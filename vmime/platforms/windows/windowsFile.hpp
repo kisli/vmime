@@ -1,0 +1,186 @@
+//
+// VMime library (http://vmime.sourceforge.net)
+// Copyright (C) 2002-2005 Vincent Richard <vincent@vincent-richard.net>
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License as
+// published by the Free Software Foundation; either version 2 of
+// the License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//
+
+#ifndef VMIME_PLATFORMS_WINDOWS_FILE_HPP_INCLUDED
+#define VMIME_PLATFORMS_WINDOWS_FILE_HPP_INCLUDED
+
+
+#include "vmime/utility/file.hpp"
+
+#include <windows.h>
+
+#if VMIME_HAVE_FILESYSTEM_FEATURES
+
+
+namespace vmime {
+namespace platforms {
+namespace windows {
+
+
+class windowsFileSystemFactory : public vmime::utility::fileSystemFactory
+{
+public:
+
+	vmime::utility::file* create(const vmime::utility::file::path& path) const;
+
+	const vmime::utility::file::path stringToPath(const vmime::string& str) const;
+	const vmime::string pathToString(const vmime::utility::file::path& path) const;
+
+	static const vmime::utility::file::path stringToPathImpl(const vmime::string& str);
+	static const vmime::string pathToStringImpl(const vmime::utility::file::path& path);
+
+	const bool isValidPathComponent(const vmime::utility::file::path::component& comp) const;
+	const bool isValidPath(const vmime::utility::file::path& path) const;
+
+	static void reportError(const vmime::utility::path& path, const int err);
+};
+
+
+class windowsFile : public vmime::utility::file
+{
+public:
+	windowsFile(const vmime::utility::file::path& path);
+
+public:
+	void createFile();
+	void createDirectory(const bool createAll = false);
+
+	const bool isFile() const;
+	const bool isDirectory() const;
+
+	const bool canRead() const;
+	const bool canWrite() const;
+
+	const length_type getLength();
+	
+	const path& getFullPath() const;
+
+	const bool exists() const;
+
+	const file* getParent() const;
+
+	void rename(const path& newName);
+	void remove();
+
+	vmime::utility::fileWriter* getFileWriter();
+
+	vmime::utility::fileReader* getFileReader();
+
+	vmime::utility::fileIterator* getFiles() const;
+
+private:
+	static void createDirectoryImpl(const vmime::utility::file::path& fullPath, const vmime::utility::file::path& path, const bool recursive = false);
+
+private:
+	vmime::utility::file::path m_path;
+	vmime::string m_nativePath;
+};
+	
+
+class windowsFileIterator : public vmime::utility::fileIterator
+{
+public:
+	windowsFileIterator(const vmime::utility::file::path& path, const vmime::string& nativePath);
+	~windowsFileIterator();
+
+	const bool hasMoreElements() const;
+	vmime::utility::file* nextElement();
+
+private:
+	void findFirst();
+	void findNext();
+	bool isCurrentOrParentDir() const;
+
+private:
+	vmime::utility::file::path m_path;
+	vmime::string m_nativePath;
+	WIN32_FIND_DATA m_findData;
+	bool m_moreElements;
+	HANDLE m_hFind;
+};
+
+
+class windowsFileReader : public vmime::utility::fileReader
+{
+public:
+	windowsFileReader(const vmime::utility::file::path& path, const vmime::string& nativePath);
+
+public:
+	vmime::utility::inputStream* getInputStream();
+
+private:
+	vmime::utility::file::path m_path;
+	vmime::string m_nativePath;
+};
+
+
+class windowsFileReaderInputStream : public vmime::utility::inputStream
+{
+public:
+	windowsFileReaderInputStream(const vmime::utility::file::path& path, HANDLE hFile);
+	~windowsFileReaderInputStream();
+
+public:
+	const bool eof() const;
+	void reset();
+	const size_type read(value_type* const data, const size_type count);
+	const size_type skip(const size_type count);
+
+private:
+	const vmime::utility::file::path m_path;
+	HANDLE m_hFile;
+};
+
+
+class windowsFileWriter : public vmime::utility::fileWriter
+{
+public:
+	windowsFileWriter(const vmime::utility::file::path& path, const vmime::string& nativePath);
+
+public:
+	vmime::utility::outputStream* getOutputStream();
+
+private:
+	vmime::utility::file::path m_path;
+	vmime::string m_nativePath;
+};
+
+
+class windowsFileWriterOutputStream : public vmime::utility::outputStream
+{
+public:
+	windowsFileWriterOutputStream(const vmime::utility::file::path& path, HANDLE hFile);
+	~windowsFileWriterOutputStream();
+
+public:
+	void write(const value_type* const data, const size_type count);
+
+private:
+	const vmime::utility::file::path m_path;
+	HANDLE m_hFile;
+};
+
+} // windows
+} // platforms
+} // vmime
+
+
+#endif // VMIME_HAVE_FILESYSTEM_FEATURES
+
+#endif // VMIME_PLATFORMS_WINDOWS_FILE_HPP_INCLUDED

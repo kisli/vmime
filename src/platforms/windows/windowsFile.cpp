@@ -1,0 +1,460 @@
+//
+// VMime library (http://vmime.sourceforge.net)
+// Copyright (C) 2002-2005 Vincent Richard <vincent@vincent-richard.net>
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License as
+// published by the Free Software Foundation; either version 2 of
+// the License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//
+
+#include "vmime/platforms/windows/windowsFile.hpp"
+
+#include <windows.h>
+#include <string.h>
+
+#include "vmime/exception.hpp"
+
+
+#if VMIME_HAVE_FILESYSTEM_FEATURES
+
+
+namespace vmime {
+namespace platforms {
+namespace windows {
+
+
+vmime::utility::file* windowsFileSystemFactory::create(const vmime::utility::file::path& path) const
+{
+	return new windowsFile(path);
+}
+
+
+const vmime::utility::file::path windowsFileSystemFactory::stringToPath(const vmime::string& str) const
+{
+	return (stringToPathImpl(str));
+}
+
+
+const vmime::string windowsFileSystemFactory::pathToString(const vmime::utility::file::path& path) const
+{
+	return (pathToStringImpl(path));
+}
+
+
+const vmime::utility::file::path windowsFileSystemFactory::stringToPathImpl(const vmime::string& str)
+{
+	vmime::string::size_type offset = 0;
+	vmime::string::size_type prev = 0;
+
+	vmime::utility::file::path path;
+
+	while ((offset = str.find_first_of("\\", offset)) != vmime::string::npos)
+	{
+		if (offset != prev)
+			path.appendComponent(vmime::string(str.begin() + prev, str.begin() + offset));
+
+		prev = offset + 1;
+		offset++;
+	}
+
+	if (prev < str.length())
+		path.appendComponent(vmime::string(str.begin() + prev, str.end()));
+
+	return (path);
+}
+
+
+const vmime::string windowsFileSystemFactory::pathToStringImpl(const vmime::utility::file::path& path)
+{
+	vmime::string native = "";
+
+	for (int i = 0 ; i < path.getSize() ; ++i)
+	{
+		if (i > 0)
+			native += "\\";
+
+		native += path[i].getBuffer();
+	}
+
+	return (native);
+}
+
+
+const bool windowsFileSystemFactory::isValidPathComponent(const vmime::utility::file::path::component& comp) const
+{
+	return (comp.getBuffer().find_first_of("\\*") == vmime::string::npos);
+}
+
+
+const bool windowsFileSystemFactory::isValidPath(const vmime::utility::file::path& path) const
+{
+	for (int i = 0 ; i < path.getSize() ; ++i)
+	{
+		if (!isValidPathComponent(path[i]))
+			return false;
+	}
+
+	return true;
+}
+
+
+void windowsFileSystemFactory::reportError(const vmime::utility::path& path, const int err)
+{
+	vmime::string desc;
+	
+	LPVOID lpMsgBuf;
+	if (FormatMessage( 
+			FORMAT_MESSAGE_ALLOCATE_BUFFER | 
+			FORMAT_MESSAGE_FROM_SYSTEM | 
+			FORMAT_MESSAGE_IGNORE_INSERTS,
+			NULL,
+			err,
+			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+			(LPTSTR) &lpMsgBuf,
+			0,
+			NULL ))
+	{
+		desc = (char*)lpMsgBuf;
+		LocalFree( lpMsgBuf );
+	}
+	
+	throw vmime::exceptions::filesystem_exception(desc, path);
+}
+
+windowsFile::windowsFile(const vmime::utility::file::path& path)
+: m_path(path), m_nativePath(windowsFileSystemFactory::pathToStringImpl(path))
+{
+}
+
+void windowsFile::createFile()
+{
+	HANDLE hFile = CreateFile(
+		m_nativePath.c_str(),
+		GENERIC_WRITE,
+		0,
+		NULL,
+		CREATE_ALWAYS,
+		FILE_ATTRIBUTE_NORMAL,
+		NULL);
+	if (hFile == INVALID_HANDLE_VALUE)
+		windowsFileSystemFactory::reportError(m_path, GetLastError());
+
+	CloseHandle(hFile);
+}
+
+void windowsFile::createDirectory(const bool createAll)
+{
+	createDirectoryImpl(m_path, m_path, createAll);
+}
+
+const bool windowsFile::isFile() const
+{
+	DWORD dwFileAttribute = GetFileAttributes(m_nativePath.c_str());
+	if (dwFileAttribute == INVALID_FILE_ATTRIBUTES)
+		return false;
+	return (dwFileAttribute & FILE_ATTRIBUTE_DIRECTORY) == 0;
+}
+
+const bool windowsFile::isDirectory() const
+{
+	DWORD dwFileAttribute = GetFileAttributes(m_nativePath.c_str());
+	if (dwFileAttribute == INVALID_FILE_ATTRIBUTES)
+		return false;
+	return (dwFileAttribute & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY;
+}
+
+const bool windowsFile::canRead() const
+{
+	HANDLE hFile = CreateFile(
+		m_nativePath.c_str(),
+		GENERIC_READ,
+		0,
+		NULL,
+		OPEN_EXISTING,
+		FILE_ATTRIBUTE_NORMAL,
+		NULL);
+	if (hFile == INVALID_HANDLE_VALUE)
+		return false;
+	CloseHandle(hFile);
+	return true;
+}
+	
+const bool windowsFile::canWrite() const
+{
+	HANDLE hFile = CreateFile(
+		m_nativePath.c_str(),
+		GENERIC_WRITE,
+		0,
+		NULL,
+		OPEN_ALWAYS,
+		FILE_ATTRIBUTE_NORMAL,
+		NULL);
+	if (hFile == INVALID_HANDLE_VALUE)
+		return false;
+	CloseHandle(hFile);
+	return true;
+}
+
+const windowsFile::length_type windowsFile::getLength()
+{
+	HANDLE hFile = CreateFile(
+		m_nativePath.c_str(),
+		GENERIC_READ,
+		0,
+		NULL,
+		OPEN_EXISTING,
+		FILE_ATTRIBUTE_NORMAL,
+		NULL);
+	if (hFile == INVALID_HANDLE_VALUE)
+		windowsFileSystemFactory::reportError(m_path, GetLastError());
+	
+	DWORD dwSize = GetFileSize(hFile, NULL);
+	CloseHandle(hFile);
+
+	return dwSize;
+}
+	
+const vmime::utility::path& windowsFile::getFullPath() const
+{
+	return m_path;
+}
+
+const bool windowsFile::exists() const
+{
+	WIN32_FIND_DATA findData;
+	HANDLE hFind = FindFirstFile(m_nativePath.c_str(), &findData);
+	if (hFind != INVALID_HANDLE_VALUE)
+	{
+		FindClose(hFind);
+		return true;
+	}
+	return false;
+}
+
+const vmime::utility::file* windowsFile::getParent() const
+{
+	if (m_path.isEmpty())
+		return NULL;
+	else
+		return new windowsFile(m_path.getParent());
+}
+
+void windowsFile::rename(const path& newName)
+{
+	const vmime::string newNativeName = windowsFileSystemFactory::pathToStringImpl(newName);
+	if (MoveFile(m_nativePath.c_str(), newNativeName.c_str()))
+	{
+		m_path = newName;
+		m_nativePath = newNativeName;
+	}
+	else
+		windowsFileSystemFactory::reportError(m_path, GetLastError());
+}
+
+void windowsFile::remove()
+{
+	if (!DeleteFile(m_nativePath.c_str()))
+		windowsFileSystemFactory::reportError(m_path, GetLastError());
+}
+
+vmime::utility::fileWriter* windowsFile::getFileWriter()
+{
+	return new windowsFileWriter(m_path, m_nativePath);
+}
+
+vmime::utility::fileReader* windowsFile::getFileReader()
+{
+	return new windowsFileReader(m_path, m_nativePath);
+}
+
+vmime::utility::fileIterator* windowsFile::getFiles() const
+{
+	return new windowsFileIterator(m_path, m_nativePath);
+}
+
+void windowsFile::createDirectoryImpl(const vmime::utility::file::path& fullPath, const vmime::utility::file::path& path, const bool recursive)
+{
+	const vmime::string nativePath = windowsFileSystemFactory::pathToStringImpl(path);
+
+	windowsFile tmp(fullPath);
+	if (tmp.isDirectory())
+		return;
+
+	if (!path.isEmpty() && recursive)
+		createDirectoryImpl(fullPath, path.getParent(), true);
+
+	if (!CreateDirectory(nativePath.c_str(), NULL))
+		windowsFileSystemFactory::reportError(fullPath, GetLastError());
+}
+
+windowsFileIterator::windowsFileIterator(const vmime::utility::file::path& path, const vmime::string& nativePath)
+: m_path(path), m_nativePath(nativePath), m_moreElements(false), m_hFind(INVALID_HANDLE_VALUE)
+{
+	findFirst();
+}
+
+windowsFileIterator::~windowsFileIterator()
+{
+	if (m_hFind != INVALID_HANDLE_VALUE)
+		FindClose(m_hFind);
+}
+
+const bool windowsFileIterator::hasMoreElements() const
+{
+	return m_moreElements;
+}
+	
+vmime::utility::file* windowsFileIterator::nextElement()
+{
+	vmime::utility::file* pFile = new windowsFile(m_path / vmime::utility::file::path::component(m_findData.cFileName));
+
+	findNext();
+
+	return pFile;
+}
+
+void windowsFileIterator::findFirst()
+{
+	m_hFind = FindFirstFile(m_nativePath.c_str(), &m_findData);
+	if (m_hFind == INVALID_HANDLE_VALUE)
+	{
+		m_moreElements = false;
+		return;
+	}
+
+	m_moreElements = true;
+	if (isCurrentOrParentDir())
+		findNext();
+}
+
+void windowsFileIterator::findNext()
+{
+	do
+	{
+		if (!FindNextFile(m_hFind, &m_findData))
+		{
+			m_moreElements = false;
+			return;
+		}
+	}
+	while (isCurrentOrParentDir());
+}
+
+bool windowsFileIterator::isCurrentOrParentDir() const
+{
+	vmime::string s(m_findData.cFileName);
+	if ((s == ".") || (s == ".."))
+		return true;
+	return false;
+}
+
+windowsFileReader::windowsFileReader(const vmime::utility::file::path& path, const vmime::string& nativePath)
+: m_path(path), m_nativePath(nativePath)
+{
+}
+
+vmime::utility::inputStream* windowsFileReader::getInputStream()
+{
+	HANDLE hFile = CreateFile(
+		m_nativePath.c_str(),
+		GENERIC_READ,
+		0,
+		NULL,
+		OPEN_EXISTING,
+		0,
+		NULL);
+	if (hFile == INVALID_HANDLE_VALUE)
+		windowsFileSystemFactory::reportError(m_path, GetLastError());
+	return new windowsFileReaderInputStream(m_path, hFile);
+}
+
+windowsFileReaderInputStream::windowsFileReaderInputStream(const vmime::utility::file::path& path, HANDLE hFile)
+: m_path(path), m_hFile(hFile)
+{
+}
+
+windowsFileReaderInputStream::~windowsFileReaderInputStream()
+{
+	CloseHandle(m_hFile);
+}
+
+const bool windowsFileReaderInputStream::eof() const
+{
+	DWORD dwSize = GetFileSize(m_hFile, NULL);
+	DWORD dwPosition = SetFilePointer(m_hFile, 0, NULL, FILE_CURRENT);
+	return (dwSize == dwPosition);
+}
+
+void windowsFileReaderInputStream::reset()
+{
+	SetFilePointer(m_hFile, 0, NULL, FILE_BEGIN);
+}
+
+const vmime::utility::stream::size_type windowsFileReaderInputStream::read(value_type* const data, const size_type count)
+{
+	DWORD dwBytesRead;
+	if (!ReadFile(m_hFile, (LPVOID)data, (DWORD)count, &dwBytesRead, NULL))
+		windowsFileSystemFactory::reportError(m_path, GetLastError());
+	return dwBytesRead;  
+}
+
+const vmime::utility::stream::size_type windowsFileReaderInputStream::skip(const size_type count)
+{
+	DWORD dwCurPos = SetFilePointer(m_hFile, 0, NULL, FILE_CURRENT);
+	DWORD dwNewPos = SetFilePointer(m_hFile, (LONG)count, NULL, FILE_CURRENT);
+	return (dwNewPos - dwCurPos);
+}
+
+windowsFileWriter::windowsFileWriter(const vmime::utility::file::path& path, const vmime::string& nativePath)
+: m_path(path), m_nativePath(nativePath)
+{
+}
+
+vmime::utility::outputStream* windowsFileWriter::getOutputStream()
+{
+	HANDLE hFile = CreateFile(
+		m_nativePath.c_str(),
+		GENERIC_WRITE,
+		0,
+		NULL,
+		CREATE_ALWAYS,
+		FILE_ATTRIBUTE_NORMAL,
+		NULL);
+	if (hFile == INVALID_HANDLE_VALUE)
+		windowsFileSystemFactory::reportError(m_path, GetLastError());
+	return new windowsFileWriterOutputStream(m_path, hFile);
+}
+
+windowsFileWriterOutputStream::windowsFileWriterOutputStream(const vmime::utility::file::path& path, HANDLE hFile)
+: m_path(path), m_hFile(hFile)
+{
+}
+
+windowsFileWriterOutputStream::~windowsFileWriterOutputStream()
+{
+	CloseHandle(m_hFile);
+}
+
+void windowsFileWriterOutputStream::write(const value_type* const data, const size_type count)
+{
+	DWORD dwBytesWritten;
+	if (!WriteFile(m_hFile, data, (DWORD)count, &dwBytesWritten, NULL))
+		windowsFileSystemFactory::reportError(m_path, GetLastError());
+}
+
+} // windows
+} // platforms
+} // vmime
+
+
+#endif // VMIME_HAVE_FILESYSTEM_FEATURES
