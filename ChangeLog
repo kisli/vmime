@@ -2,6 +2,11 @@
 VERSION 0.6.2-cvs
 =================
 
+2005-01-03  Vincent Richard  <vincent@vincent-richard.net>
+
+ * Fixed linking error on 'typeAdapter <string>::parse()' with g++ versions
+   older than 3.3.
+
 2005-01-02  Vincent Richard  <vincent@vincent-richard.net>
 
  * Added unit tests for utility::path and bodyPart.
