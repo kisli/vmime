@@ -124,6 +124,7 @@ libvmime_sources = [
 	'messageId.cpp', 'messageId.hpp',
 	'messageParser.cpp', 'messageParser.hpp',
 	'options.cpp', 'options.hpp',
+	'path.cpp', 'path.hpp',
 	'parameter.cpp', 'parameter.hpp',
 	'parameterFactory.cpp', 'parameterFactory.hpp',
 	'parameterizedHeaderField.cpp', 'parameterizedHeaderField.hpp',
@@ -151,7 +152,11 @@ libvmime_sources = [
 	'utility/smartPtr.hpp',
 	'utility/stream.cpp', 'utility/stream.hpp',
 	'utility/stringProxy.cpp', 'utility/stringProxy.hpp',
-	'utility/stringUtils.cpp', 'utility/stringUtils.hpp'
+	'utility/stringUtils.cpp', 'utility/stringUtils.hpp',
+	'mdn/MDNHelper.cpp', 'mdn/MDNHelper.hpp',
+	'mdn/MDNInfos.cpp', 'mdn/MDNInfos.hpp',
+	'mdn/receivedMDNInfos.cpp', 'mdn/receivedMDNInfos.hpp',
+	'mdn/sendableMDNInfos.cpp', 'mdn/sendableMDNInfos.hpp'
 ]
 
 libvmime_examples_sources = [
@@ -312,6 +317,7 @@ libvmimetest_sources = [
 	[ 'tests/parser/headerTest', [ 'tests/parser/headerTest.cpp' ] ],
 	[ 'tests/parser/mailboxTest', [ 'tests/parser/mailboxTest.cpp' ] ],
 	[ 'tests/parser/mediaTypeTest', [ 'tests/parser/mediaTypeTest.cpp' ] ],
+	[ 'tests/parser/pathTest', [ 'tests/parser/pathTest.cpp' ] ],
 	[ 'tests/parser/textTest', [ 'tests/parser/textTest.cpp' ] ],
 	[ 'tests/utility/md5Test', [ 'tests/utility/md5Test.cpp' ] ],
 	[ 'tests/utility/stringProxyTest', [ 'tests/utility/stringProxyTest.cpp' ] ],

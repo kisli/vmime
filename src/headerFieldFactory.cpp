@@ -46,7 +46,7 @@ headerFieldFactory::headerFieldFactory()
 	registerName <mailboxField>(vmime::fields::DELIVERED_TO);
 	registerName <textField>(vmime::fields::ORGANIZATION);
 	registerName <textField>(vmime::fields::USER_AGENT);
-	registerName <mailboxField>(vmime::fields::RETURN_PATH);
+	registerName <pathField>(vmime::fields::RETURN_PATH);
 	registerName <contentTypeField>(vmime::fields::CONTENT_TYPE);
 	registerName <contentEncodingField>(vmime::fields::CONTENT_TRANSFER_ENCODING);
 	registerName <textField>(vmime::fields::CONTENT_DESCRIPTION);
@@ -58,6 +58,7 @@ headerFieldFactory::headerFieldFactory()
 	registerName <messageIdField>(vmime::fields::IN_REPLY_TO);
 
 	registerName <messageIdField>(vmime::fields::ORIGINAL_MESSAGE_ID);
+	registerName <dispositionField>(vmime::fields::DISPOSITION);
 	registerName <mailboxListField>(vmime::fields::DISPOSITION_NOTIFICATION_TO);
 }
 

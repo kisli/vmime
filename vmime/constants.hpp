@@ -57,6 +57,7 @@ namespace vmime
 		extern const string::value_type* const MESSAGE_RFC822;
 		extern const string::value_type* const MESSAGE_PARTIAL;
 		extern const string::value_type* const MESSAGE_EXTERNAL_BODY;
+		extern const string::value_type* const MESSAGE_DISPOSITION_NOTIFICATION;
 
 		extern const string::value_type* const APPLICATION_OCTET_STREAM;
 
@@ -199,22 +200,34 @@ namespace vmime
 	/** Constants for disposition action modes (RFC-3978). */
 	namespace dispositionActionModes
 	{
+		/** User implicitely displayed or deleted the message (filter or
+		  * any other automatic action). */
 		extern const string::value_type* const MANUAL;
+
+		/** User explicitely displayed or deleted the message (manual action). */
 		extern const string::value_type* const AUTOMATIC;
 	}
 
 	/** Constants for disposition sending modes (RFC-3798). */
 	namespace dispositionSendingModes
 	{
+		/** The MDN was sent because the MUA had previously been configured
+		  * to do so automatically. */
 		extern const string::value_type* const SENT_MANUALLY;
+
+		/** User explicitly gave permission for this particular MDN to be sent. */
 		extern const string::value_type* const SENT_AUTOMATICALLY;
 	}
 
 	/** Constants for disposition types (RFC-3798). */
 	namespace dispositionTypes
 	{
+		/** Message has been displayed to the user. */
 		extern const string::value_type* const DISPLAYED;
+		/** Message has been deleted without being displayed. */
 		extern const string::value_type* const DELETED;
+		/** Message has been denied. */
+		extern const string::value_type* const DENIED;
 	}
 
 	/** Constants for disposition modifiers (RFC-3798). */

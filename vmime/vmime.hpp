@@ -73,6 +73,9 @@
 #include "vmime/plainTextPart.hpp"
 #include "vmime/htmlTextPart.hpp"
 
+// MDN
+#include "vmime/mdn/MDNHelper.hpp"
+
 // Property set
 #include "vmime/propertySet.hpp"
 

@@ -17,84 +17,72 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#ifndef VMIME_MAILBOX_HPP_INCLUDED
-#define VMIME_MAILBOX_HPP_INCLUDED
+#ifndef VMIME_PATH_HPP_INCLUDED
+#define VMIME_PATH_HPP_INCLUDED
 
 
-#include "vmime/address.hpp"
-#include "vmime/text.hpp"
+#include "vmime/component.hpp"
 
 
 namespace vmime
 {
 
 
-/** A mailbox: full name + email (basic type).
+/** A path: a local part + '@' + a domain.
   */
 
-class mailbox : public address
+class path : public component
 {
-	friend class mailboxGroup;
-	friend class mailboxField;
-
 public:
 
-	mailbox();
-	mailbox(const mailbox& mbox);
-	mailbox(const string& email);
-	mailbox(const text& name, const string& email);
+	path();
+	path(const string& localPart, const string& domain);
+	path(const path& p);
 
-	/** Return the full name of the mailbox (empty if not specified).
+	/** Return the local part of the address.
 	  *
-	  * @return full name of the mailbox
+	  * @return local part of the address
 	  */
-	const text& getName() const;
+	const string& getLocalPart() const;
 
-	/** Set the full name of the mailbox.
+	/** Set the local part of the address.
 	  *
-	  * @param name full name of the mailbox
+	  * @param localPart local part of the address
 	  */
-	void setName(const text& name);
+	void setLocalPart(const string& localPart);
 
-	/** Return the email of the mailbox.
+	/** Return the domain of the address.
 	  *
-	  * @return email of the mailbox
+	  * @return domain of the address
 	  */
-	const string& getEmail() const;
+	const string& getDomain() const;
 
-	/** Set the email of the mailbox.
+	/** Set the domain of the address.
 	  *
-	  * @param email email of the mailbox
+	  * @param domain domain of the address
 	  */
-	void setEmail(const string& email);
+	void setDomain(const string& domain);
 
 	// Comparison
-	const bool operator==(const class mailbox& mailbox) const;
-	const bool operator!=(const class mailbox& mailbox) const;
+	const bool operator==(const path& p) const;
+	const bool operator!=(const path& p) const;
 
 	// Assignment
 	void copyFrom(const component& other);
-	mailbox* clone() const;
-	mailbox& operator=(const mailbox& other);
-
-	const bool isEmpty() const;
-
-	void clear();
+	path* clone() const;
+	path& operator=(const path& other);
 
 	const std::vector <const component*> getChildComponents() const;
 
-
-	const bool isGroup() const;
-
 protected:
 
-	text m_name;
-	string m_email;
+	string m_localPart;
+	string m_domain;
 
 public:
 
-	using address::parse;
-	using address::generate;
+	using component::parse;
+	using component::generate;
 
 	// Component parsing & assembling
 	void parse(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition = NULL);
@@ -105,4 +93,4 @@ public:
 } // vmime
 
 
-#endif // VMIME_MAILBOX_HPP_INCLUDED
+#endif // VMIME_PATH_HPP_INCLUDED

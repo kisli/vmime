@@ -53,6 +53,7 @@ namespace mediaTypes
 	const string::value_type* const MESSAGE_RFC822 = "rfc822";
 	const string::value_type* const MESSAGE_PARTIAL = "partial";
 	const string::value_type* const MESSAGE_EXTERNAL_BODY = "external-body";
+	const string::value_type* const MESSAGE_DISPOSITION_NOTIFICATION = "disposition-notification";
 
 	const string::value_type* const APPLICATION_OCTET_STREAM = "octet-stream";
 

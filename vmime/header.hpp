@@ -68,6 +68,7 @@ public:
 	FIELD_ACCESS(ReplyTo,                 REPLY_TO,                  mailboxField)
 	FIELD_ACCESS(DeliveredTo,             DELIVERED_TO,              mailboxField)
 	FIELD_ACCESS(InReplyTo,               IN_REPLY_TO,               messageIdField)
+	FIELD_ACCESS(ReturnPath,              RETURN_PATH,               pathField)
 
 	FIELD_ACCESS(To,                      TO,                        addressListField)
 	FIELD_ACCESS(Cc,                      CC,                        addressListField)
@@ -85,6 +86,10 @@ public:
 	FIELD_ACCESS(ContentId,               CONTENT_ID,                messageIdField)
 	FIELD_ACCESS(MessageId,               MESSAGE_ID,                messageIdField)
 	FIELD_ACCESS(ContentLocation,         CONTENT_LOCATION,          defaultField)
+
+	FIELD_ACCESS(OriginalMessageId,       ORIGINAL_MESSAGE_ID,       messageIdField)
+	FIELD_ACCESS(Disposition,             DISPOSITION,               dispositionField)
+	FIELD_ACCESS(DispositionNotificationTo, DISPOSITION_NOTIFICATION_TO, mailboxListField)
 
 #undef FIELD_ACCESS
 
