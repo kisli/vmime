@@ -42,6 +42,13 @@ textPartFactory::~textPartFactory()
 }
 
 
+textPartFactory* textPartFactory::getInstance()
+{
+	static textPartFactory instance;
+	return (&instance);
+}
+
+
 textPart* textPartFactory::create(const mediaType& type)
 {
 	NameMap::const_iterator pos = m_nameMap.find(type.generate());

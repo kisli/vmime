@@ -54,6 +54,13 @@ encoderFactory::~encoderFactory()
 }
 
 
+encoderFactory* encoderFactory::getInstance()
+{
+	static encoderFactory instance;
+	return (&instance);
+}
+
+
 encoder* encoderFactory::create(const string& name)
 {
 	return (getEncoderByName(name)->create());

@@ -25,7 +25,6 @@
 
 #include "vmime/types.hpp"
 #include "vmime/base.hpp"
-#include "vmime/utility/singleton.hpp"
 #include "vmime/utility/stringUtils.hpp"
 
 #include "vmime/messaging/serviceInfos.hpp"
@@ -46,16 +45,16 @@ class session;
 /** A factory to create 'service' objects for a specified protocol.
   */
 
-class serviceFactory : public utility::singleton <serviceFactory>
+class serviceFactory
 {
-	friend class utility::singleton <serviceFactory>;
-
 private:
 
 	serviceFactory();
 	~serviceFactory();
 
 public:
+
+	static serviceFactory* getInstance();
 
 	/** Information about a registered service. */
 	class registeredService

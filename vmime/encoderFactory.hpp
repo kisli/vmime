@@ -22,7 +22,6 @@
 
 
 #include "vmime/encoder.hpp"
-#include "vmime/utility/singleton.hpp"
 #include "vmime/utility/stringUtils.hpp"
 
 
@@ -33,16 +32,16 @@ namespace vmime
 /** A factory to create 'encoder' objects for the specified encoding.
   */
 
-class encoderFactory : public utility::singleton <encoderFactory>
+class encoderFactory
 {
-	friend class utility::singleton <encoderFactory>;
-
 private:
 
 	encoderFactory();
 	~encoderFactory();
 
 public:
+
+	static encoderFactory* getInstance();
 
 	/** Information about a registered encoder. */
 	class registeredEncoder

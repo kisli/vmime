@@ -22,7 +22,6 @@
 
 
 #include "vmime/headerField.hpp"
-#include "vmime/utility/singleton.hpp"
 #include "vmime/utility/stringUtils.hpp"
 
 
@@ -30,10 +29,8 @@ namespace vmime
 {
 
 
-class headerFieldFactory : public utility::singleton <headerFieldFactory>
+class headerFieldFactory
 {
-	friend class utility::singleton <headerFieldFactory>;
-
 protected:
 
 	headerFieldFactory();
@@ -45,6 +42,8 @@ protected:
 	NameMap m_nameMap;
 
 public:
+
+	static headerFieldFactory* getInstance();
 
 #ifndef VMIME_BUILDING_DOC
 	template <class TYPE>

@@ -22,7 +22,6 @@
 
 
 #include "vmime/base.hpp"
-#include "vmime/utility/singleton.hpp"
 
 
 namespace vmime
@@ -32,10 +31,8 @@ namespace vmime
 /** A class to set global options for VMime.
   */
 
-class options : public utility::singleton <options>
+class options
 {
-	friend class utility::singleton <options>;
-
 protected:
 
 	/** Message-related options.
@@ -82,6 +79,8 @@ protected:
 	};
 
 public:
+
+	static options* getInstance();
 
 	multipartOptions multipart;
 	messageOptions message;

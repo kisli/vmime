@@ -42,6 +42,13 @@ parameterFactory::~parameterFactory()
 }
 
 
+parameterFactory* parameterFactory::getInstance()
+{
+	static parameterFactory instance;
+	return (&instance);
+}
+
+
 parameter* parameterFactory::create
 	(const string& name, const string& value)
 {

@@ -24,6 +24,13 @@ namespace vmime
 {
 
 
+options* options::getInstance()
+{
+	static options instance;
+	return (&instance);
+}
+
+
 options::multipartOptions::multipartOptions()
 	: m_prologText("This is a multi-part message in MIME format. Your mail reader " \
 	               "does not understand MIME message format."),

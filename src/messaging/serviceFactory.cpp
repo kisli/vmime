@@ -45,6 +45,13 @@ serviceFactory::~serviceFactory()
 }
 
 
+serviceFactory* serviceFactory::getInstance()
+{
+	static serviceFactory instance;
+	return (&instance);
+}
+
+
 service* serviceFactory::create
 	(session* sess, const string& protocol, authenticator* auth)
 {

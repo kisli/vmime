@@ -147,7 +147,6 @@ libvmime_sources = [
 	'utility/md5.cpp', 'utility/md5.hpp',
 	'utility/path.cpp', 'utility/path.hpp',
 	'utility/random.cpp', 'utility/random.hpp',
-	'utility/singleton.cpp', 'utility/singleton.hpp',
 	'utility/smartPtr.hpp',
 	'utility/stream.cpp', 'utility/stream.hpp',
 	'utility/stringProxy.cpp', 'utility/stringProxy.hpp',

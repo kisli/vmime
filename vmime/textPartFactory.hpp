@@ -23,17 +23,14 @@
 
 #include "vmime/textPart.hpp"
 #include "vmime/mediaType.hpp"
-#include "vmime/utility/singleton.hpp"
 
 
 namespace vmime
 {
 
 
-class textPartFactory : public utility::singleton <textPartFactory>
+class textPartFactory
 {
-	friend class utility::singleton <textPartFactory>;
-
 protected:
 
 	textPartFactory();
@@ -59,6 +56,8 @@ protected:
 #endif // VMIME_BUILDING_DOC
 
 public:
+
+	static textPartFactory* getInstance();
 
 	template <class T>
 	void registerType(const mediaType& type)

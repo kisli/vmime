@@ -63,6 +63,13 @@ headerFieldFactory::~headerFieldFactory()
 }
 
 
+headerFieldFactory* headerFieldFactory::getInstance()
+{
+	static headerFieldFactory instance;
+	return (&instance);
+}
+
+
 headerField* headerFieldFactory::create
 	(const string& name, const string& body)
 {

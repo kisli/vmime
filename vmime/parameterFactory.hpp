@@ -22,7 +22,6 @@
 
 
 #include "vmime/parameter.hpp"
-#include "vmime/utility/singleton.hpp"
 #include "vmime/utility/stringUtils.hpp"
 
 
@@ -30,10 +29,8 @@ namespace vmime
 {
 
 
-class parameterFactory : public utility::singleton <parameterFactory>
+class parameterFactory
 {
-	friend class utility::singleton <parameterFactory>;
-
 protected:
 
 	parameterFactory();
@@ -45,6 +42,8 @@ protected:
 	NameMap m_nameMap;
 
 public:
+
+	static parameterFactory* getInstance();
 
 #ifndef VMIME_BUILDING_DOC
 	template <class TYPE>
