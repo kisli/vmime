@@ -62,9 +62,10 @@ service* serviceFactory::create
 	if (u.getPort() != url::UNSPECIFIED_PORT)
 		sess->getProperties()[serv->getInfos().getPropertyPrefix() + "server.port"] = u.getPort();
 
-	// Path portion of the URL is used to point a specific folder (empty = root)
-	//if (!u.path().empty())
-	//	sess->properties()[serv->getInfos().getPropertyPrefix() + "server.path"] = u.getPath();
+	// Path portion of the URL is used to point a specific folder (empty = root).
+	// In maildir, this is used to point to the root of the message repository.
+	if (!u.getPath().empty())
+		sess->getProperties()[serv->getInfos().getPropertyPrefix() + "server.rootpath"] = u.getPath();
 
 	if (!u.getUsername().empty())
 	{
@@ -87,7 +88,7 @@ const serviceFactory::registeredService* serviceFactory::getServiceByProtocol(co
 			return (*it);
 	}
 
-	throw exceptions::no_service_available();
+	throw exceptions::no_service_available(name);
 }
 
 

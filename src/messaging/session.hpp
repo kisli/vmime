@@ -23,6 +23,7 @@
 
 #include "messaging/authenticator.hpp"
 #include "messaging/progressionListener.hpp"
+#include "messaging/url.hpp"
 
 #include "propertySet.hpp"
 
@@ -70,6 +71,16 @@ public:
 	  */
 	transport* getTransport(const string& protocol, authenticator* auth = NULL);
 
+	/** Return a transport service instance for the specified URL.
+	  *
+	  * @param url full URL with at least the protocol to use (eg: "smtp://myserver.com/")
+	  * @param auth authenticator object to use for the new transport service. If
+	  * NULL, a default one is used. The default authenticator simply return user
+	  * credentials by reading the session properties "auth.username" and "auth.password".
+	  * @return a new transport service
+	  */
+	transport* getTransport(const messaging::url& url, authenticator* auth = NULL);
+
 	/** Return a transport service instance for the protocol specified
 	  * in the session properties.
 	  *
@@ -78,7 +89,7 @@ public:
 	  * @param auth authenticator object to use for the new store service. If
 	  * NULL, a default one is used. The default authenticator simply return user
 	  * credentials by reading the session properties "auth.username" and "auth.password".
-	  * @return a new transport service
+	  * @return a new store service
 	  */
 	store* getStore(authenticator* auth = NULL);
 
@@ -88,9 +99,19 @@ public:
 	  * @param auth authenticator object to use for the new store service. If
 	  * NULL, a default one is used. The default authenticator simply return user
 	  * credentials by reading the session properties "auth.username" and "auth.password".
-	  * @return a new transport service
+	  * @return a new store service
 	  */
 	store* getStore(const string& protocol, authenticator* auth = NULL);
+
+	/** Return a store service instance for the specified URL.
+	  *
+	  * @param url full URL with at least the protocol to use (eg: "imap://username:password@myserver.com/")
+	  * @param auth authenticator object to use for the new store service. If
+	  * NULL, a default one is used. The default authenticator simply return user
+	  * credentials by reading the session properties "auth.username" and "auth.password".
+	  * @return a new store service
+	  */
+	store* getStore(const messaging::url& url, authenticator* auth = NULL);
 
 	/** Properties for the session and for the services.
 	  */

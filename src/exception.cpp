@@ -355,8 +355,10 @@ const string unsupported_option::name() const { return "unsupported_option"; }
 //
 
 no_service_available::~no_service_available() throw() {}
-no_service_available::no_service_available(const exception& other)
-	: messaging_exception("No service available for this protocol.", other) {}
+no_service_available::no_service_available(const string& proto, const exception& other)
+	: messaging_exception(proto.empty()
+		? "No service available for this protocol."
+		: "No service available for this protocol: '" + proto + "'.", other) {}
 
 exception* no_service_available::clone() const { return new no_service_available(*this); }
 const string no_service_available::name() const { return "no_service_available"; }

@@ -399,7 +399,7 @@ class no_service_available : public messaging_exception
 {
 public:
 
-	no_service_available(const exception& other = NO_EXCEPTION);
+	no_service_available(const string& proto = "", const exception& other = NO_EXCEPTION);
 	~no_service_available() throw();
 
 	exception* clone() const;
