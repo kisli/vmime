@@ -2,6 +2,16 @@
 VERSION 0.6.0-cvs
 =================
 
+2004-12-19  Vincent Richard  <vincent@vincent-richard.net>
+
+ * Added chaining in exception handling. vmime::exception::other() returns
+   the exception which is encapsulated in the current exception (if any).
+   This allows to retrieve the exception "stack" (for example, this is
+   used for 'maildir' implementation, where some functions return a
+   'filesystem_exception' encapsulated in a 'messaging_exception').
+
+ * Fixed bugs and memory leaks in POP3/IMAP/maildir implementations.
+
 2004-12-17  Vincent Richard  <vincent@vincent-richard.net>
 
  * Made default platform handlers (currently, only "posix"). Source files
@@ -9,8 +19,8 @@ VERSION 0.6.0-cvs
 
    To use a default platform handler, do the following:
       - #include <vmime/platforms/[platform-name]/handler.hpp>
-	 - call vmime::platformDependant::setHandler() with the appropriate class
-	 - link your program with both 'libvmime' and 'libvmime-[platform-name]'
+      - call vmime::platformDependant::setHandler() with the appropriate class
+      - link your program with both 'libvmime' and 'libvmime-[platform-name]'
 
    For example, to use the default platform handler for POSIX (GNU/Linux):
 
