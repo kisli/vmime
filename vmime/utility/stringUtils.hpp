@@ -76,6 +76,14 @@ public:
 	  */
 	static const string toLower(const string& str);
 
+	/** Transform all the characters in a string to upper-case.
+	  * \warning Use this with ASCII-only strings.
+	  *
+	  * @param str the string to transform
+	  * @return a new string in upper-case
+	  */
+	static const string toUpper(const string& str);
+
 	/** Strip the space characters (SPC, TAB, CR, LF) at the beginning
 	  * and at the end of the specified string.
 	  *

@@ -87,6 +87,18 @@ const string stringUtils::toLower(const string& str)
 }
 
 
+const string stringUtils::toUpper(const string& str)
+{
+	string out(str);
+	const string::iterator end = out.end();
+
+	for (string::iterator i = out.begin() ; i != end ; ++i)
+		*i = std::toupper(*i, std::locale());
+
+	return (out);
+}
+
+
 const string stringUtils::trim(const string& str)
 {
 	string::const_iterator b = str.begin();
