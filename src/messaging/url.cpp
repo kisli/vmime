@@ -143,26 +143,34 @@ void url::parse(const string& str)
 	string username;
 	string password;
 
-	if (atPos != string::npos && atPos < slashPos)
+	if (proto == PROTOCOL_FILE)
 	{
-		const string userPart(str.begin() + protoEnd, str.begin() + atPos);
-		const string::size_type colonPos = userPart.find(':');
-
-		if (colonPos == string::npos)
-		{
-			username = userPart;
-		}
-		else
-		{
-			username = string(userPart.begin(), userPart.begin() + colonPos);
-			password = string(userPart.begin() + colonPos + 1, userPart.end());
-		}
-
-		hostPart = string(str.begin() + atPos + 1, str.begin() + slashPos);
+		// No user name, password and host part.
+		slashPos = protoEnd + 3;
 	}
 	else
 	{
-		hostPart = string(str.begin() + protoEnd, str.begin() + slashPos);
+		if (atPos != string::npos && atPos < slashPos)
+		{
+			const string userPart(str.begin() + protoEnd + 3, str.begin() + atPos);
+			const string::size_type colonPos = userPart.find(':');
+
+			if (colonPos == string::npos)
+			{
+				username = userPart;
+			}
+			else
+			{
+				username = string(userPart.begin(), userPart.begin() + colonPos);
+				password = string(userPart.begin() + colonPos + 1, userPart.end());
+			}
+
+			hostPart = string(str.begin() + atPos + 1, str.begin() + slashPos);
+		}
+		else
+		{
+			hostPart = string(str.begin() + protoEnd + 3, str.begin() + slashPos);
+		}
 	}
 
 	// Host/port
@@ -182,7 +190,7 @@ void url::parse(const string& str)
 	}
 
 	// Path
-	string path(str.begin() + slashPos, str.end());
+	string path = stringUtils::trim(string(str.begin() + slashPos, str.end()));
 
 	if (path == "/")
 		path.clear();
