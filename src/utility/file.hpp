@@ -101,6 +101,7 @@ public:
 
 
 	/** Create the file pointed by this file object.
+	  *
 	  * @throw exceptions::filesystem_exception if an error occurs
 	  */
 	virtual void createFile() = 0;
@@ -169,6 +170,8 @@ public:
 	virtual void rename(const path& newName) = 0;
 
 	/** Deletes this file/directory.
+	  * If this is a directory, it must be empty.
+	  *
 	  * @throw exceptions::filesystem_exception if an error occurs
 	  */
 	virtual void remove() = 0;
