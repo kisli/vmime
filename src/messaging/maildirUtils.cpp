@@ -127,11 +127,11 @@ const utility::file::path::component maildirUtils::buildFlags(const int flags)
 	string str;
 	str.reserve(6);
 
+	if (flags & message::FLAG_MARKED)  str += "F";
+	if (flags & message::FLAG_PASSED)  str += "P";
 	if (flags & message::FLAG_REPLIED) str += "R";
 	if (flags & message::FLAG_SEEN)    str += "S";
 	if (flags & message::FLAG_DELETED) str += "T";
-	if (flags & message::FLAG_MARKED)  str += "F";
-	if (flags & message::FLAG_PASSED)  str += "P";
 
 	return (utility::file::path::component(str));
 }
