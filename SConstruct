@@ -52,7 +52,7 @@ libvmime_sources = [
 	'encoderQP.cpp', 'encoderQP.hpp',
 	'encoderUUE.cpp', 'encoderUUE.hpp',
 	'encoding.cpp', 'encoding.hpp',
-	'exception.hpp',
+	'exception.cpp', 'exception.hpp',
 	'fileAttachment.cpp', 'fileAttachment.hpp',
 	'genericField.hpp',
 	'genericParameter.hpp',

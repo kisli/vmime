@@ -32,17 +32,43 @@ namespace vmime
 
 class exception
 {
-protected:
+private:
 
 	string m_what;
+	exception* m_other;
+
+	exception();
 
 public:
 
-	exception(const string& what) : m_what(what) { }
-	virtual ~exception() { }
+	exception(const string& what, const exception& other = NO_EXCEPTION);
+	virtual ~exception();
 
-	const string what() const throw() { return (m_what); };
+	/** Return a description of the error.
+	  *
+	  * @return error message
+	  */
+	const string what() const throw();
+
+	/** Return the next exception in the chain (encapsuled exception).
+	  *
+	  * @return next exception in the chain
+	  */
+	const exception* other() const;
+
+	/** Return a name identifying the exception.
+	  *
+	  * @return exception name
+	  */
+	virtual const string name() const;
+
+protected:
+
+	static const exception NO_EXCEPTION;
+
+	virtual exception* clone() const;
 };
+
 
 
 /** List of all VMime exceptions. */
@@ -55,8 +81,11 @@ class bad_field_type : public vmime::exception
 {
 public:
 
-	bad_field_type() : exception("Bad field type.") {}
-	~bad_field_type() throw() {}
+	bad_field_type(const exception& other = NO_EXCEPTION);
+	~bad_field_type() throw();
+
+	exception* clone() const;
+	const string name() const;
 };
 
 
@@ -64,8 +93,11 @@ class charset_conv_error : public vmime::exception
 {
 public:
 
-	charset_conv_error() : exception("Charset conversion error.") {}
-	~charset_conv_error() throw() {}
+	charset_conv_error(const exception& other = NO_EXCEPTION);
+	~charset_conv_error() throw();
+
+	exception* clone() const;
+	const string name() const;
 };
 
 
@@ -73,8 +105,11 @@ class no_encoder_available : public vmime::exception
 {
 public:
 
-	no_encoder_available() : exception("No encoder available.") {}
-	~no_encoder_available() throw() {}
+	no_encoder_available(const exception& other = NO_EXCEPTION);
+	~no_encoder_available() throw();
+
+	exception* clone() const;
+	const string name() const;
 };
 
 
@@ -82,9 +117,11 @@ class no_such_parameter : public vmime::exception
 {
 public:
 
-	no_such_parameter(const string& name) : exception
-		(string("Parameter not found: '") + name + string("'.")) {}
-	~no_such_parameter() throw() {}
+	no_such_parameter(const string& name, const exception& other = NO_EXCEPTION);
+	~no_such_parameter() throw();
+
+	exception* clone() const;
+	const string name() const;
 };
 
 
@@ -92,8 +129,11 @@ class no_such_field : public vmime::exception
 {
 public:
 
-	no_such_field() : exception("Field not found.") {}
-	~no_such_field() throw() {}
+	no_such_field(const exception& other = NO_EXCEPTION);
+	~no_such_field() throw();
+
+	exception* clone() const;
+	const string name() const;
 };
 
 
@@ -101,8 +141,11 @@ class no_such_part : public vmime::exception
 {
 public:
 
-	no_such_part() : exception("Part not found.") {}
-	~no_such_part() throw() {}
+	no_such_part(const exception& other = NO_EXCEPTION);
+	~no_such_part() throw();
+
+	exception* clone() const;
+	const string name() const;
 };
 
 
@@ -110,8 +153,11 @@ class no_such_mailbox : public vmime::exception
 {
 public:
 
-	no_such_mailbox() : exception("Mailbox not found.") {}
-	~no_such_mailbox() throw() {}
+	no_such_mailbox(const exception& other = NO_EXCEPTION);
+	~no_such_mailbox() throw();
+
+	exception* clone() const;
+	const string name() const;
 };
 
 
@@ -119,8 +165,11 @@ class no_such_address : public vmime::exception
 {
 public:
 
-	no_such_address() : exception("Address not found.") {}
-	~no_such_address() throw() {}
+	no_such_address(const exception& other = NO_EXCEPTION);
+	~no_such_address() throw();
+
+	exception* clone() const;
+	const string name() const;
 };
 
 
@@ -128,8 +177,11 @@ class open_file_error : public vmime::exception
 {
 public:
 
-	open_file_error() : exception("Error opening file.") {}
-	~open_file_error() throw() {}
+	open_file_error(const exception& other = NO_EXCEPTION);
+	~open_file_error() throw();
+
+	exception* clone() const;
+	const string name() const;
 };
 
 
@@ -137,8 +189,11 @@ class no_factory_available : public vmime::exception
 {
 public:
 
-	no_factory_available() : exception("No factory available.") {}
-	~no_factory_available() throw() {}
+	no_factory_available(const exception& other = NO_EXCEPTION);
+	~no_factory_available() throw();
+
+	exception* clone() const;
+	const string name() const;
 };
 
 
@@ -146,26 +201,41 @@ class no_platform_dependant_handler : public vmime::exception
 {
 public:
 
-	no_platform_dependant_handler() : exception("No platform-dependant handler installed.") {}
-	~no_platform_dependant_handler() throw() {}
+	no_platform_dependant_handler(const exception& other = NO_EXCEPTION);
+	~no_platform_dependant_handler() throw();
+
+	exception* clone() const;
+	const string name() const;
 };
 
+
+/** No expeditor specified.
+  */
 
 class no_expeditor : public vmime::exception
 {
 public:
 
-	no_expeditor() : exception("No expeditor specified.") {}
-	~no_expeditor() throw() {}
+	no_expeditor(const exception& other = NO_EXCEPTION);
+	~no_expeditor() throw();
+
+	exception* clone() const;
+	const string name() const;
 };
 
+
+/** No recipient specified.
+  */
 
 class no_recipient : public vmime::exception
 {
 public:
 
-	no_recipient() : exception("No recipient specified.") {}
-	~no_recipient() throw() {}
+	no_recipient(const exception& other = NO_EXCEPTION);
+	~no_recipient() throw();
+
+	exception* clone() const;
+	const string name() const;
 };
 
 
@@ -173,42 +243,56 @@ class no_object_found : public vmime::exception
 {
 public:
 
-	no_object_found() : exception("No object found.") {}
-	~no_object_found() throw() {}
+	no_object_found(const exception& other = NO_EXCEPTION);
+	~no_object_found() throw();
+
+	exception* clone() const;
+	const string name() const;
 };
 
 
-// There is no property with that name in the set.
+/** There is no property with that name in the set.
+  */
 
 class no_such_property : public vmime::exception
 {
 public:
 
-	no_such_property(const string& name) : exception
-		(std::string("No such property: '") + name + string("'.")) { }
-	~no_such_property() throw() {}
+	no_such_property(const string& name, const exception& other = NO_EXCEPTION);
+	~no_such_property() throw();
+
+	exception* clone() const;
+	const string name() const;
 };
 
 
-// Bad type specified when reading property.
+/** Bad type specified when reading property.
+  */
 
 class invalid_property_type : public vmime::exception
 {
 public:
 
-	invalid_property_type() : exception("Invalid property type.") {}
-	~invalid_property_type() throw() {}
+	invalid_property_type(const exception& other = NO_EXCEPTION);
+	~invalid_property_type() throw();
+
+	exception* clone() const;
+	const string name() const;
 };
 
 
-// Bad argument was passed to the function.
+/** Bad argument was passed to the function.
+  */
 
 class invalid_argument : public vmime::exception
 {
 public:
 
-	invalid_argument() : exception("Invalid argument.") {}
-	~invalid_argument() throw() {}
+	invalid_argument(const exception& other = NO_EXCEPTION);
+	~invalid_argument() throw();
+
+	exception* clone() const;
+	const string name() const;
 };
 
 
@@ -223,8 +307,11 @@ class messaging_exception : public vmime::exception
 {
 public:
 
-	messaging_exception(const string& what) : exception(what) {}
-	~messaging_exception() throw() {}
+	messaging_exception(const string& what, const exception& other = NO_EXCEPTION);
+	~messaging_exception() throw();
+
+	exception* clone() const;
+	const string name() const;
 };
 
 
@@ -236,8 +323,11 @@ class connection_error : public messaging_exception
 {
 public:
 
-	connection_error() : messaging_exception("Connection error.") {}
-	~connection_error() throw() {}
+	connection_error(const exception& other = NO_EXCEPTION);
+	~connection_error() throw();
+
+	exception* clone() const;
+	const string name() const;
 };
 
 
@@ -248,11 +338,13 @@ class connection_greeting_error : public messaging_exception
 {
 public:
 
-	connection_greeting_error(const string& response)
-		: messaging_exception("Greeting error."), m_response(response) {}
-	~connection_greeting_error() throw() {}
+	connection_greeting_error(const string& response, const exception& other = NO_EXCEPTION);
+	~connection_greeting_error() throw();
 
-	const string& response() const { return (m_response); }
+	const string& response() const;
+
+	exception* clone() const;
+	const string name() const;
 
 private:
 
@@ -268,11 +360,13 @@ class authentication_error : public messaging_exception
 {
 public:
 
-	authentication_error(const string& response)
-		: messaging_exception("Authentication error."), m_response(response) {}
-	~authentication_error() throw() {}
+	authentication_error(const string& response, const exception& other = NO_EXCEPTION);
+	~authentication_error() throw();
 
-	const string& response() const { return (m_response); }
+	const string& response() const;
+
+	exception* clone() const;
+	const string name() const;
 
 private:
 
@@ -287,8 +381,11 @@ class unsupported_option : public messaging_exception
 {
 public:
 
-	unsupported_option() : messaging_exception("Unsupported option.") {}
-	~unsupported_option() throw() {}
+	unsupported_option(const exception& other = NO_EXCEPTION);
+	~unsupported_option() throw();
+
+	exception* clone() const;
+	const string name() const;
 };
 
 
@@ -299,8 +396,11 @@ class no_service_available : public messaging_exception
 {
 public:
 
-	no_service_available() : messaging_exception("No service available for this protocol.") {}
-	~no_service_available() throw() {}
+	no_service_available(const exception& other = NO_EXCEPTION);
+	~no_service_available() throw();
+
+	exception* clone() const;
+	const string name() const;
 };
 
 
@@ -312,9 +412,11 @@ class illegal_state : public messaging_exception
 {
 public:
 
-	illegal_state(const string& state)
-		: messaging_exception("Illegal state to accomplish the operation: '" + state + "'.") {}
-	~illegal_state() throw() {}
+	illegal_state(const string& state, const exception& other = NO_EXCEPTION);
+	~illegal_state() throw();
+
+	exception* clone() const;
+	const string name() const;
 };
 
 
@@ -325,8 +427,11 @@ class folder_not_found : public messaging_exception
 {
 public:
 
-	folder_not_found() : messaging_exception("Folder not found.") {}
-	~folder_not_found() throw() {}
+	folder_not_found(const exception& other = NO_EXCEPTION);
+	~folder_not_found() throw();
+
+	exception* clone() const;
+	const string name() const;
 };
 
 
@@ -337,8 +442,11 @@ class message_not_found : public messaging_exception
 {
 public:
 
-	message_not_found() : messaging_exception("Message not found.") {}
-	~message_not_found() throw() {}
+	message_not_found(const exception& other = NO_EXCEPTION);
+	~message_not_found() throw();
+
+	exception* clone() const;
+	const string name() const;
 };
 
 
@@ -349,8 +457,11 @@ class operation_not_supported : public messaging_exception
 {
 public:
 
-	operation_not_supported() : messaging_exception("Operation not supported.") {}
-	~operation_not_supported() throw() {}
+	operation_not_supported(const exception& other = NO_EXCEPTION);
+	~operation_not_supported() throw();
+
+	exception* clone() const;
+	const string name() const;
 };
 
 
@@ -361,8 +472,11 @@ class operation_timed_out : public messaging_exception
 {
 public:
 
-	operation_timed_out() : messaging_exception("Operation timed out.") {}
-	~operation_timed_out() throw() {}
+	operation_timed_out(const exception& other = NO_EXCEPTION);
+	~operation_timed_out() throw();
+
+	exception* clone() const;
+	const string name() const;
 };
 
 
@@ -373,8 +487,11 @@ class operation_cancelled : public messaging_exception
 {
 public:
 
-	operation_cancelled() : messaging_exception("Operation cancelled by the user.") {}
-	~operation_cancelled() throw() {}
+	operation_cancelled(const exception& other = NO_EXCEPTION);
+	~operation_cancelled() throw();
+
+	exception* clone() const;
+	const string name() const;
 };
 
 
@@ -386,8 +503,11 @@ class unfetched_object : public messaging_exception
 {
 public:
 
-	unfetched_object() : messaging_exception("Object not fetched.") {}
-	~unfetched_object() throw() {}
+	unfetched_object(const exception& other = NO_EXCEPTION);
+	~unfetched_object() throw();
+
+	exception* clone() const;
+	const string name() const;
 };
 
 
@@ -398,8 +518,11 @@ class not_connected : public messaging_exception
 {
 public:
 
-	not_connected() : messaging_exception("Not connected to a service.") {}
-	~not_connected() throw() {}
+	not_connected(const exception& other = NO_EXCEPTION);
+	~not_connected() throw();
+
+	exception* clone() const;
+	const string name() const;
 };
 
 
@@ -410,8 +533,11 @@ class already_connected : public messaging_exception
 {
 public:
 
-	already_connected() : messaging_exception("Already connected to a service. Disconnect and retry.") {}
-	~already_connected() throw() {}
+	already_connected(const exception& other = NO_EXCEPTION);
+	~already_connected() throw();
+
+	exception* clone() const;
+	const string name() const;
 };
 
 
@@ -422,12 +548,11 @@ class illegal_operation : public messaging_exception
 {
 public:
 
-	illegal_operation(const string& msg = "")
-		: messaging_exception(msg.empty()
-			? "Illegal operation."
-			: "Illegal operation: " + msg + "."
-		  ) {}
-	~illegal_operation() throw() {}
+	illegal_operation(const string& msg = "", const exception& other = NO_EXCEPTION);
+	~illegal_operation() throw();
+
+	exception* clone() const;
+	const string name() const;
 };
 
 
@@ -438,27 +563,25 @@ class command_error : public messaging_exception
 {
 public:
 
-	command_error(const string& command, const string& response, const string& desc = "")
-		: messaging_exception(desc.empty()
-			? "Error while executing command '" + command + "'."
-			: "Error while executing command '" + command + "': " + desc + "."
-		  ),
-		  m_command(command), m_response(response) {}
-	~command_error() throw() {}
+	command_error(const string& command, const string& response, const string& desc = "", const exception& other = NO_EXCEPTION);
+	~command_error() throw();
 
 	/** Return the name of the command which have thrown the exception.
 	  * This is protocol-dependant.
 	  *
 	  * @return command name (protocol-dependant)
 	  */
-	const string& command() const { return (m_command); }
+	const string& command() const;
 
 	/** Return the invalid response line.
 	  * The meaning is protocol-dependant.
 	  *
 	  * @return response line (protocol-dependant)
 	  */
-	const string& response() const { return (m_response); }
+	const string& response() const;
+
+	exception* clone() const;
+	const string name() const;
 
 private:
 
@@ -474,27 +597,25 @@ class invalid_response : public messaging_exception
 {
 public:
 
-	invalid_response(const string& command, const string& response)
-		: messaging_exception(command.empty()
-			? "Received invalid response."
-			: "Received invalid response for command '" + command + "'."
-		  ),
-		  m_command(command), m_response(response) {}
-	~invalid_response() throw() {}
+	invalid_response(const string& command, const string& response, const exception& other = NO_EXCEPTION);
+	~invalid_response() throw();
 
 	/** Return the name of the command which have thrown the exception.
 	  * This is protocol-dependant.
 	  *
 	  * @return command name (protocol-dependant)
 	  */
-	const string& command() const { return (m_command); }
+	const string& command() const;
 
 	/** Return the invalid response line.
 	  * The meaning is protocol-dependant.
 	  *
 	  * @return response line (protocol-dependant)
 	  */
-	const string& response() const { return (m_response); }
+	const string& response() const;
+
+	exception* clone() const;
+	const string name() const;
 
 private:
 
@@ -510,8 +631,11 @@ class partial_fetch_not_supported : public messaging_exception
 {
 public:
 
-	partial_fetch_not_supported() : messaging_exception("Partial fetch not supported.") {}
-	~partial_fetch_not_supported() throw() {}
+	partial_fetch_not_supported(const exception& other = NO_EXCEPTION);
+	~partial_fetch_not_supported() throw();
+
+	exception* clone() const;
+	const string name() const;
 };
 
 
@@ -522,8 +646,11 @@ class malformed_url : public messaging_exception
 {
 public:
 
-	malformed_url(const string& error) : messaging_exception("Malformed URL: " + error + ".") {}
-	~malformed_url() throw() {}
+	malformed_url(const string& error, const exception& other = NO_EXCEPTION);
+	~malformed_url() throw();
+
+	exception* clone() const;
+	const string name() const;
 };
 
 
@@ -534,11 +661,11 @@ class invalid_folder_name : public messaging_exception
 {
 public:
 
-	invalid_folder_name(const string& error = "")
-		: messaging_exception(error.empty()
-			? "Invalid folder name: " + error + "."
-			: "Invalid folder name.") {}
-	~invalid_folder_name() throw() {}
+	invalid_folder_name(const string& error = "", const exception& other = NO_EXCEPTION);
+	~invalid_folder_name() throw();
+
+	exception* clone() const;
+	const string name() const;
 };
 
 
@@ -555,14 +682,17 @@ class filesystem_exception : public vmime::exception
 {
 public:
 
-	filesystem_exception(const string& what, const utility::path& path) : exception(what), m_path(path) {}
-	~filesystem_exception() throw() {}
+	filesystem_exception(const string& what, const utility::path& path, const exception& other = NO_EXCEPTION);
+	~filesystem_exception() throw();
 
 	/** Return the full path of the file have thrown the exception.
 	  *
 	  * @return full path of the file/directory
 	  */
-	const utility::path& path() const { return (m_path); }
+	const utility::path& path() const;
+
+	exception* clone() const;
+	const string name() const;
 
 private:
 
@@ -577,8 +707,11 @@ class not_a_directory : public filesystem_exception
 {
 public:
 
-	not_a_directory(const utility::path& path) : filesystem_exception("Operation failed: this is not a directory.", path) {}
-	~not_a_directory() throw() {}
+	not_a_directory(const utility::path& path, const exception& other = NO_EXCEPTION);
+	~not_a_directory() throw();
+
+	exception* clone() const;
+	const string name() const;
 };
 
 
@@ -589,8 +722,11 @@ class file_not_found : public filesystem_exception
 {
 public:
 
-	file_not_found(const utility::path& path) : filesystem_exception("File not found.", path) {}
-	~file_not_found() throw() {}
+	file_not_found(const utility::path& path, const exception& other = NO_EXCEPTION);
+	~file_not_found() throw();
+
+	exception* clone() const;
+	const string name() const;
 };
 
 
