@@ -294,7 +294,9 @@ IMAPMessage::IMAPMessage(IMAPFolder* folder, const int num)
 
 IMAPMessage::~IMAPMessage()
 {
-	m_folder->unregisterMessage(this);
+	if (m_folder)
+		m_folder->unregisterMessage(this);
+
 	delete dynamic_cast <IMAPheader*>(m_header);
 }
 
