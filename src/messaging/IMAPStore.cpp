@@ -31,6 +31,8 @@ namespace vmime {
 namespace messaging {
 
 
+#ifndef VMIME_BUILDING_DOC
+
 //
 // IMAPauthenticator: private class used internally
 //
@@ -65,6 +67,8 @@ private:
 	authenticator* m_auth;
 	mutable authenticationInfos* m_infos;
 };
+
+#endif // VMIME_BUILDING_DOC
 
 
 
