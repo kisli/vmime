@@ -1293,7 +1293,7 @@ void IMAPFolder::rename(const folder::path& newPath)
 	events::folderEvent event(this, events::folderEvent::TYPE_RENAMED, oldPath, newPath);
 	notifyFolder(event);
 
-	// Notify folders with the same path
+	// Notify folders with the same path and sub-folders
 	for (std::list <IMAPFolder*>::iterator it = m_store->m_folders.begin() ;
 	     it != m_store->m_folders.end() ; ++it)
 	{
@@ -1303,6 +1303,15 @@ void IMAPFolder::rename(const folder::path& newPath)
 			(*it)->m_name = newPath.getLastComponent();
 
 			events::folderEvent event(*it, events::folderEvent::TYPE_RENAMED, oldPath, newPath);
+			(*it)->notifyFolder(event);
+		}
+		else if ((*it) != this && oldPath.isParentOf((*it)->getFullPath()))
+		{
+			folder::path oldPath((*it)->m_path);
+
+			(*it)->m_path.renameParent(oldPath, newPath);
+
+			events::folderEvent event(*it, events::folderEvent::TYPE_RENAMED, oldPath, (*it)->m_path);
 			(*it)->notifyFolder(event);
 		}
 	}
