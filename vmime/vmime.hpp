@@ -46,6 +46,10 @@
 #include "vmime/messageId.hpp"
 #include "vmime/relay.hpp"
 
+#include "vmime/emptyContentHandler.hpp"
+#include "vmime/stringContentHandler.hpp"
+#include "vmime/streamContentHandler.hpp"
+
 // Message components
 #include "vmime/message.hpp"
 

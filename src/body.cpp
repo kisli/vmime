@@ -28,25 +28,31 @@
 
 #include "vmime/parserHelpers.hpp"
 
+#include "vmime/emptyContentHandler.hpp"
+#include "vmime/stringContentHandler.hpp"
+
 
 namespace vmime
 {
 
 
 body::body()
-	: m_part(NULL), m_header(NULL)
+	: m_contents(new emptyContentHandler()), m_part(NULL), m_header(NULL)
 {
 }
 
 
 body::body(bodyPart* parentPart)
-	: m_part(parentPart), m_header(parentPart != NULL ? parentPart->getHeader() : NULL)
+	: m_contents(new emptyContentHandler()),
+	  m_part(parentPart), m_header(parentPart != NULL ? parentPart->getHeader() : NULL)
 {
 }
 
 
 body::~body()
 {
+	delete (m_contents);
+
 	removeAllParts();
 }
 
@@ -190,7 +196,7 @@ void body::parse(const string& buffer, const string::size_type position,
 			pos = buffer.find(boundarySep, partStart);
 		}
 
-		m_contents.setData("");
+		setContentsImpl(emptyContentHandler());
 
 		if (partStart < end)
 			m_epilogText = string(buffer.begin() + partStart, buffer.begin() + end);
@@ -199,7 +205,7 @@ void body::parse(const string& buffer, const string::size_type position,
 	else
 	{
 		// Extract the (encoded) contents
-		m_contents.setData(buffer, position, end, getEncoding());
+		setContentsImpl(stringContentHandler(buffer, position, end, getEncoding()));
 	}
 
 	setParsedBounds(position, end);
@@ -298,7 +304,7 @@ void body::generate(utility::outputStream& os, const string::size_type maxLineLe
 	else
 	{
 		// Generate the contents
-		m_contents.generate(os, getEncoding(), maxLineLength);
+		m_contents->generate(os, getEncoding(), maxLineLength);
 	}
 }
 
@@ -471,7 +477,7 @@ void body::copyFrom(const component& other)
 	m_prologText = bdy.m_prologText;
 	m_epilogText = bdy.m_epilogText;
 
-	m_contents = bdy.m_contents;
+	setContentsImpl(*bdy.m_contents);
 
 	removeAllParts();
 
@@ -519,19 +525,13 @@ void body::setEpilogText(const string& epilogText)
 
 const contentHandler& body::getContents() const
 {
-	return (m_contents);
-}
-
-
-contentHandler& body::getContents()
-{
-	return (m_contents);
+	return (*m_contents);
 }
 
 
 void body::setContents(const contentHandler& contents)
 {
-	m_contents = contents;
+	setContentsImpl(contents);
 }
 
 
@@ -713,6 +713,13 @@ const std::vector <const component*> body::getChildComponents() const
 	copy_vector(m_parts, list);
 
 	return (list);
+}
+
+
+void body::setContentsImpl(const contentHandler& cts)
+{
+	delete (m_contents);
+	m_contents = cts.clone();
 }
 
 

@@ -45,6 +45,8 @@ public:
 	defaultAttachment(const contentHandler& data, const mediaType& type, const text& desc = NULL_TEXT);
 	defaultAttachment(const defaultAttachment& attach);
 
+	~defaultAttachment();
+
 	defaultAttachment& operator=(const defaultAttachment& attach);
 
 	const mediaType& getType() const;
@@ -56,7 +58,7 @@ protected:
 
 	mediaType m_type;           // Media type (eg. "application/octet-stream")
 	text m_desc;                // Description (eg. "The image you requested")
-	contentHandler m_data;      // Attachment data (eg. the file contents)
+	contentHandler* m_data;     // Attachment data (eg. the file contents)
 	encoding m_encoding;        // Encoding
 
 private:

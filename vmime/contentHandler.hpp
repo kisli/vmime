@@ -35,87 +35,62 @@ namespace vmime
 
 class contentHandler
 {
-private:
-
-	static const vmime::encoding NO_ENCODING;
-
 public:
 
-	contentHandler();
-	contentHandler(const string& buffer, const vmime::encoding& enc = NO_ENCODING);  // for compatibility
-	~contentHandler();
+	/** Used to specify that enclosed data is not encoded. */
+	static const vmime::encoding NO_ENCODING;
 
-	// Copy
-	contentHandler(const contentHandler& cts);
-	contentHandler& operator=(const contentHandler& cts);
 
-	// Set the data contained in the body.
-	//
-	// The two first functions take advantage of the COW (copy-on-write) system that
-	// might be implemented into std::string. This is done using "stringProxy" object.
-	//
-	// Set "enc" parameter to anything other than NO_ENCODING if the data managed by
-	// this content handler is already encoded with the specified encoding (so, no
-	// encoding/decoding will be performed on generate()/extract()). Note that the
-	// data may be re-encoded (that is, decoded and encoded) if the encoding passed
-	// to generate() is different from this one...
-	//
-	// The 'length' parameter is optional (user-defined). You can pass 0 if you want,
-	// VMime does not make use of it.
-	void setData(const utility::stringProxy& str, const vmime::encoding& enc = NO_ENCODING);
-	void setData(const string& buffer, const vmime::encoding& enc = NO_ENCODING);
-	void setData(const string& buffer, const string::size_type start, const string::size_type end, const vmime::encoding& enc = NO_ENCODING);
-	void setData(utility::inputStream* is, const utility::stream::size_type length, const bool own, const vmime::encoding& enc = NO_ENCODING);
+	virtual ~contentHandler();
 
-	// For compatibility
-	contentHandler& operator=(const string& buffer);
+	/** Return a copy of this object.
+	  *
+	  * @return copy of this object
+	  */
+	virtual contentHandler* clone() const = 0;
 
-	// WRITE: Output the contents into the specified stream. Data will be
-	// encoded before being written into the stream. This is used internally
-	// by the body object to generate the message, you may not need to use
-	// this (see function extract() if you want to get the contents).
-	void generate(utility::outputStream& os, const vmime::encoding& enc, const string::size_type maxLineLength = lineLengthLimits::infinite) const;
+	/** Output the contents into the specified stream. Data will be
+	  * encoded before being written into the stream. This is used internally
+	  * by the body object to generate the message, you may not need to use
+	  * this (see contentHandler::extract() if you want to get the contents).
+	  *
+	  * @param os output stream
+	  * @param enc encoding for output
+	  * @param maxLineLength maximum line length for output
+	  */
+	virtual void generate(utility::outputStream& os, const vmime::encoding& enc, const string::size_type maxLineLength = lineLengthLimits::infinite) const = 0;
 
-	// READ: Extract the contents into the specified stream. If needed, data
-	// will be decoded before being written into the stream.
-	void extract(utility::outputStream& os) const;
+	/** Extract the contents into the specified stream. If needed, data
+	  * will be decoded before being written into the stream.
+	  *
+	  * @param os output stream
+	  */
+	virtual void extract(utility::outputStream& os) const = 0;
 
-	// Returns the actual length of the data. WARNING: this can return 0 if no
-	// length was specified when setting data of this object.
-	const string::size_type getLength() const;
+	/** Returns the actual length of data. WARNING: this can return 0 if no
+	  * length was specified when setting data of this object.
+	  *
+	  * @return length of data
+	  */
+	virtual const string::size_type getLength() const = 0;
 
-	// Returns 'true' if the data managed by this object is encoded.
-	const bool isEncoded() const;
+	/** Returns 'true' if data managed by this object is encoded.
+	  *
+	  * @return true if data is encoded, false otherwise
+	  */
+	virtual const bool isEncoded() const = 0;
 
-	// Returns the encoding used for the data (or "binary" if not encoded).
-	const vmime::encoding& getEncoding() const;
+	/** Returns the encoding used for data (or "binary" if not encoded).
+	  *
+	  * @return encoding used for data
+	  */
+	virtual const vmime::encoding& getEncoding() const = 0;
 
-	// Returns 'true' if there is no data set.
-	const bool isEmpty() const;
-
-private:
-
-	// Source of data managed by this content handler
-	enum Types
-	{
-		TYPE_NONE,
-		TYPE_STRING,
-		TYPE_STREAM
-	};
-
-	Types m_type;
-
-	// Equals to NO_ENCODING if data is not encoded, otherwise this
-	// specifies the encoding that have been used to encode the data.
-	vmime::encoding m_encoding;
-
-	// Used if m_type == TYPE_STRING
-	utility::stringProxy m_string;
-
-	// Used if m_type == TYPE_STREAM
-	utility::smart_ptr <utility::inputStream> m_ownedStream;   // 'contentHandler' objects are copiable...
-	utility::inputStream* m_stream;
-	string::size_type m_length;
+	/** Returns 'true' if there is no data set.
+	  *
+	  * @return true if no data is managed by this object, false otherwise
+	  */
+	virtual const bool isEmpty() const = 0;
 };
 
 

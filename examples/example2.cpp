@@ -60,7 +60,7 @@ int main()
 		mb.setSubject(vmime::text("My first message generated with vmime::messageBuilder"));
 
 		// Message body
-		mb.getTextPart()->setText(vmime::contentHandler(
+		mb.getTextPart()->setText(vmime::stringContentHandler(
 			"I'm writing this short text to test message construction " \
 			"with attachment, using the vmime::messageBuilder component."));
 

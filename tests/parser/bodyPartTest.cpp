@@ -68,7 +68,7 @@ namespace
 		{
 			vmime::bodyPart p1;
 			p1.getHeader()->getField("Foo")->setValue(vmime::string("bar"));
-			p1.getBody()->getContents() = "Baz";
+			p1.getBody()->setContents(vmime::stringContentHandler("Baz"));
 
 			assert_eq("1", "Foo: bar\r\n\r\nBaz", p1.generate());
 		}

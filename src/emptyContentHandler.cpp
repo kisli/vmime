@@ -17,48 +17,59 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#ifndef VMIME_PLAINTEXTPART_HPP_INCLUDED
-#define VMIME_PLAINTEXTPART_HPP_INCLUDED
-
-
-#include "vmime/textPart.hpp"
+#include "vmime/emptyContentHandler.hpp"
 
 
 namespace vmime
 {
 
 
-/** Text part of type 'text/plain'.
-  */
-
-class plainTextPart : public textPart
+emptyContentHandler::emptyContentHandler()
 {
-public:
+}
 
-	plainTextPart();
-	~plainTextPart();
 
-	const mediaType getType() const;
+contentHandler* emptyContentHandler::clone() const
+{
+	return new emptyContentHandler();
+}
 
-	const charset& getCharset() const;
-	void setCharset(const charset& ch);
 
-	const contentHandler& getText() const;
-	void setText(const contentHandler& text);
+void emptyContentHandler::generate(utility::outputStream& /* os */, const vmime::encoding& /* enc */,
+	const string::size_type /* maxLineLength */) const
+{
+	// Nothing to do.
+}
 
-private:
 
-	contentHandler* m_text;
-	charset m_charset;
+void emptyContentHandler::extract(utility::outputStream& /* os */) const
+{
+	// Nothing to do.
+}
 
-	const int getPartCount() const;
 
-	void generateIn(bodyPart& message, bodyPart& parent) const;
-	void parse(const bodyPart& message, const bodyPart& parent, const bodyPart& textPart);
-};
+const string::size_type emptyContentHandler::getLength() const
+{
+	return (0);
+}
+
+
+const bool emptyContentHandler::isEmpty() const
+{
+	return (true);
+}
+
+
+const bool emptyContentHandler::isEncoded() const
+{
+	return (false);
+}
+
+
+const vmime::encoding& emptyContentHandler::getEncoding() const
+{
+	return (NO_ENCODING);
+}
 
 
 } // vmime
-
-
-#endif // VMIME_PLAINTEXTPART_HPP_INCLUDED

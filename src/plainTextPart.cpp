@@ -21,9 +21,23 @@
 #include "vmime/header.hpp"
 #include "vmime/exception.hpp"
 
+#include "vmime/emptyContentHandler.hpp"
+
 
 namespace vmime
 {
+
+
+plainTextPart::plainTextPart()
+	: m_text(new emptyContentHandler)
+{
+}
+
+
+plainTextPart::~plainTextPart()
+{
+	delete (m_text);
+}
 
 
 const mediaType plainTextPart::getType() const
@@ -50,14 +64,15 @@ void plainTextPart::generateIn(bodyPart& /* message */, bodyPart& parent) const
 	part->getHeader()->ContentTransferEncoding().setValue(encoding(encodingTypes::QUOTED_PRINTABLE));
 
 	// Set contents
-	part->getBody()->setContents(m_text);
+	part->getBody()->setContents(*m_text);
 }
 
 
 void plainTextPart::parse(const bodyPart& /* message */,
 	const bodyPart& /* parent */, const bodyPart& textPart)
 {
-	m_text = textPart.getBody()->getContents();
+	delete (m_text);
+	m_text = textPart.getBody()->getContents().clone();
 
 	try
 	{
@@ -91,13 +106,14 @@ void plainTextPart::setCharset(const charset& ch)
 
 const contentHandler& plainTextPart::getText() const
 {
-	return (m_text);
+	return (*m_text);
 }
 
 
 void plainTextPart::setText(const contentHandler& text)
 {
-	m_text = text;
+	delete (m_text);
+	m_text = text.clone();
 }
 
 

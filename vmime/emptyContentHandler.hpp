@@ -17,48 +17,40 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#ifndef VMIME_PLAINTEXTPART_HPP_INCLUDED
-#define VMIME_PLAINTEXTPART_HPP_INCLUDED
+#ifndef VMIME_EMPTYCONTENTHANDLER_HPP_INCLUDED
+#define VMIME_EMPTYCONTENTHANDLER_HPP_INCLUDED
 
 
-#include "vmime/textPart.hpp"
+#include "vmime/contentHandler.hpp"
 
 
 namespace vmime
 {
 
 
-/** Text part of type 'text/plain'.
-  */
-
-class plainTextPart : public textPart
+class emptyContentHandler : public contentHandler
 {
 public:
 
-	plainTextPart();
-	~plainTextPart();
+	emptyContentHandler();
 
-	const mediaType getType() const;
+	contentHandler* clone() const;
 
-	const charset& getCharset() const;
-	void setCharset(const charset& ch);
+	void generate(utility::outputStream& os, const vmime::encoding& enc, const string::size_type maxLineLength = lineLengthLimits::infinite) const;
 
-	const contentHandler& getText() const;
-	void setText(const contentHandler& text);
+	void extract(utility::outputStream& os) const;
 
-private:
+	const string::size_type getLength() const;
 
-	contentHandler* m_text;
-	charset m_charset;
+	const bool isEncoded() const;
 
-	const int getPartCount() const;
+	const vmime::encoding& getEncoding() const;
 
-	void generateIn(bodyPart& message, bodyPart& parent) const;
-	void parse(const bodyPart& message, const bodyPart& parent, const bodyPart& textPart);
+	const bool isEmpty() const;
 };
 
 
 } // vmime
 
 
-#endif // VMIME_PLAINTEXTPART_HPP_INCLUDED
+#endif // VMIME_EMPTYCONTENTHANDLER_HPP_INCLUDED

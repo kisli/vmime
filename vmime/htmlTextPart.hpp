@@ -43,6 +43,8 @@ protected:
 
 public:
 
+	htmlTextPart();
+
 	const mediaType getType() const;
 
 	const charset& getCharset() const;
@@ -91,7 +93,7 @@ public:
 
 	private:
 
-		contentHandler m_data;
+		contentHandler* m_data;
 		encoding m_encoding;
 		string m_id;
 		mediaType m_type;
@@ -160,8 +162,8 @@ public:
 
 private:
 
-	contentHandler m_plainText;
-	contentHandler m_text;
+	contentHandler* m_plainText;
+	contentHandler* m_text;
 	charset m_charset;
 
 	std::vector <embeddedObject*> m_objects;

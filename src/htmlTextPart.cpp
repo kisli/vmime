@@ -20,14 +20,27 @@
 #include "vmime/htmlTextPart.hpp"
 #include "vmime/exception.hpp"
 
+#include "vmime/emptyContentHandler.hpp"
+#include "vmime/stringContentHandler.hpp"
+
 
 namespace vmime
 {
 
 
+htmlTextPart::htmlTextPart()
+	: m_plainText(new emptyContentHandler),
+	  m_text(new emptyContentHandler)
+{
+}
+
+
 htmlTextPart::~htmlTextPart()
 {
 	free_container(m_objects);
+
+	delete (m_plainText);
+	delete (m_text);
 }
 
 
@@ -39,14 +52,14 @@ const mediaType htmlTextPart::getType() const
 
 const int htmlTextPart::getPartCount() const
 {
-	return (m_plainText.isEmpty() ? 1 : 2);
+	return (m_plainText->isEmpty() ? 1 : 2);
 }
 
 
 void htmlTextPart::generateIn(bodyPart& /* message */, bodyPart& parent) const
 {
 	// Plain text
-	if (!m_plainText.isEmpty())
+	if (!m_plainText->isEmpty())
 	{
 		// -- Create a new part
 		bodyPart* part = new bodyPart();
@@ -58,7 +71,7 @@ void htmlTextPart::generateIn(bodyPart& /* message */, bodyPart& parent) const
 		part->getHeader()->ContentTransferEncoding().setValue(encoding(encodingTypes::QUOTED_PRINTABLE));
 
 		// -- Set contents
-		part->getBody()->setContents(m_plainText);
+		part->getBody()->setContents(*m_plainText);
 	}
 
 	// HTML text
@@ -71,7 +84,7 @@ void htmlTextPart::generateIn(bodyPart& /* message */, bodyPart& parent) const
 	htmlPart->getHeader()->ContentTransferEncoding().setValue(encoding(encodingTypes::QUOTED_PRINTABLE));
 
 	// -- Set contents
-	htmlPart->getBody()->setContents(m_text);
+	htmlPart->getBody()->setContents(*m_text);
 
 	// Handle the case we have embedded objects
 	if (!m_objects.empty())
@@ -185,7 +198,8 @@ void htmlTextPart::parse(const bodyPart& message, const bodyPart& parent, const 
 
 	const string data = oss.str();
 
-	m_text = textPart.getBody()->getContents();
+	delete (m_text);
+	m_text = textPart.getBody()->getContents().clone();
 
 	try
 	{
@@ -234,7 +248,11 @@ void htmlTextPart::parse(const bodyPart& message, const bodyPart& parent, const 
 	}
 
 	// Extract plain text, if any.
-	findPlainTextPart(message, parent, textPart);
+	if (!findPlainTextPart(message, parent, textPart))
+	{
+		delete (m_plainText);
+		m_plainText = new emptyContentHandler();
+	}
 }
 
 
@@ -279,7 +297,8 @@ bool htmlTextPart::findPlainTextPart(const bodyPart& part, const bodyPart& paren
 						if (ctf.getValue().getType() == mediaTypes::TEXT &&
 						    ctf.getValue().getSubType() == mediaTypes::TEXT_PLAIN)
 						{
-							m_plainText = p.getBody()->getContents();
+							delete (m_plainText);
+							m_plainText = p.getBody()->getContents().clone();
 							found = true;
 						}
 					}
@@ -326,25 +345,27 @@ void htmlTextPart::setCharset(const charset& ch)
 
 const contentHandler& htmlTextPart::getPlainText() const
 {
-	return (m_plainText);
+	return (*m_plainText);
 }
 
 
 void htmlTextPart::setPlainText(const contentHandler& plainText)
 {
-	m_plainText = plainText;
+	delete (m_plainText);
+	m_plainText = plainText.clone();
 }
 
 
 const contentHandler& htmlTextPart::getText() const
 {
-	return (m_text);
+	return (*m_text);
 }
 
 
 void htmlTextPart::setText(const contentHandler& text)
 {
-	m_text = text;
+	delete (m_text);
+	m_text = text.clone();
 }
 
 
@@ -406,7 +427,8 @@ const string htmlTextPart::addObject(const contentHandler& data, const mediaType
 
 const string htmlTextPart::addObject(const string& data, const mediaType& type)
 {
-	return (addObject(contentHandler(data), encoding::decide(data), type));
+	stringContentHandler cts(data);
+	return (addObject(cts, encoding::decide(cts), type));
 }
 
 
@@ -418,14 +440,14 @@ const string htmlTextPart::addObject(const string& data, const mediaType& type)
 htmlTextPart::embeddedObject::embeddedObject
 	(const contentHandler& data, const encoding& enc,
 	 const string& id, const mediaType& type)
-	: m_data(data), m_encoding(enc), m_id(id), m_type(type)
+	: m_data(data.clone()), m_encoding(enc), m_id(id), m_type(type)
 {
 }
 
 
 const contentHandler& htmlTextPart::embeddedObject::getData() const
 {
-	return (m_data);
+	return (*m_data);
 }
 
 

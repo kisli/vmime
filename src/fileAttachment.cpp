@@ -23,6 +23,8 @@
 #include "vmime/fileAttachment.hpp"
 #include "vmime/exception.hpp"
 
+#include "vmime/streamContentHandler.hpp"
+
 
 namespace vmime
 {
@@ -35,7 +37,7 @@ fileAttachment::fileAttachment(const string& filename, const mediaType& type, co
 
 	setData(filename);
 
-	m_encoding = encoding::decide(m_data);
+	m_encoding = encoding::decide(*m_data);
 }
 
 
@@ -62,7 +64,7 @@ void fileAttachment::setData(const string& filename)
 		throw exceptions::open_file_error();
 	}
 
-	m_data.setData(new utility::inputStreamPointerAdapter(file, true), 0, true);
+	m_data = new streamContentHandler(new utility::inputStreamPointerAdapter(file, true), 0, true);
 }
 
 

@@ -73,8 +73,8 @@ int main()
 		vmime::mediaType(vmime::mediaTypes::IMAGE, vmime::mediaTypes::IMAGE_JPEG));
 
 		// -- message text
-		textPart.setText(vmime::contentHandler(vmime::string("This is the <b>HTML text</b>.<br/><img src=\"") + cid + vmime::string("\"/>")));
-		textPart.setPlainText(vmime::contentHandler(vmime::string("This is the plain text (without HTML formatting).")));
+		textPart.setText(vmime::stringContentHandler(vmime::string("This is the <b>HTML text</b>.<br/><img src=\"") + cid + vmime::string("\"/>")));
+		textPart.setPlainText(vmime::stringContentHandler("This is the plain text (without HTML formatting)."));
 
 		// Construction
 		vmime::message* msg = mb.construct();

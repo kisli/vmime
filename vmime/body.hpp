@@ -178,12 +178,6 @@ public:
 	  */
 	const contentHandler& getContents() const;
 
-	/** Return a modifiable reference to body contents.
-	  *
-	  * @return body contents
-	  */
-	contentHandler& getContents();
-
 	/** Set the body contents.
 	  *
 	  * @param contents new body contents
@@ -238,7 +232,7 @@ private:
 	string m_prologText;
 	string m_epilogText;
 
-	contentHandler m_contents;
+	contentHandler* m_contents;
 
 	bodyPart* m_part;
 	header* m_header;
@@ -248,6 +242,8 @@ private:
 	const bool isRootPart() const;
 
 	void initNewPart(bodyPart* part);
+
+	void setContentsImpl(const contentHandler& cts);
 
 public:
 
