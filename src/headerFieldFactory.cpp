@@ -66,7 +66,7 @@ headerFieldFactory::~headerFieldFactory()
 headerField* headerFieldFactory::create
 	(const string& name, const string& body)
 {
-	NameMap::const_iterator pos = m_nameMap.find(stringUtils::toLower(name));
+	NameMap::const_iterator pos = m_nameMap.find(utility::stringUtils::toLower(name));
 	headerField* field = NULL;
 
 	if (pos != m_nameMap.end())

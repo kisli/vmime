@@ -6,6 +6,10 @@ VERSION 0.6.2-cvs
 
  * Added unit tests for utility::path and bodyPart.
 
+ * Added 'utility::datetimeUtils' to provide some time-related functions.
+
+ * Fixed 'stringUtils' not in namespace 'utility'.
+
 2005-01-01  Vincent Richard  <vincent@vincent-richard.net>
 
  * Converted all C-style casts to C++-style casts.

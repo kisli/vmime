@@ -115,32 +115,32 @@ void relay::parse(const string& buffer, const string::size_type position,
 
 				if (!inComment)
 				{
-					if (stringUtils::isStringEqualNoCase(word, "from", 4))
+					if (utility::stringUtils::isStringEqualNoCase(word, "from", 4))
 					{
 						newPart = Part_From;
 						keyword = true;
 					}
-					else if (stringUtils::isStringEqualNoCase(word, "by", 2))
+					else if (utility::stringUtils::isStringEqualNoCase(word, "by", 2))
 					{
 						newPart = Part_By;
 						keyword = true;
 					}
-					else if (stringUtils::isStringEqualNoCase(word, "via", 2))
+					else if (utility::stringUtils::isStringEqualNoCase(word, "via", 2))
 					{
 						newPart = Part_Via;
 						keyword = true;
 					}
-					else if (stringUtils::isStringEqualNoCase(word, "with", 2))
+					else if (utility::stringUtils::isStringEqualNoCase(word, "with", 2))
 					{
 						newPart = Part_With;
 						keyword = true;
 					}
-					else if (stringUtils::isStringEqualNoCase(word, "id", 2))
+					else if (utility::stringUtils::isStringEqualNoCase(word, "id", 2))
 					{
 						newPart = Part_Id;
 						keyword = true;
 					}
-					else if (stringUtils::isStringEqualNoCase(word, "for", 2))
+					else if (utility::stringUtils::isStringEqualNoCase(word, "for", 2))
 					{
 						newPart = Part_For;
 						keyword = true;

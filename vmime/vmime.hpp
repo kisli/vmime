@@ -71,6 +71,9 @@
 // Property set
 #include "vmime/propertySet.hpp"
 
+// Utilities
+#include "vmime/utility/datetimeUtils.hpp"
+
 // Messaging features
 #if VMIME_HAVE_MESSAGING_FEATURES
 	#include "vmime/messaging/socket.hpp"

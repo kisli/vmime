@@ -1231,7 +1231,7 @@ public:
 				else
 				{
 					atom* at = parser.get <atom>(line, &pos);
-					const string name = stringUtils::toLower(at->value());
+					const string name = utility::stringUtils::toLower(at->value());
 					delete (at);
 
 					if (name == "answered")
@@ -1403,7 +1403,7 @@ public:
 			parser.check <one_char <'\\'> >(line, &pos);
 
 			atom* at = parser.get <atom>(line, &pos);
-			const string name = stringUtils::toLower(at->value());
+			const string name = utility::stringUtils::toLower(at->value());
 			delete (at);
 
 			if (name == "marked")
@@ -1802,7 +1802,7 @@ public:
 			DEBUG_ENTER_COMPONENT("auth_type");
 
 			atom* at = parser.get <atom>(line, currentPos);
-			m_name = stringUtils::toLower(at->value());
+			m_name = utility::stringUtils::toLower(at->value());
 			delete (at);
 
 			if (m_name == "kerberos_v4")
@@ -2124,7 +2124,7 @@ public:
 			m_datetime.setDay(std::min(std::max(nd->value(), 1u), 31u));
 			m_datetime.setYear(ny->value());
 
-			const string month(stringUtils::toLower(amo->value()));
+			const string month(utility::stringUtils::toLower(amo->value()));
 			int mon = vmime::datetime::JANUARY;
 
 			if (month.length() >= 3)

@@ -262,11 +262,11 @@ private:
 	{
 	public:
 
-		propFinder(const string& name) : m_name(stringUtils::toLower(name)) { }
+		propFinder(const string& name) : m_name(utility::stringUtils::toLower(name)) { }
 
 		const bool operator()(property* const p) const
 		{
-			return (stringUtils::toLower(p->getName()) == m_name);
+			return (utility::stringUtils::toLower(p->getName()) == m_name);
 		}
 
 	private:

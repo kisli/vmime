@@ -64,7 +64,8 @@ public:
 	template <class T>
 	void registerName(const string& name)
 	{
-		m_nameMap.insert(NameMap::value_type(stringUtils::toLower(name), &registerer<T>::creator));
+		m_nameMap.insert(NameMap::value_type
+			(utility::stringUtils::toLower(name), &registerer<T>::creator));
 	}
 
 	parameter* create(const string& name, const string& value = NULL_STRING);

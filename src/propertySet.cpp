@@ -308,7 +308,7 @@ const string propertySet::property::getValue() const
 template <>
 const bool propertySet::property::getValue() const
 {
-	if (stringUtils::toLower(m_value) == "true")
+	if (utility::stringUtils::toLower(m_value) == "true")
 		return true;
 	else
 	{

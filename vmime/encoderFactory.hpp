@@ -100,7 +100,7 @@ public:
 	template <class E>
 	void registerName(const string& name)
 	{
-		m_encoders.push_back(new registeredEncoderImpl <E>(stringUtils::toLower(name)));
+		m_encoders.push_back(new registeredEncoderImpl <E>(utility::stringUtils::toLower(name)));
 	}
 
 	/** Create a new encoder instance from an encoding name.

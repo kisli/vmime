@@ -35,7 +35,7 @@ encoding::encoding()
 
 
 encoding::encoding(const string& name)
-	: m_name(stringUtils::toLower(name))
+	: m_name(utility::stringUtils::toLower(name))
 {
 }
 
@@ -49,7 +49,8 @@ encoding::encoding(const encoding& enc)
 void encoding::parse(const string& buffer, const string::size_type position,
 	const string::size_type end, string::size_type* newPosition)
 {
-	m_name = stringUtils::toLower(string(buffer.begin() + position, buffer.begin() + end));
+	m_name = utility::stringUtils::toLower
+		(string(buffer.begin() + position, buffer.begin() + end));
 
 	setParsedBounds(position, end);
 
@@ -83,14 +84,14 @@ encoding& encoding::operator=(const encoding& other)
 
 encoding& encoding::operator=(const string& name)
 {
-	m_name = stringUtils::toLower(name);
+	m_name = utility::stringUtils::toLower(name);
 	return (*this);
 }
 
 
 const bool encoding::operator==(const encoding& value) const
 {
-	return (stringUtils::toLower(m_name) == value.m_name);
+	return (utility::stringUtils::toLower(m_name) == value.m_name);
 }
 
 

@@ -122,7 +122,7 @@ public:
 	template <class S>
 	void registerServiceByProtocol(const string& protocol)
 	{
-		const string name = stringUtils::toLower(protocol);
+		const string name = utility::stringUtils::toLower(protocol);
 		m_services.push_back(new registeredServiceImpl <S>(name));
 	}
 

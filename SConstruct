@@ -140,6 +140,7 @@ libvmime_sources = [
 	'word.cpp', 'word.hpp',
 	'vmime.hpp',
 	'utility/file.hpp',
+	'utility/datetimeUtils.cpp', 'utility/datetimeUtils.hpp',
 	'utility/md5.cpp', 'utility/md5.hpp',
 	'utility/path.cpp', 'utility/path.hpp',
 	'utility/random.cpp', 'utility/random.hpp',

@@ -336,7 +336,7 @@ void text::encodeAndFold(utility::outputStream& os, const string::size_type maxL
 		// Calculate the number of ASCII chars to check whether encoding is needed
 		// and _which_ encoding to use.
 		const string::size_type asciiCount =
-			stringUtils::countASCIIchars(buffer.begin(), buffer.end());
+			utility::stringUtils::countASCIIchars(buffer.begin(), buffer.end());
 
 		bool noEncoding = (flags & FORCE_NO_ENCODING) ||
 		    (!(flags & FORCE_ENCODING) && asciiCount == buffer.length());

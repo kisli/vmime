@@ -131,7 +131,7 @@ void url::parse(const string& str)
 	if (protoEnd == string::npos) throw exceptions::malformed_url("No protocol separator");
 
 	const string proto =
-		stringUtils::toLower(string(str.begin(), str.begin() + protoEnd));
+		utility::stringUtils::toLower(string(str.begin(), str.begin() + protoEnd));
 
 	// Username/password
 	string::size_type slashPos = str.find('/', protoEnd + 3);
@@ -190,7 +190,7 @@ void url::parse(const string& str)
 	}
 
 	// Path
-	string path = stringUtils::trim(string(str.begin() + slashPos, str.end()));
+	string path = utility::stringUtils::trim(string(str.begin() + slashPos, str.end()));
 
 	if (path == "/")
 		path.clear();

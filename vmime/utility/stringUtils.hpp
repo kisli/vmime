@@ -17,8 +17,8 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#ifndef VMIME_STRINGUTILS_HPP_INCLUDED
-#define VMIME_STRINGUTILS_HPP_INCLUDED
+#ifndef VMIME_UTILITY_STRINGUTILS_HPP_INCLUDED
+#define VMIME_UTILITY_STRINGUTILS_HPP_INCLUDED
 
 
 #include "vmime/types.hpp"
@@ -27,8 +27,8 @@
 #include <sstream>
 
 
-namespace vmime
-{
+namespace vmime {
+namespace utility {
 
 
 /** Miscellaneous functions related to strings.
@@ -125,7 +125,8 @@ public:
 };
 
 
+} // utility
 } // vmime
 
 
-#endif // VMIME_STRINGUTILS_HPP_INCLUDED
+#endif // VMIME_UTILITY_STRINGUTILS_HPP_INCLUDED

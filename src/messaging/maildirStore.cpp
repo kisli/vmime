@@ -85,7 +85,7 @@ const bool maildirStore::isValidFolderName(const folder::path::component& name) 
 	const string& buf = name.getBuffer();
 
 	// Name cannot start/end with spaces
-	if (stringUtils::trim(buf) != name.getBuffer())
+	if (utility::stringUtils::trim(buf) != name.getBuffer())
 		return false;
 
 	// Name cannot start with '.'

@@ -38,7 +38,8 @@ mediaType::mediaType(const string& type)
 
 
 mediaType::mediaType(const string& type, const string& subType)
-	: m_type(stringUtils::toLower(type)), m_subType(stringUtils::toLower(subType))
+	: m_type(utility::stringUtils::toLower(type)),
+	  m_subType(utility::stringUtils::toLower(subType))
 {
 }
 
@@ -55,8 +56,9 @@ void mediaType::parse(const string& buffer, const string::size_type position,
 
 	while (p < pend && *p != '/') ++p;
 
-	m_type = stringUtils::toLower(string(buffer.begin() + typeStart,
-	                                     buffer.begin() + position + (p - pstart)));
+	m_type = utility::stringUtils::toLower(
+		string(buffer.begin() + typeStart,
+	            buffer.begin() + position + (p - pstart)));
 
 	if (p < pend)
 	{
@@ -64,8 +66,9 @@ void mediaType::parse(const string& buffer, const string::size_type position,
 		++p;
 
 		// Extract the sub-type
-		m_subType = stringUtils::toLower(string(buffer.begin() + position + (p - pstart),
-		                                        buffer.begin() + end));
+		m_subType = utility::stringUtils::toLower(
+			string(buffer.begin() + position + (p - pstart),
+		            buffer.begin() + end));
 	}
 
 	setParsedBounds(position, end);
@@ -147,7 +150,7 @@ const string& mediaType::getType() const
 
 void mediaType::setType(const string& type)
 {
-	m_type = stringUtils::toLower(type);
+	m_type = utility::stringUtils::toLower(type);
 }
 
 
@@ -159,7 +162,7 @@ const string& mediaType::getSubType() const
 
 void mediaType::setSubType(const string& subType)
 {
-	m_subType = stringUtils::toLower(subType);
+	m_subType = utility::stringUtils::toLower(subType);
 }
 
 

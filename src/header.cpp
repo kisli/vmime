@@ -300,12 +300,12 @@ header& header::operator=(const header& other)
 
 const bool header::hasField(const string& fieldName) const
 {
-	const string name = stringUtils::toLower(fieldName);
+	const string name = utility::stringUtils::toLower(fieldName);
 
 	std::vector <headerField*>::const_iterator pos = m_fields.begin();
 	const std::vector <headerField*>::const_iterator end = m_fields.end();
 
-	for ( ; pos != end && stringUtils::toLower((*pos)->getName()) != name ; ++pos);
+	for ( ; pos != end && utility::stringUtils::toLower((*pos)->getName()) != name ; ++pos);
 
 	return (pos != end);
 }
@@ -313,13 +313,13 @@ const bool header::hasField(const string& fieldName) const
 
 headerField* header::findField(const string& fieldName) const
 {
-	const string name = stringUtils::toLower(fieldName);
+	const string name = utility::stringUtils::toLower(fieldName);
 
 	// Find the first field that matches the specified name
 	std::vector <headerField*>::const_iterator pos = m_fields.begin();
 	const std::vector <headerField*>::const_iterator end = m_fields.end();
 
-	for ( ; pos != end && stringUtils::toLower((*pos)->getName()) != name ; ++pos);
+	for ( ; pos != end && utility::stringUtils::toLower((*pos)->getName()) != name ; ++pos);
 
 	// No field with this name can be found
 	if (pos == end)
@@ -336,7 +336,7 @@ headerField* header::findField(const string& fieldName) const
 
 std::vector <headerField*> header::findAllFields(const string& fieldName)
 {
-	const string name = stringUtils::toLower(fieldName);
+	const string name = utility::stringUtils::toLower(fieldName);
 
 	std::vector <headerField*> result;
 
@@ -346,7 +346,7 @@ std::vector <headerField*> header::findAllFields(const string& fieldName)
 	for ( ; pos != end ; ++pos)
 	{
 		// Add the header if it matches the specified type
-		if (stringUtils::toLower((*pos)->getName()) == name)
+		if (utility::stringUtils::toLower((*pos)->getName()) == name)
 		{
 			result.push_back(*pos);
 		}
@@ -358,13 +358,13 @@ std::vector <headerField*> header::findAllFields(const string& fieldName)
 
 headerField* header::getField(const string& fieldName)
 {
-	const string name = stringUtils::toLower(fieldName);
+	const string name = utility::stringUtils::toLower(fieldName);
 
 	// Find the first field that matches the specified name
 	std::vector <headerField*>::const_iterator pos = m_fields.begin();
 	const std::vector <headerField*>::const_iterator end = m_fields.end();
 
-	for ( ; pos != end && stringUtils::toLower((*pos)->getName()) != name ; ++pos);
+	for ( ; pos != end && utility::stringUtils::toLower((*pos)->getName()) != name ; ++pos);
 
 	// If no field with this name can be found, create a new one
 	if (pos == end)

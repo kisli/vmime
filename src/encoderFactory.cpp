@@ -62,7 +62,7 @@ encoder* encoderFactory::create(const string& name)
 
 const encoderFactory::registeredEncoder* encoderFactory::getEncoderByName(const string& name) const
 {
-	const string lcName(stringUtils::toLower(name));
+	const string lcName(utility::stringUtils::toLower(name));
 
 	for (std::vector <registeredEncoder*>::const_iterator it = m_encoders.begin() ;
 	     it != m_encoders.end() ; ++it)

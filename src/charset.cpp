@@ -270,7 +270,7 @@ charset& charset::operator=(const string& name)
 
 const bool charset::operator==(const charset& value) const
 {
-	return (stringUtils::isStringEqualNoCase(m_name, value.m_name));
+	return (utility::stringUtils::isStringEqualNoCase(m_name, value.m_name));
 }
 
 

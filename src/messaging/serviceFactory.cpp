@@ -79,7 +79,7 @@ service* serviceFactory::create
 
 const serviceFactory::registeredService* serviceFactory::getServiceByProtocol(const string& protocol) const
 {
-	const string name(stringUtils::toLower(protocol));
+	const string name(utility::stringUtils::toLower(protocol));
 
 	for (std::vector <registeredService*>::const_iterator it = m_services.begin() ;
 	     it != m_services.end() ; ++it)

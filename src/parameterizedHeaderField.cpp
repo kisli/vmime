@@ -248,12 +248,12 @@ parameterizedHeaderField& parameterizedHeaderField::operator=(const parameterize
 
 const bool parameterizedHeaderField::hasParameter(const string& paramName) const
 {
-	const string name = stringUtils::toLower(paramName);
+	const string name = utility::stringUtils::toLower(paramName);
 
 	std::vector <parameter*>::const_iterator pos = m_params.begin();
 	const std::vector <parameter*>::const_iterator end = m_params.end();
 
-	for ( ; pos != end && stringUtils::toLower((*pos)->getName()) != name ; ++pos);
+	for ( ; pos != end && utility::stringUtils::toLower((*pos)->getName()) != name ; ++pos);
 
 	return (pos != end);
 }
@@ -261,13 +261,13 @@ const bool parameterizedHeaderField::hasParameter(const string& paramName) const
 
 parameter* parameterizedHeaderField::findParameter(const string& paramName) const
 {
-	const string name = stringUtils::toLower(paramName);
+	const string name = utility::stringUtils::toLower(paramName);
 
 	// Find the first parameter that matches the specified name
 	std::vector <parameter*>::const_iterator pos = m_params.begin();
 	const std::vector <parameter*>::const_iterator end = m_params.end();
 
-	for ( ; pos != end && stringUtils::toLower((*pos)->getName()) != name ; ++pos);
+	for ( ; pos != end && utility::stringUtils::toLower((*pos)->getName()) != name ; ++pos);
 
 	// No parameter with this name can be found
 	if (pos == end)
@@ -284,13 +284,13 @@ parameter* parameterizedHeaderField::findParameter(const string& paramName) cons
 
 parameter* parameterizedHeaderField::getParameter(const string& paramName)
 {
-	const string name = stringUtils::toLower(paramName);
+	const string name = utility::stringUtils::toLower(paramName);
 
 	// Find the first parameter that matches the specified name
 	std::vector <parameter*>::const_iterator pos = m_params.begin();
 	const std::vector <parameter*>::const_iterator end = m_params.end();
 
-	for ( ; pos != end && stringUtils::toLower((*pos)->getName()) != name ; ++pos);
+	for ( ; pos != end && utility::stringUtils::toLower((*pos)->getName()) != name ; ++pos);
 
 	// If no parameter with this name can be found, create a new one
 	if (pos == end)

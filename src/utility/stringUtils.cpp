@@ -20,8 +20,8 @@
 #include "vmime/utility/stringUtils.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
+namespace utility {
 
 
 const bool stringUtils::isStringEqualNoCase
@@ -119,4 +119,5 @@ const string::size_type stringUtils::countASCIIchars
 }
 
 
+} // utility
 } // vmime

@@ -72,7 +72,7 @@ void fileAttachment::generatePart(bodyPart& part) const
 
 	contentDispositionField& cdf = part.getHeader()->ContentDisposition();
 
-	if (m_fileInfo.hasSize()) cdf.setSize(stringUtils::toString(m_fileInfo.getSize()));
+	if (m_fileInfo.hasSize()) cdf.setSize(utility::stringUtils::toString(m_fileInfo.getSize()));
 	if (m_fileInfo.hasFilename()) cdf.setFilename(m_fileInfo.getFilename());
 	if (m_fileInfo.hasCreationDate()) cdf.setCreationDate(m_fileInfo.getCreationDate());
 	if (m_fileInfo.hasModificationDate()) cdf.setModificationDate(m_fileInfo.getModificationDate());
