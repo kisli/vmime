@@ -123,7 +123,7 @@ mailbox* mailboxList::getMailboxAt(const int pos)
 }
 
 
-const mailbox* const mailboxList::getMailboxAt(const int pos) const
+const mailbox* mailboxList::getMailboxAt(const int pos) const
 {
 	return static_cast <const mailbox*>(addressList::getAddressAt(pos));
 }

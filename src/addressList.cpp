@@ -220,7 +220,7 @@ address* addressList::getAddressAt(const int pos)
 }
 
 
-const address* const addressList::getAddressAt(const int pos) const
+const address* addressList::getAddressAt(const int pos) const
 {
 	return (m_list[pos]);
 }

@@ -110,7 +110,7 @@ public:
 	  * @param pos position
 	  * @return word at position 'pos'
 	  */
-	const word* const getWordAt(const int pos) const;
+	const word* getWordAt(const int pos) const;
 
 	/** Return the word list.
 	  *

@@ -482,7 +482,7 @@ headerField* header::getFieldAt(const int pos)
 }
 
 
-const headerField* const header::getFieldAt(const int pos) const
+const headerField* header::getFieldAt(const int pos) const
 {
 	return (m_fields[pos]);
 }

@@ -140,7 +140,7 @@ public:
 	  * @param pos position
 	  * @return mailbox at position 'pos'
 	  */
-	const mailbox* const getMailboxAt(const int pos) const;
+	const mailbox* getMailboxAt(const int pos) const;
 
 	/** Return the mailbox list.
 	  *

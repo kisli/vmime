@@ -133,7 +133,7 @@ public:
 	  * @param pos position
 	  * @return address at position 'pos'
 	  */
-	const address* const getAddressAt(const int pos) const;
+	const address* getAddressAt(const int pos) const;
 
 	/** Return the address list.
 	  *

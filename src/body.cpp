@@ -678,7 +678,7 @@ bodyPart* body::getPartAt(const int pos)
 }
 
 
-const bodyPart* const body::getPartAt(const int pos) const
+const bodyPart* body::getPartAt(const int pos) const
 {
 	return (m_parts[pos]);
 }

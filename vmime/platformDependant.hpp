@@ -138,7 +138,7 @@ public:
 		sm_handler = new TYPE;
 	}
 
-	static const handler* const getHandler()
+	static const handler* getHandler()
 	{
 		if (!sm_handler)
 			throw exceptions::no_platform_dependant_handler();

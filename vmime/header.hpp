@@ -196,7 +196,7 @@ public:
 	  * @param pos position
 	  * @return field at position 'pos'
 	  */
-	const headerField* const getFieldAt(const int pos) const;
+	const headerField* getFieldAt(const int pos) const;
 
 	/** Return the field list.
 	  *

@@ -147,7 +147,7 @@ public:
 	  * @param pos position
 	  * @return parameter at position 'pos'
 	  */
-	const parameter* const getParameterAt(const int pos) const;
+	const parameter* getParameterAt(const int pos) const;
 
 	/** Return the parameter list.
 	  *

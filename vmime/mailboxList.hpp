@@ -32,12 +32,8 @@ namespace vmime
 /** A list of mailboxes (basic type).
   */
 
-#ifdef __GNUC__
-#	if (__GNUC__ >= 3) && (__GNUC_MINOR__ <= 2)
+#if (defined(__GNUC__) && (__GNUC__ >= 3) && (__GNUC_MINOR__ <= 2))
 class mailboxList : public addressList  // BUG with gcc <= 3.2
-#	else
-class mailboxList : protected addressList
-#	endif
 #else
 class mailboxList : protected addressList
 #endif
@@ -130,7 +126,7 @@ public:
 	  * @param pos position
 	  * @return mailbox at position 'pos'
 	  */
-	const mailbox* const getMailboxAt(const int pos) const;
+	const mailbox* getMailboxAt(const int pos) const;
 
 	/** Return the mailbox list.
 	  *

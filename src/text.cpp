@@ -214,7 +214,7 @@ word* text::getWordAt(const int pos)
 }
 
 
-const word* const text::getWordAt(const int pos) const
+const word* text::getWordAt(const int pos) const
 {
 	return (m_words[pos]);
 }

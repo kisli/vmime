@@ -406,7 +406,7 @@ parameter* parameterizedHeaderField::getParameterAt(const int pos)
 }
 
 
-const parameter* const parameterizedHeaderField::getParameterAt(const int pos) const
+const parameter* parameterizedHeaderField::getParameterAt(const int pos) const
 {
 	return (m_params[pos]);
 }

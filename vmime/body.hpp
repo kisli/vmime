@@ -134,7 +134,7 @@ public:
 	  * @param pos position
 	  * @return part at position 'pos'
 	  */
-	const bodyPart* const getPartAt(const int pos) const;
+	const bodyPart* getPartAt(const int pos) const;
 
 	/** Return the part list.
 	  *

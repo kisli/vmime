@@ -322,7 +322,7 @@ mailbox* mailboxGroup::getMailboxAt(const int pos)
 }
 
 
-const mailbox* const mailboxGroup::getMailboxAt(const int pos) const
+const mailbox* mailboxGroup::getMailboxAt(const int pos) const
 {
 	return (m_list[pos]);
 }
