@@ -70,7 +70,7 @@ md5::md5(const string& in)
 	: m_finalized(false)
 {
 	init();
-	update((vmime_uint8*) in.c_str(), in.length());
+	update(reinterpret_cast <const vmime_uint8*>(in.c_str()), in.length());
 }
 
 
@@ -102,7 +102,7 @@ static void copyUint8Array(vmime_uint8* dest, const vmime_uint8* src, unsigned l
 
 void md5::update(const string& in)
 {
-	update((vmime_uint8*) in.c_str(), in.length());
+	update(reinterpret_cast <const vmime_uint8*>(in.c_str()), in.length());
 }
 
 
@@ -159,8 +159,8 @@ void md5::finalize()
 
 	memset(p, 0, padding);
 
-	((vmime_uint32*) m_block)[14] = (m_byteCount << 3);
-	((vmime_uint32*) m_block)[15] = (m_byteCount >> 29);
+	reinterpret_cast <vmime_uint32*>(m_block)[14] = (m_byteCount << 3);
+	reinterpret_cast <vmime_uint32*>(m_block)[15] = (m_byteCount >> 29);
 
 #if VMIME_BYTE_ORDER_BIG_ENDIAN
 	swapUint32Array((vmime_uint32*) m_block, (64 - 8) / 4);
@@ -208,7 +208,7 @@ void md5::transformHelper()
 
 void md5::transform()
 {
-	const vmime_uint32* const in = (vmime_uint32*) m_block;
+	const vmime_uint32* const in = reinterpret_cast <vmime_uint32*>(m_block);
 
 	vmime_uint32 a = m_hash[0];
 	vmime_uint32 b = m_hash[1];
@@ -306,7 +306,7 @@ const string md5::hex()
 	static const unsigned char hex[] = "0123456789abcdef";
 
 	std::ostringstream oss;
-	const vmime_uint8* const digest = (vmime_uint8*) m_hash;
+	const vmime_uint8* const digest = reinterpret_cast <vmime_uint8*>(m_hash);
 
 	for (int i = 0 ; i < 16 ; ++i)
 	{
@@ -323,7 +323,7 @@ const vmime_uint8* md5::hash()
 	if (!m_finalized)
 		finalize();
 
-	return ((vmime_uint8*) m_hash);
+	return (reinterpret_cast <const vmime_uint8*>(m_hash));
 }
 
 

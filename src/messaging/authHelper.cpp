@@ -46,7 +46,7 @@ void hmac_md5(const string& text, const string& key, string& hexDigest)
 	if (key.length() > 64)
 	{
 		utility::md5 keyMD5;
-		keyMD5.update((vmime_uint8*) key.data(), key.length());
+		keyMD5.update(reinterpret_cast <const vmime_uint8*>(key.data()), key.length());
 
 		std::copy(keyMD5.hash(), keyMD5.hash() + 16, tkey);
 		tkeyLen = 16;

@@ -305,7 +305,8 @@ libvmimetest_sources = [
 	[ 'tests/parser/headerTest', [ 'tests/parser/headerTest.cpp' ] ],
 	[ 'tests/parser/mailboxTest', [ 'tests/parser/mailboxTest.cpp' ] ],
 	[ 'tests/parser/mediaTypeTest', [ 'tests/parser/mediaTypeTest.cpp' ] ],
-	[ 'tests/parser/textTest', [ 'tests/parser/textTest.cpp' ] ]
+	[ 'tests/parser/textTest', [ 'tests/parser/textTest.cpp' ] ],
+	[ 'tests/utility/md5Test', [ 'tests/utility/md5Test.cpp' ] ]
 ]
 
 libvmime_autotools = [
@@ -505,6 +506,7 @@ env.Append(CXXFLAGS = ['-Wall'])
 env.Append(CXXFLAGS = ['-ansi'])
 env.Append(CXXFLAGS = ['-pedantic'])
 env.Append(CXXFLAGS = ['-Wpointer-arith'])
+env.Append(CXXFLAGS = ['-Wold-style-cast'])
 
 env.Append(TARFLAGS = ['-c'])
 env.Append(TARFLAGS = ['--bzip2'])

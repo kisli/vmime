@@ -490,7 +490,7 @@ void text::encodeAndFold(utility::outputStream& os, const string::size_type maxL
 			const string::size_type maxLineLength3 =
 				(maxLineLength == lineLengthLimits::infinite)
 					? maxLineLength
-					: std::min(maxLineLength, (const string::size_type) 76);
+					: std::min(maxLineLength, static_cast <string::size_type>(76));
 
 			// Base64 if more than 60% non-ascii, quoted-printable else (default)
 			const string::size_type asciiPercent = (100 * asciiCount) / buffer.length();
@@ -534,9 +534,10 @@ void text::encodeAndFold(utility::outputStream& os, const string::size_type maxL
 			string::const_iterator pos = buffer.begin();
 			string::size_type remaining = buffer.length();
 
-			encoder* theEncoder = ((encoding == 'B')
-				? ((encoder*) new encoderB64)
-				: ((encoder*) new encoderQP));
+			encoder* theEncoder;
+
+			if (encoding == 'B') theEncoder == new encoderB64;
+			else theEncoder = new encoderQP;
 
 			string qpEncodedBuffer;
 

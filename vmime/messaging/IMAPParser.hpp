@@ -382,7 +382,7 @@ public:
 				}
 			}
 
-			if (tagString == (string) *(parser.tag()))
+			if (tagString == string(*(parser.tag())))
 			{
 				*currentPos = pos;
 			}

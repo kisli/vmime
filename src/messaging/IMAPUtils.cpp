@@ -152,7 +152,7 @@ const string IMAPUtils::toModifiedUTF7
 	const char base64alphabet[] =
 		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+,=";
 
-	const unsigned int hs = (unsigned int)(unsigned char) hierarchySeparator;
+	const unsigned int hs = static_cast <unsigned int>(static_cast <unsigned char>(hierarchySeparator));
 
 	string hsUTF7;
 	hsUTF7.resize(3);

@@ -101,9 +101,9 @@ const utility::stream::size_type encoderUUE::encode(utility::inputStream& in, ut
 
 		for (utility::stream::size_type i = 0 ; i < inLength ; i += 3, j += 4)
 		{
-			const unsigned char c1 = (unsigned char) inBuffer[i];
-			const unsigned char c2 = (unsigned char) inBuffer[i + 1];
-			const unsigned char c3 = (unsigned char) inBuffer[i + 2];
+			const unsigned char c1 = static_cast <unsigned char>(inBuffer[i]);
+			const unsigned char c2 = static_cast <unsigned char>(inBuffer[i + 1]);
+			const unsigned char c3 = static_cast <unsigned char>(inBuffer[i + 2]);
 
 			outBuffer[j]     = UUENCODE(c1 >> 2);
 			outBuffer[j + 1] = UUENCODE((c1 << 4) & 060 | (c2 >> 4) & 017);
@@ -149,7 +149,8 @@ const utility::stream::size_type encoderUUE::decode(utility::inputStream& in, ut
 			break;
 
 		const utility::stream::size_type outLength = UUDECODE(lengthChar);
-		const utility::stream::size_type inLength = std::min((outLength * 4) / 3, (utility::stream::size_type) 64);
+		const utility::stream::size_type inLength =
+			std::min((outLength * 4) / 3, static_cast <utility::stream::size_type>(64));
 		utility::stream::value_type inPos = 0;
 
 		switch (lengthChar)
@@ -257,10 +258,10 @@ const utility::stream::size_type encoderUUE::decode(utility::inputStream& in, ut
 		// Decode data
 		for (utility::stream::size_type i = 0, j = 0 ; i < inLength ; i += 4, j += 3)
 		{
-			const unsigned char c1 = (unsigned char) inBuffer[i];
-			const unsigned char c2 = (unsigned char) inBuffer[i + 1];
-			const unsigned char c3 = (unsigned char) inBuffer[i + 2];
-			const unsigned char c4 = (unsigned char) inBuffer[i + 3];
+			const unsigned char c1 = static_cast <unsigned char>(inBuffer[i]);
+			const unsigned char c2 = static_cast <unsigned char>(inBuffer[i + 1]);
+			const unsigned char c3 = static_cast <unsigned char>(inBuffer[i + 2]);
+			const unsigned char c4 = static_cast <unsigned char>(inBuffer[i + 3]);
 
 			const utility::stream::size_type n =
 				std::min(inLength - i, static_cast <utility::stream::size_type>(3));

@@ -60,7 +60,7 @@ const bool stringUtils::isStringEqualNoCase
 	(const string::const_iterator begin, const string::const_iterator end,
 	 const char* s, const string::size_type n)
 {
-	if ((string::size_type)(end - begin) < n)
+	if (static_cast <string::size_type>(end - begin) < n)
 		return (false);
 
 	bool equal = true;

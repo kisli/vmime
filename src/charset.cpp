@@ -26,17 +26,26 @@
 
 extern "C"
 {
-	#include <iconv.h>
-
 #ifndef VMIME_BUILDING_DOC
+
+	#include <iconv.h>
 
 	// HACK: prototypes may differ depending on the compiler and/or system (the
 	// second parameter may or may not be 'const'). This redeclaration is a hack
 	// to have a common prototype "iconv_cast".
-	typedef size_t (*iconv_const_hack)(iconv_t cd, const char* * inbuf,
-		size_t *inbytesleft, char* * outbuf, size_t *outbytesleft);
+	class ICONV_HACK
+	{
+	public:
 
-	#define iconv_const ((iconv_const_hack) iconv)
+		ICONV_HACK(const char** ptr) : m_ptr(ptr) { }
+
+		operator const char**() { return m_ptr; }
+		operator char**() { return const_cast <char**>(m_ptr); }
+
+	private:
+
+		const char** m_ptr;
+	};
 
 #endif // VMIME_BUILDING_DOC
 }
@@ -80,13 +89,23 @@ void charset::generate(utility::outputStream& os, const string::size_type /* max
 }
 
 
+struct X
+{
+	X(const char**);
+
+	operator const char**() { return x; }
+	operator char**() { return const_cast <char**>(x); }
+
+	const char** x;
+};
+
 void charset::convert(utility::inputStream& in, utility::outputStream& out,
 	const charset& source, const charset& dest)
 {
 	// Get an iconv descriptor
 	const iconv_t cd = iconv_open(dest.getName().c_str(), source.getName().c_str());
 
-	if (cd != (iconv_t) -1)
+	if (cd != reinterpret_cast <iconv_t>(-1))
 	{
 		char inBuffer[5];
 		char outBuffer[32768];
@@ -97,14 +116,15 @@ void charset::convert(utility::inputStream& in, utility::outputStream& out,
 		while (true)
 		{
 			// Fullfill the buffer
-			size_t inLength = (size_t) in.read(inBuffer + inPos, sizeof(inBuffer) - inPos) + inPos;
+			size_t inLength = static_cast <size_t>(in.read(inBuffer + inPos, sizeof(inBuffer) - inPos) + inPos);
 			size_t outLength = sizeof(outBuffer);
 
 			const char* inPtr = inBuffer;
 			char* outPtr = outBuffer;
 
 			// Convert input bytes
-			if (iconv_const(cd, &inPtr, &inLength, &outPtr, &outLength) == (size_t) -1)
+			if (iconv(cd, ICONV_HACK(&inPtr), &inLength,
+			              &outPtr, &outLength) == static_cast <size_t>(-1))
 			{
 				// Illegal input sequence or input sequence has no equivalent
 				// sequence in the destination charset.
@@ -118,7 +138,7 @@ void charset::convert(utility::inputStream& in, utility::outputStream& out,
 					out.write("?", 1);
 
 					// Skip a byte and leave unconverted bytes in the input buffer
-					std::copy((char*) inPtr + 1, inBuffer + sizeof(inBuffer), inBuffer);
+					std::copy(const_cast <char*>(inPtr + 1), inBuffer + sizeof(inBuffer), inBuffer);
 					inPos = inLength - 1;
 				}
 				else
@@ -127,7 +147,7 @@ void charset::convert(utility::inputStream& in, utility::outputStream& out,
 					out.write(outBuffer, sizeof(outBuffer) - outLength);
 
 					// Leave unconverted bytes in the input buffer
-					std::copy((char*) inPtr, inBuffer + sizeof(inBuffer), inBuffer);
+					std::copy(const_cast <char*>(inPtr), inBuffer + sizeof(inBuffer), inBuffer);
 					inPos = inLength;
 
 					prevIsInvalid = true;
@@ -166,13 +186,13 @@ void charset::iconvert(const STRINGF& in, STRINGT& out, const charset& from, con
 	typedef typename STRINGF::value_type ivt;
 	typedef typename STRINGT::value_type ovt;
 
-	if (cd != (iconv_t) -1)
+	if (cd != reinterpret_cast <iconv_t>(-1))
 	{
 		out.clear();
 
 		char buffer[65536];
 
-		const char* inBuffer = (const char*) in.data();
+		const char* inBuffer = static_cast <const char*>(in.data());
 		size_t inBytesLeft = in.length();
 
 		for ( ; inBytesLeft > 0 ; )
@@ -180,10 +200,10 @@ void charset::iconvert(const STRINGF& in, STRINGT& out, const charset& from, con
 			size_t outBytesLeft = sizeof(buffer);
 			char* outBuffer = buffer;
 
-			if (iconv_const(cd, &inBuffer, &inBytesLeft,
-			                &outBuffer, &outBytesLeft) == (size_t) -1)
+			if (iconv(cd, ICONV_HACK(&inBuffer), &inBytesLeft,
+			              &outBuffer, &outBytesLeft) == static_cast <size_t>(-1))
 			{
-				out += STRINGT((ovt*) buffer, sizeof(buffer) - outBytesLeft);
+				out += STRINGT(static_cast <ovt*>(buffer), sizeof(buffer) - outBytesLeft);
 
 				// Ignore this "blocking" character and continue
 				out += '?';
@@ -192,7 +212,7 @@ void charset::iconvert(const STRINGF& in, STRINGT& out, const charset& from, con
 			}
 			else
 			{
-				out += STRINGT((ovt*) buffer, sizeof(buffer) - outBytesLeft);
+				out += STRINGT(static_cast <ovt*>(buffer), sizeof(buffer) - outBytesLeft);
 			}
 		}
 

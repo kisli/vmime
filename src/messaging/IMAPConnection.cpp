@@ -218,7 +218,7 @@ void IMAPConnection::send(bool tag, const string& what, bool end)
 	{
 		++(*m_tag);
 
-		oss << (string) *m_tag;
+		oss << string(*m_tag);
 		oss << " ";
 	}
 

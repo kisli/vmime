@@ -70,12 +70,12 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 	memset(&addr, 0, sizeof(addr));
 
 	addr.sin_family = AF_INET;
-	addr.sin_port = htons((unsigned short) port);
+	addr.sin_port = htons(static_cast <unsigned short>(port));
 	addr.sin_addr.s_addr = ::inet_addr(address.c_str());
 
-	if (addr.sin_addr.s_addr == (::in_addr_t) -1)
+	if (addr.sin_addr.s_addr == static_cast <in_addr_t>(-1))
 	{
-		::hostent* hostInfo = (hostent*) ::gethostbyname(address.c_str());
+		::hostent* hostInfo = ::gethostbyname(address.c_str());
 
 		if (hostInfo == NULL)
 		{
@@ -83,7 +83,7 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 			throw vmime::exceptions::connection_error();
 		}
 
-		bcopy(hostInfo->h_addr, (char*) &addr.sin_addr, hostInfo->h_length);
+		bcopy(hostInfo->h_addr, reinterpret_cast <char*>(&addr.sin_addr), hostInfo->h_length);
 	}
 	else
 	{
@@ -98,7 +98,7 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 		throw vmime::exceptions::connection_error();
 
 	// Start connection
-	if (::connect(m_desc, (sockaddr*) &addr, sizeof(addr)) == -1)
+	if (::connect(m_desc, reinterpret_cast <sockaddr*>(&addr), sizeof(addr)) == -1)
 	{
 		::close(m_desc);
 		m_desc = -1;

@@ -64,6 +64,10 @@ const unsigned char encoderB64::sm_decodeMap[256] =
 	0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,  // 0xf0 - 0xff
 };
 
+#ifndef VMIME_BUILDING_DOC
+	#define B64_WRITE(s, x, l) s.write(reinterpret_cast <utility::stream::value_type*>(x), l)
+#endif // VMIME_BUILDING_DOC
+
 
 
 const utility::stream::size_type encoderB64::encode(utility::inputStream& in, utility::outputStream& out)
@@ -150,7 +154,7 @@ const utility::stream::size_type encoderB64::encode(utility::inputStream& in, ut
 		}
 
 		// Write encoded data to output stream
-		out.write((char*) output, 4);
+		B64_WRITE(out, output, 4);
 
 		total += 4;
 		curCol += 4;
@@ -230,31 +234,31 @@ const utility::stream::size_type encoderB64::decode(utility::inputStream& in, ut
 		if (c1 == '=' || c2 == '=')  // end
 			break;
 
-		output[0] = (unsigned char)((sm_decodeMap[c1] << 2) | ((sm_decodeMap[c2] & 0x30) >> 4));
+		output[0] = static_cast <unsigned char>((sm_decodeMap[c1] << 2) | ((sm_decodeMap[c2] & 0x30) >> 4));
 
 		c1 = bytes[2];
 
 		if (c1 == '=')  // end
 		{
-			out.write((char*) output, 1);
+			B64_WRITE(out, output, 1);
 			total += 1;
 			break;
 		}
 
-		output[1] = (unsigned char)(((sm_decodeMap[c2] & 0xf) << 4) | ((sm_decodeMap[c1] & 0x3c) >> 2));
+		output[1] = static_cast <unsigned char>(((sm_decodeMap[c2] & 0xf) << 4) | ((sm_decodeMap[c1] & 0x3c) >> 2));
 
 		c2 = bytes[3];
 
 		if (c2 == '=')  // end
 		{
-			out.write((char*) output, 2);
+			B64_WRITE(out, output, 2);
 			total += 2;
 			break;
 		}
 
-		output[2] = (unsigned char)(((sm_decodeMap[c1] & 0x03) << 6) | sm_decodeMap[c2]);
+		output[2] = static_cast <unsigned char>(((sm_decodeMap[c1] & 0x03) << 6) | sm_decodeMap[c2]);
 
-		out.write((char*) output, 3);
+		B64_WRITE(out, output, 3);
 		total += 3;
 	}
 

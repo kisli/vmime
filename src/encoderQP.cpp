@@ -80,6 +80,8 @@ const unsigned char encoderQP::sm_hexDecodeTable[256] =
 	outBufferPos += 3;                                       \
 	curCol += 3;
 
+#define QP_WRITE(s, x, l) s.write(reinterpret_cast <utility::stream::value_type*>(x), l)
+
 #endif // VMIME_BUILDING_DOC
 
 
@@ -88,13 +90,13 @@ const utility::stream::size_type encoderQP::encode(utility::inputStream& in, uti
 	in.reset();  // may not work...
 
 	const string::size_type propMaxLineLength =
-		getProperties().getProperty <string::size_type>("maxlinelength", (string::size_type) -1);
+		getProperties().getProperty <string::size_type>("maxlinelength", static_cast <string::size_type>(-1));
 
 	const bool rfc2047 = getProperties().getProperty <bool>("rfc2047", false);
 	const bool text = getProperties().getProperty <bool>("text", false);  // binary mode by default
 
-	const bool cutLines = (propMaxLineLength != (string::size_type) -1);
-	const string::size_type maxLineLength = std::min(propMaxLineLength, (string::size_type) 74);
+	const bool cutLines = (propMaxLineLength != static_cast <string::size_type>(-1));
+	const string::size_type maxLineLength = std::min(propMaxLineLength, static_cast <string::size_type>(74));
 
 	// Process the data
 	char buffer[16384];
@@ -111,9 +113,9 @@ const utility::stream::size_type encoderQP::encode(utility::inputStream& in, uti
 	while (bufferPos < bufferLength || !in.eof())
 	{
 		// Flush current output buffer
-		if (outBufferPos + 6 >= (int) sizeof(outBuffer))
+		if (outBufferPos + 6 >= static_cast <int>(sizeof(outBuffer)))
 		{
-			out.write((char*) outBuffer, outBufferPos);
+			QP_WRITE(out, outBuffer, outBufferPos);
 
 			total += outBufferPos;
 			outBufferPos = 0;
@@ -131,7 +133,7 @@ const utility::stream::size_type encoderQP::encode(utility::inputStream& in, uti
 		}
 
 		// Get the next char and encode it
-		const unsigned char c = (unsigned char) buffer[bufferPos++];
+		const unsigned char c = static_cast <unsigned char>(buffer[bufferPos++]);
 
 		switch (c)
 		{
@@ -270,7 +272,7 @@ const utility::stream::size_type encoderQP::encode(utility::inputStream& in, uti
 	// Flush remaining output buffer
 	if (outBufferPos != 0)
 	{
-		out.write((char*) outBuffer, outBufferPos);
+		QP_WRITE(out, outBuffer, outBufferPos);
 		total += outBufferPos;
 	}
 
@@ -297,9 +299,9 @@ const utility::stream::size_type encoderQP::decode(utility::inputStream& in, uti
 	while (bufferPos < bufferLength || !in.eof())
 	{
 		// Flush current output buffer
-		if (outBufferPos >= (int) sizeof(outBuffer))
+		if (outBufferPos >= static_cast <int>(sizeof(outBuffer)))
 		{
-			out.write((char*) outBuffer, outBufferPos);
+			QP_WRITE(out, outBuffer, outBufferPos);
 
 			total += outBufferPos;
 			outBufferPos = 0;
@@ -317,7 +319,7 @@ const utility::stream::size_type encoderQP::decode(utility::inputStream& in, uti
 		}
 
 		// Decode the next sequence (hex-encoded byte or printable character)
-		unsigned char c = (unsigned char) buffer[bufferPos++];
+		unsigned char c = static_cast <unsigned char>(buffer[bufferPos++]);
 
 		switch (c)
 		{
@@ -331,7 +333,7 @@ const utility::stream::size_type encoderQP::decode(utility::inputStream& in, uti
 
 			if (bufferPos < bufferLength)
 			{
-				c = (unsigned char) buffer[bufferPos++];
+				c = static_cast <unsigned char>(buffer[bufferPos++]);
 
 				switch (c)
 				{
@@ -366,7 +368,7 @@ const utility::stream::size_type encoderQP::decode(utility::inputStream& in, uti
 
 					if (bufferPos < bufferLength)
 					{
-						const unsigned char next = (unsigned char) buffer[bufferPos++];
+						const unsigned char next = static_cast <unsigned char>(buffer[bufferPos++]);
 
 						const unsigned char value =
 							  sm_hexDecodeTable[c] * 16
@@ -415,7 +417,7 @@ const utility::stream::size_type encoderQP::decode(utility::inputStream& in, uti
 	// Flush remaining output buffer
 	if (outBufferPos != 0)
 	{
-		out.write((char*) outBuffer, outBufferPos);
+		QP_WRITE(out, outBuffer, outBufferPos);
 		total += outBufferPos;
 	}
 
