@@ -143,7 +143,7 @@ public:
 	  * <pre>   &lt;iso-8859-1> "Linux dans un t'el'ephone mobile"
 	  *    ("=?iso-8859-1?Q?Linux_dans_un_t=E9l=E9phone_mobile?=")
 	  * </pre><p>it will return:</p>
-	  * <pre>   &lt:us-ascii>   "Linux dans un "
+	  * <pre>   &lt;us-ascii>   "Linux dans un "
 	  *    &lt;iso-8859-1> "t'el'ephone "
 	  *    &lt;us-ascii>   "mobile"
 	  *    ("Linux dans un =?iso-8859-1?Q?t=E9l=E9phone_?= mobile")
