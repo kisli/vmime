@@ -126,6 +126,8 @@ private:
 
 	void onClose();
 
+	void setMessageFlagsImpl(const std::vector <int>& nums, const int flags, const int mode);
+
 
 	maildirStore* m_store;
 

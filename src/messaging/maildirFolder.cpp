@@ -692,14 +692,207 @@ void maildirFolder::deleteMessages(const std::vector <int>& nums)
 void maildirFolder::setMessageFlags
 	(const int from, const int to, const int flags, const int mode)
 {
-	// TODO
+	if (from < 1 || (to < from && to != -1))
+		throw exceptions::invalid_argument();
+
+	if (!m_store)
+		throw exceptions::illegal_state("Store disconnected");
+	else if (!isOpen())
+		throw exceptions::illegal_state("Folder not open");
+	else if (m_mode == MODE_READ_ONLY)
+		throw exceptions::illegal_state("Folder is read-only");
+
+	// Construct the list of message numbers
+	const int to2 = (to == -1) ? m_messageCount : to;
+	const int count = to - from + 1;
+
+	std::vector <int> nums;
+	nums.resize(count);
+
+	for (int i = from, j = 0 ; i <= to2 ; ++i, ++j)
+		nums[j] = i;
+
+	// Change message flags
+	setMessageFlagsImpl(nums, flags, mode);
+
+	// Update local flags
+	switch (mode)
+	{
+	case message::FLAG_MODE_ADD:
+	{
+		for (std::vector <maildirMessage*>::iterator it =
+		     m_messages.begin() ; it != m_messages.end() ; ++it)
+		{
+			if ((*it)->getNumber() >= from && (*it)->getNumber() <= to2 &&
+			    (*it)->m_flags != message::FLAG_UNDEFINED)
+			{
+				(*it)->m_flags |= flags;
+			}
+		}
+
+		break;
+	}
+	case message::FLAG_MODE_REMOVE:
+	{
+		for (std::vector <maildirMessage*>::iterator it =
+		     m_messages.begin() ; it != m_messages.end() ; ++it)
+		{
+			if ((*it)->getNumber() >= from && (*it)->getNumber() <= to2 &&
+			    (*it)->m_flags != message::FLAG_UNDEFINED)
+			{
+				(*it)->m_flags &= ~flags;
+			}
+		}
+
+		break;
+	}
+	default:
+	case message::FLAG_MODE_SET:
+	{
+		for (std::vector <maildirMessage*>::iterator it =
+		     m_messages.begin() ; it != m_messages.end() ; ++it)
+		{
+			if ((*it)->getNumber() >= from && (*it)->getNumber() <= to2 &&
+			    (*it)->m_flags != message::FLAG_UNDEFINED)
+			{
+				(*it)->m_flags = flags;
+			}
+		}
+
+		break;
+	}
+
+	}
+
+	// Notify message flags changed
+	events::messageChangedEvent event(this, events::messageChangedEvent::TYPE_FLAGS, nums);
+
+	notifyMessageChanged(event);
 }
 
 
 void maildirFolder::setMessageFlags
 	(const std::vector <int>& nums, const int flags, const int mode)
 {
-	// TODO
+	if (!m_store)
+		throw exceptions::illegal_state("Store disconnected");
+	else if (!isOpen())
+		throw exceptions::illegal_state("Folder not open");
+	else if (m_mode == MODE_READ_ONLY)
+		throw exceptions::illegal_state("Folder is read-only");
+
+	// Sort the list of message numbers
+	std::vector <int> list;
+
+	list.resize(nums.size());
+	std::copy(nums.begin(), nums.end(), list.begin());
+
+	std::sort(list.begin(), list.end());
+
+	// Change message flags
+	setMessageFlagsImpl(list, flags, mode);
+
+	// Update local flags
+	switch (mode)
+	{
+	case message::FLAG_MODE_ADD:
+	{
+		for (std::vector <maildirMessage*>::iterator it =
+		     m_messages.begin() ; it != m_messages.end() ; ++it)
+		{
+			if (std::binary_search(list.begin(), list.end(), (*it)->getNumber()) &&
+			    (*it)->m_flags != message::FLAG_UNDEFINED)
+			{
+				(*it)->m_flags |= flags;
+			}
+		}
+
+		break;
+	}
+	case message::FLAG_MODE_REMOVE:
+	{
+		for (std::vector <maildirMessage*>::iterator it =
+		     m_messages.begin() ; it != m_messages.end() ; ++it)
+		{
+			if (std::binary_search(list.begin(), list.end(), (*it)->getNumber()) &&
+			    (*it)->m_flags != message::FLAG_UNDEFINED)
+			{
+				(*it)->m_flags &= ~flags;
+			}
+		}
+
+		break;
+	}
+	default:
+	case message::FLAG_MODE_SET:
+	{
+		for (std::vector <maildirMessage*>::iterator it =
+		     m_messages.begin() ; it != m_messages.end() ; ++it)
+		{
+			if (std::binary_search(list.begin(), list.end(), (*it)->getNumber()) &&
+			    (*it)->m_flags != message::FLAG_UNDEFINED)
+			{
+				(*it)->m_flags = flags;
+			}
+		}
+
+		break;
+	}
+
+	}
+
+	// Notify message flags changed
+	events::messageChangedEvent event(this, events::messageChangedEvent::TYPE_FLAGS, nums);
+
+	notifyMessageChanged(event);
+}
+
+
+void maildirFolder::setMessageFlagsImpl
+	(const std::vector <int>& nums, const int flags, const int mode)
+{
+	utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
+
+	utility::file::path curDirPath = maildirUtils::getFolderFSPath
+		(m_store, m_path, maildirUtils::FOLDER_PATH_CUR);
+
+	for (std::vector <int>::const_iterator it =
+	     nums.begin() ; it != nums.end() ; ++it)
+	{
+		const int num = *it;
+
+		try
+		{
+			const utility::file::path::component path = m_messageInfos[num].path;
+			utility::auto_ptr <utility::file> file = fsf->create(curDirPath / path);
+
+			int newFlags = maildirUtils::extractFlags(path);
+
+			switch (mode)
+			{
+			case message::FLAG_MODE_ADD:    newFlags |= flags; break;
+			case message::FLAG_MODE_REMOVE: newFlags &= ~flags; break;
+			default:
+			case message::FLAG_MODE_SET:    newFlags = flags; break;
+			}
+
+			const utility::file::path::component newPath = maildirUtils::buildFilename
+				(maildirUtils::extractId(path), newFlags);
+
+			file->rename(curDirPath / newPath);
+
+			if (flags & message::FLAG_DELETED)
+				m_messageInfos[num].type = messageInfos::TYPE_DELETED;
+			else
+				m_messageInfos[num].type = messageInfos::TYPE_CUR;
+
+			m_messageInfos[num].path = newPath;
+		}
+		catch (exceptions::filesystem_exception& e)
+		{
+			// Ignore (not important)
+		}
+	}
 }
 
 
@@ -719,18 +912,35 @@ void maildirFolder::addMessage(utility::inputStream& is, const int size,
 
 void maildirFolder::copyMessage(const folder::path& dest, const int num)
 {
+	if (!m_store)
+		throw exceptions::illegal_state("Store disconnected");
+	else if (!isOpen())
+		throw exceptions::illegal_state("Folder not open");
+
 	// TODO
 }
 
 
 void maildirFolder::copyMessages(const folder::path& dest, const int from, const int to)
 {
+	if (!m_store)
+		throw exceptions::illegal_state("Store disconnected");
+	else if (!isOpen())
+		throw exceptions::illegal_state("Folder not open");
+	else if (from < 1 || (to < from && to != -1))
+		throw exceptions::invalid_argument();
+
 	// TODO
 }
 
 
 void maildirFolder::copyMessages(const folder::path& dest, const std::vector <int>& nums)
 {
+	if (!m_store)
+		throw exceptions::illegal_state("Store disconnected");
+	else if (!isOpen())
+		throw exceptions::illegal_state("Folder not open");
+
 	// TODO
 }
 
