@@ -94,7 +94,7 @@ namespace vmime
 	// Copy one vector to another, with type conversion
 
 	template <class T1, class T2>
-	void copy_vector(T1& v1, T2& v2)
+	void copy_vector(const T1& v1, T2& v2)
 	{
 		const typename T1::size_type count = v1.size();
 
