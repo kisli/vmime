@@ -6,7 +6,8 @@ VERSION 0.6.2-cvs
 
  * Converted all C-style casts to C++-style casts.
 
- * Added unit test for utility::md5.
+ * Added unit tests for utility::md5, utility::stringProxy and
+   utility::stringUtils.
 
 2004-12-31  Vincent Richard  <vincent@vincent-richard.net>
 

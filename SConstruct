@@ -306,7 +306,9 @@ libvmimetest_sources = [
 	[ 'tests/parser/mailboxTest', [ 'tests/parser/mailboxTest.cpp' ] ],
 	[ 'tests/parser/mediaTypeTest', [ 'tests/parser/mediaTypeTest.cpp' ] ],
 	[ 'tests/parser/textTest', [ 'tests/parser/textTest.cpp' ] ],
-	[ 'tests/utility/md5Test', [ 'tests/utility/md5Test.cpp' ] ]
+	[ 'tests/utility/md5Test', [ 'tests/utility/md5Test.cpp' ] ],
+	[ 'tests/utility/stringProxyTest', [ 'tests/utility/stringProxyTest.cpp' ] ],
+	[ 'tests/utility/stringUtilsTest', [ 'tests/utility/stringUtilsTest.cpp' ] ]
 ]
 
 libvmime_autotools = [
