@@ -30,23 +30,24 @@ namespace vmime
 
 
 /** A list of mailboxes (basic type).
+  *
+  * This class works exactly like 'addressList' except it prevents user
+  * from inserting mailbox groups where it is not allowed by the RFC.
   */
 
-#if (defined(__GNUC__) && (__GNUC__ >= 3) && (__GNUC_MINOR__ <= 2)) || defined(VMIME_NO_PROTECTED_INHERITANCE)
-class mailboxList : public addressList  // BUG with gcc <= 3.2
-#else
-class mailboxList : protected addressList
-#endif
+class mailboxList : public component
 {
-	friend class mailboxGroup;
-
 public:
-
-	// This class works exactly like 'addressList' except it prevents user
-	// from inserting mailbox groups where it is not allowed by the RFC.
 
 	mailboxList();
 	mailboxList(const mailboxList& mboxList);
+
+
+	mailboxList* clone() const;
+	void copyFrom(const component& other);
+	mailboxList& operator=(const mailboxList& other);
+
+	const std::vector <const component*> getChildComponents() const;
 
 	/** Add a mailbox at the end of the list.
 	  *
@@ -139,6 +140,19 @@ public:
 	  * @return list of mailboxes
 	  */
 	const std::vector <mailbox*> getMailboxList();
+
+private:
+
+	addressList m_list;
+
+public:
+
+	using component::parse;
+	using component::generate;
+
+	// Component parsing & assembling
+	void parse(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition = NULL);
+	void generate(utility::outputStream& os, const string::size_type maxLineLength = lineLengthLimits::infinite, const string::size_type curLinePos = 0, string::size_type* newLinePos = NULL) const;
 };
 
 

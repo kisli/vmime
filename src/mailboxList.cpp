@@ -31,14 +31,14 @@ mailboxList::mailboxList()
 
 
 mailboxList::mailboxList(const mailboxList& mboxList)
-	: addressList(mboxList)
+	: component(), m_list(mboxList.m_list)
 {
 }
 
 
 void mailboxList::appendMailbox(mailbox* mbox)
 {
-	addressList::appendAddress(mbox);
+	m_list.appendAddress(mbox);
 }
 
 
@@ -46,7 +46,7 @@ void mailboxList::insertMailboxBefore(mailbox* beforeMailbox, mailbox* mbox)
 {
 	try
 	{
-		addressList::insertAddressBefore(beforeMailbox, mbox);
+		m_list.insertAddressBefore(beforeMailbox, mbox);
 	}
 	catch (exceptions::no_such_address&)
 	{
@@ -57,7 +57,7 @@ void mailboxList::insertMailboxBefore(mailbox* beforeMailbox, mailbox* mbox)
 
 void mailboxList::insertMailboxBefore(const int pos, mailbox* mbox)
 {
-	addressList::insertAddressBefore(pos, mbox);
+	m_list.insertAddressBefore(pos, mbox);
 }
 
 
@@ -65,7 +65,7 @@ void mailboxList::insertMailboxAfter(mailbox* afterMailbox, mailbox* mbox)
 {
 	try
 	{
-		addressList::insertAddressAfter(afterMailbox, mbox);
+		m_list.insertAddressAfter(afterMailbox, mbox);
 	}
 	catch (exceptions::no_such_address&)
 	{
@@ -76,7 +76,7 @@ void mailboxList::insertMailboxAfter(mailbox* afterMailbox, mailbox* mbox)
 
 void mailboxList::insertMailboxAfter(const int pos, mailbox* mbox)
 {
-	addressList::insertAddressAfter(pos, mbox);
+	m_list.insertAddressAfter(pos, mbox);
 }
 
 
@@ -84,7 +84,7 @@ void mailboxList::removeMailbox(mailbox* mbox)
 {
 	try
 	{
-		addressList::removeAddress(mbox);
+		m_list.removeAddress(mbox);
 	}
 	catch (exceptions::no_such_address&)
 	{
@@ -95,43 +95,43 @@ void mailboxList::removeMailbox(mailbox* mbox)
 
 void mailboxList::removeMailbox(const int pos)
 {
-	addressList::removeAddress(pos);
+	m_list.removeAddress(pos);
 }
 
 
 void mailboxList::removeAllMailboxes()
 {
-	addressList::removeAllAddresses();
+	m_list.removeAllAddresses();
 }
 
 
 const int mailboxList::getMailboxCount() const
 {
-	return (addressList::getAddressCount());
+	return (m_list.getAddressCount());
 }
 
 
 const bool mailboxList::isEmpty() const
 {
-	return (addressList::isEmpty());
+	return (m_list.isEmpty());
 }
 
 
 mailbox* mailboxList::getMailboxAt(const int pos)
 {
-	return static_cast <mailbox*>(addressList::getAddressAt(pos));
+	return static_cast <mailbox*>(m_list.getAddressAt(pos));
 }
 
 
 const mailbox* mailboxList::getMailboxAt(const int pos) const
 {
-	return static_cast <const mailbox*>(addressList::getAddressAt(pos));
+	return static_cast <const mailbox*>(m_list.getAddressAt(pos));
 }
 
 
 const std::vector <const mailbox*> mailboxList::getMailboxList() const
 {
-	const std::vector <const address*> addrList = addressList::getAddressList();
+	const std::vector <const address*> addrList = m_list.getAddressList();
 	std::vector <const mailbox*> res;
 
 	for (std::vector <const address*>::const_iterator it = addrList.begin() ;
@@ -149,7 +149,7 @@ const std::vector <const mailbox*> mailboxList::getMailboxList() const
 
 const std::vector <mailbox*> mailboxList::getMailboxList()
 {
-	const std::vector <address*> addrList = addressList::getAddressList();
+	const std::vector <address*> addrList = m_list.getAddressList();
 	std::vector <mailbox*> res;
 
 	for (std::vector <address*>::const_iterator it = addrList.begin() ;
@@ -162,6 +162,47 @@ const std::vector <mailbox*> mailboxList::getMailboxList()
 	}
 
 	return (res);
+}
+
+
+mailboxList* mailboxList::clone() const
+{
+	return new mailboxList(*this);
+}
+
+
+void mailboxList::copyFrom(const component& other)
+{
+	const mailboxList& mboxList = dynamic_cast <const mailboxList&>(other);
+
+	m_list = mboxList.m_list;
+}
+
+
+mailboxList& mailboxList::operator=(const mailboxList& other)
+{
+	copyFrom(other);
+	return (*this);
+}
+
+
+const std::vector <const component*> mailboxList::getChildComponents() const
+{
+	return (m_list.getChildComponents());
+}
+
+
+void mailboxList::parse(const string& buffer, const string::size_type position,
+	const string::size_type end, string::size_type* newPosition)
+{
+	m_list.parse(buffer, position, end, newPosition);
+}
+
+
+void mailboxList::generate(utility::outputStream& os, const string::size_type maxLineLength,
+	const string::size_type curLinePos, string::size_type* newLinePos) const
+{
+	m_list.generate(os, maxLineLength, curLinePos, newLinePos);
 }
 
 

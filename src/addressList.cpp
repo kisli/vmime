@@ -119,7 +119,11 @@ addressList& addressList::operator=(const addressList& other)
 
 addressList& addressList::operator=(const mailboxList& other)
 {
-	copyFrom(other);
+	removeAllAddresses();
+
+	for (int i = 0 ; i < other.getMailboxCount() ; ++i)
+		m_list.push_back(other.getMailboxAt(i)->clone());
+
 	return (*this);
 }
 
