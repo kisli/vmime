@@ -100,6 +100,27 @@ static void copyUint8Array(vmime_uint8* dest, const vmime_uint8* src, unsigned l
 }
 
 
+static inline vmime_uint32 swapUint32(const vmime_uint32 D)
+{
+	return ((D << 24) | ((D << 8) & 0x00FF0000) | ((D >> 8) & 0x0000FF00) | (D >> 24));
+}
+
+
+static inline void swapUint32Array(vmime_uint32* buf, unsigned long words)
+{
+	for ( ; words >= 4 ; words -= 4, buf += 4)
+	{
+		buf[0] = swapUint32(buf[0]);
+		buf[1] = swapUint32(buf[1]);
+		buf[2] = swapUint32(buf[2]);
+		buf[3] = swapUint32(buf[3]);
+	}
+
+	for ( ; words ; --words, ++buf)
+		buf[0] = swapUint32(buf[0]);
+}
+
+
 void md5::update(const string& in)
 {
 	update(reinterpret_cast <const vmime_uint8*>(in.c_str()), in.length());
@@ -173,27 +194,6 @@ void md5::finalize()
 #endif
 
 	m_finalized = true;
-}
-
-
-static inline vmime_uint32 swapUint32(const vmime_uint32 D)
-{
-	return ((D << 24) | ((D << 8) & 0x00FF0000) | ((D >> 8) & 0x0000FF00) | (D >> 24));
-}
-
-
-static inline void swapUint32Array(vmime_uint32* buf, unsigned long words)
-{
-	for ( ; words >= 4 ; words -= 4, buf += 4)
-	{
-		buf[0] = swapUint32(buf[0]);
-		buf[1] = swapUint32(buf[1]);
-		buf[2] = swapUint32(buf[2]);
-		buf[3] = swapUint32(buf[3]);
-	}
-
-	for ( ; words ; --words, ++buf)
-		buf[0] = swapUint32(buf[0]);
 }
 
 
