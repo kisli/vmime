@@ -781,22 +781,26 @@ Default(libVmime)
 
 # Tests
 if env['build_tests'] == 'yes':
-	libUnitpp = env.StaticLibrary(
-		target = 'tests/unit++',
-		source = libunitpp_sources
-	)
-
-	Default(libUnitpp)
-
-	for test in libvmimetest_sources:
-		Default(
-			env.Program(
-				target = test[0],
-				source = test[1],
-				LIBS=['unit++', packageVersionedGenericName + '-debug'],
-				LIBPATH=['.', './tests/']
-			)
+	if env['debug'] == 'yes':
+		libUnitpp = env.StaticLibrary(
+			target = 'tests/unit++',
+			source = libunitpp_sources
 		)
+
+		Default(libUnitpp)
+
+		for test in libvmimetest_sources:
+			Default(
+				env.Program(
+					target = test[0],
+					source = test[1],
+					LIBS=['unit++', packageVersionedGenericName + '-debug'],
+					LIBPATH=['.', './tests/']
+				)
+			)
+	else:
+		print 'Debug mode must be enabled to build tests!'
+		Exit(1)
 
 
 ########################
