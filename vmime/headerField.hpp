@@ -97,6 +97,8 @@ public:
 	void parse(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition = NULL);
 	void generate(utility::outputStream& os, const string::size_type maxLineLength = lineLengthLimits::infinite, const string::size_type curLinePos = 0, string::size_type* newLinePos = NULL) const;
 
+	static headerField* parseNext(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition = NULL);
+
 private:
 
 	string m_name;
