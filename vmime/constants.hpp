@@ -175,6 +175,7 @@ namespace vmime
 		extern const string::value_type* const CONTENT_DISPOSITION;
 		extern const string::value_type* const CONTENT_ID;
 		extern const string::value_type* const CONTENT_LOCATION;
+		extern const string::value_type* const IN_REPLY_TO;
 
 		extern const string::value_type* const X_MAILER;
 		extern const string::value_type* const X_PRIORITY;
