@@ -48,17 +48,35 @@ public:
 	};
 
 
-	messageCountEvent(class folder* folder, const Types type, const std::vector <int>& nums);
+	messageCountEvent(folder* folder, const Types type, const std::vector <int>& nums);
 
-	const class folder* folder() const;
-	const Types type() const;
-	const std::vector <int>& numbers() const;
+	/** Return the folder in which messages have been added/removed.
+	  *
+	  * @return folder in which message count changed
+	  */
+	const folder* getFolder() const;
 
+	/** Return the event type.
+	  *
+	  * @return event type (see messageCountEvent::Types)
+	  */
+	const Types getType() const;
+
+	/** Return the numbers of the messages that have been added/removed.
+	  *
+	  * @return a list of message numbers
+	  */
+	const std::vector <int>& getNumbers() const;
+
+	/** Dispatch the event to the specified listener.
+	  *
+	  * @param listener listener to notify
+	  */
 	void dispatch(class messageCountListener* listener) const;
 
 private:
 
-	class folder* m_folder;
+	folder* m_folder;
 	const Types m_type;
 	std::vector <int> m_nums;
 };
@@ -93,17 +111,35 @@ public:
 	};
 
 
-	messageChangedEvent(class folder* folder, const Types type, const std::vector <int>& nums);
+	messageChangedEvent(folder* folder, const Types type, const std::vector <int>& nums);
 
-	const class folder* folder() const;
-	const Types type() const;
-	const std::vector <int>& numbers() const;
+	/** Return the folder in which messages have changed.
+	  *
+	  * @return folder in which message count changed
+	  */
+	const folder* getFolder() const;
 
+	/** Return the event type.
+	  *
+	  * @return event type (see messageChangedEvent::Types)
+	  */
+	const Types getType() const;
+
+	/** Return the numbers of the messages that have changed.
+	  *
+	  * @return a list of message numbers
+	  */
+	const std::vector <int>& getNumbers() const;
+
+	/** Dispatch the event to the specified listener.
+	  *
+	  * @param listener listener to notify
+	  */
 	void dispatch(class messageChangedListener* listener) const;
 
 private:
 
-	class folder* m_folder;
+	folder* m_folder;
 	const Types m_type;
 	std::vector <int> m_nums;
 };
@@ -139,16 +175,29 @@ public:
 	};
 
 
-	folderEvent(class folder* folder, const Types type, const utility::path& oldPath, const utility::path& newPath);
+	folderEvent(folder* folder, const Types type, const utility::path& oldPath, const utility::path& newPath);
 
-	const class folder* folder() const;
-	const Types type() const;
+	/** Return the folder on which the event occured.
+	  *
+	  * @return folder on which the event occured
+	  */
+	const folder* getFolder() const;
 
+	/** Return the event type.
+	  *
+	  * @return event type (see folderEvent::Types)
+	  */
+	const Types getType() const;
+
+	/** Dispatch the event to the specified listener.
+	  *
+	  * @param listener listener to notify
+	  */
 	void dispatch(class folderListener* listener) const;
 
 private:
 
-	class folder* m_folder;
+	folder* m_folder;
 	const Types m_type;
 	const utility::path m_oldPath;
 	const utility::path m_newPath;

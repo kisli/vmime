@@ -2,6 +2,11 @@
 VERSION 0.6.3cvs
 ================
 
+2005-01-13  Vincent Richard  <vincent@vincent-richard.net>
+
+ * messaging/events.*: prefixed function names with 'get' + written
+   some documentation for functions.
+
 2005-01-05  Vincent Richard  <vincent@vincent-richard.net>
 
  * Started version 0.6.3.
