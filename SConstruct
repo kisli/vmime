@@ -29,24 +29,6 @@ import string
 # How to increment version number when building a public release?
 # ===============================================================
 #
-# Note about shared library (c:r:a) version number:
-#
-# 1. If the interface (API) is unchanged, but the implementation
-#    has changed or been fixed, then increment R.
-# 2. Otherwise, increment C and zero R, and:
-#      1. If the interface has grown (that is, the new library is
-#         compatible with old code), increment A.
-#      2. If the interface has changed in an incompatible way (that is,
-#         functions have changed or been removed), then zero A.
-#
-#                              no +-->  c.r+1.a
-#                                 |
-#    c.r.a ---> API changed? -----|                       no +--> c+1.0.0
-#                                 |                          |
-#                             yes +--> API compatible ? -----|
-#                                                            |
-#                                                        yes +--> c+1.0.a+1
-#
 # Changing package version number:
 #
 # * Increment major number if major changes have been made to the library,
@@ -82,12 +64,14 @@ packageMaintainer = 'vincent@vincent-richard.net'
 packageVersion = '%d.%d.%d' % (packageVersionMajor, packageVersionMinor, packageVersionMicro)
 packageAPI = '%d:%d:%d' % (packageAPICurrent, packageAPIRevision, packageAPIAge)
 
-if packageVersionMajor >= 2:
-	packageVersionedGenericName = packageGenericName + ('%d' % packageVersionMajor)
-	packageVersionedName = packageName + ('%d' % packageVersionMajor)
-else:
-	packageVersionedGenericName = packageGenericName
-	packageVersionedName = packageName
+#if packageVersionMajor >= 2:
+#	packageVersionedGenericName = packageGenericName + ('%d' % packageVersionMajor)
+#	packageVersionedName = packageName + ('%d' % packageVersionMajor)
+#else:
+#	packageVersionedGenericName = packageGenericName
+#	packageVersionedName = packageName
+packageVersionedGenericName = packageGenericName
+packageVersionedName = packageName
 
 
 ##################
@@ -810,7 +794,8 @@ if env['build_tests'] == 'yes':
 ########################
 
 libDir = "%s/lib" % env['prefix']
-includeDir = "%s/include/%s/vmime" % (env['prefix'], packageVersionedGenericName)
+#includeDir = "%s/include/%s/vmime" % (env['prefix'], packageVersionedGenericName)
+includeDir = "%s/include/vmime" % env['prefix']
 
 installPaths = [libDir, includeDir]
 
@@ -837,7 +822,8 @@ vmime_pc.write("Description: " + packageDescription + "\n")
 vmime_pc.write("Version: " + packageVersion + "\n")
 vmime_pc.write("Requires:\n")
 vmime_pc.write("Libs: -L${libdir} -l" + packageVersionedGenericName + "\n")
-vmime_pc.write("Cflags: -I${includedir}/" + packageVersionedGenericName + "\n")
+#vmime_pc.write("Cflags: -I${includedir}/" + packageVersionedGenericName + "\n")
+vmime_pc.write("Cflags: -I${includedir}/" + "\n")
 
 vmime_pc.close()
 
@@ -909,7 +895,8 @@ def generateAutotools(target, source, env):
 	vmime_pc_in.write("Version: @VERSION@\n")
 	vmime_pc_in.write("Requires:\n")
 	vmime_pc_in.write("Libs: -L${libdir} -l@GENERIC_VERSIONED_LIBRARY_NAME@\n")
-	vmime_pc_in.write("Cflags: -I${includedir}/@GENERIC_VERSIONED_LIBRARY_NAME@\n")
+	#vmime_pc_in.write("Cflags: -I${includedir}/@GENERIC_VERSIONED_LIBRARY_NAME@\n")
+	vmime_pc_in.write("Cflags: -I${includedir}/\n")
 	vmime_pc_in.close()
 
 	# Generate 'Makefile.am'
@@ -951,7 +938,8 @@ docdir = $(datadir)/doc/$(GENERIC_LIBRARY_NAME)
 # DOT NOT EDIT!
 """)
 
-	Makefile_am.write(packageVersionedName + "includedir = $(prefix)/include/@GENERIC_VERSIONED_LIBRARY_NAME@/@GENERIC_LIBRARY_NAME@\n")
+	#Makefile_am.write(packageVersionedName + "includedir = $(prefix)/include/@GENERIC_VERSIONED_LIBRARY_NAME@/@GENERIC_LIBRARY_NAME@\n")
+	Makefile_am.write(packageVersionedName + "includedir = $(prefix)/include/@GENERIC_LIBRARY_NAME@\n")
 	Makefile_am.write("nobase_" + packageVersionedName + "include_HEADERS = ")
 
 	x = []
@@ -1426,11 +1414,20 @@ EXTRA_CFLAGS="$EXTRA_CFLAGS -D_REENTRANT=1"
 EXTRA_LIBS=""
 
 CFLAGS=""
+CXXFLAGS=""
 
 if test x$VMIME_DEBUG = x1 ; then
-	CFLAGS="$CFLAGS -g"
+	# -g
+	OLD_CXXFLAGS="$CXXFLAGS"
+	CXX_FLAGS="$CXXFLAGS -g"
+	AC_MSG_CHECKING(whether cc accepts -g)
+	AC_TRY_COMPILE(,,echo yes,echo no; CXXFLAGS="$OLD_CXXFLAGS")
 else
-	CFLAGS="$CFLAGS -O2"
+	# -O2
+	OLD_CXXFLAGS="$CXXFLAGS"
+	CXX_FLAGS="$CXXFLAGS -O2"
+	AC_MSG_CHECKING(whether cc accepts -O2)
+	AC_TRY_COMPILE(,,echo yes,echo no; CXXFLAGS="$OLD_CXXFLAGS")
 fi
 
 
@@ -1454,6 +1451,7 @@ EXTRA_CFLAGS=`echo $EXTRA_CFLAGS | sed -e 's| |\\n|g' | sort | uniq | tr '\\n' '
 EXTRA_LIBS=`echo $EXTRA_LIBS | sed -e 's|^ ||g' | sed -e 's|  | |g'`
 
 AC_SUBST(CFLAGS)
+AC_SUBST(CXXFLAGS)
 
 AC_SUBST(EXTRA_CFLAGS)
 AC_SUBST(EXTRA_LIBS)

@@ -19,8 +19,6 @@ VERSION 0.6.1-cvs
 
  * Added support for 'pkg-config'.
 
- * Added versioning in library name (eg. libvmime-0.6.a).
-
  * Allow creating a service from an URL (session::getStore("url") and
    session::getTransport("url"))
 
