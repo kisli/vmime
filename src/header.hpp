@@ -56,12 +56,10 @@ class header : public component
 	friend class body;
 	friend class message;
 
-protected:
+public:
 
 	header();
 	~header();
-
-public:
 
 	// A sub-class for field manipulation
 	class fieldsContainer
@@ -124,6 +122,11 @@ public:
 		// If no field is found, an exception is thrown.
 		headerField& find(const headerField::Types fieldType) const;
 		headerField& find(const string& fieldName) const;
+
+		// Find all fields that matche the specified type/name.
+		// If no field is found, an empty vector is returned.
+		std::vector <headerField*> findAllByType(const headerField::Types fieldType);
+		std::vector <headerField*> findAllByName(const string& fieldName);
 
 		// Find the first field that matches the specified type/name.
 		// If no field is found, one will be created.

@@ -286,8 +286,6 @@ const bool header::fieldsContainer::has(const string& fieldName) const
 }
 
 
-// Find the first field that matches the specified type/name.
-// If no field is found, an exception is thrown.
 headerField& header::fieldsContainer::find(const headerField::Types fieldType) const
 {
 	// Find the first field that matches the specified type
@@ -335,7 +333,48 @@ headerField& header::fieldsContainer::find(const string& fieldName) const
 }
 
 
-// Find the first field that matches the specified type/name
+std::vector <headerField*> header::fieldsContainer::findAllByType(const headerField::Types fieldType)
+{
+	std::vector <headerField*> result;
+
+	std::vector <headerField*>::const_iterator pos = m_fields.begin();
+	const std::vector <headerField*>::const_iterator end = m_fields.end();
+
+	for ( ; pos != end ; ++pos)
+	{
+		// Add the header if it matches the specified type
+		if ((*pos)->type() == fieldType)
+		{
+			result.push_back(*pos);
+		}
+	}
+
+	return result;
+}
+
+
+std::vector <headerField*> header::fieldsContainer::findAllByName(const string& fieldName)
+{
+	const string name = toLower(fieldName);
+
+	std::vector <headerField*> result;
+
+	std::vector <headerField*>::const_iterator pos = m_fields.begin();
+	const std::vector <headerField*>::const_iterator end = m_fields.end();
+
+	for ( ; pos != end ; ++pos)
+	{
+		// Add the header if it matches the specified type
+		if (toLower((*pos)->name()) == name)
+		{
+			result.push_back(*pos);
+		}
+	}
+
+	return result;
+}
+
+
 headerField& header::fieldsContainer::get(const headerField::Types fieldType)
 {
 	// Find the first field that matches the specified type
