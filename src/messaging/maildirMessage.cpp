@@ -30,7 +30,8 @@ namespace messaging {
 
 
 maildirMessage::maildirMessage(maildirFolder* folder, const int num)
-	: m_folder(folder), m_num(num), m_size(-1), m_flags(FLAG_UNDEFINED)
+	: m_folder(folder), m_num(num), m_size(-1), m_flags(FLAG_UNDEFINED),
+	  m_expunged(false)
 {
 	m_folder->registerMessage(this);
 }
@@ -57,7 +58,7 @@ const int maildirMessage::getNumber() const
 
 const message::uid maildirMessage::getUniqueId() const
 {
-	// TODO
+	return (m_uid);
 }
 
 
@@ -72,7 +73,7 @@ const int maildirMessage::getSize() const
 
 const bool maildirMessage::isExpunged() const
 {
-	// TODO
+	return (m_expunged);
 }
 
 
@@ -105,7 +106,10 @@ const int maildirMessage::getFlags() const
 
 void maildirMessage::setFlags(const int flags, const int mode)
 {
-	// TODO
+	if (!m_folder)
+		throw exceptions::folder_not_found();
+
+	m_folder->setMessageFlags(m_num, m_num, flags, mode);
 }
 
 
@@ -144,7 +148,6 @@ void maildirMessage::fetch(maildirFolder* folder, const int options)
 	TODO: FETCH_STRUCTURE
 	TODO: FETCH_CONTENT_INFO
 	TODO: FETCH_FULL_HEADER
-	TODO: FETCH_UID
 	*/
 
 	if (options & folder::FETCH_FLAGS)
@@ -152,6 +155,9 @@ void maildirMessage::fetch(maildirFolder* folder, const int options)
 
 	if (options & folder::FETCH_SIZE)
 		m_size = file->length();
+
+	if (options & folder::FETCH_UID)
+		m_uid = maildirUtils::extractId(path.getLastComponent()).getBuffer();
 }
 
 

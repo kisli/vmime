@@ -126,6 +126,7 @@ private:
 
 	void onClose();
 
+	void deleteMessagesImpl(const std::vector <int>& nums);
 	void setMessageFlagsImpl(const std::vector <int>& nums, const int flags, const int mode);
 
 

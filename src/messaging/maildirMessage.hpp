@@ -81,6 +81,8 @@ private:
 	int m_num;
 	int m_size;
 	int m_flags;
+	bool m_expunged;
+	uid m_uid;
 };
 
 
