@@ -30,7 +30,9 @@ namespace messaging {
 
 
 POP3Folder::POP3Folder(const folder::path& path, POP3Store* store)
-	: m_store(store), m_path(path), m_name(path.getLastComponent()), m_mode(-1), m_open(false)
+	: m_store(store), m_path(path),
+	  m_name(path.isEmpty() ? folder::path::component("") : path.getLastComponent()),
+	  m_mode(-1), m_open(false)
 {
 	m_store->registerFolder(this);
 }

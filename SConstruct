@@ -308,7 +308,8 @@ libvmimetest_sources = [
 	[ 'tests/parser/textTest', [ 'tests/parser/textTest.cpp' ] ],
 	[ 'tests/utility/md5Test', [ 'tests/utility/md5Test.cpp' ] ],
 	[ 'tests/utility/stringProxyTest', [ 'tests/utility/stringProxyTest.cpp' ] ],
-	[ 'tests/utility/stringUtilsTest', [ 'tests/utility/stringUtilsTest.cpp' ] ]
+	[ 'tests/utility/stringUtilsTest', [ 'tests/utility/stringUtilsTest.cpp' ] ],
+	[ 'tests/utility/pathTest', [ 'tests/utility/pathTest.cpp' ] ]
 ]
 
 libvmime_autotools = [

@@ -40,8 +40,8 @@ namespace messaging {
 
 IMAPFolder::IMAPFolder(const folder::path& path, IMAPStore* store, const int type, const int flags)
 	: m_store(store), m_connection(m_store->connection()), m_path(path),
-	  m_name(path.getLastComponent()), m_mode(-1), m_open(false), m_type(type), m_flags(flags),
-	  m_messageCount(0), m_uidValidity(0)
+	  m_name(path.isEmpty() ? folder::path::component("") : path.getLastComponent()), m_mode(-1),
+	  m_open(false), m_type(type), m_flags(flags), m_messageCount(0), m_uidValidity(0)
 {
 	m_store->registerFolder(this);
 }

@@ -36,8 +36,9 @@ namespace messaging {
 
 
 maildirFolder::maildirFolder(const folder::path& path, maildirStore* store)
-	: m_store(store), m_path(path), m_name(path.getLastComponent()), m_mode(-1), m_open(false),
-	  m_unreadMessageCount(0), m_messageCount(0)
+	: m_store(store), m_path(path),
+	  m_name(path.isEmpty() ? folder::path::component("") : path.getLastComponent()),
+	  m_mode(-1), m_open(false), m_unreadMessageCount(0), m_messageCount(0)
 {
 	m_store->registerFolder(this);
 }
