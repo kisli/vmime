@@ -226,7 +226,7 @@ void maildirFolder::create(const int type)
 	}
 	catch (exceptions::filesystem_exception& e)
 	{
-		throw exceptions::command_error("CREATE", e.what(), "File system exception");
+		throw exceptions::command_error("CREATE", "", "File system exception", e);
 	}
 
 	// Notify folder created
@@ -455,6 +455,13 @@ std::vector <folder*> maildirFolder::getFolders(const bool recursive)
 		listFolders(list, recursive);
 	}
 	catch (std::exception&)
+	{
+		for (std::vector <folder*>::iterator it = list.begin() ; it != list.end() ; ++it)
+			delete (*it);
+
+		throw;
+	}
+	catch (vmime::exception&)
 	{
 		for (std::vector <folder*>::iterator it = list.begin() ; it != list.end() ; ++it)
 			delete (*it);
