@@ -75,6 +75,8 @@ private:
 
 	void onFolderClosed();
 
+	header& getOrCreateHeader();
+
 
 	maildirFolder* m_folder;
 
@@ -83,6 +85,9 @@ private:
 	int m_flags;
 	bool m_expunged;
 	uid m_uid;
+
+	header* m_header;
+	structure* m_structure;
 };
 
 

@@ -120,9 +120,9 @@ protected:
 	structure() { }
 	structure(const structure&) { }
 
-	virtual ~structure() { }
-
 public:
+
+	virtual ~structure() { }
 
 	/** Return the part at the specified position.
 	  *

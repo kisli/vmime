@@ -75,8 +75,8 @@ const bool maildirUtils::isSubfolderDirectory(const utility::file& file)
 	// A directory which name does not start with '.'
 	// is listed as a sub-folder...
 	if (file.isDirectory() &&
-	    file.fullPath().getLastComponent().getBuffer().length() >= 1 &&
-	    file.fullPath().getLastComponent().getBuffer()[0] != '.')
+	    file.getFullPath().getLastComponent().getBuffer().length() >= 1 &&
+	    file.getFullPath().getLastComponent().getBuffer()[0] != '.')
 	{
 		return (true);
 	}

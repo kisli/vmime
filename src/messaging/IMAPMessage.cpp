@@ -33,29 +33,10 @@ namespace messaging {
 
 
 //
-// IMAPheader
-//
-
-
-class IMAPheader : public header
-{
-public:
-
-	IMAPheader()
-	{
-	}
-
-	void parse(const string& str)
-	{
-		header::parse(str);
-	}
-};
-
-
-
-//
 // IMAPpart
 //
+
+class IMAPstructure;
 
 class IMAPpart : public part
 {
@@ -75,7 +56,13 @@ public:
 	const int getSize() const { return (m_size); }
 	const int getNumber() const { return (m_number); }
 
-	const header& getHeader() const;
+	const header& getHeader() const
+	{
+		if (m_header == NULL)
+			throw exceptions::unfetched_object();
+		else
+			return (*m_header);
+	}
 
 
 	static IMAPpart* create(IMAPpart* parent, const int number, const IMAPParser::body* body)
@@ -87,19 +74,19 @@ public:
 	}
 
 
-	IMAPheader& getOrCreateHeader()
+	header& getOrCreateHeader()
 	{
 		if (m_header != NULL)
 			return (*m_header);
 		else
-			return (*(m_header = new IMAPheader()));
+			return (*(m_header = new header()));
 	}
 
 private:
 
 	IMAPstructure* m_structure;
 	IMAPpart* m_parent;
-	IMAPheader* m_header;
+	header* m_header;
 
 	int m_number;
 	int m_size;
@@ -111,7 +98,6 @@ private:
 //
 // IMAPstructure
 //
-
 
 class IMAPstructure : public structure
 {
@@ -213,15 +199,6 @@ IMAPpart::IMAPpart(IMAPpart* parent, const int number, const IMAPParser::body_ty
 }
 
 
-const class header& IMAPpart::getHeader() const
-{
-	if (m_header == NULL)
-		throw exceptions::unfetched_object();
-	else
-		return (*m_header);
-}
-
-
 const class structure& IMAPpart::getStructure() const
 {
 	if (m_structure != NULL)
@@ -297,7 +274,7 @@ IMAPMessage::~IMAPMessage()
 	if (m_folder)
 		m_folder->unregisterMessage(this);
 
-	delete dynamic_cast <IMAPheader*>(m_header);
+	delete dynamic_cast <header*>(m_header);
 }
 
 
@@ -674,7 +651,7 @@ void IMAPMessage::processFetchResponse
 				    (*it)->section()->section_text1()->type()
 				        == IMAPParser::section_text::HEADER_FIELDS)
 				{
-					IMAPheader tempHeader;
+					header tempHeader;
 					tempHeader.parse((*it)->nstring()->value());
 
 					vmime::header& hdr = getOrCreateHeader();
@@ -706,12 +683,12 @@ void IMAPMessage::processFetchResponse
 }
 
 
-IMAPheader& IMAPMessage::getOrCreateHeader()
+header& IMAPMessage::getOrCreateHeader()
 {
 	if (m_header != NULL)
 		return (*m_header);
 	else
-		return (*(m_header = new IMAPheader()));
+		return (*(m_header = new header()));
 }
 
 

@@ -276,7 +276,7 @@ void maildirFolder::scanFolder()
 		while (nit->hasMoreElements())
 		{
 			utility::auto_ptr <utility::file> file = nit->nextElement();
-			newMessageFilenames.push_back(file->fullPath().getLastComponent());
+			newMessageFilenames.push_back(file->getFullPath().getLastComponent());
 		}
 
 		// Current messages (cur/)
@@ -286,7 +286,7 @@ void maildirFolder::scanFolder()
 		while (cit->hasMoreElements())
 		{
 			utility::auto_ptr <utility::file> file = cit->nextElement();
-			curMessageFilenames.push_back(file->fullPath().getLastComponent());
+			curMessageFilenames.push_back(file->getFullPath().getLastComponent());
 		}
 
 		// Update/delete existing messages (found in previous scan)
@@ -465,7 +465,7 @@ void maildirFolder::listFolders(std::vector <folder*>& list, const bool recursiv
 
 			if (maildirUtils::isSubfolderDirectory(*file))
 			{
-				const utility::path subPath = m_path / file->fullPath().getLastComponent();
+				const utility::path subPath = m_path / file->getFullPath().getLastComponent();
 				maildirFolder* subFolder = new maildirFolder(subPath, m_store);
 
 				list.push_back(subFolder);

@@ -30,10 +30,6 @@ namespace vmime {
 namespace messaging {
 
 
-class IMAPheader;
-class IMAPstructure;
-
-
 /** IMAP message implementation.
   */
 
@@ -83,7 +79,7 @@ private:
 	void convertAddressList(const IMAPParser::address_list& src, mailboxList& dest);
 
 
-	IMAPheader& getOrCreateHeader();
+	header& getOrCreateHeader();
 
 
 	void onFolderClosed();
@@ -96,8 +92,8 @@ private:
 	bool m_expunged;
 	uid m_uid;
 
-	class IMAPheader* m_header;
-	class IMAPstructure* m_structure;
+	header* m_header;
+	structure* m_structure;
 };
 
 
