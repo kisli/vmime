@@ -300,8 +300,18 @@ void mailbox::parse(const string& buffer, const string::size_type position,
 		}
 	}
 
-	decodeAndUnfoldText(name, m_name);
-	m_email = address;
+	// Swap name and address when no address was found
+	// (email address is mandatory, whereas name is optional).
+	if (address.empty() && !name.empty())
+	{
+		m_email = name;
+		m_name.clear();
+	}
+	else
+	{
+		decodeAndUnfoldText(name, m_name);
+		m_email = address;
+	}
 
 	if (newPosition)
 		*newPosition = position + (p - pstart);
