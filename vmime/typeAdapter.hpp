@@ -123,7 +123,7 @@ private:
 };
 
 
-#if defined(__GNUC__) && (__GNUC__ >= 3) && (__GNUC_MINOR__ <= 2)
+#if (defined(__GNUC__) && (__GNUC__ >= 3) && (__GNUC_MINOR__ <= 2)) || defined(_MSC_VER)
 
 	// Because of a bug with g++ <= 3.2, we have to put the implementation
 	// of the function inline.
@@ -146,7 +146,7 @@ private:
 		(const string& buffer, const string::size_type position,
 		 const string::size_type end, string::size_type* newPosition);
 
-#endif // defined(__GNUC__) && (__GNUC__ >= 3) && (__GNUC_MINOR__ <= 2)
+#endif // (defined(__GNUC__) && (__GNUC__ >= 3) && (__GNUC_MINOR__ <= 2)) || defined(_MSC_VER)
 
 
 } // vmime

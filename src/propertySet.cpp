@@ -285,6 +285,8 @@ void propertySet::property::setValue(const string& value)
 }
 
 
+#ifndef VMIME_INLINE_TEMPLATE_SPECIALIZATION
+
 template <>
 void propertySet::property::setValue(const string& value)
 {
@@ -321,6 +323,8 @@ const bool propertySet::property::getValue() const
 		return (!iss.fail() && val != 0);
 	}
 }
+
+#endif // VMIME_INLINE_TEMPLATE_SPECIALIZATION
 
 
 } // vmime

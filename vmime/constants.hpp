@@ -26,6 +26,13 @@
 #include "vmime/types.hpp"
 
 
+// Remove Windows defines of ERROR and WARNING
+#ifdef WIN32
+	#undef ERROR
+	#undef WARNING
+#endif
+
+
 namespace vmime
 {
 	/** Constants for media types. */

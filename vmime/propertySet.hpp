@@ -75,7 +75,13 @@ public:
 		  *
 		  * @param value new value for property
 		  */
-		template <class TYPE> void setValue(const TYPE& value);
+		template <class TYPE> void setValue(const TYPE& value)
+		{
+			std::ostringstream oss;
+			oss << value;
+
+			m_value = oss.str();
+		}
 
 		/** Get the value of the property as a generic type.
 		  *
@@ -84,7 +90,57 @@ public:
 		  * converted using std::istringstream)
 		  * @return current value of the property
 		  */
-		template <class TYPE> const TYPE getValue() const;
+		template <class TYPE> const TYPE getValue() const
+		{
+			TYPE val = TYPE();
+
+			std::istringstream iss(m_value);
+			iss >> val;
+
+			if (iss.fail())
+				throw exceptions::invalid_property_type();
+
+			return (val);
+		}
+
+
+#ifdef VMIME_INLINE_TEMPLATE_SPECIALIZATION
+
+		template <>
+		void propertySet::property::setValue(const string& value)
+		{
+			m_value = value;
+		}
+
+		template <>
+		void propertySet::property::setValue(const bool& value)
+		{
+			m_value = value ? "true" : "false";
+		}
+
+		template <>
+		const string propertySet::property::getValue() const
+		{
+			return (m_value);
+		}
+
+		template <>
+		const bool propertySet::property::getValue() const
+		{
+			if (utility::stringUtils::toLower(m_value) == "true")
+				return true;
+			else
+			{
+				int val = 0;
+
+				std::istringstream iss(m_value);
+				iss >> val;
+
+				return (!iss.fail() && val != 0);
+			}
+		}
+
+#endif // VMIME_INLINE_TEMPLATE_SPECIALIZATION
 
 	private:
 
@@ -300,37 +356,15 @@ public:
 };
 
 
-
-template <class TYPE>
-void propertySet::property::setValue(const TYPE& value)
-{
-	std::ostringstream oss;
-	oss << value;
-
-	m_value = oss.str();
-}
-
-
-template <class TYPE>
-const TYPE propertySet::property::getValue() const
-{
-	TYPE val = TYPE();
-
-	std::istringstream iss(m_value);
-	iss >> val;
-
-	if (iss.fail())
-		throw exceptions::invalid_property_type();
-
-	return (val);
-}
-
+#ifndef VMIME_INLINE_TEMPLATE_SPECIALIZATION
 
 template <> void propertySet::property::setValue(const string& value);
 template <> void propertySet::property::setValue(const bool& value);
 
 template <> const string propertySet::property::getValue() const;
 template <> const bool propertySet::property::getValue() const;
+
+#endif // VMIME_INLINE_TEMPLATE_SPECIALIZATION
 
 
 } // vmime
