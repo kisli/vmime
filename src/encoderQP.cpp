@@ -153,7 +153,7 @@ const utility::stream::size_type encoderQP::encode(utility::inputStream& in, uti
 			// represented as "_" (underscore, ASCII 95.). >>
 			if (rfc2047)
 			{
-				outBuffer[outBufferPos++] = ' ';
+				outBuffer[outBufferPos++] = '_';
 				++curCol;
 			}
 			else
