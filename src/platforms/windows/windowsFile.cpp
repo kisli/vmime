@@ -92,7 +92,50 @@ const vmime::string windowsFileSystemFactory::pathToStringImpl(const vmime::util
 
 const bool windowsFileSystemFactory::isValidPathComponent(const vmime::utility::file::path::component& comp) const
 {
-	return (comp.getBuffer().find_first_of("\\*") == vmime::string::npos);
+	const string& buffer = comp.getBuffer();
+
+	// Check for invalid characters
+	for (string::size_type i = 0 ; i < buffer.length() ; ++i)
+	{
+		const unsigned char c = buffer[i];
+
+		switch (c)
+		{
+		// Reserved characters
+		case '<': case '>': case ':':
+		case '"': case '/': case '\\':
+		case '|': case '$': case '*':
+
+			return false;
+
+		default:
+
+			if (c <= 31)
+				return false;
+		}
+	}
+
+	// Check for reserved names
+	if (buffer.length() == 3)
+	{
+		if (buffer == "CON" || buffer == "PRN" || buffer == "AUX" || buffer == "NUL")
+			return false;
+	}
+	else if (buffer.length() == 4)
+	{
+		if (buffer[0] == 'C' && buffer[1] == 'O' &&   // COM1-COM9
+		    buffer[2] == 'M' && (buffer[3] >= '0' && buffer[3] <= '9'))
+		{
+			return false;
+		}
+		else if (buffer[0] == 'L' && buffer[1] == 'P' &&   // LPT1-LPT9
+		         buffer[2] == 'T' && (buffer[3] >= '0' && buffer[3] <= '9'))
+		{
+			return false;
+		}
+	}
+
+	return true;
 }
 
 
@@ -111,11 +154,11 @@ const bool windowsFileSystemFactory::isValidPath(const vmime::utility::file::pat
 void windowsFileSystemFactory::reportError(const vmime::utility::path& path, const int err)
 {
 	vmime::string desc;
-	
+
 	LPVOID lpMsgBuf;
-	if (FormatMessage( 
-			FORMAT_MESSAGE_ALLOCATE_BUFFER | 
-			FORMAT_MESSAGE_FROM_SYSTEM | 
+	if (FormatMessage(
+			FORMAT_MESSAGE_ALLOCATE_BUFFER |
+			FORMAT_MESSAGE_FROM_SYSTEM |
 			FORMAT_MESSAGE_IGNORE_INSERTS,
 			NULL,
 			err,
@@ -127,7 +170,7 @@ void windowsFileSystemFactory::reportError(const vmime::utility::path& path, con
 		desc = (char*)lpMsgBuf;
 		LocalFree( lpMsgBuf );
 	}
-	
+
 	throw vmime::exceptions::filesystem_exception(desc, path);
 }
 
@@ -188,7 +231,7 @@ const bool windowsFile::canRead() const
 	CloseHandle(hFile);
 	return true;
 }
-	
+
 const bool windowsFile::canWrite() const
 {
 	HANDLE hFile = CreateFile(
@@ -217,13 +260,13 @@ const windowsFile::length_type windowsFile::getLength()
 		NULL);
 	if (hFile == INVALID_HANDLE_VALUE)
 		windowsFileSystemFactory::reportError(m_path, GetLastError());
-	
+
 	DWORD dwSize = GetFileSize(hFile, NULL);
 	CloseHandle(hFile);
 
 	return dwSize;
 }
-	
+
 const vmime::utility::path& windowsFile::getFullPath() const
 {
 	return m_path;
@@ -313,7 +356,7 @@ const bool windowsFileIterator::hasMoreElements() const
 {
 	return m_moreElements;
 }
-	
+
 vmime::utility::file* windowsFileIterator::nextElement()
 {
 	vmime::utility::file* pFile = new windowsFile(m_path / vmime::utility::file::path::component(m_findData.cFileName));
@@ -405,7 +448,7 @@ const vmime::utility::stream::size_type windowsFileReaderInputStream::read(value
 	DWORD dwBytesRead;
 	if (!ReadFile(m_hFile, (LPVOID)data, (DWORD)count, &dwBytesRead, NULL))
 		windowsFileSystemFactory::reportError(m_path, GetLastError());
-	return dwBytesRead;  
+	return dwBytesRead;
 }
 
 const vmime::utility::stream::size_type windowsFileReaderInputStream::skip(const size_type count)
