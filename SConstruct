@@ -172,9 +172,9 @@ libvmime_messaging_proto_sources = [
 libvmime_platforms_sources = {
 	'posix':
 	[
-		'platforms/posix/file.cpp', 'platforms/posix/file.hpp',
-		'platforms/posix/handler.cpp', 'platforms/posix/handler.hpp',
-		'platforms/posix/socket.cpp', 'platforms/posix/socket.hpp'
+		'platforms/posix/posixFile.cpp', 'platforms/posix/posixFile.hpp',
+		'platforms/posix/posixHandler.cpp', 'platforms/posix/posixSHandler.hpp',
+		'platforms/posix/posixSocket.cpp', 'platforms/posix/posixSocket.hpp'
 	]
 }
 

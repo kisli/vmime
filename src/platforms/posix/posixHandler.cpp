@@ -17,7 +17,7 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "vmime/platforms/posix/handler.hpp"
+#include "vmime/platforms/posix/posixHandler.hpp"
 
 #include <time.h>
 

@@ -17,7 +17,7 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "vmime/platforms/posix/socket.hpp"
+#include "vmime/platforms/posix/posixSocket.hpp"
 
 #include <unistd.h>
 #include <sys/socket.h>

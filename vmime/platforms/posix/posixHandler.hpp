@@ -25,11 +25,11 @@
 #include "vmime/platformDependant.hpp"
 
 #if VMIME_HAVE_MESSAGING_FEATURES
-	#include "vmime/platforms/posix/socket.hpp"
+	#include "vmime/platforms/posix/posixSocket.hpp"
 #endif
 
 #if VMIME_HAVE_FILESYSTEM_FEATURES
-     #include "vmime/platforms/posix/file.hpp"
+     #include "vmime/platforms/posix/posixFile.hpp"
 #endif
 
 
