@@ -304,13 +304,27 @@ void mailbox::parse(const string& buffer, const string::size_type position,
 	// (email address is mandatory, whereas name is optional).
 	if (address.empty() && !name.empty())
 	{
-		m_email = name;
+		m_email.empty();
+		m_email.reserve(name.size());
 		m_name.removeAllWords();
+
+		for (string::size_type i = 0 ; i < name.size() ; ++i)
+		{
+			if (!isspace(name[i]))
+				m_email += name[i];
+		}
 	}
 	else
 	{
 		decodeAndUnfoldText(name, m_name);
-		m_email = address;
+		m_email.empty();
+		m_email.reserve(address.size());
+
+		for (string::size_type i = 0 ; i < address.size() ; ++i)
+		{
+			if (!isspace(address[i]))
+				m_email += address[i];
+		}
 	}
 
 	if (newPosition)
