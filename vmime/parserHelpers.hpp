@@ -63,7 +63,8 @@ inline const char_t tolower(const char_t c)
 
 inline const bool isascii(const char_t c)
 {
-	return (c <= 127);
+	const unsigned int x = static_cast <unsigned int>(c);
+	return (x <= 127);
 }
 
 
@@ -71,7 +72,8 @@ inline const bool isascii(const char_t c)
 
 inline const bool isprint(const char_t c)
 {
-	return (c >= 0x20 && c <= 0x7E);
+	const unsigned int x = static_cast <unsigned int>(c);
+	return (x >= 0x20 && x <= 0x7E);
 }
 
 
