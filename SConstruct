@@ -519,7 +519,7 @@ config_hpp.write('// Target OS and architecture\n')
 
 if os.name == 'posix':
 	config_hpp.write('#define VMIME_TARGET_ARCH "' + commands.getoutput('uname -m') + '"\n')
-	config_hpp.write('#define VMIME_TARGET_OS "' + commands.getoutput('uname -o') + '"\n')
+	config_hpp.write('#define VMIME_TARGET_OS "' + commands.getoutput('uname -s') + '"\n')
 else:
 	config_hpp.write('#define VMIME_TARGET_ARCH ""  // Unknown\n')
 	config_hpp.write('#define VMIME_TARGET_OS "' + sys.platform + '/' + os.name + '"\n')
