@@ -13,6 +13,9 @@ VERSION 0.6.4cvs
 
  * messaging/POP3*: added notifications.
 
+ * constants.{cpp|hpp}, contentTypeField.{cpp|hpp}: added support for
+   content types and parameters defined in RFC-1892.
+
 2005-03-17  Vincent Richard  <vincent@vincent-richard.net>
 
  * base.{cpp|hpp}: renamed 'MIME_VERSION' to 'SUPPORTED_MIME_VERSION'.

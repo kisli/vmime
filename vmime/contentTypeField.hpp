@@ -43,11 +43,41 @@ protected:
 
 public:
 
+	/** Return the value of the "boundary" parameter.
+	  *
+	  * @return value of the "boundary" parameter
+	  */
 	const string getBoundary() const;
+
+	/** Set the value of the "boundary" parameter.
+	  *
+	  * @param boundary new value for the "boundary" parameter
+	  */
 	void setBoundary(const string& boundary);
 
+	/** Return the value of the "charset" parameter.
+	  *
+	  * @return value of the "charset" parameter
+	  */
 	const charset& getCharset() const;
+
+	/** Set the value of the "charset" parameter.
+	  *
+	  * @param ch new value for the "charset" parameter
+	  */
 	void setCharset(const charset& ch);
+
+	/** Return the value of the "report-type" parameter (RFC-1892).
+	  *
+	  * @return value of the "report-type" parameter
+	  */
+	const string getReportType() const;
+
+	/** Set the value of the "report-type" parameter (RFC-1892).
+	  *
+	  * @param reportType new value for the "report-type" parameter
+	  */
+	void setReportType(const string& reportType);
 };
 
 

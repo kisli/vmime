@@ -45,12 +45,14 @@ namespace vmime
 		extern const string::value_type* const TEXT_HTML;
 		extern const string::value_type* const TEXT_RICHTEXT;
 		extern const string::value_type* const TEXT_ENRICHED;
+		extern const string::value_type* const TEXT_RFC822_HEADERS;  // RFC-1892
 
 		extern const string::value_type* const MULTIPART_MIXED;
 		extern const string::value_type* const MULTIPART_RELATED;
 		extern const string::value_type* const MULTIPART_ALTERNATIVE;
 		extern const string::value_type* const MULTIPART_PARALLEL;
 		extern const string::value_type* const MULTIPART_DIGEST;
+		extern const string::value_type* const MULTIPART_REPORT;  // RFC-1892
 
 		extern const string::value_type* const MESSAGE_RFC822;
 		extern const string::value_type* const MESSAGE_PARTIAL;

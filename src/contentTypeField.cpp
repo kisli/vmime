@@ -62,4 +62,16 @@ void contentTypeField::setCharset(const charset& ch)
 }
 
 
+const string contentTypeField::getReportType() const
+{
+	return (dynamic_cast <const defaultParameter&>(*findParameter("report-type")).getValue());
+}
+
+
+void contentTypeField::setReportType(const string& reportType)
+{
+	dynamic_cast <defaultParameter&>(*getParameter("report-type")).setValue(reportType);
+}
+
+
 } // vmime

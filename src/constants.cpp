@@ -41,12 +41,14 @@ namespace mediaTypes
 	const string::value_type* const TEXT_HTML = "html";
 	const string::value_type* const TEXT_RICHTEXT = "richtext";
 	const string::value_type* const TEXT_ENRICHED = "enriched";
+	const string::value_type* const TEXT_RFC822_HEADERS = "rfc822-headers";  // RFC-1892
 
 	const string::value_type* const MULTIPART_MIXED = "mixed";
 	const string::value_type* const MULTIPART_RELATED = "related";
 	const string::value_type* const MULTIPART_ALTERNATIVE = "alternative";
 	const string::value_type* const MULTIPART_PARALLEL = "parallel";
 	const string::value_type* const MULTIPART_DIGEST = "digest";
+	const string::value_type* const MULTIPART_REPORT = "report";  // RFC-1892
 
 	const string::value_type* const MESSAGE_RFC822 = "rfc822";
 	const string::value_type* const MESSAGE_PARTIAL = "partial";
