@@ -192,5 +192,23 @@ const bool path::isDirectParentOf(const path& p) const
 }
 
 
+void path::appendComponent(const path::component& c)
+{
+	m_list.push_back(c);
+}
+
+
+const path::component& path::getComponentAt(const int pos) const
+{
+	return (m_list[pos]);
+}
+
+
+path::component& path::getComponentAt(const int pos)
+{
+	return (m_list[pos]);
+}
+
+
 } // utility
 } // vmime

@@ -65,6 +65,26 @@ public:
 	const bool operator==(const path& p) const;
 	const bool operator!=(const path& p) const;
 
+	/** Append a component to the path.
+	  *
+	  * @param c component to add
+	  */
+	void appendComponent(const component& c);
+
+	/** Return the component at the specified position.
+	  *
+	  * @param pos position
+	  * @return component at position 'pos'
+	  */
+	const component& getComponentAt(const int pos) const;
+
+	/** Return the component at the specified position.
+	  *
+	  * @param pos position
+	  * @return component at position 'pos'
+	  */
+	component& getComponentAt(const int pos);
+
 	/** Test whether this path is empty (root).
 	  *
 	  * @return true if the path is empty (no components = root)
