@@ -955,6 +955,8 @@ docdir = $(datadir)/doc/$(GENERIC_LIBRARY_NAME)
 		if file[-4:] == '.hpp':
 			x.append(file[len("vmime/"):])   # remove 'vmime/' prefix
 
+	x.append("config.hpp")
+
 	Makefile_am.write(buildMakefileFileList(x, 0))
 	Makefile_am.close()
 
