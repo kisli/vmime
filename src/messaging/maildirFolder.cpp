@@ -984,7 +984,7 @@ const utility::file::path maildirFolder::getMessageFSPath(const int number)
 	utility::file::path curDirPath = maildirUtils::getFolderFSPath
 		(m_store, m_path, maildirUtils::FOLDER_PATH_CUR);
 
-	return (curDirPath / m_messageInfos[number].path);
+	return (curDirPath / m_messageInfos[number - 1].path);
 }
 
 
