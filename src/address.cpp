@@ -178,6 +178,8 @@ address* address::parseNext(const string& buffer, const string::size_type positi
 		try
 		{
 			parsedAddress->parse(buffer, start, pos, NULL);
+			parsedAddress->setParsedBounds(start, pos);
+
 			return (parsedAddress);
 		}
 		catch (std::exception&)

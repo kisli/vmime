@@ -134,9 +134,10 @@ headerField* headerField::parseNext(const string& buffer, const string::size_typ
 				while (pos < end && (buffer[pos] == ' ' || buffer[pos] == '\t'))
 					++pos;
 
-				// Extract the field value
-				string contents;
+				const string::size_type contentsStart = pos;
+				string::size_type contentsEnd = 0;
 
+				// Extract the field value
 				while (pos < end)
 				{
 					c = buffer[pos];
@@ -144,17 +145,16 @@ headerField* headerField::parseNext(const string& buffer, const string::size_typ
 					// Check for end of contents
 					if (c == '\r' && pos + 1 < end && buffer[pos + 1] == '\n')
 					{
+						contentsEnd = pos;
 						pos += 2;
 						break;
 					}
 					else if (c == '\n')
 					{
+						contentsEnd = pos;
 						++pos;
 						break;
 					}
-
-					const string::size_type ctsStart = pos;
-					string::size_type ctsEnd = pos;
 
 					while (pos < end)
 					{
@@ -163,25 +163,18 @@ headerField* headerField::parseNext(const string& buffer, const string::size_typ
 						// Check for end of line
 						if (c == '\r' && pos + 1 < end && buffer[pos + 1] == '\n')
 						{
-							ctsEnd = pos;
+							contentsEnd = pos;
 							pos += 2;
 							break;
 						}
 						else if (c == '\n')
 						{
-							ctsEnd = pos;
+							contentsEnd = pos;
 							++pos;
 							break;
 						}
 
 						++pos;
-					}
-
-					if (ctsEnd != ctsStart)
-					{
-						// Append this line to contents
-						contents.append(buffer.begin() + ctsStart,
-						                buffer.begin() + ctsEnd);
 					}
 
 					// Handle the case of folded lines
@@ -200,7 +193,7 @@ headerField* headerField::parseNext(const string& buffer, const string::size_typ
 				// Return a new field
 				headerField* field = headerFieldFactory::getInstance()->create(name);
 
-				field->parse(contents);  // TODO: fix incorrect parsed bounds...
+				field->parse(buffer, contentsStart, contentsEnd, NULL);
 				field->setParsedBounds(nameStart, pos);
 
 				if (newPosition)
