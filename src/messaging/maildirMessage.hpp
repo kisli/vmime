@@ -77,6 +77,8 @@ protected:
 	maildirFolder* m_folder;
 
 	int m_num;
+	int m_size;
+	int m_flags;
 };
 
 

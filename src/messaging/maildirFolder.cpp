@@ -261,59 +261,113 @@ void maildirFolder::scanFolder()
 	{
 		utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
 
-		utility::auto_ptr <utility::file> newDir = fsf->create
-			(maildirUtils::getFolderFSPath(m_store, m_path, maildirUtils::FOLDER_PATH_NEW));
-		utility::auto_ptr <utility::file> curDir = fsf->create
-			(maildirUtils::getFolderFSPath(m_store, m_path, maildirUtils::FOLDER_PATH_CUR));
+		utility::file::path newDirPath = maildirUtils::getFolderFSPath
+			(m_store, m_path, maildirUtils::FOLDER_PATH_NEW);
+		utility::auto_ptr <utility::file> newDir = fsf->create(newDirPath);
 
-		// Unread messages (new/)
+		utility::file::path curDirPath = maildirUtils::getFolderFSPath
+			(m_store, m_path, maildirUtils::FOLDER_PATH_CUR);
+		utility::auto_ptr <utility::file> curDir = fsf->create(curDirPath);
+
+		// New received messages (new/)
 		utility::auto_ptr <utility::fileIterator> nit = newDir->getFiles();
-		std::vector <utility::path::component> unreadMessageFilenames;
+		std::vector <utility::file::path::component> newMessageFilenames;
 
 		while (nit->hasMoreElements())
 		{
 			utility::auto_ptr <utility::file> file = nit->nextElement();
-			unreadMessageFilenames.push_back(file->fullPath().getLastComponent());
+			newMessageFilenames.push_back(file->fullPath().getLastComponent());
 		}
 
-		// Seen messages (cur/)
+		// Current messages (cur/)
 		utility::auto_ptr <utility::fileIterator> cit = curDir->getFiles();
-		std::vector <utility::path::component> messageFilenames;
+		std::vector <utility::file::path::component> curMessageFilenames;
 
 		while (cit->hasMoreElements())
 		{
 			utility::auto_ptr <utility::file> file = cit->nextElement();
-			messageFilenames.push_back(file->fullPath().getLastComponent());
+			curMessageFilenames.push_back(file->fullPath().getLastComponent());
 		}
 
-		// TODO: update m_messageFilenames
-		// TODO: what to do with files which name has changed? (flag change, message deletion...)
+		// Update/delete existing messages (found in previous scan)
+		for (unsigned int i = 0 ; i < m_messageInfos.size() ; ++i)
+		{
+			messageInfos& msgInfos = m_messageInfos[i];
 
-		m_unreadMessageCount = unreadMessageFilenames.size();
-		m_messageCount = messageFilenames.size();
+			// NOTE: the flags may have changed (eg. moving from 'new' to 'cur'
+			// may imply the 'S' flag) and so the filename. That's why we use
+			// "maildirUtils::messageIdComparator" to compare only the 'unique'
+			// portion of the filename...
+
+			if (msgInfos.type == messageInfos::TYPE_CUR)
+			{
+				const std::vector <utility::file::path::component>::iterator pos =
+					std::find_if(curMessageFilenames.begin(), curMessageFilenames.end(),
+						maildirUtils::messageIdComparator(msgInfos.path));
+
+				// If we cannot find this message in the 'cur' directory,
+				// it means it has been deleted (and expunged).
+				if (pos == curMessageFilenames.end())
+				{
+					msgInfos.type = messageInfos::TYPE_DELETED;
+				}
+				// Otherwise, update its information.
+				else
+				{
+					msgInfos.path = *pos;
+					curMessageFilenames.erase(pos);
+				}
+			}
+		}
+
+		// Add new messages from 'new': we are responsible to move the files
+		// from the 'new' directory to the 'cur' directory, and append them
+		// to our message list.
+		for (std::vector <utility::file::path::component>::const_iterator
+		     it = newMessageFilenames.begin() ; it != newMessageFilenames.end() ; ++it)
+		{
+			// Move messages from 'new' to 'cur'
+			utility::auto_ptr <utility::file> file = fsf->create(newDirPath / *it);
+			file->rename(curDirPath / *it);
+
+			// Append to message list
+			messageInfos msgInfos;
+			msgInfos.path = *it;
+			msgInfos.type = messageInfos::TYPE_CUR;
+
+			m_messageInfos.push_back(msgInfos);
+		}
+
+		// Add new messages from 'cur': the files have already been moved
+		// from 'new' to 'cur'. Just append them to our message list.
+		for (std::vector <utility::file::path::component>::const_iterator
+		     it = curMessageFilenames.begin() ; it != curMessageFilenames.end() ; ++it)
+		{
+			// Append to message list
+			messageInfos msgInfos;
+			msgInfos.path = *it;
+			msgInfos.type = messageInfos::TYPE_CUR;
+
+			m_messageInfos.push_back(msgInfos);
+		}
+
+		// Update message count
+		int unreadMessageCount = 0;
+
+		for (std::vector <messageInfos>::const_iterator
+		     it = m_messageInfos.begin() ; it != m_messageInfos.end() ; ++it)
+		{
+			if ((maildirUtils::extractFlags((*it).path) & message::FLAG_SEEN) == 0)
+				++unreadMessageCount;
+		}
+
+		m_unreadMessageCount = unreadMessageCount;
+		m_messageCount = m_messageInfos.size();
 	}
 	catch (exceptions::filesystem_exception&)
 	{
 		// Should not happen...
 	}
-
-	/*
-	int m_unreadMessageCount;
-	int m_messageCount;
-
-	std::vector <folder::path::component> m_unreadMessageFilenames;
-	std::vector <folder::path::component> m_messageFilenames;
-
-	if (0)
-	{
-		m_messageFilenames.clear();
-
-		for (...)
-		{
-			m_messageFilenames.push_back(...);
-		}
-	}
-	*/
 }
 
 
@@ -436,19 +490,187 @@ void maildirFolder::rename(const folder::path& newPath)
 
 void maildirFolder::deleteMessage(const int num)
 {
-	// TODO
+	if (!m_store)
+		throw exceptions::illegal_state("Store disconnected");
+	else if (!isOpen())
+		throw exceptions::illegal_state("Folder not open");
+	else if (m_mode == MODE_READ_ONLY)
+		throw exceptions::illegal_state("Folder is read-only");
+
+	if (m_messageInfos[num].type == messageInfos::TYPE_DELETED)
+		return;
+
+	m_messageInfos[num].type = messageInfos::TYPE_DELETED;
+
+	// Delete file from file system
+	try
+	{
+		utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
+
+		utility::file::path curDirPath = maildirUtils::getFolderFSPath
+			(m_store, m_path, maildirUtils::FOLDER_PATH_CUR);
+
+		utility::auto_ptr <utility::file> file = fsf->create
+			(curDirPath / m_messageInfos[num].path);
+
+		file->remove();
+	}
+	catch (exceptions::filesystem_exception& e)
+	{
+		// Ignore (not important)
+	}
+
+	// Update local flags
+	for (std::vector <maildirMessage*>::iterator it =
+	     m_messages.begin() ; it != m_messages.end() ; ++it)
+	{
+		if ((*it)->getNumber() == num &&
+			(*it)->m_flags != message::FLAG_UNDEFINED)
+		{
+			(*it)->m_flags |= message::FLAG_DELETED;
+		}
+	}
+
+	// Notify message flags changed
+	std::vector <int> nums;
+	nums.push_back(num);
+
+	events::messageChangedEvent event(this, events::messageChangedEvent::TYPE_FLAGS, nums);
+
+	notifyMessageChanged(event);
 }
 
 
 void maildirFolder::deleteMessages(const int from, const int to)
 {
-	// TODO
+	if (from < 1 || (to < from && to != -1))
+		throw exceptions::invalid_argument();
+
+	if (!m_store)
+		throw exceptions::illegal_state("Store disconnected");
+	else if (!isOpen())
+		throw exceptions::illegal_state("Folder not open");
+	else if (m_mode == MODE_READ_ONLY)
+		throw exceptions::illegal_state("Folder is read-only");
+
+	const int to2 = (to == -1) ? m_messageCount : to;
+	const int count = to - from + 1;
+
+	// Delete files from file system
+	utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
+
+	utility::file::path curDirPath = maildirUtils::getFolderFSPath
+		(m_store, m_path, maildirUtils::FOLDER_PATH_CUR);
+
+	for (int i = from ; i <= to2 ; ++i)
+	{
+		if (m_messageInfos[i].type != messageInfos::TYPE_DELETED)
+		{
+			m_messageInfos[i].type = messageInfos::TYPE_DELETED;
+
+			try
+			{
+				utility::auto_ptr <utility::file> file = fsf->create
+					(curDirPath / m_messageInfos[i].path);
+
+				file->remove();
+			}
+			catch (exceptions::filesystem_exception& e)
+			{
+				// Ignore (not important)
+			}
+		}
+	}
+
+	// Update local flags
+	for (std::vector <maildirMessage*>::iterator it =
+	     m_messages.begin() ; it != m_messages.end() ; ++it)
+	{
+		if ((*it)->getNumber() >= from && (*it)->getNumber() <= to2 &&
+		    (*it)->m_flags != message::FLAG_UNDEFINED)
+		{
+			(*it)->m_flags |= message::FLAG_DELETED;
+		}
+	}
+
+	// Notify message flags changed
+	std::vector <int> nums;
+	nums.resize(count);
+
+	for (int i = from, j = 0 ; i <= to2 ; ++i, ++j)
+		nums[j] = i;
+
+	events::messageChangedEvent event(this, events::messageChangedEvent::TYPE_FLAGS, nums);
+
+	notifyMessageChanged(event);
 }
 
 
 void maildirFolder::deleteMessages(const std::vector <int>& nums)
 {
-	// TODO
+	if (nums.empty())
+		throw exceptions::invalid_argument();
+
+	if (!m_store)
+		throw exceptions::illegal_state("Store disconnected");
+	else if (!isOpen())
+		throw exceptions::illegal_state("Folder not open");
+	else if (m_mode == MODE_READ_ONLY)
+		throw exceptions::illegal_state("Folder is read-only");
+
+	// Sort the list of message numbers
+	std::vector <int> list;
+
+	list.resize(nums.size());
+	std::copy(nums.begin(), nums.end(), list.begin());
+
+	std::sort(list.begin(), list.end());
+
+	// Delete files from file system
+	utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
+
+	utility::file::path curDirPath = maildirUtils::getFolderFSPath
+		(m_store, m_path, maildirUtils::FOLDER_PATH_CUR);
+
+	for (std::vector <int>::const_iterator it =
+	     list.begin() ; it != list.end() ; ++it)
+	{
+		const int num = *it;
+
+		if (m_messageInfos[num].type != messageInfos::TYPE_DELETED)
+		{
+			m_messageInfos[num].type = messageInfos::TYPE_DELETED;
+
+			try
+			{
+				utility::auto_ptr <utility::file> file = fsf->create
+					(curDirPath / m_messageInfos[num].path);
+
+				file->remove();
+			}
+			catch (exceptions::filesystem_exception& e)
+			{
+				// Ignore (not important)
+			}
+		}
+	}
+
+
+	// Update local flags
+	for (std::vector <maildirMessage*>::iterator it =
+	     m_messages.begin() ; it != m_messages.end() ; ++it)
+	{
+		if (std::binary_search(list.begin(), list.end(), (*it)->getNumber()))
+		{
+			if ((*it)->m_flags != message::FLAG_UNDEFINED)
+				(*it)->m_flags |= message::FLAG_DELETED;
+		}
+	}
+
+	// Notify message flags changed
+	events::messageChangedEvent event(this, events::messageChangedEvent::TYPE_FLAGS, list);
+
+	notifyMessageChanged(event);
 }
 
 

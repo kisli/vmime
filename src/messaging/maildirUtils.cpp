@@ -85,13 +85,23 @@ const bool maildirUtils::isSubfolderDirectory(const utility::file& file)
 }
 
 
-/*
+const utility::file::path::component maildirUtils::extractId
+	(const utility::file::path::component& filename)
+{
+	string::size_type sep = filename.getBuffer().rfind(':');
+	if (sep == string::npos) return (filename);
+
+	return (utility::path::component
+		(string(filename.getBuffer().begin(), filename.getBuffer().begin() + sep)));
+}
+
+
 const int maildirUtils::extractFlags(const utility::file::path::component& comp)
 {
-	string::size_type sep = comp.buffer().rfind(':');
+	string::size_type sep = comp.getBuffer().rfind(':');
 	if (sep == string::npos) return (0);
 
-	const string flagsString(comp.buffer().begin() + sep + 1, comp.buffer().end());
+	const string flagsString(comp.getBuffer().begin() + sep + 1, comp.getBuffer().end());
 	const string::size_type count = flagsString.length();
 
 	int flags = 0;
@@ -102,6 +112,8 @@ const int maildirUtils::extractFlags(const utility::file::path::component& comp)
 		{
 		case 'S': case 's': flags |= message::FLAG_SEEN; break;
 		case 'R': case 'r': flags |= message::FLAG_REPLIED; break;
+
+		// TODO: more flags
 		}
 	}
 
@@ -109,11 +121,31 @@ const int maildirUtils::extractFlags(const utility::file::path::component& comp)
 }
 
 
+/*
 const utility::file::component maildirUtils::changeFlags
 	(const utility::file::component& comp, const int flags)
 {
 }
 */
+
+
+
+//
+// messageIdComparator
+//
+
+maildirUtils::messageIdComparator::messageIdComparator
+	(const utility::file::path::component& comp)
+	: m_comp(maildirUtils::extractId(comp))
+{
+}
+
+
+const bool maildirUtils::messageIdComparator::operator()
+	(const utility::file::path::component& other) const
+{
+	return (m_comp == maildirUtils::extractId(other));
+}
 
 
 } // messaging

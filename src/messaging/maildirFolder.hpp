@@ -27,6 +27,8 @@
 #include "../types.hpp"
 #include "folder.hpp"
 
+#include "../utility/file.hpp"
+
 
 namespace vmime {
 namespace messaging {
@@ -134,9 +136,22 @@ private:
 	int m_unreadMessageCount;
 	int m_messageCount;
 
-	std::vector <folder::path::component> m_unreadMessageFilenames;
-	std::vector <folder::path::component> m_messageFilenames;
+	// Store information about scanned messages
+	struct messageInfos
+	{
+		enum Type
+		{
+			TYPE_CUR,
+			TYPE_DELETED
+		};
 
+		utility::file::path::component path;    // filename
+		Type type;                              // current location
+	};
+
+	std::vector <messageInfos> m_messageInfos;
+
+	// Instanciated message objects
 	std::vector <maildirMessage*> m_messages;
 };
 
