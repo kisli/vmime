@@ -96,7 +96,7 @@ void relay::parse(const string& buffer, const string::size_type position,
 		{
 			Parts newPart = Part_None;
 
-			if (cont = (iss >> word))
+			if (cont = ((iss >> word) != 0))
 			{
 				// A little hack for handling comments
 				if (inComment)
