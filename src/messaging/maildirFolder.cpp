@@ -809,52 +809,8 @@ void maildirFolder::addMessage(utility::inputStream& is, const int size,
 		// Don't throw now, it will fail later...
 	}
 
-	if (progress)
-		progress->start(size);
-
-	try
-	{
-		// Write the message into 'tmp'
-		utility::auto_ptr <utility::file> file = fsf->create(tmpDirPath / filename);
-
-		file->createFile();
-
-		utility::fileWriter* fw = file->getFileWriter();
-		utility::outputStream* os = fw->getOutputStream();
-
-		utility::stream::value_type buffer[65536];
-		utility::stream::size_type total = 0;
-
-		while (!is.eof())
-		{
-			const utility::stream::size_type read = is.read(buffer, sizeof(buffer));
-
-			if (read != 0)
-			{
-				os->write(buffer, read);
-				total += read;
-			}
-
-			if (progress)
-				progress->progress(total, size);
-		}
-
-		delete (os);
-		delete (fw);
-
-		// And move it to 'cur'
-		file->rename(curDirPath / filename);
-
-		if (progress)
-			progress->stop(total);
-	}
-	catch (exception& e)
-	{
-		if (progress)
-			progress->stop(size);
-
-		throw exceptions::command_error("ADD", "", "", e);
-	}
+	// Actually add the message
+	copyMessageImpl(tmpDirPath, curDirPath, filename, is, size, progress);
 
 	// Append the message to the cache list
 	messageInfos msgInfos;
@@ -884,14 +840,98 @@ void maildirFolder::addMessage(utility::inputStream& is, const int size,
 			(*it)->m_messageCount = m_messageCount;
 			(*it)->m_unreadMessageCount = m_unreadMessageCount;
 
+			(*it)->m_messageInfos.resize(m_messageInfos.size());
+			std::copy(m_messageInfos.begin(), m_messageInfos.end(), (*it)->m_messageInfos.begin());
+
 			events::messageCountEvent event(*it, events::messageCountEvent::TYPE_ADDED, nums);
 
 			(*it)->notifyMessageCount(event);
-
-			(*it)->m_messageInfos.resize(m_messageInfos.size());
-			std::copy(m_messageInfos.begin(), m_messageInfos.end(), (*it)->m_messageInfos.begin());
 		}
 	}
+}
+
+
+void maildirFolder::copyMessageImpl(const utility::file::path& tmpDirPath,
+	const utility::file::path& curDirPath, const utility::file::path::component& filename,
+	utility::inputStream& is, const utility::stream::size_type size, progressionListener* progress)
+{
+	utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
+
+	utility::auto_ptr <utility::file> file = fsf->create(tmpDirPath / filename);
+
+	if (progress)
+		progress->start(size);
+
+	// First, write the message into 'tmp'...
+	try
+	{
+		file->createFile();
+
+		utility::auto_ptr <utility::fileWriter> fw = file->getFileWriter();
+		utility::auto_ptr <utility::outputStream> os = fw->getOutputStream();
+
+		utility::stream::value_type buffer[65536];
+		utility::stream::size_type total = 0;
+
+		while (!is.eof())
+		{
+			const utility::stream::size_type read = is.read(buffer, sizeof(buffer));
+
+			if (read != 0)
+			{
+				os->write(buffer, read);
+				total += read;
+			}
+
+			if (progress)
+				progress->progress(total, size);
+		}
+	}
+	catch (exception& e)
+	{
+		if (progress)
+			progress->stop(size);
+
+		// Delete temporary file
+		try
+		{
+			utility::auto_ptr <utility::file> file = fsf->create(tmpDirPath / filename);
+			file->remove();
+		}
+		catch (exceptions::filesystem_exception&)
+		{
+			// Ignore
+		}
+
+		throw exceptions::command_error("ADD", "", "", e);
+	}
+
+	// ...then, move it to 'cur'
+	try
+	{
+		file->rename(curDirPath / filename);
+	}
+	catch (exception& e)
+	{
+		if (progress)
+			progress->stop(size);
+
+		// Delete temporary file
+		try
+		{
+			utility::auto_ptr <utility::file> file = fsf->create(tmpDirPath / filename);
+			file->remove();
+		}
+		catch (exceptions::filesystem_exception&)
+		{
+			// Ignore
+		}
+
+		throw exceptions::command_error("ADD", "", "", e);
+	}
+
+	if (progress)
+		progress->stop(size);
 }
 
 
@@ -915,7 +955,18 @@ void maildirFolder::copyMessages(const folder::path& dest, const int from, const
 	else if (from < 1 || (to < from && to != -1))
 		throw exceptions::invalid_argument();
 
-	// TODO
+	// Construct the list of message numbers
+	const int to2 = (to == -1) ? m_messageCount : to;
+	const int count = to - from + 1;
+
+	std::vector <int> nums;
+	nums.resize(count);
+
+	for (int i = from, j = 0 ; i <= to2 ; ++i, ++j)
+		nums[j] = i;
+
+	// Copy messages
+	copyMessagesImpl(dest, nums);
 }
 
 
@@ -926,7 +977,90 @@ void maildirFolder::copyMessages(const folder::path& dest, const std::vector <in
 	else if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
 
-	// TODO
+	// Copy messages
+	copyMessagesImpl(dest, nums);
+}
+
+
+void maildirFolder::copyMessagesImpl(const folder::path& dest, const std::vector <int>& nums)
+{
+	utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
+
+	utility::file::path curDirPath = maildirUtils::getFolderFSPath
+		(m_store, m_path, maildirUtils::FOLDER_PATH_CUR);
+
+	utility::file::path destCurDirPath = maildirUtils::getFolderFSPath
+		(m_store, dest, maildirUtils::FOLDER_PATH_CUR);
+	utility::file::path destTmpDirPath = maildirUtils::getFolderFSPath
+		(m_store, dest, maildirUtils::FOLDER_PATH_TMP);
+
+	// Create destination directories
+	try
+	{
+		utility::auto_ptr <utility::file> destTmpDir = fsf->create(destTmpDirPath);
+		destTmpDir->createDirectory(true);
+	}
+	catch (exceptions::filesystem_exception&)
+	{
+		// Don't throw now, it will fail later...
+	}
+
+	try
+	{
+		utility::auto_ptr <utility::file> destCurDir = fsf->create(destCurDirPath);
+		destCurDir->createDirectory(true);
+	}
+	catch (exceptions::filesystem_exception&)
+	{
+		// Don't throw now, it will fail later...
+	}
+
+	// Copy messages
+	try
+	{
+		for (std::vector <int>::const_iterator it =
+		     nums.begin() ; it != nums.end() ; ++it)
+		{
+			const int num = *it;
+			const messageInfos& msg = m_messageInfos[num - 1];
+			const int flags = maildirUtils::extractFlags(msg.path);
+
+			const utility::file::path::component filename =
+				maildirUtils::buildFilename(maildirUtils::generateId(), flags);
+
+			utility::auto_ptr <utility::file> file = fsf->create(curDirPath / msg.path);
+			utility::auto_ptr <utility::fileReader> fr = file->getFileReader();
+			utility::auto_ptr <utility::inputStream> is = fr->getInputStream();
+
+			copyMessageImpl(destTmpDirPath, destCurDirPath,
+				filename, *is, file->getLength(), NULL);
+		}
+	}
+	catch (exception& e)
+	{
+		notifyMessagesCopied(dest);
+		throw exceptions::command_error("COPY", "", "", e);
+	}
+
+	notifyMessagesCopied(dest);
+}
+
+
+void maildirFolder::notifyMessagesCopied(const folder::path& dest)
+{
+	for (std::list <maildirFolder*>::iterator it = m_store->m_folders.begin() ;
+	     it != m_store->m_folders.end() ; ++it)
+	{
+		if ((*it) != this && (*it)->getFullPath() == dest)
+		{
+			// We only need to update the first folder we found as calling
+			// status() will notify all the folders with the same path.
+			int count, unseen;
+			(*it)->status(count, unseen);
+
+			return;
+		}
+	}
 }
 
 
@@ -961,12 +1095,12 @@ void maildirFolder::status(int& count, int& unseen)
 				(*it)->m_messageCount = m_messageCount;
 				(*it)->m_unreadMessageCount = m_unreadMessageCount;
 
+				(*it)->m_messageInfos.resize(m_messageInfos.size());
+				std::copy(m_messageInfos.begin(), m_messageInfos.end(), (*it)->m_messageInfos.begin());
+
 				events::messageCountEvent event(*it, events::messageCountEvent::TYPE_ADDED, nums);
 
 				(*it)->notifyMessageCount(event);
-
-				(*it)->m_messageInfos.resize(m_messageInfos.size());
-				std::copy(m_messageInfos.begin(), m_messageInfos.end(), (*it)->m_messageInfos.begin());
 			}
 		}
 	}
@@ -1046,12 +1180,12 @@ void maildirFolder::expunge()
 			(*it)->m_messageCount = m_messageCount;
 			(*it)->m_unreadMessageCount = m_unreadMessageCount;
 
+			(*it)->m_messageInfos.resize(m_messageInfos.size());
+			std::copy(m_messageInfos.begin(), m_messageInfos.end(), (*it)->m_messageInfos.begin());
+
 			events::messageCountEvent event(*it, events::messageCountEvent::TYPE_REMOVED, nums);
 
 			(*it)->notifyMessageCount(event);
-
-			(*it)->m_messageInfos.resize(m_messageInfos.size());
-			std::copy(m_messageInfos.begin(), m_messageInfos.end(), (*it)->m_messageInfos.begin());
 		}
 	}
 }

@@ -129,6 +129,11 @@ private:
 	void deleteMessagesImpl(const std::vector <int>& nums);
 	void setMessageFlagsImpl(const std::vector <int>& nums, const int flags, const int mode);
 
+	void copyMessagesImpl(const folder::path& dest, const std::vector <int>& nums);
+	void copyMessageImpl(const utility::file::path& tmpDirPath, const utility::file::path& curDirPath, const utility::file::path::component& filename, utility::inputStream& is, const utility::stream::size_type size, progressionListener* progress);
+
+	void notifyMessagesCopied(const folder::path& dest);
+
 
 	maildirStore* m_store;
 
