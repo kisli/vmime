@@ -198,6 +198,9 @@ void maildirFolder::create(const int type)
 	{
 		utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
 
+		if (!fsf->isValidPath(maildirUtils::getFolderFSPath(m_store, m_path, maildirUtils::FOLDER_PATH_ROOT)))
+			throw exceptions::invalid_folder_name();
+
 		utility::auto_ptr <utility::file> rootDir = fsf->create
 			(maildirUtils::getFolderFSPath(m_store, m_path, maildirUtils::FOLDER_PATH_ROOT));
 

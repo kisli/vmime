@@ -534,7 +534,10 @@ class invalid_folder_name : public messaging_exception
 {
 public:
 
-	invalid_folder_name(const string& error) : messaging_exception("Invalid folder name: " + error + ".") {}
+	invalid_folder_name(const string& error = "")
+		: messaging_exception(error.empty()
+			? "Invalid folder name: " + error + "."
+			: "Invalid folder name.") {}
 	~invalid_folder_name() throw() {}
 };
 

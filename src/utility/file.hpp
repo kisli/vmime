@@ -204,21 +204,37 @@ public:
 	  * @param path full path (absolute) of the file
 	  * @return new file object for the path
 	  */
-	virtual file* create(const file::path& path) = 0;
+	virtual file* create(const file::path& path) const = 0;
 
 	/** Parse a path contained in a string.
 	  *
 	  * @param str string containing a path in a system-dependant representation
 	  * @return path object (abstract representation)
 	  */
-	virtual file::path stringToPath(const string& str) = 0;
+	virtual const file::path stringToPath(const string& str) const = 0;
 
 	/** Return the system-dependant string representation for the specified path.
 	  *
 	  * @param path abstract representation of the path
 	  * @return string representation of the path
 	  */
-	virtual string pathToString(const file::path& path) = 0;
+	virtual const string pathToString(const file::path& path) const = 0;
+
+	/** Test whether the specified path component is syntactically
+	  * valid (ie: does not contain any 'special' character).
+	  *
+	  * @param comp path component to test
+	  * @return true if the component is valid, false otherwise
+	  */
+	virtual const bool isValidPathComponent(const file::path::component& comp) const = 0;
+
+	/** Test whether the specified path is syntactically valid
+	  * (ie: components do not contain any 'special' character).
+	  *
+	  * @param path path to test
+	  * @return true if the path is valid, false otherwise
+	  */
+	virtual const bool isValidPath(const file::path& path) const = 0;
 };
 
 
