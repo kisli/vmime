@@ -159,7 +159,7 @@ namespace vmime
 
 
 	// Mime version
-	extern const string MIME_VERSION;
+	extern const string SUPPORTED_MIME_VERSION;
 
 	/** Utility classes. */
 	namespace utility { }

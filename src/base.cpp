@@ -93,7 +93,7 @@ const string CRLF = "\r\n";
 
 /** The current MIME version supported by VMime.
   */
-const string MIME_VERSION = "1.0";
+const string SUPPORTED_MIME_VERSION = "1.0";
 
 
 // Line length limits

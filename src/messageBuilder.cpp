@@ -69,7 +69,7 @@ message* messageBuilder::construct() const
 	msg->getHeader()->Date().setValue(datetime::now());
 
 	// Add a "Mime-Version" header field
-	msg->getHeader()->MimeVersion().setValue(string(MIME_VERSION));
+	msg->getHeader()->MimeVersion().setValue(string(SUPPORTED_MIME_VERSION));
 
 	// If there is one or more attachments (or other parts that are
 	// not "text/...") and if there is more than one parts for the
