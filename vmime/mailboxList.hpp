@@ -32,7 +32,7 @@ namespace vmime
 /** A list of mailboxes (basic type).
   */
 
-#if (defined(__GNUC__) && (__GNUC__ >= 3) && (__GNUC_MINOR__ <= 2))
+#if (defined(__GNUC__) && (__GNUC__ >= 3) && (__GNUC_MINOR__ <= 2)) || defined(VMIME_NO_PROTECTED_INHERITANCE)
 class mailboxList : public addressList  // BUG with gcc <= 3.2
 #else
 class mailboxList : protected addressList
