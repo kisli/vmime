@@ -8,6 +8,9 @@ VERSION 0.6.4cvs
    in the same packet as the request. This caused problems with some
    servers (thanks to Donald Dade).
 
+ * SConstruct: modified 'msvc' target to generate automatically the
+   config file 'config.hpp.msvc'.
+
 2005-03-27  Stefan Uhrig <stefanuhrig@gmx.net>
 
  * Added Windows platform handlers.
