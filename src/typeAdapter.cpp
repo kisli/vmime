@@ -25,6 +25,8 @@ namespace vmime
 {
 
 
+#if !defined(__GNUC__) || ((__GNUC__ >= 3) && (__GNUC_MINOR__ >= 3))
+
 template <>
 void typeAdapter <string>::parse(const string& buffer, const string::size_type position,
 	           const string::size_type end, string::size_type* newPosition)
@@ -34,6 +36,8 @@ void typeAdapter <string>::parse(const string& buffer, const string::size_type p
 	if (newPosition)
 		*newPosition = end;
 }
+
+#endif // !defined(__GNUC__) || ((__GNUC__ >= 3) && (__GNUC_MINOR__ >= 3))
 
 
 } // vmime

@@ -121,9 +121,30 @@ private:
 };
 
 
-template <>
-void typeAdapter <string>::parse(const string& buffer, const string::size_type position,
-	           const string::size_type end, string::size_type* newPosition);
+#if defined(__GNUC__) && (__GNUC__ >= 3) && (__GNUC_MINOR__ <= 2)
+
+	// Because of a bug with g++ <= 3.2, we have to put the implementation
+	// of the function inline.
+
+	template <>
+	inline void typeAdapter <string>::parse
+		(const string& buffer, const string::size_type position,
+		 const string::size_type end, string::size_type* newPosition)
+	{
+		m_value = string(buffer.begin() + position, buffer.begin() + end);
+
+		if (newPosition)
+			*newPosition = end;
+	}
+
+#else
+
+	template <>
+	void typeAdapter <string>::parse
+		(const string& buffer, const string::size_type position,
+		 const string::size_type end, string::size_type* newPosition);
+
+#endif // defined(__GNUC__) && (__GNUC__ >= 3) && (__GNUC_MINOR__ <= 2)
 
 
 } // vmime
