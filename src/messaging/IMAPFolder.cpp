@@ -1154,6 +1154,19 @@ void IMAPFolder::addMessage(utility::inputStream& is, const int size, const int 
 
 	m_messageCount++;
 	notifyMessageCount(event);
+
+	// Notify folders with the same path
+	for (std::list <IMAPFolder*>::iterator it = m_store->m_folders.begin() ;
+	     it != m_store->m_folders.end() ; ++it)
+	{
+		if ((*it) != this && (*it)->getFullPath() == m_path)
+		{
+			events::messageCountEvent event(*it, events::messageCountEvent::TYPE_ADDED, nums);
+
+			(*it)->m_messageCount++;
+			(*it)->notifyMessageCount(event);
+		}
+	}
 }
 
 
