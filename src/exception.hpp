@@ -415,6 +415,22 @@ public:
 };
 
 
+/** Illegal operation: cannot run this operation on the object.
+  */
+
+class illegal_operation : public messaging_exception
+{
+public:
+
+	illegal_operation(const string& msg = "")
+		: messaging_exception(msg.empty()
+			? "Illegal operation."
+			: "Illegal operation: " + msg + "."
+		  ) {}
+	~illegal_operation() throw() {}
+};
+
+
 /** Command error: operation failed (this is specific to the underlying protocol).
   */
 

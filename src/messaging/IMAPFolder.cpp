@@ -1228,6 +1228,8 @@ void IMAPFolder::rename(const folder::path& newPath)
 		throw exceptions::illegal_state("Store disconnected");
 	else if (isOpen())
 		throw exceptions::illegal_state("Folder open");
+	else if (m_path.getSize() == 1 && m_name.getBuffer() == "INBOX")
+		throw exceptions::illegal_operation("Cannot rename 'INBOX' folder");
 
 	// Build the request text
 	std::ostringstream command;
