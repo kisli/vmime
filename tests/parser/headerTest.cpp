@@ -73,7 +73,7 @@ namespace
 
 			std::vector <vmime::headerField*> res = hdr.getFieldList();
 
-			assert_eq("Count", (unsigned int) 1, res.size());
+			assert_eq("Count", static_cast <unsigned int>(1), res.size());
 			assert_eq("First value", "A: a", headerTest::getFieldValue(*res[0]));
 		}
 
@@ -87,7 +87,7 @@ namespace
 
 			std::vector <vmime::headerField*> res = hdr.getFieldList();
 
-			assert_eq("Count", (unsigned int) 2, res.size());
+			assert_eq("Count", static_cast <unsigned int>(2), res.size());
 			assert_eq("First value", "A: a", headerTest::getFieldValue(*res[0]));
 			assert_eq("Second value", "B: b", headerTest::getFieldValue(*res[1]));
 		}
@@ -103,7 +103,7 @@ namespace
 
 			std::vector <vmime::headerField*> res = hdr.getFieldList();
 
-			assert_eq("Count", (unsigned int) 3, res.size());
+			assert_eq("Count", static_cast <unsigned int>(3), res.size());
 			assert_eq("First value", "A: a", headerTest::getFieldValue(*res[0]));
 			assert_eq("Second value", "B: b", headerTest::getFieldValue(*res[1]));
 			assert_eq("Third value", "C: c", headerTest::getFieldValue(*res[2]));
@@ -119,7 +119,7 @@ namespace
 
 			std::vector <vmime::headerField*> res = hdr.getFieldList();
 
-			assert_eq("Count", (unsigned int) 3, res.size());
+			assert_eq("Count", static_cast <unsigned int>(3), res.size());
 			assert_eq("First value", "A: a", headerTest::getFieldValue(*res[0]));
 			assert_eq("Second value", "B: b", headerTest::getFieldValue(*res[1]));
 			assert_eq("Third value", "C: c", headerTest::getFieldValue(*res[2]));
@@ -136,7 +136,7 @@ namespace
 
 			std::vector <vmime::headerField*> res = hdr.getFieldList();
 
-			assert_eq("Count", (unsigned int) 3, res.size());
+			assert_eq("Count", static_cast <unsigned int>(3), res.size());
 			assert_eq("First value", "A: a", headerTest::getFieldValue(*res[0]));
 			assert_eq("Second value", "B: b", headerTest::getFieldValue(*res[1]));
 			assert_eq("Third value", "C: c", headerTest::getFieldValue(*res[2]));
@@ -152,7 +152,7 @@ namespace
 
 			std::vector <vmime::headerField*> res = hdr.getFieldList();
 
-			assert_eq("Count", (unsigned int) 3, res.size());
+			assert_eq("Count", static_cast <unsigned int>(3), res.size());
 			assert_eq("First value", "A: a", headerTest::getFieldValue(*res[0]));
 			assert_eq("Second value", "B: b", headerTest::getFieldValue(*res[1]));
 			assert_eq("Third value", "C: c", headerTest::getFieldValue(*res[2]));
@@ -170,13 +170,13 @@ namespace
 
 			std::vector <vmime::headerField*> res1 = hdr1.getFieldList();
 
-			assert_eq("Count", (unsigned int) 2, res1.size());
+			assert_eq("Count", static_cast <unsigned int>(2), res1.size());
 			assert_eq("First value", "A: a", headerTest::getFieldValue(*res1[0]));
 			assert_eq("Second value", "C: c", headerTest::getFieldValue(*res1[1]));
 
 			std::vector <vmime::headerField*> res2 = hdr2.getFieldList();
 
-			assert_eq("Count", (unsigned int) 2, res2.size());
+			assert_eq("Count", static_cast <unsigned int>(2), res2.size());
 			assert_eq("First value", "A: a", headerTest::getFieldValue(*res2[0]));
 			assert_eq("Second value", "C: c", headerTest::getFieldValue(*res2[1]));
 		}
@@ -191,10 +191,10 @@ namespace
 			hdr2.removeField(0);
 
 			std::vector <vmime::headerField*> res1 = hdr1.getFieldList();
-			assert_eq("Count", (unsigned int) 0, res1.size());
+			assert_eq("Count", static_cast <unsigned int>(0), res1.size());
 
 			std::vector <vmime::headerField*> res2 = hdr2.getFieldList();
-			assert_eq("Count", (unsigned int) 0, res2.size());
+			assert_eq("Count", static_cast <unsigned int>(0), res2.size());
 		}
 
 		// removeAllFields
@@ -208,10 +208,10 @@ namespace
 			hdr2.removeAllFields();
 
 			std::vector <vmime::headerField*> res1 = hdr1.getFieldList();
-			assert_eq("Count", (unsigned int) 0, res1.size());
+			assert_eq("Count", static_cast <unsigned int>(0), res1.size());
 
 			std::vector <vmime::headerField*> res2 = hdr2.getFieldList();
-			assert_eq("Count", (unsigned int) 0, res2.size());
+			assert_eq("Count", static_cast <unsigned int>(0), res2.size());
 		}
 
 		// getFieldCount
@@ -259,7 +259,7 @@ namespace
 
 			std::vector <vmime::headerField*> res = hdr.getFieldList();
 
-			assert_eq("Count", (unsigned int) 4, res.size());
+			assert_eq("Count", static_cast <unsigned int>(4), res.size());
 			assert_eq("First value", "A: a", headerTest::getFieldValue(*res[0]));
 			assert_eq("Second value", "B: b1", headerTest::getFieldValue(*res[1]));
 			assert_eq("Third value", "C: c", headerTest::getFieldValue(*res[2]));
@@ -273,7 +273,7 @@ namespace
 
 			std::vector <vmime::headerField*> res = hdr.getFieldList();
 
-			assert_eq("Count", (unsigned int) 0, res.size());
+			assert_eq("Count", static_cast <unsigned int>(0), res.size());
 		}
 
 		// find function tests
@@ -295,7 +295,7 @@ namespace
 
 			std::vector <vmime::headerField*> res = hdr.findAllFields("B");
 
-			assert_eq("Count", (unsigned int) 0, res.size());
+			assert_eq("Count", static_cast <unsigned int>(0), res.size());
 		}
 
 		void testFindAllFields2()
@@ -305,7 +305,7 @@ namespace
 
 			std::vector <vmime::headerField*> res = hdr.findAllFields("B");
 
-			assert_eq("Count", (unsigned int) 2, res.size());
+			assert_eq("Count", static_cast <unsigned int>(2), res.size());
 			assert_eq("First value", "B: b1", headerTest::getFieldValue(*res[0]));
 			assert_eq("Second value", "B: b2", headerTest::getFieldValue(*res[1]));
 		}
@@ -317,7 +317,7 @@ namespace
 
 			std::vector <vmime::headerField*> res = hdr.findAllFields("C");
 
-			assert_eq("Count", (unsigned int) 3, res.size());
+			assert_eq("Count", static_cast <unsigned int>(3), res.size());
 			assert_eq("First value", "C: c1", headerTest::getFieldValue(*res[0]));
 			assert_eq("Second value", "C: c3", headerTest::getFieldValue(*res[1]));
 			assert_eq("Second value", "C: c2", headerTest::getFieldValue(*res[2]));
