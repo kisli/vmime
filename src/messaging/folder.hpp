@@ -308,7 +308,7 @@ public:
 	  */
 	virtual store* getStore() = 0;
 
-	/** Possible fetchable objects.
+	/** Fetchable objects.
 	  */
 	enum FetchOptions
 	{

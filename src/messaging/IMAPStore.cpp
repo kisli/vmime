@@ -125,7 +125,7 @@ folder* IMAPStore::getFolder(const folder::path& path)
 }
 
 
-const bool IMAPStore::isValidFolderName(const folder::path::component& /* name */)
+const bool IMAPStore::isValidFolderName(const folder::path::component& /* name */) const
 {
 	return true;
 }
@@ -216,6 +216,19 @@ void IMAPStore::unregisterFolder(IMAPFolder* folder)
 {
 	std::list <IMAPFolder*>::iterator it = std::find(m_folders.begin(), m_folders.end(), folder);
 	if (it != m_folders.end()) m_folders.erase(it);
+}
+
+
+const int IMAPStore::getCapabilities() const
+{
+	return (CAPABILITY_CREATE_FOLDER |
+	        CAPABILITY_RENAME_FOLDER |
+	        CAPABILITY_ADD_MESSAGE |
+	        CAPABILITY_COPY_MESSAGE |
+		   CAPABILITY_DELETE_MESSAGE |
+	        CAPABILITY_PARTIAL_FETCH |
+	        CAPABILITY_MESSAGE_FLAGS |
+		   CAPABILITY_EXTRACT_PART);
 }
 
 

@@ -360,7 +360,7 @@ opts.AddOptions(
 		    + 'This option has no effect if "with_messaging" is not activated.\n'
 		    + 'Separate protocols with spaces; string must be quoted with ".\n'
 		    + 'Available protocols: pop3, smtp, imap, maildir.',
-		'"pop3 smtp imap"'
+		'"pop3 smtp imap maildir"'
 	),
 	(
 		'with_platforms',

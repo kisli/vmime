@@ -6,6 +6,9 @@ VERSION 0.6.0-cvs
 
  * Finished 'maildir' implementation. This is EXPERIMENTAL!
 
+ * Added a getCapabilities() function on 'vmime::messaging::store' to
+   quickly check which features are available.
+
 2004-12-19  Vincent Richard  <vincent@vincent-richard.net>
 
  * Added chaining in exception handling. vmime::exception::other() returns

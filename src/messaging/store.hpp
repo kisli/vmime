@@ -50,7 +50,7 @@ public:
 	virtual folder* getDefaultFolder() = 0;
 
 	/** Return the root folder. This is protocol dependant
-	  * and usually is the user's mail drop root folder
+	  * and usually is the user's mail drop root folder.
 	  *
 	  * @return root folder
 	  */
@@ -68,7 +68,27 @@ public:
 	  *
 	  * @return true if the specified folder name is valid, false otherwise
 	  */
-	virtual const bool isValidFolderName(const folder::path::component& name) = 0;
+	virtual const bool isValidFolderName(const folder::path::component& name) const = 0;
+
+	/** Store capabilities. */
+	enum Capabilities
+	{
+		CAPABILITY_CREATE_FOLDER = (1 << 0),    /**< Can create folders. */
+		CAPABILITY_RENAME_FOLDER = (1 << 1),    /**< Can rename folders. */
+		CAPABILITY_ADD_MESSAGE = (1 << 2),      /**< Can append message to folders. */
+		CAPABILITY_COPY_MESSAGE = (1 << 3),     /**< Can copy messages from a folder to another one. */
+		CAPABILITY_DELETE_MESSAGE = (1 << 4),   /**< Can delete messages. */
+		CAPABILITY_PARTIAL_FETCH = (1 << 5),    /**< Is partial fetch supported? */
+		CAPABILITY_MESSAGE_FLAGS = (1 << 6),    /**< Can set flags on messages. */
+		CAPABILITY_EXTRACT_PART = (1 << 7)      /**< Can extract a specific part of the message. */
+	};
+
+	/** Return the features supported by this service. This is
+	  * a combination of store::CAPABILITY_xxx flags.
+	  *
+	  * @return features supported by this service
+	  */
+	virtual const int getCapabilities() const = 0;
 
 
 	const Type getType() const { return (TYPE_STORE); }

@@ -56,7 +56,7 @@ public:
 	folder* getRootFolder();
 	folder* getFolder(const folder::path& path);
 
-	const bool isValidFolderName(const folder::path::component& name);
+	const bool isValidFolderName(const folder::path::component& name) const;
 
 	static const serviceInfos& getInfosInstance();
 	const serviceInfos& getInfos() const;
@@ -68,6 +68,8 @@ public:
 	void noop();
 
 	const utility::path& getFileSystemPath() const;
+
+	const int getCapabilities() const;
 
 private:
 

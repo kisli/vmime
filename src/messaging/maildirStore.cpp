@@ -75,7 +75,7 @@ folder* maildirStore::getFolder(const folder::path& path)
 }
 
 
-const bool maildirStore::isValidFolderName(const folder::path::component& name)
+const bool maildirStore::isValidFolderName(const folder::path::component& name) const
 {
 	if (!platformDependant::getHandler()->getFileSystemFactory()->isValidPathComponent(name))
 		return false;
@@ -151,6 +151,19 @@ void maildirStore::unregisterFolder(maildirFolder* folder)
 const utility::path& maildirStore::getFileSystemPath() const
 {
 	return (m_fsPath);
+}
+
+
+const int maildirStore::getCapabilities() const
+{
+	return (CAPABILITY_CREATE_FOLDER |
+	        CAPABILITY_RENAME_FOLDER |
+	        CAPABILITY_ADD_MESSAGE |
+	        CAPABILITY_COPY_MESSAGE |
+		   CAPABILITY_DELETE_MESSAGE |
+	        CAPABILITY_PARTIAL_FETCH |
+	        CAPABILITY_MESSAGE_FLAGS |
+		   CAPABILITY_EXTRACT_PART);
 }
 
 

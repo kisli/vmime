@@ -82,7 +82,7 @@ folder* POP3Store::getFolder(const folder::path& path)
 }
 
 
-const bool POP3Store::isValidFolderName(const folder::path::component& /* name */)
+const bool POP3Store::isValidFolderName(const folder::path::component& /* name */) const
 {
 	return true;
 }
@@ -562,6 +562,12 @@ void POP3Store::unregisterFolder(POP3Folder* folder)
 {
 	std::list <POP3Folder*>::iterator it = std::find(m_folders.begin(), m_folders.end(), folder);
 	if (it != m_folders.end()) m_folders.erase(it);
+}
+
+
+const int POP3Store::getCapabilities() const
+{
+	return (CAPABILITY_DELETE_MESSAGE);
 }
 
 
