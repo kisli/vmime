@@ -298,6 +298,8 @@ def GetPackageVersion():
 
 packageName = 'libvmime'
 packageVersion = GetPackageVersion()
+packageRealName = 'VMime'
+packageDescription = 'VMime C++ Mail Library (http://vmime.sourceforge.net)'
 
 
 #############
@@ -789,6 +791,23 @@ for i in range(len(libvmime_install_includes)):
 
 # Configuration header file
 env.Install(includeDir, 'src/config.hpp')
+
+# Pkg-config support
+vmime_pc = open('vmime.pc', 'w')
+
+vmime_pc.write("prefix=" + env['prefix'] + "\n")
+vmime_pc.write("exec_prefix=" + env['prefix'] + "\n")
+vmime_pc.write("libdir=" + env['prefix'] + "/lib\n")
+vmime_pc.write("includedir=" + env['prefix'] + "/include\n")
+vmime_pc.write("\n")
+vmime_pc.write("Name: " + packageRealName + "\n")
+vmime_pc.write("Description: " + packageDescription + "\n")
+vmime_pc.write("Version: " + packageVersion + "\n")
+vmime_pc.write("Requires:\n")
+vmime_pc.write("Libs: -L${libdir} -lvmime-posix -lvmime\n")
+vmime_pc.write("Cflags: -I${includedir}/vmime\n")
+
+env.Install(libDir + "/pkgconfig", "vmime.pc")
 
 # Provide "install" target (ie. 'scons install')
 env.Alias('install', installPaths)
