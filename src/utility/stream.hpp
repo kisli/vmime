@@ -97,6 +97,13 @@ public:
 	  * @return number of bytes read
 	  */
 	virtual const size_type read(value_type* const data, const size_type count) = 0;
+
+	/** Skip a number of bytes.
+	  *
+	  * @param count maximum number of bytes to ignore
+	  * @return number of bytes skipped
+	  */
+	virtual const size_type skip(const size_type count) = 0;
 };
 
 
@@ -179,6 +186,7 @@ public:
 	const bool eof() const;
 	void reset();
 	const size_type read(value_type* const data, const size_type count);
+	const size_type skip(const size_type count);
 
 private:
 
@@ -199,6 +207,7 @@ public:
 	const bool eof() const;
 	void reset();
 	const size_type read(value_type* const data, const size_type count);
+	const size_type skip(const size_type count);
 
 private:
 
@@ -223,6 +232,7 @@ public:
 	const bool eof() const;
 	void reset();
 	const size_type read(value_type* const data, const size_type count);
+	const size_type skip(const size_type count);
 
 private:
 
@@ -248,6 +258,7 @@ public:
 	const bool eof() const;
 	void reset();
 	const size_type read(value_type* const data, const size_type count);
+	const size_type skip(const size_type count);
 
 private:
 

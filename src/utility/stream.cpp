@@ -127,6 +127,13 @@ const stream::size_type inputStreamAdapter::read
 }
 
 
+const stream::size_type inputStreamAdapter::skip(const size_type count)
+{
+	m_stream.ignore(count);
+	return (m_stream.gcount());
+}
+
+
 
 // inputStreamStringAdapter
 
@@ -175,6 +182,22 @@ const stream::size_type inputStreamStringAdapter::read
 }
 
 
+const stream::size_type inputStreamStringAdapter::skip(const size_type count)
+{
+	if (m_pos + count >= m_end)
+	{
+		const size_type remaining = m_end - m_pos;
+		m_pos = m_end;
+		return (remaining);
+	}
+	else
+	{
+		m_pos += count;
+		return (count);
+	}
+}
+
+
 
 // inputStreamStringProxyAdapter
 
@@ -216,6 +239,23 @@ const stream::size_type inputStreamStringProxyAdapter::read
 }
 
 
+const stream::size_type inputStreamStringProxyAdapter::skip(const size_type count)
+{
+	const size_type remaining = m_buffer.length() - m_pos;
+
+	if (count > remaining)
+	{
+		m_pos = m_buffer.length();
+		return (remaining);
+	}
+	else
+	{
+		m_pos += count;
+		return (count);
+	}
+}
+
+
 
 // inputStreamPointerAdapter
 
@@ -249,6 +289,13 @@ const stream::size_type inputStreamPointerAdapter::read
 	(value_type* const data, const size_type count)
 {
 	m_stream->read(data, count);
+	return (m_stream->gcount());
+}
+
+
+const stream::size_type inputStreamPointerAdapter::skip(const size_type count)
+{
+	m_stream->ignore(count);
 	return (m_stream->gcount());
 }
 
