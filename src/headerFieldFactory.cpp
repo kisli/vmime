@@ -55,6 +55,7 @@ headerFieldFactory::headerFieldFactory()
 	registerName <messageIdField>(vmime::fields::CONTENT_ID);
 	registerName <messageIdField>(vmime::fields::MESSAGE_ID);
 	registerName <defaultField>(vmime::fields::CONTENT_LOCATION);
+	registerName <messageIdField>(vmime::fields::IN_REPLY_TO);
 }
 
 
