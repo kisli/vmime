@@ -40,6 +40,7 @@ class maildirPart : public part
 public:
 
 	maildirPart(maildirPart* parent, const int number, const bodyPart& part);
+	~maildirPart();
 
 
 	const structure& getStructure() const;
@@ -119,6 +120,11 @@ public:
 			m_parts.push_back(new maildirPart(parent, number, *list[i]));
 	}
 
+	~maildirStructure()
+	{
+		free_container(m_parts);
+	}
+
 
 	const part& operator[](const int x) const
 	{
@@ -154,9 +160,12 @@ maildirStructure maildirStructure::m_emptyStructure;
 
 
 maildirPart::maildirPart(maildirPart* parent, const int number, const bodyPart& part)
-	: m_parent(parent), m_number(number)
+	: m_parent(parent), m_header(NULL), m_number(number)
 {
-	m_structure = new maildirStructure(this, part.getBody()->getPartList());
+	if (part.getBody()->getPartList().size() == 0)
+		m_structure = NULL;
+	else
+		m_structure = new maildirStructure(this, part.getBody()->getPartList());
 
 	m_headerParsedOffset = part.getHeader()->getParsedOffset();
 	m_headerParsedLength = part.getHeader()->getParsedLength();
@@ -170,15 +179,28 @@ maildirPart::maildirPart(maildirPart* parent, const int number, const bodyPart& 
 }
 
 
+maildirPart::~maildirPart()
+{
+	delete (m_structure);
+	delete (m_header);
+}
+
+
 const structure& maildirPart::getStructure() const
 {
-	return (*m_structure);
+	if (m_structure != NULL)
+		return (*m_structure);
+	else
+		return (*maildirStructure::emptyStructure());
 }
 
 
 structure& maildirPart::getStructure()
 {
-	return (*m_structure);
+	if (m_structure != NULL)
+		return (*m_structure);
+	else
+		return (*maildirStructure::emptyStructure());
 }
 
 

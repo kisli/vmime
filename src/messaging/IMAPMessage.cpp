@@ -47,6 +47,8 @@ private:
 
 public:
 
+	~IMAPpart();
+
 	const structure& getStructure() const;
 	structure& getStructure();
 
@@ -125,6 +127,11 @@ public:
 		}
 	}
 
+	~IMAPstructure()
+	{
+		free_container(m_parts);
+	}
+
 
 	const part& operator[](const int x) const
 	{
@@ -196,6 +203,13 @@ IMAPpart::IMAPpart(IMAPpart* parent, const int number, const IMAPParser::body_ty
 	}
 
 	m_structure = NULL;
+}
+
+
+IMAPpart::~IMAPpart()
+{
+	delete (m_structure);
+	delete (m_header);
 }
 
 
