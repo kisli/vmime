@@ -17,13 +17,13 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "messaging/IMAPTag.hpp"
-#include "messaging/IMAPConnection.hpp"
-#include "messaging/IMAPUtils.hpp"
-#include "messaging/IMAPStore.hpp"
+#include "vmime/messaging/IMAPTag.hpp"
+#include "vmime/messaging/IMAPConnection.hpp"
+#include "vmime/messaging/IMAPUtils.hpp"
+#include "vmime/messaging/IMAPStore.hpp"
 
-#include "exception.hpp"
-#include "platformDependant.hpp"
+#include "vmime/exception.hpp"
+#include "vmime/platformDependant.hpp"
 
 #include <sstream>
 

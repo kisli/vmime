@@ -17,7 +17,7 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "utility/path.hpp"
+#include "vmime/utility/path.hpp"
 
 #include <algorithm>
 

@@ -17,10 +17,10 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "contentDispositionField.hpp"
-#include "exception.hpp"
+#include "vmime/contentDispositionField.hpp"
+#include "vmime/exception.hpp"
 
-#include "standardParams.hpp"
+#include "vmime/standardParams.hpp"
 
 
 namespace vmime

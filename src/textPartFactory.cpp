@@ -17,12 +17,12 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "textPartFactory.hpp"
-#include "exception.hpp"
+#include "vmime/textPartFactory.hpp"
+#include "vmime/exception.hpp"
 
 
-#include "plainTextPart.hpp"
-#include "htmlTextPart.hpp"
+#include "vmime/plainTextPart.hpp"
+#include "vmime/htmlTextPart.hpp"
 
 
 namespace vmime

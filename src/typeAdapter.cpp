@@ -18,7 +18,7 @@
 //
 
 
-#include "typeAdapter.hpp"
+#include "vmime/typeAdapter.hpp"
 
 
 namespace vmime

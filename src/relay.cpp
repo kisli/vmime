@@ -17,9 +17,9 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "relay.hpp"
-#include "text.hpp"
-#include "parserHelpers.hpp"
+#include "vmime/relay.hpp"
+#include "vmime/text.hpp"
+#include "vmime/parserHelpers.hpp"
 
 #include <sstream>
 

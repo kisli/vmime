@@ -86,7 +86,7 @@ libvmime_sources = [
 	'typeAdapter.cpp', 'typeAdapter.hpp',
 	'types.hpp',
 	'word.cpp', 'word.hpp',
-	'vmime',
+	'vmime.hpp',
 	'utility/file.hpp',
 	'utility/md5.cpp', 'utility/md5.hpp',
 	'utility/path.cpp', 'utility/path.hpp',
@@ -249,15 +249,25 @@ libvmimetest_sources = [
 libvmime_dist_files = libvmime_sources + libvmime_messaging_sources
 
 for i in range(len(libvmime_dist_files)):
-	libvmime_dist_files[i] = 'src/' + libvmime_dist_files[i]
+	f = libvmime_dist_files[i]
+	if f[-4:] == '.hpp':
+		libvmime_dist_files[i] = 'vmime/' + f
+	else:
+		libvmime_dist_files[i] = 'src/' + f
 
 for p in libvmime_messaging_proto_sources:
 	for f in p[1]:
-		libvmime_dist_files.append('src/' + f)
+		if f[-4:] == '.hpp':
+			libvmime_dist_files.append('vmime/' + f)
+		else:
+			libvmime_dist_files.append('src/' + f)
 
 for p in libvmime_platforms_sources:
 	for f in libvmime_platforms_sources[p]:
-		libvmime_dist_files.append('src/' + f)
+		if f[-4:] == '.hpp':
+			libvmime_dist_files.append('vmime/' + f)
+		else:
+			libvmime_dist_files.append('src/' + f)
 
 libvmime_dist_files = libvmime_dist_files + libvmime_extra + libvmime_examples_sources
 
@@ -426,7 +436,7 @@ env = Environment(options = opts)
 env.Append(ENV = os.environ)
 env.Append(ENV = {'PATH' : os.environ['PATH']})
 
-env.Append(CPPPATH = [ '.', 'src' ])
+env.Append(CPPPATH = [ '.' ])
 
 env.Append(CPPDEFINES = { '_REENTRANT' : 1 })
 
@@ -518,7 +528,7 @@ if env['with_messaging'] == 'yes':
 #  Generate config.hpp  #
 #########################
 
-config_hpp = open('src/config.hpp', 'w')
+config_hpp = open('vmime/config.hpp', 'w')
 
 config_hpp.write("""
 //
@@ -663,11 +673,11 @@ for file in libvmime_full_sources:
 	if slash != -1:
 		dir = file[0:slash] + '/'
 
-	if file[-4:] == '.cpp':
-		libvmime_sources_CPP.append(buildDirectory + file)
-	else:
+	if file[-4:] == '.hpp':
 		libvmime_sources_HPP.append(buildDirectory + file)
-		libvmime_install_includes.append([dir, buildDirectory + file])
+		libvmime_install_includes.append([dir, 'vmime/' + file])
+	else:
+		libvmime_sources_CPP.append(buildDirectory + file)
 
 # HACK: SCons does not allow '.' in target name, so we have to
 # detect the suffix for library name and add it ourself
@@ -704,7 +714,7 @@ for platform in libvmime_platforms_sources:
 			dir = file[0:slash] + '/'
 
 		if file[-4:] == '.hpp':
-			libvmime_install_includes.append([dir, buildDirectory + file])
+			libvmime_install_includes.append([dir, 'vmime/' + file])
 
 # Platform libraries
 platformLibraries = [ ]
@@ -769,7 +779,7 @@ for i in range(len(libvmime_install_includes)):
 	env.Install(includeDir + '/' + libvmime_install_includes[i][0], libvmime_install_includes[i][1])
 
 # Configuration header file
-env.Install(includeDir, 'src/config.hpp')
+env.Install(includeDir, 'vmime/config.hpp')
 
 # Pkg-config support
 vmime_pc = open(versionedPackageName + ".pc", 'w')

@@ -17,10 +17,10 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "parameterizedHeaderField.hpp"
-#include "parameterFactory.hpp"
-#include "text.hpp"
-#include "parserHelpers.hpp"
+#include "vmime/parameterizedHeaderField.hpp"
+#include "vmime/parameterFactory.hpp"
+#include "vmime/text.hpp"
+#include "vmime/parserHelpers.hpp"
 
 
 namespace vmime

@@ -28,8 +28,8 @@
 
 #include <iostream>
 
-#include "../src/vmime"
-#include "../src/platforms/posix/handler.hpp"
+#include "vmime/vmime.hpp"
+#include "vmime/platforms/posix/handler.hpp"
 
 
 int main()

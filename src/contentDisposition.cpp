@@ -17,8 +17,8 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "contentDisposition.hpp"
-#include "utility/stringUtils.hpp"
+#include "vmime/contentDisposition.hpp"
+#include "vmime/utility/stringUtils.hpp"
 
 
 namespace vmime

@@ -17,8 +17,8 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "headerField.hpp"
-#include "headerFieldFactory.hpp"
+#include "vmime/headerField.hpp"
+#include "vmime/headerFieldFactory.hpp"
 
 
 namespace vmime

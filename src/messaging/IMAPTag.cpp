@@ -17,7 +17,7 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "messaging/IMAPTag.hpp"
+#include "vmime/messaging/IMAPTag.hpp"
 
 
 namespace vmime {

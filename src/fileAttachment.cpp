@@ -20,8 +20,8 @@
 #include <fstream>
 #include <sstream>
 
-#include "fileAttachment.hpp"
-#include "exception.hpp"
+#include "vmime/fileAttachment.hpp"
+#include "vmime/exception.hpp"
 
 
 namespace vmime

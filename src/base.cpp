@@ -17,30 +17,30 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "config.hpp"
+#include "vmime/config.hpp"
 
-#include "charset.hpp"
-#include "base.hpp"
+#include "vmime/charset.hpp"
+#include "vmime/base.hpp"
 
-#include "encoder.hpp"
-#include "encoderB64.hpp"
-#include "encoderQP.hpp"
+#include "vmime/encoder.hpp"
+#include "vmime/encoderB64.hpp"
+#include "vmime/encoderQP.hpp"
 
-#include "text.hpp"
+#include "vmime/text.hpp"
 
-#include "parserHelpers.hpp"
+#include "vmime/parserHelpers.hpp"
 
-#include "utility/stringUtils.hpp"
+#include "vmime/utility/stringUtils.hpp"
 
 // For initializing
-#include "encoderFactory.hpp"
-#include "headerFieldFactory.hpp"
-#include "parameterFactory.hpp"
-#include "textPartFactory.hpp"
-#include "options.hpp"
+#include "vmime/encoderFactory.hpp"
+#include "vmime/headerFieldFactory.hpp"
+#include "vmime/parameterFactory.hpp"
+#include "vmime/textPartFactory.hpp"
+#include "vmime/options.hpp"
 
 #if VMIME_HAVE_MESSAGING_FEATURES
-	#include "messaging/serviceFactory.hpp"
+	#include "vmime/messaging/serviceFactory.hpp"
 #endif
 
 

@@ -17,8 +17,8 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "utility/stream.hpp"
-#include "utility/stringProxy.hpp"
+#include "vmime/utility/stream.hpp"
+#include "vmime/utility/stringProxy.hpp"
 
 #include <algorithm>  // for std::copy
 #include <iterator>   // for std::back_inserter

@@ -17,11 +17,11 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "charset.hpp"
-#include "exception.hpp"
-#include "platformDependant.hpp"
+#include "vmime/charset.hpp"
+#include "vmime/exception.hpp"
+#include "vmime/platformDependant.hpp"
 
-#include "utility/stringUtils.hpp"
+#include "vmime/utility/stringUtils.hpp"
 
 
 extern "C"

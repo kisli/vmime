@@ -17,7 +17,7 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "encoder8bit.hpp"
+#include "vmime/encoder8bit.hpp"
 
 
 namespace vmime

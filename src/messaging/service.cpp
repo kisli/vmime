@@ -17,9 +17,9 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "messaging/service.hpp"
+#include "vmime/messaging/service.hpp"
 
-#include "messaging/defaultAuthenticator.hpp"
+#include "vmime/messaging/defaultAuthenticator.hpp"
 
 
 namespace vmime {

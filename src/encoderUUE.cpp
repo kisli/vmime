@@ -17,8 +17,8 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "encoderUUE.hpp"
-#include "parserHelpers.hpp"
+#include "vmime/encoderUUE.hpp"
+#include "vmime/parserHelpers.hpp"
 
 
 namespace vmime

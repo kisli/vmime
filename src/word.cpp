@@ -17,7 +17,7 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "word.hpp"
+#include "vmime/word.hpp"
 
 
 namespace vmime

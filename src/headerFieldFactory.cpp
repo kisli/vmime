@@ -17,14 +17,14 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "headerFieldFactory.hpp"
-#include "exception.hpp"
+#include "vmime/headerFieldFactory.hpp"
+#include "vmime/exception.hpp"
 
-#include "standardFields.hpp"
+#include "vmime/standardFields.hpp"
 
-#include "mailboxField.hpp"
-#include "contentTypeField.hpp"
-#include "contentDispositionField.hpp"
+#include "vmime/mailboxField.hpp"
+#include "vmime/contentTypeField.hpp"
+#include "vmime/contentDispositionField.hpp"
 
 
 namespace vmime

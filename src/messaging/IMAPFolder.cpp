@@ -17,18 +17,18 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "messaging/IMAPFolder.hpp"
+#include "vmime/messaging/IMAPFolder.hpp"
 
-#include "messaging/IMAPStore.hpp"
-#include "messaging/IMAPParser.hpp"
-#include "messaging/IMAPMessage.hpp"
-#include "messaging/IMAPUtils.hpp"
-#include "messaging/IMAPConnection.hpp"
+#include "vmime/messaging/IMAPStore.hpp"
+#include "vmime/messaging/IMAPParser.hpp"
+#include "vmime/messaging/IMAPMessage.hpp"
+#include "vmime/messaging/IMAPUtils.hpp"
+#include "vmime/messaging/IMAPConnection.hpp"
 
-#include "messageParser.hpp"   // to include "message.hpp" in root directory
+#include "vmime/message.hpp"
 
-#include "exception.hpp"
-#include "utility/smartPtr.hpp"
+#include "vmime/exception.hpp"
+#include "vmime/utility/smartPtr.hpp"
 
 #include <algorithm>
 #include <sstream>

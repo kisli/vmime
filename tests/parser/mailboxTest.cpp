@@ -22,10 +22,10 @@
 #include <iostream>
 #include <ostream>
 
-#include "../../src/vmime"
-#include "../../src/platforms/posix/handler.hpp"
+#include "vmime/vmime.hpp"
+#include "vmime/platforms/posix/handler.hpp"
 
-#include "testUtils.hpp"
+#include "tests/parser/testUtils.hpp"
 
 using namespace unitpp;
 

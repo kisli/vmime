@@ -4,7 +4,11 @@ VERSION 0.6.1-cvs
 
 2004-12-26  Vincent Richard  <vincent@vincent-richard.net>
 
- * Removed relative paths from #include's.
+ * Removed relative paths from #include's and moved all header files
+   to 'vmime/' directory.
+
+ * Renamed main VMime include from 'vmime' to 'vmime.hpp'. So, in your
+   program, you have to #include <vmime/vmime.hpp>.
 
  * Added support for 'pkg-config'.
 

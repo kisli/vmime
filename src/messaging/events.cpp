@@ -17,7 +17,7 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "messaging/events.hpp"
+#include "vmime/messaging/events.hpp"
 
 #include <algorithm>
 

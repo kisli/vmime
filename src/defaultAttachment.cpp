@@ -17,8 +17,8 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "defaultAttachment.hpp"
-#include "encoding.hpp"
+#include "vmime/defaultAttachment.hpp"
+#include "vmime/encoding.hpp"
 
 
 namespace vmime

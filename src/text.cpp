@@ -17,13 +17,13 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "text.hpp"
+#include "vmime/text.hpp"
 
-#include "utility/stringUtils.hpp"
+#include "vmime/utility/stringUtils.hpp"
 
-#include "encoder.hpp"
-#include "encoderB64.hpp"
-#include "encoderQP.hpp"
+#include "vmime/encoder.hpp"
+#include "vmime/encoderB64.hpp"
+#include "vmime/encoderQP.hpp"
 
 
 namespace vmime

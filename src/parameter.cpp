@@ -17,8 +17,8 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "parameter.hpp"
-#include "parameterFactory.hpp"
+#include "vmime/parameter.hpp"
+#include "vmime/parameterFactory.hpp"
 
 
 namespace vmime

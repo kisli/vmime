@@ -17,8 +17,8 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "component.hpp"
-#include "base.hpp"
+#include "vmime/component.hpp"
+#include "vmime/base.hpp"
 
 #include <sstream>
 

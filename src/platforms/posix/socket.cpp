@@ -17,7 +17,7 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "platforms/posix/socket.hpp"
+#include "vmime/platforms/posix/socket.hpp"
 
 #include <unistd.h>
 #include <sys/socket.h>
@@ -27,7 +27,7 @@
 #include <netdb.h>
 #include <fcntl.h>
 
-#include "exception.hpp"
+#include "vmime/exception.hpp"
 
 
 #if VMIME_HAVE_MESSAGING_FEATURES

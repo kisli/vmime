@@ -19,9 +19,9 @@
 
 #include <iomanip>
 
-#include "dateTime.hpp"
-#include "platformDependant.hpp"
-#include "parserHelpers.hpp"
+#include "vmime/dateTime.hpp"
+#include "vmime/platformDependant.hpp"
+#include "vmime/parserHelpers.hpp"
 
 
 namespace vmime

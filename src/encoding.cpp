@@ -17,9 +17,9 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "encoding.hpp"
-#include "encoderFactory.hpp"
-#include "contentHandler.hpp"
+#include "vmime/encoding.hpp"
+#include "vmime/encoderFactory.hpp"
+#include "vmime/contentHandler.hpp"
 
 #include <algorithm>
 

@@ -17,15 +17,15 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "encoderFactory.hpp"
-#include "exception.hpp"
+#include "vmime/encoderFactory.hpp"
+#include "vmime/exception.hpp"
 
-#include "encoderB64.hpp"
-#include "encoderQP.hpp"
-#include "encoderUUE.hpp"
-#include "encoderBinary.hpp"
-#include "encoder7bit.hpp"
-#include "encoder8bit.hpp"
+#include "vmime/encoderB64.hpp"
+#include "vmime/encoderQP.hpp"
+#include "vmime/encoderUUE.hpp"
+#include "vmime/encoderBinary.hpp"
+#include "vmime/encoder7bit.hpp"
+#include "vmime/encoder8bit.hpp"
 
 
 namespace vmime

@@ -17,9 +17,9 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "messageBuilder.hpp"
+#include "vmime/messageBuilder.hpp"
 
-#include "textPartFactory.hpp"
+#include "vmime/textPartFactory.hpp"
 
 
 namespace vmime

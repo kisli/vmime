@@ -17,8 +17,8 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "encoderQP.hpp"
-#include "parserHelpers.hpp"
+#include "vmime/encoderQP.hpp"
+#include "vmime/parserHelpers.hpp"
 
 
 namespace vmime

@@ -17,11 +17,11 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "url.hpp"
+#include "vmime/messaging/url.hpp"
 
-#include "parserHelpers.hpp"
-#include "messaging/urlUtils.hpp"
-#include "exception.hpp"
+#include "vmime/parserHelpers.hpp"
+#include "vmime/messaging/urlUtils.hpp"
+#include "vmime/exception.hpp"
 
 #include <sstream>
 

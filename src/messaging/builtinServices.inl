@@ -25,25 +25,25 @@
 
 
 #if VMIME_BUILTIN_MESSAGING_PROTO_POP3
-	#include "POP3Store.hpp"
+	#include "vmime/messaging/POP3Store.hpp"
 	REGISTER_SERVICE(POP3Store, pop3);
 #endif
 
 
 #if VMIME_BUILTIN_MESSAGING_PROTO_SMTP
-	#include "SMTPTransport.hpp"
+	#include "vmime/messaging/SMTPTransport.hpp"
 	REGISTER_SERVICE(SMTPTransport, smtp);
 #endif
 
 
 #if VMIME_BUILTIN_MESSAGING_PROTO_IMAP
-	#include "IMAPStore.hpp"
+	#include "vmime/messaging/IMAPStore.hpp"
 	REGISTER_SERVICE(IMAPStore, imap);
 #endif
 
 
 #if VMIME_BUILTIN_MESSAGING_PROTO_MAILDIR
-	#include "maildirStore.hpp"
+	#include "vmime/messaging/maildirStore.hpp"
 	REGISTER_SERVICE(maildirStore, maildir);
 #endif
 

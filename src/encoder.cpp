@@ -17,8 +17,8 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "encoder.hpp"
-#include "exception.hpp"
+#include "vmime/encoder.hpp"
+#include "vmime/exception.hpp"
 
 
 namespace vmime

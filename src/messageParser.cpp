@@ -17,10 +17,10 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "messageParser.hpp"
+#include "vmime/messageParser.hpp"
 
-#include "defaultAttachment.hpp"
-#include "textPartFactory.hpp"
+#include "vmime/defaultAttachment.hpp"
+#include "vmime/textPartFactory.hpp"
 
 
 namespace vmime

@@ -17,16 +17,16 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "bodyPart.hpp"
-#include "body.hpp"
+#include "vmime/bodyPart.hpp"
+#include "vmime/body.hpp"
 
-#include "options.hpp"
+#include "vmime/options.hpp"
 
-#include "contentTypeField.hpp"
+#include "vmime/contentTypeField.hpp"
 
-#include "utility/random.hpp"
+#include "vmime/utility/random.hpp"
 
-#include "parserHelpers.hpp"
+#include "vmime/parserHelpers.hpp"
 
 
 namespace vmime

@@ -17,10 +17,10 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "addressList.hpp"
-#include "parserHelpers.hpp"
-#include "exception.hpp"
-#include "mailboxList.hpp"
+#include "vmime/addressList.hpp"
+#include "vmime/parserHelpers.hpp"
+#include "vmime/exception.hpp"
+#include "vmime/mailboxList.hpp"
 
 
 namespace vmime
