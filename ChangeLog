@@ -4,7 +4,7 @@ VERSION 0.6.2-cvs
 
 2005-01-02  Vincent Richard  <vincent@vincent-richard.net>
 
- * Added unit tests for utility::path.
+ * Added unit tests for utility::path and bodyPart.
 
 2005-01-01  Vincent Richard  <vincent@vincent-richard.net>
 
