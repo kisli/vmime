@@ -302,8 +302,10 @@ void POP3Store::stripResponseCode(const string& buffer, string& result)
 
 void POP3Store::sendRequest(const string& buffer, const bool end)
 {
-	m_socket->send(buffer);
-	if (end) m_socket->send("\r\n");
+	if (end)
+		m_socket->send(buffer + "\r\n");
+	else
+		m_socket->send(buffer);
 }
 
 
