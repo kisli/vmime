@@ -84,6 +84,12 @@ public:
 	  */
 	virtual void setValue(const component& value) = 0;
 
+	/** Set the value of this field given a character string.
+	  *
+	  * @param value value string to parse
+	  */
+	void setValue(const string& value);
+
 
 	using component::parse;
 	using component::generate;

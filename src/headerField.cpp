@@ -107,4 +107,10 @@ const std::vector <const component*> headerField::getChildComponents() const
 }
 
 
+void headerField::setValue(const string& value)
+{
+	parse(value);
+}
+
+
 } // vmime
