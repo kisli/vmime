@@ -54,7 +54,7 @@ public:
 	const contentHandler& getText() const;
 	void setText(const contentHandler& text);
 
-	/** Embedded object (eg: image for <IMG> tag).
+	/** Embedded object (eg: image for &lt;IMG> tag).
 	  */
 	class embeddedObject
 	{
