@@ -121,13 +121,13 @@ const bool text::operator==(const text& t) const
 {
 	if (getWordCount() == t.getWordCount())
 	{
-		bool equal = false;
+		bool equal = true;
 
 		std::vector <word*>::const_iterator i = m_words.begin();
 		std::vector <word*>::const_iterator j = t.m_words.begin();
 
 		for ( ; equal && i != m_words.end() ; ++i, ++j)
-			equal = (*i == *j);
+			equal = (**i == **j);
 
 		return (equal);
 	}
