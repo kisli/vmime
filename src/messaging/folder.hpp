@@ -290,7 +290,7 @@ public:
 	  */
 	virtual void expunge() = 0;
 
-	/** Return a new folder objet referencing the parent folder of this folder.
+	/** Return a new folder object referencing the parent folder of this folder.
 	  *
 	  * @return parent folder object
 	  */
