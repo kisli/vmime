@@ -2,6 +2,11 @@
 VERSION 0.6.4cvs
 ================
 
+2005-03-17  Vincent Richard  <vincent@vincent-richard.net>
+
+ * Added "Viewer" example in /examples/viewer: demonstrate the parsing
+   capabilities of VMime and it can help when debugging...
+
 2005-03-16  Vincent Richard  <vincent@vincent-richard.net>
 
  * Fixed compilation problems on Solaris 9.
