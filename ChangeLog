@@ -11,6 +11,8 @@ VERSION 0.6.4cvs
  * SConstruct: fixed compilation/linking problem with g++ and X86-64 on
     static library: added -fPIC/-fpic in compiler flags.
 
+ * messaging/POP3*: added notifications.
+
 2005-03-17  Vincent Richard  <vincent@vincent-richard.net>
 
  * base.{cpp|hpp}: renamed 'MIME_VERSION' to 'SUPPORTED_MIME_VERSION'.

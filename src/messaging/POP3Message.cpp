@@ -29,7 +29,7 @@ namespace messaging {
 
 
 POP3Message::POP3Message(POP3Folder* folder, const int num)
-	: m_folder(folder), m_num(num), m_size(-1), m_header(NULL)
+	: m_folder(folder), m_num(num), m_size(-1), m_deleted(false), m_header(NULL)
 {
 	m_folder->registerMessage(this);
 }
@@ -79,7 +79,12 @@ const bool POP3Message::isExpunged() const
 
 const int POP3Message::getFlags() const
 {
-	return (FLAG_RECENT);
+	int flags = FLAG_RECENT;
+
+	if (m_deleted)
+		flags |= FLAG_DELETED;
+
+	return (flags);
 }
 
 

@@ -540,6 +540,24 @@ void POP3Folder::deleteMessage(const int num)
 
 	if (!m_store->isSuccessResponse(response))
 		throw exceptions::command_error("DELE", response);
+
+	// Update local flags
+	for (std::map <POP3Message*, int>::iterator it =
+	     m_messages.begin() ; it != m_messages.end() ; ++it)
+	{
+		POP3Message* msg = (*it).first;
+
+		if (msg->getNumber() == num)
+			msg->m_deleted = true;
+	}
+
+	// Notify message flags changed
+	std::vector <int> nums;
+	nums.push_back(num);
+
+	events::messageChangedEvent event(this, events::messageChangedEvent::TYPE_FLAGS, nums);
+
+	notifyMessageChanged(event);
 }
 
 
@@ -568,6 +586,26 @@ void POP3Folder::deleteMessages(const int from, const int to)
 		if (!m_store->isSuccessResponse(response))
 			throw exceptions::command_error("DELE", response);
 	}
+
+	// Update local flags
+	for (std::map <POP3Message*, int>::iterator it =
+	     m_messages.begin() ; it != m_messages.end() ; ++it)
+	{
+		POP3Message* msg = (*it).first;
+
+		if (msg->getNumber() >= from && msg->getNumber() <= to2)
+			msg->m_deleted = true;
+	}
+
+	// Notify message flags changed
+	std::vector <int> nums;
+
+	for (int i = from ; i <= to2 ; ++i)
+		nums.push_back(i);
+
+	events::messageChangedEvent event(this, events::messageChangedEvent::TYPE_FLAGS, nums);
+
+	notifyMessageChanged(event);
 }
 
 
@@ -595,6 +633,29 @@ void POP3Folder::deleteMessages(const std::vector <int>& nums)
 		if (!m_store->isSuccessResponse(response))
 			throw exceptions::command_error("DELE", response);
 	}
+
+	// Sort message list
+	std::vector <int> list;
+
+	list.resize(nums.size());
+	std::copy(nums.begin(), nums.end(), list.begin());
+
+	std::sort(list.begin(), list.end());
+
+	// Update local flags
+	for (std::map <POP3Message*, int>::iterator it =
+	     m_messages.begin() ; it != m_messages.end() ; ++it)
+	{
+		POP3Message* msg = (*it).first;
+
+		if (std::binary_search(list.begin(), list.end(), msg->getNumber()))
+			msg->m_deleted = true;
+	}
+
+	// Notify message flags changed
+	events::messageChangedEvent event(this, events::messageChangedEvent::TYPE_FLAGS, list);
+
+	notifyMessageChanged(event);
 }
 
 

@@ -79,6 +79,8 @@ private:
 	uid m_uid;
 	int m_size;
 
+	bool m_deleted;
+
 	header* m_header;
 };
 
