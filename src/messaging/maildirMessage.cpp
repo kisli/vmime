@@ -115,7 +115,7 @@ public:
 	{
 		int number = 1;
 
-		for (int i = 0 ; i < list.size() ; ++i)
+		for (unsigned int i = 0 ; i < list.size() ; ++i)
 			m_parts.push_back(new maildirPart(parent, number, *list[i]));
 	}
 
