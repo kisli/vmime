@@ -21,6 +21,7 @@
 #define VMIME_WORD_HPP_INCLUDED
 
 
+#include "vmime/component.hpp"
 #include "vmime/charset.hpp"
 
 
@@ -32,7 +33,7 @@ namespace vmime
   * some text encoded into one specified charset.
   */
 
-class word
+class word : public component
 {
 public:
 
@@ -93,13 +94,28 @@ public:
 	  *
 	  * @param other other word to copy data from
 	  */
-	void copyFrom(const word& other);
+	void copyFrom(const component& other);
 
 	/** Clone this word.
 	  *
 	  * @return a copy of this word
 	  */
 	word* clone() const;
+
+
+	using component::parse;
+	using component::generate;
+
+	void parse(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition = NULL);
+	void generate(utility::outputStream& os, const string::size_type maxLineLength = lineLengthLimits::infinite, const string::size_type curLinePos = 0, string::size_type* newLinePos = NULL) const;
+
+	void generate(utility::outputStream& os, const string::size_type maxLineLength, const string::size_type curLinePos, string::size_type* newLinePos, const int flags, const bool isFirstWord) const;
+
+	const std::vector <const component*> getChildComponents() const;
+
+	static word* parseNext(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition, bool prevIsEncoded, bool* isEncoded, bool isFirst);
+
+	static const std::vector <word*> parseMultiple(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition);
 
 private:
 

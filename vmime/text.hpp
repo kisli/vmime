@@ -205,8 +205,6 @@ public:
 
 private:
 
-	static void decodeAndUnfold(const string::const_iterator& inStart, const string::const_iterator& inEnd, text& out);
-
 	std::vector <word*> m_words;
 };
 
