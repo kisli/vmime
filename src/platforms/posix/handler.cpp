@@ -40,16 +40,24 @@ namespace posix {
 
 
 posixHandler::posixHandler()
-	: m_socketFactory(new posixSocketFactory()),
-	  m_fileSysFactory(new posixFileSystemFactory())
 {
+#if VMIME_HAVE_MESSAGING_FEATURES
+	m_socketFactory = new posixSocketFactory();
+#endif
+#if VMIME_HAVE_FILESYSTEM_FEATURES
+	m_fileSysFactory = new posixFileSystemFactory();
+#endif
 }
 
 
 posixHandler::~posixHandler()
 {
+#if VMIME_HAVE_MESSAGING_FEATURES
 	delete (m_socketFactory);
+#endif
+#if VMIME_HAVE_FILESYSTEM_FEATURES
 	delete (m_fileSysFactory);
+#endif
 }
 
 

@@ -69,8 +69,13 @@ public:
 
 private:
 
+#if VMIME_HAVE_MESSAGING_FEATURES
 	posixSocketFactory* m_socketFactory;
+#endif
+
+#if VMIME_HAVE_FILESYSTEM_FEATURES
 	posixFileSystemFactory* m_fileSysFactory;
+#endif
 };
 
 
