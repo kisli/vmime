@@ -36,9 +36,9 @@ namespace
 		{
 			vmime::utility::stringProxy s;
 
-			assert_eq("1", 0, s.length());
-			assert_eq("2", 0, s.start());
-			assert_eq("3", 0, s.end());
+			assert_eq("1", static_cast <vmime::utility::stringProxy::size_type>(0), s.length());
+			assert_eq("2", static_cast <vmime::utility::stringProxy::size_type>(0), s.start());
+			assert_eq("3", static_cast <vmime::utility::stringProxy::size_type>(0), s.end());
 		}
 
 		void testConstruct2()
@@ -48,20 +48,20 @@ namespace
 			vmime::utility::stringProxy s1(str);
 
 			assert_eq("1", str.length(), s1.length());
-			assert_eq("2", 0, s1.start());
+			assert_eq("2", static_cast <vmime::utility::stringProxy::size_type>(0), s1.start());
 			assert_eq("3", str.length(), s1.end());
 
 			vmime::utility::stringProxy s2(str, 10);
 
 			assert_eq("4", str.length() - 10, s2.length());
-			assert_eq("5", 10, s2.start());
+			assert_eq("5", static_cast <vmime::utility::stringProxy::size_type>(10), s2.start());
 			assert_eq("6", str.length(), s2.end());
 
 			vmime::utility::stringProxy s3(str, 10, 14);
 
-			assert_eq("7", 4, s3.length());
-			assert_eq("8", 10, s3.start());
-			assert_eq("9", 14, s3.end());
+			assert_eq("7", static_cast <vmime::utility::stringProxy::size_type>(4), s3.length());
+			assert_eq("8", static_cast <vmime::utility::stringProxy::size_type>(10), s3.start());
+			assert_eq("9", static_cast <vmime::utility::stringProxy::size_type>(14), s3.end());
 
 			assert_eq("10", 't', *s3.it_begin());
 			assert_eq("11", 'e', *(s3.it_begin() + 1));
@@ -76,9 +76,9 @@ namespace
 
 			s.detach();
 
-			assert_eq("1", 0, s.length());
-			assert_eq("2", 0, s.start());
-			assert_eq("3", 0, s.end());
+			assert_eq("1", static_cast <vmime::utility::stringProxy::size_type>(0), s.length());
+			assert_eq("2", static_cast <vmime::utility::stringProxy::size_type>(0), s.start());
+			assert_eq("3", static_cast <vmime::utility::stringProxy::size_type>(0), s.end());
 		}
 
 		void testSet()
@@ -89,22 +89,22 @@ namespace
 			s1.set(str);
 
 			assert_eq("1", str.length(), s1.length());
-			assert_eq("2", 0, s1.start());
+			assert_eq("2", static_cast <vmime::utility::stringProxy::size_type>(0), s1.start());
 			assert_eq("3", str.length(), s1.end());
 
 			vmime::utility::stringProxy s2;
 			s2.set(str, 10);
 
 			assert_eq("4", str.length() - 10, s2.length());
-			assert_eq("5", 10, s2.start());
+			assert_eq("5", static_cast <vmime::utility::stringProxy::size_type>(10), s2.start());
 			assert_eq("6", str.length(), s2.end());
 
 			vmime::utility::stringProxy s3;
 			s3.set(str, 10, 14);
 
-			assert_eq("7", 4, s3.length());
-			assert_eq("8", 10, s3.start());
-			assert_eq("9", 14, s3.end());
+			assert_eq("7", static_cast <vmime::utility::stringProxy::size_type>(4), s3.length());
+			assert_eq("8", static_cast <vmime::utility::stringProxy::size_type>(10), s3.start());
+			assert_eq("9", static_cast <vmime::utility::stringProxy::size_type>(14), s3.end());
 
 			assert_eq("10", 't', *s3.it_begin());
 			assert_eq("11", 'e', *(s3.it_begin() + 1));
