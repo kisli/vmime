@@ -186,7 +186,7 @@ vmime::utility::outputStream* posixFileWriter::getOutputStream()
 {
 	int fd = 0;
 
-	if ((fd = ::open(m_nativePath.c_str(), O_RDONLY, 0660)) == -1)
+	if ((fd = ::open(m_nativePath.c_str(), O_WRONLY, 0660)) == -1)
 		posixFileSystemFactory::reportError(m_path, errno);
 
 	return new posixFileWriterOutputStream(m_path, fd);
