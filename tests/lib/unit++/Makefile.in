@@ -1,0 +1,80 @@
+# installation targets
+prefix=@prefix@
+includedir=@includedir@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+mandir=@mandir@
+docdir=./html/unit++
+#various compilers.
+CXX=@CXX@
+CXXFLAGS=@CXXFLAGS@
+# for those that have doc++, otherwise get it
+DOC=doc++
+#Qt related stuff
+QT_LIBDIR = @QT_LDFLAGS@
+QT_INCDIR = @QT_INCLUDES@
+MOC = @MOC@
+GUI_OBJS = @gui_vars@
+GUI_DOCSRC = @gui_docsrc@
+
+# Below here should not need modification
+TARGETLIB=libunit++.a
+TARGETHEADERS=unit++.h optmap.h gui.h guitester.h main.h tester.h
+# substituted into GUI_OBJS by autoconf, if GUI is enabled
+gui_objs = gui.o guitester.o moc_gui.o moc_guitester.o
+gui_docsrc = gui.h guitester.h
+OBJS=unit++.o tester.o main.o optmap.o $(GUI_OBJS)
+#the files with doc information
+DOCSRC=$(TARGETHEADERS) main.h tester.h $(GUI_DOCSRC)
+DOCOPTS=-d $(docdir)
+TSTOBJS=Test_unit++.o Test_optmap.o Test_gui.o
+TSTLIBS=-L. -lunit++
+
+.SUFFIXES: .cc
+
+.cc.o:
+	$(CXX) -D__UNITPP -c $(CXXFLAGS) $(CPPFLAGS) @QT_INCLUDES@ @DEFS@ -o $@ $<
+
+all: $(TARGETLIB) unit++
+
+$(TARGETLIB): $(OBJS)
+	ar r $@ $(OBJS)
+
+install: $(TARGETLIB) $(TARGETHEADERS)
+	[ -d $(libdir) ] || mkdir -p $(libdir)
+	[ -d $(includedir)/unit++ ] || mkdir -p $(includedir)/unit++
+	[ -d $(mandir)/man1 ] || mkdir -p $(mandir)/man1
+	[ -d $(mandir)/man3 ] || mkdir -p $(mandir)/man3
+	cp $(TARGETLIB) $(libdir)
+	cp $(TARGETHEADERS) $(includedir)/unit++
+	cp unit++-compat.h $(includedir)/unit++.h
+	cp optmap-compat.h $(includedir)/optmap.h
+	cp unit++.1 $(mandir)/man1
+	cp unit++.3 $(mandir)/man3
+
+doc: $(DOCSRC)
+	[ -d $(docdir) ] || mkdir -p $(docdir)
+	doc++ $(DOCOPTS) $(DOCSRC)
+
+unit++: $(TSTOBJS) $(TARGETLIB)
+	$(CXX) -o $@ $(TSTOBJS) $(TSTLIBS) @QT_LDFLAGS@ @qt_lib@
+
+moc_gui.cc: gui.h
+	$(MOC) $< -o $@
+moc_guitester.cc: guitester.h
+	$(MOC) $< -o $@
+clean:
+	rm -f $(OBJS) $(TSTOBJS)
+
+clobber: clean
+	rm -f $(TARGETLIB) unit++
+
+Test_optmap.o: Test_optmap.cc unit++.h optmap.h
+Test_unit++.o: Test_unit++.cc unit++.h optmap.h tester.h main.h
+Test_gui.o: Test_gui.cc
+gui.o: gui.cc gui.h unit++.h optmap.h
+guitester.o: guitester.cc
+main.o: main.cc main.h tester.h unit++.h optmap.h
+optmap.o: optmap.cc optmap.h
+tester.o: tester.cc tester.h unit++.h optmap.h
+unit++.o: unit++.cc unit++.h optmap.h

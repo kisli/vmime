@@ -1,0 +1,16 @@
+1.2:
+Added a couple of man pages.
+
+Incorporated some changes from Craig McGeachie to allow compilation on
+MicroSoft Visual Studio.
+
+Added a Qt GUI
+
+Added Kenn Knowles' m4 automake configuration file for determining in an
+automake file if unit++ is available
+
+Added some typename hints for compilers less large than g++ (thanks to Doug
+Philips). Should get it to compile on AIX 4.3.3.
+
+1.1.1:
+Before this list started...

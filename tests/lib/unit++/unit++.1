@@ -1,0 +1,27 @@
+.hy 0
+.if n .na
+.TH UNIT++ 1 2002-02-23 "Unit++ 1.2"
+.UC
+.SH NAME
+\fBunit++\fB \- run a set of tests
+.SH SYNOPSIS
+.BI "unit++ [-v|--verbose] [-g|--gui] [testid...]
+.SH DESCRIPTION
+.B unit++
+(the usual name) is the resulting program from compiling a set of unit++
+tests, and linking them with the
+.B unit++(3)
+library supplied main function to obtain an executable test suite.
+
+Each test in the test tree has an id, and it is possible to start only some
+of the tests by naming them in the form id1.id2.id3.
+
+The GUI option is only available if the library was compiled with GUI
+support, and the tests has actually linked the GUI stuff as well. Otherwise
+the -g option will provoke an error. Otherwise it will give a Qt based GUI
+that allows running of individual tests, with a nice green (or less nice red)
+bar that shows success (or failure).
+.SH AUTHOR
+Claus Dræby <azhrarn@users.sourceforge.net>
+.SH SEE ALSO
+.BR unit++ (3).

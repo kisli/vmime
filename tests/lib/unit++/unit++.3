@@ -1,0 +1,130 @@
+.hy 0
+.if n .na
+.TH UNIT++ 3 2002-02-23 "Unit++ 1.2"
+.UC
+.SH NAME
+\fBunit++\fB: \fBtest\fB, \fBsuite\fb, \fBtestcase\fB \- test framework for C++.
+.SH SYNOPSIS
+.B #include <unit++/unit++.h>
+.br
+.B using namespace unitpp;
+.br
+.B using namespace std;
+.sp
+.BI "test::test(string " name );
+.sp
+.B virtual void test::operator()();
+.sp 
+.B class suite : public test
+.sp 
+.BI "suite::suite(string " name );
+.sp
+.BI "static suite& suite::main();"
+.sp
+.BI "void suite::add(const string& " id ", const testcase& " t );
+.sp
+.BI "template<typename " C "> "
+.br
+.BI "  testcase::testcase(" C "* " par ", const string& " name ", "
+.br
+.BI "                     typename test_mfun<" C ">::mfp " fp ");"
+.sp
+.BI "testcase::testcase(test* " t );
+.sp
+.BI "fail(const string& " msg );
+.sp
+.BI "template<typename " A "> "
+.br
+.BI "  void assert_true(const string& " msg ", " A " " assertion );
+.sp
+.BI "template<typename " T1 ", typename " T2 "> "
+.br
+.BI "  void assert_eq(const string& " msg ", " T1 " " exp ", " T2 " " got );
+.sp
+.BI "gui_hook::gui_hook();"
+.SH LIBRARIES
+.B -lunit++
+.SH DESCRIPTION
+.B unit++
+is a fremework that allows creation and execution of C++ unit tests. Each
+test is an instance of the
+.B test
+class, and is managed by an instance of the
+.B testcase
+class. The actual takes place by invoking each test as function, that is
+calling the virtual operator(). However, the usual way of making tests is by
+using a class derived from the
+.B suite
+class to wrap a number of releated tests, Each test then
+becomes a member function in the class, and the testcase instance is
+constructed by using the
+.B member function template constructor.
+
+Each test suite class is usually placed in an anonymous namespace to allow
+the all to be named Test, as in the example below. Since the
+.B main
+method of the library runs a global test suite each suite must add itself to
+this global tree. This is done by invoking
+.B add
+on the test suite object obtained by
+.B suite::main().
+
+The assert templates allows the tests to check conditions;
+.B assert_true
+checks a truth value, that is it fails if !
+.I assertion
+evaluates to true;
+.B assert_eq asserts equality by use of == between two objects, both of which
+must be of types that can be written to a stream by use of <<.
+.B fail
+simply fails a test.
+
+The
+.B gui_hook
+class is the hook for allowing a test to use the Qt gui for the test program.
+A test program must have exactly one global object of type gui_hook in order
+to enable the gui, Even when compiled without gui support, creating a
+gui_hook is ok, but it will only have effect if gui support was enabled when
+the library was compiled.
+.SH EXAMPLES
+.nf
+#include <unit++/unit++.h>
+using namespace std;
+using namespace unitpp;
+namespace {
+	class Test : public suite
+	{
+		char* p = "Hej";
+		string s("mor");
+		void t1()
+		{
+			assert_true("pointer is not 0", p);
+		}
+		void t2()
+		{
+			assert_eq("Texts match", string("Mor"), s);
+		}
+	public:
+		Test() : suite("Yet another test suite")
+		{
+			suite::main().add("demo", this);
+			add("t1", testcase(this, "T1", &Test::t1));
+			add("t2", testcase(this, "T2", &Test::t2));
+		}
+	} * theTest = new Test();
+}
+.fi
+.SH NOTE
+Each test suite runs all its tests in the same instance. That means that the
+above example will invoke first t1 and then t2 in the same object. Hence any
+side effects on the Test object that a test function has survives to the
+subsequent tests in the same object. This behaviour is directly opposite to
+how the original unit test framework junit treats test suites. There are
+however compelling C++ reasons why it must be so, and once known it might
+even be used to an advantage from time to time.
+.SH AUTHOR
+
+Claus Dræby <azhrarn@users.sourceforge.net>
+
+.SH SEE ALSO
+.BR unit++ (1).
