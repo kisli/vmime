@@ -537,7 +537,7 @@ void text::encodeAndFold(utility::outputStream& os, const string::size_type maxL
 
 			encoder* theEncoder;
 
-			if (encoding == 'B') theEncoder == new encoderB64;
+			if (encoding == 'B') theEncoder = new encoderB64;
 			else theEncoder = new encoderQP;
 
 			string qpEncodedBuffer;

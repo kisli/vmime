@@ -2,6 +2,10 @@
 VERSION 0.6.4cvs
 ================
 
+2005-02-01  Vincent Richard  <vincent@vincent-richard.net>
+
+ * text.cpp: fixed possible segfault when encoding is Base64 (typo).
+
 2005-01-28  Vincent Richard  <vincent@vincent-richard.net>
 
  * Started version 0.6.4.
