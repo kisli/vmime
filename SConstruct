@@ -1415,7 +1415,7 @@ VMIME_BUILTIN_PLATFORMS=''
 VMIME_DETECT_PLATFORM=''
 
 case "x${target_os}" in
-win* | mingw* | cygwin*)
+xwin* | xmingw* | xcygwin*)
 	VMIME_DETECT_PLATFORM='windows'
 	;;
 x*)
