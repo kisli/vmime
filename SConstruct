@@ -1815,6 +1815,9 @@ EndGlobal
 """)
 	vmime_vcproj.close();
 
+	libvmime_dist_files.append("vmime.sln")
+	libvmime_dist_files.append("vmime.vcproj")
+
 	return None
 
 
