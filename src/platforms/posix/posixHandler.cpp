@@ -104,9 +104,9 @@ const vmime::datetime posixHandler::getCurrentLocalTime() const
 
 const vmime::charset posixHandler::getLocaleCharset() const
 {
-	vmime::string prevLocale(::setlocale(::LC_ALL, ""));
-	vmime::charset ch(::nl_langinfo(::CODESET));
-	::setlocale(::LC_ALL, prevLocale.c_str());
+	vmime::string prevLocale(::setlocale(LC_ALL, ""));
+	vmime::charset ch(::nl_langinfo(CODESET));
+	::setlocale(LC_ALL, prevLocale.c_str());
 
 	return (ch);
 }
