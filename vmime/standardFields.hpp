@@ -1,5 +1,5 @@
 //
-// VMime library (http://vmime.sourceforge.net)
+// VMime library (http://www.vmime.org)
 // Copyright (C) 2002-2005 Vincent Richard <vincent@vincent-richard.net>
 //
 // This program is free software; you can redistribute it and/or
@@ -49,17 +49,39 @@ namespace vmime
 				  genericField <valueTypeClassName>() { /* Not used */ } \
 	}
 
-#define DECLARE_STANDARD_FIELD_PARAM(fieldClassName, valueTypeClassName) \
-	class fieldClassName : public genericField <valueTypeClassName>, \
-	                       public parameterizedHeaderField { \
-		friend class headerFieldFactory::registerer <fieldClassName>; \
-		protected: \
-			fieldClassName() { } \
-			fieldClassName(const fieldClassName&) \
-				: headerField(), \
-				  genericField <valueTypeClassName>(), \
-				  parameterizedHeaderField() { /* Not used */ } \
-	}
+#ifdef VMIME_NO_MULTIPLE_INHERITANCE
+
+	template <class TYPE>
+	class genericParameterizedHeaderField : public genericField <TYPE>
+	{
+	};
+
+	#define DECLARE_STANDARD_FIELD_PARAM(fieldClassName, valueTypeClassName) \
+		class fieldClassName : public genericParameterizedHeaderField <valueTypeClassName> { \
+			friend class headerFieldFactory::registerer <fieldClassName>; \
+			protected: \
+				fieldClassName() { } \
+				fieldClassName(const fieldClassName&) \
+					: headerField(), \
+					  genericParameterizedHeaderField <valueTypeClassName>() { /* Not used */ } \
+		}
+
+#else // VMIME_NO_MULTIPLE_INHERITANCE
+
+	#define DECLARE_STANDARD_FIELD_PARAM(fieldClassName, valueTypeClassName) \
+		class fieldClassName : public genericField <valueTypeClassName>, \
+		                       public parameterizedHeaderField { \
+			friend class headerFieldFactory::registerer <fieldClassName>; \
+			protected: \
+				fieldClassName() { } \
+				fieldClassName(const fieldClassName&) \
+					: headerField(), \
+					  genericField <valueTypeClassName>(), \
+					  parameterizedHeaderField() { /* Not used */ } \
+		}
+
+#endif // VMIME_NO_MULTIPLE_INHERITANCE
+
 
 
 DECLARE_STANDARD_FIELD(addressListField, addressList);

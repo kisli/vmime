@@ -1,5 +1,5 @@
 //
-// VMime library (http://vmime.sourceforge.net)
+// VMime library (http://www.vmime.org)
 // Copyright (C) 2002-2005 Vincent Richard <vincent@vincent-richard.net>
 //
 // This program is free software; you can redistribute it and/or
@@ -52,7 +52,7 @@ public:
 
 	/** Construct an URL from a string (parse the URL components).
 	  *
-	  * @param s full URL string (eg. http://vmime.sourceforge.net:80/download.html
+	  * @param s full URL string (eg. http://www.vmime.org:80/download.html
 	  */
 	url(const string& s);
 
