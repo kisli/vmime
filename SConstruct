@@ -1117,6 +1117,132 @@ AM_PROG_CC_C_O
 
 
 #
+# Some checks
+#
+
+# -- global constructors (stolen from 'configure.in' in libsigc++)
+AC_MSG_CHECKING([if linker supports global constructors])
+cat > mylib.$ac_ext <<EOF
+#include <stdio.h>
+
+struct A
+{
+  A() { printf(\"PASS\\n\"); }
+};
+
+A a;
+
+int foo()
+  { return 1; }
+
+EOF
+cat > mytest.$ac_ext <<EOF
+#include <stdio.h>
+
+extern int foo();
+
+int main(int, char**)
+{
+  int i = foo();
+  if(i != 1) printf(\"FAIL\\n\");
+  return 0;
+}
+
+EOF
+sh libtool --mode=compile $CXX -c mylib.$ac_ext >&5
+sh libtool --mode=link $CXX -o libtest.la -rpath / -version-info 0 mylib.lo  >&5
+$CXX -c $CFLAGS $CPPFLAGS mytest.$ac_ext >&5
+sh libtool --mode=link $CXX -o mytest mytest.o libtest.la >&5 2>/dev/null
+
+if test -x mytest; then
+	myresult=`./mytest`
+	if test "X$myresult" = "XPASS"; then
+		AC_MSG_RESULT(yes)
+	else
+		AC_MSG_RESULT(no)
+		AC_ERROR([
+===================================================================
+ERROR: This platform lacks support of construction of global
+objects in shared librarys.
+
+See ftp://rtfm.mit.edu/pub/usenet/news.answers/g++-FAQ/plain
+for details about this problem.  Also for possible solutions
+http://www.informatik.uni-frankfurt.de/~fp/Tcl/tcl-c++/tcl-c++.html
+===================================================================])
+	fi
+else
+	AC_MSG_RESULT(unknown)
+fi
+rm -f mylib.* mytest.* libtest.la .libs/libtest* mytest .libs/mytest .libs/lt-mytest .libs/mylib.* >&5
+rmdir .libs >&5
+
+# -- const_cast
+AC_MSG_CHECKING([if C++ compiler supports const_cast<> (required)])
+AC_TRY_COMPILE(
+[
+   class foo;
+],[
+   const foo *c=0;
+   foo *c1=const_cast<foo*>(c);
+],[
+  AC_MSG_RESULT(yes)
+],[
+  AC_MSG_RESULT(no)
+  AC_ERROR(C++ compiler const_cast<> does not work)
+])
+
+# -- dynamic_cast
+AC_MSG_CHECKING([if C++ compiler supports dynamic_cast<> (required)])
+AC_TRY_COMPILE(
+[
+   class foo { virtual ~foo() { } };
+   class bar : public foo { };
+],[
+   foo *c=0;
+   bar *c1=dynamic_cast<bar*>(c);
+],[
+  AC_MSG_RESULT(yes)
+],[
+  AC_MSG_RESULT(no)
+  AC_ERROR(C++ compiler dynamic_cast<> does not work)
+])
+
+# -- mutable
+AC_MSG_CHECKING(if C++ compiler supports mutable (required))
+AC_TRY_COMPILE(
+[
+class k {
+        mutable char *c;
+public:
+   void foo() const { c=0; }
+};
+],[
+],[
+  AC_MSG_RESULT(yes)
+],[
+  AC_MSG_RESULT(no)
+  AC_ERROR(C++ compiler does not support 'mutable')
+])
+
+# -- namespace
+AC_MSG_CHECKING(if C++ compiler supports name spaces (required))
+AC_TRY_COMPILE(
+[
+namespace Check
+  {
+   int i;
+  }
+],[
+  Check::i=1;
+],[
+  AC_MSG_RESULT(yes)
+],[
+  AC_MSG_RESULT(no)
+  AC_ERROR(C++ compiler does not support 'namespace')
+])
+
+
+#
 # Target OS and architecture
 #
 
@@ -1299,6 +1425,14 @@ AC_SUBST(PKGCONFIG_LIBS)
 EXTRA_CFLAGS="$EXTRA_CFLAGS -D_REENTRANT=1"
 EXTRA_LIBS=""
 
+CFLAGS=""
+
+if test x$VMIME_DEBUG = x1 ; then
+	CFLAGS="$CFLAGS -g"
+else
+	CFLAGS="$CFLAGS -O2"
+fi
+
 
 #
 # Check to see if the compiler can handle some flags
@@ -1318,6 +1452,8 @@ EXTRA_LIBS=""
 	configure_in.write("""
 EXTRA_CFLAGS=`echo $EXTRA_CFLAGS | sed -e 's| |\\n|g' | sort | uniq | tr '\\n' ' '`
 EXTRA_LIBS=`echo $EXTRA_LIBS | sed -e 's|^ ||g' | sed -e 's|  | |g'`
+
+AC_SUBST(CFLAGS)
 
 AC_SUBST(EXTRA_CFLAGS)
 AC_SUBST(EXTRA_LIBS)
