@@ -20,6 +20,7 @@
 #include "vmime/text.hpp"
 
 #include "vmime/utility/stringUtils.hpp"
+#include "vmime/parserHelpers.hpp"
 
 #include "vmime/encoder.hpp"
 #include "vmime/encoderB64.hpp"

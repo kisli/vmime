@@ -18,6 +18,7 @@
 //
 
 #include "vmime/utility/stringUtils.hpp"
+#include "vmime/parserHelpers.hpp"
 
 
 namespace vmime {
