@@ -83,7 +83,7 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 			throw vmime::exceptions::connection_error("Cannot resolve address.");
 		}
 
-		bcopy(hostInfo->h_addr, reinterpret_cast <char*>(&addr.sin_addr), hostInfo->h_length);
+		::memcpy(reinterpret_cast <char*>(&addr.sin_addr), hostInfo->h_addr, hostInfo->h_length);
 	}
 
 	// Get a new socket

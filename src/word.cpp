@@ -67,7 +67,7 @@ word* word::parseNext(const string& buffer, const string::size_type position,
 	//   - before the first word
 	//   - between two encoded words
 	//   - after the last word
-	while (pos < end && parserHelpers::isspace(buffer[pos]))
+	while (pos < end && parserHelpers::isSpace(buffer[pos]))
 		++pos;
 
 	string::size_type startPos = pos;
@@ -84,7 +84,7 @@ word* word::parseNext(const string& buffer, const string::size_type position,
 			if (pos > position && buffer[pos - 1] == '\r')
 				--endPos;
 
-			while (pos != end && parserHelpers::isspace(buffer[pos]))
+			while (pos != end && parserHelpers::isSpace(buffer[pos]))
 				++pos;
 
 			unencoded += string(buffer.begin() + startPos, buffer.begin() + endPos);

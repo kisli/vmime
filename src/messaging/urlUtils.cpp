@@ -34,7 +34,7 @@ const string urlUtils::encode(const string& s)
 	{
 		const char_t c = *it;
 
-		if (parserHelpers::isprint(c) && c != '%')
+		if (parserHelpers::isPrint(c) && c != '%')
 		{
 			result += c;
 		}

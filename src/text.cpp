@@ -265,7 +265,7 @@ text* text::newFromString(const string& in, const charset& ch, text* generateInE
 
 	for ( ; ; )
 	{
-		if (p == end || parserHelpers::isspace(*p))
+		if (p == end || parserHelpers::isSpace(*p))
 		{
 			if (p != end)
 				++p;
@@ -310,7 +310,7 @@ text* text::newFromString(const string& in, const charset& ch, text* generateInE
 			is8bit = false;
 			start = p;
 		}
-		else if (!parserHelpers::isascii(*p))
+		else if (!parserHelpers::isAscii(*p))
 		{
 			is8bit = true;
 			++p;

@@ -1463,7 +1463,8 @@ fi
 		configure_in.write('AC_TRY_COMPILE(,,echo yes,echo no; EXTRA_CFLAGS="$OLD_EXTRA_CFLAGS")\n\n')
 
 	configure_in.write("""
-EXTRA_CFLAGS=`echo $EXTRA_CFLAGS | sed -e 's| |\\n|g' | sort | uniq | tr '\\n' ' '`
+#EXTRA_CFLAGS=`echo $EXTRA_CFLAGS | sed -e 's| |\\n|g' | sort | uniq | tr '\\n' ' '`
+EXTRA_CFLAGS=`echo $EXTRA_CFLAGS | tr '\\n' ' ' | sort | uniq | tr '\\n' ' '`
 EXTRA_LIBS=`echo $EXTRA_LIBS | sed -e 's|^ ||g' | sed -e 's|  | |g'`
 
 AC_SUBST(CFLAGS)

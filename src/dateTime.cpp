@@ -70,22 +70,22 @@ void datetime::parse(const string& buffer, const string::size_type position,
 	const string::value_type* p = buffer.data() + position;
 
 	// Parse the date and time value
-	while (p < pend && parserHelpers::isspace(*p)) ++p;
+	while (p < pend && parserHelpers::isSpace(*p)) ++p;
 
 	if (p < pend)
 	{
-		if (parserHelpers::isalpha(*p))
+		if (parserHelpers::isAlpha(*p))
 		{
 			// Ignore week day
-			while (p < pend && parserHelpers::isalpha(*p)) ++p;
-			while (p < pend && parserHelpers::isspace(*p)) ++p;
+			while (p < pend && parserHelpers::isAlpha(*p)) ++p;
+			while (p < pend && parserHelpers::isSpace(*p)) ++p;
 			if (p < pend && *p == ',') ++p;
-			while (p < pend && parserHelpers::isspace(*p)) ++p;
+			while (p < pend && parserHelpers::isSpace(*p)) ++p;
 		}
 
-		while (p < pend && !parserHelpers::isdigit(*p)) ++p;
+		while (p < pend && !parserHelpers::isDigit(*p)) ++p;
 
-		if (p < pend && parserHelpers::isdigit(*p))
+		if (p < pend && parserHelpers::isDigit(*p))
 		{
 			// Month day
 			int day = 0;
@@ -95,23 +95,23 @@ void datetime::parse(const string& buffer, const string::size_type position,
 				day = day * 10 + (*p - '0');
 				++p;
 			}
-			while (p < pend && parserHelpers::isdigit(*p));
+			while (p < pend && parserHelpers::isDigit(*p));
 
 			m_day = (day >= 1 && day <= 31) ? day : 1;
 
-			while (p < pend && !parserHelpers::isspace(*p)) ++p;
-			while (p < pend && parserHelpers::isspace(*p)) ++p;
+			while (p < pend && !parserHelpers::isSpace(*p)) ++p;
+			while (p < pend && parserHelpers::isSpace(*p)) ++p;
 		}
 		else
 		{
 			m_day = 1;
 
 			// Skip everything to the next field
-			while (p < pend && !parserHelpers::isspace(*p)) ++p;
-			while (p < pend && parserHelpers::isspace(*p)) ++p;
+			while (p < pend && !parserHelpers::isSpace(*p)) ++p;
+			while (p < pend && parserHelpers::isSpace(*p)) ++p;
 		}
 
-		if (p < pend && parserHelpers::isalpha(*p))
+		if (p < pend && parserHelpers::isAlpha(*p))
 		{
 			// Month
 			char_t month[4] = { 0 };
@@ -122,9 +122,9 @@ void datetime::parse(const string& buffer, const string::size_type position,
 				month[monthLength++] = *p;
 				++p;
 			}
-			while (monthLength < 3 && p < pend && parserHelpers::isalpha(*p));
+			while (monthLength < 3 && p < pend && parserHelpers::isAlpha(*p));
 
-			while (p < pend && parserHelpers::isalpha(*p)) ++p;
+			while (p < pend && parserHelpers::isAlpha(*p)) ++p;
 
 			switch (month[0])
 			{
@@ -208,19 +208,19 @@ void datetime::parse(const string& buffer, const string::size_type position,
 
 			}
 
-			while (p < pend && !parserHelpers::isspace(*p)) ++p;
-			while (p < pend && parserHelpers::isspace(*p)) ++p;
+			while (p < pend && !parserHelpers::isSpace(*p)) ++p;
+			while (p < pend && parserHelpers::isSpace(*p)) ++p;
 		}
 		else
 		{
 			m_month = JANUARY;
 
 			// Skip everything to the next field
-			while (p < pend && !parserHelpers::isspace(*p)) ++p;
-			while (p < pend && parserHelpers::isspace(*p)) ++p;
+			while (p < pend && !parserHelpers::isSpace(*p)) ++p;
+			while (p < pend && parserHelpers::isSpace(*p)) ++p;
 		}
 
-		if (p < pend && parserHelpers::isdigit(*p))
+		if (p < pend && parserHelpers::isDigit(*p))
 		{
 			// Year
 			int year = 0;
@@ -230,25 +230,25 @@ void datetime::parse(const string& buffer, const string::size_type position,
 				year = year * 10 + (*p - '0');
 				++p;
 			}
-			while (p < pend && parserHelpers::isdigit(*p));
+			while (p < pend && parserHelpers::isDigit(*p));
 
 			if (year < 70)         m_year = year + 2000;
 			else if (year < 1000)  m_year = year + 1900;
 			else                   m_year = year;
 
-			while (p < pend && !parserHelpers::isspace(*p)) ++p;
-			while (p < pend && parserHelpers::isspace(*p)) ++p;
+			while (p < pend && !parserHelpers::isSpace(*p)) ++p;
+			while (p < pend && parserHelpers::isSpace(*p)) ++p;
 		}
 		else
 		{
 			m_year = 1970;
 
 			// Skip everything to the next field
-			while (p < pend && !parserHelpers::isspace(*p)) ++p;
-			while (p < pend && parserHelpers::isspace(*p)) ++p;
+			while (p < pend && !parserHelpers::isSpace(*p)) ++p;
+			while (p < pend && parserHelpers::isSpace(*p)) ++p;
 		}
 
-		if (p < pend && parserHelpers::isdigit(*p))
+		if (p < pend && parserHelpers::isDigit(*p))
 		{
 			// Hour
 			int hour = 0;
@@ -258,19 +258,19 @@ void datetime::parse(const string& buffer, const string::size_type position,
 				hour = hour * 10 + (*p - '0');
 				++p;
 			}
-			while (p < pend && parserHelpers::isdigit(*p));
+			while (p < pend && parserHelpers::isDigit(*p));
 
 			m_hour = (hour >= 0 && hour <= 23) ? hour : 0;
 
-			while (p < pend && parserHelpers::isspace(*p)) ++p;
+			while (p < pend && parserHelpers::isSpace(*p)) ++p;
 
 			if (p < pend && *p == ':')
 			{
 				++p;
 
-				while (p < pend && parserHelpers::isspace(*p)) ++p;
+				while (p < pend && parserHelpers::isSpace(*p)) ++p;
 
-				if (p < pend && parserHelpers::isdigit(*p))
+				if (p < pend && parserHelpers::isDigit(*p))
 				{
 					// Minute
 					int minute = 0;
@@ -280,19 +280,19 @@ void datetime::parse(const string& buffer, const string::size_type position,
 						minute = minute * 10 + (*p - '0');
 						++p;
 					}
-					while (p < pend && parserHelpers::isdigit(*p));
+					while (p < pend && parserHelpers::isDigit(*p));
 
 					m_minute = (minute >= 0 && minute <= 59) ? minute : 0;
 
-					while (p < pend && parserHelpers::isspace(*p)) ++p;
+					while (p < pend && parserHelpers::isSpace(*p)) ++p;
 
 					if (p < pend && *p == ':')
 					{
 						++p;
 
-						while (p < pend && parserHelpers::isspace(*p)) ++p;
+						while (p < pend && parserHelpers::isSpace(*p)) ++p;
 
-						if (p < pend && parserHelpers::isdigit(*p))
+						if (p < pend && parserHelpers::isDigit(*p))
 						{
 							// Second
 							int second = 0;
@@ -302,12 +302,12 @@ void datetime::parse(const string& buffer, const string::size_type position,
 								second = second * 10 + (*p - '0');
 								++p;
 							}
-							while (p < pend && parserHelpers::isdigit(*p));
+							while (p < pend && parserHelpers::isDigit(*p));
 
 							m_second = (second >= 0 && second <= 59) ? second : 0;
 
-							while (p < pend && !parserHelpers::isspace(*p)) ++p;
-							while (p < pend && parserHelpers::isspace(*p)) ++p;
+							while (p < pend && !parserHelpers::isSpace(*p)) ++p;
+							while (p < pend && parserHelpers::isSpace(*p)) ++p;
 						}
 						else
 						{
@@ -334,11 +334,11 @@ void datetime::parse(const string& buffer, const string::size_type position,
 			m_hour = 0;
 
 			// Skip everything to the next field
-			while (p < pend && !parserHelpers::isspace(*p)) ++p;
-			while (p < pend && parserHelpers::isspace(*p)) ++p;
+			while (p < pend && !parserHelpers::isSpace(*p)) ++p;
+			while (p < pend && parserHelpers::isSpace(*p)) ++p;
 		}
 
-		if (p + 1 < pend && (*p == '+' || *p == '-') && parserHelpers::isdigit(*(p + 1)))
+		if (p + 1 < pend && (*p == '+' || *p == '-') && parserHelpers::isDigit(*(p + 1)))
 		{
 			const char_t sign = *p;
 			++p;
@@ -351,7 +351,7 @@ void datetime::parse(const string& buffer, const string::size_type position,
 				offset = offset * 10 + (*p - '0');
 				++p;
 			}
-			while (p < pend && parserHelpers::isdigit(*p));
+			while (p < pend && parserHelpers::isDigit(*p));
 
 			const int hourOff = offset / 100;
 			const int minOff = offset % 100;
@@ -374,7 +374,7 @@ void datetime::parse(const string& buffer, const string::size_type position,
 				zone[zoneLength++] = *p;
 				++p;
 			}
-			while (zoneLength < 3 && p < pend && parserHelpers::isdigit(*p));
+			while (zoneLength < 3 && p < pend && parserHelpers::isDigit(*p));
 
 			switch (zone[0])
 			{
@@ -495,7 +495,7 @@ void datetime::parse(const string& buffer, const string::size_type position,
 						 ::vmime::end(offsetMapInit));
 
 					Map::const_iterator pos =
-						offsetMap.find(parserHelpers::tolower(z));
+						offsetMap.find(parserHelpers::toLower(z));
 
 					if (pos != offsetMap.end())
 						m_zone = (*pos).second;

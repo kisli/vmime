@@ -97,11 +97,11 @@ headerField* headerField::parseNext(const string& buffer, const string::size_typ
 		}
 
 		// This line may be a field description
-		if (!parserHelpers::isspace(c))
+		if (!parserHelpers::isSpace(c))
 		{
 			const string::size_type nameStart = pos;  // remember the start position of the line
 
-			while (pos < end && (buffer[pos] != ':' && !parserHelpers::isspace(buffer[pos])))
+			while (pos < end && (buffer[pos] != ':' && !parserHelpers::isSpace(buffer[pos])))
 				++pos;
 
 			const string::size_type nameEnd = pos;

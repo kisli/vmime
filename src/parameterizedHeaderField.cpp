@@ -78,7 +78,7 @@ void parameterizedHeaderField::parse(const string& buffer, const string::size_ty
 			// Skip ';'
 			++p;
 
-			while (p < pend && parserHelpers::isspace(*p)) ++p;
+			while (p < pend && parserHelpers::isSpace(*p)) ++p;
 
 			const string::size_type attrStart = position + (p - pstart);
 
@@ -98,14 +98,14 @@ void parameterizedHeaderField::parse(const string& buffer, const string::size_ty
 				// Extract the attribute name
 				string::size_type attrEnd = position + (p - pstart);
 
-				while (attrEnd != attrStart && parserHelpers::isspace(buffer[attrEnd - 1]))
+				while (attrEnd != attrStart && parserHelpers::isSpace(buffer[attrEnd - 1]))
 					--attrEnd;
 
 				// Skip '='
 				++p;
 
 				// Skip white-spaces between '=' and the value
-				while (p < pend && parserHelpers::isspace(*p)) ++p;
+				while (p < pend && parserHelpers::isSpace(*p)) ++p;
 
 				// Extract the value
 				string value;
@@ -173,7 +173,7 @@ void parameterizedHeaderField::parse(const string& buffer, const string::size_ty
 
 					string::size_type valEnd = position + (p - pstart);
 
-					while (valEnd != valStart && parserHelpers::isspace(buffer[valEnd - 1]))
+					while (valEnd != valStart && parserHelpers::isSpace(buffer[valEnd - 1]))
 						--valEnd;
 
 					value = string(buffer.begin() + valStart,
@@ -194,7 +194,7 @@ void parameterizedHeaderField::parse(const string& buffer, const string::size_ty
 				}
 
 				// Skip white-spaces after this parameter
-				while (p < pend && parserHelpers::isspace(*p)) ++p;
+				while (p < pend && parserHelpers::isSpace(*p)) ++p;
 			}
 		}
 	}

@@ -109,7 +109,7 @@ void body::parse(const string& buffer, const string::size_type position,
 						//  characters from a set of characters known to be very
 						//  robust through email gateways, and NOT ending with
 						//  white space..."
-						while (pos != start && parserHelpers::isspace(buffer[pos - 1]))
+						while (pos != start && parserHelpers::isSpace(buffer[pos - 1]))
 							--pos;
 
 						boundary = string(buffer.begin() + start,

@@ -205,7 +205,7 @@ const utility::stream::size_type encoderB64::decode(utility::inputStream& in, ut
 		{
 			const unsigned char c = buffer[bufferPos++];
 
-			if (!parserHelpers::isspace(c))
+			if (!parserHelpers::isSpace(c))
 				bytes[count++] = c;
 		}
 
@@ -221,7 +221,7 @@ const utility::stream::size_type encoderB64::decode(utility::inputStream& in, ut
 				{
 					const unsigned char c = buffer[bufferPos++];
 
-					if (!parserHelpers::isspace(c))
+					if (!parserHelpers::isSpace(c))
 						bytes[count++] = c;
 				}
 			}

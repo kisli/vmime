@@ -2,6 +2,10 @@
 VERSION 0.6.4cvs
 ================
 
+2005-03-16  Vincent Richard  <vincent@vincent-richard.net>
+
+ * Fixed compilation problems on Solaris 9.
+
 2005-03-15  Vincent Richard  <vincent@vincent-richard.net>
 
  * tests/parser/textTest.cpp: added more unit tests for 'text' class.

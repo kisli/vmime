@@ -173,7 +173,7 @@ const utility::stream::size_type encoderUUE::decode(utility::inputStream& in, ut
 			    inBuffer[1] == 'g' &&
 			    inBuffer[2] == 'i' &&
 			    inBuffer[3] == 'n' &&
-			    parserHelpers::isspace(inBuffer[4]))
+			    parserHelpers::isSpace(inBuffer[4]))
 			{
 				utility::stream::value_type c = 0;
 
@@ -201,15 +201,15 @@ const utility::stream::size_type encoderUUE::decode(utility::inputStream& in, ut
 
 					utility::stream::value_type* p = buffer;
 
-					while (*p && parserHelpers::isspace(*p)) ++p;
+					while (*p && parserHelpers::isSpace(*p)) ++p;
 
 					utility::stream::value_type* modeStart = buffer;
 
-					while (*p && !parserHelpers::isspace(*p)) ++p;
+					while (*p && !parserHelpers::isSpace(*p)) ++p;
 
 					getResults()["mode"] = string(modeStart, p);
 
-					while (*p && parserHelpers::isspace(*p)) ++p;
+					while (*p && parserHelpers::isSpace(*p)) ++p;
 
 					utility::stream::value_type* filenameStart = buffer;
 
