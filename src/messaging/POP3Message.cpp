@@ -28,19 +28,6 @@ namespace vmime {
 namespace messaging {
 
 
-
-class POP3header : public header
-{
-public:
-
-	POP3header(const string& str)
-	{
-		parse(str);
-	}
-};
-
-
-
 POP3Message::POP3Message(POP3Folder* folder, const int num)
 	: m_folder(folder), m_num(num), m_header(NULL)
 {
@@ -53,7 +40,7 @@ POP3Message::~POP3Message()
 	if (m_folder)
 		m_folder->unregisterMessage(this);
 
-	delete dynamic_cast <POP3header*>(m_header);
+	delete (m_header);
 }
 
 
@@ -201,7 +188,14 @@ void POP3Message::fetch(POP3Folder* folder, const int options)
 		string buffer;
 		m_folder->m_store->readResponse(buffer, true);
 
-		m_header = new POP3header(buffer);
+		if (m_header != NULL)
+		{
+			delete (m_header);
+			m_header = NULL;
+		}
+
+		m_header = new header();
+		m_header->parse(buffer);
 	}
 	catch (exceptions::command_error& e)
 	{
