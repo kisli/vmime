@@ -515,6 +515,7 @@ env.Append(CXXFLAGS = ['-ansi'])
 env.Append(CXXFLAGS = ['-pedantic'])
 env.Append(CXXFLAGS = ['-Wpointer-arith'])
 env.Append(CXXFLAGS = ['-Wold-style-cast'])
+env.Append(CXXFLAGS = ['-Wconversion'])
 
 env.Append(TARFLAGS = ['-c'])
 env.Append(TARFLAGS = ['--bzip2'])
@@ -1453,7 +1454,7 @@ fi
 
 """)
 
-	compilerFlags = [ '-pipe', '-ansi', '-pedantic', '-W', '-Wall' ]
+	compilerFlags = [ '-pipe', '-ansi', '-pedantic', '-W', '-Wall', '-Wpointer-arith', '-Wold-style-cast', '-Wconversion' ]
 
 	for f in compilerFlags:
 		configure_in.write('# ' + f + '\n')
