@@ -114,6 +114,31 @@ namespace
 			assert_eq("2.7", vmime::charset(vmime::charsets::US_ASCII), t2.getWordAt(2)->getCharset());
 		}
 
+		static const vmime::string getDisplayText(const vmime::text& t)
+		{
+			vmime::string res;
+
+			for (int i = 0 ; i < t.getWordCount() ; ++i)
+				res += t.getWordAt(i)->getBuffer();
+
+			return res;
+		}
+
+		void testDisplayForm()  // from RFC-2047
+		{
+#define DISPLAY_FORM(x) getDisplayText(*vmime::text::decodeAndUnfold(x))
+
+			assert_eq("1", "a", DISPLAY_FORM("=?ISO-8859-1?Q?a?="));
+			assert_eq("2", "a b", DISPLAY_FORM("=?ISO-8859-1?Q?a?= b"));
+			assert_eq("3", "ab", DISPLAY_FORM("=?ISO-8859-1?Q?a?= =?ISO-8859-1?Q?b?="));
+			assert_eq("4", "ab", DISPLAY_FORM("=?ISO-8859-1?Q?a?= \t  =?ISO-8859-1?Q?b?="));
+			assert_eq("5", "ab", DISPLAY_FORM("=?ISO-8859-1?Q?a?= \r\n  \t =?ISO-8859-1?Q?b?="));
+			assert_eq("6", "a b", DISPLAY_FORM("=?ISO-8859-1?Q?a_b?="));
+			assert_eq("7", "a b", DISPLAY_FORM("=?ISO-8859-1?Q?a?= =?ISO-8859-2?Q?_b?="));
+
+#undef DISPLAY_FORM
+		}
+
 		// TODO: tests for encodeAndFold() and decodeAndUnfold()
 
 	public:
@@ -125,6 +150,7 @@ namespace
 			add("Constructors", testcase(this, "Constructors", &textTest::testConstructors));
 			add("Copy", testcase(this, "Copy", &textTest::testCopy));
 			add("NewFromString", testcase(this, "NewFromString", &textTest::testNewFromString));
+			add("DisplatForm", testcase(this, "DisplayForm", &textTest::testDisplayForm));
 
 			suite::main().add("vmime::text", this);
 		}
