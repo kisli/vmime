@@ -192,6 +192,7 @@ public:
 	const int getMinute() const;
 	const int getSecond() const;
 	const int getZone() const;
+	const int getWeekDay() const;
 
 	void getTime(int& hour, int& minute, int& second, int& zone) const;
 	void getTime(int& hour, int& minute, int& second) const;
@@ -221,10 +222,6 @@ public:
 	static const datetime now();
 
 	const std::vector <const component*> getChildComponents() const;
-
-private:
-
-	static const int dayOfWeek(const int year, const int month, const int day);
 
 public:
 

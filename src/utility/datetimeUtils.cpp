@@ -217,5 +217,29 @@ const int datetimeUtils::getDaysInMonth(const int year, const int month)
 }
 
 
+const int datetimeUtils::getDayOfWeek(const int year, const int month, const int day)
+{
+	int y = year;
+	int m = month;
+
+	// From RFC-3339 - Appendix B. Day of the Week
+
+	// Adjust months so February is the last one
+	m -= 2;
+
+	if (m < 1)
+	{
+		m += 12;
+		--y;
+	}
+
+	// Split by century
+	const int cent = y / 100;
+	y %= 100;
+
+	return (((26 * m - 2) / 10 + day + y + (y >> 2) + (cent >> 2) + 5 * cent) % 7);
+}
+
+
 } // utility
 } // vmime

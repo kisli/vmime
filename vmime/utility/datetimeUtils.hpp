@@ -65,6 +65,15 @@ public:
 	  * @return local time and date
 	  */
 	static const datetime universalTimeToLocalTime(const datetime& date, const int zone);
+
+	/** Return the day of the week from the specified date.
+	  *
+	  * @param year year in 4-digit format
+	  * @param month month (1-12), January is 1, December is 12 (see datetime::Months enum)
+	  * @param day month day (1-31)
+	  * @return the day of the week, Sunday is 0, Monday is 1 (see datetime::DaysOfWeek enum)
+	  */
+	static const int getDayOfWeek(const int year, const int month, const int day);
 };
 
 

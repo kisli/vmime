@@ -23,6 +23,8 @@
 #include "vmime/platformDependant.hpp"
 #include "vmime/parserHelpers.hpp"
 
+#include "vmime/utility/datetimeUtils.hpp"
+
 
 namespace vmime
 {
@@ -545,7 +547,7 @@ void datetime::generate(utility::outputStream& os, const string::size_type /* ma
 	const int zm = z % 60;
 
 	std::ostringstream oss;
-	oss << dayNames[dayOfWeek(m_year, m_month, m_day)] << ", "
+	oss << dayNames[getWeekDay()] << ", "
 	    << m_day << " " << monthNames[m_month - 1] << " " << m_year
 	    << " " << std::setfill('0') << std::setw(2) << m_hour << ":"
 	    << std::setfill('0') << std::setw(2) << m_minute << ":"
@@ -673,30 +675,6 @@ void datetime::setDate(const int year, const int month, const int day)
 }
 
 
-const int datetime::dayOfWeek(const int year, const int month, const int day)
-{
-	int y = year;
-	int m = month;
-
-	// From RFC-3339 - Appendix B. Day of the Week
-
-	// Adjust months so February is the last one
-	m -= 2;
-
-	if (m < 1)
-	{
-		m += 12;
-		--y;
-	}
-
-	// Split by century
-	const int cent = y / 100;
-	y %= 100;
-
-	return (((26 * m - 2) / 10 + day + y + (y >> 2) + (cent >> 2) + 5 * cent) % 7);
-}
-
-
 const datetime datetime::now()
 {
 	return (platformDependant::getHandler()->getCurrentLocalTime());
@@ -722,6 +700,7 @@ const int datetime::getHour() const { return (m_hour); }
 const int datetime::getMinute() const { return (m_minute); }
 const int datetime::getSecond() const { return (m_second); }
 const int datetime::getZone() const { return (m_zone); }
+const int datetime::getWeekDay() const { return (utility::datetimeUtils::getDayOfWeek(m_year, m_month, m_day)); }
 
 void datetime::setYear(const int year) { m_year = year; }
 void datetime::setMonth(const int month) { m_month = std::min(std::max(month, 1), 12); }
