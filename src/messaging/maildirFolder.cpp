@@ -125,6 +125,8 @@ void maildirFolder::open(const int mode, bool /* failIfModeIsNotAvailable */)
 	else if (!exists())
 		throw exceptions::illegal_state("Folder already exists");
 
+	scanFolder();
+
 	m_open = true;
 	m_mode = mode;
 }
@@ -257,9 +259,6 @@ const bool maildirFolder::isOpen() const
 
 void maildirFolder::scanFolder()
 {
-	if (!isOpen())
-		throw exceptions::illegal_state("Folder not open");
-
 	try
 	{
 		utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
@@ -788,17 +787,23 @@ void maildirFolder::status(int& count, int& unseen)
 
 		events::messageCountEvent event(this, events::messageCountEvent::TYPE_ADDED, nums);
 
+		notifyMessageCount(event);
+
+		// Notify folders with the same path
 		for (std::list <maildirFolder*>::iterator it = m_store->m_folders.begin() ;
 		     it != m_store->m_folders.end() ; ++it)
 		{
-			if ((*it)->getFullPath() == m_path)
+			if ((*it) != this && (*it)->getFullPath() == m_path)
 			{
-				(*it)->m_messageCount = count;
-				(*it)->m_unreadMessageCount = unseen;
+				(*it)->m_messageCount = m_messageCount;
+				(*it)->m_unreadMessageCount = m_unreadMessageCount;
+
+				events::messageCountEvent event(*it, events::messageCountEvent::TYPE_ADDED, nums);
 
 				(*it)->notifyMessageCount(event);
 
-				(*it)->scanFolder();
+				(*it)->m_messageInfos.resize(m_messageInfos.size());
+				std::copy(m_messageInfos.begin(), m_messageInfos.end(), (*it)->m_messageInfos.begin());
 			}
 		}
 	}
@@ -861,13 +866,31 @@ void maildirFolder::expunge()
 			m_messageInfos.erase(m_messageInfos.begin() + i);
 	}
 
-	// Notify message expunged
-	events::messageCountEvent event(this, events::messageCountEvent::TYPE_REMOVED, nums);
-
 	m_messageCount -= nums.size();
 	m_unreadMessageCount -= unreadCount;
 
+	// Notify message expunged
+	events::messageCountEvent event(this, events::messageCountEvent::TYPE_REMOVED, nums);
+
 	notifyMessageCount(event);
+
+	// Notify folders with the same path
+	for (std::list <maildirFolder*>::iterator it = m_store->m_folders.begin() ;
+	     it != m_store->m_folders.end() ; ++it)
+	{
+		if ((*it) != this && (*it)->getFullPath() == m_path)
+		{
+			(*it)->m_messageCount = m_messageCount;
+			(*it)->m_unreadMessageCount = m_unreadMessageCount;
+
+			events::messageCountEvent event(*it, events::messageCountEvent::TYPE_REMOVED, nums);
+
+			(*it)->notifyMessageCount(event);
+
+			(*it)->m_messageInfos.resize(m_messageInfos.size());
+			std::copy(m_messageInfos.begin(), m_messageInfos.end(), (*it)->m_messageInfos.begin());
+		}
+	}
 }
 
 

@@ -1214,11 +1214,26 @@ void IMAPFolder::expunge()
 		}
 	}
 
+	m_messageCount -= nums.size();
+
 	// Notify message expunged
 	events::messageCountEvent event(this, events::messageCountEvent::TYPE_REMOVED, nums);
 
-	m_messageCount -= nums.size();
 	notifyMessageCount(event);
+
+	// Notify folders with the same path
+	for (std::list <IMAPFolder*>::iterator it = m_store->m_folders.begin() ;
+	     it != m_store->m_folders.end() ; ++it)
+	{
+		if ((*it) != this && (*it)->getFullPath() == m_path)
+		{
+			(*it)->m_messageCount = m_messageCount;
+
+			events::messageCountEvent event(*it, events::messageCountEvent::TYPE_REMOVED, nums);
+
+			(*it)->notifyMessageCount(event);
+		}
+	}
 }
 
 
@@ -1474,12 +1489,18 @@ void IMAPFolder::status(int& count, int& unseen)
 
 			events::messageCountEvent event(this, events::messageCountEvent::TYPE_ADDED, nums);
 
+			notifyMessageCount(event);
+
+			// Notify folders with the same path
 			for (std::list <IMAPFolder*>::iterator it = m_store->m_folders.begin() ;
 			     it != m_store->m_folders.end() ; ++it)
 			{
-				if ((*it)->getFullPath() == m_path)
+				if ((*it) != this && (*it)->getFullPath() == m_path)
 				{
 					(*it)->m_messageCount = count;
+
+					events::messageCountEvent event(*it, events::messageCountEvent::TYPE_ADDED, nums);
+
 					(*it)->notifyMessageCount(event);
 				}
 			}
