@@ -12,6 +12,7 @@
 #   . scons opt=value     set a configuration option
 #   . scons install       install library and include files (as root)
 #   . scons dist          build a source package (.tar.bz2)
+#   . scons doc           build documentation for the project (Doxygen)
 #
 
 import commands
@@ -438,6 +439,11 @@ Help(opts.GenerateHelpText(env))
 # Cache current options
 opts.Save('options.cache', env)
 
+# Documentation generation system
+doxygenBuilder = Builder(action = 'doxygen $SOURCE')
+env.Append(BUILDERS = { 'DoxygenDoc' : doxygenBuilder })
+
+
 
 ##########################
 #  Some initializations  #
@@ -730,3 +736,14 @@ if not (os.name == 'win32' or os.name == 'nt'):
 
 	#env.Alias('dist', [ packageFile, packageFileWithTests ])
 	env.Alias('dist', packageFile)
+
+
+###################
+#  Documentation  #
+###################
+
+doxygenDocPath = '(doxygen-generated-files)'
+
+env.DoxygenDoc(doxygenDocPath, 'vmime.doxygen')
+env.Alias('doc', doxygenDocPath)
+
