@@ -77,6 +77,8 @@ private:
 
 	header& getOrCreateHeader();
 
+	void extractImpl(utility::outputStream& os, progressionListener* progress, const int start, const int length, const int partialStart, const int partialLength) const;
+
 
 	maildirFolder* m_folder;
 

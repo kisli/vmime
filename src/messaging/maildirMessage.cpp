@@ -67,6 +67,12 @@ public:
 			return (*(m_header = new header()));
 	}
 
+	const int getHeaderParsedOffset() const { return (m_headerParsedOffset); }
+	const int getHeaderParsedLength() const { return (m_headerParsedLength); }
+
+	const int getBodyParsedOffset() const { return (m_bodyParsedOffset); }
+	const int getBodyParsedLength() const { return (m_bodyParsedLength); }
+
 private:
 
 	maildirStructure* m_structure;
@@ -270,20 +276,89 @@ void maildirMessage::setFlags(const int flags, const int mode)
 void maildirMessage::extract(utility::outputStream& os,
 	progressionListener* progress, const int start, const int length) const
 {
-	// TODO
+	extractImpl(os, progress, 0, m_size, start, length);
 }
 
 
 void maildirMessage::extractPart(const part& p, utility::outputStream& os,
 	progressionListener* progress, const int start, const int length) const
 {
-	// TODO
+	const maildirPart& mp = dynamic_cast <const maildirPart&>(p);
+
+	extractImpl(os, progress, mp.getBodyParsedOffset(), mp.getBodyParsedLength(), start, length);
+}
+
+
+void maildirMessage::extractImpl(utility::outputStream& os, progressionListener* progress,
+	const int start, const int length, const int partialStart, const int partialLength) const
+{
+	utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
+
+	const utility::file::path path = m_folder->getMessageFSPath(m_num);
+	utility::auto_ptr <utility::file> file = fsf->create(path);
+
+	utility::auto_ptr <utility::fileReader> reader = file->getFileReader();
+	utility::auto_ptr <utility::inputStream> is = reader->getInputStream();
+
+	is->skip(start + partialStart);
+
+	utility::stream::value_type buffer[8192];
+	utility::stream::size_type remaining = (partialLength == -1 ? length
+		: std::min(partialLength, length));
+
+	const int total = remaining;
+	int current = 0;
+
+	progress->start(total);
+
+	while (!is->eof() && remaining > 0)
+	{
+		const utility::stream::size_type read =
+			is->read(buffer, std::min(remaining, sizeof(buffer)));
+
+		remaining -= read;
+		current += read;
+
+		os.write(buffer, read);
+
+		progress->progress(current, total);
+	}
+
+	progress->stop(total);
 }
 
 
 void maildirMessage::fetchPartHeader(part& p)
 {
-	// TODO
+	maildirPart& mp = dynamic_cast <maildirPart&>(p);
+
+	utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
+
+	const utility::file::path path = m_folder->getMessageFSPath(m_num);
+	utility::auto_ptr <utility::file> file = fsf->create(path);
+
+	utility::auto_ptr <utility::fileReader> reader = file->getFileReader();
+	utility::auto_ptr <utility::inputStream> is = reader->getInputStream();
+
+	is->skip(mp.getHeaderParsedOffset());
+
+	utility::stream::value_type buffer[1024];
+	utility::stream::size_type remaining = mp.getHeaderParsedLength();
+
+	string contents;
+	contents.reserve(remaining);
+
+	while (!is->eof() && remaining > 0)
+	{
+		const utility::stream::size_type read =
+			is->read(buffer, std::min(remaining, sizeof(buffer)));
+
+		remaining -= read;
+
+		contents.append(buffer, read);
+	}
+
+	mp.getOrCreateHeader().parse(contents);
 }
 
 
