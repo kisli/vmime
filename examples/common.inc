@@ -284,12 +284,12 @@ public:
 		return getpid();
 	}
 
-	vmime::messaging::socketFactory* getSocketFactory(const vmime::string& name) const
+	vmime::messaging::socketFactory* getSocketFactory(const vmime::string& /* name */) const
 	{
 		return m_sf;
 	}
 
-	vmime::messaging::timeoutHandlerFactory* getTimeoutHandlerFactory(const vmime::string& name) const
+	vmime::messaging::timeoutHandlerFactory* getTimeoutHandlerFactory(const vmime::string& /* name */) const
 	{
 		// Not used for now
 		return NULL;

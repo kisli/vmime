@@ -100,7 +100,7 @@ void mailboxGroup::parse(const string& buffer, const string::size_type position,
 		}
 	}
 
-	decodeAndUnfoldText(name, m_name);
+	text::decodeAndUnfold(name, &m_name);
 
 	if (newPosition)
 		*newPosition = end;
@@ -152,8 +152,8 @@ void mailboxGroup::generate(utility::outputStream& os, const string::size_type m
 
 	string::size_type pos = curLinePos;
 
-	encodeAndFoldText(os, m_name, maxLineLength - 2, pos, &pos,
-		forceEncode ? encodeAndFoldFlags::forceEncoding : encodeAndFoldFlags::none);
+	m_name.encodeAndFold(os, maxLineLength - 2, pos, &pos,
+		forceEncode ? text::FORCE_ENCODING : 0);
 
 	os << ":";
 	++pos;

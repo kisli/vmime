@@ -159,6 +159,40 @@ public:
 	*/
 	static text* newFromString(const string& in, const charset& ch, text* generateInExisting = NULL);
 
+	/** Flags used by "encodeAndFold" function.
+	  */
+	enum EncodeAndFoldFlags
+	{
+		// NOTE: If both "FORCE_NO_ENCODING" and "FORCE_ENCODING" are
+		// specified, "FORCE_NO_ENCODING" is used by default.
+
+		FORCE_NO_ENCODING = (1 << 0),    /**< Just fold lines, don't encode them. */
+		FORCE_ENCODING = (1 << 1),       /**< Encode lines even if they are plain ASCII text. */
+		NO_NEW_LINE_SEQUENCE = (1 << 2)  /**< Use CRLF instead of new-line sequence (CRLF + TAB). */
+	};
+
+	/** Encode and fold text in respect to RFC-2047.
+	  *
+	  * @param os output stream
+	  * @param maxLineLength maximum line length for output
+	  * @param firstLineOffset the first line length (may be useful if the current output line is not empty)
+	  * @param lastLineLength will receive the length of the last line written
+	  * @param flags encoding flags (see EncodeAndFoldFlags)
+	  */
+	void encodeAndFold(utility::outputStream& os, const string::size_type maxLineLength,
+		const string::size_type firstLineOffset, string::size_type* lastLineLength, const int flags) const;
+
+	/** Decode and unfold text (RFC-2047).
+	  *
+	  * @param in input string
+	  * @param generateInExisting if not NULL, the resulting text will be generated
+	  * in the specified object instead of a new created object (in this case, the
+	  * function returns the same pointer). Can be used to avoid copying the
+	  * resulting object into an existing object.
+	  * @return new text object or existing object if generateInExisting != NULL
+	  */
+	static text* decodeAndUnfold(const string& in, text* generateInExisting = NULL);
+
 
 	using component::parse;
 	using component::generate;
@@ -168,6 +202,8 @@ public:
 	void generate(utility::outputStream& os, const string::size_type maxLineLength = lineLengthLimits::infinite, const string::size_type curLinePos = 0, string::size_type* newLinePos = NULL) const;
 
 private:
+
+	static void decodeAndUnfold(const string::const_iterator& inStart, const string::const_iterator& inEnd, text& out);
 
 	std::vector <word*> m_words;
 };

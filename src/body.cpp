@@ -258,8 +258,10 @@ void body::generate(utility::outputStream& os, const string::size_type maxLineLe
 
 		if (!prologText.empty())
 		{
-			encodeAndFoldText(os, text(word(prologText, getCharset())), maxLineLength, 0,
-				NULL, encodeAndFoldFlags::forceNoEncoding | encodeAndFoldFlags::noNewLineSequence);
+			text prolog(word(prologText, getCharset()));
+
+			prolog.encodeAndFold(os, maxLineLength, 0,
+				NULL, text::FORCE_NO_ENCODING | text::NO_NEW_LINE_SEQUENCE);
 
 			os << CRLF;
 		}
@@ -279,8 +281,10 @@ void body::generate(utility::outputStream& os, const string::size_type maxLineLe
 
 		if (!epilogText.empty())
 		{
-			encodeAndFoldText(os, text(word(epilogText, getCharset())), maxLineLength, 0,
-				NULL, encodeAndFoldFlags::forceNoEncoding | encodeAndFoldFlags::noNewLineSequence);
+			text epilog(word(epilogText, getCharset()));
+
+			epilog.encodeAndFold(os, maxLineLength, 0,
+				NULL, text::FORCE_NO_ENCODING | text::NO_NEW_LINE_SEQUENCE);
 
 			os << CRLF;
 		}

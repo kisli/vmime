@@ -91,32 +91,6 @@ namespace vmime
 	}
 
 
-	// Field contents encoding (RFC-2047 and folding)
-	void encodeAndFoldText(utility::outputStream& os, const text& in, const string::size_type maxLineLength, const string::size_type firstLineOffset, string::size_type* lastLineLength, const int flags);
-	void decodeAndUnfoldText(const string& in, text& out);
-	void decodeAndUnfoldText(const string::const_iterator& inStart, const string::const_iterator& inEnd, text& out);
-
-
-	//
-	// Some constants
-	//
-
-	// Flags used by "encodeAndFoldText" function
-	namespace encodeAndFoldFlags
-	{
-		enum
-		{
-			// If both "forceNoEncoding" and "forceEncoding" are specified,
-			// "forceNoEncoding" is used by default.
-			forceNoEncoding = (1 << 0),
-			forceEncoding = (1 << 1),
-
-			noNewLineSequence = (1 << 2),
-
-			none = 0
-		};
-	}
-
 	/*
 
 	RFC#2822

@@ -602,7 +602,7 @@ void IMAPMessage::processFetchResponse
 
 				// Subject
 				text subject;
-				decodeAndUnfoldText(env->env_subject()->value(), subject);
+				text::decodeAndUnfold(env->env_subject()->value(), &subject);
 
 				hdr.Subject().setValue(subject);
 
@@ -724,7 +724,7 @@ void IMAPMessage::convertAddressList
 		const IMAPParser::address& addr = **it;
 
 		text name;
-		decodeAndUnfoldText(addr.addr_name()->value(), name);
+		text::decodeAndUnfold(addr.addr_name()->value(), &name);
 
 		string email = addr.addr_mailbox()->value()
 			+ "@" + addr.addr_host()->value();

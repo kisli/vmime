@@ -114,6 +114,8 @@ namespace
 			assert_eq("2.7", vmime::charset(vmime::charsets::US_ASCII), t2.getWordAt(2)->getCharset());
 		}
 
+		// TODO: tests for encodeAndFold() and decodeAndUnfold()
+
 	public:
 
 		textTest() : suite("vmime::text")

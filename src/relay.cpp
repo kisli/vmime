@@ -213,8 +213,8 @@ void relay::generate(utility::outputStream& os, const string::size_type maxLineL
 
 	oss << "; " << m_date.generate();
 
-	encodeAndFoldText(os, text(oss.str()), maxLineLength,
-		curLinePos, newLinePos, encodeAndFoldFlags::forceNoEncoding);
+	text(oss.str()).encodeAndFold(os, maxLineLength,
+		curLinePos, newLinePos, text::FORCE_NO_ENCODING);
 }
 
 

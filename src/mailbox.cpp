@@ -316,7 +316,7 @@ void mailbox::parse(const string& buffer, const string::size_type position,
 	}
 	else
 	{
-		decodeAndUnfoldText(name, m_name);
+		text::decodeAndUnfold(name, &m_name);
 		m_email.empty();
 		m_email.reserve(address.size());
 
@@ -405,8 +405,8 @@ void mailbox::generate(utility::outputStream& os, const string::size_type maxLin
 		string::size_type pos = curLinePos;
 		bool newLine = true;
 
-		encodeAndFoldText(os, m_name, maxLineLength, pos, &pos,
-			forceEncode ? encodeAndFoldFlags::forceEncoding : encodeAndFoldFlags::none);
+		m_name.encodeAndFold(os, maxLineLength, pos, &pos,
+			forceEncode ? text::FORCE_ENCODING : 0);
 
 		if (pos + m_email.length() + 3 > maxLineLength)
 		{
