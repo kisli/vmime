@@ -786,6 +786,8 @@ vmime_pc.write("Requires:\n")
 vmime_pc.write("Libs: -L${libdir} -l" + versionedPackageName + "-posix -l" + versionedPackageName + "\n")
 vmime_pc.write("Cflags: -I${includedir}/" + versionedPackageName + "\n")
 
+vmime_pc.close()
+
 env.Install(libDir + "/pkgconfig", versionedPackageName + ".pc")
 
 # Provide "install" target (ie. 'scons install')
