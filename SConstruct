@@ -188,43 +188,6 @@ libvmime_tests = [
 	'tests/charset/test-suites/gnu.in.utf-8',
 	'tests/charset/test-suites/gnu.out.iso-8859-1',
 
-	# encoding
-	'tests/encoding/Makefile',
-	'tests/encoding/main.cpp',
-	'tests/encoding/run-test.sh',
-	'tests/encoding/test-suites/encode/1byte',
-	'tests/encoding/test-suites/encode/1byte.base64',
-	'tests/encoding/test-suites/encode/2bytes',
-	'tests/encoding/test-suites/encode/2bytes.base64',
-	'tests/encoding/test-suites/encode/3bytes',
-	'tests/encoding/test-suites/encode/3bytes.base64',
-	'tests/encoding/test-suites/encode/empty',
-	'tests/encoding/test-suites/encode/empty.base64',
-	'tests/encoding/test-suites/encode/empty.quoted-printable',
-	'tests/encoding/test-suites/encode/gpl',
-	'tests/encoding/test-suites/encode/gpl.base64',
-	'tests/encoding/test-suites/encode/gpl.quoted-printable',
-	'tests/encoding/test-suites/encode/gpl.uuencode',
-	'tests/encoding/test-suites/encode/ls',
-	'tests/encoding/test-suites/encode/ls.base64',
-	'tests/encoding/test-suites/encode/ls.quoted-printable',
-	'tests/encoding/test-suites/encode/ls.uuencode',
-	'tests/encoding/test-suites/encode/simple',
-	'tests/encoding/test-suites/encode/simple.base64',
-	'tests/encoding/test-suites/encode/simple.quoted-printable',
-	'tests/encoding/test-suites/encode/simple.uuencode',
-	'tests/encoding/test-suites/decode/ls',
-	'tests/encoding/test-suites/decode/ls.base64',
-
-	# mailbox
-	'tests/mailbox/Makefile',
-	'tests/mailbox/main.cpp',
-	'tests/mailbox/run-test.sh',
-	'tests/mailbox/test-suites/test1.in',
-	'tests/mailbox/test-suites/test1.out',
-	'tests/mailbox/test-suites/test2.in',
-	'tests/mailbox/test-suites/test2.out',
-
 	# main
 	'tests/Makefile',
 	'tests/run-tests.sh'
@@ -271,6 +234,7 @@ libvmimetest_common = [
 ]
 
 libvmimetest_sources = [
+	[ 'tests/parser/encoderTest', [ 'tests/parser/encoderTest.cpp' ] ],
 	[ 'tests/parser/headerTest', [ 'tests/parser/headerTest.cpp' ] ],
 	[ 'tests/parser/mailboxTest', [ 'tests/parser/mailboxTest.cpp' ] ],
 	[ 'tests/parser/textTest', [ 'tests/parser/textTest.cpp' ] ]
