@@ -77,9 +77,23 @@ folder* maildirStore::getFolder(const folder::path& path)
 
 const bool maildirStore::isValidFolderName(const folder::path::component& name)
 {
-	return (platformDependant::getHandler()->
-		getFileSystemFactory()->isValidPathComponent(name) &&
-		name.getBuffer().find_first_of(".") == string::npos);
+	if (!platformDependant::getHandler()->getFileSystemFactory()->isValidPathComponent(name))
+		return false;
+
+	const string& buf = name.getBuffer();
+
+	// Name cannot start/end with spaces
+	if (stringUtils::trim(buf) != name.getBuffer())
+		return false;
+
+	// Name cannot start with '.'
+	const int length = buf.length();
+	int pos = 0;
+
+	while ((pos < length) && (buf[pos] == '.'))
+		++pos;
+
+	return (pos == 0);
 }
 
 

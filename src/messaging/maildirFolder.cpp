@@ -124,7 +124,7 @@ void maildirFolder::open(const int mode, bool /* failIfModeIsNotAvailable */)
 	else if (isOpen())
 		throw exceptions::illegal_state("Folder is already open");
 	else if (!exists())
-		throw exceptions::illegal_state("Folder already exists");
+		throw exceptions::illegal_state("Folder does not exist");
 
 	scanFolder();
 
@@ -140,6 +140,9 @@ void maildirFolder::close(const bool expunge)
 
 	if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
+
+	if (expunge)
+		this->expunge();
 
 	m_open = false;
 	m_mode = -1;
@@ -176,7 +179,7 @@ void maildirFolder::unregisterMessage(maildirMessage* msg)
 }
 
 
-void maildirFolder::create(const int type)
+void maildirFolder::create(const int /* type */)
 {
 	if (!m_store)
 		throw exceptions::illegal_state("Store disconnected");
@@ -184,21 +187,8 @@ void maildirFolder::create(const int type)
 		throw exceptions::illegal_state("Folder is open");
 	else if (exists())
 		throw exceptions::illegal_state("Folder already exists");
-
-	// Folder name cannot start with '.'
-	if (!m_path.isEmpty())
-	{
-		const path::component& comp = m_path.getLastComponent();
-
-		const int length = comp.getBuffer().length();
-		int pos = 0;
-
-		while ((pos < length) && (comp.getBuffer()[pos] == '.'))
-			++pos;
-
-		if (pos != 0)
-			throw exceptions::invalid_folder_name("Name cannot start with '.'");
-	}
+	else if (!m_store->isValidFolderName(m_name))
+		throw exceptions::invalid_folder_name();
 
 	// Create directory on file system
 	try
@@ -521,7 +511,92 @@ void maildirFolder::listFolders(std::vector <folder*>& list, const bool recursiv
 
 void maildirFolder::rename(const folder::path& newPath)
 {
-	// TODO
+	if (!m_store)
+		throw exceptions::illegal_state("Store disconnected");
+	else if (m_path.isEmpty() || newPath.isEmpty())
+		throw exceptions::illegal_operation("Cannot rename root folder");
+	else if (!m_store->isValidFolderName(newPath.getLastComponent()))
+		throw exceptions::invalid_folder_name();
+
+	// Rename the directory on the file system
+	utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
+
+	utility::auto_ptr <utility::file> rootDir = fsf->create
+		(maildirUtils::getFolderFSPath(m_store, m_path, maildirUtils::FOLDER_PATH_ROOT));
+	utility::auto_ptr <utility::file> contDir = fsf->create
+		(maildirUtils::getFolderFSPath(m_store, m_path, maildirUtils::FOLDER_PATH_CONTAINER));
+
+	try
+	{
+		const utility::file::path newRootPath =
+			maildirUtils::getFolderFSPath(m_store, newPath, maildirUtils::FOLDER_PATH_ROOT);
+		const utility::file::path newContPath =
+			maildirUtils::getFolderFSPath(m_store, newPath, maildirUtils::FOLDER_PATH_CONTAINER);
+
+		rootDir->rename(newRootPath);
+
+		// Container directory may not exist, so ignore error when trying to rename it
+		try
+		{
+			contDir->rename(newContPath);
+		}
+		catch (exceptions::filesystem_exception& e)
+		{
+			// Ignore
+		}
+	}
+	catch (exceptions::filesystem_exception& e)
+	{
+		// Revert to old location
+		const utility::file::path rootPath =
+			maildirUtils::getFolderFSPath(m_store, m_path, maildirUtils::FOLDER_PATH_ROOT);
+		const utility::file::path contPath =
+			maildirUtils::getFolderFSPath(m_store, m_path, maildirUtils::FOLDER_PATH_CONTAINER);
+
+		try
+		{
+			rootDir->rename(rootPath);
+			contDir->rename(contPath);
+		}
+		catch (exceptions::filesystem_exception& e)
+		{
+			// Ignore
+		}
+
+		throw exceptions::command_error("RENAME", "", "", e);
+	}
+
+	// Notify folder renamed
+	folder::path oldPath(m_path);
+
+	m_path = newPath;
+	m_name = newPath.getLastComponent();
+
+	events::folderEvent event(this, events::folderEvent::TYPE_RENAMED, oldPath, newPath);
+	notifyFolder(event);
+
+	// Notify folders with the same path
+	for (std::list <maildirFolder*>::iterator it = m_store->m_folders.begin() ;
+	     it != m_store->m_folders.end() ; ++it)
+	{
+		if ((*it) != this && (*it)->getFullPath() == oldPath)
+		{
+			(*it)->m_path = newPath;
+			(*it)->m_name = newPath.getLastComponent();
+
+			events::folderEvent event(*it, events::folderEvent::TYPE_RENAMED, oldPath, newPath);
+			(*it)->notifyFolder(event);
+		}
+		else if ((*it) != this && oldPath.isParentOf((*it)->getFullPath()))
+		{
+			folder::path oldPath((*it)->m_path);
+
+			(*it)->m_path.renameParent(oldPath, newPath);
+
+			events::folderEvent event(*it, events::folderEvent::TYPE_RENAMED, oldPath, (*it)->m_path);
+			(*it)->notifyFolder(event);
+		}
+	}
 }
 
 

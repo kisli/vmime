@@ -323,6 +323,8 @@ void IMAPFolder::create(const int type)
 		throw exceptions::illegal_state("Folder is open");
 	else if (exists())
 		throw exceptions::illegal_state("Folder already exists");
+	else if (!m_store->isValidFolderName(m_name))
+		throw exceptions::invalid_folder_name();
 
 	// Emit the "CREATE" command
 	//
@@ -1258,10 +1260,12 @@ void IMAPFolder::rename(const folder::path& newPath)
 {
 	if (!m_store)
 		throw exceptions::illegal_state("Store disconnected");
-	else if (isOpen())
-		throw exceptions::illegal_state("Folder open");
+	else if (m_path.isEmpty() || newPath.isEmpty())
+		throw exceptions::illegal_operation("Cannot rename root folder");
 	else if (m_path.getSize() == 1 && m_name.getBuffer() == "INBOX")
 		throw exceptions::illegal_operation("Cannot rename 'INBOX' folder");
+	else if (!m_store->isValidFolderName(newPath.getLastComponent()))
+		throw exceptions::invalid_folder_name();
 
 	// Build the request text
 	std::ostringstream command;
