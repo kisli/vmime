@@ -63,6 +63,13 @@ public:
 	  */
 	virtual folder* getFolder(const folder::path& path) = 0;
 
+	/** Test whether the specified folder name is a syntactically
+	  * a valid name.
+	  *
+	  * @return true if the specified folder name is valid, false otherwise
+	  */
+	virtual const bool isValidFolderName(const folder::path::component& name) = 0;
+
 
 	const Type getType() const { return (TYPE_STORE); }
 };

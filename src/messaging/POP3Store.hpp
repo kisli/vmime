@@ -51,6 +51,8 @@ public:
 	folder* getRootFolder();
 	folder* getFolder(const folder::path& path);
 
+	const bool isValidFolderName(const folder::path::component& name);
+
 	static const serviceInfos& getInfosInstance();
 	const serviceInfos& getInfos() const;
 

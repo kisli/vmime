@@ -75,6 +75,13 @@ folder* maildirStore::getFolder(const folder::path& path)
 }
 
 
+const bool maildirStore::isValidFolderName(const folder::path::component& name)
+{
+	return (platformDependant::getHandler()->
+		getFileSystemFactory()->isValidPathComponent(name));
+}
+
+
 void maildirStore::connect()
 {
 	if (isConnected())

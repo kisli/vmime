@@ -125,6 +125,12 @@ folder* IMAPStore::getFolder(const folder::path& path)
 }
 
 
+const bool IMAPStore::isValidFolderName(const folder::path::component& /* name */)
+{
+	return true;
+}
+
+
 void IMAPStore::connect()
 {
 	if (isConnected())

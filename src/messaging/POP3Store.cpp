@@ -82,6 +82,12 @@ folder* POP3Store::getFolder(const folder::path& path)
 }
 
 
+const bool POP3Store::isValidFolderName(const folder::path::component& /* name */)
+{
+	return true;
+}
+
+
 void POP3Store::connect()
 {
 	if (isConnected())
