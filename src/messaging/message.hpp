@@ -124,14 +124,16 @@ public:
 
 	virtual ~structure() { }
 
-	/** Return the part at the specified position.
+	/** Return the part at the specified position (first
+	  * part is at position 1).
 	  *
 	  * @param x position
 	  * @return part at position 'x'
 	  */
 	virtual const part& operator[](const int x) const = 0;
 
-	/** Return the part at the specified position.
+	/** Return the part at the specified position (first
+	  * part is at position 1).
 	  *
 	  * @param x position
 	  * @return part at position 'x'
