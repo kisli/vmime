@@ -19,6 +19,7 @@
 
 #include "vmime/messageIdSequence.hpp"
 #include "vmime/exception.hpp"
+#include <algorithm>
 
 
 namespace vmime
