@@ -139,6 +139,13 @@ public:
 	  */
 	const bool isParentOf(const path& p) const;
 
+	/** Rename a parent component in the path.
+	  *
+	  * @param oldPath old parent path
+	  * @param newPath new parent path
+	  */
+	void renameParent(const path& oldPath, const path& newPath);
+
 private:
 
 	list m_list;

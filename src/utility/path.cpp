@@ -206,6 +206,33 @@ const bool path::isParentOf(const path& p) const
 }
 
 
+void path::renameParent(const path& oldPath, const path& newPath)
+{
+	if (isEmpty() || oldPath.getSize() > getSize())
+		return;
+
+	bool equal = true;
+	list::size_type i;
+
+	for (i = 0 ; equal && i < oldPath.m_list.size() ; ++i)
+		equal = (m_list[i] == oldPath.m_list[i]);
+
+	if (i != oldPath.m_list.size())
+		return;
+
+	list newList;
+
+	for (list::size_type j = 0 ; j < newPath.m_list.size() ; ++j)
+		newList.push_back(newPath.m_list[j]);
+
+	for (list::size_type j = i ; j < m_list.size() ; ++j)
+		newList.push_back(m_list[j]);
+
+	m_list.resize(newList.size());
+	std::copy(newList.begin(), newList.end(), m_list.begin());
+}
+
+
 void path::appendComponent(const path::component& c)
 {
 	m_list.push_back(c);
