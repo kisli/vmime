@@ -55,5 +55,25 @@ const unsigned int random::getProcess()
 }
 
 
+const string random::getString(const int length, const string& randomChars)
+{
+	string res;
+	res.resize(length);
+
+	const unsigned int x = randomChars.length();
+	int c = 0;
+
+	while (c < length)
+	{
+		for (unsigned int n = random::getNext() ; n != 0 ; n /= x)
+		{
+			res[c++] = randomChars[n % x];
+		}
+	}
+
+	return (res);
+}
+
+
 } // utility
 } // vmime

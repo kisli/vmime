@@ -21,6 +21,9 @@
 #define VMIME_UTILITY_RANDOM_HPP_INCLUDED
 
 
+#include "types.hpp"
+
+
 namespace vmime {
 namespace utility {
 
@@ -51,6 +54,15 @@ public:
 	  * @return process number
 	  */
 	static const unsigned int getProcess();
+
+	/** Return a random character string with the specified length.
+	  *
+	  * @param length length of the string to generate
+	  * @param randomChars list of characters to use
+	  * @return random string
+	  */
+	static const string getString(const int length, const string& randomChars
+		= "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
 
 protected:
 

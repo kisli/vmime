@@ -128,6 +128,12 @@ public:
 	  */
 	static const utility::file::path::component buildFilename(const utility::file::path::component& id, const int flags);
 
+	/** Generate a new unique message identifier.
+	  *
+	  * @return unique message id
+	  */
+	static const utility::file::path::component generateId();
+
 private:
 
 	static const vmime::word TMP_DIR;

@@ -343,13 +343,16 @@ void maildirFolder::scanFolder()
 		for (std::vector <utility::file::path::component>::const_iterator
 		     it = newMessageFilenames.begin() ; it != newMessageFilenames.end() ; ++it)
 		{
+			const utility::file::path::component newFilename =
+				maildirUtils::buildFilename(maildirUtils::extractId(*it), 0);
+
 			// Move messages from 'new' to 'cur'
 			utility::auto_ptr <utility::file> file = fsf->create(newDirPath / *it);
-			file->rename(curDirPath / *it);
+			file->rename(curDirPath / newFilename);
 
 			// Append to message list
 			messageInfos msgInfos;
-			msgInfos.path = *it;
+			msgInfos.path = newFilename;
 			msgInfos.type = messageInfos::TYPE_CUR;
 
 			m_messageInfos.push_back(msgInfos);

@@ -20,6 +20,8 @@
 #include "maildirUtils.hpp"
 #include "maildirStore.hpp"
 
+#include "../utility/random.hpp"
+
 
 namespace vmime {
 namespace messaging {
@@ -125,7 +127,9 @@ const int maildirUtils::extractFlags(const utility::file::path::component& comp)
 const utility::file::path::component maildirUtils::buildFlags(const int flags)
 {
 	string str;
-	str.reserve(6);
+	str.reserve(8);
+
+	str += "2,";
 
 	if (flags & message::FLAG_MARKED)  str += "F";
 	if (flags & message::FLAG_PASSED)  str += "P";
@@ -148,6 +152,20 @@ const utility::file::path::component maildirUtils::buildFilename
 	(const utility::file::path::component& id, const utility::file::path::component& flags)
 {
 	return (utility::path::component(id.getBuffer() + ":" + flags.getBuffer()));
+}
+
+
+const utility::file::path::component maildirUtils::generateId()
+{
+	std::ostringstream oss;
+
+	oss << utility::random::getTime();
+	oss << ".";
+	oss << utility::random::getProcess();
+	oss << ".";
+	oss << utility::random::getString(6);
+
+	return (utility::file::path::component(oss.str()));
 }
 
 
