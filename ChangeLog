@@ -1,0 +1,434 @@
+
+VERSION 0.5.2-CVS
+=================
+
+2004-09-09  Vincent Richard  <vincent@vincent-richard.net>
+
+ * IMAPFolder.cpp: fixed rename(): folder name is now updated.
+
+2004-08-21  Vincent Richard  <vincent@vincent-richard.net>
+
+ * charset.cpp: workaround (hack?) for different 'iconv' prototypes (they
+   may differ in the second parameter being 'const' or not).
+
+2004-08-20  Vincent Richard  <vincent@vincent-richard.net>
+
+ * renamed "messaging/folderPath" to "utility/path" for common use in
+   "messaging/folder" and "utility/file".
+
+ * moved "stream" and "stringProxy" into "utility" namespace.
+
+ * started to write some "JavaDoc-like" comments, for use with Doxygen.
+
+2004-08-18  Vincent Richard  <vincent@vincent-richard.net>
+
+ * stringProxy.hpp: fixed stringProxy::it_end() which returned wrong
+   value (typo...).
+
+2004-07-26  Vincent Richard  <vincent@vincent-richard.net>
+
+ * fileAttachment: fixed the encoding param (not set to default anymore)
+   and provided a new constructor to specify your own encoding.
+
+2004-07-22  Vincent Richard  <vincent@vincent-richard.net>
+
+ * wide-char support is disabled by default. To enable, set the flag
+   "with_wide_char_support=yes" on the SCons command line.
+
+2004-07-08  Vincent Richard  <vincent@vincent-richard.net>
+
+ * renamed messaging/POP3*, messaging/IMAP* and messaging/SMTP* classes
+   to follow the same convention as other class names.
+
+2004-07-03  Vincent Richard  <vincent@vincent-richard.net>
+
+ * moved some files to "utility" subdirectory ("vmime::utility" namespace).
+
+
+VERSION 0.5.1
+=============
+
+2004-06-15  Vincent Richard  <vincent@vincent-richard.net>
+
+ * contentHandler, htmlTextPart: Fixed some compilation issues with
+   g++ version < 3.4:
+   [error: declaration of `const vmime::encoding& encoding() const'
+    changes meaning of `encoding' from `class vmime::encoding'].
+
+ * Fixed errors in SConstruct with Windows NT (2k, XP...).
+
+
+VERSION 0.5.0
+=============
+
+2004-05-26  Vincent Richard  <vincent@vincent-richard.net>
+
+ * added methods receiveRaw() and sendRaw() on vmime::socket object. Do not
+   forget to implement it, or you will get a compile error.
+
+2004-05-21  Vincent Richard  <vincent@vincent-richard.net>
+
+ * added some unit tests in the "tests" directory. To run all the tests, 'cd'
+   to the "tests" directory, compile test programs by running "make" and then
+   execute the "run-tests.sh" script.
+
+ * charset: added a convert() function to perform stream conversion.
+
+2004-05-18  Vincent Richard  <vincent@vincent-richard.net>
+
+ * encoder*: updated all encoders so they use input streams and output
+   streams instead of a in-memory string. You can use the stream adapters
+   (inputStreamStringAdapter and outputStreamStringAdapter) for your code
+   to continue working the old-fashioned way...
+
+2004-05-17  Vincent Richard  <vincent@vincent-richard.net>
+
+ * messaging/transport.hpp: added a "size" parameter to send() function.
+
+2004-05-16  Vincent Richard  <vincent@vincent-richard.net>
+
+ * body: body contents and data in text parts are now handled via a
+   proxy object: contentHandler. This allow more flexibility, including
+   providing data from an input stream instead of storing whole data in
+   memory into a string object. This also provide a big performance and
+   memory usage improvement. For more information, please see the comments
+   in the file "contentHandler.hpp".
+
+2004-05-15  Vincent Richard  <vincent@vincent-richard.net>
+
+ * all files: modified the parsing in depth (not using iterators anymore),
+   the code is clearer and faster.
+
+ * IMAPutils.cpp: corrected a bug (typo) in IMAPutils::dateTime().
+
+2004-05-13  Vincent Richard  <vincent@vincent-richard.net>
+
+ * all files: added a generate() method on vmime::component to generate
+   objects into an output stream (outputStream). This offers a large
+   performance and memory usage improvement when generating big messages.
+
+ * stream.cpp/.hpp: new objects "inputStream" and "outputStream" to
+   provide more flexibility than with standard C++ streams. There are
+   also adapters for standard i/o streams, provided for compatibility.
+
+
+VERSION 0.4.2
+=============
+
+2004-05-08  Vincent Richard  <vincent@vincent-richard.net>
+
+ * messaging: added a system of event notification (message change,
+   folder renamed, etc...). For more information about this, please
+   consult "src/messaging/events.hpp".
+
+2004-05-03  Vincent Richard  <vincent@vincent-richard.net>
+
+ * messaging: added a lot of useful features to message stores
+   (set/get message flags, message deletion, copy, rename folder,
+   adding messages, unique identifiers, MIME part/header fetch,
+   partial fetch...).
+
+2004-04-30  Vincent Richard  <vincent@vincent-richard.net>
+
+ * messaging/message.hpp: added a fetchPartHeader() method to
+   extract the header of a specific MIME part.
+
+2004-04-25  Vincent Richard  <vincent@vincent-richard.net>
+
+ * all files: removed (illegal) extra ';' after namespace
+   declarations.
+
+ * all files: fixed some compilation errors with g++-3.4 (the
+   parser is more strict and more standard-compliant).
+
+2004-04-24  Vincent Richard  <vincent@vincent-richard.net>
+
+ * messaging/*: splitted "progressListener" into two objects:
+   "progressionListener" and "timeoutHandler". The last one is
+   used internally in VMime. The "progressionListener" parameter
+   is no more passed as argument to the constructor of a "service"
+   object. Instead, it can be given in argument to the functions
+   that use it:
+     - message::extract[Part]()
+     - folder::fetchMessages()
+     - transport::send()
+
+2004-04-04  Vincent Richard  <vincent@vincent-richard.net>
+
+ * messaging/folder.hpp: added a (optional) parameter "recursive"
+   to getFolders() to allow enumeration of all sub-folders
+   (that is, direct and indirect).
+
+2004-04-03  Vincent Richard  <vincent@vincent-richard.net>
+
+ * messaging/authenti[fi]cationInfos: renamed class
+   'authentificationInfos' to 'authenticationInfos'.
+
+ * exception.hpp: renamed class 'authentification_error' to
+   'authentication_error'.
+
+ * messaging/SMTPtransport: renamed 'options.need-authentification'
+   to 'options.need-authentication'.
+
+2004-04-02  Vincent Richard  <vincent@vincent-richard.net>
+
+ * added basic IMAP support. This is EXPERIMENTAL.
+
+2004-03-25  Vincent Richard  <vincent@vincent-richard.net>
+
+ * messaging::folder::path: changed type of 'component' from 'string'
+   to 'word' to allow multiple charsets to be used in a path.
+
+ * implemented a noop() command on vmime::messaging::service class.
+
+ * messageParser.cpp: it is now possible to get more information on an
+   attachment using the "Content-Disposition" (use the attachmentInfo()
+   fonction to retrieve the "Content-Disposition" field related to
+   the attachment).
+
+
+VERSION 0.4.1
+=============
+
+2004-03-24  Vincent Richard  <vincent@vincent-richard.net>
+
+  * SMTPtransport.cpp: fixed a bug in send().
+
+
+VERSION 0.4.0
+=============
+
+2004-02-19  Vincent Richard  <vincent@vincent-richard.net>
+
+ * mailboxGroup.cpp: fixed a segfault when generating() an empty group
+   (eg. "undisclosed-recipient").
+
+2004-02-17  Vincent Richard  <vincent@vincent-richard.net>
+
+ * === MAJOR CHANGE === Removed old "network features". Now, this is called
+   "messaging system" and a new (incompatible) interface is provided.
+
+2003-12-30  Vincent Richard  <vincent@vincent-richard.net>
+
+ * encoderFactory.cpp/.hpp: added stuff to allow iterating through
+   registered encoders.
+
+ * encoder*.cpp/.hpp: changed the way options/results are set in encoders:
+   now, a vmime::propertySet is used. This provides more flexibility.
+
+2003-12-25  Vincent Richard  <vincent@vincent-richard.net>
+
+ * constants.cpp/.hpp: media types constants: removed "sub" namespace and
+   translated "sub::[TYPE]::[SUBTYPE]" to "[TYPE]_[SUBTYPE]".
+
+2003-12-08  Vincent Richard  <vincent@vincent-richard.net>
+
+ * constants.cpp/.hpp, dateTime.cpp/.hpp: translated all constants/enums
+   from lower-case to upper-case letters.
+
+2003-12-04  Vincent Richard  <vincent@vincent-richard.net>
+
+ * Created a new class for singleton. Derived all concerned class from
+   this new class. This concerns: "encoderFactory", "headerFieldFactory",
+   "parameterFactory", "options" and "textPartFactory".
+
+2003-12-02  Vincent Richard  <vincent@vincent-richard.net>
+
+ * Moved to SCons building system (http://www.scons.org/) and dropped old
+   autoconf/automake system. Type 'scons' to build the library and use
+   'scons install' to install it on your system.
+
+2003-12-01  Vincent Richard  <vincent@vincent-richard.net>
+
+ * mailboxGroup.cpp: fixed a bug in typeid() comparison: changed
+   "typeid(parsedAddress)" to "typeid(*parsedAddress)" to test the
+   object dynamic type (the previous test was always false).
+
+
+VERSION 0.3.5
+=============
+
+2003-10-24  Vincent Richard  <vincent@vincent-richard.net>
+
+ * included some sample programs in the "examples/" directory. For a more
+   complete documentation, please visit: http://www.kisli.com/vmime/doc/ .
+
+ * all files: it is not possible to create header fields directly anymore
+   (ie. you cannot call the constructor directly); instead, you should use
+   the "headerFieldFactory" object.
+
+
+VERSION 0.3.4
+=============
+
+2003-10-05  Vincent Richard  <vincent@vincent-richard.net>
+
+ * all files: changed all calls 'std::isspace(???)' to '[vmime::]isspace(???)'
+   since no locale was passed (anyway, no locale is needed: text is ASCII).
+
+2003-10-04  Kai Stammerjohann  <orp@uni.de>
+
+ * included a Visual C++ 7 solution/project for vmime: see "vmime.sln" and
+   "vmime.vcproj" in the root directory.
+
+
+VERSION 0.3.3
+=============
+
+2003-09-22  Vincent Richard  <vincent@vincent-richard.net>
+
+ * moved all constants (media types, charsets...) from base.cpp/.hpp to new
+   files constants.cpp/.hpp.
+
+2003-09-21  Vincent Richard  <vincent@vincent-richard.net>
+
+ * messageBuilder.cpp (construct): fixed algorithm for generating text parts.
+   Single and multiple text parts, with or without attachments are now handled
+   correctly (as recommended by the RFCs).
+
+ * bodyPart.cpp/.hpp, body.cpp/.hpp, header.cpp/.hpp: added clone() and
+   operator=() functions to be able to duplicate body parts.
+
+ * messageParser.cpp (findTextParts): handled the case in which the message
+   is not "multipart/*": we use the main part if its type is "text/*".
+
+ * messageParser.cpp (destructor): added code for deleting the text parts
+   created by the findTextParts() function.
+
+
+VERSION 0.3.2
+=============
+
+2003-09-19  Bevan Collins  <bcollins@ihug.co.nz>
+
+ * encoderQP.cpp: fixed a bug in quoted-printable encoding: "=20\r\n" is
+   appended to the line ending with a space.
+
+2003-09-13  Vincent Richard  <vincent@vincent-richard.net>
+
+ * charset.cpp/.hpp: dropped internal conversion from charset name (string) to
+   charset type (enum). We keep only the name of the charset.
+
+ * base.cpp/.hpp: added string constants for some charsets.
+
+2003-09-12  Vincent Richard  <vincent@vincent-richard.net>
+
+ * messageParser.cpp (findAttachments): fixed the search for attachment
+   parts. The right test is "cdf.value().name() != dispositionTypes::_inline"
+   and not "cdf.value().name() != dispositionTypes::attachment"...
+
+2003-09-11  Vincent Richard  <vincent@vincent-richard.net>
+
+ * plainTextPart.cpp/htmlTextPart.cpp: fixed a bug in parse(): when getting
+   the "charset" parameter, "no_such_parameter" exception was not caught if
+   the parameter was not present.
+
+2003-09-06  Vincent Richard  <vincent@vincent-richard.net>
+
+ * base.cpp: added a special case when encoding to Quoted-Printable: lines
+   are no more limited to 76 characters (the maximum length recommended by
+   the RFC) if maxLineLength == lineLengthLimits::infinite. However, this
+   SHOULD NOT be used when generating mails (not RFC compliant).
+
+
+VERSION 0.3.1
+=============
+
+2003-08-24  Vincent Richard  <vincent@vincent-richard.net>
+
+ * mailbox.hpp: added "const" functions for name() and email().
+
+2003-07-26  Vincent Richard  <vincent@vincent-richard.net>
+
+ * charset.cpp: fixed a bug in "charset::iconvert()". Also, the
+   conversion is now done using a buffer, and not in one block.
+
+2003-07-24  Vincent Richard  <vincent@vincent-richard.net>
+
+  * receiveProtocol[POP3].hpp/.cpp: a socket factory can now be passed in
+    argument to the constructor so that it is possible to override the
+    use of the default factory (set in vmime::platformDependantHandler).
+
+
+VERSION 0.3.0
+=============
+
+2003-07-21  Vincent Richard  <vincent@vincent-richard.net>
+
+ * configure.in: changed 'libdir' to install lib files in {PREFIX}/lib
+   instead of {PREFIX}/lib/vmime. However, include files remain in the
+   {PREFIX}/include/vmime directory.
+
+2003-06-28  Vincent Richard  <vincent@vincent-richard.net>
+
+ * base.hpp/.cpp: changed the return type of "libname()" and "libversion()"
+   from "string::value_type*" to "string".
+
+2003-06-16  Vincent Richard  <vincent@vincent-richard.net>
+
+ * platformDependant.hpp: added "getSocketFactory()" function to be used
+   with the new network features.
+
+ * configure.in: modified the file to permit passing arguments to
+   the "configure" script:
+     . --disable-net: disable network support (new in 0.3.0)
+     . --enable-debug: enable debug mode (not used for now)
+
+ * started version 0.3.0: added network features: connection to mail
+   servers via POP3, IMAP... Related classes: "receiveProtocol*",
+   "serverInfos" and "socket", an abstract socket class.
+
+
+VERSION 0.2.1
+=============
+
+2003-05-28  Vincent Richard  <vincent@vincent-richard.net>
+
+ * messageId.cpp: added "vmime." at the beginning of random-generated
+   message-ids (to make them more unique).
+
+2003-05-26  Vincent Richard  <vincent@vincent-richard.net>
+
+ * all source files: replaced "_VMIME_xxxxx_HPP_INCLUDED_" macros with
+   "VMIME_xxxxx_HPP_INCLUDED". Names beginning with "_" (underscore) and
+   followed by an uppercase letter are reserved to the implementation
+   (see the C++ standard: 17.4.3.1.2 Global names).
+
+
+VERSION 0.2.0
+=============
+
+2003-05-18  Vincent Richard  <vincent@vincent-richard.net>
+
+ * messageParser.cpp: added a message parser (to be used parallely with
+   messageBuilder). Extraction of attachment, plain text parts and HTML
+   text parts (with embedded objects) is supported.
+
+2003-05-09  Vincent Richard  <vincent@vincent-richard.net>
+
+ * body.cpp (generate): the default prolog & epilog text (as defined
+   in vmime::options) are not written anymore in sub-parts (only for
+   the "root" part). Added a "isRoot" member to vmime::header.
+
+2003-05-08  Vincent Richard  <vincent@vincent-richard.net>
+
+ * encoding.cpp (decide): added some code to choose "quoted-printable"
+   when there are lines with more than "lineLengthLimits::convenient"
+   characters (or with a '.' just after a '\n').
+
+ * base.cpp (makeWordsFromText): enhanced algorithm.
+
+2003-05-04  Vincent Richard  <vincent@vincent-richard.net>
+
+ * address.cpp, mailbox.cpp, mailboxGroup.cpp: added empty() function.
+
+ * messageBuilder.cpp (construct): some validity checks: we now check
+   there is one expeditor and at least one recipient.
+
+
+VERSION 0.1.0
+=============
+
+2003-05-03  Vincent Richard  <vincent@vincent-richard.net>
+
+ * First (beta) version released.

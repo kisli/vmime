@@ -1,0 +1,8 @@
+MAILBOX[name=[[us-ascii,mailbox1]],email=mailbox@one]
+GROUP[name=[[us-ascii,group1]]]
+* MAILBOX[name=[],email=mailbox1@group1]
+* MAILBOX[name=[],email=mailbox2@group2]
+* MAILBOX[name=[[us-ascii,mailbox #3]],email=mailbox3@group2]
+MAILBOX[name=[],email=mailbox@two]
+MAILBOX[name=[[iso-8859-1,mailbox number 3]],email=mailbox@three]
+MAILBOX[name=[[abc,mailbox],[def, number 4]],email=mailbox@four]

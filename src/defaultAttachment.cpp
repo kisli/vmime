@@ -1,0 +1,91 @@
+//
+// VMime library (http://vmime.sourceforge.net)
+// Copyright (C) 2002-2004 Vincent Richard <vincent@vincent-richard.net>
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License as
+// published by the Free Software Foundation; either version 2 of
+// the License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//
+
+#include "defaultAttachment.hpp"
+#include "encoding.hpp"
+
+
+namespace vmime
+{
+
+
+defaultAttachment::defaultAttachment()
+{
+}
+
+
+defaultAttachment::defaultAttachment(const contentHandler& data,
+	const class encoding& enc, const mediaType& type, const text& desc)
+	: m_type(type), m_desc(desc), m_data(data), m_encoding(enc)
+{
+}
+
+
+defaultAttachment::defaultAttachment(const contentHandler& data,
+	const mediaType& type, const text& desc)
+	: m_type(type), m_desc(desc), m_data(data), m_encoding(encoding::decide(data))
+{
+}
+
+
+defaultAttachment::defaultAttachment(const defaultAttachment& attach)
+	: attachment(), m_type(attach.m_type), m_desc(attach.m_desc),
+	  m_data(attach.m_data), m_encoding(attach.m_encoding)
+{
+}
+
+
+attachment& defaultAttachment::operator=(const attachment& attach)
+{
+	const defaultAttachment& att =
+		dynamic_cast <const defaultAttachment&>(attach);
+
+	m_type = att.m_type;
+	m_desc = att.m_desc;
+	m_data = att.m_data;
+	m_encoding = att.m_encoding;
+
+	return (*this);
+}
+
+
+void defaultAttachment::generateIn(bodyPart& parent) const
+{
+	// Create and append a new part for this attachment
+	bodyPart* part = new bodyPart;
+	parent.body().parts.append(part);
+
+	generatePart(*part);
+}
+
+
+void defaultAttachment::generatePart(bodyPart& part) const
+{
+	// Set header fields
+	part.header().fields.ContentType() = m_type;
+	if (!m_desc.empty()) part.header().fields.ContentDescription() = m_desc;
+	part.header().fields.ContentTransferEncoding() = m_encoding;
+	part.header().fields.ContentDisposition() = disposition(dispositionTypes::ATTACHMENT);
+
+	// Set contents
+	part.body().contents() = m_data;
+}
+
+
+} // vmime
