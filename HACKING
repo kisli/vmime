@@ -1,0 +1,298 @@
+
+This file contains coding guidelines for VMime. You should follow these
+guidelines if you want to contribute to VMime. It guarantees some minimal
+quality of the code.
+
+
+1. General guidelines
+     1.1. Language
+     1.2. Unit tests
+     1.3. CVS
+     1.4. ChangeLog
+2. Style, indentation and braces
+     2.1. Indentation
+     2.2. Brace position
+     2.3. "switch" statement
+     2.4. Single instruction
+     2.5. Line length
+     2.6. Spaces and parentheses
+3. Naming conventions
+     3.1. Classes
+     3.2. Variables/parameters/member variables
+     3.3. Member variables
+     3.4. Files
+     3.5. Namespaces
+4. Comments
+5. Miscellaneous
+
+
+
+1. General guidelines
+=====================
+
+1.1. Language
+-------------
+
+The project language is English. All comments, variable names, class names,
+commit messages and so on, must be in English.
+
+
+1.2. Unit tests
+---------------
+
+Unit tests are very important. For each new class you write, you should also
+write a unit test for it. If you write a new method, add a new test case in
+the unit test of the class.
+
+When you fix a bug, also add a new test case to ensure the bug will not
+happen anymore.
+
+
+1.3. CVS
+--------
+
+Each commit MUST be done with a message ('-m' flag) that briefly describes what
+changes have been done.
+
+DO NOT use commit messages like -m "Updated"!
+
+
+1.4. ChangeLog
+--------------
+
+ChangeLog must be updated when a major change has occured. It is not required
+(but not forbidden) to report minor bug fixes in the ChangeLog.
+
+Each ChangeLog entry must have an author and a date.
+
+
+
+2. Style, indentation and braces
+================================
+
+2.1. Indentation
+----------------
+
+Use TABS (ASCII character #9) and _not_ SPACES. This allow everyone to set tab
+width to its preferred settings (eg. 4 or 8 spaces).
+
+
+2.2. Brace position
+-------------------
+
+Open braces should always be at the beginning of the line after the statement
+that begins the block. Contents of the brace should be indented by 1 tab.
+
+   if (expr)
+   {
+         do_something();
+         do_another_thing();
+   }
+   else
+   {
+         do_something_else();
+   }
+
+
+2.3. "switch" statement
+-----------------------
+
+   switch (expr)
+   {
+   case 0:
+
+        something;
+        break;
+
+   case 1:
+
+        something_else;
+        break;
+
+   case 2:
+   {
+        int var = 42;
+        another_thing;
+        break;
+   }
+
+   }
+
+
+2.4. Single instruction
+-----------------------
+
+Omit braces around simple single-statement body:
+
+   if (...)
+      something;
+
+and not:
+
+   if (...)
+   {
+      something;
+   }
+
+Except when body spans over multiple lines:
+
+   if (...)
+   {
+      something_too_long_for(
+         a_single_line);
+   }
+
+
+2.5. Line length
+----------------
+
+Line length should not exceed 80 characters.
+
+
+2.6. Spaces and parentheses
+---------------------------
+
+Put spaces around operators: =, >, <, !=, +, -, /, *, ^, %, ||, &&, &, |:
+
+    x = (a * (b + (c - d)))
+
+Do not put spaces around parentheses.
+
+    if ((a == b) || (c == d))
+
+Do not put spaces around "->":
+
+    object->method()
+
+Do not put spaces inside brackets:
+
+    x = array[index]     and _NOT_:    x = array[ index ]
+
+Do not use space between a function name and parenthesis. No extra spaces
+between parameters and arguments, just after commas:
+
+    method(arg1, arg2, ...)
+
+Do use a single space before flow control statements:
+
+    while (x == y)     and _NOT_:    while(x==y)
+
+
+
+3. Naming conventions
+=====================
+
+3.1. Classes
+------------
+
+Classes names are in lower-case. However, each word should start with an
+upper-case letter.
+
+Examples: "object", "exampleClass", "anotherExampleClass"...
+
+
+3.2. Variables/parameters/member variables
+------------------------------------------
+
+Variable names should be enough explicit so that someone reading the code can
+instantly understand what the variable contains and is used for.
+
+Variables names are in lower-case.
+
+DO NOT use Hungarian notation.
+
+Examples: "address", "recipientMailbox", ...
+
+Avoid variable names with less than 5 characters, except for loop indices and
+iterators.
+
+NOTE: variable names like "it", "jt" and so on are commonly used when iterating
+over STL containers.
+
+
+3.3. Member variables
+---------------------
+
+Use a prefix for class members: "m_" for normal class members, and "sm_" for
+static members, if they are not public.
+
+Examples: "m_mailboxList", "sm_instance"...
+
+
+3.4. Files
+----------
+
+Use ".hpp" for header files, and ".cpp" for implementation files. ".inc" should
+be used for implementation files not directly compiled, but included from
+other implementation files.
+
+Files have to be named exactly like the class they define. For example, class
+"mailboxList" should be declared in "mailboxList.hpp" and implemented in
+"mailboxList.cpp".
+
+Header files must be placed in 'vmime/' directory.
+Implementation files must be placed in 'src/' directory.
+
+
+3.5. Namespaces
+---------------
+
+Namespaces are named exactly like variables.
+
+
+
+4. Comments
+===========
+
+The // (two slashes) style of comment tags should be used in most situations.
+Where ever possible, place comments above the code instead of beside it.
+
+Comments can be placed at the end of a line when one or more spaces follow.
+Tabs should NOT be used to indent at the end of a line:
+
+   class myClass
+   {
+   private:
+
+       int m_member1;         // first member
+       int m_secondMember;    // second member
+   };
+
+
+
+5. Miscellaneous
+================
+
+* No code should be put in header files, only declarations (except for
+  templates).
+
+* Try to avoid public member variables. Write accessors instead (get/set).
+
+* Do NOT use 'using namespace'. All namespaces should be explicitely named.
+
+* Use the 'get' and 'set' prefix for accessors:
+
+     Variable:    m_foo
+     Get method:  getFoo()
+     Set method:  setFoo()
+
+* No more than one class per file (except for inner classes).
+
+* Put the inclusion for the class's header file as the first inclusion in
+  the implementation file.
+
+* Put the copyright header at the top of each file.
+
+* Write "unique inclusion #ifdef's" for header files:
+
+     #ifndef N1_N2_FILENAME_HPP_INCLUDED
+     #define N1_N2_FILENAME_HPP_INCLUDED
+
+     // ...
+
+     #endif // N1_N2_FILENAME_HPP_INCLUDED
+
+  where N1 is the top-level namespace, N2 the sub-namespace, and so on.
+  For example, class "vmime::utility::stringUtils" uses the following
+  #ifdef name: VMIME_UTILITY_STRINGUTILS_HPP_INCLUDED.
+

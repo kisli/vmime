@@ -240,6 +240,7 @@ libvmime_extra = [
 	'AUTHORS',
 	'ChangeLog',
 	'COPYING',
+	'HACKING',
 	'INSTALL',
 	'NEWS',
 	'README',
