@@ -108,12 +108,15 @@ public:
 
 	maildirStructure(maildirPart* parent, const bodyPart& part)
 	{
+		m_parts.push_back(new maildirPart(parent, 1, part));
+	}
+
+	maildirStructure(maildirPart* parent, const std::vector <const vmime::bodyPart*>& list)
+	{
 		int number = 1;
 
-		const body* bdy = part.getBody();
-
-		for (int i = 0 ; i < bdy->getPartCount() ; ++i, ++number)
-			m_parts.push_back(new maildirPart(parent, number, *bdy->getPartAt(i)));
+		for (int i = 0 ; i < list.size() ; ++i)
+			m_parts.push_back(new maildirPart(parent, number, *list[i]));
 	}
 
 
@@ -153,13 +156,17 @@ maildirStructure maildirStructure::m_emptyStructure;
 maildirPart::maildirPart(maildirPart* parent, const int number, const bodyPart& part)
 	: m_parent(parent), m_number(number)
 {
-	m_structure = new maildirStructure(this, part);
+	m_structure = new maildirStructure(this, part.getBody()->getPartList());
 
 	m_headerParsedOffset = part.getHeader()->getParsedOffset();
 	m_headerParsedLength = part.getHeader()->getParsedLength();
 
 	m_bodyParsedOffset = part.getBody()->getParsedOffset();
 	m_bodyParsedLength = part.getBody()->getParsedLength();
+
+	m_size = part.getBody()->getContents().getLength();
+
+	m_mediaType = part.getBody()->getContentType();
 }
 
 
@@ -192,6 +199,9 @@ maildirMessage::~maildirMessage()
 {
 	if (m_folder)
 		m_folder->unregisterMessage(this);
+
+	delete (m_header);
+	delete (m_structure);
 }
 
 
@@ -309,7 +319,8 @@ void maildirMessage::extractImpl(utility::outputStream& os, progressionListener*
 	const int total = remaining;
 	int current = 0;
 
-	progress->start(total);
+	if (progress)
+		progress->start(total);
 
 	while (!is->eof() && remaining > 0)
 	{
@@ -321,10 +332,12 @@ void maildirMessage::extractImpl(utility::outputStream& os, progressionListener*
 
 		os.write(buffer, read);
 
-		progress->progress(current, total);
+		if (progress)
+			progress->progress(current, total);
 	}
 
-	progress->stop(total);
+	if (progress)
+		progress->stop(total);
 }
 
 
