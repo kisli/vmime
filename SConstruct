@@ -431,6 +431,7 @@ opts.AddOptions(
 
 env = Environment(options = opts)
 
+env.Append(ENV = os.environ)
 env.Append(ENV = {'PATH' : os.environ['PATH']})
 
 env.Append(CPPPATH = [ '.', 'src' ])
