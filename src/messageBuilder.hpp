@@ -67,6 +67,12 @@ public:
 	  */
 	const addressList& getRecipients() const;
 
+	/** Return the recipients of the message (To:).
+	  *
+	  * return recipients of the message
+	  */
+	addressList& getRecipients();
+
 	/** Set the recipients of the message (To:).
 	  *
 	  * @param recipients list of recipients
@@ -79,6 +85,12 @@ public:
 	  */
 	const addressList& getCopyRecipients() const;
 
+	/** Return the copy recipients of the message (Cc:).
+	  *
+	  * @return copy recipients of the message
+	  */
+	addressList& getCopyRecipients();
+
 	/** Set the copy recipients of the message (Cc:).
 	  *
 	  * @param cc list of copy recipients
@@ -90,6 +102,12 @@ public:
 	  * @return blind-copy recipients of the message
 	  */
 	const addressList& getBlindCopyRecipients() const;
+
+	/** Return the blind-copy recipients of the message (Bcc:).
+	  *
+	  * @return blind-copy recipients of the message
+	  */
+	addressList& getBlindCopyRecipients();
 
 	/** Set the blind-copy recipients of the message (Bcc:).
 	  *

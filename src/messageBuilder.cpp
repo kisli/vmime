@@ -207,6 +207,12 @@ const addressList& messageBuilder::getRecipients() const
 }
 
 
+addressList& messageBuilder::getRecipients()
+{
+	return (m_to);
+}
+
+
 void messageBuilder::setRecipients(const addressList& recipients)
 {
 	m_to = recipients;
@@ -219,6 +225,12 @@ const addressList& messageBuilder::getCopyRecipients() const
 }
 
 
+addressList& messageBuilder::getCopyRecipients()
+{
+	return (m_cc);
+}
+
+
 void messageBuilder::setCopyRecipients(const addressList& cc)
 {
 	m_cc = cc;
@@ -226,6 +238,12 @@ void messageBuilder::setCopyRecipients(const addressList& cc)
 
 
 const addressList& messageBuilder::getBlindCopyRecipients() const
+{
+	return (m_bcc);
+}
+
+
+addressList& messageBuilder::getBlindCopyRecipients()
 {
 	return (m_bcc);
 }
