@@ -1,6 +1,6 @@
 //
 // VMime library (http://vmime.sourceforge.net)
-// Copyright (C) 2002-2004 Vincent Richard <vincent@vincent-richard.net>
+// Copyright (C) 2002-2005 Vincent Richard <vincent@vincent-richard.net>
 //
 // This program is free SOFTWARE; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
