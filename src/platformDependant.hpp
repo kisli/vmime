@@ -40,13 +40,16 @@ namespace vmime
 {
 
 
-/** The link between your application and VMime. It offers an interface to
-  * access platform-dependant objects: sockets, date/time, file system, etc.
+/** Allow setting or getting the current platform handler.
   */
 
 class platformDependant
 {
 public:
+
+	/** Handles all platform-dependant operations. It offers an interface to
+	  * access platform-dependant objects: sockets, date/time, file system, etc.
+	  */
 
 	class handler
 	{

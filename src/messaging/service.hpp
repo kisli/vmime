@@ -35,6 +35,9 @@ namespace vmime {
 namespace messaging {
 
 
+/** Base class for messaging services.
+  */
+
 class service
 {
 protected:
@@ -114,6 +117,7 @@ public:
 	  */
 	authenticator* getAuthenticator();
 
+#ifndef VMIME_BUILDING_DOC
 	// Basic service registerer
 	template <class S>
 	class initializer
@@ -126,6 +130,7 @@ public:
 				template registerServiceByProtocol <S>(protocol);
 		}
 	};
+#endif // VMIME_BUILDING_DOC
 
 private:
 

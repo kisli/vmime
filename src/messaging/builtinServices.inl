@@ -17,6 +17,9 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
+#ifndef VMIME_BUILDING_DOC
+
+
 #define REGISTER_SERVICE(p_class, p_name) \
 	vmime::messaging::service::initializer <vmime::messaging::p_class> p_name(#p_name)
 
@@ -44,3 +47,5 @@
 	REGISTER_SERVICE(maildirStore, maildir);
 #endif
 
+
+#endif // VMIME_BUILDING_DOC

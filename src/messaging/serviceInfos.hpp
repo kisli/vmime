@@ -30,6 +30,9 @@ namespace vmime {
 namespace messaging {
 
 
+/** Stores information about a messaging service.
+  */
+
 class serviceInfos
 {
 	friend class serviceFactory;

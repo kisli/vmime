@@ -46,6 +46,7 @@ protected:
 
 public:
 
+#ifndef VMIME_BUILDING_DOC
 	template <class TYPE>
 	class registerer
 	{
@@ -57,6 +58,7 @@ public:
 			return new TYPE();
 		}
 	};
+#endif // VMIME_BUILDING_DOC
 
 
 	template <class T>

@@ -28,6 +28,9 @@ namespace vmime
 {
 
 
+/** Attachment of type 'file'.
+  */
+
 class fileAttachment : public defaultAttachment
 {
 public:
@@ -35,6 +38,8 @@ public:
 	fileAttachment(const string& filename, const mediaType& type, const text& desc = NULL_TEXT);
 	fileAttachment(const string& filename, const mediaType& type, const encoding& enc, const text& desc = NULL_TEXT);
 
+	/** Stores information about a file attachment.
+	  */
 	class fileInfo
 	{
 	public:
@@ -42,27 +47,102 @@ public:
 		fileInfo();
 		~fileInfo();
 
+		/** Check whether the 'filename' property is present.
+		  *
+		  * @return true if the 'filename' property is set,
+		  * false otherwise
+		  */
 		const bool hasFilename() const;
+
+		/** Return the value of the 'filename' property.
+		  *
+		  * @return file name
+		  */
 		const string& getFilename() const;
+
+		/** Set the value of the 'filename' property.
+		  *
+		  * @param name file name
+		  */
 		void setFilename(const string& name);
 
+		/** Check whether the 'creation-date' property is present.
+		  *
+		  * @return true if the 'creation-date' property is set,
+		  * false otherwise
+		  */
 		const bool hasCreationDate() const;
+
+		/** Return the value of the 'creation-date' property.
+		  *
+		  * @return file creation time
+		  */
 		const datetime& getCreationDate() const;
+
+		/** Set the value of the 'creation-date' property.
+		  *
+		  * @param date file creation time
+		  */
 		void setCreationDate(const datetime& date);
 
+		/** Check whether the 'modification-date' property is present.
+		  *
+		  * @return true if the 'modification-date' property is set,
+		  * false otherwise
+		  */
 		const bool hasModificationDate() const;
+
+		/** Return the value of the 'modification-date' property.
+		  *
+		  * @return file modification time
+		  */
 		const datetime& getModificationDate() const;
+
+		/** Set the value of the 'modification-date' property.
+		  *
+		  * @param date file modification time
+		  */
 		void setModificationDate(const datetime& date);
 
+		/** Check whether the 'read-date' property is set.
+		  *
+		  * @return true if the 'read-date' property is set,
+		  * false otherwise
+		  */
 		const bool hasReadDate() const;
+
+		/** Return the value of the 'read-date' property.
+		  *
+		  * @return file access time
+		  */
 		const datetime& getReadDate() const;
+
+		/** Set the value of the 'read-date' property.
+		  *
+		  * @param date file access time
+		  */
 		void setReadDate(const datetime& date);
 
+		/** Check whether the value of the 'size' property is set.
+		  *
+		  * @return true if the 'size' property is set,
+		  * false otherwise
+		  */
 		const bool hasSize() const;
+
+		/** Return the value of the 'size' property.
+		  *
+		  * @return file size
+		  */
 		const unsigned int getSize() const;
+
+		/** Set the value of the 'size' property.
+		  *
+		  * @param size file size
+		  */
 		void setSize(const unsigned int& size);
 
-	protected:
+	private:
 
 		string* m_filename;
 		unsigned int* m_size;

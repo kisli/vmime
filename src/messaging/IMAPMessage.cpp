@@ -232,6 +232,8 @@ class structure& IMAPpart::getStructure()
 
 
 
+#ifndef VMIME_BUILDING_DOC
+
 //
 // IMAPMessage_literalHandler
 //
@@ -267,6 +269,8 @@ private:
 	utility::outputStream& m_os;
 	progressionListener* m_progress;
 };
+
+#endif // VMIME_BUILDING_DOC
 
 
 

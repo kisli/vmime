@@ -44,6 +44,7 @@ protected:
 
 	NameMap m_nameMap;
 
+#ifndef VMIME_BUILDING_DOC
 	template <class TYPE>
 	class registerer
 	{
@@ -55,6 +56,7 @@ protected:
 			return new TYPE();
 		}
 	};
+#endif // VMIME_BUILDING_DOC
 
 public:
 

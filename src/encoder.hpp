@@ -30,6 +30,9 @@ namespace vmime
 {
 
 
+/** Encode/decode data in different encodings.
+  */
+
 class encoder
 {
 public:

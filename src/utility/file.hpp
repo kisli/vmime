@@ -198,7 +198,7 @@ public:
 };
 
 
-/** Constructs file objects.
+/** Constructs 'file' objects.
   */
 
 class fileSystemFactory

@@ -79,6 +79,9 @@ private:
 };
 
 
+/** Generic implementation for headerField with a value of type 'string'.
+  */
+
 template <>
 class genericField <string> : public genericField <typeAdapter <string> >
 {

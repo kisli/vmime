@@ -54,6 +54,9 @@ public:
 };
 
 
+/** A class to create 'timeoutHandler' objects.
+  */
+
 class timeoutHandlerFactory
 {
 public:

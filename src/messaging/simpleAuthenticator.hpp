@@ -28,6 +28,9 @@ namespace vmime {
 namespace messaging {
 
 
+/** Basic implementation for an authenticator.
+  */
+
 class simpleAuthenticator : public authenticator
 {
 public:

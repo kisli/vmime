@@ -58,6 +58,8 @@ messageParser::~messageParser()
 void messageParser::parse(const message& msg)
 {
 	// Header fields (if field is present, copy its value, else do nothing)
+#ifndef VMIME_BUILDING_DOC
+
 #define TRY_FIELD(var, type, name) \
 	try { var = dynamic_cast<type&>(*msg.getHeader()->findField(name)).getValue(); } \
 	catch (exceptions::no_such_field) { }
@@ -71,6 +73,8 @@ void messageParser::parse(const message& msg)
 	TRY_FIELD(m_subject, textField, fields::SUBJECT);
 
 #undef TRY_FIELD
+
+#endif // VMIME_BUILDING_DOC
 
 	// Date
 	try

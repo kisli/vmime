@@ -34,6 +34,9 @@ namespace vmime
 {
 
 
+/** Base class for all types of attachment.
+  */
+
 class attachment
 {
 	friend class messageBuilder;

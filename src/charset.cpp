@@ -28,6 +28,8 @@ extern "C"
 {
 	#include <iconv.h>
 
+#ifndef VMIME_BUILDING_DOC
+
 	// HACK: prototypes may differ depending on the compiler and/or system (the
 	// second parameter may or may not be 'const'). This redeclaration is a hack
 	// to have a common prototype "iconv_cast".
@@ -35,6 +37,8 @@ extern "C"
 		size_t *inbytesleft, char* * outbuf, size_t *outbytesleft);
 
 	#define iconv_const ((iconv_const_hack) iconv)
+
+#endif // VMIME_BUILDING_DOC
 }
 
 

@@ -30,6 +30,9 @@ namespace vmime
 {
 
 
+/** An adapter to allow any type being treated as a 'component'.
+  */
+
 template <class TYPE>
 class typeAdapter : public component
 {

@@ -28,6 +28,9 @@ namespace vmime {
 namespace messaging {
 
 
+/** Interface for connecting to servers.
+  */
+
 class socket
 {
 public:
@@ -80,6 +83,9 @@ public:
 	virtual void sendRaw(const char* buffer, const int count) = 0;
 };
 
+
+/** A class to create 'socket' objects.
+  */
 
 class socketFactory
 {

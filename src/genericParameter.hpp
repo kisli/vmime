@@ -79,6 +79,9 @@ private:
 };
 
 
+/** Generic implementation for parameter of type 'string'.
+  */
+
 template <>
 class genericParameter <string> : public genericParameter <typeAdapter <string> >
 {

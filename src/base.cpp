@@ -98,6 +98,8 @@ namespace lineLengthLimits
 
 
 
+#ifndef VMIME_BUILDING_DOC
+
 //
 //  V-Mime Initializer
 // ====================
@@ -132,6 +134,8 @@ public:
 };
 
 initializer theInitializer;
+
+#endif // VMIME_BUILDING_DOC
 
 
 } // vmime

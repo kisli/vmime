@@ -30,6 +30,9 @@ namespace vmime
 {
 
 
+/** Base class for VMime exceptions.
+  */
+
 class exception
 {
 private:

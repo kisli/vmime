@@ -29,6 +29,9 @@ namespace vmime
 {
 
 
+/** Default implementation for attachments.
+  */
+
 class defaultAttachment : public attachment
 {
 protected:

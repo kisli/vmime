@@ -71,12 +71,16 @@ const unsigned char encoderQP::sm_hexDecodeTable[256] =
 };
 
 
+#ifndef VMIME_BUILDING_DOC
+
 #define QP_ENCODE_HEX(x) \
 	outBuffer[outBufferPos] = '=';                           \
 	outBuffer[outBufferPos + 1] = sm_hexDigits[x >> 4];  \
 	outBuffer[outBufferPos + 2] = sm_hexDigits[x & 0xF]; \
 	outBufferPos += 3;                                       \
 	curCol += 3;
+
+#endif // VMIME_BUILDING_DOC
 
 
 const utility::stream::size_type encoderQP::encode(utility::inputStream& in, utility::outputStream& out)

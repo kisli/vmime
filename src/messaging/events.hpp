@@ -34,9 +34,8 @@ class folder;
 namespace events {
 
 
-//
-// messageCountEvent
-//
+/** Event about the message count in a folder.
+  */
 
 class messageCountEvent
 {
@@ -44,8 +43,8 @@ public:
 
 	enum Types
 	{
-		TYPE_ADDED,     // new messages
-		TYPE_REMOVED    // expunged messages: renumbering
+		TYPE_ADDED,     /**< New messages have been added. */
+		TYPE_REMOVED    /**< Messages have been expunged (renumbering). */
 	};
 
 
@@ -65,6 +64,9 @@ private:
 };
 
 
+/** Listener for events about the message count in a folder.
+  */
+
 class messageCountListener
 {
 protected:
@@ -78,9 +80,8 @@ public:
 };
 
 
-//
-// messageChangedEvent
-//
+/** Event occuring on a message.
+  */
 
 class messageChangedEvent
 {
@@ -108,6 +109,9 @@ private:
 };
 
 
+/** Listener for events occuring on a message.
+  */
+
 class messageChangedListener
 {
 protected:
@@ -120,9 +124,8 @@ public:
 };
 
 
-//
-// folderEvent
-//
+/** Event occuring on a folder.
+  */
 
 class folderEvent
 {
@@ -130,9 +133,9 @@ public:
 
 	enum Types
 	{
-		TYPE_CREATED,   // a folder was created
-		TYPE_DELETED,   // a folder was deleted
-		TYPE_RENAMED    // a folder was renamed
+		TYPE_CREATED,   /**< A folder was created. */
+		TYPE_DELETED,   /**< A folder was deleted. */
+		TYPE_RENAMED    /**< A folder was renamed. */
 	};
 
 
@@ -151,6 +154,9 @@ private:
 	const utility::path m_newPath;
 };
 
+
+/** Listener for events occuring on a folder.
+  */
 
 class folderListener
 {

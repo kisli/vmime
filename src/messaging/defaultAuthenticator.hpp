@@ -29,8 +29,10 @@ namespace vmime {
 namespace messaging {
 
 
-/** An auhenticator that simply returns the credentials set in the
-  * session properties (named 'username' and 'password').
+/** Default implementation for authenticator. It simply returns
+  * the credentials set in the session properties (named 'username'
+  * and 'password'). This is the default implementation used if
+  * you do not write your own authenticator object.
   */
 
 class defaultAuthenticator : public authenticator
