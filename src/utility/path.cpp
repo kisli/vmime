@@ -192,6 +192,20 @@ const bool path::isDirectParentOf(const path& p) const
 }
 
 
+const bool path::isParentOf(const path& p) const
+{
+	if (p.getSize() < getSize() + 1)
+		return (false);
+
+	bool equal = true;
+
+	for (list::size_type i = 0 ; equal && i < m_list.size() ; ++i)
+		equal = (m_list[i] == p.m_list[i]);
+
+	return (equal);
+}
+
+
 void path::appendComponent(const path::component& c)
 {
 	m_list.push_back(c);

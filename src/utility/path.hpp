@@ -126,10 +126,18 @@ public:
 	/** Test whether this path is a direct parent of another one.
 	  *
 	  * @param p other path
+	  * @return true if the specified path is a child
+	  * of this path, false otherwise
+	  */
+	const bool isDirectParentOf(const path& p) const;
+
+	/** Test whether this path is a parent of another one.
+	  *
+	  * @param p other path
 	  * @return true if the specified path is a child (direct or
 	  * indirect) of this path, false otherwise
 	  */
-	const bool isDirectParentOf(const path& p) const;
+	const bool isParentOf(const path& p) const;
 
 private:
 
