@@ -78,7 +78,8 @@ folder* maildirStore::getFolder(const folder::path& path)
 const bool maildirStore::isValidFolderName(const folder::path::component& name)
 {
 	return (platformDependant::getHandler()->
-		getFileSystemFactory()->isValidPathComponent(name));
+		getFileSystemFactory()->isValidPathComponent(name) &&
+		name.getBuffer().find_first_of(".") == string::npos);
 }
 
 
