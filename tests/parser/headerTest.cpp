@@ -1,3 +1,22 @@
+//
+// VMime library (http://vmime.sourceforge.net)
+// Copyright (C) 2002-2004 Vincent Richard <vincent@vincent-richard.net>
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License as
+// published by the Free Software Foundation; either version 2 of
+// the License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+//
+
 #include "../lib/unit++/unit++.h"
 
 #include <iostream>
@@ -7,6 +26,7 @@
 #include "../../examples/common.inc"
 
 using namespace unitpp;
+
 
 namespace
 {
@@ -40,6 +60,158 @@ namespace
 			bool res = hdr.hasField("To");
 
 			assert_eq("Value", true, res);
+		}
+
+		// appendField function tests
+		void testAppend1()
+		{
+			vmime::header hdr;
+			hdr.parse("");
+
+			vmime::headerField* hf = vmime::headerFieldFactory::getInstance()->create("A", "a");
+			hdr.appendField(hf);
+
+			std::vector <vmime::headerField*> res = hdr.getFieldList();
+
+			assert_eq("Count", (unsigned int) 1, res.size());
+			assert_eq("First value", "A: a", headerTest::getFieldValue(*res[0]));
+		}
+
+		void testAppend2()
+		{
+			vmime::header hdr;
+			hdr.parse("A: a\r\n");
+
+			vmime::headerField* hf = vmime::headerFieldFactory::getInstance()->create("B", "b");
+			hdr.appendField(hf);
+
+			std::vector <vmime::headerField*> res = hdr.getFieldList();
+
+			assert_eq("Count", (unsigned int) 2, res.size());
+			assert_eq("First value", "A: a", headerTest::getFieldValue(*res[0]));
+			assert_eq("Second value", "B: b", headerTest::getFieldValue(*res[1]));
+		}
+
+		// insertFieldBefore
+		void testInsertFieldBefore1()
+		{
+			vmime::header hdr;
+			hdr.parse("A: a\r\nC: c\r\n");
+
+			vmime::headerField* hf = vmime::headerFieldFactory::getInstance()->create("B", "b");
+			hdr.insertFieldBefore(hdr.getField("C"), hf);
+
+			std::vector <vmime::headerField*> res = hdr.getFieldList();
+
+			assert_eq("Count", (unsigned int) 3, res.size());
+			assert_eq("First value", "A: a", headerTest::getFieldValue(*res[0]));
+			assert_eq("Second value", "B: b", headerTest::getFieldValue(*res[1]));
+			assert_eq("Third value", "C: c", headerTest::getFieldValue(*res[2]));
+		}
+
+		void testInsertFieldBefore2()
+		{
+			vmime::header hdr;
+			hdr.parse("A: a\r\nC: c\r\n");
+
+			vmime::headerField* hf = vmime::headerFieldFactory::getInstance()->create("B", "b");
+			hdr.insertFieldBefore(1, hf);
+
+			std::vector <vmime::headerField*> res = hdr.getFieldList();
+
+			assert_eq("Count", (unsigned int) 3, res.size());
+			assert_eq("First value", "A: a", headerTest::getFieldValue(*res[0]));
+			assert_eq("Second value", "B: b", headerTest::getFieldValue(*res[1]));
+			assert_eq("Third value", "C: c", headerTest::getFieldValue(*res[2]));
+		}
+
+		// insertFieldAfter
+		void testInsertFieldAfter1()
+		{
+			vmime::header hdr;
+			hdr.parse("A: a\r\nC: c\r\n");
+
+			vmime::headerField* hf = vmime::headerFieldFactory::getInstance()->create("B", "b");
+			hdr.insertFieldAfter(hdr.getField("A"), hf);
+
+			std::vector <vmime::headerField*> res = hdr.getFieldList();
+
+			assert_eq("Count", (unsigned int) 3, res.size());
+			assert_eq("First value", "A: a", headerTest::getFieldValue(*res[0]));
+			assert_eq("Second value", "B: b", headerTest::getFieldValue(*res[1]));
+			assert_eq("Third value", "C: c", headerTest::getFieldValue(*res[2]));
+		}
+
+		void testInsertFieldAfter2()
+		{
+			vmime::header hdr;
+			hdr.parse("A: a\r\nC: c\r\n");
+
+			vmime::headerField* hf = vmime::headerFieldFactory::getInstance()->create("B", "b");
+			hdr.insertFieldAfter(0, hf);
+
+			std::vector <vmime::headerField*> res = hdr.getFieldList();
+
+			assert_eq("Count", (unsigned int) 3, res.size());
+			assert_eq("First value", "A: a", headerTest::getFieldValue(*res[0]));
+			assert_eq("Second value", "B: b", headerTest::getFieldValue(*res[1]));
+			assert_eq("Third value", "C: c", headerTest::getFieldValue(*res[2]));
+		}
+
+		// removeField
+		void testRemoveField1()
+		{
+			vmime::header hdr1, hdr2;
+			hdr1.parse("A: a\r\nB: b\r\nC: c\r\n");
+			hdr2.parse("A: a\r\nB: b\r\nC: c\r\n");
+
+			hdr1.removeField(hdr1.getField("B"));
+			hdr2.removeField(1);
+
+			std::vector <vmime::headerField*> res1 = hdr1.getFieldList();
+
+			assert_eq("Count", (unsigned int) 2, res1.size());
+			assert_eq("First value", "A: a", headerTest::getFieldValue(*res1[0]));
+			assert_eq("Second value", "C: c", headerTest::getFieldValue(*res1[1]));
+
+			std::vector <vmime::headerField*> res2 = hdr2.getFieldList();
+
+			assert_eq("Count", (unsigned int) 2, res2.size());
+			assert_eq("First value", "A: a", headerTest::getFieldValue(*res2[0]));
+			assert_eq("Second value", "C: c", headerTest::getFieldValue(*res2[1]));
+		}
+
+		void testRemoveField2()
+		{
+			vmime::header hdr1, hdr2;
+			hdr1.parse("A: a\r\n");
+			hdr2.parse("A: a\r\n");
+
+			hdr1.removeField(hdr1.getField("A"));
+			hdr2.removeField(0);
+
+			std::vector <vmime::headerField*> res1 = hdr1.getFieldList();
+			assert_eq("Count", (unsigned int) 0, res1.size());
+
+			std::vector <vmime::headerField*> res2 = hdr2.getFieldList();
+			assert_eq("Count", (unsigned int) 0, res2.size());
+		}
+
+		// removeAllFields
+		void testRemoveAllFields()
+		{
+			vmime::header hdr1, hdr2;
+			hdr1.parse("A: a\r\n");
+			hdr2.parse("A: a\r\nB: b\r\n");
+
+			hdr1.removeAllFields();
+			hdr2.removeAllFields();
+
+			std::vector <vmime::headerField*> res1 = hdr1.getFieldList();
+			assert_eq("Count", (unsigned int) 0, res1.size());
+
+			std::vector <vmime::headerField*> res2 = hdr2.getFieldList();
+			assert_eq("Count", (unsigned int) 0, res2.size());
 		}
 
 		// getFieldCount
@@ -160,6 +332,20 @@ namespace
 
 			add("Has", testcase(this, "Has1", &headerTest::testHas1));
 			add("Has", testcase(this, "Has2", &headerTest::testHas2));
+
+			add("Append", testcase(this, "Append1", &headerTest::testAppend1));
+			add("Append", testcase(this, "Append2", &headerTest::testAppend2));
+
+			add("InsertFieldBefore", testcase(this, "InsertFieldBefore1", &headerTest::testInsertFieldBefore1));
+			add("InsertFieldBefore", testcase(this, "InsertFieldBefore2", &headerTest::testInsertFieldBefore2));
+
+			add("InsertFieldAfter", testcase(this, "InsertFieldAfter1", &headerTest::testInsertFieldAfter1));
+			add("InsertFieldAfter", testcase(this, "InsertFieldAfter2", &headerTest::testInsertFieldAfter2));
+
+			add("RemoveField", testcase(this, "RemoveField1", &headerTest::testRemoveField1));
+			add("RemoveField", testcase(this, "RemoveField2", &headerTest::testRemoveField2));
+
+			add("RemoveAllFields", testcase(this, "RemoveAllFields", &headerTest::testRemoveAllFields));
 
 			add("GetFieldCount", testcase(this, "GetFieldCount", &headerTest::testgetFieldCount));
 
