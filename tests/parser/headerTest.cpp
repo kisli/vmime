@@ -42,6 +42,68 @@ namespace
 			assert_eq("Value", true, res);
 		}
 
+		// getFieldCount
+		void testgetFieldCount()
+		{
+			vmime::header hdr;
+			hdr.parse("A: a\r\nB: b\r\nC: c\r\nD: d\r\n");
+
+			assert_eq("Value", 4, hdr.getFieldCount());
+		}
+
+		// isEmpty
+		void testIsEmpty1()
+		{
+			vmime::header hdr;
+			hdr.parse("A: a\r\nB: b\r\nC: c\r\n");
+
+			assert_eq("Value", false, hdr.isEmpty());
+		}
+
+		void testIsEmpty2()
+		{
+			vmime::header hdr;
+			hdr.parse("\r\n");
+
+			assert_eq("Value", true, hdr.isEmpty());
+		}
+
+		// getFieldAt
+		void getFieldAt()
+		{
+			vmime::header hdr;
+			hdr.parse("B: b\r\nA: a\r\nC: c\r\n");
+
+			vmime::headerField* res = hdr.getFieldAt(2);
+
+			assert_eq("Value", "C: c", getFieldValue(*res));
+		}
+
+		// getFieldList
+		void testGetFieldList1()
+		{
+			vmime::header hdr;
+			hdr.parse("A: a\r\nB: b1\r\nC: c\r\nB: b2\r\n");
+
+			std::vector <vmime::headerField*> res = hdr.getFieldList();
+
+			assert_eq("Count", (unsigned int) 4, res.size());
+			assert_eq("First value", "A: a", headerTest::getFieldValue(*res[0]));
+			assert_eq("Second value", "B: b1", headerTest::getFieldValue(*res[1]));
+			assert_eq("Third value", "C: c", headerTest::getFieldValue(*res[2]));
+			assert_eq("Thourth value", "B: b2", headerTest::getFieldValue(*res[3]));
+		}
+
+		void testGetFieldList2()
+		{
+			vmime::header hdr;
+			hdr.parse("\r\n");
+
+			std::vector <vmime::headerField*> res = hdr.getFieldList();
+
+			assert_eq("Count", (unsigned int) 0, res.size());
+		}
+
 		// find function tests
 		void testFind1()
 		{
@@ -98,6 +160,16 @@ namespace
 
 			add("Has", testcase(this, "Has1", &headerTest::testHas1));
 			add("Has", testcase(this, "Has2", &headerTest::testHas2));
+
+			add("GetFieldCount", testcase(this, "GetFieldCount", &headerTest::testgetFieldCount));
+
+			add("IsEmpty", testcase(this, "IsEmpty1", &headerTest::testIsEmpty1));
+			add("IsEmpty", testcase(this, "IsEmpty2", &headerTest::testIsEmpty2));
+
+			add("GetFieldAt", testcase(this, "GetFieldAt", &headerTest::getFieldAt));
+
+			add("GetFieldList", testcase(this, "GetFieldList1", &headerTest::testGetFieldList1));
+			add("GetFieldList", testcase(this, "GetFieldList2", &headerTest::testGetFieldList2));
 
 			add("Find", testcase(this, "Find1", &headerTest::testFind1));
 
