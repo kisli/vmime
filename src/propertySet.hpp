@@ -202,7 +202,8 @@ public:
 		const property* const prop = find(name);
 		if (!prop) throw exceptions::no_such_property(name);
 
-		return (prop->getValue <TYPE>());
+		//return (prop->getValue <TYPE>());  // BUG: with g++ < 3.4
+		return (prop->template getValue <TYPE>());
 	}
 
 	/** Get the value of the specified property.
@@ -218,7 +219,8 @@ public:
 	const TYPE getProperty(const string& name, const TYPE defaultValue) const
 	{
 		const property* const prop = find(name);
-		return (prop ? prop->getValue <TYPE>() : defaultValue);
+		//return (prop ? prop->getValue <TYPE>() : defaultValue); // BUG: with g++ < 3.4
+		return (prop ? prop->template getValue <TYPE>() : defaultValue);
 	}
 
 	/** Change the value of the specified property or create

@@ -44,6 +44,8 @@ protected:
 
 	NameMap m_nameMap;
 
+public:
+
 	template <class TYPE>
 	class registerer
 	{
@@ -56,7 +58,6 @@ protected:
 		}
 	};
 
-public:
 
 	template <class T>
 	void registerName(const string& name)
