@@ -303,8 +303,10 @@ const string messaging_exception::name() const { return "messaging_exception"; }
 //
 
 connection_error::~connection_error() throw() {}
-connection_error::connection_error(const exception& other)
-	: messaging_exception("Connection error.", other) {}
+connection_error::connection_error(const string& what, const exception& other)
+	: messaging_exception(what.empty()
+		? "Connection error."
+		: "Connection error: '" + what + "'.", other) {}
 
 exception* connection_error::clone() const { return new connection_error(*this); }
 const string connection_error::name() const { return "connection_error"; }

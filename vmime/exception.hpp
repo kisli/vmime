@@ -326,7 +326,7 @@ class connection_error : public messaging_exception
 {
 public:
 
-	connection_error(const exception& other = NO_EXCEPTION);
+	connection_error(const string& what = "", const exception& other = NO_EXCEPTION);
 	~connection_error() throw();
 
 	exception* clone() const;

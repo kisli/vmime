@@ -2,6 +2,13 @@
 VERSION 0.6.2-cvs
 =================
 
+2005-01-04  Vincent Richard  <vincent@vincent-richard.net>
+
+ * Added diagnostic error string for 'exceptions::connection_error'.
+
+ * Fixed a bug in 'posixSocket::connect()' that prevented connecting to
+   servers by specifying an IP address instead of a server name.
+
 2005-01-03  Vincent Richard  <vincent@vincent-richard.net>
 
  * Fixed linking error on 'typeAdapter <string>::parse()' with g++ versions

@@ -80,22 +80,17 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 		if (hostInfo == NULL)
 		{
 			// Error: cannot resolve address
-			throw vmime::exceptions::connection_error();
+			throw vmime::exceptions::connection_error("Cannot resolve address.");
 		}
 
 		bcopy(hostInfo->h_addr, reinterpret_cast <char*>(&addr.sin_addr), hostInfo->h_length);
-	}
-	else
-	{
-		// Error: cannot resolve address
-		throw vmime::exceptions::connection_error();
 	}
 
 	// Get a new socket
 	m_desc = ::socket(AF_INET, SOCK_STREAM, 0);
 
 	if (m_desc == -1)
-		throw vmime::exceptions::connection_error();
+		throw vmime::exceptions::connection_error("Error while creating socket.");
 
 	// Start connection
 	if (::connect(m_desc, reinterpret_cast <sockaddr*>(&addr), sizeof(addr)) == -1)
@@ -104,7 +99,7 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 		m_desc = -1;
 
 		// Error
-		throw vmime::exceptions::connection_error();
+		throw vmime::exceptions::connection_error("Error while connecting socket.");
 	}
 }
 

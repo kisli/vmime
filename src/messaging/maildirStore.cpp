@@ -121,7 +121,7 @@ void maildirStore::connect()
 		}
 		catch (exceptions::filesystem_exception& e)
 		{
-			throw exceptions::connection_error(e);
+			throw exceptions::connection_error("Cannot create root directory.", e);
 		}
 	}
 
