@@ -237,6 +237,7 @@ libvmimetest_sources = [
 	[ 'tests/parser/encoderTest', [ 'tests/parser/encoderTest.cpp' ] ],
 	[ 'tests/parser/headerTest', [ 'tests/parser/headerTest.cpp' ] ],
 	[ 'tests/parser/mailboxTest', [ 'tests/parser/mailboxTest.cpp' ] ],
+	[ 'tests/parser/mediaTypeTest', [ 'tests/parser/mediaTypeTest.cpp' ] ],
 	[ 'tests/parser/textTest', [ 'tests/parser/textTest.cpp' ] ]
 ]
 
