@@ -21,23 +21,24 @@
 #define VMIME_MESSAGING_IMAPPARSER_HPP_INCLUDED
 
 
-#include "../base.hpp"
-#include "../dateTime.hpp"
-#include "../charset.hpp"
-#include "../exception.hpp"
-#include "../utility/smartPtr.hpp"
-#include "../utility/stringUtils.hpp"
+#include "base.hpp"
+#include "dateTime.hpp"
+#include "charset.hpp"
+#include "exception.hpp"
 
-#include "../encoderB64.hpp"
-#include "../encoderQP.hpp"
+#include "utility/smartPtr.hpp"
+#include "utility/stringUtils.hpp"
 
-#include "../platformDependant.hpp"
+#include "encoderB64.hpp"
+#include "encoderQP.hpp"
 
-#include "progressionListener.hpp"
-#include "timeoutHandler.hpp"
-#include "socket.hpp"
+#include "platformDependant.hpp"
 
-#include "IMAPTag.hpp"
+#include "messaging/progressionListener.hpp"
+#include "messaging/timeoutHandler.hpp"
+#include "messaging/socket.hpp"
+
+#include "messaging/IMAPTag.hpp"
 
 #include <vector>
 #include <stdexcept>

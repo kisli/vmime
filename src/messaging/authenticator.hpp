@@ -21,7 +21,7 @@
 #define VMIME_MESSAGING_AUTHENTICATOR_HPP_INCLUDED
 
 
-#include "authenticationInfos.hpp"
+#include "messaging/authenticationInfos.hpp"
 
 
 namespace vmime {

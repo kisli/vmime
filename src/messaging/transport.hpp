@@ -21,8 +21,8 @@
 #define VMIME_MESSAGING_TRANSPORT_HPP_INCLUDED
 
 
-#include "service.hpp"
-#include "../utility/stream.hpp"
+#include "messaging/service.hpp"
+#include "utility/stream.hpp"
 
 
 namespace vmime {

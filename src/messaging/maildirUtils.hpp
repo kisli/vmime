@@ -21,8 +21,8 @@
 #define VMIME_MESSAGING_MAILDIRUTILS_HPP_INCLUDED
 
 
-#include "../utility/file.hpp"
-#include "../utility/path.hpp"
+#include "utility/file.hpp"
+#include "utility/path.hpp"
 
 
 namespace vmime {

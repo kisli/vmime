@@ -21,10 +21,10 @@
 #define VMIME_MESSAGING_SESSION_HPP_INCLUDED
 
 
-#include "authenticator.hpp"
-#include "progressionListener.hpp"
+#include "messaging/authenticator.hpp"
+#include "messaging/progressionListener.hpp"
 
-#include "../propertySet.hpp"
+#include "propertySet.hpp"
 
 
 namespace vmime {

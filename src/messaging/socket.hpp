@@ -21,7 +21,7 @@
 #define VMIME_MESSAGING_SOCKET_HPP_INCLUDED
 
 
-#include "../base.hpp"
+#include "base.hpp"
 
 
 namespace vmime {

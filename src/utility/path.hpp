@@ -23,8 +23,8 @@
 
 #include <vector>
 
-#include "../types.hpp"
-#include "../word.hpp"
+#include "types.hpp"
+#include "word.hpp"
 
 
 namespace vmime {

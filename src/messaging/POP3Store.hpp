@@ -21,11 +21,13 @@
 #define VMIME_MESSAGING_POP3STORE_HPP_INCLUDED
 
 
-#include "store.hpp"
-#include "socket.hpp"
-#include "../config.hpp"
-#include "timeoutHandler.hpp"
-#include "../utility/stream.hpp"
+#include "config.hpp"
+
+#include "messaging/store.hpp"
+#include "messaging/socket.hpp"
+#include "messaging/timeoutHandler.hpp"
+
+#include "utility/stream.hpp"
 
 
 namespace vmime {

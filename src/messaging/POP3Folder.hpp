@@ -24,9 +24,10 @@
 #include <vector>
 #include <map>
 
-#include "../types.hpp"
-#include "folder.hpp"
-#include "../config.hpp"
+#include "config.hpp"
+#include "types.hpp"
+
+#include "messaging/folder.hpp"
 
 
 namespace vmime {

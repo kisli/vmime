@@ -17,12 +17,14 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "maildirStore.hpp"
+#include "messaging/maildirStore.hpp"
 
-#include "maildirFolder.hpp"
+#include "messaging/maildirFolder.hpp"
 
-#include "../exception.hpp"
-#include "../platformDependant.hpp"
+#include "utility/smartPtr.hpp"
+
+#include "exception.hpp"
+#include "platformDependant.hpp"
 
 
 namespace vmime {

@@ -23,8 +23,8 @@
 
 #include <limits>
 
-#include "../types.hpp"
-#include "stream.hpp"
+#include "types.hpp"
+#include "utility/stream.hpp"
 
 
 namespace vmime {

@@ -21,7 +21,7 @@
 #define VMIME_MESSAGING_AUTHHELPER_HPP_INCLUDED
 
 
-#include "../types.hpp"
+#include "types.hpp"
 
 
 namespace vmime {

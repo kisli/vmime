@@ -21,10 +21,11 @@
 #define VMIME_MESSAGING_SMTPTRANSPORT_HPP_INCLUDED
 
 
-#include "transport.hpp"
-#include "socket.hpp"
-#include "../config.hpp"
-#include "timeoutHandler.hpp"
+#include "config.hpp"
+
+#include "messaging/transport.hpp"
+#include "messaging/socket.hpp"
+#include "messaging/timeoutHandler.hpp"
 
 
 namespace vmime {

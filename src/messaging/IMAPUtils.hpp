@@ -21,10 +21,11 @@
 #define VMIME_MESSAGING_IMAPUTILS_HPP_INCLUDED
 
 
-#include "folder.hpp"
-#include "../types.hpp"
-#include "IMAPParser.hpp"
-#include "../dateTime.hpp"
+#include "types.hpp"
+#include "dateTime.hpp"
+
+#include "messaging/folder.hpp"
+#include "messaging/IMAPParser.hpp"
 
 #include <vector>
 

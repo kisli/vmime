@@ -21,12 +21,13 @@
 #define VMIME_MESSAGING_IMAPCONNECTION_HPP_INCLUDED
 
 
-#include "authenticator.hpp"
-#include "socket.hpp"
-#include "../config.hpp"
-#include "timeoutHandler.hpp"
+#include "config.hpp"
 
-#include "IMAPParser.hpp"
+#include "messaging/authenticator.hpp"
+#include "messaging/socket.hpp"
+#include "messaging/timeoutHandler.hpp"
+
+#include "messaging/IMAPParser.hpp"
 
 
 namespace vmime {

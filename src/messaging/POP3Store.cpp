@@ -17,14 +17,13 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "POP3Store.hpp"
+#include "messaging/POP3Store.hpp"
+#include "messaging/POP3Folder.hpp"
 
-#include "../exception.hpp"
-#include "../platformDependant.hpp"
-#include "../messageId.hpp"
-#include "../utility/md5.hpp"
-
-#include "POP3Folder.hpp"
+#include "exception.hpp"
+#include "platformDependant.hpp"
+#include "messageId.hpp"
+#include "utility/md5.hpp"
 
 #include <algorithm>
 

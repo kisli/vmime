@@ -24,7 +24,7 @@
 #include <istream>
 #include <ostream>
 
-#include "../types.hpp"
+#include "types.hpp"
 
 
 namespace vmime {

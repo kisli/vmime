@@ -23,16 +23,16 @@
 
 #include <map>
 
-#include "../types.hpp"
-#include "../base.hpp"
-#include "../utility/singleton.hpp"
-#include "../utility/stringUtils.hpp"
+#include "types.hpp"
+#include "base.hpp"
+#include "utility/singleton.hpp"
+#include "utility/stringUtils.hpp"
 
-#include "serviceInfos.hpp"
-#include "authenticator.hpp"
-#include "progressionListener.hpp"
-#include "timeoutHandler.hpp"
-#include "url.hpp"
+#include "messaging/serviceInfos.hpp"
+#include "messaging/authenticator.hpp"
+#include "messaging/progressionListener.hpp"
+#include "messaging/timeoutHandler.hpp"
+#include "messaging/url.hpp"
 
 
 namespace vmime {

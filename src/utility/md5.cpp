@@ -44,7 +44,7 @@
 //     These notices must be retained in any copies of any part of this
 //     documentation and/or software.
 
-#include "md5.hpp"
+#include "utility/md5.hpp"
 
 
 namespace vmime {

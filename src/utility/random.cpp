@@ -17,7 +17,7 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "random.hpp"
+#include "utility/random.hpp"
 #include "platformDependant.hpp"
 
 #include <ctime>

@@ -21,15 +21,15 @@
 #define VMIME_PLATFORMS_POSIX_HANDLER_HPP_INCLUDED
 
 
-#include "../../config.hpp"
-#include "../../platformDependant.hpp"
+#include "config.hpp"
+#include "platformDependant.hpp"
 
 #if VMIME_HAVE_MESSAGING_FEATURES
-	#include "socket.hpp"
+	#include "platforms/posix/socket.hpp"
 #endif
 
 #if VMIME_HAVE_FILESYSTEM_FEATURES
-     #include "file.hpp"
+     #include "platforms/posix/file.hpp"
 #endif
 
 

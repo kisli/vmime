@@ -21,9 +21,10 @@
 #define VMIME_MESSAGING_POP3MESSAGE_HPP_INCLUDED
 
 
-#include "message.hpp"
-#include "folder.hpp"
-#include "../config.hpp"
+#include "config.hpp"
+
+#include "messaging/message.hpp"
+#include "messaging/folder.hpp"
 
 
 namespace vmime {

@@ -21,7 +21,7 @@
 #define VMIME_MESSAGING_SIMPLEAUTHENTICATOR_HPP_INCLUDED
 
 
-#include "authenticator.hpp"
+#include "messaging/authenticator.hpp"
 
 
 namespace vmime {

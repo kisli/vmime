@@ -21,10 +21,11 @@
 #define VMIME_MESSAGING_IMAPSTORE_HPP_INCLUDED
 
 
-#include "store.hpp"
-#include "socket.hpp"
-#include "folder.hpp"
-#include "../config.hpp"
+#include "config.hpp"
+
+#include "messaging/store.hpp"
+#include "messaging/socket.hpp"
+#include "messaging/folder.hpp"
 
 #include <ostream>
 

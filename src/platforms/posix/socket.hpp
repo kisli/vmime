@@ -21,7 +21,7 @@
 #define VMIME_PLATFORMS_POSIX_SOCKET_HPP_INCLUDED
 
 
-#include "../../messaging/socket.hpp"
+#include "messaging/socket.hpp"
 
 
 #if VMIME_HAVE_MESSAGING_FEATURES

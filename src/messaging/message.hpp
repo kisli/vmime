@@ -21,9 +21,9 @@
 #define VMIME_MESSAGING_MESSAGE_HPP_INCLUDED
 
 
-#include "../header.hpp"
-#include "progressionListener.hpp"
-#include "../utility/stream.hpp"
+#include "header.hpp"
+#include "messaging/progressionListener.hpp"
+#include "utility/stream.hpp"
 
 
 namespace vmime {

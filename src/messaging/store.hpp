@@ -21,8 +21,8 @@
 #define VMIME_MESSAGING_STORE_HPP_INCLUDED
 
 
-#include "service.hpp"
-#include "folder.hpp"
+#include "messaging/service.hpp"
+#include "messaging/folder.hpp"
 
 
 namespace vmime {

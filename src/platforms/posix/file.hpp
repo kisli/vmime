@@ -21,7 +21,7 @@
 #define VMIME_PLATFORMS_POSIX_FILE_HPP_INCLUDED
 
 
-#include "../../utility/file.hpp"
+#include "utility/file.hpp"
 
 
 #if VMIME_HAVE_FILESYSTEM_FEATURES

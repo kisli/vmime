@@ -17,7 +17,7 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "urlUtils.hpp"
+#include "messaging/urlUtils.hpp"
 
 
 namespace vmime {

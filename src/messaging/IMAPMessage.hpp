@@ -21,9 +21,10 @@
 #define VMIME_MESSAGING_IMAPMESSAGE_HPP_INCLUDED
 
 
-#include "message.hpp"
-#include "folder.hpp"
-#include "../mailboxList.hpp"
+#include "messaging/message.hpp"
+#include "messaging/folder.hpp"
+
+#include "mailboxList.hpp"
 
 
 namespace vmime {

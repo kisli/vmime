@@ -21,14 +21,15 @@
 #define VMIME_MESSAGING_SERVICE_HPP_INCLUDED
 
 
-#include "../types.hpp"
-#include "session.hpp"
+#include "types.hpp"
 
-#include "authenticator.hpp"
-#include "progressionListener.hpp"
+#include "messaging/session.hpp"
 
-#include "serviceFactory.hpp"
-#include "serviceInfos.hpp"
+#include "messaging/authenticator.hpp"
+#include "messaging/progressionListener.hpp"
+
+#include "messaging/serviceFactory.hpp"
+#include "messaging/serviceInfos.hpp"
 
 
 namespace vmime {

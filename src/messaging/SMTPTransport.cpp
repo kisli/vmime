@@ -17,14 +17,15 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "SMTPTransport.hpp"
+#include "messaging/SMTPTransport.hpp"
 
-#include "../exception.hpp"
-#include "../platformDependant.hpp"
-#include "../encoderB64.hpp"
-#include "../message.hpp"
-#include "../mailboxList.hpp"
-#include "authHelper.hpp"
+#include "exception.hpp"
+#include "platformDependant.hpp"
+#include "encoderB64.hpp"
+#include "messageParser.hpp"   // to include "message.hpp" in root directory
+#include "mailboxList.hpp"
+
+#include "messaging/authHelper.hpp"
 
 
 namespace vmime {

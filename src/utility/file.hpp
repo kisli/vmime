@@ -21,9 +21,10 @@
 #define VMIME_UTILITY_FILE_HPP_INCLUDED
 
 
-#include "path.hpp"
-#include "../config.hpp"
-#include "stream.hpp"
+#include "config.hpp"
+
+#include "utility/path.hpp"
+#include "utility/stream.hpp"
 
 
 #if VMIME_HAVE_FILESYSTEM_FEATURES

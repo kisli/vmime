@@ -20,7 +20,7 @@
 #include "url.hpp"
 
 #include "parserHelpers.hpp"
-#include "urlUtils.hpp"
+#include "messaging/urlUtils.hpp"
 #include "exception.hpp"
 
 #include <sstream>

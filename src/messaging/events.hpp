@@ -23,7 +23,7 @@
 
 #include <vector>
 
-#include "../utility/path.hpp"
+#include "utility/path.hpp"
 
 
 namespace vmime {

@@ -21,8 +21,8 @@
 #define VMIME_MESSAGING_URL_HPP_INCLUDED
 
 
-#include "../types.hpp"
-#include "../base.hpp"
+#include "types.hpp"
+#include "base.hpp"
 
 
 namespace vmime {

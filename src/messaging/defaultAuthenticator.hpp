@@ -21,8 +21,8 @@
 #define VMIME_MESSAGING_DEFAULTAUTHENTICATOR_HPP_INCLUDED
 
 
-#include "authenticator.hpp"
-#include "../propertySet.hpp"
+#include "messaging/authenticator.hpp"
+#include "propertySet.hpp"
 
 
 namespace vmime {

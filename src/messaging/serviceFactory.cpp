@@ -17,13 +17,13 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "serviceFactory.hpp"
-#include "service.hpp"
+#include "messaging/serviceFactory.hpp"
+#include "messaging/service.hpp"
 
-#include "../exception.hpp"
-#include "../config.hpp"
+#include "exception.hpp"
+#include "config.hpp"
 
-#include "builtinServices.inl"
+#include "messaging/builtinServices.inl"
 
 
 namespace vmime {

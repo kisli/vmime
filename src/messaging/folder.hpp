@@ -23,14 +23,13 @@
 
 #include <vector>
 
-#include "../types.hpp"
-#include "../dateTime.hpp"
-#include "progressionListener.hpp"
-#include "message.hpp"
-#include "../message.hpp"
-#include "events.hpp"
-#include "../utility/path.hpp"
-#include "../utility/stream.hpp"
+#include "types.hpp"
+#include "dateTime.hpp"
+#include "messaging/progressionListener.hpp"
+#include "messaging/message.hpp"
+#include "messaging/events.hpp"
+#include "utility/path.hpp"
+#include "utility/stream.hpp"
 
 
 namespace vmime {

@@ -17,8 +17,8 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "IMAPUtils.hpp"
-#include "message.hpp"
+#include "messaging/IMAPUtils.hpp"
+#include "messaging/message.hpp"
 
 #include <sstream>
 #include <iterator>

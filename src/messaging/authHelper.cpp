@@ -17,10 +17,10 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "authHelper.hpp"
+#include "messaging/authHelper.hpp"
 
-#include "../config.hpp"
-#include "../utility/md5.hpp"
+#include "config.hpp"
+#include "utility/md5.hpp"
 
 
 namespace vmime {
