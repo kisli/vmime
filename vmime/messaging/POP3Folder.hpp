@@ -120,6 +120,8 @@ private:
 
 	void onClose();
 
+	void parseMultiListOrUidlResponse(const string& response, std::map <int, string>& result);
+
 
 	POP3Store* m_store;
 

@@ -2,6 +2,12 @@
 VERSION 0.6.4cvs
 ================
 
+2005-03-23  Vincent Richard  <vincent@vincent-richard.net>
+
+ * messaging/POP3*: fixed incorrect message size. Fixed a bug in
+   deleteMessages() when 'to == -1' and last message not being
+   deleted (thanks to Stefan Uhrig).
+
 2005-03-17  Vincent Richard  <vincent@vincent-richard.net>
 
  * base.{cpp|hpp}: renamed 'MIME_VERSION' to 'SUPPORTED_MIME_VERSION'.

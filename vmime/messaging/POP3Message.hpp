@@ -77,6 +77,7 @@ private:
 	POP3Folder* m_folder;
 	int m_num;
 	uid m_uid;
+	int m_size;
 
 	header* m_header;
 };

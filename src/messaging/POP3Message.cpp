@@ -29,7 +29,7 @@ namespace messaging {
 
 
 POP3Message::POP3Message(POP3Folder* folder, const int num)
-	: m_folder(folder), m_num(num), m_header(NULL)
+	: m_folder(folder), m_num(num), m_size(-1), m_header(NULL)
 {
 	m_folder->registerMessage(this);
 }
@@ -64,13 +64,10 @@ const message::uid POP3Message::getUniqueId() const
 
 const int POP3Message::getSize() const
 {
-	if (!m_folder)
-		throw exceptions::illegal_state("Folder closed");
+	if (m_size == -1)
+		throw exceptions::unfetched_object();
 
-	POP3Folder::MessageMap::const_iterator it =
-		m_folder->m_messages.find(const_cast <POP3Message*>(this));
-
-	return ((it != m_folder->m_messages.end()) ? (*it).second : 0);
+	return (m_size);
 }
 
 

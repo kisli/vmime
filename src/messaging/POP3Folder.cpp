@@ -314,6 +314,51 @@ void POP3Folder::fetchMessages(std::vector <message*>& msg, const int options,
 			progress->progress(++current, total);
 	}
 
+	if (options & FETCH_SIZE)
+	{
+		// Send the "LIST" command
+		std::ostringstream command;
+		command << "LIST";
+
+		m_store->sendRequest(command.str());
+
+		// Get the response
+		string response;
+		m_store->readResponse(response, true, NULL);
+
+		if (m_store->isSuccessResponse(response))
+		{
+			m_store->stripFirstLine(response, response, NULL);
+
+			// C: LIST
+			// S: +OK
+			// S: 1 47548
+			// S: 2 12653
+			// S: .
+			std::map <int, string> result;
+			parseMultiListOrUidlResponse(response, result);
+
+			for (std::vector <message*>::iterator it = msg.begin() ;
+			     it != msg.end() ; ++it)
+			{
+				POP3Message* m = dynamic_cast <POP3Message*>(*it);
+
+				std::map <int, string>::const_iterator x = result.find(m->m_num);
+
+				if (x != result.end())
+				{
+					int size = 0;
+
+					std::istringstream iss((*x).second);
+					iss >> size;
+
+					m->m_size = size;
+				}
+			}
+		}
+
+	}
+
 	if (options & FETCH_UID)
 	{
 		// Send the "UIDL" command
@@ -335,50 +380,18 @@ void POP3Folder::fetchMessages(std::vector <message*>& msg, const int options,
 			// S: 1 whqtswO00WBw418f9t5JxYwZ
 			// S: 2 QhdPYR:00WBw1Ph7x7
 			// S: .
-
-			std::istringstream iss(response);
-			std::map <int, string> ids;
-
-			string line;
-
-			while (std::getline(iss, line))
-			{
-				string::iterator it = line.begin();
-
-				while (it != line.end() && (*it == ' ' || *it == '\t'))
-					++it;
-
-				if (it != line.end())
-				{
-					int number = 0;
-
-					while (it != line.end() && (*it >= '0' && *it <= '9'))
-					{
-						number = (number * 10) + (*it - '0');
-						++it;
-					}
-
-					while (it != line.end() && !(*it == ' ' || *it == '\t')) ++it;
-					while (it != line.end() && (*it == ' ' || *it == '\t')) ++it;
-
-					if (it != line.end())
-					{
-						ids.insert(std::map <int, string>::value_type
-							(number, string(it, line.end())));
-					}
-				}
-			}
+			std::map <int, string> result;
+			parseMultiListOrUidlResponse(response, result);
 
 			for (std::vector <message*>::iterator it = msg.begin() ;
 			     it != msg.end() ; ++it)
 			{
 				POP3Message* m = dynamic_cast <POP3Message*>(*it);
 
-				std::map <int, string>::const_iterator id =
-					ids.find(m->m_num);
+				std::map <int, string>::const_iterator x = result.find(m->m_num);
 
-				if (id != ids.end())
-					m->m_uid = (*id).second;
+				if (x != result.end())
+					m->m_uid = (*x).second;
 			}
 		}
 	}
@@ -397,11 +410,47 @@ void POP3Folder::fetchMessage(message* msg, const int options)
 
 	dynamic_cast <POP3Message*>(msg)->fetch(this, options);
 
+	if (options & FETCH_SIZE)
+	{
+		// Send the "LIST" command
+		std::ostringstream command;
+		command << "LIST " << msg->getNumber();
+
+		m_store->sendRequest(command.str());
+
+		// Get the response
+		string response;
+		m_store->readResponse(response, false, NULL);
+
+		if (m_store->isSuccessResponse(response))
+		{
+			m_store->stripResponseCode(response, response);
+
+			// C: LIST 2
+			// S: +OK 2 4242
+			string::iterator it = response.begin();
+
+			while (it != response.end() && (*it == ' ' || *it == '\t')) ++it;
+			while (it != response.end() && !(*it == ' ' || *it == '\t')) ++it;
+			while (it != response.end() && (*it == ' ' || *it == '\t')) ++it;
+
+			if (it != response.end())
+			{
+				int size = 0;
+
+				std::istringstream iss(string(it, response.end()));
+				iss >> size;
+
+				dynamic_cast <POP3Message*>(msg)->m_size = size;
+			}
+		}
+	}
+
 	if (options & FETCH_UID)
 	{
 		// Send the "UIDL" command
 		std::ostringstream command;
-		command << "UIDL";
+		command << "UIDL " << msg->getNumber();
 
 		m_store->sendRequest(command.str());
 
@@ -504,7 +553,9 @@ void POP3Folder::deleteMessages(const int from, const int to)
 	else if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
 
-	for (int i = from ; i < to ; ++i)
+	const int to2 = (to == -1 ? m_messageCount : to);
+
+	for (int i = from ; i <= to2 ; ++i)
 	{
 		std::ostringstream command;
 		command << "DELE " << i;
@@ -663,6 +714,42 @@ void POP3Folder::expunge()
 {
 	// Not supported by POP3 protocol (deleted messages are automatically
 	// expunged at the end of the session...).
+}
+
+
+void POP3Folder::parseMultiListOrUidlResponse(const string& response, std::map <int, string>& result)
+{
+	std::istringstream iss(response);
+	std::map <int, string> ids;
+
+	string line;
+
+	while (std::getline(iss, line))
+	{
+		string::iterator it = line.begin();
+
+		while (it != line.end() && (*it == ' ' || *it == '\t'))
+			++it;
+
+		if (it != line.end())
+		{
+			int number = 0;
+
+			while (it != line.end() && (*it >= '0' && *it <= '9'))
+			{
+				number = (number * 10) + (*it - '0');
+				++it;
+			}
+
+			while (it != line.end() && !(*it == ' ' || *it == '\t')) ++it;
+			while (it != line.end() && (*it == ' ' || *it == '\t')) ++it;
+
+			if (it != line.end())
+			{
+				result.insert(std::map <int, string>::value_type(number, string(it, line.end())));
+			}
+		}
+	}
 }
 
 
