@@ -51,6 +51,8 @@ public:
 	void copyFrom(const component& other);
 	mediaType& operator=(const mediaType& other);
 
+	const std::vector <const component*> getChildComponents() const;
+
 	/** Return the media type.
 	  * See the constants in vmime::mediaTypes.
 	  *

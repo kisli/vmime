@@ -227,4 +227,10 @@ void messageId::setRight(const string& right)
 }
 
 
+const std::vector <const component*> messageId::getChildComponents() const
+{
+	return std::vector <const component*>();
+}
+
+
 } // vmime

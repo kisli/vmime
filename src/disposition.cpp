@@ -117,4 +117,10 @@ void disposition::setName(const string& name)
 }
 
 
+const std::vector <const component*> disposition::getChildComponents() const
+{
+	return std::vector <const component*>();
+}
+
+
 } // vmime

@@ -91,6 +91,8 @@ public:
 	void copyFrom(const component& other);
 	messageId& operator=(const messageId& other);
 
+	const std::vector <const component*> getChildComponents() const;
+
 private:
 
 	string m_left;

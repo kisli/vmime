@@ -231,6 +231,8 @@ public:
 	void copyFrom(const component& other);
 	body& operator=(const body& other);
 
+	const std::vector <const component*> getChildComponents() const;
+
 private:
 
 	string m_prologText;

@@ -77,6 +77,8 @@ public:
 	void copyFrom(const component& other);
 	bodyPart& operator=(const bodyPart& other);
 
+	const std::vector <const component*> getChildComponents() const;
+
 private:
 
 	header m_header;

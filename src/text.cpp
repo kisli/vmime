@@ -840,4 +840,11 @@ void text::decodeAndUnfold(const string::const_iterator& inStart, const string::
 }
 
 
+const std::vector <const component*> text::getChildComponents() const
+{
+	// TODO: 'word' should inherit from 'component'
+	return std::vector <const component*>();
+}
+
+
 } // vmime

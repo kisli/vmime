@@ -53,6 +53,8 @@ public:
 	text& operator=(const component& other);
 	text& operator=(const text& other);
 
+	const std::vector <const component*> getChildComponents() const;
+
 	/** Add a word at the end of the list.
 	  *
 	  * @param w word to append

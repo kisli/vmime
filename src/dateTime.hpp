@@ -220,6 +220,8 @@ public:
 	// Current date and time
 	static const datetime now();
 
+	const std::vector <const component*> getChildComponents() const;
+
 private:
 
 	static const int dayOfWeek(const int year, const int month, const int day);

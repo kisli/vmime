@@ -48,6 +48,8 @@ public:
 	mailboxGroup* clone() const;
 	mailboxGroup& operator=(const component& other);
 
+	const std::vector <const component*> getChildComponents() const;
+
 	/** Return the name of the group.
 	  *
 	  * @return group name

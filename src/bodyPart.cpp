@@ -120,5 +120,16 @@ bodyPart* bodyPart::getParentPart() const
 }
 
 
+const std::vector <const component*> bodyPart::getChildComponents() const
+{
+	std::vector <const component*> list;
+
+	list.push_back(&m_header);
+	list.push_back(&m_body);
+
+	return (list);
+}
+
+
 } // vmime
 

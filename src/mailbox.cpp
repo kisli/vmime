@@ -504,4 +504,10 @@ void mailbox::setEmail(const string& email)
 }
 
 
+const std::vector <const component*> mailbox::getChildComponents() const
+{
+	return std::vector <const component*>();
+}
+
+
 } // vmime

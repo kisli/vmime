@@ -97,4 +97,14 @@ const bool headerField::isCustom() const
 }
 
 
+const std::vector <const component*> headerField::getChildComponents() const
+{
+	std::vector <const component*> list;
+
+	list.push_back(&getValue());
+
+	return (list);
+}
+
+
 } // vmime

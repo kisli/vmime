@@ -149,4 +149,14 @@ void parameter::generateValue(utility::outputStream& os, const string::size_type
 }
 
 
+const std::vector <const component*> parameter::getChildComponents() const
+{
+	std::vector <const component*> list;
+
+	list.push_back(&getValue());
+
+	return (list);
+}
+
+
 } // vmime

@@ -350,4 +350,15 @@ const std::vector <mailbox*> mailboxGroup::getMailboxList()
 }
 
 
+const std::vector <const component*> mailboxGroup::getChildComponents() const
+{
+	std::vector <const component*> list;
+
+	copy_vector(m_list, list);
+
+	return (list);
+
+}
+
+
 } // vmime

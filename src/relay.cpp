@@ -334,4 +334,11 @@ std::vector <string>& relay::getWithList()
 }
 
 
+const std::vector <const component*> relay::getChildComponents() const
+{
+	// TODO: should fields inherit from 'component'? (using typeAdapter)
+	return std::vector <const component*>();
+}
+
+
 } // vmime

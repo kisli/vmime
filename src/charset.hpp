@@ -53,6 +53,8 @@ public:
 	const bool operator==(const charset& value) const;
 	const bool operator!=(const charset& value) const;
 
+	const std::vector <const component*> getChildComponents() const;
+
 	/** Returns the default charset used on the system.
 	  *
 	  * This function simply calls <code>platformDependantHandler::getLocaleCharset()</code>

@@ -169,4 +169,10 @@ void mediaType::setFromString(const string& type)
 }
 
 
+const std::vector <const component*> mediaType::getChildComponents() const
+{
+	return std::vector <const component*>();
+}
+
+
 } // vmime

@@ -47,6 +47,8 @@ public:
 	void copyFrom(const component& other);
 	relay& operator=(const relay& other);
 
+	const std::vector <const component*> getChildComponents() const;
+
 	const string& getFrom() const;
 	void setFrom(const string& from);
 

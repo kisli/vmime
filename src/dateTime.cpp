@@ -709,6 +709,12 @@ datetime* datetime::clone() const
 }
 
 
+const std::vector <const component*> datetime::getChildComponents() const
+{
+	return std::vector <const component*>();
+}
+
+
 const int datetime::getYear() const { return (m_year); }
 const int datetime::getMonth() const { return (m_month); }
 const int datetime::getDay() const { return (m_day); }

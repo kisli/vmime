@@ -52,6 +52,8 @@ public:
 	addressList& operator=(const addressList& other);
 	addressList& operator=(const mailboxList& other);
 
+	const std::vector <const component*> getChildComponents() const;
+
 
 	/** Add a address at the end of the list.
 	  *

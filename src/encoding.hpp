@@ -66,6 +66,8 @@ public:
 	const bool operator==(const encoding& value) const;
 	const bool operator!=(const encoding& value) const;
 
+	const std::vector <const component*> getChildComponents() const;
+
 	/** Decide which encoding to use based on the specified data.
 	  *
 	  * \deprecated Use the new decide() method which takes a contentHandler parameter.

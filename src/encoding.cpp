@@ -187,4 +187,10 @@ void encoding::setName(const string& name)
 }
 
 
+const std::vector <const component*> encoding::getChildComponents() const
+{
+	return std::vector <const component*>();
+}
+
+
 } // vmime

@@ -81,6 +81,8 @@ public:
 
 	void clear();
 
+	const std::vector <const component*> getChildComponents() const;
+
 
 	const bool isGroup() const;
 

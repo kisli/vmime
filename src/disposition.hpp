@@ -59,6 +59,8 @@ public:
 	void copyFrom(const component& other);
 	disposition& operator=(const disposition& other);
 
+	const std::vector <const component*> getChildComponents() const;
+
 
 	disposition& operator=(const string& name);
 

@@ -274,4 +274,10 @@ void charset::copyFrom(const component& other)
 }
 
 
+const std::vector <const component*> charset::getChildComponents() const
+{
+	return std::vector <const component*>();
+}
+
+
 } // vmime

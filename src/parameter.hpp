@@ -39,6 +39,8 @@ public:
 	void copyFrom(const component& other);
 	parameter& operator=(const parameter& other);
 
+	const std::vector <const component*> getChildComponents() const;
+
 	/** Return the name of the parameter.
 	  *
 	  * @return name of the parameter

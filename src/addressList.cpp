@@ -248,6 +248,14 @@ const std::vector <address*> addressList::getAddressList()
 }
 
 
+const std::vector <const component*> addressList::getChildComponents() const
+{
+	std::vector <const component*> list;
+
+	copy_vector(m_list, list);
+
+	return (list);
+}
 
 
 } // vmime

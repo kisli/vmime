@@ -706,4 +706,14 @@ const std::vector <bodyPart*> body::getPartList()
 }
 
 
+const std::vector <const component*> body::getChildComponents() const
+{
+	std::vector <const component*> list;
+
+	copy_vector(m_parts, list);
+
+	return (list);
+}
+
+
 } // vmime

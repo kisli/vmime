@@ -107,6 +107,11 @@ public:
 			*newLinePos = curLinePos + oss.str().length();
 	}
 
+	const std::vector <const component*> getChildComponents() const
+	{
+		return std::vector <const component*>();
+	}
+
 private:
 
 	TYPE m_value;

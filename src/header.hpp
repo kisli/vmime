@@ -214,6 +214,8 @@ public:
 	void copyFrom(const component& other);
 	header& operator=(const header& other);
 
+	const std::vector <const component*> getChildComponents() const;
+
 private:
 
 	std::vector <headerField*> m_fields;

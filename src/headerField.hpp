@@ -49,6 +49,8 @@ public:
 	void copyFrom(const component& other);
 	headerField& operator=(const headerField& other);
 
+	const std::vector <const component*> getChildComponents() const;
+
 	/** Return the name of this field.
 	  *
 	  * @return field name

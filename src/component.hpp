@@ -104,6 +104,18 @@ public:
 	  */
 	const string::size_type getParsedLength() const;
 
+	/** Return the list of children of this component.
+	  *
+	  * @return list of child components
+	  */
+	const std::vector <component*> getChildComponents();
+
+	/** Return the list of children of this component (const version).
+	  *
+	  * @return list of child components
+	  */
+	virtual const std::vector <const component*> getChildComponents() const = 0;
+
 protected:
 
 	void setParsedBounds(const string::size_type start, const string::size_type end);

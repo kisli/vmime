@@ -510,4 +510,14 @@ const std::vector <headerField*> header::getFieldList()
 }
 
 
+const std::vector <const component*> header::getChildComponents() const
+{
+	std::vector <const component*> list;
+
+	copy_vector(m_fields, list);
+
+	return (list);
+}
+
+
 } // vmime
