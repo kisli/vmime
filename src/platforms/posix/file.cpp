@@ -208,7 +208,7 @@ vmime::utility::inputStream* posixFileReader::getInputStream()
 {
 	int fd = 0;
 
-	if ((fd = ::open(m_nativePath.c_str(), O_RDONLY, 0660)) == -1)
+	if ((fd = ::open(m_nativePath.c_str(), O_RDONLY, 0640)) == -1)
 		posixFileSystemFactory::reportError(m_path, errno);
 
 	return new posixFileReaderInputStream(m_path, fd);
@@ -373,7 +373,7 @@ void posixFile::createDirectoryImpl(const vmime::utility::file::path& fullPath,
 	if (!path.isEmpty() && recursive)
 		createDirectoryImpl(fullPath, path.getParent(), true);
 
-	if (::mkdir(nativePath.c_str(), 0660) != 0)
+	if (::mkdir(nativePath.c_str(), 0750) != 0)
 		posixFileSystemFactory::reportError(fullPath, errno);
 }
 
