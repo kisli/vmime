@@ -756,14 +756,142 @@ void maildirFolder::setMessageFlagsImpl
 void maildirFolder::addMessage(vmime::message* msg, const int flags,
 	vmime::datetime* date, progressionListener* progress)
 {
-	// TODO
+	std::ostringstream oss;
+	utility::outputStreamAdapter ossAdapter(oss);
+
+	msg->generate(ossAdapter);
+
+	const std::string& str = oss.str();
+	utility::inputStreamStringAdapter strAdapter(str);
+
+	addMessage(strAdapter, str.length(), flags, date, progress);
 }
 
 
 void maildirFolder::addMessage(utility::inputStream& is, const int size,
-	const int flags, vmime::datetime* date, progressionListener* progress)
+	const int flags, vmime::datetime* /* date */, progressionListener* progress)
 {
-	// TODO
+	if (!m_store)
+		throw exceptions::illegal_state("Store disconnected");
+	else if (!isOpen())
+		throw exceptions::illegal_state("Folder not open");
+	else if (m_mode == MODE_READ_ONLY)
+		throw exceptions::illegal_state("Folder is read-only");
+
+	utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
+
+	utility::file::path tmpDirPath = maildirUtils::getFolderFSPath
+		(m_store, m_path, maildirUtils::FOLDER_PATH_TMP);
+	utility::file::path curDirPath = maildirUtils::getFolderFSPath
+		(m_store, m_path, maildirUtils::FOLDER_PATH_CUR);
+
+	const utility::file::path::component filename =
+		maildirUtils::buildFilename(maildirUtils::generateId(),
+			((flags == message::FLAG_UNDEFINED) ? 0 : flags));
+
+	try
+	{
+		utility::auto_ptr <utility::file> tmpDir = fsf->create(tmpDirPath);
+		tmpDir->createDirectory(true);
+	}
+	catch (exceptions::filesystem_exception&)
+	{
+		// Don't throw now, it will fail later...
+	}
+
+	try
+	{
+		utility::auto_ptr <utility::file> curDir = fsf->create(curDirPath);
+		curDir->createDirectory(true);
+	}
+	catch (exceptions::filesystem_exception&)
+	{
+		// Don't throw now, it will fail later...
+	}
+
+	if (progress)
+		progress->start(size);
+
+	try
+	{
+		// Write the message into 'tmp'
+		utility::auto_ptr <utility::file> file = fsf->create(tmpDirPath / filename);
+
+		file->createFile();
+
+		utility::fileWriter* fw = file->getFileWriter();
+		utility::outputStream* os = fw->getOutputStream();
+
+		utility::stream::value_type buffer[65536];
+		utility::stream::size_type total = 0;
+
+		while (!is.eof())
+		{
+			const utility::stream::size_type read = is.read(buffer, sizeof(buffer));
+
+			if (read != 0)
+			{
+				os->write(buffer, read);
+				total += read;
+			}
+
+			if (progress)
+				progress->progress(total, size);
+		}
+
+		delete (os);
+		delete (fw);
+
+		// And move it to 'cur'
+		file->rename(curDirPath / filename);
+
+		if (progress)
+			progress->stop(total);
+	}
+	catch (exception& e)
+	{
+		if (progress)
+			progress->stop(size);
+
+		throw exceptions::command_error("ADD", "", "", e);
+	}
+
+	// Append the message to the cache list
+	messageInfos msgInfos;
+	msgInfos.path = filename;
+	msgInfos.type = messageInfos::TYPE_CUR;
+
+	m_messageInfos.push_back(msgInfos);
+	m_messageCount++;
+
+	if ((flags == message::FLAG_UNDEFINED) || !(flags & message::FLAG_SEEN))
+		m_unreadMessageCount++;
+
+	// Notification
+	std::vector <int> nums;
+	nums.push_back(m_messageCount);
+
+	events::messageCountEvent event(this, events::messageCountEvent::TYPE_ADDED, nums);
+
+	notifyMessageCount(event);
+
+	// Notify folders with the same path
+	for (std::list <maildirFolder*>::iterator it = m_store->m_folders.begin() ;
+	     it != m_store->m_folders.end() ; ++it)
+	{
+		if ((*it) != this && (*it)->getFullPath() == m_path)
+		{
+			(*it)->m_messageCount = m_messageCount;
+			(*it)->m_unreadMessageCount = m_unreadMessageCount;
+
+			events::messageCountEvent event(*it, events::messageCountEvent::TYPE_ADDED, nums);
+
+			(*it)->notifyMessageCount(event);
+
+			(*it)->m_messageInfos.resize(m_messageInfos.size());
+			std::copy(m_messageInfos.begin(), m_messageInfos.end(), (*it)->m_messageInfos.begin());
+		}
+	}
 }
 
 
@@ -774,7 +902,7 @@ void maildirFolder::copyMessage(const folder::path& dest, const int num)
 	else if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
 
-	// TODO
+	copyMessages(dest, num, num);
 }
 
 
