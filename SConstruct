@@ -230,6 +230,52 @@ libvmime_tests = [
 	'tests/run-tests.sh'
 ]
 
+libunitpp_common = [
+	'tests/lib/unit++/aclocal.m4',
+	'tests/lib/unit++/COPYING',
+	'tests/lib/unit++/guitester.cc',
+	'tests/lib/unit++/main.h',
+	'tests/lib/unit++/optmap-compat.h',
+	'tests/lib/unit++/tester.h',
+	'tests/lib/unit++/Test_unit++.cc',
+	'tests/lib/unit++/unit++-compat.h',
+	'tests/lib/unit++/Changelog',
+	'tests/lib/unit++/guitester.h',
+	'tests/lib/unit++/optmap.h',
+	'tests/lib/unit++/unit++.1',
+	'tests/lib/unit++/unit++.h',
+	'tests/lib/unit++/gui.cc',
+	'tests/lib/unit++/INSTALL',
+	'tests/lib/unit++/Makefile.in',
+	'tests/lib/unit++/Test_gui.cc',
+	'tests/lib/unit++/unit++.3',
+	'tests/lib/unit++/configure.ac',
+	'tests/lib/unit++/gui.h',
+#	'tests/lib/unit++/main.cc',
+#	'tests/lib/unit++/optmap.cc',
+#	'tests/lib/unit++/tester.cc',
+	'tests/lib/unit++/Test_optmap.cc',
+#	'tests/lib/unit++/unit++.cc',
+	'tests/lib/unit++/unitpp.m4'
+]
+
+libunitpp_sources = [
+	'tests/lib/unit++/unit++.cc',
+	'tests/lib/unit++/main.cc',
+	'tests/lib/unit++/optmap.cc',
+	'tests/lib/unit++/tester.cc'
+]
+
+libvmimetest_common = [
+	'tests/parser/testUtils.hpp'
+]
+
+libvmimetest_sources = [
+	[ 'tests/parser/headerTest', [ 'tests/parser/headerTest.cpp' ] ],
+	[ 'tests/parser/mailboxTest', [ 'tests/parser/mailboxTest.cpp' ] ],
+	[ 'tests/parser/textTest', [ 'tests/parser/textTest.cpp' ] ]
+]
+
 libvmime_dist_files = libvmime_sources + libvmime_messaging_sources
 
 for i in range(len(libvmime_dist_files)):
@@ -241,6 +287,11 @@ for p in libvmime_messaging_proto_sources:
 
 libvmime_dist_files = libvmime_dist_files + libvmime_extra + libvmime_examples_sources
 libvmime_dist_files_with_tests = libvmime_dist_files + libvmime_tests
+
+libvmime_dist_files = libvmime_dist_files + libunitpp_common
+libvmime_dist_files = libvmime_dist_files + libunitpp_sources
+libvmime_dist_files = libvmime_dist_files + libvmimetest_common
+libvmime_dist_files = libvmime_dist_files + libvmimetest_sources
 
 
 #################
@@ -372,6 +423,14 @@ opts.AddOptions(
 		'The C-language 32-bit type for your platform',
 		'int',
 		allowed_values = ('char', 'short', 'int', 'long'),
+		map = { },
+		ignorecase = 1
+	),
+	EnumOption(
+		'build_tests',
+		'Build unit tests (in "tests" directory)',
+		'no',
+		allowed_values = ('yes', 'no'),
 		map = { },
 		ignorecase = 1
 	)
@@ -619,26 +678,52 @@ for file in libvmime_full_sources:
 
 # Main program build
 if env['debug'] == 'yes':
-	libVmime = env.StaticLibrary(
-		target = 'vmime-debug',
-		source = libvmime_sources_CPP
-	)
-	libVmimeSh = env.SharedLibrary(
-		target = 'vmime-debug',
-		source = libvmime_sources_CPP
-	)
+	if env['static'] == 'yes':
+		libVmime = env.StaticLibrary(
+			target = 'vmime-debug',
+			source = libvmime_sources_CPP
+		)
+
+	if env['shared'] == 'yes':
+		libVmimeSh = env.SharedLibrary(
+			target = 'vmime-debug',
+			source = libvmime_sources_CPP
+		)
 else:
-	libVmime = env.StaticLibrary(
-		target = 'vmime',
-		source = libvmime_sources_CPP
-	)
-	libVmimeSh = env.SharedLibrary(
-		target = 'vmime',
-		source = libvmime_sources_CPP
-	)
+	if env['static'] == 'yes':
+		libVmime = env.StaticLibrary(
+			target = 'vmime',
+			source = libvmime_sources_CPP
+		)
+
+	if env['shared'] == 'yes':
+		libVmimeSh = env.SharedLibrary(
+			target = 'vmime',
+			source = libvmime_sources_CPP
+		)
 
 if env['static'] == 'yes': Default(libVmime)
 if env['shared'] == 'yes': Default(libVmimeSh)
+
+
+# Tests
+if env['build_tests'] == 'yes':
+	libUnitpp = env.StaticLibrary(
+		target = 'tests/unit++',
+		source = libunitpp_sources
+	)
+
+	Default(libUnitpp)
+
+	for test in libvmimetest_sources:
+		Default(
+			env.Program(
+				target = test[0],
+				source = test[1],
+				LIBS=['unit++', 'vmime-debug'],
+				LIBPATH=['.', './tests/']
+			)
+		)
 
 
 ########################
