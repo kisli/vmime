@@ -239,6 +239,12 @@ libvmime_platforms_sources = {
 		'platforms/posix/posixFile.cpp', 'platforms/posix/posixFile.hpp',
 		'platforms/posix/posixHandler.cpp', 'platforms/posix/posixHandler.hpp',
 		'platforms/posix/posixSocket.cpp', 'platforms/posix/posixSocket.hpp'
+	],
+	'windows':
+	[
+		'platforms/windows/windowsFile.cpp', 'platforms/windows/windowsFile.hpp',
+		'platforms/windows/windowsHandler.cpp', 'platforms/windows/windowsHandler.hpp',
+		'platforms/windows/windowsSocket.cpp', 'platforms/windows/windowsSocket.hpp'
 	]
 }
 
@@ -1600,6 +1606,7 @@ Platform handlers        :$VMIME_BUILTIN_PLATFORMS
 
 	return None
 
+
 # Custom builder for generating autotools scripts
 autotoolsBuilder = Builder(action = generateAutotools)
 env.Append(BUILDERS = { 'GenerateAutoTools' : autotoolsBuilder })
@@ -1607,9 +1614,230 @@ env.Append(BUILDERS = { 'GenerateAutoTools' : autotoolsBuilder })
 env.Alias('autotools', env.GenerateAutoTools('foo_autotools', 'SConstruct'))
 
 
+
+################################
+#  Generate MSVC project files #
+################################
+
+def generateMSVC(target, source, env):
+	# vmime.sln
+	vmime_sln = open("vmime.sln", 'w')
+	vmime_sln.write("""Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vmime", "vmime.vcproj", "{B2B47E11-DB57-49E1-8895-F03BDF78A221}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{B2B47E11-DB57-49E1-8895-F03BDF78A221}.Debug.ActiveCfg = Debug|Win32
+		{B2B47E11-DB57-49E1-8895-F03BDF78A221}.Debug.Build.0 = Debug|Win32
+		{B2B47E11-DB57-49E1-8895-F03BDF78A221}.Release.ActiveCfg = Release|Win32
+		{B2B47E11-DB57-49E1-8895-F03BDF78A221}.Release.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal
+""")
+	vmime_sln.close();
+
+	# vmime.vcproj
+	vmime_vcproj = open("vmime.vcproj", 'w')
+	vmime_vcproj.write("""<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioProject
+	ProjectType="Visual C++"
+	Version="7.10"
+	Name="vmime"
+	ProjectGUID="{B2B47E11-DB57-49E1-8895-F03BDF78A221}"
+	RootNamespace="vmime"
+	Keyword="Win32Proj">
+	<Platforms>
+		<Platform Name="Win32"/>
+	</Platforms>
+	<Configurations>
+		<Configuration
+			Name="Debug|Win32"
+			OutputDirectory="Debug"
+			IntermediateDirectory="Debug"
+			ConfigurationType="4"
+			CharacterSet="2">
+			<Tool Name="VCCLCompilerTool"
+			      Optimization="0"
+			      AdditionalIncludeDirectories="."
+			      PreprocessorDefinitions="WIN32;_DEBUG;_LIB"
+			      MinimalRebuild="TRUE"
+			      BasicRuntimeChecks="3"
+			      RuntimeLibrary="5"
+			      RuntimeTypeInfo="TRUE"
+			      UsePrecompiledHeader="0"
+			      WarningLevel="3"
+			      Detect64BitPortabilityProblems="TRUE"
+			      DebugInformationFormat="4"
+			      DisableSpecificWarnings="4101;4244;4250;4267;4355"/>
+			<Tool Name="VCCustomBuildTool"/>
+			<Tool Name="VCLibrarianTool"
+			      AdditionalDependencies="iconv.lib ws2_32.lib"
+			      OutputFile="$(OutDir)/vmime.lib"/>
+			<Tool Name="VCMIDLTool"/>
+			<Tool Name="VCPostBuildEventTool"/>
+			<Tool Name="VCPreBuildEventTool"
+			      CommandLine="copy $(InputDir)config.hpp.msvc $(InputDir)vmime\config.hpp"/>
+			<Tool Name="VCPreLinkEventTool"/>
+			<Tool Name="VCResourceCompilerTool"/>
+			<Tool Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool Name="VCXMLDataGeneratorTool"/>
+			<Tool Name="VCManagedWrapperGeneratorTool"/>
+			<Tool Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+		<Configuration
+			Name="Release|Win32"
+			OutputDirectory="Release"
+			IntermediateDirectory="Release"
+			ConfigurationType="4"
+			CharacterSet="2">
+			<Tool Name="VCCLCompilerTool"
+			      AdditionalIncludeDirectories="."
+			      PreprocessorDefinitions="WIN32;NDEBUG;_LIB"
+			      RuntimeLibrary="4"
+			      RuntimeTypeInfo="TRUE"
+			      UsePrecompiledHeader="0"
+			      WarningLevel="3"
+			      Detect64BitPortabilityProblems="TRUE"
+			      DebugInformationFormat="3"
+			      DisableSpecificWarnings="4101;4244;4250;4267;4355"/>
+			<Tool Name="VCCustomBuildTool"/>
+			<Tool Name="VCLibrarianTool"
+			      AdditionalDependencies="iconv.lib ws2_32.lib"
+			      OutputFile="$(OutDir)/vmime.lib"/>
+			<Tool Name="VCMIDLTool"/>
+			<Tool Name="VCPostBuildEventTool"/>
+			<Tool Name="VCPreBuildEventTool"
+			      CommandLine="copy $(InputDir)config.hpp.msvc $(InputDir)vmime\config.hpp"/>
+			<Tool Name="VCPreLinkEventTool"/>
+			<Tool Name="VCResourceCompilerTool"/>
+			<Tool Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool Name="VCXMLDataGeneratorTool"/>
+			<Tool Name="VCManagedWrapperGeneratorTool"/>
+			<Tool Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+		</Configuration>
+	</Configurations>
+	<References>
+	</References>
+""")
+
+	# Source files
+	all_sources = libvmime_all_sources
+
+	# -- Remove all platform files and re-add files for "windows" only
+	for i in range(len(all_sources)):
+		if string.find(all_sources[i], 'platforms/') != -1:
+			all_sources[i] = ''
+
+	for f in libvmime_platforms_sources['windows']:
+		if f[-4:] == '.hpp':
+			all_sources.append('vmime/' + f)
+		else:
+			all_sources.append('src/' + f)
+
+	# -- Replace '/' with '\'
+	for i in range(len(all_sources)):
+		all_sources[i] = string.replace(all_sources[i], '/', '\\')
+
+	# -- Output files in filters
+	vmime_vcproj.write("""
+	<Files>
+		<Filter Name="Source Files"
+		        Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
+		        UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
+""")
+
+	all_sources.sort()
+
+	prevLen = 0
+	prevComps = []
+
+	filesDone = []
+	dupCounter = 1      # counter for duplicate file names
+
+	for f in all_sources:
+		if len(f) != 0:
+			comps = re.split('\\\\', f)
+			l = len(comps) - 1
+
+			# Directory change
+			if l != prevLen:
+				if l < prevLen:
+					for i in range(prevLen - l):
+						vmime_vcproj.write('</Filter>\n')
+				else:
+					for i in range(l - prevLen):
+						vmime_vcproj.write('<Filter Name="' + comps[i + prevLen] + '">\n')
+			else:
+				if comps[l - 1] != prevComps[prevLen - 1]:
+					vmime_vcproj.write('</Filter>\n')
+					vmime_vcproj.write('<Filter Name="' + comps[l - 1] + '">\n')
+
+			fn = f[string.rfind(f, '\\') + 1:]
+
+			if fn in filesDone:
+				# File (duplicate filename)
+				vmime_vcproj.write('<File RelativePath=".\\' + f + '">\n')
+				vmime_vcproj.write("""	<FileConfiguration Name="Debug|Win32">
+		<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)/$(InputName)""" + str(dupCounter) + """.obj"/>
+	</FileConfiguration>
+	<FileConfiguration Name="Release|Win32">
+		<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)/$(InputName)""" + str(dupCounter) + """.obj"/>
+	</FileConfiguration>
+""")
+				vmime_vcproj.write('</File>')
+				dupCounter = dupCounter + 1
+			else:
+				# File
+				vmime_vcproj.write('<File RelativePath=".\\' + f + '"/>\n')
+				filesDone.append(fn)
+
+			prevComps = comps
+			prevLen = l
+
+	for i in range(prevLen):
+		vmime_vcproj.write('</Filter>\n')
+
+	vmime_vcproj.write("""		</Filter>
+	</Files>
+	<Globals>
+	</Globals>
+</VisualStudioProject>
+""")
+	vmime_vcproj.close();
+
+	return None
+
+
+
+# Custom builder for generating MSVC project files
+msvcBuilder = Builder(action = generateMSVC)
+env.Append(BUILDERS = { 'GenerateMSVC' : msvcBuilder })
+
+env.Alias('msvc', env.GenerateMSVC('foo_msvc', 'SConstruct'))
+
+
+
 #####################
 #  Packaging rules  #
 #####################
+
+def appendAdditionalDistFiles():
+	# Generate autotools-related files
+	generateAutotools([], [], env)
+
+	# Generate MSVC-related files
+	generateMSVC([], [], env)
+
 
 # 'tar' is not available under Windows...
 if not (os.name == 'win32' or os.name == 'nt'):
@@ -1617,8 +1845,7 @@ if not (os.name == 'win32' or os.name == 'nt'):
 		packageFullName = packageName + '-' + packageVersion
 		packageFile = packageFullName + '.tar.bz2'
 
-		# Generate autotools-related files
-		generateAutotools([], [], env)
+		appendAdditionalDistFiles()
 
 		distFiles = []
 		distFilesStr = ''
