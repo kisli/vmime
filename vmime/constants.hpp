@@ -179,6 +179,46 @@ namespace vmime
 
 		extern const string::value_type* const X_MAILER;
 		extern const string::value_type* const X_PRIORITY;
+
+		// RFC-3798: Message Disposition Notification
+		extern const string::value_type* const ORIGINAL_MESSAGE_ID;
+		extern const string::value_type* const DISPOSITION_NOTIFICATION_TO;
+		extern const string::value_type* const DISPOSITION_NOTIFICATION_OPTIONS;
+		extern const string::value_type* const DISPOSITION;
+		extern const string::value_type* const FAILURE;
+		extern const string::value_type* const ERROR;
+		extern const string::value_type* const WARNING;
+		extern const string::value_type* const ORIGINAL_RECIPIENT;
+		extern const string::value_type* const FINAL_RECIPIENT;
+		extern const string::value_type* const REPORTING_UA;
+		extern const string::value_type* const MDN_GATEWAY;
+	}
+
+	/** Constants for disposition action modes (RFC-3978). */
+	namespace dispositionActionModes
+	{
+		extern const string::value_type* const MANUAL;
+		extern const string::value_type* const AUTOMATIC;
+	}
+
+	/** Constants for disposition sending modes (RFC-3798). */
+	namespace dispositionSendingModes
+	{
+		extern const string::value_type* const SENT_MANUALLY;
+		extern const string::value_type* const SENT_AUTOMATICALLY;
+	}
+
+	/** Constants for disposition types (RFC-3798). */
+	namespace dispositionTypes
+	{
+		extern const string::value_type* const DISPLAYED;
+		extern const string::value_type* const DELETED;
+	}
+
+	/** Constants for disposition modifiers (RFC-3798). */
+	namespace dispositionModifiers
+	{
+		extern const string::value_type* const ERROR;
 	}
 }
 

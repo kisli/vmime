@@ -45,6 +45,7 @@
 #include "vmime/mediaType.hpp"
 #include "vmime/messageId.hpp"
 #include "vmime/relay.hpp"
+#include "vmime/disposition.hpp"
 
 #include "vmime/emptyContentHandler.hpp"
 #include "vmime/stringContentHandler.hpp"

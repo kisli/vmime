@@ -176,6 +176,50 @@ namespace fields
 
 	const string::value_type* const X_MAILER = "X-Mailer";
 	const string::value_type* const X_PRIORITY = "X-Priority";
+
+	// RFC-3798: Message Disposition
+	const string::value_type* const ORIGINAL_MESSAGE_ID = "Original-Message-ID";
+	const string::value_type* const DISPOSITION_NOTIFICATION_TO = "Disposition-Notification-To";
+	const string::value_type* const DISPOSITION_NOTIFICATION_OPTIONS = "Disposition-Notification-Options";
+	const string::value_type* const DISPOSITION = "Disposition";
+	const string::value_type* const FAILURE = "Failure";
+	const string::value_type* const ERROR = "Error";
+	const string::value_type* const WARNING = "Warning";
+	const string::value_type* const ORIGINAL_RECIPIENT = "Original-Recipient";
+	const string::value_type* const FINAL_RECIPIENT = "Final-Recipient";
+	const string::value_type* const REPORTING_UA = "Reporting-UA";
+	const string::value_type* const MDN_GATEWAY = "MDN-Gateway";
+}
+
+
+// Constants for disposition action modes (RFC-3978).
+namespace dispositionActionModes
+{
+	const string::value_type* const MANUAL = "manual";
+	const string::value_type* const AUTOMATIC = "automatic";
+}
+
+
+// Constants for disposition sending modes (RFC-3798).
+namespace dispositionSendingModes
+{
+	const string::value_type* const SENT_MANUALLY = "MDN-sent-manually";
+	const string::value_type* const SENT_AUTOMATICALLY ="MDN-sent-automatically";
+}
+
+
+// Constants for disposition types (RFC-3798).
+namespace dispositionTypes
+{
+	const string::value_type* const DISPLAYED = "displayed";
+	const string::value_type* const DELETED = "deleted";
+}
+
+
+// Constants for disposition modifiers (RFC-3798).
+namespace dispositionModifiers
+{
+	const string::value_type* const ERROR = "error";
 }
 
 

@@ -94,6 +94,7 @@ libvmime_sources = [
 	'contentTypeField.cpp', 'contentTypeField.hpp',
 	'dateTime.cpp', 'dateTime.hpp',
 	'defaultAttachment.cpp', 'defaultAttachment.hpp',
+	'disposition.cpp', 'disposition.hpp',
 	'emptyContentHandler.cpp', 'emptyContentHandler.hpp',
 	'encoder.cpp', 'encoder.hpp',
 	'encoder7bit.cpp', 'encoder7bit.hpp',
@@ -305,6 +306,7 @@ libvmimetest_common = [
 
 libvmimetest_sources = [
 	[ 'tests/parser/bodyPartTest', [ 'tests/parser/bodyPartTest.cpp' ] ],
+	[ 'tests/parser/dispositionTest', [ 'tests/parser/dispositionTest.cpp' ] ],
 	[ 'tests/parser/encoderTest', [ 'tests/parser/encoderTest.cpp' ] ],
 	[ 'tests/parser/headerTest', [ 'tests/parser/headerTest.cpp' ] ],
 	[ 'tests/parser/mailboxTest', [ 'tests/parser/mailboxTest.cpp' ] ],
@@ -1412,7 +1414,6 @@ VMIME_BUILTIN_PLATFORMS=''
 
 	configure_in.write("""
 
-
 #
 # Flags
 #
@@ -1432,6 +1433,7 @@ EXTRA_LIBS=""
 CFLAGS=""
 CXXFLAGS=""
 
+# -- Debug
 if test x$VMIME_DEBUG = x1 ; then
 	# -g
 	OLD_CXXFLAGS="$CXXFLAGS"
@@ -1445,6 +1447,10 @@ else
 	AC_MSG_CHECKING(whether cc accepts -O2)
 	AC_TRY_COMPILE(,,echo yes,echo no; CXXFLAGS="$OLD_CXXFLAGS")
 fi
+
+# -- HACK: add -fPIC or -fpic on static library object files
+EXTRA_CFLAGS="$EXTRA_CFLAGS $lt_prog_compiler_pic"
+
 
 
 #
