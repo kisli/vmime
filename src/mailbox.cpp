@@ -327,6 +327,8 @@ void mailbox::parse(const string& buffer, const string::size_type position,
 		}
 	}
 
+	setParsedBounds(position, position + (p - pstart));
+
 	if (newPosition)
 		*newPosition = position + (p - pstart);
 }

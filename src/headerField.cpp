@@ -71,6 +71,8 @@ void headerField::parse(const string& buffer, const string::size_type position, 
 	string::size_type* newPosition)
 {
 	getValue().parse(buffer, position, end, newPosition);
+
+	setParsedBounds(position, end);
 }
 
 

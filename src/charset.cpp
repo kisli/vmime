@@ -59,6 +59,8 @@ void charset::parse(const string& buffer, const string::size_type position,
 {
 	m_name = string(buffer.begin() + position, buffer.begin() + end);
 
+	setParsedBounds(position, end);
+
 	if (newPosition)
 		*newPosition = end;
 }

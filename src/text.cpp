@@ -71,6 +71,8 @@ void text::parse(const string& buffer, const string::size_type position,
 {
 	decodeAndUnfold(buffer.begin() + position, buffer.begin() + end, *this);
 
+	setParsedBounds(position, end);
+
 	if (newPosition)
 		*newPosition = end;
 }

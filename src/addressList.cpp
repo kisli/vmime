@@ -60,6 +60,8 @@ void addressList::parse(const string& buffer, const string::size_type position,
 			m_list.push_back(parsedAddress);
 	}
 
+	setParsedBounds(position, end);
+
 	if (newPosition)
 		*newPosition = end;
 }

@@ -61,6 +61,8 @@ void parameter::parse(const string& buffer, const string::size_type position,
 	const string::size_type end, string::size_type* newPosition)
 {
 	getValue().parse(buffer, position, end, newPosition);
+
+	setParsedBounds(position, end);
 }
 
 

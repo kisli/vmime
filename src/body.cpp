@@ -202,6 +202,8 @@ void body::parse(const string& buffer, const string::size_type position,
 		m_contents.setData(buffer, position, end, getEncoding());
 	}
 
+	setParsedBounds(position, end);
+
 	if (newPosition)
 		*newPosition = end;
 }

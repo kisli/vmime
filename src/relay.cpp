@@ -187,6 +187,8 @@ void relay::parse(const string& buffer, const string::size_type position,
 		}
 	}
 
+	setParsedBounds(position, end);
+
 	if (newPosition)
 		*newPosition = end;
 }

@@ -66,6 +66,8 @@ void mailboxField::parse(const string& buffer, const string::size_type position,
 
 	delete (parsedAddress);
 
+	setParsedBounds(position, end);
+
 	if (newPosition)
 		*newPosition = end;
 }

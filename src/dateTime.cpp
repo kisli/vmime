@@ -524,6 +524,8 @@ void datetime::parse(const string& buffer, const string::size_type position,
 		m_zone = 0;
 	}
 
+	setParsedBounds(position, end);
+
 	if (newPosition)
 		*newPosition = end;
 }

@@ -212,6 +212,8 @@ void header::parse(const string& buffer, const string::size_type position,
 		}
 	}
 
+	setParsedBounds(position, pos);
+
 	if (newPosition)
 		*newPosition = pos;
 }

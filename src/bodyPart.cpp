@@ -40,6 +40,8 @@ void bodyPart::parse(const string& buffer, const string::size_type position,
 	// Parse the body contents
 	m_body.parse(buffer, pos, end, NULL);
 
+	setParsedBounds(position, end);
+
 	if (newPosition)
 		*newPosition = end;
 }

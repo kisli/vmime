@@ -48,6 +48,8 @@ void disposition::parse(const string& buffer, const string::size_type position,
 {
 	m_name = stringUtils::toLower(string(buffer.begin() + position, buffer.begin() + end));
 
+	setParsedBounds(position, end);
+
 	if (newPosition)
 		*newPosition = end;
 }

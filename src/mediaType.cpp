@@ -68,6 +68,8 @@ void mediaType::parse(const string& buffer, const string::size_type position,
 		                                        buffer.begin() + end));
 	}
 
+	setParsedBounds(position, end);
+
 	if (newPosition)
 		*newPosition = end;
 }

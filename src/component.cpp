@@ -27,6 +27,12 @@ namespace vmime
 {
 
 
+component::component()
+	: m_parsedOffset(0), m_parsedLength(0)
+{
+}
+
+
 component::~component()
 {
 }
@@ -47,6 +53,25 @@ const string component::generate(const string::size_type maxLineLength,
 	generate(adapter, maxLineLength, curLinePos, NULL);
 
 	return (oss.str());
+}
+
+
+const string::size_type component::getParsedOffset() const
+{
+	return (m_parsedOffset);
+}
+
+
+const string::size_type component::getParsedLength() const
+{
+	return (m_parsedLength);
+}
+
+
+void component::setParsedBounds(const string::size_type start, const string::size_type end)
+{
+	m_parsedOffset = start;
+	m_parsedLength = end - start;
 }
 
 

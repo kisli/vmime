@@ -43,12 +43,34 @@ public:
 
 	bodyPart();
 
+	/** Return the header section of this part.
+	  *
+	  * @return header section
+	  */
 	const header* getHeader() const;
+
+	/** Return the header section of this part.
+	  *
+	  * @return header section
+	  */
 	header* getHeader();
 
+	/** Return the body section of this part.
+	  *
+	  * @return body section
+	  */
 	const body* getBody() const;
+
+	/** Return the body section of this part.
+	  *
+	  * @return body section
+	  */
 	body* getBody();
 
+	/** Return the parent part of this part.
+	  *
+	  * @return parent part or NULL if not known
+	  */
 	bodyPart* getParentPart() const;
 
 	bodyPart* clone() const;

@@ -102,6 +102,8 @@ void mailboxGroup::parse(const string& buffer, const string::size_type position,
 
 	text::decodeAndUnfold(name, &m_name);
 
+	setParsedBounds(position, end);
+
 	if (newPosition)
 		*newPosition = end;
 }

@@ -36,6 +36,7 @@ class component
 {
 public:
 
+	component();
 	virtual ~component();
 
 	/** Parse RFC-822/MIME data for this component.
@@ -86,6 +87,31 @@ public:
 	  * @param other other component to copy data from
 	  */
 	virtual void copyFrom(const component& other) = 0;
+
+	/** Return the start position of this component in the
+	  * parsed message contents.
+	  *
+	  * @return start position in parsed buffer
+	  * or 0 if this component has not been parsed
+	  */
+	const string::size_type getParsedOffset() const;
+
+	/** Return the length of this component in the
+	  * parsed message contents.
+	  *
+	  * @return length of the component in parsed buffer
+	  * or 0 if this component has not been parsed
+	  */
+	const string::size_type getParsedLength() const;
+
+protected:
+
+	void setParsedBounds(const string::size_type start, const string::size_type end);
+
+private:
+
+	string::size_type m_parsedOffset;
+	string::size_type m_parsedLength;
 };
 
 
