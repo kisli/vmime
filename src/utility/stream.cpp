@@ -92,8 +92,7 @@ outputStreamStringAdapter::outputStreamStringAdapter(string& buffer)
 
 void outputStreamStringAdapter::write(const value_type* const data, const size_type count)
 {
-	// TODO: better way?
-	std::copy(data, data + count, std::back_inserter(m_buffer));
+	m_buffer.append(data, count);
 }
 
 
