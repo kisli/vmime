@@ -33,6 +33,8 @@ void typeAdapter <string>::parse(const string& buffer, const string::size_type p
 {
 	m_value = string(buffer.begin() + position, buffer.begin() + end);
 
+	setParsedBounds(position, end);
+
 	if (newPosition)
 		*newPosition = end;
 }

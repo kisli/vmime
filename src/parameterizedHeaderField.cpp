@@ -184,9 +184,13 @@ void parameterizedHeaderField::parse(const string& buffer, const string::size_ty
 				if (attrStart != attrEnd && value.length())
 				{
 					// Append this parameter to the list
-					appendParameter(parameterFactory::getInstance()->
+					parameter* param = parameterFactory::getInstance()->
 						create(string(buffer.begin() + attrStart,
-						              buffer.begin() + attrEnd), value));
+						              buffer.begin() + attrEnd), value);
+
+					param->setParsedBounds(attrStart, position + (p - pstart));
+
+					appendParameter(param);
 				}
 
 				// Skip white-spaces after this parameter
@@ -432,6 +436,21 @@ const std::vector <parameter*> parameterizedHeaderField::getParameterList()
 {
 	return (m_params);
 }
+
+
+const std::vector <const component*> parameterizedHeaderField::getChildComponents() const
+{
+	std::vector <const component*> list = headerField::getChildComponents();
+
+	for (std::vector <parameter*>::const_iterator it = m_params.begin() ;
+	     it != m_params.end() ; ++it)
+	{
+		list.push_back(*it);
+	}
+
+	return (list);
+}
+
 
 
 } // vmime

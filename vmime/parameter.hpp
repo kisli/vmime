@@ -32,6 +32,7 @@ namespace vmime
 class parameter : public component
 {
 	friend class parameterFactory;
+	friend class parameterizedHeaderField;
 
 public:
 

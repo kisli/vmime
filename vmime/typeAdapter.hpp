@@ -91,6 +91,8 @@ public:
 		std::istringstream iss(string(buffer.begin() + position, buffer.begin() + end));
 		iss >> m_value;
 
+		setParsedBounds(position, end);
+
 		if (newPosition)
 			*newPosition = end;
 	}
