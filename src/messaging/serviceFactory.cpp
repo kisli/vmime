@@ -69,8 +69,9 @@ service* serviceFactory::create
 	if (u.port() != url::UNSPECIFIED_PORT)
 		sess.properties()[serv->infos().propertyPrefix() + "server.port"] = u.port();
 
-	if (!u.path().empty())
-		sess.properties()[serv->infos().propertyPrefix() + "server.path"] = u.path();
+	// Path portion of the URL is used to point a specific folder (empty = root)
+	//if (!u.path().empty())
+	//	sess.properties()[serv->infos().propertyPrefix() + "server.path"] = u.path();
 
 	if (!u.username().empty())
 	{

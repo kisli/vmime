@@ -80,8 +80,8 @@ void maildirStore::connect()
 	if (isConnected())
 		throw exceptions::already_connected();
 
-	m_fsPath = platformDependant::getHandler()->getFileSystemFactory()->stringToPath
-		(session().properties()[infos().propertyPrefix() + "server.path"]);
+	m_fsPath = platformDependant::getHandler()->getFileSystemFactory()->
+		stringToPath(session().properties()[infos().propertyPrefix() + "server.rootpath"]);
 
 	m_connected = true;
 }
@@ -155,7 +155,7 @@ const std::vector <string> maildirStore::_infos::availableProperties() const
 {
 	std::vector <string> list;
 
-	list.push_back("server.path");
+	list.push_back("server.rootpath");
 
 	return (list);
 }
