@@ -32,7 +32,15 @@ namespace vmime
 /** A list of mailboxes (basic type).
   */
 
+#ifdef __GNUC__
+#	if (__GNUC__ >= 3) && (__GNUC_MINOR__ <= 2)
+class mailboxList : public addressList  // BUG with gcc <= 3.2
+#	else
 class mailboxList : protected addressList
+#	endif
+#else
+class mailboxList : protected addressList
+#endif
 {
 	friend class mailboxGroup;
 
