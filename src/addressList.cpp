@@ -19,6 +19,8 @@
 
 #include "addressList.hpp"
 #include "parserHelpers.hpp"
+#include "exception.hpp"
+#include "mailboxList.hpp"
 
 
 namespace vmime
@@ -30,23 +32,23 @@ addressList::addressList()
 }
 
 
-addressList::addressList(const class addressList& addressList)
+addressList::addressList(const addressList& addrList)
 	: component()
 {
-	copyFrom(addressList);
+	copyFrom(addrList);
 }
 
 
 addressList::~addressList()
 {
-	clear();
+	removeAllAddresses();
 }
 
 
 void addressList::parse(const string& buffer, const string::size_type position,
 	const string::size_type end, string::size_type* newPosition)
 {
-	clear();
+	removeAllAddresses();
 
 	string::size_type pos = position;
 
@@ -69,11 +71,11 @@ void addressList::generate(utility::outputStream& os, const string::size_type ma
 	if (!m_list.empty())
 	{
 		string::size_type pos = curLinePos;
-		const_iterator i = m_list.begin();
+		std::vector <address*>::const_iterator i = m_list.begin();
 
 		for ( ; ; )
 		{
-			(*i).generate(os, maxLineLength - 2, pos, &pos);
+			(*i)->generate(os, maxLineLength - 2, pos, &pos);
 
 			if (++i != m_list.end())
 			{
@@ -92,97 +94,158 @@ void addressList::generate(utility::outputStream& os, const string::size_type ma
 }
 
 
-/** Return the number of addresses in the list.
-  *
-  * @return number of addresses in the list
-  */
-
-const std::vector <address*>::size_type addressList::size() const
+void addressList::copyFrom(const component& other)
 {
-	return (m_list.size());
+	const addressList& addrList = dynamic_cast <const addressList&>(other);
+
+	removeAllAddresses();
+
+	for (std::vector <address*>::const_iterator it = addrList.m_list.begin() ;
+	     it != addrList.m_list.end() ; ++it)
+	{
+		m_list.push_back(static_cast <address*>((*it)->clone()));
+	}
 }
 
 
-/** Return the number of addresses in the list.
-  *
-  * @return number of addresses in the list
-  */
-
-const std::vector <address*>::size_type addressList::count() const
+addressList& addressList::operator=(const addressList& other)
 {
-	return (m_list.size());
+	copyFrom(other);
+	return (*this);
 }
 
 
-/** Test whether the list is empty.
-  *
-  * @return true if the list is empty, false otherwise
-  */
-
-const bool addressList::empty() const
+addressList& addressList::operator=(const mailboxList& other)
 {
-	return (m_list.empty());
+	copyFrom(other);
+	return (*this);
 }
 
 
-/** Append an address to the list.
-  *
-  * @param addr the address to add
-  */
-
-void addressList::append(const address& addr)
+addressList* addressList::clone() const
 {
-	m_list.push_back(addr.clone());
+	return new addressList(*this);
 }
 
 
-/** Insert an address at the specified position in the list.
-  *
-  * @param it position of the new address
-  * @param addr the address to insert
-  */
-
-void addressList::insert(const iterator it, const address& addr)
+void addressList::appendAddress(address* addr)
 {
-	m_list.insert(it.m_iterator, addr.clone());
+	m_list.push_back(addr);
 }
 
 
-/** Remove the address at the specified position.
-  *
-  * @param it position of the address to remove
-  */
-
-void addressList::erase(const iterator it)
+void addressList::insertAddressBefore(address* beforeAddress, address* addr)
 {
-	delete (*it.m_iterator);
-	m_list.erase(it.m_iterator);
+	const std::vector <address*>::iterator it = std::find
+		(m_list.begin(), m_list.end(), beforeAddress);
+
+	if (it == m_list.end())
+		throw exceptions::no_such_address();
+
+	m_list.insert(it, addr);
 }
 
 
-/** Remove all the addresses from the list.
-  */
+void addressList::insertAddressBefore(const int pos, address* addr)
+{
+	m_list.insert(m_list.begin() + pos, addr);
+}
 
-void addressList::clear()
+
+void addressList::insertAddressAfter(address* afterAddress, address* addr)
+{
+	const std::vector <address*>::iterator it = std::find
+		(m_list.begin(), m_list.end(), afterAddress);
+
+	if (it == m_list.end())
+		throw exceptions::no_such_address();
+
+	m_list.insert(it + 1, addr);
+}
+
+
+void addressList::insertAddressAfter(const int pos, address* addr)
+{
+	m_list.insert(m_list.begin() + pos + 1, addr);
+}
+
+
+void addressList::removeAddress(address* addr)
+{
+	const std::vector <address*>::iterator it = std::find
+		(m_list.begin(), m_list.end(), addr);
+
+	if (it == m_list.end())
+		throw exceptions::no_such_address();
+
+	delete (*it);
+
+	m_list.erase(it);
+}
+
+
+void addressList::removeAddress(const int pos)
+{
+	const std::vector <address*>::iterator it = m_list.begin() + pos;
+
+	delete (*it);
+
+	m_list.erase(it);
+}
+
+
+void addressList::removeAllAddresses()
 {
 	free_container(m_list);
 }
 
 
-void addressList::copyFrom(const addressList& source)
+const int addressList::getAddressCount() const
 {
-	clear();
-
-	for (std::vector <address*>::const_iterator i = source.m_list.begin() ; i != source.m_list.end() ; ++i)
-		m_list.push_back((*i)->clone());
+	return (m_list.size());
 }
 
 
-addressList& addressList::operator=(const addressList& source)
+const bool addressList::isEmpty() const
 {
-	copyFrom(source);
-	return (*this);
+	return (m_list.empty());
 }
+
+
+address* addressList::getAddressAt(const int pos)
+{
+	return (m_list[pos]);
+}
+
+
+const address* const addressList::getAddressAt(const int pos) const
+{
+	return (m_list[pos]);
+}
+
+
+const std::vector <const address*> addressList::getAddressList() const
+{
+	std::vector <const address*> list;
+
+	list.reserve(m_list.size());
+
+	for (std::vector <address*>::const_iterator it = m_list.begin() ;
+	     it != m_list.end() ; ++it)
+	{
+		list.push_back(*it);
+	}
+
+	return (list);
+}
+
+
+const std::vector <address*> addressList::getAddressList()
+{
+	return (m_list);
+}
+
+
 
 
 } // vmime

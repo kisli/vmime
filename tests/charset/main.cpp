@@ -33,8 +33,8 @@ int main(int argc, char* argv[])
 	const vmime::string from(argv[1]);
 	const vmime::string to(argv[2]);
 
-	vmime::inputStreamAdapter in(std::cin);
-	vmime::outputStreamAdapter out(std::cout);
+	vmime::utility::inputStreamAdapter in(std::cin);
+	vmime::utility::outputStreamAdapter out(std::cout);
 
 	vmime::charset::convert(in, out, from, to);
 }

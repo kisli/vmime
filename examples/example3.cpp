@@ -45,10 +45,19 @@ int main()
 		vmime::messageBuilder mb;
 
 		// Fill in the basic fields
-		mb.expeditor() = vmime::mailbox("me@somewhere.com");
-		mb.recipients().append(vmime::mailbox("you@elsewhere.com"));
-		mb.blindCopyRecipients().append(vmime::mailbox("you-bcc@nowhere.com"));
-		mb.subject() = vmime::text("My first message generated with vmime::messageBuilder");
+		mb.setExpeditor(vmime::mailbox("me@somewhere.com"));
+
+		vmime::addressList to;
+		to.appendAddress(new vmime::mailbox("you@elsewhere.com"));
+
+		mb.setRecipients(to);
+
+		vmime::addressList bcc;
+		bcc.appendAddress(new vmime::mailbox("you-bcc@nowhere.com"));
+
+		mb.setBlindCopyRecipients(bcc);
+
+		mb.setSubject(vmime::text("My first message generated with vmime::messageBuilder"));
 
 		// Set the content-type to "text/html"
 		mb.constructTextPart(vmime::mediaType
@@ -56,16 +65,16 @@ int main()
 
 		// Fill in the text part: the message is available in two formats: HTML and plain text.
 		// HTML text part also includes an inline image (embedded into the message).
-		vmime::htmlTextPart& textPart = dynamic_cast<vmime::htmlTextPart&>(mb.textPart());
+		vmime::htmlTextPart& textPart = dynamic_cast<vmime::htmlTextPart&>(*mb.getTextPart());
 
 		// -- embed an image (the returned "CID" (content identifier) is used to reference
 		// -- the image into HTML content).
-		vmime::string cid = textPart.embeddedObjects.add("<...IMAGE DATA...>",
+		vmime::string cid = textPart.addObject("<...IMAGE DATA...>",
 		vmime::mediaType(vmime::mediaTypes::IMAGE, vmime::mediaTypes::IMAGE_JPEG));
 
 		// -- message text
-		textPart.text() = vmime::string("This is the <b>HTML text</b>.<br/><img src=\"") + cid + vmime::string("\"/>");
-		textPart.plainText() = vmime::string("This is the plain text (without HTML formatting).");
+		textPart.setText(vmime::contentHandler(vmime::string("This is the <b>HTML text</b>.<br/><img src=\"") + cid + vmime::string("\"/>")));
+		textPart.setPlainText(vmime::contentHandler(vmime::string("This is the plain text (without HTML formatting).")));
 
 		// Construction
 		vmime::message* msg = mb.construct();

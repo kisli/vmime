@@ -32,6 +32,7 @@ header::header()
 
 header::~header()
 {
+	removeAllFields();
 }
 
 
@@ -59,7 +60,7 @@ void header::parse(const string& buffer, const string::size_type position,
 {
 	string::size_type pos = position;
 
-	fields.clear();
+	removeAllFields();
 
 	while (pos < end)
 	{
@@ -181,8 +182,8 @@ void header::parse(const string& buffer, const string::size_type position,
 				}
 
 				// Add a new field to list
-				fields.m_fields.push_back(headerFieldFactory::getInstance()->
-					create(headerField::nameToType(name), name, contents));
+				m_fields.push_back(headerFieldFactory::getInstance()->
+					create(name, contents));
 			}
 		}
 		else
@@ -220,8 +221,8 @@ void header::generate(utility::outputStream& os, const string::size_type maxLine
 	const string::size_type /* curLinePos */, string::size_type* newLinePos) const
 {
 	// Generate the fields
-	for (std::vector <headerField*>::const_iterator
-	     it = fields.m_fields.begin() ; it != fields.m_fields.end() ; ++it)
+	for (std::vector <headerField*>::const_iterator it = m_fields.begin() ;
+	     it != m_fields.end() ; ++it)
 	{
 		(*it)->generate(os, maxLineLength);
 		os << CRLF;
@@ -232,93 +233,91 @@ void header::generate(utility::outputStream& os, const string::size_type maxLine
 }
 
 
-header& header::operator=(const header& h)
+header* header::clone() const
 {
-	fields = h.fields;
+	header* hdr = new header();
 
+	try
+	{
+		hdr->m_fields.reserve(m_fields.size());
+
+		for (std::vector <headerField*>::const_iterator it = m_fields.begin() ;
+		     it != m_fields.end() ; ++it)
+		{
+			hdr->m_fields.push_back((*it)->clone());
+		}
+	}
+	catch (std::exception&)
+	{
+		free_container(hdr->m_fields);
+
+		delete (hdr);
+		throw;
+	}
+
+	return (hdr);
+}
+
+
+void header::copyFrom(const component& other)
+{
+	const header& h = dynamic_cast <const header&>(other);
+
+	std::vector <headerField*> fields;
+
+	try
+	{
+		fields.reserve(h.m_fields.size());
+
+		for (std::vector <headerField*>::const_iterator it = h.m_fields.begin() ;
+		     it != h.m_fields.end() ; ++it)
+		{
+			fields.push_back((*it)->clone());
+		}
+
+		free_container(m_fields);
+
+		m_fields.resize(fields.size());
+
+		std::copy(fields.begin(), fields.end(), m_fields.begin());
+	}
+	catch (std::exception&)
+	{
+		free_container(fields);
+		throw;
+	}
+}
+
+
+header& header::operator=(const header& other)
+{
+	copyFrom(other);
 	return (*this);
 }
 
 
-
-//////////////////////
-// Fields container //
-//////////////////////
-
-
-header::fieldsContainer::fieldsContainer()
+const bool header::hasField(const string& fieldName) const
 {
-}
+	const string name = stringUtils::toLower(fieldName);
 
-
-header::fieldsContainer::~fieldsContainer()
-{
-	for (std::vector <headerField*>::iterator i = m_fields.begin() ; i != m_fields.end() ; ++i)
-		delete (*i);
-}
-
-
-// Checks whether (at least) one field with this type/name exists
-const bool header::fieldsContainer::has(const headerField::Types fieldType) const
-{
 	std::vector <headerField*>::const_iterator pos = m_fields.begin();
 	const std::vector <headerField*>::const_iterator end = m_fields.end();
 
-	for ( ; pos != end && (*pos)->type() != fieldType ; ++pos);
+	for ( ; pos != end && stringUtils::toLower((*pos)->getName()) != name ; ++pos);
 
 	return (pos != end);
 }
 
 
-const bool header::fieldsContainer::has(const string& fieldName) const
+headerField* header::findField(const string& fieldName) const
 {
-	headerField::Types type = headerField::nameToType(fieldName);
-	if (type != headerField::Custom) return (has(type));
-
-	const string name = toLower(fieldName);
-
-	std::vector <headerField*>::const_iterator pos = m_fields.begin();
-	const std::vector <headerField*>::const_iterator end = m_fields.end();
-
-	for ( ; pos != end && toLower((*pos)->name()) != name ; ++pos);
-
-	return (pos != end);
-}
-
-
-headerField& header::fieldsContainer::find(const headerField::Types fieldType) const
-{
-	// Find the first field that matches the specified type
-	std::vector <headerField*>::const_iterator pos = m_fields.begin();
-	const std::vector <headerField*>::const_iterator end = m_fields.end();
-
-	for ( ; pos != end && (*pos)->type() != fieldType ; ++pos);
-
-	// No field with this type can be found
-	if (pos == end)
-	{
-		throw exceptions::no_such_field();
-	}
-	// Else, return a reference to the existing field
-	else
-	{
-		return (**pos);
-	}
-}
-
-
-headerField& header::fieldsContainer::find(const string& fieldName) const
-{
-	headerField::Types type = headerField::nameToType(fieldName);
-	if (type != headerField::Custom) return (find(type));
-
-	const string name = toLower(fieldName);
+	const string name = stringUtils::toLower(fieldName);
 
 	// Find the first field that matches the specified name
 	std::vector <headerField*>::const_iterator pos = m_fields.begin();
 	const std::vector <headerField*>::const_iterator end = m_fields.end();
 
-	for ( ; pos != end && toLower((*pos)->name()) != name ; ++pos);
+	for ( ; pos != end && stringUtils::toLower((*pos)->getName()) != name ; ++pos);
 
 	// No field with this name can be found
 	if (pos == end)
@@ -328,34 +327,14 @@ headerField& header::fieldsContainer::find(const string& fieldName) const
 	// Else, return a reference to the existing field
 	else
 	{
-		return (**pos);
+		return (*pos);
 	}
 }
 
 
-std::vector <headerField*> header::fieldsContainer::findAllByType(const headerField::Types fieldType)
+std::vector <headerField*> header::findAllFields(const string& fieldName)
 {
-	std::vector <headerField*> result;
-
-	std::vector <headerField*>::const_iterator pos = m_fields.begin();
-	const std::vector <headerField*>::const_iterator end = m_fields.end();
-
-	for ( ; pos != end ; ++pos)
-	{
-		// Add the header if it matches the specified type
-		if ((*pos)->type() == fieldType)
-		{
-			result.push_back(*pos);
-		}
-	}
-
-	return result;
-}
-
-
-std::vector <headerField*> header::fieldsContainer::findAllByName(const string& fieldName)
-{
-	const string name = toLower(fieldName);
+	const string name = stringUtils::toLower(fieldName);
 
 	std::vector <headerField*> result;
 
@@ -365,7 +344,7 @@ std::vector <headerField*> header::fieldsContainer::findAllByName(const string& 
 	for ( ; pos != end ; ++pos)
 	{
 		// Add the header if it matches the specified type
-		if (toLower((*pos)->name()) == name)
+		if (stringUtils::toLower((*pos)->getName()) == name)
 		{
 			result.push_back(*pos);
 		}
@@ -375,116 +354,157 @@ std::vector <headerField*> header::fieldsContainer::findAllByName(const string& 
 }
 
 
-headerField& header::fieldsContainer::get(const headerField::Types fieldType)
+headerField* header::getField(const string& fieldName)
 {
-	// Find the first field that matches the specified type
-	std::vector <headerField*>::const_iterator pos = m_fields.begin();
-	const std::vector <headerField*>::const_iterator end = m_fields.end();
-
-	for ( ; pos != end && (*pos)->type() != fieldType ; ++pos);
-
-	// If no field with this type can be found, create a new one
-	if (pos == end)
-	{
-		headerField* field = headerFieldFactory::getInstance()->create(fieldType);
-		insertSorted(field);
-
-		// Return a reference to the new field
-		return (*field);
-	}
-	// Else, return a reference to the existing field
-	else
-	{
-		return (**pos);
-	}
-}
-
-
-headerField& header::fieldsContainer::get(const string& fieldName)
-{
-	headerField::Types type = headerField::nameToType(fieldName);
-	if (type != headerField::Custom) return (get(type));
-
-	const string name = toLower(fieldName);
+	const string name = stringUtils::toLower(fieldName);
 
 	// Find the first field that matches the specified name
 	std::vector <headerField*>::const_iterator pos = m_fields.begin();
 	const std::vector <headerField*>::const_iterator end = m_fields.end();
 
-	for ( ; pos != end && toLower((*pos)->name()) != name ; ++pos);
+	for ( ; pos != end && stringUtils::toLower((*pos)->getName()) != name ; ++pos);
 
 	// If no field with this name can be found, create a new one
 	if (pos == end)
 	{
 		headerField* field = headerFieldFactory::getInstance()->create(fieldName);
-		insertSorted(field);
+
+		try
+		{
+			appendField(field);
+		}
+		catch (std::exception&)
+		{
+			delete (field);
+			throw;
+		}
 
 		// Return a reference to the new field
-		return (*field);
+		return (field);
 	}
 	// Else, return a reference to the existing field
 	else
 	{
-		return (**pos);
+		return (*pos);
 	}
 }
 
 
-void header::fieldsContainer::insertSorted(headerField* field)
+void header::appendField(headerField* field)
 {
-	const headerField::Types type = field->type();
-	std::vector <headerField*>::iterator i;
-
-	for (i = m_fields.begin() ; (i != m_fields.end()) && ((*i)->type() < type) ; ++i);
-
-	m_fields.insert(i, field);
+	m_fields.push_back(field);
 }
 
 
-// Field insertion
-void header::fieldsContainer::append(const headerField& field)
+void header::insertFieldBefore(headerField* beforeField, headerField* field)
 {
-	m_fields.push_back(field.clone());
+	const std::vector <headerField*>::iterator it = std::find
+		(m_fields.begin(), m_fields.end(), beforeField);
+
+	if (it == m_fields.end())
+		throw exceptions::no_such_field();
+
+	m_fields.insert(it, field);
 }
 
 
-void header::fieldsContainer::insert(const iterator it, const headerField& field)
+void header::insertFieldBefore(const int pos, headerField* field)
 {
-	m_fields.insert(it.m_iterator, field.clone());
+	m_fields.insert(m_fields.begin() + pos, field);
 }
 
 
-// Field removing
-void header::fieldsContainer::remove(const iterator it)
+void header::insertFieldAfter(headerField* afterField, headerField* field)
 {
-	delete (*it.m_iterator);
-	m_fields.erase(it.m_iterator);
+	const std::vector <headerField*>::iterator it = std::find
+		(m_fields.begin(), m_fields.end(), afterField);
+
+	if (it == m_fields.end())
+		throw exceptions::no_such_field();
+
+	m_fields.insert(it + 1, field);
 }
 
 
-void header::fieldsContainer::clear()
+void header::insertFieldAfter(const int pos, headerField* field)
 {
-	for (std::vector <headerField*>::iterator it = m_fields.begin() ; it != m_fields.end() ; ++it)
-		delete (*it);
-
-	m_fields.clear();
+	m_fields.insert(m_fields.begin() + pos + 1, field);
 }
 
 
-header::fieldsContainer& header::fieldsContainer::operator=(const fieldsContainer& c)
+void header::removeField(headerField* field)
 {
-	std::vector <headerField*> fields;
+	const std::vector <headerField*>::iterator it = std::find
+		(m_fields.begin(), m_fields.end(), field);
 
-	for (std::vector <headerField*>::const_iterator it = c.m_fields.begin() ; it != c.m_fields.end() ; ++it)
-		fields.push_back((*it)->clone());
+	if (it == m_fields.end())
+		throw exceptions::no_such_field();
 
-	for (std::vector <headerField*>::iterator it = m_fields.begin() ; it != m_fields.end() ; ++it)
-		delete (*it);
+	delete (*it);
 
-	m_fields.resize(fields.size());
-	std::copy(fields.begin(), fields.end(), m_fields.begin());
+	m_fields.erase(it);
+}
 
-	return (*this);
+
+void header::removeField(const int pos)
+{
+	const std::vector <headerField*>::iterator it = m_fields.begin() + pos;
+
+	delete (*it);
+
+	m_fields.erase(it);
+}
+
+
+void header::removeAllFields()
+{
+	free_container(m_fields);
+}
+
+
+const int header::getFieldCount() const
+{
+	return (m_fields.size());
+}
+
+
+const bool header::isEmpty() const
+{
+	return (m_fields.empty());
+}
+
+
+headerField* header::getFieldAt(const int pos)
+{
+	return (m_fields[pos]);
+}
+
+
+const headerField* const header::getFieldAt(const int pos) const
+{
+	return (m_fields[pos]);
+}
+
+
+const std::vector <const headerField*> header::getFieldList() const
+{
+	std::vector <const headerField*> list;
+
+	list.reserve(m_fields.size());
+
+	for (std::vector <headerField*>::const_iterator it = m_fields.begin() ;
+	     it != m_fields.end() ; ++it)
+	{
+		list.push_back(*it);
+	}
+
+	return (list);
+}
+
+
+const std::vector <headerField*> header::getFieldList()
+{
+	return (m_fields);
 }
 
 

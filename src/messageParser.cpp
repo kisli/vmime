@@ -22,8 +22,6 @@
 #include "defaultAttachment.hpp"
 #include "textPartFactory.hpp"
 
-#include "relayField.hpp"
-
 
 namespace vmime
 {
@@ -60,28 +58,36 @@ messageParser::~messageParser()
 void messageParser::parse(const message& msg)
 {
 	// Header fields (if field is present, copy its value, else do nothing)
-#define TRY_FIELD(x) try { x; } catch (exceptions::no_such_field) { }
-	TRY_FIELD(m_from = dynamic_cast<mailboxField&>(msg.header().fields.find(headerField::From)).value());
+#define TRY_FIELD(var, type, name) \
+	try { var = dynamic_cast<type&>(*msg.getHeader()->findField(name)).getValue(); } \
+	catch (exceptions::no_such_field) { }
 
-	TRY_FIELD(m_to = dynamic_cast<addressListField&>(msg.header().fields.find(headerField::To)).value());
-	TRY_FIELD(m_cc = dynamic_cast<addressListField&>(msg.header().fields.find(headerField::Cc)).value());
-	TRY_FIELD(m_bcc = dynamic_cast<addressListField&>(msg.header().fields.find(headerField::Bcc)).value());
+	TRY_FIELD(m_from, mailboxField, fields::FROM);
 
-	TRY_FIELD(m_subject = dynamic_cast<textField&>(msg.header().fields.find(headerField::Subject)).value());
+	TRY_FIELD(m_to, addressListField, fields::TO);
+	TRY_FIELD(m_cc, addressListField, fields::CC);
+	TRY_FIELD(m_bcc, addressListField, fields::BCC);
+
+	TRY_FIELD(m_subject, textField, fields::SUBJECT);
+
 #undef TRY_FIELD
 
 	// Date
 	try
 	{
-		vmime::relayField& recv = static_cast<vmime::relayField&>(msg.header().fields.find(headerField::Received));
-		m_date = recv.date();
+		vmime::relayField& recv = dynamic_cast <vmime::relayField&>
+			(*msg.getHeader()->findField(fields::RECEIVED));
+
+		m_date = recv.getValue().getDate();
 	}
 	catch (vmime::exceptions::no_such_field&)
 	{
 		try
 		{
-			vmime::dateField& date = static_cast<vmime::dateField&>(msg.header().fields.find(headerField::Date));
-			m_date = date.value();
+			vmime::dateField& date = dynamic_cast <vmime::dateField&>
+				(*msg.getHeader()->findField(fields::DATE));
+
+			m_date = date.getValue();
 		}
 		catch (vmime::exceptions::no_such_field&)
 		{
@@ -100,10 +106,11 @@ void messageParser::parse(const message& msg)
 void messageParser::findAttachments(const bodyPart& part)
 {
 	// We simply search for parts that are not "Content-disposition: inline".
-	for (body::const_iterator p = part.body().parts.begin() ; p != part.body().parts.end() ; ++p)
+	for (int i = 0 ; i < part.getBody()->getPartCount() ; ++i)
 	{
-		const header& hdr = (*p).header();
-		const body& bdy = (*p).body();
+		const bodyPart& p = *part.getBody()->getPartAt(i);
+		const header& hdr = *p.getHeader();
+		const body& bdy = *p.getBody();
 
 		// Is this part an attachment?
 		bool isAttachment = false;
@@ -112,9 +119,9 @@ void messageParser::findAttachments(const bodyPart& part)
 		try
 		{
 			const contentDispositionField& cdf = dynamic_cast<contentDispositionField&>
-				(hdr.fields.find(headerField::ContentDisposition));
+				(*hdr.findField(fields::CONTENT_DISPOSITION));
 
-			if (cdf.value().name() != dispositionTypes::INLINE)
+			if (cdf.getValue().getName() != dispositionTypes::INLINE)
 			{
 				contentDispField = &cdf;
 				isAttachment = true;
@@ -129,9 +136,9 @@ void messageParser::findAttachments(const bodyPart& part)
 			try
 			{
 				const contentTypeField& ctf = dynamic_cast<contentTypeField&>
-					(hdr.fields.find(headerField::ContentType));
+					(*hdr.findField(fields::CONTENT_TYPE));
 
-				type = ctf.value();
+				type = ctf.getValue();
 			}
 			catch (exceptions::no_such_field)
 			{
@@ -140,8 +147,11 @@ void messageParser::findAttachments(const bodyPart& part)
 				                 mediaTypes::APPLICATION_OCTET_STREAM);
 			}
 
-			if (type.type() != mediaTypes::TEXT && type.type() != mediaTypes::MULTIPART)
+			if (type.getType() != mediaTypes::TEXT &&
+			    type.getType() != mediaTypes::MULTIPART)
+			{
 				isAttachment = true;
+			}
 		}
 
 		if (isAttachment)
@@ -152,9 +162,9 @@ void messageParser::findAttachments(const bodyPart& part)
 			try
 			{
 				const contentTypeField& ctf = dynamic_cast<contentTypeField&>
-					(hdr.fields.find(headerField::ContentType));
+					(*hdr.findField(fields::CONTENT_TYPE));
 
-				type = ctf.value();
+				type = ctf.getValue();
 			}
 			catch (exceptions::no_such_field)
 			{
@@ -169,9 +179,9 @@ void messageParser::findAttachments(const bodyPart& part)
 			try
 			{
 				const textField& cd = dynamic_cast<textField&>
-					(hdr.fields.find(headerField::ContentDescription));
+					(*hdr.findField(fields::CONTENT_DESCRIPTION));
 
-				description = cd.value();
+				description = cd.getValue();
 			}
 			catch (exceptions::no_such_field)
 			{
@@ -180,12 +190,12 @@ void messageParser::findAttachments(const bodyPart& part)
 
 			// Construct the attachment object
 			attachment* attach = new defaultAttachment
-				(bdy.contents(), bdy.encoding(), type, description);
+				(bdy.getContents(), bdy.getEncoding(), type, description);
 
 			if (contentDispField != NULL)
 			{
 				m_attachInfo.insert(std::map <attachment*, contentDispositionField*>::
-					value_type(attach, static_cast <contentDispositionField*>
+					value_type(attach, dynamic_cast <contentDispositionField*>
 						(contentDispField->clone())));
 			}
 
@@ -194,8 +204,8 @@ void messageParser::findAttachments(const bodyPart& part)
 		}
 
 		// Try to find attachments in sub-parts
-		if (bdy.parts.size())
-			findAttachments(*p);
+		if (bdy.getPartCount())
+			findAttachments(p);
 	}
 }
 
@@ -204,7 +214,7 @@ void messageParser::findTextParts(const bodyPart& msg, const bodyPart& part)
 {
 	// Handle the case in which the message is not multipart: if the body part is
 	// "text/*", take this part.
-	if (part.body().parts.count() == 0)
+	if (part.getBody()->getPartCount() == 0)
 	{
 		mediaType type(mediaTypes::TEXT, mediaTypes::TEXT_PLAIN);
 		bool accept = false;
@@ -212,11 +222,11 @@ void messageParser::findTextParts(const bodyPart& msg, const bodyPart& part)
 		try
 		{
 			const contentTypeField& ctf = dynamic_cast<contentTypeField&>
-				(msg.header().fields.find(headerField::ContentType));
+				(*msg.getHeader()->findField(fields::CONTENT_TYPE));
 
-			if (ctf.value().type() == mediaTypes::TEXT)
+			if (ctf.getValue().getType() == mediaTypes::TEXT)
 			{
-				type = ctf.value();
+				type = ctf.getValue();
 				accept = true;
 			}
 		}
@@ -251,17 +261,18 @@ bool messageParser::findSubTextParts(const bodyPart& msg, const bodyPart& part)
 
 	std::vector <const bodyPart*> textParts;
 
-	for (body::const_iterator p = part.body().parts.begin() ;
-	     p != part.body().parts.end() ; ++p)
+	for (int i = 0 ; i < part.getBody()->getPartCount() ; ++i)
 	{
+		const bodyPart& p = *part.getBody()->getPartAt(i);
+
 		try
 		{
 			const contentTypeField& ctf = dynamic_cast<contentTypeField&>
-				((*p).header().fields.find(headerField::ContentType));
+				(*p.getHeader()->findField(fields::CONTENT_TYPE));
 
-			if (ctf.value().type() == mediaTypes::TEXT)
+			if (ctf.getValue().getType() == mediaTypes::TEXT)
 			{
-				textParts.push_back(&(*p));
+				textParts.push_back(&p);
 			}
 		}
 		catch (exceptions::no_such_field)
@@ -273,14 +284,15 @@ bool messageParser::findSubTextParts(const bodyPart& msg, const bodyPart& part)
 	if (textParts.size())
 	{
 		// Okay. So we have found at least one text part
-		for (std::vector <const bodyPart*>::const_iterator p = textParts.begin() ; p != textParts.end() ; ++p)
+		for (std::vector <const bodyPart*>::const_iterator p = textParts.begin() ;
+		     p != textParts.end() ; ++p)
 		{
 			const contentTypeField& ctf = dynamic_cast<contentTypeField&>
-				((*p)->header().fields.find(headerField::ContentType));
+				(*(*p)->getHeader()->findField(fields::CONTENT_TYPE));
 
 			try
 			{
-				textPart* textPart = textPartFactory::getInstance()->create(ctf.value());
+				textPart* textPart = textPartFactory::getInstance()->create(ctf.getValue());
 				textPart->parse(msg, part, **p);
 
 				m_textParts.push_back(textPart);
@@ -298,10 +310,9 @@ bool messageParser::findSubTextParts(const bodyPart& msg, const bodyPart& part)
 	{
 		bool found = false;
 
-		for (body::const_iterator p = part.body().parts.begin() ;
-		     !found && p != part.body().parts.end() ; ++p)
+		for (int i = 0 ; !found && (i < part.getBody()->getPartCount()) ; ++i)
 		{
-			found = findSubTextParts(msg, *p);
+			found = findSubTextParts(msg, *part.getBody()->getPartAt(i));
 		}
 
 		return found;
@@ -309,12 +320,104 @@ bool messageParser::findSubTextParts(const bodyPart& msg, const bodyPart& part)
 }
 
 
-const contentDispositionField* messageParser::attachmentInfo(attachment* a) const
+const contentDispositionField* messageParser::getAttachmentInfo(const attachment* a) const
 {
 	std::map <attachment*, contentDispositionField*>::const_iterator
-		it = m_attachInfo.find(a);
+		it = m_attachInfo.find(const_cast <attachment*>(a));
 
 	return (it != m_attachInfo.end() ? (*it).second : NULL);
+}
+
+
+const mailbox& messageParser::getExpeditor() const
+{
+	return (m_from);
+}
+
+
+const addressList& messageParser::getRecipients() const
+{
+	return (m_to);
+}
+
+
+const addressList& messageParser::getCopyRecipients() const
+{
+	return (m_cc);
+}
+
+
+const addressList& messageParser::getBlindCopyRecipients() const
+{
+	return (m_bcc);
+}
+
+
+const text& messageParser::getSubject() const
+{
+	return (m_subject);
+}
+
+
+const datetime& messageParser::getDate() const
+{
+	return (m_date);
+}
+
+
+const std::vector <const attachment*> messageParser::getAttachmentList() const
+{
+	std::vector <const attachment*> res;
+
+	res.reserve(m_attach.size());
+
+	for (std::vector <attachment*>::const_iterator it = m_attach.begin() ;
+	     it != m_attach.end() ; ++it)
+	{
+		res.push_back(*it);
+	}
+
+	return (res);
+}
+
+
+const int messageParser::getAttachmentCount() const
+{
+	return (m_attach.size());
+}
+
+
+const attachment* messageParser::getAttachmentAt(const int pos) const
+{
+	return (m_attach[pos]);
+}
+
+
+const std::vector <const textPart*> messageParser::getTextPartList() const
+{
+	std::vector <const textPart*> res;
+
+	res.reserve(m_textParts.size());
+
+	for (std::vector <textPart*>::const_iterator it = m_textParts.begin() ;
+	     it != m_textParts.end() ; ++it)
+	{
+		res.push_back(*it);
+	}
+
+	return (res);
+}
+
+
+const int messageParser::getTextPartCount() const
+{
+	return (m_textParts.size());
+}
+
+
+const textPart* messageParser::getTextPartAt(const int pos) const
+{
+	return (m_textParts[pos]);
 }
 
 

@@ -42,7 +42,7 @@ word::word(const string& buffer) // Defaults to locale charset
 }
 
 
-word::word(const string& buffer, const class charset& charset)
+word::word(const string& buffer, const charset& charset)
 	: m_buffer(buffer), m_charset(charset)
 {
 }
@@ -77,6 +77,13 @@ word& word::operator=(const string& s)
 }
 
 
+void word::copyFrom(const word& w)
+{
+	m_buffer = w.m_buffer;
+	m_charset = w.m_charset;
+}
+
+
 const bool word::operator==(const word& w) const
 {
 	return (m_charset == w.m_charset && m_buffer == w.m_buffer);
@@ -89,13 +96,49 @@ const bool word::operator!=(const word& w) const
 }
 
 
-const string word::getConvertedText(const class charset& dest) const
+const string word::getConvertedText(const charset& dest) const
 {
 	string out;
 
 	charset::convert(m_buffer, out, m_charset, dest);
 
 	return (out);
+}
+
+
+word* word::clone() const
+{
+	return new word(m_buffer, m_charset);
+}
+
+
+const charset& word::getCharset() const
+{
+	return (m_charset);
+}
+
+
+void word::setCharset(const charset& ch)
+{
+	m_charset = ch;
+}
+
+
+const string& word::getBuffer() const
+{
+	return (m_buffer);
+}
+
+
+string& word::getBuffer()
+{
+	return (m_buffer);
+}
+
+
+void word::setBuffer(const string& buffer)
+{
+	m_buffer = buffer;
 }
 
 

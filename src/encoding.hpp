@@ -46,27 +46,56 @@ public:
 
 public:
 
-	const string& name() const { return (m_name); }
-	string& name() { return (m_name); }
+	/** Return the name of the encoding.
+	  * See the constants in vmime::encodingTypes.
+	  *
+	  * @return name of the encoding (eg. "quoted-printable")
+	  */
+	const string& getName() const;
 
-public:
+	/** Set the name of the encoding.
+	  * See the constants in vmime::encodingTypes.
+	  *
+	  * @param name name of the encoding
+	  */
+	void setName(const string& name);
 
-	encoding& operator=(const encoding& source);
+	encoding& operator=(const encoding& other);
 	encoding& operator=(const string& name);
 
 	const bool operator==(const encoding& value) const;
 	const bool operator!=(const encoding& value) const;
 
-	// Decide which encoding to use based on the data
+	/** Decide which encoding to use based on the specified data.
+	  *
+	  * \deprecated Use the new decide() method which takes a contentHandler parameter.
+	  *
+	  * @param begin start iterator in buffer
+	  * @param end end iterator in buffer
+	  * @return suitable encoding for specified data
+	  */
 	static const encoding decide(const string::const_iterator begin, const string::const_iterator end);
+
+	/** Decide which encoding to use based on the specified data.
+	  *
+	  * @param data data used to determine encoding
+	  * @return suitable encoding for specified data
+	  */
 	static const encoding decide(const contentHandler& data);
 
-public:
+	encoding* clone() const;
+	void copyFrom(const component& other);
 
-	// Obtain an encoder/decoder for the current encoding type
+	/** Use encoderFactory to obtain an encoder/decoder object
+	  * for the current encoding type.
+	  *
+	  * @throw exceptions::no_encoder_available if no encoder
+	  * is registered for the encoding
+	  * @return a new encoder object for the encoding type
+	  */
 	encoder* getEncoder() const;
 
-protected:
+private:
 
 	string m_name;
 

@@ -41,28 +41,74 @@ public:
 
 public:
 
-	const string name() const { return (m_name); }
+	/** Return the ISO name of the charset.
+	  *
+	  * @return charset name
+	  */
+	const string& getName() const;
 
-	charset& operator=(const charset& source);
+	charset& operator=(const charset& other);
 	charset& operator=(const string& name);
 
 	const bool operator==(const charset& value) const;
 	const bool operator!=(const charset& value) const;
 
+	/** Returns the default charset used on the system.
+	  *
+	  * This function simply calls <code>platformDependantHandler::getLocaleCharset()</code>
+	  * and is provided for convenience.
+	  *
+	  * @return system default charset
+	  */
 	static const charset getLocaleCharset();
 
 #if VMIME_WIDE_CHAR_SUPPORT
+	/** Convert a string buffer in the specified charset to a wide-char
+	  * string buffer.
+	  *
+	  * @param in input buffer
+	  * @param out output buffer
+	  * @param ch input charset
+	  */
 	static void decode(const string& in, wstring& out, const charset& ch);
+
+	/** Convert a wide-char string buffer to a string buffer in the
+	  * specified charset.
+	  *
+	  * @param in input buffer
+	  * @param out output buffer
+	  * @param ch output charset
+	  */
 	static void encode(const wstring& in, string& out, const charset& ch);
 #endif
 
-	// In-memory conversion
+	/** Convert a string buffer from one charset to another
+	  * charset (in-memory conversion)
+	  *
+	  * \deprecated Use the new convert() method, which takes
+	  * an outputStream parameter.
+	  *
+	  * @param in input buffer
+	  * @param out output buffer
+	  * @param source input charset
+	  * @param dest output charset
+	  */
 	static void convert(const string& in, string& out, const charset& source, const charset& dest);
 
-	// Stream conversion
+	/** Convert the contents of an input stream in a specified charset
+	  * to another charset and write the result to an output stream.
+	  *
+	  * @param in input stream to read data from
+	  * @param out output stream to write the converted data
+	  * @param source input charset
+	  * @param dest output charset
+	  */
 	static void convert(utility::inputStream& in, utility::outputStream& out, const charset& source, const charset& dest);
 
-protected:
+	charset* clone() const;
+	void copyFrom(const component& other);
+
+private:
 
 	string m_name;
 

@@ -25,7 +25,7 @@ namespace vmime
 
 
 bodyPart::bodyPart()
-	: m_body(*this), m_parent(NULL)
+	: m_body(this), m_parent(NULL)
 {
 }
 
@@ -64,10 +64,57 @@ bodyPart* bodyPart::clone() const
 	bodyPart* p = new bodyPart;
 
 	p->m_parent = NULL;
-	p->m_header = m_header;
-	p->m_body = m_body;
+
+	p->m_header.copyFrom(m_header);
+	p->m_body.copyFrom(m_body);
 
 	return (p);
+}
+
+
+void bodyPart::copyFrom(const component& other)
+{
+	const bodyPart& bp = dynamic_cast <const bodyPart&>(other);
+
+	m_header = bp.m_header;
+	m_body = bp.m_body;
+}
+
+
+bodyPart& bodyPart::operator=(const bodyPart& other)
+{
+	copyFrom(other);
+	return (*this);
+}
+
+
+const header* bodyPart::getHeader() const
+{
+	return (&m_header);
+}
+
+
+header* bodyPart::getHeader()
+{
+	return (&m_header);
+}
+
+
+const body* bodyPart::getBody() const
+{
+	return (&m_body);
+}
+
+
+body* bodyPart::getBody()
+{
+	return (&m_body);
+}
+
+
+bodyPart* bodyPart::getParentPart() const
+{
+	return (m_parent);
 }
 
 

@@ -30,7 +30,7 @@ namespace utility {
 unsigned int random::m_next(static_cast<unsigned int>(::std::time(NULL)));
 
 
-const unsigned int random::next()
+const unsigned int random::getNext()
 {
 	// Park and Miller's minimal standard generator:
 	// xn+1 = (a * xn + b) mod c
@@ -43,13 +43,13 @@ const unsigned int random::next()
 }
 
 
-const unsigned int random::time()
+const unsigned int random::getTime()
 {
 	return (platformDependant::getHandler()->getUnixTime());
 }
 
 
-const unsigned int random::process()
+const unsigned int random::getProcess()
 {
 	return (platformDependant::getHandler()->getProcessId());
 }

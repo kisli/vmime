@@ -30,7 +30,7 @@ namespace messaging {
 
 
 POP3Folder::POP3Folder(const folder::path& path, POP3Store* store)
-	: m_store(store), m_path(path), m_name(path.last()), m_mode(-1), m_open(false)
+	: m_store(store), m_path(path), m_name(path.getLastComponent()), m_mode(-1), m_open(false)
 {
 	m_store->registerFolder(this);
 }
@@ -52,7 +52,7 @@ POP3Folder::~POP3Folder()
 }
 
 
-const int POP3Folder::mode() const
+const int POP3Folder::getMode() const
 {
 	if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
@@ -61,33 +61,33 @@ const int POP3Folder::mode() const
 }
 
 
-const int POP3Folder::type()
+const int POP3Folder::getType()
 {
 	if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
 
-	if (m_path.empty())
+	if (m_path.isEmpty())
 		return (TYPE_CONTAINS_FOLDERS);
-	else if (m_path.size() == 1 && m_path[0].buffer() == "INBOX")
+	else if (m_path.getSize() == 1 && m_path[0].getBuffer() == "INBOX")
 		return (TYPE_CONTAINS_MESSAGES);
 	else
 		throw exceptions::folder_not_found();
 }
 
 
-const int POP3Folder::flags()
+const int POP3Folder::getFlags()
 {
 	return (0);
 }
 
 
-const folder::path::component POP3Folder::name() const
+const folder::path::component POP3Folder::getName() const
 {
 	return (m_name);
 }
 
 
-const folder::path POP3Folder::fullPath() const
+const folder::path POP3Folder::getFullPath() const
 {
 	return (m_path);
 }
@@ -98,7 +98,7 @@ void POP3Folder::open(const int mode, bool failIfModeIsNotAvailable)
 	if (!m_store)
 		throw exceptions::illegal_state("Store disconnected");
 
-	if (m_path.empty())
+	if (m_path.isEmpty())
 	{
 		if (mode != MODE_READ_ONLY && failIfModeIsNotAvailable)
 			throw exceptions::operation_not_supported();
@@ -108,7 +108,7 @@ void POP3Folder::open(const int mode, bool failIfModeIsNotAvailable)
 
 		m_messageCount = 0;
 	}
-	else if (m_path.size() == 1 && m_path[0].buffer() == "INBOX")
+	else if (m_path.getSize() == 1 && m_path[0].getBuffer() == "INBOX")
 	{
 		m_store->sendRequest("STAT");
 
@@ -178,7 +178,7 @@ const bool POP3Folder::exists()
 	if (!m_store)
 		throw exceptions::illegal_state("Store disconnected");
 
-	return (m_path.empty() || (m_path.size() == 1 && m_path[0].buffer() == "INBOX"));
+	return (m_path.isEmpty() || (m_path.getSize() == 1 && m_path[0].getBuffer() == "INBOX"));
 }
 
 
@@ -275,7 +275,7 @@ std::vector <folder*> POP3Folder::getFolders(const bool /* recursive */)
 	if (!m_store)
 		throw exceptions::illegal_state("Store disconnected");
 
-	if (m_path.empty())
+	if (m_path.isEmpty())
 	{
 		std::vector <folder*> v;
 		v.push_back(new POP3Folder(folder::path::component("INBOX"), m_store));
@@ -438,25 +438,25 @@ const int POP3Folder::getFetchCapabilities() const
 
 folder* POP3Folder::getParent()
 {
-	return (m_path.empty() ? NULL : new POP3Folder(m_path.parent(), m_store));
+	return (m_path.isEmpty() ? NULL : new POP3Folder(m_path.getParent(), m_store));
 }
 
 
-const class store& POP3Folder::store() const
+const store* POP3Folder::getStore() const
 {
-	return (*m_store);
+	return (m_store);
 }
 
 
-class store& POP3Folder::store()
+store* POP3Folder::getStore()
 {
-	return (*m_store);
+	return (m_store);
 }
 
 
 void POP3Folder::registerMessage(POP3Message* msg)
 {
-	m_messages.insert(MessageMap::value_type(msg, msg->number()));
+	m_messages.insert(MessageMap::value_type(msg, msg->getNumber()));
 }
 
 
@@ -639,7 +639,7 @@ void POP3Folder::status(int& count, int& unseen)
 			for (std::list <POP3Folder*>::iterator it = m_store->m_folders.begin() ;
 			     it != m_store->m_folders.end() ; ++it)
 			{
-				if ((*it)->fullPath() == m_path)
+				if ((*it)->getFullPath() == m_path)
 				{
 					(*it)->m_messageCount = count;
 					(*it)->notifyMessageCount(event);

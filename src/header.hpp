@@ -28,16 +28,12 @@
 #include "headerField.hpp"
 #include "headerFieldFactory.hpp"
 
-#include "addressListField.hpp"
-#include "mailboxListField.hpp"
 #include "mailboxField.hpp"
-#include "textField.hpp"
-#include "dateField.hpp"
 #include "contentTypeField.hpp"
-#include "contentEncodingField.hpp"
-#include "defaultField.hpp"
 #include "contentDispositionField.hpp"
-#include "messageIdField.hpp"
+
+#include "standardFields.hpp"
+#include "standardParams.hpp"
 
 
 namespace vmime
@@ -61,196 +57,166 @@ public:
 	header();
 	~header();
 
-	// A sub-class for field manipulation
-	class fieldsContainer
-	{
-		friend class header;
+#define FIELD_ACCESS(methodName, fieldName, type) \
+	type& methodName() { return dynamic_cast <type&> \
+		(*getField(fields::fieldName)); } \
+	const type& methodName() const { return dynamic_cast <const type&> \
+		(*findField(fields::fieldName)); }
 
-	protected:
+	FIELD_ACCESS(From,                    FROM,                      mailboxField)
+	FIELD_ACCESS(Sender,                  SENDER,                    mailboxField)
+	FIELD_ACCESS(ReplyTo,                 REPLY_TO,                  mailboxField)
+	FIELD_ACCESS(DeliveredTo,             DELIVERED_TO,              mailboxField)
 
-		fieldsContainer();
-		~fieldsContainer();
+	FIELD_ACCESS(To,                      TO,                        addressListField)
+	FIELD_ACCESS(Cc,                      CC,                        addressListField)
+	FIELD_ACCESS(Bcc,                     BCC,                       addressListField)
+	FIELD_ACCESS(Date,                    DATE,                      dateField)
+	FIELD_ACCESS(Subject,                 SUBJECT,                   textField)
+	FIELD_ACCESS(Organization,            ORGANIZATION,              textField)
+	FIELD_ACCESS(UserAgent,               USER_AGENT,                textField)
 
-	public:
+	FIELD_ACCESS(ContentType,             CONTENT_TYPE,              contentTypeField)
+	FIELD_ACCESS(ContentDescription,      CONTENT_DESCRIPTION,       textField)
+	FIELD_ACCESS(ContentTransferEncoding, CONTENT_TRANSFER_ENCODING, contentEncodingField)
+	FIELD_ACCESS(MimeVersion,             MIME_VERSION,              defaultField)
+	FIELD_ACCESS(ContentDisposition,      CONTENT_DISPOSITION,       contentDispositionField)
+	FIELD_ACCESS(ContentId,               CONTENT_ID,                messageIdField)
+	FIELD_ACCESS(MessageId,               MESSAGE_ID,                messageIdField)
+	FIELD_ACCESS(ContentLocation,         CONTENT_LOCATION,          defaultField)
 
-		// Field access
-		mailboxField& From() { return (dynamic_cast<mailboxField&>(get(headerField::From))); }
-		mailboxField& Sender() { return (dynamic_cast<mailboxField&>(get(headerField::Sender))); }
-		mailboxField& ReplyTo() { return (dynamic_cast<mailboxField&>(get(headerField::ReplyTo))); }
-		mailboxField& DeliveredTo() { return (dynamic_cast<mailboxField&>(get(headerField::DeliveredTo))); }
-		addressListField& To() { return (dynamic_cast<addressListField&>(get(headerField::To))); }
-		addressListField& Cc() { return (dynamic_cast<addressListField&>(get(headerField::Cc))); }
-		addressListField& Bcc() { return (dynamic_cast<addressListField&>(get(headerField::Bcc))); }
-		dateField& Date() { return (dynamic_cast<dateField&>(get(headerField::Date))); }
-		textField& Subject() { return (dynamic_cast<textField&>(get(headerField::Subject))); }
-		textField& Organization() { return (dynamic_cast<textField&>(get(headerField::Organization))); }
-		textField& UserAgent() { return (dynamic_cast<textField&>(get(headerField::UserAgent))); }
-		contentTypeField& ContentType() { return (dynamic_cast<contentTypeField&>(get(headerField::ContentType))); }
-		textField& ContentDescription() { return (dynamic_cast<textField&>(get(headerField::ContentDescription))); }
-		contentEncodingField& ContentTransferEncoding() { return (dynamic_cast<contentEncodingField&>(get(headerField::ContentTransferEncoding))); }
-		defaultField& MimeVersion() { return (dynamic_cast<defaultField&>(get(headerField::MimeVersion))); }
-		contentDispositionField& ContentDisposition() { return (dynamic_cast<contentDispositionField&>(get(headerField::ContentDisposition))); }
-		messageIdField& ContentId() { return (dynamic_cast<messageIdField&>(get(headerField::ContentId))); }
-		messageIdField& MessageId() { return (dynamic_cast<messageIdField&>(get(headerField::MessageId))); }
-		defaultField& ContentLocation() { return (dynamic_cast<defaultField&>(get(headerField::ContentLocation))); }
+#undef FIELD_ACCESS
 
-		const mailboxField& From() const { return (dynamic_cast<mailboxField&>(find(headerField::From))); }
-		const mailboxField& Sender() const { return (dynamic_cast<mailboxField&>(find(headerField::Sender))); }
-		const mailboxField& ReplyTo() const { return (dynamic_cast<mailboxField&>(find(headerField::ReplyTo))); }
-		const mailboxField& DeliveredTo() const { return (dynamic_cast<mailboxField&>(find(headerField::DeliveredTo))); }
-		const addressListField& To() const { return (dynamic_cast<addressListField&>(find(headerField::To))); }
-		const addressListField& Cc() const { return (dynamic_cast<addressListField&>(find(headerField::Cc))); }
-		const addressListField& Bcc() const { return (dynamic_cast<addressListField&>(find(headerField::Bcc))); }
-		const dateField& Date() const { return (dynamic_cast<dateField&>(find(headerField::Date))); }
-		const textField& Subject() const { return (dynamic_cast<textField&>(find(headerField::Subject))); }
-		const textField& Organization() const { return (dynamic_cast<textField&>(find(headerField::Organization))); }
-		const textField& UserAgent() const { return (dynamic_cast<textField&>(find(headerField::UserAgent))); }
-		const contentTypeField& ContentType() const { return (dynamic_cast<contentTypeField&>(find(headerField::ContentType))); }
-		const textField& ContentDescription() const { return (dynamic_cast<textField&>(find(headerField::ContentDescription))); }
-		const contentEncodingField& ContentTransferEncoding() const { return (dynamic_cast<contentEncodingField&>(find(headerField::ContentTransferEncoding))); }
-		const defaultField& MimeVersion() const { return (dynamic_cast<defaultField&>(find(headerField::MimeVersion))); }
-		const contentDispositionField& ContentDisposition() const { return (dynamic_cast<contentDispositionField&>(find(headerField::ContentDisposition))); }
-		const messageIdField& ContentId() const { return (dynamic_cast<messageIdField&>(find(headerField::ContentId))); }
-		const messageIdField& MessageId() const { return (dynamic_cast<messageIdField&>(find(headerField::MessageId))); }
-		const defaultField& ContentLocation() const { return (dynamic_cast<defaultField&>(find(headerField::ContentLocation))); }
+	/** Checks whether (at least) one field with this name exists.
+	  *
+	  * @return true if at least one field with the specified name
+	  * exists, or false otherwise
+	  */
+	const bool hasField(const string& fieldName) const;
 
-		// Checks whether (at least) one field with this type/name exists
-		const bool has(const headerField::Types fieldType) const;
-		const bool has(const string& fieldName) const;
+	/** Find the first field that matches the specified name.
+	  * If no field is found, an exception is thrown.
+	  *
+	  * @throw exceptions::no_such_field if no field with this name exists
+	  * @return first field with the specified name
+	  */
+	headerField* findField(const string& fieldName) const;
 
-		// Find the first field that matches the specified type/name.
-		// If no field is found, an exception is thrown.
-		headerField& find(const headerField::Types fieldType) const;
-		headerField& find(const string& fieldName) const;
+	/** Find all fields that match the specified name.
+	  * If no field is found, an empty vector is returned.
+	  *
+	  * @return list of fields with the specified name
+	  */
+	std::vector <headerField*> findAllFields(const string& fieldName);
 
-		// Find all fields that matche the specified type/name.
-		// If no field is found, an empty vector is returned.
-		std::vector <headerField*> findAllByType(const headerField::Types fieldType);
-		std::vector <headerField*> findAllByName(const string& fieldName);
+	/** Find the first field that matches the specified name.
+	  * If no field is found, one will be created and inserted into
+	  * the header.
+	  *
+	  * @return first field with the specified name or a new field
+	  * if no field is found
+	  */
+	headerField* getField(const string& fieldName);
 
-		// Find the first field that matches the specified type/name.
-		// If no field is found, one will be created.
-		headerField& get(const headerField::Types fieldType);
-		headerField& get(const string& fieldName);
+	/** Add a field at the end of the list.
+	  *
+	  * @param field field to append
+	  */
+	void appendField(headerField* field);
 
-		// Field iterator
-		class const_iterator;
+	/** Insert a new field before the specified field.
+	  *
+	  * @param beforeField field before which the new field will be inserted
+	  * @param field field to insert
+	  * @throw exceptions::no_such_field if the field is not in the list
+	  */
+	void insertFieldBefore(headerField* beforeField, headerField* field);
 
-		class iterator
-		{
-			friend class header::fieldsContainer::const_iterator;
-			friend class header::fieldsContainer;
+	/** Insert a new field before the specified position.
+	  *
+	  * @param pos position at which to insert the new field (0 to insert at
+	  * the beginning of the list)
+	  * @param field field to insert
+	  */
+	void insertFieldBefore(const int pos, headerField* field);
 
-		public:
+	/** Insert a new field after the specified field.
+	  *
+	  * @param afterField field after which the new field will be inserted
+	  * @param field field to insert
+	  * @throw exceptions::no_such_field if the field is not in the list
+	  */
+	void insertFieldAfter(headerField* afterField, headerField* field);
 
-			typedef std::vector <headerField*>::iterator::difference_type difference_type;
+	/** Insert a new field after the specified position.
+	  *
+	  * @param pos position of the field before the new field
+	  * @param field field to insert
+	  */
+	void insertFieldAfter(const int pos, headerField* field);
 
-			iterator(std::vector <headerField*>::iterator it) : m_iterator(it) { }
-			iterator(const iterator& it) : m_iterator(it.m_iterator) { }
+	/** Remove the specified field from the list.
+	  *
+	  * @param field field to remove
+	  * @throw exceptions::no_such_field if the field is not in the list
+	  */
+	void removeField(headerField* field);
 
-			iterator& operator=(const iterator& it) { m_iterator = it.m_iterator; return (*this); }
+	/** Remove the field at the specified position.
+	  *
+	  * @param pos position of the field to remove
+	  */
+	void removeField(const int pos);
 
-			headerField& operator*() const { return (**m_iterator); }
-			headerField* operator->() const { return (*m_iterator); }
+	/** Remove all fields from the list.
+	  */
+	void removeAllFields();
 
-			iterator& operator++() { ++m_iterator; return (*this); }
-			iterator operator++(int) { iterator i(*this); ++m_iterator; return (i); }
+	/** Return the number of fields in the list.
+	  *
+	  * @return number of fields
+	  */
+	const int getFieldCount() const;
 
-			iterator& operator--() { --m_iterator; return (*this); }
-			iterator operator--(int) { iterator i(*this); --m_iterator; return (i); }
+	/** Tests whether the list of fields is empty.
+	  *
+	  * @return true if there is no field, false otherwise
+	  */
+	const bool isEmpty() const;
 
-			iterator& operator+=(difference_type n) { m_iterator += n; return (*this); }
-			iterator& operator-=(difference_type n) { m_iterator -= n; return (*this); }
+	/** Return the field at the specified position.
+	  *
+	  * @param pos position
+	  * @return field at position 'pos'
+	  */
+	headerField* getFieldAt(const int pos);
 
-			iterator operator-(difference_type x) const { return iterator(m_iterator - x); }
+	/** Return the field at the specified position.
+	  *
+	  * @param pos position
+	  * @return field at position 'pos'
+	  */
+	const headerField* const getFieldAt(const int pos) const;
 
-			headerField& operator[](difference_type n) const { return *(m_iterator[n]); }
+	/** Return the field list.
+	  *
+	  * @return list of fields
+	  */
+	const std::vector <const headerField*> getFieldList() const;
 
-			const bool operator==(const iterator& it) const { return (it.m_iterator == m_iterator); }
-			const bool operator!=(const iterator& it) const { return (!(*this == it)); }
+	/** Return the field list.
+	  *
+	  * @return list of fields
+	  */
+	const std::vector <headerField*> getFieldList();
 
-		protected:
+	header* clone() const;
+	void copyFrom(const component& other);
+	header& operator=(const header& other);
 
-			std::vector <headerField*>::iterator m_iterator;
-		};
+private:
 
-		class const_iterator
-		{
-		public:
-
-			typedef std::vector <headerField*>::const_iterator::difference_type difference_type;
-
-			const_iterator(std::vector <headerField*>::const_iterator it) : m_iterator(it) { }
-			const_iterator(const iterator& it) : m_iterator(it.m_iterator) { }
-			const_iterator(const const_iterator& it) : m_iterator(it.m_iterator) { }
-
-			const_iterator& operator=(const const_iterator& it) { m_iterator = it.m_iterator; return (*this); }
-			const_iterator& operator=(const iterator& it) { m_iterator = it.m_iterator; return (*this); }
-
-			const headerField& operator*() const { return (**m_iterator); }
-			const headerField* operator->() const { return (*m_iterator); }
-
-			const_iterator& operator++() { ++m_iterator; return (*this); }
-			const_iterator operator++(int) { const_iterator i(*this); ++m_iterator; return (i); }
-
-			const_iterator& operator--() { --m_iterator; return (*this); }
-			const_iterator operator--(int) { const_iterator i(*this); --m_iterator; return (i); }
-
-			const_iterator& operator+=(difference_type n) { m_iterator += n; return (*this); }
-			const_iterator& operator-=(difference_type n) { m_iterator -= n; return (*this); }
-
-			const_iterator operator-(difference_type x) const { return const_iterator(m_iterator - x); }
-
-			const headerField& operator[](difference_type n) const { return *(m_iterator[n]); }
-
-			const bool operator==(const const_iterator& it) const { return (it.m_iterator == m_iterator); }
-			const bool operator!=(const const_iterator& it) const { return (!(*this == it)); }
-
-		protected:
-
-			std::vector <headerField*>::const_iterator m_iterator;
-		};
-
-	public:
-
-		iterator begin() { return (m_fields.begin()); }
-		iterator end() { return (m_fields.end()); }
-
-		const_iterator begin() const { return (const_iterator(m_fields.begin())); }
-		const_iterator end() const { return (const_iterator(m_fields.end())); }
-
-		// Field insertion
-		void append(const headerField& field);
-		void insert(const iterator it, const headerField& field);
-
-		// Field removing
-		void remove(const iterator it);
-		void clear();
-
-		// Field count
-		const std::vector <headerField*>::size_type count() const { return (m_fields.size()); }
-		const std::vector <headerField*>::size_type size() const { return (m_fields.size()); }
-		const bool empty() const { return (m_fields.empty()); }
-
-		headerField& front() { return (*m_fields.front()); }
-		const headerField& front() const { return (*m_fields.front()); }
-		headerField& back() { return (*m_fields.back()); }
-		const headerField& back() const { return (*m_fields.back()); }
-
-		fieldsContainer& operator=(const fieldsContainer& c);
-
-	protected:
-
-		void insertSorted(headerField* field);
-
-		std::vector <headerField*> m_fields;
-
-	} fields;
-
-	typedef fieldsContainer::iterator iterator;
-	typedef fieldsContainer::const_iterator const_iterator;
-
-	header& operator=(const header& h);
+	std::vector <headerField*> m_fields;
 
 public:
 

@@ -37,24 +37,28 @@ namespace vmime
 
 class bodyPart : public component
 {
+	friend class body;
+
 public:
 
 	bodyPart();
 
-	const class header& header() const { return (m_header); }
-	class header& header() { return (m_header); }
+	const header* getHeader() const;
+	header* getHeader();
 
-	const class body& body() const { return (m_body); }
-	class body& body() { return (m_body); }
+	const body* getBody() const;
+	body* getBody();
 
-	bodyPart* parent() const { return (m_parent); }
+	bodyPart* getParentPart() const;
 
 	bodyPart* clone() const;
+	void copyFrom(const component& other);
+	bodyPart& operator=(const bodyPart& other);
 
-protected:
+private:
 
-	class header m_header;
-	class body m_body;
+	header m_header;
+	body m_body;
 
 	bodyPart* m_parent;
 
@@ -66,11 +70,6 @@ public:
 	// Component parsing & assembling
 	void parse(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition = NULL);
 	void generate(utility::outputStream& os, const string::size_type maxLineLength = lineLengthLimits::infinite, const string::size_type curLinePos = 0, string::size_type* newLinePos = NULL) const;
-
-
-	// This is here because of a bug in g++ < 3.4
-	friend class body;
-	friend class body::partsContainer;
 };
 
 

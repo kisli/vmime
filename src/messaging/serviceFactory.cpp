@@ -37,65 +37,83 @@ serviceFactory::serviceFactory()
 
 serviceFactory::~serviceFactory()
 {
-	for (ProtoMap::iterator it = m_protoMap.begin() ; it != m_protoMap.end() ; ++it)
-		delete ((*it).second);
-}
-
-
-service* serviceFactory::create
-	(session& sess, const string& protocol, authenticator* auth)
-{
-	ProtoMap::const_iterator pos = m_protoMap.find(toLower(protocol));
-
-	if (pos != m_protoMap.end())
+	for (std::vector <registeredService*>::const_iterator it = m_services.begin() ;
+	     it != m_services.end() ; ++it)
 	{
-		return ((*pos).second)->create(sess, auth);
-	}
-	else
-	{
-		throw exceptions::no_service_available();
-		return (NULL);
+		delete (*it);
 	}
 }
 
 
 service* serviceFactory::create
-	(session& sess, const url& u, authenticator* auth)
+	(session* sess, const string& protocol, authenticator* auth)
 {
-	service* serv = create(sess, u.protocol(), auth);
+	return (getServiceByProtocol(protocol)->create(sess, auth));
+}
 
-	sess.properties()[serv->infos().propertyPrefix() + "server.address"] = u.host();
 
-	if (u.port() != url::UNSPECIFIED_PORT)
-		sess.properties()[serv->infos().propertyPrefix() + "server.port"] = u.port();
+service* serviceFactory::create
+	(session* sess, const url& u, authenticator* auth)
+{
+	service* serv = create(sess, u.getProtocol(), auth);
+
+	sess->getProperties()[serv->getInfos().getPropertyPrefix() + "server.address"] = u.getHost();
+
+	if (u.getPort() != url::UNSPECIFIED_PORT)
+		sess->getProperties()[serv->getInfos().getPropertyPrefix() + "server.port"] = u.getPort();
 
 	// Path portion of the URL is used to point a specific folder (empty = root)
 	//if (!u.path().empty())
-	//	sess.properties()[serv->infos().propertyPrefix() + "server.path"] = u.path();
+	//	sess->properties()[serv->getInfos().getPropertyPrefix() + "server.path"] = u.getPath();
 
-	if (!u.username().empty())
+	if (!u.getUsername().empty())
 	{
-		sess.properties()[serv->infos().propertyPrefix() + "auth.username"] = u.username();
-		sess.properties()[serv->infos().propertyPrefix() + "auth.password"] = u.password();
+		sess->getProperties()[serv->getInfos().getPropertyPrefix() + "auth.username"] = u.getUsername();
+		sess->getProperties()[serv->getInfos().getPropertyPrefix() + "auth.password"] = u.getPassword();
 	}
 
 	return (serv);
 }
 
 
-const serviceFactory::registeredService& serviceFactory::operator[]
-	(const string& protocol) const
+const serviceFactory::registeredService* serviceFactory::getServiceByProtocol(const string& protocol) const
 {
-	ProtoMap::const_iterator pos = m_protoMap.find(toLower(protocol));
+	const string name(stringUtils::toLower(protocol));
 
-	if (pos != m_protoMap.end())
+	for (std::vector <registeredService*>::const_iterator it = m_services.begin() ;
+	     it != m_services.end() ; ++it)
 	{
-		return *((*pos).second);
+		if ((*it)->getName() == name)
+			return (*it);
 	}
-	else
+
+	throw exceptions::no_service_available();
+}
+
+
+const int serviceFactory::getServiceCount() const
+{
+	return (m_services.size());
+}
+
+
+const serviceFactory::registeredService* serviceFactory::getServiceAt(const int pos) const
+{
+	return (m_services[pos]);
+}
+
+
+const std::vector <const serviceFactory::registeredService*> serviceFactory::getServiceList() const
+{
+	std::vector <const registeredService*> res;
+
+	for (std::vector <registeredService*>::const_iterator it = m_services.begin() ;
+	     it != m_services.end() ; ++it)
 	{
-		throw exceptions::no_service_available();
+		res.push_back(*it);
 	}
+
+	return (res);
 }
 
 

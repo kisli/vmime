@@ -1,6 +1,45 @@
 
-VERSION 0.5.2-CVS
+VERSION 0.6.0-cvs
 =================
+
+2004-10-21  Vincent Richard  <vincent@vincent-richard.net>
+
+ * A _LOT_ of cleaning/refactoring in VMime code:
+
+      - got rid of field types (only using field names now).
+
+      - removed iterators on 'header', 'text', 'addressList', 'mailboxGroup',
+        'propertySet' and 'bodyPart': use access functions instead (iterators
+        made the code difficult to understand). You can always use standard
+        iterators on the container returned by getFieldList(), and so on.
+
+      - migrated to get/set convention for accessors (most of time, just add
+        'get' or 'set' before method name, depending on what it does).
+
+      - dropped 'comp_t' typedef on 'datetime' (useless).
+
+      - moved a lot of code from header (.hpp) to implementation files (.cpp).
+
+      - made all objects cloneable and copiable at the 'component' level:
+        methods component::clone() and component::copyFrom().
+
+      - made a 'typeAdapter' to allow using fondamental/no-vmime types in
+        header field and parameter values.
+
+      - implicit 'operator=' on header fields to set value is not allowed
+        anymore: use setValue() instead or you will get a std::bad_cast
+        exception.
+
+      - 'textParameter' renamed to 'defaultParameter'.
+
+      - vmime::makeWordsFromText() is now vmime::text::newFromString().
+
+      - changed a lot of return type value from reference to pointer, to
+        to avoid confusion.
+
+2004-10-05  Vincent Richard  <vincent@vincent-richard.net>
+
+ * added clone() method on 'component' object.
 
 2004-09-09  Vincent Richard  <vincent@vincent-richard.net>
 

@@ -18,28 +18,150 @@
 //
 
 #include "mailboxList.hpp"
+#include "exception.hpp"
 
 
 namespace vmime
 {
 
 
-// Address insertion
-void mailboxList::append(const address& addr)
+mailboxList::mailboxList()
 {
-	// Ensure this is a "mailbox" object
-	const mailbox& mb = dynamic_cast<const mailbox&>(addr);
-
-	m_list.push_back(mb.clone());
 }
 
 
-void mailboxList::insert(const iterator it, const address& addr)
+mailboxList::mailboxList(const mailboxList& mboxList)
+	: addressList(mboxList)
 {
-	// Ensure this is a "mailbox" object
-	const mailbox& mb = dynamic_cast<const mailbox&>(addr);
+}
 
-	m_list.insert(it.m_iterator, mb.clone());
+
+void mailboxList::appendMailbox(mailbox* mbox)
+{
+	addressList::appendAddress(mbox);
+}
+
+
+void mailboxList::insertMailboxBefore(mailbox* beforeMailbox, mailbox* mbox)
+{
+	try
+	{
+		addressList::insertAddressBefore(beforeMailbox, mbox);
+	}
+	catch (exceptions::no_such_address&)
+	{
+		throw exceptions::no_such_mailbox();
+	}
+}
+
+
+void mailboxList::insertMailboxBefore(const int pos, mailbox* mbox)
+{
+	addressList::insertAddressBefore(pos, mbox);
+}
+
+
+void mailboxList::insertMailboxAfter(mailbox* afterMailbox, mailbox* mbox)
+{
+	try
+	{
+		addressList::insertAddressAfter(afterMailbox, mbox);
+	}
+	catch (exceptions::no_such_address&)
+	{
+		throw exceptions::no_such_mailbox();
+	}
+}
+
+
+void mailboxList::insertMailboxAfter(const int pos, mailbox* mbox)
+{
+	addressList::insertAddressAfter(pos, mbox);
+}
+
+
+void mailboxList::removeMailbox(mailbox* mbox)
+{
+	try
+	{
+		addressList::removeAddress(mbox);
+	}
+	catch (exceptions::no_such_address&)
+	{
+		throw exceptions::no_such_mailbox();
+	}
+}
+
+
+void mailboxList::removeMailbox(const int pos)
+{
+	addressList::removeAddress(pos);
+}
+
+
+void mailboxList::removeAllMailboxes()
+{
+	addressList::removeAllAddresses();
+}
+
+
+const int mailboxList::getMailboxCount() const
+{
+	return (addressList::getAddressCount());
+}
+
+
+const bool mailboxList::isEmpty() const
+{
+	return (addressList::isEmpty());
+}
+
+
+mailbox* mailboxList::getMailboxAt(const int pos)
+{
+	return static_cast <mailbox*>(addressList::getAddressAt(pos));
+}
+
+
+const mailbox* const mailboxList::getMailboxAt(const int pos) const
+{
+	return static_cast <const mailbox*>(addressList::getAddressAt(pos));
+}
+
+
+const std::vector <const mailbox*> mailboxList::getMailboxList() const
+{
+	const std::vector <const address*> addrList = addressList::getAddressList();
+	std::vector <const mailbox*> res;
+
+	for (std::vector <const address*>::const_iterator it = addrList.begin() ;
+	     it != addrList.end() ; ++it)
+	{
+		const mailbox* mbox = dynamic_cast <const mailbox*>(*it);
+
+		if (mbox != NULL)
+			res.push_back(mbox);
+	}
+
+	return (res);
+}
+
+
+const std::vector <mailbox*> mailboxList::getMailboxList()
+{
+	const std::vector <address*> addrList = addressList::getAddressList();
+	std::vector <mailbox*> res;
+
+	for (std::vector <address*>::const_iterator it = addrList.begin() ;
+	     it != addrList.end() ; ++it)
+	{
+		mailbox* mbox = dynamic_cast <mailbox*>(*it);
+
+		if (mbox != NULL)
+			res.push_back(mbox);
+	}
+
+	return (res);
 }
 
 

@@ -21,6 +21,7 @@
 #define VMIME_PARAMETER_HPP_INCLUDED
 
 
+#include "base.hpp"
 #include "component.hpp"
 
 
@@ -30,22 +31,51 @@ namespace vmime
 
 class parameter : public component
 {
-	friend class parameterFactory; // for "parse()"
+	friend class parameterFactory;
 
 public:
 
 	parameter* clone() const;
+	void copyFrom(const component& other);
+	parameter& operator=(const parameter& other);
 
-protected:
+	/** Return the name of the parameter.
+	  *
+	  * @return name of the parameter
+	  */
+	const string& getName() const;
+
+	/** Return the read-only value object attached to this field.
+	  *
+	  * @return read-only value object
+	  */
+	virtual const component& getValue() const = 0;
+
+	/** Return the value object attached to this field.
+	  *
+	  * @return value object
+	  */
+	virtual component& getValue() = 0;
+
+	/** Set the value of the parameter.
+	  *
+	  * @throw std::bad_cast_exception if the value type is
+	  * incompatible with the parameter type
+	  * @param value value object
+	  */
+	virtual void setValue(const component& value) = 0;
+
+	using component::parse;
+	using component::generate;
+
+	void parse(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition = NULL);
+	void generate(utility::outputStream& os, const string::size_type maxLineLength = lineLengthLimits::infinite, const string::size_type curLinePos = 0, string::size_type* newLinePos = NULL) const;
+
+private:
 
 	string m_name;
 
-public:
-
-	virtual void copyFrom(const parameter& param);
-
-	const string& name() const { return (m_name); }
-	string& name() { return (m_name); }
+	void generateValue(utility::outputStream& os, const string::size_type maxLineLength, const string::size_type curLinePos, string::size_type* newLinePos) const;
 };
 
 

@@ -20,9 +20,7 @@
 #include "parameterFactory.hpp"
 #include "exception.hpp"
 
-#include "textParameter.hpp"
-#include "charsetParameter.hpp"
-#include "dateParameter.hpp"
+#include "standardParams.hpp"
 
 
 namespace vmime
@@ -47,9 +45,9 @@ parameterFactory::~parameterFactory()
 parameter* parameterFactory::create
 	(const string& name, const string& value)
 {
-	const string _name = toLower(name);
+	const string lcName = stringUtils::toLower(name);
 
-	NameMap::const_iterator pos = m_nameMap.find(_name);
+	NameMap::const_iterator pos = m_nameMap.find(lcName);
 	parameter* param = NULL;
 
 	if (pos != m_nameMap.end())
@@ -58,10 +56,10 @@ parameter* parameterFactory::create
 	}
 	else
 	{
-		param = new textParameter;
+		param = registerer <defaultParameter>::creator();
 	}
 
-	param->name() = _name;
+	param->m_name = name;
 	if (value != NULL_STRING) param->parse(value);
 
 	return (param);

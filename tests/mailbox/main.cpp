@@ -32,14 +32,14 @@ std::ostream& operator<<(std::ostream& os, const vmime::text& txt)
 {
 	os << "[";
 
-	for (int i = 0 ; i < txt.size() ; ++i)
+	for (int i = 0 ; i < txt.getWordCount() ; ++i)
 	{
-		const vmime::word& w = txt[i];
+		const vmime::word& w = *txt.getWordAt(i);
 
 		if (i != 0)
 			os << ",";
 
-		os << "[" << w.charset().name() << "," << w.buffer() << "]";
+		os << "[" << w.getCharset().getName() << "," << w.getBuffer() << "]";
 	}
 
 	os << "]";
@@ -50,7 +50,7 @@ std::ostream& operator<<(std::ostream& os, const vmime::text& txt)
 
 std::ostream& operator<<(std::ostream& os, const vmime::mailbox& mbox)
 {
-	std::cout << "MAILBOX[name=" << mbox.name() << ",email=" << mbox.email() << "]" << std::endl;
+	std::cout << "MAILBOX[name=" << mbox.getName() << ",email=" << mbox.getEmail() << "]" << std::endl;
 
 	return (os);
 }
@@ -58,11 +58,11 @@ std::ostream& operator<<(std::ostream& os, const vmime::mailbox& mbox)
 
 std::ostream& operator<<(std::ostream& os, const vmime::mailboxGroup& group)
 {
-	std::cout << "GROUP[name=" << group.name() << "]" << std::endl;
+	std::cout << "GROUP[name=" << group.getName() << "]" << std::endl;
 
-	for (int i = 0 ; i < group.size() ; ++i)
+	for (int i = 0 ; i < group.getMailboxCount() ; ++i)
 	{
-		std::cout << "* " << group[i];
+		std::cout << "* " << *group.getMailboxAt(i);
 	}
 
 	return (os);
@@ -97,9 +97,9 @@ int main(int argc, char* argv[])
 	vmime::addressList list;
 	list.parse(data.str());
 
-	for (int i = 0 ; i < list.size() ; ++i)
+	for (int i = 0 ; i < list.getAddressCount() ; ++i)
 	{
-		const vmime::address& addr = list[i];
+		const vmime::address& addr = *list.getAddressAt(i);
 
 		if (addr.isGroup())
 		{

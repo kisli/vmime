@@ -17,7 +17,7 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "relayField.hpp"
+#include "relay.hpp"
 #include "text.hpp"
 #include "parserHelpers.hpp"
 
@@ -28,8 +28,15 @@ namespace vmime
 {
 
 
-relayField::relayField()
+relay::relay()
 {
+}
+
+
+relay::relay(const relay& r)
+	: component()
+{
+	copyFrom(r);
 }
 
 
@@ -46,7 +53,7 @@ relayField::relayField()
                        ["for"  addr-spec]        ; initial form
 */
 
-void relayField::parse(const string& buffer, const string::size_type position,
+void relay::parse(const string& buffer, const string::size_type position,
 	const string::size_type end, string::size_type* newPosition)
 {
 	const string::value_type* const pend = buffer.data() + end;
@@ -108,32 +115,32 @@ void relayField::parse(const string& buffer, const string::size_type position,
 
 				if (!inComment)
 				{
-					if (isStringEqualNoCase(word, "from", 4))
+					if (stringUtils::isStringEqualNoCase(word, "from", 4))
 					{
 						newPart = Part_From;
 						keyword = true;
 					}
-					else if (isStringEqualNoCase(word, "by", 2))
+					else if (stringUtils::isStringEqualNoCase(word, "by", 2))
 					{
 						newPart = Part_By;
 						keyword = true;
 					}
-					else if (isStringEqualNoCase(word, "via", 2))
+					else if (stringUtils::isStringEqualNoCase(word, "via", 2))
 					{
 						newPart = Part_Via;
 						keyword = true;
 					}
-					else if (isStringEqualNoCase(word, "with", 2))
+					else if (stringUtils::isStringEqualNoCase(word, "with", 2))
 					{
 						newPart = Part_With;
 						keyword = true;
 					}
-					else if (isStringEqualNoCase(word, "id", 2))
+					else if (stringUtils::isStringEqualNoCase(word, "id", 2))
 					{
 						newPart = Part_Id;
 						keyword = true;
 					}
-					else if (isStringEqualNoCase(word, "for", 2))
+					else if (stringUtils::isStringEqualNoCase(word, "for", 2))
 					{
 						newPart = Part_For;
 						keyword = true;
@@ -185,7 +192,7 @@ void relayField::parse(const string& buffer, const string::size_type position,
 }
 
 
-void relayField::generate(utility::outputStream& os, const string::size_type maxLineLength,
+void relay::generate(utility::outputStream& os, const string::size_type maxLineLength,
 	const string::size_type curLinePos, string::size_type* newLinePos) const
 {
 	std::ostringstream oss;
@@ -206,33 +213,122 @@ void relayField::generate(utility::outputStream& os, const string::size_type max
 
 	oss << "; " << m_date.generate();
 
-	string result(oss.str());
-
-	string::size_type pos = curLinePos;
-
-	headerField::generate(os, maxLineLength, pos, &pos);
-
-	encodeAndFoldText(os, text(result), maxLineLength,
-		pos, newLinePos, encodeAndFoldFlags::forceNoEncoding);
+	encodeAndFoldText(os, text(oss.str()), maxLineLength,
+		curLinePos, newLinePos, encodeAndFoldFlags::forceNoEncoding);
 }
 
 
-void relayField::copyFrom(const headerField& field)
+void relay::copyFrom(const component& other)
 {
-	const relayField& source = dynamic_cast<const relayField&>(field);
+	const relay& r = dynamic_cast <const relay&>(other);
 
-	m_from = source.m_from;
-	m_via = source.m_via;
-	m_by = source.m_by;
-	m_id = source.m_id;
-	m_for = source.m_for;
+	m_from = r.m_from;
+	m_via = r.m_via;
+	m_by = r.m_by;
+	m_id = r.m_id;
+	m_for = r.m_for;
 
-	m_with.resize(source.m_with.size());
-	std::copy(source.m_with.begin(), source.m_with.end(), m_with.begin());
+	m_with.resize(r.m_with.size());
+	std::copy(r.m_with.begin(), r.m_with.end(), m_with.begin());
 
-	m_date = source.m_date;
+	m_date = r.m_date;
+}
 
-	headerField::copyFrom(field);
+
+relay& relay::operator=(const relay& other)
+{
+	copyFrom(other);
+	return (*this);
+}
+
+
+relay* relay::clone() const
+{
+	return new relay(*this);
+}
+
+
+const string& relay::getFrom() const
+{
+	return (m_from);
+}
+
+
+void relay::setFrom(const string& from)
+{
+	m_from = from;
+}
+
+
+const string& relay::getVia() const
+{
+	return (m_via);
+}
+
+
+void relay::setVia(const string& via)
+{
+	m_via = via;
+}
+
+
+const string& relay::getBy() const
+{
+	return (m_by);
+}
+
+
+void relay::setBy(const string& by)
+{
+	m_by = by;
+}
+
+
+const string& relay::getId() const
+{
+	return (m_id);
+}
+
+
+void relay::setId(const string& id)
+{
+	m_id = id;
+}
+
+
+const string& relay::getFor() const
+{
+	return (m_for);
+}
+
+
+void relay::setFor(const string& for_)
+{
+	m_for = for_;
+}
+
+
+const datetime& relay::getDate() const
+{
+	return (m_date);
+}
+
+
+void relay::setDate(const datetime& date)
+{
+	m_date = date;
+}
+
+
+const std::vector <string>& relay::getWithList() const
+{
+	return (m_with);
+}
+
+
+std::vector <string>& relay::getWithList()
+{
+	return (m_with);
 }
 
 

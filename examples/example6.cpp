@@ -49,19 +49,19 @@ class my_auth : public vmime::messaging::authenticator
 
 void printStructure(const vmime::messaging::structure& s, int level = 0)
 {
-	for (int i = 1 ; i <= s.count() ; ++i)
+	for (int i = 1 ; i <= s.getCount() ; ++i)
 	{
 		const vmime::messaging::part& part = s[i];
 
 		for (int j = 0 ; j < level * 2 ; ++j)
 			std::cout << " ";
 
-		std::cout << part.number() << ". "
-		          << part.type().generate()
-				<< " [" << part.size() << " byte(s)]"
+		std::cout << part.getNumber() << ". "
+		          << part.getType().generate()
+				<< " [" << part.getSize() << " byte(s)]"
 				<< std::endl;
 
-		printStructure(part.structure(), level + 1);
+		printStructure(part.getStructure(), level + 1);
 	}
 }
 
@@ -76,22 +76,23 @@ int main()
 	// Test the new enumeration system for encoders
 	//
 
-#if 0
+#if 1
 	vmime::encoderFactory* ef = vmime::encoderFactory::getInstance();
 
 	std::cout << "Available encoders:" << std::endl;
 
-	for (vmime::encoderFactory::iterator it = ef->begin() ;
-	     it != ef->end() ; ++it)
+	for (int i = 0 ; i < ef->getEncoderCount() ; ++i)
 	{
-		std::cout << "  * " << (*it).name() << std::endl;
+		const vmime::encoderFactory::registeredEncoder& enc = *ef->getEncoderAt(i);
 
-		vmime::encoder* e = (*it).create();
+		std::cout << "  * " << enc.getName() << std::endl;
 
-		std::vector <vmime::string> props = e->availableProperties();
+		vmime::encoder* e = enc.create();
 
-		for (std::vector <vmime::string>::const_iterator it2 = props.begin() ; it2 != props.end() ; ++it2)
-			std::cout << "      - " << *it2 << std::endl;
+		std::vector <vmime::string> props = e->getAvailableProperties();
+
+		for (std::vector <vmime::string>::const_iterator it = props.begin() ; it != props.end() ; ++it)
+			std::cout << "      - " << *it << std::endl;
 
 		delete (e);
 	}
@@ -108,21 +109,22 @@ int main()
 
 	std::cout << "Available messaging services:" << std::endl;
 
-	for (vmime::messaging::serviceFactory::const_iterator it = sf->begin() ;
-	     it != sf->end() ; ++it)
+	for (int i = 0 ; i < sf->getServiceCount() ; ++i)
 	{
-		std::cout << "  * " << (*it).name() << " (" << (*it).infos().defaultPort() << ")" << std::endl;
+		const vmime::messaging::serviceFactory::registeredService& serv = *sf->getServiceAt(i);
 
-		std::vector <vmime::string> props = (*it).infos().availableProperties();
+		std::cout << "  * " << serv.getName() << " (" << serv.getInfos().getDefaultPort() << ")" << std::endl;
 
-		for (std::vector <vmime::string>::const_iterator it2 = props.begin() ; it2 != props.end() ; ++it2)
-			std::cout << "      - " << (*it).infos().propertyPrefix() + *it2 << std::endl;
+		std::vector <vmime::string> props = serv.getInfos().getAvailableProperties();
+
+		for (std::vector <vmime::string>::const_iterator it = props.begin() ; it != props.end() ; ++it)
+			std::cout << "      - " << serv.getInfos().getPropertyPrefix() + *it << std::endl;
 	}
 #endif
 
 	vmime::messaging::session sess;
-	sess.properties()["store.protocol"] = "imap";
-	sess.properties()["transport.protocol"] = "smtp";
+	sess.getProperties()["store.protocol"] = "imap";
+	sess.getProperties()["transport.protocol"] = "smtp";
 
 	my_auth auth;
 
@@ -136,12 +138,12 @@ int main()
 		// Transport protocol configuration
 		vmime::messaging::transport* tr = sess.getTransport();
 
-		//sess.properties()[tr->infos().propertyPrefix() + "auth.username"] = "username";
-		//sess.properties()[tr->infos().propertyPrefix() + "auth.password"] = "password";
+		//sess.getProperties()[tr->getInfos().getPropertyPrefix() + "auth.username"] = "username";
+		//sess.getProperties()[tr->getInfos().getPropertyPrefix() + "auth.password"] = "password";
 
-		sess.properties()[tr->infos().propertyPrefix() + "server.address"] = "smtp.mydomain.com";
+		sess.getProperties()[tr->getInfos().getPropertyPrefix() + "server.address"] = "smtp.mydomain.com";
 
-		//sess.properties()[tr->infos().propertyPrefix() + "options.need-authentification"] = true;
+		//sess.getProperties()[tr->getInfos().getPropertyPrefix() + "options.need-authentification"] = true;
 
 		// Connection
 		tr->connect();
@@ -151,8 +153,8 @@ int main()
 
 		// Recipients list
 		vmime::mailboxList to;
-		to.append(vmime::mailbox("you@somewhere.com"));
-		to.append(vmime::mailbox("somebody.else@anywhere.com"));
+		to.appendMailbox(new vmime::mailbox("you@somewhere.com"));
+		to.appendMailbox(new vmime::mailbox("somebody.else@anywhere.com"));
 
 		std::istringstream iss("[MESSAGE DATA: HEADER + BODY]");
 		tr->send(from, to, iss);
@@ -176,15 +178,15 @@ int main()
 		vmime::messaging::store* st = sess.getStore(&auth);
 
 		// Store protocol configuration
-		//sess.properties()[st->infos().propertyPrefix() + "auth.username"] = "username";
-		//sess.properties()[st->infos().propertyPrefix() + "auth.password"] = "password";
+		//sess.getProperties()[st->getInfos().getPropertyPrefix() + "auth.username"] = "username";
+		//sess.getProperties()[st->getInfos().getPropertyPrefix() + "auth.password"] = "password";
 
-		sess.properties()[st->infos().propertyPrefix() + "server.address"] = "imap.mydomain.com";
-		//sess.properties()[st->infos().propertyPrefix() + "server.port"] = 110;
-		//sess.properties()[st->infos().propertyPrefix() + "server.socket-factory"] = "default";
+		sess.getProperties()[st->getInfos().getPropertyPrefix() + "server.address"] = "imap.mydomain.com";
+		//sess.getProperties()[st->getInfos().getPropertyPrefix() + "server.port"] = 110;
+		//sess.getProperties()[st->getInfos().getPropertyPrefix() + "server.socket-factory"] = "default";
 
-		//sess.properties()[st->infos().propertyPrefix() + "options.apop"] = false;
-		//sess.properties()[st->infos().propertyPrefix() + "options.apop.fallback"] = true;
+		//sess.getProperties()[st->getInfos().getPropertyPrefix() + "options.apop"] = false;
+		//sess.getProperties()[st->getInfos().getPropertyPrefix() + "options.apop.fallback"] = true;
 
 		// Connection
 		st->connect();
@@ -205,7 +207,7 @@ int main()
 
 		// To retrieve the whole message
 		std::ostringstream oss;
-		vmime::outputStreamAdapter out(oss);
+		vmime::utility::outputStreamAdapter out(oss);
 
 		m->extract(out);
 
@@ -223,55 +225,55 @@ int main()
 		std::cout << "STRUCTURE:" << std::endl;
 		std::cout << "==========" << std::endl;
 
-		printStructure(m->structure());
+		printStructure(m->getStructure());
 
 		std::cout << std::endl;
 
-		std::cout << "Size = " << m->size() << " byte(s)" << std::endl;
-		std::cout << "UID = " << m->uniqueId() << std::endl;
+		std::cout << "Size = " << m->getSize() << " byte(s)" << std::endl;
+		std::cout << "UID = " << m->getUniqueId() << std::endl;
 		std::cout << std::endl;
 
 		std::cout << "ENVELOPE:" << std::endl;
 		std::cout << "=========" << std::endl;
-		try { std::cout << m->header().fields.From().generate() << std::endl; } catch (...) { }
-		try { std::cout << m->header().fields.To().generate() << std::endl; } catch (...) { }
-		try { std::cout << m->header().fields.Date().generate() << std::endl; } catch (...) { }
-		try { std::cout << m->header().fields.Subject().generate() << std::endl; } catch (...) { }
+		try { std::cout << m->getHeader().From().generate() << std::endl; } catch (...) { }
+		try { std::cout << m->getHeader().To().generate() << std::endl; } catch (...) { }
+		try { std::cout << m->getHeader().Date().generate() << std::endl; } catch (...) { }
+		try { std::cout << m->getHeader().Subject().generate() << std::endl; } catch (...) { }
 
 		std::cout << std::endl;
 
 		std::cout << "FULL HEADER:" << std::endl;
 		std::cout << "============" << std::endl;
-		std::cout << m->header().generate() << std::endl;
+		std::cout << m->getHeader().generate() << std::endl;
 
 		std::cout << std::endl;
 		std::cout << "=========================================================" << std::endl;
 
-		vmime::outputStreamAdapter out2(std::cout);
-		m->extractPart(m->structure()[1][2][1], out2, NULL); //, 0, 10);
+		vmime::utility::outputStreamAdapter out2(std::cout);
+		m->extractPart(m->getStructure()[1][2][1], out2, NULL); //, 0, 10);
 
 		std::cout << "=========================================================" << std::endl;
 
 		std::cout << std::endl;
 		std::cout << "=========================================================" << std::endl;
 
-		m->fetchPartHeader(m->structure()[1][2][1]);
+		m->fetchPartHeader(m->getStructure()[1][2][1]);
 
-		std::cout << m->structure()[1][2][1].header().generate() << std::endl;
+		std::cout << m->getStructure()[1][2][1].getHeader().generate() << std::endl;
 
 		std::cout << "=========================================================" << std::endl;
 
 		// Flags manipulation
-		std::cout << "Flags = " << m->flags() << std::endl;
+		std::cout << "Flags = " << m->getFlags() << std::endl;
 		m->setFlags(vmime::messaging::message::FLAG_REPLIED, vmime::messaging::message::FLAG_MODE_ADD);
-		std::cout << "Flags = " << m->flags() << std::endl;
+		std::cout << "Flags = " << m->getFlags() << std::endl;
 		m->setFlags(vmime::messaging::message::FLAG_REPLIED, vmime::messaging::message::FLAG_MODE_REMOVE);
-		std::cout << "Flags = " << m->flags() << std::endl;
+		std::cout << "Flags = " << m->getFlags() << std::endl;
 
-		f->setMessageFlags(m->number(), m->number(), vmime::messaging::message::FLAG_REPLIED, vmime::messaging::message::FLAG_MODE_ADD);
-		std::cout << "Flags = " << m->flags() << std::endl;
-		f->setMessageFlags(m->number(), m->number(), vmime::messaging::message::FLAG_REPLIED, vmime::messaging::message::FLAG_MODE_REMOVE);
-		std::cout << "Flags = " << m->flags() << std::endl;
+		f->setMessageFlags(m->getNumber(), m->getNumber(), vmime::messaging::message::FLAG_REPLIED, vmime::messaging::message::FLAG_MODE_ADD);
+		std::cout << "Flags = " << m->getFlags() << std::endl;
+		f->setMessageFlags(m->getNumber(), m->getNumber(), vmime::messaging::message::FLAG_REPLIED, vmime::messaging::message::FLAG_MODE_REMOVE);
+		std::cout << "Flags = " << m->getFlags() << std::endl;
 
 
 		std::cout << "=========================================================" << std::endl;
@@ -312,7 +314,7 @@ int main()
 			if (!g->exists())
 				g->create(vmime::messaging::folder::TYPE_CONTAINS_MESSAGES);
 
-			f->copyMessages(g->fullPath());
+			f->copyMessages(g->getFullPath());
 
 			delete (g);
 		}

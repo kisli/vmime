@@ -42,17 +42,17 @@ class POP3Store : public store
 
 public:
 
-	POP3Store(class session& sess, class authenticator* auth);
+	POP3Store(session* sess, authenticator* auth);
 	~POP3Store();
 
-	const string protocolName() const;
+	const string getProtocolName() const;
 
 	folder* getDefaultFolder();
 	folder* getRootFolder();
 	folder* getFolder(const folder::path& path);
 
-	static const serviceInfos& infosInstance() { return (sm_infos); }
-	const serviceInfos& infos() const { return (sm_infos); }
+	static const serviceInfos& getInfosInstance();
+	const serviceInfos& getInfos() const;
 
 	void connect();
 	const bool isConnected() const;
@@ -93,10 +93,10 @@ private:
 	{
 	public:
 
-		const port_t defaultPort() const;
+		const port_t getDefaultPort() const;
 
-		const string propertyPrefix() const;
-		const std::vector <string> availableProperties() const;
+		const string getPropertyPrefix() const;
+		const std::vector <string> getAvailableProperties() const;
 	};
 
 	static _infos sm_infos;

@@ -33,7 +33,7 @@ class fileAttachment : public defaultAttachment
 public:
 
 	fileAttachment(const string& filename, const mediaType& type, const text& desc = NULL_TEXT);
-	fileAttachment(const string& filename, const mediaType& type, const class encoding& enc, const text& desc = NULL_TEXT);
+	fileAttachment(const string& filename, const mediaType& type, const encoding& enc, const text& desc = NULL_TEXT);
 
 	class fileInfo
 	{
@@ -71,14 +71,14 @@ public:
 		datetime* m_readDate;
 	};
 
-	const class fileInfo& fileInfo() const { return (m_fileInfo); }
-	class fileInfo& fileInfo() { return (m_fileInfo); }
+	const fileInfo& getFileInfo() const;
+	fileInfo& getFileInfo();
 
-protected:
+private:
 
 	void setData(const string& filename);
 
-	class fileInfo m_fileInfo;
+	fileInfo m_fileInfo;
 
 	void generatePart(bodyPart& part) const;
 };

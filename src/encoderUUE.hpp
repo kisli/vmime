@@ -40,7 +40,7 @@ public:
 	const utility::stream::size_type encode(utility::inputStream& in, utility::outputStream& out);
 	const utility::stream::size_type decode(utility::inputStream& in, utility::outputStream& out);
 
-	const std::vector <string> availableProperties() const;
+	const std::vector <string> getAvailableProperties() const;
 };
 
 

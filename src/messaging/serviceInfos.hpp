@@ -51,20 +51,20 @@ public:
 	  *
 	  * @return default port number
 	  */
-	virtual const port_t defaultPort() const = 0;
+	virtual const port_t getDefaultPort() const = 0;
 
 	/** Return the property prefix used by this service.
 	  * Use this to set/get properties in the session object.
 	  *
 	  * @return property prefix
 	  */
-	virtual const string propertyPrefix() const = 0;
+	virtual const string getPropertyPrefix() const = 0;
 
 	/** Return a list of available properties for this service.
 	  *
 	  * @return list of property names
 	  */
-	virtual const std::vector <string> availableProperties() const = 0;
+	virtual const std::vector <string> getAvailableProperties() const = 0;
 };
 
 

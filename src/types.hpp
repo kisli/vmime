@@ -21,8 +21,8 @@
 #define VMIME_TYPES_HPP_INCLUDED
 
 
-#include <string>
 #include <limits>
+#include <string>
 
 #include "config.hpp"
 

@@ -18,6 +18,7 @@
 //
 
 #include "disposition.hpp"
+#include "utility/stringUtils.hpp"
 
 
 namespace vmime
@@ -31,7 +32,7 @@ disposition::disposition()
 
 
 disposition::disposition(const string& name)
-	: m_name(toLower(name))
+	: m_name(stringUtils::toLower(name))
 {
 }
 
@@ -45,7 +46,7 @@ disposition::disposition(const disposition& type)
 void disposition::parse(const string& buffer, const string::size_type position,
 	const string::size_type end, string::size_type* newPosition)
 {
-	m_name = toLower(string(buffer.begin() + position, buffer.begin() + end));
+	m_name = stringUtils::toLower(string(buffer.begin() + position, buffer.begin() + end));
 
 	if (newPosition)
 		*newPosition = end;
@@ -62,29 +63,55 @@ void disposition::generate(utility::outputStream& os, const string::size_type /*
 }
 
 
-disposition& disposition::operator=(const disposition& source)
-{
-	m_name = source.m_name;
-	return (*this);
-}
-
-
 disposition& disposition::operator=(const string& name)
 {
-	m_name = toLower(name);
+	m_name = stringUtils::toLower(name);
 	return (*this);
 }
 
 
 const bool disposition::operator==(const disposition& value) const
 {
-	return (toLower(m_name) == value.m_name);
+	return (stringUtils::toLower(m_name) == value.m_name);
 }
 
 
 const bool disposition::operator!=(const disposition& value) const
 {
 	return !(*this == value);
+}
+
+
+disposition* disposition::clone() const
+{
+	return new disposition(*this);
+}
+
+
+void disposition::copyFrom(const component& other)
+{
+	const disposition& d = dynamic_cast <const disposition&>(other);
+
+	m_name = d.m_name;
+}
+
+
+disposition& disposition::operator=(const disposition& other)
+{
+	copyFrom(other);
+	return (*this);
+}
+
+
+const string& disposition::getName() const
+{
+	return (m_name);
+}
+
+
+void disposition::setName(const string& name)
+{
+	m_name = name;
 }
 
 

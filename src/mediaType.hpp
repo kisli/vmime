@@ -21,6 +21,7 @@
 #define VMIME_MEDIATYPE_HPP_INCLUDED
 
 
+#include "base.hpp"
 #include "component.hpp"
 
 
@@ -44,17 +45,46 @@ public:
 	const bool operator==(const mediaType& type) const;
 	const bool operator!=(const mediaType& type) const;
 
-	mediaType& operator=(const mediaType& type);
 	mediaType& operator=(const string& type);
 
-	const string& type() const { return (m_type); };
-	string& type() { return (m_type); }
+	mediaType* clone() const;
+	void copyFrom(const component& other);
+	mediaType& operator=(const mediaType& other);
 
-	const string& subType() const { return (m_subType); };
-	string& subType() { return (m_subType); }
+	/** Return the media type.
+	  * See the constants in vmime::mediaTypes.
+	  *
+	  * @return media type
+	  */
+	const string& getType() const;
 
-	void set(const string& type) { parse(type); }
-	void set(const string& type, const string& subType) { m_type = type; m_subType = subType; }
+	/** Set the media type.
+	  * See the constants in vmime::mediaTypes.
+	  *
+	  * @param type media type
+	  */
+	void setType(const string& type);
+
+	/** Return the media subtype.
+	  * See the constants in vmime::mediaTypes.
+	  *
+	  * @return media subtype
+	  */
+	const string& getSubType() const;
+
+	/** Set the media subtype.
+	  * See the constants in vmime::mediaTypes.
+	  *
+	  * @param subType media subtype
+	  */
+	void setSubType(const string& subType);
+
+	/** Set the media type and subtype from a string
+	  * in the form "type/subtype" (eg: "image/jpeg").
+	  *
+	  * @param type media type and subtype
+	  */
+	void setFromString(const string& type);
 
 protected:
 

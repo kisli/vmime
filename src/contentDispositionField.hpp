@@ -22,54 +22,41 @@
 
 
 #include "parameterizedHeaderField.hpp"
-#include "disposition.hpp"
+#include "genericField.hpp"
 
-#include "dateParameter.hpp"
-#include "textParameter.hpp"
+#include "disposition.hpp"
+#include "dateTime.hpp"
 
 
 namespace vmime
 {
 
 
-class contentDispositionField : public parameterizedHeaderField
+class contentDispositionField : public parameterizedHeaderField, public genericField <disposition>
 {
 	friend class headerFieldFactory::registerer <contentDispositionField>;
 
 protected:
 
 	contentDispositionField();
+	contentDispositionField(contentDispositionField&);
 
 public:
 
-	void copyFrom(const headerField& field);
+	const datetime& getCreationDate() const;
+	void setCreationDate(const datetime& creationDate);
 
-	contentDispositionField& operator=(const disposition& type);
+	const datetime& getModificationDate() const;
+	void setModificationDate(const datetime& modificationDate);
 
-	const disposition& value() const { return (m_value); }
-	disposition& value() { return (m_value); }
+	const datetime& getReadDate() const;
+	void setReadDate(const datetime& readDate);
 
-	const datetime& creationDate() const { return (dynamic_cast<const dateParameter&>(parameters.find("creation-date")).value()); }
-	datetime& creationDate() { return (dynamic_cast<dateParameter&>(parameters.get("creation-date")).value()); }
+	const string getFilename() const;
+	void setFilename(const string& filename);
 
-	const datetime& modificationDate() const { return (dynamic_cast<const dateParameter&>(parameters.find("modification-date")).value()); }
-	datetime& modificationDate() { return (dynamic_cast<dateParameter&>(parameters.get("modification-date")).value()); }
-
-	const datetime& readDate() const { return (dynamic_cast<const dateParameter&>(parameters.find("read-date")).value()); }
-	datetime& readDate() { return (dynamic_cast<dateParameter&>(parameters.get("read-date")).value()); }
-
-	const string& filename() const { return (dynamic_cast<const textParameter&>(parameters.find("filename")).value()); }
-	string& filename() { return (dynamic_cast<textParameter&>(parameters.get("filename")).value()); }
-
-	const string& size() const { return (dynamic_cast<const textParameter&>(parameters.find("size")).value()); }
-	string& size() { return (dynamic_cast<textParameter&>(parameters.get("size")).value()); }
-
-protected:
-
-	disposition m_value;
-
-	void parseValue(const string& buffer, const string::size_type position, const string::size_type end);
-	const string generateValue() const;
+	const string getSize() const;
+	void setSize(const string& size);
 };
 
 

@@ -38,26 +38,30 @@ protected:
 
 public:
 
-	defaultAttachment(const contentHandler& data, const class encoding& enc, const mediaType& type, const text& desc = NULL_TEXT);
+	defaultAttachment(const contentHandler& data, const encoding& enc, const mediaType& type, const text& desc = NULL_TEXT);
 	defaultAttachment(const contentHandler& data, const mediaType& type, const text& desc = NULL_TEXT);
 	defaultAttachment(const defaultAttachment& attach);
 
-	attachment& operator=(const attachment& attach);
+	defaultAttachment& operator=(const defaultAttachment& attach);
 
-	const mediaType& type() const { return (m_type); }
-	const text& description() const { return (m_desc); }
-	const contentHandler& data() const { return (m_data); }
-	const class encoding& encoding() const { return (m_encoding); }
+	const mediaType& getType() const;
+	const text& getDescription() const;
+	const contentHandler& getData() const;
+	const encoding& getEncoding() const;
 
 protected:
 
 	mediaType m_type;           // Media type (eg. "application/octet-stream")
 	text m_desc;                // Description (eg. "The image you requested")
 	contentHandler m_data;      // Attachment data (eg. the file contents)
-	class encoding m_encoding;  // Encoding
+	encoding m_encoding;        // Encoding
+
+private:
 
 	// No need to override "generateIn", use "generatePart" instead (see below).
 	void generateIn(bodyPart& parent) const;
+
+protected:
 
 	virtual void generatePart(bodyPart& part) const;
 };

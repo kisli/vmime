@@ -45,12 +45,13 @@ int main()
 		vmime::messageParser mp("<...MIME message content...>");
 
 		// Enumerate attachments
-		for (std::vector <vmime::attachment*>::const_iterator i = mp.attachments().begin() ;
-		     i != mp.attachments().end() ; ++i)
+		for (int i = 0 ; i < mp.getAttachmentCount() ; ++i)
 		{
-			// Media type (content type) is in "(*i).type()"
-			// Description is in "(*i).description()"
-			// Data is in "(*i).data()"
+			const vmime::attachment& att = *mp.getAttachmentAt(i);
+
+			// Media type (content type) is in "att.getType()"
+			// Description is in "att.getDescription()"
+			// Data is in "att.getData()"
 		}
 	}
 	// VMime exception

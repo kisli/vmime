@@ -31,8 +31,8 @@ namespace vmime {
 namespace messaging {
 
 
-SMTPTransport::SMTPTransport(class session& sess, class authenticator* auth)
-	: transport(sess, infosInstance(), auth), m_socket(NULL),
+SMTPTransport::SMTPTransport(session* sess, authenticator* auth)
+	: transport(sess, getInfosInstance(), auth), m_socket(NULL),
 	  m_authentified(false), m_extendedSMTP(false), m_timeoutHandler(NULL)
 {
 }
@@ -47,7 +47,7 @@ SMTPTransport::~SMTPTransport()
 }
 
 
-const string SMTPTransport::protocolName() const
+const string SMTPTransport::getProtocolName() const
 {
 	return "smtp";
 }
@@ -58,23 +58,23 @@ void SMTPTransport::connect()
 	if (isConnected())
 		throw exceptions::already_connected();
 
-	const string address = session().properties()[sm_infos.propertyPrefix() + "server.address"];
-	const port_t port = session().properties().get(sm_infos.propertyPrefix() + "server.port", sm_infos.defaultPort());
+	const string address = getSession()->getProperties()[sm_infos.getPropertyPrefix() + "server.address"];
+	const port_t port = getSession()->getProperties().getProperty(sm_infos.getPropertyPrefix() + "server.port", sm_infos.getDefaultPort());
 
 	// Create the time-out handler
-	if (session().properties().exists
-		(sm_infos.propertyPrefix() + "timeout.factory"))
+	if (getSession()->getProperties().hasProperty
+		(sm_infos.getPropertyPrefix() + "timeout.factory"))
 	{
 		timeoutHandlerFactory* tof = platformDependant::getHandler()->
-			getTimeoutHandlerFactory(session().properties()
-				[sm_infos.propertyPrefix() + "timeout.factory"]);
+			getTimeoutHandlerFactory(getSession()->getProperties()
+				[sm_infos.getPropertyPrefix() + "timeout.factory"]);
 
 		m_timeoutHandler = tof->create();
 	}
 
 	// Create and connect the socket
 	socketFactory* sf = platformDependant::getHandler()->getSocketFactory
-		(session().properties().get(sm_infos.propertyPrefix() + "server.socket-factory", string("default")));
+		(getSession()->getProperties().getProperty(sm_infos.getPropertyPrefix() + "server.socket-factory", string("default")));
 
 	m_socket = sf->create();
 	m_socket->connect(address, port);
@@ -126,8 +126,8 @@ void SMTPTransport::connect()
 	}
 
 	// Authentication
-	if (session().properties().get
-		(sm_infos.propertyPrefix() + "options.need-authentication", false) == true)
+	if (getSession()->getProperties().getProperty
+		(sm_infos.getPropertyPrefix() + "options.need-authentication", false) == true)
 	{
 		if (!m_extendedSMTP)
 		{
@@ -135,7 +135,7 @@ void SMTPTransport::connect()
 			throw exceptions::command_error("AUTH", "ESMTP not supported.");
 		}
 
-		const authenticationInfos auth = authenticator().requestAuthInfos();
+		const authenticationInfos auth = getAuthenticator()->requestAuthInfos();
 		bool authentified = false;
 
 		enum AuthMethods
@@ -169,9 +169,9 @@ void SMTPTransport::connect()
 						base64.decode(in, out);
 					}
 
-					hmac_md5(challenge, auth.password(), challengeHex);
+					hmac_md5(challenge, auth.getPassword(), challengeHex);
 
-					string decoded = auth.username() + " " + challengeHex;
+					string decoded = auth.getUsername() + " " + challengeHex;
 					string encoded;
 
 					{
@@ -259,10 +259,12 @@ void SMTPTransport::noop()
 static void extractMailboxes
 	(mailboxList& recipients, const addressList& list)
 {
-	for (addressList::const_iterator it = list.begin() ;
-	     it != list.end() ; ++it)
+	for (int i = 0 ; i < list.getAddressCount() ; ++i)
 	{
-		recipients.append((*it));
+		mailbox* mbox = dynamic_cast <mailbox*>(list.getAddressAt(i)->clone());
+
+		if (mbox != NULL)
+			recipients.appendMailbox(mbox);
 	}
 }
 
@@ -275,8 +277,8 @@ void SMTPTransport::send(vmime::message* msg, progressionListener* progress)
 	try
 	{
 		const mailboxField& from = dynamic_cast <const mailboxField&>
-			(msg->header().fields.find(headerField::From));
-		expeditor = from.value();
+			(*msg->getHeader()->findField(fields::FROM));
+		expeditor = from.getValue();
 	}
 	catch (exceptions::no_such_field&)
 	{
@@ -289,24 +291,24 @@ void SMTPTransport::send(vmime::message* msg, progressionListener* progress)
 	try
 	{
 		const addressListField& to = dynamic_cast <const addressListField&>
-			(msg->header().fields.find(headerField::To));
-		extractMailboxes(recipients, to.value());
+			(*msg->getHeader()->findField(fields::TO));
+		extractMailboxes(recipients, to.getValue());
 	}
 	catch (exceptions::no_such_field&) { }
 
 	try
 	{
 		const addressListField& cc = dynamic_cast <const addressListField&>
-			(msg->header().fields.find(headerField::Cc));
-		extractMailboxes(recipients, cc.value());
+			(*msg->getHeader()->findField(fields::CC));
+		extractMailboxes(recipients, cc.getValue());
 	}
 	catch (exceptions::no_such_field&) { }
 
 	try
 	{
 		const addressListField& bcc = dynamic_cast <const addressListField&>
-			(msg->header().fields.find(headerField::Bcc));
-		extractMailboxes(recipients, bcc.value());
+			(*msg->getHeader()->findField(fields::BCC));
+		extractMailboxes(recipients, bcc.getValue());
 	}
 	catch (exceptions::no_such_field&) { }
 
@@ -330,15 +332,15 @@ void SMTPTransport::send(const mailbox& expeditor, const mailboxList& recipients
                          progressionListener* progress)
 {
 	// If no recipient/expeditor was found, throw an exception
-	if (recipients.empty())
+	if (recipients.isEmpty())
 		throw exceptions::no_recipient();
-	else if (expeditor.empty())
+	else if (expeditor.isEmpty())
 		throw exceptions::no_expeditor();
 
 	// Emit the "MAIL" command
 	string response;
 
-	sendRequest("MAIL FROM: <" + expeditor.email() + ">");
+	sendRequest("MAIL FROM: <" + expeditor.getEmail() + ">");
 	readResponse(response);
 
 	if (responseCode(response) != 250)
@@ -348,10 +350,11 @@ void SMTPTransport::send(const mailbox& expeditor, const mailboxList& recipients
 	}
 
 	// Emit a "RCPT TO" command for each recipient
-	for (mailboxList::const_iterator it = recipients.begin() ;
-	     it != recipients.end() ; ++it)
+	for (int i = 0 ; i < recipients.getMailboxCount() ; ++i)
 	{
-		sendRequest("RCPT TO: <" + (*it).email() + ">");
+		const mailbox& mbox = *recipients.getMailboxAt(i);
+
+		sendRequest("RCPT TO: <" + mbox.getEmail() + ">");
 		readResponse(response);
 
 		if (responseCode(response) != 250)
@@ -538,19 +541,31 @@ void SMTPTransport::readResponse(string& buffer)
 SMTPTransport::_infos SMTPTransport::sm_infos;
 
 
-const port_t SMTPTransport::_infos::defaultPort() const
+const serviceInfos& SMTPTransport::getInfosInstance()
+{
+	return (sm_infos);
+}
+
+
+const serviceInfos& SMTPTransport::getInfos() const
+{
+	return (sm_infos);
+}
+
+
+const port_t SMTPTransport::_infos::getDefaultPort() const
 {
 	return (25);
 }
 
 
-const string SMTPTransport::_infos::propertyPrefix() const
+const string SMTPTransport::_infos::getPropertyPrefix() const
 {
 	return "transport.smtp.";
 }
 
 
-const std::vector <string> SMTPTransport::_infos::availableProperties() const
+const std::vector <string> SMTPTransport::_infos::getAvailableProperties() const
 {
 	std::vector <string> list;
 

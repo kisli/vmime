@@ -49,35 +49,130 @@ public:
 
 public:
 
-	// Expeditor and recipients
-	const mailbox& expeditor() const { return (m_from); }
-	mailbox& expeditor() { return (m_from); }
+	/** Return the expeditor of the message (From:).
+	  *
+	  * @return expeditor of the message
+	  */
+	const mailbox& getExpeditor() const;
 
-	const addressList& recipients() const { return (m_to); }
-	addressList& recipients() { return (m_to); }
+	/** Set the expeditor of the message (From:).
+	  *
+	  * @param expeditor expeditor of the message
+	  */
+	void setExpeditor(const mailbox& expeditor);
 
-	const addressList& copyRecipients() const { return (m_cc); }
-	addressList& copyRecipients() { return (m_cc); }
+	/** Return the recipients of the message (To:).
+	  *
+	  * return recipients of the message
+	  */
+	const addressList& getRecipients() const;
 
-	const addressList& blindCopyRecipients() const { return (m_bcc); }
-	addressList& blindCopyRecipients() { return (m_bcc); }
+	/** Set the recipients of the message (To:).
+	  *
+	  * @param recipients list of recipients
+	  */
+	void setRecipients(const addressList& recipients);
 
-	// Subject
-	const text& subject() const { return (m_subject); }
-	text& subject() { return (m_subject); }
+	/** Return the copy recipients of the message (Cc:).
+	  *
+	  * @return copy recipients of the message
+	  */
+	const addressList& getCopyRecipients() const;
 
-	// Attachements
+	/** Set the copy recipients of the message (Cc:).
+	  *
+	  * @param cc list of copy recipients
+	  */
+	void setCopyRecipients(const addressList& cc);
+
+	/** Return the blind-copy recipients of the message (Bcc:).
+	  *
+	  * @return blind-copy recipients of the message
+	  */
+	const addressList& getBlindCopyRecipients() const;
+
+	/** Set the blind-copy recipients of the message (Bcc:).
+	  *
+	  * @param bcc list of blind-copy recipients
+	  */
+	void setBlindCopyRecipients(const addressList& bcc);
+
+	/** Return the subject of the message.
+	  *
+	  * @return subject of the message
+	  */
+	const text& getSubject() const;
+
+	/** Set the subject of the message.
+	  *
+	  * @param subject message subject
+	  */
+	void setSubject(const text& subject);
+
+	/** Attach a new object to the message.
+	  *
+	  * @param attach new attachment
+	  */
 	void attach(attachment* attach);
-	const std::vector <attachment*>& attachments() const { return (m_attach); }
 
-	// Text parts
+	/** Remove the attachment at the specified position.
+	  *
+	  * @param pos position of the attachment to remove
+	  */
+	void removeAttachment(const int pos);
+
+	/** Return the attachment at the specified position.
+	  *
+	  * @param pos position of the attachment
+	  * @return attachment at the specified position
+	  */
+	const attachment* getAttachmentAt(const int pos) const;
+
+	/** Return the attachment at the specified position.
+	  *
+	  * @param pos position of the attachment
+	  * @return attachment at the specified position
+	  */
+	attachment* getAttachmentAt(const int pos);
+
+	/** Return the number of attachments in the message.
+	  *
+	  * @return number of attachments
+	  */
+	const int getAttachmentCount() const;
+
+	/** Return the list of attachments.
+	  *
+	  * @return list of attachments
+	  */
+	const std::vector <const attachment*> getAttachmentList() const;
+
+	/** Return the list of attachments.
+	  *
+	  * @return list of attachments
+	  */
+	const std::vector <attachment*> getAttachmentList();
+
+	/** Change the type of the text part and construct a new part.
+	  *
+	  * @param type media type of the text part
+	  */
 	void constructTextPart(const mediaType& type);
-	class textPart& textPart();
 
-	// Construction
+	/** Return the text part of the message.
+	  *
+	  * @return text part of the message
+	  */
+	textPart* getTextPart();
+
+	/** Construct a new message based on the information specified
+	  * in this object.
+	  *
+	  * @return a new message
+	  */
 	message* construct() const;
 
-protected:
+private:
 
 	mailbox m_from;
 
@@ -87,7 +182,7 @@ protected:
 
 	text m_subject;
 
-	class textPart* m_textPart;
+	textPart* m_textPart;
 
 	std::vector <attachment*> m_attach;
 };

@@ -110,7 +110,7 @@ const string IMAPUtils::pathToString
 {
 	string result;
 
-	for (int i = 0 ; i < path.size() ; ++i)
+	for (int i = 0 ; i < path.getSize() ; ++i)
 	{
 		if (i > 0) result += hierarchySeparator;
 		result += toModifiedUTF7(hierarchySeparator, path[i]);
@@ -497,8 +497,8 @@ const string IMAPUtils::dateTime(const vmime::datetime& date)
 	res << '"';
 
 	// Date
-	if (date.day() < 10) res << ' ';
-	res << date.day();
+	if (date.getDay() < 10) res << ' ';
+	res << date.getDay();
 
 	res << '-';
 
@@ -506,33 +506,33 @@ const string IMAPUtils::dateTime(const vmime::datetime& date)
 		{ "Jan", "Feb", "Mar", "Apr", "May", "Jun",
 		  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 
-	res << monthNames[std::min(std::max(date.month() - 1, 0), 11)];
+	res << monthNames[std::min(std::max(date.getMonth() - 1, 0), 11)];
 
 	res << '-';
 
-	if (date.year() < 10) res << '0';
-	if (date.year() < 100) res << '0';
-	if (date.year() < 1000) res << '0';
-	res << date.year();
+	if (date.getYear() < 10) res << '0';
+	if (date.getYear() < 100) res << '0';
+	if (date.getYear() < 1000) res << '0';
+	res << date.getYear();
 
 	res << ' ';
 
 	// Time
-	if (date.hour() < 10) res << '0';
-	res << date.hour() << ':';
+	if (date.getHour() < 10) res << '0';
+	res << date.getHour() << ':';
 
-	if (date.minute() < 10) res << '0';
-	res << date.minute() << ':';
+	if (date.getMinute() < 10) res << '0';
+	res << date.getMinute() << ':';
 
-	if (date.second() < 10) res << '0';
-	res << date.second();
+	if (date.getSecond() < 10) res << '0';
+	res << date.getSecond();
 
 	res << ' ';
 
 	// Zone
-	const int zs = (date.zone() < 0 ? -1 : 1);
-	const int zh = (date.zone() * zs) / 60;
-	const int zm = (date.zone() * zs) % 60;
+	const int zs = (date.getZone() < 0 ? -1 : 1);
+	const int zh = (date.getZone() * zs) / 60;
+	const int zm = (date.getZone() * zs) % 60;
 
 	res << (zs < 0 ? '-' : '+');
 

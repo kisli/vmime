@@ -35,31 +35,31 @@ encoder::~encoder()
 }
 
 
-const propertySet& encoder::properties() const
+const propertySet& encoder::getProperties() const
 {
 	return (m_props);
 }
 
 
-propertySet& encoder::properties()
+propertySet& encoder::getProperties()
 {
 	return (m_props);
 }
 
 
-const propertySet& encoder::results() const
+const propertySet& encoder::getResults() const
 {
 	return (m_results);
 }
 
 
-propertySet& encoder::results()
+propertySet& encoder::getResults()
 {
 	return (m_results);
 }
 
 
-const std::vector <string> encoder::availableProperties() const
+const std::vector <string> encoder::getAvailableProperties() const
 {
 	std::vector <string> list;
 	return (list);

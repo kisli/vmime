@@ -45,6 +45,8 @@ public:
 };
 
 
+/** List of all VMime exceptions. */
+
 namespace exceptions
 {
 
@@ -92,6 +94,33 @@ public:
 
 	no_such_field() : exception("Field not found.") {}
 	~no_such_field() throw() {}
+};
+
+
+class no_such_part : public vmime::exception
+{
+public:
+
+	no_such_part() : exception("Part not found.") {}
+	~no_such_part() throw() {}
+};
+
+
+class no_such_mailbox : public vmime::exception
+{
+public:
+
+	no_such_mailbox() : exception("Mailbox not found.") {}
+	~no_such_mailbox() throw() {}
+};
+
+
+class no_such_address : public vmime::exception
+{
+public:
+
+	no_such_address() : exception("Address not found.") {}
+	~no_such_address() throw() {}
 };
 
 

@@ -32,6 +32,9 @@ namespace vmime
 {
 
 
+/** Text part of type 'text/html'.
+  */
+
 class htmlTextPart : public textPart
 {
 protected:
@@ -40,127 +43,128 @@ protected:
 
 public:
 
-	const mediaType type() const;
+	const mediaType getType() const;
 
-	const vmime::charset& charset() const { return (m_charset); }
-	vmime::charset& charset() { return (m_charset); }
+	const charset& getCharset() const;
+	void setCharset(const charset& ch);
 
-	const contentHandler& plainText() const { return (m_plainText); }
-	contentHandler& plainText() { return (m_plainText); }
+	const contentHandler& getPlainText() const;
+	void setPlainText(const contentHandler& plainText);
 
-	const contentHandler& text() const { return (m_text); }
-	contentHandler& text() { return (m_text); }
+	const contentHandler& getText() const;
+	void setText(const contentHandler& text);
 
-	// Embedded object (eg. image for <IMG> tag)
+	/** Embedded object (eg: image for <IMG> tag).
+	  */
 	class embeddedObject
 	{
 	public:
 
-		embeddedObject(const contentHandler& data, const vmime::encoding& enc,
-		               const string& id, const mediaType& type)
-			: m_data(data), m_encoding(enc), m_id(id), m_type(type)
-		{
-		}
+		embeddedObject(const contentHandler& data, const encoding& enc,
+		               const string& id, const mediaType& type);
 
-	public:
+		/** Return data stored in this embedded object.
+		  *
+		  * @return stored data
+		  */
+		const contentHandler& getData() const;
 
-		const contentHandler& data() const { return (m_data); }
-		const vmime::encoding& encoding() const { return (m_encoding); }
-		const string& id() const { return (m_id); }
-		const mediaType& type() const { return (m_type); }
+		/** Return the encoding used for data in this
+		  * embedded object.
+		  *
+		  * @return data encoding
+		  */
+		const vmime::encoding& getEncoding() const;
+
+		/** Return the identifier of this embedded object.
+		  *
+		  * @return object identifier
+		  */
+		const string& getId() const;
+
+		/** Return the content type of data stored in
+		  * this embedded object.
+		  *
+		  * @return data type
+		  */
+		const mediaType& getType() const;
 
 	private:
 
 		contentHandler m_data;
-		vmime::encoding m_encoding;
+		encoding m_encoding;
 		string m_id;
 		mediaType m_type;
 	};
 
-	// Embedded objects container
-	class embeddedObjectsContainer
-	{
-		friend class htmlTextPart;
 
-	protected:
+	/** Test the existence of an embedded object given its identifier.
+	  *
+	  * @param id object identifier
+	  * @return true if an object with this identifier exists,
+	  * false otherwise
+	  */
+	const bool hasObject(const string& id) const;
 
-		~embeddedObjectsContainer();
+	/** Return the embedded object with the specified identifier.
+	  *
+	  * @throw exceptions::no_object_found() if no object has been found
+	  * @param id object identifier
+	  * @return embedded object with the specified identifier
+	  */
+	const embeddedObject* findObject(const string& id) const;
 
-	public:
+	/** Return the number of embedded objects.
+	  *
+	  * @return number of embedded objects
+	  */
+	const int getObjectCount() const;
 
-		// Test the existence/get an embedded object given its identifier.
-		const bool has(const string& id) const;
-		const embeddedObject& find(const string& id) const;
+	/** Return the embedded object at the specified position.
+	  *
+	  * @param pos position of the embedded object
+	  * @return embedded object at position 'pos'
+	  */
+	const embeddedObject* getObjectAt(const int pos) const;
 
-		// Embed an object and returns a string which identifies it.
-		const string add(const string& data, const mediaType& type);
-		const string add(const contentHandler& data, const mediaType& type);
-		const string add(const contentHandler& data, const encoding& enc, const mediaType& type);
+	/** Embed an object and returns a string which identifies it.
+	  *
+	  * \deprecated Use the addObject() methods which take a 'contentHandler'
+	  * parameter type instead.
+	  *
+	  * @param data object data
+	  * @param type data type
+	  * @return an unique object identifier used to identify the new
+	  * object among all other embedded objects
+	  */
+	const string addObject(const string& data, const mediaType& type);
 
-		// Embedded objects enumerator
-		class const_iterator
-		{
-		public:
+	/** Embed an object and returns a string which identifies it.
+	  *
+	  * @param data object data
+	  * @param type data type
+	  * @return an unique object identifier used to identify the new
+	  * object among all other embedded objects
+	  */
+	const string addObject(const contentHandler& data, const mediaType& type);
 
-			typedef std::vector <embeddedObject*>::const_iterator::difference_type difference_type;
+	/** Embed an object and returns a string which identifies it.
+	  *
+	  * @param data object data
+	  * @param enc data encoding
+	  * @param type data type
+	  * @return an unique object identifier used to identify the new
+	  * object among all other embedded objects
+	  */
+	const string addObject(const contentHandler& data, const encoding& enc, const mediaType& type);
 
-			const_iterator(std::vector <embeddedObject*>::const_iterator it) : m_iterator(it) { }
-			const_iterator(const const_iterator& it) : m_iterator(it.m_iterator) { }
-
-			const_iterator& operator=(const const_iterator& it) { m_iterator = it.m_iterator; return (*this); }
-
-			const embeddedObject& operator*() const { return (**m_iterator); }
-			const embeddedObject* operator->() const { return (*m_iterator); }
-
-			const_iterator& operator++() { ++m_iterator; return (*this); }
-			const_iterator operator++(int) { const_iterator i(*this); ++m_iterator; return (i); }
-
-			const_iterator& operator--() { --m_iterator; return (*this); }
-			const_iterator operator--(int) { const_iterator i(*this); --m_iterator; return (i); }
-
-			const_iterator& operator+=(difference_type n) { m_iterator += n; return (*this); }
-			const_iterator& operator-=(difference_type n) { m_iterator -= n; return (*this); }
-
-			const_iterator operator-(difference_type x) const { return const_iterator(m_iterator - x); }
-
-			const embeddedObject& operator[](difference_type n) const { return *(m_iterator[n]); }
-
-			const bool operator==(const const_iterator& it) const { return (it.m_iterator == m_iterator); }
-			const bool operator!=(const const_iterator& it) const { return (!(*this == it)); }
-
-		protected:
-
-			std::vector <embeddedObject*>::const_iterator m_iterator;
-		};
-
-	public:
-
-		const_iterator begin() const { return (const_iterator(m_list.begin())); }
-		const_iterator end() const { return (const_iterator(m_list.end())); }
-
-		// Object count
-		const std::vector <embeddedObject*>::size_type count() const { return (m_list.size()); }
-		const std::vector <embeddedObject*>::size_type size() const { return (m_list.size()); }
-		const bool empty() const { return (m_list.empty()); }
-
-		embeddedObject& front() { return (*m_list.front()); }
-		const embeddedObject& front() const { return (*m_list.front()); }
-		embeddedObject& back() { return (*m_list.back()); }
-		const embeddedObject& back() const { return (*m_list.back()); }
-
-	protected:
-
-		std::vector <embeddedObject*> m_list;
-
-	} embeddedObjects;
-
-	typedef embeddedObjectsContainer::const_iterator const_iterator;
-
-protected:
+private:
 
 	contentHandler m_plainText;
 	contentHandler m_text;
-	vmime::charset m_charset;
+	charset m_charset;
+
+	std::vector <embeddedObject*> m_objects;
 
 	void findEmbeddedParts(const bodyPart& part, std::vector <const bodyPart*>& cidParts, std::vector <const bodyPart*>& locParts);
 	void addEmbeddedObject(const bodyPart& part, const string& id);
@@ -170,7 +174,7 @@ protected:
 	const int getPartCount() const;
 
 	void generateIn(bodyPart& message, bodyPart& parent) const;
-	virtual void parse(const bodyPart& message, const bodyPart& parent, const bodyPart& textPart);
+	void parse(const bodyPart& message, const bodyPart& parent, const bodyPart& textPart);
 };
 
 

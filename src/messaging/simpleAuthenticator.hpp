@@ -37,11 +37,11 @@ public:
 
 public:
 
-	const string& username() const { return (m_username); }
-	string& username() { return (m_username); }
+	const string& getUsername() const;
+	void setUsername(const string& username);
 
-	const string& password() const { return (m_password); }
-	string& password() { return (m_password); }
+	const string& getPassword() const;
+	void setPassword(const string& password);
 
 private:
 

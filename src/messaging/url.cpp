@@ -131,7 +131,7 @@ void url::parse(const string& str)
 	if (protoEnd == string::npos) throw exceptions::malformed_url("No protocol separator");
 
 	const string proto =
-		toLower(string(str.begin(), str.begin() + protoEnd));
+		stringUtils::toLower(string(str.begin(), str.begin() + protoEnd));
 
 	// Username/password
 	string::size_type slashPos = str.find('/', protoEnd + 3);
@@ -219,6 +219,78 @@ void url::parse(const string& str)
 	m_port = portNum;
 
 	m_path = urlUtils::decode(path);
+}
+
+
+const string& url::getProtocol() const
+{
+	return (m_protocol);
+}
+
+
+void url::setProtocol(const string& protocol)
+{
+	m_protocol = protocol;
+}
+
+
+const string& url::getUsername() const
+{
+	return (m_username);
+}
+
+
+void url::setUsername(const string& username)
+{
+	m_username = username;
+}
+
+
+const string& url::getPassword() const
+{
+	return (m_password);
+}
+
+
+void url::setPassword(const string& password)
+{
+	m_password = password;
+}
+
+
+const string& url::getHost() const
+{
+	return (m_host);
+}
+
+
+void url::setHost(const string& host)
+{
+	m_host = host;
+}
+
+
+const port_t url::getPort() const
+{
+	return (m_port);
+}
+
+
+void url::setPort(const port_t port)
+{
+	m_port = port;
+}
+
+
+const string& url::getPath() const
+{
+	return (m_path);
+}
+
+
+void url::setPath(const string& path)
+{
+	m_path = path;
 }
 
 

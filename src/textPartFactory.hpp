@@ -61,7 +61,7 @@ public:
 	template <class T>
 	void registerType(const mediaType& type)
 	{
-		m_nameMap.insert(NameMap::value_type(toLower(type.generate()), &registerer<T>::creator));
+		m_nameMap.insert(NameMap::value_type(type.generate(), &registerer<T>::creator));
 	}
 
 	textPart* create(const mediaType& type);

@@ -46,24 +46,58 @@ encoderFactory::encoderFactory()
 
 encoderFactory::~encoderFactory()
 {
-	for (NameMap::iterator it = m_nameMap.begin() ; it != m_nameMap.end() ; ++it)
-		delete ((*it).second);
+	for (std::vector <registeredEncoder*>::const_iterator it = m_encoders.begin() ;
+	     it != m_encoders.end() ; ++it)
+	{
+		delete (*it);
+	}
 }
 
 
 encoder* encoderFactory::create(const string& name)
 {
-	NameMap::const_iterator pos = m_nameMap.find(toLower(name));
+	return (getEncoderByName(name)->create());
+}
 
-	if (pos != m_nameMap.end())
+
+const encoderFactory::registeredEncoder* encoderFactory::getEncoderByName(const string& name) const
+{
+	const string lcName(stringUtils::toLower(name));
+
+	for (std::vector <registeredEncoder*>::const_iterator it = m_encoders.begin() ;
+	     it != m_encoders.end() ; ++it)
 	{
-		return ((*pos).second)->create();
+		if ((*it)->getName() == lcName)
+			return (*it);
 	}
-	else
+
+	throw exceptions::no_encoder_available();
+}
+
+
+const int encoderFactory::getEncoderCount() const
+{
+	return (m_encoders.size());
+}
+
+
+const encoderFactory::registeredEncoder* encoderFactory::getEncoderAt(const int pos) const
+{
+	return (m_encoders[pos]);
+}
+
+
+const std::vector <const encoderFactory::registeredEncoder*> encoderFactory::getEncoderList() const
+{
+	std::vector <const registeredEncoder*> res;
+
+	for (std::vector <registeredEncoder*>::const_iterator it = m_encoders.begin() ;
+	     it != m_encoders.end() ; ++it)
 	{
-		throw exceptions::no_encoder_available();
-		return (NULL);
+		res.push_back(*it);
 	}
+
+	return (res);
 }
 
 

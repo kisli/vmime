@@ -39,13 +39,37 @@ public:
 	word();
 	word(const word& w);
 	word(const string& buffer); // Defaults to locale charset
-	word(const string& buffer, const class charset& charset);
+	word(const string& buffer, const charset& charset);
 
-	const string& buffer() const { return (m_buffer); }
-	string& buffer() { return (m_buffer); }
+	/** Return the raw data for this encoded word.
+	  *
+	  * @return raw data buffer
+	  */
+	const string& getBuffer() const;
 
-	const class charset& charset() const { return (m_charset); }
-	class charset& charset() { return (m_charset); }
+	/** Return the raw data for this encoded word.
+	  *
+	  * @return raw data buffer
+	  */
+	string& getBuffer();
+
+	/** Set the raw data for this encoded word.
+	  *
+	  * @param buffer raw data buffer
+	  */
+	void setBuffer(const string& buffer);
+
+	/** Return the charset of this word.
+	  *
+	  * @return charset for this word
+	  */
+	const charset& getCharset() const;
+
+	/** Set the charset of this word.
+	  *
+	  * @param ch charset of this word
+	  */
+	void setCharset(const charset& ch);
 
 
 	word& operator=(const word& w);
@@ -57,14 +81,32 @@ public:
 #if VMIME_WIDE_CHAR_SUPPORT
 	const wstring getDecodedText() const;
 #endif
-	const string getConvertedText(const class charset& dest) const;
 
-protected:
+	/** Return the contained text converted to the specified charset.
+	  *
+	  * @param dest output charset
+	  * @return word converted to the specified charset
+	  */
+	const string getConvertedText(const charset& dest) const;
+
+	/** Replace data in this word by data in other word.
+	  *
+	  * @param other other word to copy data from
+	  */
+	void copyFrom(const word& other);
+
+	/** Clone this word.
+	  *
+	  * @return a copy of this word
+	  */
+	word* clone() const;
+
+private:
 
 	// The "m_buffer" of this word holds the data, and this data is encoded
 	// in the specified "m_charset".
 	string m_buffer;
-	class charset m_charset;
+	charset m_charset;
 };
 
 

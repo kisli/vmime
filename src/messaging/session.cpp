@@ -52,9 +52,9 @@ transport* session::getTransport(authenticator* auth)
 
 transport* session::getTransport(const string& protocol, authenticator* auth)
 {
-	service* sv = serviceFactory::getInstance()->create(*this, protocol, auth);
+	service* sv = serviceFactory::getInstance()->create(this, protocol, auth);
 
-	if (sv->type() != service::TYPE_TRANSPORT)
+	if (sv->getType() != service::TYPE_TRANSPORT)
 	{
 		delete (sv);
 		throw exceptions::no_service_available();
@@ -72,15 +72,27 @@ store* session::getStore(authenticator* auth)
 
 store* session::getStore(const string& protocol, authenticator* auth)
 {
-	service* sv = serviceFactory::getInstance()->create(*this, protocol, auth);
+	service* sv = serviceFactory::getInstance()->create(this, protocol, auth);
 
-	if (sv->type() != service::TYPE_STORE)
+	if (sv->getType() != service::TYPE_STORE)
 	{
 		delete (sv);
 		throw exceptions::no_service_available();
 	}
 
 	return static_cast<store*>(sv);
+}
+
+
+const propertySet& session::getProperties() const
+{
+	return (m_props);
+}
+
+
+propertySet& session::getProperties()
+{
+	return (m_props);
 }
 
 

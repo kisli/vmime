@@ -37,7 +37,7 @@ class store : public service
 {
 protected:
 
-	store(class session& sess, const serviceInfos& infos, class authenticator* auth)
+	store(session* sess, const serviceInfos& infos, authenticator* auth)
 		: service(sess, infos, auth) { }
 
 public:
@@ -64,7 +64,7 @@ public:
 	virtual folder* getFolder(const folder::path& path) = 0;
 
 
-	const Type type() const { return (TYPE_STORE); }
+	const Type getType() const { return (TYPE_STORE); }
 };
 
 

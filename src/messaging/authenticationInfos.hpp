@@ -42,13 +42,13 @@ public:
 	  *
 	  * @return account name
 	  */
-	const string& username() const { return (m_username); }
+	const string& getUsername() const;
 
 	/** Return the user account password.
 	  *
 	  * @return account password
 	  */
-	const string& password() const { return (m_password); }
+	const string& getPassword() const;
 
 private:
 

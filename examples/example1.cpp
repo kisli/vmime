@@ -45,14 +45,24 @@ int main()
 		vmime::messageBuilder mb;
 
 		// Fill in the basic fields
-		mb.expeditor() = vmime::mailbox("me@somewhere.com");
-		mb.recipients().append(vmime::mailbox("you@elsewhere.com"));
-		mb.blindCopyRecipients().append(vmime::mailbox("you-bcc@nowhere.com"));
-		mb.subject() = vmime::text("My first message generated with vmime::messageBuilder");
+		mb.setExpeditor(vmime::mailbox("me@somewhere.com"));
+
+		vmime::addressList to;
+		to.appendAddress(new vmime::mailbox("you@elsewhere.com"));
+
+		mb.setRecipients(to);
+
+		vmime::addressList bcc;
+		bcc.appendAddress(new vmime::mailbox("you-bcc@nowhere.com"));
+
+		mb.setBlindCopyRecipients(bcc);
+
+		mb.setSubject(vmime::text("My first message generated with vmime::messageBuilder"));
 
 		// Message body
-		mb.textPart().text() = "I'm writing this short text to test message construction " \
-			"using the vmime::messageBuilder component.";
+		mb.getTextPart()->setText(vmime::contentHandler(
+			"I'm writing this short text to test message construction " \
+			"using the vmime::messageBuilder component."));
 
 		// Construction
 		vmime::message* msg = mb.construct();
@@ -61,7 +71,7 @@ int main()
 		std::cout << "Generated message:" << std::endl;
 		std::cout << "==================" << std::endl;
 
-		vmime::outputStreamAdapter out(std::cout);
+		vmime::utility::outputStreamAdapter out(std::cout);
 		msg->generate(out);
 
 		// Destruction
@@ -77,7 +87,7 @@ int main()
 	catch (std::exception& e)
 	{
 		std::cout << "std::exception: " << e.what() << std::endl;
-		throw;
+		//throw;
 	}
 
 	std::cout << std::endl;

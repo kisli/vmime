@@ -28,7 +28,7 @@
 
 namespace vmime
 {
-	// Media types (predefined types)
+	/** Constants for media types. */
 	namespace mediaTypes
 	{
 		// Types
@@ -67,7 +67,7 @@ namespace vmime
 	}
 
 
-	// Encoding types
+	/** Constants for encoding types. */
 	namespace encodingTypes
 	{
 		extern const string::value_type* const SEVEN_BIT;
@@ -79,7 +79,7 @@ namespace vmime
 	}
 
 
-	// Disposition types (RFC-2183)
+	/** Constants for disposition types (RFC-2183). */
 	namespace dispositionTypes
 	{
 		extern const string::value_type* const INLINE;
@@ -87,7 +87,7 @@ namespace vmime
 	}
 
 
-	// Charsets
+	/** Constants for charsets. */
 	namespace charsets
 	{
 		extern const string::value_type* const ISO8859_1;
@@ -149,6 +149,35 @@ namespace vmime
 		extern const string::value_type* const WINDOWS_1256;
 		extern const string::value_type* const WINDOWS_1257;
 		extern const string::value_type* const WINDOWS_1258;
+	}
+
+	/** Constants for standard field names. */
+	namespace fields
+	{
+		extern const string::value_type* const RECEIVED;
+		extern const string::value_type* const FROM;
+		extern const string::value_type* const SENDER;
+		extern const string::value_type* const REPLY_TO;
+		extern const string::value_type* const TO;
+		extern const string::value_type* const CC;
+		extern const string::value_type* const BCC;
+		extern const string::value_type* const DATE;
+		extern const string::value_type* const SUBJECT;
+		extern const string::value_type* const ORGANIZATION;
+		extern const string::value_type* const USER_AGENT;
+		extern const string::value_type* const DELIVERED_TO;
+		extern const string::value_type* const RETURN_PATH;
+		extern const string::value_type* const MIME_VERSION;
+		extern const string::value_type* const MESSAGE_ID;
+		extern const string::value_type* const CONTENT_TYPE;
+		extern const string::value_type* const CONTENT_TRANSFER_ENCODING;
+		extern const string::value_type* const CONTENT_DESCRIPTION;
+		extern const string::value_type* const CONTENT_DISPOSITION;
+		extern const string::value_type* const CONTENT_ID;
+		extern const string::value_type* const CONTENT_LOCATION;
+
+		extern const string::value_type* const X_MAILER;
+		extern const string::value_type* const X_PRIORITY;
 	}
 }
 

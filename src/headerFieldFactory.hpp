@@ -23,6 +23,7 @@
 
 #include "headerField.hpp"
 #include "utility/singleton.hpp"
+#include "utility/stringUtils.hpp"
 
 
 namespace vmime
@@ -40,10 +41,8 @@ protected:
 
 	typedef headerField* (*AllocFunc)(void);
 	typedef std::map <string, AllocFunc> NameMap;
-	typedef std::map <headerField::Types, AllocFunc> TypeMap;
 
 	NameMap m_nameMap;
-	TypeMap m_typeMap;
 
 public:
 
@@ -63,19 +62,10 @@ public:
 	template <class T>
 	void registerName(const string& name)
 	{
-		m_nameMap.insert(NameMap::value_type(toLower(name), &registerer<T>::creator));
+		m_nameMap.insert(NameMap::value_type(stringUtils::toLower(name), &registerer<T>::creator));
 	}
 
 	headerField* create(const string& name, const string& body = NULL_STRING);
-	headerField* create(const headerField::Types type, const string& name = NULL_STRING, const string& body = NULL_STRING);
-
-protected:
-
-	template <class T>
-	void registerType(const headerField::Types type)
-	{
-		m_typeMap.insert(TypeMap::value_type(type, &registerer<T>::creator));
-	}
 };
 
 

@@ -27,15 +27,15 @@ namespace vmime
 
 encoderUUE::encoderUUE()
 {
-	properties()["mode"] = 644;
-	properties()["filename"] = "no_name";
-	properties()["maxlinelength"] = 46;
+	getProperties()["mode"] = 644;
+	getProperties()["filename"] = "no_name";
+	getProperties()["maxlinelength"] = 46;
 }
 
 
-const std::vector <string> encoderUUE::availableProperties() const
+const std::vector <string> encoderUUE::getAvailableProperties() const
 {
-	std::vector <string> list(encoder::availableProperties());
+	std::vector <string> list(encoder::getAvailableProperties());
 
 	list.push_back("maxlinelength");
 
@@ -63,11 +63,11 @@ const utility::stream::size_type encoderUUE::encode(utility::inputStream& in, ut
 {
 	in.reset();  // may not work...
 
-	const string propFilename = properties().get <string>("filename", "");
-	const string propMode = properties().get <string>("mode", "644");
+	const string propFilename = getProperties().getProperty <string>("filename", "");
+	const string propMode = getProperties().getProperty <string>("mode", "644");
 
 	const string::size_type maxLineLength =
-		std::min(properties().get <string::size_type>("maxlinelength", 46),
+		std::min(getProperties().getProperty <string::size_type>("maxlinelength", 46),
 		         static_cast <string::size_type>(46));
 
 	utility::stream::size_type total = 0;
@@ -206,7 +206,7 @@ const utility::stream::size_type encoderUUE::decode(utility::inputStream& in, ut
 
 					while (*p && !isspace(*p)) ++p;
 
-					results()["mode"] = string(modeStart, p);
+					getResults()["mode"] = string(modeStart, p);
 
 					while (*p && isspace(*p)) ++p;
 
@@ -214,13 +214,13 @@ const utility::stream::size_type encoderUUE::decode(utility::inputStream& in, ut
 
 					while (*p && !(*p == '\r' || *p == '\n')) ++p;
 
-					results()["filename"] = string(filenameStart, p);
+					getResults()["filename"] = string(filenameStart, p);
 				}
 				// No filename or mode specified
 				else
 				{
-					results()["filename"] = "untitled";
-					results()["mode"] = 644;
+					getResults()["filename"] = "untitled";
+					getResults()["mode"] = 644;
 				}
 
 				continue;

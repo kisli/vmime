@@ -34,9 +34,116 @@ parameter* parameter::clone() const
 }
 
 
-void parameter::copyFrom(const parameter& param)
+void parameter::copyFrom(const component& other)
 {
+	const parameter& param = dynamic_cast <const parameter&>(other);
+
 	m_name = param.m_name;
+
+	getValue().copyFrom(param.getValue());
+}
+
+
+parameter& parameter::operator=(const parameter& other)
+{
+	copyFrom(other);
+	return (*this);
+}
+
+
+const string& parameter::getName() const
+{
+	return (m_name);
+}
+
+
+void parameter::parse(const string& buffer, const string::size_type position,
+	const string::size_type end, string::size_type* newPosition)
+{
+	getValue().parse(buffer, position, end, newPosition);
+}
+
+
+void parameter::generate(utility::outputStream& os, const string::size_type maxLineLength,
+	const string::size_type curLinePos, string::size_type* newLinePos) const
+{
+	string::size_type pos = curLinePos;
+
+	if (pos + m_name.length() + 10 > maxLineLength)
+	{
+		os << NEW_LINE_SEQUENCE;
+		pos = NEW_LINE_SEQUENCE_LENGTH;
+	}
+
+	os << m_name << "=";
+	pos += m_name.length() + 1;
+
+	generateValue(os, maxLineLength, pos, newLinePos);
+}
+
+
+void parameter::generateValue(utility::outputStream& os, const string::size_type /* maxLineLength */,
+	const string::size_type curLinePos, string::size_type* newLinePos) const
+{
+	std::ostringstream valueStream;
+	utility::outputStreamAdapter valueStreamV(valueStream);
+
+	// TODO: can we imagine having values that span on multiple lines?
+	getValue().generate(valueStreamV, lineLengthLimits::infinite, 0, NULL);
+
+	const string value(valueStream.str());
+
+	std::ostringstream ss;
+	string::const_iterator start = value.begin();
+	bool quoted = false;
+
+	for (string::const_iterator i = value.begin() ; i != value.end() ; ++i)
+	{
+		switch (*i)
+		{
+		// Characters that need to be quoted _and_ escaped
+		case '"':
+		case '\\':
+
+			ss << string(start, i) << "\\" << *i;
+
+			start = i + 1;
+			quoted = true;
+
+			break;
+
+		// Other characters that need quoting
+		case ' ':
+		case '\t':
+		case '(':
+		case ')':
+		case '<':
+		case '>':
+		case '@':
+		case ',':
+		case ';':
+		case ':':
+		case '/':
+		case '[':
+		case ']':
+		case '?':
+		case '=':
+
+			quoted = true;
+			break;
+		}
+	}
+
+	if (start != value.end())
+		ss << string(start, value.end());
+
+	if (quoted)
+		os << "\"" << ss.str() << "\"";
+	else
+		os << ss.str();
+
+	if (newLinePos)
+		*newLinePos = curLinePos + ss.str().length() + 2;
 }
 
 

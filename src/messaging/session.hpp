@@ -94,11 +94,11 @@ public:
 
 	/** Properties for the session and for the services.
 	  */
-	const propertySet& properties() const { return (m_props); }
+	const propertySet& getProperties() const;
 
 	/** Properties for the session and for the services.
 	  */
-	propertySet& properties() { return (m_props); }
+	propertySet& getProperties();
 
 private:
 

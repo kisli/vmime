@@ -39,7 +39,7 @@ class maildirMessage : public message
 {
 	friend class maildirFolder;
 
-protected:
+private:
 
 	maildirMessage(maildirFolder* folder, const int num);
 	maildirMessage(const maildirMessage&) : message() { }
@@ -48,26 +48,35 @@ protected:
 
 public:
 
-	const int number() const;
+	const int getNumber() const;
 
-	const uid uniqueId() const;
+	const uid getUniqueId() const;
 
-	const int size() const;
+	const int getSize() const;
 
 	const bool isExpunged() const;
 
-	const class structure& structure() const;
-	class structure& structure();
+	const structure& getStructure() const;
+	structure& getStructure();
 
-	const class header& header() const;
+	const header& getHeader() const;
 
-	const int flags() const;
+	const int getFlags() const;
 	void setFlags(const int flags, const int mode = FLAG_MODE_SET);
 
 	void extract(utility::outputStream& os, progressionListener* progress = NULL, const int start = 0, const int length = -1) const;
 	void extractPart(const part& p, utility::outputStream& os, progressionListener* progress = NULL, const int start = 0, const int length = -1) const;
 
 	void fetchPartHeader(part& p);
+
+protected:
+
+	void onFolderClosed();
+
+
+	maildirFolder* m_folder;
+
+	int m_num;
 };
 
 

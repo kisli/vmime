@@ -55,7 +55,7 @@ public:
 	path& operator/=(const component& c);
 
 	// Return the parent path
-	path parent() const;
+	path getParent() const;
 
 	// Assignment
 	path& operator=(const path& p);
@@ -69,25 +69,25 @@ public:
 	  *
 	  * @return true if the path is empty (no components = root)
 	  */
-	const bool empty() const;
+	const bool isEmpty() const;
 
 	/** Return the last component of this path (const version).
 	  *
 	  * @return last component
 	  */
-	const component last() const;
+	const component getLastComponent() const;
 
 	/** Return the last component of this path (non-const version).
 	  *
 	  * @return last component
 	  */
-	component& last();
+	component& getLastComponent();
 
 	/** Return the number of components in this path.
 	  *
 	  * @return number of components
 	  */
-	const int size() const;
+	const int getSize() const;
 
 	/** Return the specified component of the path (const version).
 	  *

@@ -30,6 +30,9 @@ namespace vmime {
 namespace messaging {
 
 
+class structure;
+
+
 /** A MIME part in a message.
   */
 
@@ -48,38 +51,38 @@ public:
 	  *
 	  * @return structure of the part
 	  */
-	virtual const class structure& structure() const = 0;
+	virtual const structure& getStructure() const = 0;
 
 	/** Return the structure of this part.
 	  *
 	  * @return structure of the part
 	  */
-	virtual class structure& structure() = 0;
+	virtual structure& getStructure() = 0;
 
 	/** Return the header section for this part (you must fetch header
 	  * before using this function: see message::fetchPartHeader).
 	  *
 	  * @return header section
 	  */
-	virtual const class header& header() const = 0;
+	virtual const header& getHeader() const = 0;
 
 	/** Return the media-type of the content in this part.
 	  *
 	  * @return content media type
 	  */
-	virtual const mediaType& type() const = 0;
+	virtual const mediaType& getType() const = 0;
 
 	/** Return the size of this part.
 	  *
 	  * @return size of the part (in bytes)
 	  */
-	virtual const int size() const = 0;
+	virtual const int getSize() const = 0;
 
 	/** Return the part sequence number (index)
 	  *
 	  * @return part number
 	  */
-	virtual const int number() const = 0;   // begin at 1
+	virtual const int getNumber() const = 0;   // begin at 1
 
 	/** Return the sub-part at the specified position.
 	  * This provide easy access to parts:
@@ -103,7 +106,7 @@ public:
 	  *
 	  * @return number of sub-parts
 	  */
-	const int count() const;
+	const int getCount() const;
 };
 
 
@@ -139,7 +142,7 @@ public:
 	  *
 	  * @return number of parts
 	  */
-	virtual const int count() const = 0;
+	virtual const int getCount() const = 0;
 };
 
 
@@ -165,38 +168,38 @@ public:
 	  *
 	  * @return MIME structure of the message
 	  */
-	virtual const class structure& structure() const = 0;
+	virtual const structure& getStructure() const = 0;
 
 	/** Return the MIME structure of the message (must fetch before).
 	  *
 	  * @return MIME structure of the message
 	  */
-	virtual class structure& structure() = 0;
+	virtual structure& getStructure() = 0;
 
 	/** Return a reference to the header fields of the message (must fetch before).
 	  *
 	  * @return header section of the message
 	  */
-	virtual const class header& header() const = 0;
+	virtual const header& getHeader() const = 0;
 
 	/** Return the sequence number of this message. This number is
 	  * used to reference the message in the folder.
 	  *
 	  * @return sequence number of the message
 	  */
-	virtual const int number() const = 0;
+	virtual const int getNumber() const = 0;
 
 	/** Return the unique identified of this message (must fetch before).
 	  *
 	  * @return UID of the message
 	  */
-	virtual const uid uniqueId() const = 0;
+	virtual const uid getUniqueId() const = 0;
 
 	/** Return the size of the message (must fetch before).
 	  *
 	  * @return size of the message (in bytes)
 	  */
-	virtual const int size() const = 0;
+	virtual const int getSize() const = 0;
 
 	/** Check whether this message has been expunged
 	  * (ie: definitively deleted).
@@ -233,7 +236,7 @@ public:
 	  *
 	  * @return flags of the message
 	  */
-	virtual const int flags() const = 0;
+	virtual const int getFlags() const = 0;
 
 	/** Set the flags of this message.
 	  *
@@ -244,7 +247,7 @@ public:
 
 	/** Extract the whole message data (header + contents).
 	  *
-	  * WARNING: partial fetch might not be supported by the underlying protocol.
+	  * \warning Partial fetch might not be supported by the underlying protocol.
 	  *
 	  * @param os output stream in which to write message data
 	  * @param progress progression listener, or NULL if not used
@@ -256,7 +259,7 @@ public:
 
 	/** Extract the specified (MIME) part of the message (header + contents).
 	  *
-	  * WARNING: partial fetch might not be supported by the underlying protocol.
+	  * \warning Partial fetch might not be supported by the underlying protocol.
 	  *
 	  * @param p part to extract
 	  * @param os output stream in which to write part data

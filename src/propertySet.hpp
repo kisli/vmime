@@ -29,35 +29,66 @@
 #include "base.hpp"
 #include "exception.hpp"
 
+#include "utility/stringUtils.hpp"
+
 
 namespace vmime
 {
 
 
+/** Manage a list of (name,value) pairs.
+  */
+
 class propertySet
 {
-private:
+protected:
 
 	class property
 	{
 	public:
 
-		property(const string& name, const string& value) : m_name(name), m_value(value) { }
-		property(const string& name) : m_name(name) { }
-		property(const property& prop) : m_name(prop.m_name), m_value(prop.m_value) { }
+		property(const string& name, const string& value);
+		property(const string& name);
+		property(const property& prop);
 
-		const string& name() const { return (m_name); }
-		const string& value() const { return (m_value); }
+		/** Return the name of the property.
+		  *
+		  * @return property name
+		  */
+		const string& getName() const;
 
-		template <class TYPE> void set(const TYPE& value);
-		template <class TYPE> const TYPE get() const;
+		/** Return the value of the property as a string.
+		  *
+		  * @return current value of the property
+		  */
+		const string& getValue() const;
+
+		/** Set the value of the property as a string.
+		  *
+		  * @param value new value for property
+		  */
+		void setValue(const string& value);
+
+		/** Set the value of the property as a generic type.
+		  *
+		  * @param value new value for property
+		  */
+		template <class TYPE> void setValue(const TYPE& value);
+
+		/** Get the value of the property as a generic type.
+		  *
+		  * @throw exceptions::invalid_property_type if the specified
+		  * type is incompatible with the string value (cannot be
+		  * converted using std::istringstream)
+		  * @return current value of the property
+		  */
+		template <class TYPE> const TYPE getValue() const;
 
 	private:
 
-		string m_name;
+		const string m_name;
 		string m_value;
 	};
-
 
 	class propertyProxy
 	{
@@ -71,25 +102,25 @@ private:
 		template <class TYPE>
 		propertyProxy& operator=(const TYPE& value)
 		{
-			m_set->set(m_name, value);
+			m_set->setProperty(m_name, value);
 			return (*this);
 		}
 
 		template <class TYPE>
-		void set(const TYPE& value)
+		void setValue(const TYPE& value)
 		{
-			m_set->set(m_name, value);
+			m_set->setProperty(m_name, value);
 		}
 
 		template <class TYPE>
-		const TYPE get() const
+		const TYPE getValue() const
 		{
-			return (m_set->get <TYPE>(m_name));
+			return (m_set->getProperty <TYPE>(m_name));
 		}
 
 		operator string() const
 		{
-			return (m_set->get <string>(m_name));
+			return (m_set->getProperty <string>(m_name));
 		}
 
 	private:
@@ -108,14 +139,14 @@ private:
 		}
 
 		template <class TYPE>
-		const TYPE get() const
+		const TYPE getValue() const
 		{
-			return (m_set->get <TYPE>(m_name));
+			return (m_set->getProperty <TYPE>(m_name));
 		}
 
 		operator string() const
 		{
-			return (m_set->get <string>(m_name));
+			return (m_set->getProperty <string>(m_name));
 		}
 
 	private:
@@ -134,49 +165,91 @@ public:
 
 	propertySet& operator=(const propertySet& set);
 
-	void set(const string& props);
+	/** Parse a string and extract one or more properties.
+	  * The string format is: name[=value](;name[=value])*.
+	  *
+	  * @param props string representing a list of properties
+	  */
+	void setFromString(const string& props);
 
-	void empty();
+	/** Remove all properties from the list.
+	  */
+	void removeAllProperties();
 
-	void clear(const string& name);
+	/** Remove the specified property.
+	  *
+	  * @param name name of the property to remove
+	  */
+	void removeProperty(const string& name);
 
+	/** Test whether the specified property is set.
+	  *
+	  * @param name name of the property to test
+	  * @return true if the property is set (has a value),
+	  * false otherwise
+	  */
+	const bool hasProperty(const string& name) const;
 
-	const bool exists(const string& name) const
-	{
-		return (find(name) != NULL);
-	}
-
+	/** Get the value of the specified property.
+	  *
+	  * @throw exceptions::no_such_property if the property does not exist
+	  * @param name property name
+	  * @return value of the specified property
+	  */
 	template <class TYPE>
-	const TYPE get(const string& name) const
+	const TYPE getProperty(const string& name) const
 	{
 		const property* const prop = find(name);
 		if (!prop) throw exceptions::no_such_property(name);
 
-		return (prop->get <TYPE>());
+		return (prop->getValue <TYPE>());
 	}
 
+	/** Get the value of the specified property.
+	  * A default value can be returned if the property is not set.
+	  *
+	  * @param name property name
+	  * @param defaultValue value to return if the specified property
+	  * does not exist
+	  * @return value of the specified property or default value
+	  * if if does not exist
+	  */
 	template <class TYPE>
-	const TYPE get(const string& name, const TYPE defaultValue) const
+	const TYPE getProperty(const string& name, const TYPE defaultValue) const
 	{
 		const property* const prop = find(name);
-		return (prop ? prop->get <TYPE>() : defaultValue);
+		return (prop ? prop->getValue <TYPE>() : defaultValue);
 	}
 
+	/** Change the value of the specified property or create
+	  * a new property set to the specified a value.
+	  *
+	  * @param name property name
+	  * @param value property value
+	  */
 	template <class TYPE>
-	void set(const string& name, const TYPE& value)
+	void setProperty(const string& name, const TYPE& value)
 	{
-		findOrCreate(name)->set(value);
+		findOrCreate(name)->setValue(value);
 	}
 
-	propertyProxy operator[](const string& name)
-	{
-		return (propertyProxy(name, this));
-	}
+	/** Return a proxy object to access the specified property
+	  * suitable for reading or writing. If the property does not
+	  * exist and the value is changed, a new property will
+	  * be created.
+	  *
+	  * @param name property name
+	  * @return proxy object for the specified property
+	  */
+	propertyProxy operator[](const string& name);
 
-	const constPropertyProxy operator[](const string& name) const
-	{
-		return (constPropertyProxy(name, this));
-	}
+	/** Return a proxy object to access the specified property
+	  * suitable for reading only.
+	  *
+	  * @throw exceptions::no_such_property if the property does not exist
+	  * @return read-only proxy object for the specified property
+	  */
+	const constPropertyProxy operator[](const string& name) const;
 
 private:
 
@@ -187,11 +260,11 @@ private:
 	{
 	public:
 
-		propFinder(const string& name) : m_name(toLower(name)) { }
+		propFinder(const string& name) : m_name(stringUtils::toLower(name)) { }
 
 		const bool operator()(property* const p) const
 		{
-			return (toLower(p->name()) == m_name);
+			return (stringUtils::toLower(p->getName()) == m_name);
 		}
 
 	private:
@@ -199,111 +272,31 @@ private:
 		const std::string m_name;
 	};
 
-	property* find(const string& name) const
-	{
-		std::list <property*>::const_iterator it = std::find_if
-			(m_props.begin(), m_props.end(), propFinder(name));
-
-		return (it != m_props.end() ? *it : NULL);
-	}
-
-	property* findOrCreate(const string& name)
-	{
-		std::list <property*>::const_iterator it = std::find_if
-			(m_props.begin(), m_props.end(), propFinder(name));
-
-		if (it != m_props.end())
-		{
-			return (*it);
-		}
-		else
-		{
-			property* prop = new property(name, "");
-			m_props.push_back(prop);
-			return (prop);
-		}
-	}
+	property* find(const string& name) const;
+	property* findOrCreate(const string& name);
 
 	typedef std::list <property*> list_type;
 	list_type m_props;
 
 public:
 
-	class iterator;
+	/** Return the property list.
+	  *
+	  * @return list of properties
+	  */
+	const std::vector <const property*> getPropertyList() const;
 
-	class const_iterator
-	{
-		friend class propertySet;
-
-	public:
-
-		const_iterator() { }
-		const_iterator(const const_iterator& it) : m_it(it.m_it) { }
-		const_iterator(const iterator& it) : m_it(it.m_it) { }
-
-		const_iterator& operator=(const const_iterator& it) { m_it = it.m_it; return (*this); }
-
-		const property& operator*() const { return (**m_it); }
-		const property* operator->() const { return (*m_it); }
-
-		const_iterator& operator++() { ++m_it; return (*this); }
-		const_iterator operator++(int) { return (m_it++); }
-
-		const_iterator& operator--() { --m_it; return (*this); }
-		const_iterator operator--(int) { return (m_it--); }
-
-		const bool operator==(const const_iterator& it) const { return (m_it == it.m_it); }
-		const bool operator!=(const const_iterator& it) const { return (m_it != it.m_it); }
-
-	private:
-
-		const_iterator(const list_type::const_iterator it) : m_it(it) { }
-
-		list_type::const_iterator m_it;
-	};
-
-	class iterator
-	{
-		friend class propertySet;
-		friend class propertySet::const_iterator;
-
-	public:
-
-		iterator() { }
-		iterator(const iterator& it) : m_it(it.m_it) { }
-
-		iterator& operator=(const iterator& it) { m_it = it.m_it; return (*this); }
-
-		property& operator*() const { return (**m_it); }
-		property* operator->() const { return (*m_it); }
-
-		iterator& operator++() { ++m_it; return (*this); }
-		iterator operator++(int) { return (m_it++); }
-
-		iterator& operator--() { --m_it; return (*this); }
-		iterator operator--(int) { return (m_it--); }
-
-		const bool operator==(const iterator& it) const { return (m_it == it.m_it); }
-		const bool operator!=(const iterator& it) const { return (m_it != it.m_it); }
-
-	private:
-
-		iterator(const list_type::iterator it) : m_it(it) { }
-
-		list_type::iterator m_it;
-	};
-
-	iterator begin() { return iterator(m_props.begin()); }
-	iterator end() { return iterator(m_props.end()); }
-
-	const_iterator begin() const { return const_iterator(m_props.begin()); }
-	const_iterator end() const { return const_iterator(m_props.end()); }
+	/** Return the property list.
+	  *
+	  * @return list of properties
+	  */
+	const std::vector <property*> getPropertyList();
 };
 
 
 
 template <class TYPE>
-void propertySet::property::set(const TYPE& value)
+void propertySet::property::setValue(const TYPE& value)
 {
 	std::ostringstream oss;
 	oss << value;
@@ -313,7 +306,7 @@ void propertySet::property::set(const TYPE& value)
 
 
 template <class TYPE>
-const TYPE propertySet::property::get() const
+const TYPE propertySet::property::getValue() const
 {
 	TYPE val = TYPE();
 
@@ -327,11 +320,11 @@ const TYPE propertySet::property::get() const
 }
 
 
-template <> void propertySet::property::set(const string& value);
-template <> void propertySet::property::set(const bool& value);
+template <> void propertySet::property::setValue(const string& value);
+template <> void propertySet::property::setValue(const bool& value);
 
-template <> const string propertySet::property::get() const;
-template <> const bool propertySet::property::get() const;
+template <> const string propertySet::property::getValue() const;
+template <> const bool propertySet::property::getValue() const;
 
 
 } // vmime

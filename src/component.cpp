@@ -18,12 +18,18 @@
 //
 
 #include "component.hpp"
+#include "base.hpp"
 
 #include <sstream>
 
 
 namespace vmime
 {
+
+
+component::~component()
+{
+}
 
 
 void component::parse(const string& buffer)

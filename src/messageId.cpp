@@ -127,7 +127,7 @@ void messageId::parse(const string& buffer, const string::size_type position,
 }
 
 
-const string messageId::id() const
+const string messageId::getId() const
 {
 	return (m_left + '@' + m_right);
 }
@@ -140,14 +140,6 @@ void messageId::generate(utility::outputStream& os, const string::size_type /* m
 
 	if (newLinePos)
 		*newLinePos = curLinePos + m_left.length() + m_right.length() + 3;
-}
-
-
-messageId& messageId::operator=(const messageId& source)
-{
-	m_left = source.m_left;
-	m_right = source.m_right;
-	return (*this);
 }
 
 
@@ -164,12 +156,12 @@ messageId messageId::generateId()
 
 	left << "vmime";
 	left << '.';
-	left << std::hex << utility::random::time();
+	left << std::hex << utility::random::getTime();
 	left << '.';
-	left << std::hex << utility::random::process();
+	left << std::hex << utility::random::getProcess();
 	left << '.';
-	left << std::hex << utility::random::next();
-	left << std::hex << utility::random::next();
+	left << std::hex << utility::random::getNext();
+	left << std::hex << utility::random::getNext();
 
 	return (messageId(left.str(), platformDependant::getHandler()->getHostName()));
 }
@@ -178,6 +170,58 @@ messageId messageId::generateId()
 const bool messageId::operator==(const messageId& mid) const
 {
 	return (m_left == mid.m_left && m_right == mid.m_right);
+}
+
+
+const bool messageId::operator!=(const messageId& mid) const
+{
+	return !(*this == mid);
+}
+
+
+messageId* messageId::clone() const
+{
+	return new messageId(*this);
+}
+
+
+void messageId::copyFrom(const component& other)
+{
+	const messageId& mid = dynamic_cast <const messageId&>(other);
+
+	m_left = mid.m_left;
+	m_right = mid.m_right;
+}
+
+
+messageId& messageId::operator=(const messageId& other)
+{
+	copyFrom(other);
+	return (*this);
+}
+
+
+const string& messageId::getLeft() const
+{
+	return (m_left);
+}
+
+
+void messageId::setLeft(const string& left)
+{
+	m_left = left;
+}
+
+
+const string& messageId::getRight() const
+{
+	return (m_right);
+}
+
+
+void messageId::setRight(const string& right)
+{
+	m_right = right;
 }
 
 

@@ -19,6 +19,7 @@
 
 #include "mailboxGroup.hpp"
 #include "parserHelpers.hpp"
+#include "exception.hpp"
 
 
 namespace vmime
@@ -30,10 +31,10 @@ mailboxGroup::mailboxGroup()
 }
 
 
-mailboxGroup::mailboxGroup(const class mailboxGroup& mailboxGroup)
+mailboxGroup::mailboxGroup(const mailboxGroup& mboxGroup)
 	: address()
 {
-	copyFrom(mailboxGroup);
+	copyFrom(mboxGroup);
 }
 
 
@@ -45,7 +46,7 @@ mailboxGroup::mailboxGroup(const text& name)
 
 mailboxGroup::~mailboxGroup()
 {
-	clear();
+	removeAllMailboxes();
 }
 
 
@@ -85,10 +86,9 @@ void mailboxGroup::parse(const string& buffer, const string::size_type position,
 
 				// Sub-groups are not allowed in mailbox groups: so, we add all
 				// the contents of the sub-group into this group...
-				for (mailboxGroup::const_iterator
-				     it = group->begin() ; it != group->end() ; ++it)
+				for (int i = 0 ; i < group->getMailboxCount() ; ++i)
 				{
-					m_list.push_back(static_cast <mailbox*>((*it).clone()));
+					m_list.push_back(group->getMailboxAt(i)->clone());
 				}
 
 				delete (parsedAddress);
@@ -119,11 +119,11 @@ void mailboxGroup::generate(utility::outputStream& os, const string::size_type m
 	// and/or contain the special chars.
 	bool forceEncode = false;
 
-	for (text::const_iterator w = m_name.begin() ; !forceEncode && w != m_name.end() ; ++w)
+	for (int w = 0 ; !forceEncode && w < m_name.getWordCount() ; ++w)
 	{
-		if ((*w).charset() == charset(charsets::US_ASCII))
+		if (m_name.getWordAt(w)->getCharset() == charset(charsets::US_ASCII))
 		{
-			const string& buffer = (*w).buffer();
+			const string& buffer = m_name.getWordAt(w)->getBuffer();
 
 			for (string::const_iterator c = buffer.begin() ;
 			     !forceEncode && c != buffer.end() ; ++c)
@@ -158,7 +158,8 @@ void mailboxGroup::generate(utility::outputStream& os, const string::size_type m
 	os << ":";
 	++pos;
 
-	for (const_iterator it = m_list.begin() ; it != m_list.end() ; ++it)
+	for (std::vector <mailbox*>::const_iterator it = m_list.begin() ;
+	     it != m_list.end() ; ++it)
 	{
 		if (it != m_list.begin())
 		{
@@ -171,7 +172,7 @@ void mailboxGroup::generate(utility::outputStream& os, const string::size_type m
 			++pos;
 		}
 
-		(*it).generate(os, maxLineLength - 2, pos, &pos);
+		(*it)->generate(os, maxLineLength - 2, pos, &pos);
 	}
 
 	os << ";";
@@ -182,55 +183,168 @@ void mailboxGroup::generate(utility::outputStream& os, const string::size_type m
 }
 
 
-address* mailboxGroup::clone() const
+void mailboxGroup::copyFrom(const component& other)
+{
+	const mailboxGroup& source = dynamic_cast <const mailboxGroup&>(other);
+
+	m_name = source.m_name;
+
+	removeAllMailboxes();
+
+	for (std::vector <mailbox*>::const_iterator it = source.m_list.begin() ;
+	     it != source.m_list.end() ; ++it)
+	{
+		m_list.push_back((*it)->clone());
+	}
+}
+
+
+mailboxGroup* mailboxGroup::clone() const
 {
 	return new mailboxGroup(*this);
 }
 
 
-// Mailbox insertion
-void mailboxGroup::append(const mailbox& field)
+mailboxGroup& mailboxGroup::operator=(const component& other)
 {
-	m_list.push_back(static_cast<mailbox*>(field.clone()));
+	copyFrom(other);
+	return (*this);
 }
 
 
-void mailboxGroup::insert(const iterator it, const mailbox& field)
+const text& mailboxGroup::getName() const
 {
-	m_list.insert(it.m_iterator, static_cast<mailbox*>(field.clone()));
+	return (m_name);
 }
 
 
-// Mailbox removing
-void mailboxGroup::erase(const iterator it)
+void mailboxGroup::setName(const text& name)
 {
-	delete (*it.m_iterator);
-	m_list.erase(it.m_iterator);
-}
-
-
-void mailboxGroup::clear()
-{
-	free_container(m_list);
-}
-
-
-void mailboxGroup::copyFrom(const address& addr)
-{
-	const mailboxGroup& source = dynamic_cast<const mailboxGroup&>(addr);
-
-	m_name = source.m_name;
-
-	clear();
-
-	for (std::vector <mailbox*>::const_iterator i = source.m_list.begin() ; i != source.m_list.end() ; ++i)
-		m_list.push_back(static_cast<mailbox*>((*i)->clone()));
+	m_name = name;
 }
 
 
 const bool mailboxGroup::isGroup() const
 {
 	return (true);
+}
+
+
+const bool mailboxGroup::isEmpty() const
+{
+	return (m_list.empty());
+}
+
+
+void mailboxGroup::appendMailbox(mailbox* mbox)
+{
+	m_list.push_back(mbox);
+}
+
+
+void mailboxGroup::insertMailboxBefore(mailbox* beforeMailbox, mailbox* mbox)
+{
+	const std::vector <mailbox*>::iterator it = std::find
+		(m_list.begin(), m_list.end(), beforeMailbox);
+
+	if (it == m_list.end())
+		throw exceptions::no_such_mailbox();
+
+	m_list.insert(it, mbox);
+}
+
+
+void mailboxGroup::insertMailboxBefore(const int pos, mailbox* mbox)
+{
+	m_list.insert(m_list.begin() + pos, mbox);
+}
+
+
+void mailboxGroup::insertMailboxAfter(mailbox* afterMailbox, mailbox* mbox)
+{
+	const std::vector <mailbox*>::iterator it = std::find
+		(m_list.begin(), m_list.end(), afterMailbox);
+
+	if (it == m_list.end())
+		throw exceptions::no_such_mailbox();
+
+	m_list.insert(it + 1, mbox);
+}
+
+
+void mailboxGroup::insertMailboxAfter(const int pos, mailbox* mbox)
+{
+	m_list.insert(m_list.begin() + pos + 1, mbox);
+}
+
+
+void mailboxGroup::removeMailbox(mailbox* mbox)
+{
+	const std::vector <mailbox*>::iterator it = std::find
+		(m_list.begin(), m_list.end(), mbox);
+
+	if (it == m_list.end())
+		throw exceptions::no_such_mailbox();
+
+	delete (*it);
+
+	m_list.erase(it);
+}
+
+
+void mailboxGroup::removeMailbox(const int pos)
+{
+	const std::vector <mailbox*>::iterator it = m_list.begin() + pos;
+
+	delete (*it);
+
+	m_list.erase(it);
+}
+
+
+void mailboxGroup::removeAllMailboxes()
+{
+	free_container(m_list);
+}
+
+
+const int mailboxGroup::getMailboxCount() const
+{
+	return (m_list.size());
+}
+
+
+mailbox* mailboxGroup::getMailboxAt(const int pos)
+{
+	return (m_list[pos]);
+}
+
+
+const mailbox* const mailboxGroup::getMailboxAt(const int pos) const
+{
+	return (m_list[pos]);
+}
+
+
+const std::vector <const mailbox*> mailboxGroup::getMailboxList() const
+{
+	std::vector <const mailbox*> list;
+
+	list.reserve(m_list.size());
+
+	for (std::vector <mailbox*>::const_iterator it = m_list.begin() ;
+	     it != m_list.end() ; ++it)
+	{
+		list.push_back(*it);
+	}
+
+	return (list);
+}
+
+
+const std::vector <mailbox*> mailboxGroup::getMailboxList()
+{
+	return (m_list);
 }
 
 

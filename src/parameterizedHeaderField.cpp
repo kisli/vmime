@@ -33,14 +33,14 @@ parameterizedHeaderField::parameterizedHeaderField()
 
 
 /*
-	This class handles field contents of the following form:
-	Field: VALUE; PARAM1="VALUE1"; PARAM2="VALUE2"...
+     This class handles field contents of the following form:
+     Field: VALUE; PARAM1="VALUE1"; PARAM2="VALUE2"...
 
-	eg. RFC-1521
+     eg. RFC-1521
 
      content  :=   "Content-Type"  ":"  type  "/"  subtype  *(";" parameter)
 
-	 parameter := attribute "=" value
+     parameter := attribute "=" value
 
      attribute := token   ; case-insensitive
 
@@ -66,7 +66,9 @@ void parameterizedHeaderField::parse(const string& buffer, const string::size_ty
 
 	while (p < pend && *p != ';') ++p;
 
-	parseValue(buffer, start, position + (p - pstart));
+	getValue().parse(buffer, start, position + (p - pstart));
+
+	removeAllParameters();
 
 	// If there is one or more parameters following...
 	if (p < pend)
@@ -182,7 +184,7 @@ void parameterizedHeaderField::parse(const string& buffer, const string::size_ty
 				if (attrStart != attrEnd && value.length())
 				{
 					// Append this parameter to the list
-					parameters.m_params.push_back(parameterFactory::getInstance()->
+					appendParameter(parameterFactory::getInstance()->
 						create(string(buffer.begin() + attrStart,
 						              buffer.begin() + attrEnd), value));
 				}
@@ -206,22 +208,14 @@ void parameterizedHeaderField::generate(utility::outputStream& os, const string:
 	// Parent header field
 	headerField::generate(os, maxLineLength, pos, &pos);
 
-	// Value
-	const string value = generateValue();
-
-	encodeAndFoldText(os, text(value), maxLineLength - 1,
-		pos, &pos, encodeAndFoldFlags::none);
-
 	// Parameters
 	for (std::vector <parameter*>::const_iterator
-	     it = parameters.m_params.begin() ; it != parameters.m_params.end() ; ++it)
+	     it = m_params.begin() ; it != m_params.end() ; ++it)
 	{
-		const parameter& param = **it;
-
 		os << "; ";
 		pos += 2;
 
-		param.generate(os, maxLineLength, pos, &pos);
+		(*it)->generate(os, maxLineLength, pos, &pos);
 	}
 
 	if (newLinePos)
@@ -229,106 +223,214 @@ void parameterizedHeaderField::generate(utility::outputStream& os, const string:
 }
 
 
-void parameterizedHeaderField::copyFrom(const headerField& field)
+void parameterizedHeaderField::copyFrom(const component& other)
 {
-	const parameterizedHeaderField& source = dynamic_cast<const parameterizedHeaderField&>(field);
+	headerField::copyFrom(other);
 
-	parameters.clear();
+	const parameterizedHeaderField& source = dynamic_cast<const parameterizedHeaderField&>(other);
 
-	for (std::vector <parameter*>::const_iterator i = source.parameters.m_params.begin() ;
-	     i != source.parameters.m_params.end() ; ++i)
+	removeAllParameters();
+
+	for (std::vector <parameter*>::const_iterator i = source.m_params.begin() ;
+	     i != source.m_params.end() ; ++i)
 	{
-		parameters.m_params.push_back((*i)->clone());
+		appendParameter((*i)->clone());
 	}
-
-	headerField::copyFrom(field);
 }
 
 
-
-//////////////////////
-// Params container //
-//////////////////////
-
-
-parameterizedHeaderField::paramsContainer::~paramsContainer()
+parameterizedHeaderField& parameterizedHeaderField::operator=(const parameterizedHeaderField& other)
 {
-	clear();
+	copyFrom(other);
+	return (*this);
 }
 
 
-parameter& parameterizedHeaderField::paramsContainer::find(const string& name) const
+const bool parameterizedHeaderField::hasParameter(const string& paramName) const
 {
-	const string _name = toLower(name);
+	const string name = stringUtils::toLower(paramName);
 
 	std::vector <parameter*>::const_iterator pos = m_params.begin();
 	const std::vector <parameter*>::const_iterator end = m_params.end();
 
-	for ( ; pos != end && (*pos)->name() != _name ; ++pos);
+	for ( ; pos != end && stringUtils::toLower((*pos)->getName()) != name ; ++pos);
+
+	return (pos != end);
+}
+
+
+parameter* parameterizedHeaderField::findParameter(const string& paramName) const
+{
+	const string name = stringUtils::toLower(paramName);
+
+	// Find the first parameter that matches the specified name
+	std::vector <parameter*>::const_iterator pos = m_params.begin();
+	const std::vector <parameter*>::const_iterator end = m_params.end();
+
+	for ( ; pos != end && stringUtils::toLower((*pos)->getName()) != name ; ++pos);
 
 	// No parameter with this name can be found
 	if (pos == end)
 	{
-		throw exceptions::no_such_parameter(name);
+		throw exceptions::no_such_parameter(paramName);
 	}
 	// Else, return a reference to the existing parameter
 	else
 	{
-		return (**pos);
+		return (*pos);
 	}
 }
 
 
-parameter& parameterizedHeaderField::paramsContainer::get(const string& name)
+parameter* parameterizedHeaderField::getParameter(const string& paramName)
 {
-	const string _name = toLower(name);
+	const string name = stringUtils::toLower(paramName);
 
-	std::vector <parameter*>::iterator pos = m_params.begin();
-	const std::vector <parameter*>::iterator end = m_params.end();
+	// Find the first parameter that matches the specified name
+	std::vector <parameter*>::const_iterator pos = m_params.begin();
+	const std::vector <parameter*>::const_iterator end = m_params.end();
 
-	for ( ; pos != end && (*pos)->name() != _name ; ++pos);
+	for ( ; pos != end && stringUtils::toLower((*pos)->getName()) != name ; ++pos);
 
 	// If no parameter with this name can be found, create a new one
 	if (pos == end)
 	{
-		parameter* param = parameterFactory::getInstance()->create(_name);
-		m_params.push_back(param);
+		parameter* param = parameterFactory::getInstance()->create(paramName);
+
+		try
+		{
+			appendParameter(param);
+		}
+		catch (std::exception&)
+		{
+			delete (param);
+			throw;
+		}
 
 		// Return a reference to the new parameter
-		return (*param);
+		return (param);
 	}
 	// Else, return a reference to the existing parameter
 	else
 	{
-		return (**pos);
+		return (*pos);
 	}
 }
 
 
-// Parameter insertion
-void parameterizedHeaderField::paramsContainer::append(const parameter& param)
+void parameterizedHeaderField::appendParameter(parameter* param)
 {
-	m_params.push_back(param.clone());
+	m_params.push_back(param);
 }
 
 
-void parameterizedHeaderField::paramsContainer::insert(const iterator it, const parameter& param)
+void parameterizedHeaderField::insertParameterBefore(parameter* beforeParam, parameter* param)
 {
-	m_params.insert(it.m_iterator, param.clone());
+	const std::vector <parameter*>::iterator it = std::find
+		(m_params.begin(), m_params.end(), beforeParam);
+
+	if (it == m_params.end())
+		throw exceptions::no_such_parameter(beforeParam->getName());
+
+	m_params.insert(it, param);
 }
 
 
-// Parameter removing
-void parameterizedHeaderField::paramsContainer::remove(const iterator it)
+void parameterizedHeaderField::insertParameterBefore(const int pos, parameter* param)
 {
-	delete (*it.m_iterator);
-	m_params.erase(it.m_iterator);
+	m_params.insert(m_params.begin() + pos, param);
 }
 
 
-void parameterizedHeaderField::paramsContainer::clear()
+void parameterizedHeaderField::insertParameterAfter(parameter* afterParam, parameter* param)
+{
+	const std::vector <parameter*>::iterator it = std::find
+		(m_params.begin(), m_params.end(), afterParam);
+
+	if (it == m_params.end())
+		throw exceptions::no_such_parameter(afterParam->getName());
+
+	m_params.insert(it + 1, param);
+}
+
+
+void parameterizedHeaderField::insertParameterAfter(const int pos, parameter* param)
+{
+	m_params.insert(m_params.begin() + pos + 1, param);
+}
+
+
+void parameterizedHeaderField::removeParameter(parameter* param)
+{
+	const std::vector <parameter*>::iterator it = std::find
+		(m_params.begin(), m_params.end(), param);
+
+	if (it == m_params.end())
+		throw exceptions::no_such_parameter(param->getName());
+
+	m_params.erase(it);
+}
+
+
+void parameterizedHeaderField::removeParameter(const int pos)
+{
+	const std::vector <parameter*>::iterator it = m_params.begin() + pos;
+
+	delete (*it);
+
+	m_params.erase(it);
+}
+
+
+void parameterizedHeaderField::removeAllParameters()
 {
 	free_container(m_params);
+}
+
+
+const int parameterizedHeaderField::getParameterCount() const
+{
+	return (m_params.size());
+}
+
+
+const bool parameterizedHeaderField::isEmpty() const
+{
+	return (m_params.empty());
+}
+
+
+parameter* parameterizedHeaderField::getParameterAt(const int pos)
+{
+	return (m_params[pos]);
+}
+
+
+const parameter* const parameterizedHeaderField::getParameterAt(const int pos) const
+{
+	return (m_params[pos]);
+}
+
+
+const std::vector <const parameter*> parameterizedHeaderField::getParameterList() const
+{
+	std::vector <const parameter*> list;
+
+	list.reserve(m_params.size());
+
+	for (std::vector <parameter*>::const_iterator it = m_params.begin() ;
+	     it != m_params.end() ; ++it)
+	{
+		list.push_back(*it);
+	}
+
+	return (list);
+}
+
+
+const std::vector <parameter*> parameterizedHeaderField::getParameterList()
+{
+	return (m_params);
 }
 
 

@@ -257,7 +257,7 @@ public:
 		gmt.tm_isdst = -1;
 
 		// Calculate the difference (in seconds)
-		const vmime::datetime::comp_t diff = ::std::mktime(&local) - ::std::mktime(&gmt);
+		const int diff = ::std::mktime(&local) - ::std::mktime(&gmt);
 
 		// Return the date
 		return vmime::datetime(local.tm_year + 1900, local.tm_mon + 1, local.tm_mday,

@@ -44,28 +44,28 @@ int main()
 		vmime::messageParser mp("<...MIME message content...>");
 
 		// Enumerate text parts
-		for (std::vector <vmime::textPart*>::const_iterator i = mp.textParts().begin() ;
-		     i != mp.textParts().end() ; ++i)
+		for (int i = 0 ; i < mp.getTextPartCount() ; ++i)
 		{
-			const vmime::textPart& part = **i;
+			const vmime::textPart& part = *mp.getTextPartAt(i);
 
 			// Output content-type of the part
-			std::cout << part.type().generate() << std::endl;
+			std::cout << part.getType().generate() << std::endl;
 
 			// text/html
-			if (part.type().subType() == vmime::mediaTypes::TEXT_HTML)
+			if (part.getType().getSubType() == vmime::mediaTypes::TEXT_HTML)
 			{
 				const vmime::htmlTextPart& hp = dynamic_cast<const vmime::htmlTextPart&>(part);
 
-				// HTML text is in "hp.text()"
-				// Corresponding plain text is in "hp.plainText()"
+				// HTML text is in "hp.getText()"
+				// Corresponding plain text is in "hp.getPlainText()"
 
 				// Enumerate embedded objects (eg. images)
-				for (vmime::htmlTextPart::const_iterator i = hp.embeddedObjects.begin() ;
-				     i != hp.embeddedObjects.end() ; ++i)
+				for (int j = 0 ; j < hp.getObjectCount() ; ++j)
 				{
-					// Identifier (content-id or content-location) is in "(*i).id()"
-					// Object data is in "(*i).data()"
+					const vmime::htmlTextPart::embeddedObject& obj = *hp.getObjectAt(j);
+
+					// Identifier (content-id or content-location) is in "obj.getId()"
+					// Object data is in "obj.getData()"
 				}
 			}
 			// text/plain
@@ -73,7 +73,7 @@ int main()
 			{
 				const vmime::textPart& tp = dynamic_cast<const vmime::textPart&>(part);
 
-				// Text is in "tp.text()"
+				// Text is in "tp.getText()"
 			}
 		}
 	}

@@ -31,105 +31,123 @@ namespace vmime
 {
 
 
+class mailboxList;
+
+
 /** A list of addresses.
   */
 
 class addressList : public component
 {
-	friend class addressListField;
-	friend class mailboxListField;
-
 public:
 
 	addressList();
-	addressList(const class addressList& addressList);
+	addressList(const addressList& addrList);
 
 	~addressList();
 
-public:
 
-	addressList& operator=(const addressList& source);
+	addressList* clone() const;
+	void copyFrom(const component& other);
+	addressList& operator=(const addressList& other);
+	addressList& operator=(const mailboxList& other);
 
-	// Address iterator
-	class const_iterator;
 
-	class iterator
-	{
-		friend class addressList;
-		friend class const_iterator;
+	/** Add a address at the end of the list.
+	  *
+	  * @param addr address to append
+	  */
+	void appendAddress(address* addr);
 
-	public:
+	/** Insert a new address before the specified address.
+	  *
+	  * @param beforeAddress address before which the new address will be inserted
+	  * @param addr address to insert
+	  * @throw exceptions::no_such_address if the address is not in the list
+	  */
+	void insertAddressBefore(address* beforeAddress, address* addr);
 
-		iterator(std::vector <address*>::iterator it) : m_iterator(it) { }
-		iterator(const iterator& it) : m_iterator(it.m_iterator) { }
+	/** Insert a new address before the specified position.
+	  *
+	  * @param pos position at which to insert the new address (0 to insert at
+	  * the beginning of the list)
+	  * @param addr address to insert
+	  */
+	void insertAddressBefore(const int pos, address* addr);
 
-		iterator& operator=(const iterator& it) { m_iterator = it.m_iterator; return (*this); }
+	/** Insert a new address after the specified address.
+	  *
+	  * @param afterAddress address after which the new address will be inserted
+	  * @param addr address to insert
+	  * @throw exceptions::no_such_address if the address is not in the list
+	  */
+	void insertAddressAfter(address* afterAddress, address* addr);
 
-		address& operator*() const { return (**m_iterator); }
-		address* operator->() const { return (*m_iterator); }
+	/** Insert a new address after the specified position.
+	  *
+	  * @param pos position of the address before the new address
+	  * @param addr address to insert
+	  */
+	void insertAddressAfter(const int pos, address* addr);
 
-		iterator& operator++() { ++m_iterator; return (*this); }
-		iterator& operator++(int) { ++m_iterator; return (*this); }
+	/** Remove the specified address from the list.
+	  *
+	  * @param addr address to remove
+	  * @throw exceptions::no_such_address if the address is not in the list
+	  */
+	void removeAddress(address* addr);
 
-		const bool operator==(const iterator& it) const { return (it.m_iterator == m_iterator); }
-		const bool operator!=(const iterator& it) const { return (!(*this == it)); }
+	/** Remove the address at the specified position.
+	  *
+	  * @param pos position of the address to remove
+	  */
+	void removeAddress(const int pos);
 
-	private:
+	/** Remove all addresses from the list.
+	  */
+	void removeAllAddresses();
 
-		std::vector <address*>::iterator m_iterator;
-	};
+	/** Return the number of addresses in the list.
+	  *
+	  * @return number of addresses
+	  */
+	const int getAddressCount() const;
 
-	class const_iterator
-	{
-		friend class addressList;
+	/** Tests whether the list of addresses is empty.
+	  *
+	  * @return true if there is no address, false otherwise
+	  */
+	const bool isEmpty() const;
 
-	public:
+	/** Return the address at the specified position.
+	  *
+	  * @param pos position
+	  * @return address at position 'pos'
+	  */
+	address* getAddressAt(const int pos);
 
-		const_iterator(std::vector <address*>::const_iterator it) : m_iterator(it) { }
-		const_iterator(const iterator& it) : m_iterator(it.m_iterator) { }
-		const_iterator(const const_iterator& it) : m_iterator(it.m_iterator) { }
+	/** Return the address at the specified position.
+	  *
+	  * @param pos position
+	  * @return address at position 'pos'
+	  */
+	const address* const getAddressAt(const int pos) const;
 
-		const_iterator& operator=(const const_iterator& it) { m_iterator = it.m_iterator; return (*this); }
-		const_iterator& operator=(const iterator& it) { m_iterator = it.m_iterator; return (*this); }
+	/** Return the address list.
+	  *
+	  * @return list of addresses
+	  */
+	const std::vector <const address*> getAddressList() const;
 
-		const address& operator*() const { return (**m_iterator); }
-		const address* operator->() const { return (*m_iterator); }
+	/** Return the address list.
+	  *
+	  * @return list of addresses
+	  */
+	const std::vector <address*> getAddressList();
 
-		const_iterator& operator++() { ++m_iterator; return (*this); }
-		const_iterator& operator++(int) { ++m_iterator; return (*this); }
-
-		const bool operator==(const const_iterator& it) const { return (it.m_iterator == m_iterator); }
-		const bool operator!=(const const_iterator& it) const { return (!(*this == it)); }
-
-	private:
-
-		std::vector <address*>::const_iterator m_iterator;
-	};
-
-	iterator begin() { return (m_list.begin()); }
-	iterator end() { return (m_list.end()); }
-
-	const_iterator begin() const { return (const_iterator(m_list.begin())); }
-	const_iterator end() const { return (const_iterator(m_list.end())); }
-
-	const std::vector <address*>::size_type size() const;
-	const std::vector <address*>::size_type count() const;
-	const bool empty() const;
-
-	const address& operator[](const std::vector <address*>::size_type x) const { return (*m_list[x]); }
-	address& operator[](const std::vector <address*>::size_type x) { return (*m_list[x]); }
-
-	virtual void append(const address& addr);
-	virtual void insert(const iterator it, const address& addr);
-
-	void erase(const iterator it);
-	void clear();
-
-protected:
+private:
 
 	std::vector <address*> m_list;
-
-	void copyFrom(const addressList& source);
 
 public:
 

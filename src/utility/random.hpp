@@ -25,6 +25,9 @@ namespace vmime {
 namespace utility {
 
 
+/** Pseudo-random number generator.
+  */
+
 class random
 {
 public:
@@ -33,21 +36,21 @@ public:
 	  *
 	  * @return random number
 	  */
-	static const unsigned int next();
+	static const unsigned int getNext();
 
 	/** Return the current time as a number (may be used to
 	  * build "random" strings).
 	  *
 	  * @return time as a number
 	  */
-	static const unsigned int time();
+	static const unsigned int getTime();
 
 	/** Return the current process number (may be user to
 	  * build "random" strings).
 	  *
 	  * @return process number
 	  */
-	static const unsigned int process();
+	static const unsigned int getProcess();
 
 protected:
 

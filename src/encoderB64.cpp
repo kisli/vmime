@@ -30,9 +30,9 @@ encoderB64::encoderB64()
 }
 
 
-const std::vector <string> encoderB64::availableProperties() const
+const std::vector <string> encoderB64::getAvailableProperties() const
 {
-	std::vector <string> list(encoder::availableProperties());
+	std::vector <string> list(encoder::getAvailableProperties());
 
 	list.push_back("maxlinelength");
 
@@ -70,7 +70,7 @@ const utility::stream::size_type encoderB64::encode(utility::inputStream& in, ut
 {
 	in.reset();  // may not work...
 
-	const int propMaxLineLength = properties().get <int>("maxlinelength", -1);
+	const int propMaxLineLength = getProperties().getProperty <int>("maxlinelength", -1);
 
 	const bool cutLines = (propMaxLineLength != -1);
 	const int maxLineLength = std::min(propMaxLineLength, 76);

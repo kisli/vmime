@@ -32,92 +32,109 @@ namespace vmime
 /** A list of mailboxes (basic type).
   */
 
-class mailboxList : public addressList
+class mailboxList : protected addressList
 {
 	friend class mailboxGroup;
 
 public:
 
-	//
-	// The following functions have the same name and work *exactly* like
-	// the ones in "addressList", except we don't accept anything other
-	// than objects of type "mailbox" (instead of a generic "address").
-	//
-	// This prevents user from inserting mailbox groups where it is not
-	// allowed by the RFC.
-	//
+	// This class works exactly like 'addressList' except it prevents user
+	// from inserting mailbox groups where it is not allowed by the RFC.
 
-	// Address iterator
-	class const_iterator;
+	mailboxList();
+	mailboxList(const mailboxList& mboxList);
 
-	class iterator
-	{
-		friend class mailboxList;
-		friend class const_iterator;
+	/** Add a mailbox at the end of the list.
+	  *
+	  * @param mbox mailbox to append
+	  */
+	void appendMailbox(mailbox* mbox);
 
-	protected:
+	/** Insert a new mailbox before the specified mailbox.
+	  *
+	  * @param beforeMailbox mailbox before which the new mailbox will be inserted
+	  * @param mbox mailbox to insert
+	  * @throw exceptions::no_such_mailbox if the mailbox is not in the list
+	  */
+	void insertMailboxBefore(mailbox* beforeMailbox, mailbox* mbox);
 
-		iterator(std::vector <address*>::iterator it) : m_iterator(it) { }
+	/** Insert a new mailbox before the specified position.
+	  *
+	  * @param pos position at which to insert the new mailbox (0 to insert at
+	  * the beginning of the list)
+	  * @param mbox mailbox to insert
+	  */
+	void insertMailboxBefore(const int pos, mailbox* mbox);
 
-	public:
+	/** Insert a new mailbox after the specified mailbox.
+	  *
+	  * @param afterMailbox mailbox after which the new mailbox will be inserted
+	  * @param mbox mailbox to insert
+	  * @throw exceptions::no_such_mailbox if the mailbox is not in the list
+	  */
+	void insertMailboxAfter(mailbox* afterMailbox, mailbox* mbox);
 
-		iterator(const iterator& it) : m_iterator(it.m_iterator) { }
+	/** Insert a new mailbox after the specified position.
+	  *
+	  * @param pos position of the mailbox before the new mailbox
+	  * @param mbox mailbox to insert
+	  */
+	void insertMailboxAfter(const int pos, mailbox* mbox);
 
-		iterator& operator=(const iterator& it) { m_iterator = it.m_iterator; return (*this); }
+	/** Remove the specified mailbox from the list.
+	  *
+	  * @param mbox mailbox to remove
+	  * @throw exceptions::no_such_mailbox if the mailbox is not in the list
+	  */
+	void removeMailbox(mailbox* mbox);
 
-		mailbox& operator*() const { return static_cast<mailbox&>(**m_iterator); }
-		mailbox* operator->() const { return static_cast<mailbox*>(*m_iterator); }
+	/** Remove the mailbox at the specified position.
+	  *
+	  * @param pos position of the mailbox to remove
+	  */
+	void removeMailbox(const int pos);
 
-		iterator& operator++() { ++m_iterator; return (*this); }
-		iterator& operator++(int) { ++m_iterator; return (*this); }
+	/** Remove all mailboxes from the list.
+	  */
+	void removeAllMailboxes();
 
-		const bool operator==(const iterator& it) const { return (it.m_iterator == m_iterator); }
-		const bool operator!=(const iterator& it) const { return (!(*this == it)); }
+	/** Return the number of mailboxes in the list.
+	  *
+	  * @return number of mailboxes
+	  */
+	const int getMailboxCount() const;
 
-	private:
+	/** Tests whether the list of mailboxes is empty.
+	  *
+	  * @return true if there is no mailbox, false otherwise
+	  */
+	const bool isEmpty() const;
 
-		std::vector <address*>::iterator m_iterator;
-	};
+	/** Return the mailbox at the specified position.
+	  *
+	  * @param pos position
+	  * @return mailbox at position 'pos'
+	  */
+	mailbox* getMailboxAt(const int pos);
 
-	class const_iterator
-	{
-		friend class mailboxList;
+	/** Return the mailbox at the specified position.
+	  *
+	  * @param pos position
+	  * @return mailbox at position 'pos'
+	  */
+	const mailbox* const getMailboxAt(const int pos) const;
 
-	protected:
+	/** Return the mailbox list.
+	  *
+	  * @return list of mailboxes
+	  */
+	const std::vector <const mailbox*> getMailboxList() const;
 
-		const_iterator(std::vector <address*>::const_iterator it) : m_iterator(it) { }
-
-	public:
-
-		const_iterator(const iterator& it) : m_iterator(it.m_iterator) { }
-		const_iterator(const const_iterator& it) : m_iterator(it.m_iterator) { }
-
-		const_iterator& operator=(const const_iterator& it) { m_iterator = it.m_iterator; return (*this); }
-		const_iterator& operator=(const iterator& it) { m_iterator = it.m_iterator; return (*this); }
-
-		const mailbox& operator*() const { return static_cast<const mailbox&>(**m_iterator); }
-		const mailbox* operator->() const { return static_cast<const mailbox*>(*m_iterator); }
-
-		const_iterator& operator++() { ++m_iterator; return (*this); }
-		const_iterator& operator++(int) { ++m_iterator; return (*this); }
-
-		const bool operator==(const const_iterator& it) const { return (it.m_iterator == m_iterator); }
-		const bool operator!=(const const_iterator& it) const { return (!(*this == it)); }
-
-	private:
-
-		std::vector <address*>::const_iterator m_iterator;
-	};
-
-	iterator begin() { return (m_list.begin()); }
-	iterator end() { return (m_list.end()); }
-
-	const_iterator begin() const { return (const_iterator(m_list.begin())); }
-	const_iterator end() const { return (const_iterator(m_list.end())); }
-
-	// Address insertion
-	void append(const address& addr);
-	void insert(const iterator it, const address& addr);
+	/** Return the mailbox list.
+	  *
+	  * @return list of mailboxes
+	  */
+	const std::vector <mailbox*> getMailboxList();
 };
 
 

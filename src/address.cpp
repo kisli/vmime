@@ -191,11 +191,4 @@ address* address::parseNext(const string& buffer, const string::size_type positi
 }
 
 
-address& address::operator=(const address& addr)
-{
-	copyFrom(addr);
-	return (*this);
-}
-
-
 } // vmime

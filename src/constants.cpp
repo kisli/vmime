@@ -148,4 +148,34 @@ namespace charsets
 }
 
 
+// Fields
+namespace fields
+{
+	const string::value_type* const RECEIVED = "Received";
+	const string::value_type* const FROM = "From";
+	const string::value_type* const SENDER = "Sender";
+	const string::value_type* const REPLY_TO = "Reply-To";
+	const string::value_type* const TO = "To";
+	const string::value_type* const CC = "Cc";
+	const string::value_type* const BCC = "Bcc";
+	const string::value_type* const DATE = "Date";
+	const string::value_type* const SUBJECT = "Subject";
+	const string::value_type* const ORGANIZATION = "Organization";
+	const string::value_type* const USER_AGENT = "User-Agent";
+	const string::value_type* const DELIVERED_TO = "Delivered-To";
+	const string::value_type* const RETURN_PATH = "Return-Path";
+	const string::value_type* const MIME_VERSION = "Mime-Version";
+	const string::value_type* const MESSAGE_ID = "Message-Id";
+	const string::value_type* const CONTENT_TYPE = "Content-Type";
+	const string::value_type* const CONTENT_TRANSFER_ENCODING = "Content-Transfer-Encoding";
+	const string::value_type* const CONTENT_DESCRIPTION = "Content-Description";
+	const string::value_type* const CONTENT_DISPOSITION = "Content-Disposition";
+	const string::value_type* const CONTENT_ID = "Content-Id";
+	const string::value_type* const CONTENT_LOCATION = "Content-Location";
+
+	const string::value_type* const X_MAILER = "X-Mailer";
+	const string::value_type* const X_PRIORITY = "X-Priority";
+}
+
+
 } // vmime

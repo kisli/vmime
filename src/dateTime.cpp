@@ -86,7 +86,7 @@ void datetime::parse(const string& buffer, const string::size_type position,
 		if (p < pend && isdigit(*p))
 		{
 			// Month day
-			comp_t day = 0;
+			int day = 0;
 
 			do
 			{
@@ -221,7 +221,7 @@ void datetime::parse(const string& buffer, const string::size_type position,
 		if (p < pend && isdigit(*p))
 		{
 			// Year
-			comp_t year = 0;
+			int year = 0;
 
 			do
 			{
@@ -249,7 +249,7 @@ void datetime::parse(const string& buffer, const string::size_type position,
 		if (p < pend && isdigit(*p))
 		{
 			// Hour
-			comp_t hour = 0;
+			int hour = 0;
 
 			do
 			{
@@ -271,7 +271,7 @@ void datetime::parse(const string& buffer, const string::size_type position,
 				if (p < pend && isdigit(*p))
 				{
 					// Minute
-					comp_t minute = 0;
+					int minute = 0;
 
 					do
 					{
@@ -293,7 +293,7 @@ void datetime::parse(const string& buffer, const string::size_type position,
 						if (p < pend && isdigit(*p))
 						{
 							// Second
-							comp_t second = 0;
+							int second = 0;
 
 							do
 							{
@@ -342,7 +342,7 @@ void datetime::parse(const string& buffer, const string::size_type position,
 			++p;
 
 			// Zone offset (in hour/minutes)
-			comp_t offset = 0;
+			int offset = 0;
 
 			do
 			{
@@ -351,8 +351,8 @@ void datetime::parse(const string& buffer, const string::size_type position,
 			}
 			while (p < pend && isdigit(*p));
 
-			const comp_t hourOff = offset / 100;
-			const comp_t minOff = offset % 100;
+			const int hourOff = offset / 100;
+			const int minOff = offset % 100;
 
 			if (sign == '+')
 				m_zone = hourOff * 60 + minOff;
@@ -538,13 +538,13 @@ void datetime::generate(utility::outputStream& os, const string::size_type /* ma
 		{ "Jan", "Feb", "Mar", "Apr", "May", "Jun",
 		  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 
-	const comp_t z = ((m_zone < 0) ? -m_zone : m_zone);
-	const comp_t zh = z / 60;
-	const comp_t zm = z % 60;
+	const int z = ((m_zone < 0) ? -m_zone : m_zone);
+	const int zh = z / 60;
+	const int zm = z % 60;
 
 	std::ostringstream oss;
 	oss << dayNames[dayOfWeek(m_year, m_month, m_day)] << ", "
-	    << m_day << " " << monthNames[month() - 1] << " " << year()
+	    << m_day << " " << monthNames[m_month - 1] << " " << m_year
 	    << " " << std::setfill('0') << std::setw(2) << m_hour << ":"
 	    << std::setfill('0') << std::setw(2) << m_minute << ":"
 	    << std::setfill('0') << std::setw(2) << m_second
@@ -566,16 +566,16 @@ datetime::datetime()
 }
 
 
-datetime::datetime(const comp_t year, const comp_t month, const comp_t day)
+datetime::datetime(const int year, const int month, const int day)
 	: m_year(year), m_month(month), m_day(day),
 	  m_hour(0), m_minute(0), m_second(0), m_zone(0)
 {
 }
 
 
-datetime::datetime(const comp_t year, const comp_t month, const comp_t day,
-                   const comp_t hour, const comp_t minute, const comp_t second,
-                   const comp_t zone)
+datetime::datetime(const int year, const int month, const int day,
+                   const int hour, const int minute, const int second,
+                   const int zone)
 	: m_year(year), m_month(month), m_day(day),
 	  m_hour(hour), m_minute(minute), m_second(second), m_zone(zone)
 {
@@ -600,8 +600,10 @@ datetime::~datetime()
 }
 
 
-void datetime::copyFrom(const datetime& d)
+void datetime::copyFrom(const component& other)
 {
+	const datetime& d = dynamic_cast <const datetime&>(other);
+
 	m_year = d.m_year;
 	m_month = d.m_month;
 	m_day = d.m_day;
@@ -612,9 +614,9 @@ void datetime::copyFrom(const datetime& d)
 }
 
 
-datetime& datetime::operator=(const datetime& d)
+datetime& datetime::operator=(const datetime& other)
 {
-	copyFrom(d);
+	copyFrom(other);
 	return (*this);
 }
 
@@ -626,7 +628,7 @@ datetime& datetime::operator=(const string& s)
 }
 
 
-void datetime::getTime(comp_t& hour, comp_t& minute, comp_t& second, comp_t& zone) const
+void datetime::getTime(int& hour, int& minute, int& second, int& zone) const
 {
 	hour = m_hour;
 	minute = m_minute;
@@ -635,7 +637,7 @@ void datetime::getTime(comp_t& hour, comp_t& minute, comp_t& second, comp_t& zon
 }
 
 
-void datetime::getTime(comp_t& hour, comp_t& minute, comp_t& second) const
+void datetime::getTime(int& hour, int& minute, int& second) const
 {
 	hour = m_hour;
 	minute = m_minute;
@@ -643,7 +645,7 @@ void datetime::getTime(comp_t& hour, comp_t& minute, comp_t& second) const
 }
 
 
-void datetime::getDate(comp_t& year, comp_t& month, comp_t& day) const
+void datetime::getDate(int& year, int& month, int& day) const
 {
 	year = m_year;
 	month = m_month;
@@ -651,8 +653,8 @@ void datetime::getDate(comp_t& year, comp_t& month, comp_t& day) const
 }
 
 
-void datetime::setTime(const comp_t hour, const comp_t minute,
-                       const comp_t second, const comp_t zone)
+void datetime::setTime(const int hour, const int minute,
+                       const int second, const int zone)
 {
 	m_hour = hour;
 	m_minute = minute;
@@ -661,7 +663,7 @@ void datetime::setTime(const comp_t hour, const comp_t minute,
 }
 
 
-void datetime::setDate(const comp_t year, const comp_t month, const comp_t day)
+void datetime::setDate(const int year, const int month, const int day)
 {
 	m_year = year;
 	m_month = month;
@@ -669,10 +671,10 @@ void datetime::setDate(const comp_t year, const comp_t month, const comp_t day)
 }
 
 
-const datetime::comp_t datetime::dayOfWeek(const comp_t year, const comp_t month, const comp_t day)
+const int datetime::dayOfWeek(const int year, const int month, const int day)
 {
-	comp_t y = year;
-	comp_t m = month;
+	int y = year;
+	int m = month;
 
 	// From RFC-3339 - Appendix B. Day of the Week
 
@@ -686,7 +688,7 @@ const datetime::comp_t datetime::dayOfWeek(const comp_t year, const comp_t month
 	}
 
 	// Split by century
-	const comp_t cent = y / 100;
+	const int cent = y / 100;
 	y %= 100;
 
 	return (((26 * m - 2) / 10 + day + y + (y >> 2) + (cent >> 2) + 5 * cent) % 7);
@@ -697,6 +699,29 @@ const datetime datetime::now()
 {
 	return (platformDependant::getHandler()->getCurrentLocalTime());
 }
+
+
+datetime* datetime::clone() const
+{
+	return new datetime(*this);
+}
+
+
+const int datetime::getYear() const { return (m_year); }
+const int datetime::getMonth() const { return (m_month); }
+const int datetime::getDay() const { return (m_day); }
+const int datetime::getHour() const { return (m_hour); }
+const int datetime::getMinute() const { return (m_minute); }
+const int datetime::getSecond() const { return (m_second); }
+const int datetime::getZone() const { return (m_zone); }
+
+void datetime::setYear(const int year) { m_year = year; }
+void datetime::setMonth(const int month) { m_month = std::min(std::max(month, 1), 12); }
+void datetime::setDay(const int day) { m_day = day; }
+void datetime::setHour(const int hour) { m_hour = hour; }
+void datetime::setMinute(const int minute) { m_minute = minute; }
+void datetime::setSecond(const int second) { m_second = second; }
+void datetime::setZone(const int zone) { m_zone = zone; }
 
 
 } // vmime

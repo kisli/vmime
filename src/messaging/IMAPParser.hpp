@@ -26,6 +26,7 @@
 #include "../charset.hpp"
 #include "../exception.hpp"
 #include "../utility/smartPtr.hpp"
+#include "../utility/stringUtils.hpp"
 
 #include "../encoderB64.hpp"
 #include "../encoderQP.hpp"
@@ -1145,7 +1146,7 @@ public:
 			{
 				// Quoted-printable
 				theEncoder = new encoderQP;
-				theEncoder->properties()["rfc2047"] = true;
+				theEncoder->getProperties()["rfc2047"] = true;
 			}
 			else if (theEncoding->value()[0] == 'b' || theEncoding->value()[0] == 'B')
 			{
@@ -1229,7 +1230,7 @@ public:
 				else
 				{
 					atom* at = parser.get <atom>(line, &pos);
-					const string name = toLower(at->value());
+					const string name = stringUtils::toLower(at->value());
 					delete (at);
 
 					if (name == "answered")
@@ -1401,7 +1402,7 @@ public:
 			parser.check <one_char <'\\'> >(line, &pos);
 
 			atom* at = parser.get <atom>(line, &pos);
-			const string name = toLower(at->value());
+			const string name = stringUtils::toLower(at->value());
 			delete (at);
 
 			if (name == "marked")
@@ -1800,7 +1801,7 @@ public:
 			DEBUG_ENTER_COMPONENT("auth_type");
 
 			atom* at = parser.get <atom>(line, currentPos);
-			m_name = toLower(at->value());
+			m_name = stringUtils::toLower(at->value());
 			delete (at);
 
 			if (m_name == "kerberos_v4")
@@ -2109,21 +2110,21 @@ public:
 			parser.check <one_char <'"'> >(line, &pos);
 
 
-			m_datetime.hour() = std::min(std::max(nh->value(), 0u), 23u);
-			m_datetime.minute() = std::min(std::max(nmi->value(), 0u), 59u);
-			m_datetime.second() = std::min(std::max(ns->value(), 0u), 59u);
+			m_datetime.setHour(std::min(std::max(nh->value(), 0u), 23u));
+			m_datetime.setMinute(std::min(std::max(nmi->value(), 0u), 59u));
+			m_datetime.setSecond(std::min(std::max(ns->value(), 0u), 59u));
 
 			const int zone = static_cast <int>(nz->value());
 			const int zh = zone / 100;   // hour offset
 			const int zm = zone % 100;   // minute offset
 
-			m_datetime.zone() = ((zh * 60) + zm) * sign;
+			m_datetime.setZone(((zh * 60) + zm) * sign);
 
-			m_datetime.day() = std::min(std::max(nd->value(), 1u), 31u);
-			m_datetime.year() = ny->value();
+			m_datetime.setDay(std::min(std::max(nd->value(), 1u), 31u));
+			m_datetime.setYear(ny->value());
 
-			const string month(vmime::toLower(amo->value()));
-			vmime::datetime::comp_t mon = vmime::datetime::JANUARY;
+			const string month(stringUtils::toLower(amo->value()));
+			int mon = vmime::datetime::JANUARY;
 
 			if (month.length() >= 3)
 			{
@@ -2177,7 +2178,7 @@ public:
 				}
 			}
 
-			m_datetime.month() = mon;
+			m_datetime.setMonth(mon);
 
 			*currentPos = pos;
 		}

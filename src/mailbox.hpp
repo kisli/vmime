@@ -40,7 +40,7 @@ class mailbox : public address
 public:
 
 	mailbox();
-	mailbox(const class mailbox& mailbox);
+	mailbox(const mailbox& mbox);
 	mailbox(const string& email);
 	mailbox(const text& name, const string& email);
 
@@ -48,35 +48,36 @@ public:
 	  *
 	  * @return full name of the mailbox
 	  */
-	const text& name() const { return (m_name); }
+	const text& getName() const;
 
-	/** Return the full name of the mailbox (empty if not specified).
+	/** Set the full name of the mailbox.
 	  *
 	  * @return full name of the mailbox
 	  */
-	text& name() { return (m_name); }
+	void setName(const text& name);
 
 	/** Return the email of the mailbox.
 	  *
 	  * @return email of the mailbox
 	  */
-	const string& email() const { return (m_email); }
+	const string& getEmail() const;
 
-	/** Return the email of the mailbox.
+	/** Set the email of the mailbox.
 	  *
 	  * @return email of the mailbox
 	  */
-	string& email() { return (m_email); }
+	void setEmail(const string& email);
 
 	// Comparison
 	const bool operator==(const class mailbox& mailbox) const;
 	const bool operator!=(const class mailbox& mailbox) const;
 
 	// Assignment
-	void copyFrom(const address& addr);
-	address* clone() const;
+	void copyFrom(const component& other);
+	mailbox* clone() const;
+	mailbox& operator=(const mailbox& other);
 
-	const bool empty() const;
+	const bool isEmpty() const;
 
 	void clear();
 

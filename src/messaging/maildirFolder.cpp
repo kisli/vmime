@@ -32,7 +32,7 @@ namespace messaging {
 
 
 maildirFolder::maildirFolder(const folder::path& path, maildirStore* store)
-	: m_store(store), m_path(path), m_name(path.last()), m_mode(-1), m_open(false)
+	: m_store(store), m_path(path), m_name(path.getLastComponent()), m_mode(-1), m_open(false)
 {
 	m_store->registerFolder(this);
 }
@@ -60,7 +60,7 @@ void maildirFolder::onStoreDisconnected()
 }
 
 
-const int maildirFolder::mode() const
+const int maildirFolder::getMode() const
 {
 	if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
@@ -69,16 +69,16 @@ const int maildirFolder::mode() const
 }
 
 
-const int maildirFolder::type()
+const int maildirFolder::getType()
 {
-	if (m_path.empty())
+	if (m_path.isEmpty())
 		return (TYPE_CONTAINS_FOLDERS);
 	else
 		return (TYPE_CONTAINS_FOLDERS | TYPE_CONTAINS_MESSAGES);
 }
 
 
-const int maildirFolder::flags()
+const int maildirFolder::getFlags()
 {
 	int flags = 0;
 
@@ -104,13 +104,13 @@ const int maildirFolder::flags()
 }
 
 
-const folder::path::component maildirFolder::name() const
+const folder::path::component maildirFolder::getName() const
 {
 	return (m_name);
 }
 
 
-const folder::path maildirFolder::fullPath() const
+const folder::path maildirFolder::getFullPath() const
 {
 	return (m_path);
 }
@@ -132,13 +132,40 @@ void maildirFolder::open(const int mode, bool /* failIfModeIsNotAvailable */)
 
 void maildirFolder::close(const bool expunge)
 {
-	// TODO
+	if (!m_store)
+		throw exceptions::illegal_state("Store disconnected");
+
+	if (!isOpen())
+		throw exceptions::illegal_state("Folder not open");
+
+	m_open = false;
+	m_mode = -1;
+
+	onClose();
 }
 
 
 void maildirFolder::onClose()
 {
-	// TODO
+	for (std::vector <maildirMessage*>::iterator it = m_messages.begin() ;
+	     it != m_messages.end() ; ++it)
+	{
+		(*it)->onFolderClosed();
+	}
+
+	m_messages.clear();
+}
+
+
+void maildirFolder::registerMessage(maildirMessage* msg)
+{
+	m_messages.push_back(msg);
+}
+
+
+void maildirFolder::unregisterMessage(maildirMessage* msg)
+{
+	std::remove(m_messages.begin(), m_messages.end(), msg);
 }
 
 
@@ -152,14 +179,14 @@ void maildirFolder::create(const int type)
 		throw exceptions::illegal_state("Folder already exists");
 
 	// Folder name cannot start with '.'
-	if (!m_path.empty())
+	if (!m_path.isEmpty())
 	{
-		const path::component& comp = m_path.last();
+		const path::component& comp = m_path.getLastComponent();
 
-		const int length = comp.buffer().length();
+		const int length = comp.getBuffer().length();
 		int pos = 0;
 
-		while ((pos < length) && (comp.buffer()[pos] == '.'))
+		while ((pos < length) && (comp.getBuffer()[pos] == '.'))
 			++pos;
 
 		if (pos != 0)
@@ -246,7 +273,7 @@ void maildirFolder::scanFolder()
 		while (nit->hasMoreElements())
 		{
 			utility::auto_ptr <utility::file> file = nit->nextElement();
-			unreadMessageFilenames.push_back(file->fullPath().last());
+			unreadMessageFilenames.push_back(file->fullPath().getLastComponent());
 		}
 
 		// Seen messages (cur/)
@@ -256,7 +283,7 @@ void maildirFolder::scanFolder()
 		while (cit->hasMoreElements())
 		{
 			utility::auto_ptr <utility::file> file = cit->nextElement();
-			messageFilenames.push_back(file->fullPath().last());
+			messageFilenames.push_back(file->fullPath().getLastComponent());
 		}
 
 		// TODO: update m_messageFilenames
@@ -384,7 +411,7 @@ void maildirFolder::listFolders(std::vector <folder*>& list, const bool recursiv
 
 			if (maildirUtils::isSubfolderDirectory(*file))
 			{
-				const utility::path subPath = m_path / file->fullPath().last();
+				const utility::path subPath = m_path / file->fullPath().getLastComponent();
 				maildirFolder* subFolder = new maildirFolder(subPath, m_store);
 
 				list.push_back(subFolder);
@@ -494,10 +521,12 @@ void maildirFolder::status(int& count, int& unseen)
 		for (std::list <maildirFolder*>::iterator it = m_store->m_folders.begin() ;
 		     it != m_store->m_folders.end() ; ++it)
 		{
-			if ((*it)->fullPath() == m_path)
+			if ((*it)->getFullPath() == m_path)
 			{
 				(*it)->m_messageCount = count;
 				(*it)->notifyMessageCount(event);
+
+				(*it)->scanFolder();
 			}
 		}
 	}
@@ -512,19 +541,19 @@ void maildirFolder::expunge()
 
 folder* maildirFolder::getParent()
 {
-	return (m_path.empty() ? NULL : new maildirFolder(m_path.parent(), m_store));
+	return (m_path.isEmpty() ? NULL : new maildirFolder(m_path.getParent(), m_store));
 }
 
 
-const class store& maildirFolder::store() const
+const store* maildirFolder::getStore() const
 {
-	return (*m_store);
+	return (m_store);
 }
 
 
-class store& maildirFolder::store()
+store* maildirFolder::getStore()
 {
-	return (*m_store);
+	return (m_store);
 }
 
 

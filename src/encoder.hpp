@@ -57,30 +57,30 @@ public:
 	  *
 	  * @return properties of the encoder
 	  */
-	const propertySet& properties() const;
+	const propertySet& getProperties() const;
 
 	/** Return the properties of the encoder.
 	  *
 	  * @return properties of the encoder
 	  */
-	propertySet& properties();
+	propertySet& getProperties();
 
 	/** Return a list of property names that can be set for
 	  * this encoder.
 	  *
 	  * @return list of property names
 	  */
-	virtual const std::vector <string> availableProperties() const;
+	virtual const std::vector <string> getAvailableProperties() const;
 
 	/** Return the results returned by this encoder.
 	  *
 	  * @return results returned by the encoder
 	  */
-	const propertySet& results() const;
+	const propertySet& getResults() const;
 
 protected:
 
-	propertySet& results();
+	propertySet& getResults();
 
 private:
 

@@ -63,26 +63,22 @@ protected:
 	  */
 	class multipartOptions
 	{
-	protected:
+	private:
 
 		friend class options;
 
-		multipartOptions()
-			: m_prologText("This is a multi-part message in MIME format. Your mail reader does not understand MIME message format."),
-			  m_epilogText("")
-		{
-		}
+		multipartOptions();
 
 		string m_prologText;
 		string m_epilogText;
 
 	public:
 
-		const string& prologText() const { return (m_prologText); }
-		string& prologText() { return (m_prologText); }
+		const string& getPrologText() const;
+		void setPrologText(const string& prologText);
 
-		const string& epilogText() const { return (m_epilogText); }
-		string& epilogText() { return (m_epilogText); }
+		const string& getEpilogText() const;
+		void setEpilogText(const string& epilogText);
 	};
 
 public:

@@ -26,19 +26,19 @@ namespace messaging {
 
 const part& part::operator[](const int x) const
 {
-	return (structure()[x]);
+	return (getStructure()[x]);
 }
 
 
 part& part::operator[](const int x)
 {
-	return (structure()[x]);
+	return (getStructure()[x]);
 }
 
 
-const int part::count() const
+const int part::getCount() const
 {
-	return (structure().count());
+	return (getStructure().getCount());
 }
 
 

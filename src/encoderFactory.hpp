@@ -23,6 +23,7 @@
 
 #include "encoder.hpp"
 #include "utility/singleton.hpp"
+#include "utility/stringUtils.hpp"
 
 
 namespace vmime
@@ -43,6 +44,7 @@ private:
 
 public:
 
+	/** Information about a registered encoder. */
 	class registeredEncoder
 	{
 		friend class encoderFactory;
@@ -53,9 +55,9 @@ public:
 
 	public:
 
-		virtual encoder* create() = 0;
+		virtual encoder* create() const = 0;
 
-		virtual const string& name() const = 0;
+		virtual const string& getName() const = 0;
 	};
 
 private:
@@ -71,12 +73,12 @@ private:
 
 	public:
 
-		encoder* create()
+		encoder* create() const
 		{
 			return new E;
 		}
 
-		const string& name() const
+		const string& getName() const
 		{
 			return (m_name);
 		}
@@ -87,93 +89,56 @@ private:
 	};
 
 
-	typedef std::map <string, registeredEncoder*> NameMap;
-	NameMap m_nameMap;
+	std::vector <registeredEncoder*> m_encoders;
 
 public:
 
+	/** Register a new encoder by its encoding name.
+	  *
+	  * @param name encoding name
+	  */
 	template <class E>
 	void registerName(const string& name)
 	{
-		const string _name = toLower(name);
-		m_nameMap.insert(NameMap::value_type(_name,
-			new registeredEncoderImpl <E>(_name)));
+		m_encoders.push_back(new registeredEncoderImpl <E>(stringUtils::toLower(name)));
 	}
 
+	/** Create a new encoder instance from an encoding name.
+	  *
+	  * @param name encoding name (eg. "base64")
+	  * @return a new encoder instance for the specified encoding
+	  * @throw exceptions::no_encoder_available if no encoder is registered
+	  * for this encoding
+	  */
 	encoder* create(const string& name);
 
-	const registeredEncoder& operator[](const string& name) const;
+	/** Return information about a registered encoder.
+	  *
+	  * @param name encoding name
+	  * @return information about this encoder
+	  * @throw exceptions::no_encoder_available if no encoder is registered
+	  * for this encoding
+	  */
+	const registeredEncoder* getEncoderByName(const string& name) const;
 
+	/** Return the number of registered encoders.
+	  *
+	  * @return number of registered encoders
+	  */
+	const int getEncoderCount() const;
 
-	class iterator;
+	/** Return the registered encoder at the specified position.
+	  *
+	  * @param pos position of the registered encoder to return
+	  * @return registered encoder at the specified position
+	  */
+	const registeredEncoder* getEncoderAt(const int pos) const;
 
-	class const_iterator
-	{
-		friend class encoderFactory;
-
-	public:
-
-		const_iterator() { }
-		const_iterator(const const_iterator& it) : m_it(it.m_it) { }
-		const_iterator(const iterator& it) : m_it(it.m_it) { }
-
-		const_iterator& operator=(const const_iterator& it) { m_it = it.m_it; return (*this); }
-
-		const registeredEncoder& operator*() const { return (*(*m_it).second); }
-		const registeredEncoder* operator->() const { return ((*m_it).second); }
-
-		const_iterator& operator++() { ++m_it; return (*this); }
-		const_iterator operator++(int) { return (m_it++); }
-
-		const_iterator& operator--() { --m_it; return (*this); }
-		const_iterator operator--(int) { return (m_it--); }
-
-		const bool operator==(const const_iterator& it) const { return (m_it == it.m_it); }
-		const bool operator!=(const const_iterator& it) const { return (m_it != it.m_it); }
-
-	private:
-
-		const_iterator(const NameMap::const_iterator it) : m_it(it) { }
-
-		NameMap::const_iterator m_it;
-	};
-
-	class iterator
-	{
-		friend class encoderFactory;
-		friend class encoderFactory::const_iterator;
-
-	public:
-
-		iterator() { }
-		iterator(const iterator& it) : m_it(it.m_it) { }
-
-		iterator& operator=(const iterator& it) { m_it = it.m_it; return (*this); }
-
-		registeredEncoder& operator*() const { return (*(*m_it).second); }
-		registeredEncoder* operator->() const { return ((*m_it).second); }
-
-		iterator& operator++() { ++m_it; return (*this); }
-		iterator operator++(int) { return (m_it++); }
-
-		iterator& operator--() { --m_it; return (*this); }
-		iterator operator--(int) { return (m_it--); }
-
-		const bool operator==(const iterator& it) const { return (m_it == it.m_it); }
-		const bool operator!=(const iterator& it) const { return (m_it != it.m_it); }
-
-	private:
-
-		iterator(const NameMap::iterator it) : m_it(it) { }
-
-		NameMap::iterator m_it;
-	};
-
-	iterator begin() { return iterator(m_nameMap.begin()); }
-	iterator end() { return iterator(m_nameMap.end()); }
-
-	const_iterator begin() const { return const_iterator(m_nameMap.begin()); }
-	const_iterator end() const { return const_iterator(m_nameMap.end()); }
+	/** Return a list of all registered encoders.
+	  *
+	  * @return list of registered encoders
+	  */
+	const std::vector <const registeredEncoder*> getEncoderList() const;
 };
 
 

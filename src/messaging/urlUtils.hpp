@@ -29,6 +29,9 @@ namespace vmime {
 namespace messaging {
 
 
+/** Miscellaneous functions related to URLs.
+  */
+
 class urlUtils
 {
 public:

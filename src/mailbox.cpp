@@ -30,8 +30,8 @@ mailbox::mailbox()
 }
 
 
-mailbox::mailbox(const class mailbox& mailbox)
-	: address(), m_name(mailbox.m_name), m_email(mailbox.m_email)
+mailbox::mailbox(const mailbox& mbox)
+	: address(), m_name(mbox.m_name), m_email(mbox.m_email)
 {
 }
 
@@ -305,7 +305,7 @@ void mailbox::parse(const string& buffer, const string::size_type position,
 	if (address.empty() && !name.empty())
 	{
 		m_email = name;
-		m_name.clear();
+		m_name.removeAllWords();
 	}
 	else
 	{
@@ -321,7 +321,7 @@ void mailbox::parse(const string& buffer, const string::size_type position,
 void mailbox::generate(utility::outputStream& os, const string::size_type maxLineLength,
 	const string::size_type curLinePos, string::size_type* newLinePos) const
 {
-	if (m_name.empty())
+	if (m_name.isEmpty())
 	{
 		bool newLine = false;
 
@@ -352,11 +352,11 @@ void mailbox::generate(utility::outputStream& os, const string::size_type maxLin
 		// and/or contain the special chars.
 		bool forceEncode = false;
 
-		for (text::const_iterator w = m_name.begin() ; !forceEncode && w != m_name.end() ; ++w)
+		for (int w = 0 ; !forceEncode && w != m_name.getWordCount() ; ++w)
 		{
-			if ((*w).charset() == charset(charsets::US_ASCII))
+			if (m_name.getWordAt(w)->getCharset() == charset(charsets::US_ASCII))
 			{
-				const string& buffer = (*w).buffer();
+				const string& buffer = m_name.getWordAt(w)->getBuffer();
 
 				for (string::const_iterator c = buffer.begin() ;
 				     !forceEncode && c != buffer.end() ; ++c)
@@ -423,22 +423,29 @@ const bool mailbox::operator!=(const class mailbox& mailbox) const
 }
 
 
-void mailbox::copyFrom(const address& addr)
+void mailbox::copyFrom(const component& other)
 {
-	const mailbox& source = dynamic_cast<const mailbox&>(addr);
+	const mailbox& source = dynamic_cast <const mailbox&>(other);
 
 	m_name = source.m_name;
 	m_email = source.m_email;
 }
 
 
-address* mailbox::clone() const
+mailbox& mailbox::operator=(const mailbox& other)
+{
+	copyFrom(other);
+	return (*this);
+}
+
+
+mailbox* mailbox::clone() const
 {
 	return new mailbox(*this);
 }
 
 
-const bool mailbox::empty() const
+const bool mailbox::isEmpty() const
 {
 	return (m_email.empty());
 }
@@ -446,7 +453,7 @@ const bool mailbox::empty() const
 
 void mailbox::clear()
 {
-	m_name.clear();
+	m_name.removeAllWords();
 	m_email.clear();
 }
 
@@ -454,6 +461,30 @@ void mailbox::clear()
 const bool mailbox::isGroup() const
 {
 	return (false);
+}
+
+
+const text& mailbox::getName() const
+{
+	return (m_name);
+}
+
+
+void mailbox::setName(const text& name)
+{
+	m_name = name;
+}
+
+
+const string& mailbox::getEmail() const
+{
+	return (m_email);
+}
+
+
+void mailbox::setEmail(const string& email)
+{
+	m_email = email;
 }
 
 

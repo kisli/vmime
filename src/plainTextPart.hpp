@@ -28,22 +28,25 @@ namespace vmime
 {
 
 
+/** Text part of type 'text/plain'.
+  */
+
 class plainTextPart : public textPart
 {
 public:
 
-	const mediaType type() const;
+	const mediaType getType() const;
 
-	const class charset& charset() const { return (m_charset); }
-	class charset& charset() { return (m_charset); }
+	const charset& getCharset() const;
+	void setCharset(const charset& ch);
 
-	const contentHandler& text() const { return (m_text); }
-	contentHandler& text() { return (m_text); }
+	const contentHandler& getText() const;
+	void setText(const contentHandler& text);
 
-protected:
+private:
 
 	contentHandler m_text;
-	class charset m_charset;
+	charset m_charset;
 
 	const int getPartCount() const;
 

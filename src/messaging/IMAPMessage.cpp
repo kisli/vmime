@@ -66,16 +66,16 @@ private:
 
 public:
 
-	const class structure& structure() const;
-	class structure& structure();
+	const structure& getStructure() const;
+	structure& getStructure();
 
-	const IMAPpart* parent() const { return (m_parent); }
+	const IMAPpart* getParent() const { return (m_parent); }
 
-	const mediaType& type() const { return (m_mediaType); }
-	const int size() const { return (m_size); }
-	const int number() const { return (m_number); }
+	const mediaType& getType() const { return (m_mediaType); }
+	const int getSize() const { return (m_size); }
+	const int getNumber() const { return (m_number); }
 
-	const class header& header() const;
+	const header& getHeader() const;
 
 
 	static IMAPpart* create(IMAPpart* parent, const int number, const IMAPParser::body* body)
@@ -150,7 +150,7 @@ public:
 		return (*m_parts[x - 1]);
 	}
 
-	const int count() const
+	const int getCount() const
 	{
 		return (m_parts.size());
 	}
@@ -213,7 +213,7 @@ IMAPpart::IMAPpart(IMAPpart* parent, const int number, const IMAPParser::body_ty
 }
 
 
-const class header& IMAPpart::header() const
+const class header& IMAPpart::getHeader() const
 {
 	if (m_header == NULL)
 		throw exceptions::unfetched_object();
@@ -222,7 +222,7 @@ const class header& IMAPpart::header() const
 }
 
 
-const class structure& IMAPpart::structure() const
+const class structure& IMAPpart::getStructure() const
 {
 	if (m_structure != NULL)
 		return (*m_structure);
@@ -231,7 +231,7 @@ const class structure& IMAPpart::structure() const
 }
 
 
-class structure& IMAPpart::structure()
+class structure& IMAPpart::getStructure()
 {
 	if (m_structure != NULL)
 		return (*m_structure);
@@ -307,19 +307,19 @@ void IMAPMessage::onFolderClosed()
 }
 
 
-const int IMAPMessage::number() const
+const int IMAPMessage::getNumber() const
 {
 	return (m_num);
 }
 
 
-const message::uid IMAPMessage::uniqueId() const
+const message::uid IMAPMessage::getUniqueId() const
 {
 	return (m_uid);
 }
 
 
-const int IMAPMessage::size() const
+const int IMAPMessage::getSize() const
 {
 	if (m_size == -1)
 		throw exceptions::unfetched_object();
@@ -334,7 +334,7 @@ const bool IMAPMessage::isExpunged() const
 }
 
 
-const int IMAPMessage::flags() const
+const int IMAPMessage::getFlags() const
 {
 	if (m_flags == FLAG_UNDEFINED)
 		throw exceptions::unfetched_object();
@@ -343,7 +343,7 @@ const int IMAPMessage::flags() const
 }
 
 
-const class structure& IMAPMessage::structure() const
+const structure& IMAPMessage::getStructure() const
 {
 	if (m_structure == NULL)
 		throw exceptions::unfetched_object();
@@ -352,7 +352,7 @@ const class structure& IMAPMessage::structure() const
 }
 
 
-class structure& IMAPMessage::structure()
+structure& IMAPMessage::getStructure()
 {
 	if (m_structure == NULL)
 		throw exceptions::unfetched_object();
@@ -361,7 +361,7 @@ class structure& IMAPMessage::structure()
 }
 
 
-const class header& IMAPMessage::header() const
+const header& IMAPMessage::getHeader() const
 {
 	if (m_header == NULL)
 		throw exceptions::unfetched_object();
@@ -418,13 +418,13 @@ void IMAPMessage::extract(const part* p, utility::outputStream& os, progressionL
 		const IMAPpart* currentPart = static_cast <const IMAPpart*>(p);
 		std::vector <int> numbers;
 
-		numbers.push_back(currentPart->number());
-		currentPart = currentPart->parent();
+		numbers.push_back(currentPart->getNumber());
+		currentPart = currentPart->getParent();
 
 		while (currentPart != NULL)
 		{
-			numbers.push_back(currentPart->number());
-			currentPart = currentPart->parent();
+			numbers.push_back(currentPart->getNumber());
+			currentPart = currentPart->getParent();
 		}
 
 		numbers.erase(numbers.end() - 1);
@@ -458,7 +458,7 @@ void IMAPMessage::extract(const part* p, utility::outputStream& os, progressionL
 		resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
 	{
 		throw exceptions::command_error("FETCH",
-			m_folder->m_connection->parser()->lastLine(), "bad response");
+			m_folder->m_connection->getParser()->lastLine(), "bad response");
 	}
 
 
@@ -532,7 +532,7 @@ void IMAPMessage::fetch(IMAPFolder* folder, const int options)
 		resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
 	{
 		throw exceptions::command_error("FETCH",
-			m_folder->m_connection->parser()->lastLine(), "bad response");
+			m_folder->m_connection->getParser()->lastLine(), "bad response");
 	}
 
 	const std::vector <IMAPParser::continue_req_or_response_data*>& respDataList =
@@ -544,7 +544,7 @@ void IMAPMessage::fetch(IMAPFolder* folder, const int options)
 		if ((*it)->response_data() == NULL)
 		{
 			throw exceptions::command_error("FETCH",
-				m_folder->m_connection->parser()->lastLine(), "invalid response");
+				m_folder->m_connection->getParser()->lastLine(), "invalid response");
 		}
 
 		const IMAPParser::message_data* messageData =
@@ -598,54 +598,54 @@ void IMAPMessage::processFetchResponse
 				vmime::header& hdr = getOrCreateHeader();
 
 				// Date
-				hdr.fields.Date() = env->env_date()->value();
+				hdr.Date().setValue(env->env_date()->value());
 
 				// Subject
 				text subject;
 				decodeAndUnfoldText(env->env_subject()->value(), subject);
 
-				hdr.fields.Subject() = subject;
+				hdr.Subject().setValue(subject);
 
 				// From
 				mailboxList from;
 				convertAddressList(*(env->env_from()), from);
 
-				if (!from.empty())
-					hdr.fields.From() = *(from.begin());
+				if (!from.isEmpty())
+					hdr.From().setValue(*(from.getMailboxAt(0)));
 
 				// To
 				mailboxList to;
 				convertAddressList(*(env->env_to()), to);
 
-				hdr.fields.To() = to;
+				hdr.To().setValue(to);
 
 				// Sender
 				mailboxList sender;
 				convertAddressList(*(env->env_sender()), sender);
 
-				if (!sender.empty())
-					hdr.fields.Sender() = *(sender.begin());
+				if (!sender.isEmpty())
+					hdr.Sender().setValue(*(sender.getMailboxAt(0)));
 
 				// Reply-to
 				mailboxList replyTo;
 				convertAddressList(*(env->env_reply_to()), replyTo);
 
-				if (!replyTo.empty())
-					hdr.fields.ReplyTo() = *(replyTo.begin());
+				if (!replyTo.isEmpty())
+					hdr.ReplyTo().setValue(*(replyTo.getMailboxAt(0)));
 
 				// Cc
 				mailboxList cc;
 				convertAddressList(*(env->env_cc()), cc);
 
-				if (!cc.empty())
-					hdr.fields.Cc() = cc;
+				if (!cc.isEmpty())
+					hdr.Cc().setValue(cc);
 
 				// Bcc
 				mailboxList bcc;
 				convertAddressList(*(env->env_bcc()), bcc);
 
-				if (!bcc.empty())
-					hdr.fields.Bcc() = bcc;
+				if (!bcc.isEmpty())
+					hdr.Bcc().setValue(bcc);
 			}
 
 			break;
@@ -678,11 +678,12 @@ void IMAPMessage::processFetchResponse
 					tempHeader.parse((*it)->nstring()->value());
 
 					vmime::header& hdr = getOrCreateHeader();
+					std::vector <headerField*> fields = tempHeader.getFieldList();
 
-					for (header::const_iterator jt = tempHeader.fields.begin() ;
-					     jt != tempHeader.fields.end() ; ++jt)
+					for (std::vector <headerField*>::const_iterator jt = fields.begin() ;
+					     jt != fields.end() ; ++jt)
 					{
-						hdr.fields.append(*jt);
+						hdr.appendField((*jt)->clone());
 					}
 				}
 			}
@@ -728,7 +729,7 @@ void IMAPMessage::convertAddressList
 		string email = addr.addr_mailbox()->value()
 			+ "@" + addr.addr_host()->value();
 
-		dest.append(mailbox(name, email));
+		dest.appendMailbox(new mailbox(name, email));
 	}
 }
 
@@ -786,7 +787,7 @@ void IMAPMessage::setFlags(const int flags, const int mode)
 			resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
 		{
 			throw exceptions::command_error("STORE",
-				m_folder->m_connection->parser()->lastLine(), "bad response");
+				m_folder->m_connection->getParser()->lastLine(), "bad response");
 		}
 
 		// Update the local flags for this message
@@ -834,7 +835,7 @@ void IMAPMessage::setFlags(const int flags, const int mode)
 		for (std::list <IMAPFolder*>::iterator it = m_folder->m_store->m_folders.begin() ;
 		     it != m_folder->m_store->m_folders.end() ; ++it)
 		{
-			if ((*it)->fullPath() == m_folder->m_path)
+			if ((*it)->getFullPath() == m_folder->m_path)
 				(*it)->notifyMessageChanged(event);
 		}
 	}

@@ -44,6 +44,7 @@
 #include "addressList.hpp"
 #include "mediaType.hpp"
 #include "messageId.hpp"
+#include "relay.hpp"
 
 // Message components
 #include "message.hpp"
@@ -51,10 +52,8 @@
 // Header fields
 #include "headerFieldFactory.hpp"
 #include "mailboxField.hpp"
-#include "defaultField.hpp"
-#include "addressListField.hpp"
 #include "parameterizedHeaderField.hpp"
-#include "relayField.hpp"
+#include "standardFields.hpp"
 
 // Encoders
 #include "encoderFactory.hpp"

@@ -21,6 +21,8 @@
 #include "exception.hpp"
 #include "platformDependant.hpp"
 
+#include "utility/stringUtils.hpp"
+
 
 extern "C"
 {
@@ -72,20 +74,11 @@ void charset::generate(utility::outputStream& os, const string::size_type /* max
 }
 
 
-/** Convert the contents of an input stream in a specified charset
-  * to another charset and write the result to an output stream.
-  *
-  * @param in input stream to read data from
-  * @param out output stream to write the converted data
-  * @param source input charset
-  * @param dest output charset
-  */
-
 void charset::convert(utility::inputStream& in, utility::outputStream& out,
 	const charset& source, const charset& dest)
 {
 	// Get an iconv descriptor
-	const iconv_t cd = iconv_open(dest.name().c_str(), source.name().c_str());
+	const iconv_t cd = iconv_open(dest.getName().c_str(), source.getName().c_str());
 
 	if (cd != (iconv_t) -1)
 	{
@@ -158,20 +151,11 @@ void charset::convert(utility::inputStream& in, utility::outputStream& out,
 }
 
 
-/** Convert a string buffer in a specified charset to a string
-  * buffer in another charset.
-  *
-  * @param in input buffer
-  * @param out output buffer
-  * @param from input charset
-  * @param to output charset
-  */
-
 template <class STRINGF, class STRINGT>
 void charset::iconvert(const STRINGF& in, STRINGT& out, const charset& from, const charset& to)
 {
 	// Get an iconv descriptor
-	const iconv_t cd = iconv_open(to.name().c_str(), from.name().c_str());
+	const iconv_t cd = iconv_open(to.getName().c_str(), from.getName().c_str());
 
 	typedef typename STRINGF::value_type ivt;
 	typedef typename STRINGT::value_type ovt;
@@ -218,27 +202,11 @@ void charset::iconvert(const STRINGF& in, STRINGT& out, const charset& from, con
 
 #if VMIME_WIDE_CHAR_SUPPORT
 
-/** Convert a string buffer in the specified charset to a wide-char
-  * string buffer.
-  *
-  * @param in input buffer
-  * @param out output buffer
-  * @param ch input charset
-  */
-
 void charset::decode(const string& in, wstring& out, const charset& ch)
 {
 	iconvert(in, out, ch, charset("WCHAR_T"));
 }
 
-
-/** Convert a wide-char string buffer to a string buffer in the
-  * specified charset.
-  *
-  * @param in input buffer
-  * @param out output buffer
-  * @param ch output charset
-  */
 
 void charset::encode(const wstring& in, string& out, const charset& ch)
 {
@@ -248,27 +216,11 @@ void charset::encode(const wstring& in, string& out, const charset& ch)
 #endif
 
 
-/** Convert a string buffer from one charset to another charset.
-  *
-  * @param in input buffer
-  * @param out output buffer
-  * @param source input charset
-  * @param dest output charset
-  */
-
 void charset::convert(const string& in, string& out, const charset& source, const charset& dest)
 {
 	iconvert(in, out, source, dest);
 }
 
-
-/** Returns the default charset used on the system.
-  *
-  * This function simply calls <code>platformDependantHandler::getLocaleCharset()</code>
-  * and is provided for convenience.
-  *
-  * @return system default charset
-  */
 
 const charset charset::getLocaleCharset()
 {
@@ -276,9 +228,9 @@ const charset charset::getLocaleCharset()
 }
 
 
-charset& charset::operator=(const charset& source)
+charset& charset::operator=(const charset& other)
 {
-	m_name = source.m_name;
+	copyFrom(other);
 	return (*this);
 }
 
@@ -292,13 +244,31 @@ charset& charset::operator=(const string& name)
 
 const bool charset::operator==(const charset& value) const
 {
-	return (isStringEqualNoCase(m_name, value.m_name));
+	return (stringUtils::isStringEqualNoCase(m_name, value.m_name));
 }
 
 
 const bool charset::operator!=(const charset& value) const
 {
 	return !(*this == value);
+}
+
+
+charset* charset::clone() const
+{
+	return new charset(m_name);
+}
+
+
+const string& charset::getName() const
+{
+	return (m_name);
+}
+
+
+void charset::copyFrom(const component& other)
+{
+	m_name = dynamic_cast <const charset&>(other).m_name;
 }
 
 

@@ -41,5 +41,29 @@ const authenticationInfos simpleAuthenticator::getAuthInfos() const
 }
 
 
+const string& simpleAuthenticator::getUsername() const
+{
+	return (m_username);
+}
+
+
+void simpleAuthenticator::setUsername(const string& username)
+{
+	m_username = username;
+}
+
+
+const string& simpleAuthenticator::getPassword() const
+{
+	return (m_password);
+}
+
+
+void simpleAuthenticator::setPassword(const string& password)
+{
+	m_password = password;
+}
+
+
 } // messaging
 } // vmime

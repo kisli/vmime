@@ -40,20 +40,32 @@ public:
 	disposition(const string& name);
 	disposition(const disposition& disp);
 
-public:
 
-	const string& name() const { return (m_name); }
-	string& name() { return (m_name); }
+	/** Return the disposition type.
+	  * See the constants in vmime::dispositionTypes.
+	  *
+	  * @return name of the encoding (eg. "inline")
+	  */
+	const string& getName() const;
 
-public:
+	/** Set the disposition type.
+	  * See the constants in vmime::dispositionTypes.
+	  *
+	  * @param name name of the encoding
+	  */
+	void setName(const string& name);
 
-	disposition& operator=(const disposition& source);
+	disposition* clone() const;
+	void copyFrom(const component& other);
+	disposition& operator=(const disposition& other);
+
+
 	disposition& operator=(const string& name);
 
 	const bool operator==(const disposition& value) const;
 	const bool operator!=(const disposition& value) const;
 
-protected:
+private:
 
 	string m_name;
 

@@ -47,27 +47,25 @@ public:
 
 	virtual ~attachment() { }
 
-	virtual attachment& operator=(const attachment& attach) = 0;
-
 	/** Return the media type of this attachment.
 	  * @return content type of the attachment
 	  */
-	virtual const mediaType& type() const = 0;
+	virtual const mediaType& getType() const = 0;
 
 	/** Return the description of this attachment.
 	  * @return attachment description
 	  */
-	virtual const text& description() const = 0;
+	virtual const text& getDescription() const = 0;
 
 	/** Return the data contained in this attachment.
 	  * @return attachment data
 	  */
-	virtual const contentHandler& data() const = 0;
+	virtual const contentHandler& getData() const = 0;
 
 	/** Return the encoding used for this attachment.
 	  * @return attachment data encoding
 	  */
-	virtual const class encoding& encoding() const = 0;
+	virtual const encoding& getEncoding() const = 0;
 
 	/** Generate the attachment in the specified body part.
 	  * @param parent body part in which to generate the attachment

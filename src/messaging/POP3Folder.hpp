@@ -42,7 +42,7 @@ class POP3Message;
 
 class POP3Folder : public folder
 {
-protected:
+private:
 
 	friend class POP3Store;
 	friend class POP3Message;
@@ -54,14 +54,14 @@ protected:
 
 public:
 
-	const int mode() const;
+	const int getMode() const;
 
-	const int type();
+	const int getType();
 
-	const int flags();
+	const int getFlags();
 
-	const folder::path::component name() const;
-	const folder::path fullPath() const;
+	const folder::path::component getName() const;
+	const folder::path getFullPath() const;
 
 	void open(const int mode, bool failIfModeIsNotAvailable = false);
 	void close(const bool expunge);
@@ -101,8 +101,8 @@ public:
 
 	folder* getParent();
 
-	const class store& store() const;
-	class store& store();
+	const store* getStore() const;
+	store* getStore();
 
 
 	void fetchMessages(std::vector <message*>& msg, const int options, progressionListener* progress = NULL);

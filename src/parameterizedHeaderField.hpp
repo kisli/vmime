@@ -32,7 +32,7 @@ namespace vmime
 {
 
 
-class parameterizedHeaderField : public headerField
+class parameterizedHeaderField : virtual public headerField
 {
 	friend class headerFieldFactory::registerer <parameterizedHeaderField>;
 
@@ -42,154 +42,134 @@ protected:
 
 public:
 
-	void copyFrom(const headerField& field);
+	void copyFrom(const component& other);
+	parameterizedHeaderField& operator=(const parameterizedHeaderField& other);
 
-	// A sub-class for parameter manipulation
-	class paramsContainer
-	{
-		friend class parameterizedHeaderField;
+	/** Checks whether (at least) one parameter with this name exists.
+	  *
+	  * @return true if at least one parameter with the specified name
+	  * exists, or false otherwise
+	  */
+	const bool hasParameter(const string& paramName) const;
 
-	protected:
+	/** Find the first parameter that matches the specified name.
+	  * If no parameter is found, an exception is thrown.
+	  *
+	  * @throw exceptions::no_such_parameter if no parameter with this name exists
+	  * @return first parameter with the specified name
+	  */
+	parameter* findParameter(const string& paramName) const;
 
-		~paramsContainer();
+	/** Find the first parameter that matches the specified name.
+	  * If no parameter is found, one will be created and inserted into
+	  * the parameter list.
+	  *
+	  * @return first parameter with the specified name or a new field
+	  * if no parameter is found
+	  */
+	parameter* getParameter(const string& paramName);
 
-	public:
+	/** Add a parameter at the end of the list.
+	  *
+	  * @param param parameter to append
+	  */
+	void appendParameter(parameter* param);
 
-		// Find the first parameter with the specified name. If no parameter
-		// is found, an exception is thrown.
-		parameter& find(const string& name) const;
+	/** Insert a new parameter before the specified parameter.
+	  *
+	  * @param beforeParam parameter before which the new parameter will be inserted
+	  * @param param parameter to insert
+	  * @throw exceptions::no_such_parameter if the parameter is not in the list
+	  */
+	void insertParameterBefore(parameter* beforeParam, parameter* param);
 
-		// Find the first parameter with the specified name
-		parameter& get(const string& name);
+	/** Insert a new parameter before the specified position.
+	  *
+	  * @param pos position at which to insert the new parameter (0 to insert at
+	  * the beginning of the list)
+	  * @param param parameter to insert
+	  */
+	void insertParameterBefore(const int pos, parameter* param);
 
-		// Parameter iterator
-		class const_iterator;
+	/** Insert a new parameter after the specified parameter.
+	  *
+	  * @param afterParam parameter after which the new parameter will be inserted
+	  * @param param parameter to insert
+	  * @throw exceptions::no_such_parameter if the parameter is not in the list
+	  */
+	void insertParameterAfter(parameter* afterParam, parameter* param);
 
-		class iterator
-		{
-			friend class parameterizedHeaderField::paramsContainer::const_iterator;
-			friend class parameterizedHeaderField::paramsContainer;
+	/** Insert a new parameter after the specified position.
+	  *
+	  * @param pos position of the parameter before the new parameter
+	  * @param param parameter to insert
+	  */
+	void insertParameterAfter(const int pos, parameter* param);
 
-		public:
+	/** Remove the specified parameter from the list.
+	  *
+	  * @param param parameter to remove
+	  * @throw exceptions::no_such_parameter if the parameter is not in the list
+	  */
+	void removeParameter(parameter* param);
 
-			typedef std::vector <parameter*>::iterator::difference_type difference_type;
+	/** Remove the parameter at the specified position.
+	  *
+	  * @param pos position of the parameter to remove
+	  */
+	void removeParameter(const int pos);
 
-			iterator(std::vector <parameter*>::iterator it) : m_iterator(it) { }
-			iterator(const iterator& it) : m_iterator(it.m_iterator) { }
+	/** Remove all parameters from the list.
+	  */
+	void removeAllParameters();
 
-			iterator& operator=(const iterator& it) { m_iterator = it.m_iterator; return (*this); }
+	/** Return the number of parameters in the list.
+	  *
+	  * @return number of parameters
+	  */
+	const int getParameterCount() const;
 
-			parameter& operator*() const { return (**m_iterator); }
-			parameter* operator->() const { return (*m_iterator); }
+	/** Tests whether the list of parameters is empty.
+	  *
+	  * @return true if there is no parameter, false otherwise
+	  */
+	const bool isEmpty() const;
 
-			iterator& operator++() { ++m_iterator; return (*this); }
-			iterator operator++(int) { iterator i(*this); ++m_iterator; return (i); }
+	/** Return the parameter at the specified position.
+	  *
+	  * @param pos position
+	  * @return parameter at position 'pos'
+	  */
+	parameter* getParameterAt(const int pos);
 
-			iterator& operator--() { --m_iterator; return (*this); }
-			iterator operator--(int) { iterator i(*this); --m_iterator; return (i); }
+	/** Return the parameter at the specified position.
+	  *
+	  * @param pos position
+	  * @return parameter at position 'pos'
+	  */
+	const parameter* const getParameterAt(const int pos) const;
 
-			iterator& operator+=(difference_type n) { m_iterator += n; return (*this); }
-			iterator& operator-=(difference_type n) { m_iterator -= n; return (*this); }
+	/** Return the parameter list.
+	  *
+	  * @return list of parameters
+	  */
+	const std::vector <const parameter*> getParameterList() const;
 
-			iterator operator-(difference_type x) const { return iterator(m_iterator - x); }
+	/** Return the parameter list.
+	  *
+	  * @return list of parameters
+	  */
+	const std::vector <parameter*> getParameterList();
 
-			parameter& operator[](difference_type n) const { return *(m_iterator[n]); }
-
-			const bool operator==(const iterator& it) const { return (it.m_iterator == m_iterator); }
-			const bool operator!=(const iterator& it) const { return (!(*this == it)); }
-
-		protected:
-
-			std::vector <parameter*>::iterator m_iterator;
-		};
-
-		class const_iterator
-		{
-		public:
-
-			typedef std::vector <parameter*>::const_iterator::difference_type difference_type;
-
-			const_iterator(std::vector <parameter*>::const_iterator it) : m_iterator(it) { }
-			const_iterator(const iterator& it) : m_iterator(it.m_iterator) { }
-			const_iterator(const const_iterator& it) : m_iterator(it.m_iterator) { }
-
-			const_iterator& operator=(const const_iterator& it) { m_iterator = it.m_iterator; return (*this); }
-			const_iterator& operator=(const iterator& it) { m_iterator = it.m_iterator; return (*this); }
-
-			const parameter& operator*() const { return (**m_iterator); }
-			const parameter* operator->() const { return (*m_iterator); }
-
-			const_iterator& operator++() { ++m_iterator; return (*this); }
-			const_iterator operator++(int) { const_iterator i(*this); ++m_iterator; return (i); }
-
-			const_iterator& operator--() { --m_iterator; return (*this); }
-			const_iterator operator--(int) { const_iterator i(*this); --m_iterator; return (i); }
-
-			const_iterator& operator+=(difference_type n) { m_iterator += n; return (*this); }
-			const_iterator& operator-=(difference_type n) { m_iterator -= n; return (*this); }
-
-			const_iterator operator-(difference_type x) const { return const_iterator(m_iterator - x); }
-
-			const parameter& operator[](difference_type n) const { return *(m_iterator[n]); }
-
-			const bool operator==(const const_iterator& it) const { return (it.m_iterator == m_iterator); }
-			const bool operator!=(const const_iterator& it) const { return (!(*this == it)); }
-
-		protected:
-
-			std::vector <parameter*>::const_iterator m_iterator;
-		};
-
-	public:
-
-		iterator begin() { return (m_params.begin()); }
-		iterator end() { return (m_params.end()); }
-
-		const_iterator begin() const { return (const_iterator(m_params.begin())); }
-		const_iterator end() const { return (const_iterator(m_params.end())); }
-
-		// Parameter insertion
-		void append(const parameter& param);
-		void insert(const iterator it, const parameter& param);
-
-		// Parameter removing
-		void remove(const iterator it);
-		void clear();
-
-		// Parameter count
-		const size_t count() const { return (m_params.size()); }
-		const size_t size() const { return (m_params.size()); }
-
-		parameter& front() { return (*m_params.front()); }
-		const parameter& front() const { return (*m_params.front()); }
-		parameter& back() { return (*m_params.back()); }
-		const parameter& back() const { return (*m_params.back()); }
-
-	protected:
-
-		std::vector <parameter*> m_params;
-
-	} parameters;
-
-	typedef paramsContainer::iterator iterator;
-	typedef paramsContainer::const_iterator const_iterator;
-
-protected:
+private:
 
 	std::vector <parameter*> m_params;
-
-protected:
-
-	virtual void parseValue(const string& buffer, const string::size_type position, const string::size_type end) = 0;
-	virtual const string generateValue() const = 0;
 
 public:
 
 	using headerField::parse;
 	using headerField::generate;
 
-	// No need to override these (use "parseValue" and "generateValue" instead).
-	// For more information, see "defaultParameter.hpp".
 	void parse(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition = NULL);
 	void generate(utility::outputStream& os, const string::size_type maxLineLength = lineLengthLimits::infinite, const string::size_type curLinePos = 0, string::size_type* newLinePos = NULL) const;
 };

@@ -31,7 +31,7 @@ defaultAttachment::defaultAttachment()
 
 
 defaultAttachment::defaultAttachment(const contentHandler& data,
-	const class encoding& enc, const mediaType& type, const text& desc)
+	const encoding& enc, const mediaType& type, const text& desc)
 	: m_type(type), m_desc(desc), m_data(data), m_encoding(enc)
 {
 }
@@ -51,15 +51,12 @@ defaultAttachment::defaultAttachment(const defaultAttachment& attach)
 }
 
 
-attachment& defaultAttachment::operator=(const attachment& attach)
+defaultAttachment& defaultAttachment::operator=(const defaultAttachment& attach)
 {
-	const defaultAttachment& att =
-		dynamic_cast <const defaultAttachment&>(attach);
-
-	m_type = att.m_type;
-	m_desc = att.m_desc;
-	m_data = att.m_data;
-	m_encoding = att.m_encoding;
+	m_type = attach.m_type;
+	m_desc = attach.m_desc;
+	m_data = attach.m_data;
+	m_encoding = attach.m_encoding;
 
 	return (*this);
 }
@@ -69,7 +66,7 @@ void defaultAttachment::generateIn(bodyPart& parent) const
 {
 	// Create and append a new part for this attachment
 	bodyPart* part = new bodyPart;
-	parent.body().parts.append(part);
+	parent.getBody()->appendPart(part);
 
 	generatePart(*part);
 }
@@ -78,13 +75,37 @@ void defaultAttachment::generateIn(bodyPart& parent) const
 void defaultAttachment::generatePart(bodyPart& part) const
 {
 	// Set header fields
-	part.header().fields.ContentType() = m_type;
-	if (!m_desc.empty()) part.header().fields.ContentDescription() = m_desc;
-	part.header().fields.ContentTransferEncoding() = m_encoding;
-	part.header().fields.ContentDisposition() = disposition(dispositionTypes::ATTACHMENT);
+	part.getHeader()->ContentType().setValue(m_type);
+	if (!m_desc.isEmpty()) part.getHeader()->ContentDescription().setValue(m_desc);
+	part.getHeader()->ContentTransferEncoding().setValue(m_encoding);
+	part.getHeader()->ContentDisposition().setValue(disposition(dispositionTypes::ATTACHMENT));
 
 	// Set contents
-	part.body().contents() = m_data;
+	part.getBody()->getContents() = m_data;
+}
+
+
+const mediaType& defaultAttachment::getType() const
+{
+	return (m_type);
+}
+
+
+const text& defaultAttachment::getDescription() const
+{
+	return (m_desc);
+}
+
+
+const contentHandler& defaultAttachment::getData() const
+{
+	return (m_data);
+}
+
+
+const encoding& defaultAttachment::getEncoding() const
+{
+	return (m_encoding);
 }
 
 

@@ -37,12 +37,16 @@ class url
 {
 public:
 
-	/** Means "port not specified" (use default port).
-	  */
+	/** Means "port not specified" (use default port). */
 	static const port_t UNSPECIFIED_PORT = static_cast <port_t>(-1);
 
+	/** Standard name for FILE protocol (local file-system). */
 	static const string PROTOCOL_FILE;
+
+	/** Standard name for HTTP protocol. */
 	static const string PROTOCOL_HTTP;
+
+	/** Standard name for FTP protocol. */
 	static const string PROTOCOL_FTP;
 
 
@@ -71,23 +75,82 @@ public:
 		const string& path = "", const string& username = "", const string& password = "");
 
 
-	const string& protocol() const { return (m_protocol); }
-	string& protocol() { return (m_protocol); }
+	/** Return the protocol of the URL (eg: "http").
+	  *
+	  * @return protocol of the URL
+	  */
+	const string& getProtocol() const;
 
-	const string& username() const { return (m_username); }
-	string& username() { return (m_username); }
+	/** Set the protocol of the URL.
+	  *
+	  * @param protocol new protocol (eg: "http")
+	  */
+	void setProtocol(const string& protocol);
 
-	const string& password() const { return (m_password); }
-	string& password() { return (m_password); }
+	/** Return the username specified in the URL
+	  * or empty if not specified.
+	  *
+	  * @return user name
+	  */
+	const string& getUsername() const;
 
-	const string& host() const { return (m_host); }
-	string& host() { return (m_host); }
+	/** Set the username of the URL.
+	  *
+	  * @param username user name
+	  */
+	void setUsername(const string& username);
 
-	const port_t port() const { return (m_port); }
-	port_t& port() { return (m_port); }
+	/** Return the password specified in the URL
+	  * or empty if not specified.
+	  *
+	  * @return user password
+	  */
+	const string& getPassword() const;
 
-	const string& path() const { return (m_path); }
-	string& path() { return (m_path); }
+	/** Set the password of the URL.
+	  *
+	  * @param password user password
+	  */
+	void setPassword(const string& password);
+
+	/** Return the host name of the URL (server name or IP address).
+	  *
+	  * @return host name
+	  */
+	const string& getHost() const;
+
+	/** Set the host name of the URL.
+	  *
+	  * @param host server name or IP address
+	  */
+	void setHost(const string& host);
+
+	/** Return the port of the URL, or url::UNSPECIFIED_PORT if
+	  * the default port if used.
+	  *
+	  * @return server port
+	  */
+	const port_t getPort() const;
+
+	/** Set the port of the URL.
+	  *
+	  * @param port server port or url::UNSPECIFIED_PORT to
+	  * use the default port of the protocol
+	  */
+	void setPort(const port_t port);
+
+	/** Return the path portion of the URL,
+	  * or empty if not specified.
+	  *
+	  * @return path
+	  */
+	const string& getPath() const;
+
+	/** Set the part portion of the URL.
+	  *
+	  * @param path path
+	  */
+	void setPath(const string& path);
 
 
 	/** Build a string URL from this object.

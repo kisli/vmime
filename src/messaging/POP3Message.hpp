@@ -35,7 +35,7 @@ namespace messaging {
 
 class POP3Message : public message
 {
-protected:
+private:
 
 	friend class POP3Folder;
 
@@ -46,20 +46,20 @@ protected:
 
 public:
 
-	const int number() const;
+	const int getNumber() const;
 
-	const uid uniqueId() const;
+	const uid getUniqueId() const;
 
-	const int size() const;
+	const int getSize() const;
 
 	const bool isExpunged() const;
 
-	const class structure& structure() const;
-	class structure& structure();
+	const structure& getStructure() const;
+	structure& getStructure();
 
-	const class header& header() const;
+	const header& getHeader() const;
 
-	const int flags() const;
+	const int getFlags() const;
 	void setFlags(const int flags, const int mode = FLAG_MODE_SET);
 
 	void extract(utility::outputStream& os, progressionListener* progress = NULL, const int start = 0, const int length = -1) const;
@@ -77,7 +77,7 @@ private:
 	int m_num;
 	uid m_uid;
 
-	class header* m_header;
+	header* m_header;
 };
 
 

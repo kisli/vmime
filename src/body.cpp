@@ -23,7 +23,6 @@
 #include "options.hpp"
 
 #include "contentTypeField.hpp"
-#include "contentEncodingField.hpp"
 
 #include "utility/random.hpp"
 
@@ -34,16 +33,28 @@ namespace vmime
 {
 
 
-body::body(bodyPart& part)
-	: parts(*this), m_part(part), m_header(part.header())
+body::body()
+	: m_part(NULL), m_header(NULL)
 {
+}
+
+
+body::body(bodyPart* parentPart)
+	: m_part(parentPart), m_header(parentPart != NULL ? parentPart->getHeader() : NULL)
+{
+}
+
+
+body::~body()
+{
+	removeAllParts();
 }
 
 
 void body::parse(const string& buffer, const string::size_type position,
 	const string::size_type end, string::size_type* newPosition)
 {
-	parts.clear();
+	removeAllParts();
 
 	// Check whether the body is a MIME-multipart
 	bool isMultipart = false;
@@ -52,15 +63,15 @@ void body::parse(const string& buffer, const string::size_type position,
 	try
 	{
 		const contentTypeField& ctf = dynamic_cast <contentTypeField&>
-			(m_header.fields.find(headerField::ContentType));
+			(*m_header->findField(fields::CONTENT_TYPE));
 
-		if (ctf.value().type() == mediaTypes::MULTIPART)
+		if (ctf.getValue().getType() == mediaTypes::MULTIPART)
 		{
 			isMultipart = true;
 
 			try
 			{
-				boundary = ctf.boundary();
+				boundary = ctf.getBoundary();
 			}
 			catch (exceptions::no_such_parameter&)
 			{
@@ -170,12 +181,16 @@ void body::parse(const string& buffer, const string::size_type position,
 					throw;
 				}
 
-				parts.m_parts.push_back(part);
+				part->m_parent = m_part;
+
+				m_parts.push_back(part);
 			}
 
 			partStart = pos;
 			pos = buffer.find(boundarySep, partStart);
 		}
+
+		m_contents.setData("");
 
 		if (partStart < end)
 			m_epilogText = string(buffer.begin() + partStart, buffer.begin() + end);
@@ -184,7 +199,7 @@ void body::parse(const string& buffer, const string::size_type position,
 	else
 	{
 		// Extract the (encoded) contents
-		m_contents.set(buffer, position, end, encoding());
+		m_contents.setData(buffer, position, end, getEncoding());
 	}
 
 	if (newPosition)
@@ -196,32 +211,39 @@ void body::generate(utility::outputStream& os, const string::size_type maxLineLe
 	const string::size_type /* curLinePos */, string::size_type* newLinePos) const
 {
 	// MIME-Multipart
-	if (parts.size() != 0)
+	if (getPartCount() != 0)
 	{
 		string boundary;
 
-		try
+		if (m_header == NULL)
 		{
-			contentTypeField& ctf = dynamic_cast<contentTypeField&>
-				(m_header.fields.find(headerField::ContentType));
+			boundary = generateRandomBoundaryString();
+		}
+		else
+		{
+			try
+			{
+				contentTypeField& ctf = dynamic_cast<contentTypeField&>
+					(*m_header->findField(fields::CONTENT_TYPE));
 
-			boundary = ctf.boundary();
-		}
-		catch (exceptions::no_such_field&)
-		{
-			// Warning: no content-type and no boundary string specified!
-			boundary = generateRandomBoundaryString();
-		}
-		catch (exceptions::no_such_parameter&)
-		{
-			// Warning: no boundary string specified!
-			boundary = generateRandomBoundaryString();
+				boundary = ctf.getBoundary();
+			}
+			catch (exceptions::no_such_field&)
+			{
+				// Warning: no content-type and no boundary string specified!
+				boundary = generateRandomBoundaryString();
+			}
+			catch (exceptions::no_such_parameter&)
+			{
+				// Warning: no boundary string specified!
+				boundary = generateRandomBoundaryString();
+			}
 		}
 
 		const string& prologText =
 			m_prologText.empty()
 				? (isRootPart()
-					? options::getInstance()->multipart.prologText()
+					? options::getInstance()->multipart.getPrologText()
 					: NULL_STRING
 				  )
 				: m_prologText;
@@ -229,14 +251,14 @@ void body::generate(utility::outputStream& os, const string::size_type maxLineLe
 		const string& epilogText =
 			m_epilogText.empty()
 				? (isRootPart()
-					? options::getInstance()->multipart.epilogText()
+					? options::getInstance()->multipart.getEpilogText()
 					: NULL_STRING
 				  )
 				: m_epilogText;
 
 		if (!prologText.empty())
 		{
-			encodeAndFoldText(os, text(word(prologText, charset())), maxLineLength, 0,
+			encodeAndFoldText(os, text(word(prologText, getCharset())), maxLineLength, 0,
 				NULL, encodeAndFoldFlags::forceNoEncoding | encodeAndFoldFlags::noNewLineSequence);
 
 			os << CRLF;
@@ -244,12 +266,11 @@ void body::generate(utility::outputStream& os, const string::size_type maxLineLe
 
 		os << "--" << boundary;
 
-		for (std::vector <bodyPart*>::const_iterator
-		     p = parts.m_parts.begin() ; p != parts.m_parts.end() ; ++p)
+		for (int p = 0 ; p < getPartCount() ; ++p)
 		{
 			os << CRLF;
 
-			(*p)->generate(os, maxLineLength, 0);
+			getPartAt(p)->generate(os, maxLineLength, 0);
 
 			os << CRLF << "--" << boundary;
 		}
@@ -258,7 +279,7 @@ void body::generate(utility::outputStream& os, const string::size_type maxLineLe
 
 		if (!epilogText.empty())
 		{
-			encodeAndFoldText(os, text(word(epilogText, charset())), maxLineLength, 0,
+			encodeAndFoldText(os, text(word(epilogText, getCharset())), maxLineLength, 0,
 				NULL, encodeAndFoldFlags::forceNoEncoding | encodeAndFoldFlags::noNewLineSequence);
 
 			os << CRLF;
@@ -271,7 +292,7 @@ void body::generate(utility::outputStream& os, const string::size_type maxLineLe
 	else
 	{
 		// Generate the contents
-		m_contents.generate(os, encoding(), maxLineLength);
+		m_contents.generate(os, getEncoding(), maxLineLength);
 	}
 }
 
@@ -316,7 +337,7 @@ const string body::generateRandomBoundaryString()
 	boundary[1] = '_';
 
 	// Generate a string of random characters
-	unsigned int r = utility::random::time();
+	unsigned int r = utility::random::getTime();
 	unsigned int m = sizeof(unsigned int);
 
 	for (size_t i = 2 ; i < (sizeof(boundary) / sizeof(boundary[0]) - 1) ; ++i)
@@ -326,7 +347,7 @@ const string body::generateRandomBoundaryString()
 
 			if (--m == 0)
 			{
-				r = utility::random::next();
+				r = utility::random::getNext();
 				m = sizeof(unsigned int);
 			}
 	}
@@ -363,12 +384,14 @@ const bool body::isValidBoundary(const string& boundary)
 // Quick-access functions
 //
 
-const mediaType body::contentType() const
+const mediaType body::getContentType() const
 {
 	try
 	{
-		const contentTypeField& ctf = dynamic_cast<contentTypeField&>(m_header.fields.find(headerField::ContentType));
-		return (ctf.value());
+		const contentTypeField& ctf = dynamic_cast<contentTypeField&>
+			(*m_header->findField(fields::CONTENT_TYPE));
+
+		return (ctf.getValue());
 	}
 	catch (exceptions::no_such_field&)
 	{
@@ -378,12 +401,14 @@ const mediaType body::contentType() const
 }
 
 
-const class charset body::charset() const
+const charset body::getCharset() const
 {
 	try
 	{
-		const contentTypeField& ctf = dynamic_cast<contentTypeField&>(m_header.fields.find(headerField::ContentType));
-		const class charset& cs = ctf.charset();
+		const contentTypeField& ctf = dynamic_cast<contentTypeField&>
+			(*m_header->findField(fields::CONTENT_TYPE));
+
+		const class charset& cs = ctf.getCharset();
 
 		return (cs);
 	}
@@ -400,12 +425,14 @@ const class charset body::charset() const
 }
 
 
-const class encoding body::encoding() const
+const encoding body::getEncoding() const
 {
 	try
 	{
-		const contentEncodingField& cef = m_header.fields.ContentTransferEncoding();
-		return (cef.value());
+		const contentEncodingField& cef = dynamic_cast<contentEncodingField&>
+			(*m_header->findField(fields::CONTENT_TRANSFER_ENCODING));
+
+		return (cef.getValue());
 	}
 	catch (exceptions::no_such_field&)
 	{
@@ -417,126 +444,259 @@ const class encoding body::encoding() const
 
 const bool body::isRootPart() const
 {
-	return (m_part.parent() == NULL);
+	return (m_part == NULL || m_part->getParentPart() == NULL);
 }
 
 
-body& body::operator=(const body& b)
+body* body::clone() const
 {
-	m_prologText = b.m_prologText;
-	m_epilogText = b.m_epilogText;
+	body* bdy = new body(NULL);
 
-	m_contents = b.m_contents;
+	bdy->copyFrom(*this);
 
-	parts = b.parts;
+	return (bdy);
+}
 
+
+void body::copyFrom(const component& other)
+{
+	const body& bdy = dynamic_cast <const body&>(other);
+
+	m_prologText = bdy.m_prologText;
+	m_epilogText = bdy.m_epilogText;
+
+	m_contents = bdy.m_contents;
+
+	removeAllParts();
+
+	for (int p = 0 ; p < bdy.getPartCount() ; ++p)
+	{
+		bodyPart* part = bdy.getPartAt(p)->clone();
+
+		part->m_parent = m_part;
+
+		m_parts.push_back(part);
+	}
+}
+
+
+body& body::operator=(const body& other)
+{
+	copyFrom(other);
 	return (*this);
 }
 
 
-/////////////////////
-// Parts container //
-/////////////////////
-
-
-body::partsContainer::partsContainer(class body& body)
-	: m_body(body)
+const string& body::getPrologText() const
 {
+	return (m_prologText);
 }
 
 
-// Part insertion
-void body::partsContainer::append(bodyPart* part)
+void body::setPrologText(const string& prologText)
 {
-	part->m_parent = &(m_body.m_part);
+	m_prologText = prologText;
+}
 
-	m_parts.push_back(part);
 
-	// Check whether we have a boundary string
-	try
+const string& body::getEpilogText() const
+{
+	return (m_epilogText);
+}
+
+
+void body::setEpilogText(const string& epilogText)
+{
+	m_epilogText = epilogText;
+}
+
+
+const contentHandler& body::getContents() const
+{
+	return (m_contents);
+}
+
+
+contentHandler& body::getContents()
+{
+	return (m_contents);
+}
+
+
+void body::setContents(const contentHandler& contents)
+{
+	m_contents = contents;
+}
+
+
+void body::initNewPart(bodyPart* part)
+{
+	part->m_parent = m_part;
+
+	if (m_header != NULL)
 	{
-		contentTypeField& ctf = dynamic_cast<contentTypeField&>
-			(m_body.m_header.fields.find(headerField::ContentType));
-
+		// Check whether we have a boundary string
 		try
 		{
-			const string boundary = ctf.boundary();
+			contentTypeField& ctf = dynamic_cast<contentTypeField&>
+				(*m_header->findField(fields::CONTENT_TYPE));
 
-			if (boundary.empty() || !isValidBoundary(boundary))
-				throw exceptions::no_such_parameter("boundary"); // to generate a new one
-		}
-		catch (exceptions::no_such_parameter&)
-		{
-			// No "boundary" parameter: generate a random one.
-			ctf.boundary() = generateRandomBoundaryString();
-		}
+			try
+			{
+				const string boundary = ctf.getBoundary();
 
-		if (ctf.value().type() != mediaTypes::MULTIPART)
+				if (boundary.empty() || !isValidBoundary(boundary))
+					ctf.setBoundary(generateRandomBoundaryString());
+			}
+			catch (exceptions::no_such_parameter&)
+			{
+				// No "boundary" parameter: generate a random one.
+				ctf.setBoundary(generateRandomBoundaryString());
+			}
+
+			if (ctf.getValue().getType() != mediaTypes::MULTIPART)
+			{
+				// Warning: multi-part body but the Content-Type is
+				// not specified as "multipart/..."
+			}
+		}
+		catch (exceptions::no_such_field&)
 		{
-			// Warning: multi-part body but the Content-Type is
-			// not specified as "multipart/..."
+			// No "Content-Type" field: create a new one and generate
+			// a random boundary string.
+			contentTypeField& ctf = dynamic_cast<contentTypeField&>
+				(*m_header->getField(fields::CONTENT_TYPE));
+
+			ctf.setValue(mediaType(mediaTypes::MULTIPART, mediaTypes::MULTIPART_MIXED));
+			ctf.setBoundary(generateRandomBoundaryString());
 		}
 	}
-	catch (exceptions::no_such_field&)
-	{
-		// No "Content-Type" field: create a new one and generate
-		// a random boundary string.
-		contentTypeField& ctf = dynamic_cast<contentTypeField&>
-			(m_body.m_header.fields.get(headerField::ContentType));
-
-		ctf.value() = mediaType(mediaTypes::MULTIPART, mediaTypes::MULTIPART_MIXED);
-		ctf.boundary() = generateRandomBoundaryString();
-	}
 }
 
 
-void body::partsContainer::insert(const iterator it, bodyPart* part)
+void body::appendPart(bodyPart* part)
 {
-	part->m_parent = &(m_body.m_part);
+	initNewPart(part);
 
-	m_parts.insert(it.m_iterator, part);
+	m_parts.push_back(part);
 }
 
 
-// Part removing
-void body::partsContainer::remove(const iterator it)
+void body::insertPartBefore(bodyPart* beforePart, bodyPart* part)
 {
-	delete (*it.m_iterator);
-	m_parts.erase(it.m_iterator);
+	initNewPart(part);
+
+	const std::vector <bodyPart*>::iterator it = std::find
+		(m_parts.begin(), m_parts.end(), beforePart);
+
+	if (it == m_parts.end())
+		throw exceptions::no_such_part();
+
+	m_parts.insert(it, part);
 }
 
 
-void body::partsContainer::clear()
+void body::insertPartBefore(const int pos, bodyPart* part)
+{
+	initNewPart(part);
+
+	m_parts.insert(m_parts.begin() + pos, part);
+}
+
+
+void body::insertPartAfter(bodyPart* afterPart, bodyPart* part)
+{
+	initNewPart(part);
+
+	const std::vector <bodyPart*>::iterator it = std::find
+		(m_parts.begin(), m_parts.end(), afterPart);
+
+	if (it == m_parts.end())
+		throw exceptions::no_such_part();
+
+	m_parts.insert(it + 1, part);
+}
+
+
+void body::insertPartAfter(const int pos, bodyPart* part)
+{
+	initNewPart(part);
+
+	m_parts.insert(m_parts.begin() + pos + 1, part);
+}
+
+
+void body::removePart(bodyPart* part)
+{
+	const std::vector <bodyPart*>::iterator it = std::find
+		(m_parts.begin(), m_parts.end(), part);
+
+	if (it == m_parts.end())
+		throw exceptions::no_such_part();
+
+	delete (*it);
+
+	m_parts.erase(it);
+}
+
+
+void body::removePart(const int pos)
+{
+	delete (m_parts[pos]);
+
+	m_parts.erase(m_parts.begin() + pos);
+}
+
+
+void body::removeAllParts()
 {
 	free_container(m_parts);
 }
 
 
-body::partsContainer::~partsContainer()
+const int body::getPartCount() const
 {
-	clear();
+	return (m_parts.size());
 }
 
 
-body::partsContainer& body::partsContainer::operator=(const partsContainer& c)
+const bool body::isEmpty() const
 {
-	std::vector <bodyPart*> parts;
+	return (m_parts.size() == 0);
+}
 
-	for (std::vector <bodyPart*>::const_iterator it = c.m_parts.begin() ; it != c.m_parts.end() ; ++it)
+
+bodyPart* body::getPartAt(const int pos)
+{
+	return (m_parts[pos]);
+}
+
+
+const bodyPart* const body::getPartAt(const int pos) const
+{
+	return (m_parts[pos]);
+}
+
+
+const std::vector <const bodyPart*> body::getPartList() const
+{
+	std::vector <const bodyPart*> list;
+
+	list.reserve(m_parts.size());
+
+	for (std::vector <bodyPart*>::const_iterator it = m_parts.begin() ;
+	     it != m_parts.end() ; ++it)
 	{
-		bodyPart* p = (*it)->clone();
-		p->m_parent = &(m_body.m_part);
-
-		parts.push_back(p);
+		list.push_back(*it);
 	}
 
-	for (std::vector <bodyPart*>::iterator it = m_parts.begin() ; it != m_parts.end() ; ++it)
-		delete (*it);
+	return (list);
+}
 
-	m_parts.resize(parts.size());
-	std::copy(parts.begin(), parts.end(), m_parts.begin());
 
-	return (*this);
+const std::vector <bodyPart*> body::getPartList()
+{
+	return (m_parts);
 }
 
 

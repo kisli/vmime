@@ -26,7 +26,7 @@ namespace vmime
 {
 
 
-const mediaType plainTextPart::type() const
+const mediaType plainTextPart::getType() const
 {
 	return (mediaType(mediaTypes::TEXT, mediaTypes::TEXT_PLAIN));
 }
@@ -42,29 +42,29 @@ void plainTextPart::generateIn(bodyPart& /* message */, bodyPart& parent) const
 {
 	// Create a new part
 	bodyPart* part = new bodyPart();
-	parent.body().parts.append(part);
+	parent.getBody()->appendPart(part);
 
 	// Set header fields
-	part->header().fields.ContentType() = mediaType(mediaTypes::TEXT, mediaTypes::TEXT_PLAIN);
-	part->header().fields.ContentType().charset() = m_charset;
-	part->header().fields.ContentTransferEncoding() = encoding(encodingTypes::QUOTED_PRINTABLE);
+	part->getHeader()->ContentType().setValue(mediaType(mediaTypes::TEXT, mediaTypes::TEXT_PLAIN));
+	part->getHeader()->ContentType().setCharset(m_charset);
+	part->getHeader()->ContentTransferEncoding().setValue(encoding(encodingTypes::QUOTED_PRINTABLE));
 
 	// Set contents
-	part->body().contents() = m_text;
+	part->getBody()->setContents(m_text);
 }
 
 
 void plainTextPart::parse(const bodyPart& /* message */,
 	const bodyPart& /* parent */, const bodyPart& textPart)
 {
-	m_text = textPart.body().contents();
+	m_text = textPart.getBody()->getContents();
 
 	try
 	{
 		const contentTypeField& ctf = dynamic_cast<contentTypeField&>
-			(textPart.header().fields.find(headerField::ContentType));
+			(*textPart.getHeader()->findField(fields::CONTENT_TYPE));
 
-		m_charset = ctf.charset();
+		m_charset = ctf.getCharset();
 	}
 	catch (exceptions::no_such_field)
 	{
@@ -74,6 +74,30 @@ void plainTextPart::parse(const bodyPart& /* message */,
 	{
 		// No "charset" parameter.
 	}
+}
+
+
+const charset& plainTextPart::getCharset() const
+{
+	return (m_charset);
+}
+
+
+void plainTextPart::setCharset(const charset& ch)
+{
+	m_charset = ch;
+}
+
+
+const contentHandler& plainTextPart::getText() const
+{
+	return (m_text);
+}
+
+
+void plainTextPart::setText(const contentHandler& text)
+{
+	m_text = text;
 }
 
 

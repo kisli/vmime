@@ -42,7 +42,7 @@ class transport : public service
 {
 protected:
 
-	transport(class session& sess, const serviceInfos& infos, class authenticator* auth)
+	transport(session* sess, const serviceInfos& infos, authenticator* auth)
 		: service(sess, infos, auth) { }
 
 public:
@@ -65,7 +65,7 @@ public:
 	virtual void send(const mailbox& expeditor, const mailboxList& recipients, utility::inputStream& is, const utility::stream::size_type size, progressionListener* progress = NULL) = 0;
 
 
-	const Type type() const { return (TYPE_TRANSPORT); }
+	const Type getType() const { return (TYPE_TRANSPORT); }
 };
 
 

@@ -38,8 +38,8 @@ mediaType::mediaType(const string& type)
 
 
 mediaType::mediaType(const string& type, const string& subType)
+	: m_type(stringUtils::toLower(type)), m_subType(stringUtils::toLower(subType))
 {
-	set(type, subType);
 }
 
 
@@ -55,8 +55,8 @@ void mediaType::parse(const string& buffer, const string::size_type position,
 
 	while (p < pend && *p != '/') ++p;
 
-	m_type = toLower(string(buffer.begin() + typeStart,
-	                        buffer.begin() + position + (p - pstart)));
+	m_type = stringUtils::toLower(string(buffer.begin() + typeStart,
+	                                     buffer.begin() + position + (p - pstart)));
 
 	if (p < pend)
 	{
@@ -64,8 +64,8 @@ void mediaType::parse(const string& buffer, const string::size_type position,
 		++p;
 
 		// Extract the sub-type
-		m_subType = toLower(string(buffer.begin() + position + (p - pstart),
-		                           buffer.begin() + end));
+		m_subType = stringUtils::toLower(string(buffer.begin() + position + (p - pstart),
+		                                        buffer.begin() + end));
 	}
 
 	if (newPosition)
@@ -76,7 +76,7 @@ void mediaType::parse(const string& buffer, const string::size_type position,
 void mediaType::generate(utility::outputStream& os, const string::size_type maxLineLength,
 	const string::size_type curLinePos, string::size_type* newLinePos) const
 {
-	const string value = toLower(m_type) + "/" + toLower(m_subType);
+	const string value = m_type + "/" + m_subType;
 
 	if (curLinePos + value.length() > maxLineLength)
 	{
@@ -108,19 +108,62 @@ const bool mediaType::operator!=(const mediaType& type) const
 }
 
 
-mediaType& mediaType::operator=(const mediaType& type)
-{
-	m_type = type.m_type;
-	m_subType = type.m_subType;
-
-	return (*this);
-}
-
-
 mediaType& mediaType::operator=(const string& type)
 {
 	parse(type);
 	return (*this);
+}
+
+
+mediaType* mediaType::clone() const
+{
+	return new mediaType(m_type, m_subType);
+}
+
+
+void mediaType::copyFrom(const component& other)
+{
+	const mediaType& mt = dynamic_cast <const mediaType&>(other);
+
+	m_type = mt.m_type;
+	m_subType = mt.m_subType;
+}
+
+
+mediaType& mediaType::operator=(const mediaType& other)
+{
+	copyFrom(other);
+	return (*this);
+}
+
+
+const string& mediaType::getType() const
+{
+	return (m_type);
+}
+
+
+void mediaType::setType(const string& type)
+{
+	m_type = stringUtils::toLower(type);
+}
+
+
+const string& mediaType::getSubType() const
+{
+	return (m_subType);
+}
+
+
+void mediaType::setSubType(const string& subType)
+{
+	m_subType = stringUtils::toLower(subType);
+}
+
+
+void mediaType::setFromString(const string& type)
+{
+	parse(type);
 }
 
 

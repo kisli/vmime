@@ -35,10 +35,10 @@ int main(int argc, char* argv[])
 
 	vmime::encoder* p = vmime::encoderFactory::getInstance()->create(encoding);
 
-	p->properties()["maxlinelength"] = 76;
+	p->getProperties()["maxlinelength"] = 76;
 
-	vmime::inputStreamAdapter in(std::cin);
-	vmime::outputStreamAdapter out(std::cout);
+	vmime::utility::inputStreamAdapter in(std::cin);
+	vmime::utility::outputStreamAdapter out(std::cout);
 
 	if (mode == "e")
 		p->encode(in, out);

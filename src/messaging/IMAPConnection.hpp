@@ -72,11 +72,11 @@ public:
 	IMAPParser::response* readResponse(IMAPParser::literalHandler* lh = NULL);
 
 
-	const IMAPTag* tag() const { return (m_tag); }
-	const IMAPParser* parser() const { return (m_parser); }
+	const IMAPTag* getTag() const { return (m_tag); }
+	const IMAPParser* getParser() const { return (m_parser); }
 
-	const IMAPStore* store() const { return (m_store); }
-	IMAPStore* store() { return (m_store); }
+	const IMAPStore* getStore() const { return (m_store); }
+	IMAPStore* getStore() { return (m_store); }
 
 private:
 

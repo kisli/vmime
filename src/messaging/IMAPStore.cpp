@@ -72,8 +72,8 @@ private:
 // IMAPStore
 //
 
-IMAPStore::IMAPStore(class session& sess, class authenticator* auth)
-	: store(sess, infosInstance(), auth),
+IMAPStore::IMAPStore(session* sess, authenticator* auth)
+	: store(sess, getInfosInstance(), auth),
 	  m_connection(NULL), m_oneTimeAuth(NULL)
 {
 }
@@ -92,7 +92,7 @@ authenticator* IMAPStore::oneTimeAuthenticator()
 }
 
 
-const string IMAPStore::protocolName() const
+const string IMAPStore::getProtocolName() const
 {
 	return "imap";
 }
@@ -130,7 +130,7 @@ void IMAPStore::connect()
 	if (isConnected())
 		throw exceptions::already_connected();
 
-	m_oneTimeAuth = new IMAPauthenticator(&authenticator());
+	m_oneTimeAuth = new IMAPauthenticator(getAuthenticator());
 
 	m_connection = new IMAPConnection(this, m_oneTimeAuth);
 
@@ -189,7 +189,7 @@ void IMAPStore::noop()
 	if (resp->isBad() || resp->response_done()->response_tagged()->
 			resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
 	{
-		throw exceptions::command_error("NOOP", m_connection->parser()->lastLine());
+		throw exceptions::command_error("NOOP", m_connection->getParser()->lastLine());
 	}
 }
 
@@ -220,19 +220,31 @@ void IMAPStore::unregisterFolder(IMAPFolder* folder)
 IMAPStore::_infos IMAPStore::sm_infos;
 
 
-const port_t IMAPStore::_infos::defaultPort() const
+const serviceInfos& IMAPStore::getInfosInstance()
+{
+	return (sm_infos);
+}
+
+
+const serviceInfos& IMAPStore::getInfos() const
+{
+	return (sm_infos);
+}
+
+
+const port_t IMAPStore::_infos::getDefaultPort() const
 {
 	return (143);
 }
 
 
-const string IMAPStore::_infos::propertyPrefix() const
+const string IMAPStore::_infos::getPropertyPrefix() const
 {
 	return "store.imap.";
 }
 
 
-const std::vector <string> IMAPStore::_infos::availableProperties() const
+const std::vector <string> IMAPStore::_infos::getAvailableProperties() const
 {
 	std::vector <string> list;
 

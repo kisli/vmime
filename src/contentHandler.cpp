@@ -69,7 +69,7 @@ contentHandler& contentHandler::operator=(const contentHandler& cts)
 }
 
 
-void contentHandler::set(const utility::stringProxy& str, const vmime::encoding& enc)
+void contentHandler::setData(const utility::stringProxy& str, const vmime::encoding& enc)
 {
 	m_type = TYPE_STRING;
 	m_encoding = enc;
@@ -81,7 +81,7 @@ void contentHandler::set(const utility::stringProxy& str, const vmime::encoding&
 }
 
 
-void contentHandler::set(const string& buffer, const vmime::encoding& enc)
+void contentHandler::setData(const string& buffer, const vmime::encoding& enc)
 {
 	m_type = TYPE_STRING;
 	m_encoding = enc;
@@ -93,7 +93,7 @@ void contentHandler::set(const string& buffer, const vmime::encoding& enc)
 }
 
 
-void contentHandler::set(const string& buffer, const string::size_type start,
+void contentHandler::setData(const string& buffer, const string::size_type start,
 	const string::size_type end, const vmime::encoding& enc)
 {
 	m_type = TYPE_STRING;
@@ -106,7 +106,7 @@ void contentHandler::set(const string& buffer, const string::size_type start,
 }
 
 
-void contentHandler::set(utility::inputStream* const is, const string::size_type length,
+void contentHandler::setData(utility::inputStream* const is, const utility::stream::size_type length,
 	const bool own, const vmime::encoding& enc)
 {
 	m_type = TYPE_STREAM;
@@ -131,7 +131,7 @@ void contentHandler::set(utility::inputStream* const is, const string::size_type
 
 contentHandler& contentHandler::operator=(const string& buffer)
 {
-	set(buffer, NO_ENCODING);
+	setData(buffer, NO_ENCODING);
 	return (*this);
 }
 
@@ -154,7 +154,7 @@ void contentHandler::generate(utility::outputStream& os, const vmime::encoding& 
 			utility::auto_ptr <encoder> theDecoder(m_encoding.getEncoder());
 			utility::auto_ptr <encoder> theEncoder(enc.getEncoder());
 
-			theEncoder->properties()["maxlinelength"] = maxLineLength;
+			theEncoder->getProperties()["maxlinelength"] = maxLineLength;
 
 			switch (m_type)
 			{
@@ -234,7 +234,7 @@ void contentHandler::generate(utility::outputStream& os, const vmime::encoding& 
 	else
 	{
 		utility::auto_ptr <encoder> theEncoder(enc.getEncoder());
-		theEncoder->properties()["maxlinelength"] = maxLineLength;
+		theEncoder->getProperties()["maxlinelength"] = maxLineLength;
 
 		// Encode the contents
 		switch (m_type)
@@ -335,7 +335,7 @@ void contentHandler::extract(utility::outputStream& os) const
 }
 
 
-const string::size_type contentHandler::length() const
+const string::size_type contentHandler::getLength() const
 {
 	switch (m_type)
 	{
@@ -348,7 +348,7 @@ const string::size_type contentHandler::length() const
 }
 
 
-const bool contentHandler::empty() const
+const bool contentHandler::isEmpty() const
 {
 	return (m_type == TYPE_NONE);
 }
@@ -360,7 +360,7 @@ const bool contentHandler::isEncoded() const
 }
 
 
-const vmime::encoding& contentHandler::encoding() const
+const vmime::encoding& contentHandler::getEncoding() const
 {
 	return (m_encoding);
 }

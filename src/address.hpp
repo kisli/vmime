@@ -45,39 +45,21 @@ protected:
 
 public:
 
-	/** Copy data from another object to this object.
-	  * Both objects must be the same type.
-	  *
-	  * @param addr other object
-	  */
-	address& operator=(const address& addr);
-
-	/** Duplicate this object.
-	  *
-	  * @return a copy of this object
-	  */
-	virtual address* clone() const = 0;
-
-	/** Copy data from another object to this object.
-	  * Both objects must be the same type.
-	  *
-	  * @param addr other object
-	  */
-	virtual void copyFrom(const address& addr) = 0;
-
 	/** Check whether this address is empty (no mailboxes specified
 	  * if this is a mailboxGroup -or- no email specified if this is
 	  * a mailbox).
 	  *
 	  * @return true if this address is empty
 	  */
-	virtual const bool empty() const = 0;
+	virtual const bool isEmpty() const = 0;
 
 	/** Test whether this is object is a mailboxGroup.
 	  *
 	  * @return true if this is a mailboxGroup, false otherwise
 	  */
 	virtual const bool isGroup() const = 0;
+
+	virtual address* clone() const = 0;
 
 protected:
 

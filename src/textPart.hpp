@@ -32,6 +32,9 @@ namespace vmime
 {
 
 
+/** Generic text part.
+  */
+
 class textPart
 {
 	friend class textPartFactory;
@@ -42,14 +45,37 @@ public:
 
 	virtual ~textPart() { }
 
+	/** Return the type of text part (eg: "text/html").
+	  *
+	  * @return type of text part
+	  */
+	virtual const mediaType getType() const = 0;
 
-	virtual const mediaType type() const = 0;
+	/** Return the charset used to encode text in the
+	  * text part.
+	  *
+	  * @return text charset
+	  */
+	virtual const charset& getCharset() const = 0;
 
-	virtual const class charset& charset() const = 0;
-	virtual class charset& charset() = 0;
+	/** Set the charset used to encode text in the
+	  * text part.
+	  *
+	  * @param ch text charset
+	  */
+	virtual void setCharset(const charset& ch) = 0;
 
-	virtual const contentHandler& text() const = 0;
-	virtual contentHandler& text() = 0;
+	/** Return the text contained in the part.
+	  *
+	  * @return text of the part
+	  */
+	virtual const contentHandler& getText() const = 0;
+
+	/** Set the text contained in the part.
+	  *
+	  * @param text text of the part
+	  */
+	virtual void setText(const contentHandler& text) = 0;
 
 protected:
 

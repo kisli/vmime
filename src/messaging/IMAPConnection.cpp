@@ -59,24 +59,24 @@ void IMAPConnection::connect()
 	m_state = STATE_NONE;
 	m_hierarchySeparator = '\0';
 
-	const string address = m_store->session().properties()[m_store->infos().propertyPrefix() + "server.address"];
-	const port_t port = m_store->session().properties().get(m_store->infos().propertyPrefix() + "server.port", m_store->infos().defaultPort());
+	const string address = m_store->getSession()->getProperties()[m_store->getInfos().getPropertyPrefix() + "server.address"];
+	const port_t port = m_store->getSession()->getProperties().getProperty(m_store->getInfos().getPropertyPrefix() + "server.port", m_store->getInfos().getDefaultPort());
 
 	// Create the time-out handler
-	if (session().properties().exists
-		(m_store->infos().propertyPrefix() + "timeout.factory"))
+	if (m_store->getSession()->getProperties().hasProperty
+		(m_store->getInfos().getPropertyPrefix() + "timeout.factory"))
 	{
 		timeoutHandlerFactory* tof = platformDependant::getHandler()->
-			getTimeoutHandlerFactory(session().properties()
-				[m_store->infos().propertyPrefix() + "timeout.factory"]);
+			getTimeoutHandlerFactory(m_store->getSession()->getProperties()
+				[m_store->getInfos().getPropertyPrefix() + "timeout.factory"]);
 
 		m_timeoutHandler = tof->create();
 	}
 
 	// Create and connect the socket
 	socketFactory* sf = platformDependant::getHandler()->getSocketFactory
-		(m_store->session().properties().get
-			(m_store->infos().propertyPrefix() + "server.socket-factory", string("default")));
+		(m_store->getSession()->getProperties().getProperty
+			(m_store->getInfos().getPropertyPrefix() + "server.socket-factory", string("default")));
 
 	m_socket = sf->create();
 	m_socket->connect(address, port);
@@ -109,8 +109,8 @@ void IMAPConnection::connect()
 
 		// TODO: other authentication methods
 
-		send(true, "LOGIN " + IMAPUtils::quoteString(auth.username())
-			+ " " + IMAPUtils::quoteString(auth.password()), true);
+		send(true, "LOGIN " + IMAPUtils::quoteString(auth.getUsername())
+			+ " " + IMAPUtils::quoteString(auth.getPassword()), true);
 
 		utility::auto_ptr <IMAPParser::response> resp(m_parser->readResponse());
 

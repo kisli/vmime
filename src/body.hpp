@@ -47,175 +47,205 @@ class body : public component
 {
 	friend class bodyPart;
 
-protected:
+private:
 
-	body(bodyPart& part);
+	body(bodyPart* parentPart);
 
 public:
 
-	// A sub-class for part manipulation
-	class partsContainer
-	{
-		friend class body;
+	body();
+	~body();
 
-	protected:
+	/** Add a part at the end of the list.
+	  *
+	  * @param part part to append
+	  */
+	void appendPart(bodyPart* part);
 
-		partsContainer(class body& body);
-		~partsContainer();
+	/** Insert a new part before the specified part.
+	  *
+	  * @param beforePart part before which the new part will be inserted
+	  * @param part part to insert
+	  * @throw exceptions::no_such_part if the part is not in the list
+	  */
+	void insertPartBefore(bodyPart* beforePart, bodyPart* part);
 
-	public:
+	/** Insert a new part before the specified position.
+	  *
+	  * @param pos position at which to insert the new part (0 to insert at
+	  * the beginning of the list)
+	  * @param part part to insert
+	  */
+	void insertPartBefore(const int pos, bodyPart* part);
 
-		// Part iterator
-		class const_iterator;
+	/** Insert a new part after the specified part.
+	  *
+	  * @param afterPart part after which the new part will be inserted
+	  * @param part part to insert
+	  * @throw exceptions::no_such_part if the part is not in the list
+	  */
+	void insertPartAfter(bodyPart* afterPart, bodyPart* part);
 
-		class iterator
-		{
-			friend class body::partsContainer::const_iterator;
-			friend class body::partsContainer;
+	/** Insert a new part after the specified position.
+	  *
+	  * @param pos position of the part before the new part
+	  * @param part part to insert
+	  */
+	void insertPartAfter(const int pos, bodyPart* part);
 
-		public:
+	/** Remove the specified part from the list.
+	  *
+	  * @param part part to remove
+	  * @throw exceptions::no_such_part if the part is not in the list
+	  */
+	void removePart(bodyPart* part);
 
-			typedef std::vector <bodyPart*>::iterator::difference_type difference_type;
+	/** Remove the part at the specified position.
+	  *
+	  * @param pos position of the part to remove
+	  */
+	void removePart(const int pos);
 
-			iterator(std::vector <bodyPart*>::iterator it) : m_iterator(it) { }
-			iterator(const iterator& it) : m_iterator(it.m_iterator) { }
+	/** Remove all parts from the list.
+	  */
+	void removeAllParts();
 
-			iterator& operator=(const iterator& it) { m_iterator = it.m_iterator; return (*this); }
+	/** Return the number of parts in the list.
+	  *
+	  * @return number of parts
+	  */
+	const int getPartCount() const;
 
-			bodyPart& operator*() const { return (**m_iterator); }
-			bodyPart* operator->() const { return (*m_iterator); }
+	/** Tests whether the list of parts is empty.
+	  *
+	  * @return true if there is no part, false otherwise
+	  */
+	const bool isEmpty() const;
 
-			iterator& operator++() { ++m_iterator; return (*this); }
-			iterator operator++(int) { iterator i(*this); ++m_iterator; return (i); }
+	/** Return the part at the specified position.
+	  *
+	  * @param pos position
+	  * @return part at position 'pos'
+	  */
+	bodyPart* getPartAt(const int pos);
 
-			iterator& operator--() { --m_iterator; return (*this); }
-			iterator operator--(int) { iterator i(*this); --m_iterator; return (i); }
+	/** Return the part at the specified position.
+	  *
+	  * @param pos position
+	  * @return part at position 'pos'
+	  */
+	const bodyPart* const getPartAt(const int pos) const;
 
-			iterator& operator+=(difference_type n) { m_iterator += n; return (*this); }
-			iterator& operator-=(difference_type n) { m_iterator -= n; return (*this); }
+	/** Return the part list.
+	  *
+	  * @return list of parts
+	  */
+	const std::vector <const bodyPart*> getPartList() const;
 
-			iterator operator-(difference_type x) const { return iterator(m_iterator - x); }
+	/** Return the part list.
+	  *
+	  * @return list of parts
+	  */
+	const std::vector <bodyPart*> getPartList();
 
-			bodyPart& operator[](difference_type n) const { return *(m_iterator[n]); }
+	/** Return the prolog text.
+	  *
+	  * @return prolog text
+	  */
+	const string& getPrologText() const;
 
-			const bool operator==(const iterator& it) const { return (it.m_iterator == m_iterator); }
-			const bool operator!=(const iterator& it) const { return (!(*this == it)); }
+	/** Set the prolog text.
+	  *
+	  * @param prologText new prolog text
+	  */
+	void setPrologText(const string& prologText);
 
-		protected:
+	/** Return the epilog text.
+	  *
+	  * @return epilog text
+	  */
+	const string& getEpilogText() const;
 
-			std::vector <bodyPart*>::iterator m_iterator;
-		};
+	/** Set the epilog text.
+	  *
+	  * @param epilogText new epilog text
+	  */
+	void setEpilogText(const string& epilogText);
 
-		class const_iterator
-		{
-		public:
+	/** Return a read-only reference to body contents.
+	  *
+	  * @return read-only body contents
+	  */
+	const contentHandler& getContents() const;
 
-			typedef std::vector <bodyPart*>::const_iterator::difference_type difference_type;
+	/** Return a modifiable reference to body contents.
+	  *
+	  * @return body contents
+	  */
+	contentHandler& getContents();
 
-			const_iterator(std::vector <bodyPart*>::const_iterator it) : m_iterator(it) { }
-			const_iterator(const iterator& it) : m_iterator(it.m_iterator) { }
-			const_iterator(const const_iterator& it) : m_iterator(it.m_iterator) { }
+	/** Set the body contents.
+	  *
+	  * @param contents new body contents
+	  */
+	void setContents(const contentHandler& contents);
 
-			const_iterator& operator=(const const_iterator& it) { m_iterator = it.m_iterator; return (*this); }
-			const_iterator& operator=(const iterator& it) { m_iterator = it.m_iterator; return (*this); }
+	/** Return the media type of the data contained in the body contents.
+	  * This is a shortcut for getHeader()->ContentType()->getValue()
+	  * on the parent part.
+	  *
+	  * @return media type of body contents
+	  */
+	const mediaType getContentType() const;
 
-			const bodyPart& operator*() const { return (**m_iterator); }
-			const bodyPart* operator->() const { return (*m_iterator); }
+	/** Return the charset of the data contained in the body contents.
+	  * This is a shortcut for getHeader()->ContentType()->getCharset()
+	  * on the parent part.
+	  *
+	  * @return charset of body contents
+	  */
+	const charset getCharset() const;
 
-			const_iterator& operator++() { ++m_iterator; return (*this); }
-			const_iterator operator++(int) { const_iterator i(*this); ++m_iterator; return (i); }
+	/** Return the encoding used to encode the body contents.
+	  * This is a shortcut for getHeader()->ContentTransferEncoding()->getValue()
+	  * on the parent part.
+	  *
+	  * @return encoding of body contents
+	  */
+	const encoding getEncoding() const;
 
-			const_iterator& operator--() { --m_iterator; return (*this); }
-			const_iterator operator--(int) { const_iterator i(*this); --m_iterator; return (i); }
-
-			const_iterator& operator+=(difference_type n) { m_iterator += n; return (*this); }
-			const_iterator& operator-=(difference_type n) { m_iterator -= n; return (*this); }
-
-			const_iterator operator-(difference_type x) const { return const_iterator(m_iterator - x); }
-
-			const bodyPart& operator[](difference_type n) const { return *(m_iterator[n]); }
-
-			const bool operator==(const const_iterator& it) const { return (it.m_iterator == m_iterator); }
-			const bool operator!=(const const_iterator& it) const { return (!(*this == it)); }
-
-		protected:
-
-			std::vector <bodyPart*>::const_iterator m_iterator;
-		};
-
-	public:
-
-		iterator begin() { return (m_parts.begin()); }
-		iterator end() { return (m_parts.end()); }
-
-		const_iterator begin() const { return (const_iterator(m_parts.begin())); }
-		const_iterator end() const { return (const_iterator(m_parts.end())); }
-
-		const bodyPart& operator[](const std::vector <bodyPart*>::size_type x) const { return (*m_parts[x]); }
-		bodyPart& operator[](const std::vector <bodyPart*>::size_type x) { return (*m_parts[x]); }
-
-		// Part insertion
-		void append(bodyPart* part);
-		void insert(const iterator it, bodyPart* part);
-
-		// Part removing
-		void remove(const iterator it);
-		void clear();
-
-		// Part count
-		const size_t count() const { return (m_parts.size()); }
-		const size_t size() const { return (m_parts.size()); }
-
-		bodyPart& front() { return (*m_parts.front()); }
-		const bodyPart& front() const { return (*m_parts.front()); }
-		bodyPart& back() { return (*m_parts.back()); }
-		const bodyPart& back() const { return (*m_parts.back()); }
-
-		partsContainer& operator=(const partsContainer& c);
-
-	protected:
-
-		body& m_body;
-
-		std::vector <bodyPart*> m_parts;
-
-	} parts;
-
-	typedef partsContainer::iterator iterator;
-	typedef partsContainer::const_iterator const_iterator;
-
-
-	const string& prologText() const { return (m_prologText); }
-	string& prologText() { return (m_prologText); }
-
-	const string& epilogText() const { return (m_epilogText); }
-	string& epilogText() { return (m_epilogText); }
-
-	const contentHandler& contents() const { return (m_contents); }
-	contentHandler& contents() { return (m_contents); }
-
-	// Quick-access functions
-	const mediaType contentType() const;
-	const class charset charset() const;
-	const class encoding encoding() const;
-
-	// Boundary string functions
+	/** Generate a new random boundary string.
+	  *
+	  * @return randomly generated boundary string
+	  */
 	static const string generateRandomBoundaryString();
+
+	/** Test a boundary string for validity (as defined in RFC #1521, page 19).
+	  *
+	  * @param boundary boundary string to test
+	  * @return true if the boundary string is valid, false otherwise
+	  */
 	static const bool isValidBoundary(const string& boundary);
 
-	body& operator=(const body& b);
+	body* clone() const;
+	void copyFrom(const component& other);
+	body& operator=(const body& other);
 
-protected:
+private:
 
 	string m_prologText;
 	string m_epilogText;
 
 	contentHandler m_contents;
 
-	bodyPart& m_part;
-	header& m_header;
+	bodyPart* m_part;
+	header* m_header;
+
+	std::vector <bodyPart*> m_parts;
 
 	const bool isRootPart() const;
+
+	void initNewPart(bodyPart* part);
 
 public:
 

@@ -36,13 +36,10 @@ class datetime : public component
 {
 public:
 
-	// Data type for a date/time component
-	typedef int comp_t;
-
 	// Constructors
 	datetime();
-	datetime(const comp_t year, const comp_t month, const comp_t day);
-	datetime(const comp_t year, const comp_t month, const comp_t day, const comp_t hour, const comp_t minute, const comp_t second, const comp_t zone = GMT);
+	datetime(const int year, const int month, const int day);
+	datetime(const int year, const int month, const int day, const int hour, const int minute, const int second, const int zone = GMT);
 	datetime(const datetime& d);
 	datetime(const string& date);
 
@@ -172,58 +169,60 @@ public:
 		SAT = 6
 	};
 
-protected:
+private:
 
 	// Date components
-	comp_t m_year;
-	comp_t m_month;
-	comp_t m_day;
+	int m_year;
+	int m_month;
+	int m_day;
 
 	// Time components
-	comp_t m_hour;
-	comp_t m_minute;
-	comp_t m_second;
-	comp_t m_zone;
+	int m_hour;
+	int m_minute;
+	int m_second;
+	int m_zone;
 
 public:
 
 	// Get
-	const comp_t year() const { return (m_year); }
-	const comp_t month() const { return (m_month); }
-	const comp_t day() const { return (m_day); }
-	const comp_t hour() const { return (m_hour); }
-	const comp_t minute() const { return (m_minute); }
-	const comp_t second() const { return (m_second); }
-	const comp_t zone() const { return (m_zone); }
+	const int getYear() const;
+	const int getMonth() const;
+	const int getDay() const;
+	const int getHour() const;
+	const int getMinute() const;
+	const int getSecond() const;
+	const int getZone() const;
 
-	void getTime(comp_t& hour, comp_t& minute, comp_t& second, comp_t& zone) const;
-	void getTime(comp_t& hour, comp_t& minute, comp_t& second) const;
-	void getDate(comp_t& year, comp_t& month, comp_t& day) const;
+	void getTime(int& hour, int& minute, int& second, int& zone) const;
+	void getTime(int& hour, int& minute, int& second) const;
+	void getDate(int& year, int& month, int& day) const;
 
 	// Set
-	comp_t& year() { return (m_year); }
-	comp_t& month() { return (m_month); }
-	comp_t& day() { return (m_day); }
-	comp_t& hour() { return (m_hour); }
-	comp_t& minute() { return (m_minute); }
-	comp_t& second() { return (m_second); }
-	comp_t& zone() { return (m_zone); }
+	void setYear(const int year);
+	void setMonth(const int month);
+	void setDay(const int day);
+	void setHour(const int hour);
+	void setMinute(const int minute);
+	void setSecond(const int second);
+	void setZone(const int zone);
 
-	void setTime(const comp_t hour = 0, const comp_t minute = 0, const comp_t second = 0, const comp_t zone = GMT);
-	void setDate(const comp_t year, const comp_t month, const comp_t day);
+	void setTime(const int hour = 0, const int minute = 0, const int second = 0, const int zone = GMT);
+	void setDate(const int year, const int month, const int day);
 
 	// Assignment
-	datetime& operator=(const datetime& d);
+	datetime& operator=(const datetime& other);
 	datetime& operator=(const string& s);
 
-	void copyFrom(const datetime& d);
+	void copyFrom(const component& other);
+
+	datetime* clone() const;
 
 	// Current date and time
 	static const datetime now();
 
-protected:
+private:
 
-	static const comp_t dayOfWeek(const comp_t year, const comp_t month, const comp_t day);
+	static const int dayOfWeek(const int year, const int month, const int day);
 
 public:
 

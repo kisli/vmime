@@ -45,65 +45,53 @@ public:
 
 	~headerField();
 
-public:
+	headerField* clone() const;
+	void copyFrom(const component& other);
+	headerField& operator=(const headerField& other);
 
-	// Header field types (in the order in which they will appear
-	// in the message header)
-	enum Types
-	{
-		Received,                // Relay
-		From,                    // Expeditor
-		Sender,                  // Sender
-		ReplyTo,                 // Reply-To
-		To,                      // Recipient(s)
-		Cc,                      // Carbon copy recipient(s)
-		Bcc,                     // Blind carbon-copy recipient(s)
-		Date,                    // Date sent
-		Subject,                 // Subject
-		Organization,            // Organization
-		UserAgent,               // User agent
-		DeliveredTo,             // Delivered-To
-		ReturnPath,              // Return-Path
-		MimeVersion,             // Mime-Version
-		MessageId,               // Message-Id
-		ContentType,             // Content-Type
-		ContentTransferEncoding, // Content-Transfer-Encoding
-		ContentDescription,      // Content-Description
-		ContentDisposition,      // Content-Disposition
-		ContentId,               // Content-Id
-		ContentLocation,         // Content-Location
+	/** Return the name of this field.
+	  *
+	  * @return field name
+	  */
+	const string getName() const;
 
-		Custom,                  // Unknown or custom field (eg. X-Priority, X-Mailer, etc.)
-
-		Last
-	};
-
-protected:
-
-	Types m_type;
-	string m_name;	// In case of custom field
-
-public:
-
-	const bool operator<(const headerField& field) const;
-
-	const Types type() const;
-	const string name() const;
-
+	/** Check whether this field is a custom (non-standard) field.
+	  * Custom fields have a name beginning with "X-".
+	  *
+	  * @return true if the field is a custom field, false otherwise
+	  */
 	const bool isCustom() const;
 
-	virtual void copyFrom(const headerField& field);
-	headerField& operator=(const headerField& field);
-	headerField* clone() const;
+	/** Return the read-only value object attached to this field.
+	  *
+	  * @return read-only value object
+	  */
+	virtual const component& getValue() const = 0;
 
-	static const Types nameToType(const string& name);
-	static const string typeToName(const Types type);
+	/** Return the value object attached to this field.
+	  *
+	  * @return value object
+	  */
+	virtual component& getValue() = 0;
+
+	/** Set the value of this field.
+	  *
+	  * @throw std::bad_cast_exception if the value type is
+	  * incompatible with the header field type
+	  * @param value value object
+	  */
+	virtual void setValue(const component& value) = 0;
 
 
-	// Component assembling
+	using component::parse;
 	using component::generate;
 
+	void parse(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition = NULL);
 	void generate(utility::outputStream& os, const string::size_type maxLineLength = lineLengthLimits::infinite, const string::size_type curLinePos = 0, string::size_type* newLinePos = NULL) const;
+
+private:
+
+	string m_name;
 };
 
 

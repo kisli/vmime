@@ -17,45 +17,40 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#ifndef VMIME_CONTENTENCODINGFIELD_HPP_INCLUDED
-#define VMIME_CONTENTENCODINGFIELD_HPP_INCLUDED
+#ifndef VMIME_STANDARDPARAMS_HPP_INCLUDED
+#define VMIME_STANDARDPARAMS_HPP_INCLUDED
 
 
-#include "defaultParameterizedHeaderField.hpp"
-#include "encoding.hpp"
+#include "genericParameter.hpp"
+
+// Inclusion for field value types
+#include "dateTime.hpp"
+#include "charset.hpp"
 
 
 namespace vmime
 {
 
 
-class contentEncodingField : public parameterizedHeaderField
-{
-	friend class headerFieldFactory::registerer <contentEncodingField>;
+#define DECLARE_STANDARD_PARAM(paramClassName, valueTypeClassName) \
+	class paramClassName : public genericParameter <valueTypeClassName> { \
+		friend class parameterFactory::registerer <paramClassName>; \
+		protected: \
+			paramClassName() { } \
+			paramClassName(const paramClassName&) \
+				: genericParameter <valueTypeClassName>() { /* Not used */ } \
+	}
 
-protected:
 
-	contentEncodingField();
+DECLARE_STANDARD_PARAM(defaultParameter, string);
+DECLARE_STANDARD_PARAM(dateParameter, datetime);
+DECLARE_STANDARD_PARAM(charsetParameter, charset);
 
-public:
 
-	void copyFrom(const headerField& field);
-
-	contentEncodingField& operator=(const encoding& type);
-
-	const encoding& value() const { return (m_value); }
-	encoding& value() { return (m_value); }
-
-protected:
-
-	encoding m_value;
-
-	void parseValue(const string& buffer, const string::size_type position, const string::size_type end);
-	const string generateValue() const;
-};
+#undef DECLARE_STANDARD_PARAM
 
 
 } // vmime
 
 
-#endif // VMIME_CONTENTENCODINGFIELD_HPP_INCLUDED
+#endif // VMIME_STANDARDPARAMS_HPP_INCLUDED

@@ -86,11 +86,11 @@ path& path::operator/=(const component& c)
 }
 
 
-path path::parent() const
+path path::getParent() const
 {
 	path p;
 
-	if (!empty())
+	if (!isEmpty())
 	{
 		p.m_list.resize(m_list.size() - 1);
 		std::copy(m_list.begin(), m_list.end() - 1, p.m_list.begin());
@@ -130,7 +130,7 @@ const bool path::operator==(const path& p) const
 
 	for ( ; equal && i != m_list.end() ; ++i, ++j)
 		//equal = (*i == *j);
-		equal = ((*i).buffer() == (*j).buffer());
+		equal = ((*i).getBuffer() == (*j).getBuffer());
 
 	return (equal);
 }
@@ -142,25 +142,25 @@ const bool path::operator!=(const path& p) const
 }
 
 
-const bool path::empty() const
+const bool path::isEmpty() const
 {
 	return (m_list.empty());
 }
 
 
-const path::component path::last() const
+const path::component path::getLastComponent() const
 {
-	return (empty() ? component("") : m_list[m_list.size() - 1]);
+	return (isEmpty() ? component("") : m_list[m_list.size() - 1]);
 }
 
 
-path::component& path::last()
+path::component& path::getLastComponent()
 {
 	return (m_list[m_list.size() - 1]);
 }
 
 
-const int path::size() const
+const int path::getSize() const
 {
 	return (m_list.size());
 }
@@ -180,12 +180,12 @@ path::component& path::operator[](const int x)
 
 const bool path::isDirectParentOf(const path& p) const
 {
-	if (p.size() != size() + 1)
+	if (p.getSize() != getSize() + 1)
 		return (false);
 
 	bool equal = true;
 
-	for (int i = 0 ; equal && i < size() ; ++i)
+	for (list::size_type i = 0 ; equal && i < m_list.size() ; ++i)
 		equal = (m_list[i] == p.m_list[i]);
 
 	return (equal);

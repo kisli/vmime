@@ -24,4 +24,36 @@ namespace vmime
 {
 
 
+options::multipartOptions::multipartOptions()
+	: m_prologText("This is a multi-part message in MIME format. Your mail reader " \
+	               "does not understand MIME message format."),
+	  m_epilogText("")
+{
+}
+
+
+const string& options::multipartOptions::getPrologText() const
+{
+	return (m_prologText);
+}
+
+
+void options::multipartOptions::setPrologText(const string& prologText)
+{
+	m_prologText = prologText;
+}
+
+
+const string& options::multipartOptions::getEpilogText() const
+{
+	return (m_epilogText);
+}
+
+
+void options::multipartOptions::setEpilogText(const string& epilogText)
+{
+	m_epilogText = epilogText;
+}
+
+
 } // vmime

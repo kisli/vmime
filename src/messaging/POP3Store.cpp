@@ -33,8 +33,8 @@ namespace vmime {
 namespace messaging {
 
 
-POP3Store::POP3Store(class session& sess, class authenticator* auth)
-	: store(sess, infosInstance(), auth), m_socket(NULL),
+POP3Store::POP3Store(session* sess, authenticator* auth)
+	: store(sess, getInfosInstance(), auth), m_socket(NULL),
 	  m_authentified(false), m_timeoutHandler(NULL)
 {
 }
@@ -49,7 +49,7 @@ POP3Store::~POP3Store()
 }
 
 
-const string POP3Store::protocolName() const
+const string POP3Store::getProtocolName() const
 {
 	return "pop3";
 }
@@ -87,23 +87,23 @@ void POP3Store::connect()
 	if (isConnected())
 		throw exceptions::already_connected();
 
-	const string address = session().properties()[sm_infos.propertyPrefix() + "server.address"];
-	const port_t port = session().properties().get(sm_infos.propertyPrefix() + "server.port", sm_infos.defaultPort());
+	const string address = getSession()->getProperties()[sm_infos.getPropertyPrefix() + "server.address"];
+	const port_t port = getSession()->getProperties().getProperty(sm_infos.getPropertyPrefix() + "server.port", sm_infos.getDefaultPort());
 
 	// Create the time-out handler
-	if (session().properties().exists
-		(sm_infos.propertyPrefix() + "timeout.factory"))
+	if (getSession()->getProperties().hasProperty
+		(sm_infos.getPropertyPrefix() + "timeout.factory"))
 	{
 		timeoutHandlerFactory* tof = platformDependant::getHandler()->
-			getTimeoutHandlerFactory(session().properties()
-				[sm_infos.propertyPrefix() + "timeout.factory"]);
+			getTimeoutHandlerFactory(getSession()->getProperties()
+				[sm_infos.getPropertyPrefix() + "timeout.factory"]);
 
 		m_timeoutHandler = tof->create();
 	}
 
 	// Create and connect the socket
 	socketFactory* sf = platformDependant::getHandler()->getSocketFactory
-		(session().properties().get(sm_infos.propertyPrefix() + "server.socket-factory", string("default")));
+		(getSession()->getProperties().getProperty(sm_infos.getPropertyPrefix() + "server.socket-factory", string("default")));
 
 	m_socket = sf->create();
 	m_socket->connect(address, port);
@@ -120,7 +120,7 @@ void POP3Store::connect()
 	{
 		bool authentified = false;
 
-		const authenticationInfos auth = authenticator().requestAuthInfos();
+		const authenticationInfos auth = getAuthenticator()->requestAuthInfos();
 
 		// Secured authentication with APOP (if requested and if available)
 		//
@@ -128,13 +128,13 @@ void POP3Store::connect()
 		// ---  S: +OK vincent is a valid mailbox
 		messageId mid(response);
 
-		if (session().properties().get(sm_infos.propertyPrefix() + "options.apop", false))
+		if (getSession()->getProperties().getProperty(sm_infos.getPropertyPrefix() + "options.apop", false))
 		{
-			if (mid.left().length() && mid.right().length())
+			if (mid.getLeft().length() && mid.getRight().length())
 			{
 				// <digest> is the result of MD5 applied to "<message-id>password"
-				sendRequest("APOP " + auth.username() + " "
-					+ utility::md5(mid.generate() + auth.password()).hex());
+				sendRequest("APOP " + auth.getUsername() + " "
+					+ utility::md5(mid.generate() + auth.getPassword()).hex());
 				readResponse(response, false);
 
 				if (isSuccessResponse(response))
@@ -143,7 +143,7 @@ void POP3Store::connect()
 				}
 				else
 				{
-					if (session().properties().get(sm_infos.propertyPrefix() +
+					if (getSession()->getProperties().getProperty(sm_infos.getPropertyPrefix() +
 						"options.apop.fallback", false) == false)
 					{
 						internalDisconnect();
@@ -154,7 +154,7 @@ void POP3Store::connect()
 			else
 			{
 				// APOP not supported
-				if (session().properties().get(sm_infos.propertyPrefix() +
+				if (getSession()->getProperties().getProperty(sm_infos.getPropertyPrefix() +
 					"options.apop.fallback", false) == false)
 				{
 					// Can't fallback on basic authentification
@@ -174,12 +174,12 @@ void POP3Store::connect()
 			//      C: PASS couic
 			//      S: +OK vincent's maildrop has 2 messages (320 octets)
 
-			sendRequest("USER " + auth.username());
+			sendRequest("USER " + auth.getUsername());
 			readResponse(response, false);
 
 			if (isSuccessResponse(response))
 			{
-				sendRequest("PASS " + auth.password());
+				sendRequest("PASS " + auth.getPassword());
 				readResponse(response, false);
 
 				if (!isSuccessResponse(response))
@@ -565,19 +565,31 @@ void POP3Store::unregisterFolder(POP3Folder* folder)
 POP3Store::_infos POP3Store::sm_infos;
 
 
-const port_t POP3Store::_infos::defaultPort() const
+const serviceInfos& POP3Store::getInfosInstance()
+{
+	return (sm_infos);
+}
+
+
+const serviceInfos& POP3Store::getInfos() const
+{
+	return (sm_infos);
+}
+
+
+const port_t POP3Store::_infos::getDefaultPort() const
 {
 	return (110);
 }
 
 
-const string POP3Store::_infos::propertyPrefix() const
+const string POP3Store::_infos::getPropertyPrefix() const
 {
 	return "store.pop3.";
 }
 
 
-const std::vector <string> POP3Store::_infos::availableProperties() const
+const std::vector <string> POP3Store::_infos::getAvailableProperties() const
 {
 	std::vector <string> list;
 

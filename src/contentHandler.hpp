@@ -62,10 +62,10 @@ public:
 	//
 	// The 'length' parameter is optional (user-defined). You can pass 0 if you want,
 	// VMime does not make use of it.
-	void set(const utility::stringProxy& str, const vmime::encoding& enc = NO_ENCODING);
-	void set(const string& buffer, const vmime::encoding& enc = NO_ENCODING);
-	void set(const string& buffer, const string::size_type start, const string::size_type end, const vmime::encoding& enc = NO_ENCODING);
-	void set(utility::inputStream* const is, const utility::stream::size_type length, const bool own, const vmime::encoding& enc = NO_ENCODING);
+	void setData(const utility::stringProxy& str, const vmime::encoding& enc = NO_ENCODING);
+	void setData(const string& buffer, const vmime::encoding& enc = NO_ENCODING);
+	void setData(const string& buffer, const string::size_type start, const string::size_type end, const vmime::encoding& enc = NO_ENCODING);
+	void setData(utility::inputStream* const is, const utility::stream::size_type length, const bool own, const vmime::encoding& enc = NO_ENCODING);
 
 	// For compatibility
 	contentHandler& operator=(const string& buffer);
@@ -82,16 +82,16 @@ public:
 
 	// Returns the actual length of the data. WARNING: this can return 0 if no
 	// length was specified when setting data of this object.
-	const string::size_type length() const;
+	const string::size_type getLength() const;
 
 	// Returns 'true' if the data managed by this object is encoded.
 	const bool isEncoded() const;
 
 	// Returns the encoding used for the data (or "binary" if not encoded).
-	const vmime::encoding& encoding() const;
+	const vmime::encoding& getEncoding() const;
 
 	// Returns 'true' if there is no data set.
-	const bool empty() const;
+	const bool isEmpty() const;
 
 private:
 

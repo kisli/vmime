@@ -22,6 +22,7 @@
 
 
 #include "types.hpp"
+#include "utility/stringUtils.hpp"
 
 #include <algorithm>
 

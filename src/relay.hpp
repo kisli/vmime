@@ -17,48 +17,73 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#ifndef VMIME_ADDRESSLISTFIELD_HPP_INCLUDED
-#define VMIME_ADDRESSLISTFIELD_HPP_INCLUDED
+#ifndef VMIME_RELAY_HPP_INCLUDED
+#define VMIME_RELAY_HPP_INCLUDED
 
 
 #include "base.hpp"
 #include "component.hpp"
 
-#include "headerFieldFactory.hpp"
-#include "addressList.hpp"
+#include "dateTime.hpp"
 
 
 namespace vmime
 {
 
 
-class addressListField : public headerField
+/** Trace information about a relay (basic type).
+  */
+
+class relay : public component
 {
-	friend class headerFieldFactory::registerer <addressListField>;
+public:
 
-protected:
-
-	addressListField();
+	relay();
+	relay(const relay& r);
 
 public:
 
-	void copyFrom(const headerField& field);
+	relay* clone() const;
+	void copyFrom(const component& other);
+	relay& operator=(const relay& other);
 
-	addressListField& operator=(const addressList& list);
+	const string& getFrom() const;
+	void setFrom(const string& from);
 
-	const addressList& value() const { return (m_list); }
-	addressList& value() { return (m_list); }
+	const string& getVia() const;
+	void setVia(const string& via);
 
-protected:
+	const string& getBy() const;
+	void setBy(const string& by);
 
-	addressList m_list;
+	const string& getId() const;
+	void setId(const string& id);
+
+	const string& getFor() const;
+	void setFor(const string& for_);
+
+	const datetime& getDate() const;
+	void setDate(const datetime& date);
+
+	const std::vector <string>& getWithList() const;
+	std::vector <string>& getWithList();
+
+private:
+
+	string m_from;
+	string m_via;
+	string m_by;
+	string m_id;
+	string m_for;
+	std::vector <string> m_with;
+
+	datetime m_date;
 
 public:
 
-	using headerField::parse;
-	using headerField::generate;
+	using component::parse;
+	using component::generate;
 
-	// Component parsing & assembling
 	void parse(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition = NULL);
 	void generate(utility::outputStream& os, const string::size_type maxLineLength = lineLengthLimits::infinite, const string::size_type curLinePos = 0, string::size_type* newLinePos = NULL) const;
 };
@@ -67,4 +92,4 @@ public:
 } // vmime
 
 
-#endif // VMIME_ADDRESSLISTFIELD_HPP_INCLUDED
+#endif // VMIME_RELAY_HPP_INCLUDED

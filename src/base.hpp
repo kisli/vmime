@@ -79,39 +79,6 @@ namespace vmime
 	}
 
 
-	//
-	// Some helpful functions
-	//
-
-	bool isStringEqualNoCase(const string& s1, const char* s2, const string::size_type n);
-	bool isStringEqualNoCase(const string& s1, const string& s2);
-	bool isStringEqualNoCase(const string::const_iterator begin, const string::const_iterator end, const char* s, const string::size_type n);
-
-
-	const string toLower(const string& str);
-	const string trim(const string& str);
-
-	template <class TYPE>
-	const string toString(const TYPE& value)
-	{
-		std::ostringstream oss;
-		oss << value;
-
-		return (oss.str());
-	}
-
-	template <class TYPE>
-	const TYPE fromString(const string& value)
-	{
-		TYPE ret;
-
-		std::istringstream iss(value);
-		iss >> ret;
-
-		return (ret);
-	}
-
-
 	// Free the pointer elements in a STL container and empty the container
 
 	template <class CONTAINER>
@@ -125,13 +92,9 @@ namespace vmime
 
 
 	// Field contents encoding (RFC-2047 and folding)
-	string::size_type countASCIIchars(const string::const_iterator begin, const string::const_iterator end);
-
 	void encodeAndFoldText(utility::outputStream& os, const text& in, const string::size_type maxLineLength, const string::size_type firstLineOffset, string::size_type* lastLineLength, const int flags);
 	void decodeAndUnfoldText(const string& in, text& out);
 	void decodeAndUnfoldText(const string::const_iterator& inStart, const string::const_iterator& inEnd, text& out);
-
-	void makeWordsFromText(const string& in, const charset& ch, text& out);
 
 
 	//
@@ -209,6 +172,9 @@ namespace vmime
 
 	// Mime version
 	extern const string MIME_VERSION;
+
+	/** Utility classes. */
+	namespace utility { }
 
 } // vmime
 

@@ -36,5 +36,17 @@ authenticationInfos::authenticationInfos(const authenticationInfos& infos)
 }
 
 
+const string& authenticationInfos::getUsername() const
+{
+	return (m_username);
+}
+
+
+const string& authenticationInfos::getPassword() const
+{
+	return (m_password);
+}
+
+
 } // messaging
 } // vmime

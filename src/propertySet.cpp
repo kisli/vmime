@@ -44,13 +44,13 @@ propertySet::propertySet(const propertySet& set)
 
 propertySet::~propertySet()
 {
-	empty();
+	removeAllProperties();
 }
 
 
 propertySet& propertySet::operator=(const propertySet& set)
 {
-	empty();
+	removeAllProperties();
 
 	for (std::list <property*>::const_iterator it = set.m_props.begin() ; it != set.m_props.end() ; ++it)
 		m_props.push_back(new property(**it));
@@ -59,19 +59,19 @@ propertySet& propertySet::operator=(const propertySet& set)
 }
 
 
-void propertySet::set(const string& props)
+void propertySet::setFromString(const string& props)
 {
 	parse(props);
 }
 
 
-void propertySet::empty()
+void propertySet::removeAllProperties()
 {
 	free_container(m_props);
 }
 
 
-void propertySet::clear(const string& name)
+void propertySet::removeProperty(const string& name)
 {
 	std::list <property*>::iterator it = std::find_if
 		(m_props.begin(), m_props.end(), propFinder(name));
@@ -177,31 +177,138 @@ void propertySet::parse(const string& props)
 }
 
 
-template <>
-void propertySet::property::set(const string& value)
+propertySet::property* propertySet::find(const string& name) const
+{
+	std::list <property*>::const_iterator it = std::find_if
+		(m_props.begin(), m_props.end(), propFinder(name));
+
+	return (it != m_props.end() ? *it : NULL);
+}
+
+
+propertySet::property* propertySet::findOrCreate(const string& name)
+{
+	std::list <property*>::const_iterator it = std::find_if
+		(m_props.begin(), m_props.end(), propFinder(name));
+
+	if (it != m_props.end())
+	{
+		return (*it);
+	}
+	else
+	{
+		property* prop = new property(name, "");
+		m_props.push_back(prop);
+		return (prop);
+	}
+}
+
+
+propertySet::propertyProxy propertySet::operator[](const string& name)
+{
+	return (propertyProxy(name, this));
+}
+
+
+const propertySet::constPropertyProxy propertySet::operator[](const string& name) const
+{
+	return (constPropertyProxy(name, this));
+}
+
+
+const bool propertySet::hasProperty(const string& name) const
+{
+	return (find(name) != NULL);
+}
+
+
+const std::vector <const propertySet::property*> propertySet::getPropertyList() const
+{
+	std::vector <const property*> res;
+
+	for (list_type::const_iterator it = m_props.begin() ; it != m_props.end() ; ++it)
+		res.push_back(*it);
+
+	return (res);
+}
+
+
+const std::vector <propertySet::property*> propertySet::getPropertyList()
+{
+	std::vector <property*> res;
+
+	for (list_type::const_iterator it = m_props.begin() ; it != m_props.end() ; ++it)
+		res.push_back(*it);
+
+	return (res);
+}
+
+
+//
+// propertySet::property
+//
+
+propertySet::property::property(const string& name, const string& value)
+	: m_name(name), m_value(value)
+{
+}
+
+
+propertySet::property::property(const string& name)
+	: m_name(name)
+{
+}
+
+
+propertySet::property::property(const property& prop)
+	: m_name(prop.m_name), m_value(prop.m_value)
+{
+}
+
+
+const string& propertySet::property::getName() const
+{
+	return (m_name);
+}
+
+
+const string& propertySet::property::getValue() const
+{
+	return (m_value);
+}
+
+
+void propertySet::property::setValue(const string& value)
 {
 	m_value = value;
 }
 
 
 template <>
-void propertySet::property::set(const bool& value)
+void propertySet::property::setValue(const string& value)
+{
+	m_value = value;
+}
+
+
+template <>
+void propertySet::property::setValue(const bool& value)
 {
 	m_value = value ? "true" : "false";
 }
 
 
 template <>
-const string propertySet::property::get() const
+const string propertySet::property::getValue() const
 {
 	return (m_value);
 }
 
 
 template <>
-const bool propertySet::property::get() const
+const bool propertySet::property::getValue() const
 {
-	if (toLower(m_value) == "true")
+	if (stringUtils::toLower(m_value) == "true")
 		return true;
 	else
 	{

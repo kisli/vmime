@@ -20,6 +20,8 @@
 #include "contentTypeField.hpp"
 #include "exception.hpp"
 
+#include "standardParams.hpp"
+
 
 namespace vmime
 {
@@ -30,32 +32,33 @@ contentTypeField::contentTypeField()
 }
 
 
-void contentTypeField::parseValue(const string& buffer,
-	const string::size_type position, const string::size_type end)
+contentTypeField::contentTypeField(contentTypeField&)
+	: headerField(), parameterizedHeaderField(), genericField <mediaType>()
 {
-	m_value.parse(buffer, position, end);
 }
 
 
-const string contentTypeField::generateValue() const
+const string contentTypeField::getBoundary() const
 {
-	return (m_value.generate());
+	return (dynamic_cast <const defaultParameter&>(*findParameter("boundary")).getValue());
 }
 
 
-contentTypeField& contentTypeField::operator=(const mediaType& type)
+void contentTypeField::setBoundary(const string& boundary)
 {
-	m_value = type;
-	return (*this);
+	dynamic_cast <defaultParameter&>(*getParameter("boundary")).setValue(boundary);
 }
 
 
-void contentTypeField::copyFrom(const headerField& field)
+const charset& contentTypeField::getCharset() const
 {
-	const contentTypeField& source = dynamic_cast<const contentTypeField&>(field);
-	m_value = source.m_value;
+	return (dynamic_cast <const charsetParameter&>(*findParameter("charset")).getValue());
+}
 
-	parameterizedHeaderField::copyFrom(field);
+
+void contentTypeField::setCharset(const charset& ch)
+{
+	dynamic_cast <charsetParameter&>(*getParameter("charset")).setValue(ch);
 }
 
 

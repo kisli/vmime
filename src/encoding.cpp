@@ -35,7 +35,7 @@ encoding::encoding()
 
 
 encoding::encoding(const string& name)
-	: m_name(toLower(name))
+	: m_name(stringUtils::toLower(name))
 {
 }
 
@@ -49,7 +49,7 @@ encoding::encoding(const encoding& enc)
 void encoding::parse(const string& buffer, const string::size_type position,
 	const string::size_type end, string::size_type* newPosition)
 {
-	m_name = toLower(string(buffer.begin() + position, buffer.begin() + end));
+	m_name = stringUtils::toLower(string(buffer.begin() + position, buffer.begin() + end));
 
 	if (newPosition)
 		*newPosition = end;
@@ -72,23 +72,23 @@ encoder* encoding::getEncoder() const
 }
 
 
-encoding& encoding::operator=(const encoding& source)
+encoding& encoding::operator=(const encoding& other)
 {
-	m_name = source.m_name;
+	copyFrom(other);
 	return (*this);
 }
 
 
 encoding& encoding::operator=(const string& name)
 {
-	m_name = toLower(name);
+	m_name = stringUtils::toLower(name);
 	return (*this);
 }
 
 
 const bool encoding::operator==(const encoding& value) const
 {
-	return (toLower(m_name) == value.m_name);
+	return (stringUtils::toLower(m_name) == value.m_name);
 }
 
 
@@ -154,7 +154,34 @@ const encoding encoding::decide
 
 const encoding encoding::decide(const contentHandler& /* data */)
 {
+	// TODO: a better solution to do that?
 	return (encoding(encodingTypes::BASE64));
+}
+
+
+encoding* encoding::clone() const
+{
+	return new encoding(*this);
+}
+
+
+void encoding::copyFrom(const component& other)
+{
+	const encoding& e = dynamic_cast <const encoding&>(other);
+
+	m_name = e.m_name;
+}
+
+
+const string& encoding::getName() const
+{
+	return (m_name);
+}
+
+
+void encoding::setName(const string& name)
+{
+	m_name = name;
 }
 
 

@@ -48,28 +48,28 @@ message* messageBuilder::construct() const
 	message* msg = new message;
 
 	// Generate the header fields
-	msg->header().fields.Subject() = m_subject;
+	msg->getHeader()->Subject().setValue(m_subject);
 
-	if (m_from.empty())
+	if (m_from.isEmpty())
 		throw exceptions::no_expeditor();
 
-	if (m_to.empty() || (*m_to.begin()).empty())
+	if (m_to.isEmpty() || m_to.getAddressAt(0)->isEmpty())
 		throw exceptions::no_recipient();
 
-	msg->header().fields.From() = m_from;
-	msg->header().fields.To() = m_to;
+	msg->getHeader()->From().setValue(m_from);
+	msg->getHeader()->To().setValue(m_to);
 
-	if (!m_cc.empty())
-		msg->header().fields.Cc() = m_cc;
+	if (!m_cc.isEmpty())
+		msg->getHeader()->Cc().setValue(m_cc);
 
-	if (!m_bcc.empty())
-		msg->header().fields.Bcc() = m_bcc;
+	if (!m_bcc.isEmpty())
+		msg->getHeader()->Bcc().setValue(m_bcc);
 
 	// Add a "Date" field
-	msg->header().fields.Date() = datetime::now();
+	msg->getHeader()->Date().setValue(datetime::now());
 
 	// Add a "Mime-Version" header field
-	msg->header().fields.MimeVersion().value() = MIME_VERSION;
+	msg->getHeader()->MimeVersion().setValue(string(MIME_VERSION));
 
 	// If there is one or more attachments (or other parts that are
 	// not "text/...") and if there is more than one parts for the
@@ -92,15 +92,15 @@ message* messageBuilder::construct() const
 	if (!m_attach.empty() && m_textPart->getPartCount() > 1)
 	{
 		// Set parent part (message) to "multipart/mixed"
-		msg->header().fields.ContentType() = mediaType
-			(mediaTypes::MULTIPART, mediaTypes::MULTIPART_MIXED);
+		msg->getHeader()->ContentType().setValue
+			(mediaType(mediaTypes::MULTIPART, mediaTypes::MULTIPART_MIXED));
 
 		// Create a sub-part "multipart/alternative" for text parts
 		bodyPart* subPart = new bodyPart;
-		msg->body().parts.append(subPart);
+		msg->getBody()->appendPart(subPart);
 
-		subPart->header().fields.ContentType() = mediaType
-			(mediaTypes::MULTIPART, mediaTypes::MULTIPART_ALTERNATIVE);
+		subPart->getHeader()->ContentType().setValue
+			(mediaType(mediaTypes::MULTIPART, mediaTypes::MULTIPART_ALTERNATIVE));
 
 		// Generate the text parts into this sub-part (normally, this
 		// sub-part will have the "multipart/alternative" content-type...)
@@ -114,21 +114,22 @@ message* messageBuilder::construct() const
 		// If any attachment, set message content-type to "multipart/mixed"
 		if (!m_attach.empty())
 		{
-			msg->header().fields.ContentType() = mediaType
-				(mediaTypes::MULTIPART, mediaTypes::MULTIPART_MIXED);
+			msg->getHeader()->ContentType().setValue
+				(mediaType(mediaTypes::MULTIPART, mediaTypes::MULTIPART_MIXED));
 		}
 		// Else, set it to "multipart/alternative" if there are more than one text part.
 		else if (m_textPart->getPartCount() > 1)
 		{
-			msg->header().fields.ContentType() = mediaType
-				(mediaTypes::MULTIPART, mediaTypes::MULTIPART_ALTERNATIVE);
+			msg->getHeader()->ContentType().setValue
+				(mediaType(mediaTypes::MULTIPART, mediaTypes::MULTIPART_ALTERNATIVE));
 		}
 	}
 
 	// Generate the attachments
 	if (!m_attach.empty())
 	{
-		for (std::vector <attachment*>::const_iterator a = m_attach.begin() ; a != m_attach.end() ; ++a)
+		for (std::vector <attachment*>::const_iterator a = m_attach.begin() ;
+		     a != m_attach.end() ; ++a)
 		{
 			(*a)->generateIn(*msg);
 		}
@@ -136,19 +137,22 @@ message* messageBuilder::construct() const
 
 	// If there is only one part in the message, move it into the message
 	// (hence, the message will not be multipart...)
-	if (msg->body().parts.size() == 1)
+	if (msg->getBody()->getPartCount() == 1)
 	{
-		const bodyPart& part = msg->body().parts.front();
+		const bodyPart& part = *msg->getBody()->getPartAt(0);
 
 		// First, copy (and replace) the header fields
-		const header::fieldsContainer& hdr = part.header().fields;
+		const std::vector <const headerField*> fields = part.getHeader()->getFieldList();
 
-		for (header::const_iterator f = hdr.begin() ; f != hdr.end() ; ++f)
-			msg->header().fields.get((*f).name()) = *f;
+		for (std::vector <const headerField*>::const_iterator it = fields.begin() ;
+		     it != fields.end() ; ++it)
+		{
+			*(msg->getHeader()->getField((*it)->getName())) = **it;
+		}
 
 		// Second, copy the body contents and sub-parts (this also remove
 		// the body part we are copying...)
-		msg->body() = part.body();
+		msg->getBody()->copyFrom(*part.getBody());
 	}
 
 	return (msg);
@@ -163,7 +167,7 @@ void messageBuilder::attach(attachment* attach)
 
 void messageBuilder::constructTextPart(const mediaType& type)
 {
-	class textPart* part = NULL;
+	textPart* part = NULL;
 
 	try
 	{
@@ -179,9 +183,117 @@ void messageBuilder::constructTextPart(const mediaType& type)
 }
 
 
-class textPart& messageBuilder::textPart()
+textPart* messageBuilder::getTextPart()
 {
-	return (*m_textPart);
+	return (m_textPart);
+}
+
+
+const mailbox& messageBuilder::getExpeditor() const
+{
+	return (m_from);
+}
+
+
+void messageBuilder::setExpeditor(const mailbox& expeditor)
+{
+	m_from = expeditor;
+}
+
+
+const addressList& messageBuilder::getRecipients() const
+{
+	return (m_to);
+}
+
+
+void messageBuilder::setRecipients(const addressList& recipients)
+{
+	m_to = recipients;
+}
+
+
+const addressList& messageBuilder::getCopyRecipients() const
+{
+	return (m_cc);
+}
+
+
+void messageBuilder::setCopyRecipients(const addressList& cc)
+{
+	m_cc = cc;
+}
+
+
+const addressList& messageBuilder::getBlindCopyRecipients() const
+{
+	return (m_bcc);
+}
+
+
+void messageBuilder::setBlindCopyRecipients(const addressList& bcc)
+{
+	m_bcc = bcc;
+}
+
+
+const text& messageBuilder::getSubject() const
+{
+	return (m_subject);
+}
+
+
+void messageBuilder::setSubject(const text& subject)
+{
+	m_subject = subject;
+}
+
+
+void messageBuilder::removeAttachment(const int pos)
+{
+	delete (m_attach[pos]);
+
+	m_attach.erase(m_attach.begin() + pos);
+}
+
+
+const attachment* messageBuilder::getAttachmentAt(const int pos) const
+{
+	return (m_attach[pos]);
+}
+
+
+attachment* messageBuilder::getAttachmentAt(const int pos)
+{
+	return (m_attach[pos]);
+}
+
+
+const int messageBuilder::getAttachmentCount() const
+{
+	return (m_attach.size());
+}
+
+
+const std::vector <const attachment*> messageBuilder::getAttachmentList() const
+{
+	std::vector <const attachment*> res;
+
+	res.reserve(m_attach.size());
+
+	for (std::vector <attachment*>::const_iterator it = m_attach.begin() ;
+	     it != m_attach.end() ; ++it)
+	{
+		res.push_back(*it);
+	}
+
+	return (res);
+}
+
+
+const std::vector <attachment*> messageBuilder::getAttachmentList()
+{
+	return (m_attach);
 }
 
 

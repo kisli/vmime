@@ -45,14 +45,24 @@ int main()
 		vmime::messageBuilder mb;
 
 		// Fill in the basic fields
-		mb.expeditor() = vmime::mailbox("me@somewhere.com");
-		mb.recipients().append(vmime::mailbox("you@elsewhere.com"));
-		mb.blindCopyRecipients().append(vmime::mailbox("you-bcc@nowhere.com"));
-		mb.subject() = vmime::text("My first message generated with vmime::messageBuilder");
+		mb.setExpeditor(vmime::mailbox("me@somewhere.com"));
+
+		vmime::addressList to;
+		to.appendAddress(new vmime::mailbox("you@elsewhere.com"));
+
+		mb.setRecipients(to);
+
+		vmime::addressList bcc;
+		bcc.appendAddress(new vmime::mailbox("you-bcc@nowhere.com"));
+
+		mb.setBlindCopyRecipients(bcc);
+
+		mb.setSubject(vmime::text("My first message generated with vmime::messageBuilder"));
 
 		// Message body
-		mb.textPart().text() = "I'm writing this short text to test message construction " \
-			"with attachment, using the vmime::messageBuilder component.";
+		mb.getTextPart()->setText(vmime::contentHandler(
+			"I'm writing this short text to test message construction " \
+			"with attachment, using the vmime::messageBuilder component."));
 
 		// Adding an attachment
 		vmime::fileAttachment* a = new vmime::fileAttachment
@@ -62,8 +72,8 @@ int main()
 			vmime::text("My first attachment")              // description
 		);
 
-		a->fileInfo().setFilename("example2.cpp");
-		a->fileInfo().setCreationDate(vmime::datetime("30 Apr 2003 14:30:00 +0200"));
+		a->getFileInfo().setFilename("example2.cpp");
+		a->getFileInfo().setCreationDate(vmime::datetime("30 Apr 2003 14:30:00 +0200"));
 
 		mb.attach(a);
 

@@ -29,8 +29,8 @@ namespace vmime {
 namespace messaging {
 
 
-maildirStore::maildirStore(class session& sess, class authenticator* auth)
-	: store(sess, infosInstance(), auth), m_connected(false)
+maildirStore::maildirStore(session* sess, authenticator* auth)
+	: store(sess, getInfosInstance(), auth), m_connected(false)
 {
 }
 
@@ -42,7 +42,7 @@ maildirStore::~maildirStore()
 }
 
 
-const string maildirStore::protocolName() const
+const string maildirStore::getProtocolName() const
 {
 	return "maildir";
 }
@@ -81,7 +81,7 @@ void maildirStore::connect()
 		throw exceptions::already_connected();
 
 	m_fsPath = platformDependant::getHandler()->getFileSystemFactory()->
-		stringToPath(session().properties()[infos().propertyPrefix() + "server.rootpath"]);
+		stringToPath(getSession()->getProperties()[getInfos().getPropertyPrefix() + "server.rootpath"]);
 
 	m_connected = true;
 }
@@ -139,19 +139,31 @@ const utility::path& maildirStore::getFileSystemPath() const
 maildirStore::_infos maildirStore::sm_infos;
 
 
-const port_t maildirStore::_infos::defaultPort() const
+const serviceInfos& maildirStore::getInfosInstance()
+{
+	return (sm_infos);
+}
+
+
+const serviceInfos& maildirStore::getInfos() const
+{
+	return (sm_infos);
+}
+
+
+const port_t maildirStore::_infos::getDefaultPort() const
 {
 	return (0);
 }
 
 
-const string maildirStore::_infos::propertyPrefix() const
+const string maildirStore::_infos::getPropertyPrefix() const
 {
 	return "store.maildir.";
 }
 
 
-const std::vector <string> maildirStore::_infos::availableProperties() const
+const std::vector <string> maildirStore::_infos::getAvailableProperties() const
 {
 	std::vector <string> list;
 

@@ -30,9 +30,9 @@ encoderQP::encoderQP()
 }
 
 
-const std::vector <string> encoderQP::availableProperties() const
+const std::vector <string> encoderQP::getAvailableProperties() const
 {
-	std::vector <string> list(encoder::availableProperties());
+	std::vector <string> list(encoder::getAvailableProperties());
 
 	list.push_back("maxlinelength");
 
@@ -84,10 +84,10 @@ const utility::stream::size_type encoderQP::encode(utility::inputStream& in, uti
 	in.reset();  // may not work...
 
 	const string::size_type propMaxLineLength =
-		properties().get <string::size_type>("maxlinelength", (string::size_type) -1);
+		getProperties().getProperty <string::size_type>("maxlinelength", (string::size_type) -1);
 
-	const bool rfc2047 = properties().get <bool>("rfc2047", false);
-	const bool text = properties().get <bool>("text", false);  // binary mode by default
+	const bool rfc2047 = getProperties().getProperty <bool>("rfc2047", false);
+	const bool text = getProperties().getProperty <bool>("text", false);  // binary mode by default
 
 	const bool cutLines = (propMaxLineLength != (string::size_type) -1);
 	const string::size_type maxLineLength = std::min(propMaxLineLength, (string::size_type) 74);
@@ -279,7 +279,7 @@ const utility::stream::size_type encoderQP::decode(utility::inputStream& in, uti
 	in.reset();  // may not work...
 
 	// Process the data
-	const bool rfc2047 = properties().get <bool>("rfc2047", false);
+	const bool rfc2047 = getProperties().getProperty <bool>("rfc2047", false);
 
 	char buffer[16384];
 	int bufferLength = 0;

@@ -30,6 +30,8 @@
 
 #include "parserHelpers.hpp"
 
+#include "utility/stringUtils.hpp"
+
 // For initializing
 #include "encoderFactory.hpp"
 #include "headerFieldFactory.hpp"
@@ -75,17 +77,17 @@ const string libversion() { return (VMIME_VERSION " (" __DATE__ " " __TIME__ ")"
 
 
 // New line sequence to be used when folding header fields.
-const string NEW_LINE_SEQUENCE("\r\n ");
-const string::size_type NEW_LINE_SEQUENCE_LENGTH(1);   // space
+const string NEW_LINE_SEQUENCE = "\r\n ";
+const string::size_type NEW_LINE_SEQUENCE_LENGTH = 1;   // space
 
 /** The CR-LF sequence.
   */
-const string CRLF("\r\n");
+const string CRLF = "\r\n";
 
 
 /** The current MIME version supported by VMime.
   */
-const string MIME_VERSION("1.0");
+const string MIME_VERSION = "1.0";
 
 
 // Line length limits
@@ -94,147 +96,6 @@ namespace lineLengthLimits
 	const string::size_type infinite = std::numeric_limits <string::size_type>::max();
 }
 
-
-
-/** Test two strings for equality (case insensitive).
-  * WARNING: use this with ASCII-only strings.
-  *
-  * @param s1 first string
-  * @param s2 second string (must be in lower-case!)
-  * @param n length of the second string
-  * @return true if the two strings compare equally, false otherwise
-  */
-
-bool isStringEqualNoCase(const string& s1, const char* s2, const string::size_type n)
-{
-	// 'n' is the number of characters to compare
-	// 's2' must be in lowercase letters only
-	if (s1.length() < n)
-		return (false);
-
-	bool equal = true;
-
-	for (string::size_type i = 0 ; equal && i < n ; ++i)
-		equal = (std::tolower(s1[i], std::locale()) == s2[i]);
-
-	return (equal);
-}
-
-
-/** Test two strings for equality (case insensitive).
-  * WARNING: use this with ASCII-only strings.
-  *
-  * @param s1 first string
-  * @param s2 second string
-  * @return true if the two strings compare equally, false otherwise
-  */
-
-bool isStringEqualNoCase(const string& s1, const string& s2)
-{
-	if (s1.length() != s2.length())
-		return (false);
-
-	bool equal = true;
-	const string::const_iterator end = s1.end();
-
-	for (string::const_iterator i = s1.begin(), j = s2.begin(); i != end ; ++i, ++j)
-		equal = (std::tolower(*i, std::locale()) == std::tolower(*j, std::locale()));
-
-	return (equal);
-}
-
-
-/** Test two strings for equality (case insensitive).
-  * WARNING: use this with ASCII-only strings.
-  *
-  * @param begin start position of the first string
-  * @param end end position of the first string
-  * @param s second string (must be in lower-case!)
-  * @param n length of the second string
-  * @return true if the two strings compare equally, false otherwise
-  */
-
-bool isStringEqualNoCase(const string::const_iterator begin, const string::const_iterator end,
-	const char* s, const string::size_type n)
-{
-	if ((string::size_type)(end - begin) < n)
-		return (false);
-
-	bool equal = true;
-	char* c = const_cast<char*>(s);
-	string::size_type r = n;
-
-	for (string::const_iterator i = begin ; equal && r && *c ; ++i, ++c, --r)
-		equal = (std::tolower(*i, std::locale()) == *c);
-
-	return (r == 0 && equal);
-}
-
-
-/** Transform all the characters in a string to lower-case.
-  * WARNING: use this with ASCII-only strings.
-  *
-  * @param str the string to transform
-  * @return a new string in lower-case
-  */
-
-const string toLower(const string& str)
-{
-	string out(str);
-	const string::iterator end = out.end();
-
-	for (string::iterator i = out.begin() ; i != end ; ++i)
-		*i = std::tolower(*i, std::locale());
-
-	return (out);
-}
-
-
-/** Strip the space characters (SPC, TAB, CR, LF) at the beginning
-  * and at the end of the specified string.
-  *
-  * @param str string in which to strip spaces
-  * @return a new string with space characters removed
-  */
-
-const string trim(const string& str)
-{
-	string::const_iterator b = str.begin();
-	string::const_iterator e = str.end();
-
-	if (b != e)
-	{
-		for ( ; b != e && isspace(*b) ; ++b);
-		for ( ; e != b && isspace(*(e - 1)) ; --e);
-	}
-
-	return (string(b, e));
-}
-
-
-/** Return the number of 7-bit US-ASCII characters in a string.
-  *
-  * @param begin start position
-  * @param end end position
-  * @return number of ASCII characters
-  */
-
-string::size_type countASCIIchars
-	(const string::const_iterator begin, const string::const_iterator end)
-{
-	string::size_type count = 0;
-
-	for (string::const_iterator i = begin ; i != end ; ++i)
-	{
-		if (isascii(*i))
-		{
-			if (*i != '=' || *(i + 1) != '?') // To avoid bad behaviour...
-				++count;
-		}
-	}
-
-	return (count);
-}
 
 
 /** Encode and fold text in respect to RFC-2047.
@@ -252,14 +113,15 @@ void encodeAndFoldText(utility::outputStream& os, const text& in, const string::
 {
 	string::size_type curLineLength = firstLineOffset;
 
-	for (text::const_iterator wi = in.begin() ; wi != in.end() ; ++wi)
+	for (int wi = 0 ; wi < in.getWordCount() ; ++wi)
 	{
-		const word& w = *wi;
-		const string& buffer = w.buffer();
+		const word& w = *in.getWordAt(wi);
+		const string& buffer = w.getBuffer();
 
 		// Calculate the number of ASCII chars to check whether encoding is needed
 		// and _which_ encoding to use.
-		const string::size_type asciiCount = countASCIIchars(buffer.begin(), buffer.end());
+		const string::size_type asciiCount =
+			stringUtils::countASCIIchars(buffer.begin(), buffer.end());
 
 		bool noEncoding = (flags & encodeAndFoldFlags::forceNoEncoding) ||
 		    (!(flags & encodeAndFoldFlags::forceEncoding) && asciiCount == buffer.length());
@@ -305,7 +167,7 @@ void encodeAndFoldText(utility::outputStream& os, const text& in, const string::
 						// we write the full line no matter of the max line length...
 
 						if (!newLine && p != end && lastWSpos == end &&
-						    wi != in.begin() && curLineStart == buffer.begin())
+						    wi != 0 && curLineStart == buffer.begin())
 						{
 							// Here, we are continuing on the line of previous encoded
 							// word, but there is not even enough space to put the
@@ -359,7 +221,7 @@ void encodeAndFoldText(utility::outputStream& os, const text& in, const string::
 						// last white-space.
 
 #if 1
-						if (curLineLength != 1 && wi != in.begin())
+						if (curLineLength != 1 && wi != 0)
 							os << " "; // Separate from previous word
 #endif
 
@@ -419,7 +281,7 @@ void encodeAndFoldText(utility::outputStream& os, const text& in, const string::
 			const string::size_type asciiPercent = (100 * asciiCount) / buffer.length();
 			const string::value_type encoding = (asciiPercent <= 40) ? 'B' : 'Q';
 
-			string wordStart("=?" + w.charset().name() + "?" + encoding + "?");
+			string wordStart("=?" + w.getCharset().getName() + "?" + encoding + "?");
 			string wordEnd("?=");
 
 			const string::size_type minWordLength = wordStart.length() + wordEnd.length();
@@ -465,7 +327,7 @@ void encodeAndFoldText(utility::outputStream& os, const text& in, const string::
 
 			if (encoding == 'Q')
 			{
-				theEncoder->properties()["rfc2047"] = true;
+				theEncoder->getProperties()["rfc2047"] = true;
 
 				// In the case of Quoted-Printable encoding, we cannot simply encode input
 				// buffer line by line. So, we encode the whole buffer and we will fold it
@@ -480,7 +342,7 @@ void encodeAndFoldText(utility::outputStream& os, const text& in, const string::
 			}
 
 #if 1
-			if (curLineLength != 1 && wi != in.begin())
+			if (curLineLength != 1 && wi != 0)
 			{
 				os << " "; // Separate from previous word
 				++curLineLength;
@@ -585,7 +447,7 @@ void decodeAndUnfoldText(const string::const_iterator& inStart, const string::co
 	// NOTE: See RFC-2047, Pages 11-12 for knowing about handling
 	// of white-spaces between encoded words.
 
-	out.clear();
+	out.removeAllWords();
 
 	string::const_iterator p = inStart;
 	const string::const_iterator end = inEnd;
@@ -608,14 +470,14 @@ void decodeAndUnfoldText(const string::const_iterator& inStart, const string::co
 
 			if (textEnd != prevPos)
 			{
-				if (out.size() && prevWordCharset == defaultCharset)
+				if (!out.isEmpty() && prevWordCharset == defaultCharset)
 				{
-					out.back().buffer() += string(prevPos, textEnd);
+					out.getWordAt(out.getWordCount() - 1)->getBuffer() += string(prevPos, textEnd);
 				}
 				else
 				{
 					prevWordCharset = defaultCharset;
-					out.append(word(string(prevPos, textEnd), defaultCharset));
+					out.appendWord(new word(string(prevPos, textEnd), defaultCharset));
 					prevIsEncoded = false;
 				}
 			}
@@ -670,7 +532,7 @@ void decodeAndUnfoldText(const string::const_iterator& inStart, const string::co
 							else if (*encPos == 'Q' || *encPos == 'q')
 							{
 								theEncoder = new encoderQP;
-								theEncoder->properties()["rfc2047"] = true;
+								theEncoder->getProperties()["rfc2047"] = true;
 							}
 
 							if (theEncoder)
@@ -698,13 +560,16 @@ void decodeAndUnfoldText(const string::const_iterator& inStart, const string::co
 
 									if (p != wordPos) // if not empty
 									{
-										if (out.size() && prevWordCharset == defaultCharset)
+										if (!out.isEmpty() && prevWordCharset == defaultCharset)
 										{
-											out.back().buffer() += string(prevPos, wordPos);
+											out.getWordAt(out.getWordCount() - 1)->
+												getBuffer() += string(prevPos, wordPos);
 										}
 										else
 										{
-											out.append(word(string(prevPos, wordPos), defaultCharset));
+											out.appendWord(new word
+												(string(prevPos, wordPos), defaultCharset));
+
 											prevWordCharset = defaultCharset;
 										}
 									}
@@ -713,14 +578,15 @@ void decodeAndUnfoldText(const string::const_iterator& inStart, const string::co
 								// Append this fresh decoded word to output text
 								charset thisCharset(string(charsetPos, charsetEnd));
 
-								if (out.size() && prevWordCharset == thisCharset)
+								if (!out.isEmpty() && prevWordCharset == thisCharset)
 								{
-									out.back().buffer() += decodedBuffer;
+									out.getWordAt(out.getWordCount() - 1)->
+										getBuffer() += decodedBuffer;
 								}
 								else
 								{
 									prevWordCharset = thisCharset;
-									out.append(word(decodedBuffer, thisCharset));
+									out.appendWord(new word(decodedBuffer, thisCharset));
 								}
 
 								// This word has been decoded: we can advance in the input buffer
@@ -752,90 +618,6 @@ void decodeAndUnfoldText(const string& in, text& out)
 	decodeAndUnfoldText(in.begin(), in.end(), out);
 }
 
-
-/** This function can be used to make several encoded words from a text.
-  * All the characters in the text must be in the same specified charset.
-  *
-  * <p>Eg: giving:</p>
-  * <pre>   &lt;iso-8859-1> "Linux dans un t'el'ephone mobile"
-  *    ("=?iso-8859-1?Q?Linux_dans_un_t=E9l=E9phone_mobile?=")
-  * </pre><p>it will return:</p>
-  * <pre>   &lt:us-ascii>   "Linux dans un "
-  *    &lt;iso-8859-1> "t'el'ephone "
-  *    &lt;us-ascii>   "mobile"
-  *    ("Linux dans un =?iso-8859-1?Q?t=E9l=E9phone_?= mobile")
-  * </pre>
-  *
-  * @param in input string
-  * @param ch input charset
-  * @param out output text
-  */
-
-void makeWordsFromText(const string& in, const charset& ch, text& out)
-{
-	const string::const_iterator end = in.end();
-	string::const_iterator p = in.begin();
-	string::const_iterator start = in.begin();
-
-	bool is8bit = false;     // is the current word 8-bit?
-	bool prevIs8bit = false; // is previous word 8-bit?
-	unsigned int count = 0;  // total number of words
-
-	out.clear();
-
-	for ( ; ; )
-	{
-		if (p == end || isspace(*p))
-		{
-			if (p != end)
-				++p;
-
-			if (is8bit)
-			{
-				if (prevIs8bit)
-				{
-					// No need to create a new encoded word, just append
-					// the current word to the previous one.
-					out.back().buffer() += string(start, p);
-				}
-				else
-				{
-					out.append(word(string(start, p), ch));
-					prevIs8bit = true;
-					++count;
-				}
-			}
-			else
-			{
-				if (count && !prevIs8bit)
-				{
-					out.back().buffer() += string(start, p);
-				}
-				else
-				{
-					out.append(word(string(start, p), charset(charsets::US_ASCII)));
-					prevIs8bit = false;
-					++count;
-				}
-			}
-
-			if (p == end)
-				break;
-
-			is8bit = false;
-			start = p;
-		}
-		else if (!isascii(*p))
-		{
-			is8bit = true;
-			++p;
-		}
-		else
-		{
-			++p;
-		}
-	}
-}
 
 
 //

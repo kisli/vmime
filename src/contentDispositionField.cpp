@@ -20,6 +20,8 @@
 #include "contentDispositionField.hpp"
 #include "exception.hpp"
 
+#include "standardParams.hpp"
+
 
 namespace vmime
 {
@@ -30,32 +32,69 @@ contentDispositionField::contentDispositionField()
 }
 
 
-void contentDispositionField::parseValue(const string& buffer, const string::size_type position,
-	const string::size_type end)
+contentDispositionField::contentDispositionField(contentDispositionField&)
+	: headerField(), parameterizedHeaderField(), genericField <disposition>()
 {
-	m_value.parse(buffer, position, end);
 }
 
 
-const string contentDispositionField::generateValue() const
+const datetime& contentDispositionField::getCreationDate() const
 {
-	return (m_value.generate());
+	return (dynamic_cast <const dateParameter&>(*findParameter("creation-date")).getValue());
 }
 
 
-contentDispositionField& contentDispositionField::operator=(const disposition& type)
+void contentDispositionField::setCreationDate(const datetime& creationDate)
 {
-	m_value = type;
-	return (*this);
+	dynamic_cast <dateParameter&>(*getParameter("creation-date")).setValue(creationDate);
 }
 
 
-void contentDispositionField::copyFrom(const headerField& field)
+const datetime& contentDispositionField::getModificationDate() const
 {
-	const contentDispositionField& source = dynamic_cast<const contentDispositionField&>(field);
-	m_value = source.m_value;
+	return (dynamic_cast <const dateParameter&>(*findParameter("modification-date")).getValue());
+}
 
-	parameterizedHeaderField::copyFrom(field);
+
+void contentDispositionField::setModificationDate(const datetime& modificationDate)
+{
+	dynamic_cast <dateParameter&>(*getParameter("modification-date")).setValue(modificationDate);
+}
+
+
+const datetime& contentDispositionField::getReadDate() const
+{
+	return (dynamic_cast <const dateParameter&>(*findParameter("read-date")).getValue());
+}
+
+
+void contentDispositionField::setReadDate(const datetime& readDate)
+{
+	dynamic_cast <dateParameter&>(*getParameter("read-date")).setValue(readDate);
+}
+
+
+const string contentDispositionField::getFilename() const
+{
+	return (dynamic_cast <const defaultParameter&>(*findParameter("filename")).getValue());
+}
+
+
+void contentDispositionField::setFilename(const string& filename)
+{
+	dynamic_cast <defaultParameter&>(*getParameter("filename")).setValue(filename);
+}
+
+
+const string contentDispositionField::getSize() const
+{
+	return (dynamic_cast <const defaultParameter&>(*findParameter("size")).getValue());
+}
+
+
+void contentDispositionField::setSize(const string& size)
+{
+	dynamic_cast <defaultParameter&>(*getParameter("size")).setValue(size);
 }
 
 

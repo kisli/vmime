@@ -40,7 +40,7 @@ fileAttachment::fileAttachment(const string& filename, const mediaType& type, co
 
 
 fileAttachment::fileAttachment(const string& filename, const mediaType& type,
-	const class encoding& enc, const text& desc)
+	const encoding& enc, const text& desc)
 {
 	m_type = type;
 	m_desc = desc;
@@ -62,7 +62,7 @@ void fileAttachment::setData(const string& filename)
 		throw exceptions::open_file_error();
 	}
 
-	m_data.set(new utility::inputStreamPointerAdapter(file, true), 0, true);
+	m_data.setData(new utility::inputStreamPointerAdapter(file, true), 0, true);
 }
 
 
@@ -70,14 +70,27 @@ void fileAttachment::generatePart(bodyPart& part) const
 {
 	defaultAttachment::generatePart(part);
 
-	contentDispositionField& cdf = part.header().fields.ContentDisposition();
+	contentDispositionField& cdf = part.getHeader()->ContentDisposition();
 
-	if (m_fileInfo.hasSize()) cdf.size() = toString(m_fileInfo.getSize());
-	if (m_fileInfo.hasFilename()) cdf.filename() = m_fileInfo.getFilename();
-	if (m_fileInfo.hasCreationDate()) cdf.creationDate() = m_fileInfo.getCreationDate();
-	if (m_fileInfo.hasModificationDate()) cdf.modificationDate() = m_fileInfo.getModificationDate();
-	if (m_fileInfo.hasReadDate()) cdf.readDate() = m_fileInfo.getReadDate();
+	if (m_fileInfo.hasSize()) cdf.setSize(stringUtils::toString(m_fileInfo.getSize()));
+	if (m_fileInfo.hasFilename()) cdf.setFilename(m_fileInfo.getFilename());
+	if (m_fileInfo.hasCreationDate()) cdf.setCreationDate(m_fileInfo.getCreationDate());
+	if (m_fileInfo.hasModificationDate()) cdf.setModificationDate(m_fileInfo.getModificationDate());
+	if (m_fileInfo.hasReadDate()) cdf.setReadDate(m_fileInfo.getReadDate());
 }
+
+
+const fileAttachment::fileInfo& fileAttachment::getFileInfo() const
+{
+	return (m_fileInfo);
+}
+
+
+fileAttachment::fileInfo& fileAttachment::getFileInfo()
+{
+	return (m_fileInfo);
+}
+
 
 
 //

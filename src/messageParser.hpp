@@ -46,27 +46,88 @@ public:
 
 public:
 
-	// Expeditor and recipients
-	const mailbox& expeditor() const { return (m_from); }
+	/** Return the expeditor of the message (From:).
+	  *
+	  * @return expeditor of the message
+	  */
+	const mailbox& getExpeditor() const;
 
-	const addressList& recipients() const { return (m_to); }
-	const addressList& copyRecipients() const { return (m_cc); }
-	const addressList& blindCopyRecipients() const { return (m_bcc); }
+	/** Return the recipients of the message (To:).
+	  *
+	  * return recipients of the message
+	  */
+	const addressList& getRecipients() const;
 
-	// Subject
-	const text& subject() const { return (m_subject); }
+	/** Return the copy recipients of the message (Cc:).
+	  *
+	  * @return copy recipients of the message
+	  */
+	const addressList& getCopyRecipients() const;
 
-	// Date
-	const datetime& date() const { return (m_date); }
+	/** Return the blind-copy recipients of the message (Bcc:).
+	  *
+	  * @return blind-copy recipients of the message
+	  */
+	const addressList& getBlindCopyRecipients() const;
 
-	// Attachments
-	const std::vector <attachment*>& attachments() const { return (m_attach); }
-	const contentDispositionField* attachmentInfo(attachment* a) const;
+	/** Return the subject of the message.
+	  *
+	  * @return subject of the message
+	  */
+	const text& getSubject() const;
 
-	// Text parts
-	const std::vector <textPart*>& textParts() const { return (m_textParts); }
+	/** Return the date of the message.
+	  *
+	  * @return date of the message
+	  */
+	const datetime& getDate() const;
 
-protected:
+	/** Return the number of attachments in the message.
+	  *
+	  * @return number of attachments
+	  */
+	const int getAttachmentCount() const;
+
+	/** Return the attachment at the specified position.
+	  *
+	  * @param pos position of the attachment
+	  * @return attachment at position 'pos'
+	  */
+	const attachment* getAttachmentAt(const int pos) const;
+
+	/** Return the attachments of the message.
+	  *
+	  * @return list of attachments in the message
+	  */
+	const std::vector <const attachment*> getAttachmentList() const;
+
+	/** Return information about the specified attachment.
+	  *
+	  * @param a attachment to retrieve information about
+	  * @return information about the specified attachment
+	  */
+	const contentDispositionField* getAttachmentInfo(const attachment* a) const;
+
+	/** Return the text parts of the message.
+	  *
+	  * @return list of text parts in the message
+	  */
+	const std::vector <const textPart*> getTextPartList() const;
+
+	/** Return the number of text parts in the message.
+	  *
+	  * @return number of text parts
+	  */
+	const int getTextPartCount() const;
+
+	/** Return the text part at the specified position.
+	  *
+	  * @param pos position of the text part
+	  * @return text part at position 'pos'
+	  */
+	const textPart* getTextPartAt(const int pos) const;
+
+private:
 
 	mailbox m_from;
 

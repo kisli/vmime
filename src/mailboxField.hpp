@@ -21,10 +21,7 @@
 #define VMIME_MAILBOXFIELD_HPP_INCLUDED
 
 
-#include "base.hpp"
-#include "component.hpp"
-
-#include "headerFieldFactory.hpp"
+#include "genericField.hpp"
 #include "mailbox.hpp"
 
 
@@ -32,35 +29,18 @@ namespace vmime
 {
 
 
-class mailboxField : public headerField
+class mailboxField : public genericField <mailbox>
 {
 	friend class headerFieldFactory::registerer <mailboxField>;
 
 protected:
 
 	mailboxField();
+	mailboxField(const mailboxField&);
 
 public:
 
-	void copyFrom(const headerField& field);
-
-	mailboxField& operator=(const class mailbox& mailbox);
-
-	const mailbox& value() const { return (m_mailbox); }
-	mailbox& value() { return (m_mailbox); }
-
-protected:
-
-	mailbox m_mailbox;
-
-public:
-
-	using headerField::parse;
-	using headerField::generate;
-
-	// Component parsing & assembling
 	void parse(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition = NULL);
-	void generate(utility::outputStream& os, const string::size_type maxLineLength = lineLengthLimits::infinite, const string::size_type curLinePos = 0, string::size_type* newLinePos = NULL) const;
 };
 
 

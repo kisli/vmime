@@ -39,7 +39,7 @@ class service
 {
 protected:
 
-	service(class session& sess, const serviceInfos& infos, class authenticator* auth);
+	service(session* sess, const serviceInfos& infos, authenticator* auth);
 
 public:
 
@@ -56,31 +56,31 @@ public:
 	  *
 	  * @return type of service
 	  */
-	virtual const Type type() const = 0;
+	virtual const Type getType() const = 0;
 
 	/** Return the protocol name of this service.
 	  *
 	  * @return protocol name
 	  */
-	virtual const string protocolName() const = 0;
+	virtual const string getProtocolName() const = 0;
 
 	/** Return the session object associated with this service instance.
 	  *
 	  * @return session object
 	  */
-	const class session& session() const { return (m_session); }
+	const session* getSession() const;
 
 	/** Return the session object associated with this service instance.
 	  *
 	  * @return session object
 	  */
-	class session& session() { return (m_session); }
+	session* getSession();
 
 	/** Return information about this service.
 	  *
 	  * @return information about the service
 	  */
-	virtual const serviceInfos& infos() const = 0;
+	virtual const serviceInfos& getInfos() const = 0;
 
 	/** Connect to service.
 	  */
@@ -106,13 +106,13 @@ public:
 	  *
 	  * @return authenticator object
 	  */
-	const class authenticator& authenticator() const { return (*m_auth); }
+	const authenticator* getAuthenticator() const;
 
 	/** Return the authenticator object used with this service instance.
 	  *
 	  * @return authenticator object
 	  */
-	class authenticator& authenticator() { return (*m_auth); }
+	authenticator* getAuthenticator();
 
 	// Basic service registerer
 	template <class S>
@@ -123,7 +123,7 @@ public:
 		initializer(const string& protocol)
 		{
 			serviceFactory::getInstance()->
-				template registerName <S>(protocol);
+				template registerServiceByProtocol <S>(protocol);
 		}
 	};
 
@@ -131,8 +131,8 @@ private:
 
 	bool m_deleteAuth;
 
-	class session& m_session;
-	class authenticator* m_auth;
+	session* m_session;
+	authenticator* m_auth;
 };
 
 

@@ -37,6 +37,9 @@ namespace vmime {
 namespace messaging {
 
 
+class store;
+
+
 /** Abstract representation of a folder in a message store.
   */
 
@@ -90,31 +93,31 @@ public:
 	  *
 	  * @return folder type (see folder::Types)
 	  */
-	virtual const int type() = 0;
+	virtual const int getType() = 0;
 
 	/** Return the flags of this folder.
 	  *
 	  * @return folder flags (see folder::Flags)
 	  */
-	virtual const int flags() = 0;
+	virtual const int getFlags() = 0;
 
 	/** Return the mode in which the folder has been open.
 	  *
 	  * @return folder opening mode (see folder::Modes)
 	  */
-	virtual const int mode() const = 0;
+	virtual const int getMode() const = 0;
 
 	/** Return the name of this folder.
 	  *
 	  * @return folder name
 	  */
-	virtual const folder::path::component name() const = 0;
+	virtual const folder::path::component getName() const = 0;
 
 	/** Return the fully qualified path name of this folder.
 	  *
 	  * @return absolute path of the folder
 	  */
-	virtual const folder::path fullPath() const = 0;
+	virtual const folder::path getFullPath() const = 0;
 
 	/** Open this folder.
 	  *
@@ -297,13 +300,13 @@ public:
 	  *
 	  * @return the store object to which this folder is attached
 	  */
-	virtual const class store& store() const = 0;
+	virtual const store* getStore() const = 0;
 
 	/** Return a reference to the store to which this folder belongs.
 	  *
 	  * @return the store object to which this folder is attached
 	  */
-	virtual class store& store() = 0;
+	virtual store* getStore() = 0;
 
 	/** Possible fetchable objects.
 	  */

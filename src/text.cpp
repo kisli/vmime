@@ -30,32 +30,50 @@ text::text()
 
 
 text::text(const text& t)
+	: component()
 {
-	operator=(t);
+	copyFrom(t);
 }
 
 
 text::text(const string& t, const charset& ch)
 {
-	makeWordsFromText(t, ch, *this);
+	text::newFromString(t, ch, this);
 }
 
 
 text::text(const string& t)
 {
-	makeWordsFromText(t, charset::getLocaleCharset(), *this);
+	text::newFromString(t, charset::getLocaleCharset(), this);
 }
 
 
 text::text(const word& w)
 {
-	append(w);
+	appendWord(new word(w));
 }
 
 
 text::~text()
 {
-	clear();
+	removeAllWords();
+}
+
+
+void text::parse(const string& buffer, const string::size_type position,
+	const string::size_type end, string::size_type* newPosition)
+{
+	decodeAndUnfoldText(buffer.begin() + position, buffer.begin() + end, *this);
+
+	if (newPosition)
+		*newPosition = end;
+}
+
+
+void text::generate(utility::outputStream& os, const string::size_type maxLineLength,
+	const string::size_type curLinePos, string::size_type* newLinePos) const
+{
+	encodeAndFoldText(os, *this, maxLineLength, curLinePos, newLinePos, encodeAndFoldFlags::none);
 }
 
 
@@ -66,9 +84,7 @@ const wstring text::getDecodedText() const
 	wstring out;
 
 	for (std::vector <word*>::const_iterator i = m_words.begin() ; i != m_words.end() ; ++i)
-	{
 		out += (*i)->getDecodedText();
-	}
 
 	return (out);
 }
@@ -76,47 +92,34 @@ const wstring text::getDecodedText() const
 #endif
 
 
-void text::append(const word& w)
+void text::copyFrom(const component& other)
 {
-	m_words.push_back(new word(w));
-}
+	const text& t = dynamic_cast <const text&>(other);
 
-
-void text::insert(const iterator it, const word& w)
-{
-	m_words.insert(it.m_iterator, new word(w));
-}
-
-
-void text::clear()
-{
-	free_container(m_words);
-
-	m_words.clear();
-}
-
-
-void text::remove(const iterator it)
-{
-	delete (*it.m_iterator);
-	m_words.erase(it.m_iterator);
-}
-
-
-text& text::operator=(const text& t)
-{
-	clear();
+	removeAllWords();
 
 	for (std::vector <word*>::const_iterator i = t.m_words.begin() ; i != t.m_words.end() ; ++i)
 		m_words.push_back(new word(**i));
+}
 
+
+text& text::operator=(const component& other)
+{
+	copyFrom(other);
+	return (*this);
+}
+
+
+text& text::operator=(const text& other)
+{
+	copyFrom(other);
 	return (*this);
 }
 
 
 const bool text::operator==(const text& t) const
 {
-	if (size() == t.size())
+	if (getWordCount() == t.getWordCount())
 	{
 		bool equal = false;
 
@@ -139,101 +142,176 @@ const bool text::operator!=(const text& t) const
 }
 
 
-/** Return the text converted into the specified charset.
-  * The encoded-words are decoded and then converted in the
-  * destination charset.
-  *
-  * @param dest output charset
-  * @return text decoded in the specified charset
-  */
-
 const string text::getConvertedText(const charset& dest) const
 {
 	string out;
 
 	for (std::vector <word*>::const_iterator i = m_words.begin() ; i != m_words.end() ; ++i)
-	{
 		out += (*i)->getConvertedText(dest);
-	}
 
 	return (out);
 }
 
 
-/** Check whether the list of encoded-words is empty.
-  *
-  * @return true if the list contains no encoded-word, false otherwise
-  */
-
-const bool text::empty() const
+void text::appendWord(word* w)
 {
-	return (m_words.size() == 0);
+	m_words.push_back(w);
 }
 
 
-/** Return the number of encoded-words in the list.
-  *
-  * @return number of encoded-words
-  */
+void text::insertWordBefore(const int pos, word* w)
+{
+	m_words.insert(m_words.begin() + pos, w);
+}
 
-const size_t text::count() const
+
+void text::insertWordAfter(const int pos, word* w)
+{
+	m_words.insert(m_words.begin() + pos + 1, w);
+}
+
+
+void text::removeWord(const int pos)
+{
+	const std::vector <word*>::iterator it = m_words.begin() + pos;
+
+	delete (*it);
+
+	m_words.erase(it);
+}
+
+
+void text::removeAllWords()
+{
+	free_container(m_words);
+}
+
+
+const int text::getWordCount() const
 {
 	return (m_words.size());
 }
 
 
-/** Return the number of encoded-words in the list.
-  *
-  * @return number of encoded-words
-  */
-
-const size_t text::size() const
+const bool text::isEmpty() const
 {
-	return (m_words.size());
+	return (m_words.empty());
 }
 
 
-/** Return the first encoded-word of the list.
-  *
-  * @return first encoded-word
-  */
-
-word& text::front()
+word* text::getWordAt(const int pos)
 {
-	return (*m_words.front());
+	return (m_words[pos]);
 }
 
 
-/** Return the first encoded-word of the list.
-  *
-  * @return first encoded-word
-  */
-
-const word& text::front() const
+const word* const text::getWordAt(const int pos) const
 {
-	return (*m_words.front());
+	return (m_words[pos]);
 }
 
 
-/** Return the last encoded-word of the list.
-  *
-  * @return last encoded-word
-  */
-
-word& text::back()
+const std::vector <const word*> text::getWordList() const
 {
-	return (*m_words.back());
+	std::vector <const word*> list;
+
+	list.reserve(m_words.size());
+
+	for (std::vector <word*>::const_iterator it = m_words.begin() ;
+	     it != m_words.end() ; ++it)
+	{
+		list.push_back(*it);
+	}
+
+	return (list);
 }
 
 
-/** Return the last encoded-word of the list.
-  *
-  * @return last encoded-word
-  */
-
-const word& text::back() const
+const std::vector <word*> text::getWordList()
 {
-	return (*m_words.back());
+	return (m_words);
+}
+
+
+text* text::clone() const
+{
+	return new text(*this);
+}
+
+
+text* text::newFromString(const string& in, const charset& ch, text* generateInExisting)
+{
+	const string::const_iterator end = in.end();
+	string::const_iterator p = in.begin();
+	string::const_iterator start = in.begin();
+
+	bool is8bit = false;     // is the current word 8-bit?
+	bool prevIs8bit = false; // is previous word 8-bit?
+	unsigned int count = 0;  // total number of words
+
+	text* out = (generateInExisting != NULL) ? generateInExisting : new text();
+
+	out->removeAllWords();
+
+	for ( ; ; )
+	{
+		if (p == end || isspace(*p))
+		{
+			if (p != end)
+				++p;
+
+			if (is8bit)
+			{
+				if (count && prevIs8bit)
+				{
+					// No need to create a new encoded word, just append
+					// the current word to the previous one.
+					out->getWordAt(out->getWordCount() - 1)->
+						getBuffer() += string(start, p);
+				}
+				else
+				{
+					out->appendWord(new word(string(start, p), ch));
+
+					prevIs8bit = true;
+					++count;
+				}
+			}
+			else
+			{
+				if (count && !prevIs8bit)
+				{
+					out->getWordAt(out->getWordCount() - 1)->
+						getBuffer() += string(start, p);
+				}
+				else
+				{
+					out->appendWord(new word
+						(string(start, p), charset(charsets::US_ASCII)));
+
+					prevIs8bit = false;
+					++count;
+				}
+			}
+
+			if (p == end)
+				break;
+
+			is8bit = false;
+			start = p;
+		}
+		else if (!isascii(*p))
+		{
+			is8bit = true;
+			++p;
+		}
+		else
+		{
+			++p;
+		}
+	}
+
+	return (out);
 }
 
 

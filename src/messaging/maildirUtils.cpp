@@ -25,9 +25,9 @@ namespace vmime {
 namespace messaging {
 
 
-const vmime::word maildirUtils::TMP_DIR("tmp");  // ensure reliable delivery (not to be listed)
-const vmime::word maildirUtils::CUR_DIR("cur");  // no longer new messages
-const vmime::word maildirUtils::NEW_DIR("new");  // unread messages
+const vmime::word maildirUtils::TMP_DIR("tmp", vmime::charset(vmime::charsets::US_ASCII));  // ensure reliable delivery (not to be listed)
+const vmime::word maildirUtils::CUR_DIR("cur", vmime::charset(vmime::charsets::US_ASCII));  // no longer new messages
+const vmime::word maildirUtils::NEW_DIR("new", vmime::charset(vmime::charsets::US_ASCII));  // unread messages
 
 
 const utility::file::path maildirUtils::getFolderFSPath
@@ -35,7 +35,9 @@ const utility::file::path maildirUtils::getFolderFSPath
 {
 	// Root path
 	utility::file::path path(store->getFileSystemPath());
-	const int count = (mode == FOLDER_PATH_CONTAINER ? folderPath.size() : folderPath.size() - 1);
+
+	const int count = (mode == FOLDER_PATH_CONTAINER
+		? folderPath.getSize() : folderPath.getSize() - 1);
 
 	// Parent folders
 	for (int i = 0 ; i < count ; ++i)
@@ -43,16 +45,16 @@ const utility::file::path maildirUtils::getFolderFSPath
 		utility::file::path::component comp(folderPath[i]);
 
 		// TODO: may not work with all encodings...
-		comp.buffer() = "." + comp.buffer() + ".directory";
+		comp.setBuffer("." + comp.getBuffer() + ".directory");
 
 		path /= comp;
 	}
 
 	// Last component
-	if (folderPath.size() != 0 &&
+	if (folderPath.getSize() != 0 &&
 	    mode != FOLDER_PATH_CONTAINER)
 	{
-		path /= folderPath.last();
+		path /= folderPath.getLastComponent();
 
 		switch (mode)
 		{
@@ -73,14 +75,45 @@ const bool maildirUtils::isSubfolderDirectory(const utility::file& file)
 	// A directory which name does not start with '.'
 	// is listed as a sub-folder...
 	if (file.isDirectory() &&
-	    file.fullPath().last().buffer().size() >= 1 &&
-	    file.fullPath().last().buffer()[0] != '.')
+	    file.fullPath().getLastComponent().getBuffer().length() >= 1 &&
+	    file.fullPath().getLastComponent().getBuffer()[0] != '.')
 	{
 		return (true);
 	}
 
 	return (false);
 }
+
+
+/*
+const int maildirUtils::extractFlags(const utility::file::path::component& comp)
+{
+	string::size_type sep = comp.buffer().rfind(':');
+	if (sep == string::npos) return (0);
+
+	const string flagsString(comp.buffer().begin() + sep + 1, comp.buffer().end());
+	const string::size_type count = flagsString.length();
+
+	int flags = 0;
+
+	for (string::size_type i = 0 ; i < count ; ++i)
+	{
+		switch (flagsString[i])
+		{
+		case 'S': case 's': flags |= message::FLAG_SEEN; break;
+		case 'R': case 'r': flags |= message::FLAG_REPLIED; break;
+		}
+	}
+
+	return (flags);
+}
+
+
+const utility::file::component maildirUtils::changeFlags
+	(const utility::file::component& comp, const int flags)
+{
+}
+*/
 
 
 } // messaging

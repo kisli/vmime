@@ -29,11 +29,10 @@ namespace vmime
 {
 
 
-/** A class representing a list of encoded-words, as defined
-  * in RFC-2047 (basic type).
+/** List of encoded-words, as defined in RFC-2047 (basic type).
   */
 
-class text
+class text : public component
 {
 public:
 
@@ -46,125 +45,129 @@ public:
 
 public:
 
-	text& operator=(const text& t);
-
 	const bool operator==(const text& t) const;
 	const bool operator!=(const text& t) const;
 
-	// Words iterator
-	class const_iterator;
+	text* clone() const;
+	void copyFrom(const component& other);
+	text& operator=(const component& other);
+	text& operator=(const text& other);
 
-	class iterator
-	{
-		friend class text::const_iterator;
-		friend class text;
+	/** Add a word at the end of the list.
+	  *
+	  * @param w word to append
+	  */
+	void appendWord(word* w);
 
-	public:
+	/** Insert a new word before the specified position.
+	  *
+	  * @param pos position at which to insert the new word (0 to insert at
+	  * the beginning of the list)
+	  * @param w word to insert
+	  */
+	void insertWordBefore(const int pos, word* w);
 
-		typedef std::vector <word*>::iterator::difference_type difference_type;
+	/** Insert a new word after the specified position.
+	  *
+	  * @param pos position of the word before the new word
+	  * @param w word to insert
+	  */
+	void insertWordAfter(const int pos, word* w);
 
-		iterator(std::vector <word*>::iterator it) : m_iterator(it) { }
-		iterator(const iterator& it) : m_iterator(it.m_iterator) { }
+	/** Remove the word at the specified position.
+	  *
+	  * @param pos position of the word to remove
+	  */
+	void removeWord(const int pos);
 
-		iterator& operator=(const iterator& it) { m_iterator = it.m_iterator; return (*this); }
+	/** Remove all words from the list.
+	  */
+	void removeAllWords();
 
-		word& operator*() const { return (**m_iterator); }
-		word* operator->() const { return (*m_iterator); }
+	/** Return the number of words in the list.
+	  *
+	  * @return number of words
+	  */
+	const int getWordCount() const;
 
-		iterator& operator++() { ++m_iterator; return (*this); }
-		iterator operator++(int) { iterator i(*this); ++m_iterator; return (i); }
+	/** Tests whether the list of words is empty.
+	  *
+	  * @return true if there is no word, false otherwise
+	  */
+	const bool isEmpty() const;
 
-		iterator& operator--() { --m_iterator; return (*this); }
-		iterator operator--(int) { iterator i(*this); --m_iterator; return (i); }
+	/** Return the word at the specified position.
+	  *
+	  * @param pos position
+	  * @return word at position 'pos'
+	  */
+	word* getWordAt(const int pos);
 
-		iterator& operator+=(difference_type n) { m_iterator += n; return (*this); }
-		iterator& operator-=(difference_type n) { m_iterator -= n; return (*this); }
+	/** Return the word at the specified position.
+	  *
+	  * @param pos position
+	  * @return word at position 'pos'
+	  */
+	const word* const getWordAt(const int pos) const;
 
-		iterator operator+(difference_type x) const { return iterator(m_iterator + x); }
-		iterator operator-(difference_type x) const { return iterator(m_iterator - x); }
+	/** Return the word list.
+	  *
+	  * @return list of words
+	  */
+	const std::vector <const word*> getWordList() const;
 
-		word& operator[](difference_type n) const { return *(m_iterator[n]); }
-
-		const bool operator==(const iterator& it) const { return (it.m_iterator == m_iterator); }
-		const bool operator!=(const iterator& it) const { return (!(*this == it)); }
-
-	protected:
-
-		std::vector <word*>::iterator m_iterator;
-	};
-
-	class const_iterator
-	{
-	public:
-
-		typedef std::vector <word*>::const_iterator::difference_type difference_type;
-
-		const_iterator(std::vector <word*>::const_iterator it) : m_iterator(it) { }
-		const_iterator(const iterator& it) : m_iterator(it.m_iterator) { }
-		const_iterator(const const_iterator& it) : m_iterator(it.m_iterator) { }
-
-		const_iterator& operator=(const const_iterator& it) { m_iterator = it.m_iterator; return (*this); }
-		const_iterator& operator=(const iterator& it) { m_iterator = it.m_iterator; return (*this); }
-
-		const word& operator*() const { return (**m_iterator); }
-		const word* operator->() const { return (*m_iterator); }
-
-		const_iterator& operator++() { ++m_iterator; return (*this); }
-		const_iterator operator++(int) { const_iterator i(*this); ++m_iterator; return (i); }
-
-		const_iterator& operator--() { --m_iterator; return (*this); }
-		const_iterator operator--(int) { const_iterator i(*this); --m_iterator; return (i); }
-
-		const_iterator& operator+=(difference_type n) { m_iterator += n; return (*this); }
-		const_iterator& operator-=(difference_type n) { m_iterator -= n; return (*this); }
-
-		const_iterator operator+(difference_type x) const { return const_iterator(m_iterator + x); }
-		const_iterator operator-(difference_type x) const { return const_iterator(m_iterator - x); }
-
-		const word& operator[](difference_type n) const { return *(m_iterator[n]); }
-
-		const bool operator==(const const_iterator& it) const { return (it.m_iterator == m_iterator); }
-		const bool operator!=(const const_iterator& it) const { return (!(*this == it)); }
-
-	protected:
-
-		std::vector <word*>::const_iterator m_iterator;
-	};
-
-
-	iterator begin() { return (m_words.begin()); }
-	iterator end() { return (m_words.end()); }
-
-	const_iterator begin() const { return (const_iterator(m_words.begin())); }
-	const_iterator end() const { return (const_iterator(m_words.end())); }
-
-	const word& operator[](const std::vector <word*>::size_type x) const { return (*m_words[x]); }
-	word& operator[](const std::vector <word*>::size_type x) { return (*m_words[x]); }
-
-	// Word manipulation
-	void append(const word& w);
-	void insert(const iterator it, const word& w);
-
-	void clear();
-	void remove(const iterator it);
-
-	// Word count
-	const bool empty() const;
-	const size_t count() const;
-	const size_t size() const;
-
-	word& front();
-	const word& front() const;
-	word& back();
-	const word& back() const;
+	/** Return the word list.
+	  *
+	  * @return list of words
+	  */
+	const std::vector <word*> getWordList();
 
 	// Decoding
 #if VMIME_WIDE_CHAR_SUPPORT
 	const wstring getDecodedText() const;
 #endif
+
+	/** Return the text converted into the specified charset.
+	  * The encoded-words are decoded and then converted in the
+	  * specified destination charset.
+	  *
+	  * @param dest output charset
+	  * @return text decoded in the specified charset
+	  */
 	const string getConvertedText(const charset& dest) const;
 
-protected:
+	/** This function can be used to make several encoded words from a text.
+	  * All the characters in the text must be in the same specified charset.
+	  *
+	  * <p>Eg: giving:</p>
+	  * <pre>   &lt;iso-8859-1> "Linux dans un t'el'ephone mobile"
+	  *    ("=?iso-8859-1?Q?Linux_dans_un_t=E9l=E9phone_mobile?=")
+	  * </pre><p>it will return:</p>
+	  * <pre>   &lt:us-ascii>   "Linux dans un "
+	  *    &lt;iso-8859-1> "t'el'ephone "
+	  *    &lt;us-ascii>   "mobile"
+	  *    ("Linux dans un =?iso-8859-1?Q?t=E9l=E9phone_?= mobile")
+	  * </pre>
+	  *
+	  * @param in input string
+	  * @param ch input charset
+	  * @param generateInExisting if not NULL, the resulting text will be generated
+	  * in the specified object instead of a new created object (in this case, the
+	  * function returns the same pointer). Can be used to avoid copying the
+	  * resulting object into an existing object.
+	  * @return new text object or existing object if generateInExisting != NULL
+	*/
+	static text* newFromString(const string& in, const charset& ch, text* generateInExisting = NULL);
+
+
+	using component::parse;
+	using component::generate;
+
+	// Component parsing & assembling
+	void parse(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition = NULL);
+	void generate(utility::outputStream& os, const string::size_type maxLineLength = lineLengthLimits::infinite, const string::size_type curLinePos = 0, string::size_type* newLinePos = NULL) const;
+
+private:
 
 	std::vector <word*> m_words;
 };

@@ -63,19 +63,19 @@ void POP3Message::onFolderClosed()
 }
 
 
-const int POP3Message::number() const
+const int POP3Message::getNumber() const
 {
 	return (m_num);
 }
 
 
-const message::uid POP3Message::uniqueId() const
+const message::uid POP3Message::getUniqueId() const
 {
 	return (m_uid);
 }
 
 
-const int POP3Message::size() const
+const int POP3Message::getSize() const
 {
 	if (!m_folder)
 		throw exceptions::illegal_state("Folder closed");
@@ -93,25 +93,25 @@ const bool POP3Message::isExpunged() const
 }
 
 
-const int POP3Message::flags() const
+const int POP3Message::getFlags() const
 {
 	return (FLAG_RECENT);
 }
 
 
-const class structure& POP3Message::structure() const
+const structure& POP3Message::getStructure() const
 {
 	throw exceptions::operation_not_supported();
 }
 
 
-class structure& POP3Message::structure()
+structure& POP3Message::getStructure()
 {
 	throw exceptions::operation_not_supported();
 }
 
 
-const class header& POP3Message::header() const
+const header& POP3Message::getHeader() const
 {
 	if (m_header == NULL)
 		throw exceptions::unfetched_object();

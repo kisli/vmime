@@ -22,47 +22,32 @@
 
 
 #include "parameterizedHeaderField.hpp"
+#include "genericField.hpp"
 
 #include "mediaType.hpp"
 #include "charset.hpp"
-
-#include "textParameter.hpp"
-#include "charsetParameter.hpp"
 
 
 namespace vmime
 {
 
 
-class contentTypeField : public parameterizedHeaderField
+class contentTypeField : public parameterizedHeaderField, public genericField <mediaType>
 {
 	friend class headerFieldFactory::registerer <contentTypeField>;
 
 protected:
 
 	contentTypeField();
+	contentTypeField(contentTypeField&);
 
 public:
 
-	void copyFrom(const headerField& field);
+	const string getBoundary() const;
+	void setBoundary(const string& boundary);
 
-	contentTypeField& operator=(const mediaType& type);
-
-	const mediaType& value() const { return (m_value); }
-	mediaType& value() { return (m_value); }
-
-	const string& boundary() const { return (dynamic_cast<const textParameter&>(parameters.find("boundary")).value()); }
-	string& boundary() { return (dynamic_cast<textParameter&>(parameters.get("boundary")).value()); }
-
-	const class charset& charset() const { return (dynamic_cast<const charsetParameter&>(parameters.find("charset")).value()); }
-	class charset& charset() { return (dynamic_cast<charsetParameter&>(parameters.get("charset")).value()); }
-
-protected:
-
-	mediaType m_value;
-
-	void parseValue(const string& buffer, const string::size_type position, const string::size_type end);
-	const string generateValue() const;
+	const charset& getCharset() const;
+	void setCharset(const charset& ch);
 };
 
 

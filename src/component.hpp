@@ -34,11 +34,9 @@ namespace vmime
 
 class component
 {
-protected:
+public:
 
-	virtual ~component() {}
-
-protected:
+	virtual ~component();
 
 	/** Parse RFC-822/MIME data for this component.
 	  *
@@ -55,8 +53,6 @@ protected:
 	  */
 	virtual void parse(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition = NULL) = 0;
 
-public:
-
 	/** Generate RFC-2822/MIME data for this component.
 	  *
 	  * \deprecated Use the new generate() method, which takes an outputStream parameter.
@@ -65,7 +61,7 @@ public:
 	  * @param curLinePos length of the current line in the output buffer
 	  * @return generated data
 	  */
-	virtual const string generate(const string::size_type maxLineLength = lineLengthLimits::infinite, const string::size_type curLinePos = 0) const;
+	const string generate(const string::size_type maxLineLength = lineLengthLimits::infinite, const string::size_type curLinePos = 0) const;
 
 	/** Generate RFC-2822/MIME data for this component.
 	  *
@@ -75,6 +71,21 @@ public:
 	  * @param newLinePos will receive the new line position (length of the last line written)
 	  */
 	virtual void generate(utility::outputStream& os, const string::size_type maxLineLength = lineLengthLimits::infinite, const string::size_type curLinePos = 0, string::size_type* newLinePos = NULL) const = 0;
+
+	/** Clone this component.
+	  *
+	  * @return a copy of this component
+	  */
+	virtual component* clone() const = 0;
+
+	/** Replace data in this component by data in other component.
+	  * Both components must be of the same type.
+	  *
+	  * @throw std::bad_cast_exception if the components are not
+	  * of the same (dynamic) type
+	  * @param other other component to copy data from
+	  */
+	virtual void copyFrom(const component& other) = 0;
 };
 
 

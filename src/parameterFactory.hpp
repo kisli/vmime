@@ -23,6 +23,7 @@
 
 #include "parameter.hpp"
 #include "utility/singleton.hpp"
+#include "utility/stringUtils.hpp"
 
 
 namespace vmime
@@ -60,7 +61,7 @@ public:
 	template <class T>
 	void registerName(const string& name)
 	{
-		m_nameMap.insert(NameMap::value_type(toLower(name), &registerer<T>::creator));
+		m_nameMap.insert(NameMap::value_type(stringUtils::toLower(name), &registerer<T>::creator));
 	}
 
 	parameter* create(const string& name, const string& value = NULL_STRING);

@@ -43,24 +43,55 @@ public:
 
 public:
 
-	const string& left() const { return (m_left); }
-	string& left() { return (m_left); }
+	/** Return the left part of the message identifier.
+	  *
+	  * @return left part of message identifier
+	  */
+	const string& getLeft() const;
 
-	const string& right() const { return (m_right); }
-	string& right() { return (m_right); }
+	/** Set the left part of the message identifier.
+	  *
+	  * @param left left part of message identifier
+	  */
+	void setLeft(const string& left);
 
-public:
+	/** Return the right part of the message identifier.
+	  *
+	  * @return right part of message identifier
+	  */
+	const string& getRight() const;
 
-	messageId& operator=(const messageId& source);
+	/** Set the right part of the message identifier.
+	  *
+	  * @param right right part of message identifier
+	  */
+	void setRight(const string& right);
+
+
 	messageId& operator=(const string& id);
 
 	const bool operator==(const messageId& mid) const;
+	const bool operator!=(const messageId& mid) const;
 
+	/** Generate a random message identifier.
+	  *
+	  * @return randomly created message identifier
+	  */
 	static messageId generateId();
 
-	const string id() const;
+	/** Return the message identifier constructed by using
+	  * the right part and the left part, separated by
+	  * a '@' character.
+	  *
+	  * @return full message identifier
+	  */
+	const string getId() const;
 
-protected:
+	messageId* clone() const;
+	void copyFrom(const component& other);
+	messageId& operator=(const messageId& other);
+
+private:
 
 	string m_left;
 	string m_right;

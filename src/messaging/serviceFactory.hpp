@@ -26,6 +26,7 @@
 #include "../types.hpp"
 #include "../base.hpp"
 #include "../utility/singleton.hpp"
+#include "../utility/stringUtils.hpp"
 
 #include "serviceInfos.hpp"
 #include "authenticator.hpp"
@@ -49,13 +50,14 @@ class serviceFactory : public utility::singleton <serviceFactory>
 {
 	friend class utility::singleton <serviceFactory>;
 
-protected:
+private:
 
 	serviceFactory();
 	~serviceFactory();
 
 public:
 
+	/** Information about a registered service. */
 	class registeredService
 	{
 		friend class serviceFactory;
@@ -66,10 +68,10 @@ public:
 
 	public:
 
-		virtual service* create(session& sess, authenticator* auth) = 0;
+		virtual service* create(session* sess, authenticator* auth) const = 0;
 
-		virtual const string& name() const = 0;
-		virtual const serviceInfos& infos() const = 0;
+		virtual const string& getName() const = 0;
+		virtual const serviceInfos& getInfos() const = 0;
 	};
 
 private:
@@ -82,23 +84,23 @@ private:
 	protected:
 
 		registeredServiceImpl(const string& name)
-			: m_name(name), m_servInfos(S::infosInstance())
+			: m_name(name), m_servInfos(S::getInfosInstance())
 		{
 		}
 
 	public:
 
-		service* create(session& sess, authenticator* auth)
+		service* create(session* sess, authenticator* auth) const
 		{
 			return new S(sess, auth);
 		}
 
-		const serviceInfos& infos() const
+		const serviceInfos& getInfos() const
 		{
 			return (m_servInfos);
 		}
 
-		const string& name() const
+		const string& getName() const
 		{
 			return (m_name);
 		}
@@ -109,94 +111,71 @@ private:
 		const serviceInfos& m_servInfos;
 	};
 
-	typedef std::map <string, registeredService*> ProtoMap;
-	ProtoMap m_protoMap;
+	std::vector <registeredService*> m_services;
 
 public:
 
+	/** Register a new service by its protocol name.
+	  *
+	  * @param protocol protocol name
+	  */
 	template <class S>
-	void registerName(const string& protocol)
+	void registerServiceByProtocol(const string& protocol)
 	{
-		const string name = vmime::toLower(protocol);
-		m_protoMap.insert(ProtoMap::value_type(name,
-			new registeredServiceImpl <S>(name)));
+		const string name = stringUtils::toLower(protocol);
+		m_services.push_back(new registeredServiceImpl <S>(name));
 	}
 
-	service* create(session& sess, const string& protocol, authenticator* auth = NULL);
-	service* create(session& sess, const url& u, authenticator* auth = NULL);
+	/** Create a new service instance from a protocol name.
+	  *
+	  * @param sess session
+	  * @param protocol protocol name (eg. "pop3")
+	  * @param auth authenticator used to provide credentials (can be NULL if not used)
+	  * @return a new service instance for the specified protocol
+	  * @throw exceptions::no_service_available if no service is registered
+	  * for this protocol
+	  */
+	service* create(session* sess, const string& protocol, authenticator* auth = NULL);
 
-	const registeredService& operator[](const string& protocol) const;
+	/** Create a new service instance from a URL.
+	  *
+	  * @param sess session
+	  * @param u full URL with at least protocol and server (you can also specify
+	  * port, username and password)
+	  * @param auth authenticator used to provide credentials (can be NULL if not used)
+	  * @return a new service instance for the specified protocol
+	  * @throw exceptions::no_service_available if no service is registered
+	  * for this protocol
+	  */
+	service* create(session* sess, const url& u, authenticator* auth = NULL);
 
+	/** Return information about a registered protocol.
+	  *
+	  * @param protocol protocol name
+	  * @return information about this protocol
+	  * @throw exceptions::no_service_available if no service is registered
+	  * for this protocol
+	  */
+	const registeredService* getServiceByProtocol(const string& protocol) const;
 
-	class iterator;
+	/** Return the number of registered services.
+	  *
+	  * @return number of registered services
+	  */
+	const int getServiceCount() const;
 
-	class const_iterator
-	{
-		friend class serviceFactory;
+	/** Return the registered service at the specified position.
+	  *
+	  * @param pos position of the registered service to return
+	  * @return registered service at the specified position
+	  */
+	const registeredService* getServiceAt(const int pos) const;
 
-	public:
-
-		const_iterator() { }
-		const_iterator(const const_iterator& it) : m_it(it.m_it) { }
-		const_iterator(const iterator& it) : m_it(it.m_it) { }
-
-		const_iterator& operator=(const const_iterator& it) { m_it = it.m_it; return (*this); }
-
-		const registeredService& operator*() const { return (*(*m_it).second); }
-		const registeredService* operator->() const { return ((*m_it).second); }
-
-		const_iterator& operator++() { ++m_it; return (*this); }
-		const_iterator operator++(int) { return (m_it++); }
-
-		const_iterator& operator--() { --m_it; return (*this); }
-		const_iterator operator--(int) { return (m_it--); }
-
-		const bool operator==(const const_iterator& it) const { return (m_it == it.m_it); }
-		const bool operator!=(const const_iterator& it) const { return (m_it != it.m_it); }
-
-	private:
-
-		const_iterator(const ProtoMap::const_iterator it) : m_it(it) { }
-
-		ProtoMap::const_iterator m_it;
-	};
-
-	class iterator
-	{
-		friend class serviceFactory;
-		friend class serviceFactory::const_iterator;
-
-	public:
-
-		iterator() { }
-		iterator(const iterator& it) : m_it(it.m_it) { }
-
-		iterator& operator=(const iterator& it) { m_it = it.m_it; return (*this); }
-
-		registeredService& operator*() const { return (*(*m_it).second); }
-		registeredService* operator->() const { return ((*m_it).second); }
-
-		iterator& operator++() { ++m_it; return (*this); }
-		iterator operator++(int) { return (m_it++); }
-
-		iterator& operator--() { --m_it; return (*this); }
-		iterator operator--(int) { return (m_it--); }
-
-		const bool operator==(const iterator& it) const { return (m_it == it.m_it); }
-		const bool operator!=(const iterator& it) const { return (m_it != it.m_it); }
-
-	private:
-
-		iterator(const ProtoMap::iterator it) : m_it(it) { }
-
-		ProtoMap::iterator m_it;
-	};
-
-	iterator begin() { return iterator(m_protoMap.begin()); }
-	iterator end() { return iterator(m_protoMap.end()); }
-
-	const_iterator begin() const { return const_iterator(m_protoMap.begin()); }
-	const_iterator end() const { return const_iterator(m_protoMap.end()); }
+	/** Return a list of all registered services.
+	  *
+	  * @return list of registered services
+	  */
+	const std::vector <const registeredService*> getServiceList() const;
 };
 
 

@@ -30,10 +30,16 @@ mailboxField::mailboxField()
 }
 
 
+mailboxField::mailboxField(const mailboxField&)
+	: headerField(), genericField <mailbox>()
+{
+}
+
+
 void mailboxField::parse(const string& buffer, const string::size_type position,
 	const string::size_type end, string::size_type* newPosition)
 {
-	m_mailbox.clear();
+	getValue().clear();
 
 	// Here, we cannot simply call "m_mailbox.parse()" because it
 	// may have more than one address specified (even if this field
@@ -48,13 +54,13 @@ void mailboxField::parse(const string& buffer, const string::size_type position,
 			// mailbox of the group
 			mailboxGroup* group = static_cast <mailboxGroup*>(parsedAddress);
 
-			if (!group->empty())
-				m_mailbox = *(group->begin());
+			if (!group->isEmpty())
+				getValue() = *(group->getMailboxAt(0));
 		}
 		else
 		{
 			// Parse only if it is a mailbox
-			m_mailbox = *static_cast <mailbox*>(parsedAddress);
+			getValue() = *static_cast <mailbox*>(parsedAddress);
 		}
 	}
 
@@ -62,33 +68,6 @@ void mailboxField::parse(const string& buffer, const string::size_type position,
 
 	if (newPosition)
 		*newPosition = end;
-}
-
-
-void mailboxField::generate(utility::outputStream& os, const string::size_type maxLineLength,
-	const string::size_type curLinePos, string::size_type* newLinePos) const
-{
-	string::size_type pos = curLinePos;
-
-	headerField::generate(os, maxLineLength, pos, &pos);
-
-	m_mailbox.generate(os, maxLineLength, pos, newLinePos);
-}
-
-
-mailboxField& mailboxField::operator=(const class mailbox& mailbox)
-{
-	m_mailbox = mailbox;
-	return (*this);
-}
-
-
-void mailboxField::copyFrom(const headerField& field)
-{
-	const mailboxField& source = dynamic_cast<const mailboxField&>(field);
-	m_mailbox = source.m_mailbox;
-
-	headerField::copyFrom(field);
 }
 
 
