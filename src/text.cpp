@@ -690,7 +690,7 @@ void text::decodeAndUnfold(const string::const_iterator& inStart, const string::
 
 	for ( ; ; )
 	{
-		if (p == end || *p == '\n')
+		if (p == end) // || *p == '\n')
 		{
 			string::const_iterator textEnd = p;
 
