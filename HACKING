@@ -16,6 +16,7 @@ quality of the code.
      2.4. Single instruction
      2.5. Line length
      2.6. Spaces and parentheses
+     2.7. End-of-line character
 3. Naming conventions
      3.1. Classes
      3.2. Variables/parameters/member variables
@@ -176,6 +177,13 @@ between parameters and arguments, just after commas:
 Do use a single space before flow control statements:
 
     while (x == y)     and _NOT_:    while(x==y)
+
+
+2.7. End-of-line character
+--------------------------
+
+Configure your editor to use "\n" (UNIX convention) for end-of-line sequence,
+and not "\r\n" (Windows), nor "\n\r", nor any other combination.
 
 
 
