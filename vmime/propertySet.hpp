@@ -41,8 +41,10 @@ namespace vmime
 
 class propertySet
 {
-protected:
+public:
 
+	/** A property holds a (name,value) pair.
+	  */
 	class property
 	{
 	public:
@@ -89,6 +91,8 @@ protected:
 		const string m_name;
 		string m_value;
 	};
+
+protected:
 
 	class propertyProxy
 	{
