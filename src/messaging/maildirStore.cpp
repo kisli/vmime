@@ -102,8 +102,26 @@ void maildirStore::connect()
 	if (isConnected())
 		throw exceptions::already_connected();
 
-	m_fsPath = platformDependant::getHandler()->getFileSystemFactory()->
-		stringToPath(getSession()->getProperties()[getInfos().getPropertyPrefix() + "server.rootpath"]);
+	// Get root directory
+	utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
+
+	m_fsPath = fsf->stringToPath
+		(getSession()->getProperties()[getInfos().getPropertyPrefix() + "server.rootpath"]);
+
+	utility::auto_ptr <utility::file> rootDir = fsf->create(m_fsPath);
+
+	// Try to create the root directory if it does not exist
+	if (!(rootDir->exists() && rootDir->isDirectory()))
+	{
+		try
+		{
+			rootDir->createDirectory();
+		}
+		catch (exceptions::filesystem_exception& e)
+		{
+			throw exceptions::connection_error(e);
+		}
+	}
 
 	m_connected = true;
 }

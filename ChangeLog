@@ -2,6 +2,11 @@
 VERSION 0.6.1-cvs
 =================
 
+2004-12-23  Vincent Richard  <vincent@vincent-richard.net>
+
+ * maildir: when connecting to the store, create root directory on the
+   file system if it does not exist.
+
 2004-12-22  Vincent Richard  <vincent@vincent-richard.net>
 
  * Fixed missing files in distribution (src/platform/*).
