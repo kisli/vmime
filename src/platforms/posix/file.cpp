@@ -28,6 +28,8 @@
 
 #include <dirent.h>
 
+#include <string.h>
+
 #include "../../exception.hpp"
 
 
@@ -49,7 +51,7 @@ posixFileIterator::posixFileIterator(const vmime::utility::file::path& path, con
 	if ((m_dir = ::opendir(m_nativePath.c_str())) == NULL)
 		posixFileSystemFactory::reportError(path, errno);
 
-	m_dirEntry = ::readdir(m_dir);
+	getNextElement();
 }
 
 
@@ -70,9 +72,25 @@ vmime::utility::file* posixFileIterator::nextElement()
 {
 	posixFile* file = new posixFile(m_path / vmime::utility::file::path::component(m_dirEntry->d_name));
 
-	m_dirEntry = ::readdir(m_dir);
+	getNextElement();
 
 	return (file);
+}
+
+
+void posixFileIterator::getNextElement()
+{
+	while (m_dirEntry = ::readdir(m_dir))
+	{
+		const char* name = m_dirEntry->d_name;
+		const int len = ::strlen(name);
+
+		if (!(len == 1 && name[0] == '.') &&
+		    !(len == 2 && name[0] == '.' && name[1] == '.'))
+		{
+			break;
+		}
+	}
 }
 
 
@@ -399,6 +417,9 @@ const vmime::utility::file::path posixFileSystemFactory::stringToPathImpl(const 
 		offset++;
 	}
 
+	if (prev < str.length())
+		path.appendComponent(vmime::string(str.begin() + prev, str.end()));
+
 	return (path);
 }
 
@@ -409,7 +430,7 @@ const vmime::string posixFileSystemFactory::pathToStringImpl(const vmime::utilit
 
 	for (int i = 0 ; i < path.getSize() ; ++i)
 	{
-		if (i >= 0)
+		if (i > 0)
 			native += "/";
 
 		native += path[i].getBuffer();
@@ -460,7 +481,7 @@ void posixFileSystemFactory::reportError(const vmime::utility::path& path, const
 	default:
 
 		std::ostringstream oss;
-		oss << "Unknown error " << err << ".";
+		oss << ::strerror(err) << ".";
 
 		desc = oss.str();
 		break;

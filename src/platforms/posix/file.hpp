@@ -121,6 +121,8 @@ public:
 
 private:
 
+	void getNextElement();
+
 	vmime::utility::file::path m_path;
 	vmime::string m_nativePath;
 

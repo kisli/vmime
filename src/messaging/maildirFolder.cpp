@@ -32,7 +32,8 @@ namespace messaging {
 
 
 maildirFolder::maildirFolder(const folder::path& path, maildirStore* store)
-	: m_store(store), m_path(path), m_name(path.getLastComponent()), m_mode(-1), m_open(false)
+	: m_store(store), m_path(path), m_name(path.getLastComponent()), m_mode(-1), m_open(false),
+	  m_unreadMessageCount(0), m_messageCount(0)
 {
 	m_store->registerFolder(this);
 }
@@ -261,6 +262,9 @@ void maildirFolder::scanFolder()
 {
 	try
 	{
+		m_messageCount = 0;
+		m_unreadMessageCount = 0;
+
 		utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
 
 		utility::file::path newDirPath = maildirUtils::getFolderFSPath
@@ -272,7 +276,7 @@ void maildirFolder::scanFolder()
 		utility::auto_ptr <utility::file> curDir = fsf->create(curDirPath);
 
 		// New received messages (new/)
-		utility::auto_ptr <utility::fileIterator> nit = newDir->getFiles();
+		utility::fileIterator* nit = newDir->getFiles();
 		std::vector <utility::file::path::component> newMessageFilenames;
 
 		while (nit->hasMoreElements())
@@ -281,8 +285,10 @@ void maildirFolder::scanFolder()
 			newMessageFilenames.push_back(file->getFullPath().getLastComponent());
 		}
 
+		delete (nit);  // Free directory
+
 		// Current messages (cur/)
-		utility::auto_ptr <utility::fileIterator> cit = curDir->getFiles();
+		utility::fileIterator* cit = curDir->getFiles();
 		std::vector <utility::file::path::component> curMessageFilenames;
 
 		while (cit->hasMoreElements())
@@ -290,6 +296,8 @@ void maildirFolder::scanFolder()
 			utility::auto_ptr <utility::file> file = cit->nextElement();
 			curMessageFilenames.push_back(file->getFullPath().getLastComponent());
 		}
+
+		delete (cit);  // Free directory
 
 		// Update/delete existing messages (found in previous scan)
 		for (unsigned int i = 0 ; i < m_messageInfos.size() ; ++i)
@@ -321,6 +329,9 @@ void maildirFolder::scanFolder()
 				}
 			}
 		}
+
+		m_messageInfos.reserve(m_messageInfos.size()
+			+ newMessageFilenames.size() + curMessageFilenames.size());
 
 		// Add new messages from 'new': we are responsible to move the files
 		// from the 'new' directory to the 'cur' directory, and append them
@@ -458,28 +469,38 @@ void maildirFolder::listFolders(std::vector <folder*>& list, const bool recursiv
 		utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
 
 		utility::auto_ptr <utility::file> rootDir = fsf->create
-			(maildirUtils::getFolderFSPath(m_store, m_path, maildirUtils::FOLDER_PATH_CONTAINER));
-		utility::auto_ptr <utility::fileIterator> it = rootDir->getFiles();
+			(maildirUtils::getFolderFSPath(m_store, m_path,
+				m_path.isEmpty() ? maildirUtils::FOLDER_PATH_ROOT
+				                 : maildirUtils::FOLDER_PATH_CONTAINER));
 
-		while (it->hasMoreElements())
+		if (rootDir->exists())
 		{
-			utility::auto_ptr <utility::file> file = it->nextElement();
+			utility::auto_ptr <utility::fileIterator> it = rootDir->getFiles();
 
-			if (maildirUtils::isSubfolderDirectory(*file))
+			while (it->hasMoreElements())
 			{
-				const utility::path subPath = m_path / file->getFullPath().getLastComponent();
-				maildirFolder* subFolder = new maildirFolder(subPath, m_store);
+				utility::auto_ptr <utility::file> file = it->nextElement();
 
-				list.push_back(subFolder);
+				if (maildirUtils::isSubfolderDirectory(*file))
+				{
+					const utility::path subPath = m_path / file->getFullPath().getLastComponent();
+					maildirFolder* subFolder = new maildirFolder(subPath, m_store);
 
-				if (recursive)
-					subFolder->listFolders(list, true);
+					list.push_back(subFolder);
+
+					if (recursive)
+						subFolder->listFolders(list, true);
+				}
 			}
+		}
+		else
+		{
+			// No sub-folder
 		}
 	}
 	catch (exceptions::filesystem_exception& e)
 	{
-		throw exceptions::command_error("LIST", e.what());
+		throw exceptions::command_error("LIST", "", "", e);
 	}
 }
 
