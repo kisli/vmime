@@ -76,6 +76,9 @@
 // MDN
 #include "vmime/mdn/MDNHelper.hpp"
 
+// Misc
+#include "vmime/misc/importanceHelper.hpp"
+
 // Property set
 #include "vmime/propertySet.hpp"
 

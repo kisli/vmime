@@ -157,7 +157,8 @@ libvmime_sources = [
 	'mdn/MDNHelper.cpp', 'mdn/MDNHelper.hpp',
 	'mdn/MDNInfos.cpp', 'mdn/MDNInfos.hpp',
 	'mdn/receivedMDNInfos.cpp', 'mdn/receivedMDNInfos.hpp',
-	'mdn/sendableMDNInfos.cpp', 'mdn/sendableMDNInfos.hpp'
+	'mdn/sendableMDNInfos.cpp', 'mdn/sendableMDNInfos.hpp',
+	'misc/importanceHelper.cpp', 'misc/importanceHelper.hpp'
 ]
 
 libvmime_examples_sources = [
