@@ -259,14 +259,16 @@ for p in libvmime_platforms_sources:
 	for f in libvmime_platforms_sources[p]:
 		libvmime_dist_files.append('src/' + f)
 
-
 libvmime_dist_files = libvmime_dist_files + libvmime_extra + libvmime_examples_sources
-libvmime_dist_files_with_tests = libvmime_dist_files + libvmime_tests
 
+libvmime_dist_files = libvmime_dist_files + libvmime_tests
 libvmime_dist_files = libvmime_dist_files + libunitpp_common
 libvmime_dist_files = libvmime_dist_files + libunitpp_sources
 libvmime_dist_files = libvmime_dist_files + libvmimetest_common
-libvmime_dist_files = libvmime_dist_files + libvmimetest_sources
+
+for t in libvmimetest_sources:
+	for f in t[1]:
+		libvmime_dist_files.append(f)
 
 
 #################
@@ -798,13 +800,9 @@ env.Alias('install', installPaths)
 # 'tar' is not available under Windows...
 if not (os.name == 'win32' or os.name == 'nt'):
 	packageFile = 'libvmime-' + packageVersion + '.tar.bz2'
-	packageFileWithTests = 'libvmime-' + packageVersion + '-with-tests.tar.bz2'
 
-	#env.Tar(packageFile, libvmime_dist_files)
-	#env.Tar(packageFileWithTests, libvmime_dist_files_with_tests)
-	env.Tar(packageFile, libvmime_dist_files_with_tests)
+	env.Tar(packageFile, libvmime_dist_files)
 
-	#env.Alias('dist', [ packageFile, packageFileWithTests ])
 	env.Alias('dist', packageFile)
 
 
