@@ -191,7 +191,8 @@ public:
 	/** Enumerate files contained in this directory.
 	  *
 	  * @return file iterator to enumerate files
-	  * @throw exceptions::not_a_directory if this is not a directory
+	  * @throw exceptions::not_a_directory if this is not a directory,
+	  * exceptions::filesystem_exception if another error occurs
 	  */
 	virtual fileIterator* getFiles() const = 0;
 };
