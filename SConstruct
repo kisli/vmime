@@ -301,6 +301,12 @@ packageVersion = GetPackageVersion()
 packageRealName = 'VMime'
 packageDescription = 'VMime C++ Mail Library (http://vmime.sourceforge.net)'
 
+packageVersionMajor = re.compile('(\d+)\.(\d+)\.(\d+)', re.DOTALL).sub(r'\1', packageVersion)
+packageVersionMinor = re.compile('(\d+)\.(\d+)\.(\d+)', re.DOTALL).sub(r'\2', packageVersion)
+packageVersionRev = re.compile('(\d+)\.(\d+)\.(\d+)', re.DOTALL).sub(r'\3', packageVersion)
+
+versionedPackageName = 'vmime-%d.%d' % (int(packageVersionMajor), int(packageVersionMinor))
+
 
 #############
 #  Options  #
@@ -321,22 +327,6 @@ opts.AddOptions(
 	EnumOption(
 		'debug',
 		'Debug version (useful for developers only)',
-		'no',
-		allowed_values = ('yes', 'no'),
-		map = { },
-		ignorecase = 1
-	),
-	EnumOption(
-		'static',
-		'Build a static library (.a)',
-		'yes',
-		allowed_values = ('yes', 'no'),
-		map = { },
-		ignorecase = 1
-	),
-	EnumOption(
-		'shared',
-		'Build a shared library (.so)',
 		'no',
 		allowed_values = ('yes', 'no'),
 		map = { },
@@ -497,8 +487,6 @@ print "|  CONFIGURATION  |"
 print "+=================+"
 print ""
 print "Installation prefix      : " + env['prefix']
-print "Static library (.a)      : " + env['static']
-print "Shared library (.so)     : " + env['shared']
 print "Debugging mode           : " + env['debug']
 print "Messaging support        : " + env['with_messaging']
 if env['with_messaging'] == 'yes':
@@ -681,35 +669,27 @@ for file in libvmime_full_sources:
 		libvmime_sources_HPP.append(buildDirectory + file)
 		libvmime_install_includes.append([dir, buildDirectory + file])
 
+# HACK: SCons does not allow '.' in target name, so we have to
+# detect the suffix for library name and add it ourself
+libFoo = env.StaticLibrary(target = 'FOO', source = [])
+libNameSuffix = '';
+
+if str(libFoo[0]).rfind('.') != -1:
+	libNameSuffix = str(libFoo[0])[str(libFoo[0]).rfind('.'):]
 
 # Main program build
 if env['debug'] == 'yes':
-	if env['static'] == 'yes':
-		libVmime = env.StaticLibrary(
-			target = 'vmime-debug',
-			source = libvmime_sources_CPP
-		)
-
-	if env['shared'] == 'yes':
-		libVmimeSh = env.SharedLibrary(
-			target = 'vmime-debug',
-			source = libvmime_sources_CPP
-		)
+	libVmime = env.StaticLibrary(
+		target = versionedPackageName + '-debug' + libNameSuffix,
+		source = libvmime_sources_CPP
+	)
 else:
-	if env['static'] == 'yes':
-		libVmime = env.StaticLibrary(
-			target = 'vmime',
-			source = libvmime_sources_CPP
-		)
+	libVmime = env.StaticLibrary(
+		target = versionedPackageName + libNameSuffix,
+		source = libvmime_sources_CPP
+	)
 
-	if env['shared'] == 'yes':
-		libVmimeSh = env.SharedLibrary(
-			target = 'vmime',
-			source = libvmime_sources_CPP
-		)
-
-if env['static'] == 'yes': Default(libVmime)
-if env['shared'] == 'yes': Default(libVmimeSh)
+Default(libVmime)
 
 
 # Platform header files
@@ -739,7 +719,7 @@ for platform in platforms:
 			sources_CPP.append(buildDirectory + file)
 
 	platformLib = env.StaticLibrary(
-		target = 'vmime-' + platform,
+		target = versionedPackageName + '-' + platform + libNameSuffix,
 		source = sources_CPP
 	)
 
@@ -762,7 +742,7 @@ if env['build_tests'] == 'yes':
 			env.Program(
 				target = test[0],
 				source = test[1],
-				LIBS=['unit++', 'vmime-posix', 'vmime-debug'],
+				LIBS=['unit++', versionedPackageName + '-posix', versionedPackageName + '-debug'],
 				LIBPATH=['.', './tests/']
 			)
 		)
@@ -773,13 +753,12 @@ if env['build_tests'] == 'yes':
 ########################
 
 libDir = "%s/lib" % env['prefix']
-includeDir = "%s/include/vmime" % env['prefix']
+includeDir = "%s/include/%s/vmime" % (env['prefix'], versionedPackageName)
 
 installPaths = [libDir, includeDir]
 
 # Library
-if env['static'] == 'yes': env.Install(libDir, libVmime)
-if env['shared'] == 'yes': env.Install(libDir, libVmimeSh)
+env.Install(libDir, libVmime)
 
 # Platform libraries
 for platformLib in platformLibraries:
@@ -793,7 +772,7 @@ for i in range(len(libvmime_install_includes)):
 env.Install(includeDir, 'src/config.hpp')
 
 # Pkg-config support
-vmime_pc = open('vmime.pc', 'w')
+vmime_pc = open(versionedPackageName + ".pc", 'w')
 
 vmime_pc.write("prefix=" + env['prefix'] + "\n")
 vmime_pc.write("exec_prefix=" + env['prefix'] + "\n")
@@ -804,10 +783,10 @@ vmime_pc.write("Name: " + packageRealName + "\n")
 vmime_pc.write("Description: " + packageDescription + "\n")
 vmime_pc.write("Version: " + packageVersion + "\n")
 vmime_pc.write("Requires:\n")
-vmime_pc.write("Libs: -L${libdir} -lvmime-posix -lvmime\n")
-vmime_pc.write("Cflags: -I${includedir}/vmime\n")
+vmime_pc.write("Libs: -L${libdir} -l" + versionedPackageName + "-posix -l" + versionedPackageName + "\n")
+vmime_pc.write("Cflags: -I${includedir}/" + versionedPackageName + "\n")
 
-env.Install(libDir + "/pkgconfig", "vmime.pc")
+env.Install(libDir + "/pkgconfig", versionedPackageName + ".pc")
 
 # Provide "install" target (ie. 'scons install')
 env.Alias('install', installPaths)
@@ -819,7 +798,7 @@ env.Alias('install', installPaths)
 
 # 'tar' is not available under Windows...
 if not (os.name == 'win32' or os.name == 'nt'):
-	packageFile = 'libvmime-' + packageVersion + '.tar.bz2'
+	packageFile = packageName + '-' + packageVersion + '.tar.bz2'
 
 	env.Tar(packageFile, libvmime_dist_files)
 
