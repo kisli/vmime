@@ -161,6 +161,12 @@ message* messageBuilder::construct() const
 
 void messageBuilder::attach(attachment* attach)
 {
+	appendAttachment(attach);
+}
+
+
+void messageBuilder::appendAttachment(attachment* attach)
+{
 	m_attach.push_back(attach);
 }
 

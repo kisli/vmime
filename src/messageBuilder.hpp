@@ -128,10 +128,17 @@ public:
 	void setSubject(const text& subject);
 
 	/** Attach a new object to the message.
+	  * This is a synonym for messageBuilder::appendAttachment().
 	  *
 	  * @param attach new attachment
 	  */
 	void attach(attachment* attach);
+
+	/** Attach a new object to the message.
+	  *
+	  * @param attach new attachment
+	  */
+	void appendAttachment(attachment* attach);
 
 	/** Remove the attachment at the specified position.
 	  *
