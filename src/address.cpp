@@ -74,7 +74,7 @@ address* address::parseNext(const string& buffer, const string::size_type positi
 
 	string::size_type pos = position;
 
-	while (pos < end && isspace(buffer[pos]))
+	while (pos < end && parserHelpers::isspace(buffer[pos]))
 		++pos;
 
 	const string::size_type start = pos;

@@ -264,7 +264,7 @@ text* text::newFromString(const string& in, const charset& ch, text* generateInE
 
 	for ( ; ; )
 	{
-		if (p == end || isspace(*p))
+		if (p == end || parserHelpers::isspace(*p))
 		{
 			if (p != end)
 				++p;
@@ -309,7 +309,7 @@ text* text::newFromString(const string& in, const charset& ch, text* generateInE
 			is8bit = false;
 			start = p;
 		}
-		else if (!isascii(*p))
+		else if (!parserHelpers::isascii(*p))
 		{
 			is8bit = true;
 			++p;
@@ -784,7 +784,7 @@ void text::decodeAndUnfold(const string::const_iterator& inStart, const string::
 									{
 										// Check whether there are only white-spaces between
 										// the two encoded words
-										for ( ; (p != wordPos) && isspace(*p) ; ++p);
+										for ( ; (p != wordPos) && parserHelpers::isspace(*p) ; ++p);
 									}
 
 									if (p != wordPos) // if not empty

@@ -69,7 +69,7 @@ void mailbox::parse(const string& buffer, const string::size_type position,
 	const string::value_type* p = pstart;
 
 	// Ignore blank spaces at the beginning
-	while (p < pend && isspace(*p)) ++p;
+	while (p < pend && parserHelpers::isspace(*p)) ++p;
 
 	// Current state for parsing machine
 	enum States
@@ -161,12 +161,12 @@ void mailbox::parse(const string& buffer, const string::size_type position,
 					{
 						// Erase any space between display name and <address>
 						string::iterator q = name.end();
-						for ( ; q != name.begin() && isspace(*(q - 1)) ; --q);
+						for ( ; q != name.begin() && parserHelpers::isspace(*(q - 1)) ; --q);
 						name.erase(q, name.end());
 
 						break;
 					}
-					else if (/* isspace(*p) || */ *p == '@')
+					else if (/* parserHelpers::isspace(*p) || */ *p == '@')
 					{
 						break;
 					}
@@ -213,7 +213,7 @@ void mailbox::parse(const string& buffer, const string::size_type position,
 					{
 						++comment;
 					}
-					else if (isspace(*p))
+					else if (parserHelpers::isspace(*p))
 					{
 						break;
 					}
@@ -229,7 +229,7 @@ void mailbox::parse(const string& buffer, const string::size_type position,
 			}
 			else
 			{
-				while (p < pend && isspace(*p)) ++p;
+				while (p < pend && parserHelpers::isspace(*p)) ++p;
 				state = State_None;
 			}
 		}
@@ -278,7 +278,7 @@ void mailbox::parse(const string& buffer, const string::size_type position,
 				{
 					break;
 				}
-				else if (!isspace(*p))
+				else if (!parserHelpers::isspace(*p))
 				{
 					address += *p;
 				}
@@ -290,7 +290,7 @@ void mailbox::parse(const string& buffer, const string::size_type position,
 		}
 		else
 		{
-			while (p < pend && isspace(*p)) ++p;
+			while (p < pend && parserHelpers::isspace(*p)) ++p;
 
 			if (p < pend)
 			{
@@ -310,7 +310,7 @@ void mailbox::parse(const string& buffer, const string::size_type position,
 
 		for (string::size_type i = 0 ; i < name.size() ; ++i)
 		{
-			if (!isspace(name[i]))
+			if (!parserHelpers::isspace(name[i]))
 				m_email += name[i];
 		}
 	}
@@ -322,7 +322,7 @@ void mailbox::parse(const string& buffer, const string::size_type position,
 
 		for (string::size_type i = 0 ; i < address.size() ; ++i)
 		{
-			if (!isspace(address[i]))
+			if (!parserHelpers::isspace(address[i]))
 				m_email += address[i];
 		}
 	}

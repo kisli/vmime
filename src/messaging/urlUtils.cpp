@@ -18,6 +18,7 @@
 //
 
 #include "vmime/messaging/urlUtils.hpp"
+#include "vmime/parserHelpers.hpp"
 
 
 namespace vmime {
@@ -33,7 +34,7 @@ const string urlUtils::encode(const string& s)
 	{
 		const char_t c = *it;
 
-		if (isprint(c) && c != '%')
+		if (parserHelpers::isprint(c) && c != '%')
 		{
 			result += c;
 		}

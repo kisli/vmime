@@ -57,7 +57,7 @@ void mailboxGroup::parse(const string& buffer, const string::size_type position,
 	const string::value_type* const pstart = buffer.data() + position;
 	const string::value_type* p = pstart;
 
-	while (p < pend && isspace(*p))
+	while (p < pend && parserHelpers::isspace(*p))
 		++p;
 
 	string name;

@@ -206,7 +206,7 @@ void url::parse(const string& str)
 	for (string::const_iterator it = port.begin() ;
 	     onlyDigit && it != port.end() ; ++it)
 	{
-		onlyDigit = isdigit(*it);
+		onlyDigit = parserHelpers::isdigit(*it);
 	}
 
 	if (!onlyDigit)

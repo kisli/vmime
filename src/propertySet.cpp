@@ -18,6 +18,7 @@
 //
 
 #include "vmime/propertySet.hpp"
+#include "vmime/parserHelpers.hpp"
 
 
 namespace vmime
@@ -92,7 +93,7 @@ void propertySet::parse(const string& props)
 	for ( ; pos != end ; )
 	{
 		// Skip white-spaces
-		for ( ; pos != end && isspace(*pos) ; ++pos);
+		for ( ; pos != end && parserHelpers::isspace(*pos) ; ++pos);
 
 		if (pos != end)
 		{
@@ -109,7 +110,7 @@ void propertySet::parse(const string& props)
 
 			string::const_iterator optEnd = pos;
 
-			for ( ; optEnd != optStart && isspace(*(optEnd - 1)) ; --optEnd);
+			for ( ; optEnd != optStart && parserHelpers::isspace(*(optEnd - 1)) ; --optEnd);
 
 			const string option(optStart, optEnd);
 			string value = "1";
@@ -119,7 +120,7 @@ void propertySet::parse(const string& props)
 				++pos; // skip '='
 
 				// Extract the value
-				for ( ; pos != end && isspace(*pos) ; ++pos);
+				for ( ; pos != end && parserHelpers::isspace(*pos) ; ++pos);
 
 				if (pos != end)
 				{
@@ -158,7 +159,7 @@ void propertySet::parse(const string& props)
 					{
 						const string::const_iterator valStart = pos;
 
-						for ( ; pos != end && !isspace(*pos) ; ++pos);
+						for ( ; pos != end && !parserHelpers::isspace(*pos) ; ++pos);
 
 						value = string(valStart, pos);
 					}

@@ -94,8 +94,8 @@ const string stringUtils::trim(const string& str)
 
 	if (b != e)
 	{
-		for ( ; b != e && isspace(*b) ; ++b);
-		for ( ; e != b && isspace(*(e - 1)) ; --e);
+		for ( ; b != e && parserHelpers::isspace(*b) ; ++b);
+		for ( ; e != b && parserHelpers::isspace(*(e - 1)) ; --e);
 	}
 
 	return (string(b, e));
@@ -109,7 +109,7 @@ const string::size_type stringUtils::countASCIIchars
 
 	for (string::const_iterator i = begin ; i != end ; ++i)
 	{
-		if (isascii(*i))
+		if (parserHelpers::isascii(*i))
 		{
 			if (*i != '=' || *(i + 1) != '?') // To avoid bad behaviour...
 				++count;

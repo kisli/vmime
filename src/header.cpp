@@ -81,16 +81,16 @@ void header::parse(const string& buffer, const string::size_type position,
 		}
 
 		// This line may be a field description
-		if (!isspace(c))
+		if (!parserHelpers::isspace(c))
 		{
 			const string::size_type nameStart = pos;  // remember the start position of the line
 
-			while (pos < end && (buffer[pos] != ':' && !isspace(buffer[pos])))
+			while (pos < end && (buffer[pos] != ':' && !parserHelpers::isspace(buffer[pos])))
 				++pos;
 
 			const string::size_type nameEnd = pos;
 
-			while (pos < end && isspace(buffer[pos]))
+			while (pos < end && parserHelpers::isspace(buffer[pos]))
 				++pos;
 
 			if (buffer[pos] != ':')
