@@ -21,6 +21,38 @@ namespace
 			return (oss.str());
 		}
 
+		// has function tests
+		void testHas1()
+		{
+			vmime::header hdr;
+			hdr.parse("From: x\r\nTo: y\r\nTo: z\r\n");
+
+			bool res = hdr.hasField("Z");
+
+			assert_eq("Value", false, res);
+		}
+
+		void testHas2()
+		{
+			vmime::header hdr;
+			hdr.parse("X: x\r\nTo: y\r\nTo: z\r\n");
+
+			bool res = hdr.hasField("To");
+
+			assert_eq("Value", true, res);
+		}
+
+		// find function tests
+		void testFind1()
+		{
+			vmime::header hdr;
+			hdr.parse("A: a\r\nB: b\r\nC: c\r\nB: d\r\n");
+
+			vmime::headerField* res = hdr.findField("B");
+
+			assert_eq("Value", "B: b", getFieldValue(*res));
+		}
+
 		// getAllByName function tests
 		void testFindAllFields1()
 		{
@@ -64,9 +96,15 @@ namespace
 			// VMime initialization
 			vmime::platformDependant::setHandler<my_handler>();
 
+			add("Has", testcase(this, "Has1", &headerTest::testHas1));
+			add("Has", testcase(this, "Has2", &headerTest::testHas2));
+
+			add("Find", testcase(this, "Find1", &headerTest::testFind1));
+
 			add("FindAllFields", testcase(this, "FindAllFields1", &headerTest::testFindAllFields1));
 			add("FindAllFields", testcase(this, "FindAllFields2", &headerTest::testFindAllFields2));
 			add("FindAllFields", testcase(this, "FindAllFields3", &headerTest::testFindAllFields3));
+
 			suite::main().add("vmime::header", this);
 		}
 
