@@ -47,7 +47,7 @@ import string
 # Package version number
 packageVersionMajor = 0
 packageVersionMinor = 6
-packageVersionMicro = 3
+packageVersionMicro = 4
 
 # Shared library version number (computed from package version number)
 packageAPICurrent   = packageVersionMajor + packageVersionMinor
