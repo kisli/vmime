@@ -99,7 +99,6 @@ libvmime_sources = [
 ]
 
 libvmime_examples_sources = [
-	'examples/common.inc',
 	'examples/README',
 	'examples/example1.cpp',
 	'examples/example2.cpp',
@@ -197,10 +196,6 @@ libvmime_tests = [
 	'tests/charset/run-test.sh',
 	'tests/charset/test-suites/gnu.in.utf-8',
 	'tests/charset/test-suites/gnu.out.iso-8859-1',
-
-	# main
-	'tests/Makefile',
-	'tests/run-tests.sh'
 ]
 
 libunitpp_common = [
