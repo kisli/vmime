@@ -82,7 +82,7 @@ libvmime_sources = [
 	'text.cpp', 'text.hpp',
 	'textPartFactory.cpp', 'textPartFactory.hpp',
 	'textPart.hpp',
-	'typeAdapter.hpp',
+	'typeAdapter.cpp', 'typeAdapter.hpp',
 	'types.hpp',
 	'word.cpp', 'word.hpp',
 	'vmime',

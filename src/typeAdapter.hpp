@@ -113,6 +113,11 @@ private:
 };
 
 
+template <>
+void typeAdapter <string>::parse(const string& buffer, const string::size_type position,
+	           const string::size_type end, string::size_type* newPosition);
+
+
 } // vmime
 
 
