@@ -23,7 +23,7 @@
 #include <ostream>
 
 #include "../../src/vmime"
-#include "../../examples/common.inc"
+#include "../../src/platforms/posix/handler.hpp"
 
 using namespace unitpp;
 
@@ -284,7 +284,7 @@ namespace
 
 		encoderTest() : suite("vmime::encoder")
 		{
-			vmime::platformDependant::setHandler<my_handler>();
+			vmime::platformDependant::setHandler<vmime::platforms::posix::posixHandler>();
 
 			add("Base64", testcase(this, "Base64", &encoderTest::testBase64));
 			add("QuotedPrintable", testcase(this, "QuotedPrintable", &encoderTest::testQuotedPrintable));

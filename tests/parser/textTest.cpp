@@ -23,7 +23,7 @@
 #include <ostream>
 
 #include "../../src/vmime"
-#include "../../examples/common.inc"
+#include "../../src/platforms/posix/handler.hpp"
 
 #include "testUtils.hpp"
 
@@ -120,7 +120,7 @@ namespace
 
 		textTest() : suite("vmime::text")
 		{
-			vmime::platformDependant::setHandler<my_handler>();
+			vmime::platformDependant::setHandler<vmime::platforms::posix::posixHandler>();
 
 			add("Constructors", testcase(this, "Constructors", &textTest::testConstructors));
 			add("Copy", testcase(this, "Copy", &textTest::testCopy));

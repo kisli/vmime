@@ -29,7 +29,7 @@
 #include <iostream>
 
 #include "../src/vmime"
-#include "common.inc"
+#include "../src/platforms/posix/handler.hpp"
 
 
 int main()
@@ -37,7 +37,7 @@ int main()
 	std::cout << std::endl;
 
 	// VMime initialization
-	vmime::platformDependant::setHandler<my_handler>();
+	vmime::platformDependant::setHandler<vmime::platforms::posix::posixHandler>();
 
 	try
 	{

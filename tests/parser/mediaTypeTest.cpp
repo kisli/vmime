@@ -23,7 +23,7 @@
 #include <ostream>
 
 #include "../../src/vmime"
-#include "../../examples/common.inc"
+#include "../../src/platforms/posix/handler.hpp"
 
 using namespace unitpp;
 
@@ -98,7 +98,7 @@ namespace
 
 		mediaTypeTest() : suite("vmime::mediaType")
 		{
-			vmime::platformDependant::setHandler<my_handler>();
+			vmime::platformDependant::setHandler<vmime::platforms::posix::posixHandler>();
 
 			add("Constructors", testcase(this, "Constructors", &mediaTypeTest::testConstructors));
 			add("Copy", testcase(this, "Copy", &mediaTypeTest::testCopy));

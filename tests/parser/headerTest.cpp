@@ -23,7 +23,7 @@
 #include <ostream>
 
 #include "../../src/vmime"
-#include "../../examples/common.inc"
+#include "../../src/platforms/posix/handler.hpp"
 
 using namespace unitpp;
 
@@ -328,7 +328,7 @@ namespace
 		headerTest() : suite("vmime::header")
 		{
 			// VMime initialization
-			vmime::platformDependant::setHandler<my_handler>();
+			vmime::platformDependant::setHandler<vmime::platforms::posix::posixHandler>();
 
 			add("Has", testcase(this, "Has1", &headerTest::testHas1));
 			add("Has", testcase(this, "Has2", &headerTest::testHas2));

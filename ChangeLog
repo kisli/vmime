@@ -2,6 +2,30 @@
 VERSION 0.6.0-cvs
 =================
 
+2004-12-17  Vincent Richard  <vincent@vincent-richard.net>
+
+ * Made default platform handlers (currently, only "posix"). Source files
+   are in src/platforms/[platform-name].
+
+   To use a default platform handler, do the following:
+      - #include <vmime/platforms/[platform-name]/handler.hpp>
+	 - call vmime::platformDependant::setHandler() with the appropriate class
+	 - link your program with both 'libvmime' and 'libvmime-[platform-name]'
+
+   For example, to use the default platform handler for POSIX (GNU/Linux):
+
+        #include <vmime/platforms/posix/handler.hpp>
+
+        int main()
+        {
+            vmime::platformDependant::setHandler
+                  <vmime::platforms::posix::posixHandler>();
+
+            // ...
+        }
+
+        and link your program with "-lvmime" and "-lvmime-posix".
+
 2004-10-21  Vincent Richard  <vincent@vincent-richard.net>
 
  * A _LOT_ of cleaning/refactoring in VMime code:

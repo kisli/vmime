@@ -20,7 +20,7 @@
 #include <iostream>
 
 #include "../src/vmime"
-#include "common.inc"
+#include "../src/platforms/posix/handler.hpp"
 
 
 //
@@ -70,7 +70,7 @@ void printStructure(const vmime::messaging::structure& s, int level = 0)
 int main()
 {
 	// VMime initialization
-	vmime::platformDependant::setHandler <my_handler>();
+	vmime::platformDependant::setHandler<vmime::platforms::posix::posixHandler>();
 
 	//
 	// Test the new enumeration system for encoders

@@ -170,6 +170,15 @@ libvmime_messaging_proto_sources = [
 	]
 ]
 
+libvmime_platforms_sources = {
+	'posix':
+	[
+		'platforms/posix/file.cpp', 'platforms/posix/file.hpp',
+		'platforms/posix/handler.cpp', 'platforms/posix/handler.hpp',
+		'platforms/posix/socket.cpp', 'platforms/posix/socket.hpp'
+	]
+}
+
 libvmime_extra = [
 	'AUTHORS',
 	'ChangeLog',
@@ -339,7 +348,7 @@ opts.AddOptions(
 	),
 	EnumOption(
 		'with_filesystem',
-		'Enable file-system support (eg. "maildir" messaging support)',
+		'Enable file-system support (this is needed for "maildir" messaging support)',
 		'yes',
 		allowed_values = ('yes', 'no'),
 		map = { },
@@ -349,8 +358,19 @@ opts.AddOptions(
 		'with_messaging_protocols',
 		'Specifies which protocols to build into the library.\n'
 		    + 'This option has no effect if "with_messaging" is not activated.\n'
-		    + 'Separate protocols with spaces; string must be quoted with ".',
+		    + 'Separate protocols with spaces; string must be quoted with ".\n'
+		    + 'Available protocols: pop3, smtp, imap, maildir.',
 		'"pop3 smtp imap"'
+	),
+	(
+		'with_platforms',
+		'Specifies which default platform handlers libraries to build.\n'
+		    + 'This builds a library for each platform selected (eg: "libvmime-posix.a").\n'
+		    + 'If no default handler is available for your platform, you will have\n'
+		    + 'to write your own...\n'
+		    + 'Separate platforms with spaces; string must be quoted with ".\n'
+		    + 'Available platform handlers: posix.',
+		'"posix"'
 	),
 	EnumOption(
 		'with_wide_char_support',
@@ -457,6 +477,14 @@ for proto in re.split('\W+', env['with_messaging_protocols']):
 	if len(proto) >= 1:
 		messaging_protocols.append(proto)
 
+# Platforms
+platforms = [ ]
+
+for platform in re.split('\W+', env['with_platforms']):
+	platform = string.strip(platform)
+	if len(platform) >= 1:
+		platforms.append(platform)
+
 # Show configuration summary
 print ""
 print "+=================+"
@@ -471,6 +499,7 @@ print "Messaging support        : " + env['with_messaging']
 if env['with_messaging'] == 'yes':
 	print "  * protocols            : " + env['with_messaging_protocols']
 print "File-system support      : " + env['with_filesystem']
+print "Default handlers         : " + env['with_platforms']
 print ""
 
 
@@ -635,7 +664,7 @@ libvmime_sources_HPP = [ ]
 libvmime_install_includes = [ ]
 
 for file in libvmime_full_sources:
-	slash = string.find(file, '/')
+	slash = string.rfind(file, '/')
 	dir = ''
 
 	if slash != -1:
@@ -646,6 +675,7 @@ for file in libvmime_full_sources:
 	else:
 		libvmime_sources_HPP.append(buildDirectory + file)
 		libvmime_install_includes.append([dir, buildDirectory + file])
+
 
 # Main program build
 if env['debug'] == 'yes':
@@ -677,6 +707,42 @@ if env['static'] == 'yes': Default(libVmime)
 if env['shared'] == 'yes': Default(libVmimeSh)
 
 
+# Platform header files
+for platform in libvmime_platforms_sources:
+	files = libvmime_platforms_sources[platform]
+
+	for file in files:
+		slash = string.rfind(file, '/')
+		dir = ''
+
+		if slash != -1:
+			dir = file[0:slash] + '/'
+
+		if file[-4:] == '.hpp':
+			libvmime_install_includes.append([dir, buildDirectory + file])
+
+# Platform libraries
+platformLibraries = [ ]
+
+for platform in platforms:
+	files = libvmime_platforms_sources[platform]
+
+	sources_CPP = [ ]
+
+	for file in files:
+		if file[-4:] == '.cpp':
+			sources_CPP.append(buildDirectory + file)
+
+	platformLib = env.StaticLibrary(
+		target = 'vmime-' + platform,
+		source = sources_CPP
+	)
+
+	Default(platformLib)
+
+	platformLibraries.append(platformLib)
+
+
 # Tests
 if env['build_tests'] == 'yes':
 	libUnitpp = env.StaticLibrary(
@@ -691,7 +757,7 @@ if env['build_tests'] == 'yes':
 			env.Program(
 				target = test[0],
 				source = test[1],
-				LIBS=['unit++', 'vmime-debug'],
+				LIBS=['unit++', 'vmime-posix', 'vmime-debug'],
 				LIBPATH=['.', './tests/']
 			)
 		)
@@ -709,6 +775,10 @@ installPaths = [libDir, includeDir]
 # Library
 if env['static'] == 'yes': env.Install(libDir, libVmime)
 if env['shared'] == 'yes': env.Install(libDir, libVmimeSh)
+
+# Platform libraries
+for platformLib in platformLibraries:
+	env.Install(libDir, platformLib)
 
 # Header files
 for i in range(len(libvmime_install_includes)):

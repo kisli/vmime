@@ -23,7 +23,7 @@
 #include <ostream>
 
 #include "../../src/vmime"
-#include "../../examples/common.inc"
+#include "../../src/platforms/posix/handler.hpp"
 
 #include "testUtils.hpp"
 
@@ -101,7 +101,7 @@ namespace
 
 		mailboxTest() : suite("vmime::mailbox")
 		{
-			vmime::platformDependant::setHandler<my_handler>();
+			vmime::platformDependant::setHandler<vmime::platforms::posix::posixHandler>();
 
 			add("Parse", testcase(this, "Parse", &mailboxTest::testParse));
 
