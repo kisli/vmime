@@ -65,7 +65,7 @@ public:
 	void setData(const utility::stringProxy& str, const vmime::encoding& enc = NO_ENCODING);
 	void setData(const string& buffer, const vmime::encoding& enc = NO_ENCODING);
 	void setData(const string& buffer, const string::size_type start, const string::size_type end, const vmime::encoding& enc = NO_ENCODING);
-	void setData(utility::inputStream* const is, const utility::stream::size_type length, const bool own, const vmime::encoding& enc = NO_ENCODING);
+	void setData(utility::inputStream* is, const utility::stream::size_type length, const bool own, const vmime::encoding& enc = NO_ENCODING);
 
 	// For compatibility
 	contentHandler& operator=(const string& buffer);

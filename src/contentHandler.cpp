@@ -106,7 +106,7 @@ void contentHandler::setData(const string& buffer, const string::size_type start
 }
 
 
-void contentHandler::setData(utility::inputStream* const is, const utility::stream::size_type length,
+void contentHandler::setData(utility::inputStream* is, const utility::stream::size_type length,
 	const bool own, const vmime::encoding& enc)
 {
 	m_type = TYPE_STREAM;
