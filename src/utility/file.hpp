@@ -101,6 +101,7 @@ public:
 
 
 	/** Create the file pointed by this file object.
+	  * @throw exceptions::filesystem_exception if an error occurs
 	  */
 	virtual void createFile() = 0;
 
@@ -108,6 +109,7 @@ public:
 	  *
 	  * @param createAll if set to true, recursively create all
 	  * parent directories if they do not exist
+	  * @throw exceptions::filesystem_exception if an error occurs
 	  */
 	virtual void createDirectory(const bool createAll = false) = 0;
 
@@ -162,10 +164,12 @@ public:
 	/** Rename the file/directory.
 	  *
 	  * @param newName full path of the new file
+	  * @throw exceptions::filesystem_exception if an error occurs
 	  */
 	virtual void rename(const path& newName) = 0;
 
 	/** Deletes this file/directory.
+	  * @throw exceptions::filesystem_exception if an error occurs
 	  */
 	virtual void remove() = 0;
 
