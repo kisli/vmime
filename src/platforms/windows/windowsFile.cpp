@@ -23,6 +23,7 @@
 #include <string.h>
 
 #include "vmime/exception.hpp"
+#include "vmime/utility/stringUtils.hpp"
 
 
 #if VMIME_HAVE_FILESYSTEM_FEATURES
@@ -89,10 +90,24 @@ const vmime::string windowsFileSystemFactory::pathToStringImpl(const vmime::util
 	return (native);
 }
 
-
 const bool windowsFileSystemFactory::isValidPathComponent(const vmime::utility::file::path::component& comp) const
 {
+	return isValidPathComponent(comp, false);
+}
+
+const bool windowsFileSystemFactory::isValidPathComponent(
+	const vmime::utility::file::path::component& comp,
+	bool firstComponent) const
+{
 	const string& buffer = comp.getBuffer();
+
+	// If first component, check if component is a drive
+	if (firstComponent && (buffer.length() == 2) && (buffer[1] == ':'))
+	{
+		char drive = tolower(buffer[0]);
+    if ((drive >= 'a') && (drive <= 'z'))
+			return true;
+	}
 
 	// Check for invalid characters
 	for (string::size_type i = 0 ; i < buffer.length() ; ++i)
@@ -115,26 +130,27 @@ const bool windowsFileSystemFactory::isValidPathComponent(const vmime::utility::
 		}
 	}
 
+	string upperBuffer = vmime::utility::stringUtils::toUpper(buffer);
+	
 	// Check for reserved names
-	if (buffer.length() == 3)
+	if (upperBuffer.length() == 3)
 	{
-		if (buffer == "CON" || buffer == "PRN" || buffer == "AUX" || buffer == "NUL")
+		if (upperBuffer == "CON" || buffer == "PRN" || buffer == "AUX" || buffer == "NUL")
 			return false;
 	}
-	else if (buffer.length() == 4)
+	else if (upperBuffer.length() == 4)
 	{
-		if (buffer[0] == 'C' && buffer[1] == 'O' &&   // COM1-COM9
-		    buffer[2] == 'M' && (buffer[3] >= '0' && buffer[3] <= '9'))
+		if ((upperBuffer.substr(0, 3) == "COM") && // COM0 to COM9
+		    (upperBuffer[3] >= '0') && (upperBuffer[3] <= '9'))
 		{
 			return false;
 		}
-		else if (buffer[0] == 'L' && buffer[1] == 'P' &&   // LPT1-LPT9
-		         buffer[2] == 'T' && (buffer[3] >= '0' && buffer[3] <= '9'))
+		else if ((upperBuffer.substr(0, 3) == "LPT") && // LPT0 to LPT9
+		         (upperBuffer[3] >= '0') && (upperBuffer[3] <= '9'))
 		{
 			return false;
 		}
 	}
-
 	return true;
 }
 
@@ -143,7 +159,7 @@ const bool windowsFileSystemFactory::isValidPath(const vmime::utility::file::pat
 {
 	for (int i = 0 ; i < path.getSize() ; ++i)
 	{
-		if (!isValidPathComponent(path[i]))
+		if (!isValidPathComponent(path[i], (i==0)))
 			return false;
 	}
 

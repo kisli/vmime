@@ -46,6 +46,8 @@ public:
 	static const vmime::string pathToStringImpl(const vmime::utility::file::path& path);
 
 	const bool isValidPathComponent(const vmime::utility::file::path::component& comp) const;
+	const bool isValidPathComponent(const vmime::utility::file::path::component& comp,
+		                              bool firstComponent) const;
 	const bool isValidPath(const vmime::utility::file::path& path) const;
 
 	static void reportError(const vmime::utility::path& path, const int err);
