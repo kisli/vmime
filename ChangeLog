@@ -4,6 +4,10 @@ VERSION 0.6.1-cvs
 
 2004-12-22  Vincent Richard  <vincent@vincent-richard.net>
 
+ * Fixed missing files in distribution (src/platform/*).
+
+ * Fixed empty 'COPYING' file.
+
  * Started version 0.6.1.
 
 

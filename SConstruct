@@ -255,6 +255,11 @@ for p in libvmime_messaging_proto_sources:
 	for f in p[1]:
 		libvmime_dist_files.append('src/' + f)
 
+for p in libvmime_platforms_sources:
+	for f in libvmime_platforms_sources[p]:
+		libvmime_dist_files.append('src/' + f)
+
+
 libvmime_dist_files = libvmime_dist_files + libvmime_extra + libvmime_examples_sources
 libvmime_dist_files_with_tests = libvmime_dist_files + libvmime_tests
 
