@@ -54,6 +54,7 @@ namespace vmime
 
 	const string libname();
 	const string libversion();
+	const string libapi();
 
 
 	//

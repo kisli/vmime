@@ -22,6 +22,74 @@ import re
 import string
 
 
+#############
+#  Version  #
+#############
+
+# How to increment version number when building a public release?
+# ===============================================================
+#
+# Note about shared library (c:r:a) version number:
+#
+# 1. If the interface (API) is unchanged, but the implementation
+#    has changed or been fixed, then increment R.
+# 2. Otherwise, increment C and zero R, and:
+#      1. If the interface has grown (that is, the new library is
+#         compatible with old code), increment A.
+#      2. If the interface has changed in an incompatible way (that is,
+#         functions have changed or been removed), then zero A.
+#
+#                              no +-->  c.r+1.a
+#                                 |
+#    c.r.a ---> API changed? -----|                       no +--> c+1.0.0
+#                                 |                          |
+#                             yes +--> API compatible ? -----|
+#                                                            |
+#                                                        yes +--> c+1.0.a+1
+#
+# Changing package version number:
+#
+# * Increment major number if major changes have been made to the library,
+#   that is, program depending on this library will need to be changed to
+#   work with the new major release.
+#
+# * Increment minor number when the changes are upward-compatible: some
+#   interfaces have been added, but compatibility is maintained for
+#   existing interfaces.
+#
+# * Increment micro number when the changes do not add any new interface.
+#   The changes only apply to the implementation (bug or security fix,
+#   performance improvement, etc.).
+#
+
+# Package version number
+packageVersionMajor = 0
+packageVersionMinor = 6
+packageVersionMicro = 1
+
+# Shared library version number (computed from package version number)
+packageAPICurrent   = packageVersionMajor + packageVersionMinor
+packageAPIRevision  = packageVersionMicro
+packageAPIAge       = packageVersionMinor
+
+# Package information
+packageName = 'libvmime'
+packageGenericName = 'vmime'
+packageRealName = 'VMime Library'
+packageDescription = 'VMime C++ Mail Library (http://vmime.sourceforge.net)'
+packageMaintainer = 'vincent@vincent-richard.net'
+
+packageVersion = '%d.%d.%d' % (packageVersionMajor, packageVersionMinor, packageVersionMicro)
+packageAPI = '%d:%d:%d' % (packageAPICurrent, packageAPIRevision, packageAPIAge)
+
+if packageVersionMajor >= 2:
+	packageVersionedGenericName = packageGenericName + ('%d' % packageVersionMajor)
+	packageVersionedName = packageName + ('%d' % packageVersionMajor)
+else:
+	packageVersionedGenericName = packageGenericName
+	packageVersionedName = packageName
+
+
 ##################
 #  Source files  #
 ##################
@@ -100,6 +168,8 @@ libvmime_sources = [
 
 libvmime_examples_sources = [
 	'examples/README',
+	'examples/Makefile.am',    # not generated
+	'examples/Makefile.in',
 	'examples/example1.cpp',
 	'examples/example2.cpp',
 	'examples/example3.cpp',
@@ -173,7 +243,7 @@ libvmime_platforms_sources = {
 	'posix':
 	[
 		'platforms/posix/posixFile.cpp', 'platforms/posix/posixFile.hpp',
-		'platforms/posix/posixHandler.cpp', 'platforms/posix/posixSHandler.hpp',
+		'platforms/posix/posixHandler.cpp', 'platforms/posix/posixHandler.hpp',
 		'platforms/posix/posixSocket.cpp', 'platforms/posix/posixSocket.hpp'
 	]
 }
@@ -186,12 +256,20 @@ libvmime_extra = [
 	'NEWS',
 	'README',
 	'SConstruct',
-	'VERSION'
+	'vmime.doxygen'
 ]
 
 libvmime_tests = [
+#	'tests/Makefile.am',    # not generated
+#	'tests/Makefile.in',
+
+	# parser
+#	'tests/parser/Makefile.am',    # not generated
+#	'tests/parser/Makefile.in',
+
 	# charset
-	'tests/charset/Makefile',
+#	'tests/charset/Makefile.am',   # not generated
+#	'tests/charset/Makefile.in',
 	'tests/charset/main.cpp',
 	'tests/charset/run-test.sh',
 	'tests/charset/test-suites/gnu.in.utf-8',
@@ -214,7 +292,7 @@ libunitpp_common = [
 	'tests/lib/unit++/unit++.h',
 	'tests/lib/unit++/gui.cc',
 	'tests/lib/unit++/INSTALL',
-	'tests/lib/unit++/Makefile.in',
+#	'tests/lib/unit++/Makefile.in',
 	'tests/lib/unit++/Test_gui.cc',
 	'tests/lib/unit++/unit++.3',
 	'tests/lib/unit++/configure.ac',
@@ -246,35 +324,56 @@ libvmimetest_sources = [
 	[ 'tests/parser/textTest', [ 'tests/parser/textTest.cpp' ] ]
 ]
 
-libvmime_dist_files = libvmime_sources + libvmime_messaging_sources
+libvmime_autotools = [
+	'autotools/install-sh',
+#	'autotools/mkinstalldirs',
+	'autotools/missing',
+	'autotools/config.guess',
+	'autotools/config.sub',
+	'autotools/ltmain.sh',
+	'autotools/depcomp',
+	'bootstrap',                   # not generated
+	'configure',
+	'configure.in',
+	'config.h.in',
+	'Makefile.am',
+	'Makefile.in',
+	'src/Makefile.am',
+	'src/Makefile.in',
+	'vmime/Makefile.am',
+	'vmime/Makefile.in'
+]
 
-for i in range(len(libvmime_dist_files)):
-	f = libvmime_dist_files[i]
+libvmime_all_sources = [] + libvmime_sources + libvmime_messaging_sources
+
+for i in range(len(libvmime_all_sources)):
+	f = libvmime_all_sources[i]
 	if f[-4:] == '.hpp':
-		libvmime_dist_files[i] = 'vmime/' + f
+		libvmime_all_sources[i] = 'vmime/' + f
 	else:
-		libvmime_dist_files[i] = 'src/' + f
+		libvmime_all_sources[i] = 'src/' + f
 
 for p in libvmime_messaging_proto_sources:
 	for f in p[1]:
 		if f[-4:] == '.hpp':
-			libvmime_dist_files.append('vmime/' + f)
+			libvmime_all_sources.append('vmime/' + f)
 		else:
-			libvmime_dist_files.append('src/' + f)
+			libvmime_all_sources.append('src/' + f)
 
 for p in libvmime_platforms_sources:
 	for f in libvmime_platforms_sources[p]:
 		if f[-4:] == '.hpp':
-			libvmime_dist_files.append('vmime/' + f)
+			libvmime_all_sources.append('vmime/' + f)
 		else:
-			libvmime_dist_files.append('src/' + f)
+			libvmime_all_sources.append('src/' + f)
 
-libvmime_dist_files = libvmime_dist_files + libvmime_extra + libvmime_examples_sources
+libvmime_dist_files = libvmime_all_sources + libvmime_extra + libvmime_examples_sources
 
-libvmime_dist_files = libvmime_dist_files + libvmime_tests
-libvmime_dist_files = libvmime_dist_files + libunitpp_common
-libvmime_dist_files = libvmime_dist_files + libunitpp_sources
-libvmime_dist_files = libvmime_dist_files + libvmimetest_common
+libvmime_dist_files += libvmime_tests
+libvmime_dist_files += libunitpp_common
+libvmime_dist_files += libunitpp_sources
+libvmime_dist_files += libvmimetest_common
+libvmime_dist_files += libvmime_autotools
 
 for t in libvmimetest_sources:
 	for f in t[1]:
@@ -292,30 +391,6 @@ SetOption('implicit_cache', 1)
 #SourceSignatures('timestamp')
 SourceSignatures('MD5')
 TargetSignatures('build')
-
-
-#############
-#  Version  #
-#############
-
-def GetPackageVersion():
-	import re
-	contents = open('VERSION', 'r').read()
-	major = re.compile('(\d+)\.(\d+)\.(\d+)', re.DOTALL).sub(r'\1', contents)
-	minor = re.compile('(\d+)\.(\d+)\.(\d+)', re.DOTALL).sub(r'\2', contents)
-	patch = re.compile('(\d+)\.(\d+)\.(\d+)', re.DOTALL).sub(r'\3', contents)
-	return '%d.%d.%d' % (int(major), int(minor), int(patch))
-
-packageName = 'libvmime'
-packageVersion = GetPackageVersion()
-packageRealName = 'VMime'
-packageDescription = 'VMime C++ Mail Library (http://vmime.sourceforge.net)'
-
-packageVersionMajor = re.compile('(\d+)\.(\d+)\.(\d+)', re.DOTALL).sub(r'\1', packageVersion)
-packageVersionMinor = re.compile('(\d+)\.(\d+)\.(\d+)', re.DOTALL).sub(r'\2', packageVersion)
-packageVersionRev = re.compile('(\d+)\.(\d+)\.(\d+)', re.DOTALL).sub(r'\3', packageVersion)
-
-versionedPackageName = 'vmime-%d.%d' % (int(packageVersionMajor), int(packageVersionMinor))
 
 
 #############
@@ -363,17 +438,17 @@ opts.AddOptions(
 		'Specifies which protocols to build into the library.\n'
 		    + 'This option has no effect if "with_messaging" is not activated.\n'
 		    + 'Separate protocols with spaces; string must be quoted with ".\n'
-		    + 'Available protocols: pop3, smtp, imap, maildir.',
+		    + 'Currently available protocols: pop3, smtp, imap, maildir.',
 		'"pop3 smtp imap maildir"'
 	),
 	(
 		'with_platforms',
-		'Specifies which default platform handlers libraries to build.\n'
-		    + 'This builds a library for each platform selected (eg: "libvmime-posix.a").\n'
-		    + 'If no default handler is available for your platform, you will have\n'
+		'Specifies which default platform handlers to build.\n'
+		    + 'This provides support for each platform selected.\n'
+		    + 'If no platform handler is available for your platform, you will have\n'
 		    + 'to write your own...\n'
 		    + 'Separate platforms with spaces; string must be quoted with ".\n'
-		    + 'Available platform handlers: posix.',
+		    + 'Currently available platform handlers: posix.',
 		'"posix"'
 	),
 	EnumOption(
@@ -386,7 +461,7 @@ opts.AddOptions(
 	),
 	EnumOption(
 		'byte_order',
-		'Byte order',
+		'Byte order (Big Endian or Little Endian)',
 		sys.byteorder,
 		allowed_values = ('big', 'little'),
 		map = { },
@@ -445,6 +520,7 @@ env.Append(CXXFLAGS = ['-W'])
 env.Append(CXXFLAGS = ['-Wall'])
 env.Append(CXXFLAGS = ['-ansi'])
 env.Append(CXXFLAGS = ['-pedantic'])
+env.Append(CXXFLAGS = ['-Wpointer-arith'])
 
 env.Append(TARFLAGS = ['-c'])
 env.Append(TARFLAGS = ['--bzip2'])
@@ -454,7 +530,7 @@ if env['debug'] == 'yes':
 	env.Append(CXXFLAGS = ['-O0'])
 else:
 	env.Append(CXXFLAGS = ['-O2'])
-	#-fomit-frame-pointer -fmove-all-movables -fstrict-aliasing ')
+	#-fomit-frame-pointer -fmove-all-movables -fstrict-aliasing
 
 #env.Append(LIBS = ['additional-lib-here'])
 
@@ -477,7 +553,7 @@ env.Append(BUILDERS = { 'DoxygenDoc' : doxygenBuilder })
 # Messaging protocols
 messaging_protocols = [ ]
 
-for proto in re.split('\W+', env['with_messaging_protocols']):
+for proto in re.split('\W+', string.replace(env['with_messaging_protocols'], '"', '')):
 	proto = string.strip(proto)
 	if len(proto) >= 1:
 		messaging_protocols.append(proto)
@@ -485,7 +561,7 @@ for proto in re.split('\W+', env['with_messaging_protocols']):
 # Platforms
 platforms = [ ]
 
-for platform in re.split('\W+', env['with_platforms']):
+for platform in re.split('\W+', string.replace(env['with_platforms'], '"', '')):
 	platform = string.strip(platform)
 	if len(platform) >= 1:
 		platforms.append(platform)
@@ -502,7 +578,7 @@ print "Messaging support        : " + env['with_messaging']
 if env['with_messaging'] == 'yes':
 	print "  * protocols            : " + env['with_messaging_protocols']
 print "File-system support      : " + env['with_filesystem']
-print "Default handlers         : " + env['with_platforms']
+print "Platform handlers        : " + env['with_platforms']
 print ""
 
 
@@ -546,6 +622,7 @@ config_hpp.write('#define VMIME_PACKAGE "' + packageName + '"\n')
 config_hpp.write('\n')
 config_hpp.write('// Version number of package\n')
 config_hpp.write('#define VMIME_VERSION "' + packageVersion + '"\n')
+config_hpp.write('#define VMIME_API "' + packageAPI + '"\n')
 config_hpp.write('\n')
 config_hpp.write('// Target OS and architecture\n')
 
@@ -555,18 +632,6 @@ if os.name == 'posix':
 else:
 	config_hpp.write('#define VMIME_TARGET_ARCH ""  // Unknown\n')
 	config_hpp.write('#define VMIME_TARGET_OS "' + sys.platform + '/' + os.name + '"\n')
-
-config_hpp.write('\n')
-
-if os.name == 'posix':
-	config_hpp.write('#define VMIME_TARGET_OS_IS_POSIX  1  // POSIX compatible\n')
-	config_hpp.write('#define VMIME_TARGET_OS_IS_WIN32  0  // Win32\n')
-elif os.name == 'win32' or os.name == 'nt':
-	config_hpp.write('#define VMIME_TARGET_OS_IS_POSIX  0  // POSIX compatible\n')
-	config_hpp.write('#define VMIME_TARGET_OS_IS_WIN32  1  // Win32\n')
-else:
-	print "ERROR: unsupported system: '" + os.name + "'\n"
-	Exit(1)
 
 config_hpp.write('\n')
 config_hpp.write('// Set to 1 if debugging should be activated\n')
@@ -580,11 +645,11 @@ config_hpp.write('\n')
 config_hpp.write('// Byte order (set one or the other, but not both!)\n')
 
 if env['byte_order'] == 'big':
-	config_hpp.write('#define IMEL_BYTE_ORDER_BIG_ENDIAN    1\n')
-	config_hpp.write('#define IMEL_BYTE_ORDER_LITTLE_ENDIAN 0\n')
+	config_hpp.write('#define VMIME_BYTE_ORDER_BIG_ENDIAN    1\n')
+	config_hpp.write('#define VMIME_BYTE_ORDER_LITTLE_ENDIAN 0\n')
 else:
-	config_hpp.write('#define IMEL_BYTE_ORDER_BIG_ENDIAN    0\n')
-	config_hpp.write('#define IMEL_BYTE_ORDER_LITTLE_ENDIAN 1\n')
+	config_hpp.write('#define VMIME_BYTE_ORDER_BIG_ENDIAN    0\n')
+	config_hpp.write('#define VMIME_BYTE_ORDER_LITTLE_ENDIAN 1\n')
 
 config_hpp.write('\n')
 config_hpp.write('// Generic types\n')
@@ -607,23 +672,31 @@ if env['with_wide_char_support'] == 'yes':
 else:
 	config_hpp.write('#define VMIME_WIDE_CHAR_SUPPORT 0\n')
 
-config_hpp.write('// -- File-system support\n');
+config_hpp.write('// -- File-system support\n')
 if env['with_filesystem'] == 'yes':
 	config_hpp.write('#define VMIME_HAVE_FILESYSTEM_FEATURES 1\n')
 else:
 	config_hpp.write('#define VMIME_HAVE_FILESYSTEM_FEATURES 0\n')
 
-config_hpp.write('// -- Messaging support\n');
+config_hpp.write('// -- Messaging support\n')
 if env['with_messaging'] == 'yes':
 	config_hpp.write('#define VMIME_HAVE_MESSAGING_FEATURES 1\n')
 
 	config_hpp.write('// -- Built-in messaging protocols\n')
-	config_hpp.write('#define VMIME_BUILTIN_MESSAGING_PROTOS ' + env['with_messaging_protocols'] + '\n')
+	config_hpp.write('#define VMIME_BUILTIN_MESSAGING_PROTOS "' +
+		string.replace(env['with_messaging_protocols'], '"', '') + '"\n')
 
 	for proto in messaging_protocols:
-		config_hpp.write('#define VMIME_BUILTIN_MESSAGING_PROTO_' + string.upper(proto) + ' 1\n');
+		config_hpp.write('#define VMIME_BUILTIN_MESSAGING_PROTO_' + string.upper(proto) + ' 1\n')
 else:
 	config_hpp.write('#define VMIME_HAVE_MESSAGING_FEATURES 0\n')
+
+config_hpp.write('// -- Built-in platform handlers\n')
+config_hpp.write('#define VMIME_BUILTIN_PLATFORMS "' +
+	string.replace(env['with_platforms'], '"', '') + '"\n')
+
+for platform in platforms:
+	config_hpp.write('#define VMIME_BUILTIN_PLATFORM_' + string.upper(platform) + ' 1\n')
 
 config_hpp.write("""
 
@@ -645,20 +718,30 @@ else:
 	BuildDir("#build/release", 'src', duplicate = 0)
 	buildDirectory = 'build/release/'
 
-# Create source files list
-libvmime_full_sources = libvmime_sources
+# Create effective source files list
 
+# -- main library
+libvmime_sel_sources = [] + libvmime_sources
+
+# -- messaging module
 if env['with_messaging'] == 'yes':
 	# -- Add common files for messaging support
 	for file in libvmime_messaging_sources:
-		libvmime_full_sources.append(file)
+		libvmime_sel_sources.append(file)
 
 	# -- Add protocol specific source files
 	for proto in messaging_protocols:
 		for protosrc in libvmime_messaging_proto_sources:
 			if protosrc[0] == proto:
 				for file in protosrc[1]:
-					libvmime_full_sources.append(file)
+					libvmime_sel_sources.append(file)
+
+# -- platform handlers
+for platform in platforms:
+	files = libvmime_platforms_sources[platform]
+
+	for file in files:
+		libvmime_sel_sources.append(file)
 
 # Split source files list into two lists: .CPP and .HPP
 libvmime_sources_CPP = [ ]
@@ -666,7 +749,7 @@ libvmime_sources_HPP = [ ]
 
 libvmime_install_includes = [ ]
 
-for file in libvmime_full_sources:
+for file in libvmime_sel_sources:
 	slash = string.rfind(file, '/')
 	dir = ''
 
@@ -675,68 +758,32 @@ for file in libvmime_full_sources:
 
 	if file[-4:] == '.hpp':
 		libvmime_sources_HPP.append(buildDirectory + file)
-		libvmime_install_includes.append([dir, 'vmime/' + file])
+		libvmime_install_includes.append([dir, 'vmime/' + file, file])
 	else:
-		libvmime_sources_CPP.append(buildDirectory + file)
+		if file[-4:] == '.cpp':
+			libvmime_sources_CPP.append(buildDirectory + file)
 
 # HACK: SCons does not allow '.' in target name, so we have to
 # detect the suffix for library name and add it ourself
-libFoo = env.StaticLibrary(target = 'FOO', source = [])
-libNameSuffix = '';
+#libFoo = env.StaticLibrary(target = 'FOO', source = [])
+#libNameSuffix = '';
+#
+#if str(libFoo[0]).rfind('.') != -1:
+#	libNameSuffix = str(libFoo[0])[str(libFoo[0]).rfind('.'):]
 
-if str(libFoo[0]).rfind('.') != -1:
-	libNameSuffix = str(libFoo[0])[str(libFoo[0]).rfind('.'):]
-
-# Main program build
+# Static library build
 if env['debug'] == 'yes':
 	libVmime = env.StaticLibrary(
-		target = versionedPackageName + '-debug' + libNameSuffix,
+		target = packageVersionedGenericName + '-debug',
 		source = libvmime_sources_CPP
 	)
 else:
 	libVmime = env.StaticLibrary(
-		target = versionedPackageName + libNameSuffix,
+		target = packageVersionedGenericName,
 		source = libvmime_sources_CPP
 	)
 
 Default(libVmime)
-
-
-# Platform header files
-for platform in libvmime_platforms_sources:
-	files = libvmime_platforms_sources[platform]
-
-	for file in files:
-		slash = string.rfind(file, '/')
-		dir = ''
-
-		if slash != -1:
-			dir = file[0:slash] + '/'
-
-		if file[-4:] == '.hpp':
-			libvmime_install_includes.append([dir, 'vmime/' + file])
-
-# Platform libraries
-platformLibraries = [ ]
-
-for platform in platforms:
-	files = libvmime_platforms_sources[platform]
-
-	sources_CPP = [ ]
-
-	for file in files:
-		if file[-4:] == '.cpp':
-			sources_CPP.append(buildDirectory + file)
-
-	platformLib = env.StaticLibrary(
-		target = versionedPackageName + '-' + platform + libNameSuffix,
-		source = sources_CPP
-	)
-
-	Default(platformLib)
-
-	platformLibraries.append(platformLib)
-
 
 # Tests
 if env['build_tests'] == 'yes':
@@ -752,7 +799,7 @@ if env['build_tests'] == 'yes':
 			env.Program(
 				target = test[0],
 				source = test[1],
-				LIBS=['unit++', versionedPackageName + '-posix', versionedPackageName + '-debug'],
+				LIBS=['unit++', packageVersionedGenericName + '-debug'],
 				LIBPATH=['.', './tests/']
 			)
 		)
@@ -763,16 +810,12 @@ if env['build_tests'] == 'yes':
 ########################
 
 libDir = "%s/lib" % env['prefix']
-includeDir = "%s/include/%s/vmime" % (env['prefix'], versionedPackageName)
+includeDir = "%s/include/%s/vmime" % (env['prefix'], packageVersionedGenericName)
 
 installPaths = [libDir, includeDir]
 
 # Library
 env.Install(libDir, libVmime)
-
-# Platform libraries
-for platformLib in platformLibraries:
-	env.Install(libDir, platformLib)
 
 # Header files
 for i in range(len(libvmime_install_includes)):
@@ -782,7 +825,7 @@ for i in range(len(libvmime_install_includes)):
 env.Install(includeDir, 'vmime/config.hpp')
 
 # Pkg-config support
-vmime_pc = open(versionedPackageName + ".pc", 'w')
+vmime_pc = open(packageVersionedGenericName + ".pc", 'w')
 
 vmime_pc.write("prefix=" + env['prefix'] + "\n")
 vmime_pc.write("exec_prefix=" + env['prefix'] + "\n")
@@ -793,15 +836,608 @@ vmime_pc.write("Name: " + packageRealName + "\n")
 vmime_pc.write("Description: " + packageDescription + "\n")
 vmime_pc.write("Version: " + packageVersion + "\n")
 vmime_pc.write("Requires:\n")
-vmime_pc.write("Libs: -L${libdir} -l" + versionedPackageName + "-posix -l" + versionedPackageName + "\n")
-vmime_pc.write("Cflags: -I${includedir}/" + versionedPackageName + "\n")
+vmime_pc.write("Libs: -L${libdir} -l" + packageVersionedGenericName + "\n")
+vmime_pc.write("Cflags: -I${includedir}/" + packageVersionedGenericName + "\n")
 
 vmime_pc.close()
 
-env.Install(libDir + "/pkgconfig", versionedPackageName + ".pc")
+env.Install(libDir + "/pkgconfig", packageVersionedGenericName + ".pc")
 
 # Provide "install" target (ie. 'scons install')
 env.Alias('install', installPaths)
+
+
+################################
+#  Generate autotools scripts  #
+################################
+
+# Return the path of the specified filename.
+# Example: getPath("a/b/c/myfile") will return "a/b/c"
+def getPath(s):
+	x = s.rfind('/')
+	if x != -1:
+		return s[0:x]
+	else:
+		return ""
+
+def getParentPath(s):
+	return getPath(s)
+
+def getLastDir(s):
+	x = s.rfind('/')
+	if x != -1:
+		return s[x + 1:len(s)]
+	else:
+		return s
+
+def buildMakefileFileList(l, replaceSlash):
+	s = ''
+
+	for i in range(len(l)):
+		if i != 0:
+			s += ' \\\n\t'
+		f = l[i]
+		if replaceSlash:
+			f = string.replace(f, "/", "_")
+		s += f
+
+	return s
+
+def selectFilesFromSuffixNot(l, ext):
+	r = []
+	n = len(ext)
+
+	for f in l:
+		if f[-n:] != ext:
+			r.append(f)
+
+	return r
+
+def generateAutotools(target, source, env):
+	# Generate pkg-config file for shared and static library
+	vmime_pc_in = open(packageVersionedGenericName + ".pc.in", 'w')
+	vmime_pc_in.write("# File automatically generated by SConstruct ('scons autotools')\n")
+	vmime_pc_in.write("# DOT NOT EDIT!\n")
+	vmime_pc_in.write("\n")
+	vmime_pc_in.write("prefix=@prefix@\n")
+	vmime_pc_in.write("exec_prefix=@exec_prefix@\n")
+	vmime_pc_in.write("libdir=@libdir@\n")
+	vmime_pc_in.write("includedir=@includedir@\n")
+	vmime_pc_in.write("\n")
+	vmime_pc_in.write("Name: @GENERIC_LIBRARY_NAME@\n")
+	vmime_pc_in.write("Description: " + packageDescription + "\n")
+	vmime_pc_in.write("Version: @VERSION@\n")
+	vmime_pc_in.write("Requires:\n")
+	vmime_pc_in.write("Libs: -L${libdir} -l@GENERIC_VERSIONED_LIBRARY_NAME@\n")
+	vmime_pc_in.write("Cflags: -I${includedir}/@GENERIC_VERSIONED_LIBRARY_NAME@\n")
+	vmime_pc_in.close()
+
+	# Generate 'Makefile.am'
+	Makefile_am = open("Makefile.am", 'w')
+	Makefile_am.write("""
+# File automatically generated by SConstruct ('scons autotools')
+# DOT NOT EDIT!
+
+BINDING =
+INCLUDE = vmime
+#examples tests
+
+SUBDIRS = src $(INCLUDE) $(BINDING)
+
+DIST_SUBDIRS = $(SUBDIRS) autotools
+
+#AUTOMAKE_OPTIONS = dist-bzip2
+AUTOMAKE_OPTIONS = no-dist
+
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = $(GENERIC_VERSIONED_LIBRARY_NAME).pc
+
+EXTRA_DIST=SConstruct bootstrap
+
+dist:
+	@ echo ""
+	@ echo "Please use 'scons dist' to generate distribution tarball."
+	@ echo ""
+
+doc_DATA = AUTHORS ChangeLog COPYING INSTALL NEWS README
+docdir = $(datadir)/doc/$(GENERIC_LIBRARY_NAME)
+""")
+	Makefile_am.close()
+
+	# Generate Makefile for header files
+	Makefile_am = open("vmime/Makefile.am", 'w')
+	Makefile_am.write("""
+# File automatically generated by SConstruct ('scons autotools')
+# DOT NOT EDIT!
+""")
+
+	Makefile_am.write(packageVersionedName + "includedir = $(prefix)/include/@GENERIC_VERSIONED_LIBRARY_NAME@/@GENERIC_LIBRARY_NAME@\n")
+	Makefile_am.write("nobase_" + packageVersionedName + "include_HEADERS = ")
+
+	x = []
+
+	for file in libvmime_all_sources:
+		if file[-4:] == '.hpp':
+			x.append(file[len("vmime/"):])   # remove 'vmime/' prefix
+
+	Makefile_am.write(buildMakefileFileList(x, 0))
+	Makefile_am.close()
+
+	# Generate 'src/Makefile.am' (Makefile for source files)
+	Makefile_am = open("src/Makefile.am", 'w')
+	Makefile_am.write("""
+# File automatically generated by SConstruct ('scons autotools')
+# DOT NOT EDIT!
+
+AUTOMAKE_OPTIONS = no-dependencies foreign
+INTERNALS =
+INCLUDES = -I$(top_srcdir) -I$(srcdir) @PKGCONFIG_CFLAGS@ @EXTRA_CFLAGS@
+""")
+
+	Makefile_am.write('lib_LTLIBRARIES = ' + packageVersionedName + '.la\n')
+	Makefile_am.write(packageVersionedName + '_la_LDFLAGS = -export-dynamic -version-info '
+#		+ '@LIBRARY_VERSION@ -release @LIBRARY_RELEASE@ @PKGCONFIG_LIBS@ @EXTRA_LIBS@\n')
+		+ '@LIBRARY_VERSION@ @PKGCONFIG_LIBS@ @EXTRA_LIBS@\n')
+
+	sourceFiles = []  # for conversion:   subpath/file.cpp --> subpath_file.cpp
+	                  # used to avoid collision when two files have the same name if different dirs
+
+	# -- base library
+	x = selectFilesFromSuffixNot(libvmime_sources, '.hpp')
+	sourceFiles += x
+
+	Makefile_am.write(packageVersionedName + "_la_SOURCES = " + buildMakefileFileList(x, 1) + "\n")
+
+	# -- messaging module
+	x = selectFilesFromSuffixNot(libvmime_messaging_sources, '.hpp')
+	sourceFiles += x
+
+	Makefile_am.write("\n")
+	Makefile_am.write("if VMIME_HAVE_MESSAGING_FEATURES\n")
+	Makefile_am.write(packageVersionedName + "_la_SOURCES += " + buildMakefileFileList(x, 1) + "\n")
+	Makefile_am.write("endif\n")
+
+	# -- messaging protocols
+	for proto in libvmime_messaging_proto_sources:
+		Makefile_am.write("\n")
+		Makefile_am.write("if VMIME_BUILTIN_MESSAGING_PROTO_" + string.upper(proto[0]) + "\n")
+
+		x = selectFilesFromSuffixNot(proto[1], '.hpp')
+		sourceFiles += x
+
+		Makefile_am.write(packageVersionedName + "_la_SOURCES += " + buildMakefileFileList(x, 1) + "\n")
+		Makefile_am.write("endif\n")
+
+	# -- platform handlers
+	for platform in libvmime_platforms_sources:
+		Makefile_am.write("\n")
+		Makefile_am.write("if VMIME_BUILTIN_PLATFORM_" + string.upper(platform) + "\n")
+
+		x = selectFilesFromSuffixNot(libvmime_platforms_sources[platform], '.hpp')
+		sourceFiles += x
+
+		Makefile_am.write(packageVersionedName + "_la_SOURCES += " + buildMakefileFileList(x, 1) + "\n")
+		Makefile_am.write("endif\n")
+
+	Makefile_am.write("""
+
+noinst_HEADERS = $(INTERNALS)
+
+""")
+
+	for f in sourceFiles:    # symbolic links to avoid filename collision
+		a = f
+		b = string.replace(f, "/", "_")
+		if a != b:
+			Makefile_am.write(b + ": " + a + "\n\tln -sf $< $@\n\n")
+
+	Makefile_am.close()
+
+	# Generate 'configure.in'
+	configure_in = open("configure.in", 'w')
+	configure_in.write("""
+# configure.in
+
+# File automatically generated by SConstruct ('scons autotools')
+# DOT NOT EDIT!
+
+# Init
+""")
+
+	configure_in.write("AC_INIT([" + packageRealName
+		+ "], [" + packageVersion + "], [" + packageMaintainer
+		+ "], [" + packageGenericName + "])")
+	configure_in.write("""
+
+AC_PREREQ([2.53])
+
+AC_CONFIG_AUX_DIR(autotools)
+
+# Library name
+GENERIC_LIBRARY_NAME=""" + '"' + packageGenericName + '"' + """
+AC_SUBST(GENERIC_LIBRARY_NAME)
+
+GENERIC_VERSIONED_LIBRARY_NAME=""" + '"' + packageVersionedGenericName + '"' + """
+AC_SUBST(GENERIC_VERSIONED_LIBRARY_NAME)
+
+LIBRARY_NAME=""" + '"' + packageName + '"' + """
+AC_SUBST(LIBRARY_NAME)
+
+""")
+
+	configure_in.write('# Library version\n')
+	configure_in.write('LIBRARY_VERSION="' + str(packageAPICurrent)
+		+ ':' + str(packageAPIRevision) + ':' + str(packageAPIAge) + '"\n')
+	configure_in.write('AC_SUBST(LIBRARY_VERSION)\n')
+	configure_in.write('\n')
+	configure_in.write('LIBRARY_RELEASE="' + str(packageVersionMajor) + '"\n')
+	configure_in.write('AC_SUBST(LIBRARY_RELEASE)\n')
+
+	configure_in.write("""
+
+#
+# Miscellaneous init stuff
+#
+
+AC_CANONICAL_HOST
+AC_CANONICAL_TARGET
+
+AM_INIT_AUTOMAKE(""" + packageGenericName + """, """ + packageVersion + """)
+AC_CONFIG_SRCDIR([src/base.cpp])
+AM_CONFIG_HEADER([config.h])
+
+AM_MAINTAINER_MODE
+
+
+#
+# Check compilers, processors, etc
+#
+
+AC_PROG_CC
+AC_PROG_CXX
+AC_PROG_CPP
+AC_C_CONST
+AC_C_INLINE
+AC_HEADER_STDC
+AC_HEADER_STDBOOL
+AC_HEADER_DIRENT
+AC_HEADER_TIME
+AC_C_CONST
+
+AC_LANG(C++)
+
+AC_PROG_INSTALL
+AC_PROG_MAKE_SET
+AC_PROG_LN_S
+AC_PROG_LIBTOOL
+
+AM_SANITY_CHECK
+AM_PROG_LIBTOOL
+AM_PROG_CC_C_O
+
+
+#
+# Target OS and architecture
+#
+
+VMIME_TARGET_ARCH=${target_cpu}
+VMIME_TARGET_OS=${target_os}
+
+#
+# Byte Order
+#
+
+AC_C_BIGENDIAN
+
+if test "x$ac_cv_c_bigendian" = "xyes"; then
+  VMIME_BYTE_ORDER_BIG_ENDIAN=1
+  VMIME_BYTE_ORDER_LITTLE_ENDIAN=0
+else
+  VMIME_BYTE_ORDER_BIG_ENDIAN=0
+  VMIME_BYTE_ORDER_LITTLE_ENDIAN=1
+fi
+
+
+#
+# Generic Type Size
+#
+
+AC_CHECK_SIZEOF(char)
+AC_CHECK_SIZEOF(short)
+AC_CHECK_SIZEOF(int)
+AC_CHECK_SIZEOF(long)
+
+case 1 in
+$ac_cv_sizeof_char)
+  VMIME_TYPE_INT8=char
+  ;;
+*)
+  AC_MSG_ERROR([no 8-bit type available])
+esac
+
+case 2 in
+$ac_cv_sizeof_short)
+  VMIME_TYPE_INT16=short
+  ;;
+$ac_cv_sizeof_int)
+  VMIME_TYPE_INT16=int
+  ;;
+*)
+  AC_MSG_ERROR([no 16-bit type available])
+esac
+
+case 4 in
+$ac_cv_sizeof_int)
+  VMIME_TYPE_INT32=int
+  ;;
+$ac_cv_sizeof_int)
+  VMIME_TYPE_INT32=long
+  ;;
+*)
+  AC_MSG_ERROR([no 32-bit type available])
+esac
+
+
+#
+# Options
+#
+
+# ** debug
+
+AC_ARG_ENABLE(debug,
+     [  --enable-debug        Turn on debugging (default: disabled)],
+     [case "${enableval}" in
+       yes) conf_debug=yes ;;
+       no)  conf_debug=no ;;
+       *) AC_MSG_ERROR(bad value ${enableval} for --enable-debug) ;;
+      esac],
+     [conf_debug=no])
+
+if test "x$conf_debug" = "xyes"; then
+	AM_CONDITIONAL(VMIME_DEBUG, true)
+	VMIME_DEBUG=1
+else
+	AM_CONDITIONAL(VMIME_DEBUG, false)
+	VMIME_DEBUG=0
+fi
+
+# ** messaging
+
+AC_ARG_ENABLE(messaging,
+     [  --enable-messaging    Enable messaging support\
+ (connection to mail servers, default: enabled)],
+     [case "${enableval}" in
+       yes) conf_messaging=yes ;;
+       no)  conf_messaging=no ;;
+       *) AC_MSG_ERROR(bad value ${enableval} for --enable-messaging) ;;
+      esac],
+     [conf_messaging=yes])
+
+if test "x$conf_messaging" = "xyes"; then
+	AM_CONDITIONAL(VMIME_HAVE_MESSAGING_FEATURES, true)
+	VMIME_HAVE_MESSAGING_FEATURES=1
+else
+	AM_CONDITIONAL(VMIME_HAVE_MESSAGING_FEATURES, false)
+	VMIME_HAVE_MESSAGING_FEATURES=0
+fi
+
+# ** messaging protocols
+
+VMIME_BUILTIN_MESSAGING_PROTOS=''
+
+""")
+
+	for proto in libvmime_messaging_proto_sources:
+		p = proto[0]
+
+		configure_in.write("AC_ARG_ENABLE(messaging-proto-" + p + ",\n")
+		configure_in.write("     [  --enable-messaging-proto-" + p
+			+ "   Enable built-in support for protocol '" + p + "' "
+			+ " (default: enabled)],\n")
+		configure_in.write('     [case "${enableval}" in\n')
+		configure_in.write('       yes) conf_messaging_proto_' + p + '=yes ;;\n')
+		configure_in.write('       no)  conf_messaging_proto_' + p + '=no ;;\n')
+		configure_in.write('       *) AC_MSG_ERROR(bad value ${enableval} for '
+			+ '--enable-messaging-proto-' + p + ') ;;\n')
+		configure_in.write('      esac],\n')
+		configure_in.write('     [conf_messaging_proto_' + p + '=yes])\n')
+
+		configure_in.write('if test "x$conf_messaging_proto_' + p + '" = "xyes"; then\n')
+		configure_in.write('	AM_CONDITIONAL(VMIME_BUILTIN_MESSAGING_PROTO_' + string.upper(p) + ', true)\n')
+		configure_in.write('	VMIME_BUILTIN_MESSAGING_PROTO_' + string.upper(p) + '=1\n')
+		configure_in.write('	VMIME_BUILTIN_MESSAGING_PROTOS="$VMIME_BUILTIN_MESSAGING_PROTOS ' + p + '"\n')
+		configure_in.write('else\n')
+		configure_in.write('	AM_CONDITIONAL(VMIME_BUILTIN_MESSAGING_PROTO_' + string.upper(p) + ', false)\n')
+		configure_in.write('	VMIME_BUILTIN_MESSAGING_PROTO_' + string.upper(p) + '=0\n')
+		configure_in.write('fi\n')
+
+	configure_in.write("""
+# ** platform handlers
+
+VMIME_BUILTIN_PLATFORMS=''
+
+""")
+
+	for p in libvmime_platforms_sources:
+		configure_in.write("AC_ARG_ENABLE(platform-" + p + ",\n")
+		configure_in.write("     [  --enable-platform-" + p
+			+ "   Compile built-in platform handler for '" + p + "' "
+			+ " (default: enabled)],\n")
+		configure_in.write('     [case "${enableval}" in\n')
+		configure_in.write('       yes) conf_platform_' + p + '=yes ;;\n')
+		configure_in.write('       no)  conf_platform_' + p + '=no ;;\n')
+		configure_in.write('       *) AC_MSG_ERROR(bad value ${enableval} for '
+			+ '--enable-platform-' + p + ') ;;\n')
+		configure_in.write('      esac],\n')
+		configure_in.write('     [conf_platform_' + p + '=yes])\n')
+
+		configure_in.write('if test "x$conf_platform_' + p + '" = "xyes"; then\n')
+		configure_in.write('	AM_CONDITIONAL(VMIME_BUILTIN_PLATFORM_' + string.upper(p) + ', true)\n')
+		configure_in.write('	VMIME_BUILTIN_PLATFORM_' + string.upper(p) + '=1\n')
+		configure_in.write('	VMIME_BUILTIN_PLATFORMS="$VMIME_BUILTIN_PLATFORMS ' + p + '"\n')
+		configure_in.write('else\n')
+		configure_in.write('	AM_CONDITIONAL(VMIME_BUILTIN_PLATFORM_' + string.upper(p) + ', false)\n')
+		configure_in.write('	VMIME_BUILTIN_PLATFORM_' + string.upper(p) + '=0\n')
+		configure_in.write('fi\n')
+
+	configure_in.write("""
+
+
+#
+# Flags
+#
+
+LIBRARY_LD_FLAGS="\$(top_builddir)/src/\$(LIBRARY_NAME).la"
+AC_SUBST(LIBRARY_LD_FLAGS)
+
+PKGCONFIG_CFLAGS=""
+PKGCONFIG_LIBS=""
+
+AC_SUBST(PKGCONFIG_CFLAGS)
+AC_SUBST(PKGCONFIG_LIBS)
+
+EXTRA_CFLAGS="$EXTRA_CFLAGS -D_REENTRANT=1"
+EXTRA_LIBS=""
+
+
+#
+# Check to see if the compiler can handle some flags
+#
+
+""")
+
+	compilerFlags = [ '-pipe', '-ansi', '-pedantic', '-W', '-Wall' ]
+
+	for f in compilerFlags:
+		configure_in.write('# ' + f + '\n')
+		configure_in.write('OLD_EXTRA_CFLAGS="$EXTRA_CFLAGS"\n')
+		configure_in.write('EXTRA_CFLAGS="$EXTRA_CFLAGS ' + f + '"\n')
+		configure_in.write('AC_MSG_CHECKING(whether cc accepts ' + f + ')\n')
+		configure_in.write('AC_TRY_COMPILE(,,echo yes,echo no; EXTRA_CFLAGS="$OLD_EXTRA_CFLAGS")\n\n')
+
+	configure_in.write("""
+EXTRA_CFLAGS=`echo $EXTRA_CFLAGS | sed -e 's| |\\n|g' | sort | uniq | tr '\\n' ' '`
+EXTRA_LIBS=`echo $EXTRA_LIBS | sed -e 's|^ ||g' | sed -e 's|  | |g'`
+
+AC_SUBST(EXTRA_CFLAGS)
+AC_SUBST(EXTRA_LIBS)
+
+LIBS=`echo $LIBS | sed -e 's|^ ||g' | sed -e 's|  | |g'`
+
+AC_CONFIG_FILES([ """)
+
+	libvmime_dist_files.append(packageVersionedGenericName + ".pc.in")
+
+	configure_in.write(packageVersionedGenericName + ".pc\n")
+
+	for f in libvmime_dist_files:
+		if f[-11:] == 'Makefile.in':
+			configure_in.write("\t" + f[0:len(f) - 3] + "\n")
+
+	configure_in.write("\t])")
+	configure_in.write("""
+AC_OUTPUT
+
+
+#
+# Generate vmime/config.hpp
+#
+
+echo "
+//
+// This file was automatically generated by configuration script.
+//
+
+#ifndef VMIME_CONFIG_HPP_INCLUDED
+#define VMIME_CONFIG_HPP_INCLUDED
+
+
+// Name of package
+#define VMIME_PACKAGE """ + '\\"' + packageName + '\\"' + """
+
+// Version number of package
+#define VMIME_VERSION """ + '\\"' + packageVersion + '\\"' + """
+#define VMIME_API """ + '\\"' + packageAPI + '\\"' + """
+
+// Target OS and architecture
+#define VMIME_TARGET_ARCH \\"${VMIME_TARGET_ARCH}\\"
+#define VMIME_TARGET_OS \\"${VMIME_TARGET_OS}\\"
+
+// Set to 1 if debugging should be activated
+#define VMIME_DEBUG ${VMIME_DEBUG}
+
+// Byte order (set one or the other, but not both!)
+#define VMIME_BYTE_ORDER_BIG_ENDIAN    ${VMIME_BYTE_ORDER_BIG_ENDIAN}
+#define VMIME_BYTE_ORDER_LITTLE_ENDIAN ${VMIME_BYTE_ORDER_LITTLE_ENDIAN}
+
+// Generic types
+// -- 8-bit
+typedef signed ${VMIME_TYPE_INT8} vmime_int8;
+typedef unsigned ${VMIME_TYPE_INT8} vmime_uint8;
+// -- 16-bit
+typedef signed ${VMIME_TYPE_INT16} vmime_int16;
+typedef unsigned ${VMIME_TYPE_INT16} vmime_uint16;
+// -- 32-bit
+typedef signed ${VMIME_TYPE_INT32} vmime_int32;
+typedef unsigned ${VMIME_TYPE_INT32} vmime_uint32;
+
+// Options
+// -- Wide characters support
+#define VMIME_WIDE_CHAR_SUPPORT 0
+// -- File-system support
+#define VMIME_HAVE_FILESYSTEM_FEATURES 1
+// -- Messaging support
+#define VMIME_HAVE_MESSAGING_FEATURES ${VMIME_HAVE_MESSAGING_FEATURES}
+""")
+
+	# Messaging protocols
+	configure_in.write('// -- Built-in messaging protocols\n')
+	configure_in.write('#define VMIME_BUILTIN_MESSAGING_PROTOS \\"$VMIME_BUILTIN_MESSAGING_PROTOS\\"\n')
+
+	for p in libvmime_messaging_proto_sources:
+		p = string.upper(p[0])
+		configure_in.write("#define VMIME_BUILTIN_MESSAGING_PROTO_" + p
+			+ " $VMIME_BUILTIN_MESSAGING_PROTO_" + p + "\n")
+
+	# Platform handlers
+	configure_in.write('// -- Built-in platform handlers\n')
+	configure_in.write('#define VMIME_BUILTIN_PLATFORMS \\"$VMIME_BUILTIN_PLATFORMS\\"\n')
+
+	for p in platforms:
+		p = string.upper(p)
+		configure_in.write('#define VMIME_BUILTIN_PLATFORM_' + p
+			+ " $VMIME_BUILTIN_PLATFORM_" + p + " \n")
+
+	configure_in.write("""
+
+#endif // VMIME_CONFIG_HPP_INCLUDED
+" > vmime/config.hpp
+
+AC_MSG_RESULT([
++=================+
+|  CONFIGURATION  |
++=================+
+
+Installation prefix      : $prefix
+Debugging mode           : $conf_debug
+Messaging support        : $conf_messaging
+     * protocols         :$VMIME_BUILTIN_MESSAGING_PROTOS
+File-system support      : yes
+Platform handlers        :$VMIME_BUILTIN_PLATFORMS
+])
+""")
+
+	configure_in.close()
+
+	os.system('./bootstrap')
+
+	return None
+
+# Custom builder for generating autotools scripts
+autotoolsBuilder = Builder(action = generateAutotools)
+env.Append(BUILDERS = { 'GenerateAutoTools' : autotoolsBuilder })
+
+env.Alias('autotools', env.GenerateAutoTools('foo_autotools', 'SConstruct'))
 
 
 #####################
@@ -810,11 +1446,32 @@ env.Alias('install', installPaths)
 
 # 'tar' is not available under Windows...
 if not (os.name == 'win32' or os.name == 'nt'):
-	packageFile = packageName + '-' + packageVersion + '.tar.bz2'
+	def createPackage(target, source, env):
+		packageFullName = packageName + '-' + packageVersion
+		packageFile = packageFullName + '.tar.bz2'
 
-	env.Tar(packageFile, libvmime_dist_files)
+		# Generate autotools-related files
+		generateAutotools([], [], env)
 
-	env.Alias('dist', packageFile)
+		distFiles = []
+		distFilesStr = ''
+
+		for f in libvmime_dist_files:
+			distFiles.append(packageFullName + '/' + f)
+			distFilesStr = distFilesStr + packageFullName + '/' + f + ' '
+			print f
+
+		os.system('ln -s . ' + packageFullName)
+		os.system('tar jcf ' + packageFile + ' ' + distFilesStr)
+		os.system('rm -f ' + packageFullName)
+
+		return None
+
+	# Custom builder for creating package
+	createPackageBuilder = Builder(action = createPackage)
+	env.Append(BUILDERS = { 'CreatePackage' : createPackageBuilder })
+
+	env.Alias('dist', env.CreatePackage('foo_tar', 'SConstruct'))
 
 
 ###################
@@ -825,4 +1482,3 @@ doxygenDocPath = '(doxygen-generated-files)'
 
 env.DoxygenDoc(doxygenDocPath, 'vmime.doxygen')
 env.Alias('doc', doxygenDocPath)
-

@@ -70,23 +70,23 @@ private:
 public:
 
 	smart_ptr() : m_data(NULL) { }
-	smart_ptr(T* const ptr) : m_data(NULL) { if (ptr) { attach(ptr); } }
-	smart_ptr(smart_ptr& ptr) : m_data(NULL) { if (ptr.m_data) { attach(ptr); } }
+	smart_ptr(T* const p) : m_data(NULL) { if (p) { attach(p); } }
+	smart_ptr(smart_ptr& p) : m_data(NULL) { if (p.m_data) { attach(p); } }
 
 	~smart_ptr() { detach(); }
 
-	smart_ptr& operator=(smart_ptr& ptr)
+	smart_ptr& operator=(smart_ptr& p)
 	{
-		attach(ptr);
+		attach(p);
 		return (*this);
 	}
 
-	smart_ptr& operator=(T* const ptr)
+	smart_ptr& operator=(T* const p)
 	{
-		if (!ptr)
+		if (!p)
 			detach();
 		else
-			attach(ptr);
+			attach(p);
 
 		return (*this);
 	}
@@ -123,11 +123,11 @@ private:
 		}
 	}
 
-	void attach(T* const ptr)
+	void attach(T* const p)
 	{
 		detach();
 
-		typename MapType::iterator it = sm_map.find(ptr);
+		typename MapType::iterator it = sm_map.find(p);
 
 		if (it != sm_map.end())
 		{
@@ -137,15 +137,15 @@ private:
 		{
 			m_data = new data;
 			m_data->refCount = 1;
-			m_data->ptr = ptr;
+			m_data->ptr = p;
 
-			sm_map.insert(typename MapType::value_type(ptr, m_data));
+			sm_map.insert(typename MapType::value_type(p, m_data));
 		}
 	}
 
-	void attach(smart_ptr <T>& ptr)
+	void attach(smart_ptr <T>& p)
 	{
-		data* newData = ptr.m_data;
+		data* newData = p.m_data;
 		if (newData) newData->refCount++;
 
 		detach();

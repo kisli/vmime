@@ -1,4 +1,5 @@
 //
+// VMime library (http://vmime.sourceforge.net)
 // Copyright (C) 2002-2004 Vincent Richard <vincent@vincent-richard.net>
 //
 // This program is free software; you can redistribute it and/or
@@ -29,7 +30,7 @@
 #include <iostream>
 
 #include "vmime/vmime.hpp"
-#include "vmime/platforms/posix/handler.hpp"
+#include "vmime/platforms/posix/posixHandler.hpp"
 
 
 int main()

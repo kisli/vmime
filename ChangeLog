@@ -2,6 +2,13 @@
 VERSION 0.6.1-cvs
 =================
 
+2004-12-27  Vincent Richard  <vincent@vincent-richard.net>
+
+ * Added support for 'libtool'. All files needed for autoconf/automake
+   can be generated with SConstruct script, using the 'autotools'
+   target ("scons autotools"). These are also built and included
+   automatically in the distribution tarball ("scons dist").
+
 2004-12-26  Vincent Richard  <vincent@vincent-richard.net>
 
  * Removed relative paths from #include's and moved all header files
@@ -71,7 +78,7 @@ VERSION 0.6.0
 
    For example, to use the default platform handler for POSIX (GNU/Linux):
 
-        #include <vmime/platforms/posix/handler.hpp>
+        #include <vmime/platforms/posix/posixHandler.hpp>
 
         int main()
         {

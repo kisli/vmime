@@ -75,6 +75,12 @@ const string libname() { return (VMIME_PACKAGE); }
   */
 const string libversion() { return (VMIME_VERSION " (" __DATE__ " " __TIME__ ")"); }
 
+/** Return the library API version (eg. "6:1:6").
+  *
+  * @return library API version
+  */
+const string libapi() { return (VMIME_API); }
+
 
 // New line sequence to be used when folding header fields.
 const string NEW_LINE_SEQUENCE = "\r\n ";

@@ -23,7 +23,7 @@
 #include "vmime/exception.hpp"
 #include "vmime/config.hpp"
 
-#include "builtinServices.inl"
+#include "src/messaging/builtinServices.inl"
 
 
 namespace vmime {

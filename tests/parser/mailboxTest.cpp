@@ -23,7 +23,7 @@
 #include <ostream>
 
 #include "vmime/vmime.hpp"
-#include "vmime/platforms/posix/handler.hpp"
+#include "vmime/platforms/posix/posixHandler.hpp"
 
 #include "tests/parser/testUtils.hpp"
 
