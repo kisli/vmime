@@ -154,6 +154,8 @@ const unsigned int posixHandler::getProcessId() const
 }
 
 
+#if VMIME_HAVE_MESSAGING_FEATURES
+
 vmime::messaging::socketFactory* posixHandler::getSocketFactory
 	(const vmime::string& /* name */) const
 {
@@ -168,11 +170,17 @@ vmime::messaging::timeoutHandlerFactory* posixHandler::getTimeoutHandlerFactory
 	return (NULL);
 }
 
+#endif
+
+
+#if VMIME_HAVE_FILESYSTEM_FEATURES
 
 vmime::utility::fileSystemFactory* posixHandler::getFileSystemFactory() const
 {
 	return (m_fileSysFactory);
 }
+
+#endif
 
 
 void posixHandler::wait() const
