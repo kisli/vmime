@@ -23,6 +23,7 @@
 
 #include "path.hpp"
 #include "../config.hpp"
+#include "stream.hpp"
 
 
 #if VMIME_HAVE_FILESYSTEM_FEATURES
@@ -59,7 +60,8 @@ public:
 };
 
 
-// TODO: fileWriter
+/** Write to a file.
+  */
 
 class fileWriter
 {
@@ -71,7 +73,8 @@ public:
 };
 
 
-// TODO: fileReader
+/** Read from a file.
+  */
 
 class fileReader
 {
@@ -91,7 +94,7 @@ class file
 public:
 
 	typedef utility::path path;
-	typedef long length_type;
+	typedef unsigned long length_type;
 
 
 	virtual ~file() { }
@@ -136,13 +139,13 @@ public:
 	  *
 	  * @return file size (in bytes)
 	  */
-	virtual const length_type length() = 0;
+	virtual const length_type getLength() = 0;
 
 	/** Return the full path of this file/directory.
 	  *
 	  * @return full path of the file
 	  */
-	virtual const path& fullPath() const = 0;
+	virtual const path& getFullPath() const = 0;
 
 	/** Test whether this file/directory exists.
 	  *
@@ -166,18 +169,29 @@ public:
 	  */
 	virtual void remove() = 0;
 
+	/** Return an object capable of writing to this file.
+	  *
+	  * @return file writer object
+	  */
+	virtual fileWriter* getFileWriter() = 0;
 
-	// TODO     virtual fileWriter* getFileWriter() = 0;
-	// TODO     virtual fileReader* getFileReader() = 0;
+	/** Return an object capable of reading from this file.
+	  *
+	  * @return file reader object
+	  */
+	virtual fileReader* getFileReader() = 0;
 
 	/** Enumerate files contained in this directory.
 	  *
 	  * @return file iterator to enumerate files
 	  * @throw exceptions::not_a_directory if this is not a directory
 	  */
-	virtual fileIterator* getFiles() const;
+	virtual fileIterator* getFiles() const = 0;
 };
 
+
+/** Constructs file objects.
+  */
 
 class fileSystemFactory
 {
