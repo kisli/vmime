@@ -42,6 +42,7 @@ namespace mediaTypes
 	const string::value_type* const TEXT_RICHTEXT = "richtext";
 	const string::value_type* const TEXT_ENRICHED = "enriched";
 	const string::value_type* const TEXT_RFC822_HEADERS = "rfc822-headers";  // RFC-1892
+	const string::value_type* const TEXT_DIRECTORY = "directory";  // RFC-2426
 
 	const string::value_type* const MULTIPART_MIXED = "mixed";
 	const string::value_type* const MULTIPART_RELATED = "related";
