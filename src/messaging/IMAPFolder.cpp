@@ -662,7 +662,11 @@ void IMAPFolder::registerMessage(IMAPMessage* msg)
 
 void IMAPFolder::unregisterMessage(IMAPMessage* msg)
 {
-	std::remove(m_messages.begin(), m_messages.end(), msg);
+	std::vector <IMAPMessage*>::iterator it =
+		std::find(m_messages.begin(), m_messages.end(), msg);
+
+	if (it != m_messages.end())
+		m_messages.erase(it);
 }
 
 

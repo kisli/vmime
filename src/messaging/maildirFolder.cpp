@@ -168,7 +168,11 @@ void maildirFolder::registerMessage(maildirMessage* msg)
 
 void maildirFolder::unregisterMessage(maildirMessage* msg)
 {
-	std::remove(m_messages.begin(), m_messages.end(), msg);
+	std::vector <maildirMessage*>::iterator it =
+		std::find(m_messages.begin(), m_messages.end(), msg);
+
+	if (it != m_messages.end())
+		m_messages.erase(it);
 }
 
 
