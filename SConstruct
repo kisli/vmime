@@ -200,36 +200,36 @@ libvmime_messaging_proto_sources = [
 	[
 		'pop3',
 		[
-			'messaging/POP3Store.cpp',       'messaging/POP3Store.hpp',
-			'messaging/POP3Folder.cpp',      'messaging/POP3Folder.hpp',
-			'messaging/POP3Message.cpp',     'messaging/POP3Message.hpp'
+			'messaging/pop3/POP3Store.cpp',       'messaging/pop3/POP3Store.hpp',
+			'messaging/pop3/POP3Folder.cpp',      'messaging/pop3/POP3Folder.hpp',
+			'messaging/pop3/POP3Message.cpp',     'messaging/pop3/POP3Message.hpp'
 		]
 	],
 	[
 		'smtp',
 		[
-			'messaging/SMTPTransport.cpp',   'messaging/SMTPTransport.hpp'
+			'messaging/smtp/SMTPTransport.cpp',   'messaging/smtp/SMTPTransport.hpp'
 		]
 	],
 	[
 		'imap',
 		[
-			'messaging/IMAPConnection.cpp',  'messaging/IMAPConnection.hpp',
-			'messaging/IMAPStore.cpp',       'messaging/IMAPStore.hpp',
-			'messaging/IMAPFolder.cpp',      'messaging/IMAPFolder.hpp',
-			'messaging/IMAPMessage.cpp',     'messaging/IMAPMessage.hpp',
-			'messaging/IMAPTag.cpp',         'messaging/IMAPTag.hpp',
-			'messaging/IMAPUtils.cpp',       'messaging/IMAPUtils.hpp',
-			'messaging/IMAPParser.hpp'
+			'messaging/imap/IMAPConnection.cpp',  'messaging/imap/IMAPConnection.hpp',
+			'messaging/imap/IMAPStore.cpp',       'messaging/imap/IMAPStore.hpp',
+			'messaging/imap/IMAPFolder.cpp',      'messaging/imap/IMAPFolder.hpp',
+			'messaging/imap/IMAPMessage.cpp',     'messaging/imap/IMAPMessage.hpp',
+			'messaging/imap/IMAPTag.cpp',         'messaging/imap/IMAPTag.hpp',
+			'messaging/imap/IMAPUtils.cpp',       'messaging/imap/IMAPUtils.hpp',
+			'messaging/imap/IMAPParser.hpp'
 		]
 	],
 	[
 		'maildir',
 		[
-			'messaging/maildirStore.cpp',    'messaging/maildirStore.hpp',
-			'messaging/maildirFolder.cpp',   'messaging/maildirFolder.hpp',
-			'messaging/maildirMessage.cpp',  'messaging/maildirMessage.hpp',
-			'messaging/maildirUtils.cpp',    'messaging/maildirUtils.hpp'
+			'messaging/maildir/maildirStore.cpp',    'messaging/maildir/maildirStore.hpp',
+			'messaging/maildir/maildirFolder.cpp',   'messaging/maildir/maildirFolder.hpp',
+			'messaging/maildir/maildirMessage.cpp',  'messaging/maildir/maildirMessage.hpp',
+			'messaging/maildir/maildirUtils.cpp',    'messaging/maildir/maildirUtils.hpp'
 		]
 	]
 ]

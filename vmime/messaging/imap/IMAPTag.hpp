@@ -17,35 +17,50 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#ifndef VMIME_BUILDING_DOC
+#ifndef VMIME_MESSAGING_IMAP_IMAPTAG_HPP_INCLUDED
+#define VMIME_MESSAGING_IMAP_IMAPTAG_HPP_INCLUDED
 
 
-#define REGISTER_SERVICE(p_class, p_name) \
-	vmime::messaging::service::initializer <vmime::messaging::p_class> p_name(#p_name)
+#include "vmime/types.hpp"
 
 
-#if VMIME_BUILTIN_MESSAGING_PROTO_POP3
-	#include "vmime/messaging/pop3/POP3Store.hpp"
-	REGISTER_SERVICE(pop3::POP3Store, pop3);
-#endif
+namespace vmime {
+namespace messaging {
+namespace imap {
 
 
-#if VMIME_BUILTIN_MESSAGING_PROTO_SMTP
-	#include "vmime/messaging/smtp/SMTPTransport.hpp"
-	REGISTER_SERVICE(smtp::SMTPTransport, smtp);
-#endif
+class IMAPTag
+{
+private:
+
+	IMAPTag(const int number);
+	IMAPTag(const IMAPTag& tag);
+
+public:
+
+	IMAPTag();
+
+	IMAPTag& operator++();           // ++IMAPTag
+	const IMAPTag operator++(int);   // IMAPTag++
+
+	const int number() const;
+
+	operator string() const;
+
+private:
+
+	void generate();
+
+	static const int sm_maxNumber;
+
+	int m_number;
+	string m_tag;
+};
 
 
-#if VMIME_BUILTIN_MESSAGING_PROTO_IMAP
-	#include "vmime/messaging/imap/IMAPStore.hpp"
-	REGISTER_SERVICE(imap::IMAPStore, imap);
-#endif
+} // imap
+} // messaging
+} // vmime
 
 
-#if VMIME_BUILTIN_MESSAGING_PROTO_MAILDIR
-	#include "vmime/messaging/maildir/maildirStore.hpp"
-	REGISTER_SERVICE(maildir::maildirStore, maildir);
-#endif
-
-
-#endif // VMIME_BUILDING_DOC
+#endif // VMIME_MESSAGING_IMAP_IMAPTAG_HPP_INCLUDED
