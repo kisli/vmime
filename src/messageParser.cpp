@@ -125,7 +125,7 @@ void messageParser::findAttachments(const bodyPart& part)
 			const contentDispositionField& cdf = dynamic_cast<contentDispositionField&>
 				(*hdr.findField(fields::CONTENT_DISPOSITION));
 
-			if (cdf.getValue().getName() != dispositionTypes::INLINE)
+			if (cdf.getValue().getName() != contentDispositionTypes::INLINE)
 			{
 				contentDispField = &cdf;
 				isAttachment = true;

@@ -100,7 +100,7 @@ void htmlTextPart::generateIn(bodyPart& /* message */, bodyPart& parent) const
 
 			objPart->getHeader()->ContentType().setValue((*it)->getType());
 			objPart->getHeader()->ContentId().setValue(messageId("<" + id + ">"));
-			objPart->getHeader()->ContentDisposition().setValue(disposition(dispositionTypes::INLINE));
+			objPart->getHeader()->ContentDisposition().setValue(contentDisposition(contentDispositionTypes::INLINE));
 			objPart->getHeader()->ContentTransferEncoding().setValue((*it)->getEncoding());
 				//encoding(encodingTypes::BASE64);
 

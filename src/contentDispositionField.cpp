@@ -33,7 +33,7 @@ contentDispositionField::contentDispositionField()
 
 
 contentDispositionField::contentDispositionField(contentDispositionField&)
-	: headerField(), parameterizedHeaderField(), genericField <disposition>()
+	: headerField(), parameterizedHeaderField(), genericField <contentDisposition>()
 {
 }
 

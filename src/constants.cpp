@@ -75,8 +75,8 @@ namespace encodingTypes
 }
 
 
-// Disposition types  = "RFC-2183)
-namespace dispositionTypes
+// Content disposition types
+namespace contentDispositionTypes
 {
 	const string::value_type* const INLINE = "inline";
 	const string::value_type* const ATTACHMENT = "attachment";

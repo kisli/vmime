@@ -17,7 +17,7 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "disposition.hpp"
+#include "contentDisposition.hpp"
 #include "utility/stringUtils.hpp"
 
 
@@ -25,25 +25,25 @@ namespace vmime
 {
 
 
-disposition::disposition()
-	: m_name(dispositionTypes::INLINE)
+contentDisposition::contentDisposition()
+	: m_name(contentDispositionTypes::INLINE)
 {
 }
 
 
-disposition::disposition(const string& name)
+contentDisposition::contentDisposition(const string& name)
 	: m_name(stringUtils::toLower(name))
 {
 }
 
 
-disposition::disposition(const disposition& type)
+contentDisposition::contentDisposition(const contentDisposition& type)
 	: component(), m_name(type.m_name)
 {
 }
 
 
-void disposition::parse(const string& buffer, const string::size_type position,
+void contentDisposition::parse(const string& buffer, const string::size_type position,
 	const string::size_type end, string::size_type* newPosition)
 {
 	m_name = stringUtils::toLower(string(buffer.begin() + position, buffer.begin() + end));
@@ -55,7 +55,7 @@ void disposition::parse(const string& buffer, const string::size_type position,
 }
 
 
-void disposition::generate(utility::outputStream& os, const string::size_type /* maxLineLength */,
+void contentDisposition::generate(utility::outputStream& os, const string::size_type /* maxLineLength */,
 	const string::size_type curLinePos, string::size_type* newLinePos) const
 {
 	os << m_name;
@@ -65,59 +65,59 @@ void disposition::generate(utility::outputStream& os, const string::size_type /*
 }
 
 
-disposition& disposition::operator=(const string& name)
+contentDisposition& contentDisposition::operator=(const string& name)
 {
 	m_name = stringUtils::toLower(name);
 	return (*this);
 }
 
 
-const bool disposition::operator==(const disposition& value) const
+const bool contentDisposition::operator==(const contentDisposition& value) const
 {
 	return (stringUtils::toLower(m_name) == value.m_name);
 }
 
 
-const bool disposition::operator!=(const disposition& value) const
+const bool contentDisposition::operator!=(const contentDisposition& value) const
 {
 	return !(*this == value);
 }
 
 
-disposition* disposition::clone() const
+contentDisposition* contentDisposition::clone() const
 {
-	return new disposition(*this);
+	return new contentDisposition(*this);
 }
 
 
-void disposition::copyFrom(const component& other)
+void contentDisposition::copyFrom(const component& other)
 {
-	const disposition& d = dynamic_cast <const disposition&>(other);
+	const contentDisposition& d = dynamic_cast <const contentDisposition&>(other);
 
 	m_name = d.m_name;
 }
 
 
-disposition& disposition::operator=(const disposition& other)
+contentDisposition& contentDisposition::operator=(const contentDisposition& other)
 {
 	copyFrom(other);
 	return (*this);
 }
 
 
-const string& disposition::getName() const
+const string& contentDisposition::getName() const
 {
 	return (m_name);
 }
 
 
-void disposition::setName(const string& name)
+void contentDisposition::setName(const string& name)
 {
 	m_name = name;
 }
 
 
-const std::vector <const component*> disposition::getChildComponents() const
+const std::vector <const component*> contentDisposition::getChildComponents() const
 {
 	return std::vector <const component*>();
 }

@@ -79,8 +79,8 @@ namespace vmime
 	}
 
 
-	/** Constants for disposition types (RFC-2183). */
-	namespace dispositionTypes
+	/** Constants for content disposition types (RFC-2183). */
+	namespace contentDispositionTypes
 	{
 		extern const string::value_type* const INLINE;
 		extern const string::value_type* const ATTACHMENT;

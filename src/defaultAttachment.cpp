@@ -78,7 +78,7 @@ void defaultAttachment::generatePart(bodyPart& part) const
 	part.getHeader()->ContentType().setValue(m_type);
 	if (!m_desc.isEmpty()) part.getHeader()->ContentDescription().setValue(m_desc);
 	part.getHeader()->ContentTransferEncoding().setValue(m_encoding);
-	part.getHeader()->ContentDisposition().setValue(disposition(dispositionTypes::ATTACHMENT));
+	part.getHeader()->ContentDisposition().setValue(contentDisposition(contentDispositionTypes::ATTACHMENT));
 
 	// Set contents
 	part.getBody()->getContents() = m_data;

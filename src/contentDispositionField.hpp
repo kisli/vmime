@@ -24,7 +24,7 @@
 #include "parameterizedHeaderField.hpp"
 #include "genericField.hpp"
 
-#include "disposition.hpp"
+#include "contentDisposition.hpp"
 #include "dateTime.hpp"
 
 
@@ -32,7 +32,7 @@ namespace vmime
 {
 
 
-class contentDispositionField : public parameterizedHeaderField, public genericField <disposition>
+class contentDispositionField : public parameterizedHeaderField, public genericField <contentDisposition>
 {
 	friend class headerFieldFactory::registerer <contentDispositionField>;
 

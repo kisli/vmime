@@ -37,7 +37,7 @@
 #include "charset.hpp"
 #include "text.hpp"
 #include "encoding.hpp"
-#include "disposition.hpp"
+#include "contentDisposition.hpp"
 #include "mailbox.hpp"
 #include "mailboxGroup.hpp"
 #include "mailboxList.hpp"

@@ -17,8 +17,8 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#ifndef VMIME_DISPOSITION_HPP_INCLUDED
-#define VMIME_DISPOSITION_HPP_INCLUDED
+#ifndef VMIME_CONTENTDISPOSITION_HPP_INCLUDED
+#define VMIME_CONTENTDISPOSITION_HPP_INCLUDED
 
 
 #include "base.hpp"
@@ -32,40 +32,40 @@ namespace vmime
 /** Content disposition (basic type).
   */
 
-class disposition : public component
+class contentDisposition : public component
 {
 public:
 
-	disposition();
-	disposition(const string& name);
-	disposition(const disposition& disp);
+	contentDisposition();
+	contentDisposition(const string& name);
+	contentDisposition(const contentDisposition& disp);
 
 
-	/** Return the disposition type.
+	/** Return the content disposition type.
 	  * See the constants in vmime::dispositionTypes.
 	  *
-	  * @return name of the encoding (eg. "inline")
+	  * @return name of the disposition type (eg. "inline")
 	  */
 	const string& getName() const;
 
-	/** Set the disposition type.
+	/** Set the content disposition type.
 	  * See the constants in vmime::dispositionTypes.
 	  *
-	  * @param name name of the encoding
+	  * @param name name of the disposition type
 	  */
 	void setName(const string& name);
 
-	disposition* clone() const;
+	contentDisposition* clone() const;
 	void copyFrom(const component& other);
-	disposition& operator=(const disposition& other);
+	contentDisposition& operator=(const contentDisposition& other);
 
 	const std::vector <const component*> getChildComponents() const;
 
 
-	disposition& operator=(const string& name);
+	contentDisposition& operator=(const string& name);
 
-	const bool operator==(const disposition& value) const;
-	const bool operator!=(const disposition& value) const;
+	const bool operator==(const contentDisposition& value) const;
+	const bool operator!=(const contentDisposition& value) const;
 
 private:
 
@@ -85,4 +85,4 @@ public:
 } // vmime
 
 
-#endif // VMIME_DISPOSITION_HPP_INCLUDED
+#endif // VMIME_CONTENTDISPOSITION_HPP_INCLUDED
