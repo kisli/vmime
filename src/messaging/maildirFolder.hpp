@@ -120,6 +120,8 @@ private:
 	void registerMessage(maildirMessage* msg);
 	void unregisterMessage(maildirMessage* msg);
 
+	const utility::file::path getMessageFSPath(const int number);
+
 	void onStoreDisconnected();
 
 	void onClose();

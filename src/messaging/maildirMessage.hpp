@@ -69,7 +69,9 @@ public:
 
 	void fetchPartHeader(part& p);
 
-protected:
+private:
+
+	void fetch(maildirFolder* folder, const int options);
 
 	void onFolderClosed();
 

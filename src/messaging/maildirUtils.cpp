@@ -110,10 +110,11 @@ const int maildirUtils::extractFlags(const utility::file::path::component& comp)
 	{
 		switch (flagsString[i])
 		{
-		case 'S': case 's': flags |= message::FLAG_SEEN; break;
 		case 'R': case 'r': flags |= message::FLAG_REPLIED; break;
-
-		// TODO: more flags
+		case 'S': case 's': flags |= message::FLAG_SEEN; break;
+		case 'T': case 't': flags |= message::FLAG_DELETED; break;
+		case 'F': case 'f': flags |= message::FLAG_MARKED; break;
+		case 'P': case 'p': flags |= message::FLAG_PASSED; break;
 		}
 	}
 
@@ -121,12 +122,33 @@ const int maildirUtils::extractFlags(const utility::file::path::component& comp)
 }
 
 
-/*
-const utility::file::component maildirUtils::changeFlags
-	(const utility::file::component& comp, const int flags)
+const utility::file::path::component maildirUtils::buildFlags(const int flags)
 {
+	string str;
+	str.reserve(6);
+
+	if (flags & message::FLAG_REPLIED) str += "R";
+	if (flags & message::FLAG_SEEN)    str += "S";
+	if (flags & message::FLAG_DELETED) str += "T";
+	if (flags & message::FLAG_MARKED)  str += "F";
+	if (flags & message::FLAG_PASSED)  str += "P";
+
+	return (utility::file::path::component(str));
 }
-*/
+
+
+const utility::file::path::component maildirUtils::buildFilename
+	(const utility::file::path::component& id, const int flags)
+{
+	return (buildFilename(id, buildFlags(flags)));
+}
+
+
+const utility::file::path::component maildirUtils::buildFilename
+	(const utility::file::path::component& id, const utility::file::path::component& flags)
+{
+	return (utility::path::component(id.getBuffer() + ":" + flags.getBuffer()));
+}
 
 
 

@@ -78,6 +78,7 @@ public:
 	  * a maildir sub-folder. The name of the directory should not start
 	  * with '.' to be listed as a sub-folder.
 	  *
+	  * @param file reference to a file-system directory
 	  * @return true if the specified directory is a maildir sub-folder,
 	  * false otherwise
 	  */
@@ -87,6 +88,7 @@ public:
 	  * Eg: for the filename "1071577232.28549.m03s:2,RS", it will
 	  * return "1071577232.28549.m03s".
 	  *
+	  * @param filename filename part
 	  * @return part of the filename that corresponds to the unique
 	  * identifier of the message
 	  */
@@ -96,9 +98,35 @@ public:
 	  * Eg: for the filename "1071577232.28549.m03s:2,RS", it will
 	  * return (message::FLAG_SEEN | message::FLAG_REPLIED).
 	  *
+	  * @param comp filename part
 	  * @return message flags extracted from the specified filename
 	  */
 	static const int extractFlags(const utility::file::path::component& comp);
+
+	/** Return a string representing the specified message flags.
+	  * Eg: for (message::FLAG_SEEN | message::FLAG_REPLIED), it will
+	  * return "RS".
+	  *
+	  * @param flags set of flags
+	  * @return message flags in a string representation
+	  */
+	static const utility::file::path::component buildFlags(const int flags);
+
+	/** Build a filename with the specified id and flags.
+	  *
+	  * @param id id part of the filename
+	  * @param flags flags part of the filename
+	  * @return message filename
+	  */
+	static const utility::file::path::component buildFilename(const utility::file::path::component& id, const utility::file::path::component& flags);
+
+	/** Build a filename with the specified id and flags.
+	  *
+	  * @param id id part of the filename
+	  * @param flags set of flags
+	  * @return message filename
+	  */
+	static const utility::file::path::component buildFilename(const utility::file::path::component& id, const int flags);
 
 private:
 

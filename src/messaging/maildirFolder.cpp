@@ -500,9 +500,7 @@ void maildirFolder::deleteMessage(const int num)
 	if (m_messageInfos[num].type == messageInfos::TYPE_DELETED)
 		return;
 
-	m_messageInfos[num].type = messageInfos::TYPE_DELETED;
-
-	// Delete file from file system
+	// Mark message as deleted
 	try
 	{
 		utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
@@ -510,10 +508,17 @@ void maildirFolder::deleteMessage(const int num)
 		utility::file::path curDirPath = maildirUtils::getFolderFSPath
 			(m_store, m_path, maildirUtils::FOLDER_PATH_CUR);
 
-		utility::auto_ptr <utility::file> file = fsf->create
-			(curDirPath / m_messageInfos[num].path);
+		const utility::file::path::component path = m_messageInfos[num].path;
+		utility::auto_ptr <utility::file> file = fsf->create(curDirPath / path);
 
-		file->remove();
+		const utility::file::path::component newPath = maildirUtils::buildFilename
+			(maildirUtils::extractId(path),
+			 maildirUtils::extractFlags(path) | message::FLAG_DELETED);
+
+		file->rename(curDirPath / newPath);
+
+		m_messageInfos[num].type = messageInfos::TYPE_DELETED;
+		m_messageInfos[num].path = newPath;
 	}
 	catch (exceptions::filesystem_exception& e)
 	{
@@ -556,7 +561,7 @@ void maildirFolder::deleteMessages(const int from, const int to)
 	const int to2 = (to == -1) ? m_messageCount : to;
 	const int count = to - from + 1;
 
-	// Delete files from file system
+	// Mark messages as deleted
 	utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
 
 	utility::file::path curDirPath = maildirUtils::getFolderFSPath
@@ -566,14 +571,19 @@ void maildirFolder::deleteMessages(const int from, const int to)
 	{
 		if (m_messageInfos[i].type != messageInfos::TYPE_DELETED)
 		{
-			m_messageInfos[i].type = messageInfos::TYPE_DELETED;
-
 			try
 			{
-				utility::auto_ptr <utility::file> file = fsf->create
-					(curDirPath / m_messageInfos[i].path);
+				const utility::file::path::component path = m_messageInfos[i].path;
+				utility::auto_ptr <utility::file> file = fsf->create(curDirPath / path);
 
-				file->remove();
+				const utility::file::path::component newPath = maildirUtils::buildFilename
+					(maildirUtils::extractId(path),
+					 maildirUtils::extractFlags(path) | message::FLAG_DELETED);
+
+				file->rename(curDirPath / newPath);
+
+				m_messageInfos[i].type = messageInfos::TYPE_DELETED;
+				m_messageInfos[i].path = newPath;
 			}
 			catch (exceptions::filesystem_exception& e)
 			{
@@ -626,7 +636,7 @@ void maildirFolder::deleteMessages(const std::vector <int>& nums)
 
 	std::sort(list.begin(), list.end());
 
-	// Delete files from file system
+	// Mark messages as deleted
 	utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
 
 	utility::file::path curDirPath = maildirUtils::getFolderFSPath
@@ -639,14 +649,20 @@ void maildirFolder::deleteMessages(const std::vector <int>& nums)
 
 		if (m_messageInfos[num].type != messageInfos::TYPE_DELETED)
 		{
-			m_messageInfos[num].type = messageInfos::TYPE_DELETED;
-
 			try
 			{
+				const utility::file::path::component path = m_messageInfos[num].path;
 				utility::auto_ptr <utility::file> file = fsf->create
 					(curDirPath / m_messageInfos[num].path);
 
-				file->remove();
+				const utility::file::path::component newPath = maildirUtils::buildFilename
+					(maildirUtils::extractId(path),
+					 maildirUtils::extractFlags(path) | message::FLAG_DELETED);
+
+				file->rename(curDirPath / newPath);
+
+				m_messageInfos[num].type = messageInfos::TYPE_DELETED;
+				m_messageInfos[num].path = newPath;
 			}
 			catch (exceptions::filesystem_exception& e)
 			{
@@ -654,7 +670,6 @@ void maildirFolder::deleteMessages(const std::vector <int>& nums)
 			}
 		}
 	}
-
 
 	// Update local flags
 	for (std::vector <maildirMessage*>::iterator it =
@@ -782,13 +797,39 @@ store* maildirFolder::getStore()
 void maildirFolder::fetchMessages(std::vector <message*>& msg,
 	const int options, progressionListener* progress)
 {
-	// TODO
+	if (!m_store)
+		throw exceptions::illegal_state("Store disconnected");
+	else if (!isOpen())
+		throw exceptions::illegal_state("Folder not open");
+
+	const int total = msg.size();
+	int current = 0;
+
+	if (progress)
+		progress->start(total);
+
+	for (std::vector <message*>::iterator it = msg.begin() ;
+	     it != msg.end() ; ++it)
+	{
+		dynamic_cast <maildirMessage*>(*it)->fetch(this, options);
+
+		if (progress)
+			progress->progress(++current, total);
+	}
+
+	if (progress)
+		progress->stop(total);
 }
 
 
 void maildirFolder::fetchMessage(message* msg, const int options)
 {
-	// TODO
+	if (!m_store)
+		throw exceptions::illegal_state("Store disconnected");
+	else if (!isOpen())
+		throw exceptions::illegal_state("Folder not open");
+
+	dynamic_cast <maildirMessage*>(msg)->fetch(this, options);
 }
 
 
@@ -796,6 +837,15 @@ const int maildirFolder::getFetchCapabilities() const
 {
 	return (FETCH_ENVELOPE | FETCH_STRUCTURE | FETCH_CONTENT_INFO |
 	        FETCH_FLAGS | FETCH_SIZE | FETCH_FULL_HEADER | FETCH_UID);
+}
+
+
+const utility::file::path maildirFolder::getMessageFSPath(const int number)
+{
+	utility::file::path curDirPath = maildirUtils::getFolderFSPath
+		(m_store, m_path, maildirUtils::FOLDER_PATH_CUR);
+
+	return (curDirPath / m_messageInfos[number].path);
 }
 
 

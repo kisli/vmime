@@ -19,6 +19,10 @@
 
 #include "maildirMessage.hpp"
 #include "maildirFolder.hpp"
+#include "maildirUtils.hpp"
+
+#include "../exception.hpp"
+#include "../platformDependant.hpp"
 
 
 namespace vmime {
@@ -26,7 +30,7 @@ namespace messaging {
 
 
 maildirMessage::maildirMessage(maildirFolder* folder, const int num)
-	: m_folder(folder), m_num(num)
+	: m_folder(folder), m_num(num), m_size(-1), m_flags(FLAG_UNDEFINED)
 {
 	m_folder->registerMessage(this);
 }
@@ -47,61 +51,107 @@ void maildirMessage::onFolderClosed()
 
 const int maildirMessage::getNumber() const
 {
+	return (m_num);
 }
 
 
 const message::uid maildirMessage::getUniqueId() const
 {
+	// TODO
 }
 
 
 const int maildirMessage::getSize() const
 {
+	if (m_size == -1)
+		throw exceptions::unfetched_object();
+
+	return (m_size);
 }
 
 
 const bool maildirMessage::isExpunged() const
 {
+	// TODO
 }
 
 
 const structure& maildirMessage::getStructure() const
 {
+	// TODO
 }
 
 
 structure& maildirMessage::getStructure()
 {
+	// TODO
 }
 
 
 const header& maildirMessage::getHeader() const
 {
+	// TODO
 }
 
 
 const int maildirMessage::getFlags() const
 {
+	if (m_flags == FLAG_UNDEFINED)
+		throw exceptions::unfetched_object();
+
+	return (m_flags);
 }
 
 
 void maildirMessage::setFlags(const int flags, const int mode)
 {
+	// TODO
 }
 
 
-void maildirMessage::extract(utility::outputStream& os, progressionListener* progress, const int start, const int length) const
+void maildirMessage::extract(utility::outputStream& os,
+	progressionListener* progress, const int start, const int length) const
 {
+	// TODO
 }
 
 
-void maildirMessage::extractPart(const part& p, utility::outputStream& os, progressionListener* progress, const int start, const int length) const
+void maildirMessage::extractPart(const part& p, utility::outputStream& os,
+	progressionListener* progress, const int start, const int length) const
 {
+	// TODO
 }
 
 
 void maildirMessage::fetchPartHeader(part& p)
 {
+	// TODO
+}
+
+
+void maildirMessage::fetch(maildirFolder* folder, const int options)
+{
+	if (m_folder != folder)
+		throw exceptions::folder_not_found();
+
+	utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
+
+	const utility::file::path path = folder->getMessageFSPath(m_num);
+	utility::auto_ptr <utility::file> file = fsf->create(path);
+
+	/*
+	TODO: FETCH_ENVELOPE
+	TODO: FETCH_STRUCTURE
+	TODO: FETCH_CONTENT_INFO
+	TODO: FETCH_FULL_HEADER
+	TODO: FETCH_UID
+	*/
+
+	if (options & folder::FETCH_FLAGS)
+		m_flags = maildirUtils::extractFlags(path.getLastComponent());
+
+	if (options & folder::FETCH_SIZE)
+		m_size = file->length();
 }
 
 
