@@ -67,8 +67,9 @@ public:
 	FIELD_ACCESS(Sender,                  SENDER,                    mailboxField)
 	FIELD_ACCESS(ReplyTo,                 REPLY_TO,                  mailboxField)
 	FIELD_ACCESS(DeliveredTo,             DELIVERED_TO,              mailboxField)
-	FIELD_ACCESS(InReplyTo,               IN_REPLY_TO,               messageIdField)
+	FIELD_ACCESS(InReplyTo,               IN_REPLY_TO,               messageIdSequenceField)
 	FIELD_ACCESS(ReturnPath,              RETURN_PATH,               pathField)
+	FIELD_ACCESS(References,              REFERENCES,                messageIdSequenceField)
 
 	FIELD_ACCESS(To,                      TO,                        addressListField)
 	FIELD_ACCESS(Cc,                      CC,                        addressListField)

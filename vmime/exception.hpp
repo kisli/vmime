@@ -164,6 +164,18 @@ public:
 };
 
 
+class no_such_message_id : public vmime::exception
+{
+public:
+
+	no_such_message_id(const exception& other = NO_EXCEPTION);
+	~no_such_message_id() throw();
+
+	exception* clone() const;
+	const string name() const;
+};
+
+
 class no_such_address : public vmime::exception
 {
 public:

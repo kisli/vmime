@@ -34,6 +34,8 @@ namespace vmime
 
 class messageId : public component
 {
+	friend class messageIdSequence;
+
 public:
 
 	messageId();
@@ -106,6 +108,18 @@ public:
 	// Component parsing & assembling
 	void parse(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition = NULL);
 	void generate(utility::outputStream& os, const string::size_type maxLineLength = lineLengthLimits::infinite, const string::size_type curLinePos = 0, string::size_type* newLinePos = NULL) const;
+
+protected:
+
+	/** Parse a message-id from an input buffer.
+	  *
+	  * @param buffer input buffer
+	  * @param position position in the input buffer
+	  * @param end end position in the input buffer
+	  * @param newPosition will receive the new position in the input buffer
+	  * @return a new message-id object, or null if no more message-id can be parsed from the input buffer
+	  */
+	static messageId* parseNext(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition);
 };
 
 

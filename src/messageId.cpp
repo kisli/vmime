@@ -129,19 +129,58 @@ void messageId::parse(const string& buffer, const string::size_type position,
 }
 
 
+messageId* messageId::parseNext(const string& buffer, const string::size_type position,
+	const string::size_type end, string::size_type* newPosition)
+{
+	string::size_type pos = position;
+
+	while (pos < end && parserHelpers::isSpace(buffer[pos]))
+		++pos;
+
+	if (pos != end)
+	{
+		const string::size_type begin = pos;
+
+		while (pos < end && !parserHelpers::isSpace(buffer[pos]))
+			++pos;
+
+		messageId* mid = new messageId();
+		mid->parse(buffer, begin, pos, NULL);
+
+		if (newPosition != NULL)
+			*newPosition = pos;
+
+		return (mid);
+	}
+
+	if (newPosition != NULL)
+		*newPosition = end;
+
+	return (NULL);
+}
+
+
 const string messageId::getId() const
 {
 	return (m_left + '@' + m_right);
 }
 
 
-void messageId::generate(utility::outputStream& os, const string::size_type /* maxLineLength */,
+void messageId::generate(utility::outputStream& os, const string::size_type maxLineLength,
 	const string::size_type curLinePos, string::size_type* newLinePos) const
 {
+	string::size_type pos = curLinePos;
+
+	if (curLinePos + m_left.length() + m_right.length() + 3 > maxLineLength)
+	{
+		os << NEW_LINE_SEQUENCE;
+		pos = NEW_LINE_SEQUENCE_LENGTH;
+	}
+
 	os << '<' << m_left << '@' << m_right << '>';
 
 	if (newLinePos)
-		*newLinePos = curLinePos + m_left.length() + m_right.length() + 3;
+		*newLinePos = pos + m_left.length() + m_right.length() + 3;
 }
 
 

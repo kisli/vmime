@@ -176,6 +176,7 @@ namespace fields
 	const string::value_type* const CONTENT_ID = "Content-Id";
 	const string::value_type* const CONTENT_LOCATION = "Content-Location";
 	const string::value_type* const IN_REPLY_TO = "In-Reply-To";
+	const string::value_type* const REFERENCES = "References";
 
 	const string::value_type* const X_MAILER = "X-Mailer";
 	const string::value_type* const X_PRIORITY = "X-Priority";

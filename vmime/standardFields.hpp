@@ -35,6 +35,7 @@
 #include "vmime/mailboxList.hpp"
 #include "vmime/disposition.hpp"
 #include "vmime/path.hpp"
+#include "vmime/messageIdSequence.hpp"
 
 
 namespace vmime
@@ -96,6 +97,7 @@ DECLARE_STANDARD_FIELD(relayField, relay);
 DECLARE_STANDARD_FIELD(mailboxListField, mailboxList);
 DECLARE_STANDARD_FIELD(dispositionField, disposition);
 DECLARE_STANDARD_FIELD(pathField, path);
+DECLARE_STANDARD_FIELD(messageIdSequenceField, messageIdSequence);
 
 
 #undef DECLARE_STANDARD_FIELD

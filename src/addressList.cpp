@@ -70,29 +70,24 @@ void addressList::parse(const string& buffer, const string::size_type position,
 void addressList::generate(utility::outputStream& os, const string::size_type maxLineLength,
 	const string::size_type curLinePos, string::size_type* newLinePos) const
 {
+	string::size_type pos = curLinePos;
+
 	if (!m_list.empty())
 	{
-		string::size_type pos = curLinePos;
-		std::vector <address*>::const_iterator i = m_list.begin();
-
-		for ( ; ; )
+		for (std::vector <address*>::const_iterator i = m_list.begin() ; ; )
 		{
 			(*i)->generate(os, maxLineLength - 2, pos, &pos);
 
-			if (++i != m_list.end())
-			{
-				os << ", ";
-				pos += 2;
-			}
-			else
-			{
+			if (++i == m_list.end())
 				break;
-			}
-		}
 
-		if (newLinePos)
-			*newLinePos = pos;
+			os << ", ";
+			pos += 2;
+		}
 	}
+
+	if (newLinePos)
+		*newLinePos = pos;
 }
 
 

@@ -163,6 +163,18 @@ const string no_such_mailbox::name() const { return "no_such_mailbox"; }
 
 
 //
+// no_such_message_id
+//
+
+no_such_message_id::~no_such_message_id() throw() {}
+no_such_message_id::no_such_message_id(const exception& other)
+	: exception("Message-Id not found.", other) {}
+
+exception* no_such_message_id::clone() const { return new no_such_message_id(*this); }
+const string no_such_message_id::name() const { return "no_such_message_id"; }
+
+
+//
 // no_such_address
 //
 
