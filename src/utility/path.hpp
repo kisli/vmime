@@ -140,6 +140,8 @@ public:
 	const bool isParentOf(const path& p) const;
 
 	/** Rename a parent component in the path.
+	  * Example: path("a/b/c/d").renameParent("a/b", "x/y/z")
+	  * will return path("x/y/z/c/d").
 	  *
 	  * @param oldPath old parent path
 	  * @param newPath new parent path
