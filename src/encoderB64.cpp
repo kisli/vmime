@@ -186,6 +186,11 @@ const utility::stream::size_type encoderB64::decode(utility::inputStream& in, ut
 
 	while (bufferPos < bufferLength || !in.eof())
 	{
+		bytes[0] = '=';
+		bytes[1] = '=';
+		bytes[2] = '=';
+		bytes[3] = '=';
+
 		// Need to get more data?
 		if (bufferPos >= bufferLength)
 		{
