@@ -27,6 +27,23 @@ namespace vmime {
 namespace mdn {
 
 
+void MDNHelper::attachMDNRequest(message* msg, const mailboxList& mailboxes)
+{
+	header* hdr = msg->getHeader();
+
+	hdr->DispositionNotificationTo().setValue(mailboxes);
+}
+
+
+void MDNHelper::attachMDNRequest(message* msg, const mailbox& mbox)
+{
+	mailboxList mboxList;
+	mboxList.appendMailbox(mbox.clone());
+
+	attachMDNRequest(msg, mboxList);
+}
+
+
 const std::vector <sendableMDNInfos> MDNHelper::getPossibleMDNs(const message* msg)
 {
 	std::vector <sendableMDNInfos> result;

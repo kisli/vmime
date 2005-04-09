@@ -37,6 +37,20 @@ class MDNHelper
 {
 public:
 
+	/** Attach a MDN request to the specified message.
+	  *
+	  * @param msg message in which to add a MDN request
+	  * @param mailboxes list of mailboxes to which the MDN will be sent
+	  */
+	static void attachMDNRequest(message* msg, const mailboxList& mailboxes);
+
+	/** Attach a MDN request to the specified message.
+	  *
+	  * @param msg message in which to add a MDN request
+	  * @param mbox mailbox to which the MDN will be sent
+	  */
+	static void attachMDNRequest(message* msg, const mailbox& mbox);
+
 	/** Return a list of possible MDNs that can be generated
 	  * for the specified message.
 	  *
