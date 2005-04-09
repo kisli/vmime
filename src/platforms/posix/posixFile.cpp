@@ -80,7 +80,7 @@ vmime::utility::file* posixFileIterator::nextElement()
 
 void posixFileIterator::getNextElement()
 {
-	while (m_dirEntry = ::readdir(m_dir))
+	while ((m_dirEntry = ::readdir(m_dir)) != NULL)
 	{
 		const char* name = m_dirEntry->d_name;
 		const int len = ::strlen(name);
