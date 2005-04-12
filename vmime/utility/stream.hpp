@@ -23,6 +23,7 @@
 
 #include <istream>
 #include <ostream>
+#include <sstream>
 
 #include "vmime/types.hpp"
 
@@ -118,6 +119,18 @@ template <int N>
 outputStream& operator<<(outputStream& os, const char (&str)[N])
 {
 	os.write(str, N - 1);
+	return (os);
+}
+
+
+template <typename T>
+outputStream& operator<<(outputStream& os, const T& t)
+{
+	std::ostringstream oss;
+	oss << t;
+
+	os << oss.str();
+
 	return (os);
 }
 

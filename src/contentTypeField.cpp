@@ -40,13 +40,13 @@ contentTypeField::contentTypeField(contentTypeField&)
 
 const string contentTypeField::getBoundary() const
 {
-	return (dynamic_cast <const defaultParameter&>(*findParameter("boundary")).getValue());
+	return (dynamic_cast <const defaultParameter&>(*findParameter("boundary")).getValue().getBuffer());
 }
 
 
 void contentTypeField::setBoundary(const string& boundary)
 {
-	dynamic_cast <defaultParameter&>(*getParameter("boundary")).setValue(boundary);
+	dynamic_cast <defaultParameter&>(*getParameter("boundary")).setValue(word(boundary));
 }
 
 
@@ -64,13 +64,13 @@ void contentTypeField::setCharset(const charset& ch)
 
 const string contentTypeField::getReportType() const
 {
-	return (dynamic_cast <const defaultParameter&>(*findParameter("report-type")).getValue());
+	return (dynamic_cast <const defaultParameter&>(*findParameter("report-type")).getValue().getBuffer());
 }
 
 
 void contentTypeField::setReportType(const string& reportType)
 {
-	dynamic_cast <defaultParameter&>(*getParameter("report-type")).setValue(reportType);
+	dynamic_cast <defaultParameter&>(*getParameter("report-type")).setValue(word(reportType));
 }
 
 

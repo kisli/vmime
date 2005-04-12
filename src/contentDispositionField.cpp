@@ -74,13 +74,13 @@ void contentDispositionField::setReadDate(const datetime& readDate)
 }
 
 
-const string contentDispositionField::getFilename() const
+const word contentDispositionField::getFilename() const
 {
 	return (dynamic_cast <const defaultParameter&>(*findParameter("filename")).getValue());
 }
 
 
-void contentDispositionField::setFilename(const string& filename)
+void contentDispositionField::setFilename(const word& filename)
 {
 	dynamic_cast <defaultParameter&>(*getParameter("filename")).setValue(filename);
 }
@@ -88,13 +88,13 @@ void contentDispositionField::setFilename(const string& filename)
 
 const string contentDispositionField::getSize() const
 {
-	return (dynamic_cast <const defaultParameter&>(*findParameter("size")).getValue());
+	return (dynamic_cast <const defaultParameter&>(*findParameter("size")).getValue().getBuffer());
 }
 
 
 void contentDispositionField::setSize(const string& size)
 {
-	dynamic_cast <defaultParameter&>(*getParameter("size")).setValue(size);
+	dynamic_cast <defaultParameter&>(*getParameter("size")).setValue(word(size));
 }
 
 

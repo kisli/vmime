@@ -22,6 +22,7 @@
 
 
 #include "vmime/genericParameter.hpp"
+#include "vmime/defaultParameter.hpp"
 
 // Inclusion for field value types
 #include "vmime/dateTime.hpp"
@@ -42,7 +43,6 @@ namespace vmime
 	}
 
 
-DECLARE_STANDARD_PARAM(defaultParameter, string);
 DECLARE_STANDARD_PARAM(dateParameter, datetime);
 DECLARE_STANDARD_PARAM(charsetParameter, charset);
 

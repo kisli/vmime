@@ -32,6 +32,10 @@ namespace vmime
 {
 
 
+/** A header field that can also contain parameters (name=value pairs).
+  * Parameters can be created using vmime::parameterFactory.
+  */
+
 class parameterizedHeaderField : virtual public headerField
 {
 	friend class headerFieldFactory::registerer <parameterizedHeaderField>;

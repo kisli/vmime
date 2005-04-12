@@ -63,6 +63,23 @@ void parameter::parse(const string& buffer, const string::size_type position,
 	getValue().parse(buffer, position, end, newPosition);
 
 	setParsedBounds(position, end);
+
+	if (newPosition)
+		*newPosition = end;
+}
+
+
+void parameter::parse(const std::vector <valueChunk>& chunks)
+{
+	string value;
+
+	for (std::vector <valueChunk>::const_iterator it = chunks.begin() ;
+	     it != chunks.end() ; ++it)
+	{
+		value += (*it).data;
+	}
+
+	getValue().parse(value, 0, value.length(), NULL);
 }
 
 
@@ -87,10 +104,13 @@ void parameter::generate(utility::outputStream& os, const string::size_type maxL
 void parameter::generateValue(utility::outputStream& os, const string::size_type /* maxLineLength */,
 	const string::size_type curLinePos, string::size_type* newLinePos) const
 {
+	// NOTE: This default implementation does not support parameter
+	// values that span on several lines ('defaultParameter' can do
+	// that, following rules specified in RFC-2231).
+
 	std::ostringstream valueStream;
 	utility::outputStreamAdapter valueStreamV(valueStream);
 
-	// TODO: can we imagine having values that span on multiple lines?
 	getValue().generate(valueStreamV, lineLengthLimits::infinite, 0, NULL);
 
 	const string value(valueStream.str());

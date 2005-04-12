@@ -36,6 +36,20 @@ class parameter : public component
 
 public:
 
+#ifndef VMIME_BUILDING_DOC
+
+	/** A single section of a multi-section parameter,
+	  * as defined in RFC-2231/3. This is used when
+	  * calling parse() on the parameter.
+	  */
+	struct valueChunk
+	{
+		bool encoded;
+		string data;
+	};
+
+#endif // VMIME_BUILDING_DOC
+
 	parameter* clone() const;
 	void copyFrom(const component& other);
 	parameter& operator=(const parameter& other);
@@ -79,6 +93,8 @@ private:
 	string m_name;
 
 	void generateValue(utility::outputStream& os, const string::size_type maxLineLength, const string::size_type curLinePos, string::size_type* newLinePos) const;
+
+	virtual void parse(const std::vector <valueChunk>& chunks);
 };
 
 

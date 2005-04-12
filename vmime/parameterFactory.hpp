@@ -67,7 +67,23 @@ public:
 			(utility::stringUtils::toLower(name), &registerer<T>::creator));
 	}
 
+	/** Create a new parameter and parse its value. The returned parameter
+	  * can then be added in a vmime::parameterizedHeaderField object.
+	  *
+	  * @param name parameter name (ASCII characters only)
+	  * @param value value to be parsed
+	  * @return created parameter
+	  */
 	parameter* create(const string& name, const string& value = NULL_STRING);
+
+	/** Create a new parameter and set its value. The returned parameter
+	  * can then be added in a vmime::parameterizedHeaderField object.
+	  *
+	  * @param name parameter name (ASCII characters only)
+	  * @param value value to be set
+	  * @return created parameter
+	  */
+	parameter* create(const string& name, const component& value);
 };
 
 

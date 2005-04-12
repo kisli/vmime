@@ -26,6 +26,7 @@
 
 #include "vmime/contentDisposition.hpp"
 #include "vmime/dateTime.hpp"
+#include "vmime/word.hpp"
 
 
 namespace vmime
@@ -52,8 +53,8 @@ public:
 	const datetime& getReadDate() const;
 	void setReadDate(const datetime& readDate);
 
-	const string getFilename() const;
-	void setFilename(const string& filename);
+	const word getFilename() const;
+	void setFilename(const word& filename);
 
 	const string getSize() const;
 	void setSize(const string& size);
