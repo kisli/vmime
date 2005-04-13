@@ -110,4 +110,14 @@ std::ostream& operator<<(std::ostream& os, const vmime::addressList& list)
 }
 
 
+std::ostream& operator<<(std::ostream& os, const vmime::datetime& d)
+{
+	os << "[datetime: " << d.getYear() << "/" << d.getMonth() << "/" << d.getDay();
+	os << " " << d.getHour() << ":" << d.getMinute() << ":" << d.getSecond();
+	os << " #" << d.getZone() << "]";
+
+	return (os);
+}
+
+
 }

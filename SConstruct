@@ -321,6 +321,7 @@ libvmimetest_common = [
 
 libvmimetest_sources = [
 	[ 'tests/parser/bodyPartTest', [ 'tests/parser/bodyPartTest.cpp' ] ],
+	[ 'tests/parser/datetimeTest', [ 'tests/parser/datetimeTest.cpp' ] ],
 	[ 'tests/parser/dispositionTest', [ 'tests/parser/dispositionTest.cpp' ] ],
 	[ 'tests/parser/encoderTest', [ 'tests/parser/encoderTest.cpp' ] ],
 	[ 'tests/parser/headerTest', [ 'tests/parser/headerTest.cpp' ] ],
