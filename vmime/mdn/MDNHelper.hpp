@@ -92,6 +92,7 @@ public:
 	  *             to provide an easily-understood description of the
 	  *             condition(s) that caused the report to be generated.
 	  * @param ch charset of the text
+	  * @param expeditor expeditor of the MDN
 	  * @param dispo disposition information
 	  * @param reportingUA name of reporting user-agent (optional)
 	  * @param reportingUAProducts list of products in the reporting user-agent (optional)
