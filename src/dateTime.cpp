@@ -83,32 +83,44 @@ void datetime::parse(const string& buffer, const string::size_type position,
 			while (p < pend && parserHelpers::isSpace(*p)) ++p;
 		}
 
-		while (p < pend && !parserHelpers::isDigit(*p)) ++p;
+		bool dayParsed = false;
 
-		if (p < pend && parserHelpers::isDigit(*p))
+		if (parserHelpers::isAlpha(*p))
 		{
-			// Month day
-			int day = 0;
-
-			do
-			{
-				day = day * 10 + (*p - '0');
-				++p;
-			}
-			while (p < pend && parserHelpers::isDigit(*p));
-
-			m_day = (day >= 1 && day <= 31) ? day : 1;
-
-			while (p < pend && !parserHelpers::isSpace(*p)) ++p;
-			while (p < pend && parserHelpers::isSpace(*p)) ++p;
+			// Ill-formed date/time, this may be the month,
+			// so we skip day parsing (will be done later)
 		}
 		else
 		{
-			m_day = 1;
+			while (p < pend && !parserHelpers::isDigit(*p)) ++p;
 
-			// Skip everything to the next field
-			while (p < pend && !parserHelpers::isSpace(*p)) ++p;
-			while (p < pend && parserHelpers::isSpace(*p)) ++p;
+			if (p < pend && parserHelpers::isDigit(*p))
+			{
+				// Month day
+				int day = 0;
+
+				do
+				{
+					day = day * 10 + (*p - '0');
+					++p;
+				}
+				while (p < pend && parserHelpers::isDigit(*p));
+
+				m_day = (day >= 1 && day <= 31) ? day : 1;
+
+				while (p < pend && !parserHelpers::isSpace(*p)) ++p;
+				while (p < pend && parserHelpers::isSpace(*p)) ++p;
+			}
+			else
+			{
+				m_day = 1;
+
+				// Skip everything to the next field
+				while (p < pend && !parserHelpers::isSpace(*p)) ++p;
+				while (p < pend && parserHelpers::isSpace(*p)) ++p;
+			}
+
+			dayParsed = true;
 		}
 
 		if (p < pend && parserHelpers::isAlpha(*p))
@@ -215,29 +227,66 @@ void datetime::parse(const string& buffer, const string::size_type position,
 		{
 			m_month = JANUARY;
 
-			// Skip everything to the next field
+			if (parserHelpers::isDigit(*p))
+			{
+				// Here, we expected a month, but it maybe
+				// a ill-formed date, so try to parse a year
+				// (we don't skip anything).
+			}
+			else
+			{
+				// Skip everything to the next field
+				while (p < pend && !parserHelpers::isSpace(*p)) ++p;
+				while (p < pend && parserHelpers::isSpace(*p)) ++p;
+			}
+		}
+
+		if (!dayParsed && p < pend && parserHelpers::isDigit(*p))
+		{
+			// Month day
+			int day = 0;
+
+			do
+			{
+				day = day * 10 + (*p - '0');
+				++p;
+			}
+			while (p < pend && parserHelpers::isDigit(*p));
+
+			m_day = (day >= 1 && day <= 31) ? day : 1;
+
 			while (p < pend && !parserHelpers::isSpace(*p)) ++p;
 			while (p < pend && parserHelpers::isSpace(*p)) ++p;
 		}
 
 		if (p < pend && parserHelpers::isDigit(*p))
 		{
-			// Year
-			int year = 0;
-
-			do
+			// Check for ill-formed date/time and try to recover
+			if (p + 2 < pend && *(p + 2) == ':')
 			{
-				year = year * 10 + (*p - '0');
-				++p;
+				// Skip year (default to current), and advance
+				// to time parsing
+				m_year = now().getYear();
 			}
-			while (p < pend && parserHelpers::isDigit(*p));
+			else
+			{
+				// Year
+				int year = 0;
 
-			if (year < 70)         m_year = year + 2000;
-			else if (year < 1000)  m_year = year + 1900;
-			else                   m_year = year;
+				do
+				{
+					year = year * 10 + (*p - '0');
+					++p;
+				}
+				while (p < pend && parserHelpers::isDigit(*p));
 
-			while (p < pend && !parserHelpers::isSpace(*p)) ++p;
-			while (p < pend && parserHelpers::isSpace(*p)) ++p;
+				if (year < 70)         m_year = year + 2000;
+				else if (year < 1000)  m_year = year + 1900;
+				else                   m_year = year;
+
+				while (p < pend && !parserHelpers::isSpace(*p)) ++p;
+				while (p < pend && parserHelpers::isSpace(*p)) ++p;
+			}
 		}
 		else
 		{
@@ -709,6 +758,86 @@ void datetime::setHour(const int hour) { m_hour = hour; }
 void datetime::setMinute(const int minute) { m_minute = minute; }
 void datetime::setSecond(const int second) { m_second = second; }
 void datetime::setZone(const int zone) { m_zone = zone; }
+
+
+const bool datetime::operator==(const datetime& other) const
+{
+	return (m_year == other.m_year &&
+	        m_month == other.m_month &&
+	        m_day == other.m_day &&
+	        m_hour == other.m_hour &&
+	        m_minute == other.m_minute &&
+	        m_second == other.m_second &&
+	        m_zone == other.m_zone);
+}
+
+
+const bool datetime::operator!=(const datetime& other) const
+{
+	return (m_year != other.m_year ||
+	        m_month != other.m_month ||
+	        m_day != other.m_day ||
+	        m_hour != other.m_hour ||
+	        m_minute != other.m_minute ||
+	        m_second != other.m_second ||
+	        m_zone != other.m_zone);
+}
+
+
+const bool datetime::operator<(const datetime& other) const
+{
+	const datetime ut1 = utility::datetimeUtils::localTimeToUniversalTime(*this);
+	const datetime ut2 = utility::datetimeUtils::localTimeToUniversalTime(other);
+
+	return (ut1.m_year < ut2.m_year &&
+	        ut1.m_month < ut2.m_month &&
+	        ut1.m_day < ut2.m_day &&
+	        ut1.m_hour < ut2.m_hour &&
+	        ut1.m_minute < ut2.m_minute &&
+	        ut1.m_second < ut2.m_second);
+}
+
+
+const bool datetime::operator<=(const datetime& other) const
+{
+	const datetime ut1 = utility::datetimeUtils::localTimeToUniversalTime(*this);
+	const datetime ut2 = utility::datetimeUtils::localTimeToUniversalTime(other);
+
+	return (ut1.m_year <= ut2.m_year &&
+	        ut1.m_month <= ut2.m_month &&
+	        ut1.m_day <= ut2.m_day &&
+	        ut1.m_hour <= ut2.m_hour &&
+	        ut1.m_minute <= ut2.m_minute &&
+	        ut1.m_second <= ut2.m_second);
+}
+
+
+const bool datetime::operator>(const datetime& other) const
+{
+	const datetime ut1 = utility::datetimeUtils::localTimeToUniversalTime(*this);
+	const datetime ut2 = utility::datetimeUtils::localTimeToUniversalTime(other);
+
+	return (ut1.m_year > ut2.m_year &&
+	        ut1.m_month > ut2.m_month &&
+	        ut1.m_day > ut2.m_day &&
+	        ut1.m_hour > ut2.m_hour &&
+	        ut1.m_minute > ut2.m_minute &&
+	        ut1.m_second > ut2.m_second);
+}
+
+
+const bool datetime::operator>=(const datetime& other) const
+{
+	const datetime ut1 = utility::datetimeUtils::localTimeToUniversalTime(*this);
+	const datetime ut2 = utility::datetimeUtils::localTimeToUniversalTime(other);
+
+	return (ut1.m_year >= ut2.m_year &&
+	        ut1.m_month >= ut2.m_month &&
+	        ut1.m_day >= ut2.m_day &&
+	        ut1.m_hour >= ut2.m_hour &&
+	        ut1.m_minute >= ut2.m_minute &&
+	        ut1.m_second >= ut2.m_second);
+}
 
 
 } // vmime

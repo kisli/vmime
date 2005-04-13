@@ -218,6 +218,14 @@ public:
 
 	datetime* clone() const;
 
+	// Comparison
+	const bool operator==(const datetime& other) const;
+	const bool operator!=(const datetime& other) const;
+	const bool operator<(const datetime& other) const;
+	const bool operator<=(const datetime& other) const;
+	const bool operator>(const datetime& other) const;
+	const bool operator>=(const datetime& other) const;
+
 	// Current date and time
 	static const datetime now();
 
