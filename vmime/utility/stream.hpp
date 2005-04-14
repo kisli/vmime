@@ -27,6 +27,10 @@
 
 #include "vmime/types.hpp"
 
+#if defined(_MSC_VER) && (_MSC_VER <= 1200)  // VC++6
+#   include <cstring>
+#endif
+
 
 namespace vmime {
 namespace utility {
@@ -115,12 +119,24 @@ outputStream& operator<<(outputStream& os, const string& str);
 outputStream& operator<<(outputStream& os, const stream::value_type c);
 
 
+#if defined(_MSC_VER) && (_MSC_VER <= 1200)  // Internal compiler error with VC++6
+
+inline outputStream& operator<<(outputStream& os, const char* str)
+{
+	os.write(str, ::strlen(str));
+	return (os);
+}
+
+#else
+
 template <int N>
 outputStream& operator<<(outputStream& os, const char (&str)[N])
 {
 	os.write(str, N - 1);
 	return (os);
 }
+
+#endif // defined(_MSC_VER) && (_MSC_VER <= 1200)
 
 
 template <typename T>
