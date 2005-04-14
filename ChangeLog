@@ -2,6 +2,11 @@
 VERSION 0.7.1cvs
 ================
 
+2005-04-14  Vincent Richard  <vincent@vincent-richard.net>
+
+ * url.{hpp|cpp}, urlUtils.{hpp|cpp}: moved 'url' and 'urlUtils' from
+   'vmime::messaging' namespace to 'vmime::utility' namespace.
+
 2005-04-12  Vincent Richard  <vincent@vincent-richard.net>
 
  * Started version 0.7.1.

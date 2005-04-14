@@ -64,7 +64,7 @@ transport* session::getTransport(const string& protocol, authenticator* auth)
 }
 
 
-transport* session::getTransport(const messaging::url& url, authenticator* auth)
+transport* session::getTransport(const utility::url& url, authenticator* auth)
 {
 	service* sv = serviceFactory::getInstance()->create(this, url, auth);
 
@@ -98,7 +98,7 @@ store* session::getStore(const string& protocol, authenticator* auth)
 }
 
 
-store* session::getStore(const messaging::url& url, authenticator* auth)
+store* session::getStore(const utility::url& url, authenticator* auth)
 {
 	service* sv = serviceFactory::getInstance()->create(this, url, auth);
 

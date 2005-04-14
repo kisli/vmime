@@ -60,13 +60,13 @@ service* serviceFactory::create
 
 
 service* serviceFactory::create
-	(session* sess, const url& u, authenticator* auth)
+	(session* sess, const utility::url& u, authenticator* auth)
 {
 	service* serv = create(sess, u.getProtocol(), auth);
 
 	sess->getProperties()[serv->getInfos().getPropertyPrefix() + "server.address"] = u.getHost();
 
-	if (u.getPort() != url::UNSPECIFIED_PORT)
+	if (u.getPort() != utility::url::UNSPECIFIED_PORT)
 		sess->getProperties()[serv->getInfos().getPropertyPrefix() + "server.port"] = u.getPort();
 
 	// Path portion of the URL is used to point a specific folder (empty = root).

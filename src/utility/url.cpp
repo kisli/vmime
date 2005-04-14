@@ -17,17 +17,17 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "vmime/messaging/url.hpp"
+#include "vmime/utility/url.hpp"
 
 #include "vmime/parserHelpers.hpp"
-#include "vmime/messaging/urlUtils.hpp"
+#include "vmime/utility/urlUtils.hpp"
 #include "vmime/exception.hpp"
 
 #include <sstream>
 
 
 namespace vmime {
-namespace messaging {
+namespace utility {
 
 
 // Known protocols
@@ -302,5 +302,5 @@ void url::setPath(const string& path)
 }
 
 
-} // messaging
+} // utility
 } // vmime

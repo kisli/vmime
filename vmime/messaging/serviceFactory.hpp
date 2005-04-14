@@ -25,13 +25,14 @@
 
 #include "vmime/types.hpp"
 #include "vmime/base.hpp"
+
 #include "vmime/utility/stringUtils.hpp"
+#include "vmime/utility/url.hpp"
 
 #include "vmime/messaging/serviceInfos.hpp"
 #include "vmime/messaging/authenticator.hpp"
 #include "vmime/messaging/progressionListener.hpp"
 #include "vmime/messaging/timeoutHandler.hpp"
-#include "vmime/messaging/url.hpp"
 
 
 namespace vmime {
@@ -146,7 +147,7 @@ public:
 	  * @throw exceptions::no_service_available if no service is registered
 	  * for this protocol
 	  */
-	service* create(session* sess, const url& u, authenticator* auth = NULL);
+	service* create(session* sess, const utility::url& u, authenticator* auth = NULL);
 
 	/** Return information about a registered protocol.
 	  *

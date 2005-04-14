@@ -17,8 +17,8 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#ifndef VMIME_MESSAGING_URLUTILS_HPP_INCLUDED
-#define VMIME_MESSAGING_URLUTILS_HPP_INCLUDED
+#ifndef VMIME_UTILITY_URLUTILS_HPP_INCLUDED
+#define VMIME_UTILITY_URLUTILS_HPP_INCLUDED
 
 
 #include "vmime/types.hpp"
@@ -26,7 +26,7 @@
 
 
 namespace vmime {
-namespace messaging {
+namespace utility {
 
 
 /** Miscellaneous functions related to URLs.
@@ -47,8 +47,8 @@ public:
 };
 
 
-} // messaging
+} // utility
 } // vmime
 
 
-#endif // VMIME_MESSAGING_URLUTILS_HPP_INCLUDED
+#endif // VMIME_UTILITY_URLUTILS_HPP_INCLUDED

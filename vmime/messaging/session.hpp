@@ -23,7 +23,7 @@
 
 #include "vmime/messaging/authenticator.hpp"
 #include "vmime/messaging/progressionListener.hpp"
-#include "vmime/messaging/url.hpp"
+#include "vmime/utility/url.hpp"
 
 #include "vmime/propertySet.hpp"
 
@@ -79,7 +79,7 @@ public:
 	  * credentials by reading the session properties "auth.username" and "auth.password".
 	  * @return a new transport service
 	  */
-	transport* getTransport(const messaging::url& url, authenticator* auth = NULL);
+	transport* getTransport(const utility::url& url, authenticator* auth = NULL);
 
 	/** Return a transport service instance for the protocol specified
 	  * in the session properties.
@@ -111,7 +111,7 @@ public:
 	  * credentials by reading the session properties "auth.username" and "auth.password".
 	  * @return a new store service
 	  */
-	store* getStore(const messaging::url& url, authenticator* auth = NULL);
+	store* getStore(const utility::url& url, authenticator* auth = NULL);
 
 	/** Properties for the session and for the services.
 	  */

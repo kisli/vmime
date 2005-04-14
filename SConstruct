@@ -155,6 +155,8 @@ libvmime_sources = [
 	'utility/stream.cpp', 'utility/stream.hpp',
 	'utility/stringProxy.cpp', 'utility/stringProxy.hpp',
 	'utility/stringUtils.cpp', 'utility/stringUtils.hpp',
+	'utility/url.cpp', 'utility/url.hpp',
+	'utility/urlUtils.cpp', 'utility/urlUtils.hpp',
 	'mdn/MDNHelper.cpp', 'mdn/MDNHelper.hpp',
 	'mdn/MDNInfos.cpp', 'mdn/MDNInfos.hpp',
 	'mdn/receivedMDNInfos.cpp', 'mdn/receivedMDNInfos.hpp',
@@ -192,9 +194,7 @@ libvmime_messaging_sources = [
 	'messaging/socket.hpp',
 	'messaging/store.hpp',
 	'messaging/timeoutHandler.hpp',
-	'messaging/transport.hpp',
-	'messaging/url.cpp', 'messaging/url.hpp',
-	'messaging/urlUtils.cpp', 'messaging/urlUtils.hpp'
+	'messaging/transport.hpp'
 ]
 
 libvmime_messaging_proto_sources = [

@@ -17,12 +17,12 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "vmime/messaging/urlUtils.hpp"
+#include "vmime/utility/urlUtils.hpp"
 #include "vmime/parserHelpers.hpp"
 
 
 namespace vmime {
-namespace messaging {
+namespace utility {
 
 
 const string urlUtils::encode(const string& s)
@@ -90,5 +90,5 @@ const string urlUtils::decode(const string& s)
 }
 
 
-} // messaging
+} // utility
 } // vmime

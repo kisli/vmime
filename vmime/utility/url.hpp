@@ -17,8 +17,8 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#ifndef VMIME_MESSAGING_URL_HPP_INCLUDED
-#define VMIME_MESSAGING_URL_HPP_INCLUDED
+#ifndef VMIME_UTILITY_URL_HPP_INCLUDED
+#define VMIME_UTILITY_URL_HPP_INCLUDED
 
 
 #include "vmime/types.hpp"
@@ -26,7 +26,7 @@
 
 
 namespace vmime {
-namespace messaging {
+namespace utility {
 
 
 /** This class represents a Uniform Resource Locator (a pointer
@@ -52,7 +52,8 @@ public:
 
 	/** Construct an URL from a string (parse the URL components).
 	  *
-	  * @param s full URL string (eg. http://www.vmime.org:80/download.html
+	  * @param s full URL string (eg. http://www.vmime.org:80/download.html)
+	  * @throw exceptions::malformed_url if URL is malformed
 	  */
 	url(const string& s);
 
@@ -181,8 +182,8 @@ private:
 };
 
 
-} // messaging
+} // utility
 } // vmime
 
 
-#endif // VMIME_MESSAGING_URL_HPP_INCLUDED
+#endif // VMIME_UTILITY_URL_HPP_INCLUDED
