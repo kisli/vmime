@@ -2,6 +2,11 @@
 VERSION 0.7.1cvs
 ================
 
+2005-04-15  Vincent Richard  <vincent@vincent-richard.net>
+
+ * url.{hpp|cpp}, urlUtils.{hpp|cpp}: fixed a lot of bugs in URLs parsing
+   and encoding/decoding + added unit tests.
+
 2005-04-14  Vincent Richard  <vincent@vincent-richard.net>
 
  * url.{hpp|cpp}, urlUtils.{hpp|cpp}: moved 'url' and 'urlUtils' from
