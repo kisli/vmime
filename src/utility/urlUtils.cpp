@@ -34,17 +34,18 @@ const string urlUtils::encode(const string& s)
 	{
 		const char_t c = *it;
 
-		if (parserHelpers::isPrint(c) && c != '%')
+		if (parserHelpers::isPrint(c) && !parserHelpers::isSpace(c) && c != '%')
 		{
 			result += c;
 		}
 		else
 		{
 			char hex[4];
+			const unsigned char k = static_cast <unsigned char>(c);
 
 			hex[0] = '%';
-			hex[1] = c / 16;
-			hex[2] = c % 16;
+			hex[1] = "0123456789ABCDEF"[k / 16];
+			hex[2] = "0123456789ABCDEF"[k % 16];
 			hex[3] = 0;
 
 			result += hex;
@@ -71,7 +72,35 @@ const string urlUtils::decode(const string& s)
 			const char_t p = (++it != s.end() ? *it : 0);
 			const char_t q = (++it != s.end() ? *it : 0);
 
-			result += static_cast <string::value_type>(p * 16 + q);
+			unsigned char r = 0;
+
+			switch (p)
+			{
+			case 0: r = '?'; break;
+			case 'a': case 'A': r = 10; break;
+			case 'b': case 'B': r = 11; break;
+			case 'c': case 'C': r = 12; break;
+			case 'd': case 'D': r = 13; break;
+			case 'e': case 'E': r = 14; break;
+			case 'f': case 'F': r = 15; break;
+			default: r = p - '0'; break;
+			}
+
+			r *= 16;
+
+			switch (q)
+			{
+			case 0: r = '?'; break;
+			case 'a': case 'A': r += 10; break;
+			case 'b': case 'B': r += 11; break;
+			case 'c': case 'C': r += 12; break;
+			case 'd': case 'D': r += 13; break;
+			case 'e': case 'E': r += 14; break;
+			case 'f': case 'F': r += 15; break;
+			default: r += q - '0'; break;
+			}
+
+			result += static_cast <string::value_type>(r);
 
 			if (it != s.end())
 				++it;

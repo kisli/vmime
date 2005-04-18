@@ -1124,6 +1124,8 @@ AM_CONFIG_HEADER([config.h])
 
 AM_MAINTAINER_MODE
 
+VMIME_ADDITIONAL_DEFINES=""
+
 
 #
 # Check compilers, processors, etc
@@ -1429,6 +1431,16 @@ x*)
 	;;
 esac
 
+
+#
+# Detect some platform-specific stuff
+#
+
+if test "x$VMIME_DETECT_PLATFORM" = "xwindows"; then
+	AC_CHECK_HEADER(mlang.h, [VMIME_ADDITIONAL_DEFINES="$VMIME_ADDITIONAL_DEFINES HAVE_MLANG_H"])
+fi
+
+
 """)
 
 
@@ -1615,9 +1627,20 @@ typedef unsigned ${VMIME_TYPE_INT32} vmime_uint32;
 			+ " $VMIME_BUILTIN_PLATFORM_" + p + " \n")
 
 	configure_in.write("""
-
-#endif // VMIME_CONFIG_HPP_INCLUDED
 " > vmime/config.hpp
+
+
+# Additional defines
+echo "// Additional defines" >> vmime/config.hpp
+
+for d in $VMIME_ADDITIONAL_DEFINES ; do
+	echo "#define VMIME_$d 1" >> vmime/config.hpp
+done
+
+
+echo "" >> vmime/config.hpp
+echo "#endif // VMIME_CONFIG_HPP_INCLUDED" >> vmime/config.hpp
+
 
 AC_MSG_RESULT([
 +=================+

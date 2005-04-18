@@ -181,12 +181,12 @@ void url::parse(const string& str)
 
 	if (colonPos == string::npos)
 	{
-		host = hostPart;
+		host = utility::stringUtils::trim(hostPart);
 	}
 	else
 	{
-		host = string(hostPart.begin(), hostPart.begin() + colonPos);
-		port = string(hostPart.begin() + colonPos + 1, hostPart.end());
+		host = utility::stringUtils::trim(string(hostPart.begin(), hostPart.begin() + colonPos));
+		port = utility::stringUtils::trim(string(hostPart.begin() + colonPos + 1, hostPart.end()));
 	}
 
 	// Path
@@ -198,8 +198,12 @@ void url::parse(const string& str)
 	// Some sanity check
 	if (proto.empty())
 		throw exceptions::malformed_url("No protocol specified");
-	else if (host.empty() && path.empty())  // Accept empty host (eg. "file:///home/vincent/mydoc")
-		throw exceptions::malformed_url("No host specified");
+	else if (host.empty())
+	{
+		// Accept empty host (eg. "file:///home/vincent/mydoc")
+		if (proto != PROTOCOL_FILE)
+			throw exceptions::malformed_url("No host specified");
+	}
 
 	bool onlyDigit = true;
 
@@ -216,6 +220,9 @@ void url::parse(const string& str)
 	port_t portNum = 0;
 
 	iss >> portNum;
+
+	if (portNum == 0)
+		portNum = UNSPECIFIED_PORT;
 
 	// Now, save URL parts
 	m_protocol = proto;

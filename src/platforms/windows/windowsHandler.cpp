@@ -18,11 +18,17 @@
 //
 
 #include "vmime/platforms/windows/windowsHandler.hpp"
+#include "vmime/config.hpp"
 
 #include <time.h>
 #include <locale.h>
 #include <process.h>
-#include <mlang.h>
+#include <windows.h>  // for winnls.h
+
+#ifdef VMIME_HAVE_MLANG_H
+#   include <mlang.h>
+#endif
+
 
 namespace vmime {
 namespace platforms {
@@ -62,7 +68,7 @@ const vmime::datetime windowsHandler::getCurrentLocalTime() const
 	const time_t t(::time(NULL));
 
 	// Get the local time
-#ifdef _REENTRANT
+#if defined(_REENTRANT) && defined(localtime_r)
 	tm local;
 	::localtime_r(&t, &local);
 #else
@@ -70,7 +76,7 @@ const vmime::datetime windowsHandler::getCurrentLocalTime() const
 #endif
 
 	// Get the UTC time
-#ifdef _REENTRANT
+#if defined(_REENTRANT) && defined(gmtime_r)
 	tm gmt;
 	::gmtime_r(&t, &gmt);
 #else
@@ -94,8 +100,9 @@ const vmime::datetime windowsHandler::getCurrentLocalTime() const
 
 const vmime::charset windowsHandler::getLocaleCharset() const
 {
+#ifdef VMIME_HAVE_MLANG_H
 	char szCharset[256];
-	
+
 	CoInitialize(NULL);
 	{
 		IMultiLanguage* pMultiLanguage;
@@ -111,15 +118,66 @@ const vmime::charset windowsHandler::getLocaleCharset() const
 		pMultiLanguage->GetCodePageInfo(codePage, &cpInfo);
 
 		int nLengthW = lstrlenW(cpInfo.wszBodyCharset) + 1;
-		
+
 		WideCharToMultiByte(codePage, 0, cpInfo.wszBodyCharset, nLengthW, szCharset, sizeof(szCharset), NULL, NULL );
-		
+
 		pMultiLanguage->Release();
 
-	}  
+	}
 	CoUninitialize();
 
 	return vmime::charset(szCharset);
+#else // VMIME_HAVE_MLANG_H
+	vmime::string ch = vmime::charsets::ISO8859_1; // default
+
+	switch (GetACP())
+	{
+	case 437: ch = vmime::charsets::CP_437; break;
+	case 737: ch = vmime::charsets::CP_737; break;
+	case 775: ch = vmime::charsets::CP_775; break;
+	case 850: ch = vmime::charsets::CP_850; break;
+	case 852: ch = vmime::charsets::CP_852; break;
+	case 853: ch = vmime::charsets::CP_853; break;
+	case 855: ch = vmime::charsets::CP_855; break;
+	case 857: ch = vmime::charsets::CP_857; break;
+	case 858: ch = vmime::charsets::CP_858; break;
+	case 860: ch = vmime::charsets::CP_860; break;
+	case 861: ch = vmime::charsets::CP_861; break;
+	case 862: ch = vmime::charsets::CP_862; break;
+	case 863: ch = vmime::charsets::CP_863; break;
+	case 864: ch = vmime::charsets::CP_864; break;
+	case 865: ch = vmime::charsets::CP_865; break;
+	case 866: ch = vmime::charsets::CP_866; break;
+	case 869: ch = vmime::charsets::CP_869; break;
+	case 874: ch = vmime::charsets::CP_874; break;
+
+	case 1125: ch = vmime::charsets::CP_1125; break;
+	case 1250: ch = vmime::charsets::CP_1250; break;
+	case 1251: ch = vmime::charsets::CP_1251; break;
+	case 1252: ch = vmime::charsets::CP_1252; break;
+	case 1253: ch = vmime::charsets::CP_1253; break;
+	case 1254: ch = vmime::charsets::CP_1254; break;
+	case 1255: ch = vmime::charsets::CP_1255; break;
+	case 1256: ch = vmime::charsets::CP_1256; break;
+	case 1257: ch = vmime::charsets::CP_1257; break;
+
+	case 28591: ch = vmime::charsets::ISO8859_1; break;
+	case 28592: ch = vmime::charsets::ISO8859_2; break;
+	case 28593: ch = vmime::charsets::ISO8859_3; break;
+	case 28594: ch = vmime::charsets::ISO8859_4; break;
+	case 28595: ch = vmime::charsets::ISO8859_5; break;
+	case 28596: ch = vmime::charsets::ISO8859_6; break;
+	case 28597: ch = vmime::charsets::ISO8859_7; break;
+	case 28598: ch = vmime::charsets::ISO8859_8; break;
+	case 28599: ch = vmime::charsets::ISO8859_9; break;
+	case 28605: ch = vmime::charsets::ISO8859_15; break;
+
+	case 65000: ch = vmime::charsets::UTF_7; break;
+	case 65001: ch = vmime::charsets::UTF_8; break;
+	}
+
+	return (vmime::charset(ch));
+#endif
 }
 
 
