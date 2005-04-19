@@ -191,15 +191,16 @@ void defaultParameter::generate(utility::outputStream& os, const string::size_ty
 	// also generate a normal "7bit/us-ascii" parameter
 	string::size_type pos = curLinePos;
 
-	if (pos + name.length() + 10 > maxLineLength)
+	if (pos + name.length() + 10 + value.length() > maxLineLength)
 	{
 		os << NEW_LINE_SEQUENCE;
 		pos = NEW_LINE_SEQUENCE_LENGTH;
 	}
 
 	bool needQuoting = false;
+	string::size_type valueLength = 0;
 
-	for (string::size_type i = 0 ; (i < value.length()) && (pos < maxLineLength - 4) ; ++i)
+	for (string::size_type i = 0 ; (i < value.length()) && (pos < maxLineLength - 4) ; ++i, ++valueLength)
 	{
 		switch (value[i])
 		{
@@ -227,6 +228,8 @@ void defaultParameter::generate(utility::outputStream& os, const string::size_ty
 			break;
 		}
 	}
+
+	const bool cutValue = (valueLength != value.length());  // has the value been cut?
 
 	if (needQuoting)
 	{
@@ -269,7 +272,7 @@ void defaultParameter::generate(utility::outputStream& os, const string::size_ty
 
 	// Also generate an extended parameter if the value contains 8-bit characters
 	// or is too long for a single line
-	if (extended || (value.length() >= (maxLineLength - name.length() + 3)))
+	if (extended || cutValue)
 	{
 		os << ';';
 		++pos;

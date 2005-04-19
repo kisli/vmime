@@ -2,6 +2,11 @@
 VERSION 0.7.1cvs
 ================
 
+2005-04-19  Vincent Richard  <vincent@vincent-richard.net>
+
+ * defaultParameter.cpp: fixed a bug in implementation of RFC-2231 (values
+   were cut if longer than maxLineLength, and no line wrapping occured).
+
 2005-04-15  Vincent Richard  <vincent@vincent-richard.net>
 
  * url.{hpp|cpp}, urlUtils.{hpp|cpp}: fixed a lot of bugs in URLs parsing
