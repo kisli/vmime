@@ -86,6 +86,42 @@ namespace
 			assert_eq("1", "Fri, 8 Jul 2005 04:05:06 +0123", d1.generate());
 		}
 
+		void testCompare()
+		{
+			// Date1 = Date2
+			vmime::datetime d1(2005, 4, 22, 14, 6, 0, vmime::datetime::GMT2);
+			vmime::datetime d2(2005, 4, 22, 10, 6, 0, vmime::datetime::GMT_2);
+
+			assert_eq("1.1", true,  d1 == d2);
+			assert_eq("1.2", false, d1 != d2);
+			assert_eq("1.3", true,  d1 <= d2);
+			assert_eq("1.4", false, d1 <  d2);
+			assert_eq("1.5", true,  d1 >= d2);
+			assert_eq("1.6", false, d1 >  d2);
+
+			// Date1 < Date2
+			vmime::datetime d3(2005, 4, 22, 14, 6, 0);
+			vmime::datetime d4(2005, 4, 22, 15, 6, 0);
+
+			assert_eq("2.1", false, d3 == d4);
+			assert_eq("2.2", true,  d3 != d4);
+			assert_eq("2.3", true,  d3 <= d4);
+			assert_eq("2.4", true,  d3 <  d4);
+			assert_eq("2.5", false, d3 >= d4);
+			assert_eq("2.6", false, d3 >  d4);
+
+			// Date1 > Date2
+			vmime::datetime d5(2005, 4, 22, 15, 6, 0);
+			vmime::datetime d6(2005, 4, 22, 14, 6, 0);
+
+			assert_eq("3.1", false, d5 == d6);
+			assert_eq("3.2", true,  d5 != d6);
+			assert_eq("3.3", false, d5 <= d6);
+			assert_eq("3.4", false, d5 <  d6);
+			assert_eq("3.5", true,  d5 >= d6);
+			assert_eq("3.6", true,  d5 >  d6);
+		}
+
 	public:
 
 		datetimeTest() : suite("vmime::datetime")
@@ -95,6 +131,7 @@ namespace
 
 			add("Parse", testcase(this, "Parse", &datetimeTest::testParse));
 			add("Generate", testcase(this, "Generate", &datetimeTest::testGenerate));
+			add("Compare", testcase(this, "Compare", &datetimeTest::testCompare));
 
 			suite::main().add("vmime::datetime", this);
 		}

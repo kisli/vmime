@@ -793,12 +793,12 @@ const bool datetime::operator<(const datetime& other) const
 	const datetime ut1 = utility::datetimeUtils::localTimeToUniversalTime(*this);
 	const datetime ut2 = utility::datetimeUtils::localTimeToUniversalTime(other);
 
-	return ((ut1.m_year   <  ut2.m_year) ||
-	        (ut1.m_year   == ut2.m_year   && ut1.m_month  < ut2.m_month)  ||
-	        (ut1.m_month  == ut2.m_month  && ut1.m_day    < ut2.m_day)    ||
-	        (ut1.m_day    == ut2.m_day    && ut1.m_hour   < ut2.m_hour)   ||
-	        (ut1.m_hour   == ut2.m_hour   && ut1.m_minute < ut2.m_minute) ||
-	        (ut1.m_minute == ut2.m_minute && ut1.m_second < ut2.m_second));
+	return ((ut1.m_year    <  ut2.m_year) ||
+	        ((ut1.m_year   == ut2.m_year)   && ((ut1.m_month  < ut2.m_month)  ||
+	        ((ut1.m_month  == ut2.m_month)  && ((ut1.m_day    < ut2.m_day)    ||
+	        ((ut1.m_day    == ut2.m_day)    && ((ut1.m_hour   < ut2.m_hour)   ||
+	        ((ut1.m_hour   == ut2.m_hour)   && ((ut1.m_minute < ut2.m_minute) ||
+	        ((ut1.m_minute == ut2.m_minute) && ((ut1.m_second < ut2.m_second))))))))))));
 }
 
 
@@ -807,12 +807,12 @@ const bool datetime::operator<=(const datetime& other) const
 	const datetime ut1 = utility::datetimeUtils::localTimeToUniversalTime(*this);
 	const datetime ut2 = utility::datetimeUtils::localTimeToUniversalTime(other);
 
-	return ((ut1.m_year   <  ut2.m_year) ||
-	        (ut1.m_year   == ut2.m_year   && ut1.m_month  <  ut2.m_month)  ||
-	        (ut1.m_month  == ut2.m_month  && ut1.m_day    <  ut2.m_day)    ||
-	        (ut1.m_day    == ut2.m_day    && ut1.m_hour   <  ut2.m_hour)   ||
-	        (ut1.m_hour   == ut2.m_hour   && ut1.m_minute <  ut2.m_minute) ||
-	        (ut1.m_minute == ut2.m_minute && ut1.m_second <= ut2.m_second));
+	return ((ut1.m_year    <  ut2.m_year) ||
+	        ((ut1.m_year   == ut2.m_year)   && ((ut1.m_month  <  ut2.m_month)  ||
+	        ((ut1.m_month  == ut2.m_month)  && ((ut1.m_day    <  ut2.m_day)    ||
+	        ((ut1.m_day    == ut2.m_day)    && ((ut1.m_hour   <  ut2.m_hour)   ||
+	        ((ut1.m_hour   == ut2.m_hour)   && ((ut1.m_minute <  ut2.m_minute) ||
+	        ((ut1.m_minute == ut2.m_minute) && ((ut1.m_second <= ut2.m_second))))))))))));
 }
 
 
@@ -821,12 +821,12 @@ const bool datetime::operator>(const datetime& other) const
 	const datetime ut1 = utility::datetimeUtils::localTimeToUniversalTime(*this);
 	const datetime ut2 = utility::datetimeUtils::localTimeToUniversalTime(other);
 
-	return ((ut1.m_year   >  ut2.m_year) ||
-	        (ut1.m_year   == ut2.m_year   && ut1.m_month  > ut2.m_month)  ||
-	        (ut1.m_month  == ut2.m_month  && ut1.m_day    > ut2.m_day)    ||
-	        (ut1.m_day    == ut2.m_day    && ut1.m_hour   > ut2.m_hour)   ||
-	        (ut1.m_hour   == ut2.m_hour   && ut1.m_minute > ut2.m_minute) ||
-	        (ut1.m_minute == ut2.m_minute && ut1.m_second > ut2.m_second));
+	return ((ut1.m_year    >  ut2.m_year) ||
+	        ((ut1.m_year   == ut2.m_year)   && ((ut1.m_month  > ut2.m_month)  ||
+	        ((ut1.m_month  == ut2.m_month)  && ((ut1.m_day    > ut2.m_day)    ||
+	        ((ut1.m_day    == ut2.m_day)    && ((ut1.m_hour   > ut2.m_hour)   ||
+	        ((ut1.m_hour   == ut2.m_hour)   && ((ut1.m_minute > ut2.m_minute) ||
+	        ((ut1.m_minute == ut2.m_minute) && (ut1.m_second > ut2.m_second)))))))))));
 }
 
 
@@ -835,12 +835,12 @@ const bool datetime::operator>=(const datetime& other) const
 	const datetime ut1 = utility::datetimeUtils::localTimeToUniversalTime(*this);
 	const datetime ut2 = utility::datetimeUtils::localTimeToUniversalTime(other);
 
-	return ((ut1.m_year   >  ut2.m_year) ||
-	        (ut1.m_year   == ut2.m_year   && ut1.m_month  >  ut2.m_month)  ||
-	        (ut1.m_month  == ut2.m_month  && ut1.m_day    >  ut2.m_day)    ||
-	        (ut1.m_day    == ut2.m_day    && ut1.m_hour   >  ut2.m_hour)   ||
-	        (ut1.m_hour   == ut2.m_hour   && ut1.m_minute >  ut2.m_minute) ||
-	        (ut1.m_minute == ut2.m_minute && ut1.m_second >= ut2.m_second));
+	return ((ut1.m_year    >  ut2.m_year) ||
+	        ((ut1.m_year   == ut2.m_year)   && ((ut1.m_month  >  ut2.m_month)  ||
+	        ((ut1.m_month  == ut2.m_month)  && ((ut1.m_day    >  ut2.m_day)    ||
+	        ((ut1.m_day    == ut2.m_day)    && ((ut1.m_hour   >  ut2.m_hour)   ||
+	        ((ut1.m_hour   == ut2.m_hour)   && ((ut1.m_minute >  ut2.m_minute) ||
+	        ((ut1.m_minute == ut2.m_minute) && (ut1.m_second >= ut2.m_second)))))))))));
 }
 
 
