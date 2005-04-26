@@ -310,6 +310,7 @@ void SMTPTransport::send(const mailbox& expeditor, const mailboxList& recipients
 		progress->start(total);
 
 	char buffer[65536];
+	char previousChar = '\0';
 
 	while (!is.eof())
 	{
@@ -322,7 +323,13 @@ void SMTPTransport::send(const mailbox& expeditor, const mailboxList& recipients
 
 		while ((pos = std::find(pos, end, '.')) != end)
 		{
-			if (pos > buffer && *(pos - 1) == '\n')
+			// '\n' in the previous buffer, '.' in the current one
+			if (pos == buffer && previousChar == '\n')
+			{
+				m_socket->sendRaw(".", 1);
+			}
+			// Both '\n' and '.' are in the current buffer
+			else if (pos > buffer && *(pos - 1) == '\n')
 			{
 				m_socket->sendRaw(start, pos - start);
 				m_socket->sendRaw(".", 1);
@@ -332,6 +339,11 @@ void SMTPTransport::send(const mailbox& expeditor, const mailboxList& recipients
 
 			++pos;
 		}
+
+		if (read > 0)
+			previousChar = buffer[read - 1];
+		else
+			previousChar = '\0';
 
 		// Send the remaining data
 		m_socket->sendRaw(start, end - start);
