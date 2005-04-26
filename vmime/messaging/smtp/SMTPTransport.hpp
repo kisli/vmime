@@ -54,7 +54,6 @@ public:
 
 	void noop();
 
-	void send(vmime::message* msg, progressionListener* progress = NULL);
 	void send(const mailbox& expeditor, const mailboxList& recipients, utility::inputStream& is, const utility::stream::size_type size, progressionListener* progress = NULL);
 
 private:
