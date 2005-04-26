@@ -194,7 +194,7 @@ libvmime_messaging_sources = [
 	'messaging/socket.hpp',
 	'messaging/store.hpp',
 	'messaging/timeoutHandler.hpp',
-	'messaging/transport.hpp'
+	'messaging/transport.cpp', 'messaging/transport.hpp'
 ]
 
 libvmime_messaging_proto_sources = [

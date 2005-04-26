@@ -22,7 +22,6 @@
 #include "vmime/exception.hpp"
 #include "vmime/platformDependant.hpp"
 #include "vmime/encoderB64.hpp"
-#include "vmime/message.hpp"
 #include "vmime/mailboxList.hpp"
 
 #include "vmime/messaging/authHelper.hpp"
@@ -255,77 +254,6 @@ void SMTPTransport::noop()
 
 	if (responseCode(response) != 250)
 		throw exceptions::command_error("NOOP", response);
-}
-
-
-static void extractMailboxes
-	(mailboxList& recipients, const addressList& list)
-{
-	for (int i = 0 ; i < list.getAddressCount() ; ++i)
-	{
-		mailbox* mbox = dynamic_cast <mailbox*>(list.getAddressAt(i)->clone());
-
-		if (mbox != NULL)
-			recipients.appendMailbox(mbox);
-	}
-}
-
-
-void SMTPTransport::send(vmime::message* msg, progressionListener* progress)
-{
-	// Extract expeditor
-	mailbox expeditor;
-
-	try
-	{
-		const mailboxField& from = dynamic_cast <const mailboxField&>
-			(*msg->getHeader()->findField(fields::FROM));
-		expeditor = from.getValue();
-	}
-	catch (exceptions::no_such_field&)
-	{
-		throw exceptions::no_expeditor();
-	}
-
-	// Extract recipients
-	mailboxList recipients;
-
-	try
-	{
-		const addressListField& to = dynamic_cast <const addressListField&>
-			(*msg->getHeader()->findField(fields::TO));
-		extractMailboxes(recipients, to.getValue());
-	}
-	catch (exceptions::no_such_field&) { }
-
-	try
-	{
-		const addressListField& cc = dynamic_cast <const addressListField&>
-			(*msg->getHeader()->findField(fields::CC));
-		extractMailboxes(recipients, cc.getValue());
-	}
-	catch (exceptions::no_such_field&) { }
-
-	try
-	{
-		const addressListField& bcc = dynamic_cast <const addressListField&>
-			(*msg->getHeader()->findField(fields::BCC));
-		extractMailboxes(recipients, bcc.getValue());
-	}
-	catch (exceptions::no_such_field&) { }
-
-	// Generate the message, "stream" it and delegate the sending
-	// to the generic send() function.
-	std::ostringstream oss;
-	utility::outputStreamAdapter ossAdapter(oss);
-
-	msg->generate(ossAdapter);
-
-	const string& str(oss.str());
-
-	utility::inputStreamStringAdapter isAdapter(str);
-
-	send(expeditor, recipients, isAdapter, str.length(), progress);
 }
 
 
