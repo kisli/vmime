@@ -156,8 +156,10 @@ int main()
 		to.appendMailbox(new vmime::mailbox("you@somewhere.com"));
 		to.appendMailbox(new vmime::mailbox("somebody.else@anywhere.com"));
 
-		std::istringstream iss("[MESSAGE DATA: HEADER + BODY]");
-		tr->send(from, to, iss);
+		vmime::string str("[MESSAGE DATA: HEADER + BODY]");
+		vmime::utility::inputStreamStringAdapter vis(str);
+
+		tr->send(from, to, vis, str.length());
 
 		// Note: you could also write this:
 		//     vmime::message msg;
