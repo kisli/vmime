@@ -282,7 +282,9 @@ void maildirFolder::scanFolder()
 		while (nit->hasMoreElements())
 		{
 			utility::auto_ptr <utility::file> file = nit->nextElement();
-			newMessageFilenames.push_back(file->getFullPath().getLastComponent());
+
+			if (maildirUtils::isMessageFile(*file))
+				newMessageFilenames.push_back(file->getFullPath().getLastComponent());
 		}
 
 		delete (nit);  // Free directory
@@ -294,7 +296,9 @@ void maildirFolder::scanFolder()
 		while (cit->hasMoreElements())
 		{
 			utility::auto_ptr <utility::file> file = cit->nextElement();
-			curMessageFilenames.push_back(file->getFullPath().getLastComponent());
+
+			if (maildirUtils::isMessageFile(*file))
+				curMessageFilenames.push_back(file->getFullPath().getLastComponent());
 		}
 
 		delete (cit);  // Free directory

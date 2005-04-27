@@ -85,6 +85,14 @@ public:
 	  */
 	static const bool isSubfolderDirectory(const utility::file& file);
 
+	/** Test whether the specified file-system object is a message.
+	  *
+	  * @param file reference to a file-system object
+	  * @return true if the specified object is a message file,
+	  * false otherwise
+	  */
+	static const bool isMessageFile(const utility::file& file);
+
 	/** Extract the unique identifier part of the message filename.
 	  * Eg: for the filename "1071577232.28549.m03s:2,RS", it will
 	  * return "1071577232.28549.m03s".

@@ -88,6 +88,20 @@ const bool maildirUtils::isSubfolderDirectory(const utility::file& file)
 }
 
 
+const bool maildirUtils::isMessageFile(const utility::file& file)
+{
+	// Ignore files which name begins with '.'
+	if (file.isFile() &&
+	    file.getFullPath().getLastComponent().getBuffer().length() >= 1 &&
+	    file.getFullPath().getLastComponent().getBuffer()[0] != '.')
+	{
+		return (true);
+	}
+
+	return (false);
+}
+
+
 const utility::file::path::component maildirUtils::extractId
 	(const utility::file::path::component& filename)
 {
