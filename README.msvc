@@ -1,0 +1,89 @@
+==========================================================
+Using VMime library with Microsoft Visual Studio .NET 2003
+==========================================================
+
+
+I. Prerequisites
+================
+
+  To use  VMime with Microsoft Visual Studio .NET 2003 you need
+    * Microsoft Visual Studio .NET 2003
+    * The GNU libiconv library
+    * The GNU gettext package (libiconv depends on it)
+    * SCons if you'd like to compile from the CVS repository
+  
+
+1. Retrieve GNU libiconv and GNU gettext
+------------------------------------------
+
+  Download libiconv (http://www.gnu.org/software/libiconv/) and gettext
+  (http://www.gnu.org/software/gettext/). Currently libiconv-1.9.1 and
+  gettext-0.13.1 works fine with Visual Studio .NET 2003 and VMime. However
+  I was experiencing problems trying to compile gettext-0.14.3.
+  
+
+2. Compile GNU libiconv and GNU gettext
+-----------------------------------------
+
+  You have to compile libiconv first, then compile gettext and afterwards
+  you have to compile libiconv again. Follow the instructions in the files
+  README.woe32 coming with both packages.
+  
+  Before compiling you have to decide if you want to use the library in
+  single-threaded projects only or not. If in doubt choose the multi-threaded
+  version. According to your choice you have to specify the right MFLAGS 
+  (explained in the README.woe32 of both packages).
+  
+
+3. Install the libraries
+---------------------------
+  
+  Once the libraries are compiled copy the files from C:\usr\include to your
+  Microsoft Visual Studio .NET 2003 include directory (...\Vc7\include). Copy
+  the files from C:\usr\lib to your library directory (...\Vc7\lib).
+  
+  
+4. Retrieve and install SCons
+-----------------------------
+
+  If you'd like to compile from the CVS repository you need SCons to build
+  the MSVC project files. You can download it from http://www.scons.org/.
+  
+  
+II. Compiling VMime
+===================
+
+
+1. Build the project files
+--------------------------
+
+  If you'd like to compile the code in the CVS repository you need to build
+  the project files first. You do so by changing to your VMime directory and
+  typing
+    scons msvc
+  on the command line.
+
+  
+2. Build VMime
+--------------
+
+  Use the vmime.sln file to build the library.
+
+  
+3. Install VMime
+----------------
+
+  Copy the compiled library file to your library directory (...\Vc7\lib). Copy
+  the whole vmime directory to your include directory (...\Vc7\include). Don't
+  copy all files in the vmime directory to your include directory but the 
+  directory itself, so that all headers are in ...\Vc7\include\vmime.
+  
+
+4. Use VMime
+------------
+
+  Now you are ready to use VMime (hopefully). Probably you'd like to disable
+  warnings 4101, 4244, 4250, 4267 and 4355. Do so in your project using
+  Project -> vmime Properties -> C/C++ -> Advanced -> Disable specific warnings.
+  
+

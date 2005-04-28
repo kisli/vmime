@@ -2,6 +2,11 @@
 VERSION 0.7.1cvs
 ================
 
+2005-04-28  Stefan Uhrig  <stefanuhrig@gmx.net>
+
+ * README.msvc: added guide describing how to compile VMime using
+   Visual Studio .NET 2003
+
 2005-04-27  Vincent Richard  <vincent@vincent-richard.net>
 
  * progressionListener.{hpp|cpp}: moved to 'vmime::utility' package since
@@ -69,7 +74,7 @@ VERSION 0.7.0
  * SConstruct: modified 'msvc' target to generate automatically the
    config file 'config.hpp.msvc'.
 
-2005-03-27  Stefan Uhrig <stefanuhrig@gmx.net>
+2005-03-27  Stefan Uhrig  <stefanuhrig@gmx.net>
 
  * Added Windows platform handlers.
 
