@@ -149,13 +149,57 @@ namespace
 			assert_eq("1.7", "/pa\xabth/", u1.getPath());
 		}
 
+		void testParse4()
+		{
+			// Test parameters
+			vmime::utility::url u1("", "");
+
+			assert_eq("1.1", true, parseHelper(u1, "proto://host/path?p1=v1&p2=v2"));
+			assert_eq("1.2", "v1", u1.getParams().getProperty <vmime::string>("p1"));
+			assert_eq("1.3", "v2", u1.getParams().getProperty <vmime::string>("p2"));
+			assert_eq("1.4", "/path", u1.getPath());
+
+			vmime::utility::url u2("", "");
+
+			assert_eq("2.1", true, parseHelper(u2, "proto://host/path?p1=v1&p2"));
+			assert_eq("2.2", "v1", u2.getParams().getProperty <vmime::string>("p1"));
+			assert_eq("2.3", "p2", u2.getParams().getProperty <vmime::string>("p2"));
+			assert_eq("2.4", "/path", u2.getPath());
+
+			vmime::utility::url u3("", "");
+
+			assert_eq("3.1", true, parseHelper(u3, "proto://host/?p1=v1&p2=v2"));
+			assert_eq("3.2", "v1", u3.getParams().getProperty <vmime::string>("p1"));
+			assert_eq("3.3", "v2", u3.getParams().getProperty <vmime::string>("p2"));
+			assert_eq("3.4", "", u3.getPath());
+
+			vmime::utility::url u4("", "");
+
+			assert_eq("4.1", true, parseHelper(u4, "proto://host/path?p1=%3D&%3D=v2"));
+			assert_eq("4.2", "=", u4.getParams().getProperty <vmime::string>("p1"));
+			assert_eq("4.3", "v2", u4.getParams().getProperty <vmime::string>("="));
+			assert_eq("4.4", "/path", u4.getPath());
+		}
+
 		void testGenerate()
 		{
 			vmime::utility::url u1("proto", "host", 12345, "path", "user", "password");
 			assert_eq("1", "proto://user:password@host:12345/path",
 				static_cast <vmime::string>(u1));
 
-			// TODO: more tests
+			vmime::utility::url u2("proto", "host");
+			assert_eq("2", "proto://host", static_cast <vmime::string>(u2));
+
+			vmime::utility::url u3("proto", "host");
+			u3.getParams().setProperty("p1", "v1");
+			assert_eq("3.1", "proto://host/?p1=v1",
+				static_cast <vmime::string>(u3));
+			u3.getParams().setProperty("p2", "v2");
+			assert_eq("3.2", "proto://host/?p1=v1&p2=v2",
+				static_cast <vmime::string>(u3));
+			u3.getParams().setProperty("&", "=");
+			assert_eq("3.3", "proto://host/?p1=v1&p2=v2&%26=%3D",
+				static_cast <vmime::string>(u3));
 		}
 
 		void testUtilsEncode()
@@ -196,6 +240,7 @@ namespace
 			add("Parse1", testcase(this, "Parse1", &urlTest::testParse1));
 			add("Parse2", testcase(this, "Parse2", &urlTest::testParse2));
 			add("Parse3", testcase(this, "Parse3", &urlTest::testParse3));
+			add("Parse4", testcase(this, "Parse4", &urlTest::testParse4));
 			add("Generate", testcase(this, "Generate", &urlTest::testGenerate));
 			add("UtilsEncode", testcase(this, "UtilsEncode", &urlTest::testUtilsEncode));
 			add("UtilsDecode", testcase(this, "UtilsDecode", &urlTest::testUtilsDecode));

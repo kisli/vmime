@@ -69,6 +69,8 @@ url& url::operator=(const url& u)
 
 	m_path = u.m_path;
 
+	m_params = u.m_params;
+
 	return (*this);
 }
 
@@ -118,6 +120,29 @@ const string url::build() const
 	{
 		oss << "/";
 		oss << urlUtils::encode(m_path);
+	}
+
+	const std::vector <const propertySet::property*> params
+		= m_params.getPropertyList();
+
+	if (!params.empty())
+	{
+		if (m_path.empty())
+			oss << "/";
+
+		oss << "?";
+
+		for (unsigned int i = 0 ; i < params.size() ; ++i)
+		{
+			const propertySet::property* prop = params[i];
+
+			if (i != 0)
+				oss << "&";
+
+			oss << urlUtils::encode(prop->getName());
+			oss << "=";
+			oss << urlUtils::encode(prop->getValue());
+		}
 	}
 
 	return (oss.str());
@@ -191,6 +216,15 @@ void url::parse(const string& str)
 
 	// Path
 	string path = utility::stringUtils::trim(string(str.begin() + slashPos, str.end()));
+	string params;
+
+	string::size_type paramSep = path.find_first_of('?');
+
+	if (paramSep != string::npos)
+	{
+		params = string(path.begin() + paramSep + 1, path.end());
+		path.erase(path.begin() + paramSep, path.end());
+	}
 
 	if (path == "/")
 		path.clear();
@@ -223,6 +257,48 @@ void url::parse(const string& str)
 
 	if (portNum == 0)
 		portNum = UNSPECIFIED_PORT;
+
+	// Extract parameters
+	m_params.removeAllProperties();
+
+	if (!params.empty())
+	{
+		string::size_type pos = 0;
+
+		do
+		{
+			const string::size_type start = pos;
+
+			pos = params.find_first_of('&', pos);
+
+			const string::size_type equal = params.find_first_of('=', start);
+			const string::size_type end =
+				(pos == string::npos ? params.length() : pos);
+
+			string name;
+			string value;
+
+			if (equal == string::npos || equal > pos) // no value
+			{
+				name = string(params.begin() + start, params.begin() + end);
+				value = name;
+			}
+			else
+			{
+				name = string(params.begin() + start, params.begin() + equal);
+				value = string(params.begin() + equal + 1, params.begin() + end);
+			}
+
+			name = urlUtils::decode(name);
+			value = urlUtils::decode(value);
+
+			m_params.setProperty(name, value);
+
+			if (pos != string::npos)
+				++pos;
+		}
+		while (pos != string::npos);
+	}
 
 	// Now, save URL parts
 	m_protocol = proto;
@@ -306,6 +382,18 @@ const string& url::getPath() const
 void url::setPath(const string& path)
 {
 	m_path = path;
+}
+
+
+const propertySet& url::getParams() const
+{
+	return (m_params);
+}
+
+
+propertySet& url::getParams()
+{
+	return (m_params);
 }
 
 

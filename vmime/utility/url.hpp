@@ -23,6 +23,7 @@
 
 #include "vmime/types.hpp"
 #include "vmime/base.hpp"
+#include "vmime/propertySet.hpp"
 
 
 namespace vmime {
@@ -153,6 +154,17 @@ public:
 	  */
 	void setPath(const string& path);
 
+	/** Return the parameters of the URL (read-only).
+	  *
+	  * @return parameters
+	  */
+	const propertySet& getParams() const;
+
+	/** Return the parameters of the URL.
+	  *
+	  * @return parameters
+	  */
+	propertySet& getParams();
 
 	/** Build a string URL from this object.
 	  */
@@ -179,6 +191,8 @@ private:
 	port_t m_port;
 
 	string m_path;
+
+	propertySet m_params;
 };
 
 
