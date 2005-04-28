@@ -25,7 +25,19 @@
 #include <ostream>
 #include <sstream>
 
+#include "vmime/config.hpp"
 #include "vmime/types.hpp"
+
+#include "vmime/utility/progressionListener.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES
+	namespace vmime {
+	namespace messaging {
+		class socket;  // forward reference
+	} // messaging
+	} // vmime
+#endif
 
 #if defined(_MSC_VER) && (_MSC_VER <= 1200)  // VC++6
 #   include <cstring>
@@ -160,6 +172,18 @@ outputStream& operator<<(outputStream& os, const T& t)
 
 const stream::size_type bufferedStreamCopy(inputStream& is, outputStream& os);
 
+/** Copy data from one stream into another stream using a buffered method
+  * and notify progression of the operation.
+  *
+  * @param is input stream (source data)
+  * @param os output stream (destination for data)
+  * @param length predicted number of bytes to copy
+  * @param progress listener to notify
+  * @return number of bytes copied
+  */
+
+const stream::size_type bufferedStreamCopy(inputStream& is, outputStream& os,
+	const stream::size_type length, progressionListener* progress);
 
 
 // Adapters
@@ -294,6 +318,29 @@ private:
 	std::istream* m_stream;
 	const bool m_own;
 };
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES
+
+
+/** An output stream that is connected to a socket.
+  */
+
+class outputStreamSocketAdapter : public outputStream
+{
+public:
+
+	outputStreamSocketAdapter(messaging::socket& sok);
+
+	void write(const value_type* const data, const size_type count);
+
+private:
+
+	messaging::socket& m_socket;
+};
+
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES
 
 
 } // utility

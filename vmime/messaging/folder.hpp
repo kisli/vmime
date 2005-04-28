@@ -25,11 +25,13 @@
 
 #include "vmime/types.hpp"
 #include "vmime/dateTime.hpp"
-#include "vmime/messaging/progressionListener.hpp"
+
 #include "vmime/messaging/message.hpp"
 #include "vmime/messaging/events.hpp"
+
 #include "vmime/utility/path.hpp"
 #include "vmime/utility/stream.hpp"
+#include "vmime/utility/progressionListener.hpp"
 
 
 namespace vmime {
@@ -244,7 +246,7 @@ public:
 	  * @param date date/time for the new message (if NULL, the current time is used)
 	  * @param progress progression listener, or NULL if not used
 	  */
-	virtual void addMessage(vmime::message* msg, const int flags = message::FLAG_UNDEFINED, vmime::datetime* date = NULL, progressionListener* progress = NULL) = 0;
+	virtual void addMessage(vmime::message* msg, const int flags = message::FLAG_UNDEFINED, vmime::datetime* date = NULL, utility::progressionListener* progress = NULL) = 0;
 
 	/** Add a message to this folder.
 	  *
@@ -254,7 +256,7 @@ public:
 	  * @param date date/time for the new message (if NULL, the current time is used)
 	  * @param progress progression listener, or NULL if not used
 	  */
-	virtual void addMessage(utility::inputStream& is, const int size, const int flags = message::FLAG_UNDEFINED, vmime::datetime* date = NULL, progressionListener* progress = NULL) = 0;
+	virtual void addMessage(utility::inputStream& is, const int size, const int flags = message::FLAG_UNDEFINED, vmime::datetime* date = NULL, utility::progressionListener* progress = NULL) = 0;
 
 	/** Copy a message from this folder to another folder.
 	  *
@@ -328,7 +330,7 @@ public:
 	  * @param options objects to fetch (combination of folder::FetchOptions flags)
 	  * @param progress progression listener, or NULL if not used
 	  */
-	virtual void fetchMessages(std::vector <message*>& msg, const int options, progressionListener* progress = NULL) = 0;
+	virtual void fetchMessages(std::vector <message*>& msg, const int options, utility::progressionListener* progress = NULL) = 0;
 
 	/** Fetch objects for the specified message.
 	  *

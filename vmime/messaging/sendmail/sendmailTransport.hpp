@@ -17,8 +17,8 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#ifndef VMIME_MESSAGING_SMTP_SMTPTRANSPORT_HPP_INCLUDED
-#define VMIME_MESSAGING_SMTP_SMTPTRANSPORT_HPP_INCLUDED
+#ifndef VMIME_MESSAGING_SENDMAIL_SENDMAILTRANSPORT_HPP_INCLUDED
+#define VMIME_MESSAGING_SENDMAIL_SENDMAILTRANSPORT_HPP_INCLUDED
 
 
 #include "vmime/config.hpp"
@@ -28,20 +28,23 @@
 #include "vmime/messaging/timeoutHandler.hpp"
 
 
+#if VMIME_BUILTIN_PLATFORM_POSIX
+
+
 namespace vmime {
 namespace messaging {
-namespace smtp {
+namespace sendmail {
 
 
-/** SMTP transport service.
+/** Sendmail local transport service.
   */
 
-class SMTPTransport : public transport
+class sendmailTransport : public transport
 {
 public:
 
-	SMTPTransport(session* sess, authenticator* auth);
-	~SMTPTransport();
+	sendmailTransport(session* sess, authenticator* auth);
+	~sendmailTransport();
 
 	const string getProtocolName() const;
 
@@ -58,20 +61,15 @@ public:
 
 private:
 
-	static const int responseCode(const string& response);
-	static const string responseText(const string& response);
-
-	void sendRequest(const string& buffer, const bool end = true);
-
-	void readResponse(string& buffer);
-
 	void internalDisconnect();
 
-	socket* m_socket;
-	bool m_authentified;
-	bool m_extendedSMTP;
+	void internalSend(const std::vector <string> args, utility::inputStream& is,
+		const utility::stream::size_type size, utility::progressionListener* progress);
 
-	timeoutHandler* m_timeoutHandler;
+
+	string m_sendmailPath;
+
+	bool m_connected;
 
 
 	// Service infos
@@ -89,9 +87,12 @@ private:
 };
 
 
-} // smtp
+} // sendmail
 } // messaging
 } // vmime
 
 
-#endif // VMIME_MESSAGING_SMTP_SMTPTRANSPORT_HPP_INCLUDED
+#endif // VMIME_BUILTIN_PLATFORM_POSIX
+
+
+#endif // VMIME_MESSAGING_SENDMAIL_SENDMAILTRANSPORT_HPP_INCLUDED

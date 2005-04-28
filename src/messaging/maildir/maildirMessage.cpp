@@ -309,14 +309,14 @@ void maildirMessage::setFlags(const int flags, const int mode)
 
 
 void maildirMessage::extract(utility::outputStream& os,
-	progressionListener* progress, const int start, const int length) const
+	utility::progressionListener* progress, const int start, const int length) const
 {
 	extractImpl(os, progress, 0, m_size, start, length);
 }
 
 
 void maildirMessage::extractPart(const part& p, utility::outputStream& os,
-	progressionListener* progress, const int start, const int length) const
+	utility::progressionListener* progress, const int start, const int length) const
 {
 	const maildirPart& mp = dynamic_cast <const maildirPart&>(p);
 
@@ -324,7 +324,7 @@ void maildirMessage::extractPart(const part& p, utility::outputStream& os,
 }
 
 
-void maildirMessage::extractImpl(utility::outputStream& os, progressionListener* progress,
+void maildirMessage::extractImpl(utility::outputStream& os, utility::progressionListener* progress,
 	const int start, const int length, const int partialStart, const int partialLength) const
 {
 	utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();

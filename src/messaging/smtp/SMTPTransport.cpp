@@ -26,6 +26,8 @@
 
 #include "vmime/messaging/authHelper.hpp"
 
+#include "vmime/utility/filteredStream.hpp"
+
 
 namespace vmime {
 namespace messaging {
@@ -259,7 +261,7 @@ void SMTPTransport::noop()
 
 void SMTPTransport::send(const mailbox& expeditor, const mailboxList& recipients,
                          utility::inputStream& is, const utility::stream::size_type size,
-                         progressionListener* progress)
+                         utility::progressionListener* progress)
 {
 	// If no recipient/expeditor was found, throw an exception
 	if (recipients.isEmpty())
@@ -304,63 +306,13 @@ void SMTPTransport::send(const mailbox& expeditor, const mailboxList& recipients
 		throw exceptions::command_error("DATA", response);
 	}
 
-	int current = 0, total = size;
+	// Stream copy with "\n." to "\n.." transformation
+	utility::outputStreamSocketAdapter sos(*m_socket);
+	utility::dotFilteredOutputStream fos(sos);
 
-	if (progress)
-		progress->start(total);
+	utility::bufferedStreamCopy(is, fos, size, progress);
 
-	char buffer[65536];
-	char previousChar = '\0';
-
-	while (!is.eof())
-	{
-		const int read = is.read(buffer, sizeof(buffer));
-
-		// Transform '.' into '..' at the beginning of a line
-		char* start = buffer;
-		char* end = buffer + read;
-		char* pos = buffer;
-
-		while ((pos = std::find(pos, end, '.')) != end)
-		{
-			// '\n' in the previous buffer, '.' in the current one
-			if (pos == buffer && previousChar == '\n')
-			{
-				m_socket->sendRaw(".", 1);
-			}
-			// Both '\n' and '.' are in the current buffer
-			else if (pos > buffer && *(pos - 1) == '\n')
-			{
-				m_socket->sendRaw(start, pos - start);
-				m_socket->sendRaw(".", 1);
-
-				start = pos;
-			}
-
-			++pos;
-		}
-
-		if (read > 0)
-			previousChar = buffer[read - 1];
-		else
-			previousChar = '\0';
-
-		// Send the remaining data
-		m_socket->sendRaw(start, end - start);
-
-		current += read;
-
-		// Notify progression
-		if (progress)
-		{
-			total = std::max(total, current);
-			progress->progress(current, total);
-		}
-	}
-
-	if (progress)
-		progress->stop(total);
-
+	// Send end-of-data delimiter
 	m_socket->sendRaw("\r\n.\r\n", 5);
 	readResponse(response);
 

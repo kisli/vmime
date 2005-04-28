@@ -31,8 +31,9 @@
 
 #include "vmime/messaging/serviceInfos.hpp"
 #include "vmime/messaging/authenticator.hpp"
-#include "vmime/messaging/progressionListener.hpp"
 #include "vmime/messaging/timeoutHandler.hpp"
+
+#include "vmime/utility/progressionListener.hpp"
 
 
 namespace vmime {

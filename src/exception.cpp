@@ -294,6 +294,18 @@ exception* invalid_argument::clone() const { return new invalid_argument(*this);
 const string invalid_argument::name() const { return "invalid_argument"; }
 
 
+//
+// system_error
+//
+
+system_error::~system_error() throw() { }
+system_error::system_error(const string& what, const exception& other)
+	: exception(what, other) {}
+
+exception* system_error::clone() const { return new system_error(*this); }
+const string system_error::name() const { return "system_error"; }
+
+
 
 #if VMIME_HAVE_MESSAGING_FEATURES
 

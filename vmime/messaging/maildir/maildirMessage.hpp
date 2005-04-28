@@ -65,8 +65,8 @@ public:
 	const int getFlags() const;
 	void setFlags(const int flags, const int mode = FLAG_MODE_SET);
 
-	void extract(utility::outputStream& os, progressionListener* progress = NULL, const int start = 0, const int length = -1) const;
-	void extractPart(const part& p, utility::outputStream& os, progressionListener* progress = NULL, const int start = 0, const int length = -1) const;
+	void extract(utility::outputStream& os, utility::progressionListener* progress = NULL, const int start = 0, const int length = -1) const;
+	void extractPart(const part& p, utility::outputStream& os, utility::progressionListener* progress = NULL, const int start = 0, const int length = -1) const;
 
 	void fetchPartHeader(part& p);
 
@@ -78,7 +78,7 @@ private:
 
 	header& getOrCreateHeader();
 
-	void extractImpl(utility::outputStream& os, progressionListener* progress, const int start, const int length, const int partialStart, const int partialLength) const;
+	void extractImpl(utility::outputStream& os, utility::progressionListener* progress, const int start, const int length, const int partialStart, const int partialLength) const;
 
 
 	maildirFolder* m_folder;

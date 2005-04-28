@@ -51,7 +51,7 @@ public:
 	  * @param msg message to send
 	  * @param progress progression listener, or NULL if not used
 	  */
-	virtual void send(vmime::message* msg, progressionListener* progress = NULL);
+	virtual void send(vmime::message* msg, utility::progressionListener* progress = NULL);
 
 	/** Send a message over this transport service.
 	  *
@@ -61,7 +61,7 @@ public:
 	  * @param size size of the message data
 	  * @param progress progression listener, or NULL if not used
 	  */
-	virtual void send(const mailbox& expeditor, const mailboxList& recipients, utility::inputStream& is, const utility::stream::size_type size, progressionListener* progress = NULL) = 0;
+	virtual void send(const mailbox& expeditor, const mailboxList& recipients, utility::inputStream& is, const utility::stream::size_type size, utility::progressionListener* progress = NULL) = 0;
 
 
 	const Type getType() const;

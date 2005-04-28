@@ -311,6 +311,21 @@ public:
 };
 
 
+/** Underlying operating system error.
+  */
+
+class system_error : public vmime::exception
+{
+public:
+
+	system_error(const string& what, const exception& other = NO_EXCEPTION);
+	~system_error() throw();
+
+	exception* clone() const;
+	const string name() const;
+};
+
+
 
 #if VMIME_HAVE_MESSAGING_FEATURES
 

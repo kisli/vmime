@@ -311,7 +311,7 @@ void POP3Store::sendRequest(const string& buffer, const bool end)
 
 
 void POP3Store::readResponse(string& buffer, const bool multiLine,
-                             progressionListener* progress)
+                             utility::progressionListener* progress)
 {
 	bool foundTerminator = false;
 	int current = 0, total = 0;
@@ -406,8 +406,8 @@ void POP3Store::readResponse(string& buffer, const bool multiLine,
 }
 
 
-void POP3Store::readResponse(utility::outputStream& os, progressionListener* progress,
-                             const int predictedSize)
+void POP3Store::readResponse(utility::outputStream& os,
+	utility::progressionListener* progress, const int predictedSize)
 {
 	bool foundTerminator = false;
 	int current = 0, total = predictedSize;

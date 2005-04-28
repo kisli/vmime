@@ -23,6 +23,10 @@
 #include <algorithm>  // for std::copy
 #include <iterator>   // for std::back_inserter
 
+#if VMIME_HAVE_MESSAGING_FEATURES
+   #include "vmime/messaging/socket.hpp"
+#endif
+
 
 namespace vmime {
 namespace utility {
@@ -46,8 +50,18 @@ outputStream& operator<<(outputStream& os, const string& str)
 
 const stream::size_type bufferedStreamCopy(inputStream& is, outputStream& os)
 {
+	return bufferedStreamCopy(is, os, 0, NULL);
+}
+
+
+const stream::size_type bufferedStreamCopy(inputStream& is, outputStream& os,
+	const stream::size_type length, progressionListener* progress)
+{
 	stream::value_type buffer[65536];
 	stream::size_type total = 0;
+
+	if (progress != NULL)
+		progress->start(length);
 
 	while (!is.eof())
 	{
@@ -57,8 +71,14 @@ const stream::size_type bufferedStreamCopy(inputStream& is, outputStream& os)
 		{
 			os.write(buffer, read);
 			total += read;
+
+			if (progress != NULL)
+				progress->progress(total, std::max(total, length));
 		}
 	}
+
+	if (progress != NULL)
+		progress->stop(total);
 
 	return (total);
 }
@@ -297,6 +317,29 @@ const stream::size_type inputStreamPointerAdapter::skip(const size_type count)
 	m_stream->ignore(count);
 	return (m_stream->gcount());
 }
+
+
+// outputStreamSocketAdapter
+
+#ifdef VMIME_HAVE_MESSAGING_FEATURES
+
+
+outputStreamSocketAdapter::outputStreamSocketAdapter(messaging::socket& sok)
+	: m_socket(sok)
+{
+}
+
+
+void outputStreamSocketAdapter::write
+	(const value_type* const data, const size_type count)
+{
+	m_socket.sendRaw(data, count);
+}
+
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES
+
+
 
 
 } // utility

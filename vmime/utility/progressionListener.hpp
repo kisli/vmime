@@ -17,12 +17,12 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#ifndef VMIME_MESSAGING_PROGRESSIONLISTENER_HPP_INCLUDED
-#define VMIME_MESSAGING_PROGRESSIONLISTENER_HPP_INCLUDED
+#ifndef VMIME_UTILITY_PROGRESSIONLISTENER_HPP_INCLUDED
+#define VMIME_UTILITY_PROGRESSIONLISTENER_HPP_INCLUDED
 
 
 namespace vmime {
-namespace messaging {
+namespace utility {
 
 
 /** An interface to implement if you want to be notified
@@ -39,8 +39,8 @@ public:
 
 	/** Allow the caller object to cancel the current operation.
 	  *
-	  * @warning WARNING: this is implementation-dependant: the underlying
-	  * messaging protocol may not support this).
+	  * @warning WARNING: this is implementation-dependant: cancelling
+	  * may not be supported by the notifier object.
 	  *
 	  * @return true to cancel the operation, false otherwise
 	  */
@@ -49,7 +49,7 @@ public:
 	/** Called at the beginning of the operation.
 	  *
 	  * @param predictedTotal predicted amount of units (this has
-	  * no concrete meaning: they are not bytes, nor percentage...)
+	  * no concrete meaning: these are not bytes, nor percentage...)
 	  */
 	virtual void start(const int predictedTotal) = 0;
 
@@ -68,8 +68,8 @@ public:
 };
 
 
-} // messaging
+} // utility
 } // vmime
 
 
-#endif // VMIME_MESSAGING_PROGRESSIONLISTENER_HPP_INCLUDED
+#endif // VMIME_UTILITY_PROGRESSIONLISTENER_HPP_INCLUDED

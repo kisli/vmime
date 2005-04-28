@@ -47,7 +47,7 @@ static void extractMailboxes
 }
 
 
-void transport::send(vmime::message* msg, progressionListener* progress)
+void transport::send(vmime::message* msg, utility::progressionListener* progress)
 {
 	// Extract expeditor
 	mailbox expeditor;

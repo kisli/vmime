@@ -28,13 +28,13 @@
 
 #include "vmime/utility/smartPtr.hpp"
 #include "vmime/utility/stringUtils.hpp"
+#include "vmime/utility/progressionListener.hpp"
 
 #include "vmime/encoderB64.hpp"
 #include "vmime/encoderQP.hpp"
 
 #include "vmime/platformDependant.hpp"
 
-#include "vmime/messaging/progressionListener.hpp"
 #include "vmime/messaging/timeoutHandler.hpp"
 #include "vmime/messaging/socket.hpp"
 
@@ -135,7 +135,7 @@ public:
 		{
 		protected:
 
-			target(class progressionListener* progress) : m_progress(progress) {}
+			target(utility::progressionListener* progress) : m_progress(progress) {}
 			target(const target&) {}
 
 		public:
@@ -143,13 +143,13 @@ public:
 			virtual ~target() { }
 
 
-			class progressionListener* progressionListener() { return (m_progress); }
+			utility::progressionListener* progressionListener() { return (m_progress); }
 
 			virtual void putData(const string& chunk) = 0;
 
 		private:
 
-			class progressionListener* m_progress;
+			utility::progressionListener* m_progress;
 		};
 
 
@@ -158,7 +158,7 @@ public:
 		{
 		public:
 
-			targetString(class progressionListener* progress, vmime::string& str)
+			targetString(utility::progressionListener* progress, vmime::string& str)
 				: target(progress), m_string(str) { }
 
 			const vmime::string& string() const { return (m_string); }
@@ -181,7 +181,7 @@ public:
 		{
 		public:
 
-			targetStream(class progressionListener* progress, utility::outputStream& stream)
+			targetStream(utility::progressionListener* progress, utility::outputStream& stream)
 				: target(progress), m_stream(stream) { }
 
 			const utility::outputStream& stream() const { return (m_stream); }
@@ -809,7 +809,7 @@ public:
 							m_value = "[literal-handler]";
 
 							const string::size_type length = text->value().length();
-							progressionListener* progress = target->progressionListener();
+							utility::progressionListener* progress = target->progressionListener();
 
 							if (progress)
 							{
@@ -4914,7 +4914,7 @@ private:
 	IMAPTag* m_tag;
 	socket* m_socket;
 
-	progressionListener* m_progress;
+	utility::progressionListener* m_progress;
 
 	literalHandler* m_literalHandler;
 

@@ -22,7 +22,7 @@
 
 
 #include "vmime/messaging/authenticator.hpp"
-#include "vmime/messaging/progressionListener.hpp"
+
 #include "vmime/utility/url.hpp"
 
 #include "vmime/propertySet.hpp"

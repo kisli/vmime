@@ -47,5 +47,10 @@
 	REGISTER_SERVICE(maildir::maildirStore, maildir);
 #endif
 
+#if VMIME_BUILTIN_MESSAGING_PROTO_SENDMAIL
+	#include "vmime/messaging/sendmail/sendmailTransport.hpp"
+	REGISTER_SERVICE(sendmail::sendmailTransport, sendmail);
+#endif
+
 
 #endif // VMIME_BUILDING_DOC

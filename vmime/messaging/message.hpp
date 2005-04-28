@@ -22,7 +22,8 @@
 
 
 #include "vmime/header.hpp"
-#include "vmime/messaging/progressionListener.hpp"
+
+#include "vmime/utility/progressionListener.hpp"
 #include "vmime/utility/stream.hpp"
 
 
@@ -257,7 +258,7 @@ public:
 	  * @param length number of bytes to retrieve (used for partial fetch)
 	  */
 
-	virtual void extract(utility::outputStream& os, progressionListener* progress = NULL, const int start = 0, const int length = -1) const = 0;
+	virtual void extract(utility::outputStream& os, utility::progressionListener* progress = NULL, const int start = 0, const int length = -1) const = 0;
 
 	/** Extract the specified (MIME) part of the message (header + contents).
 	  *
@@ -269,7 +270,7 @@ public:
 	  * @param start index of the first byte to retrieve (used for partial fetch)
 	  * @param length number of bytes to retrieve (used for partial fetch)
 	  */
-	virtual void extractPart(const part& p, utility::outputStream& os, progressionListener* progress = NULL, const int start = 0, const int length = -1) const = 0;
+	virtual void extractPart(const part& p, utility::outputStream& os, utility::progressionListener* progress = NULL, const int start = 0, const int length = -1) const = 0;
 
 	/** Fetch the MIME header for the specified part.
 	  *

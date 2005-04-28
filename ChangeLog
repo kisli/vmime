@@ -2,6 +2,19 @@
 VERSION 0.7.1cvs
 ================
 
+2005-04-27  Vincent Richard  <vincent@vincent-richard.net>
+
+ * progressionListener.{hpp|cpp}: moved to 'vmime::utility' package since
+   this can be of general use.
+
+ * stream.{hpp|cpp}: added a bufferedStreamCopy() function which can
+   take a 'progressionListener' parameter.
+
+ * filteredStream.{hpp|cpp}: new feature added: filtered input and
+   output streams.
+
+ * Added 'sendmail' transport service for local delivery.
+
 2005-04-19  Vincent Richard  <vincent@vincent-richard.net>
 
  * defaultParameter.cpp: fixed a bug in implementation of RFC-2231 (values

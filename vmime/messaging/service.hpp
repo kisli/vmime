@@ -24,12 +24,12 @@
 #include "vmime/types.hpp"
 
 #include "vmime/messaging/session.hpp"
-
 #include "vmime/messaging/authenticator.hpp"
-#include "vmime/messaging/progressionListener.hpp"
 
 #include "vmime/messaging/serviceFactory.hpp"
 #include "vmime/messaging/serviceInfos.hpp"
+
+#include "vmime/utility/progressionListener.hpp"
 
 
 namespace vmime {

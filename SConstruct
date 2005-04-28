@@ -148,8 +148,10 @@ libvmime_sources = [
 	'vmime.hpp',
 	'utility/file.hpp',
 	'utility/datetimeUtils.cpp', 'utility/datetimeUtils.hpp',
+	'utility/filteredStream.cpp', 'utility/filteredStream.hpp',
 	'utility/md5.cpp', 'utility/md5.hpp',
 	'utility/path.cpp', 'utility/path.hpp',
+	'utility/progressionListener.hpp',
 	'utility/random.cpp', 'utility/random.hpp',
 	'utility/smartPtr.hpp',
 	'utility/stream.cpp', 'utility/stream.hpp',
@@ -185,7 +187,6 @@ libvmime_messaging_sources = [
 	'messaging/events.cpp', 'messaging/events.hpp',
 	'messaging/folder.cpp', 'messaging/folder.hpp',
 	'messaging/message.cpp', 'messaging/message.hpp',
-	'messaging/progressionListener.hpp',
 	'messaging/service.cpp', 'messaging/service.hpp',
 	'messaging/serviceFactory.cpp', 'messaging/serviceFactory.hpp',
 	'messaging/serviceInfos.hpp',
@@ -231,6 +232,12 @@ libvmime_messaging_proto_sources = [
 			'messaging/maildir/maildirFolder.cpp',   'messaging/maildir/maildirFolder.hpp',
 			'messaging/maildir/maildirMessage.cpp',  'messaging/maildir/maildirMessage.hpp',
 			'messaging/maildir/maildirUtils.cpp',    'messaging/maildir/maildirUtils.hpp'
+		]
+	],
+	[
+		'sendmail',
+		[
+			'messaging/sendmail/sendmailTransport.cpp',  'messaging/sendmail/sendmailTransport.hpp'
 		]
 	]
 ]
@@ -413,7 +420,11 @@ TargetSignatures('build')
 #############
 
 # Try to guess some default values
-# TODO
+defaultSendmailPath = WhereIs("sendmail")
+
+if defaultSendmailPath == None:
+	defaultSendmailPath = ''
+
 
 # Command line options
 opts = Options('options.cache')
@@ -453,8 +464,8 @@ opts.AddOptions(
 		'Specifies which protocols to build into the library.\n'
 		    + 'This option has no effect if "with_messaging" is not activated.\n'
 		    + 'Separate protocols with spaces; string must be quoted with ".\n'
-		    + 'Currently available protocols: pop3, smtp, imap, maildir.',
-		'"pop3 smtp imap maildir"'
+		    + 'Currently available protocols: pop3, smtp, imap, maildir, sendmail.',
+		'"pop3 smtp imap maildir sendmail"'
 	),
 	(
 		'with_platforms',
@@ -465,6 +476,11 @@ opts.AddOptions(
 		    + 'Separate platforms with spaces; string must be quoted with ".\n'
 		    + 'Currently available platform handlers: posix.',
 		'"posix"'
+	),
+	(
+		'sendmail_path',
+		'Specifies the path to sendmail.',
+		defaultSendmailPath
 	),
 	EnumOption(
 		'with_wide_char_support',
@@ -515,6 +531,7 @@ opts.AddOptions(
 		ignorecase = 1
 	)
 )
+
 
 
 ###############################
@@ -583,20 +600,6 @@ for platform in re.split('\W+', string.replace(env['with_platforms'], '"', '')):
 	if len(platform) >= 1:
 		platforms.append(platform)
 
-# Show configuration summary
-print ""
-print "+=================+"
-print "|  CONFIGURATION  |"
-print "+=================+"
-print ""
-print "Installation prefix      : " + env['prefix']
-print "Debugging mode           : " + env['debug']
-print "Messaging support        : " + env['with_messaging']
-if env['with_messaging'] == 'yes':
-	print "  * protocols            : " + env['with_messaging_protocols']
-print "File-system support      : " + env['with_filesystem']
-print "Platform handlers        : " + env['with_platforms']
-print ""
 
 
 ########################
@@ -609,12 +612,55 @@ def IsProtocolSupported(protoList, proto):
 			return 1
 	return 0
 
+
 # File-system support must be activated when 'maildir' protocol is selected
 if env['with_messaging'] == 'yes':
 	if IsProtocolSupported(messaging_protocols, 'maildir'):
 		if env['with_filesystem'] != 'yes':
 			print "ERROR: 'maildir' protocol requires file-system support!\n"
 			Exit(1)
+
+# Sendmail transport is only available on POSIX platforms
+if os.name != 'posix':
+	if IsProtocolSupported(messaging_protocols, 'sendmail'):
+		print "WARNING: ignoring 'sendmail' support (only available on POSIX platforms)\n"
+
+		newProtoList = [ ]
+
+		for p in messaging_protocols:
+			if string.upper(p) != "SENDMAIL":
+				newProtoList.append(p)
+
+		messaging_protocols = newProtoList
+
+# Check sendmail path
+if IsProtocolSupported(messaging_protocols, 'sendmail'):
+	if env['sendmail_path'] == '':
+		print "ERROR: no path specified for 'sendmail'"
+		Exit(1)
+
+
+###########################
+#  Configuration summary  #
+###########################
+
+print ""
+print "+=================+"
+print "|  CONFIGURATION  |"
+print "+=================+"
+print ""
+print "Installation prefix      : " + env['prefix']
+print "Debugging mode           : " + env['debug']
+print "Messaging support        : " + env['with_messaging']
+if env['with_messaging'] == 'yes':
+	print "  * protocols            : " + env['with_messaging_protocols']
+print "File-system support      : " + env['with_filesystem']
+print "Platform handlers        : " + env['with_platforms']
+
+if IsProtocolSupported(messaging_protocols, 'sendmail'):
+	print "Sendmail path            : " + env['sendmail_path']
+
+print ""
 
 
 #########################
@@ -723,6 +769,12 @@ for platform in platforms:
 for platform in libvmime_platforms_sources:
 	if not platform in platforms:
 		config_hpp.write('#define VMIME_BUILTIN_PLATFORM_' + string.upper(platform) + ' 0\n')
+
+config_hpp.write('\n')
+config_hpp.write('// Miscellaneous flags\n')
+
+if IsProtocolSupported(messaging_protocols, 'sendmail'):
+	config_hpp.write('#define VMIME_SENDMAIL_PATH "' + env['sendmail_path'] + '"\n')
 
 config_hpp.write("""
 
@@ -1433,6 +1485,13 @@ esac
 
 
 #
+# System mail
+#
+
+AC_PATH_PROG(SENDMAIL, sendmail, /usr/sbin/sendmail, /usr/sbin:/usr/lib)
+
+
+#
 # Detect some platform-specific stuff
 #
 
@@ -1629,6 +1688,10 @@ typedef unsigned ${VMIME_TYPE_INT32} vmime_uint32;
 	configure_in.write("""
 " > vmime/config.hpp
 
+# Miscellaneous flags
+echo "// Miscellaneous flags" >> vmime/config.hpp
+echo "#define VMIME_SENDMAIL_PATH \\"$SENDMAIL\\"" >> vmime/config.hpp
+echo "" >> vmime/config.hpp
 
 # Additional defines
 echo "// Additional defines" >> vmime/config.hpp
@@ -1926,7 +1989,7 @@ typedef unsigned int vmime_uint32;
 // -- Messaging support
 #define VMIME_HAVE_MESSAGING_FEATURES 1
 // -- Built-in messaging protocols
-#define VMIME_BUILTIN_MESSAGING_PROTOS " pop3 smtp imap maildir"
+#define VMIME_BUILTIN_MESSAGING_PROTOS "pop3 smtp imap maildir"
 #define VMIME_BUILTIN_MESSAGING_PROTO_POP3 1
 #define VMIME_BUILTIN_MESSAGING_PROTO_SMTP 1
 #define VMIME_BUILTIN_MESSAGING_PROTO_IMAP 1

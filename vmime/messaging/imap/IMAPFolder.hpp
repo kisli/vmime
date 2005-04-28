@@ -91,8 +91,8 @@ public:
 	void setMessageFlags(const int from, const int to, const int flags, const int mode = message::FLAG_MODE_SET);
 	void setMessageFlags(const std::vector <int>& nums, const int flags, const int mode = message::FLAG_MODE_SET);
 
-	void addMessage(vmime::message* msg, const int flags = message::FLAG_UNDEFINED, vmime::datetime* date = NULL, progressionListener* progress = NULL);
-	void addMessage(utility::inputStream& is, const int size, const int flags = message::FLAG_UNDEFINED, vmime::datetime* date = NULL, progressionListener* progress = NULL);
+	void addMessage(vmime::message* msg, const int flags = message::FLAG_UNDEFINED, vmime::datetime* date = NULL, utility::progressionListener* progress = NULL);
+	void addMessage(utility::inputStream& is, const int size, const int flags = message::FLAG_UNDEFINED, vmime::datetime* date = NULL, utility::progressionListener* progress = NULL);
 
 	void copyMessage(const folder::path& dest, const int num);
 	void copyMessages(const folder::path& dest, const int from = 1, const int to = -1);
@@ -108,7 +108,7 @@ public:
 	store* getStore();
 
 
-	void fetchMessages(std::vector <message*>& msg, const int options, progressionListener* progress = NULL);
+	void fetchMessages(std::vector <message*>& msg, const int options, utility::progressionListener* progress = NULL);
 	void fetchMessage(message* msg, const int options);
 
 	const int getFetchCapabilities() const;

@@ -84,6 +84,7 @@
 
 // Utilities
 #include "vmime/utility/datetimeUtils.hpp"
+#include "vmime/utility/filteredStream.hpp"
 
 // Messaging features
 #if VMIME_HAVE_MESSAGING_FEATURES
