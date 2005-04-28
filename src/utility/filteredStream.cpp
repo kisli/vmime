@@ -19,6 +19,7 @@
 
 #include "vmime/utility/filteredStream.hpp"
 
+#include <algorithm>
 
 namespace vmime {
 namespace utility {
