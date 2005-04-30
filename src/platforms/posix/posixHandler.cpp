@@ -46,6 +46,7 @@ posixHandler::posixHandler()
 #endif
 #if VMIME_HAVE_FILESYSTEM_FEATURES
 	m_fileSysFactory = new posixFileSystemFactory();
+	m_childProcFactory = new posixChildProcessFactory();
 #endif
 }
 
@@ -57,6 +58,7 @@ posixHandler::~posixHandler()
 #endif
 #if VMIME_HAVE_FILESYSTEM_FEATURES
 	delete (m_fileSysFactory);
+	delete (m_childProcFactory);
 #endif
 }
 
@@ -186,6 +188,12 @@ vmime::messaging::timeoutHandlerFactory* posixHandler::getTimeoutHandlerFactory
 vmime::utility::fileSystemFactory* posixHandler::getFileSystemFactory() const
 {
 	return (m_fileSysFactory);
+}
+
+
+vmime::utility::childProcessFactory* posixHandler::getChildProcessFactory() const
+{
+	return (m_childProcFactory);
 }
 
 #endif

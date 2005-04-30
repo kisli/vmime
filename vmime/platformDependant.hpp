@@ -33,6 +33,7 @@
 
 #if VMIME_HAVE_FILESYSTEM_FEATURES
 	#include "vmime/utility/file.hpp"
+	#include "vmime/utility/childProcess.hpp"
 #endif
 
 
@@ -126,8 +127,20 @@ public:
 		virtual messaging::timeoutHandlerFactory* getTimeoutHandlerFactory(const string& name = "default") const = 0;
 #endif
 #if VMIME_HAVE_FILESYSTEM_FEATURES
+		/** Return a pointer to a factory that creates file-system objects.
+		  *
+		  * @return file-system factory
+		  */
 		virtual utility::fileSystemFactory* getFileSystemFactory() const = 0;
+
+		/** Return a pointer to a factory that creates child process objects,
+		  * which are used to spawn processes (run executable files).
+		  *
+		  * @return child process factory
+		  */
+		virtual utility::childProcessFactory* getChildProcessFactory() const = 0;
 #endif
+
 	};
 
 

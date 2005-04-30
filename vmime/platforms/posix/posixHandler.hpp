@@ -30,6 +30,7 @@
 
 #if VMIME_HAVE_FILESYSTEM_FEATURES
      #include "vmime/platforms/posix/posixFile.hpp"
+     #include "vmime/platforms/posix/posixChildProcess.hpp"
 #endif
 
 
@@ -63,6 +64,8 @@ public:
 
 #if VMIME_HAVE_FILESYSTEM_FEATURES
 	vmime::utility::fileSystemFactory* getFileSystemFactory() const;
+
+	vmime::utility::childProcessFactory* getChildProcessFactory() const;
 #endif
 
 	void wait() const;
@@ -75,6 +78,7 @@ private:
 
 #if VMIME_HAVE_FILESYSTEM_FEATURES
 	posixFileSystemFactory* m_fileSysFactory;
+	posixChildProcessFactory* m_childProcFactory;
 #endif
 };
 

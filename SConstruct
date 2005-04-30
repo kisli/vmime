@@ -146,6 +146,7 @@ libvmime_sources = [
 	'types.hpp',
 	'word.cpp', 'word.hpp',
 	'vmime.hpp',
+	'utility/childProcess.hpp',
 	'utility/file.hpp',
 	'utility/datetimeUtils.cpp', 'utility/datetimeUtils.hpp',
 	'utility/filteredStream.cpp', 'utility/filteredStream.hpp',
@@ -245,6 +246,7 @@ libvmime_messaging_proto_sources = [
 libvmime_platforms_sources = {
 	'posix':
 	[
+		'platforms/posix/posixChildProcess.cpp', 'platforms/posix/posixChildProcess.hpp',
 		'platforms/posix/posixFile.cpp', 'platforms/posix/posixFile.hpp',
 		'platforms/posix/posixHandler.cpp', 'platforms/posix/posixHandler.hpp',
 		'platforms/posix/posixSocket.cpp', 'platforms/posix/posixSocket.hpp'

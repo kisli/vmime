@@ -24,20 +24,12 @@
 #include "vmime/message.hpp"
 #include "vmime/mailboxList.hpp"
 
-#include "vmime/messaging/authHelper.hpp"
-
 #include "vmime/utility/filteredStream.hpp"
+#include "vmime/utility/childProcess.hpp"
+#include "vmime/utility/smartPtr.hpp"
 
 
 #if VMIME_BUILTIN_PLATFORM_POSIX
-
-
-#include <unistd.h>
-#include <string.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <signal.h>
-#include <sys/wait.h>
 
 
 namespace vmime {
@@ -138,204 +130,33 @@ void sendmailTransport::send
 }
 
 
-static const string getSignalMessage(const int num)
-{
-	switch (num)
-	{
-	case SIGHUP:  return "SIGHUP";
-	case SIGINT:  return "SIGINT";
-	case SIGQUIT: return "SIGQUIT";
-	case SIGILL:  return "SIGILL";
-	case SIGABRT: return "SIGABRT";
-	case SIGFPE:  return "SIGFPE";
-	case SIGKILL: return "SIGKILL";
-	case SIGSEGV: return "SIGSEGV";
-	case SIGPIPE: return "SIGPIPE";
-	case SIGALRM: return "SIGALRM";
-	case SIGTERM: return "SIGTERM";
-	case SIGUSR1: return "SIGUSR1";
-	case SIGUSR2: return "SIGUSR2";
-	case SIGCHLD: return "SIGCHLD";
-	case SIGCONT: return "SIGCONT";
-	case SIGSTOP: return "SIGSTOP";
-	case SIGTSTP: return "SIGTSTP";
-	case SIGTTIN: return "SIGTTIN";
-	case SIGTTOU: return "SIGTTOU";
-	}
-
-	return "(unknown)";
-}
-
-
-static const string getErrorMessage(const int num)
-{
-#ifdef strerror_r
-	char res[256];
-	res[0] = '\0';
-
-	strerror_r(num, res, sizeof(res));
-
-	return string(res);
-#else
-	return string(strerror(num));
-#endif
-}
-
-
-
-#ifndef VMIME_BUILDING_DOC
-
-// Output stream adapter for UNIX pipe
-
-class outputStreamPipeAdapter : public utility::outputStream
-{
-public:
-
-	outputStreamPipeAdapter(const int desc)
-		: m_desc(desc)
-	{
-	}
-
-	void write(const value_type* const data, const size_type count)
-	{
-		if (::write(m_desc, data, count) == -1)
-		{
-			const string errorMsg = getErrorMessage(errno);
-			throw exceptions::system_error(errorMsg);
-		}
-	}
-
-private:
-
-	int m_desc;
-};
-
-#endif // VMIME_BUILDING_DOC
-
-
-
-// The following code is highly inspired and adapted from the 'sendmail'
-// provider module in Evolution data server code.
-//
-// Original authors: Dan Winship <danw@ximian.com>
-// Copyright 2000 Ximian, Inc. (www.ximian.com)
-
 void sendmailTransport::internalSend
 	(const std::vector <string> args, utility::inputStream& is,
 	 const utility::stream::size_type size, utility::progressionListener* progress)
 {
-	// Construct C-style argument array
-	const char** argv = new const char*[args.size() + 2];
+	const utility::file::path path = vmime::platformDependant::getHandler()->
+		getFileSystemFactory()->stringToPath(m_sendmailPath);
 
-	argv[0] = "sendmail";
-	argv[args.size()] = NULL;
+	utility::auto_ptr <utility::childProcess> proc =
+		vmime::platformDependant::getHandler()->
+			getChildProcessFactory()->create(path);
 
-	for (unsigned int i = 0 ; i < args.size() ; ++i)
-		argv[i + 1] = args[i].c_str();
-
-	// Create a pipe to communicate with sendmail
-	int fd[2];
-
-	if (pipe(fd) == -1)
-	{
-		throw exceptions::system_error(getErrorMessage(errno));
-	}
-
-	// Block SIGCHLD so the calling application doesn't notice
-	// sendmail exiting before we do
-	sigset_t mask, oldMask;
-
-	sigemptyset(&mask);
-	sigaddset(&mask, SIGCHLD);
-	sigprocmask(SIG_BLOCK, &mask, &oldMask);
-
-	// Spawn 'sendmail' process
-	pid_t pid = fork();
-
-	if (pid == -1)  // error
-	{
-		const string errorMsg = getErrorMessage(errno);
-
-		sigprocmask(SIG_SETMASK, &oldMask, NULL);
-
-		close(fd[0]);
-		close(fd[1]);
-
-		throw exceptions::system_error(errorMsg);
-	}
-	else if (pid == 0)  // child process
-	{
-		dup2(fd[0], STDIN_FILENO);
-		close(fd[1]);
-
-		execv(m_sendmailPath.c_str(), const_cast <char**>(argv));
-		_exit(255);
-	}
-
-	close(fd[0]);
+	proc->start(args, utility::childProcess::FLAG_REDIRECT_STDIN);
 
 	// Copy message data from input stream to output pipe
-	try
-	{
-		outputStreamPipeAdapter pos(fd[1]);
+	utility::outputStream& os = *(proc->getStdIn());
 
-		// Workaround for lame sendmail implementations that
-		// can't handle CRLF eoln sequences: we transform CRLF
-		// sequences into LF characters.
-		utility::CRLFToLFFilteredOutputStream fos(pos);
+	// Workaround for lame sendmail implementations that
+	// can't handle CRLF eoln sequences: we transform CRLF
+	// sequences into LF characters.
+	utility::CRLFToLFFilteredOutputStream fos(os);
 
-		// TODO: remove 'Bcc:' field from message header
+	// TODO: remove 'Bcc:' field from message header
 
-		utility::bufferedStreamCopy(is, fos, size, progress);
-	}
-	catch (exception& e)
-	{
-		close(fd[1]);
-
-		int wstat;
-
-		while (waitpid(pid, &wstat, 0) == -1 && errno == EINTR)
-			;
-
-		sigprocmask(SIG_SETMASK, &oldMask, NULL);
-
-		throw;
-	}
-
-	close(fd[1]);
+	utility::bufferedStreamCopy(is, fos, size, progress);
 
 	// Wait for sendmail to exit
-	int wstat;
-
-	while (waitpid(pid, &wstat, 0) == -1 && errno == EINTR)
-		;
-
-	sigprocmask(SIG_SETMASK, &oldMask, NULL);
-
-	if (!WIFEXITED(wstat))
-	{
-		throw exceptions::system_error("sendmail exited with signal "
-			+ getSignalMessage(WTERMSIG(wstat)) + ", mail not sent");
-	}
-	else if (WEXITSTATUS(wstat) != 0)
-	{
-		if (WEXITSTATUS(wstat) == 255)
-		{
-			std::ostringstream oss;
-			oss << "Could not execute '" << m_sendmailPath;
-			oss << "', mail not sent";
-
-			throw exceptions::system_error(oss.str());
-		}
-		else
-		{
-			std::ostringstream oss;
-			oss << "sendmail exited with status " << WEXITSTATUS(wstat);
-			oss << ", mail not sent";
-
-			throw exceptions::system_error(oss.str());
-		}
-	}
+	proc->waitForFinish();
 }
 
 

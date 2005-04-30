@@ -257,6 +257,13 @@ vmime::utility::fileSystemFactory* windowsHandler::getFileSystemFactory() const
 	return (m_fileSysFactory);
 }
 
+
+vmime::utility::childProcessFactory* windowsHandler::getChildProcessFactory() const
+{
+	// TODO: Not implemented
+	return (NULL);
+}
+
 #endif
 
 

@@ -2,6 +2,11 @@
 VERSION 0.7.1cvs
 ================
 
+2005-04-30  Vincent Richard  <vincent@vincent-richard.net>
+
+ * utility/childProcess.{hpp|cpp}: added a 'childProcess' class to help
+   with spawning child processes (used in 'sendmail' implementation).
+
 2005-04-28  Stefan Uhrig  <stefanuhrig@gmx.net>
 
  * README.msvc: added guide describing how to compile VMime using

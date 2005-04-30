@@ -29,7 +29,7 @@
 #endif
 
 #if VMIME_HAVE_FILESYSTEM_FEATURES
-		 #include "vmime/platforms/windows/windowsFile.hpp"
+	 #include "vmime/platforms/windows/windowsFile.hpp"
 #endif
 
 
@@ -63,6 +63,8 @@ public:
 
 #if VMIME_HAVE_FILESYSTEM_FEATURES
 	vmime::utility::fileSystemFactory* getFileSystemFactory() const;
+
+	vmime::utility::childProcessFactory* getChildProcessFactory() const;
 #endif
 
 	void wait() const;
