@@ -1461,7 +1461,7 @@ void IMAPFolder::status(int& count, int& unseen)
 	command << "STATUS ";
 	command << IMAPUtils::quoteString(IMAPUtils::pathToString
 			(m_connection->hierarchySeparator(), getFullPath()));
-	command << "(MESSAGES UNSEEN)";
+	command << " (MESSAGES UNSEEN)";
 
 	// Send the request
 	m_store->m_connection->send(true, command.str(), true);

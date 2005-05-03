@@ -4344,7 +4344,10 @@ public:
 					m_status_info_list.push_back(parser.get <status_info>(line, &pos));
 
 					while (!parser.check <one_char <')'> >(line, &pos, true))
+					{
+						parser.check <SPACE>(line, &pos);
 						m_status_info_list.push_back(parser.get <status_info>(line, &pos));
+					}
 
 					m_type = STATUS;
 				}
