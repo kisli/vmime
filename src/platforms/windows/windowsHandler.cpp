@@ -227,7 +227,7 @@ const vmime::string windowsHandler::getHostName() const
 
 const unsigned int windowsHandler::getProcessId() const
 {
-	return (static_cast <unsigned int>(::GetCurrentProcessId());
+	return (static_cast <unsigned int>(::GetCurrentProcessId()));
 }
 
 
