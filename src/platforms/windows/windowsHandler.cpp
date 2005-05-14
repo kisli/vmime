@@ -59,7 +59,7 @@ windowsHandler::~windowsHandler()
 
 const unsigned int windowsHandler::getUnixTime() const
 {
-	return (unsigned int)::time(NULL);
+	return static_cast <unsigned int>(::time(NULL));
 }
 
 
@@ -227,7 +227,7 @@ const vmime::string windowsHandler::getHostName() const
 
 const unsigned int windowsHandler::getProcessId() const
 {
-	return (::getpid());
+	return (static_cast <unsigned int>(::GetCurrentProcessId());
 }
 
 
