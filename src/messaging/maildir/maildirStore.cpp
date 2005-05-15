@@ -27,6 +27,13 @@
 #include "vmime/platformDependant.hpp"
 
 
+// Helpers for service properties
+#define GET_PROPERTY(type, prop) \
+	(sm_infos.getPropertyValue <type>(getSession(), sm_infos.getProperties().prop))
+#define HAS_PROPERTY(prop) \
+	(sm_infos.hasProperty(getSession(), sm_infos.getProperties().prop))
+
+
 namespace vmime {
 namespace messaging {
 namespace maildir {
@@ -108,8 +115,7 @@ void maildirStore::connect()
 	// Get root directory
 	utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
 
-	m_fsPath = fsf->stringToPath
-		(getSession()->getProperties()[getInfos().getPropertyPrefix() + "server.rootpath"]);
+	m_fsPath = fsf->stringToPath(GET_PROPERTY(string, PROPERTY_SERVER_ROOTPATH));
 
 	utility::auto_ptr <utility::file> rootDir = fsf->create(m_fsPath);
 
@@ -181,10 +187,10 @@ const int maildirStore::getCapabilities() const
 	        CAPABILITY_RENAME_FOLDER |
 	        CAPABILITY_ADD_MESSAGE |
 	        CAPABILITY_COPY_MESSAGE |
-		   CAPABILITY_DELETE_MESSAGE |
+	        CAPABILITY_DELETE_MESSAGE |
 	        CAPABILITY_PARTIAL_FETCH |
 	        CAPABILITY_MESSAGE_FLAGS |
-		   CAPABILITY_EXTRACT_PART);
+	        CAPABILITY_EXTRACT_PART);
 }
 
 
@@ -207,23 +213,30 @@ const serviceInfos& maildirStore::getInfos() const
 }
 
 
-const port_t maildirStore::_infos::getDefaultPort() const
-{
-	return (0);
-}
-
-
 const string maildirStore::_infos::getPropertyPrefix() const
 {
 	return "store.maildir.";
 }
 
 
-const std::vector <string> maildirStore::_infos::getAvailableProperties() const
+const maildirStore::_infos::props& maildirStore::_infos::getProperties() const
 {
-	std::vector <string> list;
+	static props p =
+	{
+		property(serviceInfos::property::SERVER_ROOTPATH, serviceInfos::property::FLAG_REQUIRED)
+	};
 
-	list.push_back("server.rootpath");
+	return p;
+}
+
+
+const std::vector <serviceInfos::property> maildirStore::_infos::getAvailableProperties() const
+{
+	std::vector <property> list;
+	const props& p = getProperties();
+
+	// Maildir-specific properties
+	list.push_back(p.PROPERTY_SERVER_ROOTPATH);
 
 	return (list);
 }

@@ -342,6 +342,64 @@ private:
 
 public:
 
+	template <typename TYPE>
+	static const TYPE valueFromString(const string& value)
+	{
+		TYPE v = TYPE();
+
+		std::istringstream iss(value);
+		iss >> v;
+
+		return v;
+	}
+
+	template <typename TYPE>
+	static const string valueToString(const TYPE& value)
+	{
+		std::ostringstream oss(value);
+		oss << value;
+
+		return oss.str();
+	}
+
+#ifdef VMIME_INLINE_TEMPLATE_SPECIALIZATION
+
+	template <>
+	static const string valueFromString(const string& value)
+	{
+		return value;
+	}
+
+	template <>
+	static const string valueToString(const string& value)
+	{
+		return value;
+	}
+
+	template <>
+	static const bool valueFromString(const string& value)
+	{
+		if (utility::stringUtils::toLower(m_value) == "true")
+			return true;
+		else
+		{
+			int val = 0;
+
+			std::istringstream iss(m_value);
+			iss >> val;
+
+			return (!iss.fail() && val != 0);
+		}
+	}
+
+	template <>
+	static const string valueToString(const bool& value)
+	{
+		return (value ? "true" : "false");
+	}
+
+#endif // VMIME_INLINE_TEMPLATE_SPECIALIZATION
+
 	/** Return the property list.
 	  *
 	  * @return list of properties
@@ -363,6 +421,12 @@ template <> void propertySet::property::setValue(const bool& value);
 
 template <> const string propertySet::property::getValue() const;
 template <> const bool propertySet::property::getValue() const;
+
+template <> const string propertySet::valueFromString(const string& value);
+template <> const string propertySet::valueToString(const string& value);
+
+template <> const bool propertySet::valueFromString(const string& value);
+template <> const string propertySet::valueToString(const bool& value);
 
 #endif // VMIME_INLINE_TEMPLATE_SPECIALIZATION
 

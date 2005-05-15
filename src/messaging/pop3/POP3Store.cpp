@@ -28,6 +28,13 @@
 #include <algorithm>
 
 
+// Helpers for service properties
+#define GET_PROPERTY(type, prop) \
+	(sm_infos.getPropertyValue <type>(getSession(), sm_infos.getProperties().prop))
+#define HAS_PROPERTY(prop) \
+	(sm_infos.hasProperty(getSession(), sm_infos.getProperties().prop))
+
+
 namespace vmime {
 namespace messaging {
 namespace pop3 {
@@ -93,23 +100,21 @@ void POP3Store::connect()
 	if (isConnected())
 		throw exceptions::already_connected();
 
-	const string address = getSession()->getProperties()[sm_infos.getPropertyPrefix() + "server.address"];
-	const port_t port = getSession()->getProperties().getProperty(sm_infos.getPropertyPrefix() + "server.port", sm_infos.getDefaultPort());
+	const string address = GET_PROPERTY(string, PROPERTY_SERVER_ADDRESS);
+	const port_t port = GET_PROPERTY(port_t, PROPERTY_SERVER_PORT);
 
 	// Create the time-out handler
-	if (getSession()->getProperties().hasProperty
-		(sm_infos.getPropertyPrefix() + "timeout.factory"))
+	if (HAS_PROPERTY(PROPERTY_TIMEOUT_FACTORY))
 	{
 		timeoutHandlerFactory* tof = platformDependant::getHandler()->
-			getTimeoutHandlerFactory(getSession()->getProperties()
-				[sm_infos.getPropertyPrefix() + "timeout.factory"]);
+			getTimeoutHandlerFactory(GET_PROPERTY(string, PROPERTY_TIMEOUT_FACTORY));
 
 		m_timeoutHandler = tof->create();
 	}
 
 	// Create and connect the socket
-	socketFactory* sf = platformDependant::getHandler()->getSocketFactory
-		(getSession()->getProperties().getProperty(sm_infos.getPropertyPrefix() + "server.socket-factory", string("default")));
+	socketFactory* sf = platformDependant::getHandler()->
+		getSocketFactory(GET_PROPERTY(string, PROPERTY_SERVER_SOCKETFACTORY));
 
 	m_socket = sf->create();
 	m_socket->connect(address, port);
@@ -134,7 +139,7 @@ void POP3Store::connect()
 		// ---  S: +OK vincent is a valid mailbox
 		messageId mid(response);
 
-		if (getSession()->getProperties().getProperty(sm_infos.getPropertyPrefix() + "options.apop", false))
+		if (GET_PROPERTY(bool, PROPERTY_OPTIONS_APOP))
 		{
 			if (mid.getLeft().length() && mid.getRight().length())
 			{
@@ -149,8 +154,7 @@ void POP3Store::connect()
 				}
 				else
 				{
-					if (getSession()->getProperties().getProperty(sm_infos.getPropertyPrefix() +
-						"options.apop.fallback", false) == false)
+					if (!GET_PROPERTY(bool, PROPERTY_OPTIONS_APOP_FALLBACK))
 					{
 						internalDisconnect();
 						throw exceptions::authentication_error(response);
@@ -160,8 +164,7 @@ void POP3Store::connect()
 			else
 			{
 				// APOP not supported
-				if (getSession()->getProperties().getProperty(sm_infos.getPropertyPrefix() +
-					"options.apop.fallback", false) == false)
+				if (!GET_PROPERTY(bool, PROPERTY_OPTIONS_APOP_FALLBACK))
 				{
 					// Can't fallback on basic authentification
 					internalDisconnect();
@@ -591,35 +594,53 @@ const serviceInfos& POP3Store::getInfos() const
 }
 
 
-const port_t POP3Store::_infos::getDefaultPort() const
-{
-	return (110);
-}
-
-
 const string POP3Store::_infos::getPropertyPrefix() const
 {
 	return "store.pop3.";
 }
 
 
-const std::vector <string> POP3Store::_infos::getAvailableProperties() const
+const POP3Store::_infos::props& POP3Store::_infos::getProperties() const
 {
-	std::vector <string> list;
+	static props p =
+	{
+		// POP3-specific options
+		property("options.apop", serviceInfos::property::TYPE_BOOL, "false"),
+		property("options.apop.fallback", serviceInfos::property::TYPE_BOOL, "false"),
+
+		// Common properties
+		property(serviceInfos::property::AUTH_USERNAME, serviceInfos::property::FLAG_REQUIRED),
+		property(serviceInfos::property::AUTH_PASSWORD, serviceInfos::property::FLAG_REQUIRED),
+
+		property(serviceInfos::property::SERVER_ADDRESS, serviceInfos::property::FLAG_REQUIRED),
+		property(serviceInfos::property::SERVER_PORT, "110"),
+		property(serviceInfos::property::SERVER_SOCKETFACTORY),
+
+		property(serviceInfos::property::TIMEOUT_FACTORY)
+	};
+
+	return p;
+}
+
+
+const std::vector <serviceInfos::property> POP3Store::_infos::getAvailableProperties() const
+{
+	std::vector <property> list;
+	const props& p = getProperties();
 
 	// POP3-specific options
-	list.push_back("options.apop");
-	list.push_back("options.apop.fallback");
+	list.push_back(p.PROPERTY_OPTIONS_APOP);
+	list.push_back(p.PROPERTY_OPTIONS_APOP_FALLBACK);
 
 	// Common properties
-	list.push_back("auth.username");
-	list.push_back("auth.password");
+	list.push_back(p.PROPERTY_AUTH_USERNAME);
+	list.push_back(p.PROPERTY_AUTH_PASSWORD);
 
-	list.push_back("server.address");
-	list.push_back("server.port");
-	list.push_back("server.socket-factory");
+	list.push_back(p.PROPERTY_SERVER_ADDRESS);
+	list.push_back(p.PROPERTY_SERVER_PORT);
+	list.push_back(p.PROPERTY_SERVER_SOCKETFACTORY);
 
-	list.push_back("timeout.factory");
+	list.push_back(p.PROPERTY_TIMEOUT_FACTORY);
 
 	return (list);
 }

@@ -176,7 +176,8 @@ libvmime_examples_sources = [
 	'examples/example3.cpp',
 	'examples/example4.cpp',
 	'examples/example5.cpp',
-	'examples/example6.cpp'
+	'examples/example6.cpp',
+	'examples/example7.cpp'
 ]
 
 libvmime_messaging_sources = [
@@ -190,7 +191,7 @@ libvmime_messaging_sources = [
 	'messaging/message.cpp', 'messaging/message.hpp',
 	'messaging/service.cpp', 'messaging/service.hpp',
 	'messaging/serviceFactory.cpp', 'messaging/serviceFactory.hpp',
-	'messaging/serviceInfos.hpp',
+	'messaging/serviceInfos.cpp', 'messaging/serviceInfos.hpp',
 	'messaging/session.cpp', 'messaging/session.hpp',
 	'messaging/simpleAuthenticator.cpp', 'messaging/simpleAuthenticator.hpp',
 	'messaging/socket.hpp',

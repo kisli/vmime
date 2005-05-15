@@ -28,6 +28,15 @@
 #include "vmime/utility/childProcess.hpp"
 #include "vmime/utility/smartPtr.hpp"
 
+#include "vmime/config.hpp"
+
+
+// Helpers for service properties
+#define GET_PROPERTY(type, prop) \
+	(sm_infos.getPropertyValue <type>(getSession(), sm_infos.getProperties().prop))
+#define HAS_PROPERTY(prop) \
+	(sm_infos.hasProperty(getSession(), sm_infos.getProperties().prop))
+
 
 #if VMIME_BUILTIN_PLATFORM_POSIX
 
@@ -62,8 +71,7 @@ void sendmailTransport::connect()
 		throw exceptions::already_connected();
 
 	// Use the specified path for 'sendmail' or a default one if no path is specified
-	m_sendmailPath = getSession()->getProperties().getProperty
-		(sm_infos.getPropertyPrefix() + "binpath", string(VMIME_SENDMAIL_PATH));
+	m_sendmailPath = GET_PROPERTY(string, PROPERTY_BINPATH);
 
 	m_connected = true;
 }
@@ -177,24 +185,30 @@ const serviceInfos& sendmailTransport::getInfos() const
 }
 
 
-const port_t sendmailTransport::_infos::getDefaultPort() const
-{
-	return (0);
-}
-
-
 const string sendmailTransport::_infos::getPropertyPrefix() const
 {
 	return "transport.sendmail.";
 }
 
 
-const std::vector <string> sendmailTransport::_infos::getAvailableProperties() const
+const sendmailTransport::_infos::props& sendmailTransport::_infos::getProperties() const
 {
-	std::vector <string> list;
+	static props p =
+	{
+		// Path to sendmail (override default)
+		property("binpath", serviceInfos::property::TYPE_STRING, string(VMIME_SENDMAIL_PATH))
+	};
 
-	// Path to sendmail (override default)
-	list.push_back("binpath");
+	return p;
+}
+
+
+const std::vector <serviceInfos::property> sendmailTransport::_infos::getAvailableProperties() const
+{
+	std::vector <property> list;
+	const props& p = getProperties();
+
+	list.push_back(p.PROPERTY_BINPATH);
 
 	return (list);
 }

@@ -72,56 +72,6 @@ int main()
 	// VMime initialization
 	vmime::platformDependant::setHandler<vmime::platforms::posix::posixHandler>();
 
-	//
-	// Test the new enumeration system for encoders
-	//
-
-#if 1
-	vmime::encoderFactory* ef = vmime::encoderFactory::getInstance();
-
-	std::cout << "Available encoders:" << std::endl;
-
-	for (int i = 0 ; i < ef->getEncoderCount() ; ++i)
-	{
-		const vmime::encoderFactory::registeredEncoder& enc = *ef->getEncoderAt(i);
-
-		std::cout << "  * " << enc.getName() << std::endl;
-
-		vmime::encoder* e = enc.create();
-
-		std::vector <vmime::string> props = e->getAvailableProperties();
-
-		for (std::vector <vmime::string>::const_iterator it = props.begin() ; it != props.end() ; ++it)
-			std::cout << "      - " << *it << std::endl;
-
-		delete (e);
-	}
-#endif
-
-	// ======================================================================================
-
-	//
-	// Test the new enumeration system for messaging services
-	//
-
-#if 1
-	vmime::messaging::serviceFactory* sf = vmime::messaging::serviceFactory::getInstance();
-
-	std::cout << "Available messaging services:" << std::endl;
-
-	for (int i = 0 ; i < sf->getServiceCount() ; ++i)
-	{
-		const vmime::messaging::serviceFactory::registeredService& serv = *sf->getServiceAt(i);
-
-		std::cout << "  * " << serv.getName() << " (" << serv.getInfos().getDefaultPort() << ")" << std::endl;
-
-		std::vector <vmime::string> props = serv.getInfos().getAvailableProperties();
-
-		for (std::vector <vmime::string>::const_iterator it = props.begin() ; it != props.end() ; ++it)
-			std::cout << "      - " << serv.getInfos().getPropertyPrefix() + *it << std::endl;
-	}
-#endif
-
 	vmime::messaging::session sess;
 	sess.getProperties()["store.protocol"] = "imap";
 	sess.getProperties()["transport.protocol"] = "smtp";

@@ -324,6 +324,46 @@ const bool propertySet::property::getValue() const
 	}
 }
 
+
+
+
+template <>
+const string propertySet::valueFromString(const string& value)
+{
+	return value;
+}
+
+
+template <>
+const string propertySet::valueToString(const string& value)
+{
+	return value;
+}
+
+
+template <>
+const bool propertySet::valueFromString(const string& value)
+{
+	if (utility::stringUtils::toLower(value) == "true")
+		return true;
+	else
+	{
+		int val = 0;
+
+		std::istringstream iss(value);
+		iss >> val;
+
+		return (!iss.fail() && val != 0);
+	}
+}
+
+
+template <>
+const string propertySet::valueToString(const bool& value)
+{
+	return (value ? "true" : "false");
+}
+
 #endif // VMIME_INLINE_TEMPLATE_SPECIALIZATION
 
 

@@ -28,6 +28,15 @@
 #include <sstream>
 
 
+// Helpers for service properties
+#define GET_PROPERTY(type, prop) \
+	(m_store->getInfos().getPropertyValue <type>(getSession(), \
+		dynamic_cast <const IMAPStore::_infos&>(m_store->getInfos()).getProperties().prop))
+#define HAS_PROPERTY(prop) \
+	(m_store->getInfos().hasProperty(getSession(), \
+		dynamic_cast <const IMAPStore::_infos&>(m_store->getInfos()).getProperties().prop))
+
+
 namespace vmime {
 namespace messaging {
 namespace imap {
@@ -60,27 +69,25 @@ void IMAPConnection::connect()
 	m_state = STATE_NONE;
 	m_hierarchySeparator = '\0';
 
-	const string address = m_store->getSession()->getProperties()[m_store->getInfos().getPropertyPrefix() + "server.address"];
-	const port_t port = m_store->getSession()->getProperties().getProperty(m_store->getInfos().getPropertyPrefix() + "server.port", m_store->getInfos().getDefaultPort());
+	const string address = GET_PROPERTY(string, PROPERTY_SERVER_ADDRESS);
+	const port_t port = GET_PROPERTY(port_t, PROPERTY_SERVER_PORT);
 
 	// Create the time-out handler
-	if (m_store->getSession()->getProperties().hasProperty
-		(m_store->getInfos().getPropertyPrefix() + "timeout.factory"))
+	if (HAS_PROPERTY(PROPERTY_TIMEOUT_FACTORY))
 	{
 		timeoutHandlerFactory* tof = platformDependant::getHandler()->
-			getTimeoutHandlerFactory(m_store->getSession()->getProperties()
-				[m_store->getInfos().getPropertyPrefix() + "timeout.factory"]);
+			getTimeoutHandlerFactory(GET_PROPERTY(string, PROPERTY_TIMEOUT_FACTORY));
 
 		m_timeoutHandler = tof->create();
 	}
 
 	// Create and connect the socket
-	socketFactory* sf = platformDependant::getHandler()->getSocketFactory
-		(m_store->getSession()->getProperties().getProperty
-			(m_store->getInfos().getPropertyPrefix() + "server.socket-factory", string("default")));
+	socketFactory* sf = platformDependant::getHandler()->
+		getSocketFactory(GET_PROPERTY(string, PROPERTY_SERVER_SOCKETFACTORY));
 
 	m_socket = sf->create();
 	m_socket->connect(address, port);
+
 
 	delete (m_tag);
 	m_tag = new IMAPTag();
@@ -257,6 +264,53 @@ void IMAPConnection::sendRaw(const char* buffer, const int count)
 IMAPParser::response* IMAPConnection::readResponse(IMAPParser::literalHandler* lh)
 {
 	return (m_parser->readResponse(lh));
+}
+
+
+const IMAPConnection::ProtocolStates IMAPConnection::state() const
+{
+	return (m_state);
+}
+
+
+void IMAPConnection::setState(const ProtocolStates state)
+{
+	m_state = state;
+}
+
+const char IMAPConnection::hierarchySeparator() const
+{
+	return (m_hierarchySeparator);
+}
+
+
+const IMAPTag* IMAPConnection::getTag() const
+{
+	return (m_tag);
+}
+
+
+const IMAPParser* IMAPConnection::getParser() const
+{
+	return (m_parser);
+}
+
+
+const IMAPStore* IMAPConnection::getStore() const
+{
+	return (m_store);
+}
+
+
+IMAPStore* IMAPConnection::getStore()
+{
+	return (m_store);
+}
+
+
+session* IMAPConnection::getSession()
+{
+	return (m_store->getSession());
 }
 
 

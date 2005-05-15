@@ -2,6 +2,12 @@
 VERSION 0.7.1cvs
 ================
 
+2005-05-15  Vincent Richard  <vincent@vincent-richard.net>
+
+ * messaging/serviceInfos.{hpp|cpp}: changed getAvailableProperties() to
+   return 'serviceInfos::property' objects instead of strings. This permits
+   setting service properties in a more generic manner.
+
 2005-05-03  Vincent Richard  <vincent@vincent-richard.net>
 
  * messaging/imap/IMAPFolder.cpp: fixed missing space in "STATUS" command +

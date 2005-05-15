@@ -230,12 +230,11 @@ const int IMAPStore::getCapabilities() const
 	        CAPABILITY_RENAME_FOLDER |
 	        CAPABILITY_ADD_MESSAGE |
 	        CAPABILITY_COPY_MESSAGE |
-		   CAPABILITY_DELETE_MESSAGE |
+	        CAPABILITY_DELETE_MESSAGE |
 	        CAPABILITY_PARTIAL_FETCH |
 	        CAPABILITY_MESSAGE_FLAGS |
-		   CAPABILITY_EXTRACT_PART);
+	        CAPABILITY_EXTRACT_PART);
 }
-
 
 
 
@@ -256,37 +255,55 @@ const serviceInfos& IMAPStore::getInfos() const
 }
 
 
-const port_t IMAPStore::_infos::getDefaultPort() const
-{
-	return (143);
-}
-
-
 const string IMAPStore::_infos::getPropertyPrefix() const
 {
 	return "store.imap.";
 }
 
 
-const std::vector <string> IMAPStore::_infos::getAvailableProperties() const
+const IMAPStore::_infos::props& IMAPStore::_infos::getProperties() const
 {
-	std::vector <string> list;
+	static props p =
+	{
+		// IMAP-specific options
+		// (none)
+
+		// Common properties
+		property(serviceInfos::property::AUTH_USERNAME, serviceInfos::property::FLAG_REQUIRED),
+		property(serviceInfos::property::AUTH_PASSWORD, serviceInfos::property::FLAG_REQUIRED),
+
+		property(serviceInfos::property::SERVER_ADDRESS, serviceInfos::property::FLAG_REQUIRED),
+		property(serviceInfos::property::SERVER_PORT, "143"),
+		property(serviceInfos::property::SERVER_SOCKETFACTORY),
+
+		property(serviceInfos::property::TIMEOUT_FACTORY)
+	};
+
+	return p;
+}
+
+
+const std::vector <serviceInfos::property> IMAPStore::_infos::getAvailableProperties() const
+{
+	std::vector <property> list;
+	const props& p = getProperties();
 
 	// IMAP-specific options
-	//list.push_back("auth.mechanism");
+	// (none)
 
 	// Common properties
-	list.push_back("auth.username");
-	list.push_back("auth.password");
+	list.push_back(p.PROPERTY_AUTH_USERNAME);
+	list.push_back(p.PROPERTY_AUTH_PASSWORD);
 
-	list.push_back("server.address");
-	list.push_back("server.port");
-	list.push_back("server.socket-factory");
+	list.push_back(p.PROPERTY_SERVER_ADDRESS);
+	list.push_back(p.PROPERTY_SERVER_PORT);
+	list.push_back(p.PROPERTY_SERVER_SOCKETFACTORY);
 
-	list.push_back("timeout.factory");
+	list.push_back(p.PROPERTY_TIMEOUT_FACTORY);
 
 	return (list);
 }
+
 
 
 } // imap

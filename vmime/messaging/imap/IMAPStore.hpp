@@ -47,6 +47,7 @@ class IMAPStore : public store
 {
 	friend class IMAPFolder;
 	friend class IMAPMessage;
+	friend class IMAPConnection;
 
 public:
 
@@ -101,10 +102,26 @@ private:
 	{
 	public:
 
-		const port_t getDefaultPort() const;
+		struct props
+		{
+			// IMAP-specific options
+			// (none)
+
+			// Common properties
+			serviceInfos::property PROPERTY_AUTH_USERNAME;
+			serviceInfos::property PROPERTY_AUTH_PASSWORD;
+
+			serviceInfos::property PROPERTY_SERVER_ADDRESS;
+			serviceInfos::property PROPERTY_SERVER_PORT;
+			serviceInfos::property PROPERTY_SERVER_SOCKETFACTORY;
+
+			serviceInfos::property PROPERTY_TIMEOUT_FACTORY;
+		};
+
+		const props& getProperties() const;
 
 		const string getPropertyPrefix() const;
-		const std::vector <string> getAvailableProperties() const;
+		const std::vector <serviceInfos::property> getAvailableProperties() const;
 	};
 
 	static _infos sm_infos;

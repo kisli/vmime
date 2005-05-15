@@ -77,10 +77,15 @@ private:
 	{
 	public:
 
-		const port_t getDefaultPort() const;
+		struct props
+		{
+			serviceInfos::property PROPERTY_BINPATH;
+		};
+
+		const props& getProperties() const;
 
 		const string getPropertyPrefix() const;
-		const std::vector <string> getAvailableProperties() const;
+		const std::vector <serviceInfos::property> getAvailableProperties() const;
 	};
 
 	static _infos sm_infos;

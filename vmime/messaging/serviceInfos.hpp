@@ -25,6 +25,8 @@
 
 #include "vmime/types.hpp"
 
+#include "vmime/messaging/session.hpp"
+
 
 namespace vmime {
 namespace messaging {
@@ -39,22 +41,143 @@ class serviceInfos
 
 protected:
 
-	serviceInfos() { }
-	serviceInfos(const serviceInfos&) { }
+	serviceInfos();
+	serviceInfos(const serviceInfos&);
 
 private:
 
-	serviceInfos& operator=(const serviceInfos&) { return (*this); }
+	serviceInfos& operator=(const serviceInfos&);
 
 public:
 
-	virtual ~serviceInfos() { }
+	virtual ~serviceInfos();
 
-	/** Return the default port used for the underlying protocol.
-	  *
-	  * @return default port number
+
+	/** A service property.
 	  */
-	virtual const port_t getDefaultPort() const = 0;
+	class property
+	{
+	public:
+
+		/** The common property 'server.address' which is
+		  * the host name or the IP address of the server. */
+		static const property SERVER_ADDRESS;
+
+		/** The common property 'server.port' which is
+		  * the port used to connect to the server. */
+		static const property SERVER_PORT;
+
+		/** The common property 'server.rootpath' which is
+		  * the full path of the folder on the server (for
+		  * maildir, this is the local filesystem directory). */
+		static const property SERVER_ROOTPATH;
+
+		/** The common property 'server.socket-factory' used
+		  * to indicate which factory to use to instanciate
+		  * new socket objects. */
+		static const property SERVER_SOCKETFACTORY;
+
+		/** The common property 'auth.username' which is the
+		  * username used to authenticate with the server. */
+		static const property AUTH_USERNAME;
+
+		/** The common property 'auth.password' which is the
+		  * password used to authenticate with the server. */
+		static const property AUTH_PASSWORD;
+
+		/** The common property 'timeout.factory' used to
+		  * specify which factory to use to instanciate
+		  * time-out handler objects. If none is specified,
+		  * no time-out handler is used. */
+		static const property TIMEOUT_FACTORY;
+
+
+		/** Value types.
+		  */
+		enum Types
+		{
+			TYPE_INTEGER,   /*< Integer number. */
+			TYPE_STRING,    /*< Character string. */
+			TYPE_BOOL,      /*< Boolean (true or false). */
+
+			TYPE_DEFAULT = TYPE_STRING
+		};
+
+		/** Property flags.
+		  */
+		enum Flags
+		{
+			FLAG_NONE = 0,              /*< No flags. */
+			FLAG_REQUIRED = (1 << 0),   /*< The property must be valued. */
+			FLAG_HIDDEN = (1 << 1),     /*< The property should not be shown
+			                                to the user but can be modified. */
+
+			FLAG_DEFAULT = FLAG_NONE    /*< Default flags. */
+		};
+
+
+		/** Construct a new property.
+		  *
+		  * @param name property name
+		  * @param type value type
+		  * @param defaultValue default value
+		  * @param flags property attributes
+		  */
+		property(const string& name, const Types type, const string& defaultValue = "", const int flags = FLAG_DEFAULT);
+
+		/** Construct a new property from an existing property.
+		  *
+		  * @param p source property
+		  * @param addFlags flags to add
+		  * @param removeFlags flags to remove
+		  */
+		property(const property& p, const int addFlags = FLAG_NONE, const int removeFlags = FLAG_NONE);
+
+		/** Construct a new property from an existing property.
+		  *
+		  * @param p source property
+		  * @param newDefaultValue new default value
+		  * @param addFlags flags to add
+		  * @param removeFlags flags to remove
+		  */
+		property(const property& p, const string& newDefaultValue, const int addFlags = FLAG_NONE, const int removeFlags = FLAG_NONE);
+
+		property& operator=(const property& p);
+
+		/** Return the name of the property.
+		  *
+		  * @return property name
+		  */
+		const string& getName() const;
+
+		/** Return the default value of the property or
+		  * an empty string if there is no default value.
+		  *
+		  * @return default value for the property
+		  */
+		const string& getDefaultValue() const;
+
+		/** Return the value type of the property.
+		  *
+		  * @return property value type
+		  */
+		const Types getType() const;
+
+		/** Return the attributes of the property (see
+		  * serviceInfos::property::Types constants).
+		  *
+		  * @return property attributes
+		  */
+		const int getFlags() const;
+
+	private:
+
+		string m_name;
+		string m_defaultValue;
+		Types m_type;
+		int m_flags;
+	};
+
 
 	/** Return the property prefix used by this service.
 	  * Use this to set/get properties in the session object.
@@ -65,9 +188,36 @@ public:
 
 	/** Return a list of available properties for this service.
 	  *
-	  * @return list of property names
+	  * @return list of properties
 	  */
-	virtual const std::vector <string> getAvailableProperties() const = 0;
+	virtual const std::vector <property> getAvailableProperties() const = 0;
+
+	/** Helper function to retrieve the value of a property.
+	  *
+	  * @param s session object
+	  * @param p property to retrieve
+	  * @throw exceptions::no_such_property if the property does not exist
+	  * and has the flag property::FLAG_REQUIRED
+	  * @return value of the property
+	  */
+	template <typename TYPE>
+	const TYPE getPropertyValue(session* s, const property& p) const
+	{
+		if (p.getFlags() & property::FLAG_REQUIRED)
+			return s->getProperties()[getPropertyPrefix() + p.getName()].template getValue <TYPE>();
+
+		return s->getProperties().template getProperty <TYPE>(getPropertyPrefix() + p.getName(),
+			propertySet::valueFromString <TYPE>(p.getDefaultValue()));
+	}
+
+	/** Helper function to test if the specified property is set in
+	  * the session object.
+	  *
+	  * @param s session object
+	  * @param p property to test
+	  * @return true if the property is set, false otherwise
+	  */
+	const bool hasProperty(session* s, const property& p) const;
 };
 
 

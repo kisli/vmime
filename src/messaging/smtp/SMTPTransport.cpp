@@ -29,6 +29,13 @@
 #include "vmime/utility/filteredStream.hpp"
 
 
+// Helpers for service properties
+#define GET_PROPERTY(type, prop) \
+	(sm_infos.getPropertyValue <type>(getSession(), sm_infos.getProperties().prop))
+#define HAS_PROPERTY(prop) \
+	(sm_infos.hasProperty(getSession(), sm_infos.getProperties().prop))
+
+
 namespace vmime {
 namespace messaging {
 namespace smtp {
@@ -61,23 +68,21 @@ void SMTPTransport::connect()
 	if (isConnected())
 		throw exceptions::already_connected();
 
-	const string address = getSession()->getProperties()[sm_infos.getPropertyPrefix() + "server.address"];
-	const port_t port = getSession()->getProperties().getProperty(sm_infos.getPropertyPrefix() + "server.port", sm_infos.getDefaultPort());
+	const string address = GET_PROPERTY(string, PROPERTY_SERVER_ADDRESS);
+	const port_t port = GET_PROPERTY(port_t, PROPERTY_SERVER_PORT);
 
 	// Create the time-out handler
-	if (getSession()->getProperties().hasProperty
-		(sm_infos.getPropertyPrefix() + "timeout.factory"))
+	if (HAS_PROPERTY(PROPERTY_TIMEOUT_FACTORY))
 	{
 		timeoutHandlerFactory* tof = platformDependant::getHandler()->
-			getTimeoutHandlerFactory(getSession()->getProperties()
-				[sm_infos.getPropertyPrefix() + "timeout.factory"]);
+			getTimeoutHandlerFactory(GET_PROPERTY(string, PROPERTY_TIMEOUT_FACTORY));
 
 		m_timeoutHandler = tof->create();
 	}
 
 	// Create and connect the socket
-	socketFactory* sf = platformDependant::getHandler()->getSocketFactory
-		(getSession()->getProperties().getProperty(sm_infos.getPropertyPrefix() + "server.socket-factory", string("default")));
+	socketFactory* sf = platformDependant::getHandler()->
+		getSocketFactory(GET_PROPERTY(string, PROPERTY_SERVER_SOCKETFACTORY));
 
 	m_socket = sf->create();
 	m_socket->connect(address, port);
@@ -129,8 +134,7 @@ void SMTPTransport::connect()
 	}
 
 	// Authentication
-	if (getSession()->getProperties().getProperty
-		(sm_infos.getPropertyPrefix() + "options.need-authentication", false) == true)
+	if (GET_PROPERTY(bool, PROPERTY_OPTIONS_NEEDAUTH))
 	{
 		if (!m_extendedSMTP)
 		{
@@ -447,34 +451,51 @@ const serviceInfos& SMTPTransport::getInfos() const
 }
 
 
-const port_t SMTPTransport::_infos::getDefaultPort() const
-{
-	return (25);
-}
-
-
 const string SMTPTransport::_infos::getPropertyPrefix() const
 {
 	return "transport.smtp.";
 }
 
 
-const std::vector <string> SMTPTransport::_infos::getAvailableProperties() const
+const SMTPTransport::_infos::props& SMTPTransport::_infos::getProperties() const
 {
-	std::vector <string> list;
+	static props p =
+	{
+		// SMTP-specific options
+		property("options.need-authentication", serviceInfos::property::TYPE_BOOL, "false"),
+
+		// Common properties
+		property(serviceInfos::property::AUTH_USERNAME),
+		property(serviceInfos::property::AUTH_PASSWORD),
+
+		property(serviceInfos::property::SERVER_ADDRESS, serviceInfos::property::FLAG_REQUIRED),
+		property(serviceInfos::property::SERVER_PORT, "25"),
+		property(serviceInfos::property::SERVER_SOCKETFACTORY),
+
+		property(serviceInfos::property::TIMEOUT_FACTORY)
+	};
+
+	return p;
+}
+
+
+const std::vector <serviceInfos::property> SMTPTransport::_infos::getAvailableProperties() const
+{
+	std::vector <property> list;
+	const props& p = getProperties();
 
 	// SMTP-specific options
-	list.push_back("options.need-authentication");
+	list.push_back(p.PROPERTY_OPTIONS_NEEDAUTH);
 
 	// Common properties
-	list.push_back("auth.username");
-	list.push_back("auth.password");
+	list.push_back(p.PROPERTY_AUTH_USERNAME);
+	list.push_back(p.PROPERTY_AUTH_PASSWORD);
 
-	list.push_back("server.address");
-	list.push_back("server.port");
-	list.push_back("server.socket-factory");
+	list.push_back(p.PROPERTY_SERVER_ADDRESS);
+	list.push_back(p.PROPERTY_SERVER_PORT);
+	list.push_back(p.PROPERTY_SERVER_SOCKETFACTORY);
 
-	list.push_back("timeout.factory");
+	list.push_back(p.PROPERTY_TIMEOUT_FACTORY);
 
 	return (list);
 }

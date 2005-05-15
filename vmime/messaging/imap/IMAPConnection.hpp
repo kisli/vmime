@@ -26,6 +26,7 @@
 #include "vmime/messaging/authenticator.hpp"
 #include "vmime/messaging/socket.hpp"
 #include "vmime/messaging/timeoutHandler.hpp"
+#include "vmime/messaging/session.hpp"
 
 #include "vmime/messaging/imap/IMAPParser.hpp"
 
@@ -61,11 +62,11 @@ public:
 		STATE_LOGOUT
 	};
 
-	const ProtocolStates state() const { return (m_state); }
-	void setState(const ProtocolStates state) { m_state = state; }
+	const ProtocolStates state() const;
+	void setState(const ProtocolStates state);
 
 
-	const char hierarchySeparator() const { return (m_hierarchySeparator); }
+	const char hierarchySeparator() const;
 
 
 	void send(bool tag, const string& what, bool end);
@@ -74,11 +75,13 @@ public:
 	IMAPParser::response* readResponse(IMAPParser::literalHandler* lh = NULL);
 
 
-	const IMAPTag* getTag() const { return (m_tag); }
-	const IMAPParser* getParser() const { return (m_parser); }
+	const IMAPTag* getTag() const;
+	const IMAPParser* getParser() const;
 
-	const IMAPStore* getStore() const { return (m_store); }
-	IMAPStore* getStore() { return (m_store); }
+	const IMAPStore* getStore() const;
+	IMAPStore* getStore();
+
+	session* getSession();
 
 private:
 
