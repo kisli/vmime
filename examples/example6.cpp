@@ -18,36 +18,97 @@
 //
 
 #include <iostream>
+#include <sstream>
+#include <vector>
 
 #include "vmime/vmime.hpp"
 #include "vmime/platforms/posix/posixHandler.hpp"
 
 
-//
-// Authentification handler
-//
+// Global session object
+static vmime::utility::auto_ptr <vmime::messaging::session> g_session
+	= new vmime::messaging::session();
 
-class my_auth : public vmime::messaging::authenticator
+
+// Authentification handler
+class interactiveAuthenticator : public vmime::messaging::authenticator
 {
 	const vmime::messaging::authenticationInfos requestAuthInfos() const
 	{
 		vmime::string username, password;
 
-		std::cout << "Username: "; std::cout.flush();
-		std::cin >> username;
+		std::cout << std::endl;
+		std::cout << "Please authenticate yourself:" << std::endl;
 
-		std::cout << "Password: "; std::cout.flush();
-		std::cin >> password;
+		std::cout << "   Username: ";
+		std::cout.flush();
+
+		std::getline(std::cin, username);
+
+		std::cout << "   Password: ";
+		std::cout.flush();
+
+		std::getline(std::cin, password);
 
 		return (vmime::messaging::authenticationInfos(username, password));
 	}
 };
 
 
+// Exception helper
+static std::ostream& operator<<(std::ostream& os, const vmime::exception& e)
+{
+	os << "* vmime::exceptions::" << e.name() << std::endl;
+	os << "    what = " << e.what() << std::endl;
+
+	// More information for special exceptions
+	if (dynamic_cast <const vmime::exceptions::command_error*>(&e))
+	{
+		const vmime::exceptions::command_error& cee =
+			dynamic_cast <const vmime::exceptions::command_error&>(e);
+
+		os << "    command = " << cee.command() << std::endl;
+		os << "    response = " << cee.response() << std::endl;
+	}
+
+	if (dynamic_cast <const vmime::exceptions::connection_greeting_error*>(&e))
+	{
+		const vmime::exceptions::connection_greeting_error& cgee =
+			dynamic_cast <const vmime::exceptions::connection_greeting_error&>(e);
+
+		os << "    response = " << cgee.response() << std::endl;
+	}
+
+	if (dynamic_cast <const vmime::exceptions::authentication_error*>(&e))
+	{
+		const vmime::exceptions::authentication_error& aee =
+			dynamic_cast <const vmime::exceptions::authentication_error&>(e);
+
+		os << "    response = " << aee.response() << std::endl;
+	}
+
+	if (dynamic_cast <const vmime::exceptions::filesystem_exception*>(&e))
+	{
+		const vmime::exceptions::filesystem_exception& fse =
+			dynamic_cast <const vmime::exceptions::filesystem_exception&>(e);
+
+		os << "    path = " << vmime::platformDependant::getHandler()->
+			getFileSystemFactory()->pathToString(fse.path()) << std::endl;
+	}
+
+	if (e.other() != NULL)
+		os << *e.other();
+
+	return os;
+}
 
 
-
-void printStructure(const vmime::messaging::structure& s, int level = 0)
+/** Print the MIME structure of a message on the standard output.
+  *
+  * @param s structure object
+  * @param level current depth
+  */
+static void printStructure(const vmime::messaging::structure& s, const int level = 0)
 {
 	for (int i = 1 ; i <= s.getCount() ; ++i)
 	{
@@ -66,50 +127,148 @@ void printStructure(const vmime::messaging::structure& s, int level = 0)
 }
 
 
-
-int main()
+static const vmime::string getFolderPathString(vmime::messaging::folder* f)
 {
-	// VMime initialization
-	vmime::platformDependant::setHandler<vmime::platforms::posix::posixHandler>();
+	const vmime::string n = f->getName().getBuffer();
 
-	vmime::messaging::session sess;
-	sess.getProperties()["store.protocol"] = "imap";
-	sess.getProperties()["transport.protocol"] = "smtp";
+	if (n.empty()) // root folder
+	{
+		return "/";
+	}
+	else
+	{
+		vmime::utility::auto_ptr <vmime::messaging::folder> p = f->getParent();
+		return getFolderPathString(p) + n + "/";
+	}
+}
 
-	my_auth auth;
 
+/** Print folders and sub-folders on the standard output.
+  *
+  * @param folder current folder
+  */
+static void printFolders(vmime::messaging::folder* folder, const int level = 0)
+{
+	for (int j = 0 ; j < level * 2 ; ++j)
+		std::cout << " ";
+
+	std::cout << getFolderPathString(folder) << std::endl;
+
+	std::vector <vmime::messaging::folder*> subFolders = folder->getFolders(false);
+
+	for (unsigned int i = 0 ; i < subFolders.size() ; ++i)
+	{
+		printFolders(subFolders[i], level + 1);
+		delete subFolders[i];
+	}
+}
+
+
+/** Print a menu on the standard output.
+  *
+  * @param choices menu choices
+  */
+static const unsigned int printMenu(const std::vector <std::string>& choices)
+{
+	std::cout << std::endl;
+
+	for (unsigned int i = 0 ; i < choices.size() ; ++i)
+		std::cout << "   " << (i + 1) << ". " << choices[i] << std::endl;
+
+	std::cout << std::endl;
+	std::cout << "   Your choice? [1-" << choices.size() << "] ";
+	std::cout.flush();
+
+	std::string line;
+	std::getline(std::cin, line);
+
+	std::istringstream iss(line);
+
+	unsigned int choice = 0;
+	iss >> choice;
+
+	std::cout << std::endl;
+
+	if (choice < 1 || choice > choices.size())
+		return 0;
+	else
+		return choice;
+}
+
+
+/** Send a message interactively.
+  */
+static void sendMessage()
+{
 	try
 	{
-		//
-		// Test the sending of a message
-		//
+		// Request user to enter an URL
+		std::cout << "Enter an URL to connect to transport service." << std::endl;
+		std::cout << "(eg. smtp://myserver.com, sendmail://localhost)" << std::endl;
+		std::cout << "> ";
+		std::cout.flush();
 
-#if 0
-		// Transport protocol configuration
-		vmime::messaging::transport* tr = sess.getTransport();
+		vmime::string urlString;
+		std::getline(std::cin, urlString);
 
-		//sess.getProperties()[tr->getInfos().getPropertyPrefix() + "auth.username"] = "username";
-		//sess.getProperties()[tr->getInfos().getPropertyPrefix() + "auth.password"] = "password";
+		vmime::utility::url url(urlString);
 
-		sess.getProperties()[tr->getInfos().getPropertyPrefix() + "server.address"] = "smtp.mydomain.com";
+		interactiveAuthenticator auth;
 
-		//sess.getProperties()[tr->getInfos().getPropertyPrefix() + "options.need-authentification"] = true;
+		vmime::utility::auto_ptr <vmime::messaging::transport> tr =
+			g_session->getTransport(url, &auth);
 
-		// Connection
+		// You can also set some properties (see example7 to know the properties
+		// available for each service). For example, for SMTP:
+//		tr->setProperty("options.need-authentication", true);
+
+		// Information about the mail
+		std::cout << "Enter email of the expeditor (eg. me@somewhere.com): ";
+		std::cout.flush();
+
+		vmime::string fromString;
+		std::getline(std::cin, fromString);
+
+		vmime::mailbox from(fromString);
+		vmime::mailboxList to;
+
+		for (bool cont = true ; cont ; )
+		{
+			std::cout << "Enter email of the recipient (empty to stop): ";
+			std::cout.flush();
+
+			vmime::string toString;
+			std::getline(std::cin, toString);
+
+			cont = (toString.size() != 0);
+
+			if (cont)
+				to.appendMailbox(new vmime::mailbox(toString));
+		}
+
+		std::cout << "Enter message data (end with '.' on a single line):" << std::endl;
+
+		std::ostringstream data;
+
+		for (bool cont = true ; cont ; )
+		{
+			std::string line;
+			std::getline(std::cin, line);
+
+			if (line == ".")
+				cont = false;
+			else
+				data << line << "\r\n";
+		}
+
+		// Connect to server
 		tr->connect();
 
-		// Expeditor
-		vmime::mailbox from("me@somewhere.com");
+		// Send the message
+		vmime::string msgData = data.str();
+		vmime::utility::inputStreamStringAdapter vis(msgData);
 
-		// Recipients list
-		vmime::mailboxList to;
-		to.appendMailbox(new vmime::mailbox("you@somewhere.com"));
-		to.appendMailbox(new vmime::mailbox("somebody.else@anywhere.com"));
-
-		vmime::string str("[MESSAGE DATA: HEADER + BODY]");
-		vmime::utility::inputStreamStringAdapter vis(str);
-
-		tr->send(from, to, vis, str.length());
+		tr->send(from, to, vis, msgData.length());
 
 		// Note: you could also write this:
 		//     vmime::message msg;
@@ -117,121 +276,197 @@ int main()
 		//     tr->send(&msg);
 
 		tr->disconnect();
-#endif
+	}
+	catch (vmime::exception& e)
+	{
+		std::cerr << std::endl;
+		std::cerr << e << std::endl;
+		throw;
+	}
+	catch (std::exception& e)
+	{
+		std::cerr << std::endl;
+		std::cerr << "std::exception: " << e.what() << std::endl;
+		throw;
+	}
+}
 
-		//
-		// Test the access to a mail store
-		//
 
-#if 1
+/** Connect to a message store interactively.
+  */
+static void connectStore()
+{
+	try
+	{
+		// Request user to enter an URL
+		std::cout << "Enter an URL to connect to store service." << std::endl;
+		std::cout << "(eg. pop3://user:pass@myserver.com, imap://myserver.com:123)" << std::endl;
+		std::cout << "> ";
+		std::cout.flush();
+
+		vmime::string urlString;
+		std::getline(std::cin, urlString);
+
+		vmime::utility::url url(urlString);
+
 		// If no authenticator is given in argument to getStore(), a default one
 		// is used. Its behaviour is to get the user credentials from the
 		// session properties "auth.username" and "auth.password".
-		vmime::messaging::store* st = sess.getStore(&auth);
+		interactiveAuthenticator auth;
 
-		// Store protocol configuration
-		//sess.getProperties()[st->getInfos().getPropertyPrefix() + "auth.username"] = "username";
-		//sess.getProperties()[st->getInfos().getPropertyPrefix() + "auth.password"] = "password";
+		vmime::utility::auto_ptr <vmime::messaging::store> st =
+			g_session->getStore(url, &auth);
 
-		sess.getProperties()[st->getInfos().getPropertyPrefix() + "server.address"] = "imap.mydomain.com";
-		//sess.getProperties()[st->getInfos().getPropertyPrefix() + "server.port"] = 110;
-		//sess.getProperties()[st->getInfos().getPropertyPrefix() + "server.socket-factory"] = "default";
-
-		//sess.getProperties()[st->getInfos().getPropertyPrefix() + "options.apop"] = false;
-		//sess.getProperties()[st->getInfos().getPropertyPrefix() + "options.apop.fallback"] = true;
-
-		// Connection
+		// Connect to the mail store
 		st->connect();
 
 		// Open the default folder in this store
-		vmime::messaging::folder* f = st->getDefaultFolder();
+		vmime::utility::auto_ptr <vmime::messaging::folder> f = st->getDefaultFolder();
+//		vmime::utility::auto_ptr <vmime::messaging::folder> f = st->getFolder(vmime::utility::path("a"));
 
 		f->open(vmime::messaging::folder::MODE_READ_WRITE);
 
-		std::cout << f->getMessageCount() << " message(s) in your inbox" << std::endl;
-
-		// Get a pointer to the first message
-		vmime::messaging::message* m = f->getMessage(1);
-
-		// To fetch the header
-		f->fetchMessage(m, vmime::messaging::folder::FETCH_ENVELOPE |
-			vmime::messaging::folder::FETCH_CONTENT_INFO);
-
-		// To retrieve the whole message
-		std::ostringstream oss;
-		vmime::utility::outputStreamAdapter out(oss);
-
-		m->extract(out);
-
-		// To fetch the header
-		f->fetchMessage(m, vmime::messaging::folder::FETCH_ENVELOPE |
-			vmime::messaging::folder::FETCH_CONTENT_INFO |
-			vmime::messaging::folder::FETCH_STRUCTURE |
-			vmime::messaging::folder::FETCH_SIZE |
-			//vmime::messaging::folder::FETCH_FULL_HEADER |
-			vmime::messaging::folder::FETCH_SIZE |
-			vmime::messaging::folder::FETCH_FLAGS |
-			vmime::messaging::folder::FETCH_UID);
-
-		// Print structure
-		std::cout << "STRUCTURE:" << std::endl;
-		std::cout << "==========" << std::endl;
-
-		printStructure(m->getStructure());
+		int count = f->getMessageCount();
 
 		std::cout << std::endl;
+		std::cout << count << " message(s) in your inbox" << std::endl;
 
-		std::cout << "Size = " << m->getSize() << " byte(s)" << std::endl;
-		std::cout << "UID = " << m->getUniqueId() << std::endl;
-		std::cout << std::endl;
+		for (bool cont = true ; cont ; )
+		{
+			typedef std::map <int, vmime::utility::smart_ptr <vmime::messaging::message> > MessageList;
+			MessageList msgList;
 
-		std::cout << "ENVELOPE:" << std::endl;
-		std::cout << "=========" << std::endl;
-		try { std::cout << m->getHeader().From().generate() << std::endl; } catch (...) { }
-		try { std::cout << m->getHeader().To().generate() << std::endl; } catch (...) { }
-		try { std::cout << m->getHeader().Date().generate() << std::endl; } catch (...) { }
-		try { std::cout << m->getHeader().Subject().generate() << std::endl; } catch (...) { }
+			try
+			{
+				std::vector <std::string> choices;
 
-		std::cout << std::endl;
+				choices.push_back("Show message flags");
+				choices.push_back("Show message structure");
+				choices.push_back("Show message header");
+				choices.push_back("Show message envelope");
+				choices.push_back("Extract whole message");
+				choices.push_back("List folders");
+				choices.push_back("Return to main menu");
 
-		std::cout << "FULL HEADER:" << std::endl;
-		std::cout << "============" << std::endl;
-		std::cout << m->getHeader().generate() << std::endl;
+				const int choice = printMenu(choices);
 
-		std::cout << std::endl;
-		std::cout << "=========================================================" << std::endl;
+				// Request message number
+				vmime::utility::smart_ptr <vmime::messaging::message> msg;
 
-		vmime::utility::outputStreamAdapter out2(std::cout);
-		m->extractPart(m->getStructure()[1][2][1], out2, NULL); //, 0, 10);
+				if (choice != 6 && choice != 7)
+				{
+					std::cout << "Enter message number: ";
+					std::cout.flush();
 
-		std::cout << "=========================================================" << std::endl;
+					std::string line;
+					std::getline(std::cin, line);
 
-		std::cout << std::endl;
-		std::cout << "=========================================================" << std::endl;
+					std::istringstream iss(line);
 
-		m->fetchPartHeader(m->getStructure()[1][2][1]);
+					int num = 0;
+					iss >> num;
 
-		std::cout << m->getStructure()[1][2][1].getHeader().generate() << std::endl;
+					if (num < 1 || num > count)
+					{
+						std::cerr << "Invalid message number." << std::endl;
+						continue;
+					}
 
-		std::cout << "=========================================================" << std::endl;
+					MessageList::iterator it = msgList.find(num);
 
-		// Flags manipulation
-		std::cout << "Flags = " << m->getFlags() << std::endl;
-		m->setFlags(vmime::messaging::message::FLAG_REPLIED, vmime::messaging::message::FLAG_MODE_ADD);
-		std::cout << "Flags = " << m->getFlags() << std::endl;
-		m->setFlags(vmime::messaging::message::FLAG_REPLIED, vmime::messaging::message::FLAG_MODE_REMOVE);
-		std::cout << "Flags = " << m->getFlags() << std::endl;
+					if (it != msgList.end())
+					{
+						msg = (*it).second;
+					}
+					else
+					{
+						msg = f->getMessage(num);
+						msgList.insert(MessageList::value_type(num, msg));
+					}
 
-		f->setMessageFlags(m->getNumber(), m->getNumber(), vmime::messaging::message::FLAG_REPLIED, vmime::messaging::message::FLAG_MODE_ADD);
-		std::cout << "Flags = " << m->getFlags() << std::endl;
-		f->setMessageFlags(m->getNumber(), m->getNumber(), vmime::messaging::message::FLAG_REPLIED, vmime::messaging::message::FLAG_MODE_REMOVE);
-		std::cout << "Flags = " << m->getFlags() << std::endl;
+					std::cout << std::endl;
+				}
 
+				switch (choice)
+				{
+				// Show message flags
+				case 1:
 
-		std::cout << "=========================================================" << std::endl;
+					f->fetchMessage(msg, vmime::messaging::folder::FETCH_FLAGS);
 
-		// Append message
+					if (msg->getFlags() & vmime::messaging::message::FLAG_SEEN)
+						std::cout << "FLAG_SEEN" << std::endl;
+					if (msg->getFlags() & vmime::messaging::message::FLAG_RECENT)
+						std::cout << "FLAG_RECENT" << std::endl;
+					if (msg->getFlags() & vmime::messaging::message::FLAG_REPLIED)
+						std::cout << "FLAG_REPLIED" << std::endl;
+					if (msg->getFlags() & vmime::messaging::message::FLAG_DELETED)
+						std::cout << "FLAG_DELETED" << std::endl;
+					if (msg->getFlags() & vmime::messaging::message::FLAG_MARKED)
+						std::cout << "FLAG_MARKED" << std::endl;
+					if (msg->getFlags() & vmime::messaging::message::FLAG_PASSED)
+						std::cout << "FLAG_PASSED" << std::endl;
+
+					break;
+
+				// Show message structure
+				case 2:
+
+					f->fetchMessage(msg, vmime::messaging::folder::FETCH_STRUCTURE);
+					printStructure(msg->getStructure());
+					break;
+
+				// Show message header
+				case 3:
+
+					f->fetchMessage(msg, vmime::messaging::folder::FETCH_FULL_HEADER);
+					std::cout << msg->getHeader().generate() << std::endl;
+					break;
+
+				// Show message envelope
+				case 4:
+
+					f->fetchMessage(msg, vmime::messaging::folder::FETCH_ENVELOPE);
+
+#define ENV_HELPER(x, y) \
+	try { std::cout << x << msg->getHeader().y().generate() << std::endl; } \
+	catch (vmime::exception) { /* In case the header field does not exist. */ }
+
+					ENV_HELPER("From: ", From)
+					ENV_HELPER("To: ", To)
+					ENV_HELPER("Date: ", Date)
+					ENV_HELPER("Subject: ", Subject)
+
+#undef ENV_HELPER
+
+					break;
+
+				// Extract whole message
+				case 5:
+				{
+					vmime::utility::outputStreamAdapter out(std::cout);
+					msg->extract(out);
+
+					break;
+				}
+				// List folders
+				case 6:
+				{
+					vmime::utility::auto_ptr <vmime::messaging::folder>
+						root = st->getRootFolder();
+
+					printFolders(root);
+					break;
+				}
+				// Main menu
+				case 7:
+
+					cont = false;
+					break;
+				}
+
 /*
+		// Append message
 		std::istringstream iss(
 			"From: me@localhost\r\n"
 			"To: you@localhost\r\n"
@@ -242,10 +477,7 @@ int main()
 		);
 
 		f->addMessage(iss, iss.str().size());
-*/
 
-
-/*
 		// Folder renaming
 		{
 			vmime::messaging::folder* f = st->getFolder(vmime::messaging::folder::path("c"));
@@ -256,10 +488,8 @@ int main()
 			g->rename(vmime::messaging::folder::path("c"));
 			delete (g);
 		}
-*/
 
-/*
-		// Message copy
+		// Message copy: copy all messages from 'f' to 'g'
 		{
 			vmime::messaging::folder* g = st->getFolder(vmime::messaging::folder::path("TEMP"));
 
@@ -271,36 +501,84 @@ int main()
 			delete (g);
 		}
 */
-
-		delete (m);
-
-		f->close(true);
-		delete (f);
-
-		st->disconnect();
-		delete (st);
-#endif
-	}
-	catch (vmime::exceptions::authentication_error& e)
-	{
-		std::cout << "vmime::authentication_error: " << e.what() << std::endl
-		          << "Response is: '" << e.response() << "'." << std::endl;
-		throw;
-	}
-	catch (vmime::exceptions::command_error& e)
-	{
-		std::cout << "vmime::command_error: " << e.what() << std::endl
-		          << "Response is: '" << e.response() << "'." << std::endl;
-		throw;
+			}
+			catch (vmime::exception& e)
+			{
+				std::cerr << std::endl;
+				std::cerr << e << std::endl;
+			}
+			catch (std::exception& e)
+			{
+				std::cerr << std::endl;
+				std::cerr << "std::exception: " << e.what() << std::endl;
+			}
+		}
 	}
 	catch (vmime::exception& e)
 	{
-		std::cout << "vmime::exception: " << e.what() << std::endl;
+		std::cerr << std::endl;
+		std::cerr << e << std::endl;
 		throw;
 	}
 	catch (std::exception& e)
 	{
-		std::cout << "std::exception: " << e.what() << std::endl;
+		std::cerr << std::endl;
+		std::cerr << "std::exception: " << e.what() << std::endl;
 		throw;
 	}
 }
+
+
+/* Show the main menu.
+ *
+ * @return true to quit the program, false to continue
+ */
+static const bool menu()
+{
+	std::vector <std::string> items;
+
+	items.push_back("Connect to a message store");
+	items.push_back("Send a message");
+	items.push_back("Quit");
+
+	switch (printMenu(items))
+	{
+	// Connect to store
+	case 1:
+
+		connectStore();
+		return false;
+
+	// Send a message
+	case 2:
+
+		sendMessage();
+		return false;
+
+	// Quit
+	case 3:
+
+		return true;
+
+	// Other choice
+	default:
+
+		return false;
+	}
+}
+
+
+int main()
+{
+	// VMime initialization
+	vmime::platformDependant::setHandler<vmime::platforms::posix::posixHandler>();
+
+	for (bool quit = false ; !quit ; )
+	{
+		// Loop on main menu
+		quit = menu();
+	}
+
+	return 0;
+}
+

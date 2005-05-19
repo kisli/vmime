@@ -6,6 +6,9 @@ VERSION 0.7.1cvs
 
  * messaging/imap/IMAPFolder.cpp: fixed bug in subfolders enumeration.
 
+ * examples/example6.cpp: enhanced 'example6' into an interactive program to
+   show some of the features of the messaging module.
+
 2005-05-15  Vincent Richard  <vincent@vincent-richard.net>
 
  * messaging/serviceInfos.{hpp|cpp}: changed getAvailableProperties() to

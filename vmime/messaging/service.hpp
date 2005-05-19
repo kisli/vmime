@@ -118,6 +118,20 @@ public:
 	  */
 	authenticator* getAuthenticator();
 
+	/** Set a property for this service (service prefix is added automatically).
+	  *
+	  * WARNING: this sets the property on the session object, so all service
+	  * instances created with the session object will inherit the property.
+	  *
+	  * @param name property name
+	  * @param value property value
+	  */
+	template <typename TYPE>
+	void setProperty(const string& name, const TYPE& value)
+	{
+		m_session->getProperties()[getInfos().getPropertyPrefix() + name] = value;
+	}
+
 #ifndef VMIME_BUILDING_DOC
 	// Basic service registerer
 	template <class S>
