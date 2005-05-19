@@ -71,7 +71,7 @@ public:
 
 	smart_ptr() : m_data(NULL) { }
 	smart_ptr(T* const p) : m_data(NULL) { if (p) { attach(p); } }
-	smart_ptr(smart_ptr& p) : m_data(NULL) { if (p.m_data) { attach(p); } }
+	smart_ptr(const smart_ptr& p) : m_data(NULL) { if (p.m_data) { attach(p); } }
 
 	~smart_ptr() { detach(); }
 
@@ -143,7 +143,7 @@ private:
 		}
 	}
 
-	void attach(smart_ptr <T>& p)
+	void attach(const smart_ptr <T>& p)
 	{
 		data* newData = p.m_data;
 		if (newData) newData->refCount++;
