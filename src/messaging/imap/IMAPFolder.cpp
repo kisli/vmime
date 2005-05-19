@@ -522,13 +522,24 @@ std::vector <folder*> IMAPFolder::getFolders(const bool recursive)
 
 	std::ostringstream oss;
 	oss << "LIST ";
-	oss << IMAPUtils::quoteString
-		(IMAPUtils::pathToString(m_connection->hierarchySeparator(), getFullPath()));
+
+	const string pathString = IMAPUtils::pathToString
+		(m_connection->hierarchySeparator(), getFullPath());
 
 	if (recursive)
+	{
+		oss << IMAPUtils::quoteString(pathString);
 		oss << " *";
+	}
 	else
+	{
+		if (pathString.empty()) // don't add sep for root folder
+			oss << "\"\"";
+		else
+			oss << IMAPUtils::quoteString(pathString + m_connection->hierarchySeparator());
+
 		oss << " %";
+	}
 
 	m_connection->send(true, oss.str(), true);
 
