@@ -257,7 +257,6 @@ public:
 	  * @param start index of the first byte to retrieve (used for partial fetch)
 	  * @param length number of bytes to retrieve (used for partial fetch)
 	  */
-
 	virtual void extract(utility::outputStream& os, utility::progressionListener* progress = NULL, const int start = 0, const int length = -1) const = 0;
 
 	/** Extract the specified (MIME) part of the message (header + contents).
