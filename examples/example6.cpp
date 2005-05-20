@@ -428,14 +428,14 @@ static void connectStore()
 
 					f->fetchMessage(msg, vmime::messaging::folder::FETCH_ENVELOPE);
 
-#define ENV_HELPER(x, y) \
-	try { std::cout << x << msg->getHeader().y().generate() << std::endl; } \
+#define ENV_HELPER(x) \
+	try { std::cout << msg->getHeader().x().generate() << std::endl; } \
 	catch (vmime::exception) { /* In case the header field does not exist. */ }
 
-					ENV_HELPER("From: ", From)
-					ENV_HELPER("To: ", To)
-					ENV_HELPER("Date: ", Date)
-					ENV_HELPER("Subject: ", Subject)
+					ENV_HELPER(From)
+					ENV_HELPER(To)
+					ENV_HELPER(Date)
+					ENV_HELPER(Subject)
 
 #undef ENV_HELPER
 
