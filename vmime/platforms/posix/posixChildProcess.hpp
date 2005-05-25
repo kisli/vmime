@@ -54,6 +54,9 @@ private:
 	sigset_t m_oldProcMask;
 	pid_t m_pid;
 	int m_pipe[2];
+
+	std::vector <string> m_argVector;
+	const char** m_argArray;
 };
 
 

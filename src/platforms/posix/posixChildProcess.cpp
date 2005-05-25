@@ -200,7 +200,7 @@ private:
 
 posixChildProcess::posixChildProcess(const utility::file::path& path)
 	: m_processPath(path), m_started(false),
-	  m_stdIn(NULL), m_stdOut(NULL), m_pid(0)
+	  m_stdIn(NULL), m_stdOut(NULL), m_pid(0), m_argArray(NULL)
 {
 	m_pipe[0] = 0;
 	m_pipe[1] = 0;
@@ -222,6 +222,8 @@ posixChildProcess::~posixChildProcess()
 
 	delete (m_stdIn);
 	delete (m_stdOut);
+
+	delete [] (m_argArray);
 }
 
 
@@ -239,11 +241,14 @@ void posixChildProcess::start(const std::vector <string> args, const int flags)
 	// Construct C-style argument array
 	const char** argv = new const char*[args.size() + 2];
 
+	m_argVector = args;  // for c_str() pointer to remain valid
+	m_argArray = argv;   // to free later
+
 	argv[0] = m_processPath.getLastComponent().getBuffer().c_str();
 	argv[args.size()] = NULL;
 
-	for (unsigned int i = 0 ; i < args.size() ; ++i)
-		argv[i + 1] = args[i].c_str();
+	for (unsigned int i = 0 ; i < m_argVector.size() ; ++i)
+		argv[i + 1] = m_argVector[i].c_str();
 
 	// Create a pipe to communicate with the child process
 	int fd[2];
