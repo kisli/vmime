@@ -2,6 +2,11 @@
 VERSION 0.7.1cvs
 ================
 
+2005-05-27  Vincent Richard  <vincent@vincent-richard.net>
+
+ * messaging/*/*Message.{hpp|cpp}: added a 'peek' parameter to extract
+   message contents without marking the message as seen.
+
 2005-05-19  Vincent Richard  <vincent@vincent-richard.net>
 
  * messaging/imap/IMAPFolder.cpp: fixed bug in subfolders enumeration.

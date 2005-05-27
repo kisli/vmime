@@ -256,8 +256,11 @@ public:
 	  * @param progress progression listener, or NULL if not used
 	  * @param start index of the first byte to retrieve (used for partial fetch)
 	  * @param length number of bytes to retrieve (used for partial fetch)
+	  * @param peek if true, try not to mark the message as read. This may not
+	  * be supported by the protocol (IMAP supports this), but it will NOT throw
+	  * an exception if not supported.
 	  */
-	virtual void extract(utility::outputStream& os, utility::progressionListener* progress = NULL, const int start = 0, const int length = -1) const = 0;
+	virtual void extract(utility::outputStream& os, utility::progressionListener* progress = NULL, const int start = 0, const int length = -1, const bool peek = false) const = 0;
 
 	/** Extract the specified (MIME) part of the message (header + contents).
 	  *
@@ -268,8 +271,11 @@ public:
 	  * @param progress progression listener, or NULL if not used
 	  * @param start index of the first byte to retrieve (used for partial fetch)
 	  * @param length number of bytes to retrieve (used for partial fetch)
+	  * @param peek if true, try not to mark the message as read. This may not
+	  * be supported by the protocol (IMAP supports this), but it will NOT throw
+	  * an exception if not supported.
 	  */
-	virtual void extractPart(const part& p, utility::outputStream& os, utility::progressionListener* progress = NULL, const int start = 0, const int length = -1) const = 0;
+	virtual void extractPart(const part& p, utility::outputStream& os, utility::progressionListener* progress = NULL, const int start = 0, const int length = -1, const bool peek = false) const = 0;
 
 	/** Fetch the MIME header for the specified part.
 	  *

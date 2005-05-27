@@ -111,7 +111,8 @@ const header& POP3Message::getHeader() const
 
 
 void POP3Message::extract(utility::outputStream& os,
-	utility::progressionListener* progress, const int start, const int length) const
+	utility::progressionListener* progress, const int start,
+	const int length, const bool /* peek */) const
 {
 	if (!m_folder)
 		throw exceptions::illegal_state("Folder closed");
@@ -148,7 +149,8 @@ void POP3Message::extract(utility::outputStream& os,
 void POP3Message::extractPart
 	(const part& /* p */, utility::outputStream& /* os */,
 	 utility::progressionListener* /* progress */,
-	 const int /* start */, const int /* length */) const
+	 const int /* start */, const int /* length */,
+	 const bool /* peek */) const
 {
 	throw exceptions::operation_not_supported();
 }

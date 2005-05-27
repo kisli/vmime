@@ -309,23 +309,27 @@ void maildirMessage::setFlags(const int flags, const int mode)
 
 
 void maildirMessage::extract(utility::outputStream& os,
-	utility::progressionListener* progress, const int start, const int length) const
+	utility::progressionListener* progress, const int start,
+	const int length, const bool peek) const
 {
-	extractImpl(os, progress, 0, m_size, start, length);
+	extractImpl(os, progress, 0, m_size, start, length, peek);
 }
 
 
 void maildirMessage::extractPart(const part& p, utility::outputStream& os,
-	utility::progressionListener* progress, const int start, const int length) const
+	utility::progressionListener* progress, const int start,
+	const int length, const bool peek) const
 {
 	const maildirPart& mp = dynamic_cast <const maildirPart&>(p);
 
-	extractImpl(os, progress, mp.getBodyParsedOffset(), mp.getBodyParsedLength(), start, length);
+	extractImpl(os, progress, mp.getBodyParsedOffset(), mp.getBodyParsedLength(),
+		start, length, peek);
 }
 
 
 void maildirMessage::extractImpl(utility::outputStream& os, utility::progressionListener* progress,
-	const int start, const int length, const int partialStart, const int partialLength) const
+	const int start, const int length, const int partialStart, const int partialLength,
+	const bool peek) const
 {
 	utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
 
@@ -363,6 +367,8 @@ void maildirMessage::extractImpl(utility::outputStream& os, utility::progression
 
 	if (progress)
 		progress->stop(total);
+
+	// TODO: mark as read unless 'peek' is set
 }
 
 

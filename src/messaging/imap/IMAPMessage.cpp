@@ -367,23 +367,23 @@ const header& IMAPMessage::getHeader() const
 
 
 void IMAPMessage::extract(utility::outputStream& os, utility::progressionListener* progress,
-                          const int start, const int length) const
+                          const int start, const int length, const bool peek) const
 {
 	if (!m_folder)
 		throw exceptions::folder_not_found();
 
-	extract(NULL, os, progress, start, length, false);
+	extract(NULL, os, progress, start, length, false, peek);
 }
 
 
 void IMAPMessage::extractPart
 	(const part& p, utility::outputStream& os, utility::progressionListener* progress,
-	 const int start, const int length) const
+	 const int start, const int length, const bool peek) const
 {
 	if (!m_folder)
 		throw exceptions::folder_not_found();
 
-	extract(&p, os, progress, start, length, false);
+	extract(&p, os, progress, start, length, false, peek);
 }
 
 
@@ -395,7 +395,7 @@ void IMAPMessage::fetchPartHeader(part& p)
 	std::ostringstream oss;
 	utility::outputStreamAdapter ossAdapter(oss);
 
-	extract(&p, ossAdapter, NULL, 0, -1, true);
+	extract(&p, ossAdapter, NULL, 0, -1, true, true);
 
 	static_cast <IMAPpart&>(p).getOrCreateHeader().parse(oss.str());
 }
@@ -403,7 +403,7 @@ void IMAPMessage::fetchPartHeader(part& p)
 
 void IMAPMessage::extract(const part* p, utility::outputStream& os,
 	utility::progressionListener* progress, const int start,
-	const int length, const bool headerOnly) const
+	const int length, const bool headerOnly, const bool peek) const
 {
 	IMAPMessage_literalHandler literalHandler(os, progress);
 
@@ -436,7 +436,9 @@ void IMAPMessage::extract(const part* p, utility::outputStream& os,
 	// Build the request text
 	std::ostringstream command;
 
-	command << "FETCH " << m_num << " BODY[";
+	command << "FETCH " << m_num << " BODY";
+	if (peek) command << ".PEEK";
+	command << "[";
 	command << section.str();
 	if (headerOnly) command << ".MIME";   // "MIME" not "HEADER" for parts
 	command << "]";
