@@ -315,7 +315,9 @@ static void connectStore()
 		interactiveAuthenticator auth;
 
 		vmime::utility::auto_ptr <vmime::messaging::store> st =
-			g_session->getStore(url, &auth);
+			g_session->getStore(url,
+				(url.getUsername().empty() || url.getPassword().empty())
+					? &auth : NULL);
 
 		// Connect to the mail store
 		st->connect();
