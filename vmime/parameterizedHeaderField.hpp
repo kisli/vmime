@@ -46,6 +46,8 @@ protected:
 
 public:
 
+	~parameterizedHeaderField();
+
 	void copyFrom(const component& other);
 	parameterizedHeaderField& operator=(const parameterizedHeaderField& other);
 

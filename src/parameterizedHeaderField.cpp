@@ -32,6 +32,12 @@ parameterizedHeaderField::parameterizedHeaderField()
 }
 
 
+parameterizedHeaderField::~parameterizedHeaderField()
+{
+	removeAllParameters();
+}
+
+
 /*
      This class handles field contents of the following form:
      Field: VALUE; PARAM1="VALUE1"; PARAM2="VALUE2"...

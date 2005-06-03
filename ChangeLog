@@ -2,6 +2,11 @@
 VERSION 0.7.1cvs
 ================
 
+2005-06-03  Vincent Richard  <vincent@vincent-richard.net>
+
+ * parameterizedHeaderField.{hpp|cpp}: fixed a memory leak in the
+   destructor (thanks to Rafael Fernandez).
+
 2005-05-27  Vincent Richard  <vincent@vincent-richard.net>
 
  * messaging/*/*Message.{hpp|cpp}: added a 'peek' parameter to extract
