@@ -2,6 +2,11 @@
 VERSION 0.7.1cvs
 ================
 
+2005-06-13  Vincent Richard  <vincent@vincent-richard.net>
+
+ * word.cpp: fixed a bug in parsing, when the first character of word data
+   was encoded in QP (thanks to Wolf Jiang).
+
 2005-06-03  Vincent Richard  <vincent@vincent-richard.net>
 
  * parameterizedHeaderField.{hpp|cpp}: fixed a memory leak in the

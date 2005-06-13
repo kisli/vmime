@@ -93,7 +93,7 @@ word* word::parseNext(const string& buffer, const string::size_type position,
 			startPos = pos;
 		}
 		// Start of an encoded word
-		else if (pos + 6 < end &&  // 6 = "=?(.+)?(.*)?="
+		else if (pos + 8 < end &&  // 8 = "=?(.+)?(.+)?(.*)?="
 		         buffer[pos] == '=' && buffer[pos + 1] == '?')
 		{
 			// Check whether there is some unencoded text before
@@ -116,7 +116,23 @@ word* word::parseNext(const string& buffer, const string::size_type position,
 			// ...else find the finish sequence '?=' and return an encoded word
 			const string::size_type wordStart = pos;
 
-			pos += 4;
+			pos += 2;
+
+			while (pos < end && buffer[pos] != '?')
+				++pos;
+
+			if (pos < end)
+			{
+				++pos; // skip '?' between charset and encoding
+
+				while (pos < end && buffer[pos] != '?')
+					++pos;
+
+				if (pos < end)
+				{
+					++pos; // skip '?' between encoding and encoded data
+				}
+			}
 
 			while (pos < end)
 			{
