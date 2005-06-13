@@ -144,6 +144,12 @@ namespace
 				parseText("=?ISO-8859-1?B?SWYgeW91IGNhbiByZWFkIHRoaXMgeW8=?=\r\n " \
 					"=?ISO-8859-2?B?dSB1bmRlcnN0YW5kIHRoZSBleGFtcGxlLg==?="));
 
+			// Bugfix: in "=?charset?q?=XX=YY?=", the "?=" finish
+			// sequence was not correctly found (should be the one
+			// after '=YY' and not the one after '?q').
+			assert_eq("5", "[text: [[word: charset=abc, buffer=\xe9\xe9]]]",
+				parseText("=?abc?q?=E9=E9?="));
+
 			// TODO: add more
 		}
 
