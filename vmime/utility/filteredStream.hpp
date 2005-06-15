@@ -58,6 +58,39 @@ public:
 };
 
 
+/** A filtered input stream which replaces "\n.."
+  * sequences with "\n." sequences.
+  */
+
+class dotFilteredInputStream : public filteredInputStream
+{
+public:
+
+	/** Construct a new filter for the specified input stream.
+	  *
+	  * @param is stream from which to read data to be filtered
+	  */
+	dotFilteredInputStream(inputStream& is);
+
+	inputStream& getPreviousInputStream();
+
+	const bool eof() const;
+
+	void reset();
+
+	const size_type read(value_type* const data, const size_type count);
+
+	const size_type skip(const size_type count);
+
+private:
+
+	inputStream& m_stream;
+
+	value_type m_previousChar2; // (N - 1)th character of previous buffer
+	value_type m_previousChar1; // (N)th (last) character of previous buffer
+};
+
+
 /** A filtered output stream which replaces "\n."
   * sequences with "\n.." sequences.
   */

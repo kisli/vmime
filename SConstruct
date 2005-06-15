@@ -342,6 +342,7 @@ libvmimetest_sources = [
 	[ 'tests/parser/pathTest', [ 'tests/parser/pathTest.cpp' ] ],
 	[ 'tests/parser/parameterTest', [ 'tests/parser/parameterTest.cpp' ] ],
 	[ 'tests/parser/textTest', [ 'tests/parser/textTest.cpp' ] ],
+	[ 'tests/utility/filteredStreamTest', [ 'tests/utility/filteredStreamTest.cpp' ] ],
 	[ 'tests/utility/md5Test', [ 'tests/utility/md5Test.cpp' ] ],
 	[ 'tests/utility/stringProxyTest', [ 'tests/utility/stringProxyTest.cpp' ] ],
 	[ 'tests/utility/stringUtilsTest', [ 'tests/utility/stringUtilsTest.cpp' ] ],
