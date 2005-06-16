@@ -24,6 +24,7 @@
 #include "vmime/platformDependant.hpp"
 #include "vmime/messageId.hpp"
 #include "vmime/utility/md5.hpp"
+#include "vmime/utility/filteredStream.hpp"
 
 #include <algorithm>
 
@@ -412,7 +413,6 @@ void POP3Store::readResponse(string& buffer, const bool multiLine,
 void POP3Store::readResponse(utility::outputStream& os,
 	utility::progressionListener* progress, const int predictedSize)
 {
-	bool foundTerminator = false;
 	int current = 0, total = predictedSize;
 
 	string temp;
@@ -424,9 +424,14 @@ void POP3Store::readResponse(utility::outputStream& os,
 	if (m_timeoutHandler)
 		m_timeoutHandler->resetTimeOut();
 
-	string::value_type last1 = '\0', last2 = '\0';
+	utility::inputStreamSocketAdapter sis(*m_socket);
+	utility::stopSequenceFilteredInputStream <5> sfis1(sis, "\r\n.\r\n");
+	utility::stopSequenceFilteredInputStream <3> sfis2(sfis1, "\n.\n");
+	utility::dotFilteredInputStream dfis(sfis2);   // "\n.." --> "\n."
 
-	for ( ; !foundTerminator ; )
+	utility::inputStream& is = dfis;
+
+	while (!is.eof())
 	{
 #if 0 // not supported
 		// Check for possible cancellation
@@ -442,10 +447,10 @@ void POP3Store::readResponse(utility::outputStream& os,
 		}
 
 		// Receive data from the socket
-		string receiveBuffer;
-		m_socket->receive(receiveBuffer);
+		utility::stream::value_type buffer[65536];
+		const utility::stream::size_type read = is.read(buffer, sizeof(buffer));
 
-		if (receiveBuffer.empty())   // buffer is empty
+		if (read == 0)   // buffer is empty
 		{
 			platformDependant::getHandler()->wait();
 			continue;
@@ -455,32 +460,10 @@ void POP3Store::readResponse(utility::outputStream& os,
 		if (m_timeoutHandler)
 			m_timeoutHandler->resetTimeOut();
 
-		// Check for transparent characters: '\n..' becomes '\n.'
-		const string::value_type first = receiveBuffer[0];
-
-		if (first == '.' && last2 == '\n' && last1 == '.')
-		{
-			receiveBuffer.erase(receiveBuffer.begin());
-		}
-		else if (receiveBuffer.length() >= 2 && first == '.' &&
-		         receiveBuffer[1] == '.' && last1 == '\n')
-		{
-			receiveBuffer.erase(receiveBuffer.begin());
-		}
-
-		for (string::size_type trans ;
-		     string::npos != (trans = receiveBuffer.find("\n..")) ; )
-		{
-			receiveBuffer.replace(trans, 3, "\n.");
-		}
-
-		last1 = receiveBuffer[receiveBuffer.length() - 1];
-		last2 = (receiveBuffer.length() >= 2) ? receiveBuffer[receiveBuffer.length() - 2] : 0;
-
 		// If we don't have extracted the response code yet
 		if (!codeDone)
 		{
-			temp += receiveBuffer;
+			temp += string(buffer, read);
 
 			string firstLine;
 
@@ -489,21 +472,19 @@ void POP3Store::readResponse(utility::outputStream& os,
 				if (!isSuccessResponse(firstLine))
 					throw exceptions::command_error("?", firstLine);
 
-				receiveBuffer = temp;
+				codeDone = true;
+
+				os.write(temp.data(), temp.length());
 				temp.clear();
 
-				codeDone = true;
+				continue;
 			}
 		}
-
-		if (codeDone)
+		else
 		{
-			// Check for terminator string (and strip it if present)
-			foundTerminator = checkTerminator(receiveBuffer, true);
-
 			// Inject the data into the output stream
-			os.write(receiveBuffer.data(), receiveBuffer.length());
-			current += receiveBuffer.length();
+			os.write(buffer, read);
+			current += read;
 
 			// Notify progression
 			if (progress)
@@ -649,3 +630,4 @@ const std::vector <serviceInfos::property> POP3Store::_infos::getAvailableProper
 } // pop3
 } // messaging
 } // vmime
+
