@@ -340,6 +340,26 @@ private:
 };
 
 
+/** An input stream that is connected to a socket.
+  */
+
+class inputStreamSocketAdapter : public inputStream
+{
+public:
+
+	inputStreamSocketAdapter(messaging::socket& sok);
+
+	const bool eof() const;
+	void reset();
+	const size_type read(value_type* const data, const size_type count);
+	const size_type skip(const size_type count);
+
+private:
+
+	messaging::socket& m_socket;
+};
+
+
 #endif // VMIME_HAVE_MESSAGING_FEATURES
 
 

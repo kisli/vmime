@@ -319,10 +319,10 @@ const stream::size_type inputStreamPointerAdapter::skip(const size_type count)
 }
 
 
-// outputStreamSocketAdapter
-
 #ifdef VMIME_HAVE_MESSAGING_FEATURES
 
+
+// outputStreamSocketAdapter
 
 outputStreamSocketAdapter::outputStreamSocketAdapter(messaging::socket& sok)
 	: m_socket(sok)
@@ -334,6 +334,42 @@ void outputStreamSocketAdapter::write
 	(const value_type* const data, const size_type count)
 {
 	m_socket.sendRaw(data, count);
+}
+
+
+// inputStreamSocketAdapter
+
+inputStreamSocketAdapter::inputStreamSocketAdapter(messaging::socket& sok)
+	: m_socket(sok)
+{
+}
+
+
+const bool inputStreamSocketAdapter::eof() const
+{
+	// Can't know...
+	return false;
+}
+
+
+void inputStreamSocketAdapter::reset()
+{
+	// Not supported
+}
+
+
+const stream::size_type inputStreamSocketAdapter::read
+	(value_type* const data, const size_type count)
+{
+	return m_socket.receiveRaw(data, count);
+}
+
+
+const stream::size_type inputStreamSocketAdapter::skip
+	(const size_type /* count */)
+{
+	// Not supported
+	return 0;
 }
 
 

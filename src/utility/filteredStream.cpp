@@ -228,6 +228,35 @@ void CRLFToLFFilteredOutputStream::write
 }
 
 
+// stopSequenceFilteredInputStream <1>
+
+template <>
+const stream::size_type stopSequenceFilteredInputStream <1>::read
+	(value_type* const data, const size_type count)
+{
+	if (eof() || m_stream.eof())
+	{
+		m_eof = true;
+		return 0;
+	}
+
+	const size_type read = m_stream.read(data, count);
+	value_type* end = data + read;
+
+	value_type* pos = std::find(data, end, m_sequence[0]);
+
+	if (pos == end)
+	{
+		return (read);
+	}
+	else
+	{
+		m_found = 1;
+		return (pos - data);
+	}
+}
+
+
 } // utility
 } // vmime
 
