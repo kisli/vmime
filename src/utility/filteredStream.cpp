@@ -29,7 +29,7 @@ namespace utility {
 // dotFilteredInputStream
 
 dotFilteredInputStream::dotFilteredInputStream(inputStream& is)
-	: m_stream(is)
+	: m_stream(is), m_previousChar2('\0'), m_previousChar1('\0')
 {
 }
 
@@ -117,7 +117,7 @@ const stream::size_type dotFilteredInputStream::skip(const size_type /* count */
 // dotFilteredOutputStream
 
 dotFilteredOutputStream::dotFilteredOutputStream(outputStream& os)
-	: m_stream(os)
+	: m_stream(os), m_previousChar('\0')
 {
 }
 
@@ -163,7 +163,7 @@ void dotFilteredOutputStream::write
 // CRLFToLFFilteredOutputStream
 
 CRLFToLFFilteredOutputStream::CRLFToLFFilteredOutputStream(outputStream& os)
-	: m_stream(os)
+	: m_stream(os), m_previousChar('\0')
 {
 }
 
