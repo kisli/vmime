@@ -77,6 +77,21 @@ namespace
 				"\"John Doe\" <john.doe@acme.com>",
 
 				"[address-list: [[mailbox: name=[text: [[word: charset=us-ascii, buffer=John Doe]]], email=john.doe@acme.com]]]",
+
+				// Test 9
+				"=?us-ascii?q?John?=<john.doe@acme.com>",
+
+				"[address-list: [[mailbox: name=[text: [[word: charset=us-ascii, buffer=John]]], email=john.doe@acme.com]]]",
+
+				// Test 10
+				"\"John\"<john.doe@acme.com>",
+
+				"[address-list: [[mailbox: name=[text: [[word: charset=us-ascii, buffer=John]]], email=john.doe@acme.com]]]",
+
+				// Test 11
+				"John<john.doe@acme.com>",
+
+				"[address-list: [[mailbox: name=[text: [[word: charset=us-ascii, buffer=John]]], email=john.doe@acme.com]]]"
 			};
 
 			for (unsigned int i = 0 ; i < sizeof(testSuitesParse) / sizeof(testSuitesParse[0]) / 2 ; ++i)
