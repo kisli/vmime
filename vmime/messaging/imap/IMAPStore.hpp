@@ -38,6 +38,7 @@ namespace imap {
 class IMAPParser;
 class IMAPTag;
 class IMAPConnection;
+class IMAPFolder;
 
 
 /** IMAP store service.

@@ -26,6 +26,7 @@
 #include "vmime/types.hpp"
 #include "vmime/dateTime.hpp"
 
+#include "vmime/message.hpp"
 #include "vmime/messaging/message.hpp"
 #include "vmime/messaging/events.hpp"
 

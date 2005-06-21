@@ -37,6 +37,7 @@ namespace maildir {
 
 
 class maildirStore;
+class maildirMessage;
 
 
 /** maildir folder implementation.

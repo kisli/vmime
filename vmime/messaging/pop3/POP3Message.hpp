@@ -32,6 +32,9 @@ namespace messaging {
 namespace pop3 {
 
 
+class POP3Folder;
+
+
 /** POP3 message implementation.
   */
 

@@ -35,6 +35,9 @@ namespace messaging {
 namespace pop3 {
 
 
+class POP3Folder;
+
+
 /** POP3 store service.
   */
 

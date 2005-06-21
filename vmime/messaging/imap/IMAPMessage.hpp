@@ -32,6 +32,9 @@ namespace messaging {
 namespace imap {
 
 
+class IMAPFolder;
+
+
 /** IMAP message implementation.
   */
 

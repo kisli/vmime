@@ -329,7 +329,7 @@ void maildirMessage::extractPart(const part& p, utility::outputStream& os,
 
 void maildirMessage::extractImpl(utility::outputStream& os, utility::progressionListener* progress,
 	const int start, const int length, const int partialStart, const int partialLength,
-	const bool peek) const
+	const bool /* peek */) const
 {
 	utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
 
