@@ -153,6 +153,7 @@ public:
 	/** Construct a new filter for the specified input stream.
 	  *
 	  * @param is stream from which to read data to be filtered
+	  * @param sequence sequence on which to stop
 	  */
 	stopSequenceFilteredInputStream(inputStream& is, const value_type* sequence)
 		: m_stream(is), m_sequence(sequence), m_found(0), m_eof(false)
