@@ -221,7 +221,8 @@ namespace
 				vmime::word("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
 				            vmime::charset("charset"))));
 
-			assert_eq("4", "F: X; param1=abcdefgh;\r\n "
+			assert_eq("4", "F: X; \r\n "
+				"param1=abcdefghijklm;\r\n "
 				"param1*0*=charset''abc;\r\n "
 				"param1*1*=defghijkl;\r\n "
 				"param1*2*=mnopqrstu;\r\n "

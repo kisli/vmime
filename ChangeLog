@@ -6,6 +6,8 @@ VERSION 0.7.1cvs
 
  * Fixed compilation errors with g++ 4.0.
 
+ * defaultParameter.cpp: fixed a bug in RFC-2231 implementation.
+
 2005-06-13  Vincent Richard  <vincent@vincent-richard.net>
 
  * word.cpp: fixed a bug in parsing, when the first character of word data

@@ -200,7 +200,7 @@ void defaultParameter::generate(utility::outputStream& os, const string::size_ty
 	bool needQuoting = false;
 	string::size_type valueLength = 0;
 
-	for (string::size_type i = 0 ; (i < value.length()) && (pos < maxLineLength - 4) ; ++i, ++valueLength)
+	for (string::size_type i = 0 ; (i < value.length()) && (pos + valueLength < maxLineLength - 4) ; ++i, ++valueLength)
 	{
 		switch (value[i])
 		{
