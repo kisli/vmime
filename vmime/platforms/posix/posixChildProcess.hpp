@@ -23,6 +23,9 @@
 
 #include "vmime/utility/childProcess.hpp"
 
+#include <sys/types.h>
+#include <signal.h>
+
 
 namespace vmime {
 namespace platforms {
