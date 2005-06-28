@@ -379,13 +379,13 @@ public:
 	template <>
 	static const bool valueFromString(const string& value)
 	{
-		if (utility::stringUtils::toLower(m_value) == "true")
+		if (utility::stringUtils::toLower(value) == "true")
 			return true;
 		else
 		{
 			int val = 0;
 
-			std::istringstream iss(m_value);
+			std::istringstream iss(value);
 			iss >> val;
 
 			return (!iss.fail() && val != 0);
