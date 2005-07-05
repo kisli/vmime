@@ -1738,7 +1738,7 @@ Platform handlers        :$VMIME_BUILTIN_PLATFORMS
 
 	configure_in.close()
 
-	os.system('./bootstrap')
+	os.system('sh bootstrap')
 
 	return None
 
