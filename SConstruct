@@ -1441,6 +1441,21 @@ else
 	VMIME_HAVE_MESSAGING_FEATURES=0
 fi
 
+# ** platform handlers
+
+VMIME_BUILTIN_PLATFORMS=''
+VMIME_DETECT_PLATFORM=''
+
+case "x${target_os}" in
+xwin* | xmingw* | xcygwin*)
+	VMIME_DETECT_PLATFORM='windows'
+	;;
+x*)
+	# Default is POSIX
+	VMIME_DETECT_PLATFORM='posix'
+	;;
+esac
+
 # ** messaging protocols
 
 VMIME_BUILTIN_MESSAGING_PROTOS=''
@@ -1463,29 +1478,27 @@ VMIME_BUILTIN_MESSAGING_PROTOS=''
 		configure_in.write('     [conf_messaging_proto_' + p + '=yes])\n')
 
 		configure_in.write('if test "x$conf_messaging_proto_' + p + '" = "xyes"; then\n')
+
+		if p == 'sendmail':  # sendmail only on POSIX platforms
+			configure_in.write('if test "x$VMIME_DETECT_PLATFORM" = "xposix"; then\n')
+
 		configure_in.write('	AM_CONDITIONAL(VMIME_BUILTIN_MESSAGING_PROTO_' + string.upper(p) + ', true)\n')
 		configure_in.write('	VMIME_BUILTIN_MESSAGING_PROTO_' + string.upper(p) + '=1\n')
 		configure_in.write('	VMIME_BUILTIN_MESSAGING_PROTOS="$VMIME_BUILTIN_MESSAGING_PROTOS ' + p + '"\n')
+
+		if p == 'sendmail':  # sendmail only on POSIX platforms
+			configure_in.write('else\n');
+			configure_in.write('	AC_MSG_WARN(' + p +' is only available on POSIX platforms)\n');
+			configure_in.write('	AM_CONDITIONAL(VMIME_BUILTIN_MESSAGING_PROTO_' + string.upper(p) + ', false)\n')
+			configure_in.write('	VMIME_BUILTIN_MESSAGING_PROTO_' + string.upper(p) + '=0\n')
+			configure_in.write('fi\n');
+
 		configure_in.write('else\n')
 		configure_in.write('	AM_CONDITIONAL(VMIME_BUILTIN_MESSAGING_PROTO_' + string.upper(p) + ', false)\n')
 		configure_in.write('	VMIME_BUILTIN_MESSAGING_PROTO_' + string.upper(p) + '=0\n')
 		configure_in.write('fi\n\n')
 
 	configure_in.write("""
-# ** platform handlers
-
-VMIME_BUILTIN_PLATFORMS=''
-VMIME_DETECT_PLATFORM=''
-
-case "x${target_os}" in
-xwin* | xmingw* | xcygwin*)
-	VMIME_DETECT_PLATFORM='windows'
-	;;
-x*)
-	# Default is POSIX
-	VMIME_DETECT_PLATFORM='posix'
-	;;
-esac
 
 
 #
