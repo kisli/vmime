@@ -357,7 +357,7 @@ libvmime_autotools = [
 	'autotools/config.guess',
 	'autotools/config.sub',
 	'autotools/ltmain.sh',
-	'autotools/depcomp',
+#	'autotools/depcomp',
 	'bootstrap',                   # not generated
 	'configure',
 	'configure.in',
