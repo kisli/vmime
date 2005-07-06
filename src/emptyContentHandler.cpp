@@ -48,6 +48,12 @@ void emptyContentHandler::extract(utility::outputStream& /* os */) const
 }
 
 
+void emptyContentHandler::extractRaw(utility::outputStream& /* os */) const
+{
+	// Nothing to do.
+}
+
+
 const string::size_type emptyContentHandler::getLength() const
 {
 	return (0);

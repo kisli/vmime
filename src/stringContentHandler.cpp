@@ -165,6 +165,12 @@ void stringContentHandler::extract(utility::outputStream& os) const
 }
 
 
+void stringContentHandler::extractRaw(utility::outputStream& os) const
+{
+	m_string.extract(os);
+}
+
+
 const string::size_type stringContentHandler::getLength() const
 {
 	return (m_string.length());

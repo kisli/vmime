@@ -179,6 +179,20 @@ void streamContentHandler::extract(utility::outputStream& os) const
 }
 
 
+void streamContentHandler::extractRaw(utility::outputStream& os) const
+{
+	if (m_stream == NULL && m_ownedStream.ptr() == NULL)
+		return;
+
+	utility::inputStream& in = const_cast <utility::inputStream&>
+		(*(m_stream ? m_stream : m_ownedStream.ptr()));
+
+	in.reset();  // may not work...
+
+	utility::bufferedStreamCopy(in, os);
+}
+
+
 const string::size_type streamContentHandler::getLength() const
 {
 	return (m_length);

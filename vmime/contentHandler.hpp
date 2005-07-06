@@ -63,9 +63,19 @@ public:
 	/** Extract the contents into the specified stream. If needed, data
 	  * will be decoded before being written into the stream.
 	  *
+	  * @throw exceptions::no_encoder_available if the encoding is
+	  * not supported
 	  * @param os output stream
 	  */
 	virtual void extract(utility::outputStream& os) const = 0;
+
+	/** Extract the contents into the specified stream, without
+	  * decoding it. It may be useful in case the encoding is not
+	  * supported and you want to extract raw data.
+	  *
+	  * @param os output stream
+	  */
+	virtual void extractRaw(utility::outputStream& os) const = 0;
 
 	/** Returns the actual length of data. WARNING: this can return 0 if no
 	  * length was specified when setting data of this object.

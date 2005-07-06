@@ -2,6 +2,11 @@
 VERSION 0.7.2cvs
 ================
 
+2005-07-06  Vincent Richard  <vincent@vincent-richard.net>
+
+ * *contentHandler.{hpp|cpp}: added extractRaw() method to allow extracting
+   data without performing any decoding.
+
 2005-06-22  Vincent Richard  <vincent@vincent-richard.net>
 
  * Started version 0.7.2.
