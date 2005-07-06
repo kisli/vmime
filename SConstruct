@@ -169,8 +169,8 @@ libvmime_sources = [
 
 libvmime_examples_sources = [
 	'examples/README',
-	'examples/Makefile.am',    # not generated
-	'examples/Makefile.in',
+#	'examples/Makefile.am',    # not generated
+#	'examples/Makefile.in',
 	'examples/example1.cpp',
 	'examples/example2.cpp',
 	'examples/example3.cpp',
