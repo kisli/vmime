@@ -37,7 +37,7 @@ class store : public service
 {
 protected:
 
-	store(session* sess, const serviceInfos& infos, authenticator* auth)
+	store(ref <session> sess, const serviceInfos& infos, ref <authenticator> auth)
 		: service(sess, infos, auth) { }
 
 public:
@@ -47,21 +47,21 @@ public:
 	  *
 	  * @return default folder
 	  */
-	virtual folder* getDefaultFolder() = 0;
+	virtual ref <folder> getDefaultFolder() = 0;
 
 	/** Return the root folder. This is protocol dependant
 	  * and usually is the user's mail drop root folder.
 	  *
 	  * @return root folder
 	  */
-	virtual folder* getRootFolder() = 0;
+	virtual ref <folder> getRootFolder() = 0;
 
 	/** Return the folder specified by the path.
 	  *
 	  * @param path absolute folder path
 	  * @return folder at the specified path
 	  */
-	virtual folder* getFolder(const folder::path& path) = 0;
+	virtual ref <folder> getFolder(const folder::path& path) = 0;
 
 	/** Test whether the specified folder name is a syntactically
 	  * a valid name.

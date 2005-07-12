@@ -42,11 +42,11 @@ public:
 	disposition(const string& actionMode, const string& sendingMode, const string& type, const string& modifier);
 
 
-	disposition* clone() const;
+	ref <component> clone() const;
 	void copyFrom(const component& other);
 	disposition& operator=(const disposition& other);
 
-	const std::vector <const component*> getChildComponents() const;
+	const std::vector <ref <const component> > getChildComponents() const;
 
 
 	/** Set the disposition action mode.

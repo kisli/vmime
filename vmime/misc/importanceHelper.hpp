@@ -54,7 +54,7 @@ public:
 	  *
 	  * @param msg message on which to reset importance
 	  */
-	static void resetImportance(message* msg);
+	static void resetImportance(ref <message> msg);
 
 	/** Return the importance of the specified message.
 	  *
@@ -62,14 +62,14 @@ public:
 	  * @return importance of the message, or default importance is no
 	  * information about importance is given in the message
 	  */
-	static const Importance getImportance(const message* msg);
+	static const Importance getImportance(const ref <const message> msg);
 
 	/** Set the importance of the specified message.
 	  *
 	  * @param msg message on which to set importance
 	  * @param i new message importance
 	  */
-	static void setImportance(message* msg, const Importance i);
+	static void setImportance(ref <message> msg, const Importance i);
 };
 
 

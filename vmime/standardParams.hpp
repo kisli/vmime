@@ -35,7 +35,7 @@ namespace vmime
 
 #define DECLARE_STANDARD_PARAM(paramClassName, valueTypeClassName) \
 	class paramClassName : public genericParameter <valueTypeClassName> { \
-		friend class parameterFactory::registerer <paramClassName>; \
+		friend class vmime::creator; \
 		protected: \
 			paramClassName() { } \
 			paramClassName(const paramClassName&) \

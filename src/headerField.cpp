@@ -44,9 +44,9 @@ headerField::~headerField()
 }
 
 
-headerField* headerField::clone() const
+ref <component> headerField::clone() const
 {
-	headerField* field = headerFieldFactory::getInstance()->create(m_name);
+	ref <headerField> field = headerFieldFactory::getInstance()->create(m_name);
 
 	field->copyFrom(*this);
 
@@ -69,7 +69,7 @@ headerField& headerField::operator=(const headerField& other)
 }
 
 
-headerField* headerField::parseNext(const string& buffer, const string::size_type position,
+ref <headerField> headerField::parseNext(const string& buffer, const string::size_type position,
 	const string::size_type end, string::size_type* newPosition)
 {
 	string::size_type pos = position;
@@ -191,7 +191,7 @@ headerField* headerField::parseNext(const string& buffer, const string::size_typ
 				}
 
 				// Return a new field
-				headerField* field = headerFieldFactory::getInstance()->create(name);
+				ref <headerField> field = headerFieldFactory::getInstance()->create(name);
 
 				field->parse(buffer, contentsStart, contentsEnd, NULL);
 				field->setParsedBounds(nameStart, pos);
@@ -248,11 +248,11 @@ const bool headerField::isCustom() const
 }
 
 
-const std::vector <const component*> headerField::getChildComponents() const
+const std::vector <ref <const component> > headerField::getChildComponents() const
 {
-	std::vector <const component*> list;
+	std::vector <ref <const component> > list;
 
-	list.push_back(&getValue());
+	list.push_back(getValueImp());
 
 	return (list);
 }

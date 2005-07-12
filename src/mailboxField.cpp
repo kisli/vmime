@@ -44,7 +44,7 @@ void mailboxField::parse(const string& buffer, const string::size_type position,
 	// Here, we cannot simply call "m_mailbox.parse()" because it
 	// may have more than one address specified (even if this field
 	// should contain only one). We are never too much careful...
-	address* parsedAddress = address::parseNext(buffer, position, end, newPosition);
+	ref <address> parsedAddress = address::parseNext(buffer, position, end, newPosition);
 
 	if (parsedAddress)
 	{
@@ -52,7 +52,7 @@ void mailboxField::parse(const string& buffer, const string::size_type position,
 		{
 			// If it is a group of mailboxes, take the first
 			// mailbox of the group
-			mailboxGroup* group = static_cast <mailboxGroup*>(parsedAddress);
+			ref <mailboxGroup> group = parsedAddress.staticCast <mailboxGroup>();
 
 			if (!group->isEmpty())
 				getValue() = *(group->getMailboxAt(0));
@@ -60,11 +60,9 @@ void mailboxField::parse(const string& buffer, const string::size_type position,
 		else
 		{
 			// Parse only if it is a mailbox
-			getValue() = *static_cast <mailbox*>(parsedAddress);
+			getValue() = *parsedAddress.staticCast <mailbox>();
 		}
 	}
-
-	delete (parsedAddress);
 
 	getValue().setParsedBounds(position, end);
 

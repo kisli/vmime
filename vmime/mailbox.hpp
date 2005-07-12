@@ -74,14 +74,14 @@ public:
 
 	// Assignment
 	void copyFrom(const component& other);
-	mailbox* clone() const;
+	ref <component> clone() const;
 	mailbox& operator=(const mailbox& other);
 
 	const bool isEmpty() const;
 
 	void clear();
 
-	const std::vector <const component*> getChildComponents() const;
+	const std::vector <ref <const component> > getChildComponents() const;
 
 
 	const bool isGroup() const;

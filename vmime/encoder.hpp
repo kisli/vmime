@@ -33,7 +33,7 @@ namespace vmime
 /** Encode/decode data in different encodings.
   */
 
-class encoder
+class encoder : public object
 {
 public:
 

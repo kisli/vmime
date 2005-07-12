@@ -43,6 +43,7 @@ class IMAPMessage : public message
 private:
 
 	friend class IMAPFolder;
+	friend class vmime::creator;  // vmime::create <IMAPMessage>
 
 	IMAPMessage(IMAPFolder* folder, const int num);
 	IMAPMessage(const IMAPMessage&) : message() { }
@@ -97,8 +98,8 @@ private:
 	bool m_expunged;
 	uid m_uid;
 
-	header* m_header;
-	structure* m_structure;
+	ref <header> m_header;
+	ref <structure> m_structure;
 };
 
 

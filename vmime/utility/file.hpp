@@ -40,7 +40,7 @@ class file;
 /** File list iterator (see file::getFiles).
   */
 
-class fileIterator
+class fileIterator : public object
 {
 public:
 
@@ -57,40 +57,40 @@ public:
 	  *
 	  * @return next file or NULL
 	  */
-	virtual file* nextElement() = 0;
+	virtual ref <file> nextElement() = 0;
 };
 
 
 /** Write to a file.
   */
 
-class fileWriter
+class fileWriter : public object
 {
 public:
 
 	virtual ~fileWriter() { }
 
-	virtual utility::outputStream* getOutputStream() = 0;
+	virtual ref <utility::outputStream> getOutputStream() = 0;
 };
 
 
 /** Read from a file.
   */
 
-class fileReader
+class fileReader : public object
 {
 public:
 
 	virtual ~fileReader() { }
 
-	virtual utility::inputStream* getInputStream() = 0;
+	virtual ref <utility::inputStream> getInputStream() = 0;
 };
 
 
 /** Abstract representation of a file or directory.
   */
 
-class file
+class file : public object
 {
 public:
 
@@ -161,7 +161,7 @@ public:
 	  *
 	  * @return parent directory (or NULL if root)
 	  */
-	virtual const file* getParent() const = 0;
+	virtual ref <file> getParent() const = 0;
 
 	/** Rename the file/directory.
 	  *
@@ -181,13 +181,13 @@ public:
 	  *
 	  * @return file writer object
 	  */
-	virtual fileWriter* getFileWriter() = 0;
+	virtual ref <fileWriter> getFileWriter() = 0;
 
 	/** Return an object capable of reading from this file.
 	  *
 	  * @return file reader object
 	  */
-	virtual fileReader* getFileReader() = 0;
+	virtual ref <fileReader> getFileReader() = 0;
 
 	/** Enumerate files contained in this directory.
 	  *
@@ -195,7 +195,15 @@ public:
 	  * @throw exceptions::not_a_directory if this is not a directory,
 	  * exceptions::filesystem_exception if another error occurs
 	  */
-	virtual fileIterator* getFiles() const = 0;
+	virtual ref <fileIterator> getFiles() const = 0;
+
+protected:
+
+	file() { }
+
+private:
+
+	file(const file&) : object() { }
 };
 
 
@@ -213,7 +221,7 @@ public:
 	  * @param path full path (absolute) of the file
 	  * @return new file object for the path
 	  */
-	virtual file* create(const file::path& path) const = 0;
+	virtual ref <file> create(const file::path& path) const = 0;
 
 	/** Parse a path contained in a string.
 	  *

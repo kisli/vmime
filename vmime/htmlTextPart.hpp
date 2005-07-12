@@ -37,39 +37,36 @@ namespace vmime
 
 class htmlTextPart : public textPart
 {
-protected:
-
-	~htmlTextPart();
-
 public:
 
 	htmlTextPart();
+	~htmlTextPart();
 
 	const mediaType getType() const;
 
 	const charset& getCharset() const;
 	void setCharset(const charset& ch);
 
-	const contentHandler& getPlainText() const;
-	void setPlainText(const contentHandler& plainText);
+	const ref <const contentHandler> getPlainText() const;
+	void setPlainText(ref <contentHandler> plainText);
 
-	const contentHandler& getText() const;
-	void setText(const contentHandler& text);
+	const ref <const contentHandler> getText() const;
+	void setText(ref <contentHandler> text);
 
 	/** Embedded object (eg: image for &lt;IMG> tag).
 	  */
-	class embeddedObject
+	class embeddedObject : public object
 	{
 	public:
 
-		embeddedObject(const contentHandler& data, const encoding& enc,
+		embeddedObject(ref <contentHandler> data, const encoding& enc,
 		               const string& id, const mediaType& type);
 
 		/** Return data stored in this embedded object.
 		  *
 		  * @return stored data
 		  */
-		const contentHandler& getData() const;
+		const ref <const contentHandler> getData() const;
 
 		/** Return the encoding used for data in this
 		  * embedded object.
@@ -93,7 +90,7 @@ public:
 
 	private:
 
-		contentHandler* m_data;
+		ref <contentHandler> m_data;
 		encoding m_encoding;
 		string m_id;
 		mediaType m_type;
@@ -114,7 +111,7 @@ public:
 	  * @param id object identifier
 	  * @return embedded object with the specified identifier
 	  */
-	const embeddedObject* findObject(const string& id) const;
+	const ref <const embeddedObject> findObject(const string& id) const;
 
 	/** Return the number of embedded objects.
 	  *
@@ -127,7 +124,7 @@ public:
 	  * @param pos position of the embedded object
 	  * @return embedded object at position 'pos'
 	  */
-	const embeddedObject* getObjectAt(const int pos) const;
+	const ref <const embeddedObject> getObjectAt(const int pos) const;
 
 	/** Embed an object and returns a string which identifies it.
 	  *
@@ -148,7 +145,7 @@ public:
 	  * @return an unique object identifier used to identify the new
 	  * object among all other embedded objects
 	  */
-	const string addObject(const contentHandler& data, const mediaType& type);
+	const string addObject(ref <contentHandler> data, const mediaType& type);
 
 	/** Embed an object and returns a string which identifies it.
 	  *
@@ -158,17 +155,17 @@ public:
 	  * @return an unique object identifier used to identify the new
 	  * object among all other embedded objects
 	  */
-	const string addObject(const contentHandler& data, const encoding& enc, const mediaType& type);
+	const string addObject(ref <contentHandler> data, const encoding& enc, const mediaType& type);
 
 private:
 
-	contentHandler* m_plainText;
-	contentHandler* m_text;
+	ref <contentHandler> m_plainText;
+	ref <contentHandler> m_text;
 	charset m_charset;
 
-	std::vector <embeddedObject*> m_objects;
+	std::vector <ref <embeddedObject> > m_objects;
 
-	void findEmbeddedParts(const bodyPart& part, std::vector <const bodyPart*>& cidParts, std::vector <const bodyPart*>& locParts);
+	void findEmbeddedParts(const bodyPart& part, std::vector <ref <const bodyPart> >& cidParts, std::vector <ref <const bodyPart> >& locParts);
 	void addEmbeddedObject(const bodyPart& part, const string& id);
 
 	bool findPlainTextPart(const bodyPart& part, const bodyPart& parent, const bodyPart& textPart);

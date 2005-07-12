@@ -49,14 +49,12 @@ int main()
 
 		std::cout << "  * " << enc.getName() << std::endl;
 
-		vmime::encoder* e = enc.create();
+		vmime::ref <vmime::encoder> e = enc.create();
 
 		std::vector <vmime::string> props = e->getAvailableProperties();
 
 		for (std::vector <vmime::string>::const_iterator it = props.begin() ; it != props.end() ; ++it)
 			std::cout << "      - " << *it << std::endl;
-
-		delete (e);
 	}
 
 	std::cout << std::endl;

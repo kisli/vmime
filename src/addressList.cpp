@@ -54,7 +54,7 @@ void addressList::parse(const string& buffer, const string::size_type position,
 
 	while (pos < end)
 	{
-		address* parsedAddress = address::parseNext(buffer, pos, end, &pos);
+		ref <address> parsedAddress = address::parseNext(buffer, pos, end, &pos);
 
 		if (parsedAddress != NULL)
 			m_list.push_back(parsedAddress);
@@ -74,7 +74,7 @@ void addressList::generate(utility::outputStream& os, const string::size_type ma
 
 	if (!m_list.empty())
 	{
-		for (std::vector <address*>::const_iterator i = m_list.begin() ; ; )
+		for (std::vector <ref <address> >::const_iterator i = m_list.begin() ; ; )
 		{
 			(*i)->generate(os, maxLineLength - 2, pos, &pos);
 
@@ -97,10 +97,10 @@ void addressList::copyFrom(const component& other)
 
 	removeAllAddresses();
 
-	for (std::vector <address*>::const_iterator it = addrList.m_list.begin() ;
+	for (std::vector <ref <address> >::const_iterator it = addrList.m_list.begin() ;
 	     it != addrList.m_list.end() ; ++it)
 	{
-		m_list.push_back(static_cast <address*>((*it)->clone()));
+		m_list.push_back((*it)->clone().dynamicCast <address>());
 	}
 }
 
@@ -117,27 +117,27 @@ addressList& addressList::operator=(const mailboxList& other)
 	removeAllAddresses();
 
 	for (int i = 0 ; i < other.getMailboxCount() ; ++i)
-		m_list.push_back(other.getMailboxAt(i)->clone());
+		m_list.push_back(other.getMailboxAt(i)->clone().dynamicCast <address>());
 
 	return (*this);
 }
 
 
-addressList* addressList::clone() const
+ref <component> addressList::clone() const
 {
-	return new addressList(*this);
+	return vmime::create <addressList>(*this);
 }
 
 
-void addressList::appendAddress(address* addr)
+void addressList::appendAddress(ref <address> addr)
 {
 	m_list.push_back(addr);
 }
 
 
-void addressList::insertAddressBefore(address* beforeAddress, address* addr)
+void addressList::insertAddressBefore(ref <address> beforeAddress, ref <address> addr)
 {
-	const std::vector <address*>::iterator it = std::find
+	const std::vector <ref <address> >::iterator it = std::find
 		(m_list.begin(), m_list.end(), beforeAddress);
 
 	if (it == m_list.end())
@@ -147,15 +147,15 @@ void addressList::insertAddressBefore(address* beforeAddress, address* addr)
 }
 
 
-void addressList::insertAddressBefore(const int pos, address* addr)
+void addressList::insertAddressBefore(const int pos, ref <address> addr)
 {
 	m_list.insert(m_list.begin() + pos, addr);
 }
 
 
-void addressList::insertAddressAfter(address* afterAddress, address* addr)
+void addressList::insertAddressAfter(ref <address> afterAddress, ref <address> addr)
 {
-	const std::vector <address*>::iterator it = std::find
+	const std::vector <ref <address> >::iterator it = std::find
 		(m_list.begin(), m_list.end(), afterAddress);
 
 	if (it == m_list.end())
@@ -165,21 +165,19 @@ void addressList::insertAddressAfter(address* afterAddress, address* addr)
 }
 
 
-void addressList::insertAddressAfter(const int pos, address* addr)
+void addressList::insertAddressAfter(const int pos, ref <address> addr)
 {
 	m_list.insert(m_list.begin() + pos + 1, addr);
 }
 
 
-void addressList::removeAddress(address* addr)
+void addressList::removeAddress(ref <address> addr)
 {
-	const std::vector <address*>::iterator it = std::find
+	const std::vector <ref <address> >::iterator it = std::find
 		(m_list.begin(), m_list.end(), addr);
 
 	if (it == m_list.end())
 		throw exceptions::no_such_address();
-
-	delete (*it);
 
 	m_list.erase(it);
 }
@@ -187,9 +185,7 @@ void addressList::removeAddress(address* addr)
 
 void addressList::removeAddress(const int pos)
 {
-	const std::vector <address*>::iterator it = m_list.begin() + pos;
-
-	delete (*it);
+	const std::vector <ref <address> >::iterator it = m_list.begin() + pos;
 
 	m_list.erase(it);
 }
@@ -197,7 +193,7 @@ void addressList::removeAddress(const int pos)
 
 void addressList::removeAllAddresses()
 {
-	free_container(m_list);
+	m_list.clear();
 }
 
 
@@ -213,25 +209,25 @@ const bool addressList::isEmpty() const
 }
 
 
-address* addressList::getAddressAt(const int pos)
+ref <address> addressList::getAddressAt(const int pos)
 {
 	return (m_list[pos]);
 }
 
 
-const address* addressList::getAddressAt(const int pos) const
+const ref <const address> addressList::getAddressAt(const int pos) const
 {
 	return (m_list[pos]);
 }
 
 
-const std::vector <const address*> addressList::getAddressList() const
+const std::vector <ref <const address> > addressList::getAddressList() const
 {
-	std::vector <const address*> list;
+	std::vector <ref <const address> > list;
 
 	list.reserve(m_list.size());
 
-	for (std::vector <address*>::const_iterator it = m_list.begin() ;
+	for (std::vector <ref <address> >::const_iterator it = m_list.begin() ;
 	     it != m_list.end() ; ++it)
 	{
 		list.push_back(*it);
@@ -241,15 +237,15 @@ const std::vector <const address*> addressList::getAddressList() const
 }
 
 
-const std::vector <address*> addressList::getAddressList()
+const std::vector <ref <address> > addressList::getAddressList()
 {
 	return (m_list);
 }
 
 
-const std::vector <const component*> addressList::getChildComponents() const
+const std::vector <ref <const component> > addressList::getChildComponents() const
 {
-	std::vector <const component*> list;
+	std::vector <ref <const component> > list;
 
 	copy_vector(m_list, list);
 

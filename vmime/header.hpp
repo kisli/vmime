@@ -58,10 +58,8 @@ public:
 	~header();
 
 #define FIELD_ACCESS(methodName, fieldName, type) \
-	type& methodName() { return dynamic_cast <type&> \
-		(*getField(fields::fieldName)); } \
-	const type& methodName() const { return dynamic_cast <const type&> \
-		(*findField(fields::fieldName)); }
+	ref <type> methodName() { return getField(fields::fieldName).dynamicCast <type>(); } \
+	ref <const type> methodName() const { return findField(fields::fieldName).dynamicCast <const type>(); }
 
 	FIELD_ACCESS(From,                    FROM,                      mailboxField)
 	FIELD_ACCESS(Sender,                  SENDER,                    mailboxField)
@@ -107,14 +105,14 @@ public:
 	  * @throw exceptions::no_such_field if no field with this name exists
 	  * @return first field with the specified name
 	  */
-	headerField* findField(const string& fieldName) const;
+	ref <headerField> findField(const string& fieldName) const;
 
 	/** Find all fields that match the specified name.
 	  * If no field is found, an empty vector is returned.
 	  *
 	  * @return list of fields with the specified name
 	  */
-	std::vector <headerField*> findAllFields(const string& fieldName);
+	std::vector <ref <headerField> > findAllFields(const string& fieldName);
 
 	/** Find the first field that matches the specified name.
 	  * If no field is found, one will be created and inserted into
@@ -123,13 +121,13 @@ public:
 	  * @return first field with the specified name or a new field
 	  * if no field is found
 	  */
-	headerField* getField(const string& fieldName);
+	ref <headerField> getField(const string& fieldName);
 
 	/** Add a field at the end of the list.
 	  *
 	  * @param field field to append
 	  */
-	void appendField(headerField* field);
+	void appendField(ref <headerField> field);
 
 	/** Insert a new field before the specified field.
 	  *
@@ -137,7 +135,7 @@ public:
 	  * @param field field to insert
 	  * @throw exceptions::no_such_field if the field is not in the list
 	  */
-	void insertFieldBefore(headerField* beforeField, headerField* field);
+	void insertFieldBefore(ref <headerField> beforeField, ref <headerField> field);
 
 	/** Insert a new field before the specified position.
 	  *
@@ -145,7 +143,7 @@ public:
 	  * the beginning of the list)
 	  * @param field field to insert
 	  */
-	void insertFieldBefore(const int pos, headerField* field);
+	void insertFieldBefore(const int pos, ref <headerField> field);
 
 	/** Insert a new field after the specified field.
 	  *
@@ -153,21 +151,21 @@ public:
 	  * @param field field to insert
 	  * @throw exceptions::no_such_field if the field is not in the list
 	  */
-	void insertFieldAfter(headerField* afterField, headerField* field);
+	void insertFieldAfter(ref <headerField> afterField, ref <headerField> field);
 
 	/** Insert a new field after the specified position.
 	  *
 	  * @param pos position of the field before the new field
 	  * @param field field to insert
 	  */
-	void insertFieldAfter(const int pos, headerField* field);
+	void insertFieldAfter(const int pos, ref <headerField> field);
 
 	/** Remove the specified field from the list.
 	  *
 	  * @param field field to remove
 	  * @throw exceptions::no_such_field if the field is not in the list
 	  */
-	void removeField(headerField* field);
+	void removeField(ref <headerField> field);
 
 	/** Remove the field at the specified position.
 	  *
@@ -196,36 +194,36 @@ public:
 	  * @param pos position
 	  * @return field at position 'pos'
 	  */
-	headerField* getFieldAt(const int pos);
+	ref <headerField> getFieldAt(const int pos);
 
 	/** Return the field at the specified position.
 	  *
 	  * @param pos position
 	  * @return field at position 'pos'
 	  */
-	const headerField* getFieldAt(const int pos) const;
+	const ref <const headerField> getFieldAt(const int pos) const;
 
 	/** Return the field list.
 	  *
 	  * @return list of fields
 	  */
-	const std::vector <const headerField*> getFieldList() const;
+	const std::vector <ref <const headerField> > getFieldList() const;
 
 	/** Return the field list.
 	  *
 	  * @return list of fields
 	  */
-	const std::vector <headerField*> getFieldList();
+	const std::vector <ref <headerField> > getFieldList();
 
-	header* clone() const;
+	ref <component> clone() const;
 	void copyFrom(const component& other);
 	header& operator=(const header& other);
 
-	const std::vector <const component*> getChildComponents() const;
+	const std::vector <ref <const component> > getChildComponents() const;
 
 private:
 
-	std::vector <headerField*> m_fields;
+	std::vector <ref <headerField> > m_fields;
 
 public:
 

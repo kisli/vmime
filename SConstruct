@@ -125,6 +125,7 @@ libvmime_sources = [
 	'messageId.cpp', 'messageId.hpp',
 	'messageIdSequence.cpp', 'messageIdSequence.hpp',
 	'messageParser.cpp', 'messageParser.hpp',
+	'object.cpp', 'object.hpp',
 	'options.cpp', 'options.hpp',
 	'path.cpp', 'path.hpp',
 	'parameter.cpp', 'parameter.hpp',
@@ -2092,3 +2093,23 @@ doxygenDocPath = '(doxygen-generated-files)'
 
 env.DoxygenDoc(doxygenDocPath, 'vmime.doxygen')
 env.Alias('doc', doxygenDocPath)
+
+
+################
+#  Unit tests  #
+################
+
+def runTests(target, source, env):
+	for t in libvmimetest_sources:
+		print ""
+		print t[0] + ':'  # test name
+		os.system(t[0])
+
+	return None
+
+
+runTestsBuilder = Builder(action = runTests)
+env.Append(BUILDERS = { 'RunTests' : runTestsBuilder })
+
+env.Alias('run-tests', env.RunTests('foo', 'SConstruct'))
+

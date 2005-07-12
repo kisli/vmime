@@ -77,7 +77,7 @@ void windowsSocket::connect(const vmime::string& address, const vmime::port_t po
 			// Error: cannot resolve address
 			throw vmime::exceptions::connection_error("Cannot resolve address.");
 		}
-	
+
 		memcpy(reinterpret_cast <char*>(&addr.sin_addr), hostInfo->h_addr, hostInfo->h_length);
 	}
 
@@ -167,9 +167,9 @@ void windowsSocket::sendRaw(const char* buffer, const int count)
 // posixSocketFactory
 //
 
-vmime::messaging::socket* windowsSocketFactory::create()
+ref <vmime::messaging::socket> windowsSocketFactory::create()
 {
-	return new windowsSocket();
+	return vmime::create <windowsSocket>();
 }
 
 

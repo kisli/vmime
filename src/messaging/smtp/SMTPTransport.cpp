@@ -41,7 +41,7 @@ namespace messaging {
 namespace smtp {
 
 
-SMTPTransport::SMTPTransport(session* sess, authenticator* auth)
+SMTPTransport::SMTPTransport(ref <session> sess, ref <authenticator> auth)
 	: transport(sess, getInfosInstance(), auth), m_socket(NULL),
 	  m_authentified(false), m_extendedSMTP(false), m_timeoutHandler(NULL)
 {
@@ -239,11 +239,8 @@ void SMTPTransport::internalDisconnect()
 	sendRequest("QUIT");
 
 	m_socket->disconnect();
-
-	delete (m_socket);
 	m_socket = NULL;
 
-	delete (m_timeoutHandler);
 	m_timeoutHandler = NULL;
 
 	m_authentified = false;

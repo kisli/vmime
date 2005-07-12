@@ -66,13 +66,13 @@ namespace
 		void testGenerate()
 		{
 			vmime::messageIdSequence s1;
-			s1.appendMessageId(new vmime::messageId("a", "b"));
+			s1.appendMessageId(vmime::create <vmime::messageId>("a", "b"));
 
 			assert_eq("1", "<a@b>", s1.generate());
 
 			vmime::messageIdSequence s2;
-			s2.appendMessageId(new vmime::messageId("a", "b"));
-			s2.appendMessageId(new vmime::messageId("c", "d"));
+			s2.appendMessageId(vmime::create <vmime::messageId>("a", "b"));
+			s2.appendMessageId(vmime::create <vmime::messageId>("c", "d"));
 
 			assert_eq("2", "<a@b> <c@d>", s2.generate());
 		}

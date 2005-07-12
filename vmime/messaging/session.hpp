@@ -40,11 +40,12 @@ class transport;
   * for connection to a service.
   */
 
-class session
+class session : public object
 {
 public:
 
 	session();
+	session(const session& sess);
 	session(const propertySet& props);
 
 	virtual ~session();
@@ -59,7 +60,7 @@ public:
 	  * credentials by reading the session properties "auth.username" and "auth.password".
 	  * @return a new transport service
 	  */
-	transport* getTransport(authenticator* auth = NULL);
+	ref <transport> getTransport(ref <authenticator> auth = NULL);
 
 	/** Return a transport service instance for the specified protocol.
 	  *
@@ -69,7 +70,7 @@ public:
 	  * credentials by reading the session properties "auth.username" and "auth.password".
 	  * @return a new transport service
 	  */
-	transport* getTransport(const string& protocol, authenticator* auth = NULL);
+	ref <transport> getTransport(const string& protocol, ref <authenticator> auth = NULL);
 
 	/** Return a transport service instance for the specified URL.
 	  *
@@ -79,7 +80,7 @@ public:
 	  * credentials by reading the session properties "auth.username" and "auth.password".
 	  * @return a new transport service
 	  */
-	transport* getTransport(const utility::url& url, authenticator* auth = NULL);
+	ref <transport> getTransport(const utility::url& url, ref <authenticator> auth = NULL);
 
 	/** Return a transport service instance for the protocol specified
 	  * in the session properties.
@@ -91,7 +92,7 @@ public:
 	  * credentials by reading the session properties "auth.username" and "auth.password".
 	  * @return a new store service
 	  */
-	store* getStore(authenticator* auth = NULL);
+	ref <store> getStore(ref <authenticator> auth = NULL);
 
 	/** Return a store service instance for the specified protocol.
 	  *
@@ -101,7 +102,7 @@ public:
 	  * credentials by reading the session properties "auth.username" and "auth.password".
 	  * @return a new store service
 	  */
-	store* getStore(const string& protocol, authenticator* auth = NULL);
+	ref <store> getStore(const string& protocol, ref <authenticator> auth = NULL);
 
 	/** Return a store service instance for the specified URL.
 	  *
@@ -111,7 +112,7 @@ public:
 	  * credentials by reading the session properties "auth.username" and "auth.password".
 	  * @return a new store service
 	  */
-	store* getStore(const utility::url& url, authenticator* auth = NULL);
+	ref <store> getStore(const utility::url& url, ref <authenticator> auth = NULL);
 
 	/** Properties for the session and for the services.
 	  */

@@ -93,26 +93,26 @@ public:
 	  * @param pos position of the attachment
 	  * @return attachment at position 'pos'
 	  */
-	const attachment* getAttachmentAt(const int pos) const;
+	const ref <const attachment> getAttachmentAt(const int pos) const;
 
 	/** Return the attachments of the message.
 	  *
 	  * @return list of attachments in the message
 	  */
-	const std::vector <const attachment*> getAttachmentList() const;
+	const std::vector <ref <const attachment> > getAttachmentList() const;
 
 	/** Return information about the specified attachment.
 	  *
 	  * @param a attachment to retrieve information about
 	  * @return information about the specified attachment
 	  */
-	const contentDispositionField* getAttachmentInfo(const attachment* a) const;
+	const ref <const contentDispositionField> getAttachmentInfo(const ref <const attachment> a) const;
 
 	/** Return the text parts of the message.
 	  *
 	  * @return list of text parts in the message
 	  */
-	const std::vector <const textPart*> getTextPartList() const;
+	const std::vector <ref <const textPart> > getTextPartList() const;
 
 	/** Return the number of text parts in the message.
 	  *
@@ -125,7 +125,7 @@ public:
 	  * @param pos position of the text part
 	  * @return text part at position 'pos'
 	  */
-	const textPart* getTextPartAt(const int pos) const;
+	const ref <const textPart> getTextPartAt(const int pos) const;
 
 private:
 
@@ -139,10 +139,10 @@ private:
 
 	datetime m_date;
 
-	std::vector <attachment*> m_attach;
-	std::map <attachment*, contentDispositionField*> m_attachInfo;
+	std::vector <ref <attachment> > m_attach;
+	std::map <attachment*, ref <contentDispositionField> > m_attachInfo;
 
-	std::vector <textPart*> m_textParts;
+	std::vector <ref <textPart> > m_textParts;
 
 	void parse(const message& msg);
 

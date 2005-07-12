@@ -42,14 +42,14 @@ public:
 	  * @param msg message in which to add a MDN request
 	  * @param mailboxes list of mailboxes to which the MDN will be sent
 	  */
-	static void attachMDNRequest(message* msg, const mailboxList& mailboxes);
+	static void attachMDNRequest(ref <message> msg, const mailboxList& mailboxes);
 
 	/** Attach a MDN request to the specified message.
 	  *
 	  * @param msg message in which to add a MDN request
 	  * @param mbox mailbox to which the MDN will be sent
 	  */
-	static void attachMDNRequest(message* msg, const mailbox& mbox);
+	static void attachMDNRequest(ref <message> msg, const mailbox& mbox);
 
 	/** Return a list of possible MDNs that can be generated
 	  * for the specified message.
@@ -57,14 +57,14 @@ public:
 	  * @param msg message for which to send a MDN
 	  * @return list of possible MDNs
 	  */
-	static const std::vector <sendableMDNInfos> getPossibleMDNs(const message* msg);
+	static const std::vector <sendableMDNInfos> getPossibleMDNs(const ref <const message> msg);
 
 	/** Test whether the specified message is a MDN.
 	  *
 	  * @param msg message
 	  * @return true if the message is a MDN, false otherwise
 	  */
-	static const bool isMDN(const message* msg);
+	static const bool isMDN(const ref <const message> msg);
 
 	/** If the specified message is a MDN, return information
 	  * about it.
@@ -73,7 +73,7 @@ public:
 	  * @throw exceptions::invalid_argument if the message is not a MDN
 	  * @return information about the MDN
 	  */
-	static receivedMDNInfos getReceivedMDN(const message* msg);
+	static receivedMDNInfos getReceivedMDN(const ref <const message> msg);
 
 	/** Check whether we need user confirmation for sending a MDN even
 	  * if he/she explicitely allowed automatic send of MDNs. This can
@@ -82,7 +82,7 @@ public:
 	  * @param msg message for which to send a MDN
 	  * @return true if user confirmation should be asked, false otherwise
 	  */
-	static bool needConfirmation(const message* msg);
+	static const bool needConfirmation(const ref <const message> msg);
 
 	/** Build a new MDN for the message. The resulting MDN can then be
 	  * sent over SMTP transport service.
@@ -98,26 +98,26 @@ public:
 	  * @param reportingUAProducts list of products in the reporting user-agent (optional)
 	  * @return a new message object containing the MDN
 	  */
-	static message* buildMDN(const sendableMDNInfos& mdnInfos,
-	                         const string& text,
-	                         const charset& ch,
-	                         const mailbox& expeditor,
-	                         const disposition& dispo,
-	                         const string& reportingUA = NULL_STRING,
-	                         const std::vector <string>& reportingUAProducts
+	static ref <message> buildMDN(const sendableMDNInfos& mdnInfos,
+	                              const string& text,
+	                              const charset& ch,
+	                              const mailbox& expeditor,
+	                              const disposition& dispo,
+	                              const string& reportingUA = NULL_STRING,
+	                              const std::vector <string>& reportingUAProducts
 	                                   = std::vector <string>());
 
 private:
 
-	static bodyPart* createFirstMDNPart(const sendableMDNInfos& mdnInfos,
-	                                    const string& text, const charset& ch);
+	static ref <bodyPart> createFirstMDNPart(const sendableMDNInfos& mdnInfos,
+	                                         const string& text, const charset& ch);
 
-	static bodyPart* createSecondMDNPart(const sendableMDNInfos& mdnInfos,
-	                                     const disposition& dispo,
-	                                     const string& reportingUA,
-	                                     const std::vector <string>& reportingUAProducts);
+	static ref <bodyPart> createSecondMDNPart(const sendableMDNInfos& mdnInfos,
+	                                          const disposition& dispo,
+	                                          const string& reportingUA,
+	                                          const std::vector <string>& reportingUAProducts);
 
-	static bodyPart* createThirdMDNPart(const sendableMDNInfos& mdnInfos);
+	static ref <bodyPart> createThirdMDNPart(const sendableMDNInfos& mdnInfos);
 };
 
 

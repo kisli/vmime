@@ -33,7 +33,7 @@ namespace vmime
 {
 
 
-class contentHandler
+class contentHandler : public object
 {
 public:
 
@@ -47,7 +47,7 @@ public:
 	  *
 	  * @return copy of this object
 	  */
-	virtual contentHandler* clone() const = 0;
+	virtual ref <contentHandler> clone() const = 0;
 
 	/** Output the contents into the specified stream. Data will be
 	  * encoded before being written into the stream. This is used internally

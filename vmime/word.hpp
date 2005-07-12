@@ -35,6 +35,8 @@ namespace vmime
 
 class word : public component
 {
+	friend class text;
+
 public:
 
 	word();
@@ -100,7 +102,7 @@ public:
 	  *
 	  * @return a copy of this word
 	  */
-	word* clone() const;
+	ref <component> clone() const;
 
 
 	using component::parse;
@@ -111,13 +113,14 @@ public:
 
 	void generate(utility::outputStream& os, const string::size_type maxLineLength, const string::size_type curLinePos, string::size_type* newLinePos, const int flags, const bool isFirstWord) const;
 
-	const std::vector <const component*> getChildComponents() const;
-
-	static word* parseNext(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition, bool prevIsEncoded, bool* isEncoded, bool isFirst);
-
-	static const std::vector <word*> parseMultiple(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition);
+	const std::vector <ref <const component> > getChildComponents() const;
 
 private:
+
+	static ref <word> parseNext(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition, bool prevIsEncoded, bool* isEncoded, bool isFirst);
+
+	static const std::vector <ref <word> > parseMultiple(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition);
+
 
 	// The "m_buffer" of this word holds the data, and this data is encoded
 	// in the specified "m_charset".

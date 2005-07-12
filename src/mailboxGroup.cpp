@@ -76,26 +76,24 @@ void mailboxGroup::parse(const string& buffer, const string::size_type position,
 
 	while (pos < end)
 	{
-		address* parsedAddress = address::parseNext(buffer, pos, end, &pos);
+		ref <address> parsedAddress = address::parseNext(buffer, pos, end, &pos);
 
 		if (parsedAddress)
 		{
 			if (parsedAddress->isGroup())
 			{
-				mailboxGroup* group = static_cast <mailboxGroup*>(parsedAddress);
+				ref <mailboxGroup> group = parsedAddress.staticCast <mailboxGroup>();
 
 				// Sub-groups are not allowed in mailbox groups: so, we add all
 				// the contents of the sub-group into this group...
 				for (int i = 0 ; i < group->getMailboxCount() ; ++i)
 				{
-					m_list.push_back(group->getMailboxAt(i)->clone());
+					m_list.push_back(group->getMailboxAt(i)->clone().staticCast <mailbox>());
 				}
-
-				delete (parsedAddress);
 			}
 			else
 			{
-				m_list.push_back(static_cast <mailbox*>(parsedAddress));
+				m_list.push_back(parsedAddress.staticCast <mailbox>());
 			}
 		}
 	}
@@ -160,7 +158,7 @@ void mailboxGroup::generate(utility::outputStream& os, const string::size_type m
 	os << ":";
 	++pos;
 
-	for (std::vector <mailbox*>::const_iterator it = m_list.begin() ;
+	for (std::vector <ref <mailbox> >::const_iterator it = m_list.begin() ;
 	     it != m_list.end() ; ++it)
 	{
 		if (it != m_list.begin())
@@ -193,17 +191,17 @@ void mailboxGroup::copyFrom(const component& other)
 
 	removeAllMailboxes();
 
-	for (std::vector <mailbox*>::const_iterator it = source.m_list.begin() ;
+	for (std::vector <ref <mailbox> >::const_iterator it = source.m_list.begin() ;
 	     it != source.m_list.end() ; ++it)
 	{
-		m_list.push_back((*it)->clone());
+		m_list.push_back((*it)->clone().staticCast <mailbox>());
 	}
 }
 
 
-mailboxGroup* mailboxGroup::clone() const
+ref <component> mailboxGroup::clone() const
 {
-	return new mailboxGroup(*this);
+	return vmime::create <mailboxGroup>(*this);
 }
 
 
@@ -238,15 +236,15 @@ const bool mailboxGroup::isEmpty() const
 }
 
 
-void mailboxGroup::appendMailbox(mailbox* mbox)
+void mailboxGroup::appendMailbox(ref <mailbox> mbox)
 {
 	m_list.push_back(mbox);
 }
 
 
-void mailboxGroup::insertMailboxBefore(mailbox* beforeMailbox, mailbox* mbox)
+void mailboxGroup::insertMailboxBefore(ref <mailbox> beforeMailbox, ref <mailbox> mbox)
 {
-	const std::vector <mailbox*>::iterator it = std::find
+	const std::vector <ref <mailbox> >::iterator it = std::find
 		(m_list.begin(), m_list.end(), beforeMailbox);
 
 	if (it == m_list.end())
@@ -256,15 +254,15 @@ void mailboxGroup::insertMailboxBefore(mailbox* beforeMailbox, mailbox* mbox)
 }
 
 
-void mailboxGroup::insertMailboxBefore(const int pos, mailbox* mbox)
+void mailboxGroup::insertMailboxBefore(const int pos, ref <mailbox> mbox)
 {
 	m_list.insert(m_list.begin() + pos, mbox);
 }
 
 
-void mailboxGroup::insertMailboxAfter(mailbox* afterMailbox, mailbox* mbox)
+void mailboxGroup::insertMailboxAfter(ref <mailbox> afterMailbox, ref <mailbox> mbox)
 {
-	const std::vector <mailbox*>::iterator it = std::find
+	const std::vector <ref <mailbox> >::iterator it = std::find
 		(m_list.begin(), m_list.end(), afterMailbox);
 
 	if (it == m_list.end())
@@ -274,21 +272,19 @@ void mailboxGroup::insertMailboxAfter(mailbox* afterMailbox, mailbox* mbox)
 }
 
 
-void mailboxGroup::insertMailboxAfter(const int pos, mailbox* mbox)
+void mailboxGroup::insertMailboxAfter(const int pos, ref <mailbox> mbox)
 {
 	m_list.insert(m_list.begin() + pos + 1, mbox);
 }
 
 
-void mailboxGroup::removeMailbox(mailbox* mbox)
+void mailboxGroup::removeMailbox(ref <mailbox> mbox)
 {
-	const std::vector <mailbox*>::iterator it = std::find
+	const std::vector <ref <mailbox> >::iterator it = std::find
 		(m_list.begin(), m_list.end(), mbox);
 
 	if (it == m_list.end())
 		throw exceptions::no_such_mailbox();
-
-	delete (*it);
 
 	m_list.erase(it);
 }
@@ -296,9 +292,7 @@ void mailboxGroup::removeMailbox(mailbox* mbox)
 
 void mailboxGroup::removeMailbox(const int pos)
 {
-	const std::vector <mailbox*>::iterator it = m_list.begin() + pos;
-
-	delete (*it);
+	const std::vector <ref <mailbox> >::iterator it = m_list.begin() + pos;
 
 	m_list.erase(it);
 }
@@ -306,7 +300,7 @@ void mailboxGroup::removeMailbox(const int pos)
 
 void mailboxGroup::removeAllMailboxes()
 {
-	free_container(m_list);
+	m_list.clear();
 }
 
 
@@ -316,25 +310,25 @@ const int mailboxGroup::getMailboxCount() const
 }
 
 
-mailbox* mailboxGroup::getMailboxAt(const int pos)
+ref <mailbox> mailboxGroup::getMailboxAt(const int pos)
 {
 	return (m_list[pos]);
 }
 
 
-const mailbox* mailboxGroup::getMailboxAt(const int pos) const
+const ref <const mailbox> mailboxGroup::getMailboxAt(const int pos) const
 {
 	return (m_list[pos]);
 }
 
 
-const std::vector <const mailbox*> mailboxGroup::getMailboxList() const
+const std::vector <ref <const mailbox> > mailboxGroup::getMailboxList() const
 {
-	std::vector <const mailbox*> list;
+	std::vector <ref <const mailbox> > list;
 
 	list.reserve(m_list.size());
 
-	for (std::vector <mailbox*>::const_iterator it = m_list.begin() ;
+	for (std::vector <ref <mailbox> >::const_iterator it = m_list.begin() ;
 	     it != m_list.end() ; ++it)
 	{
 		list.push_back(*it);
@@ -344,15 +338,15 @@ const std::vector <const mailbox*> mailboxGroup::getMailboxList() const
 }
 
 
-const std::vector <mailbox*> mailboxGroup::getMailboxList()
+const std::vector <ref <mailbox> > mailboxGroup::getMailboxList()
 {
 	return (m_list);
 }
 
 
-const std::vector <const component*> mailboxGroup::getChildComponents() const
+const std::vector <ref <const component> > mailboxGroup::getChildComponents() const
 {
-	std::vector <const component*> list;
+	std::vector <ref <const component> > list;
 
 	copy_vector(m_list, list);
 

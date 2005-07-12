@@ -61,7 +61,7 @@ class posixSocketFactory : public vmime::messaging::socketFactory
 {
 public:
 
-	vmime::messaging::socket* create();
+	ref <vmime::messaging::socket> create();
 };
 
 

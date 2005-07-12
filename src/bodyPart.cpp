@@ -25,8 +25,11 @@ namespace vmime
 
 
 bodyPart::bodyPart()
-	: m_body(this), m_parent(NULL)
+	: m_header(vmime::create <header>()),
+	  m_body(vmime::create <body>()),
+	  m_parent(NULL)
 {
+	m_body->setParentPart(this);
 }
 
 
@@ -35,10 +38,10 @@ void bodyPart::parse(const string& buffer, const string::size_type position,
 {
 	// Parse the headers
 	string::size_type pos = position;
-	m_header.parse(buffer, pos, end, &pos);
+	m_header->parse(buffer, pos, end, &pos);
 
 	// Parse the body contents
-	m_body.parse(buffer, pos, end, NULL);
+	m_body->parse(buffer, pos, end, NULL);
 
 	setParsedBounds(position, end);
 
@@ -50,25 +53,25 @@ void bodyPart::parse(const string& buffer, const string::size_type position,
 void bodyPart::generate(utility::outputStream& os, const string::size_type maxLineLength,
 	const string::size_type /* curLinePos */, string::size_type* newLinePos) const
 {
-	m_header.generate(os, maxLineLength);
+	m_header->generate(os, maxLineLength);
 
 	os << CRLF;
 
-	m_body.generate(os, maxLineLength);
+	m_body->generate(os, maxLineLength);
 
 	if (newLinePos)
 		*newLinePos = 0;
 }
 
 
-bodyPart* bodyPart::clone() const
+ref <component> bodyPart::clone() const
 {
-	bodyPart* p = new bodyPart;
+	ref <bodyPart> p = vmime::create <bodyPart>();
 
-	p->m_parent = NULL;
+	p->m_parent = null;
 
-	p->m_header.copyFrom(m_header);
-	p->m_body.copyFrom(m_body);
+	p->m_header->copyFrom(*m_header);
+	p->m_body->copyFrom(*m_body);
 
 	return (p);
 }
@@ -78,8 +81,8 @@ void bodyPart::copyFrom(const component& other)
 {
 	const bodyPart& bp = dynamic_cast <const bodyPart&>(other);
 
-	m_header = bp.m_header;
-	m_body = bp.m_body;
+	m_header->copyFrom(*(bp.m_header));
+	m_body->copyFrom(*(bp.m_body));
 }
 
 
@@ -90,42 +93,42 @@ bodyPart& bodyPart::operator=(const bodyPart& other)
 }
 
 
-const header* bodyPart::getHeader() const
+const ref <const header> bodyPart::getHeader() const
 {
-	return (&m_header);
+	return (m_header);
 }
 
 
-header* bodyPart::getHeader()
+ref <header> bodyPart::getHeader()
 {
-	return (&m_header);
+	return (m_header);
 }
 
 
-const body* bodyPart::getBody() const
+const ref <const body> bodyPart::getBody() const
 {
-	return (&m_body);
+	return (m_body);
 }
 
 
-body* bodyPart::getBody()
+ref <body> bodyPart::getBody()
 {
-	return (&m_body);
+	return (m_body);
 }
 
 
-bodyPart* bodyPart::getParentPart() const
+weak_ref <bodyPart> bodyPart::getParentPart() const
 {
 	return (m_parent);
 }
 
 
-const std::vector <const component*> bodyPart::getChildComponents() const
+const std::vector <ref <const component> > bodyPart::getChildComponents() const
 {
-	std::vector <const component*> list;
+	std::vector <ref <const component> > list;
 
-	list.push_back(&m_header);
-	list.push_back(&m_body);
+	list.push_back(m_header);
+	list.push_back(m_body);
 
 	return (list);
 }

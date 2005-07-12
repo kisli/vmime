@@ -44,7 +44,7 @@ namespace vmime
 
 #define DECLARE_STANDARD_FIELD(fieldClassName, valueTypeClassName) \
 	class fieldClassName : public genericField <valueTypeClassName> { \
-		friend class headerFieldFactory::registerer <fieldClassName>; \
+		friend class vmime::creator; \
 		protected: \
 			fieldClassName() { } \
 			fieldClassName(const fieldClassName&) \
@@ -61,7 +61,7 @@ namespace vmime
 
 	#define DECLARE_STANDARD_FIELD_PARAM(fieldClassName, valueTypeClassName) \
 		class fieldClassName : public genericParameterizedHeaderField <valueTypeClassName> { \
-			friend class headerFieldFactory::registerer <fieldClassName>; \
+			friend class vmime::creator; \
 			protected: \
 				fieldClassName() { } \
 				fieldClassName(const fieldClassName&) \
@@ -74,7 +74,7 @@ namespace vmime
 	#define DECLARE_STANDARD_FIELD_PARAM(fieldClassName, valueTypeClassName) \
 		class fieldClassName : public genericField <valueTypeClassName>, \
 		                       public parameterizedHeaderField { \
-			friend class headerFieldFactory::registerer <fieldClassName>; \
+			friend class vmime::creator; \
 			protected: \
 				fieldClassName() { } \
 				fieldClassName(const fieldClassName&) \

@@ -57,7 +57,7 @@ word::word(const string& buffer, const charset& charset)
 }
 
 
-word* word::parseNext(const string& buffer, const string::size_type position,
+ref <word> word::parseNext(const string& buffer, const string::size_type position,
 	const string::size_type end, string::size_type* newPosition,
 	bool prevIsEncoded, bool* isEncoded, bool isFirst)
 {
@@ -101,7 +101,7 @@ word* word::parseNext(const string& buffer, const string::size_type position,
 
 			if (!unencoded.empty())
 			{
-				word* w = new word(unencoded, charset(charsets::US_ASCII));
+				ref <word> w = vmime::create <word>(unencoded, charset(charsets::US_ASCII));
 				w->setParsedBounds(position, pos);
 
 				if (newPosition)
@@ -158,7 +158,7 @@ word* word::parseNext(const string& buffer, const string::size_type position,
 
 			pos += 2; // ?=
 
-			word* w = new word();
+			ref <word> w = vmime::create <word>();
 			w->parse(buffer, wordStart, pos, NULL);
 
 			if (newPosition)
@@ -181,7 +181,7 @@ word* word::parseNext(const string& buffer, const string::size_type position,
 
 		unencoded += string(buffer.begin() + startPos, buffer.begin() + end);
 
-		word* w = new word(unencoded, charset(charsets::US_ASCII));
+		ref <word> w = vmime::create <word>(unencoded, charset(charsets::US_ASCII));
 		w->setParsedBounds(position, end);
 
 		if (newPosition)
@@ -193,15 +193,15 @@ word* word::parseNext(const string& buffer, const string::size_type position,
 		return (w);
 	}
 
-	return (NULL);
+	return (null);
 }
 
 
-const std::vector <word*> word::parseMultiple(const string& buffer, const string::size_type position,
+const std::vector <ref <word> > word::parseMultiple(const string& buffer, const string::size_type position,
 	const string::size_type end, string::size_type* newPosition)
 {
-	std::vector <word*> res;
-	word* w = NULL;
+	std::vector <ref <word> > res;
+	ref <word> w;
 
 	string::size_type pos = position;
 
@@ -694,9 +694,9 @@ const string word::getConvertedText(const charset& dest) const
 }
 
 
-word* word::clone() const
+ref <component> word::clone() const
 {
-	return new word(m_buffer, m_charset);
+	return vmime::create <word>(m_buffer, m_charset);
 }
 
 
@@ -730,9 +730,9 @@ void word::setBuffer(const string& buffer)
 }
 
 
-const std::vector <const component*> word::getChildComponents() const
+const std::vector <ref <const component> > word::getChildComponents() const
 {
-	return std::vector <const component*>();
+	return std::vector <ref <const component> >();
 }
 
 

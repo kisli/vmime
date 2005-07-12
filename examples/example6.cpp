@@ -26,8 +26,8 @@
 
 
 // Global session object
-static vmime::utility::auto_ptr <vmime::messaging::session> g_session
-	= new vmime::messaging::session();
+static vmime::ref <vmime::messaging::session> g_session
+	= vmime::create <vmime::messaging::session>();
 
 
 // Authentification handler
@@ -127,7 +127,7 @@ static void printStructure(const vmime::messaging::structure& s, const int level
 }
 
 
-static const vmime::string getFolderPathString(vmime::messaging::folder* f)
+static const vmime::string getFolderPathString(vmime::ref <vmime::messaging::folder> f)
 {
 	const vmime::string n = f->getName().getBuffer();
 
@@ -137,7 +137,7 @@ static const vmime::string getFolderPathString(vmime::messaging::folder* f)
 	}
 	else
 	{
-		vmime::utility::auto_ptr <vmime::messaging::folder> p = f->getParent();
+		vmime::ref <vmime::messaging::folder> p = f->getParent();
 		return getFolderPathString(p) + n + "/";
 	}
 }
@@ -147,20 +147,17 @@ static const vmime::string getFolderPathString(vmime::messaging::folder* f)
   *
   * @param folder current folder
   */
-static void printFolders(vmime::messaging::folder* folder, const int level = 0)
+static void printFolders(vmime::ref <vmime::messaging::folder> folder, const int level = 0)
 {
 	for (int j = 0 ; j < level * 2 ; ++j)
 		std::cout << " ";
 
 	std::cout << getFolderPathString(folder) << std::endl;
 
-	std::vector <vmime::messaging::folder*> subFolders = folder->getFolders(false);
+	std::vector <vmime::ref <vmime::messaging::folder> > subFolders = folder->getFolders(false);
 
 	for (unsigned int i = 0 ; i < subFolders.size() ; ++i)
-	{
 		printFolders(subFolders[i], level + 1);
-		delete subFolders[i];
-	}
 }
 
 
@@ -213,10 +210,8 @@ static void sendMessage()
 
 		vmime::utility::url url(urlString);
 
-		interactiveAuthenticator auth;
-
-		vmime::utility::auto_ptr <vmime::messaging::transport> tr =
-			g_session->getTransport(url, &auth);
+		vmime::ref <vmime::messaging::transport> tr =
+			g_session->getTransport(url, vmime::create <interactiveAuthenticator>());
 
 		// You can also set some properties (see example7 to know the properties
 		// available for each service). For example, for SMTP:
@@ -243,7 +238,7 @@ static void sendMessage()
 			cont = (toString.size() != 0);
 
 			if (cont)
-				to.appendMailbox(new vmime::mailbox(toString));
+				to.appendMailbox(vmime::create <vmime::mailbox>(toString));
 		}
 
 		std::cout << "Enter message data (end with '.' on a single line):" << std::endl;
@@ -312,19 +307,19 @@ static void connectStore()
 		// If no authenticator is given in argument to getStore(), a default one
 		// is used. Its behaviour is to get the user credentials from the
 		// session properties "auth.username" and "auth.password".
-		interactiveAuthenticator auth;
+		vmime::ref <vmime::messaging::store> st;
 
-		vmime::utility::auto_ptr <vmime::messaging::store> st =
-			g_session->getStore(url,
-				(url.getUsername().empty() || url.getPassword().empty())
-					? &auth : NULL);
+		if (url.getUsername().empty() || url.getPassword().empty())
+			st = g_session->getStore(url, vmime::create <interactiveAuthenticator>());
+		else
+			st = g_session->getStore(url);
 
 		// Connect to the mail store
 		st->connect();
 
 		// Open the default folder in this store
-		vmime::utility::auto_ptr <vmime::messaging::folder> f = st->getDefaultFolder();
-//		vmime::utility::auto_ptr <vmime::messaging::folder> f = st->getFolder(vmime::utility::path("a"));
+		vmime::ref <vmime::messaging::folder> f = st->getDefaultFolder();
+//		vmime::ref <vmime::messaging::folder> f = st->getFolder(vmime::utility::path("a"));
 
 		f->open(vmime::messaging::folder::MODE_READ_WRITE);
 
@@ -335,7 +330,7 @@ static void connectStore()
 
 		for (bool cont = true ; cont ; )
 		{
-			typedef std::map <int, vmime::utility::smart_ptr <vmime::messaging::message> > MessageList;
+			typedef std::map <int, vmime::ref <vmime::messaging::message> > MessageList;
 			MessageList msgList;
 
 			try
@@ -353,7 +348,7 @@ static void connectStore()
 				const int choice = printMenu(choices);
 
 				// Request message number
-				vmime::utility::smart_ptr <vmime::messaging::message> msg;
+				vmime::ref <vmime::messaging::message> msg;
 
 				if (choice != 6 && choice != 7)
 				{
@@ -431,7 +426,7 @@ static void connectStore()
 					f->fetchMessage(msg, vmime::messaging::folder::FETCH_ENVELOPE);
 
 #define ENV_HELPER(x) \
-	try { std::cout << msg->getHeader().x().generate() << std::endl; } \
+	try { std::cout << msg->getHeader().x()->generate() << std::endl; } \
 	catch (vmime::exception) { /* In case the header field does not exist. */ }
 
 					ENV_HELPER(From)
@@ -454,7 +449,7 @@ static void connectStore()
 				// List folders
 				case 6:
 				{
-					vmime::utility::auto_ptr <vmime::messaging::folder>
+					vmime::ref <vmime::messaging::folder>
 						root = st->getRootFolder();
 
 					printFolders(root);
@@ -482,25 +477,21 @@ static void connectStore()
 
 		// Folder renaming
 		{
-			vmime::messaging::folder* f = st->getFolder(vmime::messaging::folder::path("c"));
+			vmime::ref <vmime::messaging::folder> f = st->getFolder(vmime::messaging::folder::path("c"));
 			f->rename(vmime::messaging::folder::path("c2"));
-			delete (f);
 
-			vmime::messaging::folder* g = st->getFolder(vmime::messaging::folder::path("c2"));
+			vmime::ref <vmime::messaging::folder> g = st->getFolder(vmime::messaging::folder::path("c2"));
 			g->rename(vmime::messaging::folder::path("c"));
-			delete (g);
 		}
 
 		// Message copy: copy all messages from 'f' to 'g'
 		{
-			vmime::messaging::folder* g = st->getFolder(vmime::messaging::folder::path("TEMP"));
+			vmime::ref <vmime::messaging::folder> g = st->getFolder(vmime::messaging::folder::path("TEMP"));
 
 			if (!g->exists())
 				g->create(vmime::messaging::folder::TYPE_CONTAINS_MESSAGES);
 
 			f->copyMessages(g->getFullPath());
-
-			delete (g);
 		}
 */
 			}

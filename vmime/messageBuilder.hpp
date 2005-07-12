@@ -128,17 +128,17 @@ public:
 	void setSubject(const text& subject);
 
 	/** Attach a new object to the message.
-	  * This is a synonym for messageBuilder::appendAttachment().
+	  * \deprecated Use messageBuilder::appendAttachment() instead.
 	  *
 	  * @param attach new attachment
 	  */
-	void attach(attachment* attach);
+	void attach(ref <attachment> attach);
 
 	/** Attach a new object to the message.
 	  *
 	  * @param attach new attachment
 	  */
-	void appendAttachment(attachment* attach);
+	void appendAttachment(ref <attachment> attach);
 
 	/** Remove the attachment at the specified position.
 	  *
@@ -151,14 +151,14 @@ public:
 	  * @param pos position of the attachment
 	  * @return attachment at the specified position
 	  */
-	const attachment* getAttachmentAt(const int pos) const;
+	const ref <const attachment> getAttachmentAt(const int pos) const;
 
 	/** Return the attachment at the specified position.
 	  *
 	  * @param pos position of the attachment
 	  * @return attachment at the specified position
 	  */
-	attachment* getAttachmentAt(const int pos);
+	ref <attachment> getAttachmentAt(const int pos);
 
 	/** Return the number of attachments in the message.
 	  *
@@ -170,13 +170,13 @@ public:
 	  *
 	  * @return list of attachments
 	  */
-	const std::vector <const attachment*> getAttachmentList() const;
+	const std::vector <ref <const attachment> > getAttachmentList() const;
 
 	/** Return the list of attachments.
 	  *
 	  * @return list of attachments
 	  */
-	const std::vector <attachment*> getAttachmentList();
+	const std::vector <ref <attachment> > getAttachmentList();
 
 	/** Change the type of the text part and construct a new part.
 	  *
@@ -188,14 +188,14 @@ public:
 	  *
 	  * @return text part of the message
 	  */
-	textPart* getTextPart();
+	ref <textPart> getTextPart();
 
 	/** Construct a new message based on the information specified
 	  * in this object.
 	  *
 	  * @return a new message
 	  */
-	message* construct() const;
+	ref <message> construct() const;
 
 private:
 
@@ -207,9 +207,9 @@ private:
 
 	text m_subject;
 
-	textPart* m_textPart;
+	ref <textPart> m_textPart;
 
-	std::vector <attachment*> m_attach;
+	std::vector <ref <attachment> > m_attach;
 };
 
 

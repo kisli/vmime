@@ -36,10 +36,10 @@ protected:
 	textPartFactory();
 	~textPartFactory();
 
-	typedef textPart* (*AllocFunc)(void);
-	typedef std::map <string, AllocFunc> NameMap;
+	typedef ref <textPart> (*AllocFunc)(void);
+	typedef std::vector <std::pair <mediaType, AllocFunc> > MapType;
 
-	NameMap m_nameMap;
+	MapType m_map;
 
 #ifndef VMIME_BUILDING_DOC
 	template <class TYPE>
@@ -47,10 +47,10 @@ protected:
 	{
 	public:
 
-		static textPart* creator()
+		static ref <textPart> creator()
 		{
 			// Allocate a new object
-			return new TYPE();
+			return vmime::create <TYPE>();
 		}
 	};
 #endif // VMIME_BUILDING_DOC
@@ -62,10 +62,10 @@ public:
 	template <class T>
 	void registerType(const mediaType& type)
 	{
-		m_nameMap.insert(NameMap::value_type(type.generate(), &registerer<T>::creator));
+		m_map.push_back(MapType::value_type(type, &registerer<T>::creator));
 	}
 
-	textPart* create(const mediaType& type);
+	ref <textPart> create(const mediaType& type);
 };
 
 

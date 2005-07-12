@@ -31,7 +31,7 @@ namespace messaging {
 /** Interface for connecting to servers.
   */
 
-class socket
+class socket : public object
 {
 public:
 
@@ -81,6 +81,14 @@ public:
 	  * @param count number of bytes to send (size of buffer)
 	  */
 	virtual void sendRaw(const char* buffer, const int count) = 0;
+
+protected:
+
+	socket() { }
+
+private:
+
+	socket(const socket&) : object() { }
 };
 
 
@@ -93,7 +101,7 @@ public:
 
 	virtual ~socketFactory() { }
 
-	virtual socket* create() = 0;
+	virtual ref <socket> create() = 0;
 };
 
 

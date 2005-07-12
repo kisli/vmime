@@ -21,6 +21,9 @@
 #define VMIME_MESSAGING_TIMEOUTHANDLER_HPP_INCLUDED
 
 
+#include "vmime/types.hpp"
+
+
 namespace vmime {
 namespace messaging {
 
@@ -28,7 +31,7 @@ namespace messaging {
 /** A class to manage time-out in messaging services.
   */
 
-class timeoutHandler
+class timeoutHandler : public object
 {
 public:
 
@@ -63,7 +66,7 @@ public:
 
 	virtual ~timeoutHandlerFactory() { }
 
-	virtual timeoutHandler* create() = 0;
+	virtual ref <timeoutHandler> create() = 0;
 };
 
 

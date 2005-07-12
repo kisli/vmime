@@ -39,11 +39,11 @@ namespace messaging {
 /** Base class for messaging services.
   */
 
-class service
+class service : public object
 {
 protected:
 
-	service(session* sess, const serviceInfos& infos, authenticator* auth);
+	service(ref <session> sess, const serviceInfos& infos, ref <authenticator> auth);
 
 public:
 
@@ -72,13 +72,13 @@ public:
 	  *
 	  * @return session object
 	  */
-	const session* getSession() const;
+	ref <const session> getSession() const;
 
 	/** Return the session object associated with this service instance.
 	  *
 	  * @return session object
 	  */
-	session* getSession();
+	ref <session> getSession();
 
 	/** Return information about this service.
 	  *
@@ -110,13 +110,13 @@ public:
 	  *
 	  * @return authenticator object
 	  */
-	const authenticator* getAuthenticator() const;
+	ref <const authenticator> getAuthenticator() const;
 
 	/** Return the authenticator object used with this service instance.
 	  *
 	  * @return authenticator object
 	  */
-	authenticator* getAuthenticator();
+	ref <authenticator> getAuthenticator();
 
 	/** Set a property for this service (service prefix is added automatically).
 	  *
@@ -149,10 +149,8 @@ public:
 
 private:
 
-	bool m_deleteAuth;
-
-	session* m_session;
-	authenticator* m_auth;
+	ref <session> m_session;
+	ref <authenticator> m_auth;
 };
 
 

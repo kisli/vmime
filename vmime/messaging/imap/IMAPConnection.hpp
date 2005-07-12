@@ -40,11 +40,11 @@ class IMAPTag;
 class IMAPStore;
 
 
-class IMAPConnection
+class IMAPConnection : public object
 {
 public:
 
-	IMAPConnection(IMAPStore* store, authenticator* auth);
+	IMAPConnection(weak_ref <IMAPStore> store, ref <authenticator> auth);
 	~IMAPConnection();
 
 
@@ -75,31 +75,31 @@ public:
 	IMAPParser::response* readResponse(IMAPParser::literalHandler* lh = NULL);
 
 
-	const IMAPTag* getTag() const;
-	const IMAPParser* getParser() const;
+	ref <const IMAPTag> getTag() const;
+	ref <const IMAPParser> getParser() const;
 
-	const IMAPStore* getStore() const;
-	IMAPStore* getStore();
+	weak_ref <const IMAPStore> getStore() const;
+	weak_ref <IMAPStore> getStore();
 
-	session* getSession();
+	ref <session> getSession();
 
 private:
 
-	IMAPStore* m_store;
+	weak_ref <IMAPStore> m_store;
 
-	authenticator* m_auth;
+	ref <authenticator> m_auth;
 
-	socket* m_socket;
+	ref <socket> m_socket;
 
-	IMAPParser* m_parser;
+	ref <IMAPParser> m_parser;
 
-	IMAPTag* m_tag;
+	ref <IMAPTag> m_tag;
 
 	char m_hierarchySeparator;
 
 	ProtocolStates m_state;
 
-	timeoutHandler* m_timeoutHandler;
+	ref <timeoutHandler> m_timeoutHandler;
 
 
 	void internalDisconnect();

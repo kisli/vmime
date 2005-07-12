@@ -89,11 +89,11 @@ public:
 	  */
 	const string getId() const;
 
-	messageId* clone() const;
+	ref <component> clone() const;
 	void copyFrom(const component& other);
 	messageId& operator=(const messageId& other);
 
-	const std::vector <const component*> getChildComponents() const;
+	const std::vector <ref <const component> > getChildComponents() const;
 
 private:
 
@@ -119,7 +119,7 @@ protected:
 	  * @param newPosition will receive the new position in the input buffer
 	  * @return a new message-id object, or null if no more message-id can be parsed from the input buffer
 	  */
-	static messageId* parseNext(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition);
+	static ref <messageId> parseNext(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition);
 };
 
 

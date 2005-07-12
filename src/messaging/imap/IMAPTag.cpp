@@ -36,7 +36,7 @@ IMAPTag::IMAPTag(const int number)
 
 
 IMAPTag::IMAPTag(const IMAPTag& tag)
-	: m_number(tag.m_number)
+	: object(), m_number(tag.m_number)
 {
 	m_tag.resize(4);
 }

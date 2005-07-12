@@ -48,13 +48,13 @@ public:
 	};
 
 
-	messageCountEvent(folder* folder, const Types type, const std::vector <int>& nums);
+	messageCountEvent(ref <folder> folder, const Types type, const std::vector <int>& nums);
 
 	/** Return the folder in which messages have been added/removed.
 	  *
 	  * @return folder in which message count changed
 	  */
-	const folder* getFolder() const;
+	ref <const folder> getFolder() const;
 
 	/** Return the event type.
 	  *
@@ -76,7 +76,7 @@ public:
 
 private:
 
-	folder* m_folder;
+	ref <folder> m_folder;
 	const Types m_type;
 	std::vector <int> m_nums;
 };
@@ -111,13 +111,13 @@ public:
 	};
 
 
-	messageChangedEvent(folder* folder, const Types type, const std::vector <int>& nums);
+	messageChangedEvent(ref <folder> folder, const Types type, const std::vector <int>& nums);
 
 	/** Return the folder in which messages have changed.
 	  *
 	  * @return folder in which message count changed
 	  */
-	const folder* getFolder() const;
+	ref <const folder> getFolder() const;
 
 	/** Return the event type.
 	  *
@@ -139,7 +139,7 @@ public:
 
 private:
 
-	folder* m_folder;
+	ref <folder> m_folder;
 	const Types m_type;
 	std::vector <int> m_nums;
 };
@@ -175,13 +175,13 @@ public:
 	};
 
 
-	folderEvent(folder* folder, const Types type, const utility::path& oldPath, const utility::path& newPath);
+	folderEvent(ref <folder> folder, const Types type, const utility::path& oldPath, const utility::path& newPath);
 
 	/** Return the folder on which the event occured.
 	  *
 	  * @return folder on which the event occured
 	  */
-	const folder* getFolder() const;
+	ref <const folder> getFolder() const;
 
 	/** Return the event type.
 	  *
@@ -197,7 +197,7 @@ public:
 
 private:
 
-	folder* m_folder;
+	ref <folder> m_folder;
 	const Types m_type;
 	const utility::path m_oldPath;
 	const utility::path m_newPath;

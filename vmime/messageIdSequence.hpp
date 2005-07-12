@@ -41,18 +41,18 @@ public:
 	~messageIdSequence();
 
 
-	messageIdSequence* clone() const;
+	ref <component> clone() const;
 	void copyFrom(const component& other);
 	messageIdSequence& operator=(const messageIdSequence& other);
 
-	const std::vector <const component*> getChildComponents() const;
+	const std::vector <ref <const component> > getChildComponents() const;
 
 
 	/** Add a message-id at the end of the list.
 	  *
 	  * @param mid message-id to append
 	  */
-	void appendMessageId(messageId* mid);
+	void appendMessageId(ref <messageId> mid);
 
 	/** Insert a new message-id before the specified message-id.
 	  *
@@ -60,7 +60,7 @@ public:
 	  * @param mid message-id to insert
 	  * @throw exceptions::no_such_messageid if the message-id is not in the list
 	  */
-	void insertMessageIdBefore(messageId* beforeMid, messageId* mid);
+	void insertMessageIdBefore(ref <messageId> beforeMid, ref <messageId> mid);
 
 	/** Insert a new message-id before the specified position.
 	  *
@@ -68,7 +68,7 @@ public:
 	  * the beginning of the list)
 	  * @param mid message-id to insert
 	  */
-	void insertMessageIdBefore(const int pos, messageId* mid);
+	void insertMessageIdBefore(const int pos, ref <messageId> mid);
 
 	/** Insert a new message-id after the specified message-id.
 	  *
@@ -76,21 +76,21 @@ public:
 	  * @param mid message-id to insert
 	  * @throw exceptions::no_such_message_id if the message-id is not in the list
 	  */
-	void insertMessageIdAfter(messageId* afterMid, messageId* mid);
+	void insertMessageIdAfter(ref <messageId> afterMid, ref <messageId> mid);
 
 	/** Insert a new message-id after the specified position.
 	  *
 	  * @param pos position of the message-id before the new message-id
 	  * @param mid message-id to insert
 	  */
-	void insertMessageIdAfter(const int pos, messageId* mid);
+	void insertMessageIdAfter(const int pos, ref <messageId> mid);
 
 	/** Remove the specified message-id from the list.
 	  *
 	  * @param mid message-id to remove
 	  * @throw exceptions::no_such_message_id if the message-id is not in the list
 	  */
-	void removeMessageId(messageId* mid);
+	void removeMessageId(ref <messageId> mid);
 
 	/** Remove the message-id at the specified position.
 	  *
@@ -119,30 +119,30 @@ public:
 	  * @param pos position
 	  * @return message-id at position 'pos'
 	  */
-	messageId* getMessageIdAt(const int pos);
+	const ref <messageId> getMessageIdAt(const int pos);
 
 	/** Return the message-id at the specified position.
 	  *
 	  * @param pos position
 	  * @return message-id at position 'pos'
 	  */
-	const messageId* getMessageIdAt(const int pos) const;
+	const ref <const messageId> getMessageIdAt(const int pos) const;
 
 	/** Return the message-id list.
 	  *
 	  * @return list of message-ids
 	  */
-	const std::vector <const messageId*> getMessageIdList() const;
+	const std::vector <ref <const messageId> > getMessageIdList() const;
 
 	/** Return the message-id list.
 	  *
 	  * @return list of message-ids
 	  */
-	const std::vector <messageId*> getMessageIdList();
+	const std::vector <ref <messageId> > getMessageIdList();
 
 private:
 
-	std::vector <messageId*> m_list;
+	std::vector <ref <messageId> > m_list;
 
 public:
 
@@ -153,8 +153,6 @@ public:
 	void parse(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition = NULL);
 	void generate(utility::outputStream& os, const string::size_type maxLineLength = lineLengthLimits::infinite, const string::size_type curLinePos = 0, string::size_type* newLinePos = NULL) const;
 };
-
-
 
 
 } // vmime

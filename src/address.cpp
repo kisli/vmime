@@ -62,7 +62,7 @@ address-list    =       (address *("," address)) / obs-addr-list
 
 */
 
-address* address::parseNext(const string& buffer, const string::size_type position,
+ref <address> address::parseNext(const string& buffer, const string::size_type position,
 	const string::size_type end, string::size_type* newPosition)
 {
 	bool escaped = false;
@@ -171,22 +171,14 @@ address* address::parseNext(const string& buffer, const string::size_type positi
 	// Parse extracted address (mailbox or group)
 	if (pos != start)
 	{
-		address* parsedAddress = isGroup
-			? static_cast<address*>(new mailboxGroup)
-			: static_cast<address*>(new mailbox);
+		ref <address> parsedAddress = isGroup
+			? create <mailboxGroup>().dynamicCast <address>()
+			: create <mailbox>().dynamicCast <address>();
 
-		try
-		{
-			parsedAddress->parse(buffer, start, pos, NULL);
-			parsedAddress->setParsedBounds(start, pos);
+		parsedAddress->parse(buffer, start, pos, NULL);
+		parsedAddress->setParsedBounds(start, pos);
 
-			return (parsedAddress);
-		}
-		catch (std::exception&)
-		{
-			delete (parsedAddress);
-			throw;
-		}
+		return (parsedAddress);
 	}
 
 	return (NULL);

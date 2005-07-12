@@ -27,7 +27,6 @@ namespace vmime
 
 
 messageBuilder::messageBuilder()
-	: m_textPart(NULL)
 {
 	// By default there is one text part of type "text/plain"
 	constructTextPart(mediaType(mediaTypes::TEXT, mediaTypes::TEXT_PLAIN));
@@ -36,19 +35,16 @@ messageBuilder::messageBuilder()
 
 messageBuilder::~messageBuilder()
 {
-	delete (m_textPart);
-
-	free_container(m_attach);
 }
 
 
-message* messageBuilder::construct() const
+ref <message> messageBuilder::construct() const
 {
 	// Create a new message
-	message* msg = new message;
+	ref <message> msg = vmime::create <message>();
 
 	// Generate the header fields
-	msg->getHeader()->Subject().setValue(m_subject);
+	msg->getHeader()->Subject()->setValue(m_subject);
 
 	if (m_from.isEmpty())
 		throw exceptions::no_expeditor();
@@ -56,20 +52,20 @@ message* messageBuilder::construct() const
 	if (m_to.isEmpty() || m_to.getAddressAt(0)->isEmpty())
 		throw exceptions::no_recipient();
 
-	msg->getHeader()->From().setValue(m_from);
-	msg->getHeader()->To().setValue(m_to);
+	msg->getHeader()->From()->setValue(m_from);
+	msg->getHeader()->To()->setValue(m_to);
 
 	if (!m_cc.isEmpty())
-		msg->getHeader()->Cc().setValue(m_cc);
+		msg->getHeader()->Cc()->setValue(m_cc);
 
 	if (!m_bcc.isEmpty())
-		msg->getHeader()->Bcc().setValue(m_bcc);
+		msg->getHeader()->Bcc()->setValue(m_bcc);
 
 	// Add a "Date" field
-	msg->getHeader()->Date().setValue(datetime::now());
+	msg->getHeader()->Date()->setValue(datetime::now());
 
 	// Add a "Mime-Version" header field
-	msg->getHeader()->MimeVersion().setValue(string(SUPPORTED_MIME_VERSION));
+	msg->getHeader()->MimeVersion()->setValue(string(SUPPORTED_MIME_VERSION));
 
 	// If there is one or more attachments (or other parts that are
 	// not "text/...") and if there is more than one parts for the
@@ -92,14 +88,14 @@ message* messageBuilder::construct() const
 	if (!m_attach.empty() && m_textPart->getPartCount() > 1)
 	{
 		// Set parent part (message) to "multipart/mixed"
-		msg->getHeader()->ContentType().setValue
+		msg->getHeader()->ContentType()->setValue
 			(mediaType(mediaTypes::MULTIPART, mediaTypes::MULTIPART_MIXED));
 
 		// Create a sub-part "multipart/alternative" for text parts
-		bodyPart* subPart = new bodyPart;
+		ref <bodyPart> subPart = vmime::create <bodyPart>();
 		msg->getBody()->appendPart(subPart);
 
-		subPart->getHeader()->ContentType().setValue
+		subPart->getHeader()->ContentType()->setValue
 			(mediaType(mediaTypes::MULTIPART, mediaTypes::MULTIPART_ALTERNATIVE));
 
 		// Generate the text parts into this sub-part (normally, this
@@ -114,13 +110,13 @@ message* messageBuilder::construct() const
 		// If any attachment, set message content-type to "multipart/mixed"
 		if (!m_attach.empty())
 		{
-			msg->getHeader()->ContentType().setValue
+			msg->getHeader()->ContentType()->setValue
 				(mediaType(mediaTypes::MULTIPART, mediaTypes::MULTIPART_MIXED));
 		}
 		// Else, set it to "multipart/alternative" if there are more than one text part.
 		else if (m_textPart->getPartCount() > 1)
 		{
-			msg->getHeader()->ContentType().setValue
+			msg->getHeader()->ContentType()->setValue
 				(mediaType(mediaTypes::MULTIPART, mediaTypes::MULTIPART_ALTERNATIVE));
 		}
 	}
@@ -128,7 +124,7 @@ message* messageBuilder::construct() const
 	// Generate the attachments
 	if (!m_attach.empty())
 	{
-		for (std::vector <attachment*>::const_iterator a = m_attach.begin() ;
+		for (std::vector <ref <attachment> >::const_iterator a = m_attach.begin() ;
 		     a != m_attach.end() ; ++a)
 		{
 			(*a)->generateIn(*msg);
@@ -142,9 +138,9 @@ message* messageBuilder::construct() const
 		const bodyPart& part = *msg->getBody()->getPartAt(0);
 
 		// First, copy (and replace) the header fields
-		const std::vector <const headerField*> fields = part.getHeader()->getFieldList();
+		const std::vector <ref <const headerField> > fields = part.getHeader()->getFieldList();
 
-		for (std::vector <const headerField*>::const_iterator it = fields.begin() ;
+		for (std::vector <ref <const headerField> >::const_iterator it = fields.begin() ;
 		     it != fields.end() ; ++it)
 		{
 			*(msg->getHeader()->getField((*it)->getName())) = **it;
@@ -159,13 +155,13 @@ message* messageBuilder::construct() const
 }
 
 
-void messageBuilder::attach(attachment* attach)
+void messageBuilder::attach(ref <attachment> attach)
 {
 	appendAttachment(attach);
 }
 
 
-void messageBuilder::appendAttachment(attachment* attach)
+void messageBuilder::appendAttachment(ref <attachment> attach)
 {
 	m_attach.push_back(attach);
 }
@@ -173,7 +169,7 @@ void messageBuilder::appendAttachment(attachment* attach)
 
 void messageBuilder::constructTextPart(const mediaType& type)
 {
-	textPart* part = NULL;
+	ref <textPart> part = NULL;
 
 	try
 	{
@@ -184,12 +180,11 @@ void messageBuilder::constructTextPart(const mediaType& type)
 		throw;
 	}
 
-	delete (m_textPart);
 	m_textPart = part;
 }
 
 
-textPart* messageBuilder::getTextPart()
+ref <textPart> messageBuilder::getTextPart()
 {
 	return (m_textPart);
 }
@@ -275,19 +270,17 @@ void messageBuilder::setSubject(const text& subject)
 
 void messageBuilder::removeAttachment(const int pos)
 {
-	delete (m_attach[pos]);
-
 	m_attach.erase(m_attach.begin() + pos);
 }
 
 
-const attachment* messageBuilder::getAttachmentAt(const int pos) const
+const ref <const attachment> messageBuilder::getAttachmentAt(const int pos) const
 {
 	return (m_attach[pos]);
 }
 
 
-attachment* messageBuilder::getAttachmentAt(const int pos)
+ref <attachment> messageBuilder::getAttachmentAt(const int pos)
 {
 	return (m_attach[pos]);
 }
@@ -299,13 +292,13 @@ const int messageBuilder::getAttachmentCount() const
 }
 
 
-const std::vector <const attachment*> messageBuilder::getAttachmentList() const
+const std::vector <ref <const attachment> > messageBuilder::getAttachmentList() const
 {
-	std::vector <const attachment*> res;
+	std::vector <ref <const attachment> > res;
 
 	res.reserve(m_attach.size());
 
-	for (std::vector <attachment*>::const_iterator it = m_attach.begin() ;
+	for (std::vector <ref <attachment> >::const_iterator it = m_attach.begin() ;
 	     it != m_attach.end() ; ++it)
 	{
 		res.push_back(*it);
@@ -315,7 +308,7 @@ const std::vector <const attachment*> messageBuilder::getAttachmentList() const
 }
 
 
-const std::vector <attachment*> messageBuilder::getAttachmentList()
+const std::vector <ref <attachment> > messageBuilder::getAttachmentList()
 {
 	return (m_attach);
 }

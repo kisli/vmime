@@ -61,7 +61,7 @@ namespace
 			assert_eq("4.3", w1.getCharset(), t4.getWordAt(0)->getCharset());
 
 			vmime::word w2("Other", vmime::charset(vmime::charsets::US_ASCII));
-			t4.appendWord(new vmime::word(w2));
+			t4.appendWord(vmime::create <vmime::word>(w2));
 
 			vmime::text t5(t4);
 
@@ -77,7 +77,7 @@ namespace
 			vmime::text t1("Test: \xa9\xc3");
 
 			assert_true("operator==", t1 == t1);
-			assert_true("clone", *(t1.clone()) == t1);
+			assert_true("clone", *vmime::clone(t1) == t1);
 
 			vmime::text t2;
 			t2.copyFrom(t1);
@@ -91,7 +91,7 @@ namespace
 			vmime::charset c1("test");
 			vmime::text t1;
 
-			vmime::text::newFromString(s1, c1, &t1);
+			t1.createFromString(s1, c1);
 
 			assert_eq("1.1", 1, t1.getWordCount());
 			assert_eq("1.2", s1, t1.getWordAt(0)->getBuffer());
@@ -104,7 +104,7 @@ namespace
 			vmime::charset c2("test");
 			vmime::text t2;
 
-			vmime::text::newFromString(s2, c2, &t2);
+			t2.createFromString(s2, c2);
 
 			assert_eq("2.1", 3, t2.getWordCount());
 			assert_eq("2.2", s2_1, t2.getWordAt(0)->getBuffer());

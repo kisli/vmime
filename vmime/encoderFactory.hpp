@@ -44,17 +44,15 @@ public:
 	static encoderFactory* getInstance();
 
 	/** Information about a registered encoder. */
-	class registeredEncoder
+	class registeredEncoder : public object
 	{
-		friend class encoderFactory;
-
 	protected:
 
 		virtual ~registeredEncoder() { }
 
 	public:
 
-		virtual encoder* create() const = 0;
+		virtual ref <encoder> create() const = 0;
 
 		virtual const string& getName() const = 0;
 	};
@@ -64,7 +62,7 @@ private:
 	template <class E>
 	class registeredEncoderImpl : public registeredEncoder
 	{
-		friend class encoderFactory;
+		friend class vmime::creator;
 
 	protected:
 
@@ -72,9 +70,9 @@ private:
 
 	public:
 
-		encoder* create() const
+		ref <encoder> create() const
 		{
-			return new E;
+			return vmime::create <E>();
 		}
 
 		const string& getName() const
@@ -88,7 +86,7 @@ private:
 	};
 
 
-	std::vector <registeredEncoder*> m_encoders;
+	std::vector <ref <registeredEncoder> > m_encoders;
 
 public:
 
@@ -99,7 +97,7 @@ public:
 	template <class E>
 	void registerName(const string& name)
 	{
-		m_encoders.push_back(new registeredEncoderImpl <E>(utility::stringUtils::toLower(name)));
+		m_encoders.push_back(vmime::create <registeredEncoderImpl <E> >(utility::stringUtils::toLower(name)));
 	}
 
 	/** Create a new encoder instance from an encoding name.
@@ -109,7 +107,7 @@ public:
 	  * @throw exceptions::no_encoder_available if no encoder is registered
 	  * for this encoding
 	  */
-	encoder* create(const string& name);
+	ref <encoder> create(const string& name);
 
 	/** Return information about a registered encoder.
 	  *
@@ -118,7 +116,7 @@ public:
 	  * @throw exceptions::no_encoder_available if no encoder is registered
 	  * for this encoding
 	  */
-	const registeredEncoder* getEncoderByName(const string& name) const;
+	const ref <const registeredEncoder> getEncoderByName(const string& name) const;
 
 	/** Return the number of registered encoders.
 	  *
@@ -131,13 +129,13 @@ public:
 	  * @param pos position of the registered encoder to return
 	  * @return registered encoder at the specified position
 	  */
-	const registeredEncoder* getEncoderAt(const int pos) const;
+	const ref <const registeredEncoder> getEncoderAt(const int pos) const;
 
 	/** Return a list of all registered encoders.
 	  *
 	  * @return list of registered encoders
 	  */
-	const std::vector <const registeredEncoder*> getEncoderList() const;
+	const std::vector <ref <const registeredEncoder> > getEncoderList() const;
 };
 
 

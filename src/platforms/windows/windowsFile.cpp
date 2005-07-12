@@ -34,9 +34,9 @@ namespace platforms {
 namespace windows {
 
 
-vmime::utility::file* windowsFileSystemFactory::create(const vmime::utility::file::path& path) const
+ref <vmime::utility::file> windowsFileSystemFactory::create(const vmime::utility::file::path& path) const
 {
-	return new windowsFile(path);
+	return vmime::create <windowsFile>(path);
 }
 
 
@@ -105,7 +105,7 @@ const bool windowsFileSystemFactory::isValidPathComponent(
 	if (firstComponent && (buffer.length() == 2) && (buffer[1] == ':'))
 	{
 		char drive = tolower(buffer[0]);
-    if ((drive >= 'a') && (drive <= 'z'))
+		if ((drive >= 'a') && (drive <= 'z'))
 			return true;
 	}
 
@@ -131,7 +131,7 @@ const bool windowsFileSystemFactory::isValidPathComponent(
 	}
 
 	string upperBuffer = vmime::utility::stringUtils::toUpper(buffer);
-	
+
 	// Check for reserved names
 	if (upperBuffer.length() == 3)
 	{
@@ -300,12 +300,12 @@ const bool windowsFile::exists() const
 	return false;
 }
 
-const vmime::utility::file* windowsFile::getParent() const
+ref <vmime::utility::file> windowsFile::getParent() const
 {
 	if (m_path.isEmpty())
 		return NULL;
 	else
-		return new windowsFile(m_path.getParent());
+		return vmime::create <windowsFile>(m_path.getParent());
 }
 
 void windowsFile::rename(const path& newName)
@@ -326,19 +326,19 @@ void windowsFile::remove()
 		windowsFileSystemFactory::reportError(m_path, GetLastError());
 }
 
-vmime::utility::fileWriter* windowsFile::getFileWriter()
+ref <vmime::utility::fileWriter> windowsFile::getFileWriter()
 {
-	return new windowsFileWriter(m_path, m_nativePath);
+	return vmime::create <windowsFileWriter>(m_path, m_nativePath);
 }
 
-vmime::utility::fileReader* windowsFile::getFileReader()
+ref <vmime::utility::fileReader> windowsFile::getFileReader()
 {
-	return new windowsFileReader(m_path, m_nativePath);
+	return vmime::create <windowsFileReader>(m_path, m_nativePath);
 }
 
-vmime::utility::fileIterator* windowsFile::getFiles() const
+ref <vmime::utility::fileIterator> windowsFile::getFiles() const
 {
-	return new windowsFileIterator(m_path, m_nativePath);
+	return vmime::create <windowsFileIterator>(m_path, m_nativePath);
 }
 
 void windowsFile::createDirectoryImpl(const vmime::utility::file::path& fullPath, const vmime::utility::file::path& path, const bool recursive)
@@ -373,9 +373,10 @@ const bool windowsFileIterator::hasMoreElements() const
 	return m_moreElements;
 }
 
-vmime::utility::file* windowsFileIterator::nextElement()
+ref <vmime::utility::file> windowsFileIterator::nextElement()
 {
-	vmime::utility::file* pFile = new windowsFile(m_path / vmime::utility::file::path::component(m_findData.cFileName));
+	ref <vmime::utility::file> pFile = vmime::create <windowsFile>
+		(m_path / vmime::utility::file::path::component(m_findData.cFileName));
 
 	findNext();
 
@@ -422,7 +423,7 @@ windowsFileReader::windowsFileReader(const vmime::utility::file::path& path, con
 {
 }
 
-vmime::utility::inputStream* windowsFileReader::getInputStream()
+ref <vmime::utility::inputStream> windowsFileReader::getInputStream()
 {
 	HANDLE hFile = CreateFile(
 		m_nativePath.c_str(),
@@ -434,7 +435,7 @@ vmime::utility::inputStream* windowsFileReader::getInputStream()
 		NULL);
 	if (hFile == INVALID_HANDLE_VALUE)
 		windowsFileSystemFactory::reportError(m_path, GetLastError());
-	return new windowsFileReaderInputStream(m_path, hFile);
+	return vmime::create <windowsFileReaderInputStream>(m_path, hFile);
 }
 
 windowsFileReaderInputStream::windowsFileReaderInputStream(const vmime::utility::file::path& path, HANDLE hFile)
@@ -479,7 +480,7 @@ windowsFileWriter::windowsFileWriter(const vmime::utility::file::path& path, con
 {
 }
 
-vmime::utility::outputStream* windowsFileWriter::getOutputStream()
+ref <vmime::utility::outputStream> windowsFileWriter::getOutputStream()
 {
 	HANDLE hFile = CreateFile(
 		m_nativePath.c_str(),
@@ -491,7 +492,7 @@ vmime::utility::outputStream* windowsFileWriter::getOutputStream()
 		NULL);
 	if (hFile == INVALID_HANDLE_VALUE)
 		windowsFileSystemFactory::reportError(m_path, GetLastError());
-	return new windowsFileWriterOutputStream(m_path, hFile);
+	return vmime::create <windowsFileWriterOutputStream>(m_path, hFile);
 }
 
 windowsFileWriterOutputStream::windowsFileWriterOutputStream(const vmime::utility::file::path& path, HANDLE hFile)

@@ -54,7 +54,7 @@ class stringProxy;
 /** Base class for input/output stream.
   */
 
-class stream
+class stream : public object
 {
 public:
 
@@ -264,6 +264,8 @@ public:
 
 private:
 
+	inputStreamStringAdapter(const inputStreamStringAdapter&);
+
 	const string m_buffer;  // do _NOT_ keep a reference...
 	const string::size_type m_begin;
 	const string::size_type m_end;
@@ -288,6 +290,8 @@ public:
 	const size_type skip(const size_type count);
 
 private:
+
+	inputStreamStringProxyAdapter(const inputStreamStringProxyAdapter&);
 
 	const stringProxy& m_buffer;
 	string::size_type m_pos;
@@ -315,6 +319,8 @@ public:
 
 private:
 
+	inputStreamPointerAdapter(const inputStreamPointerAdapter&);
+
 	std::istream* m_stream;
 	const bool m_own;
 };
@@ -336,6 +342,8 @@ public:
 
 private:
 
+	outputStreamSocketAdapter(const outputStreamSocketAdapter&);
+
 	messaging::socket& m_socket;
 };
 
@@ -355,6 +363,8 @@ public:
 	const size_type skip(const size_type count);
 
 private:
+
+	inputStreamSocketAdapter(const inputStreamSocketAdapter&);
 
 	messaging::socket& m_socket;
 };

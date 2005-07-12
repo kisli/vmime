@@ -31,7 +31,7 @@ namespace messaging {
 /** This class encapsulates user credentials.
   */
 
-class authenticationInfos
+class authenticationInfos : public object
 {
 public:
 

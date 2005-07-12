@@ -35,7 +35,7 @@ namespace vmime
 /** Generic text part.
   */
 
-class textPart
+class textPart : public object
 {
 	friend class textPartFactory;
 	friend class messageBuilder; // for generateIn, getPartCount
@@ -69,13 +69,13 @@ public:
 	  *
 	  * @return text of the part
 	  */
-	virtual const contentHandler& getText() const = 0;
+	virtual const ref <const contentHandler> getText() const = 0;
 
 	/** Set the text contained in the part.
 	  *
 	  * @param text text of the part
 	  */
-	virtual void setText(const contentHandler& text) = 0;
+	virtual void setText(ref <contentHandler> text) = 0;
 
 protected:
 

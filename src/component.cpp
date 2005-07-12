@@ -75,19 +75,19 @@ void component::setParsedBounds(const string::size_type start, const string::siz
 }
 
 
-const std::vector <component*> component::getChildComponents()
+const std::vector <ref <component> > component::getChildComponents()
 {
-	const std::vector <const component*> constList =
+	const std::vector <ref <const component> > constList =
 		const_cast <const component*>(this)->getChildComponents();
 
-	std::vector <component*> list;
+	std::vector <ref <component> > list;
 
-	const std::vector <const component*>::size_type count = constList.size();
+	const std::vector <ref <const component> >::size_type count = constList.size();
 
 	list.resize(count);
 
-	for (std::vector <const component*>::size_type i = 0 ; i < count ; ++i)
-		list[i] = const_cast <component*>(constList[i]);
+	for (std::vector <ref <const component> >::size_type i = 0 ; i < count ; ++i)
+		list[i] = constList[i].constCast <component>();
 
 	return (list);
 }

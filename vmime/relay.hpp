@@ -43,11 +43,11 @@ public:
 
 public:
 
-	relay* clone() const;
+	ref <component> clone() const;
 	void copyFrom(const component& other);
 	relay& operator=(const relay& other);
 
-	const std::vector <const component*> getChildComponents() const;
+	const std::vector <ref <const component> > getChildComponents() const;
 
 	const string& getFrom() const;
 	void setFrom(const string& from);

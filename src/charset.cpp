@@ -280,9 +280,9 @@ const bool charset::operator!=(const charset& value) const
 }
 
 
-charset* charset::clone() const
+ref <component> charset::clone() const
 {
-	return new charset(m_name);
+	return vmime::create <charset>(m_name);
 }
 
 
@@ -298,9 +298,9 @@ void charset::copyFrom(const component& other)
 }
 
 
-const std::vector <const component*> charset::getChildComponents() const
+const std::vector <ref <const component> > charset::getChildComponents() const
 {
-	return std::vector <const component*>();
+	return std::vector <ref <const component> >();
 }
 
 

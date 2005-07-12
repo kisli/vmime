@@ -89,9 +89,9 @@ void path::copyFrom(const component& other)
 }
 
 
-path* path::clone() const
+ref <component> path::clone() const
 {
-	return new path(*this);
+	return vmime::create <path>(*this);
 }
 
 
@@ -102,9 +102,9 @@ path& path::operator=(const path& other)
 }
 
 
-const std::vector <const component*> path::getChildComponents() const
+const std::vector <ref <const component> > path::getChildComponents() const
 {
-	return std::vector <const component*>();
+	return std::vector <ref <const component> >();
 }
 
 

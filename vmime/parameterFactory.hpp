@@ -36,7 +36,7 @@ protected:
 	parameterFactory();
 	~parameterFactory();
 
-	typedef parameter* (*AllocFunc)(void);
+	typedef ref <parameter> (*AllocFunc)(void);
 	typedef std::map <string, AllocFunc> NameMap;
 
 	NameMap m_nameMap;
@@ -51,10 +51,10 @@ public:
 	{
 	public:
 
-		static parameter* creator()
+		static ref <parameter> creator()
 		{
 			// Allocate a new object
-			return new TYPE();
+			return vmime::create <TYPE>();
 		}
 	};
 #endif // VMIME_BUILDING_DOC
@@ -74,7 +74,7 @@ public:
 	  * @param value value to be parsed
 	  * @return created parameter
 	  */
-	parameter* create(const string& name, const string& value = NULL_STRING);
+	ref <parameter> create(const string& name, const string& value = NULL_STRING);
 
 	/** Create a new parameter and set its value. The returned parameter
 	  * can then be added in a vmime::parameterizedHeaderField object.
@@ -83,7 +83,7 @@ public:
 	  * @param value value to be set
 	  * @return created parameter
 	  */
-	parameter* create(const string& name, const component& value);
+	ref <parameter> create(const string& name, const component& value);
 };
 
 

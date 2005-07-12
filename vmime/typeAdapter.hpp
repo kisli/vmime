@@ -30,7 +30,7 @@ namespace vmime
 {
 
 
-/** An adapter to allow any type being treated as a 'component'.
+/** An adapter to allow any type to act as a 'component'.
   */
 
 template <class TYPE>
@@ -43,7 +43,7 @@ public:
 	}
 
 	typeAdapter(typeAdapter& a)
-		: m_value(a.m_value)
+		: component(), m_value(a.m_value)
 	{
 	}
 
@@ -53,9 +53,9 @@ public:
 	}
 
 
-	typeAdapter* clone() const
+	ref <component> clone() const
 	{
-		return new typeAdapter(*this);
+		return create <typeAdapter>(*this);
 	}
 
 
@@ -112,9 +112,9 @@ public:
 			*newLinePos = curLinePos + oss.str().length();
 	}
 
-	const std::vector <const component*> getChildComponents() const
+	const std::vector <ref <const component> > getChildComponents() const
 	{
-		return std::vector <const component*>();
+		return std::vector <ref <const component> >();
 	}
 
 private:

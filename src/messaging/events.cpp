@@ -18,6 +18,7 @@
 //
 
 #include "vmime/messaging/events.hpp"
+#include "vmime/messaging/folder.hpp"
 
 #include <algorithm>
 
@@ -32,7 +33,7 @@ namespace events {
 //
 
 messageCountEvent::messageCountEvent
-	(folder* folder, const Types type, const std::vector <int>& nums)
+	(ref <folder> folder, const Types type, const std::vector <int>& nums)
 		: m_folder(folder), m_type(type)
 {
 	m_nums.resize(nums.size());
@@ -40,7 +41,7 @@ messageCountEvent::messageCountEvent
 }
 
 
-const folder* messageCountEvent::getFolder() const { return (const_cast <folder*>(m_folder)); }
+ref <const folder> messageCountEvent::getFolder() const { return (m_folder); }
 const messageCountEvent::Types messageCountEvent::getType() const { return (m_type); }
 const std::vector <int>& messageCountEvent::getNumbers() const { return (m_nums); }
 
@@ -59,7 +60,7 @@ void messageCountEvent::dispatch(messageCountListener* listener) const
 //
 
 messageChangedEvent::messageChangedEvent
-	(folder* folder, const Types type, const std::vector <int>& nums)
+	(ref <folder> folder, const Types type, const std::vector <int>& nums)
 		: m_folder(folder), m_type(type)
 {
 	m_nums.resize(nums.size());
@@ -67,7 +68,7 @@ messageChangedEvent::messageChangedEvent
 }
 
 
-const folder* messageChangedEvent::getFolder() const { return (const_cast <folder*>(m_folder)); }
+ref <const folder> messageChangedEvent::getFolder() const { return (m_folder); }
 const messageChangedEvent::Types messageChangedEvent::getType() const { return (m_type); }
 const std::vector <int>& messageChangedEvent::getNumbers() const { return (m_nums); }
 
@@ -83,14 +84,14 @@ void messageChangedEvent::dispatch(messageChangedListener* listener) const
 //
 
 folderEvent::folderEvent
-	(folder* folder, const Types type,
+	(ref <folder> folder, const Types type,
 	 const utility::path& oldPath, const utility::path& newPath)
 	: m_folder(folder), m_type(type), m_oldPath(oldPath), m_newPath(newPath)
 {
 }
 
 
-const folder* folderEvent::getFolder() const { return (m_folder); }
+ref <const folder> folderEvent::getFolder() const { return (m_folder); }
 const folderEvent::Types folderEvent::getType() const { return (m_type); }
 
 

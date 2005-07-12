@@ -244,9 +244,9 @@ relay& relay::operator=(const relay& other)
 }
 
 
-relay* relay::clone() const
+ref <component> relay::clone() const
 {
-	return new relay(*this);
+	return vmime::create <relay>(*this);
 }
 
 
@@ -334,10 +334,10 @@ std::vector <string>& relay::getWithList()
 }
 
 
-const std::vector <const component*> relay::getChildComponents() const
+const std::vector <ref <const component> > relay::getChildComponents() const
 {
 	// TODO: should fields inherit from 'component'? (using typeAdapter)
-	return std::vector <const component*>();
+	return std::vector <ref <const component> >();
 }
 
 

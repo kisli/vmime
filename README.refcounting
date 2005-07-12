@@ -1,0 +1,105 @@
+==============================================
+Reference counting and smart pointers in VMime
+==============================================
+
+
+I. Introduction
+===============
+
+Since version 0.7.2cvs, VMime has been modified to use smart pointers and
+reference counting instead of raw pointers.
+
+This simplifies a lot using VMime objects as you don't have to worry about
+freeing memory occupied by objects, or even wondering which of your program
+or VMime is responsible for deleting the object.
+
+This is also convenient when a function returns a list of objects. Before,
+you wrote:
+
+    std::vector <vmime::messaging::folder*> subFolders = folder->getFolders();
+
+    ...do something with result...
+
+    for (std::vector <vmime::messaging::folder*>::iterator
+         it = subFolders.begin() ; it != subFolders.end() ; ++it)
+    {
+        delete *it;
+    }
+
+Now, you can simply write:
+
+    std::vector <vmime::messaging::folder*> subFolders = folder->getFolders();
+
+    ...do something with result...
+
+and nothing more!
+
+Two new template classes were introduced:
+
+  - vmime::ref <> holds a strong reference to an object. When there is no
+    more strong reference pointing to an object, the object is deleted.
+
+  - vmime::weak_ref <> holds a weak reference to an object. A weak reference
+    automatically points to NULL when the last strong reference is released.
+    It can be used to bypass the problems with circular references: A holds
+    a strong reference to B, which holds a strong reference back to A.
+
+
+II. Creating objects
+====================
+
+You should not use 'new' to allocate VMime objects anymore. Instead, you
+should use the vmime::create() helper function:
+
+   vmime::ref <vmime::mailbox> mbox =
+         vmime::create <vmime::mailbox>("me@somewhere.com");
+
+
+III. Casting
+============
+
+Like raw C++ pointers, you can cast VMime references. Implicit downcast is
+also supported.
+
+To do a dynamic cast, write:
+
+   vmime::ref <vmime::component> foo = ...
+   vmime::ref <vmime::mailbox> mbox = foo.dynamicCast <vmime::mailbox>()
+
+then 'mbox' will be set to null ref if the dynamic cast failed (ie. if dynamic
+type of 'foo' is not/is not derived from 'vmime::mailbox').
+
+The same thing is possible with static cast:
+
+   vmime::ref <vmime::component> foo = ...
+   vmime::ref <vmime::mailbox> mbox = foo.staticCast <vmime::mailbox>()
+
+Like in standard C++, if 'foo' is not really a 'vmime::mailbox', the 'mbox'
+reference can point to anything (ie. "invalid"), so be careful...
+
+Finally, const cast is also supported:
+
+   vmime::ref <const vmime::component> foo_const = ...
+   vmime::ref <vmime::component> foo = foo_const.constCast();
+
+
+IV. Upgrading your code from version <= 0.7.1
+=============================================
+
+1. vmime::text
+--------------
+
+In v0.7.1 and below:
+
+   vmime::text t1;
+   vmime::newFromString("blah blah", vmime::charset(...), &t1);
+
+   vmime::text* t2 = vmime::newFromString("foo", vmime::charset(...));
+
+In v0.7.2:
+
+   vmime::text t1;
+   t1.createFromString("blah blah", vmime::charset(...));
+
+   vmime::ref <vmime::text> t2 = vmime::newFromString("foo", vmime::charset(...));
+

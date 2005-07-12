@@ -39,7 +39,7 @@ namespace messaging {
 namespace maildir {
 
 
-maildirStore::maildirStore(session* sess, authenticator* auth)
+maildirStore::maildirStore(ref <session> sess, ref <authenticator> auth)
 	: store(sess, getInfosInstance(), auth), m_connected(false)
 {
 }
@@ -58,30 +58,33 @@ const string maildirStore::getProtocolName() const
 }
 
 
-folder* maildirStore::getRootFolder()
+ref <folder> maildirStore::getRootFolder()
 {
 	if (!isConnected())
 		throw exceptions::illegal_state("Not connected");
 
-	return new maildirFolder(folder::path(), this);
+	return vmime::create <maildirFolder>(folder::path(),
+		thisWeakRef().dynamicCast <maildirStore>());
 }
 
 
-folder* maildirStore::getDefaultFolder()
+ref <folder> maildirStore::getDefaultFolder()
 {
 	if (!isConnected())
 		throw exceptions::illegal_state("Not connected");
 
-	return new maildirFolder(folder::path::component("inbox"), this);
+	return vmime::create <maildirFolder>(folder::path::component("inbox"),
+		thisWeakRef().dynamicCast <maildirStore>());
 }
 
 
-folder* maildirStore::getFolder(const folder::path& path)
+ref <folder> maildirStore::getFolder(const folder::path& path)
 {
 	if (!isConnected())
 		throw exceptions::illegal_state("Not connected");
 
-	return new maildirFolder(path, this);
+	return vmime::create <maildirFolder>(path,
+		thisWeakRef().dynamicCast <maildirStore>());
 }
 
 
@@ -117,7 +120,7 @@ void maildirStore::connect()
 
 	m_fsPath = fsf->stringToPath(GET_PROPERTY(string, PROPERTY_SERVER_ROOTPATH));
 
-	utility::auto_ptr <utility::file> rootDir = fsf->create(m_fsPath);
+	ref <utility::file> rootDir = fsf->create(m_fsPath);
 
 	// Try to create the root directory if it does not exist
 	if (!(rootDir->exists() && rootDir->isDirectory()))

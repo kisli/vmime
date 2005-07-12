@@ -20,6 +20,7 @@
 #include "vmime/messaging/maildir/maildirMessage.hpp"
 #include "vmime/messaging/maildir/maildirFolder.hpp"
 #include "vmime/messaging/maildir/maildirUtils.hpp"
+#include "vmime/messaging/maildir/maildirStore.hpp"
 
 #include "vmime/message.hpp"
 
@@ -42,14 +43,14 @@ class maildirPart : public part
 {
 public:
 
-	maildirPart(maildirPart* parent, const int number, const bodyPart& part);
+	maildirPart(weak_ref <maildirPart> parent, const int number, const bodyPart& part);
 	~maildirPart();
 
 
 	const structure& getStructure() const;
 	structure& getStructure();
 
-	const maildirPart* getParent() const { return (m_parent); }
+	weak_ref <const maildirPart> getParent() const { return (m_parent); }
 
 	const mediaType& getType() const { return (m_mediaType); }
 	const int getSize() const { return (m_size); }
@@ -68,7 +69,7 @@ public:
 		if (m_header != NULL)
 			return (*m_header);
 		else
-			return (*(m_header = new header()));
+			return (*(m_header = vmime::create <header>()));
 	}
 
 	const int getHeaderParsedOffset() const { return (m_headerParsedOffset); }
@@ -79,9 +80,9 @@ public:
 
 private:
 
-	maildirStructure* m_structure;
-	maildirPart* m_parent;
-	header* m_header;
+	ref <maildirStructure> m_structure;
+	weak_ref <maildirPart> m_parent;
+	ref <header> m_header;
 
 	int m_number;
 	int m_size;
@@ -110,22 +111,17 @@ private:
 
 public:
 
-	maildirStructure(maildirPart* parent, const bodyPart& part)
+	maildirStructure(weak_ref <maildirPart> parent, const bodyPart& part)
 	{
-		m_parts.push_back(new maildirPart(parent, 1, part));
+		m_parts.push_back(vmime::create <maildirPart>(parent, 1, part));
 	}
 
-	maildirStructure(maildirPart* parent, const std::vector <const vmime::bodyPart*>& list)
+	maildirStructure(weak_ref <maildirPart> parent, const std::vector <ref <const vmime::bodyPart> >& list)
 	{
 		int number = 1;
 
 		for (unsigned int i = 0 ; i < list.size() ; ++i)
-			m_parts.push_back(new maildirPart(parent, number, *list[i]));
-	}
-
-	~maildirStructure()
-	{
-		free_container(m_parts);
+			m_parts.push_back(vmime::create <maildirPart>(parent, number, *list[i]));
 	}
 
 
@@ -154,7 +150,7 @@ private:
 
 	static maildirStructure m_emptyStructure;
 
-	std::vector <maildirPart*> m_parts;
+	std::vector <ref <maildirPart> > m_parts;
 };
 
 
@@ -162,13 +158,17 @@ maildirStructure maildirStructure::m_emptyStructure;
 
 
 
-maildirPart::maildirPart(maildirPart* parent, const int number, const bodyPart& part)
+maildirPart::maildirPart(weak_ref <maildirPart> parent, const int number, const bodyPart& part)
 	: m_parent(parent), m_header(NULL), m_number(number)
 {
 	if (part.getBody()->getPartList().size() == 0)
 		m_structure = NULL;
 	else
-		m_structure = new maildirStructure(this, part.getBody()->getPartList());
+	{
+		m_structure = vmime::create <maildirStructure>
+			(thisWeakRef().dynamicCast <maildirPart>(),
+			 part.getBody()->getPartList());
+	}
 
 	m_headerParsedOffset = part.getHeader()->getParsedOffset();
 	m_headerParsedLength = part.getHeader()->getParsedLength();
@@ -176,7 +176,7 @@ maildirPart::maildirPart(maildirPart* parent, const int number, const bodyPart& 
 	m_bodyParsedOffset = part.getBody()->getParsedOffset();
 	m_bodyParsedLength = part.getBody()->getParsedLength();
 
-	m_size = part.getBody()->getContents().getLength();
+	m_size = part.getBody()->getContents()->getLength();
 
 	m_mediaType = part.getBody()->getContentType();
 }
@@ -184,8 +184,6 @@ maildirPart::maildirPart(maildirPart* parent, const int number, const bodyPart& 
 
 maildirPart::~maildirPart()
 {
-	delete (m_structure);
-	delete (m_header);
 }
 
 
@@ -212,7 +210,7 @@ structure& maildirPart::getStructure()
 // maildirMessage
 //
 
-maildirMessage::maildirMessage(maildirFolder* folder, const int num)
+maildirMessage::maildirMessage(weak_ref <maildirFolder> folder, const int num)
 	: m_folder(folder), m_num(num), m_size(-1), m_flags(FLAG_UNDEFINED),
 	  m_expunged(false), m_header(NULL), m_structure(NULL)
 {
@@ -224,9 +222,6 @@ maildirMessage::~maildirMessage()
 {
 	if (m_folder)
 		m_folder->unregisterMessage(this);
-
-	delete (m_header);
-	delete (m_structure);
 }
 
 
@@ -334,10 +329,10 @@ void maildirMessage::extractImpl(utility::outputStream& os, utility::progression
 	utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
 
 	const utility::file::path path = m_folder->getMessageFSPath(m_num);
-	utility::auto_ptr <utility::file> file = fsf->create(path);
+	ref <utility::file> file = fsf->create(path);
 
-	utility::auto_ptr <utility::fileReader> reader = file->getFileReader();
-	utility::auto_ptr <utility::inputStream> is = reader->getInputStream();
+	ref <utility::fileReader> reader = file->getFileReader();
+	ref <utility::inputStream> is = reader->getInputStream();
 
 	is->skip(start + partialStart);
 
@@ -379,10 +374,10 @@ void maildirMessage::fetchPartHeader(part& p)
 	utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
 
 	const utility::file::path path = m_folder->getMessageFSPath(m_num);
-	utility::auto_ptr <utility::file> file = fsf->create(path);
+	ref <utility::file> file = fsf->create(path);
 
-	utility::auto_ptr <utility::fileReader> reader = file->getFileReader();
-	utility::auto_ptr <utility::inputStream> is = reader->getInputStream();
+	ref <utility::fileReader> reader = file->getFileReader();
+	ref <utility::inputStream> is = reader->getInputStream();
 
 	is->skip(mp.getHeaderParsedOffset());
 
@@ -406,7 +401,7 @@ void maildirMessage::fetchPartHeader(part& p)
 }
 
 
-void maildirMessage::fetch(maildirFolder* folder, const int options)
+void maildirMessage::fetch(weak_ref <maildirFolder> folder, const int options)
 {
 	if (m_folder != folder)
 		throw exceptions::folder_not_found();
@@ -414,7 +409,7 @@ void maildirMessage::fetch(maildirFolder* folder, const int options)
 	utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
 
 	const utility::file::path path = folder->getMessageFSPath(m_num);
-	utility::auto_ptr <utility::file> file = fsf->create(path);
+	ref <utility::file> file = fsf->create(path);
 
 	if (options & folder::FETCH_FLAGS)
 		m_flags = maildirUtils::extractFlags(path.getLastComponent());
@@ -430,8 +425,8 @@ void maildirMessage::fetch(maildirFolder* folder, const int options)
 	{
 		string contents;
 
-		utility::auto_ptr <utility::fileReader> reader = file->getFileReader();
-		utility::auto_ptr <utility::inputStream> is = reader->getInputStream();
+		ref <utility::fileReader> reader = file->getFileReader();
+		ref <utility::inputStream> is = reader->getInputStream();
 
 		// Need whole message contents for structure
 		if (options & folder::FETCH_STRUCTURE)
@@ -480,10 +475,7 @@ void maildirMessage::fetch(maildirFolder* folder, const int options)
 		// Extract structure
 		if (options & folder::FETCH_STRUCTURE)
 		{
-			if (m_structure)
-				delete (m_structure);
-
-			m_structure = new maildirStructure(NULL, msg);
+			m_structure = vmime::create <maildirStructure>(null, msg);
 		}
 
 		// Extract some header fields or whole header
@@ -502,7 +494,7 @@ header& maildirMessage::getOrCreateHeader()
 	if (m_header != NULL)
 		return (*m_header);
 	else
-		return (*(m_header = new header()));
+		return (*(m_header = vmime::create <header>()));
 }
 
 

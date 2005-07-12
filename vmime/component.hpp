@@ -32,7 +32,7 @@ namespace vmime
   * It defines the methods for parsing and generating all the components.
   */
 
-class component
+class component : public object
 {
 public:
 
@@ -77,7 +77,7 @@ public:
 	  *
 	  * @return a copy of this component
 	  */
-	virtual component* clone() const = 0;
+	virtual ref <component> clone() const = 0;
 
 	/** Replace data in this component by data in other component.
 	  * Both components must be of the same type.
@@ -108,13 +108,13 @@ public:
 	  *
 	  * @return list of child components
 	  */
-	const std::vector <component*> getChildComponents();
+	const std::vector <ref <component> > getChildComponents();
 
 	/** Return the list of children of this component (const version).
 	  *
 	  * @return list of child components
 	  */
-	virtual const std::vector <const component*> getChildComponents() const = 0;
+	virtual const std::vector <ref <const component> > getChildComponents() const = 0;
 
 protected:
 

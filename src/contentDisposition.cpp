@@ -85,9 +85,9 @@ const bool contentDisposition::operator!=(const contentDisposition& value) const
 }
 
 
-contentDisposition* contentDisposition::clone() const
+ref <component> contentDisposition::clone() const
 {
-	return new contentDisposition(*this);
+	return vmime::create <contentDisposition>(*this);
 }
 
 
@@ -118,9 +118,9 @@ void contentDisposition::setName(const string& name)
 }
 
 
-const std::vector <const component*> contentDisposition::getChildComponents() const
+const std::vector <ref <const component> > contentDisposition::getChildComponents() const
 {
-	return std::vector <const component*>();
+	return std::vector <ref <const component> >();
 }
 
 

@@ -68,9 +68,10 @@ const bool posixFileIterator::hasMoreElements() const
 }
 
 
-vmime::utility::file* posixFileIterator::nextElement()
+ref <vmime::utility::file> posixFileIterator::nextElement()
 {
-	posixFile* file = new posixFile(m_path / vmime::utility::file::path::component(m_dirEntry->d_name));
+	ref <posixFile> file = vmime::create <posixFile>
+		(m_path / vmime::utility::file::path::component(m_dirEntry->d_name));
 
 	getNextElement();
 
@@ -182,14 +183,14 @@ posixFileWriter::posixFileWriter(const vmime::utility::file::path& path, const v
 }
 
 
-vmime::utility::outputStream* posixFileWriter::getOutputStream()
+ref <vmime::utility::outputStream> posixFileWriter::getOutputStream()
 {
 	int fd = 0;
 
 	if ((fd = ::open(m_nativePath.c_str(), O_WRONLY, 0660)) == -1)
 		posixFileSystemFactory::reportError(m_path, errno);
 
-	return new posixFileWriterOutputStream(m_path, fd);
+	return vmime::create <posixFileWriterOutputStream>(m_path, fd);
 }
 
 
@@ -204,14 +205,14 @@ posixFileReader::posixFileReader(const vmime::utility::file::path& path, const v
 }
 
 
-vmime::utility::inputStream* posixFileReader::getInputStream()
+ref <vmime::utility::inputStream> posixFileReader::getInputStream()
 {
 	int fd = 0;
 
 	if ((fd = ::open(m_nativePath.c_str(), O_RDONLY, 0640)) == -1)
 		posixFileSystemFactory::reportError(m_path, errno);
 
-	return new posixFileReaderInputStream(m_path, fd);
+	return vmime::create <posixFileReaderInputStream>(m_path, fd);
 }
 
 
@@ -299,12 +300,12 @@ const bool posixFile::exists() const
 }
 
 
-const vmime::utility::file* posixFile::getParent() const
+ref <vmime::utility::file> posixFile::getParent() const
 {
 	if (m_path.isEmpty())
 		return NULL;
 	else
-		return new posixFile(m_path.getParent());
+		return vmime::create <posixFile>(m_path.getParent());
 }
 
 
@@ -340,24 +341,24 @@ void posixFile::remove()
 }
 
 
-vmime::utility::fileWriter* posixFile::getFileWriter()
+ref <vmime::utility::fileWriter> posixFile::getFileWriter()
 {
-	return new posixFileWriter(m_path, m_nativePath);
+	return vmime::create <posixFileWriter>(m_path, m_nativePath);
 }
 
 
-vmime::utility::fileReader* posixFile::getFileReader()
+ref <vmime::utility::fileReader> posixFile::getFileReader()
 {
-	return new posixFileReader(m_path, m_nativePath);
+	return vmime::create <posixFileReader>(m_path, m_nativePath);
 }
 
 
-vmime::utility::fileIterator* posixFile::getFiles() const
+ref <vmime::utility::fileIterator> posixFile::getFiles() const
 {
 	if (!isDirectory())
 		throw vmime::exceptions::not_a_directory(m_path);
 
-	return new posixFileIterator(m_path, m_nativePath);
+	return vmime::create <posixFileIterator>(m_path, m_nativePath);
 }
 
 
@@ -383,9 +384,9 @@ void posixFile::createDirectoryImpl(const vmime::utility::file::path& fullPath,
 // posixFileSystemFactory
 //
 
-vmime::utility::file* posixFileSystemFactory::create(const vmime::utility::file::path& path) const
+ref <vmime::utility::file> posixFileSystemFactory::create(const vmime::utility::file::path& path) const
 {
-	return new posixFile(path);
+	return vmime::create <posixFile>(path);
 }
 
 

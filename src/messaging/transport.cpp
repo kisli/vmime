@@ -28,7 +28,7 @@ namespace vmime {
 namespace messaging {
 
 
-transport::transport(session* sess, const serviceInfos& infos, authenticator* auth)
+transport::transport(ref <session> sess, const serviceInfos& infos, ref <authenticator> auth)
 	: service(sess, infos, auth)
 {
 }
@@ -39,7 +39,7 @@ static void extractMailboxes
 {
 	for (int i = 0 ; i < list.getAddressCount() ; ++i)
 	{
-		mailbox* mbox = dynamic_cast <mailbox*>(list.getAddressAt(i)->clone());
+		ref <mailbox> mbox = list.getAddressAt(i)->clone().dynamicCast <mailbox>();
 
 		if (mbox != NULL)
 			recipients.appendMailbox(mbox);
@@ -47,7 +47,7 @@ static void extractMailboxes
 }
 
 
-void transport::send(vmime::message* msg, utility::progressionListener* progress)
+void transport::send(ref <vmime::message> msg, utility::progressionListener* progress)
 {
 	// Extract expeditor
 	mailbox expeditor;

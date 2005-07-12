@@ -37,7 +37,7 @@ namespace vmime
 /** Base class for all types of attachment.
   */
 
-class attachment
+class attachment : public object
 {
 	friend class messageBuilder;
 	friend class messageParser;
@@ -63,7 +63,7 @@ public:
 	/** Return the data contained in this attachment.
 	  * @return attachment data
 	  */
-	virtual const contentHandler& getData() const = 0;
+	virtual const ref <const contentHandler> getData() const = 0;
 
 	/** Return the encoding used for this attachment.
 	  * @return attachment data encoding

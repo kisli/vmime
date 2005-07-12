@@ -291,7 +291,7 @@ void parameterizedHeaderField::parse(const string& buffer, const string::size_ty
 			const paramInfo& info = (*it).second;
 
 			// Append this parameter to the list
-			parameter* param = parameterFactory::getInstance()->create((*it).first);
+			ref <parameter> param = parameterFactory::getInstance()->create((*it).first);
 
 			param->parse(info.value);
 			param->setParsedBounds(info.start, info.end);
@@ -314,7 +314,7 @@ void parameterizedHeaderField::generate(utility::outputStream& os, const string:
 	headerField::generate(os, maxLineLength, pos, &pos);
 
 	// Parameters
-	for (std::vector <parameter*>::const_iterator
+	for (std::vector <ref <parameter> >::const_iterator
 	     it = m_params.begin() ; it != m_params.end() ; ++it)
 	{
 		os << "; ";
@@ -336,10 +336,10 @@ void parameterizedHeaderField::copyFrom(const component& other)
 
 	removeAllParameters();
 
-	for (std::vector <parameter*>::const_iterator i = source.m_params.begin() ;
+	for (std::vector <ref <parameter> >::const_iterator i = source.m_params.begin() ;
 	     i != source.m_params.end() ; ++i)
 	{
-		appendParameter((*i)->clone());
+		appendParameter((*i)->clone().dynamicCast <parameter>());
 	}
 }
 
@@ -355,8 +355,8 @@ const bool parameterizedHeaderField::hasParameter(const string& paramName) const
 {
 	const string name = utility::stringUtils::toLower(paramName);
 
-	std::vector <parameter*>::const_iterator pos = m_params.begin();
-	const std::vector <parameter*>::const_iterator end = m_params.end();
+	std::vector <ref <parameter> >::const_iterator pos = m_params.begin();
+	const std::vector <ref <parameter> >::const_iterator end = m_params.end();
 
 	for ( ; pos != end && utility::stringUtils::toLower((*pos)->getName()) != name ; ++pos);
 
@@ -364,13 +364,13 @@ const bool parameterizedHeaderField::hasParameter(const string& paramName) const
 }
 
 
-parameter* parameterizedHeaderField::findParameter(const string& paramName) const
+ref <parameter> parameterizedHeaderField::findParameter(const string& paramName) const
 {
 	const string name = utility::stringUtils::toLower(paramName);
 
 	// Find the first parameter that matches the specified name
-	std::vector <parameter*>::const_iterator pos = m_params.begin();
-	const std::vector <parameter*>::const_iterator end = m_params.end();
+	std::vector <ref <parameter> >::const_iterator pos = m_params.begin();
+	const std::vector <ref <parameter> >::const_iterator end = m_params.end();
 
 	for ( ; pos != end && utility::stringUtils::toLower((*pos)->getName()) != name ; ++pos);
 
@@ -387,30 +387,22 @@ parameter* parameterizedHeaderField::findParameter(const string& paramName) cons
 }
 
 
-parameter* parameterizedHeaderField::getParameter(const string& paramName)
+ref <parameter> parameterizedHeaderField::getParameter(const string& paramName)
 {
 	const string name = utility::stringUtils::toLower(paramName);
 
 	// Find the first parameter that matches the specified name
-	std::vector <parameter*>::const_iterator pos = m_params.begin();
-	const std::vector <parameter*>::const_iterator end = m_params.end();
+	std::vector <ref <parameter> >::const_iterator pos = m_params.begin();
+	const std::vector <ref <parameter> >::const_iterator end = m_params.end();
 
 	for ( ; pos != end && utility::stringUtils::toLower((*pos)->getName()) != name ; ++pos);
 
 	// If no parameter with this name can be found, create a new one
 	if (pos == end)
 	{
-		parameter* param = parameterFactory::getInstance()->create(paramName);
+		ref <parameter> param = parameterFactory::getInstance()->create(paramName);
 
-		try
-		{
-			appendParameter(param);
-		}
-		catch (std::exception&)
-		{
-			delete (param);
-			throw;
-		}
+		appendParameter(param);
 
 		// Return a reference to the new parameter
 		return (param);
@@ -423,15 +415,15 @@ parameter* parameterizedHeaderField::getParameter(const string& paramName)
 }
 
 
-void parameterizedHeaderField::appendParameter(parameter* param)
+void parameterizedHeaderField::appendParameter(ref <parameter> param)
 {
 	m_params.push_back(param);
 }
 
 
-void parameterizedHeaderField::insertParameterBefore(parameter* beforeParam, parameter* param)
+void parameterizedHeaderField::insertParameterBefore(ref <parameter> beforeParam, ref <parameter> param)
 {
-	const std::vector <parameter*>::iterator it = std::find
+	const std::vector <ref <parameter> >::iterator it = std::find
 		(m_params.begin(), m_params.end(), beforeParam);
 
 	if (it == m_params.end())
@@ -441,15 +433,15 @@ void parameterizedHeaderField::insertParameterBefore(parameter* beforeParam, par
 }
 
 
-void parameterizedHeaderField::insertParameterBefore(const int pos, parameter* param)
+void parameterizedHeaderField::insertParameterBefore(const int pos, ref <parameter> param)
 {
 	m_params.insert(m_params.begin() + pos, param);
 }
 
 
-void parameterizedHeaderField::insertParameterAfter(parameter* afterParam, parameter* param)
+void parameterizedHeaderField::insertParameterAfter(ref <parameter> afterParam, ref <parameter> param)
 {
-	const std::vector <parameter*>::iterator it = std::find
+	const std::vector <ref <parameter> >::iterator it = std::find
 		(m_params.begin(), m_params.end(), afterParam);
 
 	if (it == m_params.end())
@@ -459,15 +451,15 @@ void parameterizedHeaderField::insertParameterAfter(parameter* afterParam, param
 }
 
 
-void parameterizedHeaderField::insertParameterAfter(const int pos, parameter* param)
+void parameterizedHeaderField::insertParameterAfter(const int pos, ref <parameter> param)
 {
 	m_params.insert(m_params.begin() + pos + 1, param);
 }
 
 
-void parameterizedHeaderField::removeParameter(parameter* param)
+void parameterizedHeaderField::removeParameter(ref <parameter> param)
 {
-	const std::vector <parameter*>::iterator it = std::find
+	const std::vector <ref <parameter> >::iterator it = std::find
 		(m_params.begin(), m_params.end(), param);
 
 	if (it == m_params.end())
@@ -479,9 +471,7 @@ void parameterizedHeaderField::removeParameter(parameter* param)
 
 void parameterizedHeaderField::removeParameter(const int pos)
 {
-	const std::vector <parameter*>::iterator it = m_params.begin() + pos;
-
-	delete (*it);
+	const std::vector <ref <parameter> >::iterator it = m_params.begin() + pos;
 
 	m_params.erase(it);
 }
@@ -489,7 +479,7 @@ void parameterizedHeaderField::removeParameter(const int pos)
 
 void parameterizedHeaderField::removeAllParameters()
 {
-	free_container(m_params);
+	m_params.clear();
 }
 
 
@@ -505,25 +495,25 @@ const bool parameterizedHeaderField::isEmpty() const
 }
 
 
-parameter* parameterizedHeaderField::getParameterAt(const int pos)
+const ref <parameter> parameterizedHeaderField::getParameterAt(const int pos)
 {
 	return (m_params[pos]);
 }
 
 
-const parameter* parameterizedHeaderField::getParameterAt(const int pos) const
+const ref <parameter> parameterizedHeaderField::getParameterAt(const int pos) const
 {
 	return (m_params[pos]);
 }
 
 
-const std::vector <const parameter*> parameterizedHeaderField::getParameterList() const
+const std::vector <ref <const parameter> > parameterizedHeaderField::getParameterList() const
 {
-	std::vector <const parameter*> list;
+	std::vector <ref <const parameter> > list;
 
 	list.reserve(m_params.size());
 
-	for (std::vector <parameter*>::const_iterator it = m_params.begin() ;
+	for (std::vector <ref <parameter> >::const_iterator it = m_params.begin() ;
 	     it != m_params.end() ; ++it)
 	{
 		list.push_back(*it);
@@ -533,17 +523,17 @@ const std::vector <const parameter*> parameterizedHeaderField::getParameterList(
 }
 
 
-const std::vector <parameter*> parameterizedHeaderField::getParameterList()
+const std::vector <ref <parameter> > parameterizedHeaderField::getParameterList()
 {
 	return (m_params);
 }
 
 
-const std::vector <const component*> parameterizedHeaderField::getChildComponents() const
+const std::vector <ref <const component> > parameterizedHeaderField::getChildComponents() const
 {
-	std::vector <const component*> list = headerField::getChildComponents();
+	std::vector <ref <const component> > list = headerField::getChildComponents();
 
-	for (std::vector <parameter*>::const_iterator it = m_params.begin() ;
+	for (std::vector <ref <parameter> >::const_iterator it = m_params.begin() ;
 	     it != m_params.end() ; ++it)
 	{
 		list.push_back(*it);

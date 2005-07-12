@@ -48,24 +48,24 @@ int main()
 		mb.setExpeditor(vmime::mailbox("me@somewhere.com"));
 
 		vmime::addressList to;
-		to.appendAddress(new vmime::mailbox("you@elsewhere.com"));
+		to.appendAddress(vmime::create <vmime::mailbox>("you@elsewhere.com"));
 
 		mb.setRecipients(to);
 
 		vmime::addressList bcc;
-		bcc.appendAddress(new vmime::mailbox("you-bcc@nowhere.com"));
+		bcc.appendAddress(vmime::create <vmime::mailbox>("you-bcc@nowhere.com"));
 
 		mb.setBlindCopyRecipients(bcc);
 
 		mb.setSubject(vmime::text("My first message generated with vmime::messageBuilder"));
 
 		// Message body
-		mb.getTextPart()->setText(vmime::stringContentHandler(
+		mb.getTextPart()->setText(vmime::create <vmime::stringContentHandler>(
 			"I'm writing this short text to test message construction " \
 			"with attachment, using the vmime::messageBuilder component."));
 
 		// Adding an attachment
-		vmime::fileAttachment* a = new vmime::fileAttachment
+		vmime::ref <vmime::fileAttachment> a = vmime::create <vmime::fileAttachment>
 		(
 			"./example2.cpp",                               // full path to file
 			vmime::mediaType("application/octet-stream"),   // content type
@@ -78,7 +78,7 @@ int main()
 		mb.attach(a);
 
 		// Construction
-		vmime::message* msg = mb.construct();
+		vmime::ref <vmime::message> msg = mb.construct();
 
 		// Raw text generation
 		vmime::string dataToSend = msg->generate();
@@ -87,9 +87,6 @@ int main()
 		std::cout << "==================" << std::endl;
 		std::cout << std::endl;
 		std::cout << dataToSend << std::endl;
-
-		// Destruction
-		delete (msg);
 	}
 	// VMime exception
 	catch (vmime::exception& e)

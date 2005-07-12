@@ -48,18 +48,18 @@ public:
 	const bool operator==(const text& t) const;
 	const bool operator!=(const text& t) const;
 
-	text* clone() const;
+	ref <component> clone() const;
 	void copyFrom(const component& other);
 	text& operator=(const component& other);
 	text& operator=(const text& other);
 
-	const std::vector <const component*> getChildComponents() const;
+	const std::vector <ref <const component> > getChildComponents() const;
 
 	/** Add a word at the end of the list.
 	  *
 	  * @param w word to append
 	  */
-	void appendWord(word* w);
+	void appendWord(ref <word> w);
 
 	/** Insert a new word before the specified position.
 	  *
@@ -67,14 +67,14 @@ public:
 	  * the beginning of the list)
 	  * @param w word to insert
 	  */
-	void insertWordBefore(const int pos, word* w);
+	void insertWordBefore(const int pos, ref <word> w);
 
 	/** Insert a new word after the specified position.
 	  *
 	  * @param pos position of the word before the new word
 	  * @param w word to insert
 	  */
-	void insertWordAfter(const int pos, word* w);
+	void insertWordAfter(const int pos, ref <word> w);
 
 	/** Remove the word at the specified position.
 	  *
@@ -103,26 +103,26 @@ public:
 	  * @param pos position
 	  * @return word at position 'pos'
 	  */
-	word* getWordAt(const int pos);
+	const ref <word> getWordAt(const int pos);
 
 	/** Return the word at the specified position.
 	  *
 	  * @param pos position
 	  * @return word at position 'pos'
 	  */
-	const word* getWordAt(const int pos) const;
+	const ref <const word> getWordAt(const int pos) const;
 
 	/** Return the word list.
 	  *
 	  * @return list of words
 	  */
-	const std::vector <const word*> getWordList() const;
+	const std::vector <ref <const word> > getWordList() const;
 
 	/** Return the word list.
 	  *
 	  * @return list of words
 	  */
-	const std::vector <word*> getWordList();
+	const std::vector <ref <word> > getWordList();
 
 	// Decoding
 #if VMIME_WIDE_CHAR_SUPPORT
@@ -153,13 +153,27 @@ public:
 	  *
 	  * @param in input string
 	  * @param ch input charset
-	  * @param generateInExisting if not NULL, the resulting text will be generated
-	  * in the specified object instead of a new created object (in this case, the
-	  * function returns the same pointer). Can be used to avoid copying the
-	  * resulting object into an existing object.
-	  * @return new text object or existing object if generateInExisting != NULL
-	*/
-	static text* newFromString(const string& in, const charset& ch, text* generateInExisting = NULL);
+	  * @return new text object
+	  */
+	static ref <text> newFromString(const string& in, const charset& ch);
+
+	/** This function can be used to make several encoded words from a text.
+	  * All the characters in the text must be in the same specified charset.
+	  *
+	  * <p>Eg: giving:</p>
+	  * <pre>   &lt;iso-8859-1> "Linux dans un t'el'ephone mobile"
+	  *    ("=?iso-8859-1?Q?Linux_dans_un_t=E9l=E9phone_mobile?=")
+	  * </pre><p>it will return:</p>
+	  * <pre>   &lt;us-ascii>   "Linux dans un "
+	  *    &lt;iso-8859-1> "t'el'ephone "
+	  *    &lt;us-ascii>   "mobile"
+	  *    ("Linux dans un =?iso-8859-1?Q?t=E9l=E9phone_?= mobile")
+	  * </pre>
+	  *
+	  * @param in input string
+	  * @param ch input charset
+	  */
+	void createFromString(const string& in, const charset& ch);
 
 	/** Flags used by "encodeAndFold" function.
 	  */
@@ -193,7 +207,18 @@ public:
 	  * resulting object into an existing object.
 	  * @return new text object or existing object if generateInExisting != NULL
 	  */
-	static text* decodeAndUnfold(const string& in, text* generateInExisting = NULL);
+	static ref <text> decodeAndUnfold(const string& in);
+
+	/** Decode and unfold text (RFC-2047).
+	  *
+	  * @param in input string
+	  * @param generateInExisting if not NULL, the resulting text will be generated
+	  * in the specified object instead of a new created object (in this case, the
+	  * function returns the same pointer). Can be used to avoid copying the
+	  * resulting object into an existing object.
+	  * @return new text object or existing object if generateInExisting != NULL
+	  */
+	static text* decodeAndUnfold(const string& in, text* generateInExisting);
 
 
 	using component::parse;
@@ -205,7 +230,7 @@ public:
 
 private:
 
-	std::vector <word*> m_words;
+	std::vector <ref <word> > m_words;
 };
 
 

@@ -29,14 +29,13 @@ namespace vmime
 
 
 plainTextPart::plainTextPart()
-	: m_text(new emptyContentHandler)
+	: m_text(vmime::create <emptyContentHandler>())
 {
 }
 
 
 plainTextPart::~plainTextPart()
 {
-	delete (m_text);
 }
 
 
@@ -55,24 +54,23 @@ const int plainTextPart::getPartCount() const
 void plainTextPart::generateIn(bodyPart& /* message */, bodyPart& parent) const
 {
 	// Create a new part
-	bodyPart* part = new bodyPart();
+	ref <bodyPart> part = vmime::create <bodyPart>();
 	parent.getBody()->appendPart(part);
 
 	// Set header fields
-	part->getHeader()->ContentType().setValue(mediaType(mediaTypes::TEXT, mediaTypes::TEXT_PLAIN));
-	part->getHeader()->ContentType().setCharset(m_charset);
-	part->getHeader()->ContentTransferEncoding().setValue(encoding(encodingTypes::QUOTED_PRINTABLE));
+	part->getHeader()->ContentType()->setValue(mediaType(mediaTypes::TEXT, mediaTypes::TEXT_PLAIN));
+	part->getHeader()->ContentType()->setCharset(m_charset);
+	part->getHeader()->ContentTransferEncoding()->setValue(encoding(encodingTypes::QUOTED_PRINTABLE));
 
 	// Set contents
-	part->getBody()->setContents(*m_text);
+	part->getBody()->setContents(m_text);
 }
 
 
 void plainTextPart::parse(const bodyPart& /* message */,
 	const bodyPart& /* parent */, const bodyPart& textPart)
 {
-	delete (m_text);
-	m_text = textPart.getBody()->getContents().clone();
+	m_text = textPart.getBody()->getContents()->clone().dynamicCast <contentHandler>();
 
 	try
 	{
@@ -104,16 +102,15 @@ void plainTextPart::setCharset(const charset& ch)
 }
 
 
-const contentHandler& plainTextPart::getText() const
+const ref <const contentHandler> plainTextPart::getText() const
 {
-	return (*m_text);
+	return (m_text);
 }
 
 
-void plainTextPart::setText(const contentHandler& text)
+void plainTextPart::setText(ref <contentHandler> text)
 {
-	delete (m_text);
-	m_text = text.clone();
+	m_text = text->clone().dynamicCast <contentHandler>();
 }
 
 

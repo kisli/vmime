@@ -25,15 +25,15 @@ namespace vmime
 
 
 streamContentHandler::streamContentHandler()
-	: m_encoding(NO_ENCODING), m_ownedStream(NULL), m_stream(NULL)
+	: m_encoding(NO_ENCODING), m_stream(null)
 {
 }
 
 
-streamContentHandler::streamContentHandler(utility::inputStream* is,
-	const utility::stream::size_type length, const bool own, const vmime::encoding& enc)
+streamContentHandler::streamContentHandler(ref <utility::inputStream> is,
+	const utility::stream::size_type length, const vmime::encoding& enc)
 {
-	setData(is, length, own, enc);
+	setData(is, length, enc);
 }
 
 
@@ -44,15 +44,14 @@ streamContentHandler::~streamContentHandler()
 
 streamContentHandler::streamContentHandler(const streamContentHandler& cts)
 	: contentHandler(), m_encoding(cts.m_encoding),
-	  m_ownedStream(const_cast <utility::smart_ptr <utility::inputStream>&>(cts.m_ownedStream)),
 	  m_stream(cts.m_stream), m_length(cts.m_length)
 {
 }
 
 
-contentHandler* streamContentHandler::clone() const
+ref <contentHandler> streamContentHandler::clone() const
 {
-	return new streamContentHandler(*this);
+	return vmime::create <streamContentHandler>(*this);
 }
 
 
@@ -60,7 +59,6 @@ streamContentHandler& streamContentHandler::operator=(const streamContentHandler
 {
 	m_encoding = cts.m_encoding;
 
-	m_ownedStream = const_cast <utility::smart_ptr <utility::inputStream>&>(cts.m_ownedStream);
 	m_stream = cts.m_stream;
 	m_length = cts.m_length;
 
@@ -68,29 +66,19 @@ streamContentHandler& streamContentHandler::operator=(const streamContentHandler
 }
 
 
-void streamContentHandler::setData(utility::inputStream* is,
-	const utility::stream::size_type length, const bool own, const vmime::encoding& enc)
+void streamContentHandler::setData(ref <utility::inputStream> is,
+	const utility::stream::size_type length, const vmime::encoding& enc)
 {
 	m_encoding = enc;
 	m_length = length;
-
-	if (own)
-	{
-		m_ownedStream = is;
-		m_stream = NULL;
-	}
-	else
-	{
-		m_ownedStream = NULL;
-		m_stream = is;
-	}
+	m_stream = is;
 }
 
 
 void streamContentHandler::generate(utility::outputStream& os, const vmime::encoding& enc,
 	const string::size_type maxLineLength) const
 {
-	if (m_stream == NULL && m_ownedStream.ptr() == NULL)
+	if (!m_stream)
 		return;
 
 	// Managed data is already encoded
@@ -102,20 +90,17 @@ void streamContentHandler::generate(utility::outputStream& os, const vmime::enco
 		// buffer, and then re-encode to output stream...
 		if (m_encoding != enc)
 		{
-			utility::auto_ptr <encoder> theDecoder(m_encoding.getEncoder());
-			utility::auto_ptr <encoder> theEncoder(enc.getEncoder());
+			ref <encoder> theDecoder = m_encoding.getEncoder();
+			ref <encoder> theEncoder = enc.getEncoder();
 
 			theEncoder->getProperties()["maxlinelength"] = maxLineLength;
 
-			utility::inputStream& in = const_cast <utility::inputStream&>
-				(*(m_stream ? m_stream : m_ownedStream.ptr()));
-
-			in.reset();  // may not work...
+			m_stream->reset();  // may not work...
 
 			std::ostringstream oss;
 			utility::outputStreamAdapter tempOut(oss);
 
-			theDecoder->decode(in, tempOut);
+			theDecoder->decode(*m_stream, tempOut);
 
 			string str = oss.str();
 			utility::inputStreamStringAdapter tempIn(str);
@@ -125,71 +110,56 @@ void streamContentHandler::generate(utility::outputStream& os, const vmime::enco
 		// No encoding to perform
 		else
 		{
-			utility::inputStream& in = const_cast <utility::inputStream&>
-				(*(m_stream ? m_stream : m_ownedStream.ptr()));
+			m_stream->reset();  // may not work...
 
-			in.reset();  // may not work...
-
-			utility::bufferedStreamCopy(in, os);
+			utility::bufferedStreamCopy(*m_stream, os);
 		}
 	}
 	// Need to encode data before
 	else
 	{
-		utility::auto_ptr <encoder> theEncoder(enc.getEncoder());
+		ref <encoder> theEncoder = enc.getEncoder();
 		theEncoder->getProperties()["maxlinelength"] = maxLineLength;
 
-		utility::inputStream& in = const_cast <utility::inputStream&>
-			(*(m_stream ? m_stream : m_ownedStream.ptr()));
+		m_stream->reset();  // may not work...
 
-		in.reset();  // may not work...
-
-		theEncoder->encode(in, os);
+		theEncoder->encode(*m_stream, os);
 	}
 }
 
 
 void streamContentHandler::extract(utility::outputStream& os) const
 {
-	if (m_stream == NULL && m_ownedStream.ptr() == NULL)
+	if (!m_stream)
 		return;
 
 	// No decoding to perform
 	if (!isEncoded())
 	{
-		utility::inputStream& in = const_cast <utility::inputStream&>
-			(*(m_stream ? m_stream : m_ownedStream.ptr()));
+		m_stream->reset();  // may not work...
 
-		in.reset();  // may not work...
-
-		utility::bufferedStreamCopy(in, os);
+		utility::bufferedStreamCopy(*m_stream, os);
 	}
 	// Need to decode data
 	else
 	{
-		utility::auto_ptr <encoder> theDecoder(m_encoding.getEncoder());
+		ref <encoder> theDecoder = m_encoding.getEncoder();
 
-		utility::inputStream& in = const_cast <utility::inputStream&>
-			(*(m_stream ? m_stream : m_ownedStream.ptr()));
+		m_stream->reset();  // may not work...
 
-		in.reset();  // may not work...
-
-		theDecoder->decode(in, os);
+		theDecoder->decode(*m_stream, os);
 	}
 }
 
 
 void streamContentHandler::extractRaw(utility::outputStream& os) const
 {
-	if (m_stream == NULL && m_ownedStream.ptr() == NULL)
+	if (!m_stream)
 		return;
 
-	utility::inputStream& in = const_cast <utility::inputStream&>
-		(*(m_stream ? m_stream : m_ownedStream.ptr()));
+	m_stream->reset();  // may not work...
 
-	in.reset();  // may not work...
-
-	utility::bufferedStreamCopy(in, os);
+	utility::bufferedStreamCopy(*m_stream, os);
 }
 
 
@@ -201,7 +171,7 @@ const string::size_type streamContentHandler::getLength() const
 
 const bool streamContentHandler::isEmpty() const
 {
-	return (m_length == 0 || (m_stream == NULL && m_ownedStream.ptr() == NULL));
+	return (m_length == 0 || !m_stream);
 }
 
 

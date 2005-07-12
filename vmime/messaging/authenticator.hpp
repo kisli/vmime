@@ -21,6 +21,7 @@
 #define VMIME_MESSAGING_AUTHENTICATOR_HPP_INCLUDED
 
 
+#include "vmime/types.hpp"
 #include "vmime/messaging/authenticationInfos.hpp"
 
 
@@ -31,7 +32,7 @@ namespace messaging {
 /** This class is used to obtain user credentials.
   */
 
-class authenticator
+class authenticator : public object
 {
 public:
 

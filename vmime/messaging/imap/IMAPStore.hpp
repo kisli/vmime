@@ -52,14 +52,14 @@ class IMAPStore : public store
 
 public:
 
-	IMAPStore(session* sess, authenticator* auth);
+	IMAPStore(ref <session> sess, ref <authenticator> auth);
 	~IMAPStore();
 
 	const string getProtocolName() const;
 
-	folder* getDefaultFolder();
-	folder* getRootFolder();
-	folder* getFolder(const folder::path& path);
+	ref <folder> getDefaultFolder();
+	ref <folder> getRootFolder();
+	ref <folder> getFolder(const folder::path& path);
 
 	const bool isValidFolderName(const folder::path::component& name) const;
 
@@ -77,18 +77,18 @@ public:
 private:
 
 	// Connection
-	IMAPConnection* m_connection;
+	ref <IMAPConnection> m_connection;
 
 	// Used to request the authentication informations only the
 	// first time, and reuse these informations the next time.
-	class authenticator* m_oneTimeAuth;
+	ref <class authenticator> m_oneTimeAuth;
 
 
 
-	class authenticator* oneTimeAuthenticator();
+	ref <class authenticator> oneTimeAuthenticator();
 
 
-	IMAPConnection* connection();
+	ref <IMAPConnection> connection();
 
 
 	void registerFolder(IMAPFolder* folder);

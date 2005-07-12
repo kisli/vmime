@@ -37,7 +37,7 @@ fileAttachment::fileAttachment(const string& filename, const mediaType& type, co
 
 	setData(filename);
 
-	m_encoding = encoding::decide(*m_data);
+	m_encoding = encoding::decide(m_data);
 }
 
 
@@ -64,7 +64,9 @@ void fileAttachment::setData(const string& filename)
 		throw exceptions::open_file_error();
 	}
 
-	m_data = new streamContentHandler(new utility::inputStreamPointerAdapter(file, true), 0, true);
+	ref <utility::inputStream> is = vmime::create <utility::inputStreamPointerAdapter>(file, true);
+
+	m_data = vmime::create <streamContentHandler>(is, 0);
 }
 
 
@@ -72,13 +74,13 @@ void fileAttachment::generatePart(bodyPart& part) const
 {
 	defaultAttachment::generatePart(part);
 
-	contentDispositionField& cdf = part.getHeader()->ContentDisposition();
+	ref <contentDispositionField> cdf = part.getHeader()->ContentDisposition();
 
-	if (m_fileInfo.hasSize()) cdf.setSize(utility::stringUtils::toString(m_fileInfo.getSize()));
-	if (m_fileInfo.hasFilename()) cdf.setFilename(m_fileInfo.getFilename());
-	if (m_fileInfo.hasCreationDate()) cdf.setCreationDate(m_fileInfo.getCreationDate());
-	if (m_fileInfo.hasModificationDate()) cdf.setModificationDate(m_fileInfo.getModificationDate());
-	if (m_fileInfo.hasReadDate()) cdf.setReadDate(m_fileInfo.getReadDate());
+	if (m_fileInfo.hasSize()) cdf->setSize(utility::stringUtils::toString(m_fileInfo.getSize()));
+	if (m_fileInfo.hasFilename()) cdf->setFilename(m_fileInfo.getFilename());
+	if (m_fileInfo.hasCreationDate()) cdf->setCreationDate(m_fileInfo.getCreationDate());
+	if (m_fileInfo.hasModificationDate()) cdf->setModificationDate(m_fileInfo.getModificationDate());
+	if (m_fileInfo.hasReadDate()) cdf->setReadDate(m_fileInfo.getReadDate());
 }
 
 

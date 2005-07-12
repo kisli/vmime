@@ -49,18 +49,16 @@ textPartFactory* textPartFactory::getInstance()
 }
 
 
-textPart* textPartFactory::create(const mediaType& type)
+ref <textPart> textPartFactory::create(const mediaType& type)
 {
-	NameMap::const_iterator pos = m_nameMap.find(type.generate());
+	for (MapType::const_iterator it = m_map.begin() ;
+	     it != m_map.end() ; ++it)
+	{
+		if ((*it).first == type)
+			return ((*it).second)();
+	}
 
-	if (pos != m_nameMap.end())
-	{
-		return ((*pos).second)();
-	}
-	else
-	{
-		throw exceptions::no_factory_available();
-	}
+	throw exceptions::no_factory_available();
 }
 
 

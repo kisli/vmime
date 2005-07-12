@@ -47,44 +47,44 @@ public:
 	  *
 	  * @return header section
 	  */
-	const header* getHeader() const;
+	const ref <const header> getHeader() const;
 
 	/** Return the header section of this part.
 	  *
 	  * @return header section
 	  */
-	header* getHeader();
+	ref <header> getHeader();
 
 	/** Return the body section of this part.
 	  *
 	  * @return body section
 	  */
-	const body* getBody() const;
+	const ref <const body> getBody() const;
 
 	/** Return the body section of this part.
 	  *
 	  * @return body section
 	  */
-	body* getBody();
+	ref <body> getBody();
 
 	/** Return the parent part of this part.
 	  *
 	  * @return parent part or NULL if not known
 	  */
-	bodyPart* getParentPart() const;
+	weak_ref <bodyPart> getParentPart() const;
 
-	bodyPart* clone() const;
+	ref <component> clone() const;
 	void copyFrom(const component& other);
 	bodyPart& operator=(const bodyPart& other);
 
-	const std::vector <const component*> getChildComponents() const;
+	const std::vector <ref <const component> > getChildComponents() const;
 
 private:
 
-	header m_header;
-	body m_body;
+	ref <header> m_header;
+	ref <body> m_body;
 
-	bodyPart* m_parent;
+	weak_ref <bodyPart> m_parent;
 
 public:
 

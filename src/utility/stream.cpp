@@ -284,6 +284,13 @@ inputStreamPointerAdapter::inputStreamPointerAdapter(std::istream* is, const boo
 }
 
 
+inputStreamPointerAdapter::inputStreamPointerAdapter(const inputStreamPointerAdapter&)
+	: inputStream(), m_stream(NULL), m_own(false)
+{
+	// Not copiable
+}
+
+
 inputStreamPointerAdapter::~inputStreamPointerAdapter()
 {
 	if (m_own)

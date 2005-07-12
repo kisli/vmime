@@ -24,7 +24,7 @@ namespace vmime {
 namespace mdn {
 
 
-receivedMDNInfos::receivedMDNInfos(const message* msg)
+receivedMDNInfos::receivedMDNInfos(const ref <const message> msg)
 	: m_msg(msg)
 {
 	extract();
@@ -45,7 +45,7 @@ receivedMDNInfos& receivedMDNInfos::operator=(const receivedMDNInfos& other)
 }
 
 
-const message* receivedMDNInfos::getMessage() const
+const ref <const message> receivedMDNInfos::getMessage() const
 {
 	return (m_msg);
 }
@@ -73,16 +73,16 @@ void receivedMDNInfos::copyFrom(const receivedMDNInfos& other)
 
 void receivedMDNInfos::extract()
 {
-	const body* bdy = m_msg->getBody();
+	const ref <const body> bdy = m_msg->getBody();
 
 	for (int i = 0 ; i < bdy->getPartCount() ; ++i)
 	{
-		const bodyPart* part = bdy->getPartAt(i);
+		const ref <const bodyPart> part = bdy->getPartAt(i);
 
 		if (!part->getHeader()->hasField(fields::CONTENT_TYPE))
 			continue;
 
-		const mediaType& type = part->getHeader()->ContentType().getValue();
+		const mediaType& type = part->getHeader()->ContentType()->getValue();
 
 		// Extract from second part (message/disposition-notification)
 		if (type.getType() == vmime::mediaTypes::MESSAGE &&
@@ -91,16 +91,16 @@ void receivedMDNInfos::extract()
 			std::ostringstream oss;
 			utility::outputStreamAdapter vos(oss);
 
-			part->getBody()->getContents().extract(vos);
+			part->getBody()->getContents()->extract(vos);
 
 			// Body actually contains fields
 			header fields;
 			fields.parse(oss.str());
 
-			try { m_omid = fields.OriginalMessageId().getValue(); }
+			try { m_omid = fields.OriginalMessageId()->getValue(); }
 			catch (exceptions::no_such_field&) { /* Ignore */ }
 
-			try { m_disp = fields.Disposition().getValue(); }
+			try { m_disp = fields.Disposition()->getValue(); }
 			catch (exceptions::no_such_field&) { /* Ignore */ }
 		}
 	}

@@ -45,28 +45,27 @@ class IMAPauthenticator : public authenticator
 {
 public:
 
-	IMAPauthenticator(authenticator* auth)
+	IMAPauthenticator(ref <authenticator> auth)
 		: m_auth(auth), m_infos(NULL)
 	{
 	}
 
 	~IMAPauthenticator()
 	{
-		delete (m_infos);
 	}
 
 	const authenticationInfos requestAuthInfos() const
 	{
 		if (m_infos == NULL)
-			m_infos = new authenticationInfos(m_auth->requestAuthInfos());
+			m_infos = vmime::create <authenticationInfos>(m_auth->requestAuthInfos());
 
 		return (*m_infos);
 	}
 
 private:
 
-	authenticator* m_auth;
-	mutable authenticationInfos* m_infos;
+	ref <authenticator> m_auth;
+	mutable ref <authenticationInfos> m_infos;
 };
 
 #endif // VMIME_BUILDING_DOC
@@ -77,7 +76,7 @@ private:
 // IMAPStore
 //
 
-IMAPStore::IMAPStore(session* sess, authenticator* auth)
+IMAPStore::IMAPStore(ref <session> sess, ref <authenticator> auth)
 	: store(sess, getInfosInstance(), auth),
 	  m_connection(NULL), m_oneTimeAuth(NULL)
 {
@@ -91,7 +90,7 @@ IMAPStore::~IMAPStore()
 }
 
 
-authenticator* IMAPStore::oneTimeAuthenticator()
+ref <authenticator> IMAPStore::oneTimeAuthenticator()
 {
 	return (m_oneTimeAuth);
 }
@@ -103,30 +102,30 @@ const string IMAPStore::getProtocolName() const
 }
 
 
-folder* IMAPStore::getRootFolder()
+ref <folder> IMAPStore::getRootFolder()
 {
 	if (!isConnected())
 		throw exceptions::illegal_state("Not connected");
 
-	return new IMAPFolder(folder::path(), this);
+	return vmime::create <IMAPFolder>(folder::path(), this);
 }
 
 
-folder* IMAPStore::getDefaultFolder()
+ref <folder> IMAPStore::getDefaultFolder()
 {
 	if (!isConnected())
 		throw exceptions::illegal_state("Not connected");
 
-	return new IMAPFolder(folder::path::component("INBOX"), this);
+	return vmime::create <IMAPFolder>(folder::path::component("INBOX"), this);
 }
 
 
-folder* IMAPStore::getFolder(const folder::path& path)
+ref <folder> IMAPStore::getFolder(const folder::path& path)
 {
 	if (!isConnected())
 		throw exceptions::illegal_state("Not connected");
 
-	return new IMAPFolder(path, this);
+	return vmime::create <IMAPFolder>(path, this);
 }
 
 
@@ -141,9 +140,10 @@ void IMAPStore::connect()
 	if (isConnected())
 		throw exceptions::already_connected();
 
-	m_oneTimeAuth = new IMAPauthenticator(getAuthenticator());
+	m_oneTimeAuth = vmime::create <IMAPauthenticator>(getAuthenticator());
 
-	m_connection = new IMAPConnection(this, m_oneTimeAuth);
+	m_connection = vmime::create <IMAPConnection>
+		(thisWeakRef().dynamicCast <IMAPStore>(), m_oneTimeAuth);
 
 	try
 	{
@@ -151,7 +151,6 @@ void IMAPStore::connect()
 	}
 	catch (std::exception&)
 	{
-		delete (m_connection);
 		m_connection = NULL;
 		throw;
 	}
@@ -180,10 +179,8 @@ void IMAPStore::disconnect()
 
 	m_connection->disconnect();
 
-	delete (m_oneTimeAuth);
 	m_oneTimeAuth = NULL;
 
-	delete (m_connection);
 	m_connection = NULL;
 }
 
@@ -205,7 +202,7 @@ void IMAPStore::noop()
 }
 
 
-IMAPConnection* IMAPStore::connection()
+ref <IMAPConnection> IMAPStore::connection()
 {
 	return (m_connection);
 }

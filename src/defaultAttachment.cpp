@@ -30,16 +30,16 @@ defaultAttachment::defaultAttachment()
 }
 
 
-defaultAttachment::defaultAttachment(const contentHandler& data,
+defaultAttachment::defaultAttachment(ref <contentHandler> data,
 	const encoding& enc, const mediaType& type, const text& desc)
-	: m_type(type), m_desc(desc), m_data(data.clone()), m_encoding(enc)
+	: m_type(type), m_desc(desc), m_data(data), m_encoding(enc)
 {
 }
 
 
-defaultAttachment::defaultAttachment(const contentHandler& data,
+defaultAttachment::defaultAttachment(ref <contentHandler> data,
 	const mediaType& type, const text& desc)
-	: m_type(type), m_desc(desc), m_data(data.clone()),
+	: m_type(type), m_desc(desc), m_data(data),
 	  m_encoding(encoding::decide(data))
 {
 }
@@ -47,25 +47,21 @@ defaultAttachment::defaultAttachment(const contentHandler& data,
 
 defaultAttachment::defaultAttachment(const defaultAttachment& attach)
 	: attachment(), m_type(attach.m_type), m_desc(attach.m_desc),
-	  m_data(attach.m_data->clone()), m_encoding(attach.m_encoding)
+	  m_data(attach.m_data->clone().dynamicCast <contentHandler>()), m_encoding(attach.m_encoding)
 {
 }
 
 
 defaultAttachment::~defaultAttachment()
 {
-	delete (m_data);
 }
 
 
 defaultAttachment& defaultAttachment::operator=(const defaultAttachment& attach)
 {
-	if (m_data)
-		delete (m_data);
-
 	m_type = attach.m_type;
 	m_desc = attach.m_desc;
-	m_data = attach.m_data->clone();
+	m_data = attach.m_data->clone().dynamicCast <contentHandler>();
 	m_encoding = attach.m_encoding;
 
 	return (*this);
@@ -75,7 +71,7 @@ defaultAttachment& defaultAttachment::operator=(const defaultAttachment& attach)
 void defaultAttachment::generateIn(bodyPart& parent) const
 {
 	// Create and append a new part for this attachment
-	bodyPart* part = new bodyPart;
+	ref <bodyPart> part = vmime::create <bodyPart>();
 	parent.getBody()->appendPart(part);
 
 	generatePart(*part);
@@ -85,13 +81,13 @@ void defaultAttachment::generateIn(bodyPart& parent) const
 void defaultAttachment::generatePart(bodyPart& part) const
 {
 	// Set header fields
-	part.getHeader()->ContentType().setValue(m_type);
-	if (!m_desc.isEmpty()) part.getHeader()->ContentDescription().setValue(m_desc);
-	part.getHeader()->ContentTransferEncoding().setValue(m_encoding);
-	part.getHeader()->ContentDisposition().setValue(contentDisposition(contentDispositionTypes::ATTACHMENT));
+	part.getHeader()->ContentType()->setValue(m_type);
+	if (!m_desc.isEmpty()) part.getHeader()->ContentDescription()->setValue(m_desc);
+	part.getHeader()->ContentTransferEncoding()->setValue(m_encoding);
+	part.getHeader()->ContentDisposition()->setValue(contentDisposition(contentDispositionTypes::ATTACHMENT));
 
 	// Set contents
-	part.getBody()->setContents(*m_data);
+	part.getBody()->setContents(m_data);
 }
 
 
@@ -107,9 +103,9 @@ const text& defaultAttachment::getDescription() const
 }
 
 
-const contentHandler& defaultAttachment::getData() const
+const ref <const contentHandler> defaultAttachment::getData() const
 {
-	return (*m_data);
+	return (m_data);
 }
 
 

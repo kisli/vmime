@@ -42,7 +42,7 @@ public:
 	stringContentHandler(const stringContentHandler& cts);
 	stringContentHandler& operator=(const stringContentHandler& cts);
 
-	contentHandler* clone() const;
+	ref <contentHandler> clone() const;
 
 	// Set the data contained in the body.
 	//

@@ -55,11 +55,11 @@ public:
 	  */
 	void setName(const string& name);
 
-	contentDisposition* clone() const;
+	ref <component> clone() const;
 	void copyFrom(const component& other);
 	contentDisposition& operator=(const contentDisposition& other);
 
-	const std::vector <const component*> getChildComponents() const;
+	const std::vector <ref <const component> > getChildComponents() const;
 
 
 	contentDisposition& operator=(const string& name);

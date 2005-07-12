@@ -54,9 +54,9 @@ stringContentHandler::~stringContentHandler()
 }
 
 
-contentHandler* stringContentHandler::clone() const
+ref <contentHandler> stringContentHandler::clone() const
 {
-	return new stringContentHandler(*this);
+	return vmime::create <stringContentHandler>(*this);
 }
 
 
@@ -110,8 +110,8 @@ void stringContentHandler::generate(utility::outputStream& os,
 		// buffer, and then re-encode to output stream...
 		if (m_encoding != enc)
 		{
-			utility::auto_ptr <encoder> theDecoder(m_encoding.getEncoder());
-			utility::auto_ptr <encoder> theEncoder(enc.getEncoder());
+			ref <encoder> theDecoder = m_encoding.getEncoder();
+			ref <encoder> theEncoder = enc.getEncoder();
 
 			theEncoder->getProperties()["maxlinelength"] = maxLineLength;
 
@@ -136,7 +136,7 @@ void stringContentHandler::generate(utility::outputStream& os,
 	// Need to encode data before
 	else
 	{
-		utility::auto_ptr <encoder> theEncoder(enc.getEncoder());
+		ref <encoder> theEncoder = enc.getEncoder();
 		theEncoder->getProperties()["maxlinelength"] = maxLineLength;
 
 		utility::inputStreamStringProxyAdapter in(m_string);
@@ -156,7 +156,7 @@ void stringContentHandler::extract(utility::outputStream& os) const
 	// Need to decode data
 	else
 	{
-		utility::auto_ptr <encoder> theDecoder(m_encoding.getEncoder());
+		ref <encoder> theDecoder = m_encoding.getEncoder();
 
 		utility::inputStreamStringProxyAdapter in(m_string);
 

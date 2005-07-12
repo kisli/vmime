@@ -44,14 +44,6 @@ messageParser::messageParser(const message& msg)
 
 messageParser::~messageParser()
 {
-	free_container(m_attach);
-	free_container(m_textParts);
-
-	for (std::map <attachment*, contentDispositionField*>::iterator
-	     it = m_attachInfo.begin() ; it != m_attachInfo.end() ; ++it)
-	{
-		delete ((*it).second);
-	}
 }
 
 
@@ -193,14 +185,15 @@ void messageParser::findAttachments(const bodyPart& part)
 			}
 
 			// Construct the attachment object
-			attachment* attach = new defaultAttachment
-				(bdy.getContents(), bdy.getEncoding(), type, description);
+			ref <attachment> attach = vmime::create <defaultAttachment>
+				(bdy.getContents()->clone().dynamicCast <contentHandler>(),
+				 bdy.getEncoding(), type, description);
 
 			if (contentDispField != NULL)
 			{
-				m_attachInfo.insert(std::map <attachment*, contentDispositionField*>::
-					value_type(attach, dynamic_cast <contentDispositionField*>
-						(contentDispField->clone())));
+				m_attachInfo.insert(std::map <attachment*, ref <contentDispositionField> >::
+					value_type(attach.get(), contentDispField->clone().
+						dynamicCast <contentDispositionField>()));
 			}
 
 			// Add the attachment to the list
@@ -242,10 +235,10 @@ void messageParser::findTextParts(const bodyPart& msg, const bodyPart& part)
 
 		if (accept)
 		{
-			textPart* textPart = textPartFactory::getInstance()->create(type);
-			textPart->parse(msg, msg, msg);
+			ref <textPart> txtPart = textPartFactory::getInstance()->create(type);
+			txtPart->parse(msg, msg, msg);
 
-			m_textParts.push_back(textPart);
+			m_textParts.push_back(txtPart);
 		}
 	}
 	// Multipart message
@@ -263,20 +256,20 @@ bool messageParser::findSubTextParts(const bodyPart& msg, const bodyPart& part)
 	// So, wherever the text parts are, all we have to do is to find the first
 	// MIME part which is a text part.
 
-	std::vector <const bodyPart*> textParts;
+	std::vector <ref <const bodyPart> > textParts;
 
 	for (int i = 0 ; i < part.getBody()->getPartCount() ; ++i)
 	{
-		const bodyPart& p = *part.getBody()->getPartAt(i);
+		const ref <const bodyPart> p = part.getBody()->getPartAt(i);
 
 		try
 		{
-			const contentTypeField& ctf = dynamic_cast<contentTypeField&>
-				(*p.getHeader()->findField(fields::CONTENT_TYPE));
+			const contentTypeField& ctf = dynamic_cast <const contentTypeField&>
+				(*(p->getHeader()->findField(fields::CONTENT_TYPE)));
 
 			if (ctf.getValue().getType() == mediaTypes::TEXT)
 			{
-				textParts.push_back(&p);
+				textParts.push_back(p);
 			}
 		}
 		catch (exceptions::no_such_field)
@@ -288,18 +281,18 @@ bool messageParser::findSubTextParts(const bodyPart& msg, const bodyPart& part)
 	if (textParts.size())
 	{
 		// Okay. So we have found at least one text part
-		for (std::vector <const bodyPart*>::const_iterator p = textParts.begin() ;
+		for (std::vector <ref <const bodyPart> >::const_iterator p = textParts.begin() ;
 		     p != textParts.end() ; ++p)
 		{
-			const contentTypeField& ctf = dynamic_cast<contentTypeField&>
-				(*(*p)->getHeader()->findField(fields::CONTENT_TYPE));
+			const contentTypeField& ctf = dynamic_cast <const contentTypeField&>
+				(*((*p)->getHeader()->findField(fields::CONTENT_TYPE)));
 
 			try
 			{
-				textPart* textPart = textPartFactory::getInstance()->create(ctf.getValue());
-				textPart->parse(msg, part, **p);
+				ref <textPart> txtPart = textPartFactory::getInstance()->create(ctf.getValue());
+				txtPart->parse(msg, part, **p);
 
-				m_textParts.push_back(textPart);
+				m_textParts.push_back(txtPart);
 			}
 			catch (exceptions::no_factory_available& e)
 			{
@@ -324,10 +317,10 @@ bool messageParser::findSubTextParts(const bodyPart& msg, const bodyPart& part)
 }
 
 
-const contentDispositionField* messageParser::getAttachmentInfo(const attachment* a) const
+const ref <const contentDispositionField> messageParser::getAttachmentInfo(const ref <const attachment> a) const
 {
-	std::map <attachment*, contentDispositionField*>::const_iterator
-		it = m_attachInfo.find(const_cast <attachment*>(a));
+	std::map <attachment*, ref <contentDispositionField> >::const_iterator
+		it = m_attachInfo.find(ref <attachment>(a.constCast <attachment>()).get());
 
 	return (it != m_attachInfo.end() ? (*it).second : NULL);
 }
@@ -369,13 +362,13 @@ const datetime& messageParser::getDate() const
 }
 
 
-const std::vector <const attachment*> messageParser::getAttachmentList() const
+const std::vector <ref <const attachment> > messageParser::getAttachmentList() const
 {
-	std::vector <const attachment*> res;
+	std::vector <ref <const attachment> > res;
 
 	res.reserve(m_attach.size());
 
-	for (std::vector <attachment*>::const_iterator it = m_attach.begin() ;
+	for (std::vector <ref <attachment> >::const_iterator it = m_attach.begin() ;
 	     it != m_attach.end() ; ++it)
 	{
 		res.push_back(*it);
@@ -391,19 +384,19 @@ const int messageParser::getAttachmentCount() const
 }
 
 
-const attachment* messageParser::getAttachmentAt(const int pos) const
+const ref <const attachment> messageParser::getAttachmentAt(const int pos) const
 {
 	return (m_attach[pos]);
 }
 
 
-const std::vector <const textPart*> messageParser::getTextPartList() const
+const std::vector <ref <const textPart> > messageParser::getTextPartList() const
 {
-	std::vector <const textPart*> res;
+	std::vector <ref <const textPart> > res;
 
 	res.reserve(m_textParts.size());
 
-	for (std::vector <textPart*>::const_iterator it = m_textParts.begin() ;
+	for (std::vector <ref <textPart> >::const_iterator it = m_textParts.begin() ;
 	     it != m_textParts.end() ; ++it)
 	{
 		res.push_back(*it);
@@ -419,7 +412,7 @@ const int messageParser::getTextPartCount() const
 }
 
 
-const textPart* messageParser::getTextPartAt(const int pos) const
+const ref <const textPart> messageParser::getTextPartAt(const int pos) const
 {
 	return (m_textParts[pos]);
 }

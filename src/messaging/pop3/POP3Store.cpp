@@ -41,7 +41,7 @@ namespace messaging {
 namespace pop3 {
 
 
-POP3Store::POP3Store(session* sess, authenticator* auth)
+POP3Store::POP3Store(ref <session> sess, ref <authenticator> auth)
 	: store(sess, getInfosInstance(), auth), m_socket(NULL),
 	  m_authentified(false), m_timeoutHandler(NULL)
 {
@@ -63,30 +63,30 @@ const string POP3Store::getProtocolName() const
 }
 
 
-folder* POP3Store::getDefaultFolder()
+ref <folder> POP3Store::getDefaultFolder()
 {
 	if (!isConnected())
 		throw exceptions::illegal_state("Not connected");
 
-	return new POP3Folder(folder::path(folder::path::component("INBOX")), this);
+	return vmime::create <POP3Folder>(folder::path(folder::path::component("INBOX")), this);
 }
 
 
-folder* POP3Store::getRootFolder()
+ref <folder> POP3Store::getRootFolder()
 {
 	if (!isConnected())
 		throw exceptions::illegal_state("Not connected");
 
-	return new POP3Folder(folder::path(), this);
+	return vmime::create <POP3Folder>(folder::path(), this);
 }
 
 
-folder* POP3Store::getFolder(const folder::path& path)
+ref <folder> POP3Store::getFolder(const folder::path& path)
 {
 	if (!isConnected())
 		throw exceptions::illegal_state("Not connected");
 
-	return new POP3Folder(path, this);
+	return vmime::create <POP3Folder>(path, this);
 }
 
 
@@ -244,11 +244,8 @@ void POP3Store::internalDisconnect()
 	sendRequest("QUIT");
 
 	m_socket->disconnect();
-
-	delete (m_socket);
 	m_socket = NULL;
 
-	delete (m_timeoutHandler);
 	m_timeoutHandler = NULL;
 
 	m_authentified = false;

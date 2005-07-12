@@ -40,9 +40,9 @@ disposition::disposition(const string& actionMode, const string& sendingMode,
 }
 
 
-disposition* disposition::clone() const
+ref <component> disposition::clone() const
 {
-	disposition* disp = new disposition;
+	ref <disposition> disp = vmime::create <disposition>();
 
 	disp->m_actionMode = m_actionMode;
 	disp->m_sendingMode = m_sendingMode;
@@ -75,9 +75,9 @@ disposition& disposition::operator=(const disposition& other)
 }
 
 
-const std::vector <const component*> disposition::getChildComponents() const
+const std::vector <ref <const component> > disposition::getChildComponents() const
 {
-	return std::vector <const component*>();
+	return std::vector <ref <const component> >();
 }
 
 

@@ -29,6 +29,9 @@ namespace vmime {
 namespace messaging {
 
 
+class session;
+
+
 /** Default implementation for authenticator. It simply returns
   * the credentials set in the session properties (named 'username'
   * and 'password'). This is the default implementation used if
@@ -39,11 +42,11 @@ class defaultAuthenticator : public authenticator
 {
 public:
 
-	defaultAuthenticator(const propertySet& props, const string& prefix);
+	defaultAuthenticator(weak_ref <session> session, const string& prefix);
 
 private:
 
-	const propertySet& m_props;
+	weak_ref <session> m_session;
 	const string m_prefix;
 
 	const authenticationInfos requestAuthInfos() const;

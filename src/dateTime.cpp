@@ -730,15 +730,15 @@ const datetime datetime::now()
 }
 
 
-datetime* datetime::clone() const
+ref <component> datetime::clone() const
 {
-	return new datetime(*this);
+	return vmime::create <datetime>(*this);
 }
 
 
-const std::vector <const component*> datetime::getChildComponents() const
+const std::vector <ref <const component> > datetime::getChildComponents() const
 {
-	return std::vector <const component*>();
+	return std::vector <ref <const component> >();
 }
 
 

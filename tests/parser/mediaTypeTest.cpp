@@ -58,10 +58,10 @@ namespace
 			assert_eq("eq2", "sub", t1.getSubType());
 
 			assert_true("operator==", t1 == t1);
-			assert_true("clone", *(t1.clone()) == t1);
+			assert_true("clone", t1 == *vmime::clone(t1));
 
-			assert_eq("eq3", "type", t1.clone()->getType());
-			assert_eq("eq4", "sub", t1.clone()->getSubType());
+			assert_eq("eq3", "type", vmime::clone(t1)->getType());
+			assert_eq("eq4", "sub", vmime::clone(t1)->getSubType());
 
 			vmime::mediaType t2;
 			t2.copyFrom(t1);

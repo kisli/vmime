@@ -37,12 +37,12 @@ class structure;
 /** A MIME part in a message.
   */
 
-class part
+class part : public object
 {
 protected:
 
 	part() { }
-	part(const part&) { }
+	part(const part&) : object() { }
 
 	virtual ~part() { }
 
@@ -114,12 +114,12 @@ public:
 /** Structure of a MIME part/message.
   */
 
-class structure
+class structure : public object
 {
 protected:
 
 	structure() { }
-	structure(const structure&) { }
+	structure(const structure&) : object() { }
 
 public:
 
@@ -152,12 +152,12 @@ public:
 /** Abstract representation of a message in a store/transport service.
   */
 
-class message
+class message : public object
 {
 protected:
 
 	message() { }
-	message(const message&) { }
+	message(const message&) : object() { }
 
 public:
 

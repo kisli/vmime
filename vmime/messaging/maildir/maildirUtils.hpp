@@ -73,7 +73,8 @@ public:
 	  * @param mode type of path to return (see FolderFSPathMode)
 	  * @return filesystem path for the specified folder
 	  */
-	static const utility::file::path getFolderFSPath(maildirStore* store, const utility::path& folderPath, const FolderFSPathMode mode);
+	static const utility::file::path getFolderFSPath(weak_ref <maildirStore> store,
+		const utility::path& folderPath, const FolderFSPathMode mode);
 
 	/** Test whether the specified file-system directory corresponds to
 	  * a maildir sub-folder. The name of the directory should not start

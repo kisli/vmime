@@ -69,7 +69,7 @@ void encoding::generate(utility::outputStream& os, const string::size_type /* ma
 }
 
 
-encoder* encoding::getEncoder() const
+ref <encoder> encoding::getEncoder() const
 {
 	return (encoderFactory::getInstance()->create(generate()));
 }
@@ -155,16 +155,16 @@ const encoding encoding::decide
 }
 
 
-const encoding encoding::decide(const contentHandler& /* data */)
+const encoding encoding::decide(ref <const contentHandler> /* data */)
 {
 	// TODO: a better solution to do that?
 	return (encoding(encodingTypes::BASE64));
 }
 
 
-encoding* encoding::clone() const
+ref <component> encoding::clone() const
 {
-	return new encoding(*this);
+	return vmime::create <encoding>(*this);
 }
 
 
@@ -188,9 +188,9 @@ void encoding::setName(const string& name)
 }
 
 
-const std::vector <const component*> encoding::getChildComponents() const
+const std::vector <ref <const component> > encoding::getChildComponents() const
 {
-	return std::vector <const component*>();
+	return std::vector <ref <const component> >();
 }
 
 

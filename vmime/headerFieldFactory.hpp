@@ -36,7 +36,7 @@ protected:
 	headerFieldFactory();
 	~headerFieldFactory();
 
-	typedef headerField* (*AllocFunc)(void);
+	typedef ref <headerField> (*AllocFunc)(void);
 	typedef std::map <string, AllocFunc> NameMap;
 
 	NameMap m_nameMap;
@@ -51,10 +51,10 @@ public:
 	{
 	public:
 
-		static headerField* creator()
+		static ref <headerField> creator()
 		{
 			// Allocate a new object
-			return new TYPE();
+			return vmime::create <TYPE>();
 		}
 	};
 #endif // VMIME_BUILDING_DOC
@@ -67,7 +67,7 @@ public:
 			(utility::stringUtils::toLower(name), &registerer<T>::creator));
 	}
 
-	headerField* create(const string& name, const string& body = NULL_STRING);
+	ref <headerField> create(const string& name, const string& body = NULL_STRING);
 };
 
 

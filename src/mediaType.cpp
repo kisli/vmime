@@ -120,9 +120,9 @@ mediaType& mediaType::operator=(const string& type)
 }
 
 
-mediaType* mediaType::clone() const
+ref <component> mediaType::clone() const
 {
-	return new mediaType(m_type, m_subType);
+	return vmime::create <mediaType>(m_type, m_subType);
 }
 
 
@@ -172,9 +172,9 @@ void mediaType::setFromString(const string& type)
 }
 
 
-const std::vector <const component*> mediaType::getChildComponents() const
+const std::vector <ref <const component> > mediaType::getChildComponents() const
 {
-	return std::vector <const component*>();
+	return std::vector <ref <const component> >();
 }
 
 

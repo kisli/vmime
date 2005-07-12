@@ -46,18 +46,16 @@ class POP3Store : public store
 	friend class POP3Folder;
 	friend class POP3Message;
 
-private:
-
 public:
 
-	POP3Store(session* sess, authenticator* auth);
+	POP3Store(ref <session> sess, ref <authenticator> auth);
 	~POP3Store();
 
 	const string getProtocolName() const;
 
-	folder* getDefaultFolder();
-	folder* getRootFolder();
-	folder* getFolder(const folder::path& path);
+	ref <folder> getDefaultFolder();
+	ref <folder> getRootFolder();
+	ref <folder> getFolder(const folder::path& path);
 
 	const bool isValidFolderName(const folder::path::component& name) const;
 
@@ -94,10 +92,10 @@ private:
 	std::list <POP3Folder*> m_folders;
 
 
-	socket* m_socket;
+	ref <socket> m_socket;
 	bool m_authentified;
 
-	timeoutHandler* m_timeoutHandler;
+	ref <timeoutHandler> m_timeoutHandler;
 
 
 	// Service infos

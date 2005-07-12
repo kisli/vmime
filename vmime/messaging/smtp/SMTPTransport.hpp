@@ -40,7 +40,7 @@ class SMTPTransport : public transport
 {
 public:
 
-	SMTPTransport(session* sess, authenticator* auth);
+	SMTPTransport(ref <session> sess, ref <authenticator> auth);
 	~SMTPTransport();
 
 	const string getProtocolName() const;
@@ -67,11 +67,11 @@ private:
 
 	void internalDisconnect();
 
-	socket* m_socket;
+	ref <socket> m_socket;
 	bool m_authentified;
 	bool m_extendedSMTP;
 
-	timeoutHandler* m_timeoutHandler;
+	ref <timeoutHandler> m_timeoutHandler;
 
 
 	// Service infos

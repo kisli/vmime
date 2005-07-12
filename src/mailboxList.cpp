@@ -36,13 +36,13 @@ mailboxList::mailboxList(const mailboxList& mboxList)
 }
 
 
-void mailboxList::appendMailbox(mailbox* mbox)
+void mailboxList::appendMailbox(ref <mailbox> mbox)
 {
 	m_list.appendAddress(mbox);
 }
 
 
-void mailboxList::insertMailboxBefore(mailbox* beforeMailbox, mailbox* mbox)
+void mailboxList::insertMailboxBefore(ref <mailbox> beforeMailbox, ref <mailbox> mbox)
 {
 	try
 	{
@@ -55,13 +55,13 @@ void mailboxList::insertMailboxBefore(mailbox* beforeMailbox, mailbox* mbox)
 }
 
 
-void mailboxList::insertMailboxBefore(const int pos, mailbox* mbox)
+void mailboxList::insertMailboxBefore(const int pos, ref <mailbox> mbox)
 {
 	m_list.insertAddressBefore(pos, mbox);
 }
 
 
-void mailboxList::insertMailboxAfter(mailbox* afterMailbox, mailbox* mbox)
+void mailboxList::insertMailboxAfter(ref <mailbox> afterMailbox, ref <mailbox> mbox)
 {
 	try
 	{
@@ -74,13 +74,13 @@ void mailboxList::insertMailboxAfter(mailbox* afterMailbox, mailbox* mbox)
 }
 
 
-void mailboxList::insertMailboxAfter(const int pos, mailbox* mbox)
+void mailboxList::insertMailboxAfter(const int pos, ref <mailbox> mbox)
 {
 	m_list.insertAddressAfter(pos, mbox);
 }
 
 
-void mailboxList::removeMailbox(mailbox* mbox)
+void mailboxList::removeMailbox(ref <mailbox> mbox)
 {
 	try
 	{
@@ -117,27 +117,27 @@ const bool mailboxList::isEmpty() const
 }
 
 
-mailbox* mailboxList::getMailboxAt(const int pos)
+ref <mailbox> mailboxList::getMailboxAt(const int pos)
 {
-	return static_cast <mailbox*>(m_list.getAddressAt(pos));
+	return m_list.getAddressAt(pos).staticCast <mailbox>();
 }
 
 
-const mailbox* mailboxList::getMailboxAt(const int pos) const
+const ref <const mailbox> mailboxList::getMailboxAt(const int pos) const
 {
-	return static_cast <const mailbox*>(m_list.getAddressAt(pos));
+	return m_list.getAddressAt(pos).staticCast <const mailbox>();
 }
 
 
-const std::vector <const mailbox*> mailboxList::getMailboxList() const
+const std::vector <ref <const mailbox> > mailboxList::getMailboxList() const
 {
-	const std::vector <const address*> addrList = m_list.getAddressList();
-	std::vector <const mailbox*> res;
+	const std::vector <ref <const address> > addrList = m_list.getAddressList();
+	std::vector <ref <const mailbox> > res;
 
-	for (std::vector <const address*>::const_iterator it = addrList.begin() ;
+	for (std::vector <ref <const address> >::const_iterator it = addrList.begin() ;
 	     it != addrList.end() ; ++it)
 	{
-		const mailbox* mbox = dynamic_cast <const mailbox*>(*it);
+		const ref <const mailbox> mbox = (*it).dynamicCast <const mailbox>();
 
 		if (mbox != NULL)
 			res.push_back(mbox);
@@ -147,15 +147,15 @@ const std::vector <const mailbox*> mailboxList::getMailboxList() const
 }
 
 
-const std::vector <mailbox*> mailboxList::getMailboxList()
+const std::vector <ref <mailbox> > mailboxList::getMailboxList()
 {
-	const std::vector <address*> addrList = m_list.getAddressList();
-	std::vector <mailbox*> res;
+	const std::vector <ref <address> > addrList = m_list.getAddressList();
+	std::vector <ref <mailbox> > res;
 
-	for (std::vector <address*>::const_iterator it = addrList.begin() ;
+	for (std::vector <ref <address> >::const_iterator it = addrList.begin() ;
 	     it != addrList.end() ; ++it)
 	{
-		mailbox* mbox = dynamic_cast <mailbox*>(*it);
+		const ref <mailbox> mbox = (*it).dynamicCast <mailbox>();
 
 		if (mbox != NULL)
 			res.push_back(mbox);
@@ -165,9 +165,9 @@ const std::vector <mailbox*> mailboxList::getMailboxList()
 }
 
 
-mailboxList* mailboxList::clone() const
+ref <component> mailboxList::clone() const
 {
-	return new mailboxList(*this);
+	return vmime::create <mailboxList>(*this);
 }
 
 
@@ -186,7 +186,7 @@ mailboxList& mailboxList::operator=(const mailboxList& other)
 }
 
 
-const std::vector <const component*> mailboxList::getChildComponents() const
+const std::vector <ref <const component> > mailboxList::getChildComponents() const
 {
 	return (m_list.getChildComponents());
 }

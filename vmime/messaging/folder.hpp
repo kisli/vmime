@@ -45,11 +45,11 @@ class store;
 /** Abstract representation of a folder in a message store.
   */
 
-class folder
+class folder : public object
 {
 protected:
 
-	folder(const folder&) { }
+	folder(const folder&) : object() { }
 	folder() { }
 
 public:
@@ -160,7 +160,7 @@ public:
 	  * @param num message sequence number
 	  * @return a new object referencing the specified message
 	  */
-	virtual message* getMessage(const int num) = 0;
+	virtual ref <message> getMessage(const int num) = 0;
 
 	/** Get new references to messages in this folder.
 	  *
@@ -168,14 +168,14 @@ public:
 	  * @param to sequence number of the last message to get
 	  * @return new objects referencing the specified messages
 	  */
-	virtual std::vector <message*> getMessages(const int from = 1, const int to = -1) = 0;
+	virtual std::vector <ref <message> > getMessages(const int from = 1, const int to = -1) = 0;
 
 	/** Get new references to messages in this folder.
 	  *
 	  * @param nums sequence numbers of the messages to delete
 	  * @return new objects referencing the specified messages
 	  */
-	virtual std::vector <message*> getMessages(const std::vector <int>& nums) = 0;
+	virtual std::vector <ref <message> > getMessages(const std::vector <int>& nums) = 0;
 
 	/** Return the number of messages in this folder.
 	  *
@@ -188,7 +188,7 @@ public:
 	  * @param name sub-folder name
 	  * @return a new object referencing the specified folder
 	  */
-	virtual folder* getFolder(const folder::path::component& name) = 0;
+	virtual ref <folder> getFolder(const folder::path::component& name) = 0;
 
 	/** Get the list of all sub-folders in this folder.
 	  *
@@ -196,7 +196,7 @@ public:
 	  * If set to false, only the direct children are returned.
 	  * @return list of sub-folders
 	  */
-	virtual std::vector <folder*> getFolders(const bool recursive = false) = 0;
+	virtual std::vector <ref <folder> > getFolders(const bool recursive = false) = 0;
 
 	/** Rename (move) this folder to another location.
 	  *
@@ -247,7 +247,7 @@ public:
 	  * @param date date/time for the new message (if NULL, the current time is used)
 	  * @param progress progression listener, or NULL if not used
 	  */
-	virtual void addMessage(vmime::message* msg, const int flags = message::FLAG_UNDEFINED, vmime::datetime* date = NULL, utility::progressionListener* progress = NULL) = 0;
+	virtual void addMessage(ref <vmime::message> msg, const int flags = message::FLAG_UNDEFINED, vmime::datetime* date = NULL, utility::progressionListener* progress = NULL) = 0;
 
 	/** Add a message to this folder.
 	  *
@@ -296,19 +296,19 @@ public:
 	  *
 	  * @return parent folder object
 	  */
-	virtual folder* getParent() = 0;
+	virtual ref <folder> getParent() = 0;
 
 	/** Return a reference to the store to which this folder belongs.
 	  *
 	  * @return the store object to which this folder is attached
 	  */
-	virtual const store* getStore() const = 0;
+	virtual weak_ref <const store> getStore() const = 0;
 
 	/** Return a reference to the store to which this folder belongs.
 	  *
 	  * @return the store object to which this folder is attached
 	  */
-	virtual store* getStore() = 0;
+	virtual weak_ref <store> getStore() = 0;
 
 	/** Fetchable objects.
 	  */
@@ -331,14 +331,14 @@ public:
 	  * @param options objects to fetch (combination of folder::FetchOptions flags)
 	  * @param progress progression listener, or NULL if not used
 	  */
-	virtual void fetchMessages(std::vector <message*>& msg, const int options, utility::progressionListener* progress = NULL) = 0;
+	virtual void fetchMessages(std::vector <ref <message> >& msg, const int options, utility::progressionListener* progress = NULL) = 0;
 
 	/** Fetch objects for the specified message.
 	  *
 	  * @param msg the message
 	  * @param options objects to fetch (combination of folder::FetchOptions flags)
 	  */
-	virtual void fetchMessage(message* msg, const int options) = 0;
+	virtual void fetchMessage(ref <message> msg, const int options) = 0;
 
 	/** Return the list of fetchable objects supported by
 	  * the underlying protocol (see folder::FetchOptions).

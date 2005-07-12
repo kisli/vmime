@@ -47,19 +47,19 @@ public:
 	~addressList();
 
 
-	addressList* clone() const;
+	ref <component> clone() const;
 	void copyFrom(const component& other);
 	addressList& operator=(const addressList& other);
 	addressList& operator=(const mailboxList& other);
 
-	const std::vector <const component*> getChildComponents() const;
+	const std::vector <ref <const component> > getChildComponents() const;
 
 
 	/** Add a address at the end of the list.
 	  *
 	  * @param addr address to append
 	  */
-	void appendAddress(address* addr);
+	void appendAddress(ref <address> addr);
 
 	/** Insert a new address before the specified address.
 	  *
@@ -67,7 +67,7 @@ public:
 	  * @param addr address to insert
 	  * @throw exceptions::no_such_address if the address is not in the list
 	  */
-	void insertAddressBefore(address* beforeAddress, address* addr);
+	void insertAddressBefore(ref <address> beforeAddress, ref <address> addr);
 
 	/** Insert a new address before the specified position.
 	  *
@@ -75,7 +75,7 @@ public:
 	  * the beginning of the list)
 	  * @param addr address to insert
 	  */
-	void insertAddressBefore(const int pos, address* addr);
+	void insertAddressBefore(const int pos, ref <address> addr);
 
 	/** Insert a new address after the specified address.
 	  *
@@ -83,21 +83,21 @@ public:
 	  * @param addr address to insert
 	  * @throw exceptions::no_such_address if the address is not in the list
 	  */
-	void insertAddressAfter(address* afterAddress, address* addr);
+	void insertAddressAfter(ref <address> afterAddress, ref <address> addr);
 
 	/** Insert a new address after the specified position.
 	  *
 	  * @param pos position of the address before the new address
 	  * @param addr address to insert
 	  */
-	void insertAddressAfter(const int pos, address* addr);
+	void insertAddressAfter(const int pos, ref <address> addr);
 
 	/** Remove the specified address from the list.
 	  *
 	  * @param addr address to remove
 	  * @throw exceptions::no_such_address if the address is not in the list
 	  */
-	void removeAddress(address* addr);
+	void removeAddress(ref <address> addr);
 
 	/** Remove the address at the specified position.
 	  *
@@ -126,30 +126,30 @@ public:
 	  * @param pos position
 	  * @return address at position 'pos'
 	  */
-	address* getAddressAt(const int pos);
+	ref <address> getAddressAt(const int pos);
 
 	/** Return the address at the specified position.
 	  *
 	  * @param pos position
 	  * @return address at position 'pos'
 	  */
-	const address* getAddressAt(const int pos) const;
+	const ref <const address> getAddressAt(const int pos) const;
 
 	/** Return the address list.
 	  *
 	  * @return list of addresses
 	  */
-	const std::vector <const address*> getAddressList() const;
+	const std::vector <ref <const address> > getAddressList() const;
 
 	/** Return the address list.
 	  *
 	  * @return list of addresses
 	  */
-	const std::vector <address*> getAddressList();
+	const std::vector <ref <address> > getAddressList();
 
 private:
 
-	std::vector <address*> m_list;
+	std::vector <ref <address> > m_list;
 
 public:
 

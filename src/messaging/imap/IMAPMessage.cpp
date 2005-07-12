@@ -43,17 +43,17 @@ class IMAPpart : public part
 {
 private:
 
-	IMAPpart(IMAPpart* parent, const int number, const IMAPParser::body_type_mpart* mpart);
-	IMAPpart(IMAPpart* parent, const int number, const IMAPParser::body_type_1part* part);
+	friend class vmime::creator;
+
+	IMAPpart(weak_ref <IMAPpart> parent, const int number, const IMAPParser::body_type_mpart* mpart);
+	IMAPpart(weak_ref <IMAPpart> parent, const int number, const IMAPParser::body_type_1part* part);
 
 public:
-
-	~IMAPpart();
 
 	const structure& getStructure() const;
 	structure& getStructure();
 
-	const IMAPpart* getParent() const { return (m_parent); }
+	weak_ref <const IMAPpart> getParent() const { return (m_parent); }
 
 	const mediaType& getType() const { return (m_mediaType); }
 	const int getSize() const { return (m_size); }
@@ -68,12 +68,13 @@ public:
 	}
 
 
-	static IMAPpart* create(IMAPpart* parent, const int number, const IMAPParser::body* body)
+	static ref <IMAPpart> create
+		(weak_ref <IMAPpart> parent, const int number, const IMAPParser::body* body)
 	{
 		if (body->body_type_mpart())
-			return new IMAPpart(parent, number, body->body_type_mpart());
+			return vmime::create <IMAPpart>(parent, number, body->body_type_mpart());
 		else
-			return new IMAPpart(parent, number, body->body_type_1part());
+			return vmime::create <IMAPpart>(parent, number, body->body_type_1part());
 	}
 
 
@@ -82,14 +83,14 @@ public:
 		if (m_header != NULL)
 			return (*m_header);
 		else
-			return (*(m_header = new header()));
+			return (*(m_header = vmime::create <header>()));
 	}
 
 private:
 
-	IMAPstructure* m_structure;
-	IMAPpart* m_parent;
-	header* m_header;
+	ref <IMAPstructure> m_structure;
+	weak_ref <IMAPpart> m_parent;
+	ref <header> m_header;
 
 	int m_number;
 	int m_size;
@@ -117,7 +118,7 @@ public:
 		m_parts.push_back(IMAPpart::create(NULL, 1, body));
 	}
 
-	IMAPstructure(IMAPpart* parent, const std::vector <IMAPParser::body*>& list)
+	IMAPstructure(weak_ref <IMAPpart> parent, const std::vector <IMAPParser::body*>& list)
 	{
 		int number = 1;
 
@@ -126,11 +127,6 @@ public:
 		{
 			m_parts.push_back(IMAPpart::create(parent, number, *it));
 		}
-	}
-
-	~IMAPstructure()
-	{
-		free_container(m_parts);
 	}
 
 
@@ -159,7 +155,7 @@ private:
 
 	static IMAPstructure m_emptyStructure;
 
-	std::vector <IMAPpart*> m_parts;
+	std::vector <ref <IMAPpart> > m_parts;
 };
 
 
@@ -167,17 +163,18 @@ IMAPstructure IMAPstructure::m_emptyStructure;
 
 
 
-IMAPpart::IMAPpart(IMAPpart* parent, const int number, const IMAPParser::body_type_mpart* mpart)
+IMAPpart::IMAPpart(weak_ref <IMAPpart> parent, const int number, const IMAPParser::body_type_mpart* mpart)
 	: m_parent(parent), m_header(NULL), m_number(number), m_size(0)
 {
 	m_mediaType = vmime::mediaType
 		("multipart", mpart->media_subtype()->value());
 
-	m_structure = new IMAPstructure(this, mpart->list());
+	m_structure = vmime::create <IMAPstructure>
+		(thisWeakRef().dynamicCast <IMAPpart>(), mpart->list());
 }
 
 
-IMAPpart::IMAPpart(IMAPpart* parent, const int number, const IMAPParser::body_type_1part* part)
+IMAPpart::IMAPpart(weak_ref <IMAPpart> parent, const int number, const IMAPParser::body_type_1part* part)
 	: m_parent(parent), m_header(NULL), m_number(number), m_size(0)
 {
 	if (part->body_type_text())
@@ -204,13 +201,6 @@ IMAPpart::IMAPpart(IMAPpart* parent, const int number, const IMAPParser::body_ty
 	}
 
 	m_structure = NULL;
-}
-
-
-IMAPpart::~IMAPpart()
-{
-	delete (m_structure);
-	delete (m_header);
 }
 
 
@@ -292,8 +282,6 @@ IMAPMessage::~IMAPMessage()
 {
 	if (m_folder)
 		m_folder->unregisterMessage(this);
-
-	delete dynamic_cast <header*>(m_header);
 }
 
 
@@ -597,62 +585,61 @@ void IMAPMessage::processFetchResponse
 				vmime::header& hdr = getOrCreateHeader();
 
 				// Date
-				hdr.Date().setValue(env->env_date()->value());
+				hdr.Date()->setValue(env->env_date()->value());
 
 				// Subject
 				text subject;
 				text::decodeAndUnfold(env->env_subject()->value(), &subject);
 
-				hdr.Subject().setValue(subject);
+				hdr.Subject()->setValue(subject);
 
 				// From
 				mailboxList from;
 				convertAddressList(*(env->env_from()), from);
 
 				if (!from.isEmpty())
-					hdr.From().setValue(*(from.getMailboxAt(0)));
+					hdr.From()->setValue(*(from.getMailboxAt(0)));
 
 				// To
 				mailboxList to;
 				convertAddressList(*(env->env_to()), to);
 
-				hdr.To().setValue(to);
+				hdr.To()->setValue(to);
 
 				// Sender
 				mailboxList sender;
 				convertAddressList(*(env->env_sender()), sender);
 
 				if (!sender.isEmpty())
-					hdr.Sender().setValue(*(sender.getMailboxAt(0)));
+					hdr.Sender()->setValue(*(sender.getMailboxAt(0)));
 
 				// Reply-to
 				mailboxList replyTo;
 				convertAddressList(*(env->env_reply_to()), replyTo);
 
 				if (!replyTo.isEmpty())
-					hdr.ReplyTo().setValue(*(replyTo.getMailboxAt(0)));
+					hdr.ReplyTo()->setValue(*(replyTo.getMailboxAt(0)));
 
 				// Cc
 				mailboxList cc;
 				convertAddressList(*(env->env_cc()), cc);
 
 				if (!cc.isEmpty())
-					hdr.Cc().setValue(cc);
+					hdr.Cc()->setValue(cc);
 
 				// Bcc
 				mailboxList bcc;
 				convertAddressList(*(env->env_bcc()), bcc);
 
 				if (!bcc.isEmpty())
-					hdr.Bcc().setValue(bcc);
+					hdr.Bcc()->setValue(bcc);
 			}
 
 			break;
 		}
 		case IMAPParser::msg_att_item::BODY_STRUCTURE:
 		{
-			delete (m_structure);
-			m_structure = new IMAPstructure((*it)->body());
+			m_structure = vmime::create <IMAPstructure>((*it)->body());
 			break;
 		}
 		case IMAPParser::msg_att_item::RFC822_HEADER:
@@ -677,12 +664,12 @@ void IMAPMessage::processFetchResponse
 					tempHeader.parse((*it)->nstring()->value());
 
 					vmime::header& hdr = getOrCreateHeader();
-					std::vector <headerField*> fields = tempHeader.getFieldList();
+					std::vector <ref <headerField> > fields = tempHeader.getFieldList();
 
-					for (std::vector <headerField*>::const_iterator jt = fields.begin() ;
+					for (std::vector <ref <headerField> >::const_iterator jt = fields.begin() ;
 					     jt != fields.end() ; ++jt)
 					{
-						hdr.appendField((*jt)->clone());
+						hdr.appendField((*jt)->clone().dynamicCast <headerField>());
 					}
 				}
 			}
@@ -710,7 +697,7 @@ header& IMAPMessage::getOrCreateHeader()
 	if (m_header != NULL)
 		return (*m_header);
 	else
-		return (*(m_header = new header()));
+		return (*(m_header = vmime::create <header>()));
 }
 
 
@@ -728,7 +715,7 @@ void IMAPMessage::convertAddressList
 		string email = addr.addr_mailbox()->value()
 			+ "@" + addr.addr_host()->value();
 
-		dest.appendMailbox(new mailbox(name, email));
+		dest.appendMailbox(vmime::create <mailbox>(name, email));
 	}
 }
 
@@ -829,7 +816,9 @@ void IMAPMessage::setFlags(const int flags, const int mode)
 		std::vector <int> nums;
 		nums.push_back(m_num);
 
-		events::messageChangedEvent event(m_folder, events::messageChangedEvent::TYPE_FLAGS, nums);
+		events::messageChangedEvent event
+			(m_folder->thisRef().dynamicCast <folder>(),
+			 events::messageChangedEvent::TYPE_FLAGS, nums);
 
 		for (std::list <IMAPFolder*>::iterator it = m_folder->m_store->m_folders.begin() ;
 		     it != m_folder->m_store->m_folders.end() ; ++it)

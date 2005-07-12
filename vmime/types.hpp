@@ -25,6 +25,7 @@
 #include <string>
 
 #include "vmime/config.hpp"
+#include "vmime/utility/smartPtr.hpp"
 
 
 namespace vmime
@@ -37,7 +38,20 @@ namespace vmime
 	typedef unsigned short port_t;
 
 	typedef int char_t;
+
+	// Some aliases
+	namespace utils = utility;
+
+	using vmime::utility::ref;
+	using vmime::utility::weak_ref;
+	using vmime::utility::null_ref;
+
+	extern const null_ref null;
 }
+
+
+// This is here because 'vmime::ref' need to be declared...
+#include "vmime/object.hpp"
 
 
 #endif // VMIME_TYPES_HPP_INCLUDED

@@ -37,13 +37,13 @@ class receivedMDNInfos : public MDNInfos
 {
 public:
 
-	receivedMDNInfos(const message* msg);
+	receivedMDNInfos(const ref <const message> msg);
 	receivedMDNInfos(const receivedMDNInfos& other);
 
 	receivedMDNInfos& operator=(const receivedMDNInfos& other);
 
 
-	const message* getMessage() const;
+	const ref <const message> getMessage() const;
 
 	/** Return the identifier of the message for which this MDN
 	  * has been generated.
@@ -65,7 +65,7 @@ private:
 	void extract();
 
 
-	const message* m_msg;
+	ref <const message> m_msg;
 
 	disposition m_disp;
 	messageId m_omid;

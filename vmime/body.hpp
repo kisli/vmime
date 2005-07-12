@@ -47,10 +47,6 @@ class body : public component
 {
 	friend class bodyPart;
 
-private:
-
-	body(bodyPart* parentPart);
-
 public:
 
 	body();
@@ -60,7 +56,7 @@ public:
 	  *
 	  * @param part part to append
 	  */
-	void appendPart(bodyPart* part);
+	void appendPart(ref <bodyPart> part);
 
 	/** Insert a new part before the specified part.
 	  *
@@ -68,7 +64,7 @@ public:
 	  * @param part part to insert
 	  * @throw exceptions::no_such_part if the part is not in the list
 	  */
-	void insertPartBefore(bodyPart* beforePart, bodyPart* part);
+	void insertPartBefore(ref <bodyPart> beforePart, ref <bodyPart> part);
 
 	/** Insert a new part before the specified position.
 	  *
@@ -76,7 +72,7 @@ public:
 	  * the beginning of the list)
 	  * @param part part to insert
 	  */
-	void insertPartBefore(const int pos, bodyPart* part);
+	void insertPartBefore(const int pos, ref <bodyPart> part);
 
 	/** Insert a new part after the specified part.
 	  *
@@ -84,21 +80,21 @@ public:
 	  * @param part part to insert
 	  * @throw exceptions::no_such_part if the part is not in the list
 	  */
-	void insertPartAfter(bodyPart* afterPart, bodyPart* part);
+	void insertPartAfter(ref <bodyPart> afterPart, ref <bodyPart> part);
 
 	/** Insert a new part after the specified position.
 	  *
 	  * @param pos position of the part before the new part
 	  * @param part part to insert
 	  */
-	void insertPartAfter(const int pos, bodyPart* part);
+	void insertPartAfter(const int pos, ref <bodyPart> part);
 
 	/** Remove the specified part from the list.
 	  *
 	  * @param part part to remove
 	  * @throw exceptions::no_such_part if the part is not in the list
 	  */
-	void removePart(bodyPart* part);
+	void removePart(ref <bodyPart> part);
 
 	/** Remove the part at the specified position.
 	  *
@@ -127,26 +123,26 @@ public:
 	  * @param pos position
 	  * @return part at position 'pos'
 	  */
-	bodyPart* getPartAt(const int pos);
+	ref <bodyPart> getPartAt(const int pos);
 
 	/** Return the part at the specified position.
 	  *
 	  * @param pos position
 	  * @return part at position 'pos'
 	  */
-	const bodyPart* getPartAt(const int pos) const;
+	const ref <const bodyPart> getPartAt(const int pos) const;
 
 	/** Return the part list.
 	  *
 	  * @return list of parts
 	  */
-	const std::vector <const bodyPart*> getPartList() const;
+	const std::vector <ref <const bodyPart> > getPartList() const;
 
 	/** Return the part list.
 	  *
 	  * @return list of parts
 	  */
-	const std::vector <bodyPart*> getPartList();
+	const std::vector <ref <bodyPart> > getPartList();
 
 	/** Return the prolog text.
 	  *
@@ -176,13 +172,13 @@ public:
 	  *
 	  * @return read-only body contents
 	  */
-	const contentHandler& getContents() const;
+	const ref <const contentHandler> getContents() const;
 
 	/** Set the body contents.
 	  *
 	  * @param contents new body contents
 	  */
-	void setContents(const contentHandler& contents);
+	void setContents(ref <contentHandler> contents);
 
 	/** Return the media type of the data contained in the body contents.
 	  * This is a shortcut for getHeader()->ContentType()->getValue()
@@ -221,29 +217,30 @@ public:
 	  */
 	static const bool isValidBoundary(const string& boundary);
 
-	body* clone() const;
+	ref <component> clone() const;
 	void copyFrom(const component& other);
 	body& operator=(const body& other);
 
-	const std::vector <const component*> getChildComponents() const;
+	const std::vector <ref <const component> > getChildComponents() const;
 
 private:
+
+	void setParentPart(weak_ref <bodyPart> parent);
+
 
 	string m_prologText;
 	string m_epilogText;
 
-	contentHandler* m_contents;
+	ref <contentHandler> m_contents;
 
-	bodyPart* m_part;
-	header* m_header;
+	weak_ref <bodyPart> m_part;
+	weak_ref <header> m_header;
 
-	std::vector <bodyPart*> m_parts;
+	std::vector <ref <bodyPart> > m_parts;
 
 	const bool isRootPart() const;
 
-	void initNewPart(bodyPart* part);
-
-	void setContentsImpl(const contentHandler& cts);
+	void initNewPart(ref <bodyPart> part);
 
 public:
 

@@ -59,7 +59,7 @@ public:
 	static serviceFactory* getInstance();
 
 	/** Information about a registered service. */
-	class registeredService
+	class registeredService : public object
 	{
 		friend class serviceFactory;
 
@@ -69,7 +69,7 @@ public:
 
 	public:
 
-		virtual service* create(session* sess, authenticator* auth) const = 0;
+		virtual ref <service> create(ref <session> sess, ref <authenticator> auth) const = 0;
 
 		virtual const string& getName() const = 0;
 		virtual const serviceInfos& getInfos() const = 0;
@@ -81,6 +81,7 @@ private:
 	class registeredServiceImpl : public registeredService
 	{
 		friend class serviceFactory;
+		friend class vmime::creator;
 
 	protected:
 
@@ -91,9 +92,9 @@ private:
 
 	public:
 
-		service* create(session* sess, authenticator* auth) const
+		ref <service> create(ref <session> sess, ref <authenticator> auth) const
 		{
-			return new S(sess, auth);
+			return vmime::create <S>(sess, auth);
 		}
 
 		const serviceInfos& getInfos() const
@@ -112,7 +113,7 @@ private:
 		const serviceInfos& m_servInfos;
 	};
 
-	std::vector <registeredService*> m_services;
+	std::vector <ref <registeredService> > m_services;
 
 public:
 
@@ -124,7 +125,7 @@ public:
 	void registerServiceByProtocol(const string& protocol)
 	{
 		const string name = utility::stringUtils::toLower(protocol);
-		m_services.push_back(new registeredServiceImpl <S>(name));
+		m_services.push_back(vmime::create <registeredServiceImpl <S> >(name));
 	}
 
 	/** Create a new service instance from a protocol name.
@@ -136,7 +137,7 @@ public:
 	  * @throw exceptions::no_service_available if no service is registered
 	  * for this protocol
 	  */
-	service* create(session* sess, const string& protocol, authenticator* auth = NULL);
+	ref <service> create(ref <session> sess, const string& protocol, ref <authenticator> auth = NULL);
 
 	/** Create a new service instance from a URL.
 	  *
@@ -148,7 +149,7 @@ public:
 	  * @throw exceptions::no_service_available if no service is registered
 	  * for this protocol
 	  */
-	service* create(session* sess, const utility::url& u, authenticator* auth = NULL);
+	ref <service> create(ref <session> sess, const utility::url& u, ref <authenticator> auth = NULL);
 
 	/** Return information about a registered protocol.
 	  *
@@ -157,7 +158,7 @@ public:
 	  * @throw exceptions::no_service_available if no service is registered
 	  * for this protocol
 	  */
-	const registeredService* getServiceByProtocol(const string& protocol) const;
+	ref <const registeredService> getServiceByProtocol(const string& protocol) const;
 
 	/** Return the number of registered services.
 	  *
@@ -170,13 +171,13 @@ public:
 	  * @param pos position of the registered service to return
 	  * @return registered service at the specified position
 	  */
-	const registeredService* getServiceAt(const int pos) const;
+	ref <const registeredService> getServiceAt(const int pos) const;
 
 	/** Return a list of all registered services.
 	  *
 	  * @return list of registered services
 	  */
-	const std::vector <const registeredService*> getServiceList() const;
+	const std::vector <ref <const registeredService> > getServiceList() const;
 };
 
 

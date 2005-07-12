@@ -46,7 +46,7 @@ namespace messaging {
 namespace sendmail {
 
 
-sendmailTransport::sendmailTransport(session* sess, authenticator* auth)
+sendmailTransport::sendmailTransport(ref <session> sess, ref <authenticator> auth)
 	: transport(sess, getInfosInstance(), auth), m_connected(false)
 {
 }
@@ -145,7 +145,7 @@ void sendmailTransport::internalSend
 	const utility::file::path path = vmime::platformDependant::getHandler()->
 		getFileSystemFactory()->stringToPath(m_sendmailPath);
 
-	utility::auto_ptr <utility::childProcess> proc =
+	ref <utility::childProcess> proc =
 		vmime::platformDependant::getHandler()->
 			getChildProcessFactory()->create(path);
 

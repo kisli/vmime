@@ -18,14 +18,15 @@
 //
 
 #include "vmime/messaging/defaultAuthenticator.hpp"
+#include "vmime/messaging/session.hpp"
 
 
 namespace vmime {
 namespace messaging {
 
 
-defaultAuthenticator::defaultAuthenticator(const propertySet& props, const string& prefix)
-	: m_props(props), m_prefix(prefix)
+defaultAuthenticator::defaultAuthenticator(weak_ref <session> sess, const string& prefix)
+	: m_session(sess), m_prefix(prefix)
 {
 }
 
@@ -33,7 +34,8 @@ defaultAuthenticator::defaultAuthenticator(const propertySet& props, const strin
 const authenticationInfos defaultAuthenticator::requestAuthInfos() const
 {
 	return (authenticationInfos
-		(m_props[m_prefix + "auth.username"], m_props[m_prefix + "auth.password"]));
+		(m_session->getProperties()[m_prefix + "auth.username"],
+		 m_session->getProperties()[m_prefix + "auth.password"]));
 }
 
 

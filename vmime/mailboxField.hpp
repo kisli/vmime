@@ -31,7 +31,7 @@ namespace vmime
 
 class mailboxField : public genericField <mailbox>
 {
-	friend class headerFieldFactory::registerer <mailboxField>;
+	friend class vmime::creator;  // create ref
 
 protected:
 

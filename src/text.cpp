@@ -40,19 +40,19 @@ text::text(const text& t)
 
 text::text(const string& t, const charset& ch)
 {
-	text::newFromString(t, ch, this);
+	createFromString(t, ch);
 }
 
 
 text::text(const string& t)
 {
-	text::newFromString(t, charset::getLocaleCharset(), this);
+	createFromString(t, charset::getLocaleCharset());
 }
 
 
 text::text(const word& w)
 {
-	appendWord(new word(w));
+	appendWord(vmime::create <word>(w));
 }
 
 
@@ -69,7 +69,7 @@ void text::parse(const string& buffer, const string::size_type position,
 
 	string::size_type newPos;
 
-	const std::vector <word*> words = word::parseMultiple(buffer, position, end, &newPos);
+	const std::vector <ref <word> > words = word::parseMultiple(buffer, position, end, &newPos);
 
 	copy_vector(words, m_words);
 
@@ -93,7 +93,7 @@ const wstring text::getDecodedText() const
 {
 	wstring out;
 
-	for (std::vector <word*>::const_iterator i = m_words.begin() ; i != m_words.end() ; ++i)
+	for (std::vector <ref <word> >::const_iterator i = m_words.begin() ; i != m_words.end() ; ++i)
 		out += (*i)->getDecodedText();
 
 	return (out);
@@ -108,8 +108,8 @@ void text::copyFrom(const component& other)
 
 	removeAllWords();
 
-	for (std::vector <word*>::const_iterator i = t.m_words.begin() ; i != t.m_words.end() ; ++i)
-		m_words.push_back(new word(**i));
+	for (std::vector <ref <word> >::const_iterator i = t.m_words.begin() ; i != t.m_words.end() ; ++i)
+		m_words.push_back(vmime::create <word>(**i));
 }
 
 
@@ -133,8 +133,8 @@ const bool text::operator==(const text& t) const
 	{
 		bool equal = true;
 
-		std::vector <word*>::const_iterator i = m_words.begin();
-		std::vector <word*>::const_iterator j = t.m_words.begin();
+		std::vector <ref <word> >::const_iterator i = m_words.begin();
+		std::vector <ref <word> >::const_iterator j = t.m_words.begin();
 
 		for ( ; equal && i != m_words.end() ; ++i, ++j)
 			equal = (**i == **j);
@@ -156,26 +156,26 @@ const string text::getConvertedText(const charset& dest) const
 {
 	string out;
 
-	for (std::vector <word*>::const_iterator i = m_words.begin() ; i != m_words.end() ; ++i)
+	for (std::vector <ref <word> >::const_iterator i = m_words.begin() ; i != m_words.end() ; ++i)
 		out += (*i)->getConvertedText(dest);
 
 	return (out);
 }
 
 
-void text::appendWord(word* w)
+void text::appendWord(ref <word> w)
 {
 	m_words.push_back(w);
 }
 
 
-void text::insertWordBefore(const int pos, word* w)
+void text::insertWordBefore(const int pos, ref <word> w)
 {
 	m_words.insert(m_words.begin() + pos, w);
 }
 
 
-void text::insertWordAfter(const int pos, word* w)
+void text::insertWordAfter(const int pos, ref <word> w)
 {
 	m_words.insert(m_words.begin() + pos + 1, w);
 }
@@ -183,9 +183,7 @@ void text::insertWordAfter(const int pos, word* w)
 
 void text::removeWord(const int pos)
 {
-	const std::vector <word*>::iterator it = m_words.begin() + pos;
-
-	delete (*it);
+	const std::vector <ref <word> >::iterator it = m_words.begin() + pos;
 
 	m_words.erase(it);
 }
@@ -193,7 +191,7 @@ void text::removeWord(const int pos)
 
 void text::removeAllWords()
 {
-	free_container(m_words);
+	m_words.clear();
 }
 
 
@@ -209,25 +207,25 @@ const bool text::isEmpty() const
 }
 
 
-word* text::getWordAt(const int pos)
+const ref <word> text::getWordAt(const int pos)
 {
 	return (m_words[pos]);
 }
 
 
-const word* text::getWordAt(const int pos) const
+const ref <const word> text::getWordAt(const int pos) const
 {
 	return (m_words[pos]);
 }
 
 
-const std::vector <const word*> text::getWordList() const
+const std::vector <ref <const word> > text::getWordList() const
 {
-	std::vector <const word*> list;
+	std::vector <ref <const word> > list;
 
 	list.reserve(m_words.size());
 
-	for (std::vector <word*>::const_iterator it = m_words.begin() ;
+	for (std::vector <ref <word> >::const_iterator it = m_words.begin() ;
 	     it != m_words.end() ; ++it)
 	{
 		list.push_back(*it);
@@ -237,19 +235,29 @@ const std::vector <const word*> text::getWordList() const
 }
 
 
-const std::vector <word*> text::getWordList()
+const std::vector <ref <word> > text::getWordList()
 {
 	return (m_words);
 }
 
 
-text* text::clone() const
+ref <component> text::clone() const
 {
-	return new text(*this);
+	return vmime::create <text>(*this);
 }
 
 
-text* text::newFromString(const string& in, const charset& ch, text* generateInExisting)
+ref <text> text::newFromString(const string& in, const charset& ch)
+{
+	ref <text> t = vmime::create <text>();
+
+	t->createFromString(in, ch);
+
+	return t;
+}
+
+
+void text::createFromString(const string& in, const charset& ch)
 {
 	const string::const_iterator end = in.end();
 	string::const_iterator p = in.begin();
@@ -259,9 +267,7 @@ text* text::newFromString(const string& in, const charset& ch, text* generateInE
 	bool prevIs8bit = false; // is previous word 8-bit?
 	unsigned int count = 0;  // total number of words
 
-	text* out = (generateInExisting != NULL) ? generateInExisting : new text();
-
-	out->removeAllWords();
+	removeAllWords();
 
 	for ( ; ; )
 	{
@@ -276,12 +282,12 @@ text* text::newFromString(const string& in, const charset& ch, text* generateInE
 				{
 					// No need to create a new encoded word, just append
 					// the current word to the previous one.
-					out->getWordAt(out->getWordCount() - 1)->
-						getBuffer() += string(start, p);
+					ref <word> w = getWordAt(getWordCount() - 1);
+					w->getBuffer() += string(start, p);
 				}
 				else
 				{
-					out->appendWord(new word(string(start, p), ch));
+					appendWord(vmime::create <word>(string(start, p), ch));
 
 					prevIs8bit = true;
 					++count;
@@ -291,12 +297,12 @@ text* text::newFromString(const string& in, const charset& ch, text* generateInE
 			{
 				if (count && !prevIs8bit)
 				{
-					out->getWordAt(out->getWordCount() - 1)->
-						getBuffer() += string(start, p);
+					ref <word> w = getWordAt(getWordCount() - 1);
+					w->getBuffer() += string(start, p);
 				}
 				else
 				{
-					out->appendWord(new word
+					appendWord(vmime::create <word>
 						(string(start, p), charset(charsets::US_ASCII)));
 
 					prevIs8bit = false;
@@ -320,8 +326,6 @@ text* text::newFromString(const string& in, const charset& ch, text* generateInE
 			++p;
 		}
 	}
-
-	return (out);
 }
 
 
@@ -341,13 +345,23 @@ void text::encodeAndFold(utility::outputStream& os, const string::size_type maxL
 }
 
 
+ref <text> text::decodeAndUnfold(const string& in)
+{
+	ref <text> t = vmime::create <text>();
+
+	decodeAndUnfold(in, t.get());
+
+	return t;
+}
+
+
 text* text::decodeAndUnfold(const string& in, text* generateInExisting)
 {
 	text* out = (generateInExisting != NULL) ? generateInExisting : new text();
 
 	out->removeAllWords();
 
-	const std::vector <word*> words = word::parseMultiple(in, 0, in.length(), NULL);
+	const std::vector <ref <word> > words = word::parseMultiple(in, 0, in.length(), NULL);
 
 	copy_vector(words, out->m_words);
 
@@ -355,9 +369,9 @@ text* text::decodeAndUnfold(const string& in, text* generateInExisting)
 }
 
 
-const std::vector <const component*> text::getChildComponents() const
+const std::vector <ref <const component> > text::getChildComponents() const
 {
-	std::vector <const component*> list;
+	std::vector <ref <const component> > list;
 
 	copy_vector(m_words, list);
 

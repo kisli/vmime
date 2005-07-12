@@ -33,6 +33,12 @@ session::session()
 }
 
 
+session::session(const session& sess)
+	: object(), m_props(sess.m_props)
+{
+}
+
+
 session::session(const propertySet& props)
 	: m_props(props)
 {
@@ -44,71 +50,63 @@ session::~session()
 }
 
 
-transport* session::getTransport(authenticator* auth)
+ref <transport> session::getTransport(ref <authenticator> auth)
 {
 	return (getTransport(m_props["transport.protocol"], auth));
 }
 
 
-transport* session::getTransport(const string& protocol, authenticator* auth)
+ref <transport> session::getTransport(const string& protocol, ref <authenticator> auth)
 {
-	service* sv = serviceFactory::getInstance()->create(this, protocol, auth);
+	ref <session> sess = thisRef().dynamicCast <session>();
+	ref <service> sv = serviceFactory::getInstance()->create(sess, protocol, auth);
 
 	if (sv->getType() != service::TYPE_TRANSPORT)
-	{
-		delete (sv);
 		throw exceptions::no_service_available();
-	}
 
-	return static_cast<transport*>(sv);
+	return sv.staticCast <transport>();
 }
 
 
-transport* session::getTransport(const utility::url& url, authenticator* auth)
+ref <transport> session::getTransport(const utility::url& url, ref <authenticator> auth)
 {
-	service* sv = serviceFactory::getInstance()->create(this, url, auth);
+	ref <session> sess = thisRef().dynamicCast <session>();
+	ref <service> sv = serviceFactory::getInstance()->create(sess, url, auth);
 
 	if (sv->getType() != service::TYPE_TRANSPORT)
-	{
-		delete (sv);
 		throw exceptions::no_service_available();
-	}
 
-	return static_cast<transport*>(sv);
+	return sv.staticCast <transport>();
 }
 
 
-store* session::getStore(authenticator* auth)
+ref <store> session::getStore(ref <authenticator> auth)
 {
 	return (getStore(m_props["store.protocol"], auth));
 }
 
 
-store* session::getStore(const string& protocol, authenticator* auth)
+ref <store> session::getStore(const string& protocol, ref <authenticator> auth)
 {
-	service* sv = serviceFactory::getInstance()->create(this, protocol, auth);
+	ref <session> sess = thisRef().dynamicCast <session>();
+	ref <service> sv = serviceFactory::getInstance()->create(sess, protocol, auth);
 
 	if (sv->getType() != service::TYPE_STORE)
-	{
-		delete (sv);
 		throw exceptions::no_service_available();
-	}
 
-	return static_cast<store*>(sv);
+	return sv.staticCast <store>();
 }
 
 
-store* session::getStore(const utility::url& url, authenticator* auth)
+ref <store> session::getStore(const utility::url& url, ref <authenticator> auth)
 {
-	service* sv = serviceFactory::getInstance()->create(this, url, auth);
+	ref <session> sess = thisRef().dynamicCast <session>();
+	ref <service> sv = serviceFactory::getInstance()->create(sess, url, auth);
 
 	if (sv->getType() != service::TYPE_STORE)
-	{
-		delete (sv);
 		throw exceptions::no_service_available();
-	}
 
-	return static_cast<store*>(sv);
+	return sv.staticCast <store>();
 }
 
 

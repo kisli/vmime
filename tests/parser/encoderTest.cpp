@@ -35,7 +35,7 @@ namespace
 		// Encoding helper function
 		static const vmime::string encode(const vmime::string& name, const vmime::string& in, int maxLineLength = 0)
 		{
-			vmime::encoder* enc = vmime::encoderFactory::getInstance()->create(name);
+			vmime::ref <vmime::encoder> enc = vmime::encoderFactory::getInstance()->create(name);
 
 			if (maxLineLength != 0)
 				enc->getProperties()["maxlinelength"] = maxLineLength;
@@ -53,7 +53,7 @@ namespace
 		// Decoding helper function
 		static const vmime::string decode(const vmime::string& name, const vmime::string& in, int maxLineLength = 0)
 		{
-			vmime::encoder* enc = vmime::encoderFactory::getInstance()->create(name);
+			vmime::ref <vmime::encoder> enc = vmime::encoderFactory::getInstance()->create(name);
 
 			if (maxLineLength != 0)
 				enc->getProperties()["maxlinelength"] = maxLineLength;

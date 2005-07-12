@@ -29,9 +29,9 @@ emptyContentHandler::emptyContentHandler()
 }
 
 
-contentHandler* emptyContentHandler::clone() const
+ref <contentHandler> emptyContentHandler::clone() const
 {
-	return new emptyContentHandler();
+	return vmime::create <emptyContentHandler>();
 }
 
 

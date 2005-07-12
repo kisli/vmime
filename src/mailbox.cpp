@@ -455,9 +455,9 @@ mailbox& mailbox::operator=(const mailbox& other)
 }
 
 
-mailbox* mailbox::clone() const
+ref <component>mailbox::clone() const
 {
-	return new mailbox(*this);
+	return vmime::create <mailbox>(*this);
 }
 
 
@@ -504,9 +504,9 @@ void mailbox::setEmail(const string& email)
 }
 
 
-const std::vector <const component*> mailbox::getChildComponents() const
+const std::vector <ref <const component> > mailbox::getChildComponents() const
 {
-	return std::vector <const component*>();
+	return std::vector <ref <const component> >();
 }
 
 

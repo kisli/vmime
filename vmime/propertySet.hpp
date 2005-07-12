@@ -39,13 +39,13 @@ namespace vmime
 /** Manage a list of (name,value) pairs.
   */
 
-class propertySet
+class propertySet : public object
 {
 public:
 
 	/** A property holds a (name,value) pair.
 	  */
-	class property
+	class property : public object
 	{
 	public:
 
@@ -259,7 +259,7 @@ public:
 	template <class TYPE>
 	const TYPE getProperty(const string& name) const
 	{
-		const property* const prop = find(name);
+		const ref <property> prop = find(name);
 		if (!prop) throw exceptions::no_such_property(name);
 
 		//return (prop->getValue <TYPE>());  // BUG: with g++ < 3.4
@@ -278,7 +278,7 @@ public:
 	template <class TYPE>
 	const TYPE getProperty(const string& name, const TYPE defaultValue) const
 	{
-		const property* const prop = find(name);
+		const ref <property> prop = find(name);
 		//return (prop ? prop->getValue <TYPE>() : defaultValue); // BUG: with g++ < 3.4
 		return (prop ? prop->template getValue <TYPE>() : defaultValue);
 	}
@@ -318,13 +318,13 @@ private:
 	void parse(const string& props);
 
 
-	class propFinder : public std::unary_function <property*, bool>
+	class propFinder : public std::unary_function <ref <property>, bool>
 	{
 	public:
 
 		propFinder(const string& name) : m_name(utility::stringUtils::toLower(name)) { }
 
-		const bool operator()(property* const p) const
+		const bool operator()(ref <property> p) const
 		{
 			return (utility::stringUtils::toLower(p->getName()) == m_name);
 		}
@@ -334,10 +334,10 @@ private:
 		const std::string m_name;
 	};
 
-	property* find(const string& name) const;
-	property* findOrCreate(const string& name);
+	ref <property> find(const string& name) const;
+	ref <property> findOrCreate(const string& name);
 
-	typedef std::list <property*> list_type;
+	typedef std::list <ref <property> > list_type;
 	list_type m_props;
 
 public:
@@ -404,13 +404,13 @@ public:
 	  *
 	  * @return list of properties
 	  */
-	const std::vector <const property*> getPropertyList() const;
+	const std::vector <ref <const property> > getPropertyList() const;
 
 	/** Return the property list.
 	  *
 	  * @return list of properties
 	  */
-	const std::vector <property*> getPropertyList();
+	const std::vector <ref <property> > getPropertyList();
 };
 
 

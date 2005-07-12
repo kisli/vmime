@@ -46,9 +46,9 @@ messageIdSequence::messageIdSequence(const messageIdSequence& midSeq)
 }
 
 
-messageIdSequence* messageIdSequence::clone() const
+ref <component> messageIdSequence::clone() const
 {
-	return new messageIdSequence(*this);
+	return vmime::create <messageIdSequence>(*this);
 }
 
 
@@ -59,7 +59,7 @@ void messageIdSequence::copyFrom(const component& other)
 	removeAllMessageIds();
 
 	for (unsigned int i = 0 ; i < midSeq.m_list.size() ; ++i)
-		m_list.push_back(midSeq.m_list[i]->clone());
+		m_list.push_back(midSeq.m_list[i]->clone().dynamicCast <messageId>());
 }
 
 
@@ -70,9 +70,9 @@ messageIdSequence& messageIdSequence::operator=(const messageIdSequence& other)
 }
 
 
-const std::vector <const component*> messageIdSequence::getChildComponents() const
+const std::vector <ref <const component> > messageIdSequence::getChildComponents() const
 {
-	std::vector <const component*> res;
+	std::vector <ref <const component> > res;
 
 	copy_vector(m_list, res);
 
@@ -89,7 +89,7 @@ void messageIdSequence::parse(const string& buffer, const string::size_type posi
 
 	while (pos < end)
 	{
-		messageId* parsedMid = messageId::parseNext(buffer, pos, end, &pos);
+		ref <messageId> parsedMid = messageId::parseNext(buffer, pos, end, &pos);
 
 		if (parsedMid != NULL)
 			m_list.push_back(parsedMid);
@@ -109,7 +109,7 @@ void messageIdSequence::generate(utility::outputStream& os, const string::size_t
 
 	if (!m_list.empty())
 	{
-		for (std::vector <messageId*>::const_iterator it = m_list.begin() ; ; )
+		for (std::vector <ref <messageId> >::const_iterator it = m_list.begin() ; ; )
 		{
 			(*it)->generate(os, maxLineLength - 2, pos, &pos);
 
@@ -126,15 +126,15 @@ void messageIdSequence::generate(utility::outputStream& os, const string::size_t
 }
 
 
-void messageIdSequence::appendMessageId(messageId* mid)
+void messageIdSequence::appendMessageId(ref <messageId> mid)
 {
 	m_list.push_back(mid);
 }
 
 
-void messageIdSequence::insertMessageIdBefore(messageId* beforeMid, messageId* mid)
+void messageIdSequence::insertMessageIdBefore(ref <messageId> beforeMid, ref <messageId> mid)
 {
-	const std::vector <messageId*>::iterator it = std::find
+	const std::vector <ref <messageId> >::iterator it = std::find
 		(m_list.begin(), m_list.end(), beforeMid);
 
 	if (it == m_list.end())
@@ -144,15 +144,15 @@ void messageIdSequence::insertMessageIdBefore(messageId* beforeMid, messageId* m
 }
 
 
-void messageIdSequence::insertMessageIdBefore(const int pos, messageId* mid)
+void messageIdSequence::insertMessageIdBefore(const int pos, ref <messageId> mid)
 {
 	m_list.insert(m_list.begin() + pos, mid);
 }
 
 
-void messageIdSequence::insertMessageIdAfter(messageId* afterMid, messageId* mid)
+void messageIdSequence::insertMessageIdAfter(ref <messageId> afterMid, ref <messageId> mid)
 {
-	const std::vector <messageId*>::iterator it = std::find
+	const std::vector <ref <messageId> >::iterator it = std::find
 		(m_list.begin(), m_list.end(), afterMid);
 
 	if (it == m_list.end())
@@ -162,21 +162,19 @@ void messageIdSequence::insertMessageIdAfter(messageId* afterMid, messageId* mid
 }
 
 
-void messageIdSequence::insertMessageIdAfter(const int pos, messageId* mid)
+void messageIdSequence::insertMessageIdAfter(const int pos, ref <messageId> mid)
 {
 	m_list.insert(m_list.begin() + pos + 1, mid);
 }
 
 
-void messageIdSequence::removeMessageId(messageId* mid)
+void messageIdSequence::removeMessageId(ref <messageId> mid)
 {
-	const std::vector <messageId*>::iterator it = std::find
+	const std::vector <ref <messageId> >::iterator it = std::find
 		(m_list.begin(), m_list.end(), mid);
 
 	if (it == m_list.end())
 		throw exceptions::no_such_message_id();
-
-	delete (*it);
 
 	m_list.erase(it);
 }
@@ -184,9 +182,7 @@ void messageIdSequence::removeMessageId(messageId* mid)
 
 void messageIdSequence::removeMessageId(const int pos)
 {
-	const std::vector <messageId*>::iterator it = m_list.begin() + pos;
-
-	delete (*it);
+	const std::vector <ref <messageId> >::iterator it = m_list.begin() + pos;
 
 	m_list.erase(it);
 }
@@ -194,7 +190,7 @@ void messageIdSequence::removeMessageId(const int pos)
 
 void messageIdSequence::removeAllMessageIds()
 {
-	free_container(m_list);
+	m_list.clear();
 }
 
 
@@ -210,25 +206,25 @@ const bool messageIdSequence::isEmpty() const
 }
 
 
-messageId* messageIdSequence::getMessageIdAt(const int pos)
+const ref <messageId> messageIdSequence::getMessageIdAt(const int pos)
 {
 	return (m_list[pos]);
 }
 
 
-const messageId* messageIdSequence::getMessageIdAt(const int pos) const
+const ref <const messageId> messageIdSequence::getMessageIdAt(const int pos) const
 {
 	return (m_list[pos]);
 }
 
 
-const std::vector <const messageId*> messageIdSequence::getMessageIdList() const
+const std::vector <ref <const messageId> > messageIdSequence::getMessageIdList() const
 {
-	std::vector <const messageId*> list;
+	std::vector <ref <const messageId> > list;
 
 	list.reserve(m_list.size());
 
-	for (std::vector <messageId*>::const_iterator it = m_list.begin() ;
+	for (std::vector <ref <messageId> >::const_iterator it = m_list.begin() ;
 	     it != m_list.end() ; ++it)
 	{
 		list.push_back(*it);
@@ -238,7 +234,7 @@ const std::vector <const messageId*> messageIdSequence::getMessageIdList() const
 }
 
 
-const std::vector <messageId*> messageIdSequence::getMessageIdList()
+const std::vector <ref <messageId> > messageIdSequence::getMessageIdList()
 {
 	return (m_list);
 }

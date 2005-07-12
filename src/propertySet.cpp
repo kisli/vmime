@@ -37,9 +37,10 @@ propertySet::propertySet(const string& props)
 
 
 propertySet::propertySet(const propertySet& set)
+	: object()
 {
-	for (std::list <property*>::const_iterator it = set.m_props.begin() ; it != set.m_props.end() ; ++it)
-		m_props.push_back(new property(**it));
+	for (std::list <ref <property> >::const_iterator it = set.m_props.begin() ; it != set.m_props.end() ; ++it)
+		m_props.push_back(vmime::create <property>(**it));
 }
 
 
@@ -53,8 +54,8 @@ propertySet& propertySet::operator=(const propertySet& set)
 {
 	removeAllProperties();
 
-	for (std::list <property*>::const_iterator it = set.m_props.begin() ; it != set.m_props.end() ; ++it)
-		m_props.push_back(new property(**it));
+	for (std::list <ref <property> >::const_iterator it = set.m_props.begin() ; it != set.m_props.end() ; ++it)
+		m_props.push_back(vmime::create <property>(**it));
 
 	return (*this);
 }
@@ -68,20 +69,17 @@ void propertySet::setFromString(const string& props)
 
 void propertySet::removeAllProperties()
 {
-	free_container(m_props);
+	m_props.clear();
 }
 
 
 void propertySet::removeProperty(const string& name)
 {
-	std::list <property*>::iterator it = std::find_if
+	std::list <ref <property> >::iterator it = std::find_if
 		(m_props.begin(), m_props.end(), propFinder(name));
 
 	if (it != m_props.end())
-	{
-		delete (*it);
 		m_props.erase(it);
-	}
 }
 
 
@@ -172,24 +170,24 @@ void propertySet::parse(const string& props)
 				}
 			}
 
-			m_props.push_back(new property(option, value));
+			m_props.push_back(vmime::create <property>(option, value));
 		}
 	}
 }
 
 
-propertySet::property* propertySet::find(const string& name) const
+ref <propertySet::property> propertySet::find(const string& name) const
 {
-	std::list <property*>::const_iterator it = std::find_if
+	std::list <ref <property> >::const_iterator it = std::find_if
 		(m_props.begin(), m_props.end(), propFinder(name));
 
 	return (it != m_props.end() ? *it : NULL);
 }
 
 
-propertySet::property* propertySet::findOrCreate(const string& name)
+ref <propertySet::property> propertySet::findOrCreate(const string& name)
 {
-	std::list <property*>::const_iterator it = std::find_if
+	std::list <ref <property> >::const_iterator it = std::find_if
 		(m_props.begin(), m_props.end(), propFinder(name));
 
 	if (it != m_props.end())
@@ -198,7 +196,7 @@ propertySet::property* propertySet::findOrCreate(const string& name)
 	}
 	else
 	{
-		property* prop = new property(name, "");
+		ref <property> prop = vmime::create <property>(name, "");
 		m_props.push_back(prop);
 		return (prop);
 	}
@@ -223,9 +221,9 @@ const bool propertySet::hasProperty(const string& name) const
 }
 
 
-const std::vector <const propertySet::property*> propertySet::getPropertyList() const
+const std::vector <ref <const propertySet::property> > propertySet::getPropertyList() const
 {
-	std::vector <const property*> res;
+	std::vector <ref <const property> > res;
 
 	for (list_type::const_iterator it = m_props.begin() ; it != m_props.end() ; ++it)
 		res.push_back(*it);
@@ -234,9 +232,9 @@ const std::vector <const propertySet::property*> propertySet::getPropertyList() 
 }
 
 
-const std::vector <propertySet::property*> propertySet::getPropertyList()
+const std::vector <ref <propertySet::property> > propertySet::getPropertyList()
 {
-	std::vector <property*> res;
+	std::vector <ref <property> > res;
 
 	for (list_type::const_iterator it = m_props.begin() ; it != m_props.end() ; ++it)
 		res.push_back(*it);
@@ -262,7 +260,7 @@ propertySet::property::property(const string& name)
 
 
 propertySet::property::property(const property& prop)
-	: m_name(prop.m_name), m_value(prop.m_value)
+	: object(), m_name(prop.m_name), m_value(prop.m_value)
 {
 }
 

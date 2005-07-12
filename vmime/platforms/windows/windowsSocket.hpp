@@ -40,6 +40,7 @@ public:
 	~windowsSocket();
 
 public:
+
 	void connect(const vmime::string& address, const vmime::port_t port);
 	const bool isConnected() const;
 	void disconnect();
@@ -51,6 +52,7 @@ public:
 	void sendRaw(const char* buffer, const int count);
 
 private:
+
 	char m_buffer[65536];
 	SOCKET m_desc;
 };
@@ -60,7 +62,8 @@ private:
 class windowsSocketFactory : public vmime::messaging::socketFactory
 {
 public:
-	vmime::messaging::socket* create();
+
+	ref <vmime::messaging::socket> create();
 };
 
 

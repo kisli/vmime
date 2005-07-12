@@ -37,11 +37,22 @@ namespace vmime
 template <class VALUE_TYPE>
 class genericField : virtual public headerField
 {
-	friend class headerFieldFactory::registerer <genericField <VALUE_TYPE> >;
+	friend class vmime::creator;  // create ref
 
 protected:
 
-	genericField() { }
+	genericField() : m_value(vmime::create <VALUE_TYPE>()) { }
+
+
+	const ref <const component> getValueImp() const
+	{
+		return (m_value);
+	}
+
+	ref <component> getValueImp()
+	{
+		return (m_value);
+	}
 
 public:
 
@@ -51,31 +62,31 @@ public:
 		return (*this);
 	}
 
-	const VALUE_TYPE& getValue() const
+	template <class TYPE>
+	void setValue(const TYPE& value)
 	{
-		return (m_value);
+		*m_value = value;
 	}
 
 	VALUE_TYPE& getValue()
 	{
-		return (m_value);
+		return *m_value;
 	}
 
-	template <class TYPE>
-	void setValue(const TYPE& value)
+	const VALUE_TYPE& getValue() const
 	{
-		m_value = value;
+		return *m_value;
 	}
 
 	void setValue(const component& value)
 	{
 		const VALUE_TYPE& v = dynamic_cast <const VALUE_TYPE&>(value);
-		m_value = v;
+		*m_value = v;
 	}
 
 private:
 
-	VALUE_TYPE m_value;
+	ref <VALUE_TYPE> m_value;
 };
 
 

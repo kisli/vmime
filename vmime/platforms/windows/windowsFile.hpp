@@ -37,7 +37,7 @@ class windowsFileSystemFactory : public vmime::utility::fileSystemFactory
 {
 public:
 
-	vmime::utility::file* create(const vmime::utility::file::path& path) const;
+	ref <vmime::utility::file> create(const vmime::utility::file::path& path) const;
 
 	const vmime::utility::file::path stringToPath(const vmime::string& str) const;
 	const vmime::string pathToString(const vmime::utility::file::path& path) const;
@@ -57,9 +57,9 @@ public:
 class windowsFile : public vmime::utility::file
 {
 public:
+
 	windowsFile(const vmime::utility::file::path& path);
 
-public:
 	void createFile();
 	void createDirectory(const bool createAll = false);
 
@@ -70,34 +70,37 @@ public:
 	const bool canWrite() const;
 
 	const length_type getLength();
-	
+
 	const path& getFullPath() const;
 
 	const bool exists() const;
 
-	const file* getParent() const;
+	ref <file> getParent() const;
 
 	void rename(const path& newName);
 	void remove();
 
-	vmime::utility::fileWriter* getFileWriter();
+	ref <vmime::utility::fileWriter> getFileWriter();
 
-	vmime::utility::fileReader* getFileReader();
+	ref <vmime::utility::fileReader> getFileReader();
 
-	vmime::utility::fileIterator* getFiles() const;
+	ref <vmime::utility::fileIterator> getFiles() const;
 
 private:
+
 	static void createDirectoryImpl(const vmime::utility::file::path& fullPath, const vmime::utility::file::path& path, const bool recursive = false);
 
 private:
+
 	vmime::utility::file::path m_path;
 	vmime::string m_nativePath;
 };
-	
+
 
 class windowsFileIterator : public vmime::utility::fileIterator
 {
 public:
+
 	windowsFileIterator(const vmime::utility::file::path& path, const vmime::string& nativePath);
 	~windowsFileIterator();
 
@@ -105,11 +108,13 @@ public:
 	vmime::utility::file* nextElement();
 
 private:
+
 	void findFirst();
 	void findNext();
 	bool isCurrentOrParentDir() const;
 
 private:
+
 	vmime::utility::file::path m_path;
 	vmime::string m_nativePath;
 	WIN32_FIND_DATA m_findData;
@@ -121,12 +126,15 @@ private:
 class windowsFileReader : public vmime::utility::fileReader
 {
 public:
+
 	windowsFileReader(const vmime::utility::file::path& path, const vmime::string& nativePath);
 
 public:
-	vmime::utility::inputStream* getInputStream();
+
+	ref <vmime::utility::inputStream> getInputStream();
 
 private:
+
 	vmime::utility::file::path m_path;
 	vmime::string m_nativePath;
 };
@@ -135,16 +143,19 @@ private:
 class windowsFileReaderInputStream : public vmime::utility::inputStream
 {
 public:
+
 	windowsFileReaderInputStream(const vmime::utility::file::path& path, HANDLE hFile);
 	~windowsFileReaderInputStream();
 
 public:
+
 	const bool eof() const;
 	void reset();
 	const size_type read(value_type* const data, const size_type count);
 	const size_type skip(const size_type count);
 
 private:
+
 	const vmime::utility::file::path m_path;
 	HANDLE m_hFile;
 };
@@ -153,12 +164,15 @@ private:
 class windowsFileWriter : public vmime::utility::fileWriter
 {
 public:
+
 	windowsFileWriter(const vmime::utility::file::path& path, const vmime::string& nativePath);
 
 public:
-	vmime::utility::outputStream* getOutputStream();
+
+	ref <vmime::utility::outputStream> getOutputStream();
 
 private:
+
 	vmime::utility::file::path m_path;
 	vmime::string m_nativePath;
 };
@@ -167,16 +181,20 @@ private:
 class windowsFileWriterOutputStream : public vmime::utility::outputStream
 {
 public:
+
 	windowsFileWriterOutputStream(const vmime::utility::file::path& path, HANDLE hFile);
 	~windowsFileWriterOutputStream();
 
 public:
+
 	void write(const value_type* const data, const size_type count);
 
 private:
+
 	const vmime::utility::file::path m_path;
 	HANDLE m_hFile;
 };
+
 
 } // windows
 } // platforms

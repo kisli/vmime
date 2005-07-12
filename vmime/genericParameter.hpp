@@ -37,11 +37,22 @@ namespace vmime
 template <class VALUE_TYPE>
 class genericParameter : public parameter
 {
-	friend class parameterFactory::registerer <genericParameter <VALUE_TYPE> >;
+	friend class vmime::creator;  // create ref
 
 protected:
 
-	genericParameter() { }
+	genericParameter() : m_value(vmime::create <VALUE_TYPE>()) { }
+
+
+	const ref <const component> getValueImp() const
+	{
+		return m_value;
+	}
+
+	const ref <component> getValueImp()
+	{
+		return m_value;
+	}
 
 public:
 
@@ -53,29 +64,29 @@ public:
 
 	const VALUE_TYPE& getValue() const
 	{
-		return (m_value);
+		return (*m_value);
 	}
 
 	VALUE_TYPE& getValue()
 	{
-		return (m_value);
+		return (*m_value);
 	}
 
 	template <class TYPE>
 	void setValue(const TYPE& value)
 	{
-		m_value = value;
+		*m_value = value;
 	}
 
 	void setValue(const component& value)
 	{
 		const VALUE_TYPE& v = dynamic_cast <const VALUE_TYPE&>(value);
-		m_value = v;
+		*m_value = v;
 	}
 
 private:
 
-	VALUE_TYPE m_value;
+	ref <VALUE_TYPE> m_value;
 };
 
 

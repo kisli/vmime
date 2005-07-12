@@ -42,7 +42,7 @@ class transport : public service
 {
 protected:
 
-	transport(session* sess, const serviceInfos& infos, authenticator* auth);
+	transport(ref <session> sess, const serviceInfos& infos, ref <authenticator> auth);
 
 public:
 
@@ -51,7 +51,7 @@ public:
 	  * @param msg message to send
 	  * @param progress progression listener, or NULL if not used
 	  */
-	virtual void send(vmime::message* msg, utility::progressionListener* progress = NULL);
+	virtual void send(ref <vmime::message> msg, utility::progressionListener* progress = NULL);
 
 	/** Send a message over this transport service.
 	  *

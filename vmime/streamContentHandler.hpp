@@ -33,16 +33,16 @@ class streamContentHandler : public contentHandler
 public:
 
 	streamContentHandler();
-	streamContentHandler(utility::inputStream* is, const utility::stream::size_type length, const bool own, const vmime::encoding& enc = NO_ENCODING);
+	streamContentHandler(ref <utility::inputStream> is, const utility::stream::size_type length, const vmime::encoding& enc = NO_ENCODING);
 
 	~streamContentHandler();
 
 	streamContentHandler(const streamContentHandler& cts);
 	streamContentHandler& operator=(const streamContentHandler& cts);
 
-	contentHandler* clone() const;
+	ref <contentHandler> clone() const;
 
-	void setData(utility::inputStream* is, const utility::stream::size_type length, const bool own, const vmime::encoding& enc = NO_ENCODING);
+	void setData(ref <utility::inputStream> is, const utility::stream::size_type length, const vmime::encoding& enc = NO_ENCODING);
 
 
 	void generate(utility::outputStream& os, const vmime::encoding& enc, const string::size_type maxLineLength = lineLengthLimits::infinite) const;
@@ -65,8 +65,7 @@ private:
 	vmime::encoding m_encoding;
 
 	// Actual data
-	utility::smart_ptr <utility::inputStream> m_ownedStream;   // 'contentHandler' objects are copiable...
-	utility::inputStream* m_stream;
+	mutable ref <utility::inputStream> m_stream;
 	string::size_type m_length;
 };
 

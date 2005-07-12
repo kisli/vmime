@@ -71,7 +71,7 @@ serviceInfos::~serviceInfos()
 }
 
 
-const bool serviceInfos::hasProperty(session* s, const property& p) const
+const bool serviceInfos::hasProperty(ref <session> s, const property& p) const
 {
 	return s->getProperties().hasProperty(getPropertyPrefix() + p.getName());
 }

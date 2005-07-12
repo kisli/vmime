@@ -42,7 +42,7 @@ namespace messaging {
 namespace imap {
 
 
-IMAPConnection::IMAPConnection(IMAPStore* store, authenticator* auth)
+IMAPConnection::IMAPConnection(weak_ref <IMAPStore> store, ref <authenticator> auth)
 	: m_store(store), m_auth(auth), m_socket(NULL), m_parser(NULL), m_tag(NULL),
 	  m_hierarchySeparator('\0'), m_state(STATE_NONE), m_timeoutHandler(NULL)
 {
@@ -55,9 +55,6 @@ IMAPConnection::~IMAPConnection()
 		disconnect();
 	else if (m_socket)
 		internalDisconnect();
-
-	delete (m_tag);
-	delete (m_parser);
 }
 
 
@@ -89,11 +86,8 @@ void IMAPConnection::connect()
 	m_socket->connect(address, port);
 
 
-	delete (m_tag);
-	m_tag = new IMAPTag();
-
-	delete (m_parser);
-	m_parser = new IMAPParser(m_tag, m_socket, m_timeoutHandler);
+	m_tag = vmime::create <IMAPTag>();
+	m_parser = vmime::create <IMAPParser>(m_tag, m_socket, m_timeoutHandler);
 
 
 	setState(STATE_NON_AUTHENTICATED);
@@ -164,11 +158,8 @@ void IMAPConnection::internalDisconnect()
 	send(true, "LOGOUT", true);
 
 	m_socket->disconnect();
-
-	delete (m_socket);
 	m_socket = NULL;
 
-	delete (m_timeoutHandler);
 	m_timeoutHandler = NULL;
 
 	m_state = STATE_LOGOUT;
@@ -179,7 +170,7 @@ void IMAPConnection::initHierarchySeparator()
 {
 	send(true, "LIST \"\" \"\"", true);
 
-	utility::auto_ptr <IMAPParser::response> resp(m_parser->readResponse());
+	vmime::utility::auto_ptr <IMAPParser::response> resp(m_parser->readResponse());
 
 	if (resp->isBad() || resp->response_done()->response_tagged()->
 		resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
@@ -284,31 +275,31 @@ const char IMAPConnection::hierarchySeparator() const
 }
 
 
-const IMAPTag* IMAPConnection::getTag() const
+ref <const IMAPTag> IMAPConnection::getTag() const
 {
 	return (m_tag);
 }
 
 
-const IMAPParser* IMAPConnection::getParser() const
+ref <const IMAPParser> IMAPConnection::getParser() const
 {
 	return (m_parser);
 }
 
 
-const IMAPStore* IMAPConnection::getStore() const
+weak_ref <const IMAPStore> IMAPConnection::getStore() const
 {
 	return (m_store);
 }
 
 
-IMAPStore* IMAPConnection::getStore()
+weak_ref <IMAPStore> IMAPConnection::getStore()
 {
 	return (m_store);
 }
 
 
-session* IMAPConnection::getSession()
+ref <session> IMAPConnection::getSession()
 {
 	return (m_store->getSession());
 }

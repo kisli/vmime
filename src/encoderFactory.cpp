@@ -46,11 +46,6 @@ encoderFactory::encoderFactory()
 
 encoderFactory::~encoderFactory()
 {
-	for (std::vector <registeredEncoder*>::const_iterator it = m_encoders.begin() ;
-	     it != m_encoders.end() ; ++it)
-	{
-		delete (*it);
-	}
 }
 
 
@@ -61,17 +56,17 @@ encoderFactory* encoderFactory::getInstance()
 }
 
 
-encoder* encoderFactory::create(const string& name)
+ref <encoder> encoderFactory::create(const string& name)
 {
 	return (getEncoderByName(name)->create());
 }
 
 
-const encoderFactory::registeredEncoder* encoderFactory::getEncoderByName(const string& name) const
+const ref <const encoderFactory::registeredEncoder> encoderFactory::getEncoderByName(const string& name) const
 {
 	const string lcName(utility::stringUtils::toLower(name));
 
-	for (std::vector <registeredEncoder*>::const_iterator it = m_encoders.begin() ;
+	for (std::vector <ref <registeredEncoder> >::const_iterator it = m_encoders.begin() ;
 	     it != m_encoders.end() ; ++it)
 	{
 		if ((*it)->getName() == lcName)
@@ -88,17 +83,17 @@ const int encoderFactory::getEncoderCount() const
 }
 
 
-const encoderFactory::registeredEncoder* encoderFactory::getEncoderAt(const int pos) const
+const ref <const encoderFactory::registeredEncoder> encoderFactory::getEncoderAt(const int pos) const
 {
 	return (m_encoders[pos]);
 }
 
 
-const std::vector <const encoderFactory::registeredEncoder*> encoderFactory::getEncoderList() const
+const std::vector <ref <const encoderFactory::registeredEncoder> > encoderFactory::getEncoderList() const
 {
-	std::vector <const registeredEncoder*> res;
+	std::vector <ref <const registeredEncoder> > res;
 
-	for (std::vector <registeredEncoder*>::const_iterator it = m_encoders.begin() ;
+	for (std::vector <ref <registeredEncoder> >::const_iterator it = m_encoders.begin() ;
 	     it != m_encoders.end() ; ++it)
 	{
 		res.push_back(*it);

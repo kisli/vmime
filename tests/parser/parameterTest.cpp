@@ -37,25 +37,32 @@ namespace
 	{
 	private:
 
-		vmime::typeAdapter <vmime::string> m_value;
+		vmime::ref <vmime::typeAdapter <vmime::string> > m_value;
 
 	public:
 
-		parameterizedHeaderField() : headerField("F"), m_value("X") { }
+		parameterizedHeaderField()
+			: headerField("F"),
+			  m_value(vmime::create <vmime::typeAdapter <vmime::string> >("X"))
+		{
+		}
 
-		const vmime::component& getValue() const { return m_value; }
-		vmime::component& getValue() { return m_value; }
+		const vmime::component& getValue() const { return *m_value; }
+		vmime::component& getValue() { return *m_value; }
 
 		void setValue(const vmime::component&) { /* Do nothing */ }
+
+		const vmime::ref <const vmime::component> getValueImp() const { return m_value; }
+		vmime::ref <vmime::component> getValueImp() { return m_value; }
 	};
 
 
 #define PARAM_VALUE(p, n) (p.getParameterAt(n)->getValue().generate())
 #define PARAM_NAME(p, n) (p.getParameterAt(n)->getName())
-#define PARAM_CHARSET(p, n) (static_cast <vmime::defaultParameter*> \
-	(p.getParameterAt(n))->getValue().getCharset().generate())
-#define PARAM_BUFFER(p, n) (static_cast <vmime::defaultParameter*> \
-	(p.getParameterAt(n))->getValue().getBuffer())
+#define PARAM_CHARSET(p, n) ( \
+	(p.getParameterAt(n).staticCast <vmime::defaultParameter>())->getValue().getCharset().generate())
+#define PARAM_BUFFER(p, n) ( \
+	(p.getParameterAt(n).staticCast <vmime::defaultParameter>())->getValue().getBuffer())
 
 
 	class parameterTest : public suite

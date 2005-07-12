@@ -38,6 +38,7 @@ path::path(const component& c)
 
 
 path::path(const path& p)
+	: object()
 {
 	m_list.resize(p.m_list.size());
 	std::copy(p.m_list.begin(), p.m_list.end(), m_list.begin());

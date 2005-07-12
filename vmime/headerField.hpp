@@ -35,6 +35,7 @@ namespace vmime
 class headerField : public component
 {
 	friend class headerFieldFactory;
+	friend class header;
 
 protected:
 
@@ -45,11 +46,11 @@ public:
 
 	~headerField();
 
-	headerField* clone() const;
+	ref <component> clone() const;
 	void copyFrom(const component& other);
 	headerField& operator=(const headerField& other);
 
-	const std::vector <const component*> getChildComponents() const;
+	const std::vector <ref <const component> > getChildComponents() const;
 
 	/** Return the name of this field.
 	  *
@@ -97,9 +98,15 @@ public:
 	void parse(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition = NULL);
 	void generate(utility::outputStream& os, const string::size_type maxLineLength = lineLengthLimits::infinite, const string::size_type curLinePos = 0, string::size_type* newLinePos = NULL) const;
 
-	static headerField* parseNext(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition = NULL);
+protected:
+
+	virtual const ref <const component> getValueImp() const = 0;
+	virtual ref <component> getValueImp() = 0;
 
 private:
+
+	static ref <headerField> parseNext(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition = NULL);
+
 
 	string m_name;
 };

@@ -53,7 +53,7 @@ public:
 	const bool operator==(const charset& value) const;
 	const bool operator!=(const charset& value) const;
 
-	const std::vector <const component*> getChildComponents() const;
+	const std::vector <ref <const component> > getChildComponents() const;
 
 	/** Returns the default charset used on the system.
 	  *
@@ -107,7 +107,7 @@ public:
 	  */
 	static void convert(utility::inputStream& in, utility::outputStream& out, const charset& source, const charset& dest);
 
-	charset* clone() const;
+	ref <component> clone() const;
 	void copyFrom(const component& other);
 
 private:

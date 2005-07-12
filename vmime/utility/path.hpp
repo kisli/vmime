@@ -34,7 +34,7 @@ namespace utility {
 /** Abstract representation of a path (filesystem, mailbox, etc).
   */
 
-class path
+class path : public object
 {
 public:
 

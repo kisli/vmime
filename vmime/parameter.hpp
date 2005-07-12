@@ -50,11 +50,11 @@ public:
 
 #endif // VMIME_BUILDING_DOC
 
-	parameter* clone() const;
+	ref <component> clone() const;
 	void copyFrom(const component& other);
 	parameter& operator=(const parameter& other);
 
-	const std::vector <const component*> getChildComponents() const;
+	const std::vector <ref <const component> > getChildComponents() const;
 
 	/** Return the name of the parameter.
 	  *
@@ -87,6 +87,11 @@ public:
 
 	void parse(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition = NULL);
 	void generate(utility::outputStream& os, const string::size_type maxLineLength = lineLengthLimits::infinite, const string::size_type curLinePos = 0, string::size_type* newLinePos = NULL) const;
+
+protected:
+
+	virtual const ref <const component> getValueImp() const = 0;
+	virtual const ref <component> getValueImp() = 0;
 
 private:
 

@@ -129,7 +129,7 @@ void messageId::parse(const string& buffer, const string::size_type position,
 }
 
 
-messageId* messageId::parseNext(const string& buffer, const string::size_type position,
+ref <messageId> messageId::parseNext(const string& buffer, const string::size_type position,
 	const string::size_type end, string::size_type* newPosition)
 {
 	string::size_type pos = position;
@@ -144,7 +144,7 @@ messageId* messageId::parseNext(const string& buffer, const string::size_type po
 		while (pos < end && !parserHelpers::isSpace(buffer[pos]))
 			++pos;
 
-		messageId* mid = new messageId();
+		ref <messageId> mid = vmime::create <messageId>();
 		mid->parse(buffer, begin, pos, NULL);
 
 		if (newPosition != NULL)
@@ -220,9 +220,9 @@ const bool messageId::operator!=(const messageId& mid) const
 }
 
 
-messageId* messageId::clone() const
+ref <component> messageId::clone() const
 {
-	return new messageId(*this);
+	return vmime::create <messageId>(*this);
 }
 
 
@@ -266,9 +266,9 @@ void messageId::setRight(const string& right)
 }
 
 
-const std::vector <const component*> messageId::getChildComponents() const
+const std::vector <ref <const component> > messageId::getChildComponents() const
 {
-	return std::vector <const component*>();
+	return std::vector <ref <const component> >();
 }
 
 

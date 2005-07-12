@@ -48,12 +48,12 @@ int main()
 		mb.setExpeditor(vmime::mailbox("me@somewhere.com"));
 
 		vmime::addressList to;
-		to.appendAddress(new vmime::mailbox("you@elsewhere.com"));
+		to.appendAddress(vmime::create <vmime::mailbox>("you@elsewhere.com"));
 
 		mb.setRecipients(to);
 
 		vmime::addressList bcc;
-		bcc.appendAddress(new vmime::mailbox("you-bcc@nowhere.com"));
+		bcc.appendAddress(vmime::create <vmime::mailbox>("you-bcc@nowhere.com"));
 
 		mb.setBlindCopyRecipients(bcc);
 
@@ -65,7 +65,7 @@ int main()
 
 		// Fill in the text part: the message is available in two formats: HTML and plain text.
 		// HTML text part also includes an inline image (embedded into the message).
-		vmime::htmlTextPart& textPart = dynamic_cast<vmime::htmlTextPart&>(*mb.getTextPart());
+		vmime::htmlTextPart& textPart = *mb.getTextPart().dynamicCast <vmime::htmlTextPart>();
 
 		// -- embed an image (the returned "CID" (content identifier) is used to reference
 		// -- the image into HTML content).
@@ -73,11 +73,13 @@ int main()
 		vmime::mediaType(vmime::mediaTypes::IMAGE, vmime::mediaTypes::IMAGE_JPEG));
 
 		// -- message text
-		textPart.setText(vmime::stringContentHandler(vmime::string("This is the <b>HTML text</b>.<br/><img src=\"") + cid + vmime::string("\"/>")));
-		textPart.setPlainText(vmime::stringContentHandler("This is the plain text (without HTML formatting)."));
+		textPart.setText(vmime::create <vmime::stringContentHandler>
+			(vmime::string("This is the <b>HTML text</b>.<br/><img src=\"") + cid + vmime::string("\"/>")));
+		textPart.setPlainText(vmime::create <vmime::stringContentHandler>
+			("This is the plain text (without HTML formatting)."));
 
 		// Construction
-		vmime::message* msg = mb.construct();
+		vmime::ref <vmime::message> msg = mb.construct();
 
 		// Raw text generation
 		vmime::string dataToSend = msg->generate();
@@ -86,9 +88,6 @@ int main()
 		std::cout << "==================" << std::endl;
 		std::cout << std::endl;
 		std::cout << dataToSend << std::endl;
-
-		// Destruction
-		delete (msg);
 	}
 	// VMime exception
 	catch (vmime::exception& e)

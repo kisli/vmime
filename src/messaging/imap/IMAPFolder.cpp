@@ -59,7 +59,7 @@ IMAPFolder::~IMAPFolder()
 	}
 	else if (m_open)
 	{
-		delete (m_connection);
+		m_connection = NULL;
 		onClose();
 	}
 }
@@ -132,8 +132,8 @@ void IMAPFolder::open(const int mode, bool failIfModeIsNotAvailable)
 		throw exceptions::illegal_state("Store disconnected");
 
 	// Open a connection for this folder
-	IMAPConnection* connection =
-		new IMAPConnection(m_store, m_store->oneTimeAuthenticator());
+	ref <IMAPConnection> connection =
+		vmime::create <IMAPConnection>(m_store, m_store->oneTimeAuthenticator());
 
 	try
 	{
@@ -263,7 +263,6 @@ void IMAPFolder::open(const int mode, bool failIfModeIsNotAvailable)
 	}
 	catch (std::exception&)
 	{
-		delete (connection);
 		throw;
 	}
 }
@@ -277,7 +276,7 @@ void IMAPFolder::close(const bool expunge)
 	if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
 
-	IMAPConnection* oldConnection = m_connection;
+	ref <IMAPConnection> oldConnection = m_connection;
 
 	// Emit the "CLOSE" command to expunge messages marked
 	// as deleted (this is fastest than "EXPUNGE")
@@ -301,8 +300,6 @@ void IMAPFolder::close(const bool expunge)
 	m_uidValidity = 0;
 
 	onClose();
-
-	delete (oldConnection);
 }
 
 
@@ -358,7 +355,10 @@ void IMAPFolder::create(const int type)
 	}
 
 	// Notify folder created
-	events::folderEvent event(this, events::folderEvent::TYPE_CREATED, m_path, m_path);
+	events::folderEvent event
+		(thisRef().dynamicCast <folder>(),
+		 events::folderEvent::TYPE_CREATED, m_path, m_path);
+
 	notifyFolder(event);
 }
 
@@ -450,7 +450,7 @@ const bool IMAPFolder::isOpen() const
 }
 
 
-message* IMAPFolder::getMessage(const int num)
+ref <message> IMAPFolder::getMessage(const int num)
 {
 	if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
@@ -458,33 +458,33 @@ message* IMAPFolder::getMessage(const int num)
 	if (num < 1 || num > m_messageCount)
 		throw exceptions::message_not_found();
 
-	return new IMAPMessage(this, num);
+	return vmime::create <IMAPMessage>(this, num);
 }
 
 
-std::vector <message*> IMAPFolder::getMessages(const int from, const int to)
+std::vector <ref <message> > IMAPFolder::getMessages(const int from, const int to)
 {
 	if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
 
-	std::vector <message*> v;
+	std::vector <ref <message> > v;
 
 	for (int i = from ; i <= to ; ++i)
-		v.push_back(new IMAPMessage(this, i));
+		v.push_back(vmime::create <IMAPMessage>(this, i));
 
 	return (v);
 }
 
 
-std::vector <message*> IMAPFolder::getMessages(const std::vector <int>& nums)
+std::vector <ref <message> > IMAPFolder::getMessages(const std::vector <int>& nums)
 {
 	if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
 
-	std::vector <message*> v;
+	std::vector <ref <message> > v;
 
 	for (std::vector <int>::const_iterator it = nums.begin() ; it != nums.end() ; ++it)
-		v.push_back(new IMAPMessage(this, *it));
+		v.push_back(vmime::create <IMAPMessage>(this, *it));
 
 	return (v);
 }
@@ -499,16 +499,16 @@ const int IMAPFolder::getMessageCount()
 }
 
 
-folder* IMAPFolder::getFolder(const folder::path::component& name)
+ref <folder> IMAPFolder::getFolder(const folder::path::component& name)
 {
 	if (!m_store)
 		throw exceptions::illegal_state("Store disconnected");
 
-	return new IMAPFolder(m_path / name, m_store);
+	return vmime::create <IMAPFolder>(m_path / name, m_store);
 }
 
 
-std::vector <folder*> IMAPFolder::getFolders(const bool recursive)
+std::vector <ref <folder> > IMAPFolder::getFolders(const bool recursive)
 {
 	if (!isOpen() && !m_store)
 		throw exceptions::illegal_state("Store disconnected");
@@ -556,57 +556,47 @@ std::vector <folder*> IMAPFolder::getFolders(const bool recursive)
 		resp->continue_req_or_response_data();
 
 
-	std::vector <folder*> v;
+	std::vector <ref <folder> > v;
 
-	try
+	for (std::vector <IMAPParser::continue_req_or_response_data*>::const_iterator
+	     it = respDataList.begin() ; it != respDataList.end() ; ++it)
 	{
-		for (std::vector <IMAPParser::continue_req_or_response_data*>::const_iterator
-		     it = respDataList.begin() ; it != respDataList.end() ; ++it)
+		if ((*it)->response_data() == NULL)
 		{
-			if ((*it)->response_data() == NULL)
-			{
-				throw exceptions::command_error("LIST",
-					m_connection->getParser()->lastLine(), "invalid response");
-			}
-
-			const IMAPParser::mailbox_data* mailboxData =
-				(*it)->response_data()->mailbox_data();
-
-			if (mailboxData == NULL || mailboxData->type() != IMAPParser::mailbox_data::LIST)
-				continue;
-
-			// Get folder path
-			const class IMAPParser::mailbox* mailbox =
-				mailboxData->mailbox_list()->mailbox();
-
-			folder::path path = IMAPUtils::stringToPath
-				(mailboxData->mailbox_list()->quoted_char(), mailbox->name());
-
-			if (recursive || m_path.isDirectParentOf(path))
-			{
-				// Append folder to list
-				const class IMAPParser::mailbox_flag_list* mailbox_flag_list =
-					mailboxData->mailbox_list()->mailbox_flag_list();
-
-				v.push_back(new IMAPFolder(path, m_store,
-					IMAPUtils::folderTypeFromFlags(mailbox_flag_list),
-					IMAPUtils::folderFlagsFromFlags(mailbox_flag_list)));
-			}
+			throw exceptions::command_error("LIST",
+				m_connection->getParser()->lastLine(), "invalid response");
 		}
-	}
-	catch (std::exception&)
-	{
-		for (std::vector <folder*>::iterator it = v.begin() ; it != v.end() ; ++it)
-			delete (*it);
 
-		throw;
+		const IMAPParser::mailbox_data* mailboxData =
+			(*it)->response_data()->mailbox_data();
+
+		if (mailboxData == NULL || mailboxData->type() != IMAPParser::mailbox_data::LIST)
+			continue;
+
+		// Get folder path
+		const class IMAPParser::mailbox* mailbox =
+			mailboxData->mailbox_list()->mailbox();
+
+		folder::path path = IMAPUtils::stringToPath
+			(mailboxData->mailbox_list()->quoted_char(), mailbox->name());
+
+		if (recursive || m_path.isDirectParentOf(path))
+		{
+			// Append folder to list
+			const class IMAPParser::mailbox_flag_list* mailbox_flag_list =
+				mailboxData->mailbox_list()->mailbox_flag_list();
+
+			v.push_back(vmime::create <IMAPFolder>(path, m_store,
+				IMAPUtils::folderTypeFromFlags(mailbox_flag_list),
+				IMAPUtils::folderFlagsFromFlags(mailbox_flag_list)));
+		}
 	}
 
 	return (v);
 }
 
 
-void IMAPFolder::fetchMessages(std::vector <message*>& msg, const int options,
+void IMAPFolder::fetchMessages(std::vector <ref <message> >& msg, const int options,
                                utility::progressionListener* progress)
 {
 	if (!m_store)
@@ -620,10 +610,10 @@ void IMAPFolder::fetchMessages(std::vector <message*>& msg, const int options,
 	if (progress)
 		progress->start(total);
 
-	for (std::vector <message*>::iterator it = msg.begin() ;
+	for (std::vector <ref <message> >::iterator it = msg.begin() ;
 	     it != msg.end() ; ++it)
 	{
-		dynamic_cast <IMAPMessage*>(*it)->fetch(this, options);
+		(*it).dynamicCast <IMAPMessage>()->fetch(this, options);
 
 		if (progress)
 			progress->progress(++current, total);
@@ -634,14 +624,14 @@ void IMAPFolder::fetchMessages(std::vector <message*>& msg, const int options,
 }
 
 
-void IMAPFolder::fetchMessage(message* msg, const int options)
+void IMAPFolder::fetchMessage(ref <message> msg, const int options)
 {
 	if (!m_store)
 		throw exceptions::illegal_state("Store disconnected");
 	else if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
 
-	dynamic_cast <IMAPMessage*>(msg)->fetch(this, options);
+	msg.dynamicCast <IMAPMessage>()->fetch(this, options);
 }
 
 
@@ -652,19 +642,22 @@ const int IMAPFolder::getFetchCapabilities() const
 }
 
 
-folder* IMAPFolder::getParent()
+ref <folder> IMAPFolder::getParent()
 {
-	return (m_path.isEmpty() ? NULL : new IMAPFolder(m_path.getParent(), m_store));
+	if (m_path.isEmpty())
+		return NULL;
+	else
+		return vmime::create <IMAPFolder>(m_path.getParent(), m_store);
 }
 
 
-const store* IMAPFolder::getStore() const
+weak_ref <const store> IMAPFolder::getStore() const
 {
 	return (m_store);
 }
 
 
-store* IMAPFolder::getStore()
+weak_ref <store> IMAPFolder::getStore()
 {
 	return (m_store);
 }
@@ -733,7 +726,9 @@ void IMAPFolder::deleteMessage(const int num)
 	std::vector <int> nums;
 	nums.push_back(num);
 
-	events::messageChangedEvent event(this, events::messageChangedEvent::TYPE_FLAGS, nums);
+	events::messageChangedEvent event
+		(thisRef().dynamicCast <folder>(),
+		 events::messageChangedEvent::TYPE_FLAGS, nums);
 
 	notifyMessageChanged(event);
 }
@@ -794,7 +789,9 @@ void IMAPFolder::deleteMessages(const int from, const int to)
 	for (int i = from, j = 0 ; i <= to2 ; ++i, ++j)
 		nums[j] = i;
 
-	events::messageChangedEvent event(this, events::messageChangedEvent::TYPE_FLAGS, nums);
+	events::messageChangedEvent event
+		(thisRef().dynamicCast <folder>(),
+		 events::messageChangedEvent::TYPE_FLAGS, nums);
 
 	notifyMessageChanged(event);
 }
@@ -851,7 +848,9 @@ void IMAPFolder::deleteMessages(const std::vector <int>& nums)
 	}
 
 	// Notify message flags changed
-	events::messageChangedEvent event(this, events::messageChangedEvent::TYPE_FLAGS, list);
+	events::messageChangedEvent event
+		(thisRef().dynamicCast <folder>(),
+		 events::messageChangedEvent::TYPE_FLAGS, list);
 
 	notifyMessageChanged(event);
 }
@@ -937,7 +936,9 @@ void IMAPFolder::setMessageFlags(const int from, const int to, const int flags, 
 	for (int i = from, j = 0 ; i <= to2 ; ++i, ++j)
 		nums[j] = i;
 
-	events::messageChangedEvent event(this, events::messageChangedEvent::TYPE_FLAGS, nums);
+	events::messageChangedEvent event
+		(thisRef().dynamicCast <folder>(),
+		 events::messageChangedEvent::TYPE_FLAGS, nums);
 
 	notifyMessageChanged(event);
 }
@@ -1013,7 +1014,9 @@ void IMAPFolder::setMessageFlags(const std::vector <int>& nums, const int flags,
 	}
 
 	// Notify message flags changed
-	events::messageChangedEvent event(this, events::messageChangedEvent::TYPE_FLAGS, nums);
+	events::messageChangedEvent event
+		(thisRef().dynamicCast <folder>(),
+		 events::messageChangedEvent::TYPE_FLAGS, nums);
 
 	notifyMessageChanged(event);
 }
@@ -1055,7 +1058,7 @@ void IMAPFolder::setMessageFlags(const string& set, const int flags, const int m
 }
 
 
-void IMAPFolder::addMessage(vmime::message* msg, const int flags,
+void IMAPFolder::addMessage(ref <vmime::message> msg, const int flags,
                             vmime::datetime* date, utility::progressionListener* progress)
 {
 	std::ostringstream oss;
@@ -1166,7 +1169,9 @@ void IMAPFolder::addMessage(utility::inputStream& is, const int size, const int 
 	std::vector <int> nums;
 	nums.push_back(m_messageCount + 1);
 
-	events::messageCountEvent event(this, events::messageCountEvent::TYPE_ADDED, nums);
+	events::messageCountEvent event
+		(thisRef().dynamicCast <folder>(),
+		 events::messageCountEvent::TYPE_ADDED, nums);
 
 	m_messageCount++;
 	notifyMessageCount(event);
@@ -1177,7 +1182,9 @@ void IMAPFolder::addMessage(utility::inputStream& is, const int size, const int 
 	{
 		if ((*it) != this && (*it)->getFullPath() == m_path)
 		{
-			events::messageCountEvent event(*it, events::messageCountEvent::TYPE_ADDED, nums);
+			events::messageCountEvent event
+				((*it)->thisRef().dynamicCast <folder>(),
+				 events::messageCountEvent::TYPE_ADDED, nums);
 
 			(*it)->m_messageCount++;
 			(*it)->notifyMessageCount(event);
@@ -1250,7 +1257,9 @@ void IMAPFolder::expunge()
 	m_messageCount -= nums.size();
 
 	// Notify message expunged
-	events::messageCountEvent event(this, events::messageCountEvent::TYPE_REMOVED, nums);
+	events::messageCountEvent event
+		(thisRef().dynamicCast <folder>(),
+		 events::messageCountEvent::TYPE_REMOVED, nums);
 
 	notifyMessageCount(event);
 
@@ -1262,7 +1271,9 @@ void IMAPFolder::expunge()
 		{
 			(*it)->m_messageCount = m_messageCount;
 
-			events::messageCountEvent event(*it, events::messageCountEvent::TYPE_REMOVED, nums);
+			events::messageCountEvent event
+				((*it)->thisRef().dynamicCast <folder>(),
+				 events::messageCountEvent::TYPE_REMOVED, nums);
 
 			(*it)->notifyMessageCount(event);
 		}
@@ -1308,7 +1319,10 @@ void IMAPFolder::rename(const folder::path& newPath)
 	m_path = newPath;
 	m_name = newPath.getLastComponent();
 
-	events::folderEvent event(this, events::folderEvent::TYPE_RENAMED, oldPath, newPath);
+	events::folderEvent event
+		(thisRef().dynamicCast <folder>(),
+		 events::folderEvent::TYPE_RENAMED, oldPath, newPath);
+
 	notifyFolder(event);
 
 	// Notify folders with the same path and sub-folders
@@ -1320,7 +1334,10 @@ void IMAPFolder::rename(const folder::path& newPath)
 			(*it)->m_path = newPath;
 			(*it)->m_name = newPath.getLastComponent();
 
-			events::folderEvent event(*it, events::folderEvent::TYPE_RENAMED, oldPath, newPath);
+			events::folderEvent event
+				((*it)->thisRef().dynamicCast <folder>(),
+				 events::folderEvent::TYPE_RENAMED, oldPath, newPath);
+
 			(*it)->notifyFolder(event);
 		}
 		else if ((*it) != this && oldPath.isParentOf((*it)->getFullPath()))
@@ -1329,7 +1346,10 @@ void IMAPFolder::rename(const folder::path& newPath)
 
 			(*it)->m_path.renameParent(oldPath, newPath);
 
-			events::folderEvent event(*it, events::folderEvent::TYPE_RENAMED, oldPath, (*it)->m_path);
+			events::folderEvent event
+				((*it)->thisRef().dynamicCast <folder>(),
+				 events::folderEvent::TYPE_RENAMED, oldPath, (*it)->m_path);
+
 			(*it)->notifyFolder(event);
 		}
 	}
@@ -1354,13 +1374,15 @@ void IMAPFolder::copyMessage(const folder::path& dest, const int num)
 	std::vector <int> nums;
 	nums.push_back(num);
 
-	events::messageCountEvent event(this, events::messageCountEvent::TYPE_ADDED, nums);
-
 	for (std::list <IMAPFolder*>::iterator it = m_store->m_folders.begin() ;
 	     it != m_store->m_folders.end() ; ++it)
 	{
 		if ((*it)->getFullPath() == dest)
 		{
+			events::messageCountEvent event
+				((*it)->thisRef().dynamicCast <folder>(),
+				 events::messageCountEvent::TYPE_ADDED, nums);
+
 			(*it)->m_messageCount++;
 			(*it)->notifyMessageCount(event);
 		}
@@ -1398,13 +1420,15 @@ void IMAPFolder::copyMessages(const folder::path& dest, const int from, const in
 	for (int i = from, j = 0 ; i <= to2 ; ++i, ++j)
 		nums[j] = i;
 
-	events::messageCountEvent event(this, events::messageCountEvent::TYPE_ADDED, nums);
-
 	for (std::list <IMAPFolder*>::iterator it = m_store->m_folders.begin() ;
 	     it != m_store->m_folders.end() ; ++it)
 	{
 		if ((*it)->getFullPath() == dest)
 		{
+			events::messageCountEvent event
+				((*it)->thisRef().dynamicCast <folder>(),
+				 events::messageCountEvent::TYPE_ADDED, nums);
+
 			(*it)->m_messageCount += count;
 			(*it)->notifyMessageCount(event);
 		}
@@ -1425,13 +1449,15 @@ void IMAPFolder::copyMessages(const folder::path& dest, const std::vector <int>&
 	// Notify message count changed
 	const int count = nums.size();
 
-	events::messageCountEvent event(this, events::messageCountEvent::TYPE_ADDED, nums);
-
 	for (std::list <IMAPFolder*>::iterator it = m_store->m_folders.begin() ;
 		it != m_store->m_folders.end() ; ++it)
 	{
 		if ((*it)->getFullPath() == dest)
 		{
+			events::messageCountEvent event
+				((*it)->thisRef().dynamicCast <folder>(),
+				 events::messageCountEvent::TYPE_ADDED, nums);
+
 			(*it)->m_messageCount += count;
 			(*it)->notifyMessageCount(event);
 		}
@@ -1545,7 +1571,9 @@ void IMAPFolder::status(int& count, int& unseen)
 			for (int i = oldCount + 1, j = 0 ; i <= count ; ++i, ++j)
 				nums[j] = i;
 
-			events::messageCountEvent event(this, events::messageCountEvent::TYPE_ADDED, nums);
+			events::messageCountEvent event
+				(thisRef().dynamicCast <folder>(),
+				 events::messageCountEvent::TYPE_ADDED, nums);
 
 			notifyMessageCount(event);
 
@@ -1557,7 +1585,9 @@ void IMAPFolder::status(int& count, int& unseen)
 				{
 					(*it)->m_messageCount = count;
 
-					events::messageCountEvent event(*it, events::messageCountEvent::TYPE_ADDED, nums);
+					events::messageCountEvent event
+						((*it)->thisRef().dynamicCast <folder>(),
+						 events::messageCountEvent::TYPE_ADDED, nums);
 
 					(*it)->notifyMessageCount(event);
 				}

@@ -26,39 +26,41 @@ namespace vmime {
 namespace messaging {
 
 
-service::service(session* sess, const serviceInfos& infos, authenticator* auth)
-	: m_deleteAuth(auth == NULL), m_session(sess), m_auth(auth ? auth :
-	  	new defaultAuthenticator(sess->getProperties(), infos.getPropertyPrefix()))
+service::service(ref <session> sess, const serviceInfos& infos, ref <authenticator> auth)
+	: m_session(sess), m_auth(auth)
 {
+	if (!auth)
+	{
+		m_auth = vmime::create <defaultAuthenticator>
+			(sess, infos.getPropertyPrefix());
+	}
 }
 
 
 service::~service()
 {
-	if (m_deleteAuth)
-		delete (m_auth);
 }
 
 
-const session* service::getSession() const
+ref <const session> service::getSession() const
 {
 	return (m_session);
 }
 
 
-session* service::getSession()
+ref <session> service::getSession()
 {
 	return (m_session);
 }
 
 
-const authenticator* service::getAuthenticator() const
+ref <const authenticator> service::getAuthenticator() const
 {
 	return (m_auth);
 }
 
 
-authenticator* service::getAuthenticator()
+ref <authenticator> service::getAuthenticator()
 {
 	return (m_auth);
 }

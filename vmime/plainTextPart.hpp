@@ -43,12 +43,12 @@ public:
 	const charset& getCharset() const;
 	void setCharset(const charset& ch);
 
-	const contentHandler& getText() const;
-	void setText(const contentHandler& text);
+	const ref <const contentHandler> getText() const;
+	void setText(ref <contentHandler> text);
 
 private:
 
-	contentHandler* m_text;
+	ref <contentHandler> m_text;
 	charset m_charset;
 
 	const int getPartCount() const;

@@ -35,7 +35,7 @@ namespace vmime
 
 class contentDispositionField : public parameterizedHeaderField, public genericField <contentDisposition>
 {
-	friend class headerFieldFactory::registerer <contentDispositionField>;
+	friend class vmime::creator;  // create ref
 
 protected:
 

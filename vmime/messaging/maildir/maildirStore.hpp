@@ -49,14 +49,14 @@ class maildirStore : public store
 
 public:
 
-	maildirStore(session* sess, authenticator* auth);
+	maildirStore(ref <session> sess, ref <authenticator> auth);
 	~maildirStore();
 
 	const string getProtocolName() const;
 
-	folder* getDefaultFolder();
-	folder* getRootFolder();
-	folder* getFolder(const folder::path& path);
+	ref <folder> getDefaultFolder();
+	ref <folder> getRootFolder();
+	ref <folder> getFolder(const folder::path& path);
 
 	const bool isValidFolderName(const folder::path::component& name) const;
 

@@ -25,9 +25,9 @@ namespace vmime
 {
 
 
-parameter* parameter::clone() const
+ref <component> parameter::clone() const
 {
-	parameter* p = parameterFactory::getInstance()->create(m_name);
+	ref <parameter> p = parameterFactory::getInstance()->create(m_name);
 	p->copyFrom(*this);
 
 	return (p);
@@ -169,11 +169,11 @@ void parameter::generateValue(utility::outputStream& os, const string::size_type
 }
 
 
-const std::vector <const component*> parameter::getChildComponents() const
+const std::vector <ref <const component> > parameter::getChildComponents() const
 {
-	std::vector <const component*> list;
+	std::vector <ref <const component> > list;
 
-	list.push_back(&getValue());
+	list.push_back(getValueImp());
 
 	return (list);
 }

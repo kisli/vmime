@@ -41,8 +41,8 @@ public:
 
 	void start(const std::vector <string> args, const int flags = 0);
 
-	utility::outputStream* getStdIn();
-	utility::inputStream* getStdOut();
+	ref <utility::outputStream> getStdIn();
+	ref <utility::inputStream> getStdOut();
 
 	void waitForFinish();
 
@@ -51,8 +51,8 @@ private:
 	utility::file::path m_processPath;
 	bool m_started;
 
-	utility::outputStream* m_stdIn;
-	utility::inputStream* m_stdOut;
+	ref <utility::outputStream> m_stdIn;
+	ref <utility::inputStream> m_stdOut;
 
 	sigset_t m_oldProcMask;
 	pid_t m_pid;
@@ -67,7 +67,7 @@ class posixChildProcessFactory : public utility::childProcessFactory
 {
 public:
 
-	utility::childProcess* create(const utility::file::path& path) const;
+	ref <utility::childProcess> create(const utility::file::path& path) const;
 };
 
 

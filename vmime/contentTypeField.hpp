@@ -34,7 +34,7 @@ namespace vmime
 
 class contentTypeField : public parameterizedHeaderField, public genericField <mediaType>
 {
-	friend class headerFieldFactory::registerer <contentTypeField>;
+	friend class vmime::creator;  // create ref
 
 protected:
 

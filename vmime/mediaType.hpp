@@ -47,11 +47,11 @@ public:
 
 	mediaType& operator=(const string& type);
 
-	mediaType* clone() const;
+	ref <component> clone() const;
 	void copyFrom(const component& other);
 	mediaType& operator=(const mediaType& other);
 
-	const std::vector <const component*> getChildComponents() const;
+	const std::vector <ref <const component> > getChildComponents() const;
 
 	/** Return the media type.
 	  * See the constants in vmime::mediaTypes.

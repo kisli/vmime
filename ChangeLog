@@ -2,6 +2,11 @@
 VERSION 0.7.2cvs
 ================
 
+2005-07-13  Vincent Richard  <vincent@vincent-richard.net>
+
+ * All files: added reference counting and smart pointers to simplify the
+   use of VMime objects. Please see README.refcounting for more information.
+
 2005-07-06  Vincent Richard  <vincent@vincent-richard.net>
 
  * *contentHandler.{hpp|cpp}: added extractRaw() method to allow extracting

@@ -21,6 +21,7 @@
 #define VMIME_MDN_MDNINFOS_HPP_INCLUDED
 
 
+#include "vmime/types.hpp"
 #include "vmime/message.hpp"
 
 
@@ -31,7 +32,7 @@ namespace mdn {
 /** Holds information about Message Disposition Notifications (MDN).
   */
 
-class MDNInfos
+class MDNInfos : public object
 {
 public:
 
@@ -42,7 +43,7 @@ public:
 	  *
 	  * @return related message
 	  */
-	virtual const message* getMessage() const = 0;
+	virtual const ref <const message> getMessage() const = 0;
 };
 
 

@@ -26,6 +26,7 @@ namespace vmime
 
 
 defaultParameter::defaultParameter()
+	: m_value(vmime::create <word>())
 {
 }
 
@@ -37,36 +38,49 @@ defaultParameter& defaultParameter::operator=(const defaultParameter& other)
 }
 
 
-const word& defaultParameter::getValue() const
+const ref <const component> defaultParameter::getValueImp() const
 {
 	return (m_value);
+}
+
+
+const ref <component> defaultParameter::getValueImp()
+{
+	return (m_value);
+}
+
+
+const word& defaultParameter::getValue() const
+{
+	return (*m_value);
 }
 
 
 word& defaultParameter::getValue()
 {
-	return (m_value);
+	return (*m_value);
 }
 
 
 void defaultParameter::setValue(const word& value)
 {
-	m_value = value;
+	*m_value = value;
 }
 
 
 void defaultParameter::setValue(const component& value)
 {
 	const word& v = dynamic_cast <const word&>(value);
-	m_value = v;
+	*m_value = v;
 }
 
 
 void defaultParameter::parse(const string& buffer, const string::size_type position,
 	const string::size_type end, string::size_type* newPosition)
 {
-	m_value = word(string(buffer.begin() + position, buffer.begin() + end),
-	               charset(charsets::US_ASCII));
+	m_value = vmime::create <word>
+		(string(buffer.begin() + position, buffer.begin() + end),
+		 charset(charsets::US_ASCII));
 
 	if (newPosition)
 		*newPosition = end;
@@ -177,7 +191,7 @@ void defaultParameter::parse(const std::vector <valueChunk>& chunks)
 		}
 	}
 
-	m_value = word(value.str(), ch);
+	m_value = vmime::create <word>(value.str(), ch);
 }
 
 
@@ -185,7 +199,7 @@ void defaultParameter::generate(utility::outputStream& os, const string::size_ty
 	const string::size_type curLinePos, string::size_type* newLinePos) const
 {
 	const string& name = getName();
-	const string& value = m_value.getBuffer();
+	const string& value = m_value->getBuffer();
 
 	// For compatibility with implementations that do not understand RFC-2231,
 	// also generate a normal "7bit/us-ascii" parameter
@@ -298,7 +312,7 @@ void defaultParameter::generate(utility::outputStream& os, const string::size_ty
 		// + at least 5 characters for the value
 		const string::size_type firstSectionLength =
 			  name.length() + 4 /* *0*= */ + 2 /* '' */
-			+ m_value.getCharset().getName().length();
+			+ m_value->getCharset().getName().length();
 
 		if (pos + firstSectionLength + 5 >= maxLineLength)
 		{
@@ -395,7 +409,7 @@ void defaultParameter::generate(utility::outputStream& os, const string::size_ty
 
 			if (sectionNumber == 0)
 			{
-				os << m_value.getCharset().getName();
+				os << m_value->getCharset().getName();
 				os << '\'' << /* No language */ '\'';
 			}
 

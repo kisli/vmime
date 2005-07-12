@@ -36,12 +36,12 @@ class sendableMDNInfos : public MDNInfos
 {
 public:
 
-	sendableMDNInfos(const message* msg, const mailbox& mbox);
+	sendableMDNInfos(const ref <const message> msg, const mailbox& mbox);
 	sendableMDNInfos(const sendableMDNInfos& other);
 
 	sendableMDNInfos& operator=(const sendableMDNInfos& other);
 
-	const message* getMessage() const;
+	const ref <const message> getMessage() const;
 
 	/** Return the recipient of the MDN (the mailbox that will receive
 	  * the notification message).
@@ -55,7 +55,7 @@ private:
 	void copyFrom(const sendableMDNInfos& other);
 
 
-	const message* m_msg;
+	ref <const message> m_msg;
 	mailbox m_mailbox;
 };
 

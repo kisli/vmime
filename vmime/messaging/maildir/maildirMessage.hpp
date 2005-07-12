@@ -39,10 +39,11 @@ class maildirFolder;
 class maildirMessage : public message
 {
 	friend class maildirFolder;
+	friend class vmime::creator;  // vmime::create <maildirMessage>
 
 private:
 
-	maildirMessage(maildirFolder* folder, const int num);
+	maildirMessage(weak_ref <maildirFolder> folder, const int num);
 	maildirMessage(const maildirMessage&) : message() { }
 
 	~maildirMessage();
@@ -72,7 +73,7 @@ public:
 
 private:
 
-	void fetch(maildirFolder* folder, const int options);
+	void fetch(weak_ref <maildirFolder> folder, const int options);
 
 	void onFolderClosed();
 
@@ -81,7 +82,7 @@ private:
 	void extractImpl(utility::outputStream& os, utility::progressionListener* progress, const int start, const int length, const int partialStart, const int partialLength, const bool peek) const;
 
 
-	maildirFolder* m_folder;
+	weak_ref <maildirFolder> m_folder;
 
 	int m_num;
 	int m_size;
@@ -89,8 +90,8 @@ private:
 	bool m_expunged;
 	uid m_uid;
 
-	header* m_header;
-	structure* m_structure;
+	ref <header> m_header;
+	ref <structure> m_structure;
 };
 
 

@@ -37,11 +37,6 @@ serviceFactory::serviceFactory()
 
 serviceFactory::~serviceFactory()
 {
-	for (std::vector <registeredService*>::const_iterator it = m_services.begin() ;
-	     it != m_services.end() ; ++it)
-	{
-		delete (*it);
-	}
 }
 
 
@@ -52,17 +47,17 @@ serviceFactory* serviceFactory::getInstance()
 }
 
 
-service* serviceFactory::create
-	(session* sess, const string& protocol, authenticator* auth)
+ref <service> serviceFactory::create
+	(ref <session> sess, const string& protocol, ref <authenticator> auth)
 {
 	return (getServiceByProtocol(protocol)->create(sess, auth));
 }
 
 
-service* serviceFactory::create
-	(session* sess, const utility::url& u, authenticator* auth)
+ref <service> serviceFactory::create
+	(ref <session> sess, const utility::url& u, ref <authenticator> auth)
 {
-	service* serv = create(sess, u.getProtocol(), auth);
+	ref <service> serv = create(sess, u.getProtocol(), auth);
 
 	sess->getProperties()[serv->getInfos().getPropertyPrefix() + "server.address"] = u.getHost();
 
@@ -84,11 +79,11 @@ service* serviceFactory::create
 }
 
 
-const serviceFactory::registeredService* serviceFactory::getServiceByProtocol(const string& protocol) const
+ref <const serviceFactory::registeredService> serviceFactory::getServiceByProtocol(const string& protocol) const
 {
 	const string name(utility::stringUtils::toLower(protocol));
 
-	for (std::vector <registeredService*>::const_iterator it = m_services.begin() ;
+	for (std::vector <ref <registeredService> >::const_iterator it = m_services.begin() ;
 	     it != m_services.end() ; ++it)
 	{
 		if ((*it)->getName() == name)
@@ -105,17 +100,17 @@ const int serviceFactory::getServiceCount() const
 }
 
 
-const serviceFactory::registeredService* serviceFactory::getServiceAt(const int pos) const
+ref <const serviceFactory::registeredService> serviceFactory::getServiceAt(const int pos) const
 {
 	return (m_services[pos]);
 }
 
 
-const std::vector <const serviceFactory::registeredService*> serviceFactory::getServiceList() const
+const std::vector <ref <const serviceFactory::registeredService> > serviceFactory::getServiceList() const
 {
-	std::vector <const registeredService*> res;
+	std::vector <ref <const registeredService> > res;
 
-	for (std::vector <registeredService*>::const_iterator it = m_services.begin() ;
+	for (std::vector <ref <registeredService> >::const_iterator it = m_services.begin() ;
 	     it != m_services.end() ; ++it)
 	{
 		res.push_back(*it);

@@ -43,7 +43,7 @@ class sendmailTransport : public transport
 {
 public:
 
-	sendmailTransport(session* sess, authenticator* auth);
+	sendmailTransport(ref <session> sess, ref <authenticator> auth);
 	~sendmailTransport();
 
 	const string getProtocolName() const;

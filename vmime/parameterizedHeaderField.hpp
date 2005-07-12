@@ -64,7 +64,7 @@ public:
 	  * @throw exceptions::no_such_parameter if no parameter with this name exists
 	  * @return first parameter with the specified name
 	  */
-	parameter* findParameter(const string& paramName) const;
+	ref <parameter> findParameter(const string& paramName) const;
 
 	/** Find the first parameter that matches the specified name.
 	  * If no parameter is found, one will be created and inserted into
@@ -73,13 +73,13 @@ public:
 	  * @return first parameter with the specified name or a new field
 	  * if no parameter is found
 	  */
-	parameter* getParameter(const string& paramName);
+	ref <parameter> getParameter(const string& paramName);
 
 	/** Add a parameter at the end of the list.
 	  *
 	  * @param param parameter to append
 	  */
-	void appendParameter(parameter* param);
+	void appendParameter(ref <parameter> param);
 
 	/** Insert a new parameter before the specified parameter.
 	  *
@@ -87,7 +87,7 @@ public:
 	  * @param param parameter to insert
 	  * @throw exceptions::no_such_parameter if the parameter is not in the list
 	  */
-	void insertParameterBefore(parameter* beforeParam, parameter* param);
+	void insertParameterBefore(ref <parameter> beforeParam, ref <parameter> param);
 
 	/** Insert a new parameter before the specified position.
 	  *
@@ -95,7 +95,7 @@ public:
 	  * the beginning of the list)
 	  * @param param parameter to insert
 	  */
-	void insertParameterBefore(const int pos, parameter* param);
+	void insertParameterBefore(const int pos, ref <parameter> param);
 
 	/** Insert a new parameter after the specified parameter.
 	  *
@@ -103,21 +103,21 @@ public:
 	  * @param param parameter to insert
 	  * @throw exceptions::no_such_parameter if the parameter is not in the list
 	  */
-	void insertParameterAfter(parameter* afterParam, parameter* param);
+	void insertParameterAfter(ref <parameter> afterParam, ref <parameter> param);
 
 	/** Insert a new parameter after the specified position.
 	  *
 	  * @param pos position of the parameter before the new parameter
 	  * @param param parameter to insert
 	  */
-	void insertParameterAfter(const int pos, parameter* param);
+	void insertParameterAfter(const int pos, ref <parameter> param);
 
 	/** Remove the specified parameter from the list.
 	  *
 	  * @param param parameter to remove
 	  * @throw exceptions::no_such_parameter if the parameter is not in the list
 	  */
-	void removeParameter(parameter* param);
+	void removeParameter(ref <parameter> param);
 
 	/** Remove the parameter at the specified position.
 	  *
@@ -146,30 +146,30 @@ public:
 	  * @param pos position
 	  * @return parameter at position 'pos'
 	  */
-	parameter* getParameterAt(const int pos);
+	const ref <parameter> getParameterAt(const int pos);
 
 	/** Return the parameter at the specified position.
 	  *
 	  * @param pos position
 	  * @return parameter at position 'pos'
 	  */
-	const parameter* getParameterAt(const int pos) const;
+	const ref <parameter> getParameterAt(const int pos) const;
 
 	/** Return the parameter list.
 	  *
 	  * @return list of parameters
 	  */
-	const std::vector <const parameter*> getParameterList() const;
+	const std::vector <ref <const parameter> > getParameterList() const;
 
 	/** Return the parameter list.
 	  *
 	  * @return list of parameters
 	  */
-	const std::vector <parameter*> getParameterList();
+	const std::vector <ref <parameter> > getParameterList();
 
 private:
 
-	std::vector <parameter*> m_params;
+	std::vector <ref <parameter> > m_params;
 
 public:
 
@@ -179,7 +179,7 @@ public:
 	void parse(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition = NULL);
 	void generate(utility::outputStream& os, const string::size_type maxLineLength = lineLengthLimits::infinite, const string::size_type curLinePos = 0, string::size_type* newLinePos = NULL) const;
 
-	const std::vector <const component*> getChildComponents() const;
+	const std::vector <ref <const component> > getChildComponents() const;
 };
 
 

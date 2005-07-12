@@ -29,7 +29,7 @@ namespace messaging {
 namespace imap {
 
 
-class IMAPTag
+class IMAPTag : public object
 {
 private:
 

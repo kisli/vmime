@@ -31,7 +31,7 @@ authenticationInfos::authenticationInfos(const string& username, const string& p
 
 
 authenticationInfos::authenticationInfos(const authenticationInfos& infos)
-	: m_username(infos.m_username), m_password(infos.m_password)
+	: object(), m_username(infos.m_username), m_password(infos.m_password)
 {
 }
 

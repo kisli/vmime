@@ -39,9 +39,9 @@ namespace posix {
 
 // posixChildProcessFactory
 
-utility::childProcess* posixChildProcessFactory::create(const utility::file::path& path) const
+ref <utility::childProcess> posixChildProcessFactory::create(const utility::file::path& path) const
 {
-	return new posixChildProcess(path);
+	return vmime::create <posixChildProcess>(path);
 }
 
 
@@ -220,9 +220,6 @@ posixChildProcess::~posixChildProcess()
 	if (m_pipe[1] != 0)
 		close(m_pipe[1]);
 
-	delete (m_stdIn);
-	delete (m_stdOut);
-
 	delete [] (m_argArray);
 }
 
@@ -307,7 +304,7 @@ void posixChildProcess::start(const std::vector <string> args, const int flags)
 
 	if (flags & FLAG_REDIRECT_STDIN)
 	{
-		m_stdIn = new outputStreamPosixPipeAdapter(m_pipe[1]);
+		m_stdIn = vmime::create <outputStreamPosixPipeAdapter>(m_pipe[1]);
 	}
 	else
 	{
@@ -317,7 +314,7 @@ void posixChildProcess::start(const std::vector <string> args, const int flags)
 
 	if (flags & FLAG_REDIRECT_STDOUT)
 	{
-		m_stdOut = new inputStreamPosixPipeAdapter(m_pipe[0]);
+		m_stdOut = vmime::create <inputStreamPosixPipeAdapter>(m_pipe[0]);
 	}
 	else
 	{
@@ -330,13 +327,13 @@ void posixChildProcess::start(const std::vector <string> args, const int flags)
 }
 
 
-utility::outputStream* posixChildProcess::getStdIn()
+ref <utility::outputStream> posixChildProcess::getStdIn()
 {
 	return (m_stdIn);
 }
 
 
-utility::inputStream* posixChildProcess::getStdOut()
+ref <utility::inputStream> posixChildProcess::getStdOut()
 {
 	return (m_stdOut);
 }

@@ -49,13 +49,13 @@ parameterFactory* parameterFactory::getInstance()
 }
 
 
-parameter* parameterFactory::create
+ref <parameter> parameterFactory::create
 	(const string& name, const string& value)
 {
 	const string lcName = utility::stringUtils::toLower(name);
 
 	NameMap::const_iterator pos = m_nameMap.find(lcName);
-	parameter* param = NULL;
+	ref <parameter> param;
 
 	if (pos != m_nameMap.end())
 	{
@@ -73,12 +73,12 @@ parameter* parameterFactory::create
 }
 
 
-parameter* parameterFactory::create(const string& name, const component& value)
+ref <parameter> parameterFactory::create(const string& name, const component& value)
 {
 	const string lcName = utility::stringUtils::toLower(name);
 
 	NameMap::const_iterator pos = m_nameMap.find(lcName);
-	parameter* param = NULL;
+	ref <parameter> param;
 
 	if (pos != m_nameMap.end())
 	{

@@ -66,7 +66,7 @@ public:
 	const bool operator==(const encoding& value) const;
 	const bool operator!=(const encoding& value) const;
 
-	const std::vector <const component*> getChildComponents() const;
+	const std::vector <ref <const component> > getChildComponents() const;
 
 	/** Decide which encoding to use based on the specified data.
 	  *
@@ -83,9 +83,9 @@ public:
 	  * @param data data used to determine encoding
 	  * @return suitable encoding for specified data
 	  */
-	static const encoding decide(const contentHandler& data);
+	static const encoding decide(ref <const contentHandler> data);
 
-	encoding* clone() const;
+	ref <component> clone() const;
 	void copyFrom(const component& other);
 
 	/** Use encoderFactory to obtain an encoder/decoder object
@@ -95,7 +95,7 @@ public:
 	  * is registered for the encoding
 	  * @return a new encoder object for the encoding type
 	  */
-	encoder* getEncoder() const;
+	ref <encoder> getEncoder() const;
 
 private:
 

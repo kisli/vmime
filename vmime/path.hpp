@@ -69,10 +69,10 @@ public:
 
 	// Assignment
 	void copyFrom(const component& other);
-	path* clone() const;
+	ref <component> clone() const;
 	path& operator=(const path& other);
 
-	const std::vector <const component*> getChildComponents() const;
+	const std::vector <ref <const component> > getChildComponents() const;
 
 protected:
 

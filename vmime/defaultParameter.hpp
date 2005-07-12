@@ -36,7 +36,7 @@ namespace vmime
 
 class defaultParameter : public parameter
 {
-	friend class parameterFactory::registerer <defaultParameter>;
+	friend class vmime::creator;  // create ref
 
 protected:
 
@@ -59,8 +59,11 @@ private:
 
 	void parse(const std::vector <valueChunk>& chunks);
 
+	const ref <const component> getValueImp() const;
+	const ref <component> getValueImp();
 
-	word m_value;
+
+	ref <word> m_value;
 };
 
 

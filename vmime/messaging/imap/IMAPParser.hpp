@@ -74,18 +74,18 @@ namespace imap {
 #endif
 
 
-class IMAPParser
+class IMAPParser : public object
 {
 public:
 
-	IMAPParser(IMAPTag* tag, socket* sok, timeoutHandler* _timeoutHandler)
+	IMAPParser(weak_ref <IMAPTag> tag, weak_ref <socket> sok, weak_ref <timeoutHandler> _timeoutHandler)
 		: m_tag(tag), m_socket(sok), m_progress(NULL),
 		  m_literalHandler(NULL), m_timeoutHandler(_timeoutHandler)
 	{
 	}
 
 
-	const IMAPTag* tag() const
+	weak_ref <const IMAPTag> tag() const
 	{
 		return (m_tag);
 	}
@@ -4914,14 +4914,14 @@ public:
 
 private:
 
-	IMAPTag* m_tag;
-	socket* m_socket;
+	weak_ref <IMAPTag> m_tag;
+	weak_ref <socket> m_socket;
 
 	utility::progressionListener* m_progress;
 
 	literalHandler* m_literalHandler;
 
-	timeoutHandler* m_timeoutHandler;
+	weak_ref <timeoutHandler> m_timeoutHandler;
 
 
 	string m_buffer;

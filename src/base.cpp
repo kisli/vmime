@@ -96,6 +96,11 @@ const string CRLF = "\r\n";
 const string SUPPORTED_MIME_VERSION = "1.0";
 
 
+/** Null reference.
+  */
+const null_ref null = null_ref();
+
+
 // Line length limits
 namespace lineLengthLimits
 {
