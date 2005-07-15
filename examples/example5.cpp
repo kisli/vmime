@@ -50,6 +50,7 @@ int main()
 			const vmime::attachment& att = *mp.getAttachmentAt(i);
 
 			// Media type (content type) is in "att.getType()"
+			// Name is in "att.getName()"
 			// Description is in "att.getDescription()"
 			// Data is in "att.getData()"
 		}

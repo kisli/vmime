@@ -60,6 +60,11 @@ public:
 	  */
 	virtual const text& getDescription() const = 0;
 
+	/** Return the name of this attachment.
+	  * @return attachment name
+	  */
+	virtual const word& getName() const = 0;
+
 	/** Return the data contained in this attachment.
 	  * @return attachment data
 	  */

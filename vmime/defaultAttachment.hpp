@@ -41,8 +41,8 @@ protected:
 
 public:
 
-	defaultAttachment(ref <contentHandler> data, const encoding& enc, const mediaType& type, const text& desc = NULL_TEXT);
-	defaultAttachment(ref <contentHandler> data, const mediaType& type, const text& desc = NULL_TEXT);
+	defaultAttachment(ref <contentHandler> data, const encoding& enc, const mediaType& type, const text& desc = NULL_TEXT, const word& name = NULL_TEXT);
+	defaultAttachment(ref <contentHandler> data, const mediaType& type, const text& desc = NULL_TEXT, const word& name = NULL_TEXT);
 	defaultAttachment(const defaultAttachment& attach);
 
 	~defaultAttachment();
@@ -51,6 +51,7 @@ public:
 
 	const mediaType& getType() const;
 	const text& getDescription() const;
+	const word& getName() const;
 	const ref <const contentHandler> getData() const;
 	const encoding& getEncoding() const;
 
@@ -60,6 +61,7 @@ protected:
 	text m_desc;                     // Description (eg. "The image you requested")
 	ref <contentHandler> m_data;     // Attachment data (eg. the file contents)
 	encoding m_encoding;             // Encoding
+	word m_name;                     // Name/filename (eg. "sunset.jpg")
 
 private:
 

@@ -31,23 +31,24 @@ defaultAttachment::defaultAttachment()
 
 
 defaultAttachment::defaultAttachment(ref <contentHandler> data,
-	const encoding& enc, const mediaType& type, const text& desc)
-	: m_type(type), m_desc(desc), m_data(data), m_encoding(enc)
+	const encoding& enc, const mediaType& type, const text& desc, const word& name)
+	: m_type(type), m_desc(desc), m_data(data), m_encoding(enc), m_name(name)
 {
 }
 
 
 defaultAttachment::defaultAttachment(ref <contentHandler> data,
-	const mediaType& type, const text& desc)
+	const mediaType& type, const text& desc, const word& name)
 	: m_type(type), m_desc(desc), m_data(data),
-	  m_encoding(encoding::decide(data))
+	  m_encoding(encoding::decide(data)), m_name(name)
 {
 }
 
 
 defaultAttachment::defaultAttachment(const defaultAttachment& attach)
 	: attachment(), m_type(attach.m_type), m_desc(attach.m_desc),
-	  m_data(attach.m_data->clone().dynamicCast <contentHandler>()), m_encoding(attach.m_encoding)
+	  m_data(attach.m_data->clone().dynamicCast <contentHandler>()),
+	  m_encoding(attach.m_encoding), m_name(attach.m_name)
 {
 }
 
@@ -61,6 +62,7 @@ defaultAttachment& defaultAttachment::operator=(const defaultAttachment& attach)
 {
 	m_type = attach.m_type;
 	m_desc = attach.m_desc;
+	m_name = attach.m_name;
 	m_data = attach.m_data->clone().dynamicCast <contentHandler>();
 	m_encoding = attach.m_encoding;
 
@@ -100,6 +102,12 @@ const mediaType& defaultAttachment::getType() const
 const text& defaultAttachment::getDescription() const
 {
 	return (m_desc);
+}
+
+
+const word& defaultAttachment::getName() const
+{
+	return (m_name);
 }
 
 

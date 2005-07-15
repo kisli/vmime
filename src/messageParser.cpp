@@ -153,6 +153,7 @@ void messageParser::findAttachments(const bodyPart& part)
 		if (isAttachment)
 		{
 			// Determine the media type of this attachment
+			const contentTypeField* contTypeField = NULL;
 			mediaType type;
 
 			try
@@ -161,6 +162,8 @@ void messageParser::findAttachments(const bodyPart& part)
 					(*hdr.findField(fields::CONTENT_TYPE));
 
 				type = ctf.getValue();
+
+				contTypeField = &ctf;
 			}
 			catch (exceptions::no_such_field)
 			{
@@ -184,10 +187,43 @@ void messageParser::findAttachments(const bodyPart& part)
 				// No description available.
 			}
 
+			// Get the name/filename (if available)
+			word name;
+
+			// -- try the 'filename' parameter of 'Content-Disposition' field
+			if (contentDispField != NULL)
+			{
+				try
+				{
+					name = contentDispField->getFilename();
+				}
+				catch (exceptions::no_such_parameter)
+				{
+					// No 'filename' parameter
+				}
+			}
+
+			// -- try the 'name' parameter of 'Content-Type' field
+			if (name.getBuffer().empty() && contTypeField != NULL)
+			{
+				try
+				{
+					ref <defaultParameter> prm = contTypeField->
+						findParameter("name").dynamicCast <defaultParameter>();
+
+					if (prm != NULL)
+						name = prm->getValue();
+				}
+				catch (exceptions::no_such_parameter)
+				{
+					// No attachment name available.
+				}
+			}
+
 			// Construct the attachment object
 			ref <attachment> attach = vmime::create <defaultAttachment>
 				(bdy.getContents()->clone().dynamicCast <contentHandler>(),
-				 bdy.getEncoding(), type, description);
+				 bdy.getEncoding(), type, description, name);
 
 			if (contentDispField != NULL)
 			{

@@ -2,6 +2,13 @@
 VERSION 0.7.2cvs
 ================
 
+2005-07-15  Vincent Richard  <vincent@vincent-richard.net>
+
+ * *attachment, messageParser: added a getName() parameter to retrieve
+   the attachment filename either from the "filename" parameter of the
+   "Content-Disposition" field, or from the "name" parameter of the
+   "Content-Type" field (if available).
+
 2005-07-13  Vincent Richard  <vincent@vincent-richard.net>
 
  * All files: added reference counting and smart pointers to simplify the
