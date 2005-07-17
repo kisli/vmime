@@ -44,18 +44,18 @@ GtkWidget* textArea = NULL;
 
 GtkTreeStore* treeModel = NULL;
 
-vmime::message* currentMessage = NULL;
+vmime::ref <vmime::message> currentMessage = NULL;
 
 
 
-void insertRowInModel(GtkTreeStore* model, const vmime::component* comp, GtkTreeIter* parent = NULL)
+void insertRowInModel(GtkTreeStore* model, vmime::ref <const vmime::component> comp, GtkTreeIter* parent = NULL)
 {
 	GtkTreeIter iter;
 
 	gtk_tree_store_append(model, &iter, parent);
-	gtk_tree_store_set(model, &iter, 0, typeid(*comp).name(), 1, comp, -1);
+	gtk_tree_store_set(model, &iter, 0, typeid(*comp).name(), 1, comp.get(), -1);
 
-	const std::vector <const vmime::component*> children = comp->getChildComponents();
+	const std::vector <vmime::ref <const vmime::component> > children = comp->getChildComponents();
 
 	for (int i = 0 ; i < children.size() ; ++i)
 	{
@@ -134,10 +134,9 @@ void openFile(const std::string& filename)
 	}
 	while (file.gcount());
 
-	vmime::message* msg = new vmime::message();
+	vmime::ref <vmime::message> msg = vmime::create <vmime::message>();
 	msg->parse(data);
 
-	delete (currentMessage);
 	currentMessage = msg;
 
 	char* convData = g_convert_with_fallback(data.c_str(), data.length(),
