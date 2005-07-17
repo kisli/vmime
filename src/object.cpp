@@ -126,5 +126,17 @@ weak_ref <const object> object::thisWeakRef() const
 }
 
 
+const int object::getStrongRefCount() const
+{
+	return m_strongCount;
+}
+
+
+const int object::getWeakRefCount() const
+{
+	return static_cast <const int>(m_weakRefs.size());
+}
+
+
 } // vmime
 

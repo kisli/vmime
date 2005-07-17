@@ -348,7 +348,8 @@ libvmimetest_sources = [
 	[ 'tests/utility/stringProxyTest', [ 'tests/utility/stringProxyTest.cpp' ] ],
 	[ 'tests/utility/stringUtilsTest', [ 'tests/utility/stringUtilsTest.cpp' ] ],
 	[ 'tests/utility/pathTest', [ 'tests/utility/pathTest.cpp' ] ],
-	[ 'tests/utility/urlTest', [ 'tests/utility/urlTest.cpp' ] ]
+	[ 'tests/utility/urlTest', [ 'tests/utility/urlTest.cpp' ] ],
+	[ 'tests/utility/smartPtrTest', [ 'tests/utility/smartPtrTest.cpp' ] ]
 ]
 
 libvmime_autotools = [

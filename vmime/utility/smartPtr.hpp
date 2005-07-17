@@ -208,6 +208,9 @@ public:
 	bool operator==(const class null_pointer*) const { return m_ptr == 0; }
 	bool operator!=(const class null_pointer*) const { return m_ptr != 0; }
 
+	bool operator==(const null_ref&) const { return m_ptr == 0; }
+	bool operator!=(const null_ref&) const { return m_ptr != 0; }
+
 	/** Create a ref<> from a raw pointer.
 	  *
 	  * WARNING: you should use this function only if you know what
@@ -305,6 +308,18 @@ template <class T>
 bool operator!=(T* const p, const ref <T>& a)
 {
 	return (a.get() != p);
+}
+
+template <class T>
+bool operator==(const null_ref&, const ref <T>& r)
+{
+	return (r.get() == 0);
+}
+
+template <class T>
+bool operator!=(const null_ref&, const ref <T>& r)
+{
+	return (r.get() != 0);
 }
 
 

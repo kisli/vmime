@@ -92,6 +92,19 @@ protected:
 	  */
 	weak_ref <const object> thisWeakRef() const;
 
+	/** Return the number of strong refs to this object.
+	  * For debugging purposes only.
+	  *
+	  * @return strong reference count
+	  */
+	const int getStrongRefCount() const;
+
+	/** Return the number of weak refs to this object.
+	  * For debugging purposes only.
+	  *
+	  * @return weak reference count
+	  */
+	const int getWeakRefCount() const;
 #endif // VMIME_BUILDING_DOC
 
 private:
