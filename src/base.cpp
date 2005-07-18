@@ -64,7 +64,7 @@ const text NULL_TEXT;
 
 /** "Null" (empty) word.
   */
-const word NULL_WORD;
+const word NULL_WORD("", vmime::charset(vmime::charsets::US_ASCII));
 
 
 /** Return the library name (eg. "libvmime").
