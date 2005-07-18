@@ -21,6 +21,7 @@
 
 #include <iostream>
 #include <ostream>
+#include <vector>
 
 #include "vmime/vmime.hpp"
 #include "vmime/platforms/posix/posixHandler.hpp"
@@ -173,6 +174,45 @@ namespace
 			assert_true("3", r4.get() == dynamic_cast <A*>(r3.get()));
 		}
 
+		void testContainer()
+		{
+			bool o1_alive;
+			vmime::ref <R> r1 = vmime::create <R>(&o1_alive);
+
+			bool o2_alive;
+			vmime::ref <R> r2 = vmime::create <R>(&o2_alive);
+
+			std::vector <vmime::ref <R> > v1;
+			v1.push_back(r1);
+			v1.push_back(r2);
+
+			assert_true("1", o1_alive);
+			assert_eq("2", 2, r1->strongCount());
+			assert_true("3", o2_alive);
+			assert_eq("4", 2, r2->strongCount());
+
+			{
+				std::vector <vmime::ref <R> > v2 = v1;
+
+				assert_true("5", o1_alive);
+				assert_eq("6", 3, r1->strongCount());
+				assert_true("7", o2_alive);
+				assert_eq("8", 3, r2->strongCount());
+
+				v2[1] = NULL;
+
+				assert_true("9", o1_alive);
+				assert_eq("10", 3, r1->strongCount());
+				assert_true("11", o2_alive);
+				assert_eq("12", 2, r2->strongCount());
+			}
+
+			assert_true("13", o1_alive);
+			assert_eq("14", 2, r1->strongCount());
+			assert_true("15", o2_alive);
+			assert_eq("16", 2, r2->strongCount());
+		}
+
 	public:
 
 		smartPtrTest() : suite("vmime::utility::url")
@@ -184,6 +224,7 @@ namespace
 			add("RefCounting", testcase(this, "TestRefCounting", &smartPtrTest::testRefCounting));
 			add("WeakRef", testcase(this, "TestWeakRef", &smartPtrTest::testWeakRef));
 			add("Cast", testcase(this, "TestCast", &smartPtrTest::testCast));
+			add("Container", testcase(this, "TestContainer", &smartPtrTest::testContainer));
 
 			suite::main().add("vmime::utility::smartPtr", this);
 		}
