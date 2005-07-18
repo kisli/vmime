@@ -62,6 +62,10 @@ const string NULL_STRING;
   */
 const text NULL_TEXT;
 
+/** "Null" (empty) word.
+  */
+const word NULL_WORD;
+
 
 /** Return the library name (eg. "libvmime").
   *

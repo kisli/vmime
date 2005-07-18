@@ -41,8 +41,8 @@ protected:
 
 public:
 
-	defaultAttachment(ref <contentHandler> data, const encoding& enc, const mediaType& type, const text& desc = NULL_TEXT, const word& name = NULL_TEXT);
-	defaultAttachment(ref <contentHandler> data, const mediaType& type, const text& desc = NULL_TEXT, const word& name = NULL_TEXT);
+	defaultAttachment(ref <contentHandler> data, const encoding& enc, const mediaType& type, const text& desc = NULL_TEXT, const word& name = NULL_WORD);
+	defaultAttachment(ref <contentHandler> data, const mediaType& type, const text& desc = NULL_TEXT, const word& name = NULL_WORD);
 	defaultAttachment(const defaultAttachment& attach);
 
 	~defaultAttachment();

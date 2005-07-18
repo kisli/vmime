@@ -37,6 +37,7 @@
 namespace vmime
 {
 	class text;
+	class word;
 	class charset;
 
 
@@ -47,6 +48,7 @@ namespace vmime
 #endif
 
 	extern const text NULL_TEXT;
+	extern const word NULL_WORD;
 
 
 	//
