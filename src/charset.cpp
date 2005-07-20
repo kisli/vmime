@@ -67,6 +67,12 @@ charset::charset(const string& name)
 }
 
 
+charset::charset(const char* name)
+	: m_name(name)
+{
+}
+
+
 void charset::parse(const string& buffer, const string::size_type position,
 	const string::size_type end, string::size_type* newPosition)
 {
@@ -88,16 +94,6 @@ void charset::generate(utility::outputStream& os, const string::size_type /* max
 		*newLinePos = curLinePos + m_name.length();
 }
 
-
-struct X
-{
-	X(const char**);
-
-	operator const char**() { return x; }
-	operator char**() { return const_cast <char**>(x); }
-
-	const char** x;
-};
 
 void charset::convert(utility::inputStream& in, utility::outputStream& out,
 	const charset& source, const charset& dest)
@@ -257,13 +253,6 @@ const charset charset::getLocaleCharset()
 charset& charset::operator=(const charset& other)
 {
 	copyFrom(other);
-	return (*this);
-}
-
-
-charset& charset::operator=(const string& name)
-{
-	parse(name);
 	return (*this);
 }
 

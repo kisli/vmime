@@ -38,6 +38,7 @@ public:
 
 	charset();
 	charset(const string& name);
+	charset(const char* name); // to allow creation from vmime::charsets constants
 
 public:
 
@@ -48,7 +49,6 @@ public:
 	const string& getName() const;
 
 	charset& operator=(const charset& other);
-	charset& operator=(const string& name);
 
 	const bool operator==(const charset& value) const;
 	const bool operator!=(const charset& value) const;
