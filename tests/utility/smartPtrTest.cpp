@@ -213,6 +213,30 @@ namespace
 			assert_eq("16", 2, r2->strongCount());
 		}
 
+		void testCompare()
+		{
+			vmime::ref <A> r1 = vmime::create <A>();
+			vmime::ref <A> r2 = vmime::create <B>();
+			vmime::ref <A> r3 = vmime::create <C>();
+			vmime::ref <A> r4 = r1;
+
+			assert_true("1", r1 != r2);
+			assert_true("2", r1.get() == r1);
+			assert_true("3", r1 == r1.get());
+			assert_true("4", r2 != r1.get());
+			assert_true("5", r1.get() != r2);
+			assert_true("6", r1 == r4);
+			assert_true("7", r1.get() == r4);
+
+			std::vector <vmime::ref <A> > v;
+			v.push_back(r1);
+			v.push_back(r2);
+
+			assert_true("8", std::find(v.begin(), v.end(), r1) == v.begin());
+			assert_true("9", std::find(v.begin(), v.end(), r2) == v.begin() + 1);
+			assert_true("10", std::find(v.begin(), v.end(), r3) == v.end());
+		}
+
 	public:
 
 		smartPtrTest() : suite("vmime::utility::url")
@@ -225,6 +249,7 @@ namespace
 			add("WeakRef", testcase(this, "TestWeakRef", &smartPtrTest::testWeakRef));
 			add("Cast", testcase(this, "TestCast", &smartPtrTest::testCast));
 			add("Container", testcase(this, "TestContainer", &smartPtrTest::testContainer));
+			add("Compare", testcase(this, "TestCompare", &smartPtrTest::testCompare));
 
 			suite::main().add("vmime::utility::smartPtr", this);
 		}
