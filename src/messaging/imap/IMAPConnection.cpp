@@ -155,10 +155,13 @@ void IMAPConnection::disconnect()
 
 void IMAPConnection::internalDisconnect()
 {
-	send(true, "LOGOUT", true);
+	if (isConnected())
+	{
+		send(true, "LOGOUT", true);
 
-	m_socket->disconnect();
-	m_socket = NULL;
+		m_socket->disconnect();
+		m_socket = NULL;
+	}
 
 	m_timeoutHandler = NULL;
 
