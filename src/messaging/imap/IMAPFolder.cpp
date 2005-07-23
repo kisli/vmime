@@ -464,12 +464,17 @@ ref <message> IMAPFolder::getMessage(const int num)
 
 std::vector <ref <message> > IMAPFolder::getMessages(const int from, const int to)
 {
+	const int messageCount = getMessageCount();
+	const int to2 = (to == -1 ? messageCount : to);
+
 	if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
+	else if (to2 < from || from < 1 || to2 < 1 || from > messageCount || to2 > messageCount)
+		throw exceptions::message_not_found();
 
 	std::vector <ref <message> > v;
 
-	for (int i = from ; i <= to ; ++i)
+	for (int i = from ; i <= to2 ; ++i)
 		v.push_back(vmime::create <IMAPMessage>(this, i));
 
 	return (v);

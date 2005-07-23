@@ -2,6 +2,11 @@
 VERSION 0.7.2cvs
 ================
 
+2005-07-23  Vincent Richard  <vincent@vincent-richard.net>
+
+ * POP3, IMAP, maildir: fixed getMessages() when default arguments are given:
+   no message were returned, instead of the real message count.
+
 2005-07-15  Vincent Richard  <vincent@vincent-richard.net>
 
  * *attachment, messageParser: added a getName() parameter to retrieve

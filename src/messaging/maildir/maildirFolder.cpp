@@ -405,12 +405,16 @@ ref <message> maildirFolder::getMessage(const int num)
 
 std::vector <ref <message> > maildirFolder::getMessages(const int from, const int to)
 {
+	const int to2 = (to == -1 ? m_messageCount : to);
+
 	if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
+	else if (to2 < from || from < 1 || to2 < 1 || from > m_messageCount || to2 > m_messageCount)
+		throw exceptions::message_not_found();
 
 	std::vector <ref <message> > v;
 
-	for (int i = from ; i <= to ; ++i)
+	for (int i = from ; i <= to2 ; ++i)
 	{
 		v.push_back(vmime::create <maildirMessage>
 			(thisWeakRef().dynamicCast <maildirFolder>(), i));
