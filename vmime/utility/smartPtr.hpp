@@ -88,7 +88,8 @@ public:
 
 
 	// Access to wrapped object
-	operator const T*() const { return m_ptr; }
+//	operator const T*() const { return m_ptr; }
+	operator const void*() const { return m_ptr; }
 
 	T& operator *() { return *m_ptr; }
 	const T& operator *() const { return *m_ptr; }
@@ -364,7 +365,8 @@ public:
 
 
 	// Access to wrapped object
-	operator const T*() const { return m_ptr; }
+//	operator const T*() const { return m_ptr; }
+	operator const void*() const { return m_ptr; }
 
 	T& operator *() { return *m_ptr; }
 	const T& operator *() const { return *m_ptr; }
@@ -374,6 +376,9 @@ public:
 
 	const T* const get() const { return m_ptr; }
 	T* const get() { return m_ptr; }
+
+	const bool operator !() const { return m_ptr == NULL; }
+
 
 	// dynamic_cast
 	template <class U>

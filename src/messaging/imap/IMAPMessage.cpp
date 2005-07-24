@@ -400,7 +400,7 @@ void IMAPMessage::extract(const part* p, utility::outputStream& os,
 
 	if (p != NULL)
 	{
-		const IMAPpart* currentPart = static_cast <const IMAPpart*>(p);
+		weak_ref <const IMAPpart> currentPart = static_cast <const IMAPpart*>(p);
 		std::vector <int> numbers;
 
 		numbers.push_back(currentPart->getNumber());

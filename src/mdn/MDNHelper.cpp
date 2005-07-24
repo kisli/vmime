@@ -100,7 +100,7 @@ receivedMDNInfos MDNHelper::getReceivedMDN(const ref <const message> msg)
 
 const bool MDNHelper::needConfirmation(const ref <const message> msg)
 {
-	const header* hdr = msg->getHeader();
+	ref <const header> hdr = msg->getHeader();
 
 	// No "Return-Path" field
 	if (!hdr->hasField(fields::RETURN_PATH))

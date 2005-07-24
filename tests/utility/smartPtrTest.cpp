@@ -70,9 +70,6 @@ namespace
 			assert_true("6", r1 == vmime::null);
 			assert_true("7", vmime::null == r1);
 			assert_eq("8", static_cast <A*>(0), r1.get());
-
-			const A* p = r1;
-			assert_eq("9", static_cast <A*>(0), p);
 		}
 
 		void testRefCounting()
