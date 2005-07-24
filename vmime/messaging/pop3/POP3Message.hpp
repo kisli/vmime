@@ -63,7 +63,7 @@ public:
 	const structure& getStructure() const;
 	structure& getStructure();
 
-	const header& getHeader() const;
+	ref <const header> getHeader() const;
 
 	const int getFlags() const;
 	void setFlags(const int flags, const int mode = FLAG_MODE_SET);
@@ -86,7 +86,7 @@ private:
 
 	bool m_deleted;
 
-	header* m_header;
+	ref <header> m_header;
 };
 
 

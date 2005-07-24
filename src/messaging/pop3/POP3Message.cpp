@@ -30,7 +30,7 @@ namespace pop3 {
 
 
 POP3Message::POP3Message(POP3Folder* folder, const int num)
-	: m_folder(folder), m_num(num), m_size(-1), m_deleted(false), m_header(NULL)
+	: m_folder(folder), m_num(num), m_size(-1), m_deleted(false)
 {
 	m_folder->registerMessage(this);
 }
@@ -40,8 +40,6 @@ POP3Message::~POP3Message()
 {
 	if (m_folder)
 		m_folder->unregisterMessage(this);
-
-	delete (m_header);
 }
 
 
@@ -101,12 +99,12 @@ structure& POP3Message::getStructure()
 }
 
 
-const header& POP3Message::getHeader() const
+ref <const header> POP3Message::getHeader() const
 {
 	if (m_header == NULL)
 		throw exceptions::unfetched_object();
 
-	return (*m_header);
+	return (m_header);
 }
 
 
@@ -194,13 +192,7 @@ void POP3Message::fetch(POP3Folder* folder, const int options)
 		string buffer;
 		m_folder->m_store->readResponse(buffer, true);
 
-		if (m_header != NULL)
-		{
-			delete (m_header);
-			m_header = NULL;
-		}
-
-		m_header = new header();
+		m_header = vmime::create <header>();
 		m_header->parse(buffer);
 	}
 	catch (exceptions::command_error& e)

@@ -212,7 +212,7 @@ structure& maildirPart::getStructure()
 
 maildirMessage::maildirMessage(weak_ref <maildirFolder> folder, const int num)
 	: m_folder(folder), m_num(num), m_size(-1), m_flags(FLAG_UNDEFINED),
-	  m_expunged(false), m_header(NULL), m_structure(NULL)
+	  m_expunged(false), m_structure(NULL)
 {
 	m_folder->registerMessage(this);
 }
@@ -276,12 +276,12 @@ structure& maildirMessage::getStructure()
 }
 
 
-const header& maildirMessage::getHeader() const
+ref <const header> maildirMessage::getHeader() const
 {
 	if (m_header == NULL)
 		throw exceptions::unfetched_object();
 
-	return (*m_header);
+	return (m_header);
 }
 
 
@@ -483,18 +483,18 @@ void maildirMessage::fetch(weak_ref <maildirFolder> folder, const int options)
 		               folder::FETCH_CONTENT_INFO |
 		               folder::FETCH_FULL_HEADER))
 		{
-			getOrCreateHeader().copyFrom(*(msg.getHeader()));
+			getOrCreateHeader()->copyFrom(*(msg.getHeader()));
 		}
 	}
 }
 
 
-header& maildirMessage::getOrCreateHeader()
+ref <header> maildirMessage::getOrCreateHeader()
 {
 	if (m_header != NULL)
-		return (*m_header);
+		return (m_header);
 	else
-		return (*(m_header = vmime::create <header>()));
+		return (m_header = vmime::create <header>());
 }
 
 

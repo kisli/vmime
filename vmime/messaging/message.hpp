@@ -87,7 +87,7 @@ public:
 
 	/** Return the sub-part at the specified position.
 	  * This provide easy access to parts:
-	  * Eg: "message->extract(message->structure()[3][1][2])".
+	  * Eg: "message->extractPart(message->getStructure()[3][1][2])".
 	  *
 	  * @param x index of the sub-part
 	  * @return sub-part at position 'x'
@@ -96,7 +96,7 @@ public:
 
 	/** Return the sub-part at the specified position.
 	  * This provide easy access to parts:
-	  * Eg: "message->extract(message->structure()[3][1][2])".
+	  * Eg: "message->extractPart(message->getStructure()[3][1][2])".
 	  *
 	  * @param x index of the sub-part
 	  * @return sub-part at position 'x'
@@ -183,7 +183,7 @@ public:
 	  *
 	  * @return header section of the message
 	  */
-	virtual const header& getHeader() const = 0;
+	virtual ref <const header> getHeader() const = 0;
 
 	/** Return the sequence number of this message. This number is
 	  * used to reference the message in the folder.
@@ -262,7 +262,7 @@ public:
 	  */
 	virtual void extract(utility::outputStream& os, utility::progressionListener* progress = NULL, const int start = 0, const int length = -1, const bool peek = false) const = 0;
 
-	/** Extract the specified (MIME) part of the message (header + contents).
+	/** Extract the specified MIME part of the message (header + contents).
 	  *
 	  * \warning Partial fetch might not be supported by the underlying protocol.
 	  *

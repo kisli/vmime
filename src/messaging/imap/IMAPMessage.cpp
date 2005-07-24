@@ -272,7 +272,7 @@ private:
 
 IMAPMessage::IMAPMessage(IMAPFolder* folder, const int num)
 	: m_folder(folder), m_num(num), m_size(-1), m_flags(FLAG_UNDEFINED),
-	  m_expunged(false), m_header(NULL), m_structure(NULL)
+	  m_expunged(false), m_structure(NULL)
 {
 	m_folder->registerMessage(this);
 }
@@ -345,12 +345,12 @@ structure& IMAPMessage::getStructure()
 }
 
 
-const header& IMAPMessage::getHeader() const
+ref <const header> IMAPMessage::getHeader() const
 {
 	if (m_header == NULL)
 		throw exceptions::unfetched_object();
 
-	return (*m_header);
+	return (m_header);
 }
 
 
@@ -582,57 +582,57 @@ void IMAPMessage::processFetchResponse
 			if (!(options & folder::FETCH_FULL_HEADER))
 			{
 				const IMAPParser::envelope* env = (*it)->envelope();
-				vmime::header& hdr = getOrCreateHeader();
+				ref <vmime::header> hdr = getOrCreateHeader();
 
 				// Date
-				hdr.Date()->setValue(env->env_date()->value());
+				hdr->Date()->setValue(env->env_date()->value());
 
 				// Subject
 				text subject;
 				text::decodeAndUnfold(env->env_subject()->value(), &subject);
 
-				hdr.Subject()->setValue(subject);
+				hdr->Subject()->setValue(subject);
 
 				// From
 				mailboxList from;
 				convertAddressList(*(env->env_from()), from);
 
 				if (!from.isEmpty())
-					hdr.From()->setValue(*(from.getMailboxAt(0)));
+					hdr->From()->setValue(*(from.getMailboxAt(0)));
 
 				// To
 				mailboxList to;
 				convertAddressList(*(env->env_to()), to);
 
-				hdr.To()->setValue(to);
+				hdr->To()->setValue(to);
 
 				// Sender
 				mailboxList sender;
 				convertAddressList(*(env->env_sender()), sender);
 
 				if (!sender.isEmpty())
-					hdr.Sender()->setValue(*(sender.getMailboxAt(0)));
+					hdr->Sender()->setValue(*(sender.getMailboxAt(0)));
 
 				// Reply-to
 				mailboxList replyTo;
 				convertAddressList(*(env->env_reply_to()), replyTo);
 
 				if (!replyTo.isEmpty())
-					hdr.ReplyTo()->setValue(*(replyTo.getMailboxAt(0)));
+					hdr->ReplyTo()->setValue(*(replyTo.getMailboxAt(0)));
 
 				// Cc
 				mailboxList cc;
 				convertAddressList(*(env->env_cc()), cc);
 
 				if (!cc.isEmpty())
-					hdr.Cc()->setValue(cc);
+					hdr->Cc()->setValue(cc);
 
 				// Bcc
 				mailboxList bcc;
 				convertAddressList(*(env->env_bcc()), bcc);
 
 				if (!bcc.isEmpty())
-					hdr.Bcc()->setValue(bcc);
+					hdr->Bcc()->setValue(bcc);
 			}
 
 			break;
@@ -644,7 +644,7 @@ void IMAPMessage::processFetchResponse
 		}
 		case IMAPParser::msg_att_item::RFC822_HEADER:
 		{
-			getOrCreateHeader().parse((*it)->nstring()->value());
+			getOrCreateHeader()->parse((*it)->nstring()->value());
 			break;
 		}
 		case IMAPParser::msg_att_item::RFC822_SIZE:
@@ -663,7 +663,7 @@ void IMAPMessage::processFetchResponse
 					header tempHeader;
 					tempHeader.parse((*it)->nstring()->value());
 
-					vmime::header& hdr = getOrCreateHeader();
+					vmime::header& hdr = *getOrCreateHeader();
 					std::vector <ref <headerField> > fields = tempHeader.getFieldList();
 
 					for (std::vector <ref <headerField> >::const_iterator jt = fields.begin() ;
@@ -692,12 +692,12 @@ void IMAPMessage::processFetchResponse
 }
 
 
-header& IMAPMessage::getOrCreateHeader()
+ref <header> IMAPMessage::getOrCreateHeader()
 {
 	if (m_header != NULL)
-		return (*m_header);
+		return (m_header);
 	else
-		return (*(m_header = vmime::create <header>()));
+		return (m_header = vmime::create <header>());
 }
 
 

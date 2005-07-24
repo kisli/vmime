@@ -63,7 +63,7 @@ public:
 	const structure& getStructure() const;
 	structure& getStructure();
 
-	const header& getHeader() const;
+	ref <const header> getHeader() const;
 
 	const int getFlags() const;
 	void setFlags(const int flags, const int mode = FLAG_MODE_SET);
@@ -85,7 +85,7 @@ private:
 	void convertAddressList(const IMAPParser::address_list& src, mailboxList& dest);
 
 
-	header& getOrCreateHeader();
+	ref <header> getOrCreateHeader();
 
 
 	void onFolderClosed();

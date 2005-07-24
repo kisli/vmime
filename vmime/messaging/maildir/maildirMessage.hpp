@@ -61,7 +61,7 @@ public:
 	const structure& getStructure() const;
 	structure& getStructure();
 
-	const header& getHeader() const;
+	ref <const header> getHeader() const;
 
 	const int getFlags() const;
 	void setFlags(const int flags, const int mode = FLAG_MODE_SET);
@@ -77,7 +77,7 @@ private:
 
 	void onFolderClosed();
 
-	header& getOrCreateHeader();
+	ref <header> getOrCreateHeader();
 
 	void extractImpl(utility::outputStream& os, utility::progressionListener* progress, const int start, const int length, const int partialStart, const int partialLength, const bool peek) const;
 
