@@ -27,8 +27,12 @@ namespace misc {
 
 void importanceHelper::resetImportance(ref <message> msg)
 {
-	ref <header> hdr = msg->getHeader();
+	resetImportance(msg->getHeader());
+}
 
+
+void importanceHelper::resetImportance(ref <header> hdr)
+{
 	try
 	{
 		ref <headerField> fld = hdr->findField("X-Priority");
@@ -53,8 +57,12 @@ void importanceHelper::resetImportance(ref <message> msg)
 
 const importanceHelper::Importance importanceHelper::getImportance(const ref <const message> msg)
 {
-	const ref <const header> hdr = msg->getHeader();
+	return getImportance(msg->getHeader());
+}
 
+
+const importanceHelper::Importance importanceHelper::getImportance(const ref <const header> hdr)
+{
 	try
 	{
 		const ref <const defaultField> fld = hdr->findField("X-Priority").dynamicCast <const defaultField>();
@@ -98,8 +106,12 @@ const importanceHelper::Importance importanceHelper::getImportance(const ref <co
 
 void importanceHelper::setImportance(ref <message> msg, const Importance i)
 {
-	ref <header> hdr = msg->getHeader();
+	setImportance(msg->getHeader(), i);
+}
 
+
+void importanceHelper::setImportance(ref <header> hdr, const Importance i)
+{
 	// "X-Priority:" Field
 	ref <defaultField> fld = hdr->getField("X-Priority").dynamicCast <defaultField>();
 

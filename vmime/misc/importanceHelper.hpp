@@ -56,6 +56,12 @@ public:
 	  */
 	static void resetImportance(ref <message> msg);
 
+	/** Reset the importance of the message to the default importance.
+	  *
+	  * @param hdr message header on which to reset importance
+	  */
+	static void resetImportance(ref <header> hdr);
+
 	/** Return the importance of the specified message.
 	  *
 	  * @param msg message from which to retrieve importance
@@ -64,12 +70,27 @@ public:
 	  */
 	static const Importance getImportance(const ref <const message> msg);
 
+	/** Return the importance of the specified message.
+	  *
+	  * @param hdr message header from which to retrieve importance
+	  * @return importance of the message, or default importance is no
+	  * information about importance is given in the message
+	  */
+	static const Importance getImportance(const ref <const header> hdr);
+
 	/** Set the importance of the specified message.
 	  *
 	  * @param msg message on which to set importance
 	  * @param i new message importance
 	  */
 	static void setImportance(ref <message> msg, const Importance i);
+
+	/** Set the importance of the specified message.
+	  *
+	  * @param hdr message header on which to set importance
+	  * @param i new message importance
+	  */
+	static void setImportance(ref <header> hdr, const Importance i);
 };
 
 
