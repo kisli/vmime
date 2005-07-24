@@ -63,6 +63,7 @@ const importanceHelper::Importance importanceHelper::getImportance(const ref <co
 
 const importanceHelper::Importance importanceHelper::getImportance(const ref <const header> hdr)
 {
+	// Try "X-Priority" field
 	try
 	{
 		const ref <const defaultField> fld = hdr->findField("X-Priority").dynamicCast <const defaultField>();
@@ -88,15 +89,24 @@ const importanceHelper::Importance importanceHelper::getImportance(const ref <co
 	}
 	catch (exceptions::no_such_field)
 	{
-		const ref <const defaultField> fld = hdr->findField("Importance").dynamicCast <const defaultField>();
-		const string value = utility::stringUtils::toLower(utility::stringUtils::trim(fld->getValue()));
+		// Try "Importance" field
+		try
+		{
+			const ref <const defaultField> fld = hdr->findField("Importance").dynamicCast <const defaultField>();
+			const string value = utility::stringUtils::toLower(utility::stringUtils::trim(fld->getValue()));
 
-		if (value == "low")
-			return (IMPORTANCE_LOWEST);
-		else if (value == "high")
-			return (IMPORTANCE_HIGHEST);
-		else
+			if (value == "low")
+				return (IMPORTANCE_LOWEST);
+			else if (value == "high")
+				return (IMPORTANCE_HIGHEST);
+			else
+				return (IMPORTANCE_NORMAL);
+		}
+		catch (exceptions::no_such_field)
+		{
+			// Default
 			return (IMPORTANCE_NORMAL);
+		}
 	}
 
 	// Should not go here...
