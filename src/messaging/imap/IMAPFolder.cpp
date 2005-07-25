@@ -643,7 +643,8 @@ void IMAPFolder::fetchMessage(ref <message> msg, const int options)
 const int IMAPFolder::getFetchCapabilities() const
 {
 	return (FETCH_ENVELOPE | FETCH_CONTENT_INFO | FETCH_STRUCTURE |
-	        FETCH_FLAGS | FETCH_SIZE | FETCH_FULL_HEADER | FETCH_UID);
+	        FETCH_FLAGS | FETCH_SIZE | FETCH_FULL_HEADER | FETCH_UID |
+	        FETCH_IMPORTANCE);
 }
 
 

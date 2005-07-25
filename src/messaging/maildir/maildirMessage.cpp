@@ -421,7 +421,8 @@ void maildirMessage::fetch(weak_ref <maildirFolder> folder, const int options)
 		m_uid = maildirUtils::extractId(path.getLastComponent()).getBuffer();
 
 	if (options & (folder::FETCH_ENVELOPE | folder::FETCH_CONTENT_INFO |
-	               folder::FETCH_FULL_HEADER | folder::FETCH_STRUCTURE))
+	               folder::FETCH_FULL_HEADER | folder::FETCH_STRUCTURE |
+	               folder::FETCH_IMPORTANCE))
 	{
 		string contents;
 
@@ -481,7 +482,8 @@ void maildirMessage::fetch(weak_ref <maildirFolder> folder, const int options)
 		// Extract some header fields or whole header
 		if (options & (folder::FETCH_ENVELOPE |
 		               folder::FETCH_CONTENT_INFO |
-		               folder::FETCH_FULL_HEADER))
+		               folder::FETCH_FULL_HEADER |
+		               folder::FETCH_IMPORTANCE))
 		{
 			getOrCreateHeader()->copyFrom(*(msg.getHeader()));
 		}

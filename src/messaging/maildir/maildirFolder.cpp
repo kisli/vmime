@@ -1368,7 +1368,8 @@ void maildirFolder::fetchMessage(ref <message> msg, const int options)
 const int maildirFolder::getFetchCapabilities() const
 {
 	return (FETCH_ENVELOPE | FETCH_STRUCTURE | FETCH_CONTENT_INFO |
-	        FETCH_FLAGS | FETCH_SIZE | FETCH_FULL_HEADER | FETCH_UID);
+	        FETCH_FLAGS | FETCH_SIZE | FETCH_FULL_HEADER | FETCH_UID |
+	        FETCH_IMPORTANCE);
 }
 
 

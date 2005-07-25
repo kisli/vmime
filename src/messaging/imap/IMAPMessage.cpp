@@ -492,8 +492,32 @@ void IMAPMessage::fetch(IMAPFolder* folder, const int options)
 		if (options & folder::FETCH_ENVELOPE)
 			items.push_back("ENVELOPE");
 
+		std::vector <string> headerFields;
+
 		if (options & folder::FETCH_CONTENT_INFO)
-			items.push_back("BODY[HEADER.FIELDS (CONTENT-TYPE)]");
+			headerFields.push_back("CONTENT_TYPE");
+
+		if (options & folder::FETCH_IMPORTANCE)
+		{
+			headerFields.push_back("IMPORTANCE");
+			headerFields.push_back("X-PRIORITY");
+		}
+
+		if (!headerFields.empty())
+		{
+			string list;
+
+			for (std::vector <string>::iterator it = headerFields.begin() ;
+			     it != headerFields.end() ; ++it)
+			{
+				if (it != headerFields.begin())
+					list += " ";
+
+				list += *it;
+			}
+
+			items.push_back("BODY[HEADER.FIELDS (" + list + ")]");
+		}
 	}
 
 	// Build the request text

@@ -170,12 +170,12 @@ void POP3Message::fetch(POP3Folder* folder, const int options)
 		throw exceptions::operation_not_supported();
 
 	// Check for the real need to fetch the full header
-	if (!((options & folder::FETCH_ENVELOPE) ||
-	      (options & folder::FETCH_CONTENT_INFO) ||
-	      (options & folder::FETCH_FULL_HEADER)))
-	{
+	static const int optionsRequiringHeader =
+		folder::FETCH_ENVELOPE | folder::FETCH_CONTENT_INFO |
+		folder::FETCH_FULL_HEADER | folder::FETCH_IMPORTANCE;
+
+	if (!(options & optionsRequiringHeader))
 		return;
-	}
 
 	// No need to differenciate between FETCH_ENVELOPE,
 	// FETCH_CONTENT_INFO, ... since POP3 only permits to

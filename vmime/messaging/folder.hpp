@@ -321,6 +321,7 @@ public:
 		FETCH_SIZE = (1 << 4),           /**< Fetch message size (exact or estimated). */
 		FETCH_FULL_HEADER = (1 << 5),    /**< Fetch full RFC-[2]822 header. */
 		FETCH_UID = (1 << 6),            /**< Fetch unique identifier (protocol specific). */
+		FETCH_IMPORTANCE = (1 << 7),     /**< Fetch header fields suitable for use with misc::importanceHelper. */
 
 		FETCH_CUSTOM = (1 << 16)         /**< Reserved for future use. */
 	};

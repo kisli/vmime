@@ -476,7 +476,8 @@ void POP3Folder::fetchMessage(ref <message> msg, const int options)
 const int POP3Folder::getFetchCapabilities() const
 {
 	return (FETCH_ENVELOPE | FETCH_CONTENT_INFO |
-	        FETCH_SIZE | FETCH_FULL_HEADER | FETCH_UID);
+	        FETCH_SIZE | FETCH_FULL_HEADER | FETCH_UID |
+	        FETCH_IMPORTANCE);
 }
 
 
