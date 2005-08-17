@@ -417,7 +417,7 @@ static void connectStore()
 				case 3:
 
 					f->fetchMessage(msg, vmime::messaging::folder::FETCH_FULL_HEADER);
-					std::cout << msg->getHeader().generate() << std::endl;
+					std::cout << msg->getHeader()->generate() << std::endl;
 					break;
 
 				// Show message envelope
@@ -426,7 +426,7 @@ static void connectStore()
 					f->fetchMessage(msg, vmime::messaging::folder::FETCH_ENVELOPE);
 
 #define ENV_HELPER(x) \
-	try { std::cout << msg->getHeader().x()->generate() << std::endl; } \
+	try { std::cout << msg->getHeader()->x()->generate() << std::endl; } \
 	catch (vmime::exception) { /* In case the header field does not exist. */ }
 
 					ENV_HELPER(From)

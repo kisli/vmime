@@ -30,14 +30,14 @@ defaultAttachment::defaultAttachment()
 }
 
 
-defaultAttachment::defaultAttachment(ref <contentHandler> data,
+defaultAttachment::defaultAttachment(ref <const contentHandler> data,
 	const encoding& enc, const mediaType& type, const text& desc, const word& name)
 	: m_type(type), m_desc(desc), m_data(data), m_encoding(enc), m_name(name)
 {
 }
 
 
-defaultAttachment::defaultAttachment(ref <contentHandler> data,
+defaultAttachment::defaultAttachment(ref <const contentHandler> data,
 	const mediaType& type, const text& desc, const word& name)
 	: m_type(type), m_desc(desc), m_data(data),
 	  m_encoding(encoding::decide(data)), m_name(name)

@@ -515,7 +515,7 @@ const ref <const contentHandler> body::getContents() const
 }
 
 
-void body::setContents(ref <contentHandler> contents)
+void body::setContents(ref <const contentHandler> contents)
 {
 	m_contents = contents;
 }

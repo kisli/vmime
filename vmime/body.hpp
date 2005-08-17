@@ -178,7 +178,7 @@ public:
 	  *
 	  * @param contents new body contents
 	  */
-	void setContents(ref <contentHandler> contents);
+	void setContents(ref <const contentHandler> contents);
 
 	/** Return the media type of the data contained in the body contents.
 	  * This is a shortcut for getHeader()->ContentType()->getValue()
@@ -231,7 +231,7 @@ private:
 	string m_prologText;
 	string m_epilogText;
 
-	ref <contentHandler> m_contents;
+	ref <const contentHandler> m_contents;
 
 	weak_ref <bodyPart> m_part;
 	weak_ref <header> m_header;
