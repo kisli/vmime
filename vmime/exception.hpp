@@ -21,6 +21,8 @@
 #define VMIME_EXCEPTION_HPP_INCLUDED
 
 
+#include <stdexcept>
+
 #include "vmime/config.hpp"
 #include "vmime/base.hpp"
 #include "vmime/utility/path.hpp"
@@ -33,7 +35,7 @@ namespace vmime
 /** Base class for VMime exceptions.
   */
 
-class exception
+class exception : public std::exception
 {
 private:
 
@@ -45,25 +47,31 @@ private:
 public:
 
 	exception(const string& what, const exception& other = NO_EXCEPTION);
-	virtual ~exception();
+	virtual ~exception() throw();
 
 	/** Return a description of the error.
 	  *
 	  * @return error message
 	  */
-	const string what() const throw();
+	const char* what() const throw();
 
-	/** Return the next exception in the chain (encapsuled exception).
+	/** Return a description of the error.
+	  *
+	  * @return error message
+	  */
+	const char* what() throw();
+
+	/** Return the next exception in the chain (encapsulated exception).
 	  *
 	  * @return next exception in the chain
 	  */
-	const exception* other() const;
+	const exception* other() const throw();
 
 	/** Return a name identifying the exception.
 	  *
 	  * @return exception name
 	  */
-	virtual const string name() const;
+	virtual const char* name() const throw();
 
 protected:
 
@@ -88,7 +96,7 @@ public:
 	~bad_field_type() throw();
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 };
 
 
@@ -100,7 +108,7 @@ public:
 	~charset_conv_error() throw();
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 };
 
 
@@ -112,7 +120,7 @@ public:
 	~no_encoder_available() throw();
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 };
 
 
@@ -124,7 +132,7 @@ public:
 	~no_such_parameter() throw();
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 };
 
 
@@ -136,7 +144,7 @@ public:
 	~no_such_field() throw();
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 };
 
 
@@ -148,7 +156,7 @@ public:
 	~no_such_part() throw();
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 };
 
 
@@ -160,7 +168,7 @@ public:
 	~no_such_mailbox() throw();
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 };
 
 
@@ -172,7 +180,7 @@ public:
 	~no_such_message_id() throw();
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 };
 
 
@@ -184,7 +192,7 @@ public:
 	~no_such_address() throw();
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 };
 
 
@@ -196,7 +204,7 @@ public:
 	~open_file_error() throw();
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 };
 
 
@@ -208,7 +216,7 @@ public:
 	~no_factory_available() throw();
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 };
 
 
@@ -220,7 +228,7 @@ public:
 	~no_platform_dependant_handler() throw();
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 };
 
 
@@ -235,7 +243,7 @@ public:
 	~no_expeditor() throw();
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 };
 
 
@@ -250,7 +258,7 @@ public:
 	~no_recipient() throw();
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 };
 
 
@@ -262,7 +270,7 @@ public:
 	~no_object_found() throw();
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 };
 
 
@@ -277,7 +285,7 @@ public:
 	~no_such_property() throw();
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 };
 
 
@@ -292,7 +300,7 @@ public:
 	~invalid_property_type() throw();
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 };
 
 
@@ -307,7 +315,7 @@ public:
 	~invalid_argument() throw();
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 };
 
 
@@ -322,7 +330,7 @@ public:
 	~system_error() throw();
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 };
 
 
@@ -341,7 +349,7 @@ public:
 	~messaging_exception() throw();
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 };
 
 
@@ -357,7 +365,7 @@ public:
 	~connection_error() throw();
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 };
 
 
@@ -374,7 +382,7 @@ public:
 	const string& response() const;
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 
 private:
 
@@ -396,7 +404,7 @@ public:
 	const string& response() const;
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 
 private:
 
@@ -415,7 +423,7 @@ public:
 	~unsupported_option() throw();
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 };
 
 
@@ -430,7 +438,7 @@ public:
 	~no_service_available() throw();
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 };
 
 
@@ -446,7 +454,7 @@ public:
 	~illegal_state() throw();
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 };
 
 
@@ -461,7 +469,7 @@ public:
 	~folder_not_found() throw();
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 };
 
 
@@ -476,7 +484,7 @@ public:
 	~message_not_found() throw();
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 };
 
 
@@ -491,7 +499,7 @@ public:
 	~operation_not_supported() throw();
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 };
 
 
@@ -506,7 +514,7 @@ public:
 	~operation_timed_out() throw();
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 };
 
 
@@ -521,7 +529,7 @@ public:
 	~operation_cancelled() throw();
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 };
 
 
@@ -537,7 +545,7 @@ public:
 	~unfetched_object() throw();
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 };
 
 
@@ -552,7 +560,7 @@ public:
 	~not_connected() throw();
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 };
 
 
@@ -567,7 +575,7 @@ public:
 	~already_connected() throw();
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 };
 
 
@@ -582,7 +590,7 @@ public:
 	~illegal_operation() throw();
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 };
 
 
@@ -611,7 +619,7 @@ public:
 	const string& response() const;
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 
 private:
 
@@ -645,7 +653,7 @@ public:
 	const string& response() const;
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 
 private:
 
@@ -665,7 +673,7 @@ public:
 	~partial_fetch_not_supported() throw();
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 };
 
 
@@ -680,7 +688,7 @@ public:
 	~malformed_url() throw();
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 };
 
 
@@ -695,7 +703,7 @@ public:
 	~invalid_folder_name() throw();
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 };
 
 
@@ -722,7 +730,7 @@ public:
 	const utility::path& path() const;
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 
 private:
 
@@ -741,7 +749,7 @@ public:
 	~not_a_directory() throw();
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 };
 
 
@@ -756,7 +764,7 @@ public:
 	~file_not_found() throw();
 
 	exception* clone() const;
-	const string name() const;
+	const char* name() const throw();
 };
 
 
