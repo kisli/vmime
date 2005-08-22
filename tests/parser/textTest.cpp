@@ -150,6 +150,10 @@ namespace
 			assert_eq("5", "[text: [[word: charset=abc, buffer=\xe9\xe9]]]",
 				parseText("=?abc?q?=E9=E9?="));
 
+			// Question marks (?) in the middle of the string
+			assert_eq("6", "[text: [[word: charset=iso-8859-1, buffer=Know wh\xe4t? It works!]]]",
+				parseText("=?iso-8859-1?Q?Know_wh=E4t?_It_works!?="));
+
 			// TODO: add more
 		}
 
