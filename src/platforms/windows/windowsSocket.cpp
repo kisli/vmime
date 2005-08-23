@@ -167,7 +167,7 @@ void windowsSocket::sendRaw(const char* buffer, const int count)
 // posixSocketFactory
 //
 
-ref <vmime::messaging::socket> windowsSocketFactory::create()
+ref <vmime::net::socket> windowsSocketFactory::create()
 {
 	return vmime::create <windowsSocket>();
 }

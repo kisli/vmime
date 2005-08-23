@@ -24,7 +24,7 @@
 #include <iterator>   // for std::back_inserter
 
 #if VMIME_HAVE_MESSAGING_FEATURES
-   #include "vmime/messaging/socket.hpp"
+   #include "vmime/net/socket.hpp"
 #endif
 
 
@@ -331,7 +331,7 @@ const stream::size_type inputStreamPointerAdapter::skip(const size_type count)
 
 // outputStreamSocketAdapter
 
-outputStreamSocketAdapter::outputStreamSocketAdapter(messaging::socket& sok)
+outputStreamSocketAdapter::outputStreamSocketAdapter(net::socket& sok)
 	: m_socket(sok)
 {
 }
@@ -346,7 +346,7 @@ void outputStreamSocketAdapter::write
 
 // inputStreamSocketAdapter
 
-inputStreamSocketAdapter::inputStreamSocketAdapter(messaging::socket& sok)
+inputStreamSocketAdapter::inputStreamSocketAdapter(net::socket& sok)
 	: m_socket(sok)
 {
 }

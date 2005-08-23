@@ -166,14 +166,14 @@ const unsigned int posixHandler::getProcessId() const
 
 #if VMIME_HAVE_MESSAGING_FEATURES
 
-vmime::messaging::socketFactory* posixHandler::getSocketFactory
+vmime::net::socketFactory* posixHandler::getSocketFactory
 	(const vmime::string& /* name */) const
 {
 	return (m_socketFactory);
 }
 
 
-vmime::messaging::timeoutHandlerFactory* posixHandler::getTimeoutHandlerFactory
+vmime::net::timeoutHandlerFactory* posixHandler::getTimeoutHandlerFactory
 	(const vmime::string& /* name */) const
 {
 	// Not used by default

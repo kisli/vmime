@@ -317,15 +317,15 @@ const char* system_error::name() const throw() { return "system_error"; }
 
 
 //
-// messaging_exception
+// net_exception
 //
 
-messaging_exception::~messaging_exception() throw() {}
-messaging_exception::messaging_exception(const string& what, const exception& other)
+net_exception::~net_exception() throw() {}
+net_exception::net_exception(const string& what, const exception& other)
 	: exception(what, other) {}
 
-exception* messaging_exception::clone() const { return new messaging_exception(*this); }
-const char* messaging_exception::name() const throw() { return "messaging_exception"; }
+exception* net_exception::clone() const { return new net_exception(*this); }
+const char* net_exception::name() const throw() { return "net_exception"; }
 
 
 //
@@ -334,7 +334,7 @@ const char* messaging_exception::name() const throw() { return "messaging_except
 
 connection_error::~connection_error() throw() {}
 connection_error::connection_error(const string& what, const exception& other)
-	: messaging_exception(what.empty()
+	: net_exception(what.empty()
 		? "Connection error."
 		: "Connection error: '" + what + "'.", other) {}
 
@@ -348,7 +348,7 @@ const char* connection_error::name() const throw() { return "connection_error"; 
 
 connection_greeting_error::~connection_greeting_error() throw() {}
 connection_greeting_error::connection_greeting_error(const string& response, const exception& other)
-	: messaging_exception("Greeting error.", other), m_response(response) {}
+	: net_exception("Greeting error.", other), m_response(response) {}
 
 const string& connection_greeting_error::response() const { return (m_response); }
 
@@ -362,7 +362,7 @@ const char* connection_greeting_error::name() const throw() { return "connection
 
 authentication_error::~authentication_error() throw() {}
 authentication_error::authentication_error(const string& response, const exception& other)
-	: messaging_exception("Authentication error.", other), m_response(response) {}
+	: net_exception("Authentication error.", other), m_response(response) {}
 
 const string& authentication_error::response() const { return (m_response); }
 
@@ -376,7 +376,7 @@ const char* authentication_error::name() const throw() { return "authentication_
 
 unsupported_option::~unsupported_option() throw() {}
 unsupported_option::unsupported_option(const exception& other)
-	: messaging_exception("Unsupported option.", other) {}
+	: net_exception("Unsupported option.", other) {}
 
 exception* unsupported_option::clone() const { return new unsupported_option(*this); }
 const char* unsupported_option::name() const throw() { return "unsupported_option"; }
@@ -388,7 +388,7 @@ const char* unsupported_option::name() const throw() { return "unsupported_optio
 
 no_service_available::~no_service_available() throw() {}
 no_service_available::no_service_available(const string& proto, const exception& other)
-	: messaging_exception(proto.empty()
+	: net_exception(proto.empty()
 		? "No service available for this protocol."
 		: "No service available for this protocol: '" + proto + "'.", other) {}
 
@@ -402,7 +402,7 @@ const char* no_service_available::name() const throw() { return "no_service_avai
 
 illegal_state::~illegal_state() throw() {}
 illegal_state::illegal_state(const string& state, const exception& other)
-	: messaging_exception("Illegal state to accomplish the operation: '" + state + "'.", other) {}
+	: net_exception("Illegal state to accomplish the operation: '" + state + "'.", other) {}
 
 exception* illegal_state::clone() const { return new illegal_state(*this); }
 const char* illegal_state::name() const throw() { return "illegal_state"; }
@@ -414,7 +414,7 @@ const char* illegal_state::name() const throw() { return "illegal_state"; }
 
 folder_not_found::~folder_not_found() throw() {}
 folder_not_found::folder_not_found(const exception& other)
-	: messaging_exception("Folder not found.", other) {}
+	: net_exception("Folder not found.", other) {}
 
 exception* folder_not_found::clone() const { return new folder_not_found(*this); }
 const char* folder_not_found::name() const throw() { return "folder_not_found"; }
@@ -426,7 +426,7 @@ const char* folder_not_found::name() const throw() { return "folder_not_found"; 
 
 message_not_found::~message_not_found() throw() {}
 message_not_found::message_not_found(const exception& other)
-	: messaging_exception("Message not found.", other) {}
+	: net_exception("Message not found.", other) {}
 
 exception* message_not_found::clone() const { return new message_not_found(*this); }
 const char* message_not_found::name() const throw() { return "message_not_found"; }
@@ -438,7 +438,7 @@ const char* message_not_found::name() const throw() { return "message_not_found"
 
 operation_not_supported::~operation_not_supported() throw() {}
 operation_not_supported::operation_not_supported(const exception& other)
-	: messaging_exception("Operation not supported.", other) {}
+	: net_exception("Operation not supported.", other) {}
 
 exception* operation_not_supported::clone() const { return new operation_not_supported(*this); }
 const char* operation_not_supported::name() const throw() { return "operation_not_supported"; }
@@ -450,7 +450,7 @@ const char* operation_not_supported::name() const throw() { return "operation_no
 
 operation_timed_out::~operation_timed_out() throw() {}
 operation_timed_out::operation_timed_out(const exception& other)
-	: messaging_exception("Operation timed out.", other) {}
+	: net_exception("Operation timed out.", other) {}
 
 exception* operation_timed_out::clone() const { return new operation_timed_out(*this); }
 const char* operation_timed_out::name() const throw() { return "operation_timed_out"; }
@@ -462,7 +462,7 @@ const char* operation_timed_out::name() const throw() { return "operation_timed_
 
 operation_cancelled::~operation_cancelled() throw() {}
 operation_cancelled::operation_cancelled(const exception& other)
-	: messaging_exception("Operation cancelled by the user.", other) {}
+	: net_exception("Operation cancelled by the user.", other) {}
 
 exception* operation_cancelled::clone() const { return new operation_cancelled(*this); }
 const char* operation_cancelled::name() const throw() { return "operation_cancelled"; }
@@ -474,7 +474,7 @@ const char* operation_cancelled::name() const throw() { return "operation_cancel
 
 unfetched_object::~unfetched_object() throw() {}
 unfetched_object::unfetched_object(const exception& other)
-	: messaging_exception("Object not fetched.", other) {}
+	: net_exception("Object not fetched.", other) {}
 
 exception* unfetched_object::clone() const { return new unfetched_object(*this); }
 const char* unfetched_object::name() const throw() { return "unfetched_object"; }
@@ -486,7 +486,7 @@ const char* unfetched_object::name() const throw() { return "unfetched_object"; 
 
 not_connected::~not_connected() throw() {}
 not_connected::not_connected(const exception& other)
-	: messaging_exception("Not connected to a service.", other) {}
+	: net_exception("Not connected to a service.", other) {}
 
 exception* not_connected::clone() const { return new not_connected(*this); }
 const char* not_connected::name() const throw() { return "not_connected"; }
@@ -498,7 +498,7 @@ const char* not_connected::name() const throw() { return "not_connected"; }
 
 already_connected::~already_connected() throw() {}
 already_connected::already_connected(const exception& other)
-	: messaging_exception("Already connected to a service. Disconnect and retry.", other) {}
+	: net_exception("Already connected to a service. Disconnect and retry.", other) {}
 
 exception* already_connected::clone() const { return new already_connected(*this); }
 const char* already_connected::name() const throw() { return "already_connected"; }
@@ -510,7 +510,7 @@ const char* already_connected::name() const throw() { return "already_connected"
 
 illegal_operation::~illegal_operation() throw() {}
 illegal_operation::illegal_operation(const string& msg, const exception& other)
-	: messaging_exception(msg.empty()
+	: net_exception(msg.empty()
 		? "Illegal operation."
 		: "Illegal operation: " + msg + ".",
 		other
@@ -527,7 +527,7 @@ const char* illegal_operation::name() const throw() { return "illegal_operation"
 command_error::~command_error() throw() {}
 command_error::command_error(const string& command, const string& response,
                              const string& desc, const exception& other)
-	: messaging_exception(desc.empty()
+	: net_exception(desc.empty()
 		? "Error while executing command '" + command + "'."
 		: "Error while executing command '" + command + "': " + desc + ".",
 		other
@@ -548,7 +548,7 @@ const char* command_error::name() const throw() { return "command_error"; }
 
 invalid_response::~invalid_response() throw() {}
 invalid_response::invalid_response(const string& command, const string& response, const exception& other)
-	: messaging_exception(command.empty()
+	: net_exception(command.empty()
 		? "Received invalid response."
 		: "Received invalid response for command '" + command + "'.",
 		other
@@ -569,7 +569,7 @@ const char* invalid_response::name() const throw() { return "invalid_response"; 
 
 partial_fetch_not_supported::~partial_fetch_not_supported() throw() {}
 partial_fetch_not_supported::partial_fetch_not_supported(const exception& other)
-	: messaging_exception("Partial fetch not supported.", other) {}
+	: net_exception("Partial fetch not supported.", other) {}
 
 exception* partial_fetch_not_supported::clone() const { return new partial_fetch_not_supported(*this); }
 const char* partial_fetch_not_supported::name() const throw() { return "partial_fetch_not_supported"; }
@@ -581,7 +581,7 @@ const char* partial_fetch_not_supported::name() const throw() { return "partial_
 
 malformed_url::~malformed_url() throw() {}
 malformed_url::malformed_url(const string& error, const exception& other)
-	: messaging_exception("Malformed URL: " + error + ".", other) {}
+	: net_exception("Malformed URL: " + error + ".", other) {}
 
 exception* malformed_url::clone() const { return new malformed_url(*this); }
 const char* malformed_url::name() const throw() { return "malformed_url"; }
@@ -593,7 +593,7 @@ const char* malformed_url::name() const throw() { return "malformed_url"; }
 
 invalid_folder_name::~invalid_folder_name() throw() {}
 invalid_folder_name::invalid_folder_name(const string& error, const exception& other)
-	: messaging_exception(error.empty()
+	: net_exception(error.empty()
 		? "Invalid folder name: " + error + "."
 		: "Invalid folder name.",
 		other) {}

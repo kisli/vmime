@@ -88,19 +88,19 @@
 
 // Messaging features
 #if VMIME_HAVE_MESSAGING_FEATURES
-	#include "vmime/messaging/socket.hpp"
+	#include "vmime/net/socket.hpp"
 
-	#include "vmime/messaging/service.hpp"
-	#include "vmime/messaging/store.hpp"
-	#include "vmime/messaging/transport.hpp"
+	#include "vmime/net/service.hpp"
+	#include "vmime/net/store.hpp"
+	#include "vmime/net/transport.hpp"
 
-	#include "vmime/messaging/session.hpp"
-	#include "vmime/messaging/authenticator.hpp"
-	#include "vmime/messaging/defaultAuthenticator.hpp"
-	#include "vmime/messaging/simpleAuthenticator.hpp"
+	#include "vmime/net/session.hpp"
+	#include "vmime/net/authenticator.hpp"
+	#include "vmime/net/defaultAuthenticator.hpp"
+	#include "vmime/net/simpleAuthenticator.hpp"
 
-	#include "vmime/messaging/folder.hpp"
-	#include "vmime/messaging/message.hpp"
+	#include "vmime/net/folder.hpp"
+	#include "vmime/net/message.hpp"
 #endif // VMIME_HAVE_MESSAGING_FEATURES
 
 

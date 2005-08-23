@@ -22,7 +22,7 @@
 
 
 #include <winsock2.h>
-#include "vmime/messaging/socket.hpp"
+#include "vmime/net/socket.hpp"
 
 
 #if VMIME_HAVE_MESSAGING_FEATURES
@@ -33,7 +33,7 @@ namespace platforms {
 namespace windows {
 
 
-class windowsSocket : public vmime::messaging::socket
+class windowsSocket : public vmime::net::socket
 {
 public:
 	windowsSocket();
@@ -59,11 +59,11 @@ private:
 
 
 
-class windowsSocketFactory : public vmime::messaging::socketFactory
+class windowsSocketFactory : public vmime::net::socketFactory
 {
 public:
 
-	ref <vmime::messaging::socket> create();
+	ref <vmime::net::socket> create();
 };
 
 

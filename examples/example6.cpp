@@ -26,14 +26,14 @@
 
 
 // Global session object
-static vmime::ref <vmime::messaging::session> g_session
-	= vmime::create <vmime::messaging::session>();
+static vmime::ref <vmime::net::session> g_session
+	= vmime::create <vmime::net::session>();
 
 
 // Authentification handler
-class interactiveAuthenticator : public vmime::messaging::authenticator
+class interactiveAuthenticator : public vmime::net::authenticator
 {
-	const vmime::messaging::authenticationInfos requestAuthInfos() const
+	const vmime::net::authenticationInfos requestAuthInfos() const
 	{
 		vmime::string username, password;
 
@@ -50,7 +50,7 @@ class interactiveAuthenticator : public vmime::messaging::authenticator
 
 		std::getline(std::cin, password);
 
-		return (vmime::messaging::authenticationInfos(username, password));
+		return (vmime::net::authenticationInfos(username, password));
 	}
 };
 
@@ -108,11 +108,11 @@ static std::ostream& operator<<(std::ostream& os, const vmime::exception& e)
   * @param s structure object
   * @param level current depth
   */
-static void printStructure(const vmime::messaging::structure& s, const int level = 0)
+static void printStructure(const vmime::net::structure& s, const int level = 0)
 {
 	for (int i = 1 ; i <= s.getCount() ; ++i)
 	{
-		const vmime::messaging::part& part = s[i];
+		const vmime::net::part& part = s[i];
 
 		for (int j = 0 ; j < level * 2 ; ++j)
 			std::cout << " ";
@@ -127,7 +127,7 @@ static void printStructure(const vmime::messaging::structure& s, const int level
 }
 
 
-static const vmime::string getFolderPathString(vmime::ref <vmime::messaging::folder> f)
+static const vmime::string getFolderPathString(vmime::ref <vmime::net::folder> f)
 {
 	const vmime::string n = f->getName().getBuffer();
 
@@ -137,7 +137,7 @@ static const vmime::string getFolderPathString(vmime::ref <vmime::messaging::fol
 	}
 	else
 	{
-		vmime::ref <vmime::messaging::folder> p = f->getParent();
+		vmime::ref <vmime::net::folder> p = f->getParent();
 		return getFolderPathString(p) + n + "/";
 	}
 }
@@ -147,14 +147,14 @@ static const vmime::string getFolderPathString(vmime::ref <vmime::messaging::fol
   *
   * @param folder current folder
   */
-static void printFolders(vmime::ref <vmime::messaging::folder> folder, const int level = 0)
+static void printFolders(vmime::ref <vmime::net::folder> folder, const int level = 0)
 {
 	for (int j = 0 ; j < level * 2 ; ++j)
 		std::cout << " ";
 
 	std::cout << getFolderPathString(folder) << std::endl;
 
-	std::vector <vmime::ref <vmime::messaging::folder> > subFolders = folder->getFolders(false);
+	std::vector <vmime::ref <vmime::net::folder> > subFolders = folder->getFolders(false);
 
 	for (unsigned int i = 0 ; i < subFolders.size() ; ++i)
 		printFolders(subFolders[i], level + 1);
@@ -210,7 +210,7 @@ static void sendMessage()
 
 		vmime::utility::url url(urlString);
 
-		vmime::ref <vmime::messaging::transport> tr =
+		vmime::ref <vmime::net::transport> tr =
 			g_session->getTransport(url, vmime::create <interactiveAuthenticator>());
 
 		// You can also set some properties (see example7 to know the properties
@@ -307,7 +307,7 @@ static void connectStore()
 		// If no authenticator is given in argument to getStore(), a default one
 		// is used. Its behaviour is to get the user credentials from the
 		// session properties "auth.username" and "auth.password".
-		vmime::ref <vmime::messaging::store> st;
+		vmime::ref <vmime::net::store> st;
 
 		if (url.getUsername().empty() || url.getPassword().empty())
 			st = g_session->getStore(url, vmime::create <interactiveAuthenticator>());
@@ -318,10 +318,10 @@ static void connectStore()
 		st->connect();
 
 		// Open the default folder in this store
-		vmime::ref <vmime::messaging::folder> f = st->getDefaultFolder();
-//		vmime::ref <vmime::messaging::folder> f = st->getFolder(vmime::utility::path("a"));
+		vmime::ref <vmime::net::folder> f = st->getDefaultFolder();
+//		vmime::ref <vmime::net::folder> f = st->getFolder(vmime::utility::path("a"));
 
-		f->open(vmime::messaging::folder::MODE_READ_WRITE);
+		f->open(vmime::net::folder::MODE_READ_WRITE);
 
 		int count = f->getMessageCount();
 
@@ -330,7 +330,7 @@ static void connectStore()
 
 		for (bool cont = true ; cont ; )
 		{
-			typedef std::map <int, vmime::ref <vmime::messaging::message> > MessageList;
+			typedef std::map <int, vmime::ref <vmime::net::message> > MessageList;
 			MessageList msgList;
 
 			try
@@ -348,7 +348,7 @@ static void connectStore()
 				const int choice = printMenu(choices);
 
 				// Request message number
-				vmime::ref <vmime::messaging::message> msg;
+				vmime::ref <vmime::net::message> msg;
 
 				if (choice != 6 && choice != 7)
 				{
@@ -389,19 +389,19 @@ static void connectStore()
 				// Show message flags
 				case 1:
 
-					f->fetchMessage(msg, vmime::messaging::folder::FETCH_FLAGS);
+					f->fetchMessage(msg, vmime::net::folder::FETCH_FLAGS);
 
-					if (msg->getFlags() & vmime::messaging::message::FLAG_SEEN)
+					if (msg->getFlags() & vmime::net::message::FLAG_SEEN)
 						std::cout << "FLAG_SEEN" << std::endl;
-					if (msg->getFlags() & vmime::messaging::message::FLAG_RECENT)
+					if (msg->getFlags() & vmime::net::message::FLAG_RECENT)
 						std::cout << "FLAG_RECENT" << std::endl;
-					if (msg->getFlags() & vmime::messaging::message::FLAG_REPLIED)
+					if (msg->getFlags() & vmime::net::message::FLAG_REPLIED)
 						std::cout << "FLAG_REPLIED" << std::endl;
-					if (msg->getFlags() & vmime::messaging::message::FLAG_DELETED)
+					if (msg->getFlags() & vmime::net::message::FLAG_DELETED)
 						std::cout << "FLAG_DELETED" << std::endl;
-					if (msg->getFlags() & vmime::messaging::message::FLAG_MARKED)
+					if (msg->getFlags() & vmime::net::message::FLAG_MARKED)
 						std::cout << "FLAG_MARKED" << std::endl;
-					if (msg->getFlags() & vmime::messaging::message::FLAG_PASSED)
+					if (msg->getFlags() & vmime::net::message::FLAG_PASSED)
 						std::cout << "FLAG_PASSED" << std::endl;
 
 					break;
@@ -409,21 +409,21 @@ static void connectStore()
 				// Show message structure
 				case 2:
 
-					f->fetchMessage(msg, vmime::messaging::folder::FETCH_STRUCTURE);
+					f->fetchMessage(msg, vmime::net::folder::FETCH_STRUCTURE);
 					printStructure(msg->getStructure());
 					break;
 
 				// Show message header
 				case 3:
 
-					f->fetchMessage(msg, vmime::messaging::folder::FETCH_FULL_HEADER);
+					f->fetchMessage(msg, vmime::net::folder::FETCH_FULL_HEADER);
 					std::cout << msg->getHeader()->generate() << std::endl;
 					break;
 
 				// Show message envelope
 				case 4:
 
-					f->fetchMessage(msg, vmime::messaging::folder::FETCH_ENVELOPE);
+					f->fetchMessage(msg, vmime::net::folder::FETCH_ENVELOPE);
 
 #define ENV_HELPER(x) \
 	try { std::cout << msg->getHeader()->x()->generate() << std::endl; } \
@@ -449,7 +449,7 @@ static void connectStore()
 				// List folders
 				case 6:
 				{
-					vmime::ref <vmime::messaging::folder>
+					vmime::ref <vmime::net::folder>
 						root = st->getRootFolder();
 
 					printFolders(root);
@@ -477,19 +477,19 @@ static void connectStore()
 
 		// Folder renaming
 		{
-			vmime::ref <vmime::messaging::folder> f = st->getFolder(vmime::messaging::folder::path("c"));
-			f->rename(vmime::messaging::folder::path("c2"));
+			vmime::ref <vmime::net::folder> f = st->getFolder(vmime::net::folder::path("c"));
+			f->rename(vmime::net::folder::path("c2"));
 
-			vmime::ref <vmime::messaging::folder> g = st->getFolder(vmime::messaging::folder::path("c2"));
-			g->rename(vmime::messaging::folder::path("c"));
+			vmime::ref <vmime::net::folder> g = st->getFolder(vmime::net::folder::path("c2"));
+			g->rename(vmime::net::folder::path("c"));
 		}
 
 		// Message copy: copy all messages from 'f' to 'g'
 		{
-			vmime::ref <vmime::messaging::folder> g = st->getFolder(vmime::messaging::folder::path("TEMP"));
+			vmime::ref <vmime::net::folder> g = st->getFolder(vmime::net::folder::path("TEMP"));
 
 			if (!g->exists())
-				g->create(vmime::messaging::folder::TYPE_CONTAINS_MESSAGES);
+				g->create(vmime::net::folder::TYPE_CONTAINS_MESSAGES);
 
 			f->copyMessages(g->getFullPath());
 		}

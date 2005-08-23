@@ -58,7 +58,7 @@ packageAPIAge       = packageVersionMinor
 packageName = 'libvmime'
 packageGenericName = 'vmime'
 packageRealName = 'VMime Library'
-packageDescription = 'VMime C++ Mail Library (http://vmime.sourceforge.net)'
+packageDescription = 'VMime C++ Mail Library (http://www.vmime.org)'
 packageMaintainer = 'vincent@vincent-richard.net'
 
 packageVersion = '%d.%d.%d' % (packageVersionMajor, packageVersionMinor, packageVersionMicro)
@@ -182,65 +182,65 @@ libvmime_examples_sources = [
 ]
 
 libvmime_messaging_sources = [
-	'messaging/authenticator.cpp', 'messaging/authenticator.hpp',
-	'messaging/authenticationInfos.cpp', 'messaging/authenticationInfos.hpp',
-	'messaging/authHelper.cpp', 'messaging/authHelper.hpp',
-	'messaging/builtinServices.inl',
-	'messaging/defaultAuthenticator.cpp', 'messaging/defaultAuthenticator.hpp',
-	'messaging/events.cpp', 'messaging/events.hpp',
-	'messaging/folder.cpp', 'messaging/folder.hpp',
-	'messaging/message.cpp', 'messaging/message.hpp',
-	'messaging/service.cpp', 'messaging/service.hpp',
-	'messaging/serviceFactory.cpp', 'messaging/serviceFactory.hpp',
-	'messaging/serviceInfos.cpp', 'messaging/serviceInfos.hpp',
-	'messaging/session.cpp', 'messaging/session.hpp',
-	'messaging/simpleAuthenticator.cpp', 'messaging/simpleAuthenticator.hpp',
-	'messaging/socket.hpp',
-	'messaging/store.hpp',
-	'messaging/timeoutHandler.hpp',
-	'messaging/transport.cpp', 'messaging/transport.hpp'
+	'net/authenticator.cpp', 'net/authenticator.hpp',
+	'net/authenticationInfos.cpp', 'net/authenticationInfos.hpp',
+	'net/authHelper.cpp', 'net/authHelper.hpp',
+	'net/builtinServices.inl',
+	'net/defaultAuthenticator.cpp', 'net/defaultAuthenticator.hpp',
+	'net/events.cpp', 'net/events.hpp',
+	'net/folder.cpp', 'net/folder.hpp',
+	'net/message.cpp', 'net/message.hpp',
+	'net/service.cpp', 'net/service.hpp',
+	'net/serviceFactory.cpp', 'net/serviceFactory.hpp',
+	'net/serviceInfos.cpp', 'net/serviceInfos.hpp',
+	'net/session.cpp', 'net/session.hpp',
+	'net/simpleAuthenticator.cpp', 'net/simpleAuthenticator.hpp',
+	'net/socket.hpp',
+	'net/store.hpp',
+	'net/timeoutHandler.hpp',
+	'net/transport.cpp', 'net/transport.hpp'
 ]
 
 libvmime_messaging_proto_sources = [
 	[
 		'pop3',
 		[
-			'messaging/pop3/POP3Store.cpp',       'messaging/pop3/POP3Store.hpp',
-			'messaging/pop3/POP3Folder.cpp',      'messaging/pop3/POP3Folder.hpp',
-			'messaging/pop3/POP3Message.cpp',     'messaging/pop3/POP3Message.hpp'
+			'net/pop3/POP3Store.cpp',       'net/pop3/POP3Store.hpp',
+			'net/pop3/POP3Folder.cpp',      'net/pop3/POP3Folder.hpp',
+			'net/pop3/POP3Message.cpp',     'net/pop3/POP3Message.hpp'
 		]
 	],
 	[
 		'smtp',
 		[
-			'messaging/smtp/SMTPTransport.cpp',   'messaging/smtp/SMTPTransport.hpp'
+			'net/smtp/SMTPTransport.cpp',   'net/smtp/SMTPTransport.hpp'
 		]
 	],
 	[
 		'imap',
 		[
-			'messaging/imap/IMAPConnection.cpp',  'messaging/imap/IMAPConnection.hpp',
-			'messaging/imap/IMAPStore.cpp',       'messaging/imap/IMAPStore.hpp',
-			'messaging/imap/IMAPFolder.cpp',      'messaging/imap/IMAPFolder.hpp',
-			'messaging/imap/IMAPMessage.cpp',     'messaging/imap/IMAPMessage.hpp',
-			'messaging/imap/IMAPTag.cpp',         'messaging/imap/IMAPTag.hpp',
-			'messaging/imap/IMAPUtils.cpp',       'messaging/imap/IMAPUtils.hpp',
-			'messaging/imap/IMAPParser.hpp'
+			'net/imap/IMAPConnection.cpp',  'net/imap/IMAPConnection.hpp',
+			'net/imap/IMAPStore.cpp',       'net/imap/IMAPStore.hpp',
+			'net/imap/IMAPFolder.cpp',      'net/imap/IMAPFolder.hpp',
+			'net/imap/IMAPMessage.cpp',     'net/imap/IMAPMessage.hpp',
+			'net/imap/IMAPTag.cpp',         'net/imap/IMAPTag.hpp',
+			'net/imap/IMAPUtils.cpp',       'net/imap/IMAPUtils.hpp',
+			'net/imap/IMAPParser.hpp'
 		]
 	],
 	[
 		'maildir',
 		[
-			'messaging/maildir/maildirStore.cpp',    'messaging/maildir/maildirStore.hpp',
-			'messaging/maildir/maildirFolder.cpp',   'messaging/maildir/maildirFolder.hpp',
-			'messaging/maildir/maildirMessage.cpp',  'messaging/maildir/maildirMessage.hpp',
-			'messaging/maildir/maildirUtils.cpp',    'messaging/maildir/maildirUtils.hpp'
+			'net/maildir/maildirStore.cpp',    'net/maildir/maildirStore.hpp',
+			'net/maildir/maildirFolder.cpp',   'net/maildir/maildirFolder.hpp',
+			'net/maildir/maildirMessage.cpp',  'net/maildir/maildirMessage.hpp',
+			'net/maildir/maildirUtils.cpp',    'net/maildir/maildirUtils.hpp'
 		]
 	],
 	[
 		'sendmail',
 		[
-			'messaging/sendmail/sendmailTransport.cpp',  'messaging/sendmail/sendmailTransport.hpp'
+			'net/sendmail/sendmailTransport.cpp',  'net/sendmail/sendmailTransport.hpp'
 		]
 	]
 ]

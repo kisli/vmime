@@ -47,6 +47,10 @@ namespace vmime
 	using vmime::utility::null_ref;
 
 	extern const null_ref null;
+
+	// For compatibility with versions <= 0.7.1 (deprecated)
+	namespace net { }
+	namespace messaging = net;
 }
 
 

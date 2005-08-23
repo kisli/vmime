@@ -40,7 +40,7 @@
 #include "vmime/options.hpp"
 
 #if VMIME_HAVE_MESSAGING_FEATURES
-	#include "vmime/messaging/serviceFactory.hpp"
+	#include "vmime/net/serviceFactory.hpp"
 #endif
 
 
@@ -143,7 +143,7 @@ public:
 		textPartFactory::getInstance();
 
 		#if VMIME_HAVE_MESSAGING_FEATURES
-			messaging::serviceFactory::getInstance();
+			net::serviceFactory::getInstance();
 		#endif
 	}
 };

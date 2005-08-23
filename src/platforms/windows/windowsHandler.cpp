@@ -233,14 +233,14 @@ const unsigned int windowsHandler::getProcessId() const
 
 #if VMIME_HAVE_MESSAGING_FEATURES
 
-vmime::messaging::socketFactory* windowsHandler::getSocketFactory
+vmime::net::socketFactory* windowsHandler::getSocketFactory
 	(const vmime::string& /* name */) const
 {
 	return (m_socketFactory);
 }
 
 
-vmime::messaging::timeoutHandlerFactory* windowsHandler::getTimeoutHandlerFactory
+vmime::net::timeoutHandlerFactory* windowsHandler::getTimeoutHandlerFactory
 	(const vmime::string& /* name */) const
 {
 	// Not used by default

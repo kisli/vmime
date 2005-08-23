@@ -27,8 +27,8 @@
 #include "vmime/charset.hpp"
 
 #if VMIME_HAVE_MESSAGING_FEATURES
-	#include "vmime/messaging/socket.hpp"
-	#include "vmime/messaging/timeoutHandler.hpp"
+	#include "vmime/net/socket.hpp"
+	#include "vmime/net/timeoutHandler.hpp"
 #endif
 
 #if VMIME_HAVE_FILESYSTEM_FEATURES
@@ -110,7 +110,7 @@ public:
 		  * session object
 		  * @return socket factory
 		  */
-		virtual messaging::socketFactory* getSocketFactory(const string& name = "default") const = 0;
+		virtual net::socketFactory* getSocketFactory(const string& name = "default") const = 0;
 
 		/** Return a pointer to a timeout-handler factory for the specified name.
 		  * The returned object will not be deleted by VMime, so it can be a
@@ -124,7 +124,7 @@ public:
 		  * @param name time-out type name
 		  * @return time-out factory
 		  */
-		virtual messaging::timeoutHandlerFactory* getTimeoutHandlerFactory(const string& name = "default") const = 0;
+		virtual net::timeoutHandlerFactory* getTimeoutHandlerFactory(const string& name = "default") const = 0;
 #endif
 #if VMIME_HAVE_FILESYSTEM_FEATURES
 		/** Return a pointer to a factory that creates file-system objects.

@@ -338,26 +338,32 @@ public:
 #if VMIME_HAVE_MESSAGING_FEATURES
 
 
-/** Base class for exceptions thrown by the messaging module.
+/** Base class for exceptions thrown by the networking module.
   */
 
-class messaging_exception : public vmime::exception
+class net_exception : public vmime::exception
 {
 public:
 
-	messaging_exception(const string& what, const exception& other = NO_EXCEPTION);
-	~messaging_exception() throw();
+	net_exception(const string& what, const exception& other = NO_EXCEPTION);
+	~net_exception() throw();
 
 	exception* clone() const;
 	const char* name() const throw();
 };
 
 
+/** Alias for 'net_exception' (compatibility with version <= 0.7.1);
+  * this is deprecated.
+  */
+typedef net_exception messaging_exception;
+
+
 /** Error while connecting to the server: this may be a DNS resolution error
   * or a connection error (for example, time-out while connecting).
   */
 
-class connection_error : public messaging_exception
+class connection_error : public net_exception
 {
 public:
 
@@ -372,7 +378,7 @@ public:
 /** Server did not initiated the connection correctly.
   */
 
-class connection_greeting_error : public messaging_exception
+class connection_greeting_error : public net_exception
 {
 public:
 
@@ -394,7 +400,7 @@ private:
   * or password, or wrong authentication method).
   */
 
-class authentication_error : public messaging_exception
+class authentication_error : public net_exception
 {
 public:
 
@@ -415,7 +421,7 @@ private:
 /** Option not supported.
   */
 
-class unsupported_option : public messaging_exception
+class unsupported_option : public net_exception
 {
 public:
 
@@ -430,7 +436,7 @@ public:
 /** No service available for this protocol.
   */
 
-class no_service_available : public messaging_exception
+class no_service_available : public net_exception
 {
 public:
 
@@ -446,7 +452,7 @@ public:
   * operation (for example, you try to close a folder which is not open).
   */
 
-class illegal_state : public messaging_exception
+class illegal_state : public net_exception
 {
 public:
 
@@ -461,7 +467,7 @@ public:
 /** Folder not found (does not exist).
   */
 
-class folder_not_found : public messaging_exception
+class folder_not_found : public net_exception
 {
 public:
 
@@ -476,7 +482,7 @@ public:
 /** Message not found (does not exist).
   */
 
-class message_not_found : public messaging_exception
+class message_not_found : public net_exception
 {
 public:
 
@@ -491,7 +497,7 @@ public:
 /** Operation not supported by the underlying protocol.
   */
 
-class operation_not_supported : public messaging_exception
+class operation_not_supported : public net_exception
 {
 public:
 
@@ -506,7 +512,7 @@ public:
 /** The operation timed out (time-out delay is elapsed).
   */
 
-class operation_timed_out : public messaging_exception
+class operation_timed_out : public net_exception
 {
 public:
 
@@ -521,7 +527,7 @@ public:
 /** The operation has been cancelled.
   */
 
-class operation_cancelled : public messaging_exception
+class operation_cancelled : public net_exception
 {
 public:
 
@@ -537,7 +543,7 @@ public:
   * the requested object.
   */
 
-class unfetched_object : public messaging_exception
+class unfetched_object : public net_exception
 {
 public:
 
@@ -552,7 +558,7 @@ public:
 /** The service is not currently connected.
   */
 
-class not_connected : public messaging_exception
+class not_connected : public net_exception
 {
 public:
 
@@ -567,7 +573,7 @@ public:
 /** The service is already connected (must disconnect before).
   */
 
-class already_connected : public messaging_exception
+class already_connected : public net_exception
 {
 public:
 
@@ -582,7 +588,7 @@ public:
 /** Illegal operation: cannot run this operation on the object.
   */
 
-class illegal_operation : public messaging_exception
+class illegal_operation : public net_exception
 {
 public:
 
@@ -597,7 +603,7 @@ public:
 /** Command error: operation failed (this is specific to the underlying protocol).
   */
 
-class command_error : public messaging_exception
+class command_error : public net_exception
 {
 public:
 
@@ -631,7 +637,7 @@ private:
 /** The server returned an invalid response.
   */
 
-class invalid_response : public messaging_exception
+class invalid_response : public net_exception
 {
 public:
 
@@ -665,7 +671,7 @@ private:
 /** Partial fetch is not supported by the underlying protocol.
   */
 
-class partial_fetch_not_supported : public messaging_exception
+class partial_fetch_not_supported : public net_exception
 {
 public:
 
@@ -680,7 +686,7 @@ public:
 /** The URL is malformed.
   */
 
-class malformed_url : public messaging_exception
+class malformed_url : public net_exception
 {
 public:
 
@@ -695,7 +701,7 @@ public:
 /** Folder name is invalid.
   */
 
-class invalid_folder_name : public messaging_exception
+class invalid_folder_name : public net_exception
 {
 public:
 

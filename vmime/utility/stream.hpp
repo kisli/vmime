@@ -33,9 +33,9 @@
 
 #if VMIME_HAVE_MESSAGING_FEATURES
 	namespace vmime {
-	namespace messaging {
+	namespace net {
 		class socket;  // forward reference
-	} // messaging
+	} // net
 	} // vmime
 #endif
 
@@ -336,7 +336,7 @@ class outputStreamSocketAdapter : public outputStream
 {
 public:
 
-	outputStreamSocketAdapter(messaging::socket& sok);
+	outputStreamSocketAdapter(net::socket& sok);
 
 	void write(const value_type* const data, const size_type count);
 
@@ -344,7 +344,7 @@ private:
 
 	outputStreamSocketAdapter(const outputStreamSocketAdapter&);
 
-	messaging::socket& m_socket;
+	net::socket& m_socket;
 };
 
 
@@ -355,7 +355,7 @@ class inputStreamSocketAdapter : public inputStream
 {
 public:
 
-	inputStreamSocketAdapter(messaging::socket& sok);
+	inputStreamSocketAdapter(net::socket& sok);
 
 	const bool eof() const;
 	void reset();
@@ -366,7 +366,7 @@ private:
 
 	inputStreamSocketAdapter(const inputStreamSocketAdapter&);
 
-	messaging::socket& m_socket;
+	net::socket& m_socket;
 };
 
 

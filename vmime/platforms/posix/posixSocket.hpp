@@ -21,7 +21,7 @@
 #define VMIME_PLATFORMS_POSIX_SOCKET_HPP_INCLUDED
 
 
-#include "vmime/messaging/socket.hpp"
+#include "vmime/net/socket.hpp"
 
 
 #if VMIME_HAVE_MESSAGING_FEATURES
@@ -32,7 +32,7 @@ namespace platforms {
 namespace posix {
 
 
-class posixSocket : public vmime::messaging::socket
+class posixSocket : public vmime::net::socket
 {
 public:
 
@@ -57,11 +57,11 @@ private:
 
 
 
-class posixSocketFactory : public vmime::messaging::socketFactory
+class posixSocketFactory : public vmime::net::socketFactory
 {
 public:
 
-	ref <vmime::messaging::socket> create();
+	ref <vmime::net::socket> create();
 };
 
 

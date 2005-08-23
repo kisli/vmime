@@ -172,7 +172,7 @@ void posixSocket::sendRaw(const char* buffer, const int count)
 // posixSocketFactory
 //
 
-ref <vmime::messaging::socket> posixSocketFactory::create()
+ref <vmime::net::socket> posixSocketFactory::create()
 {
 	return vmime::create <posixSocket>();
 }

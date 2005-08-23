@@ -60,23 +60,23 @@ int main()
 	std::cout << std::endl;
 
 	// Enumerate messaging services and their properties
-	vmime::messaging::serviceFactory* sf = vmime::messaging::serviceFactory::getInstance();
+	vmime::net::serviceFactory* sf = vmime::net::serviceFactory::getInstance();
 
 	std::cout << "Available messaging services:" << std::endl;
 
 	for (int i = 0 ; i < sf->getServiceCount() ; ++i)
 	{
-		const vmime::messaging::serviceFactory::registeredService& serv = *sf->getServiceAt(i);
+		const vmime::net::serviceFactory::registeredService& serv = *sf->getServiceAt(i);
 
 		std::cout << "  * " << serv.getName() << std::endl;
 
-		std::vector <vmime::messaging::serviceInfos::property> props =
+		std::vector <vmime::net::serviceInfos::property> props =
 			serv.getInfos().getAvailableProperties();
 
-		for (std::vector <vmime::messaging::serviceInfos::property>::const_iterator it = props.begin() ;
+		for (std::vector <vmime::net::serviceInfos::property>::const_iterator it = props.begin() ;
 		     it != props.end() ; ++it)
 		{
-			const vmime::messaging::serviceInfos::property& p = *it;
+			const vmime::net::serviceInfos::property& p = *it;
 
 			const vmime::string name = serv.getInfos().getPropertyPrefix() + p.getName();
 
@@ -84,17 +84,17 @@ int main()
 
 			switch (p.getType())
 			{
-			case vmime::messaging::serviceInfos::property::TYPE_INTEGER: type = "TYPE_INTEGER"; break;
-			case vmime::messaging::serviceInfos::property::TYPE_STRING: type = "TYPE_STRING"; break;
-			case vmime::messaging::serviceInfos::property::TYPE_BOOL: type = "TYPE_BOOL"; break;
+			case vmime::net::serviceInfos::property::TYPE_INTEGER: type = "TYPE_INTEGER"; break;
+			case vmime::net::serviceInfos::property::TYPE_STRING: type = "TYPE_STRING"; break;
+			case vmime::net::serviceInfos::property::TYPE_BOOL: type = "TYPE_BOOL"; break;
 			default: type = "(unknown)"; break;
 			}
 
 			vmime::string flags;
 
-			if (p.getFlags() & vmime::messaging::serviceInfos::property::FLAG_REQUIRED)
+			if (p.getFlags() & vmime::net::serviceInfos::property::FLAG_REQUIRED)
 				flags += " FLAG_REQUIRED";
-			if (p.getFlags() & vmime::messaging::serviceInfos::property::FLAG_HIDDEN)
+			if (p.getFlags() & vmime::net::serviceInfos::property::FLAG_HIDDEN)
 				flags += " FLAG_HIDDEN";
 
 			std::cout << "      - " << serv.getInfos().getPropertyPrefix() + p.getName();
