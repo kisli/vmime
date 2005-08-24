@@ -49,6 +49,10 @@ public:
 	void send(const vmime::string& buffer);
 	void sendRaw(const char* buffer, const int count);
 
+protected:
+
+	static void throwSocketError(const int err);
+
 private:
 
 	char m_buffer[65536];

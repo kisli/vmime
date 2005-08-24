@@ -329,12 +329,26 @@ const char* net_exception::name() const throw() { return "net_exception"; }
 
 
 //
+// socket_exception
+//
+
+socket_exception::~socket_exception() throw() {}
+socket_exception::socket_exception(const string& what, const exception& other)
+	: net_exception(what.empty()
+		? "Socket error."
+		: "Socket error: '" + what + "'.", other) {}
+
+exception* socket_exception::clone() const { return new socket_exception(*this); }
+const char* socket_exception::name() const throw() { return "socket_exception"; }
+
+
+//
 // connection_error
 //
 
 connection_error::~connection_error() throw() {}
 connection_error::connection_error(const string& what, const exception& other)
-	: net_exception(what.empty()
+	: socket_exception(what.empty()
 		? "Connection error."
 		: "Connection error: '" + what + "'.", other) {}
 

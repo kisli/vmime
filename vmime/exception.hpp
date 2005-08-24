@@ -359,11 +359,27 @@ public:
 typedef net_exception messaging_exception;
 
 
+/** Socket error.
+  */
+
+class socket_exception : public net_exception
+{
+public:
+
+	socket_exception(const string& what = "", const exception& other = NO_EXCEPTION);
+	~socket_exception() throw();
+
+	exception* clone() const;
+	const char* name() const throw();
+
+};
+
+
 /** Error while connecting to the server: this may be a DNS resolution error
   * or a connection error (for example, time-out while connecting).
   */
 
-class connection_error : public net_exception
+class connection_error : public socket_exception
 {
 public:
 

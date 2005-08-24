@@ -26,6 +26,8 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <fcntl.h>
+#include <errno.h>
+#include <string.h>
 
 #include "vmime/exception.hpp"
 
@@ -90,16 +92,34 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 	m_desc = ::socket(AF_INET, SOCK_STREAM, 0);
 
 	if (m_desc == -1)
-		throw vmime::exceptions::connection_error("Error while creating socket.");
+	{
+		try
+		{
+			throwSocketError(errno);
+		}
+		catch (exceptions::socket_exception& e)
+		{
+			throw vmime::exceptions::connection_error
+				("Error while creating socket.", e);
+		}
+	}
 
 	// Start connection
 	if (::connect(m_desc, reinterpret_cast <sockaddr*>(&addr), sizeof(addr)) == -1)
 	{
-		::close(m_desc);
-		m_desc = -1;
+		try
+		{
+			throwSocketError(errno);
+		}
+		catch (exceptions::socket_exception& e)
+		{
+			::close(m_desc);
+			m_desc = -1;
 
-		// Error
-		throw vmime::exceptions::connection_error("Error while connecting socket.");
+			// Error
+			throw vmime::exceptions::connection_error
+				("Error while connecting socket.", e);
+		}
 	}
 }
 
@@ -156,15 +176,52 @@ const int posixSocket::receiveRaw(char* buffer, const int count)
 
 void posixSocket::send(const vmime::string& buffer)
 {
-	::send(m_desc, buffer.data(), buffer.length(), 0);
+	if (::send(m_desc, buffer.data(), buffer.length(), 0) == -1)
+		throwSocketError(errno);
 }
 
 
 void posixSocket::sendRaw(const char* buffer, const int count)
 {
-	::send(m_desc, buffer, count, 0);
+	if (::send(m_desc, buffer, count, 0) == -1)
+		throwSocketError(errno);
 }
 
+
+void posixSocket::throwSocketError(const int err)
+{
+	string msg;
+
+	switch (err)
+	{
+	case EACCES:          msg = "EACCES: permission denied"; break;
+	case EAFNOSUPPORT:    msg = "EAFNOSUPPORT: address family not supported"; break;
+	case EMFILE:          msg = "EMFILE: process file table overflow"; break;
+	case ENFILE:          msg = "ENFILE: system limit reached"; break;
+	case EPROTONOSUPPORT: msg = "EPROTONOSUPPORT: protocol not supported"; break;
+	case EAGAIN:          msg = "EGAIN: blocking operation"; break;
+	case EBADF:           msg = "EBADF: invalid descriptor"; break;
+	case ECONNRESET:      msg = "ECONNRESET: connection reset by peer"; break;
+	case EFAULT:          msg = "EFAULT: bad user space address"; break;
+	case EINTR:           msg = "EINTR: signal occured before transmission"; break;
+	case EINVAL:          msg = "EINVAL: invalid argument"; break;
+	case EMSGSIZE:        msg = "EMSGSIZE: message cannot be sent atomically"; break;
+	case ENOBUFS:         msg = "ENOBUFS: output queue is full"; break;
+	case ENOMEM:          msg = "ENOMEM: out of memory"; break;
+	case EPIPE:
+	case ENOTCONN:        msg = "ENOTCONN: not connected"; break;
+	case ECONNREFUSED:    msg = "ECONNREFUSED: connection refused"; break;
+	default:
+
+		std::ostringstream oss;
+		oss << ::strerror(err);
+
+		msg = oss.str();
+		break;
+	}
+
+	throw exceptions::socket_exception(msg);
+}
 
 
 
