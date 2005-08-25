@@ -290,66 +290,31 @@ libvmime_tests = [
 	'tests/charset/test-suites/gnu.out.iso-8859-1',
 ]
 
-libunitpp_common = [
-	'tests/lib/unit++/aclocal.m4',
-	'tests/lib/unit++/COPYING',
-	'tests/lib/unit++/guitester.cc',
-	'tests/lib/unit++/main.h',
-	'tests/lib/unit++/optmap-compat.h',
-	'tests/lib/unit++/tester.h',
-	'tests/lib/unit++/Test_unit++.cc',
-	'tests/lib/unit++/unit++-compat.h',
-	'tests/lib/unit++/Changelog',
-	'tests/lib/unit++/guitester.h',
-	'tests/lib/unit++/optmap.h',
-	'tests/lib/unit++/unit++.1',
-	'tests/lib/unit++/unit++.h',
-	'tests/lib/unit++/gui.cc',
-	'tests/lib/unit++/INSTALL',
-#	'tests/lib/unit++/Makefile.in',
-	'tests/lib/unit++/Test_gui.cc',
-	'tests/lib/unit++/unit++.3',
-	'tests/lib/unit++/configure.ac',
-	'tests/lib/unit++/gui.h',
-#	'tests/lib/unit++/main.cc',
-#	'tests/lib/unit++/optmap.cc',
-#	'tests/lib/unit++/tester.cc',
-	'tests/lib/unit++/Test_optmap.cc',
-#	'tests/lib/unit++/unit++.cc',
-	'tests/lib/unit++/unitpp.m4'
-]
-
-libunitpp_sources = [
-	'tests/lib/unit++/unit++.cc',
-	'tests/lib/unit++/main.cc',
-	'tests/lib/unit++/optmap.cc',
-	'tests/lib/unit++/tester.cc'
-]
-
 libvmimetest_common = [
-	'tests/parser/testUtils.hpp'
+	'tests/testUtils.hpp'
 ]
 
 libvmimetest_sources = [
-	[ 'tests/parser/bodyPartTest', [ 'tests/parser/bodyPartTest.cpp' ] ],
-	[ 'tests/parser/datetimeTest', [ 'tests/parser/datetimeTest.cpp' ] ],
-	[ 'tests/parser/dispositionTest', [ 'tests/parser/dispositionTest.cpp' ] ],
-	[ 'tests/parser/encoderTest', [ 'tests/parser/encoderTest.cpp' ] ],
-	[ 'tests/parser/headerTest', [ 'tests/parser/headerTest.cpp' ] ],
-	[ 'tests/parser/mailboxTest', [ 'tests/parser/mailboxTest.cpp' ] ],
-	[ 'tests/parser/mediaTypeTest', [ 'tests/parser/mediaTypeTest.cpp' ] ],
-	[ 'tests/parser/messageIdTest', [ 'tests/parser/messageIdTest.cpp' ] ],
-	[ 'tests/parser/messageIdSequenceTest', [ 'tests/parser/messageIdSequenceTest.cpp' ] ],
-	[ 'tests/parser/pathTest', [ 'tests/parser/pathTest.cpp' ] ],
-	[ 'tests/parser/parameterTest', [ 'tests/parser/parameterTest.cpp' ] ],
-	[ 'tests/parser/textTest', [ 'tests/parser/textTest.cpp' ] ],
-	[ 'tests/utility/filteredStreamTest', [ 'tests/utility/filteredStreamTest.cpp' ] ],
-	[ 'tests/utility/md5Test', [ 'tests/utility/md5Test.cpp' ] ],
-	[ 'tests/utility/stringProxyTest', [ 'tests/utility/stringProxyTest.cpp' ] ],
-	[ 'tests/utility/stringUtilsTest', [ 'tests/utility/stringUtilsTest.cpp' ] ],
-	[ 'tests/utility/pathTest', [ 'tests/utility/pathTest.cpp' ] ],
-	[ 'tests/utility/urlTest', [ 'tests/utility/urlTest.cpp' ] ],
-	[ 'tests/utility/smartPtrTest', [ 'tests/utility/smartPtrTest.cpp' ] ]
+	'tests/testRunner.cpp',
+	'tests/parser/bodyPartTest.cpp',
+	'tests/parser/datetimeTest.cpp',
+	'tests/parser/dispositionTest.cpp',
+	'tests/parser/encoderTest.cpp',
+	'tests/parser/headerTest.cpp',
+	'tests/parser/mailboxTest.cpp',
+	'tests/parser/mediaTypeTest.cpp',
+	'tests/parser/messageIdTest.cpp',
+	'tests/parser/messageIdSequenceTest.cpp',
+	'tests/parser/pathTest.cpp',
+	'tests/parser/parameterTest.cpp',
+	'tests/parser/textTest.cpp',
+	'tests/utility/filteredStreamTest.cpp',
+	'tests/utility/md5Test.cpp',
+	'tests/utility/stringProxyTest.cpp',
+	'tests/utility/stringUtilsTest.cpp',
+	'tests/utility/pathTest.cpp',
+	'tests/utility/urlTest.cpp',
+	'tests/utility/smartPtrTest.cpp'
 ]
 
 libvmime_autotools = [
@@ -398,14 +363,9 @@ for p in libvmime_platforms_sources:
 libvmime_dist_files = libvmime_all_sources + libvmime_extra + libvmime_examples_sources
 
 libvmime_dist_files += libvmime_tests
-libvmime_dist_files += libunitpp_common
-libvmime_dist_files += libunitpp_sources
+libvmime_dist_files += libvmimetest_sources
 libvmime_dist_files += libvmimetest_common
 libvmime_dist_files += libvmime_autotools
-
-for t in libvmimetest_sources:
-	for f in t[1]:
-		libvmime_dist_files.append(f)
 
 
 #################
@@ -530,7 +490,7 @@ opts.AddOptions(
 	),
 	EnumOption(
 		'build_tests',
-		'Build unit tests (in "tests" directory)',
+		'Build unit tests (run with "scons run-tests")',
 		'no',
 		allowed_values = ('yes', 'no'),
 		map = { },
@@ -872,22 +832,14 @@ Default(libVmime)
 # Tests
 if env['build_tests'] == 'yes':
 	if env['debug'] == 'yes':
-		libUnitpp = env.StaticLibrary(
-			target = 'tests/unit++',
-			source = libunitpp_sources
-		)
-
-		Default(libUnitpp)
-
-		for test in libvmimetest_sources:
-			Default(
-				env.Program(
-					target = test[0],
-					source = test[1],
-					LIBS=['unit++', packageVersionedGenericName + '-debug'],
-					LIBPATH=['.', './tests/']
-				)
+		Default(
+			env.Program(
+				target = 'run-tests',
+				source = libvmimetest_sources,
+				LIBS=['cppunit', 'dl', packageVersionedGenericName + '-debug'],
+				LIBPATH=['.']
 			)
+		)
 	else:
 		print 'Debug mode must be enabled to build tests!'
 		Exit(1)
@@ -2101,11 +2053,7 @@ env.Alias('doc', doxygenDocPath)
 ################
 
 def runTests(target, source, env):
-	for t in libvmimetest_sources:
-		print ""
-		print t[0] + ':'  # test name
-		os.system(t[0])
-
+	os.system("./run-tests")
 	return None
 
 

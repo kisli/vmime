@@ -17,117 +17,103 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "../lib/unit++/unit++.h"
+#include "tests/testUtils.hpp"
 
-#include <iostream>
-#include <ostream>
-
-#include "vmime/vmime.hpp"
-#include "vmime/platforms/posix/posixHandler.hpp"
 #include "vmime/utility/stringUtils.hpp"
 
-using namespace unitpp;
+
+#define VMIME_TEST_SUITE         stringUtilsTest
+#define VMIME_TEST_SUITE_MODULE  "Utility"
 
 
-namespace
-{
-	class stringUtilsTest : public suite
+VMIME_TEST_SUITE_BEGIN
+
+	VMIME_TEST_LIST_BEGIN
+		VMIME_TEST(testIsStringEqualNoCase1)
+		VMIME_TEST(testIsStringEqualNoCase2)
+		VMIME_TEST(testIsStringEqualNoCase3)
+
+		VMIME_TEST(testToLower)
+
+		VMIME_TEST(testTrim)
+
+		VMIME_TEST(testCountASCIIChars)
+	VMIME_TEST_LIST_END
+
+
+	typedef vmime::utility::stringUtils stringUtils;
+
+
+	void testIsStringEqualNoCase1()
 	{
-		typedef vmime::utility::stringUtils stringUtils;
+		VASSERT_EQ("1", true, stringUtils::isStringEqualNoCase(vmime::string("foo"), "foo", 3));
+		VASSERT_EQ("2", true, stringUtils::isStringEqualNoCase(vmime::string("FOo"), "foo", 3));
 
+		VASSERT_EQ("3", false, stringUtils::isStringEqualNoCase(vmime::string("foo"), "FOo", 3));
+		VASSERT_EQ("4", false, stringUtils::isStringEqualNoCase(vmime::string("foo"), "bar", 3));
+	}
 
-		void testIsStringEqualNoCase1()
-		{
-			assert_eq("1", true, stringUtils::isStringEqualNoCase(vmime::string("foo"), "foo", 3));
-			assert_eq("2", true, stringUtils::isStringEqualNoCase(vmime::string("FOo"), "foo", 3));
+	void testIsStringEqualNoCase2()
+	{
+		VASSERT_EQ("1", true, stringUtils::isStringEqualNoCase(vmime::string("foo"), vmime::string("foo")));
+		VASSERT_EQ("2", true, stringUtils::isStringEqualNoCase(vmime::string("FOo"), vmime::string("foo")));
+		VASSERT_EQ("3", true, stringUtils::isStringEqualNoCase(vmime::string("foO"), vmime::string("FOo")));
+	}
 
-			assert_eq("3", false, stringUtils::isStringEqualNoCase(vmime::string("foo"), "FOo", 3));
-			assert_eq("4", false, stringUtils::isStringEqualNoCase(vmime::string("foo"), "bar", 3));
-		}
+	void testIsStringEqualNoCase3()
+	{
+		vmime::string str1("FooBar");
 
-		void testIsStringEqualNoCase2()
-		{
-			assert_eq("1", true, stringUtils::isStringEqualNoCase(vmime::string("foo"), vmime::string("foo")));
-			assert_eq("2", true, stringUtils::isStringEqualNoCase(vmime::string("FOo"), vmime::string("foo")));
-			assert_eq("3", true, stringUtils::isStringEqualNoCase(vmime::string("foO"), vmime::string("FOo")));
-		}
+		VASSERT_EQ("1", true, stringUtils::isStringEqualNoCase(str1.begin(), str1.end(), "foobar", 6));
+		VASSERT_EQ("2", false, stringUtils::isStringEqualNoCase(str1.begin(), str1.end(), "FooBar", 6));
+		VASSERT_EQ("3", true, stringUtils::isStringEqualNoCase(str1.begin(), str1.end(), "fooBar", 3));
+		VASSERT_EQ("4", false, stringUtils::isStringEqualNoCase(str1.begin(), str1.begin() + 3, "fooBar", 6));
+	}
 
-		void testIsStringEqualNoCase3()
-		{
-			vmime::string str1("FooBar");
+	void testToLower()
+	{
+		VASSERT_EQ("1", "foo", stringUtils::toLower("FOO"));
+		VASSERT_EQ("2", "foo", stringUtils::toLower("foO"));
+		VASSERT_EQ("3", "foo", stringUtils::toLower("foo"));
+	}
 
-			assert_eq("1", true, stringUtils::isStringEqualNoCase(str1.begin(), str1.end(), "foobar", 6));
-			assert_eq("2", false, stringUtils::isStringEqualNoCase(str1.begin(), str1.end(), "FooBar", 6));
-			assert_eq("3", true, stringUtils::isStringEqualNoCase(str1.begin(), str1.end(), "fooBar", 3));
-			assert_eq("4", false, stringUtils::isStringEqualNoCase(str1.begin(), str1.begin() + 3, "fooBar", 6));
-		}
+	void testTrim()
+	{
+		VASSERT_EQ("1", "foo", stringUtils::trim("  foo"));
+		VASSERT_EQ("2", "foo", stringUtils::trim("\t\tfoo"));
+		VASSERT_EQ("3", "foo", stringUtils::trim(" \t \tfoo"));
+		VASSERT_EQ("4", "foo", stringUtils::trim(" \r\n\tfoo"));
 
-		void testToLower()
-		{
-			assert_eq("1", "foo", stringUtils::toLower("FOO"));
-			assert_eq("2", "foo", stringUtils::toLower("foO"));
-			assert_eq("3", "foo", stringUtils::toLower("foo"));
-		}
+		VASSERT_EQ("5", "foo", stringUtils::trim("foo  "));
+		VASSERT_EQ("6", "foo", stringUtils::trim("foo\t\t"));
+		VASSERT_EQ("7", "foo", stringUtils::trim("foo \t \t"));
+		VASSERT_EQ("8", "foo", stringUtils::trim("foo \r\n\t"));
 
-		void testTrim()
-		{
-			assert_eq("1", "foo", stringUtils::trim("  foo"));
-			assert_eq("2", "foo", stringUtils::trim("\t\tfoo"));
-			assert_eq("3", "foo", stringUtils::trim(" \t \tfoo"));
-			assert_eq("4", "foo", stringUtils::trim(" \r\n\tfoo"));
+		VASSERT_EQ( "9", "foo", stringUtils::trim("foo  "));
+		VASSERT_EQ("10", "foo", stringUtils::trim(" foo  "));
+		VASSERT_EQ("11", "foo", stringUtils::trim(" foo\t\t"));
+		VASSERT_EQ("12", "foo", stringUtils::trim("\tfoo \r \t"));
+		VASSERT_EQ("13", "foo", stringUtils::trim("\r \tfoo \n\t"));
+	}
 
-			assert_eq("5", "foo", stringUtils::trim("foo  "));
-			assert_eq("6", "foo", stringUtils::trim("foo\t\t"));
-			assert_eq("7", "foo", stringUtils::trim("foo \t \t"));
-			assert_eq("8", "foo", stringUtils::trim("foo \r\n\t"));
+	void testCountASCIIChars()
+	{
+		vmime::string str1("foo");
+		VASSERT_EQ("1", static_cast <vmime::string::size_type>(3),
+			stringUtils::countASCIIchars(str1.begin(), str1.end()));
 
-			assert_eq( "9", "foo", stringUtils::trim("foo  "));
-			assert_eq("10", "foo", stringUtils::trim(" foo  "));
-			assert_eq("11", "foo", stringUtils::trim(" foo\t\t"));
-			assert_eq("12", "foo", stringUtils::trim("\tfoo \r \t"));
-			assert_eq("13", "foo", stringUtils::trim("\r \tfoo \n\t"));
-		}
+		vmime::string str2("f=?oo");
+		VASSERT_EQ("2", static_cast <vmime::string::size_type>(3 + 1),
+			stringUtils::countASCIIchars(str2.begin(), str2.end()));
 
-		void testCountASCIIChars()
-		{
-			vmime::string str1("foo");
-			assert_eq("1", static_cast <vmime::string::size_type>(3),
-				stringUtils::countASCIIchars(str1.begin(), str1.end()));
+		vmime::string str3("foo\x7f");
+		VASSERT_EQ("3", static_cast <vmime::string::size_type>(4),
+			stringUtils::countASCIIchars(str3.begin(), str3.end()));
 
-			vmime::string str2("f=?oo");
-			assert_eq("2", static_cast <vmime::string::size_type>(3 + 1),
-				stringUtils::countASCIIchars(str2.begin(), str2.end()));
+		vmime::string str4("foo\x80");
+		VASSERT_EQ("4", static_cast <vmime::string::size_type>(3),
+			stringUtils::countASCIIchars(str4.begin(), str4.end()));
+	}
 
-			vmime::string str3("foo\x7f");
-			assert_eq("3", static_cast <vmime::string::size_type>(4),
-				stringUtils::countASCIIchars(str3.begin(), str3.end()));
+VMIME_TEST_SUITE_END
 
-			vmime::string str4("foo\x80");
-			assert_eq("4", static_cast <vmime::string::size_type>(3),
-				stringUtils::countASCIIchars(str4.begin(), str4.end()));
-		}
-
-	public:
-
-		stringUtilsTest() : suite("vmime::utility::stringUtils")
-		{
-			// VMime initialization
-			vmime::platformDependant::setHandler<vmime::platforms::posix::posixHandler>();
-
-			add("IsStringEqualNoCase1", testcase(this, "IsStringEqualNoCase1", &stringUtilsTest::testIsStringEqualNoCase1));
-			add("IsStringEqualNoCase2", testcase(this, "IsStringEqualNoCase2", &stringUtilsTest::testIsStringEqualNoCase2));
-			add("IsStringEqualNoCase3", testcase(this, "IsStringEqualNoCase3", &stringUtilsTest::testIsStringEqualNoCase3));
-
-			add("ToLower", testcase(this, "ToLower", &stringUtilsTest::testToLower));
-
-			add("Trim", testcase(this, "Trim", &stringUtilsTest::testTrim));
-
-			add("CountASCIIChars", testcase(this, "CountASCIIChars", &stringUtilsTest::testCountASCIIChars));
-
-			suite::main().add("vmime::utility::stringUtils", this);
-		}
-
-	};
-
-	stringUtilsTest* theTest = new stringUtilsTest();
-}

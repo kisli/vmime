@@ -17,255 +17,238 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "../lib/unit++/unit++.h"
-
-#include <iostream>
-#include <ostream>
-#include <sstream>
-
-#include "vmime/vmime.hpp"
-#include "vmime/platforms/posix/posixHandler.hpp"
-
-#include "tests/parser/testUtils.hpp"
-
-using namespace unitpp;
+#include "tests/testUtils.hpp"
 
 
-namespace
-{
-	class textTest : public suite
+#define VMIME_TEST_SUITE         textTest
+#define VMIME_TEST_SUITE_MODULE  "Parser"
+
+
+VMIME_TEST_SUITE_BEGIN
+
+	VMIME_TEST_LIST_BEGIN
+		VMIME_TEST(testConstructors)
+		VMIME_TEST(testCopy)
+		VMIME_TEST(testNewFromString)
+		VMIME_TEST(testDisplayForm)
+		VMIME_TEST(testParse)
+		VMIME_TEST(testGenerate)
+
+		VMIME_TEST(testWordConstructors)
+		VMIME_TEST(testWordParse)
+		VMIME_TEST(testWordGenerate)
+	VMIME_TEST_LIST_END
+
+
+	void testConstructors()
 	{
-		void testConstructors()
-		{
-			vmime::text t1;
+		vmime::text t1;
 
-			assert_eq("1.1", 0, t1.getWordCount());
+		VASSERT_EQ("1.1", 0, t1.getWordCount());
 
-			vmime::text t2("Test\xa9\xc3");
+		vmime::text t2("Test\xa9\xc3");
 
-			assert_eq("2.1", 1, t2.getWordCount());
-			assert_eq("2.2", "Test\xa9\xc3", t2.getWordAt(0)->getBuffer());
-			assert_eq("2.3", vmime::charset::getLocaleCharset(), t2.getWordAt(0)->getCharset());
+		VASSERT_EQ("2.1", 1, t2.getWordCount());
+		VASSERT_EQ("2.2", "Test\xa9\xc3", t2.getWordAt(0)->getBuffer());
+		VASSERT_EQ("2.3", vmime::charset::getLocaleCharset(), t2.getWordAt(0)->getCharset());
 
-			vmime::text t3("Test\xa9\xc3", vmime::charset(vmime::charsets::ISO8859_13));
+		vmime::text t3("Test\xa9\xc3", vmime::charset(vmime::charsets::ISO8859_13));
 
-			assert_eq("3.1", 1, t3.getWordCount());
-			assert_eq("3.2", "Test\xa9\xc3", t3.getWordAt(0)->getBuffer());
-			assert_eq("3.3", vmime::charset(vmime::charsets::ISO8859_13), t3.getWordAt(0)->getCharset());
+		VASSERT_EQ("3.1", 1, t3.getWordCount());
+		VASSERT_EQ("3.2", "Test\xa9\xc3", t3.getWordAt(0)->getBuffer());
+		VASSERT_EQ("3.3", vmime::charset(vmime::charsets::ISO8859_13), t3.getWordAt(0)->getCharset());
 
-			vmime::word w1("Test", vmime::charset(vmime::charsets::UTF_8));
-			vmime::text t4(w1);
+		vmime::word w1("Test", vmime::charset(vmime::charsets::UTF_8));
+		vmime::text t4(w1);
 
-			assert_eq("4.1", 1, t4.getWordCount());
-			assert_eq("4.2", w1.getBuffer(), t4.getWordAt(0)->getBuffer());
-			assert_eq("4.3", w1.getCharset(), t4.getWordAt(0)->getCharset());
+		VASSERT_EQ("4.1", 1, t4.getWordCount());
+		VASSERT_EQ("4.2", w1.getBuffer(), t4.getWordAt(0)->getBuffer());
+		VASSERT_EQ("4.3", w1.getCharset(), t4.getWordAt(0)->getCharset());
 
-			vmime::word w2("Other", vmime::charset(vmime::charsets::US_ASCII));
-			t4.appendWord(vmime::create <vmime::word>(w2));
+		vmime::word w2("Other", vmime::charset(vmime::charsets::US_ASCII));
+		t4.appendWord(vmime::create <vmime::word>(w2));
 
-			vmime::text t5(t4);
+		vmime::text t5(t4);
 
-			assert_eq("5.1", 2, t5.getWordCount());
-			assert_eq("5.2", w1.getBuffer(), t5.getWordAt(0)->getBuffer());
-			assert_eq("5.3", w1.getCharset(), t5.getWordAt(0)->getCharset());
-			assert_eq("5.4", w2.getBuffer(), t5.getWordAt(1)->getBuffer());
-			assert_eq("5.5", w2.getCharset(), t5.getWordAt(1)->getCharset());
-		}
+		VASSERT_EQ("5.1", 2, t5.getWordCount());
+		VASSERT_EQ("5.2", w1.getBuffer(), t5.getWordAt(0)->getBuffer());
+		VASSERT_EQ("5.3", w1.getCharset(), t5.getWordAt(0)->getCharset());
+		VASSERT_EQ("5.4", w2.getBuffer(), t5.getWordAt(1)->getBuffer());
+		VASSERT_EQ("5.5", w2.getCharset(), t5.getWordAt(1)->getCharset());
+	}
 
-		void testCopy()
-		{
-			vmime::text t1("Test: \xa9\xc3");
+	void testCopy()
+	{
+		vmime::text t1("Test: \xa9\xc3");
 
-			assert_true("operator==", t1 == t1);
-			assert_true("clone", *vmime::clone(t1) == t1);
+		VASSERT("operator==", t1 == t1);
+		VASSERT("clone", *vmime::clone(t1) == t1);
 
-			vmime::text t2;
-			t2.copyFrom(t1);
+		vmime::text t2;
+		t2.copyFrom(t1);
 
-			assert_true("copyFrom", t1 == t2);
-		}
+		VASSERT("copyFrom", t1 == t2);
+	}
 
-		void testNewFromString()
-		{
-			vmime::string s1 = "only ASCII characters";
-			vmime::charset c1("test");
-			vmime::text t1;
+	void testNewFromString()
+	{
+		vmime::string s1 = "only ASCII characters";
+		vmime::charset c1("test");
+		vmime::text t1;
 
-			t1.createFromString(s1, c1);
+		t1.createFromString(s1, c1);
 
-			assert_eq("1.1", 1, t1.getWordCount());
-			assert_eq("1.2", s1, t1.getWordAt(0)->getBuffer());
-			assert_eq("1.3", vmime::charset(vmime::charsets::US_ASCII), t1.getWordAt(0)->getCharset());
+		VASSERT_EQ("1.1", 1, t1.getWordCount());
+		VASSERT_EQ("1.2", s1, t1.getWordAt(0)->getBuffer());
+		VASSERT_EQ("1.3", vmime::charset(vmime::charsets::US_ASCII), t1.getWordAt(0)->getCharset());
 
-			vmime::string s2_1 = "some ASCII characters and special chars: ";
-			vmime::string s2_2 = "\xf1\xf2\xf3\xf4 ";
-			vmime::string s2_3 = "and then more ASCII chars.";
-			vmime::string s2 = s2_1 + s2_2 + s2_3;
-			vmime::charset c2("test");
-			vmime::text t2;
+		vmime::string s2_1 = "some ASCII characters and special chars: ";
+		vmime::string s2_2 = "\xf1\xf2\xf3\xf4 ";
+		vmime::string s2_3 = "and then more ASCII chars.";
+		vmime::string s2 = s2_1 + s2_2 + s2_3;
+		vmime::charset c2("test");
+		vmime::text t2;
 
-			t2.createFromString(s2, c2);
+		t2.createFromString(s2, c2);
 
-			assert_eq("2.1", 3, t2.getWordCount());
-			assert_eq("2.2", s2_1, t2.getWordAt(0)->getBuffer());
-			assert_eq("2.3", vmime::charset(vmime::charsets::US_ASCII), t2.getWordAt(0)->getCharset());
-			assert_eq("2.4", s2_2, t2.getWordAt(1)->getBuffer());
-			assert_eq("2.5", c2, t2.getWordAt(1)->getCharset());
-			assert_eq("2.6", s2_3, t2.getWordAt(2)->getBuffer());
-			assert_eq("2.7", vmime::charset(vmime::charsets::US_ASCII), t2.getWordAt(2)->getCharset());
-		}
+		VASSERT_EQ("2.1", 3, t2.getWordCount());
+		VASSERT_EQ("2.2", s2_1, t2.getWordAt(0)->getBuffer());
+		VASSERT_EQ("2.3", vmime::charset(vmime::charsets::US_ASCII), t2.getWordAt(0)->getCharset());
+		VASSERT_EQ("2.4", s2_2, t2.getWordAt(1)->getBuffer());
+		VASSERT_EQ("2.5", c2, t2.getWordAt(1)->getCharset());
+		VASSERT_EQ("2.6", s2_3, t2.getWordAt(2)->getBuffer());
+		VASSERT_EQ("2.7", vmime::charset(vmime::charsets::US_ASCII), t2.getWordAt(2)->getCharset());
+	}
 
-		static const vmime::string parseText(const vmime::string& buffer)
-		{
-			vmime::text t;
-			t.parse(buffer);
+	static const vmime::string parseText(const vmime::string& buffer)
+	{
+		vmime::text t;
+		t.parse(buffer);
 
-			std::ostringstream oss;
-			oss << t;
+		std::ostringstream oss;
+		oss << t;
 
-			return (oss.str());
-		}
+		return (oss.str());
+	}
 
-		void testParse()
-		{
-			// From RFC-2047
-			assert_eq("1", "[text: [[word: charset=US-ASCII, buffer=Keith Moore]]]",
-				parseText("=?US-ASCII?Q?Keith_Moore?="));
+	void testParse()
+	{
+		// From RFC-2047
+		VASSERT_EQ("1", "[text: [[word: charset=US-ASCII, buffer=Keith Moore]]]",
+			parseText("=?US-ASCII?Q?Keith_Moore?="));
 
-			assert_eq("2", "[text: [[word: charset=ISO-8859-1, buffer=Keld J\xf8rn Simonsen]]]",
-				parseText("=?ISO-8859-1?Q?Keld_J=F8rn_Simonsen?="));
+		VASSERT_EQ("2", "[text: [[word: charset=ISO-8859-1, buffer=Keld J\xf8rn Simonsen]]]",
+			parseText("=?ISO-8859-1?Q?Keld_J=F8rn_Simonsen?="));
 
-			assert_eq("3", "[text: [[word: charset=ISO-8859-1, buffer=Andr\xe9]," \
-				                 "[word: charset=us-ascii, buffer= Pirard]]]",
-				parseText("=?ISO-8859-1?Q?Andr=E9?= Pirard"));
+		VASSERT_EQ("3", "[text: [[word: charset=ISO-8859-1, buffer=Andr\xe9]," \
+			                 "[word: charset=us-ascii, buffer= Pirard]]]",
+			parseText("=?ISO-8859-1?Q?Andr=E9?= Pirard"));
 
-			assert_eq("4", "[text: [[word: charset=ISO-8859-1, buffer=If you can read this yo]," \
-				                 "[word: charset=ISO-8859-2, buffer=u understand the example.]]]",
-				parseText("=?ISO-8859-1?B?SWYgeW91IGNhbiByZWFkIHRoaXMgeW8=?=\r\n " \
-					"=?ISO-8859-2?B?dSB1bmRlcnN0YW5kIHRoZSBleGFtcGxlLg==?="));
+		VASSERT_EQ("4", "[text: [[word: charset=ISO-8859-1, buffer=If you can read this yo]," \
+			                 "[word: charset=ISO-8859-2, buffer=u understand the example.]]]",
+			parseText("=?ISO-8859-1?B?SWYgeW91IGNhbiByZWFkIHRoaXMgeW8=?=\r\n " \
+				"=?ISO-8859-2?B?dSB1bmRlcnN0YW5kIHRoZSBleGFtcGxlLg==?="));
 
-			// Bugfix: in "=?charset?q?=XX=YY?=", the "?=" finish
-			// sequence was not correctly found (should be the one
-			// after '=YY' and not the one after '?q').
-			assert_eq("5", "[text: [[word: charset=abc, buffer=\xe9\xe9]]]",
-				parseText("=?abc?q?=E9=E9?="));
+		// Bugfix: in "=?charset?q?=XX=YY?=", the "?=" finish
+		// sequence was not correctly found (should be the one
+		// after '=YY' and not the one after '?q').
+		VASSERT_EQ("5", "[text: [[word: charset=abc, buffer=\xe9\xe9]]]",
+			parseText("=?abc?q?=E9=E9?="));
 
-			// Question marks (?) in the middle of the string
-			assert_eq("6", "[text: [[word: charset=iso-8859-1, buffer=Know wh\xe4t? It works!]]]",
-				parseText("=?iso-8859-1?Q?Know_wh=E4t?_It_works!?="));
+		// Question marks (?) in the middle of the string
+		VASSERT_EQ("6", "[text: [[word: charset=iso-8859-1, buffer=Know wh\xe4t? It works!]]]",
+			parseText("=?iso-8859-1?Q?Know_wh=E4t?_It_works!?="));
 
-			// TODO: add more
-		}
+		// TODO: add more
+	}
 
-		void testGenerate()
-		{
-			// TODO
-		}
+	void testGenerate()
+	{
+		// TODO
+	}
 
-		static const vmime::string getDisplayText(const vmime::text& t)
-		{
-			vmime::string res;
+	static const vmime::string getDisplayText(const vmime::text& t)
+	{
+		vmime::string res;
 
-			for (int i = 0 ; i < t.getWordCount() ; ++i)
-				res += t.getWordAt(i)->getBuffer();
+		for (int i = 0 ; i < t.getWordCount() ; ++i)
+			res += t.getWordAt(i)->getBuffer();
 
-			return res;
-		}
+		return res;
+	}
 
-		void testDisplayForm()
-		{
+	void testDisplayForm()
+	{
 #define DISPLAY_FORM(x) getDisplayText(*vmime::text::decodeAndUnfold(x))
 
-			// From RFC-2047
-			assert_eq("1", "a", DISPLAY_FORM("=?ISO-8859-1?Q?a?="));
-			assert_eq("2", "a b", DISPLAY_FORM("=?ISO-8859-1?Q?a?= b"));
-			assert_eq("3", "ab", DISPLAY_FORM("=?ISO-8859-1?Q?a?= =?ISO-8859-1?Q?b?="));
-			assert_eq("4", "ab", DISPLAY_FORM("=?ISO-8859-1?Q?a?= \t  =?ISO-8859-1?Q?b?="));
-			assert_eq("5", "ab", DISPLAY_FORM("=?ISO-8859-1?Q?a?= \r\n  \t =?ISO-8859-1?Q?b?="));
-			assert_eq("6", "a b", DISPLAY_FORM("=?ISO-8859-1?Q?a_b?="));
-			assert_eq("7", "a b", DISPLAY_FORM("=?ISO-8859-1?Q?a?= =?ISO-8859-2?Q?_b?="));
+		// From RFC-2047
+		VASSERT_EQ("1", "a", DISPLAY_FORM("=?ISO-8859-1?Q?a?="));
+		VASSERT_EQ("2", "a b", DISPLAY_FORM("=?ISO-8859-1?Q?a?= b"));
+		VASSERT_EQ("3", "ab", DISPLAY_FORM("=?ISO-8859-1?Q?a?= =?ISO-8859-1?Q?b?="));
+		VASSERT_EQ("4", "ab", DISPLAY_FORM("=?ISO-8859-1?Q?a?= \t  =?ISO-8859-1?Q?b?="));
+		VASSERT_EQ("5", "ab", DISPLAY_FORM("=?ISO-8859-1?Q?a?= \r\n  \t =?ISO-8859-1?Q?b?="));
+		VASSERT_EQ("6", "a b", DISPLAY_FORM("=?ISO-8859-1?Q?a_b?="));
+		VASSERT_EQ("7", "a b", DISPLAY_FORM("=?ISO-8859-1?Q?a?= =?ISO-8859-2?Q?_b?="));
 
-			// Some more tests...
-			assert_eq("8", "a b", DISPLAY_FORM(" a =?ISO-8859-1?Q?b?=  "));
-			assert_eq("9", "a b  ", DISPLAY_FORM(" \t  =?ISO-8859-1?Q?a?= b  "));
-			assert_eq("10", "a b", DISPLAY_FORM("  a\r\n\t  b"));
+		// Some more tests...
+		VASSERT_EQ("8", "a b", DISPLAY_FORM(" a =?ISO-8859-1?Q?b?=  "));
+		VASSERT_EQ("9", "a b  ", DISPLAY_FORM(" \t  =?ISO-8859-1?Q?a?= b  "));
+		VASSERT_EQ("10", "a b", DISPLAY_FORM("  a\r\n\t  b"));
 
 #undef DISPLAY_FORM
-		}
+	}
 
-		void testWordConstructors()
-		{
-			assert_eq("1.1", vmime::charset::getLocaleCharset(), vmime::word().getCharset());
-			assert_eq("1.2", "", vmime::word().getBuffer());
+	void testWordConstructors()
+	{
+		VASSERT_EQ("1.1", vmime::charset::getLocaleCharset(), vmime::word().getCharset());
+		VASSERT_EQ("1.2", "", vmime::word().getBuffer());
 
-			assert_eq("2.1", vmime::charset::getLocaleCharset(), vmime::word("foo").getCharset());
-			assert_eq("2.2", "foo", vmime::word("foo").getBuffer());
+		VASSERT_EQ("2.1", vmime::charset::getLocaleCharset(), vmime::word("foo").getCharset());
+		VASSERT_EQ("2.2", "foo", vmime::word("foo").getBuffer());
 
-			assert_eq("3.1", "bar", vmime::word("foo", vmime::charset("bar")).getCharset().getName());
-			assert_eq("3.2", "foo", vmime::word("foo", vmime::charset("bar")).getBuffer());
-		}
+		VASSERT_EQ("3.1", "bar", vmime::word("foo", vmime::charset("bar")).getCharset().getName());
+		VASSERT_EQ("3.2", "foo", vmime::word("foo", vmime::charset("bar")).getBuffer());
+	}
 
-		void testWordParse()
-		{
-			// Simple encoded word
-			vmime::word w1;
-			w1.parse("=?foo?q?bar=E9 baz?=");
+	void testWordParse()
+	{
+		// Simple encoded word
+		vmime::word w1;
+		w1.parse("=?foo?q?bar=E9 baz?=");
 
-			assert_eq("1.1", "foo", w1.getCharset().getName());
-			assert_eq("1.2", "bar\xe9 baz", w1.getBuffer());
+		VASSERT_EQ("1.1", "foo", w1.getCharset().getName());
+		VASSERT_EQ("1.2", "bar\xe9 baz", w1.getBuffer());
 
-			// Unencoded text
-			vmime::word w2;
-			w2.parse("  foo bar \tbaz...");
+		// Unencoded text
+		vmime::word w2;
+		w2.parse("  foo bar \tbaz...");
 
-			assert_eq("2.1", vmime::charset(vmime::charsets::US_ASCII), w2.getCharset());
-			assert_eq("2.2", "  foo bar \tbaz...", w2.getBuffer());
+		VASSERT_EQ("2.1", vmime::charset(vmime::charsets::US_ASCII), w2.getCharset());
+		VASSERT_EQ("2.2", "  foo bar \tbaz...", w2.getBuffer());
 
-			// Malformed word
-			vmime::word w3;
-			w3.parse("=?foo bar");
+		// Malformed word
+		vmime::word w3;
+		w3.parse("=?foo bar");
 
-			assert_eq("3.1", vmime::charset(vmime::charsets::US_ASCII), w3.getCharset());
-			assert_eq("3.2", "=?foo bar", w3.getBuffer());
+		VASSERT_EQ("3.1", vmime::charset(vmime::charsets::US_ASCII), w3.getCharset());
+		VASSERT_EQ("3.2", "=?foo bar", w3.getBuffer());
 
-			// Unknown encoding
-			vmime::word w4;
-			w4.parse("=?whatever?not_q_or_b?whatever?=");
+		// Unknown encoding
+		vmime::word w4;
+		w4.parse("=?whatever?not_q_or_b?whatever?=");
 
-			assert_eq("4.1", vmime::charset(vmime::charsets::US_ASCII), w4.getCharset());
-			assert_eq("4.2", "=?whatever?not_q_or_b?whatever?=", w4.getBuffer());
-		}
+		VASSERT_EQ("4.1", vmime::charset(vmime::charsets::US_ASCII), w4.getCharset());
+		VASSERT_EQ("4.2", "=?whatever?not_q_or_b?whatever?=", w4.getBuffer());
+	}
 
-		void testWordGenerate()
-		{
-			assert_eq("1", "=?foo?Q?bar=E9_baz?=",
-				vmime::word("bar\xe9 baz", vmime::charset("foo")).generate());
+	void testWordGenerate()
+	{
+		VASSERT_EQ("1", "=?foo?Q?bar=E9_baz?=",
+			vmime::word("bar\xe9 baz", vmime::charset("foo")).generate());
 
-			assert_eq("2", "=?foo?B?8fLz9PU=?=",
-				vmime::word("\xf1\xf2\xf3\xf4\xf5", vmime::charset("foo")).generate());
-		}
+		VASSERT_EQ("2", "=?foo?B?8fLz9PU=?=",
+			vmime::word("\xf1\xf2\xf3\xf4\xf5", vmime::charset("foo")).generate());
+	}
 
-	public:
+VMIME_TEST_SUITE_END
 
-		textTest() : suite("vmime::text")
-		{
-			vmime::platformDependant::setHandler<vmime::platforms::posix::posixHandler>();
-
-			add("Constructors", testcase(this, "Constructors", &textTest::testConstructors));
-			add("Copy", testcase(this, "Copy", &textTest::testCopy));
-			add("NewFromString", testcase(this, "NewFromString", &textTest::testNewFromString));
-			add("DisplayForm", testcase(this, "DisplayForm", &textTest::testDisplayForm));
-			add("Parse", testcase(this, "Parse", &textTest::testParse));
-			add("Generate", testcase(this, "Generate", &textTest::testGenerate));
-
-			add("WordConstructors", testcase(this, "WordConstructors", &textTest::testWordConstructors));
-			add("WordParse", testcase(this, "WordParse", &textTest::testWordParse));
-			add("WordGenerate", testcase(this, "WordGenerate", &textTest::testWordGenerate));
-
-			suite::main().add("vmime::text", this);
-		}
-
-	};
-
-	textTest* theTest = new textTest();
-}

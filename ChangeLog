@@ -2,6 +2,10 @@
 VERSION 0.7.2cvs
 ================
 
+2005-08-25  Vincent Richard  <vincent@vincent-richard.net>
+
+ * Tests: moved to CppUnit for unit tests framework.
+
 2005-08-23  Vincent Richard  <vincent@vincent-richard.net>
 
  * All sources: renamed 'vmime::messaging' to 'vmime::net'. An alias has been

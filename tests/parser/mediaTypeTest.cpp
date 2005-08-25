@@ -17,99 +17,85 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "../lib/unit++/unit++.h"
-
-#include <iostream>
-#include <ostream>
-
-#include "vmime/vmime.hpp"
-#include "vmime/platforms/posix/posixHandler.hpp"
-
-using namespace unitpp;
+#include "tests/testUtils.hpp"
 
 
-namespace
-{
-	class mediaTypeTest : public suite
+#define VMIME_TEST_SUITE         mediaTypeTest
+#define VMIME_TEST_SUITE_MODULE  "Parser"
+
+
+VMIME_TEST_SUITE_BEGIN
+
+	VMIME_TEST_LIST_BEGIN
+		VMIME_TEST(testConstructors)
+		VMIME_TEST(testCopy)
+		VMIME_TEST(testSetFromString)
+		VMIME_TEST(testParse)
+		VMIME_TEST(testGenerate)
+	VMIME_TEST_LIST_END
+
+
+	void testConstructors()
 	{
-		void testConstructors()
-		{
-			vmime::mediaType t1;
+		vmime::mediaType t1;
 
-			assert_eq("1.1", vmime::mediaTypes::APPLICATION, t1.getType());
-			assert_eq("1.2", vmime::mediaTypes::APPLICATION_OCTET_STREAM, t1.getSubType());
+		VASSERT_EQ("1.1", vmime::mediaTypes::APPLICATION, t1.getType());
+		VASSERT_EQ("1.2", vmime::mediaTypes::APPLICATION_OCTET_STREAM, t1.getSubType());
 
-			vmime::mediaType t2("type", "sub");
+		vmime::mediaType t2("type", "sub");
 
-			assert_eq("2.1", "type", t2.getType());
-			assert_eq("2.2", "sub", t2.getSubType());
+		VASSERT_EQ("2.1", "type", t2.getType());
+		VASSERT_EQ("2.2", "sub", t2.getSubType());
 
-			vmime::mediaType t3("type/sub");
+		vmime::mediaType t3("type/sub");
 
-			assert_eq("3.1", "type", t3.getType());
-			assert_eq("3.2", "sub", t3.getSubType());
-		}
+		VASSERT_EQ("3.1", "type", t3.getType());
+		VASSERT_EQ("3.2", "sub", t3.getSubType());
+	}
 
-		void testCopy()
-		{
-			vmime::mediaType t1("type/sub");
+	void testCopy()
+	{
+		vmime::mediaType t1("type/sub");
 
-			assert_eq("eq1", "type", t1.getType());
-			assert_eq("eq2", "sub", t1.getSubType());
+		VASSERT_EQ("eq1", "type", t1.getType());
+		VASSERT_EQ("eq2", "sub", t1.getSubType());
 
-			assert_true("operator==", t1 == t1);
-			assert_true("clone", t1 == *vmime::clone(t1));
+		VASSERT("operator==", t1 == t1);
+		VASSERT("clone", t1 == *vmime::clone(t1));
 
-			assert_eq("eq3", "type", vmime::clone(t1)->getType());
-			assert_eq("eq4", "sub", vmime::clone(t1)->getSubType());
+		VASSERT_EQ("eq3", "type", vmime::clone(t1)->getType());
+		VASSERT_EQ("eq4", "sub", vmime::clone(t1)->getSubType());
 
-			vmime::mediaType t2;
-			t2.copyFrom(t1);
+		vmime::mediaType t2;
+		t2.copyFrom(t1);
 
-			assert_true("copyFrom", t1 == t2);
-		}
+		VASSERT("copyFrom", t1 == t2);
+	}
 
-		void testSetFromString()
-		{
-			vmime::mediaType t1;
-			t1.setFromString("type/sub");
+	void testSetFromString()
+	{
+		vmime::mediaType t1;
+		t1.setFromString("type/sub");
 
-			assert_eq("1.1", "type", t1.getType());
-			assert_eq("1.2", "sub", t1.getSubType());
-		}
+		VASSERT_EQ("1.1", "type", t1.getType());
+		VASSERT_EQ("1.2", "sub", t1.getSubType());
+	}
 
-		void testParse()
-		{
-			vmime::mediaType t1;
-			t1.parse("type/sub");
+	void testParse()
+	{
+		vmime::mediaType t1;
+		t1.parse("type/sub");
 
-			assert_eq("1.1", "type", t1.getType());
-			assert_eq("1.2", "sub", t1.getSubType());
-		}
+		VASSERT_EQ("1.1", "type", t1.getType());
+		VASSERT_EQ("1.2", "sub", t1.getSubType());
+	}
 
-		void testGenerate()
-		{
-			vmime::mediaType t1("type", "sub");
+	void testGenerate()
+	{
+		vmime::mediaType t1("type", "sub");
 
-			assert_eq("1", "type/sub", t1.generate());
-		}
+		VASSERT_EQ("1", "type/sub", t1.generate());
+	}
 
-	public:
+VMIME_TEST_SUITE_END
 
-		mediaTypeTest() : suite("vmime::mediaType")
-		{
-			vmime::platformDependant::setHandler<vmime::platforms::posix::posixHandler>();
-
-			add("Constructors", testcase(this, "Constructors", &mediaTypeTest::testConstructors));
-			add("Copy", testcase(this, "Copy", &mediaTypeTest::testCopy));
-			add("SetFromString", testcase(this, "SetFromString", &mediaTypeTest::testSetFromString));
-			add("Parse", testcase(this, "Parse", &mediaTypeTest::testParse));
-			add("Generate", testcase(this, "Generate", &mediaTypeTest::testGenerate));
-
-			suite::main().add("vmime::mediaType", this);
-		}
-
-	};
-
-	mediaTypeTest* theTest = new mediaTypeTest();
-}

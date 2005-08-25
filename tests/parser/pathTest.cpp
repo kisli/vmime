@@ -17,103 +17,87 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "../lib/unit++/unit++.h"
-
-#include <iostream>
-#include <ostream>
-
-#include "vmime/vmime.hpp"
-#include "vmime/platforms/posix/posixHandler.hpp"
-
-#include "tests/parser/testUtils.hpp"
-
-using namespace unitpp;
+#include "tests/testUtils.hpp"
 
 
-namespace
-{
-	class pathTest : public suite
+#define VMIME_TEST_SUITE         pathTest
+#define VMIME_TEST_SUITE_MODULE  "Parser"
+
+
+VMIME_TEST_SUITE_BEGIN
+
+	VMIME_TEST_LIST_BEGIN
+		VMIME_TEST(testParse)
+		VMIME_TEST(testParse2)
+		VMIME_TEST(testGenerate)
+	VMIME_TEST_LIST_END
+
+
+	void testParse()
 	{
-		void testParse()
-		{
-			vmime::path p1;
-			p1.parse("<>");
+		vmime::path p1;
+		p1.parse("<>");
 
-			assert_eq("1.1", "", p1.getLocalPart());
-			assert_eq("1.2", "", p1.getDomain());
+		VASSERT_EQ("1.1", "", p1.getLocalPart());
+		VASSERT_EQ("1.2", "", p1.getDomain());
 
-			vmime::path p2;
-			p2.parse("<domain>");
+		vmime::path p2;
+		p2.parse("<domain>");
 
-			assert_eq("2.1", "", p2.getLocalPart());
-			assert_eq("2.2", "domain", p2.getDomain());
+		VASSERT_EQ("2.1", "", p2.getLocalPart());
+		VASSERT_EQ("2.2", "domain", p2.getDomain());
 
-			vmime::path p3;
-			p3.parse("<local@domain>");
+		vmime::path p3;
+		p3.parse("<local@domain>");
 
-			assert_eq("3.1", "local", p3.getLocalPart());
-			assert_eq("3.2", "domain", p3.getDomain());
-		}
+		VASSERT_EQ("3.1", "local", p3.getLocalPart());
+		VASSERT_EQ("3.2", "domain", p3.getDomain());
+	}
 
-		void testParse2()
-		{
-			// Test some invalid paths (no '<>')
-			vmime::path p1;
-			p1.parse("");
+	void testParse2()
+	{
+		// Test some invalid paths (no '<>')
+		vmime::path p1;
+		p1.parse("");
 
-			assert_eq("1.1", "", p1.getLocalPart());
-			assert_eq("1.2", "", p1.getDomain());
+		VASSERT_EQ("1.1", "", p1.getLocalPart());
+		VASSERT_EQ("1.2", "", p1.getDomain());
 
-			vmime::path p2;
-			p2.parse("domain");
+		vmime::path p2;
+		p2.parse("domain");
 
-			assert_eq("2.1", "", p2.getLocalPart());
-			assert_eq("2.2", "domain", p2.getDomain());
+		VASSERT_EQ("2.1", "", p2.getLocalPart());
+		VASSERT_EQ("2.2", "domain", p2.getDomain());
 
-			vmime::path p3;
-			p3.parse("local@domain");
+		vmime::path p3;
+		p3.parse("local@domain");
 
-			assert_eq("3.1", "local", p3.getLocalPart());
-			assert_eq("3.2", "domain", p3.getDomain());
-		}
+		VASSERT_EQ("3.1", "local", p3.getLocalPart());
+		VASSERT_EQ("3.2", "domain", p3.getDomain());
+	}
 
-		void testGenerate()
-		{
-			vmime::path p1;
+	void testGenerate()
+	{
+		vmime::path p1;
 
-			assert_eq("1", "<>", p1.generate());
+		VASSERT_EQ("1", "<>", p1.generate());
 
-			vmime::path p2;
-			p2.setLocalPart("local");
+		vmime::path p2;
+		p2.setLocalPart("local");
 
-			assert_eq("2", "<local@>", p2.generate());
+		VASSERT_EQ("2", "<local@>", p2.generate());
 
-			vmime::path p3;
-			p3.setDomain("domain");
+		vmime::path p3;
+		p3.setDomain("domain");
 
-			assert_eq("3", "<@domain>", p3.generate());
+		VASSERT_EQ("3", "<@domain>", p3.generate());
 
-			vmime::path p4;
-			p4.setLocalPart("local");
-			p4.setDomain("domain");
+		vmime::path p4;
+		p4.setLocalPart("local");
+		p4.setDomain("domain");
 
-			assert_eq("4", "<local@domain>", p4.generate());
-		}
+		VASSERT_EQ("4", "<local@domain>", p4.generate());
+	}
 
-	public:
+VMIME_TEST_SUITE_END
 
-		pathTest() : suite("vmime::path")
-		{
-			vmime::platformDependant::setHandler<vmime::platforms::posix::posixHandler>();
-
-			add("Parse", testcase(this, "Parse", &pathTest::testParse));
-			add("Parse2", testcase(this, "Parse2", &pathTest::testParse2));
-			add("Generate", testcase(this, "Generate", &pathTest::testGenerate));
-
-			suite::main().add("vmime::path", this);
-		}
-
-	};
-
-	pathTest* theTest = new pathTest();
-}

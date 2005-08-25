@@ -17,79 +17,63 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "../lib/unit++/unit++.h"
-
-#include <iostream>
-#include <ostream>
-
-#include "vmime/vmime.hpp"
-#include "vmime/platforms/posix/posixHandler.hpp"
-
-#include "tests/parser/testUtils.hpp"
-
-using namespace unitpp;
+#include "tests/testUtils.hpp"
 
 
-namespace
-{
-	class messageIdSequenceTest : public suite
+#define VMIME_TEST_SUITE         messageIdSequenceTest
+#define VMIME_TEST_SUITE_MODULE  "Parser"
+
+
+VMIME_TEST_SUITE_BEGIN
+
+	VMIME_TEST_LIST_BEGIN
+		VMIME_TEST(testParse)
+		VMIME_TEST(testGenerate)
+	VMIME_TEST_LIST_END
+
+
+	void testParse()
 	{
-		void testParse()
-		{
-			vmime::messageIdSequence s1;
-			s1.parse("");
+		vmime::messageIdSequence s1;
+		s1.parse("");
 
-			assert_eq("1", 0, s1.getMessageIdCount());
+		VASSERT_EQ("1", 0, s1.getMessageIdCount());
 
-			vmime::messageIdSequence s2;
-			s2.parse("   \t  ");
+		vmime::messageIdSequence s2;
+		s2.parse("   \t  ");
 
-			assert_eq("2", 0, s2.getMessageIdCount());
+		VASSERT_EQ("2", 0, s2.getMessageIdCount());
 
-			vmime::messageIdSequence s3;
-			s3.parse("<a@b>");
+		vmime::messageIdSequence s3;
+		s3.parse("<a@b>");
 
-			assert_eq("3.1", 1, s3.getMessageIdCount());
-			assert_eq("3.2", "a", s3.getMessageIdAt(0)->getLeft());
-			assert_eq("3.3", "b", s3.getMessageIdAt(0)->getRight());
+		VASSERT_EQ("3.1", 1, s3.getMessageIdCount());
+		VASSERT_EQ("3.2", "a", s3.getMessageIdAt(0)->getLeft());
+		VASSERT_EQ("3.3", "b", s3.getMessageIdAt(0)->getRight());
 
-			vmime::messageIdSequence s4;
-			s4.parse("<a@b>  \r\n\t<c@d>");
+		vmime::messageIdSequence s4;
+		s4.parse("<a@b>  \r\n\t<c@d>");
 
-			assert_eq("4.1", 2, s4.getMessageIdCount());
-			assert_eq("4.2", "a", s4.getMessageIdAt(0)->getLeft());
-			assert_eq("4.3", "b", s4.getMessageIdAt(0)->getRight());
-			assert_eq("4.4", "c", s4.getMessageIdAt(1)->getLeft());
-			assert_eq("4.5", "d", s4.getMessageIdAt(1)->getRight());
-		}
+		VASSERT_EQ("4.1", 2, s4.getMessageIdCount());
+		VASSERT_EQ("4.2", "a", s4.getMessageIdAt(0)->getLeft());
+		VASSERT_EQ("4.3", "b", s4.getMessageIdAt(0)->getRight());
+		VASSERT_EQ("4.4", "c", s4.getMessageIdAt(1)->getLeft());
+		VASSERT_EQ("4.5", "d", s4.getMessageIdAt(1)->getRight());
+	}
 
-		void testGenerate()
-		{
-			vmime::messageIdSequence s1;
-			s1.appendMessageId(vmime::create <vmime::messageId>("a", "b"));
+	void testGenerate()
+	{
+		vmime::messageIdSequence s1;
+		s1.appendMessageId(vmime::create <vmime::messageId>("a", "b"));
 
-			assert_eq("1", "<a@b>", s1.generate());
+		VASSERT_EQ("1", "<a@b>", s1.generate());
 
-			vmime::messageIdSequence s2;
-			s2.appendMessageId(vmime::create <vmime::messageId>("a", "b"));
-			s2.appendMessageId(vmime::create <vmime::messageId>("c", "d"));
+		vmime::messageIdSequence s2;
+		s2.appendMessageId(vmime::create <vmime::messageId>("a", "b"));
+		s2.appendMessageId(vmime::create <vmime::messageId>("c", "d"));
 
-			assert_eq("2", "<a@b> <c@d>", s2.generate());
-		}
+		VASSERT_EQ("2", "<a@b> <c@d>", s2.generate());
+	}
 
-	public:
+VMIME_TEST_SUITE_END
 
-		messageIdSequenceTest() : suite("vmime::messageIdSequence")
-		{
-			vmime::platformDependant::setHandler<vmime::platforms::posix::posixHandler>();
-
-			add("Parse", testcase(this, "Parse", &messageIdSequenceTest::testParse));
-			add("Generate", testcase(this, "Generate", &messageIdSequenceTest::testGenerate));
-
-			suite::main().add("vmime::messageIdSequence", this);
-		}
-
-	};
-
-	messageIdSequenceTest* theTest = new messageIdSequenceTest();
-}

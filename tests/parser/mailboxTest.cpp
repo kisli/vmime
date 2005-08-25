@@ -17,113 +17,97 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "../lib/unit++/unit++.h"
-
-#include <iostream>
-#include <ostream>
-
-#include "vmime/vmime.hpp"
-#include "vmime/platforms/posix/posixHandler.hpp"
-
-#include "tests/parser/testUtils.hpp"
-
-using namespace unitpp;
+#include "tests/testUtils.hpp"
 
 
-namespace
-{
-	class mailboxTest : public suite
+#define VMIME_TEST_SUITE         mailboxTest
+#define VMIME_TEST_SUITE_MODULE  "Parser"
+
+
+VMIME_TEST_SUITE_BEGIN
+
+	VMIME_TEST_LIST_BEGIN
+		VMIME_TEST(testParse)
+	VMIME_TEST_LIST_END
+
+
+	void testParse()
 	{
-		void testParse()
+		static const vmime::string testSuitesParse[] =
 		{
-			static const vmime::string testSuitesParse[] =
-			{
-				// Test 1
-				"My (this is a comment)name <me(another \\)comment) @    	somewhere(else).com>",
+			// Test 1
+			"My (this is a comment)name <me(another \\)comment) @    	somewhere(else).com>",
 
-				"[address-list: [[mailbox: name=[text: [[word: charset=us-ascii, buffer=My name]]], email=me@somewhere.com]]]",
+			"[address-list: [[mailbox: name=[text: [[word: charset=us-ascii, buffer=My name]]], email=me@somewhere.com]]]",
 
-				// Test 2
-				"mailbox1 <mailbox@one>,;,,,	,,  	,,;group1:mailbox1@group1,  mailbox2@group2,,\"mailbox #3\" <mailbox3@group2>;, <mailbox@two>,,,,,,,,=?iso-8859-1?q?mailbox_number_3?= <mailbox@three>, =?abc?Q?mailbox?=   	 =?def?Q?_number_4?= <mailbox@four>",
+			// Test 2
+			"mailbox1 <mailbox@one>,;,,,	,,  	,,;group1:mailbox1@group1,  mailbox2@group2,,\"mailbox #3\" <mailbox3@group2>;, <mailbox@two>,,,,,,,,=?iso-8859-1?q?mailbox_number_3?= <mailbox@three>, =?abc?Q?mailbox?=   	 =?def?Q?_number_4?= <mailbox@four>",
 
-				"[address-list: [[mailbox: name=[text: [[word: charset=us-ascii, buffer=mailbox1]]], email=mailbox@one],[mailbox-group: name=[text: [[word: charset=us-ascii, buffer=group1]]], list=[[mailbox: name=[text: []], email=mailbox1@group1],[mailbox: name=[text: []], email=mailbox2@group2],[mailbox: name=[text: [[word: charset=us-ascii, buffer=mailbox #3]]], email=mailbox3@group2]]],[mailbox: name=[text: []], email=mailbox@two],[mailbox: name=[text: [[word: charset=iso-8859-1, buffer=mailbox number 3]]], email=mailbox@three],[mailbox: name=[text: [[word: charset=abc, buffer=mailbox],[word: charset=def, buffer= number 4]]], email=mailbox@four]]]",
+			"[address-list: [[mailbox: name=[text: [[word: charset=us-ascii, buffer=mailbox1]]], email=mailbox@one],[mailbox-group: name=[text: [[word: charset=us-ascii, buffer=group1]]], list=[[mailbox: name=[text: []], email=mailbox1@group1],[mailbox: name=[text: []], email=mailbox2@group2],[mailbox: name=[text: [[word: charset=us-ascii, buffer=mailbox #3]]], email=mailbox3@group2]]],[mailbox: name=[text: []], email=mailbox@two],[mailbox: name=[text: [[word: charset=iso-8859-1, buffer=mailbox number 3]]], email=mailbox@three],[mailbox: name=[text: [[word: charset=abc, buffer=mailbox],[word: charset=def, buffer= number 4]]], email=mailbox@four]]]",
 
-				// Test 3
-				"John Doe <john.doe@acme.com>",
+			// Test 3
+			"John Doe <john.doe@acme.com>",
 
-				"[address-list: [[mailbox: name=[text: [[word: charset=us-ascii, buffer=John Doe]]], email=john.doe@acme.com]]]",
+			"[address-list: [[mailbox: name=[text: [[word: charset=us-ascii, buffer=John Doe]]], email=john.doe@acme.com]]]",
 
-				// Test 4
-				"john.doe@acme.com (John Doe)",
+			// Test 4
+			"john.doe@acme.com (John Doe)",
 
-				"[address-list: [[mailbox: name=[text: []], email=john.doe@acme.com]]]",
+			"[address-list: [[mailbox: name=[text: []], email=john.doe@acme.com]]]",
 
-				// Test 5
-				"John.Doe (ignore) @acme.com (John Doe)",
+			// Test 5
+			"John.Doe (ignore) @acme.com (John Doe)",
 
-				"[address-list: [[mailbox: name=[text: []], email=John.Doe@acme.com]]]",
+			"[address-list: [[mailbox: name=[text: []], email=John.Doe@acme.com]]]",
 
-				// Test 6
-				"<john.doe@acme.com>",
+			// Test 6
+			"<john.doe@acme.com>",
 
-				"[address-list: [[mailbox: name=[text: []], email=john.doe@acme.com]]]",
+			"[address-list: [[mailbox: name=[text: []], email=john.doe@acme.com]]]",
 
-				// Test 7
-				"john.doe@acme.com",
+			// Test 7
+			"john.doe@acme.com",
 
-				"[address-list: [[mailbox: name=[text: []], email=john.doe@acme.com]]]",
+			"[address-list: [[mailbox: name=[text: []], email=john.doe@acme.com]]]",
 
-				// Test 8
-				"\"John Doe\" <john.doe@acme.com>",
+			// Test 8
+			"\"John Doe\" <john.doe@acme.com>",
 
-				"[address-list: [[mailbox: name=[text: [[word: charset=us-ascii, buffer=John Doe]]], email=john.doe@acme.com]]]",
+			"[address-list: [[mailbox: name=[text: [[word: charset=us-ascii, buffer=John Doe]]], email=john.doe@acme.com]]]",
 
-				// Test 9
-				"=?us-ascii?q?John?=<john.doe@acme.com>",
+			// Test 9
+			"=?us-ascii?q?John?=<john.doe@acme.com>",
 
-				"[address-list: [[mailbox: name=[text: [[word: charset=us-ascii, buffer=John]]], email=john.doe@acme.com]]]",
+			"[address-list: [[mailbox: name=[text: [[word: charset=us-ascii, buffer=John]]], email=john.doe@acme.com]]]",
 
-				// Test 10
-				"\"John\"<john.doe@acme.com>",
+			// Test 10
+			"\"John\"<john.doe@acme.com>",
 
-				"[address-list: [[mailbox: name=[text: [[word: charset=us-ascii, buffer=John]]], email=john.doe@acme.com]]]",
+			"[address-list: [[mailbox: name=[text: [[word: charset=us-ascii, buffer=John]]], email=john.doe@acme.com]]]",
 
-				// Test 11
-				"John<john.doe@acme.com>",
+			// Test 11
+			"John<john.doe@acme.com>",
 
-				"[address-list: [[mailbox: name=[text: [[word: charset=us-ascii, buffer=John]]], email=john.doe@acme.com]]]"
-			};
+			"[address-list: [[mailbox: name=[text: [[word: charset=us-ascii, buffer=John]]], email=john.doe@acme.com]]]"
+		};
 
-			for (unsigned int i = 0 ; i < sizeof(testSuitesParse) / sizeof(testSuitesParse[0]) / 2 ; ++i)
-			{
-				vmime::string in = testSuitesParse[i * 2];
-				vmime::string out = testSuitesParse[i * 2 + 1];
-
-				std::ostringstream oss;
-				oss << "Test " << (i + 1);
-
-				vmime::addressList addrList;
-				addrList.parse(in);
-
-				std::ostringstream cmp;
-				cmp << addrList;
-
-				assert_eq(oss.str(), out, cmp.str());
-			}
-		}
-
-	public:
-
-		mailboxTest() : suite("vmime::mailbox")
+		for (unsigned int i = 0 ; i < sizeof(testSuitesParse) / sizeof(testSuitesParse[0]) / 2 ; ++i)
 		{
-			vmime::platformDependant::setHandler<vmime::platforms::posix::posixHandler>();
+			vmime::string in = testSuitesParse[i * 2];
+			vmime::string out = testSuitesParse[i * 2 + 1];
 
-			add("Parse", testcase(this, "Parse", &mailboxTest::testParse));
+			std::ostringstream oss;
+			oss << "Test " << (i + 1);
 
-			suite::main().add("vmime::mailbox", this);
+			vmime::addressList addrList;
+			addrList.parse(in);
+
+			std::ostringstream cmp;
+			cmp << addrList;
+
+			VASSERT_EQ(oss.str(), out, cmp.str());
 		}
+	}
 
-	};
+VMIME_TEST_SUITE_END
 
-	mailboxTest* theTest = new mailboxTest();
-}

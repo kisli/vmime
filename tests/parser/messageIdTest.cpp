@@ -17,68 +17,52 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#include "../lib/unit++/unit++.h"
-
-#include <iostream>
-#include <ostream>
-
-#include "vmime/vmime.hpp"
-#include "vmime/platforms/posix/posixHandler.hpp"
-
-#include "tests/parser/testUtils.hpp"
-
-using namespace unitpp;
+#include "tests/testUtils.hpp"
 
 
-namespace
-{
-	class messageIdTest : public suite
+#define VMIME_TEST_SUITE         messageIdTest
+#define VMIME_TEST_SUITE_MODULE  "Parser"
+
+
+VMIME_TEST_SUITE_BEGIN
+
+	VMIME_TEST_LIST_BEGIN
+		VMIME_TEST(testParse)
+		VMIME_TEST(testGenerate)
+	VMIME_TEST_LIST_END
+
+
+	void testParse()
 	{
-		void testParse()
-		{
-			vmime::messageId m1;
-			m1.parse("<a@b>");
+		vmime::messageId m1;
+		m1.parse("<a@b>");
 
-			assert_eq("1.1", "a", m1.getLeft());
-			assert_eq("1.2", "b", m1.getRight());
-		}
+		VASSERT_EQ("1.1", "a", m1.getLeft());
+		VASSERT_EQ("1.2", "b", m1.getRight());
+	}
 
-		void testGenerate()
-		{
-			vmime::messageId m1;
+	void testGenerate()
+	{
+		vmime::messageId m1;
 
-			assert_eq("1", "<@>", m1.generate());
+		VASSERT_EQ("1", "<@>", m1.generate());
 
-			vmime::messageId m2;
-			m2.setLeft("a");
+		vmime::messageId m2;
+		m2.setLeft("a");
 
-			assert_eq("2", "<a@>", m2.generate());
+		VASSERT_EQ("2", "<a@>", m2.generate());
 
-			vmime::messageId m3;
-			m3.setRight("b");
+		vmime::messageId m3;
+		m3.setRight("b");
 
-			assert_eq("3", "<@b>", m3.generate());
+		VASSERT_EQ("3", "<@b>", m3.generate());
 
-			vmime::messageId m4;
-			m4.setLeft("a");
-			m4.setRight("b");
+		vmime::messageId m4;
+		m4.setLeft("a");
+		m4.setRight("b");
 
-			assert_eq("4", "<a@b>", m4.generate());
-		}
+		VASSERT_EQ("4", "<a@b>", m4.generate());
+	}
 
-	public:
+VMIME_TEST_SUITE_END
 
-		messageIdTest() : suite("vmime::messageId")
-		{
-			vmime::platformDependant::setHandler<vmime::platforms::posix::posixHandler>();
-
-			add("Parse", testcase(this, "Parse", &messageIdTest::testParse));
-			add("Generate", testcase(this, "Generate", &messageIdTest::testGenerate));
-
-			suite::main().add("vmime::messageId", this);
-		}
-
-	};
-
-	messageIdTest* theTest = new messageIdTest();
-}
