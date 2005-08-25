@@ -39,7 +39,7 @@ class url
 public:
 
 	/** Means "port not specified" (use default port). */
-	static const port_t UNSPECIFIED_PORT = static_cast <port_t>(-1);
+	static const port_t UNSPECIFIED_PORT;
 
 	/** Standard name for FILE protocol (local file-system). */
 	static const string PROTOCOL_FILE;

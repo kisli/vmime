@@ -30,6 +30,9 @@ namespace vmime {
 namespace utility {
 
 
+// Unspecified port
+const port_t url::UNSPECIFIED_PORT = static_cast <port_t>(-1);
+
 // Known protocols
 const string url::PROTOCOL_FILE = "file";
 const string url::PROTOCOL_HTTP = "http";
