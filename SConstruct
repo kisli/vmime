@@ -314,7 +314,8 @@ libvmimetest_sources = [
 	'tests/utility/stringUtilsTest.cpp',
 	'tests/utility/pathTest.cpp',
 	'tests/utility/urlTest.cpp',
-	'tests/utility/smartPtrTest.cpp'
+	'tests/utility/smartPtrTest.cpp',
+	'tests/misc/importanceHelperTest.cpp'
 ]
 
 libvmime_autotools = [
