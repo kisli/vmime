@@ -1164,10 +1164,27 @@ AM_SANITY_CHECK
 AM_PROG_LIBTOOL
 AM_PROG_CC_C_O
 
+AM_ICONV
+
 
 #
 # Some checks
 #
+
+# -- iconv
+AC_MSG_CHECKING([if an usable version of iconv exists (required)])
+AC_TRY_LINK(
+[
+   #include <iconv.h>
+],[
+   iconv_t x = iconv_open("", "");
+   return 0;
+],[
+  AC_MSG_RESULT(yes)
+],[
+  AC_MSG_RESULT(no)
+  AC_ERROR(no usable version of iconv has been found)
+])
 
 # -- global constructors (stolen from 'configure.in' in libsigc++)
 AC_MSG_CHECKING([if linker supports global constructors])
