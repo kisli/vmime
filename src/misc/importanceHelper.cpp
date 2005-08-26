@@ -27,11 +27,11 @@ namespace misc {
 
 void importanceHelper::resetImportance(ref <message> msg)
 {
-	resetImportance(msg->getHeader());
+	resetImportanceHeader(msg->getHeader());
 }
 
 
-void importanceHelper::resetImportance(ref <header> hdr)
+void importanceHelper::resetImportanceHeader(ref <header> hdr)
 {
 	try
 	{
@@ -55,13 +55,13 @@ void importanceHelper::resetImportance(ref <header> hdr)
 }
 
 
-const importanceHelper::Importance importanceHelper::getImportance(const ref <const message> msg)
+const importanceHelper::Importance importanceHelper::getImportance(ref <const message> msg)
 {
-	return getImportance(msg->getHeader());
+	return getImportanceHeader(msg->getHeader());
 }
 
 
-const importanceHelper::Importance importanceHelper::getImportance(const ref <const header> hdr)
+const importanceHelper::Importance importanceHelper::getImportanceHeader(ref <const header> hdr)
 {
 	// Try "X-Priority" field
 	try
@@ -116,11 +116,11 @@ const importanceHelper::Importance importanceHelper::getImportance(const ref <co
 
 void importanceHelper::setImportance(ref <message> msg, const Importance i)
 {
-	setImportance(msg->getHeader(), i);
+	setImportanceHeader(msg->getHeader(), i);
 }
 
 
-void importanceHelper::setImportance(ref <header> hdr, const Importance i)
+void importanceHelper::setImportanceHeader(ref <header> hdr, const Importance i)
 {
 	// "X-Priority:" Field
 	ref <defaultField> fld = hdr->getField("X-Priority").dynamicCast <defaultField>();
