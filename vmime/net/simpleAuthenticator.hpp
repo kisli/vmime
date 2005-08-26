@@ -46,12 +46,12 @@ public:
 	const string& getPassword() const;
 	void setPassword(const string& password);
 
+	const authenticationInfos requestAuthInfos() const;
+
 private:
 
 	string m_username;
 	string m_password;
-
-	const authenticationInfos getAuthInfos() const;
 };
 
 

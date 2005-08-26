@@ -35,7 +35,7 @@ simpleAuthenticator::simpleAuthenticator(const string& username, const string& p
 }
 
 
-const authenticationInfos simpleAuthenticator::getAuthInfos() const
+const authenticationInfos simpleAuthenticator::requestAuthInfos() const
 {
 	return (authenticationInfos(m_username, m_password));
 }

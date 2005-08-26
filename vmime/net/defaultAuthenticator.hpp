@@ -44,12 +44,12 @@ public:
 
 	defaultAuthenticator(weak_ref <session> session, const string& prefix);
 
+	const authenticationInfos requestAuthInfos() const;
+
 private:
 
 	weak_ref <session> m_session;
 	const string m_prefix;
-
-	const authenticationInfos requestAuthInfos() const;
 };
 
 
