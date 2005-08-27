@@ -41,7 +41,7 @@ DIE=0
 echo ""
 
 if test $DIE = 0 ; then
-	echo -n "* Running aclocal...    " ; (aclocal${amvers} >& bootstrap.tmpout) \
+	echo -n "* Running aclocal...    " ; (aclocal${amvers} -I m4 >& bootstrap.tmpout) \
 		&& (echo "[OK]" ; cat bootstrap.tmpout ; rm -f bootstrap.tmpout) \
 		|| (echo "[NO]" ; cat bootstrap.tmpout ; rm -f bootstrap.tmpout ; not_a_command >& /dev/null) || DIE=1
 fi
