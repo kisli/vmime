@@ -1710,7 +1710,7 @@ Platform handlers        :$VMIME_BUILTIN_PLATFORMS
 
 	configure_in.close()
 
-	os.system('sh bootstrap')
+	os.system('bash bootstrap')
 
 	return None
 

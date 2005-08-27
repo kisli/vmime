@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 #
 # Bootstrap file for 'autotools' build
 #
