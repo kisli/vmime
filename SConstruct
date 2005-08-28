@@ -269,6 +269,8 @@ libvmime_extra = [
 	'INSTALL',
 	'NEWS',
 	'README',
+	'README.msvc',
+	'README.refcounting',
 	'SConstruct',
 	'vmime.doxygen'
 ]
@@ -319,6 +321,10 @@ libvmimetest_sources = [
 ]
 
 libvmime_autotools = [
+	'm4/iconv.m4',
+	'm4/lib-ld.m4',
+	'm4/lib-link.m4',
+	'm4/lib-prefix.m4',
 	'autotools/install-sh',
 #	'autotools/mkinstalldirs',
 	'autotools/missing',
@@ -1173,18 +1179,13 @@ AM_ICONV
 
 # -- iconv
 AC_MSG_CHECKING([if an usable version of iconv exists (required)])
-AC_TRY_LINK(
-[
-   #include <iconv.h>
-],[
-   iconv_t x = iconv_open("", "");
-   return 0;
-],[
+
+if test "x$am_cv_func_iconv" = "xyes"; then
   AC_MSG_RESULT(yes)
-],[
+else
   AC_MSG_RESULT(no)
   AC_ERROR(no usable version of iconv has been found)
-])
+fi
 
 # -- global constructors (stolen from 'configure.in' in libsigc++)
 AC_MSG_CHECKING([if linker supports global constructors])
