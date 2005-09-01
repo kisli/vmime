@@ -343,6 +343,7 @@ static void connectStore()
 				choices.push_back("Show message envelope");
 				choices.push_back("Extract whole message");
 				choices.push_back("List folders");
+				choices.push_back("Change folder");
 				choices.push_back("Return to main menu");
 
 				const int choice = printMenu(choices);
@@ -350,7 +351,7 @@ static void connectStore()
 				// Request message number
 				vmime::ref <vmime::net::message> msg;
 
-				if (choice != 6 && choice != 7)
+				if (choice != 6 && choice != 7 && choice != 8)
 				{
 					std::cout << "Enter message number: ";
 					std::cout.flush();
@@ -455,8 +456,45 @@ static void connectStore()
 					printFolders(root);
 					break;
 				}
-				// Main menu
+				// Change folder
 				case 7:
+				{
+					std::cout << "Enter folder path (eg. /root/subfolder):" << std::endl;
+					std::cout.flush();
+
+					std::string path;
+					std::getline(std::cin, path);
+
+					vmime::ref <vmime::net::folder> newFolder = st->getRootFolder();
+
+					for (std::string::size_type s = 0, p = 0 ; ; s = p + 1)
+					{
+						p = path.find_first_of('/', s);
+
+						const std::string x = (p == std::string::npos)
+							? std::string(path.begin() + s, path.end())
+							: std::string(path.begin() + s, path.begin() + p);
+
+						if (!x.empty())
+							newFolder = newFolder->getFolder(x);
+
+						if (p == std::string::npos)
+							break;
+					}
+
+					newFolder->open(vmime::net::folder::MODE_READ_WRITE);
+
+					count = newFolder->getMessageCount();
+
+					std::cout << std::endl;
+					std::cout << count << " message(s) in this folder" << std::endl;
+
+					f = newFolder;
+
+					break;
+				}
+				// Main menu
+				case 8:
 
 					cont = false;
 					break;
