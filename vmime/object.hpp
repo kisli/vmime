@@ -69,24 +69,28 @@ protected:
 	void releaseWeak(utility::weak_ref_base* w) const;
 
 	/** Return a reference to this object.
+	  * \warning NEVER CALL THIS FROM A CONSTRUCTOR!
 	  *
 	  * @return reference to self
 	  */
 	ref <object> thisRef();
 
 	/** Return a reference to this object (const version).
+	  * \warning NEVER CALL THIS FROM A CONSTRUCTOR!
 	  *
 	  * @return reference to self
 	  */
 	ref <const object> thisRef() const;
 
 	/** Return a weak reference to this object.
+	  * \warning NEVER CALL THIS FROM A CONSTRUCTOR!
 	  *
 	  * @return weak reference to self
 	  */
 	weak_ref <object> thisWeakRef();
 
 	/** Return a weak reference to this object (const version).
+	  * \warning NEVER CALL THIS FROM A CONSTRUCTOR!
 	  *
 	  * @return weak reference to self
 	  */

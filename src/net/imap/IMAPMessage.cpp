@@ -45,8 +45,8 @@ private:
 
 	friend class vmime::creator;
 
-	IMAPpart(weak_ref <IMAPpart> parent, const int number, const IMAPParser::body_type_mpart* mpart);
-	IMAPpart(weak_ref <IMAPpart> parent, const int number, const IMAPParser::body_type_1part* part);
+	IMAPpart(ref <IMAPpart> parent, const int number, const IMAPParser::body_type_mpart* mpart);
+	IMAPpart(ref <IMAPpart> parent, const int number, const IMAPParser::body_type_1part* part);
 
 public:
 
@@ -69,12 +69,19 @@ public:
 
 
 	static ref <IMAPpart> create
-		(weak_ref <IMAPpart> parent, const int number, const IMAPParser::body* body)
+		(ref <IMAPpart> parent, const int number, const IMAPParser::body* body)
 	{
 		if (body->body_type_mpart())
-			return vmime::create <IMAPpart>(parent, number, body->body_type_mpart());
+		{
+			ref <IMAPpart> part = vmime::create <IMAPpart>(parent, number, body->body_type_mpart());
+			part->m_structure = vmime::create <IMAPstructure>(part, body->body_type_mpart()->list());
+
+			return part;
+		}
 		else
+		{
 			return vmime::create <IMAPpart>(parent, number, body->body_type_1part());
+		}
 	}
 
 
@@ -118,7 +125,7 @@ public:
 		m_parts.push_back(IMAPpart::create(NULL, 1, body));
 	}
 
-	IMAPstructure(weak_ref <IMAPpart> parent, const std::vector <IMAPParser::body*>& list)
+	IMAPstructure(ref <IMAPpart> parent, const std::vector <IMAPParser::body*>& list)
 	{
 		int number = 1;
 
@@ -163,18 +170,15 @@ IMAPstructure IMAPstructure::m_emptyStructure;
 
 
 
-IMAPpart::IMAPpart(weak_ref <IMAPpart> parent, const int number, const IMAPParser::body_type_mpart* mpart)
+IMAPpart::IMAPpart(ref <IMAPpart> parent, const int number, const IMAPParser::body_type_mpart* mpart)
 	: m_parent(parent), m_header(NULL), m_number(number), m_size(0)
 {
 	m_mediaType = vmime::mediaType
 		("multipart", mpart->media_subtype()->value());
-
-	m_structure = vmime::create <IMAPstructure>
-		(thisWeakRef().dynamicCast <IMAPpart>(), mpart->list());
 }
 
 
-IMAPpart::IMAPpart(weak_ref <IMAPpart> parent, const int number, const IMAPParser::body_type_1part* part)
+IMAPpart::IMAPpart(ref <IMAPpart> parent, const int number, const IMAPParser::body_type_1part* part)
 	: m_parent(parent), m_header(NULL), m_number(number), m_size(0)
 {
 	if (part->body_type_text())
