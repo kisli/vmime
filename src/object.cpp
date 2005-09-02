@@ -104,24 +104,68 @@ void object::releaseWeak(utility::weak_ref_base* w) const
 
 ref <object> object::thisRef()
 {
+#if VMIME_DEBUG
+	if (m_strongCount == 0)
+	{
+		std::ostringstream oss;
+		oss << "ERROR: thisRef() MUST NOT be called from the object constructor."
+		    << " (" << __FILE__ << ", line " << __LINE__ << ")" << std::endl;
+
+		throw std::runtime_error(oss.str());
+	}
+#endif // VMIME_DEBUG
+
 	return ref <object>::fromPtr(this);
 }
 
 
 ref <const object> object::thisRef() const
 {
+#if VMIME_DEBUG
+	if (m_strongCount == 0)
+	{
+		std::ostringstream oss;
+		oss << "ERROR: thisRef() MUST NOT be called from the object constructor."
+		    << " (" << __FILE__ << ", line " << __LINE__ << ")" << std::endl;
+
+		throw std::runtime_error(oss.str());
+	}
+#endif // VMIME_DEBUG
+
 	return ref <const object>::fromPtr(this);
 }
 
 
 weak_ref <object> object::thisWeakRef()
 {
+#if VMIME_DEBUG
+	if (m_strongCount == 0)
+	{
+		std::ostringstream oss;
+		oss << "ERROR: thisWeakRef() MUST NOT be called from the object constructor."
+		    << " (" << __FILE__ << ", line " << __LINE__ << ")" << std::endl;
+
+		throw std::runtime_error(oss.str());
+	}
+#endif // VMIME_DEBUG
+
 	return weak_ref <object>(thisRef());
 }
 
 
 weak_ref <const object> object::thisWeakRef() const
 {
+#if VMIME_DEBUG
+	if (m_strongCount == 0)
+	{
+		std::ostringstream oss;
+		oss << "ERROR: thisWeakRef() MUST NOT be called from the object constructor."
+		    << " (" << __FILE__ << ", line " << __LINE__ << ")" << std::endl;
+
+		throw std::runtime_error(oss.str());
+	}
+#endif // VMIME_DEBUG
+
 	return weak_ref <const object>(thisRef());
 }
 
