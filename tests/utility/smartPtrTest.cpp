@@ -35,6 +35,7 @@ VMIME_TEST_SUITE_BEGIN
 		VMIME_TEST(testCast)
 		VMIME_TEST(testContainer)
 		VMIME_TEST(testCompare)
+		VMIME_TEST(testThisRefCtor)
 	VMIME_TEST_LIST_END
 
 
@@ -58,6 +59,12 @@ VMIME_TEST_SUITE_BEGIN
 	private:
 
 		bool* m_aliveFlag;
+	};
+
+	struct X : public vmime::object
+	{
+		X() { f(thisRef().dynamicCast <X>()); }
+		static void f(vmime::ref <X> /* x */) { }
 	};
 
 
@@ -235,6 +242,12 @@ VMIME_TEST_SUITE_BEGIN
 		VASSERT("8", std::find(v.begin(), v.end(), r1) == v.begin());
 		VASSERT("9", std::find(v.begin(), v.end(), r2) == v.begin() + 1);
 		VASSERT("10", std::find(v.begin(), v.end(), r3) == v.end());
+	}
+
+	void testThisRefCtor()
+	{
+		// BUGFIX: thisRef() MUST NOT be called from the object constructor
+		VASSERT_THROW("1", vmime::create <X>(), std::runtime_error);
 	}
 
 VMIME_TEST_SUITE_END
