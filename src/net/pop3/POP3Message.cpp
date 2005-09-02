@@ -87,13 +87,13 @@ const int POP3Message::getFlags() const
 }
 
 
-const structure& POP3Message::getStructure() const
+ref <const structure> POP3Message::getStructure() const
 {
 	throw exceptions::operation_not_supported();
 }
 
 
-structure& POP3Message::getStructure()
+ref <structure> POP3Message::getStructure()
 {
 	throw exceptions::operation_not_supported();
 }
@@ -145,7 +145,7 @@ void POP3Message::extract(utility::outputStream& os,
 
 
 void POP3Message::extractPart
-	(const part& /* p */, utility::outputStream& /* os */,
+	(ref <const part> /* p */, utility::outputStream& /* os */,
 	 utility::progressionListener* /* progress */,
 	 const int /* start */, const int /* length */,
 	 const bool /* peek */) const
@@ -154,7 +154,7 @@ void POP3Message::extractPart
 }
 
 
-void POP3Message::fetchPartHeader(part& /* p */)
+void POP3Message::fetchPartHeader(ref <part> /* p */)
 {
 	throw exceptions::operation_not_supported();
 }

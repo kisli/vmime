@@ -108,21 +108,21 @@ static std::ostream& operator<<(std::ostream& os, const vmime::exception& e)
   * @param s structure object
   * @param level current depth
   */
-static void printStructure(const vmime::net::structure& s, const int level = 0)
+static void printStructure(vmime::ref <const vmime::net::structure> s, const int level = 0)
 {
-	for (int i = 1 ; i <= s.getCount() ; ++i)
+	for (int i = 0 ; i < s->getPartCount() ; ++i)
 	{
-		const vmime::net::part& part = s[i];
+		vmime::ref <const vmime::net::part> part = s->getPartAt(i);
 
 		for (int j = 0 ; j < level * 2 ; ++j)
 			std::cout << " ";
 
-		std::cout << part.getNumber() << ". "
-		          << part.getType().generate()
-				<< " [" << part.getSize() << " byte(s)]"
+		std::cout << (part->getNumber() + 1) << ". "
+				<< part->getType().generate()
+				<< " [" << part->getSize() << " byte(s)]"
 				<< std::endl;
 
-		printStructure(part.getStructure(), level + 1);
+		printStructure(part->getStructure(), level + 1);
 	}
 }
 

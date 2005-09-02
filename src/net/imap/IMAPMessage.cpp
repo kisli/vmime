@@ -50,8 +50,8 @@ private:
 
 public:
 
-	const structure& getStructure() const;
-	structure& getStructure();
+	ref <const structure> getStructure() const;
+	ref <structure> getStructure();
 
 	weak_ref <const IMAPpart> getParent() const { return (m_parent); }
 
@@ -59,12 +59,12 @@ public:
 	const int getSize() const { return (m_size); }
 	const int getNumber() const { return (m_number); }
 
-	const header& getHeader() const
+	ref <const header> getHeader() const
 	{
 		if (m_header == NULL)
 			throw exceptions::unfetched_object();
 		else
-			return (*m_header);
+			return m_header;
 	}
 
 
@@ -112,22 +112,20 @@ private:
 
 class IMAPstructure : public structure
 {
-private:
+public:
 
 	IMAPstructure()
 	{
 	}
 
-public:
-
 	IMAPstructure(const IMAPParser::body* body)
 	{
-		m_parts.push_back(IMAPpart::create(NULL, 1, body));
+		m_parts.push_back(IMAPpart::create(NULL, 0, body));
 	}
 
 	IMAPstructure(ref <IMAPpart> parent, const std::vector <IMAPParser::body*>& list)
 	{
-		int number = 1;
+		int number = 0;
 
 		for (std::vector <IMAPParser::body*>::const_iterator
 		     it = list.begin() ; it != list.end() ; ++it, ++number)
@@ -137,36 +135,36 @@ public:
 	}
 
 
-	const part& operator[](const int x) const
+	ref <const part> getPartAt(const int x) const
 	{
-		return (*m_parts[x - 1]);
+		return m_parts[x];
 	}
 
-	part& operator[](const int x)
+	ref <part> getPartAt(const int x)
 	{
-		return (*m_parts[x - 1]);
+		return m_parts[x];
 	}
 
-	const int getCount() const
+	const int getPartCount() const
 	{
-		return (m_parts.size());
+		return m_parts.size();
 	}
 
 
-	static IMAPstructure* emptyStructure()
+	static ref <IMAPstructure> emptyStructure()
 	{
-		return (&m_emptyStructure);
+		return (m_emptyStructure);
 	}
 
 private:
 
-	static IMAPstructure m_emptyStructure;
+	static ref <IMAPstructure> m_emptyStructure;
 
 	std::vector <ref <IMAPpart> > m_parts;
 };
 
 
-IMAPstructure IMAPstructure::m_emptyStructure;
+ref <IMAPstructure> IMAPstructure::m_emptyStructure = vmime::create <IMAPstructure>();
 
 
 
@@ -208,21 +206,21 @@ IMAPpart::IMAPpart(ref <IMAPpart> parent, const int number, const IMAPParser::bo
 }
 
 
-const class structure& IMAPpart::getStructure() const
+ref <const structure> IMAPpart::getStructure() const
 {
 	if (m_structure != NULL)
-		return (*m_structure);
+		return (m_structure);
 	else
-		return (*IMAPstructure::emptyStructure());
+		return (IMAPstructure::emptyStructure());
 }
 
 
-class structure& IMAPpart::getStructure()
+ref <structure> IMAPpart::getStructure()
 {
 	if (m_structure != NULL)
-		return (*m_structure);
+		return (m_structure);
 	else
-		return (*IMAPstructure::emptyStructure());
+		return (IMAPstructure::emptyStructure());
 }
 
 
@@ -331,21 +329,21 @@ const int IMAPMessage::getFlags() const
 }
 
 
-const structure& IMAPMessage::getStructure() const
+ref <const structure> IMAPMessage::getStructure() const
 {
 	if (m_structure == NULL)
 		throw exceptions::unfetched_object();
 
-	return (*m_structure);
+	return m_structure;
 }
 
 
-structure& IMAPMessage::getStructure()
+ref <structure> IMAPMessage::getStructure()
 {
 	if (m_structure == NULL)
 		throw exceptions::unfetched_object();
 
-	return (*m_structure);
+	return m_structure;
 }
 
 
@@ -369,17 +367,17 @@ void IMAPMessage::extract(utility::outputStream& os, utility::progressionListene
 
 
 void IMAPMessage::extractPart
-	(const part& p, utility::outputStream& os, utility::progressionListener* progress,
+	(ref <const part> p, utility::outputStream& os, utility::progressionListener* progress,
 	 const int start, const int length, const bool peek) const
 {
 	if (!m_folder)
 		throw exceptions::folder_not_found();
 
-	extract(&p, os, progress, start, length, false, peek);
+	extract(p, os, progress, start, length, false, peek);
 }
 
 
-void IMAPMessage::fetchPartHeader(part& p)
+void IMAPMessage::fetchPartHeader(ref <part> p)
 {
 	if (!m_folder)
 		throw exceptions::folder_not_found();
@@ -387,13 +385,13 @@ void IMAPMessage::fetchPartHeader(part& p)
 	std::ostringstream oss;
 	utility::outputStreamAdapter ossAdapter(oss);
 
-	extract(&p, ossAdapter, NULL, 0, -1, true, true);
+	extract(p, ossAdapter, NULL, 0, -1, true, true);
 
-	static_cast <IMAPpart&>(p).getOrCreateHeader().parse(oss.str());
+	p.dynamicCast <IMAPpart>()->getOrCreateHeader().parse(oss.str());
 }
 
 
-void IMAPMessage::extract(const part* p, utility::outputStream& os,
+void IMAPMessage::extract(ref <const part> p, utility::outputStream& os,
 	utility::progressionListener* progress, const int start,
 	const int length, const bool headerOnly, const bool peek) const
 {
@@ -404,7 +402,7 @@ void IMAPMessage::extract(const part* p, utility::outputStream& os,
 
 	if (p != NULL)
 	{
-		weak_ref <const IMAPpart> currentPart = static_cast <const IMAPpart*>(p);
+		weak_ref <const IMAPpart> currentPart = p.dynamicCast <const IMAPpart>();
 		std::vector <int> numbers;
 
 		numbers.push_back(currentPart->getNumber());
@@ -421,7 +419,7 @@ void IMAPMessage::extract(const part* p, utility::outputStream& os,
 		for (std::vector <int>::reverse_iterator it = numbers.rbegin() ; it != numbers.rend() ; ++it)
 		{
 			if (it != numbers.rbegin()) section << ".";
-			section << *it;
+			section << (*it + 1);
 		}
 	}
 

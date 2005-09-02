@@ -52,20 +52,20 @@ public:
 	  *
 	  * @return structure of the part
 	  */
-	virtual const structure& getStructure() const = 0;
+	virtual ref <const structure> getStructure() const = 0;
 
 	/** Return the structure of this part.
 	  *
 	  * @return structure of the part
 	  */
-	virtual structure& getStructure() = 0;
+	virtual ref <structure> getStructure() = 0;
 
 	/** Return the header section for this part (you must fetch header
 	  * before using this function: see message::fetchPartHeader).
 	  *
 	  * @return header section
 	  */
-	virtual const header& getHeader() const = 0;
+	virtual ref <const header> getHeader() const = 0;
 
 	/** Return the media-type of the content in this part.
 	  *
@@ -79,35 +79,34 @@ public:
 	  */
 	virtual const int getSize() const = 0;
 
-	/** Return the part sequence number (index)
+	/** Return the part sequence number (index).
+	  * The first part is at index zero.
 	  *
 	  * @return part number
 	  */
-	virtual const int getNumber() const = 0;   // begin at 1
+	virtual const int getNumber() const = 0;
 
-	/** Return the sub-part at the specified position.
-	  * This provide easy access to parts:
-	  * Eg: "message->extractPart(message->getStructure()[3][1][2])".
+	/** Return the sub-part at the specified position (zero is the
+	  * first part).
 	  *
-	  * @param x index of the sub-part
-	  * @return sub-part at position 'x'
+	  * @param pos index of the sub-part
+	  * @return sub-part at position 'pos'
 	  */
-	const part& operator[](const int x) const;
+	ref <const part> getPartAt(const int pos) const;
 
-	/** Return the sub-part at the specified position.
-	  * This provide easy access to parts:
-	  * Eg: "message->extractPart(message->getStructure()[3][1][2])".
+	/** Return the sub-part at the specified position (zero is the
+	  * first part).
 	  *
-	  * @param x index of the sub-part
-	  * @return sub-part at position 'x'
+	  * @param pos index of the sub-part
+	  * @return sub-part at position 'pos'
 	  */
-	part& operator[](const int x);
+	ref <part> getPartAt(const int pos);
 
 	/** Return the number of sub-parts in this part.
 	  *
 	  * @return number of sub-parts
 	  */
-	const int getCount() const;
+	const int getPartCount() const;
 };
 
 
@@ -126,26 +125,26 @@ public:
 	virtual ~structure() { }
 
 	/** Return the part at the specified position (first
-	  * part is at position 1).
+	  * part is at position 0).
 	  *
-	  * @param x position
-	  * @return part at position 'x'
+	  * @param pos position
+	  * @return part at position 'pos'
 	  */
-	virtual const part& operator[](const int x) const = 0;
+	virtual ref <const part> getPartAt(const int pos) const = 0;
 
 	/** Return the part at the specified position (first
-	  * part is at position 1).
+	  * part is at position 0).
 	  *
-	  * @param x position
-	  * @return part at position 'x'
+	  * @param pos position
+	  * @return part at position 'pos'
 	  */
-	virtual part& operator[](const int x) = 0;
+	virtual ref <part> getPartAt(const int pos) = 0;
 
 	/** Return the number of parts in this part.
 	  *
 	  * @return number of parts
 	  */
-	virtual const int getCount() const = 0;
+	virtual const int getPartCount() const = 0;
 };
 
 
@@ -171,13 +170,13 @@ public:
 	  *
 	  * @return MIME structure of the message
 	  */
-	virtual const structure& getStructure() const = 0;
+	virtual ref <const structure> getStructure() const = 0;
 
 	/** Return the MIME structure of the message (must fetch before).
 	  *
 	  * @return MIME structure of the message
 	  */
-	virtual structure& getStructure() = 0;
+	virtual ref <structure> getStructure() = 0;
 
 	/** Return a reference to the header fields of the message (must fetch before).
 	  *
@@ -275,13 +274,13 @@ public:
 	  * be supported by the protocol (IMAP supports this), but it will NOT throw
 	  * an exception if not supported.
 	  */
-	virtual void extractPart(const part& p, utility::outputStream& os, utility::progressionListener* progress = NULL, const int start = 0, const int length = -1, const bool peek = false) const = 0;
+	virtual void extractPart(ref <const part> p, utility::outputStream& os, utility::progressionListener* progress = NULL, const int start = 0, const int length = -1, const bool peek = false) const = 0;
 
 	/** Fetch the MIME header for the specified part.
 	  *
 	  * @param p the part for which to fetch the header
 	  */
-	virtual void fetchPartHeader(part& p) = 0;
+	virtual void fetchPartHeader(ref <part> p) = 0;
 };
 
 

@@ -24,21 +24,21 @@ namespace vmime {
 namespace net {
 
 
-const part& part::operator[](const int x) const
+ref <const part> part::getPartAt(const int pos) const
 {
-	return (getStructure()[x]);
+	return getStructure()->getPartAt(pos);
 }
 
 
-part& part::operator[](const int x)
+ref <part> part::getPartAt(const int pos)
 {
-	return (getStructure()[x]);
+	return getStructure()->getPartAt(pos);
 }
 
 
-const int part::getCount() const
+const int part::getPartCount() const
 {
-	return (getStructure().getCount());
+	return getStructure()->getPartCount();
 }
 
 
