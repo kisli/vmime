@@ -153,7 +153,7 @@ libvmime_sources = [
 	'utility/filteredStream.cpp', 'utility/filteredStream.hpp',
 	'utility/md5.cpp', 'utility/md5.hpp',
 	'utility/path.cpp', 'utility/path.hpp',
-	'utility/progressionListener.hpp',
+	'utility/progressionListener.cpp', 'utility/progressionListener.hpp',
 	'utility/random.cpp', 'utility/random.hpp',
 	'utility/smartPtr.hpp',
 	'utility/stream.cpp', 'utility/stream.hpp',

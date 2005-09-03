@@ -128,7 +128,8 @@ void streamContentHandler::generate(utility::outputStream& os, const vmime::enco
 }
 
 
-void streamContentHandler::extract(utility::outputStream& os) const
+void streamContentHandler::extract(utility::outputStream& os,
+	utility::progressionListener* progress) const
 {
 	if (!m_stream)
 		return;
@@ -138,7 +139,10 @@ void streamContentHandler::extract(utility::outputStream& os) const
 	{
 		m_stream->reset();  // may not work...
 
-		utility::bufferedStreamCopy(*m_stream, os);
+		if (progress)
+			utility::bufferedStreamCopy(*m_stream, os, getLength(), progress);
+		else
+			utility::bufferedStreamCopy(*m_stream, os);
 	}
 	// Need to decode data
 	else
@@ -147,19 +151,25 @@ void streamContentHandler::extract(utility::outputStream& os) const
 
 		m_stream->reset();  // may not work...
 
-		theDecoder->decode(*m_stream, os);
+		utility::progressionListenerSizeAdapter plsa(progress, getLength());
+
+		theDecoder->decode(*m_stream, os, &plsa);
 	}
 }
 
 
-void streamContentHandler::extractRaw(utility::outputStream& os) const
+void streamContentHandler::extractRaw(utility::outputStream& os,
+	utility::progressionListener* progress) const
 {
 	if (!m_stream)
 		return;
 
 	m_stream->reset();  // may not work...
 
-	utility::bufferedStreamCopy(*m_stream, os);
+	if (progress)
+		utility::bufferedStreamCopy(*m_stream, os, getLength(), progress);
+	else
+		utility::bufferedStreamCopy(*m_stream, os);
 }
 
 

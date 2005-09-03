@@ -29,21 +29,37 @@ encoderDefault::encoderDefault()
 }
 
 
-const utility::stream::size_type encoderDefault::encode(utility::inputStream& in, utility::outputStream& out)
+const utility::stream::size_type encoderDefault::encode(utility::inputStream& in,
+	utility::outputStream& out, utility::progressionListener* progress)
 {
 	in.reset();  // may not work...
 
 	// No encoding performed
-	return (utility::bufferedStreamCopy(in, out));
+	utility::stream::size_type res = 0;
+
+	if (progress)
+		res = utility::bufferedStreamCopy(in, out, 0, progress);
+	else
+		res = utility::bufferedStreamCopy(in, out);
+
+	return res;
 }
 
 
-const utility::stream::size_type encoderDefault::decode(utility::inputStream& in, utility::outputStream& out)
+const utility::stream::size_type encoderDefault::decode(utility::inputStream& in,
+	utility::outputStream& out, utility::progressionListener* progress)
 {
 	in.reset();  // may not work...
 
 	// No decoding performed
-	return (utility::bufferedStreamCopy(in, out));
+	utility::stream::size_type res = 0;
+
+	if (progress)
+		res = utility::bufferedStreamCopy(in, out, 0, progress);
+	else
+		res = utility::bufferedStreamCopy(in, out);
+
+	return res;
 }
 
 

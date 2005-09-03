@@ -42,15 +42,29 @@ void emptyContentHandler::generate(utility::outputStream& /* os */, const vmime:
 }
 
 
-void emptyContentHandler::extract(utility::outputStream& /* os */) const
+void emptyContentHandler::extract(utility::outputStream& /* os */,
+	utility::progressionListener* progress) const
 {
+	if (progress)
+		progress->start(0);
+
 	// Nothing to do.
+
+	if (progress)
+		progress->stop(0);
 }
 
 
-void emptyContentHandler::extractRaw(utility::outputStream& /* os */) const
+void emptyContentHandler::extractRaw(utility::outputStream& /* os */,
+	utility::progressionListener* progress) const
 {
+	if (progress)
+		progress->start(0);
+
 	// Nothing to do.
+
+	if (progress)
+		progress->stop(0);
 }
 
 

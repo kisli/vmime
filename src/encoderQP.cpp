@@ -85,7 +85,8 @@ const unsigned char encoderQP::sm_hexDecodeTable[256] =
 #endif // VMIME_BUILDING_DOC
 
 
-const utility::stream::size_type encoderQP::encode(utility::inputStream& in, utility::outputStream& out)
+const utility::stream::size_type encoderQP::encode(utility::inputStream& in,
+	utility::outputStream& out, utility::progressionListener* progress)
 {
 	in.reset();  // may not work...
 
@@ -109,6 +110,10 @@ const utility::stream::size_type encoderQP::encode(utility::inputStream& in, uti
 	int outBufferPos = 0;
 
 	utility::stream::size_type total = 0;
+	utility::stream::size_type inTotal = 0;
+
+	if (progress)
+		progress->start(0);
 
 	while (bufferPos < bufferLength || !in.eof())
 	{
@@ -267,6 +272,11 @@ const utility::stream::size_type encoderQP::encode(utility::inputStream& in, uti
 			outBufferPos += 3;
 			curCol = 0;
 		}
+
+		++inTotal;
+
+		if (progress)
+			progress->progress(inTotal, inTotal);
 	}
 
 	// Flush remaining output buffer
@@ -276,11 +286,15 @@ const utility::stream::size_type encoderQP::encode(utility::inputStream& in, uti
 		total += outBufferPos;
 	}
 
+	if (progress)
+		progress->stop(inTotal);
+
 	return (total);
 }
 
 
-const utility::stream::size_type encoderQP::decode(utility::inputStream& in, utility::outputStream& out)
+const utility::stream::size_type encoderQP::decode(utility::inputStream& in,
+	utility::outputStream& out, utility::progressionListener* progress)
 {
 	in.reset();  // may not work...
 
@@ -295,6 +309,7 @@ const utility::stream::size_type encoderQP::decode(utility::inputStream& in, uti
 	int outBufferPos = 0;
 
 	utility::stream::size_type total = 0;
+	utility::stream::size_type inTotal = 0;
 
 	while (bufferPos < bufferLength || !in.eof())
 	{
@@ -321,6 +336,8 @@ const utility::stream::size_type encoderQP::decode(utility::inputStream& in, uti
 		// Decode the next sequence (hex-encoded byte or printable character)
 		unsigned char c = static_cast <unsigned char>(buffer[bufferPos++]);
 
+		++inTotal;
+
 		switch (c)
 		{
 		case '=':
@@ -335,6 +352,8 @@ const utility::stream::size_type encoderQP::decode(utility::inputStream& in, uti
 			{
 				c = static_cast <unsigned char>(buffer[bufferPos++]);
 
+				++inTotal;
+
 				switch (c)
 				{
 				// Ignore soft line break ("=\r\n" or "=\n")
@@ -348,7 +367,10 @@ const utility::stream::size_type encoderQP::decode(utility::inputStream& in, uti
 					}
 
 					if (bufferPos < bufferLength)
+					{
 						++bufferPos;
+						++inTotal;
+					}
 
 					break;
 
@@ -369,6 +391,8 @@ const utility::stream::size_type encoderQP::decode(utility::inputStream& in, uti
 					if (bufferPos < bufferLength)
 					{
 						const unsigned char next = static_cast <unsigned char>(buffer[bufferPos++]);
+
+						++inTotal;
 
 						const unsigned char value =
 							  sm_hexDecodeTable[c] * 16
@@ -412,6 +436,9 @@ const utility::stream::size_type encoderQP::decode(utility::inputStream& in, uti
 		}
 
 		}
+
+		if (progress)
+			progress->progress(inTotal, inTotal);
 	}
 
 	// Flush remaining output buffer
@@ -420,6 +447,9 @@ const utility::stream::size_type encoderQP::decode(utility::inputStream& in, uti
 		QP_WRITE(out, outBuffer, outBufferPos);
 		total += outBufferPos;
 	}
+
+	if (progress)
+		progress->stop(inTotal);
 
 	return (total);
 }

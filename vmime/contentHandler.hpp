@@ -26,6 +26,7 @@
 #include "vmime/base.hpp"
 #include "vmime/utility/stringProxy.hpp"
 #include "vmime/utility/smartPtr.hpp"
+#include "vmime/utility/progressionListener.hpp"
 #include "vmime/encoding.hpp"
 
 
@@ -66,16 +67,20 @@ public:
 	  * @throw exceptions::no_encoder_available if the encoding is
 	  * not supported
 	  * @param os output stream
+	  * @param progress progression listener, or NULL if you do not
+	  * want to receive progression notifications
 	  */
-	virtual void extract(utility::outputStream& os) const = 0;
+	virtual void extract(utility::outputStream& os, utility::progressionListener* progress = NULL) const = 0;
 
 	/** Extract the contents into the specified stream, without
 	  * decoding it. It may be useful in case the encoding is not
 	  * supported and you want to extract raw data.
 	  *
 	  * @param os output stream
+	  * @param progress progression listener, or NULL if you do not
+	  * want to receive progression notifications
 	  */
-	virtual void extractRaw(utility::outputStream& os) const = 0;
+	virtual void extractRaw(utility::outputStream& os, utility::progressionListener* progress = NULL) const = 0;
 
 	/** Returns the actual length of data. WARNING: this can return 0 if no
 	  * length was specified when setting data of this object.

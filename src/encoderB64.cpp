@@ -70,7 +70,8 @@ const unsigned char encoderB64::sm_decodeMap[256] =
 
 
 
-const utility::stream::size_type encoderB64::encode(utility::inputStream& in, utility::outputStream& out)
+const utility::stream::size_type encoderB64::encode(utility::inputStream& in,
+	utility::outputStream& out, utility::progressionListener* progress)
 {
 	in.reset();  // may not work...
 
@@ -88,8 +89,12 @@ const utility::stream::size_type encoderB64::encode(utility::inputStream& in, ut
 	unsigned char output[4];
 
 	utility::stream::size_type total = 0;
+	utility::stream::size_type inTotal = 0;
 
 	int curCol = 0;
+
+	if (progress)
+		progress->start(0);
 
 	while (bufferPos < bufferLength || !in.eof())
 	{
@@ -156,6 +161,7 @@ const utility::stream::size_type encoderB64::encode(utility::inputStream& in, ut
 		// Write encoded data to output stream
 		B64_WRITE(out, output, 4);
 
+		inTotal += count;
 		total += 4;
 		curCol += 4;
 
@@ -164,13 +170,20 @@ const utility::stream::size_type encoderB64::encode(utility::inputStream& in, ut
 			out.write("\r\n", 2);
 			curCol = 0;
 		}
+
+		if (progress)
+			progress->progress(inTotal, inTotal);
 	}
+
+	if (progress)
+		progress->stop(inTotal);
 
 	return (total);
 }
 
 
-const utility::stream::size_type encoderB64::decode(utility::inputStream& in, utility::outputStream& out)
+const utility::stream::size_type encoderB64::decode(utility::inputStream& in,
+	utility::outputStream& out, utility::progressionListener* progress)
 {
 	in.reset();  // may not work...
 
@@ -180,9 +193,13 @@ const utility::stream::size_type encoderB64::decode(utility::inputStream& in, ut
 	int bufferPos = 0;
 
 	utility::stream::size_type total = 0;
+	utility::stream::size_type inTotal = 0;
 
 	unsigned char bytes[4];
 	unsigned char output[3];
+
+	if (progress)
+		progress->start(0);
 
 	while (bufferPos < bufferLength || !in.eof())
 	{
@@ -265,7 +282,14 @@ const utility::stream::size_type encoderB64::decode(utility::inputStream& in, ut
 
 		B64_WRITE(out, output, 3);
 		total += 3;
+		inTotal += count;
+
+		if (progress)
+			progress->progress(inTotal, inTotal);
 	}
+
+	if (progress)
+		progress->stop(inTotal);
 
 	return (total);
 }

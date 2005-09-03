@@ -85,12 +85,26 @@ stringProxy& stringProxy::operator=(const string_type& s)
 }
 
 
-void stringProxy::extract(outputStream& os, const size_type start, const size_type end) const
+void stringProxy::extract(outputStream& os, const size_type start, const size_type end,
+	utility::progressionListener* progress) const
 {
+	size_type len = 0;
+
 	if (end == std::numeric_limits <size_type>::max())
-		os.write(m_buffer.data() + m_start + start, m_end - start - m_start);
-	else
-		os.write(m_buffer.data() + m_start + start, end - start - m_start);
+		len = m_end - start - m_start;
+	else if (end > start)
+		len = end - start - m_start;
+
+	if (progress)
+		progress->start(len);
+
+	os.write(m_buffer.data() + m_start + start, len);
+
+	if (progress)
+	{
+		progress->progress(len, len);
+		progress->stop(len);
+	}
 }
 
 

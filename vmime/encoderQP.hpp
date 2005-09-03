@@ -37,8 +37,8 @@ public:
 
 	encoderQP();
 
-	const utility::stream::size_type encode(utility::inputStream& in, utility::outputStream& out);
-	const utility::stream::size_type decode(utility::inputStream& in, utility::outputStream& out);
+	const utility::stream::size_type encode(utility::inputStream& in, utility::outputStream& out, utility::progressionListener* progress = NULL);
+	const utility::stream::size_type decode(utility::inputStream& in, utility::outputStream& out, utility::progressionListener* progress = NULL);
 
 	const std::vector <string> getAvailableProperties() const;
 

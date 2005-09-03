@@ -68,6 +68,35 @@ public:
 };
 
 
+
+/** A progression listener used when total size is known by the
+  * receiver, but not by the notifier.
+  */
+
+class progressionListenerSizeAdapter : public progressionListener
+{
+public:
+
+	/** Construct a new progressionListenerSizeAdapter object.
+	  *
+	  * @param list wrapped progression listener (can be NULL)
+	  * @param total predicted total
+	  */
+	progressionListenerSizeAdapter(progressionListener* list, const int total);
+
+	const bool cancel() const;
+
+	void start(const int predictedTotal);
+	void progress(const int current, const int currentTotal);
+	void stop(const int total);
+
+private:
+
+	progressionListener* m_wrapped;
+	int m_total;
+};
+
+
 } // utility
 } // vmime
 

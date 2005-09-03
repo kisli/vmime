@@ -59,7 +59,8 @@ static inline const unsigned char UUDECODE(const unsigned char c)
 }
 
 
-const utility::stream::size_type encoderUUE::encode(utility::inputStream& in, utility::outputStream& out)
+const utility::stream::size_type encoderUUE::encode(utility::inputStream& in,
+	utility::outputStream& out, utility::progressionListener* progress)
 {
 	in.reset();  // may not work...
 
@@ -71,6 +72,7 @@ const utility::stream::size_type encoderUUE::encode(utility::inputStream& in, ut
 		         static_cast <string::size_type>(46));
 
 	utility::stream::size_type total = 0;
+	utility::stream::size_type inTotal = 0;
 
 	// Output the prelude text ("begin [mode] [filename]")
 	out << "begin";
@@ -87,6 +89,9 @@ const utility::stream::size_type encoderUUE::encode(utility::inputStream& in, ut
 	// Process the data
 	utility::stream::value_type inBuffer[64];
 	utility::stream::value_type outBuffer[64];
+
+	if (progress)
+		progress->start(0);
 
 	while (!in.eof())
 	{
@@ -117,16 +122,24 @@ const utility::stream::size_type encoderUUE::encode(utility::inputStream& in, ut
 		out.write(outBuffer, j + 2);
 
 		total += j + 2;
+		inTotal += inLength;
+
+		if (progress)
+			progress->progress(inTotal, inTotal);
 	}
 
 	out << "end\r\n";
 	total += 5;
 
+	if (progress)
+		progress->stop(inTotal);
+
 	return (total);
 }
 
 
-const utility::stream::size_type encoderUUE::decode(utility::inputStream& in, utility::outputStream& out)
+const utility::stream::size_type encoderUUE::decode(utility::inputStream& in,
+	utility::outputStream& out, utility::progressionListener* progress)
 {
 	in.reset();  // may not work...
 
@@ -135,10 +148,14 @@ const utility::stream::size_type encoderUUE::decode(utility::inputStream& in, ut
 	utility::stream::value_type outBuffer[64];
 
 	utility::stream::size_type total = 0;
+	utility::stream::size_type inTotal = 0;
 
 	bool stop = false;
 
 	std::fill(inBuffer, inBuffer + sizeof(inBuffer), 0);
+
+	if (progress)
+		progress->start(0);
 
 	while (!stop && !in.eof())
 	{
@@ -175,6 +192,8 @@ const utility::stream::size_type encoderUUE::decode(utility::inputStream& in, ut
 			    inBuffer[3] == 'n' &&
 			    parserHelpers::isSpace(inBuffer[4]))
 			{
+				inTotal += 5;
+
 				utility::stream::value_type c = 0;
 
 				utility::stream::size_type count = 0;
@@ -188,9 +207,15 @@ const utility::stream::size_type encoderUUE::decode(utility::inputStream& in, ut
 					buffer[count++] = c;
 				}
 
+				inTotal += count;
+
 				if (c != '\n')
 				{
 					// OOPS! Weird line. Don't try to decode more...
+
+					if (progress)
+						progress->stop(inTotal);
+
 					return (total);
 				}
 
@@ -240,6 +265,7 @@ const utility::stream::size_type encoderUUE::decode(utility::inputStream& in, ut
 			    (inBuffer[2] == '\r' || inBuffer[2] == '\n'))
 			{
 				stop = true;
+				inTotal += 3;
 				continue;
 			}
 
@@ -254,6 +280,8 @@ const utility::stream::size_type encoderUUE::decode(utility::inputStream& in, ut
 			// Premature end of data
 			break;
 		}
+
+		inTotal += (inLength - inPos);
 
 		// Decode data
 		for (utility::stream::size_type i = 0, j = 0 ; i < inLength ; i += 4, j += 3)
@@ -281,7 +309,13 @@ const utility::stream::size_type encoderUUE::decode(utility::inputStream& in, ut
 		out.write(outBuffer, outLength);
 
 		std::fill(inBuffer, inBuffer + sizeof(inBuffer), 0);
+
+		if (progress)
+			progress->progress(inTotal, inTotal);
 	}
+
+	if (progress)
+		progress->stop(inTotal);
 
 	return (total);
 }
