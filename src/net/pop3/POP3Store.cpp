@@ -23,7 +23,7 @@
 #include "vmime/exception.hpp"
 #include "vmime/platformDependant.hpp"
 #include "vmime/messageId.hpp"
-#include "vmime/utility/md5.hpp"
+#include "vmime/security/digest/messageDigestFactory.hpp"
 #include "vmime/utility/filteredStream.hpp"
 
 #include <algorithm>
@@ -145,8 +145,13 @@ void POP3Store::connect()
 			if (mid.getLeft().length() && mid.getRight().length())
 			{
 				// <digest> is the result of MD5 applied to "<message-id>password"
-				sendRequest("APOP " + auth.getUsername() + " "
-					+ utility::md5(mid.generate() + auth.getPassword()).hex());
+				ref <security::digest::messageDigest> md5 =
+					security::digest::messageDigestFactory::getInstance()->create("md5");
+
+				md5->update(mid.generate() + auth.getPassword());
+				md5->finalize();
+
+				sendRequest("APOP " + auth.getUsername() + " " + md5->getHexDigest());
 				readResponse(response, false);
 
 				if (isSuccessResponse(response))

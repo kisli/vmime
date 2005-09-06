@@ -44,37 +44,28 @@
 //     These notices must be retained in any copies of any part of this
 //     documentation and/or software.
 
-#include "vmime/utility/md5.hpp"
+#include "vmime/security/digest/md5/md5MessageDigest.hpp"
 
 
 namespace vmime {
-namespace utility {
+namespace security {
+namespace digest {
+namespace md5 {
 
 
-md5::md5()
-	: m_finalized(false)
+md5MessageDigest::md5MessageDigest()
 {
 	init();
 }
 
 
-md5::md5(const vmime_uint8* const in, const unsigned long length)
-	: m_finalized(false)
+void md5MessageDigest::reset()
 {
 	init();
-	update(in, length);
 }
 
 
-md5::md5(const string& in)
-	: m_finalized(false)
-{
-	init();
-	update(reinterpret_cast <const vmime_uint8*>(in.c_str()), in.length());
-}
-
-
-void md5::init()
+void md5MessageDigest::init()
 {
 	m_hash[0] = 0x67452301;
 	m_hash[1] = 0xefcdab89;
@@ -82,6 +73,7 @@ void md5::init()
 	m_hash[3] = 0x10325476;
 
 	m_byteCount = 0;
+	m_finalized = false;
 }
 
 
@@ -121,18 +113,29 @@ static inline void swapUint32Array(vmime_uint32* buf, unsigned long words)
 }
 
 
-void md5::update(const string& in)
+void md5MessageDigest::update(const byte b)
 {
-	update(reinterpret_cast <const vmime_uint8*>(in.c_str()), in.length());
+	update(&b, 1);
 }
 
 
-void md5::update(const vmime_uint8* data, unsigned long len)
+void md5MessageDigest::update(const string& s)
 {
-	if (m_finalized)
-		return;
+	update(reinterpret_cast <const byte*>(s.data()), s.length());
+}
 
+
+void md5MessageDigest::update(const byte* data, const unsigned long offset,
+	const unsigned long len)
+{
+	update(data + offset, len);
+}
+
+
+void md5MessageDigest::update(const byte* data, const unsigned long length)
+{
 	const unsigned long avail = 64 - (m_byteCount & 0x3f);
+	unsigned long len = length;
 
 	m_byteCount += len;
 
@@ -161,7 +164,29 @@ void md5::update(const vmime_uint8* data, unsigned long len)
 }
 
 
-void md5::finalize()
+void md5MessageDigest::finalize(const string& s)
+{
+	update(s);
+	finalize();
+}
+
+
+void md5MessageDigest::finalize(const byte* buffer, const unsigned long len)
+{
+	update(buffer, len);
+	finalize();
+}
+
+
+void md5MessageDigest::finalize(const byte* buffer,
+	const unsigned long offset, const unsigned long len)
+{
+	update(buffer, offset, len);
+	finalize();
+}
+
+
+void md5MessageDigest::finalize()
 {
 	const long offset = m_byteCount & 0x3f;
 
@@ -197,7 +222,7 @@ void md5::finalize()
 }
 
 
-void md5::transformHelper()
+void md5MessageDigest::transformHelper()
 {
 #if VMIME_BYTE_ORDER_BIG_ENDIAN
 	swapUint32Array((vmime_uint32*) m_block, 64 / 4);
@@ -206,7 +231,7 @@ void md5::transformHelper()
 }
 
 
-void md5::transform()
+void md5MessageDigest::transform()
 {
 	const vmime_uint32* const in = reinterpret_cast <vmime_uint32*>(m_block);
 
@@ -298,34 +323,20 @@ void md5::transform()
 }
 
 
-const string md5::hex()
+const int md5MessageDigest::getDigestLength() const
 {
-	if (!m_finalized)
-		finalize();
-
-	static const unsigned char hex[] = "0123456789abcdef";
-
-	std::ostringstream oss;
-	const vmime_uint8* const digest = reinterpret_cast <vmime_uint8*>(m_hash);
-
-	for (int i = 0 ; i < 16 ; ++i)
-	{
-		oss << hex[(digest[i] & 0xf0) >> 4];
-		oss << hex[(digest[i] & 0x0f)];
-	}
-
-	return (oss.str());
+	return 16;
 }
 
 
-const vmime_uint8* md5::hash()
+const byte* md5MessageDigest::getDigest() const
 {
-	if (!m_finalized)
-		finalize();
-
-	return (reinterpret_cast <const vmime_uint8*>(m_hash));
+	return reinterpret_cast <const byte*>(m_hash);
 }
 
 
-} // utility
+} // md5
+} // digest
+} // security
 } // vmime
+

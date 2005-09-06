@@ -17,52 +17,37 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#ifndef VMIME_UTILITY_MD5_HPP_INCLUDED
-#define VMIME_UTILITY_MD5_HPP_INCLUDED
+#include "vmime/security/digest/messageDigest.hpp"
 
-
-#include "vmime/base.hpp"
-#include "vmime/config.hpp"
+#include <sstream>
 
 
 namespace vmime {
-namespace utility {
+namespace security {
+namespace digest {
 
 
-class md5
+const string messageDigest::getHexDigest() const
 {
-public:
+	const byte* hash = getDigest();
+	const int len = getDigestLength();
 
-	md5();
-	md5(const vmime_uint8* const in, const unsigned long length);
-	md5(const string& in);
+	static const unsigned char hex[] = "0123456789abcdef";
 
-public:
+	std::ostringstream oss;
 
-	const string hex();
-	const vmime_uint8* hash();
+	for (int i = 0 ; i < len ; ++i)
+	{
+		oss << hex[(hash[i] & 0xf0) >> 4];
+		oss << hex[(hash[i] & 0x0f)];
+	}
 
-	void update(const vmime_uint8* data, unsigned long len);
-	void update(const string& in);
+	return oss.str();
 
-protected:
-
-	void init();
-	void transformHelper();
-	void transform();
-	void finalize();
-
-	vmime_uint32 m_hash[4];
-
-	unsigned long m_byteCount;
-	vmime_uint8 m_block[64];
-
-	bool m_finalized;
-};
+}
 
 
-} // utility
+} // digest
+} // security
 } // vmime
 
-
-#endif // VMIME_UTILITY_MD5_HPP_INCLUDED

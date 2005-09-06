@@ -39,6 +39,8 @@ namespace vmime
 
 	typedef int char_t;
 
+	typedef vmime_uint8 byte;
+
 	// Some aliases
 	namespace utils = utility;
 

@@ -121,6 +121,18 @@ const char* no_encoder_available::name() const throw() { return "no_encoder_avai
 
 
 //
+// no_digest_algorithm_available
+//
+
+no_digest_algorithm_available::~no_digest_algorithm_available() throw() {}
+no_digest_algorithm_available::no_digest_algorithm_available(const string& name, const exception& other)
+	: exception("No algorithm available: '" + name + "'.", other) {}
+
+exception* no_digest_algorithm_available::clone() const { return new no_digest_algorithm_available(*this); }
+const char* no_digest_algorithm_available::name() const throw() { return "no_digest_algorithm_available"; }
+
+
+//
 // no_such_parameter
 //
 

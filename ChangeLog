@@ -2,6 +2,11 @@
 VERSION 0.7.2cvs
 ================
 
+2005-09-06  Vincent Richard  <vincent@vincent-richard.net>
+
+ * Created 'vmime::security' and 'vmime::security::digest' namespaces.
+   MD5 has been moved here. Added SHA-1 hash algorithm.
+
 2005-09-03  Vincent Richard  <vincent@vincent-richard.net>
 
  * encoder*, *contentHandler: added progression notifications.

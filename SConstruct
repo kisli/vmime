@@ -79,6 +79,7 @@ packageVersionedName = packageName
 ##################
 
 libvmime_sources = [
+	# ==============================  Parser  ==============================
 	'address.cpp', 'address.hpp',
 	'addressList.cpp', 'addressList.hpp',
 	'attachment.hpp',
@@ -147,11 +148,11 @@ libvmime_sources = [
 	'types.hpp',
 	'word.cpp', 'word.hpp',
 	'vmime.hpp',
+	# ==============================  Utility  =============================
 	'utility/childProcess.hpp',
 	'utility/file.hpp',
 	'utility/datetimeUtils.cpp', 'utility/datetimeUtils.hpp',
 	'utility/filteredStream.cpp', 'utility/filteredStream.hpp',
-	'utility/md5.cpp', 'utility/md5.hpp',
 	'utility/path.cpp', 'utility/path.hpp',
 	'utility/progressionListener.cpp', 'utility/progressionListener.hpp',
 	'utility/random.cpp', 'utility/random.hpp',
@@ -161,11 +162,18 @@ libvmime_sources = [
 	'utility/stringUtils.cpp', 'utility/stringUtils.hpp',
 	'utility/url.cpp', 'utility/url.hpp',
 	'utility/urlUtils.cpp', 'utility/urlUtils.hpp',
+	# ===============================  MDN  ================================
 	'mdn/MDNHelper.cpp', 'mdn/MDNHelper.hpp',
 	'mdn/MDNInfos.cpp', 'mdn/MDNInfos.hpp',
 	'mdn/receivedMDNInfos.cpp', 'mdn/receivedMDNInfos.hpp',
 	'mdn/sendableMDNInfos.cpp', 'mdn/sendableMDNInfos.hpp',
-	'misc/importanceHelper.cpp', 'misc/importanceHelper.hpp'
+	# ===============================  Misc  ===============================
+	'misc/importanceHelper.cpp', 'misc/importanceHelper.hpp',
+	# =============================  Security  =============================
+	'security/digest/messageDigest.cpp', 'security/digest/messageDigest.hpp',
+	'security/digest/messageDigestFactory.cpp', 'security/digest/messageDigestFactory.hpp',
+	'security/digest/md5/md5MessageDigest.cpp', 'security/digest/md5/md5MessageDigest.hpp',
+	'security/digest/sha1/sha1MessageDigest.cpp', 'security/digest/sha1/sha1MessageDigest.hpp'
 ]
 
 libvmime_examples_sources = [
@@ -298,6 +306,7 @@ libvmimetest_common = [
 
 libvmimetest_sources = [
 	'tests/testRunner.cpp',
+	# ==============================  Parser  ==============================
 	'tests/parser/bodyPartTest.cpp',
 	'tests/parser/datetimeTest.cpp',
 	'tests/parser/dispositionTest.cpp',
@@ -310,14 +319,18 @@ libvmimetest_sources = [
 	'tests/parser/pathTest.cpp',
 	'tests/parser/parameterTest.cpp',
 	'tests/parser/textTest.cpp',
+	# ==============================  Utility  =============================
 	'tests/utility/filteredStreamTest.cpp',
-	'tests/utility/md5Test.cpp',
 	'tests/utility/stringProxyTest.cpp',
 	'tests/utility/stringUtilsTest.cpp',
 	'tests/utility/pathTest.cpp',
 	'tests/utility/urlTest.cpp',
 	'tests/utility/smartPtrTest.cpp',
-	'tests/misc/importanceHelperTest.cpp'
+	# ===============================  Misc  ===============================
+	'tests/misc/importanceHelperTest.cpp',
+	# =============================  Security  =============================
+	'tests/security/digest/md5Test.cpp',
+	'tests/security/digest/sha1Test.cpp'
 ]
 
 libvmime_autotools = [

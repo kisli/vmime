@@ -21,6 +21,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <string>
 
 
 // VMime
@@ -53,7 +54,15 @@
 	}; \
 	\
 	static CppUnit::AutoRegisterSuite <VMIME_TEST_SUITE>(autoRegisterRegistry1); \
-	static CppUnit::AutoRegisterSuite <VMIME_TEST_SUITE>(autoRegisterRegistry2)(VMIME_TEST_SUITE_MODULE);
+	static CppUnit::AutoRegisterSuite <VMIME_TEST_SUITE>(autoRegisterRegistry2)(VMIME_TEST_SUITE_MODULE); \
+	extern void registerTestModule(const char* name); \
+	template <typename T> \
+	struct AutoRegisterModule { \
+		AutoRegisterModule() { \
+			registerTestModule(VMIME_TEST_SUITE_MODULE); \
+		} \
+	}; \
+	static AutoRegisterModule <VMIME_TEST_SUITE> autoRegisterModule;
 
 #define VMIME_TEST_LIST_BEGIN       CPPUNIT_TEST_SUITE(VMIME_TEST_SUITE);
 #define VMIME_TEST_LIST_END         CPPUNIT_TEST_SUITE_END();

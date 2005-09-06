@@ -112,12 +112,30 @@ public:
 };
 
 
+/** No encoder has been found for the specified encoding name.
+  */
+
 class no_encoder_available : public vmime::exception
 {
 public:
 
 	no_encoder_available(const exception& other = NO_EXCEPTION);
 	~no_encoder_available() throw();
+
+	exception* clone() const;
+	const char* name() const throw();
+};
+
+
+/** No algorithm has been found for the specified name.
+  */
+
+class no_digest_algorithm_available : public vmime::exception
+{
+public:
+
+	no_digest_algorithm_available(const string& name, const exception& other = NO_EXCEPTION);
+	~no_digest_algorithm_available() throw();
 
 	exception* clone() const;
 	const char* name() const throw();

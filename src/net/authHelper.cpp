@@ -20,7 +20,7 @@
 #include "vmime/net/authHelper.hpp"
 
 #include "vmime/config.hpp"
-#include "vmime/utility/md5.hpp"
+#include "vmime/security/digest/messageDigestFactory.hpp"
 
 
 namespace vmime {
@@ -42,13 +42,17 @@ void hmac_md5(const string& text, const string& key, string& hexDigest)
 	unsigned char tkey[16];
 	int tkeyLen;
 
+	ref <security::digest::messageDigest> md5 =
+		security::digest::messageDigestFactory::getInstance()->create("md5");
+
 	// If key is longer than 64 bytes reset it to key = MD5(key)
 	if (key.length() > 64)
 	{
-		utility::md5 keyMD5;
-		keyMD5.update(reinterpret_cast <const vmime_uint8*>(key.data()), key.length());
+		md5->reset();
+		md5->update(reinterpret_cast <const vmime_uint8*>(key.data()), key.length());
+		md5->finalize();
 
-		std::copy(keyMD5.hash(), keyMD5.hash() + 16, tkey);
+		std::copy(md5->getDigest(), md5->getDigest() + 16, tkey);
 		tkeyLen = 16;
 	}
 	else
@@ -84,20 +88,22 @@ void hmac_md5(const string& text, const string& key, string& hexDigest)
 	}
 
 	// Perform inner MD5
-	utility::md5 innerMD5;
-	innerMD5.update(ipad, 64);
-	innerMD5.update(text);
+	md5->reset();
+	md5->update(ipad, 64);
+	md5->update(text);
+	md5->finalize();
 
-	std::copy(innerMD5.hash(), innerMD5.hash() + 16, digest);
+	std::copy(md5->getDigest(), md5->getDigest() + 16, digest);
 
 	// Perform outer MD5
-	utility::md5 outerMD5;
-	outerMD5.update(opad, 64);
-	outerMD5.update(digest, 16);
+	md5->reset();
+	md5->update(opad, 64);
+	md5->update(digest, 16);
+	md5->finalize();
 
 	//std::copy(outerMD5.hash(), outerMD5.hash() + 16, digest);
 
-	hexDigest = outerMD5.hex();
+	hexDigest = md5->getHexDigest();
 }
 
 

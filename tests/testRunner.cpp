@@ -21,6 +21,8 @@
 #include <time.h>
 
 #include <iostream>
+#include <vector>
+#include <algorithm>
 
 #include <cppunit/XmlOutputter.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
@@ -165,6 +167,26 @@ private:
 };
 
 
+
+// see testUtils.hpp
+
+std::vector <std::string>& getTestModules()
+{
+	static std::vector <std::string> allModules;
+	return allModules;
+}
+
+
+void registerTestModule(const char* name_)
+{
+	std::vector <std::string>& testModules = getTestModules();
+	std::string name(name_);
+
+	if (std::find(testModules.begin(), testModules.end(), name) == testModules.end())
+		testModules.push_back(name);
+}
+
+
 int main(int argc, char* argv[])
 {
         // VMime initialization
@@ -186,9 +208,12 @@ int main(int argc, char* argv[])
 	{
 		// Get the test suites from the registry and add them to the list of test to run
 		CppUnit::TestRunner runner;
-		runner.addTest(CppUnit::TestFactoryRegistry::getRegistry("Parser").makeTest());
-		runner.addTest(CppUnit::TestFactoryRegistry::getRegistry("Utility").makeTest());
-		runner.addTest(CppUnit::TestFactoryRegistry::getRegistry("Misc").makeTest());
+
+		for (unsigned int i = 0 ; i < getTestModules().size() ; ++i)
+		{
+			runner.addTest(CppUnit::TestFactoryRegistry::
+				getRegistry(getTestModules()[i]).makeTest());
+		}
 
 		std::auto_ptr <XmlTestListener> xmlListener(new XmlTestListener);
 
