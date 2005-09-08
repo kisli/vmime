@@ -35,7 +35,8 @@ const string urlUtils::encode(const string& s)
 		const char_t c = *it;
 
 		if (parserHelpers::isPrint(c) && !parserHelpers::isSpace(c) &&
-		    c != '%' && c != '=' && c != '?' && c != '&')
+		    c != '%' && c != '=' && c != '?' && c != '&' &&
+		    c != '@' && c != '/' && c != ':')
 		{
 			result += c;
 		}
