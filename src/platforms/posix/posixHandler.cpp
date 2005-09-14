@@ -33,6 +33,10 @@
 
 #include <string.h>
 
+#ifdef _POSIX_PRIORITY_SCHEDULING
+	#include <sched.h>
+#endif // _POSIX_PRIORITY_SCHEDULING
+
 
 namespace vmime {
 namespace platforms {
@@ -201,7 +205,11 @@ vmime::utility::childProcessFactory* posixHandler::getChildProcessFactory() cons
 
 void posixHandler::wait() const
 {
+#ifdef _POSIX_PRIORITY_SCHEDULING
+	::sched_yield();
+#else
 	::sleep(1);
+#endif // _POSIX_PRIORITY_SCHEDULING
 }
 
 

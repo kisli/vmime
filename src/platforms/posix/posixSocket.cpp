@@ -18,6 +18,7 @@
 //
 
 #include "vmime/platforms/posix/posixSocket.hpp"
+#include "vmime/platforms/posix/posixHandler.hpp"
 
 #include <unistd.h>
 #include <sys/socket.h>
@@ -121,12 +122,19 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 				("Error while connecting socket.", e);
 		}
 	}
+
+	::fcntl(m_desc, F_SETFL, ::fcntl(m_desc, F_GETFL) | O_NONBLOCK);
 }
 
 
 const bool posixSocket::isConnected() const
 {
-	return (m_desc != -1);
+	if (m_desc == -1)
+		return false;
+
+	char buff;
+
+	return ::recv(m_desc, &buff, 1, MSG_PEEK) != 0;
 }
 
 
@@ -144,47 +152,60 @@ void posixSocket::disconnect()
 
 void posixSocket::receive(vmime::string& buffer)
 {
-	::ssize_t ret = ::recv(m_desc, m_buffer, sizeof(m_buffer), 0);
-
-	if (ret == -1)
-	{
-		// Error or no data
-		return;
-	}
-	else if (ret > 0)
-	{
-		buffer = vmime::string(m_buffer, ret);
-	}
+	const int size = receiveRaw(m_buffer, sizeof(m_buffer));
+	buffer = vmime::string(m_buffer, size);
 }
 
 
 const int posixSocket::receiveRaw(char* buffer, const int count)
 {
-	::ssize_t ret = ::recv(m_desc, buffer, count, 0);
+	const int ret = ::recv(m_desc, buffer, count, 0);
 
-	if (ret == -1)
+	if (ret < 0)
 	{
-		// Error or no data
-		return (0);
+		if (errno != EAGAIN)
+			throwSocketError(errno);
+
+		// No data available at this time
+		return 0;
 	}
-	else
+	else if (ret == 0)
 	{
-		return (ret);
+		// Host shutdown
+		throwSocketError(ENOTCONN);
 	}
+
+	return ret;
 }
 
 
 void posixSocket::send(const vmime::string& buffer)
 {
-	if (::send(m_desc, buffer.data(), buffer.length(), 0) == -1)
-		throwSocketError(errno);
+	sendRaw(buffer.data(), buffer.length());
 }
 
 
 void posixSocket::sendRaw(const char* buffer, const int count)
 {
-	if (::send(m_desc, buffer, count, 0) == -1)
-		throwSocketError(errno);
+	int size = count;
+
+	while (size > 0)
+	{
+		const int ret = ::send(m_desc, buffer, size, 0);
+
+		if (ret < 0)
+		{
+			if (errno != EAGAIN)
+				throwSocketError(errno);
+
+			platformDependant::getHandler()->wait();
+		}
+		else
+		{
+			buffer += ret;
+			size -= ret;
+		}
+	}
 }
 
 
