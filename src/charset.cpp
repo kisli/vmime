@@ -29,6 +29,7 @@ extern "C"
 #ifndef VMIME_BUILDING_DOC
 
 	#include <iconv.h>
+	#include <errno.h>
 
 	// HACK: prototypes may differ depending on the compiler and/or system (the
 	// second parameter may or may not be 'const'). This redeclaration is a hack
@@ -103,7 +104,7 @@ void charset::convert(utility::inputStream& in, utility::outputStream& out,
 
 	if (cd != reinterpret_cast <iconv_t>(-1))
 	{
-		char inBuffer[5];
+		char inBuffer[32768];
 		char outBuffer[32768];
 		size_t inPos = 0;
 
@@ -146,7 +147,8 @@ void charset::convert(utility::inputStream& in, utility::outputStream& out,
 					std::copy(const_cast <char*>(inPtr), inBuffer + sizeof(inBuffer), inBuffer);
 					inPos = inLength;
 
-					prevIsInvalid = true;
+					if (errno != E2BIG)
+						prevIsInvalid = true;
 				}
 			}
 			else
