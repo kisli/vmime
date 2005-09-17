@@ -24,7 +24,6 @@
 #include "vmime/types.hpp"
 
 #include "vmime/net/session.hpp"
-#include "vmime/net/authenticator.hpp"
 
 #include "vmime/net/serviceFactory.hpp"
 #include "vmime/net/serviceInfos.hpp"
@@ -43,7 +42,7 @@ class service : public object
 {
 protected:
 
-	service(ref <session> sess, const serviceInfos& infos, ref <authenticator> auth);
+	service(ref <session> sess, const serviceInfos& infos, ref <security::authenticator> auth);
 
 public:
 
@@ -110,13 +109,19 @@ public:
 	  *
 	  * @return authenticator object
 	  */
-	ref <const authenticator> getAuthenticator() const;
+	ref <const security::authenticator> getAuthenticator() const;
 
 	/** Return the authenticator object used with this service instance.
 	  *
 	  * @return authenticator object
 	  */
-	ref <authenticator> getAuthenticator();
+	ref <security::authenticator> getAuthenticator();
+
+	/** Set the authenticator object used with this service instance.
+	  *
+	  * @param auth authenticator object
+	  */
+	void setAuthenticator(ref <security::authenticator> auth);
 
 	/** Set a property for this service (service prefix is added automatically).
 	  *
@@ -150,7 +155,7 @@ public:
 private:
 
 	ref <session> m_session;
-	ref <authenticator> m_auth;
+	ref <security::authenticator> m_auth;
 };
 
 

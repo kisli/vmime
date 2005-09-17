@@ -133,7 +133,7 @@ void IMAPFolder::open(const int mode, bool failIfModeIsNotAvailable)
 
 	// Open a connection for this folder
 	ref <IMAPConnection> connection =
-		vmime::create <IMAPConnection>(m_store, m_store->oneTimeAuthenticator());
+		vmime::create <IMAPConnection>(m_store, m_store->getAuthenticator());
 
 	try
 	{

@@ -23,6 +23,7 @@
 
 #include <limits>
 #include <string>
+#include <vector>
 
 #include "vmime/config.hpp"
 #include "vmime/utility/smartPtr.hpp"
@@ -40,6 +41,7 @@ namespace vmime
 	typedef int char_t;
 
 	typedef vmime_uint8 byte;
+	typedef std::vector <byte> byteArray;
 
 	// Some aliases
 	namespace utils = utility;

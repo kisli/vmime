@@ -326,6 +326,29 @@ private:
 };
 
 
+/** An adapter class for reading from an array of bytes.
+  */
+
+class inputStreamByteBufferAdapter : public inputStream
+{
+public:
+
+	inputStreamByteBufferAdapter(const byte* buffer, size_type length);
+
+	const bool eof() const;
+	void reset();
+	const size_type read(value_type* const data, const size_type count);
+	const size_type skip(const size_type count);
+
+private:
+
+	const byte* m_buffer;
+	const size_type m_length;
+
+	size_type m_pos;
+};
+
+
 #if VMIME_HAVE_MESSAGING_FEATURES
 
 

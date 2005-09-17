@@ -40,7 +40,7 @@ class SMTPTransport : public transport
 {
 public:
 
-	SMTPTransport(ref <session> sess, ref <authenticator> auth);
+	SMTPTransport(ref <session> sess, ref <security::authenticator> auth);
 	~SMTPTransport();
 
 	const string getProtocolName() const;
@@ -58,18 +58,30 @@ public:
 
 private:
 
-	static const int responseCode(const string& response);
-	static const string responseText(const string& response);
+	static const int getResponseCode(const string& response);
 
 	void sendRequest(const string& buffer, const bool end = true);
 
-	void readResponse(string& buffer);
+	const string readResponseLine();
+	const int readResponse(string& text);
+	const int readAllResponses(string& text, const bool allText = false);
 
 	void internalDisconnect();
 
+	void authenticate();
+#if VMIME_HAVE_SASL_SUPPORT
+	void authenticateSASL();
+#endif // VMIME_HAVE_SASL_SUPPORT
+
+
 	ref <socket> m_socket;
 	bool m_authentified;
+
 	bool m_extendedSMTP;
+	string m_extendedSMTPResponse;
+
+	string m_responseBuffer;
+	bool m_responseContinues;
 
 	ref <timeoutHandler> m_timeoutHandler;
 
@@ -83,6 +95,10 @@ private:
 		{
 			// SMTP-specific options
 			serviceInfos::property PROPERTY_OPTIONS_NEEDAUTH;
+#if VMIME_HAVE_SASL_SUPPORT
+			serviceInfos::property PROPERTY_OPTIONS_SASL;
+			serviceInfos::property PROPERTY_OPTIONS_SASL_FALLBACK;
+#endif // VMIME_HAVE_SASL_SUPPORT
 
 			// Common properties
 			serviceInfos::property PROPERTY_AUTH_USERNAME;

@@ -2,6 +2,11 @@
 VERSION 0.7.2cvs
 ================
 
+2005-09-17  Vincent Richard  <vincent@vincent-richard.net>
+
+ * Added SASL support, based on GNU SASL library. Slightly modified
+   auhenticator object; see 'example6' which has been updated.
+
 2005-09-06  Vincent Richard  <vincent@vincent-richard.net>
 
  * Created 'vmime::security' and 'vmime::security::digest' namespaces.

@@ -17,22 +17,33 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
+#include "vmime/config.hpp"
 #include "vmime/net/service.hpp"
 
-#include "vmime/net/defaultAuthenticator.hpp"
+#if VMIME_HAVE_SASL_SUPPORT
+	#include "vmime/security/sasl/defaultSASLAuthenticator.hpp"
+#else
+	#include "vmime/security/defaultAuthenticator.hpp"
+#endif // VMIME_HAVE_SASL_SUPPORT
 
 
 namespace vmime {
 namespace net {
 
 
-service::service(ref <session> sess, const serviceInfos& infos, ref <authenticator> auth)
+service::service(ref <session> sess, const serviceInfos& /* infos */,
+                 ref <security::authenticator> auth)
 	: m_session(sess), m_auth(auth)
 {
 	if (!auth)
 	{
-		m_auth = vmime::create <defaultAuthenticator>
-			(sess, infos.getPropertyPrefix());
+#if VMIME_HAVE_SASL_SUPPORT
+		m_auth = vmime::create
+			<security::sasl::defaultSASLAuthenticator>();
+#else
+		m_auth = vmime::create
+			<security::defaultAuthenticator>();
+#endif // VMIME_HAVE_SASL_SUPPORT
 	}
 }
 
@@ -54,15 +65,21 @@ ref <session> service::getSession()
 }
 
 
-ref <const authenticator> service::getAuthenticator() const
+ref <const security::authenticator> service::getAuthenticator() const
 {
 	return (m_auth);
 }
 
 
-ref <authenticator> service::getAuthenticator()
+ref <security::authenticator> service::getAuthenticator()
 {
 	return (m_auth);
+}
+
+
+void service::setAuthenticator(ref <security::authenticator> auth)
+{
+	m_auth = auth;
 }
 
 

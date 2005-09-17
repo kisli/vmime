@@ -48,7 +48,7 @@ class POP3Store : public store
 
 public:
 
-	POP3Store(ref <session> sess, ref <authenticator> auth);
+	POP3Store(ref <session> sess, ref <security::authenticator> auth);
 	~POP3Store();
 
 	const string getProtocolName() const;
@@ -72,9 +72,24 @@ public:
 
 private:
 
+	enum ResponseCode
+	{
+		RESPONSE_OK = 0,
+		RESPONSE_READY,
+		RESPONSE_ERR
+	};
+
+	void authenticate(const messageId& randomMID);
+#if VMIME_HAVE_SASL_SUPPORT
+	void authenticateSASL();
+#endif // VMIME_HAVE_SASL_SUPPORT
+
+	const std::vector <string> getCapabilities();
+
 	static const bool isSuccessResponse(const string& buffer);
 	static const bool stripFirstLine(const string& buffer, string& result, string* firstLine = NULL);
 	static void stripResponseCode(const string& buffer, string& result);
+	static const int getResponseCode(const string& buffer);
 
 	void sendRequest(const string& buffer, const bool end = true);
 	void readResponse(string& buffer, const bool multiLine, utility::progressionListener* progress = NULL);
@@ -108,6 +123,10 @@ private:
 			// POP3-specific options
 			serviceInfos::property PROPERTY_OPTIONS_APOP;
 			serviceInfos::property PROPERTY_OPTIONS_APOP_FALLBACK;
+#if VMIME_HAVE_SASL_SUPPORT
+			serviceInfos::property PROPERTY_OPTIONS_SASL;
+			serviceInfos::property PROPERTY_OPTIONS_SASL_FALLBACK;
+#endif // VMIME_HAVE_SASL_SUPPORT
 
 			// Common properties
 			serviceInfos::property PROPERTY_AUTH_USERNAME;

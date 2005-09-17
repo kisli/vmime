@@ -86,6 +86,21 @@
 #include "vmime/utility/datetimeUtils.hpp"
 #include "vmime/utility/filteredStream.hpp"
 
+// Security
+#include "vmime/security/authenticator.hpp"
+#include "vmime/security/defaultAuthenticator.hpp"
+
+// Security/digest
+#include "vmime/security/digest/messageDigestFactory.hpp"
+
+// Security/SASL
+#if VMIME_HAVE_SASL_SUPPORT
+	#include "vmime/security/sasl/SASLAuthenticator.hpp"
+	#include "vmime/security/sasl/defaultSASLAuthenticator.hpp"
+	#include "vmime/security/sasl/SASLContext.hpp"
+	#include "vmime/security/sasl/SASLSession.hpp"
+#endif // VMIME_HAVE_SASL_SUPPORT
+
 // Messaging features
 #if VMIME_HAVE_MESSAGING_FEATURES
 	#include "vmime/net/socket.hpp"
@@ -95,9 +110,6 @@
 	#include "vmime/net/transport.hpp"
 
 	#include "vmime/net/session.hpp"
-	#include "vmime/net/authenticator.hpp"
-	#include "vmime/net/defaultAuthenticator.hpp"
-	#include "vmime/net/simpleAuthenticator.hpp"
 
 	#include "vmime/net/folder.hpp"
 	#include "vmime/net/message.hpp"

@@ -49,7 +49,7 @@ class maildirStore : public store
 
 public:
 
-	maildirStore(ref <session> sess, ref <authenticator> auth);
+	maildirStore(ref <session> sess, ref <security::authenticator> auth);
 	~maildirStore();
 
 	const string getProtocolName() const;

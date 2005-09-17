@@ -25,6 +25,11 @@
 #include "vmime/messageId.hpp"
 #include "vmime/security/digest/messageDigestFactory.hpp"
 #include "vmime/utility/filteredStream.hpp"
+#include "vmime/utility/stringUtils.hpp"
+
+#if VMIME_HAVE_SASL_SUPPORT
+	#include "vmime/security/sasl/SASLContext.hpp"
+#endif // VMIME_HAVE_SASL_SUPPORT
 
 #include <algorithm>
 
@@ -41,7 +46,7 @@ namespace net {
 namespace pop3 {
 
 
-POP3Store::POP3Store(ref <session> sess, ref <authenticator> auth)
+POP3Store::POP3Store(ref <session> sess, ref <security::authenticator> auth)
 	: store(sess, getInfosInstance(), auth), m_socket(NULL),
 	  m_authentified(false), m_timeoutHandler(NULL)
 {
@@ -50,10 +55,17 @@ POP3Store::POP3Store(ref <session> sess, ref <authenticator> auth)
 
 POP3Store::~POP3Store()
 {
-	if (isConnected())
-		disconnect();
-	else if (m_socket)
-		internalDisconnect();
+	try
+	{
+		if (isConnected())
+			disconnect();
+		else if (m_socket)
+			internalDisconnect();
+	}
+	catch (vmime::exception&)
+	{
+		// Ignore
+	}
 }
 
 
@@ -128,96 +140,317 @@ void POP3Store::connect()
 	string response;
 	readResponse(response, false);
 
-	if (isSuccessResponse(response))
-	{
-		bool authentified = false;
-
-		const authenticationInfos auth = getAuthenticator()->requestAuthInfos();
-
-		// Secured authentication with APOP (if requested and if available)
-		//
-		// eg:  C: APOP vincent <digest>
-		// ---  S: +OK vincent is a valid mailbox
-		messageId mid(response);
-
-		if (GET_PROPERTY(bool, PROPERTY_OPTIONS_APOP))
-		{
-			if (mid.getLeft().length() && mid.getRight().length())
-			{
-				// <digest> is the result of MD5 applied to "<message-id>password"
-				ref <security::digest::messageDigest> md5 =
-					security::digest::messageDigestFactory::getInstance()->create("md5");
-
-				md5->update(mid.generate() + auth.getPassword());
-				md5->finalize();
-
-				sendRequest("APOP " + auth.getUsername() + " " + md5->getHexDigest());
-				readResponse(response, false);
-
-				if (isSuccessResponse(response))
-				{
-					authentified = true;
-				}
-				else
-				{
-					if (!GET_PROPERTY(bool, PROPERTY_OPTIONS_APOP_FALLBACK))
-					{
-						internalDisconnect();
-						throw exceptions::authentication_error(response);
-					}
-				}
-			}
-			else
-			{
-				// APOP not supported
-				if (!GET_PROPERTY(bool, PROPERTY_OPTIONS_APOP_FALLBACK))
-				{
-					// Can't fallback on basic authentification
-					internalDisconnect();
-					throw exceptions::unsupported_option();
-				}
-			}
-		}
-
-		if (!authentified)
-		{
-			// Basic authentication
-			//
-			// eg:  C: USER vincent
-			// ---  S: +OK vincent is a valid mailbox
-			//
-			//      C: PASS couic
-			//      S: +OK vincent's maildrop has 2 messages (320 octets)
-
-			sendRequest("USER " + auth.getUsername());
-			readResponse(response, false);
-
-			if (isSuccessResponse(response))
-			{
-				sendRequest("PASS " + auth.getPassword());
-				readResponse(response, false);
-
-				if (!isSuccessResponse(response))
-				{
-					internalDisconnect();
-					throw exceptions::authentication_error(response);
-				}
-			}
-			else
-			{
-				internalDisconnect();
-				throw exceptions::authentication_error(response);
-			}
-		}
-	}
-	else
+	if (!isSuccessResponse(response))
 	{
 		internalDisconnect();
 		throw exceptions::connection_greeting_error(response);
 	}
 
+	// Start authentication process
+	authenticate(messageId(response));
+}
+
+
+void POP3Store::authenticate(const messageId& randomMID)
+{
+	getAuthenticator()->setService(thisRef().dynamicCast <service>());
+
+#if VMIME_HAVE_SASL_SUPPORT
+	// First, try SASL authentication
+	if (GET_PROPERTY(bool, PROPERTY_OPTIONS_SASL))
+	{
+		try
+		{
+			authenticateSASL();
+
+			m_authentified = true;
+			return;
+		}
+		catch (exceptions::authentication_error& e)
+		{
+			if (!GET_PROPERTY(bool, PROPERTY_OPTIONS_SASL_FALLBACK))
+			{
+				// Can't fallback on APOP/normal authentication
+				internalDisconnect();
+				throw e;
+			}
+			else
+			{
+				// Ignore, will try APOP/normal authentication
+			}
+		}
+		catch (exception& e)
+		{
+			internalDisconnect();
+			throw e;
+		}
+	}
+#endif // VMIME_HAVE_SASL_SUPPORT
+
+	// Secured authentication with APOP (if requested and if available)
+	//
+	// eg:  C: APOP vincent <digest>
+	// ---  S: +OK vincent is a valid mailbox
+
+	const string username = getAuthenticator()->getUsername();
+	const string password = getAuthenticator()->getPassword();
+
+	string response;
+
+	if (GET_PROPERTY(bool, PROPERTY_OPTIONS_APOP))
+	{
+		if (randomMID.getLeft().length() != 0 &&
+		    randomMID.getRight().length() != 0)
+		{
+			// <digest> is the result of MD5 applied to "<message-id>password"
+			ref <security::digest::messageDigest> md5 =
+				security::digest::messageDigestFactory::getInstance()->create("md5");
+
+			md5->update(randomMID.generate() + password);
+			md5->finalize();
+
+			sendRequest("APOP " + username + " " + md5->getHexDigest());
+			readResponse(response, false);
+
+			if (isSuccessResponse(response))
+			{
+				m_authentified = true;
+				return;
+			}
+			else
+			{
+				// Some servers close the connection after an
+				// unsuccessful APOP command, so the fallback
+				// may not always work...
+				//
+				// S: +OK Qpopper (version 4.0.5) at xxx starting.  <30396.1126730747@xxx>
+				// C: APOP plop c5e0a87d088ec71d60e32692d4c5bdf4
+				// S: -ERR [AUTH] Password supplied for "o" is incorrect.
+				// S: +OK Pop server at xxx signing off.
+				// [Connection closed by foreign host.]
+
+				if (!GET_PROPERTY(bool, PROPERTY_OPTIONS_APOP_FALLBACK))
+				{
+					// Can't fallback on basic authentication
+					internalDisconnect();
+					throw exceptions::authentication_error(response);
+				}
+			}
+		}
+		else
+		{
+			// APOP not supported
+			if (!GET_PROPERTY(bool, PROPERTY_OPTIONS_APOP_FALLBACK))
+			{
+				// Can't fallback on basic authentication
+				internalDisconnect();
+				throw exceptions::authentication_error("APOP not supported");
+			}
+		}
+	}
+
+	// Basic authentication
+	//
+	// eg:  C: USER vincent
+	// ---  S: +OK vincent is a valid mailbox
+	//
+	//      C: PASS couic
+	//      S: +OK vincent's maildrop has 2 messages (320 octets)
+	sendRequest("USER " + username);
+	readResponse(response, false);
+
+	if (!isSuccessResponse(response))
+	{
+		internalDisconnect();
+		throw exceptions::authentication_error(response);
+	}
+
+	sendRequest("PASS " + password);
+	readResponse(response, false);
+
+	if (!isSuccessResponse(response))
+	{
+		internalDisconnect();
+		throw exceptions::authentication_error(response);
+	}
+
 	m_authentified = true;
 }
+
+
+#if VMIME_HAVE_SASL_SUPPORT
+
+void POP3Store::authenticateSASL()
+{
+	if (!getAuthenticator().dynamicCast <security::sasl::SASLAuthenticator>())
+		throw exceptions::authentication_error("No SASL authenticator available.");
+
+	std::vector <string> capa = getCapabilities();
+	std::vector <string> saslMechs;
+
+	for (unsigned int i = 0 ; i < capa.size() ; ++i)
+	{
+		const string& x = capa[i];
+
+		// C: CAPA
+		// S: +OK List of capabilities follows
+		// S: LOGIN-DELAY 0
+		// S: PIPELINING
+		// S: UIDL
+		// S: ...
+		// S: SASL DIGEST-MD5 CRAM-MD5   <-----
+		// S: EXPIRE NEVER
+		// S: ...
+
+		if (x.length() > 5 &&
+		    (x[0] == 'S' || x[0] == 's') &&
+		    (x[1] == 'A' || x[1] == 'a') &&
+		    (x[2] == 'S' || x[2] == 's') &&
+		    (x[3] == 'L' || x[3] == 'l') &&
+		    std::isspace(x[4]))
+		{
+			const string list(x.begin() + 5, x.end());
+
+			std::istringstream iss(list);
+			string mech;
+
+			while (iss >> mech)
+				saslMechs.push_back(mech);
+		}
+	}
+
+	if (saslMechs.empty())
+		throw exceptions::authentication_error("No SASL mechanism available.");
+
+	std::vector <ref <security::sasl::SASLMechanism> > mechList;
+
+	ref <security::sasl::SASLContext> saslContext =
+		vmime::create <security::sasl::SASLContext>();
+
+	for (unsigned int i = 0 ; i < saslMechs.size() ; ++i)
+	{
+		try
+		{
+			mechList.push_back
+				(saslContext->createMechanism(saslMechs[i]));
+		}
+		catch (exceptions::no_such_mechanism&)
+		{
+			// Ignore mechanism
+		}
+	}
+
+	if (mechList.empty())
+		throw exceptions::authentication_error("No SASL mechanism available.");
+
+	// Try to suggest a mechanism among all those supported
+	ref <security::sasl::SASLMechanism> suggestedMech =
+		saslContext->suggestMechanism(mechList);
+
+	if (!suggestedMech)
+		throw exceptions::authentication_error("Unable to suggest SASL mechanism.");
+
+	// Allow application to choose which mechanisms to use
+	mechList = getAuthenticator().dynamicCast <security::sasl::SASLAuthenticator>()->
+		getAcceptableMechanisms(mechList, suggestedMech);
+
+	if (mechList.empty())
+		throw exceptions::authentication_error("No SASL mechanism available.");
+
+	// Try each mechanism in the list in turn
+	for (unsigned int i = 0 ; i < mechList.size() ; ++i)
+	{
+		ref <security::sasl::SASLMechanism> mech = mechList[i];
+
+		ref <security::sasl::SASLSession> saslSession =
+			saslContext->createSession("pop3", getAuthenticator(), mech);
+
+		saslSession->init();
+
+		sendRequest("AUTH " + mech->getName());
+
+		for (bool cont = true ; cont ; )
+		{
+			string response;
+			readResponse(response, false);
+
+			switch (getResponseCode(response))
+			{
+			case RESPONSE_OK:
+			{
+				m_socket = saslSession->getSecuredSocket(m_socket);
+				return;
+			}
+			case RESPONSE_READY:
+			{
+				byte* challenge = 0;
+				int challengeLen = 0;
+
+				byte* resp = 0;
+				int respLen = 0;
+
+				try
+				{
+					// Extract challenge
+					stripResponseCode(response, response);
+					saslContext->decodeB64(response, &challenge, &challengeLen);
+
+					// Prepare response
+					saslSession->evaluateChallenge
+						(challenge, challengeLen, &resp, &respLen);
+
+					// Send response
+					sendRequest(saslContext->encodeB64(resp, respLen));
+				}
+				catch (exceptions::sasl_exception& e)
+				{
+					if (challenge)
+					{
+						delete [] challenge;
+						challenge = NULL;
+					}
+
+					if (resp)
+					{
+						delete [] resp;
+						resp = NULL;
+					}
+
+					// Cancel SASL exchange
+					sendRequest("*");
+				}
+				catch (...)
+				{
+					if (challenge)
+						delete [] challenge;
+
+					if (resp)
+						delete [] resp;
+
+					throw;
+				}
+
+				if (challenge)
+					delete [] challenge;
+
+				if (resp)
+					delete [] resp;
+
+				break;
+			}
+			default:
+
+				cont = false;
+				break;
+			}
+		}
+	}
+
+	throw exceptions::authentication_error
+		("Could not authenticate using SASL: all mechanisms failed.");
+}
+
+#endif // VMIME_HAVE_SASL_SUPPORT
 
 
 const bool POP3Store::isConnected() const
@@ -259,7 +492,7 @@ void POP3Store::internalDisconnect()
 
 void POP3Store::noop()
 {
-	m_socket->send("NOOP");
+	sendRequest("NOOP");
 
 	string response;
 	readResponse(response, false);
@@ -269,12 +502,33 @@ void POP3Store::noop()
 }
 
 
+const std::vector <string> POP3Store::getCapabilities()
+{
+	sendRequest("CAPA");
+
+	string response;
+	readResponse(response, true);
+
+	std::vector <string> res;
+
+	if (isSuccessResponse(response))
+	{
+		stripFirstLine(response, response);
+
+		std::istringstream iss(response);
+		string line;
+
+		while (std::getline(iss, line, '\n'))
+			res.push_back(utility::stringUtils::trim(line));
+	}
+
+	return res;
+}
+
+
 const bool POP3Store::isSuccessResponse(const string& buffer)
 {
-	static const string OK("+OK");
-
-	return (buffer.length() >= 3 &&
-	        std::equal(buffer.begin(), buffer.begin() + 3, OK.begin()));
+	return getResponseCode(buffer) == RESPONSE_OK;
 }
 
 
@@ -293,6 +547,34 @@ const bool POP3Store::stripFirstLine(const string& buffer, string& result, strin
 		result = buffer;
 		return (false);
 	}
+}
+
+
+const int POP3Store::getResponseCode(const string& buffer)
+{
+	if (buffer.length() >= 2)
+	{
+		// +[space]
+		if (buffer[0] == '+' &&
+		    (buffer[1] == ' ' || buffer[1] == '\t'))
+		{
+			return RESPONSE_READY;
+		}
+
+		// +OK
+		if (buffer.length() >= 3)
+		{
+			if (buffer[0] == '+' &&
+			    (buffer[1] == 'O' || buffer[1] == 'o') &&
+			    (buffer[2] == 'K' || buffer[1] == 'k'))
+			{
+				return RESPONSE_OK;
+			}
+		}
+	}
+
+	// -ERR or whatever
+	return RESPONSE_ERR;
 }
 
 
@@ -588,8 +870,12 @@ const POP3Store::_infos::props& POP3Store::_infos::getProperties() const
 	static props p =
 	{
 		// POP3-specific options
-		property("options.apop", serviceInfos::property::TYPE_BOOL, "false"),
-		property("options.apop.fallback", serviceInfos::property::TYPE_BOOL, "false"),
+		property("options.apop", serviceInfos::property::TYPE_BOOL, "true"),
+		property("options.apop.fallback", serviceInfos::property::TYPE_BOOL, "true"),
+#if VMIME_HAVE_SASL_SUPPORT
+		property("options.sasl", serviceInfos::property::TYPE_BOOL, "true"),
+		property("options.sasl.fallback", serviceInfos::property::TYPE_BOOL, "true"),
+#endif // VMIME_HAVE_SASL_SUPPORT
 
 		// Common properties
 		property(serviceInfos::property::AUTH_USERNAME, serviceInfos::property::FLAG_REQUIRED),
@@ -614,6 +900,10 @@ const std::vector <serviceInfos::property> POP3Store::_infos::getAvailableProper
 	// POP3-specific options
 	list.push_back(p.PROPERTY_OPTIONS_APOP);
 	list.push_back(p.PROPERTY_OPTIONS_APOP_FALLBACK);
+#if VMIME_HAVE_SASL_SUPPORT
+	list.push_back(p.PROPERTY_OPTIONS_SASL);
+	list.push_back(p.PROPERTY_OPTIONS_SASL_FALLBACK);
+#endif // VMIME_HAVE_SASL_SUPPORT
 
 	// Common properties
 	list.push_back(p.PROPERTY_AUTH_USERNAME);

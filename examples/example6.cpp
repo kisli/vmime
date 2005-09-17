@@ -20,6 +20,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <map>
 
 #include "vmime/vmime.hpp"
 #include "vmime/platforms/posix/posixHandler.hpp"
@@ -31,27 +32,65 @@ static vmime::ref <vmime::net::session> g_session
 
 
 // Authentification handler
-class interactiveAuthenticator : public vmime::net::authenticator
+class interactiveAuthenticator : public vmime::security::sasl::defaultSASLAuthenticator
 {
-	const vmime::net::authenticationInfos requestAuthInfos() const
+	const std::vector <vmime::ref <vmime::security::sasl::SASLMechanism> > getAcceptableMechanisms
+		(const std::vector <vmime::ref <vmime::security::sasl::SASLMechanism> >& available,
+		 vmime::ref <vmime::security::sasl::SASLMechanism> suggested) const
 	{
-		vmime::string username, password;
+		std::cout << std::endl << "Available SASL mechanisms:" << std::endl;
 
-		std::cout << std::endl;
-		std::cout << "Please authenticate yourself:" << std::endl;
+		for (unsigned int i = 0 ; i < available.size() ; ++i)
+		{
+			std::cout << "  " << available[i]->getName();
 
-		std::cout << "   Username: ";
-		std::cout.flush();
+			if (suggested && available[i]->getName() == suggested->getName())
+				std::cout << "(suggested)";
+		}
 
-		std::getline(std::cin, username);
+		std::cout << std::endl << std::endl;
 
-		std::cout << "   Password: ";
-		std::cout.flush();
-
-		std::getline(std::cin, password);
-
-		return (vmime::net::authenticationInfos(username, password));
+		return defaultSASLAuthenticator::getAcceptableMechanisms(available, suggested);
 	}
+
+	void setSASLMechanism(vmime::ref <vmime::security::sasl::SASLMechanism> mech)
+	{
+		std::cout << "Trying " << mech->getName() << std::endl;
+
+		defaultSASLAuthenticator::setSASLMechanism(mech);
+	}
+
+	const vmime::string getUsername() const
+	{
+		if (m_username.empty())
+			m_username = getUserInput("Username");
+
+		return m_username;
+	}
+
+	const vmime::string getPassword() const
+	{
+		if (m_password.empty())
+			m_password = getUserInput("Password");
+
+		return m_password;
+	}
+
+	static const vmime::string getUserInput(const std::string& prompt)
+	{
+		std::cout << prompt << ": ";
+		std::cout.flush();
+
+		vmime::string res;
+		std::getline(std::cin, res);
+
+		return res;
+	}
+
+private:
+
+	mutable vmime::string m_username;
+	mutable vmime::string m_password;
 };
 
 
@@ -215,7 +254,7 @@ static void sendMessage()
 
 		// You can also set some properties (see example7 to know the properties
 		// available for each service). For example, for SMTP:
-//		tr->setProperty("options.need-authentication", true);
+		tr->setProperty("options.need-authentication", true);
 
 		// Information about the mail
 		std::cout << "Enter email of the expeditor (eg. me@somewhere.com): ";

@@ -23,12 +23,13 @@
 
 #include "vmime/config.hpp"
 
-#include "vmime/net/authenticator.hpp"
 #include "vmime/net/socket.hpp"
 #include "vmime/net/timeoutHandler.hpp"
 #include "vmime/net/session.hpp"
 
 #include "vmime/net/imap/IMAPParser.hpp"
+
+#include "vmime/security/authenticator.hpp"
 
 
 namespace vmime {
@@ -44,7 +45,7 @@ class IMAPConnection : public object
 {
 public:
 
-	IMAPConnection(weak_ref <IMAPStore> store, ref <authenticator> auth);
+	IMAPConnection(weak_ref <IMAPStore> store, ref <security::authenticator> auth);
 	~IMAPConnection();
 
 
@@ -83,11 +84,21 @@ public:
 
 	ref <session> getSession();
 
+	const std::vector <string> getCapabilities();
+
+	ref <security::authenticator> getAuthenticator();
+
 private:
+
+	void authenticate();
+#if VMIME_HAVE_SASL_SUPPORT
+	void authenticateSASL();
+#endif // VMIME_HAVE_SASL_SUPPORT
+
 
 	weak_ref <IMAPStore> m_store;
 
-	ref <authenticator> m_auth;
+	ref <security::authenticator> m_auth;
 
 	ref <socket> m_socket;
 

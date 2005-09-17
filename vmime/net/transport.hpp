@@ -42,7 +42,7 @@ class transport : public service
 {
 protected:
 
-	transport(ref <session> sess, const serviceInfos& infos, ref <authenticator> auth);
+	transport(ref <session> sess, const serviceInfos& infos, ref <security::authenticator> auth);
 
 public:
 

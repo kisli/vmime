@@ -30,8 +30,9 @@
 #include "vmime/utility/url.hpp"
 
 #include "vmime/net/serviceInfos.hpp"
-#include "vmime/net/authenticator.hpp"
 #include "vmime/net/timeoutHandler.hpp"
+
+#include "vmime/security/authenticator.hpp"
 
 #include "vmime/utility/progressionListener.hpp"
 
@@ -69,7 +70,9 @@ public:
 
 	public:
 
-		virtual ref <service> create(ref <session> sess, ref <authenticator> auth) const = 0;
+		virtual ref <service> create
+			(ref <session> sess,
+			 ref <security::authenticator> auth) const = 0;
 
 		virtual const string& getName() const = 0;
 		virtual const serviceInfos& getInfos() const = 0;
@@ -92,7 +95,9 @@ private:
 
 	public:
 
-		ref <service> create(ref <session> sess, ref <authenticator> auth) const
+		ref <service> create
+			(ref <session> sess,
+			 ref <security::authenticator> auth) const
 		{
 			return vmime::create <S>(sess, auth);
 		}
@@ -137,7 +142,10 @@ public:
 	  * @throw exceptions::no_service_available if no service is registered
 	  * for this protocol
 	  */
-	ref <service> create(ref <session> sess, const string& protocol, ref <authenticator> auth = NULL);
+	ref <service> create
+		(ref <session> sess,
+		 const string& protocol,
+		 ref <security::authenticator> auth = NULL);
 
 	/** Create a new service instance from a URL.
 	  *
@@ -149,7 +157,10 @@ public:
 	  * @throw exceptions::no_service_available if no service is registered
 	  * for this protocol
 	  */
-	ref <service> create(ref <session> sess, const utility::url& u, ref <authenticator> auth = NULL);
+	ref <service> create
+		(ref <session> sess,
+		 const utility::url& u,
+		 ref <security::authenticator> auth = NULL);
 
 	/** Return information about a registered protocol.
 	  *

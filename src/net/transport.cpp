@@ -28,7 +28,7 @@ namespace vmime {
 namespace net {
 
 
-transport::transport(ref <session> sess, const serviceInfos& infos, ref <authenticator> auth)
+transport::transport(ref <session> sess, const serviceInfos& infos, ref <security::authenticator> auth)
 	: service(sess, infos, auth)
 {
 }

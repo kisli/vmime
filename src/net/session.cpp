@@ -50,13 +50,14 @@ session::~session()
 }
 
 
-ref <transport> session::getTransport(ref <authenticator> auth)
+ref <transport> session::getTransport(ref <security::authenticator> auth)
 {
 	return (getTransport(m_props["transport.protocol"], auth));
 }
 
 
-ref <transport> session::getTransport(const string& protocol, ref <authenticator> auth)
+ref <transport> session::getTransport
+	(const string& protocol, ref <security::authenticator> auth)
 {
 	ref <session> sess = thisRef().dynamicCast <session>();
 	ref <service> sv = serviceFactory::getInstance()->create(sess, protocol, auth);
@@ -68,7 +69,8 @@ ref <transport> session::getTransport(const string& protocol, ref <authenticator
 }
 
 
-ref <transport> session::getTransport(const utility::url& url, ref <authenticator> auth)
+ref <transport> session::getTransport
+	(const utility::url& url, ref <security::authenticator> auth)
 {
 	ref <session> sess = thisRef().dynamicCast <session>();
 	ref <service> sv = serviceFactory::getInstance()->create(sess, url, auth);
@@ -80,13 +82,14 @@ ref <transport> session::getTransport(const utility::url& url, ref <authenticato
 }
 
 
-ref <store> session::getStore(ref <authenticator> auth)
+ref <store> session::getStore(ref <security::authenticator> auth)
 {
 	return (getStore(m_props["store.protocol"], auth));
 }
 
 
-ref <store> session::getStore(const string& protocol, ref <authenticator> auth)
+ref <store> session::getStore
+	(const string& protocol, ref <security::authenticator> auth)
 {
 	ref <session> sess = thisRef().dynamicCast <session>();
 	ref <service> sv = serviceFactory::getInstance()->create(sess, protocol, auth);
@@ -98,7 +101,8 @@ ref <store> session::getStore(const string& protocol, ref <authenticator> auth)
 }
 
 
-ref <store> session::getStore(const utility::url& url, ref <authenticator> auth)
+ref <store> session::getStore
+	(const utility::url& url, ref <security::authenticator> auth)
 {
 	ref <session> sess = thisRef().dynamicCast <session>();
 	ref <service> sv = serviceFactory::getInstance()->create(sess, url, auth);

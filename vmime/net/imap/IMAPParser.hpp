@@ -1401,22 +1401,32 @@ public:
 
 			string::size_type pos = *currentPos;
 
-			parser.check <one_char <'\\'> >(line, &pos);
+			if (parser.check <one_char <'\\'> >(line, &pos, true))
+			{
+				atom* at = parser.get <atom>(line, &pos);
+				const string name = utility::stringUtils::toLower(at->value());
+				delete (at);
 
-			atom* at = parser.get <atom>(line, &pos);
-			const string name = utility::stringUtils::toLower(at->value());
-			delete (at);
-
-			if (name == "marked")
-				m_type = MARKED;
-			else if (name == "noinferiors")
-				m_type = NOINFERIORS;
-			else if (name == "noselect")
-				m_type = NOSELECT;
-			else if (name == "unmarked")
-				m_type = UNMARKED;
+				if (name == "marked")
+					m_type = MARKED;
+				else if (name == "noinferiors")
+					m_type = NOINFERIORS;
+				else if (name == "noselect")
+					m_type = NOSELECT;
+				else if (name == "unmarked")
+					m_type = UNMARKED;
+				else
+				{
+					m_type = UNKNOWN;
+					m_name = "\\" + name;
+				}
+			}
 			else
 			{
+				atom* at = parser.get <atom>(line, &pos);
+				const string name = utility::stringUtils::toLower(at->value());
+				delete (at);
+
 				m_type = UNKNOWN;
 				m_name = name;
 			}
@@ -1989,40 +1999,13 @@ public:
 			string::size_type pos = *currentPos;
 
 			parser.checkWithArg <special_atom>(line, &pos, "capability");
-			parser.check <SPACE>(line, &pos);
 
-			bool IMAP4rev1 = false;
-
-			for (bool end = false ; !end && !IMAP4rev1 ; )
+			while (parser.check <SPACE>(line, &pos, true))
 			{
-				if (parser.checkWithArg <special_atom>(line, &pos, "imap4rev1", true))
-				{
-					IMAP4rev1 = true;
-				}
-				else
-				{
-					capability* cap = parser.get <capability>(line, &pos);
-					end = (cap == NULL);
+				capability* cap = parser.get <capability>(line, &pos);
+				if (cap == NULL) break;
 
-					if (cap)
-					{
-						m_capabilities.push_back(cap);
-					}
-				}
-
-				parser.check <SPACE>(line, &pos);
-			}
-
-
-			if (parser.check <SPACE>(line, &pos, true))
-			{
-				for (capability* cap = NULL ;
-				     (cap = parser.get <capability>(line, &pos)) != NULL ; )
-				{
-					m_capabilities.push_back(cap);
-
-					parser.check <SPACE>(line, &pos);
-				}
+				m_capabilities.push_back(cap);
 			}
 
 			*currentPos = pos;

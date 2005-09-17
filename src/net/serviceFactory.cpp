@@ -48,14 +48,16 @@ serviceFactory* serviceFactory::getInstance()
 
 
 ref <service> serviceFactory::create
-	(ref <session> sess, const string& protocol, ref <authenticator> auth)
+	(ref <session> sess, const string& protocol,
+	 ref <security::authenticator> auth)
 {
 	return (getServiceByProtocol(protocol)->create(sess, auth));
 }
 
 
 ref <service> serviceFactory::create
-	(ref <session> sess, const utility::url& u, ref <authenticator> auth)
+	(ref <session> sess, const utility::url& u,
+	 ref <security::authenticator> auth)
 {
 	ref <service> serv = create(sess, u.getProtocol(), auth);
 

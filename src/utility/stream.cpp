@@ -326,6 +326,67 @@ const stream::size_type inputStreamPointerAdapter::skip(const size_type count)
 }
 
 
+
+// inputStreamByteBufferAdapter
+
+inputStreamByteBufferAdapter::inputStreamByteBufferAdapter(const byte* buffer, const size_type length)
+	: m_buffer(buffer), m_length(length), m_pos(0)
+{
+}
+
+
+const bool inputStreamByteBufferAdapter::eof() const
+{
+	return m_pos >= m_length;
+}
+
+
+void inputStreamByteBufferAdapter::reset()
+{
+	m_pos = 0;
+}
+
+
+const stream::size_type inputStreamByteBufferAdapter::read
+	(value_type* const data, const size_type count)
+{
+	const size_type remaining = m_length - m_pos;
+
+	if (remaining < count)
+	{
+		std::copy(m_buffer + m_pos, m_buffer + m_pos + remaining, data);
+		m_pos += remaining;
+
+		return remaining;
+	}
+	else
+	{
+		std::copy(m_buffer + m_pos, m_buffer + m_pos + count, data);
+		m_pos += count;
+
+		return count;
+	}
+}
+
+
+const stream::size_type inputStreamByteBufferAdapter::skip(const size_type count)
+{
+	const size_type remaining = m_length - m_pos;
+
+	if (remaining < count)
+	{
+		m_pos += remaining;
+		return remaining;
+	}
+	else
+	{
+		m_pos += count;
+		return count;
+	}
+}
+
+
+
 #ifdef VMIME_HAVE_MESSAGING_FEATURES
 
 

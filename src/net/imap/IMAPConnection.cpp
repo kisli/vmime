@@ -25,6 +25,10 @@
 #include "vmime/exception.hpp"
 #include "vmime/platformDependant.hpp"
 
+#if VMIME_HAVE_SASL_SUPPORT
+	#include "vmime/security/sasl/SASLContext.hpp"
+#endif // VMIME_HAVE_SASL_SUPPORT
+
 #include <sstream>
 
 
@@ -42,7 +46,7 @@ namespace net {
 namespace imap {
 
 
-IMAPConnection::IMAPConnection(weak_ref <IMAPStore> store, ref <authenticator> auth)
+IMAPConnection::IMAPConnection(weak_ref <IMAPStore> store, ref <security::authenticator> auth)
 	: m_store(store), m_auth(auth), m_socket(NULL), m_parser(NULL), m_tag(NULL),
 	  m_hierarchySeparator('\0'), m_state(STATE_NONE), m_timeoutHandler(NULL)
 {
@@ -51,10 +55,17 @@ IMAPConnection::IMAPConnection(weak_ref <IMAPStore> store, ref <authenticator> a
 
 IMAPConnection::~IMAPConnection()
 {
-	if (isConnected())
-		disconnect();
-	else if (m_socket)
-		internalDisconnect();
+	try
+	{
+		if (isConnected())
+			disconnect();
+		else if (m_socket)
+			internalDisconnect();
+	}
+	catch (vmime::exception&)
+	{
+		// Ignore
+	}
 }
 
 
@@ -107,25 +118,14 @@ void IMAPConnection::connect()
 	}
 	else if (greet->resp_cond_auth()->condition() != IMAPParser::resp_cond_auth::PREAUTH)
 	{
-		const authenticationInfos auth = m_auth->requestAuthInfos();
-
-		// TODO: other authentication methods
-
-		send(true, "LOGIN " + IMAPUtils::quoteString(auth.getUsername())
-			+ " " + IMAPUtils::quoteString(auth.getPassword()), true);
-
-		utility::auto_ptr <IMAPParser::response> resp(m_parser->readResponse());
-
-		if (resp->isBad())
+		try
 		{
-			internalDisconnect();
-			throw exceptions::command_error("LOGIN", m_parser->lastLine());
+			authenticate();
 		}
-		else if (resp->response_done()->response_tagged()->
-				resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
+		catch (...)
 		{
-			internalDisconnect();
-			throw exceptions::authentication_error(m_parser->lastLine());
+			m_state = STATE_NONE;
+			throw;
 		}
 	}
 
@@ -134,6 +134,278 @@ void IMAPConnection::connect()
 
 	// Switch to state "Authenticated"
 	setState(STATE_AUTHENTICATED);
+}
+
+
+void IMAPConnection::authenticate()
+{
+	getAuthenticator()->setService(thisRef().dynamicCast <service>());
+
+#if VMIME_HAVE_SASL_SUPPORT
+	// First, try SASL authentication
+	if (GET_PROPERTY(bool, PROPERTY_OPTIONS_SASL))
+	{
+		try
+		{
+			authenticateSASL();
+			return;
+		}
+		catch (exceptions::authentication_error& e)
+		{
+			if (!GET_PROPERTY(bool, PROPERTY_OPTIONS_SASL_FALLBACK))
+			{
+				// Can't fallback on normal authentication
+				internalDisconnect();
+				throw e;
+			}
+			else
+			{
+				// Ignore, will try normal authentication
+			}
+		}
+		catch (exception& e)
+		{
+			internalDisconnect();
+			throw e;
+		}
+	}
+#endif // VMIME_HAVE_SASL_SUPPORT
+
+	// Normal authentication
+	const string username = getAuthenticator()->getUsername();
+	const string password = getAuthenticator()->getPassword();
+
+	send(true, "LOGIN " + IMAPUtils::quoteString(username)
+		+ " " + IMAPUtils::quoteString(password), true);
+
+	utility::auto_ptr <IMAPParser::response> resp(m_parser->readResponse());
+
+	if (resp->isBad())
+	{
+		internalDisconnect();
+		throw exceptions::command_error("LOGIN", m_parser->lastLine());
+	}
+	else if (resp->response_done()->response_tagged()->
+			resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
+	{
+		internalDisconnect();
+		throw exceptions::authentication_error(m_parser->lastLine());
+	}
+}
+
+
+#if VMIME_HAVE_SASL_SUPPORT
+
+void IMAPConnection::authenticateSASL()
+{
+	if (!getAuthenticator().dynamicCast <security::sasl::SASLAuthenticator>())
+		throw exceptions::authentication_error("No SASL authenticator available.");
+
+	const std::vector <string> capa = getCapabilities();
+	std::vector <string> saslMechs;
+
+	for (unsigned int i = 0 ; i < capa.size() ; ++i)
+	{
+		const string& x = capa[i];
+
+		if (x.length() > 5 &&
+		    (x[0] == 'A' || x[0] == 'a') &&
+		    (x[1] == 'U' || x[1] == 'u') &&
+		    (x[2] == 'T' || x[2] == 't') &&
+		    (x[3] == 'H' || x[3] == 'h') &&
+		    x[4] == '=')
+		{
+			saslMechs.push_back(string(x.begin() + 5, x.end()));
+		}
+	}
+
+	if (saslMechs.empty())
+		throw exceptions::authentication_error("No SASL mechanism available.");
+
+	std::vector <ref <security::sasl::SASLMechanism> > mechList;
+
+	ref <security::sasl::SASLContext> saslContext =
+		vmime::create <security::sasl::SASLContext>();
+
+	for (unsigned int i = 0 ; i < saslMechs.size() ; ++i)
+	{
+		try
+		{
+			mechList.push_back
+				(saslContext->createMechanism(saslMechs[i]));
+		}
+		catch (exceptions::no_such_mechanism&)
+		{
+			// Ignore mechanism
+		}
+	}
+
+	if (mechList.empty())
+		throw exceptions::authentication_error("No SASL mechanism available.");
+
+	// Try to suggest a mechanism among all those supported
+	ref <security::sasl::SASLMechanism> suggestedMech =
+		saslContext->suggestMechanism(mechList);
+
+	if (!suggestedMech)
+		throw exceptions::authentication_error("Unable to suggest SASL mechanism.");
+
+	// Allow application to choose which mechanisms to use
+	mechList = getAuthenticator().dynamicCast <security::sasl::SASLAuthenticator>()->
+		getAcceptableMechanisms(mechList, suggestedMech);
+
+	if (mechList.empty())
+		throw exceptions::authentication_error("No SASL mechanism available.");
+
+	// Try each mechanism in the list in turn
+	for (unsigned int i = 0 ; i < mechList.size() ; ++i)
+	{
+		ref <security::sasl::SASLMechanism> mech = mechList[i];
+
+		ref <security::sasl::SASLSession> saslSession =
+			saslContext->createSession("imap", getAuthenticator(), mech);
+
+		saslSession->init();
+
+		send(true, "AUTHENTICATE " + mech->getName(), true);
+
+		for (bool cont = true ; cont ; )
+		{
+			utility::auto_ptr <IMAPParser::response> resp(m_parser->readResponse());
+
+			if (resp->response_done() &&
+			    resp->response_done()->response_tagged() &&
+			    resp->response_done()->response_tagged()->resp_cond_state()->
+			    	status() == IMAPParser::resp_cond_state::OK)
+			{
+				m_socket = saslSession->getSecuredSocket(m_socket);
+				return;
+			}
+			else
+			{
+				std::vector <IMAPParser::continue_req_or_response_data*>
+					respDataList = resp->continue_req_or_response_data();
+
+				string response;
+
+				for (unsigned int i = 0 ; i < respDataList.size() ; ++i)
+				{
+					if (respDataList[i]->continue_req())
+					{
+						response = respDataList[i]->continue_req()->resp_text()->text();
+						break;
+					}
+				}
+
+				if (response.empty())
+				{
+					cont = false;
+					continue;
+				}
+
+				byte* challenge = 0;
+				int challengeLen = 0;
+
+				byte* resp = 0;
+				int respLen = 0;
+
+				try
+				{
+					// Extract challenge
+					saslContext->decodeB64(response, &challenge, &challengeLen);
+
+					// Prepare response
+					saslSession->evaluateChallenge
+						(challenge, challengeLen, &resp, &respLen);
+
+					// Send response
+					send(false, saslContext->encodeB64(resp, respLen), true);
+				}
+				catch (exceptions::sasl_exception& e)
+				{
+					if (challenge)
+					{
+						delete [] challenge;
+						challenge = NULL;
+					}
+
+					if (resp)
+					{
+						delete [] resp;
+						resp = NULL;
+					}
+
+					// Cancel SASL exchange
+					send(false, "*", true);
+				}
+				catch (...)
+				{
+					if (challenge)
+						delete [] challenge;
+
+					if (resp)
+						delete [] resp;
+
+					throw;
+				}
+
+				if (challenge)
+					delete [] challenge;
+
+				if (resp)
+					delete [] resp;
+			}
+		}
+	}
+
+	throw exceptions::authentication_error
+		("Could not authenticate using SASL: all mechanisms failed.");
+}
+
+#endif // VMIME_HAVE_SASL_SUPPORT
+
+
+const std::vector <string> IMAPConnection::getCapabilities()
+{
+	send(true, "CAPABILITY", true);
+
+	utility::auto_ptr <IMAPParser::response> resp(m_parser->readResponse());
+
+	std::vector <string> res;
+
+	if (resp->response_done()->response_tagged()->
+		resp_cond_state()->status() == IMAPParser::resp_cond_state::OK)
+	{
+		const std::vector <IMAPParser::continue_req_or_response_data*>& respDataList =
+			resp->continue_req_or_response_data();
+
+		for (unsigned int i = 0 ; i < respDataList.size() ; ++i)
+		{
+			if (respDataList[i]->response_data() == NULL)
+				continue;
+
+			const IMAPParser::capability_data* capaData =
+				respDataList[i]->response_data()->capability_data();
+
+			std::vector <IMAPParser::capability*> caps = capaData->capabilities();
+
+			for (unsigned int j = 0 ; j < caps.size() ; ++j)
+			{
+				if (caps[j]->auth_type())
+					res.push_back("AUTH=" + caps[j]->auth_type()->name());
+				else
+					res.push_back(caps[j]->atom()->value());
+			}
+		}
+	}
+
+	return res;
+}
+
+
+ref <security::authenticator> IMAPConnection::getAuthenticator()
+{
+	return m_auth;
 }
 
 

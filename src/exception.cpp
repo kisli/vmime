@@ -347,8 +347,7 @@ const char* net_exception::name() const throw() { return "net_exception"; }
 socket_exception::~socket_exception() throw() {}
 socket_exception::socket_exception(const string& what, const exception& other)
 	: net_exception(what.empty()
-		? "Socket error."
-		: "Socket error: '" + what + "'.", other) {}
+		? "Socket error." : what, other) {}
 
 exception* socket_exception::clone() const { return new socket_exception(*this); }
 const char* socket_exception::name() const throw() { return "socket_exception"; }
@@ -361,8 +360,7 @@ const char* socket_exception::name() const throw() { return "socket_exception"; 
 connection_error::~connection_error() throw() {}
 connection_error::connection_error(const string& what, const exception& other)
 	: socket_exception(what.empty()
-		? "Connection error."
-		: "Connection error: '" + what + "'.", other) {}
+		? "Connection error." : what, other) {}
 
 exception* connection_error::clone() const { return new connection_error(*this); }
 const char* connection_error::name() const throw() { return "connection_error"; }
@@ -673,6 +671,48 @@ const char* file_not_found::name() const throw() { return "file_not_found"; }
 
 
 #endif // VMIME_HAVE_FILESYSTEM_FEATURES
+
+
+#if VMIME_HAVE_SASL_SUPPORT
+
+
+//
+// sasl_exception
+//
+
+sasl_exception::~sasl_exception() throw() {}
+sasl_exception::sasl_exception(const string& what, const exception& other)
+	: exception(what, other) {}
+
+exception* sasl_exception::clone() const { return new sasl_exception(*this); }
+const char* sasl_exception::name() const throw() { return "sasl_exception"; }
+
+
+//
+// no_such_mechanism
+//
+
+no_such_mechanism::~no_such_mechanism() throw() {}
+no_such_mechanism::no_such_mechanism(const string& name, const exception& other)
+	: sasl_exception("No such SASL mechanism: '" + name + "'.", other) {}
+
+exception* no_such_mechanism::clone() const { return new no_such_mechanism(*this); }
+const char* no_such_mechanism::name() const throw() { return "no_such_mechanism"; }
+
+
+//
+// no_auth_information
+//
+
+no_auth_information::~no_auth_information() throw() {}
+no_auth_information::no_auth_information(const exception& other)
+	: sasl_exception("Information cannot be provided.", other) {}
+
+exception* no_auth_information::clone() const { return new no_auth_information(*this); }
+const char* no_auth_information::name() const throw() { return "no_auth_information"; }
+
+
+#endif // VMIME_HAVE_SASL_SUPPORT
 
 
 } // exceptions

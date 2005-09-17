@@ -46,7 +46,7 @@ namespace net {
 namespace sendmail {
 
 
-sendmailTransport::sendmailTransport(ref <session> sess, ref <authenticator> auth)
+sendmailTransport::sendmailTransport(ref <session> sess, ref <security::authenticator> auth)
 	: transport(sess, getInfosInstance(), auth), m_connected(false)
 {
 }
@@ -54,8 +54,15 @@ sendmailTransport::sendmailTransport(ref <session> sess, ref <authenticator> aut
 
 sendmailTransport::~sendmailTransport()
 {
-	if (isConnected())
-		disconnect();
+	try
+	{
+		if (isConnected())
+			disconnect();
+	}
+	catch (vmime::exception&)
+	{
+		// Ignore
+	}
 }
 
 

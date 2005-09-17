@@ -811,6 +811,58 @@ public:
 #endif // VMIME_HAVE_FILESYSTEM_FEATURES
 
 
+#if VMIME_HAVE_SASL_SUPPORT
+
+
+/** Base class for exceptions throw by SASL module.
+  */
+
+class sasl_exception : public vmime::exception
+{
+public:
+
+	sasl_exception(const string& what, const exception& other = NO_EXCEPTION);
+	~sasl_exception() throw();
+
+	exception* clone() const;
+	const char* name() const throw();
+};
+
+
+/** No mechanism is registered with the specified name.
+  */
+
+class no_such_mechanism : public sasl_exception
+{
+public:
+
+	no_such_mechanism(const string& name, const exception& other = NO_EXCEPTION);
+	~no_such_mechanism() throw();
+
+	exception* clone() const;
+	const char* name() const throw();
+};
+
+
+/** The requested information cannot be provided.
+  */
+
+class no_auth_information : public sasl_exception
+{
+public:
+
+	no_auth_information(const exception& other = NO_EXCEPTION);
+	~no_auth_information() throw();
+
+	exception* clone() const;
+	const char* name() const throw();
+};
+
+
+#endif // VMIME_HAVE_SASL_SUPPORT
+
+
+
 } // exceptions
 
 

@@ -170,10 +170,24 @@ libvmime_sources = [
 	# ===============================  Misc  ===============================
 	'misc/importanceHelper.cpp', 'misc/importanceHelper.hpp',
 	# =============================  Security  =============================
+	'security/authenticator.hpp',
+	'security/defaultAuthenticator.cpp', 'security/defaultAuthenticator.hpp',
+	# -- digest
 	'security/digest/messageDigest.cpp', 'security/digest/messageDigest.hpp',
 	'security/digest/messageDigestFactory.cpp', 'security/digest/messageDigestFactory.hpp',
 	'security/digest/md5/md5MessageDigest.cpp', 'security/digest/md5/md5MessageDigest.hpp',
 	'security/digest/sha1/sha1MessageDigest.cpp', 'security/digest/sha1/sha1MessageDigest.hpp'
+]
+
+libvmime_security_sasl_sources = [
+	'security/sasl/SASLContext.cpp', 'security/sasl/SASLContext.hpp',
+	'security/sasl/SASLSession.cpp', 'security/sasl/SASLSession.hpp',
+	'security/sasl/SASLMechanism.hpp',
+	'security/sasl/SASLMechanismFactory.cpp', 'security/sasl/SASLMechanismFactory.hpp',
+	'security/sasl/SASLSocket.cpp', 'security/sasl/SASLSocket.hpp',
+	'security/sasl/SASLAuthenticator.hpp',
+	'security/sasl/defaultSASLAuthenticator.cpp', 'security/sasl/defaultSASLAuthenticator.hpp',
+	'security/sasl/builtinSASLMechanism.cpp', 'security/sasl/builtinSASLMechanism.hpp'
 ]
 
 libvmime_examples_sources = [
@@ -190,11 +204,8 @@ libvmime_examples_sources = [
 ]
 
 libvmime_messaging_sources = [
-	'net/authenticator.cpp', 'net/authenticator.hpp',
-	'net/authenticationInfos.cpp', 'net/authenticationInfos.hpp',
 	'net/authHelper.cpp', 'net/authHelper.hpp',
 	'net/builtinServices.inl',
-	'net/defaultAuthenticator.cpp', 'net/defaultAuthenticator.hpp',
 	'net/events.cpp', 'net/events.hpp',
 	'net/folder.cpp', 'net/folder.hpp',
 	'net/message.cpp', 'net/message.hpp',
@@ -202,7 +213,6 @@ libvmime_messaging_sources = [
 	'net/serviceFactory.cpp', 'net/serviceFactory.hpp',
 	'net/serviceInfos.cpp', 'net/serviceInfos.hpp',
 	'net/session.cpp', 'net/session.hpp',
-	'net/simpleAuthenticator.cpp', 'net/simpleAuthenticator.hpp',
 	'net/socket.hpp',
 	'net/store.hpp',
 	'net/timeoutHandler.hpp',
@@ -357,7 +367,7 @@ libvmime_autotools = [
 	'vmime/Makefile.in'
 ]
 
-libvmime_all_sources = [] + libvmime_sources + libvmime_messaging_sources
+libvmime_all_sources = [] + libvmime_sources + libvmime_messaging_sources + libvmime_security_sasl_sources
 
 for i in range(len(libvmime_all_sources)):
 	f = libvmime_all_sources[i]
@@ -463,6 +473,14 @@ opts.AddOptions(
 		    + 'Currently available platform handlers: posix.',
 		'"posix"'
 	),
+	EnumOption(
+	 	'with_sasl',
+		'Enable SASL support (requires GNU SASL library)',
+		'yes',
+		allowed_values = ('yes', 'no'),
+		map = { },
+		ignorecase = 1
+	),
 	(
 		'sendmail_path',
 		'Specifies the path to sendmail.',
@@ -554,6 +572,8 @@ else:
 
 #env.Append(LIBS = ['additional-lib-here'])
 
+env.ParseConfig('pkg-config --cflags --libs libgsasl')
+
 # Generate help text for command line options
 Help(opts.GenerateHelpText(env))
 
@@ -642,6 +662,7 @@ if env['with_messaging'] == 'yes':
 	print "  * protocols            : " + env['with_messaging_protocols']
 print "File-system support      : " + env['with_filesystem']
 print "Platform handlers        : " + env['with_platforms']
+print "SASL support             : " + env['with_sasl']
 
 if IsProtocolSupported(messaging_protocols, 'sendmail'):
 	print "Sendmail path            : " + env['sendmail_path']
@@ -727,6 +748,12 @@ if env['with_filesystem'] == 'yes':
 else:
 	config_hpp.write('#define VMIME_HAVE_FILESYSTEM_FEATURES 0\n')
 
+config_hpp.write('// -- SASL support\n')
+if env['with_sasl'] == 'yes':
+	config_hpp.write('#define VMIME_HAVE_SASL_SUPPORT 1\n')
+else:
+	config_hpp.write('#define VMIME_HAVE_SASL_SUPPORT 0\n')
+
 config_hpp.write('// -- Messaging support\n')
 if env['with_messaging'] == 'yes':
 	config_hpp.write('#define VMIME_HAVE_MESSAGING_FEATURES 1\n')
@@ -800,6 +827,11 @@ if env['with_messaging'] == 'yes':
 				for file in protosrc[1]:
 					libvmime_sel_sources.append(file)
 
+# -- SASL support
+if env['with_sasl'] == 'yes':
+	for file in libvmime_security_sasl_sources:
+		libvmime_sel_sources.append(file)
+
 # -- platform handlers
 for platform in platforms:
 	files = libvmime_platforms_sources[platform]
@@ -852,12 +884,13 @@ Default(libVmime)
 # Tests
 if env['build_tests'] == 'yes':
 	if env['debug'] == 'yes':
+		env = env.Copy()
+		env.Append(LIBS = ['cppunit', 'dl', packageVersionedGenericName + '-debug'])
+		env.Append(LIBPATH=['.'])
 		Default(
 			env.Program(
 				target = 'run-tests',
-				source = libvmimetest_sources,
-				LIBS=['cppunit', 'dl', packageVersionedGenericName + '-debug'],
-				LIBPATH=['.']
+				source = libvmimetest_sources
 			)
 		)
 	else:
@@ -888,6 +921,13 @@ env.Install(includeDir, 'vmime/config.hpp')
 # Pkg-config support
 vmime_pc = open(packageVersionedGenericName + ".pc", 'w')
 
+vmime_pc_requires = ''
+vmime_pc_libs = ''
+
+if env['with_sasl'] == 'yes':
+	vmime_pc_requires = vmime_pc_requires + "libgsasl "
+	vmime_pc_libs = vmime_pc_libs + "-lgsasl "
+
 vmime_pc.write("prefix=" + env['prefix'] + "\n")
 vmime_pc.write("exec_prefix=" + env['prefix'] + "\n")
 vmime_pc.write("libdir=" + env['prefix'] + "/lib\n")
@@ -896,8 +936,8 @@ vmime_pc.write("\n")
 vmime_pc.write("Name: " + packageRealName + "\n")
 vmime_pc.write("Description: " + packageDescription + "\n")
 vmime_pc.write("Version: " + packageVersion + "\n")
-vmime_pc.write("Requires:\n")
-vmime_pc.write("Libs: -L${libdir} -l" + packageVersionedGenericName + "\n")
+vmime_pc.write("Requires: " + vmime_pc_requires + "\n")
+vmime_pc.write("Libs: -L${libdir} -l" + packageVersionedGenericName + " " + vmime_pc_libs + "\n")
 #vmime_pc.write("Cflags: -I${includedir}/" + packageVersionedGenericName + "\n")
 vmime_pc.write("Cflags: -I${includedir}/" + "\n")
 
@@ -969,8 +1009,8 @@ def generateAutotools(target, source, env):
 	vmime_pc_in.write("Name: @GENERIC_LIBRARY_NAME@\n")
 	vmime_pc_in.write("Description: " + packageDescription + "\n")
 	vmime_pc_in.write("Version: @VERSION@\n")
-	vmime_pc_in.write("Requires:\n")
-	vmime_pc_in.write("Libs: -L${libdir} -l@GENERIC_VERSIONED_LIBRARY_NAME@\n")
+	vmime_pc_in.write("Requires: @GSASL_REQUIRED@\n")
+	vmime_pc_in.write("Libs: -L${libdir} -l@GENERIC_VERSIONED_LIBRARY_NAME@ @GSASL_LIBS@\n")
 	#vmime_pc_in.write("Cflags: -I${includedir}/@GENERIC_VERSIONED_LIBRARY_NAME@\n")
 	vmime_pc_in.write("Cflags: -I${includedir}/\n")
 	vmime_pc_in.close()
@@ -1073,6 +1113,15 @@ INCLUDES = -I$(top_srcdir) -I$(srcdir) @PKGCONFIG_CFLAGS@ @EXTRA_CFLAGS@
 
 		Makefile_am.write(packageVersionedName + "_la_SOURCES += " + buildMakefileFileList(x, 1) + "\n")
 		Makefile_am.write("endif\n")
+
+	# -- SASL support
+	x = selectFilesFromSuffixNot(libvmime_security_sasl_sources, '.hpp')
+	sourceFiles += x
+
+	Makefile_am.write("\n")
+	Makefile_am.write("if VMIME_HAVE_SASL_SUPPORT\n")
+	Makefile_am.write(packageVersionedName + "_la_SOURCES += " + buildMakefileFileList(x, 1) + "\n")
+	Makefile_am.write("endif\n")
 
 	# -- platform handlers
 	for platform in libvmime_platforms_sources:
@@ -1199,6 +1248,13 @@ else
   AC_MSG_RESULT(no)
   AC_ERROR(no usable version of iconv has been found)
 fi
+
+# -- GNU SASL Library (http://www.gnu.org/software/gsasl/)
+AC_CHECK_HEADER(gsasl.h,
+	AC_CHECK_LIB(gsasl, gsasl_check_version,
+		[have_gsasl=yes AC_SUBST(GSASL_AVAIL_LIBS, -lgsasl) AC_SUBST(GSASL_AVAIL_REQUIRED, libgsasl)],
+		 have_gsasl=no),
+	have_gsasl=no)
 
 # -- global constructors (stolen from 'configure.in' in libsigc++)
 AC_MSG_CHECKING([if linker supports global constructors])
@@ -1391,7 +1447,7 @@ esac
 # ** debug
 
 AC_ARG_ENABLE(debug,
-     [  --enable-debug        Turn on debugging (default: disabled)],
+     AC_HELP_STRING([--enable-debug], [Turn on debugging, default: disabled]),
      [case "${enableval}" in
        yes) conf_debug=yes ;;
        no)  conf_debug=no ;;
@@ -1410,8 +1466,7 @@ fi
 # ** messaging
 
 AC_ARG_ENABLE(messaging,
-     [  --enable-messaging    Enable messaging support\
- (connection to mail servers, default: enabled)],
+     AC_HELP_STRING([--enable-messaging], [Enable messaging support and connection to mail servers, default: enabled]),
      [case "${enableval}" in
        yes) conf_messaging=yes ;;
        no)  conf_messaging=no ;;
@@ -1426,6 +1481,38 @@ else
 	AM_CONDITIONAL(VMIME_HAVE_MESSAGING_FEATURES, false)
 	VMIME_HAVE_MESSAGING_FEATURES=0
 fi
+
+# ** SASL
+
+AC_ARG_ENABLE(sasl,
+     AC_HELP_STRING([--enable-sasl], [Enable SASL support with GNU SASL, default: enabled]),
+     [case "${enableval}" in
+       yes) conf_sasl=yes ;;
+       no)  conf_sasl=no ;;
+       *) AC_MSG_ERROR(bad value ${enableval} for --enable-sasl) ;;
+      esac],
+     [conf_sasl=yes])
+
+if test "x$conf_sasl" = "xyes"; then
+	if test "x$have_gsasl" = "xyes"; then
+		AM_CONDITIONAL(VMIME_HAVE_SASL_SUPPORT, true)
+		VMIME_HAVE_SASL_SUPPORT=1
+
+		GSASL_REQUIRED=${GSASL_AVAIL_REQUIRED}
+		GSASL_LIBS=${GSASL_AVAIL_LIBS}
+	else
+		AC_MSG_ERROR(can't find an usable version of GNU SASL library)
+	fi
+else
+	AM_CONDITIONAL(VMIME_HAVE_SASL_SUPPORT, false)
+	VMIME_HAVE_SASL_SUPPORT=0
+
+	GSASL_REQUIRED=
+	GSASL_LIBS=
+fi
+
+AC_SUBST(GSASL_REQUIRED)
+AC_SUBST(GSASL_LIBS)
 
 # ** platform handlers
 
@@ -1452,9 +1539,9 @@ VMIME_BUILTIN_MESSAGING_PROTOS=''
 		p = proto[0]
 
 		configure_in.write("AC_ARG_ENABLE(messaging-proto-" + p + ",\n")
-		configure_in.write("     [  --enable-messaging-proto-" + p
-			+ "   Enable built-in support for protocol '" + p + "' "
-			+ " (default: enabled)],\n")
+		configure_in.write("     AC_HELP_STRING([--enable-messaging-proto-" + p
+			+ "], [Enable built-in support for protocol '" + p + "'"
+			+ ", default: enabled]),\n")
 		configure_in.write('     [case "${enableval}" in\n')
 		configure_in.write('       yes) conf_messaging_proto_' + p + '=yes ;;\n')
 		configure_in.write('       no)  conf_messaging_proto_' + p + '=no ;;\n')
@@ -1514,9 +1601,9 @@ fi
 		configure_in.write('fi\n\n')
 
 		configure_in.write("AC_ARG_ENABLE(platform-" + p + ",\n")
-		configure_in.write("     [  --enable-platform-" + p
-			+ "   Compile built-in platform handler for '" + p + "' "
-			+ " (default: disabled, except if default for your platform)],\n")
+		configure_in.write("     AC_HELP_STRING([--enable-platform-" + p
+			+ "], [Compile built-in platform handler for '" + p + "' "
+			+ ", default: disabled, except if default for your platform]),\n")
 		configure_in.write('     [case "${enableval}" in\n')
 		configure_in.write('       yes) conf_platform_' + p + '=yes ;;\n')
 		configure_in.write('       no)  conf_platform_' + p + '=no ;;\n')
@@ -1551,7 +1638,7 @@ AC_SUBST(PKGCONFIG_CFLAGS)
 AC_SUBST(PKGCONFIG_LIBS)
 
 EXTRA_CFLAGS="$EXTRA_CFLAGS -D_REENTRANT=1"
-EXTRA_LIBS=""
+EXTRA_LIBS="$GSASL_LIBS"
 
 CFLAGS=""
 CXXFLAGS=""
@@ -1666,6 +1753,8 @@ typedef unsigned ${VMIME_TYPE_INT32} vmime_uint32;
 #define VMIME_WIDE_CHAR_SUPPORT 0
 // -- File-system support
 #define VMIME_HAVE_FILESYSTEM_FEATURES 1
+// -- SASL support
+#define VMIME_HAVE_SASL_SUPPORT ${VMIME_HAVE_SASL_SUPPORT}
 // -- Messaging support
 #define VMIME_HAVE_MESSAGING_FEATURES ${VMIME_HAVE_MESSAGING_FEATURES}
 """)
@@ -1719,6 +1808,9 @@ Messaging support        : $conf_messaging
      * protocols         :$VMIME_BUILTIN_MESSAGING_PROTOS
 File-system support      : yes
 Platform handlers        :$VMIME_BUILTIN_PLATFORMS
+SASL support             : $conf_sasl
+
+Please check 'vmime/config.hpp' to ensure the configuration is correct.
 ])
 """)
 

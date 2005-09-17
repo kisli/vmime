@@ -17,48 +17,45 @@
 // Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //
 
-#ifndef VMIME_NET_AUTHENTICATIONINFOS_HPP_INCLUDED
-#define VMIME_NET_AUTHENTICATIONINFOS_HPP_INCLUDED
+#ifndef VMIME_SECURITY_DEFAULTAUTHENTICATOR_HPP_INCLUDED
+#define VMIME_SECURITY_DEFAULTAUTHENTICATOR_HPP_INCLUDED
 
 
-#include "vmime/types.hpp"
+#include "vmime/security/authenticator.hpp"
 
 
 namespace vmime {
-namespace net {
+namespace security {
 
 
-/** This class encapsulates user credentials.
+/** An authenticator that can provide some basic information by
+  * reading in the messaging session properties.
   */
-
-class authenticationInfos : public object
+class defaultAuthenticator : public authenticator
 {
 public:
 
-	authenticationInfos(const string& username, const string& password);
-	authenticationInfos(const authenticationInfos& infos);
+	defaultAuthenticator();
+	~defaultAuthenticator();
 
-	/** Return the user account name.
-	  *
-	  * @return account name
-	  */
-	const string& getUsername() const;
+	const string getUsername() const;
+	const string getPassword() const;
+	const string getHostname() const;
+	const string getAnonymousToken() const;
+	const string getServiceName() const;
 
-	/** Return the user account password.
-	  *
-	  * @return account password
-	  */
-	const string& getPassword() const;
+	void setService(ref <net::service> serv);
+	weak_ref <net::service> getService() const;
 
 private:
 
-	string m_username;
-	string m_password;
+	weak_ref <net::service> m_service;
 };
 
 
-} // net
+} // security
 } // vmime
 
 
-#endif // VMIME_NET_AUTHENTICATIONINFOS_HPP_INCLUDED
+#endif // VMIME_SECURITY_DEFAULTAUTHENTICATOR_HPP_INCLUDED
+

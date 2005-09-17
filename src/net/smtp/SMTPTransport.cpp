@@ -27,6 +27,11 @@
 #include "vmime/net/authHelper.hpp"
 
 #include "vmime/utility/filteredStream.hpp"
+#include "vmime/utility/stringUtils.hpp"
+
+#if VMIME_HAVE_SASL_SUPPORT
+	#include "vmime/security/sasl/SASLContext.hpp"
+#endif // VMIME_HAVE_SASL_SUPPORT
 
 
 // Helpers for service properties
@@ -41,7 +46,7 @@ namespace net {
 namespace smtp {
 
 
-SMTPTransport::SMTPTransport(ref <session> sess, ref <authenticator> auth)
+SMTPTransport::SMTPTransport(ref <session> sess, ref <security::authenticator> auth)
 	: transport(sess, getInfosInstance(), auth), m_socket(NULL),
 	  m_authentified(false), m_extendedSMTP(false), m_timeoutHandler(NULL)
 {
@@ -50,10 +55,17 @@ SMTPTransport::SMTPTransport(ref <session> sess, ref <authenticator> auth)
 
 SMTPTransport::~SMTPTransport()
 {
-	if (isConnected())
-		disconnect();
-	else if (m_socket)
-		internalDisconnect();
+	try
+	{
+		if (isConnected())
+			disconnect();
+		else if (m_socket)
+			internalDisconnect();
+	}
+	catch (vmime::exception&)
+	{
+		// Ignore
+	}
 }
 
 
@@ -87,15 +99,16 @@ void SMTPTransport::connect()
 	m_socket = sf->create();
 	m_socket->connect(address, port);
 
+	m_responseBuffer.clear();
+
 	// Connection
 	//
 	// eg:  C: <connection to server>
 	// ---  S: 220 smtp.domain.com Service ready
 
 	string response;
-	readResponse(response);
 
-	if (responseCode(response) != 220)
+	if (readAllResponses(response) != 220)
 	{
 		internalDisconnect();
 		throw exceptions::connection_greeting_error(response);
@@ -105,12 +118,12 @@ void SMTPTransport::connect()
 	// First, try Extended SMTP (ESMTP)
 	//
 	// eg:  C: EHLO thismachine.ourdomain.com
-	//      S: 250 OK
+	//      S: 250-smtp.theserver.com
+	//      S: 250 AUTH CRAM-MD5 DIGEST-MD5
 
 	sendRequest("EHLO " + platformDependant::getHandler()->getHostName());
-	readResponse(response);
 
-	if (responseCode(response) != 250)
+	if (readAllResponses(response, true) != 250)
 	{
 		// Next, try "Basic" SMTP
 		//
@@ -118,9 +131,8 @@ void SMTPTransport::connect()
 		//      S: 250 OK
 
 		sendRequest("HELO " + platformDependant::getHandler()->getHostName());
-		readResponse(response);
 
-		if (responseCode(response) != 250)
+		if (readAllResponses(response) != 250)
 		{
 			internalDisconnect();
 			throw exceptions::connection_greeting_error(response);
@@ -131,92 +143,230 @@ void SMTPTransport::connect()
 	else
 	{
 		m_extendedSMTP = true;
+		m_extendedSMTPResponse = response;
 	}
 
 	// Authentication
 	if (GET_PROPERTY(bool, PROPERTY_OPTIONS_NEEDAUTH))
+		authenticate();
+}
+
+
+void SMTPTransport::authenticate()
+{
+	if (!m_extendedSMTP)
 	{
-		if (!m_extendedSMTP)
+		internalDisconnect();
+		throw exceptions::command_error("AUTH", "ESMTP not supported.");
+	}
+
+	getAuthenticator()->setService(thisRef().dynamicCast <service>());
+
+#if VMIME_HAVE_SASL_SUPPORT
+	// First, try SASL authentication
+	if (GET_PROPERTY(bool, PROPERTY_OPTIONS_SASL))
+	{
+		try
+		{
+			authenticateSASL();
+
+			m_authentified = true;
+			return;
+		}
+		catch (exceptions::authentication_error& e)
+		{
+			if (!GET_PROPERTY(bool, PROPERTY_OPTIONS_SASL_FALLBACK))
+			{
+				// Can't fallback on normal authentication
+				internalDisconnect();
+				throw e;
+			}
+			else
+			{
+				// Ignore, will try normal authentication
+			}
+		}
+		catch (exception& e)
 		{
 			internalDisconnect();
-			throw exceptions::command_error("AUTH", "ESMTP not supported.");
+			throw e;
 		}
+	}
+#endif // VMIME_HAVE_SASL_SUPPORT
 
-		const authenticationInfos auth = getAuthenticator()->requestAuthInfos();
-		bool authentified = false;
+	// No other authentication method is possible
+	throw exceptions::authentication_error("All authentication methods failed");
+}
 
-		enum AuthMethods
+
+#if VMIME_HAVE_SASL_SUPPORT
+
+void SMTPTransport::authenticateSASL()
+{
+	if (!getAuthenticator().dynamicCast <security::sasl::SASLAuthenticator>())
+		throw exceptions::authentication_error("No SASL authenticator available.");
+
+	// Obtain SASL mechanisms supported by server from EHLO response
+	std::vector <string> saslMechs;
+	std::istringstream iss(m_extendedSMTPResponse);
+
+	while (!iss.eof())
+	{
+		string line;
+		std::getline(iss, line);
+
+		std::istringstream liss(line);
+		string word;
+
+		bool inAuth = false;
+
+		while (liss >> word)
 		{
-			First = 0,
-			CRAM_MD5 = First,
-			// TODO: more authentication methods...
-			End
-		};
-
-		for (int currentMethod = First ; !authentified ; ++currentMethod)
-		{
-			switch (currentMethod)
+			if (word.length() == 4 &&
+			    (word[0] == 'A' || word[0] == 'a') ||
+			    (word[0] == 'U' || word[0] == 'u') ||
+			    (word[0] == 'T' || word[0] == 't') ||
+			    (word[0] == 'H' || word[0] == 'h'))
 			{
-			case CRAM_MD5:
-			{
-				sendRequest("AUTH CRAM-MD5");
-				readResponse(response);
-
-				if (responseCode(response) == 334)
-				{
-					encoderB64 base64;
-
-					string challengeB64 = responseText(response);
-					string challenge, challengeHex;
-
-					{
-						utility::inputStreamStringAdapter in(challengeB64);
-						utility::outputStreamStringAdapter out(challenge);
-
-						base64.decode(in, out);
-					}
-
-					hmac_md5(challenge, auth.getPassword(), challengeHex);
-
-					string decoded = auth.getUsername() + " " + challengeHex;
-					string encoded;
-
-					{
-						utility::inputStreamStringAdapter in(decoded);
-						utility::outputStreamStringAdapter out(encoded);
-
-						base64.encode(in, out);
-					}
-
-					sendRequest(encoded);
-					readResponse(response);
-
-					if (responseCode(response) == 235)
-					{
-						authentified = true;
-					}
-					else
-					{
-						internalDisconnect();
-						throw exceptions::authentication_error(response);
-					}
-				}
-
-				break;
+				inAuth = true;
 			}
-			case End:
+			else if (inAuth)
 			{
-				// All authentication methods have been tried and
-				// the server does not understand any.
-				throw exceptions::authentication_error(response);
-			}
-
+				saslMechs.push_back(word);
 			}
 		}
 	}
 
-	m_authentified = true;
+	if (saslMechs.empty())
+		throw exceptions::authentication_error("No SASL mechanism available.");
+
+	std::vector <ref <security::sasl::SASLMechanism> > mechList;
+
+	ref <security::sasl::SASLContext> saslContext =
+		vmime::create <security::sasl::SASLContext>();
+
+	for (unsigned int i = 0 ; i < saslMechs.size() ; ++i)
+	{
+		try
+		{
+			mechList.push_back
+				(saslContext->createMechanism(saslMechs[i]));
+		}
+		catch (exceptions::no_such_mechanism&)
+		{
+			// Ignore mechanism
+		}
+	}
+
+	if (mechList.empty())
+		throw exceptions::authentication_error("No SASL mechanism available.");
+
+	// Try to suggest a mechanism among all those supported
+	ref <security::sasl::SASLMechanism> suggestedMech =
+		saslContext->suggestMechanism(mechList);
+
+	if (!suggestedMech)
+		throw exceptions::authentication_error("Unable to suggest SASL mechanism.");
+
+	// Allow application to choose which mechanisms to use
+	mechList = getAuthenticator().dynamicCast <security::sasl::SASLAuthenticator>()->
+		getAcceptableMechanisms(mechList, suggestedMech);
+
+	if (mechList.empty())
+		throw exceptions::authentication_error("No SASL mechanism available.");
+
+	// Try each mechanism in the list in turn
+	for (unsigned int i = 0 ; i < mechList.size() ; ++i)
+	{
+		ref <security::sasl::SASLMechanism> mech = mechList[i];
+
+		ref <security::sasl::SASLSession> saslSession =
+			saslContext->createSession("smtp", getAuthenticator(), mech);
+
+		saslSession->init();
+
+		sendRequest("AUTH " + mech->getName());
+
+		for (bool cont = true ; cont ; )
+		{
+			string response;
+
+			switch (readAllResponses(response))
+			{
+			case 235:
+			{
+				m_socket = saslSession->getSecuredSocket(m_socket);
+				return;
+			}
+			case 334:
+			{
+				byte* challenge = 0;
+				int challengeLen = 0;
+
+				byte* resp = 0;
+				int respLen = 0;
+
+				try
+				{
+					// Extract challenge
+					saslContext->decodeB64(response, &challenge, &challengeLen);
+
+					// Prepare response
+					saslSession->evaluateChallenge
+						(challenge, challengeLen, &resp, &respLen);
+
+					// Send response
+					sendRequest(saslContext->encodeB64(resp, respLen));
+				}
+				catch (exceptions::sasl_exception& e)
+				{
+					if (challenge)
+					{
+						delete [] challenge;
+						challenge = NULL;
+					}
+
+					if (resp)
+					{
+						delete [] resp;
+						resp = NULL;
+					}
+
+					// Cancel SASL exchange
+					sendRequest("*");
+				}
+				catch (...)
+				{
+					if (challenge)
+						delete [] challenge;
+
+					if (resp)
+						delete [] resp;
+
+					throw;
+				}
+
+				if (challenge)
+					delete [] challenge;
+
+				if (resp)
+					delete [] resp;
+
+				break;
+			}
+			default:
+
+				cont = false;
+				break;
+			}
+		}
+	}
+
+	throw exceptions::authentication_error
+		("Could not authenticate using SASL: all mechanisms failed.");
 }
+
+#endif // VMIME_HAVE_SASL_SUPPORT
 
 
 const bool SMTPTransport::isConnected() const
@@ -250,12 +400,11 @@ void SMTPTransport::internalDisconnect()
 
 void SMTPTransport::noop()
 {
-	m_socket->send("NOOP");
+	sendRequest("NOOP");
 
 	string response;
-	readResponse(response);
 
-	if (responseCode(response) != 250)
+	if (readAllResponses(response) != 250)
 		throw exceptions::command_error("NOOP", response);
 }
 
@@ -274,9 +423,8 @@ void SMTPTransport::send(const mailbox& expeditor, const mailboxList& recipients
 	string response;
 
 	sendRequest("MAIL FROM: <" + expeditor.getEmail() + ">");
-	readResponse(response);
 
-	if (responseCode(response) != 250)
+	if (readAllResponses(response) != 250)
 	{
 		internalDisconnect();
 		throw exceptions::command_error("MAIL", response);
@@ -288,9 +436,8 @@ void SMTPTransport::send(const mailbox& expeditor, const mailboxList& recipients
 		const mailbox& mbox = *recipients.getMailboxAt(i);
 
 		sendRequest("RCPT TO: <" + mbox.getEmail() + ">");
-		readResponse(response);
 
-		if (responseCode(response) != 250)
+		if (readAllResponses(response) != 250)
 		{
 			internalDisconnect();
 			throw exceptions::command_error("RCPT TO", response);
@@ -299,9 +446,8 @@ void SMTPTransport::send(const mailbox& expeditor, const mailboxList& recipients
 
 	// Send the message data
 	sendRequest("DATA");
-	readResponse(response);
 
-	if (responseCode(response) != 354)
+	if (readAllResponses(response) != 354)
 	{
 		internalDisconnect();
 		throw exceptions::command_error("DATA", response);
@@ -315,9 +461,8 @@ void SMTPTransport::send(const mailbox& expeditor, const mailboxList& recipients
 
 	// Send end-of-data delimiter
 	m_socket->sendRaw("\r\n.\r\n", 5);
-	readResponse(response);
 
-	if (responseCode(response) != 250)
+	if (readAllResponses(response) != 250)
 	{
 		internalDisconnect();
 		throw exceptions::command_error("DATA", response);
@@ -332,7 +477,7 @@ void SMTPTransport::sendRequest(const string& buffer, const bool end)
 }
 
 
-const int SMTPTransport::responseCode(const string& response)
+const int SMTPTransport::getResponseCode(const string& response)
 {
 	int code = 0;
 
@@ -347,35 +492,25 @@ const int SMTPTransport::responseCode(const string& response)
 }
 
 
-const string SMTPTransport::responseText(const string& response)
+const string SMTPTransport::readResponseLine()
 {
-	string text;
+	string currentBuffer = m_responseBuffer;
 
-	std::istringstream iss(response);
-	std::string line;
-
-	while (std::getline(iss, line))
+	while (true)
 	{
-		if (line.length() >= 4)
-			text += line.substr(4);
-		else
-			text += line;
+		// Get a line from the response buffer
+		string::size_type lineEnd = currentBuffer.find_first_of('\n');
 
-		text += "\n";
-	}
+		if (lineEnd != string::npos)
+		{
+			const string line(currentBuffer.begin(), currentBuffer.begin() + lineEnd);
 
-	return (text);
-}
+			currentBuffer.erase(currentBuffer.begin(), currentBuffer.begin() + lineEnd + 1);
+			m_responseBuffer = currentBuffer;
 
+			return line;
+		}
 
-void SMTPTransport::readResponse(string& buffer)
-{
-	bool foundTerminator = false;
-
-	buffer.clear();
-
-	for ( ; !foundTerminator ; )
-	{
 		// Check whether the time-out delay is elapsed
 		if (m_timeoutHandler && m_timeoutHandler->isTimeOut())
 		{
@@ -393,40 +528,61 @@ void SMTPTransport::readResponse(string& buffer)
 			continue;
 		}
 
-		// We have received data: reset the time-out counter
-		if (m_timeoutHandler)
-			m_timeoutHandler->resetTimeOut();
+		currentBuffer += receiveBuffer;
+	}
+}
 
-		// Append the data to the response buffer
-		buffer += receiveBuffer;
 
-		// Check for terminator string (and strip it if present)
-		if (buffer.length() >= 2 && buffer[buffer.length() - 1] == '\n')
+const int SMTPTransport::readResponse(string& text)
+{
+	string line = readResponseLine();
+
+	// Special case where CRLF occurs after response code
+	if (line.length() < 4)
+		line = line + '\n' + readResponseLine();
+
+	const int code = getResponseCode(line);
+
+	m_responseContinues = (line.length() >= 4 && line[3] == '-');
+
+	if (line.length() > 4)
+		text = utility::stringUtils::trim(line.substr(4));
+	else
+		text = utility::stringUtils::trim(line);
+
+	return code;
+}
+
+
+const int SMTPTransport::readAllResponses(string& outText, const bool allText)
+{
+	string text;
+
+	const int firstCode = readResponse(outText);
+
+	if (allText)
+		text = outText;
+
+	while (m_responseContinues)
+	{
+		const int code = readResponse(outText);
+
+		if (allText)
+			text += '\n' + outText;
+
+		if (code != firstCode)
 		{
-			string::size_type p = buffer.length() - 2;
-			bool end = false;
+			if (allText)
+				outText = text;
 
-			for ( ; !end ; --p)
-			{
-				if (p == 0 || buffer[p] == '\n')
-				{
-					end = true;
-
-					if (p + 4 < buffer.length())
-						foundTerminator = true;
-				}
-			}
+			return 0;
 		}
 	}
 
-	// Remove [CR]LF at the end of the response
-	if (buffer.length() >= 2 && buffer[buffer.length() - 1] == '\n')
-	{
-		if (buffer[buffer.length() - 2] == '\r')
-			buffer.resize(buffer.length() - 2);
-		else
-			buffer.resize(buffer.length() - 1);
-	}
+	if (allText)
+		outText = text;
+
+	return firstCode;
 }
 
 
@@ -460,6 +616,10 @@ const SMTPTransport::_infos::props& SMTPTransport::_infos::getProperties() const
 	{
 		// SMTP-specific options
 		property("options.need-authentication", serviceInfos::property::TYPE_BOOL, "false"),
+#if VMIME_HAVE_SASL_SUPPORT
+		property("options.sasl", serviceInfos::property::TYPE_BOOL, "true"),
+		property("options.sasl.fallback", serviceInfos::property::TYPE_BOOL, "false"),
+#endif // VMIME_HAVE_SASL_SUPPORT
 
 		// Common properties
 		property(serviceInfos::property::AUTH_USERNAME),
@@ -483,6 +643,10 @@ const std::vector <serviceInfos::property> SMTPTransport::_infos::getAvailablePr
 
 	// SMTP-specific options
 	list.push_back(p.PROPERTY_OPTIONS_NEEDAUTH);
+#if VMIME_HAVE_SASL_SUPPORT
+	list.push_back(p.PROPERTY_OPTIONS_SASL);
+	list.push_back(p.PROPERTY_OPTIONS_SASL_FALLBACK);
+#endif // VMIME_HAVE_SASL_SUPPORT
 
 	// Common properties
 	list.push_back(p.PROPERTY_AUTH_USERNAME);

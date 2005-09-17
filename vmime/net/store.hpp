@@ -37,7 +37,7 @@ class store : public service
 {
 protected:
 
-	store(ref <session> sess, const serviceInfos& infos, ref <authenticator> auth)
+	store(ref <session> sess, const serviceInfos& infos, ref <security::authenticator> auth)
 		: service(sess, infos, auth) { }
 
 public:

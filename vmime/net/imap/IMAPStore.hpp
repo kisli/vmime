@@ -52,7 +52,7 @@ class IMAPStore : public store
 
 public:
 
-	IMAPStore(ref <session> sess, ref <authenticator> auth);
+	IMAPStore(ref <session> sess, ref <security::authenticator> auth);
 	~IMAPStore();
 
 	const string getProtocolName() const;
@@ -79,13 +79,6 @@ private:
 	// Connection
 	ref <IMAPConnection> m_connection;
 
-	// Used to request the authentication informations only the
-	// first time, and reuse these informations the next time.
-	ref <class authenticator> m_oneTimeAuth;
-
-
-
-	ref <class authenticator> oneTimeAuthenticator();
 
 
 	ref <IMAPConnection> connection();
@@ -106,7 +99,10 @@ private:
 		struct props
 		{
 			// IMAP-specific options
-			// (none)
+#if VMIME_HAVE_SASL_SUPPORT
+			serviceInfos::property PROPERTY_OPTIONS_SASL;
+			serviceInfos::property PROPERTY_OPTIONS_SASL_FALLBACK;
+#endif // VMIME_HAVE_SASL_SUPPORT
 
 			// Common properties
 			serviceInfos::property PROPERTY_AUTH_USERNAME;

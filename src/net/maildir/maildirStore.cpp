@@ -39,7 +39,7 @@ namespace net {
 namespace maildir {
 
 
-maildirStore::maildirStore(ref <session> sess, ref <authenticator> auth)
+maildirStore::maildirStore(ref <session> sess, ref <security::authenticator> auth)
 	: store(sess, getInfosInstance(), auth), m_connected(false)
 {
 }
@@ -47,8 +47,15 @@ maildirStore::maildirStore(ref <session> sess, ref <authenticator> auth)
 
 maildirStore::~maildirStore()
 {
-	if (isConnected())
-		disconnect();
+	try
+	{
+		if (isConnected())
+			disconnect();
+	}
+	catch (vmime::exception&)
+	{
+		// Ignore
+	}
 }
 
 
@@ -96,7 +103,7 @@ const bool maildirStore::isValidFolderName(const folder::path::component& name) 
 	const string& buf = name.getBuffer();
 
 	// Name cannot start/end with spaces
-	if (utility::stringUtils::trim(buf) != name.getBuffer())
+	if (utility::stringUtils::trim(buf) != buf)
 		return false;
 
 	// Name cannot start with '.'

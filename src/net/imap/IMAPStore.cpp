@@ -32,67 +32,23 @@ namespace net {
 namespace imap {
 
 
-#ifndef VMIME_BUILDING_DOC
-
-//
-// IMAPauthenticator: private class used internally
-//
-// Used to request user credentials only in the first authentication
-// and reuse this information the next times
-//
-
-class IMAPauthenticator : public authenticator
-{
-public:
-
-	IMAPauthenticator(ref <authenticator> auth)
-		: m_auth(auth), m_infos(NULL)
-	{
-	}
-
-	~IMAPauthenticator()
-	{
-	}
-
-	const authenticationInfos requestAuthInfos() const
-	{
-		if (m_infos == NULL)
-			m_infos = vmime::create <authenticationInfos>(m_auth->requestAuthInfos());
-
-		return (*m_infos);
-	}
-
-private:
-
-	ref <authenticator> m_auth;
-	mutable ref <authenticationInfos> m_infos;
-};
-
-#endif // VMIME_BUILDING_DOC
-
-
-
-//
-// IMAPStore
-//
-
-IMAPStore::IMAPStore(ref <session> sess, ref <authenticator> auth)
-	: store(sess, getInfosInstance(), auth),
-	  m_connection(NULL), m_oneTimeAuth(NULL)
+IMAPStore::IMAPStore(ref <session> sess, ref <security::authenticator> auth)
+	: store(sess, getInfosInstance(), auth), m_connection(NULL)
 {
 }
 
 
 IMAPStore::~IMAPStore()
 {
-	if (isConnected())
-		disconnect();
-}
-
-
-ref <authenticator> IMAPStore::oneTimeAuthenticator()
-{
-	return (m_oneTimeAuth);
+	try
+	{
+		if (isConnected())
+			disconnect();
+	}
+	catch (vmime::exception&)
+	{
+		// Ignore
+	}
 }
 
 
@@ -140,10 +96,8 @@ void IMAPStore::connect()
 	if (isConnected())
 		throw exceptions::already_connected();
 
-	m_oneTimeAuth = vmime::create <IMAPauthenticator>(getAuthenticator());
-
 	m_connection = vmime::create <IMAPConnection>
-		(thisWeakRef().dynamicCast <IMAPStore>(), m_oneTimeAuth);
+		(thisWeakRef().dynamicCast <IMAPStore>(), getAuthenticator());
 
 	try
 	{
@@ -178,8 +132,6 @@ void IMAPStore::disconnect()
 
 
 	m_connection->disconnect();
-
-	m_oneTimeAuth = NULL;
 
 	m_connection = NULL;
 }
@@ -263,7 +215,10 @@ const IMAPStore::_infos::props& IMAPStore::_infos::getProperties() const
 	static props p =
 	{
 		// IMAP-specific options
-		// (none)
+#if VMIME_HAVE_SASL_SUPPORT
+		property("options.sasl", serviceInfos::property::TYPE_BOOL, "true"),
+		property("options.sasl.fallback", serviceInfos::property::TYPE_BOOL, "true"),
+#endif // VMIME_HAVE_SASL_SUPPORT
 
 		// Common properties
 		property(serviceInfos::property::AUTH_USERNAME, serviceInfos::property::FLAG_REQUIRED),
@@ -286,7 +241,10 @@ const std::vector <serviceInfos::property> IMAPStore::_infos::getAvailableProper
 	const props& p = getProperties();
 
 	// IMAP-specific options
-	// (none)
+#if VMIME_HAVE_SASL_SUPPORT
+	list.push_back(p.PROPERTY_OPTIONS_SASL);
+	list.push_back(p.PROPERTY_OPTIONS_SASL_FALLBACK);
+#endif // VMIME_HAVE_SASL_SUPPORT
 
 	// Common properties
 	list.push_back(p.PROPERTY_AUTH_USERNAME);
