@@ -1738,10 +1738,17 @@ public:
 			else
 			{
 				IMAPParser::text* text2 =
-					parser.get <IMAPParser::text>(line, &pos);
+					parser.get <IMAPParser::text>(line, &pos, true);
 
-				m_text = text2->value();
-				delete (text2);
+				if (text2 != NULL)
+				{
+					m_text = text2->value();
+					delete (text2);
+				}
+				else
+				{
+					// Empty response text
+				}
 			}
 
 			*currentPos = pos;
@@ -5016,6 +5023,8 @@ public:
 			{
 				if (!m_timeoutHandler->handleTimeOut())
 					throw exceptions::operation_timed_out();
+
+				m_timeoutHandler->resetTimeOut();
 			}
 
 			// Receive data from the socket
