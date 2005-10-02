@@ -33,9 +33,11 @@
 
 #include <string.h>
 
+/*
 #ifdef _POSIX_PRIORITY_SCHEDULING
 	#include <sched.h>
 #endif // _POSIX_PRIORITY_SCHEDULING
+*/
 
 
 namespace vmime {
@@ -205,11 +207,19 @@ vmime::utility::childProcessFactory* posixHandler::getChildProcessFactory() cons
 
 void posixHandler::wait() const
 {
+/*
 #ifdef _POSIX_PRIORITY_SCHEDULING
 	::sched_yield();
 #else
 	::sleep(1);
 #endif // _POSIX_PRIORITY_SCHEDULING
+*/
+
+	struct timespec ts;
+	ts.tv_sec = 0;
+	ts.tv_nsec = 150000000;  // 150 ms
+
+	nanosleep(&ts, NULL);
 }
 
 
