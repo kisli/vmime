@@ -59,7 +59,7 @@ class interactiveAuthenticator : public vmime::security::sasl::defaultSASLAuthen
 
 	void setSASLMechanism(vmime::ref <vmime::security::sasl::SASLMechanism> mech)
 	{
-		std::cout << "Trying " << mech->getName() << std::endl;
+		std::cout << "Trying '" << mech->getName() << "' authentication mechanism" << std::endl;
 
 		defaultSASLAuthenticator::setSASLMechanism(mech);
 	}
@@ -96,6 +96,94 @@ private:
 	mutable vmime::string m_username;
 	mutable vmime::string m_password;
 };
+
+
+#if VMIME_HAVE_TLS_SUPPORT
+
+// Certificate verifier (TLS/SSL)
+class interactiveCertificateVerifier : public vmime::net::tls::defaultCertificateVerifier
+{
+public:
+
+        void verify(vmime::ref <vmime::net::tls::certificateChain> chain)
+	{
+		try
+		{
+			setX509TrustedCerts(m_trustedCerts);
+
+			defaultCertificateVerifier::verify(chain);
+		}
+		catch (vmime::exceptions::certificate_verification_exception&)
+		{
+			// Obtain subject's certificate
+			vmime::ref <vmime::net::tls::certificate> cert = chain->getAt(0);
+
+			std::cout << std::endl;
+			std::cout << "Server sent a '" << cert->getType() << "'" << " certificate." << std::endl;
+			std::cout << "Do you want to accept this certificate? (Y/n) ";
+			std::cout.flush();
+
+			std::string answer;
+			std::getline(std::cin, answer);
+
+			if (answer.length() != 0 &&
+			    (answer[0] == 'Y' || answer[0] == 'y'))
+			{
+				// Accept it, and remember user's choice for later
+				if (cert->getType() == "X.509")
+				{
+					m_trustedCerts.push_back(cert.dynamicCast
+						<vmime::net::tls::X509Certificate>());
+				}
+
+				return;
+			}
+
+			throw vmime::exceptions::certificate_verification_exception
+				("User did not accept the certificate.");
+		}
+	}
+
+private:
+
+	static std::vector <vmime::ref <vmime::net::tls::X509Certificate> > m_trustedCerts;
+};
+
+
+std::vector <vmime::ref <vmime::net::tls::X509Certificate> >
+	interactiveCertificateVerifier::m_trustedCerts;
+
+#endif // VMIME_HAVE_TLS_SUPPORT
+
+
+/** Returns the messaging protocols supported by VMime.
+  *
+  * @param type service type (vmime::net::service::TYPE_STORE or
+  * vmime::net::service::TYPE_TRANSPORT)
+  */
+static const std::string findAvailableProtocols(const vmime::net::service::Type type)
+{
+	vmime::net::serviceFactory* sf = vmime::net::serviceFactory::getInstance();
+
+	std::ostringstream res;
+	int count = 0;
+
+	for (int i = 0 ; i < sf->getServiceCount() ; ++i)
+	{
+		const vmime::net::serviceFactory::registeredService& serv = *sf->getServiceAt(i);
+
+		if (serv.getType() == type)
+		{
+			if (count != 0)
+				res << ", ";
+
+			res << serv.getName();
+			++count;
+		}
+	}
+
+	return res.str();
+}
 
 
 // Exception helper
@@ -244,6 +332,7 @@ static void sendMessage()
 	{
 		// Request user to enter an URL
 		std::cout << "Enter an URL to connect to transport service." << std::endl;
+		std::cout << "Available protocols: " << findAvailableProtocols(vmime::net::service::TYPE_TRANSPORT) << std::endl;
 		std::cout << "(eg. smtp://myserver.com, sendmail://localhost)" << std::endl;
 		std::cout << "> ";
 		std::cout.flush();
@@ -256,9 +345,21 @@ static void sendMessage()
 		vmime::ref <vmime::net::transport> tr =
 			g_session->getTransport(url, vmime::create <interactiveAuthenticator>());
 
+#if VMIME_HAVE_TLS_SUPPORT
+
+		// Enable TLS support if available
+		tr->setProperty("connection.tls", true);
+
+		// Set the object responsible for verifying certificates, in the
+		// case a secured connection is used (TLS/SSL)
+		tr->setCertificateVerifier
+			(vmime::create <interactiveCertificateVerifier>());
+
+#endif // VMIME_HAVE_TLS_SUPPORT
+
 		// You can also set some properties (see example7 to know the properties
 		// available for each service). For example, for SMTP:
-		tr->setProperty("options.need-authentication", true);
+//		tr->setProperty("options.need-authentication", true);
 
 		// Information about the mail
 		std::cout << "Enter email of the expeditor (eg. me@somewhere.com): ";
@@ -338,6 +439,7 @@ static void connectStore()
 	{
 		// Request user to enter an URL
 		std::cout << "Enter an URL to connect to store service." << std::endl;
+		std::cout << "Available protocols: " << findAvailableProtocols(vmime::net::service::TYPE_STORE) << std::endl;
 		std::cout << "(eg. pop3://user:pass@myserver.com, imap://myserver.com:123)" << std::endl;
 		std::cout << "> ";
 		std::cout.flush();
@@ -356,6 +458,18 @@ static void connectStore()
 			st = g_session->getStore(url, vmime::create <interactiveAuthenticator>());
 		else
 			st = g_session->getStore(url);
+
+#if VMIME_HAVE_TLS_SUPPORT
+
+		// Enable TLS support if available
+		st->setProperty("connection.tls", true);
+
+		// Set the object responsible for verifying certificates, in the
+		// case a secured connection is used (TLS/SSL)
+		st->setCertificateVerifier
+			(vmime::create <interactiveCertificateVerifier>());
+
+#endif // VMIME_HAVE_TLS_SUPPORT
 
 		// Connect to the mail store
 		st->connect();

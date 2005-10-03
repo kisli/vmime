@@ -31,14 +31,20 @@
 	#include "vmime/security/sasl/SASLContext.hpp"
 #endif // VMIME_HAVE_SASL_SUPPORT
 
+#if VMIME_HAVE_TLS_SUPPORT
+	#include "vmime/net/tls/TLSSession.hpp"
+#endif // VMIME_HAVE_TLS_SUPPORT
+
 #include <algorithm>
 
 
 // Helpers for service properties
 #define GET_PROPERTY(type, prop) \
-	(sm_infos.getPropertyValue <type>(getSession(), sm_infos.getProperties().prop))
+	(getInfos().getPropertyValue <type>(getSession(), \
+		dynamic_cast <const POP3ServiceInfos&>(getInfos()).getProperties().prop))
 #define HAS_PROPERTY(prop) \
-	(sm_infos.hasProperty(getSession(), sm_infos.getProperties().prop))
+	(getInfos().hasProperty(getSession(), \
+		dynamic_cast <const POP3ServiceInfos&>(getInfos()).getProperties().prop))
 
 
 namespace vmime {
@@ -46,9 +52,9 @@ namespace net {
 namespace pop3 {
 
 
-POP3Store::POP3Store(ref <session> sess, ref <security::authenticator> auth)
+POP3Store::POP3Store(ref <session> sess, ref <security::authenticator> auth, const bool secured)
 	: store(sess, getInfosInstance(), auth), m_socket(NULL),
-	  m_authentified(false), m_timeoutHandler(NULL)
+	  m_authentified(false), m_timeoutHandler(NULL), m_secured(secured)
 {
 }
 
@@ -130,6 +136,20 @@ void POP3Store::connect()
 		getSocketFactory(GET_PROPERTY(string, PROPERTY_SERVER_SOCKETFACTORY));
 
 	m_socket = sf->create();
+
+#if VMIME_HAVE_TLS_SUPPORT
+	if (m_secured)  // dedicated port/POP3S
+	{
+		ref <tls::TLSSession> tlsSession =
+			vmime::create <tls::TLSSession>(getCertificateVerifier());
+
+		ref <tls::TLSSocket> tlsSocket =
+			tlsSession->getSocket(m_socket);
+
+		m_socket = tlsSocket;
+	}
+#endif // VMIME_HAVE_TLS_SUPPORT
+
 	m_socket->connect(address, port);
 
 	// Connection
@@ -145,6 +165,39 @@ void POP3Store::connect()
 		internalDisconnect();
 		throw exceptions::connection_greeting_error(response);
 	}
+
+#if VMIME_HAVE_TLS_SUPPORT
+	// Setup secured connection, if requested
+	const bool tls = HAS_PROPERTY(PROPERTY_CONNECTION_TLS)
+		&& GET_PROPERTY(bool, PROPERTY_CONNECTION_TLS);
+	const bool tlsRequired = HAS_PROPERTY(PROPERTY_CONNECTION_TLS_REQUIRED)
+		&& GET_PROPERTY(bool, PROPERTY_CONNECTION_TLS_REQUIRED);
+
+	if (!m_secured && tls)  // only if not POP3S
+	{
+		try
+		{
+			startTLS();
+		}
+		// Non-fatal error
+		catch (exceptions::command_error&)
+		{
+			if (tlsRequired)
+			{
+				throw;
+			}
+			else
+			{
+				// TLS is not required, so don't bother
+			}
+		}
+		// Fatal error
+		catch (...)
+		{
+			throw;
+		}
+	}
+#endif // VMIME_HAVE_TLS_SUPPORT
 
 	// Start authentication process
 	authenticate(messageId(response));
@@ -233,6 +286,18 @@ void POP3Store::authenticate(const messageId& randomMID)
 				{
 					// Can't fallback on basic authentication
 					internalDisconnect();
+					throw exceptions::authentication_error(response);
+				}
+
+				// Ensure connection is valid (cf. note above)
+				try
+				{
+					string response2;
+					sendRequest("NOOP");
+					readResponse(response2, false);
+				}
+				catch (exceptions::socket_exception&)
+				{
 					throw exceptions::authentication_error(response);
 				}
 			}
@@ -453,6 +518,46 @@ void POP3Store::authenticateSASL()
 #endif // VMIME_HAVE_SASL_SUPPORT
 
 
+#if VMIME_HAVE_TLS_SUPPORT
+
+void POP3Store::startTLS()
+{
+	try
+	{
+		sendRequest("STLS");
+
+		string response;
+		readResponse(response, false);
+
+		if (getResponseCode(response) != RESPONSE_OK)
+			throw exceptions::command_error("STLS", response);
+
+		ref <tls::TLSSession> tlsSession =
+			vmime::create <tls::TLSSession>(getCertificateVerifier());
+
+		ref <tls::TLSSocket> tlsSocket =
+			tlsSession->getSocket(m_socket);
+
+		tlsSocket->handshake(m_timeoutHandler);
+
+		m_socket = tlsSocket;
+	}
+	catch (exceptions::command_error&)
+	{
+		// Non-fatal error
+		throw;
+	}
+	catch (exception&)
+	{
+		// Fatal error
+		internalDisconnect();
+		throw;
+	}
+}
+
+#endif // VMIME_HAVE_TLS_SUPPORT
+
+
 const bool POP3Store::isConnected() const
 {
 	return (m_socket && m_socket->isConnected() && m_authentified);
@@ -478,8 +583,14 @@ void POP3Store::internalDisconnect()
 
 	m_folders.clear();
 
-
-	sendRequest("QUIT");
+	try
+	{
+		sendRequest("QUIT");
+	}
+	catch (exception&)
+	{
+		// Not important
+	}
 
 	m_socket->disconnect();
 	m_socket = NULL;
@@ -627,6 +738,8 @@ void POP3Store::readResponse(string& buffer, const bool multiLine,
 		{
 			if (!m_timeoutHandler->handleTimeOut())
 				throw exceptions::operation_timed_out();
+
+			m_timeoutHandler->resetTimeOut();
 		}
 
 		// Receive data from the socket
@@ -844,78 +957,18 @@ const int POP3Store::getCapabilities() const
 
 // Service infos
 
-POP3Store::_infos POP3Store::sm_infos;
+POP3ServiceInfos POP3Store::sm_infos(false);
 
 
 const serviceInfos& POP3Store::getInfosInstance()
 {
-	return (sm_infos);
+	return sm_infos;
 }
 
 
 const serviceInfos& POP3Store::getInfos() const
 {
-	return (sm_infos);
-}
-
-
-const string POP3Store::_infos::getPropertyPrefix() const
-{
-	return "store.pop3.";
-}
-
-
-const POP3Store::_infos::props& POP3Store::_infos::getProperties() const
-{
-	static props p =
-	{
-		// POP3-specific options
-		property("options.apop", serviceInfos::property::TYPE_BOOL, "true"),
-		property("options.apop.fallback", serviceInfos::property::TYPE_BOOL, "true"),
-#if VMIME_HAVE_SASL_SUPPORT
-		property("options.sasl", serviceInfos::property::TYPE_BOOL, "true"),
-		property("options.sasl.fallback", serviceInfos::property::TYPE_BOOL, "true"),
-#endif // VMIME_HAVE_SASL_SUPPORT
-
-		// Common properties
-		property(serviceInfos::property::AUTH_USERNAME, serviceInfos::property::FLAG_REQUIRED),
-		property(serviceInfos::property::AUTH_PASSWORD, serviceInfos::property::FLAG_REQUIRED),
-
-		property(serviceInfos::property::SERVER_ADDRESS, serviceInfos::property::FLAG_REQUIRED),
-		property(serviceInfos::property::SERVER_PORT, "110"),
-		property(serviceInfos::property::SERVER_SOCKETFACTORY),
-
-		property(serviceInfos::property::TIMEOUT_FACTORY)
-	};
-
-	return p;
-}
-
-
-const std::vector <serviceInfos::property> POP3Store::_infos::getAvailableProperties() const
-{
-	std::vector <property> list;
-	const props& p = getProperties();
-
-	// POP3-specific options
-	list.push_back(p.PROPERTY_OPTIONS_APOP);
-	list.push_back(p.PROPERTY_OPTIONS_APOP_FALLBACK);
-#if VMIME_HAVE_SASL_SUPPORT
-	list.push_back(p.PROPERTY_OPTIONS_SASL);
-	list.push_back(p.PROPERTY_OPTIONS_SASL_FALLBACK);
-#endif // VMIME_HAVE_SASL_SUPPORT
-
-	// Common properties
-	list.push_back(p.PROPERTY_AUTH_USERNAME);
-	list.push_back(p.PROPERTY_AUTH_PASSWORD);
-
-	list.push_back(p.PROPERTY_SERVER_ADDRESS);
-	list.push_back(p.PROPERTY_SERVER_PORT);
-	list.push_back(p.PROPERTY_SERVER_SOCKETFACTORY);
-
-	list.push_back(p.PROPERTY_TIMEOUT_FACTORY);
-
-	return (list);
+	return sm_infos;
 }
 
 

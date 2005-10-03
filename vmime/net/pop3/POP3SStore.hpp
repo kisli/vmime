@@ -21,74 +21,43 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#ifndef VMIME_NET_SENDMAIL_SENDMAILTRANSPORT_HPP_INCLUDED
-#define VMIME_NET_SENDMAIL_SENDMAILTRANSPORT_HPP_INCLUDED
+#ifndef VMIME_NET_POP3_POP3SSTORE_HPP_INCLUDED
+#define VMIME_NET_POP3_POP3SSTORE_HPP_INCLUDED
 
 
-#include "vmime/config.hpp"
-
-#include "vmime/net/transport.hpp"
-#include "vmime/net/socket.hpp"
-#include "vmime/net/timeoutHandler.hpp"
-
-#include "vmime/net/sendmail/sendmailServiceInfos.hpp"
-
-
-#if VMIME_BUILTIN_PLATFORM_POSIX
+#include "vmime/net/pop3/POP3Store.hpp"
 
 
 namespace vmime {
 namespace net {
-namespace sendmail {
+namespace pop3 {
 
 
-/** Sendmail local transport service.
+/** POP3S store service.
   */
 
-class sendmailTransport : public transport
+class POP3SStore : public POP3Store
 {
 public:
 
-	sendmailTransport(ref <session> sess, ref <security::authenticator> auth);
-	~sendmailTransport();
+	POP3SStore(ref <session> sess, ref <security::authenticator> auth);
+	~POP3SStore();
 
 	const string getProtocolName() const;
 
 	static const serviceInfos& getInfosInstance();
 	const serviceInfos& getInfos() const;
 
-	void connect();
-	const bool isConnected() const;
-	void disconnect();
-
-	void noop();
-
-	void send(const mailbox& expeditor, const mailboxList& recipients, utility::inputStream& is, const utility::stream::size_type size, utility::progressionListener* progress = NULL);
-
 private:
 
-	void internalDisconnect();
-
-	void internalSend(const std::vector <string> args, utility::inputStream& is,
-		const utility::stream::size_type size, utility::progressionListener* progress);
-
-
-	string m_sendmailPath;
-
-	bool m_connected;
-
-
-	// Service infos
-	static sendmailServiceInfos sm_infos;
+	static POP3ServiceInfos sm_infos;
 };
 
 
-} // sendmail
+} // pop3
 } // net
 } // vmime
 
 
-#endif // VMIME_BUILTIN_PLATFORM_POSIX
+#endif // VMIME_NET_POP3_POP3SSTORE_HPP_INCLUDED
 
-
-#endif // VMIME_NET_SENDMAIL_SENDMAILTRANSPORT_HPP_INCLUDED

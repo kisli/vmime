@@ -26,33 +26,26 @@ import string
 #  Version  #
 #############
 
-# How to increment version number when building a public release?
-# ===============================================================
-#
-# Changing package version number:
-#
-# * Increment major number if major changes have been made to the library,
-#   that is, program depending on this library will need to be changed to
-#   work with the new major release.
-#
-# * Increment minor number when the changes are upward-compatible: some
-#   interfaces have been added, but compatibility is maintained for
-#   existing interfaces.
-#
-# * Increment micro number when the changes do not add any new interface.
-#   The changes only apply to the implementation (bug or security fix,
-#   performance improvement, etc.).
-#
-
 # Package version number
 packageVersionMajor = 0
 packageVersionMinor = 7
 packageVersionMicro = 2
 
-# Shared library version number (computed from package version number)
-packageAPICurrent   = packageVersionMajor + packageVersionMinor
-packageAPIRevision  = packageVersionMicro
-packageAPIAge       = packageVersionMinor
+# API version number (libtool)
+#
+# Increment this number only immediately before a public release.
+# This is independant from package version number.
+#
+# See: http://www.gnu.org/software/libtool/manual.html#Libtool-versioning
+#
+# . Implementation changed (eg. bug/security fix):  REVISION++
+# . Interfaces added/removed/changed:               CURRENT++, REVISION=0
+# . Interfaces added (upward-compatible changes):   AGE++
+# . Interfaces removed:                             AGE=0
+#
+packageAPICurrent   = 0
+packageAPIRevision  = 0
+packageAPIAge       = 0
 
 # Package information
 packageName = 'libvmime'
@@ -204,7 +197,6 @@ libvmime_examples_sources = [
 ]
 
 libvmime_messaging_sources = [
-	'net/authHelper.cpp', 'net/authHelper.hpp',
 	'net/builtinServices.inl',
 	'net/events.cpp', 'net/events.hpp',
 	'net/folder.cpp', 'net/folder.hpp',
@@ -219,46 +211,64 @@ libvmime_messaging_sources = [
 	'net/transport.cpp', 'net/transport.hpp'
 ]
 
+libvmime_net_tls_sources = [
+	'net/tls/TLSSession.cpp', 'net/tls/TLSSession.hpp',
+	'net/tls/TLSSocket.cpp', 'net/tls/TLSSocket.hpp',
+	'net/tls/certificateChain.cpp', 'net/tls/certificateChain.hpp',
+	'net/tls/certificateVerifier.hpp',
+	'net/tls/defaultCertificateVerifier.cpp', 'net/tls/defaultCertificateVerifier.hpp',
+	'net/tls/certificate.hpp',
+	'net/tls/X509Certificate.cpp', 'net/tls/X509Certificate.hpp'
+]
+
 libvmime_messaging_proto_sources = [
 	[
 		'pop3',
 		[
-			'net/pop3/POP3Store.cpp',       'net/pop3/POP3Store.hpp',
-			'net/pop3/POP3Folder.cpp',      'net/pop3/POP3Folder.hpp',
-			'net/pop3/POP3Message.cpp',     'net/pop3/POP3Message.hpp'
+			'net/pop3/POP3ServiceInfos.cpp', 'net/pop3/POP3ServiceInfos.hpp',
+			'net/pop3/POP3Store.cpp',        'net/pop3/POP3Store.hpp',
+			'net/pop3/POP3SStore.cpp',       'net/pop3/POP3SStore.hpp',
+			'net/pop3/POP3Folder.cpp',       'net/pop3/POP3Folder.hpp',
+			'net/pop3/POP3Message.cpp',      'net/pop3/POP3Message.hpp'
 		]
 	],
 	[
 		'smtp',
 		[
-			'net/smtp/SMTPTransport.cpp',   'net/smtp/SMTPTransport.hpp'
+			'net/smtp/SMTPServiceInfos.cpp', 'net/smtp/SMTPServiceInfos.hpp',
+			'net/smtp/SMTPTransport.cpp',    'net/smtp/SMTPTransport.hpp',
+			'net/smtp/SMTPSTransport.cpp',   'net/smtp/SMTPSTransport.hpp'
 		]
 	],
 	[
 		'imap',
 		[
-			'net/imap/IMAPConnection.cpp',  'net/imap/IMAPConnection.hpp',
-			'net/imap/IMAPStore.cpp',       'net/imap/IMAPStore.hpp',
-			'net/imap/IMAPFolder.cpp',      'net/imap/IMAPFolder.hpp',
-			'net/imap/IMAPMessage.cpp',     'net/imap/IMAPMessage.hpp',
-			'net/imap/IMAPTag.cpp',         'net/imap/IMAPTag.hpp',
-			'net/imap/IMAPUtils.cpp',       'net/imap/IMAPUtils.hpp',
-			'net/imap/IMAPParser.hpp'
+			'net/imap/IMAPServiceInfos.cpp', 'net/imap/IMAPServiceInfos.hpp',
+			'net/imap/IMAPConnection.cpp',   'net/imap/IMAPConnection.hpp',
+			'net/imap/IMAPStore.cpp',        'net/imap/IMAPStore.hpp',
+			'net/imap/IMAPSStore.cpp',       'net/imap/IMAPSStore.hpp',
+			'net/imap/IMAPFolder.cpp',       'net/imap/IMAPFolder.hpp',
+			'net/imap/IMAPMessage.cpp',      'net/imap/IMAPMessage.hpp',
+			'net/imap/IMAPTag.cpp',          'net/imap/IMAPTag.hpp',
+			'net/imap/IMAPUtils.cpp',        'net/imap/IMAPUtils.hpp',
+			'net/imap/IMAPParser.hpp',
 		]
 	],
 	[
 		'maildir',
 		[
-			'net/maildir/maildirStore.cpp',    'net/maildir/maildirStore.hpp',
-			'net/maildir/maildirFolder.cpp',   'net/maildir/maildirFolder.hpp',
-			'net/maildir/maildirMessage.cpp',  'net/maildir/maildirMessage.hpp',
-			'net/maildir/maildirUtils.cpp',    'net/maildir/maildirUtils.hpp'
+			'net/maildir/maildirServiceInfos.cpp', 'net/maildir/maildirServiceInfos.hpp',
+			'net/maildir/maildirStore.cpp',        'net/maildir/maildirStore.hpp',
+			'net/maildir/maildirFolder.cpp',       'net/maildir/maildirFolder.hpp',
+			'net/maildir/maildirMessage.cpp',      'net/maildir/maildirMessage.hpp',
+			'net/maildir/maildirUtils.cpp',        'net/maildir/maildirUtils.hpp'
 		]
 	],
 	[
 		'sendmail',
 		[
-			'net/sendmail/sendmailTransport.cpp',  'net/sendmail/sendmailTransport.hpp'
+			'net/sendmail/sendmailServiceInfos.cpp', 'net/sendmail/sendmailServiceInfos.hpp',
+			'net/sendmail/sendmailTransport.cpp',    'net/sendmail/sendmailTransport.hpp'
 		]
 	]
 ]
@@ -348,6 +358,7 @@ libvmime_autotools = [
 	'm4/lib-ld.m4',
 	'm4/lib-link.m4',
 	'm4/lib-prefix.m4',
+	'm4/libgnutls.m4',
 	'autotools/install-sh',
 #	'autotools/mkinstalldirs',
 	'autotools/missing',
@@ -367,7 +378,7 @@ libvmime_autotools = [
 	'vmime/Makefile.in'
 ]
 
-libvmime_all_sources = [] + libvmime_sources + libvmime_messaging_sources + libvmime_security_sasl_sources
+libvmime_all_sources = [] + libvmime_sources + libvmime_messaging_sources + libvmime_security_sasl_sources + libvmime_net_tls_sources
 
 for i in range(len(libvmime_all_sources)):
 	f = libvmime_all_sources[i]
@@ -481,6 +492,14 @@ opts.AddOptions(
 		map = { },
 		ignorecase = 1
 	),
+	EnumOption(
+		'with_tls',
+		'Enable TLS support (requires GNU TLS library)',
+		'yes',
+		allowed_values = ('yes', 'no'),
+		map = { },
+		ignorecase = 1
+	),
 	(
 		'sendmail_path',
 		'Specifies the path to sendmail.',
@@ -559,6 +578,8 @@ env.Append(CXXFLAGS = ['-pedantic'])
 env.Append(CXXFLAGS = ['-Wpointer-arith'])
 env.Append(CXXFLAGS = ['-Wold-style-cast'])
 env.Append(CXXFLAGS = ['-Wconversion'])
+env.Append(CXXFLAGS = ['-Wcast-align'])
+#env.Append(CXXFLAGS = ['-Wshadow'])
 
 env.Append(TARFLAGS = ['-c'])
 env.Append(TARFLAGS = ['--bzip2'])
@@ -572,7 +593,11 @@ else:
 
 #env.Append(LIBS = ['additional-lib-here'])
 
-env.ParseConfig('pkg-config --cflags --libs libgsasl')
+if env['with_sasl'] == 'yes':
+	env.ParseConfig('pkg-config --cflags --libs libgsasl')
+
+if env['with_tls'] == 'yes':
+	env.ParseConfig('pkg-config --cflags --libs libgnutls')
 
 # Generate help text for command line options
 Help(opts.GenerateHelpText(env))
@@ -663,6 +688,7 @@ if env['with_messaging'] == 'yes':
 print "File-system support      : " + env['with_filesystem']
 print "Platform handlers        : " + env['with_platforms']
 print "SASL support             : " + env['with_sasl']
+print "TLS/SSL support          : " + env['with_tls']
 
 if IsProtocolSupported(messaging_protocols, 'sendmail'):
 	print "Sendmail path            : " + env['sendmail_path']
@@ -754,6 +780,12 @@ if env['with_sasl'] == 'yes':
 else:
 	config_hpp.write('#define VMIME_HAVE_SASL_SUPPORT 0\n')
 
+config_hpp.write('// -- TLS/SSL support\n')
+if env['with_tls'] == 'yes':
+	config_hpp.write('#define VMIME_HAVE_TLS_SUPPORT 1\n')
+else:
+	config_hpp.write('#define VMIME_HAVE_TLS_SUPPORT 0\n')
+
 config_hpp.write('// -- Messaging support\n')
 if env['with_messaging'] == 'yes':
 	config_hpp.write('#define VMIME_HAVE_MESSAGING_FEATURES 1\n')
@@ -830,6 +862,11 @@ if env['with_messaging'] == 'yes':
 # -- SASL support
 if env['with_sasl'] == 'yes':
 	for file in libvmime_security_sasl_sources:
+		libvmime_sel_sources.append(file)
+
+# -- TLS support
+if env['with_tls'] == 'yes':
+	for file in libvmime_net_tls_sources:
 		libvmime_sel_sources.append(file)
 
 # -- platform handlers
@@ -1010,9 +1047,9 @@ def generateAutotools(target, source, env):
 	vmime_pc_in.write("Description: " + packageDescription + "\n")
 	vmime_pc_in.write("Version: @VERSION@\n")
 	vmime_pc_in.write("Requires: @GSASL_REQUIRED@\n")
-	vmime_pc_in.write("Libs: -L${libdir} -l@GENERIC_VERSIONED_LIBRARY_NAME@ @GSASL_LIBS@\n")
+	vmime_pc_in.write("Libs: -L${libdir} -l@GENERIC_VERSIONED_LIBRARY_NAME@ @GSASL_LIBS@ @LIBGNUTLS_LIBS@\n")
 	#vmime_pc_in.write("Cflags: -I${includedir}/@GENERIC_VERSIONED_LIBRARY_NAME@\n")
-	vmime_pc_in.write("Cflags: -I${includedir}/\n")
+	vmime_pc_in.write("Cflags: -I${includedir}/ @LIBGNUTLS_CFLAGS@\n")
 	vmime_pc_in.close()
 
 	# Generate 'Makefile.am'
@@ -1120,6 +1157,15 @@ INCLUDES = -I$(top_srcdir) -I$(srcdir) @PKGCONFIG_CFLAGS@ @EXTRA_CFLAGS@
 
 	Makefile_am.write("\n")
 	Makefile_am.write("if VMIME_HAVE_SASL_SUPPORT\n")
+	Makefile_am.write(packageVersionedName + "_la_SOURCES += " + buildMakefileFileList(x, 1) + "\n")
+	Makefile_am.write("endif\n")
+
+	# -- TLS support
+	x = selectFilesFromSuffixNot(libvmime_net_tls_sources, '.hpp')
+	sourceFiles += x
+
+	Makefile_am.write("\n")
+	Makefile_am.write("if VMIME_HAVE_TLS_SUPPORT\n")
 	Makefile_am.write(packageVersionedName + "_la_SOURCES += " + buildMakefileFileList(x, 1) + "\n")
 	Makefile_am.write("endif\n")
 
@@ -1256,6 +1302,9 @@ AC_CHECK_HEADER(gsasl.h,
 		 have_gsasl=no),
 	have_gsasl=no)
 
+# -- GNU TLS Library (http://www.gnu.org/software/gnutls/)
+AM_PATH_LIBGNUTLS(1.2.0, have_gnutls=yes, have_gnutls=no)
+
 # -- global constructors (stolen from 'configure.in' in libsigc++)
 AC_MSG_CHECKING([if linker supports global constructors])
 cat > mylib.$ac_ext <<EOF
@@ -1299,7 +1348,7 @@ if test -x mytest; then
 		AC_ERROR([
 ===================================================================
 ERROR: This platform lacks support of construction of global
-objects in shared librarys.
+objects in shared libraries.
 
 See ftp://rtfm.mit.edu/pub/usenet/news.answers/g++-FAQ/plain
 for details about this problem.  Also for possible solutions
@@ -1514,6 +1563,29 @@ fi
 AC_SUBST(GSASL_REQUIRED)
 AC_SUBST(GSASL_LIBS)
 
+# ** TLS
+
+AC_ARG_ENABLE(tls,
+     AC_HELP_STRING([--enable-tls], [Enable TLS/SSL support with GNU TLS, default: enabled]),
+     [case "${enableval}" in
+       yes) conf_tls=yes ;;
+       no)  conf_tls=no ;;
+       *) AC_MSG_ERROR(bad value ${enableval} for --enable-tls) ;;
+      esac],
+     [conf_tls=yes])
+
+if test "x$conf_tls" = "xyes"; then
+	if test "x$have_gnutls" = "xyes"; then
+		AM_CONDITIONAL(VMIME_HAVE_TLS_SUPPORT, true)
+		VMIME_HAVE_TLS_SUPPORT=1
+	else
+		AC_MSG_ERROR(can't find an usable version of GNU TLS library)
+	fi
+else
+	AM_CONDITIONAL(VMIME_HAVE_TLS_SUPPORT, false)
+	VMIME_HAVE_TLS_SUPPORT=0
+fi
+
 # ** platform handlers
 
 VMIME_BUILTIN_PLATFORMS=''
@@ -1637,8 +1709,8 @@ PKGCONFIG_LIBS=""
 AC_SUBST(PKGCONFIG_CFLAGS)
 AC_SUBST(PKGCONFIG_LIBS)
 
-EXTRA_CFLAGS="$EXTRA_CFLAGS -D_REENTRANT=1"
-EXTRA_LIBS="$GSASL_LIBS"
+EXTRA_CFLAGS="$EXTRA_CFLAGS -D_REENTRANT=1 -D_THREAD_SAFE=1 $LIBGNUTLS_CFLAGS"
+EXTRA_LIBS="$GSASL_LIBS $LIBGNUTLS_LIBS"
 
 CFLAGS=""
 CXXFLAGS=""
@@ -1755,6 +1827,8 @@ typedef unsigned ${VMIME_TYPE_INT32} vmime_uint32;
 #define VMIME_HAVE_FILESYSTEM_FEATURES 1
 // -- SASL support
 #define VMIME_HAVE_SASL_SUPPORT ${VMIME_HAVE_SASL_SUPPORT}
+// -- TLS support
+#define VMIME_HAVE_TLS_SUPPORT ${VMIME_HAVE_TLS_SUPPORT}
 // -- Messaging support
 #define VMIME_HAVE_MESSAGING_FEATURES ${VMIME_HAVE_MESSAGING_FEATURES}
 """)
@@ -1809,6 +1883,7 @@ Messaging support        : $conf_messaging
 File-system support      : yes
 Platform handlers        :$VMIME_BUILTIN_PLATFORMS
 SASL support             : $conf_sasl
+TLS/SSL support          : $conf_tls
 
 Please check 'vmime/config.hpp' to ensure the configuration is correct.
 ])
@@ -2081,6 +2156,10 @@ typedef unsigned int vmime_uint32;
 #define VMIME_NO_MULTIPLE_INHERITANCE 1
 // -- File-system support
 #define VMIME_HAVE_FILESYSTEM_FEATURES 1
+// -- SASL support
+#define VMIME_HAVE_SASL_SUPPORT 1
+// -- TLS/SSL support
+#define VMIME_HAVE_TLS_SUPPORT 1
 // -- Messaging support
 #define VMIME_HAVE_MESSAGING_FEATURES 1
 // -- Built-in messaging protocols

@@ -719,6 +719,60 @@ const char* no_auth_information::name() const throw() { return "no_auth_informat
 #endif // VMIME_HAVE_SASL_SUPPORT
 
 
+#if VMIME_HAVE_TLS_SUPPORT
+
+
+//
+// tls_exception
+//
+
+tls_exception::~tls_exception() throw() {}
+tls_exception::tls_exception(const string& what, const exception& other)
+	: exception(what, other) {}
+
+exception* tls_exception::clone() const { return new tls_exception(*this); }
+const char* tls_exception::name() const throw() { return "tls_exception"; }
+
+
+//
+// certificate_exception
+//
+
+certificate_exception::~certificate_exception() throw() {}
+certificate_exception::certificate_exception(const string& what, const exception& other)
+	: tls_exception(what, other) {}
+
+exception* certificate_exception::clone() const { return new certificate_exception(*this); }
+const char* certificate_exception::name() const throw() { return "certificate_exception"; }
+
+
+//
+// certificate_verification_exception
+//
+
+certificate_verification_exception::~certificate_verification_exception() throw() {}
+certificate_verification_exception::certificate_verification_exception(const string& what, const exception& other)
+	: certificate_exception(what, other) {}
+
+exception* certificate_verification_exception::clone() const { return new certificate_verification_exception(*this); }
+const char* certificate_verification_exception::name() const throw() { return "certificate_verification_exception"; }
+
+
+//
+// unsupported_certificate_type
+//
+
+unsupported_certificate_type::~unsupported_certificate_type() throw() {}
+unsupported_certificate_type::unsupported_certificate_type(const string& type, const exception& other)
+	: certificate_exception("Unsupported certificate type: '" + type + "'", other) {}
+
+exception* unsupported_certificate_type::clone() const { return new unsupported_certificate_type(*this); }
+const char* unsupported_certificate_type::name() const throw() { return "unsupported_certificate_type"; }
+
+
+#endif // VMIME_HAVE_TLS_SUPPORT
+
+
 } // exceptions
 
 

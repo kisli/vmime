@@ -31,6 +31,8 @@
 #include "vmime/net/socket.hpp"
 #include "vmime/net/folder.hpp"
 
+#include "vmime/net/maildir/maildirServiceInfos.hpp"
+
 #include "vmime/utility/file.hpp"
 
 #include <ostream>
@@ -91,22 +93,7 @@ private:
 
 
 	// Service infos
-	class _infos : public serviceInfos
-	{
-	public:
-
-		struct props
-		{
-			serviceInfos::property PROPERTY_SERVER_ROOTPATH;
-		};
-
-		const props& getProperties() const;
-
-		const string getPropertyPrefix() const;
-		const std::vector <serviceInfos::property> getAvailableProperties() const;
-	};
-
-	static _infos sm_infos;
+	static maildirServiceInfos sm_infos;
 };
 
 

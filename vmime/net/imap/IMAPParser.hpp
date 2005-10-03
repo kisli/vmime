@@ -94,6 +94,11 @@ public:
 		return (m_tag);
 	}
 
+	void setSocket(weak_ref <socket> sok)
+	{
+		m_socket = sok;
+	}
+
 
 	const string lastLine() const
 	{

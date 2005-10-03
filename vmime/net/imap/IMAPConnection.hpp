@@ -99,6 +99,10 @@ private:
 	void authenticateSASL();
 #endif // VMIME_HAVE_SASL_SUPPORT
 
+#if VMIME_HAVE_TLS_SUPPORT
+	void startTLS();
+#endif // VMIME_HAVE_TLS_SUPPORT
+
 
 	weak_ref <IMAPStore> m_store;
 

@@ -119,5 +119,18 @@
 	#include "vmime/net/message.hpp"
 #endif // VMIME_HAVE_MESSAGING_FEATURES
 
+// Net/TLS
+#if VMIME_HAVE_TLS_SUPPORT
+	#include "vmime/net/tls/certificate.hpp"
+	#include "vmime/net/tls/certificateChain.hpp"
+	#include "vmime/net/tls/certificateVerifier.hpp"
+
+	#include "vmime/net/tls/X509Certificate.hpp"
+
+	#include "vmime/net/tls/defaultCertificateVerifier.hpp"
+
+	#include "vmime/net/tls/TLSSession.hpp"
+#endif // VMIME_HAVE_TLS_SUPPORT
+
 
 #endif // VMIME_INCLUDED

@@ -24,8 +24,6 @@
 #include "vmime/encoderB64.hpp"
 #include "vmime/mailboxList.hpp"
 
-#include "vmime/net/authHelper.hpp"
-
 #include "vmime/utility/filteredStream.hpp"
 #include "vmime/utility/stringUtils.hpp"
 
@@ -33,12 +31,18 @@
 	#include "vmime/security/sasl/SASLContext.hpp"
 #endif // VMIME_HAVE_SASL_SUPPORT
 
+#if VMIME_HAVE_TLS_SUPPORT
+	#include "vmime/net/tls/TLSSession.hpp"
+#endif // VMIME_HAVE_TLS_SUPPORT
+
 
 // Helpers for service properties
 #define GET_PROPERTY(type, prop) \
-	(sm_infos.getPropertyValue <type>(getSession(), sm_infos.getProperties().prop))
+	(getInfos().getPropertyValue <type>(getSession(), \
+		dynamic_cast <const SMTPServiceInfos&>(getInfos()).getProperties().prop))
 #define HAS_PROPERTY(prop) \
-	(sm_infos.hasProperty(getSession(), sm_infos.getProperties().prop))
+	(getInfos().hasProperty(getSession(), \
+		dynamic_cast <const SMTPServiceInfos&>(getInfos()).getProperties().prop))
 
 
 namespace vmime {
@@ -46,9 +50,10 @@ namespace net {
 namespace smtp {
 
 
-SMTPTransport::SMTPTransport(ref <session> sess, ref <security::authenticator> auth)
+SMTPTransport::SMTPTransport(ref <session> sess, ref <security::authenticator> auth, const bool secured)
 	: transport(sess, getInfosInstance(), auth), m_socket(NULL),
-	  m_authentified(false), m_extendedSMTP(false), m_timeoutHandler(NULL)
+	  m_authentified(false), m_extendedSMTP(false), m_timeoutHandler(NULL),
+	  m_secured(secured)
 {
 }
 
@@ -97,6 +102,20 @@ void SMTPTransport::connect()
 		getSocketFactory(GET_PROPERTY(string, PROPERTY_SERVER_SOCKETFACTORY));
 
 	m_socket = sf->create();
+
+#if VMIME_HAVE_TLS_SUPPORT
+	if (m_secured)  // dedicated port/SMTPS
+	{
+		ref <tls::TLSSession> tlsSession =
+			vmime::create <tls::TLSSession>(getCertificateVerifier());
+
+		ref <tls::TLSSocket> tlsSocket =
+			tlsSession->getSocket(m_socket);
+
+		m_socket = tlsSocket;
+	}
+#endif // VMIME_HAVE_TLS_SUPPORT
+
 	m_socket->connect(address, port);
 
 	m_responseBuffer.clear();
@@ -145,6 +164,39 @@ void SMTPTransport::connect()
 		m_extendedSMTP = true;
 		m_extendedSMTPResponse = response;
 	}
+
+#if VMIME_HAVE_TLS_SUPPORT
+	// Setup secured connection, if requested
+	const bool tls = HAS_PROPERTY(PROPERTY_CONNECTION_TLS)
+		&& GET_PROPERTY(bool, PROPERTY_CONNECTION_TLS);
+	const bool tlsRequired = HAS_PROPERTY(PROPERTY_CONNECTION_TLS_REQUIRED)
+		&& GET_PROPERTY(bool, PROPERTY_CONNECTION_TLS_REQUIRED);
+
+	if (!m_secured && tls)  // only if not POP3S
+	{
+		try
+		{
+			startTLS();
+		}
+		// Non-fatal error
+		catch (exceptions::command_error&)
+		{
+			if (tlsRequired)
+			{
+				throw;
+			}
+			else
+			{
+				// TLS is not required, so don't bother
+			}
+		}
+		// Fatal error
+		catch (...)
+		{
+			throw;
+		}
+	}
+#endif // VMIME_HAVE_TLS_SUPPORT
 
 	// Authentication
 	if (GET_PROPERTY(bool, PROPERTY_OPTIONS_NEEDAUTH))
@@ -369,6 +421,45 @@ void SMTPTransport::authenticateSASL()
 #endif // VMIME_HAVE_SASL_SUPPORT
 
 
+#if VMIME_HAVE_TLS_SUPPORT
+
+void SMTPTransport::startTLS()
+{
+	try
+	{
+		sendRequest("STARTTLS");
+
+		string response;
+
+		if (readAllResponses(response) != 220)
+			throw exceptions::command_error("STARTTLS", response);
+
+		ref <tls::TLSSession> tlsSession =
+			vmime::create <tls::TLSSession>(getCertificateVerifier());
+
+		ref <tls::TLSSocket> tlsSocket =
+			tlsSession->getSocket(m_socket);
+
+		tlsSocket->handshake(m_timeoutHandler);
+
+		m_socket = tlsSocket;
+	}
+	catch (exceptions::command_error&)
+	{
+		// Non-fatal error
+		throw;
+	}
+	catch (exception&)
+	{
+		// Fatal error
+		internalDisconnect();
+		throw;
+	}
+}
+
+#endif // VMIME_HAVE_TLS_SUPPORT
+
+
 const bool SMTPTransport::isConnected() const
 {
 	return (m_socket && m_socket->isConnected() && m_authentified);
@@ -516,6 +607,8 @@ const string SMTPTransport::readResponseLine()
 		{
 			if (!m_timeoutHandler->handleTimeOut())
 				throw exceptions::operation_timed_out();
+
+			m_timeoutHandler->resetTimeOut();
 		}
 
 		// Receive data from the socket
@@ -589,76 +682,18 @@ const int SMTPTransport::readAllResponses(string& outText, const bool allText)
 
 // Service infos
 
-SMTPTransport::_infos SMTPTransport::sm_infos;
+SMTPServiceInfos SMTPTransport::sm_infos(false);
 
 
 const serviceInfos& SMTPTransport::getInfosInstance()
 {
-	return (sm_infos);
+	return sm_infos;
 }
 
 
 const serviceInfos& SMTPTransport::getInfos() const
 {
-	return (sm_infos);
-}
-
-
-const string SMTPTransport::_infos::getPropertyPrefix() const
-{
-	return "transport.smtp.";
-}
-
-
-const SMTPTransport::_infos::props& SMTPTransport::_infos::getProperties() const
-{
-	static props p =
-	{
-		// SMTP-specific options
-		property("options.need-authentication", serviceInfos::property::TYPE_BOOL, "false"),
-#if VMIME_HAVE_SASL_SUPPORT
-		property("options.sasl", serviceInfos::property::TYPE_BOOL, "true"),
-		property("options.sasl.fallback", serviceInfos::property::TYPE_BOOL, "false"),
-#endif // VMIME_HAVE_SASL_SUPPORT
-
-		// Common properties
-		property(serviceInfos::property::AUTH_USERNAME),
-		property(serviceInfos::property::AUTH_PASSWORD),
-
-		property(serviceInfos::property::SERVER_ADDRESS, serviceInfos::property::FLAG_REQUIRED),
-		property(serviceInfos::property::SERVER_PORT, "25"),
-		property(serviceInfos::property::SERVER_SOCKETFACTORY),
-
-		property(serviceInfos::property::TIMEOUT_FACTORY)
-	};
-
-	return p;
-}
-
-
-const std::vector <serviceInfos::property> SMTPTransport::_infos::getAvailableProperties() const
-{
-	std::vector <property> list;
-	const props& p = getProperties();
-
-	// SMTP-specific options
-	list.push_back(p.PROPERTY_OPTIONS_NEEDAUTH);
-#if VMIME_HAVE_SASL_SUPPORT
-	list.push_back(p.PROPERTY_OPTIONS_SASL);
-	list.push_back(p.PROPERTY_OPTIONS_SASL_FALLBACK);
-#endif // VMIME_HAVE_SASL_SUPPORT
-
-	// Common properties
-	list.push_back(p.PROPERTY_AUTH_USERNAME);
-	list.push_back(p.PROPERTY_AUTH_PASSWORD);
-
-	list.push_back(p.PROPERTY_SERVER_ADDRESS);
-	list.push_back(p.PROPERTY_SERVER_PORT);
-	list.push_back(p.PROPERTY_SERVER_SOCKETFACTORY);
-
-	list.push_back(p.PROPERTY_TIMEOUT_FACTORY);
-
-	return (list);
+	return sm_infos;
 }
 
 

@@ -117,6 +117,22 @@ void outputStreamStringAdapter::write(const value_type* const data, const size_t
 
 
 
+// outputStreamByteArrayAdapter
+
+outputStreamByteArrayAdapter::outputStreamByteArrayAdapter(byteArray& array)
+	: m_array(array)
+{
+	m_array.clear();
+}
+
+
+void outputStreamByteArrayAdapter::write(const value_type* const data, const size_type count)
+{
+	m_array.insert(m_array.end(), data, data + count);
+}
+
+
+
 // inputStreamAdapter
 
 inputStreamAdapter::inputStreamAdapter(std::istream& is)

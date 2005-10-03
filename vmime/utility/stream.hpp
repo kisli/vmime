@@ -229,6 +229,23 @@ private:
 };
 
 
+/** An adapter class for byte array output.
+  */
+
+class outputStreamByteArrayAdapter : public outputStream
+{
+public:
+
+	outputStreamByteArrayAdapter(byteArray& array);
+
+	void write(const value_type* const data, const size_type count);
+
+private:
+
+	byteArray m_array;
+};
+
+
 /** An adapter class for C++ standard input streams.
   */
 

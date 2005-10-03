@@ -25,12 +25,17 @@
 #define VMIME_NET_SERVICE_HPP_INCLUDED
 
 
+#include "vmime/config.hpp"
 #include "vmime/types.hpp"
 
 #include "vmime/net/session.hpp"
 
 #include "vmime/net/serviceFactory.hpp"
 #include "vmime/net/serviceInfos.hpp"
+
+#if VMIME_HAVE_TLS_SUPPORT
+	#include "vmime/net/tls/certificateVerifier.hpp"
+#endif // VMIME_HAVE_TLS_SUPPORT
 
 #include "vmime/utility/progressionListener.hpp"
 
@@ -52,7 +57,7 @@ public:
 
 	virtual ~service();
 
-	// Possible service types
+	/** Possible service types. */
 	enum Type
 	{
 		TYPE_STORE = 0,    /**< The service is a message store. */
@@ -127,6 +132,20 @@ public:
 	  */
 	void setAuthenticator(ref <security::authenticator> auth);
 
+#if VMIME_HAVE_TLS_SUPPORT
+
+	/** Set the object responsible for verifying certificates when
+	  * using secured connections (TLS/SSL).
+	  */
+	void setCertificateVerifier(ref <tls::certificateVerifier> cv);
+
+	/** Get the object responsible for verifying certificates when
+	  * using secured connections (TLS/SSL).
+	  */
+	ref <tls::certificateVerifier> getCertificateVerifier();
+
+#endif // VMIME_HAVE_TLS_SUPPORT
+
 	/** Set a property for this service (service prefix is added automatically).
 	  *
 	  * WARNING: this sets the property on the session object, so all service
@@ -148,10 +167,10 @@ public:
 	{
 	public:
 
-		initializer(const string& protocol)
+		initializer(const string& protocol, const Type type)
 		{
 			serviceFactory::getInstance()->
-				template registerServiceByProtocol <S>(protocol);
+				template registerServiceByProtocol <S>(protocol, type);
 		}
 	};
 #endif // VMIME_BUILDING_DOC
@@ -160,6 +179,11 @@ private:
 
 	ref <session> m_session;
 	ref <security::authenticator> m_auth;
+
+#if VMIME_HAVE_TLS_SUPPORT
+	ref <tls::certificateVerifier> m_certVerifier;
+#endif // VMIME_HAVE_TLS_SUPPORT
+
 };
 
 

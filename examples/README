@@ -1,9 +1,12 @@
+=========================================
+Instructions for compiling VMime examples
+=========================================
 
 1) Configure, compile and install vmime library
 
 2) Compile the sample programs with:
-  $ g++ -o exampleX exampleX.cpp ../libvmime.a ../libvmime-posix.a
+   $ g++ -o exampleX exampleX.cpp `pkg-config libvmime`
 
 3) For a more complete documentation, please visit:
-   http://vmime.sourceforge.net/documentation/
+   http://www.vmime.org/documentation/
 

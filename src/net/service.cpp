@@ -26,6 +26,10 @@
 	#include "vmime/security/defaultAuthenticator.hpp"
 #endif // VMIME_HAVE_SASL_SUPPORT
 
+#if VMIME_HAVE_TLS_SUPPORT
+	#include "vmime/net/tls/defaultCertificateVerifier.hpp"
+#endif // VMIME_HAVE_TLS_SUPPORT
+
 
 namespace vmime {
 namespace net {
@@ -45,6 +49,11 @@ service::service(ref <session> sess, const serviceInfos& /* infos */,
 			<security::defaultAuthenticator>();
 #endif // VMIME_HAVE_SASL_SUPPORT
 	}
+
+#if VMIME_HAVE_TLS_SUPPORT
+	m_certVerifier = vmime::create <tls::defaultCertificateVerifier>();
+#endif // VMIME_HAVE_TLS_SUPPORT
+
 }
 
 
@@ -81,6 +90,22 @@ void service::setAuthenticator(ref <security::authenticator> auth)
 {
 	m_auth = auth;
 }
+
+
+#if VMIME_HAVE_TLS_SUPPORT
+
+void service::setCertificateVerifier(ref <tls::certificateVerifier> cv)
+{
+	m_certVerifier = cv;
+}
+
+
+ref <tls::certificateVerifier> service::getCertificateVerifier()
+{
+	return m_certVerifier;
+}
+
+#endif // VMIME_HAVE_TLS_SUPPORT
 
 
 } // net

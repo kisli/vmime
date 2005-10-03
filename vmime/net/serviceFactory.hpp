@@ -45,8 +45,8 @@ namespace vmime {
 namespace net {
 
 
-class service;
 class session;
+class service;
 
 
 /** A factory to create 'service' objects for a specified protocol.
@@ -78,6 +78,7 @@ public:
 			(ref <session> sess,
 			 ref <security::authenticator> auth) const = 0;
 
+		virtual const int getType() const = 0;
 		virtual const string& getName() const = 0;
 		virtual const serviceInfos& getInfos() const = 0;
 	};
@@ -92,8 +93,8 @@ private:
 
 	protected:
 
-		registeredServiceImpl(const string& name)
-			: m_name(name), m_servInfos(S::getInfosInstance())
+		registeredServiceImpl(const string& name, const int type)
+			: m_type(type), m_name(name), m_servInfos(S::getInfosInstance())
 		{
 		}
 
@@ -116,8 +117,14 @@ private:
 			return (m_name);
 		}
 
+		const int getType() const
+		{
+			return (m_type);
+		}
+
 	private:
 
+		const int m_type;
 		const string m_name;
 		const serviceInfos& m_servInfos;
 	};
@@ -129,12 +136,13 @@ public:
 	/** Register a new service by its protocol name.
 	  *
 	  * @param protocol protocol name
+	  * @param type service type
 	  */
 	template <class S>
-	void registerServiceByProtocol(const string& protocol)
+	void registerServiceByProtocol(const string& protocol, const int type)
 	{
 		const string name = utility::stringUtils::toLower(protocol);
-		m_services.push_back(vmime::create <registeredServiceImpl <S> >(name));
+		m_services.push_back(vmime::create <registeredServiceImpl <S> >(name, type));
 	}
 
 	/** Create a new service instance from a protocol name.

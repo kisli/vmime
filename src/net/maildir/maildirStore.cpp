@@ -29,9 +29,11 @@
 
 // Helpers for service properties
 #define GET_PROPERTY(type, prop) \
-	(sm_infos.getPropertyValue <type>(getSession(), sm_infos.getProperties().prop))
+	(getInfos().getPropertyValue <type>(getSession(), \
+		dynamic_cast <const maildirServiceInfos&>(getInfos()).getProperties().prop))
 #define HAS_PROPERTY(prop) \
-	(sm_infos.hasProperty(getSession(), sm_infos.getProperties().prop))
+	(getInfos().hasProperty(getSession(), \
+		dynamic_cast <const maildirServiceInfos&>(getInfos()).getProperties().prop))
 
 
 namespace vmime {
@@ -205,50 +207,20 @@ const int maildirStore::getCapabilities() const
 
 
 
-
 // Service infos
 
-maildirStore::_infos maildirStore::sm_infos;
+maildirServiceInfos maildirStore::sm_infos;
 
 
 const serviceInfos& maildirStore::getInfosInstance()
 {
-	return (sm_infos);
+	return sm_infos;
 }
 
 
 const serviceInfos& maildirStore::getInfos() const
 {
-	return (sm_infos);
-}
-
-
-const string maildirStore::_infos::getPropertyPrefix() const
-{
-	return "store.maildir.";
-}
-
-
-const maildirStore::_infos::props& maildirStore::_infos::getProperties() const
-{
-	static props p =
-	{
-		property(serviceInfos::property::SERVER_ROOTPATH, serviceInfos::property::FLAG_REQUIRED)
-	};
-
-	return p;
-}
-
-
-const std::vector <serviceInfos::property> maildirStore::_infos::getAvailableProperties() const
-{
-	std::vector <property> list;
-	const props& p = getProperties();
-
-	// Maildir-specific properties
-	list.push_back(p.PROPERTY_SERVER_ROOTPATH);
-
-	return (list);
+	return sm_infos;
 }
 
 

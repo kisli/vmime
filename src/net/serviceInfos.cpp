@@ -46,6 +46,16 @@ const serviceInfos::property serviceInfos::property::AUTH_PASSWORD
 const serviceInfos::property serviceInfos::property::TIMEOUT_FACTORY
 	("timeout.factory", serviceInfos::property::TYPE_STRING);
 
+#if VMIME_HAVE_TLS_SUPPORT
+
+const serviceInfos::property serviceInfos::property::CONNECTION_TLS
+	("connection.tls", serviceInfos::property::TYPE_BOOL, "false");
+
+const serviceInfos::property serviceInfos::property::CONNECTION_TLS_REQUIRED
+	("connection.tls.required", serviceInfos::property::TYPE_BOOL, "false");
+
+#endif // VMIME_HAVE_TLS_SUPPORT
+
 
 
 // serviceInfos

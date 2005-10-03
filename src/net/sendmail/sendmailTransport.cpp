@@ -33,9 +33,11 @@
 
 // Helpers for service properties
 #define GET_PROPERTY(type, prop) \
-	(sm_infos.getPropertyValue <type>(getSession(), sm_infos.getProperties().prop))
+	(getInfos().getPropertyValue <type>(getSession(), \
+		dynamic_cast <const sendmailServiceInfos&>(getInfos()).getProperties().prop))
 #define HAS_PROPERTY(prop) \
-	(sm_infos.hasProperty(getSession(), sm_infos.getProperties().prop))
+	(getInfos().hasProperty(getSession(), \
+		dynamic_cast <const sendmailServiceInfos&>(getInfos()).getProperties().prop))
 
 
 #if VMIME_BUILTIN_PLATFORM_POSIX
@@ -177,47 +179,18 @@ void sendmailTransport::internalSend
 
 // Service infos
 
-sendmailTransport::_infos sendmailTransport::sm_infos;
+sendmailServiceInfos sendmailTransport::sm_infos;
 
 
 const serviceInfos& sendmailTransport::getInfosInstance()
 {
-	return (sm_infos);
+	return sm_infos;
 }
 
 
 const serviceInfos& sendmailTransport::getInfos() const
 {
-	return (sm_infos);
-}
-
-
-const string sendmailTransport::_infos::getPropertyPrefix() const
-{
-	return "transport.sendmail.";
-}
-
-
-const sendmailTransport::_infos::props& sendmailTransport::_infos::getProperties() const
-{
-	static props p =
-	{
-		// Path to sendmail (override default)
-		property("binpath", serviceInfos::property::TYPE_STRING, string(VMIME_SENDMAIL_PATH))
-	};
-
-	return p;
-}
-
-
-const std::vector <serviceInfos::property> sendmailTransport::_infos::getAvailableProperties() const
-{
-	std::vector <property> list;
-	const props& p = getProperties();
-
-	list.push_back(p.PROPERTY_BINPATH);
-
-	return (list);
+	return sm_infos;
 }
 
 

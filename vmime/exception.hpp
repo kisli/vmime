@@ -77,11 +77,15 @@ public:
 	  */
 	virtual const char* name() const throw();
 
+	/** Clone this object.
+	  *
+	  * @return a new copy of this object
+	  */
+	virtual exception* clone() const;
+
 protected:
 
 	static const exception NO_EXCEPTION;
-
-	virtual exception* clone() const;
 };
 
 
@@ -818,7 +822,7 @@ public:
 #if VMIME_HAVE_SASL_SUPPORT
 
 
-/** Base class for exceptions throw by SASL module.
+/** Base class for exceptions thrown by SASL module.
   */
 
 class sasl_exception : public vmime::exception
@@ -864,6 +868,63 @@ public:
 
 
 #endif // VMIME_HAVE_SASL_SUPPORT
+
+
+#if VMIME_HAVE_TLS_SUPPORT
+
+
+/** Base class for exceptions thrown by TLS module.
+  */
+
+class tls_exception : public vmime::exception
+{
+public:
+
+	tls_exception(const string& what, const exception& other = NO_EXCEPTION);
+	~tls_exception() throw();
+
+	exception* clone() const;
+	const char* name() const throw();
+};
+
+
+class certificate_exception : public tls_exception
+{
+public:
+
+	certificate_exception(const string& what, const exception& other = NO_EXCEPTION);
+	~certificate_exception() throw();
+
+	exception* clone() const;
+	const char* name() const throw();
+};
+
+
+class certificate_verification_exception : public certificate_exception
+{
+public:
+
+	certificate_verification_exception(const string& what, const exception& other = NO_EXCEPTION);
+	~certificate_verification_exception() throw ();
+
+	exception* clone() const;
+	const char* name() const throw ();
+};
+
+
+class unsupported_certificate_type : public certificate_exception
+{
+public:
+
+	unsupported_certificate_type(const string& type, const exception& other = NO_EXCEPTION);
+	~unsupported_certificate_type() throw ();
+
+	exception* clone() const;
+	const char* name() const throw ();
+};
+
+
+#endif // VMIME_HAVE_TLS_SUPPORT
 
 
 

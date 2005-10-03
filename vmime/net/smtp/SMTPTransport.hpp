@@ -31,6 +31,8 @@
 #include "vmime/net/socket.hpp"
 #include "vmime/net/timeoutHandler.hpp"
 
+#include "vmime/net/smtp/SMTPServiceInfos.hpp"
+
 
 namespace vmime {
 namespace net {
@@ -44,7 +46,7 @@ class SMTPTransport : public transport
 {
 public:
 
-	SMTPTransport(ref <session> sess, ref <security::authenticator> auth);
+	SMTPTransport(ref <session> sess, ref <security::authenticator> auth, const bool secured = false);
 	~SMTPTransport();
 
 	const string getProtocolName() const;
@@ -77,6 +79,9 @@ private:
 	void authenticateSASL();
 #endif // VMIME_HAVE_SASL_SUPPORT
 
+#if VMIME_HAVE_TLS_SUPPORT
+	void startTLS();
+#endif // VMIME_HAVE_TLS_SUPPORT
 
 	ref <socket> m_socket;
 	bool m_authentified;
@@ -89,39 +94,11 @@ private:
 
 	ref <timeoutHandler> m_timeoutHandler;
 
+	bool m_secured;
+
 
 	// Service infos
-	class _infos : public serviceInfos
-	{
-	public:
-
-		struct props
-		{
-			// SMTP-specific options
-			serviceInfos::property PROPERTY_OPTIONS_NEEDAUTH;
-#if VMIME_HAVE_SASL_SUPPORT
-			serviceInfos::property PROPERTY_OPTIONS_SASL;
-			serviceInfos::property PROPERTY_OPTIONS_SASL_FALLBACK;
-#endif // VMIME_HAVE_SASL_SUPPORT
-
-			// Common properties
-			serviceInfos::property PROPERTY_AUTH_USERNAME;
-			serviceInfos::property PROPERTY_AUTH_PASSWORD;
-
-			serviceInfos::property PROPERTY_SERVER_ADDRESS;
-			serviceInfos::property PROPERTY_SERVER_PORT;
-			serviceInfos::property PROPERTY_SERVER_SOCKETFACTORY;
-
-			serviceInfos::property PROPERTY_TIMEOUT_FACTORY;
-		};
-
-		const props& getProperties() const;
-
-		const string getPropertyPrefix() const;
-		const std::vector <serviceInfos::property> getAvailableProperties() const;
-	};
-
-	static _infos sm_infos;
+	static SMTPServiceInfos sm_infos;
 };
 
 

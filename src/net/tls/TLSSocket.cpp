@@ -1,0 +1,391 @@
+//
+// VMime library (http://www.vmime.org)
+// Copyright (C) 2002-2005 Vincent Richard <vincent@vincent-richard.net>
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License as
+// published by the Free Software Foundation; either version 2 of
+// the License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+//
+// Linking this library statically or dynamically with other modules is making
+// a combined work based on this library.  Thus, the terms and conditions of
+// the GNU General Public License cover the whole combination.
+//
+
+#include <gnutls/gnutls.h>
+#include <gnutls/x509.h>
+
+#include "vmime/net/tls/TLSSocket.hpp"
+#include "vmime/net/tls/TLSSession.hpp"
+
+#include "vmime/platformDependant.hpp"
+
+#include "vmime/net/tls/X509Certificate.hpp"
+
+
+namespace vmime {
+namespace net {
+namespace tls {
+
+
+TLSSocket::TLSSocket(ref <TLSSession> session, ref <socket> sok)
+	: m_session(session), m_wrapped(sok), m_connected(false),
+	  m_handshaking(false), m_ex(NULL)
+{
+	gnutls_transport_set_ptr(*m_session->m_gnutlsSession, this);
+
+	gnutls_transport_set_push_function(*m_session->m_gnutlsSession, gnutlsPushFunc);
+	gnutls_transport_set_pull_function(*m_session->m_gnutlsSession, gnutlsPullFunc);
+}
+
+
+TLSSocket::~TLSSocket()
+{
+	try
+	{
+		disconnect();
+	}
+	catch (...)
+	{
+		// Don't throw exception in destructor
+	}
+}
+
+
+void TLSSocket::connect(const string& address, const port_t port)
+{
+	m_wrapped->connect(address, port);
+
+	handshake(NULL);
+
+	m_connected = true;
+}
+
+
+void TLSSocket::disconnect()
+{
+	if (m_connected)
+	{
+		gnutls_bye(*m_session->m_gnutlsSession, GNUTLS_SHUT_RDWR);
+
+		m_wrapped->disconnect();
+
+		m_connected = false;
+	}
+}
+
+
+const bool TLSSocket::isConnected() const
+{
+	return m_wrapped->isConnected() && m_connected;
+}
+
+
+void TLSSocket::receive(string& buffer)
+{
+	const int size = receiveRaw(m_buffer, sizeof(m_buffer));
+	buffer = vmime::string(m_buffer, size);
+}
+
+
+void TLSSocket::send(const string& buffer)
+{
+	sendRaw(buffer.data(), buffer.length());
+}
+
+
+const int TLSSocket::receiveRaw(char* buffer, const int count)
+{
+	const ssize_t ret = gnutls_record_recv
+		(*m_session->m_gnutlsSession,
+		 buffer, static_cast <size_t>(count));
+
+	if (m_ex)
+		internalThrow();
+
+	if (ret < 0)
+	{
+		if (ret == GNUTLS_E_AGAIN)
+			return 0;
+
+		TLSSession::throwTLSException("gnutls_record_recv", ret);
+	}
+
+	return static_cast <int>(ret);
+}
+
+
+void TLSSocket::sendRaw(const char* buffer, const int count)
+{
+	gnutls_record_send
+		(*m_session->m_gnutlsSession,
+		 buffer, static_cast <size_t>(count));
+
+	if (m_ex)
+		internalThrow();
+}
+
+
+void TLSSocket::handshake(ref <timeoutHandler> toHandler)
+{
+	if (toHandler)
+		toHandler->resetTimeOut();
+
+	// Start handshaking process
+	m_handshaking = true;
+	m_toHandler = toHandler;
+
+	try
+	{
+		while (true)
+		{
+			const int ret = gnutls_handshake(*m_session->m_gnutlsSession);
+
+			if (m_ex)
+				internalThrow();
+
+			if (ret < 0)
+			{
+				if (ret == GNUTLS_E_AGAIN ||
+				    ret == GNUTLS_E_INTERRUPTED)
+				{
+					// Non-fatal error
+					platformDependant::getHandler()->wait();
+				}
+				else
+				{
+					TLSSession::throwTLSException("gnutls_handshake", ret);
+				}
+			}
+			else
+			{
+				// Successful handshake
+				break;
+			}
+		}
+	}
+	catch (...)
+	{
+		m_handshaking = false;
+		m_toHandler = NULL;
+
+		throw;
+	}
+
+	m_handshaking = false;
+	m_toHandler = NULL;
+
+	// Verify server's certificate(s)
+	ref <certificateChain> certs = getPeerCertificates();
+
+	if (certs == NULL)
+		throw exceptions::tls_exception("No peer certificate.");
+
+	m_session->getCertificateVerifier()->verify(certs);
+
+	m_connected = true;
+}
+
+
+ssize_t TLSSocket::gnutlsPushFunc
+	(gnutls_transport_ptr trspt, const void* data, size_t len)
+{
+	TLSSocket* sok = reinterpret_cast <TLSSocket*>(trspt);
+
+	try
+	{
+		sok->m_wrapped->sendRaw
+			(reinterpret_cast <const char*>(data), static_cast <int>(len));
+	}
+	catch (exception& e)
+	{
+		// Workaround for bad behaviour when throwing C++ exceptions
+		// from C functions (GNU TLS)
+		sok->m_ex = e.clone();
+		return -1;
+	}
+
+	return len;
+}
+
+
+ssize_t TLSSocket::gnutlsPullFunc
+	(gnutls_transport_ptr trspt, void* data, size_t len)
+{
+	TLSSocket* sok = reinterpret_cast <TLSSocket*>(trspt);
+
+	try
+	{
+		// Workaround for cross-platform asynchronous handshaking:
+		// gnutls_handshake() only returns GNUTLS_E_AGAIN if recv()
+		// returns -1 and errno is set to EGAIN...
+		if (sok->m_handshaking)
+		{
+			while (true)
+			{
+				const ssize_t ret = static_cast <ssize_t>
+					(sok->m_wrapped->receiveRaw
+						(reinterpret_cast <char*>(data),
+						 static_cast <int>(len)));
+
+				if (ret == 0)
+				{
+					// No data available yet
+					platformDependant::getHandler()->wait();
+				}
+				else
+				{
+					return ret;
+				}
+
+				// Check whether the time-out delay is elapsed
+				if (sok->m_toHandler && sok->m_toHandler->isTimeOut())
+				{
+					if (!sok->m_toHandler->handleTimeOut())
+						throw exceptions::operation_timed_out();
+
+					sok->m_toHandler->resetTimeOut();
+				}
+			}
+		}
+		else
+		{
+			const ssize_t n = static_cast <ssize_t>
+				(sok->m_wrapped->receiveRaw
+					(reinterpret_cast <char*>(data),
+					 static_cast <int>(len)));
+
+			if (n == 0)
+				return GNUTLS_E_AGAIN;  // This seems like a hack, really...
+
+			return n;
+		}
+	}
+	catch (exception& e)
+	{
+		// Workaround for bad behaviour when throwing C++ exceptions
+		// from C functions (GNU TLS)
+		sok->m_ex = e.clone();
+		return -1;
+	}
+}
+
+
+ref <certificateChain> TLSSocket::getPeerCertificates()
+{
+	unsigned int certCount = 0;
+	const gnutls_datum* rawData = gnutls_certificate_get_peers
+		(*m_session->m_gnutlsSession, &certCount);
+
+	// Try X.509
+	gnutls_x509_crt* x509Certs = new gnutls_x509_crt[certCount];
+
+	unsigned int count = certCount;
+
+	int res = gnutls_x509_crt_list_import
+		(x509Certs, &count, rawData, GNUTLS_X509_FMT_PEM, 0);
+
+	if (res <= 0)
+	{
+		count = certCount;
+
+		res = gnutls_x509_crt_list_import
+			(x509Certs, &count, rawData, GNUTLS_X509_FMT_DER, 0);
+	}
+
+	if (res >= 1)
+	{
+		std::vector <ref <certificate> > certs;
+		bool error = false;
+
+		count = static_cast <unsigned int>(res);
+
+		for (unsigned int i = 0 ; i < count ; ++i)
+		{
+			size_t dataSize = 0;
+
+			gnutls_x509_crt_export(x509Certs[i],
+				GNUTLS_X509_FMT_DER, NULL, &dataSize);
+
+			byte* data = new byte[dataSize];
+
+			gnutls_x509_crt_export(x509Certs[i],
+				GNUTLS_X509_FMT_DER, data, &dataSize);
+
+			ref <X509Certificate> cert =
+				X509Certificate::import(data, dataSize);
+
+			if (cert != NULL)
+				certs.push_back(cert);
+			else
+				error = true;
+
+			delete [] data;
+
+			gnutls_x509_crt_deinit(x509Certs[i]);
+		}
+
+		delete [] x509Certs;
+
+		if (error)
+			return NULL;
+
+		return vmime::create <certificateChain>(certs);
+	}
+
+	delete [] x509Certs;
+
+	return NULL;
+}
+
+
+// Following is a workaround for C++ exceptions to pass correctly between
+// C and C++ calls.
+//
+// gnutls_record_recv() calls TLSSocket::gnutlsPullFunc, and exceptions
+// thrown by the socket can not not catched.
+
+#ifndef VMIME_BUILDING_DOC
+
+class TLSSocket_DeleteExWrapper : public object
+{
+public:
+
+	TLSSocket_DeleteExWrapper(exception* ex) : m_ex(ex) { }
+	~TLSSocket_DeleteExWrapper() { delete m_ex; }
+
+private:
+
+	exception* m_ex;
+};
+
+#endif // VMIME_BUILDING_DOC
+
+
+void TLSSocket::internalThrow()
+{
+	static std::vector <ref <TLSSocket_DeleteExWrapper> > exToDelete;
+
+	if (m_ex)
+	{
+		// To avoid memory leaks
+		exToDelete.push_back(vmime::create <TLSSocket_DeleteExWrapper>(m_ex));
+
+		throw *m_ex;
+	}
+}
+
+
+} // tls
+} // net
+} // vmime
+

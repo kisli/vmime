@@ -32,8 +32,8 @@ namespace net {
 namespace imap {
 
 
-IMAPStore::IMAPStore(ref <session> sess, ref <security::authenticator> auth)
-	: store(sess, getInfosInstance(), auth), m_connection(NULL)
+IMAPStore::IMAPStore(ref <session> sess, ref <security::authenticator> auth, const bool secured)
+	: store(sess, getInfosInstance(), auth), m_connection(NULL), m_secured(secured)
 {
 }
 
@@ -88,6 +88,12 @@ ref <folder> IMAPStore::getFolder(const folder::path& path)
 const bool IMAPStore::isValidFolderName(const folder::path::component& /* name */) const
 {
 	return true;
+}
+
+
+const bool IMAPStore::isSecuredConnection() const
+{
+	return m_secured;
 }
 
 
@@ -189,76 +195,19 @@ const int IMAPStore::getCapabilities() const
 
 // Service infos
 
-IMAPStore::_infos IMAPStore::sm_infos;
+IMAPServiceInfos IMAPStore::sm_infos(false);
 
 
 const serviceInfos& IMAPStore::getInfosInstance()
 {
-	return (sm_infos);
+	return sm_infos;
 }
 
 
 const serviceInfos& IMAPStore::getInfos() const
 {
-	return (sm_infos);
+	return sm_infos;
 }
-
-
-const string IMAPStore::_infos::getPropertyPrefix() const
-{
-	return "store.imap.";
-}
-
-
-const IMAPStore::_infos::props& IMAPStore::_infos::getProperties() const
-{
-	static props p =
-	{
-		// IMAP-specific options
-#if VMIME_HAVE_SASL_SUPPORT
-		property("options.sasl", serviceInfos::property::TYPE_BOOL, "true"),
-		property("options.sasl.fallback", serviceInfos::property::TYPE_BOOL, "true"),
-#endif // VMIME_HAVE_SASL_SUPPORT
-
-		// Common properties
-		property(serviceInfos::property::AUTH_USERNAME, serviceInfos::property::FLAG_REQUIRED),
-		property(serviceInfos::property::AUTH_PASSWORD, serviceInfos::property::FLAG_REQUIRED),
-
-		property(serviceInfos::property::SERVER_ADDRESS, serviceInfos::property::FLAG_REQUIRED),
-		property(serviceInfos::property::SERVER_PORT, "143"),
-		property(serviceInfos::property::SERVER_SOCKETFACTORY),
-
-		property(serviceInfos::property::TIMEOUT_FACTORY)
-	};
-
-	return p;
-}
-
-
-const std::vector <serviceInfos::property> IMAPStore::_infos::getAvailableProperties() const
-{
-	std::vector <property> list;
-	const props& p = getProperties();
-
-	// IMAP-specific options
-#if VMIME_HAVE_SASL_SUPPORT
-	list.push_back(p.PROPERTY_OPTIONS_SASL);
-	list.push_back(p.PROPERTY_OPTIONS_SASL_FALLBACK);
-#endif // VMIME_HAVE_SASL_SUPPORT
-
-	// Common properties
-	list.push_back(p.PROPERTY_AUTH_USERNAME);
-	list.push_back(p.PROPERTY_AUTH_PASSWORD);
-
-	list.push_back(p.PROPERTY_SERVER_ADDRESS);
-	list.push_back(p.PROPERTY_SERVER_PORT);
-	list.push_back(p.PROPERTY_SERVER_SOCKETFACTORY);
-
-	list.push_back(p.PROPERTY_TIMEOUT_FACTORY);
-
-	return (list);
-}
-
 
 
 } // imap

@@ -31,7 +31,7 @@
 #include "vmime/net/socket.hpp"
 #include "vmime/net/folder.hpp"
 
-#include <ostream>
+#include "vmime/net/imap/IMAPServiceInfos.hpp"
 
 
 namespace vmime {
@@ -56,7 +56,7 @@ class IMAPStore : public store
 
 public:
 
-	IMAPStore(ref <session> sess, ref <security::authenticator> auth);
+	IMAPStore(ref <session> sess, ref <security::authenticator> auth, const bool secured = false);
 	~IMAPStore();
 
 	const string getProtocolName() const;
@@ -78,7 +78,9 @@ public:
 
 	const int getCapabilities() const;
 
-private:
+	const bool isSecuredConnection() const;
+
+protected:
 
 	// Connection
 	ref <IMAPConnection> m_connection;
@@ -93,39 +95,10 @@ private:
 
 	std::list <IMAPFolder*> m_folders;
 
+	bool m_secured;  // Use IMAPS
 
 
-	// Service infos
-	class _infos : public serviceInfos
-	{
-	public:
-
-		struct props
-		{
-			// IMAP-specific options
-#if VMIME_HAVE_SASL_SUPPORT
-			serviceInfos::property PROPERTY_OPTIONS_SASL;
-			serviceInfos::property PROPERTY_OPTIONS_SASL_FALLBACK;
-#endif // VMIME_HAVE_SASL_SUPPORT
-
-			// Common properties
-			serviceInfos::property PROPERTY_AUTH_USERNAME;
-			serviceInfos::property PROPERTY_AUTH_PASSWORD;
-
-			serviceInfos::property PROPERTY_SERVER_ADDRESS;
-			serviceInfos::property PROPERTY_SERVER_PORT;
-			serviceInfos::property PROPERTY_SERVER_SOCKETFACTORY;
-
-			serviceInfos::property PROPERTY_TIMEOUT_FACTORY;
-		};
-
-		const props& getProperties() const;
-
-		const string getPropertyPrefix() const;
-		const std::vector <serviceInfos::property> getAvailableProperties() const;
-	};
-
-	static _infos sm_infos;
+	static IMAPServiceInfos sm_infos;
 };
 
 

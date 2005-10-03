@@ -31,6 +31,8 @@
 #include "vmime/net/socket.hpp"
 #include "vmime/net/timeoutHandler.hpp"
 
+#include "vmime/net/pop3/POP3ServiceInfos.hpp"
+
 #include "vmime/utility/stream.hpp"
 
 
@@ -52,7 +54,7 @@ class POP3Store : public store
 
 public:
 
-	POP3Store(ref <session> sess, ref <security::authenticator> auth);
+	POP3Store(ref <session> sess, ref <security::authenticator> auth, const bool secured = false);
 	~POP3Store();
 
 	const string getProtocolName() const;
@@ -88,6 +90,10 @@ private:
 	void authenticateSASL();
 #endif // VMIME_HAVE_SASL_SUPPORT
 
+#if VMIME_HAVE_TLS_SUPPORT
+	void startTLS();
+#endif // VMIME_HAVE_TLS_SUPPORT
+
 	const std::vector <string> getCapabilities();
 
 	static const bool isSuccessResponse(const string& buffer);
@@ -116,40 +122,11 @@ private:
 
 	ref <timeoutHandler> m_timeoutHandler;
 
+	bool m_secured;
+
 
 	// Service infos
-	class _infos : public serviceInfos
-	{
-	public:
-
-		struct props
-		{
-			// POP3-specific options
-			serviceInfos::property PROPERTY_OPTIONS_APOP;
-			serviceInfos::property PROPERTY_OPTIONS_APOP_FALLBACK;
-#if VMIME_HAVE_SASL_SUPPORT
-			serviceInfos::property PROPERTY_OPTIONS_SASL;
-			serviceInfos::property PROPERTY_OPTIONS_SASL_FALLBACK;
-#endif // VMIME_HAVE_SASL_SUPPORT
-
-			// Common properties
-			serviceInfos::property PROPERTY_AUTH_USERNAME;
-			serviceInfos::property PROPERTY_AUTH_PASSWORD;
-
-			serviceInfos::property PROPERTY_SERVER_ADDRESS;
-			serviceInfos::property PROPERTY_SERVER_PORT;
-			serviceInfos::property PROPERTY_SERVER_SOCKETFACTORY;
-
-			serviceInfos::property PROPERTY_TIMEOUT_FACTORY;
-		};
-
-		const props& getProperties() const;
-
-		const string getPropertyPrefix() const;
-		const std::vector <serviceInfos::property> getAvailableProperties() const;
-	};
-
-	static _infos sm_infos;
+	static POP3ServiceInfos sm_infos;
 };
 
 

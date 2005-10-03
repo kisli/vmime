@@ -95,6 +95,23 @@ public:
 		  * no time-out handler is used. */
 		static const property TIMEOUT_FACTORY;
 
+#if VMIME_HAVE_TLS_SUPPORT
+
+		/** The common property 'connection.tls': this is used to
+		  * start a secured connection if it is supported by the
+		  * server (STARTTLS extension).
+		  */
+		static const property CONNECTION_TLS;
+
+		/** The common property 'connection.tls.required' should be
+		  * set to 'true' to make the connection process fail if the
+		  * server can't start a secured connection (no effect if
+		  * 'connection.tls' is not set to 'true').
+		  */
+		static const property CONNECTION_TLS_REQUIRED;
+
+#endif // VMIME_HAVE_TLS_SUPPORT
+
 
 		/** Value types.
 		  */

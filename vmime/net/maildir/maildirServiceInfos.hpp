@@ -21,22 +21,44 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#ifndef VMIME_NET_AUTHHELPER_HPP_INCLUDED
-#define VMIME_NET_AUTHHELPER_HPP_INCLUDED
+#ifndef VMIME_NET_MAILDIR_MAILDIRSERVICEINFOS_HPP_INCLUDED
+#define VMIME_NET_MAILDIR_MAILDIRSERVICEINFOS_HPP_INCLUDED
 
 
-#include "vmime/types.hpp"
+#include "vmime/config.hpp"
+#include "vmime/net/serviceInfos.hpp"
 
 
 namespace vmime {
 namespace net {
+namespace maildir {
 
 
-void hmac_md5(const string& text, const string& key, string& hexDigest);
+/** Information about maildir service.
+  */
+
+class maildirServiceInfos : public serviceInfos
+{
+public:
+
+	maildirServiceInfos();
+
+	struct props
+	{
+		serviceInfos::property PROPERTY_SERVER_ROOTPATH;
+	};
+
+	const props& getProperties() const;
+
+	const string getPropertyPrefix() const;
+	const std::vector <serviceInfos::property> getAvailableProperties() const;
+};
 
 
+} // maildir
 } // net
 } // vmime
 
 
-#endif // VMIME_NET_AUTHHELPER_HPP_INCLUDED
+#endif // VMIME_NET_MAILDIR_MAILDIRSERVICEINFOS_HPP_INCLUDED
+

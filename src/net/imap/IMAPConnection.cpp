@@ -29,16 +29,20 @@
 	#include "vmime/security/sasl/SASLContext.hpp"
 #endif // VMIME_HAVE_SASL_SUPPORT
 
+#if VMIME_HAVE_TLS_SUPPORT
+	#include "vmime/net/tls/TLSSession.hpp"
+#endif // VMIME_HAVE_TLS_SUPPORT
+
 #include <sstream>
 
 
 // Helpers for service properties
 #define GET_PROPERTY(type, prop) \
 	(m_store->getInfos().getPropertyValue <type>(getSession(), \
-		dynamic_cast <const IMAPStore::_infos&>(m_store->getInfos()).getProperties().prop))
+		dynamic_cast <const IMAPServiceInfos&>(m_store->getInfos()).getProperties().prop))
 #define HAS_PROPERTY(prop) \
 	(m_store->getInfos().hasProperty(getSession(), \
-		dynamic_cast <const IMAPStore::_infos&>(m_store->getInfos()).getProperties().prop))
+		dynamic_cast <const IMAPServiceInfos&>(m_store->getInfos()).getProperties().prop))
 
 
 namespace vmime {
@@ -94,6 +98,20 @@ void IMAPConnection::connect()
 		getSocketFactory(GET_PROPERTY(string, PROPERTY_SERVER_SOCKETFACTORY));
 
 	m_socket = sf->create();
+
+#if VMIME_HAVE_TLS_SUPPORT
+	if (m_store->isSecuredConnection())  // dedicated port/IMAPS
+	{
+		ref <tls::TLSSession> tlsSession =
+			vmime::create <tls::TLSSession>(m_store->getCertificateVerifier());
+
+		ref <tls::TLSSocket> tlsSocket =
+			tlsSession->getSocket(m_socket);
+
+		m_socket = tlsSocket;
+	}
+#endif // VMIME_HAVE_TLS_SUPPORT
+
 	m_socket->connect(address, port);
 
 
@@ -110,6 +128,7 @@ void IMAPConnection::connect()
 	// ---  S: * OK mydomain.org IMAP4rev1 v12.256 server ready
 
 	utility::auto_ptr <IMAPParser::greeting> greet(m_parser->readGreeting());
+	bool needAuth = false;
 
 	if (greet->resp_cond_bye())
 	{
@@ -117,6 +136,47 @@ void IMAPConnection::connect()
 		throw exceptions::connection_greeting_error(m_parser->lastLine());
 	}
 	else if (greet->resp_cond_auth()->condition() != IMAPParser::resp_cond_auth::PREAUTH)
+	{
+		needAuth = true;
+	}
+
+#if VMIME_HAVE_TLS_SUPPORT
+	// Setup secured connection, if requested
+	const bool tls = HAS_PROPERTY(PROPERTY_CONNECTION_TLS)
+		&& GET_PROPERTY(bool, PROPERTY_CONNECTION_TLS);
+	const bool tlsRequired = HAS_PROPERTY(PROPERTY_CONNECTION_TLS_REQUIRED)
+		&& GET_PROPERTY(bool, PROPERTY_CONNECTION_TLS_REQUIRED);
+
+	if (!m_store->isSecuredConnection() && tls)  // only if not IMAPS
+	{
+		try
+		{
+			startTLS();
+		}
+		// Non-fatal error
+		catch (exceptions::command_error&)
+		{
+			if (tlsRequired)
+			{
+				m_state = STATE_NONE;
+				throw;
+			}
+			else
+			{
+				// TLS is not required, so don't bother
+			}
+		}
+		// Fatal error
+		catch (...)
+		{
+			m_state = STATE_NONE;
+			throw;
+		}
+	}
+#endif // VMIME_HAVE_TLS_SUPPORT
+
+	// Authentication
+	if (needAuth)
 	{
 		try
 		{
@@ -287,17 +347,19 @@ void IMAPConnection::authenticateSASL()
 					respDataList = resp->continue_req_or_response_data();
 
 				string response;
+				bool hasResponse = false;
 
 				for (unsigned int i = 0 ; i < respDataList.size() ; ++i)
 				{
 					if (respDataList[i]->continue_req())
 					{
 						response = respDataList[i]->continue_req()->resp_text()->text();
+						hasResponse = true;
 						break;
 					}
 				}
 
-				if (response.empty())
+				if (!hasResponse)
 				{
 					cont = false;
 					continue;
@@ -363,6 +425,50 @@ void IMAPConnection::authenticateSASL()
 }
 
 #endif // VMIME_HAVE_SASL_SUPPORT
+
+
+#if VMIME_HAVE_TLS_SUPPORT
+
+void IMAPConnection::startTLS()
+{
+	try
+	{
+		send(true, "STARTTLS", true);
+
+		utility::auto_ptr <IMAPParser::response> resp(m_parser->readResponse());
+
+		if (resp->isBad() || resp->response_done()->response_tagged()->
+			resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
+		{
+			throw exceptions::command_error
+				("STARTTLS", m_parser->lastLine(), "bad response");
+		}
+
+		ref <tls::TLSSession> tlsSession =
+			vmime::create <tls::TLSSession>(m_store->getCertificateVerifier());
+
+		ref <tls::TLSSocket> tlsSocket =
+			tlsSession->getSocket(m_socket);
+
+		tlsSocket->handshake(m_timeoutHandler);
+
+		m_socket = tlsSocket;
+		m_parser->setSocket(m_socket);
+	}
+	catch (exceptions::command_error&)
+	{
+		// Non-fatal error
+		throw;
+	}
+	catch (exception&)
+	{
+		// Fatal error
+		internalDisconnect();
+		throw;
+	}
+}
+
+#endif // VMIME_HAVE_TLS_SUPPORT
 
 
 const std::vector <string> IMAPConnection::getCapabilities()
