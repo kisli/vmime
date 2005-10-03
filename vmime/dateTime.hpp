@@ -28,6 +28,8 @@
 #include "vmime/base.hpp"
 #include "vmime/component.hpp"
 
+#include <ctime>
+
 
 namespace vmime
 {
@@ -46,6 +48,7 @@ public:
 	datetime(const int year, const int month, const int day, const int hour, const int minute, const int second, const int zone = GMT);
 	datetime(const datetime& d);
 	datetime(const string& date);
+	datetime(const time_t t, const int zone = GMT);
 
 	// Destructor
 	~datetime();

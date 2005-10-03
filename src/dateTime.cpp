@@ -646,6 +646,35 @@ datetime::datetime(const datetime& d)
 }
 
 
+datetime::datetime(const time_t t, const int zone)
+{
+#ifdef _REENTRANT
+	struct tm tms;
+
+	if (!gmtime_r(&t, &tms))
+		localtime_r(&t, &tms);
+#else
+	struct tm* gtm = gmtime(&t);
+	struct tm* ltm = localtime(&t);
+
+	struct tm tms;
+
+	if (gtm)
+		tms = *gtm;
+	else if (ltm)
+		tms = *ltm;
+#endif // _REENTRANT
+
+	m_year = tms.tm_year + 1900;
+	m_month = tms.tm_mon + 1;
+	m_day = tms.tm_mday;
+	m_hour = tms.tm_hour;
+	m_minute = tms.tm_min;
+	m_second = tms.tm_sec;
+	m_zone = zone;
+}
+
+
 datetime::datetime(const string& date)
 {
 	parse(date);
