@@ -217,7 +217,7 @@ void posixHandler::wait() const
 
 	struct timespec ts;
 	ts.tv_sec = 0;
-	ts.tv_nsec = 150000000;  // 150 ms
+	ts.tv_nsec = 500000;  // 500 microseconds
 
 	nanosleep(&ts, NULL);
 }
