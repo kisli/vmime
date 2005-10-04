@@ -174,14 +174,6 @@ ref <vmime::net::socketFactory> posixHandler::getSocketFactory() const
 	return m_socketFactory.dynamicCast <vmime::net::socketFactory>();
 }
 
-
-vmime::net::timeoutHandlerFactory* posixHandler::getTimeoutHandlerFactory
-	(const vmime::string& /* name */) const
-{
-	// Not used by default
-	return (NULL);
-}
-
 #endif
 
 

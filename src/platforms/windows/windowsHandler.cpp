@@ -239,14 +239,6 @@ ref <vmime::net::socketFactory> windowsHandler::getSocketFactory() const
 	return m_socketFactory.dynamicCast <vmime::net::socketFactory>();
 }
 
-
-vmime::net::timeoutHandlerFactory* windowsHandler::getTimeoutHandlerFactory
-	(const vmime::string& /* name */) const
-{
-	// Not used by default
-	return (NULL);
-}
-
 #endif
 
 

@@ -63,8 +63,6 @@ public:
 
 		serviceInfos::property PROPERTY_SERVER_ADDRESS;
 		serviceInfos::property PROPERTY_SERVER_PORT;
-
-		serviceInfos::property PROPERTY_TIMEOUT_FACTORY;
 	};
 
 	const props& getProperties() const;

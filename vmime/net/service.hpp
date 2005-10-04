@@ -34,6 +34,7 @@
 #include "vmime/net/serviceInfos.hpp"
 
 #include "vmime/net/socket.hpp"
+#include "vmime/net/timeoutHandler.hpp"
 
 #if VMIME_HAVE_TLS_SUPPORT
 	#include "vmime/net/tls/certificateVerifier.hpp"
@@ -162,6 +163,21 @@ public:
 	  */
 	ref <socketFactory> getSocketFactory();
 
+	/** Set the factory used to create timeoutHandler objects for
+	  * this service. By default, no timeout handler is used. Not all
+	  * services support timeout handling.
+	  *
+	  * @param thf timeoutHandler factory
+	  */
+	void setTimeoutHandlerFactory(ref <timeoutHandlerFactory> thf);
+
+	/** Return the factory used to create timeoutHandler objects for
+	  * this service.
+	  *
+	  * @return timeoutHandler factory
+	  */
+	ref <timeoutHandlerFactory> getTimeoutHandlerFactory();
+
 	/** Set a property for this service (service prefix is added automatically).
 	  *
 	  * WARNING: this sets the property on the session object, so all service
@@ -201,6 +217,8 @@ private:
 #endif // VMIME_HAVE_TLS_SUPPORT
 
 	ref <socketFactory> m_socketFactory;
+
+	ref <timeoutHandlerFactory> m_toHandlerFactory;
 };
 
 

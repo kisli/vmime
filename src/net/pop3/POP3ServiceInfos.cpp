@@ -63,8 +63,6 @@ const POP3ServiceInfos::props& POP3ServiceInfos::getProperties() const
 
 		property(serviceInfos::property::SERVER_ADDRESS, serviceInfos::property::FLAG_REQUIRED),
 		property(serviceInfos::property::SERVER_PORT, "110"),
-
-		property(serviceInfos::property::TIMEOUT_FACTORY)
 	};
 
 	static props pop3sProps =
@@ -88,8 +86,6 @@ const POP3ServiceInfos::props& POP3ServiceInfos::getProperties() const
 
 		property(serviceInfos::property::SERVER_ADDRESS, serviceInfos::property::FLAG_REQUIRED),
 		property(serviceInfos::property::SERVER_PORT, "995"),
-
-		property(serviceInfos::property::TIMEOUT_FACTORY)
 	};
 
 	return m_pop3s ? pop3sProps : pop3Props;
@@ -123,8 +119,6 @@ const std::vector <serviceInfos::property> POP3ServiceInfos::getAvailablePropert
 
 	list.push_back(p.PROPERTY_SERVER_ADDRESS);
 	list.push_back(p.PROPERTY_SERVER_PORT);
-
-	list.push_back(p.PROPERTY_TIMEOUT_FACTORY);
 
 	return list;
 }

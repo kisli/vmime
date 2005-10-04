@@ -89,13 +89,8 @@ void SMTPTransport::connect()
 	const port_t port = GET_PROPERTY(port_t, PROPERTY_SERVER_PORT);
 
 	// Create the time-out handler
-	if (HAS_PROPERTY(PROPERTY_TIMEOUT_FACTORY))
-	{
-		timeoutHandlerFactory* tof = platformDependant::getHandler()->
-			getTimeoutHandlerFactory(GET_PROPERTY(string, PROPERTY_TIMEOUT_FACTORY));
-
-		m_timeoutHandler = tof->create();
-	}
+	if (getTimeoutHandlerFactory())
+		m_timeoutHandler = getTimeoutHandlerFactory()->create();
 
 	// Create and connect the socket
 	m_socket = getSocketFactory()->create();

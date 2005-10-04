@@ -40,9 +40,6 @@ const serviceInfos::property serviceInfos::property::AUTH_USERNAME
 const serviceInfos::property serviceInfos::property::AUTH_PASSWORD
 	("auth.password", serviceInfos::property::TYPE_STRING);
 
-const serviceInfos::property serviceInfos::property::TIMEOUT_FACTORY
-	("timeout.factory", serviceInfos::property::TYPE_STRING);
-
 #if VMIME_HAVE_TLS_SUPPORT
 
 const serviceInfos::property serviceInfos::property::CONNECTION_TLS

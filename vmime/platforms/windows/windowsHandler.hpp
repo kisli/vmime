@@ -61,8 +61,6 @@ public:
 
 #if VMIME_HAVE_MESSAGING_FEATURES
 	ref <vmime::net::socketFactory> getSocketFactory() const;
-
-	vmime::net::timeoutHandlerFactory* getTimeoutHandlerFactory(const vmime::string& name) const;
 #endif
 
 #if VMIME_HAVE_FILESYSTEM_FEATURES

@@ -123,5 +123,17 @@ ref <socketFactory> service::getSocketFactory()
 }
 
 
+void service::setTimeoutHandlerFactory(ref <timeoutHandlerFactory> thf)
+{
+	m_toHandlerFactory = thf;
+}
+
+
+ref <timeoutHandlerFactory> service::getTimeoutHandlerFactory()
+{
+	return m_toHandlerFactory;
+}
+
+
 } // net
 } // vmime

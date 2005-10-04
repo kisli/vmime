@@ -8,6 +8,10 @@ VERSION 0.7.2cvs
    service::setSocketFactory() function instead. Removed "name" parameter
    from platformDependant::getSocketFactory() function.
 
+ * net/service: removed "timeout.factory" property; added the function
+   service::setTimeoutHandlerFactory() instead. Removed the function
+   platformDependant::getTimeoutHandlerFactory().
+
 2005-10-03  Vincent Richard  <vincent@vincent-richard.net>
 
  * Added TLS/SSL support, using GNU TLS library.

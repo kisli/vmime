@@ -84,12 +84,6 @@ public:
 		  * password used to authenticate with the server. */
 		static const property AUTH_PASSWORD;
 
-		/** The common property 'timeout.factory' used to
-		  * specify which factory to use to instanciate
-		  * time-out handler objects. If none is specified,
-		  * no time-out handler is used. */
-		static const property TIMEOUT_FACTORY;
-
 #if VMIME_HAVE_TLS_SUPPORT
 
 		/** The common property 'connection.tls': this is used to

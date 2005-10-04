@@ -109,21 +109,8 @@ public:
 		  * @return socket factory
 		  */
 		virtual ref <net::socketFactory> getSocketFactory() const = 0;
-
-		/** Return a pointer to a timeout-handler factory for the specified name.
-		  * The returned object will not be deleted by VMime, so it can be a
-		  * pointer to a static object.
-		  *
-		  * This is used when you want to handle a timeout-mechanism when
-		  * connecting to messaging servers (please read the documentation to
-		  * learn how to use it). If you are not using time-out handlers, you
-		  * can safely return NULL here.
-		  *
-		  * @param name time-out type name
-		  * @return time-out factory
-		  */
-		virtual net::timeoutHandlerFactory* getTimeoutHandlerFactory(const string& name = "default") const = 0;
 #endif
+
 #if VMIME_HAVE_FILESYSTEM_FEATURES
 		/** Return a pointer to a factory that creates file-system objects.
 		  *
