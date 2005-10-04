@@ -98,10 +98,7 @@ void SMTPTransport::connect()
 	}
 
 	// Create and connect the socket
-	socketFactory* sf = platformDependant::getHandler()->
-		getSocketFactory(GET_PROPERTY(string, PROPERTY_SERVER_SOCKETFACTORY));
-
-	m_socket = sf->create();
+	m_socket = getSocketFactory()->create();
 
 #if VMIME_HAVE_TLS_SUPPORT
 	if (m_secured)  // dedicated port/SMTPS

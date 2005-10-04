@@ -34,9 +34,6 @@ const serviceInfos::property serviceInfos::property::SERVER_PORT
 const serviceInfos::property serviceInfos::property::SERVER_ROOTPATH
 	("server.rootpath", serviceInfos::property::TYPE_STRING);
 
-const serviceInfos::property serviceInfos::property::SERVER_SOCKETFACTORY
-	("server.socket-factory", serviceInfos::property::TYPE_STRING, "default");
-
 const serviceInfos::property serviceInfos::property::AUTH_USERNAME
 	("auth.username", serviceInfos::property::TYPE_STRING);
 

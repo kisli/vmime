@@ -33,6 +33,8 @@
 #include "vmime/net/serviceFactory.hpp"
 #include "vmime/net/serviceInfos.hpp"
 
+#include "vmime/net/socket.hpp"
+
 #if VMIME_HAVE_TLS_SUPPORT
 	#include "vmime/net/tls/certificateVerifier.hpp"
 #endif // VMIME_HAVE_TLS_SUPPORT
@@ -146,6 +148,20 @@ public:
 
 #endif // VMIME_HAVE_TLS_SUPPORT
 
+	/** Set the factory used to create socket objects for this
+	  * service.
+	  *
+	  * @param sf socket factory
+	  */
+	void setSocketFactory(ref <socketFactory> sf);
+
+	/** Return the factory used to create socket objects for this
+	  * service.
+	  *
+	  * @return socket factory
+	  */
+	ref <socketFactory> getSocketFactory();
+
 	/** Set a property for this service (service prefix is added automatically).
 	  *
 	  * WARNING: this sets the property on the session object, so all service
@@ -184,6 +200,7 @@ private:
 	ref <tls::certificateVerifier> m_certVerifier;
 #endif // VMIME_HAVE_TLS_SUPPORT
 
+	ref <socketFactory> m_socketFactory;
 };
 
 

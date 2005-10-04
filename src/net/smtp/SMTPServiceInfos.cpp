@@ -62,7 +62,6 @@ const SMTPServiceInfos::props& SMTPServiceInfos::getProperties() const
 
 		property(serviceInfos::property::SERVER_ADDRESS, serviceInfos::property::FLAG_REQUIRED),
 		property(serviceInfos::property::SERVER_PORT, "25"),
-		property(serviceInfos::property::SERVER_SOCKETFACTORY),
 
 		property(serviceInfos::property::TIMEOUT_FACTORY)
 	};
@@ -87,7 +86,6 @@ const SMTPServiceInfos::props& SMTPServiceInfos::getProperties() const
 
 		property(serviceInfos::property::SERVER_ADDRESS, serviceInfos::property::FLAG_REQUIRED),
 		property(serviceInfos::property::SERVER_PORT, "465"),
-		property(serviceInfos::property::SERVER_SOCKETFACTORY),
 
 		property(serviceInfos::property::TIMEOUT_FACTORY)
 	};
@@ -122,7 +120,6 @@ const std::vector <serviceInfos::property> SMTPServiceInfos::getAvailablePropert
 
 	list.push_back(p.PROPERTY_SERVER_ADDRESS);
 	list.push_back(p.PROPERTY_SERVER_PORT);
-	list.push_back(p.PROPERTY_SERVER_SOCKETFACTORY);
 
 	list.push_back(p.PROPERTY_TIMEOUT_FACTORY);
 

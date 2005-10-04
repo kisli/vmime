@@ -61,7 +61,7 @@ public:
 	const unsigned int getProcessId() const;
 
 #if VMIME_HAVE_MESSAGING_FEATURES
-	vmime::net::socketFactory* getSocketFactory(const vmime::string& name) const;
+	ref <vmime::net::socketFactory> getSocketFactory() const;
 
 	vmime::net::timeoutHandlerFactory* getTimeoutHandlerFactory(const vmime::string& name) const;
 #endif
@@ -77,7 +77,7 @@ public:
 private:
 
 #if VMIME_HAVE_MESSAGING_FEATURES
-	posixSocketFactory* m_socketFactory;
+	ref <posixSocketFactory> m_socketFactory;
 #endif
 
 #if VMIME_HAVE_FILESYSTEM_FEATURES

@@ -2,6 +2,12 @@
 VERSION 0.7.2cvs
 ================
 
+2005-10-04  Vincent Richard  <vincent@vincent-richard.net>
+
+ * net/service: removed "server.socket-factory" property; added the
+   service::setSocketFactory() function instead. Removed "name" parameter
+   from platformDependant::getSocketFactory() function.
+
 2005-10-03  Vincent Richard  <vincent@vincent-richard.net>
 
  * Added TLS/SSL support, using GNU TLS library.

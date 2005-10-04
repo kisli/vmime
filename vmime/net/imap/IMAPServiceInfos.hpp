@@ -62,7 +62,6 @@ public:
 
 		serviceInfos::property PROPERTY_SERVER_ADDRESS;
 		serviceInfos::property PROPERTY_SERVER_PORT;
-		serviceInfos::property PROPERTY_SERVER_SOCKETFACTORY;
 
 		serviceInfos::property PROPERTY_TIMEOUT_FACTORY;
 	};

@@ -99,7 +99,7 @@ private:
 /** A class to create 'socket' objects.
   */
 
-class socketFactory
+class socketFactory : public object
 {
 public:
 

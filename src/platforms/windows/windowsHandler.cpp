@@ -42,7 +42,7 @@ namespace windows {
 windowsHandler::windowsHandler()
 {
 #if VMIME_HAVE_MESSAGING_FEATURES
-	m_socketFactory = new windowsSocketFactory();
+	m_socketFactory = vmime::create <windowsSocketFactory>();
 #endif
 #if VMIME_HAVE_FILESYSTEM_FEATURES
 	m_fileSysFactory = new windowsFileSystemFactory();
@@ -52,9 +52,6 @@ windowsHandler::windowsHandler()
 
 windowsHandler::~windowsHandler()
 {
-#if VMIME_HAVE_MESSAGING_FEATURES
-	delete (m_socketFactory);
-#endif
 #if VMIME_HAVE_FILESYSTEM_FEATURES
 	delete (m_fileSysFactory);
 #endif
@@ -237,10 +234,9 @@ const unsigned int windowsHandler::getProcessId() const
 
 #if VMIME_HAVE_MESSAGING_FEATURES
 
-vmime::net::socketFactory* windowsHandler::getSocketFactory
-	(const vmime::string& /* name */) const
+ref <vmime::net::socketFactory> windowsHandler::getSocketFactory() const
 {
-	return (m_socketFactory);
+	return m_socketFactory.dynamicCast <vmime::net::socketFactory>();
 }
 
 

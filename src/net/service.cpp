@@ -20,6 +20,8 @@
 #include "vmime/config.hpp"
 #include "vmime/net/service.hpp"
 
+#include "vmime/platformDependant.hpp"
+
 #if VMIME_HAVE_SASL_SUPPORT
 	#include "vmime/security/sasl/defaultSASLAuthenticator.hpp"
 #else
@@ -54,6 +56,7 @@ service::service(ref <session> sess, const serviceInfos& /* infos */,
 	m_certVerifier = vmime::create <tls::defaultCertificateVerifier>();
 #endif // VMIME_HAVE_TLS_SUPPORT
 
+	m_socketFactory = platformDependant::getHandler()->getSocketFactory();
 }
 
 
@@ -106,6 +109,18 @@ ref <tls::certificateVerifier> service::getCertificateVerifier()
 }
 
 #endif // VMIME_HAVE_TLS_SUPPORT
+
+
+void service::setSocketFactory(ref <socketFactory> sf)
+{
+	m_socketFactory = sf;
+}
+
+
+ref <socketFactory> service::getSocketFactory()
+{
+	return m_socketFactory;
+}
 
 
 } // net

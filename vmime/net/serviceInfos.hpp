@@ -76,11 +76,6 @@ public:
 		  * maildir, this is the local filesystem directory). */
 		static const property SERVER_ROOTPATH;
 
-		/** The common property 'server.socket-factory' used
-		  * to indicate which factory to use to instanciate
-		  * new socket objects. */
-		static const property SERVER_SOCKETFACTORY;
-
 		/** The common property 'auth.username' which is the
 		  * username used to authenticate with the server. */
 		static const property AUTH_USERNAME;

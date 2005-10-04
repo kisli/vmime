@@ -64,7 +64,7 @@ public:
 /** A class to create 'timeoutHandler' objects.
   */
 
-class timeoutHandlerFactory
+class timeoutHandlerFactory : public object
 {
 public:
 

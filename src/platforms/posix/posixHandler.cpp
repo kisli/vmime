@@ -48,7 +48,7 @@ namespace posix {
 posixHandler::posixHandler()
 {
 #if VMIME_HAVE_MESSAGING_FEATURES
-	m_socketFactory = new posixSocketFactory();
+	m_socketFactory = vmime::create <posixSocketFactory>();
 #endif
 #if VMIME_HAVE_FILESYSTEM_FEATURES
 	m_fileSysFactory = new posixFileSystemFactory();
@@ -59,9 +59,6 @@ posixHandler::posixHandler()
 
 posixHandler::~posixHandler()
 {
-#if VMIME_HAVE_MESSAGING_FEATURES
-	delete (m_socketFactory);
-#endif
 #if VMIME_HAVE_FILESYSTEM_FEATURES
 	delete (m_fileSysFactory);
 	delete (m_childProcFactory);
@@ -172,10 +169,9 @@ const unsigned int posixHandler::getProcessId() const
 
 #if VMIME_HAVE_MESSAGING_FEATURES
 
-vmime::net::socketFactory* posixHandler::getSocketFactory
-	(const vmime::string& /* name */) const
+ref <vmime::net::socketFactory> posixHandler::getSocketFactory() const
 {
-	return (m_socketFactory);
+	return m_socketFactory.dynamicCast <vmime::net::socketFactory>();
 }
 
 

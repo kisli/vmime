@@ -132,10 +132,7 @@ void POP3Store::connect()
 	}
 
 	// Create and connect the socket
-	socketFactory* sf = platformDependant::getHandler()->
-		getSocketFactory(GET_PROPERTY(string, PROPERTY_SERVER_SOCKETFACTORY));
-
-	m_socket = sf->create();
+	m_socket = getSocketFactory()->create();
 
 #if VMIME_HAVE_TLS_SUPPORT
 	if (m_secured)  // dedicated port/POP3S
@@ -272,13 +269,12 @@ void POP3Store::authenticate(const messageId& randomMID)
 			}
 			else
 			{
-				// Some servers close the connection after an
-				// unsuccessful APOP command, so the fallback
-				// may not always work...
+				// Some servers close the connection after an unsuccessful APOP
+				// command, so the fallback may not always work...
 				//
 				// S: +OK Qpopper (version 4.0.5) at xxx starting.  <30396.1126730747@xxx>
 				// C: APOP plop c5e0a87d088ec71d60e32692d4c5bdf4
-				// S: -ERR [AUTH] Password supplied for "o" is incorrect.
+				// S: -ERR [AUTH] Password supplied for "plop" is incorrect.
 				// S: +OK Pop server at xxx signing off.
 				// [Connection closed by foreign host.]
 
@@ -298,6 +294,7 @@ void POP3Store::authenticate(const messageId& randomMID)
 				}
 				catch (exceptions::socket_exception&)
 				{
+					internalDisconnect();
 					throw exceptions::authentication_error(response);
 				}
 			}

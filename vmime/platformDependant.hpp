@@ -103,18 +103,12 @@ public:
 		virtual void wait() const = 0;
 
 #if VMIME_HAVE_MESSAGING_FEATURES
-		/** Return a pointer to a socket factory for the specified socket
-		  * type name (this is user-defined, and used for example when you
-		  * want to set up a SSL connection to a server).
-		  * The returned object will not be deleted by VMime, so it can be
-		  * a pointer to a static object.
+		/** Return a pointer to the default socket factory for
+		  * this platform.
 		  *
-		  * @param name socket type name (user-dependant): this is usually
-		  * the value of the property "server.socket-factory" set in the
-		  * session object
 		  * @return socket factory
 		  */
-		virtual net::socketFactory* getSocketFactory(const string& name = "default") const = 0;
+		virtual ref <net::socketFactory> getSocketFactory() const = 0;
 
 		/** Return a pointer to a timeout-handler factory for the specified name.
 		  * The returned object will not be deleted by VMime, so it can be a
