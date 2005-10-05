@@ -2152,8 +2152,6 @@ typedef unsigned int vmime_uint32;
 // Options
 // -- Wide characters support
 #define VMIME_WIDE_CHAR_SUPPORT 0
-#define VMIME_INLINE_TEMPLATE_SPECIALIZATION 1
-#define VMIME_NO_MULTIPLE_INHERITANCE 1
 // -- File-system support
 #define VMIME_HAVE_FILESYSTEM_FEATURES 1
 // -- SASL support
@@ -2171,6 +2169,10 @@ typedef unsigned int vmime_uint32;
 // -- Built-in platform handlers
 #define VMIME_BUILTIN_PLATFORMS "windows"
 #define VMIME_BUILTIN_PLATFORM_WINDOWS 1
+
+// Miscellaneous
+#define VMIME_INLINE_TEMPLATE_SPECIALIZATION 1
+#define VMIME_NO_MULTIPLE_INHERITANCE 1
 """)
 
 	for p in libvmime_platforms_sources:
