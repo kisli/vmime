@@ -167,8 +167,10 @@ namespace vmime
 	  * Make this class a friend if you want to be able to use
 	  * vmime::create() with private/protected constructors.
 	  */
-	struct creator
+	class creator
 	{
+	public:
+
 		template <class T>
 		static ref <T> create() { return ref <T>::fromPtr(new T); }
 
