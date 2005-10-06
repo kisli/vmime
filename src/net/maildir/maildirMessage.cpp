@@ -302,7 +302,7 @@ void maildirMessage::setFlags(const int flags, const int mode)
 
 
 void maildirMessage::extract(utility::outputStream& os,
-	utility::progressionListener* progress, const int start,
+	utility::progressListener* progress, const int start,
 	const int length, const bool peek) const
 {
 	extractImpl(os, progress, 0, m_size, start, length, peek);
@@ -310,7 +310,7 @@ void maildirMessage::extract(utility::outputStream& os,
 
 
 void maildirMessage::extractPart(ref <const part> p, utility::outputStream& os,
-	utility::progressionListener* progress, const int start,
+	utility::progressListener* progress, const int start,
 	const int length, const bool peek) const
 {
 	const maildirPart& mp = dynamic_cast <const maildirPart&>(p);
@@ -320,7 +320,7 @@ void maildirMessage::extractPart(ref <const part> p, utility::outputStream& os,
 }
 
 
-void maildirMessage::extractImpl(utility::outputStream& os, utility::progressionListener* progress,
+void maildirMessage::extractImpl(utility::outputStream& os, utility::progressListener* progress,
 	const int start, const int length, const int partialStart, const int partialLength,
 	const bool /* peek */) const
 {

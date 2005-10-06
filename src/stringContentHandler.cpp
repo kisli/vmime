@@ -151,7 +151,7 @@ void stringContentHandler::generate(utility::outputStream& os,
 
 
 void stringContentHandler::extract(utility::outputStream& os,
-	utility::progressionListener* progress) const
+	utility::progressListener* progress) const
 {
 	// No decoding to perform
 	if (!isEncoded())
@@ -164,7 +164,7 @@ void stringContentHandler::extract(utility::outputStream& os,
 		ref <encoder> theDecoder = m_encoding.getEncoder();
 
 		utility::inputStreamStringProxyAdapter in(m_string);
-		utility::progressionListenerSizeAdapter plsa(progress, getLength());
+		utility::progressListenerSizeAdapter plsa(progress, getLength());
 
 		theDecoder->decode(in, os, &plsa);
 	}
@@ -172,7 +172,7 @@ void stringContentHandler::extract(utility::outputStream& os,
 
 
 void stringContentHandler::extractRaw(utility::outputStream& os,
-	utility::progressionListener* progress) const
+	utility::progressListener* progress) const
 {
 	m_string.extract(os, 0, m_string.length(), progress);
 }

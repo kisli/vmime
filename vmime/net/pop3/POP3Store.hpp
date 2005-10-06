@@ -102,8 +102,8 @@ private:
 	static const int getResponseCode(const string& buffer);
 
 	void sendRequest(const string& buffer, const bool end = true);
-	void readResponse(string& buffer, const bool multiLine, utility::progressionListener* progress = NULL);
-	void readResponse(utility::outputStream& os, utility::progressionListener* progress = NULL, const int predictedSize = 0);
+	void readResponse(string& buffer, const bool multiLine, utility::progressListener* progress = NULL);
+	void readResponse(utility::outputStream& os, utility::progressListener* progress = NULL, const int predictedSize = 0);
 
 	static const bool checkTerminator(string& buffer, const bool multiLine);
 	static const bool checkOneTerminator(string& buffer, const string& term);

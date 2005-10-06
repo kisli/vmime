@@ -42,8 +42,8 @@ public:
 
 	void generate(utility::outputStream& os, const vmime::encoding& enc, const string::size_type maxLineLength = lineLengthLimits::infinite) const;
 
-	void extract(utility::outputStream& os, utility::progressionListener* progress = NULL) const;
-	void extractRaw(utility::outputStream& os, utility::progressionListener* progress = NULL) const;
+	void extract(utility::outputStream& os, utility::progressListener* progress = NULL) const;
+	void extractRaw(utility::outputStream& os, utility::progressListener* progress = NULL) const;
 
 	const string::size_type getLength() const;
 

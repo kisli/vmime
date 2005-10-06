@@ -64,7 +64,7 @@ static inline const unsigned char UUDECODE(const unsigned char c)
 
 
 const utility::stream::size_type encoderUUE::encode(utility::inputStream& in,
-	utility::outputStream& out, utility::progressionListener* progress)
+	utility::outputStream& out, utility::progressListener* progress)
 {
 	in.reset();  // may not work...
 
@@ -143,7 +143,7 @@ const utility::stream::size_type encoderUUE::encode(utility::inputStream& in,
 
 
 const utility::stream::size_type encoderUUE::decode(utility::inputStream& in,
-	utility::outputStream& out, utility::progressionListener* progress)
+	utility::outputStream& out, utility::progressListener* progress)
 {
 	in.reset();  // may not work...
 

@@ -28,7 +28,7 @@
 #include "vmime/base.hpp"
 #include "vmime/propertySet.hpp"
 #include "vmime/exception.hpp"
-#include "vmime/utility/progressionListener.hpp"
+#include "vmime/utility/progressListener.hpp"
 
 
 namespace vmime
@@ -49,21 +49,21 @@ public:
 	  *
 	  * @param in input data (decoded)
 	  * @param out output stream for encoded data
-	  * @param progress progression listener, or NULL if you do not
-	  * want to receive progression notifications
+	  * @param progress progress listener, or NULL if you do not
+	  * want to receive progress notifications
 	  * @return number of bytes written into output stream
 	  */
-	virtual const utility::stream::size_type encode(utility::inputStream& in, utility::outputStream& out, utility::progressionListener* progress = NULL) = 0;
+	virtual const utility::stream::size_type encode(utility::inputStream& in, utility::outputStream& out, utility::progressListener* progress = NULL) = 0;
 
 	/** Decode data.
 	  *
 	  * @param in input data (encoded)
 	  * @param out output stream for decoded data
-	  * @param progress progression listener, or NULL if you do not
-	  * want to receive progression notifications
+	  * @param progress progress listener, or NULL if you do not
+	  * want to receive progress notifications
 	  * @return number of bytes written into output stream
 	  */
-	virtual const utility::stream::size_type decode(utility::inputStream& in, utility::outputStream& out, utility::progressionListener* progress = NULL) = 0;
+	virtual const utility::stream::size_type decode(utility::inputStream& in, utility::outputStream& out, utility::progressListener* progress = NULL) = 0;
 
 	/** Return the properties of the encoder.
 	  *

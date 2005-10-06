@@ -86,7 +86,7 @@ stringProxy& stringProxy::operator=(const string_type& s)
 
 
 void stringProxy::extract(outputStream& os, const size_type start, const size_type end,
-	utility::progressionListener* progress) const
+	utility::progressListener* progress) const
 {
 	size_type len = 0;
 

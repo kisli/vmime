@@ -55,7 +55,7 @@ const stream::size_type bufferedStreamCopy(inputStream& is, outputStream& os)
 
 
 const stream::size_type bufferedStreamCopy(inputStream& is, outputStream& os,
-	const stream::size_type length, progressionListener* progress)
+	const stream::size_type length, progressListener* progress)
 {
 	stream::value_type buffer[65536];
 	stream::size_type total = 0;

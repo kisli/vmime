@@ -90,7 +90,7 @@ const unsigned char encoderQP::sm_hexDecodeTable[256] =
 
 
 const utility::stream::size_type encoderQP::encode(utility::inputStream& in,
-	utility::outputStream& out, utility::progressionListener* progress)
+	utility::outputStream& out, utility::progressListener* progress)
 {
 	in.reset();  // may not work...
 
@@ -298,7 +298,7 @@ const utility::stream::size_type encoderQP::encode(utility::inputStream& in,
 
 
 const utility::stream::size_type encoderQP::decode(utility::inputStream& in,
-	utility::outputStream& out, utility::progressionListener* progress)
+	utility::outputStream& out, utility::progressListener* progress)
 {
 	in.reset();  // may not work...
 

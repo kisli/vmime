@@ -21,8 +21,8 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#ifndef VMIME_UTILITY_PROGRESSIONLISTENER_HPP_INCLUDED
-#define VMIME_UTILITY_PROGRESSIONLISTENER_HPP_INCLUDED
+#ifndef VMIME_UTILITY_PROGRESSLISTENER_HPP_INCLUDED
+#define VMIME_UTILITY_PROGRESSLISTENER_HPP_INCLUDED
 
 
 namespace vmime {
@@ -30,14 +30,14 @@ namespace utility {
 
 
 /** An interface to implement if you want to be notified
-  * of a progression status by some objects.
+  * of a state of progress by some objects.
   */
 
-class progressionListener
+class progressListener
 {
 protected:
 
-	virtual ~progressionListener() { }
+	virtual ~progressListener() { }
 
 public:
 
@@ -73,20 +73,20 @@ public:
 
 
 
-/** A progression listener used when total size is known by the
+/** A progress listener used when total size is known by the
   * receiver, but not by the notifier.
   */
 
-class progressionListenerSizeAdapter : public progressionListener
+class progressListenerSizeAdapter : public progressListener
 {
 public:
 
-	/** Construct a new progressionListenerSizeAdapter object.
+	/** Construct a new progressListenerSizeAdapter object.
 	  *
-	  * @param list wrapped progression listener (can be NULL)
+	  * @param list wrapped progress listener (can be NULL)
 	  * @param total predicted total
 	  */
-	progressionListenerSizeAdapter(progressionListener* list, const int total);
+	progressListenerSizeAdapter(progressListener* list, const int total);
 
 	const bool cancel() const;
 
@@ -96,7 +96,7 @@ public:
 
 private:
 
-	progressionListener* m_wrapped;
+	progressListener* m_wrapped;
 	int m_total;
 };
 
@@ -105,4 +105,5 @@ private:
 } // vmime
 
 
-#endif // VMIME_UTILITY_PROGRESSIONLISTENER_HPP_INCLUDED
+#endif // VMIME_UTILITY_PROGRESSLISTENER_HPP_INCLUDED
+

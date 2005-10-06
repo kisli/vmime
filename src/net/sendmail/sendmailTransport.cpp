@@ -116,7 +116,7 @@ void sendmailTransport::noop()
 void sendmailTransport::send
 	(const mailbox& expeditor, const mailboxList& recipients,
 	 utility::inputStream& is, const utility::stream::size_type size,
-         utility::progressionListener* progress)
+         utility::progressListener* progress)
 {
 	// If no recipient/expeditor was found, throw an exception
 	if (recipients.isEmpty())
@@ -149,7 +149,7 @@ void sendmailTransport::send
 
 void sendmailTransport::internalSend
 	(const std::vector <string> args, utility::inputStream& is,
-	 const utility::stream::size_type size, utility::progressionListener* progress)
+	 const utility::stream::size_type size, utility::progressListener* progress)
 {
 	const utility::file::path path = vmime::platformDependant::getHandler()->
 		getFileSystemFactory()->stringToPath(m_sendmailPath);

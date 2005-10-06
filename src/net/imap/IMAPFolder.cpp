@@ -602,7 +602,7 @@ std::vector <ref <folder> > IMAPFolder::getFolders(const bool recursive)
 
 
 void IMAPFolder::fetchMessages(std::vector <ref <message> >& msg, const int options,
-                               utility::progressionListener* progress)
+                               utility::progressListener* progress)
 {
 	if (!m_store)
 		throw exceptions::illegal_state("Store disconnected");
@@ -1065,7 +1065,7 @@ void IMAPFolder::setMessageFlags(const string& set, const int flags, const int m
 
 
 void IMAPFolder::addMessage(ref <vmime::message> msg, const int flags,
-                            vmime::datetime* date, utility::progressionListener* progress)
+                            vmime::datetime* date, utility::progressListener* progress)
 {
 	std::ostringstream oss;
 	utility::outputStreamAdapter ossAdapter(oss);
@@ -1080,7 +1080,7 @@ void IMAPFolder::addMessage(ref <vmime::message> msg, const int flags,
 
 
 void IMAPFolder::addMessage(utility::inputStream& is, const int size, const int flags,
-                            vmime::datetime* date, utility::progressionListener* progress)
+                            vmime::datetime* date, utility::progressListener* progress)
 {
 	if (!m_store)
 		throw exceptions::illegal_state("Store disconnected");
@@ -1151,7 +1151,7 @@ void IMAPFolder::addMessage(utility::inputStream& is, const int size, const int 
 		// Put read data into socket output stream
 		m_connection->sendRaw(buffer, read);
 
-		// Notify progression
+		// Notify progress
 		if (progress)
 			progress->progress(current, total);
 	}

@@ -70,8 +70,8 @@ public:
 	const int getFlags() const;
 	void setFlags(const int flags, const int mode = FLAG_MODE_SET);
 
-	void extract(utility::outputStream& os, utility::progressionListener* progress = NULL, const int start = 0, const int length = -1, const bool peek = false) const;
-	void extractPart(ref <const part> p, utility::outputStream& os, utility::progressionListener* progress = NULL, const int start = 0, const int length = -1, const bool peek = false) const;
+	void extract(utility::outputStream& os, utility::progressListener* progress = NULL, const int start = 0, const int length = -1, const bool peek = false) const;
+	void extractPart(ref <const part> p, utility::outputStream& os, utility::progressListener* progress = NULL, const int start = 0, const int length = -1, const bool peek = false) const;
 
 	void fetchPartHeader(ref <part> p);
 
@@ -83,7 +83,7 @@ private:
 
 	ref <header> getOrCreateHeader();
 
-	void extractImpl(utility::outputStream& os, utility::progressionListener* progress, const int start, const int length, const int partialStart, const int partialLength, const bool peek) const;
+	void extractImpl(utility::outputStream& os, utility::progressListener* progress, const int start, const int length, const int partialStart, const int partialLength, const bool peek) const;
 
 
 	weak_ref <maildirFolder> m_folder;

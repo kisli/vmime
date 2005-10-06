@@ -36,7 +36,7 @@
 
 #include "vmime/utility/path.hpp"
 #include "vmime/utility/stream.hpp"
-#include "vmime/utility/progressionListener.hpp"
+#include "vmime/utility/progressListener.hpp"
 
 
 namespace vmime {
@@ -249,9 +249,9 @@ public:
 	  * @param msg message to add (data: header + body)
 	  * @param flags flags for the new message
 	  * @param date date/time for the new message (if NULL, the current time is used)
-	  * @param progress progression listener, or NULL if not used
+	  * @param progress progress listener, or NULL if not used
 	  */
-	virtual void addMessage(ref <vmime::message> msg, const int flags = message::FLAG_UNDEFINED, vmime::datetime* date = NULL, utility::progressionListener* progress = NULL) = 0;
+	virtual void addMessage(ref <vmime::message> msg, const int flags = message::FLAG_UNDEFINED, vmime::datetime* date = NULL, utility::progressListener* progress = NULL) = 0;
 
 	/** Add a message to this folder.
 	  *
@@ -259,9 +259,9 @@ public:
 	  * @param size size of the message to add (in bytes)
 	  * @param flags flags for the new message
 	  * @param date date/time for the new message (if NULL, the current time is used)
-	  * @param progress progression listener, or NULL if not used
+	  * @param progress progress listener, or NULL if not used
 	  */
-	virtual void addMessage(utility::inputStream& is, const int size, const int flags = message::FLAG_UNDEFINED, vmime::datetime* date = NULL, utility::progressionListener* progress = NULL) = 0;
+	virtual void addMessage(utility::inputStream& is, const int size, const int flags = message::FLAG_UNDEFINED, vmime::datetime* date = NULL, utility::progressListener* progress = NULL) = 0;
 
 	/** Copy a message from this folder to another folder.
 	  *
@@ -334,9 +334,9 @@ public:
 	  *
 	  * @param msg list of message sequence numbers
 	  * @param options objects to fetch (combination of folder::FetchOptions flags)
-	  * @param progress progression listener, or NULL if not used
+	  * @param progress progress listener, or NULL if not used
 	  */
-	virtual void fetchMessages(std::vector <ref <message> >& msg, const int options, utility::progressionListener* progress = NULL) = 0;
+	virtual void fetchMessages(std::vector <ref <message> >& msg, const int options, utility::progressListener* progress = NULL) = 0;
 
 	/** Fetch objects for the specified message.
 	  *

@@ -72,8 +72,8 @@ public:
 	const int getFlags() const;
 	void setFlags(const int flags, const int mode = FLAG_MODE_SET);
 
-	void extract(utility::outputStream& os, utility::progressionListener* progress = NULL, const int start = 0, const int length = -1, const bool peek = false) const;
-	void extractPart(ref <const part> p, utility::outputStream& os, utility::progressionListener* progress = NULL, const int start = 0, const int length = -1, const bool peek = false) const;
+	void extract(utility::outputStream& os, utility::progressListener* progress = NULL, const int start = 0, const int length = -1, const bool peek = false) const;
+	void extractPart(ref <const part> p, utility::outputStream& os, utility::progressListener* progress = NULL, const int start = 0, const int length = -1, const bool peek = false) const;
 
 	void fetchPartHeader(ref <part> p);
 
@@ -83,7 +83,7 @@ private:
 
 	void processFetchResponse(const int options, const IMAPParser::msg_att* msgAtt);
 
-	void extract(ref <const part> p, utility::outputStream& os, utility::progressionListener* progress, const int start, const int length, const bool headerOnly, const bool peek) const;
+	void extract(ref <const part> p, utility::outputStream& os, utility::progressListener* progress, const int start, const int length, const bool headerOnly, const bool peek) const;
 
 
 	void convertAddressList(const IMAPParser::address_list& src, mailboxList& dest);

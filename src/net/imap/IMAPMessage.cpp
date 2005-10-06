@@ -235,7 +235,7 @@ class IMAPMessage_literalHandler : public IMAPParser::literalHandler
 {
 public:
 
-	IMAPMessage_literalHandler(utility::outputStream& os, utility::progressionListener* progress)
+	IMAPMessage_literalHandler(utility::outputStream& os, utility::progressListener* progress)
 		: m_os(os), m_progress(progress)
 	{
 	}
@@ -260,7 +260,7 @@ public:
 private:
 
 	utility::outputStream& m_os;
-	utility::progressionListener* m_progress;
+	utility::progressListener* m_progress;
 };
 
 #endif // VMIME_BUILDING_DOC
@@ -356,7 +356,7 @@ ref <const header> IMAPMessage::getHeader() const
 }
 
 
-void IMAPMessage::extract(utility::outputStream& os, utility::progressionListener* progress,
+void IMAPMessage::extract(utility::outputStream& os, utility::progressListener* progress,
                           const int start, const int length, const bool peek) const
 {
 	if (!m_folder)
@@ -367,7 +367,7 @@ void IMAPMessage::extract(utility::outputStream& os, utility::progressionListene
 
 
 void IMAPMessage::extractPart
-	(ref <const part> p, utility::outputStream& os, utility::progressionListener* progress,
+	(ref <const part> p, utility::outputStream& os, utility::progressListener* progress,
 	 const int start, const int length, const bool peek) const
 {
 	if (!m_folder)
@@ -392,7 +392,7 @@ void IMAPMessage::fetchPartHeader(ref <part> p)
 
 
 void IMAPMessage::extract(ref <const part> p, utility::outputStream& os,
-	utility::progressionListener* progress, const int start,
+	utility::progressListener* progress, const int start,
 	const int length, const bool headerOnly, const bool peek) const
 {
 	IMAPMessage_literalHandler literalHandler(os, progress);

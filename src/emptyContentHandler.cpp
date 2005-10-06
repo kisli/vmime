@@ -47,7 +47,7 @@ void emptyContentHandler::generate(utility::outputStream& /* os */, const vmime:
 
 
 void emptyContentHandler::extract(utility::outputStream& /* os */,
-	utility::progressionListener* progress) const
+	utility::progressListener* progress) const
 {
 	if (progress)
 		progress->start(0);
@@ -60,7 +60,7 @@ void emptyContentHandler::extract(utility::outputStream& /* os */,
 
 
 void emptyContentHandler::extractRaw(utility::outputStream& /* os */,
-	utility::progressionListener* progress) const
+	utility::progressListener* progress) const
 {
 	if (progress)
 		progress->start(0);

@@ -702,7 +702,7 @@ void POP3Store::sendRequest(const string& buffer, const bool end)
 
 
 void POP3Store::readResponse(string& buffer, const bool multiLine,
-                             utility::progressionListener* progress)
+                             utility::progressListener* progress)
 {
 	bool foundTerminator = false;
 	int current = 0, total = 0;
@@ -777,7 +777,7 @@ void POP3Store::readResponse(string& buffer, const bool multiLine,
 		// Check for terminator string (and strip it if present)
 		foundTerminator = checkTerminator(buffer, multiLine);
 
-		// Notify progression
+		// Notify progress
 		if (progress)
 		{
 			total = std::max(total, current);
@@ -800,7 +800,7 @@ void POP3Store::readResponse(string& buffer, const bool multiLine,
 
 
 void POP3Store::readResponse(utility::outputStream& os,
-	utility::progressionListener* progress, const int predictedSize)
+	utility::progressListener* progress, const int predictedSize)
 {
 	int current = 0, total = predictedSize;
 
@@ -875,7 +875,7 @@ void POP3Store::readResponse(utility::outputStream& os,
 			os.write(buffer, read);
 			current += read;
 
-			// Notify progression
+			// Notify progress
 			if (progress)
 			{
 				total = std::max(total, current);

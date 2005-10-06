@@ -494,7 +494,7 @@ void SMTPTransport::noop()
 
 void SMTPTransport::send(const mailbox& expeditor, const mailboxList& recipients,
                          utility::inputStream& is, const utility::stream::size_type size,
-                         utility::progressionListener* progress)
+                         utility::progressListener* progress)
 {
 	// If no recipient/expeditor was found, throw an exception
 	if (recipients.isEmpty())

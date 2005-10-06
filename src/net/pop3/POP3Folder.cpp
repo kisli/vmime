@@ -285,7 +285,7 @@ std::vector <ref <folder> > POP3Folder::getFolders(const bool /* recursive */)
 
 
 void POP3Folder::fetchMessages(std::vector <ref <message> >& msg, const int options,
-                               utility::progressionListener* progress)
+                               utility::progressListener* progress)
 {
 	if (!m_store)
 		throw exceptions::illegal_state("Store disconnected");
@@ -683,14 +683,14 @@ void POP3Folder::rename(const folder::path& /* newPath */)
 
 
 void POP3Folder::addMessage(ref <vmime::message> /* msg */, const int /* flags */,
-	vmime::datetime* /* date */, utility::progressionListener* /* progress */)
+	vmime::datetime* /* date */, utility::progressListener* /* progress */)
 {
 	throw exceptions::operation_not_supported();
 }
 
 
 void POP3Folder::addMessage(utility::inputStream& /* is */, const int /* size */, const int /* flags */,
-	vmime::datetime* /* date */, utility::progressionListener* /* progress */)
+	vmime::datetime* /* date */, utility::progressListener* /* progress */)
 {
 	throw exceptions::operation_not_supported();
 }

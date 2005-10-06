@@ -852,7 +852,7 @@ void maildirFolder::setMessageFlagsImpl
 
 
 void maildirFolder::addMessage(ref <vmime::message> msg, const int flags,
-	vmime::datetime* date, utility::progressionListener* progress)
+	vmime::datetime* date, utility::progressListener* progress)
 {
 	std::ostringstream oss;
 	utility::outputStreamAdapter ossAdapter(oss);
@@ -867,7 +867,7 @@ void maildirFolder::addMessage(ref <vmime::message> msg, const int flags,
 
 
 void maildirFolder::addMessage(utility::inputStream& is, const int size,
-	const int flags, vmime::datetime* /* date */, utility::progressionListener* progress)
+	const int flags, vmime::datetime* /* date */, utility::progressListener* progress)
 {
 	if (!m_store)
 		throw exceptions::illegal_state("Store disconnected");
@@ -956,7 +956,7 @@ void maildirFolder::addMessage(utility::inputStream& is, const int size,
 void maildirFolder::copyMessageImpl(const utility::file::path& tmpDirPath,
 	const utility::file::path& curDirPath, const utility::file::path::component& filename,
 	utility::inputStream& is, const utility::stream::size_type size,
-	utility::progressionListener* progress)
+	utility::progressListener* progress)
 {
 	utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
 
@@ -1324,7 +1324,7 @@ weak_ref <store> maildirFolder::getStore()
 
 
 void maildirFolder::fetchMessages(std::vector <ref <message> >& msg,
-	const int options, utility::progressionListener* progress)
+	const int options, utility::progressListener* progress)
 {
 	if (!m_store)
 		throw exceptions::illegal_state("Store disconnected");

@@ -29,7 +29,7 @@
 
 #include "vmime/types.hpp"
 #include "vmime/utility/stream.hpp"
-#include "vmime/utility/progressionListener.hpp"
+#include "vmime/utility/progressListener.hpp"
 
 
 namespace vmime {
@@ -63,7 +63,7 @@ public:
 
 	// Extract some portion (or whole) of the string
 	// and output it into a stream.
-	void extract(outputStream& os, const size_type start = 0, const size_type end = std::numeric_limits <size_type>::max(), utility::progressionListener* progress = NULL) const;
+	void extract(outputStream& os, const size_type start = 0, const size_type end = std::numeric_limits <size_type>::max(), utility::progressListener* progress = NULL) const;
 
 	// Return the "virtual" length of the string
 	const size_type length() const;

@@ -40,7 +40,7 @@
 	#include "vmime/net/tls/certificateVerifier.hpp"
 #endif // VMIME_HAVE_TLS_SUPPORT
 
-#include "vmime/utility/progressionListener.hpp"
+#include "vmime/utility/progressListener.hpp"
 
 
 namespace vmime {

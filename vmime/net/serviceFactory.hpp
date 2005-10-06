@@ -38,7 +38,7 @@
 
 #include "vmime/security/authenticator.hpp"
 
-#include "vmime/utility/progressionListener.hpp"
+#include "vmime/utility/progressListener.hpp"
 
 
 namespace vmime {

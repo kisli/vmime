@@ -2,6 +2,11 @@
 VERSION 0.7.2cvs
 ================
 
+2005-10-06  Vincent Richard  <vincent@vincent-richard.net>
+
+ * utility/progressionListener.{hpp|cpp}: renamed 'progressionListener'
+   to 'progressListener'.
+
 2005-10-04  Vincent Richard  <vincent@vincent-richard.net>
 
  * net/service: removed "server.socket-factory" property; added the

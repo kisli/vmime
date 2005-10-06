@@ -34,7 +34,7 @@ encoderDefault::encoderDefault()
 
 
 const utility::stream::size_type encoderDefault::encode(utility::inputStream& in,
-	utility::outputStream& out, utility::progressionListener* progress)
+	utility::outputStream& out, utility::progressListener* progress)
 {
 	in.reset();  // may not work...
 
@@ -51,7 +51,7 @@ const utility::stream::size_type encoderDefault::encode(utility::inputStream& in
 
 
 const utility::stream::size_type encoderDefault::decode(utility::inputStream& in,
-	utility::outputStream& out, utility::progressionListener* progress)
+	utility::outputStream& out, utility::progressListener* progress)
 {
 	in.reset();  // may not work...
 

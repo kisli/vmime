@@ -32,7 +32,7 @@
 
 #include "vmime/utility/smartPtr.hpp"
 #include "vmime/utility/stringUtils.hpp"
-#include "vmime/utility/progressionListener.hpp"
+#include "vmime/utility/progressListener.hpp"
 
 #include "vmime/encoderB64.hpp"
 #include "vmime/encoderQP.hpp"
@@ -144,7 +144,7 @@ public:
 		{
 		protected:
 
-			target(utility::progressionListener* progress) : m_progress(progress) {}
+			target(utility::progressListener* progress) : m_progress(progress) {}
 			target(const target&) {}
 
 		public:
@@ -152,13 +152,13 @@ public:
 			virtual ~target() { }
 
 
-			utility::progressionListener* progressionListener() { return (m_progress); }
+			utility::progressListener* progressListener() { return (m_progress); }
 
 			virtual void putData(const string& chunk) = 0;
 
 		private:
 
-			utility::progressionListener* m_progress;
+			utility::progressListener* m_progress;
 		};
 
 
@@ -167,7 +167,7 @@ public:
 		{
 		public:
 
-			targetString(utility::progressionListener* progress, vmime::string& str)
+			targetString(utility::progressListener* progress, vmime::string& str)
 				: target(progress), m_string(str) { }
 
 			const vmime::string& string() const { return (m_string); }
@@ -190,7 +190,7 @@ public:
 		{
 		public:
 
-			targetStream(utility::progressionListener* progress, utility::outputStream& stream)
+			targetStream(utility::progressListener* progress, utility::outputStream& stream)
 				: target(progress), m_stream(stream) { }
 
 			const utility::outputStream& stream() const { return (m_stream); }
@@ -818,7 +818,7 @@ public:
 							m_value = "[literal-handler]";
 
 							const string::size_type length = text->value().length();
-							utility::progressionListener* progress = target->progressionListener();
+							utility::progressListener* progress = target->progressListener();
 
 							if (progress)
 							{
@@ -871,7 +871,7 @@ public:
 						{
 							m_value = "[literal-handler]";
 
-							parser.m_progress = target->progressionListener();
+							parser.m_progress = target->progressListener();
 							parser.readLiteral(*target, length);
 							parser.m_progress = NULL;
 
@@ -4916,7 +4916,7 @@ private:
 	weak_ref <IMAPTag> m_tag;
 	weak_ref <socket> m_socket;
 
-	utility::progressionListener* m_progress;
+	utility::progressListener* m_progress;
 
 	literalHandler* m_literalHandler;
 
@@ -5064,7 +5064,7 @@ public:
 				len += receiveBuffer.length();
 			}
 
-			// Notify progression
+			// Notify progress
 			if (m_progress)
 				m_progress->progress(len, count);
 		}

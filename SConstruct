@@ -147,7 +147,7 @@ libvmime_sources = [
 	'utility/datetimeUtils.cpp', 'utility/datetimeUtils.hpp',
 	'utility/filteredStream.cpp', 'utility/filteredStream.hpp',
 	'utility/path.cpp', 'utility/path.hpp',
-	'utility/progressionListener.cpp', 'utility/progressionListener.hpp',
+	'utility/progressListener.cpp', 'utility/progressListener.hpp',
 	'utility/random.cpp', 'utility/random.hpp',
 	'utility/smartPtr.hpp',
 	'utility/stream.cpp', 'utility/stream.hpp',

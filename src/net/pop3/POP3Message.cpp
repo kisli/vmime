@@ -109,7 +109,7 @@ ref <const header> POP3Message::getHeader() const
 
 
 void POP3Message::extract(utility::outputStream& os,
-	utility::progressionListener* progress, const int start,
+	utility::progressListener* progress, const int start,
 	const int length, const bool /* peek */) const
 {
 	if (!m_folder)
@@ -146,7 +146,7 @@ void POP3Message::extract(utility::outputStream& os,
 
 void POP3Message::extractPart
 	(ref <const part> /* p */, utility::outputStream& /* os */,
-	 utility::progressionListener* /* progress */,
+	 utility::progressListener* /* progress */,
 	 const int /* start */, const int /* length */,
 	 const bool /* peek */) const
 {

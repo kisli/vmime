@@ -21,36 +21,36 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#include "vmime/utility/progressionListener.hpp"
+#include "vmime/utility/progressListener.hpp"
 
 
 namespace vmime {
 namespace utility {
 
 
-// progressionListenerSizeAdapter
+// progressListenerSizeAdapter
 
-progressionListenerSizeAdapter::progressionListenerSizeAdapter
-	(progressionListener* list, const int total)
+progressListenerSizeAdapter::progressListenerSizeAdapter
+	(progressListener* list, const int total)
 	: m_wrapped(list), m_total(total)
 {
 }
 
 
-const bool progressionListenerSizeAdapter::cancel() const
+const bool progressListenerSizeAdapter::cancel() const
 {
 	return (m_wrapped ? m_wrapped->cancel() : false);
 }
 
 
-void progressionListenerSizeAdapter::start(const int predictedTotal)
+void progressListenerSizeAdapter::start(const int predictedTotal)
 {
 	if (m_wrapped)
 		m_wrapped->start(predictedTotal);
 }
 
 
-void progressionListenerSizeAdapter::progress(const int current, const int currentTotal)
+void progressListenerSizeAdapter::progress(const int current, const int currentTotal)
 {
 	if (m_wrapped)
 	{
@@ -62,7 +62,7 @@ void progressionListenerSizeAdapter::progress(const int current, const int curre
 }
 
 
-void progressionListenerSizeAdapter::stop(const int total)
+void progressListenerSizeAdapter::stop(const int total)
 {
 	if (m_wrapped)
 	{

@@ -32,7 +32,7 @@
 #include "vmime/config.hpp"
 #include "vmime/types.hpp"
 
-#include "vmime/utility/progressionListener.hpp"
+#include "vmime/utility/progressListener.hpp"
 
 
 #if VMIME_HAVE_MESSAGING_FEATURES
@@ -177,7 +177,7 @@ outputStream& operator<<(outputStream& os, const T& t)
 const stream::size_type bufferedStreamCopy(inputStream& is, outputStream& os);
 
 /** Copy data from one stream into another stream using a buffered method
-  * and notify progression of the operation.
+  * and notify progress state of the operation.
   *
   * @param is input stream (source data)
   * @param os output stream (destination for data)
@@ -187,7 +187,7 @@ const stream::size_type bufferedStreamCopy(inputStream& is, outputStream& os);
   */
 
 const stream::size_type bufferedStreamCopy(inputStream& is, outputStream& os,
-	const stream::size_type length, progressionListener* progress);
+	const stream::size_type length, progressListener* progress);
 
 
 // Adapters

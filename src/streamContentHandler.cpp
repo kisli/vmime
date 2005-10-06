@@ -133,7 +133,7 @@ void streamContentHandler::generate(utility::outputStream& os, const vmime::enco
 
 
 void streamContentHandler::extract(utility::outputStream& os,
-	utility::progressionListener* progress) const
+	utility::progressListener* progress) const
 {
 	if (!m_stream)
 		return;
@@ -155,7 +155,7 @@ void streamContentHandler::extract(utility::outputStream& os,
 
 		m_stream->reset();  // may not work...
 
-		utility::progressionListenerSizeAdapter plsa(progress, getLength());
+		utility::progressListenerSizeAdapter plsa(progress, getLength());
 
 		theDecoder->decode(*m_stream, os, &plsa);
 	}
@@ -163,7 +163,7 @@ void streamContentHandler::extract(utility::outputStream& os,
 
 
 void streamContentHandler::extractRaw(utility::outputStream& os,
-	utility::progressionListener* progress) const
+	utility::progressListener* progress) const
 {
 	if (!m_stream)
 		return;
