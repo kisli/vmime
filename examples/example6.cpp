@@ -646,6 +646,7 @@ static void connectStore()
 					std::cout << std::endl;
 					std::cout << count << " message(s) in this folder" << std::endl;
 
+					f->close(true);  // 'true' to expunge deleted messages
 					f = newFolder;
 
 					break;
@@ -653,6 +654,7 @@ static void connectStore()
 				// Main menu
 				case 8:
 
+					f->close(true);  // 'true' to expunge deleted messages
 					cont = false;
 					break;
 				}
