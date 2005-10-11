@@ -97,8 +97,8 @@ private:
 	static ssize_t gnutlsPushFunc(gnutls_transport_ptr trspt, const void* data, size_t len);
 	static ssize_t gnutlsPullFunc(gnutls_transport_ptr trspt, void* data, size_t len);
 #else
-	static ssize_t gnutlsPushFunc(void* trspt, const void* data, size_t len);
-	static ssize_t gnutlsPullFunc(void* trspt, void* data, size_t len);
+	static int gnutlsPushFunc(void* trspt, const void* data, size_t len);
+	static int gnutlsPullFunc(void* trspt, void* data, size_t len);
 #endif // LIBGNUTLS_VERSION
 
 
