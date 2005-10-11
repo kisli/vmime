@@ -29,6 +29,9 @@
 #include "vmime/net/serviceInfos.hpp"
 
 
+#if VMIME_BUILTIN_PLATFORM_POSIX
+
+
 namespace vmime {
 namespace net {
 namespace sendmail {
@@ -58,6 +61,9 @@ public:
 } // sendmail
 } // net
 } // vmime
+
+
+#endif // VMIME_BUILTIN_PLATFORM_POSIX
 
 
 #endif // VMIME_NET_SENDMAIL_SENDMAILSERVICEINFOS_HPP_INCLUDED

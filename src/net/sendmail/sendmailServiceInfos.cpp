@@ -20,6 +20,9 @@
 #include "vmime/net/sendmail/sendmailServiceInfos.hpp"
 
 
+#if VMIME_BUILTIN_PLATFORM_POSIX
+
+
 namespace vmime {
 namespace net {
 namespace sendmail {
@@ -62,4 +65,7 @@ const std::vector <serviceInfos::property> sendmailServiceInfos::getAvailablePro
 } // sendmail
 } // net
 } // vmime
+
+
+#endif // VMIME_BUILTIN_PLATFORM_POSIX
 
