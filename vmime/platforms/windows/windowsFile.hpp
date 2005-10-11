@@ -109,7 +109,7 @@ public:
 	~windowsFileIterator();
 
 	const bool hasMoreElements() const;
-	vmime::utility::file* nextElement();
+	vmime::ref <vmime::utility::file> nextElement();
 
 private:
 
