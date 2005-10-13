@@ -127,4 +127,16 @@ const encoding defaultAttachment::getEncoding() const
 }
 
 
+ref <const object> defaultAttachment::getPart() const
+{
+	return NULL;
+}
+
+
+ref <const header> defaultAttachment::getHeader() const
+{
+	return NULL;
+}
+
+
 } // vmime

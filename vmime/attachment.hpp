@@ -86,6 +86,21 @@ public:
 	  */
 	virtual const encoding getEncoding() const = 0;
 
+	/** Return the part in which the attachment has been found.
+	  * This can be a vmime::bodyPart or a vmime::net::part object.
+	  *
+	  * @return attachment part or NULL if the attachment is not
+	  * attached to a part
+	  */
+	virtual ref <const object> getPart() const = 0;
+
+	/** Return the header of the attachment part.
+	  *
+	  * @return attachment part header or NULL if the attachment
+	  * is not attached to a part
+	  */
+	virtual ref <const header> getHeader() const = 0;
+
 protected:
 
 	/** Generate the attachment in the specified body part.

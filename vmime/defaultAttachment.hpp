@@ -59,6 +59,10 @@ public:
 	const ref <const contentHandler> getData() const;
 	const encoding getEncoding() const;
 
+	ref <const object> getPart() const;
+
+	ref <const header> getHeader() const;
+
 protected:
 
 	mediaType m_type;                   /**< Media type (eg. "application/octet-stream") */
