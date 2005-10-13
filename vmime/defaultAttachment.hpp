@@ -53,11 +53,11 @@ public:
 
 	defaultAttachment& operator=(const defaultAttachment& attach);
 
-	const mediaType& getType() const;
-	const text& getDescription() const;
-	const word& getName() const;
+	const mediaType getType() const;
+	const text getDescription() const;
+	const word getName() const;
 	const ref <const contentHandler> getData() const;
-	const encoding& getEncoding() const;
+	const encoding getEncoding() const;
 
 protected:
 

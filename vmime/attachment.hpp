@@ -55,31 +55,41 @@ public:
 	virtual ~attachment() { }
 
 	/** Return the media type of this attachment.
+	  *
 	  * @return content type of the attachment
 	  */
-	virtual const mediaType& getType() const = 0;
+	virtual const mediaType getType() const = 0;
 
 	/** Return the description of this attachment.
-	  * @return attachment description
+	  *
+	  * @return attachment description, or an empty text
+	  * if no description is available
 	  */
-	virtual const text& getDescription() const = 0;
+	virtual const text getDescription() const = 0;
 
-	/** Return the name of this attachment.
-	  * @return attachment name
+	/** Return the (file) name of this attachment.
+	  *
+	  * @return attachment name, or an empty word if no
+	  * name is available
 	  */
-	virtual const word& getName() const = 0;
+	virtual const word getName() const = 0;
 
 	/** Return the data contained in this attachment.
+	  *
 	  * @return attachment data
 	  */
 	virtual const ref <const contentHandler> getData() const = 0;
 
 	/** Return the encoding used for this attachment.
+	  *
 	  * @return attachment data encoding
 	  */
-	virtual const encoding& getEncoding() const = 0;
+	virtual const encoding getEncoding() const = 0;
+
+protected:
 
 	/** Generate the attachment in the specified body part.
+	  *
 	  * @param parent body part in which to generate the attachment
 	  */
 	virtual void generateIn(bodyPart& parent) const = 0;
