@@ -295,6 +295,15 @@ void header::removeAllFields()
 }
 
 
+void header::removeAllFields(const string& fieldName)
+{
+	std::vector <ref <headerField> > fields = findAllFields(fieldName);
+
+	for (unsigned int i = 0 ; i < fields.size() ; ++i)
+		removeField(fields[i]);
+}
+
+
 const int header::getFieldCount() const
 {
 	return (m_fields.size());

@@ -181,6 +181,10 @@ public:
 	  */
 	void removeAllFields();
 
+	/** Remove all fields with the specified name.
+	  */
+	void removeAllFields(const string& fieldName);
+
 	/** Return the number of fields in the list.
 	  *
 	  * @return number of fields
