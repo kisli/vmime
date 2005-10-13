@@ -32,6 +32,7 @@
 #include "vmime/net/folder.hpp"
 
 #include "vmime/net/imap/IMAPServiceInfos.hpp"
+#include "vmime/net/imap/IMAPConnection.hpp"
 
 
 namespace vmime {
@@ -41,7 +42,6 @@ namespace imap {
 
 class IMAPParser;
 class IMAPTag;
-class IMAPConnection;
 class IMAPFolder;
 
 
