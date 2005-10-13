@@ -45,7 +45,7 @@ class messageParser
 public:
 
 	messageParser(const string& buffer);
-	messageParser(const message& msg);
+	messageParser(ref <const message> msg);
 	~messageParser();
 
 public:
@@ -105,13 +105,6 @@ public:
 	  */
 	const std::vector <ref <const attachment> > getAttachmentList() const;
 
-	/** Return information about the specified attachment.
-	  *
-	  * @param a attachment to retrieve information about
-	  * @return information about the specified attachment
-	  */
-	const ref <const contentDispositionField> getAttachmentInfo(const ref <const attachment> a) const;
-
 	/** Return the text parts of the message.
 	  *
 	  * @return list of text parts in the message
@@ -143,14 +136,13 @@ private:
 
 	datetime m_date;
 
-	std::vector <ref <attachment> > m_attach;
-	std::map <attachment*, ref <contentDispositionField> > m_attachInfo;
+	std::vector <ref <const attachment> > m_attach;
 
 	std::vector <ref <textPart> > m_textParts;
 
-	void parse(const message& msg);
+	void parse(ref <const message> msg);
 
-	void findAttachments(const bodyPart& part);
+	void findAttachments(ref <const message> msg);
 
 	void findTextParts(const bodyPart& msg, const bodyPart& part);
 	bool findSubTextParts(const bodyPart& msg, const bodyPart& part);

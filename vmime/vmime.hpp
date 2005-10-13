@@ -77,6 +77,8 @@
 #include "vmime/plainTextPart.hpp"
 #include "vmime/htmlTextPart.hpp"
 
+#include "vmime/attachmentHelper.hpp"
+
 // MDN
 #include "vmime/mdn/MDNHelper.hpp"
 

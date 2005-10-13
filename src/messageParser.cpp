@@ -23,6 +23,8 @@
 
 #include "vmime/messageParser.hpp"
 
+#include "vmime/attachmentHelper.hpp"
+
 #include "vmime/defaultAttachment.hpp"
 #include "vmime/textPartFactory.hpp"
 
@@ -33,14 +35,14 @@ namespace vmime
 
 messageParser::messageParser(const string& buffer)
 {
-	vmime::message msg;
-	msg.parse(buffer);
+	ref <message> msg = vmime::create <message>();
+	msg->parse(buffer);
 
 	parse(msg);
 }
 
 
-messageParser::messageParser(const message& msg)
+messageParser::messageParser(ref <const message> msg)
 {
 	parse(msg);
 }
@@ -51,13 +53,13 @@ messageParser::~messageParser()
 }
 
 
-void messageParser::parse(const message& msg)
+void messageParser::parse(ref <const message> msg)
 {
 	// Header fields (if field is present, copy its value, else do nothing)
 #ifndef VMIME_BUILDING_DOC
 
 #define TRY_FIELD(var, type, name) \
-	try { var = dynamic_cast<type&>(*msg.getHeader()->findField(name)).getValue(); } \
+	try { var = dynamic_cast<type&>(*msg->getHeader()->findField(name)).getValue(); } \
 	catch (exceptions::no_such_field) { }
 
 	TRY_FIELD(m_from, mailboxField, fields::FROM);
@@ -76,7 +78,7 @@ void messageParser::parse(const message& msg)
 	try
 	{
 		vmime::relayField& recv = dynamic_cast <vmime::relayField&>
-			(*msg.getHeader()->findField(fields::RECEIVED));
+			(*msg->getHeader()->findField(fields::RECEIVED));
 
 		m_date = recv.getValue().getDate();
 	}
@@ -85,7 +87,7 @@ void messageParser::parse(const message& msg)
 		try
 		{
 			vmime::dateField& date = dynamic_cast <vmime::dateField&>
-				(*msg.getHeader()->findField(fields::DATE));
+				(*msg->getHeader()->findField(fields::DATE));
 
 			m_date = date.getValue();
 		}
@@ -99,151 +101,13 @@ void messageParser::parse(const message& msg)
 	findAttachments(msg);
 
 	// Text parts
-	findTextParts(msg, msg);
+	findTextParts(*msg, *msg);
 }
 
 
-void messageParser::findAttachments(const bodyPart& part)
+void messageParser::findAttachments(ref <const message> msg)
 {
-	// We simply search for parts that are not "Content-disposition: inline".
-	for (int i = 0 ; i < part.getBody()->getPartCount() ; ++i)
-	{
-		const bodyPart& p = *part.getBody()->getPartAt(i);
-		const header& hdr = *p.getHeader();
-		const body& bdy = *p.getBody();
-
-		// Is this part an attachment?
-		bool isAttachment = false;
-		const contentDispositionField* contentDispField = NULL;
-
-		try
-		{
-			const contentDispositionField& cdf = dynamic_cast<contentDispositionField&>
-				(*hdr.findField(fields::CONTENT_DISPOSITION));
-
-			if (cdf.getValue().getName() != contentDispositionTypes::INLINE)
-			{
-				contentDispField = &cdf;
-				isAttachment = true;
-			}
-		}
-		catch (exceptions::no_such_field)
-		{
-			// No "Content-disposition" field: assume "attachment" if
-			// type is not "text/..." or "multipart/...".
-			mediaType type;
-
-			try
-			{
-				const contentTypeField& ctf = dynamic_cast<contentTypeField&>
-					(*hdr.findField(fields::CONTENT_TYPE));
-
-				type = ctf.getValue();
-			}
-			catch (exceptions::no_such_field)
-			{
-				// No "Content-type" field: assume "application/octet-stream".
-				type = mediaType(mediaTypes::APPLICATION,
-				                 mediaTypes::APPLICATION_OCTET_STREAM);
-			}
-
-			if (type.getType() != mediaTypes::TEXT &&
-			    type.getType() != mediaTypes::MULTIPART)
-			{
-				isAttachment = true;
-			}
-		}
-
-		if (isAttachment)
-		{
-			// Determine the media type of this attachment
-			const contentTypeField* contTypeField = NULL;
-			mediaType type;
-
-			try
-			{
-				const contentTypeField& ctf = dynamic_cast<contentTypeField&>
-					(*hdr.findField(fields::CONTENT_TYPE));
-
-				type = ctf.getValue();
-
-				contTypeField = &ctf;
-			}
-			catch (exceptions::no_such_field)
-			{
-				// No "Content-type" field: assume "application/octet-stream".
-				type = mediaType(mediaTypes::APPLICATION,
-				                 mediaTypes::APPLICATION_OCTET_STREAM);
-			}
-
-			// Get the description (if available)
-			text description;
-
-			try
-			{
-				const textField& cd = dynamic_cast<textField&>
-					(*hdr.findField(fields::CONTENT_DESCRIPTION));
-
-				description = cd.getValue();
-			}
-			catch (exceptions::no_such_field)
-			{
-				// No description available.
-			}
-
-			// Get the name/filename (if available)
-			word name;
-
-			// -- try the 'filename' parameter of 'Content-Disposition' field
-			if (contentDispField != NULL)
-			{
-				try
-				{
-					name = contentDispField->getFilename();
-				}
-				catch (exceptions::no_such_parameter)
-				{
-					// No 'filename' parameter
-				}
-			}
-
-			// -- try the 'name' parameter of 'Content-Type' field
-			if (name.getBuffer().empty() && contTypeField != NULL)
-			{
-				try
-				{
-					ref <defaultParameter> prm = contTypeField->
-						findParameter("name").dynamicCast <defaultParameter>();
-
-					if (prm != NULL)
-						name = prm->getValue();
-				}
-				catch (exceptions::no_such_parameter)
-				{
-					// No attachment name available.
-				}
-			}
-
-			// Construct the attachment object
-			ref <attachment> attach = vmime::create <defaultAttachment>
-				(bdy.getContents()->clone().dynamicCast <contentHandler>(),
-				 bdy.getEncoding(), type, description, name);
-
-			if (contentDispField != NULL)
-			{
-				m_attachInfo.insert(std::map <attachment*, ref <contentDispositionField> >::
-					value_type(attach.get(), contentDispField->clone().
-						dynamicCast <contentDispositionField>()));
-			}
-
-			// Add the attachment to the list
-			m_attach.push_back(attach);
-		}
-
-		// Try to find attachments in sub-parts
-		if (bdy.getPartCount())
-			findAttachments(p);
-	}
+	m_attach = attachmentHelper::findAttachmentsInMessage(msg);
 }
 
 
@@ -357,15 +221,6 @@ bool messageParser::findSubTextParts(const bodyPart& msg, const bodyPart& part)
 }
 
 
-const ref <const contentDispositionField> messageParser::getAttachmentInfo(const ref <const attachment> a) const
-{
-	std::map <attachment*, ref <contentDispositionField> >::const_iterator
-		it = m_attachInfo.find(ref <attachment>(a.constCast <attachment>()).get());
-
-	return (it != m_attachInfo.end() ? (*it).second : NULL);
-}
-
-
 const mailbox& messageParser::getExpeditor() const
 {
 	return (m_from);
@@ -404,17 +259,7 @@ const datetime& messageParser::getDate() const
 
 const std::vector <ref <const attachment> > messageParser::getAttachmentList() const
 {
-	std::vector <ref <const attachment> > res;
-
-	res.reserve(m_attach.size());
-
-	for (std::vector <ref <attachment> >::const_iterator it = m_attach.begin() ;
-	     it != m_attach.end() ; ++it)
-	{
-		res.push_back(*it);
-	}
-
-	return (res);
+	return m_attach;
 }
 
 

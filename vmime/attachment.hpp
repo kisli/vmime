@@ -45,6 +45,7 @@ class attachment : public object
 {
 	friend class messageBuilder;
 	friend class messageParser;
+	friend class attachmentHelper;
 
 protected:
 

@@ -76,9 +76,11 @@ libvmime_sources = [
 	'address.cpp', 'address.hpp',
 	'addressList.cpp', 'addressList.hpp',
 	'attachment.hpp',
+	'attachmentHelper.cpp', 'attachmentHelper.hpp',
 	'base.cpp', 'base.hpp',
 	'body.cpp', 'body.hpp',
 	'bodyPart.cpp', 'bodyPart.hpp',
+	'bodyPartAttachment.cpp', 'bodyPartAttachment.hpp',
 	'charset.cpp', 'charset.hpp',
 	'component.cpp', 'component.hpp',
 	'constants.cpp', 'constants.hpp',
@@ -327,6 +329,7 @@ libvmimetest_common = [
 libvmimetest_sources = [
 	'tests/testRunner.cpp',
 	# ==============================  Parser  ==============================
+	'tests/parser/attachmentHelperTest.cpp',
 	'tests/parser/bodyPartTest.cpp',
 	'tests/parser/datetimeTest.cpp',
 	'tests/parser/dispositionTest.cpp',
