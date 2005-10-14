@@ -64,6 +64,11 @@ const bool attachmentHelper::isBodyPartAnAttachment(ref <const bodyPart> part)
 		if (type.getType() != mediaTypes::TEXT &&
 		    type.getType() != mediaTypes::MULTIPART)
 		{
+			// If a "Content-Id" field is present, it might be an
+			// embedded object (MHTML messages)
+			if (part->getHeader()->hasField(vmime::fields::CONTENT_ID))
+				return false;
+
 			return true;
 		}
 	}
