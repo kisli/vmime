@@ -93,7 +93,7 @@ void stringProxy::extract(outputStream& os, const size_type start, const size_ty
 	if (end == std::numeric_limits <size_type>::max())
 		len = m_end - start - m_start;
 	else if (end > start)
-		len = end - start - m_start;
+		len = end - start;
 
 	if (progress)
 		progress->start(len);
