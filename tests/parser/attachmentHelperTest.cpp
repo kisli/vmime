@@ -33,7 +33,10 @@ VMIME_TEST_SUITE_BEGIN
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testAddAttachment1)
 		VMIME_TEST(testAddAttachment2)
-		// TODO: add more tests
+		VMIME_TEST(testIsBodyPartAnAttachment1)
+		VMIME_TEST(testIsBodyPartAnAttachment2)
+		VMIME_TEST(testIsBodyPartAnAttachment3)
+		VMIME_TEST(testGetBodyPartAttachment)
 	VMIME_TEST_LIST_END
 
 
@@ -107,6 +110,95 @@ VMIME_TEST_SUITE_BEGIN
 		vmime::attachmentHelper::addAttachment(msg, att);
 
 		VASSERT_EQ("1", "multipart/mixed[text/plain,application/octet-stream,image/jpeg]", getStructure(msg));
+	}
+
+	// Content-Disposition: attachment
+	// No other field
+	void testIsBodyPartAnAttachment1()
+	{
+		vmime::string data = "Content-Disposition: attachment\r\n\r\nFoo\r\n";
+
+		vmime::ref <vmime::bodyPart> p = vmime::create <vmime::bodyPart>();
+		p->parse(data);
+
+		VASSERT_EQ("1", true, vmime::attachmentHelper::isBodyPartAnAttachment(p));
+	}
+
+	// No Content-Disposition field
+	// Content-Type: multipart/* or text/*
+	void testIsBodyPartAnAttachment2()
+	{
+		vmime::string data = "Content-Type: multipart/*\r\n\r\nFoo\r\n";
+
+		vmime::ref <vmime::bodyPart> p = vmime::create <vmime::bodyPart>();
+		p->parse(data);
+
+		VASSERT_EQ("1", false, vmime::attachmentHelper::isBodyPartAnAttachment(p));
+
+		data = "Content-Type: text/*\r\n\r\nFoo\r\n";
+
+		p->parse(data);
+
+		VASSERT_EQ("2", false, vmime::attachmentHelper::isBodyPartAnAttachment(p));
+	}
+
+	// No Content-Disposition field
+	void testIsBodyPartAnAttachment3()
+	{
+		vmime::string data = "Content-Type: application/octet-stream\r\n\r\nFoo\r\n";
+
+		vmime::ref <vmime::bodyPart> p = vmime::create <vmime::bodyPart>();
+		p->parse(data);
+
+		VASSERT_EQ("1", true, vmime::attachmentHelper::isBodyPartAnAttachment(p));
+	}
+
+	// Content-Disposition: attachment
+	// Content-Id field present
+	void testIsBodyPartAnAttachment4()
+	{
+		vmime::string data = "Content-Disposition: attachment\r\n"
+			"Content-Type: application/octet-stream\r\n"
+			"Content-Id: bar\r\n"
+			"\r\nFoo\r\n";
+
+		vmime::ref <vmime::bodyPart> p = vmime::create <vmime::bodyPart>();
+		p->parse(data);
+
+		VASSERT_EQ("1", false, vmime::attachmentHelper::isBodyPartAnAttachment(p));
+	}
+
+	void testGetBodyPartAttachment()
+	{
+		vmime::string data =
+			"Content-Type: image/jpeg\r\n"
+			"Content-Description: foobar\r\n"
+			"Content-Transfer-Encoding: x-baz\r\n"
+			"Content-Disposition: attachment; filename=\"foobar.baz\"\r\n"
+			"\r\n"
+			"Foo bar baz";
+
+		vmime::ref <vmime::bodyPart> part = vmime::create <vmime::bodyPart>();
+		part->parse(data);
+
+		vmime::ref <const vmime::attachment> att =
+			vmime::attachmentHelper::getBodyPartAttachment(part);
+
+		VASSERT_EQ("1", "image/jpeg", att->getType().generate());
+		VASSERT_EQ("2", "foobar", att->getDescription().generate());
+		VASSERT_EQ("3", "x-baz", att->getEncoding().generate());
+		VASSERT_EQ("4", "foobar.baz", att->getName().generate());
+
+		vmime::string attData;
+		vmime::utility::outputStreamStringAdapter out(attData);
+		att->getData()->extractRaw(out);  // 'x-baz' encoding not supported
+
+		VASSERT_EQ("5", "Foo bar baz", attData);
+
+		//VASSERT_EQ("6", part, att->getPart());
+		VASSERT_EQ("6", part->generate(), att->getPart().dynamicCast <const vmime::component>()->generate());
+		//VASSERT_EQ("7", part->getHeader(), att->getHeader());
+		VASSERT_EQ("7", part->getHeader()->generate(), att->getHeader()->generate());
 	}
 
 VMIME_TEST_SUITE_END
