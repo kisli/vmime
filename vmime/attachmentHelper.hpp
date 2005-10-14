@@ -57,7 +57,7 @@ public:
 	  * information (ie. is not an attachment), NULL is returned.
 	  *
 	  * @param part message part in which to search
-	  * @return a list of attachments found
+	  * @return attachment found in the part, or NULL
 	  */
 	static ref <const attachment>
 		getBodyPartAttachment(ref <const bodyPart> part);
