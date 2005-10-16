@@ -1117,7 +1117,7 @@ docdir = $(datadir)/doc/$(GENERIC_LIBRARY_NAME)
 
 AUTOMAKE_OPTIONS = no-dependencies foreign
 INTERNALS =
-INCLUDES = -I$(top_srcdir) -I$(srcdir) @PKGCONFIG_CFLAGS@ @EXTRA_CFLAGS@
+INCLUDES = -I$(prefix)/include -I$(top_srcdir) @PKGCONFIG_CFLAGS@ @EXTRA_CFLAGS@
 """)
 
 	Makefile_am.write('lib_LTLIBRARIES = ' + packageVersionedName + '.la\n')
