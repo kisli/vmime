@@ -2,6 +2,10 @@
 VERSION 0.7.2cvs
 ================
 
+2005-10-16  Vincent Richard  <vincent@vincent-richard.net>
+
+ * SConstruct: fixed compilation problems on FreeBSD (thanks to Xin LI).
+
 2005-10-13  Vincent Richard  <vincent@vincent-richard.net>
 
  * attachmentHelper.{hpp|cpp}: the attachmentHelper allows listing all
