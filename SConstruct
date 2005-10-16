@@ -1718,6 +1718,15 @@ esac
 
 AC_SUBST(VMIME_PKGCONFIGDIR)
 
+# -- libtool 'CXX' tag
+case "x${target_os}" in
+xfreebsd*)
+	# FIXME: temporary hack until I find a better solution
+	# to make libtool use the C++ tag...
+	LIBTOOL="$LIBTOOL --tag=CXX"
+	;;
+esac
+
 
 #
 # Flags
