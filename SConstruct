@@ -1072,7 +1072,7 @@ DIST_SUBDIRS = $(SUBDIRS) autotools
 #AUTOMAKE_OPTIONS = dist-bzip2
 AUTOMAKE_OPTIONS = no-dist
 
-pkgconfigdir = $(libdir)/pkgconfig
+pkgconfigdir = $(VMIME_PKGCONFIGDIR)
 pkgconfig_DATA = $(GENERIC_VERSIONED_LIBRARY_NAME).pc
 
 EXTRA_DIST=SConstruct bootstrap
@@ -1698,6 +1698,26 @@ fi
 		configure_in.write('fi\n\n')
 
 	configure_in.write("""
+
+#
+# Workarounds for some platforms
+#
+
+# -- pkgconfigdir
+case "x${target_os}" in
+xfreebsd*)
+
+	VMIME_PKGCONFIGDIR='$(prefix)/libdata/pkgconfig'
+	;;
+
+x*)
+
+	VMIME_PKGCONFIGDIR='$(libdir)/pkgconfig'
+	;;
+esac
+
+AC_SUBST(VMIME_PKGCONFIGDIR)
+
 
 #
 # Flags
