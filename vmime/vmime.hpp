@@ -111,7 +111,7 @@
 #if VMIME_HAVE_MESSAGING_FEATURES
 	#include "vmime/net/socket.hpp"
 
-	#include "vmime/net/service.hpp"
+	#include "vmime/net/serviceFactory.hpp"
 	#include "vmime/net/store.hpp"
 	#include "vmime/net/transport.hpp"
 

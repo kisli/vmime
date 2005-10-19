@@ -30,7 +30,6 @@
 
 #include "vmime/net/session.hpp"
 
-#include "vmime/net/serviceFactory.hpp"
 #include "vmime/net/serviceInfos.hpp"
 
 #include "vmime/net/socket.hpp"
@@ -191,21 +190,6 @@ public:
 	{
 		m_session->getProperties()[getInfos().getPropertyPrefix() + name] = value;
 	}
-
-#ifndef VMIME_BUILDING_DOC
-	// Basic service registerer
-	template <class S>
-	class initializer
-	{
-	public:
-
-		initializer(const string& protocol, const Type type)
-		{
-			serviceFactory::getInstance()->
-				template registerServiceByProtocol <S>(protocol, type);
-		}
-	};
-#endif // VMIME_BUILDING_DOC
 
 private:
 

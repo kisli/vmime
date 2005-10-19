@@ -33,6 +33,7 @@
 #include "vmime/utility/stringUtils.hpp"
 #include "vmime/utility/url.hpp"
 
+#include "vmime/net/service.hpp"
 #include "vmime/net/serviceInfos.hpp"
 #include "vmime/net/timeoutHandler.hpp"
 
@@ -46,7 +47,6 @@ namespace net {
 
 
 class session;
-class service;
 
 
 /** A factory to create 'service' objects for a specified protocol.
@@ -83,67 +83,12 @@ public:
 		virtual const serviceInfos& getInfos() const = 0;
 	};
 
-private:
-
-	template <class S>
-	class registeredServiceImpl : public registeredService
-	{
-		friend class serviceFactory;
-		friend class vmime::creator;
-
-	protected:
-
-		registeredServiceImpl(const string& name, const int type)
-			: m_type(type), m_name(name), m_servInfos(S::getInfosInstance())
-		{
-		}
-
-	public:
-
-		ref <service> create
-			(ref <session> sess,
-			 ref <security::authenticator> auth) const
-		{
-			return vmime::create <S>(sess, auth);
-		}
-
-		const serviceInfos& getInfos() const
-		{
-			return (m_servInfos);
-		}
-
-		const string& getName() const
-		{
-			return (m_name);
-		}
-
-		const int getType() const
-		{
-			return (m_type);
-		}
-
-	private:
-
-		const int m_type;
-		const string m_name;
-		const serviceInfos& m_servInfos;
-	};
-
-	std::vector <ref <registeredService> > m_services;
-
-public:
 
 	/** Register a new service by its protocol name.
 	  *
-	  * @param protocol protocol name
-	  * @param type service type
+	  * @param reg service registration infos
 	  */
-	template <class S>
-	void registerServiceByProtocol(const string& protocol, const int type)
-	{
-		const string name = utility::stringUtils::toLower(protocol);
-		m_services.push_back(vmime::create <registeredServiceImpl <S> >(name, type));
-	}
+	void registerService(ref <registeredService> reg);
 
 	/** Create a new service instance from a protocol name.
 	  *
@@ -201,6 +146,10 @@ public:
 	  * @return list of registered services
 	  */
 	const std::vector <ref <const registeredService> > getServiceList() const;
+
+private:
+
+	std::vector <ref <registeredService> > m_services;
 };
 
 

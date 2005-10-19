@@ -21,12 +21,12 @@
 // the GNU General Public License cover the whole combination.
 //
 
+
+// Include registration helpers
+#include "src/net/serviceRegistration.inl"
+
+
 #ifndef VMIME_BUILDING_DOC
-
-
-#define REGISTER_SERVICE(p_class, p_name, p_type) \
-	vmime::net::service::initializer <vmime::net::p_class> \
-		p_name(#p_name, vmime::net::service::p_type)
 
 
 #if VMIME_BUILTIN_MESSAGING_PROTO_POP3

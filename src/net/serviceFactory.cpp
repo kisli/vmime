@@ -122,5 +122,11 @@ const std::vector <ref <const serviceFactory::registeredService> > serviceFactor
 }
 
 
+void serviceFactory::registerService(ref <registeredService> reg)
+{
+	m_services.push_back(reg);
+}
+
+
 } // net
 } // vmime

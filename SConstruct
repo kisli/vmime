@@ -207,6 +207,7 @@ libvmime_messaging_sources = [
 	'net/service.cpp', 'net/service.hpp',
 	'net/serviceFactory.cpp', 'net/serviceFactory.hpp',
 	'net/serviceInfos.cpp', 'net/serviceInfos.hpp',
+	'net/serviceRegistration.inl',
 	'net/session.cpp', 'net/session.hpp',
 	'net/socket.hpp',
 	'net/store.hpp',
