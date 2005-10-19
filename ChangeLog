@@ -7,6 +7,9 @@ VERSION 0.7.2cvs
  * charsetConverter.{hpp|cpp}: new object 'charsetConverter' for converting
    between charsets (code moved from static functions in 'charset' class).
 
+ * Added 'charsetFilteredOutputStream': provide charset conversion while
+   writing to an output stream.
+
 2005-10-16  Vincent Richard  <vincent@vincent-richard.net>
 
  * SConstruct: fixed compilation problems on FreeBSD (thanks to Xin LI).

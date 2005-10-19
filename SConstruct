@@ -333,6 +333,7 @@ libvmimetest_sources = [
 	# ==============================  Parser  ==============================
 	'tests/parser/attachmentHelperTest.cpp',
 	'tests/parser/bodyPartTest.cpp',
+	'tests/parser/charsetTest.cpp',
 	'tests/parser/datetimeTest.cpp',
 	'tests/parser/dispositionTest.cpp',
 	'tests/parser/encoderTest.cpp',

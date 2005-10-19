@@ -33,8 +33,8 @@ extern "C"
 	#include <errno.h>
 
 	// HACK: prototypes may differ depending on the compiler and/or system (the
-	// second parameter may or may not be 'const'). This redeclaration is a hack
-	// to have a common prototype "iconv_cast".
+	// second parameter may or may not be 'const'). This relies on the compiler
+	// for choosing the right type.
 	class ICONV_HACK
 	{
 	public:
@@ -81,6 +81,7 @@ charsetConverter::~charsetConverter()
 		iconv_close(*static_cast <iconv_t*>(m_desc));
 
 		delete static_cast <iconv_t*>(m_desc);
+		m_desc = NULL;
 	}
 }
 
@@ -162,6 +163,171 @@ void charsetConverter::convert(const string& in, string& out)
 
 	convert(is, os);
 }
+
+
+
+// charsetFilteredOutputStream
+
+namespace utility {
+
+
+charsetFilteredOutputStream::charsetFilteredOutputStream
+	(const charset& source, const charset& dest, outputStream& os)
+	: m_desc(NULL), m_sourceCharset(source), m_destCharset(dest),
+	  m_stream(os), m_unconvCount(0)
+{
+	// Get an iconv descriptor
+	const iconv_t cd = iconv_open(dest.getName().c_str(), source.getName().c_str());
+
+	if (cd != reinterpret_cast <iconv_t>(-1))
+	{
+		iconv_t* p = new iconv_t;
+		*p= cd;
+
+		m_desc = p;
+	}
+}
+
+
+charsetFilteredOutputStream::~charsetFilteredOutputStream()
+{
+	if (m_desc != NULL)
+	{
+		// Close iconv handle
+		iconv_close(*static_cast <iconv_t*>(m_desc));
+
+		delete static_cast <iconv_t*>(m_desc);
+		m_desc = NULL;
+	}
+}
+
+
+outputStream& charsetFilteredOutputStream::getNextOutputStream()
+{
+	return m_stream;
+}
+
+
+void charsetFilteredOutputStream::write
+	(const value_type* const data, const size_type count)
+{
+	if (m_desc == NULL)
+		throw exceptions::charset_conv_error("Cannot initialize converter.");
+
+	const iconv_t cd = *static_cast <iconv_t*>(m_desc);
+
+	const value_type* curData = data;
+	size_type curDataLen = count;
+
+	// If there is some unconverted bytes left, add more data from this
+	// chunk to see if it can now be converted.
+	while (m_unconvCount != 0 || curDataLen != 0)
+	{
+		if (m_unconvCount != 0)
+		{
+			// Check if an incomplete input sequence is larger than the
+			// input buffer size: should not happen except if something
+			// in the input sequence is invalid. If so, output a special
+			// character and skip one byte in the invalid sequence.
+			if (m_unconvCount >= sizeof(m_unconvBuffer))
+			{
+				m_stream.write("?", 1);
+
+				std::copy(m_unconvBuffer + 1,
+					m_unconvBuffer + m_unconvCount, m_unconvBuffer);
+
+				m_unconvCount--;
+			}
+
+			// Get more data
+			const size_type remaining =
+				std::min(curDataLen, sizeof(m_unconvBuffer) - m_unconvCount);
+
+			std::copy(curData, curData + remaining, m_unconvBuffer + m_unconvCount);
+
+			m_unconvCount += remaining;
+			curDataLen -= remaining;
+			curData += remaining;
+
+			if (remaining == 0)
+				return;  // no more data
+
+			// Try a conversion
+			const char* inPtr = m_unconvBuffer;
+			size_t inLength = m_unconvCount;
+			char* outPtr = m_outputBuffer;
+			size_t outLength = sizeof(m_outputBuffer);
+
+			const size_t inLength0 = inLength;
+
+			if (iconv(cd, ICONV_HACK(&inPtr), &inLength, &outPtr, &outLength) == static_cast <size_t>(-1))
+			{
+				const size_t inputConverted = inLength0 - inLength;
+
+				// Write successfully converted bytes
+				m_stream.write(m_outputBuffer, sizeof(m_outputBuffer) - outLength);
+
+				// Shift unconverted bytes
+				std::copy(m_unconvBuffer + inputConverted,
+					m_unconvBuffer + m_unconvCount, m_unconvBuffer);
+
+				m_unconvCount -= inputConverted;
+
+				continue;
+			}
+
+			// Write successfully converted bytes
+			m_stream.write(m_outputBuffer, sizeof(m_outputBuffer) - outLength);
+
+			// Empty the unconverted buffer
+			m_unconvCount = 0;
+		}
+
+		if (curDataLen == 0)
+			return;  // no more data
+
+		// Now, convert the current data buffer
+		const char* inPtr = curData;
+		size_t inLength = std::min(curDataLen, sizeof(m_outputBuffer) / MAX_CHARACTER_WIDTH);
+		char* outPtr = m_outputBuffer;
+		size_t outLength = sizeof(m_outputBuffer);
+
+		const size_t inLength0 = inLength;
+
+		if (iconv(cd, ICONV_HACK(&inPtr), &inLength, &outPtr, &outLength) == static_cast <size_t>(-1))
+		{
+			// Write successfully converted bytes
+			m_stream.write(m_outputBuffer, sizeof(m_outputBuffer) - outLength);
+
+			const size_t inputConverted = inLength0 - inLength;
+
+			curData += inputConverted;
+			curDataLen -= inputConverted;
+
+			// Put one byte byte into the unconverted buffer so
+			// that the next iteration fill it
+			if (curDataLen != 0)
+			{
+				m_unconvCount = 1;
+				m_unconvBuffer[0] = *curData;
+
+				curData++;
+				curDataLen--;
+			}
+		}
+		else
+		{
+			// Write successfully converted bytes
+			m_stream.write(m_outputBuffer, sizeof(m_outputBuffer) - outLength);
+
+			curData += inLength0;
+			curDataLen -= inLength0;
+		}
+	}
+}
+
+
+} // utility
 
 
 } // vmime
