@@ -105,8 +105,8 @@ const char* bad_field_type::name() const throw() { return "bad_field_type"; }
 //
 
 charset_conv_error::~charset_conv_error() throw() {}
-charset_conv_error::charset_conv_error(const exception& other)
-	: exception("Charset conversion error.", other) {}
+charset_conv_error::charset_conv_error(const string& what, const exception& other)
+	: exception(what.empty() ? "Charset conversion error." : what, other) {}
 
 exception* charset_conv_error::clone() const { return new charset_conv_error(*this); }
 const char* charset_conv_error::name() const throw() { return "charset_conv_error"; }

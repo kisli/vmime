@@ -24,14 +24,14 @@
 #include <iostream>
 #include <ostream>
 
-#include "../../src/vmime"
-#include "../../examples/common.inc"
+#include "vmime/vmime.hpp"
+#include "vmime/platforms/posix/posixHandler.hpp"
 
 
 int main(int argc, char* argv[])
 {
 	// VMime initialization
-	vmime::platformDependant::setHandler<my_handler>();
+	vmime::platformDependant::setHandler<vmime::platforms::posix::posixHandler>();
 
 
 	const vmime::string from(argv[1]);

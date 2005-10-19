@@ -30,33 +30,6 @@
 #include "vmime/charsetConverter.hpp"
 
 
-extern "C"
-{
-#ifndef VMIME_BUILDING_DOC
-
-	#include <iconv.h>
-	#include <errno.h>
-
-	// HACK: prototypes may differ depending on the compiler and/or system (the
-	// second parameter may or may not be 'const'). This redeclaration is a hack
-	// to have a common prototype "iconv_cast".
-	class ICONV_HACK
-	{
-	public:
-
-		ICONV_HACK(const char** ptr) : m_ptr(ptr) { }
-
-		operator const char**() { return m_ptr; }
-		operator char**() { return const_cast <char**>(m_ptr); }
-
-	private:
-
-		const char** m_ptr;
-	};
-
-#endif // VMIME_BUILDING_DOC
-}
-
 
 namespace vmime
 {

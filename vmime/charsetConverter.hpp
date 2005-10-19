@@ -21,52 +21,35 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#ifndef VMIME_CHARSET_HPP_INCLUDED
-#define VMIME_CHARSET_HPP_INCLUDED
+#ifndef VMIME_CHARSETCONVERTER_HPP_INCLUDED
+#define VMIME_CHARSETCONVERTER_HPP_INCLUDED
 
 
 #include "vmime/base.hpp"
 #include "vmime/component.hpp"
+
+#include "vmime/charset.hpp"
 
 
 namespace vmime
 {
 
 
-/** Charset description (basic type).
+/** Convert between charsets.
   */
 
-class charset : public component
+class charsetConverter : public object
 {
 public:
 
-	charset();
-	charset(const string& name);
-	charset(const char* name); // to allow creation from vmime::charsets constants
-
-public:
-
-	/** Return the ISO name of the charset.
+	/** Construct and initialize a charset converter.
 	  *
-	  * @return charset name
+	  * @param source input charset
+	  * @param dest output charset
 	  */
-	const string& getName() const;
+	charsetConverter(const charset& source, const charset& dest);
 
-	charset& operator=(const charset& other);
-
-	const bool operator==(const charset& value) const;
-	const bool operator!=(const charset& value) const;
-
-	const std::vector <ref <const component> > getChildComponents() const;
-
-	/** Returns the default charset used on the system.
-	  *
-	  * This function simply calls <code>platformDependantHandler::getLocaleCharset()</code>
-	  * and is provided for convenience.
-	  *
-	  * @return system default charset
-	  */
-	static const charset getLocaleCharset();
+	~charsetConverter();
 
 	/** Convert a string buffer from one charset to another
 	  * charset (in-memory conversion)
@@ -76,44 +59,32 @@ public:
 	  *
 	  * @param in input buffer
 	  * @param out output buffer
-	  * @param source input charset
-	  * @param dest output charset
 	  * @throws exceptions::charset_conv_error if an error occured during
 	  * the conversion
 	  */
-	static void convert(const string& in, string& out, const charset& source, const charset& dest);
+	void convert(const string& in, string& out);
 
 	/** Convert the contents of an input stream in a specified charset
 	  * to another charset and write the result to an output stream.
 	  *
 	  * @param in input stream to read data from
 	  * @param out output stream to write the converted data
-	  * @param source input charset
-	  * @param dest output charset
 	  * @throws exceptions::charset_conv_error if an error occured during
 	  * the conversion
 	  */
-	static void convert(utility::inputStream& in, utility::outputStream& out, const charset& source, const charset& dest);
-
-	ref <component> clone() const;
-	void copyFrom(const component& other);
+	void convert(utility::inputStream& in, utility::outputStream& out);
 
 private:
 
-	string m_name;
+	void* m_desc;
 
-public:
-
-	using component::parse;
-	using component::generate;
-
-	// Component parsing & assembling
-	void parse(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition = NULL);
-	void generate(utility::outputStream& os, const string::size_type maxLineLength = lineLengthLimits::infinite, const string::size_type curLinePos = 0, string::size_type* newLinePos = NULL) const;
+	charset m_source;
+	charset m_dest;
 };
 
 
 } // vmime
 
 
-#endif // VMIME_CHARSET_HPP_INCLUDED
+#endif // VMIME_CHARSETCONVERTER_HPP_INCLUDED
+

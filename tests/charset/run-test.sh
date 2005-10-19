@@ -5,7 +5,7 @@ TEMP_DIR="/tmp"
 PROGRAM="./main"
 
 
-testFiles=`cd $TEST_DIR ; find . -regex '\./[^\.]*\.in\..*' -maxdepth 1 -type f`
+testFiles=`cd $TEST_DIR ; find . -maxdepth 1 -regex '\./[^\.]*\.in\..*' -type f`
 
 echo
 echo Testing charset conversions
@@ -16,7 +16,7 @@ for testFile in $testFiles ; do
 	testName=`echo $testFile | sed 's/^\.\/\([^\.]*\).*/\1/'`
 	sourceCharset=`echo $testFile | sed 's/^\.\/[^\.]*\.[^\.]*\.\(.*\)/\1/'`
 
-	testOutFiles=`cd $TEST_DIR ; find . -regex "\./$testName\.out\..*" -maxdepth 1 -type f`
+	testOutFiles=`cd $TEST_DIR ; find . -maxdepth 1 -regex "\./$testName\.out\..*" -type f`
 
 	for testOutFile in $testOutFiles ; do
 

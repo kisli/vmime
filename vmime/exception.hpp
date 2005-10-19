@@ -112,7 +112,7 @@ class charset_conv_error : public vmime::exception
 {
 public:
 
-	charset_conv_error(const exception& other = NO_EXCEPTION);
+	charset_conv_error(const string& what = "", const exception& other = NO_EXCEPTION);
 	~charset_conv_error() throw();
 
 	exception* clone() const;
