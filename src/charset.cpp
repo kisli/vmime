@@ -27,6 +27,8 @@
 
 #include "vmime/utility/stringUtils.hpp"
 
+#include "vmime/charsetConverter.hpp"
+
 
 extern "C"
 {
@@ -103,150 +105,15 @@ void charset::generate(utility::outputStream& os, const string::size_type /* max
 void charset::convert(utility::inputStream& in, utility::outputStream& out,
 	const charset& source, const charset& dest)
 {
-	// Get an iconv descriptor
-	const iconv_t cd = iconv_open(dest.getName().c_str(), source.getName().c_str());
-
-	if (cd != reinterpret_cast <iconv_t>(-1))
-	{
-		char inBuffer[32768];
-		char outBuffer[32768];
-		size_t inPos = 0;
-
-		bool prevIsInvalid = false;
-
-		while (true)
-		{
-			// Fullfill the buffer
-			size_t inLength = static_cast <size_t>(in.read(inBuffer + inPos, sizeof(inBuffer) - inPos) + inPos);
-			size_t outLength = sizeof(outBuffer);
-
-			const char* inPtr = inBuffer;
-			char* outPtr = outBuffer;
-
-			// Convert input bytes
-			if (iconv(cd, ICONV_HACK(&inPtr), &inLength,
-			              &outPtr, &outLength) == static_cast <size_t>(-1))
-			{
-				// Illegal input sequence or input sequence has no equivalent
-				// sequence in the destination charset.
-				if (prevIsInvalid)
-				{
-					// Write successfully converted bytes
-					out.write(outBuffer, sizeof(outBuffer) - outLength);
-
-					// Output a special character to indicate we don't known how to
-					// convert the sequence at this position
-					out.write("?", 1);
-
-					// Skip a byte and leave unconverted bytes in the input buffer
-					std::copy(const_cast <char*>(inPtr + 1), inBuffer + sizeof(inBuffer), inBuffer);
-					inPos = inLength - 1;
-				}
-				else
-				{
-					// Write successfully converted bytes
-					out.write(outBuffer, sizeof(outBuffer) - outLength);
-
-					// Leave unconverted bytes in the input buffer
-					std::copy(const_cast <char*>(inPtr), inBuffer + sizeof(inBuffer), inBuffer);
-					inPos = inLength;
-
-					if (errno != E2BIG)
-						prevIsInvalid = true;
-				}
-			}
-			else
-			{
-				// Write successfully converted bytes
-				out.write(outBuffer, sizeof(outBuffer) - outLength);
-
-				inPos = 0;
-				prevIsInvalid = false;
-			}
-
-			// Check for end of data
-			if (in.eof() && inPos == 0)
-				break;
-		}
-
-		// Close iconv handle
-		iconv_close(cd);
-	}
-	else
-	{
-		throw exceptions::charset_conv_error();
-	}
+	charsetConverter conv(source, dest);
+	conv.convert(in, out);
 }
-
-
-template <class STRINGF, class STRINGT>
-void charset::iconvert(const STRINGF& in, STRINGT& out, const charset& from, const charset& to)
-{
-	// Get an iconv descriptor
-	const iconv_t cd = iconv_open(to.getName().c_str(), from.getName().c_str());
-
-	typedef typename STRINGF::value_type ivt;
-	typedef typename STRINGT::value_type ovt;
-
-	if (cd != reinterpret_cast <iconv_t>(-1))
-	{
-		out.clear();
-
-		char buffer[65536];
-
-		const char* inBuffer = static_cast <const char*>(in.data());
-		size_t inBytesLeft = in.length();
-
-		for ( ; inBytesLeft > 0 ; )
-		{
-			size_t outBytesLeft = sizeof(buffer);
-			char* outBuffer = buffer;
-
-			if (iconv(cd, ICONV_HACK(&inBuffer), &inBytesLeft,
-			              &outBuffer, &outBytesLeft) == static_cast <size_t>(-1))
-			{
-				out += STRINGT(static_cast <ovt*>(buffer), sizeof(buffer) - outBytesLeft);
-
-				// Ignore this "blocking" character and continue
-				out += '?';
-				++inBuffer;
-				--inBytesLeft;
-			}
-			else
-			{
-				out += STRINGT(static_cast <ovt*>(buffer), sizeof(buffer) - outBytesLeft);
-			}
-		}
-
-		// Close iconv handle
-		iconv_close(cd);
-	}
-	else
-	{
-		throw exceptions::charset_conv_error();
-	}
-}
-
-
-#if VMIME_WIDE_CHAR_SUPPORT
-
-void charset::decode(const string& in, wstring& out, const charset& ch)
-{
-	iconvert(in, out, ch, charset("WCHAR_T"));
-}
-
-
-void charset::encode(const wstring& in, string& out, const charset& ch)
-{
-	iconvert(in, out, charset("WCHAR_T"), ch);
-}
-
-#endif
 
 
 void charset::convert(const string& in, string& out, const charset& source, const charset& dest)
 {
-	iconvert(in, out, source, dest);
+	charsetConverter conv(source, dest);
+	conv.convert(in, out);
 }
 
 

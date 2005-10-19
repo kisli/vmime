@@ -49,11 +49,12 @@ int main()
 
 	for (int i = 0 ; i < ef->getEncoderCount() ; ++i)
 	{
-		const vmime::encoderFactory::registeredEncoder& enc = *ef->getEncoderAt(i);
+		vmime::ref <const vmime::encoderFactory::registeredEncoder>
+			enc = ef->getEncoderAt(i);
 
-		std::cout << "  * " << enc.getName() << std::endl;
+		std::cout << "  * " << enc->getName() << std::endl;
 
-		vmime::ref <vmime::encoder> e = enc.create();
+		vmime::ref <vmime::encoder> e = enc->create();
 
 		std::vector <vmime::string> props = e->getAvailableProperties();
 

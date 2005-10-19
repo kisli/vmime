@@ -82,6 +82,7 @@ libvmime_sources = [
 	'bodyPart.cpp', 'bodyPart.hpp',
 	'bodyPartAttachment.cpp', 'bodyPartAttachment.hpp',
 	'charset.cpp', 'charset.hpp',
+	'charsetConverter.cpp', 'charsetConverter.hpp',
 	'component.cpp', 'component.hpp',
 	'constants.cpp', 'constants.hpp',
 	'contentDisposition.cpp', 'contentDisposition.hpp',
