@@ -91,6 +91,7 @@
 // Utilities
 #include "vmime/utility/datetimeUtils.hpp"
 #include "vmime/utility/filteredStream.hpp"
+#include "vmime/charsetConverter.hpp"
 
 // Security
 #include "vmime/security/authenticator.hpp"

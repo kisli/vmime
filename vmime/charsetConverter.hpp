@@ -29,6 +29,7 @@
 #include "vmime/component.hpp"
 
 #include "vmime/charset.hpp"
+#include "vmime/utility/filteredStream.hpp"
 
 
 namespace vmime
@@ -81,6 +82,64 @@ private:
 	charset m_source;
 	charset m_dest;
 };
+
+
+namespace utility {
+
+
+/** A filtered output stream which applies a charset conversion
+  * to input bytes.
+  *
+  * May throw a exceptions::charset_conv_error if an error
+  * occured when initializing convert, or during charset conversion.
+  */
+
+class charsetFilteredOutputStream : public filteredOutputStream
+{
+public:
+
+	/** Construct a new filter for the specified output stream.
+	  *
+	  * @param source input charset
+	  * @param dest output charset
+	  * @param os stream into which write filtered data
+	  */
+	charsetFilteredOutputStream
+		(const charset& source, const charset& dest, outputStream& os);
+
+	~charsetFilteredOutputStream();
+
+
+	outputStream& getNextOutputStream();
+
+	void write(const value_type* const data, const size_type count);
+
+private:
+
+	// Maximum character width in any charset
+	enum { MAX_CHARACTER_WIDTH = 128 };
+
+
+	void* m_desc;
+
+	const charset m_sourceCharset;
+	const charset m_destCharset;
+
+	outputStream& m_stream;
+
+	// Buffer in which unconverted bytes are left until they can
+	// be converted (when more data arrives). The length should be
+	// large enough to contain any character in any charset.
+	value_type m_unconvBuffer[MAX_CHARACTER_WIDTH];
+	size_type m_unconvCount;
+
+	// Buffer used for conversion. Avoids declaring it in write().
+	// Should be at least MAX_CHARACTER_WIDTH * MAX_CHARACTER_WIDTH.
+	value_type m_outputBuffer[32768];
+};
+
+
+} // utility
 
 
 } // vmime
