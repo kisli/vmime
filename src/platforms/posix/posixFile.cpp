@@ -119,6 +119,12 @@ void posixFileWriterOutputStream::write(const value_type* const data, const size
 }
 
 
+void posixFileWriterOutputStream::flush()
+{
+	::fsync(m_fd);
+}
+
+
 
 //
 // posixFileReaderInputStream

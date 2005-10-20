@@ -516,6 +516,13 @@ void windowsFileWriterOutputStream::write(const value_type* const data, const si
 		windowsFileSystemFactory::reportError(m_path, GetLastError());
 }
 
+
+void windowsFileWriterOutputStream::flush()
+{
+	// TODO
+}
+
+
 } // windows
 } // platforms
 } // vmime

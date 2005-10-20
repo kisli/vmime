@@ -542,6 +542,8 @@ void SMTPTransport::send(const mailbox& expeditor, const mailboxList& recipients
 
 	utility::bufferedStreamCopy(is, fos, size, progress);
 
+	fos.flush();
+
 	// Send end-of-data delimiter
 	m_socket->sendRaw("\r\n.\r\n", 5);
 

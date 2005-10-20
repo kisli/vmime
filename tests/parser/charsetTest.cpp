@@ -101,6 +101,9 @@ VMIME_TEST_SUITE_BEGIN
 		VMIME_TEST(testFilterValid2)
 		VMIME_TEST(testFilterValid3)
 
+		// Test invalid input
+		VMIME_TEST(testFilterInvalid1)
+
 		// TODO: more tests
 	VMIME_TEST_LIST_END
 
@@ -130,6 +133,8 @@ VMIME_TEST_SUITE_BEGIN
 		vmime::charset::convert
 			(is, os, inputCharset, outputCharset);
 
+		os.flush();
+
 		VASSERT_EQ("1", toHex(expectedOut), toHex(actualOut));
 	}
 
@@ -147,6 +152,8 @@ VMIME_TEST_SUITE_BEGIN
 		vmime::utility::inputStreamStringAdapter is(in);
 
 		vmime::utility::bufferedStreamCopy(is, os);
+
+		os.flush();
 
 		VASSERT_EQ("1", toHex(expectedOut), toHex(actualOut));
 	}
@@ -169,6 +176,8 @@ VMIME_TEST_SUITE_BEGIN
 		for (int i = 0 ; !is.eof() ; ++i)
 			os.write(buffer, is.read(buffer, 1));
 
+		os.flush();
+
 		VASSERT_EQ("1", toHex(expectedOut), toHex(actualOut));
 	}
 
@@ -189,6 +198,31 @@ VMIME_TEST_SUITE_BEGIN
 
 		for (int i = 0 ; !is.eof() ; ++i)
 			os.write(buffer, is.read(buffer, (i % 5) + 1));
+
+		os.flush();
+
+		VASSERT_EQ("1", toHex(expectedOut), toHex(actualOut));
+	}
+
+	void testFilterInvalid1()
+	{
+		vmime::string in("foo\xab\xcd\xef bar");
+		vmime::string expectedOut("foo??? bar");
+
+		vmime::string actualOut;
+		vmime::utility::outputStreamStringAdapter osa(actualOut);
+		vmime::utility::charsetFilteredOutputStream os
+			(vmime::charset("utf-8"),
+			 vmime::charset("iso-8859-1"), osa);
+
+		vmime::utility::inputStreamStringAdapter is(in);
+
+		vmime::utility::stream::value_type buffer[16];
+
+		for (int i = 0 ; !is.eof() ; ++i)
+			os.write(buffer, is.read(buffer, 1));
+
+		os.flush();
 
 		VASSERT_EQ("1", toHex(expectedOut), toHex(actualOut));
 	}

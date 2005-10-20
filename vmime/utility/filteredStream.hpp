@@ -112,6 +112,7 @@ public:
 	outputStream& getNextOutputStream();
 
 	void write(const value_type* const data, const size_type count);
+	void flush();
 
 private:
 
@@ -137,6 +138,7 @@ public:
 	outputStream& getNextOutputStream();
 
 	void write(const value_type* const data, const size_type count);
+	void flush();
 
 private:
 

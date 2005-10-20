@@ -160,6 +160,13 @@ void dotFilteredOutputStream::write
 }
 
 
+void dotFilteredOutputStream::flush()
+{
+	// Do nothing
+	m_stream.flush();
+}
+
+
 // CRLFToLFFilteredOutputStream
 
 CRLFToLFFilteredOutputStream::CRLFToLFFilteredOutputStream(outputStream& os)
@@ -185,8 +192,8 @@ void CRLFToLFFilteredOutputStream::write
 	const value_type* start = data;
 
 	// Warning: if the whole buffer finishes with '\r', this
-	// last character will not be written back...
-	// TODO: add a finalize() method?
+	// last character will not be written back if flush() is
+	// not called
 	if (m_previousChar == '\r')
 	{
 		if (*pos != '\n')
@@ -225,6 +232,14 @@ void CRLFToLFFilteredOutputStream::write
 		m_stream.write(start, end - start);
 		m_previousChar = data[count - 1];
 	}
+}
+
+
+void CRLFToLFFilteredOutputStream::flush()
+{
+	m_stream.flush();
+
+	// TODO
 }
 
 

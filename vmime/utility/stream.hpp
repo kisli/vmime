@@ -88,6 +88,11 @@ public:
 	  * @param count number of bytes to write
 	  */
 	virtual void write(const value_type* const data, const size_type count) = 0;
+
+	/** Flush this output stream and forces any buffered output
+	  * bytes to be written out to the stream.
+	  */
+	virtual void flush() = 0;
 };
 
 
@@ -205,6 +210,7 @@ public:
 	outputStreamAdapter(std::ostream& os);
 
 	void write(const value_type* const data, const size_type count);
+	void flush();
 
 private:
 
@@ -222,6 +228,7 @@ public:
 	outputStreamStringAdapter(string& buffer);
 
 	void write(const value_type* const data, const size_type count);
+	void flush();
 
 private:
 
@@ -239,6 +246,7 @@ public:
 	outputStreamByteArrayAdapter(byteArray& array);
 
 	void write(const value_type* const data, const size_type count);
+	void flush();
 
 private:
 
@@ -383,6 +391,7 @@ public:
 	outputStreamSocketAdapter(net::socket& sok);
 
 	void write(const value_type* const data, const size_type count);
+	void flush();
 
 private:
 

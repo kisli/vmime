@@ -47,6 +47,7 @@ public:
 	~posixFileWriterOutputStream();
 
 	void write(const value_type* const data, const size_type count);
+	void flush();
 
 private:
 

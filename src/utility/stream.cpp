@@ -100,6 +100,12 @@ void outputStreamAdapter::write
 }
 
 
+void outputStreamAdapter::flush()
+{
+	m_stream.flush();
+}
+
+
 
 // outputStreamStringAdapter
 
@@ -116,6 +122,12 @@ void outputStreamStringAdapter::write(const value_type* const data, const size_t
 }
 
 
+void outputStreamStringAdapter::flush()
+{
+	// Do nothing
+}
+
+
 
 // outputStreamByteArrayAdapter
 
@@ -129,6 +141,12 @@ outputStreamByteArrayAdapter::outputStreamByteArrayAdapter(byteArray& array)
 void outputStreamByteArrayAdapter::write(const value_type* const data, const size_type count)
 {
 	m_array.insert(m_array.end(), data, data + count);
+}
+
+
+void outputStreamByteArrayAdapter::flush()
+{
+	// Do nothing
 }
 
 
@@ -421,6 +439,12 @@ void outputStreamSocketAdapter::write
 }
 
 
+void outputStreamSocketAdapter::flush()
+{
+	// Do nothing
+}
+
+
 // inputStreamSocketAdapter
 
 inputStreamSocketAdapter::inputStreamSocketAdapter(net::socket& sok)
@@ -458,8 +482,6 @@ const stream::size_type inputStreamSocketAdapter::skip
 
 
 #endif // VMIME_HAVE_MESSAGING_FEATURES
-
-
 
 
 } // utility

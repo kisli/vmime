@@ -119,6 +119,11 @@ public:
 		}
 	}
 
+	void flush()
+	{
+		::fsync(m_desc);
+	}
+
 private:
 
 	const int m_desc;

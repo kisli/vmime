@@ -162,6 +162,8 @@ void charsetConverter::convert(const string& in, string& out)
 	utility::outputStreamStringAdapter os(out);
 
 	convert(is, os);
+
+	os.flush();
 }
 
 
@@ -324,6 +326,60 @@ void charsetFilteredOutputStream::write
 			curDataLen -= inLength0;
 		}
 	}
+}
+
+
+void charsetFilteredOutputStream::flush()
+{
+	if (m_desc == NULL)
+		throw exceptions::charset_conv_error("Cannot initialize converter.");
+
+	const iconv_t cd = *static_cast <iconv_t*>(m_desc);
+
+	size_t offset = 0;
+
+	// Process unconverted bytes
+	while (m_unconvCount != 0)
+	{
+		// Try a conversion
+		const char* inPtr = m_unconvBuffer + offset;
+		size_t inLength = m_unconvCount;
+		char* outPtr = m_outputBuffer;
+		size_t outLength = sizeof(m_outputBuffer);
+
+		const size_t inLength0 = inLength;
+
+		if (iconv(cd, ICONV_HACK(&inPtr), &inLength, &outPtr, &outLength) == static_cast <size_t>(-1))
+		{
+			const size_t inputConverted = inLength0 - inLength;
+
+			// Skip a "blocking" character
+			if (inputConverted == 0)
+			{
+				m_stream.write("?", 1);
+
+				offset++;
+				m_unconvCount--;
+			}
+			else
+			{
+				// Write successfully converted bytes
+				m_stream.write(m_outputBuffer, sizeof(m_outputBuffer) - outLength);
+
+				offset += inputConverted;
+				m_unconvCount -= inputConverted;
+			}
+		}
+		else
+		{
+			// Write successfully converted bytes
+			m_stream.write(m_outputBuffer, sizeof(m_outputBuffer) - outLength);
+
+			m_unconvCount = 0;
+		}
+	}
+
+	m_stream.flush();
 }
 
 
