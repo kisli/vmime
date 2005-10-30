@@ -21,40 +21,59 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#ifndef VMIME_NET_TLS_CERTIFICATEVERIFIER_HPP_INCLUDED
-#define VMIME_NET_TLS_CERTIFICATEVERIFIER_HPP_INCLUDED
+#ifndef VMIME_SECURITY_CERT_CERTIFICATECHAIN_HPP_INCLUDED
+#define VMIME_SECURITY_CERT_CERTIFICATECHAIN_HPP_INCLUDED
 
 
 #include "vmime/types.hpp"
 
-#include "vmime/net/tls/certificateChain.hpp"
+#include "vmime/security/cert/certificate.hpp"
 
 
 namespace vmime {
-namespace net {
-namespace tls {
+namespace security {
+namespace cert {
 
 
-/** Verify that a certificate path issued by a server can be trusted.
+/** An ordered list of certificates, from the subject certificate to
+  * the issuer certificate.
   */
-class certificateVerifier : public object
+class certificateChain : public object
 {
 public:
 
-	/** Verify that the specified certificate chain is trusted.
+	/** Construct a new certificateChain object given an ordered list
+	  * of certificates.
 	  *
-	  * @param chain certificate chain
-	  * @throw exceptions::certificate_verification_exception if one
-	  * or more certificates can not be trusted
+	  * @param certs chain of certificates
 	  */
-	virtual void verify(ref <certificateChain> chain) = 0;
+	certificateChain(const std::vector <ref <certificate> >& certs);
+
+	/** Return the number of certificates in the chain.
+	  *
+	  * @return number of certificates in the chain
+	  */
+	const unsigned int getCount() const;
+
+	/** Return the certificate at the specified position. 0 is the
+	  * subject certificate, 1 is the issuer's certificate, 2 is
+	  * the issuer's issuer, etc.
+	  *
+	  * @param index position at which to retrieve certificate
+	  * @return certificate at the specified position
+	  */
+	ref <certificate> getAt(const unsigned int index);
+
+protected:
+
+	std::vector <ref <certificate> > m_certs;
 };
 
 
-} // tls
-} // net
+} // cert
+} // security
 } // vmime
 
 
-#endif // VMIME_NET_TLS_CERTIFICATEVERIFIER_HPP_INCLUDED
+#endif // VMIME_SECURITY_CERT_CERTIFICATECHAIN_HPP_INCLUDED
 

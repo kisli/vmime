@@ -91,7 +91,7 @@ static TLSGlobal g_gnutlsGlobal;
 
 
 
-TLSSession::TLSSession(ref <certificateVerifier> cv)
+TLSSession::TLSSession(ref <security::cert::certificateVerifier> cv)
 	: m_certVerifier(cv)
 {
 	int res;
@@ -212,7 +212,7 @@ ref <TLSSocket> TLSSession::getSocket(ref <socket> sok)
 }
 
 
-ref <tls::certificateVerifier> TLSSession::getCertificateVerifier()
+ref <security::cert::certificateVerifier> TLSSession::getCertificateVerifier()
 {
 	return m_certVerifier;
 }

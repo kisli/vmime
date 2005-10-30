@@ -21,12 +21,12 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#include "vmime/net/tls/certificateChain.hpp"
+#include "vmime/security/cert/certificateChain.hpp"
 
 
 namespace vmime {
-namespace net {
-namespace tls {
+namespace security {
+namespace cert {
 
 
 certificateChain::certificateChain(const std::vector <ref <certificate> >& certs)
@@ -47,7 +47,7 @@ ref <certificate> certificateChain::getAt(const unsigned int index)
 }
 
 
-} // tls
-} // net
+} // cert
+} // security
 } // vmime
 

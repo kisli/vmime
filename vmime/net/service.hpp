@@ -36,7 +36,7 @@
 #include "vmime/net/timeoutHandler.hpp"
 
 #if VMIME_HAVE_TLS_SUPPORT
-	#include "vmime/net/tls/certificateVerifier.hpp"
+	#include "vmime/security/cert/certificateVerifier.hpp"
 #endif // VMIME_HAVE_TLS_SUPPORT
 
 #include "vmime/utility/progressListener.hpp"
@@ -139,12 +139,12 @@ public:
 	/** Set the object responsible for verifying certificates when
 	  * using secured connections (TLS/SSL).
 	  */
-	void setCertificateVerifier(ref <tls::certificateVerifier> cv);
+	void setCertificateVerifier(ref <security::cert::certificateVerifier> cv);
 
 	/** Get the object responsible for verifying certificates when
 	  * using secured connections (TLS/SSL).
 	  */
-	ref <tls::certificateVerifier> getCertificateVerifier();
+	ref <security::cert::certificateVerifier> getCertificateVerifier();
 
 #endif // VMIME_HAVE_TLS_SUPPORT
 
@@ -197,7 +197,7 @@ private:
 	ref <security::authenticator> m_auth;
 
 #if VMIME_HAVE_TLS_SUPPORT
-	ref <tls::certificateVerifier> m_certVerifier;
+	ref <security::cert::certificateVerifier> m_certVerifier;
 #endif // VMIME_HAVE_TLS_SUPPORT
 
 	ref <socketFactory> m_socketFactory;

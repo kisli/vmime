@@ -21,11 +21,11 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#ifndef VMIME_NET_TLS_X509CERTIFICATE_HPP_INCLUDED
-#define VMIME_NET_TLS_X509CERTIFICATE_HPP_INCLUDED
+#ifndef VMIME_SECURITY_CERT_X509CERTIFICATE_HPP_INCLUDED
+#define VMIME_SECURITY_CERT_X509CERTIFICATE_HPP_INCLUDED
 
 
-#include "vmime/net/tls/certificate.hpp"
+#include "vmime/security/cert/certificate.hpp"
 
 #include "vmime/utility/stream.hpp"
 
@@ -34,8 +34,8 @@
 
 
 namespace vmime {
-namespace net {
-namespace tls {
+namespace security {
+namespace cert {
 
 
 /** Identity certificate based on X.509 standard.
@@ -149,10 +149,10 @@ private:
 };
 
 
-} // tls
-} // net
+} // cert
+} // security
 } // vmime
 
 
-#endif // VMIME_NET_TLS_X509CERTIFICATE_HPP_INCLUDED
+#endif // VMIME_SECURITY_CERT_X509CERTIFICATE_HPP_INCLUDED
 

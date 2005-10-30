@@ -26,12 +26,12 @@
 
 #include <ctime>
 
-#include "vmime/net/tls/X509Certificate.hpp"
+#include "vmime/security/cert/X509Certificate.hpp"
 
 
 namespace vmime {
-namespace net {
-namespace tls {
+namespace security {
+namespace cert {
 
 
 #ifndef VMIME_BUILDING_DOC
@@ -267,7 +267,7 @@ const bool X509Certificate::equals(ref <const certificate> other) const
 }
 
 
-} // tls
-} // net
+} // cert
+} // security
 } // vmime
 

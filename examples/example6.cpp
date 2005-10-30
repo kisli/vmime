@@ -101,11 +101,11 @@ private:
 #if VMIME_HAVE_TLS_SUPPORT
 
 // Certificate verifier (TLS/SSL)
-class interactiveCertificateVerifier : public vmime::net::tls::defaultCertificateVerifier
+class interactiveCertificateVerifier : public vmime::security::cert::defaultCertificateVerifier
 {
 public:
 
-        void verify(vmime::ref <vmime::net::tls::certificateChain> chain)
+        void verify(vmime::ref <vmime::security::cert::certificateChain> chain)
 	{
 		try
 		{
@@ -116,7 +116,7 @@ public:
 		catch (vmime::exceptions::certificate_verification_exception&)
 		{
 			// Obtain subject's certificate
-			vmime::ref <vmime::net::tls::certificate> cert = chain->getAt(0);
+			vmime::ref <vmime::security::cert::certificate> cert = chain->getAt(0);
 
 			std::cout << std::endl;
 			std::cout << "Server sent a '" << cert->getType() << "'" << " certificate." << std::endl;
@@ -133,7 +133,7 @@ public:
 				if (cert->getType() == "X.509")
 				{
 					m_trustedCerts.push_back(cert.dynamicCast
-						<vmime::net::tls::X509Certificate>());
+						<vmime::security::cert::X509Certificate>());
 				}
 
 				return;
@@ -146,11 +146,11 @@ public:
 
 private:
 
-	static std::vector <vmime::ref <vmime::net::tls::X509Certificate> > m_trustedCerts;
+	static std::vector <vmime::ref <vmime::security::cert::X509Certificate> > m_trustedCerts;
 };
 
 
-std::vector <vmime::ref <vmime::net::tls::X509Certificate> >
+std::vector <vmime::ref <vmime::security::cert::X509Certificate> >
 	interactiveCertificateVerifier::m_trustedCerts;
 
 #endif // VMIME_HAVE_TLS_SUPPORT

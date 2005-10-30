@@ -29,7 +29,7 @@
 #endif // VMIME_HAVE_SASL_SUPPORT
 
 #if VMIME_HAVE_TLS_SUPPORT
-	#include "vmime/net/tls/defaultCertificateVerifier.hpp"
+	#include "vmime/security/cert/defaultCertificateVerifier.hpp"
 #endif // VMIME_HAVE_TLS_SUPPORT
 
 
@@ -53,7 +53,7 @@ service::service(ref <session> sess, const serviceInfos& /* infos */,
 	}
 
 #if VMIME_HAVE_TLS_SUPPORT
-	m_certVerifier = vmime::create <tls::defaultCertificateVerifier>();
+	m_certVerifier = vmime::create <security::cert::defaultCertificateVerifier>();
 #endif // VMIME_HAVE_TLS_SUPPORT
 
 	m_socketFactory = platformDependant::getHandler()->getSocketFactory();
@@ -97,13 +97,13 @@ void service::setAuthenticator(ref <security::authenticator> auth)
 
 #if VMIME_HAVE_TLS_SUPPORT
 
-void service::setCertificateVerifier(ref <tls::certificateVerifier> cv)
+void service::setCertificateVerifier(ref <security::cert::certificateVerifier> cv)
 {
 	m_certVerifier = cv;
 }
 
 
-ref <tls::certificateVerifier> service::getCertificateVerifier()
+ref <security::cert::certificateVerifier> service::getCertificateVerifier()
 {
 	return m_certVerifier;
 }

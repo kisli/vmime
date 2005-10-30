@@ -218,11 +218,11 @@ libvmime_messaging_sources = [
 libvmime_net_tls_sources = [
 	'net/tls/TLSSession.cpp', 'net/tls/TLSSession.hpp',
 	'net/tls/TLSSocket.cpp', 'net/tls/TLSSocket.hpp',
-	'net/tls/certificateChain.cpp', 'net/tls/certificateChain.hpp',
-	'net/tls/certificateVerifier.hpp',
-	'net/tls/defaultCertificateVerifier.cpp', 'net/tls/defaultCertificateVerifier.hpp',
-	'net/tls/certificate.hpp',
-	'net/tls/X509Certificate.cpp', 'net/tls/X509Certificate.hpp'
+	'security/cert/certificateChain.cpp', 'security/cert/certificateChain.hpp',
+	'security/cert/certificateVerifier.hpp',
+	'security/cert/defaultCertificateVerifier.cpp', 'security/cert/defaultCertificateVerifier.hpp',
+	'security/cert/certificate.hpp',
+	'security/cert/X509Certificate.cpp', 'security/cert/X509Certificate.hpp'
 ]
 
 libvmime_messaging_proto_sources = [

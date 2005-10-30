@@ -124,13 +124,13 @@
 
 // Net/TLS
 #if VMIME_HAVE_TLS_SUPPORT
-	#include "vmime/net/tls/certificate.hpp"
-	#include "vmime/net/tls/certificateChain.hpp"
-	#include "vmime/net/tls/certificateVerifier.hpp"
+	#include "vmime/security/cert/certificate.hpp"
+	#include "vmime/security/cert/certificateChain.hpp"
+	#include "vmime/security/cert/certificateVerifier.hpp"
 
-	#include "vmime/net/tls/X509Certificate.hpp"
+	#include "vmime/security/cert/X509Certificate.hpp"
 
-	#include "vmime/net/tls/defaultCertificateVerifier.hpp"
+	#include "vmime/security/cert/defaultCertificateVerifier.hpp"
 
 	#include "vmime/net/tls/TLSSession.hpp"
 #endif // VMIME_HAVE_TLS_SUPPORT

@@ -30,7 +30,7 @@
 #include "vmime/net/socket.hpp"
 #include "vmime/net/timeoutHandler.hpp"
 
-#include "vmime/net/tls/certificateChain.hpp"
+#include "vmime/security/cert/certificateChain.hpp"
 
 
 namespace vmime {
@@ -75,7 +75,7 @@ public:
 	  * @return server certificate chain, or NULL if the handshake
 	  * has not been performed yet
 	  */
-	ref <certificateChain> getPeerCertificates();
+	ref <security::cert::certificateChain> getPeerCertificates();
 
 
 	// Implementation of 'socket'

@@ -29,7 +29,7 @@
 
 #include "vmime/platformDependant.hpp"
 
-#include "vmime/net/tls/X509Certificate.hpp"
+#include "vmime/security/cert/X509Certificate.hpp"
 
 
 namespace vmime {
@@ -185,7 +185,7 @@ void TLSSocket::handshake(ref <timeoutHandler> toHandler)
 	m_toHandler = NULL;
 
 	// Verify server's certificate(s)
-	ref <certificateChain> certs = getPeerCertificates();
+	ref <security::cert::certificateChain> certs = getPeerCertificates();
 
 	if (certs == NULL)
 		throw exceptions::tls_exception("No peer certificate.");
@@ -280,7 +280,7 @@ ssize_t TLSSocket::gnutlsPullFunc
 }
 
 
-ref <certificateChain> TLSSocket::getPeerCertificates()
+ref <security::cert::certificateChain> TLSSocket::getPeerCertificates()
 {
 	unsigned int certCount = 0;
 	const gnutls_datum* rawData = gnutls_certificate_get_peers
@@ -304,7 +304,7 @@ ref <certificateChain> TLSSocket::getPeerCertificates()
 
 	if (res >= 1)
 	{
-		std::vector <ref <certificate> > certs;
+		std::vector <ref <security::cert::certificate> > certs;
 		bool error = false;
 
 		count = static_cast <unsigned int>(res);
@@ -321,8 +321,8 @@ ref <certificateChain> TLSSocket::getPeerCertificates()
 			gnutls_x509_crt_export(x509Certs[i],
 				GNUTLS_X509_FMT_DER, data, &dataSize);
 
-			ref <X509Certificate> cert =
-				X509Certificate::import(data, dataSize);
+			ref <security::cert::X509Certificate> cert =
+				security::cert::X509Certificate::import(data, dataSize);
 
 			if (cert != NULL)
 				certs.push_back(cert);
@@ -339,7 +339,7 @@ ref <certificateChain> TLSSocket::getPeerCertificates()
 		if (error)
 			return NULL;
 
-		return vmime::create <certificateChain>(certs);
+		return vmime::create <security::cert::certificateChain>(certs);
 	}
 
 	delete [] x509Certs;

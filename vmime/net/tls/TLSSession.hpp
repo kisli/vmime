@@ -29,7 +29,7 @@
 
 #include "vmime/net/tls/TLSSocket.hpp"
 
-#include "vmime/net/tls/certificateVerifier.hpp"
+#include "vmime/security/cert/certificateVerifier.hpp"
 
 
 namespace vmime {
@@ -53,7 +53,7 @@ public:
 	  * sent by the server
 	  * @return a new TLS session
 	  */
-	TLSSession(ref <certificateVerifier> cv);
+	TLSSession(ref <security::cert::certificateVerifier> cv);
 
 	/** Create a new socket that adds a TLS security layer around
 	  * an existing socket. You should create only one socket
@@ -67,7 +67,7 @@ public:
 	/** Get the object responsible for verifying certificates when
 	  * using secured connections (TLS/SSL).
 	  */
-	ref <tls::certificateVerifier> getCertificateVerifier();
+	ref <security::cert::certificateVerifier> getCertificateVerifier();
 
 private:
 
@@ -82,7 +82,7 @@ private:
 	void* m_gnutlsSession;
 #endif // LIBGNUTLS_VERSION
 
-	ref <certificateVerifier> m_certVerifier;
+	ref <security::cert::certificateVerifier> m_certVerifier;
 };
 
 
