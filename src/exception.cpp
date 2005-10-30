@@ -677,6 +677,30 @@ const char* file_not_found::name() const throw() { return "file_not_found"; }
 #endif // VMIME_HAVE_FILESYSTEM_FEATURES
 
 
+//
+// authentication_exception
+//
+
+authentication_exception::~authentication_exception() throw() {}
+authentication_exception::authentication_exception(const string& what, const exception& other)
+	: exception(what, other) {}
+
+exception* authentication_exception::clone() const { return new authentication_exception(*this); }
+const char* authentication_exception::name() const throw() { return "authentication_exception"; }
+
+
+//
+// no_auth_information
+//
+
+no_auth_information::~no_auth_information() throw() {}
+no_auth_information::no_auth_information(const exception& other)
+	: authentication_exception("Information cannot be provided.", other) {}
+
+exception* no_auth_information::clone() const { return new no_auth_information(*this); }
+const char* no_auth_information::name() const throw() { return "no_auth_information"; }
+
+
 #if VMIME_HAVE_SASL_SUPPORT
 
 
@@ -686,7 +710,7 @@ const char* file_not_found::name() const throw() { return "file_not_found"; }
 
 sasl_exception::~sasl_exception() throw() {}
 sasl_exception::sasl_exception(const string& what, const exception& other)
-	: exception(what, other) {}
+	: authentication_exception(what, other) {}
 
 exception* sasl_exception::clone() const { return new sasl_exception(*this); }
 const char* sasl_exception::name() const throw() { return "sasl_exception"; }
@@ -702,18 +726,6 @@ no_such_mechanism::no_such_mechanism(const string& name, const exception& other)
 
 exception* no_such_mechanism::clone() const { return new no_such_mechanism(*this); }
 const char* no_such_mechanism::name() const throw() { return "no_such_mechanism"; }
-
-
-//
-// no_auth_information
-//
-
-no_auth_information::~no_auth_information() throw() {}
-no_auth_information::no_auth_information(const exception& other)
-	: sasl_exception("Information cannot be provided.", other) {}
-
-exception* no_auth_information::clone() const { return new no_auth_information(*this); }
-const char* no_auth_information::name() const throw() { return "no_auth_information"; }
 
 
 #endif // VMIME_HAVE_SASL_SUPPORT
@@ -777,3 +789,4 @@ const char* unsupported_certificate_type::name() const throw() { return "unsuppo
 
 
 } // vmime
+
