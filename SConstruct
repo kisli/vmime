@@ -1487,7 +1487,7 @@ case 4 in
 $ac_cv_sizeof_int)
   VMIME_TYPE_INT32=int
   ;;
-$ac_cv_sizeof_int)
+$ac_cv_sizeof_long)
   VMIME_TYPE_INT32=long
   ;;
 *)
