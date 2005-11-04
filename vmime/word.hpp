@@ -25,7 +25,7 @@
 #define VMIME_WORD_HPP_INCLUDED
 
 
-#include "vmime/component.hpp"
+#include "vmime/headerFieldValue.hpp"
 #include "vmime/charset.hpp"
 
 
@@ -37,7 +37,7 @@ namespace vmime
   * some text encoded into one specified charset.
   */
 
-class word : public component
+class word : public headerFieldValue
 {
 	friend class text;
 

@@ -27,6 +27,8 @@
 
 #include "vmime/mdn/MDNInfos.hpp"
 
+#include "vmime/mailbox.hpp"
+
 
 namespace vmime {
 namespace mdn {

@@ -28,6 +28,9 @@
 #include "vmime/defaultAttachment.hpp"
 #include "vmime/textPartFactory.hpp"
 
+#include "vmime/relay.hpp"
+#include "vmime/contentTypeField.hpp"
+
 
 namespace vmime
 {
@@ -59,16 +62,16 @@ void messageParser::parse(ref <const message> msg)
 #ifndef VMIME_BUILDING_DOC
 
 #define TRY_FIELD(var, type, name) \
-	try { var = dynamic_cast<type&>(*msg->getHeader()->findField(name)).getValue(); } \
+	try { var = *msg->getHeader()->findField(name)->getValue().dynamicCast <type>(); } \
 	catch (exceptions::no_such_field) { }
 
-	TRY_FIELD(m_from, mailboxField, fields::FROM);
+	TRY_FIELD(m_from, mailbox, fields::FROM);
 
-	TRY_FIELD(m_to, addressListField, fields::TO);
-	TRY_FIELD(m_cc, addressListField, fields::CC);
-	TRY_FIELD(m_bcc, addressListField, fields::BCC);
+	TRY_FIELD(m_to, addressList, fields::TO);
+	TRY_FIELD(m_cc, addressList, fields::CC);
+	TRY_FIELD(m_bcc, addressList, fields::BCC);
 
-	TRY_FIELD(m_subject, textField, fields::SUBJECT);
+	TRY_FIELD(m_subject, text, fields::SUBJECT);
 
 #undef TRY_FIELD
 
@@ -77,19 +80,15 @@ void messageParser::parse(ref <const message> msg)
 	// Date
 	try
 	{
-		vmime::relayField& recv = dynamic_cast <vmime::relayField&>
-			(*msg->getHeader()->findField(fields::RECEIVED));
-
-		m_date = recv.getValue().getDate();
+		const headerField& recv = *msg->getHeader()->findField(fields::RECEIVED);
+		m_date = recv.getValue().dynamicCast <const relay>()->getDate();
 	}
 	catch (vmime::exceptions::no_such_field&)
 	{
 		try
 		{
-			vmime::dateField& date = dynamic_cast <vmime::dateField&>
-				(*msg->getHeader()->findField(fields::DATE));
-
-			m_date = date.getValue();
+			const headerField& date = *msg->getHeader()->findField(fields::DATE);
+			m_date = *date.getValue().dynamicCast <const datetime>();
 		}
 		catch (vmime::exceptions::no_such_field&)
 		{
@@ -125,13 +124,16 @@ void messageParser::findTextParts(const bodyPart& msg, const bodyPart& part)
 			const contentTypeField& ctf = dynamic_cast<contentTypeField&>
 				(*msg.getHeader()->findField(fields::CONTENT_TYPE));
 
-			if (ctf.getValue().getType() == mediaTypes::TEXT)
+			const mediaType ctfType =
+				*ctf.getValue().dynamicCast <const mediaType>();
+
+			if (ctfType.getType() == mediaTypes::TEXT)
 			{
-				type = ctf.getValue();
+				type = ctfType;
 				accept = true;
 			}
 		}
-		catch (exceptions::no_such_field)
+		catch (exceptions::no_such_field&)
 		{
 			// No "Content-type" field: assume "text/plain".
 			accept = true;
@@ -171,12 +173,14 @@ bool messageParser::findSubTextParts(const bodyPart& msg, const bodyPart& part)
 			const contentTypeField& ctf = dynamic_cast <const contentTypeField&>
 				(*(p->getHeader()->findField(fields::CONTENT_TYPE)));
 
-			if (ctf.getValue().getType() == mediaTypes::TEXT)
+			const mediaType type = *ctf.getValue().dynamicCast <const mediaType>();
+
+			if (type.getType() == mediaTypes::TEXT)
 			{
 				textParts.push_back(p);
 			}
 		}
-		catch (exceptions::no_such_field)
+		catch (exceptions::no_such_field&)
 		{
 			// No "Content-type" field.
 		}
@@ -191,9 +195,11 @@ bool messageParser::findSubTextParts(const bodyPart& msg, const bodyPart& part)
 			const contentTypeField& ctf = dynamic_cast <const contentTypeField&>
 				(*((*p)->getHeader()->findField(fields::CONTENT_TYPE)));
 
+			const mediaType type = *ctf.getValue().dynamicCast <const mediaType>();
+
 			try
 			{
-				ref <textPart> txtPart = textPartFactory::getInstance()->create(ctf.getValue());
+				ref <textPart> txtPart = textPartFactory::getInstance()->create(type);
 				txtPart->parse(msg, part, **p);
 
 				m_textParts.push_back(txtPart);

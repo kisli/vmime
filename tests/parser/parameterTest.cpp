@@ -33,40 +33,30 @@ VMIME_TEST_SUITE_BEGIN
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testParse)
 		VMIME_TEST(testGenerate)
+		VMIME_TEST(testNonStandardEncodedParam)
 	VMIME_TEST_LIST_END
 
 
 	// HACK: parameterizedHeaderField constructor is private
 	class parameterizedHeaderField : public vmime::parameterizedHeaderField
 	{
-	private:
-
-		vmime::ref <vmime::typeAdapter <vmime::string> > m_value;
-
 	public:
 
 		parameterizedHeaderField()
-			: headerField("F"),
-			  m_value(vmime::create <vmime::typeAdapter <vmime::string> >("X"))
+			: headerField("F")
 		{
+			setValue(vmime::headerFieldFactory::getInstance()->createValue(getName()));
+			setValue(vmime::word("X"));
 		}
-
-		const vmime::component& getValue() const { return *m_value; }
-		vmime::component& getValue() { return *m_value; }
-
-		void setValue(const vmime::component&) { /* Do nothing */ }
-
-		const vmime::ref <const vmime::component> getValueImp() const { return m_value; }
-		vmime::ref <vmime::component> getValueImp() { return m_value; }
 	};
 
 
 #define PARAM_VALUE(p, n) (p.getParameterAt(n)->getValue().generate())
 #define PARAM_NAME(p, n) (p.getParameterAt(n)->getName())
-#define PARAM_CHARSET(p, n) ( \
-	(p.getParameterAt(n).staticCast <vmime::defaultParameter>())->getValue().getCharset().generate())
-#define PARAM_BUFFER(p, n) ( \
-	(p.getParameterAt(n).staticCast <vmime::defaultParameter>())->getValue().getBuffer())
+#define PARAM_CHARSET(p, n) \
+	(p.getParameterAt(n)->getValue().getCharset().generate())
+#define PARAM_BUFFER(p, n) \
+	(p.getParameterAt(n)->getValue().getBuffer())
 
 
 	void testParse()
@@ -201,32 +191,32 @@ VMIME_TEST_SUITE_BEGIN
 	{
 		// Simple parameter/value
 		parameterizedHeaderField p1;
-		p1.appendParameter(vmime::parameterFactory::getInstance()->create("param1", "value1"));
+		p1.appendParameter(vmime::create <vmime::parameter>("param1", "value1"));
 
 		VASSERT_EQ("1", "F: X; param1=value1", p1.generate());
 
 		// Value that needs quoting (1/2)
 		parameterizedHeaderField p2a;
-		p2a.appendParameter(vmime::parameterFactory::getInstance()->create("param1", "value1a;value1b"));
+		p2a.appendParameter(vmime::create <vmime::parameter>("param1", "value1a;value1b"));
 
 		VASSERT_EQ("2a", "F: X; param1=\"value1a;value1b\"", p2a.generate());
 
 		// Value that needs quoting (2/2)
 		parameterizedHeaderField p2b;
-		p2b.appendParameter(vmime::parameterFactory::getInstance()->create("param1", "va\\lue\"1"));
+		p2b.appendParameter(vmime::create <vmime::parameter>("param1", "va\\lue\"1"));
 
 		VASSERT_EQ("2b", "F: X; param1=\"va\\\\lue\\\"1\"", p2b.generate());
 
 		// Extended parameter with charset specifier
 		parameterizedHeaderField p3;
-		p3.appendParameter(vmime::parameterFactory::getInstance()->create("param1",
+		p3.appendParameter(vmime::create <vmime::parameter>("param1",
 			vmime::word("value 1\xe9", vmime::charset("charset"))));
 
 		VASSERT_EQ("3", "F: X; param1=\"value 1\";param1*=charset''value%201%E9", p3.generate());
 
 		// Value that spans on multiple lines
 		parameterizedHeaderField p4;
-		p4.appendParameter(vmime::parameterFactory::getInstance()->create("param1",
+		p4.appendParameter(vmime::create <vmime::parameter>("param1",
 			vmime::word("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
 				    vmime::charset("charset"))));
 
@@ -239,6 +229,29 @@ VMIME_TEST_SUITE_BEGIN
 			"param1*4*=EFGHIJKLM;\r\n "
 			"param1*5*=NOPQRSTUV;\r\n "
 			"param1*6*=WXYZ", p4.generate(25));  // max line length = 25
+	}
+
+	void testNonStandardEncodedParam()
+	{
+		// This syntax is non-standard (expressly prohibited
+		// by RFC-2047), but is used by Mozilla:
+		//
+    		// Content-Type: image/png;
+		//    name="=?us-ascii?Q?Logo_VMime=2Epng?="
+
+		parameterizedHeaderField p1;
+		p1.parse("image/png; name=\"=?us-ascii?Q?Logo_VMime=2Epng?=\"");
+
+		VASSERT_EQ("1.1", 1, p1.getParameterCount());
+		VASSERT_EQ("1.2", "name", PARAM_NAME(p1, 0));
+		VASSERT_EQ("1.3", "Logo VMime.png", PARAM_VALUE(p1, 0));
+
+		parameterizedHeaderField p2;
+		p2.parse("image/png; name=\"Logo =?us-ascii?Q?VMime=2Epng?=\"");
+
+		VASSERT_EQ("2.1", 1, p2.getParameterCount());
+		VASSERT_EQ("2.2", "name", PARAM_NAME(p2, 0));
+		VASSERT_EQ("2.3", "Logo VMime.png", PARAM_VALUE(p2, 0));
 	}
 
 VMIME_TEST_SUITE_END

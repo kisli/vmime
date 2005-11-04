@@ -27,6 +27,7 @@
 
 #include "vmime/base.hpp"
 #include "vmime/component.hpp"
+#include "vmime/headerFieldValue.hpp"
 
 
 namespace vmime
@@ -41,8 +42,12 @@ class headerField : public component
 	friend class headerFieldFactory;
 	friend class header;
 
+	friend class vmime::creator;  // create ref
+
 protected:
 
+	// Protected constructor to prevent the user from creating
+	// new objects without using 'headerFieldFactory'
 	headerField();
 	headerField(const string& fieldName);
 
@@ -55,6 +60,12 @@ public:
 	headerField& operator=(const headerField& other);
 
 	const std::vector <ref <const component> > getChildComponents() const;
+
+	/** Sets the name of this field.
+	  *
+	  * @param name field name (eg: "From" or "X-MyField").
+	  */
+	void setName(const string& name);
 
 	/** Return the name of this field.
 	  *
@@ -73,21 +84,32 @@ public:
 	  *
 	  * @return read-only value object
 	  */
-	virtual const component& getValue() const = 0;
+	virtual ref <const headerFieldValue> getValue() const;
 
 	/** Return the value object attached to this field.
 	  *
 	  * @return value object
 	  */
-	virtual component& getValue() = 0;
+	virtual ref <headerFieldValue> getValue();
 
 	/** Set the value of this field.
 	  *
-	  * @throw std::bad_cast_exception if the value type is
-	  * incompatible with the header field type
-	  * @param value value object
+	  * @param value new value
 	  */
-	virtual void setValue(const component& value) = 0;
+	virtual void setValue(ref <headerFieldValue> value);
+
+	/** Set the value of this field by cloning the specified value.
+	  *
+	  * @param value new value
+	  */
+	virtual void setValueConst(ref <const headerFieldValue> value);
+
+	/** Set the value of this field (reference version).
+	  * The value will be cloned.
+	  *
+	  * @param value new value
+	  */
+	virtual void setValue(const headerFieldValue& value);
 
 	/** Set the value of this field given a character string.
 	  *
@@ -104,15 +126,11 @@ public:
 
 protected:
 
-	virtual const ref <const component> getValueImp() const = 0;
-	virtual ref <component> getValueImp() = 0;
-
-private:
-
 	static ref <headerField> parseNext(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition = NULL);
 
 
 	string m_name;
+	ref <headerFieldValue> m_value;
 };
 
 

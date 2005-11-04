@@ -27,6 +27,7 @@
 
 #include "vmime/base.hpp"
 #include "vmime/component.hpp"
+#include "vmime/word.hpp"
 
 
 namespace vmime
@@ -35,10 +36,18 @@ namespace vmime
 
 class parameter : public component
 {
-	friend class parameterFactory;
 	friend class parameterizedHeaderField;
 
+private:
+
+	parameter(const parameter&);
+
 public:
+
+	parameter(const string& name);
+	parameter(const string& name, const word& value);
+	parameter(const string& name, const string& value);
+
 
 #ifndef VMIME_BUILDING_DOC
 
@@ -60,31 +69,58 @@ public:
 
 	const std::vector <ref <const component> > getChildComponents() const;
 
-	/** Return the name of the parameter.
+	/** Return the name of this parameter.
 	  *
-	  * @return name of the parameter
+	  * @return name of this parameter
 	  */
 	const string& getName() const;
 
-	/** Return the read-only value object attached to this field.
+	/** Return the raw value of this parameter.
 	  *
-	  * @return read-only value object
+	  * @return read-only value
 	  */
-	virtual const component& getValue() const = 0;
+	const word& getValue() const;
 
-	/** Return the value object attached to this field.
+	/** Return the value of this object in the specified type.
+	  * For example, the following code:
 	  *
-	  * @return value object
+	  * <pre>
+	  *    getParameter("creation-date")->getValueAs <vmime::dateTime>()</pre>
+	  * </pre>
+	  *
+	  * is equivalent to:
+	  *
+	  * <pre>
+	  *    ref <vmime::word> rawValue = getParameter("creation-date");
+	  *
+	  *    vmime::dateTime theDate;
+	  *    theDate.parse(rawValue->getBuffer());
+	  * </pre>
+	  *
+	  * @param T type to which convert the value
+	  * @return value
 	  */
-	virtual component& getValue() = 0;
+	template <typename T>
+	const T getValueAs() const
+	{
+		T ret;
+		ret.parse(m_value.getBuffer());
 
-	/** Set the value of the parameter.
+		return ret;
+	}
+
+	/** Set the value of this parameter.
 	  *
-	  * @throw std::bad_cast_exception if the value type is
-	  * incompatible with the parameter type
-	  * @param value value object
+	  * @param value new value
 	  */
-	virtual void setValue(const component& value) = 0;
+	void setValue(const component& value);
+
+	/** Set the raw value of this parameter.
+	  *
+	  * @param value new value
+	  */
+	void setValue(const word& value);
+
 
 	using component::parse;
 	using component::generate;
@@ -92,18 +128,13 @@ public:
 	void parse(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition = NULL);
 	void generate(utility::outputStream& os, const string::size_type maxLineLength = lineLengthLimits::infinite, const string::size_type curLinePos = 0, string::size_type* newLinePos = NULL) const;
 
-protected:
-
-	virtual const ref <const component> getValueImp() const = 0;
-	virtual const ref <component> getValueImp() = 0;
-
 private:
 
+	void parse(const std::vector <valueChunk>& chunks);
+
+
 	string m_name;
-
-	void generateValue(utility::outputStream& os, const string::size_type maxLineLength, const string::size_type curLinePos, string::size_type* newLinePos) const;
-
-	virtual void parse(const std::vector <valueChunk>& chunks);
+	word m_value;
 };
 
 

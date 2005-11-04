@@ -22,6 +22,8 @@
 //
 
 #include "vmime/defaultAttachment.hpp"
+
+#include "vmime/contentDisposition.hpp"
 #include "vmime/encoding.hpp"
 
 

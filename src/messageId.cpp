@@ -43,7 +43,7 @@ messageId::messageId(const string& id)
 
 
 messageId::messageId(const messageId& mid)
-	: component(), m_left(mid.m_left), m_right(mid.m_right)
+	: headerFieldValue(), m_left(mid.m_left), m_right(mid.m_right)
 {
 }
 

@@ -27,6 +27,8 @@
 
 #include "vmime/defaultAttachment.hpp"
 
+#include "vmime/dateTime.hpp"
+
 
 namespace vmime
 {

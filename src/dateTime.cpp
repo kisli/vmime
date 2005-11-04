@@ -640,7 +640,7 @@ datetime::datetime(const int year, const int month, const int day,
 
 
 datetime::datetime(const datetime& d)
-	: component(), m_year(d.m_year), m_month(d.m_month), m_day(d.m_day),
+	: headerFieldValue(), m_year(d.m_year), m_month(d.m_month), m_day(d.m_day),
 	  m_hour(d.m_hour), m_minute(d.m_minute), m_second(d.m_second), m_zone(d.m_zone)
 {
 }

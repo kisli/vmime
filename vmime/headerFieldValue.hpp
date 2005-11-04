@@ -21,29 +21,31 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#ifndef VMIME_HEADERFIELDVALUE_HPP_INCLUDED
+#define VMIME_HEADERFIELDVALUE_HPP_INCLUDED
 
-#include "vmime/typeAdapter.hpp"
+
+#include "vmime/base.hpp"
+#include "vmime/component.hpp"
 
 
 namespace vmime
 {
 
 
-#if (!defined(__GNUC__) || ((__GNUC__ >= 3) && (__GNUC_MINOR__ >= 3))) && !defined(_MSC_VER)
+/** Base class for all classes that can be used as a value
+  * for a header field.
+  */
 
-template <>
-void typeAdapter <string>::parse(const string& buffer, const string::size_type position,
-	           const string::size_type end, string::size_type* newPosition)
+class headerFieldValue : public component
 {
-	m_value = string(buffer.begin() + position, buffer.begin() + end);
+public:
 
-	setParsedBounds(position, end);
-
-	if (newPosition)
-		*newPosition = end;
-}
-
-#endif // (!defined(__GNUC__) || ((__GNUC__ >= 3) && (__GNUC_MINOR__ >= 3))) && !defined(_MSC_VER)
+};
 
 
 } // vmime
+
+
+#endif // VMIME_HEADERFIELDVALUE_HPP_INCLUDED
+

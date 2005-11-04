@@ -30,6 +30,10 @@
 #include "vmime/message.hpp"
 #include "vmime/attachment.hpp"
 
+#include "vmime/mailbox.hpp"
+#include "vmime/addressList.hpp"
+#include "vmime/dateTime.hpp"
+
 #include "vmime/textPart.hpp"
 
 

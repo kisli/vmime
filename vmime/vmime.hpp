@@ -48,8 +48,10 @@
 #include "vmime/addressList.hpp"
 #include "vmime/mediaType.hpp"
 #include "vmime/messageId.hpp"
+#include "vmime/messageIdSequence.hpp"
 #include "vmime/relay.hpp"
 #include "vmime/disposition.hpp"
+#include "vmime/path.hpp"
 
 #include "vmime/emptyContentHandler.hpp"
 #include "vmime/stringContentHandler.hpp"
@@ -62,7 +64,6 @@
 #include "vmime/headerFieldFactory.hpp"
 #include "vmime/mailboxField.hpp"
 #include "vmime/parameterizedHeaderField.hpp"
-#include "vmime/standardFields.hpp"
 
 // Encoders
 #include "vmime/encoderFactory.hpp"

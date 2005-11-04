@@ -29,6 +29,8 @@
 
 #include "vmime/streamContentHandler.hpp"
 
+#include "vmime/contentDispositionField.hpp"
+
 
 namespace vmime
 {
@@ -78,7 +80,8 @@ void fileAttachment::generatePart(bodyPart& part) const
 {
 	defaultAttachment::generatePart(part);
 
-	ref <contentDispositionField> cdf = part.getHeader()->ContentDisposition();
+	ref <contentDispositionField> cdf = part.getHeader()->ContentDisposition().
+		dynamicCast <contentDispositionField>();
 
 	if (m_fileInfo.hasSize()) cdf->setSize(utility::stringUtils::toString(m_fileInfo.getSize()));
 	if (m_fileInfo.hasFilename()) cdf->setFilename(m_fileInfo.getFilename());

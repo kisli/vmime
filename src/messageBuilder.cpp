@@ -23,6 +23,7 @@
 
 #include "vmime/messageBuilder.hpp"
 
+#include "vmime/dateTime.hpp"
 #include "vmime/textPartFactory.hpp"
 
 

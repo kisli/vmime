@@ -26,7 +26,7 @@
 
 
 #include "vmime/base.hpp"
-#include "vmime/component.hpp"
+#include "vmime/headerFieldValue.hpp"
 
 
 namespace vmime
@@ -39,7 +39,7 @@ namespace vmime
   * and mailboxGroup classes.
   */
 
-class address : public component
+class address : public headerFieldValue
 {
 	friend class addressList;
 

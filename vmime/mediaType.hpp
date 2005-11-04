@@ -26,7 +26,7 @@
 
 
 #include "vmime/base.hpp"
-#include "vmime/component.hpp"
+#include "vmime/headerFieldValue.hpp"
 
 
 namespace vmime
@@ -36,7 +36,7 @@ namespace vmime
 /** Content media type (basic type).
   */
 
-class mediaType : public component
+class mediaType : public headerFieldValue
 {
 public:
 

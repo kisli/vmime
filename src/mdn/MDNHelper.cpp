@@ -22,6 +22,11 @@
 #include "vmime/exception.hpp"
 #include "vmime/stringContentHandler.hpp"
 
+#include "vmime/contentTypeField.hpp"
+
+#include "vmime/path.hpp"
+#include "vmime/dateTime.hpp"
+
 
 namespace vmime {
 namespace mdn {
@@ -52,7 +57,8 @@ const std::vector <sendableMDNInfos> MDNHelper::getPossibleMDNs(const ref <const
 
 	if (hdr->hasField(fields::DISPOSITION_NOTIFICATION_TO))
 	{
-		const mailboxList& dnto = hdr->DispositionNotificationTo()->getValue();
+		const mailboxList& dnto = *hdr->DispositionNotificationTo()->getValue()
+			.dynamicCast <const mailboxList>();
 
 		for (int i = 0 ; i < dnto.getMailboxCount() ; ++i)
 			result.push_back(sendableMDNInfos(msg, *dnto.getMailboxAt(i)));
@@ -72,10 +78,13 @@ const bool MDNHelper::isMDN(const ref <const message> msg)
 	//     and its value is "disposition-notification"
 	if (hdr->hasField(fields::CONTENT_TYPE))
 	{
-		const contentTypeField& ctf = *(hdr->ContentType());
+		const contentTypeField& ctf = *(hdr->ContentType()
+			.dynamicCast <const contentTypeField>());
 
-		if (ctf.getValue().getType() == vmime::mediaTypes::MULTIPART &&
-		    ctf.getValue().getSubType() == vmime::mediaTypes::MULTIPART_REPORT)
+		const mediaType type = *ctf.getValue().dynamicCast <const mediaType>();
+
+		if (type.getType() == vmime::mediaTypes::MULTIPART &&
+		    type.getSubType() == vmime::mediaTypes::MULTIPART_REPORT)
 		{
 			if (ctf.hasParameter("report-type") &&
 			    ctf.getReportType() == "disposition-notification")
@@ -104,26 +113,29 @@ const bool MDNHelper::needConfirmation(const ref <const message> msg)
 
 	// No "Return-Path" field
 	if (!hdr->hasField(fields::RETURN_PATH))
-		return (true);
+		return true;
 
 	// More than one address in Disposition-Notification-To
 	if (hdr->hasField(fields::DISPOSITION_NOTIFICATION_TO))
 	{
-		const mailboxList& dnto = hdr->DispositionNotificationTo()->getValue();
+		const mailboxList& dnto = *hdr->DispositionNotificationTo()->getValue()
+			.dynamicCast <const mailboxList>();
 
 		if (dnto.getMailboxCount() > 1)
-			return (true);
+			return true;
+		else if (dnto.getMailboxCount() == 0)
+			return false;
 
 		// Return-Path != Disposition-Notification-To
 		const mailbox& mbox = *dnto.getMailboxAt(0);
-		const path& rp = hdr->ReturnPath()->getValue();
+		const path& rp = *hdr->ReturnPath()->getValue().dynamicCast <const path>();
 
 		if (mbox.getEmail() != rp.getLocalPart() + "@" + rp.getDomain())
-			return (true);
+			return true;
 	}
 
 	// User confirmation not needed
-	return (false);
+	return false;
 }
 
 
@@ -143,13 +155,17 @@ ref <message> MDNHelper::buildMDN(const sendableMDNInfos& mdnInfos,
 
 	hdr->ContentType()->setValue(mediaType(vmime::mediaTypes::MULTIPART,
 	                                       vmime::mediaTypes::MULTIPART_REPORT));
-	hdr->ContentType()->setReportType("disosition-notification");
+	hdr->ContentType().dynamicCast <contentTypeField>()->setReportType("disposition-notification");
 
 	hdr->Disposition()->setValue(dispo);
 
-	hdr->To()->getValue().appendAddress(vmime::create <mailbox>(mdnInfos.getRecipient()));
-	hdr->From()->getValue() = expeditor;
-	hdr->Subject()->getValue().appendWord(vmime::create <word>("Disposition notification"));
+	addressList to;
+	to.appendAddress(vmime::create <mailbox>(mdnInfos.getRecipient()));
+	hdr->To()->setValue(to);
+
+	hdr->From()->setValue(expeditor);
+
+	hdr->Subject()->setValue(vmime::text(word("Disposition notification")));
 
 	hdr->Date()->setValue(datetime::now());
 	hdr->MimeVersion()->setValue(string(SUPPORTED_MIME_VERSION));
@@ -174,7 +190,7 @@ ref <bodyPart> MDNHelper::createFirstMDNPart(const sendableMDNInfos& /* mdnInfos
 	hdr->ContentType()->setValue(mediaType(vmime::mediaTypes::TEXT,
 	                                       vmime::mediaTypes::TEXT_PLAIN));
 
-	hdr->ContentType()->setCharset(ch);
+	hdr->ContentType().dynamicCast <contentTypeField>()->setCharset(ch);
 
 	// Body
 	part->getBody()->setContents(vmime::create <stringContentHandler>(text));
@@ -233,9 +249,8 @@ ref <bodyPart> MDNHelper::createSecondMDNPart(const sendableMDNInfos& mdnInfos,
 			ruaText += reportingUAProducts[i];
 		}
 
-		ref <defaultField> rua =
-			(headerFieldFactory::getInstance()->create
-				(vmime::fields::REPORTING_UA)).dynamicCast <defaultField>();
+		ref <headerField> rua = headerFieldFactory::getInstance()->
+			create(vmime::fields::REPORTING_UA);
 
 		rua->setValue(ruaText);
 
@@ -243,16 +258,15 @@ ref <bodyPart> MDNHelper::createSecondMDNPart(const sendableMDNInfos& mdnInfos,
 	}
 
 	// -- Final-Recipient
-	ref <defaultField> fr =
-		(headerFieldFactory::getInstance()->
-			create(vmime::fields::FINAL_RECIPIENT)).dynamicCast <defaultField>();
+	ref <headerField> fr = headerFieldFactory::getInstance()->
+		create(vmime::fields::FINAL_RECIPIENT);
 
 	fr->setValue("rfc822; " + mdnInfos.getRecipient().getEmail());
 
 	// -- Original-Message-ID
 	if (mdnInfos.getMessage()->getHeader()->hasField(vmime::fields::MESSAGE_ID))
 	{
-		fields.OriginalMessageId()->setValue
+		fields.OriginalMessageId()->setValueConst
 			(mdnInfos.getMessage()->getHeader()->MessageId()->getValue());
 	}
 

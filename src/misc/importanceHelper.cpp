@@ -20,6 +20,8 @@
 #include "vmime/misc/importanceHelper.hpp"
 #include "vmime/exception.hpp"
 
+#include "vmime/text.hpp"
+
 
 namespace vmime {
 namespace misc {
@@ -66,8 +68,8 @@ const importanceHelper::Importance importanceHelper::getImportanceHeader(ref <co
 	// Try "X-Priority" field
 	try
 	{
-		const ref <const defaultField> fld = hdr->findField("X-Priority").dynamicCast <const defaultField>();
-		const string value = fld->getValue();
+		const ref <const headerField> fld = hdr->findField("X-Priority");
+		const string value = fld->getValue().dynamicCast <const text>()->getWholeBuffer();
 
 		int n = IMPORTANCE_NORMAL;
 
@@ -92,8 +94,9 @@ const importanceHelper::Importance importanceHelper::getImportanceHeader(ref <co
 		// Try "Importance" field
 		try
 		{
-			const ref <const defaultField> fld = hdr->findField("Importance").dynamicCast <const defaultField>();
-			const string value = utility::stringUtils::toLower(utility::stringUtils::trim(fld->getValue()));
+			const ref <const headerField> fld = hdr->findField("Importance");
+			const string value = utility::stringUtils::toLower(utility::stringUtils::trim
+				(fld->getValue().dynamicCast <const text>()->getWholeBuffer()));
 
 			if (value == "low")
 				return (IMPORTANCE_LOWEST);
@@ -123,7 +126,7 @@ void importanceHelper::setImportance(ref <message> msg, const Importance i)
 void importanceHelper::setImportanceHeader(ref <header> hdr, const Importance i)
 {
 	// "X-Priority:" Field
-	ref <defaultField> fld = hdr->getField("X-Priority").dynamicCast <defaultField>();
+	ref <headerField> fld = hdr->getField("X-Priority");
 
 	switch (i)
 	{
@@ -136,7 +139,7 @@ void importanceHelper::setImportanceHeader(ref <header> hdr, const Importance i)
 	}
 
 	// "Importance:" Field
-	fld = hdr->getField("Importance").dynamicCast <defaultField>();
+	fld = hdr->getField("Importance");
 
 	switch (i)
 	{

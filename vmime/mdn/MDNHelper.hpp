@@ -28,6 +28,8 @@
 #include "vmime/mdn/receivedMDNInfos.hpp"
 #include "vmime/mdn/sendableMDNInfos.hpp"
 
+#include "vmime/mailboxList.hpp"
+
 
 namespace vmime {
 namespace mdn {

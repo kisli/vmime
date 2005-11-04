@@ -28,6 +28,8 @@
 #include "vmime/net/service.hpp"
 #include "vmime/utility/stream.hpp"
 
+#include "vmime/mailboxList.hpp"
+
 
 namespace vmime {
 

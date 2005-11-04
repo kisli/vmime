@@ -37,7 +37,7 @@ addressList::addressList()
 
 
 addressList::addressList(const addressList& addrList)
-	: component()
+	: headerFieldValue()
 {
 	copyFrom(addrList);
 }

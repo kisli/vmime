@@ -38,7 +38,7 @@ relay::relay()
 
 
 relay::relay(const relay& r)
-	: component()
+	: headerFieldValue()
 {
 	copyFrom(r);
 }

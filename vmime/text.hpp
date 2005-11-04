@@ -25,6 +25,7 @@
 #define VMIME_TEXT_HPP_INCLUDED
 
 
+#include "vmime/headerFieldValue.hpp"
 #include "vmime/base.hpp"
 #include "vmime/word.hpp"
 
@@ -36,7 +37,7 @@ namespace vmime
 /** List of encoded-words, as defined in RFC-2047 (basic type).
   */
 
-class text : public component
+class text : public headerFieldValue
 {
 public:
 
@@ -141,6 +142,14 @@ public:
 	  * @return text decoded in the specified charset
 	  */
 	const string getConvertedText(const charset& dest) const;
+
+	/** Return the unconverted (raw) data of all words. This is the
+	  * concatenation of the results returned by getBuffer() on
+	  * the contained words.
+	  *
+	  * @return raw data
+	  */
+	const string getWholeBuffer() const;
 
 	/** This function can be used to make several encoded words from a text.
 	  * All the characters in the text must be in the same specified charset.

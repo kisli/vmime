@@ -26,7 +26,7 @@
 
 
 #include "vmime/base.hpp"
-#include "vmime/component.hpp"
+#include "vmime/headerFieldValue.hpp"
 
 #include "vmime/dateTime.hpp"
 
@@ -38,7 +38,7 @@ namespace vmime
 /** Trace information about a relay (basic type).
   */
 
-class relay : public component
+class relay : public headerFieldValue
 {
 public:
 

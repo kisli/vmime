@@ -27,6 +27,9 @@
 
 #include "vmime/attachment.hpp"
 
+#include "vmime/contentDispositionField.hpp"
+#include "vmime/contentTypeField.hpp"
+
 
 namespace vmime
 {

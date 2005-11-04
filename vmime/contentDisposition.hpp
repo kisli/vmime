@@ -26,7 +26,7 @@
 
 
 #include "vmime/base.hpp"
-#include "vmime/component.hpp"
+#include "vmime/headerFieldValue.hpp"
 
 
 namespace vmime
@@ -36,7 +36,7 @@ namespace vmime
 /** Content disposition (basic type).
   */
 
-class contentDisposition : public component
+class contentDisposition : public headerFieldValue
 {
 public:
 

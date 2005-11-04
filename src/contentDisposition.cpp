@@ -42,7 +42,7 @@ contentDisposition::contentDisposition(const string& name)
 
 
 contentDisposition::contentDisposition(const contentDisposition& type)
-	: component(), m_name(type.m_name)
+	: headerFieldValue(), m_name(type.m_name)
 {
 }
 

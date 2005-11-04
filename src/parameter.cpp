@@ -22,16 +22,42 @@
 //
 
 #include "vmime/parameter.hpp"
-#include "vmime/parameterFactory.hpp"
+#include "vmime/parserHelpers.hpp"
+
+#include "vmime/text.hpp"
 
 
 namespace vmime
 {
 
 
+parameter::parameter(const string& name)
+	: m_name(name)
+{
+}
+
+
+parameter::parameter(const string& name, const word& value)
+	: m_name(name), m_value(value)
+{
+}
+
+
+parameter::parameter(const string& name, const string& value)
+	: m_name(name), m_value(value)
+{
+}
+
+
+parameter::parameter(const parameter&)
+	: component()
+{
+}
+
+
 ref <component> parameter::clone() const
 {
-	ref <parameter> p = parameterFactory::getInstance()->create(m_name);
+	ref <parameter> p = vmime::create <parameter>(m_name);
 	p->copyFrom(*this);
 
 	return (p);
@@ -43,8 +69,7 @@ void parameter::copyFrom(const component& other)
 	const parameter& param = dynamic_cast <const parameter&>(other);
 
 	m_name = param.m_name;
-
-	getValue().copyFrom(param.getValue());
+	m_value.copyFrom(param.m_value);
 }
 
 
@@ -57,16 +82,38 @@ parameter& parameter::operator=(const parameter& other)
 
 const string& parameter::getName() const
 {
-	return (m_name);
+	return m_name;
+}
+
+
+const word& parameter::getValue() const
+{
+	return m_value;
+}
+
+
+void parameter::setValue(const component& value)
+{
+	std::ostringstream oss;
+	utility::outputStreamAdapter vos(oss);
+
+	value.generate(vos);
+
+	setValue(word(oss.str(), vmime::charsets::US_ASCII));
+}
+
+
+void parameter::setValue(const word& value)
+{
+	m_value = value;
 }
 
 
 void parameter::parse(const string& buffer, const string::size_type position,
 	const string::size_type end, string::size_type* newPosition)
 {
-	getValue().parse(buffer, position, end, newPosition);
-
-	setParsedBounds(position, end);
+	m_value.setBuffer(string(buffer.begin() + position, buffer.begin() + end));
+	m_value.setCharset(charset(charsets::US_ASCII));
 
 	if (newPosition)
 		*newPosition = end;
@@ -75,69 +122,157 @@ void parameter::parse(const string& buffer, const string::size_type position,
 
 void parameter::parse(const std::vector <valueChunk>& chunks)
 {
-	string value;
+	bool foundCharsetChunk = false;
 
-	for (std::vector <valueChunk>::const_iterator it = chunks.begin() ;
-	     it != chunks.end() ; ++it)
+	charset ch(charsets::US_ASCII);
+	std::ostringstream value;
+
+	for (std::vector <valueChunk>::size_type i = 0 ; i < chunks.size() ; ++i)
 	{
-		value += (*it).data;
+		const valueChunk& chunk = chunks[i];
+
+		// Decode following data
+		if (chunk.encoded)
+		{
+			const string::size_type len = chunk.data.length();
+			string::size_type pos = 0;
+
+			// If this is the first encoded chunk, extract charset
+			// and language information
+			if (!foundCharsetChunk)
+			{
+				// Eg. "us-ascii'en'This%20is%20even%20more%20"
+				string::size_type q = chunk.data.find_first_of('\'');
+
+				if (q != string::npos)
+				{
+					const string chs = chunk.data.substr(0, q);
+
+					if (!chs.empty())
+						ch = charset(chs);
+
+					++q;
+					pos = q;
+				}
+
+				q = chunk.data.find_first_of('\'', pos);
+
+				if (q != string::npos)
+				{
+					// Ignore language
+					++q;
+					pos = q;
+				}
+
+				foundCharsetChunk = true;
+			}
+
+			for (string::size_type i = pos ; i < len ; ++i)
+			{
+				const string::value_type c = chunk.data[i];
+
+				if (c == '%' && i + 2 < len)
+				{
+					string::value_type v = 0;
+
+					// First char
+					switch (chunk.data[i + 1])
+					{
+					case 'a': case 'A': v += 10; break;
+					case 'b': case 'B': v += 11; break;
+					case 'c': case 'C': v += 12; break;
+					case 'd': case 'D': v += 13; break;
+					case 'e': case 'E': v += 14; break;
+					case 'f': case 'F': v += 15; break;
+					default: // assume 0-9
+
+						v += (chunk.data[i + 1] - '0');
+						break;
+					}
+
+					v *= 16;
+
+					// Second char
+					switch (chunk.data[i + 2])
+					{
+					case 'a': case 'A': v += 10; break;
+					case 'b': case 'B': v += 11; break;
+					case 'c': case 'C': v += 12; break;
+					case 'd': case 'D': v += 13; break;
+					case 'e': case 'E': v += 14; break;
+					case 'f': case 'F': v += 15; break;
+					default: // assume 0-9
+
+						v += (chunk.data[i + 2] - '0');
+						break;
+					}
+
+					value << v;
+
+					i += 2; // skip next 2 chars
+				}
+				else
+				{
+					value << c;
+				}
+			}
+		}
+		// Simply copy data, as it is not encoded
+		else
+		{
+			// This syntax is non-standard (expressly prohibited
+			// by RFC-2047), but is used by Mozilla:
+			//
+    			// Content-Type: image/png;
+			//    name="=?us-ascii?Q?Logo_VMime=2Epng?="
+
+			// Using 'vmime::text' to parse the data is safe even
+			// if the data is not encoded, because it can recover
+			// from parsing errors.
+			vmime::text t;
+			t.parse(chunk.data);
+
+			if (t.getWordCount() != 0)
+			{
+				value << t.getWholeBuffer();
+
+				if (!foundCharsetChunk)
+					ch = t.getWordAt(0)->getCharset();
+			}
+		}
 	}
 
-	getValue().parse(value, 0, value.length(), NULL);
+	m_value.setBuffer(value.str());
+	m_value.setCharset(ch);
 }
 
 
 void parameter::generate(utility::outputStream& os, const string::size_type maxLineLength,
 	const string::size_type curLinePos, string::size_type* newLinePos) const
 {
+	const string& name = m_name;
+	const string& value = m_value.getBuffer();
+
+	// For compatibility with implementations that do not understand RFC-2231,
+	// also generate a normal "7bit/us-ascii" parameter
 	string::size_type pos = curLinePos;
 
-	if (pos + m_name.length() + 10 > maxLineLength)
+	if (pos + name.length() + 10 + value.length() > maxLineLength)
 	{
 		os << NEW_LINE_SEQUENCE;
 		pos = NEW_LINE_SEQUENCE_LENGTH;
 	}
 
-	os << m_name << "=";
-	pos += m_name.length() + 1;
+	bool needQuoting = false;
+	string::size_type valueLength = 0;
 
-	generateValue(os, maxLineLength, pos, newLinePos);
-}
-
-
-void parameter::generateValue(utility::outputStream& os, const string::size_type /* maxLineLength */,
-	const string::size_type curLinePos, string::size_type* newLinePos) const
-{
-	// NOTE: This default implementation does not support parameter
-	// values that span on several lines ('defaultParameter' can do
-	// that, following rules specified in RFC-2231).
-
-	std::ostringstream valueStream;
-	utility::outputStreamAdapter valueStreamV(valueStream);
-
-	getValue().generate(valueStreamV, lineLengthLimits::infinite, 0, NULL);
-
-	const string value(valueStream.str());
-
-	std::ostringstream ss;
-	string::const_iterator start = value.begin();
-	bool quoted = false;
-
-	for (string::const_iterator i = value.begin() ; i != value.end() ; ++i)
+	for (string::size_type i = 0 ; (i < value.length()) && (pos + valueLength < maxLineLength - 4) ; ++i, ++valueLength)
 	{
-		switch (*i)
+		switch (value[i])
 		{
 		// Characters that need to be quoted _and_ escaped
 		case '"':
 		case '\\':
-
-			ss << string(start, i) << "\\" << *i;
-
-			start = i + 1;
-			quoted = true;
-
-			break;
-
 		// Other characters that need quoting
 		case ' ':
 		case '\t':
@@ -155,21 +290,194 @@ void parameter::generateValue(utility::outputStream& os, const string::size_type
 		case '?':
 		case '=':
 
-			quoted = true;
+			needQuoting = true;
 			break;
 		}
 	}
 
-	if (start != value.end())
-		ss << string(start, value.end());
+	const bool cutValue = (valueLength != value.length());  // has the value been cut?
 
-	if (quoted)
-		os << "\"" << ss.str() << "\"";
+	if (needQuoting)
+	{
+		os << name << "=\"";
+		pos += name.length() + 2;
+	}
 	else
-		os << ss.str();
+	{
+		os << name << "=";
+		pos += name.length() + 1;
+	}
+
+	bool extended = false;
+
+	for (string::size_type i = 0 ; (i < value.length()) && (pos < maxLineLength - 4) ; ++i)
+	{
+		const char_t c = value[i];
+
+		if (/* needQuoting && */ (c == '"' || c == '\\'))  // 'needQuoting' is implicit
+		{
+			os << '\\' << value[i];  // escape 'x' with '\x'
+			pos += 2;
+		}
+		else if (parserHelpers::isAscii(c))
+		{
+			os << value[i];
+			++pos;
+		}
+		else
+		{
+			extended = true;
+		}
+	}
+
+	if (needQuoting)
+	{
+		os << '"';
+		++pos;
+	}
+
+	// Also generate an extended parameter if the value contains 8-bit characters
+	// or is too long for a single line
+	if (extended || cutValue)
+	{
+		os << ';';
+		++pos;
+
+		/* RFC-2231
+		 * ========
+		 *
+		 * Content-Type: message/external-body; access-type=URL;
+		 *    URL*0="ftp://";
+		 *    URL*1="cs.utk.edu/pub/moore/bulk-mailer/bulk-mailer.tar"
+		 *
+		 * Content-Type: application/x-stuff;
+		 *    title*=us-ascii'en-us'This%20is%20%2A%2A%2Afun%2A%2A%2A
+		 *
+		 * Content-Type: application/x-stuff;
+		 *    title*0*=us-ascii'en'This%20is%20even%20more%20
+		 *    title*1*=%2A%2A%2Afun%2A%2A%2A%20
+		 *    title*2="isn't it!"
+		 */
+
+		// Check whether there is enough space for the first section:
+		// parameter name, section identifier, charset and separators
+		// + at least 5 characters for the value
+		const string::size_type firstSectionLength =
+			  name.length() + 4 /* *0*= */ + 2 /* '' */
+			+ m_value.getCharset().getName().length();
+
+		if (pos + firstSectionLength + 5 >= maxLineLength)
+		{
+			os << NEW_LINE_SEQUENCE;
+			pos = NEW_LINE_SEQUENCE_LENGTH;
+		}
+
+		// Split text into multiple sections that fit on one line
+		int sectionCount = 0;
+		std::vector <string> sectionText;
+
+		string currentSection;
+		string::size_type currentSectionLength = firstSectionLength;
+
+		for (string::size_type i = 0 ; i < value.length() ; ++i)
+		{
+			// Check whether we should start a new line (taking into
+			// account the next character will be encoded = worst case)
+			if (currentSectionLength + 3 >= maxLineLength)
+			{
+				sectionText.push_back(currentSection);
+				sectionCount++;
+
+				currentSection.clear();
+				currentSectionLength = NEW_LINE_SEQUENCE_LENGTH
+					+ name.length() + 6;
+			}
+
+			// Output next character
+			const char_t c = value[i];
+			bool encode = false;
+
+			switch (c)
+			{
+			// special characters
+			case ' ':
+			case '\t':
+			case '\r':
+			case '\n':
+			case '"':
+			case ';':
+			case ',':
+
+				encode = true;
+				break;
+
+			default:
+
+				encode = (!parserHelpers::isPrint(c) ||
+				          !parserHelpers::isAscii(c));
+
+				break;
+			}
+
+			if (encode)  // need encoding
+			{
+				const int h1 = static_cast <unsigned char>(c) / 16;
+				const int h2 = static_cast <unsigned char>(c) % 16;
+
+				currentSection += '%';
+				currentSection += "0123456789ABCDEF"[h1];
+				currentSection += "0123456789ABCDEF"[h2];
+
+				pos += 3;
+				currentSectionLength += 3;
+			}
+			else
+			{
+				currentSection += value[i];
+
+				++pos;
+				++currentSectionLength;
+			}
+		}
+
+		if (!currentSection.empty())
+		{
+			sectionText.push_back(currentSection);
+			sectionCount++;
+		}
+
+		// Output sections
+		for (int sectionNumber = 0 ; sectionNumber < sectionCount ; ++sectionNumber)
+		{
+			os << name;
+
+			if (sectionCount != 1) // no section specifier when only a single one
+			{
+				os << '*';
+				os << sectionNumber;
+			}
+
+			os << "*=";
+
+			if (sectionNumber == 0)
+			{
+				os << m_value.getCharset().getName();
+				os << '\'' << /* No language */ '\'';
+			}
+
+			os << sectionText[sectionNumber];
+
+			if (sectionNumber + 1 < sectionCount)
+			{
+				os << ';';
+				os << NEW_LINE_SEQUENCE;
+				pos = NEW_LINE_SEQUENCE_LENGTH;
+			}
+		}
+	}
 
 	if (newLinePos)
-		*newLinePos = curLinePos + ss.str().length() + 2;
+		*newLinePos = pos;
 }
 
 
@@ -177,10 +485,11 @@ const std::vector <ref <const component> > parameter::getChildComponents() const
 {
 	std::vector <ref <const component> > list;
 
-	list.push_back(getValueImp());
+	list.push_back(ref <const component>::fromPtr(&m_value));
 
-	return (list);
+	return list;
 }
 
 
 } // vmime
+

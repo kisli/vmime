@@ -26,7 +26,7 @@
 
 
 #include "vmime/base.hpp"
-#include "vmime/component.hpp"
+#include "vmime/headerFieldValue.hpp"
 
 
 namespace vmime
@@ -36,7 +36,7 @@ namespace vmime
 /** Message identifier (basic type).
   */
 
-class messageId : public component
+class messageId : public headerFieldValue
 {
 	friend class messageIdSequence;
 

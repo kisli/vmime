@@ -44,7 +44,7 @@ word::word()
 
 
 word::word(const word& w)
-	: component(), m_buffer(w.m_buffer), m_charset(w.m_charset)
+	: headerFieldValue(), m_buffer(w.m_buffer), m_charset(w.m_charset)
 {
 }
 

@@ -35,7 +35,7 @@ namespace vmime
 /** A list of message identifiers (basic type).
   */
 
-class messageIdSequence : public component
+class messageIdSequence : public headerFieldValue
 {
 public:
 

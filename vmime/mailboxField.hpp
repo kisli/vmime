@@ -25,15 +25,23 @@
 #define VMIME_MAILBOXFIELD_HPP_INCLUDED
 
 
-#include "vmime/genericField.hpp"
+#include "vmime/headerField.hpp"
 #include "vmime/mailbox.hpp"
+
+
+// Hide implementation details from user
+#ifndef VMIME_BUILDING_DOC
 
 
 namespace vmime
 {
 
 
-class mailboxField : public genericField <mailbox>
+/** Work-around for malformed header fields that are of type 'mailbox'
+  * and contains multiple addresses.
+  */
+
+class mailboxField : public headerField
 {
 	friend class vmime::creator;  // create ref
 
@@ -48,7 +56,11 @@ public:
 };
 
 
+#endif // VMIME_BUILDING_DOC
+
+
 } // vmime
 
 
 #endif // VMIME_MAILBOXFIELD_HPP_INCLUDED
+

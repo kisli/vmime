@@ -44,7 +44,7 @@ messageIdSequence::~messageIdSequence()
 
 
 messageIdSequence::messageIdSequence(const messageIdSequence& midSeq)
-	: component()
+	: headerFieldValue()
 {
 	copyFrom(midSeq);
 }

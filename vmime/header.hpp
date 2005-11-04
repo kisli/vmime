@@ -32,13 +32,6 @@
 #include "vmime/headerField.hpp"
 #include "vmime/headerFieldFactory.hpp"
 
-#include "vmime/mailboxField.hpp"
-#include "vmime/contentTypeField.hpp"
-#include "vmime/contentDispositionField.hpp"
-
-#include "vmime/standardFields.hpp"
-#include "vmime/standardParams.hpp"
-
 
 namespace vmime
 {
@@ -61,38 +54,38 @@ public:
 	header();
 	~header();
 
-#define FIELD_ACCESS(methodName, fieldName, type) \
-	ref <type> methodName() { return getField(fields::fieldName).dynamicCast <type>(); } \
-	ref <const type> methodName() const { return findField(fields::fieldName).dynamicCast <const type>(); }
+#define FIELD_ACCESS(methodName, fieldName) \
+	ref <headerField> methodName() { return getField(fields::fieldName); } \
+	ref <const headerField> methodName() const { return findField(fields::fieldName); }
 
-	FIELD_ACCESS(From,                    FROM,                      mailboxField)
-	FIELD_ACCESS(Sender,                  SENDER,                    mailboxField)
-	FIELD_ACCESS(ReplyTo,                 REPLY_TO,                  mailboxField)
-	FIELD_ACCESS(DeliveredTo,             DELIVERED_TO,              mailboxField)
-	FIELD_ACCESS(InReplyTo,               IN_REPLY_TO,               messageIdSequenceField)
-	FIELD_ACCESS(ReturnPath,              RETURN_PATH,               pathField)
-	FIELD_ACCESS(References,              REFERENCES,                messageIdSequenceField)
+	FIELD_ACCESS(From,                         FROM)
+	FIELD_ACCESS(Sender,                       SENDER)
+	FIELD_ACCESS(ReplyTo,                      REPLY_TO)
+	FIELD_ACCESS(DeliveredTo,                  DELIVERED_TO)
+	FIELD_ACCESS(InReplyTo,                    IN_REPLY_TO)
+	FIELD_ACCESS(ReturnPath,                   RETURN_PATH)
+	FIELD_ACCESS(References,                   REFERENCES)
 
-	FIELD_ACCESS(To,                      TO,                        addressListField)
-	FIELD_ACCESS(Cc,                      CC,                        addressListField)
-	FIELD_ACCESS(Bcc,                     BCC,                       addressListField)
-	FIELD_ACCESS(Date,                    DATE,                      dateField)
-	FIELD_ACCESS(Subject,                 SUBJECT,                   textField)
-	FIELD_ACCESS(Organization,            ORGANIZATION,              textField)
-	FIELD_ACCESS(UserAgent,               USER_AGENT,                textField)
+	FIELD_ACCESS(To,                           TO)
+	FIELD_ACCESS(Cc,                           CC)
+	FIELD_ACCESS(Bcc,                          BCC)
+	FIELD_ACCESS(Date,                         DATE)
+	FIELD_ACCESS(Subject,                      SUBJECT)
+	FIELD_ACCESS(Organization,                 ORGANIZATION)
+	FIELD_ACCESS(UserAgent,                    USER_AGENT)
 
-	FIELD_ACCESS(ContentType,             CONTENT_TYPE,              contentTypeField)
-	FIELD_ACCESS(ContentDescription,      CONTENT_DESCRIPTION,       textField)
-	FIELD_ACCESS(ContentTransferEncoding, CONTENT_TRANSFER_ENCODING, contentEncodingField)
-	FIELD_ACCESS(MimeVersion,             MIME_VERSION,              defaultField)
-	FIELD_ACCESS(ContentDisposition,      CONTENT_DISPOSITION,       contentDispositionField)
-	FIELD_ACCESS(ContentId,               CONTENT_ID,                messageIdField)
-	FIELD_ACCESS(MessageId,               MESSAGE_ID,                messageIdField)
-	FIELD_ACCESS(ContentLocation,         CONTENT_LOCATION,          defaultField)
+	FIELD_ACCESS(ContentType,                  CONTENT_TYPE)
+	FIELD_ACCESS(ContentDescription,           CONTENT_DESCRIPTION)
+	FIELD_ACCESS(ContentTransferEncoding,      CONTENT_TRANSFER_ENCODING)
+	FIELD_ACCESS(MimeVersion,                  MIME_VERSION)
+	FIELD_ACCESS(ContentDisposition,           CONTENT_DISPOSITION)
+	FIELD_ACCESS(ContentId,                    CONTENT_ID)
+	FIELD_ACCESS(MessageId,                    MESSAGE_ID)
+	FIELD_ACCESS(ContentLocation,              CONTENT_LOCATION)
 
-	FIELD_ACCESS(OriginalMessageId,       ORIGINAL_MESSAGE_ID,       messageIdField)
-	FIELD_ACCESS(Disposition,             DISPOSITION,               dispositionField)
-	FIELD_ACCESS(DispositionNotificationTo, DISPOSITION_NOTIFICATION_TO, mailboxListField)
+	FIELD_ACCESS(OriginalMessageId,            ORIGINAL_MESSAGE_ID)
+	FIELD_ACCESS(Disposition,                  DISPOSITION)
+	FIELD_ACCESS(DispositionNotificationTo,    DISPOSITION_NOTIFICATION_TO)
 
 #undef FIELD_ACCESS
 

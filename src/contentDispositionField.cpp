@@ -24,8 +24,6 @@
 #include "vmime/contentDispositionField.hpp"
 #include "vmime/exception.hpp"
 
-#include "vmime/standardParams.hpp"
-
 
 namespace vmime
 {
@@ -37,68 +35,68 @@ contentDispositionField::contentDispositionField()
 
 
 contentDispositionField::contentDispositionField(contentDispositionField&)
-	: headerField(), parameterizedHeaderField(), genericField <contentDisposition>()
+	: headerField(), parameterizedHeaderField()
 {
 }
 
 
-const datetime& contentDispositionField::getCreationDate() const
+const datetime contentDispositionField::getCreationDate() const
 {
-	return (dynamic_cast <const dateParameter&>(*findParameter("creation-date")).getValue());
+	return findParameter("creation-date")->getValueAs <datetime>();
 }
 
 
 void contentDispositionField::setCreationDate(const datetime& creationDate)
 {
-	dynamic_cast <dateParameter&>(*getParameter("creation-date")).setValue(creationDate);
+	getParameter("creation-date")->setValue(creationDate);
 }
 
 
-const datetime& contentDispositionField::getModificationDate() const
+const datetime contentDispositionField::getModificationDate() const
 {
-	return (dynamic_cast <const dateParameter&>(*findParameter("modification-date")).getValue());
+	return findParameter("modification-date")->getValueAs <datetime>();
 }
 
 
 void contentDispositionField::setModificationDate(const datetime& modificationDate)
 {
-	dynamic_cast <dateParameter&>(*getParameter("modification-date")).setValue(modificationDate);
+	getParameter("modification-date")->setValue(modificationDate);
 }
 
 
-const datetime& contentDispositionField::getReadDate() const
+const datetime contentDispositionField::getReadDate() const
 {
-	return (dynamic_cast <const dateParameter&>(*findParameter("read-date")).getValue());
+	return findParameter("read-date")->getValueAs <datetime>();
 }
 
 
 void contentDispositionField::setReadDate(const datetime& readDate)
 {
-	dynamic_cast <dateParameter&>(*getParameter("read-date")).setValue(readDate);
+	getParameter("read-date")->setValue(readDate);
 }
 
 
 const word contentDispositionField::getFilename() const
 {
-	return (dynamic_cast <const defaultParameter&>(*findParameter("filename")).getValue());
+	return findParameter("filename")->getValue();
 }
 
 
 void contentDispositionField::setFilename(const word& filename)
 {
-	dynamic_cast <defaultParameter&>(*getParameter("filename")).setValue(filename);
+	getParameter("filename")->setValue(filename);
 }
 
 
 const string contentDispositionField::getSize() const
 {
-	return (dynamic_cast <const defaultParameter&>(*findParameter("size")).getValue().getBuffer());
+	return findParameter("size")->getValue().getBuffer();
 }
 
 
 void contentDispositionField::setSize(const string& size)
 {
-	dynamic_cast <defaultParameter&>(*getParameter("size")).setValue(word(size));
+	getParameter("size")->setValue(word(size, vmime::charsets::US_ASCII));
 }
 
 

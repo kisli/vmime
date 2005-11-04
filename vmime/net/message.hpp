@@ -26,6 +26,7 @@
 
 
 #include "vmime/header.hpp"
+#include "vmime/mediaType.hpp"
 
 #include "vmime/utility/progressListener.hpp"
 #include "vmime/utility/stream.hpp"

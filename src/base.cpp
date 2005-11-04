@@ -39,7 +39,6 @@
 // For initializing
 #include "vmime/encoderFactory.hpp"
 #include "vmime/headerFieldFactory.hpp"
-#include "vmime/parameterFactory.hpp"
 #include "vmime/textPartFactory.hpp"
 #include "vmime/options.hpp"
 
@@ -143,7 +142,6 @@ public:
 
 		encoderFactory::getInstance();
 		headerFieldFactory::getInstance();
-		parameterFactory::getInstance();
 		textPartFactory::getInstance();
 
 		#if VMIME_HAVE_MESSAGING_FEATURES

@@ -33,6 +33,9 @@ namespace vmime
 {
 
 
+/** Creates header field and header field value objects.
+  */
+
 class headerFieldFactory
 {
 protected:
@@ -45,17 +48,23 @@ protected:
 
 	NameMap m_nameMap;
 
+	typedef ref <headerFieldValue> (*ValueAllocFunc)(void);
+	typedef std::map <string, ValueAllocFunc> ValueMap;
+
+	ValueMap m_valueMap;
+
 public:
 
 	static headerFieldFactory* getInstance();
 
 #ifndef VMIME_BUILDING_DOC
-	template <class TYPE>
+	// TYPE must inherit from BASE_TYPE
+	template <class BASE_TYPE, class TYPE>
 	class registerer
 	{
 	public:
 
-		static ref <headerField> creator()
+		static ref <BASE_TYPE> creator()
 		{
 			// Allocate a new object
 			return vmime::create <TYPE>();
@@ -64,14 +73,49 @@ public:
 #endif // VMIME_BUILDING_DOC
 
 
+	/** Register a field type.
+	  *
+	  * @param T field class (must inherit from 'headerField')
+	  * @param name field name (eg. "X-MyField")
+	  */
 	template <class T>
-	void registerName(const string& name)
+	void registerField(const string& name)
 	{
 		m_nameMap.insert(NameMap::value_type
-			(utility::stringUtils::toLower(name), &registerer<T>::creator));
+			(utility::stringUtils::toLower(name),
+			 &registerer <headerField, T>::creator));
 	}
 
+	/** Register a field value type.
+	  *
+	  * @param T value class (must inherit from 'headerFieldValue')
+	  * @param name field name
+	  */
+	template <class T>
+	void registerFieldValue(const string& name)
+	{
+		m_valueMap.insert(ValueMap::value_type
+			(utility::stringUtils::toLower(name),
+			 &registerer <headerFieldValue, T>::creator));
+	}
+
+	/** Create a new field object for the specified field name.
+	  * If the field name has not been registered, a default type
+	  * is used.
+	  *
+	  * @param name field name
+	  * @param body string that will be parsed to initialize
+	  * the value of the field
+	  * @return a new field object
+	  */
 	ref <headerField> create(const string& name, const string& body = NULL_STRING);
+
+	/** Create a new field value for the specified field.
+	  *
+	  * @param fieldName name of the field for which to create value
+	  * @return a new value object for the field
+	  */
+	ref <headerFieldValue> createValue(const string& fieldName);
 };
 
 

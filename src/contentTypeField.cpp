@@ -24,8 +24,6 @@
 #include "vmime/contentTypeField.hpp"
 #include "vmime/exception.hpp"
 
-#include "vmime/standardParams.hpp"
-
 
 namespace vmime
 {
@@ -37,45 +35,46 @@ contentTypeField::contentTypeField()
 
 
 contentTypeField::contentTypeField(contentTypeField&)
-	: headerField(), parameterizedHeaderField(), genericField <mediaType>()
+	: headerField(), parameterizedHeaderField()
 {
 }
 
 
 const string contentTypeField::getBoundary() const
 {
-	return (dynamic_cast <const defaultParameter&>(*findParameter("boundary")).getValue().getBuffer());
+	return findParameter("boundary")->getValue().getBuffer();
 }
 
 
 void contentTypeField::setBoundary(const string& boundary)
 {
-	dynamic_cast <defaultParameter&>(*getParameter("boundary")).setValue(word(boundary));
+	getParameter("boundary")->setValue(word(boundary, vmime::charsets::US_ASCII));
 }
 
 
-const charset& contentTypeField::getCharset() const
+const charset contentTypeField::getCharset() const
 {
-	return (dynamic_cast <const charsetParameter&>(*findParameter("charset")).getValue());
+	return findParameter("charset")->getValueAs <charset>();
 }
 
 
 void contentTypeField::setCharset(const charset& ch)
 {
-	dynamic_cast <charsetParameter&>(*getParameter("charset")).setValue(ch);
+	getParameter("charset")->setValue(ch);
 }
 
 
 const string contentTypeField::getReportType() const
 {
-	return (dynamic_cast <const defaultParameter&>(*findParameter("report-type")).getValue().getBuffer());
+	return findParameter("report-type")->getValue().getBuffer();
 }
 
 
 void contentTypeField::setReportType(const string& reportType)
 {
-	dynamic_cast <defaultParameter&>(*getParameter("report-type")).setValue(word(reportType));
+	getParameter("report-type")->setValue(word(reportType, vmime::charsets::US_ASCII));
 }
 
 
 } // vmime
+

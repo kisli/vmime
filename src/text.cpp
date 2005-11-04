@@ -36,7 +36,7 @@ text::text()
 
 
 text::text(const text& t)
-	: component()
+	: headerFieldValue()
 {
 	copyFrom(t);
 }
@@ -380,6 +380,20 @@ const std::vector <ref <const component> > text::getChildComponents() const
 	copy_vector(m_words, list);
 
 	return (list);
+}
+
+
+const string text::getWholeBuffer() const
+{
+	string res;
+
+	for (std::vector <ref <word> >::const_iterator it = m_words.begin() ;
+	     it != m_words.end() ; ++it)
+	{
+		res += (*it)->getBuffer();
+	}
+
+	return res;
 }
 
 

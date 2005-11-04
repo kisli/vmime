@@ -45,7 +45,7 @@ encoding::encoding(const string& name)
 
 
 encoding::encoding(const encoding& enc)
-	: component(), m_name(enc.m_name)
+	: headerFieldValue(), m_name(enc.m_name)
 {
 }
 

@@ -26,7 +26,7 @@
 
 
 #include "vmime/base.hpp"
-#include "vmime/component.hpp"
+#include "vmime/headerFieldValue.hpp"
 
 #include "vmime/address.hpp"
 
@@ -41,7 +41,7 @@ class mailboxList;
 /** A list of addresses.
   */
 
-class addressList : public component
+class addressList : public headerFieldValue
 {
 public:
 

@@ -29,7 +29,6 @@
 #include "vmime/headerFieldFactory.hpp"
 #include "vmime/parameter.hpp"
 #include "vmime/exception.hpp"
-#include "vmime/parameterFactory.hpp"
 
 
 namespace vmime
@@ -42,10 +41,12 @@ namespace vmime
 
 class parameterizedHeaderField : virtual public headerField
 {
-	friend class headerFieldFactory::registerer <parameterizedHeaderField>;
+	friend class vmime::creator;  // create ref
 
 protected:
 
+	// Protected constructor to prevent the user from creating
+	// new objects without using 'headerFieldFactory'
 	parameterizedHeaderField();
 
 public:

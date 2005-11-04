@@ -26,7 +26,7 @@
 
 
 #include "vmime/base.hpp"
-#include "vmime/component.hpp"
+#include "vmime/headerFieldValue.hpp"
 
 #include <ctime>
 
@@ -38,7 +38,7 @@ namespace vmime
 /** Date and time (basic type).
   */
 
-class datetime : public component
+class datetime : public headerFieldValue
 {
 public:
 

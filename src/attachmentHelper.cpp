@@ -24,6 +24,7 @@
 #include "vmime/attachmentHelper.hpp"
 
 #include "vmime/bodyPartAttachment.hpp"
+#include "vmime/disposition.hpp"
 
 
 namespace vmime
@@ -38,10 +39,13 @@ const bool attachmentHelper::isBodyPartAnAttachment(ref <const bodyPart> part)
 		const contentDispositionField& cdf = dynamic_cast<contentDispositionField&>
 			(*part->getHeader()->findField(fields::CONTENT_DISPOSITION));
 
-		if (cdf.getValue().getName() != contentDispositionTypes::INLINE)
+		const contentDisposition disp = *cdf.getValue()
+			.dynamicCast <const contentDisposition>();
+
+		if (disp.getName() != contentDispositionTypes::INLINE)
 			return true;
 	}
-	catch (exceptions::no_such_field)
+	catch (exceptions::no_such_field&)
 	{
 		// No "Content-disposition" field: assume "attachment" if
 		// type is not "text/..." or "multipart/...".
@@ -52,9 +56,9 @@ const bool attachmentHelper::isBodyPartAnAttachment(ref <const bodyPart> part)
 			const contentTypeField& ctf = dynamic_cast<contentTypeField&>
 				(*part->getHeader()->findField(fields::CONTENT_TYPE));
 
-			type = ctf.getValue();
+			type = *ctf.getValue().dynamicCast <const mediaType>();
 		}
-		catch (exceptions::no_such_field)
+		catch (exceptions::no_such_field&)
 		{
 			// No "Content-type" field: assume "application/octet-stream".
 			type = mediaType(mediaTypes::APPLICATION,

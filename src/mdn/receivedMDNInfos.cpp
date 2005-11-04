@@ -82,7 +82,8 @@ void receivedMDNInfos::extract()
 		if (!part->getHeader()->hasField(fields::CONTENT_TYPE))
 			continue;
 
-		const mediaType& type = part->getHeader()->ContentType()->getValue();
+		const mediaType& type = *part->getHeader()->ContentType()->
+			getValue().dynamicCast <const mediaType>();
 
 		// Extract from second part (message/disposition-notification)
 		if (type.getType() == vmime::mediaTypes::MESSAGE &&
@@ -97,10 +98,10 @@ void receivedMDNInfos::extract()
 			header fields;
 			fields.parse(oss.str());
 
-			try { m_omid = fields.OriginalMessageId()->getValue(); }
+			try { m_omid = *fields.OriginalMessageId()->getValue().dynamicCast <const messageId>(); }
 			catch (exceptions::no_such_field&) { /* Ignore */ }
 
-			try { m_disp = fields.Disposition()->getValue(); }
+			try { m_disp = *fields.Disposition()->getValue().dynamicCast <const disposition>(); }
 			catch (exceptions::no_such_field&) { /* Ignore */ }
 		}
 	}

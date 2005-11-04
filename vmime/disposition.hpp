@@ -26,7 +26,7 @@
 
 
 #include "vmime/base.hpp"
-#include "vmime/component.hpp"
+#include "vmime/headerFieldValue.hpp"
 
 #include <vector>
 
@@ -38,7 +38,7 @@ namespace vmime
 /** Disposition - from RFC-3798 (basic type).
   */
 
-class disposition : public component
+class disposition : public headerFieldValue
 {
 public:
 

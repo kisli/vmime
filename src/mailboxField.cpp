@@ -25,6 +25,9 @@
 #include "vmime/mailboxGroup.hpp"
 
 
+#ifndef VMIME_BUILDING_DOC
+
+
 namespace vmime
 {
 
@@ -35,7 +38,7 @@ mailboxField::mailboxField()
 
 
 mailboxField::mailboxField(const mailboxField&)
-	: headerField(), genericField <mailbox>()
+	: headerField()
 {
 }
 
@@ -43,7 +46,7 @@ mailboxField::mailboxField(const mailboxField&)
 void mailboxField::parse(const string& buffer, const string::size_type position,
 	const string::size_type end, string::size_type* newPosition)
 {
-	getValue().clear();
+	ref <mailbox> mbox = vmime::create <mailbox>();
 
 	// Here, we cannot simply call "m_mailbox.parse()" because it
 	// may have more than one address specified (even if this field
@@ -59,16 +62,18 @@ void mailboxField::parse(const string& buffer, const string::size_type position,
 			ref <mailboxGroup> group = parsedAddress.staticCast <mailboxGroup>();
 
 			if (!group->isEmpty())
-				getValue() = *(group->getMailboxAt(0));
+				mbox = group->getMailboxAt(0);
 		}
 		else
 		{
 			// Parse only if it is a mailbox
-			getValue() = *parsedAddress.staticCast <mailbox>();
+			mbox = parsedAddress.staticCast <mailbox>();
 		}
 	}
 
-	getValue().setParsedBounds(position, end);
+	mbox->setParsedBounds(position, end);
+
+	setValue(mbox);
 
 	setParsedBounds(position, end);
 
@@ -78,3 +83,7 @@ void mailboxField::parse(const string& buffer, const string::size_type position,
 
 
 } // vmime
+
+
+#endif // VMIME_BUILDING_DOC
+

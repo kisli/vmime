@@ -27,6 +27,7 @@
 #include "vmime/options.hpp"
 
 #include "vmime/contentTypeField.hpp"
+#include "vmime/text.hpp"
 
 #include "vmime/utility/random.hpp"
 
@@ -65,7 +66,9 @@ void body::parse(const string& buffer, const string::size_type position,
 		const ref <const contentTypeField> ctf =
 			m_header->findField(fields::CONTENT_TYPE).dynamicCast <contentTypeField>();
 
-		if (ctf->getValue().getType() == mediaTypes::MULTIPART)
+		const mediaType type = *ctf->getValue().dynamicCast <const mediaType>();
+
+		if (type.getType() == mediaTypes::MULTIPART)
 		{
 			isMultipart = true;
 
@@ -388,7 +391,7 @@ const mediaType body::getContentType() const
 		ref <const contentTypeField> ctf =
 			m_header->findField(fields::CONTENT_TYPE).dynamicCast <const contentTypeField>();
 
-		return (ctf->getValue());
+		return (*ctf->getValue().dynamicCast <const mediaType>());
 	}
 	catch (exceptions::no_such_field&)
 	{
@@ -424,10 +427,10 @@ const encoding body::getEncoding() const
 {
 	try
 	{
-		const ref <const contentEncodingField> cef =
-			m_header->findField(fields::CONTENT_TRANSFER_ENCODING).dynamicCast <contentEncodingField>();
+		const ref <const headerField> cef =
+			m_header->findField(fields::CONTENT_TRANSFER_ENCODING);
 
-		return (cef->getValue());
+		return (*cef->getValue().dynamicCast <const encoding>());
 	}
 	catch (exceptions::no_such_field&)
 	{
@@ -550,7 +553,7 @@ void body::initNewPart(ref <bodyPart> part)
 				ctf->setBoundary(generateRandomBoundaryString());
 			}
 
-			if (ctf->getValue().getType() != mediaTypes::MULTIPART)
+			if (ctf->getValue().dynamicCast <const mediaType>()->getType() != mediaTypes::MULTIPART)
 			{
 				// Warning: multi-part body but the Content-Type is
 				// not specified as "multipart/..."

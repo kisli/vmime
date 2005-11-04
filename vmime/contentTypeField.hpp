@@ -26,7 +26,6 @@
 
 
 #include "vmime/parameterizedHeaderField.hpp"
-#include "vmime/genericField.hpp"
 
 #include "vmime/mediaType.hpp"
 #include "vmime/charset.hpp"
@@ -36,7 +35,7 @@ namespace vmime
 {
 
 
-class contentTypeField : public parameterizedHeaderField, public genericField <mediaType>
+class contentTypeField : public parameterizedHeaderField
 {
 	friend class vmime::creator;  // create ref
 
@@ -47,25 +46,33 @@ protected:
 
 public:
 
-	/** Return the value of the "boundary" parameter.
+	/** Return the value of the "boundary" parameter. Boundary is a
+	  * random string used to separate body parts.
 	  *
 	  * @return value of the "boundary" parameter
+	  * @throw exceptions::no_such_parameter if the parameter does not exist
 	  */
 	const string getBoundary() const;
 
-	/** Set the value of the "boundary" parameter.
+	/** Set the value of the "boundary" parameter. Boundary is a
+	  * random string used to separate body parts. Normally, the
+	  * boundary is generated automatically by VMime, you should
+	  * not need to call this.
 	  *
 	  * @param boundary new value for the "boundary" parameter
 	  */
 	void setBoundary(const string& boundary);
 
-	/** Return the value of the "charset" parameter.
+	/** Return the value of the "charset" parameter. It specifies the
+	  * charset used in the body part contents.
 	  *
 	  * @return value of the "charset" parameter
+	  * @throw exceptions::no_such_parameter if the parameter does not exist
 	  */
-	const charset& getCharset() const;
+	const charset getCharset() const;
 
-	/** Set the value of the "charset" parameter.
+	/** Set the value of the "charset" parameter. It specifies the
+	  * charset used in the body part contents.
 	  *
 	  * @param ch new value for the "charset" parameter
 	  */
@@ -74,6 +81,7 @@ public:
 	/** Return the value of the "report-type" parameter (RFC-1892).
 	  *
 	  * @return value of the "report-type" parameter
+	  * @throw exceptions::no_such_parameter if the parameter does not exist
 	  */
 	const string getReportType() const;
 

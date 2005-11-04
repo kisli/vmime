@@ -26,7 +26,7 @@
 
 
 #include "vmime/base.hpp"
-#include "vmime/component.hpp"
+#include "vmime/headerFieldValue.hpp"
 #include "vmime/encoder.hpp"
 
 
@@ -40,7 +40,7 @@ class contentHandler;
 /** Content encoding (basic type).
   */
 
-class encoding : public component
+class encoding : public headerFieldValue
 {
 public:
 

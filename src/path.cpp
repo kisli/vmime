@@ -41,7 +41,7 @@ path::path(const string& localPart, const string& domain)
 
 
 path::path(const path& p)
-	: component(), m_localPart(p.m_localPart), m_domain(p.m_domain)
+	: headerFieldValue(), m_localPart(p.m_localPart), m_domain(p.m_domain)
 {
 }
 

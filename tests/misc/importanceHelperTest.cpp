@@ -78,10 +78,10 @@ VMIME_TEST_SUITE_BEGIN
 		vmime::misc::importanceHelper::setImportanceHeader(hdr, i);
 
 		VASSERT_NO_THROW("1", hdr->findField("Importance"));
-		VASSERT_EQ("2", ImportanceValue, hdr->findField("Importance")->getValue().generate());
+		VASSERT_EQ("2", ImportanceValue, hdr->findField("Importance")->getValue()->generate());
 
 		VASSERT_NO_THROW("3", hdr->findField("X-Priority"));
-		VASSERT_EQ("4", XPriorityValue, hdr->findField("X-Priority")->getValue().generate());
+		VASSERT_EQ("4", XPriorityValue, hdr->findField("X-Priority")->getValue()->generate());
 	}
 
 	void testSetImportance1()

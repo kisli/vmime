@@ -40,7 +40,7 @@ const mediaType bodyPartAttachment::getType() const
 
 	try
 	{
-		type = getContentType()->getValue();
+		type = *getContentType()->getValue().dynamicCast <const mediaType>();
 	}
 	catch (exceptions::no_such_field&)
 	{
@@ -76,8 +76,7 @@ const word bodyPartAttachment::getName() const
 	{
 		try
 		{
-			ref <defaultParameter> prm = getContentType()->
-				findParameter("name").dynamicCast <defaultParameter>();
+			ref <parameter> prm = getContentType()->findParameter("name");
 
 			if (prm != NULL)
 				name = prm->getValue();
@@ -102,10 +101,10 @@ const text bodyPartAttachment::getDescription() const
 
 	try
 	{
-		const textField& cd = dynamic_cast <textField&>
-			(*getHeader()->findField(fields::CONTENT_DESCRIPTION));
+		ref <const headerField> cd =
+			getHeader()->findField(fields::CONTENT_DESCRIPTION);
 
-		description = cd.getValue();
+		description = *cd->getValue().dynamicCast <const text>();
 	}
 	catch (exceptions::no_such_field&)
 	{

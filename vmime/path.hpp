@@ -25,7 +25,7 @@
 #define VMIME_PATH_HPP_INCLUDED
 
 
-#include "vmime/component.hpp"
+#include "vmime/headerFieldValue.hpp"
 
 
 namespace vmime
@@ -35,7 +35,7 @@ namespace vmime
 /** A path: a local part + '@' + a domain.
   */
 
-class path : public component
+class path : public headerFieldValue
 {
 public:
 

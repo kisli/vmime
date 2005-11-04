@@ -35,7 +35,7 @@ mailboxList::mailboxList()
 
 
 mailboxList::mailboxList(const mailboxList& mboxList)
-	: component(), m_list(mboxList.m_list)
+	: headerFieldValue(), m_list(mboxList.m_list)
 {
 }
 

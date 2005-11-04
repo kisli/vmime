@@ -22,7 +22,6 @@
 //
 
 #include "vmime/parameterizedHeaderField.hpp"
-#include "vmime/parameterFactory.hpp"
 #include "vmime/text.hpp"
 #include "vmime/parserHelpers.hpp"
 
@@ -90,7 +89,7 @@ void parameterizedHeaderField::parse(const string& buffer, const string::size_ty
 
 	while (p < pend && *p != ';') ++p;
 
-	getValue().parse(buffer, start, position + (p - pstart));
+	getValue()->parse(buffer, start, position + (p - pstart));
 
 	removeAllParameters();
 
@@ -295,7 +294,7 @@ void parameterizedHeaderField::parse(const string& buffer, const string::size_ty
 			const paramInfo& info = (*it).second;
 
 			// Append this parameter to the list
-			ref <parameter> param = parameterFactory::getInstance()->create((*it).first);
+			ref <parameter> param = vmime::create <parameter>((*it).first);
 
 			param->parse(info.value);
 			param->setParsedBounds(info.start, info.end);
@@ -404,7 +403,7 @@ ref <parameter> parameterizedHeaderField::getParameter(const string& paramName)
 	// If no parameter with this name can be found, create a new one
 	if (pos == end)
 	{
-		ref <parameter> param = parameterFactory::getInstance()->create(paramName);
+		ref <parameter> param = vmime::create <parameter>(paramName);
 
 		appendParameter(param);
 

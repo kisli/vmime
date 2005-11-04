@@ -24,11 +24,18 @@
 #include "vmime/headerFieldFactory.hpp"
 #include "vmime/exception.hpp"
 
-#include "vmime/standardFields.hpp"
+#include "vmime/mailboxList.hpp"
+#include "vmime/dateTime.hpp"
+#include "vmime/text.hpp"
+#include "vmime/path.hpp"
+#include "vmime/relay.hpp"
+#include "vmime/encoding.hpp"
+#include "vmime/disposition.hpp"
+#include "vmime/messageIdSequence.hpp"
 
-#include "vmime/mailboxField.hpp"
 #include "vmime/contentTypeField.hpp"
 #include "vmime/contentDispositionField.hpp"
+#include "vmime/mailboxField.hpp"
 
 
 namespace vmime
@@ -37,34 +44,44 @@ namespace vmime
 
 headerFieldFactory::headerFieldFactory()
 {
-	// Register some default fields
-	registerName <mailboxField>(vmime::fields::FROM);
-	registerName <addressListField>(vmime::fields::TO);
-	registerName <addressListField>(vmime::fields::CC);
-	registerName <addressListField>(vmime::fields::BCC);
-	registerName <mailboxField>(vmime::fields::SENDER);
-	registerName <dateField>(vmime::fields::DATE);
-	registerName <relayField>(vmime::fields::RECEIVED);
-	registerName <textField>(vmime::fields::SUBJECT);
-	registerName <mailboxField>(vmime::fields::REPLY_TO);
-	registerName <mailboxField>(vmime::fields::DELIVERED_TO);
-	registerName <textField>(vmime::fields::ORGANIZATION);
-	registerName <textField>(vmime::fields::USER_AGENT);
-	registerName <pathField>(vmime::fields::RETURN_PATH);
-	registerName <contentTypeField>(vmime::fields::CONTENT_TYPE);
-	registerName <contentEncodingField>(vmime::fields::CONTENT_TRANSFER_ENCODING);
-	registerName <textField>(vmime::fields::CONTENT_DESCRIPTION);
-	registerName <defaultField>(vmime::fields::MIME_VERSION);
-	registerName <contentDispositionField>(vmime::fields::CONTENT_DISPOSITION);
-	registerName <messageIdField>(vmime::fields::CONTENT_ID);
-	registerName <messageIdField>(vmime::fields::MESSAGE_ID);
-	registerName <defaultField>(vmime::fields::CONTENT_LOCATION);
-	registerName <messageIdSequenceField>(vmime::fields::IN_REPLY_TO);
-	registerName <messageIdSequenceField>(vmime::fields::REFERENCES);
+	// Register parameterized fields
+	registerField <contentTypeField>(vmime::fields::CONTENT_TYPE);
+	registerField <parameterizedHeaderField>(vmime::fields::CONTENT_TRANSFER_ENCODING);
+	registerField <contentDispositionField>(vmime::fields::CONTENT_DISPOSITION);
 
-	registerName <messageIdField>(vmime::fields::ORIGINAL_MESSAGE_ID);
-	registerName <dispositionField>(vmime::fields::DISPOSITION);
-	registerName <mailboxListField>(vmime::fields::DISPOSITION_NOTIFICATION_TO);
+	registerField <mailboxField>(vmime::fields::FROM);
+	registerField <mailboxField>(vmime::fields::SENDER);
+	registerField <mailboxField>(vmime::fields::REPLY_TO);
+	registerField <mailboxField>(vmime::fields::DELIVERED_TO);
+
+	// Register standard field values
+	registerFieldValue <mailbox>(vmime::fields::FROM);
+	registerFieldValue <addressList>(vmime::fields::TO);
+	registerFieldValue <addressList>(vmime::fields::CC);
+	registerFieldValue <addressList>(vmime::fields::BCC);
+	registerFieldValue <mailbox>(vmime::fields::SENDER);
+	registerFieldValue <datetime>(vmime::fields::DATE);
+	registerFieldValue <relay>(vmime::fields::RECEIVED);
+	registerFieldValue <text>(vmime::fields::SUBJECT);
+	registerFieldValue <mailbox>(vmime::fields::REPLY_TO);
+	registerFieldValue <mailbox>(vmime::fields::DELIVERED_TO);
+	registerFieldValue <text>(vmime::fields::ORGANIZATION);
+	registerFieldValue <text>(vmime::fields::USER_AGENT);
+	registerFieldValue <path>(vmime::fields::RETURN_PATH);
+	registerFieldValue <mediaType>(vmime::fields::CONTENT_TYPE);
+	registerFieldValue <encoding>(vmime::fields::CONTENT_TRANSFER_ENCODING);
+	registerFieldValue <text>(vmime::fields::CONTENT_DESCRIPTION);
+	registerFieldValue <text>(vmime::fields::MIME_VERSION);
+	registerFieldValue <contentDisposition>(vmime::fields::CONTENT_DISPOSITION);
+	registerFieldValue <messageId>(vmime::fields::CONTENT_ID);
+	registerFieldValue <messageId>(vmime::fields::MESSAGE_ID);
+	registerFieldValue <text>(vmime::fields::CONTENT_LOCATION);
+	registerFieldValue <messageIdSequence>(vmime::fields::IN_REPLY_TO);
+	registerFieldValue <messageIdSequence>(vmime::fields::REFERENCES);
+
+	registerFieldValue <messageId>(vmime::fields::ORIGINAL_MESSAGE_ID);
+	registerFieldValue <disposition>(vmime::fields::DISPOSITION);
+	registerFieldValue <mailboxList>(vmime::fields::DISPOSITION_NOTIFICATION_TO);
 }
 
 
@@ -87,21 +104,35 @@ ref <headerField> headerFieldFactory::create
 	ref <headerField> field = NULL;
 
 	if (pos != m_nameMap.end())
-	{
 		field = ((*pos).second)();
-	}
 	else
-	{
-		field = registerer <defaultField>::creator();
-	}
+		field = registerer <headerField, headerField>::creator();
 
-	field->m_name = name;
+	field->setName(name);
+	field->setValue(createValue(name));
 
 	if (body != NULL_STRING)
 		field->parse(body);
 
-	return (field);
+	return field;
+}
+
+
+ref <headerFieldValue> headerFieldFactory::createValue(const string& fieldName)
+{
+	ValueMap::const_iterator pos = m_valueMap.find
+		(utility::stringUtils::toLower(fieldName));
+
+	ref <headerFieldValue> value = NULL;
+
+	if (pos != m_valueMap.end())
+		value = ((*pos).second)();
+	else
+		value = registerer <headerFieldValue, text>::creator();
+
+	return value;
 }
 
 
 } // vmime
+

@@ -25,6 +25,8 @@
 #include "vmime/header.hpp"
 #include "vmime/exception.hpp"
 
+#include "vmime/contentTypeField.hpp"
+
 #include "vmime/emptyContentHandler.hpp"
 
 
@@ -63,7 +65,7 @@ void plainTextPart::generateIn(bodyPart& /* message */, bodyPart& parent) const
 
 	// Set header fields
 	part->getHeader()->ContentType()->setValue(mediaType(mediaTypes::TEXT, mediaTypes::TEXT_PLAIN));
-	part->getHeader()->ContentType()->setCharset(m_charset);
+	part->getHeader()->ContentType().dynamicCast <contentTypeField>()->setCharset(m_charset);
 	part->getHeader()->ContentTransferEncoding()->setValue(encoding(encodingTypes::QUOTED_PRINTABLE));
 
 	// Set contents
@@ -83,11 +85,11 @@ void plainTextPart::parse(const bodyPart& /* message */,
 
 		m_charset = ctf.getCharset();
 	}
-	catch (exceptions::no_such_field)
+	catch (exceptions::no_such_field&)
 	{
 		// No "Content-type" field.
 	}
-	catch (exceptions::no_such_parameter)
+	catch (exceptions::no_such_parameter&)
 	{
 		// No "charset" parameter.
 	}

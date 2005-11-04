@@ -54,9 +54,10 @@ void transport::send(ref <vmime::message> msg, utility::progressListener* progre
 
 	try
 	{
-		const mailboxField& from = dynamic_cast <const mailboxField&>
-			(*msg->getHeader()->findField(fields::FROM));
-		expeditor = from.getValue();
+		const mailbox& mbox = *msg->getHeader()->findField(fields::FROM)->
+			getValue().dynamicCast <const mailbox>();
+
+		expeditor = mbox;
 	}
 	catch (exceptions::no_such_field&)
 	{
@@ -68,25 +69,28 @@ void transport::send(ref <vmime::message> msg, utility::progressListener* progre
 
 	try
 	{
-		const addressListField& to = dynamic_cast <const addressListField&>
-			(*msg->getHeader()->findField(fields::TO));
-		extractMailboxes(recipients, to.getValue());
+		const addressList& to = *msg->getHeader()->findField(fields::TO)->
+			getValue().dynamicCast <const addressList>();
+
+		extractMailboxes(recipients, to);
 	}
 	catch (exceptions::no_such_field&) { }
 
 	try
 	{
-		const addressListField& cc = dynamic_cast <const addressListField&>
-			(*msg->getHeader()->findField(fields::CC));
-		extractMailboxes(recipients, cc.getValue());
+		const addressList& cc = *msg->getHeader()->findField(fields::CC)->
+			getValue().dynamicCast <const addressList>();
+
+		extractMailboxes(recipients, cc);
 	}
 	catch (exceptions::no_such_field&) { }
 
 	try
 	{
-		const addressListField& bcc = dynamic_cast <const addressListField&>
-			(*msg->getHeader()->findField(fields::BCC));
-		extractMailboxes(recipients, bcc.getValue());
+		const addressList& bcc = *msg->getHeader()->findField(fields::BCC)->
+			getValue().dynamicCast <const addressList>();
+
+		extractMailboxes(recipients, bcc);
 	}
 	catch (exceptions::no_such_field&) { }
 

@@ -26,7 +26,6 @@
 
 
 #include "vmime/parameterizedHeaderField.hpp"
-#include "vmime/genericField.hpp"
 
 #include "vmime/contentDisposition.hpp"
 #include "vmime/dateTime.hpp"
@@ -37,7 +36,7 @@ namespace vmime
 {
 
 
-class contentDispositionField : public parameterizedHeaderField, public genericField <contentDisposition>
+class contentDispositionField : public parameterizedHeaderField
 {
 	friend class vmime::creator;  // create ref
 
@@ -48,19 +47,69 @@ protected:
 
 public:
 
-	const datetime& getCreationDate() const;
+	/** Return the value of the "creation-date" parameter.
+	  *
+	  * @return value of the "creation-date" parameter
+	  * @throw exceptions::no_such_parameter if the parameter does not exist
+	  */
+	const datetime getCreationDate() const;
+
+	/** Set the value of the "creation-date" parameter.
+	  *
+	  * @param creationDate new value for the "creation-date" parameter
+	  */
 	void setCreationDate(const datetime& creationDate);
 
-	const datetime& getModificationDate() const;
+	/** Return the value of the "modification-date" parameter.
+	  *
+	  * @return value of the "modification-date" parameter
+	  * @throw exceptions::no_such_parameter if the parameter does not exist
+	  */
+	const datetime getModificationDate() const;
+
+	/** Set the value of the "modification-date" parameter.
+	  *
+	  * @param modificationDate new value for the "modification-date" parameter
+	  */
 	void setModificationDate(const datetime& modificationDate);
 
-	const datetime& getReadDate() const;
+	/** Return the value of the "read-date" parameter.
+	  *
+	  * @return value of the "read-date" parameter
+	  * @throw exceptions::no_such_parameter if the parameter does not exist
+	  */
+	const datetime getReadDate() const;
+
+	/** Set the value of the "read-date" parameter.
+	  *
+	  * @param readDate new value for the "read-date" parameter
+	  */
 	void setReadDate(const datetime& readDate);
 
+	/** Return the value of the "filename" parameter.
+	  *
+	  * @return value of the "filename" parameter
+	  * @throw exceptions::no_such_parameter if the parameter does not exist
+	  */
 	const word getFilename() const;
+
+	/** Set the value of the "filename" parameter.
+	  *
+	  * @param filename new value for the "filename" parameter
+	  */
 	void setFilename(const word& filename);
 
+	/** Return the value of the "size" parameter.
+	  *
+	  * @return value of the "size" parameter
+	  * @throw exceptions::no_such_parameter if the parameter does not exist
+	  */
 	const string getSize() const;
+
+	/** Set the value of the "size" parameter.
+	  *
+	  * @param size new value for the "size" parameter
+	  */
 	void setSize(const string& size);
 };
 

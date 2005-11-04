@@ -26,6 +26,7 @@
 
 
 #include "vmime/config.hpp"
+#include "vmime/messageId.hpp"
 
 #include "vmime/net/store.hpp"
 #include "vmime/net/socket.hpp"

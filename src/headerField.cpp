@@ -62,7 +62,7 @@ void headerField::copyFrom(const component& other)
 {
 	const headerField& hf = dynamic_cast <const headerField&>(other);
 
-	getValue().copyFrom(hf.getValue());
+	m_value->copyFrom(*hf.m_value);
 }
 
 
@@ -227,7 +227,7 @@ ref <headerField> headerField::parseNext(const string& buffer, const string::siz
 void headerField::parse(const string& buffer, const string::size_type position, const string::size_type end,
 	string::size_type* newPosition)
 {
-	getValue().parse(buffer, position, end, newPosition);
+	m_value->parse(buffer, position, end, newPosition);
 }
 
 
@@ -236,13 +236,19 @@ void headerField::generate(utility::outputStream& os, const string::size_type ma
 {
 	os << m_name + ": ";
 
-	getValue().generate(os, maxLineLength, curLinePos + m_name.length() + 2, newLinePos);
+	m_value->generate(os, maxLineLength, curLinePos + m_name.length() + 2, newLinePos);
 }
 
 
 const string headerField::getName() const
 {
-	return (m_name);
+	return m_name;
+}
+
+
+void headerField::setName(const string& name)
+{
+	m_name = name;
 }
 
 
@@ -256,9 +262,40 @@ const std::vector <ref <const component> > headerField::getChildComponents() con
 {
 	std::vector <ref <const component> > list;
 
-	list.push_back(getValueImp());
+	list.push_back(m_value);
 
 	return (list);
+}
+
+
+ref <const headerFieldValue> headerField::getValue() const
+{
+	return m_value;
+}
+
+
+ref <headerFieldValue> headerField::getValue()
+{
+	return m_value;
+}
+
+
+void headerField::setValue(ref <headerFieldValue> value)
+{
+	if (value != NULL)
+		m_value = value;
+}
+
+
+void headerField::setValueConst(ref <const headerFieldValue> value)
+{
+	m_value = value->clone().dynamicCast <headerFieldValue>();
+}
+
+
+void headerField::setValue(const headerFieldValue& value)
+{
+	m_value = value.clone().dynamicCast <headerFieldValue>();
 }
 
 
