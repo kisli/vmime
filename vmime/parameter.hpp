@@ -85,7 +85,7 @@ public:
 	  * For example, the following code:
 	  *
 	  * <pre>
-	  *    getParameter("creation-date")->getValueAs <vmime::dateTime>()</pre>
+	  *    getParameter("creation-date")->getValueAs <vmime::dateTime>()
 	  * </pre>
 	  *
 	  * is equivalent to:

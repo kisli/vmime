@@ -29,6 +29,9 @@
 #include <stdexcept>  // std::runtime_error
 
 
+#ifndef VMIME_BUILDING_DOC
+
+
 namespace vmime
 {
 
@@ -187,4 +190,7 @@ const int object::getWeakRefCount() const
 
 
 } // vmime
+
+
+#endif // VMIME_BUILDING_DOC
 

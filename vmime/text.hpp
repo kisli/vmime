@@ -214,11 +214,7 @@ public:
 	/** Decode and unfold text (RFC-2047).
 	  *
 	  * @param in input string
-	  * @param generateInExisting if not NULL, the resulting text will be generated
-	  * in the specified object instead of a new created object (in this case, the
-	  * function returns the same pointer). Can be used to avoid copying the
-	  * resulting object into an existing object.
-	  * @return new text object or existing object if generateInExisting != NULL
+	  * @return new text object
 	  */
 	static ref <text> decodeAndUnfold(const string& in);
 

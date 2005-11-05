@@ -316,7 +316,7 @@ const bool header::isEmpty() const
 }
 
 
-ref <headerField> header::getFieldAt(const int pos)
+const ref <headerField> header::getFieldAt(const int pos)
 {
 	return (m_fields[pos]);
 }

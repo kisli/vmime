@@ -504,7 +504,7 @@ const ref <parameter> parameterizedHeaderField::getParameterAt(const int pos)
 }
 
 
-const ref <parameter> parameterizedHeaderField::getParameterAt(const int pos) const
+const ref <const parameter> parameterizedHeaderField::getParameterAt(const int pos) const
 {
 	return (m_params[pos]);
 }
@@ -546,5 +546,5 @@ const std::vector <ref <const component> > parameterizedHeaderField::getChildCom
 }
 
 
-
 } // vmime
+

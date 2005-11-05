@@ -195,7 +195,7 @@ public:
 	  * @param pos position
 	  * @return field at position 'pos'
 	  */
-	ref <headerField> getFieldAt(const int pos);
+	const ref <headerField> getFieldAt(const int pos);
 
 	/** Return the field at the specified position.
 	  *
