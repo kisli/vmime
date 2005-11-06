@@ -108,6 +108,7 @@ libvmime_sources = [
 	'header.cpp', 'header.hpp',
 	'headerFieldFactory.cpp', 'headerFieldFactory.hpp',
 	'headerField.cpp', 'headerField.hpp',
+	'headerFieldValue.hpp',
 	'htmlTextPart.cpp', 'htmlTextPart.hpp',
 	'mailbox.cpp', 'mailbox.hpp',
 	'mailboxField.cpp', 'mailboxField.hpp',
