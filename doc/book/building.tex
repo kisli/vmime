@@ -1,0 +1,102 @@
+\chapter{Building and Installing VMime\label{chapter_building}}
+
+% ============================================================================
+\section{Introduction}
+
+If no pre-build packages of VMime is available for your system, or if for some
+reason you want to compile it yourself from scratch, this section will guide
+you through the process.
+
+% ============================================================================
+\section{What you need}
+
+To build VMime from the sources, you will need the following:
+
+\begin{itemize}
+\item a working C++ compiler with good STL implementation and also a good
+support for templates (for example, \href{http://gcc.gnu.org/}{GNU GCC}) ;
+\item \href{http://www.scons.org/}{SCons} build system, or the
+autoconf/automake tool chain ;
+\item an usable iconv() implementation (see
+\href{http://www.gnu.org/software/libiconv/}{libiconv of GNU Project}) ;
+\item the \href{http://www.gnu.org/software/gsasl/}{GNU SASL Library} if you
+want SASL\footnote{Simple Authentication and Security Layer} support ;
+\item the \href{http://www.gnu.org/software/gnutls/}{GNU TLS Library} if you
+want SSL and TLS\footnote{Transport Layer Security} support ;
+\end{itemize}
+
+% ============================================================================
+\section{Obtaining source files}
+
+You can download a package containing the source files of the latest release
+of the VMime library from the \href{http://www.vmime.org/}{VMime web site}.
+
+You can also obtain the current development version from the CVS. VMime's CVS
+repository can be checked out from anonymous CVS with the following
+instructions. When prompted for a password for {\em anonymous}, simply press
+Enter key.
+
+\begin{verbatim}
+   cvs -d:pserver:anonymous@cvs.vmime.org:/cvsroot/vmime login
+   cvs -z3 -d:pserver:anonymous@cvs.vmime.org:/cvsroot/vmime co -P vmime
+\end{verbatim}
+
+% ============================================================================
+\section{Compiling and installing}
+
+There are two possibilities for compiling VMime: using SCons building system,
+or using the Autotools.
+
+\vnote{MS Visual C++ users, you can skip this section as a project file
+is provided in the distribution tarball.}
+
+SCons is only used for development purposes, and so it is recommended that you
+use Autotools to build the project as it is a more portable solution, and is
+likely to work out-of-the-box on your computer. Thus, we will not describe
+the process of compiling VMime using SCons here.
+
+\vnote{Windows users, you can use MinGW and MSYS\footnote{See on the MinGW
+website: http://www.mingw.org/} to install a POSIX compatible environment
+on top of Windows. This allow executing configure scripts and Makefiles on
+Windows}.
+
+Before compiling VMime, you should run the {\vcode configure} script to
+detect some parameters specific to your platform. Go into the directory where
+you extracted the tarball and type:
+
+\begin{verbatim}
+   $ ./configure
+\end{verbatim}
+
+This will create a file named {\vcode config.hpp} in the {\vcode vmime/}
+directory, with the parameters detected for your platform. You should modify
+this file only if you know what you are doing!
+
+If you want to enable or disable some features in VMime, you can obtain some
+help by typing {\vcode ./configure --help}. The defaults should be OK though.
+
+Next, you can start the compilation process:
+
+\begin{verbatim}
+   $ make
+\end{verbatim}
+
+Please wait a few minutes will the compilation runs (you should have some time
+to have a coffee right now!). If you get errors during the compilation, be
+sure your system meet the requirements given at the beginning of the chapter.
+You can also try to get a newer version (from the CVS, for example) or to
+get some help on VMime user forums.
+
+If everything has been compiled successfully, you can install the library and
+the development files on your system:
+
+\begin{verbatim}
+   # make install
+\end{verbatim}
+
+\vnote{you must do that with superuser rights (root) if you chose to install
+the library into the default location (ie: /usr/lib and /usr/include).}
+
+Now, you are done! You can jump to the next chapter to know how to use VMime
+in your program...
+

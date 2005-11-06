@@ -1,0 +1,946 @@
+\chapter{Working with Messaging Services}
+
+% ============================================================================
+\section{Introduction}
+
+In addition to parsing and building MIME messages, VMime also offers a lot of
+features to work with messaging services. This includes connecting to remote
+messaging stores (like IMAP or POP3), local stores (maildir) and transport
+services (send messages over SMTP or local sendmail), through an unified
+interface (see Figure \ref{uml_messaging_module}). That means that you can
+use independently IMAP of POP3 without having to change any line of code.
+
+Source code of {\vexample Example6} covers all features presented in this
+chapter, so it is important you take some time to read it.
+
+\begin{figure}
+	\center\includegraphics[width=0.9\textwidth]
+		{images/messaging-services.png}
+	\caption{Overall structure of the messaging module}
+	\label{uml_messaging_module}
+\end{figure}
+
+The interface is composed of five classes:
+
+\begin{itemize}
+\item {\vcode vmime::net::service}: this is the base interface for a
+messaging service. It can be either a store service or a transport
+service.
+
+\item {\vcode vmime::net::serviceFactory}: create instances of a service.
+This is used internally by the session object (see below).
+
+\item {\vcode vmime::net::store}: interface for a store service. A store
+service offers access to a set of folders containing messages. This is
+used for IMAP, POP3 and maildir.
+
+\item {\vcode vmime::net::transport}: interface for a transport service.
+A transport service is capable of sending messages. This is used for
+SMTP and sendmail.
+
+\item {\vcode vmime::net::session}: a session oject is used to store the
+parameters used by a service (eg. connection parameters). Each service
+instance is associated with only one session. The session object is capable
+of creating instances of services.
+\end{itemize}
+
+The following classes are specific to store services:
+
+\begin{itemize}
+\item {\vcode vmime::net::folder}: a folder can either contain other folders
+or messages, or both.
+
+\item {\vcode vmime::net::message}: this is the interface for dealing with
+messages. For a given message, you can have access to its flags, its MIME
+structure and you can also extract the whole message data or given parts (if
+supported by the underlying protocol).
+\end{itemize}
+
+
+% ============================================================================
+\section{Working with sessions}
+
+\subsection{Setting properties} % --------------------------------------------
+
+Sessions are used to store configuration parameters for services. They
+contains a set of typed properties that can modify the behaviour of the
+services. Before using a messaging service, you must create and
+initialize a session object:
+
+\begin{lstlisting}
+vmime::ref <net::session> theSession = vmime::create <net::session>();
+\end{lstlisting}
+
+Session properties include:
+
+\begin{itemize}
+\item connection parameters: host and port to connect to;
+\item authentication parameters: user credentials required to use the
+service (if any);
+\item protocol-specific parameters: enable or disable extensions (eg. APOP
+support in POP3).
+\end{itemize}
+
+Properties are stored using a dotted notation, to specify the service type,
+the protocol name, the category and the name of the property:
+
+\begin{verbatim}
+   {service_type}.{protocol}.category.name
+\end{verbatim}
+
+An example of property is \emph{store.pop3.options.apop} (used to enable or
+disable the use of APOP authentication). The \emph{store.pop3} part is called
+the \emph{prefix}. This allow specifying different values for the same
+property depending on the protocol used.
+
+The session properties are stored in a {\vcode vmime::propertySet} object.
+To set the value of a property, you can use either:
+
+\begin{lstlisting}
+theSession->getProperties().setProperty("property-name", value);
+\end{lstlisting}
+
+or:
+
+\begin{lstlisting}
+theSession->getProperties()["property-name"] = value;
+\end{lstlisting}
+
+
+\subsection{Available properties} % ------------------------------------------
+
+Following is a list of available properties and the protocols they apply to,
+as the time of writing this documentation\footnote{You can get an up-to-date
+list of the properties by running \vexample{Example7}}. For better clarity,
+the prefixes do not appear in this table.
+
+\begin{table}[!ht]
+\noindent\begin{tabularx}{1.0\textwidth}{|l|c|X|c|c|c|c|c|c|c|c|}
+\hline
+	{\bf Property name} &
+	{\bf Type} &
+	{\bf Description} &
+	\verti{\bf POP3} &
+	\verti{\bf POP3S} &
+	\verti{\bf IMAP} &
+	\verti{\bf IMAPS} &
+	\verti{\bf SMTP} &
+	\verti{\bf SMTPS} &
+	\verti{\bf maildir} &
+	\verti{\bf sendmail} \\
+\hline
+\hline
+options.sasl & bool & Set to {\vcode true} to use SASL authentication, if
+available. & \vdot & \vdot & \vdot & \vdot & \vdot & \vdot & & \\
+\hline
+options.sasl.fallback & bool & Fail if SASL authentication failed (do not
+try other authentication mechanisms). & \vdot & \vdot & \vdot & \vdot &
+\vdot & \vdot & & \\
+\hline
+auth.username\footnote{You should use authenticators
+instead.\label{fn_auth_username}} & string & Set the username of the account
+to connect to. & \vdot & \vdot & \vdot & \vdot & \vdot & \vdot & & \\
+\hline
+auth.password\footref{fn_auth_username} & string & Set the password of the
+account. & \vdot & \vdot & \vdot & \vdot & \vdot & \vdot & & \\
+\hline
+connection.tls & bool & Set to {\vcode true} to start a secured connection
+using STARTTLS extension, if available. & \vdot & & \vdot & & \vdot & & & \\
+\hline
+connection.tls.required & bool & Fail if a secured connection cannot be
+started. & \vdot & & \vdot & & \vdot & & & \\
+\hline
+server.address & string & Server host name or IP address. &\vdot & \vdot &
+\vdot & \vdot & \vdot & \vdot & & \\
+\hline
+server.port & int & Server port. & \vdot & \vdot & \vdot & \vdot &
+\vdot & \vdot & & \\
+\hline
+server.rootpath & string & Root directory for mail repository (eg.
+\emph{/home/vincent/Mail}). & & & & & & & \vdot & \\
+\hline
+\end{tabularx}
+\caption{Properties common to all protocols}
+\end{table}
+
+\newpage
+These are the protocol-specific options:
+
+\begin{table}[!ht]
+\noindent\begin{tabularx}{1.0\textwidth}{|l|c|X|}
+\hline
+	{\bf Property name} &
+	{\bf Type} &
+	{\bf Description} \\
+% POP3/POP3S
+\hline
+\multicolumn{3}{|c|}{POP3, POP3S} \\
+\hline
+store.pop3.options.apop & bool & Enable or disable authentication with
+APOP (if SASL is enabled, this occurs after all SASL mechanisms have been
+tried). \\
+\hline
+store.pop3.options.apop.fallback & bool & If set to {\vcode true} and
+APOP fails, the authentication process fails (ie. unsecure plain text
+authentication is not used). \\
+\hline
+% SMTP
+\multicolumn{3}{|c|}{SMTP, SMTPS} \\
+\hline
+transport.smtp.options.need-authentication & bool & Set to \emph{true} if
+the server requires to authenticate before sending messages. \\
+\hline
+% sendmail
+\multicolumn{3}{|c|}{sendmail} \\
+\hline
+transport.sendmail.binpath & string & The path to the \emph{sendmail}
+executable on your system. The default is the one found by the configuration
+script when VMime was built. \\
+\hline
+\end{tabularx}
+\caption{Protocol-specific options}
+\end{table}
+
+
+\subsection{Instanciating services} % ----------------------------------------
+
+You can create a service either by specifying its protocol name, or by
+specifying the URL of the service. Creation by name is deprecated so
+this chapter only presents the latter option.
+
+The URL scheme for connecting to services is:
+
+\begin{verbatim}
+   protocol://[username[:password]@]host[:port]/[root-path]
+\end{verbatim}
+
+\vnote{For local services (ie. \emph{sendmail} and \emph{maildir}), the host
+part is not used, but it must not be empty (you can use "localhost").}
+
+The following table shows an example URL for each service:
+
+\noindent\begin{tabularx}{1.0\textwidth}{|c|X|}
+\hline
+	{\bf Service} &
+	{\bf Connection URL} \\
+\hline
+imap, imaps & {\tt imap://imap.example.com},
+{\tt imaps://vincent:pass@example.com} \\
+\hline
+pop3, pop3s & {\tt pop3://pop3.example.com} \\
+\hline
+smtp, smtps & {\tt smtp://smtp.example.com} \\
+\hline
+maildir & {\tt maildir://localhost/home/vincent/Mail} (host not used) \\
+\hline
+sendmail & {\tt sendmail://localhost} (host not used, always localhost) \\
+\hline
+\end{tabularx}
+
+\newpage
+
+When you have the connection URL, instanciating the service is quite simple.
+Depending on the type of service, you will use either {\vcode getStore()} or
+{\vcode getTransport()}. For example, for store services, use:
+
+\begin{lstlisting}
+vmime::utility:url url("imap://user:pass@imap.example.com");
+vmime::ref <vmime::net::store> st = sess->getStore(url);
+\end{lstlisting}
+
+and for transport services:
+
+\begin{lstlisting}
+vmime::utility:url url("smtp://smtp.example.com");
+vmime::ref <vmime::net::transport> tr = sess->getTransport(url);
+\end{lstlisting}
+
+
+% ============================================================================
+\section{User credentials and authenticators}
+
+Some services need some user credentials (eg. username and password) to open
+a session. In VMime, user credentials can be specified in the session
+properties or by using a custom authenticator (callback).
+
+\begin{lstlisting}[caption={Setting user credentials using session
+properties}]
+vmime::ref <vmime::net::session> sess;  // Suppose we have a session
+
+sess->getProperties()["store.imap.auth.username"] = "vincent";
+sess->getProperties()["store.imap.auth.password"] = "my-password";
+\end{lstlisting}
+
+Although not recommended, you can also specify username and password
+directly in the connection URL,
+ie: \emph{imap://username:password@imap.example.com/}. This works only for
+services requiring an username and a password as user credentials, and no
+other information.
+
+Sometimes, it may not be very convenient to set username/password in the
+session properties, or not possible (eg. extended SASL mechanisms) . That's
+why VMime offers an alternate way of getting user credentials: the
+{\vcode authenticator} object. Basically, an authenticator is an object that
+can return user credentials on-demand (like a callback).
+
+Currently, there are two types of authenticator in VMime: a basic
+authenticator (class {\vcode vmime::security::authenticator}) and, if SASL
+support is enabled, a SASL authenticator
+(class {\vcode vmime::security::sasl::SASLAuthenticator}). Usually, you
+should use the default implementations, or at least make your own
+implementation inherit from them.
+
+The following example shows how to use a custom authenticator to request
+the user to enter her/his credentials:
+
+\begin{lstlisting}[caption={A simple interactive authenticator}]
+class myAuthenticator : public vmime::security::defaultAuthenticator
+{
+   const string getUsername() const
+   {
+      std::cout << "Enter your username: " << std::endl;
+
+      vmime::string res;
+      std::getline(std::cin, res);
+
+      return res;
+   }
+
+   const string getPassword() const
+   {
+      std::cout << "Enter your password: " << std::endl;
+
+      vmime::string res;
+      std::getline(std::cin, res);
+
+      return res;
+   }
+};
+\end{lstlisting}
+
+This is how to use it:
+
+\begin{lstlisting}
+// First, create a session
+vmime::ref <vmime::net::session> sess =
+   vmime::create <vmime::net::session>();
+
+// Next, initialize a service which will use our authenticator
+vmime::ref <vmime::net::store> st =
+   sess->getStore(vmime::utility::url("imap://imap.example.com"),
+      /* use our authenticator */ vmime::create <myAuthenticator>());
+\end{lstlisting}
+
+\vnote{An authenticator object should be used with one and only one service
+at a time. This is required because the authentication process may need to
+retrieve the service name (SASL).}
+
+Of course, this example is quite simplified. For example, if several
+authentication mechanisms are tried, the user may be requested to enter the
+same information multiple times. See  {\vexample Example6} for a more complex
+implementation of an authenticator, with caching support.
+
+If you want to use SASL (ie. if \emph{options.sasl} is set to \emph{true}),
+your authenticator must inherit from
+{\vcode vmime::security::sasl::SASLAuthenticator} or
+{\vcode vmime::security::sasl::defaultSASLAuthenticator}, even if you do not
+use the SASL-specific methods {\vcode getAcceptableMechanisms()} and
+{\vcode setSASLMechanism()}. Have a look at {\vexample Example6} to see an
+implementation of an SASL authenticator.
+
+\begin{lstlisting}[caption={A simple SASL authenticator}]
+class mySASLAuthenticator : public vmime::security::sasl::defaultSASLAuthenticator
+{
+   typedef vmime::security::sasl::SASLMechanism mechanism;  // save us typing
+
+   const std::vector <vmime::ref <mechanism > getAcceptableMechanisms
+         (const std::vector <vmime::ref <mechanism> >& available,
+          vmime::ref <mechanism> suggested) const
+   {
+      // Here, you can sort the SASL mechanisms in the order they will be
+      // tried. If no SASL mechanism is acceptable (ie. for example, not
+      // enough secure), you can return an empty list.
+      //
+      // If you do not want to bother with this, you can simply return
+      // the default list, which is ordered by security strength.
+      return defaultSASLAuthenticator::
+         getAcceptableMechanisms(available, suggested);
+   }
+
+   void setSASLMechanism(vmime::ref <mechanism> mech)
+   {
+      // This is called when the authentication process is going to
+      // try the specified mechanism.
+      //
+      // The mechanism name is in mech->getName()
+
+      defaultSASLAuthenticator::setSASLMechanism(mech);
+   }
+
+   // ...implement getUsername() and getPassword()...
+};
+\end{lstlisting}
+
+
+% ============================================================================
+\section{Using transport service}
+
+You have two possibilities for giving message data to the service when you
+want to send a message:
+
+\begin{itemize}
+\item either you have a reference to a message (type {\vcode vmime::message})
+and you can simply call {\vcode send(msg)};
+\item or you only have raw message data (as a string, for example), and you
+have to call the second overload of {\vcode send()}, which takes additional
+parameters (corresponding to message envelope);
+\end{itemize}
+
+The following example illustrates the use of a transport service to send a
+message using the second method:
+
+\begin{lstlisting}[caption={Using a transport service}]
+const vmime::string msgData =
+   "From: me@example.org \r\n"
+   "To: you@example.org \r\n"
+   "Date: Sun, Oct 30 2005 17:06:42 +0200 \r\n"
+   "Subject: Test \r\n"
+   "\r\n"
+   "Message body";
+
+// Create a new session
+vmime::utility::url url("smtp://example.com");
+
+vmime::ref <vmime::net::session> sess =
+   vmime::create <vmime::net::session>();
+
+// Create an instance of the transport service
+vmime::ref <vmime::net::transport> tr = sess->getTransport(url);
+
+// Connect it
+tr->connect();
+
+// Send the message
+vmime::utility::inputStreamStringAdapter is(msgData);
+
+vmime::mailbox from("me@example.org");
+vmime::mailboxList to;
+to.appendMailbox(vmime::create <vmime::mailbox>("you@example.org"));
+
+tr->send(
+   /* expeditor */    from,
+   /* recipient(s) */ to,
+   /* data */         is,
+   /* total length */ msgData.length());
+
+// We have finished using the service
+tr->disconnect();
+\end{lstlisting}
+
+\vnote{Exceptions can be thrown at any time when using a service. For better
+clarity, exceptions are not caught here, but be sure to catch them in your own
+application to provide error feedback to the user.}
+
+If you use SMTP, you can enable authentication by setting some properties
+on the session object ({\vcode service::setProperty()} is a shortcut for
+setting properties on the session with the correct prefix):
+
+\begin{lstlisting}
+tr->setProperty("options.need-authentication", true);
+tr->setProperty("auth.username", "user");
+tr->setProperty("auth.password", "password");
+\end{lstlisting}
+
+
+% ============================================================================
+\section{Using store service}
+
+\subsection{Connecting to a store} % -----------------------------------------
+
+The first basic step for using a store service is to connect to it. The
+following example shows how to initialize a session and instanciate the
+store service:
+
+\begin{lstlisting}[caption={Connecting to a store service}]
+// Create a new session
+vmime::utility::url url("imap://vincent:password@imap:example.org");
+
+vmime::ref <vmime::net::session> sess =
+   vmime::create <vmime::net::session>();
+
+// Create an instance of the transport service
+vmime::ref <vmime::net::store> store = sess->getStore(url);
+
+// Connect it
+store->connect();
+\end{lstlisting}
+
+\vnote{{\vexample Example6} contains a more complete example for connecting
+to a store service, with support for a custom authenticator.}
+
+\subsection{Opening a folder} % ----------------------------------------------
+
+You can open a folder using two different access modes: either in
+\emph{read-only} mode (where you can only read message flags and contents), or
+in \emph{read-write} mode (where you can read messages, but also delete them
+or add new ones). When you have a reference to a folder, simply call the
+{\vcode open()} method with the desired access mode:
+
+\begin{lstlisting}
+folder->open(vmime::net::folder::MODE_READ_WRITE);
+\end{lstlisting}
+
+\vnote{Not all stores support the \emph{read-write} mode. By default, if the
+\emph{read-write} mode is not available, the folder silently fall backs on
+the \emph{read-only} mode, unless the \emph{failIfModeIsNotAvailable} argument
+to {\vcode open()} is set to true.}
+
+Call {\vcode getDefaultFolder()} on the store to obtain a reference to the
+default folder, which is usually the INBOX folder (where messages arrive when
+they are received).
+
+You can also open a specific folder by specifying its path. The following
+example will open a folder named \emph{bar}, which is a child of \emph{foo}
+in the root folder:
+
+\begin{lstlisting}[caption={Opening a folder from its path}]
+vmime::net::folder::path path;
+path /= vmime::net::folder::path::component("foo");
+path /= vmime::net::folder::path::component("bar");
+
+vmime::ref <vmime::net::folder> fld = store->getFolder(path);
+fld->open(vmime::net::folder::MODE_READ_WRITE);
+\end{lstlisting}
+
+\vnote{You can specify a path as a string as there is no way to get the
+separator used to delimitate path components. Always use {\vcode operator/=}
+or {\vcode appendComponent}.}
+
+\vnote{Path components are of type {\vcode vmime::word}, which means that
+VMime supports folder names with extended characters, not only 7-bit
+US-ASCII. However, be careful that this may not be supported by the
+underlying store protocol (IMAP supports it, because it uses internally a
+modified UTF-7 encoding).}
+
+\subsection{Fetching messages} % ---------------------------------------------
+
+You can fetch some information about a message without having to download the
+whole message. Moreover, folders support fetching for multiple messages in
+a single request, for better performance. The following items are currently
+available for fetching:
+
+\begin{itemize}
+\item {\bf envelope}: sender, recipients, date and subject;
+\item {\bf structure}: MIME structure of the message;
+\item {\bf content-info}: content-type of the root part;
+\item {\bf flags}: message flags;
+\item {\bf size}: message size;
+\item {\bf header}: retrieve all the header fields of a message;
+\item {\bf uid}: unique identifier of a message;
+\item {\bf importance}: fetch header fields suitable for use with
+{\vcode misc::importanceHelper}.
+\end{itemize}
+
+\vnote{Not all services support all fetchable items. Call
+{\vcode getFetchCapabilities()} on a folder to know which information can be
+fetched by a service.}
+
+The following code shows how to list all the messages in a folder, and
+retrieve basic information to show them to the user:
+
+\begin{lstlisting}[caption={Fetching information about multiple messages}]
+std::vector <ref <vmime::net::message> > allMessages = folder->getMessages();
+
+folder->fetchMessages(allMessages,
+   vmime::net::folder::FETCH_FLAGS |
+   vmime::net::folder::FETCH_ENVELOPE);
+
+for (unsigned int i = 0 ; i < allMessages.size() ; ++i)
+{
+   vmime::ref <vmime::net::message> msg = allMessages[i];
+
+   const int flags = msg->getFlags();
+
+   std::cout << "Message " << i << ":" << std::endl;
+
+   if (flags & vmime::net::message::FLAG_SEEN)
+      std::cout << " - is read" << std::endl;
+   if (flags & vmime::net::message::FLAG_DELETED)
+      std::cout << " - is deleted" << std::endl;
+
+   vmime::ref <const vmime::header> hdr = msg->getHeader();
+
+   std::cout << " - sent on " << hdr->Date()->generate() << std::endl;
+   std::cout << " - sent by " << hdr->From()->generate() << std::endl;
+}
+\end{lstlisting}
+
+\subsection{Extracting messages and parts}
+
+To extract the whole contents of a message (including headers), use the
+{\vcode extract()} method on a {\vcode vmime::net::message} object. The
+following example extracts the first message in the default folder:
+
+\begin{lstlisting}[caption={Extracting messages}]
+// Get a reference to the folder and to its first message
+vmime::ref <vmime::net::folder> folder = store->getDefaultFolder();
+vmime::ref <vmime::net::message> msg = folder->getMessage(1);
+
+// Write the message contents to the standard output
+vmime::utility::outputStreamAdapter out(std::cout);
+msg->extract(out);
+\end{lstlisting}
+
+Some protocols (like IMAP) also support the extraction of specific MIME parts
+of a message without downloading the whole message. This can save bandwidth
+and time. The method {\vcode extractPart()} is used in this case:
+
+\begin{lstlisting}[caption={Extracting a specific MIME part of a message}]
+// Fetching structure is required before extracting a part
+folder->fetchMessage(msg, vmime::net::folder::FETCH_STRUCTURE);
+
+// Now, we can extract the part
+msg->extractPart(msg->getStructure()->getPartAt(0)->getPartAt(1));
+\end{lstlisting}
+
+Suppose we have a message with the following structure:
+
+\begin{verbatim}
+   multipart/mixed
+      text/html
+      image/jpeg [*]
+\end{verbatim}
+
+The previous example will extract the header and body of the \emph{image/jpeg}
+part.
+
+\subsection{Events} % --------------------------------------------------------
+
+As a result of executing some operation (or from time to time, even if no
+operation has been performed), a store service can send events to notify you
+that something has changed (eg. the number of messages in a folder). These
+events may allow you to update the user interface associated to a message
+store.
+
+Currently, there are three types of event:
+
+\begin{itemize}
+\item {\bf message change}: sent when the number of messages in a folder
+has changed (ie. some messages have been added or removed);
+\item {\bf message count change}: sent when one or more message(s) have
+changed (eg. flags or deleted status);
+\item {\bf folder change}: sent when a folder has been created, renamed or
+deleted.
+\end{itemize}
+
+You can register a listener for each event type by using the corresponding
+methods on a {\vcode folder} object: {\vcode addMessageChangedListener()},
+{\vcode addMessageCountListener()} or {\vcode addFolderListener()}. For more
+information, please read the class documentation for
+{\vcode vmime::net::events} namespace.
+
+
+% ============================================================================
+\section{Handling time-outs}
+
+Unexpected errors can occur while messaging services are performing
+operations and waiting a response from the server (eg. server stops
+responding, network link falls down). As all operations as synchronous,
+they can be ``blocked'' a long time before returning (in fact, they loop
+until they either receive a response from the server, or the underlying
+socket system returns an error).
+
+VMime provides a mechanism to control the duration of operations. This
+mechanism allows the program to cancel an operation that is currently
+running.
+
+An interface called {\vcode timeoutHandler} is provided:
+
+\begin{lstlisting}
+class timeoutHandler : public object
+{
+   /** Called to test if the time limit has been reached.
+     *
+     * @return true if the time-out delay is elapsed
+     */
+   virtual const bool isTimeOut() = 0;
+
+   /** Called to reset the time-out counter.
+     */
+   virtual void resetTimeOut() = 0;
+
+   /** Called when the time limit has been reached (when
+     * isTimeOut() returned true).
+     *
+     * @return true to continue (and reset the time-out)
+     * or false to cancel the current operation
+     */
+   virtual const bool handleTimeOut() = 0;
+};
+\end{lstlisting}
+
+While the operation runs, the service calls {\vcode isTimeout()} at variable
+intervals. If the function returns {\vcode true}, then
+{\vcode handleTimeout()} is called. If it also returns {\vcode true}, the
+operation is cancelled and an {\vcode operation\_timed\_out} exception is
+thrown. The function {\vcode resetTimeout()} is called each time data has
+been received from the server to reset time-out delay.
+
+The following example shows how to implement a simple time-out handler:
+
+\begin{lstlisting}[caption={Implementing a simple time-out handler}]
+class myTimeoutHandler : public vmime::net::timeoutHandler
+{
+public:
+
+   const bool isTimeOut()
+   {
+      return (getTime() >= m_last + 30);  // 30 seconds time-out
+   }
+
+   void resetTimeOut()
+   {
+      m_last = getTime();
+   }
+
+   const bool handleTimeOut()
+   {
+      std::cout << "Operation timed out." << std::endl;
+                << "Press [Y] to continue, or [N] to "
+                << "cancel the operation." << std::endl;
+
+      std::string response;
+      std::cin >> response;
+
+      return (response == "y" || response == "Y");
+   }
+
+private:
+
+   const unsigned int getTime() const
+   {
+      return vmime::platformDependant::getHandler()->getUnixTime();
+   }
+
+   unsigned int m_last;
+};
+\end{lstlisting}
+
+
+% ============================================================================
+\newpage
+\section{Secured connection using TLS/SSL}
+
+\subsection{Introduction} % --------------------------------------------------
+
+If you have enabled TLS support in VMime, you can configure messaging services
+so that they use a secured connection.
+
+Quoting from RFC-2246 - the TLS 1.0 protocol specification: \emph{`` The TLS
+protocol provides communications privacy over the Internet. The protocol
+allows client/server applications to communicate in a way that is designed
+to prevent eavesdropping, tampering, or message forgery.''}
+
+TLS has the following advantages:
+
+\begin{itemize}
+\item authentication: server identity can be verified;
+\item privacy: transmission of data between client and server cannot be read
+by someone in the middle of the connection;
+\item integrity: original data which is transferred between a client and a
+server can not be modified by an attacker without being detected.
+\end{itemize}
+
+\vnote{What is the difference between SSL and TLS? SSL is a protocol designed
+by Netscape. TLS is a standard protocol, and is partly based on version 3 of
+the SSL protocol. The two protocols are not interoperable, but TLS does
+support a mechanism to back down to SSL 3.}
+
+VMime offers two possibilities for using a secured connection:
+
+\begin{itemize}
+\item you can connect to a server listening on a special port (eg. IMAPS
+instead of IMAP): this is the classical use of SSL, but is now deprecated;
+\item connect to a server listening on the default port, and then begin a
+secured connection: this is STARTTLS.
+\end{itemize}
+
+
+\subsection{Setting up a secured connection} % -------------------------------
+
+\subsubsection{Connecting to a ``secured'' port} % ...........................
+
+To use the classical SSL/TLS way, simply use the ``S'' version of the protocol
+to connect to the server (eg. \emph{imaps} instead of \emph{imap}). This is
+currently available for SMTP, POP3 and IMAP.
+
+\begin{lstlisting}
+vmime::ref <vmime::net::store> store =
+   theSession->getStore(vmime::utility::url("imaps://example.org"));
+\end{lstlisting}
+
+\subsubsection{Using STARTTLS} % .............................................
+
+To make the service start a secured session using the STARTTLS method, simply
+set the \emph{connection.tls} property:
+
+\begin{lstlisting}
+theService->setProperty("connection.tls", true);
+\end{lstlisting}
+
+\vnote{If, for some reason, a secured connection cannot be started, the
+default behaviour is to fallback on a normal connection. To make
+{\vcode connect()} fail if STARTTLS fails, set the
+\emph{connection.tls.required} to \emph{true}.}
+
+\subsection{Certificate verification} % --------------------------------------
+
+\subsubsection{How it works} % ...............................................
+
+If you tried the previous examples, a
+{\vcode certificate\_verification\_exception} might have been thrown.
+This is because the default certificate verifier in VMime did not manage to
+verify the certificate, and so could not trust it.
+
+Basically, when you connect to a server using TLS, the server responds with
+a list of certificates, called a certificate chain (usually, certificates are
+of type X.509\footnote{And VMime currently supports only X.509 certificates}).
+The certificate chain is ordered so that the first certificate is the subject
+certificate, the second is the subject's issuer one, the third is the issuer's
+issuer, and so on.
+
+To decide whether the server can be trusted or not, you have to verify that
+\emph{each} certificate is valid (ie. is trusted). For more information
+about X.509 and certificate verification, see related articles on Wikipedia
+\footnote{\url{See http://wikipedia.org/wiki/Public\_key\_certificate}}.
+
+\subsubsection{Using the default certificate verifier} % .....................
+
+The default certificate verifier maintains a list of root (CAs) and user
+certificates that are trusted. By default, the list is empty. So, you have
+to initialize it before using the verifier.
+
+The algorithm\footnote{See
+\url{http://wikipedia.org/wiki/Certification\_path\_validation\_algorithm}}
+used is quite simple:
+
+\begin{enumerate}
+\item for every certificate in the chain, verify that the certificate has been
+issued by the next certificate in the chain;
+\item for every certificate in the chain, verify that the certificate is valid
+at the current time;
+\item decide whether the subject's certificate can be trusted:
+	\begin{itemize}
+	\item first, verify that the the last certificate in the chain was
+	issued by a third-party that we trust (root CAs);
+	\item if the issuer certificate cannot be verified against root CAs,
+	compare the subject's certificate against the trusted certificates
+	(the certificates the user has decided to trust).
+	\end{itemize}
+\end{enumerate}
+
+First, we need some code to load existing X.509 certificates:
+
+\begin{lstlisting}[caption={Reading a X.509 certificate from a file}]
+vmime::ref <vmime::security::cert::X509Certificate>
+   loadX509CertificateFromFile(const std::string& path)
+{
+   std::ifstream certFile;
+   certFile.open(path.c_str(), std::ios::in | std::ios::binary);
+
+   if (!certFile)
+   {
+      // ...handle error...
+   }
+
+   vmime::utility::inputStreamAdapter is(certFile);
+   vmime::ref <vmime::security::cert::X509Certificate> cert;
+
+   // Try DER format
+   cert = vmime::security::cert::X509Certificate::import
+      (is, vmime::security::cert::X509Certificate::FORMAT_DER);
+
+   if (cert != NULL)
+      return cert;
+
+   // Try PEM format
+   is.reset();
+   cert = vmime::security::cert::X509Certificate::import
+      (is, vmime::security::cert::X509Certificate::FORMAT_PEM);
+
+   return cert;
+}
+\end{lstlisting}
+
+Then, we can use the {\vcode loadX509CertificateFromFile} function to load
+certificates and initialize the certificate verifier:
+
+\begin{lstlisting}[caption={Using the default certificate verifier}]
+vmime::ref <vmime::security::cert::defaultCertificateVerifier> vrf =
+   vmime::create <vmime::security::cert::defaultCertificateVerifier>();
+
+// Load root CAs (such as Verisign or Thawte)
+std::vector <vmime::ref <vmime::security::cert::X509Certificate> > rootCAs;
+
+rootCAs.push_back(loadX509CertificateFromFile("/path/to/root-ca1.cer");
+rootCAs.push_back(loadX509CertificateFromFile("/path/to/root-ca2.cer");
+rootCAs.push_back(loadX509CertificateFromFile("/path/to/root-ca3.cer");
+
+vrf->setX509RootCAs(rootCAs);
+
+// Then, load certificates that the user explicitely chose to trust
+std::vector <vmime::ref <vmime::security::cert::X509Certificate> > trusted;
+
+trusted.push_back(loadX509CertificateFromFile("/path/to/trusted-site1.cer");
+trusted.push_back(loadX509CertificateFromFile("/path/to/trusted-site2.cer");
+
+vrf->setX509TrustedCerts(trusted);
+\end{lstlisting}
+
+
+\subsubsection{Writing your own certificate verifier} % ......................
+
+If you need to do more complex verifications on certificates, you will have to
+write your own verifier. Your verifier should inherit from the
+{\vcode vmime::security::cert::certificateVerifier} class and implement the
+method {\vcode verify()}. Then, if the specified certificate chain is trusted,
+simply return from the function, or else throw a
+{\vcode certificate\_verification\_exception}.
+
+The following example shows how to implement an interactive certificate
+verifier which relies on the user's decision, and nothing else (you SHOULD NOT
+use this in a production application as this is obviously a serious security
+issue):
+
+\begin{lstlisting}[caption={A custom certificate verifier}]
+class myCertVerifier : public vmime::security::cert::certificateVerifier
+{
+public:
+
+   void verify(vmime::ref <certificateChain> certs)
+   {
+      // Obtain the subject's certificate
+      vmime::ref <vmime::security::cert::certificate> cert = chain->getAt(0);
+
+      std::cout << std::endl;
+      std::cout << "Server sent a '" << cert->getType() << "'"
+         << " certificate." << std::endl;
+      std::cout << "Do you want to accept this certificate? (Y/n) ";
+      std::cout.flush();
+
+      std::string answer;
+      std::getline(std::cin, answer);
+
+      if (answer.length() != 0 && (answer[0] == 'Y' || answer[0] == 'y'))
+         return;  // OK, we trust the certificate
+
+      // Don't trust this certificate
+      throw exceptions::certificate_verification_exception();
+   }
+};
+\end{lstlisting}
+
+\vnote{In production code, it may be a good idea to remember user's decisions
+about which certificates to trust and which not. See {\vexample Example6} for
+a basic cache implementation.}
+

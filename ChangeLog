@@ -2,6 +2,10 @@
 VERSION 0.7.2cvs
 ================
 
+2005-11-06  Vincent Richard  <vincent@vincent-richard.net>
+
+ * First version of the VMime Book.
+
 2005-11-05  Vincent Richard  <vincent@vincent-richard.net>
 
  * Refactored header field values and parameters.

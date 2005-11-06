@@ -1,0 +1,385 @@
+\chapter{Parsing and Building Messages}
+
+% ============================================================================
+\section{Parsing messages}
+
+\subsection{Introduction} % --------------------------------------------------
+
+Parsing is the process of creating a structured representation (for example,
+a hierarchy of C++ objects) of a message from its ``textual'' representation
+(the raw data that is actually sent on the Internet).
+
+For example, say you have the following email in a file called "hello.eml":
+
+\begin{verbatim}
+Date: Thu, Oct 13 2005 15:22:46 +0200
+From: Vincent <vincent@vmime.org>
+To: you@vmime.org
+Subject: Hello from VMime!
+
+A simple message to test VMime
+\end{verbatim}
+
+The following code snippet shows how you can easily obtain a
+{\vcode vmime::message} object from data in this file:
+
+\begin{lstlisting}[caption={Parsing a message from a file}]
+// Read data from file
+std::ifstream file;
+file.open("hello.eml", std::ios::in | std::ios::binary);
+
+vmime::utility::inputStreamAdapter is(file);
+
+vmime::string data;
+vmime::utility::outputStreamStringAdapter os(data);
+
+vmime::utility::bufferedStreamCopy(is, os);
+
+// Actually parse the message
+vmime::ref <vmime::message> msg = vmime::create <vmime::message>();
+msg->parse(data);
+
+vmime::ref <vmime::header> hdr = msg->getHeader();
+vmime::ref <vmime::body> bdy = msg->getBody();
+
+// Now, you can extract some of its components
+vmime::charset ch(vmime::charsets::UTF_8);
+
+std::cout
+   << "The subject of the message is: "
+   << hdr->Subject()->getValue().getDecodedText(ch)
+   << std::endl
+   << "It was sent by: "
+   << hdr->From()->getValue().getName().getDecodedText(ch)
+   << " (email: " << hdr->From()->getValue().getEmail() << ")"
+   << std::endl;
+\end{lstlisting}
+
+The output of this program is:
+
+\begin{verbatim}
+The subject of the message is: Hello from VMime!
+It was sent by: Vincent (email: vincent@vmime.org)
+\end{verbatim}
+
+
+\subsection{Using the {\vcode vmime::messageParser} object} % ----------------
+
+The {\vcode vmime::messageParser} object allows to parse messages in a more
+simple manner. You can obtain all the text parts and attachments as well as
+basic fields (expeditor, recipients, subject...), without dealing with
+MIME message structure.
+
+\begin{lstlisting}[caption={Using {\vcode vmime::messageParser} to parse
+more complex messages}]
+// Read data from file
+std::ifstream file;
+file.open("hello.eml", std::ios::in | std::ios::binary);
+
+vmime::utility::inputStreamAdapter is(file);
+
+vmime::string data;
+vmime::utility::outputStreamStringAdapter os(data);
+
+vmime::utility::bufferedStreamCopy(is, os);
+
+// Actually parse the message
+vmime::ref <vmime::message> msg = vmime::create <vmime::message>();
+msg->parse(data);
+
+// Here start the differences with the previous example
+vmime::messageParser mp(msg);
+
+// Output information about attachments
+std::cout << "Message has " << mp.getAttachmentCount()
+   << " attachment(s)" << std::endl;
+
+for (int i = 0 ; i < mp.getAttachmentCount() ; ++i)
+{
+   vmime::ref <const vmime::attachment> att = mp.getAttachmentAt(i);
+   std::cout << "   - " << att->getType().generate() << std::endl;
+}
+
+// Output information about text parts
+std::cout << "Message has " << mp.getTextPartCount()
+   << " text part(s)" << std::endl;
+
+for (int i = 0 ; i < mp.getTextPartCount() ; ++i)
+{
+   vmime::ref <const vmime::textPart> tp = mp.getTextPartAt(i);
+
+   // text/html
+   if (tp->getType().getSubType() == vmime::mediaTypes::TEXT_HTML)
+   {
+      vmime::ref <const vmime::htmlTextPart> htp =
+         tp.dynamicCast <const vmime::htmlTextPart>();
+
+      // HTML text is in tp->getText()
+      // Plain text is in tp->getPlainText()
+
+      // Enumerate embedded objects
+      for (int j = 0 ; j < htp->getObjectCount() ; ++j)
+      {
+         vmime::ref <const vmime::htmlTextPart::embeddedObject> obj =
+            htp->getObjectAt(j);
+
+         // Identifier (Content-Id or Content-Location) is obj->getId()
+         // Object data is in obj->getData()
+      }
+   }
+   // text/plain or anything else
+   else
+   {
+      // Text is in tp->getText()
+   }
+}
+\end{lstlisting}
+
+
+% ============================================================================
+\section{Building messages}
+
+\subsection{A simple message\label{msg-building-simple-message}} % -----------
+
+Of course, you can build a MIME message from scratch by creating the various
+objects that compose it (parts, fields, etc.). The following is an example of
+how to achieve it:
+
+\begin{lstlisting}[caption={Building a simple message from scratch}]
+vmime::ref <vmime::message> msg = vmime::create <vmime::message>();
+
+vmime::ref <vmime::header> hdr = msg->getHeader();
+vmime::ref <vmime::body> bdy = msg->getBody();
+
+vmime::headerFieldFactory* hfFactory =
+   vmime::headerFieldFactory::getInstance();
+
+// Append a 'Date:' field
+vmime::ref <vmime::headerField> dateField =
+   hfFactory->create(vmime::fields::DATE);
+
+dateField->setValue(vmime::datetime::now());
+hdr->appendField(dateField);
+
+// Append a 'Subject:' field
+vmime::ref <vmime::headerField> subjectField =
+   hfFactory->create(vmime::fields::SUBJECT);
+
+subjectField->setValue(vmime::text("Message subject"));
+hdr->appendField(subjectField);
+
+// Append a 'From:' field
+vmime::ref <vmime::headerField> fromField =
+   hfFactory->create(vmime::fields::FROM);
+
+fromField->setValue
+   (vmime::create <vmime::mailbox>("me@vmime.org"));
+hdr->appendField(fromField);
+
+// Append a 'To:' field
+vmime::ref <vmime::headerField> toField =
+   hfFactory->create(vmime::fields::TO);
+
+vmime::ref <vmime::mailboxList> recipients =
+   vmime::create <vmime::mailboxList>();
+
+recipients->appendMailbox
+   (vmime::create <vmime::mailbox>("you@vmime.org"));
+
+toField->setValue(recipients);
+hdr->appendField(toField);
+
+// Set the body contents
+bdy->setContents(vmime::create <vmime::stringContentHandler>
+   ("This is the text of your message..."));
+
+// Output raw message data to standard output
+vmime::utility::outputStreamAdapter out(std::cout);
+msg->generate(out);
+\end{lstlisting}
+
+As you can see, this is a little fastidious. Hopefully, VMime also offers a
+more simple way for creating messages. The {\vcode vmime::messageBuilder}
+object can create basic messages that you can then customize.
+
+The following code can be used to build exactly the same message as in the
+previous example, using the {\vcode vmime::messageBuilder} object:
+
+\begin{lstlisting}[caption={Building a simple message
+using {\vcode vmime::messageBuilder}}]
+try
+{
+   vmime::messageBuilder mb;
+
+   // Fill in some header fields and message body
+   mb.setSubject(vmime::text("Message subject"));
+   mb.setExpeditor(vmime::mailbox("me@vmime.org"));
+   mb.getRecipients().appendAddress
+      (vmime::create <vmime::mailbox>("you@vmime.org"));
+
+   mb.getTextPart()->setCharset(vmime::charsets::ISO8859_15);
+   mb.getTextPart()->setText(vmime::create <vmime::stringContentHandler>
+   	("This is the text of your message..."));
+
+   // Message construction
+   vmime::ref <vmime::message> msg = mb.construct();
+
+   // Output raw message data to standard output
+   vmime::utility::outputStreamAdapter out(std::cout);
+   msg->generate(out);
+}
+// VMime exception
+catch (vmime::exception& e)
+{
+   std::cerr << "vmime::exception: " << e.what() << std::endl;
+}
+// Standard exception
+catch (std::exception& e)
+{
+   std::cerr << "std::exception: " << e.what() << std::endl;
+}
+\end{lstlisting}
+
+
+\subsection{Adding an attachment} % ------------------------------------------
+
+Dealing with attachments is quite simple. Add the following code to the
+previous example to attach a file to the message:
+
+\begin{lstlisting}[caption={Building a message with an attachment using
+{\vcode vmime::messageBuilder}}]
+// Create an attachment
+vmime::ref <vmime::fileAttachment> att =
+   vmime::create <vmime::fileAttachment>
+   (
+     /* full path to file */  "/home/vincent/paris.jpg",
+     /* content type */       vmime::mediaType("image/jpeg),
+     /* description */        vmime::text("My holidays in Paris")
+   );
+
+// You can also set some infos about the file
+att->getFileInfo().setFilename("paris.jpg");
+att->getFileInfo().setCreationDate
+   (vmime::datetime("30 Apr 2003 14:30:00 +0200"));
+
+// Add this attachment to the message
+mb.appendAttachment(att);
+\end{lstlisting}
+
+
+\subsection{HTML messages and embedded objects} % ----------------------------
+
+VMime also supports aggregated messages, which permits to build MIME messages
+containing HTML text and embedded objects (such as images).
+
+Creating such messages is quite easy, using the {\vcode vmime::messageBuilder}
+object. The following code constructs a message containing text in both plain
+and HTML format, and a JPEG image:
+
+\begin{lstlisting}[caption={Building an HTML message with an embedded image
+using the {\vcode vmime::messageBuilder}}]
+// Fill in some header fields
+mb.setSubject(vmime::text("An HTML message"));
+mb.setExpeditor(vmime::mailbox("me@vmime.org"));
+mb.getRecipients().appendAddress
+   (vmime::create <vmime::mailbox>("you@vmime.org"));
+
+// Set the content-type to "text/html": a text part factory must be
+// available for the type you are using. The following code will make
+// the message builder construct the two text parts.
+mb.constructTextPart(vmime::mediaType
+   (vmime::mediaTypes::TEXT, vmime::mediaTypes::TEXT_HTML));
+
+// Set contents of the text parts; the message is available in two formats:
+// HTML and plain text. The HTML format also includes an embedded image.
+vmime::ref <vmime::htmlTextPart> textPart =
+   mb.getTextPart().dynamicCast <vmime::htmlTextPart>();
+
+// -- add the JPEG image (the returned identifier is used to identify the
+// -- embedded object in the HTML text, the famous "CID", or "Content-Id")
+vmime::string id = textPart->addObject("<...image data...>",
+   vmime::mediaType(vmime::mediaTypes::IMAGE, vmime::mediaTypes::IMAGE_JPEG));
+
+// -- set the text
+textPart->setCharset(vmime::charsets::ISO8859_15);
+
+textPart->setText(vmime::create <vmime::stringContentHandler>
+   ("This is the <b>HTML text</b>, and the image:<br/>"
+    "<img src=\"") + id + vmime::string("\"/>"));
+
+textPart->setPlainText(vmime::create <vmime::stringContentHandler>
+   ("This is the plain text."));
+\end{lstlisting}
+
+This will create a message having the following structure:
+
+\begin{verbatim}
+multipart/alternative
+   text/plain
+   multipart/related
+      text/html
+      image/jpeg
+\end{verbatim}
+
+
+% ============================================================================
+\section{Working with attachments: the attachment helper}
+
+The {\vcode attachmentHelper} object allows listing all attachments in a
+message, as well as adding new attachments, without using the
+{\vcode messageParser} and {\vcode messageBuilders} objects. It can work
+directly on messages and body parts.
+
+To use it, you do not need any knowledge about how attachment parts should
+be organized in a MIME message.
+
+The following code snippet tests if a body part is an attachment, and if so,
+extract its contents to the standard output:
+
+\begin{lstlisting}[caption={Testing if a body part is an attachment}]
+vmime::ref <vmime::bodyPart> part;  // suppose we have a body part
+
+if (vmime::attachmentHelper::isBodyPartAnAttachment(part))
+{
+   // The body part contains an attachment, get it
+   vmime::ref <const vmime::attachment> attach =
+      attachmentHelper::getBodyPartAttachment(part);
+
+   // Extract attachment data to standard output
+   vmime::utility::outputStreamAdapter out(std::cout);
+   attach->getData()->extract(out);
+}
+\end{lstlisting}
+
+You can also easily extract all attachments from a message:
+
+\begin{lstlisting}[caption={Extracting all attachments from a message}]
+vmime::ref <vmime::message> msg;  // suppose we have a message
+
+const std::vector <ref <const attachment> > atts =
+   attachmentHelper::findAttachmentsInMessage(msg);
+\end{lstlisting}
+
+Finally, the {\vcode attachmentHelper} object can be used to add an
+attachment to an existing message, whatever it contains (text parts,
+attachments, ...). The algorithm can modify the structure of the
+message if needed (eg. add a \emph{multipart/mixed} part if no one
+exists in the message). Simply call the {\vcode addAttachment}
+function:
+
+\begin{lstlisting}[caption={Adding an attachment to an existing message}]
+vmime::ref <vmime::message> msg;  // suppose we have a message
+
+// Create an attachment
+vmime::ref <vmime::fileAttachment> att =
+   vmime::create <vmime::fileAttachment>
+   (
+     /* full path to file */  "/home/vincent/paris.jpg",
+     /* content type */       vmime::mediaType("image/jpeg),
+     /* description */        vmime::text("My holidays in Paris")
+   );
+
+// Attach it to the message
+vmime::attachmentHelper::addAttachment(msg, att);
+\end{lstlisting}
+

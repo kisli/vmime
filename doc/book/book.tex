@@ -1,0 +1,100 @@
+\documentclass[11pt]{report}
+
+\title{{\Huge VMime Book} \\ \ \\ A Developer's Guide To VMime}
+\author{Vincent Richard \\ vincent@vincent-richard.net}
+
+\usepackage{graphicx}
+\usepackage{tabularx}
+\usepackage{listings}
+\usepackage[usenames]{color}
+\usepackage{ucs}
+\usepackage[latin1]{inputenc}
+\usepackage[vcentering,dvips]{geometry}
+%\usepackage{type1cm}  % scalable Computer Modern fonts
+\usepackage{courier}  % use Adobe Courier instead of Computer Modern Typewriter
+\usepackage{fancyheadings}
+\usepackage{hyperref}
+\usepackage{sverb}
+\usepackage{footmisc}
+
+
+\addtolength{\parskip}{+0.3cm}
+\linespread{1.05}
+
+\setlength{\skip\footins}{1cm}  % margin between text and footnotes
+
+\clubpenalty=1000
+\widowpenalty=1000
+
+\setcounter{secnumdepth}{10}
+\setcounter{tocdepth}{10}
+
+\def\vcode{\tt}
+\def\vnull{{\tt NULL}}
+\newcommand{\vnote}[1]{{\sc note:} #1}
+\def\vexample{\tt\sc}
+\newcommand{\verti}[1]{\rotatebox{90}{#1\ }}  % vertical text
+\def\vdot{$\bullet$}
+
+\sloppy  % Disable "overfull \hbox..." warnings
+
+\newcommand{\Chapter}[1]{\chapter{#1} \setcounter{figure}{1}}
+
+% 'geometry' configuration
+\geometry{papersize={210mm,297mm},total={160mm,230mm}}
+
+% 'listings' configuration
+\definecolor{listingFrame}{rgb}{0.9,0.9,0.9}
+\lstset{language=C++,showstringspaces=false}
+\lstset{captionpos=b,extendedchars=true,inputencoding=latin1}
+\lstset{fontadjust=true,basewidth={0.5em,0.4em},columns=fixed,flexiblecolumns=false}
+\lstset{frame=leftline,framerule=0.1cm,framesep=0.3cm,rulecolor=\color{listingFrame}}
+\lstset{abovecaptionskip=0.5cm,xleftmargin=1.1cm,aboveskip=0.5cm,belowskip=0.2cm}
+
+% 'hyperref' configuration
+\hypersetup{
+   backref=true,pagebackref=true,hyperindex=rue,colorlinks=true,
+   breaklinks=true,urlcolor=blue,linkcolor=black,bookmarks=true,bookmarksopen=true
+}
+
+\begin{document}
+
+% Title page
+\maketitle
+\newpage
+
+% Table of contents
+\tableofcontents
+\newpage
+
+% Chapters
+\include{intro}
+\include{building}
+\include{start}
+\include{basics}
+\include{msg}
+\include{net}
+
+\thispagestyle{empty}
+\ \newpage
+
+% List of listings
+\lstlistoflistings
+\addcontentsline{toc}{chapter}{Listings}
+
+% List of figures
+\listoffigures
+\addcontentsline{toc}{chapter}{List of figures}
+
+% List of table
+\listoftables
+\addcontentsline{toc}{chapter}{List of tables}
+
+% Appendixes
+\appendix
+
+\chapter{The GNU General Public License\label{appendix_license}}
+\verbinput{../../COPYING}
+
+\end{document}
+

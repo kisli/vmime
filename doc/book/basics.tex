@@ -1,0 +1,812 @@
+\chapter{Basics}
+
+% ============================================================================
+\section{Reference counting}
+
+\subsection{Introduction} % --------------------------------------------------
+
+Since version 0.7.2cvs, VMime use smart pointers to simplify memory
+management. VMime's smart pointer implementation relies on
+RAII\footnote{Ressource Allocation is Initialisation} so that we do not need
+to bother with deleting an object (freeing memory) when it is not used
+anymore.
+
+There are two possibilities for owning a reference to an object. We can own a
+strong reference to an object: as long as we keep this reference, the object
+is not destroyed. Or we can own a weak reference to the object: the object can
+be destroyed if nobody owns a strong reference to it, in which case the weak
+reference becomes invalid.
+
+An object is destroyed as soon as the last strong reference to it is released.
+At the same tine, all weak references (if any) are automatically set to point
+to \vnull.
+
+In VMime, these two types of references are known as {\vcode vmime::ref}
+and {\vcode vmime::weak\_ref}, respectively.
+
+\subsection{Instanciating reference-counted objects} % -----------------------
+
+In VMime, all objects that support reference counting inherit from the
+{\vcode vmime::object} class, which is responsible for
+incrementing/decrementing the counter and managing the object's life cycle.
+If you want to create a smart pointer to a new object instance, you should
+use the function {\vcode vmime::create} instead of the {\vcode new}
+operator.
+
+\begin{lstlisting}[caption={Smarts pointers and creating objects}]
+class myObject : public vmime::object
+{
+public:
+
+   myObject(const vmime::string& name)
+      : m_name(name)
+   {
+   }
+
+   void sayHello()
+   {
+      std::cout << "Hello " << m_name << std::endl;
+   }
+
+private:
+
+   vmime::string m_name;
+};
+
+int main()
+{
+   vmime::ref <myObject> obj =
+      vmime::create <myObject>("world");
+
+   obj->sayHello();
+
+   return 0;
+
+} // Here, 'obj' gets automatically destroyed
+\end{lstlisting}
+
+\subsection{Using smart pointers} % ------------------------------------------
+
+Smart pointers are copiable, assignable and comparable. You can use them like
+you would use normal ("raw") C++ pointers (eg. you can write
+\lstinline{!ptr, ptr != NULL, ptr->method(), *ptr}...).
+
+Type safety is also guaranteed, and you can type cast smart pointers using
+the {\vcode staticCast()}, {\vcode dynamicCast()} and {\vcode constCast()}
+equivalents on {\vcode mime::ref} and {\vcode vmime::weak\_ref} objects:
+
+\begin{lstlisting}[caption={Casting smart pointers}]
+class myBase : public vmime::object { }
+class myObject : public myBase { }
+
+vmime::ref <myObject> obj = vmime::create <myObject>();
+
+// Implicit downcast
+vmime::ref <myBase> base = obj;
+
+// Explicit upcast
+vmime::ref <myObject> obj2 = base.dynamicCast <myObject>();
+\end{lstlisting}
+
+Weak references are used to resolve reference cycles (an object which refers
+directly or indirectly to itself). The following example illustrates a
+typical problem of reference counting:
+
+\begin{lstlisting}
+class parent : public vmime::object
+{
+public:
+
+   void createChild(vmime::ref <child> c)
+   {
+      m_child = c;
+   }
+
+private:
+
+   vmime::ref <child> m_child;
+};
+
+class child : public vmime::object
+{
+public:
+
+   child(vmime::ref <parent> p)
+      : m_parent(p)
+   {
+   }
+
+private:
+
+   vmime::ref <parent> m_parent;
+};
+
+int main()
+{
+   vmime::ref <parent> p = vmime::create <parent>();
+   vmime::ref <child> c = vmime::create <child>();
+
+   p->setChild(c);
+}
+\end{lstlisting}
+
+In this example, neither {\vcode p} nor {\vcode c} will be deleted when
+exiting {\vcode main()}. That's because {\vcode p} indirectly points to itself
+{\em via} {\vcode c}, and {\em vice versa}. The solution is to use a weak
+reference to the parent:
+
+\begin{lstlisting}
+vmime::weak_ref <parent> m_parent;
+\end{lstlisting}
+
+The decision to make the parent or the child a weak reference is purely
+semantic, and it depends on the context and the relationships between the
+objects. Note that when the parent is deleted, the {\vcode m\_parent} member
+of the child points to \vnull.
+
+More information about reference counting can be found on
+Wikipedia\footnote{http://en.wikipedia.org/wiki/Reference\_counting}.
+
+% ============================================================================
+\section{Error handling}
+
+In VMime, error handling is exclusively based on exceptions, there is no error
+codes, or things like that.
+
+VMime code may throw exceptions in many different situations: an unexpected
+error occured, an operation is not supported, etc. You should catch them if
+you want to report failures to the user. This is also useful when debugging
+your program.
+
+VMime exceptions support chaining: an exception can be encapsulated into
+another exception to hide implementation details. The function
+{\vcode exception::other()} returns the next exception in the chain,
+or \vnull.
+
+Following is an example code for catching VMime exceptions and writing error
+messages to the console:
+
+\begin{lstlisting}[caption={Catching VMime exceptions}]
+std::ostream& operator<<(std::ostream& os, const vmime::exception& e)
+{
+   os << "* vmime::exceptions::" << e.name() << std::endl;
+   os << "    what = " << e.what() << std::endl;
+
+   // Recursively print all encapsuled exceptions
+   if (e.other() != NULL)
+      os << *e.other();
+
+   return os;
+}
+
+...
+
+try
+{
+   // ...some call to VMime...
+}
+catch (vmime::exception& e)
+{
+   std::cerr << e;         // VMime exception
+}
+catch (std::exception& e)
+{
+   std::cerr << e.what();  // standard exception
+}
+\end{lstlisting}
+
+Read the source of {\vexample example6} if yo want to see a more complete
+example of using VMime exceptions (such as getting more detailed information
+by using specialized classes of {\vcode vmime::exception}).
+
+
+% ============================================================================
+\section{Basic objects}
+
+\subsection{The {\vcode component} class} % ----------------------------------
+
+In VMime, all the components of a message inherit from the same class
+{\vcode component}. This includes the message itself (classes {\vcode message}
+and {\vcode bodyPart}), the header, the header fields and the value of each
+header field, the body and all the parts in the message.
+
+The class component provide a common interface for parsing or generating all
+these components (methods {\vcode parse()} and {\vcode generate()}). It also
+provides additional functions to get some information about the parsing
+process or the structure (methods {\vcode getParsedOffset()},
+{\vcode getParsedLength()} and {\vcode getChildComponents()}).
+
+Vmime also provides a set of classes corresponding to the basic types found
+in a message; for example a mailbox, a mailbox list, date/time information,
+media type, etc. They all inherit from {\vcode component} too.
+
+\subsection{Date and time} % -------------------------------------------------
+
+Date and time are used in several places in VMime, particularly in header
+fields (Date, Received, ...). VMime fully supports RFC-2822's date and time
+specification. The object {\vcode vmime::datetime} is used to manipulate date
+and time information, and to parse/generate it from/to RFC-2822 format.
+
+The following code snippet show various manners of using the
+{\vcode vmime::datetime} object:
+
+\begin{lstlisting}[caption={Using {\vcode vmime::datetime} object}]
+// Creating from string in RFC-2822 format
+vmime::datetime d1("Sat, 08 Oct 2005 14:07:52 +0200");
+
+// Creating from components
+vmime::datetime d2(
+   /* date */ 2005, vmime::datetime::OCTOBER, 8,
+   /* time */ 14, 7, 52,
+   /* zone */ vmime::datetime::GMT2);
+
+// Getting day of week
+const int dow = d2.getWeekDay();  // 'dow' should be datetime::SATURDAY
+\end{lstlisting}
+
+\subsection{Media type} % ----------------------------------------------------
+
+In MIME, the nature of the data contained in parts is identified using a
+media type. A general type (eg. \emph{image}) and a sub-type (eg. \emph{jpeg})
+are put together to form a media type (eg. \emph{image/jpeg}). This is also
+called the MIME type.
+
+There are a lot of media types officially registered, and vendor-specific
+types are possible (they start with ``x-'', eg.
+\emph{application/x-zip-compressed}).
+
+In VMime, the object {\vcode vmime::mediaType} represents a media type. There
+are also some constants for top-level types and sub-types in the
+{\vcode vmime::mediaTypes} namespace. For example, you can instanciate a new
+media type with:
+
+\begin{lstlisting}
+vmime::mediaType theType(
+   /* top-level type */ vmime::mediaTypes::IMAGE,
+   /* sub-type */       vmime::mediaTypes::IMAGE_JPEG);
+
+// theType.getType() is "image"
+// theType.getSubType() is "jpeg"
+// theType.generate() returns "image/jpeg"
+\end{lstlisting}
+
+For more information about media types, see
+RFC-2046\footnote{http://www.faqs.org/rfcs/rfc2046.html}.
+
+\subsection{Mailbox and mailbox groups} % ------------------------------------
+
+VMime provides several objects for working with mailboxes and addresses.
+
+The {\vcode vmime::address} class is an abstract type for representing an
+address: it can be either a mailbox (type {\vcode vmime::mailbox}) or a
+mailbox group (type {\vcode vmime::mailboxGroup}). A mailbox is composed of
+an email address (mandatory) and possibly a name. A mailbox group is simply
+a named list of mailboxes (see Figure \ref{uml_addr_mbox_mboxgroup}).
+
+\begin{lstlisting}[caption={Using mailboxes and mailbox groups}]
+vmime::ref <vmime::mailbox> mbox1 = vmime::create <vmime::mailbox>
+    (/* name */ vmime::text("John Doe"), /* email */ "john.doe@acme.com");
+vmime::ref <vmime::mailbox> mbox2 = vmime::create <vmime::mailbox>
+    (/* no name, email only */ "bill@acme.com");
+
+vmime::ref <vmime::mailboxGroup> grp = vmime::create <vmime::mailboxGroup>();
+grp->appendMailbox(mbox1);
+grp->appendMailbox(mbox2);
+\end{lstlisting}
+
+\begin{figure}[ht!]
+	\center\includegraphics[width=0.7\textwidth]
+		{images/address-mailbox-mailboxgroup.png}
+	\caption{Diagram for address-related classes}
+	\label{uml_addr_mbox_mboxgroup}
+\end{figure}
+
+
+% ============================================================================
+\section{Message, body parts and header}
+
+\subsection{Introduction to MIME messages} % ---------------------------------
+
+A MIME message is a recursive structure in which each part can contains one
+or more parts (or \emph{entities}). Each part is composed of a header and
+a body (actual contents). Figure \ref{uml_msg_body_header} shows how this
+model is implemented in VMime, and all classes that take part in it.
+
+\begin{figure}
+	\center\includegraphics[width=1.0\textwidth]
+		{images/message-body-header.png}
+	\caption{Overall structure of MIME messages}
+	\label{uml_msg_body_header}
+\end{figure}
+
+
+\subsection{Header and header fields} % --------------------------------------
+
+\subsubsection{Standard header fields} % .....................................
+
+Header fields carry information about a message (or a part) and its contents.
+Each header field has a name and a value. All types that can be used as a
+field value inherit from the {\vcode headerFieldValue} class.
+
+You cannot instanciate header fields directly using their constructor.
+Instead, you should use the {\vcode headerFieldFactory} object. This ensures
+the right field type and value type is used for the specified field name.
+For more information about how to use header fields and the factory, see
+section \ref{msg-building-simple-message}.
+
+Some standard fields are officially registered and have their value type
+specified in a RFC. Table \ref{standard-fields} lists all the fields
+registered by default in VMime and the value type they contains.
+
+By default, all unregistered fields have a value of type {\vcode text}.
+
+\begin{table}[!ht]
+\begin{center}
+\noindent\begin{tabularx}{0.85\textwidth}{|X|X|}
+\hline
+	{\bf Field Name} &
+	{\bf Value Type} \\
+\hline
+\hline
+From & mailbox \\
+To & addressList \\
+Cc & addressList \\
+Bcc & addressList \\
+Sender & mailbox \\
+Date & datetime \\
+Received & relay \\
+Subject & text \\
+Reply-To & mailbox \\
+Delivered-To & mailbox \\
+Organization & text \\
+Return-Path & path \\
+Mime-Version & text \\
+Content-Type & mediaType \\
+Content-Transfer-Encoding & encoding \\
+Content-Description & text \\
+Content-Disposition & contentDisposition \\
+Content-Id & messageId \\
+Content-Location & text \\
+Message-Id & messageId \\
+In-Reply-To & messageIdSequence \\
+References & messageIdSequence \\
+Original-Message-Id & messageId \\
+Disposition & disposition \\
+Disposition-Notification-To & mailboxList \\
+\hline
+\end{tabularx}
+\end{center}
+\label{standard-fields}
+\caption{Standard fields and their types}
+\end{table}
+
+
+\subsubsection{Parameterized fields} % .......................................
+
+In addition to a value, some header fields can contain one or more
+\emph{name=value} couples which are called \emph{parameters}. For example,
+this is used in the \emph{Content-Type} field to give more information about
+the content:
+
+\begin{verbatim}
+   Content-Type: text/plain; charset="utf-8"
+\end{verbatim}
+
+Fields that support parameters inherit from the
+{\vcode parameterizedHeaderField} class which provides methods to deal with
+these parameters: {\vcode appendParameter()}, {\vcode getParameterAt()}...
+
+A parameter is identified by a name (eg. \emph{charset}) and associated to
+a value of type {\vcode vmime::text}. Parameters provide helper functions to
+convert automatically from basic types to text, and \emph{vice versa}. The
+following example illustrates it:
+
+\begin{lstlisting}[caption={Getting and setting parameter value in fields}]
+vmime::ref <vmime::parameterizedField> field =
+   header->findField("X-Field-That-Contains-Parameters")
+      .dynamicCast <vmime::parameterizedField>();
+
+// Use setValue() to convert from a basic type to 'text'
+vmime::ref <vmime::parameter> prm = field->getParameter("my-date-param");
+prm->setValue(vmime::datetime::now());
+
+// Use getValueAs() to convert from 'text' to a basic type
+prm = field->getParameter("my-charset-param");
+const vmime::charset ch = prm->getValueAs <vmime::charset>();
+\end{lstlisting}
+
+Some fields provide easy access to their standard parameters (see
+Table \ref{standard-prm-fields}). This avoids finding the parameter and
+\emph{dynamic-casting} its value to the right type. The following code
+illustrates how to use it:
+
+\begin{lstlisting}
+vmime::ref <vmime::contentTypeField> field =
+   header->getField(vmime::fields::CONTENT_TYPE)
+      .dynamicCast <vmime::contentTypeField>();
+
+// 1. First solution: the "hard" way
+vmime::ref <vmime::parameter> prm = field->findParameter("charset");
+const charset ch1 = prm->getValueAs <vmime::charset>();
+
+// 2. Second solution: the simple way
+const charset ch2 = field->getCharset();
+\end{lstlisting}
+
+\vnote{In both cases, an exception {\vcode no\_such\_parameter} can be
+thrown if the parameter does not exist, so be sure to catch it.}
+
+\begin{table}[ht!]
+\begin{center}
+\noindent\begin{tabularx}{0.85\textwidth}{|l|l|X|}
+\hline
+	{\bf Field Name} &
+	{\bf Field Type} &
+	{\bf Parameters} \\
+\hline
+\hline
+Content-Type & contentTypeField & boundary, charset, report-type  \\
+\hline
+Content-Disposition & contentDispositionField & creation-date,
+modification-date, read-date, filename, size \\
+\hline
+\end{tabularx}
+\end{center}
+\label{standard-prm-fields}
+\caption{Standard parameterized fields}
+\end{table}
+
+
+
+% ============================================================================
+\section{Streams}
+
+\subsection{Streams and stream adapters} % -----------------------------------
+
+Streams permit reading or writing data whatever the underlying system is:
+a file on a hard disk, a socket connected to a remote service...
+
+There are two types of streams: input streams (from which you can read data)
+and output streams (in which you can write data). Some adapters are provided
+for compatibility and convenience, for example:
+
+\begin{itemize}
+\item {\vcode inputStreamAdapter} and {\vcode outputStreamAdapter}: allow
+to use standard C++ iostreams with VMime;
+\item {\vcode inputStreamStringAdapter} and
+{\vcode outputStreamStringAdapter}: use a {\vcode vmime::string} object to
+read/write data.
+\end{itemize}
+
+The following example shows two ways of writing the current date to the
+standard output, using stream adapters:
+
+\begin{lstlisting}[caption={Using stream adapters}]
+// Get current date and time
+const vmime::datetime date = vmime::datetime::now();
+
+// 1. Using outputStreamAdapter
+vmime::utility::outputStreamAdapter out(std::cout);
+
+std::cout << "Current date is: ";
+date.generate(out);
+std::cout << std::endl;
+
+// 2. Using outputStreamStringAdapter
+vmime::string dateStr;
+vmime::utility::outputStreamStringAdapter outStr(dateStr);
+
+std::cout << "Current date is: " << dateStr << std::endl;
+\end{lstlisting}
+
+
+\subsection{Stream filters} % ------------------------------------------------
+
+Input and output streams can be filtered to perform inline conversions (for
+example, there is a filter to convert ``{\textbackslash}r{\textbackslash}n''
+sequences to ``{\textbackslash}n''). They inherit from
+{\vcode vmime::utility::filteredInputStream} or
+{\vcode vmime::utility::filteredOutputStream} and are used like adapters (some
+filters also accept parameters; read the documentation).
+
+The most useful filter in VMime (and probably the only one you will need) is
+the {\vcode charsetFilteredOutputStream}, which performs inline conversion
+of charsets. See \ref{section_charsets} to know how to use it.
+
+\vnote{After you have finished to use a filtered output stream, it is
+important to call {\vcode flush()} on it to flush the internal buffer.
+If {\vcode flush()} is not called, not all data may be written to the
+underlying stream.}
+
+
+% ============================================================================
+\section{Content handlers}
+
+\subsection{Introduction} % --------------------------------------------------
+
+Content handlers are an abstraction for data sources. They are currently used
+when some data need to be stored for later use (eg. body part contents,
+attachment data, ...). Data can be stored encoded or unencoded (for more
+information about encodings, see \ref{section_encodings}).
+
+\subsection{Extracting data from content handlers} % -------------------------
+
+You can extract data in a content handler using the {\vcode extract()} method
+(which automatically decodes data if encoded) or {\vcode extractRaw()} (which
+extracts data without perfoming any decoding).
+
+The following example shows how to extract the body text from a message, and
+writing it to the standard output with charset conversion:
+
+\begin{lstlisting}[caption={Using content handlers to extract body text from
+a message}]
+// Suppose we already have a message
+vmime::ref <vmime::message> msg;
+
+// Obtains a reference to the body contents
+vmime::ref <vmime::body> body = msg->getBody();
+vmime::ref <vmime::contentHandler> cts = msg->getContents();
+
+vmime::utility::outputStreamAdapter out(std::cout);
+cts->extract(out);
+\end{lstlisting}
+
+\vnote{The body contents is extracted ``as is''. No charset conversion is
+performed. See \ref{section_charsets} to know more about conversion between
+charsets.}
+
+
+\subsection{Creating content handlers} % -------------------------------------
+
+When you are building a message, you may need to instanciate content handlers
+if you want to set the contents of a body part. The following code snippet
+shows how to set the body text of a part from a string:
+
+\begin{lstlisting}[caption={Setting the contents of a body part}]
+vmime::ref <vmime::bodyPart> part;  // suppose we have a body part
+
+// Create a new content handler from a string
+vmime::ref <vmime::contentHandler> cth =
+   vmime::create <vmime::stringContentHandler>("Put body contents here");
+
+// Set the contents
+part->getBody()->setContents(cth);
+\end{lstlisting}
+
+Content handlers are also used when creating attachments. The following
+example illustrates how to create an attachment from a file:
+
+\begin{lstlisting}[caption={Creating an attachment from a file}]
+// Create a stream from a file
+std::ifstream* fileStream = new std::ifstream();
+
+fileStream->open("/home/vincent/paris.jpg", std::ios::binary);
+
+if (!*fileStream)
+   // handle error
+
+vmime::ref <utility::stream> dataStream =
+   vmime::create <vmime::utility::inputStreamPointerAdapter>(fileStream);
+
+   // NOTE: 'fileStream' will be automatically deleted
+   // when 'dataStream' is deleted
+
+// Create a new content handler
+vmime::ref <contentHandler> data =
+   vmime::create <vmime::streamContentHandler>(dataStream, 0);
+
+// Now create the attachment
+ref <vmime::attachment> att = vmime::create <vmime::defaultAttachment>
+   (
+   	/* attachment data */ data,
+	/* content type */    vmime::mediaType("image/jpeg"),
+	/* description */     vmime::text("Holiday photo"),
+	/* filename */        vmime::word("paris.jpg")
+   );
+\end{lstlisting}
+
+You will see later that the {\vcode vmime::fileAttachment} class already
+encapsulates all the mechanics to create an attachment from a file.
+
+
+% ============================================================================
+\section{Character sets, charsets and conversions\label{section_charsets}}
+
+Quoting from RFC-2278: \emph{`` The term 'charset' is used to refer to a
+method of converting a sequence of octets into a sequence of characters.''}
+
+With the {\vcode vmime::charset} object, VMime supports conversion between
+charsets using the {\em iconv} library, which is available on almost all
+existing platforms. See {\vcode vmime::charset} and
+{\vcode vmime::charsetConverter} in the class documentation to know more
+about charset conversion.
+
+The following example shows how to convert data in one charset to another
+charset. The data is extracted from the body of a message and converted
+to UTF-8 charset:
+
+\begin{lstlisting}[caption={Extracting and converting body contents to a
+specified charset}]
+vmime::ref <vmime::message> msg;  // we have a message
+
+// Obtain the content handler first
+vmime::ref <vmime::body> body = msg->getBody();
+vmime::ref <const vmime::contentHandler> cth = body->getContents();
+
+// Then, extract and convert the contents
+vmime::utility::outputStreamAdapter out(std::cout);
+vmime::utility::charsetFilteredOutputStream fout
+   (/* source charset */ body->getCharset(),
+    /* dest charset */   vmime::charset("utf-8"),
+    /* dest stream */    out);
+
+cth->extract(fout);
+
+fout.flush();  // Very important!
+\end{lstlisting}
+
+
+% ============================================================================
+\section{Non-ASCII text in header fields}
+
+MIME standard defines methods\footnote{See RFC-2047: Message Header Extensions
+for Non-ASCII Text} for dealing with data which is not 7-bit only (ie. the
+ASCII character set), in particular in header fields. For example, the field
+``Subject:'' use this data type.
+
+VMime is fully compatible with RFC-2047 and provides two objects for
+manipulating 8-bit data: {\vcode vmime::text} and {\vcode vmime::word}. A word
+represents textual information encoded in a specified charset. A text is
+composed of one or more words.
+
+RFC-2047 describes the process of encoding 8-bit data into a 7-bit form;
+basically, it relies on Base64 and Quoted-Printable encoding. Hopefully, all
+the encoding/decoding process is done internally by VMime, so creating text
+objects is fairly simple:
+
+\begin{lstlisting}[caption={Creating \vcode{vmime::text} objects}]
+vmime::string inText = "Linux dans un téléphone mobile";
+vmime::charset inCharset = "utf-8";
+
+vmime::text outText;
+vmime::newFromString(inText, inCharset, &outText);
+
+// 'outText' now contains 3 words:
+//    . <us-ascii>   "Linux dans un "
+//    . <utf-8>      "téléphone "
+//    . <us-ascii>   "mobile"
+
+vmime::ref <vmime::header> header = myMessage->getHeader();
+header->Subject()->setValue(outText);
+\end{lstlisting}
+
+In general, you will not need to decode RFC-2047-encoded data as the process
+is totally transparent in VMime. If you really have to, you can use the
+{\vcode vmime::text::decodeAndUnfold()} static method to create a text object
+from encoded data.
+
+For example, say you have the following encoded data:
+
+\begin{verbatim}
+   Linux dans un =?UTF-8?B?dMOpbMOpcGhvbmUgbW9iaWxl?=
+\end{verbatim}
+
+You can simply decode it using the following code:
+
+\begin{lstlisting}[caption={Decoding RFC-2047-encoded data}]
+vmime::string inData =
+    "Linux dans un =?UTF-8?B?dMOpbMOpcGhvbmUgbW9iaWxl?=";
+
+vmime::text outText;
+vmime::text::decodeAndUnfold(inData, &outText);
+\end{lstlisting}
+
+{\vcode vmime::text} also provides a function to convert all the words to
+another charset in a single call. The following example shows how to convert
+text stored in the Subject field of a message:
+
+\begin{lstlisting}[caption={Converting data in a {\vcode vmime::text} to a
+specified charset}]
+vmime::ref <vmime::message> msg;  // we have a message
+
+vmime::text subject = msg->getHeader()->Subject()->getValue();
+
+const vmime::string subjectText =
+   subject.getConvertedText(vmime::charset("utf-8"));
+
+// 'subjectText' now contains the subject in UTF-8 encoding
+\end{lstlisting}
+
+
+% ============================================================================
+\section{Encodings\label{section_encodings}}
+
+\subsection{Introduction} % --------------------------------------------------
+
+The MIME standard defines a certain number of encodings to allow data
+to be safely transmitted from one peer to another. VMime provides
+data encoding and decoding using the {\vcode vmime::encoder} object.
+
+You should not need to use encoders directly, as all encoding/decoding
+process is handled internally by the library, but it is good to know
+they exist and how they work.
+
+\subsection{Using encoders} % ------------------------------------------------
+
+You can create an instance of an encoder using the 'vmime::encoderFactory'
+object, giving the encoding name ({\it base64}, {\it quoted-printable}, ...).
+The following example creates an instance of the Base64 encoder to encode
+some data:
+
+\begin{lstlisting}[caption={A simple example of using an encoder}]
+vmime::ref <vmime::encoder> enc =
+    vmime::encoderFactory::getInstance()->create("base64");
+
+vmime::string inString("Some data to encode");
+vmime::utility::inputStreamStringAdapter in(inString);
+
+vmime::string outString;
+vmime::utility::outputStreamStringAdapter out(outString);
+
+enc->encode(in, out);
+
+std::cout << "Encoded data is:"  << outString << std::endl;
+\end{lstlisting}
+
+\subsection{Enumerating available encoders} % --------------------------------
+
+The behaviour of the encoders can be configured using properties. However,
+not all encoders support properties. The following example\footnote{This is
+an excerpt from {\vexample example6}} enumerates available encoders and the
+supported properties for each of them:
+
+\begin{lstlisting}[caption={Enumerating encoders and their properties}]
+vmime::encoderFactory* ef = vmime::encoderFactory::getInstance();
+
+std::cout << "Available encoders:" << std::endl;
+
+for (int i = 0 ; i < ef->getEncoderCount() ; ++i)
+{
+   // Output encoder name
+   vmime::ref <const vmime::encoderFactory::registeredEncoder>
+      enc = ef->getEncoderAt(i);
+
+   std::cout << "  * " << enc->getName() << std::endl;
+
+   // Create an instance of the encoder to get its properties
+   vmime::ref <vmime::encoder> e = enc->create();
+
+   std::vector <vmime::string> props = e->getAvailableProperties();
+   std::vector <vmime::string>::const_iterator it;
+
+   for (it = props.begin() ; it != props.end() ; ++it)
+      std::cout << "      - " << *it << std::endl;
+\end{lstlisting}
+
+
+% ============================================================================
+\section{Progress listeners}
+
+Progress listeners are used with objects that can notify you about the state
+of progress when they are performing an operation.
+
+The {\vcode vmime::utility::progressListener} interface is rather simple:
+
+\begin{lstlisting}
+const bool cancel() const;
+
+void start(const int predictedTotal);
+void progress(const int current, const int currentTotal);
+void stop(const int total);
+\end{lstlisting}
+
+{\vcode start()} and {\vcode stop()} are called at the beginning and the end
+of the operation, respectively. {\vcode progress()} is called each time the
+status of progress changes (eg. a chunk of data has been processed). There is
+no unit specified for the values passed in argument. It depends on the
+notifier: it can be bytes, percent, number of messages...
+
+Your listener can return {\vcode} in the {\vcode cancel()} method to cancel
+the operation. However, be warned that cancelling is not always supported by
+the source object.
+

@@ -1,0 +1,104 @@
+\chapter{Getting Started}
+
+% ============================================================================
+\section{Using VMime in your programs}
+
+First, make sure you have successfully compiled and installed VMime using the
+instructions described in Chapter \ref{chapter_building}. To use VMime in your
+program, you simply have to include VMime headers:
+
+\begin{lstlisting}
+#include <vmime/vmime.hpp>
+\end{lstlisting}
+
+\vnote{for versions older than 0.6.1, include $<$vmime/vmime$>$.}
+
+As of version 0.6.1, VMime uses {\vcode pkg-config} to simplify compiling and
+linking with VMime. The {\vcode pkg-config} utility is used to detect the
+appropriate compiler and linker flags needed for a library.
+
+You can simply build your program with:
+
+\begin{verbatim}
+   $ g++ `pkg-config --cflags --libs vmime` -static -o myprog myprog.cpp
+\end{verbatim}
+
+to use the static version, or with:
+
+\begin{verbatim}
+   $ g++ `pkg-config --cflags --libs vmime` -o myprog myprog.cpp
+\end{verbatim}
+
+to use the shared version.
+
+\vnote{it is highly recommended that you link your program against the shared
+version of the library.}
+
+All VMime classes and global functions are defined in the namespace
+{\vcode vmime}, so prefix explicitely all your declarations which use VMime
+with {\vcode vmime::}, or import the {\vcode vmime} namespace into the global
+namespace with the C++ keywork {\vcode using} (not recommended, though).
+
+
+% ============================================================================
+\section{If you can not (or do not want to) use {\vcode pkg-config}}
+
+{\bf Linking with the shared library (.so):} compile your program with the
+{\vcode -lvmime} flag. You can use the -L path flag if the library file is
+not in a standard path (ie. not in /usr/lib or /usr/local/lib).
+
+\vnote{if you want to link your program with the shared version of VMime
+library, make sure the library has been compiled using the autotools version
+of the build system ({\vcode ./configure}, {\vcode make} and {\vcode make
+install}). When you compile with SCons, only the static library is built and
+installed.}
+
+{\bf Linking with the static library (.a):} follow the same procedure as for
+shared linking and append the flag -static to force static linking. Although
+static linking is possible, you are encouraged to use the shared (dynamic)
+version of the library.
+
+
+% ============================================================================
+\section{Platform-dependant code}
+
+While the most part of VMime code is pure ANSI C++, there are some features
+that are platform-specific: file management (opening/reading/writing files),
+network code (socket, DNS resolution) and time management. All the
+non-portable stuff is done by a bridge object called a platform handler (see
+{\vcode vmime::platformDependant}).
+
+If your platform is POSIX-compatible (eg. GNU/Linux, *BSD) or is Windows,
+then you are lucky: VMime has built-in support for these platforms. If not,
+don't worry, the sources of the built-in platform handlers are very well
+documented, so writing you own should not be very difficult.
+
+At the beginning of your program (before using \emph{any} VMime object, or
+calling \emph{any} VMime global function), you should tell VMime which
+platform handler you want to use.
+
+So, if your platform is POSIX, your program should look like this:
+
+\begin{lstlisting}[caption={Initializing VMime and the platform handler}]
+#include <vmime/vmime.hpp>
+#include <vmime/platforms/posix/posixHandler.hpp>
+
+int main()
+{
+   vmime::platformDependant::
+      setHandler <vmime::platforms::posix::posixHandler>();
+
+   // Now, you can use VMime
+   // ...do what you want, it's your program...
+}
+\end{lstlisting}
+
+For using VMime on Windows, include
+$<$vmime/platforms/windows/windowsHandler.hpp$>$ and use the following line
+to initialize the platform handler:
+
+\begin{lstlisting}
+vmime::platformDependant::
+   setHandler <vmime::platforms::windows::windowsHandler>();
+\end{lstlisting}
+
