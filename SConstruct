@@ -29,7 +29,7 @@ import string
 # Package version number
 packageVersionMajor = 0
 packageVersionMinor = 8
-packageVersionMicro = 0
+packageVersionMicro = 1
 
 # API version number (libtool)
 #
