@@ -193,6 +193,8 @@ void SMTPTransport::connect()
 	// Authentication
 	if (GET_PROPERTY(bool, PROPERTY_OPTIONS_NEEDAUTH))
 		authenticate();
+	else
+		m_authentified = true;
 }
 
 

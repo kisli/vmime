@@ -2,6 +2,11 @@
 VERSION 0.8.1cvs
 ================
 
+2005-11-07  Vincent Richard  <vincent@vincent-richard.net>
+
+ * SMTPTransport.cpp: fixed bug in disconnect() when authentication is
+   not needed (thanks to Benjamin Biron).
+
 2005-11-06  Vincent Richard  <vincent@vincent-richard.net>
 
  * Started version 0.8.1.
