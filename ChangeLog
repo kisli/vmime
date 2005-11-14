@@ -7,6 +7,9 @@ VERSION 0.8.1cvs
  * SMTPTransport.cpp: fixed bug in disconnect() when authentication is
    not needed (thanks to Benjamin Biron).
 
+ * dateTime.cpp: gmtime() and localtime() are reentrant when using
+   MS C runtime library (MinGW/MSVC).
+
 2005-11-06  Vincent Richard  <vincent@vincent-richard.net>
 
  * Started version 0.8.1.

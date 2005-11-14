@@ -648,7 +648,18 @@ datetime::datetime(const datetime& d)
 
 datetime::datetime(const time_t t, const int zone)
 {
-#ifdef _REENTRANT
+#if defined(_MSC_VER) || defined(__MINGW32__)
+	// These functions are reentrant in MS C runtime library
+	struct tm* gtm = gmtime(&t);
+	struct tm* ltm = localtime(&t);
+
+	struct tm tms;
+
+	if (gtm)
+		tms = *gtm;
+	else if (ltm)
+		tms = *ltm;
+#elif defined(_REENTRANT)
 	struct tm tms;
 
 	if (!gmtime_r(&t, &tms))
