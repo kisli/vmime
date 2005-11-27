@@ -102,11 +102,29 @@ const bool maildirUtils::isMessageFile(const utility::file& file)
 }
 
 
+// NOTE ABOUT ID/FLAGS SEPARATOR
+// -----------------------------
+// In the maildir specification, the character ':' is used to separate
+// the unique identifier and the message flags.
+//
+// On Windows (and particularly FAT file systems), ':' is not allowed
+// in a filename, so we use a dash ('-') instead. This is the solution
+// used by Mutt/Win32, so we also use it here.
+//
+// To be compatible between implementations, we check for both
+// characters when reading file names.
+
+
 const utility::file::path::component maildirUtils::extractId
 	(const utility::file::path::component& filename)
 {
-	string::size_type sep = filename.getBuffer().rfind(':');
-	if (sep == string::npos) return (filename);
+	string::size_type sep = filename.getBuffer().rfind(':');  // try colon
+
+	if (sep == string::npos)
+	{
+		sep = filename.getBuffer().rfind('-');  // try dash (Windows)
+		if (sep == string::npos) return (filename);
+	}
 
 	return (utility::path::component
 		(string(filename.getBuffer().begin(), filename.getBuffer().begin() + sep)));
@@ -115,8 +133,13 @@ const utility::file::path::component maildirUtils::extractId
 
 const int maildirUtils::extractFlags(const utility::file::path::component& comp)
 {
-	string::size_type sep = comp.getBuffer().rfind(':');
-	if (sep == string::npos) return (0);
+	string::size_type sep = comp.getBuffer().rfind(':');  // try colon
+
+	if (sep == string::npos)
+	{
+		sep = comp.getBuffer().rfind('-');  // try dash (Windows)
+		if (sep == string::npos) return 0;
+	}
 
 	const string flagsString(comp.getBuffer().begin() + sep + 1, comp.getBuffer().end());
 	const string::size_type count = flagsString.length();
@@ -166,7 +189,11 @@ const utility::file::path::component maildirUtils::buildFilename
 const utility::file::path::component maildirUtils::buildFilename
 	(const utility::file::path::component& id, const utility::file::path::component& flags)
 {
-	return (utility::path::component(id.getBuffer() + ":" + flags.getBuffer()));
+#if VMIME_BUILTIN_PLATFORM_WINDOWS
+	return (utility::path::component(id.getBuffer() + "-" + flags.getBuffer()));  // use dash
+#else
+	return (utility::path::component(id.getBuffer() + ":" + flags.getBuffer()));  // use colon
+#endif
 }
 
 
