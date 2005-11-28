@@ -65,7 +65,7 @@ const string random::getString(const int length, const string& randomChars)
 
 	while (c < length)
 	{
-		for (unsigned int n = random::getNext() ; n != 0 ; n /= x)
+		for (unsigned int n = random::getNext() ; n != 0 && c < length ; n /= x)
 		{
 			res[c++] = randomChars[n % x];
 		}

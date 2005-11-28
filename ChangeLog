@@ -7,6 +7,9 @@ VERSION 0.8.1cvs
  * maildirUtils.cpp: fixed problem with ':' in filename on Windows
    platform (thanks to Benjamin Biron).
 
+ * random.cpp: fixed buffer overrun in random::getString (thanks
+   to Benjamin Biron).
+
 2005-11-07  Vincent Richard  <vincent@vincent-richard.net>
 
  * SMTPTransport.cpp: fixed bug in disconnect() when authentication is
