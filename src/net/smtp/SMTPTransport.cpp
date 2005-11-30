@@ -471,7 +471,14 @@ void SMTPTransport::disconnect()
 
 void SMTPTransport::internalDisconnect()
 {
-	sendRequest("QUIT");
+	try
+	{
+		sendRequest("QUIT");
+	}
+	catch (exception&)
+	{
+		// Not important
+	}
 
 	m_socket->disconnect();
 	m_socket = NULL;
