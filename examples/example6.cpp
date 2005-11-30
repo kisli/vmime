@@ -385,7 +385,7 @@ static void sendMessage()
 				to.appendMailbox(vmime::create <vmime::mailbox>(toString));
 		}
 
-		std::cout << "Enter message data (end with '.' on a single line):" << std::endl;
+		std::cout << "Enter message data, including headers (end with '.' on a single line):" << std::endl;
 
 		std::ostringstream data;
 
