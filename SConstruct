@@ -1749,13 +1749,13 @@ CXXFLAGS=""
 if test x$VMIME_DEBUG = x1 ; then
 	# -g
 	OLD_CXXFLAGS="$CXXFLAGS"
-	CXX_FLAGS="$CXXFLAGS -g"
+	CXXFLAGS="$CXXFLAGS -g"
 	AC_MSG_CHECKING(whether cc accepts -g)
 	AC_TRY_COMPILE(,,echo yes,echo no; CXXFLAGS="$OLD_CXXFLAGS")
 else
 	# -O2
 	OLD_CXXFLAGS="$CXXFLAGS"
-	CXX_FLAGS="$CXXFLAGS -O2"
+	CXXFLAGS="$CXXFLAGS -O2"
 	AC_MSG_CHECKING(whether cc accepts -O2)
 	AC_TRY_COMPILE(,,echo yes,echo no; CXXFLAGS="$OLD_CXXFLAGS")
 fi
