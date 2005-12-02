@@ -475,6 +475,14 @@ public:
 		return *this;
 	}
 
+	ref <T> toStrong()
+	{
+		if (m_ptr == NULL)
+			return ref <T>();
+
+		return ref <T>::fromPtr(m_ptr);
+	}
+
 	// Implicit non-const => const conversion
 	operator weak_ref <const T>() const
 	{
