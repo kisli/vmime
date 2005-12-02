@@ -44,7 +44,7 @@ defaultAuthenticator::~defaultAuthenticator()
 
 const string defaultAuthenticator::getUsername() const
 {
-	const string& prefix = m_service->getInfos().getPropertyPrefix();
+	const string prefix = m_service->getInfos().getPropertyPrefix();
 	const propertySet& props = m_service->getSession()->getProperties();
 
 	if (props.hasProperty(prefix + net::serviceInfos::property::AUTH_USERNAME.getName()))
@@ -56,7 +56,7 @@ const string defaultAuthenticator::getUsername() const
 
 const string defaultAuthenticator::getPassword() const
 {
-	const string& prefix = m_service->getInfos().getPropertyPrefix();
+	const string prefix = m_service->getInfos().getPropertyPrefix();
 	const propertySet& props = m_service->getSession()->getProperties();
 
 	if (props.hasProperty(prefix + net::serviceInfos::property::AUTH_PASSWORD.getName()))

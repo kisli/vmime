@@ -191,7 +191,7 @@ void IMAPConnection::connect()
 
 void IMAPConnection::authenticate()
 {
-	getAuthenticator()->setService(thisRef().dynamicCast <service>());
+	getAuthenticator()->setService(m_store.toStrong());
 
 #if VMIME_HAVE_SASL_SUPPORT
 	// First, try SASL authentication
