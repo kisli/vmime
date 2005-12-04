@@ -247,7 +247,7 @@ void posixChildProcess::start(const std::vector <string> args, const int flags)
 	m_argArray = argv;   // to free later
 
 	argv[0] = m_processPath.getLastComponent().getBuffer().c_str();
-	argv[args.size()] = NULL;
+	argv[args.size() + 1] = NULL;
 
 	for (unsigned int i = 0 ; i < m_argVector.size() ; ++i)
 		argv[i + 1] = m_argVector[i].c_str();
