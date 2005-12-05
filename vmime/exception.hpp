@@ -51,6 +51,8 @@ private:
 public:
 
 	exception(const string& what, const exception& other = NO_EXCEPTION);
+	exception(const exception& e);
+
 	virtual ~exception() throw();
 
 	/** Return a description of the error.

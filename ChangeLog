@@ -4,6 +4,10 @@ VERSION 0.8.1cvs
 
 2005-12-04  Vincent Richard  <vincent@vincent-richard.net>
 
+ * exception.{hpp|cpp}: fixed segfault in destructor when destroying
+   an exception chain with more than 2 elements (thanks to Bertrand
+   Benoit).
+
  * posixChildProcess.cpp: fixed a bug in argument vector; last argument
    was not NULL (thanks to Bertrand Benoit).
 

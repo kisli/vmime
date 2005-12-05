@@ -46,6 +46,12 @@ exception::exception(const string& what, const exception& other)
 }
 
 
+exception::exception(const exception& e)
+	: std::exception(), m_what(e.what()), m_other(e.m_other == NULL ? NULL : e.m_other->clone())
+{
+}
+
+
 exception::~exception() throw()
 {
 	delete (m_other);
