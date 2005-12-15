@@ -597,7 +597,10 @@ if env['with_sasl'] == 'yes':
 	env.ParseConfig('pkg-config --cflags --libs libgsasl')
 
 if env['with_tls'] == 'yes':
-	libgnutls_pc = os.popen("pkg-config --list-all | grep gnutls | cut -f 1 -d ' '").read()
+	libgnutls_pc = string.strip(os.popen("pkg-config --list-all | grep '^libgnutls[ ]' | cut -f 1 -d ' '").read())
+	if len(libgnutls_pc) == 0:
+		libgnutls_pc = string.strip(os.popen("pkg-config --list-all | grep '^gnutls[ ]' | cut -f 1 -d ' '").read())
+
 	env.ParseConfig('pkg-config --cflags --libs ' + libgnutls_pc)
 
 # Generate help text for command line options
