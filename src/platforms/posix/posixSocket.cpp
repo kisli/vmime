@@ -67,6 +67,65 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 		m_desc = -1;
 	}
 
+#if VMIME_HAVE_GETADDRINFO  // use thread-safe and IPv6-aware getaddrinfo() if available
+
+	// Resolve address, if needed
+	struct ::addrinfo hints;
+	memset(&hints, 0, sizeof(hints));
+
+	hints.ai_flags = AI_CANONNAME;
+	hints.ai_family = PF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+
+	std::ostringstream portStr;
+	portStr << port;
+
+	struct ::addrinfo* res0;
+
+	if (::getaddrinfo(address.c_str(), portStr.str().c_str(), &hints, &res0) != 0)
+	{
+		// Error: cannot resolve address
+		throw vmime::exceptions::connection_error("Cannot resolve address.");
+	}
+
+	// Connect to host
+	int sock = -1;
+	struct ::addrinfo* res = res0;
+
+	for ( ; sock == -1 && res != NULL ; res = res->ai_next)
+	{
+		sock = ::socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+
+		if (sock < 0)
+			continue;  // try next
+
+		if (::connect(sock, res->ai_addr, res->ai_addrlen) < 0)
+		{
+			::close(sock);
+			sock = -1;
+			continue;  // try next
+		}
+	}
+
+	::freeaddrinfo(res0);
+
+	if (sock == -1)
+	{
+		try
+		{
+			throwSocketError(errno);
+		}
+		catch (exceptions::socket_exception& e)
+		{
+			throw vmime::exceptions::connection_error
+				("Error while connecting socket.", e);
+		}
+	}
+
+	m_desc = sock;
+
+#else // !VMIME_HAVE_GETADDRINFO
+
 	// Resolve address
 	::sockaddr_in addr;
 
@@ -122,6 +181,8 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 				("Error while connecting socket.", e);
 		}
 	}
+
+#endif // VMIME_HAVE_GETADDRINFO
 
 	::fcntl(m_desc, F_SETFL, ::fcntl(m_desc, F_GETFL) | O_NONBLOCK);
 }

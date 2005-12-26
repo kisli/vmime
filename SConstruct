@@ -827,6 +827,10 @@ if IsProtocolSupported(messaging_protocols, 'sendmail'):
 
 config_hpp.write("""
 
+// Additional defines
+#define VMIME_HAVE_GETADDRINFO 1
+
+
 #endif // VMIME_CONFIG_HPP_INCLUDED
 """)
 
@@ -1661,8 +1665,15 @@ AC_PATH_PROG(SENDMAIL, sendmail, /usr/sbin/sendmail, /usr/sbin:/usr/lib)
 # Detect some platform-specific stuff
 #
 
+# -- MLang (Windows)
 if test "x$VMIME_DETECT_PLATFORM" = "xwindows"; then
 	AC_CHECK_HEADER(mlang.h, [VMIME_ADDITIONAL_DEFINES="$VMIME_ADDITIONAL_DEFINES HAVE_MLANG_H"])
+fi
+
+# -- getaddrinfo (POSIX)
+if test "x$VMIME_DETECT_PLATFORM" = "xposix"; then
+	AC_CHECK_HEADERS(netdb.h sys/types.h sys/socket.h,)
+	AC_CHECK_FUNC(getaddrinfo, [VMIME_ADDITIONAL_DEFINES="$VMIME_ADDITIONAL_DEFINES HAVE_GETADDRINFO"])
 fi
 
 
