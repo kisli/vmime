@@ -47,10 +47,10 @@ vmime::charset ch(vmime::charsets::UTF_8);
 
 std::cout
    << "The subject of the message is: "
-   << hdr->Subject()->getValue().getDecodedText(ch)
+   << hdr->Subject()->getValue().dynamicCast <vmime::text>()->getDecodedText(ch)
    << std::endl
    << "It was sent by: "
-   << hdr->From()->getValue().getName().getDecodedText(ch)
+   << hdr->From()->getValue().dynamicCast <vmime::mailbox>()->getName().getDecodedText(ch)
    << " (email: " << hdr->From()->getValue().getEmail() << ")"
    << std::endl;
 \end{lstlisting}
