@@ -545,7 +545,7 @@ vmime::ref <vmime::message> msg;
 
 // Obtains a reference to the body contents
 vmime::ref <vmime::body> body = msg->getBody();
-vmime::ref <vmime::contentHandler> cts = msg->getContents();
+vmime::ref <vmime::contentHandler> cts = body->getContents();
 
 vmime::utility::outputStreamAdapter out(std::cout);
 cts->extract(out);
