@@ -77,25 +77,25 @@ const bool stringUtils::isStringEqualNoCase
 
 const string stringUtils::toLower(const string& str)
 {
-	string out(str);
-	const string::iterator end = out.end();
+	string out;
+	out.resize(str.size());
 
-	for (string::iterator i = out.begin() ; i != end ; ++i)
-		*i = std::tolower(*i, std::locale());
+	for (string::size_type i = 0, len = str.length() ; i < len ; ++i)
+		out[i] = std::tolower(str[i], std::locale());
 
-	return (out);
+	return out;
 }
 
 
 const string stringUtils::toUpper(const string& str)
 {
-	string out(str);
-	const string::iterator end = out.end();
+	string out;
+	out.resize(str.size());
 
-	for (string::iterator i = out.begin() ; i != end ; ++i)
-		*i = std::toupper(*i, std::locale());
+	for (string::size_type i = 0, len = str.length() ; i < len ; ++i)
+		out[i] = std::toupper(str[i], std::locale());
 
-	return (out);
+	return out;
 }
 
 
