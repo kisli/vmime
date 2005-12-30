@@ -226,6 +226,31 @@ private:
 
 	std::vector <ref <headerField> > m_fields;
 
+
+	class fieldHasName
+	{
+	public:
+
+		fieldHasName(const string& name);
+		const bool operator() (const ref <const headerField>& field);
+
+	private:
+
+		string m_name;
+	};
+
+	class fieldHasNotName
+	{
+	public:
+
+		fieldHasNotName(const string& name);
+		const bool operator() (const ref <const headerField>& field);
+
+	private:
+
+		string m_name;
+	};
+
 public:
 
 	using component::parse;

@@ -24,6 +24,8 @@
 #include "vmime/header.hpp"
 #include "vmime/parserHelpers.hpp"
 
+#include <algorithm>
+
 
 namespace vmime
 {
@@ -143,29 +145,23 @@ header& header::operator=(const header& other)
 
 const bool header::hasField(const string& fieldName) const
 {
-	const string name = utility::stringUtils::toLower(fieldName);
+	std::vector <ref <headerField> >::const_iterator pos =
+		std::find_if(m_fields.begin(), m_fields.end(),
+		             fieldHasName(utility::stringUtils::toLower(fieldName)));
 
-	std::vector <ref <headerField> >::const_iterator pos = m_fields.begin();
-	const std::vector <ref <headerField> >::const_iterator end = m_fields.end();
-
-	for ( ; pos != end && utility::stringUtils::toLower((*pos)->getName()) != name ; ++pos);
-
-	return (pos != end);
+	return (pos != m_fields.end());
 }
 
 
 ref <headerField> header::findField(const string& fieldName) const
 {
-	const string name = utility::stringUtils::toLower(fieldName);
-
 	// Find the first field that matches the specified name
-	std::vector <ref <headerField> >::const_iterator pos = m_fields.begin();
-	const std::vector <ref <headerField> >::const_iterator end = m_fields.end();
-
-	for ( ; pos != end && utility::stringUtils::toLower((*pos)->getName()) != name ; ++pos);
+	std::vector <ref <headerField> >::const_iterator pos =
+		std::find_if(m_fields.begin(), m_fields.end(),
+		             fieldHasName(utility::stringUtils::toLower(fieldName)));
 
 	// No field with this name can be found
-	if (pos == end)
+	if (pos == m_fields.end())
 	{
 		throw exceptions::no_such_field();
 	}
@@ -179,21 +175,11 @@ ref <headerField> header::findField(const string& fieldName) const
 
 std::vector <ref <headerField> > header::findAllFields(const string& fieldName)
 {
-	const string name = utility::stringUtils::toLower(fieldName);
-
 	std::vector <ref <headerField> > result;
+	std::back_insert_iterator <std::vector <ref <headerField> > > back(result);
 
-	std::vector <ref <headerField> >::const_iterator pos = m_fields.begin();
-	const std::vector <ref <headerField> >::const_iterator end = m_fields.end();
-
-	for ( ; pos != end ; ++pos)
-	{
-		// Add the header if it matches the specified type
-		if (utility::stringUtils::toLower((*pos)->getName()) == name)
-		{
-			result.push_back(*pos);
-		}
-	}
+	std::remove_copy_if(m_fields.begin(), m_fields.end(), back,
+	                    fieldHasNotName(utility::stringUtils::toLower(fieldName)));
 
 	return result;
 }
@@ -357,6 +343,32 @@ const std::vector <ref <const component> > header::getChildComponents() const
 	copy_vector(m_fields, list);
 
 	return (list);
+}
+
+
+
+// Field search
+
+
+header::fieldHasName::fieldHasName(const string& name)
+	: m_name(name)
+{
+}
+
+const bool header::fieldHasName::operator() (const ref <const headerField>& field)
+{
+	return utility::stringUtils::toLower(field->getName()) == m_name;
+}
+
+
+header::fieldHasNotName::fieldHasNotName(const string& name)
+	: m_name(name)
+{
+}
+
+const bool header::fieldHasNotName::operator() (const ref <const headerField>& field)
+{
+	return utility::stringUtils::toLower(field->getName()) != m_name;
 }
 
 
