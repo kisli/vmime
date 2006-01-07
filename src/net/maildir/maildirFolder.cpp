@@ -618,21 +618,21 @@ void maildirFolder::rename(const folder::path& newPath)
 void maildirFolder::deleteMessage(const int num)
 {
 	// Mark messages as deleted
-	setMessageFlags(num, num, message::FLAG_MODE_ADD, message::FLAG_DELETED);
+	setMessageFlags(num, num, message::FLAG_DELETED, message::FLAG_MODE_ADD);
 }
 
 
 void maildirFolder::deleteMessages(const int from, const int to)
 {
 	// Mark messages as deleted
-	setMessageFlags(from, to, message::FLAG_MODE_ADD, message::FLAG_DELETED);
+	setMessageFlags(from, to, message::FLAG_DELETED, message::FLAG_MODE_ADD);
 }
 
 
 void maildirFolder::deleteMessages(const std::vector <int>& nums)
 {
 	// Mark messages as deleted
-	setMessageFlags(nums, message::FLAG_MODE_ADD, message::FLAG_DELETED);
+	setMessageFlags(nums, message::FLAG_DELETED, message::FLAG_MODE_ADD);
 }
 
 
