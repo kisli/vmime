@@ -18,6 +18,7 @@
 //
 
 #include "vmime/net/smtp/SMTPTransport.hpp"
+#include "vmime/net/smtp/SMTPResponse.hpp"
 
 #include "vmime/exception.hpp"
 #include "vmime/platformDependant.hpp"
@@ -110,19 +111,17 @@ void SMTPTransport::connect()
 
 	m_socket->connect(address, port);
 
-	m_responseBuffer.clear();
-
 	// Connection
 	//
 	// eg:  C: <connection to server>
 	// ---  S: 220 smtp.domain.com Service ready
 
-	string response;
+	ref <SMTPResponse> resp;
 
-	if (readAllResponses(response) != 220)
+	if ((resp = readResponse())->getCode() != 220)
 	{
 		internalDisconnect();
-		throw exceptions::connection_greeting_error(response);
+		throw exceptions::connection_greeting_error(resp->getText());
 	}
 
 	// Identification
@@ -134,7 +133,7 @@ void SMTPTransport::connect()
 
 	sendRequest("EHLO " + platformDependant::getHandler()->getHostName());
 
-	if (readAllResponses(response, true) != 250)
+	if ((resp = readResponse())->getCode() != 250)
 	{
 		// Next, try "Basic" SMTP
 		//
@@ -143,10 +142,10 @@ void SMTPTransport::connect()
 
 		sendRequest("HELO " + platformDependant::getHandler()->getHostName());
 
-		if (readAllResponses(response) != 250)
+		if ((resp = readResponse())->getCode() != 250)
 		{
 			internalDisconnect();
-			throw exceptions::connection_greeting_error(response);
+			throw exceptions::connection_greeting_error(resp->getLastLine().getText());
 		}
 
 		m_extendedSMTP = false;
@@ -154,7 +153,7 @@ void SMTPTransport::connect()
 	else
 	{
 		m_extendedSMTP = true;
-		m_extendedSMTPResponse = response;
+		m_extendedSMTPResponse = resp->getText();
 	}
 
 #if VMIME_HAVE_TLS_SUPPORT
@@ -335,9 +334,9 @@ void SMTPTransport::authenticateSASL()
 
 		for (bool cont = true ; cont ; )
 		{
-			string response;
+			ref <SMTPResponse> response = readResponse();
 
-			switch (readAllResponses(response))
+			switch (response->getCode())
 			{
 			case 235:
 			{
@@ -355,7 +354,7 @@ void SMTPTransport::authenticateSASL()
 				try
 				{
 					// Extract challenge
-					saslContext->decodeB64(response, &challenge, &challengeLen);
+					saslContext->decodeB64(response->getText(), &challenge, &challengeLen);
 
 					// Prepare response
 					saslSession->evaluateChallenge
@@ -423,10 +422,10 @@ void SMTPTransport::startTLS()
 	{
 		sendRequest("STARTTLS");
 
-		string response;
+		ref <SMTPResponse> resp = readResponse();
 
-		if (readAllResponses(response) != 220)
-			throw exceptions::command_error("STARTTLS", response);
+		if (resp->getCode() != 220)
+			throw exceptions::command_error("STARTTLS", resp->getText());
 
 		ref <tls::TLSSession> tlsSession =
 			vmime::create <tls::TLSSession>(getCertificateVerifier());
@@ -494,10 +493,10 @@ void SMTPTransport::noop()
 {
 	sendRequest("NOOP");
 
-	string response;
+	ref <SMTPResponse> resp = readResponse();
 
-	if (readAllResponses(response) != 250)
-		throw exceptions::command_error("NOOP", response);
+	if (resp->getCode() != 250)
+		throw exceptions::command_error("NOOP", resp->getText());
 }
 
 
@@ -512,14 +511,14 @@ void SMTPTransport::send(const mailbox& expeditor, const mailboxList& recipients
 		throw exceptions::no_expeditor();
 
 	// Emit the "MAIL" command
-	string response;
+	ref <SMTPResponse> resp;
 
 	sendRequest("MAIL FROM: <" + expeditor.getEmail() + ">");
 
-	if (readAllResponses(response) != 250)
+	if ((resp = readResponse())->getCode() != 250)
 	{
 		internalDisconnect();
-		throw exceptions::command_error("MAIL", response);
+		throw exceptions::command_error("MAIL", resp->getText());
 	}
 
 	// Emit a "RCPT TO" command for each recipient
@@ -529,20 +528,20 @@ void SMTPTransport::send(const mailbox& expeditor, const mailboxList& recipients
 
 		sendRequest("RCPT TO: <" + mbox.getEmail() + ">");
 
-		if (readAllResponses(response) != 250)
+		if ((resp = readResponse())->getCode() != 250)
 		{
 			internalDisconnect();
-			throw exceptions::command_error("RCPT TO", response);
+			throw exceptions::command_error("RCPT TO", resp->getText());
 		}
 	}
 
 	// Send the message data
 	sendRequest("DATA");
 
-	if (readAllResponses(response) != 354)
+	if ((resp = readResponse())->getCode() != 354)
 	{
 		internalDisconnect();
-		throw exceptions::command_error("DATA", response);
+		throw exceptions::command_error("DATA", resp->getText());
 	}
 
 	// Stream copy with "\n." to "\n.." transformation
@@ -556,10 +555,10 @@ void SMTPTransport::send(const mailbox& expeditor, const mailboxList& recipients
 	// Send end-of-data delimiter
 	m_socket->sendRaw("\r\n.\r\n", 5);
 
-	if (readAllResponses(response) != 250)
+	if ((resp = readResponse())->getCode() != 250)
 	{
 		internalDisconnect();
-		throw exceptions::command_error("DATA", response);
+		throw exceptions::command_error("DATA", resp->getText());
 	}
 }
 
@@ -571,114 +570,9 @@ void SMTPTransport::sendRequest(const string& buffer, const bool end)
 }
 
 
-const int SMTPTransport::getResponseCode(const string& response)
+ref <SMTPResponse> SMTPTransport::readResponse()
 {
-	int code = 0;
-
-	if (response.length() >= 3)
-	{
-		code = (response[0] - '0') * 100
-		     + (response[1] - '0') * 10
-		     + (response[2] - '0');
-	}
-
-	return (code);
-}
-
-
-const string SMTPTransport::readResponseLine()
-{
-	string currentBuffer = m_responseBuffer;
-
-	while (true)
-	{
-		// Get a line from the response buffer
-		string::size_type lineEnd = currentBuffer.find_first_of('\n');
-
-		if (lineEnd != string::npos)
-		{
-			const string line(currentBuffer.begin(), currentBuffer.begin() + lineEnd);
-
-			currentBuffer.erase(currentBuffer.begin(), currentBuffer.begin() + lineEnd + 1);
-			m_responseBuffer = currentBuffer;
-
-			return line;
-		}
-
-		// Check whether the time-out delay is elapsed
-		if (m_timeoutHandler && m_timeoutHandler->isTimeOut())
-		{
-			if (!m_timeoutHandler->handleTimeOut())
-				throw exceptions::operation_timed_out();
-
-			m_timeoutHandler->resetTimeOut();
-		}
-
-		// Receive data from the socket
-		string receiveBuffer;
-		m_socket->receive(receiveBuffer);
-
-		if (receiveBuffer.empty())   // buffer is empty
-		{
-			platformDependant::getHandler()->wait();
-			continue;
-		}
-
-		currentBuffer += receiveBuffer;
-	}
-}
-
-
-const int SMTPTransport::readResponse(string& text)
-{
-	string line = readResponseLine();
-
-	// Special case where CRLF occurs after response code
-	if (line.length() < 4)
-		line = line + '\n' + readResponseLine();
-
-	const int code = getResponseCode(line);
-
-	m_responseContinues = (line.length() >= 4 && line[3] == '-');
-
-	if (line.length() > 4)
-		text = utility::stringUtils::trim(line.substr(4));
-	else
-		text = utility::stringUtils::trim(line);
-
-	return code;
-}
-
-
-const int SMTPTransport::readAllResponses(string& outText, const bool allText)
-{
-	string text;
-
-	const int firstCode = readResponse(outText);
-
-	if (allText)
-		text = outText;
-
-	while (m_responseContinues)
-	{
-		const int code = readResponse(outText);
-
-		if (allText)
-			text += '\n' + outText;
-
-		if (code != firstCode)
-		{
-			if (allText)
-				outText = text;
-
-			return 0;
-		}
-	}
-
-	if (allText)
-		outText = text;
-
-	return firstCode;
+	return SMTPResponse::readResponse(m_socket, m_timeoutHandler);
 }
 
 

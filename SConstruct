@@ -233,6 +233,7 @@ libvmime_messaging_proto_sources = [
 	[
 		'smtp',
 		[
+			'net/smtp/SMTPResponse.cpp',     'net/smtp/SMTPResponse.hpp',
 			'net/smtp/SMTPServiceInfos.cpp', 'net/smtp/SMTPServiceInfos.hpp',
 			'net/smtp/SMTPTransport.cpp',    'net/smtp/SMTPTransport.hpp',
 			'net/smtp/SMTPSTransport.cpp',   'net/smtp/SMTPSTransport.hpp'

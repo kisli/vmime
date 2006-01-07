@@ -39,6 +39,9 @@ namespace net {
 namespace smtp {
 
 
+class SMTPResponse;
+
+
 /** SMTP transport service.
   */
 
@@ -64,13 +67,8 @@ public:
 
 private:
 
-	static const int getResponseCode(const string& response);
-
 	void sendRequest(const string& buffer, const bool end = true);
-
-	const string readResponseLine();
-	const int readResponse(string& text);
-	const int readAllResponses(string& text, const bool allText = false);
+	ref <SMTPResponse> readResponse();
 
 	void internalDisconnect();
 
@@ -88,9 +86,6 @@ private:
 
 	bool m_extendedSMTP;
 	string m_extendedSMTPResponse;
-
-	string m_responseBuffer;
-	bool m_responseContinues;
 
 	ref <timeoutHandler> m_timeoutHandler;
 
