@@ -44,7 +44,7 @@ namespace smtp {
   */
 class SMTPResponse : public object
 {
-	friend class creator;
+	friend class vmime::creator;
 
 public:
 
