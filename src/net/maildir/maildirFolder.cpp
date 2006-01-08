@@ -352,7 +352,11 @@ void maildirFolder::scanFolder()
 			// Append to message list
 			messageInfos msgInfos;
 			msgInfos.path = newFilename;
-			msgInfos.type = messageInfos::TYPE_CUR;
+
+			if (maildirUtils::extractFlags(msgInfos.path) & message::FLAG_DELETED)
+				msgInfos.type = messageInfos::TYPE_DELETED;
+			else
+				msgInfos.type = messageInfos::TYPE_CUR;
 
 			m_messageInfos.push_back(msgInfos);
 		}
@@ -365,7 +369,11 @@ void maildirFolder::scanFolder()
 			// Append to message list
 			messageInfos msgInfos;
 			msgInfos.path = *it;
-			msgInfos.type = messageInfos::TYPE_CUR;
+
+			if (maildirUtils::extractFlags(msgInfos.path) & message::FLAG_DELETED)
+				msgInfos.type = messageInfos::TYPE_DELETED;
+			else
+				msgInfos.type = messageInfos::TYPE_CUR;
 
 			m_messageInfos.push_back(msgInfos);
 		}
