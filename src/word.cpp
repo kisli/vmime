@@ -91,7 +91,7 @@ ref <word> word::parseNext(const string& buffer, const string::size_type positio
 			while (pos != end && parserHelpers::isSpace(buffer[pos]))
 				++pos;
 
-			unencoded += string(buffer.begin() + startPos, buffer.begin() + endPos);
+			unencoded += buffer.substr(startPos, endPos - startPos);
 			unencoded += ' ';
 
 			startPos = pos;
@@ -101,7 +101,7 @@ ref <word> word::parseNext(const string& buffer, const string::size_type positio
 		         buffer[pos] == '=' && buffer[pos + 1] == '?')
 		{
 			// Check whether there is some unencoded text before
-			unencoded += string(buffer.begin() + startPos, buffer.begin() + pos);
+			unencoded += buffer.substr(startPos, pos - startPos);
 
 			if (!unencoded.empty())
 			{
@@ -183,7 +183,7 @@ ref <word> word::parseNext(const string& buffer, const string::size_type positio
 		if (startPos != pos && !isFirst && prevIsEncoded)
 			unencoded += ' ';
 
-		unencoded += string(buffer.begin() + startPos, buffer.begin() + end);
+		unencoded += buffer.substr(startPos, end - startPos);
 
 		ref <word> w = vmime::create <word>(unencoded, charset(charsets::US_ASCII));
 		w->setParsedBounds(position, end);

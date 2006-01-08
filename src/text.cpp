@@ -263,22 +263,20 @@ ref <text> text::newFromString(const string& in, const charset& ch)
 
 void text::createFromString(const string& in, const charset& ch)
 {
-	const string::const_iterator end = in.end();
-	string::const_iterator p = in.begin();
-	string::const_iterator start = in.begin();
-
 	bool is8bit = false;     // is the current word 8-bit?
 	bool prevIs8bit = false; // is previous word 8-bit?
 	unsigned int count = 0;  // total number of words
 
 	removeAllWords();
 
-	for ( ; ; )
+	for (string::size_type end = in.size(), pos = 0, start = 0 ; ; )
 	{
-		if (p == end || parserHelpers::isSpace(*p))
+		if (pos == end || parserHelpers::isSpace(in[pos]))
 		{
-			if (p != end)
-				++p;
+			if (pos != end)
+				++pos;
+
+			const string chunk(in.begin() + start, in.begin() + pos);
 
 			if (is8bit)
 			{
@@ -287,11 +285,11 @@ void text::createFromString(const string& in, const charset& ch)
 					// No need to create a new encoded word, just append
 					// the current word to the previous one.
 					ref <word> w = getWordAt(getWordCount() - 1);
-					w->getBuffer() += string(start, p);
+					w->getBuffer() += chunk;
 				}
 				else
 				{
-					appendWord(vmime::create <word>(string(start, p), ch));
+					appendWord(vmime::create <word>(chunk, ch));
 
 					prevIs8bit = true;
 					++count;
@@ -302,32 +300,32 @@ void text::createFromString(const string& in, const charset& ch)
 				if (count && !prevIs8bit)
 				{
 					ref <word> w = getWordAt(getWordCount() - 1);
-					w->getBuffer() += string(start, p);
+					w->getBuffer() += chunk;
 				}
 				else
 				{
 					appendWord(vmime::create <word>
-						(string(start, p), charset(charsets::US_ASCII)));
+						(chunk, charset(charsets::US_ASCII)));
 
 					prevIs8bit = false;
 					++count;
 				}
 			}
 
-			if (p == end)
+			if (pos == end)
 				break;
 
 			is8bit = false;
-			start = p;
+			start = pos;
 		}
-		else if (!parserHelpers::isAscii(*p))
+		else if (!parserHelpers::isAscii(in[pos]))
 		{
 			is8bit = true;
-			++p;
+			++pos;
 		}
 		else
 		{
-			++p;
+			++pos;
 		}
 	}
 }
