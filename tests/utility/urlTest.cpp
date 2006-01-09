@@ -38,6 +38,7 @@ VMIME_TEST_SUITE_BEGIN
 		VMIME_TEST(testParse2)
 		VMIME_TEST(testParse3)
 		VMIME_TEST(testParse4)
+		VMIME_TEST(testParse5)
 		VMIME_TEST(testGenerate)
 		VMIME_TEST(testUtilsEncode)
 		VMIME_TEST(testUtilsDecode)
@@ -188,6 +189,17 @@ VMIME_TEST_SUITE_BEGIN
 		VASSERT_EQ("4.2", "=", u4.getParams().getProperty <vmime::string>("p1"));
 		VASSERT_EQ("4.3", "v2", u4.getParams().getProperty <vmime::string>("="));
 		VASSERT_EQ("4.4", "/path", u4.getPath());
+	}
+
+	// '@' symbol in the username part
+	void testParse5()
+	{
+		vmime::utility::url u1("", "");
+
+		VASSERT_EQ("1", true, parseHelper(u1, "imap://account@myserver.com:password@myserver.com"));
+		VASSERT_EQ("2", "account@myserver.com", u1.getUsername());
+		VASSERT_EQ("3", "password", u1.getPassword());
+		VASSERT_EQ("4", "myserver.com", u1.getHost());
 	}
 
 	void testGenerate()

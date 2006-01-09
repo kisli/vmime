@@ -165,7 +165,7 @@ void url::parse(const string& str)
 	string::size_type slashPos = str.find('/', protoEnd + 3);
 	if (slashPos == string::npos) slashPos = str.length();
 
-	string::size_type atPos = str.find('@', protoEnd + 3);
+	string::size_type atPos = str.rfind('@', slashPos);
 	string hostPart;
 
 	string username;
