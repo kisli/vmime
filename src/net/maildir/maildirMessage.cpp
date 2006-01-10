@@ -78,6 +78,8 @@ public:
 	const int getBodyParsedOffset() const { return (m_bodyParsedOffset); }
 	const int getBodyParsedLength() const { return (m_bodyParsedLength); }
 
+	void initStructure(const bodyPart& part);
+
 private:
 
 	ref <maildirStructure> m_structure;
@@ -111,15 +113,21 @@ public:
 
 	maildirStructure(weak_ref <maildirPart> parent, const bodyPart& part)
 	{
-		m_parts.push_back(vmime::create <maildirPart>(parent, 0, part));
+		vmime::ref <maildirPart> mpart = vmime::create <maildirPart>(parent, 0, part);
+		mpart->initStructure(part);
+
+		m_parts.push_back(mpart);
 	}
 
 	maildirStructure(weak_ref <maildirPart> parent, const std::vector <ref <const vmime::bodyPart> >& list)
 	{
-		int number = 0;
-
 		for (unsigned int i = 0 ; i < list.size() ; ++i)
-			m_parts.push_back(vmime::create <maildirPart>(parent, number, *list[i]));
+		{
+			vmime::ref <maildirPart> mpart = vmime::create <maildirPart>(parent, i, *list[i]);
+			mpart->initStructure(*list[i]);
+
+			m_parts.push_back(mpart);
+		}
 	}
 
 
@@ -159,15 +167,6 @@ ref <maildirStructure> maildirStructure::m_emptyStructure = vmime::create <maild
 maildirPart::maildirPart(weak_ref <maildirPart> parent, const int number, const bodyPart& part)
 	: m_parent(parent), m_header(NULL), m_number(number)
 {
-	if (part.getBody()->getPartList().size() == 0)
-		m_structure = NULL;
-	else
-	{
-		m_structure = vmime::create <maildirStructure>
-			(thisWeakRef().dynamicCast <maildirPart>(),
-			 part.getBody()->getPartList());
-	}
-
 	m_headerParsedOffset = part.getHeader()->getParsedOffset();
 	m_headerParsedLength = part.getHeader()->getParsedLength();
 
@@ -182,6 +181,19 @@ maildirPart::maildirPart(weak_ref <maildirPart> parent, const int number, const 
 
 maildirPart::~maildirPart()
 {
+}
+
+
+void maildirPart::initStructure(const bodyPart& part)
+{
+	if (part.getBody()->getPartList().size() == 0)
+		m_structure = NULL;
+	else
+	{
+		m_structure = vmime::create <maildirStructure>
+			(thisWeakRef().dynamicCast <maildirPart>(),
+			 part.getBody()->getPartList());
+	}
 }
 
 
