@@ -313,9 +313,9 @@ void maildirMessage::extractPart(ref <const part> p, utility::outputStream& os,
 	utility::progressListener* progress, const int start,
 	const int length, const bool peek) const
 {
-	const maildirPart& mp = dynamic_cast <const maildirPart&>(p);
+	ref <const maildirPart> mp = p.dynamicCast <const maildirPart>();
 
-	extractImpl(os, progress, mp.getBodyParsedOffset(), mp.getBodyParsedLength(),
+	extractImpl(os, progress, mp->getBodyParsedOffset(), mp->getBodyParsedLength(),
 		start, length, peek);
 }
 
