@@ -1278,7 +1278,7 @@ public:
 	public:
 
 		flag()
-			: m_flag_keyword(NULL)
+			: m_type(UNKNOWN), m_flag_keyword(NULL)
 		{
 		}
 
@@ -1324,6 +1324,7 @@ public:
 			}
 			else
 			{
+				m_type = KEYWORD_OR_EXTENSION;
 				m_flag_keyword = parser.get <atom>(line, &pos);
 			}
 
@@ -1339,6 +1340,7 @@ public:
 			DELETED,
 			SEEN,
 			DRAFT,
+			KEYWORD_OR_EXTENSION,
 			STAR       // * = custom flags allowed
 		};
 
