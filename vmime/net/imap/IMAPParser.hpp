@@ -3188,6 +3188,16 @@ public:
 	{
 	public:
 
+		media_message()
+			: m_media_subtype(NULL)
+		{
+		}
+
+		~media_message()
+		{
+			delete m_media_subtype;
+		}
+
 		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("media_message");
@@ -4335,6 +4345,12 @@ public:
 
 			for (std::vector <nz_number*>::iterator it = m_search_nz_number_list.begin() ;
 			     it != m_search_nz_number_list.end() ; ++it)
+			{
+				delete (*it);
+			}
+
+			for (std::vector <status_info*>::iterator it = m_status_info_list.begin() ;
+			     it != m_status_info_list.end() ; ++it)
 			{
 				delete (*it);
 			}
