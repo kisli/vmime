@@ -485,6 +485,9 @@ const std::vector <string> IMAPConnection::getCapabilities()
 			const IMAPParser::capability_data* capaData =
 				respDataList[i]->response_data()->capability_data();
 
+			if (capaData == NULL)
+				continue;
+
 			std::vector <IMAPParser::capability*> caps = capaData->capabilities();
 
 			for (unsigned int j = 0 ; j < caps.size() ; ++j)
@@ -555,29 +558,29 @@ void IMAPConnection::initHierarchySeparator()
 	const std::vector <IMAPParser::continue_req_or_response_data*>& respDataList =
 		resp->continue_req_or_response_data();
 
-	if (respDataList.size() < 1 || respDataList[0]->response_data() == NULL)
+	bool found = false;
+
+	for (unsigned int i = 0 ; !found && i < respDataList.size() ; ++i)
 	{
-		internalDisconnect();
-		throw exceptions::command_error("LIST", m_parser->lastLine(), "unexpected response");
+		if (respDataList[i]->response_data() == NULL)
+			continue;
+
+		const IMAPParser::mailbox_data* mailboxData =
+			static_cast <const IMAPParser::response_data*>
+				(respDataList[i]->response_data())->mailbox_data();
+
+		if (mailboxData == NULL || mailboxData->type() != IMAPParser::mailbox_data::LIST)
+			continue;
+
+		if (mailboxData->mailbox_list()->quoted_char() != '\0')
+		{
+			m_hierarchySeparator = mailboxData->mailbox_list()->quoted_char();
+			found = true;
+		}
 	}
 
-	const IMAPParser::mailbox_data* mailboxData =
-		static_cast <const IMAPParser::response_data*>(respDataList[0]->response_data())->
-			mailbox_data();
-
-	if (mailboxData == NULL || mailboxData->type() != IMAPParser::mailbox_data::LIST)
-	{
-		internalDisconnect();
-		throw exceptions::command_error("LIST", m_parser->lastLine(), "invalid type");
-	}
-
-	if (mailboxData->mailbox_list()->quoted_char() == '\0')
-	{
-		internalDisconnect();
-		throw exceptions::command_error("LIST", m_parser->lastLine(), "no hierarchy separator");
-	}
-
-	m_hierarchySeparator = mailboxData->mailbox_list()->quoted_char();
+	if (!found) // default
+		m_hierarchySeparator = '/';
 }
 
 
