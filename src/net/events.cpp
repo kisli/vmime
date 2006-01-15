@@ -41,7 +41,7 @@ messageCountEvent::messageCountEvent
 }
 
 
-ref <const folder> messageCountEvent::getFolder() const { return (m_folder); }
+ref <folder> messageCountEvent::getFolder() const { return (m_folder); }
 const messageCountEvent::Types messageCountEvent::getType() const { return (m_type); }
 const std::vector <int>& messageCountEvent::getNumbers() const { return (m_nums); }
 
@@ -68,7 +68,7 @@ messageChangedEvent::messageChangedEvent
 }
 
 
-ref <const folder> messageChangedEvent::getFolder() const { return (m_folder); }
+ref <folder> messageChangedEvent::getFolder() const { return (m_folder); }
 const messageChangedEvent::Types messageChangedEvent::getType() const { return (m_type); }
 const std::vector <int>& messageChangedEvent::getNumbers() const { return (m_nums); }
 
@@ -91,7 +91,7 @@ folderEvent::folderEvent
 }
 
 
-ref <const folder> folderEvent::getFolder() const { return (m_folder); }
+ref <folder> folderEvent::getFolder() const { return (m_folder); }
 const folderEvent::Types folderEvent::getType() const { return (m_type); }
 
 

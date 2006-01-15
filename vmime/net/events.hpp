@@ -58,7 +58,7 @@ public:
 	  *
 	  * @return folder in which message count changed
 	  */
-	ref <const folder> getFolder() const;
+	ref <folder> getFolder() const;
 
 	/** Return the event type.
 	  *
@@ -121,7 +121,7 @@ public:
 	  *
 	  * @return folder in which message count changed
 	  */
-	ref <const folder> getFolder() const;
+	ref <folder> getFolder() const;
 
 	/** Return the event type.
 	  *
@@ -185,7 +185,7 @@ public:
 	  *
 	  * @return folder on which the event occured
 	  */
-	ref <const folder> getFolder() const;
+	ref <folder> getFolder() const;
 
 	/** Return the event type.
 	  *
