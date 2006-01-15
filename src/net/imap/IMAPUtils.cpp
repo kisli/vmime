@@ -19,6 +19,7 @@
 
 #include "vmime/net/imap/IMAPUtils.hpp"
 #include "vmime/net/message.hpp"
+#include "vmime/net/folder.hpp"
 
 #include <sstream>
 #include <iterator>
@@ -30,6 +31,7 @@ namespace net {
 namespace imap {
 
 
+// static
 const string IMAPUtils::quoteString(const string& text)
 {
 	//
@@ -405,13 +407,7 @@ const string IMAPUtils::messageFlagList(const int flags)
 }
 
 
-// This function builds a "IMAP set" given a list. Try to group consecutive
-// message numbers to reduce the list.
-//
-// Example:
-//    IN  = "1,2,3,4,5,7,8,13,15,16,17"
-//    OUT = "1:5,7:8,13,15:*" for a mailbox with a total of 17 messages (max = 17)
-
+// static
 const string IMAPUtils::listToSet(const std::vector <int>& list, const int max,
                                   const bool alreadySorted)
 {
@@ -483,6 +479,7 @@ const string IMAPUtils::listToSet(const std::vector <int>& list, const int max,
 }
 
 
+// static
 const string IMAPUtils::dateTime(const vmime::datetime& date)
 {
 	std::ostringstream res;
@@ -547,6 +544,82 @@ const string IMAPUtils::dateTime(const vmime::datetime& date)
 
 
 	return (res.str());
+}
+
+
+// static
+const string IMAPUtils::buildFetchRequest(const std::vector <int>& list, const int options)
+{
+	// Example:
+	//   C: A654 FETCH 2:4 (FLAGS BODY[HEADER.FIELDS (DATE FROM)])
+	//   S: * 2 FETCH ....
+	//   S: * 3 FETCH ....
+	//   S: * 4 FETCH ....
+	//   S: A654 OK FETCH completed
+
+	std::vector <string> items;
+
+	if (options & folder::FETCH_SIZE)
+		items.push_back("RFC822.SIZE");
+
+	if (options & folder::FETCH_FLAGS)
+		items.push_back("FLAGS");
+
+	if (options & folder::FETCH_STRUCTURE)
+		items.push_back("BODYSTRUCTURE");
+
+	if (options & folder::FETCH_UID)
+		items.push_back("UID");
+
+	if (options & folder::FETCH_FULL_HEADER)
+		items.push_back("RFC822.HEADER");
+	else
+	{
+		if (options & folder::FETCH_ENVELOPE)
+			items.push_back("ENVELOPE");
+
+		std::vector <string> headerFields;
+
+		if (options & folder::FETCH_CONTENT_INFO)
+			headerFields.push_back("CONTENT_TYPE");
+
+		if (options & folder::FETCH_IMPORTANCE)
+		{
+			headerFields.push_back("IMPORTANCE");
+			headerFields.push_back("X-PRIORITY");
+		}
+
+		if (!headerFields.empty())
+		{
+			string list;
+
+			for (std::vector <string>::iterator it = headerFields.begin() ;
+			     it != headerFields.end() ; ++it)
+			{
+				if (it != headerFields.begin())
+					list += " ";
+
+				list += *it;
+			}
+
+			items.push_back("BODY[HEADER.FIELDS (" + list + ")]");
+		}
+	}
+
+	// Build the request text
+	std::ostringstream command;
+	command << "FETCH " << listToSet(list, -1, false) << " (";
+
+	for (std::vector <string>::const_iterator it = items.begin() ;
+	     it != items.end() ; ++it)
+	{
+		if (it != items.begin()) command << " ";
+		command << *it;
+	}
+
+	command << ")";
+
+	return command.str();
 }
 
 

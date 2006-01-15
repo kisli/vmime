@@ -463,80 +463,13 @@ void IMAPMessage::fetch(IMAPFolder* folder, const int options)
 	if (m_folder != folder)
 		throw exceptions::folder_not_found();
 
-	// TODO: optimization: send the request for multiple
-	// messages at the same time (FETCH x:y)
-
-	// Example:
-	//   C: A654 FETCH 2:4 (FLAGS BODY[HEADER.FIELDS (DATE FROM)])
-	//   S: * 2 FETCH ....
-	//   S: * 3 FETCH ....
-	//   S: * 4 FETCH ....
-	//   S: A654 OK FETCH completed
-
-	std::vector <string> items;
-
-	if (options & folder::FETCH_SIZE)
-		items.push_back("RFC822.SIZE");
-
-	if (options & folder::FETCH_FLAGS)
-		items.push_back("FLAGS");
-
-	if (options & folder::FETCH_STRUCTURE)
-		items.push_back("BODYSTRUCTURE");
-
-	if (options & folder::FETCH_UID)
-		items.push_back("UID");
-
-	if (options & folder::FETCH_FULL_HEADER)
-		items.push_back("RFC822.HEADER");
-	else
-	{
-		if (options & folder::FETCH_ENVELOPE)
-			items.push_back("ENVELOPE");
-
-		std::vector <string> headerFields;
-
-		if (options & folder::FETCH_CONTENT_INFO)
-			headerFields.push_back("CONTENT_TYPE");
-
-		if (options & folder::FETCH_IMPORTANCE)
-		{
-			headerFields.push_back("IMPORTANCE");
-			headerFields.push_back("X-PRIORITY");
-		}
-
-		if (!headerFields.empty())
-		{
-			string list;
-
-			for (std::vector <string>::iterator it = headerFields.begin() ;
-			     it != headerFields.end() ; ++it)
-			{
-				if (it != headerFields.begin())
-					list += " ";
-
-				list += *it;
-			}
-
-			items.push_back("BODY[HEADER.FIELDS (" + list + ")]");
-		}
-	}
-
-	// Build the request text
-	std::ostringstream command;
-	command << "FETCH " << m_num << " (";
-
-	for (std::vector <string>::const_iterator it = items.begin() ;
-	     it != items.end() ; ++it)
-	{
-		if (it != items.begin()) command << " ";
-		command << *it;
-	}
-
-	command << ")";
-
 	// Send the request
-	m_folder->m_connection->send(true, command.str(), true);
+	std::vector <int> list;
+	list.push_back(m_num);
+
+	const string command = IMAPUtils::buildFetchRequest(list, options);
+
+	m_folder->m_connection->send(true, command, true);
 
 	// Get the response
 	utility::auto_ptr <IMAPParser::response> resp(m_folder->m_connection->readResponse());

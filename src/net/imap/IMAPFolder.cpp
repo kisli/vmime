@@ -609,19 +609,79 @@ void IMAPFolder::fetchMessages(std::vector <ref <message> >& msg, const int opti
 	else if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
 
+	// Build message numbers list
+	std::vector <int> list;
+	list.reserve(msg.size());
+
+	std::map <int, ref <IMAPMessage> > numberToMsg;
+
+	for (std::vector <ref <message> >::iterator it = msg.begin() ; it != msg.end() ; ++it)
+	{
+		list.push_back((*it)->getNumber());
+		numberToMsg[(*it)->getNumber()] = (*it).dynamicCast <IMAPMessage>();
+	}
+
+	// Send the request
+	const string command = IMAPUtils::buildFetchRequest(list, options);
+	m_connection->send(true, command, true);
+
+	// Get the response
+	utility::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
+
+	if (resp->isBad() || resp->response_done()->response_tagged()->
+		resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
+	{
+		throw exceptions::command_error("FETCH",
+			m_connection->getParser()->lastLine(), "bad response");
+	}
+
+	const std::vector <IMAPParser::continue_req_or_response_data*>& respDataList =
+		resp->continue_req_or_response_data();
+
 	const int total = msg.size();
 	int current = 0;
 
 	if (progress)
 		progress->start(total);
 
-	for (std::vector <ref <message> >::iterator it = msg.begin() ;
-	     it != msg.end() ; ++it)
+	try
 	{
-		(*it).dynamicCast <IMAPMessage>()->fetch(this, options);
+		for (std::vector <IMAPParser::continue_req_or_response_data*>::const_iterator
+		     it = respDataList.begin() ; it != respDataList.end() ; ++it)
+		{
+			if ((*it)->response_data() == NULL)
+			{
+				throw exceptions::command_error("FETCH",
+					m_connection->getParser()->lastLine(), "invalid response");
+			}
 
+			const IMAPParser::message_data* messageData =
+				(*it)->response_data()->message_data();
+
+			// We are only interested in responses of type "FETCH"
+			if (messageData == NULL || messageData->type() != IMAPParser::message_data::FETCH)
+				continue;
+
+			// Process fetch response for this message
+			const int num = static_cast <int>(messageData->number());
+
+			std::map <int, ref <IMAPMessage> >::iterator msg = numberToMsg.find(num);
+
+			if (msg != numberToMsg.end())
+			{
+				(*msg).second->processFetchResponse(options, messageData->msg_att());
+
+				if (progress)
+					progress->progress(++current, total);
+			}
+		}
+	}
+	catch (...)
+	{
 		if (progress)
-			progress->progress(++current, total);
+			progress->stop(total);
+
+		throw;
 	}
 
 	if (progress)

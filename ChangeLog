@@ -2,6 +2,11 @@
 VERSION 0.8.1cvs
 ================
 
+2006-01-15  Vincent Richard  <vincent@vincent-richard.net>
+
+ * IMAP: implemented multi-fetching. Now using "FETCH x:y" instead of
+   sending (y-x+1) "FETCH" requests.
+
 2005-12-26  Vincent Richard  <vincent@vincent-richard.net>
 
  * posixSocket.cpp: use getaddrinfo() if available. This should bring
