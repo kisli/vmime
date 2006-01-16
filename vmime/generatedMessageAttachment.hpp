@@ -21,62 +21,59 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#ifndef VMIME_BODYPARTATTACHMENT_HPP_INCLUDED
-#define VMIME_BODYPARTATTACHMENT_HPP_INCLUDED
+#ifndef VMIME_GENERATEDMESSAGEATTACHMENT_HPP_INCLUDED
+#define VMIME_GENERATEDMESSAGEATTACHMENT_HPP_INCLUDED
 
 
 #ifndef VMIME_BUILDING_DOC  // implementation detail
 
 
-#include "vmime/attachment.hpp"
-
-#include "vmime/contentDispositionField.hpp"
-#include "vmime/contentTypeField.hpp"
+#include "vmime/messageAttachment.hpp"
+#include "vmime/bodyPartAttachment.hpp"
 
 
 namespace vmime
 {
 
 
-/** An attachment related to a local body part.
+/** A message attachment that can be extracted from a message.
   */
-class bodyPartAttachment : public attachment
+class generatedMessageAttachment : public messageAttachment
 {
-	friend class creator;
-
-protected:
-
-	bodyPartAttachment(ref <const bodyPart> part);
-
 public:
 
+	generatedMessageAttachment(ref <const bodyPart> part);
+
 	const mediaType getType() const;
-	const word getName() const;
 	const text getDescription() const;
-	const encoding getEncoding() const;
+	const word getName() const;
 
 	const ref <const contentHandler> getData() const;
 
+	const encoding getEncoding() const;
+
 	ref <const object> getPart() const;
+
 	ref <const header> getHeader() const;
 
-private:
+	ref <message> getMessage() const;
+
+protected:
 
 	void generateIn(bodyPart& parent) const;
 
-	ref <const contentDispositionField> getContentDisposition() const;
-	ref <const contentTypeField> getContentType() const;
+private:
 
-
-	ref <const bodyPart> m_part;
+	ref <bodyPartAttachment> m_bpa;
+	mutable ref <message> m_msg;
 };
 
 
 } // vmime
 
 
-#endif // VMIME_BUILDING_DOC
+#endif // !VMIME_BUILDING_DOC
 
 
-#endif // VMIME_BODYPARTATTACHMENT_HPP_INCLUDED
+#endif // VMIME_GENERATEDMESSAGEATTACHMENT_HPP_INCLUDED
 

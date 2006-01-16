@@ -74,6 +74,7 @@
 
 #include "vmime/fileAttachment.hpp"
 #include "vmime/defaultAttachment.hpp"
+#include "vmime/messageAttachment.hpp"
 
 #include "vmime/plainTextPart.hpp"
 #include "vmime/htmlTextPart.hpp"

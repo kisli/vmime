@@ -78,6 +78,13 @@ public:
 	  */
 	static void addAttachment(ref <message> msg, ref <attachment> att);
 
+	/** Add a message attachment to the specified message.
+	  *
+	  * @param msg message into which to add the attachment
+	  * @param amsg message to attach
+	  */
+	static void addAttachment(ref <message> msg, ref <message> amsg);
+
 protected:
 
 	static const std::vector <ref <const attachment> >

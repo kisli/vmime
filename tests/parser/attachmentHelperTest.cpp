@@ -33,10 +33,13 @@ VMIME_TEST_SUITE_BEGIN
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testAddAttachment1)
 		VMIME_TEST(testAddAttachment2)
+		VMIME_TEST(testAddAttachment3)
 		VMIME_TEST(testIsBodyPartAnAttachment1)
 		VMIME_TEST(testIsBodyPartAnAttachment2)
 		VMIME_TEST(testIsBodyPartAnAttachment3)
 		VMIME_TEST(testGetBodyPartAttachment)
+		VMIME_TEST(testAddAttachmentMessage1)
+		VMIME_TEST(testGetBodyPartAttachmentMessage)
 	VMIME_TEST_LIST_END
 
 
@@ -64,6 +67,18 @@ VMIME_TEST_SUITE_BEGIN
 		return res + "]";
 	}
 
+	static const vmime::string extractBodyContents(vmime::ref <const vmime::bodyPart> part)
+	{
+		vmime::ref <const vmime::contentHandler> cth = part->getBody()->getContents();
+
+		vmime::string data;
+		vmime::utility::outputStreamStringAdapter os(data);
+
+		cth->extract(os);
+
+		return data;
+	}
+
 	void testAddAttachment1()
 	{
 		vmime::string data =
@@ -82,6 +97,7 @@ VMIME_TEST_SUITE_BEGIN
 		vmime::attachmentHelper::addAttachment(msg, att);
 
 		VASSERT_EQ("1", "multipart/mixed[text/plain,image/jpeg]", getStructure(msg));
+		VASSERT_EQ("2", "The text\r\n", extractBodyContents(msg->getBody()->getPartAt(0)));
 	}
 
 	void testAddAttachment2()
@@ -110,6 +126,31 @@ VMIME_TEST_SUITE_BEGIN
 		vmime::attachmentHelper::addAttachment(msg, att);
 
 		VASSERT_EQ("1", "multipart/mixed[text/plain,application/octet-stream,image/jpeg]", getStructure(msg));
+		VASSERT_EQ("2", "The text", extractBodyContents(msg->getBody()->getPartAt(0)));
+		VASSERT_EQ("3", "Blah", extractBodyContents(msg->getBody()->getPartAt(1)));
+		VASSERT_EQ("4", "test", extractBodyContents(msg->getBody()->getPartAt(2)));
+	}
+
+	// Initial part is encoded
+	void testAddAttachment3()
+	{
+		vmime::string data =
+"Content-Type: text/plain\r\n"
+"Content-Transfer-Encoding: base64\r\n"
+"\r\n"
+"TWVzc2FnZSBib2R5";
+
+		vmime::ref <vmime::message> msg = vmime::create <vmime::message>();
+		msg->parse(data);
+
+		vmime::ref <vmime::attachment> att = vmime::create <vmime::defaultAttachment>
+			(vmime::create <vmime::stringContentHandler>("test"),
+				vmime::mediaType("image/jpeg"));
+
+		vmime::attachmentHelper::addAttachment(msg, att);
+
+		VASSERT_EQ("1", "multipart/mixed[text/plain,image/jpeg]", getStructure(msg));
+		VASSERT_EQ("2", "Message body", extractBodyContents(msg->getBody()->getPartAt(0)));
 	}
 
 	// Content-Disposition: attachment
@@ -199,6 +240,88 @@ VMIME_TEST_SUITE_BEGIN
 		VASSERT_EQ("6", part->generate(), att->getPart().dynamicCast <const vmime::component>()->generate());
 		//VASSERT_EQ("7", part->getHeader(), att->getHeader());
 		VASSERT_EQ("7", part->getHeader()->generate(), att->getHeader()->generate());
+	}
+
+	void testAddAttachmentMessage1()
+	{
+		const vmime::string data =
+"Subject: Test message\r\n"
+"Content-Type: text/plain\r\n"
+"\r\n"
+"Message body";
+
+		vmime::ref <vmime::message> msg = vmime::create <vmime::message>();
+		msg->parse(data);
+
+		const vmime::string attData =
+"Subject: Attached message\r\n"
+"Content-Type: text/plain\r\n"
+"Content-Transfer-Encoding: base64\r\n"
+"\r\n"
+"QXR0YWNoZWQgbWVzc2FnZSBib2R5";
+
+		vmime::ref <vmime::message> amsg = vmime::create <vmime::message>();
+		amsg->parse(attData);
+
+		vmime::attachmentHelper::addAttachment(msg, amsg);
+
+		VASSERT_EQ("1", "multipart/mixed[text/plain,message/rfc822]", getStructure(msg));
+		VASSERT_EQ("2", "Message body", extractBodyContents(msg->getBody()->getPartAt(0)));
+
+		// Ensure message has been encoded properly
+		vmime::ref <const vmime::bodyPart> attPart = msg->getBody()->getPartAt(1);
+		vmime::ref <const vmime::contentHandler> attCth = attPart->getBody()->getContents();
+
+		vmime::string attDataOut;
+		vmime::utility::outputStreamStringAdapter attDataOutOs(attDataOut);
+
+		attCth->extract(attDataOutOs);
+
+		vmime::ref <vmime::message> amsgOut = vmime::create <vmime::message>();
+		amsgOut->parse(attDataOut);
+
+		vmime::ref <vmime::header> hdr = amsgOut->getHeader();
+
+		VASSERT_EQ("3", "Attached message", hdr->Subject()->getValue().dynamicCast <vmime::text>()->generate());
+		VASSERT_EQ("4", "Attached message body", extractBodyContents(amsgOut));
+	}
+
+	void testGetBodyPartAttachmentMessage()
+	{
+		const vmime::string data =
+"Subject: Test message\r\n"
+"Content-Type: multipart/mixed; boundary=\"foo\"\r\n"
+"\r\n"
+"--foo\r\n"
+"Content-Type: message/rfc822\r\n"
+"\r\n"
+"Subject: Attached message\r\n"
+"\r\n"
+"Attached message body\r\n"
+"--foo\r\n"
+"Content-Type: text/plain\r\n"
+"\r\n"
+"FooBar\r\n"
+"--foo--\r\n";
+
+		vmime::ref <vmime::message> msg = vmime::create <vmime::message>();
+		msg->parse(data);
+
+		vmime::ref <const vmime::attachment> att = vmime::attachmentHelper::
+			getBodyPartAttachment(msg->getBody()->getPartAt(0));
+
+		VASSERT("1", att != NULL);
+
+		vmime::ref <const vmime::messageAttachment> msgAtt =
+			att.dynamicCast <const vmime::messageAttachment>();
+
+		VASSERT("2", msgAtt != NULL);
+
+		vmime::ref <vmime::message> amsg = msgAtt->getMessage();
+		vmime::ref <vmime::header> hdr = amsg->getHeader();
+
+		VASSERT_EQ("3", "Attached message", hdr->Subject()->getValue().dynamicCast <vmime::text>()->generate());
+		VASSERT_EQ("4", "Attached message body", extractBodyContents(amsg));
 	}
 
 VMIME_TEST_SUITE_END

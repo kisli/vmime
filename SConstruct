@@ -105,6 +105,7 @@ libvmime_sources = [
 	'encoding.cpp', 'encoding.hpp',
 	'exception.cpp', 'exception.hpp',
 	'fileAttachment.cpp', 'fileAttachment.hpp',
+	'generatedMessageAttachment.hpp', 'generatedMessageAttachment.cpp',
 	'header.cpp', 'header.hpp',
 	'headerFieldFactory.cpp', 'headerFieldFactory.hpp',
 	'headerField.cpp', 'headerField.hpp',
@@ -115,6 +116,7 @@ libvmime_sources = [
 	'mailboxGroup.cpp', 'mailboxGroup.hpp',
 	'mailboxList.cpp', 'mailboxList.hpp',
 	'mediaType.cpp', 'mediaType.hpp',
+	'messageAttachment.hpp',
 	'messageBuilder.cpp', 'messageBuilder.hpp',
 	'message.cpp', 'message.hpp',
 	'messageId.cpp', 'messageId.hpp',
@@ -125,6 +127,7 @@ libvmime_sources = [
 	'path.cpp', 'path.hpp',
 	'parameter.cpp', 'parameter.hpp',
 	'parameterizedHeaderField.cpp', 'parameterizedHeaderField.hpp',
+	'parsedMessageAttachment.cpp', 'parsedMessageAttachment.hpp',
 	'parserHelpers.hpp',
 	'plainTextPart.cpp', 'plainTextPart.hpp',
 	'platformDependant.cpp', 'platformDependant.hpp',
@@ -2254,7 +2257,6 @@ env.Alias('msvc', env.GenerateMSVC('foo_msvc', 'SConstruct'))
 def appendAdditionalDistFiles():
 	# Generate autotools-related files
 	generateAutotools([], [], env)
-
 	# Generate MSVC-related files
 	generateMSVC([], [], env)
 

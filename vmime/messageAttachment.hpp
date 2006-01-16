@@ -21,62 +21,35 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#ifndef VMIME_BODYPARTATTACHMENT_HPP_INCLUDED
-#define VMIME_BODYPARTATTACHMENT_HPP_INCLUDED
-
-
-#ifndef VMIME_BUILDING_DOC  // implementation detail
+#ifndef VMIME_MESSAGEATTACHMENT_HPP_INCLUDED
+#define VMIME_MESSAGEATTACHMENT_HPP_INCLUDED
 
 
 #include "vmime/attachment.hpp"
-
-#include "vmime/contentDispositionField.hpp"
-#include "vmime/contentTypeField.hpp"
+#include "vmime/message.hpp"
 
 
 namespace vmime
 {
 
 
-/** An attachment related to a local body part.
+/** Attachment of type message/rfc822.
   */
-class bodyPartAttachment : public attachment
+
+class messageAttachment : public attachment
 {
-	friend class creator;
-
-protected:
-
-	bodyPartAttachment(ref <const bodyPart> part);
-
 public:
 
-	const mediaType getType() const;
-	const word getName() const;
-	const text getDescription() const;
-	const encoding getEncoding() const;
-
-	const ref <const contentHandler> getData() const;
-
-	ref <const object> getPart() const;
-	ref <const header> getHeader() const;
-
-private:
-
-	void generateIn(bodyPart& parent) const;
-
-	ref <const contentDispositionField> getContentDisposition() const;
-	ref <const contentTypeField> getContentType() const;
-
-
-	ref <const bodyPart> m_part;
+	/** Return the message encapsulated in this attachment.
+	  *
+	  * @return encapsulated message
+	  */
+	virtual ref <message> getMessage() const = 0;
 };
 
 
 } // vmime
 
 
-#endif // VMIME_BUILDING_DOC
-
-
-#endif // VMIME_BODYPARTATTACHMENT_HPP_INCLUDED
+#endif // VMIME_MESSAGEATTACHMENT_HPP_INCLUDED
 
