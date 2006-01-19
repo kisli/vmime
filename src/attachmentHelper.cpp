@@ -48,6 +48,14 @@ const bool attachmentHelper::isBodyPartAnAttachment(ref <const bodyPart> part)
 
 		if (disp.getName() != contentDispositionTypes::INLINE)
 			return true;
+
+		// If the Content-Disposition is 'inline' and there is no
+		// Content-Id or Content-Location field, it is an attachment
+		if (!part->getHeader()->hasField(vmime::fields::CONTENT_ID) &&
+		    !part->getHeader()->hasField(vmime::fields::CONTENT_LOCATION))
+		{
+			return true;
+		}
 	}
 	catch (exceptions::no_such_field&)
 	{
