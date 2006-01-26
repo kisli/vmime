@@ -1307,16 +1307,6 @@ else
   AC_ERROR(no usable version of iconv has been found)
 fi
 
-# -- GNU SASL Library (http://www.gnu.org/software/gsasl/)
-AC_CHECK_HEADER(gsasl.h,
-	AC_CHECK_LIB(gsasl, gsasl_check_version,
-		[have_gsasl=yes AC_SUBST(GSASL_AVAIL_LIBS, -lgsasl) AC_SUBST(GSASL_AVAIL_REQUIRED, libgsasl)],
-		 have_gsasl=no),
-	have_gsasl=no)
-
-# -- GNU TLS Library (http://www.gnu.org/software/gnutls/)
-AM_PATH_LIBGNUTLS(1.2.0, have_gnutls=yes, have_gnutls=no)
-
 # -- global constructors (stolen from 'configure.in' in libsigc++)
 AC_MSG_CHECKING([if linker supports global constructors])
 cat > mylib.$ac_ext <<EOF
@@ -1555,6 +1545,13 @@ AC_ARG_ENABLE(sasl,
      [conf_sasl=yes])
 
 if test "x$conf_sasl" = "xyes"; then
+	# -- GNU SASL Library (http://www.gnu.org/software/gsasl/)
+	AC_CHECK_HEADER(gsasl.h,
+		AC_CHECK_LIB(gsasl, gsasl_check_version,
+			[have_gsasl=yes AC_SUBST(GSASL_AVAIL_LIBS, -lgsasl) AC_SUBST(GSASL_AVAIL_REQUIRED, libgsasl)],
+			 have_gsasl=no),
+		have_gsasl=no)
+
 	if test "x$have_gsasl" = "xyes"; then
 		AM_CONDITIONAL(VMIME_HAVE_SASL_SUPPORT, true)
 		VMIME_HAVE_SASL_SUPPORT=1
@@ -1587,6 +1584,9 @@ AC_ARG_ENABLE(tls,
      [conf_tls=yes])
 
 if test "x$conf_tls" = "xyes"; then
+	# -- GNU TLS Library (http://www.gnu.org/software/gnutls/)
+	AM_PATH_LIBGNUTLS(1.2.0, have_gnutls=yes, have_gnutls=no)
+
 	if test "x$have_gnutls" = "xyes"; then
 		AM_CONDITIONAL(VMIME_HAVE_TLS_SUPPORT, true)
 		VMIME_HAVE_TLS_SUPPORT=1
