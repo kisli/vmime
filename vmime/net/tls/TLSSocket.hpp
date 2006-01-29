@@ -75,7 +75,7 @@ public:
 	  * @return server certificate chain, or NULL if the handshake
 	  * has not been performed yet
 	  */
-	ref <security::cert::certificateChain> getPeerCertificates();
+	ref <security::cert::certificateChain> getPeerCertificates() const;
 
 
 	// Implementation of 'socket'

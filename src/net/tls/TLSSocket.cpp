@@ -280,7 +280,7 @@ ssize_t TLSSocket::gnutlsPullFunc
 }
 
 
-ref <security::cert::certificateChain> TLSSocket::getPeerCertificates()
+ref <security::cert::certificateChain> TLSSocket::getPeerCertificates() const
 {
 	unsigned int certCount = 0;
 	const gnutls_datum* rawData = gnutls_certificate_get_peers
