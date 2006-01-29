@@ -286,6 +286,9 @@ ref <security::cert::certificateChain> TLSSocket::getPeerCertificates()
 	const gnutls_datum* rawData = gnutls_certificate_get_peers
 		(*m_session->m_gnutlsSession, &certCount);
 
+	if (rawData == NULL)
+		return NULL;
+
 	// Try X.509
 	gnutls_x509_crt* x509Certs = new gnutls_x509_crt[certCount];
 
