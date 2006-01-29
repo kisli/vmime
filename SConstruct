@@ -198,9 +198,12 @@ libvmime_examples_sources = [
 
 libvmime_messaging_sources = [
 	'net/builtinServices.inl',
+	'net/connectionInfos.hpp',
+	'net/defaultConnectionInfos.cpp', 'net/defaultConnectionInfos.hpp',
 	'net/events.cpp', 'net/events.hpp',
 	'net/folder.cpp', 'net/folder.hpp',
 	'net/message.cpp', 'net/message.hpp',
+	'net/securedConnectionInfos.hpp',
 	'net/service.cpp', 'net/service.hpp',
 	'net/serviceFactory.cpp', 'net/serviceFactory.hpp',
 	'net/serviceInfos.cpp', 'net/serviceInfos.hpp',
@@ -215,6 +218,7 @@ libvmime_messaging_sources = [
 libvmime_net_tls_sources = [
 	'net/tls/TLSSession.cpp', 'net/tls/TLSSession.hpp',
 	'net/tls/TLSSocket.cpp', 'net/tls/TLSSocket.hpp',
+	'net/tls/TLSSecuredConnectionInfos.cpp', 'net/tls/TLSSecuredConnectionInfos.hpp',
 	'security/cert/certificateChain.cpp', 'security/cert/certificateChain.hpp',
 	'security/cert/certificateVerifier.hpp',
 	'security/cert/defaultCertificateVerifier.cpp', 'security/cert/defaultCertificateVerifier.hpp',

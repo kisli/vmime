@@ -30,6 +30,7 @@
 #include "vmime/net/socket.hpp"
 #include "vmime/net/timeoutHandler.hpp"
 #include "vmime/net/session.hpp"
+#include "vmime/net/connectionInfos.hpp"
 
 #include "vmime/net/imap/IMAPParser.hpp"
 
@@ -92,6 +93,9 @@ public:
 
 	ref <security::authenticator> getAuthenticator();
 
+	const bool isSecuredConnection() const;
+	ref <connectionInfos> getConnectionInfos() const;
+
 private:
 
 	void authenticate();
@@ -119,6 +123,9 @@ private:
 	ProtocolStates m_state;
 
 	ref <timeoutHandler> m_timeoutHandler;
+
+	bool m_secured;
+	ref <connectionInfos> m_cntInfos;
 
 
 	void internalDisconnect();

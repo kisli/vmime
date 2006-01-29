@@ -26,6 +26,8 @@
 #include "vmime/exception.hpp"
 #include "vmime/platformDependant.hpp"
 
+#include "vmime/net/defaultConnectionInfos.hpp"
+
 
 // Helpers for service properties
 #define GET_PROPERTY(type, prop) \
@@ -151,6 +153,18 @@ void maildirStore::connect()
 const bool maildirStore::isConnected() const
 {
 	return (m_connected);
+}
+
+
+const bool maildirStore::isSecuredConnection() const
+{
+	return false;
+}
+
+
+ref <connectionInfos> maildirStore::getConnectionInfos() const
+{
+	return vmime::create <defaultConnectionInfos>("localhost", 0);
 }
 
 

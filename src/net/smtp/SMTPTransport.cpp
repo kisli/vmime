@@ -28,12 +28,15 @@
 #include "vmime/utility/filteredStream.hpp"
 #include "vmime/utility/stringUtils.hpp"
 
+#include "vmime/net/defaultConnectionInfos.hpp"
+
 #if VMIME_HAVE_SASL_SUPPORT
 	#include "vmime/security/sasl/SASLContext.hpp"
 #endif // VMIME_HAVE_SASL_SUPPORT
 
 #if VMIME_HAVE_TLS_SUPPORT
 	#include "vmime/net/tls/TLSSession.hpp"
+	#include "vmime/net/tls/TLSSecuredConnectionInfos.hpp"
 #endif // VMIME_HAVE_TLS_SUPPORT
 
 
@@ -54,7 +57,7 @@ namespace smtp {
 SMTPTransport::SMTPTransport(ref <session> sess, ref <security::authenticator> auth, const bool secured)
 	: transport(sess, getInfosInstance(), auth), m_socket(NULL),
 	  m_authentified(false), m_extendedSMTP(false), m_timeoutHandler(NULL),
-	  m_secured(secured)
+	  m_isSMTPS(secured), m_secured(false)
 {
 }
 
@@ -97,7 +100,7 @@ void SMTPTransport::connect()
 	m_socket = getSocketFactory()->create();
 
 #if VMIME_HAVE_TLS_SUPPORT
-	if (m_secured)  // dedicated port/SMTPS
+	if (m_isSMTPS)  // dedicated port/SMTPS
 	{
 		ref <tls::TLSSession> tlsSession =
 			vmime::create <tls::TLSSession>(getCertificateVerifier());
@@ -106,8 +109,15 @@ void SMTPTransport::connect()
 			tlsSession->getSocket(m_socket);
 
 		m_socket = tlsSocket;
+
+		m_secured = true;
+		m_cntInfos = vmime::create <tls::TLSSecuredConnectionInfos>(address, port, tlsSession, tlsSocket);
 	}
 #endif // VMIME_HAVE_TLS_SUPPORT
+	else
+	{
+		m_cntInfos = vmime::create <defaultConnectionInfos>(address, port);
+	}
 
 	m_socket->connect(address, port);
 
@@ -163,7 +173,7 @@ void SMTPTransport::connect()
 	const bool tlsRequired = HAS_PROPERTY(PROPERTY_CONNECTION_TLS_REQUIRED)
 		&& GET_PROPERTY(bool, PROPERTY_CONNECTION_TLS_REQUIRED);
 
-	if (!m_secured && tls)  // only if not POP3S
+	if (!m_isSMTPS && tls)  // only if not POP3S
 	{
 		try
 		{
@@ -436,6 +446,10 @@ void SMTPTransport::startTLS()
 		tlsSocket->handshake(m_timeoutHandler);
 
 		m_socket = tlsSocket;
+
+		m_secured = true;
+		m_cntInfos = vmime::create <tls::TLSSecuredConnectionInfos>
+			(m_cntInfos->getHost(), m_cntInfos->getPort(), tlsSession, tlsSocket);
 	}
 	catch (exceptions::command_error&)
 	{
@@ -456,6 +470,18 @@ void SMTPTransport::startTLS()
 const bool SMTPTransport::isConnected() const
 {
 	return (m_socket && m_socket->isConnected() && m_authentified);
+}
+
+
+const bool SMTPTransport::isSecuredConnection() const
+{
+	return m_secured;
+}
+
+
+ref <connectionInfos> SMTPTransport::getConnectionInfos() const
+{
+	return m_cntInfos;
 }
 
 
@@ -486,6 +512,9 @@ void SMTPTransport::internalDisconnect()
 
 	m_authentified = false;
 	m_extendedSMTP = false;
+
+	m_secured = false;
+	m_cntInfos = NULL;
 }
 
 

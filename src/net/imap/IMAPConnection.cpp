@@ -25,12 +25,15 @@
 #include "vmime/exception.hpp"
 #include "vmime/platformDependant.hpp"
 
+#include "vmime/net/defaultConnectionInfos.hpp"
+
 #if VMIME_HAVE_SASL_SUPPORT
 	#include "vmime/security/sasl/SASLContext.hpp"
 #endif // VMIME_HAVE_SASL_SUPPORT
 
 #if VMIME_HAVE_TLS_SUPPORT
 	#include "vmime/net/tls/TLSSession.hpp"
+	#include "vmime/net/tls/TLSSecuredConnectionInfos.hpp"
 #endif // VMIME_HAVE_TLS_SUPPORT
 
 #include <sstream>
@@ -52,7 +55,8 @@ namespace imap {
 
 IMAPConnection::IMAPConnection(weak_ref <IMAPStore> store, ref <security::authenticator> auth)
 	: m_store(store), m_auth(auth), m_socket(NULL), m_parser(NULL), m_tag(NULL),
-	  m_hierarchySeparator('\0'), m_state(STATE_NONE), m_timeoutHandler(NULL)
+	  m_hierarchySeparator('\0'), m_state(STATE_NONE), m_timeoutHandler(NULL),
+	  m_secured(false)
 {
 }
 
@@ -92,7 +96,7 @@ void IMAPConnection::connect()
 	m_socket = m_store->getSocketFactory()->create();
 
 #if VMIME_HAVE_TLS_SUPPORT
-	if (m_store->isSecuredConnection())  // dedicated port/IMAPS
+	if (m_store->isIMAPS())  // dedicated port/IMAPS
 	{
 		ref <tls::TLSSession> tlsSession =
 			vmime::create <tls::TLSSession>(m_store->getCertificateVerifier());
@@ -101,8 +105,15 @@ void IMAPConnection::connect()
 			tlsSession->getSocket(m_socket);
 
 		m_socket = tlsSocket;
+
+		m_secured = true;
+		m_cntInfos = vmime::create <tls::TLSSecuredConnectionInfos>(address, port, tlsSession, tlsSocket);
 	}
 #endif // VMIME_HAVE_TLS_SUPPORT
+	else
+	{
+		m_cntInfos = vmime::create <defaultConnectionInfos>(address, port);
+	}
 
 	m_socket->connect(address, port);
 
@@ -446,6 +457,10 @@ void IMAPConnection::startTLS()
 
 		m_socket = tlsSocket;
 		m_parser->setSocket(m_socket);
+
+		m_secured = true;
+		m_cntInfos = vmime::create <tls::TLSSecuredConnectionInfos>
+			(m_cntInfos->getHost(), m_cntInfos->getPort(), tlsSession, tlsSocket);
 	}
 	catch (exceptions::command_error&)
 	{
@@ -517,6 +532,18 @@ const bool IMAPConnection::isConnected() const
 }
 
 
+const bool IMAPConnection::isSecuredConnection() const
+{
+	return m_secured;
+}
+
+
+ref <connectionInfos> IMAPConnection::getConnectionInfos() const
+{
+	return m_cntInfos;
+}
+
+
 void IMAPConnection::disconnect()
 {
 	if (!isConnected())
@@ -539,6 +566,9 @@ void IMAPConnection::internalDisconnect()
 	m_timeoutHandler = NULL;
 
 	m_state = STATE_LOGOUT;
+
+	m_secured = false;
+	m_cntInfos = NULL;
 }
 
 

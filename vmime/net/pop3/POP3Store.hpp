@@ -77,6 +77,9 @@ public:
 
 	const int getCapabilities() const;
 
+	const bool isSecuredConnection() const;
+	ref <connectionInfos> getConnectionInfos() const;
+
 private:
 
 	enum ResponseCode
@@ -123,7 +126,10 @@ private:
 
 	ref <timeoutHandler> m_timeoutHandler;
 
+	const bool m_isPOP3S;
+
 	bool m_secured;
+	ref <connectionInfos> m_cntInfos;
 
 
 	// Service infos

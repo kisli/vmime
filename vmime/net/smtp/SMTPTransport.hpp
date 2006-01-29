@@ -65,6 +65,9 @@ public:
 
 	void send(const mailbox& expeditor, const mailboxList& recipients, utility::inputStream& is, const utility::stream::size_type size, utility::progressListener* progress = NULL);
 
+	const bool isSecuredConnection() const;
+	ref <connectionInfos> getConnectionInfos() const;
+
 private:
 
 	void sendRequest(const string& buffer, const bool end = true);
@@ -89,7 +92,10 @@ private:
 
 	ref <timeoutHandler> m_timeoutHandler;
 
+	const bool m_isSMTPS;
+
 	bool m_secured;
+	ref <connectionInfos> m_cntInfos;
 
 
 	// Service infos

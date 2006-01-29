@@ -78,7 +78,10 @@ public:
 
 	const int getCapabilities() const;
 
+	const bool isIMAPS() const;
+
 	const bool isSecuredConnection() const;
+	ref <connectionInfos> getConnectionInfos() const;
 
 protected:
 
@@ -95,7 +98,7 @@ protected:
 
 	std::list <IMAPFolder*> m_folders;
 
-	bool m_secured;  // Use IMAPS
+	const bool m_isIMAPS;  // Use IMAPS
 
 
 	static IMAPServiceInfos sm_infos;

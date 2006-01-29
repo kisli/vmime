@@ -516,6 +516,13 @@ static void connectStore()
 		// Connect to the mail store
 		st->connect();
 
+		// Display some information about the connection
+		vmime::ref <vmime::net::connectionInfos> ci = st->getConnectionInfos();
+
+		std::cout << std::endl;
+		std::cout << "Connected to '" << ci->getHost() << "' (port " << ci->getPort() << ")" << std::endl;
+		std::cout << "Connection is " << (st->isSecuredConnection() ? "" : "NOT ") << "secured." << std::endl;
+
 		// Open the default folder in this store
 		vmime::ref <vmime::net::folder> f = st->getDefaultFolder();
 //		vmime::ref <vmime::net::folder> f = st->getFolder(vmime::utility::path("a"));

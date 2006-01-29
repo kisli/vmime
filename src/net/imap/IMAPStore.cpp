@@ -33,7 +33,7 @@ namespace imap {
 
 
 IMAPStore::IMAPStore(ref <session> sess, ref <security::authenticator> auth, const bool secured)
-	: store(sess, getInfosInstance(), auth), m_connection(NULL), m_secured(secured)
+	: store(sess, getInfosInstance(), auth), m_connection(NULL), m_isIMAPS(secured)
 {
 }
 
@@ -91,12 +91,6 @@ const bool IMAPStore::isValidFolderName(const folder::path::component& /* name *
 }
 
 
-const bool IMAPStore::isSecuredConnection() const
-{
-	return m_secured;
-}
-
-
 void IMAPStore::connect()
 {
 	if (isConnected())
@@ -120,6 +114,30 @@ void IMAPStore::connect()
 const bool IMAPStore::isConnected() const
 {
 	return (m_connection && m_connection->isConnected());
+}
+
+
+const bool IMAPStore::isIMAPS() const
+{
+	return m_isIMAPS;
+}
+
+
+const bool IMAPStore::isSecuredConnection() const
+{
+	if (m_connection == NULL)
+		return false;
+
+	return m_connection->isSecuredConnection();
+}
+
+
+ref <connectionInfos> IMAPStore::getConnectionInfos() const
+{
+	if (m_connection == NULL)
+		return NULL;
+
+	return m_connection->getConnectionInfos();
 }
 
 

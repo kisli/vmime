@@ -28,6 +28,8 @@
 #include "vmime/utility/childProcess.hpp"
 #include "vmime/utility/smartPtr.hpp"
 
+#include "vmime/net/defaultConnectionInfos.hpp"
+
 #include "vmime/config.hpp"
 
 
@@ -89,6 +91,18 @@ void sendmailTransport::connect()
 const bool sendmailTransport::isConnected() const
 {
 	return (m_connected);
+}
+
+
+const bool sendmailTransport::isSecuredConnection() const
+{
+	return false;
+}
+
+
+ref <connectionInfos> sendmailTransport::getConnectionInfos() const
+{
+	return vmime::create <defaultConnectionInfos>("localhost", 0);
 }
 
 

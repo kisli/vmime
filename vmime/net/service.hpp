@@ -31,6 +31,7 @@
 #include "vmime/net/session.hpp"
 
 #include "vmime/net/serviceInfos.hpp"
+#include "vmime/net/connectionInfos.hpp"
 
 #include "vmime/net/socket.hpp"
 #include "vmime/net/timeoutHandler.hpp"
@@ -190,6 +191,18 @@ public:
 	{
 		m_session->getProperties()[getInfos().getPropertyPrefix() + name] = value;
 	}
+
+	/** Check whether the connection is secured.
+	  *
+	  * @return true if the connection is secured, false otherwise
+	  */
+	virtual const bool isSecuredConnection() const = 0;
+
+	/** Get information about the connection.
+	  *
+	  * @return information about the connection
+	  */
+	virtual ref <connectionInfos> getConnectionInfos() const = 0;
 
 private:
 

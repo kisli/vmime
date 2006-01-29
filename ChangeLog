@@ -2,6 +2,11 @@
 VERSION 0.8.1cvs
 ================
 
+2006-01-29  Vincent Richard  <vincent@vincent-richard.net>
+
+ * Added service::isSecuredConnection() and service::getConnectionInfos()
+   to retrieve information about the connection.
+
 2006-01-16  Vincent Richard  <vincent@vincent-richard.net>
 
  * Added support for attachments of type "message/rfc822".

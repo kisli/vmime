@@ -79,6 +79,9 @@ public:
 
 	const int getCapabilities() const;
 
+	const bool isSecuredConnection() const;
+	ref <connectionInfos> getConnectionInfos() const;
+
 private:
 
 	void registerFolder(maildirFolder* folder);
