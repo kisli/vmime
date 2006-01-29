@@ -1059,7 +1059,7 @@ def generateAutotools(target, source, env):
 	vmime_pc_in.write("Description: " + packageDescription + "\n")
 	vmime_pc_in.write("Version: @VERSION@\n")
 	vmime_pc_in.write("Requires: @GSASL_REQUIRED@\n")
-	vmime_pc_in.write("Libs: -L${libdir} -l@GENERIC_VERSIONED_LIBRARY_NAME@ @GSASL_LIBS@ @LIBGNUTLS_LIBS@\n")
+	vmime_pc_in.write("Libs: -L${libdir} -l@GENERIC_VERSIONED_LIBRARY_NAME@ @GSASL_LIBS@ @LIBGNUTLS_LIBS@ @VMIME_ADDITIONAL_PC_LIBS@\n")
 	#vmime_pc_in.write("Cflags: -I${includedir}/@GENERIC_VERSIONED_LIBRARY_NAME@\n")
 	vmime_pc_in.write("Cflags: -I${includedir}/ @LIBGNUTLS_CFLAGS@\n")
 	vmime_pc_in.close()
@@ -1262,6 +1262,7 @@ AM_CONFIG_HEADER([config.h])
 AM_MAINTAINER_MODE
 
 VMIME_ADDITIONAL_DEFINES=""
+VMIME_ADDITIONAL_PC_LIBS=""
 
 
 #
@@ -1674,6 +1675,11 @@ if test "x$VMIME_DETECT_PLATFORM" = "xwindows"; then
 	AC_CHECK_HEADER(mlang.h, [VMIME_ADDITIONAL_DEFINES="$VMIME_ADDITIONAL_DEFINES HAVE_MLANG_H"])
 fi
 
+# -- Link with Winsock (Windows)
+if test "x$VMIME_DETECT_PLATFORM" = "xwindows"; then
+	VMIME_ADDITIONAL_PC_LIBS="$VMIME_ADDITIONAL_PC_LIBS -lwsock32"
+fi
+
 # -- getaddrinfo (POSIX)
 if test "x$VMIME_DETECT_PLATFORM" = "xposix"; then
 	AC_CHECK_HEADERS(netdb.h sys/types.h sys/socket.h,)
@@ -1808,6 +1814,8 @@ AC_SUBST(CXXFLAGS)
 
 AC_SUBST(EXTRA_CFLAGS)
 AC_SUBST(EXTRA_LIBS)
+
+AC_SUBST(VMIME_ADDITIONAL_PC_LIBS)
 
 LIBS=`echo $LIBS | sed -e 's|^ ||g' | sed -e 's|  | |g'`
 
