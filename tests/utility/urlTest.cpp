@@ -42,6 +42,8 @@ VMIME_TEST_SUITE_BEGIN
 		VMIME_TEST(testGenerate)
 		VMIME_TEST(testUtilsEncode)
 		VMIME_TEST(testUtilsDecode)
+		VMIME_TEST(testUtilsEncodeReservedChars)
+		VMIME_TEST(testUtilsEncodeUnsafeChars)
 	VMIME_TEST_LIST_END
 
 
@@ -249,6 +251,39 @@ VMIME_TEST_SUITE_BEGIN
 				vmime::utility::urlUtils::decode(ossTest.str()));
 		}
 
+	}
+
+	void testUtilsEncodeReservedChars()
+	{
+		VASSERT_EQ("1",  "%24", vmime::utility::urlUtils::encode("$"));
+		VASSERT_EQ("2",  "%26", vmime::utility::urlUtils::encode("&"));
+		VASSERT_EQ("3",  "%2B", vmime::utility::urlUtils::encode("+"));
+		VASSERT_EQ("4",  "%2C", vmime::utility::urlUtils::encode(","));
+		VASSERT_EQ("5",  "%2F", vmime::utility::urlUtils::encode("/"));
+		VASSERT_EQ("6",  "%3A", vmime::utility::urlUtils::encode(":"));
+		VASSERT_EQ("7",  "%3B", vmime::utility::urlUtils::encode(";"));
+		VASSERT_EQ("8",  "%3D", vmime::utility::urlUtils::encode("="));
+		VASSERT_EQ("9",  "%3F", vmime::utility::urlUtils::encode("?"));
+		VASSERT_EQ("10", "%40", vmime::utility::urlUtils::encode("@"));
+	}
+
+	void testUtilsEncodeUnsafeChars()
+	{
+		VASSERT_EQ("1",  "%20", vmime::utility::urlUtils::encode(" "));
+		VASSERT_EQ("2",  "%22", vmime::utility::urlUtils::encode("\""));
+		VASSERT_EQ("3",  "%3C", vmime::utility::urlUtils::encode("<"));
+		VASSERT_EQ("4",  "%3E", vmime::utility::urlUtils::encode(">"));
+		VASSERT_EQ("5",  "%23", vmime::utility::urlUtils::encode("#"));
+		VASSERT_EQ("6",  "%25", vmime::utility::urlUtils::encode("%"));
+		VASSERT_EQ("7",  "%7B", vmime::utility::urlUtils::encode("{"));
+		VASSERT_EQ("8",  "%7D", vmime::utility::urlUtils::encode("}"));
+		VASSERT_EQ("9",  "%7C", vmime::utility::urlUtils::encode("|"));
+		VASSERT_EQ("10", "%5C", vmime::utility::urlUtils::encode("\\"));
+		VASSERT_EQ("11", "%5E", vmime::utility::urlUtils::encode("^"));
+		VASSERT_EQ("12", "%7E", vmime::utility::urlUtils::encode("~"));
+		VASSERT_EQ("13", "%5B", vmime::utility::urlUtils::encode("["));
+		VASSERT_EQ("14", "%5D", vmime::utility::urlUtils::encode("]"));
+		VASSERT_EQ("15", "%60", vmime::utility::urlUtils::encode("`"));
 	}
 
 VMIME_TEST_SUITE_END
