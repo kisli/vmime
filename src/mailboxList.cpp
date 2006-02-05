@@ -210,4 +210,11 @@ void mailboxList::generate(utility::outputStream& os, const string::size_type ma
 }
 
 
+ref <addressList> mailboxList::toAddressList() const
+{
+	return m_list.clone().dynamicCast <addressList>();
+}
+
+
 } // vmime
+

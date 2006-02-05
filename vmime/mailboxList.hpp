@@ -145,6 +145,12 @@ public:
 	  */
 	const std::vector <ref <mailbox> > getMailboxList();
 
+	/** Return a list of addresses.
+	  *
+	  * @return list of addresses
+	  */
+	ref <addressList> toAddressList() const;
+
 private:
 
 	addressList m_list;
