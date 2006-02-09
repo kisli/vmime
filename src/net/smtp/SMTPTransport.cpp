@@ -113,8 +113,8 @@ void SMTPTransport::connect()
 		m_secured = true;
 		m_cntInfos = vmime::create <tls::TLSSecuredConnectionInfos>(address, port, tlsSession, tlsSocket);
 	}
-#endif // VMIME_HAVE_TLS_SUPPORT
 	else
+#endif // VMIME_HAVE_TLS_SUPPORT
 	{
 		m_cntInfos = vmime::create <defaultConnectionInfos>(address, port);
 	}
