@@ -55,20 +55,20 @@ public:
 	  */
 	static const int getDaysInMonth(const int year, const int month);
 
-	/** Convert the specified local time and date to UT (GMT).
+	/** Convert the specified date/time to UT (GMT).
 	  *
-	  * @param date local date/time
+	  * @param date date/time to convert
 	  * @return GMT date/time
 	  */
-	static const datetime localTimeToUniversalTime(const datetime& date);
+	static const datetime toUniversalTime(const datetime& date);
 
-	/** Convert the specified UT to local time and date.
+	/** Convert the specified date/time to the specified time zone.
 	  *
-	  * @param date GMT date/time
+	  * @param date date/time to convert
 	  * @param zone local zone to convert to (see datetime::TimeZones enum)
 	  * @return local time and date
 	  */
-	static const datetime universalTimeToLocalTime(const datetime& date, const int zone);
+	static const datetime toLocalTime(const datetime& date, const int zone);
 
 	/** Return the day of the week from the specified date.
 	  *

@@ -19,6 +19,8 @@
 
 #include "vmime/utility/datetimeUtils.hpp"
 
+#include <stdexcept>
+
 
 namespace vmime {
 namespace utility {
@@ -157,10 +159,10 @@ static inline void substractHoursAndMinutes(datetime& d, const int h, const int 
 #endif // VMIME_BUILDING_DOC
 
 
-const datetime datetimeUtils::localTimeToUniversalTime(const datetime& date)
+const datetime datetimeUtils::toUniversalTime(const datetime& date)
 {
 	if (date.getZone() == datetime::GMT)
-		return (date);
+		return date; // no conversion needed
 
 	datetime nd(date);
 	nd.setZone(datetime::GMT);
@@ -178,19 +180,20 @@ const datetime datetimeUtils::localTimeToUniversalTime(const datetime& date)
 }
 
 
-const datetime datetimeUtils::universalTimeToLocalTime(const datetime& date, const int zone)
+const datetime datetimeUtils::toLocalTime(const datetime& date, const int zone)
 {
-	if (zone == 0)
-		return (date);
+	datetime utcDate(date);
 
-	datetime nd(date);
+	if (utcDate.getZone() != datetime::GMT)
+		utcDate = toUniversalTime(date); // convert to UT before
+
+	datetime nd(utcDate);
 	nd.setZone(zone);
 
-	const int z = zone;
-	const int h = (z < 0) ? (-z / 60) : (z / 60);
-	const int m = (z < 0) ? (-z - h * 60) : (z - h * 60);
+	const int h = (zone < 0) ? (-zone / 60) : (zone / 60);
+	const int m = (zone < 0) ? (-zone - h * 60) : (zone - h * 60);
 
-	if (z < 0)  // GMT+hhmm: substract hours and minutes from date
+	if (zone < 0)  // GMT+hhmm: substract hours and minutes from date
 		substractHoursAndMinutes(nd, h, m);
 	else        // GMT-hhmm: add hours and minutes to date
 		addHoursAndMinutes(nd, h, m);
@@ -213,6 +216,9 @@ const int datetimeUtils::getDaysInMonth(const int year, const int month)
 	static const int daysInMonthLeapYear[12] =
 		{ 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
+	if (month < 1 || month > 12)
+		throw std::out_of_range("Invalid month number");
+
 	return (isLeapYear(year) ? daysInMonthLeapYear[month - 1] : daysInMonth[month - 1]);
 }
 
@@ -221,6 +227,11 @@ const int datetimeUtils::getDayOfWeek(const int year, const int month, const int
 {
 	int y = year;
 	int m = month;
+
+	if (month < 1 || month > 12)
+		throw std::out_of_range("Invalid month number");
+	else if (day < 1 || day > getDaysInMonth(year, month))
+		throw std::out_of_range("Invalid day number");
 
 	// From RFC-3339 - Appendix B. Day of the Week
 
