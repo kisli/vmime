@@ -2,6 +2,12 @@
 VERSION 0.8.1cvs
 ================
 
+2006-02-20  Vincent Richard  <vincent@vincent-richard.net>
+
+ * net/imap/IMAPParser.hpp: added a "relaxed" mode to allow 8-bit
+   characters where not allowed by the standard (thanks to Tim Teulings
+   for having found the bug).
+
 2006-01-29  Vincent Richard  <vincent@vincent-richard.net>
 
  * Added service::isSecuredConnection() and service::getConnectionInfos()

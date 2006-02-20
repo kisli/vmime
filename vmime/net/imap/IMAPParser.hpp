@@ -134,7 +134,7 @@ class IMAPParser : public object
 public:
 
 	IMAPParser(weak_ref <IMAPTag> tag, weak_ref <socket> sok, weak_ref <timeoutHandler> _timeoutHandler)
-		: m_tag(tag), m_socket(sok), m_progress(NULL),
+		: m_tag(tag), m_socket(sok), m_progress(NULL), m_strict(false),
 		  m_literalHandler(NULL), m_timeoutHandler(_timeoutHandler)
 	{
 	}
@@ -148,6 +148,27 @@ public:
 	void setSocket(weak_ref <socket> sok)
 	{
 		m_socket = sok;
+	}
+
+	/** Set whether we operate in strict mode (this may not work
+	  * with some servers which are not fully standard-compliant).
+	  *
+	  * @param strict true to operate in strict mode, or false
+	  * to operate in default, relaxed mode
+	  */
+	void setStrict(const bool strict)
+	{
+		m_strict = strict;
+	}
+
+	/** Return true if the parser operates in strict mode, or
+	  * false otherwise.
+	  *
+	  * @return true if we are in strict mode, false otherwise
+	  */
+	const bool isStrict() const
+	{
+		return m_strict;
 	}
 
 
@@ -562,14 +583,14 @@ public:
 		{
 		}
 
-		void go(IMAPParser& /* parser */, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("text");
 
 			string::size_type pos = *currentPos;
 			string::size_type len = 0;
 
-			if (m_allow8bits)
+			if (m_allow8bits || !parser.isStrict())
 			{
 				const unsigned char except = m_except;
 
@@ -4999,6 +5020,8 @@ private:
 	weak_ref <socket> m_socket;
 
 	utility::progressListener* m_progress;
+
+	bool m_strict;
 
 	literalHandler* m_literalHandler;
 
