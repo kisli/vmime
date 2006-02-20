@@ -1,7 +1,7 @@
 
 COMPILER=g++
 CFLAGS=-g -I ../.. `pkg-config --cflags gtk+-2.0`
-LDFLAGS=-I ../.. `pkg-config --libs gtk+-2.0`
+LDFLAGS=-I ../.. `pkg-config --libs gtk+-2.0` -lgnutls -lgsasl
 
 
 viewer: viewer.o ../../libvmime-debug.a
