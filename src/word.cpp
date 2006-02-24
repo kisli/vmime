@@ -325,6 +325,14 @@ void word::generate(utility::outputStream& os, const string::size_type maxLineLe
 	bool noEncoding = (flags & text::FORCE_NO_ENCODING) ||
 	    (!(flags & text::FORCE_ENCODING) && asciiCount == m_buffer.length());
 
+	if (!(flags & text::FORCE_NO_ENCODING) &&
+	    m_buffer.find_first_of("\n\r") != string::npos)
+	{
+		// Force encoding when there are only ASCII chars, but there is
+		// also at least one of '\n' or '\r' (header fields)
+		noEncoding = false;
+	}
+
 	if (noEncoding)
 	{
 		// We will fold lines without encoding them.
