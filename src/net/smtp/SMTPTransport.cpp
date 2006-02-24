@@ -520,6 +520,9 @@ void SMTPTransport::internalDisconnect()
 
 void SMTPTransport::noop()
 {
+	if (!isConnected())
+		throw exceptions::not_connected();
+
 	sendRequest("NOOP");
 
 	ref <SMTPResponse> resp = readResponse();
@@ -533,6 +536,9 @@ void SMTPTransport::send(const mailbox& expeditor, const mailboxList& recipients
                          utility::inputStream& is, const utility::stream::size_type size,
                          utility::progressListener* progress)
 {
+	if (!isConnected())
+		throw exceptions::not_connected();
+
 	// If no recipient/expeditor was found, throw an exception
 	if (recipients.isEmpty())
 		throw exceptions::no_recipient();
