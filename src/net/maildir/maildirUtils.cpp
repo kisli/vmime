@@ -34,7 +34,8 @@ const vmime::word maildirUtils::NEW_DIR("new", vmime::charset(vmime::charsets::U
 
 
 const utility::file::path maildirUtils::getFolderFSPath
-	(weak_ref <maildirStore> store, const utility::path& folderPath, const FolderFSPathMode mode)
+	(ref <const maildirStore> store, const utility::path& folderPath,
+	 const FolderFSPathMode mode)
 {
 	// Root path
 	utility::file::path path(store->getFileSystemPath());

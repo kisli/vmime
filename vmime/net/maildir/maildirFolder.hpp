@@ -56,7 +56,7 @@ private:
 	friend class vmime::creator;  // vmime::create <maildirFolder>
 
 
-	maildirFolder(const folder::path& path, weak_ref <maildirStore> store);
+	maildirFolder(const folder::path& path, ref <maildirStore> store);
 	maildirFolder(const maildirFolder&) : folder() { }
 
 	~maildirFolder();
@@ -110,8 +110,8 @@ public:
 
 	ref <folder> getParent();
 
-	weak_ref <const store> getStore() const;
-	weak_ref <store> getStore();
+	ref <const store> getStore() const;
+	ref <store> getStore();
 
 
 	void fetchMessages(std::vector <ref <message> >& msg, const int options, utility::progressListener* progress = NULL);

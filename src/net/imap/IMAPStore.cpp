@@ -63,7 +63,8 @@ ref <folder> IMAPStore::getRootFolder()
 	if (!isConnected())
 		throw exceptions::illegal_state("Not connected");
 
-	return vmime::create <IMAPFolder>(folder::path(), this);
+	return vmime::create <IMAPFolder>(folder::path(),
+		thisRef().dynamicCast <IMAPStore>());
 }
 
 
@@ -72,7 +73,8 @@ ref <folder> IMAPStore::getDefaultFolder()
 	if (!isConnected())
 		throw exceptions::illegal_state("Not connected");
 
-	return vmime::create <IMAPFolder>(folder::path::component("INBOX"), this);
+	return vmime::create <IMAPFolder>(folder::path::component("INBOX"),
+		thisRef().dynamicCast <IMAPStore>());
 }
 
 
@@ -81,7 +83,7 @@ ref <folder> IMAPStore::getFolder(const folder::path& path)
 	if (!isConnected())
 		throw exceptions::illegal_state("Not connected");
 
-	return vmime::create <IMAPFolder>(path, this);
+	return vmime::create <IMAPFolder>(path, thisRef().dynamicCast <IMAPStore>());
 }
 
 
@@ -97,7 +99,7 @@ void IMAPStore::connect()
 		throw exceptions::already_connected();
 
 	m_connection = vmime::create <IMAPConnection>
-		(thisWeakRef().dynamicCast <IMAPStore>(), getAuthenticator());
+		(thisRef().dynamicCast <IMAPStore>(), getAuthenticator());
 
 	try
 	{

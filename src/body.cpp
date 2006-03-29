@@ -64,7 +64,7 @@ void body::parse(const string& buffer, const string::size_type position,
 	try
 	{
 		const ref <const contentTypeField> ctf =
-			m_header->findField(fields::CONTENT_TYPE).dynamicCast <contentTypeField>();
+			m_header.acquire()->findField(fields::CONTENT_TYPE).dynamicCast <contentTypeField>();
 
 		const mediaType type = *ctf->getValue().dynamicCast <const mediaType>();
 
@@ -211,7 +211,7 @@ void body::generate(utility::outputStream& os, const string::size_type maxLineLe
 	{
 		string boundary;
 
-		if (m_header == NULL)
+		if (m_header.acquire() == NULL)
 		{
 			boundary = generateRandomBoundaryString();
 		}
@@ -220,7 +220,8 @@ void body::generate(utility::outputStream& os, const string::size_type maxLineLe
 			try
 			{
 				ref <const contentTypeField> ctf =
-					m_header->findField(fields::CONTENT_TYPE).dynamicCast <const contentTypeField>();
+					m_header.acquire()->findField(fields::CONTENT_TYPE)
+						.dynamicCast <const contentTypeField>();
 
 				boundary = ctf->getBoundary();
 			}
@@ -389,7 +390,7 @@ const mediaType body::getContentType() const
 	try
 	{
 		ref <const contentTypeField> ctf =
-			m_header->findField(fields::CONTENT_TYPE).dynamicCast <const contentTypeField>();
+			m_header.acquire()->findField(fields::CONTENT_TYPE).dynamicCast <const contentTypeField>();
 
 		return (*ctf->getValue().dynamicCast <const mediaType>());
 	}
@@ -406,7 +407,7 @@ const charset body::getCharset() const
 	try
 	{
 		const ref <const contentTypeField> ctf =
-			m_header->findField(fields::CONTENT_TYPE).dynamicCast <contentTypeField>();
+			m_header.acquire()->findField(fields::CONTENT_TYPE).dynamicCast <contentTypeField>();
 
 		return (ctf->getCharset());
 	}
@@ -428,7 +429,7 @@ const encoding body::getEncoding() const
 	try
 	{
 		const ref <const headerField> cef =
-			m_header->findField(fields::CONTENT_TRANSFER_ENCODING);
+			m_header.acquire()->findField(fields::CONTENT_TRANSFER_ENCODING);
 
 		return (*cef->getValue().dynamicCast <const encoding>());
 	}
@@ -440,7 +441,7 @@ const encoding body::getEncoding() const
 }
 
 
-void body::setParentPart(weak_ref <bodyPart> parent)
+void body::setParentPart(ref <bodyPart> parent)
 {
 	m_part = parent;
 	m_header = (parent != NULL ? parent->getHeader() : NULL);
@@ -449,7 +450,8 @@ void body::setParentPart(weak_ref <bodyPart> parent)
 
 const bool body::isRootPart() const
 {
-	return (m_part == NULL || m_part->getParentPart() == NULL);
+	ref <const bodyPart> part = m_part.acquire();
+	return (part == NULL || part->getParentPart() == NULL);
 }
 
 
@@ -532,13 +534,15 @@ void body::initNewPart(ref <bodyPart> part)
 {
 	part->m_parent = m_part;
 
-	if (m_header != NULL)
+	ref <header> hdr = m_header.acquire();
+
+	if (hdr != NULL)
 	{
 		// Check whether we have a boundary string
 		try
 		{
 			ref <contentTypeField> ctf =
-				m_header->findField(fields::CONTENT_TYPE).dynamicCast <contentTypeField>();
+				hdr->findField(fields::CONTENT_TYPE).dynamicCast <contentTypeField>();
 
 			try
 			{
@@ -564,7 +568,7 @@ void body::initNewPart(ref <bodyPart> part)
 			// No "Content-Type" field: create a new one and generate
 			// a random boundary string.
 			ref <contentTypeField> ctf =
-				m_header->getField(fields::CONTENT_TYPE).dynamicCast <contentTypeField>();
+				hdr->getField(fields::CONTENT_TYPE).dynamicCast <contentTypeField>();
 
 			ctf->setValue(mediaType(mediaTypes::MULTIPART, mediaTypes::MULTIPART_MIXED));
 			ctf->setBoundary(generateRandomBoundaryString());

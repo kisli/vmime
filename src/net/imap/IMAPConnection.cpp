@@ -41,11 +41,11 @@
 
 // Helpers for service properties
 #define GET_PROPERTY(type, prop) \
-	(m_store->getInfos().getPropertyValue <type>(getSession(), \
-		dynamic_cast <const IMAPServiceInfos&>(m_store->getInfos()).getProperties().prop))
+	(m_store.acquire()->getInfos().getPropertyValue <type>(getSession(), \
+		dynamic_cast <const IMAPServiceInfos&>(m_store.acquire()->getInfos()).getProperties().prop))
 #define HAS_PROPERTY(prop) \
-	(m_store->getInfos().hasProperty(getSession(), \
-		dynamic_cast <const IMAPServiceInfos&>(m_store->getInfos()).getProperties().prop))
+	(m_store.acquire()->getInfos().hasProperty(getSession(), \
+		dynamic_cast <const IMAPServiceInfos&>(m_store.acquire()->getInfos()).getProperties().prop))
 
 
 namespace vmime {
@@ -53,7 +53,7 @@ namespace net {
 namespace imap {
 
 
-IMAPConnection::IMAPConnection(weak_ref <IMAPStore> store, ref <security::authenticator> auth)
+IMAPConnection::IMAPConnection(ref <IMAPStore> store, ref <security::authenticator> auth)
 	: m_store(store), m_auth(auth), m_socket(NULL), m_parser(NULL), m_tag(NULL),
 	  m_hierarchySeparator('\0'), m_state(STATE_NONE), m_timeoutHandler(NULL),
 	  m_secured(false)
@@ -88,18 +88,20 @@ void IMAPConnection::connect()
 	const string address = GET_PROPERTY(string, PROPERTY_SERVER_ADDRESS);
 	const port_t port = GET_PROPERTY(port_t, PROPERTY_SERVER_PORT);
 
+	ref <IMAPStore> store = m_store.acquire();
+
 	// Create the time-out handler
-	if (m_store->getTimeoutHandlerFactory())
-		m_timeoutHandler = m_store->getTimeoutHandlerFactory()->create();
+	if (store->getTimeoutHandlerFactory())
+		m_timeoutHandler = store->getTimeoutHandlerFactory()->create();
 
 	// Create and connect the socket
-	m_socket = m_store->getSocketFactory()->create();
+	m_socket = store->getSocketFactory()->create();
 
 #if VMIME_HAVE_TLS_SUPPORT
-	if (m_store->isIMAPS())  // dedicated port/IMAPS
+	if (store->isIMAPS())  // dedicated port/IMAPS
 	{
 		ref <tls::TLSSession> tlsSession =
-			vmime::create <tls::TLSSession>(m_store->getCertificateVerifier());
+			vmime::create <tls::TLSSession>(store->getCertificateVerifier());
 
 		ref <tls::TLSSocket> tlsSocket =
 			tlsSession->getSocket(m_socket);
@@ -150,7 +152,7 @@ void IMAPConnection::connect()
 	const bool tlsRequired = HAS_PROPERTY(PROPERTY_CONNECTION_TLS_REQUIRED)
 		&& GET_PROPERTY(bool, PROPERTY_CONNECTION_TLS_REQUIRED);
 
-	if (!m_store->isSecuredConnection() && tls)  // only if not IMAPS
+	if (!store->isSecuredConnection() && tls)  // only if not IMAPS
 	{
 		try
 		{
@@ -202,7 +204,7 @@ void IMAPConnection::connect()
 
 void IMAPConnection::authenticate()
 {
-	getAuthenticator()->setService(m_store.toStrong());
+	getAuthenticator()->setService(m_store.acquire());
 
 #if VMIME_HAVE_SASL_SUPPORT
 	// First, try SASL authentication
@@ -448,7 +450,7 @@ void IMAPConnection::startTLS()
 		}
 
 		ref <tls::TLSSession> tlsSession =
-			vmime::create <tls::TLSSession>(m_store->getCertificateVerifier());
+			vmime::create <tls::TLSSession>(m_store.acquire()->getCertificateVerifier());
 
 		ref <tls::TLSSocket> tlsSocket =
 			tlsSession->getSocket(m_socket);
@@ -693,21 +695,21 @@ ref <const IMAPParser> IMAPConnection::getParser() const
 }
 
 
-weak_ref <const IMAPStore> IMAPConnection::getStore() const
+ref <const IMAPStore> IMAPConnection::getStore() const
 {
-	return (m_store);
+	return m_store.acquire();
 }
 
 
-weak_ref <IMAPStore> IMAPConnection::getStore()
+ref <IMAPStore> IMAPConnection::getStore()
 {
-	return (m_store);
+	return m_store.acquire();
 }
 
 
 ref <session> IMAPConnection::getSession()
 {
-	return (m_store->getSession());
+	return m_store.acquire()->getSession();
 }
 
 

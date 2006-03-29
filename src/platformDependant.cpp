@@ -28,7 +28,7 @@ namespace vmime
 {
 
 
-platformDependant::handler* platformDependant::sm_handler = NULL;
+ref <platformDependant::handler> platformDependant::sm_handler = NULL;
 
 
 platformDependant::handler::~handler()

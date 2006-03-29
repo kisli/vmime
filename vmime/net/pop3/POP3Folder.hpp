@@ -54,7 +54,7 @@ private:
 	friend class POP3Message;
 	friend class vmime::creator;  // vmime::create <POP3Folder>
 
-	POP3Folder(const folder::path& path, POP3Store* store);
+	POP3Folder(const folder::path& path, ref <POP3Store> store);
 	POP3Folder(const POP3Folder&) : folder() { }
 
 	~POP3Folder();
@@ -108,8 +108,8 @@ public:
 
 	ref <folder> getParent();
 
-	weak_ref <const store> getStore() const;
-	weak_ref <store> getStore();
+	ref <const store> getStore() const;
+	ref <store> getStore();
 
 
 	void fetchMessages(std::vector <ref <message> >& msg, const int options, utility::progressListener* progress = NULL);
@@ -129,7 +129,7 @@ private:
 	void parseMultiListOrUidlResponse(const string& response, std::map <int, string>& result);
 
 
-	POP3Store* m_store;
+	weak_ref <POP3Store> m_store;
 
 	folder::path m_path;
 	folder::path::component m_name;

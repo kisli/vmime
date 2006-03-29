@@ -29,17 +29,19 @@ namespace net {
 namespace pop3 {
 
 
-POP3Message::POP3Message(POP3Folder* folder, const int num)
+POP3Message::POP3Message(ref <POP3Folder> folder, const int num)
 	: m_folder(folder), m_num(num), m_size(-1), m_deleted(false)
 {
-	m_folder->registerMessage(this);
+	folder->registerMessage(this);
 }
 
 
 POP3Message::~POP3Message()
 {
-	if (m_folder)
-		m_folder->unregisterMessage(this);
+	ref <POP3Folder> folder = m_folder.acquire();
+
+	if (folder)
+		folder->unregisterMessage(this);
 }
 
 
@@ -112,9 +114,11 @@ void POP3Message::extract(utility::outputStream& os,
 	utility::progressListener* progress, const int start,
 	const int length, const bool /* peek */) const
 {
-	if (!m_folder)
+	ref <const POP3Folder> folder = m_folder.acquire();
+
+	if (!folder)
 		throw exceptions::illegal_state("Folder closed");
-	else if (!m_folder->m_store)
+	else if (!folder->getStore())
 		throw exceptions::illegal_state("Store disconnected");
 
 	if (start != 0 && length != -1)
@@ -124,17 +128,17 @@ void POP3Message::extract(utility::outputStream& os,
 	std::ostringstream oss;
 	oss << "RETR " << m_num;
 
-	const_cast <POP3Folder*>(m_folder)->m_store->sendRequest(oss.str());
+	folder.constCast <POP3Folder>()->m_store.acquire()->sendRequest(oss.str());
 
 	try
 	{
 		POP3Folder::MessageMap::const_iterator it =
-			m_folder->m_messages.find(const_cast <POP3Message*>(this));
+			folder->m_messages.find(const_cast <POP3Message*>(this));
 
-		const int totalSize = (it != m_folder->m_messages.end())
+		const int totalSize = (it != folder.constCast <POP3Folder>()->m_messages.end())
 			? (*it).second : 0;
 
-		const_cast <POP3Folder*>(m_folder)->m_store->
+		folder.constCast <POP3Folder>()->m_store.acquire()->
 			readResponse(os, progress, totalSize);
 	}
 	catch (exceptions::command_error& e)
@@ -160,9 +164,11 @@ void POP3Message::fetchPartHeader(ref <part> /* p */)
 }
 
 
-void POP3Message::fetch(POP3Folder* folder, const int options)
+void POP3Message::fetch(ref <POP3Folder> msgFolder, const int options)
 {
-	if (m_folder != folder)
+	ref <POP3Folder> folder = m_folder.acquire();
+
+	if (folder != msgFolder)
 		throw exceptions::folder_not_found();
 
 	// FETCH_STRUCTURE and FETCH_FLAGS are not supported by POP3.
@@ -185,12 +191,12 @@ void POP3Message::fetch(POP3Folder* folder, const int options)
 	std::ostringstream oss;
 	oss << "TOP " << m_num << " 0";
 
-	m_folder->m_store->sendRequest(oss.str());
+	folder->m_store.acquire()->sendRequest(oss.str());
 
 	try
 	{
 		string buffer;
-		m_folder->m_store->readResponse(buffer, true);
+		folder->m_store.acquire()->readResponse(buffer, true);
 
 		m_header = vmime::create <header>();
 		m_header->parse(buffer);

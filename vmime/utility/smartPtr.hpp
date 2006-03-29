@@ -58,6 +58,89 @@ public:
 };
 
 
+/** Reference counter for shared pointers.
+  */
+
+class refCounter
+{
+public:
+
+	refCounter(const long initialValue);
+	~refCounter();
+
+	const long increment();
+	const long decrement();
+	const long compareExchange(const long compare, const long exchangeWith);
+
+	operator long() const;
+
+private:
+
+	long m_value;
+};
+
+
+/** Manage the life cycle of an object.
+  */
+
+class refManager
+{
+public:
+
+	refManager(object* obj);
+	~refManager();
+
+	/** Add a strong reference to the managed object.
+	  */
+	const bool addStrong();
+
+	/** Release a strong reference to the managed object.
+	  * If it is the last reference, the object is destroyed.
+	  */
+	void releaseStrong();
+
+	/** Add a weak reference to the managed object.
+	  */
+	void addWeak();
+
+	/** Release a weak reference to the managed object.
+	  * If it is the last weak reference, the manager is destroyed.
+	  */
+	void releaseWeak();
+
+	/** Return a raw pointer to the managed object.
+	  *
+	  * @return pointer to the managed object
+	  */
+	object* getObject();
+
+	/** Return the number of strong refs to this object.
+	  * For debugging purposes only.
+	  *
+	  * @return strong reference count
+	  */
+	const long getStrongRefCount() const;
+
+	/** Return the number of weak refs to this object.
+	  * For debugging purposes only.
+	  *
+	  * @return weak reference count
+	  */
+	const long getWeakRefCount() const;
+
+private:
+
+	void deleteManager();
+	void deleteObject();
+
+
+	object* m_object;
+
+	refCounter m_strongCount;
+	refCounter m_weakCount;
+};
+
+
 /** Null reference.
   */
 
@@ -69,7 +152,11 @@ private:
 };
 
 
-/** Strong reference (smart pointer).
+template <class T>
+class weak_ref;
+
+
+/** Shared ownership (strong reference to an object).
   */
 
 template <class T>
@@ -85,7 +172,7 @@ public:
 	ref(const ref& r) : m_ptr(0) { attach(r); }
 	ref(const null_ref&) : m_ptr(0) { }
 
-	virtual ~ref() { detach(); }
+	virtual ~ref() throw() { detach(); }
 
 	// Allow creating NULL ref (NULL casts to anything*)
 	ref(class null_pointer*) : m_ptr(0) { }
@@ -112,12 +199,10 @@ public:
 		U* p = dynamic_cast <U*>(const_cast <T*>(m_ptr));
 		if (!p) return ref <U>();
 
-		p->addStrong();
+		if (m_ptr)
+			m_ptr->getRefManager()->addStrong();
 
-		ref <U> r;
-		r.m_ptr = p;
-
-		return r;
+		return ref <U>::fromPtrImpl(p);
 	}
 
 	// static_cast
@@ -127,12 +212,10 @@ public:
 		U* p = static_cast <U*>(const_cast <T*>(m_ptr));
 		if (!p) return ref <U>();
 
-		p->addStrong();
+		if (m_ptr)
+			m_ptr->getRefManager()->addStrong();
 
-		ref <U> r;
-		r.m_ptr = p;
-
-		return r;
+		return ref <U>::fromPtrImpl(p);
 	}
 
 	// const_cast
@@ -142,12 +225,10 @@ public:
 		U* p = const_cast <U*>(m_ptr);
 		if (!p) return ref <U>();
 
-		m_ptr->addStrong();
+		if (m_ptr)
+			m_ptr->getRefManager()->addStrong();
 
-		ref <U> r;
-		r.m_ptr = p;
-
-		return r;
+		return ref <U>::fromPtrImpl(p);
 	}
 
 	// Implicit downcast
@@ -155,10 +236,10 @@ public:
 	operator ref <const U>() const
 	{
 		if (m_ptr)
-			m_ptr->addStrong();
+			m_ptr->getRefManager()->addStrong();
 
 		ref <const U> r;
-		r.m_ptr = m_ptr;   // will type check at compile-time (prevent from implicit upcast)
+		r.m_ptr = m_ptr; // will type check at compile-time (prevent from implicit upcast)
 
 		return r;
 	}
@@ -167,10 +248,10 @@ public:
 	operator ref <U>()
 	{
 		if (m_ptr)
-			m_ptr->addStrong();
+			m_ptr->getRefManager()->addStrong();
 
 		ref <U> r;
-		r.m_ptr = m_ptr;   // will type check at compile-time (prevent from implicit upcast)
+		r.m_ptr = m_ptr; // will type check at compile-time (prevent from implicit upcast)
 
 		return r;
 	}
@@ -181,7 +262,7 @@ public:
 		U* ptr = other.m_ptr;   // will type check at compile-time (prevent from implicit upcast)
 
 		if (ptr)
-			ptr->addStrong();
+			ptr->getRefManager()->addStrong();
 
 		detach();
 
@@ -194,12 +275,9 @@ public:
 	operator ref <const T>() const
 	{
 		if (m_ptr)
-			m_ptr->addStrong();
+			m_ptr->getRefManager()->addStrong();
 
-		ref <const T> r;
-		r.m_ptr = m_ptr;
-
-		return r;
+		return ref <const T>::fromPtrImpl(m_ptr);
 	}
 
 	// Copy
@@ -230,22 +308,50 @@ public:
 	  */
 	static ref <T> fromPtr(T* const ptr)
 	{
-		if (ptr)
-			ptr->addStrong();
+		return ref <T>::fromPtrImpl(ptr);
+	}
 
-		ref <T> r;
+	static ref <const T> fromPtrConst(const T* const ptr)
+	{
+		return ref <const T>::fromPtrImpl(ptr);
+	}
+
+	static ref <T> fromWeak(weak_ref <T> wr)
+	{
+		refManager* mgr = wr.getManager();
+
+		if (mgr && mgr->addStrong())
+			return ref <T>::fromPtrImpl(dynamic_cast <T*>(mgr->getObject()));
+		else
+			return ref <T>();
+	}
+
+	static ref <const T> fromWeakConst(weak_ref <const T> wr)
+	{
+		refManager* mgr = wr.getManager();
+
+		if (mgr && mgr->addStrong())
+			return ref <const T>::fromPtrImpl(dynamic_cast <const T*>(mgr->getObject()));
+		else
+			return ref <const T>();
+	}
+
+protected:
+
+	template <class U>
+	static ref <U> fromPtrImpl(U* ptr)
+	{
+		ref <U> r;
 		r.m_ptr = ptr;
 
 		return r;
 	}
 
-protected:
-
 	void detach()
 	{
 		if (m_ptr)
 		{
-			m_ptr->releaseStrong();
+			m_ptr->getRefManager()->releaseStrong();
 			m_ptr = 0;
 		}
 	}
@@ -254,7 +360,7 @@ protected:
 	void attach(U* const ptr)
 	{
 		if (ptr)
-			ptr->addStrong();
+			ptr->getRefManager()->addStrong();
 
 		detach();
 
@@ -265,7 +371,7 @@ protected:
 	void attach(const ref <U>& r)
 	{
 		if (r.m_ptr)
-			r.m_ptr->addStrong();
+			r.m_ptr->getRefManager()->addStrong();
 
 		detach();
 
@@ -329,169 +435,64 @@ bool operator!=(const null_ref&, const ref <T>& r)
 
 
 
-/** Base class for weak references.
-  */
-
-class weak_ref_base
-{
-	friend class vmime::object;  // calls 'notifyObjectDestroyed'
-
-protected:
-
-	weak_ref_base() { }
-	weak_ref_base(const weak_ref_base&) { }
-	virtual ~weak_ref_base() { }
-
-
-	virtual void notifyObjectDestroyed() = 0;
-};
-
-
 /** Weak reference.
   * Avoid circular references.
   */
 
 template <class T>
-class weak_ref : public weak_ref_base
+class weak_ref
 {
 public:
 
 	template <class U> friend class weak_ref;
 
 
-	weak_ref() : m_ptr(0) { }
-	weak_ref(const ref <T>& r) : m_ptr(0) { attach(r); }
-	weak_ref(const weak_ref& r) : weak_ref_base(), m_ptr(0) { attach(r); }
-	weak_ref(const null_ref&) : m_ptr(0) { }
-	weak_ref(T* const p) : m_ptr(0) { attach(p); }
+	weak_ref() : m_mgr(0) { }
+	weak_ref(const ref <T>& r) : m_mgr(0) { attach(r); }
+	weak_ref(const weak_ref& r) : m_mgr(0) { attach(r); }
+	weak_ref(const null_ref&) : m_mgr(0) { }
+	weak_ref(class null_pointer*) : m_mgr(0) { }
 
 	~weak_ref() { detach(); }
 
-
-	// Access to wrapped object
-//	operator const T*() const { return m_ptr; }
-	operator const void*() const { return m_ptr; }
-
-	T& operator *() { return *m_ptr; }
-	const T& operator *() const { return *m_ptr; }
-
-	T* operator ->() { return m_ptr; }
-	const T* operator ->() const { return m_ptr; }
-
-	const T* const get() const { return m_ptr; }
-	T* const get() { return m_ptr; }
-
-	const bool operator !() const { return m_ptr == NULL; }
-
-
-	// dynamic_cast
-	template <class U>
-	weak_ref <U> dynamicCast() const
+	/** Return the manager for the object.
+	  *
+	  * @return pointer to the object which manages the object
+	  * or NULL if the weak reference points to nothing
+	  */
+	refManager* getManager()
 	{
-		U* p = dynamic_cast <U*>(const_cast <T*>(m_ptr));
-		if (!p) return weak_ref <U>();
-
-		weak_ref <U> r;
-
-		p->addWeak(&r);
-
-		r.m_ptr = p;
-
-		return r;
+		return m_mgr;
 	}
 
-	// static_cast
-	template <class U>
-	weak_ref <U> staticCast() const
+	/** Try to acquire a strong reference to the object (const version).
+	  *
+	  * @return strong reference or null reference if the
+	  * object is not available anymore
+	  */
+	ref <const T> acquire() const
 	{
-		U* p = static_cast <U*>(const_cast <T*>(m_ptr));
-		if (!p) return weak_ref <U>();
-
-		weak_ref <U> r;
-
-		p->addWeak(&r);
-
-		r.m_ptr = p;
-
-		return r;
+		return ref <const T>::fromWeakConst(*this);
 	}
 
-	// const_cast
-	template <class U>
-	weak_ref <U> constCast() const
+	/** Try to acquire a strong reference to the object.
+	  *
+	  * @return strong reference or null reference if the
+	  * object is not available anymore
+	  */
+	ref <T> acquire()
 	{
-		U* p = const_cast <U*>(m_ptr);
-		if (!p) return weak_ref <U>();
-
-		weak_ref <U> r;
-
-		p->addWeak(&r);
-
-		r.m_ptr = p;
-
-		return r;
-	}
-
-	// Implicit downcast
-	template <class U>
-	operator weak_ref <const U>()
-	{
-		weak_ref <const U> r;
-
-		if (m_ptr)
-			m_ptr->addWeak(&r);
-
-		r.m_ptr = m_ptr;   // will type check at compile-time (prevent from implicit upcast)
-
-		return r;
-	}
-
-	// Implicit downcast
-	template <class U>
-	operator weak_ref <U>()
-	{
-		weak_ref <U> r;
-
-		if (m_ptr)
-			m_ptr->addWeak(&r);
-
-		r.m_ptr = m_ptr;   // will type check at compile-time (prevent from implicit upcast)
-
-		return r;
-	}
-
-	template <class U>
-	weak_ref <T>& operator=(const weak_ref <U>& other)
-	{
-		U* ptr = other.m_ptr;   // will type check at compile-time (prevent from implicit upcast)
-
-		if (ptr)
-			ptr->addWeak(this);
-
-		detach();
-
-		m_ptr = ptr;
-
-		return *this;
-	}
-
-	ref <T> toStrong()
-	{
-		if (m_ptr == NULL)
-			return ref <T>();
-
-		return ref <T>::fromPtr(m_ptr);
+		return ref <T>::fromWeak(*this);
 	}
 
 	// Implicit non-const => const conversion
 	operator weak_ref <const T>() const
 	{
+		if (m_mgr)
+			m_mgr->addWeak();
+
 		weak_ref <const T> r;
-
-		if (m_ptr)
-			m_ptr->addWeak(&r);
-
-		r.m_ptr = m_ptr;
+		r.m_mgr = m_mgr;
 
 		return r;
 	}
@@ -499,12 +500,11 @@ public:
 	template <class U>
 	operator weak_ref <const U>() const
 	{
+		if (m_mgr)
+			m_mgr->addWeak();
+
 		weak_ref <const U> r;
-
-		if (m_ptr)
-			m_ptr->addWeak(&r);
-
-		r.m_ptr = m_ptr;
+		r.m_mgr = m_mgr;
 
 		return r;
 	}
@@ -516,58 +516,42 @@ public:
 		return *this;
 	}
 
-	// NULL-pointer comparison
-	bool operator==(const class null_pointer*) const { return m_ptr == 0; }
-	bool operator!=(const class null_pointer*) const { return m_ptr != 0; }
-
 private:
-
-	void notifyObjectDestroyed()
-	{
-		m_ptr = 0;
-	}
 
 	void detach()
 	{
-		if (m_ptr)
+		if (m_mgr)
 		{
-			m_ptr->releaseWeak(this);
-			m_ptr = 0;
+			m_mgr->releaseWeak();
+			m_mgr = 0;
 		}
 	}
 
 	void attach(const ref <T>& r)
 	{
 		if (r.m_ptr)
-			r.m_ptr->addWeak(this);
+			r.m_ptr->getRefManager()->addWeak();
 
 		detach();
 
-		m_ptr = r.m_ptr;
+		if (r.m_ptr)
+			m_mgr = r.m_ptr->getRefManager();
+		else
+			m_mgr = 0;
 	}
 
 	void attach(const weak_ref& r)
 	{
-		if (r.m_ptr)
-			r.m_ptr->addWeak(this);
+		if (r.m_mgr)
+			r.m_mgr->addWeak();
 
 		detach();
 
-		m_ptr = r.m_ptr;
-	}
-
-	void attach(T* const p)
-	{
-		if (p)
-			p->addWeak(this);
-
-		detach();
-
-		m_ptr = p;
+		m_mgr = r.m_mgr;
 	}
 
 
-	T* m_ptr;
+	refManager* m_mgr;
 };
 
 

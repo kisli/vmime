@@ -229,7 +229,7 @@ public:
 
 private:
 
-	void setParentPart(weak_ref <bodyPart> parent);
+	void setParentPart(ref <bodyPart> parent);
 
 
 	string m_prologText;

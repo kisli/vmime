@@ -50,7 +50,7 @@ class IMAPConnection : public object
 {
 public:
 
-	IMAPConnection(weak_ref <IMAPStore> store, ref <security::authenticator> auth);
+	IMAPConnection(ref <IMAPStore> store, ref <security::authenticator> auth);
 	~IMAPConnection();
 
 
@@ -84,8 +84,8 @@ public:
 	ref <const IMAPTag> getTag() const;
 	ref <const IMAPParser> getParser() const;
 
-	weak_ref <const IMAPStore> getStore() const;
-	weak_ref <IMAPStore> getStore();
+	ref <const IMAPStore> getStore() const;
+	ref <IMAPStore> getStore();
 
 	ref <session> getSession();
 

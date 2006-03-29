@@ -49,7 +49,7 @@ private:
 	friend class IMAPFolder;
 	friend class vmime::creator;  // vmime::create <IMAPMessage>
 
-	IMAPMessage(IMAPFolder* folder, const int num);
+	IMAPMessage(ref <IMAPFolder> folder, const int num);
 	IMAPMessage(const IMAPMessage&) : message() { }
 
 	~IMAPMessage();
@@ -79,7 +79,7 @@ public:
 
 private:
 
-	void fetch(IMAPFolder* folder, const int options);
+	void fetch(ref <IMAPFolder> folder, const int options);
 
 	void processFetchResponse(const int options, const IMAPParser::msg_att* msgAtt);
 
@@ -94,7 +94,7 @@ private:
 
 	void onFolderClosed();
 
-	IMAPFolder* m_folder;
+	weak_ref <IMAPFolder> m_folder;
 
 	int m_num;
 	int m_size;

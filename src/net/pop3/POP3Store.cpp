@@ -90,7 +90,8 @@ ref <folder> POP3Store::getDefaultFolder()
 	if (!isConnected())
 		throw exceptions::illegal_state("Not connected");
 
-	return vmime::create <POP3Folder>(folder::path(folder::path::component("INBOX")), this);
+	return vmime::create <POP3Folder>(folder::path(folder::path::component("INBOX")),
+		thisRef().dynamicCast <POP3Store>());
 }
 
 
@@ -99,7 +100,8 @@ ref <folder> POP3Store::getRootFolder()
 	if (!isConnected())
 		throw exceptions::illegal_state("Not connected");
 
-	return vmime::create <POP3Folder>(folder::path(), this);
+	return vmime::create <POP3Folder>(folder::path(),
+		thisRef().dynamicCast <POP3Store>());
 }
 
 
@@ -108,7 +110,8 @@ ref <folder> POP3Store::getFolder(const folder::path& path)
 	if (!isConnected())
 		throw exceptions::illegal_state("Not connected");
 
-	return vmime::create <POP3Folder>(path, this);
+	return vmime::create <POP3Folder>(path,
+		thisRef().dynamicCast <POP3Store>());
 }
 
 

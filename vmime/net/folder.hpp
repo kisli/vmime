@@ -306,13 +306,13 @@ public:
 	  *
 	  * @return the store object to which this folder is attached
 	  */
-	virtual weak_ref <const store> getStore() const = 0;
+	virtual ref <const store> getStore() const = 0;
 
 	/** Return a reference to the store to which this folder belongs.
 	  *
 	  * @return the store object to which this folder is attached
 	  */
-	virtual weak_ref <store> getStore() = 0;
+	virtual ref <store> getStore() = 0;
 
 	/** Fetchable objects.
 	  */

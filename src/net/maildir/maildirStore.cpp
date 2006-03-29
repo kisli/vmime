@@ -75,7 +75,7 @@ ref <folder> maildirStore::getRootFolder()
 		throw exceptions::illegal_state("Not connected");
 
 	return vmime::create <maildirFolder>(folder::path(),
-		thisWeakRef().dynamicCast <maildirStore>());
+		thisRef().dynamicCast <maildirStore>());
 }
 
 
@@ -85,7 +85,7 @@ ref <folder> maildirStore::getDefaultFolder()
 		throw exceptions::illegal_state("Not connected");
 
 	return vmime::create <maildirFolder>(folder::path::component("inbox"),
-		thisWeakRef().dynamicCast <maildirStore>());
+		thisRef().dynamicCast <maildirStore>());
 }
 
 
@@ -95,7 +95,7 @@ ref <folder> maildirStore::getFolder(const folder::path& path)
 		throw exceptions::illegal_state("Not connected");
 
 	return vmime::create <maildirFolder>(path,
-		thisWeakRef().dynamicCast <maildirStore>());
+		thisRef().dynamicCast <maildirStore>());
 }
 
 

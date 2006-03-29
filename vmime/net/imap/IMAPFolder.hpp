@@ -55,7 +55,7 @@ private:
 	friend class vmime::creator;  // vmime::create <IMAPFolder>
 
 
-	IMAPFolder(const folder::path& path, IMAPStore* store, const int type = TYPE_UNDEFINED, const int flags = FLAG_UNDEFINED);
+	IMAPFolder(const folder::path& path, ref <IMAPStore> store, const int type = TYPE_UNDEFINED, const int flags = FLAG_UNDEFINED);
 	IMAPFolder(const IMAPFolder&) : folder() { }
 
 	~IMAPFolder();
@@ -109,8 +109,8 @@ public:
 
 	ref <folder> getParent();
 
-	weak_ref <const store> getStore() const;
-	weak_ref <store> getStore();
+	ref <const store> getStore() const;
+	ref <store> getStore();
 
 
 	void fetchMessages(std::vector <ref <message> >& msg, const int options, utility::progressListener* progress = NULL);
@@ -134,7 +134,7 @@ private:
 	void copyMessages(const string& set, const folder::path& dest);
 
 
-	IMAPStore* m_store;
+	weak_ref <IMAPStore> m_store;
 	ref <IMAPConnection> m_connection;
 
 	folder::path m_path;

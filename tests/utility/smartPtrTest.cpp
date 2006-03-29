@@ -39,14 +39,13 @@ VMIME_TEST_SUITE_BEGIN
 		VMIME_TEST(testCast)
 		VMIME_TEST(testContainer)
 		VMIME_TEST(testCompare)
-		VMIME_TEST(testThisRefCtor)
 	VMIME_TEST_LIST_END
 
 
 	struct A : public vmime::object
 	{
-		const int strongCount() const { return getStrongRefCount(); }
-		const int weakCount() const { return getWeakRefCount(); }
+		const int strongCount() const { return getRefManager()->getStrongRefCount(); }
+		const int weakCount() const { return getRefManager()->getWeakRefCount(); }
 	};
 
 	struct B : public virtual A { };
@@ -63,12 +62,6 @@ VMIME_TEST_SUITE_BEGIN
 	private:
 
 		bool* m_aliveFlag;
-	};
-
-	struct X : public vmime::object
-	{
-		X() { f(thisRef().dynamicCast <X>()); }
-		static void f(vmime::ref <X> /* x */) { }
 	};
 
 
@@ -94,13 +87,13 @@ VMIME_TEST_SUITE_BEGIN
 		VASSERT("1", r1.get() != 0);
 		VASSERT("2", o1_alive);
 		VASSERT_EQ("3", 1, r1->strongCount());
-		VASSERT_EQ("4", 0, r1->weakCount());
+		VASSERT_EQ("4", 1, r1->weakCount());
 
 		vmime::ref <R> r2 = r1;
 
 		VASSERT("5", o1_alive);
 		VASSERT_EQ("6", 2, r1->strongCount());
-		VASSERT_EQ("7", 0, r1->weakCount());
+		VASSERT_EQ("7", 2, r1->weakCount());
 
 		bool o2_alive;
 		vmime::ref <R> r3 = vmime::create <R>(&o2_alive);
@@ -138,12 +131,12 @@ VMIME_TEST_SUITE_BEGIN
 		{
 			vmime::weak_ref <R> w1 = r3;
 
-			VASSERT_EQ("22", 1, r3->weakCount());
+			VASSERT_EQ("22", 3, r3->weakCount());
 		}
 
 		VASSERT("23", o2_alive);
 		VASSERT_EQ("24", 2, r3->strongCount());
-		VASSERT_EQ("25", 0, r3->weakCount());
+		VASSERT_EQ("25", 2, r3->weakCount());
 	}
 
 	void testWeakRef()
@@ -152,21 +145,21 @@ VMIME_TEST_SUITE_BEGIN
 		vmime::weak_ref <A> w1 = r1;
 
 		VASSERT("1", r1.get() != 0);
-		VASSERT("2", r1.get() == w1.get());
+		VASSERT("2", r1.get() == w1.acquire().get());
 
 		{
 			vmime::ref <A> r2 = r1;
 
 			VASSERT("3", r1.get() == r2.get());
-			VASSERT("4", r1.get() == w1.get());
+			VASSERT("4", r1.get() == w1.acquire().get());
 		}
 
 		VASSERT("5", r1.get() != 0);
-		VASSERT("6", r1.get() == w1.get());
+		VASSERT("6", r1.get() == w1.acquire().get());
 
 		r1 = 0;
 
-		VASSERT("7", w1.get() == 0);
+		VASSERT("7", w1.acquire().get() == 0);
 	}
 
 	void testCast()
@@ -246,12 +239,6 @@ VMIME_TEST_SUITE_BEGIN
 		VASSERT("8", std::find(v.begin(), v.end(), r1) == v.begin());
 		VASSERT("9", std::find(v.begin(), v.end(), r2) == v.begin() + 1);
 		VASSERT("10", std::find(v.begin(), v.end(), r3) == v.end());
-	}
-
-	void testThisRefCtor()
-	{
-		// BUGFIX: thisRef() MUST NOT be called from the object constructor
-		VASSERT_THROW("1", vmime::create <X>(), std::runtime_error);
 	}
 
 VMIME_TEST_SUITE_END

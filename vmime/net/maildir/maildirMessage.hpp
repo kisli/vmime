@@ -47,7 +47,7 @@ class maildirMessage : public message
 
 private:
 
-	maildirMessage(weak_ref <maildirFolder> folder, const int num);
+	maildirMessage(ref <maildirFolder> folder, const int num);
 	maildirMessage(const maildirMessage&) : message() { }
 
 	~maildirMessage();
@@ -77,7 +77,7 @@ public:
 
 private:
 
-	void fetch(weak_ref <maildirFolder> folder, const int options);
+	void fetch(ref <maildirFolder> folder, const int options);
 
 	void onFolderClosed();
 

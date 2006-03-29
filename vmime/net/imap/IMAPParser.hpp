@@ -140,12 +140,12 @@ public:
 	}
 
 
-	weak_ref <const IMAPTag> tag() const
+	ref <const IMAPTag> getTag() const
 	{
-		return (m_tag);
+		return m_tag.acquire();
 	}
 
-	void setSocket(weak_ref <socket> sok)
+	void setSocket(ref <socket> sok)
 	{
 		m_socket = sok;
 	}
@@ -474,7 +474,7 @@ public:
 				}
 			}
 
-			if (tagString == string(*(parser.tag())))
+			if (tagString == string(*parser.getTag()))
 			{
 				*currentPos = pos;
 			}
@@ -5072,17 +5072,20 @@ public:
 	{
 		string receiveBuffer;
 
+		ref <timeoutHandler> toh = m_timeoutHandler.acquire();
+		ref <socket> sok = m_socket.acquire();
+
 		while (receiveBuffer.empty())
 		{
 			// Check whether the time-out delay is elapsed
-			if (m_timeoutHandler && m_timeoutHandler->isTimeOut())
+			if (toh && toh->isTimeOut())
 			{
-				if (!m_timeoutHandler->handleTimeOut())
+				if (!toh->handleTimeOut())
 					throw exceptions::operation_timed_out();
 			}
 
 			// We have received data: reset the time-out counter
-			m_socket->receive(receiveBuffer);
+			sok->receive(receiveBuffer);
 
 			if (receiveBuffer.empty())   // buffer is empty
 			{
@@ -5091,8 +5094,8 @@ public:
 			}
 
 			// We have received data ...
-			if (m_timeoutHandler)
-				m_timeoutHandler->resetTimeOut();
+			if (toh)
+				toh->resetTimeOut();
 		}
 
 		m_buffer += receiveBuffer;
@@ -5104,11 +5107,14 @@ public:
 		string::size_type len = 0;
 		string receiveBuffer;
 
+		ref <timeoutHandler> toh = m_timeoutHandler.acquire();
+		ref <socket> sok = m_socket.acquire();
+
 		if (m_progress)
 			m_progress->start(count);
 
-		if (m_timeoutHandler)
-			m_timeoutHandler->resetTimeOut();
+		if (toh)
+			toh->resetTimeOut();
 
 		if (!m_buffer.empty())
 		{
@@ -5129,16 +5135,16 @@ public:
 		while (len < count)
 		{
 			// Check whether the time-out delay is elapsed
-			if (m_timeoutHandler && m_timeoutHandler->isTimeOut())
+			if (toh && toh->isTimeOut())
 			{
-				if (!m_timeoutHandler->handleTimeOut())
+				if (!toh->handleTimeOut())
 					throw exceptions::operation_timed_out();
 
-				m_timeoutHandler->resetTimeOut();
+				toh->resetTimeOut();
 			}
 
 			// Receive data from the socket
-			m_socket->receive(receiveBuffer);
+			sok->receive(receiveBuffer);
 
 			if (receiveBuffer.empty())   // buffer is empty
 			{
@@ -5147,8 +5153,8 @@ public:
 			}
 
 			// We have received data: reset the time-out counter
-			if (m_timeoutHandler)
-				m_timeoutHandler->resetTimeOut();
+			if (toh)
+				toh->resetTimeOut();
 
 			if (len + receiveBuffer.length() > count)
 			{

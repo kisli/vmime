@@ -24,10 +24,6 @@
 #include "vmime/types.hpp"
 #include "vmime/object.hpp"
 
-#include <algorithm>  // std::find
-#include <sstream>    // std::ostringstream
-#include <stdexcept>  // std::runtime_error
-
 
 #ifndef VMIME_BUILDING_DOC
 
@@ -37,155 +33,66 @@ namespace vmime
 
 
 object::object()
-	: m_strongCount(0)
+	: m_refMgr(new utility::refManager(this))
 {
 }
 
 
 object::object(const object&)
-	: m_strongCount(0)
+	: m_refMgr(new utility::refManager(this))
 {
-	// Not used
+}
+
+
+object& object::operator=(const object&)
+{
+	// Do _NOT_ copy 'm_refMgr'
+	return *this;
 }
 
 
 object::~object()
 {
-	for (std::vector <utility::weak_ref_base*>::iterator
-	     it = m_weakRefs.begin() ; it != m_weakRefs.end() ; ++it)
-	{
-		(*it)->notifyObjectDestroyed();
-	}
-
-#if VMIME_DEBUG
-	if (m_strongCount != 0)
-	{
-		std::ostringstream oss;
-		oss << "ERROR: Deleting object and strong count != 0."
-		    << " (" << __FILE__ << ", line " << __LINE__ << ")" << std::endl;
-
-		throw std::runtime_error(oss.str());
-	}
-#endif // VMIME_DEBUG
-}
-
-
-void object::addStrong() const
-{
-	++m_strongCount;
-}
-
-
-void object::addWeak(utility::weak_ref_base* w) const
-{
-	m_weakRefs.push_back(w);
-}
-
-
-void object::releaseStrong() const
-{
-	if (--m_strongCount == 0)
-		delete this;
-}
-
-
-void object::releaseWeak(utility::weak_ref_base* w) const
-{
-	std::vector <utility::weak_ref_base*>::iterator
-		it = std::find(m_weakRefs.begin(), m_weakRefs.end(), w);
-
-	if (it != m_weakRefs.end())
-		m_weakRefs.erase(it);
-#if VMIME_DEBUG
-	else
-	{
-		std::ostringstream oss;
-		oss << "ERROR: weak ref does not exist anymore!"
-		    << " (" << __FILE__ << ", line " << __LINE__ << ")" << std::endl;
-
-		throw std::runtime_error(oss.str());
-	}
-#endif // VMIME_DEBUG
+	delete m_refMgr;
+	m_refMgr = 0;
 }
 
 
 ref <object> object::thisRef()
 {
-#if VMIME_DEBUG
-	if (m_strongCount == 0)
-	{
-		std::ostringstream oss;
-		oss << "ERROR: thisRef() MUST NOT be called from the object constructor."
-		    << " (" << __FILE__ << ", line " << __LINE__ << ")" << std::endl;
-
-		throw std::runtime_error(oss.str());
-	}
-#endif // VMIME_DEBUG
-
+	m_refMgr->addStrong();
 	return ref <object>::fromPtr(this);
 }
 
 
 ref <const object> object::thisRef() const
 {
-#if VMIME_DEBUG
-	if (m_strongCount == 0)
-	{
-		std::ostringstream oss;
-		oss << "ERROR: thisRef() MUST NOT be called from the object constructor."
-		    << " (" << __FILE__ << ", line " << __LINE__ << ")" << std::endl;
-
-		throw std::runtime_error(oss.str());
-	}
-#endif // VMIME_DEBUG
-
+	m_refMgr->addStrong();
 	return ref <const object>::fromPtr(this);
 }
 
 
 weak_ref <object> object::thisWeakRef()
 {
-#if VMIME_DEBUG
-	if (m_strongCount == 0)
-	{
-		std::ostringstream oss;
-		oss << "ERROR: thisWeakRef() MUST NOT be called from the object constructor."
-		    << " (" << __FILE__ << ", line " << __LINE__ << ")" << std::endl;
-
-		throw std::runtime_error(oss.str());
-	}
-#endif // VMIME_DEBUG
-
 	return weak_ref <object>(thisRef());
 }
 
 
 weak_ref <const object> object::thisWeakRef() const
 {
-#if VMIME_DEBUG
-	if (m_strongCount == 0)
-	{
-		std::ostringstream oss;
-		oss << "ERROR: thisWeakRef() MUST NOT be called from the object constructor."
-		    << " (" << __FILE__ << ", line " << __LINE__ << ")" << std::endl;
-
-		throw std::runtime_error(oss.str());
-	}
-#endif // VMIME_DEBUG
-
 	return weak_ref <const object>(thisRef());
 }
 
 
-const int object::getStrongRefCount() const
+void object::setRefManager(utility::refManager* mgr)
 {
-	return m_strongCount;
+	m_refMgr = mgr;
 }
 
 
-const int object::getWeakRefCount() const
+utility::refManager* object::getRefManager() const
 {
-	return static_cast <const int>(m_weakRefs.size());
+	return m_refMgr;
 }
 
 

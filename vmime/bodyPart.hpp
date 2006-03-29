@@ -75,7 +75,14 @@ public:
 	  *
 	  * @return parent part or NULL if not known
 	  */
-	weak_ref <bodyPart> getParentPart() const;
+	ref <bodyPart> getParentPart();
+
+	/** Return the parent part of this part (const version).
+	  *
+	  * @return parent part or NULL if not known
+	  */
+	ref <const bodyPart> getParentPart() const;
+
 
 	ref <component> clone() const;
 	void copyFrom(const component& other);

@@ -44,84 +44,52 @@ class object
 	template <class T> friend class utility::ref;
 	template <class T> friend class utility::weak_ref;
 
+	friend class utility::refManager;
+
 protected:
 
 	object();
 	object(const object&);
 
+	object& operator=(const object&);
+
 	virtual ~object();
 
 #ifndef VMIME_BUILDING_DOC
 
-	/** Add a strong reference to this object. A strong
-	  * reference ensure the object remains alive.
-	  */
-	void addStrong() const;
-
-	/** Add a weak reference to this object. A weak
-	  * reference helps to resolve circular references.
-	  */
-	void addWeak(utility::weak_ref_base* w) const;
-
-	/** Release a strong reference to this object.
-	  *
-	  * @return true if the object is not referenced anymore.
-	  */
-	void releaseStrong() const;
-
-	/** Release a weak reference to this object.
-	  *
-	  * @return true if the object is not referenced anymore.
-	  */
-	void releaseWeak(utility::weak_ref_base* w) const;
-
 	/** Return a reference to this object.
-	  * \warning NEVER CALL THIS FROM A CONSTRUCTOR!
 	  *
 	  * @return reference to self
 	  */
 	ref <object> thisRef();
 
 	/** Return a reference to this object (const version).
-	  * \warning NEVER CALL THIS FROM A CONSTRUCTOR!
 	  *
 	  * @return reference to self
 	  */
 	ref <const object> thisRef() const;
 
 	/** Return a weak reference to this object.
-	  * \warning NEVER CALL THIS FROM A CONSTRUCTOR!
 	  *
 	  * @return weak reference to self
 	  */
 	weak_ref <object> thisWeakRef();
 
 	/** Return a weak reference to this object (const version).
-	  * \warning NEVER CALL THIS FROM A CONSTRUCTOR!
 	  *
 	  * @return weak reference to self
 	  */
 	weak_ref <const object> thisWeakRef() const;
 
-	/** Return the number of strong refs to this object.
-	  * For debugging purposes only.
-	  *
-	  * @return strong reference count
-	  */
-	const int getStrongRefCount() const;
 
-	/** Return the number of weak refs to this object.
-	  * For debugging purposes only.
-	  *
-	  * @return weak reference count
-	  */
-	const int getWeakRefCount() const;
+	void setRefManager(utility::refManager* mgr);
+	utility::refManager* getRefManager() const;
+
 #endif // VMIME_BUILDING_DOC
 
 private:
 
-	mutable int m_strongCount;
-	mutable std::vector <utility::weak_ref_base*> m_weakRefs;
+	mutable utility::refManager* m_refMgr;
 };
 
 
