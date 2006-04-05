@@ -126,8 +126,6 @@ private:
 
 	void onClose();
 
-	void parseMultiListOrUidlResponse(const string& response, std::map <int, string>& result);
-
 
 	weak_ref <POP3Store> m_store;
 

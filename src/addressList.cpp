@@ -25,6 +25,7 @@
 #include "vmime/parserHelpers.hpp"
 #include "vmime/exception.hpp"
 #include "vmime/mailboxList.hpp"
+#include "vmime/mailboxGroup.hpp"
 
 
 namespace vmime
@@ -254,6 +255,36 @@ const std::vector <ref <const component> > addressList::getChildComponents() con
 	copy_vector(m_list, list);
 
 	return (list);
+}
+
+
+ref <mailboxList> addressList::toMailboxList() const
+{
+	ref <mailboxList> res = vmime::create <mailboxList>();
+
+	for (std::vector <ref <address> >::const_iterator it = m_list.begin() ;
+	     it != m_list.end() ; ++it)
+	{
+		ref <const address> addr = *it;
+
+		if (addr->isGroup())
+		{
+			const std::vector <ref <const mailbox> > mailboxes =
+				addr.dynamicCast <const mailboxGroup>()->getMailboxList();
+
+			for (std::vector <ref <const mailbox> >::const_iterator jt = mailboxes.begin() ;
+			     jt != mailboxes.end() ; ++jt)
+			{
+				res->appendMailbox(vmime::clone(*jt));
+			}
+		}
+		else
+		{
+			res->appendMailbox(addr->clone().dynamicCast <mailbox>());
+		}
+	}
+
+	return res;
 }
 
 

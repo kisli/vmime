@@ -232,7 +232,7 @@ namespace vmime
 	  * Use "vmime::clone(obj)" instead of "obj->clone().cast <objtype>()".
 	  */
 	template <class T>
-	ref <T> clone(ref <T> x)
+	ref <T> clone(ref <const T> x)
 	{
 		return x->clone().template dynamicCast <T>();
 	}
@@ -241,7 +241,7 @@ namespace vmime
 	  * Use "vmime::clone(obj)" instead of "obj.clone().cast <objtype>()".
 	  */
 	template <class T>
-	ref <T> clone(T& x)
+	ref <T> clone(const T& x)
 	{
 		return x.clone().template dynamicCast <T>();
 	}

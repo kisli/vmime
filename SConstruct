@@ -234,7 +234,8 @@ libvmime_messaging_proto_sources = [
 			'net/pop3/POP3Store.cpp',        'net/pop3/POP3Store.hpp',
 			'net/pop3/POP3SStore.cpp',       'net/pop3/POP3SStore.hpp',
 			'net/pop3/POP3Folder.cpp',       'net/pop3/POP3Folder.hpp',
-			'net/pop3/POP3Message.cpp',      'net/pop3/POP3Message.hpp'
+			'net/pop3/POP3Message.cpp',      'net/pop3/POP3Message.hpp',
+			'net/pop3/POP3Utils.cpp',        'net/pop3/POP3Utils.hpp'
 		]
 	],
 	[

@@ -623,6 +623,26 @@ const string IMAPUtils::buildFetchRequest(const std::vector <int>& list, const i
 }
 
 
+// static
+void IMAPUtils::convertAddressList
+	(const IMAPParser::address_list& src, mailboxList& dest)
+{
+	for (std::vector <IMAPParser::address*>::const_iterator
+	     it = src.addresses().begin() ; it != src.addresses().end() ; ++it)
+	{
+		const IMAPParser::address& addr = **it;
+
+		text name;
+		text::decodeAndUnfold(addr.addr_name()->value(), &name);
+
+		string email = addr.addr_mailbox()->value()
+			+ "@" + addr.addr_host()->value();
+
+		dest.appendMailbox(vmime::create <mailbox>(name, email));
+	}
+}
+
+
 } // imap
 } // net
 } // vmime

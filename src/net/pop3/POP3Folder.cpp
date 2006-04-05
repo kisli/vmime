@@ -22,6 +22,8 @@
 #include "vmime/net/pop3/POP3Store.hpp"
 #include "vmime/net/pop3/POP3Message.hpp"
 
+#include "vmime/net/pop3/POP3Utils.hpp"
+
 #include "vmime/exception.hpp"
 
 
@@ -354,7 +356,7 @@ void POP3Folder::fetchMessages(std::vector <ref <message> >& msg, const int opti
 			// S: 2 12653
 			// S: .
 			std::map <int, string> result;
-			parseMultiListOrUidlResponse(response, result);
+			POP3Utils::parseMultiListOrUidlResponse(response, result);
 
 			for (std::vector <ref <message> >::iterator it = msg.begin() ;
 			     it != msg.end() ; ++it)
@@ -399,7 +401,7 @@ void POP3Folder::fetchMessages(std::vector <ref <message> >& msg, const int opti
 			// S: 2 QhdPYR:00WBw1Ph7x7
 			// S: .
 			std::map <int, string> result;
-			parseMultiListOrUidlResponse(response, result);
+			POP3Utils::parseMultiListOrUidlResponse(response, result);
 
 			for (std::vector <ref <message> >::iterator it = msg.begin() ;
 			     it != msg.end() ; ++it)
@@ -818,42 +820,6 @@ void POP3Folder::expunge()
 {
 	// Not supported by POP3 protocol (deleted messages are automatically
 	// expunged at the end of the session...).
-}
-
-
-void POP3Folder::parseMultiListOrUidlResponse(const string& response, std::map <int, string>& result)
-{
-	std::istringstream iss(response);
-	std::map <int, string> ids;
-
-	string line;
-
-	while (std::getline(iss, line))
-	{
-		string::iterator it = line.begin();
-
-		while (it != line.end() && (*it == ' ' || *it == '\t'))
-			++it;
-
-		if (it != line.end())
-		{
-			int number = 0;
-
-			while (it != line.end() && (*it >= '0' && *it <= '9'))
-			{
-				number = (number * 10) + (*it - '0');
-				++it;
-			}
-
-			while (it != line.end() && !(*it == ' ' || *it == '\t')) ++it;
-			while (it != line.end() && (*it == ' ' || *it == '\t')) ++it;
-
-			if (it != line.end())
-			{
-				result.insert(std::map <int, string>::value_type(number, string(it, line.end())));
-			}
-		}
-	}
 }
 
 

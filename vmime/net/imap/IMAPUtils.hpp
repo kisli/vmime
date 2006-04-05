@@ -31,6 +31,8 @@
 #include "vmime/net/folder.hpp"
 #include "vmime/net/imap/IMAPParser.hpp"
 
+#include "vmime/mailboxList.hpp"
+
 #include <vector>
 
 
@@ -93,6 +95,13 @@ public:
 	  * @return fetch request
 	  */
 	static const string buildFetchRequest(const std::vector <int>& list, const int options);
+
+	/** Convert a parser-style address list to a mailbox list.
+	  *
+	  * @param src input address list
+	  * @param dest output mailbox list
+	  */
+	static void convertAddressList(const IMAPParser::address_list& src, mailboxList& dest);
 };
 
 

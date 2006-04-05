@@ -28,8 +28,6 @@
 #include "vmime/net/message.hpp"
 #include "vmime/net/folder.hpp"
 
-#include "vmime/mailboxList.hpp"
-
 
 namespace vmime {
 namespace net {
@@ -84,9 +82,6 @@ private:
 	void processFetchResponse(const int options, const IMAPParser::msg_att* msgAtt);
 
 	void extract(ref <const part> p, utility::outputStream& os, utility::progressListener* progress, const int start, const int length, const bool headerOnly, const bool peek) const;
-
-
-	void convertAddressList(const IMAPParser::address_list& src, mailboxList& dest);
 
 
 	ref <header> getOrCreateHeader();

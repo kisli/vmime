@@ -568,41 +568,41 @@ void IMAPMessage::processFetchResponse
 
 				// From
 				mailboxList from;
-				convertAddressList(*(env->env_from()), from);
+				IMAPUtils::convertAddressList(*(env->env_from()), from);
 
 				if (!from.isEmpty())
 					hdr->From()->setValue(*(from.getMailboxAt(0)));
 
 				// To
 				mailboxList to;
-				convertAddressList(*(env->env_to()), to);
+				IMAPUtils::convertAddressList(*(env->env_to()), to);
 
 				hdr->To()->setValue(to);
 
 				// Sender
 				mailboxList sender;
-				convertAddressList(*(env->env_sender()), sender);
+				IMAPUtils::convertAddressList(*(env->env_sender()), sender);
 
 				if (!sender.isEmpty())
 					hdr->Sender()->setValue(*(sender.getMailboxAt(0)));
 
 				// Reply-to
 				mailboxList replyTo;
-				convertAddressList(*(env->env_reply_to()), replyTo);
+				IMAPUtils::convertAddressList(*(env->env_reply_to()), replyTo);
 
 				if (!replyTo.isEmpty())
 					hdr->ReplyTo()->setValue(*(replyTo.getMailboxAt(0)));
 
 				// Cc
 				mailboxList cc;
-				convertAddressList(*(env->env_cc()), cc);
+				IMAPUtils::convertAddressList(*(env->env_cc()), cc);
 
 				if (!cc.isEmpty())
 					hdr->Cc()->setValue(cc);
 
 				// Bcc
 				mailboxList bcc;
-				convertAddressList(*(env->env_bcc()), bcc);
+				IMAPUtils::convertAddressList(*(env->env_bcc()), bcc);
 
 				if (!bcc.isEmpty())
 					hdr->Bcc()->setValue(bcc);
@@ -671,25 +671,6 @@ ref <header> IMAPMessage::getOrCreateHeader()
 		return (m_header);
 	else
 		return (m_header = vmime::create <header>());
-}
-
-
-void IMAPMessage::convertAddressList
-	(const IMAPParser::address_list& src, mailboxList& dest)
-{
-	for (std::vector <IMAPParser::address*>::const_iterator
-	     it = src.addresses().begin() ; it != src.addresses().end() ; ++it)
-	{
-		const IMAPParser::address& addr = **it;
-
-		text name;
-		text::decodeAndUnfold(addr.addr_name()->value(), &name);
-
-		string email = addr.addr_mailbox()->value()
-			+ "@" + addr.addr_host()->value();
-
-		dest.appendMailbox(vmime::create <mailbox>(name, email));
-	}
 }
 
 

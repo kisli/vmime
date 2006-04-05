@@ -151,6 +151,14 @@ public:
 	  */
 	const std::vector <ref <address> > getAddressList();
 
+	/** Return a list of mailboxes.
+	  * If some addresses are actually groups, mailboxes are recursively
+	  * extracted from these groups.
+	  *
+	  * @return list of mailboxes
+	  */
+	ref <mailboxList> toMailboxList() const;
+
 private:
 
 	std::vector <ref <address> > m_list;
