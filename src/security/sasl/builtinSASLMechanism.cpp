@@ -57,8 +57,8 @@ const string builtinSASLMechanism::getName() const
 
 
 const bool builtinSASLMechanism::step
-	(ref <SASLSession> sess, const byte* challenge, const int challengeLen,
-	 byte** response, int* responseLen)
+	(ref <SASLSession> sess, const byte_t* challenge, const int challengeLen,
+	 byte_t** response, int* responseLen)
 {
 	char* output = 0;
 	size_t outputLen = 0;
@@ -69,7 +69,7 @@ const bool builtinSASLMechanism::step
 
 	if (result == GSASL_OK || result == GSASL_NEEDS_MORE)
 	{
-		byte* res = new byte[outputLen];
+		byte_t* res = new byte_t[outputLen];
 
 		for (size_t i = 0 ; i < outputLen ; ++i)
 			res[i] = output[i];
@@ -115,8 +115,8 @@ const bool builtinSASLMechanism::isComplete() const
 
 
 void builtinSASLMechanism::encode
-	(ref <SASLSession> sess, const byte* input, const int inputLen,
-	 byte** output, int* outputLen)
+	(ref <SASLSession> sess, const byte_t* input, const int inputLen,
+	 byte_t** output, int* outputLen)
 {
 	char* coutput = 0;
 	size_t coutputLen = 0;
@@ -130,7 +130,7 @@ void builtinSASLMechanism::encode
 
 	try
 	{
-		byte* res = new byte[coutputLen];
+		byte_t* res = new byte_t[coutputLen];
 
 		std::copy(coutput, coutput + coutputLen, res);
 
@@ -148,8 +148,8 @@ void builtinSASLMechanism::encode
 
 
 void builtinSASLMechanism::decode
-	(ref <SASLSession> sess, const byte* input, const int inputLen,
-	 byte** output, int* outputLen)
+	(ref <SASLSession> sess, const byte_t* input, const int inputLen,
+	 byte_t** output, int* outputLen)
 {
 	char* coutput = 0;
 	size_t coutputLen = 0;
@@ -163,7 +163,7 @@ void builtinSASLMechanism::decode
 			throw exceptions::sasl_exception("Decoding error.");
 		}
 
-		byte* res = new byte[coutputLen];
+		byte_t* res = new byte_t[coutputLen];
 
 		std::copy(coutput, coutput + coutputLen, res);
 

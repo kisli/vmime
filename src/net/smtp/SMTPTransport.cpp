@@ -355,10 +355,10 @@ void SMTPTransport::authenticateSASL()
 			}
 			case 334:
 			{
-				byte* challenge = 0;
+				byte_t* challenge = 0;
 				int challengeLen = 0;
 
-				byte* resp = 0;
+				byte_t* resp = 0;
 				int respLen = 0;
 
 				try

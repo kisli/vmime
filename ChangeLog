@@ -2,6 +2,11 @@
 VERSION 0.8.1cvs
 ================
 
+2006-04-18  Vincent Richard  <vincent@vincent-richard.net>
+
+ * Renamed 'byte' to 'byte_t' to fix compilation problems on Fedora
+   core 5 (thanks to Rafael Fernandez).
+
 2006-02-20  Vincent Richard  <vincent@vincent-richard.net>
 
  * net/imap/IMAPParser.hpp: added a "relaxed" mode to allow 8-bit

@@ -362,7 +362,7 @@ class inputStreamByteBufferAdapter : public inputStream
 {
 public:
 
-	inputStreamByteBufferAdapter(const byte* buffer, size_type length);
+	inputStreamByteBufferAdapter(const byte_t* buffer, size_type length);
 
 	const bool eof() const;
 	void reset();
@@ -371,7 +371,7 @@ public:
 
 private:
 
-	const byte* m_buffer;
+	const byte_t* m_buffer;
 	const size_type m_length;
 
 	size_type m_pos;

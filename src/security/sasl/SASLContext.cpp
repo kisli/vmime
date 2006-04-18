@@ -96,7 +96,7 @@ ref <SASLMechanism> SASLContext::suggestMechanism
 }
 
 
-void SASLContext::decodeB64(const string& input, byte** output, int* outputLen)
+void SASLContext::decodeB64(const string& input, byte_t** output, int* outputLen)
 {
 	string res;
 
@@ -107,7 +107,7 @@ void SASLContext::decodeB64(const string& input, byte** output, int* outputLen)
 
 	dec->decode(is, os);
 
-	byte* out = new byte[res.length()];
+	byte_t* out = new byte_t[res.length()];
 
 	std::copy(res.begin(), res.end(), out);
 
@@ -116,7 +116,7 @@ void SASLContext::decodeB64(const string& input, byte** output, int* outputLen)
 }
 
 
-const string SASLContext::encodeB64(const byte* input, const int inputLen)
+const string SASLContext::encodeB64(const byte_t* input, const int inputLen)
 {
 	string res;
 

@@ -83,7 +83,7 @@ public:
 	  * @return a X.509 certificate, or NULL if the given data does not
 	  * represent a valid certificate
 	  */
-	static ref <X509Certificate> import(const byte* data, const unsigned int length);
+	static ref <X509Certificate> import(const byte_t* data, const unsigned int length);
 
 	/** Exports this X.509 certificate to the specified format.
 	  *

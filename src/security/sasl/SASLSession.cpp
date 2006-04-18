@@ -93,8 +93,8 @@ ref <SASLContext> SASLSession::getContext()
 
 
 const bool SASLSession::evaluateChallenge
-	(const byte* challenge, const int challengeLen,
-	 byte** response, int* responseLen)
+	(const byte_t* challenge, const int challengeLen,
+	 byte_t** response, int* responseLen)
 {
 	return m_mech->step(thisRef().dynamicCast <SASLSession>(),
 		challenge, challengeLen, response, responseLen);

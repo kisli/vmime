@@ -363,7 +363,7 @@ const stream::size_type inputStreamPointerAdapter::skip(const size_type count)
 
 // inputStreamByteBufferAdapter
 
-inputStreamByteBufferAdapter::inputStreamByteBufferAdapter(const byte* buffer, const size_type length)
+inputStreamByteBufferAdapter::inputStreamByteBufferAdapter(const byte_t* buffer, const size_type length)
 	: m_buffer(buffer), m_length(length), m_pos(0)
 {
 }

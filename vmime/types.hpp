@@ -44,8 +44,8 @@ namespace vmime
 
 	typedef int char_t;
 
-	typedef vmime_uint8 byte;
-	typedef std::vector <byte> byteArray;
+	typedef vmime_uint8 byte_t;
+	typedef std::vector <byte_t> byteArray;
 
 	// Some aliases
 	namespace utils = utility;

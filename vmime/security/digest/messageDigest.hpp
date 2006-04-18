@@ -52,14 +52,14 @@ public:
 	  *
 	  * @param b the byte with which to update the digest.
 	  */
-	virtual void update(const byte b) = 0;
+	virtual void update(const byte_t b) = 0;
 
 	/** Updates the digest using the specified array of bytes.
 	  *
 	  * @param buffer array of bytes
 	  * @param len number of bytes to use in the buffer
 	  */
-	virtual void update(const byte* buffer, const unsigned long len) = 0;
+	virtual void update(const byte_t* buffer, const unsigned long len) = 0;
 
 	/** Updates the digest using the specified array of bytes,
 	  * starting at the specified offset.
@@ -68,7 +68,7 @@ public:
 	  * @param offset offset to start from in the array of bytes
 	  * @param len number of bytes to use, starting at offset
 	  */
-	virtual void update(const byte* buffer,
+	virtual void update(const byte_t* buffer,
 	                    const unsigned long offset,
 	                    const unsigned long len) = 0;
 
@@ -87,14 +87,14 @@ public:
 	  * such as padding. This is equivalent to calling update() and
 	  * then finalize().
 	  */
-	virtual void finalize(const byte* buffer,
+	virtual void finalize(const byte_t* buffer,
 	                      const unsigned long len) = 0;
 
 	/** Completes the hash computation by performing final operations
 	  * such as padding. This is equivalent to calling update() and
 	  * then finalize().
 	  */
-	virtual void finalize(const byte* buffer,
+	virtual void finalize(const byte_t* buffer,
 	                      const unsigned long offset,
 	                      const unsigned long len) = 0;
 
@@ -112,7 +112,7 @@ public:
 	  *
 	  * @return computed hash
 	  */
-	virtual const byte* getDigest() const = 0;
+	virtual const byte_t* getDigest() const = 0;
 
 	/** Returns the hash as an hexadecimal string.
 	  * You must call finalize() before using this function, or the

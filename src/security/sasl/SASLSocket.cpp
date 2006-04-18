@@ -105,11 +105,11 @@ const int SASLSocket::receiveRaw(char* buffer, const int count)
 
 	const int n = m_wrapped->receiveRaw(buffer, count);
 
-	byte* output = 0;
+	byte_t* output = 0;
 	int outputLen = 0;
 
 	m_session->getMechanism()->decode
-		(m_session, reinterpret_cast <const byte*>(buffer), n,
+		(m_session, reinterpret_cast <const byte_t*>(buffer), n,
 		 &output, &outputLen);
 
 	// If we can not copy all decoded data into the output buffer, put
@@ -143,11 +143,11 @@ void SASLSocket::send(const string& buffer)
 
 void SASLSocket::sendRaw(const char* buffer, const int count)
 {
-	byte* output = 0;
+	byte_t* output = 0;
 	int outputLen = 0;
 
 	m_session->getMechanism()->encode
-		(m_session, reinterpret_cast <const byte*>(buffer), count,
+		(m_session, reinterpret_cast <const byte_t*>(buffer), count,
 		 &output, &outputLen);
 
 	try

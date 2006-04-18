@@ -102,8 +102,8 @@ public:
 	  * 'responseLen' are undetermined)
 	  */
 	const bool evaluateChallenge
-		(const byte* challenge, const int challengeLen,
-		 byte** response, int* responseLen);
+		(const byte_t* challenge, const int challengeLen,
+		 byte_t** response, int* responseLen);
 
 	/** Return a socket in which transmitted data is integrity
 	  * and/or privacy protected, depending on the QOP (Quality of

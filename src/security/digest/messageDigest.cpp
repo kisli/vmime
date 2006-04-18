@@ -33,7 +33,7 @@ namespace digest {
 
 const string messageDigest::getHexDigest() const
 {
-	const byte* hash = getDigest();
+	const byte_t* hash = getDigest();
 	const int len = getDigestLength();
 
 	static const unsigned char hex[] = "0123456789abcdef";
@@ -47,7 +47,6 @@ const string messageDigest::getHexDigest() const
 	}
 
 	return oss.str();
-
 }
 
 

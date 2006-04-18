@@ -63,7 +63,7 @@ private:
 	ref <SASLSession> m_session;
 	ref <net::socket> m_wrapped;
 
-	byte* m_pendingBuffer;
+	byte_t* m_pendingBuffer;
 	int m_pendingPos;
 	int m_pendingLen;
 

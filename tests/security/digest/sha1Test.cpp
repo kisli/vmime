@@ -74,7 +74,7 @@ VMIME_TEST_SUITE_BEGIN
 	{
 		INIT_DIGEST(algo, "sha1");
 
-		vmime::byte* buffer = new vmime::byte[1000000];
+		vmime::byte_t* buffer = new vmime::byte_t[1000000];
 
 		for (int i = 0 ; i < 1000000 ; ++i)
 			buffer[i] = 'a';

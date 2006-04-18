@@ -80,7 +80,7 @@ void sha1MessageDigest::init()
 }
 
 
-void sha1MessageDigest::update(const byte b)
+void sha1MessageDigest::update(const byte_t b)
 {
 	update(&b, 1);
 }
@@ -88,18 +88,18 @@ void sha1MessageDigest::update(const byte b)
 
 void sha1MessageDigest::update(const string& s)
 {
-	update(reinterpret_cast <const byte*>(s.data()), s.length());
+	update(reinterpret_cast <const byte_t*>(s.data()), s.length());
 }
 
 
-void sha1MessageDigest::update(const byte* buffer, const unsigned long offset,
+void sha1MessageDigest::update(const byte_t* buffer, const unsigned long offset,
 	const unsigned long len)
 {
 	update(buffer + offset, len);
 }
 
 
-void sha1MessageDigest::update(const byte* buffer, const unsigned long len)
+void sha1MessageDigest::update(const byte_t* buffer, const unsigned long len)
 {
 	unsigned int i, j;
 
@@ -142,10 +142,10 @@ void sha1MessageDigest::finalize()
 			 >> ((3-(i & 3)) * 8) ) & 255);  // Endian independent
 	}
 
-	update(reinterpret_cast <const byte*>("\200"), 1);
+	update(reinterpret_cast <const byte_t*>("\200"), 1);
 
 	while ((m_count[0] & 504) != 448)
-		update(reinterpret_cast <const byte*>("\0"), 1);
+		update(reinterpret_cast <const byte_t*>("\0"), 1);
 
 	update(finalcount, 8);  // Should cause a transform()
 
@@ -167,18 +167,18 @@ void sha1MessageDigest::finalize()
 
 void sha1MessageDigest::finalize(const string& s)
 {
-	finalize(reinterpret_cast <const byte*>(s.data()), s.length());
+	finalize(reinterpret_cast <const byte_t*>(s.data()), s.length());
 }
 
 
-void sha1MessageDigest::finalize(const byte* buffer, const unsigned long len)
+void sha1MessageDigest::finalize(const byte_t* buffer, const unsigned long len)
 {
 	update(buffer, len);
 	finalize();
 }
 
 
-void sha1MessageDigest::finalize(const byte* buffer,
+void sha1MessageDigest::finalize(const byte_t* buffer,
 	const unsigned long offset, const unsigned long len)
 {
 	finalize(buffer + offset, len);
@@ -252,7 +252,7 @@ const int sha1MessageDigest::getDigestLength() const
 }
 
 
-const byte* sha1MessageDigest::getDigest() const
+const byte_t* sha1MessageDigest::getDigest() const
 {
 	return m_digest;
 }
