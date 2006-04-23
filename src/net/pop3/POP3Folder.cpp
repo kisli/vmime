@@ -184,6 +184,12 @@ void POP3Folder::create(const int /* type */)
 }
 
 
+void POP3Folder::destroy()
+{
+	throw exceptions::operation_not_supported();
+}
+
+
 const bool POP3Folder::exists()
 {
 	ref <POP3Store> store = m_store.acquire();

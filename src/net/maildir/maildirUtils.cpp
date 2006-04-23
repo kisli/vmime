@@ -22,6 +22,9 @@
 
 #include "vmime/utility/random.hpp"
 
+#include "vmime/exception.hpp"
+#include "vmime/platformDependant.hpp"
+
 
 namespace vmime {
 namespace net {
@@ -209,6 +212,44 @@ const utility::file::path::component maildirUtils::generateId()
 	oss << utility::random::getString(6);
 
 	return (utility::file::path::component(oss.str()));
+}
+
+
+void maildirUtils::recursiveFSDelete(ref <utility::file> dir)
+{
+	ref <utility::fileIterator> files = dir->getFiles();
+
+	// First, delete files and subdirectories in this directory
+	while (files->hasMoreElements())
+	{
+		ref <utility::file> file = files->nextElement();
+
+		if (file->isDirectory())
+		{
+			maildirUtils::recursiveFSDelete(file);
+		}
+		else
+		{
+			try
+			{
+				file->remove();
+			}
+			catch (exceptions::filesystem_exception&)
+			{
+				// Ignore
+			}
+		}
+	}
+
+	// Then, delete this (empty) directory
+	try
+	{
+		dir->remove();
+	}
+	catch (exceptions::filesystem_exception&)
+	{
+		// Ignore
+	}
 }
 
 

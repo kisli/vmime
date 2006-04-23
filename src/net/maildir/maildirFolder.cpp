@@ -242,6 +242,42 @@ void maildirFolder::create(const int /* type */)
 }
 
 
+void maildirFolder::destroy()
+{
+	ref <maildirStore> store = m_store.acquire();
+
+	if (!store)
+		throw exceptions::illegal_state("Store disconnected");
+	else if (isOpen())
+		throw exceptions::illegal_state("Folder is open");
+
+	// Delete 'folder' and '.folder.directory' directories
+	utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
+
+	ref <utility::file> rootDir = fsf->create
+		(maildirUtils::getFolderFSPath(store, m_path, maildirUtils::FOLDER_PATH_ROOT));
+	ref <utility::file> contDir = fsf->create
+		(maildirUtils::getFolderFSPath(store, m_path, maildirUtils::FOLDER_PATH_CONTAINER));
+
+	try
+	{
+		maildirUtils::recursiveFSDelete(rootDir);
+		maildirUtils::recursiveFSDelete(contDir);
+	}
+	catch (std::exception&)
+	{
+		// Ignore exception: anyway, we can't recover from this...
+	}
+
+	// Notify folder deleted
+	events::folderEvent event
+		(thisRef().dynamicCast <folder>(),
+		 events::folderEvent::TYPE_DELETED, m_path, m_path);
+
+	notifyFolder(event);
+}
+
+
 const bool maildirFolder::exists()
 {
 	ref <maildirStore> store = m_store.acquire();

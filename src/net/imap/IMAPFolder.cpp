@@ -371,6 +371,43 @@ void IMAPFolder::create(const int type)
 }
 
 
+void IMAPFolder::destroy()
+{
+	ref <IMAPStore> store = m_store.acquire();
+
+	if (!store)
+		throw exceptions::illegal_state("Store disconnected");
+
+	if (isOpen())
+		throw exceptions::illegal_state("Folder is open");
+
+	const string mailbox = IMAPUtils::pathToString
+		(m_connection->hierarchySeparator(), getFullPath());
+
+	std::ostringstream oss;
+	oss << "DELETE " << IMAPUtils::quoteString(mailbox);
+
+	m_connection->send(true, oss.str(), true);
+
+
+	utility::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
+
+	if (resp->isBad() || resp->response_done()->response_tagged()->
+			resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
+	{
+		throw exceptions::command_error("DELETE",
+			m_connection->getParser()->lastLine(), "bad response");
+	}
+
+	// Notify folder deleted
+	events::folderEvent event
+		(thisRef().dynamicCast <folder>(),
+		 events::folderEvent::TYPE_DELETED, m_path, m_path);
+
+	notifyFolder(event);
+}
+
+
 const bool IMAPFolder::exists()
 {
 	ref <IMAPStore> store = m_store.acquire();

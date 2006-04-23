@@ -77,6 +77,8 @@ public:
 
 	const bool exists();
 
+	void destroy();
+
 	const bool isOpen() const;
 
 	ref <message> getMessage(const int num);

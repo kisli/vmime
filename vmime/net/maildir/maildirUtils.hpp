@@ -148,6 +148,12 @@ public:
 	  */
 	static const utility::file::path::component generateId();
 
+	/** Recursively delete a directory on the file system.
+	  *
+	  * @param dir directory to delete
+	  */
+	static void recursiveFSDelete(ref <utility::file> dir);
+
 private:
 
 	static const vmime::word TMP_DIR;
