@@ -78,6 +78,15 @@ public:
 	  * @return the day of the week, Sunday is 0, Monday is 1 (see datetime::DaysOfWeek enum)
 	  */
 	static const int getDayOfWeek(const int year, const int month, const int day);
+
+	/** Return the week number in the year (ISO 8601).
+	  *
+	  * @param year year in 4-digit format
+	  * @param month month (1-12), January is 1, December is 12 (see datetime::Months enum)
+	  * @param day month day (1-31)
+	  * @return the week number (1 is the first week of the year)
+	  */
+	static const int getWeekOfYear(const int year, const int month, const int day);
 };
 
 

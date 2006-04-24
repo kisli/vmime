@@ -200,6 +200,7 @@ public:
 	const int getSecond() const;
 	const int getZone() const;
 	const int getWeekDay() const;
+	const int getWeek() const;
 
 	void getTime(int& hour, int& minute, int& second, int& zone) const;
 	void getTime(int& hour, int& minute, int& second) const;

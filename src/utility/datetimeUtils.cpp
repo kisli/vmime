@@ -252,5 +252,75 @@ const int datetimeUtils::getDayOfWeek(const int year, const int month, const int
 }
 
 
+const int datetimeUtils::getWeekOfYear(const int year, const int month, const int day)
+{
+	// Algorithm from http://personal.ecu.edu/mccartyr/ISOwdALG.txt
+
+	const bool leapYear = ((year % 4) == 0 && (year % 100) != 0) || (year % 400) == 0;
+	const bool leapYear_1 = (((year - 1) % 4) == 0 && ((year - 1) % 100) != 0) || ((year - 1) % 400) == 0;
+
+	// 4. Find the DayOfYearNumber for Y M D
+	static const int DAY_OF_YEAR_NUMBER_MAP[12] =
+		{ 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 };
+
+	int DayOfYearNumber = day + DAY_OF_YEAR_NUMBER_MAP[month - 1];
+
+	if (leapYear && month > 2)
+		DayOfYearNumber += 1;
+
+	// 5. Find the Jan1Weekday for Y (Monday=1, Sunday=7)
+	const int YY = (year - 1) % 100;
+	const int C = (year - 1) - YY;
+	const int G = YY + YY / 4;
+	const int Jan1Weekday = 1 + (((((C / 100) % 4) * 5) + G) % 7);
+
+	// 6. Find the Weekday for Y M D
+	const int H = DayOfYearNumber + (Jan1Weekday - 1);
+	const int Weekday = 1 + ((H - 1) % 7);
+
+	// 7. Find if Y M D falls in YearNumber Y-1, WeekNumber 52 or 53
+	int YearNumber, WeekNumber;
+
+	if (DayOfYearNumber <= (8 - Jan1Weekday) && Jan1Weekday > 4)
+	{
+		YearNumber = year - 1;
+
+		if (Jan1Weekday == 5 || (Jan1Weekday == 6 && leapYear_1))
+			WeekNumber = 53;
+		else
+			WeekNumber = 52;
+	}
+	else
+	{
+		YearNumber = year;
+	}
+
+	// 8. Find if Y M D falls in YearNumber Y+1, WeekNumber 1
+	if (YearNumber == year)
+	{
+		const int I = (leapYear ? 366 : 365);
+
+		if ((I - DayOfYearNumber) < (4 - Weekday))
+		{
+			YearNumber = year + 1;
+			WeekNumber = 1;
+		}
+	}
+
+	// 9. Find if Y M D falls in YearNumber Y, WeekNumber 1 through 53
+	if (YearNumber == year)
+	{
+		const int J = DayOfYearNumber + (7 - Weekday) + (Jan1Weekday - 1);
+
+		WeekNumber = J / 7;
+
+		if (Jan1Weekday > 4)
+			WeekNumber -= 1;
+	}
+
+	return WeekNumber;
+}
+
+
 } // utility
 } // vmime

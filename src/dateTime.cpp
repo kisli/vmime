@@ -794,6 +794,7 @@ const int datetime::getMinute() const { return (m_minute); }
 const int datetime::getSecond() const { return (m_second); }
 const int datetime::getZone() const { return (m_zone); }
 const int datetime::getWeekDay() const { return (utility::datetimeUtils::getDayOfWeek(m_year, m_month, m_day)); }
+const int datetime::getWeek() const { return utility::datetimeUtils::getWeekOfYear(m_year, m_month, m_day); }
 
 void datetime::setYear(const int year) { m_year = year; }
 void datetime::setMonth(const int month) { m_month = std::min(std::max(month, 1), 12); }

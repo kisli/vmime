@@ -39,6 +39,8 @@ VMIME_TEST_SUITE_BEGIN
 		VMIME_TEST(testGetDaysInMonthLeapYear)
 		VMIME_TEST(testToUniversalTime)
 		VMIME_TEST(testToLocalTime)
+		VMIME_TEST(testGetDayOfWeek)
+		VMIME_TEST(testGetWeekOfYear)
 	VMIME_TEST_LIST_END
 
 
@@ -122,6 +124,41 @@ VMIME_TEST_SUITE_BEGIN
 		VASSERT_EQ("5",   34, local.getMinute());
 		VASSERT_EQ("6",   56, local.getSecond());
 		VASSERT_EQ("7",  120, local.getZone());
+	}
+
+	void testGetDayOfWeek()
+	{
+		VASSERT_EQ("1", vmime::datetime::WEDNESDAY, datetimeUtils::getDayOfWeek(1969, 12, 31));
+		VASSERT_EQ("2", vmime::datetime::FRIDAY,    datetimeUtils::getDayOfWeek(1976,  4,  9));
+		VASSERT_EQ("3", vmime::datetime::TUESDAY,   datetimeUtils::getDayOfWeek(1987,  6, 23));
+		VASSERT_EQ("4", vmime::datetime::SATURDAY,  datetimeUtils::getDayOfWeek(1990,  1, 13));
+		VASSERT_EQ("5", vmime::datetime::MONDAY,    datetimeUtils::getDayOfWeek(1999,  9, 20));
+		VASSERT_EQ("6", vmime::datetime::THURSDAY,  datetimeUtils::getDayOfWeek(2003,  2, 27));
+		VASSERT_EQ("7", vmime::datetime::SATURDAY,  datetimeUtils::getDayOfWeek(2005, 11, 19));
+		VASSERT_EQ("8", vmime::datetime::WEDNESDAY, datetimeUtils::getDayOfWeek(2012,  5, 16));
+		VASSERT_EQ("9", vmime::datetime::FRIDAY,    datetimeUtils::getDayOfWeek(2027,  3, 12));
+	}
+
+	void testGetWeekOfYear()
+	{
+		VASSERT_EQ("1.1", 52, datetimeUtils::getWeekOfYear(2003, 12, 27));
+		VASSERT_EQ("1.2", 52, datetimeUtils::getWeekOfYear(2003, 12, 28));
+		VASSERT_EQ("1.3",  1, datetimeUtils::getWeekOfYear(2003, 12, 29));
+		VASSERT_EQ("1.4",  1, datetimeUtils::getWeekOfYear(2004,  1,  4));
+		VASSERT_EQ("1.5",  2, datetimeUtils::getWeekOfYear(2004,  1,  5));
+		VASSERT_EQ("1.6",  2, datetimeUtils::getWeekOfYear(2004,  1, 11));
+
+		VASSERT_EQ("2.1", 52, datetimeUtils::getWeekOfYear(2004, 12, 26));
+		VASSERT_EQ("2.2", 53, datetimeUtils::getWeekOfYear(2004, 12, 27));
+		VASSERT_EQ("2.3", 53, datetimeUtils::getWeekOfYear(2005,  1,  2));
+		VASSERT_EQ("2.4",  1, datetimeUtils::getWeekOfYear(2005,  1,  3));
+		VASSERT_EQ("2.5",  1, datetimeUtils::getWeekOfYear(2005,  1,  4));
+		VASSERT_EQ("2.6",  2, datetimeUtils::getWeekOfYear(2005,  1, 11));
+
+		VASSERT_EQ("3.1",  9, datetimeUtils::getWeekOfYear(2027,  3,  7));
+		VASSERT_EQ("3.2", 10, datetimeUtils::getWeekOfYear(2027,  3,  8));
+		VASSERT_EQ("3.3", 10, datetimeUtils::getWeekOfYear(2027,  3, 14));
+		VASSERT_EQ("3.4", 11, datetimeUtils::getWeekOfYear(2027,  3, 15));
 	}
 
 VMIME_TEST_SUITE_END
