@@ -108,6 +108,9 @@ const string SMTPResponse::readResponseLine()
 {
 	string currentBuffer = m_responseBuffer;
 
+	if (m_timeoutHandler)
+		m_timeoutHandler->resetTimeOut();
+
 	while (true)
 	{
 		// Get a line from the response buffer

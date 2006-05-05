@@ -5075,6 +5075,9 @@ public:
 		ref <timeoutHandler> toh = m_timeoutHandler.acquire();
 		ref <socket> sok = m_socket.acquire();
 
+		if (toh)
+			toh->resetTimeOut();
+
 		while (receiveBuffer.empty())
 		{
 			// Check whether the time-out delay is elapsed
