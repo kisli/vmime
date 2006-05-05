@@ -173,7 +173,7 @@ void SMTPTransport::connect()
 	const bool tlsRequired = HAS_PROPERTY(PROPERTY_CONNECTION_TLS_REQUIRED)
 		&& GET_PROPERTY(bool, PROPERTY_CONNECTION_TLS_REQUIRED);
 
-	if (!m_isSMTPS && tls)  // only if not POP3S
+	if (!m_isSMTPS && tls)  // only if not SMTPS
 	{
 		try
 		{
