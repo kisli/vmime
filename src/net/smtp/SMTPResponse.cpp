@@ -114,11 +114,16 @@ const string SMTPResponse::readResponseLine()
 	while (true)
 	{
 		// Get a line from the response buffer
-		string::size_type lineEnd = currentBuffer.find_first_of('\n');
+		const string::size_type lineEnd = currentBuffer.find_first_of('\n');
 
 		if (lineEnd != string::npos)
 		{
-			const string line(currentBuffer.begin(), currentBuffer.begin() + lineEnd);
+			string::size_type actualLineEnd = lineEnd;
+
+			if (actualLineEnd != 0 && currentBuffer[actualLineEnd - 1] == '\r')  // CRLF case
+				actualLineEnd--;
+
+			const string line(currentBuffer.begin(), currentBuffer.begin() + actualLineEnd);
 
 			currentBuffer.erase(currentBuffer.begin(), currentBuffer.begin() + lineEnd + 1);
 			m_responseBuffer = currentBuffer;
@@ -154,19 +159,20 @@ const SMTPResponse::responseLine SMTPResponse::getNextResponse()
 {
 	string line = readResponseLine();
 
-	// Special case where CRLF occurs after response code
-	if (line.length() < 4)
-		line = line + '\n' + readResponseLine();
-
 	const int code = extractResponseCode(line);
 	string text;
+
+	// Special case where CRLF occurs after response code
+	// in "Positive Intermediate replies" (3yz reply)
+	if (line.length() < 4 && (code / 100) == 3)
+		line = line + '\n' + readResponseLine();
 
 	m_responseContinues = (line.length() >= 4 && line[3] == '-');
 
 	if (line.length() > 4)
 		text = utility::stringUtils::trim(line.substr(4));
 	else
-		text = utility::stringUtils::trim(line);
+		text = "";
 
 	return responseLine(code, text);
 }
