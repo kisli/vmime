@@ -333,6 +333,7 @@ libvmimetest_common = [
 
 libvmimetest_sources = [
 	'tests/testRunner.cpp',
+	'tests/testUtils.cpp',
 	# ==============================  Parser  ==============================
 	'tests/parser/attachmentHelperTest.cpp',
 	'tests/parser/bodyPartTest.cpp',
@@ -360,7 +361,10 @@ libvmimetest_sources = [
 	'tests/misc/importanceHelperTest.cpp',
 	# =============================  Security  =============================
 	'tests/security/digest/md5Test.cpp',
-	'tests/security/digest/sha1Test.cpp'
+	'tests/security/digest/sha1Test.cpp',
+	# ===============================  Net  ================================
+	'tests/net/smtp/SMTPTransportTest.cpp',
+	'tests/net/smtp/SMTPResponseTest.cpp'
 ]
 
 libvmime_autotools = [

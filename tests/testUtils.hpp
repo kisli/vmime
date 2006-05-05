@@ -193,3 +193,113 @@ inline std::ostream& operator<<(std::ostream& os, const vmime::datetime& d)
 
 }
 
+
+
+// Used to test network features.
+//
+// This works like a local pipe: client reads and writes data using receive()
+// and send(). Server reads incoming data with localReceive() and sends data
+// to client with localSend().
+
+class testSocket : public vmime::net::socket
+{
+public:
+
+	void connect(const vmime::string& address, const vmime::port_t port);
+	void disconnect();
+
+	const bool isConnected() const;
+
+	void receive(vmime::string& buffer);
+	void send(const vmime::string& buffer);
+
+	const int receiveRaw(char* buffer, const int count);
+	void sendRaw(const char* buffer, const int count);
+
+	/** Send data to client.
+	  *
+	  * @buffer data to send
+	  */
+	void localSend(const vmime::string& buffer);
+
+	/** Receive data from client.
+	  *
+	  * @buffer buffer in which to store received data
+	  */
+	void localReceive(vmime::string& buffer);
+
+protected:
+
+	/** Called when the client has sent some data.
+	  */
+	virtual void onDataReceived();
+
+	/** Called when the client has connected.
+	  */
+	virtual void onConnected();
+
+private:
+
+	vmime::string m_address;
+	vmime::port_t m_port;
+	bool m_connected;
+
+	vmime::string m_inBuffer;
+	vmime::string m_outBuffer;
+};
+
+
+template <typename T>
+class testSocketFactory : public vmime::net::socketFactory
+{
+public:
+
+	vmime::ref <vmime::net::socket> create()
+	{
+		return vmime::create <T>();
+	}
+};
+
+
+class lineBasedTestSocket : public testSocket
+{
+public:
+
+	void onDataReceived();
+
+	const vmime::string getNextLine();
+	const bool haveMoreLines() const;
+
+	virtual void processCommand() = 0;
+
+private:
+
+	std::vector <vmime::string> m_lines;
+	std::string m_buffer;
+};
+
+
+class testTimeoutHandler : public vmime::net::timeoutHandler
+{
+public:
+
+	testTimeoutHandler(const unsigned int delay = 3);
+
+	const bool isTimeOut();
+	void resetTimeOut();
+	const bool handleTimeOut();
+
+private:
+
+	unsigned int m_delay;
+	unsigned int m_start;
+};
+
+
+class testTimeoutHandlerFactory : public vmime::net::timeoutHandlerFactory
+{
+public:
+
+	vmime::ref <vmime::net::timeoutHandler> create();
+};
+
