@@ -278,10 +278,10 @@ void SMTPTransport::authenticateSASL()
 		while (liss >> word)
 		{
 			if (word.length() == 4 &&
-			    (word[0] == 'A' || word[0] == 'a') ||
-			    (word[0] == 'U' || word[0] == 'u') ||
-			    (word[0] == 'T' || word[0] == 't') ||
-			    (word[0] == 'H' || word[0] == 'h'))
+			    (word[0] == 'A' || word[0] == 'a') &&
+			    (word[1] == 'U' || word[1] == 'u') &&
+			    (word[2] == 'T' || word[2] == 't') &&
+			    (word[3] == 'H' || word[3] == 'h'))
 			{
 				inAuth = true;
 			}
