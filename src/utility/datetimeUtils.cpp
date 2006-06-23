@@ -279,7 +279,7 @@ const int datetimeUtils::getWeekOfYear(const int year, const int month, const in
 	const int Weekday = 1 + ((H - 1) % 7);
 
 	// 7. Find if Y M D falls in YearNumber Y-1, WeekNumber 52 or 53
-	int YearNumber, WeekNumber;
+	int YearNumber = 0, WeekNumber = 0;
 
 	if (DayOfYearNumber <= (8 - Jan1Weekday) && Jan1Weekday > 4)
 	{
