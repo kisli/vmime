@@ -2,6 +2,11 @@
 VERSION 0.8.1cvs
 ================
 
+2006-07-13  Vincent Richard  <vincent@vincent-richard.net>
+
+ * Fixed bugs in MHTML code: 'CID' prefix should not be case-sensitive;
+   fixed detection of parts identified by a 'Content-Location'.
+
 2006-04-23  Vincent Richard  <vincent@vincent-richard.net>
 
  * Added vmime::net::folder::destroy() to delete folders on IMAP and

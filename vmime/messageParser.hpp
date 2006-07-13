@@ -148,8 +148,8 @@ private:
 
 	void findAttachments(ref <const message> msg);
 
-	void findTextParts(const bodyPart& msg, const bodyPart& part);
-	bool findSubTextParts(const bodyPart& msg, const bodyPart& part);
+	void findTextParts(ref <const bodyPart> msg, ref <const bodyPart> part);
+	bool findSubTextParts(ref <const bodyPart> msg, ref <const bodyPart> part);
 };
 
 

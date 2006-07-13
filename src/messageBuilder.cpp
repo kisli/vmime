@@ -105,12 +105,12 @@ ref <message> messageBuilder::construct() const
 
 		// Generate the text parts into this sub-part (normally, this
 		// sub-part will have the "multipart/alternative" content-type...)
-		m_textPart->generateIn(*msg, *subPart);
+		m_textPart->generateIn(msg, subPart);
 	}
 	else
 	{
 		// Generate the text part(s) directly into the message
-		m_textPart->generateIn(*msg, *msg);
+		m_textPart->generateIn(msg, msg);
 
 		// If any attachment, set message content-type to "multipart/mixed"
 		if (!m_attach.empty())

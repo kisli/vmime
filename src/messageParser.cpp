@@ -100,7 +100,7 @@ void messageParser::parse(ref <const message> msg)
 	findAttachments(msg);
 
 	// Text parts
-	findTextParts(*msg, *msg);
+	findTextParts(msg, msg);
 }
 
 
@@ -110,11 +110,11 @@ void messageParser::findAttachments(ref <const message> msg)
 }
 
 
-void messageParser::findTextParts(const bodyPart& msg, const bodyPart& part)
+void messageParser::findTextParts(ref <const bodyPart> msg, ref <const bodyPart> part)
 {
 	// Handle the case in which the message is not multipart: if the body part is
 	// "text/*", take this part.
-	if (part.getBody()->getPartCount() == 0)
+	if (part->getBody()->getPartCount() == 0)
 	{
 		mediaType type(mediaTypes::TEXT, mediaTypes::TEXT_PLAIN);
 		bool accept = false;
@@ -122,7 +122,7 @@ void messageParser::findTextParts(const bodyPart& msg, const bodyPart& part)
 		try
 		{
 			const contentTypeField& ctf = dynamic_cast<contentTypeField&>
-				(*msg.getHeader()->findField(fields::CONTENT_TYPE));
+				(*msg->getHeader()->findField(fields::CONTENT_TYPE));
 
 			const mediaType ctfType =
 				*ctf.getValue().dynamicCast <const mediaType>();
@@ -155,7 +155,7 @@ void messageParser::findTextParts(const bodyPart& msg, const bodyPart& part)
 }
 
 
-bool messageParser::findSubTextParts(const bodyPart& msg, const bodyPart& part)
+bool messageParser::findSubTextParts(ref <const bodyPart> msg, ref <const bodyPart> part)
 {
 	// In general, all the text parts are contained in parallel in the same
 	// parent part (or message).
@@ -164,9 +164,9 @@ bool messageParser::findSubTextParts(const bodyPart& msg, const bodyPart& part)
 
 	std::vector <ref <const bodyPart> > textParts;
 
-	for (int i = 0 ; i < part.getBody()->getPartCount() ; ++i)
+	for (int i = 0 ; i < part->getBody()->getPartCount() ; ++i)
 	{
-		const ref <const bodyPart> p = part.getBody()->getPartAt(i);
+		const ref <const bodyPart> p = part->getBody()->getPartAt(i);
 
 		try
 		{
@@ -200,7 +200,7 @@ bool messageParser::findSubTextParts(const bodyPart& msg, const bodyPart& part)
 			try
 			{
 				ref <textPart> txtPart = textPartFactory::getInstance()->create(type);
-				txtPart->parse(msg, part, **p);
+				txtPart->parse(msg, part, *p);
 
 				m_textParts.push_back(txtPart);
 			}
@@ -209,21 +209,16 @@ bool messageParser::findSubTextParts(const bodyPart& msg, const bodyPart& part)
 				// Content-type not recognized.
 			}
 		}
-
-		//return true;
 	}
 
-	//else
+	bool found = false;
+
+	for (int i = 0 ; !found && (i < part->getBody()->getPartCount()) ; ++i)
 	{
-		bool found = false;
-
-		for (int i = 0 ; !found && (i < part.getBody()->getPartCount()) ; ++i)
-		{
-			found = findSubTextParts(msg, *part.getBody()->getPartAt(i));
-		}
-
-		return found;
+		found = findSubTextParts(msg, part->getBody()->getPartAt(i));
 	}
+
+	return found;
 }
 
 

@@ -81,12 +81,28 @@ public:
 	  */
 	virtual void setText(ref <contentHandler> text) = 0;
 
-protected:
-
+	/** Return the actual body parts this text part is composed of.
+	  * For example, HTML parts are composed of two parts: one "text/html"
+	  * part, and the plain text part "text/plain".
+	  *
+	  * @return number of body parts
+	  */
 	virtual const int getPartCount() const = 0;
 
-	virtual void generateIn(bodyPart& message, bodyPart& parent) const = 0;
-	virtual void parse(const bodyPart& message, const bodyPart& parent, const bodyPart& textPart) = 0;
+	/** Generate the text part(s) into the specified message.
+	  *
+	  * @param message the message
+	  * @param parent body part into which generate this part
+	  */
+	virtual void generateIn(ref <bodyPart> message, ref <bodyPart> parent) const = 0;
+
+	/** Parse the text part(s) from the specified message.
+	  *
+	  * @param message message containing the text part
+	  * @param parent part containing the text part
+	  * @param textPart actual text part
+	  */
+	virtual void parse(ref <const bodyPart> message, ref <const bodyPart> parent, ref <const bodyPart> textPart) = 0;
 };
 
 

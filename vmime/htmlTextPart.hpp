@@ -131,6 +131,8 @@ public:
 	const ref <const embeddedObject> getObjectAt(const int pos) const;
 
 	/** Embed an object and returns a string which identifies it.
+	  * The returned identifier is suitable for use in the 'src' attribute
+	  * of an <img> tag.
 	  *
 	  * \deprecated Use the addObject() methods which take a 'contentHandler'
 	  * parameter type instead.
@@ -143,6 +145,8 @@ public:
 	const string addObject(const string& data, const mediaType& type);
 
 	/** Embed an object and returns a string which identifies it.
+	  * The returned identifier is suitable for use in the 'src' attribute
+	  * of an <img> tag.
 	  *
 	  * @param data object data
 	  * @param type data type
@@ -152,6 +156,8 @@ public:
 	const string addObject(ref <contentHandler> data, const mediaType& type);
 
 	/** Embed an object and returns a string which identifies it.
+	  * The returned identifier is suitable for use in the 'src' attribute
+	  * of an <img> tag.
 	  *
 	  * @param data object data
 	  * @param enc data encoding
@@ -160,6 +166,12 @@ public:
 	  * object among all other embedded objects
 	  */
 	const string addObject(ref <contentHandler> data, const encoding& enc, const mediaType& type);
+
+
+	const int getPartCount() const;
+
+	void generateIn(ref <bodyPart> message, ref <bodyPart> parent) const;
+	void parse(ref <const bodyPart> message, ref <const bodyPart> parent, ref <const bodyPart> textPart);
 
 private:
 
@@ -174,10 +186,7 @@ private:
 
 	bool findPlainTextPart(const bodyPart& part, const bodyPart& parent, const bodyPart& textPart);
 
-	const int getPartCount() const;
-
-	void generateIn(bodyPart& message, bodyPart& parent) const;
-	void parse(const bodyPart& message, const bodyPart& parent, const bodyPart& textPart);
+	static const string cleanId(const string& id);
 };
 
 
