@@ -251,7 +251,7 @@ void attachmentHelper::addAttachment(ref <message> msg, ref <attachment> att)
 	}
 
 	// Generate the attachment part
-	att->generateIn(*part);
+	att->generateIn(part);
 }
 
 

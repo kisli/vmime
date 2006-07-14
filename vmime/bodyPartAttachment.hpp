@@ -62,7 +62,7 @@ public:
 
 private:
 
-	void generateIn(bodyPart& parent) const;
+	void generateIn(ref <bodyPart> parent) const;
 
 	ref <const contentDispositionField> getContentDisposition() const;
 	ref <const contentTypeField> getContentType() const;

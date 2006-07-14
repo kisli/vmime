@@ -95,7 +95,7 @@ ref <message> generatedMessageAttachment::getMessage() const
 }
 
 
-void generatedMessageAttachment::generateIn(bodyPart& /* parent */) const
+void generatedMessageAttachment::generateIn(ref <bodyPart> /* parent */) const
 {
 	// Not used (see 'parsedMessageAttachment')
 }

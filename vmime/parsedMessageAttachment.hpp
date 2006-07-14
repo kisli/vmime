@@ -59,7 +59,7 @@ public:
 
 protected:
 
-	void generateIn(bodyPart& parent) const;
+	void generateIn(ref <bodyPart> parent) const;
 
 private:
 

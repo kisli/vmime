@@ -153,7 +153,7 @@ ref <const contentTypeField> bodyPartAttachment::getContentType() const
 }
 
 
-void bodyPartAttachment::generateIn(bodyPart& /* parent */) const
+void bodyPartAttachment::generateIn(ref <bodyPart> /* parent */) const
 {
 	// Not used
 }

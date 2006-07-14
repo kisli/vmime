@@ -108,7 +108,7 @@ protected:
 	  *
 	  * @param parent body part in which to generate the attachment
 	  */
-	virtual void generateIn(bodyPart& parent) const = 0;
+	virtual void generateIn(ref <bodyPart> parent) const = 0;
 };
 
 

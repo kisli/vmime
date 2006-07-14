@@ -74,11 +74,11 @@ protected:
 private:
 
 	// No need to override "generateIn", use "generatePart" instead (see below).
-	void generateIn(bodyPart& parent) const;
+	void generateIn(ref <bodyPart> parent) const;
 
 protected:
 
-	virtual void generatePart(bodyPart& part) const;
+	virtual void generatePart(ref <bodyPart> part) const;
 };
 
 

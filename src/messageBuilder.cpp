@@ -132,7 +132,7 @@ ref <message> messageBuilder::construct() const
 		for (std::vector <ref <attachment> >::const_iterator a = m_attach.begin() ;
 		     a != m_attach.end() ; ++a)
 		{
-			(*a)->generateIn(*msg);
+			(*a)->generateIn(msg);
 		}
 	}
 

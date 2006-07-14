@@ -95,11 +95,11 @@ ref <message> parsedMessageAttachment::getMessage() const
 }
 
 
-void parsedMessageAttachment::generateIn(bodyPart& parent) const
+void parsedMessageAttachment::generateIn(ref <bodyPart> parent) const
 {
 	// Create and append a new part for this attachment
 	ref <bodyPart> part = vmime::create <bodyPart>();
-	parent.getBody()->appendPart(part);
+	parent->getBody()->appendPart(part);
 
 	// Set header fields
 	part->getHeader()->ContentType()->setValue(getType());

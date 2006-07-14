@@ -166,7 +166,7 @@ private:
 
 	fileInfo m_fileInfo;
 
-	void generatePart(bodyPart& part) const;
+	void generatePart(ref <bodyPart> part) const;
 };
 
 

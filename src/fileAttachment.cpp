@@ -66,7 +66,7 @@ void fileAttachment::setData(const string& filename)
 
 	if (!*file)
 	{
-		delete (file);
+		delete file;
 		throw exceptions::open_file_error();
 	}
 
@@ -76,11 +76,11 @@ void fileAttachment::setData(const string& filename)
 }
 
 
-void fileAttachment::generatePart(bodyPart& part) const
+void fileAttachment::generatePart(ref <bodyPart> part) const
 {
 	defaultAttachment::generatePart(part);
 
-	ref <contentDispositionField> cdf = part.getHeader()->ContentDisposition().
+	ref <contentDispositionField> cdf = part->getHeader()->ContentDisposition().
 		dynamicCast <contentDispositionField>();
 
 	if (m_fileInfo.hasSize()) cdf->setSize(utility::stringUtils::toString(m_fileInfo.getSize()));
@@ -93,13 +93,13 @@ void fileAttachment::generatePart(bodyPart& part) const
 
 const fileAttachment::fileInfo& fileAttachment::getFileInfo() const
 {
-	return (m_fileInfo);
+	return m_fileInfo;
 }
 
 
 fileAttachment::fileInfo& fileAttachment::getFileInfo()
 {
-	return (m_fileInfo);
+	return m_fileInfo;
 }
 
 
