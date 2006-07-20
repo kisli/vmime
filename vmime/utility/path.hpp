@@ -49,7 +49,7 @@ public:
 	path();
 	path(const component& c);
 	path(const path& p);
-	path(const string& s);
+	explicit path(const string& s);
 
 	// Append a component to a path
 	path operator/(const path& p) const;
