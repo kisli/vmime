@@ -244,6 +244,14 @@ static std::ostream& operator<<(std::ostream& os, const vmime::exception& e)
 		os << "    response = " << cee.response() << std::endl;
 	}
 
+	if (dynamic_cast <const vmime::exceptions::invalid_response*>(&e))
+	{
+		const vmime::exceptions::invalid_response& ir =
+			dynamic_cast <const vmime::exceptions::invalid_response&>(e);
+
+		os << "    response = " << ir.response() << std::endl;
+	}
+
 	if (dynamic_cast <const vmime::exceptions::connection_greeting_error*>(&e))
 	{
 		const vmime::exceptions::connection_greeting_error& cgee =
