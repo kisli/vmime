@@ -32,6 +32,7 @@ VMIME_TEST_SUITE_BEGIN
 
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testParse)
+		VMIME_TEST(testParseInvalid)
 		VMIME_TEST(testGenerate)
 	VMIME_TEST_LIST_END
 
@@ -43,6 +44,15 @@ VMIME_TEST_SUITE_BEGIN
 
 		VASSERT_EQ("1.1", "a", m1.getLeft());
 		VASSERT_EQ("1.2", "b", m1.getRight());
+	}
+
+	void testParseInvalid()
+	{
+		vmime::messageId m1;
+		m1.parse("foo@bar");
+
+		VASSERT_EQ("1.1", "foo", m1.getLeft());
+		VASSERT_EQ("1.2", "bar", m1.getRight());
 	}
 
 	void testGenerate()

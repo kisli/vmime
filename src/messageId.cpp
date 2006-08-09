@@ -101,6 +101,18 @@ void messageId::parse(const string& buffer, const string::size_type position,
 		}
 	}
 
+	// Fix for message ids without angle brackets (invalid)
+	bool hasBrackets = true;
+
+	if (p == pend)  // no opening angle bracket found
+	{
+		hasBrackets = false;
+		p = pstart;
+
+		while (p < pend && parserHelpers::isSpace(*p))
+			++p;
+	}
+
 	if (p < pend)
 	{
 		// Extract left part
@@ -119,7 +131,7 @@ void messageId::parse(const string& buffer, const string::size_type position,
 			// Extract right part
 			const string::size_type rightStart = position + (p - pstart);
 
-			while (p < pend && *p != '>') ++p;
+			while (p < pend && *p != '>' && (hasBrackets || !parserHelpers::isSpace(*p))) ++p;
 
 			m_right = string(buffer.begin() + rightStart,
 			                 buffer.begin() + position + (p - pstart));
