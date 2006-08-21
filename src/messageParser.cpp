@@ -30,6 +30,7 @@
 
 #include "vmime/relay.hpp"
 #include "vmime/contentTypeField.hpp"
+#include "vmime/contentDispositionField.hpp"
 
 
 namespace vmime
@@ -174,10 +175,24 @@ bool messageParser::findSubTextParts(ref <const bodyPart> msg, ref <const bodyPa
 				(*(p->getHeader()->findField(fields::CONTENT_TYPE)));
 
 			const mediaType type = *ctf.getValue().dynamicCast <const mediaType>();
+			contentDisposition disp; // default should be inline
 
 			if (type.getType() == mediaTypes::TEXT)
 			{
-				textParts.push_back(p);
+				try
+				{
+					ref <const contentDispositionField> cdf = p->getHeader()->
+						findField(fields::CONTENT_DISPOSITION).dynamicCast <const contentDispositionField>();
+
+					disp = *cdf->getValue().dynamicCast <const contentDisposition>();
+				}
+				catch (exceptions::no_such_field&)
+				{
+					// No "Content-Disposition" field, assume default
+				}
+
+				if (disp.getName() == contentDispositionTypes::INLINE)
+					textParts.push_back(p);
 			}
 		}
 		catch (exceptions::no_such_field&)
