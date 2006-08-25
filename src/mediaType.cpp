@@ -60,9 +60,9 @@ void mediaType::parse(const string& buffer, const string::size_type position,
 
 	while (p < pend && *p != '/') ++p;
 
-	m_type = utility::stringUtils::toLower(
+	m_type = utility::stringUtils::trim(utility::stringUtils::toLower(
 		string(buffer.begin() + typeStart,
-	            buffer.begin() + position + (p - pstart)));
+	            buffer.begin() + position + (p - pstart))));
 
 	if (p < pend)
 	{
@@ -70,9 +70,9 @@ void mediaType::parse(const string& buffer, const string::size_type position,
 		++p;
 
 		// Extract the sub-type
-		m_subType = utility::stringUtils::toLower(
+		m_subType = utility::stringUtils::trim(utility::stringUtils::toLower(
 			string(buffer.begin() + position + (p - pstart),
-		            buffer.begin() + end));
+		            buffer.begin() + end)));
 	}
 
 	setParsedBounds(position, end);

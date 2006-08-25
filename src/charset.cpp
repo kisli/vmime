@@ -56,7 +56,8 @@ charset::charset(const char* name)
 void charset::parse(const string& buffer, const string::size_type position,
 	const string::size_type end, string::size_type* newPosition)
 {
-	m_name = string(buffer.begin() + position, buffer.begin() + end);
+	m_name = utility::stringUtils::trim
+		(string(buffer.begin() + position, buffer.begin() + end));
 
 	setParsedBounds(position, end);
 

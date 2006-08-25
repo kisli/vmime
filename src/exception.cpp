@@ -123,8 +123,8 @@ const char* charset_conv_error::name() const throw() { return "charset_conv_erro
 //
 
 no_encoder_available::~no_encoder_available() throw() {}
-no_encoder_available::no_encoder_available(const exception& other)
-	: exception("No encoder available.", other) {}
+no_encoder_available::no_encoder_available(const string& name, const exception& other)
+	: exception("No encoder available: '" + name + "'.", other) {}
 
 exception* no_encoder_available::clone() const { return new no_encoder_available(*this); }
 const char* no_encoder_available::name() const throw() { return "no_encoder_available"; }

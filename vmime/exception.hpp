@@ -129,7 +129,7 @@ class no_encoder_available : public vmime::exception
 {
 public:
 
-	no_encoder_available(const exception& other = NO_EXCEPTION);
+	no_encoder_available(const string& name, const exception& other = NO_EXCEPTION);
 	~no_encoder_available() throw();
 
 	exception* clone() const;

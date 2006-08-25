@@ -77,7 +77,7 @@ const ref <const encoderFactory::registeredEncoder> encoderFactory::getEncoderBy
 			return (*it);
 	}
 
-	throw exceptions::no_encoder_available();
+	throw exceptions::no_encoder_available(name);
 }
 
 
