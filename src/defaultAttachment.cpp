@@ -24,6 +24,7 @@
 #include "vmime/defaultAttachment.hpp"
 
 #include "vmime/contentDisposition.hpp"
+#include "vmime/contentDispositionField.hpp"
 #include "vmime/encoding.hpp"
 
 
@@ -93,6 +94,7 @@ void defaultAttachment::generatePart(ref <bodyPart> part) const
 	if (!m_desc.isEmpty()) part->getHeader()->ContentDescription()->setValue(m_desc);
 	part->getHeader()->ContentTransferEncoding()->setValue(m_encoding);
 	part->getHeader()->ContentDisposition()->setValue(contentDisposition(contentDispositionTypes::ATTACHMENT));
+	part->getHeader()->ContentDisposition().dynamicCast <contentDispositionField>()->setFilename(m_name);
 
 	// Set contents
 	part->getBody()->setContents(m_data);
