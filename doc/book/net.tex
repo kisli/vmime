@@ -726,6 +726,30 @@ private:
 };
 \end{lstlisting}
 
+To make the service use your time-out handler, you need to write a factory
+class, to allow the service to create instances of the handler class. This
+is required because the service can use several connections to the server
+simultaneously, and each connection needs its own time-out handler.
+
+\begin{lstlisting}
+class myTimeoutHandlerFactory : public vmime::net::timeoutHandlerFactory
+{
+public:
+
+   ref <timeoutHandler> create()
+   {
+      return vmime::create <myTimeoutHandler>();
+   }
+};
+\end{lstlisting}
+
+Then, call the {\vcode setTimeoutHandlerFactory()} method on the service object
+to set the time-out handler factory to use during the session:
+
+\begin{lstlisting}
+theService->setTimeoutHandlerFactory(vmime::create <myTimeoutHandlerFactory>());
+\end{lstlisting}
+
 
 % ============================================================================
 \newpage
@@ -812,7 +836,7 @@ issuer, and so on.
 To decide whether the server can be trusted or not, you have to verify that
 \emph{each} certificate is valid (ie. is trusted). For more information
 about X.509 and certificate verification, see related articles on Wikipedia
-\footnote{\url{See http://wikipedia.org/wiki/Public\_key\_certificate}}.
+\footnote{See \url{http://wikipedia.org/wiki/Public\_key\_certificate}}.
 
 \subsubsection{Using the default certificate verifier} % .....................
 
@@ -943,4 +967,10 @@ public:
 \vnote{In production code, it may be a good idea to remember user's decisions
 about which certificates to trust and which not. See {\vexample Example6} for
 a basic cache implementation.}
+
+Finally, to make the service use your own certificate verifier, simply write:
+
+\begin{lstlisting}
+theService->setCertificateVerifier(vmime::create <myCertVerifier>());
+\end{lstlisting}
 
