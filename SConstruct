@@ -140,6 +140,7 @@ libvmime_sources = [
 	'textPart.hpp',
 	'types.hpp',
 	'word.cpp', 'word.hpp',
+	'wordEncoder.cpp', 'wordEncoder.hpp',
 	'vmime.hpp',
 	# ==============================  Utility  =============================
 	'utility/childProcess.hpp',

@@ -41,7 +41,32 @@ VMIME_TEST_SUITE_BEGIN
 		VMIME_TEST(testWordConstructors)
 		VMIME_TEST(testWordParse)
 		VMIME_TEST(testWordGenerate)
+		VMIME_TEST(testWordGenerateMultiBytes)
 	VMIME_TEST_LIST_END
+
+
+	static const vmime::string getDisplayText(const vmime::text& t)
+	{
+		vmime::string res;
+
+		for (int i = 0 ; i < t.getWordCount() ; ++i)
+			res += t.getWordAt(i)->getBuffer();
+
+		return res;
+	}
+
+	static const vmime::string cleanGeneratedWords(const std::string& str)
+	{
+		std::istringstream iss(str);
+
+		std::string res;
+		std::string x;
+
+		while (std::getline(iss, x))
+			res += vmime::utility::stringUtils::trim(x);
+
+		return res;
+	}
 
 
 	void testConstructors()
@@ -171,16 +196,6 @@ VMIME_TEST_SUITE_BEGIN
 		// TODO
 	}
 
-	static const vmime::string getDisplayText(const vmime::text& t)
-	{
-		vmime::string res;
-
-		for (int i = 0 ; i < t.getWordCount() ; ++i)
-			res += t.getWordAt(i)->getBuffer();
-
-		return res;
-	}
-
 	void testDisplayForm()
 	{
 #define DISPLAY_FORM(x) getDisplayText(*vmime::text::decodeAndUnfold(x))
@@ -252,6 +267,16 @@ VMIME_TEST_SUITE_BEGIN
 
 		VASSERT_EQ("2", "=?foo?B?8fLz9PU=?=",
 			vmime::word("\xf1\xf2\xf3\xf4\xf5", vmime::charset("foo")).generate());
+	}
+
+	void testWordGenerateMultiBytes()
+	{
+		// Ensure we don't encode a non-integral number of characters
+		VASSERT_EQ("1", "=?utf-8?Q?aaa?==?utf-8?Q?=C3=A9?==?utf-8?Q?zzz?=",
+			cleanGeneratedWords(vmime::word("aaa\xc3\xa9zzz", vmime::charset("utf-8")).generate(16)));
+
+		VASSERT_EQ("1", "=?utf-8?Q?aaa=C3=A9?==?utf-8?Q?zzz?=",
+			cleanGeneratedWords(vmime::word("aaa\xc3\xa9zzz", vmime::charset("utf-8")).generate(17)));
 	}
 
 VMIME_TEST_SUITE_END

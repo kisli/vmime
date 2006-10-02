@@ -32,6 +32,8 @@
 #include "vmime/encoderB64.hpp"
 #include "vmime/encoderQP.hpp"
 
+#include "vmime/wordEncoder.hpp"
+
 
 namespace vmime
 {
@@ -481,12 +483,11 @@ void word::generate(utility::outputStream& os, const string::size_type maxLineLe
 				? maxLineLength
 				: std::min(maxLineLength, static_cast <string::size_type>(76));
 
-		// Base64 if more than 60% non-ascii, quoted-printable else (default)
-		const string::size_type asciiPercent = (m_buffer.length() == 0 ? 100 : (100 * asciiCount) / m_buffer.length());
-		const string::value_type encoding = (asciiPercent <= 40) ? 'B' : 'Q';
+		wordEncoder wordEnc(m_buffer, m_charset);
 
-		string wordStart("=?" + m_charset.getName() + "?" + encoding + "?");
-		string wordEnd("?=");
+		const string wordStart("=?" + m_charset.getName() + "?" +
+			(wordEnc.getEncoding() == wordEncoder::ENCODING_B64 ? 'B' : 'Q') + "?");
+		const string wordEnd("?=");
 
 		const string::size_type minWordLength = wordStart.length() + wordEnd.length();
 		const string::size_type maxLineLength2 = (maxLineLength3 < minWordLength + 1)
@@ -520,125 +521,40 @@ void word::generate(utility::outputStream& os, const string::size_type maxLineLe
 		}
 
 		// Encode and fold input buffer
-		string::const_iterator pos = m_buffer.begin();
-		string::size_type remaining = m_buffer.length();
-
-		encoder* theEncoder = NULL;
-
-		if (encoding == 'B') theEncoder = new encoderB64;
-		else theEncoder = new encoderQP;
-
-		string qpEncodedBuffer;
-
-		if (encoding == 'Q')
-		{
-			theEncoder->getProperties()["rfc2047"] = true;
-
-			// In the case of Quoted-Printable encoding, we cannot simply encode input
-			// buffer line by line. So, we encode the whole buffer and we will fold it
-			// in the next loop...
-			utility::inputStreamStringAdapter in(m_buffer);
-			utility::outputStreamStringAdapter out(qpEncodedBuffer);
-
-			theEncoder->encode(in, out);
-
-			pos = qpEncodedBuffer.begin();
-			remaining = qpEncodedBuffer.length();
-		}
-
-#if 1
 		if (curLineLength != 1 && !isFirstWord)
 		{
 			os << " "; // Separate from previous word
 			++curLineLength;
 		}
-#endif
 
-		for ( ; remaining ; )
+		for (unsigned int i = 0 ; ; ++i)
 		{
-			// Start a new encoded word
-			os << wordStart;
-			curLineLength += minWordLength;
-
 			// Compute the number of encoded chars that will fit on this line
-			const string::size_type fit = maxLineLength2 - curLineLength;
+			const string::size_type fit = maxLineLength2 - minWordLength
+				- (i == 0 ? curLineLength : NEW_LINE_SEQUENCE_LENGTH);
 
-			// Base-64 encoding
-			if (encoding == 'B')
-			{
-				// TODO: WARNING! "Any encoded word which encodes a non-integral
-				// number of characters or octets is incorrectly formed."
+			// Get the next encoded chunk
+			const string chunk = wordEnc.getNextChunk(fit);
 
-				// Here, we have a formula to compute the maximum number of source
-				// characters to encode knowing the maximum number of encoded chars
-				// (with Base64, 3 bytes of input provide 4 bytes of output).
-				string::size_type count = (fit > 1) ? ((fit - 1) * 3) / 4 : 1;
-				if (count > remaining) count = remaining;
+			if (chunk.empty())
+				break;
 
-				utility::inputStreamStringAdapter in
-					(m_buffer, pos - m_buffer.begin(), pos - m_buffer.begin() + count);
-
-				curLineLength += theEncoder->encode(in, os);
-
-				pos += count;
-				remaining -= count;
-			}
-			// Quoted-Printable encoding
-			else
-			{
-				// TODO: WARNING! "Any encoded word which encodes a non-integral
-				// number of characters or octets is incorrectly formed."
-
-				// All we have to do here is to take a certain number of character
-				// (that is less than or equal to "fit") from the QP encoded buffer,
-				// but we also make sure not to fold a "=XY" encoded char.
-				const string::const_iterator qpEnd = qpEncodedBuffer.end();
-				string::const_iterator lastFoldPos = pos;
-				string::const_iterator p = pos;
-				string::size_type n = 0;
-
-				while (n < fit && p != qpEnd)
-				{
-					if (*p == '=')
-					{
-						if (n + 3 >= fit)
-						{
-							lastFoldPos = p;
-							break;
-						}
-
-						p += 3;
-						n += 3;
-					}
-					else
-					{
-						++p;
-						++n;
-					}
-				}
-
-				if (lastFoldPos == pos)
-					lastFoldPos = p;
-
-				os << string(pos, lastFoldPos);
-
-				curLineLength += (lastFoldPos - pos) + 1;
-
-				pos += n;
-				remaining -= n;
-			}
-
-			// End of the encoded word
-			os << wordEnd;
-
-			if (remaining)
+			// Start a new encoded word
+			if (i != 0)
 			{
 				os << NEW_LINE_SEQUENCE;
 				curLineLength = NEW_LINE_SEQUENCE_LENGTH;
 			}
-		}
 
-		delete (theEncoder);
+			os << wordStart;
+			curLineLength += minWordLength;
+
+			os << chunk;
+			curLineLength += chunk.length();
+
+			// End of the encoded word
+			os << wordEnd;
+		}
 	}
 
 	if (newLinePos)
