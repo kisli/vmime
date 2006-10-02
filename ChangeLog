@@ -4,6 +4,9 @@ VERSION 0.8.1cvs
 
 2006-10-02  Vincent Richard  <vincent@vincent-richard.net>
 
+ * SMTPTransport.cpp: reissue EHLO command after a successful STARTTLS
+   negociation.
+
  * word, wordEncoder: fixed bug #1096610 which caused encoding of a
    non-integral number of characters (and then, generation of
    incorrectly-formed words) with multi-bytes charsets.

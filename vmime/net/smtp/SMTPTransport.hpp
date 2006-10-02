@@ -75,6 +75,7 @@ private:
 
 	void internalDisconnect();
 
+	void helo();
 	void authenticate();
 #if VMIME_HAVE_SASL_SUPPORT
 	void authenticateSASL();

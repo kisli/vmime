@@ -135,36 +135,7 @@ void SMTPTransport::connect()
 	}
 
 	// Identification
-	// First, try Extended SMTP (ESMTP)
-	//
-	// eg:  C: EHLO thismachine.ourdomain.com
-	//      S: 250-smtp.theserver.com
-	//      S: 250 AUTH CRAM-MD5 DIGEST-MD5
-
-	sendRequest("EHLO " + platformDependant::getHandler()->getHostName());
-
-	if ((resp = readResponse())->getCode() != 250)
-	{
-		// Next, try "Basic" SMTP
-		//
-		// eg:  C: HELO thismachine.ourdomain.com
-		//      S: 250 OK
-
-		sendRequest("HELO " + platformDependant::getHandler()->getHostName());
-
-		if ((resp = readResponse())->getCode() != 250)
-		{
-			internalDisconnect();
-			throw exceptions::connection_greeting_error(resp->getLastLine().getText());
-		}
-
-		m_extendedSMTP = false;
-	}
-	else
-	{
-		m_extendedSMTP = true;
-		m_extendedSMTPResponse = resp->getText();
-	}
+	helo();
 
 #if VMIME_HAVE_TLS_SUPPORT
 	// Setup secured connection, if requested
@@ -196,6 +167,9 @@ void SMTPTransport::connect()
 		{
 			throw;
 		}
+
+		// Must reissue a EHLO command [RFC-2487, 5.2]
+		helo();
 	}
 #endif // VMIME_HAVE_TLS_SUPPORT
 
@@ -204,6 +178,44 @@ void SMTPTransport::connect()
 		authenticate();
 	else
 		m_authentified = true;
+}
+
+
+void SMTPTransport::helo()
+{
+	// First, try Extended SMTP (ESMTP)
+	//
+	// eg:  C: EHLO thismachine.ourdomain.com
+	//      S: 250-smtp.theserver.com
+	//      S: 250 AUTH CRAM-MD5 DIGEST-MD5
+
+	sendRequest("EHLO " + platformDependant::getHandler()->getHostName());
+
+	ref <SMTPResponse> resp;
+
+	if ((resp = readResponse())->getCode() != 250)
+	{
+		// Next, try "Basic" SMTP
+		//
+		// eg:  C: HELO thismachine.ourdomain.com
+		//      S: 250 OK
+
+		sendRequest("HELO " + platformDependant::getHandler()->getHostName());
+
+		if ((resp = readResponse())->getCode() != 250)
+		{
+			internalDisconnect();
+			throw exceptions::connection_greeting_error(resp->getLastLine().getText());
+		}
+
+		m_extendedSMTP = false;
+		m_extendedSMTPResponse.clear();
+	}
+	else
+	{
+		m_extendedSMTP = true;
+		m_extendedSMTPResponse = resp->getText();
+	}
 }
 
 
