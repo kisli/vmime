@@ -28,7 +28,7 @@
 #include "vmime/message.hpp"
 
 #include "vmime/exception.hpp"
-#include "vmime/platformDependant.hpp"
+#include "vmime/platform.hpp"
 
 
 namespace vmime {
@@ -91,7 +91,7 @@ const int maildirFolder::getFlags()
 {
 	int flags = 0;
 
-	utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
+	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
 
 	ref <utility::file> rootDir = fsf->create
 		(maildirUtils::getFolderFSPath(m_store.acquire(), m_path, maildirUtils::FOLDER_PATH_CONTAINER));
@@ -207,7 +207,7 @@ void maildirFolder::create(const int /* type */)
 	// Create directory on file system
 	try
 	{
-		utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
+		utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
 
 		if (!fsf->isValidPath(maildirUtils::getFolderFSPath(store, m_path, maildirUtils::FOLDER_PATH_ROOT)))
 			throw exceptions::invalid_folder_name();
@@ -252,7 +252,7 @@ void maildirFolder::destroy()
 		throw exceptions::illegal_state("Folder is open");
 
 	// Delete 'folder' and '.folder.directory' directories
-	utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
+	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
 
 	ref <utility::file> rootDir = fsf->create
 		(maildirUtils::getFolderFSPath(store, m_path, maildirUtils::FOLDER_PATH_ROOT));
@@ -282,7 +282,7 @@ const bool maildirFolder::exists()
 {
 	ref <maildirStore> store = m_store.acquire();
 
-	utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
+	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
 
 	ref <utility::file> rootDir = fsf->create
 		(maildirUtils::getFolderFSPath(store, m_path, maildirUtils::FOLDER_PATH_ROOT));
@@ -316,7 +316,7 @@ void maildirFolder::scanFolder()
 		m_messageCount = 0;
 		m_unreadMessageCount = 0;
 
-		utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
+		utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
 
 		utility::file::path newDirPath = maildirUtils::getFolderFSPath
 			(store, m_path, maildirUtils::FOLDER_PATH_NEW);
@@ -531,7 +531,7 @@ void maildirFolder::listFolders(std::vector <ref <folder> >& list, const bool re
 
 	try
 	{
-		utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
+		utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
 
 		ref <utility::file> rootDir = fsf->create
 			(maildirUtils::getFolderFSPath(store, m_path,
@@ -585,7 +585,7 @@ void maildirFolder::rename(const folder::path& newPath)
 		throw exceptions::invalid_folder_name();
 
 	// Rename the directory on the file system
-	utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
+	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
 
 	ref <utility::file> rootDir = fsf->create
 		(maildirUtils::getFolderFSPath(store, m_path, maildirUtils::FOLDER_PATH_ROOT));
@@ -872,7 +872,7 @@ void maildirFolder::setMessageFlagsImpl
 {
 	ref <maildirStore> store = m_store.acquire();
 
-	utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
+	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
 
 	utility::file::path curDirPath = maildirUtils::getFolderFSPath
 		(store, m_path, maildirUtils::FOLDER_PATH_CUR);
@@ -944,7 +944,7 @@ void maildirFolder::addMessage(utility::inputStream& is, const int size,
 	else if (m_mode == MODE_READ_ONLY)
 		throw exceptions::illegal_state("Folder is read-only");
 
-	utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
+	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
 
 	utility::file::path tmpDirPath = maildirUtils::getFolderFSPath
 		(store, m_path, maildirUtils::FOLDER_PATH_TMP);
@@ -1026,7 +1026,7 @@ void maildirFolder::copyMessageImpl(const utility::file::path& tmpDirPath,
 	utility::inputStream& is, const utility::stream::size_type size,
 	utility::progressListener* progress)
 {
-	utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
+	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
 
 	ref <utility::file> file = fsf->create(tmpDirPath / filename);
 
@@ -1163,7 +1163,7 @@ void maildirFolder::copyMessagesImpl(const folder::path& dest, const std::vector
 {
 	ref <maildirStore> store = m_store.acquire();
 
-	utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
+	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
 
 	utility::file::path curDirPath = maildirUtils::getFolderFSPath
 		(store, m_path, maildirUtils::FOLDER_PATH_CUR);
@@ -1305,7 +1305,7 @@ void maildirFolder::expunge()
 	else if (m_mode == MODE_READ_ONLY)
 		throw exceptions::illegal_state("Folder is read-only");
 
-	utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
+	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
 
 	utility::file::path curDirPath = maildirUtils::getFolderFSPath
 		(store, m_path, maildirUtils::FOLDER_PATH_CUR);

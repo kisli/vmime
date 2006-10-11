@@ -31,7 +31,7 @@
 int main(int argc, char* argv[])
 {
 	// VMime initialization
-	vmime::platformDependant::setHandler<vmime::platforms::posix::posixHandler>();
+	vmime::platform::setHandler<vmime::platforms::posix::posixHandler>();
 
 
 	const vmime::string from(argv[1]);

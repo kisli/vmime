@@ -24,7 +24,7 @@
 #include "vmime/utility/smartPtr.hpp"
 
 #include "vmime/exception.hpp"
-#include "vmime/platformDependant.hpp"
+#include "vmime/platform.hpp"
 
 #include "vmime/net/defaultConnectionInfos.hpp"
 
@@ -101,7 +101,7 @@ ref <folder> maildirStore::getFolder(const folder::path& path)
 
 const bool maildirStore::isValidFolderName(const folder::path::component& name) const
 {
-	if (!platformDependant::getHandler()->getFileSystemFactory()->isValidPathComponent(name))
+	if (!platform::getHandler()->getFileSystemFactory()->isValidPathComponent(name))
 		return false;
 
 	const string& buf = name.getBuffer();
@@ -127,7 +127,7 @@ void maildirStore::connect()
 		throw exceptions::already_connected();
 
 	// Get root directory
-	utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
+	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
 
 	m_fsPath = fsf->stringToPath(GET_PROPERTY(string, PROPERTY_SERVER_ROOTPATH));
 

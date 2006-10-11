@@ -193,8 +193,8 @@ void registerTestModule(const char* name_)
 
 int main(int argc, char* argv[])
 {
-        // VMime initialization
-        vmime::platformDependant::setHandler<vmime::platforms::posix::posixHandler>();
+	// VMime initialization
+	vmime::platform::setHandler<vmime::platforms::posix::posixHandler>();
 
 	// Parse arguments
 	bool xmlOutput = false;

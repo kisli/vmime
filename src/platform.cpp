@@ -21,17 +21,17 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#include "vmime/platformDependant.hpp"
+#include "vmime/platform.hpp"
 
 
 namespace vmime
 {
 
 
-ref <platformDependant::handler> platformDependant::sm_handler = NULL;
+ref <platform::handler> platform::sm_handler = NULL;
 
 
-platformDependant::handler::~handler()
+platform::handler::~handler()
 {
 }
 

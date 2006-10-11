@@ -23,7 +23,6 @@
 #include "vmime/utility/random.hpp"
 
 #include "vmime/exception.hpp"
-#include "vmime/platformDependant.hpp"
 
 
 namespace vmime {

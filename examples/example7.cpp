@@ -40,7 +40,7 @@
 int main()
 {
 	// VMime initialization
-	vmime::platformDependant::setHandler<vmime::platforms::posix::posixHandler>();
+	vmime::platform::setHandler<vmime::platforms::posix::posixHandler>();
 
 	// Enumerate encoders
 	vmime::encoderFactory* ef = vmime::encoderFactory::getInstance();

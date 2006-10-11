@@ -20,7 +20,7 @@
 #include "vmime/net/sendmail/sendmailTransport.hpp"
 
 #include "vmime/exception.hpp"
-#include "vmime/platformDependant.hpp"
+#include "vmime/platform.hpp"
 #include "vmime/message.hpp"
 #include "vmime/mailboxList.hpp"
 
@@ -165,11 +165,11 @@ void sendmailTransport::internalSend
 	(const std::vector <string> args, utility::inputStream& is,
 	 const utility::stream::size_type size, utility::progressListener* progress)
 {
-	const utility::file::path path = vmime::platformDependant::getHandler()->
+	const utility::file::path path = vmime::platform::getHandler()->
 		getFileSystemFactory()->stringToPath(m_sendmailPath);
 
 	ref <utility::childProcess> proc =
-		vmime::platformDependant::getHandler()->
+		vmime::platform::getHandler()->
 			getChildProcessFactory()->create(path);
 
 	proc->start(args, utility::childProcess::FLAG_REDIRECT_STDIN);

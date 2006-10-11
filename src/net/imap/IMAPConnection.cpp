@@ -23,7 +23,7 @@
 #include "vmime/net/imap/IMAPStore.hpp"
 
 #include "vmime/exception.hpp"
-#include "vmime/platformDependant.hpp"
+#include "vmime/platform.hpp"
 
 #include "vmime/net/defaultConnectionInfos.hpp"
 

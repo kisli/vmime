@@ -239,15 +239,15 @@ const char* no_factory_available::name() const throw() { return "no_factory_avai
 
 
 //
-// no_platform_dependant_handler
+// no_platform_handler
 //
 
-no_platform_dependant_handler::~no_platform_dependant_handler() throw() {}
-no_platform_dependant_handler::no_platform_dependant_handler(const exception& other)
-	: exception("No platform-dependant handler installed.", other) {}
+no_platform_handler::~no_platform_handler() throw() {}
+no_platform_handler::no_platform_handler(const exception& other)
+	: exception("No platform handler installed.", other) {}
 
-exception* no_platform_dependant_handler::clone() const { return new no_platform_dependant_handler(*this); }
-const char* no_platform_dependant_handler::name() const throw() { return "no_platform_dependant_handler"; }
+exception* no_platform_handler::clone() const { return new no_platform_handler(*this); }
+const char* no_platform_handler::name() const throw() { return "no_platform_handler"; }
 
 
 //

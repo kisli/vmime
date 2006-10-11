@@ -24,7 +24,7 @@
 #include <iomanip>
 
 #include "vmime/dateTime.hpp"
-#include "vmime/platformDependant.hpp"
+#include "vmime/platform.hpp"
 #include "vmime/parserHelpers.hpp"
 
 #include "vmime/utility/datetimeUtils.hpp"
@@ -770,7 +770,7 @@ void datetime::setDate(const int year, const int month, const int day)
 
 const datetime datetime::now()
 {
-	return (platformDependant::getHandler()->getCurrentLocalTime());
+	return (platform::getHandler()->getCurrentLocalTime());
 }
 
 

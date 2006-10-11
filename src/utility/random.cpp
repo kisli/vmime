@@ -18,7 +18,7 @@
 //
 
 #include "vmime/utility/random.hpp"
-#include "vmime/platformDependant.hpp"
+#include "vmime/platform.hpp"
 
 #include <ctime>
 
@@ -45,13 +45,13 @@ const unsigned int random::getNext()
 
 const unsigned int random::getTime()
 {
-	return (platformDependant::getHandler()->getUnixTime());
+	return (platform::getHandler()->getUnixTime());
 }
 
 
 const unsigned int random::getProcess()
 {
-	return (platformDependant::getHandler()->getProcessId());
+	return (platform::getHandler()->getProcessId());
 }
 
 

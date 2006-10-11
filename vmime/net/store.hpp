@@ -46,14 +46,14 @@ protected:
 
 public:
 
-	/** Return the default folder. This is protocol dependant
+	/** Return the default folder. This is protocol dependent
 	  * and usually is the INBOX folder.
 	  *
 	  * @return default folder
 	  */
 	virtual ref <folder> getDefaultFolder() = 0;
 
-	/** Return the root folder. This is protocol dependant
+	/** Return the root folder. This is protocol dependent
 	  * and usually is the user's mail drop root folder.
 	  *
 	  * @return root folder

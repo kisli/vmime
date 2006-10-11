@@ -42,7 +42,7 @@ int main()
 	std::cout << std::endl;
 
 	// VMime initialization
-	vmime::platformDependant::setHandler<vmime::platforms::posix::posixHandler>();
+	vmime::platform::setHandler<vmime::platforms::posix::posixHandler>();
 
 	try
 	{

@@ -25,7 +25,7 @@
 
 #include "vmime/net/service.hpp"
 
-#include "vmime/platformDependant.hpp"
+#include "vmime/platform.hpp"
 
 
 namespace vmime {
@@ -72,13 +72,13 @@ const string defaultAuthenticator::getPassword() const
 
 const string defaultAuthenticator::getHostname() const
 {
-	return platformDependant::getHandler()->getHostName();
+	return platform::getHandler()->getHostName();
 }
 
 
 const string defaultAuthenticator::getAnonymousToken() const
 {
-	return "anonymous@" + platformDependant::getHandler()->getHostName();
+	return "anonymous@" + platform::getHandler()->getHostName();
 }
 
 

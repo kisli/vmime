@@ -60,13 +60,13 @@ version of the library.
 
 
 % ============================================================================
-\section{Platform-dependant code}
+\section{Platform-dependent code}
 
 While the most part of VMime code is pure ANSI C++, there are some features
 that are platform-specific: file management (opening/reading/writing files),
 network code (socket, DNS resolution) and time management. All the
 non-portable stuff is done by a bridge object called a platform handler (see
-{\vcode vmime::platformDependant}).
+{\vcode vmime::platform}).
 
 If your platform is POSIX-compatible (eg. GNU/Linux, *BSD) or is Windows,
 then you are lucky: VMime has built-in support for these platforms. If not,
@@ -85,7 +85,7 @@ So, if your platform is POSIX, your program should look like this:
 
 int main()
 {
-   vmime::platformDependant::
+   vmime::platform::
       setHandler <vmime::platforms::posix::posixHandler>();
 
    // Now, you can use VMime
@@ -98,7 +98,11 @@ $<$vmime/platforms/windows/windowsHandler.hpp$>$ and use the following line
 to initialize the platform handler:
 
 \begin{lstlisting}
-vmime::platformDependant::
+vmime::platform::
    setHandler <vmime::platforms::windows::windowsHandler>();
 \end{lstlisting}
+
+\vnote{since version 0.8.1, {\vcode vmime::platformDependant} was renamed
+to {\vcode vmime::platform}. The old name has been kept for compatibility
+but it is recommended that you update your code, if needed.}
 

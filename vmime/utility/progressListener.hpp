@@ -43,7 +43,7 @@ public:
 
 	/** Allow the caller object to cancel the current operation.
 	  *
-	  * @warning WARNING: this is implementation-dependant: cancelling
+	  * @warning WARNING: this is implementation-dependent: cancelling
 	  * may not be supported by the notifier object.
 	  *
 	  * @return true to cancel the operation, false otherwise

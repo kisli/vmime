@@ -259,7 +259,7 @@ void posixSocket::sendRaw(const char* buffer, const int count)
 			if (errno != EAGAIN)
 				throwSocketError(errno);
 
-			platformDependant::getHandler()->wait();
+			platform::getHandler()->wait();
 		}
 		else
 		{

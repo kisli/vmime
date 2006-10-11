@@ -2,6 +2,11 @@
 VERSION 0.8.1cvs
 ================
 
+2006-10-11  Vincent Richard  <vincent@vincent-richard.net>
+
+ * Renamed 'vmime::platformDependant' to 'vmime::platform'. The old
+   name has been kept for compatibility with previous versions.
+
 2006-10-02  Vincent Richard  <vincent@vincent-richard.net>
 
  * SMTPTransport.cpp: reissue EHLO command after a successful STARTTLS

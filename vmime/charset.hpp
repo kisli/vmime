@@ -61,7 +61,7 @@ public:
 
 	/** Returns the default charset used on the system.
 	  *
-	  * This function simply calls <code>platformDependantHandler::getLocaleCharset()</code>
+	  * This function simply calls <code>platformHandler::getLocaleCharset()</code>
 	  * and is provided for convenience.
 	  *
 	  * @return system default charset

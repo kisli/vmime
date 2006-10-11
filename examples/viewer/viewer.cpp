@@ -207,7 +207,7 @@ static const char* uiDefinition =
 int main(int argc, char* argv[])
 {
 	// VMime initialization
-	vmime::platformDependant::setHandler<vmime::platforms::posix::posixHandler>();
+	vmime::platform::setHandler<vmime::platforms::posix::posixHandler>();
 
 	// GTK+ initialization
 	gtk_init(&argc, &argv);

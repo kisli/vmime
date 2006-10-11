@@ -21,7 +21,7 @@
 #include "vmime/net/pop3/POP3Folder.hpp"
 
 #include "vmime/exception.hpp"
-#include "vmime/platformDependant.hpp"
+#include "vmime/platform.hpp"
 #include "vmime/messageId.hpp"
 #include "vmime/security/digest/messageDigestFactory.hpp"
 #include "vmime/utility/filteredStream.hpp"
@@ -773,7 +773,7 @@ void POP3Store::readResponse(string& buffer, const bool multiLine,
 
 		if (receiveBuffer.empty())   // buffer is empty
 		{
-			platformDependant::getHandler()->wait();
+			platform::getHandler()->wait();
 			continue;
 		}
 
@@ -874,7 +874,7 @@ void POP3Store::readResponse(utility::outputStream& os,
 
 		if (read == 0)   // buffer is empty
 		{
-			platformDependant::getHandler()->wait();
+			platform::getHandler()->wait();
 			continue;
 		}
 

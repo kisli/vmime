@@ -27,7 +27,7 @@
 #include "vmime/net/tls/TLSSocket.hpp"
 #include "vmime/net/tls/TLSSession.hpp"
 
-#include "vmime/platformDependant.hpp"
+#include "vmime/platform.hpp"
 
 #include "vmime/security/cert/X509Certificate.hpp"
 
@@ -159,7 +159,7 @@ void TLSSocket::handshake(ref <timeoutHandler> toHandler)
 				    ret == GNUTLS_E_INTERRUPTED)
 				{
 					// Non-fatal error
-					platformDependant::getHandler()->wait();
+					platform::getHandler()->wait();
 				}
 				else
 				{
@@ -240,7 +240,7 @@ ssize_t TLSSocket::gnutlsPullFunc
 				if (ret == 0)
 				{
 					// No data available yet
-					platformDependant::getHandler()->wait();
+					platform::getHandler()->wait();
 				}
 				else
 				{

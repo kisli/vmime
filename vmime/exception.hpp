@@ -248,12 +248,12 @@ public:
 };
 
 
-class no_platform_dependant_handler : public vmime::exception
+class no_platform_handler : public vmime::exception
 {
 public:
 
-	no_platform_dependant_handler(const exception& other = NO_EXCEPTION);
-	~no_platform_dependant_handler() throw();
+	no_platform_handler(const exception& other = NO_EXCEPTION);
+	~no_platform_handler() throw();
 
 	exception* clone() const;
 	const char* name() const throw();
@@ -655,16 +655,16 @@ public:
 	~command_error() throw();
 
 	/** Return the name of the command which have thrown the exception.
-	  * This is protocol-dependant.
+	  * This is protocol-dependent.
 	  *
-	  * @return command name (protocol-dependant)
+	  * @return command name (protocol-dependent)
 	  */
 	const string& command() const;
 
 	/** Return the invalid response line.
-	  * The meaning is protocol-dependant.
+	  * The meaning is protocol-dependent.
 	  *
-	  * @return response line (protocol-dependant)
+	  * @return response line (protocol-dependent)
 	  */
 	const string& response() const;
 
@@ -689,16 +689,16 @@ public:
 	~invalid_response() throw();
 
 	/** Return the name of the command which have thrown the exception.
-	  * This is protocol-dependant.
+	  * This is protocol-dependent.
 	  *
-	  * @return command name (protocol-dependant)
+	  * @return command name (protocol-dependent)
 	  */
 	const string& command() const;
 
 	/** Return the invalid response line.
-	  * The meaning is protocol-dependant.
+	  * The meaning is protocol-dependent.
 	  *
-	  * @return response line (protocol-dependant)
+	  * @return response line (protocol-dependent)
 	  */
 	const string& response() const;
 

@@ -26,7 +26,7 @@
 
 
 #include "vmime/config.hpp"
-#include "vmime/platformDependant.hpp"
+#include "vmime/platform.hpp"
 
 #if VMIME_HAVE_MESSAGING_FEATURES
 	#include "vmime/platforms/posix/posixSocket.hpp"
@@ -43,7 +43,7 @@ namespace platforms {
 namespace posix {
 
 
-class posixHandler : public vmime::platformDependant::handler
+class posixHandler : public vmime::platform::handler
 {
 public:
 

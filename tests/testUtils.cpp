@@ -158,13 +158,13 @@ testTimeoutHandler::testTimeoutHandler(const unsigned int delay)
 
 const bool testTimeoutHandler::isTimeOut()
 {
-	return (vmime::platformDependant::getHandler()->getUnixTime() - m_start) >= m_delay;
+	return (vmime::platform::getHandler()->getUnixTime() - m_start) >= m_delay;
 }
 
 
 void testTimeoutHandler::resetTimeOut()
 {
-	m_start = vmime::platformDependant::getHandler()->getUnixTime();
+	m_start = vmime::platform::getHandler()->getUnixTime();
 }
 
 

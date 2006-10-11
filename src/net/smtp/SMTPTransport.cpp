@@ -21,7 +21,7 @@
 #include "vmime/net/smtp/SMTPResponse.hpp"
 
 #include "vmime/exception.hpp"
-#include "vmime/platformDependant.hpp"
+#include "vmime/platform.hpp"
 #include "vmime/encoderB64.hpp"
 #include "vmime/mailboxList.hpp"
 
@@ -189,7 +189,7 @@ void SMTPTransport::helo()
 	//      S: 250-smtp.theserver.com
 	//      S: 250 AUTH CRAM-MD5 DIGEST-MD5
 
-	sendRequest("EHLO " + platformDependant::getHandler()->getHostName());
+	sendRequest("EHLO " + platform::getHandler()->getHostName());
 
 	ref <SMTPResponse> resp;
 
@@ -200,7 +200,7 @@ void SMTPTransport::helo()
 		// eg:  C: HELO thismachine.ourdomain.com
 		//      S: 250 OK
 
-		sendRequest("HELO " + platformDependant::getHandler()->getHostName());
+		sendRequest("HELO " + platform::getHandler()->getHostName());
 
 		if ((resp = readResponse())->getCode() != 250)
 		{

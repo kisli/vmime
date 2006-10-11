@@ -21,8 +21,8 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#ifndef VMIME_PLATFORMDEPENDANT_HPP_INCLUDED
-#define VMIME_PLATFORMDEPENDANT_HPP_INCLUDED
+#ifndef VMIME_PLATFORM_HPP_INCLUDED
+#define VMIME_PLATFORM_HPP_INCLUDED
 
 
 #include "vmime/config.hpp"
@@ -48,12 +48,12 @@ namespace vmime
 /** Allow setting or getting the current platform handler.
   */
 
-class platformDependant
+class platform
 {
 public:
 
-	/** Handles all platform-dependant operations. It offers an interface to
-	  * access platform-dependant objects: sockets, date/time, file system, etc.
+	/** Handles all platform-dependent operations. It offers an interface to
+	  * access platform-dependent objects: sockets, date/time, file system, etc.
 	  */
 
 	class handler : public object
@@ -138,7 +138,7 @@ public:
 	static ref <const handler> getHandler()
 	{
 		if (!sm_handler)
-			throw exceptions::no_platform_dependant_handler();
+			throw exceptions::no_platform_handler();
 
 		return (sm_handler);
 	}
@@ -149,7 +149,12 @@ private:
 };
 
 
+/** Compatibility with older versions of VMime (before 0.8.1). */
+typedef platform platformDependant;
+
+
 } // vmime
 
 
-#endif // VMIME_PLATFORMDEPENDANT_HPP_INCLUDED
+#endif // VMIME_PLATFORM_HPP_INCLUDED
+

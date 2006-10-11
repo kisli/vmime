@@ -23,7 +23,7 @@
 
 #include "vmime/net/smtp/SMTPResponse.hpp"
 
-#include "vmime/platformDependant.hpp"
+#include "vmime/platform.hpp"
 #include "vmime/utility/stringUtils.hpp"
 
 #include "vmime/net/socket.hpp"
@@ -146,7 +146,7 @@ const string SMTPResponse::readResponseLine()
 
 		if (receiveBuffer.empty())   // buffer is empty
 		{
-			platformDependant::getHandler()->wait();
+			platform::getHandler()->wait();
 			continue;
 		}
 

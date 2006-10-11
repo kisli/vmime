@@ -32,7 +32,7 @@
 #include "vmime/base.hpp"
 #include "vmime/exception.hpp"
 #include "vmime/options.hpp"
-#include "vmime/platformDependant.hpp"
+#include "vmime/platform.hpp"
 
 // Base components
 #include "vmime/dateTime.hpp"

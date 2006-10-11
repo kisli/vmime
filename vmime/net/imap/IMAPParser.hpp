@@ -37,7 +37,7 @@
 #include "vmime/encoderB64.hpp"
 #include "vmime/encoderQP.hpp"
 
-#include "vmime/platformDependant.hpp"
+#include "vmime/platform.hpp"
 
 #include "vmime/net/timeoutHandler.hpp"
 #include "vmime/net/socket.hpp"
@@ -5092,7 +5092,7 @@ public:
 
 			if (receiveBuffer.empty())   // buffer is empty
 			{
-				platformDependant::getHandler()->wait();
+				platform::getHandler()->wait();
 				continue;
 			}
 
@@ -5151,7 +5151,7 @@ public:
 
 			if (receiveBuffer.empty())   // buffer is empty
 			{
-				platformDependant::getHandler()->wait();
+				platform::getHandler()->wait();
 				continue;
 			}
 

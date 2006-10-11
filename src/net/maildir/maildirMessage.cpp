@@ -25,7 +25,7 @@
 #include "vmime/message.hpp"
 
 #include "vmime/exception.hpp"
-#include "vmime/platformDependant.hpp"
+#include "vmime/platform.hpp"
 
 
 namespace vmime {
@@ -342,7 +342,7 @@ void maildirMessage::extractImpl(utility::outputStream& os, utility::progressLis
 {
 	ref <const maildirFolder> folder = m_folder.acquire();
 
-	utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
+	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
 
 	const utility::file::path path = folder->getMessageFSPath(m_num);
 	ref <utility::file> file = fsf->create(path);
@@ -389,7 +389,7 @@ void maildirMessage::fetchPartHeader(ref <part> p)
 
 	ref <maildirPart> mp = p.dynamicCast <maildirPart>();
 
-	utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
+	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
 
 	const utility::file::path path = folder->getMessageFSPath(m_num);
 	ref <utility::file> file = fsf->create(path);
@@ -426,7 +426,7 @@ void maildirMessage::fetch(ref <maildirFolder> msgFolder, const int options)
 	if (folder != msgFolder)
 		throw exceptions::folder_not_found();
 
-	utility::fileSystemFactory* fsf = platformDependant::getHandler()->getFileSystemFactory();
+	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
 
 	const utility::file::path path = folder->getMessageFSPath(m_num);
 	ref <utility::file> file = fsf->create(path);

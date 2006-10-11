@@ -26,7 +26,7 @@
 
 
 #include "vmime/config.hpp"
-#include "vmime/platformDependant.hpp"
+#include "vmime/platform.hpp"
 
 #if VMIME_HAVE_MESSAGING_FEATURES
 	#include "vmime/platforms/windows/windowsSocket.hpp"
@@ -42,7 +42,7 @@ namespace platforms {
 namespace windows {
 
 
-class windowsHandler : public vmime::platformDependant::handler
+class windowsHandler : public vmime::platform::handler
 {
 public:
 

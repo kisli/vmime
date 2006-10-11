@@ -719,7 +719,7 @@ private:
 
    const unsigned int getTime() const
    {
-      return vmime::platformDependant::getHandler()->getUnixTime();
+      return vmime::platform::getHandler()->getUnixTime();
    }
 
    unsigned int m_last;

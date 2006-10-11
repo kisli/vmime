@@ -23,7 +23,7 @@
 
 #include "vmime/charset.hpp"
 #include "vmime/exception.hpp"
-#include "vmime/platformDependant.hpp"
+#include "vmime/platform.hpp"
 
 #include "vmime/utility/stringUtils.hpp"
 
@@ -93,7 +93,7 @@ void charset::convert(const string& in, string& out, const charset& source, cons
 
 const charset charset::getLocaleCharset()
 {
-	return (platformDependant::getHandler()->getLocaleCharset());
+	return (platform::getHandler()->getLocaleCharset());
 }
 
 

@@ -229,12 +229,12 @@ public:
 
 	/** Parse a path contained in a string.
 	  *
-	  * @param str string containing a path in a system-dependant representation
+	  * @param str string containing a path in a system-dependent representation
 	  * @return path object (abstract representation)
 	  */
 	virtual const file::path stringToPath(const string& str) const = 0;
 
-	/** Return the system-dependant string representation for the specified path.
+	/** Return the system-dependent string representation for the specified path.
 	  *
 	  * @param path abstract representation of the path
 	  * @return string representation of the path

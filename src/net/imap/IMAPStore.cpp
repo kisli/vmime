@@ -22,7 +22,7 @@
 #include "vmime/net/imap/IMAPConnection.hpp"
 
 #include "vmime/exception.hpp"
-#include "vmime/platformDependant.hpp"
+#include "vmime/platform.hpp"
 
 #include <map>
 
