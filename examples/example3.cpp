@@ -73,8 +73,21 @@ int main()
 
 		// -- embed an image (the returned "CID" (content identifier) is used to reference
 		// -- the image into HTML content).
-		vmime::string cid = textPart.addObject("<...IMAGE DATA...>",
-		vmime::mediaType(vmime::mediaTypes::IMAGE, vmime::mediaTypes::IMAGE_JPEG));
+		vmime::utility::fileSystemFactory* fs =
+			vmime::platform::getHandler()->getFileSystemFactory();
+
+		vmime::ref <vmime::utility::file> imageFile =
+			fs->create(fs->stringToPath("/path/to/image.jpg"));
+
+		vmime::ref <vmime::utility::fileReader> fileReader =
+			imageFile->getFileReader();
+
+		vmime::ref <vmime::contentHandler> imageCts =
+			vmime::create <vmime::streamContentHandler>
+				(fileReader->getInputStream(), imageFile->getLength());
+
+		const vmime::string cid = textPart.addObject(imageCts,
+			vmime::mediaType(vmime::mediaTypes::IMAGE, vmime::mediaTypes::IMAGE_JPEG));
 
 		// -- message text
 		textPart.setText(vmime::create <vmime::stringContentHandler>

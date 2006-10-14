@@ -269,8 +269,10 @@ mb.appendAttachment(att);
 
 \subsection{HTML messages and embedded objects} % ----------------------------
 
-VMime also supports aggregated messages, which permits to build MIME messages
-containing HTML text and embedded objects (such as images).
+VMime also supports aggregate messages, which permits to build MIME messages
+containing HTML text and embedded objects (such as images). For more information
+about aggregate messages, please read RFC-2557 (\emph{MIME Encapsulation of
+Aggregate Documents, such as HTML}).
 
 Creating such messages is quite easy, using the {\vcode vmime::messageBuilder}
 object. The following code constructs a message containing text in both plain
@@ -295,12 +297,13 @@ mb.constructTextPart(vmime::mediaType
 vmime::ref <vmime::htmlTextPart> textPart =
    mb.getTextPart().dynamicCast <vmime::htmlTextPart>();
 
-// -- add the JPEG image (the returned identifier is used to identify the
-// -- embedded object in the HTML text, the famous "CID", or "Content-Id")
-vmime::string id = textPart->addObject("<...image data...>",
+// -- Add the JPEG image (the returned identifier is used to identify the
+// -- embedded object in the HTML text, the famous "CID", or "Content-Id").
+// -- Note: you can also read data from a file; see the next example.
+const vmime::string id = textPart->addObject("<...image data...>",
    vmime::mediaType(vmime::mediaTypes::IMAGE, vmime::mediaTypes::IMAGE_JPEG));
 
-// -- set the text
+// -- Set the text
 textPart->setCharset(vmime::charsets::ISO8859_15);
 
 textPart->setText(vmime::create <vmime::stringContentHandler>
@@ -320,6 +323,25 @@ multipart/alternative
       text/html
       image/jpeg
 \end{verbatim}
+
+You can easily tell VMime to read the embedded object data from a file. The
+following code opens the file \emph{/path/to/image.jpg}, connects it to an
+input stream, then add an embedded object:
+
+\begin{lstlisting}
+vmime::utility::fileSystemFactory* fs =
+   vmime::platform::getHandler()->getFileSystemFactory();
+
+vmime::ref <vmime::utility::file> imageFile =
+   fs->create(fs->stringToPath("/path/to/image.jpg"));
+
+vmime::ref <vmime::contentHandler> imageCts =
+   vmime::create <vmime::streamContentHandler>
+      (imageFile->getFileReader()->getInputStream(), imageFile->getLength());
+
+const vmime::string cid = textPart.addObject(imageCts,
+   vmime::mediaType(vmime::mediaTypes::IMAGE, vmime::mediaTypes::IMAGE_JPEG));
+\end{lstlisting}
 
 
 % ============================================================================
