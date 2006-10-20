@@ -182,7 +182,7 @@ const string wordEncoder::getNextChunk(const string::size_type maxLength)
 	// Fully RFC-compliant encoding
 	else
 	{
-		charsetConverter conv(vmime::charset(charsets::UTF_8), m_charset);
+		charsetConverter conv(charsets::UTF_8, m_charset);
 
 		string::size_type inputCount = 0;
 		string::size_type outputCount = 0;
