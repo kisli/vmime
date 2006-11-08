@@ -78,6 +78,8 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 	hints.ai_socktype = SOCK_STREAM;
 
 	std::ostringstream portStr;
+	portStr.imbue(std::locale::classic());
+
 	portStr << port;
 
 	struct ::addrinfo* res0;

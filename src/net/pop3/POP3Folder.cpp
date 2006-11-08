@@ -443,6 +443,8 @@ void POP3Folder::fetchMessage(ref <message> msg, const int options)
 	{
 		// Send the "LIST" command
 		std::ostringstream command;
+		command.imbue(std::locale::classic());
+
 		command << "LIST " << msg->getNumber();
 
 		store->sendRequest(command.str());
@@ -479,6 +481,8 @@ void POP3Folder::fetchMessage(ref <message> msg, const int options)
 	{
 		// Send the "UIDL" command
 		std::ostringstream command;
+		command.imbue(std::locale::classic());
+
 		command << "UIDL " << msg->getNumber();
 
 		store->sendRequest(command.str());
@@ -566,6 +570,8 @@ void POP3Folder::deleteMessage(const int num)
 		throw exceptions::illegal_state("Folder not open");
 
 	std::ostringstream command;
+	command.imbue(std::locale::classic());
+
 	command << "DELE " << num;
 
 	store->sendRequest(command.str());
@@ -615,6 +621,8 @@ void POP3Folder::deleteMessages(const int from, const int to)
 	for (int i = from ; i <= to2 ; ++i)
 	{
 		std::ostringstream command;
+		command.imbue(std::locale::classic());
+
 		command << "DELE " << i;
 
 		store->sendRequest(command.str());
@@ -666,6 +674,8 @@ void POP3Folder::deleteMessages(const std::vector <int>& nums)
 	     it = nums.begin() ; it != nums.end() ; ++it)
 	{
 		std::ostringstream command;
+		command.imbue(std::locale::classic());
+
 		command << "DELE " << (*it);
 
 		store->sendRequest(command.str());

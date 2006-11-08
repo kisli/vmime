@@ -33,10 +33,13 @@ const bool stringUtils::isStringEqualNoCase
 	if (s1.length() < n)
 		return (false);
 
+	const std::ctype <unsigned char>& fac =
+		std::use_facet <std::ctype <unsigned char> >(std::locale::classic());
+
 	bool equal = true;
 
 	for (string::size_type i = 0 ; equal && i < n ; ++i)
-		equal = (std::tolower(s1[i], std::locale()) == s2[i]);
+		equal = (fac.tolower(static_cast <unsigned char>(s1[i])) == s2[i]);
 
 	return (equal);
 }
@@ -47,11 +50,14 @@ const bool stringUtils::isStringEqualNoCase(const string& s1, const string& s2)
 	if (s1.length() != s2.length())
 		return (false);
 
+	const std::ctype <unsigned char>& fac =
+		std::use_facet <std::ctype <unsigned char> >(std::locale::classic());
+
 	bool equal = true;
 	const string::const_iterator end = s1.end();
 
 	for (string::const_iterator i = s1.begin(), j = s2.begin(); i != end ; ++i, ++j)
-		equal = (std::tolower(*i, std::locale()) == std::tolower(*j, std::locale()));
+		equal = (fac.tolower(static_cast <unsigned char>(*i)) == fac.tolower(static_cast <unsigned char>(*j)));
 
 	return (equal);
 }
@@ -64,12 +70,15 @@ const bool stringUtils::isStringEqualNoCase
 	if (static_cast <string::size_type>(end - begin) < n)
 		return (false);
 
+	const std::ctype <unsigned char>& fac =
+		std::use_facet <std::ctype <unsigned char> >(std::locale::classic());
+
 	bool equal = true;
 	char* c = const_cast<char*>(s);
 	string::size_type r = n;
 
 	for (string::const_iterator i = begin ; equal && r && *c ; ++i, ++c, --r)
-		equal = (std::tolower(*i, std::locale()) == *c);
+		equal = (fac.tolower(static_cast <unsigned char>(*i)) == static_cast <unsigned char>(*c));
 
 	return (r == 0 && equal);
 }
@@ -77,11 +86,14 @@ const bool stringUtils::isStringEqualNoCase
 
 const string stringUtils::toLower(const string& str)
 {
+	const std::ctype <unsigned char>& fac =
+		std::use_facet <std::ctype <unsigned char> >(std::locale::classic());
+
 	string out;
 	out.resize(str.size());
 
 	for (string::size_type i = 0, len = str.length() ; i < len ; ++i)
-		out[i] = std::tolower(str[i], std::locale());
+		out[i] = fac.tolower(static_cast <unsigned char>(str[i]));
 
 	return out;
 }
@@ -89,11 +101,14 @@ const string stringUtils::toLower(const string& str)
 
 const string stringUtils::toUpper(const string& str)
 {
+	const std::ctype <unsigned char>& fac =
+		std::use_facet <std::ctype <unsigned char> >(std::locale::classic());
+
 	string out;
 	out.resize(str.size());
 
 	for (string::size_type i = 0, len = str.length() ; i < len ; ++i)
-		out[i] = std::toupper(str[i], std::locale());
+		out[i] = fac.toupper(static_cast <unsigned char>(str[i]));
 
 	return out;
 }

@@ -376,6 +376,8 @@ void posixChildProcess::waitForFinish()
 		else
 		{
 			std::ostringstream oss;
+			oss.imbue(std::locale::classic());
+
 			oss << "Process exited with status " << WEXITSTATUS(wstat);
 
 			throw exceptions::system_error(oss.str());

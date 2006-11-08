@@ -125,7 +125,9 @@ void parameter::parse(const std::vector <valueChunk>& chunks)
 	bool foundCharsetChunk = false;
 
 	charset ch(charsets::US_ASCII);
+
 	std::ostringstream value;
+	value.imbue(std::locale::classic());
 
 	for (std::vector <valueChunk>::size_type i = 0 ; i < chunks.size() ; ++i)
 	{

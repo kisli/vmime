@@ -39,6 +39,7 @@ const string messageDigest::getHexDigest() const
 	static const unsigned char hex[] = "0123456789abcdef";
 
 	std::ostringstream oss;
+	oss.imbue(std::locale::classic());
 
 	for (int i = 0 ; i < len ; ++i)
 	{

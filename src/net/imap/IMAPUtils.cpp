@@ -390,6 +390,8 @@ const string IMAPUtils::messageFlagList(const int flags)
 	if (!flagList.empty())
 	{
 		std::ostringstream res;
+		res.imbue(std::locale::classic());
+
 		res << "(";
 
 		if (flagList.size() >= 2)
@@ -426,6 +428,8 @@ const string IMAPUtils::listToSet(const std::vector <int>& list, const int max,
 
 	// Build the set
 	std::ostringstream res;
+	res.imbue(std::locale::classic());
+
 	int previous = -1, setBegin = -1;
 
 	for (std::vector <int>::const_iterator it = theList.begin() ;
@@ -483,6 +487,7 @@ const string IMAPUtils::listToSet(const std::vector <int>& list, const int max,
 const string IMAPUtils::dateTime(const vmime::datetime& date)
 {
 	std::ostringstream res;
+	res.imbue(std::locale::classic());
 
 	// date_time ::= <"> date_day_fixed "-" date_month "-" date_year
 	//               SPACE time SPACE zone <">
@@ -608,6 +613,8 @@ const string IMAPUtils::buildFetchRequest(const std::vector <int>& list, const i
 
 	// Build the request text
 	std::ostringstream command;
+	command.imbue(std::locale::classic());
+
 	command << "FETCH " << listToSet(list, -1, false) << " (";
 
 	for (std::vector <string>::const_iterator it = items.begin() ;

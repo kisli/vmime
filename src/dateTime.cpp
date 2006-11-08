@@ -600,6 +600,8 @@ void datetime::generate(utility::outputStream& os, const string::size_type /* ma
 	const int zm = z % 60;
 
 	std::ostringstream oss;
+	oss.imbue(std::locale::classic());
+
 	oss << dayNames[getWeekDay()] << ", "
 	    << m_day << " " << monthNames[m_month - 1] << " " << m_year
 	    << " " << std::setfill('0') << std::setw(2) << m_hour << ":"

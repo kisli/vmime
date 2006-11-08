@@ -203,6 +203,7 @@ const utility::file::path::component maildirUtils::buildFilename
 const utility::file::path::component maildirUtils::generateId()
 {
 	std::ostringstream oss;
+	oss.imbue(std::locale::classic());
 
 	oss << utility::random::getTime();
 	oss << ".";

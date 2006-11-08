@@ -113,6 +113,8 @@ public:
 	static const string toString(const TYPE& value)
 	{
 		std::ostringstream oss;
+		oss.imbue(std::locale::classic());
+
 		oss << value;
 
 		return (oss.str());
@@ -130,6 +132,8 @@ public:
 		TYPE ret;
 
 		std::istringstream iss(value);
+		iss.imbue(std::locale::classic());
+
 		iss >> ret;
 
 		return (ret);

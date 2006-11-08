@@ -409,6 +409,7 @@ void IMAPMessage::extract(ref <const part> p, utility::outputStream& os,
 
 	// Construct section identifier
 	std::ostringstream section;
+	section.imbue(std::locale::classic());
 
 	if (p != NULL)
 	{
@@ -435,6 +436,7 @@ void IMAPMessage::extract(ref <const part> p, utility::outputStream& os,
 
 	// Build the request text
 	std::ostringstream command;
+	command.imbue(std::locale::classic());
 
 	command << "FETCH " << m_num << " BODY";
 	if (peek) command << ".PEEK";
@@ -545,6 +547,8 @@ void IMAPMessage::processFetchResponse
 		case IMAPParser::msg_att_item::UID:
 		{
 			std::ostringstream oss;
+			oss.imbue(std::locale::classic());
+
 			oss << folder->m_uidValidity << ":" << (*it)->unique_id()->value();
 
 			m_uid = oss.str();
@@ -685,6 +689,8 @@ void IMAPMessage::setFlags(const int flags, const int mode)
 
 	// Build the request text
 	std::ostringstream command;
+	command.imbue(std::locale::classic());
+
 	command << "STORE " << m_num;
 
 	switch (mode)

@@ -821,6 +821,8 @@ void IMAPFolder::deleteMessage(const int num)
 
 	// Build the request text
 	std::ostringstream command;
+	command.imbue(std::locale::classic());
+
 	command << "STORE " << num << " +FLAGS.SILENT (\\Deleted)";
 
 	// Send the request
@@ -875,6 +877,8 @@ void IMAPFolder::deleteMessages(const int from, const int to)
 
 	// Build the request text
 	std::ostringstream command;
+	command.imbue(std::locale::classic());
+
 	command << "STORE " << from << ":";
 
 	if (to == -1) command << m_messageCount;
@@ -948,6 +952,8 @@ void IMAPFolder::deleteMessages(const std::vector <int>& nums)
 
 	// Build the request text
 	std::ostringstream command;
+	command.imbue(std::locale::classic());
+
 	command << "STORE ";
 	command << IMAPUtils::listToSet(list, m_messageCount, true);
 	command << " +FLAGS.SILENT (\\Deleted)";
@@ -1000,6 +1006,7 @@ void IMAPFolder::setMessageFlags(const int from, const int to, const int flags, 
 		throw exceptions::illegal_state("Folder is read-only");
 
 	std::ostringstream oss;
+	oss.imbue(std::locale::classic());
 
 	if (to == -1)
 		oss << from << ":*";
@@ -1159,6 +1166,8 @@ void IMAPFolder::setMessageFlags(const string& set, const int flags, const int m
 {
 	// Build the request text
 	std::ostringstream command;
+	command.imbue(std::locale::classic());
+
 	command << "STORE " << set;
 
 	switch (mode)
@@ -1220,6 +1229,8 @@ void IMAPFolder::addMessage(utility::inputStream& is, const int size, const int 
 
 	// Build the request text
 	std::ostringstream command;
+	command.imbue(std::locale::classic());
+
 	command << "APPEND " << IMAPUtils::quoteString(IMAPUtils::pathToString
 			(m_connection->hierarchySeparator(), getFullPath())) << ' ';
 
@@ -1433,6 +1444,8 @@ void IMAPFolder::rename(const folder::path& newPath)
 
 	// Build the request text
 	std::ostringstream command;
+	command.imbue(std::locale::classic());
+
 	command << "RENAME ";
 	command << IMAPUtils::quoteString(IMAPUtils::pathToString
 			(m_connection->hierarchySeparator(), getFullPath())) << " ";
@@ -1506,6 +1519,8 @@ void IMAPFolder::copyMessage(const folder::path& dest, const int num)
 
 	// Construct set
 	std::ostringstream set;
+	set.imbue(std::locale::classic());
+
 	set << num;
 
 	// Delegate message copy
@@ -1544,6 +1559,7 @@ void IMAPFolder::copyMessages(const folder::path& dest, const int from, const in
 
 	// Construct set
 	std::ostringstream set;
+	set.imbue(std::locale::classic());
 
 	if (to == -1)
 		set << from << ":*";
@@ -1614,6 +1630,8 @@ void IMAPFolder::copyMessages(const string& set, const folder::path& dest)
 {
 	// Build the request text
 	std::ostringstream command;
+	command.imbue(std::locale::classic());
+
 	command << "COPY " << set << " ";
 	command << IMAPUtils::quoteString(IMAPUtils::pathToString
 			(m_connection->hierarchySeparator(), dest));
@@ -1642,6 +1660,8 @@ void IMAPFolder::status(int& count, int& unseen)
 
 	// Build the request text
 	std::ostringstream command;
+	command.imbue(std::locale::classic());
+
 	command << "STATUS ";
 	command << IMAPUtils::quoteString(IMAPUtils::pathToString
 			(m_connection->hierarchySeparator(), getFullPath()));

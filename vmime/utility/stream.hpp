@@ -164,6 +164,8 @@ template <typename T>
 outputStream& operator<<(outputStream& os, const T& t)
 {
 	std::ostringstream oss;
+	oss.imbue(std::locale::classic());  // no formatting
+
 	oss << t;
 
 	os << oss.str();

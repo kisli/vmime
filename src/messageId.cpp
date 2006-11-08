@@ -210,6 +210,7 @@ messageId& messageId::operator=(const string& id)
 messageId messageId::generateId()
 {
 	std::ostringstream left;
+	left.imbue(std::locale::classic());
 
 	left << "vmime";
 	left << '.';

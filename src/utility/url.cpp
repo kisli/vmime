@@ -95,6 +95,7 @@ url::operator string() const
 const string url::build() const
 {
 	std::ostringstream oss;
+	oss.imbue(std::locale::classic());
 
 	oss << m_protocol << "://";
 
