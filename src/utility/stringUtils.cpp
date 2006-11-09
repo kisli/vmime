@@ -33,8 +33,8 @@ const bool stringUtils::isStringEqualNoCase
 	if (s1.length() < n)
 		return (false);
 
-	const std::ctype <unsigned char>& fac =
-		std::use_facet <std::ctype <unsigned char> >(std::locale::classic());
+	const std::ctype <char>& fac =
+		std::use_facet <std::ctype <char> >(std::locale::classic());
 
 	bool equal = true;
 
@@ -50,8 +50,8 @@ const bool stringUtils::isStringEqualNoCase(const string& s1, const string& s2)
 	if (s1.length() != s2.length())
 		return (false);
 
-	const std::ctype <unsigned char>& fac =
-		std::use_facet <std::ctype <unsigned char> >(std::locale::classic());
+	const std::ctype <char>& fac =
+		std::use_facet <std::ctype <char> >(std::locale::classic());
 
 	bool equal = true;
 	const string::const_iterator end = s1.end();
@@ -70,8 +70,8 @@ const bool stringUtils::isStringEqualNoCase
 	if (static_cast <string::size_type>(end - begin) < n)
 		return (false);
 
-	const std::ctype <unsigned char>& fac =
-		std::use_facet <std::ctype <unsigned char> >(std::locale::classic());
+	const std::ctype <char>& fac =
+		std::use_facet <std::ctype <char> >(std::locale::classic());
 
 	bool equal = true;
 	char* c = const_cast<char*>(s);
@@ -86,8 +86,8 @@ const bool stringUtils::isStringEqualNoCase
 
 const string stringUtils::toLower(const string& str)
 {
-	const std::ctype <unsigned char>& fac =
-		std::use_facet <std::ctype <unsigned char> >(std::locale::classic());
+	const std::ctype <char>& fac =
+		std::use_facet <std::ctype <char> >(std::locale::classic());
 
 	string out;
 	out.resize(str.size());
@@ -101,8 +101,8 @@ const string stringUtils::toLower(const string& str)
 
 const string stringUtils::toUpper(const string& str)
 {
-	const std::ctype <unsigned char>& fac =
-		std::use_facet <std::ctype <unsigned char> >(std::locale::classic());
+	const std::ctype <char>& fac =
+		std::use_facet <std::ctype <char> >(std::locale::classic());
 
 	string out;
 	out.resize(str.size());
