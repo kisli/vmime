@@ -157,8 +157,7 @@ const std::vector <ref <const attachment> >
 			std::vector <ref <const attachment> > partAtts =
 				findAttachmentsInBodyPart(bdy->getPartAt(i));
 
-			for (unsigned int j = 0 ; j < partAtts.size() ; ++j)
-				atts.push_back(partAtts[j]);
+			std::copy(partAtts.begin(), partAtts.end(), std::back_inserter(atts)); 
 		}
 	}
 
