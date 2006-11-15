@@ -112,7 +112,6 @@ void outputStreamAdapter::flush()
 outputStreamStringAdapter::outputStreamStringAdapter(string& buffer)
 	: m_buffer(buffer)
 {
-	m_buffer.clear();
 }
 
 
@@ -134,7 +133,6 @@ void outputStreamStringAdapter::flush()
 outputStreamByteArrayAdapter::outputStreamByteArrayAdapter(byteArray& array)
 	: m_array(array)
 {
-	m_array.clear();
 }
 
 

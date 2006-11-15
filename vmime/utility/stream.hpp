@@ -252,7 +252,7 @@ public:
 
 private:
 
-	byteArray m_array;
+	byteArray& m_array;
 };
 
 

@@ -158,6 +158,8 @@ void charsetConverter::convert(utility::inputStream& in, utility::outputStream& 
 
 void charsetConverter::convert(const string& in, string& out)
 {
+	out.clear();
+
 	utility::inputStreamStringAdapter is(in);
 	utility::outputStreamStringAdapter os(out);
 
