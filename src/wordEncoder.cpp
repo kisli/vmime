@@ -207,7 +207,7 @@ const string wordEncoder::getNextChunk(const string::size_type maxLength)
 			if (m_encoding == ENCODING_B64)
 			{
 				outputCount = std::max(static_cast <string::size_type>(4),
-					(encodeBytes.length() * 4) / 3);
+					(encodeBuffer.length() * 4) / 3);
 			}
 			else // ENCODING_QP
 			{
