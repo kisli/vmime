@@ -320,6 +320,8 @@ const bool propertySet::property::getValue() const
 		int val = 0;
 
 		std::istringstream iss(m_value);
+		iss.imbue(std::locale::classic());  // no formatting
+
 		iss >> val;
 
 		return (!iss.fail() && val != 0);
@@ -353,6 +355,8 @@ const bool propertySet::valueFromString(const string& value)
 		int val = 0;
 
 		std::istringstream iss(value);
+		iss.imbue(std::locale::classic());  // no formatting
+
 		iss >> val;
 
 		return (!iss.fail() && val != 0);

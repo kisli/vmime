@@ -82,6 +82,8 @@ public:
 		template <class TYPE> void setValue(const TYPE& value)
 		{
 			std::ostringstream oss;
+			oss.imbue(std::locale::classic());  // no formatting
+
 			oss << value;
 
 			m_value = oss.str();
@@ -99,6 +101,8 @@ public:
 			TYPE val = TYPE();
 
 			std::istringstream iss(m_value);
+			iss.imbue(std::locale::classic());  // no formatting
+
 			iss >> val;
 
 			if (iss.fail())
@@ -138,6 +142,8 @@ public:
 				int val = 0;
 
 				std::istringstream iss(m_value);
+				iss.imbue(std::locale::classic());  // no formatting
+
 				iss >> val;
 
 				return (!iss.fail() && val != 0);
@@ -352,6 +358,8 @@ public:
 		TYPE v = TYPE();
 
 		std::istringstream iss(value);
+		iss.imbue(std::locale::classic());  // no formatting
+
 		iss >> v;
 
 		return v;
@@ -361,6 +369,8 @@ public:
 	static const string valueToString(const TYPE& value)
 	{
 		std::ostringstream oss(value);
+		oss.imbue(std::locale::classic());  // no formatting
+
 		oss << value;
 
 		return oss.str();
@@ -390,6 +400,8 @@ public:
 			int val = 0;
 
 			std::istringstream iss(value);
+			iss.imbue(std::locale::classic());  // no formatting
+
 			iss >> val;
 
 			return (!iss.fail() && val != 0);
