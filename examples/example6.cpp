@@ -147,7 +147,7 @@ class interactiveCertificateVerifier : public vmime::security::cert::defaultCert
 {
 public:
 
-        void verify(vmime::ref <vmime::security::cert::certificateChain> chain)
+	void verify(vmime::ref <vmime::security::cert::certificateChain> chain)
 	{
 		try
 		{
