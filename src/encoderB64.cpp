@@ -117,13 +117,16 @@ const utility::stream::size_type encoderB64::encode(utility::inputStream& in,
 		while (count < 3 && bufferPos < bufferLength)
 			bytes[count++] = buffer[bufferPos++];
 
-		if (count != 3)
+		while (count < 3)
 		{
 			// There may be more data in the next chunk...
 			if (bufferPos >= bufferLength)
 			{
 				bufferLength = in.read(buffer, sizeof(buffer));
 				bufferPos = 0;
+
+				if (bufferLength == 0)
+					break;
 			}
 
 			while (count < 3 && bufferPos < bufferLength)
@@ -169,7 +172,7 @@ const utility::stream::size_type encoderB64::encode(utility::inputStream& in,
 		total += 4;
 		curCol += 4;
 
-		if (cutLines && curCol >= maxLineLength - 1)
+		if (cutLines && curCol >= maxLineLength - 2 /* \r\n */ - 4 /* next bytes */)
 		{
 			out.write("\r\n", 2);
 			curCol = 0;
