@@ -32,6 +32,14 @@ namespace vmime {
 namespace utility {
 
 
+// stream
+
+const stream::size_type stream::getBlockSize() const
+{
+	return 32768;  // 32 KB
+}
+
+
 // Helpers
 
 outputStream& operator<<(outputStream& os, const stream::value_type c)
@@ -57,7 +65,12 @@ const stream::size_type bufferedStreamCopy(inputStream& is, outputStream& os)
 const stream::size_type bufferedStreamCopy(inputStream& is, outputStream& os,
 	const stream::size_type length, progressListener* progress)
 {
-	stream::value_type buffer[16384];
+	const stream::size_type blockSize =
+		std::min(is.getBlockSize(), os.getBlockSize());
+
+	std::vector <stream::value_type> vbuffer(blockSize);
+
+	stream::value_type* buffer = &vbuffer.front();
 	stream::size_type total = 0;
 
 	if (progress != NULL)
@@ -443,6 +456,13 @@ void outputStreamSocketAdapter::flush()
 }
 
 
+const stream::size_type outputStreamSocketAdapter::getBlockSize() const
+{
+	return 16384;  // 16 KB
+}
+
+
+
 // inputStreamSocketAdapter
 
 inputStreamSocketAdapter::inputStreamSocketAdapter(net::socket& sok)
@@ -476,6 +496,12 @@ const stream::size_type inputStreamSocketAdapter::skip
 {
 	// Not supported
 	return 0;
+}
+
+
+const stream::size_type inputStreamSocketAdapter::getBlockSize() const
+{
+	return 16384;  // 16 KB
 }
 
 
