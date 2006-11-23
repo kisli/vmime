@@ -50,7 +50,7 @@ public:
 
 	/** This method is called to allow the client to choose the
 	  * authentication mechanisms that will be used. By default,
-	  * the more secure mechanisms are chosen.
+	  * the most secure mechanisms are chosen.
 	  *
 	  * @param available available mechanisms
 	  * @param suggested suggested mechanism (or NULL if the system
