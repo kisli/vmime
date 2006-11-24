@@ -378,7 +378,7 @@ void POP3Store::authenticateSASL()
 		    (x[1] == 'A' || x[1] == 'a') &&
 		    (x[2] == 'S' || x[2] == 's') &&
 		    (x[3] == 'L' || x[3] == 'l') &&
-		    std::isspace(x[4]))
+		    (x[4] == ' ' || x[4] == '\t'))
 		{
 			const string list(x.begin() + 5, x.end());
 
