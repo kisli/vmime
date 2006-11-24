@@ -584,7 +584,7 @@ env.Append(ENV = {'PATH' : os.environ['PATH']})
 
 env.Append(CPPPATH = [ '.' ])
 
-env.Append(CPPDEFINES = { '_REENTRANT' : 1 })
+env.Append(CPPDEFINES = ['_REENTRANT=1'])
 
 env.Append(CXXFLAGS = ['-pipe'])
 env.Append(CXXFLAGS = ['-W'])
