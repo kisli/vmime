@@ -186,6 +186,18 @@ ref <headerField> headerField::parseNext(const string& buffer, const string::siz
 					{
 						// This is a folding white-space: we keep it as is and
 						// we continue with contents parsing...
+
+						// If the line contains only space characters, we assume it is
+						// the end of the headers. This is not strictly standard-compliant
+						// but, hey, we can't fail when parsing some malformed mails...
+						while (pos < end && (buffer[pos] == ' ' || buffer[pos] == '\t'))
+							++pos;
+
+						if ((pos < end && buffer[pos] == '\n') ||
+						    (pos + 1 < end && buffer[pos] == '\r' && buffer[pos + 1] == '\n'))
+						{
+							break;
+						}
 					}
 					else
 					{
@@ -208,6 +220,26 @@ ref <headerField> headerField::parseNext(const string& buffer, const string::siz
 		}
 		else
 		{
+			// If the line contains only space characters, we assume it is
+			// the end of the headers.
+			while (pos < end && (buffer[pos] == ' ' || buffer[pos] == '\t'))
+				++pos;
+
+			if (pos < end && buffer[pos] == '\n')
+			{
+				if (newPosition)
+					*newPosition = pos + 1;   // LF: illegal
+
+				return NULL;
+			}
+			else if (pos + 1 < end && buffer[pos] == '\r' && buffer[pos + 1] == '\n')
+			{
+				if (newPosition)
+					*newPosition = pos + 2;   // CR+LF
+
+				return NULL;
+			}
+
 			// Skip this error and advance to the next line
 			while (pos < end && buffer[pos] != '\n')
 				++pos;
