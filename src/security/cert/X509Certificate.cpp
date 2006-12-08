@@ -94,19 +94,21 @@ ref <X509Certificate> X509Certificate::import(utility::inputStream& is)
 ref <X509Certificate> X509Certificate::import
 	(const byte_t* data, const unsigned int length)
 {
-	ref <X509Certificate> cert = vmime::create <X509Certificate>();
-
 	gnutls_datum buffer;
 	buffer.data = const_cast <byte_t*>(data);
 	buffer.size = length;
 
 	// Try DER format
-	if (gnutls_x509_crt_import(cert->m_data->cert, &buffer, GNUTLS_X509_FMT_DER) >= 0)
-		return cert;
+	ref <X509Certificate> derCert = vmime::create <X509Certificate>();
+
+	if (gnutls_x509_crt_import(derCert->m_data->cert, &buffer, GNUTLS_X509_FMT_DER) >= 0)
+		return derCert;
 
 	// Try PEM format
-	if (gnutls_x509_crt_import(cert->m_data->cert, &buffer, GNUTLS_X509_FMT_PEM) >= 0)
-		return cert;
+	ref <X509Certificate> pemCert = vmime::create <X509Certificate>();
+
+	if (gnutls_x509_crt_import(pemCert->m_data->cert, &buffer, GNUTLS_X509_FMT_PEM) >= 0)
+		return pemCert;
 
 	return NULL;
 }
