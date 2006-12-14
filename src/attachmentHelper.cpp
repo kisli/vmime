@@ -72,6 +72,12 @@ const bool attachmentHelper::isBodyPartAnAttachment(ref <const bodyPart> part)
 		}
 		catch (exceptions::no_such_field&)
 		{
+			// If this is the root part and no Content-Type field is present,
+			// then this may not be a MIME message, so do not assume it is
+			// an attachment
+			if (part->getParentPart() == NULL)
+				return false;
+
 			// No "Content-type" field: assume "application/octet-stream".
 			type = mediaType(mediaTypes::APPLICATION,
 			                 mediaTypes::APPLICATION_OCTET_STREAM);
@@ -157,7 +163,7 @@ const std::vector <ref <const attachment> >
 			std::vector <ref <const attachment> > partAtts =
 				findAttachmentsInBodyPart(bdy->getPartAt(i));
 
-			std::copy(partAtts.begin(), partAtts.end(), std::back_inserter(atts)); 
+			std::copy(partAtts.begin(), partAtts.end(), std::back_inserter(atts));
 		}
 	}
 
