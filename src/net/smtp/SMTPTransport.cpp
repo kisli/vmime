@@ -301,6 +301,11 @@ void SMTPTransport::authenticateSASL()
 			{
 				saslMechs.push_back(word);
 			}
+			// Some servers send "AUTH=LOGIN"
+			else if (word.length() == 10 && utility::stringUtils::toUpper(word) == "AUTH=LOGIN")
+			{
+				saslMechs.push_back("LOGIN");
+			}
 		}
 	}
 
