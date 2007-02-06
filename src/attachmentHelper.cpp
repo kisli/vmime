@@ -50,10 +50,14 @@ const bool attachmentHelper::isBodyPartAnAttachment(ref <const bodyPart> part)
 			return true;
 
 		// If the Content-Disposition is 'inline' and there is no
-		// Content-Id or Content-Location field, it is an attachment
+		// Content-Id or Content-Location field, it may be an attachment
 		if (!part->getHeader()->hasField(vmime::fields::CONTENT_ID) &&
 		    !part->getHeader()->hasField(vmime::fields::CONTENT_LOCATION))
 		{
+			// If this is the root part, it might not be an attachment
+			if (part->getParentPart() == NULL)
+				return false;
+
 			return true;
 		}
 	}
