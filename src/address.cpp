@@ -107,7 +107,7 @@ ref <address> address::parseNext(const string& buffer, const string::size_type p
 				break;
 			case '=':
 
-				if (pos + 1 < end && buffer[pos + 1] == '?')
+				if (!quoted && !quotedRFC2047 && pos + 1 < end && buffer[pos + 1] == '?')
 				{
 					++pos;
 					quotedRFC2047 = true;
