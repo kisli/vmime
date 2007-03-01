@@ -35,10 +35,7 @@ const unsigned int random::getNext()
 	// Park and Miller's minimal standard generator:
 	// xn+1 = (a * xn + b) mod c
 	// xn+1 = (16807 * xn) mod (2^31 - 1)
-	static const unsigned long a = 16807;
-	static const unsigned long c = (1 << ((sizeof(int) << 3) - 1));
-
-	m_next = static_cast<unsigned int>((a * m_next) % c);
+	m_next = static_cast<unsigned int>((16807 * m_next) % 2147483647ul);
 	return (m_next);
 }
 
