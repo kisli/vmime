@@ -277,7 +277,14 @@ public:
 		if (m_ptr)
 			m_ptr->getRefManager()->addStrong();
 
+#if defined(_MSC_VER) // VC++ compiler bug (stack overflow)
+		ref <const T> r;
+		r.m_ptr = m_ptr;
+		return r;
+#else
 		return ref <const T>::fromPtrImpl(m_ptr);
+#endif // defined(_MSC_VER)
+
 	}
 
 	// Copy
