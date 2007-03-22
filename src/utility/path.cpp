@@ -149,6 +149,12 @@ const bool path::isEmpty() const
 }
 
 
+const bool path::isRoot() const
+{
+	return (m_list.empty());
+}
+
+
 const path::component path::getLastComponent() const
 {
 	return (m_list[m_list.size() - 1]);

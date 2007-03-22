@@ -22,6 +22,7 @@
 #include "vmime/net/maildir/maildirStore.hpp"
 #include "vmime/net/maildir/maildirMessage.hpp"
 #include "vmime/net/maildir/maildirUtils.hpp"
+#include "vmime/net/maildir/maildirFormat.hpp"
 
 #include "vmime/utility/smartPtr.hpp"
 
@@ -91,23 +92,8 @@ const int maildirFolder::getFlags()
 {
 	int flags = 0;
 
-	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
-
-	ref <utility::file> rootDir = fsf->create
-		(maildirUtils::getFolderFSPath(m_store.acquire(), m_path, maildirUtils::FOLDER_PATH_CONTAINER));
-
-	ref <utility::fileIterator> it = rootDir->getFiles();
-
-	while (it->hasMoreElements())
-	{
-		ref <utility::file> file = it->nextElement();
-
-		if (maildirUtils::isSubfolderDirectory(*file))
-		{
-			flags |= FLAG_CHILDREN; // Contains at least one sub-folder
-			break;
-		}
-	}
+	if (m_store.acquire()->getFormat()->folderHasSubfolders(m_path))
+		flags |= FLAG_CHILDREN; // Contains at least one sub-folder
 
 	return (flags);
 }
@@ -207,26 +193,7 @@ void maildirFolder::create(const int /* type */)
 	// Create directory on file system
 	try
 	{
-		utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
-
-		if (!fsf->isValidPath(maildirUtils::getFolderFSPath(store, m_path, maildirUtils::FOLDER_PATH_ROOT)))
-			throw exceptions::invalid_folder_name();
-
-		ref <utility::file> rootDir = fsf->create
-			(maildirUtils::getFolderFSPath(store, m_path, maildirUtils::FOLDER_PATH_ROOT));
-
-		ref <utility::file> newDir = fsf->create
-			(maildirUtils::getFolderFSPath(store, m_path, maildirUtils::FOLDER_PATH_NEW));
-		ref <utility::file> tmpDir = fsf->create
-			(maildirUtils::getFolderFSPath(store, m_path, maildirUtils::FOLDER_PATH_TMP));
-		ref <utility::file> curDir = fsf->create
-			(maildirUtils::getFolderFSPath(store, m_path, maildirUtils::FOLDER_PATH_CUR));
-
-		rootDir->createDirectory(true);
-
-		newDir->createDirectory(false);
-		tmpDir->createDirectory(false);
-		curDir->createDirectory(false);
+		store->getFormat()->createFolder(m_path);
 	}
 	catch (exceptions::filesystem_exception& e)
 	{
@@ -251,18 +218,10 @@ void maildirFolder::destroy()
 	else if (isOpen())
 		throw exceptions::illegal_state("Folder is open");
 
-	// Delete 'folder' and '.folder.directory' directories
-	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
-
-	ref <utility::file> rootDir = fsf->create
-		(maildirUtils::getFolderFSPath(store, m_path, maildirUtils::FOLDER_PATH_ROOT));
-	ref <utility::file> contDir = fsf->create
-		(maildirUtils::getFolderFSPath(store, m_path, maildirUtils::FOLDER_PATH_CONTAINER));
-
+	// Delete folder
 	try
 	{
-		maildirUtils::recursiveFSDelete(rootDir);
-		maildirUtils::recursiveFSDelete(contDir);
+		store->getFormat()->destroyFolder(m_path);
 	}
 	catch (std::exception&)
 	{
@@ -282,22 +241,7 @@ const bool maildirFolder::exists()
 {
 	ref <maildirStore> store = m_store.acquire();
 
-	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
-
-	ref <utility::file> rootDir = fsf->create
-		(maildirUtils::getFolderFSPath(store, m_path, maildirUtils::FOLDER_PATH_ROOT));
-
-	ref <utility::file> newDir = fsf->create
-		(maildirUtils::getFolderFSPath(store, m_path, maildirUtils::FOLDER_PATH_NEW));
-	ref <utility::file> tmpDir = fsf->create
-		(maildirUtils::getFolderFSPath(store, m_path, maildirUtils::FOLDER_PATH_TMP));
-	ref <utility::file> curDir = fsf->create
-		(maildirUtils::getFolderFSPath(store, m_path, maildirUtils::FOLDER_PATH_CUR));
-
-	return (rootDir->exists() && rootDir->isDirectory() &&
-	        newDir->exists() && newDir->isDirectory() &&
-	        tmpDir->exists() && tmpDir->isDirectory() &&
-	        curDir->exists() && curDir->isDirectory());
+	return store->getFormat()->folderExists(m_path);
 }
 
 
@@ -318,12 +262,12 @@ void maildirFolder::scanFolder()
 
 		utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
 
-		utility::file::path newDirPath = maildirUtils::getFolderFSPath
-			(store, m_path, maildirUtils::FOLDER_PATH_NEW);
+		utility::file::path newDirPath = store->getFormat()->folderPathToFileSystemPath
+			(m_path, maildirFormat::NEW_DIRECTORY);
 		ref <utility::file> newDir = fsf->create(newDirPath);
 
-		utility::file::path curDirPath = maildirUtils::getFolderFSPath
-			(store, m_path, maildirUtils::FOLDER_PATH_CUR);
+		utility::file::path curDirPath = store->getFormat()->folderPathToFileSystemPath
+			(m_path, maildirFormat::CUR_DIRECTORY);
 		ref <utility::file> curDir = fsf->create(curDirPath);
 
 		// New received messages (new/)
@@ -531,39 +475,17 @@ void maildirFolder::listFolders(std::vector <ref <folder> >& list, const bool re
 
 	try
 	{
-		utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
+		std::vector <folder::path> pathList =
+			store->getFormat()->listFolders(m_path, recursive);
 
-		ref <utility::file> rootDir = fsf->create
-			(maildirUtils::getFolderFSPath(store, m_path,
-				m_path.isEmpty() ? maildirUtils::FOLDER_PATH_ROOT
-				                 : maildirUtils::FOLDER_PATH_CONTAINER));
+		list.reserve(pathList.size());
 
-		if (rootDir->exists())
+		for (unsigned int i = 0, n = pathList.size() ; i < n ; ++i)
 		{
-			ref <utility::fileIterator> it = rootDir->getFiles();
+			ref <maildirFolder> subFolder =
+				vmime::create <maildirFolder>(pathList[i], store);
 
-			while (it->hasMoreElements())
-			{
-				ref <utility::file> file = it->nextElement();
-
-				if (maildirUtils::isSubfolderDirectory(*file))
-				{
-					const utility::path subPath =
-						m_path / file->getFullPath().getLastComponent();
-
-					ref <maildirFolder> subFolder =
-						vmime::create <maildirFolder>(subPath, store);
-
-					list.push_back(subFolder);
-
-					if (recursive)
-						subFolder->listFolders(list, true);
-				}
-			}
-		}
-		else
-		{
-			// No sub-folder
+			list.push_back(subFolder);
 		}
 	}
 	catch (exceptions::filesystem_exception& e)
@@ -585,50 +507,12 @@ void maildirFolder::rename(const folder::path& newPath)
 		throw exceptions::invalid_folder_name();
 
 	// Rename the directory on the file system
-	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
-
-	ref <utility::file> rootDir = fsf->create
-		(maildirUtils::getFolderFSPath(store, m_path, maildirUtils::FOLDER_PATH_ROOT));
-	ref <utility::file> contDir = fsf->create
-		(maildirUtils::getFolderFSPath(store, m_path, maildirUtils::FOLDER_PATH_CONTAINER));
-
 	try
 	{
-		const utility::file::path newRootPath =
-			maildirUtils::getFolderFSPath(store, newPath, maildirUtils::FOLDER_PATH_ROOT);
-		const utility::file::path newContPath =
-			maildirUtils::getFolderFSPath(store, newPath, maildirUtils::FOLDER_PATH_CONTAINER);
-
-		rootDir->rename(newRootPath);
-
-		// Container directory may not exist, so ignore error when trying to rename it
-		try
-		{
-			contDir->rename(newContPath);
-		}
-		catch (exceptions::filesystem_exception& e)
-		{
-			// Ignore
-		}
+		store->getFormat()->renameFolder(m_path, newPath);
 	}
-	catch (exceptions::filesystem_exception& e)
+	catch (vmime::exception& e)
 	{
-		// Revert to old location
-		const utility::file::path rootPath =
-			maildirUtils::getFolderFSPath(store, m_path, maildirUtils::FOLDER_PATH_ROOT);
-		const utility::file::path contPath =
-			maildirUtils::getFolderFSPath(store, m_path, maildirUtils::FOLDER_PATH_CONTAINER);
-
-		try
-		{
-			rootDir->rename(rootPath);
-			contDir->rename(contPath);
-		}
-		catch (exceptions::filesystem_exception& e)
-		{
-			// Ignore
-		}
-
 		throw exceptions::command_error("RENAME", "", "", e);
 	}
 
@@ -874,8 +758,8 @@ void maildirFolder::setMessageFlagsImpl
 
 	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
 
-	utility::file::path curDirPath = maildirUtils::getFolderFSPath
-		(store, m_path, maildirUtils::FOLDER_PATH_CUR);
+	utility::file::path curDirPath = store->getFormat()->
+		folderPathToFileSystemPath(m_path, maildirFormat::CUR_DIRECTORY);
 
 	for (std::vector <int>::const_iterator it =
 	     nums.begin() ; it != nums.end() ; ++it)
@@ -946,10 +830,10 @@ void maildirFolder::addMessage(utility::inputStream& is, const int size,
 
 	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
 
-	utility::file::path tmpDirPath = maildirUtils::getFolderFSPath
-		(store, m_path, maildirUtils::FOLDER_PATH_TMP);
-	utility::file::path curDirPath = maildirUtils::getFolderFSPath
-		(store, m_path, maildirUtils::FOLDER_PATH_CUR);
+	utility::file::path tmpDirPath = store->getFormat()->
+		folderPathToFileSystemPath(m_path, maildirFormat::TMP_DIRECTORY);
+	utility::file::path curDirPath = store->getFormat()->
+		folderPathToFileSystemPath(m_path, maildirFormat::CUR_DIRECTORY);
 
 	const utility::file::path::component filename =
 		maildirUtils::buildFilename(maildirUtils::generateId(),
@@ -1165,13 +1049,13 @@ void maildirFolder::copyMessagesImpl(const folder::path& dest, const std::vector
 
 	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
 
-	utility::file::path curDirPath = maildirUtils::getFolderFSPath
-		(store, m_path, maildirUtils::FOLDER_PATH_CUR);
+	utility::file::path curDirPath = store->getFormat()->folderPathToFileSystemPath
+		(m_path, maildirFormat::CUR_DIRECTORY);
 
-	utility::file::path destCurDirPath = maildirUtils::getFolderFSPath
-		(store, dest, maildirUtils::FOLDER_PATH_CUR);
-	utility::file::path destTmpDirPath = maildirUtils::getFolderFSPath
-		(store, dest, maildirUtils::FOLDER_PATH_TMP);
+	utility::file::path destCurDirPath = store->getFormat()->
+		folderPathToFileSystemPath(dest, maildirFormat::CUR_DIRECTORY);
+	utility::file::path destTmpDirPath = store->getFormat()->
+		folderPathToFileSystemPath(dest, maildirFormat::TMP_DIRECTORY);
 
 	// Create destination directories
 	try
@@ -1307,8 +1191,8 @@ void maildirFolder::expunge()
 
 	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
 
-	utility::file::path curDirPath = maildirUtils::getFolderFSPath
-		(store, m_path, maildirUtils::FOLDER_PATH_CUR);
+	utility::file::path curDirPath = store->getFormat()->
+		folderPathToFileSystemPath(m_path, maildirFormat::CUR_DIRECTORY);
 
 	std::vector <int> nums;
 	int unreadCount = 0;
@@ -1461,8 +1345,8 @@ const int maildirFolder::getFetchCapabilities() const
 
 const utility::file::path maildirFolder::getMessageFSPath(const int number) const
 {
-	utility::file::path curDirPath = maildirUtils::getFolderFSPath
-		(m_store.acquire(), m_path, maildirUtils::FOLDER_PATH_CUR);
+	utility::file::path curDirPath = m_store.acquire()->getFormat()->
+		folderPathToFileSystemPath(m_path, maildirFormat::CUR_DIRECTORY);
 
 	return (curDirPath / m_messageInfos[number - 1].path);
 }

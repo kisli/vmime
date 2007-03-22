@@ -269,7 +269,10 @@ libvmime_messaging_proto_sources = [
 			'net/maildir/maildirStore.cpp',        'net/maildir/maildirStore.hpp',
 			'net/maildir/maildirFolder.cpp',       'net/maildir/maildirFolder.hpp',
 			'net/maildir/maildirMessage.cpp',      'net/maildir/maildirMessage.hpp',
-			'net/maildir/maildirUtils.cpp',        'net/maildir/maildirUtils.hpp'
+			'net/maildir/maildirUtils.cpp',        'net/maildir/maildirUtils.hpp',
+			'net/maildir/maildirFormat.cpp',       'net/maildir/maildirFormat.hpp',
+			'net/maildir/format/kmailMaildirFormat.cpp',    'net/maildir/format/kmailMaildirFormat.hpp',
+			'net/maildir/format/courierMaildirFormat.cpp',  'net/maildir/format/courierMaildirFormat.hpp'
 		]
 	],
 	[
@@ -366,7 +369,8 @@ libvmimetest_sources = [
 	'tests/security/digest/sha1Test.cpp',
 	# ===============================  Net  ================================
 	'tests/net/smtp/SMTPTransportTest.cpp',
-	'tests/net/smtp/SMTPResponseTest.cpp'
+	'tests/net/smtp/SMTPResponseTest.cpp',
+	'tests/net/maildir/maildirStoreTest.cpp'
 ]
 
 libvmime_autotools = [

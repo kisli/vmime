@@ -44,6 +44,7 @@ namespace maildir {
 
 
 class maildirFolder;
+class maildirFormat;
 
 
 /** maildir store service.
@@ -82,6 +83,9 @@ public:
 	const bool isSecuredConnection() const;
 	ref <connectionInfos> getConnectionInfos() const;
 
+	ref <maildirFormat> getFormat();
+	ref <const maildirFormat> getFormat() const;
+
 private:
 
 	void registerFolder(maildirFolder* folder);
@@ -89,6 +93,8 @@ private:
 
 
 	std::list <maildirFolder*> m_folders;
+
+	ref <maildirFormat> m_format;
 
 	bool m_connected;
 

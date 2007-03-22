@@ -95,6 +95,12 @@ public:
 	  */
 	const bool isEmpty() const;
 
+	/** Test whether this path is the root (alias for isEmpty()).
+	  *
+	  * @return true if the path is the root
+	  */
+	const bool isRoot() const;
+
 	/** Return the last component of this path (const version).
 	  *
 	  * @return last component

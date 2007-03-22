@@ -20,6 +20,7 @@
 #include "vmime/net/maildir/maildirStore.hpp"
 
 #include "vmime/net/maildir/maildirFolder.hpp"
+#include "vmime/net/maildir/maildirFormat.hpp"
 
 #include "vmime/utility/smartPtr.hpp"
 
@@ -146,6 +147,8 @@ void maildirStore::connect()
 		}
 	}
 
+	m_format = maildirFormat::detect(thisRef().dynamicCast <maildirStore>());
+
 	m_connected = true;
 }
 
@@ -185,6 +188,18 @@ void maildirStore::disconnect()
 void maildirStore::noop()
 {
 	// Nothing to do.
+}
+
+
+ref <maildirFormat> maildirStore::getFormat()
+{
+	return m_format;
+}
+
+
+ref <const maildirFormat> maildirStore::getFormat() const
+{
+	return m_format;
 }
 
 

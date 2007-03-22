@@ -246,6 +246,17 @@ namespace vmime
 		return x.clone().template dynamicCast <T>();
 	}
 
+
+	/** Downcast helper.
+	  * Usage: vmime::dynamicCast <DerivedType>(obj), where 'obj' is of
+	  * type Type, and DerivedType is derived from Type.
+	  */
+	template <class X, class Y>
+	ref <X> dynamicCast(ref <Y> y)
+	{
+		return y.dynamicCast <X>();
+	}
+
 } // vmime
 
 

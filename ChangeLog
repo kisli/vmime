@@ -2,6 +2,10 @@
 VERSION 0.8.2cvs
 ================
 
+2007-03-02  Vincent Richard  <vincent@vincent-richard.net>
+
+ * Maildir: added support for "Courier" Maildir.
+
 2006-12-20  Vincent Richard  <vincent@vincent-richard.net>
 
  * Started version 0.8.2.
