@@ -89,7 +89,7 @@ private:
 	bool m_authentified;
 
 	bool m_extendedSMTP;
-	string m_extendedSMTPResponse;
+	std::map <string, std::vector <string> > m_extensions;
 
 	ref <timeoutHandler> m_timeoutHandler;
 

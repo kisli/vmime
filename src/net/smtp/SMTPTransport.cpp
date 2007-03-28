@@ -191,7 +191,9 @@ void SMTPTransport::helo()
 	//
 	// eg:  C: EHLO thismachine.ourdomain.com
 	//      S: 250-smtp.theserver.com
-	//      S: 250 AUTH CRAM-MD5 DIGEST-MD5
+	//      S: 250-AUTH CRAM-MD5 DIGEST-MD5
+	//      S: 250-PIPELINING
+	//      S: 250 SIZE 2555555555
 
 	sendRequest("EHLO " + platform::getHandler()->getHostName());
 
@@ -213,12 +215,39 @@ void SMTPTransport::helo()
 		}
 
 		m_extendedSMTP = false;
-		m_extendedSMTPResponse.clear();
+		m_extensions.clear();
 	}
 	else
 	{
 		m_extendedSMTP = true;
-		m_extendedSMTPResponse = resp->getText();
+		m_extensions.clear();
+
+		// Get supported extensions from SMTP response
+		for (int i = 1, n = resp->getLineCount() ; i < n ; ++i)
+		{
+			const string line = resp->getLineAt(i).getText();
+			std::istringstream iss(line);
+
+			string ext;
+			iss >> ext;
+
+			// Special case: some servers send "AUTH=LOGIN"
+			if (ext.length() == 10 && utility::stringUtils::toUpper(ext) == "AUTH=LOGIN")
+			{
+				m_extensions["AUTH"].push_back("LOGIN");
+			}
+			// Default case: EXT PARAM1 PARAM2...
+			else
+			{
+				std::vector <string> params;
+				string param;
+
+				while (iss >> param)
+					params.push_back(utility::stringUtils::toUpper(param));
+
+				m_extensions[ext] = params;
+			}
+		}
 	}
 }
 
@@ -277,41 +306,10 @@ void SMTPTransport::authenticateSASL()
 	if (!getAuthenticator().dynamicCast <security::sasl::SASLAuthenticator>())
 		throw exceptions::authentication_error("No SASL authenticator available.");
 
-	// Obtain SASL mechanisms supported by server from EHLO response
-	std::vector <string> saslMechs;
-	std::istringstream iss(m_extendedSMTPResponse);
-
-	while (!iss.eof())
-	{
-		string line;
-		std::getline(iss, line);
-
-		std::istringstream liss(line);
-		string word;
-
-		bool inAuth = false;
-
-		while (liss >> word)
-		{
-			if (word.length() == 4 &&
-			    (word[0] == 'A' || word[0] == 'a') &&
-			    (word[1] == 'U' || word[1] == 'u') &&
-			    (word[2] == 'T' || word[2] == 't') &&
-			    (word[3] == 'H' || word[3] == 'h'))
-			{
-				inAuth = true;
-			}
-			else if (inAuth)
-			{
-				saslMechs.push_back(word);
-			}
-			// Some servers send "AUTH=LOGIN"
-			else if (word.length() == 10 && utility::stringUtils::toUpper(word) == "AUTH=LOGIN")
-			{
-				saslMechs.push_back("LOGIN");
-			}
-		}
-	}
+	// Obtain SASL mechanisms supported by server from ESMTP extensions
+	const std::vector <string> saslMechs =
+		(m_extensions.find("AUTH") != m_extensions.end())
+			? m_extensions["AUTH"] : std::vector <string>();
 
 	if (saslMechs.empty())
 		throw exceptions::authentication_error("No SASL mechanism available.");

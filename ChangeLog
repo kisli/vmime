@@ -2,6 +2,10 @@
 VERSION 0.8.2cvs
 ================
 
+2007-03-28  Vincent Richard  <vincent@vincent-richard.net>
+
+ * SMTPTransport.cpp: better parsing of ESMTP extensions.
+
 2007-03-02  Vincent Richard  <vincent@vincent-richard.net>
 
  * Maildir: added support for "Courier" Maildir.
