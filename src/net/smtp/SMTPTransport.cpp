@@ -223,6 +223,7 @@ void SMTPTransport::helo()
 		m_extensions.clear();
 
 		// Get supported extensions from SMTP response
+		// One extension per line, format is: EXT PARAM1 PARAM2...
 		for (int i = 1, n = resp->getLineCount() ; i < n ; ++i)
 		{
 			const string line = resp->getLineAt(i).getText();
@@ -231,22 +232,20 @@ void SMTPTransport::helo()
 			string ext;
 			iss >> ext;
 
-			// Special case: some servers send "AUTH=LOGIN"
-			if (ext.length() == 10 && utility::stringUtils::toUpper(ext) == "AUTH=LOGIN")
-			{
-				m_extensions["AUTH"].push_back("LOGIN");
-			}
-			// Default case: EXT PARAM1 PARAM2...
-			else
-			{
-				std::vector <string> params;
-				string param;
+			std::vector <string> params;
+			string param;
 
-				while (iss >> param)
-					params.push_back(utility::stringUtils::toUpper(param));
-
-				m_extensions[ext] = params;
+			// Special case: some servers send "AUTH=MECH [MECH MECH...]"
+			if (ext.length() >= 5 && utility::stringUtils::toUpper(ext.substr(0, 5)) == "AUTH=")
+			{
+				params.push_back(utility::stringUtils::toUpper(ext.substr(5)));
+				ext = "AUTH";
 			}
+
+			while (iss >> param)
+				params.push_back(utility::stringUtils::toUpper(param));
+
+			m_extensions[ext] = params;
 		}
 	}
 }
