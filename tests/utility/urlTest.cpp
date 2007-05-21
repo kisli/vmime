@@ -42,6 +42,7 @@ VMIME_TEST_SUITE_BEGIN
 		VMIME_TEST(testGenerate)
 		VMIME_TEST(testUtilsEncode)
 		VMIME_TEST(testUtilsDecode)
+		VMIME_TEST(testUtilsDecodeSpecialCases)
 		VMIME_TEST(testUtilsEncodeReservedChars)
 		VMIME_TEST(testUtilsEncodeUnsafeChars)
 	VMIME_TEST_LIST_END
@@ -239,7 +240,7 @@ VMIME_TEST_SUITE_BEGIN
 		{
 			std::ostringstream ossTest;
 			ossTest << "%" << "0123456789ABCDEF"[i / 16]
-				       << "0123456789ABCDEF"[i % 16];
+			               << "0123456789ABCDEF"[i % 16];
 
 			std::ostringstream ossNum;
 			ossNum << i;
@@ -251,6 +252,14 @@ VMIME_TEST_SUITE_BEGIN
 				vmime::utility::urlUtils::decode(ossTest.str()));
 		}
 
+	}
+
+	void testUtilsDecodeSpecialCases()
+	{
+		// Bug #1656547: segfault with '%' at the end of the string
+		VASSERT_EQ("1.1", "sadfsda%", vmime::utility::urlUtils::decode("sadfsda%"));
+		VASSERT_EQ("1.2", "sadfsda\x05", vmime::utility::urlUtils::decode("sadfsda%5"));
+		VASSERT_EQ("1.3", "sadfsda\x42", vmime::utility::urlUtils::decode("sadfsda%42"));
 	}
 
 	void testUtilsEncodeReservedChars()

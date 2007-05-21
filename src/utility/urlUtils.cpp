@@ -79,14 +79,16 @@ const string urlUtils::decode(const string& s)
 		{
 		case '%':
 		{
-			const char_t p = (++it != s.end() ? *it : 0);
-			const char_t q = (++it != s.end() ? *it : 0);
+			++it;  // skip '%'
+
+			const char_t p = (it != s.end() ? *(it++) : 0);
+			const char_t q = (it != s.end() ? *(it++) : 0);
 
 			unsigned char r = 0;
 
 			switch (p)
 			{
-			case 0: r = '?'; break;
+			case 0: r = '%'; break;
 			case 'a': case 'A': r = 10; break;
 			case 'b': case 'B': r = 11; break;
 			case 'c': case 'C': r = 12; break;
@@ -96,25 +98,23 @@ const string urlUtils::decode(const string& s)
 			default: r = p - '0'; break;
 			}
 
-			r *= 16;
-
-			switch (q)
+			if (q != 0)
 			{
-			case 0: r = '?'; break;
-			case 'a': case 'A': r += 10; break;
-			case 'b': case 'B': r += 11; break;
-			case 'c': case 'C': r += 12; break;
-			case 'd': case 'D': r += 13; break;
-			case 'e': case 'E': r += 14; break;
-			case 'f': case 'F': r += 15; break;
-			default: r += q - '0'; break;
+				r *= 16;
+
+				switch (q)
+				{
+				case 'a': case 'A': r += 10; break;
+				case 'b': case 'B': r += 11; break;
+				case 'c': case 'C': r += 12; break;
+				case 'd': case 'D': r += 13; break;
+				case 'e': case 'E': r += 14; break;
+				case 'f': case 'F': r += 15; break;
+				default: r += q - '0'; break;
+				}
 			}
 
 			result += static_cast <string::value_type>(r);
-
-			if (it != s.end())
-				++it;
-
 			break;
 		}
 		default:
