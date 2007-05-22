@@ -614,12 +614,23 @@ else:
 #env.Append(LIBS = ['additional-lib-here'])
 
 if env['with_sasl'] == 'yes':
-	env.ParseConfig('pkg-config --cflags --libs libgsasl')
+	libgsasl_pc = string.strip(os.popen("pkg-config --list-all | grep '^libgsasl[ ]' | cut -f 1 -d ' '").read())
+
+	if len(libgsasl_pc) == 0:
+		print "ERROR: GNU SASL development package is not installed\n"
+		Exit(1)
+
+	env.ParseConfig('pkg-config --cflags --libs ' + libgsasl_pc)
 
 if env['with_tls'] == 'yes':
 	libgnutls_pc = string.strip(os.popen("pkg-config --list-all | grep '^libgnutls[ ]' | cut -f 1 -d ' '").read())
+
 	if len(libgnutls_pc) == 0:
 		libgnutls_pc = string.strip(os.popen("pkg-config --list-all | grep '^gnutls[ ]' | cut -f 1 -d ' '").read())
+
+	if len(libgnutls_pc) == 0:
+		print "ERROR: GNU TLS development package is not installed\n"
+		Exit(1)
 
 	env.ParseConfig('pkg-config --cflags --libs ' + libgnutls_pc)
 
