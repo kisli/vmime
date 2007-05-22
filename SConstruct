@@ -151,6 +151,7 @@ libvmime_sources = [
 	'utility/progressListener.cpp', 'utility/progressListener.hpp',
 	'utility/random.cpp', 'utility/random.hpp',
 	'utility/smartPtr.cpp', 'utility/smartPtr.hpp',
+	'utility/smartPtrInt.cpp', 'utility/smartPtrInt.hpp',
 	'utility/stream.cpp', 'utility/stream.hpp',
 	'utility/stringProxy.cpp', 'utility/stringProxy.hpp',
 	'utility/stringUtils.cpp', 'utility/stringUtils.hpp',
@@ -634,6 +635,8 @@ if env['with_tls'] == 'yes':
 
 	env.ParseConfig('pkg-config --cflags --libs ' + libgnutls_pc)
 
+env.Append(CXXFLAGS = ['-pthread'])
+
 # Generate help text for command line options
 Help(opts.GenerateHelpText(env))
 
@@ -860,6 +863,7 @@ config_hpp.write("""
 
 // Additional defines
 #define VMIME_HAVE_GETADDRINFO 1
+#define VMIME_HAVE_PTHREAD 1
 
 
 #endif // VMIME_CONFIG_HPP_INCLUDED
@@ -961,7 +965,7 @@ Default(libVmime)
 if env['build_tests'] == 'yes':
 	if env['debug'] == 'yes':
 		env = env.Copy()
-		env.Append(LIBS = ['cppunit', 'dl', packageVersionedGenericName + '-debug'])
+		env.Append(LIBS = ['cppunit', 'dl', packageVersionedGenericName + '-debug', 'pthread'])
 		env.Append(LIBPATH=['.'])
 		Default(
 			env.Program(
@@ -1319,6 +1323,8 @@ AM_PROG_LIBTOOL
 AM_PROG_CC_C_O
 
 AM_ICONV
+
+OST_LIB_PTHREAD  # from GNU Commons C++
 
 
 #
@@ -1712,6 +1718,10 @@ if test "x$VMIME_DETECT_PLATFORM" = "xposix"; then
 	AC_CHECK_HEADERS(netdb.h sys/types.h sys/socket.h,)
 	AC_CHECK_FUNC(getaddrinfo, [VMIME_ADDITIONAL_DEFINES="$VMIME_ADDITIONAL_DEFINES HAVE_GETADDRINFO"])
 fi
+
+# -- pthreads (POSIX)
+
+ACX_PTHREAD([VMIME_ADDITIONAL_DEFINES="$VMIME_ADDITIONAL_DEFINES HAVE_PTHREAD"])
 
 
 """)

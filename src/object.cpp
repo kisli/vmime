@@ -33,13 +33,13 @@ namespace vmime
 
 
 object::object()
-	: m_refMgr(new utility::refManager(this))
+	: m_refMgr(utility::refManager::create(this))
 {
 }
 
 
 object::object(const object&)
-	: m_refMgr(new utility::refManager(this))
+	: m_refMgr(utility::refManager::create(this))
 {
 }
 

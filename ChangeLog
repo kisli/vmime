@@ -2,6 +2,11 @@
 VERSION 0.8.2cvs
 ================
 
+2007-05-22  Vincent Richard  <vincent@vincent-richard.net>
+
+ * Implemented thread-safe reference counting for smart pointers,
+   whenever possible (GCC built-in functions / pthread / Win32).
+
 2007-03-28  Vincent Richard  <vincent@vincent-richard.net>
 
  * SMTPTransport.cpp: better parsing of ESMTP extensions.
