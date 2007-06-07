@@ -82,7 +82,7 @@ const stream::size_type bufferedStreamCopy(inputStream& is, outputStream& os,
 
 	while (!is.eof())
 	{
-		const stream::size_type read = is.read(buffer, sizeof(buffer));
+		const stream::size_type read = is.read(buffer, blockSize);
 
 		if (read != 0)
 		{
