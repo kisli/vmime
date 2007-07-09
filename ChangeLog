@@ -2,6 +2,10 @@
 VERSION 0.8.2cvs
 ================
 
+2007-07-09  Vincent Richard  <vincent@vincent-richard.net>
+
+ * IMAPUtils.cpp: fixed bug in modified UTF-7 encoding (IMAP).
+
 2007-05-22  Vincent Richard  <vincent@vincent-richard.net>
 
  * Implemented thread-safe reference counting for smart pointers,
