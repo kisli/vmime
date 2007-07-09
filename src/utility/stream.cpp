@@ -113,12 +113,14 @@ outputStreamAdapter::outputStreamAdapter(std::ostream& os)
 void outputStreamAdapter::write
 	(const value_type* const data, const size_type count)
 {
+	m_stream.exceptions(std::ios_base::badbit);
 	m_stream.write(data, count);
 }
 
 
 void outputStreamAdapter::flush()
 {
+	m_stream.exceptions(std::ios_base::badbit);
 	m_stream.flush();
 }
 
@@ -182,6 +184,7 @@ const bool inputStreamAdapter::eof() const
 
 void inputStreamAdapter::reset()
 {
+	m_stream.exceptions(std::ios_base::badbit);
 	m_stream.seekg(0, std::ios::beg);
 	m_stream.clear();
 }
@@ -190,6 +193,7 @@ void inputStreamAdapter::reset()
 const stream::size_type inputStreamAdapter::read
 	(value_type* const data, const size_type count)
 {
+	m_stream.exceptions(std::ios_base::badbit);
 	m_stream.read(data, count);
 	return (m_stream.gcount());
 }
@@ -197,6 +201,7 @@ const stream::size_type inputStreamAdapter::read
 
 const stream::size_type inputStreamAdapter::skip(const size_type count)
 {
+	m_stream.exceptions(std::ios_base::badbit);
 	m_stream.ignore(count);
 	return (m_stream.gcount());
 }
@@ -355,6 +360,7 @@ const bool inputStreamPointerAdapter::eof() const
 
 void inputStreamPointerAdapter::reset()
 {
+	m_stream->exceptions(std::ios_base::badbit);
 	m_stream->seekg(0, std::ios::beg);
 	m_stream->clear();
 }
@@ -363,6 +369,7 @@ void inputStreamPointerAdapter::reset()
 const stream::size_type inputStreamPointerAdapter::read
 	(value_type* const data, const size_type count)
 {
+	m_stream->exceptions(std::ios_base::badbit);
 	m_stream->read(data, count);
 	return (m_stream->gcount());
 }
@@ -370,6 +377,7 @@ const stream::size_type inputStreamPointerAdapter::read
 
 const stream::size_type inputStreamPointerAdapter::skip(const size_type count)
 {
+	m_stream->exceptions(std::ios_base::badbit);
 	m_stream->ignore(count);
 	return (m_stream->gcount());
 }
