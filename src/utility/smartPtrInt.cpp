@@ -167,7 +167,7 @@ refCounter::operator long() const
 }
 
 
-#elif defined(__GNUC__) && defined(__GLIBCPP__)
+#elif defined(__GNUC__) && (defined(__GLIBCPP__) || defined(__GLIBCXX__))
 
 
 refCounter::refCounter(const long initialValue)

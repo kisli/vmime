@@ -52,7 +52,7 @@ private:
 
 #if defined(_WIN32)
 	long m_value;
-#elif defined(__GNUC__) && defined(__GLIBCPP__)
+#elif defined(__GNUC__) && (defined(__GLIBCPP__) || defined(__GLIBCXX__))
 	mutable volatile int m_value;
 #elif defined (VMIME_HAVE_PTHREAD)
 	volatile long m_value;
