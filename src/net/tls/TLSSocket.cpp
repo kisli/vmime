@@ -355,7 +355,7 @@ ref <security::cert::certificateChain> TLSSocket::getPeerCertificates() const
 // C and C++ calls.
 //
 // gnutls_record_recv() calls TLSSocket::gnutlsPullFunc, and exceptions
-// thrown by the socket can not not catched.
+// thrown by the socket can not be caught.
 
 #ifndef VMIME_BUILDING_DOC
 
@@ -380,10 +380,15 @@ void TLSSocket::internalThrow()
 
 	if (m_ex)
 	{
-		// To avoid memory leaks
-		exToDelete.push_back(vmime::create <TLSSocket_DeleteExWrapper>(m_ex));
+		// Reset the current exception pointer to prevent the same
+		// exception from being thrown again later
+		exception* ex = m_ex;
+		m_ex = NULL;
 
-		throw *m_ex;
+		// To avoid memory leaks
+		exToDelete.push_back(vmime::create <TLSSocket_DeleteExWrapper>(ex));
+
+		throw *ex;
 	}
 }
 
