@@ -42,6 +42,8 @@ VMIME_TEST_SUITE_BEGIN
 		VMIME_TEST(testTrim)
 
 		VMIME_TEST(testCountASCIIChars)
+
+		VMIME_TEST(testUnquote)
 	VMIME_TEST_LIST_END
 
 
@@ -117,6 +119,14 @@ VMIME_TEST_SUITE_BEGIN
 		vmime::string str4("foo\x80");
 		VASSERT_EQ("4", static_cast <vmime::string::size_type>(3),
 			stringUtils::countASCIIchars(str4.begin(), str4.end()));
+	}
+
+	void testUnquote()
+	{
+		VASSERT_EQ("1", "quoted", stringUtils::unquote("\"quoted\""));  // "quoted"
+		VASSERT_EQ("2", "\"not quoted", stringUtils::unquote("\"not quoted"));  // "not quoted
+		VASSERT_EQ("3", "not quoted\"", stringUtils::unquote("not quoted\""));  // not quoted"
+		VASSERT_EQ("4", "quoted with \"escape\"", stringUtils::unquote("\"quoted with \\\"escape\\\"\""));  // "quoted with \"escape\""
 	}
 
 VMIME_TEST_SUITE_END

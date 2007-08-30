@@ -151,5 +151,41 @@ const string::size_type stringUtils::countASCIIchars
 }
 
 
+const string stringUtils::unquote(const string& str)
+{
+	if (str.length() < 2)
+		return str;
+
+	if (str[0] != '"' || str[str.length() - 1] != '"')
+		return str;
+
+	string res;
+	res.reserve(str.length());
+
+	bool escaped = false;
+
+	for (string::const_iterator it = str.begin() + 1, end = str.end() - 1 ; it != end ; ++it)
+	{
+		const string::value_type c = *it;
+
+		if (escaped)
+		{
+			res += c;
+			escaped = false;
+		}
+		else if (!escaped && c == '\\')
+		{
+			escaped = true;
+		}
+		else
+		{
+			res += c;
+		}
+	}
+
+	return res;
+}
+
+
 } // utility
 } // vmime
