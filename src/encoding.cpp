@@ -53,8 +53,9 @@ encoding::encoding(const encoding& enc)
 void encoding::parse(const string& buffer, const string::size_type position,
 	const string::size_type end, string::size_type* newPosition)
 {
-	m_name = utility::stringUtils::trim(utility::stringUtils::toLower
-		(string(buffer.begin() + position, buffer.begin() + end)));
+	m_name = utility::stringUtils::toLower(utility::stringUtils::trim
+		(utility::stringUtils::unquote(utility::stringUtils::trim
+			(string(buffer.begin() + position, buffer.begin() + end)))));
 
 	setParsedBounds(position, end);
 
