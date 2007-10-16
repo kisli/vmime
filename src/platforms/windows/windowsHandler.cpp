@@ -28,6 +28,7 @@
 #include <locale.h>
 #include <process.h>
 #include <windows.h>  // for winnls.h
+#include <winsock2.h> // for WSAStartup()
 
 #ifdef VMIME_HAVE_MLANG_H
 #   include <mlang.h>
@@ -41,6 +42,9 @@ namespace windows {
 
 windowsHandler::windowsHandler()
 {
+	WSAData wsaData;
+	WSAStartup(MAKEWORD(1, 1), &wsaData);
+
 #if VMIME_HAVE_MESSAGING_FEATURES
 	m_socketFactory = vmime::create <windowsSocketFactory>();
 #endif
@@ -55,6 +59,8 @@ windowsHandler::~windowsHandler()
 #if VMIME_HAVE_FILESYSTEM_FEATURES
 	delete (m_fileSysFactory);
 #endif
+
+	WSACleanup();
 }
 
 
