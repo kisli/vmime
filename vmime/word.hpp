@@ -109,13 +109,29 @@ public:
 	ref <component> clone() const;
 
 
+#ifndef VMIME_BUILDING_DOC
+	class generatorState
+	{
+	public:
+
+		generatorState()
+			: isFirstWord(true), prevWordIsEncoded(false)
+		{
+		}
+
+		bool isFirstWord;
+		bool prevWordIsEncoded;
+	};
+#endif
+
+
 	using component::parse;
 	using component::generate;
 
 	void parse(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition = NULL);
 	void generate(utility::outputStream& os, const string::size_type maxLineLength = lineLengthLimits::infinite, const string::size_type curLinePos = 0, string::size_type* newLinePos = NULL) const;
 
-	void generate(utility::outputStream& os, const string::size_type maxLineLength, const string::size_type curLinePos, string::size_type* newLinePos, const int flags, const bool isFirstWord) const;
+	void generate(utility::outputStream& os, const string::size_type maxLineLength, const string::size_type curLinePos, string::size_type* newLinePos, const int flags, generatorState* state) const;
 
 	const std::vector <ref <const component> > getChildComponents() const;
 

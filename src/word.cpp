@@ -309,15 +309,20 @@ void word::parse(const string& buffer, const string::size_type position,
 void word::generate(utility::outputStream& os, const string::size_type maxLineLength,
 	const string::size_type curLinePos, string::size_type* newLinePos) const
 {
-	generate(os, maxLineLength, curLinePos, newLinePos, 0, true);
+	generate(os, maxLineLength, curLinePos, newLinePos, 0, NULL);
 }
 
 
 void word::generate(utility::outputStream& os, const string::size_type maxLineLength,
 	const string::size_type curLinePos, string::size_type* newLinePos, const int flags,
-	const bool isFirstWord) const
+	generatorState* state) const
 {
 	string::size_type curLineLength = curLinePos;
+
+	generatorState defaultGeneratorState;
+
+	if (state == NULL)
+		state = &defaultGeneratorState;
 
 	// Calculate the number of ASCII chars to check whether encoding is needed
 	// and _which_ encoding to use.
@@ -374,7 +379,7 @@ void word::generate(utility::outputStream& os, const string::size_type maxLineLe
 				// we write the full line no matter of the max line length...
 
 				if (!newLine && p != end && lastWSpos == end &&
-				    !isFirstWord && curLineStart == m_buffer.begin())
+				    !state->isFirstWord && curLineStart == m_buffer.begin())
 				{
 					// Here, we are continuing on the line of previous encoded
 					// word, but there is not even enough space to put the
@@ -428,7 +433,7 @@ void word::generate(utility::outputStream& os, const string::size_type maxLineLe
 				// last white-space.
 
 #if 1
-				if (curLineLength != 1 && !isFirstWord)
+				if (curLineLength != NEW_LINE_SEQUENCE_LENGTH && !state->isFirstWord && state->prevWordIsEncoded)
 					os << " "; // Separate from previous word
 #endif
 
@@ -521,7 +526,7 @@ void word::generate(utility::outputStream& os, const string::size_type maxLineLe
 		}
 
 		// Encode and fold input buffer
-		if (curLineLength != 1 && !isFirstWord)
+		if (!startNewLine && !state->isFirstWord && state->prevWordIsEncoded)
 		{
 			os << " "; // Separate from previous word
 			++curLineLength;
@@ -554,11 +559,15 @@ void word::generate(utility::outputStream& os, const string::size_type maxLineLe
 
 			// End of the encoded word
 			os << wordEnd;
+
+			state->prevWordIsEncoded = true;
 		}
 	}
 
 	if (newLinePos)
 		*newLinePos = curLineLength;
+
+	state->isFirstWord = false;
 }
 
 

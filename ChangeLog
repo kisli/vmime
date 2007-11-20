@@ -2,6 +2,10 @@
 VERSION 0.8.2cvs
 ================
 
+2007-11-20  Vincent Richard  <vincent@vincent-richard.net>
+
+ * text, word: fixed incorrect white-space between words.
+
 2007-07-09  Vincent Richard  <vincent@vincent-richard.net>
 
  * IMAPUtils.cpp: fixed bug in modified UTF-7 encoding (IMAP).

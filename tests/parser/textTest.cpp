@@ -41,6 +41,7 @@ VMIME_TEST_SUITE_BEGIN
 		VMIME_TEST(testWordConstructors)
 		VMIME_TEST(testWordParse)
 		VMIME_TEST(testWordGenerate)
+		VMIME_TEST(testWordGenerateSpace)
 		VMIME_TEST(testWordGenerateMultiBytes)
 	VMIME_TEST_LIST_END
 
@@ -267,6 +268,31 @@ VMIME_TEST_SUITE_BEGIN
 
 		VASSERT_EQ("2", "=?foo?B?8fLz9PU=?=",
 			vmime::word("\xf1\xf2\xf3\xf4\xf5", vmime::charset("foo")).generate());
+	}
+
+	void testWordGenerateSpace()
+	{
+		// No white-space between an unencoded word and a encoded one
+		VASSERT_EQ("1", "Bonjour =?utf-8?Q?Fran=C3=A7ois?=",
+			vmime::text::newFromString("Bonjour Fran\xc3\xa7ois",
+				vmime::charset("utf-8"))->generate());
+
+		// White-space between two encoded words
+		vmime::text txt;
+		txt.appendWord(vmime::create <vmime::word>("\xc3\x89t\xc3\xa9", "utf-8"));
+		txt.appendWord(vmime::create <vmime::word>("Fran\xc3\xa7ois", "utf-8"));
+
+		const vmime::string decoded = "\xc3\x89t\xc3\xa9""Fran\xc3\xa7ois";
+		const vmime::string encoded = "=?utf-8?B?w4l0w6k=?= =?utf-8?Q?Fran=C3=A7ois?=";
+
+		// -- test encoding
+		VASSERT_EQ("2", encoded, txt.generate());
+
+		// -- ensure no space is added when decoding
+		vmime::text txt2;
+		txt2.parse(encoded, 0, encoded.length());
+
+		VASSERT_EQ("3", decoded, txt2.getWholeBuffer());
 	}
 
 	void testWordGenerateMultiBytes()

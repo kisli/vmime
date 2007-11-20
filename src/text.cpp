@@ -335,11 +335,12 @@ void text::encodeAndFold(utility::outputStream& os, const string::size_type maxL
 	const string::size_type firstLineOffset, string::size_type* lastLineLength, const int flags) const
 {
 	string::size_type curLineLength = firstLineOffset;
+	word::generatorState state;
 
 	for (int wi = 0 ; wi < getWordCount() ; ++wi)
 	{
 		getWordAt(wi)->generate(os, maxLineLength, curLineLength,
-			&curLineLength, flags, (wi == 0));
+			&curLineLength, flags, &state);
 	}
 
 	if (lastLineLength)
