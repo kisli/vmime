@@ -2001,6 +2001,9 @@ env.Alias('autotools', env.GenerateAutoTools('foo_autotools', 'SConstruct'))
 #  Generate MSVC project files #
 ################################
 
+MSVC_filesDone = []
+MSVC_dupCounter = 1      # counter for duplicate file names
+
 def generateMSVC(target, source, env):
 	# vmime.sln
 	vmime_sln = open("vmime.sln", 'w')
@@ -2114,7 +2117,7 @@ EndGlobal
 """)
 
 	# Source files
-	all_sources = libvmime_all_sources
+	all_sources = libvmime_sel_sources
 
 	# -- Remove all platform files and re-add files for "windows" only
 	for i in range(len(all_sources)):
@@ -2122,14 +2125,41 @@ EndGlobal
 			all_sources[i] = ''
 
 	for f in libvmime_platforms_sources['windows']:
-		if f[-4:] == '.hpp':
-			all_sources.append('vmime/' + f)
+		all_sources.append(f)
+
+	# -- Prepend with 'src' (for source files) or 'vmime' (for includes)
+	for i in range(len(all_sources)):
+		f = all_sources[i]
+		if f[-4:] == '.cpp':
+			all_sources[i] = 'src/' + f
 		else:
-			all_sources.append('src/' + f)
+			all_sources[i] = 'vmime/' + f
 
 	# -- Replace '/' with '\'
 	for i in range(len(all_sources)):
 		all_sources[i] = string.replace(all_sources[i], '/', '\\')
+
+	all_sources.sort()
+
+	# -- Sort by directory
+	filesInDir = {}
+
+	for f in all_sources:
+		if len(f) != 0:
+			comps = re.split('\\\\', f)
+			l = len(comps) - 1
+
+			tmp = filesInDir
+
+			for i in range(len(comps) - 1):
+				d = '*' + comps[i]
+
+				if not tmp.has_key(d):
+					tmp[d] = {}
+
+				tmp = tmp[d]
+
+			tmp['file%i' % len(tmp)] = f
 
 	# -- Output files in filters
 	vmime_vcproj.write("""
@@ -2139,56 +2169,41 @@ EndGlobal
 		        UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
 """)
 
-	all_sources.sort()
+	def MSVC_OutputFiles(filesInDir):
+		global MSVC_filesDone, MSVC_dupCounter
 
-	prevLen = 0
-	prevComps = []
+		for k in filesInDir.keys():
+			f = filesInDir[k]
 
-	filesDone = []
-	dupCounter = 1      # counter for duplicate file names
-
-	for f in all_sources:
-		if len(f) != 0:
-			comps = re.split('\\\\', f)
-			l = len(comps) - 1
-
-			# Directory change
-			if l != prevLen:
-				if l < prevLen:
-					for i in range(prevLen - l):
-						vmime_vcproj.write('</Filter>\n')
-				else:
-					for i in range(l - prevLen):
-						vmime_vcproj.write('<Filter Name="' + comps[i + prevLen] + '">\n')
+			# Directory
+			if k[0] == '*':
+				vmime_vcproj.write('<Filter Name="' + k[1:] + '">\n')
+				MSVC_OutputFiles(f)
+				vmime_vcproj.write('</Filter>\n')
+			# File
 			else:
-				if comps[l - 1] != prevComps[prevLen - 1]:
-					vmime_vcproj.write('</Filter>\n')
-					vmime_vcproj.write('<Filter Name="' + comps[l - 1] + '">\n')
+				fn = f[string.rfind(f, '\\') + 1:]
 
-			fn = f[string.rfind(f, '\\') + 1:]
-
-			if fn in filesDone:
-				# File (duplicate filename)
-				vmime_vcproj.write('<File RelativePath=".\\' + f + '">\n')
-				vmime_vcproj.write("""	<FileConfiguration Name="Debug|Win32">
-		<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)/$(InputName)""" + str(dupCounter) + """.obj"/>
+				if len(fn) != 0:
+					if fn in MSVC_filesDone:
+						# File (duplicate filename)
+						vmime_vcproj.write('<File RelativePath=".\\' + f + '">\n')
+						vmime_vcproj.write("""	<FileConfiguration Name="Debug|Win32">
+		<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)/$(InputName)""" + str(MSVC_dupCounter) + """.obj"/>
 	</FileConfiguration>
 	<FileConfiguration Name="Release|Win32">
-		<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)/$(InputName)""" + str(dupCounter) + """.obj"/>
+		<Tool Name="VCCLCompilerTool" ObjectFile="$(IntDir)/$(InputName)""" + str(MSVC_dupCounter) + """.obj"/>
 	</FileConfiguration>
 """)
-				vmime_vcproj.write('</File>')
-				dupCounter = dupCounter + 1
-			else:
-				# File
-				vmime_vcproj.write('<File RelativePath=".\\' + f + '"/>\n')
-				filesDone.append(fn)
+						vmime_vcproj.write('</File>')
+						MSVC_dupCounter = MSVC_dupCounter + 1
+					else:
+						# File
+						vmime_vcproj.write('<File RelativePath=".\\' + f + '"/>\n')
+						MSVC_filesDone.append(fn)
 
-			prevComps = comps
-			prevLen = l
 
-	for i in range(prevLen):
-		vmime_vcproj.write('</Filter>\n')
+	MSVC_OutputFiles(filesInDir)
 
 	vmime_vcproj.write("""		</Filter>
 	</Files>
