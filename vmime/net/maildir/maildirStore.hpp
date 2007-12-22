@@ -31,6 +31,7 @@
 #include "vmime/net/socket.hpp"
 #include "vmime/net/folder.hpp"
 
+#include "vmime/net/maildir/maildirFormat.hpp"
 #include "vmime/net/maildir/maildirServiceInfos.hpp"
 
 #include "vmime/utility/file.hpp"
@@ -44,7 +45,6 @@ namespace maildir {
 
 
 class maildirFolder;
-class maildirFormat;
 
 
 /** maildir store service.
