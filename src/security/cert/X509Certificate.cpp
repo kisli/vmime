@@ -128,19 +128,11 @@ void X509Certificate::write
 
 	gnutls_x509_crt_export(m_data->cert, fmt, NULL, &dataSize);
 
-	byte_t* data = new byte_t[dataSize];
+	std::vector <byte_t> data(dataSize);
 
-	gnutls_x509_crt_export(m_data->cert, fmt, data, &dataSize);
+	gnutls_x509_crt_export(m_data->cert, fmt, &data[0], &dataSize);
 
-	try
-	{
-		os.write(reinterpret_cast <utility::stream::value_type*>(data), dataSize);
-	}
-	catch (...)
-	{
-		delete [] data;
-		throw;
-	}
+	os.write(reinterpret_cast <utility::stream::value_type*>(&data[0]), dataSize);
 }
 
 
@@ -212,20 +204,16 @@ const byteArray X509Certificate::getFingerprint(const DigestAlgorithm algo) cons
 	gnutls_x509_crt_get_fingerprint
 		(m_data->cert, galgo, NULL, &bufferSize);
 
-	byte_t* buffer = new byte_t[bufferSize];
+	std::vector <byte_t> buffer(bufferSize);
 
 	if (gnutls_x509_crt_get_fingerprint
-		(m_data->cert, galgo, buffer, &bufferSize) == 0)
+		(m_data->cert, galgo, &buffer[0], &bufferSize) == 0)
 	{
 		byteArray res;
-		res.insert(res.end(), buffer, buffer + bufferSize);
-
-		delete [] buffer;
+		res.insert(res.end(), &buffer[0], &buffer[0] + bufferSize);
 
 		return res;
 	}
-
-	delete [] buffer;
 
 	return byteArray();
 }

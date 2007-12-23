@@ -319,20 +319,18 @@ ref <security::cert::certificateChain> TLSSocket::getPeerCertificates() const
 			gnutls_x509_crt_export(x509Certs[i],
 				GNUTLS_X509_FMT_DER, NULL, &dataSize);
 
-			byte_t* data = new byte_t[dataSize];
+			std::vector <byte_t> data(dataSize);
 
 			gnutls_x509_crt_export(x509Certs[i],
-				GNUTLS_X509_FMT_DER, data, &dataSize);
+				GNUTLS_X509_FMT_DER, &data[0], &dataSize);
 
 			ref <security::cert::X509Certificate> cert =
-				security::cert::X509Certificate::import(data, dataSize);
+				security::cert::X509Certificate::import(&data[0], dataSize);
 
 			if (cert != NULL)
 				certs.push_back(cert);
 			else
 				error = true;
-
-			delete [] data;
 
 			gnutls_x509_crt_deinit(x509Certs[i]);
 		}
