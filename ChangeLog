@@ -2,6 +2,13 @@
 VERSION 0.8.2cvs
 ================
 
+2008-01-28  Vincent Richard  <vincent@vincent-richard.net>
+
+ * fileAttachment: fixed constructor ambiguity due to implicit conversions.
+   Removed default values and reordered parameters (API breaking change).
+   Many thanks to Philipp Frenkel. More information here:
+   http://sourceforge.net/forum/message.php?msg_id=4739926
+
 2007-11-20  Vincent Richard  <vincent@vincent-richard.net>
 
  * text, word: fixed incorrect white-space between words.

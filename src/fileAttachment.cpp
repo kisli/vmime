@@ -36,6 +36,16 @@ namespace vmime
 {
 
 
+fileAttachment::fileAttachment(const string& filename, const mediaType& type)
+{
+	m_type = type;
+
+	setData(filename);
+
+	m_encoding = encoding::decide(m_data);
+}
+
+
 fileAttachment::fileAttachment(const string& filename, const mediaType& type, const text& desc)
 {
 	m_type = type;
@@ -48,7 +58,7 @@ fileAttachment::fileAttachment(const string& filename, const mediaType& type, co
 
 
 fileAttachment::fileAttachment(const string& filename, const mediaType& type,
-	const encoding& enc, const text& desc)
+	const text& desc, const encoding& enc)
 {
 	m_type = type;
 	m_desc = desc;

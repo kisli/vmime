@@ -41,8 +41,9 @@ class fileAttachment : public defaultAttachment
 {
 public:
 
-	fileAttachment(const string& filename, const mediaType& type, const text& desc = NULL_TEXT);
-	fileAttachment(const string& filename, const mediaType& type, const encoding& enc, const text& desc = NULL_TEXT);
+	fileAttachment(const string& filename, const mediaType& type);
+	fileAttachment(const string& filename, const mediaType& type, const text& desc);
+	fileAttachment(const string& filename, const mediaType& type, const text& desc, const encoding& enc);
 
 	/** Stores information about a file attachment.
 	  */
