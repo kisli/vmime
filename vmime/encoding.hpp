@@ -45,7 +45,7 @@ class encoding : public headerFieldValue
 public:
 
 	encoding();
-	encoding(const string& name);
+	explicit encoding(const string& name);
 	encoding(const encoding& enc);
 
 public:
