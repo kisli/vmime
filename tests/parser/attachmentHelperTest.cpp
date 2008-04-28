@@ -307,6 +307,8 @@ VMIME_TEST_SUITE_BEGIN
 		vmime::ref <vmime::message> msg = vmime::create <vmime::message>();
 		msg->parse(data);
 
+		VASSERT_EQ("0", 2, msg->getBody()->getPartCount());
+
 		vmime::ref <const vmime::attachment> att = vmime::attachmentHelper::
 			getBodyPartAttachment(msg->getBody()->getPartAt(0));
 

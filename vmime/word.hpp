@@ -115,12 +115,13 @@ public:
 	public:
 
 		generatorState()
-			: isFirstWord(true), prevWordIsEncoded(false)
+			: isFirstWord(true), prevWordIsEncoded(false), lastCharIsSpace(false)
 		{
 		}
 
 		bool isFirstWord;
 		bool prevWordIsEncoded;
+		bool lastCharIsSpace;
 	};
 #endif
 

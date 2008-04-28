@@ -73,8 +73,13 @@ ref <word> word::parseNext(const string& buffer, const string::size_type positio
 	//   - before the first word
 	//   - between two encoded words
 	//   - after the last word
+	string whiteSpaces;
+
 	while (pos < end && parserHelpers::isSpace(buffer[pos]))
+	{
+		whiteSpaces += buffer[pos];
 		++pos;
+	}
 
 	string::size_type startPos = pos;
 	string unencoded;
@@ -88,7 +93,10 @@ ref <word> word::parseNext(const string& buffer, const string::size_type positio
 			string::size_type endPos = pos;
 
 			if (pos > position && buffer[pos - 1] == '\r')
+			{
+				++pos;
 				--endPos;
+			}
 
 			while (pos != end && parserHelpers::isSpace(buffer[pos]))
 				++pos;
@@ -97,6 +105,7 @@ ref <word> word::parseNext(const string& buffer, const string::size_type positio
 			unencoded += ' ';
 
 			startPos = pos;
+			continue;
 		}
 		// Start of an encoded word
 		else if (pos + 8 < end &&  // 8 = "=?(.+)?(.+)?(.*)?="
@@ -107,6 +116,9 @@ ref <word> word::parseNext(const string& buffer, const string::size_type positio
 
 			if (!unencoded.empty())
 			{
+				if (prevIsEncoded)
+					unencoded = whiteSpaces + unencoded;
+
 				ref <word> w = vmime::create <word>(unencoded, charset(charsets::US_ASCII));
 				w->setParsedBounds(position, pos);
 
@@ -183,7 +195,7 @@ ref <word> word::parseNext(const string& buffer, const string::size_type positio
 	if (end != startPos)
 	{
 		if (startPos != pos && !isFirst && prevIsEncoded)
-			unencoded += ' ';
+			unencoded += whiteSpaces;
 
 		unencoded += buffer.substr(startPos, end - startPos);
 
@@ -388,11 +400,15 @@ void word::generate(utility::outputStream& os, const string::size_type maxLineLe
 					{
 						os << CRLF;
 						curLineLength = 0;
+
+						state->lastCharIsSpace = true;
 					}
 					else
 					{
 						os << NEW_LINE_SEQUENCE;
 						curLineLength = NEW_LINE_SEQUENCE_LENGTH;
+
+						state->lastCharIsSpace = true;
 					}
 
 					p = curLineStart;
@@ -401,7 +417,15 @@ void word::generate(utility::outputStream& os, const string::size_type maxLineLe
 				}
 				else
 				{
+					if (!state->isFirstWord && state->prevWordIsEncoded && !state->lastCharIsSpace && !parserHelpers::isSpace(*curLineStart))
+						os << " "; // Separate from previous word
+
 					os << string(curLineStart, p);
+
+					if (parserHelpers::isSpace(*(p - 1)))
+						state->lastCharIsSpace = true;
+					else
+						state->lastCharIsSpace = false;
 
 					if (p == end)
 					{
@@ -439,15 +463,24 @@ void word::generate(utility::outputStream& os, const string::size_type maxLineLe
 
 				os << string(curLineStart, lastWSpos);
 
+				if (lastWSpos > curLineStart && std::isspace(*(lastWSpos - 1)))
+					state->lastCharIsSpace = true;
+				else
+					state->lastCharIsSpace = false;
+
 				if (flags & text::NO_NEW_LINE_SEQUENCE)
 				{
 					os << CRLF;
 					curLineLength = 0;
+
+					state->lastCharIsSpace = true;
 				}
 				else
 				{
 					os << NEW_LINE_SEQUENCE;
 					curLineLength = NEW_LINE_SEQUENCE_LENGTH;
+
+					state->lastCharIsSpace = true;
 				}
 
 				curLineStart = lastWSpos + 1;
@@ -523,13 +556,17 @@ void word::generate(utility::outputStream& os, const string::size_type maxLineLe
 		{
 			os << NEW_LINE_SEQUENCE;
 			curLineLength = NEW_LINE_SEQUENCE_LENGTH;
+
+			state->lastCharIsSpace = true;
 		}
 
 		// Encode and fold input buffer
-		if (!startNewLine && !state->isFirstWord && state->prevWordIsEncoded)
+		if (!startNewLine && !state->isFirstWord && !state->lastCharIsSpace)
 		{
 			os << " "; // Separate from previous word
 			++curLineLength;
+
+			state->lastCharIsSpace = true;
 		}
 
 		for (unsigned int i = 0 ; ; ++i)
@@ -561,6 +598,7 @@ void word::generate(utility::outputStream& os, const string::size_type maxLineLe
 			os << wordEnd;
 
 			state->prevWordIsEncoded = true;
+			state->lastCharIsSpace = false;
 		}
 	}
 
