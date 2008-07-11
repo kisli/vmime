@@ -223,10 +223,18 @@ const utility::stream::size_type encoderQP::encode(utility::inputStream& in,
 			QP_ENCODE_HEX('=')
 			break;
 		}
+		// RFC-2047 'especials' characters
 		case ',':
 		case ';':
 		case ':':
 		case '_':
+		case '@':
+		case '(':
+		case ')':
+		case '<':
+		case '>':
+		case '[':
+		case ']':
 		{
 			if (rfc2047)
 			{
