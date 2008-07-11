@@ -267,6 +267,8 @@ ref <bodyPart> MDNHelper::createSecondMDNPart(const sendableMDNInfos& mdnInfos,
 
 	fr->setValue("rfc822; " + mdnInfos.getRecipient().getEmail());
 
+	fields.appendField(fr);
+
 	// -- Original-Message-ID
 	if (mdnInfos.getMessage()->getHeader()->hasField(vmime::fields::MESSAGE_ID))
 	{
