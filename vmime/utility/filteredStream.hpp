@@ -25,6 +25,8 @@
 #define VMIME_UTILITY_FILTEREDSTREAM_HPP_INCLUDED
 
 
+#include <algorithm>
+
 #include "vmime/utility/stream.hpp"
 
 
