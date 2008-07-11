@@ -258,7 +258,7 @@ const utility::stream::size_type encoderQP::encode(utility::inputStream& in,
 		default:
 		{
 			//if ((c >= 33 && c <= 60) || (c >= 62 && c <= 126))
-			if (c >= 33 && c <= 126 && c != 61)
+			if (c >= 33 && c <= 126 && c != 61 && c != 63)
 			{
 				outBuffer[outBufferPos++] = c;
 				++curCol;
