@@ -57,6 +57,9 @@ void encoding::parse(const string& buffer, const string::size_type position,
 		(utility::stringUtils::unquote(utility::stringUtils::trim
 			(string(buffer.begin() + position, buffer.begin() + end)))));
 
+	if (m_name.empty())
+		m_name = encodingTypes::SEVEN_BIT;   // assume default "7-bit"
+
 	setParsedBounds(position, end);
 
 	if (newPosition)
