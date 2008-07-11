@@ -150,7 +150,7 @@ void dotFilteredOutputStream::write
 
 		if (previousChar == '\n')
 		{
-			m_stream.write(start, pos - data);
+			m_stream.write(start, pos - start);
 			m_stream.write("..", 2);
 
 			start = pos + 1;
