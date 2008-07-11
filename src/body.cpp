@@ -186,8 +186,29 @@ void body::parse(const string& buffer, const string::size_type position,
 
 		m_contents = vmime::create <emptyContentHandler>();
 
-		if (partStart < end)
+		// Last part was not found: recover from missing boundary
+		if (!lastPart && pos == string::npos)
+		{
+			ref <bodyPart> part = vmime::create <bodyPart>();
+
+			try
+			{
+				part->parse(buffer, partStart, end);
+			}
+			catch (std::exception&)
+			{
+				throw;
+			}
+
+			part->m_parent = m_part;
+
+			m_parts.push_back(part);
+		}
+		// Treat remaining text as epilog
+		else if (partStart < end)
+		{
 			m_epilogText = string(buffer.begin() + partStart, buffer.begin() + end);
+		}
 	}
 	// Treat the contents as 'simple' data
 	else

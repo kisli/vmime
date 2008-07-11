@@ -33,6 +33,7 @@ VMIME_TEST_SUITE_BEGIN
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testParse)
 		VMIME_TEST(testGenerate)
+		VMIME_TEST(testParseMissingLastBoundary)
 	VMIME_TEST_LIST_END
 
 
@@ -41,6 +42,16 @@ VMIME_TEST_SUITE_BEGIN
 	{
 		return vmime::string(buffer.begin() + c.getParsedOffset(),
 		                     buffer.begin() + c.getParsedOffset() + c.getParsedLength());
+	}
+
+	static const vmime::string extractContents(const vmime::ref <const vmime::contentHandler> cts)
+	{
+		std::ostringstream oss;
+		vmime::utility::outputStreamAdapter os(oss);
+
+		cts->extract(os);
+
+		return oss.str();
 	}
 
 
@@ -66,6 +77,23 @@ VMIME_TEST_SUITE_BEGIN
 
 		VASSERT_EQ("5", "HEADER\r\n\n", extractComponentString(str3, *p3.getHeader()));
 		VASSERT_EQ("6", "BODY", extractComponentString(str3, *p3.getBody()));
+	}
+
+	void testParseMissingLastBoundary()
+	{
+		vmime::string str =
+			"Content-Type: multipart/mixed; boundary=\"MY-BOUNDARY\""
+			"\r\n\r\n"
+			"--MY-BOUNDARY\r\nHEADER1\r\n\r\nBODY1"
+			"--MY-BOUNDARY\r\nHEADER2\r\n\r\nBODY2";
+
+		vmime::bodyPart p;
+		p.parse(str);
+
+		VASSERT_EQ("count", 2, p.getBody()->getPartCount());
+
+		VASSERT_EQ("part1-body", "BODY1", extractContents(p.getBody()->getPartAt(0)->getBody()->getContents()));
+		VASSERT_EQ("part2-body", "BODY2", extractContents(p.getBody()->getPartAt(1)->getBody()->getContents()));
 	}
 
 	void testGenerate()
