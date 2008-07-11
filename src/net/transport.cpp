@@ -98,6 +98,16 @@ void transport::send(ref <vmime::message> msg, utility::progressListener* progre
 	}
 	catch (exceptions::no_such_field&) { }
 
+	// Remove BCC headers from the message we're about to send, as required by the RFC.
+	// Some SMTP server automatically strip this header (Postfix, qmail), and others
+	// have an option for this (Exim).
+	try
+	{
+		ref <headerField> bcc = msg->getHeader()->findField(fields::BCC);
+		msg->getHeader()->removeField(bcc);
+	}
+	catch (exceptions::no_such_field&) { }
+
 	// Generate the message, "stream" it and delegate the sending
 	// to the generic send() function.
 	std::ostringstream oss;
