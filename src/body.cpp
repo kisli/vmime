@@ -141,8 +141,8 @@ void body::parse(const string& buffer, const string::size_type position,
 			string::size_type partEnd = pos;
 
 			// Get rid of the [CR]LF just before the boundary string
-			if (pos - 1 >= position && buffer[pos - 1] == '\n') --partEnd;
-			if (pos - 2 >= position && buffer[pos - 2] == '\r') --partEnd;
+			if (pos >= (position + 1) && buffer[pos - 1] == '\n') --partEnd;
+			if (pos >= (position + 2) && buffer[pos - 2] == '\r') --partEnd;
 
 			// Check whether it is the last part (boundary terminated by "--")
 			pos += boundarySep.length();
