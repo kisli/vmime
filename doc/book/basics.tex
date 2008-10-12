@@ -725,7 +725,7 @@ const vmime::string subjectText =
 
 The MIME standard defines a certain number of encodings to allow data
 to be safely transmitted from one peer to another. VMime provides
-data encoding and decoding using the {\vcode vmime::encoder} object.
+data encoding and decoding using the {\vcode vmime::utility::encoder::encoder} object.
 
 You should not need to use encoders directly, as all encoding/decoding
 process is handled internally by the library, but it is good to know
@@ -733,14 +733,14 @@ they exist and how they work.
 
 \subsection{Using encoders} % ------------------------------------------------
 
-You can create an instance of an encoder using the 'vmime::encoderFactory'
+You can create an instance of an encoder using the 'vmime::utility::encoder::encoderFactory'
 object, giving the encoding name ({\it base64}, {\it quoted-printable}, ...).
 The following example creates an instance of the Base64 encoder to encode
 some data:
 
 \begin{lstlisting}[caption={A simple example of using an encoder}]
-vmime::ref <vmime::encoder> enc =
-    vmime::encoderFactory::getInstance()->create("base64");
+vmime::ref <vmime::utility::encoder::encoder> enc =
+    vmime::utility::encoder::encoderFactory::getInstance()->create("base64");
 
 vmime::string inString("Some data to encode");
 vmime::utility::inputStreamStringAdapter in(inString);
@@ -761,20 +761,21 @@ an excerpt from {\vexample example6}} enumerates available encoders and the
 supported properties for each of them:
 
 \begin{lstlisting}[caption={Enumerating encoders and their properties}]
-vmime::encoderFactory* ef = vmime::encoderFactory::getInstance();
+vmime::utility::encoder::encoderFactory* ef =
+   vmime::utility::encoder::encoderFactory::getInstance();
 
 std::cout << "Available encoders:" << std::endl;
 
 for (int i = 0 ; i < ef->getEncoderCount() ; ++i)
 {
    // Output encoder name
-   vmime::ref <const vmime::encoderFactory::registeredEncoder>
+   vmime::ref <const vmime::utility::encoder::encoderFactory::registeredEncoder>
       enc = ef->getEncoderAt(i);
 
    std::cout << "  * " << enc->getName() << std::endl;
 
    // Create an instance of the encoder to get its properties
-   vmime::ref <vmime::encoder> e = enc->create();
+   vmime::ref <vmime::utility::encoder::encoder> e = enc->create();
 
    std::vector <vmime::string> props = e->getAvailableProperties();
    std::vector <vmime::string>::const_iterator it;
