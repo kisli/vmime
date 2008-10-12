@@ -53,7 +53,7 @@ public:
 
 		messageIdComparator(const utility::file::path::component& comp);
 
-		const bool operator()(const utility::file::path::component& other) const;
+		bool operator()(const utility::file::path::component& other) const;
 
 	private:
 
@@ -66,7 +66,7 @@ public:
 	  * @return true if the specified object is a message file,
 	  * false otherwise
 	  */
-	static const bool isMessageFile(const utility::file& file);
+	static bool isMessageFile(const utility::file& file);
 
 	/** Extract the unique identifier part of the message filename.
 	  * Eg: for the filename "1071577232.28549.m03s:2,RS", it will
@@ -85,7 +85,7 @@ public:
 	  * @param comp filename part
 	  * @return message flags extracted from the specified filename
 	  */
-	static const int extractFlags(const utility::file::path::component& comp);
+	static int extractFlags(const utility::file::path::component& comp);
 
 	/** Return a string representing the specified message flags.
 	  * Eg: for (message::FLAG_SEEN | message::FLAG_REPLIED), it will

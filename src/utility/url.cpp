@@ -369,7 +369,7 @@ void url::setHost(const string& host)
 }
 
 
-const port_t url::getPort() const
+port_t url::getPort() const
 {
 	return (m_port);
 }

@@ -72,7 +72,7 @@ const std::vector <sendableMDNInfos> MDNHelper::getPossibleMDNs(const ref <const
 }
 
 
-const bool MDNHelper::isMDN(const ref <const message> msg)
+bool MDNHelper::isMDN(const ref <const message> msg)
 {
 	const ref <const header> hdr = msg->getHeader();
 
@@ -111,7 +111,7 @@ receivedMDNInfos MDNHelper::getReceivedMDN(const ref <const message> msg)
 }
 
 
-const bool MDNHelper::needConfirmation(const ref <const message> msg)
+bool MDNHelper::needConfirmation(const ref <const message> msg)
 {
 	ref <const header> hdr = msg->getHeader();
 

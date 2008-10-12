@@ -78,7 +78,7 @@ public:
 	  *
 	  * @return true if the field is a custom field, false otherwise
 	  */
-	const bool isCustom() const;
+	bool isCustom() const;
 
 	/** Return the read-only value object attached to this field.
 	  *

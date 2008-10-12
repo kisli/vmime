@@ -49,7 +49,7 @@ public:
 		ref <TLSSession> tlsSession, ref <TLSSocket> tlsSocket);
 
 	const string getHost() const;
-	const port_t getPort() const;
+	port_t getPort() const;
 
 	/** Return the peer's certificate (chain) as sent by the peer.
 	  *

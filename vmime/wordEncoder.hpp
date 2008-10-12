@@ -65,11 +65,11 @@ public:
 	  *
 	  * @return encoding
 	  */
-	const Encoding getEncoding() const;
+	Encoding getEncoding() const;
 
 private:
 
-	static const Encoding guessBestEncoding(const string& buffer, const charset& charset);
+	static Encoding guessBestEncoding(const string& buffer, const charset& charset);
 
 	void guessBestEncoding();
 

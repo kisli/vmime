@@ -68,8 +68,8 @@ public:
 	void setDomain(const string& domain);
 
 	// Comparison
-	const bool operator==(const path& p) const;
-	const bool operator!=(const path& p) const;
+	bool operator==(const path& p) const;
+	bool operator!=(const path& p) const;
 
 	// Assignment
 	void copyFrom(const component& other);

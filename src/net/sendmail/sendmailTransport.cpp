@@ -92,13 +92,13 @@ void sendmailTransport::connect()
 }
 
 
-const bool sendmailTransport::isConnected() const
+bool sendmailTransport::isConnected() const
 {
 	return (m_connected);
 }
 
 
-const bool sendmailTransport::isSecuredConnection() const
+bool sendmailTransport::isSecuredConnection() const
 {
 	return false;
 }
@@ -106,7 +106,7 @@ const bool sendmailTransport::isSecuredConnection() const
 
 ref <connectionInfos> sendmailTransport::getConnectionInfos() const
 {
-	return vmime::create <defaultConnectionInfos>("localhost", 0);
+	return vmime::create <defaultConnectionInfos>("localhost", static_cast <port_t>(0));
 }
 
 

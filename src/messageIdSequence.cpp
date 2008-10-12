@@ -198,13 +198,13 @@ void messageIdSequence::removeAllMessageIds()
 }
 
 
-const int messageIdSequence::getMessageIdCount() const
+int messageIdSequence::getMessageIdCount() const
 {
 	return (m_list.size());
 }
 
 
-const bool messageIdSequence::isEmpty() const
+bool messageIdSequence::isEmpty() const
 {
 	return (m_list.empty());
 }

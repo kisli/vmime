@@ -47,7 +47,7 @@ public:
 	IMAPTag& operator++();           // ++IMAPTag
 	const IMAPTag operator++(int);   // IMAPTag++
 
-	const int number() const;
+	int number() const;
 
 	operator string() const;
 

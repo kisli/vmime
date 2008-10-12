@@ -60,13 +60,13 @@ const string component::generate(const string::size_type maxLineLength,
 }
 
 
-const string::size_type component::getParsedOffset() const
+string::size_type component::getParsedOffset() const
 {
 	return (m_parsedOffset);
 }
 
 
-const string::size_type component::getParsedLength() const
+string::size_type component::getParsedLength() const
 {
 	return (m_parsedLength);
 }

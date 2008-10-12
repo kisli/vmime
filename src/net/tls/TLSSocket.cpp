@@ -84,7 +84,7 @@ void TLSSocket::disconnect()
 }
 
 
-const bool TLSSocket::isConnected() const
+bool TLSSocket::isConnected() const
 {
 	return m_wrapped->isConnected() && m_connected;
 }
@@ -103,7 +103,7 @@ void TLSSocket::send(const string& buffer)
 }
 
 
-const int TLSSocket::receiveRaw(char* buffer, const int count)
+int TLSSocket::receiveRaw(char* buffer, const int count)
 {
 	const ssize_t ret = gnutls_record_recv
 		(*m_session->m_gnutlsSession,

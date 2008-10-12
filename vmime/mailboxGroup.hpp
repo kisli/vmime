@@ -124,13 +124,13 @@ public:
 	  *
 	  * @return number of mailboxes
 	  */
-	const int getMailboxCount() const;
+	int getMailboxCount() const;
 
 	/** Tests whether the list of mailboxes is empty.
 	  *
 	  * @return true if there is no mailbox, false otherwise
 	  */
-	const bool isEmpty() const;
+	bool isEmpty() const;
 
 	/** Return the mailbox at the specified position.
 	  *
@@ -158,7 +158,7 @@ public:
 	  */
 	const std::vector <ref <mailbox> > getMailboxList();
 
-	const bool isGroup() const;
+	bool isGroup() const;
 
 private:
 

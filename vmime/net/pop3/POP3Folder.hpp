@@ -61,11 +61,11 @@ private:
 
 public:
 
-	const int getMode() const;
+	int getMode() const;
 
-	const int getType();
+	int getType();
 
-	const int getFlags();
+	int getFlags();
 
 	const folder::path::component getName() const;
 	const folder::path getFullPath() const;
@@ -74,16 +74,16 @@ public:
 	void close(const bool expunge);
 	void create(const int type);
 
-	const bool exists();
+	bool exists();
 
 	void destroy();
 
-	const bool isOpen() const;
+	bool isOpen() const;
 
 	ref <message> getMessage(const int num);
 	std::vector <ref <message> > getMessages(const int from = 1, const int to = -1);
 	std::vector <ref <message> > getMessages(const std::vector <int>& nums);
-	const int getMessageCount();
+	int getMessageCount();
 
 	ref <folder> getFolder(const folder::path::component& name);
 	std::vector <ref <folder> > getFolders(const bool recursive = false);
@@ -117,7 +117,7 @@ public:
 	void fetchMessages(std::vector <ref <message> >& msg, const int options, utility::progressListener* progress = NULL);
 	void fetchMessage(ref <message> msg, const int options);
 
-	const int getFetchCapabilities() const;
+	int getFetchCapabilities() const;
 
 private:
 

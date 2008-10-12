@@ -50,6 +50,8 @@
 
 #include "vmime/security/digest/md5/md5MessageDigest.hpp"
 
+#include <cstring>
+
 
 namespace vmime {
 namespace security {
@@ -327,7 +329,7 @@ void md5MessageDigest::transform()
 }
 
 
-const int md5MessageDigest::getDigestLength() const
+int md5MessageDigest::getDigestLength() const
 {
 	return 16;
 }

@@ -788,15 +788,15 @@ const std::vector <ref <const component> > datetime::getChildComponents() const
 }
 
 
-const int datetime::getYear() const { return (m_year); }
-const int datetime::getMonth() const { return (m_month); }
-const int datetime::getDay() const { return (m_day); }
-const int datetime::getHour() const { return (m_hour); }
-const int datetime::getMinute() const { return (m_minute); }
-const int datetime::getSecond() const { return (m_second); }
-const int datetime::getZone() const { return (m_zone); }
-const int datetime::getWeekDay() const { return (utility::datetimeUtils::getDayOfWeek(m_year, m_month, m_day)); }
-const int datetime::getWeek() const { return utility::datetimeUtils::getWeekOfYear(m_year, m_month, m_day); }
+int datetime::getYear() const { return (m_year); }
+int datetime::getMonth() const { return (m_month); }
+int datetime::getDay() const { return (m_day); }
+int datetime::getHour() const { return (m_hour); }
+int datetime::getMinute() const { return (m_minute); }
+int datetime::getSecond() const { return (m_second); }
+int datetime::getZone() const { return (m_zone); }
+int datetime::getWeekDay() const { return (utility::datetimeUtils::getDayOfWeek(m_year, m_month, m_day)); }
+int datetime::getWeek() const { return utility::datetimeUtils::getWeekOfYear(m_year, m_month, m_day); }
 
 void datetime::setYear(const int year) { m_year = year; }
 void datetime::setMonth(const int month) { m_month = std::min(std::max(month, 1), 12); }
@@ -807,7 +807,7 @@ void datetime::setSecond(const int second) { m_second = second; }
 void datetime::setZone(const int zone) { m_zone = zone; }
 
 
-const bool datetime::operator==(const datetime& other) const
+bool datetime::operator==(const datetime& other) const
 {
 	const datetime ut1 = utility::datetimeUtils::toUniversalTime(*this);
 	const datetime ut2 = utility::datetimeUtils::toUniversalTime(other);
@@ -821,7 +821,7 @@ const bool datetime::operator==(const datetime& other) const
 }
 
 
-const bool datetime::operator!=(const datetime& other) const
+bool datetime::operator!=(const datetime& other) const
 {
 	const datetime ut1 = utility::datetimeUtils::toUniversalTime(*this);
 	const datetime ut2 = utility::datetimeUtils::toUniversalTime(other);
@@ -835,7 +835,7 @@ const bool datetime::operator!=(const datetime& other) const
 }
 
 
-const bool datetime::operator<(const datetime& other) const
+bool datetime::operator<(const datetime& other) const
 {
 	const datetime ut1 = utility::datetimeUtils::toUniversalTime(*this);
 	const datetime ut2 = utility::datetimeUtils::toUniversalTime(other);
@@ -849,7 +849,7 @@ const bool datetime::operator<(const datetime& other) const
 }
 
 
-const bool datetime::operator<=(const datetime& other) const
+bool datetime::operator<=(const datetime& other) const
 {
 	const datetime ut1 = utility::datetimeUtils::toUniversalTime(*this);
 	const datetime ut2 = utility::datetimeUtils::toUniversalTime(other);
@@ -863,7 +863,7 @@ const bool datetime::operator<=(const datetime& other) const
 }
 
 
-const bool datetime::operator>(const datetime& other) const
+bool datetime::operator>(const datetime& other) const
 {
 	const datetime ut1 = utility::datetimeUtils::toUniversalTime(*this);
 	const datetime ut2 = utility::datetimeUtils::toUniversalTime(other);
@@ -877,7 +877,7 @@ const bool datetime::operator>(const datetime& other) const
 }
 
 
-const bool datetime::operator>=(const datetime& other) const
+bool datetime::operator>=(const datetime& other) const
 {
 	const datetime ut1 = utility::datetimeUtils::toUniversalTime(*this);
 	const datetime ut2 = utility::datetimeUtils::toUniversalTime(other);

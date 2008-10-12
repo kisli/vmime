@@ -192,15 +192,15 @@ private:
 public:
 
 	// Get
-	const int getYear() const;
-	const int getMonth() const;
-	const int getDay() const;
-	const int getHour() const;
-	const int getMinute() const;
-	const int getSecond() const;
-	const int getZone() const;
-	const int getWeekDay() const;
-	const int getWeek() const;
+	int getYear() const;
+	int getMonth() const;
+	int getDay() const;
+	int getHour() const;
+	int getMinute() const;
+	int getSecond() const;
+	int getZone() const;
+	int getWeekDay() const;
+	int getWeek() const;
 
 	void getTime(int& hour, int& minute, int& second, int& zone) const;
 	void getTime(int& hour, int& minute, int& second) const;
@@ -227,12 +227,12 @@ public:
 	ref <component> clone() const;
 
 	// Comparison
-	const bool operator==(const datetime& other) const;
-	const bool operator!=(const datetime& other) const;
-	const bool operator<(const datetime& other) const;
-	const bool operator<=(const datetime& other) const;
-	const bool operator>(const datetime& other) const;
-	const bool operator>=(const datetime& other) const;
+	bool operator==(const datetime& other) const;
+	bool operator!=(const datetime& other) const;
+	bool operator<(const datetime& other) const;
+	bool operator<=(const datetime& other) const;
+	bool operator>(const datetime& other) const;
+	bool operator>=(const datetime& other) const;
 
 	// Current date and time
 	static const datetime now();

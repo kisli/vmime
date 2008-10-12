@@ -70,7 +70,7 @@ posixHandler::~posixHandler()
 }
 
 
-const unsigned int posixHandler::getUnixTime() const
+unsigned int posixHandler::getUnixTime() const
 {
 	return ::time(NULL);
 }
@@ -165,7 +165,7 @@ const vmime::string posixHandler::getHostName() const
 }
 
 
-const unsigned int posixHandler::getProcessId() const
+unsigned int posixHandler::getProcessId() const
 {
 	return (::getpid());
 }

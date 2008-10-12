@@ -208,12 +208,12 @@ public:
 	void connect(const vmime::string& address, const vmime::port_t port);
 	void disconnect();
 
-	const bool isConnected() const;
+	bool isConnected() const;
 
 	void receive(vmime::string& buffer);
 	void send(const vmime::string& buffer);
 
-	const int receiveRaw(char* buffer, const int count);
+	int receiveRaw(char* buffer, const int count);
 	void sendRaw(const char* buffer, const int count);
 
 	/** Send data to client.
@@ -268,7 +268,7 @@ public:
 	void onDataReceived();
 
 	const vmime::string getNextLine();
-	const bool haveMoreLines() const;
+	bool haveMoreLines() const;
 
 	virtual void processCommand() = 0;
 
@@ -285,9 +285,9 @@ public:
 
 	testTimeoutHandler(const unsigned int delay = 3);
 
-	const bool isTimeOut();
+	bool isTimeOut();
 	void resetTimeOut();
-	const bool handleTimeOut();
+	bool handleTimeOut();
 
 private:
 

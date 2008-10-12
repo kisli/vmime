@@ -50,7 +50,7 @@ public:
 	posixHandler();
 	~posixHandler();
 
-	const unsigned int getUnixTime() const;
+	unsigned int getUnixTime() const;
 
 	const vmime::datetime getCurrentLocalTime() const;
 
@@ -58,7 +58,7 @@ public:
 
 	const vmime::string getHostName() const;
 
-	const unsigned int getProcessId() const;
+	unsigned int getProcessId() const;
 
 #if VMIME_HAVE_MESSAGING_FEATURES
 	ref <vmime::net::socketFactory> getSocketFactory() const;

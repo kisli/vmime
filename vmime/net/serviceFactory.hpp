@@ -78,7 +78,7 @@ public:
 			(ref <session> sess,
 			 ref <security::authenticator> auth) const = 0;
 
-		virtual const int getType() const = 0;
+		virtual int getType() const = 0;
 		virtual const string& getName() const = 0;
 		virtual const serviceInfos& getInfos() const = 0;
 	};
@@ -132,7 +132,7 @@ public:
 	  *
 	  * @return number of registered services
 	  */
-	const int getServiceCount() const;
+	int getServiceCount() const;
 
 	/** Return the registered service at the specified position.
 	  *

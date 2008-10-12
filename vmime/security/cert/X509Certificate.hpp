@@ -107,14 +107,14 @@ public:
 	  * @return true if this certificate was issued by the given issuer,
 	  * false otherwise
 	  */
-	const bool checkIssuer(ref <const X509Certificate> issuer) const;
+	bool checkIssuer(ref <const X509Certificate> issuer) const;
 
 	/** Verifies this certificate against a given trusted one.
 	  *
 	  * @param caCert a certificate that is considered to be trusted one
 	  * @return true if the verification succeeded, false otherwise
 	  */
-	const bool verify(ref <const X509Certificate> caCert) const;
+	bool verify(ref <const X509Certificate> caCert) const;
 
 	/** Gets the expiration date of this certificate. This is the date
 	  * at which this certificate will not be valid anymore.
@@ -140,8 +140,8 @@ public:
 	// Implementation of 'certificate'
 	const byteArray getEncoded() const;
 	const string getType() const;
-	const int getVersion() const;
-	const bool equals(ref <const certificate> other) const;
+	int getVersion() const;
+	bool equals(ref <const certificate> other) const;
 
 private:
 

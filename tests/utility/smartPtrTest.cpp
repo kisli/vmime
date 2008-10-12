@@ -44,8 +44,8 @@ VMIME_TEST_SUITE_BEGIN
 
 	struct A : public vmime::object
 	{
-		const int strongCount() const { return getRefManager()->getStrongRefCount(); }
-		const int weakCount() const { return getRefManager()->getWeakRefCount(); }
+		int strongCount() const { return getRefManager()->getStrongRefCount(); }
+		int weakCount() const { return getRefManager()->getWeakRefCount(); }
 	};
 
 	struct B : public virtual A { };

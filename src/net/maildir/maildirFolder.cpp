@@ -74,7 +74,7 @@ void maildirFolder::onStoreDisconnected()
 }
 
 
-const int maildirFolder::getMode() const
+int maildirFolder::getMode() const
 {
 	if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
@@ -83,7 +83,7 @@ const int maildirFolder::getMode() const
 }
 
 
-const int maildirFolder::getType()
+int maildirFolder::getType()
 {
 	if (m_path.isEmpty())
 		return (TYPE_CONTAINS_FOLDERS);
@@ -92,7 +92,7 @@ const int maildirFolder::getType()
 }
 
 
-const int maildirFolder::getFlags()
+int maildirFolder::getFlags()
 {
 	int flags = 0;
 
@@ -241,7 +241,7 @@ void maildirFolder::destroy()
 }
 
 
-const bool maildirFolder::exists()
+bool maildirFolder::exists()
 {
 	ref <maildirStore> store = m_store.acquire();
 
@@ -249,7 +249,7 @@ const bool maildirFolder::exists()
 }
 
 
-const bool maildirFolder::isOpen() const
+bool maildirFolder::isOpen() const
 {
 	return (m_open);
 }
@@ -441,7 +441,7 @@ std::vector <ref <message> > maildirFolder::getMessages(const std::vector <int>&
 }
 
 
-const int maildirFolder::getMessageCount()
+int maildirFolder::getMessageCount()
 {
 	return (m_messageCount);
 }
@@ -1339,7 +1339,7 @@ void maildirFolder::fetchMessage(ref <message> msg, const int options)
 }
 
 
-const int maildirFolder::getFetchCapabilities() const
+int maildirFolder::getFetchCapabilities() const
 {
 	return (FETCH_ENVELOPE | FETCH_STRUCTURE | FETCH_CONTENT_INFO |
 	        FETCH_FLAGS | FETCH_SIZE | FETCH_FULL_HEADER | FETCH_UID |

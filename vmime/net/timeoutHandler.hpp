@@ -45,7 +45,7 @@ public:
 	  *
 	  * @return true if the time-out delay is elapsed
 	  */
-	virtual const bool isTimeOut() = 0;
+	virtual bool isTimeOut() = 0;
 
 	/** Called to reset the time-out counter.
 	  */
@@ -57,7 +57,7 @@ public:
 	  * @return true to continue (and reset the time-out)
 	  * or false to cancel the current operation
 	  */
-	virtual const bool handleTimeOut() = 0;
+	virtual bool handleTimeOut() = 0;
 };
 
 

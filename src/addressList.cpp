@@ -202,13 +202,13 @@ void addressList::removeAllAddresses()
 }
 
 
-const int addressList::getAddressCount() const
+int addressList::getAddressCount() const
 {
 	return (m_list.size());
 }
 
 
-const bool addressList::isEmpty() const
+bool addressList::isEmpty() const
 {
 	return (m_list.empty());
 }

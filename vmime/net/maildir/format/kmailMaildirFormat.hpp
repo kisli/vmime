@@ -59,8 +59,8 @@ public:
 	void destroyFolder(const folder::path& path);
 	void renameFolder(const folder::path& oldPath, const folder::path& newPath);
 
-	const bool folderExists(const folder::path& path) const;
-	const bool folderHasSubfolders(const folder::path& path) const;
+	bool folderExists(const folder::path& path) const;
+	bool folderHasSubfolders(const folder::path& path) const;
 
 	const utility::file::path folderPathToFileSystemPath
 		(const folder::path& path, const DirectoryType type) const;
@@ -70,7 +70,7 @@ public:
 
 protected:
 
-	const bool supports() const;
+	bool supports() const;
 
 
 	/** Recursive implementation of listFolders().
@@ -86,7 +86,7 @@ protected:
 	  * @return true if the specified directory is a maildir subfolder,
 	  * false otherwise
 	  */
-	static const bool isSubfolderDirectory(const utility::file& file);
+	static bool isSubfolderDirectory(const utility::file& file);
 };
 
 

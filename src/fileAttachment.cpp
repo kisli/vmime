@@ -133,24 +133,24 @@ fileAttachment::fileInfo::~fileInfo()
 	delete (m_readDate);
 }
 
-const bool fileAttachment::fileInfo::hasFilename() const { return (m_filename != NULL); }
+bool fileAttachment::fileInfo::hasFilename() const { return (m_filename != NULL); }
 const string& fileAttachment::fileInfo::getFilename() const { return (*m_filename); }
 void fileAttachment::fileInfo::setFilename(const string& name) { if (m_filename) { *m_filename = name; } else { m_filename = new string(name); } }
 
-const bool fileAttachment::fileInfo::hasCreationDate() const { return (m_creationDate != NULL); }
+bool fileAttachment::fileInfo::hasCreationDate() const { return (m_creationDate != NULL); }
 const datetime& fileAttachment::fileInfo::getCreationDate() const { return (*m_creationDate); }
 void fileAttachment::fileInfo::setCreationDate(const datetime& date) { if (m_creationDate) { *m_creationDate = date; } else { m_creationDate = new datetime(date); } }
 
-const bool fileAttachment::fileInfo::hasModificationDate() const { return (m_modifDate != NULL); }
+bool fileAttachment::fileInfo::hasModificationDate() const { return (m_modifDate != NULL); }
 const datetime& fileAttachment::fileInfo::getModificationDate() const { return (*m_modifDate); }
 void fileAttachment::fileInfo::setModificationDate(const datetime& date) { if (m_modifDate) { *m_modifDate = date; } else { m_modifDate = new datetime(date); } }
 
-const bool fileAttachment::fileInfo::hasReadDate() const { return (m_readDate != NULL); }
+bool fileAttachment::fileInfo::hasReadDate() const { return (m_readDate != NULL); }
 const datetime& fileAttachment::fileInfo::getReadDate() const { return (*m_readDate); }
 void fileAttachment::fileInfo::setReadDate(const datetime& date) { if (m_readDate) { *m_readDate = date; } else { m_readDate = new datetime(date); } }
 
-const bool fileAttachment::fileInfo::hasSize() const { return (m_size != NULL); }
-const unsigned int fileAttachment::fileInfo::getSize() const { return (*m_size); }
+bool fileAttachment::fileInfo::hasSize() const { return (m_size != NULL); }
+unsigned int fileAttachment::fileInfo::getSize() const { return (*m_size); }
 void fileAttachment::fileInfo::setSize(const unsigned int& size) { if (m_size) { *m_size = size; } else { m_size = new unsigned int(size); } }
 
 

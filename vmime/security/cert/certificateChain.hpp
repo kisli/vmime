@@ -53,7 +53,7 @@ public:
 	  *
 	  * @return number of certificates in the chain
 	  */
-	const unsigned int getCount() const;
+	unsigned int getCount() const;
 
 	/** Return the certificate at the specified position. 0 is the
 	  * subject certificate, 1 is the issuer's certificate, 2 is

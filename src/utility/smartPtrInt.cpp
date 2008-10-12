@@ -57,7 +57,7 @@ refManagerImpl::~refManagerImpl()
 }
 
 
-const bool refManagerImpl::addStrong()
+bool refManagerImpl::addStrong()
 {
 	if (m_strongCount <= 0)
 		return false;
@@ -118,13 +118,13 @@ void refManagerImpl::deleteObject()
 }
 
 
-const long refManagerImpl::getStrongRefCount() const
+long refManagerImpl::getStrongRefCount() const
 {
 	return m_strongCount;
 }
 
 
-const long refManagerImpl::getWeakRefCount() const
+long refManagerImpl::getWeakRefCount() const
 {
 	return m_weakCount;
 }
@@ -149,13 +149,13 @@ refCounter::~refCounter()
 }
 
 
-const long refCounter::increment()
+long refCounter::increment()
 {
 	return InterlockedIncrement(&m_value);
 }
 
 
-const long refCounter::decrement()
+long refCounter::decrement()
 {
 	return InterlockedDecrement(&m_value);
 }
@@ -181,7 +181,7 @@ refCounter::~refCounter()
 }
 
 
-const long refCounter::increment()
+long refCounter::increment()
 {
 #if __GNUC_MINOR__ < 4 && __GNUC__ < 4
 	return __exchange_and_add(&m_value, 1) + 1;
@@ -191,7 +191,7 @@ const long refCounter::increment()
 }
 
 
-const long refCounter::decrement()
+long refCounter::decrement()
 {
 #if __GNUC_MINOR__ < 4 && __GNUC__ < 4
 	return __exchange_and_add(&m_value, -1) - 1;
@@ -231,7 +231,7 @@ refCounter::~refCounter()
 }
 
 
-const long refCounter::increment()
+long refCounter::increment()
 {
 	long value;
 
@@ -243,7 +243,7 @@ const long refCounter::increment()
 }
 
 
-const long refCounter::decrement()
+long refCounter::decrement()
 {
 	long value;
 
@@ -275,13 +275,13 @@ refCounter::~refCounter()
 }
 
 
-const long refCounter::increment()
+long refCounter::increment()
 {
 	return ++m_value;
 }
 
 
-const long refCounter::decrement()
+long refCounter::decrement()
 {
 	return --m_value;
 }

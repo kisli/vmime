@@ -113,7 +113,7 @@ public:
 	  * @return true if the specified mechanism is supported,
 	  * false otherwise
 	  */
-	const bool isMechanismSupported(const string& name) const;
+	bool isMechanismSupported(const string& name) const;
 
 private:
 

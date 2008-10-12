@@ -50,7 +50,7 @@ public:
 	void finalize(const byte_t* buffer, const unsigned long len);
 	void finalize(const byte_t* buffer, const unsigned long offset, const unsigned long len);
 
-	const int getDigestLength() const;
+	int getDigestLength() const;
 	const byte_t* getDigest() const;
 
 	void reset();

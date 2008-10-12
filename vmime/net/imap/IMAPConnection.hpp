@@ -55,7 +55,7 @@ public:
 
 
 	void connect();
-	const bool isConnected() const;
+	bool isConnected() const;
 	void disconnect();
 
 
@@ -68,11 +68,11 @@ public:
 		STATE_LOGOUT
 	};
 
-	const ProtocolStates state() const;
+	ProtocolStates state() const;
 	void setState(const ProtocolStates state);
 
 
-	const char hierarchySeparator() const;
+	char hierarchySeparator() const;
 
 
 	void send(bool tag, const string& what, bool end);
@@ -93,7 +93,7 @@ public:
 
 	ref <security::authenticator> getAuthenticator();
 
-	const bool isSecuredConnection() const;
+	bool isSecuredConnection() const;
 	ref <connectionInfos> getConnectionInfos() const;
 
 private:

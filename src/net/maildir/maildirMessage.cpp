@@ -57,8 +57,8 @@ public:
 	weak_ref <const maildirPart> getParent() const { return (m_parent); }
 
 	const mediaType& getType() const { return (m_mediaType); }
-	const int getSize() const { return (m_size); }
-	const int getNumber() const { return (m_number); }
+	int getSize() const { return (m_size); }
+	int getNumber() const { return (m_number); }
 
 	ref <const header> getHeader() const
 	{
@@ -76,11 +76,11 @@ public:
 			return (*(m_header = vmime::create <header>()));
 	}
 
-	const int getHeaderParsedOffset() const { return (m_headerParsedOffset); }
-	const int getHeaderParsedLength() const { return (m_headerParsedLength); }
+	int getHeaderParsedOffset() const { return (m_headerParsedOffset); }
+	int getHeaderParsedLength() const { return (m_headerParsedLength); }
 
-	const int getBodyParsedOffset() const { return (m_bodyParsedOffset); }
-	const int getBodyParsedLength() const { return (m_bodyParsedLength); }
+	int getBodyParsedOffset() const { return (m_bodyParsedOffset); }
+	int getBodyParsedLength() const { return (m_bodyParsedLength); }
 
 	void initStructure(const bodyPart& part);
 
@@ -145,7 +145,7 @@ public:
 		return m_parts[x];
 	}
 
-	const int getPartCount() const
+	int getPartCount() const
 	{
 		return m_parts.size();
 	}
@@ -247,7 +247,7 @@ void maildirMessage::onFolderClosed()
 }
 
 
-const int maildirMessage::getNumber() const
+int maildirMessage::getNumber() const
 {
 	return (m_num);
 }
@@ -259,7 +259,7 @@ const message::uid maildirMessage::getUniqueId() const
 }
 
 
-const int maildirMessage::getSize() const
+int maildirMessage::getSize() const
 {
 	if (m_size == -1)
 		throw exceptions::unfetched_object();
@@ -268,7 +268,7 @@ const int maildirMessage::getSize() const
 }
 
 
-const bool maildirMessage::isExpunged() const
+bool maildirMessage::isExpunged() const
 {
 	return (m_expunged);
 }
@@ -301,7 +301,7 @@ ref <const header> maildirMessage::getHeader() const
 }
 
 
-const int maildirMessage::getFlags() const
+int maildirMessage::getFlags() const
 {
 	if (m_flags == FLAG_UNDEFINED)
 		throw exceptions::unfetched_object();

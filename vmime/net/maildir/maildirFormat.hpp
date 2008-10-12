@@ -102,7 +102,7 @@ public:
 	  * @param path virtual path of the folder
 	  * @return true if the folder exists, false otherwise
 	  */
-	virtual const bool folderExists(const folder::path& path) const = 0;
+	virtual bool folderExists(const folder::path& path) const = 0;
 
 	/** Test whether the specified folder has subfolders.
 	  *
@@ -110,7 +110,7 @@ public:
 	  * @return true if the folder has at least one subfolder,
 	  * false otherwise
 	  */
-	virtual const bool folderHasSubfolders(const folder::path& path) const = 0;
+	virtual bool folderHasSubfolders(const folder::path& path) const = 0;
 
 	/** Returns the directory which represents the specified
 	  * folder on the file system.
@@ -170,7 +170,7 @@ protected:
 	  * @return true if the implementation supports the specified
 	  * Maildir, or false otherwise
 	  */
-	virtual const bool supports() const = 0;
+	virtual bool supports() const = 0;
 
 private:
 

@@ -98,7 +98,7 @@ public:
 	  * @return start position in parsed buffer
 	  * or 0 if this component has not been parsed
 	  */
-	const string::size_type getParsedOffset() const;
+	string::size_type getParsedOffset() const;
 
 	/** Return the length of this component in the
 	  * parsed message contents.
@@ -106,7 +106,7 @@ public:
 	  * @return length of the component in parsed buffer
 	  * or 0 if this component has not been parsed
 	  */
-	const string::size_type getParsedLength() const;
+	string::size_type getParsedLength() const;
 
 	/** Return the list of children of this component.
 	  *

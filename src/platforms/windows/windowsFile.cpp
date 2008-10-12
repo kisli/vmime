@@ -94,12 +94,12 @@ const vmime::string windowsFileSystemFactory::pathToStringImpl(const vmime::util
 	return (native);
 }
 
-const bool windowsFileSystemFactory::isValidPathComponent(const vmime::utility::file::path::component& comp) const
+bool windowsFileSystemFactory::isValidPathComponent(const vmime::utility::file::path::component& comp) const
 {
 	return isValidPathComponent(comp, false);
 }
 
-const bool windowsFileSystemFactory::isValidPathComponent(
+bool windowsFileSystemFactory::isValidPathComponent(
 	const vmime::utility::file::path::component& comp,
 	bool firstComponent) const
 {
@@ -159,7 +159,7 @@ const bool windowsFileSystemFactory::isValidPathComponent(
 }
 
 
-const bool windowsFileSystemFactory::isValidPath(const vmime::utility::file::path& path) const
+bool windowsFileSystemFactory::isValidPath(const vmime::utility::file::path& path) const
 {
 	for (int i = 0 ; i < path.getSize() ; ++i)
 	{
@@ -220,7 +220,7 @@ void windowsFile::createDirectory(const bool createAll)
 	createDirectoryImpl(m_path, m_path, createAll);
 }
 
-const bool windowsFile::isFile() const
+bool windowsFile::isFile() const
 {
 	DWORD dwFileAttribute = GetFileAttributes(m_nativePath.c_str());
 	if (dwFileAttribute == INVALID_FILE_ATTRIBUTES)
@@ -228,7 +228,7 @@ const bool windowsFile::isFile() const
 	return (dwFileAttribute & FILE_ATTRIBUTE_DIRECTORY) == 0;
 }
 
-const bool windowsFile::isDirectory() const
+bool windowsFile::isDirectory() const
 {
 	DWORD dwFileAttribute = GetFileAttributes(m_nativePath.c_str());
 	if (dwFileAttribute == INVALID_FILE_ATTRIBUTES)
@@ -236,7 +236,7 @@ const bool windowsFile::isDirectory() const
 	return (dwFileAttribute & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY;
 }
 
-const bool windowsFile::canRead() const
+bool windowsFile::canRead() const
 {
 	HANDLE hFile = CreateFile(
 		m_nativePath.c_str(),
@@ -252,7 +252,7 @@ const bool windowsFile::canRead() const
 	return true;
 }
 
-const bool windowsFile::canWrite() const
+bool windowsFile::canWrite() const
 {
 	HANDLE hFile = CreateFile(
 		m_nativePath.c_str(),
@@ -292,7 +292,7 @@ const vmime::utility::path& windowsFile::getFullPath() const
 	return m_path;
 }
 
-const bool windowsFile::exists() const
+bool windowsFile::exists() const
 {
 	WIN32_FIND_DATA findData;
 	HANDLE hFind = FindFirstFile(m_nativePath.c_str(), &findData);
@@ -372,7 +372,7 @@ windowsFileIterator::~windowsFileIterator()
 		FindClose(m_hFind);
 }
 
-const bool windowsFileIterator::hasMoreElements() const
+bool windowsFileIterator::hasMoreElements() const
 {
 	return m_moreElements;
 }
@@ -452,7 +452,7 @@ windowsFileReaderInputStream::~windowsFileReaderInputStream()
 	CloseHandle(m_hFile);
 }
 
-const bool windowsFileReaderInputStream::eof() const
+bool windowsFileReaderInputStream::eof() const
 {
 	DWORD dwSize = GetFileSize(m_hFile, NULL);
 	DWORD dwPosition = SetFilePointer(m_hFile, 0, NULL, FILE_CURRENT);

@@ -145,7 +145,7 @@ public:
 	{
 	}
 
-	const bool eof() const
+	bool eof() const
 	{
 		return (m_eof);
 	}
@@ -155,7 +155,7 @@ public:
 		// Do nothing: unsupported
 	}
 
-	const size_type skip(const size_type count)
+	size_type skip(const size_type count)
 	{
 		// TODO: not tested
 		value_type buffer[4096];
@@ -178,7 +178,7 @@ public:
 		return static_cast <size_type>(bytesSkipped);
 	}
 
-	const size_type read(value_type* const data, const size_type count)
+	size_type read(value_type* const data, const size_type count)
 	{
 		int bytesRead = 0;
 

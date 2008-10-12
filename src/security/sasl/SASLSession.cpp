@@ -92,7 +92,7 @@ ref <SASLContext> SASLSession::getContext()
 }
 
 
-const bool SASLSession::evaluateChallenge
+bool SASLSession::evaluateChallenge
 	(const byte_t* challenge, const int challengeLen,
 	 byte_t** response, int* responseLen)
 {

@@ -58,10 +58,10 @@ public:
 	  */
 	static const string quoteString(const string& text);
 
-	static const int folderTypeFromFlags(const IMAPParser::mailbox_flag_list* list);
-	static const int folderFlagsFromFlags(const IMAPParser::mailbox_flag_list* list);
+	static int folderTypeFromFlags(const IMAPParser::mailbox_flag_list* list);
+	static int folderFlagsFromFlags(const IMAPParser::mailbox_flag_list* list);
 
-	static const int messageFlagsFromFlags(const IMAPParser::flag_list* list);
+	static int messageFlagsFromFlags(const IMAPParser::flag_list* list);
 
 	static const string messageFlagList(const int flags);
 

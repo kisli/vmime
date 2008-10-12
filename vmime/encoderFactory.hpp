@@ -126,7 +126,7 @@ public:
 	  *
 	  * @return number of registered encoders
 	  */
-	const int getEncoderCount() const;
+	int getEncoderCount() const;
 
 	/** Return the registered encoder at the specified position.
 	  *

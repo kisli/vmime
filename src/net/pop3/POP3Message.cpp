@@ -55,7 +55,7 @@ void POP3Message::onFolderClosed()
 }
 
 
-const int POP3Message::getNumber() const
+int POP3Message::getNumber() const
 {
 	return (m_num);
 }
@@ -67,7 +67,7 @@ const message::uid POP3Message::getUniqueId() const
 }
 
 
-const int POP3Message::getSize() const
+int POP3Message::getSize() const
 {
 	if (m_size == -1)
 		throw exceptions::unfetched_object();
@@ -76,13 +76,13 @@ const int POP3Message::getSize() const
 }
 
 
-const bool POP3Message::isExpunged() const
+bool POP3Message::isExpunged() const
 {
 	return (false);
 }
 
 
-const int POP3Message::getFlags() const
+int POP3Message::getFlags() const
 {
 	int flags = FLAG_RECENT;
 

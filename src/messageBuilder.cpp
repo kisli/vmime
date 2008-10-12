@@ -291,7 +291,7 @@ ref <attachment> messageBuilder::getAttachmentAt(const int pos)
 }
 
 
-const int messageBuilder::getAttachmentCount() const
+int messageBuilder::getAttachmentCount() const
 {
 	return (m_attach.size());
 }

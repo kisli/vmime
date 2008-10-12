@@ -119,7 +119,7 @@ ref <folder> POP3Store::getFolder(const folder::path& path)
 }
 
 
-const bool POP3Store::isValidFolderName(const folder::path::component& /* name */) const
+bool POP3Store::isValidFolderName(const folder::path::component& /* name */) const
 {
 	return true;
 }
@@ -572,13 +572,13 @@ void POP3Store::startTLS()
 #endif // VMIME_HAVE_TLS_SUPPORT
 
 
-const bool POP3Store::isConnected() const
+bool POP3Store::isConnected() const
 {
 	return (m_socket && m_socket->isConnected() && m_authentified);
 }
 
 
-const bool POP3Store::isSecuredConnection() const
+bool POP3Store::isSecuredConnection() const
 {
 	return m_secured;
 }
@@ -666,13 +666,13 @@ const std::vector <string> POP3Store::getCapabilities()
 }
 
 
-const bool POP3Store::isSuccessResponse(const string& buffer)
+bool POP3Store::isSuccessResponse(const string& buffer)
 {
 	return getResponseCode(buffer) == RESPONSE_OK;
 }
 
 
-const bool POP3Store::stripFirstLine(const string& buffer, string& result, string* firstLine)
+bool POP3Store::stripFirstLine(const string& buffer, string& result, string* firstLine)
 {
 	const string::size_type end = buffer.find('\n');
 
@@ -690,7 +690,7 @@ const bool POP3Store::stripFirstLine(const string& buffer, string& result, strin
 }
 
 
-const int POP3Store::getResponseCode(const string& buffer)
+int POP3Store::getResponseCode(const string& buffer)
 {
 	if (buffer.length() >= 2)
 	{
@@ -805,7 +805,7 @@ void POP3Store::readResponse(string& buffer, const bool multiLine,
 		}
 
 		last1 = receiveBuffer[receiveBuffer.length() - 1];
-		last2 = (receiveBuffer.length() >= 2) ? receiveBuffer[receiveBuffer.length() - 2] : 0;
+		last2 = static_cast <char>((receiveBuffer.length() >= 2) ? receiveBuffer[receiveBuffer.length() - 2] : 0);
 
 		// Append the data to the response buffer
 		buffer += receiveBuffer;
@@ -926,7 +926,7 @@ void POP3Store::readResponse(utility::outputStream& os,
 }
 
 
-const bool POP3Store::checkTerminator(string& buffer, const bool multiLine)
+bool POP3Store::checkTerminator(string& buffer, const bool multiLine)
 {
 	// Multi-line response
 	if (multiLine)
@@ -951,7 +951,7 @@ const bool POP3Store::checkTerminator(string& buffer, const bool multiLine)
 }
 
 
-const bool POP3Store::checkOneTerminator(string& buffer, const string& term)
+bool POP3Store::checkOneTerminator(string& buffer, const string& term)
 {
 	if (buffer.length() >= term.length() &&
 		std::equal(buffer.end() - term.length(), buffer.end(), term.begin()))
@@ -977,7 +977,7 @@ void POP3Store::unregisterFolder(POP3Folder* folder)
 }
 
 
-const int POP3Store::getCapabilities() const
+int POP3Store::getCapabilities() const
 {
 	return (CAPABILITY_DELETE_MESSAGE);
 }

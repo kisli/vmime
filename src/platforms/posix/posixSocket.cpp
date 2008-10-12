@@ -194,7 +194,7 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 }
 
 
-const bool posixSocket::isConnected() const
+bool posixSocket::isConnected() const
 {
 	if (m_desc == -1)
 		return false;
@@ -224,7 +224,7 @@ void posixSocket::receive(vmime::string& buffer)
 }
 
 
-const int posixSocket::receiveRaw(char* buffer, const int count)
+int posixSocket::receiveRaw(char* buffer, const int count)
 {
 	const int ret = ::recv(m_desc, buffer, count, 0);
 

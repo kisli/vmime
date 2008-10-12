@@ -56,7 +56,7 @@ public:
 		responseLine(const int code, const string& text);
 
 		void setCode(const int code);
-		const int getCode() const;
+		int getCode() const;
 
 		void setText(const string& text);
 		const string getText() const;
@@ -82,7 +82,7 @@ public:
 	  *
 	  * @return response code
 	  */
-	const int getCode() const;
+	int getCode() const;
 
 	/** Return the SMTP response text.
 	  * The text of each line is concatenated.
@@ -102,7 +102,7 @@ public:
 	  *
 	  * @return number of lines in the response
 	  */
-	const unsigned int getLineCount() const;
+	unsigned int getLineCount() const;
 
 	/** Return the last line in the response.
 	  *
@@ -120,7 +120,7 @@ private:
 	const string readResponseLine();
 	const responseLine getNextResponse();
 
-	static const int extractResponseCode(const string& response);
+	static int extractResponseCode(const string& response);
 
 
 	std::vector <responseLine> m_lines;

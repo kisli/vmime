@@ -70,14 +70,14 @@ void path::setDomain(const string& domain)
 }
 
 
-const bool path::operator==(const path& p) const
+bool path::operator==(const path& p) const
 {
 	return (m_localPart == p.m_localPart &&
 	        m_domain == p.m_domain);
 }
 
 
-const bool path::operator!=(const path& p) const
+bool path::operator!=(const path& p) const
 {
 	return (m_localPart != p.m_localPart ||
 	        m_domain != p.m_domain);

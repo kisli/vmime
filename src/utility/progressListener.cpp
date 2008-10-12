@@ -37,7 +37,7 @@ progressListenerSizeAdapter::progressListenerSizeAdapter
 }
 
 
-const bool progressListenerSizeAdapter::cancel() const
+bool progressListenerSizeAdapter::cancel() const
 {
 	return (m_wrapped ? m_wrapped->cancel() : false);
 }

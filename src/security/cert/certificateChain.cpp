@@ -35,7 +35,7 @@ certificateChain::certificateChain(const std::vector <ref <certificate> >& certs
 }
 
 
-const unsigned int certificateChain::getCount() const
+unsigned int certificateChain::getCount() const
 {
 	return static_cast <unsigned int>(m_certs.size());
 }

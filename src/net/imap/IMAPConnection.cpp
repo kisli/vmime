@@ -531,14 +531,14 @@ ref <security::authenticator> IMAPConnection::getAuthenticator()
 }
 
 
-const bool IMAPConnection::isConnected() const
+bool IMAPConnection::isConnected() const
 {
 	return (m_socket && m_socket->isConnected() &&
 	        (m_state == STATE_AUTHENTICATED || m_state == STATE_SELECTED));
 }
 
 
-const bool IMAPConnection::isSecuredConnection() const
+bool IMAPConnection::isSecuredConnection() const
 {
 	return m_secured;
 }
@@ -670,7 +670,7 @@ IMAPParser::response* IMAPConnection::readResponse(IMAPParser::literalHandler* l
 }
 
 
-const IMAPConnection::ProtocolStates IMAPConnection::state() const
+IMAPConnection::ProtocolStates IMAPConnection::state() const
 {
 	return (m_state);
 }
@@ -681,7 +681,8 @@ void IMAPConnection::setState(const ProtocolStates state)
 	m_state = state;
 }
 
-const char IMAPConnection::hierarchySeparator() const
+
+char IMAPConnection::hierarchySeparator() const
 {
 	return (m_hierarchySeparator);
 }

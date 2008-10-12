@@ -64,7 +64,7 @@ public:
 	  * authentication (in this case, the values in 'response' and
 	  * 'responseLen' are undetermined)
 	  */
-	virtual const bool step
+	virtual bool step
 		(ref <SASLSession> sess,
 		 const byte_t* challenge, const int challengeLen,
 		 byte_t** response, int* responseLen) = 0;
@@ -76,7 +76,7 @@ public:
 	  * @return true if the authentication has finished, or false
 	  * otherwise
 	  */
-	virtual const bool isComplete() const = 0;
+	virtual bool isComplete() const = 0;
 
 	/** Encode data according to negotiated SASL mechanism. This
 	  * might mean that data is integrity or privacy protected.

@@ -63,7 +63,7 @@ POP3Folder::~POP3Folder()
 }
 
 
-const int POP3Folder::getMode() const
+int POP3Folder::getMode() const
 {
 	if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
@@ -72,7 +72,7 @@ const int POP3Folder::getMode() const
 }
 
 
-const int POP3Folder::getType()
+int POP3Folder::getType()
 {
 	if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
@@ -86,7 +86,7 @@ const int POP3Folder::getType()
 }
 
 
-const int POP3Folder::getFlags()
+int POP3Folder::getFlags()
 {
 	return (0);
 }
@@ -194,7 +194,7 @@ void POP3Folder::destroy()
 }
 
 
-const bool POP3Folder::exists()
+bool POP3Folder::exists()
 {
 	ref <POP3Store> store = m_store.acquire();
 
@@ -205,7 +205,7 @@ const bool POP3Folder::exists()
 }
 
 
-const bool POP3Folder::isOpen() const
+bool POP3Folder::isOpen() const
 {
 	return (m_open);
 }
@@ -273,7 +273,7 @@ std::vector <ref <message> > POP3Folder::getMessages(const std::vector <int>& nu
 }
 
 
-const int POP3Folder::getMessageCount()
+int POP3Folder::getMessageCount()
 {
 	ref <POP3Store> store = m_store.acquire();
 
@@ -517,7 +517,7 @@ void POP3Folder::fetchMessage(ref <message> msg, const int options)
 }
 
 
-const int POP3Folder::getFetchCapabilities() const
+int POP3Folder::getFetchCapabilities() const
 {
 	return (FETCH_ENVELOPE | FETCH_CONTENT_INFO |
 	        FETCH_SIZE | FETCH_FULL_HEADER | FETCH_UID |

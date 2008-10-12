@@ -100,7 +100,7 @@ ref <const serviceFactory::registeredService> serviceFactory::getServiceByProtoc
 }
 
 
-const int serviceFactory::getServiceCount() const
+int serviceFactory::getServiceCount() const
 {
 	return (m_services.size());
 }

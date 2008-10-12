@@ -166,7 +166,7 @@ public:
 	  *
 	  * @return true if we are in strict mode, false otherwise
 	  */
-	const bool isStrict() const
+	bool isStrict() const
 	{
 		return m_strict;
 	}
@@ -548,7 +548,7 @@ public:
 
 	public:
 
-		const unsigned int value() const { return (m_value); }
+		unsigned int value() const { return (m_value); }
 	};
 
 
@@ -703,7 +703,7 @@ public:
 
 			string::size_type pos = *currentPos;
 
-			const unsigned char c = (pos < line.length() ? line[pos] : 0);
+			const unsigned char c = static_cast <unsigned char>(pos < line.length() ? line[pos] : 0);
 
 			if (c >= 0x01 && c <= 0x7f &&   // 0x01 - 0x7f
 			    c != '"' && c != '\\' &&    // quoted_specials
@@ -730,7 +730,7 @@ public:
 
 	public:
 
-		const char value() const { return (m_value); }
+		char value() const { return (m_value); }
 	};
 
 
@@ -1374,7 +1374,7 @@ public:
 
 	public:
 
-		const Type type() const { return (m_type); }
+		Type type() const { return (m_type); }
 		const string& name() const { return (m_name); }
 
 		const IMAPParser::atom* flag_keyword() const { return (m_flag_keyword); }
@@ -1474,7 +1474,7 @@ public:
 
 	public:
 
-		const Type type() const { return (m_type); }
+		Type type() const { return (m_type); }
 		const string& name() const { return (m_name); }
 	};
 
@@ -1544,7 +1544,7 @@ public:
 
 	public:
 
-		const Type type() const { return (m_type); }
+		Type type() const { return (m_type); }
 		const string& name() const { return (m_name); }
 	};
 
@@ -1652,7 +1652,7 @@ public:
 
 		const IMAPParser::mailbox_flag_list* mailbox_flag_list() const { return (m_mailbox_flag_list); }
 		const IMAPParser::mailbox* mailbox() const { return (m_mailbox); }
-		const char quoted_char() const { return (m_quoted_char); }
+		char quoted_char() const { return (m_quoted_char); }
 	};
 
 
@@ -1776,7 +1776,7 @@ public:
 
 	public:
 
-		const Type type() const { return (m_type); }
+		Type type() const { return (m_type); }
 
 		const IMAPParser::nz_number* nz_number() const { return (m_nz_number); }
 		const IMAPParser::atom* atom() const { return (m_atom); }
@@ -1944,7 +1944,7 @@ public:
 
 	public:
 
-		const Type type() const { return (m_type); }
+		Type type() const { return (m_type); }
 		const string name() const { return (m_name); }
 	};
 
@@ -2005,7 +2005,7 @@ public:
 
 	public:
 
-		const Type type() const { return (m_type); }
+		Type type() const { return (m_type); }
 	};
 
 
@@ -2470,7 +2470,7 @@ public:
 
 	public:
 
-		const Type type() const { return (m_type); }
+		Type type() const { return (m_type); }
 		const IMAPParser::header_list* header_list() const { return (m_header_list); }
 	};
 
@@ -3991,7 +3991,7 @@ public:
 
 	public:
 
-		const Type type() const { return (m_type); }
+		Type type() const { return (m_type); }
 
 		const IMAPParser::date_time* date_time() const { return (m_date_time); }
 		const IMAPParser::number* number() const { return (m_number); }
@@ -4113,8 +4113,8 @@ public:
 
 	public:
 
-		const Type type() const { return (m_type); }
-		const unsigned int number() const { return (m_number); }
+		Type type() const { return (m_type); }
+		unsigned int number() const { return (m_number); }
 		const IMAPParser::msg_att* msg_att() const { return (m_msg_att); }
 	};
 
@@ -4181,7 +4181,7 @@ public:
 	public:
 
 		const IMAPParser::resp_text* resp_text() const { return (m_resp_text); }
-		const Status status() const { return (m_status); }
+		Status status() const { return (m_status); }
 	};
 
 
@@ -4285,7 +4285,7 @@ public:
 
 	public:
 
-		const Condition condition() const { return (m_cond); }
+		Condition condition() const { return (m_cond); }
 		const IMAPParser::resp_text* resp_text() const { return (m_resp_text); }
 	};
 
@@ -4511,7 +4511,7 @@ public:
 
 	public:
 
-		const Type type() const { return (m_type); }
+		Type type() const { return (m_type); }
 
 		const IMAPParser::number* number() const { return (m_number); }
 		const IMAPParser::mailbox_flag_list* mailbox_flag_list() const { return (m_mailbox_flag_list); }
@@ -4812,7 +4812,7 @@ public:
 		}
 
 
-		const bool isBad() const
+		bool isBad() const
 		{
 			if (!response_done())  // incomplete (partial) response
 				return (true);
@@ -4970,7 +4970,7 @@ public:
 	//
 
 	template <class TYPE>
-	const bool check(string& line, string::size_type* currentPos,
+	bool check(string& line, string::size_type* currentPos,
 	                 const bool noThrow = false)
 	{
 		const string::size_type oldPos = *currentPos;
@@ -4992,7 +4992,7 @@ public:
 	}
 
 	template <class TYPE, class ARG_TYPE>
-	const bool checkWithArg(string& line, string::size_type* currentPos,
+	bool checkWithArg(string& line, string::size_type* currentPos,
 	                        const ARG_TYPE arg, const bool noThrow = false)
 	{
 		const string::size_type oldPos = *currentPos;

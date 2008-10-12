@@ -55,13 +55,13 @@ public:
 	  *
 	  * @return true if this address is empty
 	  */
-	virtual const bool isEmpty() const = 0;
+	virtual bool isEmpty() const = 0;
 
 	/** Test whether this is object is a mailboxGroup.
 	  *
 	  * @return true if this is a mailboxGroup, false otherwise
 	  */
-	virtual const bool isGroup() const = 0;
+	virtual bool isGroup() const = 0;
 
 	virtual ref <component> clone() const = 0;
 

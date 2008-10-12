@@ -77,13 +77,13 @@ contentDisposition& contentDisposition::operator=(const string& name)
 }
 
 
-const bool contentDisposition::operator==(const contentDisposition& value) const
+bool contentDisposition::operator==(const contentDisposition& value) const
 {
 	return (utility::stringUtils::toLower(m_name) == value.m_name);
 }
 
 
-const bool contentDisposition::operator!=(const contentDisposition& value) const
+bool contentDisposition::operator!=(const contentDisposition& value) const
 {
 	return !(*this == value);
 }

@@ -50,7 +50,7 @@ public:
 	  * @param n length of the second string
 	  * @return true if the two strings compare equally, false otherwise
 	  */
-	static const bool isStringEqualNoCase(const string& s1, const char* s2, const string::size_type n);
+	static bool isStringEqualNoCase(const string& s1, const char* s2, const string::size_type n);
 
 	/** Test two strings for equality (case insensitive).
 	  * \warning Use this with ASCII-only strings.
@@ -59,7 +59,7 @@ public:
 	  * @param s2 second string
 	  * @return true if the two strings compare equally, false otherwise
 	  */
-	static const bool isStringEqualNoCase(const string& s1, const string& s2);
+	static bool isStringEqualNoCase(const string& s1, const string& s2);
 
 	/** Test two strings for equality (case insensitive).
 	  * \warning Use this with ASCII-only strings.
@@ -70,7 +70,7 @@ public:
 	  * @param n length of the second string
 	  * @return true if the two strings compare equally, false otherwise
 	  */
-	static const bool isStringEqualNoCase(const string::const_iterator begin, const string::const_iterator end, const char* s, const string::size_type n);
+	static bool isStringEqualNoCase(const string::const_iterator begin, const string::const_iterator end, const char* s, const string::size_type n);
 
 	/** Transform all the characters in a string to lower-case.
 	  * \warning Use this with ASCII-only strings.
@@ -102,7 +102,7 @@ public:
 	  * @param end end position
 	  * @return number of ASCII characters
 	  */
-	static const string::size_type countASCIIchars(const string::const_iterator begin, const string::const_iterator end);
+	static string::size_type countASCIIchars(const string::const_iterator begin, const string::const_iterator end);
 
 	/** Convert the specified value to a string value.
 	  *

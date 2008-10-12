@@ -61,13 +61,13 @@ void importanceHelper::resetImportanceHeader(ref <header> hdr)
 }
 
 
-const importanceHelper::Importance importanceHelper::getImportance(ref <const message> msg)
+importanceHelper::Importance importanceHelper::getImportance(ref <const message> msg)
 {
 	return getImportanceHeader(msg->getHeader());
 }
 
 
-const importanceHelper::Importance importanceHelper::getImportanceHeader(ref <const header> hdr)
+importanceHelper::Importance importanceHelper::getImportanceHeader(ref <const header> hdr)
 {
 	// Try "X-Priority" field
 	try

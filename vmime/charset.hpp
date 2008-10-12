@@ -54,8 +54,8 @@ public:
 
 	charset& operator=(const charset& other);
 
-	const bool operator==(const charset& value) const;
-	const bool operator!=(const charset& value) const;
+	bool operator==(const charset& value) const;
+	bool operator!=(const charset& value) const;
 
 	const std::vector <ref <const component> > getChildComponents() const;
 

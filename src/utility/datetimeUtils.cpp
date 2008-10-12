@@ -206,14 +206,14 @@ const datetime datetimeUtils::toLocalTime(const datetime& date, const int zone)
 }
 
 
-const bool datetimeUtils::isLeapYear(const int year)
+bool datetimeUtils::isLeapYear(const int year)
 {
 	// From RFC 3339 - Appendix C. Leap Years:
 	return ((year % 4) == 0 && (year % 100 != 0 || year % 400 == 0));
 }
 
 
-const int datetimeUtils::getDaysInMonth(const int year, const int month)
+int datetimeUtils::getDaysInMonth(const int year, const int month)
 {
 	static const int daysInMonth[12] =
 		{ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
@@ -227,7 +227,7 @@ const int datetimeUtils::getDaysInMonth(const int year, const int month)
 }
 
 
-const int datetimeUtils::getDayOfWeek(const int year, const int month, const int day)
+int datetimeUtils::getDayOfWeek(const int year, const int month, const int day)
 {
 	int y = year;
 	int m = month;
@@ -256,7 +256,7 @@ const int datetimeUtils::getDayOfWeek(const int year, const int month, const int
 }
 
 
-const int datetimeUtils::getWeekOfYear(const int year, const int month, const int day)
+int datetimeUtils::getWeekOfYear(const int year, const int month, const int day)
 {
 	// Algorithm from http://personal.ecu.edu/mccartyr/ISOwdALG.txt
 

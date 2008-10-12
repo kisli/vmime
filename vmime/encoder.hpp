@@ -53,7 +53,7 @@ public:
 	  * want to receive progress notifications
 	  * @return number of bytes written into output stream
 	  */
-	virtual const utility::stream::size_type encode(utility::inputStream& in, utility::outputStream& out, utility::progressListener* progress = NULL) = 0;
+	virtual utility::stream::size_type encode(utility::inputStream& in, utility::outputStream& out, utility::progressListener* progress = NULL) = 0;
 
 	/** Decode data.
 	  *
@@ -63,7 +63,7 @@ public:
 	  * want to receive progress notifications
 	  * @return number of bytes written into output stream
 	  */
-	virtual const utility::stream::size_type decode(utility::inputStream& in, utility::outputStream& out, utility::progressListener* progress = NULL) = 0;
+	virtual utility::stream::size_type decode(utility::inputStream& in, utility::outputStream& out, utility::progressListener* progress = NULL) = 0;
 
 	/** Return the properties of the encoder.
 	  *

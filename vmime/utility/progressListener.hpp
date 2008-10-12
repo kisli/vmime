@@ -48,7 +48,7 @@ public:
 	  *
 	  * @return true to cancel the operation, false otherwise
 	  */
-	virtual const bool cancel() const = 0;
+	virtual bool cancel() const = 0;
 
 	/** Called at the beginning of the operation.
 	  *
@@ -88,7 +88,7 @@ public:
 	  */
 	progressListenerSizeAdapter(progressListener* list, const int total);
 
-	const bool cancel() const;
+	bool cancel() const;
 
 	void start(const int predictedTotal);
 	void progress(const int current, const int currentTotal);

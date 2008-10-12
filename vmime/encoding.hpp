@@ -67,8 +67,8 @@ public:
 	encoding& operator=(const encoding& other);
 	encoding& operator=(const string& name);
 
-	const bool operator==(const encoding& value) const;
-	const bool operator!=(const encoding& value) const;
+	bool operator==(const encoding& value) const;
+	bool operator!=(const encoding& value) const;
 
 	const std::vector <ref <const component> > getChildComponents() const;
 

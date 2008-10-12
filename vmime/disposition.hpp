@@ -118,7 +118,7 @@ public:
 	  * @param modifier modifier to test
 	  * @return true if the specified modifier is set, false otherwise
 	  */
-	const bool hasModifier(const string& modifier) const;
+	bool hasModifier(const string& modifier) const;
 
 	/** Return the list of modifiers.
 	  *

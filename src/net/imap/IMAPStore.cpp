@@ -91,7 +91,7 @@ ref <folder> IMAPStore::getFolder(const folder::path& path)
 }
 
 
-const bool IMAPStore::isValidFolderName(const folder::path::component& /* name */) const
+bool IMAPStore::isValidFolderName(const folder::path::component& /* name */) const
 {
 	return true;
 }
@@ -117,19 +117,19 @@ void IMAPStore::connect()
 }
 
 
-const bool IMAPStore::isConnected() const
+bool IMAPStore::isConnected() const
 {
 	return (m_connection && m_connection->isConnected());
 }
 
 
-const bool IMAPStore::isIMAPS() const
+bool IMAPStore::isIMAPS() const
 {
 	return m_isIMAPS;
 }
 
 
-const bool IMAPStore::isSecuredConnection() const
+bool IMAPStore::isSecuredConnection() const
 {
 	if (m_connection == NULL)
 		return false;
@@ -203,7 +203,7 @@ void IMAPStore::unregisterFolder(IMAPFolder* folder)
 }
 
 
-const int IMAPStore::getCapabilities() const
+int IMAPStore::getCapabilities() const
 {
 	return (CAPABILITY_CREATE_FOLDER |
 	        CAPABILITY_RENAME_FOLDER |

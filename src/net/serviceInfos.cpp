@@ -79,7 +79,7 @@ serviceInfos::~serviceInfos()
 }
 
 
-const bool serviceInfos::hasProperty(ref <session> s, const property& p) const
+bool serviceInfos::hasProperty(ref <session> s, const property& p) const
 {
 	return s->getProperties().hasProperty(getPropertyPrefix() + p.getName());
 }
@@ -141,13 +141,13 @@ const string& serviceInfos::property::getDefaultValue() const
 }
 
 
-const serviceInfos::property::Types serviceInfos::property::getType() const
+serviceInfos::property::Types serviceInfos::property::getType() const
 {
 	return (m_type);
 }
 
 
-const int serviceInfos::property::getFlags() const
+int serviceInfos::property::getFlags() const
 {
 	return (m_flags);
 }

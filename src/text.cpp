@@ -131,7 +131,7 @@ text& text::operator=(const text& other)
 }
 
 
-const bool text::operator==(const text& t) const
+bool text::operator==(const text& t) const
 {
 	if (getWordCount() == t.getWordCount())
 	{
@@ -150,7 +150,7 @@ const bool text::operator==(const text& t) const
 }
 
 
-const bool text::operator!=(const text& t) const
+bool text::operator!=(const text& t) const
 {
 	return !(*this == t);
 }
@@ -199,13 +199,13 @@ void text::removeAllWords()
 }
 
 
-const int text::getWordCount() const
+int text::getWordCount() const
 {
 	return (m_words.size());
 }
 
 
-const bool text::isEmpty() const
+bool text::isEmpty() const
 {
 	return (m_words.empty());
 }

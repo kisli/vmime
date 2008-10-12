@@ -48,7 +48,7 @@ public:
 	  *
 	  * @return server port
 	  */
-	virtual const port_t getPort() const = 0;
+	virtual port_t getPort() const = 0;
 };
 
 

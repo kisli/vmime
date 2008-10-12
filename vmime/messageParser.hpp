@@ -94,7 +94,7 @@ public:
 	  *
 	  * @return number of attachments
 	  */
-	const int getAttachmentCount() const;
+	int getAttachmentCount() const;
 
 	/** Return the attachment at the specified position.
 	  *
@@ -119,7 +119,7 @@ public:
 	  *
 	  * @return number of text parts
 	  */
-	const int getTextPartCount() const;
+	int getTextPartCount() const;
 
 	/** Return the text part at the specified position.
 	  *

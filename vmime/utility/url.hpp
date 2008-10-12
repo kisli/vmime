@@ -136,7 +136,7 @@ public:
 	  *
 	  * @return server port
 	  */
-	const port_t getPort() const;
+	port_t getPort() const;
 
 	/** Set the port of the URL.
 	  *

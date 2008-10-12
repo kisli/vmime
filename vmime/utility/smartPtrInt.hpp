@@ -43,8 +43,8 @@ public:
 	refCounter(const long initialValue);
 	~refCounter();
 
-	const long increment();
-	const long decrement();
+	long increment();
+	long decrement();
 
 	operator long() const;
 
@@ -75,7 +75,7 @@ public:
 	refManagerImpl(object* obj);
 	~refManagerImpl();
 
-	const bool addStrong();
+	bool addStrong();
 	void releaseStrong();
 
 	void addWeak();
@@ -83,8 +83,8 @@ public:
 
 	object* getObject();
 
-	const long getStrongRefCount() const;
-	const long getWeakRefCount() const;
+	long getStrongRefCount() const;
+	long getWeakRefCount() const;
 
 private:
 

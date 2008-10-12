@@ -177,19 +177,19 @@ void streamContentHandler::extractRaw(utility::outputStream& os,
 }
 
 
-const string::size_type streamContentHandler::getLength() const
+string::size_type streamContentHandler::getLength() const
 {
 	return (m_length);
 }
 
 
-const bool streamContentHandler::isEmpty() const
+bool streamContentHandler::isEmpty() const
 {
 	return (m_length == 0 || !m_stream);
 }
 
 
-const bool streamContentHandler::isEncoded() const
+bool streamContentHandler::isEncoded() const
 {
 	return (m_encoding != NO_ENCODING);
 }

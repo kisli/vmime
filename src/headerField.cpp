@@ -284,7 +284,7 @@ void headerField::setName(const string& name)
 }
 
 
-const bool headerField::isCustom() const
+bool headerField::isCustom() const
 {
 	return (m_name.length() > 2 && m_name[0] == 'X' && m_name[1] == '-');
 }

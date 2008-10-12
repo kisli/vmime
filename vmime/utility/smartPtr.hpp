@@ -53,7 +53,7 @@ public:
 
 	operator T*() { return (m_ptr); }
 
-	T* const operator ->() { return (m_ptr); }
+	T* operator ->() { return (m_ptr); }
 	T& operator *() { return (*m_ptr); }
 };
 
@@ -79,7 +79,7 @@ public:
 
 	/** Add a strong reference to the managed object.
 	  */
-	virtual const bool addStrong() = 0;
+	virtual bool addStrong() = 0;
 
 	/** Release a strong reference to the managed object.
 	  * If it is the last reference, the object is destroyed.
@@ -106,14 +106,14 @@ public:
 	  *
 	  * @return strong reference count
 	  */
-	virtual const long getStrongRefCount() const = 0;
+	virtual long getStrongRefCount() const = 0;
 
 	/** Return the number of weak refs to this object.
 	  * For debugging purposes only.
 	  *
 	  * @return weak reference count
 	  */
-	virtual const long getWeakRefCount() const = 0;
+	virtual long getWeakRefCount() const = 0;
 
 protected:
 
@@ -168,8 +168,8 @@ public:
 	T* operator ->() { return m_ptr; }
 	const T* operator ->() const { return m_ptr; }
 
-	const T* const get() const { return m_ptr; }
-	T* const get() { return m_ptr; }
+	const T* get() const { return m_ptr; }
+	T* get() { return m_ptr; }
 
 
 	// dynamic_cast

@@ -101,7 +101,7 @@ public:
 	  * authentication (in this case, the values in 'response' and
 	  * 'responseLen' are undetermined)
 	  */
-	const bool evaluateChallenge
+	bool evaluateChallenge
 		(const byte_t* challenge, const int challengeLen,
 		 byte_t** response, int* responseLen);
 

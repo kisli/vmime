@@ -56,7 +56,7 @@ public:
 	  *
 	  * @return the version of this certificate
 	  */
-	virtual const int getVersion() const = 0;
+	virtual int getVersion() const = 0;
 
 	/** Checks if two certificates are the same.
 	  *
@@ -64,7 +64,7 @@ public:
 	  * @return true if the two certificates are the same,
 	  * false otherwise
 	  */
-	virtual const bool equals(ref <const certificate> other) const = 0;
+	virtual bool equals(ref <const certificate> other) const = 0;
 };
 
 

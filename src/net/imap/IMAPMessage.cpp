@@ -30,6 +30,7 @@
 
 #include <sstream>
 #include <iterator>
+#include <typeinfo>
 
 
 namespace vmime {
@@ -60,8 +61,8 @@ public:
 	ref <const IMAPpart> getParent() const { return m_parent.acquire(); }
 
 	const mediaType& getType() const { return (m_mediaType); }
-	const int getSize() const { return (m_size); }
-	const int getNumber() const { return (m_number); }
+	int getSize() const { return (m_size); }
+	int getNumber() const { return (m_number); }
 
 	ref <const header> getHeader() const
 	{
@@ -149,7 +150,7 @@ public:
 		return m_parts[x];
 	}
 
-	const int getPartCount() const
+	int getPartCount() const
 	{
 		return m_parts.size();
 	}
@@ -299,7 +300,7 @@ void IMAPMessage::onFolderClosed()
 }
 
 
-const int IMAPMessage::getNumber() const
+int IMAPMessage::getNumber() const
 {
 	return (m_num);
 }
@@ -311,7 +312,7 @@ const message::uid IMAPMessage::getUniqueId() const
 }
 
 
-const int IMAPMessage::getSize() const
+int IMAPMessage::getSize() const
 {
 	if (m_size == -1)
 		throw exceptions::unfetched_object();
@@ -320,13 +321,13 @@ const int IMAPMessage::getSize() const
 }
 
 
-const bool IMAPMessage::isExpunged() const
+bool IMAPMessage::isExpunged() const
 {
 	return (m_expunged);
 }
 
 
-const int IMAPMessage::getFlags() const
+int IMAPMessage::getFlags() const
 {
 	if (m_flags == FLAG_UNDEFINED)
 		throw exceptions::unfetched_object();

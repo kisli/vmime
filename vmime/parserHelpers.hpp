@@ -40,25 +40,25 @@ class parserHelpers
 {
 public:
 
-	static const bool isSpace(const char_t c)
+	static bool isSpace(const char_t c)
 	{
 		return (c == ' ' || c == '\t' || c == '\n' || c == '\r');
 	}
 
 
-	static const bool isDigit(const char_t c)
+	static bool isDigit(const char_t c)
 	{
 		return (c >= '0' && c <= '9');
 	}
 
 
-	static const bool isAlpha(const char_t c)
+	static bool isAlpha(const char_t c)
 	{
 		return ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'));
 	}
 
 
-	static const char_t toLower(const char_t c)
+	static char_t toLower(const char_t c)
 	{
 		if (c >= 'A' && c <= 'Z')
 			return ('a' + (c - 'A'));
@@ -69,7 +69,7 @@ public:
 
 	// Checks whether a character is in the 7-bit US-ASCII charset
 
-	static const bool isAscii(const char_t c)
+	static bool isAscii(const char_t c)
 	{
 		const unsigned int x = static_cast <unsigned int>(c);
 		return (x <= 127);
@@ -78,7 +78,7 @@ public:
 
 	// Checks whether a character has a visual representation
 
-	static const bool isPrint(const char_t c)
+	static bool isPrint(const char_t c)
 	{
 		const unsigned int x = static_cast <unsigned int>(c);
 		return (x >= 0x20 && x <= 0x7E);

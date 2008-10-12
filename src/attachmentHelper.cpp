@@ -36,7 +36,7 @@ namespace vmime
 
 
 // static
-const bool attachmentHelper::isBodyPartAnAttachment(ref <const bodyPart> part)
+bool attachmentHelper::isBodyPartAnAttachment(ref <const bodyPart> part)
 {
 	try
 	{

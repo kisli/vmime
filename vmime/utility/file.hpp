@@ -55,7 +55,7 @@ public:
 	  * @return true if you can call nextElement(), or false
 	  * if no more file is available
 	  */
-	virtual const bool hasMoreElements() const = 0;
+	virtual bool hasMoreElements() const = 0;
 
 	/** Return the next file in the list.
 	  *
@@ -123,31 +123,31 @@ public:
 	  *
 	  * @return true if this is a file, false otherwise
 	  */
-	virtual const bool isFile() const = 0;
+	virtual bool isFile() const = 0;
 
 	/** Test whether this is a directory.
 	  *
 	  * @return true if this is a directory, false otherwise
 	  */
-	virtual const bool isDirectory() const = 0;
+	virtual bool isDirectory() const = 0;
 
 	/** Test whether this file is readible.
 	  *
 	  * @return true if we can read this file, false otherwise
 	  */
-	virtual const bool canRead() const = 0;
+	virtual bool canRead() const = 0;
 
 	/** Test whether this file is writeable.
 	  *
 	  * @return true if we can write to this file, false otherwise
 	  */
-	virtual const bool canWrite() const = 0;
+	virtual bool canWrite() const = 0;
 
 	/** Return the length of this file.
 	  *
 	  * @return file size (in bytes)
 	  */
-	virtual const length_type getLength() = 0;
+	virtual length_type getLength() = 0;
 
 	/** Return the full path of this file/directory.
 	  *
@@ -159,7 +159,7 @@ public:
 	  *
 	  * @return true if the file exists, false otherwise
 	  */
-	virtual const bool exists() const = 0;
+	virtual bool exists() const = 0;
 
 	/** Return the parent directory of this file/directory.
 	  *
@@ -247,7 +247,7 @@ public:
 	  * @param comp path component to test
 	  * @return true if the component is valid, false otherwise
 	  */
-	virtual const bool isValidPathComponent(const file::path::component& comp) const = 0;
+	virtual bool isValidPathComponent(const file::path::component& comp) const = 0;
 
 	/** Test whether the specified path is syntactically valid
 	  * (ie: components do not contain any 'special' character).
@@ -255,7 +255,7 @@ public:
 	  * @param path path to test
 	  * @return true if the path is valid, false otherwise
 	  */
-	virtual const bool isValidPath(const file::path& path) const = 0;
+	virtual bool isValidPath(const file::path& path) const = 0;
 };
 
 

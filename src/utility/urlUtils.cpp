@@ -40,7 +40,7 @@ const string urlUtils::encode(const string& s)
 
 	for (string::const_iterator it = s.begin() ; it != s.end() ; ++it)
 	{
-		const char_t c = *it;
+		const string::value_type c = *it;
 
 		if (parserHelpers::isPrint(c) && !parserHelpers::isSpace(c) &&
 		    static_cast <unsigned char>(c) <= 127 &&
@@ -73,7 +73,7 @@ const string urlUtils::decode(const string& s)
 
 	for (string::const_iterator it = s.begin() ; it != s.end() ; )
 	{
-		const char_t c = *it;
+		const string::value_type c = *it;
 
 		switch (c)
 		{
@@ -84,7 +84,7 @@ const string urlUtils::decode(const string& s)
 			const char_t p = (it != s.end() ? *(it++) : 0);
 			const char_t q = (it != s.end() ? *(it++) : 0);
 
-			unsigned char r = 0;
+			unsigned int r = 0;
 
 			switch (p)
 			{

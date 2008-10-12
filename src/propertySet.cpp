@@ -95,7 +95,7 @@ void propertySet::parse(const string& props)
 	for ( ; pos != end ; )
 	{
 		// Skip white-spaces
-		for ( ; pos != end && parserHelpers::isSpace(*pos) ; ++pos);
+		for ( ; pos != end && parserHelpers::isSpace(*pos) ; ++pos) {}
 
 		if (pos != end)
 		{
@@ -108,11 +108,11 @@ void propertySet::parse(const string& props)
 			// Extract the property name
 			const string::const_iterator optStart = pos;
 
-			for ( ; pos != end && *pos != '=' ; ++pos);
+			for ( ; pos != end && *pos != '=' ; ++pos) {}
 
 			string::const_iterator optEnd = pos;
 
-			for ( ; optEnd != optStart && parserHelpers::isSpace(*(optEnd - 1)) ; --optEnd);
+			for ( ; optEnd != optStart && parserHelpers::isSpace(*(optEnd - 1)) ; --optEnd) {}
 
 			const string option(optStart, optEnd);
 			string value = "1";
@@ -122,7 +122,7 @@ void propertySet::parse(const string& props)
 				++pos; // skip '='
 
 				// Extract the value
-				for ( ; pos != end && parserHelpers::isSpace(*pos) ; ++pos);
+				for ( ; pos != end && parserHelpers::isSpace(*pos) ; ++pos) {}
 
 				if (pos != end)
 				{
@@ -161,13 +161,13 @@ void propertySet::parse(const string& props)
 					{
 						const string::const_iterator valStart = pos;
 
-						for ( ; pos != end && !parserHelpers::isSpace(*pos) ; ++pos);
+						for ( ; pos != end && !parserHelpers::isSpace(*pos) ; ++pos) {}
 
 						value = string(valStart, pos);
 					}
 
 					// Advance to the next ';'
-					for ( ; pos != end && (*pos != ';') ; ++pos);
+					for ( ; pos != end && (*pos != ';') ; ++pos) {}
 
 					if (pos != end)
 						++pos; // skip ';'
@@ -219,7 +219,7 @@ const propertySet::constPropertyProxy propertySet::operator[](const string& name
 }
 
 
-const bool propertySet::hasProperty(const string& name) const
+bool propertySet::hasProperty(const string& name) const
 {
 	return (find(name) != NULL);
 }
@@ -304,14 +304,14 @@ void propertySet::property::setValue(const bool& value)
 
 
 template <>
-const string propertySet::property::getValue() const
+string propertySet::property::getValue() const
 {
 	return (m_value);
 }
 
 
 template <>
-const bool propertySet::property::getValue() const
+bool propertySet::property::getValue() const
 {
 	if (utility::stringUtils::toLower(m_value) == "true")
 		return true;
@@ -332,21 +332,21 @@ const bool propertySet::property::getValue() const
 
 
 template <>
-const string propertySet::valueFromString(const string& value)
+string propertySet::valueFromString(const string& value)
 {
 	return value;
 }
 
 
 template <>
-const string propertySet::valueToString(const string& value)
+string propertySet::valueToString(const string& value)
 {
 	return value;
 }
 
 
 template <>
-const bool propertySet::valueFromString(const string& value)
+bool propertySet::valueFromString(const string& value)
 {
 	if (utility::stringUtils::toLower(value) == "true")
 		return true;
@@ -365,7 +365,7 @@ const bool propertySet::valueFromString(const string& value)
 
 
 template <>
-const string propertySet::valueToString(const bool& value)
+string propertySet::valueToString(const bool& value)
 {
 	return (value ? "true" : "false");
 }

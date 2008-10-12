@@ -81,7 +81,7 @@ const ref <const encoderFactory::registeredEncoder> encoderFactory::getEncoderBy
 }
 
 
-const int encoderFactory::getEncoderCount() const
+int encoderFactory::getEncoderCount() const
 {
 	return (m_encoders.size());
 }

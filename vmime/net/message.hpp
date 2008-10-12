@@ -82,14 +82,14 @@ public:
 	  *
 	  * @return size of the part (in bytes)
 	  */
-	virtual const int getSize() const = 0;
+	virtual int getSize() const = 0;
 
 	/** Return the part sequence number (index).
 	  * The first part is at index zero.
 	  *
 	  * @return part number
 	  */
-	virtual const int getNumber() const = 0;
+	virtual int getNumber() const = 0;
 
 	/** Return the sub-part at the specified position (zero is the
 	  * first part).
@@ -111,7 +111,7 @@ public:
 	  *
 	  * @return number of sub-parts
 	  */
-	const int getPartCount() const;
+	int getPartCount() const;
 };
 
 
@@ -149,7 +149,7 @@ public:
 	  *
 	  * @return number of parts
 	  */
-	virtual const int getPartCount() const = 0;
+	virtual int getPartCount() const = 0;
 };
 
 
@@ -194,7 +194,7 @@ public:
 	  *
 	  * @return sequence number of the message
 	  */
-	virtual const int getNumber() const = 0;
+	virtual int getNumber() const = 0;
 
 	/** Return the unique identified of this message (must fetch before).
 	  *
@@ -206,14 +206,14 @@ public:
 	  *
 	  * @return size of the message (in bytes)
 	  */
-	virtual const int getSize() const = 0;
+	virtual int getSize() const = 0;
 
 	/** Check whether this message has been expunged
 	  * (ie: definitively deleted).
 	  *
 	  * @return true if the message is expunged, false otherwise
 	  */
-	virtual const bool isExpunged() const = 0;
+	virtual bool isExpunged() const = 0;
 
 	/** Possible flags for a message.
 	  */
@@ -243,7 +243,7 @@ public:
 	  *
 	  * @return flags of the message
 	  */
-	virtual const int getFlags() const = 0;
+	virtual int getFlags() const = 0;
 
 	/** Set the flags of this message.
 	  *

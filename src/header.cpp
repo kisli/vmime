@@ -143,7 +143,7 @@ header& header::operator=(const header& other)
 }
 
 
-const bool header::hasField(const string& fieldName) const
+bool header::hasField(const string& fieldName) const
 {
 	std::vector <ref <headerField> >::const_iterator pos =
 		std::find_if(m_fields.begin(), m_fields.end(),
@@ -193,7 +193,8 @@ ref <headerField> header::getField(const string& fieldName)
 	std::vector <ref <headerField> >::const_iterator pos = m_fields.begin();
 	const std::vector <ref <headerField> >::const_iterator end = m_fields.end();
 
-	for ( ; pos != end && utility::stringUtils::toLower((*pos)->getName()) != name ; ++pos);
+	while (pos != end && utility::stringUtils::toLower((*pos)->getName()) != name)
+		++pos;
 
 	// If no field with this name can be found, create a new one
 	if (pos == end)
@@ -290,13 +291,13 @@ void header::removeAllFields(const string& fieldName)
 }
 
 
-const int header::getFieldCount() const
+int header::getFieldCount() const
 {
 	return (m_fields.size());
 }
 
 
-const bool header::isEmpty() const
+bool header::isEmpty() const
 {
 	return (m_fields.empty());
 }
@@ -355,7 +356,7 @@ header::fieldHasName::fieldHasName(const string& name)
 {
 }
 
-const bool header::fieldHasName::operator() (const ref <const headerField>& field)
+bool header::fieldHasName::operator() (const ref <const headerField>& field)
 {
 	return utility::stringUtils::toLower(field->getName()) == m_name;
 }
@@ -366,7 +367,7 @@ header::fieldHasNotName::fieldHasNotName(const string& name)
 {
 }
 
-const bool header::fieldHasNotName::operator() (const ref <const headerField>& field)
+bool header::fieldHasNotName::operator() (const ref <const headerField>& field)
 {
 	return utility::stringUtils::toLower(field->getName()) != m_name;
 }

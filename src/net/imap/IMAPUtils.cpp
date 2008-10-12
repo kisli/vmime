@@ -272,7 +272,7 @@ const string IMAPUtils::toModifiedUTF7
 				base64 = false;
 			}
 
-			out += ch;
+			out += static_cast <string::value_type>(ch);
 
 			if (ch == '&')
 				out += '-';
@@ -358,7 +358,7 @@ const folder::path::component IMAPUtils::fromModifiedUTF7(const string& text)
 }
 
 
-const int IMAPUtils::folderTypeFromFlags(const IMAPParser::mailbox_flag_list* list)
+int IMAPUtils::folderTypeFromFlags(const IMAPParser::mailbox_flag_list* list)
 {
 	// Get folder type
 	int type = folder::TYPE_CONTAINS_MESSAGES | folder::TYPE_CONTAINS_FOLDERS;
@@ -378,7 +378,7 @@ const int IMAPUtils::folderTypeFromFlags(const IMAPParser::mailbox_flag_list* li
 }
 
 
-const int IMAPUtils::folderFlagsFromFlags(const IMAPParser::mailbox_flag_list* list)
+int IMAPUtils::folderFlagsFromFlags(const IMAPParser::mailbox_flag_list* list)
 {
 	// Get folder flags
 	int folderFlags = folder::FLAG_CHILDREN;
@@ -397,7 +397,7 @@ const int IMAPUtils::folderFlagsFromFlags(const IMAPParser::mailbox_flag_list* l
 }
 
 
-const int IMAPUtils::messageFlagsFromFlags(const IMAPParser::flag_list* list)
+int IMAPUtils::messageFlagsFromFlags(const IMAPParser::flag_list* list)
 {
 	const std::vector <IMAPParser::flag*>& flagList = list->flags();
 	int flags = 0;

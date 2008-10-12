@@ -114,13 +114,13 @@ public:
 	  *
 	  * @return number of parts
 	  */
-	const int getPartCount() const;
+	int getPartCount() const;
 
 	/** Tests whether the list of parts is empty.
 	  *
 	  * @return true if there is no part, false otherwise
 	  */
-	const bool isEmpty() const;
+	bool isEmpty() const;
 
 	/** Return the part at the specified position.
 	  *
@@ -219,7 +219,7 @@ public:
 	  * @param boundary boundary string to test
 	  * @return true if the boundary string is valid, false otherwise
 	  */
-	static const bool isValidBoundary(const string& boundary);
+	static bool isValidBoundary(const string& boundary);
 
 	ref <component> clone() const;
 	void copyFrom(const component& other);
@@ -242,7 +242,7 @@ private:
 
 	std::vector <ref <bodyPart> > m_parts;
 
-	const bool isRootPart() const;
+	bool isRootPart() const;
 
 	void initNewPart(ref <bodyPart> part);
 

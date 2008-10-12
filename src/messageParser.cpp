@@ -279,7 +279,7 @@ const std::vector <ref <const attachment> > messageParser::getAttachmentList() c
 }
 
 
-const int messageParser::getAttachmentCount() const
+int messageParser::getAttachmentCount() const
 {
 	return (m_attach.size());
 }
@@ -307,7 +307,7 @@ const std::vector <ref <const textPart> > messageParser::getTextPartList() const
 }
 
 
-const int messageParser::getTextPartCount() const
+int messageParser::getTextPartCount() const
 {
 	return (m_textParts.size());
 }

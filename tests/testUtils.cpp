@@ -45,7 +45,7 @@ void testSocket::disconnect()
 }
 
 
-const bool testSocket::isConnected() const
+bool testSocket::isConnected() const
 {
 	return m_connected;
 }
@@ -66,7 +66,7 @@ void testSocket::send(const vmime::string& buffer)
 }
 
 
-const int testSocket::receiveRaw(char* buffer, const int count)
+int testSocket::receiveRaw(char* buffer, const int count)
 {
 	const int n = std::min(count, static_cast <int>(m_inBuffer.size()));
 
@@ -142,7 +142,7 @@ const vmime::string lineBasedTestSocket::getNextLine()
 	return line;
 }
 
-const bool lineBasedTestSocket::haveMoreLines() const
+bool lineBasedTestSocket::haveMoreLines() const
 {
 	return !m_lines.empty();
 }
@@ -156,7 +156,7 @@ testTimeoutHandler::testTimeoutHandler(const unsigned int delay)
 }
 
 
-const bool testTimeoutHandler::isTimeOut()
+bool testTimeoutHandler::isTimeOut()
 {
 	return (vmime::platform::getHandler()->getUnixTime() - m_start) >= m_delay;
 }
@@ -168,7 +168,7 @@ void testTimeoutHandler::resetTimeOut()
 }
 
 
-const bool testTimeoutHandler::handleTimeOut()
+bool testTimeoutHandler::handleTimeOut()
 {
 	return false;
 }

@@ -82,8 +82,8 @@ public:
 	word& operator=(const word& w);
 	word& operator=(const string& s);
 
-	const bool operator==(const word& w) const;
-	const bool operator!=(const word& w) const;
+	bool operator==(const word& w) const;
+	bool operator!=(const word& w) const;
 
 #if VMIME_WIDE_CHAR_SUPPORT
 	const wstring getDecodedText() const;

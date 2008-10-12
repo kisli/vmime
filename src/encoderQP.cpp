@@ -89,7 +89,7 @@ const unsigned char encoderQP::sm_hexDecodeTable[256] =
 #endif // VMIME_BUILDING_DOC
 
 
-const utility::stream::size_type encoderQP::encode(utility::inputStream& in,
+utility::stream::size_type encoderQP::encode(utility::inputStream& in,
 	utility::outputStream& out, utility::progressListener* progress)
 {
 	in.reset();  // may not work...
@@ -305,7 +305,7 @@ const utility::stream::size_type encoderQP::encode(utility::inputStream& in,
 }
 
 
-const utility::stream::size_type encoderQP::decode(utility::inputStream& in,
+utility::stream::size_type encoderQP::decode(utility::inputStream& in,
 	utility::outputStream& out, utility::progressListener* progress)
 {
 	in.reset();  // may not work...
@@ -406,9 +406,8 @@ const utility::stream::size_type encoderQP::decode(utility::inputStream& in,
 
 						++inTotal;
 
-						const unsigned char value =
-							  sm_hexDecodeTable[c] * 16
-							+ sm_hexDecodeTable[next];
+						const unsigned char value = static_cast <unsigned char>
+							(sm_hexDecodeTable[c] * 16 + sm_hexDecodeTable[next]);
 
 						outBuffer[outBufferPos++] = value;
 					}

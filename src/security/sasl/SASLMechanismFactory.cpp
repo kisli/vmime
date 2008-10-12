@@ -115,14 +115,14 @@ const std::vector <string> SASLMechanismFactory::getSupportedMechanisms() const
 			}
 		}
 
-		free(out);
+		gsasl_free(out);
 	}
 
 	return list;
 }
 
 
-const bool SASLMechanismFactory::isMechanismSupported(const string& name) const
+bool SASLMechanismFactory::isMechanismSupported(const string& name) const
 {
 	return (gsasl_client_support_p(m_gsaslContext, name.c_str()) != 0 ||
 		m_mechs.find(name) != m_mechs.end());

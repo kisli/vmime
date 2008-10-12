@@ -72,7 +72,7 @@ wordEncoder::wordEncoder(const string& buffer, const charset& charset, const Enc
 }
 
 
-static const string::size_type getUTF8CharLength
+static string::size_type getUTF8CharLength
 	(const string& buffer, const string::size_type pos, const string::size_type length)
 {
 	// Gives the number of extra bytes in a UTF8 char, given the leading char
@@ -253,14 +253,14 @@ const string wordEncoder::getNextChunk(const string::size_type maxLength)
 }
 
 
-const wordEncoder::Encoding wordEncoder::getEncoding() const
+wordEncoder::Encoding wordEncoder::getEncoding() const
 {
 	return m_encoding;
 }
 
 
 // static
-const wordEncoder::Encoding wordEncoder::guessBestEncoding
+wordEncoder::Encoding wordEncoder::guessBestEncoding
 	(const string& buffer, const charset& charset)
 {
 	// If the charset is ISO-8859-x, set to QP encoding

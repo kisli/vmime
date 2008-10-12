@@ -72,7 +72,7 @@ public:
 	  *
 	  * @return true if the specified folder name is valid, false otherwise
 	  */
-	virtual const bool isValidFolderName(const folder::path::component& name) const = 0;
+	virtual bool isValidFolderName(const folder::path::component& name) const = 0;
 
 	/** Store capabilities. */
 	enum Capabilities
@@ -92,10 +92,10 @@ public:
 	  *
 	  * @return features supported by this service
 	  */
-	virtual const int getCapabilities() const = 0;
+	virtual int getCapabilities() const = 0;
 
 
-	const Type getType() const { return (TYPE_STORE); }
+	Type getType() const { return (TYPE_STORE); }
 };
 
 

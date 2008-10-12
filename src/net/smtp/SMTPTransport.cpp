@@ -485,13 +485,13 @@ void SMTPTransport::startTLS()
 #endif // VMIME_HAVE_TLS_SUPPORT
 
 
-const bool SMTPTransport::isConnected() const
+bool SMTPTransport::isConnected() const
 {
 	return (m_socket && m_socket->isConnected() && m_authentified);
 }
 
 
-const bool SMTPTransport::isSecuredConnection() const
+bool SMTPTransport::isSecuredConnection() const
 {
 	return m_secured;
 }

@@ -71,7 +71,7 @@ public:
 	  *
 	  * @return type of service
 	  */
-	virtual const Type getType() const = 0;
+	virtual Type getType() const = 0;
 
 	/** Return the protocol name of this service.
 	  *
@@ -109,7 +109,7 @@ public:
 	  *
 	  * @return true if the service is connected, false otherwise
 	  */
-	virtual const bool isConnected() const = 0;
+	virtual bool isConnected() const = 0;
 
 	/** Do nothing but ensure the server do not disconnect (for
 	  * example, this can reset the auto-logout timer on the
@@ -196,7 +196,7 @@ public:
 	  *
 	  * @return true if the connection is secured, false otherwise
 	  */
-	virtual const bool isSecuredConnection() const = 0;
+	virtual bool isSecuredConnection() const = 0;
 
 	/** Get information about the connection.
 	  *

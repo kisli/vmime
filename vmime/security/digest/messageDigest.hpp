@@ -103,7 +103,7 @@ public:
 	  *
 	  * @return length of computed hash
 	  */
-	virtual const int getDigestLength() const = 0;
+	virtual int getDigestLength() const = 0;
 
 	/** Returns the hash, as computed by the algorithm.
 	  * You must call finalize() before using this function, or the

@@ -112,19 +112,19 @@ void stringProxy::extract(outputStream& os, const size_type start, const size_ty
 }
 
 
-const stringProxy::size_type stringProxy::length() const
+stringProxy::size_type stringProxy::length() const
 {
 	return (m_end - m_start);
 }
 
 
-const stringProxy::size_type stringProxy::start() const
+stringProxy::size_type stringProxy::start() const
 {
 	return (m_start);
 }
 
 
-const stringProxy::size_type stringProxy::end() const
+stringProxy::size_type stringProxy::end() const
 {
 	return (m_end);
 }

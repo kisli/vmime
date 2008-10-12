@@ -50,7 +50,7 @@ public:
 	const ref <const contentHandler> getText() const;
 	void setText(ref <contentHandler> text);
 
-	const int getPartCount() const;
+	int getPartCount() const;
 
 	void generateIn(ref <bodyPart> message, ref <bodyPart> parent) const;
 	void parse(ref <const bodyPart> message, ref <const bodyPart> parent, ref <const bodyPart> textPart);

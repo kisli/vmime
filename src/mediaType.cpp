@@ -105,13 +105,13 @@ void mediaType::generate(utility::outputStream& os, const string::size_type maxL
 }
 
 
-const bool mediaType::operator==(const mediaType& type) const
+bool mediaType::operator==(const mediaType& type) const
 {
 	return (m_type == type.m_type && m_subType == type.m_subType);
 }
 
 
-const bool mediaType::operator!=(const mediaType& type) const
+bool mediaType::operator!=(const mediaType& type) const
 {
 	return !(*this == type);
 }

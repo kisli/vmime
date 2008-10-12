@@ -132,7 +132,7 @@ void courierMaildirFormat::renameFolderImpl
 }
 
 
-const bool courierMaildirFormat::folderExists(const folder::path& path) const
+bool courierMaildirFormat::folderExists(const folder::path& path) const
 {
 	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
 
@@ -164,7 +164,7 @@ const bool courierMaildirFormat::folderExists(const folder::path& path) const
 }
 
 
-const bool courierMaildirFormat::folderHasSubfolders(const folder::path& path) const
+bool courierMaildirFormat::folderHasSubfolders(const folder::path& path) const
 {
 	std::vector <string> dirs;
 	return listDirectories(path, dirs, true);
@@ -251,7 +251,7 @@ const std::vector <folder::path> courierMaildirFormat::listFolders
 }
 
 
-const bool courierMaildirFormat::listDirectories(const folder::path& root,
+bool courierMaildirFormat::listDirectories(const folder::path& root,
 	std::vector <string>& dirs, const bool onlyTestForExistence) const
 {
 	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
@@ -304,7 +304,7 @@ const bool courierMaildirFormat::listDirectories(const folder::path& root,
 
 
 // static
-const bool courierMaildirFormat::isSubfolderDirectory(const utility::file& file)
+bool courierMaildirFormat::isSubfolderDirectory(const utility::file& file)
 {
 	// A directory which names starts with '.' may be a subfolder
 	if (file.isDirectory() &&
@@ -494,7 +494,7 @@ const folder::path::component courierMaildirFormat::fromModifiedUTF7(const strin
 }
 
 
-const bool courierMaildirFormat::supports() const
+bool courierMaildirFormat::supports() const
 {
 	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
 

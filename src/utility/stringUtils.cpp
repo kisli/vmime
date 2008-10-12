@@ -29,7 +29,7 @@ namespace vmime {
 namespace utility {
 
 
-const bool stringUtils::isStringEqualNoCase
+bool stringUtils::isStringEqualNoCase
 	(const string& s1, const char* s2, const string::size_type n)
 {
 	// 'n' is the number of characters to compare
@@ -49,7 +49,7 @@ const bool stringUtils::isStringEqualNoCase
 }
 
 
-const bool stringUtils::isStringEqualNoCase(const string& s1, const string& s2)
+bool stringUtils::isStringEqualNoCase(const string& s1, const string& s2)
 {
 	if (s1.length() != s2.length())
 		return (false);
@@ -67,7 +67,7 @@ const bool stringUtils::isStringEqualNoCase(const string& s1, const string& s2)
 }
 
 
-const bool stringUtils::isStringEqualNoCase
+bool stringUtils::isStringEqualNoCase
 	(const string::const_iterator begin, const string::const_iterator end,
 	 const char* s, const string::size_type n)
 {
@@ -125,15 +125,15 @@ const string stringUtils::trim(const string& str)
 
 	if (b != e)
 	{
-		for ( ; b != e && parserHelpers::isSpace(*b) ; ++b);
-		for ( ; e != b && parserHelpers::isSpace(*(e - 1)) ; --e);
+		for ( ; b != e && parserHelpers::isSpace(*b) ; ++b) {}
+		for ( ; e != b && parserHelpers::isSpace(*(e - 1)) ; --e) {}
 	}
 
 	return (string(b, e));
 }
 
 
-const string::size_type stringUtils::countASCIIchars
+string::size_type stringUtils::countASCIIchars
 	(const string::const_iterator begin, const string::const_iterator end)
 {
 	string::size_type count = 0;

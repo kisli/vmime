@@ -70,7 +70,7 @@ public:
 	virtual void send(const mailbox& expeditor, const mailboxList& recipients, utility::inputStream& is, const utility::stream::size_type size, utility::progressListener* progress = NULL) = 0;
 
 
-	const Type getType() const;
+	Type getType() const;
 };
 
 

@@ -44,7 +44,7 @@ inputStream& dotFilteredInputStream::getPreviousInputStream()
 }
 
 
-const bool dotFilteredInputStream::eof() const
+bool dotFilteredInputStream::eof() const
 {
 	return (m_stream.eof());
 }
@@ -59,7 +59,7 @@ void dotFilteredInputStream::reset()
 }
 
 
-const stream::size_type dotFilteredInputStream::read(value_type* const data, const size_type count)
+stream::size_type dotFilteredInputStream::read(value_type* const data, const size_type count)
 {
 	const stream::size_type read = m_stream.read(data, count);
 
@@ -111,7 +111,7 @@ const stream::size_type dotFilteredInputStream::read(value_type* const data, con
 }
 
 
-const stream::size_type dotFilteredInputStream::skip(const size_type /* count */)
+stream::size_type dotFilteredInputStream::skip(const size_type /* count */)
 {
 	// Skipping bytes is not supported
 	return 0;
@@ -250,7 +250,7 @@ void CRLFToLFFilteredOutputStream::flush()
 // stopSequenceFilteredInputStream <1>
 
 template <>
-const stream::size_type stopSequenceFilteredInputStream <1>::read
+stream::size_type stopSequenceFilteredInputStream <1>::read
 	(value_type* const data, const size_type count)
 {
 	if (eof() || m_stream.eof())

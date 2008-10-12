@@ -49,10 +49,10 @@ public:
 	static const vmime::utility::file::path stringToPathImpl(const vmime::string& str);
 	static const vmime::string pathToStringImpl(const vmime::utility::file::path& path);
 
-	const bool isValidPathComponent(const vmime::utility::file::path::component& comp) const;
-	const bool isValidPathComponent(const vmime::utility::file::path::component& comp,
+	bool isValidPathComponent(const vmime::utility::file::path::component& comp) const;
+	bool isValidPathComponent(const vmime::utility::file::path::component& comp,
 		                              bool firstComponent) const;
-	const bool isValidPath(const vmime::utility::file::path& path) const;
+	bool isValidPath(const vmime::utility::file::path& path) const;
 
 	static void reportError(const vmime::utility::path& path, const int err);
 };
@@ -67,17 +67,17 @@ public:
 	void createFile();
 	void createDirectory(const bool createAll = false);
 
-	const bool isFile() const;
-	const bool isDirectory() const;
+	bool isFile() const;
+	bool isDirectory() const;
 
-	const bool canRead() const;
-	const bool canWrite() const;
+	bool canRead() const;
+	bool canWrite() const;
 
 	const length_type getLength();
 
 	const path& getFullPath() const;
 
-	const bool exists() const;
+	bool exists() const;
 
 	ref <file> getParent() const;
 
@@ -108,7 +108,7 @@ public:
 	windowsFileIterator(const vmime::utility::file::path& path, const vmime::string& nativePath);
 	~windowsFileIterator();
 
-	const bool hasMoreElements() const;
+	bool hasMoreElements() const;
 	vmime::ref <vmime::utility::file> nextElement();
 
 private:
@@ -153,10 +153,10 @@ public:
 
 public:
 
-	const bool eof() const;
+	bool eof() const;
 	void reset();
-	const size_type read(value_type* const data, const size_type count);
-	const size_type skip(const size_type count);
+	size_type read(value_type* const data, const size_type count);
+	size_type skip(const size_type count);
 
 private:
 

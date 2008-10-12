@@ -74,7 +74,7 @@ const IMAPTag IMAPTag::operator++(int)
 }
 
 
-const int IMAPTag::number() const
+int IMAPTag::number() const
 {
 	return (m_number);
 }
@@ -92,9 +92,9 @@ void IMAPTag::generate()
 		"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 	m_tag[0] = prefixChars[m_number / 1000];
-	m_tag[1] = '0' + (m_number % 1000) / 100;
-	m_tag[2] = '0' + (m_number % 100) / 10;
-	m_tag[3] = '0' + (m_number % 10);
+	m_tag[1] = static_cast <char>('0' + (m_number % 1000) / 100);
+	m_tag[2] = static_cast <char>('0' + (m_number % 100) / 10);
+	m_tag[3] = static_cast <char>('0' + m_number % 10);
 }
 
 

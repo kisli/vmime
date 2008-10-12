@@ -228,13 +228,13 @@ void mailboxGroup::setName(const text& name)
 }
 
 
-const bool mailboxGroup::isGroup() const
+bool mailboxGroup::isGroup() const
 {
 	return (true);
 }
 
 
-const bool mailboxGroup::isEmpty() const
+bool mailboxGroup::isEmpty() const
 {
 	return (m_list.empty());
 }
@@ -308,7 +308,7 @@ void mailboxGroup::removeAllMailboxes()
 }
 
 
-const int mailboxGroup::getMailboxCount() const
+int mailboxGroup::getMailboxCount() const
 {
 	return (m_list.size());
 }

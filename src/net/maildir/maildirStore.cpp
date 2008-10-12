@@ -104,7 +104,7 @@ ref <folder> maildirStore::getFolder(const folder::path& path)
 }
 
 
-const bool maildirStore::isValidFolderName(const folder::path::component& name) const
+bool maildirStore::isValidFolderName(const folder::path::component& name) const
 {
 	if (!platform::getHandler()->getFileSystemFactory()->isValidPathComponent(name))
 		return false;
@@ -157,13 +157,13 @@ void maildirStore::connect()
 }
 
 
-const bool maildirStore::isConnected() const
+bool maildirStore::isConnected() const
 {
 	return (m_connected);
 }
 
 
-const bool maildirStore::isSecuredConnection() const
+bool maildirStore::isSecuredConnection() const
 {
 	return false;
 }
@@ -171,7 +171,7 @@ const bool maildirStore::isSecuredConnection() const
 
 ref <connectionInfos> maildirStore::getConnectionInfos() const
 {
-	return vmime::create <defaultConnectionInfos>("localhost", 0);
+	return vmime::create <defaultConnectionInfos>("localhost", static_cast <port_t>(0));
 }
 
 
@@ -226,7 +226,7 @@ const utility::path& maildirStore::getFileSystemPath() const
 }
 
 
-const int maildirStore::getCapabilities() const
+int maildirStore::getCapabilities() const
 {
 	return (CAPABILITY_CREATE_FOLDER |
 	        CAPABILITY_RENAME_FOLDER |

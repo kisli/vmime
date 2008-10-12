@@ -85,7 +85,7 @@ void kmailMaildirFormat::destroyFolder(const folder::path& path)
 }
 
 
-const bool kmailMaildirFormat::folderExists(const folder::path& path) const
+bool kmailMaildirFormat::folderExists(const folder::path& path) const
 {
 	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
 
@@ -210,7 +210,7 @@ void kmailMaildirFormat::listFoldersImpl
 
 
 // static
-const bool kmailMaildirFormat::isSubfolderDirectory(const utility::file& file)
+bool kmailMaildirFormat::isSubfolderDirectory(const utility::file& file)
 {
 	// A directory which name does not start with '.' is listed as a sub-folder
 	if (file.isDirectory() &&
@@ -275,7 +275,7 @@ void kmailMaildirFormat::renameFolder(const folder::path& oldPath, const folder:
 }
 
 
-const bool kmailMaildirFormat::folderHasSubfolders(const folder::path& path) const
+bool kmailMaildirFormat::folderHasSubfolders(const folder::path& path) const
 {
 	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
 
@@ -296,7 +296,7 @@ const bool kmailMaildirFormat::folderHasSubfolders(const folder::path& path) con
 }
 
 
-const bool kmailMaildirFormat::supports() const
+bool kmailMaildirFormat::supports() const
 {
 	// This is the default
 	return true;

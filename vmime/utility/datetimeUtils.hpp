@@ -44,7 +44,7 @@ public:
 	  * @param year year in 4-digit format
 	  * @return true if year is a leap year, false otherwise
 	  */
-	static const bool isLeapYear(const int year);
+	static bool isLeapYear(const int year);
 
 	/** Return the number of days in the specified month.
 	  *
@@ -53,7 +53,7 @@ public:
 	  * @param month month, January is 1, December is 12 (see datetime::Months enum)
 	  * @return the number of days in the month
 	  */
-	static const int getDaysInMonth(const int year, const int month);
+	static int getDaysInMonth(const int year, const int month);
 
 	/** Convert the specified date/time to UT (GMT).
 	  *
@@ -77,7 +77,7 @@ public:
 	  * @param day month day (1-31)
 	  * @return the day of the week, Sunday is 0, Monday is 1 (see datetime::DaysOfWeek enum)
 	  */
-	static const int getDayOfWeek(const int year, const int month, const int day);
+	static int getDayOfWeek(const int year, const int month, const int day);
 
 	/** Return the week number in the year (ISO 8601).
 	  *
@@ -86,7 +86,7 @@ public:
 	  * @param day month day (1-31)
 	  * @return the week number (1 is the first week of the year)
 	  */
-	static const int getWeekOfYear(const int year, const int month, const int day);
+	static int getWeekOfYear(const int year, const int month, const int day);
 };
 
 

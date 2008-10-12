@@ -40,7 +40,7 @@ ref <part> part::getPartAt(const int pos)
 }
 
 
-const int part::getPartCount() const
+int part::getPartCount() const
 {
 	return getStructure()->getPartCount();
 }

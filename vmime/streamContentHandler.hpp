@@ -54,13 +54,13 @@ public:
 	void extract(utility::outputStream& os, utility::progressListener* progress = NULL) const;
 	void extractRaw(utility::outputStream& os, utility::progressListener* progress = NULL) const;
 
-	const string::size_type getLength() const;
+	string::size_type getLength() const;
 
-	const bool isEncoded() const;
+	bool isEncoded() const;
 
 	const vmime::encoding& getEncoding() const;
 
-	const bool isEmpty() const;
+	bool isEmpty() const;
 
 private:
 

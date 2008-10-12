@@ -49,12 +49,11 @@ public:
 
 	const string getName() const;
 
-	const bool step
-		(ref <SASLSession> sess,
+	bool step(ref <SASLSession> sess,
 		 const byte_t* challenge, const int challengeLen,
 		 byte_t** response, int* responseLen);
 
-	const bool isComplete() const;
+	bool isComplete() const;
 
 	void encode(ref <SASLSession> sess,
 		const byte_t* input, const int inputLen,

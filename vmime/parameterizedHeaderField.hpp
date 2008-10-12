@@ -61,7 +61,7 @@ public:
 	  * @return true if at least one parameter with the specified name
 	  * exists, or false otherwise
 	  */
-	const bool hasParameter(const string& paramName) const;
+	bool hasParameter(const string& paramName) const;
 
 	/** Find the first parameter that matches the specified name.
 	  * If no parameter is found, an exception is thrown.
@@ -138,13 +138,13 @@ public:
 	  *
 	  * @return number of parameters
 	  */
-	const int getParameterCount() const;
+	int getParameterCount() const;
 
 	/** Tests whether the list of parameters is empty.
 	  *
 	  * @return true if there is no parameter, false otherwise
 	  */
-	const bool isEmpty() const;
+	bool isEmpty() const;
 
 	/** Return the parameter at the specified position.
 	  *

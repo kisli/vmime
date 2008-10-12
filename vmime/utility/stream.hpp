@@ -77,7 +77,7 @@ public:
 	  *
 	  * @return block size, in bytes
 	  */
-	virtual const size_type getBlockSize() const;
+	virtual size_type getBlockSize() const;
 };
 
 
@@ -115,7 +115,7 @@ public:
 	  *
 	  * @return true if we have reached the end of stream, false otherwise
 	  */
-	virtual const bool eof() const = 0;
+	virtual bool eof() const = 0;
 
 	/** Set the read pointer to the beginning of the stream.
 	  *
@@ -129,14 +129,14 @@ public:
 	  * @param count maximum number of bytes to read
 	  * @return number of bytes read
 	  */
-	virtual const size_type read(value_type* const data, const size_type count) = 0;
+	virtual size_type read(value_type* const data, const size_type count) = 0;
 
 	/** Skip a number of bytes.
 	  *
 	  * @param count maximum number of bytes to ignore
 	  * @return number of bytes skipped
 	  */
-	virtual const size_type skip(const size_type count) = 0;
+	virtual size_type skip(const size_type count) = 0;
 };
 
 
@@ -188,7 +188,7 @@ outputStream& operator<<(outputStream& os, const T& t)
   * @return number of bytes copied
   */
 
-const stream::size_type bufferedStreamCopy(inputStream& is, outputStream& os);
+stream::size_type bufferedStreamCopy(inputStream& is, outputStream& os);
 
 /** Copy data from one stream into another stream using a buffered method
   * and notify progress state of the operation.
@@ -200,7 +200,7 @@ const stream::size_type bufferedStreamCopy(inputStream& is, outputStream& os);
   * @return number of bytes copied
   */
 
-const stream::size_type bufferedStreamCopy(inputStream& is, outputStream& os,
+stream::size_type bufferedStreamCopy(inputStream& is, outputStream& os,
 	const stream::size_type length, progressListener* progress);
 
 
@@ -274,10 +274,10 @@ public:
 	  */
 	inputStreamAdapter(std::istream& is);
 
-	const bool eof() const;
+	bool eof() const;
 	void reset();
-	const size_type read(value_type* const data, const size_type count);
-	const size_type skip(const size_type count);
+	size_type read(value_type* const data, const size_type count);
+	size_type skip(const size_type count);
 
 private:
 
@@ -295,10 +295,10 @@ public:
 	inputStreamStringAdapter(const string& buffer);
 	inputStreamStringAdapter(const string& buffer, const string::size_type begin, const string::size_type end);
 
-	const bool eof() const;
+	bool eof() const;
 	void reset();
-	const size_type read(value_type* const data, const size_type count);
-	const size_type skip(const size_type count);
+	size_type read(value_type* const data, const size_type count);
+	size_type skip(const size_type count);
 
 private:
 
@@ -322,10 +322,10 @@ public:
 	  */
 	inputStreamStringProxyAdapter(const stringProxy& buffer);
 
-	const bool eof() const;
+	bool eof() const;
 	void reset();
-	const size_type read(value_type* const data, const size_type count);
-	const size_type skip(const size_type count);
+	size_type read(value_type* const data, const size_type count);
+	size_type skip(const size_type count);
 
 private:
 
@@ -350,10 +350,10 @@ public:
 	inputStreamPointerAdapter(std::istream* is, const bool own = true);
 	~inputStreamPointerAdapter();
 
-	const bool eof() const;
+	bool eof() const;
 	void reset();
-	const size_type read(value_type* const data, const size_type count);
-	const size_type skip(const size_type count);
+	size_type read(value_type* const data, const size_type count);
+	size_type skip(const size_type count);
 
 private:
 
@@ -373,10 +373,10 @@ public:
 
 	inputStreamByteBufferAdapter(const byte_t* buffer, size_type length);
 
-	const bool eof() const;
+	bool eof() const;
 	void reset();
-	const size_type read(value_type* const data, const size_type count);
-	const size_type skip(const size_type count);
+	size_type read(value_type* const data, const size_type count);
+	size_type skip(const size_type count);
 
 private:
 
@@ -402,7 +402,7 @@ public:
 	void write(const value_type* const data, const size_type count);
 	void flush();
 
-	const size_type getBlockSize() const;
+	size_type getBlockSize() const;
 
 private:
 
@@ -421,12 +421,12 @@ public:
 
 	inputStreamSocketAdapter(net::socket& sok);
 
-	const bool eof() const;
+	bool eof() const;
 	void reset();
-	const size_type read(value_type* const data, const size_type count);
-	const size_type skip(const size_type count);
+	size_type read(value_type* const data, const size_type count);
+	size_type skip(const size_type count);
 
-	const size_type getBlockSize() const;
+	size_type getBlockSize() const;
 
 private:
 

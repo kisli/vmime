@@ -71,7 +71,7 @@ IMAPFolder::~IMAPFolder()
 }
 
 
-const int IMAPFolder::getMode() const
+int IMAPFolder::getMode() const
 {
 	if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
@@ -80,7 +80,7 @@ const int IMAPFolder::getMode() const
 }
 
 
-const int IMAPFolder::getType()
+int IMAPFolder::getType()
 {
 	if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
@@ -100,7 +100,7 @@ const int IMAPFolder::getType()
 }
 
 
-const int IMAPFolder::getFlags()
+int IMAPFolder::getFlags()
 {
 	if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
@@ -412,7 +412,7 @@ void IMAPFolder::destroy()
 }
 
 
-const bool IMAPFolder::exists()
+bool IMAPFolder::exists()
 {
 	ref <IMAPStore> store = m_store.acquire();
 
@@ -423,7 +423,7 @@ const bool IMAPFolder::exists()
 }
 
 
-const int IMAPFolder::testExistAndGetType()
+int IMAPFolder::testExistAndGetType()
 {
 	m_type = TYPE_UNDEFINED;
 
@@ -495,7 +495,7 @@ const int IMAPFolder::testExistAndGetType()
 }
 
 
-const bool IMAPFolder::isOpen() const
+bool IMAPFolder::isOpen() const
 {
 	return (m_open);
 }
@@ -548,7 +548,7 @@ std::vector <ref <message> > IMAPFolder::getMessages(const std::vector <int>& nu
 }
 
 
-const int IMAPFolder::getMessageCount()
+int IMAPFolder::getMessageCount()
 {
 	if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
@@ -761,7 +761,7 @@ void IMAPFolder::fetchMessage(ref <message> msg, const int options)
 }
 
 
-const int IMAPFolder::getFetchCapabilities() const
+int IMAPFolder::getFetchCapabilities() const
 {
 	return (FETCH_ENVELOPE | FETCH_CONTENT_INFO | FETCH_STRUCTURE |
 	        FETCH_FLAGS | FETCH_SIZE | FETCH_FULL_HEADER | FETCH_UID |

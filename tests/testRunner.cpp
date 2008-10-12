@@ -56,7 +56,7 @@ public:
 		gettimeofday(&m_start, &tz);
 	}
 
-	const double getDuration() const
+	double getDuration() const
 	{
 		struct timeval tv;
 		struct timezone tz;

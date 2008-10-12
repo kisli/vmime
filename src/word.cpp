@@ -246,21 +246,21 @@ void word::parse(const string& buffer, const string::size_type position,
 
 		const string::const_iterator charsetPos = p;
 
-		for ( ; p != pend && *p != '?' ; ++p);
+		for ( ; p != pend && *p != '?' ; ++p) {}
 
 		if (p != pend) // a charset is specified
 		{
 			const string::const_iterator charsetEnd = p;
 			const string::const_iterator encPos = ++p; // skip '?'
 
-			for ( ; p != pend && *p != '?' ; ++p);
+			for ( ; p != pend && *p != '?' ; ++p) {}
 
 			if (p != pend) // an encoding is specified
 			{
 				//const string::const_iterator encEnd = p;
 				const string::const_iterator dataPos = ++p; // skip '?'
 
-				for ( ; p != pend && !(*p == '?' && *(p + 1) == '=') ; ++p);
+				for ( ; p != pend && !(*p == '?' && *(p + 1) == '=') ; ++p) {}
 
 				if (p != pend) // some data is specified
 				{
@@ -647,13 +647,13 @@ void word::copyFrom(const component& other)
 }
 
 
-const bool word::operator==(const word& w) const
+bool word::operator==(const word& w) const
 {
 	return (m_charset == w.m_charset && m_buffer == w.m_buffer);
 }
 
 
-const bool word::operator!=(const word& w) const
+bool word::operator!=(const word& w) const
 {
 	return (m_charset != w.m_charset || m_buffer != w.m_buffer);
 }

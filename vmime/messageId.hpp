@@ -76,8 +76,8 @@ public:
 
 	messageId& operator=(const string& id);
 
-	const bool operator==(const messageId& mid) const;
-	const bool operator!=(const messageId& mid) const;
+	bool operator==(const messageId& mid) const;
+	bool operator!=(const messageId& mid) const;
 
 	/** Generate a random message identifier.
 	  *

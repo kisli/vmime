@@ -123,7 +123,7 @@ path& path::operator=(const component& c)
 }
 
 
-const bool path::operator==(const path& p) const
+bool path::operator==(const path& p) const
 {
 	if (m_list.size() != p.m_list.size())
 		return (false);
@@ -141,19 +141,19 @@ const bool path::operator==(const path& p) const
 }
 
 
-const bool path::operator!=(const path& p) const
+bool path::operator!=(const path& p) const
 {
 	return (!(*this == p));
 }
 
 
-const bool path::isEmpty() const
+bool path::isEmpty() const
 {
 	return (m_list.empty());
 }
 
 
-const bool path::isRoot() const
+bool path::isRoot() const
 {
 	return (m_list.empty());
 }
@@ -171,7 +171,7 @@ path::component& path::getLastComponent()
 }
 
 
-const int path::getSize() const
+int path::getSize() const
 {
 	return (m_list.size());
 }
@@ -189,7 +189,7 @@ path::component& path::operator[](const int x)
 }
 
 
-const bool path::isDirectParentOf(const path& p) const
+bool path::isDirectParentOf(const path& p) const
 {
 	if (p.getSize() != getSize() + 1)
 		return (false);
@@ -203,7 +203,7 @@ const bool path::isDirectParentOf(const path& p) const
 }
 
 
-const bool path::isParentOf(const path& p) const
+bool path::isParentOf(const path& p) const
 {
 	if (p.getSize() < getSize() + 1)
 		return (false);

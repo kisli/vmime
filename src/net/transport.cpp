@@ -123,7 +123,7 @@ void transport::send(ref <vmime::message> msg, utility::progressListener* progre
 }
 
 
-const transport::Type transport::getType() const
+transport::Type transport::getType() const
 {
 	return (TYPE_TRANSPORT);
 }

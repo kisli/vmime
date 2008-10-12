@@ -68,8 +68,8 @@ public:
 
 	contentDisposition& operator=(const string& name);
 
-	const bool operator==(const contentDisposition& value) const;
-	const bool operator!=(const contentDisposition& value) const;
+	bool operator==(const contentDisposition& value) const;
+	bool operator!=(const contentDisposition& value) const;
 
 private:
 

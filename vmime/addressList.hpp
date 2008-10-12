@@ -117,13 +117,13 @@ public:
 	  *
 	  * @return number of addresses
 	  */
-	const int getAddressCount() const;
+	int getAddressCount() const;
 
 	/** Tests whether the list of addresses is empty.
 	  *
 	  * @return true if there is no address, false otherwise
 	  */
-	const bool isEmpty() const;
+	bool isEmpty() const;
 
 	/** Return the address at the specified position.
 	  *

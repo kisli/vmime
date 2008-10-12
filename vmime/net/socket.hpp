@@ -57,7 +57,7 @@ public:
 	  *
 	  * @return true if the socket is connected, false otherwise
 	  */
-	virtual const bool isConnected() const = 0;
+	virtual bool isConnected() const = 0;
 
 	/** Receive (text) data from the socket.
 	  *
@@ -71,7 +71,7 @@ public:
 	  * @param count maximum number of bytes to receive (size of buffer)
 	  * @return number of bytes received/written into output buffer
 	  */
-	virtual const int receiveRaw(char* buffer, const int count) = 0;
+	virtual int receiveRaw(char* buffer, const int count) = 0;
 
 	/** Send (text) data to the socket.
 	  *

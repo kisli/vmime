@@ -46,8 +46,8 @@ public:
 
 public:
 
-	const bool operator==(const mediaType& type) const;
-	const bool operator!=(const mediaType& type) const;
+	bool operator==(const mediaType& type) const;
+	bool operator!=(const mediaType& type) const;
 
 	mediaType& operator=(const string& type);
 

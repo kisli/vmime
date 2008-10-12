@@ -230,13 +230,13 @@ messageId messageId::generateId()
 }
 
 
-const bool messageId::operator==(const messageId& mid) const
+bool messageId::operator==(const messageId& mid) const
 {
 	return (m_left == mid.m_left && m_right == mid.m_right);
 }
 
 
-const bool messageId::operator!=(const messageId& mid) const
+bool messageId::operator!=(const messageId& mid) const
 {
 	return !(*this == mid);
 }

@@ -97,13 +97,13 @@ encoding& encoding::operator=(const string& name)
 }
 
 
-const bool encoding::operator==(const encoding& value) const
+bool encoding::operator==(const encoding& value) const
 {
 	return (utility::stringUtils::toLower(m_name) == value.m_name);
 }
 
 
-const bool encoding::operator!=(const encoding& value) const
+bool encoding::operator!=(const encoding& value) const
 {
 	return !(*this == value);
 }

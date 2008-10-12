@@ -45,7 +45,7 @@ const string TLSSecuredConnectionInfos::getHost() const
 }
 
 
-const port_t TLSSecuredConnectionInfos::getPort() const
+port_t TLSSecuredConnectionInfos::getPort() const
 {
 	return m_port;
 }

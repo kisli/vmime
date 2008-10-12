@@ -74,7 +74,7 @@ const unsigned char encoderB64::sm_decodeMap[256] =
 
 
 
-const utility::stream::size_type encoderB64::encode(utility::inputStream& in,
+utility::stream::size_type encoderB64::encode(utility::inputStream& in,
 	utility::outputStream& out, utility::progressListener* progress)
 {
 	in.reset();  // may not work...
@@ -189,7 +189,7 @@ const utility::stream::size_type encoderB64::encode(utility::inputStream& in,
 }
 
 
-const utility::stream::size_type encoderB64::decode(utility::inputStream& in,
+utility::stream::size_type encoderB64::decode(utility::inputStream& in,
 	utility::outputStream& out, utility::progressListener* progress)
 {
 	in.reset();  // may not work...

@@ -147,15 +147,14 @@ const byteArray X509Certificate::getSerialNumber() const
 }
 
 
-const bool X509Certificate::checkIssuer
-	(ref <const X509Certificate> issuer) const
+bool X509Certificate::checkIssuer(ref <const X509Certificate> issuer) const
 {
 	return (gnutls_x509_crt_check_issuer
 			(m_data->cert, issuer->m_data->cert) >= 1);
 }
 
 
-const bool X509Certificate::verify(ref <const X509Certificate> caCert) const
+bool X509Certificate::verify(ref <const X509Certificate> caCert) const
 {
 	unsigned int verify = 0;
 
@@ -236,13 +235,13 @@ const string X509Certificate::getType() const
 }
 
 
-const int X509Certificate::getVersion() const
+int X509Certificate::getVersion() const
 {
 	return gnutls_x509_crt_get_version(m_data->cert);
 }
 
 
-const bool X509Certificate::equals(ref <const certificate> other) const
+bool X509Certificate::equals(ref <const certificate> other) const
 {
 	ref <const X509Certificate> otherX509 =
 		other.dynamicCast <const X509Certificate>();

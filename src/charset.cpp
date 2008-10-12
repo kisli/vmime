@@ -104,13 +104,13 @@ charset& charset::operator=(const charset& other)
 }
 
 
-const bool charset::operator==(const charset& value) const
+bool charset::operator==(const charset& value) const
 {
 	return (utility::stringUtils::isStringEqualNoCase(m_name, value.m_name));
 }
 
 
-const bool charset::operator!=(const charset& value) const
+bool charset::operator!=(const charset& value) const
 {
 	return !(*this == value);
 }

@@ -96,7 +96,7 @@ public:
 		  * converted using std::istringstream)
 		  * @return current value of the property
 		  */
-		template <class TYPE> const TYPE getValue() const
+		template <class TYPE> TYPE getValue() const
 		{
 			TYPE val = TYPE();
 
@@ -127,13 +127,13 @@ public:
 		}
 
 		template <>
-		const string propertySet::property::getValue() const
+		string propertySet::property::getValue() const
 		{
 			return (m_value);
 		}
 
 		template <>
-		const bool propertySet::property::getValue() const
+		bool propertySet::property::getValue() const
 		{
 			if (utility::stringUtils::toLower(m_value) == "true")
 				return true;
@@ -258,7 +258,7 @@ public:
 	  * @return true if the property is set (has a value),
 	  * false otherwise
 	  */
-	const bool hasProperty(const string& name) const;
+	bool hasProperty(const string& name) const;
 
 	/** Get the value of the specified property.
 	  *
@@ -334,7 +334,7 @@ private:
 
 		propFinder(const string& name) : m_name(utility::stringUtils::toLower(name)) { }
 
-		const bool operator()(ref <property> p) const
+		bool operator()(ref <property> p) const
 		{
 			return (utility::stringUtils::toLower(p->getName()) == m_name);
 		}
@@ -353,7 +353,7 @@ private:
 public:
 
 	template <typename TYPE>
-	static const TYPE valueFromString(const string& value)
+	static TYPE valueFromString(const string& value)
 	{
 		TYPE v = TYPE();
 
@@ -366,7 +366,7 @@ public:
 	}
 
 	template <typename TYPE>
-	static const string valueToString(const TYPE& value)
+	static string valueToString(const TYPE& value)
 	{
 		std::ostringstream oss(value);
 		oss.imbue(std::locale::classic());  // no formatting
@@ -379,19 +379,19 @@ public:
 #ifdef VMIME_INLINE_TEMPLATE_SPECIALIZATION
 
 	template <>
-	static const string valueFromString(const string& value)
+	static string valueFromString(const string& value)
 	{
 		return value;
 	}
 
 	template <>
-	static const string valueToString(const string& value)
+	static string valueToString(const string& value)
 	{
 		return value;
 	}
 
 	template <>
-	static const bool valueFromString(const string& value)
+	static bool valueFromString(const string& value)
 	{
 		if (utility::stringUtils::toLower(value) == "true")
 			return true;
@@ -409,7 +409,7 @@ public:
 	}
 
 	template <>
-	static const string valueToString(const bool& value)
+	static string valueToString(const bool& value)
 	{
 		return (value ? "true" : "false");
 	}
@@ -435,14 +435,14 @@ public:
 template <> void propertySet::property::setValue(const string& value);
 template <> void propertySet::property::setValue(const bool& value);
 
-template <> const string propertySet::property::getValue() const;
-template <> const bool propertySet::property::getValue() const;
+template <> string propertySet::property::getValue() const;
+template <> bool propertySet::property::getValue() const;
 
-template <> const string propertySet::valueFromString(const string& value);
-template <> const string propertySet::valueToString(const string& value);
+template <> string propertySet::valueFromString(const string& value);
+template <> string propertySet::valueToString(const string& value);
 
-template <> const bool propertySet::valueFromString(const string& value);
-template <> const string propertySet::valueToString(const bool& value);
+template <> bool propertySet::valueFromString(const string& value);
+template <> string propertySet::valueToString(const bool& value);
 
 #endif // VMIME_INLINE_TEMPLATE_SPECIALIZATION
 

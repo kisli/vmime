@@ -43,21 +43,21 @@ public:
 	  *
 	  * @return random number
 	  */
-	static const unsigned int getNext();
+	static unsigned int getNext();
 
 	/** Return the current time as a number (may be used to
 	  * build "random" strings).
 	  *
 	  * @return time as a number
 	  */
-	static const unsigned int getTime();
+	static unsigned int getTime();
 
 	/** Return the current process number (may be user to
 	  * build "random" strings).
 	  *
 	  * @return process number
 	  */
-	static const unsigned int getProcess();
+	static unsigned int getProcess();
 
 	/** Return a random character string with the specified length.
 	  *

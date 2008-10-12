@@ -46,11 +46,11 @@ public:
 public:
 
 	void connect(const vmime::string& address, const vmime::port_t port);
-	const bool isConnected() const;
+	bool isConnected() const;
 	void disconnect();
 
 	void receive(vmime::string& buffer);
-	const int receiveRaw(char* buffer, const int count);
+	int receiveRaw(char* buffer, const int count);
 
 	void send(const vmime::string& buffer);
 	void sendRaw(const char* buffer, const int count);

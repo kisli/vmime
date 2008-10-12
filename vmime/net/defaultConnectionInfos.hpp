@@ -41,7 +41,7 @@ public:
 	defaultConnectionInfos(const string& host, const port_t port);
 
 	const string getHost() const;
-	const port_t getPort() const;
+	port_t getPort() const;
 
 private:
 

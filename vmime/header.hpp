@@ -94,7 +94,7 @@ public:
 	  * @return true if at least one field with the specified name
 	  * exists, or false otherwise
 	  */
-	const bool hasField(const string& fieldName) const;
+	bool hasField(const string& fieldName) const;
 
 	/** Find the first field that matches the specified name.
 	  * If no field is found, an exception is thrown.
@@ -182,13 +182,13 @@ public:
 	  *
 	  * @return number of fields
 	  */
-	const int getFieldCount() const;
+	int getFieldCount() const;
 
 	/** Tests whether the list of fields is empty.
 	  *
 	  * @return true if there is no field, false otherwise
 	  */
-	const bool isEmpty() const;
+	bool isEmpty() const;
 
 	/** Return the field at the specified position.
 	  *
@@ -232,7 +232,7 @@ private:
 	public:
 
 		fieldHasName(const string& name);
-		const bool operator() (const ref <const headerField>& field);
+		bool operator() (const ref <const headerField>& field);
 
 	private:
 
@@ -244,7 +244,7 @@ private:
 	public:
 
 		fieldHasNotName(const string& name);
-		const bool operator() (const ref <const headerField>& field);
+		bool operator() (const ref <const headerField>& field);
 
 	private:
 

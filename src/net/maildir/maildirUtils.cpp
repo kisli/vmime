@@ -34,7 +34,7 @@ namespace net {
 namespace maildir {
 
 
-const bool maildirUtils::isMessageFile(const utility::file& file)
+bool maildirUtils::isMessageFile(const utility::file& file)
 {
 	// Ignore files which name begins with '.'
 	if (file.isFile() &&
@@ -77,7 +77,7 @@ const utility::file::path::component maildirUtils::extractId
 }
 
 
-const int maildirUtils::extractFlags(const utility::file::path::component& comp)
+int maildirUtils::extractFlags(const utility::file::path::component& comp)
 {
 	string::size_type sep = comp.getBuffer().rfind(':');  // try colon
 
@@ -208,7 +208,7 @@ maildirUtils::messageIdComparator::messageIdComparator
 }
 
 
-const bool maildirUtils::messageIdComparator::operator()
+bool maildirUtils::messageIdComparator::operator()
 	(const utility::file::path::component& other) const
 {
 	return (m_comp == maildirUtils::extractId(other));

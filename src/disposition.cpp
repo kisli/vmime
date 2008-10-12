@@ -150,7 +150,7 @@ void disposition::removeAllModifiers()
 }
 
 
-const bool disposition::hasModifier(const string& modifier) const
+bool disposition::hasModifier(const string& modifier) const
 {
 	const string modifierLC = utility::stringUtils::toLower(modifier);
 

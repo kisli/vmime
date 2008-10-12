@@ -168,7 +168,7 @@ public:
 	  *
 	  * @return number of attachments
 	  */
-	const int getAttachmentCount() const;
+	int getAttachmentCount() const;
 
 	/** Return the list of attachments.
 	  *

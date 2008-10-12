@@ -48,7 +48,7 @@ VMIME_TEST_SUITE_BEGIN
 	VMIME_TEST_LIST_END
 
 
-	static const bool parseHelper(vmime::utility::url& u, const vmime::string& str)
+	static bool parseHelper(vmime::utility::url& u, const vmime::string& str)
 	{
 		try
 		{

@@ -40,7 +40,7 @@ const string defaultConnectionInfos::getHost() const
 }
 
 
-const port_t defaultConnectionInfos::getPort() const
+port_t defaultConnectionInfos::getPort() const
 {
 	return m_port;
 }

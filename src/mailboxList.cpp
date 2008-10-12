@@ -109,13 +109,13 @@ void mailboxList::removeAllMailboxes()
 }
 
 
-const int mailboxList::getMailboxCount() const
+int mailboxList::getMailboxCount() const
 {
 	return (m_list.getAddressCount());
 }
 
 
-const bool mailboxList::isEmpty() const
+bool mailboxList::isEmpty() const
 {
 	return (m_list.isEmpty());
 }

@@ -56,7 +56,7 @@ const string builtinSASLMechanism::getName() const
 }
 
 
-const bool builtinSASLMechanism::step
+bool builtinSASLMechanism::step
 	(ref <SASLSession> sess, const byte_t* challenge, const int challengeLen,
 	 byte_t** response, int* responseLen)
 {
@@ -77,7 +77,7 @@ const bool builtinSASLMechanism::step
 		*response = res;
 		*responseLen = outputLen;
 
-		free(output);
+		gsasl_free(output);
 	}
 	else
 	{
@@ -108,7 +108,7 @@ const bool builtinSASLMechanism::step
 }
 
 
-const bool builtinSASLMechanism::isComplete() const
+bool builtinSASLMechanism::isComplete() const
 {
 	return m_complete;
 }
@@ -139,11 +139,11 @@ void builtinSASLMechanism::encode
 	}
 	catch (...)
 	{
-		free(coutput);
+		gsasl_free(coutput);
 		throw;
 	}
 
-	free(coutput);
+	gsasl_free(coutput);
 }
 
 
@@ -172,11 +172,11 @@ void builtinSASLMechanism::decode
 	}
 	catch (...)
 	{
-		free(coutput);
+		gsasl_free(coutput);
 		throw;
 	}
 
-	free(coutput);
+	gsasl_free(coutput);
 }
 
 

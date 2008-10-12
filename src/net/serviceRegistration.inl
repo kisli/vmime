@@ -58,7 +58,7 @@ public:
 		return (m_name);
 	}
 
-	const int getType() const
+	int getType() const
 	{
 		return (m_type);
 	}

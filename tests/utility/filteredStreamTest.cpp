@@ -55,10 +55,10 @@ VMIME_TEST_SUITE_BEGIN
 
 		void addChunk(const std::string& chunk) { m_chunks.push_back(chunk); }
 
-		const bool eof() const { return (m_index >= m_chunks.size()); }
+		bool eof() const { return (m_index >= m_chunks.size()); }
 		void reset() { m_index = 0; }
 
-		const size_type read(value_type* const data, const size_type /* count */)
+		size_type read(value_type* const data, const size_type /* count */)
 		{
 			if (eof())
 				return 0;
@@ -74,7 +74,7 @@ VMIME_TEST_SUITE_BEGIN
 			return chunk.length();
 		}
 
-		const size_type skip(const size_type /* count */)
+		size_type skip(const size_type /* count */)
 		{
 			// Not supported
 			return 0;

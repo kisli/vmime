@@ -50,7 +50,7 @@ public:
 	  * @param part message part to test
 	  * @return true if the part is an attachment, false otherwise
 	  */
-	static const bool isBodyPartAnAttachment(ref <const bodyPart> part);
+	static bool isBodyPartAnAttachment(ref <const bodyPart> part);
 
 	/** Return attachment information in the specified body part.
 	  * If the specified body part does not contain attachment

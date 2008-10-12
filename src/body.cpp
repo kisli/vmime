@@ -378,7 +378,7 @@ const string body::generateRandomBoundaryString()
 }
 
 
-const bool body::isValidBoundary(const string& boundary)
+bool body::isValidBoundary(const string& boundary)
 {
 	static const string validChars("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'()+_,-./:=?");
 
@@ -469,7 +469,7 @@ void body::setParentPart(ref <bodyPart> parent)
 }
 
 
-const bool body::isRootPart() const
+bool body::isRootPart() const
 {
 	ref <const bodyPart> part = m_part.acquire();
 	return (part == NULL || part->getParentPart() == NULL);
@@ -674,13 +674,13 @@ void body::removeAllParts()
 }
 
 
-const int body::getPartCount() const
+int body::getPartCount() const
 {
 	return (m_parts.size());
 }
 
 
-const bool body::isEmpty() const
+bool body::isEmpty() const
 {
 	return (m_parts.size() == 0);
 }

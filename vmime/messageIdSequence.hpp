@@ -110,13 +110,13 @@ public:
 	  *
 	  * @return number of message-ides
 	  */
-	const int getMessageIdCount() const;
+	int getMessageIdCount() const;
 
 	/** Tests whether the list of message-ides is empty.
 	  *
 	  * @return true if there is no message-id, false otherwise
 	  */
-	const bool isEmpty() const;
+	bool isEmpty() const;
 
 	/** Return the message-id at the specified position.
 	  *

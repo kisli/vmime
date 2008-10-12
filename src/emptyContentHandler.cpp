@@ -72,19 +72,19 @@ void emptyContentHandler::extractRaw(utility::outputStream& /* os */,
 }
 
 
-const string::size_type emptyContentHandler::getLength() const
+string::size_type emptyContentHandler::getLength() const
 {
 	return (0);
 }
 
 
-const bool emptyContentHandler::isEmpty() const
+bool emptyContentHandler::isEmpty() const
 {
 	return (true);
 }
 
 
-const bool emptyContentHandler::isEncoded() const
+bool emptyContentHandler::isEncoded() const
 {
 	return (false);
 }

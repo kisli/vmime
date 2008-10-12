@@ -50,10 +50,10 @@ public:
 	void connect(const string& address, const port_t port);
 	void disconnect();
 
-	const bool isConnected() const;
+	bool isConnected() const;
 
 	void receive(string& buffer);
-	const int receiveRaw(char* buffer, const int count);
+	int receiveRaw(char* buffer, const int count);
 
 	void send(const string& buffer);
 	void sendRaw(const char* buffer, const int count);

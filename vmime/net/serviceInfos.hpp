@@ -171,14 +171,14 @@ public:
 		  *
 		  * @return property value type
 		  */
-		const Types getType() const;
+		Types getType() const;
 
 		/** Return the attributes of the property (see
 		  * serviceInfos::property::Types constants).
 		  *
 		  * @return property attributes
 		  */
-		const int getFlags() const;
+		int getFlags() const;
 
 	private:
 
@@ -227,7 +227,7 @@ public:
 	  * @param p property to test
 	  * @return true if the property is set, false otherwise
 	  */
-	const bool hasProperty(ref <session> s, const property& p) const;
+	bool hasProperty(ref <session> s, const property& p) const;
 };
 
 

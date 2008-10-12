@@ -64,20 +64,20 @@ public:
 	ref <folder> getRootFolder();
 	ref <folder> getFolder(const folder::path& path);
 
-	const bool isValidFolderName(const folder::path::component& name) const;
+	bool isValidFolderName(const folder::path::component& name) const;
 
 	static const serviceInfos& getInfosInstance();
 	const serviceInfos& getInfos() const;
 
 	void connect();
-	const bool isConnected() const;
+	bool isConnected() const;
 	void disconnect();
 
 	void noop();
 
-	const int getCapabilities() const;
+	int getCapabilities() const;
 
-	const bool isSecuredConnection() const;
+	bool isSecuredConnection() const;
 	ref <connectionInfos> getConnectionInfos() const;
 
 private:
@@ -100,17 +100,17 @@ private:
 
 	const std::vector <string> getCapabilities();
 
-	static const bool isSuccessResponse(const string& buffer);
-	static const bool stripFirstLine(const string& buffer, string& result, string* firstLine = NULL);
+	static bool isSuccessResponse(const string& buffer);
+	static bool stripFirstLine(const string& buffer, string& result, string* firstLine = NULL);
 	static void stripResponseCode(const string& buffer, string& result);
-	static const int getResponseCode(const string& buffer);
+	static int getResponseCode(const string& buffer);
 
 	void sendRequest(const string& buffer, const bool end = true);
 	void readResponse(string& buffer, const bool multiLine, utility::progressListener* progress = NULL);
 	void readResponse(utility::outputStream& os, utility::progressListener* progress = NULL, const int predictedSize = 0);
 
-	static const bool checkTerminator(string& buffer, const bool multiLine);
-	static const bool checkOneTerminator(string& buffer, const string& term);
+	static bool checkTerminator(string& buffer, const bool multiLine);
+	static bool checkOneTerminator(string& buffer, const string& term);
 
 	void internalDisconnect();
 

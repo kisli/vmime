@@ -67,7 +67,7 @@ public:
 		  *
 		  * @return UNIX Epoch time
 		  */
-		virtual const unsigned int getUnixTime() const = 0;
+		virtual unsigned int getUnixTime() const = 0;
 
 		/** Return the current date and time, in the local time zone.
 		  *
@@ -87,7 +87,7 @@ public:
 		  *
 		  * @return current process id
 		  */
-		virtual const unsigned int getProcessId() const = 0;
+		virtual unsigned int getProcessId() const = 0;
 
 		/** Return the charset used on the system.
 		  *
