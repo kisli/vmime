@@ -27,7 +27,8 @@
 
 #include "vmime/base.hpp"
 #include "vmime/headerFieldValue.hpp"
-#include "vmime/encoder.hpp"
+
+#include "vmime/utility/encoder/encoder.hpp"
 
 
 namespace vmime
@@ -99,7 +100,7 @@ public:
 	  * is registered for the encoding
 	  * @return a new encoder object for the encoding type
 	  */
-	ref <encoder> getEncoder() const;
+	ref <utility::encoder::encoder> getEncoder() const;
 
 private:
 

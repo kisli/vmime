@@ -21,29 +21,37 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#ifndef VMIME_ENCODERBINARY_HPP_INCLUDED
-#define VMIME_ENCODERBINARY_HPP_INCLUDED
+#ifndef VMIME_UTILITY_ENCODER_UUENCODER_HPP_INCLUDED
+#define VMIME_UTILITY_ENCODER_UUENCODER_HPP_INCLUDED
 
 
-#include "vmime/encoderDefault.hpp"
+#include "vmime/utility/encoder/encoder.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
+namespace utility {
+namespace encoder {
 
 
-/** Binary encoder.
+/** UUEncode encoder.
   */
 
-class encoderBinary : public encoderDefault
+class uuEncoder : public encoder
 {
 public:
 
-	encoderBinary();
+	uuEncoder();
+
+	utility::stream::size_type encode(utility::inputStream& in, utility::outputStream& out, utility::progressListener* progress = NULL);
+	utility::stream::size_type decode(utility::inputStream& in, utility::outputStream& out, utility::progressListener* progress = NULL);
+
+	const std::vector <string> getAvailableProperties() const;
 };
 
 
+} // encoder
+} // utility
 } // vmime
 
 
-#endif // VMIME_ENCODERBINARY_HPP_INCLUDED
+#endif // VMIME_UTILITY_ENCODER_UUENCODER_HPP_INCLUDED

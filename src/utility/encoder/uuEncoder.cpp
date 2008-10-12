@@ -21,15 +21,16 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#include "vmime/encoderUUE.hpp"
+#include "vmime/utility/encoder/uuEncoder.hpp"
 #include "vmime/parserHelpers.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
+namespace utility {
+namespace encoder {
 
 
-encoderUUE::encoderUUE()
+uuEncoder::uuEncoder()
 {
 	getProperties()["mode"] = 644;
 	getProperties()["filename"] = "no_name";
@@ -37,7 +38,7 @@ encoderUUE::encoderUUE()
 }
 
 
-const std::vector <string> encoderUUE::getAvailableProperties() const
+const std::vector <string> uuEncoder::getAvailableProperties() const
 {
 	std::vector <string> list(encoder::getAvailableProperties());
 
@@ -63,7 +64,7 @@ static inline unsigned char UUDECODE(const unsigned char c)
 }
 
 
-utility::stream::size_type encoderUUE::encode(utility::inputStream& in,
+utility::stream::size_type uuEncoder::encode(utility::inputStream& in,
 	utility::outputStream& out, utility::progressListener* progress)
 {
 	in.reset();  // may not work...
@@ -142,7 +143,7 @@ utility::stream::size_type encoderUUE::encode(utility::inputStream& in,
 }
 
 
-utility::stream::size_type encoderUUE::decode(utility::inputStream& in,
+utility::stream::size_type uuEncoder::decode(utility::inputStream& in,
 	utility::outputStream& out, utility::progressListener* progress)
 {
 	in.reset();  // may not work...
@@ -325,4 +326,6 @@ utility::stream::size_type encoderUUE::decode(utility::inputStream& in,
 }
 
 
+} // encoder
+} // utility
 } // vmime

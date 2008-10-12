@@ -28,9 +28,9 @@
 #include "vmime/utility/smartPtr.hpp"
 #include "vmime/parserHelpers.hpp"
 
-#include "vmime/encoder.hpp"
-#include "vmime/encoderB64.hpp"
-#include "vmime/encoderQP.hpp"
+#include "vmime/utility/encoder/encoder.hpp"
+#include "vmime/utility/encoder/b64Encoder.hpp"
+#include "vmime/utility/encoder/qpEncoder.hpp"
 
 #include "vmime/wordEncoder.hpp"
 
@@ -267,17 +267,17 @@ void word::parse(const string& buffer, const string::size_type position,
 					const string::const_iterator dataEnd = p;
 					p += 2; // skip '?='
 
-					encoder* theEncoder = NULL;
+					utility::encoder::encoder* theEncoder = NULL;
 
 					// Base-64 encoding
 					if (*encPos == 'B' || *encPos == 'b')
 					{
-						theEncoder = new encoderB64;
+						theEncoder = new utility::encoder::b64Encoder();
 					}
 					// Quoted-Printable encoding
 					else if (*encPos == 'Q' || *encPos == 'q')
 					{
-						theEncoder = new encoderQP;
+						theEncoder = new utility::encoder::qpEncoder();
 						theEncoder->getProperties()["rfc2047"] = true;
 					}
 

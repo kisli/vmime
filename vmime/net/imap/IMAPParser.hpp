@@ -34,8 +34,8 @@
 #include "vmime/utility/stringUtils.hpp"
 #include "vmime/utility/progressListener.hpp"
 
-#include "vmime/encoderB64.hpp"
-#include "vmime/encoderQP.hpp"
+#include "vmime/utility/encoder/b64Encoder.hpp"
+#include "vmime/utility/encoder/qpEncoder.hpp"
 
 #include "vmime/platform.hpp"
 
@@ -1233,18 +1233,18 @@ public:
 			delete (theCharset);
 
 			// Decode text
-			encoder* theEncoder = NULL;
+			utility::encoder::encoder* theEncoder = NULL;
 
 			if (theEncoding->value()[0] == 'q' || theEncoding->value()[0] == 'Q')
 			{
 				// Quoted-printable
-				theEncoder = new encoderQP;
+				theEncoder = new utility::encoder::qpEncoder();
 				theEncoder->getProperties()["rfc2047"] = true;
 			}
 			else if (theEncoding->value()[0] == 'b' || theEncoding->value()[0] == 'B')
 			{
 				// Base64
-				theEncoder = new encoderB64;
+				theEncoder = new utility::encoder::b64Encoder();
 			}
 
 			if (theEncoder)

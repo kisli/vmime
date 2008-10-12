@@ -21,20 +21,21 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#include "vmime/encoderQP.hpp"
+#include "vmime/utility/encoder/qpEncoder.hpp"
 #include "vmime/parserHelpers.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
+namespace utility {
+namespace encoder {
 
 
-encoderQP::encoderQP()
+qpEncoder::qpEncoder()
 {
 }
 
 
-const std::vector <string> encoderQP::getAvailableProperties() const
+const std::vector <string> qpEncoder::getAvailableProperties() const
 {
 	std::vector <string> list(encoder::getAvailableProperties());
 
@@ -51,10 +52,10 @@ const std::vector <string> encoderQP::getAvailableProperties() const
 
 
 // Encoding table
-const unsigned char encoderQP::sm_hexDigits[] = "0123456789ABCDEF";
+const unsigned char qpEncoder::sm_hexDigits[] = "0123456789ABCDEF";
 
 // Decoding table
-const unsigned char encoderQP::sm_hexDecodeTable[256] =
+const unsigned char qpEncoder::sm_hexDecodeTable[256] =
 {
 	 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
 	 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -89,7 +90,7 @@ const unsigned char encoderQP::sm_hexDecodeTable[256] =
 #endif // VMIME_BUILDING_DOC
 
 
-utility::stream::size_type encoderQP::encode(utility::inputStream& in,
+utility::stream::size_type qpEncoder::encode(utility::inputStream& in,
 	utility::outputStream& out, utility::progressListener* progress)
 {
 	in.reset();  // may not work...
@@ -305,7 +306,7 @@ utility::stream::size_type encoderQP::encode(utility::inputStream& in,
 }
 
 
-utility::stream::size_type encoderQP::decode(utility::inputStream& in,
+utility::stream::size_type qpEncoder::decode(utility::inputStream& in,
 	utility::outputStream& out, utility::progressListener* progress)
 {
 	in.reset();  // may not work...
@@ -466,4 +467,6 @@ utility::stream::size_type encoderQP::decode(utility::inputStream& in,
 }
 
 
+} // encoder
+} // utility
 } // vmime

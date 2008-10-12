@@ -22,8 +22,9 @@
 //
 
 #include "vmime/encoding.hpp"
-#include "vmime/encoderFactory.hpp"
 #include "vmime/contentHandler.hpp"
+
+#include "vmime/utility/encoder/encoderFactory.hpp"
 
 #include <algorithm>
 
@@ -77,9 +78,9 @@ void encoding::generate(utility::outputStream& os, const string::size_type /* ma
 }
 
 
-ref <encoder> encoding::getEncoder() const
+ref <utility::encoder::encoder> encoding::getEncoder() const
 {
-	return (encoderFactory::getInstance()->create(generate()));
+	return (utility::encoder::encoderFactory::getInstance()->create(generate()));
 }
 
 

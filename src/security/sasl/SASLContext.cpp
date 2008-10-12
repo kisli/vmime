@@ -29,7 +29,8 @@
 #include "vmime/security/sasl/SASLMechanism.hpp"
 
 #include "vmime/base.hpp"
-#include "vmime/encoderFactory.hpp"
+
+#include "vmime/utility/encoder/encoderFactory.hpp"
 
 #include "vmime/utility/stream.hpp"
 
@@ -103,7 +104,8 @@ void SASLContext::decodeB64(const string& input, byte_t** output, int* outputLen
 	utility::inputStreamStringAdapter is(input);
 	utility::outputStreamStringAdapter os(res);
 
-	ref <encoder> dec = encoderFactory::getInstance()->create("base64");
+	ref <utility::encoder::encoder> dec =
+		utility::encoder::encoderFactory::getInstance()->create("base64");
 
 	dec->decode(is, os);
 
@@ -123,7 +125,8 @@ const string SASLContext::encodeB64(const byte_t* input, const int inputLen)
 	utility::inputStreamByteBufferAdapter is(input, inputLen);
 	utility::outputStreamStringAdapter os(res);
 
-	ref <encoder> enc = encoderFactory::getInstance()->create("base64");
+	ref <utility::encoder::encoder> enc =
+		utility::encoder::encoderFactory::getInstance()->create("base64");
 
 	enc->encode(is, os);
 

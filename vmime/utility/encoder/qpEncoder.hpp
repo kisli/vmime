@@ -21,25 +21,26 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#ifndef VMIME_ENCODERB64_HPP_INCLUDED
-#define VMIME_ENCODERB64_HPP_INCLUDED
+#ifndef VMIME_UTILITY_ENCODER_QPENCODER_HPP_INCLUDED
+#define VMIME_UTILITY_ENCODER_QPENCODER_HPP_INCLUDED
 
 
-#include "vmime/encoder.hpp"
+#include "vmime/utility/encoder/encoder.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
+namespace utility {
+namespace encoder {
 
 
-/** Base64 encoder.
+/** Quoted-printable encoder.
   */
 
-class encoderB64 : public encoder
+class qpEncoder : public encoder
 {
 public:
 
-	encoderB64();
+	qpEncoder();
 
 	utility::stream::size_type encode(utility::inputStream& in, utility::outputStream& out, utility::progressListener* progress = NULL);
 	utility::stream::size_type decode(utility::inputStream& in, utility::outputStream& out, utility::progressListener* progress = NULL);
@@ -48,12 +49,14 @@ public:
 
 protected:
 
-	static const unsigned char sm_alphabet[];
-	static const unsigned char sm_decodeMap[256];
+	static const unsigned char sm_hexDigits[17];
+	static const unsigned char sm_hexDecodeTable[256];
 };
 
 
+} // encoder
+} // utility
 } // vmime
 
 
-#endif // VMIME_ENCODERB64_HPP_INCLUDED
+#endif // VMIME_UTILITY_ENCODER_QPENCODER_HPP_INCLUDED

@@ -21,16 +21,53 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#include "vmime/encoderBinary.hpp"
+#include "vmime/utility/encoder/defaultEncoder.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
+namespace utility {
+namespace encoder {
 
 
-encoderBinary::encoderBinary()
+defaultEncoder::defaultEncoder()
 {
 }
 
 
+utility::stream::size_type defaultEncoder::encode(utility::inputStream& in,
+	utility::outputStream& out, utility::progressListener* progress)
+{
+	in.reset();  // may not work...
+
+	// No encoding performed
+	utility::stream::size_type res = 0;
+
+	if (progress)
+		res = utility::bufferedStreamCopy(in, out, 0, progress);
+	else
+		res = utility::bufferedStreamCopy(in, out);
+
+	return res;
+}
+
+
+utility::stream::size_type defaultEncoder::decode(utility::inputStream& in,
+	utility::outputStream& out, utility::progressListener* progress)
+{
+	in.reset();  // may not work...
+
+	// No decoding performed
+	utility::stream::size_type res = 0;
+
+	if (progress)
+		res = utility::bufferedStreamCopy(in, out, 0, progress);
+	else
+		res = utility::bufferedStreamCopy(in, out);
+
+	return res;
+}
+
+
+} // encoder
+} // utility
 } // vmime

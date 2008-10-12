@@ -21,16 +21,17 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#ifndef VMIME_ENCODERFACTORY_HPP_INCLUDED
-#define VMIME_ENCODERFACTORY_HPP_INCLUDED
+#ifndef VMIME_UTILITY_ENCODER_ENCODERFACTORY_HPP_INCLUDED
+#define VMIME_UTILITY_ENCODER_ENCODERFACTORY_HPP_INCLUDED
 
 
-#include "vmime/encoder.hpp"
+#include "vmime/utility/encoder/encoder.hpp"
 #include "vmime/utility/stringUtils.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
+namespace utility {
+namespace encoder {
 
 
 /** A factory to create 'encoder' objects for the specified encoding.
@@ -143,7 +144,9 @@ public:
 };
 
 
+} // encoder
+} // utility
 } // vmime
 
 
-#endif // VMIME_ENCODERFACTORY_HPP_INCLUDED
+#endif // VMIME_UTILITY_ENCODER_ENCODERFACTORY_HPP_INCLUDED

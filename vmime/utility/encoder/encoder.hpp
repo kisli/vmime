@@ -21,8 +21,8 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#ifndef VMIME_ENCODER_HPP_INCLUDED
-#define VMIME_ENCODER_HPP_INCLUDED
+#ifndef VMIME_UTILITY_ENCODER_ENCODER_HPP_INCLUDED
+#define VMIME_UTILITY_ENCODER_ENCODER_HPP_INCLUDED
 
 
 #include "vmime/base.hpp"
@@ -31,8 +31,9 @@
 #include "vmime/utility/progressListener.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
+namespace utility {
+namespace encoder {
 
 
 /** Encode/decode data in different encodings.
@@ -101,7 +102,9 @@ private:
 };
 
 
+} // encoder
+} // utility
 } // vmime
 
 
-#endif // VMIME_ENCODER_HPP_INCLUDED
+#endif // VMIME_UTILITY_ENCODER_ENCODER_HPP_INCLUDED

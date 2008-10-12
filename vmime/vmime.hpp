@@ -66,7 +66,7 @@
 #include "vmime/parameterizedHeaderField.hpp"
 
 // Encoders
-#include "vmime/encoderFactory.hpp"
+#include "vmime/utility/encoder/encoderFactory.hpp"
 
 // Message builder/parser
 #include "vmime/messageBuilder.hpp"

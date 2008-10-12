@@ -21,16 +21,32 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#include "vmime/encoder7bit.hpp"
+#ifndef VMIME_UTILITY_ENCODER_BINARYENCODER_HPP_INCLUDED
+#define VMIME_UTILITY_ENCODER_BINARYENCODER_HPP_INCLUDED
 
 
-namespace vmime
+#include "vmime/utility/encoder/defaultEncoder.hpp"
+
+
+namespace vmime {
+namespace utility {
+namespace encoder {
+
+
+/** Binary encoder.
+  */
+
+class binaryEncoder : public defaultEncoder
 {
+public:
+
+	binaryEncoder();
+};
 
 
-encoder7bit::encoder7bit()
-{
-}
-
-
+} // encoder
+} // utility
 } // vmime
+
+
+#endif // VMIME_UTILITY_ENCODER_BINARYENCODER_HPP_INCLUDED

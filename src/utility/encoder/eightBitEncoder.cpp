@@ -21,39 +21,19 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#ifndef VMIME_ENCODERQP_HPP_INCLUDED
-#define VMIME_ENCODERQP_HPP_INCLUDED
+#include "vmime/utility/encoder/eightBitEncoder.hpp"
 
 
-#include "vmime/encoder.hpp"
+namespace vmime {
+namespace utility {
+namespace encoder {
 
 
-namespace vmime
+eightBitEncoder::eightBitEncoder()
 {
+}
 
 
-/** Quoted-printable encoder.
-  */
-
-class encoderQP : public encoder
-{
-public:
-
-	encoderQP();
-
-	utility::stream::size_type encode(utility::inputStream& in, utility::outputStream& out, utility::progressListener* progress = NULL);
-	utility::stream::size_type decode(utility::inputStream& in, utility::outputStream& out, utility::progressListener* progress = NULL);
-
-	const std::vector <string> getAvailableProperties() const;
-
-protected:
-
-	static const unsigned char sm_hexDigits[17];
-	static const unsigned char sm_hexDecodeTable[256];
-};
-
-
+} // encoder
+} // utility
 } // vmime
-
-
-#endif // VMIME_ENCODERQP_HPP_INCLUDED

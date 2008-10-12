@@ -21,20 +21,21 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#include "vmime/encoderB64.hpp"
+#include "vmime/utility/encoder/b64Encoder.hpp"
 #include "vmime/parserHelpers.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
+namespace utility {
+namespace encoder {
 
 
-encoderB64::encoderB64()
+b64Encoder::b64Encoder()
 {
 }
 
 
-const std::vector <string> encoderB64::getAvailableProperties() const
+const std::vector <string> b64Encoder::getAvailableProperties() const
 {
 	std::vector <string> list(encoder::getAvailableProperties());
 
@@ -45,10 +46,10 @@ const std::vector <string> encoderB64::getAvailableProperties() const
 
 
 // 7-bits alphabet used to encode binary data
-const unsigned char encoderB64::sm_alphabet[] =
+const unsigned char b64Encoder::sm_alphabet[] =
 	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
 
-const unsigned char encoderB64::sm_decodeMap[256] =
+const unsigned char b64Encoder::sm_decodeMap[256] =
 {
 	0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,  // 0x00 - 0x0f
 	0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,  // 0x10 - 0x1f
@@ -74,7 +75,7 @@ const unsigned char encoderB64::sm_decodeMap[256] =
 
 
 
-utility::stream::size_type encoderB64::encode(utility::inputStream& in,
+utility::stream::size_type b64Encoder::encode(utility::inputStream& in,
 	utility::outputStream& out, utility::progressListener* progress)
 {
 	in.reset();  // may not work...
@@ -189,7 +190,7 @@ utility::stream::size_type encoderB64::encode(utility::inputStream& in,
 }
 
 
-utility::stream::size_type encoderB64::decode(utility::inputStream& in,
+utility::stream::size_type b64Encoder::decode(utility::inputStream& in,
 	utility::outputStream& out, utility::progressListener* progress)
 {
 	in.reset();  // may not work...
@@ -302,4 +303,6 @@ utility::stream::size_type encoderB64::decode(utility::inputStream& in,
 }
 
 
+} // encoder
+} // utility
 } // vmime

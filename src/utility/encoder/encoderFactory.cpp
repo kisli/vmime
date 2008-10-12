@@ -21,30 +21,31 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#include "vmime/encoderFactory.hpp"
+#include "vmime/utility/encoder/encoderFactory.hpp"
 #include "vmime/exception.hpp"
 
-#include "vmime/encoderB64.hpp"
-#include "vmime/encoderQP.hpp"
-#include "vmime/encoderUUE.hpp"
-#include "vmime/encoderBinary.hpp"
-#include "vmime/encoder7bit.hpp"
-#include "vmime/encoder8bit.hpp"
+#include "vmime/utility/encoder/b64Encoder.hpp"
+#include "vmime/utility/encoder/qpEncoder.hpp"
+#include "vmime/utility/encoder/uuEncoder.hpp"
+#include "vmime/utility/encoder/binaryEncoder.hpp"
+#include "vmime/utility/encoder/sevenBitEncoder.hpp"
+#include "vmime/utility/encoder/eightBitEncoder.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
+namespace utility {
+namespace encoder {
 
 
 encoderFactory::encoderFactory()
 {
 	// Register some default encoders
-	registerName <encoderB64>("base64");
-	registerName <encoderQP>("quoted-printable");
-	registerName <encoderUUE>("uuencode");
-	registerName <encoder7bit>("7bit");
-	registerName <encoder8bit>("8bit");
-	registerName <encoderBinary>("binary");
+	registerName <b64Encoder>("base64");
+	registerName <qpEncoder>("quoted-printable");
+	registerName <uuEncoder>("uuencode");
+	registerName <sevenBitEncoder>("7bit");
+	registerName <eightBitEncoder>("8bit");
+	registerName <binaryEncoder>("binary");
 }
 
 
@@ -107,4 +108,6 @@ const std::vector <ref <const encoderFactory::registeredEncoder> > encoderFactor
 }
 
 
+} // encoder
+} // utility
 } // vmime

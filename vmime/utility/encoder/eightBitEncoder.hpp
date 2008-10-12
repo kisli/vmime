@@ -21,50 +21,32 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#include "vmime/encoderDefault.hpp"
+#ifndef VMIME_UTILITY_ENCODER_EIGHTBITENCODER_HPP_INCLUDED
+#define VMIME_UTILITY_ENCODER_EIGHTBITENCODER_HPP_INCLUDED
 
 
-namespace vmime
+#include "vmime/utility/encoder/defaultEncoder.hpp"
+
+
+namespace vmime {
+namespace utility {
+namespace encoder {
+
+
+/** 8-bit encoder.
+  */
+
+class eightBitEncoder : public defaultEncoder
 {
+public:
+
+	eightBitEncoder();
+};
 
 
-encoderDefault::encoderDefault()
-{
-}
-
-
-utility::stream::size_type encoderDefault::encode(utility::inputStream& in,
-	utility::outputStream& out, utility::progressListener* progress)
-{
-	in.reset();  // may not work...
-
-	// No encoding performed
-	utility::stream::size_type res = 0;
-
-	if (progress)
-		res = utility::bufferedStreamCopy(in, out, 0, progress);
-	else
-		res = utility::bufferedStreamCopy(in, out);
-
-	return res;
-}
-
-
-utility::stream::size_type encoderDefault::decode(utility::inputStream& in,
-	utility::outputStream& out, utility::progressListener* progress)
-{
-	in.reset();  // may not work...
-
-	// No decoding performed
-	utility::stream::size_type res = 0;
-
-	if (progress)
-		res = utility::bufferedStreamCopy(in, out, 0, progress);
-	else
-		res = utility::bufferedStreamCopy(in, out);
-
-	return res;
-}
-
-
+} // encoder
+} // utility
 } // vmime
+
+
+#endif // VMIME_UTILITY_ENCODER_EIGHTBITENCODER_HPP_INCLUDED

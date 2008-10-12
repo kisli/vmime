@@ -32,7 +32,13 @@ namespace vmime
 {
 
 
+namespace utility {
+namespace encoder {
+
 class encoder;
+
+} // encoder
+} // utility
 
 
 /** Encodes words following RFC-2047.
@@ -83,7 +89,7 @@ private:
 	charset m_charset;
 	Encoding m_encoding;
 
-	ref <encoder> m_encoder;
+	ref <utility::encoder::encoder> m_encoder;
 };
 
 

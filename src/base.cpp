@@ -26,9 +26,9 @@
 #include "vmime/charset.hpp"
 #include "vmime/base.hpp"
 
-#include "vmime/encoder.hpp"
-#include "vmime/encoderB64.hpp"
-#include "vmime/encoderQP.hpp"
+#include "vmime/utility/encoder/encoder.hpp"
+#include "vmime/utility/encoder/b64Encoder.hpp"
+#include "vmime/utility/encoder/qpEncoder.hpp"
 
 #include "vmime/text.hpp"
 
@@ -37,7 +37,7 @@
 #include "vmime/utility/stringUtils.hpp"
 
 // For initializing
-#include "vmime/encoderFactory.hpp"
+#include "vmime/utility/encoder/encoderFactory.hpp"
 #include "vmime/headerFieldFactory.hpp"
 #include "vmime/textPartFactory.hpp"
 #include "vmime/options.hpp"
@@ -140,7 +140,7 @@ public:
 	{
 		options::getInstance();
 
-		encoderFactory::getInstance();
+		utility::encoder::encoderFactory::getInstance();
 		headerFieldFactory::getInstance();
 		textPartFactory::getInstance();
 

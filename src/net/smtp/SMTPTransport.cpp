@@ -26,7 +26,6 @@
 
 #include "vmime/exception.hpp"
 #include "vmime/platform.hpp"
-#include "vmime/encoderB64.hpp"
 #include "vmime/mailboxList.hpp"
 
 #include "vmime/utility/filteredStream.hpp"

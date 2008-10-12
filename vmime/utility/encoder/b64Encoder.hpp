@@ -21,32 +21,42 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#ifndef VMIME_ENCODERDEFAULT_HPP_INCLUDED
-#define VMIME_ENCODERDEFAULT_HPP_INCLUDED
+#ifndef VMIME_UTILITY_ENCODER_B64ENCODER_HPP_INCLUDED
+#define VMIME_UTILITY_ENCODER_B64ENCODER_HPP_INCLUDED
 
 
-#include "vmime/encoder.hpp"
+#include "vmime/utility/encoder/encoder.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
+namespace utility {
+namespace encoder {
 
 
-/** Default encoder (simple copy, no encoding/decoding is performed).
+/** Base64 encoder.
   */
 
-class encoderDefault : public encoder
+class b64Encoder : public encoder
 {
 public:
 
-	encoderDefault();
+	b64Encoder();
 
 	utility::stream::size_type encode(utility::inputStream& in, utility::outputStream& out, utility::progressListener* progress = NULL);
 	utility::stream::size_type decode(utility::inputStream& in, utility::outputStream& out, utility::progressListener* progress = NULL);
+
+	const std::vector <string> getAvailableProperties() const;
+
+protected:
+
+	static const unsigned char sm_alphabet[];
+	static const unsigned char sm_decodeMap[256];
 };
 
 
+} // encoder
+} // utility
 } // vmime
 
 
-#endif // VMIME_ENCODERDEFAUL_HPP_INCLUDED
+#endif // VMIME_UTILITY_ENCODER_B64ENCODER_HPP_INCLUDED

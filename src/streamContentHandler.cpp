@@ -94,8 +94,8 @@ void streamContentHandler::generate(utility::outputStream& os, const vmime::enco
 		// buffer, and then re-encode to output stream...
 		if (m_encoding != enc)
 		{
-			ref <encoder> theDecoder = m_encoding.getEncoder();
-			ref <encoder> theEncoder = enc.getEncoder();
+			ref <utility::encoder::encoder> theDecoder = m_encoding.getEncoder();
+			ref <utility::encoder::encoder> theEncoder = enc.getEncoder();
 
 			theEncoder->getProperties()["maxlinelength"] = maxLineLength;
 
@@ -122,7 +122,7 @@ void streamContentHandler::generate(utility::outputStream& os, const vmime::enco
 	// Need to encode data before
 	else
 	{
-		ref <encoder> theEncoder = enc.getEncoder();
+		ref <utility::encoder::encoder> theEncoder = enc.getEncoder();
 		theEncoder->getProperties()["maxlinelength"] = maxLineLength;
 
 		m_stream->reset();  // may not work...
@@ -151,7 +151,7 @@ void streamContentHandler::extract(utility::outputStream& os,
 	// Need to decode data
 	else
 	{
-		ref <encoder> theDecoder = m_encoding.getEncoder();
+		ref <utility::encoder::encoder> theDecoder = m_encoding.getEncoder();
 
 		m_stream->reset();  // may not work...
 

@@ -21,34 +21,56 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#ifndef VMIME_ENCODERUUE_HPP_INCLUDED
-#define VMIME_ENCODERUUE_HPP_INCLUDED
+#include "vmime/utility/encoder/encoder.hpp"
+#include "vmime/exception.hpp"
 
 
-#include "vmime/encoder.hpp"
+namespace vmime {
+namespace utility {
+namespace encoder {
 
 
-namespace vmime
+encoder::encoder()
 {
+}
 
 
-/** UUEncode encoder.
-  */
-
-class encoderUUE : public encoder
+encoder::~encoder()
 {
-public:
-
-	encoderUUE();
-
-	utility::stream::size_type encode(utility::inputStream& in, utility::outputStream& out, utility::progressListener* progress = NULL);
-	utility::stream::size_type decode(utility::inputStream& in, utility::outputStream& out, utility::progressListener* progress = NULL);
-
-	const std::vector <string> getAvailableProperties() const;
-};
+}
 
 
+const propertySet& encoder::getProperties() const
+{
+	return (m_props);
+}
+
+
+propertySet& encoder::getProperties()
+{
+	return (m_props);
+}
+
+
+const propertySet& encoder::getResults() const
+{
+	return (m_results);
+}
+
+
+propertySet& encoder::getResults()
+{
+	return (m_results);
+}
+
+
+const std::vector <string> encoder::getAvailableProperties() const
+{
+	std::vector <string> list;
+	return (list);
+}
+
+
+} // encoder
+} // utility
 } // vmime
-
-
-#endif // VMIME_ENCODERUUE_HPP_INCLUDED

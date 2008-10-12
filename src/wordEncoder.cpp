@@ -25,8 +25,9 @@
 
 #include "vmime/exception.hpp"
 #include "vmime/charsetConverter.hpp"
-#include "vmime/encoderB64.hpp"
-#include "vmime/encoderQP.hpp"
+
+#include "vmime/utility/encoder/b64Encoder.hpp"
+#include "vmime/utility/encoder/qpEncoder.hpp"
 
 #include "vmime/utility/stringUtils.hpp"
 
@@ -62,11 +63,11 @@ wordEncoder::wordEncoder(const string& buffer, const charset& charset, const Enc
 
 	if (m_encoding == ENCODING_B64)
 	{
-		m_encoder = vmime::create <encoderB64>();
+		m_encoder = vmime::create <utility::encoder::b64Encoder>();
 	}
 	else // ENCODING_QP
 	{
-		m_encoder = vmime::create <encoderQP>();
+		m_encoder = vmime::create <utility::encoder::qpEncoder>();
 		m_encoder->getProperties()["rfc2047"] = true;
 	}
 }
