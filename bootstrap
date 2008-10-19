@@ -6,31 +6,6 @@
 export WANT_AUTOCONF_2_5=1
 export LANG=C
 
-amvers="no"
-
-if automake-1.8 --version >/dev/null 2>&1; then
-  amvers="-1.8"
-#if automake-1.7 --version >/dev/null 2>&1; then
-#  amvers="-1.7"
-#elif automake-1.6 --version >/dev/null 2>&1; then
-#  amvers="-1.6"
-#elif automake-1.5 --version >/dev/null 2>&1; then
-#  amvers="-1.5"
-elif automake --version > /dev/null 2>&1; then
-  amvers="`automake --version | sed -e '1s/[^0-9]*//' -e q`"
-#  if expr "$amvers" "<" "1.5" > /dev/null 2>&1; then
-  if expr "$amvers" "<" "1.8" > /dev/null 2>&1; then
-    amvers="no"
-  else
-    amvers=""
-  fi
-fi
-
-if test "$amvers" = "no"; then
-  echo "$0: you need automake version 1.8 or later"
-  exit 1
-fi
-
 rm -f aclocal.m4 configure config.guess config.log config.sub config.cache config.h.in config.h compile ltmain.sh libtool ltconfig missing mkinstalldirs depcomp install-sh INSTALL
 rm -Rf autom4te.cache
 (mkdir autotools >& /dev/null)
@@ -41,7 +16,7 @@ DIE=0
 echo ""
 
 if test $DIE = 0 ; then
-	echo -n "* Running aclocal...    " ; (aclocal${amvers} -I m4 >& bootstrap.tmpout) \
+	echo -n "* Running aclocal...    " ; (aclocal -I m4 >& bootstrap.tmpout) \
 		&& (echo "[OK]" ; cat bootstrap.tmpout ; rm -f bootstrap.tmpout) \
 		|| (echo "[NO]" ; cat bootstrap.tmpout ; rm -f bootstrap.tmpout ; not_a_command >& /dev/null) || DIE=1
 fi
@@ -65,7 +40,7 @@ if test $DIE = 0 ; then
 fi
 
 if test $DIE = 0 ; then
-	echo -n "* Running automake...   " ; (automake${amvers} --add-missing --copy >& bootstrap.tmpout) \
+	echo -n "* Running automake...   " ; (automake --add-missing --copy >& bootstrap.tmpout) \
 		&& (echo "[OK]" ; cat bootstrap.tmpout ; rm -f bootstrap.tmpout) \
 		|| (echo "[NO]" ; cat bootstrap.tmpout ; rm -f bootstrap.tmpout ; not_a_command >& /dev/null) || DIE=1
 fi
