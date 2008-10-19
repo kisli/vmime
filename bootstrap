@@ -3,7 +3,8 @@
 # Bootstrap file for 'autotools' build
 #
 
-export WANT_AUTOCONF_2_5=1
+export WANT_AUTOCONF="latest"
+export WANT_AUTOMAKE="1.9"
 export LANG=C
 
 rm -f aclocal.m4 configure config.guess config.log config.sub config.cache config.h.in config.h compile ltmain.sh libtool ltconfig missing mkinstalldirs depcomp install-sh INSTALL
@@ -38,6 +39,9 @@ if test $DIE = 0 ; then
 		&& (echo "[OK]" ; cat bootstrap.tmpout ; rm -f bootstrap.tmpout) \
 		|| (echo "[NO]" ; cat bootstrap.tmpout ; rm -f bootstrap.tmpout ; not_a_command >& /dev/null) || DIE=1
 fi
+
+# Bug with automake 1.10?
+touch autotools/config.rpath
 
 if test $DIE = 0 ; then
 	echo -n "* Running automake...   " ; (automake --add-missing --copy >& bootstrap.tmpout) \
