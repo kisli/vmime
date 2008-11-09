@@ -32,6 +32,7 @@
 
 #include <dirent.h>
 
+#include <stdio.h>
 #include <string.h>
 
 #include "vmime/exception.hpp"
