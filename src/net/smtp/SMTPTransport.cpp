@@ -617,8 +617,10 @@ void SMTPTransport::send(const mailbox& expeditor, const mailboxList& recipients
 
 void SMTPTransport::sendRequest(const string& buffer, const bool end)
 {
-	m_socket->send(buffer);
-	if (end) m_socket->send("\r\n");
+	if (end)
+		m_socket->send(buffer + "\r\n");
+	else
+		m_socket->send(buffer);
 }
 
 
