@@ -322,6 +322,9 @@ int datetimeUtils::getWeekOfYear(const int year, const int month, const int day)
 			WeekNumber -= 1;
 	}
 
+	if (WeekNumber == 1 && month == 12)
+		WeekNumber = 53;
+
 	return WeekNumber;
 }
 
