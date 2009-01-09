@@ -427,7 +427,7 @@ void datetime::parse(const string& buffer, const string::size_type position,
 				zone[zoneLength++] = *p;
 				++p;
 			}
-			while (zoneLength < 3 && p < pend && parserHelpers::isDigit(*p));
+			while (zoneLength < 3 && p < pend);
 
 			switch (zone[0])
 			{
@@ -491,6 +491,8 @@ void datetime::parse(const string& buffer, const string::size_type position,
 
 				break;
 			}
+			case 'g':
+			case 'G':
 			case 'u':
 			case 'U':
 			{
