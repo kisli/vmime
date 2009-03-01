@@ -439,9 +439,7 @@ EnsureSConsVersion(0, 94)
 
 SetOption('implicit_cache', 1)
 
-#SourceSignatures('timestamp')
-SourceSignatures('MD5')
-TargetSignatures('build')
+Decider('MD5-timestamp')
 
 
 #############
