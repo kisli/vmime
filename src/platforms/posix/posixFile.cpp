@@ -488,7 +488,9 @@ void posixFileSystemFactory::reportError(const vmime::utility::path& path, const
 	case ENOMEM: desc = "ENOMEM: insufficient kernel memory."; break;
 	case EMFILE: desc = "ENFILE: limit on number of files open by the process has been reached."; break;
 	case ENFILE: desc = "ENFILE: limit on number of files open on the system has been reached."; break;
+#ifndef AIX
 	case ENOTEMPTY: desc = "ENOTEMPTY: directory is not empty."; break;
+#endif
 
 	default:
 
