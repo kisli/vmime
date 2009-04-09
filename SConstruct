@@ -590,7 +590,6 @@ env.Append(CPPPATH = [ '.' ])
 
 env.Append(CPPDEFINES = ['_REENTRANT=1'])
 
-env.Append(CXXFLAGS = ['-pipe'])
 env.Append(CXXFLAGS = ['-W'])
 env.Append(CXXFLAGS = ['-Wall'])
 env.Append(CXXFLAGS = ['-ansi'])
@@ -1831,7 +1830,7 @@ EXTRA_CFLAGS="$EXTRA_CFLAGS $lt_prog_compiler_pic"
 
 """)
 
-	compilerFlags = [ '-pipe', '-ansi', '-pedantic', '-W', '-Wall', '-Wpointer-arith', '-Wold-style-cast', '-Wconversion' ]
+	compilerFlags = [ '-ansi', '-pedantic', '-W', '-Wall', '-Wpointer-arith', '-Wold-style-cast', '-Wconversion' ]
 
 	for f in compilerFlags:
 		configure_in.write('# ' + f + '\n')
