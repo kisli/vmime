@@ -41,6 +41,8 @@ class filteredInputStream : public inputStream
 {
 public:
 
+	virtual size_type getBlockSize();
+
 	/** Return a reference to the stream being filtered.
 	  *
 	  * @return stream being filtered
@@ -55,6 +57,8 @@ public:
 class filteredOutputStream : public outputStream
 {
 public:
+
+	virtual size_type getBlockSize();
 
 	/** Return a reference to the stream being filtered.
 	  *

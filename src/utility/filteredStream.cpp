@@ -30,6 +30,22 @@ namespace vmime {
 namespace utility {
 
 
+// filteredInputStream
+
+stream::size_type filteredInputStream::getBlockSize()
+{
+	return std::min(inputStream::getBlockSize(), getPreviousInputStream().getBlockSize());
+}
+
+
+// filteredOutputStream
+
+stream::size_type filteredOutputStream::getBlockSize()
+{
+	return std::min(outputStream::getBlockSize(), getNextOutputStream().getBlockSize());
+}
+
+
 // dotFilteredInputStream
 
 dotFilteredInputStream::dotFilteredInputStream(inputStream& is)

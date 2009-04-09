@@ -77,7 +77,7 @@ public:
 	  *
 	  * @return block size, in bytes
 	  */
-	virtual size_type getBlockSize() const;
+	virtual size_type getBlockSize();
 };
 
 
@@ -239,6 +239,7 @@ public:
 	void write(const value_type* const data, const size_type count);
 	void flush();
 
+size_type getBlockSize(){return 8192;}
 private:
 
 	string& m_buffer;
@@ -402,7 +403,7 @@ public:
 	void write(const value_type* const data, const size_type count);
 	void flush();
 
-	size_type getBlockSize() const;
+	size_type getBlockSize();
 
 private:
 
@@ -426,7 +427,7 @@ public:
 	size_type read(value_type* const data, const size_type count);
 	size_type skip(const size_type count);
 
-	size_type getBlockSize() const;
+	size_type getBlockSize();
 
 private:
 

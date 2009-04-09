@@ -38,7 +38,7 @@ namespace utility {
 
 // stream
 
-stream::size_type stream::getBlockSize() const
+stream::size_type stream::getBlockSize()
 {
 	return 32768;  // 32 KB
 }
@@ -468,7 +468,7 @@ void outputStreamSocketAdapter::flush()
 }
 
 
-stream::size_type outputStreamSocketAdapter::getBlockSize() const
+stream::size_type outputStreamSocketAdapter::getBlockSize()
 {
 	return 16384;  // 16 KB
 }
@@ -511,7 +511,7 @@ stream::size_type inputStreamSocketAdapter::skip
 }
 
 
-stream::size_type inputStreamSocketAdapter::getBlockSize() const
+stream::size_type inputStreamSocketAdapter::getBlockSize()
 {
 	return 16384;  // 16 KB
 }
