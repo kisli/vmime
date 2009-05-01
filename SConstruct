@@ -1414,8 +1414,8 @@ AC_TRY_COMPILE(
 AC_MSG_CHECKING([if C++ compiler supports dynamic_cast<> (required)])
 AC_TRY_COMPILE(
 [
-   class foo { virtual ~foo() { } };
-   class bar : public foo { };
+   class foo { public: virtual ~foo() { } };
+   class bar : public foo { public: virtual ~bar() { } };
 ],[
    foo *c=0;
    bar *c1=dynamic_cast<bar*>(c);
