@@ -126,7 +126,8 @@ void posixFileWriterOutputStream::write(const value_type* const data, const size
 
 void posixFileWriterOutputStream::flush()
 {
-	::fsync(m_fd);
+	if (::fsync(m_fd) == -1)
+		posixFileSystemFactory::reportError(m_path, errno);
 }
 
 
