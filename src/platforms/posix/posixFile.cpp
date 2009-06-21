@@ -127,8 +127,29 @@ posixFileWriterOutputStream::~posixFileWriterOutputStream()
 
 void posixFileWriterOutputStream::write(const value_type* const data, const size_type count)
 {
-	if (::write(m_fd, data, count) == -1)
-		posixFileSystemFactory::reportError(m_path, errno);
+	const value_type* array = data;
+	size_t size = count;
+
+	while (1)
+	{
+		ssize_t ret = ::write(m_fd, array, size);
+
+		if (ret == -1)
+		{
+			if (errno == EINTR)
+				continue;
+
+			posixFileSystemFactory::reportError(m_path, errno);
+			break;
+		}
+		else if (size_t(ret) < size)
+		{
+			array += ret;
+			size -= ret;
+		}
+
+		break;
+	}
 }
 
 
