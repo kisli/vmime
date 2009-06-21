@@ -25,6 +25,7 @@
 #include "vmime/net/maildir/maildirStore.hpp"
 
 #include "vmime/utility/random.hpp"
+#include "vmime/platform.hpp"
 
 #include "vmime/exception.hpp"
 
@@ -153,6 +154,8 @@ const utility::file::path::component maildirUtils::generateId()
 	oss << utility::random::getProcess();
 	oss << ".";
 	oss << utility::random::getString(6);
+	oss << ".";
+	oss << platform::getHandler()->getHostName();
 
 	return (utility::file::path::component(oss.str()));
 }
