@@ -945,6 +945,8 @@ void maildirFolder::copyMessageImpl(const utility::file::path& tmpDirPath,
 			if (progress)
 				progress->progress(total, size);
 		}
+
+		os->flush();
 	}
 	catch (exception& e)
 	{
