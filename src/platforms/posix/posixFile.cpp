@@ -63,7 +63,10 @@ posixFileIterator::posixFileIterator(const vmime::utility::file::path& path, con
 posixFileIterator::~posixFileIterator()
 {
 	if (m_dir != NULL)
-		::closedir(m_dir);
+	{
+		if (::closedir(m_dir) == -1)
+			posixFileSystemFactory::reportError(m_path, errno);
+	}
 }
 
 
@@ -86,6 +89,8 @@ ref <vmime::utility::file> posixFileIterator::nextElement()
 
 void posixFileIterator::getNextElement()
 {
+	errno = 0;
+
 	while ((m_dirEntry = ::readdir(m_dir)) != NULL)
 	{
 		const char* name = m_dirEntry->d_name;
@@ -97,6 +102,9 @@ void posixFileIterator::getNextElement()
 			break;
 		}
 	}
+
+	if (errno)
+		posixFileSystemFactory::reportError(m_path, errno);
 }
 
 
@@ -144,7 +152,8 @@ posixFileReaderInputStream::posixFileReaderInputStream(const vmime::utility::fil
 
 posixFileReaderInputStream::~posixFileReaderInputStream()
 {
-	::close(m_fd);
+	if (::close(m_fd) == -1)
+		posixFileSystemFactory::reportError(m_path, errno);
 }
 
 
@@ -156,7 +165,8 @@ bool posixFileReaderInputStream::eof() const
 
 void posixFileReaderInputStream::reset()
 {
-	::lseek(m_fd, 0, SEEK_SET);
+	if (::lseek(m_fd, 0, SEEK_SET) == off_t(-1))
+		posixFileSystemFactory::reportError(m_path, errno);
 }
 
 
@@ -178,7 +188,14 @@ vmime::utility::stream::size_type posixFileReaderInputStream::read
 vmime::utility::stream::size_type posixFileReaderInputStream::skip(const size_type count)
 {
 	const off_t curPos = ::lseek(m_fd, 0, SEEK_CUR);
+
+	if (curPos == off_t(-1))
+		posixFileSystemFactory::reportError(m_path, errno);
+
 	const off_t newPos = ::lseek(m_fd, count, SEEK_CUR);
+
+	if (newPos == off_t(-1))
+		posixFileSystemFactory::reportError(m_path, errno);
 
 	return static_cast <size_type>(newPos - curPos);
 }
@@ -246,7 +263,8 @@ void posixFile::createFile()
 	if ((fd = ::open(m_nativePath.c_str(), O_CREAT | O_EXCL | O_WRONLY, 0660)) == -1)
 		posixFileSystemFactory::reportError(m_path, errno);
 
-	::close(fd);
+	if (::close(fd) == -1)
+		posixFileSystemFactory::reportError(m_path, errno);
 }
 
 
@@ -259,32 +277,58 @@ void posixFile::createDirectory(const bool createAll)
 bool posixFile::isFile() const
 {
 	struct stat buf;
-	return (::stat(m_nativePath.c_str(), &buf) == 0 && S_ISREG(buf.st_mode));
+
+	if (::stat(m_nativePath.c_str(), &buf) == -1)
+	{
+		posixFileSystemFactory::reportError(m_path, errno);
+		return false;
+	}
+
+	return S_ISREG(buf.st_mode);
 }
 
 
 bool posixFile::isDirectory() const
 {
 	struct stat buf;
-	return (::stat(m_nativePath.c_str(), &buf) == 0 && S_ISDIR(buf.st_mode));
+
+	if (::stat(m_nativePath.c_str(), &buf) == -1)
+	{
+		posixFileSystemFactory::reportError(m_path, errno);
+		return false;
+	}
+
+	return S_ISDIR(buf.st_mode);
 }
 
 
 bool posixFile::canRead() const
 {
 	struct stat buf;
-	return (::stat(m_nativePath.c_str(), &buf) == 0 &&
-			S_ISREG(buf.st_mode) &&
-			::access(m_nativePath.c_str(), R_OK | F_OK) == 0);
+
+	if (::stat(m_nativePath.c_str(), &buf) == -1)
+	{
+		posixFileSystemFactory::reportError(m_path, errno);
+		return false;
+	}
+
+	return S_ISREG(buf.st_mode) &&
+		::access(m_nativePath.c_str(), R_OK | F_OK) == 0;
 }
 
 
 bool posixFile::canWrite() const
 {
 	struct stat buf;
-	return (::stat(m_nativePath.c_str(), &buf) == 0 &&
-			S_ISREG(buf.st_mode) &&
-			::access(m_nativePath.c_str(), W_OK | F_OK) == 0);
+
+	if (::stat(m_nativePath.c_str(), &buf) == -1)
+	{
+		posixFileSystemFactory::reportError(m_path, errno);
+		return false;
+	}
+
+	return S_ISREG(buf.st_mode) &&
+		::access(m_nativePath.c_str(), W_OK | F_OK) == 0;
 }
 
 
@@ -292,7 +336,7 @@ posixFile::length_type posixFile::getLength()
 {
 	struct stat buf;
 
-	if (::stat(m_nativePath.c_str(), &buf) != 0)
+	if (::stat(m_nativePath.c_str(), &buf) == -1)
 		posixFileSystemFactory::reportError(m_path, errno);
 
 	return static_cast <length_type>(buf.st_size);
@@ -325,7 +369,7 @@ void posixFile::rename(const path& newName)
 {
 	const vmime::string newNativePath = posixFileSystemFactory::pathToStringImpl(newName);
 
-	if (::rename(m_nativePath.c_str(), newNativePath.c_str()) != 0)
+	if (::rename(m_nativePath.c_str(), newNativePath.c_str()) == -1)
 		posixFileSystemFactory::reportError(m_path, errno);
 
 	m_path = newName;
@@ -337,17 +381,17 @@ void posixFile::remove()
 {
 	struct stat buf;
 
-	if (::stat(m_nativePath.c_str(), &buf) != 0)
+	if (::stat(m_nativePath.c_str(), &buf) == -1)
 		posixFileSystemFactory::reportError(m_path, errno);
 
 	if (S_ISDIR(buf.st_mode))
 	{
-		if (::rmdir(m_nativePath.c_str()) != 0)
+		if (::rmdir(m_nativePath.c_str()) == -1)
 			posixFileSystemFactory::reportError(m_path, errno);
 	}
 	else if (S_ISREG(buf.st_mode))
 	{
-		if (::unlink(m_nativePath.c_str()) != 0)
+		if (::unlink(m_nativePath.c_str()) == -1)
 			posixFileSystemFactory::reportError(m_path, errno);
 	}
 }
@@ -386,7 +430,7 @@ void posixFile::createDirectoryImpl(const vmime::utility::file::path& fullPath,
 	if (!path.isEmpty() && recursive)
 		createDirectoryImpl(fullPath, path.getParent(), true);
 
-	if (::mkdir(nativePath.c_str(), 0750) != 0)
+	if (::mkdir(nativePath.c_str(), 0750) == -1)
 		posixFileSystemFactory::reportError(fullPath, errno);
 }
 
