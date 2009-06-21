@@ -292,27 +292,26 @@ ref <security::cert::certificateChain> TLSSocket::getPeerCertificates() const
 	// Try X.509
 	gnutls_x509_crt* x509Certs = new gnutls_x509_crt[certCount];
 
-	unsigned int count = certCount;
-
-	int res = gnutls_x509_crt_list_import
-		(x509Certs, &count, rawData, GNUTLS_X509_FMT_PEM, 0);
-
-	if (res <= 0)
+	for (unsigned int i = 0; i < certCount; ++i)
 	{
-		count = certCount;
+		gnutls_x509_crt_init(x509Certs + i);
 
-		res = gnutls_x509_crt_list_import
-			(x509Certs, &count, rawData, GNUTLS_X509_FMT_DER, 0);
+		int res = gnutls_x509_crt_import(x509Certs[i], rawData + i,
+			GNUTLS_X509_FMT_DER);
+
+		if (res < 0)
+		{
+			// XXX more fine-grained error reporting?
+			delete [] x509Certs;
+			return NULL;
+		}
 	}
 
-	if (res >= 1)
 	{
 		std::vector <ref <security::cert::certificate> > certs;
 		bool error = false;
 
-		count = static_cast <unsigned int>(res);
-
-		for (unsigned int i = 0 ; i < count ; ++i)
+		for (unsigned int i = 0 ; i < certCount ; ++i)
 		{
 			size_t dataSize = 0;
 
