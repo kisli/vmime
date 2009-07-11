@@ -129,18 +129,24 @@ const utility::file::path::component maildirUtils::buildFlags(const int flags)
 const utility::file::path::component maildirUtils::buildFilename
 	(const utility::file::path::component& id, const int flags)
 {
-	return (buildFilename(id, buildFlags(flags)));
+	if (flags == message::FLAG_RECENT)
+		return id;
+	else
+		return (buildFilename(id, buildFlags(flags)));
 }
 
 
 const utility::file::path::component maildirUtils::buildFilename
-	(const utility::file::path::component& id, const utility::file::path::component& flags)
+	(const utility::file::path::component& id,
+	 const utility::file::path::component& flags)
 {
 #if VMIME_BUILTIN_PLATFORM_WINDOWS
-	return (utility::path::component(id.getBuffer() + "-" + flags.getBuffer()));  // use dash
+	static const char DELIMITER[] = "-";
 #else
-	return (utility::path::component(id.getBuffer() + ":" + flags.getBuffer()));  // use colon
+	static const char DELIMITER[] = ":";
 #endif
+
+	return utility::path::component(id.getBuffer() + DELIMITER + flags.getBuffer());
 }
 
 

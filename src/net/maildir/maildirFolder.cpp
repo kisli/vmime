@@ -835,9 +835,12 @@ void maildirFolder::addMessage(utility::inputStream& is, const int size,
 	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
 
 	utility::file::path tmpDirPath = store->getFormat()->
-		folderPathToFileSystemPath(m_path, maildirFormat::TMP_DIRECTORY);
-	utility::file::path curDirPath = store->getFormat()->
-		folderPathToFileSystemPath(m_path, maildirFormat::CUR_DIRECTORY);
+		folderPathToFileSystemPath(m_path,maildirFormat::TMP_DIRECTORY);
+	utility::file::path dstDirPath = store->getFormat()->
+		folderPathToFileSystemPath(m_path,
+			flags == message::FLAG_RECENT ?
+				maildirFormat::NEW_DIRECTORY :
+				maildirFormat::CUR_DIRECTORY);
 
 	const utility::file::path::component filename =
 		maildirUtils::buildFilename(maildirUtils::generateId(),
@@ -855,7 +858,7 @@ void maildirFolder::addMessage(utility::inputStream& is, const int size,
 
 	try
 	{
-		ref <utility::file> curDir = fsf->create(curDirPath);
+		ref <utility::file> curDir = fsf->create(dstDirPath);
 		curDir->createDirectory(true);
 	}
 	catch (exceptions::filesystem_exception&)
@@ -864,7 +867,7 @@ void maildirFolder::addMessage(utility::inputStream& is, const int size,
 	}
 
 	// Actually add the message
-	copyMessageImpl(tmpDirPath, curDirPath, filename, is, size, progress);
+	copyMessageImpl(tmpDirPath, dstDirPath, filename, is, size, progress);
 
 	// Append the message to the cache list
 	messageInfos msgInfos;
@@ -910,7 +913,8 @@ void maildirFolder::addMessage(utility::inputStream& is, const int size,
 
 
 void maildirFolder::copyMessageImpl(const utility::file::path& tmpDirPath,
-	const utility::file::path& curDirPath, const utility::file::path::component& filename,
+	const utility::file::path& dstDirPath,
+	const utility::file::path::component& filename,
 	utility::inputStream& is, const utility::stream::size_type size,
 	utility::progressListener* progress)
 {
@@ -970,7 +974,7 @@ void maildirFolder::copyMessageImpl(const utility::file::path& tmpDirPath,
 	// ...then, move it to 'cur'
 	try
 	{
-		file->rename(curDirPath / filename);
+		file->rename(dstDirPath / filename);
 	}
 	catch (exception& e)
 	{
@@ -980,7 +984,8 @@ void maildirFolder::copyMessageImpl(const utility::file::path& tmpDirPath,
 		// Delete temporary file
 		try
 		{
-			ref <utility::file> file = fsf->create(tmpDirPath / filename);
+			file->remove();
+			ref <utility::file> file = fsf->create(dstDirPath / filename);
 			file->remove();
 		}
 		catch (exceptions::filesystem_exception&)
