@@ -284,6 +284,9 @@ void posixFile::createFile()
 	if ((fd = ::open(m_nativePath.c_str(), O_CREAT | O_EXCL | O_WRONLY, 0660)) == -1)
 		posixFileSystemFactory::reportError(m_path, errno);
 
+	if (::fsync(fd) == -1)
+		posixFileSystemFactory::reportError(m_path, errno);
+
 	if (::close(fd) == -1)
 		posixFileSystemFactory::reportError(m_path, errno);
 }
@@ -389,6 +392,9 @@ ref <vmime::utility::file> posixFile::getParent() const
 void posixFile::rename(const path& newName)
 {
 	const vmime::string newNativePath = posixFileSystemFactory::pathToStringImpl(newName);
+
+	posixFile dest(newName);
+	dest.createFile();
 
 	if (::rename(m_nativePath.c_str(), newNativePath.c_str()) == -1)
 		posixFileSystemFactory::reportError(m_path, errno);
