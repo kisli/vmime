@@ -27,6 +27,7 @@
 #include "vmime/security/digest/sha1/sha1MessageDigest.hpp"
 
 #include <cstring>
+#include <cassert>
 
 
 namespace vmime {
@@ -161,8 +162,8 @@ void sha1MessageDigest::finalize()
 	i = j = 0;
 
 	std::memset(m_buffer, 0, 64);
-	std::memset(m_state, 0, 20);
-	std::memset(m_count, 0, 8);
+	std::memset(m_state, 0, 5 * sizeof(unsigned long));
+	std::memset(m_count, 0, 2 * sizeof(unsigned long));
 	std::memset(&finalcount, 0, 8);
 }
 
@@ -200,6 +201,8 @@ void sha1MessageDigest::transform
 		unsigned char c[64];
 		unsigned long l[16];
 	} CHAR64LONG16;
+
+	assert(sizeof(unsigned long) == 4);
 
 	CHAR64LONG16* block;
 	static unsigned char workspace[64];
