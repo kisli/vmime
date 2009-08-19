@@ -1617,7 +1617,7 @@ AC_ARG_ENABLE(tls,
 
 if test "x$conf_tls" = "xyes"; then
 	# -- GNU TLS Library (http://www.gnu.org/software/gnutls/)
-	AM_PATH_LIBGNUTLS(1.2.0, have_gnutls=yes, have_gnutls=no)
+	PKG_CHECK_MODULES([LIBGNUTLS], [gnutls >= 1.2.0], have_gnutls=yes, have_gnutls=no)
 
 	if test "x$have_gnutls" = "xyes"; then
 		AM_CONDITIONAL(VMIME_HAVE_TLS_SUPPORT, true)
