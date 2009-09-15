@@ -142,6 +142,9 @@ ref <message> messageBuilder::construct() const
 	{
 		const bodyPart& part = *msg->getBody()->getPartAt(0);
 
+		// Make a full copy of the body, otherwise the copyFrom() will delete the body we're copying
+		ref <body> bodyCopy = part.getBody()->clone().dynamicCast <body>();
+
 		// First, copy (and replace) the header fields
 		const std::vector <ref <const headerField> > fields = part.getHeader()->getFieldList();
 
@@ -153,7 +156,7 @@ ref <message> messageBuilder::construct() const
 
 		// Second, copy the body contents and sub-parts (this also remove
 		// the body part we are copying...)
-		msg->getBody()->copyFrom(*part.getBody());
+		msg->getBody()->copyFrom(*bodyCopy);
 	}
 
 	return (msg);
