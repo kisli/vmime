@@ -142,7 +142,7 @@ string::size_type stringUtils::countASCIIchars
 	{
 		if (parserHelpers::isAscii(*i))
 		{
-			if (*i != '=' || *(i + 1) != '?') // To avoid bad behaviour...
+			if (*i != '=' || ((i + 1) != end && *(i + 1) != '?')) // To avoid bad behaviour...
 				++count;
 		}
 	}
