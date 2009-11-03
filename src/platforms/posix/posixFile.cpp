@@ -188,6 +188,8 @@ void posixFileReaderInputStream::reset()
 {
 	if (::lseek(m_fd, 0, SEEK_SET) == off_t(-1))
 		posixFileSystemFactory::reportError(m_path, errno);
+
+	m_eof = false;
 }
 
 
@@ -199,7 +201,7 @@ vmime::utility::stream::size_type posixFileReaderInputStream::read
 	if ((c = ::read(m_fd, data, count)) == -1)
 		posixFileSystemFactory::reportError(m_path, errno);
 
-	if (c == 0)
+	if (c == 0 && count != 0)
 		m_eof = true;
 
 	return static_cast <size_type>(c);
