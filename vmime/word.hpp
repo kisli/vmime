@@ -60,6 +60,12 @@ public:
 	  */
 	string& getBuffer();
 
+	/** Tests whether this word is empty.
+	  *
+	  * @return true if the buffer is empty, false otherwise
+	  */
+	bool isEmpty() const;
+
 	/** Set the raw data for this encoded word.
 	  *
 	  * @param buffer raw data buffer

@@ -699,6 +699,12 @@ string& word::getBuffer()
 }
 
 
+bool word::isEmpty() const
+{
+	return m_buffer.empty();
+}
+
+
 void word::setBuffer(const string& buffer)
 {
 	m_buffer = buffer;

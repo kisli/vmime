@@ -31,48 +31,93 @@
 
 #include "vmime/contentDispositionField.hpp"
 
+#include "vmime/platform.hpp"
+#include "vmime/utility/file.hpp"
+
 
 namespace vmime
 {
 
 
-fileAttachment::fileAttachment(const string& filename, const mediaType& type)
+fileAttachment::fileAttachment(const string& filepath, const mediaType& type)
 {
 	m_type = type;
 
-	setData(filename);
+	setData(filepath);
 
 	m_encoding = encoding::decide(m_data);
 }
 
 
-fileAttachment::fileAttachment(const string& filename, const mediaType& type, const text& desc)
+fileAttachment::fileAttachment(const string& filepath, const mediaType& type, const text& desc)
 {
 	m_type = type;
 	m_desc = desc;
 
-	setData(filename);
+	setData(filepath);
 
 	m_encoding = encoding::decide(m_data);
 }
 
 
-fileAttachment::fileAttachment(const string& filename, const mediaType& type,
+fileAttachment::fileAttachment(const string& filepath, const mediaType& type,
 	const text& desc, const encoding& enc)
 {
 	m_type = type;
 	m_desc = desc;
 
-	setData(filename);
+	setData(filepath);
 
 	m_encoding = enc;
 }
 
 
-void fileAttachment::setData(const string& filename)
+fileAttachment::fileAttachment(ref <utility::inputStream> is, const word& filename, const mediaType& type)
+{
+	if (!filename.isEmpty())
+		m_fileInfo.setFilename(filename);
+
+	m_type = type;
+
+	setData(is);
+
+	m_encoding = encoding::decide(m_data);
+}
+
+
+fileAttachment::fileAttachment(ref <utility::inputStream> is, const word& filename,
+	const mediaType& type, const text& desc)
+{
+	if (!filename.isEmpty())
+		m_fileInfo.setFilename(filename);
+
+	m_type = type;
+	m_desc = desc;
+
+	setData(is);
+
+	m_encoding = encoding::decide(m_data);
+}
+
+
+fileAttachment::fileAttachment(ref <utility::inputStream> is, const word& filename,
+	const mediaType& type, const text& desc, const encoding& enc)
+{
+	if (!filename.isEmpty())
+		m_fileInfo.setFilename(filename);
+
+	m_type = type;
+	m_desc = desc;
+	m_encoding = enc;
+
+	setData(is);
+}
+
+
+void fileAttachment::setData(const string& filepath)
 {
 	std::ifstream* file = new std::ifstream();
-	file->open(filename.c_str(), std::ios::in | std::ios::binary);
+	file->open(filepath.c_str(), std::ios::in | std::ios::binary);
 
 	if (!*file)
 	{
@@ -82,6 +127,15 @@ void fileAttachment::setData(const string& filename)
 
 	ref <utility::inputStream> is = vmime::create <utility::inputStreamPointerAdapter>(file, true);
 
+	setData(is);
+
+	utility::file::path path = platform::getHandler()->getFileSystemFactory()->stringToPath(filepath);
+	m_fileInfo.setFilename(path.getLastComponent());
+}
+
+
+void fileAttachment::setData(ref <utility::inputStream> is)
+{
 	m_data = vmime::create <streamContentHandler>(is, 0);
 }
 
@@ -94,7 +148,7 @@ void fileAttachment::generatePart(ref <bodyPart> part) const
 		dynamicCast <contentDispositionField>();
 
 	if (m_fileInfo.hasSize()) cdf->setSize(utility::stringUtils::toString(m_fileInfo.getSize()));
-	if (m_fileInfo.hasFilename()) cdf->setFilename(m_fileInfo.getFilename());
+	if (m_fileInfo.hasFilename() && !m_fileInfo.getFilename().isEmpty()) cdf->setFilename(m_fileInfo.getFilename());
 	if (m_fileInfo.hasCreationDate()) cdf->setCreationDate(m_fileInfo.getCreationDate());
 	if (m_fileInfo.hasModificationDate()) cdf->setModificationDate(m_fileInfo.getModificationDate());
 	if (m_fileInfo.hasReadDate()) cdf->setReadDate(m_fileInfo.getReadDate());
@@ -134,8 +188,9 @@ fileAttachment::fileInfo::~fileInfo()
 }
 
 bool fileAttachment::fileInfo::hasFilename() const { return (m_filename != NULL); }
-const string& fileAttachment::fileInfo::getFilename() const { return (*m_filename); }
-void fileAttachment::fileInfo::setFilename(const string& name) { if (m_filename) { *m_filename = name; } else { m_filename = new string(name); } }
+const word& fileAttachment::fileInfo::getFilename() const { return (*m_filename); }
+void fileAttachment::fileInfo::setFilename(const string& name) { if (m_filename) { *m_filename = name; } else { m_filename = new word(name); } }
+void fileAttachment::fileInfo::setFilename(const word& name) { if (m_filename) { *m_filename = name; } else { m_filename = new word(name); } }
 
 bool fileAttachment::fileInfo::hasCreationDate() const { return (m_creationDate != NULL); }
 const datetime& fileAttachment::fileInfo::getCreationDate() const { return (*m_creationDate); }
