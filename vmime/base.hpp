@@ -29,6 +29,7 @@
 #include <vector>
 #include <map>
 #include <sstream>
+#include <cctype>
 #include <locale>
 
 #include "vmime/config.hpp"

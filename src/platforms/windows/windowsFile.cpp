@@ -464,7 +464,7 @@ void windowsFileReaderInputStream::reset()
 	SetFilePointer(m_hFile, 0, NULL, FILE_BEGIN);
 }
 
-const vmime::utility::stream::size_type windowsFileReaderInputStream::read(value_type* const data, const size_type count)
+vmime::utility::stream::size_type windowsFileReaderInputStream::read(value_type* const data, const size_type count)
 {
 	DWORD dwBytesRead;
 	if (!ReadFile(m_hFile, (LPVOID)data, (DWORD)count, &dwBytesRead, NULL))
@@ -472,7 +472,7 @@ const vmime::utility::stream::size_type windowsFileReaderInputStream::read(value
 	return dwBytesRead;
 }
 
-const vmime::utility::stream::size_type windowsFileReaderInputStream::skip(const size_type count)
+vmime::utility::stream::size_type windowsFileReaderInputStream::skip(const size_type count)
 {
 	DWORD dwCurPos = SetFilePointer(m_hFile, 0, NULL, FILE_CURRENT);
 	DWORD dwNewPos = SetFilePointer(m_hFile, (LONG)count, NULL, FILE_CURRENT);

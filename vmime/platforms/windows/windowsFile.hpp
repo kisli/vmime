@@ -73,7 +73,7 @@ public:
 	bool canRead() const;
 	bool canWrite() const;
 
-	const length_type getLength();
+	length_type getLength();
 
 	const path& getFullPath() const;
 
