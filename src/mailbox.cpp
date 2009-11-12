@@ -415,7 +415,7 @@ void mailbox::generate(utility::outputStream& os, const string::size_type maxLin
 		bool newLine = true;
 
 		m_name.encodeAndFold(os, maxLineLength, pos, &pos,
-			forceEncode ? text::FORCE_ENCODING : 0);
+			text::QUOTE_IF_POSSIBLE | (forceEncode ? text::FORCE_ENCODING : 0));
 
 		if (pos + m_email.length() + 3 > maxLineLength)
 		{

@@ -197,7 +197,8 @@ public:
 
 		FORCE_NO_ENCODING = (1 << 0),    /**< Just fold lines, don't encode them. */
 		FORCE_ENCODING = (1 << 1),       /**< Encode lines even if they are plain ASCII text. */
-		NO_NEW_LINE_SEQUENCE = (1 << 2)  /**< Use CRLF instead of new-line sequence (CRLF + TAB). */
+		NO_NEW_LINE_SEQUENCE = (1 << 2), /**< Use CRLF instead of new-line sequence (CRLF + TAB). */
+		QUOTE_IF_POSSIBLE = (1 << 3)     /**< Use quoting instead of encoding when possible (even if FORCE_ENCODING is specified). */
 	};
 
 	/** Encode and fold text in respect to RFC-2047.

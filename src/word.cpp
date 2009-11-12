@@ -352,10 +352,22 @@ void word::generate(utility::outputStream& os, const string::size_type maxLineLe
 		noEncoding = false;
 	}
 
-	if (noEncoding)
+	// If possible and requested (with flag), quote the buffer (no folding is performed).
+	// Quoting is possible if and only if:
+	//  - the whole buffer is ASCII-only
+	//  - the buffer does not contain quoting character (")
+	//  - there is enough remaining space on the current line to hold the whole buffer
+	if ((flags & text::QUOTE_IF_POSSIBLE) &&
+	    asciiCount == m_buffer.length() &&
+	    m_buffer.find('"') == string::npos &&
+	    (curLineLength + 2 /* 2 x " */ + m_buffer.length()) < maxLineLength)
 	{
-		// We will fold lines without encoding them.
-
+		os << '"' << m_buffer << '"';
+		curLineLength += 2 + m_buffer.length();
+	}
+	// We will fold lines without encoding them.
+	else if (noEncoding)
+	{
 		string::const_iterator lastWSpos = m_buffer.end(); // last white-space position
 		string::const_iterator curLineStart = m_buffer.begin(); // current line start
 
