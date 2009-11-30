@@ -121,6 +121,12 @@ void windowsSocket::disconnect()
 }
 
 
+windowsSocket::size_type windowsSocket::getBlockSize() const
+{
+	return 16384;  // 16 KB
+}
+
+
 void windowsSocket::receive(vmime::string& buffer)
 {
 	int ret = ::recv(m_desc, m_buffer, sizeof(m_buffer), 0);
@@ -137,7 +143,7 @@ void windowsSocket::receive(vmime::string& buffer)
 }
 
 
-int windowsSocket::receiveRaw(char* buffer, const int count)
+windowsSocket::size_type windowsSocket::receiveRaw(char* buffer, const size_type count)
 {
 	int ret = ::recv(m_desc, buffer, count, 0);
 
@@ -159,7 +165,7 @@ void windowsSocket::send(const vmime::string& buffer)
 }
 
 
-void windowsSocket::sendRaw(const char* buffer, const int count)
+void windowsSocket::sendRaw(const char* buffer, const size_type count)
 {
 	::send(m_desc, buffer, count, 0);
 }

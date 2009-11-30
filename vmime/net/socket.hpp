@@ -41,6 +41,11 @@ public:
 
 	virtual ~socket() { }
 
+	/** Type used for lengths in streams.
+	  */
+	typedef int size_type;
+
+
 	/** Connect to the specified address and port.
 	  *
 	  * @param address server address (this can be a full qualified domain name
@@ -71,7 +76,7 @@ public:
 	  * @param count maximum number of bytes to receive (size of buffer)
 	  * @return number of bytes received/written into output buffer
 	  */
-	virtual int receiveRaw(char* buffer, const int count) = 0;
+	virtual int receiveRaw(char* buffer, const size_type count) = 0;
 
 	/** Send (text) data to the socket.
 	  *
@@ -84,7 +89,14 @@ public:
 	  * @param buffer data to send
 	  * @param count number of bytes to send (size of buffer)
 	  */
-	virtual void sendRaw(const char* buffer, const int count) = 0;
+	virtual void sendRaw(const char* buffer, const size_type count) = 0;
+
+	/** Return the preferred maximum block size when reading
+	  * from or writing to this stream.
+	  *
+	  * @return block size, in bytes
+	  */
+	virtual size_type getBlockSize() const = 0;
 
 protected:
 

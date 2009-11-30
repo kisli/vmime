@@ -718,6 +718,12 @@ ref <session> IMAPConnection::getSession()
 }
 
 
+ref <const socket> IMAPConnection::getSocket() const
+{
+	return m_socket;
+}
+
+
 } // imap
 } // net
 } // vmime

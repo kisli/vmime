@@ -90,6 +90,12 @@ bool TLSSocket::isConnected() const
 }
 
 
+TLSSocket::size_type TLSSocket::getBlockSize() const
+{
+	return 16384;  // 16 KB
+}
+
+
 void TLSSocket::receive(string& buffer)
 {
 	const int size = receiveRaw(m_buffer, sizeof(m_buffer));
@@ -103,7 +109,7 @@ void TLSSocket::send(const string& buffer)
 }
 
 
-int TLSSocket::receiveRaw(char* buffer, const int count)
+TLSSocket::size_type TLSSocket::receiveRaw(char* buffer, const size_type count)
 {
 	const ssize_t ret = gnutls_record_recv
 		(*m_session->m_gnutlsSession,
@@ -124,7 +130,7 @@ int TLSSocket::receiveRaw(char* buffer, const int count)
 }
 
 
-void TLSSocket::sendRaw(const char* buffer, const int count)
+void TLSSocket::sendRaw(const char* buffer, const size_type count)
 {
 	gnutls_record_send
 		(*m_session->m_gnutlsSession,

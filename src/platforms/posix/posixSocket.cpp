@@ -217,6 +217,12 @@ void posixSocket::disconnect()
 }
 
 
+posixSocket::size_type posixSocket::getBlockSize() const
+{
+	return 16384;  // 16 KB
+}
+
+
 void posixSocket::receive(vmime::string& buffer)
 {
 	const int size = receiveRaw(m_buffer, sizeof(m_buffer));
@@ -224,7 +230,7 @@ void posixSocket::receive(vmime::string& buffer)
 }
 
 
-int posixSocket::receiveRaw(char* buffer, const int count)
+posixSocket::size_type posixSocket::receiveRaw(char* buffer, const size_type count)
 {
 	const int ret = ::recv(m_desc, buffer, count, 0);
 
@@ -252,9 +258,9 @@ void posixSocket::send(const vmime::string& buffer)
 }
 
 
-void posixSocket::sendRaw(const char* buffer, const int count)
+void posixSocket::sendRaw(const char* buffer, const size_type count)
 {
-	int size = count;
+	size_type size = count;
 
 	while (size > 0)
 	{

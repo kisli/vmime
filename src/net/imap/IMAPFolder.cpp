@@ -1284,7 +1284,11 @@ void IMAPFolder::addMessage(utility::inputStream& is, const int size, const int 
 	if (progress)
 		progress->start(total);
 
-	char buffer[65536];
+      const socket::size_type blockSize = std::min(is.getBlockSize(),
+		static_cast <size_t>(m_connection->getSocket()->getBlockSize()));
+
+	std::vector <char> vbuffer(blockSize);
+	char* buffer = &vbuffer.front();
 
 	while (!is.eof())
 	{

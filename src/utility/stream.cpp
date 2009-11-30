@@ -470,7 +470,7 @@ void outputStreamSocketAdapter::flush()
 
 stream::size_type outputStreamSocketAdapter::getBlockSize()
 {
-	return 16384;  // 16 KB
+	return m_socket.getBlockSize();
 }
 
 
@@ -513,7 +513,7 @@ stream::size_type inputStreamSocketAdapter::skip
 
 stream::size_type inputStreamSocketAdapter::getBlockSize()
 {
-	return 16384;  // 16 KB
+	return m_socket.getBlockSize();
 }
 
 

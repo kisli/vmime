@@ -69,6 +69,12 @@ bool SASLSocket::isConnected() const
 }
 
 
+SASLSocket::size_type SASLSocket::getBlockSize() const
+{
+	return m_wrapped->getBlockSize();
+}
+
+
 void SASLSocket::receive(string& buffer)
 {
 	const int n = receiveRaw(m_recvBuffer, sizeof(m_recvBuffer));
@@ -77,7 +83,7 @@ void SASLSocket::receive(string& buffer)
 }
 
 
-int SASLSocket::receiveRaw(char* buffer, const int count)
+SASLSocket::size_type SASLSocket::receiveRaw(char* buffer, const size_type count)
 {
 	if (m_pendingLen != 0)
 	{
@@ -141,7 +147,7 @@ void SASLSocket::send(const string& buffer)
 }
 
 
-void SASLSocket::sendRaw(const char* buffer, const int count)
+void SASLSocket::sendRaw(const char* buffer, const size_type count)
 {
 	byte_t* output = 0;
 	int outputLen = 0;

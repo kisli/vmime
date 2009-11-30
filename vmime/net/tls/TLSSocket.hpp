@@ -84,10 +84,12 @@ public:
 	bool isConnected() const;
 
 	void receive(string& buffer);
-	int receiveRaw(char* buffer, const int count);
+	size_type receiveRaw(char* buffer, const size_type count);
 
 	void send(const string& buffer);
-	void sendRaw(const char* buffer, const int count);
+	void sendRaw(const char* buffer, const size_type count);
+
+	size_type getBlockSize() const;
 
 private:
 

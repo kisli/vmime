@@ -96,6 +96,8 @@ public:
 	bool isSecuredConnection() const;
 	ref <connectionInfos> getConnectionInfos() const;
 
+	ref <const socket> getSocket() const;
+
 private:
 
 	void authenticate();

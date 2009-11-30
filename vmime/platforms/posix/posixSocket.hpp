@@ -48,10 +48,12 @@ public:
 	void disconnect();
 
 	void receive(vmime::string& buffer);
-	int receiveRaw(char* buffer, const int count);
+	size_type receiveRaw(char* buffer, const size_type count);
 
 	void send(const vmime::string& buffer);
-	void sendRaw(const char* buffer, const int count);
+	void sendRaw(const char* buffer, const size_type count);
+
+	size_type getBlockSize() const;
 
 protected:
 
