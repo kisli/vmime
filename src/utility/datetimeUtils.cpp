@@ -256,7 +256,7 @@ int datetimeUtils::getDayOfWeek(const int year, const int month, const int day)
 }
 
 
-int datetimeUtils::getWeekOfYear(const int year, const int month, const int day)
+int datetimeUtils::getWeekOfYear(const int year, const int month, const int day, const bool iso)
 {
 	// Algorithm from http://personal.ecu.edu/mccartyr/ISOwdALG.txt
 
@@ -322,7 +322,7 @@ int datetimeUtils::getWeekOfYear(const int year, const int month, const int day)
 			WeekNumber -= 1;
 	}
 
-	if (WeekNumber == 1 && month == 12)
+	if (!iso && (WeekNumber == 1 && month == 12))
 		WeekNumber = 53;
 
 	return WeekNumber;

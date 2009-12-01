@@ -84,9 +84,11 @@ public:
 	  * @param year year in 4-digit format
 	  * @param month month (1-12), January is 1, December is 12 (see datetime::Months enum)
 	  * @param day month day (1-31)
+	  * @param iso if TRUE, use ISO week-numbering year (default is to use calendar year).
+	  * For more information, read here: http://en.wikipedia.org/wiki/ISO_8601#Week_dates
 	  * @return the week number (1 is the first week of the year)
 	  */
-	static int getWeekOfYear(const int year, const int month, const int day);
+	static int getWeekOfYear(const int year, const int month, const int day, const bool iso = false);
 };
 
 

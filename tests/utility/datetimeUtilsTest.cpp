@@ -143,10 +143,11 @@ VMIME_TEST_SUITE_BEGIN
 	{
 		VASSERT_EQ("1.1", 52, datetimeUtils::getWeekOfYear(2003, 12, 27));
 		VASSERT_EQ("1.2", 52, datetimeUtils::getWeekOfYear(2003, 12, 28));
-		VASSERT_EQ("1.3",  1, datetimeUtils::getWeekOfYear(2003, 12, 29));
-		VASSERT_EQ("1.4",  1, datetimeUtils::getWeekOfYear(2004,  1,  4));
-		VASSERT_EQ("1.5",  2, datetimeUtils::getWeekOfYear(2004,  1,  5));
-		VASSERT_EQ("1.6",  2, datetimeUtils::getWeekOfYear(2004,  1, 11));
+		VASSERT_EQ("1.3",  1, datetimeUtils::getWeekOfYear(2003, 12, 29, true));
+		VASSERT_EQ("1.4", 53, datetimeUtils::getWeekOfYear(2003, 12, 29, false));
+		VASSERT_EQ("1.5",  1, datetimeUtils::getWeekOfYear(2004,  1,  4));
+		VASSERT_EQ("1.6",  2, datetimeUtils::getWeekOfYear(2004,  1,  5));
+		VASSERT_EQ("1.7",  2, datetimeUtils::getWeekOfYear(2004,  1, 11));
 
 		VASSERT_EQ("2.1", 52, datetimeUtils::getWeekOfYear(2004, 12, 26));
 		VASSERT_EQ("2.2", 53, datetimeUtils::getWeekOfYear(2004, 12, 27));
