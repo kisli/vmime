@@ -305,3 +305,7 @@ public:
 	vmime::ref <vmime::net::timeoutHandler> create();
 };
 
+
+// Exception helper
+std::ostream& operator<<(std::ostream& os, const vmime::exception& e);
+

@@ -322,12 +322,28 @@ public:
 
 	void testRenameFolder_KMail()
 	{
-		testRenameFolderImpl(TEST_MAILDIR_KMAIL, TEST_MAILDIRFILES_KMAIL);
+		try
+		{
+			testRenameFolderImpl(TEST_MAILDIR_KMAIL, TEST_MAILDIRFILES_KMAIL);
+		}
+		catch (vmime::exception& e)
+		{
+			std::cerr << e;
+			throw e;
+		}
 	}
 
 	void testRenameFolder_Courier()
 	{
-		testRenameFolderImpl(TEST_MAILDIR_COURIER, TEST_MAILDIRFILES_COURIER);
+		try
+		{
+			testRenameFolderImpl(TEST_MAILDIR_COURIER, TEST_MAILDIRFILES_COURIER);
+		}
+		catch (vmime::exception& e)
+		{
+			std::cerr << e;
+			throw e;
+		}
 	}
 
 	void testRenameFolderImpl(const vmime::string* const dirs, const vmime::string* const files)

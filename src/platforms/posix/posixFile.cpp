@@ -396,7 +396,11 @@ void posixFile::rename(const path& newName)
 	const vmime::string newNativePath = posixFileSystemFactory::pathToStringImpl(newName);
 
 	posixFile dest(newName);
-	dest.createFile();
+
+	if (isDirectory())
+		dest.createDirectory();
+	else
+		dest.createFile();
 
 	if (::rename(m_nativePath.c_str(), newNativePath.c_str()) == -1)
 		posixFileSystemFactory::reportError(m_path, errno);
