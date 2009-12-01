@@ -216,6 +216,8 @@ public:
 	int receiveRaw(char* buffer, const int count);
 	void sendRaw(const char* buffer, const int count);
 
+	size_type getBlockSize() const;
+
 	/** Send data to client.
 	  *
 	  * @buffer data to send

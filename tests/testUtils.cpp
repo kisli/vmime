@@ -51,6 +51,12 @@ bool testSocket::isConnected() const
 }
 
 
+testSocket::size_type testSocket::getBlockSize() const
+{
+	return 16384;
+}
+
+
 void testSocket::receive(vmime::string& buffer)
 {
 	buffer = m_inBuffer;
