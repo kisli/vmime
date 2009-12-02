@@ -432,7 +432,7 @@ public:
 
 #ifndef VMIME_INLINE_TEMPLATE_SPECIALIZATION
 
-template <> void propertySet::property::setValue(const string& value);
+template <> void propertySet::property::setValue <string>(const string& value);
 template <> void propertySet::property::setValue(const bool& value);
 
 template <> string propertySet::property::getValue() const;
