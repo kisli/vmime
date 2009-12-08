@@ -85,7 +85,7 @@ public:
 /** Create 'childProcess' objects.
   */
 
-class childProcessFactory
+class childProcessFactory : public object
 {
 public:
 

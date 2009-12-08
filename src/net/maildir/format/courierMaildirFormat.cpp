@@ -49,7 +49,7 @@ const string courierMaildirFormat::getName() const
 
 void courierMaildirFormat::createFolder(const folder::path& path)
 {
-	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
+	ref <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
 	if (!fsf->isValidPath(folderPathToFileSystemPath(path, ROOT_DIRECTORY)))
 		throw exceptions::invalid_folder_name();
@@ -80,7 +80,7 @@ void courierMaildirFormat::createFolder(const folder::path& path)
 
 void courierMaildirFormat::destroyFolder(const folder::path& path)
 {
-	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
+	ref <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
 	// Recursively delete directories of subfolders
 	const std::vector <folder::path> folders = listFolders(path, true);
@@ -119,7 +119,7 @@ void courierMaildirFormat::renameFolder
 void courierMaildirFormat::renameFolderImpl
 	(const folder::path& oldPath, const folder::path& newPath)
 {
-	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
+	ref <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
 	const utility::file::path oldFSPath =
 		folderPathToFileSystemPath(oldPath, ROOT_DIRECTORY);
@@ -134,7 +134,7 @@ void courierMaildirFormat::renameFolderImpl
 
 bool courierMaildirFormat::folderExists(const folder::path& path) const
 {
-	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
+	ref <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
 	ref <utility::file> rootDir = fsf->create
 		(folderPathToFileSystemPath(path, ROOT_DIRECTORY));
@@ -254,7 +254,7 @@ const std::vector <folder::path> courierMaildirFormat::listFolders
 bool courierMaildirFormat::listDirectories(const folder::path& root,
 	std::vector <string>& dirs, const bool onlyTestForExistence) const
 {
-	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
+	ref <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
 	ref <utility::file> rootDir = fsf->create
 		(getContext()->getStore()->getFileSystemPath());
@@ -496,7 +496,7 @@ const folder::path::component courierMaildirFormat::fromModifiedUTF7(const strin
 
 bool courierMaildirFormat::supports() const
 {
-	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
+	ref <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
 	ref <utility::file> rootDir = fsf->create
 		(getContext()->getStore()->getFileSystemPath());

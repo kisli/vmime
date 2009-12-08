@@ -49,7 +49,7 @@ const string kmailMaildirFormat::getName() const
 
 void kmailMaildirFormat::createFolder(const folder::path& path)
 {
-	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
+	ref <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
 	if (!fsf->isValidPath(folderPathToFileSystemPath(path, ROOT_DIRECTORY)))
 		throw exceptions::invalid_folder_name();
@@ -75,7 +75,7 @@ void kmailMaildirFormat::createFolder(const folder::path& path)
 void kmailMaildirFormat::destroyFolder(const folder::path& path)
 {
 	// Delete 'folder' and '.folder.directory' directories
-	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
+	ref <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
 	maildirUtils::recursiveFSDelete(fsf->create
 		(folderPathToFileSystemPath(path, ROOT_DIRECTORY)));  // root
@@ -87,7 +87,7 @@ void kmailMaildirFormat::destroyFolder(const folder::path& path)
 
 bool kmailMaildirFormat::folderExists(const folder::path& path) const
 {
-	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
+	ref <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
 	ref <utility::file> rootDir = fsf->create
 		(folderPathToFileSystemPath(path, ROOT_DIRECTORY));
@@ -177,7 +177,7 @@ const std::vector <folder::path> kmailMaildirFormat::listFolders
 void kmailMaildirFormat::listFoldersImpl
 	(std::vector <folder::path>& list, const folder::path& root, const bool recursive) const
 {
-	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
+	ref <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
 	ref <utility::file> rootDir = fsf->create(folderPathToFileSystemPath(root,
 		root.isEmpty() ? ROOT_DIRECTORY : CONTAINER_DIRECTORY));
@@ -226,7 +226,7 @@ bool kmailMaildirFormat::isSubfolderDirectory(const utility::file& file)
 
 void kmailMaildirFormat::renameFolder(const folder::path& oldPath, const folder::path& newPath)
 {
-	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
+	ref <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
 	ref <utility::file> rootDir = fsf->create
 		(folderPathToFileSystemPath(oldPath, ROOT_DIRECTORY));
@@ -277,7 +277,7 @@ void kmailMaildirFormat::renameFolder(const folder::path& oldPath, const folder:
 
 bool kmailMaildirFormat::folderHasSubfolders(const folder::path& path) const
 {
-	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
+	ref <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
 	ref <utility::file> rootDir = fsf->create
 		(folderPathToFileSystemPath(path, CONTAINER_DIRECTORY));

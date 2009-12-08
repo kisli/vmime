@@ -501,7 +501,7 @@ private:
 
 	const vmime::utility::url getStoreURL()
 	{
-		vmime::utility::fileSystemFactory* fsf =
+		vmime::ref <vmime::utility::fileSystemFactory> fsf =
 			vmime::platform::getHandler()->getFileSystemFactory();
 
 		vmime::utility::url url(std::string("maildir://localhost")
@@ -512,7 +512,7 @@ private:
 
 	void createMaildir(const vmime::string* const dirs, const vmime::string* const files)
 	{
-		vmime::utility::fileSystemFactory* fsf =
+		vmime::ref <vmime::utility::fileSystemFactory> fsf =
 			vmime::platform::getHandler()->getFileSystemFactory();
 
 		vmime::ref <vmime::utility::file> rootDir = fsf->create(m_tempPath);
@@ -544,7 +544,7 @@ private:
 
 	void destroyMaildir()
 	{
-		vmime::utility::fileSystemFactory* fsf =
+		vmime::ref <vmime::utility::fileSystemFactory> fsf =
 			vmime::platform::getHandler()->getFileSystemFactory();
 
 		recursiveDelete(fsf->create(m_tempPath));

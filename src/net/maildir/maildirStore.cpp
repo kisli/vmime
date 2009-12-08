@@ -132,7 +132,7 @@ void maildirStore::connect()
 		throw exceptions::already_connected();
 
 	// Get root directory
-	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
+	ref <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
 	m_fsPath = fsf->stringToPath(GET_PROPERTY(string, PROPERTY_SERVER_ROOTPATH));
 

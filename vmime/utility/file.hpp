@@ -214,7 +214,7 @@ private:
 /** Constructs 'file' objects.
   */
 
-class fileSystemFactory
+class fileSystemFactory : public object
 {
 public:
 

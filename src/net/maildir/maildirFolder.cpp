@@ -264,7 +264,7 @@ void maildirFolder::scanFolder()
 		m_messageCount = 0;
 		m_unreadMessageCount = 0;
 
-		utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
+		ref <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
 		utility::file::path newDirPath = store->getFormat()->folderPathToFileSystemPath
 			(m_path, maildirFormat::NEW_DIRECTORY);
@@ -760,7 +760,7 @@ void maildirFolder::setMessageFlagsImpl
 {
 	ref <maildirStore> store = m_store.acquire();
 
-	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
+	ref <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
 	utility::file::path curDirPath = store->getFormat()->
 		folderPathToFileSystemPath(m_path, maildirFormat::CUR_DIRECTORY);
@@ -832,7 +832,7 @@ void maildirFolder::addMessage(utility::inputStream& is, const int size,
 	else if (m_mode == MODE_READ_ONLY)
 		throw exceptions::illegal_state("Folder is read-only");
 
-	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
+	ref <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
 	utility::file::path tmpDirPath = store->getFormat()->
 		folderPathToFileSystemPath(m_path,maildirFormat::TMP_DIRECTORY);
@@ -918,7 +918,7 @@ void maildirFolder::copyMessageImpl(const utility::file::path& tmpDirPath,
 	utility::inputStream& is, const utility::stream::size_type size,
 	utility::progressListener* progress)
 {
-	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
+	ref <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
 	ref <utility::file> file = fsf->create(tmpDirPath / filename);
 
@@ -1058,7 +1058,7 @@ void maildirFolder::copyMessagesImpl(const folder::path& dest, const std::vector
 {
 	ref <maildirStore> store = m_store.acquire();
 
-	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
+	ref <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
 	utility::file::path curDirPath = store->getFormat()->folderPathToFileSystemPath
 		(m_path, maildirFormat::CUR_DIRECTORY);
@@ -1200,7 +1200,7 @@ void maildirFolder::expunge()
 	else if (m_mode == MODE_READ_ONLY)
 		throw exceptions::illegal_state("Folder is read-only");
 
-	utility::fileSystemFactory* fsf = platform::getHandler()->getFileSystemFactory();
+	ref <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
 	utility::file::path curDirPath = store->getFormat()->
 		folderPathToFileSystemPath(m_path, maildirFormat::CUR_DIRECTORY);

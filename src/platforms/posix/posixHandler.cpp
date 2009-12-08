@@ -55,18 +55,14 @@ posixHandler::posixHandler()
 	m_socketFactory = vmime::create <posixSocketFactory>();
 #endif
 #if VMIME_HAVE_FILESYSTEM_FEATURES
-	m_fileSysFactory = new posixFileSystemFactory();
-	m_childProcFactory = new posixChildProcessFactory();
+	m_fileSysFactory = vmime::create <posixFileSystemFactory>();
+	m_childProcFactory = vmime::create <posixChildProcessFactory>();
 #endif
 }
 
 
 posixHandler::~posixHandler()
 {
-#if VMIME_HAVE_FILESYSTEM_FEATURES
-	delete (m_fileSysFactory);
-	delete (m_childProcFactory);
-#endif
 }
 
 
@@ -173,9 +169,9 @@ unsigned int posixHandler::getProcessId() const
 
 #if VMIME_HAVE_MESSAGING_FEATURES
 
-ref <vmime::net::socketFactory> posixHandler::getSocketFactory() const
+ref <vmime::net::socketFactory> posixHandler::getSocketFactory()
 {
-	return m_socketFactory.dynamicCast <vmime::net::socketFactory>();
+	return m_socketFactory;
 }
 
 #endif
@@ -183,15 +179,15 @@ ref <vmime::net::socketFactory> posixHandler::getSocketFactory() const
 
 #if VMIME_HAVE_FILESYSTEM_FEATURES
 
-vmime::utility::fileSystemFactory* posixHandler::getFileSystemFactory() const
+ref <vmime::utility::fileSystemFactory> posixHandler::getFileSystemFactory()
 {
-	return (m_fileSysFactory);
+	return m_fileSysFactory;
 }
 
 
-vmime::utility::childProcessFactory* posixHandler::getChildProcessFactory() const
+ref <vmime::utility::childProcessFactory> posixHandler::getChildProcessFactory()
 {
-	return (m_childProcFactory);
+	return m_childProcFactory;
 }
 
 #endif
