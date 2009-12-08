@@ -24,6 +24,13 @@
 #include <gnutls/gnutls.h>
 #include <gnutls/extra.h>
 
+#include "vmime/config.hpp"
+
+#if VMIME_HAVE_PTHREAD
+#	include <gcrypt.h>
+#	include <errno.h>
+#endif // VMIME_HAVE_PTHREAD
+
 #include "vmime/net/tls/TLSSession.hpp"
 
 #include "vmime/exception.hpp"
@@ -38,6 +45,14 @@
 #endif // VMIME_DEBUG && GNUTLS_DEBUG
 
 
+#if VMIME_HAVE_PTHREAD && defined(GCRY_THREAD_OPTION_PTHREAD_IMPL)
+extern "C"
+{
+	GCRY_THREAD_OPTION_PTHREAD_IMPL;
+}
+#endif // VMIME_HAVE_PTHREAD && defined(GCRY_THREAD_OPTION_PTHREAD_IMPL
+
+
 namespace vmime {
 namespace net {
 namespace tls {
@@ -50,6 +65,10 @@ struct TLSGlobal
 {
 	TLSGlobal()
 	{
+#if VMIME_HAVE_PTHREAD && defined(GCRY_THREAD_OPTION_PTHREAD_IMPL)
+		gcry_control(GCRYCTL_SET_THREAD_CBS, &gcry_threads_pthread);
+#endif // VMIME_HAVE_PTHREAD && defined(GCRY_THREAD_OPTION_PTHREAD_IMPL
+
 		gnutls_global_init();
 		//gnutls_global_init_extra();
 
