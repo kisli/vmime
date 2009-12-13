@@ -54,11 +54,17 @@ ref <message> messageBuilder::construct() const
 	if (m_from.isEmpty())
 		throw exceptions::no_expeditor();
 
-	if (m_to.isEmpty() || m_to.getAddressAt(0)->isEmpty())
+	if ((m_to.isEmpty() || m_to.getAddressAt(0)->isEmpty()) &&
+	    (m_cc.isEmpty() || m_cc.getAddressAt(0)->isEmpty()) &&
+	    (m_bcc.isEmpty() || m_bcc.getAddressAt(0)->isEmpty()))
+	{
 		throw exceptions::no_recipient();
+	}
 
 	msg->getHeader()->From()->setValue(m_from);
-	msg->getHeader()->To()->setValue(m_to);
+
+	if (!m_to.isEmpty())
+		msg->getHeader()->To()->setValue(m_to);
 
 	if (!m_cc.isEmpty())
 		msg->getHeader()->Cc()->setValue(m_cc);
