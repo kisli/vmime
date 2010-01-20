@@ -231,8 +231,8 @@ void CRLFToLFFilteredOutputStream::write
 
 		if (previousChar == '\r')
 		{
-			if (pos != data)
-				m_stream.write(start, pos - 1 - data);  // do not write \r
+			if (pos != start)
+				m_stream.write(start, pos - 1 - start);  // do not write \r
 
 			m_stream.write("\n", 1);
 

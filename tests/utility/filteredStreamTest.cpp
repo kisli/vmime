@@ -175,6 +175,7 @@ VMIME_TEST_SUITE_BEGIN
 		testFilteredOutputStreamHelper<FILTER>("4", "foo\nbar", "foo", "\r\nbar");
 		testFilteredOutputStreamHelper<FILTER>("5", "foo\nbar", "foo", "\r", "\nbar");
 		testFilteredOutputStreamHelper<FILTER>("6", "foo\nbar", "foo", "\r", "\n", "bar");
+		testFilteredOutputStreamHelper<FILTER>("7", "foo\nba\nr", "foo\r", "\nba\r\nr");
 	}
 
 	// stopSequenceFilteredInputStream
