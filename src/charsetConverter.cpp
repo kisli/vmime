@@ -53,6 +53,27 @@ extern "C"
 }
 
 
+
+// Output replacement char when an invalid sequence is encountered
+template <typename OUTPUT_CLASS, typename ICONV_DESC>
+void outputInvalidChar(OUTPUT_CLASS& out, ICONV_DESC cd)
+{
+	const char* invalidCharIn = "?";
+	size_t invalidCharInLen = 1;
+
+	char invalidCharOutBuffer[16];
+	char* invalidCharOutPtr = invalidCharOutBuffer;
+	size_t invalidCharOutLen = 16;
+
+	if (iconv(cd, ICONV_HACK(&invalidCharIn), &invalidCharInLen,
+		&invalidCharOutPtr, &invalidCharOutLen) != static_cast <size_t>(-1))
+	{
+		out.write(invalidCharOutBuffer, 16 - invalidCharOutLen);
+	}
+}
+
+
+
 namespace vmime
 {
 
@@ -121,18 +142,7 @@ void charsetConverter::convert(utility::inputStream& in, utility::outputStream& 
 
 				// Output a special character to indicate we don't known how to
 				// convert the sequence at this position
-				const char* invalidCharIn = "?";
-				size_t invalidCharInLen = 1;
-
-				char invalidCharOutBuffer[16];
-				char* invalidCharOutPtr = invalidCharOutBuffer;
-				size_t invalidCharOutLen = 16;
-
-				if (iconv(cd, ICONV_HACK(&invalidCharIn), &invalidCharInLen,
-					&invalidCharOutPtr, &invalidCharOutLen) != static_cast <size_t>(-1))
-				{
-					out.write(invalidCharOutBuffer, 16 - invalidCharOutLen);
-				}
+				outputInvalidChar(out, cd);
 
 				// Skip a byte and leave unconverted bytes in the input buffer
 				std::copy(const_cast <char*>(inPtr + 1), inBuffer + sizeof(inBuffer), inBuffer);
@@ -246,7 +256,7 @@ void charsetFilteredOutputStream::write
 			// character and skip one byte in the invalid sequence.
 			if (m_unconvCount >= sizeof(m_unconvBuffer))
 			{
-				m_stream.write("?", 1);
+				outputInvalidChar(m_stream, cd);
 
 				std::copy(m_unconvBuffer + 1,
 					m_unconvBuffer + m_unconvCount, m_unconvBuffer);
@@ -369,7 +379,7 @@ void charsetFilteredOutputStream::flush()
 			// Skip a "blocking" character
 			if (inputConverted == 0)
 			{
-				m_stream.write("?", 1);
+				outputInvalidChar(m_stream, cd);
 
 				offset++;
 				m_unconvCount--;
