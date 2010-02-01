@@ -55,7 +55,7 @@ public:
 
 	private:
 
-		ref <maildirStore> m_store;
+		weak_ref <maildirStore> m_store;
 	};
 
 

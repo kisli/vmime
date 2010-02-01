@@ -52,7 +52,7 @@ maildirFormat::context::context(ref <maildirStore> store)
 
 ref <maildirStore> maildirFormat::context::getStore() const
 {
-	return m_store;
+	return m_store.acquire().constCast <maildirStore>();
 }
 
 
