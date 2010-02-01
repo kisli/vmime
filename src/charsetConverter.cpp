@@ -121,7 +121,18 @@ void charsetConverter::convert(utility::inputStream& in, utility::outputStream& 
 
 				// Output a special character to indicate we don't known how to
 				// convert the sequence at this position
-				out.write("?", 1);
+				const char* invalidCharIn = "?";
+				size_t invalidCharInLen = 1;
+
+				char invalidCharOutBuffer[16];
+				char* invalidCharOutPtr = invalidCharOutBuffer;
+				size_t invalidCharOutLen = 16;
+
+				if (iconv(cd, ICONV_HACK(&invalidCharIn), &invalidCharInLen,
+					&invalidCharOutPtr, &invalidCharOutLen) != static_cast <size_t>(-1))
+				{
+					out.write(invalidCharOutBuffer, 16 - invalidCharOutLen);
+				}
 
 				// Skip a byte and leave unconverted bytes in the input buffer
 				std::copy(const_cast <char*>(inPtr + 1), inBuffer + sizeof(inBuffer), inBuffer);
