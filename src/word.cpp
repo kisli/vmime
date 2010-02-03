@@ -475,7 +475,7 @@ void word::generate(utility::outputStream& os, const string::size_type maxLineLe
 
 				os << string(curLineStart, lastWSpos);
 
-				if (lastWSpos > curLineStart && std::isspace(*(lastWSpos - 1)))
+				if (lastWSpos > curLineStart && parserHelpers::isSpace(*(lastWSpos - 1)))
 					state->lastCharIsSpace = true;
 				else
 					state->lastCharIsSpace = false;
