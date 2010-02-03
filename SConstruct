@@ -530,14 +530,6 @@ opts.AddOptions(
 		defaultSendmailPath
 	),
 	EnumOption(
-		'with_wide_char_support',
-		'Support for wide characters (rarely used, should be set to "no")',
-		'no',
-		allowed_values = ('yes', 'no'),
-		map = { },
-		ignorecase = 1
-	),
-	EnumOption(
 		'byte_order',
 		'Byte order (Big Endian or Little Endian)',
 		sys.byteorder,
@@ -801,12 +793,6 @@ config_hpp.write('typedef unsigned ' + env['pf_32bit_type'] + ' vmime_uint32;\n'
 config_hpp.write('\n')
 
 config_hpp.write('// Options\n')
-
-config_hpp.write('// -- Wide characters support\n')
-if env['with_wide_char_support'] == 'yes':
-	config_hpp.write('#define VMIME_WIDE_CHAR_SUPPORT 1\n')
-else:
-	config_hpp.write('#define VMIME_WIDE_CHAR_SUPPORT 0\n')
 
 config_hpp.write('// -- File-system support\n')
 if env['with_filesystem'] == 'yes':
@@ -1916,8 +1902,6 @@ typedef signed ${VMIME_TYPE_INT32} vmime_int32;
 typedef unsigned ${VMIME_TYPE_INT32} vmime_uint32;
 
 // Options
-// -- Wide characters support
-#define VMIME_WIDE_CHAR_SUPPORT 0
 // -- File-system support
 #define VMIME_HAVE_FILESYSTEM_FEATURES 1
 // -- SASL support
@@ -2261,8 +2245,6 @@ typedef unsigned int vmime_uint32;
 
 
 // Options
-// -- Wide characters support
-#define VMIME_WIDE_CHAR_SUPPORT 0
 // -- File-system support
 #define VMIME_HAVE_FILESYSTEM_FEATURES 1
 // -- SASL support

@@ -91,10 +91,6 @@ public:
 	bool operator==(const word& w) const;
 	bool operator!=(const word& w) const;
 
-#if VMIME_WIDE_CHAR_SUPPORT
-	const wstring getDecodedText() const;
-#endif
-
 	/** Return the contained text converted to the specified charset.
 	  *
 	  * @param dest output charset

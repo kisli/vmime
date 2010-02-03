@@ -55,12 +55,6 @@ namespace vmime
   */
 const string NULL_STRING;
 
-#if VMIME_WIDE_CHAR_SUPPORT
-	/** "Null" (empty) wide-char string.
-	  */
-	const wstring NULL_WSTRING;
-#endif
-
 /** "Null" (empty) text.
   */
 const text NULL_TEXT;

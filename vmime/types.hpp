@@ -36,9 +36,6 @@
 namespace vmime
 {
 	typedef std::string string;
-#if VMIME_WIDE_CHAR_SUPPORT
-	typedef std::wstring wstring;
-#endif
 
 	typedef unsigned short port_t;
 

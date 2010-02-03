@@ -48,9 +48,6 @@ namespace vmime
 
 	// "Null" strings
 	extern const string NULL_STRING;
-#if VMIME_WIDE_CHAR_SUPPORT
-	extern const wstring NULL_WSTRING;
-#endif
 
 	extern const text NULL_TEXT;
 	extern const word NULL_WORD;

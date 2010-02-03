@@ -621,20 +621,6 @@ void word::generate(utility::outputStream& os, const string::size_type maxLineLe
 }
 
 
-#if VMIME_WIDE_CHAR_SUPPORT
-
-const wstring word::getDecodedText() const
-{
-	wstring out;
-
-	charset::decode(m_buffer, out, m_charset);
-
-	return (out);
-}
-
-#endif
-
-
 word& word::operator=(const word& w)
 {
 	m_buffer = w.m_buffer;

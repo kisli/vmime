@@ -91,21 +91,6 @@ void text::generate(utility::outputStream& os, const string::size_type maxLineLe
 }
 
 
-#if VMIME_WIDE_CHAR_SUPPORT
-
-const wstring text::getDecodedText() const
-{
-	wstring out;
-
-	for (std::vector <ref <word> >::const_iterator i = m_words.begin() ; i != m_words.end() ; ++i)
-		out += (*i)->getDecodedText();
-
-	return (out);
-}
-
-#endif
-
-
 void text::copyFrom(const component& other)
 {
 	const text& t = dynamic_cast <const text&>(other);

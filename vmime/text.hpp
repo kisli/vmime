@@ -129,10 +129,6 @@ public:
 	  */
 	const std::vector <ref <word> > getWordList();
 
-	// Decoding
-#if VMIME_WIDE_CHAR_SUPPORT
-	const wstring getDecodedText() const;
-#endif
 
 	/** Return the text converted into the specified charset.
 	  * The encoded-words are decoded and then converted in the
