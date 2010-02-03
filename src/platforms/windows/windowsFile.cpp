@@ -268,7 +268,7 @@ bool windowsFile::canWrite() const
 	return true;
 }
 
-const windowsFile::length_type windowsFile::getLength()
+windowsFile::length_type windowsFile::getLength()
 {
 	HANDLE hFile = CreateFile(
 		m_nativePath.c_str(),
