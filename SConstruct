@@ -376,6 +376,7 @@ libvmimetest_sources = [
 ]
 
 libvmime_autotools = [
+	'm4/acx_pthread.m4',
 	'm4/iconv.m4',
 	'm4/lib-ld.m4',
 	'm4/lib-link.m4',
