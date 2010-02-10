@@ -369,7 +369,7 @@ void mailbox::generate(utility::outputStream& os, const string::size_type maxLin
 		// We have to encode the name:
 		//   - if it contains characters in a charset different from "US-ASCII",
 		//   - and/or if it contains one or more of these special chars:
-		//        SPACE  TAB  "  ;  ,  <  >  (  )  @  /  ?  .  =  :
+		//        CR  LF  TAB  "  ;  ,  <  >  (  )  @  /  ?  .  =  :
 
 		// Check whether there are words that are not "US-ASCII"
 		// and/or contain the special chars.
@@ -386,7 +386,8 @@ void mailbox::generate(utility::outputStream& os, const string::size_type maxLin
 				{
 					switch (*c)
 					{
-					case ' ':
+					case '\r':
+					case '\n':
 					case '\t':
 					case ';':
 					case ',':
