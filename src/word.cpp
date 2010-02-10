@@ -357,7 +357,8 @@ void word::generate(utility::outputStream& os, const string::size_type maxLineLe
 	//  - the whole buffer is ASCII-only
 	//  - the buffer does not contain quoting character (")
 	//  - there is enough remaining space on the current line to hold the whole buffer
-	if ((flags & text::QUOTE_IF_POSSIBLE) &&
+	if (!noEncoding &&
+	    (flags & text::QUOTE_IF_POSSIBLE) &&
 	    asciiCount == m_buffer.length() &&
 	    m_buffer.find('"') == string::npos &&
 	    (curLineLength + 2 /* 2 x " */ + m_buffer.length()) < maxLineLength)
