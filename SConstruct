@@ -459,15 +459,15 @@ if defaultSendmailPath == None:
 
 
 # Command line options
-opts = Options('options.cache')
+opts = Variables('options.cache')
 
-opts.AddOptions(
+opts.AddVariables(
 	(
 		'prefix',
 		'Installation prefix directory',
 		'/usr'
 	),
-	EnumOption(
+	EnumVariable(
 		'debug',
 		'Debug version (useful for developers only)',
 		'no',
@@ -475,7 +475,7 @@ opts.AddOptions(
 		map = { },
 		ignorecase = 1
 	),
-	EnumOption(
+	EnumVariable(
 		'with_messaging',
 		'Messaging support (connection to mail store/transport servers)',
 		'yes',
@@ -483,7 +483,7 @@ opts.AddOptions(
 		map = { },
 		ignorecase = 1
 	),
-	EnumOption(
+	EnumVariable(
 		'with_filesystem',
 		'Enable file-system support (this is needed for "maildir" messaging support)',
 		'yes',
@@ -509,7 +509,7 @@ opts.AddOptions(
 		    + 'Currently available platform handlers: posix.',
 		'"posix"'
 	),
-	EnumOption(
+	EnumVariable(
 	 	'with_sasl',
 		'Enable SASL support (requires GNU SASL library)',
 		'yes',
@@ -517,7 +517,7 @@ opts.AddOptions(
 		map = { },
 		ignorecase = 1
 	),
-	EnumOption(
+	EnumVariable(
 		'with_tls',
 		'Enable TLS support (requires GNU TLS library)',
 		'yes',
@@ -530,7 +530,7 @@ opts.AddOptions(
 		'Specifies the path to sendmail.',
 		defaultSendmailPath
 	),
-	EnumOption(
+	EnumVariable(
 		'byte_order',
 		'Byte order (Big Endian or Little Endian)',
 		sys.byteorder,
@@ -538,7 +538,7 @@ opts.AddOptions(
 		map = { },
 		ignorecase = 1
 	),
-	EnumOption(
+	EnumVariable(
 		'pf_8bit_type',
 		'The C-language 8-bit type for your platform',
 		'char',
@@ -546,7 +546,7 @@ opts.AddOptions(
 		map = { },
 		ignorecase = 1
 	),
-	EnumOption(
+	EnumVariable(
 		'pf_16bit_type',
 		'The C-language 16-bit type for your platform',
 		'short',
@@ -554,7 +554,7 @@ opts.AddOptions(
 		map = { },
 		ignorecase = 1
 	),
-	EnumOption(
+	EnumVariable(
 		'pf_32bit_type',
 		'The C-language 32-bit type for your platform',
 		'int',
@@ -562,7 +562,7 @@ opts.AddOptions(
 		map = { },
 		ignorecase = 1
 	),
-	EnumOption(
+	EnumVariable(
 		'build_tests',
 		'Build unit tests (run with "scons run-tests")',
 		'no',
