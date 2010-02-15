@@ -1364,7 +1364,7 @@ sh libtool --mode=link $CXX -o libtest.la -rpath / -version-info 0 mylib.lo  >&5
 $CXX -c $CFLAGS $CPPFLAGS mytest.$ac_ext >&5
 sh libtool --mode=link $CXX -o mytest mytest.o libtest.la >&5 2>/dev/null
 
-if test -x mytest; then
+if test -x mytest -a "$cross_compiling" != yes; then
 	myresult=`./mytest`
 	if test "X$myresult" = "XPASS"; then
 		AC_MSG_RESULT(yes)
