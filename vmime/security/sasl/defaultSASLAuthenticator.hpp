@@ -67,10 +67,8 @@ private:
 
 	defaultAuthenticator m_default;
 
-
 	weak_ref <net::service> m_service;
-
-	ref <SASLSession> m_saslSession;
+	weak_ref <SASLSession> m_saslSession;
 	ref <SASLMechanism> m_saslMech;
 };
 

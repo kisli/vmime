@@ -96,7 +96,7 @@ const string defaultSASLAuthenticator::getAnonymousToken() const
 
 const string defaultSASLAuthenticator::getServiceName() const
 {
-	return m_saslSession->getServiceName();
+	return m_saslSession.acquire()->getServiceName();
 }
 
 
@@ -121,7 +121,7 @@ void defaultSASLAuthenticator::setSASLSession(ref <SASLSession> sess)
 
 ref <SASLSession> defaultSASLAuthenticator::getSASLSession() const
 {
-	return m_saslSession;
+	return m_saslSession.acquire();
 }
 
 
