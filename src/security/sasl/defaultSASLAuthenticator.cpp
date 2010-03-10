@@ -121,7 +121,7 @@ void defaultSASLAuthenticator::setSASLSession(ref <SASLSession> sess)
 
 ref <SASLSession> defaultSASLAuthenticator::getSASLSession() const
 {
-	return m_saslSession.acquire();
+	return m_saslSession.acquire().constCast <SASLSession>();
 }
 
 
