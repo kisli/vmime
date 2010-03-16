@@ -311,7 +311,7 @@ void mailbox::parse(const string& buffer, const string::size_type position,
 	// (email address is mandatory, whereas name is optional).
 	if (address.empty() && !name.empty())
 	{
-		m_email.empty();
+		m_email.clear();
 		m_email.reserve(name.size());
 		m_name.removeAllWords();
 
@@ -324,7 +324,7 @@ void mailbox::parse(const string& buffer, const string::size_type position,
 	else
 	{
 		text::decodeAndUnfold(name, &m_name);
-		m_email.empty();
+		m_email.clear();
 		m_email.reserve(address.size());
 
 		for (string::size_type i = 0 ; i < address.size() ; ++i)
