@@ -306,6 +306,9 @@ bool posixFile::isFile() const
 
 	if (::stat(m_nativePath.c_str(), &buf) == -1)
 	{
+		if (errno == ENOENT)
+			return false;
+
 		posixFileSystemFactory::reportError(m_path, errno);
 		return false;
 	}
@@ -320,6 +323,9 @@ bool posixFile::isDirectory() const
 
 	if (::stat(m_nativePath.c_str(), &buf) == -1)
 	{
+		if (errno == ENOENT)
+			return false;
+
 		posixFileSystemFactory::reportError(m_path, errno);
 		return false;
 	}
@@ -334,6 +340,9 @@ bool posixFile::canRead() const
 
 	if (::stat(m_nativePath.c_str(), &buf) == -1)
 	{
+		if (errno == ENOENT)
+			return false;
+
 		posixFileSystemFactory::reportError(m_path, errno);
 		return false;
 	}
@@ -349,6 +358,9 @@ bool posixFile::canWrite() const
 
 	if (::stat(m_nativePath.c_str(), &buf) == -1)
 	{
+		if (errno == ENOENT)
+			return false;
+
 		posixFileSystemFactory::reportError(m_path, errno);
 		return false;
 	}
