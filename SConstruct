@@ -436,7 +436,7 @@ libvmime_dist_files += libvmime_autotools
 #  Set options  #
 #################
 
-EnsureSConsVersion(0, 94)
+EnsureSConsVersion(0, 98, 1)
 
 SetOption('implicit_cache', 1)
 
@@ -578,7 +578,10 @@ opts.AddVariables(
 #  Configuration Environment  #
 ###############################
 
-env = Environment(options = opts)
+try:
+	env = Environment(variables = opts)
+except TypeError:
+	env = Environment(options = opts)
 
 env.Append(ENV = os.environ)
 env.Append(ENV = {'PATH' : os.environ['PATH']})
@@ -953,7 +956,7 @@ Default(libVmime)
 # Tests
 if env['build_tests'] == 'yes':
 	if env['debug'] == 'yes':
-		env = env.Copy()
+		env = env.Clone()
 		env.Append(LIBS = ['cppunit', 'dl', packageVersionedGenericName + '-debug', 'pthread'])
 		env.Append(LIBPATH=['.'])
 		Default(
