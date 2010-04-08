@@ -85,12 +85,32 @@ void parameterizedHeaderField::parse(const string& buffer, const string::size_ty
 	const string::value_type* const pstart = buffer.data() + position;
 	const string::value_type* p = pstart;
 
-	const string::size_type start = position;
+	// Skip non-significant whitespaces
+	string::size_type valueStart = position;
 
-	while (p < pend && *p != ';') ++p;
+	while (p < pend && parserHelpers::isSpace(*p))
+	{
+		++p;
+		++valueStart;
+	}
 
-	getValue()->parse(buffer, start, position + (p - pstart));
+	// Advance up to ';', if any
+	string::size_type valueLength = 0;
 
+	while (p < pend && *p != ';')  // FIXME: support ";" inside quoted or RFC-2047-encoded text
+	{
+		++p;
+		++valueLength;
+	}
+
+	// Trim whitespaces at the end of the value
+	while (valueLength > 0 && parserHelpers::isSpace(buffer[valueStart + valueLength - 1]))
+		--valueLength;
+
+	// Parse value
+	getValue()->parse(buffer, valueStart, valueStart + valueLength);
+
+	// Reset parameters
 	removeAllParameters();
 
 	// If there is one or more parameters following...

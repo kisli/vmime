@@ -36,6 +36,7 @@ VMIME_TEST_SUITE_BEGIN
 		VMIME_TEST(testGenerate)
 		VMIME_TEST(testGenerateRFC2231)
 		VMIME_TEST(testNonStandardEncodedParam)
+		VMIME_TEST(testParseNonSignificantWS)
 	VMIME_TEST_LIST_END
 
 
@@ -53,6 +54,7 @@ VMIME_TEST_SUITE_BEGIN
 	};
 
 
+#define FIELD_VALUE(f) (f.getValue()->generate())
 #define PARAM_VALUE(p, n) (p.getParameterAt(n)->getValue().generate())
 #define PARAM_NAME(p, n) (p.getParameterAt(n)->getName())
 #define PARAM_CHARSET(p, n) \
@@ -276,6 +278,23 @@ VMIME_TEST_SUITE_BEGIN
 		VASSERT_EQ("2.1", 1, p2.getParameterCount());
 		VASSERT_EQ("2.2", "name", PARAM_NAME(p2, 0));
 		VASSERT_EQ("2.3", "Logo VMime.png", PARAM_VALUE(p2, 0));
+	}
+
+	// Parse parameters with non-significant whitespaces
+	void testParseNonSignificantWS()
+	{
+		parameterizedHeaderField p1;
+		p1.parse(" \t X   \r\n");
+
+		VASSERT_EQ("1.1", "X", FIELD_VALUE(p1));
+
+		parameterizedHeaderField p2;
+		p2.parse(" X  ; param1 =  value1 \r\n");
+
+		VASSERT_EQ("2.1", 1, p2.getParameterCount());
+		VASSERT_EQ("2.2", "X", FIELD_VALUE(p2));
+		VASSERT_EQ("2.3", "param1", PARAM_NAME(p2, 0));
+		VASSERT_EQ("2.4", "value1", PARAM_VALUE(p2, 0));
 	}
 
 VMIME_TEST_SUITE_END
