@@ -46,6 +46,10 @@ encoderFactory::encoderFactory()
 	registerName <sevenBitEncoder>("7bit");
 	registerName <eightBitEncoder>("8bit");
 	registerName <binaryEncoder>("binary");
+
+	// Also register some non-standard encoding names
+	registerName <sevenBitEncoder>("7-bit");
+	registerName <eightBitEncoder>("8-bit");
 }
 
 
