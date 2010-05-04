@@ -156,7 +156,7 @@ void IMAPConnection::connect()
 	const bool tlsRequired = HAS_PROPERTY(PROPERTY_CONNECTION_TLS_REQUIRED)
 		&& GET_PROPERTY(bool, PROPERTY_CONNECTION_TLS_REQUIRED);
 
-	if (!store->isSecuredConnection() && tls)  // only if not IMAPS
+	if (!store->isIMAPS() && tls)  // only if not IMAPS
 	{
 		try
 		{
