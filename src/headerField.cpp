@@ -146,6 +146,12 @@ ref <headerField> headerField::parseNext(const string& buffer, const string::siz
 				{
 					c = buffer[pos];
 
+					// Check for folded line
+					if (c == '\r' && pos + 2 < end && buffer[pos + 1] == '\n' &&
+						(buffer[pos + 2] == ' ' || buffer[pos + 2] == '\t'))
+					{
+						pos += 3;
+					}
 					// Check for end of contents
 					if (c == '\r' && pos + 1 < end && buffer[pos + 1] == '\n')
 					{
