@@ -28,6 +28,8 @@
 #include "vmime/net/message.hpp"
 #include "vmime/net/folder.hpp"
 
+#include "vmime/net/imap/IMAPParser.hpp"
+
 
 namespace vmime {
 namespace net {
@@ -75,11 +77,28 @@ public:
 
 	void fetchPartHeader(ref <part> p);
 
+	ref <vmime::message> getParsedMessage();
+
 private:
 
 	void fetch(ref <IMAPFolder> folder, const int options);
 
 	void processFetchResponse(const int options, const IMAPParser::msg_att* msgAtt);
+
+	/** Recursively fetch part header for all parts in the structure.
+	  *
+	  * @param str structure for which to fetch parts headers
+	  */
+	void fetchPartHeaderForStructure(ref <structure> str);
+
+	/** Recursively contruct parsed message from structure.
+	  * Called by getParsedMessage().
+	  *
+	  * @param parentPart root body part (the message)
+	  * @param str structure for which to construct part
+	  * @param level current nesting level (0 is root)
+	  */
+	void constructParsedMessage(ref <bodyPart> parentPart, ref <structure> str, int level = 0);
 
 	void extract(ref <const part> p, utility::outputStream& os, utility::progressListener* progress, const int start, const int length, const bool headerOnly, const bool peek) const;
 

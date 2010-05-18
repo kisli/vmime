@@ -2,6 +2,11 @@
 VERSION 0.9.1svn
 ================
 
+2010-05-18  Vincent Richard  <vincent@vincent-richard.net>
+
+ * net/*: added helper function vmime::net::message::getParsedMessage()
+   to construct a RFC-822 parsed message from a net message.
+
 2009-09-06  Vincent Richard  <vincent@vincent-richard.net>
 
  * Relicensed VMime under the GNU GPL license version 3. Dual licensing

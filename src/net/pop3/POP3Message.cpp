@@ -218,6 +218,20 @@ void POP3Message::setFlags(const int /* flags */, const int /* mode */)
 }
 
 
+ref <vmime::message> POP3Message::getParsedMessage()
+{
+	std::ostringstream oss;
+	utility::outputStreamAdapter os(oss);
+
+	extract(os);
+
+	vmime::ref <vmime::message> msg = vmime::create <vmime::message>();
+	msg->parse(oss.str());
+
+	return msg;
+}
+
+
 } // pop3
 } // net
 } // vmime

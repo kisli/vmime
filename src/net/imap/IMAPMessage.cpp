@@ -27,6 +27,9 @@
 #include "vmime/net/imap/IMAPStore.hpp"
 #include "vmime/net/imap/IMAPConnection.hpp"
 #include "vmime/net/imap/IMAPUtils.hpp"
+#include "vmime/net/imap/IMAPStructure.hpp"
+#include "vmime/net/imap/IMAPPart.hpp"
+#include "vmime/net/imap/IMAPMessagePartContentHandler.hpp"
 
 #include <sstream>
 #include <iterator>
@@ -36,198 +39,6 @@
 namespace vmime {
 namespace net {
 namespace imap {
-
-
-//
-// IMAPpart
-//
-
-class IMAPstructure;
-
-class IMAPpart : public part
-{
-private:
-
-	friend class vmime::creator;
-
-	IMAPpart(ref <IMAPpart> parent, const int number, const IMAPParser::body_type_mpart* mpart);
-	IMAPpart(ref <IMAPpart> parent, const int number, const IMAPParser::body_type_1part* part);
-
-public:
-
-	ref <const structure> getStructure() const;
-	ref <structure> getStructure();
-
-	ref <const IMAPpart> getParent() const { return m_parent.acquire(); }
-
-	const mediaType& getType() const { return (m_mediaType); }
-	int getSize() const { return (m_size); }
-	int getNumber() const { return (m_number); }
-
-	ref <const header> getHeader() const
-	{
-		if (m_header == NULL)
-			throw exceptions::unfetched_object();
-		else
-			return m_header;
-	}
-
-
-	static ref <IMAPpart> create
-		(ref <IMAPpart> parent, const int number, const IMAPParser::body* body)
-	{
-		if (body->body_type_mpart())
-		{
-			ref <IMAPpart> part = vmime::create <IMAPpart>(parent, number, body->body_type_mpart());
-			part->m_structure = vmime::create <IMAPstructure>(part, body->body_type_mpart()->list());
-
-			return part;
-		}
-		else
-		{
-			return vmime::create <IMAPpart>(parent, number, body->body_type_1part());
-		}
-	}
-
-
-	header& getOrCreateHeader()
-	{
-		if (m_header != NULL)
-			return (*m_header);
-		else
-			return (*(m_header = vmime::create <header>()));
-	}
-
-private:
-
-	ref <IMAPstructure> m_structure;
-	weak_ref <IMAPpart> m_parent;
-	ref <header> m_header;
-
-	int m_number;
-	int m_size;
-	mediaType m_mediaType;
-};
-
-
-
-//
-// IMAPstructure
-//
-
-class IMAPstructure : public structure
-{
-public:
-
-	IMAPstructure()
-	{
-	}
-
-	IMAPstructure(const IMAPParser::body* body)
-	{
-		m_parts.push_back(IMAPpart::create(NULL, 0, body));
-	}
-
-	IMAPstructure(ref <IMAPpart> parent, const std::vector <IMAPParser::body*>& list)
-	{
-		int number = 0;
-
-		for (std::vector <IMAPParser::body*>::const_iterator
-		     it = list.begin() ; it != list.end() ; ++it, ++number)
-		{
-			m_parts.push_back(IMAPpart::create(parent, number, *it));
-		}
-	}
-
-
-	ref <const part> getPartAt(const int x) const
-	{
-		return m_parts[x];
-	}
-
-	ref <part> getPartAt(const int x)
-	{
-		return m_parts[x];
-	}
-
-	int getPartCount() const
-	{
-		return m_parts.size();
-	}
-
-
-	static ref <IMAPstructure> emptyStructure()
-	{
-		return (m_emptyStructure);
-	}
-
-private:
-
-	static ref <IMAPstructure> m_emptyStructure;
-
-	std::vector <ref <IMAPpart> > m_parts;
-};
-
-
-ref <IMAPstructure> IMAPstructure::m_emptyStructure = vmime::create <IMAPstructure>();
-
-
-
-IMAPpart::IMAPpart(ref <IMAPpart> parent, const int number, const IMAPParser::body_type_mpart* mpart)
-	: m_parent(parent), m_header(NULL), m_number(number), m_size(0)
-{
-	m_mediaType = vmime::mediaType
-		("multipart", mpart->media_subtype()->value());
-}
-
-
-IMAPpart::IMAPpart(ref <IMAPpart> parent, const int number, const IMAPParser::body_type_1part* part)
-	: m_parent(parent), m_header(NULL), m_number(number), m_size(0)
-{
-	if (part->body_type_text())
-	{
-		m_mediaType = vmime::mediaType
-			("text", part->body_type_text()->
-				media_text()->media_subtype()->value());
-
-		m_size = part->body_type_text()->body_fields()->body_fld_octets()->value();
-	}
-	else if (part->body_type_msg())
-	{
-		m_mediaType = vmime::mediaType
-			("message", part->body_type_msg()->
-				media_message()->media_subtype()->value());
-	}
-	else
-	{
-		m_mediaType = vmime::mediaType
-			(part->body_type_basic()->media_basic()->media_type()->value(),
-			 part->body_type_basic()->media_basic()->media_subtype()->value());
-
-		m_size = part->body_type_basic()->body_fields()->body_fld_octets()->value();
-	}
-
-	m_structure = NULL;
-}
-
-
-ref <const structure> IMAPpart::getStructure() const
-{
-	if (m_structure != NULL)
-		return (m_structure);
-	else
-		return (IMAPstructure::emptyStructure());
-}
-
-
-ref <structure> IMAPpart::getStructure()
-{
-	if (m_structure != NULL)
-		return (m_structure);
-	else
-		return (IMAPstructure::emptyStructure());
-}
-
 
 
 #ifndef VMIME_BUILDING_DOC
@@ -400,7 +211,22 @@ void IMAPMessage::fetchPartHeader(ref <part> p)
 
 	extract(p, ossAdapter, NULL, 0, -1, true, true);
 
-	p.dynamicCast <IMAPpart>()->getOrCreateHeader().parse(oss.str());
+	p.dynamicCast <IMAPPart>()->getOrCreateHeader().parse(oss.str());
+}
+
+
+void IMAPMessage::fetchPartHeaderForStructure(ref <structure> str)
+{
+	for (int i = 0, n = str->getPartCount() ; i < n ; ++i)
+	{
+		ref <class part> part = str->getPartAt(i);
+
+		// Fetch header of current part
+		fetchPartHeader(part);
+
+		// Fetch header of sub-parts
+		fetchPartHeaderForStructure(part->getStructure());
+	}
 }
 
 
@@ -418,7 +244,7 @@ void IMAPMessage::extract(ref <const part> p, utility::outputStream& os,
 
 	if (p != NULL)
 	{
-		ref <const IMAPpart> currentPart = p.dynamicCast <const IMAPpart>();
+		ref <const IMAPPart> currentPart = p.dynamicCast <const IMAPPart>();
 		std::vector <int> numbers;
 
 		numbers.push_back(currentPart->getNumber());
@@ -446,8 +272,17 @@ void IMAPMessage::extract(ref <const part> p, utility::outputStream& os,
 	command << "FETCH " << m_num << " BODY";
 	if (peek) command << ".PEEK";
 	command << "[";
-	command << section.str();
-	if (headerOnly) command << ".MIME";   // "MIME" not "HEADER" for parts
+
+	if (section.str().empty() && headerOnly)
+	{
+		command << "HEADER";
+	}
+	else
+	{
+		command << section.str();
+		if (headerOnly) command << ".MIME";   // "MIME" not "HEADER" for parts
+	}
+
 	command << "]";
 
 	if (start != 0 || length != -1)
@@ -621,7 +456,7 @@ void IMAPMessage::processFetchResponse
 		}
 		case IMAPParser::msg_att_item::BODY_STRUCTURE:
 		{
-			m_structure = vmime::create <IMAPstructure>((*it)->body());
+			m_structure = vmime::create <IMAPStructure>((*it)->body());
 			break;
 		}
 		case IMAPParser::msg_att_item::RFC822_HEADER:
@@ -796,6 +631,80 @@ void IMAPMessage::setFlags(const int flags, const int mode)
 }
 
 
+void IMAPMessage::constructParsedMessage(ref <bodyPart> parentPart, ref <structure> str, int level)
+{
+	if (level == 0)
+	{
+		ref <class part> part = str->getPartAt(0);
+
+		// Copy header
+		ref <const header> hdr = part->getHeader();
+		parentPart->getHeader()->copyFrom(*hdr);
+
+		// Initialize body
+		parentPart->getBody()->setContents
+			(vmime::create <IMAPMessagePartContentHandler>
+				(thisRef().dynamicCast <IMAPMessage>(),
+				 part, parentPart->getBody()->getEncoding()));
+
+		constructParsedMessage(parentPart, part->getStructure(), 1);
+	}
+	else
+	{
+		for (int i = 0, n = str->getPartCount() ; i < n ; ++i)
+		{
+			ref <class part> part = str->getPartAt(i);
+
+			ref <bodyPart> childPart = vmime::create <bodyPart>();
+
+			// Copy header
+			ref <const header> hdr = part->getHeader();
+			childPart->getHeader()->copyFrom(*hdr);
+
+			// Initialize body
+			childPart->getBody()->setContents
+				(vmime::create <IMAPMessagePartContentHandler>
+					(thisRef().dynamicCast <IMAPMessage>(),
+					 part, childPart->getBody()->getEncoding()));
+
+			// Add child part
+			parentPart->getBody()->appendPart(childPart);
+
+			// Construct sub parts
+			constructParsedMessage(childPart, part->getStructure(), ++level);
+		}
+	}
+}
+
+
+ref <vmime::message> IMAPMessage::getParsedMessage()
+{
+	// Fetch structure
+	ref <structure> structure = NULL;
+
+	try
+	{
+		structure = getStructure();
+	}
+	catch (exceptions::unfetched_object&)
+	{
+		fetch(m_folder.acquire(), IMAPFolder::FETCH_STRUCTURE);
+		structure = getStructure();
+	}
+
+	// Fetch header for each part
+	fetchPartHeaderForStructure(structure);
+
+	// Construct message from structure
+	ref <vmime::message> msg = vmime::create <vmime::message>();
+
+	constructParsedMessage(msg, structure);
+
+	return msg;
+}
+
+
 } // imap
 } // net
 } // vmime
+

@@ -261,6 +261,9 @@ libvmime_messaging_proto_sources = [
 			'net/imap/IMAPMessage.cpp',      'net/imap/IMAPMessage.hpp',
 			'net/imap/IMAPTag.cpp',          'net/imap/IMAPTag.hpp',
 			'net/imap/IMAPUtils.cpp',        'net/imap/IMAPUtils.hpp',
+			'net/imap/IMAPMessagePartContentHandler.cpp', 'net/imap/IMAPMessagePartContentHandler.hpp',
+			'net/imap/IMAPStructure.cpp',    'net/imap/IMAPStructure.hpp',
+			'net/imap/IMAPPart.cpp',         'net/imap/IMAPPart.hpp',
 			'net/imap/IMAPParser.hpp',
 		]
 	],

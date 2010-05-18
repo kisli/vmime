@@ -524,6 +524,20 @@ ref <header> maildirMessage::getOrCreateHeader()
 }
 
 
+ref <vmime::message> maildirMessage::getParsedMessage()
+{
+	std::ostringstream oss;
+	utility::outputStreamAdapter os(oss);
+
+	extract(os);
+
+	vmime::ref <vmime::message> msg = vmime::create <vmime::message>();
+	msg->parse(oss.str());
+
+	return msg;
+}
+
+
 } // maildir
 } // net
 } // vmime

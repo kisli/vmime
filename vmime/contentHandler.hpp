@@ -87,7 +87,8 @@ public:
 	virtual void extractRaw(utility::outputStream& os, utility::progressListener* progress = NULL) const = 0;
 
 	/** Returns the actual length of data. WARNING: this can return 0 if no
-	  * length was specified when setting data of this object.
+	  * length was specified when setting data of this object, or if the
+	  * length is not known).
 	  *
 	  * @return length of data
 	  */

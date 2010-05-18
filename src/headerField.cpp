@@ -300,7 +300,8 @@ const std::vector <ref <const component> > headerField::getChildComponents() con
 {
 	std::vector <ref <const component> > list;
 
-	list.push_back(m_value);
+	if (m_value)
+		list.push_back(m_value);
 
 	return (list);
 }

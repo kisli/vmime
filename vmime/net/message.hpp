@@ -31,6 +31,8 @@
 #include "vmime/utility/progressListener.hpp"
 #include "vmime/utility/stream.hpp"
 
+#include "vmime/message.hpp"
+
 
 namespace vmime {
 namespace net {
@@ -286,6 +288,16 @@ public:
 	  * @param p the part for which to fetch the header
 	  */
 	virtual void fetchPartHeader(ref <part> p) = 0;
+
+	/** Get the RFC-822 message for this abstract message.
+	  * Warning: This may require getting some data (ie: structure and headers) from
+	  * the server, which is done automatically. Actual message contents (ie: body)
+	  * will not be fetched if possible (IMAP allows it, whereas POP3 will require
+	  * to fetch the whole message).
+	  *
+	  * @return a RFC-822-parsed message
+	  */
+	virtual ref <vmime::message> getParsedMessage() = 0;
 };
 
 

@@ -46,6 +46,7 @@ class bodyPart : public component
 public:
 
 	bodyPart();
+	bodyPart(weak_ref <vmime::bodyPart> parentPart);
 
 	/** Return the header section of this part.
 	  *

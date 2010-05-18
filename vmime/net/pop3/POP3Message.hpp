@@ -77,6 +77,8 @@ public:
 
 	void fetchPartHeader(ref <part> p);
 
+	ref <vmime::message> getParsedMessage();
+
 private:
 
 	void fetch(ref <POP3Folder> folder, const int options);

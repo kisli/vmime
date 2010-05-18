@@ -37,6 +37,15 @@ bodyPart::bodyPart()
 }
 
 
+bodyPart::bodyPart(weak_ref <vmime::bodyPart> parentPart)
+	: m_header(vmime::create <header>()),
+	  m_body(vmime::create <body>()),
+	  m_parent(parentPart)
+{
+	m_body->setParentPart(thisRef().dynamicCast <bodyPart>());
+}
+
+
 void bodyPart::parse(const string& buffer, const string::size_type position,
 	const string::size_type end, string::size_type* newPosition)
 {
