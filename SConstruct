@@ -962,6 +962,10 @@ if env['build_tests'] == 'yes':
 		env = env.Clone()
 		env.Append(LIBS = ['cppunit', 'dl', packageVersionedGenericName + '-debug', 'pthread'])
 		env.Append(LIBPATH=['.'])
+
+		if sys.platform == "mac" or sys.platform == "darwin":
+			env.Append(LIBS = ['iconv', 'gcrypt'])
+
 		Default(
 			env.Program(
 				target = 'run-tests',
