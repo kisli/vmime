@@ -21,7 +21,7 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#include "vmime/net/imap/imapmessagepartcontenthandler.hpp"
+#include "vmime/net/imap/IMAPMessagePartContentHandler.hpp"
 
 
 namespace vmime {
