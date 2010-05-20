@@ -135,7 +135,7 @@ void sha1MessageDigest::update(const byte_t* buffer, const unsigned long len)
 
 void sha1MessageDigest::finalize()
 {
-	unsigned long i, j;
+	unsigned int i, j;
 	unsigned char finalcount[8];
 
 	for (i = 0 ; i < 8 ; i++)
@@ -162,8 +162,8 @@ void sha1MessageDigest::finalize()
 	i = j = 0;
 
 	std::memset(m_buffer, 0, 64);
-	std::memset(m_state, 0, 5 * sizeof(unsigned long));
-	std::memset(m_count, 0, 2 * sizeof(unsigned long));
+	std::memset(m_state, 0, 5 * sizeof(unsigned int));
+	std::memset(m_count, 0, 2 * sizeof(unsigned int));
 	std::memset(&finalcount, 0, 8);
 }
 
@@ -192,17 +192,17 @@ void sha1MessageDigest::finalize(const byte_t* buffer,
   * This is the core of the algorithm.
   */
 void sha1MessageDigest::transform
-	(unsigned long state[5], const unsigned char buffer[64])
+	(unsigned int state[5], const unsigned char buffer[64])
 {
-	unsigned long a, b, c, d, e;
+	unsigned int a, b, c, d, e;
 
 	typedef union
 	{
 		unsigned char c[64];
-		unsigned long l[16];
+		unsigned int l[16];
 	} CHAR64LONG16;
 
-	assert(sizeof(unsigned long) == 4);
+	assert(sizeof(unsigned int) == 4);
 
 	CHAR64LONG16* block;
 	static unsigned char workspace[64];

@@ -59,10 +59,10 @@ protected:
 
 	void init();
 
-	static void transform(unsigned long state[5], const byte_t buffer[64]);
+	static void transform(unsigned int state[5], const byte_t buffer[64]);
 
-	unsigned long m_state[5];
-	unsigned long m_count[2];
+	unsigned int m_state[5];
+	unsigned int m_count[2];
 	byte_t m_buffer[64];
 
 	byte_t m_digest[20];
