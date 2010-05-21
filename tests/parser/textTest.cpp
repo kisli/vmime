@@ -44,6 +44,8 @@ VMIME_TEST_SUITE_BEGIN
 		VMIME_TEST(testWordGenerateSpace)
 		VMIME_TEST(testWordGenerateSpace2)
 		VMIME_TEST(testWordGenerateMultiBytes)
+		VMIME_TEST(testWordGenerateQuote)
+		VMIME_TEST(testWordGenerateSpecialCharsets)
 	VMIME_TEST_LIST_END
 
 
@@ -335,8 +337,37 @@ VMIME_TEST_SUITE_BEGIN
 		VASSERT_EQ("1", "=?utf-8?Q?aaa?==?utf-8?Q?=C3=A9?==?utf-8?Q?zzz?=",
 			cleanGeneratedWords(vmime::word("aaa\xc3\xa9zzz", vmime::charset("utf-8")).generate(16)));
 
-		VASSERT_EQ("1", "=?utf-8?Q?aaa=C3=A9?==?utf-8?Q?zzz?=",
+		VASSERT_EQ("2", "=?utf-8?Q?aaa=C3=A9?==?utf-8?Q?zzz?=",
 			cleanGeneratedWords(vmime::word("aaa\xc3\xa9zzz", vmime::charset("utf-8")).generate(17)));
+	}
+
+	void testWordGenerateQuote()
+	{
+		std::string str;
+		vmime::utility::outputStreamStringAdapter os(str);
+
+		// ASCII-only text is quotable
+		str.clear();
+		vmime::word("Quoted text").generate(os, 1000, 0, NULL, vmime::text::QUOTE_IF_POSSIBLE, NULL);
+		VASSERT_EQ("1", "\"Quoted text\"", cleanGeneratedWords(str));
+
+		// Text with CR/LF is not quotable
+		str.clear();
+		vmime::word("Non-quotable\ntext", "us-ascii").generate(os, 1000, 0, NULL, vmime::text::QUOTE_IF_POSSIBLE, NULL);
+		VASSERT_EQ("2", "=?us-ascii?Q?Non-quotable=0Atext?=", cleanGeneratedWords(str));
+
+		// Text with non-ASCII chars is not quotable
+		str.clear();
+		vmime::word("Non-quotable text \xc3\xa9").generate(os, 1000, 0, NULL, vmime::text::QUOTE_IF_POSSIBLE, NULL);
+		VASSERT_EQ("3", "=?UTF-8?Q?Non-quotable_text_=C3=A9?=", cleanGeneratedWords(str));
+	}
+
+	void testWordGenerateSpecialCharsets()
+	{
+		// ISO-2022-JP only uses 7-bit chars but should be encoded in Base64
+		VASSERT_EQ("1", "=?iso-2022-jp?B?XlskQiVRITwlPSVKJWshJiU9JVUlSCUmJSclIl5bKEI=?=",
+			cleanGeneratedWords(vmime::word("^[$B%Q!<%=%J%k!&%=%U%H%&%'%\"^[(B",
+				vmime::charset("iso-2022-jp")).generate(100)));
 	}
 
 VMIME_TEST_SUITE_END

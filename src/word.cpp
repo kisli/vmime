@@ -336,30 +336,22 @@ void word::generate(utility::outputStream& os, const string::size_type maxLineLe
 	if (state == NULL)
 		state = &defaultGeneratorState;
 
-	// Calculate the number of ASCII chars to check whether encoding is needed
-	// and _which_ encoding to use.
-	const string::size_type asciiCount =
-		utility::stringUtils::countASCIIchars(m_buffer.begin(), m_buffer.end());
+	// Find out if encoding is forced or required by contents + charset
+	bool encodingNeeded = (flags & text::FORCE_ENCODING) != 0;
 
-	bool noEncoding = (flags & text::FORCE_NO_ENCODING) ||
-	    (!(flags & text::FORCE_ENCODING) && asciiCount == m_buffer.length());
-
-	if (!(flags & text::FORCE_NO_ENCODING) &&
-	    m_buffer.find_first_of("\n\r") != string::npos)
-	{
-		// Force encoding when there are only ASCII chars, but there is
-		// also at least one of '\n' or '\r' (header fields)
-		noEncoding = false;
-	}
+	if (encodingNeeded == false)
+		encodingNeeded = wordEncoder::isEncodingNeeded(m_buffer, m_charset);
+	else if ((flags & text::FORCE_NO_ENCODING) != 0)
+		encodingNeeded = false;
 
 	// If possible and requested (with flag), quote the buffer (no folding is performed).
 	// Quoting is possible if and only if:
-	//  - the whole buffer is ASCII-only
+	//  - the buffer does not need to be encoded
 	//  - the buffer does not contain quoting character (")
 	//  - there is enough remaining space on the current line to hold the whole buffer
-	if (!noEncoding &&
+	if (!encodingNeeded &&
 	    (flags & text::QUOTE_IF_POSSIBLE) &&
-	    asciiCount == m_buffer.length() &&
+	    !encodingNeeded &&
 	    m_buffer.find('"') == string::npos &&
 	    (curLineLength + 2 /* 2 x " */ + m_buffer.length()) < maxLineLength)
 	{
@@ -367,7 +359,7 @@ void word::generate(utility::outputStream& os, const string::size_type maxLineLe
 		curLineLength += 2 + m_buffer.length();
 	}
 	// We will fold lines without encoding them.
-	else if (noEncoding)
+	else if (!encodingNeeded)
 	{
 		string::const_iterator lastWSpos = m_buffer.end(); // last white-space position
 		string::const_iterator curLineStart = m_buffer.begin(); // current line start

@@ -73,12 +73,23 @@ public:
 	  */
 	Encoding getEncoding() const;
 
-private:
+	/** Test whether RFC-2047 encoding is needed.
+	  *
+	  * @param buffer buffer to analyze
+	  * @param charset charset of the buffer
+	  * @return true if encoding is needed, false otherwise.
+	  */
+	static bool isEncodingNeeded(const string& buffer, const charset& charset);
 
+	/** Guess the best RFC-2047 encoding to use for the specified buffer.
+	  *
+	  * @param buffer buffer to analyze
+	  * @param charset charset of the buffer
+	  * @return RFC-2047 encoding
+	  */
 	static Encoding guessBestEncoding(const string& buffer, const charset& charset);
 
-	void guessBestEncoding();
-
+private:
 
 	string m_buffer;
 	string::size_type m_pos;

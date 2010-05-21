@@ -151,6 +151,24 @@ string::size_type stringUtils::countASCIIchars
 }
 
 
+string::size_type stringUtils::findFirstNonASCIIchar
+	(const string::const_iterator begin, const string::const_iterator end)
+{
+	string::size_type pos = string::npos;
+
+	for (string::const_iterator i = begin ; i != end ; ++i)
+	{
+		if (!parserHelpers::isAscii(*i))
+		{
+			pos = i - begin;
+			break;
+		}
+	}
+
+	return pos;
+}
+
+
 const string stringUtils::unquote(const string& str)
 {
 	if (str.length() < 2)

@@ -104,6 +104,14 @@ public:
 	  */
 	static string::size_type countASCIIchars(const string::const_iterator begin, const string::const_iterator end);
 
+	/** Returns the position of the first non 7-bit US-ASCII character in a string.
+	  *
+	  * @param begin start position
+	  * @param end end position
+	  * @return position since begin, or string::npos
+	  */
+	static string::size_type findFirstNonASCIIchar(const string::const_iterator begin, const string::const_iterator end);
+
 	/** Convert the specified value to a string value.
 	  *
 	  * @param value to convert
