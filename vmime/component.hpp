@@ -32,8 +32,8 @@ namespace vmime
 {
 
 
-/** This abstract class is the base for all the classes in the library.
-  * It defines the methods for parsing and generating all the components.
+/** This abstract class is the base class for all the components of a message.
+  * It defines methods for parsing and generating a component.
   */
 
 class component : public object
