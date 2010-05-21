@@ -27,6 +27,7 @@
 #include "vmime/config.hpp"
 
 #if VMIME_HAVE_PTHREAD
+#	include <pthread.h>
 #	include <gcrypt.h>
 #	include <errno.h>
 #endif // VMIME_HAVE_PTHREAD
