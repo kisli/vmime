@@ -73,7 +73,7 @@ int main()
 
 		// -- embed an image (the returned "CID" (content identifier) is used to reference
 		// -- the image into HTML content).
-		vmime::utility::fileSystemFactory* fs =
+		vmime::ref <vmime::utility::fileSystemFactory> fs =
 			vmime::platform::getHandler()->getFileSystemFactory();
 
 		vmime::ref <vmime::utility::file> imageFile =
