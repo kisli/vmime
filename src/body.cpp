@@ -213,8 +213,26 @@ void body::parse(const string& buffer, const string::size_type position,
 	// Treat the contents as 'simple' data
 	else
 	{
+		encoding enc;
+
+		try
+		{
+			const ref <const headerField> cef =
+				m_header.acquire()->findField(fields::CONTENT_TRANSFER_ENCODING);
+
+			enc = *cef->getValue().dynamicCast <const encoding>();
+		}
+		catch (exceptions::no_such_field&)
+		{
+			// Defaults to "7bit" (RFC-1521)
+			enc = vmime::encoding(encodingTypes::SEVEN_BIT);
+
+			// Set header field
+			m_header.acquire()->ContentTransferEncoding()->setValue(enc);
+		}
+
 		// Extract the (encoded) contents
-		m_contents = vmime::create <stringContentHandler>(buffer, position, end, getEncoding());
+		m_contents = vmime::create <stringContentHandler>(buffer, position, end, enc);
 	}
 
 	setParsedBounds(position, end);
@@ -406,6 +424,22 @@ bool body::isValidBoundary(const string& boundary)
 // Quick-access functions
 //
 
+
+void body::setContentType(const mediaType& type, const charset& chset)
+{
+	ref <contentTypeField> ctf = m_header.acquire()->ContentType().dynamicCast <contentTypeField>();
+
+	ctf->setValue(type);
+	ctf->setCharset(chset);
+}
+
+
+void body::setContentType(const mediaType& type)
+{
+	m_header.acquire()->ContentType()->setValue(type);
+}
+
+
 const mediaType body::getContentType() const
 {
 	try
@@ -419,6 +453,25 @@ const mediaType body::getContentType() const
 	{
 		// Defaults to "text/plain" (RFC-1521)
 		return (mediaType(mediaTypes::TEXT, mediaTypes::TEXT_PLAIN));
+	}
+}
+
+
+void body::setCharset(const charset& chset)
+{
+	// If a Content-Type field exists, set charset
+	try
+	{
+		ref <contentTypeField> ctf =
+			m_header.acquire()->findField(fields::CONTENT_TYPE).dynamicCast <contentTypeField>();
+
+		ctf->setCharset(chset);
+	}
+	// Else, create a new Content-Type field of default type "text/plain"
+	// and set charset on it
+	catch (exceptions::no_such_field&)
+	{
+		setContentType(mediaType(mediaTypes::TEXT, mediaTypes::TEXT_PLAIN), chset);
 	}
 }
 
@@ -445,6 +498,12 @@ const charset body::getCharset() const
 }
 
 
+void body::setEncoding(const encoding& enc)
+{
+	m_header.acquire()->ContentTransferEncoding()->setValue(enc);
+}
+
+
 const encoding body::getEncoding() const
 {
 	try
@@ -456,8 +515,15 @@ const encoding body::getEncoding() const
 	}
 	catch (exceptions::no_such_field&)
 	{
-		// Defaults to "7bit" (RFC-1521)
-		return (vmime::encoding(encodingTypes::SEVEN_BIT));
+		if (m_contents->isEncoded())
+		{
+			return m_contents->getEncoding();
+		}
+		else
+		{
+			// Defaults to "7bit" (RFC-1521)
+			return vmime::encoding(encodingTypes::SEVEN_BIT);
+		}
 	}
 }
 
@@ -548,6 +614,32 @@ const ref <const contentHandler> body::getContents() const
 void body::setContents(ref <const contentHandler> contents)
 {
 	m_contents = contents;
+}
+
+
+void body::setContents(ref <const contentHandler> contents, const mediaType& type)
+{
+	m_contents = contents;
+
+	setContentType(type);
+}
+
+
+void body::setContents(ref <const contentHandler> contents, const mediaType& type, const charset& chset)
+{
+	m_contents = contents;
+
+	setContentType(type, chset);
+}
+
+
+void body::setContents(ref <const contentHandler> contents, const mediaType& type,
+	const charset& chset, const encoding& enc)
+{
+	m_contents = contents;
+
+	setContentType(type, chset);
+	setEncoding(enc);
 }
 
 

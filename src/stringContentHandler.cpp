@@ -202,4 +202,10 @@ const vmime::encoding& stringContentHandler::getEncoding() const
 }
 
 
+bool stringContentHandler::isBuffered() const
+{
+	return true;
+}
+
+
 } // vmime

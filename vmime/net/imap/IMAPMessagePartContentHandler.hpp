@@ -55,6 +55,8 @@ public:
 
 	bool isEmpty() const;
 
+	bool isBuffered() const;
+
 private:
 
 	weak_ref <IMAPMessage> m_message;

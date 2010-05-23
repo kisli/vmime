@@ -111,6 +111,13 @@ public:
 	  * @return true if no data is managed by this object, false otherwise
 	  */
 	virtual bool isEmpty() const = 0;
+
+	/** Indicates whether the extract() method can be called multiple times.
+	  *
+	  * @return true if the data can be extracted multiple times, or false
+	  * if not (ie. streamed data from socket)
+	  */
+	virtual bool isBuffered() const = 0;
 };
 
 

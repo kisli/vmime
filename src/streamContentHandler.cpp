@@ -201,4 +201,11 @@ const vmime::encoding& streamContentHandler::getEncoding() const
 }
 
 
+bool streamContentHandler::isBuffered() const
+{
+	// FIXME: some streams can be resetted
+	return false;
+}
+
+
 } // vmime

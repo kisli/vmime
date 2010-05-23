@@ -52,6 +52,8 @@ public:
 	const vmime::encoding& getEncoding() const;
 
 	bool isEmpty() const;
+
+	bool isBuffered() const;
 };
 
 

@@ -184,6 +184,45 @@ public:
 	  */
 	void setContents(ref <const contentHandler> contents);
 
+	/** Set the body contents and type.
+	  *
+	  * @param contents new body contents
+	  * @param type type of contents
+	  */
+	void setContents(ref <const contentHandler> contents, const mediaType& type);
+
+	/** Set the body contents, type and charset.
+	  *
+	  * @param contents new body contents
+	  * @param type type of contents
+	  * @param charset charset of contents
+	  */
+	void setContents(ref <const contentHandler> contents, const mediaType& type, const charset& chset);
+
+	/** Set the body contents, type, charset and encoding.
+	  *
+	  * @param contents new body contents
+	  * @param type type of contents
+	  * @param charset charset of contents
+	  * @param encoding contents encoding
+	  */
+	void setContents(ref <const contentHandler> contents, const mediaType& type,
+		const charset& chset, const encoding& enc);
+
+	/** Set the MIME type and charset of contents.
+	  * If a charset is defined, it will not be modified.
+	  *
+	  * @param type MIME media type of contents
+	  * @param chset charset of contents
+	  */
+	void setContentType(const mediaType& type, const charset& chset);
+
+	/** Set the MIME type of contents.
+	  *
+	  * @param type MIME media type of contents
+	  */
+	void setContentType(const mediaType& type);
+
 	/** Return the media type of the data contained in the body contents.
 	  * This is a shortcut for getHeader()->ContentType()->getValue()
 	  * on the parent part.
@@ -192,6 +231,13 @@ public:
 	  */
 	const mediaType getContentType() const;
 
+	/** Set the charset of contents.
+	  * If the type is not set, it will be set to default "text/plain" type.
+	  *
+	  * @param chset charset of contents
+	  */
+	void setCharset(const charset& chset);
+
 	/** Return the charset of the data contained in the body contents.
 	  * This is a shortcut for getHeader()->ContentType()->getCharset()
 	  * on the parent part.
@@ -199,6 +245,13 @@ public:
 	  * @return charset of body contents
 	  */
 	const charset getCharset() const;
+
+	/** Set the output encoding of contents.
+	  * Contents will be encoded (or re-encoded) when this node is being generated.
+	  *
+	  * @param enc encoding of contents
+	  */
+	void setEncoding(const encoding& enc);
 
 	/** Return the encoding used to encode the body contents.
 	  * This is a shortcut for getHeader()->ContentTransferEncoding()->getValue()

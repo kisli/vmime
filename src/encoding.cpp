@@ -110,7 +110,7 @@ bool encoding::operator!=(const encoding& value) const
 }
 
 
-const encoding encoding::decide
+const encoding encoding::decideImpl
 	(const string::const_iterator begin, const string::const_iterator end)
 {
 	const string::difference_type length = end - begin;
@@ -164,10 +164,40 @@ const encoding encoding::decide
 }
 
 
-const encoding encoding::decide(ref <const contentHandler> /* data */)
+const encoding encoding::decide
+	(ref <const contentHandler> data, const EncodingUsage usage)
 {
-	// TODO: a better solution to do that?
-	return (encoding(encodingTypes::BASE64));
+	if (usage == USAGE_TEXT && data->isBuffered() &&
+	    data->getLength() > 0 && data->getLength() < 32768)
+	{
+		// Extract data into temporary buffer
+		string buffer;
+		utility::outputStreamStringAdapter os(buffer);
+
+		data->extract(os);
+		os.flush();
+
+		return decideImpl(buffer.begin(), buffer.end());
+	}
+	else
+	{
+		return encoding(encodingTypes::BASE64);
+	}
+}
+
+
+const encoding encoding::decide(ref <const contentHandler> data,
+	const charset& chset, const EncodingUsage usage)
+{
+	if (usage == USAGE_TEXT)
+	{
+		encoding recEncoding;
+
+		if (chset.getRecommendedEncoding(recEncoding))
+			return recEncoding;
+	}
+
+	return decide(data, usage);
 }
 
 

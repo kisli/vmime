@@ -69,27 +69,20 @@ void htmlTextPart::generateIn(ref <bodyPart> /* message */, ref <bodyPart> paren
 		ref <bodyPart> part = vmime::create <bodyPart>();
 		parent->getBody()->appendPart(part);
 
-		// -- Set header fields
-		part->getHeader()->ContentType()->setValue
-			(mediaType(mediaTypes::TEXT, mediaTypes::TEXT_PLAIN));
-		part->getHeader()->ContentType().dynamicCast <contentTypeField>()->setCharset(m_charset);
-		part->getHeader()->ContentTransferEncoding()->setValue(encoding(encodingTypes::QUOTED_PRINTABLE));
-
 		// -- Set contents
-		part->getBody()->setContents(m_plainText);
+		part->getBody()->setContents(m_plainText,
+			mediaType(mediaTypes::TEXT, mediaTypes::TEXT_PLAIN), m_charset,
+			encoding::decide(m_plainText, m_charset, encoding::USAGE_TEXT));
 	}
 
 	// HTML text
 	// -- Create a new part
 	ref <bodyPart> htmlPart = vmime::create <bodyPart>();
 
-	// -- Set header fields
-	htmlPart->getHeader()->ContentType()->setValue(mediaType(mediaTypes::TEXT, mediaTypes::TEXT_HTML));
-	htmlPart->getHeader()->ContentType().dynamicCast <contentTypeField>()->setCharset(m_charset);
-	htmlPart->getHeader()->ContentTransferEncoding()->setValue(encoding(encodingTypes::QUOTED_PRINTABLE));
-
 	// -- Set contents
-	htmlPart->getBody()->setContents(m_text);
+	htmlPart->getBody()->setContents(m_text,
+		mediaType(mediaTypes::TEXT, mediaTypes::TEXT_HTML), m_charset,
+		encoding::decide(m_text, m_charset, encoding::USAGE_TEXT));
 
 	// Handle the case we have embedded objects
 	if (!m_objects.empty())

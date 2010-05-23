@@ -173,6 +173,12 @@ bool IMAPMessagePartContentHandler::isEmpty() const
 }
 
 
+bool IMAPMessagePartContentHandler::isBuffered() const
+{
+	return true;
+}
+
+
 } // imap
 } // net
 } // vmime

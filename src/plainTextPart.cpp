@@ -63,13 +63,10 @@ void plainTextPart::generateIn(ref <bodyPart> /* message */, ref <bodyPart> pare
 	ref <bodyPart> part = vmime::create <bodyPart>();
 	parent->getBody()->appendPart(part);
 
-	// Set header fields
-	part->getHeader()->ContentType()->setValue(mediaType(mediaTypes::TEXT, mediaTypes::TEXT_PLAIN));
-	part->getHeader()->ContentType().dynamicCast <contentTypeField>()->setCharset(m_charset);
-	part->getHeader()->ContentTransferEncoding()->setValue(encoding(encodingTypes::QUOTED_PRINTABLE));
-
 	// Set contents
-	part->getBody()->setContents(m_text);
+	part->getBody()->setContents(m_text,
+		mediaType(mediaTypes::TEXT, mediaTypes::TEXT_PLAIN), m_charset,
+		encoding::decide(m_text, m_charset, encoding::USAGE_TEXT));
 }
 
 

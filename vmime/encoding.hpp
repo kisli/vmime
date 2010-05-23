@@ -45,6 +45,13 @@ class encoding : public headerFieldValue
 {
 public:
 
+	enum EncodingUsage
+	{
+		USAGE_TEXT,         /**< Use for body text. */
+		USAGE_BINARY_DATA   /**< Use for attachment, image... */
+	};
+
+
 	encoding();
 	explicit encoding(const string& name);
 	encoding(const encoding& enc);
@@ -75,20 +82,21 @@ public:
 
 	/** Decide which encoding to use based on the specified data.
 	  *
-	  * \deprecated Use the new decide() method which takes a contentHandler parameter.
-	  *
-	  * @param begin start iterator in buffer
-	  * @param end end iterator in buffer
+	  * @param data data used to determine encoding
+	  * @param usage context of use of data
 	  * @return suitable encoding for specified data
 	  */
-	static const encoding decide(const string::const_iterator begin, const string::const_iterator end);
+	static const encoding decide(ref <const contentHandler> data, const EncodingUsage usage = USAGE_BINARY_DATA);
 
-	/** Decide which encoding to use based on the specified data.
+	/** Decide which encoding to use based on the specified data and charset.
 	  *
 	  * @param data data used to determine encoding
-	  * @return suitable encoding for specified data
+	  * @param charset charset of data
+	  * @param usage context of use of data
+	  * @return suitable encoding for specified data and charset
 	  */
-	static const encoding decide(ref <const contentHandler> data);
+	static const encoding decide(ref <const contentHandler> data, const charset& chset, const EncodingUsage usage = USAGE_BINARY_DATA);
+
 
 	ref <component> clone() const;
 	void copyFrom(const component& other);
@@ -105,6 +113,17 @@ public:
 private:
 
 	string m_name;
+
+	/** Decide which encoding to use based on the specified data.
+	  *
+	  * Please note: this will read the whole buffer, so it should be used only
+	  * for small amount of data (eg. text), and not large binary attachments.
+	  *
+	  * @param begin start iterator in buffer
+	  * @param end end iterator in buffer
+	  * @return suitable encoding for specified data
+	  */
+	static const encoding decideImpl(const string::const_iterator begin, const string::const_iterator end);
 
 public:
 

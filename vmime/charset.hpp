@@ -33,6 +33,9 @@ namespace vmime
 {
 
 
+class encoding;  // forward reference
+
+
 /** Charset description (basic type).
   */
 
@@ -58,6 +61,16 @@ public:
 	bool operator!=(const charset& value) const;
 
 	const std::vector <ref <const component> > getChildComponents() const;
+
+	/** Gets the recommended encoding for this charset.
+	  * Note: there may be no recommended encoding.
+	  *
+	  * @param enc output parameter that will hold recommended encoding
+	  * @return true if an encoding is recommended (the encoding is stored
+	  * in the enc parameter), false otherwise (in this case, the enc
+	  * parameter is not modified)
+	  */
+	bool getRecommendedEncoding(encoding& enc) const;
 
 	/** Returns the default charset used on the system.
 	  *

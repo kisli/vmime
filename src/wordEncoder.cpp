@@ -26,6 +26,8 @@
 #include "vmime/exception.hpp"
 #include "vmime/charsetConverter.hpp"
 
+#include "vmime/encoding.hpp"
+
 #include "vmime/utility/encoder/b64Encoder.hpp"
 #include "vmime/utility/encoder/qpEncoder.hpp"
 
@@ -260,50 +262,14 @@ wordEncoder::Encoding wordEncoder::getEncoding() const
 }
 
 
-// Explicitly force encoding for some charsets
-struct CharsetEncodingEntry
-{
-	CharsetEncodingEntry(const std::string& charset_, const wordEncoder::Encoding encoding_)
-		: charset(charset_), encoding(encoding_)
-	{
-	}
-
-	std::string charset;
-	wordEncoder::Encoding encoding;
-};
-
-CharsetEncodingEntry g_charsetEncodingMap[] =
-{
-	// Use QP encoding for ISO-8859-x charsets
-	CharsetEncodingEntry("iso-8859",     wordEncoder::ENCODING_QP),
-	CharsetEncodingEntry("iso8859",      wordEncoder::ENCODING_QP),
-
-	// RFC-1468 states:
-	//   " ISO-2022-JP may also be used in MIME Part 2 headers.  The "B"
-	//     encoding should be used with ISO-2022-JP text. "
-	// Use Base64 encoding for all ISO-2022 charsets.
-	CharsetEncodingEntry("iso-2022",     wordEncoder::ENCODING_B64),
-	CharsetEncodingEntry("iso2022",      wordEncoder::ENCODING_B64),
-
-	// Last entry is not used
-	CharsetEncodingEntry("", wordEncoder::ENCODING_AUTO)
-};
-
-
 // static
 bool wordEncoder::isEncodingNeeded(const string& buffer, const charset& charset)
 {
-	// Special treatment for some charsets
-	const string cset = utility::stringUtils::toLower(charset.getName());
+	// Charset-specific encoding
+	encoding recEncoding;
 
-	for (unsigned int i = 0 ; i < (sizeof(g_charsetEncodingMap) / sizeof(g_charsetEncodingMap[0])) - 1 ; ++i)
-	{
-		if (cset.find(g_charsetEncodingMap[i].charset) != string::npos)
-		{
-			if (g_charsetEncodingMap[i].encoding != wordEncoder::ENCODING_AUTO)
-				return true;
-		}
-	}
+	if (charset.getRecommendedEncoding(recEncoding))
+		return true;
 
 	// No encoding is needed if the buffer only contains ASCII chars
 	if (utility::stringUtils::findFirstNonASCIIchar(buffer.begin(), buffer.end()) != string::npos)
@@ -322,13 +288,15 @@ bool wordEncoder::isEncodingNeeded(const string& buffer, const charset& charset)
 wordEncoder::Encoding wordEncoder::guessBestEncoding
 	(const string& buffer, const charset& charset)
 {
-	// Special treatment for some charsets
-	const string cset = utility::stringUtils::toLower(charset.getName());
+	// Charset-specific encoding
+	encoding recEncoding;
 
-	for (unsigned int i = 0 ; i < (sizeof(g_charsetEncodingMap) / sizeof(g_charsetEncodingMap[0])) - 1 ; ++i)
+	if (charset.getRecommendedEncoding(recEncoding))
 	{
-		if (cset.find(g_charsetEncodingMap[i].charset) != string::npos)
-			return g_charsetEncodingMap[i].encoding;
+		if (recEncoding == encoding(encodingTypes::QUOTED_PRINTABLE))
+			return ENCODING_QP;
+		else
+			return ENCODING_B64;
 	}
 
 	// Use Base64 if more than 40% non-ASCII, or Quoted-Printable else (default)

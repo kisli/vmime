@@ -96,4 +96,10 @@ const vmime::encoding& emptyContentHandler::getEncoding() const
 }
 
 
+bool emptyContentHandler::isBuffered() const
+{
+	return true;
+}
+
+
 } // vmime

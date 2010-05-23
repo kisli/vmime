@@ -62,6 +62,8 @@ public:
 
 	bool isEmpty() const;
 
+	bool isBuffered() const;
+
 private:
 
 	// Equals to NO_ENCODING if data is not encoded, otherwise this
