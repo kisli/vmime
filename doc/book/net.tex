@@ -614,6 +614,27 @@ Suppose we have a message with the following structure:
 The previous example will extract the header and body of the \emph{image/jpeg}
 part.
 
+\subsection{Deleting messages} % ---------------------------------------------
+
+The following example will delete the second and the third message from the
+store.
+
+\begin{lstlisting}[caption={Deleting messages}]
+vmime::ref <vmime::net::folder> folder = store->getDefaultFolder();
+
+folder->deleteMessage(3);
+folder->deleteMessage(2);
+
+// This is equivalent
+std::vector <int> nums;
+nums.push_back(2);
+nums.push_back(3);
+folder->deleteMessages(nums);
+
+// This is also equivalent
+folder->deleteMessages(/* from */ 2, /* to */ 3);
+\end{lstlisting}
+
 \subsection{Events} % --------------------------------------------------------
 
 As a result of executing some operation (or from time to time, even if no
