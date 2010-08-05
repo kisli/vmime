@@ -99,7 +99,7 @@ void IMAPConnection::connect()
 		m_timeoutHandler = store->getTimeoutHandlerFactory()->create();
 
 	// Create and connect the socket
-	m_socket = store->getSocketFactory()->create();
+	m_socket = store->getSocketFactory()->create(m_timeoutHandler);
 
 #if VMIME_HAVE_TLS_SUPPORT
 	if (store->isIMAPS())  // dedicated port/IMAPS

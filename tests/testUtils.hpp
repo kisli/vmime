@@ -260,6 +260,11 @@ public:
 	{
 		return vmime::create <T>();
 	}
+
+	vmime::ref <vmime::net::socket> create(vmime::ref <vmime::net::timeoutHandler> /* th */)
+	{
+		return vmime::create <T>();
+	}
 };
 
 

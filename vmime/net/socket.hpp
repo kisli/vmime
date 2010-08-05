@@ -27,6 +27,8 @@
 
 #include "vmime/base.hpp"
 
+#include "vmime/net/timeoutHandler.hpp"
+
 
 namespace vmime {
 namespace net {
@@ -117,7 +119,18 @@ public:
 
 	virtual ~socketFactory() { }
 
+	/** Creates a socket without timeout handler.
+	  *
+	  * @return a new socket
+	  */
 	virtual ref <socket> create() = 0;
+
+	/** Creates a socket with the specified timeout handler.
+	  *
+	  * @param th timeout handler
+	  * @return a new socket
+	  */
+	virtual ref <socket> create(ref <timeoutHandler> th) = 0;
 };
 
 
