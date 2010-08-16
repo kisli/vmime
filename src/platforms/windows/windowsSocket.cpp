@@ -38,8 +38,8 @@ namespace windows {
 // posixSocket
 //
 
-windowsSocket::windowsSocket()
-	: m_desc(-1)
+windowsSocket::windowsSocket(ref <vmime::net::timeoutHandler> th)
+	: m_timeoutHandler(th), m_desc(-1)
 {
 	WSAData wsaData;
 	WSAStartup(MAKEWORD(1, 1), &wsaData);
@@ -179,9 +179,14 @@ void windowsSocket::sendRaw(const char* buffer, const size_type count)
 
 ref <vmime::net::socket> windowsSocketFactory::create()
 {
-	return vmime::create <windowsSocket>();
+	ref <vmime::net::timeoutHandler> th = NULL;
+	return vmime::create <windowsSocket>(th);
 }
 
+ref <vmime::net::socket> windowsSocketFactory::create(ref <vmime::net::timeoutHandler> th)
+{
+    return vmime::create <windowsSocket>(th);
+}
 
 } // posix
 } // platforms

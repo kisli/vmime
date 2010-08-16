@@ -41,6 +41,7 @@ class windowsSocket : public vmime::net::socket
 {
 public:
 	windowsSocket();
+	windowsSocket(ref <vmime::net::timeoutHandler> th);
 	~windowsSocket();
 
 public:
@@ -59,6 +60,8 @@ public:
 
 private:
 
+	ref <vmime::net::timeoutHandler> m_timeoutHandler;
+
 	char m_buffer[65536];
 	SOCKET m_desc;
 };
@@ -70,6 +73,7 @@ class windowsSocketFactory : public vmime::net::socketFactory
 public:
 
 	ref <vmime::net::socket> create();
+	ref <vmime::net::socket> create(ref <vmime::net::timeoutHandler> th);
 };
 
 
