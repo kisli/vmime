@@ -432,9 +432,21 @@ void parameter::generate(utility::outputStream& os, const string::size_type maxL
 			case '\t':
 			case '\r':
 			case '\n':
+			case '%':
 			case '"':
 			case ';':
 			case ',':
+			case '(':
+			case ')':
+			case '<':
+			case '>':
+			case '@':
+			case ':':
+			case '/':
+			case '[':
+			case ']':
+			case '?':
+			case '=':
 
 				encode = true;
 				break;

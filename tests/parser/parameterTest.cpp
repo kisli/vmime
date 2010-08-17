@@ -37,6 +37,8 @@ VMIME_TEST_SUITE_BEGIN
 		VMIME_TEST(testGenerateRFC2231)
 		VMIME_TEST(testNonStandardEncodedParam)
 		VMIME_TEST(testParseNonSignificantWS)
+		VMIME_TEST(testEncodeTSpecials)
+		VMIME_TEST(testEncodeTSpecialsInRFC2231)
 	VMIME_TEST_LIST_END
 
 
@@ -222,7 +224,11 @@ VMIME_TEST_SUITE_BEGIN
 		p1.appendParameter(vmime::create <vmime::parameter>("param1",
 			vmime::word("value 1\xe9", vmime::charset("charset"))));
 
+#if VMIME_ALWAYS_GENERATE_7BIT_PARAMETER
 		VASSERT_EQ("1", "F: X; param1=\"value 1\";param1*=charset''value%201%E9", p1.generate());
+#else
+		VASSERT_EQ("1", "F: X; param1*=charset''value%201%E9", p1.generate());
+#endif
 
 		// Value that spans on multiple lines
 		parameterizedHeaderField p2;
@@ -230,6 +236,7 @@ VMIME_TEST_SUITE_BEGIN
 			vmime::word("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
 				    vmime::charset("charset"))));
 
+#if VMIME_ALWAYS_GENERATE_7BIT_PARAMETER
 		VASSERT_EQ("2", "F: X; \r\n "
 			"param1=abcdefghijklm;\r\n "
 			"param1*0*=charset''abc;\r\n "
@@ -239,6 +246,16 @@ VMIME_TEST_SUITE_BEGIN
 			"param1*4*=EFGHIJKLM;\r\n "
 			"param1*5*=NOPQRSTUV;\r\n "
 			"param1*6*=WXYZ", p2.generate(25));  // max line length = 25
+#else
+		VASSERT_EQ("2", "F: X; \r\n "
+			"param1*0*=charset''abc;\r\n "
+			"param1*1*=defghijkl;\r\n "
+			"param1*2*=mnopqrstu;\r\n "
+			"param1*3*=vwxyzABCD;\r\n "
+			"param1*4*=EFGHIJKLM;\r\n "
+			"param1*5*=NOPQRSTUV;\r\n "
+			"param1*6*=WXYZ", p2.generate(25));  // max line length = 25
+#endif
 
 		// Non-ASCII parameter value
 		parameterizedHeaderField p3;
@@ -246,6 +263,7 @@ VMIME_TEST_SUITE_BEGIN
 			vmime::word("δσσσσσσσσσσσσσσσσσσσσδσδα δσαδσδσαδσαδασδασ δσαδασδσα δσαδασδσα δασδασδασ δασαχφδδσα 2008.doc",
 				vmime::charset("utf-8"))));
 
+#if VMIME_ALWAYS_GENERATE_7BIT_PARAMETER
 		VASSERT_EQ("3", "F: X; \r\n "
 			"param1=\"      2008.doc\";param1*0*=utf-8''%CE%B4%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83;\r\n "
 			"param1*1*=%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83;\r\n "
@@ -255,6 +273,16 @@ VMIME_TEST_SUITE_BEGIN
 			"param1*5*=%83%CE%B1%CE%B4%CE%B1%CF%83%CE%B4%CF%83%CE%B1%20%CE%B4%CE%B1%CF%83;\r\n "
 			"param1*6*=%CE%B4%CE%B1%CF%83%CE%B4%CE%B1%CF%83%20%CE%B4%CE%B1%CF%83%CE%B1%CF;\r\n "
 			"param1*7*=%87%CF%86%CE%B4%CE%B4%CF%83%CE%B1%202008.doc", p3.generate(80));
+#else
+		VASSERT_EQ("3", "F: X; param1*0*=utf-8''%CE%B4%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83;\r\n "
+			"param1*1*=%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83;\r\n "
+			"param1*2*=%CE%B4%CF%83%CE%B4%CE%B1%20%CE%B4%CF%83%CE%B1%CE%B4%CF%83%CE%B4%CF;\r\n "
+			"param1*3*=%83%CE%B1%CE%B4%CF%83%CE%B1%CE%B4%CE%B1%CF%83%CE%B4%CE%B1%CF%83%20;\r\n "
+			"param1*4*=%CE%B4%CF%83%CE%B1%CE%B4%CE%B1%CF%83%CE%B4%CF%83%CE%B1%20%CE%B4%CF;\r\n "
+			"param1*5*=%83%CE%B1%CE%B4%CE%B1%CF%83%CE%B4%CF%83%CE%B1%20%CE%B4%CE%B1%CF%83;\r\n "
+			"param1*6*=%CE%B4%CE%B1%CF%83%CE%B4%CE%B1%CF%83%20%CE%B4%CE%B1%CF%83%CE%B1%CF;\r\n "
+			"param1*7*=%87%CF%86%CE%B4%CE%B4%CF%83%CE%B1%202008.doc", p3.generate(80));
+#endif
 	}
 
 	void testNonStandardEncodedParam()
@@ -295,6 +323,33 @@ VMIME_TEST_SUITE_BEGIN
 		VASSERT_EQ("2.2", "X", FIELD_VALUE(p2));
 		VASSERT_EQ("2.3", "param1", PARAM_NAME(p2, 0));
 		VASSERT_EQ("2.4", "value1", PARAM_VALUE(p2, 0));
+	}
+
+	// Encode "tspecials"
+	void testEncodeTSpecials()
+	{
+		VASSERT_EQ(" 1", "p=\"val(ue\"",  vmime::create <vmime::parameter>("p", "val(ue")->generate());
+		VASSERT_EQ(" 2", "p=\"val)ue\"",  vmime::create <vmime::parameter>("p", "val)ue")->generate());
+		VASSERT_EQ(" 3", "p=\"val<ue\"",  vmime::create <vmime::parameter>("p", "val<ue")->generate());
+		VASSERT_EQ(" 4", "p=\"val>ue\"",  vmime::create <vmime::parameter>("p", "val>ue")->generate());
+		VASSERT_EQ(" 5", "p=\"val@ue\"",  vmime::create <vmime::parameter>("p", "val@ue")->generate());
+		VASSERT_EQ(" 6", "p=\"val,ue\"",  vmime::create <vmime::parameter>("p", "val,ue")->generate());
+		VASSERT_EQ(" 7", "p=\"val;ue\"",  vmime::create <vmime::parameter>("p", "val;ue")->generate());
+		VASSERT_EQ(" 8", "p=\"val:ue\"",  vmime::create <vmime::parameter>("p", "val:ue")->generate());
+		VASSERT_EQ(" 9", "p=\"val/ue\"",  vmime::create <vmime::parameter>("p", "val/ue")->generate());
+		VASSERT_EQ("10", "p=\"val[ue\"",  vmime::create <vmime::parameter>("p", "val[ue")->generate());
+		VASSERT_EQ("11", "p=\"val]ue\"",  vmime::create <vmime::parameter>("p", "val]ue")->generate());
+		VASSERT_EQ("12", "p=\"val?ue\"",  vmime::create <vmime::parameter>("p", "val?ue")->generate());
+		VASSERT_EQ("13", "p=\"val=ue\"",  vmime::create <vmime::parameter>("p", "val=ue")->generate());
+		VASSERT_EQ("14", "p=\"val ue\"",  vmime::create <vmime::parameter>("p", "val ue")->generate());
+		VASSERT_EQ("15", "p=\"val\tue\"", vmime::create <vmime::parameter>("p", "val\tue")->generate());
+	}
+
+	// http://sourceforge.net/projects/vmime/forums/forum/237356/topic/3812278
+	void testEncodeTSpecialsInRFC2231()
+	{
+		VASSERT_EQ("1", "filename*=UTF-8''my_file_name_%C3%B6%C3%A4%C3%BC_%281%29.txt",
+			vmime::create <vmime::parameter>("filename", "my_file_name_\xc3\xb6\xc3\xa4\xc3\xbc_(1).txt")->generate());
 	}
 
 VMIME_TEST_SUITE_END
