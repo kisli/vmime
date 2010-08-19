@@ -199,10 +199,10 @@ TLSSession::TLSSession(ref <security::cert::certificateVerifier> cv)
 
 	// Initialize credentials
 	gnutls_credentials_set(*m_gnutlsSession,
-		GNUTLS_CRD_ANON, &g_gnutlsGlobal.anonCred);
+		GNUTLS_CRD_ANON, g_gnutlsGlobal.anonCred);
 
 	gnutls_credentials_set(*m_gnutlsSession,
-		GNUTLS_CRD_CERTIFICATE, &g_gnutlsGlobal.certCred);
+		GNUTLS_CRD_CERTIFICATE, g_gnutlsGlobal.certCred);
 }
 
 
