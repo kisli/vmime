@@ -273,9 +273,12 @@ void IMAPMessage::extract(ref <const part> p, utility::outputStream& os,
 	if (peek) command << ".PEEK";
 	command << "[";
 
-	if (section.str().empty() && headerOnly)
+	if (section.str().empty())
 	{
-		command << "HEADER";
+		if (headerOnly)
+			command << "HEADER";
+		else
+			command << "TEXT";
 	}
 	else
 	{
