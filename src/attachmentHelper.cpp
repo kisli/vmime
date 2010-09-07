@@ -36,7 +36,8 @@ namespace vmime
 
 
 // static
-bool attachmentHelper::isBodyPartAnAttachment(ref <const bodyPart> part)
+bool attachmentHelper::isBodyPartAnAttachment
+	(ref <const bodyPart> part, const unsigned int options)
 {
 	try
 	{
@@ -49,54 +50,63 @@ bool attachmentHelper::isBodyPartAnAttachment(ref <const bodyPart> part)
 		if (disp.getName() != contentDispositionTypes::INLINE)
 			return true;
 
-		// If the Content-Disposition is 'inline' and there is no
-		// Content-Id or Content-Location field, it may be an attachment
-		if (!part->getHeader()->hasField(vmime::fields::CONTENT_ID) &&
-		    !part->getHeader()->hasField(vmime::fields::CONTENT_LOCATION))
+		if ((options & INLINE_OBJECTS) == 0)
 		{
-			// If this is the root part, it might not be an attachment
-			if (part->getParentPart() == NULL)
-				return false;
+			// If the Content-Disposition is 'inline' and there is no
+			// Content-Id or Content-Location field, it may be an attachment
+			if (!part->getHeader()->hasField(vmime::fields::CONTENT_ID) &&
+			    !part->getHeader()->hasField(vmime::fields::CONTENT_LOCATION))
+			{
+				// If this is the root part, it might not be an attachment
+				if (part->getParentPart() == NULL)
+					return false;
 
-			return true;
+				return true;
+			}
+
+			return false;
 		}
 	}
 	catch (exceptions::no_such_field&)
 	{
-		// No "Content-disposition" field: assume "attachment" if
-		// type is not "text/..." or "multipart/...".
-		mediaType type;
+		// Will try using Content-Type
+	}
 
-		try
-		{
-			const contentTypeField& ctf = dynamic_cast<contentTypeField&>
-				(*part->getHeader()->findField(fields::CONTENT_TYPE));
+	// Assume "attachment" if type is not "text/..." or "multipart/...".
+	mediaType type;
 
-			type = *ctf.getValue().dynamicCast <const mediaType>();
-		}
-		catch (exceptions::no_such_field&)
-		{
-			// If this is the root part and no Content-Type field is present,
-			// then this may not be a MIME message, so do not assume it is
-			// an attachment
-			if (part->getParentPart() == NULL)
-				return false;
+	try
+	{
+		const contentTypeField& ctf = dynamic_cast<contentTypeField&>
+			(*part->getHeader()->findField(fields::CONTENT_TYPE));
 
-			// No "Content-type" field: assume "application/octet-stream".
-			type = mediaType(mediaTypes::APPLICATION,
-			                 mediaTypes::APPLICATION_OCTET_STREAM);
-		}
+		type = *ctf.getValue().dynamicCast <const mediaType>();
+	}
+	catch (exceptions::no_such_field&)
+	{
+		// If this is the root part and no Content-Type field is present,
+		// then this may not be a MIME message, so do not assume it is
+		// an attachment
+		if (part->getParentPart() == NULL)
+			return false;
 
-		if (type.getType() != mediaTypes::TEXT &&
-		    type.getType() != mediaTypes::MULTIPART)
+		// No "Content-type" field: assume "application/octet-stream".
+		type = mediaType(mediaTypes::APPLICATION,
+				     mediaTypes::APPLICATION_OCTET_STREAM);
+	}
+
+	if (type.getType() != mediaTypes::TEXT &&
+	    type.getType() != mediaTypes::MULTIPART)
+	{
+		if ((options & INLINE_OBJECTS) == 0)
 		{
 			// If a "Content-Id" field is present, it might be an
 			// embedded object (MHTML messages)
 			if (part->getHeader()->hasField(vmime::fields::CONTENT_ID))
 				return false;
-
-			return true;
 		}
+
+		return true;
 	}
 
 	return false;
@@ -104,10 +114,10 @@ bool attachmentHelper::isBodyPartAnAttachment(ref <const bodyPart> part)
 
 
 // static
-ref <const attachment>
-	attachmentHelper::getBodyPartAttachment(ref <const bodyPart> part)
+ref <const attachment> attachmentHelper::getBodyPartAttachment
+	(ref <const bodyPart> part, const unsigned int options)
 {
-	if (!isBodyPartAnAttachment(part))
+	if (!isBodyPartAnAttachment(part, options))
 		return NULL;
 
 	mediaType type;
@@ -140,22 +150,24 @@ ref <const attachment>
 
 // static
 const std::vector <ref <const attachment> >
-	attachmentHelper::findAttachmentsInMessage(ref <const message> msg)
+	attachmentHelper::findAttachmentsInMessage
+		(ref <const message> msg, const unsigned int options)
 {
-	return findAttachmentsInBodyPart(msg);
+	return findAttachmentsInBodyPart(msg, options);
 }
 
 
 // static
 const std::vector <ref <const attachment> >
-	attachmentHelper::findAttachmentsInBodyPart(ref <const bodyPart> part)
+	attachmentHelper::findAttachmentsInBodyPart
+		(ref <const bodyPart> part, const unsigned int options)
 {
 	std::vector <ref <const attachment> > atts;
 
 	// Test this part
-	if (isBodyPartAnAttachment(part))
+	if (isBodyPartAnAttachment(part, options))
 	{
-		atts.push_back(getBodyPartAttachment(part));
+		atts.push_back(getBodyPartAttachment(part, options));
 	}
 	// Find in sub-parts
 	else
@@ -165,7 +177,7 @@ const std::vector <ref <const attachment> >
 		for (int i = 0 ; i < bdy->getPartCount() ; ++i)
 		{
 			std::vector <ref <const attachment> > partAtts =
-				findAttachmentsInBodyPart(bdy->getPartAt(i));
+				findAttachmentsInBodyPart(bdy->getPartAt(i), options);
 
 			std::copy(partAtts.begin(), partAtts.end(), std::back_inserter(atts));
 		}

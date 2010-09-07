@@ -30,10 +30,6 @@
 #include "vmime/attachment.hpp"
 #include "vmime/message.hpp"
 
-#if VMIME_HAVE_MESSAGING_FEATURES
-	#include "vmime/net/message.hpp"
-#endif
-
 
 namespace vmime
 {
@@ -45,31 +41,57 @@ class attachmentHelper
 {
 public:
 
+	/** Options for use with the following functions:
+	  *     findAttachmentsInMessage,
+	  *     getBodyPartAttachment,
+	  * and isBodyPartAnAttachment.
+	  */
+	enum FindOptions
+	{
+		INLINE_OBJECTS = (1 << 0)        /**< Recognize and return inline objects. The aim is to
+		                                      consider MHTML objects (parts with a "Content-Id" or
+		                                      a "Content-Location", such as inline images) as attachments. */
+	};
+
 	/** Test whether a body part is an attachment.
 	  *
 	  * @param part message part to test
+	  * @param options search options (see FindOptions)
 	  * @return true if the part is an attachment, false otherwise
 	  */
-	static bool isBodyPartAnAttachment(ref <const bodyPart> part);
+	static bool isBodyPartAnAttachment(ref <const bodyPart> part, const unsigned int options = 0);
 
 	/** Return attachment information in the specified body part.
 	  * If the specified body part does not contain attachment
 	  * information (ie. is not an attachment), NULL is returned.
 	  *
 	  * @param part message part in which to search
+	  * @param options search options (see FindOptions)
 	  * @return attachment found in the part, or NULL
 	  */
 	static ref <const attachment>
-		getBodyPartAttachment(ref <const bodyPart> part);
+		getBodyPartAttachment(ref <const bodyPart> part, const unsigned int options = 0);
+
+	/** Find all attachments contained in the specified part
+	  * and all its children parts.
+	  * This is simply a recursive call to getBodyPartAttachment().
+	  *
+	  * @param part part in which to search
+	  * @param options search options (see FindOptions)
+	  * @return a list of attachments found
+	  */
+	static const std::vector <ref <const attachment> >
+		findAttachmentsInBodyPart(ref <const bodyPart> part, const unsigned int options = 0);
 
 	/** Find all attachments contained in the specified message.
 	  * This is simply a recursive call to getBodyPartAttachment().
 	  *
 	  * @param msg message in which to search
+	  * @param options search options (see FindOptions)
 	  * @return a list of attachments found
 	  */
 	static const std::vector <ref <const attachment> >
-		findAttachmentsInMessage(ref <const message> msg);
+		findAttachmentsInMessage(ref <const message> msg, const unsigned int options = 0);
 
 	/** Add an attachment to the specified message.
 	  *
@@ -86,9 +108,6 @@ public:
 	static void addAttachment(ref <message> msg, ref <message> amsg);
 
 protected:
-
-	static const std::vector <ref <const attachment> >
-		findAttachmentsInBodyPart(ref <const bodyPart> part);
 
 	static ref <bodyPart> findBodyPart
 		(ref <bodyPart> part, const mediaType& type);
