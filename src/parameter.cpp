@@ -25,6 +25,7 @@
 #include "vmime/parserHelpers.hpp"
 
 #include "vmime/text.hpp"
+#include "vmime/encoding.hpp"
 
 
 namespace vmime
@@ -322,7 +323,13 @@ void parameter::generate(utility::outputStream& os, const string::size_type maxL
 		pos += name.length() + 1;
 	}
 
-	bool extended = false;
+	// Check whether there is a recommended encoding for this charset.
+	// If so, the whole buffer will be encoded. Else, the number of
+	// 7-bit (ASCII) bytes in the input will be used to determine if
+	// we need to encode the whole buffer.
+	encoding recommendedEnc;
+	const bool alwaysEncode = m_value.getCharset().getRecommendedEncoding(recommendedEnc);
+	bool extended = alwaysEncode;
 
 	for (string::size_type i = 0 ; (i < value.length()) && (pos < maxLineLength - 4) ; ++i)
 	{
@@ -454,7 +461,8 @@ void parameter::generate(utility::outputStream& os, const string::size_type maxL
 			default:
 
 				encode = (!parserHelpers::isPrint(c) ||
-				          !parserHelpers::isAscii(c));
+				          !parserHelpers::isAscii(c) ||
+				          alwaysEncode);
 
 				break;
 			}
