@@ -47,6 +47,9 @@ VMIME_TEST_SUITE_BEGIN
 		VMIME_TEST(testWordGenerateQuote)
 		VMIME_TEST(testWordGenerateSpecialCharsets)
 		VMIME_TEST(testWordGenerateSpecials)
+
+		VMIME_TEST(testWhitespace)
+		VMIME_TEST(testWhitespaceMBox)
 	VMIME_TEST_LIST_END
 
 
@@ -141,9 +144,9 @@ VMIME_TEST_SUITE_BEGIN
 		t2.createFromString(s2, c2);
 
 		VASSERT_EQ("2.1", 3, t2.getWordCount());
-		VASSERT_EQ("2.2", "some ASCII characters and special chars:", t2.getWordAt(0)->getBuffer());
+		VASSERT_EQ("2.2", "some ASCII characters and special chars: ", t2.getWordAt(0)->getBuffer());
 		VASSERT_EQ("2.3", vmime::charset(vmime::charsets::US_ASCII), t2.getWordAt(0)->getCharset());
-		VASSERT_EQ("2.4", "\xf1\xf2\xf3\xf4", t2.getWordAt(1)->getBuffer());
+		VASSERT_EQ("2.4", "\xf1\xf2\xf3\xf4 ", t2.getWordAt(1)->getBuffer());
 		VASSERT_EQ("2.5", c2, t2.getWordAt(1)->getCharset());
 		VASSERT_EQ("2.6", "and then more ASCII chars.", t2.getWordAt(2)->getBuffer());
 		VASSERT_EQ("2.7", vmime::charset(vmime::charsets::US_ASCII), t2.getWordAt(2)->getCharset());
@@ -376,6 +379,53 @@ VMIME_TEST_SUITE_BEGIN
 		// In RFC-2047, quotation marks (ASCII 22h) should be encoded
 		VASSERT_EQ("1", "=?UTF-8?Q?=22=C3=9Cml=C3=A4ute=22?=",
 			vmime::word("\x22\xC3\x9Cml\xC3\xA4ute\x22", vmime::charset("UTF-8")).generate());
+	}
+
+	void testWhitespace()
+	{
+		// Create
+		vmime::text text;
+		text.createFromString("Achim Br\xc3\xa4ndt", vmime::charsets::UTF_8);
+
+		VASSERT_EQ("1", 2, text.getWordCount());
+		VASSERT_EQ("2", "Achim ", text.getWordAt(0)->getBuffer());
+		VASSERT_EQ("3", "us-ascii", text.getWordAt(0)->getCharset());
+		VASSERT_EQ("4", "Br\xc3\xa4ndt", text.getWordAt(1)->getBuffer());
+		VASSERT_EQ("5", "utf-8", text.getWordAt(1)->getCharset());
+
+		// Generate
+		VASSERT_EQ("6", "Achim =?utf-8?Q?Br=C3=A4ndt?=", text.generate());
+
+		// Parse
+		text.parse("=?us-ascii?Q?Achim_?= =?utf-8?Q?Br=C3=A4ndt?=");
+
+		VASSERT_EQ("7", 2, text.getWordCount());
+		VASSERT_EQ("8", "Achim ", text.getWordAt(0)->getBuffer());
+		VASSERT_EQ("9", "us-ascii", text.getWordAt(0)->getCharset());
+		VASSERT_EQ("10", "Br\xc3\xa4ndt", text.getWordAt(1)->getBuffer());
+		VASSERT_EQ("11", "utf-8", text.getWordAt(1)->getCharset());
+	}
+
+	void testWhitespaceMBox()
+	{
+		// Space MUST be encoded inside a word
+		vmime::mailbox mbox(vmime::text("Achim Br\xc3\xa4ndt", vmime::charsets::UTF_8), "me@vmime.org");
+		VASSERT_EQ("generate1", "=?us-ascii?Q?Achim_?= =?utf-8?Q?Br=C3=A4ndt?= <me@vmime.org>", mbox.generate());
+
+		vmime::text txt;
+		txt.appendWord(vmime::create <vmime::word>("Achim ", "us-ascii"));
+		txt.appendWord(vmime::create <vmime::word>("Br\xc3\xa4ndt", "utf-8"));
+		mbox = vmime::mailbox(txt, "me@vmime.org");
+		VASSERT_EQ("generate2", "=?us-ascii?Q?Achim_?= =?utf-8?Q?Br=C3=A4ndt?= <me@vmime.org>", mbox.generate());
+
+		mbox.parse("=?us-ascii?Q?Achim?= =?utf-8?Q?Br=C3=A4ndt?= <me@vmime.org>");
+		VASSERT_EQ("parse.name.count", 2, mbox.getName().getWordCount());
+		VASSERT_EQ("parse.name.word1.buffer", "Achim", mbox.getName().getWordAt(0)->getBuffer());
+		VASSERT_EQ("parse.name.word1.charset", "us-ascii", mbox.getName().getWordAt(0)->getCharset());
+		VASSERT_EQ("parse.name.word2.buffer", "Br\xc3\xa4ndt", mbox.getName().getWordAt(1)->getBuffer());
+		VASSERT_EQ("parse.name.word2.charset", "utf-8", mbox.getName().getWordAt(1)->getCharset());
+
+		VASSERT_EQ("parse.email", "me@vmime.org", mbox.getEmail());
 	}
 
 VMIME_TEST_SUITE_END
