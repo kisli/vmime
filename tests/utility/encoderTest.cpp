@@ -33,14 +33,18 @@ VMIME_TEST_SUITE_BEGIN
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testBase64)
 		VMIME_TEST(testQuotedPrintable)
+		VMIME_TEST(testQuotedPrintable_RFC2047)
 	VMIME_TEST_LIST_END
 
 
 	// Encoding helper function
-	static const vmime::string encode(const vmime::string& name, const vmime::string& in, int maxLineLength = 0)
+	static const vmime::string encode(const vmime::string& name, const vmime::string& in,
+		int maxLineLength = 0, const vmime::propertySet props = vmime::propertySet())
 	{
 		vmime::ref <vmime::utility::encoder::encoder> enc =
 			vmime::utility::encoder::encoderFactory::getInstance()->create(name);
+
+		enc->getProperties() = props;
 
 		if (maxLineLength != 0)
 			enc->getProperties()["maxlinelength"] = maxLineLength;
@@ -282,6 +286,37 @@ VMIME_TEST_SUITE_BEGIN
 										encode("quoted-printable",
 											encode("quoted-printable", decoded)))))))));
 		}
+	}
+
+	void testQuotedPrintable_RFC2047()
+	{
+		/*
+		 * The RFC (http://tools.ietf.org/html/rfc2047#section-5) says:
+		 *
+		 *    In this case the set of characters that may be used in a "Q"-encoded
+		 *    'encoded-word' is restricted to: <upper and lower case ASCII
+		 *    letters, decimal digits, "!", "*", "+", "-", "/", "=", and "_"
+		 *    (underscore, ASCII 95.)>.  An 'encoded-word' that appears within a
+		 *    'phrase' MUST be separated from any adjacent 'word', 'text' or
+		 *    'special' by 'linear-white-space'.
+		 */
+
+		vmime::propertySet encProps;
+		encProps["rfc2047"] = true;
+
+		// Ensure 'especials' are encoded
+		VASSERT_EQ("especials.1",  "=2C", encode("quoted-printable", ",", 10, encProps));
+		VASSERT_EQ("especials.2",  "=3B", encode("quoted-printable", ";", 10, encProps));
+		VASSERT_EQ("especials.3",  "=3A", encode("quoted-printable", ":", 10, encProps));
+		VASSERT_EQ("especials.4",  "=5F", encode("quoted-printable", "_", 10, encProps));
+		VASSERT_EQ("especials.5",  "=40", encode("quoted-printable", "@", 10, encProps));
+		VASSERT_EQ("especials.6",  "=28", encode("quoted-printable", "(", 10, encProps));
+		VASSERT_EQ("especials.7",  "=29", encode("quoted-printable", ")", 10, encProps));
+		VASSERT_EQ("especials.8",  "=3C", encode("quoted-printable", "<", 10, encProps));
+		VASSERT_EQ("especials.9",  "=3E", encode("quoted-printable", ">", 10, encProps));
+		VASSERT_EQ("especials.10", "=5B", encode("quoted-printable", "[", 10, encProps));
+		VASSERT_EQ("especials.11", "=5D", encode("quoted-printable", "]", 10, encProps));
+		VASSERT_EQ("especials.12", "=22", encode("quoted-printable", "\"", 10, encProps));
 	}
 
 	// TODO: UUEncode

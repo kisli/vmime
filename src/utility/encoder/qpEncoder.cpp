@@ -236,6 +236,7 @@ utility::stream::size_type qpEncoder::encode(utility::inputStream& in,
 		case '>':
 		case '[':
 		case ']':
+		case '"':
 		{
 			if (rfc2047)
 			{

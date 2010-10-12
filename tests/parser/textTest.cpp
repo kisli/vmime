@@ -46,6 +46,7 @@ VMIME_TEST_SUITE_BEGIN
 		VMIME_TEST(testWordGenerateMultiBytes)
 		VMIME_TEST(testWordGenerateQuote)
 		VMIME_TEST(testWordGenerateSpecialCharsets)
+		VMIME_TEST(testWordGenerateSpecials)
 	VMIME_TEST_LIST_END
 
 
@@ -368,6 +369,13 @@ VMIME_TEST_SUITE_BEGIN
 		VASSERT_EQ("1", "=?iso-2022-jp?B?XlskQiVRITwlPSVKJWshJiU9JVUlSCUmJSclIl5bKEI=?=",
 			cleanGeneratedWords(vmime::word("^[$B%Q!<%=%J%k!&%=%U%H%&%'%\"^[(B",
 				vmime::charset("iso-2022-jp")).generate(100)));
+	}
+
+	void testWordGenerateSpecials()
+	{
+		// In RFC-2047, quotation marks (ASCII 22h) should be encoded
+		VASSERT_EQ("1", "=?UTF-8?Q?=22=C3=9Cml=C3=A4ute=22?=",
+			vmime::word("\x22\xC3\x9Cml\xC3\xA4ute\x22", vmime::charset("UTF-8")).generate());
 	}
 
 VMIME_TEST_SUITE_END
