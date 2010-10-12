@@ -51,10 +51,52 @@ const std::vector <string> qpEncoder::getAvailableProperties() const
 
 
 
-// Encoding table
+// Hex-encoding table
 const unsigned char qpEncoder::sm_hexDigits[] = "0123456789ABCDEF";
 
-// Decoding table
+
+// RFC-2047 encoding table: we always encode RFC-2047 using the restricted
+// charset, that is the one used for 'phrase' in From/To/Cc/... headers.
+//
+// " The set of characters that may be used in a "Q"-encoded 'encoded-word'
+//   is restricted to: <upper and lower case ASCII letters, decimal digits,
+//   "!", "*", "+", "-", "/", "=", and "_" (underscore, ASCII 95.)>. "
+//
+// Two special cases:
+// - encode space (32) as underscore (95)
+// - encode underscore as hex (=5F)
+//
+// This is a quick lookup table:
+//   '1' means "encode", '0' means "no encoding"
+//
+const unsigned char qpEncoder::sm_RFC2047EncodeTable[] =
+{
+	/*   0  NUL */ 1, /*   1  SOH */ 1, /*   2  STX */ 1, /*   3  ETX */ 1, /*   4  EOT */ 1, /*   5  ENQ */ 1,
+	/*   6  ACK */ 1, /*   7  BEL */ 1, /*   8   BS */ 1, /*   9  TAB */ 1, /*  10   LF */ 1, /*  11   VT */ 1,
+	/*  12   FF */ 1, /*  13   CR */ 1, /*  14   SO */ 1, /*  15   SI */ 1, /*  16  DLE */ 1, /*  17  DC1 */ 1,
+	/*  18  DC2 */ 1, /*  19  DC3 */ 1, /*  20  DC4 */ 1, /*  21  NAK */ 1, /*  22  SYN */ 1, /*  23  ETB */ 1,
+	/*  24  CAN */ 1, /*  25   EM */ 1, /*  26  SUB */ 1, /*  27  ESC */ 1, /*  28   FS */ 1, /*  29   GS */ 1,
+	/*  30   RS */ 1, /*  31   US */ 1, /*  32 SPACE*/ 1, /*  33    ! */ 0, /*  34    " */ 1, /*  35    # */ 1,
+	/*  36    $ */ 1, /*  37    % */ 1, /*  38    & */ 1, /*  39    ' */ 1, /*  40    ( */ 1, /*  41    ) */ 1,
+	/*  42    * */ 0, /*  43    + */ 0, /*  44    , */ 1, /*  45    - */ 0, /*  46    . */ 1, /*  47    / */ 0,
+	/*  48    0 */ 0, /*  49    1 */ 0, /*  50    2 */ 0, /*  51    3 */ 0, /*  52    4 */ 0, /*  53    5 */ 0,
+	/*  54    6 */ 0, /*  55    7 */ 0, /*  56    8 */ 0, /*  57    9 */ 0, /*  58    : */ 1, /*  59    ; */ 1,
+	/*  60    < */ 1, /*  61    = */ 1, /*  62    > */ 1, /*  63    ? */ 1, /*  64    @ */ 1, /*  65    A */ 0,
+	/*  66    B */ 0, /*  67    C */ 0, /*  68    D */ 0, /*  69    E */ 0, /*  70    F */ 0, /*  71    G */ 0,
+	/*  72    H */ 0, /*  73    I */ 0, /*  74    J */ 0, /*  75    K */ 0, /*  76    L */ 0, /*  77    M */ 0,
+	/*  78    N */ 0, /*  79    O */ 0, /*  80    P */ 0, /*  81    Q */ 0, /*  82    R */ 0, /*  83    S */ 0,
+	/*  84    T */ 0, /*  85    U */ 0, /*  86    V */ 0, /*  87    W */ 0, /*  88    X */ 0, /*  89    Y */ 0,
+	/*  90    Z */ 0, /*  91    [ */ 1, /*  92    " */ 1, /*  93    ] */ 1, /*  94    ^ */ 1, /*  95    _ */ 1,
+	/*  96    ` */ 1, /*  97    a */ 0, /*  98    b */ 0, /*  99    c */ 0, /* 100    d */ 0, /* 101    e */ 0,
+	/* 102    f */ 0, /* 103    g */ 0, /* 104    h */ 0, /* 105    i */ 0, /* 106    j */ 0, /* 107    k */ 0,
+	/* 108    l */ 0, /* 109    m */ 0, /* 110    n */ 0, /* 111    o */ 0, /* 112    p */ 0, /* 113    q */ 0,
+	/* 114    r */ 0, /* 115    s */ 0, /* 116    t */ 0, /* 117    u */ 0, /* 118    v */ 0, /* 119    w */ 0,
+	/* 120    x */ 0, /* 121    y */ 0, /* 122    z */ 0, /* 123    { */ 1, /* 124    | */ 1, /* 125    } */ 1,
+	/* 126    ~ */ 1, /* 127  DEL */ 1
+};
+
+
+// Hex-decoding table
 const unsigned char qpEncoder::sm_hexDecodeTable[256] =
 {
 	 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -76,6 +118,36 @@ const unsigned char qpEncoder::sm_hexDecodeTable[256] =
 };
 
 
+// static
+bool qpEncoder::RFC2047_isEncodingNeededForChar(const unsigned char c)
+{
+	return (c >= 128 || sm_RFC2047EncodeTable[c] != 0);
+}
+
+
+// static
+int qpEncoder::RFC2047_getEncodedLength(const unsigned char c)
+{
+	if (c >= 128 || sm_RFC2047EncodeTable[c] != 0)
+	{
+		if (c == 32)  // space
+		{
+			// Encoded as "_"
+			return 1;
+		}
+		else
+		{
+			// Hex encoding
+			return 3;
+		}
+	}
+	else
+	{
+		return 1;  // no encoding
+	}
+}
+
+
 #ifndef VMIME_BUILDING_DOC
 
 #define QP_ENCODE_HEX(x) \
@@ -83,7 +155,7 @@ const unsigned char qpEncoder::sm_hexDecodeTable[256] =
 	outBuffer[outBufferPos + 1] = sm_hexDigits[x >> 4];  \
 	outBuffer[outBufferPos + 2] = sm_hexDigits[x & 0xF]; \
 	outBufferPos += 3;                                       \
-	curCol += 3;
+	curCol += 3
 
 #define QP_WRITE(s, x, l) s.write(reinterpret_cast <utility::stream::value_type*>(x), l)
 
@@ -145,34 +217,51 @@ utility::stream::size_type qpEncoder::encode(utility::inputStream& in,
 		// Get the next char and encode it
 		const unsigned char c = static_cast <unsigned char>(buffer[bufferPos++]);
 
-		switch (c)
+		if (rfc2047)
 		{
-		case '.':
-		{
-			if (!rfc2047 && curCol == 0)
+			if (c >= 128 || sm_RFC2047EncodeTable[c] != 0)
 			{
-				// If a '.' appears at the beginning of a line, we encode it to
-				// to avoid problems with SMTP servers... ("\r\n.\r\n" means the
-				// end of data transmission).
-				QP_ENCODE_HEX('.')
-				continue;
-			}
-
-			outBuffer[outBufferPos++] = '.';
-			++curCol;
-			break;
-		}
-		case ' ':
-		{
-			// RFC-2047, Page 5, 4.2. The "Q" encoding:
-			// << The 8-bit hexadecimal value 20 (e.g., ISO-8859-1 SPACE) may be
-			// represented as "_" (underscore, ASCII 95.). >>
-			if (rfc2047)
-			{
-				outBuffer[outBufferPos++] = '_';
-				++curCol;
+				if (c == 32)  // space
+				{
+					// RFC-2047, Page 5, 4.2. The "Q" encoding:
+					// << The 8-bit hexadecimal value 20 (e.g., ISO-8859-1 SPACE) may be
+					// represented as "_" (underscore, ASCII 95.). >>
+					outBuffer[outBufferPos++] = '_';
+					++curCol;
+				}
+				else
+				{
+					// Other characters: '=' + hexadecimal encoding
+					QP_ENCODE_HEX(c);
+				}
 			}
 			else
+			{
+				// No encoding
+				outBuffer[outBufferPos++] = c;
+				++curCol;
+			}
+		}
+		else
+		{
+			switch (c)
+			{
+			case 46:  // .
+			{
+				if (curCol == 0)
+				{
+					// If a '.' appears at the beginning of a line, we encode it to
+					// to avoid problems with SMTP servers... ("\r\n.\r\n" means the
+					// end of data transmission).
+					QP_ENCODE_HEX('.');
+					continue;
+				}
+
+				outBuffer[outBufferPos++] = '.';
+				++curCol;
+				break;
+			}
+			case 32:  // space
 			{
 				// Need to get more data?
 				if (bufferPos >= bufferLength)
@@ -192,100 +281,74 @@ utility::stream::size_type qpEncoder::encode(utility::inputStream& in,
 					outBuffer[outBufferPos++] = ' ';
 					++curCol;
 				}
-			}
 
-			break;
-		}
-		case '\t':
-		{
-			QP_ENCODE_HEX(c)
-			break;
-		}
-		case '\r':
-		case '\n':
-		{
-			// Text mode (where using CRLF or LF or ... does not
-			// care for a new line...)
-			if (text)
+				break;
+			}
+			case 9:   // TAB
 			{
-				outBuffer[outBufferPos++] = c;
-				++curCol;
+				QP_ENCODE_HEX(c);
+				break;
 			}
-			// Binary mode (where CR and LF bytes are important!)
-			else
+			case 13:  // CR
+			case 10:  // LF
 			{
-				QP_ENCODE_HEX(c)
-			}
+				// Text mode (where using CRLF or LF or ... does not
+				// care for a new line...)
+				if (text)
+				{
+					outBuffer[outBufferPos++] = c;
+					++curCol;
+				}
+				// Binary mode (where CR and LF bytes are important!)
+				else
+				{
+					QP_ENCODE_HEX(c);
+				}
 
-			break;
-		}
-		case '=':
-		{
-			QP_ENCODE_HEX('=')
-			break;
-		}
-		// RFC-2047 'especials' characters
-		case ',':
-		case ';':
-		case ':':
-		case '_':
-		case '@':
-		case '(':
-		case ')':
-		case '<':
-		case '>':
-		case '[':
-		case ']':
-		case '"':
-		{
-			if (rfc2047)
+				break;
+			}
+			case 61:  // =
 			{
-				QP_ENCODE_HEX(c)
+				QP_ENCODE_HEX('=');
+				break;
 			}
-			else
+			/*
+				Rule #2: (Literal representation) Octets with decimal values of 33
+				through 60 inclusive, and 62 through 126, inclusive, MAY be
+				represented as the ASCII characters which correspond to those
+				octets (EXCLAMATION POINT through LESS THAN, and GREATER THAN
+				through TILDE, respectively).
+			*/
+			default:
+
+				//if ((c >= 33 && c <= 60) || (c >= 62 && c <= 126))
+				if (c >= 33 && c <= 126 && c != 61 && c != 63)
+				{
+					outBuffer[outBufferPos++] = c;
+					++curCol;
+				}
+				// Other characters: '=' + hexadecimal encoding
+				else
+				{
+					QP_ENCODE_HEX(c);
+				}
+
+				break;
+
+			} // switch (c)
+
+			// Soft line break : "=\r\n"
+			if (cutLines && curCol >= maxLineLength - 1)
 			{
-				outBuffer[outBufferPos++] = c;
-				++curCol;
+				outBuffer[outBufferPos] = '=';
+				outBuffer[outBufferPos + 1] = '\r';
+				outBuffer[outBufferPos + 2] = '\n';
+
+				outBufferPos += 3;
+				curCol = 0;
 			}
 
-			break;
-		}
-		/*
-			Rule #2: (Literal representation) Octets with decimal values of 33
-			through 60 inclusive, and 62 through 126, inclusive, MAY be
-			represented as the ASCII characters which correspond to those
-			octets (EXCLAMATION POINT through LESS THAN, and GREATER THAN
-			through TILDE, respectively).
-		*/
-		default:
-		{
-			//if ((c >= 33 && c <= 60) || (c >= 62 && c <= 126))
-			if (c >= 33 && c <= 126 && c != 61 && c != 63)
-			{
-				outBuffer[outBufferPos++] = c;
-				++curCol;
-			}
-			// Other characters: '=' + hexadecimal encoding
-			else
-			{
-				QP_ENCODE_HEX(c)
-			}
-
-			break;
-		}
-
-		}
-
-		// Soft line break : "=\r\n"
-		if (cutLines && curCol >= maxLineLength - 1)
-		{
-			outBuffer[outBufferPos] = '=';
-			outBuffer[outBufferPos + 1] = '\r';
-			outBuffer[outBufferPos + 2] = '\n';
-
-			outBufferPos += 3;
-			curCol = 0;
-		}
+		} // !rfc2047
 
 		++inTotal;
 

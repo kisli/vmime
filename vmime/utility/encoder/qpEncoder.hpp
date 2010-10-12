@@ -47,10 +47,14 @@ public:
 
 	const std::vector <string> getAvailableProperties() const;
 
+	static bool RFC2047_isEncodingNeededForChar(const unsigned char c);
+	static int RFC2047_getEncodedLength(const unsigned char c);
+
 protected:
 
 	static const unsigned char sm_hexDigits[17];
 	static const unsigned char sm_hexDecodeTable[256];
+	static const unsigned char sm_RFC2047EncodeTable[128];
 };
 
 

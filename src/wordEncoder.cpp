@@ -150,29 +150,9 @@ const string wordEncoder::getNextChunk(const string::size_type maxLength)
 			while ((inputCount == 0 || outputCount < maxLength) && (inputCount < remaining))
 			{
 				const unsigned char c = m_buffer[m_pos + inputCount];
-				bool encoded = true;
-
-				switch (c)
-				{
-				case ',':
-				case ';':
-				case ':':
-				case '_':
-				case '=':
-
-					encoded = true;
-					break;
-
-				default:
-
-					if (c >= 33 && c <= 126 && c != 61)
-						encoded = false;
-
-					break;
-				}
 
 				inputCount++;
-				outputCount += (encoded ? 3 : 1);
+				outputCount += utility::encoder::qpEncoder::RFC2047_getEncodedLength(c);
 			}
 
 			// Encode chunk
@@ -217,28 +197,7 @@ const string wordEncoder::getNextChunk(const string::size_type maxLength)
 				for (string::size_type i = 0, n = encodeBytes.length() ; i < n ; ++i)
 				{
 					const unsigned char c = encodeBytes[i];
-					bool encoded = true;
-
-					switch (c)
-					{
-					case ',':
-					case ';':
-					case ':':
-					case '_':
-					case '=':
-
-						encoded = true;
-						break;
-
-					default:
-
-						if (c >= 33 && c <= 126 && c != 61)
-							encoded = false;
-
-						break;
-					}
-
-					outputCount += (encoded ? 3 : 1);
+					outputCount += utility::encoder::qpEncoder::RFC2047_getEncodedLength(c);
 				}
 			}
 
