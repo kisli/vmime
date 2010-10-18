@@ -351,7 +351,6 @@ void word::generate(utility::outputStream& os, const string::size_type maxLineLe
 	//  - there is enough remaining space on the current line to hold the whole buffer
 	if (!encodingNeeded &&
 	    (flags & text::QUOTE_IF_POSSIBLE) &&
-	    !encodingNeeded &&
 	    m_buffer.find('"') == string::npos &&
 	    (curLineLength + 2 /* 2 x " */ + m_buffer.length()) < maxLineLength)
 	{
@@ -361,6 +360,40 @@ void word::generate(utility::outputStream& os, const string::size_type maxLineLe
 	// We will fold lines without encoding them.
 	else if (!encodingNeeded)
 	{
+		// Here, we could have the following conditions:
+		//
+		//  * a maximum line length of N bytes
+		//  * a buffer containing N+1 bytes, with no whitespace
+		//
+		// Look in the buffer for any run (ie. whitespace-separated sequence) which
+		// is longer than the maximum line length. If there is one, then force encoding,
+		// so that no generated line is longer than the maximum line length.
+		string::size_type maxRunLength = 0;
+		string::size_type curRunLength = 0;
+
+		for (string::const_iterator p = m_buffer.begin(), end = m_buffer.end() ; p != end ; ++p)
+		{
+			if (parserHelpers::isSpace(*p))
+			{
+				maxRunLength = std::max(maxRunLength, curRunLength);
+				curRunLength = 0;
+			}
+			else
+			{
+				curRunLength++;
+			}
+		}
+
+		maxRunLength = std::max(maxRunLength, curRunLength);
+
+		if (maxRunLength >= maxLineLength - 3)
+		{
+			// Generate with encoding forced
+			generate(os, maxLineLength, curLinePos, newLinePos, flags | text::FORCE_ENCODING, state);
+			return;
+		}
+
+		// Output runs, and fold line when a whitespace is encountered
 		string::const_iterator lastWSpos = m_buffer.end(); // last white-space position
 		string::const_iterator curLineStart = m_buffer.begin(); // current line start
 

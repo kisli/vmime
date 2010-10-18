@@ -50,6 +50,8 @@ VMIME_TEST_SUITE_BEGIN
 
 		VMIME_TEST(testWhitespace)
 		VMIME_TEST(testWhitespaceMBox)
+
+		VMIME_TEST(testFoldingAscii)
 	VMIME_TEST_LIST_END
 
 
@@ -426,6 +428,18 @@ VMIME_TEST_SUITE_BEGIN
 		VASSERT_EQ("parse.name.word2.charset", "utf-8", mbox.getName().getWordAt(1)->getCharset());
 
 		VASSERT_EQ("parse.email", "me@vmime.org", mbox.getEmail());
+	}
+
+	void testFoldingAscii()
+	{
+		// In this test, no encoding is needed, but line should be folded anyway
+		vmime::word w("01234567890123456789012345678901234567890123456789"
+		              "01234567890123456789012345678901234567890123456789", vmime::charset("us-ascii"));
+
+		VASSERT_EQ("fold.ascii",
+			"=?us-ascii?Q?01234567890123456789012345678901234?=\r\n"
+			" =?us-ascii?Q?5678901234567890123456789012345678?=\r\n"
+			" =?us-ascii?Q?9012345678901234567890123456789?=", w.generate(50));
 	}
 
 VMIME_TEST_SUITE_END
