@@ -419,10 +419,12 @@ int IMAPUtils::messageFlagsFromFlags(const IMAPParser::flag_list* list)
 		case IMAPParser::flag::SEEN:
 			flags |= message::FLAG_SEEN;
 			break;
+		case IMAPParser::flag::DRAFT:
+			flags |= message::FLAG_DRAFT;
+			break;
 
 		default:
 		//case IMAPParser::flag::UNKNOWN:
-		//case IMAPParser::flag::DRAFT:
 			break;
 		}
 	}
@@ -439,6 +441,7 @@ const string IMAPUtils::messageFlagList(const int flags)
 	if (flags & message::FLAG_MARKED) flagList.push_back("\\Flagged");
 	if (flags & message::FLAG_DELETED) flagList.push_back("\\Deleted");
 	if (flags & message::FLAG_SEEN) flagList.push_back("\\Seen");
+	if (flags & message::FLAG_DRAFT) flagList.push_back("\\Draft");
 
 	if (!flagList.empty())
 	{

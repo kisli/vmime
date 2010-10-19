@@ -555,6 +555,7 @@ void IMAPMessage::setFlags(const int flags, const int mode)
 	if (flags & FLAG_MARKED) flagList.push_back("\\Flagged");
 	if (flags & FLAG_DELETED) flagList.push_back("\\Deleted");
 	if (flags & FLAG_SEEN) flagList.push_back("\\Seen");
+	if (flags & FLAG_DRAFT) flagList.push_back("\\Draft");
 
 	if (!flagList.empty())
 	{

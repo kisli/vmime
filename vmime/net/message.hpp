@@ -227,6 +227,7 @@ public:
 		FLAG_REPLIED = (1 << 3),   /**< User replied to this message. */
 		FLAG_MARKED  = (1 << 4),   /**< Used-defined flag. */
 		FLAG_PASSED  = (1 << 5),   /**< Message has been resent/forwarded/bounced. */
+		FLAG_DRAFT   = (1 << 6),   /**< Message is marked as a 'draft'. */
 
 		FLAG_UNDEFINED = 9999      /**< Used internally (this should not be returned
 		                                by the flags() function). */

@@ -102,6 +102,7 @@ int maildirUtils::extractFlags(const utility::file::path::component& comp)
 		case 'T': case 't': flags |= message::FLAG_DELETED; break;
 		case 'F': case 'f': flags |= message::FLAG_MARKED; break;
 		case 'P': case 'p': flags |= message::FLAG_PASSED; break;
+		case 'D': case 'd': flags |= message::FLAG_DRAFT; break;
 		}
 	}
 
@@ -121,6 +122,7 @@ const utility::file::path::component maildirUtils::buildFlags(const int flags)
 	if (flags & message::FLAG_REPLIED) str += "R";
 	if (flags & message::FLAG_SEEN)    str += "S";
 	if (flags & message::FLAG_DELETED) str += "T";
+	if (flags & message::FLAG_DRAFT)   str += "D";
 
 	return (utility::file::path::component(str));
 }
