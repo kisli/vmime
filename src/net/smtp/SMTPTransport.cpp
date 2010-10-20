@@ -583,7 +583,7 @@ void SMTPTransport::send(const mailbox& expeditor, const mailboxList& recipients
 		if ((resp = readResponse())->getCode() != 250)
 		{
 			internalDisconnect();
-			throw exceptions::command_error("RCPT TO", resp->getText());
+			throw exceptions::command_error("RCPT TO", resp->getText(), mbox.getEmail());
 		}
 	}
 
