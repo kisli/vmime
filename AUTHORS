@@ -10,6 +10,13 @@ under the GNU GPL license in 2003.
 VMIME CONTRIBUTORS
 ==================
 
+VMime is Open Source software, you are free and welcome to contribute!
+
+If you have a patch and you want it to be included into official VMime
+release, you have to release your patch into the public domain or assign
+the copyright to "VMime authors". You will then be credited in this
+AUTHORS file.
+
  - Stefan Uhrig  <stefanuhrig@gmx.net>
  - Rafael Fernandez <prf@adinet.com.uy>
  - Xin Li <lixin3@staff.sina.com.cn>
@@ -22,6 +29,8 @@ VMIME CONTRIBUTORS
  - Bartek Szurgot <vempirelord@wp.pl, http://baszerr.org>
  - Achim Brandt <http://sourceforge.net/users/a-brandt/>
 
-Please apologize if I have forgotten someone here.  ;)
+Please apologize if I have forgotten someone here.  ;)  Send me an email
+to <vincent@vincent-richard.net> if you want your name to be listed.
+
 See SVN Changelog for full list.
 
