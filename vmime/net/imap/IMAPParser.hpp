@@ -3823,7 +3823,9 @@ public:
 
 		msg_att_item()
 			: m_date_time(NULL), m_number(NULL), m_envelope(NULL),
-			  m_uniqueid(NULL), m_nstring(NULL), m_body(NULL), m_flag_list(NULL)
+			  m_uniqueid(NULL), m_nstring(NULL), m_body(NULL), m_flag_list(NULL),
+			  m_section(NULL)
+              
 		{
 		}
 
@@ -3836,6 +3838,7 @@ public:
 			delete (m_nstring);
 			delete (m_body);
 			delete (m_flag_list);
+ 			delete (m_section);
 		}
 
 		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
