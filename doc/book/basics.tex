@@ -669,7 +669,7 @@ vmime::string inText = "Linux dans un téléphone mobile";
 vmime::charset inCharset = "utf-8";
 
 vmime::text outText;
-vmime::newFromString(inText, inCharset, &outText);
+outText.createFromString(inText, inCharset);
 
 // 'outText' now contains 3 words:
 //    . <us-ascii>   "Linux dans un "
