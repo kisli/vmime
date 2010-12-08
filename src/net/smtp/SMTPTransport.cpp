@@ -516,6 +516,7 @@ void SMTPTransport::internalDisconnect()
 	try
 	{
 		sendRequest("QUIT");
+		readResponse();
 	}
 	catch (exception&)
 	{
@@ -565,7 +566,7 @@ void SMTPTransport::send(const mailbox& expeditor, const mailboxList& recipients
 	// Emit the "MAIL" command
 	ref <SMTPResponse> resp;
 
-	sendRequest("MAIL FROM: <" + expeditor.getEmail() + ">");
+	sendRequest("MAIL FROM:<" + expeditor.getEmail() + ">");
 
 	if ((resp = readResponse())->getCode() != 250)
 	{
@@ -578,7 +579,7 @@ void SMTPTransport::send(const mailbox& expeditor, const mailboxList& recipients
 	{
 		const mailbox& mbox = *recipients.getMailboxAt(i);
 
-		sendRequest("RCPT TO: <" + mbox.getEmail() + ">");
+		sendRequest("RCPT TO:<" + mbox.getEmail() + ">");
 
 		if ((resp = readResponse())->getCode() != 250)
 		{
