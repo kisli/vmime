@@ -165,7 +165,7 @@ public:
 			}
 			else if (cmd == "MAIL")
 			{
-				VASSERT_EQ("MAIL", std::string("MAIL FROM: <expeditor@test.vmime.org>"), line);
+				VASSERT_EQ("MAIL", std::string("MAIL FROM:<expeditor@test.vmime.org>"), line);
 
 				localSend("250 OK\r\n");
 			}
