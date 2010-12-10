@@ -84,7 +84,7 @@ VMIME_TEST_SUITE_BEGIN
 		vmime::string str =
 			"Content-Type: multipart/mixed; boundary=\"MY-BOUNDARY\""
 			"\r\n\r\n"
-			"--MY-BOUNDARY\r\nHEADER1\r\n\r\nBODY1"
+			"--MY-BOUNDARY\r\nHEADER1\r\n\r\nBODY1\r\n"
 			"--MY-BOUNDARY\r\nHEADER2\r\n\r\nBODY2";
 
 		vmime::bodyPart p;

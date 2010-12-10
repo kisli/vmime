@@ -127,9 +127,29 @@ void body::parse(const string& buffer, const string::size_type position,
 		const string boundarySep("--" + boundary);
 
 		string::size_type partStart = position;
-		string::size_type pos = buffer.find(boundarySep, position);
+		string::size_type pos = position;
 
 		bool lastPart = false;
+
+		while (pos != string::npos && pos < end)
+		{
+			pos = buffer.find(boundarySep, pos);
+
+			if (pos == string::npos ||
+			    ((pos == 0 || buffer[pos - 1] == '\n') &&
+			     (buffer[pos + boundarySep.length()] == '\r' ||
+			      buffer[pos + boundarySep.length()] == '\n' ||
+			      buffer[pos + boundarySep.length()] == '-'
+			     )
+			    )
+			   )
+			{
+				break;
+			}
+
+			// boundary not a beginning of line, or just a prefix of another, continue the search.
+			pos++;
+		}
 
 		if (pos != string::npos && pos < end)
 		{
@@ -181,7 +201,26 @@ void body::parse(const string& buffer, const string::size_type position,
 			}
 
 			partStart = pos;
-			pos = buffer.find(boundarySep, partStart);
+
+			while (pos != string::npos && pos < end)
+			{
+				pos = buffer.find(boundarySep, pos);
+
+				if (pos == string::npos ||
+				    ((pos == 0 || buffer[pos - 1] == '\n') &&
+				     (buffer[pos + boundarySep.length()] == '\r' ||
+				      buffer[pos + boundarySep.length()] == '\n' ||
+					buffer[pos + boundarySep.length()] == '-'
+				     )
+				    )
+				   )
+				{
+					break;
+				}
+
+				// boundary not a beginning of line, or just a prefix of another, continue the search.
+				pos++;
+			}
 		}
 
 		m_contents = vmime::create <emptyContentHandler>();
