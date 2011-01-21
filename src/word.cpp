@@ -386,7 +386,7 @@ void word::generate(utility::outputStream& os, const string::size_type maxLineLe
 
 		maxRunLength = std::max(maxRunLength, curRunLength);
 
-		if (maxRunLength >= maxLineLength - 3)
+		if (((flags & text::FORCE_NO_ENCODING) == 0) && maxRunLength >= maxLineLength - 3)
 		{
 			// Generate with encoding forced
 			generate(os, maxLineLength, curLinePos, newLinePos, flags | text::FORCE_ENCODING, state);

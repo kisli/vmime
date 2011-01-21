@@ -52,6 +52,7 @@ VMIME_TEST_SUITE_BEGIN
 		VMIME_TEST(testWhitespaceMBox)
 
 		VMIME_TEST(testFoldingAscii)
+		VMIME_TEST(testForcedNonEncoding)
 	VMIME_TEST_LIST_END
 
 
@@ -440,6 +441,16 @@ VMIME_TEST_SUITE_BEGIN
 			"=?us-ascii?Q?01234567890123456789012345678901234?=\r\n"
 			" =?us-ascii?Q?5678901234567890123456789012345678?=\r\n"
 			" =?us-ascii?Q?9012345678901234567890123456789?=", w.generate(50));
+	}
+
+	void testForcedNonEncoding()
+	{
+		// Testing long unbreakable and unencodable header
+		vmime::relay r;
+		r.parse(" from User (Ee9GMqZQ8t7IQwftfAFHd2KyScCYRrFSJ50tKEoXv2bVCG4HcPU80GGWiFabAvG77FekpGgF1h@[127.0.0.1]) by servername.hostname.com\n\t"
+				"with esmtp id 1NGTS9-2C0sqG0; Fri, 4 Dec 2009 09:23:49 +0100");
+
+		VASSERT_EQ("received.long", "from User\r\n (Ee9GMqZQ8t7IQwftfAFHd2KyScCYRrFSJ50tKEoXv2bVCG4HcPU80GGWiFabAvG77FekpGgF1h@[127.0.0.1])\r\n by servername.hostname.com with esmtp id 1NGTS9-2C0sqG0; Fri, 4 Dec 2009\r\n 09:23:49 +0100", r.generate(78));
 	}
 
 VMIME_TEST_SUITE_END
