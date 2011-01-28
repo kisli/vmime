@@ -460,7 +460,7 @@ void word::generate(utility::outputStream& os, const string::size_type maxLineLe
 
 					os << string(curLineStart, p);
 
-					if (parserHelpers::isSpace(*(p - 1)))
+					if (p != m_buffer.begin() && parserHelpers::isSpace(*(p - 1)))
 						state->lastCharIsSpace = true;
 					else
 						state->lastCharIsSpace = false;
