@@ -34,6 +34,8 @@ VMIME_TEST_SUITE_BEGIN
 		VMIME_TEST(testParse)
 		VMIME_TEST(testGenerate)
 		VMIME_TEST(testParseMissingLastBoundary)
+		VMIME_TEST(testPrologEpilog)
+		VMIME_TEST(testPrologEncoding)
 	VMIME_TEST_LIST_END
 
 
@@ -103,6 +105,80 @@ VMIME_TEST_SUITE_BEGIN
 		p1.getBody()->setContents(vmime::create <vmime::stringContentHandler>("Baz"));
 
 		VASSERT_EQ("1", "Foo: bar\r\n\r\nBaz", p1.generate());
+	}
+
+	void testPrologEpilog()
+	{
+		const char testMail[] =
+			"To: test@vmime.org\r\n"
+			"From: test@vmime.org\r\n"
+			"Subject: Prolog and epilog test\r\n"
+			"Content-Type: multipart/mixed; \r\n"
+			" boundary=\"=_boundary\"\r\n"
+			"\r\n"
+			"Prolog text\r\n"
+			"--=_boundary\r\n"
+			"Content-Type: text/plain\r\n"
+			"\r\n"
+			"Part1\r\n"
+			"--=_boundary--\r\n"
+			"Epilog text";
+
+		vmime::bodyPart part;
+		part.parse(testMail);
+
+		VASSERT_EQ("prolog", "Prolog text", part.getBody()->getPrologText());
+		VASSERT_EQ("epilog", "Epilog text", part.getBody()->getEpilogText());
+	}
+
+	// Test for bug fix: prolog should not be encoded
+	// http://sourceforge.net/tracker/?func=detail&atid=525568&aid=3174903&group_id=69724
+	void testPrologEncoding()
+	{
+		const char testmail[] =
+			"To: test@vmime.org\r\n"
+			"From: test@vmime.org\r\n"
+			"Subject: Prolog encoding test\r\n"
+			"Content-Type: multipart/mixed; \r\n"
+			" boundary=\"=_+ZWjySayKqSf2CyrfnNpaAcO6-G1HpoXdHZ4YyswAWqEY39Q\"\r\n"
+			"\r\n"
+			"This is a multi-part message in MIME format. Your mail reader does not\r\n"
+			"understand MIME message format.\r\n"
+			"--=_+ZWjySayKqSf2CyrfnNpaAcO6-G1HpoXdHZ4YyswAWqEY39Q\r\n"
+			"Content-Type: text/html; charset=windows-1251\r\n"
+			"Content-Transfer-Encoding: quoted-printable\r\n"
+			"\r\n"
+			"=DD=F2=EE =F2=E5=EA=F1=F2=EE=E2=E0=FF =F7=E0=F1=F2=FC =F1=EB=EE=E6=ED=EE=E3=\r\n"
+			"=EE =F1=EE=EE=E1=F9=E5=ED=E8=FF\r\n"
+			"--=_+ZWjySayKqSf2CyrfnNpaAcO6-G1HpoXdHZ4YyswAWqEY39Q\r\n"
+			"Content-Type: application/octet-stream; charset=windows-1251\r\n"
+			"Content-Disposition: attachment; filename=FNS.zip\r\n"
+			"Content-Transfer-Encoding: base64\r\n"
+			"\r\n"
+			"UEsDBB...snap...EEAAAAAA==\r\n"
+			"--=_+ZWjySayKqSf2CyrfnNpaAcO6-G1HpoXdHZ4YyswAWqEY39Q--\r\n"
+			"Epilog text";
+
+		vmime::ref<vmime::message> msg = vmime::create<vmime::message>();
+
+		std::string istr(testmail);
+
+		std::string ostr;
+		vmime::utility::outputStreamStringAdapter out(ostr);
+
+		for (int i = 0 ; i < 10 ; ++i)
+		{
+			ostr.clear();
+
+			msg->parse(istr);
+			msg->generate(out);
+
+			istr = ostr;
+		}
+
+		VASSERT_EQ("prolog", "This is a multi-part message in MIME format. Your mail reader"
+					   " does not understand MIME message format.", msg->getBody()->getPrologText());
+		VASSERT_EQ("epilog", "Epilog text", msg->getBody()->getEpilogText());
 	}
 
 VMIME_TEST_SUITE_END

@@ -102,7 +102,9 @@ ref <word> word::parseNext(const string& buffer, const string::size_type positio
 				++pos;
 
 			unencoded += buffer.substr(startPos, endPos - startPos);
-			unencoded += ' ';
+
+			if (pos != end)  // ignore white-spaces at end
+				unencoded += ' ';
 
 			startPos = pos;
 			continue;
@@ -191,14 +193,15 @@ ref <word> word::parseNext(const string& buffer, const string::size_type positio
 		++pos;
 	}
 
-	// Treat unencoded text at the end of the buffer
-	if (end != startPos)
-	{
-		if (startPos != pos && !isFirst && prevIsEncoded)
-			unencoded += whiteSpaces;
+	if (startPos != end && !isFirst && prevIsEncoded)
+		unencoded += whiteSpaces;
 
+	if (startPos != end)
 		unencoded += buffer.substr(startPos, end - startPos);
 
+	// Treat unencoded text at the end of the buffer
+	if (!unencoded.empty())
+	{
 		ref <word> w = vmime::create <word>(unencoded, charset(charsets::US_ASCII));
 		w->setParsedBounds(position, end);
 
@@ -337,12 +340,14 @@ void word::generate(utility::outputStream& os, const string::size_type maxLineLe
 		state = &defaultGeneratorState;
 
 	// Find out if encoding is forced or required by contents + charset
-	bool encodingNeeded = (flags & text::FORCE_ENCODING) != 0;
+	bool encodingNeeded = false;
 
-	if (encodingNeeded == false)
-		encodingNeeded = wordEncoder::isEncodingNeeded(m_buffer, m_charset);
-	else if ((flags & text::FORCE_NO_ENCODING) != 0)
+	if ((flags & text::FORCE_NO_ENCODING) != 0)
 		encodingNeeded = false;
+	else if ((flags & text::FORCE_ENCODING) != 0)
+		encodingNeeded = true;
+	else  // auto-detect
+		encodingNeeded = wordEncoder::isEncodingNeeded(m_buffer, m_charset);
 
 	// If possible and requested (with flag), quote the buffer (no folding is performed).
 	// Quoting is possible if and only if:

@@ -153,7 +153,10 @@ void body::parse(const string& buffer, const string::size_type position,
 
 		if (pos != string::npos && pos < end)
 		{
-			m_prologText = string(buffer.begin() + position, buffer.begin() + pos);
+			vmime::text text;
+			text.parse(buffer, position, pos);
+
+			m_prologText = text.getWholeBuffer();
 		}
 
 		for (int index = 0 ; !lastPart && (pos != string::npos) && (pos < end) ; ++index)
@@ -246,7 +249,10 @@ void body::parse(const string& buffer, const string::size_type position,
 		// Treat remaining text as epilog
 		else if (partStart < end)
 		{
-			m_epilogText = string(buffer.begin() + partStart, buffer.begin() + end);
+			vmime::text text;
+			text.parse(buffer, partStart, end);
+
+			m_epilogText = text.getWholeBuffer();
 		}
 	}
 	// Treat the contents as 'simple' data
@@ -333,7 +339,7 @@ void body::generate(utility::outputStream& os, const string::size_type maxLineLe
 
 		if (!prologText.empty())
 		{
-			text prolog(word(prologText, getCharset()));
+			text prolog(prologText, vmime::charset("us-ascii"));
 
 			prolog.encodeAndFold(os, maxLineLength, 0,
 				NULL, text::FORCE_NO_ENCODING | text::NO_NEW_LINE_SEQUENCE);
@@ -356,7 +362,7 @@ void body::generate(utility::outputStream& os, const string::size_type maxLineLe
 
 		if (!epilogText.empty())
 		{
-			text epilog(word(epilogText, getCharset()));
+			text epilog(epilogText, vmime::charset("us-ascii"));
 
 			epilog.encodeAndFold(os, maxLineLength, 0,
 				NULL, text::FORCE_NO_ENCODING | text::NO_NEW_LINE_SEQUENCE);
