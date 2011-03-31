@@ -119,6 +119,7 @@ void charsetConverter::convert(utility::inputStream& in, utility::outputStream& 
 	size_t inPos = 0;
 
 	bool prevIsInvalid = false;
+	bool breakAfterNext = false;
 
 	while (true)
 	{
@@ -126,11 +127,12 @@ void charsetConverter::convert(utility::inputStream& in, utility::outputStream& 
 		size_t inLength = static_cast <size_t>(in.read(inBuffer + inPos, sizeof(inBuffer) - inPos) + inPos);
 		size_t outLength = sizeof(outBuffer);
 
-		const char* inPtr = inBuffer;
+		const char* inPtr = breakAfterNext ? NULL : inBuffer;
+		size_t *ptrLength = breakAfterNext ? NULL : &inLength;
 		char* outPtr = outBuffer;
 
 		// Convert input bytes
-		if (iconv(cd, ICONV_HACK(&inPtr), &inLength,
+		if (iconv(cd, ICONV_HACK(&inPtr), ptrLength,
 			      &outPtr, &outLength) == static_cast <size_t>(-1))
 		{
 			// Illegal input sequence or input sequence has no equivalent
@@ -170,9 +172,12 @@ void charsetConverter::convert(utility::inputStream& in, utility::outputStream& 
 			prevIsInvalid = false;
 		}
 
-		// Check for end of data
-		if (in.eof() && inPos == 0)
+		if (breakAfterNext)
 			break;
+
+		// Check for end of data, loop again to flush stateful data from iconv
+		if (in.eof() && inPos == 0)
+			breakAfterNext = true;
 	}
 }
 

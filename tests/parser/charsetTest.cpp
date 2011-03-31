@@ -100,6 +100,7 @@ VMIME_TEST_SUITE_BEGIN
 		VMIME_TEST(testFilterValid1)
 		VMIME_TEST(testFilterValid2)
 		VMIME_TEST(testFilterValid3)
+		VMIME_TEST(testEncodingHebrew1255)
 
 		// Test invalid input
 		VMIME_TEST(testFilterInvalid1)
@@ -227,6 +228,15 @@ VMIME_TEST_SUITE_BEGIN
 		VASSERT_EQ("1", toHex(expectedOut), toHex(actualOut));
 	}
 
+	void testEncodingHebrew1255()
+	{
+		// hewbrew string in windows-1255 charset
+		const char data[] = "\xe9\xf9\xf7\xf8\xe9\xf9\xf8\xf7\xe9\xe9\xf9";
+		vmime::word w = vmime::word(data, "windows-1255");
+		vmime::string encoded = w.generate();
+		// less than 60% ascii, base64 received
+		VASSERT_EQ("1", "=?windows-1255?B?6fn3+On5+Pfp6fk=?=", encoded);
+	}
 
 	// Conversion to hexadecimal for easier debugging
 	static const vmime::string toHex(const vmime::string str)
