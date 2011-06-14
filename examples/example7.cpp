@@ -43,18 +43,18 @@ int main()
 	vmime::platform::setHandler<vmime::platforms::posix::posixHandler>();
 
 	// Enumerate encoders
-	vmime::encoderFactory* ef = vmime::encoderFactory::getInstance();
+	vmime::utility::encoder::encoderFactory* ef = vmime::utility::encoder::encoderFactory::getInstance();
 
 	std::cout << "Available encoders:" << std::endl;
 
 	for (int i = 0 ; i < ef->getEncoderCount() ; ++i)
 	{
-		vmime::ref <const vmime::encoderFactory::registeredEncoder>
+		vmime::ref <const vmime::utility::encoder::encoderFactory::registeredEncoder>
 			enc = ef->getEncoderAt(i);
 
 		std::cout << "  * " << enc->getName() << std::endl;
 
-		vmime::ref <vmime::encoder> e = enc->create();
+		vmime::ref <vmime::utility::encoder::encoder> e = enc->create();
 
 		std::vector <vmime::string> props = e->getAvailableProperties();
 
