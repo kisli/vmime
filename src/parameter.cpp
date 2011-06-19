@@ -281,7 +281,8 @@ void parameter::generate(utility::outputStream& os, const string::size_type maxL
 	bool needQuoting = false;
 	string::size_type valueLength = 0;
 
-	for (string::size_type i = 0 ; (i < value.length()) && (pos + valueLength < maxLineLength - 4) ; ++i, ++valueLength)
+	// Use worst-case length name.length()+2 for 'name=' part of line
+	for (string::size_type i = 0 ; (i < value.length()) && (pos + name.length() + 2 + valueLength < maxLineLength - 4) ; ++i, ++valueLength)
 	{
 		switch (value[i])
 		{
