@@ -45,6 +45,9 @@ charset::charset()
 charset::charset(const string& name)
 	: m_name(name)
 {
+	// If we receive this rfc-1642 valid MIME charset, convert it to something usefull for iconv
+	if (utility::stringUtils::isStringEqualNoCase(m_name, "unicode-1-1-utf-7"))
+		m_name = "utf-7";
 }
 
 
@@ -59,6 +62,10 @@ void charset::parse(const string& buffer, const string::size_type position,
 {
 	m_name = utility::stringUtils::trim
 		(string(buffer.begin() + position, buffer.begin() + end));
+
+	// If we parsed this rfc-1642 valid MIME charset, convert it to something usefull for iconv
+	if (utility::stringUtils::isStringEqualNoCase(m_name, "unicode-1-1-utf-7"))
+		m_name = "utf-7";
 
 	setParsedBounds(position, end);
 
