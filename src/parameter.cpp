@@ -268,17 +268,19 @@ void parameter::generate(utility::outputStream& os, const string::size_type maxL
 	// value is to be generated.
 
 	// A stream for a temporary storage
-	std::ostringstream sevenBitBuffer;
+	std::string sevenBitBuffer;
+	utility::outputStreamStringAdapter sevenBitStream(sevenBitBuffer);
 
 	string::size_type pos = curLinePos;
 
 	if (pos + name.length() + 10 + value.length() > maxLineLength)
 	{
-		sevenBitBuffer << NEW_LINE_SEQUENCE;
+		sevenBitStream << NEW_LINE_SEQUENCE;
 		pos = NEW_LINE_SEQUENCE_LENGTH;
 	}
 
 	bool needQuoting = false;
+	bool needQuotedPrintable = false;
 	string::size_type valueLength = 0;
 
 	// Use worst-case length name.length()+2 for 'name=' part of line
@@ -308,6 +310,16 @@ void parameter::generate(utility::outputStream& os, const string::size_type maxL
 
 			needQuoting = true;
 			break;
+
+		default:
+
+			if (!parserHelpers::isAscii(value[i]))
+			{
+				needQuotedPrintable = true;
+				needQuoting = true;
+			}
+
+			break;
 		}
 	}
 
@@ -315,12 +327,12 @@ void parameter::generate(utility::outputStream& os, const string::size_type maxL
 
 	if (needQuoting)
 	{
-		sevenBitBuffer << name << "=\"";
+		sevenBitStream << name << "=\"";
 		pos += name.length() + 2;
 	}
 	else
 	{
-		sevenBitBuffer << name << "=";
+		sevenBitStream << name << "=";
 		pos += name.length() + 1;
 	}
 
@@ -332,29 +344,43 @@ void parameter::generate(utility::outputStream& os, const string::size_type maxL
 	const bool alwaysEncode = m_value.getCharset().getRecommendedEncoding(recommendedEnc);
 	bool extended = alwaysEncode;
 
-	for (string::size_type i = 0 ; (i < value.length()) && (pos < maxLineLength - 4) ; ++i)
+	if (needQuotedPrintable)
 	{
-		const char_t c = value[i];
-
-		if (/* needQuoting && */ (c == '"' || c == '\\'))  // 'needQuoting' is implicit
-		{
-			sevenBitBuffer << '\\' << value[i];  // escape 'x' with '\x'
-			pos += 2;
-		}
-		else if (parserHelpers::isAscii(c))
-		{
-			sevenBitBuffer << value[i];
-			++pos;
-		}
-		else
-		{
-			extended = true;
-		}
+		// Send the name in quoted-printable, so outlook express et.al.
+		// will understand the real filename
+		size_t oldLen = sevenBitBuffer.length();
+		m_value.generate(sevenBitStream);
+		pos += sevenBitBuffer.length() - oldLen;
+		extended = true;		// also send with RFC-2231 encoding
 	}
+	else
+	{
+		// Do not chop off this value, but just add the complete name as one header line.
+		for (string::size_type i = 0 ; i < value.length() ; ++i)
+		{
+			const char_t c = value[i];
+
+			if (/* needQuoting && */ (c == '"' || c == '\\'))  // 'needQuoting' is implicit
+			{
+				sevenBitStream << '\\' << value[i];  // escape 'x' with '\x'
+				pos += 2;
+			}
+			else if (parserHelpers::isAscii(c))
+			{
+				sevenBitStream << value[i];
+				++pos;
+			}
+			else
+			{
+				extended = true;
+			}
+		}
+
+	} // !needQuotedPrintable
 
 	if (needQuoting)
 	{
-		sevenBitBuffer << '"';
+		sevenBitStream << '"';
 		++pos;
 	}
 
@@ -532,7 +558,7 @@ void parameter::generate(utility::outputStream& os, const string::size_type maxL
 		// "7bit/us-ascii" will suffice in this case.
 
 		// Output what has been stored in temporary buffer so far
-		os << sevenBitBuffer.str();
+		os << sevenBitBuffer;
 	}
 #endif // !VMIME_ALWAYS_GENERATE_7BIT_PARAMETER
 
