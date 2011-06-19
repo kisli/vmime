@@ -88,6 +88,7 @@ void mailbox::parse(const string& buffer, const string::size_type position,
 	// Temporary buffers for extracted name and address
 	string name;
 	string address;
+	bool hadBrackets = false;
 
 	while (p < pend)
 	{
@@ -283,6 +284,7 @@ void mailbox::parse(const string& buffer, const string::size_type position,
 				}
 				else if (*p == '>')
 				{
+					hadBrackets = true;
 					break;
 				}
 				else if (!parserHelpers::isSpace(*p))
@@ -309,7 +311,7 @@ void mailbox::parse(const string& buffer, const string::size_type position,
 
 	// Swap name and address when no address was found
 	// (email address is mandatory, whereas name is optional).
-	if (address.empty() && !name.empty())
+	if (address.empty() && !name.empty() && !hadBrackets)
 	{
 		m_email.clear();
 		m_email.reserve(name.size());

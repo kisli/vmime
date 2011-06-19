@@ -32,6 +32,7 @@ VMIME_TEST_SUITE_BEGIN
 
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testParse)
+		VMIME_TEST(testEmptyEmailAddress)
 	VMIME_TEST_LIST_END
 
 
@@ -111,6 +112,20 @@ VMIME_TEST_SUITE_BEGIN
 
 			VASSERT_EQ(oss.str(), out, cmp.str());
 		}
+	}
+
+	void testEmptyEmailAddress()
+	{
+		vmime::addressList addrList;
+		addrList.parse("\"Full Name\" <>");
+
+		VASSERT_EQ("count", 1, addrList.getAddressCount());
+		VASSERT_EQ("!group", false, addrList.getAddressAt(0)->isGroup());
+
+		vmime::ref <vmime::mailbox> mbox = addrList.getAddressAt(0).dynamicCast <vmime::mailbox>();
+
+		VASSERT_EQ("name", "Full Name", mbox->getName());
+		VASSERT_EQ("email", "", mbox->getEmail());
 	}
 
 VMIME_TEST_SUITE_END
