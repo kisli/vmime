@@ -51,17 +51,15 @@ ref <message> messageBuilder::construct() const
 	// Generate the header fields
 	msg->getHeader()->Subject()->setValue(m_subject);
 
-	if (m_from.isEmpty())
-		throw exceptions::no_expeditor();
-
-	if ((m_to.isEmpty() || m_to.getAddressAt(0)->isEmpty()) &&
+	if (((m_to.isEmpty()) || (m_to.getAddressAt(0)->isEmpty() && !m_to.getAddressAt(0)->isGroup())) &&
 	    (m_cc.isEmpty() || m_cc.getAddressAt(0)->isEmpty()) &&
 	    (m_bcc.isEmpty() || m_bcc.getAddressAt(0)->isEmpty()))
 	{
 		throw exceptions::no_recipient();
 	}
 
-	msg->getHeader()->From()->setValue(m_from);
+	if (!m_from.isEmpty())
+		msg->getHeader()->From()->setValue(m_from);
 
 	if (!m_to.isEmpty())
 		msg->getHeader()->To()->setValue(m_to);
