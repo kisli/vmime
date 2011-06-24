@@ -1089,7 +1089,7 @@ def generateAutotools(target, source, env):
 	vmime_pc_in.write("Description: " + packageDescription + "\n")
 	vmime_pc_in.write("Version: @VERSION@\n")
 	vmime_pc_in.write("Requires: @GSASL_REQUIRED@\n")
-	vmime_pc_in.write("Libs: -L${libdir} -l@GENERIC_VERSIONED_LIBRARY_NAME@ @GSASL_LIBS@ @LIBGNUTLS_LIBS@ @LIBICONV@ @PTHREAD_LIBS@ @VMIME_ADDITIONAL_PC_LIBS@\n")
+	vmime_pc_in.write("Libs: -L${libdir} -l@GENERIC_VERSIONED_LIBRARY_NAME@ @GSASL_LIBS@ @LIBGNUTLS_LIBS@ @LIBICONV@ @PTHREAD_LIBS@ @LIBICONV@ @PTHREAD_LIBS@ @VMIME_ADDITIONAL_PC_LIBS@\n")
 	#vmime_pc_in.write("Cflags: -I${includedir}/@GENERIC_VERSIONED_LIBRARY_NAME@\n")
 	vmime_pc_in.write("Cflags: -I${includedir}/ @LIBGNUTLS_CFLAGS@\n")
 	vmime_pc_in.close()
