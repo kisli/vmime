@@ -197,6 +197,11 @@ void body::parse(const string& buffer, const string::size_type position,
 			{
 				ref <bodyPart> part = vmime::create <bodyPart>();
 
+				// End before start may happen on empty bodyparts (directly
+				// successive boundaries without even a line-break)
+				if (partEnd < partStart)
+					std::swap(partStart, partEnd);
+
 				part->parse(buffer, partStart, partEnd, NULL);
 				part->m_parent = m_part;
 

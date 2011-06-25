@@ -36,6 +36,7 @@ VMIME_TEST_SUITE_BEGIN
 		VMIME_TEST(testParseMissingLastBoundary)
 		VMIME_TEST(testPrologEpilog)
 		VMIME_TEST(testPrologEncoding)
+		VMIME_TEST(testSuccessiveBoundaries)
 	VMIME_TEST_LIST_END
 
 
@@ -179,6 +180,24 @@ VMIME_TEST_SUITE_BEGIN
 		VASSERT_EQ("prolog", "This is a multi-part message in MIME format. Your mail reader"
 					   " does not understand MIME message format.", msg->getBody()->getPrologText());
 		VASSERT_EQ("epilog", "Epilog text", msg->getBody()->getEpilogText());
+	}
+
+	void testSuccessiveBoundaries()
+	{
+		vmime::string str =
+			"Content-Type: multipart/mixed; boundary=\"MY-BOUNDARY\""
+			"\r\n\r\n"
+			"--MY-BOUNDARY\r\nHEADER1\r\n\r\nBODY1\r\n"
+			"--MY-BOUNDARY\r\n"
+			"--MY-BOUNDARY--\r\n";
+
+		vmime::bodyPart p;
+		p.parse(str);
+
+		VASSERT_EQ("count", 2, p.getBody()->getPartCount());
+
+		VASSERT_EQ("part1-body", "BODY1", extractContents(p.getBody()->getPartAt(0)->getBody()->getContents()));
+		VASSERT_EQ("part2-body", "", extractContents(p.getBody()->getPartAt(1)->getBody()->getContents()));
 	}
 
 VMIME_TEST_SUITE_END
