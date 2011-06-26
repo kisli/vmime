@@ -320,12 +320,6 @@ void text::createFromString(const string& in, const charset& ch)
 					}
 					else
 					{
-						if (count)
-						{
-							ref <word> w = getWordAt(getWordCount() - 1);
-							w->getBuffer() += ' ';
-						}
-
 						appendWord(vmime::create <word>
 							(chunk, charset(charsets::US_ASCII)));
 

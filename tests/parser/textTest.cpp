@@ -53,6 +53,8 @@ VMIME_TEST_SUITE_BEGIN
 
 		VMIME_TEST(testFoldingAscii)
 		VMIME_TEST(testForcedNonEncoding)
+
+		VMIME_TEST(testBugFix20110511)
 	VMIME_TEST_LIST_END
 
 
@@ -149,7 +151,7 @@ VMIME_TEST_SUITE_BEGIN
 		VASSERT_EQ("2.1", 3, t2.getWordCount());
 		VASSERT_EQ("2.2", "some ASCII characters and special chars: ", t2.getWordAt(0)->getBuffer());
 		VASSERT_EQ("2.3", vmime::charset(vmime::charsets::US_ASCII), t2.getWordAt(0)->getCharset());
-		VASSERT_EQ("2.4", "\xf1\xf2\xf3\xf4 ", t2.getWordAt(1)->getBuffer());
+		VASSERT_EQ("2.4", "\xf1\xf2\xf3\xf4", t2.getWordAt(1)->getBuffer());
 		VASSERT_EQ("2.5", c2, t2.getWordAt(1)->getCharset());
 		VASSERT_EQ("2.6", "and then more ASCII chars.", t2.getWordAt(2)->getBuffer());
 		VASSERT_EQ("2.7", vmime::charset(vmime::charsets::US_ASCII), t2.getWordAt(2)->getCharset());
@@ -451,6 +453,44 @@ VMIME_TEST_SUITE_BEGIN
 				"with esmtp id 1NGTS9-2C0sqG0; Fri, 4 Dec 2009 09:23:49 +0100");
 
 		VASSERT_EQ("received.long", "from User\r\n (Ee9GMqZQ8t7IQwftfAFHd2KyScCYRrFSJ50tKEoXv2bVCG4HcPU80GGWiFabAvG77FekpGgF1h@[127.0.0.1])\r\n by servername.hostname.com with esmtp id 1NGTS9-2C0sqG0; Fri, 4 Dec 2009\r\n 09:23:49 +0100", r.generate(78));
+	}
+
+	void testBugFix20110511()
+	{
+		/*
+
+		 Using the latest version of vmime (0.9.1), encoding the following string: Jean
+		 Gwenaël Dutourd will result in:
+		 Jean =?utf-8?Q?Gwena=C3=ABl_?= Dutourd
+		 However, decoding this will result in Jean Gwenaël  Dutourd (notice two spaces
+		 between the last 2 words).  The encoder adds a _ after the second word, but
+		 since the last word is not encoded, the space between them is not ignored, and
+		 is decoded into an additional space.
+
+		 See: http://sourceforge.net/projects/vmime/forums/forum/237357/topic/4531365
+
+		*/
+
+		const std::string DECODED_TEXT = "Jean Gwenaël Dutourd";
+		const std::string ENCODED_TEXT = "Jean =?utf-8?Q?Gwena=C3=ABl?= Dutourd";
+
+		// Encode
+		VASSERT_EQ("encode", ENCODED_TEXT,
+			vmime::text::newFromString(DECODED_TEXT, vmime::charset("utf-8"))->generate());
+
+		// Decode
+		vmime::text t;
+		t.parse(ENCODED_TEXT);
+
+		// -- words
+		std::ostringstream oss; oss << t;
+		VASSERT_EQ("decode1",
+			"[text: [[word: charset=us-ascii, buffer=Jean ],"
+			        "[word: charset=utf-8, buffer=Gwenaël],"
+				  "[word: charset=us-ascii, buffer= Dutourd]]]", oss.str());
+
+		// -- getWholeBuffer
+		VASSERT_EQ("decode2", DECODED_TEXT, t.getWholeBuffer());
 	}
 
 VMIME_TEST_SUITE_END
