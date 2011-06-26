@@ -816,6 +816,7 @@ else:
 config_hpp.write('// -- TLS/SSL support\n')
 if env['with_tls'] == 'yes':
 	config_hpp.write('#define VMIME_HAVE_TLS_SUPPORT 1\n')
+	config_hpp.write('#define HAVE_GNUTLS_PRIORITY_FUNCS 1\n')
 else:
 	config_hpp.write('#define VMIME_HAVE_TLS_SUPPORT 0\n')
 
@@ -1626,10 +1627,41 @@ if test "x$conf_tls" = "xyes"; then
 	else
 		AC_MSG_ERROR(can't find an usable version of GNU TLS library)
 	fi
+
+	# -- check for gnutls_priority_set_direct() function
+	if test "x$have_gnutls" = "xyes"; then
+		AC_MSG_CHECKING(for gnutls_priority_set_direct)
+
+		LIBS_save="$LIBS"
+		LIBS="$LIBS $LIBGNUTLS_LIBS"
+		CPPFLAGS_save="$CPPFLAGS"
+		CPPFLAGS="$CPPFLAGS $LIBGNUTLS_CFLAGS"
+
+		AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <gnutls/gnutls.h>],
+		                                [gnutls_session s; gnutls_priority_set_direct(s, NULL, NULL);])],
+		               [have_gnutls_priority_funcs=yes],
+		               [have_gnutls_priority_funcs=no])
+
+		CPPFLAGS="$CPPFLAGS_save"
+		LIBS="$LIBS_save"
+
+		AC_MSG_RESULT([$have_gnutls_priority_funcs])
+
+		if test "x$have_gnutls_priority_funcs" = "xyes"; then
+			AM_CONDITIONAL(HAVE_GNUTLS_PRIORITY_FUNCS, true)
+			HAVE_GNUTLS_PRIORITY_FUNCS=1
+		else
+			AM_CONDITIONAL(HAVE_GNUTLS_PRIORITY_FUNCS, false)
+			HAVE_GNUTLS_PRIORITY_FUNCS=0
+		fi
+	fi
 else
 	AM_CONDITIONAL(VMIME_HAVE_TLS_SUPPORT, false)
 	VMIME_HAVE_TLS_SUPPORT=0
 fi
+
+AC_SUBST(LIBGNUTLS_CFLAGS)
+AC_SUBST(LIBGNUTLS_LIBS)
 
 # ** platform handlers
 
@@ -1919,6 +1951,7 @@ typedef unsigned ${VMIME_TYPE_INT32} vmime_uint32;
 #define VMIME_HAVE_SASL_SUPPORT ${VMIME_HAVE_SASL_SUPPORT}
 // -- TLS support
 #define VMIME_HAVE_TLS_SUPPORT ${VMIME_HAVE_TLS_SUPPORT}
+#define HAVE_GNUTLS_PRIORITY_FUNCS ${HAVE_GNUTLS_PRIORITY_FUNCS}
 // -- Messaging support
 #define VMIME_HAVE_MESSAGING_FEATURES ${VMIME_HAVE_MESSAGING_FEATURES}
 """)

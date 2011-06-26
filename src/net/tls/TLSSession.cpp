@@ -123,6 +123,21 @@ TLSSession::TLSSession(ref <security::cert::certificateVerifier> cv)
 
 	// Sets some default priority on the ciphers, key exchange methods,
 	// macs and compression methods.
+#if HAVE_GNUTLS_PRIORITY_FUNCS
+
+	if ((res = gnutls_priority_set_direct
+		(*m_gnutlsSession, "NORMAL:%SSL3_RECORD_VERSION", NULL)) != 0)
+	{
+		if ((res = gnutls_priority_set_direct
+			(*m_gnutlsSession, "NORMAL", NULL)) != 0)
+		{
+			throwTLSException
+				("gnutls_priority_set_direct", res);
+		}
+	}
+
+#else  // !HAVE_GNUTLS_PRIORITY_FUNCS
+
 	gnutls_set_default_priority(*m_gnutlsSession);
 
 	// Sets the priority on the certificate types supported by gnutls.
@@ -196,6 +211,8 @@ TLSSession::TLSSession(ref <security::cert::certificateVerifier> cv)
 	};
 
 	gnutls_compression_set_priority(*m_gnutlsSession, compressionPriority);
+
+#endif // !HAVE_GNUTLS_PRIORITY_FUNCS
 
 	// Initialize credentials
 	gnutls_credentials_set(*m_gnutlsSession,
