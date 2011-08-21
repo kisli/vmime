@@ -26,9 +26,17 @@
 
 #include "vmime/config.hpp"
 
+// Dependency on gcrypt is not needed since GNU TLS version 2.12.
+// See here: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=638651
+#if GNUTLS_VERSION_NUMBER <= 0x020b00
+#	define VMIME_GNUTLS_NEEDS_GCRYPT  1
+#endif
+
 #if VMIME_HAVE_PTHREAD
 #	include <pthread.h>
-#	include <gcrypt.h>
+#	if VMIME_GNUTLS_NEEDS_GCRYPT
+#		include <gcrypt.h>
+#	endif
 #	include <errno.h>
 #endif // VMIME_HAVE_PTHREAD
 
@@ -49,7 +57,7 @@
 #endif // VMIME_DEBUG && GNUTLS_DEBUG
 
 
-#if VMIME_HAVE_PTHREAD && defined(GCRY_THREAD_OPTION_PTHREAD_IMPL)
+#if VMIME_HAVE_PTHREAD && VMIME_GNUTLS_NEEDS_GCRYPT && defined(GCRY_THREAD_OPTION_PTHREAD_IMPL)
 extern "C"
 {
 	GCRY_THREAD_OPTION_PTHREAD_IMPL;
@@ -70,7 +78,9 @@ struct TLSGlobal
 	TLSGlobal()
 	{
 #if VMIME_HAVE_PTHREAD && defined(GCRY_THREAD_OPTION_PTHREAD_IMPL)
+	#if VMIME_GNUTLS_NEEDS_GCRYPT
 		gcry_control(GCRYCTL_SET_THREAD_CBS, &gcry_threads_pthread);
+	#endif // VMIME_GNUTLS_NEEDS_GCRYPT
 #endif // VMIME_HAVE_PTHREAD && defined(GCRY_THREAD_OPTION_PTHREAD_IMPL
 
 		gnutls_global_init();
