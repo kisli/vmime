@@ -139,6 +139,7 @@ TLSSession::TLSSession(ref <security::cert::certificateVerifier> cv)
 	// Sets some default priority on the ciphers, key exchange methods,
 	// macs and compression methods.
 #if HAVE_GNUTLS_PRIORITY_FUNCS
+	gnutls_dh_set_prime_bits(*m_gnutlsSession, 128);
 
 	if ((res = gnutls_priority_set_direct
 		(*m_gnutlsSession, "NORMAL:%SSL3_RECORD_VERSION", NULL)) != 0)
