@@ -22,7 +22,9 @@
 //
 
 #include <gnutls/gnutls.h>
+#if GNUTLS_VERSION_NUMBER < 0x030000
 #include <gnutls/extra.h>
+#endif
 
 #include "vmime/config.hpp"
 
