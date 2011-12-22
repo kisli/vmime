@@ -1,10 +1,10 @@
 
-This file contains coding guidelines for VMime. You should follow these
-guidelines if you want to contribute to VMime. It guarantees some minimal
-quality of the code.
+This file contains coding guidelines for VMime. You should follow them
+if you want to contribute to VMime. The rules below are not guidelines
+or recommendations, but strict rules.
 
 
-1. General guidelines
+1. General rules
      1.1. Language
      1.2. Unit tests
      1.3. CVS
@@ -18,19 +18,22 @@ quality of the code.
      2.5. Line length
      2.6. Spaces and parentheses
      2.7. End-of-line character
+     2.8. Short functions
+     2.9. Limit Variable Scope
 3. Naming conventions
      3.1. Classes
      3.2. Variables/parameters/member variables
      3.3. Member variables
      3.4. Files
      3.5. Namespaces
+     3.6. Constants
 4. Comments
 5. Miscellaneous
 
 
 
-1. General guidelines
-=====================
+1. General rules
+================
 
 1.1. Language
 -------------
@@ -50,7 +53,7 @@ When you fix a bug, also add a new test case to ensure the bug will not
 happen anymore.
 
 
-1.3. CVS
+1.3. SVN
 --------
 
 Each commit MUST be done with a message ('-m' flag) that briefly describes what
@@ -154,7 +157,11 @@ Except when body spans over multiple lines:
 2.5. Line length
 ----------------
 
-Line length should not exceed 80 characters.
+Each line of text should not exceed 80 characters.
+
+Exception: if a comment line contains an example command or a literal URL
+longer than 100 characters, that line may be longer than 100 characters
+for ease of cut and paste.
 
 
 2.6. Spaces and parentheses
@@ -191,6 +198,30 @@ Do use a single space before flow control statements:
 
 Configure your editor to use "\n" (UNIX convention) for end-of-line sequence,
 and not "\r\n" (Windows), nor "\n\r", nor any other combination.
+
+
+2.8. Short functions
+--------------------
+
+To the extent that it is feasible, functions should be kept small and focused.
+It is, however, recognized that long functions are sometimes appropriate, so no
+hard limit is placed on method length. If a function exceeds 40 lines or so,
+think about whether it can be broken up without harming the structure of the
+program.
+
+
+2.9. Limit Variable Scope
+-------------------------
+
+The scope of local variables should be kept to a minimum. By doing so, you
+increase the readability and maintainability of your code and reduce the
+likelihood of error. Each variable should be declared in the innermost block
+that encloses all uses of the variable.
+
+Local variables should be declared at the point they are first used. Nearly
+every local variable declaration should contain an initializer. If you don't
+yet have enough information to initialize a variable sensibly, you should
+postpone the declaration until you do.
 
 
 
@@ -253,6 +284,12 @@ Implementation files must be placed in 'src/' directory.
 ---------------
 
 Namespaces are named exactly like variables.
+
+
+3.6. Constants
+--------------
+
+Constants are ALL_CAPS_WITH_UNDERSCORES.
 
 
 
