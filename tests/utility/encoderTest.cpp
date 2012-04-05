@@ -33,6 +33,8 @@ VMIME_TEST_SUITE_BEGIN
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testBase64)
 		VMIME_TEST(testQuotedPrintable)
+		VMIME_TEST(testQuotedPrintable_SoftLineBreaks)
+		VMIME_TEST(testQuotedPrintable_CRLF)
 		VMIME_TEST(testQuotedPrintable_RFC2047)
 	VMIME_TEST_LIST_END
 
@@ -286,6 +288,35 @@ VMIME_TEST_SUITE_BEGIN
 										encode("quoted-printable",
 											encode("quoted-printable", decoded)))))))));
 		}
+	}
+
+	/** Tests Soft Line Breaks (RFC-2047/6.7(5). */
+	void testQuotedPrintable_SoftLineBreaks()
+	{
+		VASSERT_EQ("1", "Now's the time=\r\n"
+		                " for all folk =\r\n"
+		                "to come to the=\r\n"
+		                " aid of their =\r\n"
+		                "country.",
+		                encode("quoted-printable", "Now's the time for all folk "
+		                                           "to come to the aid of their country.", 15));
+	}
+
+	/** In text mode, ensure line breaks in QP-encoded text are represented
+	  * by a CRLF sequence, as per RFC-2047/6.7(4). */
+	void testQuotedPrintable_CRLF()
+	{
+		vmime::propertySet encProps;
+
+		// in "text" mode
+		encProps["text"] = true;
+		VASSERT_EQ("text", "line1\r\nline2",
+		           encode("quoted-printable", "line1\r\nline2", 80, encProps));
+
+		// in "binary" mode
+		encProps["text"] = false;
+		VASSERT_EQ("binary", "line1=0D=0Aline2",
+		           encode("quoted-printable", "line1\r\nline2", 80, encProps));
 	}
 
 	void testQuotedPrintable_RFC2047()
