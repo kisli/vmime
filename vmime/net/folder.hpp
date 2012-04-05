@@ -383,6 +383,13 @@ public:
 	  */
 	virtual int getFetchCapabilities() const = 0;
 
+	/** Return the sequence numbers of messages whose UID equal or greater than uid
+ 	  *
+ 	  * @param uid the uid of the first message
+ 	  * @throw net_exception if an error occurs
+ 	  */
+	virtual std::vector <int> getMessageNumbersStartingOnUID(const message::uid& uid) = 0;
+
 	// Event listeners
 	void addMessageChangedListener(events::messageChangedListener* l);
 	void removeMessageChangedListener(events::messageChangedListener* l);

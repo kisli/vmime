@@ -121,6 +121,8 @@ public:
 
 	int getFetchCapabilities() const;
 
+	std::vector <int> getMessageNumbersStartingOnUID(const message::uid& uid);
+
 private:
 
 	void scanFolder();

@@ -1363,6 +1363,12 @@ const utility::file::path maildirFolder::getMessageFSPath(const int number) cons
 }
 
 
+std::vector <int> maildirFolder::getMessageNumbersStartingOnUID(const message::uid& /* uid */)
+{
+	throw exceptions::operation_not_supported();
+}
+
+
 } // maildir
 } // net
 } // vmime

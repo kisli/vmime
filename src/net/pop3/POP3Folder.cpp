@@ -843,6 +843,12 @@ void POP3Folder::expunge()
 }
 
 
+std::vector <int> POP3Folder::getMessageNumbersStartingOnUID(const message::uid& /* uid */)
+{
+	throw exceptions::operation_not_supported();
+}
+
+
 } // pop3
 } // net
 } // vmime
