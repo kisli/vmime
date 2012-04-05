@@ -338,7 +338,9 @@ protected:
 	{
 		if (m_ptr)
 		{
-			m_ptr->getRefManager()->releaseStrong();
+			if (m_ptr->getRefManager())
+				m_ptr->getRefManager()->releaseStrong();
+
 			m_ptr = 0;
 		}
 	}
