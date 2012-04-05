@@ -1,0 +1,11 @@
+*.o
+*.swp
+build/
+
+/libvmime.a
+/vmime.pc
+/vmime/config.hpp
+
+# SConstruct
+.sconsign.dblite
+/options.cache
