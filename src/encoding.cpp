@@ -34,19 +34,28 @@ namespace vmime
 
 
 encoding::encoding()
-	: m_name(encodingTypes::SEVEN_BIT)
+	: m_name(encodingTypes::SEVEN_BIT),
+	  m_usage(USAGE_UNKNOWN)
 {
 }
 
 
 encoding::encoding(const string& name)
-	: m_name(utility::stringUtils::toLower(name))
+	: m_name(utility::stringUtils::toLower(name)),
+	  m_usage(USAGE_UNKNOWN)
+{
+}
+
+
+encoding::encoding(const string& name, const EncodingUsage usage)
+	: m_name(utility::stringUtils::toLower(name)),
+	  m_usage(usage)
 {
 }
 
 
 encoding::encoding(const encoding& enc)
-	: headerFieldValue(), m_name(enc.m_name)
+	: headerFieldValue(), m_name(enc.m_name), m_usage(enc.m_usage)
 {
 }
 
@@ -54,6 +63,8 @@ encoding::encoding(const encoding& enc)
 void encoding::parse(const string& buffer, const string::size_type position,
 	const string::size_type end, string::size_type* newPosition)
 {
+	m_usage = USAGE_UNKNOWN;
+
 	m_name = utility::stringUtils::toLower(utility::stringUtils::trim
 		(utility::stringUtils::unquote(utility::stringUtils::trim
 			(string(buffer.begin() + position, buffer.begin() + end)))));
@@ -80,7 +91,14 @@ void encoding::generate(utility::outputStream& os, const string::size_type /* ma
 
 ref <utility::encoder::encoder> encoding::getEncoder() const
 {
-	return (utility::encoder::encoderFactory::getInstance()->create(generate()));
+	ref <utility::encoder::encoder> encoder =
+		utility::encoder::encoderFactory::getInstance()->create(generate());
+
+	// FIXME: this should not be here (move me into QP encoder instead?)
+	if (m_usage == USAGE_TEXT && m_name == encodingTypes::QUOTED_PRINTABLE)
+		encoder->getProperties()["text"] = true;
+
+	return encoder;
 }
 
 
@@ -94,6 +112,7 @@ encoding& encoding::operator=(const encoding& other)
 encoding& encoding::operator=(const string& name)
 {
 	m_name = utility::stringUtils::toLower(name);
+	m_usage = USAGE_UNKNOWN;
 	return (*this);
 }
 
@@ -167,6 +186,8 @@ const encoding encoding::decideImpl
 const encoding encoding::decide
 	(ref <const contentHandler> data, const EncodingUsage usage)
 {
+	encoding enc;
+
 	if (usage == USAGE_TEXT && data->isBuffered() &&
 	    data->getLength() > 0 && data->getLength() < 32768)
 	{
@@ -177,12 +198,16 @@ const encoding encoding::decide
 		data->extract(os);
 		os.flush();
 
-		return decideImpl(buffer.begin(), buffer.end());
+		enc = decideImpl(buffer.begin(), buffer.end());
 	}
 	else
 	{
-		return encoding(encodingTypes::BASE64);
+		enc = encoding(encodingTypes::BASE64);
 	}
+
+	enc.setUsage(usage);
+
+	return enc;
 }
 
 
@@ -194,7 +219,10 @@ const encoding encoding::decide(ref <const contentHandler> data,
 		encoding recEncoding;
 
 		if (chset.getRecommendedEncoding(recEncoding))
+		{
+			recEncoding.setUsage(usage);
 			return recEncoding;
+		}
 	}
 
 	return decide(data, usage);
@@ -224,6 +252,18 @@ const string& encoding::getName() const
 void encoding::setName(const string& name)
 {
 	m_name = name;
+}
+
+
+encoding::EncodingUsage encoding::getUsage() const
+{
+	return m_usage;
+}
+
+
+void encoding::setUsage(const EncodingUsage usage)
+{
+	m_usage = usage;
 }
 
 

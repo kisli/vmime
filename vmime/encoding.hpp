@@ -47,6 +47,7 @@ public:
 
 	enum EncodingUsage
 	{
+		USAGE_UNKNOWN,
 		USAGE_TEXT,         /**< Use for body text. */
 		USAGE_BINARY_DATA   /**< Use for attachment, image... */
 	};
@@ -54,6 +55,7 @@ public:
 
 	encoding();
 	explicit encoding(const string& name);
+	encoding(const string& name, const EncodingUsage usage);
 	encoding(const encoding& enc);
 
 public:
@@ -71,6 +73,19 @@ public:
 	  * @param name name of the encoding
 	  */
 	void setName(const string& name);
+
+	/** Return the type of contents this encoding is used for.
+	  * See the EncodingUsage enum.
+	  */
+	EncodingUsage getUsage() const;
+
+	/** Set the type of contents this encoding is used for.
+	  * See the EncodingUsage enum.
+	  *
+	  * @param usage type of contents
+	  */
+	void setUsage(const EncodingUsage usage);
+
 
 	encoding& operator=(const encoding& other);
 	encoding& operator=(const string& name);
@@ -113,6 +128,7 @@ public:
 private:
 
 	string m_name;
+	EncodingUsage m_usage;
 
 	/** Decide which encoding to use based on the specified data.
 	  *

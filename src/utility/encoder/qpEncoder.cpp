@@ -292,14 +292,15 @@ utility::stream::size_type qpEncoder::encode(utility::inputStream& in,
 			case 13:  // CR
 			case 10:  // LF
 			{
-				// Text mode (where using CRLF or LF or ... does not
-				// care for a new line...)
-				if (text)
+				// RFC-2045/6.7(4)
+
+				// Text data
+				if (text && !rfc2047)
 				{
 					outBuffer[outBufferPos++] = c;
 					++curCol;
 				}
-				// Binary mode (where CR and LF bytes are important!)
+				// Binary data
 				else
 				{
 					QP_ENCODE_HEX(c);

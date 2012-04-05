@@ -38,6 +38,7 @@ VMIME_TEST_SUITE_BEGIN
 		VMIME_TEST(testPrologEncoding)
 		VMIME_TEST(testSuccessiveBoundaries)
 		VMIME_TEST(testGenerate7bit)
+		VMIME_TEST(testTextUsageForQPEncoding)
 	VMIME_TEST_LIST_END
 
 
@@ -213,6 +214,29 @@ VMIME_TEST_SUITE_BEGIN
 		vmime::ref <vmime::header> header1 = msg->getBody()->getPartAt(0)->getHeader();
 		VASSERT_EQ("1", "7bit", header1->ContentTransferEncoding()->getValue()->generate());
 	}
+
+	void testTextUsageForQPEncoding()
+	{
+		vmime::ref <vmime::plainTextPart> part = vmime::create <vmime::plainTextPart>();
+		part->setText(vmime::create <vmime::stringContentHandler>("Part1-line1\r\nPart1-line2\r\n\x89"));
+
+		vmime::ref <vmime::message> msg = vmime::create <vmime::message>();
+		part->generateIn(msg, msg);
+
+		vmime::ref <vmime::body> body = msg->getBody()->getPartAt(0)->getBody();
+		vmime::ref <vmime::header> header = msg->getBody()->getPartAt(0)->getHeader();
+
+		std::ostringstream oss;
+		vmime::utility::outputStreamAdapter os(oss);
+		body->generate(os, 80);
+
+		VASSERT_EQ("1", "quoted-printable", header->ContentTransferEncoding()->getValue()->generate());
+
+		// This should *NOT* be:
+		//    Part1-line1=0D=0APart1-line2=0D=0A=89
+		VASSERT_EQ("2", "Part1-line1\r\nPart1-line2\r\n=89", oss.str());
+	}
+
 
 VMIME_TEST_SUITE_END
 
