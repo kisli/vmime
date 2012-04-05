@@ -37,6 +37,7 @@ VMIME_TEST_SUITE_BEGIN
 		VMIME_TEST(testPrologEpilog)
 		VMIME_TEST(testPrologEncoding)
 		VMIME_TEST(testSuccessiveBoundaries)
+		VMIME_TEST(testGenerate7bit)
 	VMIME_TEST_LIST_END
 
 
@@ -198,6 +199,19 @@ VMIME_TEST_SUITE_BEGIN
 
 		VASSERT_EQ("part1-body", "BODY1", extractContents(p.getBody()->getPartAt(0)->getBody()->getContents()));
 		VASSERT_EQ("part2-body", "", extractContents(p.getBody()->getPartAt(1)->getBody()->getContents()));
+	}
+
+	/** Ensure '7bit' encoding is used when body is 7-bit only. */
+	void testGenerate7bit()
+	{
+		vmime::ref <vmime::plainTextPart> p1 = vmime::create <vmime::plainTextPart>();
+		p1->setText(vmime::create <vmime::stringContentHandler>("Part1 is US-ASCII only."));
+
+		vmime::ref <vmime::message> msg = vmime::create <vmime::message>();
+		p1->generateIn(msg, msg);
+
+		vmime::ref <vmime::header> header1 = msg->getBody()->getPartAt(0)->getHeader();
+		VASSERT_EQ("1", "7bit", header1->ContentTransferEncoding()->getValue()->generate());
 	}
 
 VMIME_TEST_SUITE_END
