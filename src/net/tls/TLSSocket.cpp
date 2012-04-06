@@ -50,6 +50,12 @@ TLSSocket::TLSSocket(ref <TLSSession> session, ref <socket> sok)
 
 TLSSocket::~TLSSocket()
 {
+	if (m_ex)
+	{
+		delete m_ex;
+		m_ex = NULL;
+	}
+
 	try
 	{
 		disconnect();
