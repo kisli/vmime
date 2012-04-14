@@ -23,6 +23,9 @@
 
 #include "vmime/net/imap/IMAPMessagePartContentHandler.hpp"
 
+#include "vmime/utility/outputStreamAdapter.hpp"
+#include "vmime/utility/inputStreamStringProxyAdapter.hpp"
+
 
 namespace vmime {
 namespace net {

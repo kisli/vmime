@@ -28,6 +28,8 @@
 
 #include "vmime/security/cert/X509Certificate.hpp"
 
+#include "vmime/utility/outputStreamByteArrayAdapter.hpp"
+
 
 namespace vmime {
 namespace security {

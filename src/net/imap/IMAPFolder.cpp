@@ -34,6 +34,8 @@
 #include "vmime/exception.hpp"
 #include "vmime/utility/smartPtr.hpp"
 
+#include "vmime/utility/outputStreamAdapter.hpp"
+
 #include <algorithm>
 #include <sstream>
 

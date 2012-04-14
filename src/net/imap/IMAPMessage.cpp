@@ -31,6 +31,8 @@
 #include "vmime/net/imap/IMAPPart.hpp"
 #include "vmime/net/imap/IMAPMessagePartContentHandler.hpp"
 
+#include "vmime/utility/outputStreamAdapter.hpp"
+
 #include <sstream>
 #include <iterator>
 #include <typeinfo>

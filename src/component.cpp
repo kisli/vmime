@@ -23,6 +23,7 @@
 
 #include "vmime/component.hpp"
 #include "vmime/base.hpp"
+#include "vmime/utility/outputStreamAdapter.hpp"
 
 #include <sstream>
 

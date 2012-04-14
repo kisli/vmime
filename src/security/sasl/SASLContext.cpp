@@ -33,6 +33,9 @@
 #include "vmime/utility/encoder/encoderFactory.hpp"
 
 #include "vmime/utility/stream.hpp"
+#include "vmime/utility/outputStreamStringAdapter.hpp"
+#include "vmime/utility/inputStreamStringAdapter.hpp"
+#include "vmime/utility/inputStreamByteBufferAdapter.hpp"
 
 
 namespace vmime {

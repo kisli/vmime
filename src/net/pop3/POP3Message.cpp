@@ -25,6 +25,8 @@
 #include "vmime/net/pop3/POP3Folder.hpp"
 #include "vmime/net/pop3/POP3Store.hpp"
 
+#include "vmime/utility/outputStreamAdapter.hpp"
+
 #include <sstream>
 
 

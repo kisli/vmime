@@ -32,6 +32,8 @@
 #include "vmime/utility/childProcess.hpp"
 #include "vmime/utility/smartPtr.hpp"
 
+#include "vmime/utility/streamUtils.hpp"
+
 #include "vmime/net/defaultConnectionInfos.hpp"
 
 #include "vmime/config.hpp"

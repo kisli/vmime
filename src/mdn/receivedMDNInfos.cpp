@@ -23,6 +23,8 @@
 
 #include "vmime/mdn/receivedMDNInfos.hpp"
 
+#include "vmime/utility/outputStreamAdapter.hpp"
+
 
 namespace vmime {
 namespace mdn {

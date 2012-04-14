@@ -24,6 +24,7 @@
 #include "vmime/encoding.hpp"
 #include "vmime/contentHandler.hpp"
 
+#include "vmime/utility/outputStreamStringAdapter.hpp"
 #include "vmime/utility/encoder/encoderFactory.hpp"
 
 #include <algorithm>

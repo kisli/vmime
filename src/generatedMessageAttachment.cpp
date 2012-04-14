@@ -23,6 +23,8 @@
 
 #include "vmime/generatedMessageAttachment.hpp"
 
+#include "vmime/utility/outputStreamAdapter.hpp"
+
 
 namespace vmime
 {

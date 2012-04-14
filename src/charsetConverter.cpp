@@ -23,6 +23,8 @@
 
 #include "vmime/charsetConverter.hpp"
 #include "vmime/exception.hpp"
+#include "vmime/utility/inputStreamStringAdapter.hpp"
+#include "vmime/utility/outputStreamStringAdapter.hpp"
 
 
 extern "C"

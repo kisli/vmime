@@ -33,6 +33,9 @@
 
 #include "vmime/utility/stringUtils.hpp"
 
+#include "vmime/utility/outputStreamStringAdapter.hpp"
+#include "vmime/utility/inputStreamStringAdapter.hpp"
+
 
 namespace vmime
 {

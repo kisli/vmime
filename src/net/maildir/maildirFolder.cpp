@@ -35,6 +35,9 @@
 #include "vmime/exception.hpp"
 #include "vmime/platform.hpp"
 
+#include "vmime/utility/outputStreamAdapter.hpp"
+#include "vmime/utility/inputStreamStringAdapter.hpp"
+
 
 namespace vmime {
 namespace net {

@@ -29,6 +29,7 @@
 
 #include "vmime/types.hpp"
 #include "vmime/utility/stream.hpp"
+#include "vmime/utility/outputStream.hpp"
 #include "vmime/utility/progressListener.hpp"
 
 

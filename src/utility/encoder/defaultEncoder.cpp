@@ -23,6 +23,8 @@
 
 #include "vmime/utility/encoder/defaultEncoder.hpp"
 
+#include "vmime/utility/streamUtils.hpp"
+
 
 namespace vmime {
 namespace utility {

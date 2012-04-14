@@ -23,6 +23,10 @@
 
 #include "vmime/streamContentHandler.hpp"
 
+#include "vmime/utility/outputStreamAdapter.hpp"
+#include "vmime/utility/inputStreamStringAdapter.hpp"
+#include "vmime/utility/streamUtils.hpp"
+
 
 namespace vmime
 {

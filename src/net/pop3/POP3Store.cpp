@@ -30,6 +30,7 @@
 #include "vmime/security/digest/messageDigestFactory.hpp"
 #include "vmime/utility/filteredStream.hpp"
 #include "vmime/utility/stringUtils.hpp"
+#include "vmime/utility/inputStreamSocketAdapter.hpp"
 
 #include "vmime/net/defaultConnectionInfos.hpp"
 

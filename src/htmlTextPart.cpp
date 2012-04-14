@@ -31,6 +31,8 @@
 #include "vmime/emptyContentHandler.hpp"
 #include "vmime/stringContentHandler.hpp"
 
+#include "vmime/utility/outputStreamAdapter.hpp"
+
 
 namespace vmime
 {

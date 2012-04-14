@@ -24,6 +24,8 @@
 #include "vmime/message.hpp"
 #include "vmime/options.hpp"
 
+#include "vmime/utility/outputStreamAdapter.hpp"
+
 #include <sstream>
 
 

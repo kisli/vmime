@@ -28,6 +28,7 @@
 #include "vmime/exception.hpp"
 
 #include "vmime/streamContentHandler.hpp"
+#include "vmime/utility/inputStreamPointerAdapter.hpp"
 
 #include "vmime/contentDispositionField.hpp"
 

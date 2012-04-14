@@ -68,6 +68,22 @@
 // Encoders
 #include "vmime/utility/encoder/encoderFactory.hpp"
 
+// Streams
+#include "vmime/utility/filteredStream.hpp"
+#include "vmime/utility/inputStream.hpp"
+#include "vmime/utility/inputStreamAdapter.hpp"
+#include "vmime/utility/inputStreamByteBufferAdapter.hpp"
+#include "vmime/utility/inputStreamPointerAdapter.hpp"
+#include "vmime/utility/inputStreamSocketAdapter.hpp"
+#include "vmime/utility/inputStreamStringAdapter.hpp"
+#include "vmime/utility/inputStreamStringProxyAdapter.hpp"
+#include "vmime/utility/outputStream.hpp"
+#include "vmime/utility/outputStreamAdapter.hpp"
+#include "vmime/utility/outputStreamByteArrayAdapter.hpp"
+#include "vmime/utility/outputStreamSocketAdapter.hpp"
+#include "vmime/utility/outputStreamStringAdapter.hpp"
+#include "vmime/utility/streamUtils.hpp"
+
 // Message builder/parser
 #include "vmime/messageBuilder.hpp"
 #include "vmime/messageParser.hpp"

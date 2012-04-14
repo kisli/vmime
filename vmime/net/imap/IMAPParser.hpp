@@ -37,6 +37,9 @@
 #include "vmime/utility/encoder/b64Encoder.hpp"
 #include "vmime/utility/encoder/qpEncoder.hpp"
 
+#include "vmime/utility/inputStreamStringAdapter.hpp"
+#include "vmime/utility/outputStreamStringAdapter.hpp"
+
 #include "vmime/platform.hpp"
 
 #include "vmime/net/timeoutHandler.hpp"
@@ -3825,7 +3828,7 @@ public:
 			: m_date_time(NULL), m_number(NULL), m_envelope(NULL),
 			  m_uniqueid(NULL), m_nstring(NULL), m_body(NULL), m_flag_list(NULL),
 			  m_section(NULL)
-              
+
 		{
 		}
 

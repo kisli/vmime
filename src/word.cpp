@@ -28,6 +28,9 @@
 #include "vmime/utility/smartPtr.hpp"
 #include "vmime/parserHelpers.hpp"
 
+#include "vmime/utility/outputStreamStringAdapter.hpp"
+#include "vmime/utility/inputStreamStringAdapter.hpp"
+
 #include "vmime/utility/encoder/encoder.hpp"
 #include "vmime/utility/encoder/b64Encoder.hpp"
 #include "vmime/utility/encoder/qpEncoder.hpp"

@@ -31,6 +31,8 @@
 #include "vmime/path.hpp"
 #include "vmime/dateTime.hpp"
 
+#include "vmime/utility/outputStreamAdapter.hpp"
+
 
 namespace vmime {
 namespace mdn {

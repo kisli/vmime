@@ -23,6 +23,8 @@
 
 #include "vmime/utility/stringProxy.hpp"
 
+#include "vmime/utility/outputStreamAdapter.hpp"
+
 #include <iterator>
 #include <algorithm>
 

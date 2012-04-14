@@ -27,6 +27,9 @@
 #include "vmime/text.hpp"
 #include "vmime/encoding.hpp"
 
+#include "vmime/utility/outputStreamAdapter.hpp"
+#include "vmime/utility/outputStreamStringAdapter.hpp"
+
 
 namespace vmime
 {

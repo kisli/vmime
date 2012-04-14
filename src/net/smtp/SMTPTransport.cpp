@@ -30,6 +30,8 @@
 
 #include "vmime/utility/filteredStream.hpp"
 #include "vmime/utility/stringUtils.hpp"
+#include "vmime/utility/outputStreamSocketAdapter.hpp"
+#include "vmime/utility/streamUtils.hpp"
 
 #include "vmime/net/defaultConnectionInfos.hpp"
 

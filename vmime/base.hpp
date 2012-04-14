@@ -35,7 +35,6 @@
 #include "vmime/config.hpp"
 #include "vmime/types.hpp"
 #include "vmime/constants.hpp"
-#include "vmime/utility/stream.hpp"
 #include "vmime/utility/smartPtr.hpp"
 
 
@@ -255,7 +254,26 @@ namespace vmime
 		return y.dynamicCast <X>();
 	}
 
+	/** Inherit from this class to indicate the subclass is not copyable,
+	  * ie. you want to prohibit copy construction and copy assignment.
+	  */
+	class noncopyable
+	{
+	protected:
+
+		noncopyable() { }
+		virtual ~noncopyable() { }
+
+	private:
+
+		noncopyable(const noncopyable&);
+		void operator=(const noncopyable&);
+	};
+
 } // vmime
+
+
+#include "vmime/utility/stream.hpp"
 
 
 #endif // VMIME_BASE_HPP_INCLUDED

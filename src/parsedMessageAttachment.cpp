@@ -26,6 +26,8 @@
 #include "vmime/stringContentHandler.hpp"
 #include "vmime/contentDisposition.hpp"
 
+#include "vmime/utility/outputStreamAdapter.hpp"
+
 
 namespace vmime
 {
