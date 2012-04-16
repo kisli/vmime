@@ -61,7 +61,7 @@ messageId::messageId(const string& left, const string& right)
 	msg-id          =       [CFWS] "<" id-left "@" id-right ">" [CFWS]
 */
 
-void messageId::parse(const string& buffer, const string::size_type position,
+void messageId::parseImpl(const string& buffer, const string::size_type position,
 	const string::size_type end, string::size_type* newPosition)
 {
 	const string::value_type* const pend = buffer.data() + end;
@@ -185,7 +185,7 @@ const string messageId::getId() const
 }
 
 
-void messageId::generate(utility::outputStream& os, const string::size_type maxLineLength,
+void messageId::generateImpl(utility::outputStream& os, const string::size_type maxLineLength,
 	const string::size_type curLinePos, string::size_type* newLinePos) const
 {
 	string::size_type pos = curLinePos;
@@ -288,9 +288,9 @@ void messageId::setRight(const string& right)
 }
 
 
-const std::vector <ref <const component> > messageId::getChildComponents() const
+const std::vector <ref <component> > messageId::getChildComponents()
 {
-	return std::vector <ref <const component> >();
+	return std::vector <ref <component> >();
 }
 
 

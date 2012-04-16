@@ -241,7 +241,7 @@ const std::vector <ref <word> > word::parseMultiple(const string& buffer, const 
 }
 
 
-void word::parse(const string& buffer, const string::size_type position,
+void word::parseImpl(const string& buffer, const string::size_type position,
 	const string::size_type end, string::size_type* newPosition)
 {
 	if (position + 6 < end && // 6 = "=?(.+)?(.*)?="
@@ -324,7 +324,7 @@ void word::parse(const string& buffer, const string::size_type position,
 }
 
 
-void word::generate(utility::outputStream& os, const string::size_type maxLineLength,
+void word::generateImpl(utility::outputStream& os, const string::size_type maxLineLength,
 	const string::size_type curLinePos, string::size_type* newLinePos) const
 {
 	generate(os, maxLineLength, curLinePos, newLinePos, 0, NULL);
@@ -743,9 +743,9 @@ void word::setBuffer(const string& buffer)
 }
 
 
-const std::vector <ref <const component> > word::getChildComponents() const
+const std::vector <ref <component> > word::getChildComponents()
 {
-	return std::vector <ref <const component> >();
+	return std::vector <ref <component> >();
 }
 
 

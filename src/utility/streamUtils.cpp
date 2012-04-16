@@ -52,6 +52,35 @@ stream::size_type bufferedStreamCopy(inputStream& is, outputStream& os)
 }
 
 
+stream::size_type bufferedStreamCopyRange(inputStream& is, outputStream& os,
+	const stream::size_type start, const stream::size_type length)
+{
+	const stream::size_type blockSize =
+		std::min(is.getBlockSize(), os.getBlockSize());
+
+	is.skip(start);
+
+	std::vector <stream::value_type> vbuffer(blockSize);
+
+	stream::value_type* buffer = &vbuffer.front();
+	stream::size_type total = 0;
+
+	while (!is.eof() && total < length)
+	{
+		const stream::size_type remaining = std::min(length - total, blockSize);
+		const stream::size_type read = is.read(buffer, blockSize);
+
+		if (read != 0)
+		{
+			os.write(buffer, read);
+			total += read;
+		}
+	}
+
+	return total;
+}
+
+
 stream::size_type bufferedStreamCopy(inputStream& is, outputStream& os,
 	const stream::size_type length, progressListener* progress)
 {

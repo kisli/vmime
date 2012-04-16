@@ -262,14 +262,14 @@ ref <headerField> headerField::parseNext(const string& buffer, const string::siz
 }
 
 
-void headerField::parse(const string& buffer, const string::size_type position, const string::size_type end,
+void headerField::parseImpl(const string& buffer, const string::size_type position, const string::size_type end,
 	string::size_type* newPosition)
 {
 	m_value->parse(buffer, position, end, newPosition);
 }
 
 
-void headerField::generate(utility::outputStream& os, const string::size_type maxLineLength,
+void headerField::generateImpl(utility::outputStream& os, const string::size_type maxLineLength,
 	const string::size_type curLinePos, string::size_type* newLinePos) const
 {
 	os << m_name + ": ";
@@ -296,9 +296,9 @@ bool headerField::isCustom() const
 }
 
 
-const std::vector <ref <const component> > headerField::getChildComponents() const
+const std::vector <ref <component> > headerField::getChildComponents()
 {
-	std::vector <ref <const component> > list;
+	std::vector <ref <component> > list;
 
 	if (m_value)
 		list.push_back(m_value);

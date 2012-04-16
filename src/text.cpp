@@ -67,7 +67,7 @@ text::~text()
 }
 
 
-void text::parse(const string& buffer, const string::size_type position,
+void text::parseImpl(const string& buffer, const string::size_type position,
 	const string::size_type end, string::size_type* newPosition)
 {
 	removeAllWords();
@@ -85,7 +85,7 @@ void text::parse(const string& buffer, const string::size_type position,
 }
 
 
-void text::generate(utility::outputStream& os, const string::size_type maxLineLength,
+void text::generateImpl(utility::outputStream& os, const string::size_type maxLineLength,
 	const string::size_type curLinePos, string::size_type* newLinePos) const
 {
 	encodeAndFold(os, maxLineLength, curLinePos, newLinePos, 0);
@@ -389,9 +389,9 @@ text* text::decodeAndUnfold(const string& in, text* generateInExisting)
 }
 
 
-const std::vector <ref <const component> > text::getChildComponents() const
+const std::vector <ref <component> > text::getChildComponents()
 {
-	std::vector <ref <const component> > list;
+	std::vector <ref <component> > list;
 
 	copy_vector(m_words, list);
 

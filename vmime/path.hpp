@@ -76,21 +76,26 @@ public:
 	ref <component> clone() const;
 	path& operator=(const path& other);
 
-	const std::vector <ref <const component> > getChildComponents() const;
+	const std::vector <ref <component> > getChildComponents();
 
 protected:
 
 	string m_localPart;
 	string m_domain;
 
-public:
-
-	using component::parse;
-	using component::generate;
 
 	// Component parsing & assembling
-	void parse(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition = NULL);
-	void generate(utility::outputStream& os, const string::size_type maxLineLength = lineLengthLimits::infinite, const string::size_type curLinePos = 0, string::size_type* newLinePos = NULL) const;
+	void parseImpl
+		(const string& buffer,
+		 const string::size_type position,
+		 const string::size_type end,
+		 string::size_type* newPosition = NULL);
+
+	void generateImpl
+		(utility::outputStream& os,
+		 const string::size_type maxLineLength = lineLengthLimits::infinite,
+		 const string::size_type curLinePos = 0,
+		 string::size_type* newLinePos = NULL) const;
 };
 
 

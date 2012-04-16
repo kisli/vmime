@@ -26,6 +26,7 @@
 
 
 #include "vmime/utility/file.hpp"
+#include "vmime/utility/seekableInputStream.hpp"
 
 
 #if VMIME_HAVE_FILESYSTEM_FEATURES
@@ -57,7 +58,7 @@ private:
 
 
 
-class posixFileReaderInputStream : public vmime::utility::inputStream
+class posixFileReaderInputStream : public vmime::utility::seekableInputStream
 {
 public:
 
@@ -71,6 +72,9 @@ public:
 	size_type read(value_type* const data, const size_type count);
 
 	size_type skip(const size_type count);
+
+	size_type getPosition() const;
+	void seek(const size_type pos);
 
 private:
 

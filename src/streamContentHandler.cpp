@@ -25,6 +25,7 @@
 
 #include "vmime/utility/outputStreamAdapter.hpp"
 #include "vmime/utility/inputStreamStringAdapter.hpp"
+#include "vmime/utility/seekableInputStream.hpp"
 #include "vmime/utility/streamUtils.hpp"
 
 
@@ -207,6 +208,9 @@ const vmime::encoding& streamContentHandler::getEncoding() const
 
 bool streamContentHandler::isBuffered() const
 {
+	if (m_stream.dynamicCast <utility::seekableInputStream>() != NULL)
+		return true;
+
 	// FIXME: some streams can be resetted
 	return false;
 }

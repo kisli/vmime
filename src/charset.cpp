@@ -57,7 +57,7 @@ charset::charset(const char* name)
 }
 
 
-void charset::parse(const string& buffer, const string::size_type position,
+void charset::parseImpl(const string& buffer, const string::size_type position,
 	const string::size_type end, string::size_type* newPosition)
 {
 	m_name = utility::stringUtils::trim
@@ -74,7 +74,7 @@ void charset::parse(const string& buffer, const string::size_type position,
 }
 
 
-void charset::generate(utility::outputStream& os, const string::size_type /* maxLineLength */,
+void charset::generateImpl(utility::outputStream& os, const string::size_type /* maxLineLength */,
 	const string::size_type curLinePos, string::size_type* newLinePos) const
 {
 	os << m_name;
@@ -142,9 +142,9 @@ void charset::copyFrom(const component& other)
 }
 
 
-const std::vector <ref <const component> > charset::getChildComponents() const
+const std::vector <ref <component> > charset::getChildComponents()
 {
-	return std::vector <ref <const component> >();
+	return std::vector <ref <component> >();
 }
 
 

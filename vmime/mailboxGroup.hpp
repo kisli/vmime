@@ -52,7 +52,7 @@ public:
 	ref <component> clone() const;
 	mailboxGroup& operator=(const component& other);
 
-	const std::vector <ref <const component> > getChildComponents() const;
+	const std::vector <ref <component> > getChildComponents();
 
 	/** Return the name of the group.
 	  *
@@ -165,14 +165,20 @@ private:
 	text m_name;
 	std::vector <ref <mailbox> > m_list;
 
-public:
-
-	using address::parse;
-	using address::generate;
+protected:
 
 	// Component parsing & assembling
-	void parse(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition = NULL);
-	void generate(utility::outputStream& os, const string::size_type maxLineLength = lineLengthLimits::infinite, const string::size_type curLinePos = 0, string::size_type* newLinePos = NULL) const;
+	void parseImpl
+		(const string& buffer,
+		 const string::size_type position,
+		 const string::size_type end,
+		 string::size_type* newPosition = NULL);
+
+	void generateImpl
+		(utility::outputStream& os,
+		 const string::size_type maxLineLength = lineLengthLimits::infinite,
+		 const string::size_type curLinePos = 0,
+		 string::size_type* newLinePos = NULL) const;
 };
 
 

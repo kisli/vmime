@@ -21,59 +21,72 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#include "vmime/utility/inputStreamAdapter.hpp"
+#include "vmime/utility/seekableInputStreamRegionAdapter.hpp"
 
 
 namespace vmime {
 namespace utility {
 
 
-inputStreamAdapter::inputStreamAdapter(std::istream& is)
-	: m_stream(is)
+seekableInputStreamRegionAdapter::seekableInputStreamRegionAdapter
+	(ref <seekableInputStream> stream, const size_type begin, const size_type length)
+	: m_stream(stream), m_begin(begin), m_length(length)
 {
 }
 
 
-bool inputStreamAdapter::eof() const
+bool seekableInputStreamRegionAdapter::eof() const
 {
-	return (m_stream.eof());
+	return getPosition() >= m_length;
 }
 
 
-void inputStreamAdapter::reset()
+void seekableInputStreamRegionAdapter::reset()
 {
-	m_stream.exceptions(std::ios_base::badbit);
-	m_stream.seekg(0, std::ios::beg);
-	m_stream.clear();
+	m_stream->seek(m_begin);
 }
 
 
-stream::size_type inputStreamAdapter::read
+stream::size_type seekableInputStreamRegionAdapter::read
 	(value_type* const data, const size_type count)
 {
-	m_stream.exceptions(std::ios_base::badbit);
-	m_stream.read(data, count);
-	return (m_stream.gcount());
+	if (getPosition() + count >= m_length)
+	{
+		const size_type remaining = m_length - getPosition();
+		return m_stream->read(data, remaining);
+	}
+	else
+	{
+		return m_stream->read(data, count);
+	}
 }
 
 
-stream::size_type inputStreamAdapter::skip(const size_type count)
+stream::size_type seekableInputStreamRegionAdapter::skip(const size_type count)
 {
-	m_stream.exceptions(std::ios_base::badbit);
-	m_stream.ignore(count);
-	return (m_stream.gcount());
+	if (getPosition() + count >= m_length)
+	{
+		const size_type remaining = m_length - getPosition();
+		m_stream->skip(remaining);
+		return remaining;
+	}
+	else
+	{
+		m_stream->skip(count);
+		return count;
+	}
 }
 
 
-stream::size_type inputStreamAdapter::getPosition() const
+stream::size_type seekableInputStreamRegionAdapter::getPosition() const
 {
-	return m_stream.tellg();
+	return m_stream->getPosition() - m_begin;
 }
 
 
-void inputStreamAdapter::seek(const size_type pos)
+void seekableInputStreamRegionAdapter::seek(const size_type pos)
 {
-	m_stream.seekg(pos, std::ios_base::beg);
+	m_stream->seek(m_begin + pos);
 }
 
 

@@ -128,21 +128,52 @@ public:
 #endif
 
 
-	using component::parse;
+protected:
+
+	void parseImpl
+		(const string& buffer,
+		 const string::size_type position,
+		 const string::size_type end,
+		 string::size_type* newPosition = NULL);
+
+	void generateImpl
+		(utility::outputStream& os,
+		 const string::size_type maxLineLength = lineLengthLimits::infinite,
+		 const string::size_type curLinePos = 0,
+		 string::size_type* newLinePos = NULL) const;
+
+public:
+
 	using component::generate;
 
-	void parse(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition = NULL);
-	void generate(utility::outputStream& os, const string::size_type maxLineLength = lineLengthLimits::infinite, const string::size_type curLinePos = 0, string::size_type* newLinePos = NULL) const;
+#ifndef VMIME_BUILDING_DOC
+	void generate
+		(utility::outputStream& os,
+		 const string::size_type maxLineLength,
+		 const string::size_type curLinePos,
+		 string::size_type* newLinePos,
+		 const int flags,
+		 generatorState* state) const;
+#endif
 
-	void generate(utility::outputStream& os, const string::size_type maxLineLength, const string::size_type curLinePos, string::size_type* newLinePos, const int flags, generatorState* state) const;
-
-	const std::vector <ref <const component> > getChildComponents() const;
+	const std::vector <ref <component> > getChildComponents();
 
 private:
 
-	static ref <word> parseNext(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition, bool prevIsEncoded, bool* isEncoded, bool isFirst);
+	static ref <word> parseNext
+		(const string& buffer,
+		 const string::size_type position,
+		 const string::size_type end,
+		 string::size_type* newPosition,
+		 bool prevIsEncoded,
+		 bool* isEncoded,
+		 bool isFirst);
 
-	static const std::vector <ref <word> > parseMultiple(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition);
+	static const std::vector <ref <word> > parseMultiple
+		(const string& buffer,
+		 const string::size_type position,
+		 const string::size_type end,
+		 string::size_type* newPosition);
 
 
 	// The "m_buffer" of this word holds the data, and this data is encoded

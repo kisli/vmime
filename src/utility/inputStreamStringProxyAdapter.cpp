@@ -84,6 +84,19 @@ stream::size_type inputStreamStringProxyAdapter::skip(const size_type count)
 }
 
 
+stream::size_type inputStreamStringProxyAdapter::getPosition() const
+{
+	return m_pos;
+}
+
+
+void inputStreamStringProxyAdapter::seek(const size_type pos)
+{
+	if (pos <= m_buffer.length())
+		m_pos = pos;
+}
+
+
 } // utility
 } // vmime
 

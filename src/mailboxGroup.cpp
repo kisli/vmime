@@ -54,7 +54,7 @@ mailboxGroup::~mailboxGroup()
 }
 
 
-void mailboxGroup::parse(const string& buffer, const string::size_type position,
+void mailboxGroup::parseImpl(const string& buffer, const string::size_type position,
 	const string::size_type end, string::size_type* newPosition)
 {
 	const string::value_type* const pend = buffer.data() + end;
@@ -111,7 +111,7 @@ void mailboxGroup::parse(const string& buffer, const string::size_type position,
 }
 
 
-void mailboxGroup::generate(utility::outputStream& os, const string::size_type maxLineLength,
+void mailboxGroup::generateImpl(utility::outputStream& os, const string::size_type maxLineLength,
 	const string::size_type curLinePos, string::size_type* newLinePos) const
 {
 	// We have to encode the name:
@@ -348,9 +348,9 @@ const std::vector <ref <mailbox> > mailboxGroup::getMailboxList()
 }
 
 
-const std::vector <ref <const component> > mailboxGroup::getChildComponents() const
+const std::vector <ref <component> > mailboxGroup::getChildComponents()
 {
-	std::vector <ref <const component> > list;
+	std::vector <ref <component> > list;
 
 	copy_vector(m_list, list);
 

@@ -224,6 +224,26 @@ vmime::utility::stream::size_type posixFileReaderInputStream::skip(const size_ty
 }
 
 
+vmime::utility::stream::size_type posixFileReaderInputStream::getPosition() const
+{
+	const off_t curPos = ::lseek(m_fd, 0, SEEK_CUR);
+
+	if (curPos == off_t(-1))
+		posixFileSystemFactory::reportError(m_path, errno);
+
+	return static_cast <size_type>(curPos);
+}
+
+
+void posixFileReaderInputStream::seek(const size_type pos)
+{
+	const off_t newPos = ::lseek(m_fd, pos, SEEK_SET);
+
+	if (newPos == off_t(-1))
+		posixFileSystemFactory::reportError(m_path, errno);
+}
+
+
 
 //
 // posixFileWriter

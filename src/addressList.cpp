@@ -50,7 +50,7 @@ addressList::~addressList()
 }
 
 
-void addressList::parse(const string& buffer, const string::size_type position,
+void addressList::parseImpl(const string& buffer, const string::size_type position,
 	const string::size_type end, string::size_type* newPosition)
 {
 	removeAllAddresses();
@@ -72,7 +72,7 @@ void addressList::parse(const string& buffer, const string::size_type position,
 }
 
 
-void addressList::generate(utility::outputStream& os, const string::size_type maxLineLength,
+void addressList::generateImpl(utility::outputStream& os, const string::size_type maxLineLength,
 	const string::size_type curLinePos, string::size_type* newLinePos) const
 {
 	string::size_type pos = curLinePos;
@@ -248,9 +248,9 @@ const std::vector <ref <address> > addressList::getAddressList()
 }
 
 
-const std::vector <ref <const component> > addressList::getChildComponents() const
+const std::vector <ref <component> > addressList::getChildComponents()
 {
-	std::vector <ref <const component> > list;
+	std::vector <ref <component> > list;
 
 	copy_vector(m_list, list);
 

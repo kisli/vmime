@@ -33,12 +33,14 @@ VMIME_TEST_SUITE_BEGIN
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testParse)
 		VMIME_TEST(testGenerate)
+		VMIME_TEST(testParseGuessBoundary)
 		VMIME_TEST(testParseMissingLastBoundary)
 		VMIME_TEST(testPrologEpilog)
 		VMIME_TEST(testPrologEncoding)
 		VMIME_TEST(testSuccessiveBoundaries)
 		VMIME_TEST(testGenerate7bit)
 		VMIME_TEST(testTextUsageForQPEncoding)
+		VMIME_TEST(testParseVeryBigMessage)
 	VMIME_TEST_LIST_END
 
 
@@ -237,6 +239,93 @@ VMIME_TEST_SUITE_BEGIN
 		VASSERT_EQ("2", "Part1-line1\r\nPart1-line2\r\n=89", oss.str());
 	}
 
+	void testParseGuessBoundary()
+	{
+		// Boundary is not specified in "Content-Type" field
+		// Parser will try to guess it from message contents.
+
+		vmime::string str =
+			"Content-Type: multipart/mixed"
+			"\r\n\r\n"
+			"--UNKNOWN-BOUNDARY\r\nHEADER1\r\n\r\nBODY1\r\n"
+			"--UNKNOWN-BOUNDARY\r\nHEADER2\r\n\r\nBODY2\r\n"
+			"--UNKNOWN-BOUNDARY--";
+
+		vmime::bodyPart p;
+		p.parse(str);
+
+		VASSERT_EQ("count", 2, p.getBody()->getPartCount());
+
+		VASSERT_EQ("part1-body", "BODY1", extractContents(p.getBody()->getPartAt(0)->getBody()->getContents()));
+		VASSERT_EQ("part2-body", "BODY2", extractContents(p.getBody()->getPartAt(1)->getBody()->getContents()));
+	}
+
+	void testParseVeryBigMessage()
+	{
+		// When parsing from a seekable input stream, body contents should not
+		// be kept in memory in a "stringContentHandler" object. Instead, content
+		// should be accessible via a "streamContentHandler" object.
+
+		static const std::string BODY1_BEGIN = "BEGIN1BEGIN1BEGIN1";
+		static const std::string BODY1_LINE = "BODY1BODY1BODY1BODY1BODY1BODY1BODY1BODY1BODY1BODY1BODY1BODY1BODY1";
+		static const std::string BODY1_END = "END1END1";
+		static const unsigned int BODY1_REPEAT = 35000;
+		static const unsigned int BODY1_LENGTH =
+			BODY1_BEGIN.length() + BODY1_LINE.length() * BODY1_REPEAT + BODY1_END.length();
+
+		static const std::string BODY2_LINE = "BODY2BODY2BODY2BODY2BODY2BODY2BODY2BODY2BODY2BODY2BODY2BODY2BODY2";
+		static const unsigned int BODY2_REPEAT = 20000;
+
+		std::ostringstream oss;
+		oss << "Content-Type: multipart/mixed; boundary=\"MY-BOUNDARY\""
+		    << "\r\n\r\n"
+		    << "--MY-BOUNDARY\r\n"
+		    << "HEADER1\r\n"
+		    << "\r\n";
+
+		oss << BODY1_BEGIN;
+
+		for (unsigned int i = 0 ; i < BODY1_REPEAT ; ++i)
+			oss << BODY1_LINE;
+
+		oss << BODY1_END;
+
+		oss << "\r\n"
+		    << "--MY-BOUNDARY\r\n"
+		    << "HEADER2\r\n"
+		    << "\r\n";
+
+		for (unsigned int i = 0 ; i < BODY2_REPEAT ; ++i)
+			oss << BODY2_LINE;
+
+		oss << "\r\n"
+		    << "--MY-BOUNDARY--\r\n";
+
+		vmime::ref <vmime::utility::inputStreamStringAdapter> is =
+			vmime::create <vmime::utility::inputStreamStringAdapter>(oss.str());
+
+		vmime::ref <vmime::message> msg = vmime::create <vmime::message>();
+		msg->parse(is, oss.str().length());
+
+		vmime::ref <vmime::body> body1 = msg->getBody()->getPartAt(0)->getBody();
+		vmime::ref <const vmime::contentHandler> body1Cts = body1->getContents();
+
+		vmime::ref <vmime::body> body2 = msg->getBody()->getPartAt(1)->getBody();
+		vmime::ref <const vmime::contentHandler> body2Cts = body2->getContents();
+
+		vmime::string body1CtsExtracted;
+		vmime::utility::outputStreamStringAdapter body1CtsExtractStream(body1CtsExtracted);
+		body1Cts->extract(body1CtsExtractStream);
+
+		VASSERT_EQ("1.1", BODY1_LENGTH, body1Cts->getLength());
+		VASSERT("1.2", body1Cts.dynamicCast <const vmime::streamContentHandler>() != NULL);
+		VASSERT_EQ("1.3", BODY1_LENGTH, body1CtsExtracted.length());
+		VASSERT_EQ("1.4", BODY1_BEGIN, body1CtsExtracted.substr(0, BODY1_BEGIN.length()));
+		VASSERT_EQ("1.5", BODY1_END, body1CtsExtracted.substr(BODY1_LENGTH - BODY1_END.length(), BODY1_END.length()));
+
+		VASSERT_EQ("2.1", BODY2_LINE.length() * BODY2_REPEAT, body2Cts->getLength());
+		VASSERT("2.2", body2Cts.dynamicCast <const vmime::streamContentHandler>() != NULL);
+	}
 
 VMIME_TEST_SUITE_END
 

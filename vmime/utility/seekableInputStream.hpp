@@ -21,42 +21,38 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#ifndef VMIME_UTILITY_INPUTSTREAMSTRINGADAPTER_HPP_INCLUDED
-#define VMIME_UTILITY_INPUTSTREAMSTRINGADAPTER_HPP_INCLUDED
+#ifndef VMIME_UTILITY_SEEKABLEINPUTSTREAM_HPP_INCLUDED
+#define VMIME_UTILITY_SEEKABLEINPUTSTREAM_HPP_INCLUDED
 
 
-#include "vmime/utility/seekableInputStream.hpp"
+#include "vmime/utility/inputStream.hpp"
 
 
 namespace vmime {
 namespace utility {
 
 
-/** An adapter class for string input.
+/** An input stream that allows seeking within the input.
   */
 
-class inputStreamStringAdapter : public seekableInputStream
+class seekableInputStream : public inputStream
 {
 public:
 
-	inputStreamStringAdapter(const string& buffer);
-	inputStreamStringAdapter(const string& buffer, const string::size_type begin, const string::size_type end);
+	/** Returns the current position in this stream.
+	  *
+	  * @return the offset from the beginning of the stream, in bytes,
+	  * at which the next read occurs
+	  */
+	virtual size_type getPosition() const = 0;
 
-	bool eof() const;
-	void reset();
-	size_type read(value_type* const data, const size_type count);
-	size_type skip(const size_type count);
-	size_type getPosition() const;
-	void seek(const size_type pos);
-
-private:
-
-	inputStreamStringAdapter(const inputStreamStringAdapter&);
-
-	const string m_buffer;  // do _NOT_ keep a reference...
-	const string::size_type m_begin;
-	const string::size_type m_end;
-	string::size_type m_pos;
+	/** Sets the position, measured from the beginning of this stream,
+	  * at which the next read occurs.
+	  *
+	  * @param pos the offset position, measured in bytes from the
+	  * beginning of the stream, at which to set the stream pointer.
+	  */
+	virtual void seek(const size_type pos) = 0;
 };
 
 
@@ -64,5 +60,5 @@ private:
 } // vmime
 
 
-#endif // VMIME_UTILITY_INPUTSTREAMSTRINGADAPTER_HPP_INCLUDED
+#endif // VMIME_UTILITY_SEEKABLEINPUTSTREAM_HPP_INCLUDED
 

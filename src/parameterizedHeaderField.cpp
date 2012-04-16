@@ -78,7 +78,7 @@ struct paramInfo
 #endif // VMIME_BUILDING_DOC
 
 
-void parameterizedHeaderField::parse(const string& buffer, const string::size_type position,
+void parameterizedHeaderField::parseImpl(const string& buffer, const string::size_type position,
 	const string::size_type end, string::size_type* newPosition)
 {
 	const string::value_type* const pend = buffer.data() + end;
@@ -328,13 +328,13 @@ void parameterizedHeaderField::parse(const string& buffer, const string::size_ty
 }
 
 
-void parameterizedHeaderField::generate(utility::outputStream& os, const string::size_type maxLineLength,
+void parameterizedHeaderField::generateImpl(utility::outputStream& os, const string::size_type maxLineLength,
 	const string::size_type curLinePos, string::size_type* newLinePos) const
 {
 	string::size_type pos = curLinePos;
 
 	// Parent header field
-	headerField::generate(os, maxLineLength, pos, &pos);
+	headerField::generateImpl(os, maxLineLength, pos, &pos);
 
 	// Parameters
 	for (std::vector <ref <parameter> >::const_iterator
@@ -552,11 +552,11 @@ const std::vector <ref <parameter> > parameterizedHeaderField::getParameterList(
 }
 
 
-const std::vector <ref <const component> > parameterizedHeaderField::getChildComponents() const
+const std::vector <ref <component> > parameterizedHeaderField::getChildComponents()
 {
-	std::vector <ref <const component> > list = headerField::getChildComponents();
+	std::vector <ref <component> > list = headerField::getChildComponents();
 
-	for (std::vector <ref <parameter> >::const_iterator it = m_params.begin() ;
+	for (std::vector <ref <parameter> >::iterator it = m_params.begin() ;
 	     it != m_params.end() ; ++it)
 	{
 		list.push_back(*it);

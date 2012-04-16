@@ -21,8 +21,8 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#ifndef VMIME_UTILITY_INPUTSTREAMSTRINGADAPTER_HPP_INCLUDED
-#define VMIME_UTILITY_INPUTSTREAMSTRINGADAPTER_HPP_INCLUDED
+#ifndef VMIME_UTILITY_SEEKABLEINPUTSTREAMREGIONADAPTER_HPP_INCLUDED
+#define VMIME_UTILITY_SEEKABLEINPUTSTREAMREGIONADAPTER_HPP_INCLUDED
 
 
 #include "vmime/utility/seekableInputStream.hpp"
@@ -32,15 +32,21 @@ namespace vmime {
 namespace utility {
 
 
-/** An adapter class for string input.
+/** An adapter for reading a limited region of a seekable input stream.
   */
 
-class inputStreamStringAdapter : public seekableInputStream
+class seekableInputStreamRegionAdapter : public seekableInputStream
 {
 public:
 
-	inputStreamStringAdapter(const string& buffer);
-	inputStreamStringAdapter(const string& buffer, const string::size_type begin, const string::size_type end);
+	/** Creates a new adapter for a seekableInputStream.
+	  *
+	  * @param stream source stream
+	  * @param begin start position in source stream
+	  * @param length region length in source stream
+	  */
+	seekableInputStreamRegionAdapter(ref <seekableInputStream> stream,
+		const size_type begin, const size_type length);
 
 	bool eof() const;
 	void reset();
@@ -51,12 +57,9 @@ public:
 
 private:
 
-	inputStreamStringAdapter(const inputStreamStringAdapter&);
-
-	const string m_buffer;  // do _NOT_ keep a reference...
-	const string::size_type m_begin;
-	const string::size_type m_end;
-	string::size_type m_pos;
+	ref <seekableInputStream> m_stream;
+	size_type m_begin;
+	size_type m_length;
 };
 
 
@@ -64,5 +67,5 @@ private:
 } // vmime
 
 
-#endif // VMIME_UTILITY_INPUTSTREAMSTRINGADAPTER_HPP_INCLUDED
+#endif // VMIME_UTILITY_SEEKABLEINPUTSTREAMREGIONADAPTER_HPP_INCLUDED
 

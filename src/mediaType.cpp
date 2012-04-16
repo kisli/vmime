@@ -48,7 +48,7 @@ mediaType::mediaType(const string& type, const string& subType)
 }
 
 
-void mediaType::parse(const string& buffer, const string::size_type position,
+void mediaType::parseImpl(const string& buffer, const string::size_type position,
 	const string::size_type end, string::size_type* newPosition)
 {
 	const string::value_type* const pend = buffer.data() + end;
@@ -82,7 +82,7 @@ void mediaType::parse(const string& buffer, const string::size_type position,
 }
 
 
-void mediaType::generate(utility::outputStream& os, const string::size_type maxLineLength,
+void mediaType::generateImpl(utility::outputStream& os, const string::size_type maxLineLength,
 	const string::size_type curLinePos, string::size_type* newLinePos) const
 {
 	const string value = m_type + "/" + m_subType;
@@ -176,9 +176,9 @@ void mediaType::setFromString(const string& type)
 }
 
 
-const std::vector <ref <const component> > mediaType::getChildComponents() const
+const std::vector <ref <component> > mediaType::getChildComponents()
 {
-	return std::vector <ref <const component> >();
+	return std::vector <ref <component> >();
 }
 
 

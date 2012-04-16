@@ -54,6 +54,10 @@ public:
 	  */
 	typedef string::size_type size_type;
 
+	/** Constant value with the greatest possible value for an element of type size_type.
+	  */
+	static const size_type npos;
+
 	/** Return the preferred maximum block size when reading
 	  * from or writing to this stream.
 	  *

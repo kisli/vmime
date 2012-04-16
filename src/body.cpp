@@ -31,10 +31,13 @@
 
 #include "vmime/utility/random.hpp"
 
+#include "vmime/utility/seekableInputStreamRegionAdapter.hpp"
+
 #include "vmime/parserHelpers.hpp"
 
 #include "vmime/emptyContentHandler.hpp"
 #include "vmime/stringContentHandler.hpp"
+#include "vmime/streamContentHandler.hpp"
 
 
 namespace vmime
@@ -52,10 +55,27 @@ body::~body()
 }
 
 
-void body::parse(const string& buffer, const string::size_type position,
-	const string::size_type end, string::size_type* newPosition)
+void body::parseImpl
+	(ref <utility::parserInputStreamAdapter> parser,
+	 const utility::stream::size_type position,
+	 const utility::stream::size_type end,
+	 utility::stream::size_type* newPosition)
 {
 	removeAllParts();
+
+	m_prologText.clear();
+	m_epilogText.clear();
+
+	if (end == position)
+	{
+
+		setParsedBounds(position, end);
+
+		if (newPosition)
+			*newPosition = end;
+
+		return;
+	}
 
 	// Check whether the body is a MIME-multipart
 	bool isMultipart = false;
@@ -80,37 +100,61 @@ void body::parse(const string& buffer, const string::size_type position,
 			{
 				// No "boundary" parameter specified: we can try to
 				// guess it by scanning the body contents...
-				string::size_type pos = buffer.find("\n--", position);
+				utility::stream::size_type pos = position;
 
-				if ((pos != string::npos) && (pos < end))
+				parser->seek(pos);
+
+				if (pos + 2 < end && parser->matchBytes("--", 2))
 				{
-					pos += 3;
+					pos += 2;
+				}
+				else
+				{
+					pos = parser->findNext("\n--", position);
 
-					const string::size_type start = pos;
+					if ((pos != utility::stream::npos) && (pos + 3 < end))
+						pos += 3;  // skip \n--
+				}
 
-					char_t c = buffer[pos];
-					string::size_type length = 0;
+				if ((pos != utility::stream::npos) && (pos < end))
+				{
+					parser->seek(pos);
 
+					// Read some bytes after boundary separator
+					utility::stream::value_type buffer[256];
+					const utility::stream::size_type bufferLen =
+						parser->read(buffer, std::min(end - pos, sizeof(buffer) / sizeof(buffer[0])));
+
+					buffer[sizeof(buffer) / sizeof(buffer[0]) - 1] = '\0';
+
+					// Extract boundary from buffer (stop at first CR or LF).
 					// We have to stop after a reasonnably long boundary length (100)
 					// not to take the whole body contents for a boundary...
-					while (pos < end && length < 100 && !(c == '\r' || c == '\n'))
+					string::value_type boundaryBytes[100];
+					string::size_type boundaryLen = 0;
+
+					for (string::value_type c = buffer[0] ;
+					     boundaryLen < bufferLen && boundaryLen < 100 && !(c == '\r' || c == '\n') ;
+					     c = buffer[++boundaryLen])
 					{
-						++length;
-						c = buffer[pos++];
+						boundaryBytes[boundaryLen] = buffer[boundaryLen];
 					}
 
-					if (pos < end && length < 100)
+					if (boundaryLen >= 1 && boundaryLen < 100)
 					{
 						// RFC #1521, Page 31:
 						// "...the boundary parameter, which consists of 1 to 70
 						//  characters from a set of characters known to be very
 						//  robust through email gateways, and NOT ending with
 						//  white space..."
-						while (pos != start && parserHelpers::isSpace(buffer[pos - 1]))
-							--pos;
+						while (boundaryLen != 0 &&
+						       parserHelpers::isSpace(boundaryBytes[boundaryLen - 1]))
+						{
+							boundaryLen--;
+						}
 
-						boundary = string(buffer.begin() + start,
-						                  buffer.begin() + pos);
+						if (boundaryLen >= 1)
+							boundary = string(boundaryBytes, boundaryBytes + boundaryLen);
 					}
 				}
 			}
@@ -126,51 +170,79 @@ void body::parse(const string& buffer, const string::size_type position,
 	{
 		const string boundarySep("--" + boundary);
 
-		string::size_type partStart = position;
-		string::size_type pos = position;
+		utility::stream::size_type partStart = position;
+		utility::stream::size_type pos = position;
 
 		bool lastPart = false;
 
-		while (pos != string::npos && pos < end)
+		while (pos != utility::stream::npos && pos < end)
 		{
-			pos = buffer.find(boundarySep, pos);
+			pos = parser->findNext(boundarySep, pos);
 
-			if (pos == string::npos ||
-			    ((pos == 0 || buffer[pos - 1] == '\n') &&
-			     (buffer[pos + boundarySep.length()] == '\r' ||
-			      buffer[pos + boundarySep.length()] == '\n' ||
-			      buffer[pos + boundarySep.length()] == '-'
-			     )
-			    )
-			   )
+			if (pos == utility::stream::npos)
+				break;  // not found
+
+			if (pos != 0)
 			{
-				break;
+				parser->seek(pos - 1);
+
+				if (parser->peekByte() != '\n')
+				{
+					// Boundary is not at a beginning of a line
+					pos++;
+					continue;
+				}
+
+				parser->skip(1 + boundarySep.length());
+			}
+			else
+			{
+				parser->seek(pos + boundarySep.length());
 			}
 
-			// boundary not a beginning of line, or just a prefix of another, continue the search.
+			const utility::stream::value_type next = parser->peekByte();
+
+			if (next == '\r' || next == '\n' || next == '-')
+				break;
+
+			// Boundary is a prefix of another, continue the search
 			pos++;
 		}
 
-		if (pos != string::npos && pos < end)
+		if (pos != utility::stream::npos && pos < end)
 		{
 			vmime::text text;
-			text.parse(buffer, position, pos);
+			text.parse(parser, position, pos);
 
 			m_prologText = text.getWholeBuffer();
 		}
 
-		for (int index = 0 ; !lastPart && (pos != string::npos) && (pos < end) ; ++index)
+		for (int index = 0 ; !lastPart && (pos != utility::stream::npos) && (pos < end) ; ++index)
 		{
-			string::size_type partEnd = pos;
+			utility::stream::size_type partEnd = pos;
 
 			// Get rid of the [CR]LF just before the boundary string
-			if (pos >= (position + 1) && buffer[pos - 1] == '\n') --partEnd;
-			if (pos >= (position + 2) && buffer[pos - 2] == '\r') --partEnd;
+			if (pos >= (position + 1))
+			{
+				parser->seek(pos - 1);
+
+				if (parser->peekByte() == '\n')
+					--partEnd;
+			}
+
+			if (pos >= (position + 2))
+			{
+				parser->seek(pos - 2);
+
+				if (parser->peekByte() == '\r')
+					--partEnd;
+			}
 
 			// Check whether it is the last part (boundary terminated by "--")
 			pos += boundarySep.length();
+			parser->seek(pos);
 
-			if (pos + 1 < end && buffer[pos] == '-' && buffer[pos + 1] == '-')
+			if (pos + 1 < end && parser->matchBytes("--", 2))
 			{
 				lastPart = true;
 				pos += 2;
@@ -180,15 +252,15 @@ void body::parse(const string& buffer, const string::size_type position,
 			// "...(If a boundary appears to end with white space, the
 			//  white space must be presumed to have been added by a
 			//  gateway, and must be deleted.)..."
-			while (pos < end && (buffer[pos] == ' ' || buffer[pos] == '\t'))
-				++pos;
+			parser->seek(pos);
+			pos += parser->skipIf(parserHelpers::isSpaceOrTab, end);
 
 			// End of boundary line
-			if (pos + 1 < end && buffer[pos] == '\r' && buffer[pos + 1] =='\n')
+			if (pos + 1 < end && parser->matchBytes("\r\n", 2))
 			{
 				pos += 2;
 			}
-			else if (pos < end && buffer[pos] == '\n')
+			else if (pos < end && parser->peekByte() == '\n')
 			{
 				++pos;
 			}
@@ -202,7 +274,7 @@ void body::parse(const string& buffer, const string::size_type position,
 				if (partEnd < partStart)
 					std::swap(partStart, partEnd);
 
-				part->parse(buffer, partStart, partEnd, NULL);
+				part->parse(parser, partStart, partEnd, NULL);
 				part->m_parent = m_part;
 
 				m_parts.push_back(part);
@@ -210,23 +282,37 @@ void body::parse(const string& buffer, const string::size_type position,
 
 			partStart = pos;
 
-			while (pos != string::npos && pos < end)
+			while (pos != utility::stream::npos && pos < end)
 			{
-				pos = buffer.find(boundarySep, pos);
+				pos = parser->findNext(boundarySep, pos);
 
-				if (pos == string::npos ||
-				    ((pos == 0 || buffer[pos - 1] == '\n') &&
-				     (buffer[pos + boundarySep.length()] == '\r' ||
-				      buffer[pos + boundarySep.length()] == '\n' ||
-					buffer[pos + boundarySep.length()] == '-'
-				     )
-				    )
-				   )
+				if (pos == utility::stream::npos)
+					break;  // not found
+
+				if (pos != 0)
 				{
-					break;
+					parser->seek(pos - 1);
+
+					if (parser->peekByte() != '\n')
+					{
+						// Boundary is not at a beginning of a line
+						pos++;
+						continue;
+					}
+
+					parser->skip(1 + boundarySep.length());
+				}
+				else
+				{
+					parser->seek(pos + boundarySep.length());
 				}
 
-				// boundary not a beginning of line, or just a prefix of another, continue the search.
+				const utility::stream::value_type next = parser->peekByte();
+
+				if (next == '\r' || next == '\n' || next == '-')
+					break;
+
+				// Boundary is a prefix of another, continue the search
 				pos++;
 			}
 		}
@@ -234,13 +320,13 @@ void body::parse(const string& buffer, const string::size_type position,
 		m_contents = vmime::create <emptyContentHandler>();
 
 		// Last part was not found: recover from missing boundary
-		if (!lastPart && pos == string::npos)
+		if (!lastPart && pos == utility::stream::npos)
 		{
 			ref <bodyPart> part = vmime::create <bodyPart>();
 
 			try
 			{
-				part->parse(buffer, partStart, end);
+				part->parse(parser, partStart, end);
 			}
 			catch (std::exception&)
 			{
@@ -255,7 +341,7 @@ void body::parse(const string& buffer, const string::size_type position,
 		else if (partStart < end)
 		{
 			vmime::text text;
-			text.parse(buffer, partStart, end);
+			text.parse(parser, partStart, end);
 
 			m_epilogText = text.getWholeBuffer();
 		}
@@ -282,7 +368,13 @@ void body::parse(const string& buffer, const string::size_type position,
 		}
 
 		// Extract the (encoded) contents
-		m_contents = vmime::create <stringContentHandler>(buffer, position, end, enc);
+		const utility::stream::size_type length = end - position;
+
+		ref <utility::inputStream> contentStream =
+			vmime::create <utility::seekableInputStreamRegionAdapter>
+				(parser->getUnderlyingStream(), position, length);
+
+		m_contents = vmime::create <streamContentHandler>(contentStream, length, enc);
 	}
 
 	setParsedBounds(position, end);
@@ -292,7 +384,7 @@ void body::parse(const string& buffer, const string::size_type position,
 }
 
 
-void body::generate(utility::outputStream& os, const string::size_type maxLineLength,
+void body::generateImpl(utility::outputStream& os, const string::size_type maxLineLength,
 	const string::size_type /* curLinePos */, string::size_type* newLinePos) const
 {
 	// MIME-Multipart
@@ -862,9 +954,9 @@ const std::vector <ref <bodyPart> > body::getPartList()
 }
 
 
-const std::vector <ref <const component> > body::getChildComponents() const
+const std::vector <ref <component> > body::getChildComponents()
 {
-	std::vector <ref <const component> > list;
+	std::vector <ref <component> > list;
 
 	copy_vector(m_parts, list);
 

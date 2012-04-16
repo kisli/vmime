@@ -47,7 +47,7 @@ contentDisposition::contentDisposition(const contentDisposition& type)
 }
 
 
-void contentDisposition::parse(const string& buffer, const string::size_type position,
+void contentDisposition::parseImpl(const string& buffer, const string::size_type position,
 	const string::size_type end, string::size_type* newPosition)
 {
 	m_name = utility::stringUtils::trim(utility::stringUtils::toLower
@@ -60,7 +60,7 @@ void contentDisposition::parse(const string& buffer, const string::size_type pos
 }
 
 
-void contentDisposition::generate(utility::outputStream& os, const string::size_type /* maxLineLength */,
+void contentDisposition::generateImpl(utility::outputStream& os, const string::size_type /* maxLineLength */,
 	const string::size_type curLinePos, string::size_type* newLinePos) const
 {
 	os << m_name;
@@ -122,9 +122,9 @@ void contentDisposition::setName(const string& name)
 }
 
 
-const std::vector <ref <const component> > contentDisposition::getChildComponents() const
+const std::vector <ref <component> > contentDisposition::getChildComponents()
 {
-	return std::vector <ref <const component> >();
+	return std::vector <ref <component> >();
 }
 
 

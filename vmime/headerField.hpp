@@ -59,7 +59,7 @@ public:
 	void copyFrom(const component& other);
 	headerField& operator=(const headerField& other);
 
-	const std::vector <ref <const component> > getChildComponents() const;
+	const std::vector <ref <component> > getChildComponents();
 
 	/** Sets the name of this field.
 	  *
@@ -118,15 +118,26 @@ public:
 	void setValue(const string& value);
 
 
-	using component::parse;
-	using component::generate;
-
-	void parse(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition = NULL);
-	void generate(utility::outputStream& os, const string::size_type maxLineLength = lineLengthLimits::infinite, const string::size_type curLinePos = 0, string::size_type* newLinePos = NULL) const;
-
 protected:
 
-	static ref <headerField> parseNext(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition = NULL);
+	void parseImpl
+		(const string& buffer,
+		 const string::size_type position,
+		 const string::size_type end,
+		 string::size_type* newPosition = NULL);
+
+	void generateImpl
+		(utility::outputStream& os,
+		 const string::size_type maxLineLength = lineLengthLimits::infinite,
+		 const string::size_type curLinePos = 0,
+		 string::size_type* newLinePos = NULL) const;
+
+
+	static ref <headerField> parseNext
+		(const string& buffer,
+		 const string::size_type position,
+		 const string::size_type end,
+		 string::size_type* newPosition = NULL);
 
 
 	string m_name;

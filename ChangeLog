@@ -2,6 +2,12 @@
 VERSION 0.9.2svn
 ================
 
+2012-04-16  Vincent Richard  <vincent@vincent-richard.net>
+
+ * MIME Parser can now operate directly on an input stream (eg. file).
+   This allows very big messages to be parsed without loading the whole
+   message data into memory.
+
 2010-11-16  Vincent Richard  <vincent@vincent-richard.net>
 
  * Started version 0.9.2.

@@ -74,9 +74,9 @@ messageIdSequence& messageIdSequence::operator=(const messageIdSequence& other)
 }
 
 
-const std::vector <ref <const component> > messageIdSequence::getChildComponents() const
+const std::vector <ref <component> > messageIdSequence::getChildComponents()
 {
-	std::vector <ref <const component> > res;
+	std::vector <ref <component> > res;
 
 	copy_vector(m_list, res);
 
@@ -84,7 +84,7 @@ const std::vector <ref <const component> > messageIdSequence::getChildComponents
 }
 
 
-void messageIdSequence::parse(const string& buffer, const string::size_type position,
+void messageIdSequence::parseImpl(const string& buffer, const string::size_type position,
 	const string::size_type end, string::size_type* newPosition)
 {
 	removeAllMessageIds();
@@ -106,7 +106,7 @@ void messageIdSequence::parse(const string& buffer, const string::size_type posi
 }
 
 
-void messageIdSequence::generate(utility::outputStream& os, const string::size_type maxLineLength,
+void messageIdSequence::generateImpl(utility::outputStream& os, const string::size_type maxLineLength,
 	const string::size_type curLinePos, string::size_type* newLinePos) const
 {
 	string::size_type pos = curLinePos;

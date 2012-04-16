@@ -23,6 +23,9 @@
 
 #include "vmime/component.hpp"
 #include "vmime/base.hpp"
+
+#include "vmime/utility/streamUtils.hpp"
+#include "vmime/utility/inputStreamStringAdapter.hpp"
 #include "vmime/utility/outputStreamAdapter.hpp"
 
 #include <sstream>
@@ -43,9 +46,102 @@ component::~component()
 }
 
 
+void component::parse
+	(ref <utility::inputStream> inputStream, const utility::stream::size_type length)
+{
+	parse(inputStream, 0, length, NULL);
+}
+
+
+void component::parse
+	(ref <utility::inputStream> inputStream, const utility::stream::size_type position,
+	 const utility::stream::size_type end, utility::stream::size_type* newPosition)
+{
+	m_parsedOffset = m_parsedLength = 0;
+
+	ref <utility::seekableInputStream> seekableStream =
+		inputStream.dynamicCast <utility::seekableInputStream>();
+
+	if (seekableStream == NULL || end == 0)
+	{
+		// Read the whole stream into a buffer
+		std::ostringstream oss;
+		utility::outputStreamAdapter ossAdapter(oss);
+
+		utility::bufferedStreamCopyRange(*inputStream, ossAdapter, position, end - position);
+
+		const string buffer = oss.str();
+		parseImpl(buffer, 0, buffer.length(), NULL);
+	}
+	else
+	{
+		ref <utility::parserInputStreamAdapter> parser =
+			vmime::create <utility::parserInputStreamAdapter>(seekableStream);
+
+		parseImpl(parser, position, end, newPosition);
+	}
+}
+
+
 void component::parse(const string& buffer)
 {
-	parse(buffer, 0, buffer.length(), NULL);
+	m_parsedOffset = m_parsedLength = 0;
+
+	parseImpl(buffer, 0, buffer.length(), NULL);
+}
+
+
+void component::parse
+	(const string& buffer, const string::size_type position,
+	 const string::size_type end, string::size_type* newPosition)
+{
+	m_parsedOffset = m_parsedLength = 0;
+
+	parseImpl(buffer, position, end, newPosition);
+}
+
+
+void component::offsetParsedBounds(const utility::stream::size_type offset)
+{
+	// Offset parsed bounds of this component
+	if (m_parsedLength != 0)
+		m_parsedOffset += offset;
+
+	// Offset parsed bounds of our children
+	std::vector <ref <component> > children = getChildComponents();
+
+	for (unsigned int i = 0, n = children.size() ; i < n ; ++i)
+		children[i]->offsetParsedBounds(offset);
+}
+
+
+void component::parseImpl
+	(ref <utility::parserInputStreamAdapter> parser, const utility::stream::size_type position,
+	 const utility::stream::size_type end, utility::stream::size_type* newPosition)
+{
+	const std::string buffer = parser->extract(position, end);
+	parseImpl(buffer, 0, buffer.length(), newPosition);
+
+	// Recursivey offset parsed bounds on children
+	if (position != 0)
+		offsetParsedBounds(position);
+
+	if (newPosition != NULL)
+		*newPosition += position;
+}
+
+
+void component::parseImpl
+	(const string& buffer, const string::size_type position,
+	 const string::size_type end, string::size_type* newPosition)
+{
+	ref <utility::seekableInputStream> stream =
+		vmime::create <utility::inputStreamStringAdapter>(buffer);
+
+	ref <utility::parserInputStreamAdapter> parser =
+		vmime::create <utility::parserInputStreamAdapter>(stream);
+
+	parseImpl(parser, position, end, newPosition);
 }
 
 
@@ -58,6 +154,26 @@ const string component::generate(const string::size_type maxLineLength,
 	generate(adapter, maxLineLength, curLinePos, NULL);
 
 	return (oss.str());
+}
+
+
+void component::generate
+	(utility::outputStream& os,
+	 const string::size_type maxLineLength,
+	 const string::size_type curLinePos,
+	 string::size_type* newLinePos) const
+{
+	generateImpl(os, maxLineLength, curLinePos, newLinePos);
+}
+
+
+void component::generate
+	(ref <utility::outputStream> os,
+	 const string::size_type maxLineLength,
+	 const string::size_type curLinePos,
+	 string::size_type* newLinePos) const
+{
+	generateImpl(*os, maxLineLength, curLinePos, newLinePos);
 }
 
 
@@ -80,22 +196,5 @@ void component::setParsedBounds(const string::size_type start, const string::siz
 }
 
 
-const std::vector <ref <component> > component::getChildComponents()
-{
-	const std::vector <ref <const component> > constList =
-		const_cast <const component*>(this)->getChildComponents();
+} // vmime
 
-	std::vector <ref <component> > list;
-
-	const std::vector <ref <const component> >::size_type count = constList.size();
-
-	list.resize(count);
-
-	for (std::vector <ref <const component> >::size_type i = 0 ; i < count ; ++i)
-		list[i] = constList[i].constCast <component>();
-
-	return (list);
-}
-
-
-}

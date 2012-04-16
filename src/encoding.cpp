@@ -61,7 +61,7 @@ encoding::encoding(const encoding& enc)
 }
 
 
-void encoding::parse(const string& buffer, const string::size_type position,
+void encoding::parseImpl(const string& buffer, const string::size_type position,
 	const string::size_type end, string::size_type* newPosition)
 {
 	m_usage = USAGE_UNKNOWN;
@@ -80,7 +80,7 @@ void encoding::parse(const string& buffer, const string::size_type position,
 }
 
 
-void encoding::generate(utility::outputStream& os, const string::size_type /* maxLineLength */,
+void encoding::generateImpl(utility::outputStream& os, const string::size_type /* maxLineLength */,
 	const string::size_type curLinePos, string::size_type* newLinePos) const
 {
 	os << m_name;
@@ -268,9 +268,9 @@ void encoding::setUsage(const EncodingUsage usage)
 }
 
 
-const std::vector <ref <const component> > encoding::getChildComponents() const
+const std::vector <ref <component> > encoding::getChildComponents()
 {
-	return std::vector <ref <const component> >();
+	return std::vector <ref <component> >();
 }
 
 

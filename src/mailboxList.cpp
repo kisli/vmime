@@ -190,20 +190,20 @@ mailboxList& mailboxList::operator=(const mailboxList& other)
 }
 
 
-const std::vector <ref <const component> > mailboxList::getChildComponents() const
+const std::vector <ref <component> > mailboxList::getChildComponents()
 {
 	return (m_list.getChildComponents());
 }
 
 
-void mailboxList::parse(const string& buffer, const string::size_type position,
+void mailboxList::parseImpl(const string& buffer, const string::size_type position,
 	const string::size_type end, string::size_type* newPosition)
 {
 	m_list.parse(buffer, position, end, newPosition);
 }
 
 
-void mailboxList::generate(utility::outputStream& os, const string::size_type maxLineLength,
+void mailboxList::generateImpl(utility::outputStream& os, const string::size_type maxLineLength,
 	const string::size_type curLinePos, string::size_type* newLinePos) const
 {
 	m_list.generate(os, maxLineLength, curLinePos, newLinePos);

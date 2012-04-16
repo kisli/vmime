@@ -61,9 +61,14 @@ const string message::generate(const string::size_type maxLineLength,
 }
 
 
-void message::parse(const string& buffer)
+
+void message::generate
+	(ref <utility::outputStream> os,
+	 const string::size_type maxLineLength,
+	 const string::size_type curLinePos,
+	 string::size_type* newLinePos) const
 {
-	bodyPart::parse(buffer);
+	bodyPart::generate(os, maxLineLength, curLinePos, newLinePos);
 }
 
 

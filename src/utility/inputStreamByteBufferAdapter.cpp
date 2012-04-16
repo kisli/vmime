@@ -85,6 +85,19 @@ stream::size_type inputStreamByteBufferAdapter::skip(const size_type count)
 }
 
 
+stream::size_type inputStreamByteBufferAdapter::getPosition() const
+{
+	return m_pos;
+}
+
+
+void inputStreamByteBufferAdapter::seek(const size_type pos)
+{
+	if (pos <= m_length)
+		m_pos = pos;
+}
+
+
 } // utility
 } // vmime
 

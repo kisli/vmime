@@ -25,7 +25,7 @@
 #define VMIME_UTILITY_INPUTSTREAMADAPTER_HPP_INCLUDED
 
 
-#include "vmime/utility/inputStream.hpp"
+#include "vmime/utility/seekableInputStream.hpp"
 
 #include <istream>
 
@@ -37,7 +37,7 @@ namespace utility {
 /** An adapter class for C++ standard input streams.
   */
 
-class inputStreamAdapter : public inputStream
+class inputStreamAdapter : public seekableInputStream
 {
 public:
 
@@ -49,6 +49,8 @@ public:
 	void reset();
 	size_type read(value_type* const data, const size_type count);
 	size_type skip(const size_type count);
+	size_type getPosition() const;
+	void seek(const size_type pos);
 
 private:
 

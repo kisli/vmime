@@ -45,6 +45,10 @@ public:
 		return (c == ' ' || c == '\t' || c == '\n' || c == '\r');
 	}
 
+	static bool isSpaceOrTab(const char_t c)
+	{
+		return (c == ' ' || c == '\t');
+	}
 
 	static bool isDigit(const char_t c)
 	{

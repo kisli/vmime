@@ -89,6 +89,19 @@ stream::size_type inputStreamStringAdapter::skip(const size_type count)
 }
 
 
+stream::size_type inputStreamStringAdapter::getPosition() const
+{
+	return m_pos - m_begin;
+}
+
+
+void inputStreamStringAdapter::seek(const size_type pos)
+{
+	if (m_begin + pos <= m_end)
+		m_pos = m_begin + pos;
+}
+
+
 } // utility
 } // vmime
 

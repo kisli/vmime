@@ -25,7 +25,7 @@
 #define VMIME_UTILITY_INPUTSTREAMSTRINGPROXYADAPTER_HPP_INCLUDED
 
 
-#include "vmime/utility/inputStream.hpp"
+#include "vmime/utility/seekableInputStream.hpp"
 
 
 namespace vmime {
@@ -38,7 +38,7 @@ class stringProxy;
 /** An adapter class for stringProxy input.
   */
 
-class inputStreamStringProxyAdapter : public inputStream
+class inputStreamStringProxyAdapter : public seekableInputStream
 {
 public:
 
@@ -50,6 +50,8 @@ public:
 	void reset();
 	size_type read(value_type* const data, const size_type count);
 	size_type skip(const size_type count);
+	size_type getPosition() const;
+	void seek(const size_type pos);
 
 private:
 

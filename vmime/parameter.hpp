@@ -67,7 +67,7 @@ public:
 	void copyFrom(const component& other);
 	parameter& operator=(const parameter& other);
 
-	const std::vector <ref <const component> > getChildComponents() const;
+	const std::vector <ref <component> > getChildComponents();
 
 	/** Return the name of this parameter.
 	  *
@@ -104,7 +104,7 @@ public:
 	const T getValueAs() const
 	{
 		T ret;
-		ret.parse(m_value.getBuffer());
+		ret.parse(m_value->getBuffer());
 
 		return ret;
 	}
@@ -122,11 +122,19 @@ public:
 	void setValue(const word& value);
 
 
-	using component::parse;
-	using component::generate;
+protected:
 
-	void parse(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition = NULL);
-	void generate(utility::outputStream& os, const string::size_type maxLineLength = lineLengthLimits::infinite, const string::size_type curLinePos = 0, string::size_type* newLinePos = NULL) const;
+	void parseImpl
+		(const string& buffer,
+		 const string::size_type position,
+		 const string::size_type end,
+		 string::size_type* newPosition = NULL);
+
+	void generateImpl
+		(utility::outputStream& os,
+		 const string::size_type maxLineLength = lineLengthLimits::infinite,
+		 const string::size_type curLinePos = 0,
+		 string::size_type* newLinePos = NULL) const;
 
 private:
 
@@ -134,7 +142,7 @@ private:
 
 
 	string m_name;
-	word m_value;
+	ref <word> m_value;
 };
 
 

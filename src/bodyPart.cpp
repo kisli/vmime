@@ -46,15 +46,18 @@ bodyPart::bodyPart(weak_ref <vmime::bodyPart> parentPart)
 }
 
 
-void bodyPart::parse(const string& buffer, const string::size_type position,
-	const string::size_type end, string::size_type* newPosition)
+void bodyPart::parseImpl
+	(ref <utility::parserInputStreamAdapter> parser,
+	 const utility::stream::size_type position,
+	 const utility::stream::size_type end,
+	 utility::stream::size_type* newPosition)
 {
 	// Parse the headers
 	string::size_type pos = position;
-	m_header->parse(buffer, pos, end, &pos);
+	m_header->parse(parser, pos, end, &pos);
 
 	// Parse the body contents
-	m_body->parse(buffer, pos, end, NULL);
+	m_body->parse(parser, pos, end, NULL);
 
 	setParsedBounds(position, end);
 
@@ -63,7 +66,7 @@ void bodyPart::parse(const string& buffer, const string::size_type position,
 }
 
 
-void bodyPart::generate(utility::outputStream& os, const string::size_type maxLineLength,
+void bodyPart::generateImpl(utility::outputStream& os, const string::size_type maxLineLength,
 	const string::size_type /* curLinePos */, string::size_type* newLinePos) const
 {
 	m_header->generate(os, maxLineLength);
@@ -142,9 +145,9 @@ ref <const bodyPart> bodyPart::getParentPart() const
 }
 
 
-const std::vector <ref <const component> > bodyPart::getChildComponents() const
+const std::vector <ref <component> > bodyPart::getChildComponents()
 {
-	std::vector <ref <const component> > list;
+	std::vector <ref <component> > list;
 
 	list.push_back(m_header);
 	list.push_back(m_body);

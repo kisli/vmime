@@ -45,6 +45,19 @@ namespace utility {
 stream::size_type bufferedStreamCopy(inputStream& is, outputStream& os);
 
 /** Copy data from one stream into another stream using a buffered method
+  * and copying only a specified range of data.
+  *
+  * @param is input stream (source data)
+  * @param os output stream (destination for data)
+  * @param start number of bytes to ignore before starting copying
+  * @param length maximum number of bytes to copy
+  * @return number of bytes copied
+  */
+
+stream::size_type bufferedStreamCopyRange(inputStream& is, outputStream& os,
+	const stream::size_type start, const stream::size_type length);
+
+/** Copy data from one stream into another stream using a buffered method
   * and notify progress state of the operation.
   *
   * @param is input stream (source data)

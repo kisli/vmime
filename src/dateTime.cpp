@@ -67,7 +67,7 @@ zone = "UT" / "GMT"                               ; Universal Time
 */
 
 
-void datetime::parse(const string& buffer, const string::size_type position,
+void datetime::parseImpl(const string& buffer, const string::size_type position,
 	const string::size_type end, string::size_type* newPosition)
 {
 	const string::value_type* const pend = buffer.data() + end;
@@ -588,7 +588,7 @@ void datetime::parse(const string& buffer, const string::size_type position,
 }
 
 
-void datetime::generate(utility::outputStream& os, const string::size_type /* maxLineLength */,
+void datetime::generateImpl(utility::outputStream& os, const string::size_type /* maxLineLength */,
 	const string::size_type curLinePos, string::size_type* newLinePos) const
 {
 	static const string::value_type* dayNames[] =
@@ -784,9 +784,9 @@ ref <component> datetime::clone() const
 }
 
 
-const std::vector <ref <const component> > datetime::getChildComponents() const
+const std::vector <ref <component> > datetime::getChildComponents()
 {
-	return std::vector <ref <const component> >();
+	return std::vector <ref <component> >();
 }
 
 

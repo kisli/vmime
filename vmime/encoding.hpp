@@ -93,7 +93,7 @@ public:
 	bool operator==(const encoding& value) const;
 	bool operator!=(const encoding& value) const;
 
-	const std::vector <ref <const component> > getChildComponents() const;
+	const std::vector <ref <component> > getChildComponents();
 
 	/** Decide which encoding to use based on the specified data.
 	  *
@@ -141,14 +141,20 @@ private:
 	  */
 	static const encoding decideImpl(const string::const_iterator begin, const string::const_iterator end);
 
-public:
-
-	using component::parse;
-	using component::generate;
+protected:
 
 	// Component parsing & assembling
-	void parse(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition = NULL);
-	void generate(utility::outputStream& os, const string::size_type maxLineLength = lineLengthLimits::infinite, const string::size_type curLinePos = 0, string::size_type* newLinePos = NULL) const;
+	void parseImpl
+		(const string& buffer,
+		 const string::size_type position,
+		 const string::size_type end,
+		 string::size_type* newPosition = NULL);
+
+	void generateImpl
+		(utility::outputStream& os,
+		 const string::size_type maxLineLength = lineLengthLimits::infinite,
+		 const string::size_type curLinePos = 0,
+		 string::size_type* newLinePos = NULL) const;
 };
 
 

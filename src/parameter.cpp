@@ -36,19 +36,19 @@ namespace vmime
 
 
 parameter::parameter(const string& name)
-	: m_name(name)
+	: m_name(name), m_value(vmime::create <word>())
 {
 }
 
 
 parameter::parameter(const string& name, const word& value)
-	: m_name(name), m_value(value)
+	: m_name(name), m_value(vmime::create <word>(value))
 {
 }
 
 
 parameter::parameter(const string& name, const string& value)
-	: m_name(name), m_value(value)
+	: m_name(name), m_value(vmime::create <word>(value))
 {
 }
 
@@ -73,7 +73,7 @@ void parameter::copyFrom(const component& other)
 	const parameter& param = dynamic_cast <const parameter&>(other);
 
 	m_name = param.m_name;
-	m_value.copyFrom(param.m_value);
+	m_value->copyFrom(*param.m_value);
 }
 
 
@@ -92,7 +92,7 @@ const string& parameter::getName() const
 
 const word& parameter::getValue() const
 {
-	return m_value;
+	return *m_value;
 }
 
 
@@ -109,15 +109,15 @@ void parameter::setValue(const component& value)
 
 void parameter::setValue(const word& value)
 {
-	m_value = value;
+	*m_value = value;
 }
 
 
-void parameter::parse(const string& buffer, const string::size_type position,
+void parameter::parseImpl(const string& buffer, const string::size_type position,
 	const string::size_type end, string::size_type* newPosition)
 {
-	m_value.setBuffer(string(buffer.begin() + position, buffer.begin() + end));
-	m_value.setCharset(charset(charsets::US_ASCII));
+	m_value->setBuffer(string(buffer.begin() + position, buffer.begin() + end));
+	m_value->setCharset(charset(charsets::US_ASCII));
 
 	if (newPosition)
 		*newPosition = end;
@@ -248,16 +248,16 @@ void parameter::parse(const std::vector <valueChunk>& chunks)
 		}
 	}
 
-	m_value.setBuffer(value.str());
-	m_value.setCharset(ch);
+	m_value->setBuffer(value.str());
+	m_value->setCharset(ch);
 }
 
 
-void parameter::generate(utility::outputStream& os, const string::size_type maxLineLength,
+void parameter::generateImpl(utility::outputStream& os, const string::size_type maxLineLength,
 	const string::size_type curLinePos, string::size_type* newLinePos) const
 {
 	const string& name = m_name;
-	const string& value = m_value.getBuffer();
+	const string& value = m_value->getBuffer();
 
 	// For compatibility with implementations that do not understand RFC-2231,
 	// also generate a normal "7bit/us-ascii" parameter
@@ -344,7 +344,7 @@ void parameter::generate(utility::outputStream& os, const string::size_type maxL
 	// 7-bit (ASCII) bytes in the input will be used to determine if
 	// we need to encode the whole buffer.
 	encoding recommendedEnc;
-	const bool alwaysEncode = m_value.getCharset().getRecommendedEncoding(recommendedEnc);
+	const bool alwaysEncode = m_value->getCharset().getRecommendedEncoding(recommendedEnc);
 	bool extended = alwaysEncode;
 
 	if (needQuotedPrintable)
@@ -352,7 +352,7 @@ void parameter::generate(utility::outputStream& os, const string::size_type maxL
 		// Send the name in quoted-printable, so outlook express et.al.
 		// will understand the real filename
 		size_t oldLen = sevenBitBuffer.length();
-		m_value.generate(sevenBitStream);
+		m_value->generate(sevenBitStream);
 		pos += sevenBitBuffer.length() - oldLen;
 		extended = true;		// also send with RFC-2231 encoding
 	}
@@ -429,7 +429,7 @@ void parameter::generate(utility::outputStream& os, const string::size_type maxL
 		// + at least 5 characters for the value
 		const string::size_type firstSectionLength =
 			  name.length() + 4 /* *0*= */ + 2 /* '' */
-			+ m_value.getCharset().getName().length();
+			+ m_value->getCharset().getName().length();
 
 		if (pos + firstSectionLength + 5 >= maxLineLength)
 		{
@@ -539,7 +539,7 @@ void parameter::generate(utility::outputStream& os, const string::size_type maxL
 
 			if (sectionNumber == 0)
 			{
-				os << m_value.getCharset().getName();
+				os << m_value->getCharset().getName();
 				os << '\'' << /* No language */ '\'';
 			}
 
@@ -570,11 +570,11 @@ void parameter::generate(utility::outputStream& os, const string::size_type maxL
 }
 
 
-const std::vector <ref <const component> > parameter::getChildComponents() const
+const std::vector <ref <component> > parameter::getChildComponents()
 {
-	std::vector <ref <const component> > list;
+	std::vector <ref <component> > list;
 
-	list.push_back(ref <const component>::fromPtr(&m_value));
+	list.push_back(m_value);
 
 	return list;
 }

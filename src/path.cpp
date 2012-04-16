@@ -106,14 +106,14 @@ path& path::operator=(const path& other)
 }
 
 
-const std::vector <ref <const component> > path::getChildComponents() const
+const std::vector <ref <component> > path::getChildComponents()
 {
-	return std::vector <ref <const component> >();
+	return std::vector <ref <component> >();
 }
 
 
-void path::parse(const string& buffer, const string::size_type position,
-                 const string::size_type end, string::size_type* newPosition)
+void path::parseImpl(const string& buffer, const string::size_type position,
+	const string::size_type end, string::size_type* newPosition)
 {
 	string::size_type pos = position;
 
@@ -165,8 +165,8 @@ void path::parse(const string& buffer, const string::size_type position,
 }
 
 
-void path::generate(utility::outputStream& os, const string::size_type /* maxLineLength */,
-                    const string::size_type curLinePos, string::size_type* newLinePos) const
+void path::generateImpl(utility::outputStream& os, const string::size_type /* maxLineLength */,
+	const string::size_type curLinePos, string::size_type* newLinePos) const
 {
 	if (m_localPart.empty() && m_domain.empty())
 	{

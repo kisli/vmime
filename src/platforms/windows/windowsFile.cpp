@@ -479,6 +479,24 @@ vmime::utility::stream::size_type windowsFileReaderInputStream::skip(const size_
 	return (dwNewPos - dwCurPos);
 }
 
+vmime::utility::stream::size_type windowsFileReaderInputStream::getPosition() const
+{
+	DWORD dwCurPos = SetFilePointer(m_hFile, 0, NULL, FILE_CURRENT);
+
+	if (dwCurPos == INVALID_SET_FILE_POINTER)
+		windowsFileSystemFactory::reportError(m_path, GetLastError());
+
+	return static_cast <size_type>(dwCurPos);
+}
+
+void windowsFileReaderInputStream::seek(const size_type pos)
+{
+	DWORD dwNewPos = SetFilePointer(m_hFile, (LONG)pos, NULL, FILE_BEGIN);
+
+	if (dwNewPos == INVALID_SET_FILE_POINTER)
+		windowsFileSystemFactory::reportError(m_path, GetLastError());
+}
+
 windowsFileWriter::windowsFileWriter(const vmime::utility::file::path& path, const vmime::string& nativePath)
 : m_path(path), m_nativePath(nativePath)
 {

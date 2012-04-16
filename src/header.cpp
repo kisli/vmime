@@ -61,7 +61,7 @@ field-body-contents =
 		 specials tokens, or else consisting of texts>
 */
 
-void header::parse(const string& buffer, const string::size_type position,
+void header::parseImpl(const string& buffer, const string::size_type position,
 	const string::size_type end, string::size_type* newPosition)
 {
 	string::size_type pos = position;
@@ -83,7 +83,7 @@ void header::parse(const string& buffer, const string::size_type position,
 }
 
 
-void header::generate(utility::outputStream& os, const string::size_type maxLineLength,
+void header::generateImpl(utility::outputStream& os, const string::size_type maxLineLength,
 	const string::size_type /* curLinePos */, string::size_type* newLinePos) const
 {
 	// Generate the fields
@@ -337,9 +337,9 @@ const std::vector <ref <headerField> > header::getFieldList()
 }
 
 
-const std::vector <ref <const component> > header::getChildComponents() const
+const std::vector <ref <component> > header::getChildComponents()
 {
-	std::vector <ref <const component> > list;
+	std::vector <ref <component> > list;
 
 	copy_vector(m_fields, list);
 

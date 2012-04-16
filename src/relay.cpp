@@ -57,7 +57,7 @@ relay::relay(const relay& r)
                        ["for"  addr-spec]        ; initial form
 */
 
-void relay::parse(const string& buffer, const string::size_type position,
+void relay::parseImpl(const string& buffer, const string::size_type position,
 	const string::size_type end, string::size_type* newPosition)
 {
 	const string::value_type* const pend = buffer.data() + end;
@@ -198,7 +198,7 @@ void relay::parse(const string& buffer, const string::size_type position,
 }
 
 
-void relay::generate(utility::outputStream& os, const string::size_type maxLineLength,
+void relay::generateImpl(utility::outputStream& os, const string::size_type maxLineLength,
 	const string::size_type curLinePos, string::size_type* newLinePos) const
 {
 	std::ostringstream oss;
@@ -338,10 +338,10 @@ std::vector <string>& relay::getWithList()
 }
 
 
-const std::vector <ref <const component> > relay::getChildComponents() const
+const std::vector <ref <component> > relay::getChildComponents()
 {
 	// TODO: should fields inherit from 'component'? (using typeAdapter)
-	return std::vector <ref <const component> >();
+	return std::vector <ref <component> >();
 }
 
 

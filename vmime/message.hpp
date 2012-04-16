@@ -43,12 +43,25 @@ public:
 	message();
 
 
-	// Component parsing & assembling
-	void generate(utility::outputStream& os, const string::size_type maxLineLength = options::getInstance()->message.maxLineLength(), const string::size_type curLinePos = 0, string::size_type* newLinePos = NULL) const;
+public:
 
-	const string generate(const string::size_type maxLineLength = options::getInstance()->message.maxLineLength(), const string::size_type curLinePos = 0) const;
+	// Override default generate() functions so that we can change
+	// the default 'maxLineLength' value
+	void generate
+		(utility::outputStream& os,
+		 const string::size_type maxLineLength = options::getInstance()->message.maxLineLength(),
+		 const string::size_type curLinePos = 0,
+		 string::size_type* newLinePos = NULL) const;
 
-	void parse(const string& buffer);
+	const string generate
+		(const string::size_type maxLineLength = options::getInstance()->message.maxLineLength(),
+		 const string::size_type curLinePos = 0) const;
+
+	void generate
+		(ref <utility::outputStream> os,
+		 const string::size_type maxLineLength = lineLengthLimits::infinite,
+		 const string::size_type curLinePos = 0,
+		 string::size_type* newLinePos = NULL) const;
 };
 
 

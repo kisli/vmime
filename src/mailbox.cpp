@@ -65,7 +65,7 @@ angle-addr      =       [CFWS] "<" addr-spec ">" [CFWS] / obs-angle-addr
 
 */
 
-void mailbox::parse(const string& buffer, const string::size_type position,
+void mailbox::parseImpl(const string& buffer, const string::size_type position,
 	const string::size_type end, string::size_type* newPosition)
 {
 	const string::value_type* const pend = buffer.data() + end;
@@ -343,7 +343,7 @@ void mailbox::parse(const string& buffer, const string::size_type position,
 }
 
 
-void mailbox::generate(utility::outputStream& os, const string::size_type maxLineLength,
+void mailbox::generateImpl(utility::outputStream& os, const string::size_type maxLineLength,
 	const string::size_type curLinePos, string::size_type* newLinePos) const
 {
 	if (m_name.isEmpty())
@@ -514,9 +514,9 @@ void mailbox::setEmail(const string& email)
 }
 
 
-const std::vector <ref <const component> > mailbox::getChildComponents() const
+const std::vector <ref <component> > mailbox::getChildComponents()
 {
-	return std::vector <ref <const component> >();
+	return std::vector <ref <component> >();
 }
 
 

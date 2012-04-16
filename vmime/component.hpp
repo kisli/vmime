@@ -27,6 +27,8 @@
 
 #include "vmime/base.hpp"
 #include "vmime/utility/inputStream.hpp"
+#include "vmime/utility/seekableInputStream.hpp"
+#include "vmime/utility/parserInputStreamAdapter.hpp"
 #include "vmime/utility/outputStream.hpp"
 
 
@@ -51,6 +53,12 @@ public:
 	  */
 	void parse(const string& buffer);
 
+	/** Parse RFC-822/MIME data for this component. If stream is not seekable,
+	  * or if length is not specified, entire contents of the stream will
+	  * be loaded into memory before parsing.
+	  */
+	void parse(ref <utility::inputStream> inputStream, const utility::stream::size_type length);
+
 	/** Parse RFC-822/MIME data for this component.
 	  *
 	  * @param buffer input buffer
@@ -58,7 +66,26 @@ public:
 	  * @param end end position in the input buffer
 	  * @param newPosition will receive the new position in the input buffer
 	  */
-	virtual void parse(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition = NULL) = 0;
+	void parse
+		(const string& buffer,
+		 const string::size_type position,
+		 const string::size_type end,
+		 string::size_type* newPosition = NULL);
+
+	/** Parse RFC-822/MIME data for this component. If stream is not seekable,
+	  * or if end position is not specified, entire contents of the stream will
+	  * be loaded into memory before parsing.
+	  *
+	  * @param inputStream stream from which to read data
+	  * @param position current position in the input stream
+	  * @param end end position in the input stream
+	  * @param newPosition will receive the new position in the input stream
+	  */
+	void parse
+		(ref <utility::inputStream> inputStream,
+		 const utility::stream::size_type position,
+		 const utility::stream::size_type end,
+		 utility::stream::size_type* newPosition = NULL);
 
 	/** Generate RFC-2822/MIME data for this component.
 	  *
@@ -68,16 +95,35 @@ public:
 	  * @param curLinePos length of the current line in the output buffer
 	  * @return generated data
 	  */
-	const string generate(const string::size_type maxLineLength = lineLengthLimits::infinite, const string::size_type curLinePos = 0) const;
+	virtual const string generate
+		(const string::size_type maxLineLength = lineLengthLimits::infinite,
+		 const string::size_type curLinePos = 0) const;
 
 	/** Generate RFC-2822/MIME data for this component.
 	  *
-	  * @param os output stream
+	  * @param outputStream output stream
 	  * @param maxLineLength maximum line length for output
 	  * @param curLinePos length of the current line in the output buffer
 	  * @param newLinePos will receive the new line position (length of the last line written)
 	  */
-	virtual void generate(utility::outputStream& os, const string::size_type maxLineLength = lineLengthLimits::infinite, const string::size_type curLinePos = 0, string::size_type* newLinePos = NULL) const = 0;
+	virtual void generate
+		(utility::outputStream& outputStream,
+		 const string::size_type maxLineLength = lineLengthLimits::infinite,
+		 const string::size_type curLinePos = 0,
+		 string::size_type* newLinePos = NULL) const;
+
+	/** Generate RFC-2822/MIME data for this component.
+	  *
+	  * @param outputStream output stream
+	  * @param maxLineLength maximum line length for output
+	  * @param curLinePos length of the current line in the output buffer
+	  * @param newLinePos will receive the new line position (length of the last line written)
+	  */
+	virtual void generate
+		(ref <utility::outputStream> outputStream,
+		 const string::size_type maxLineLength = lineLengthLimits::infinite,
+		 const string::size_type curLinePos = 0,
+		 string::size_type* newLinePos = NULL) const;
 
 	/** Clone this component.
 	  *
@@ -95,41 +141,56 @@ public:
 	virtual void copyFrom(const component& other) = 0;
 
 	/** Return the start position of this component in the
-	  * parsed message contents.
+	  * parsed message contents. Use for debugging only.
 	  *
 	  * @return start position in parsed buffer
 	  * or 0 if this component has not been parsed
 	  */
-	string::size_type getParsedOffset() const;
+	utility::stream::size_type getParsedOffset() const;
 
 	/** Return the length of this component in the
-	  * parsed message contents.
+	  * parsed message contents. Use for debugging only.
 	  *
 	  * @return length of the component in parsed buffer
 	  * or 0 if this component has not been parsed
 	  */
-	string::size_type getParsedLength() const;
+	utility::stream::size_type getParsedLength() const;
 
 	/** Return the list of children of this component.
 	  *
 	  * @return list of child components
 	  */
-	const std::vector <ref <component> > getChildComponents();
-
-	/** Return the list of children of this component (const version).
-	  *
-	  * @return list of child components
-	  */
-	virtual const std::vector <ref <const component> > getChildComponents() const = 0;
+	virtual const std::vector <ref <component> > getChildComponents() = 0;
 
 protected:
 
-	void setParsedBounds(const string::size_type start, const string::size_type end);
+	void setParsedBounds(const utility::stream::size_type start, const utility::stream::size_type end);
+
+	// AT LEAST ONE of these parseImpl() functions MUST be implemented in derived class
+	virtual void parseImpl
+		(ref <utility::parserInputStreamAdapter> parser,
+		 const utility::stream::size_type position,
+		 const utility::stream::size_type end,
+		 utility::stream::size_type* newPosition = NULL);
+
+	virtual void parseImpl
+		(const string& buffer,
+		 const string::size_type position,
+		 const string::size_type end,
+		 string::size_type* newPosition = NULL);
+
+	virtual void generateImpl
+		(utility::outputStream& os,
+		 const string::size_type maxLineLength = lineLengthLimits::infinite,
+		 const string::size_type curLinePos = 0,
+		 string::size_type* newLinePos = NULL) const = 0;
 
 private:
 
-	string::size_type m_parsedOffset;
-	string::size_type m_parsedLength;
+	void offsetParsedBounds(const utility::stream::size_type offset);
+
+	utility::stream::size_type m_parsedOffset;
+	utility::stream::size_type m_parsedLength;
 };
 
 

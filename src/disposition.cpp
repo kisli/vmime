@@ -79,9 +79,9 @@ disposition& disposition::operator=(const disposition& other)
 }
 
 
-const std::vector <ref <const component> > disposition::getChildComponents() const
+const std::vector <ref <component> > disposition::getChildComponents()
 {
-	return std::vector <ref <const component> >();
+	return std::vector <ref <component> >();
 }
 
 
@@ -171,7 +171,7 @@ const std::vector <string> disposition::getModifierList() const
 }
 
 
-void disposition::parse(const string& buffer, const string::size_type position,
+void disposition::parseImpl(const string& buffer, const string::size_type position,
 	const string::size_type end, string::size_type* newPosition)
 {
 	// disposition-mode ";" disposition-type
@@ -276,7 +276,7 @@ void disposition::parse(const string& buffer, const string::size_type position,
 }
 
 
-void disposition::generate(utility::outputStream& os, const string::size_type maxLineLength,
+void disposition::generateImpl(utility::outputStream& os, const string::size_type maxLineLength,
 	const string::size_type curLinePos, string::size_type* newLinePos) const
 {
 	string::size_type pos = curLinePos;
