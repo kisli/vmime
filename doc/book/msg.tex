@@ -51,7 +51,7 @@ std::cout
    << std::endl
    << "It was sent by: "
    << hdr->From()->getValue().dynamicCast <vmime::mailbox>()->getName().getConvertedText(ch)
-   << " (email: " << hdr->From()->getValue().getEmail() << ")"
+   << " (email: " << hdr->From()->getValue().dynamicCast<vmime::mailbox>()->getEmail() << ")"
    << std::endl;
 \end{lstlisting}
 
