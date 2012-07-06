@@ -279,8 +279,6 @@ void IMAPMessage::extract(ref <const part> p, utility::outputStream& os,
 	{
 		if (headerOnly)
 			command << "HEADER";
-		else
-			command << "TEXT";
 	}
 	else
 	{
