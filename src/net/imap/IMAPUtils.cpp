@@ -540,6 +540,24 @@ const string IMAPUtils::listToSet(const std::vector <int>& list, const int max,
 
 
 // static
+const string IMAPUtils::listToSet(const std::vector <message::uid>& list)
+{
+	if (list.size() == 0)
+		return "";
+
+	std::ostringstream res;
+	res.imbue(std::locale::classic());
+
+	res << extractUIDFromGlobalUID(list[0]);
+
+	for (unsigned int i = 1, n = list.size() ; i < n ; ++i)
+		res << "," << extractUIDFromGlobalUID(list[i]);
+
+	return res.str();
+}
+
+
+// static
 const string IMAPUtils::dateTime(const vmime::datetime& date)
 {
 	std::ostringstream res;
@@ -609,7 +627,8 @@ const string IMAPUtils::dateTime(const vmime::datetime& date)
 
 
 // static
-const string IMAPUtils::buildFetchRequest(const std::vector <int>& list, const int options)
+const string IMAPUtils::buildFetchRequestImpl
+	(const std::string& mode, const std::string& set, const int options)
 {
 	// Example:
 	//   C: A654 FETCH 2:4 (FLAGS BODY[HEADER.FIELDS (DATE FROM)])
@@ -671,7 +690,10 @@ const string IMAPUtils::buildFetchRequest(const std::vector <int>& list, const i
 	std::ostringstream command;
 	command.imbue(std::locale::classic());
 
-	command << "FETCH " << listToSet(list, -1, false) << " (";
+	if (mode == "uid")
+		command << "UID FETCH " << set << " (";
+	else
+		command << "FETCH " << set << " (";
 
 	for (std::vector <string>::const_iterator it = items.begin() ;
 	     it != items.end() ; ++it)
@@ -683,6 +705,20 @@ const string IMAPUtils::buildFetchRequest(const std::vector <int>& list, const i
 	command << ")";
 
 	return command.str();
+}
+
+
+// static
+const string IMAPUtils::buildFetchRequest(const std::vector <int>& list, const int options)
+{
+	return buildFetchRequestImpl("number", listToSet(list, -1, false), options);
+}
+
+
+// static
+const string IMAPUtils::buildFetchRequest(const std::vector <message::uid>& list, const int options)
+{
+	return buildFetchRequestImpl("uid", listToSet(list), options);
 }
 
 
@@ -703,6 +739,46 @@ void IMAPUtils::convertAddressList
 
 		dest.appendMailbox(vmime::create <mailbox>(name, email));
 	}
+}
+
+
+// static
+unsigned int IMAPUtils::extractUIDFromGlobalUID(const message::uid& uid)
+{
+	message::uid::size_type colonPos = uid.find(':');
+
+	if (colonPos == message::uid::npos)
+	{
+		std::istringstream iss(uid);
+		iss.imbue(std::locale::classic());
+
+		unsigned int n = 0;
+		iss >> n;
+
+		return n;
+	}
+	else
+	{
+		std::istringstream iss(uid.substr(colonPos + 1));
+		iss.imbue(std::locale::classic());
+
+		unsigned int n = 0;
+		iss >> n;
+
+		return n;
+	}
+}
+
+
+// static
+const message::uid IMAPUtils::makeGlobalUID(const unsigned int UIDValidity, const unsigned int messageUID)
+{
+	std::ostringstream oss;
+	oss.imbue(std::locale::classic());
+
+	oss << UIDValidity << ":" << messageUID;
+
+	return message::uid(oss.str());
 }
 
 

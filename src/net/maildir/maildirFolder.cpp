@@ -444,6 +444,18 @@ std::vector <ref <message> > maildirFolder::getMessages(const std::vector <int>&
 }
 
 
+ref <message> maildirFolder::getMessageByUID(const message::uid& /* uid */)
+{
+	throw exceptions::operation_not_supported();
+}
+
+
+std::vector <ref <message> > maildirFolder::getMessagesByUID(const std::vector <message::uid>& /* uids */)
+{
+	throw exceptions::operation_not_supported();
+}
+
+
 int maildirFolder::getMessageCount()
 {
 	return (m_messageCount);

@@ -169,7 +169,7 @@ public:
 	  */
 	virtual bool isOpen() const = 0;
 
-	/** Get a new reference to a message in this folder.
+	/** Get a new reference to a message in this folder, given its number.
 	  *
 	  * @param num message sequence number
 	  * @return a new object referencing the specified message
@@ -177,7 +177,7 @@ public:
 	  */
 	virtual ref <message> getMessage(const int num) = 0;
 
-	/** Get new references to messages in this folder.
+	/** Get new references to messages in this folder, given their numbers.
 	  *
 	  * @param from sequence number of the first message to get
 	  * @param to sequence number of the last message to get
@@ -186,13 +186,29 @@ public:
 	  */
 	virtual std::vector <ref <message> > getMessages(const int from = 1, const int to = -1) = 0;
 
-	/** Get new references to messages in this folder.
+	/** Get new references to messages in this folder, given their numbers.
 	  *
-	  * @param nums sequence numbers of the messages to delete
+	  * @param nums sequence numbers of the messages to retrieve
 	  * @return new objects referencing the specified messages
 	  * @throw net_exception if an error occurs
 	  */
 	virtual std::vector <ref <message> > getMessages(const std::vector <int>& nums) = 0;
+
+	/** Get message in this folder, given its UID.
+	  *
+	  * @param uid UID of message to retrieve
+	  * @return a new object referencing the specified message
+	  * @throw net_exception if an error occurs
+	  */
+	virtual ref <message> getMessageByUID(const message::uid& uid) = 0;
+
+	/** Get messages in this folder, given their UIDs.
+	  *
+	  * @param uids UIDs of messages to retrieve
+	  * @return new objects referencing the specified messages
+	  * @throw net_exception if an error occurs
+	  */
+	virtual std::vector <ref <message> > getMessagesByUID(const std::vector <message::uid>& uids) = 0;
 
 	/** Return the number of messages in this folder.
 	  *

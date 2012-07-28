@@ -98,6 +98,14 @@ IMAPMessage::IMAPMessage(ref <IMAPFolder> folder, const int num)
 }
 
 
+IMAPMessage::IMAPMessage(ref <IMAPFolder> folder, const int num, const uid& uniqueId)
+	: m_folder(folder), m_num(num), m_size(-1), m_flags(FLAG_UNDEFINED),
+	  m_expunged(false), m_uid(uniqueId), m_structure(NULL)
+{
+	folder->registerMessage(this);
+}
+
+
 IMAPMessage::~IMAPMessage()
 {
 	ref <IMAPFolder> folder = m_folder.acquire();
@@ -271,7 +279,11 @@ void IMAPMessage::extract(ref <const part> p, utility::outputStream& os,
 	std::ostringstream command;
 	command.imbue(std::locale::classic());
 
-	command << "FETCH " << m_num << " BODY";
+	if (m_uid.empty())
+		command << "FETCH " << m_num << " BODY";
+	else
+		command << "UID FETCH " << IMAPUtils::extractUIDFromGlobalUID(m_uid) << " BODY";
+
 	if (peek) command << ".PEEK";
 	command << "[";
 
@@ -361,19 +373,18 @@ void IMAPMessage::fetch(ref <IMAPFolder> msgFolder, const int options)
 			continue;
 
 		// Process fetch response for this message
-		processFetchResponse(options, messageData->msg_att());
+		processFetchResponse(options, messageData);
 	}
 }
 
 
 void IMAPMessage::processFetchResponse
-	(const int options, const IMAPParser::msg_att* msgAtt)
+	(const int options, const IMAPParser::message_data* msgData)
 {
 	ref <IMAPFolder> folder = m_folder.acquire();
 
 	// Get message attributes
-	const std::vector <IMAPParser::msg_att_item*> atts =
-		msgAtt->items();
+	const std::vector <IMAPParser::msg_att_item*> atts = msgData->msg_att()->items();
 
 	int flags = 0;
 
@@ -389,12 +400,7 @@ void IMAPMessage::processFetchResponse
 		}
 		case IMAPParser::msg_att_item::UID:
 		{
-			std::ostringstream oss;
-			oss.imbue(std::locale::classic());
-
-			oss << folder->m_uidValidity << ":" << (*it)->unique_id()->value();
-
-			m_uid = oss.str();
+			m_uid = IMAPUtils::makeGlobalUID(folder->m_uidValidity, (*it)->unique_id()->value());
 			break;
 		}
 		case IMAPParser::msg_att_item::ENVELOPE:

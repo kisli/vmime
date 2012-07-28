@@ -83,6 +83,10 @@ public:
 	ref <message> getMessage(const int num);
 	std::vector <ref <message> > getMessages(const int from = 1, const int to = -1);
 	std::vector <ref <message> > getMessages(const std::vector <int>& nums);
+
+	ref <message> getMessageByUID(const message::uid& uid);
+	std::vector <ref <message> > getMessagesByUID(const std::vector <message::uid>& uids);
+
 	int getMessageCount();
 
 	ref <folder> getFolder(const folder::path::component& name);

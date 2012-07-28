@@ -84,6 +84,12 @@ public:
 	ref <message> getMessage(const int num);
 	std::vector <ref <message> > getMessages(const int from = 1, const int to = -1);
 	std::vector <ref <message> > getMessages(const std::vector <int>& nums);
+
+	ref <message> getMessageByUID(const message::uid& uid);
+	std::vector <ref <message> > getMessagesByUID(const std::vector <message::uid>& uids);
+
+	std::vector <int> getMessageNumbersStartingOnUID(const message::uid& uid);
+
 	int getMessageCount();
 
 	ref <folder> getFolder(const folder::path::component& name);
@@ -120,8 +126,6 @@ public:
 
 	int getFetchCapabilities() const;
 
-	std::vector <int> getMessageNumbersStartingOnUID(const message::uid& uid);
-
 private:
 
 	void registerMessage(IMAPMessage* msg);
@@ -152,7 +156,7 @@ private:
 
 	int m_messageCount;
 
-	int m_uidValidity;
+	unsigned int m_uidValidity;
 
 	std::vector <IMAPMessage*> m_messages;
 };

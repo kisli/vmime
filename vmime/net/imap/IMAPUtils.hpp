@@ -29,6 +29,7 @@
 #include "vmime/dateTime.hpp"
 
 #include "vmime/net/folder.hpp"
+#include "vmime/net/message.hpp"
 #include "vmime/net/imap/IMAPParser.hpp"
 
 #include "vmime/mailboxList.hpp"
@@ -65,8 +66,8 @@ public:
 
 	static const string messageFlagList(const int flags);
 
-	/** Build an "IMAP set" given a list. The function tries to group
-	  * consecutive message numbers to reduce the list.
+	/** Build an "IMAP set" given a list of message numbers. The function tries
+	  * to group consecutive message numbers to reduce the list.
 	  *
 	  * Example:
 	  *    IN  = "1,2,3,4,5,7,8,13,15,16,17"
@@ -81,6 +82,13 @@ public:
 	static const string listToSet(const std::vector <int>& list,
 		const int max = -1, const bool alreadySorted = false);
 
+	/** Build an "IMAP set" set given a list of message UIDs.
+	  *
+	  * @param list list of message UIDs
+	  * @return a set corresponding to the list
+	  */
+	static const string listToSet(const std::vector <message::uid>& list);
+
 	/** Format a date/time to IMAP date/time format.
 	  *
 	  * @param date date/time to format
@@ -88,7 +96,7 @@ public:
 	  */
 	static const string dateTime(const vmime::datetime& date);
 
-	/** Construct a fetch request for the specified messages.
+	/** Construct a fetch request for the specified messages, designated by their sequence numbers.
 	  *
 	  * @param list list of message numbers
 	  * @param options fetch options
@@ -96,12 +104,40 @@ public:
 	  */
 	static const string buildFetchRequest(const std::vector <int>& list, const int options);
 
+	/** Construct a fetch request for the specified messages, designated by their UIDs.
+	  *
+	  * @param list list of message UIDs
+	  * @param options fetch options
+	  * @return fetch request
+	  */
+	static const string buildFetchRequest(const std::vector <message::uid>& list, const int options);
+
 	/** Convert a parser-style address list to a mailbox list.
 	  *
 	  * @param src input address list
 	  * @param dest output mailbox list
 	  */
 	static void convertAddressList(const IMAPParser::address_list& src, mailboxList& dest);
+
+	/** Extract the message UID from a globally unique UID.
+	  *
+	  * @param uid globally unique UID (as returned by makeGlobalUID(), for example)
+	  * @return message UID
+	  */
+	static unsigned int extractUIDFromGlobalUID(const message::uid& uid);
+
+	/** Construct a globally unique UID from UID Validity and a message UID.
+	  *
+	  * @param UIDValidity UID Validity of the folder
+	  * @param messageUID UID of the message
+	  * @return global UID
+	  */
+	static const message::uid makeGlobalUID(const unsigned int UIDValidity, const unsigned int messageUID);
+
+private:
+
+	static const string buildFetchRequestImpl
+		(const std::string& mode, const std::string& set, const int options);
 };
 
 

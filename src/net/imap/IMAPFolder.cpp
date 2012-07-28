@@ -208,7 +208,7 @@ void IMAPFolder::open(const int mode, bool failIfModeIsNotAvailable)
 					{
 					case IMAPParser::resp_text_code::UIDVALIDITY:
 
-						m_uidValidity = code->nz_number()->value();
+						m_uidValidity = static_cast <unsigned int>(code->nz_number()->value());
 						break;
 
 					default:
@@ -550,6 +550,109 @@ std::vector <ref <message> > IMAPFolder::getMessages(const std::vector <int>& nu
 }
 
 
+ref <message> IMAPFolder::getMessageByUID(const message::uid& uid)
+{
+	std::vector <message::uid> uids;
+	uids.push_back(uid);
+
+	std::vector <ref <message> > msgs = getMessagesByUID(uids);
+
+	if (msgs.size() == 0)
+		throw exceptions::message_not_found();
+
+	return msgs[0];
+}
+
+
+std::vector <ref <message> > IMAPFolder::getMessagesByUID(const std::vector <message::uid>& uids)
+{
+	if (!isOpen())
+		throw exceptions::illegal_state("Folder not open");
+
+	if (uids.size() == 0)
+		return std::vector <ref <message> >();
+
+	//     C: . UID FETCH uuuu1,uuuu2,uuuu3 UID
+	//     S: * nnnn1 FETCH (UID uuuu1)
+	//     S: * nnnn2 FETCH (UID uuuu2)
+	//     S: * nnnn3 FETCH (UID uuuu3)
+	//     S: . OK UID FETCH completed
+
+	// Prepare command and arguments
+	std::ostringstream cmd;
+	cmd.imbue(std::locale::classic());
+
+	cmd << "UID FETCH " << IMAPUtils::extractUIDFromGlobalUID(uids[0]);
+
+	for (unsigned int i = 1, n = uids.size() ; i < n ; ++i)
+		cmd << "," << IMAPUtils::extractUIDFromGlobalUID(uids[i]);
+
+	cmd << " UID";
+
+	// Send the request
+	m_connection->send(true, cmd.str(), true);
+
+	// Get the response
+	utility::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
+
+	if (resp->isBad() || resp->response_done()->response_tagged()->
+			resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
+	{
+		throw exceptions::command_error("UID FETCH ... UID", m_connection->getParser()->lastLine(), "bad response");
+	}
+
+	// Process the response
+	const std::vector <IMAPParser::continue_req_or_response_data*>& respDataList =
+		resp->continue_req_or_response_data();
+
+	std::vector <ref <message> > messages;
+
+	for (std::vector <IMAPParser::continue_req_or_response_data*>::const_iterator
+	     it = respDataList.begin() ; it != respDataList.end() ; ++it)
+	{
+		if ((*it)->response_data() == NULL)
+		{
+			throw exceptions::command_error("UID FETCH ... UID",
+				m_connection->getParser()->lastLine(), "invalid response");
+		}
+
+		const IMAPParser::message_data* messageData =
+			(*it)->response_data()->message_data();
+
+		// We are only interested in responses of type "FETCH"
+		if (messageData == NULL || messageData->type() != IMAPParser::message_data::FETCH)
+			continue;
+
+		// Get Process fetch response for this message
+		const int msgNum = static_cast <int>(messageData->number());
+		message::uid msgUID, msgFullUID;
+
+		// Find UID in message attributes
+		const std::vector <IMAPParser::msg_att_item*> atts = messageData->msg_att()->items();
+
+		for (std::vector <IMAPParser::msg_att_item*>::const_iterator
+		     it = atts.begin() ; it != atts.end() ; ++it)
+		{
+			if ((*it)->type() == IMAPParser::msg_att_item::UID)
+			{
+				msgFullUID = IMAPUtils::makeGlobalUID(m_uidValidity, (*it)->unique_id()->value());
+				msgUID = (*it)->unique_id()->value();
+
+				break;
+			}
+		}
+
+		if (!msgUID.empty())
+		{
+			ref <IMAPFolder> thisFolder = thisRef().dynamicCast <IMAPFolder>();
+			messages.push_back(vmime::create <IMAPMessage>(thisFolder, msgNum, msgFullUID));
+		}
+	}
+
+	return messages;
+}
+
+
 int IMAPFolder::getMessageCount()
 {
 	if (!isOpen())
@@ -730,7 +833,7 @@ void IMAPFolder::fetchMessages(std::vector <ref <message> >& msg, const int opti
 
 			if (msg != numberToMsg.end())
 			{
-				(*msg).second->processFetchResponse(options, messageData->msg_att());
+				(*msg).second->processFetchResponse(options, messageData);
 
 				if (progress)
 					progress->progress(++current, total);
@@ -1781,7 +1884,7 @@ std::vector <int> IMAPFolder::getMessageNumbersStartingOnUID(const message::uid&
 	std::ostringstream command;
 	command.imbue(std::locale::classic());
 
-	command << "SEARCH UID " << uid;
+	command << "SEARCH UID " << uid << ":*";
 
 	// Send the request
 	m_connection->send(true, command.str(), true);

@@ -50,6 +50,7 @@ private:
 	friend class vmime::creator;  // vmime::create <IMAPMessage>
 
 	IMAPMessage(ref <IMAPFolder> folder, const int num);
+	IMAPMessage(ref <IMAPFolder> folder, const int num, const uid& uniqueId);
 	IMAPMessage(const IMAPMessage&) : message() { }
 
 	~IMAPMessage();
@@ -83,7 +84,7 @@ private:
 
 	void fetch(ref <IMAPFolder> folder, const int options);
 
-	void processFetchResponse(const int options, const IMAPParser::msg_att* msgAtt);
+	void processFetchResponse(const int options, const IMAPParser::message_data* msgData);
 
 	/** Recursively fetch part header for all parts in the structure.
 	  *

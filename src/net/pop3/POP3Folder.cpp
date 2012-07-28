@@ -249,6 +249,18 @@ std::vector <ref <message> > POP3Folder::getMessages(const int from, const int t
 }
 
 
+ref <message> POP3Folder::getMessageByUID(const message::uid& /* uid */)
+{
+	throw exceptions::operation_not_supported();
+}
+
+
+std::vector <ref <message> > POP3Folder::getMessagesByUID(const std::vector <message::uid>& /* uids */)
+{
+	throw exceptions::operation_not_supported();
+}
+
+
 std::vector <ref <message> > POP3Folder::getMessages(const std::vector <int>& nums)
 {
 	ref <POP3Store> store = m_store.acquire();
