@@ -192,7 +192,7 @@ void IMAPMessage::extract(utility::outputStream& os, utility::progressListener* 
 	if (!folder)
 		throw exceptions::folder_not_found();
 
-	extract(NULL, os, progress, start, length, false, peek);
+	extractImpl(NULL, os, progress, start, length, EXTRACT_HEADER | EXTRACT_BODY | (peek ? EXTRACT_PEEK : 0));
 }
 
 
@@ -205,7 +205,7 @@ void IMAPMessage::extractPart
 	if (!folder)
 		throw exceptions::folder_not_found();
 
-	extract(p, os, progress, start, length, false, peek);
+	extractImpl(p, os, progress, start, length, EXTRACT_HEADER | EXTRACT_BODY | (peek ? EXTRACT_PEEK : 0));
 }
 
 
@@ -219,7 +219,7 @@ void IMAPMessage::fetchPartHeader(ref <part> p)
 	std::ostringstream oss;
 	utility::outputStreamAdapter ossAdapter(oss);
 
-	extract(p, ossAdapter, NULL, 0, -1, true, true);
+	extractImpl(p, ossAdapter, NULL, 0, -1, EXTRACT_HEADER | EXTRACT_PEEK);
 
 	p.dynamicCast <IMAPPart>()->getOrCreateHeader().parse(oss.str());
 }
@@ -240,9 +240,9 @@ void IMAPMessage::fetchPartHeaderForStructure(ref <structure> str)
 }
 
 
-void IMAPMessage::extract(ref <const part> p, utility::outputStream& os,
+void IMAPMessage::extractImpl(ref <const part> p, utility::outputStream& os,
 	utility::progressListener* progress, const int start,
-	const int length, const bool headerOnly, const bool peek) const
+	const int length, const int extractFlags) const
 {
 	ref <const IMAPFolder> folder = m_folder.acquire();
 
@@ -284,18 +284,45 @@ void IMAPMessage::extract(ref <const part> p, utility::outputStream& os,
 	else
 		command << "UID FETCH " << IMAPUtils::extractUIDFromGlobalUID(m_uid) << " BODY";
 
-	if (peek) command << ".PEEK";
+	/*
+	   BODY[]               header + body
+	   BODY.PEEK[]          header + body (peek)
+	   BODY[HEADER]         header
+	   BODY.PEEK[HEADER]    header (peek)
+	   BODY[TEXT]           body
+	   BODY.PEEK[TEXT]      body (peek)
+	*/
+
+	if (extractFlags & EXTRACT_PEEK)
+		command << ".PEEK";
+
 	command << "[";
 
 	if (section.str().empty())
 	{
-		if (headerOnly)
+		// header + body
+		if ((extractFlags & EXTRACT_HEADER) && (extractFlags & EXTRACT_BODY))
+			command << "";
+		// body only
+		else if (extractFlags & EXTRACT_BODY)
+			command << "TEXT";
+		// header only
+		else if (extractFlags & EXTRACT_HEADER)
 			command << "HEADER";
 	}
 	else
 	{
 		command << section.str();
-		if (headerOnly) command << ".MIME";   // "MIME" not "HEADER" for parts
+
+		// header + body
+		if ((extractFlags & EXTRACT_HEADER) && (extractFlags & EXTRACT_BODY))
+			*((int *) 0)=42;//throw exceptions::operation_not_supported();
+		// body only
+		else if (extractFlags & EXTRACT_BODY)
+			command << ".TEXT";
+		// header only
+		else if (extractFlags & EXTRACT_HEADER)
+			command << ".MIME";   // "MIME" not "HEADER" for parts
 	}
 
 	command << "]";
@@ -318,7 +345,7 @@ void IMAPMessage::extract(ref <const part> p, utility::outputStream& os,
 	}
 
 
-	if (!headerOnly)
+	if (extractFlags & EXTRACT_BODY)
 	{
 		// TODO: update the flags (eg. flag "\Seen" may have been set)
 	}

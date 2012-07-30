@@ -47,6 +47,7 @@ class IMAPMessage : public message
 private:
 
 	friend class IMAPFolder;
+	friend class IMAPMessagePartContentHandler;
 	friend class vmime::creator;  // vmime::create <IMAPMessage>
 
 	IMAPMessage(ref <IMAPFolder> folder, const int num);
@@ -101,7 +102,16 @@ private:
 	  */
 	void constructParsedMessage(ref <bodyPart> parentPart, ref <structure> str, int level = 0);
 
-	void extract(ref <const part> p, utility::outputStream& os, utility::progressListener* progress, const int start, const int length, const bool headerOnly, const bool peek) const;
+
+	enum ExtractFlags
+	{
+		EXTRACT_HEADER = 0x1,
+		EXTRACT_BODY = 0x2,
+		EXTRACT_PEEK = 0x10
+	};
+
+	void extractImpl(ref <const part> p, utility::outputStream& os, utility::progressListener* progress,
+		const int start, const int length, const int extractFlags) const;
 
 
 	ref <header> getOrCreateHeader();

@@ -121,7 +121,7 @@ void IMAPMessagePartContentHandler::extract
 	// No decoding to perform
 	if (!isEncoded())
 	{
-		msg->extractPart(part, os, progress);
+		msg->extractImpl(part, os, progress, 0, -1, IMAPMessage::EXTRACT_BODY);
 	}
 	// Need to decode data
 	else
@@ -130,7 +130,7 @@ void IMAPMessagePartContentHandler::extract
 		std::ostringstream oss;
 		utility::outputStreamAdapter tmp(oss);
 
-		msg->extractPart(part, tmp, NULL);
+		msg->extractImpl(part, tmp, NULL, 0, -1, IMAPMessage::EXTRACT_BODY);
 
 		// Encode temporary buffer to output stream
 		utility::inputStreamStringAdapter is(oss.str());
