@@ -82,7 +82,7 @@ public:
 
 			m_stream->seek(initialPos);
 
-			return (readBytes == 1 ? buffer[0] : 0);
+			return (readBytes == 1 ? buffer[0] : static_cast <value_type>(0));
 		}
 		catch (...)
 		{
@@ -101,7 +101,7 @@ public:
 		value_type buffer[1];
 		const size_type readBytes = m_stream->read(buffer, 1);
 
-		return (readBytes == 1 ? buffer[0] : 0);
+		return (readBytes == 1 ? buffer[0] : static_cast <value_type>(0));
 	}
 
 	/** Check whether the bytes following the current position match
