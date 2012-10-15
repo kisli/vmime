@@ -50,6 +50,9 @@ encoderFactory::encoderFactory()
 	// Also register some non-standard encoding names
 	registerName <sevenBitEncoder>("7-bit");
 	registerName <eightBitEncoder>("8-bit");
+
+	// Finally, register some bogus encoding names, for compatibility
+	registerName <qpEncoder>("bmoted-printable");
 }
 
 
