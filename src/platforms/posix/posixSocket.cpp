@@ -336,7 +336,45 @@ void posixSocket::receive(vmime::string& buffer)
 
 posixSocket::size_type posixSocket::receiveRaw(char* buffer, const size_type count)
 {
-	const int ret = ::recv(m_desc, buffer, count, 0);
+	// Check whether data is available
+	fd_set fds;
+	FD_ZERO(&fds);
+	FD_SET(m_desc, &fds);
+
+	struct timeval tv;
+	tv.tv_sec = 1;
+	tv.tv_usec = 0;
+
+	int ret = ::select(m_desc + 1, &fds, NULL, NULL, &tv);
+
+	if (ret < 0)
+	{
+		if (errno != EAGAIN)
+			throwSocketError(errno);
+
+		// No data available at this time
+		// Check if we are timed out
+		if (m_timeoutHandler &&
+		    m_timeoutHandler->isTimeOut())
+		{
+			if (!m_timeoutHandler->handleTimeOut())
+			{
+				// Server did not react within timeout delay
+				throwSocketError(errno);
+			}
+			else
+			{
+				// Reset timeout
+				m_timeoutHandler->resetTimeOut();
+			}
+		}
+
+		// Continue waiting for data
+		return 0;
+	}
+
+	// Read available data
+	ret = ::recv(m_desc, buffer, count, 0);
 
 	if (ret < 0)
 	{
@@ -350,6 +388,12 @@ posixSocket::size_type posixSocket::receiveRaw(char* buffer, const size_type cou
 	{
 		// Host shutdown
 		throwSocketError(ENOTCONN);
+	}
+	else
+	{
+		// Data received, reset timeout
+		if (m_timeoutHandler)
+			m_timeoutHandler->resetTimeOut();
 	}
 
 	return ret;
@@ -383,6 +427,10 @@ void posixSocket::sendRaw(const char* buffer, const size_type count)
 			size -= ret;
 		}
 	}
+
+	// Reset timeout
+	if (m_timeoutHandler)
+		m_timeoutHandler->resetTimeOut();
 }
 
 
