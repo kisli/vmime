@@ -695,7 +695,16 @@ const string word::getConvertedText(const charset& dest) const
 {
 	string out;
 
-	charset::convert(m_buffer, out, m_charset, dest);
+	try
+	{
+		charset::convert(m_buffer, out, m_charset, dest);
+	}
+	catch (vmime::exceptions::charset_conv_error& e)
+	{
+		// Do not fail if charset is not recognized:
+		// copy 'word' as raw text
+		out = m_buffer;
+	}
 
 	return (out);
 }
