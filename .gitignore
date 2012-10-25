@@ -1,6 +1,8 @@
 *.o
 *.swp
 build/
+*.a
+*.dSYM
 
 /libvmime.a
 /vmime.pc
@@ -9,3 +11,7 @@ build/
 # SConstruct
 .sconsign.dblite
 /options.cache
+
+# Mac
+._DS_Store
+
