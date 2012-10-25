@@ -41,8 +41,6 @@ namespace vmime
 
 class address : public headerFieldValue
 {
-	friend class addressList;
-
 protected:
 
 	address();
@@ -64,8 +62,6 @@ public:
 	virtual bool isGroup() const = 0;
 
 	virtual ref <component> clone() const = 0;
-
-protected:
 
 	/** Parse an address from an input buffer.
 	  *

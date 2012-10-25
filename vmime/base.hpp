@@ -251,7 +251,7 @@ namespace vmime
 	template <class X, class Y>
 	ref <X> dynamicCast(ref <Y> y)
 	{
-		return y.dynamicCast <X>();
+		return y.template dynamicCast <X>();
 	}
 
 	/** Inherit from this class to indicate the subclass is not copyable,
