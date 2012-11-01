@@ -26,10 +26,12 @@
 
 
 #include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_SENDMAIL
+
+
 #include "vmime/net/serviceInfos.hpp"
-
-
-#if VMIME_BUILTIN_PLATFORM_POSIX
 
 
 namespace vmime {
@@ -63,8 +65,7 @@ public:
 } // vmime
 
 
-#endif // VMIME_BUILTIN_PLATFORM_POSIX
-
+#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_SENDMAIL
 
 #endif // VMIME_NET_SENDMAIL_SENDMAILSERVICEINFOS_HPP_INCLUDED
 

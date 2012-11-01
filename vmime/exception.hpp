@@ -362,6 +362,21 @@ public:
 };
 
 
+/** The URL is malformed.
+  */
+
+class malformed_url : public vmime::exception
+{
+public:
+
+	malformed_url(const string& error, const exception& other = NO_EXCEPTION);
+	~malformed_url() throw();
+
+	exception* clone() const;
+	const char* name() const throw();
+};
+
+
 
 #if VMIME_HAVE_MESSAGING_FEATURES
 
@@ -721,21 +736,6 @@ public:
 
 	partial_fetch_not_supported(const exception& other = NO_EXCEPTION);
 	~partial_fetch_not_supported() throw();
-
-	exception* clone() const;
-	const char* name() const throw();
-};
-
-
-/** The URL is malformed.
-  */
-
-class malformed_url : public net_exception
-{
-public:
-
-	malformed_url(const string& error, const exception& other = NO_EXCEPTION);
-	~malformed_url() throw();
 
 	exception* clone() const;
 	const char* name() const throw();

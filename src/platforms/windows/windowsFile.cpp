@@ -21,6 +21,12 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_PLATFORM_IS_WINDOWS && VMIME_HAVE_FILESYSTEM_FEATURES
+
+
 #include "vmime/platforms/windows/windowsFile.hpp"
 
 #include <windows.h>
@@ -28,9 +34,6 @@
 
 #include "vmime/exception.hpp"
 #include "vmime/utility/stringUtils.hpp"
-
-
-#if VMIME_HAVE_FILESYSTEM_FEATURES
 
 
 namespace vmime {
@@ -546,4 +549,5 @@ void windowsFileWriterOutputStream::flush()
 } // vmime
 
 
-#endif // VMIME_HAVE_FILESYSTEM_FEATURES
+#endif // VMIME_PLATFORM_IS_WINDOWS && VMIME_HAVE_FILESYSTEM_FEATURES
+

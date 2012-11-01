@@ -21,12 +21,17 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT && VMIME_TLS_SUPPORT_LIB_IS_GNUTLS
+
+
 #include <gnutls/gnutls.h>
 #if GNUTLS_VERSION_NUMBER < 0x030000
 #include <gnutls/extra.h>
 #endif
 
-#include "vmime/config.hpp"
 
 // Dependency on gcrypt is not needed since GNU TLS version 2.12.
 // See here: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=638651
@@ -138,7 +143,7 @@ TLSSession::TLSSession(ref <security::cert::certificateVerifier> cv)
 
 	// Sets some default priority on the ciphers, key exchange methods,
 	// macs and compression methods.
-#if HAVE_GNUTLS_PRIORITY_FUNCS
+#if VMIME_HAVE_GNUTLS_PRIORITY_FUNCS
 	gnutls_dh_set_prime_bits(*m_gnutlsSession, 128);
 
 	if ((res = gnutls_priority_set_direct
@@ -152,7 +157,7 @@ TLSSession::TLSSession(ref <security::cert::certificateVerifier> cv)
 		}
 	}
 
-#else  // !HAVE_GNUTLS_PRIORITY_FUNCS
+#else  // !VMIME_HAVE_GNUTLS_PRIORITY_FUNCS
 
 	gnutls_set_default_priority(*m_gnutlsSession);
 
@@ -228,7 +233,7 @@ TLSSession::TLSSession(ref <security::cert::certificateVerifier> cv)
 
 	gnutls_compression_set_priority(*m_gnutlsSession, compressionPriority);
 
-#endif // !HAVE_GNUTLS_PRIORITY_FUNCS
+#endif // !VMIME_HAVE_GNUTLS_PRIORITY_FUNCS
 
 	// Initialize credentials
 	gnutls_credentials_set(*m_gnutlsSession,
@@ -287,4 +292,7 @@ void TLSSession::throwTLSException(const string& fname, const int code)
 } // tls
 } // net
 } // vmime
+
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT && VMIME_TLS_SUPPORT_LIB_IS_GNUTLS
 

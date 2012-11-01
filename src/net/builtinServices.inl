@@ -29,7 +29,7 @@
 #ifndef VMIME_BUILDING_DOC
 
 
-#if VMIME_BUILTIN_MESSAGING_PROTO_POP3
+#if VMIME_HAVE_MESSAGING_PROTO_POP3
 	#include "vmime/net/pop3/POP3Store.hpp"
 	REGISTER_SERVICE(pop3::POP3Store, pop3, TYPE_STORE);
 
@@ -40,7 +40,7 @@
 #endif
 
 
-#if VMIME_BUILTIN_MESSAGING_PROTO_SMTP
+#if VMIME_HAVE_MESSAGING_PROTO_SMTP
 	#include "vmime/net/smtp/SMTPTransport.hpp"
 	REGISTER_SERVICE(smtp::SMTPTransport, smtp, TYPE_TRANSPORT);
 
@@ -51,7 +51,7 @@
 #endif
 
 
-#if VMIME_BUILTIN_MESSAGING_PROTO_IMAP
+#if VMIME_HAVE_MESSAGING_PROTO_IMAP
 	#include "vmime/net/imap/IMAPStore.hpp"
 	REGISTER_SERVICE(imap::IMAPStore, imap, TYPE_STORE);
 
@@ -62,12 +62,12 @@
 #endif
 
 
-#if VMIME_BUILTIN_MESSAGING_PROTO_MAILDIR
+#if VMIME_HAVE_MESSAGING_PROTO_MAILDIR
 	#include "vmime/net/maildir/maildirStore.hpp"
 	REGISTER_SERVICE(maildir::maildirStore, maildir, TYPE_STORE);
 #endif
 
-#if VMIME_BUILTIN_MESSAGING_PROTO_SENDMAIL
+#if VMIME_HAVE_MESSAGING_PROTO_SENDMAIL
 	#include "vmime/net/sendmail/sendmailTransport.hpp"
 	REGISTER_SERVICE(sendmail::sendmailTransport, sendmail, TYPE_TRANSPORT);
 #endif

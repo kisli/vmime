@@ -25,6 +25,12 @@
 #define VMIME_NET_IMAP_IMAPSSTORE_HPP_INCLUDED
 
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_IMAP
+
+
 #include "vmime/net/imap/IMAPStore.hpp"
 
 
@@ -58,6 +64,8 @@ private:
 } // net
 } // vmime
 
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_IMAP
 
 #endif // VMIME_NET_IMAP_IMAPSSTORE_HPP_INCLUDED
 

@@ -25,6 +25,12 @@
 #define VMIME_NET_SECUREDCONNECTIONINFOS_HPP_INCLUDED
 
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES
+
+
 #include "vmime/net/connectionInfos.hpp"
 
 
@@ -42,6 +48,8 @@ class securedConnectionInfos : public connectionInfos
 } // net
 } // vmime
 
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES
 
 #endif // VMIME_NET_SECUREDCONNECTIONINFOS_HPP_INCLUDED
 

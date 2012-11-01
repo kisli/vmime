@@ -145,7 +145,7 @@ public:
 
 private:
 
-	class X509CertificateInternalData* m_data;
+	struct X509CertificateInternalData* m_data;
 };
 
 

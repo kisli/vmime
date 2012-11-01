@@ -21,13 +21,18 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_PLATFORM_IS_WINDOWS && VMIME_HAVE_MESSAGING_FEATURES
+
+
 #pragma warning(disable: 4267)
 
 #include "vmime/platforms/windows/windowsSocket.hpp"
 
 #include "vmime/exception.hpp"
 
-#if VMIME_HAVE_MESSAGING_FEATURES
 
 namespace vmime {
 namespace platforms {
@@ -193,4 +198,5 @@ ref <vmime::net::socket> windowsSocketFactory::create(ref <vmime::net::timeoutHa
 } // vmime
 
 
-#endif // VMIME_HAVE_MESSAGING_FEATURES
+#endif // VMIME_PLATFORM_IS_WINDOWS && VMIME_HAVE_MESSAGING_FEATURES
+

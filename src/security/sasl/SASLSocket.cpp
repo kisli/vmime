@@ -21,6 +21,12 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_SASL_SUPPORT
+
+
 #include "vmime/security/sasl/SASLSocket.hpp"
 #include "vmime/security/sasl/SASLSession.hpp"
 
@@ -174,4 +180,7 @@ void SASLSocket::sendRaw(const char* buffer, const size_type count)
 } // sasl
 } // security
 } // vmime
+
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_SASL_SUPPORT
 

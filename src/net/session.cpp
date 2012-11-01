@@ -21,6 +21,12 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES
+
+
 #include "vmime/net/session.hpp"
 #include "vmime/net/serviceFactory.hpp"
 
@@ -132,3 +138,7 @@ propertySet& session::getProperties()
 
 } // net
 } // vmime
+
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES
+

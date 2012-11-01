@@ -25,6 +25,12 @@
 #define VMIME_NET_TLS_TLSSESSION_HPP_INCLUDED
 
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT && VMIME_TLS_SUPPORT_LIB_IS_GNUTLS
+
+
 #include "vmime/types.hpp"
 
 #include "vmime/net/tls/TLSSocket.hpp"
@@ -90,6 +96,8 @@ private:
 } // net
 } // vmime
 
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT && VMIME_TLS_SUPPORT_LIB_IS_GNUTLS
 
 #endif // VMIME_NET_TLS_TLSSESSION_HPP_INCLUDED
 

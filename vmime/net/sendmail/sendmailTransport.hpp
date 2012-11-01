@@ -27,14 +27,15 @@
 
 #include "vmime/config.hpp"
 
+
+#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_SENDMAIL
+
+
 #include "vmime/net/transport.hpp"
 #include "vmime/net/socket.hpp"
 #include "vmime/net/timeoutHandler.hpp"
 
 #include "vmime/net/sendmail/sendmailServiceInfos.hpp"
-
-
-#if VMIME_BUILTIN_PLATFORM_POSIX
 
 
 namespace vmime {
@@ -91,7 +92,6 @@ private:
 } // vmime
 
 
-#endif // VMIME_BUILTIN_PLATFORM_POSIX
-
+#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_SENDMAIL
 
 #endif // VMIME_NET_SENDMAIL_SENDMAILTRANSPORT_HPP_INCLUDED

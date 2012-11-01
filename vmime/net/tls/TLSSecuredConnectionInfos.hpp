@@ -25,6 +25,12 @@
 #define VMIME_NET_TLSSECUREDCONNECTIONINFOS_HPP_INCLUDED
 
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT
+
+
 #include "vmime/net/securedConnectionInfos.hpp"
 
 #include "vmime/security/cert/certificateChain.hpp"
@@ -71,6 +77,8 @@ private:
 } // net
 } // vmime
 
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT
 
 #endif // VMIME_NET_TLSSECUREDCONNECTIONINFOS_HPP_INCLUDED
 

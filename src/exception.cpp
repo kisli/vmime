@@ -334,6 +334,18 @@ exception* system_error::clone() const { return new system_error(*this); }
 const char* system_error::name() const throw() { return "system_error"; }
 
 
+//
+// malformed_url
+//
+
+malformed_url::~malformed_url() throw() {}
+malformed_url::malformed_url(const string& error, const exception& other)
+	: exception("Malformed URL: " + error + ".", other) {}
+
+exception* malformed_url::clone() const { return new malformed_url(*this); }
+const char* malformed_url::name() const throw() { return "malformed_url"; }
+
+
 
 #if VMIME_HAVE_MESSAGING_FEATURES
 
@@ -607,18 +619,6 @@ partial_fetch_not_supported::partial_fetch_not_supported(const exception& other)
 
 exception* partial_fetch_not_supported::clone() const { return new partial_fetch_not_supported(*this); }
 const char* partial_fetch_not_supported::name() const throw() { return "partial_fetch_not_supported"; }
-
-
-//
-// malformed_url
-//
-
-malformed_url::~malformed_url() throw() {}
-malformed_url::malformed_url(const string& error, const exception& other)
-	: net_exception("Malformed URL: " + error + ".", other) {}
-
-exception* malformed_url::clone() const { return new malformed_url(*this); }
-const char* malformed_url::name() const throw() { return "malformed_url"; }
 
 
 //

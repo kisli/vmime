@@ -25,6 +25,12 @@
 #define VMIME_SECURITY_SASL_BUILTINSASLMECHANISM_HPP_INCLUDED
 
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_SASL_SUPPORT
+
+
 #include "vmime/security/sasl/SASLMechanism.hpp"
 
 
@@ -80,6 +86,8 @@ private:
 } // security
 } // vmime
 
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_SASL_SUPPORT
 
 #endif // VMIME_SECURITY_SASL_BUILTINSASLMECHANISM_HPP_INCLUDED
 

@@ -21,6 +21,12 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_SASL_SUPPORT
+
+
 #include "vmime/security/sasl/defaultSASLAuthenticator.hpp"
 
 #include "vmime/security/sasl/SASLMechanism.hpp"
@@ -140,4 +146,7 @@ ref <SASLMechanism> defaultSASLAuthenticator::getSASLMechanism() const
 } // sasl
 } // security
 } // vmime
+
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_SASL_SUPPORT
 

@@ -21,6 +21,12 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_IMAP
+
+
 #include "vmime/net/imap/IMAPTag.hpp"
 #include "vmime/net/imap/IMAPConnection.hpp"
 #include "vmime/net/imap/IMAPUtils.hpp"
@@ -727,3 +733,7 @@ ref <const socket> IMAPConnection::getSocket() const
 } // imap
 } // net
 } // vmime
+
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_IMAP
+

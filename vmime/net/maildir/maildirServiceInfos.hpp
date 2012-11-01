@@ -26,6 +26,11 @@
 
 
 #include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_MAILDIR
+
+
 #include "vmime/net/serviceInfos.hpp"
 
 
@@ -59,6 +64,8 @@ public:
 } // net
 } // vmime
 
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_MAILDIR
 
 #endif // VMIME_NET_MAILDIR_MAILDIRSERVICEINFOS_HPP_INCLUDED
 

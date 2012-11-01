@@ -25,6 +25,12 @@
 #define VMIME_NET_MAILDIR_MAILDIRUTILS_HPP_INCLUDED
 
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_MAILDIR
+
+
 #include "vmime/utility/file.hpp"
 #include "vmime/utility/path.hpp"
 
@@ -130,5 +136,7 @@ public:
 } // net
 } // vmime
 
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_MAILDIR
 
 #endif // VMIME_NET_MAILDIR_MAILDIRUTILS_HPP_INCLUDED

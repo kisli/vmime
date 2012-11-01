@@ -21,6 +21,12 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_PLATFORM_IS_POSIX && VMIME_HAVE_FILESYSTEM_FEATURES
+
+
 #include "vmime/platforms/posix/posixFile.hpp"
 
 #include <unistd.h>
@@ -36,9 +42,6 @@
 #include <string.h>
 
 #include "vmime/exception.hpp"
-
-
-#if VMIME_HAVE_FILESYSTEM_FEATURES
 
 
 namespace vmime {
@@ -621,4 +624,4 @@ void posixFileSystemFactory::reportError(const vmime::utility::path& path, const
 } // vmime
 
 
-#endif // VMIME_HAVE_FILESYSTEM_FEATURES
+#endif // VMIME_PLATFORM_IS_POSIX && VMIME_HAVE_FILESYSTEM_FEATURES

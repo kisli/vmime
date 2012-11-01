@@ -21,6 +21,12 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES
+
+
 #include "vmime/security/defaultAuthenticator.hpp"
 
 #include "vmime/net/service.hpp"
@@ -103,4 +109,7 @@ weak_ref <net::service> defaultAuthenticator::getService() const
 
 } // security
 } // vmime
+
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES
 

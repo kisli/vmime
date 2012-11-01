@@ -21,6 +21,12 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_MAILDIR
+
+
 #include "vmime/net/maildir/maildirFormat.hpp"
 #include "vmime/net/maildir/maildirStore.hpp"
 
@@ -97,4 +103,7 @@ ref <maildirFormat> maildirFormat::detect(ref <maildirStore> store)
 } // maildir
 } // net
 } // vmime
+
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_MAILDIR
 

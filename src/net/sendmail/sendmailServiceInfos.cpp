@@ -21,10 +21,13 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_SENDMAIL
+
+
 #include "vmime/net/sendmail/sendmailServiceInfos.hpp"
-
-
-#if VMIME_BUILTIN_PLATFORM_POSIX
 
 
 namespace vmime {
@@ -71,5 +74,5 @@ const std::vector <serviceInfos::property> sendmailServiceInfos::getAvailablePro
 } // vmime
 
 
-#endif // VMIME_BUILTIN_PLATFORM_POSIX
+#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_SENDMAIL
 

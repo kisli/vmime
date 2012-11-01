@@ -78,7 +78,7 @@ namespace vmime
 	}
 
 	template <typename T, size_t N>
-	inline size_t count(T const (&array)[N])
+	inline size_t count(T const (&/* array */)[N])
 	{
 		return (N);
 	}

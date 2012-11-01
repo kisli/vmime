@@ -21,6 +21,12 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_IMAP
+
+
 #include "vmime/net/imap/IMAPParser.hpp"
 #include "vmime/net/imap/IMAPMessage.hpp"
 #include "vmime/net/imap/IMAPFolder.hpp"
@@ -316,7 +322,7 @@ void IMAPMessage::extractImpl(ref <const part> p, utility::outputStream& os,
 
 		// header + body
 		if ((extractFlags & EXTRACT_HEADER) && (extractFlags & EXTRACT_BODY))
-			*((int *) 0)=42;//throw exceptions::operation_not_supported();
+			throw exceptions::operation_not_supported();
 		// body only
 		else if (extractFlags & EXTRACT_BODY)
 			command << ".TEXT";
@@ -744,4 +750,7 @@ ref <vmime::message> IMAPMessage::getParsedMessage()
 } // imap
 } // net
 } // vmime
+
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_IMAP
 

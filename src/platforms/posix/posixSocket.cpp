@@ -21,6 +21,12 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_PLATFORM_IS_POSIX && VMIME_HAVE_MESSAGING_FEATURES
+
+
 #include "vmime/platforms/posix/posixSocket.hpp"
 #include "vmime/platforms/posix/posixHandler.hpp"
 
@@ -35,9 +41,6 @@
 #include <string.h>
 
 #include "vmime/exception.hpp"
-
-
-#if VMIME_HAVE_MESSAGING_FEATURES
 
 
 namespace vmime {
@@ -493,4 +496,4 @@ ref <vmime::net::socket> posixSocketFactory::create(ref <vmime::net::timeoutHand
 } // vmime
 
 
-#endif // VMIME_HAVE_MESSAGING_FEATURES
+#endif // VMIME_PLATFORM_IS_POSIX && VMIME_HAVE_MESSAGING_FEATURES

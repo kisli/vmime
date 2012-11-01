@@ -25,6 +25,12 @@
 #define VMIME_NET_SMTP_SMTPRESPONSE_HPP_INCLUDED
 
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_SMTP
+
+
 #include "vmime/object.hpp"
 #include "vmime/base.hpp"
 
@@ -137,6 +143,8 @@ private:
 } // net
 } // vmime
 
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_SMTP
 
 #endif // VMIME_NET_SMTP_SMTPRESPONSE_HPP_INCLUDED
 

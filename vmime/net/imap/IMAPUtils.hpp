@@ -25,6 +25,12 @@
 #define VMIME_NET_IMAP_IMAPUTILS_HPP_INCLUDED
 
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_IMAP
+
+
 #include "vmime/types.hpp"
 #include "vmime/dateTime.hpp"
 
@@ -145,5 +151,7 @@ private:
 } // net
 } // vmime
 
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_IMAP
 
 #endif // VMIME_NET_IMAP_IMAPUTILS_HPP_INCLUDED

@@ -21,6 +21,12 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_SMTP
+
+
 #include "vmime/net/smtp/SMTPResponse.hpp"
 
 #include "vmime/platform.hpp"
@@ -248,4 +254,7 @@ const string SMTPResponse::responseLine::getText() const
 } // smtp
 } // net
 } // vmime
+
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_SMTP
 

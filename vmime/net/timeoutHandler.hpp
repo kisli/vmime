@@ -25,6 +25,12 @@
 #define VMIME_NET_TIMEOUTHANDLER_HPP_INCLUDED
 
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES
+
+
 #include "vmime/types.hpp"
 
 
@@ -77,5 +83,7 @@ public:
 } // net
 } // vmime
 
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES
 
 #endif // VMIME_NET_TIMEOUTHANDLER_HPP_INCLUDED

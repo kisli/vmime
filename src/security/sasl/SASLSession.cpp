@@ -21,6 +21,12 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_SASL_SUPPORT
+
+
 #include <sstream>
 
 #include <gsasl.h>
@@ -180,4 +186,7 @@ int SASLSession::gsaslCallback
 } // sasl
 } // security
 } // vmime
+
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_SASL_SUPPORT
 

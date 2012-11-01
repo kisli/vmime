@@ -25,6 +25,12 @@
 #define VMIME_PLATFORMS_POSIX_POSIXCHILDPROCESS_HPP_INCLUDED
 
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_PLATFORM_IS_POSIX && VMIME_HAVE_FILESYSTEM_FEATURES
+
+
 #include "vmime/utility/childProcess.hpp"
 
 #include <sys/types.h>
@@ -79,6 +85,8 @@ public:
 } // platforms
 } // vmime
 
+
+#endif // VMIME_PLATFORM_IS_POSIX && VMIME_HAVE_FILESYSTEM_FEATURES
 
 #endif // VMIME_PLATFORMS_POSIX_POSIXCHILDPROCESS_HPP_INCLUDED
 

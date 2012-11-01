@@ -21,6 +21,12 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_MAILDIR
+
+
 #include "vmime/net/maildir/maildirFolder.hpp"
 
 #include "vmime/net/maildir/maildirStore.hpp"
@@ -1387,3 +1393,7 @@ std::vector <int> maildirFolder::getMessageNumbersStartingOnUID(const message::u
 } // maildir
 } // net
 } // vmime
+
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_MAILDIR
+

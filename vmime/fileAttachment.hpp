@@ -25,8 +25,13 @@
 #define VMIME_FILEATTACHMENT_HPP_INCLUDED
 
 
-#include "vmime/defaultAttachment.hpp"
+#include "vmime/config.hpp"
 
+
+#if VMIME_HAVE_FILESYSTEM_FEATURES
+
+
+#include "vmime/defaultAttachment.hpp"
 #include "vmime/dateTime.hpp"
 
 
@@ -184,5 +189,7 @@ private:
 
 } // vmime
 
+
+#endif // VMIME_HAVE_FILESYSTEM_FEATURES
 
 #endif // VMIME_FILEATTACHMENT_HPP_INCLUDED

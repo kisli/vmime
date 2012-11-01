@@ -26,6 +26,11 @@
 
 
 #include "vmime/config.hpp"
+
+
+#if VMIME_PLATFORM_IS_POSIX
+
+
 #include "vmime/platform.hpp"
 
 #if VMIME_HAVE_MESSAGING_FEATURES
@@ -89,5 +94,7 @@ private:
 } // platforms
 } // vmime
 
+
+#endif // VMIME_PLATFORM_IS_POSIX
 
 #endif // VMIME_PLATFORMS_POSIX_HANDLER_HPP_INCLUDED

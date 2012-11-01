@@ -25,6 +25,12 @@
 #define VMIME_NET_FOLDER_HPP_INCLUDED
 
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES
+
+
 #include <vector>
 
 #include "vmime/types.hpp"
@@ -433,5 +439,7 @@ private:
 } // net
 } // vmime
 
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES
 
 #endif // VMIME_NET_FOLDER_HPP_INCLUDED

@@ -27,6 +27,10 @@
 
 #include "vmime/config.hpp"
 
+
+#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_IMAP
+
+
 #include "vmime/net/store.hpp"
 #include "vmime/net/socket.hpp"
 #include "vmime/net/folder.hpp"
@@ -109,5 +113,7 @@ protected:
 } // net
 } // vmime
 
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_IMAP
 
 #endif // VMIME_NET_IMAP_IMAPSTORE_HPP_INCLUDED

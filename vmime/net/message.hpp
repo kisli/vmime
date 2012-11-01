@@ -25,6 +25,12 @@
 #define VMIME_NET_MESSAGE_HPP_INCLUDED
 
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES
+
+
 #include "vmime/header.hpp"
 #include "vmime/mediaType.hpp"
 
@@ -305,5 +311,7 @@ public:
 } // net
 } // vmime
 
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES
 
 #endif // VMIME_NET_MESSAGE_HPP_INCLUDED

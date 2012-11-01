@@ -21,6 +21,12 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_IMAP
+
+
 #include "vmime/net/imap/IMAPStore.hpp"
 #include "vmime/net/imap/IMAPFolder.hpp"
 #include "vmime/net/imap/IMAPConnection.hpp"
@@ -237,3 +243,7 @@ const serviceInfos& IMAPStore::getInfos() const
 } // imap
 } // net
 } // vmime
+
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_IMAP
+

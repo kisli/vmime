@@ -21,6 +21,12 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES
+
+
 #include "vmime/net/transport.hpp"
 
 #include "vmime/utility/stream.hpp"
@@ -134,4 +140,7 @@ transport::Type transport::getType() const
 
 } // net
 } // vmime
+
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES
 

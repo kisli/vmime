@@ -27,6 +27,10 @@
 
 #include "vmime/config.hpp"
 
+
+#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_IMAP
+
+
 #include "vmime/net/socket.hpp"
 #include "vmime/net/timeoutHandler.hpp"
 #include "vmime/net/session.hpp"
@@ -140,5 +144,7 @@ private:
 } // net
 } // vmime
 
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_IMAP
 
 #endif // VMIME_NET_IMAP_IMAPCONNECTION_HPP_INCLUDED

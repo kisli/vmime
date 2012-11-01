@@ -21,6 +21,12 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_MAILDIR
+
+
 #include "vmime/net/maildir/maildirUtils.hpp"
 #include "vmime/net/maildir/maildirStore.hpp"
 
@@ -142,7 +148,7 @@ const utility::file::path::component maildirUtils::buildFilename
 	(const utility::file::path::component& id,
 	 const utility::file::path::component& flags)
 {
-#if VMIME_BUILTIN_PLATFORM_WINDOWS
+#if VMIME_PLATFORM_IS_WINDOWS
 	static const char DELIMITER[] = "-";
 #else
 	static const char DELIMITER[] = ":";
@@ -229,3 +235,7 @@ bool maildirUtils::messageIdComparator::operator()
 } // maildir
 } // net
 } // vmime
+
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_MAILDIR
+

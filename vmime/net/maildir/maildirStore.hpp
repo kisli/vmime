@@ -27,6 +27,10 @@
 
 #include "vmime/config.hpp"
 
+
+#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_MAILDIR
+
+
 #include "vmime/net/store.hpp"
 #include "vmime/net/socket.hpp"
 #include "vmime/net/folder.hpp"
@@ -110,5 +114,7 @@ private:
 } // net
 } // vmime
 
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_MAILDIR
 
 #endif // VMIME_NET_MAILDIR_MAILDIRSTORE_HPP_INCLUDED

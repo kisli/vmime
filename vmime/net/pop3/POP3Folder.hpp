@@ -25,10 +25,15 @@
 #define VMIME_NET_POP3_POP3FOLDER_HPP_INCLUDED
 
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_POP3
+
+
 #include <vector>
 #include <map>
 
-#include "vmime/config.hpp"
 #include "vmime/types.hpp"
 
 #include "vmime/net/folder.hpp"
@@ -154,5 +159,7 @@ private:
 } // net
 } // vmime
 
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_POP3
 
 #endif // VMIME_NET_POP3_POP3FOLDER_HPP_INCLUDED

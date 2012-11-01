@@ -21,6 +21,12 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_SENDMAIL
+
+
 #include "vmime/net/sendmail/sendmailTransport.hpp"
 
 #include "vmime/exception.hpp"
@@ -46,9 +52,6 @@
 #define HAS_PROPERTY(prop) \
 	(getInfos().hasProperty(getSession(), \
 		dynamic_cast <const sendmailServiceInfos&>(getInfos()).getProperties().prop))
-
-
-#if VMIME_BUILTIN_PLATFORM_POSIX
 
 
 namespace vmime {
@@ -219,4 +222,5 @@ const serviceInfos& sendmailTransport::getInfos() const
 } // vmime
 
 
-#endif // VMIME_BUILTIN_PLATFORM_POSIX
+#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_SENDMAIL
+

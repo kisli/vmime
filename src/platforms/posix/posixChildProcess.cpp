@@ -21,6 +21,12 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_PLATFORM_IS_POSIX && VMIME_HAVE_FILESYSTEM_FEATURES
+
+
 #include "vmime/platforms/posix/posixChildProcess.hpp"
 #include "vmime/platforms/posix/posixFile.hpp"
 
@@ -393,4 +399,7 @@ void posixChildProcess::waitForFinish()
 } // posix
 } // platforms
 } // vmime
+
+
+#endif // VMIME_PLATFORM_IS_POSIX && VMIME_HAVE_FILESYSTEM_FEATURES
 

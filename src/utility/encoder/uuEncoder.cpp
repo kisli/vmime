@@ -116,8 +116,8 @@ utility::stream::size_type uuEncoder::encode(utility::inputStream& in,
 			const unsigned char c3 = static_cast <unsigned char>(inBuffer[i + 2]);
 
 			outBuffer[j]     = UUENCODE(c1 >> 2);
-			outBuffer[j + 1] = UUENCODE((c1 << 4) & 060 | (c2 >> 4) & 017);
-			outBuffer[j + 2] = UUENCODE((c2 << 2) & 074 | (c3 >> 6) & 03);
+			outBuffer[j + 1] = UUENCODE(((c1 << 4) & 060) | ((c2 >> 4) & 017));
+			outBuffer[j + 2] = UUENCODE(((c2 << 2) & 074) | ((c3 >> 6) & 03));
 			outBuffer[j + 3] = UUENCODE(c3 & 077);
 		}
 
@@ -173,7 +173,7 @@ utility::stream::size_type uuEncoder::decode(utility::inputStream& in,
 		const utility::stream::size_type outLength = UUDECODE(lengthChar);
 		const utility::stream::size_type inLength =
 			std::min((outLength * 4) / 3, static_cast <utility::stream::size_type>(64));
-		utility::stream::value_type inPos = 0;
+		utility::stream::size_type inPos = 0;
 
 		switch (lengthChar)
 		{
@@ -302,9 +302,9 @@ utility::stream::size_type uuEncoder::decode(utility::inputStream& in,
 			switch (n)
 			{
 			default:
-			case 3: outBuffer[j + 2] = UUDECODE(c3) << 6 | UUDECODE(c4);
-			case 2: outBuffer[j + 1] = UUDECODE(c2) << 4 | UUDECODE(c3) >> 2;
-			case 1: outBuffer[j]     = UUDECODE(c1) << 2 | UUDECODE(c2) >> 4;
+			case 3: outBuffer[j + 2] = static_cast <unsigned char>(UUDECODE(c3) << 6 | UUDECODE(c4));
+			case 2: outBuffer[j + 1] = static_cast <unsigned char>(UUDECODE(c2) << 4 | UUDECODE(c3) >> 2);
+			case 1: outBuffer[j]     = static_cast <unsigned char>(UUDECODE(c1) << 2 | UUDECODE(c2) >> 4);
 			case 0: break;
 			}
 

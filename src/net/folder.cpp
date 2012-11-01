@@ -21,6 +21,12 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES
+
+
 #include "vmime/net/folder.hpp"
 
 #include <algorithm>
@@ -98,3 +104,7 @@ void folder::notifyFolder(const events::folderEvent& event)
 
 } // net
 } // vmime
+
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES
+

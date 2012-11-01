@@ -21,6 +21,12 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_PLATFORM_IS_POSIX
+
+
 #include "vmime/platforms/posix/posixHandler.hpp"
 
 #include <time.h>
@@ -258,3 +264,6 @@ void posixHandler::wait() const
 } // posix
 } // platforms
 } // vmime
+
+
+#endif // VMIME_PLATFORM_IS_POSIX

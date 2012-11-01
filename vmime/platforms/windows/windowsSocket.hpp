@@ -25,11 +25,14 @@
 #define VMIME_PLATFORMS_WINDOWS_SOCKET_HPP_INCLUDED
 
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_PLATFORM_IS_WINDOWS && VMIME_HAVE_MESSAGING_FEATURES
+
+
 #include <winsock2.h>
 #include "vmime/net/socket.hpp"
-
-
-#if VMIME_HAVE_MESSAGING_FEATURES
 
 
 namespace vmime {
@@ -82,6 +85,6 @@ public:
 } // vmime
 
 
-#endif // VMIME_HAVE_MESSAGING_FEATURES
+#endif // VMIME_PLATFORM_IS_WINDOWS && VMIME_HAVE_MESSAGING_FEATURES
 
 #endif // VMIME_PLATFORMS_WINDOWS_SOCKET_HPP_INCLUDED

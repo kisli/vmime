@@ -25,6 +25,12 @@
 #define VMIME_SECURITY_DEFAULTAUTHENTICATOR_HPP_INCLUDED
 
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES
+
+
 #include "vmime/security/authenticator.hpp"
 
 
@@ -60,6 +66,8 @@ private:
 } // security
 } // vmime
 
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES
 
 #endif // VMIME_SECURITY_DEFAULTAUTHENTICATOR_HPP_INCLUDED
 

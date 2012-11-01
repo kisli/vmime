@@ -21,6 +21,12 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_FILESYSTEM_FEATURES
+
+
 #include <fstream>
 #include <sstream>
 
@@ -211,3 +217,7 @@ void fileAttachment::fileInfo::setSize(const unsigned int& size) { if (m_size) {
 
 
 } // vmime
+
+
+#endif // VMIME_HAVE_FILESYSTEM_FEATURES
+

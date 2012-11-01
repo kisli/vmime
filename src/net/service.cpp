@@ -22,6 +22,11 @@
 //
 
 #include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES
+
+
 #include "vmime/net/service.hpp"
 
 #include "vmime/platform.hpp"
@@ -141,3 +146,7 @@ ref <timeoutHandlerFactory> service::getTimeoutHandlerFactory()
 
 } // net
 } // vmime
+
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES
+

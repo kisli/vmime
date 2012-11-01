@@ -22,6 +22,10 @@
 //
 
 #include "vmime/platform.hpp"
+#include "vmime/config.hpp"
+
+#include "vmime/platforms/posix/posixHandler.hpp"
+#include "vmime/platforms/windows/windowsHandler.hpp"
 
 
 namespace vmime
@@ -33,6 +37,42 @@ ref <platform::handler> platform::sm_handler = NULL;
 
 platform::handler::~handler()
 {
+}
+
+
+// static
+ref <platform::handler> platform::getDefaultHandler()
+{
+
+#if VMIME_PLATFORM_IS_WINDOWS
+	return vmime::create <platforms::windows::windowsHandler>();
+#elif VMIME_PLATFORM_IS_POSIX
+	return vmime::create <platforms::posix::posixHandler>();
+#else
+	return NULL;
+#endif
+
+}
+
+
+// static
+ref <platform::handler> platform::getHandler()
+{
+	// If a custom platform handler is installed, return it
+	if (sm_handler)
+		return sm_handler;
+
+	// Else, use the default handler for this platform
+	ref <handler> defaultHandler = getDefaultHandler();
+
+	if (defaultHandler)
+	{
+		sm_handler = defaultHandler;
+		return sm_handler;
+	}
+
+	// Oops... no platform handler!
+	throw exceptions::no_platform_handler();
 }
 
 

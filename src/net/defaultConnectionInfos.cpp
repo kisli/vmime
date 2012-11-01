@@ -21,6 +21,12 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES
+
+
 #include "vmime/net/defaultConnectionInfos.hpp"
 
 
@@ -49,4 +55,6 @@ port_t defaultConnectionInfos::getPort() const
 } // net
 } // vmime
 
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES
 

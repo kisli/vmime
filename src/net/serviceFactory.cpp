@@ -21,11 +21,16 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES
+
+
 #include "vmime/net/serviceFactory.hpp"
 #include "vmime/net/service.hpp"
 
 #include "vmime/exception.hpp"
-#include "vmime/config.hpp"
 
 #include "src/net/builtinServices.inl"
 
@@ -134,3 +139,7 @@ void serviceFactory::registerService(ref <registeredService> reg)
 
 } // net
 } // vmime
+
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES
+

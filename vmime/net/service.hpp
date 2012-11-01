@@ -26,6 +26,11 @@
 
 
 #include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES
+
+
 #include "vmime/types.hpp"
 
 #include "vmime/net/session.hpp"
@@ -222,5 +227,7 @@ private:
 } // net
 } // vmime
 
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES
 
 #endif // VMIME_NET_SERVICE_HPP_INCLUDED

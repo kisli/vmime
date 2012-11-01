@@ -21,6 +21,12 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_SMTP
+
+
 #include "vmime/net/smtp/SMTPServiceInfos.hpp"
 
 
@@ -128,4 +134,7 @@ const std::vector <serviceInfos::property> SMTPServiceInfos::getAvailablePropert
 } // smtp
 } // net
 } // vmime
+
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_SMTP
 

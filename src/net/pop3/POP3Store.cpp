@@ -21,6 +21,12 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_POP3
+
+
 #include "vmime/net/pop3/POP3Store.hpp"
 #include "vmime/net/pop3/POP3Folder.hpp"
 
@@ -1005,4 +1011,7 @@ const serviceInfos& POP3Store::getInfos() const
 } // pop3
 } // net
 } // vmime
+
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_POP3
 

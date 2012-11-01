@@ -25,6 +25,12 @@
 #define VMIME_NET_SOCKET_HPP_INCLUDED
 
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES
+
+
 #include "vmime/base.hpp"
 
 #include "vmime/net/timeoutHandler.hpp"
@@ -137,5 +143,7 @@ public:
 } // net
 } // vmime
 
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES
 
 #endif // VMIME_NET_SOCKET_HPP_INCLUDED

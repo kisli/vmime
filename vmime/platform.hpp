@@ -52,7 +52,7 @@ class platform
 {
 public:
 
-	/** Handles all platform-dependent operations. It offers an interface to
+	/** Takes care of all platform-dependent operations. It offers an interface to
 	  * access platform-dependent objects: sockets, date/time, file system, etc.
 	  */
 
@@ -135,22 +135,13 @@ public:
 		sm_handler = vmime::create <TYPE>();
 	}
 
-	static ref <handler> getHandler()
-	{
-		if (!sm_handler)
-			throw exceptions::no_platform_handler();
-
-		return (sm_handler);
-	}
+	static ref <handler> getDefaultHandler();
+	static ref <handler> getHandler();
 
 private:
 
 	static ref <handler> sm_handler;
 };
-
-
-/** Compatibility with older versions of VMime (before 0.8.1). */
-typedef platform platformDependant;
 
 
 } // vmime

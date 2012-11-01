@@ -1,16 +1,32 @@
 *.o
-*.swp
-build/
+*.sw?
 *.a
 *.dSYM
+*.vim
 
-/libvmime.a
-/vmime.pc
-/vmime/config.hpp
+# Doxygen-generated
+doc/html/*
 
 # SConstruct
 .sconsign.dblite
 /options.cache
+
+# CMake-generated / Build files
+/CMakeFiles/
+/CMakeCache.txt
+/_CPack_Packages/
+/cmake_install.cmake
+/CPackConfig.cmake
+/CPackSourceConfig.cmake
+/Doxyfile
+/Makefile
+/install_manifest*
+/libvmime.a
+/libvmime.pc
+/libvmime*
+/vmime/config.hpp
+/COPYING.txt
+/build/
 
 # Mac
 ._DS_Store

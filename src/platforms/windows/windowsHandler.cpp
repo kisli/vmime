@@ -21,8 +21,13 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#include "vmime/platforms/windows/windowsHandler.hpp"
 #include "vmime/config.hpp"
+
+
+#if VMIME_PLATFORM_IS_WINDOWS
+
+
+#include "vmime/platforms/windows/windowsHandler.hpp"
 
 #include <time.h>
 #include <locale.h>
@@ -270,3 +275,7 @@ void windowsHandler::wait() const
 } // posix
 } // platforms
 } // vmime
+
+
+#endif // VMIME_PLATFORM_IS_WINDOWS
+
