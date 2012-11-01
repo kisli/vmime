@@ -28,7 +28,7 @@ you wrote:
 
 Now, you can simply write:
 
-    std::vector <vmime::messaging::folder*> subFolders = folder->getFolders();
+    std::vector <ref <vmime::messaging::folder > > subFolders = folder->getFolders();
 
     ...do something with result...
 
