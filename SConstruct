@@ -137,6 +137,8 @@ libvmime_sources = [
 	'utility/stringUtils.cpp', 'utility/stringUtils.hpp',
 	'utility/url.cpp', 'utility/url.hpp',
 	'utility/urlUtils.cpp', 'utility/urlUtils.hpp',
+	'utility/sync/autoLock.hpp',
+	'utility/sync/criticalSection.cpp', 'utility/sync/criticalSection.hpp',
 	# -- encoder
 	'utility/encoder/encoder.cpp', 'utility/encoder/encoder.hpp',
 	'utility/encoder/sevenBitEncoder.cpp', 'utility/encoder/sevenBitEncoder.hpp',
@@ -210,12 +212,19 @@ libvmime_messaging_sources = [
 libvmime_net_tls_sources = [
 	'net/tls/TLSSession.cpp', 'net/tls/TLSSession.hpp',
 	'net/tls/TLSSocket.cpp', 'net/tls/TLSSocket.hpp',
+	'net/tls/gnutls/TLSSession_GnuTLS.cpp', 'net/tls/gnutls/TLSSession_GnuTLS.hpp',
+	'net/tls/gnutls/TLSSocket_GnuTLS.cpp', 'net/tls/gnutls/TLSSocket_GnuTLS.hpp',
+	'net/tls/openssl/TLSSession_OpenSSL.cpp', 'net/tls/openssl/TLSSession_OpenSSL.hpp',
+	'net/tls/openssl/TLSSocket_OpenSSL.cpp', 'net/tls/openssl/TLSSocket_OpenSSL.hpp',
+	'net/tls/openssl/OpenSSLInitializer.cpp', 'net/tls/openssl/OpenSSLInitializer.hpp',
 	'net/tls/TLSSecuredConnectionInfos.cpp', 'net/tls/TLSSecuredConnectionInfos.hpp',
 	'security/cert/certificateChain.cpp', 'security/cert/certificateChain.hpp',
 	'security/cert/certificateVerifier.hpp',
 	'security/cert/defaultCertificateVerifier.cpp', 'security/cert/defaultCertificateVerifier.hpp',
 	'security/cert/certificate.hpp',
-	'security/cert/X509Certificate.cpp', 'security/cert/X509Certificate.hpp'
+	'security/cert/X509Certificate.cpp', 'security/cert/X509Certificate.hpp',
+	'security/cert/gnutls/X509Certificate_GnuTLS.cpp', 'security/cert/gnutls/X509Certificate_GnuTLS.hpp',
+	'security/cert/openssl/X509Certificate_OpenSSL.cpp', 'security/cert/openssl/X509Certificate_OpenSSL.hpp'
 ]
 
 libvmime_messaging_proto_sources = [
@@ -282,12 +291,14 @@ libvmime_platforms_sources = {
 	'posix':
 	[
 		'platforms/posix/posixChildProcess.cpp', 'platforms/posix/posixChildProcess.hpp',
+		'platforms/posix/posixCriticalSection.cpp', 'platforms/posix/posixCriticalSection.hpp',
 		'platforms/posix/posixFile.cpp', 'platforms/posix/posixFile.hpp',
 		'platforms/posix/posixHandler.cpp', 'platforms/posix/posixHandler.hpp',
 		'platforms/posix/posixSocket.cpp', 'platforms/posix/posixSocket.hpp'
 	],
 	'windows':
 	[
+		'platforms/windows/windowsCriticalSection.cpp', 'platforms/windows/windowsCriticalSection.hpp',
 		'platforms/windows/windowsFile.cpp', 'platforms/windows/windowsFile.hpp',
 		'platforms/windows/windowsHandler.cpp', 'platforms/windows/windowsHandler.hpp',
 		'platforms/windows/windowsSocket.cpp', 'platforms/windows/windowsSocket.hpp'
@@ -590,6 +601,7 @@ env.Append(CXXFLAGS = ['-Wpointer-arith'])
 env.Append(CXXFLAGS = ['-Wold-style-cast'])
 env.Append(CXXFLAGS = ['-Wconversion'])
 env.Append(CXXFLAGS = ['-Wcast-align'])
+env.Append(CXXFLAGS = ['-Wno-long-long'])  # OpenSSL
 #env.Append(CXXFLAGS = ['-Wshadow'])
 
 env.Append(TARFLAGS = ['-c'])
@@ -614,6 +626,7 @@ if env['with_sasl'] == 'yes':
 	env.ParseConfig('pkg-config --cflags --libs ' + libgsasl_pc)
 
 if env['with_tls'] == 'yes':
+	# GnuTLS
 	libgnutls_pc = string.strip(os.popen("pkg-config --list-all | grep '^libgnutls[ ]' | cut -f 1 -d ' '").read())
 
 	if len(libgnutls_pc) == 0:
@@ -624,6 +637,15 @@ if env['with_tls'] == 'yes':
 		Exit(1)
 
 	env.ParseConfig('pkg-config --cflags --libs ' + libgnutls_pc)
+
+	# OpenSSL
+	libopenssl_pc = string.strip(os.popen("pkg-config --list-all | grep '^openssl[ ]' | cut -f 1 -d ' '").read())
+
+	if len(libopenssl_pc) == 0:
+		print "ERROR: OpenSSL development package is not installed\n"
+		Exit(1)
+
+	env.ParseConfig('pkg-config --cflags --libs ' + libopenssl_pc)
 
 env.Append(CXXFLAGS = ['-pthread'])
 
@@ -806,6 +828,7 @@ config_hpp.write('// -- TLS/SSL support\n')
 if env['with_tls'] == 'yes':
 	config_hpp.write('#define VMIME_HAVE_TLS_SUPPORT 1\n')
 	config_hpp.write('#define VMIME_TLS_SUPPORT_LIB_IS_GNUTLS 1\n')
+	config_hpp.write('#define VMIME_TLS_SUPPORT_LIB_IS_OPENSSL 0\n')
 	config_hpp.write('#define VMIME_HAVE_GNUTLS_PRIORITY_FUNCS 1\n')
 else:
 	config_hpp.write('#define VMIME_HAVE_TLS_SUPPORT 0\n')
@@ -834,8 +857,13 @@ for platform in libvmime_platforms_sources:
 	if not platform in platforms:
 		config_hpp.write('#define VMIME_PLATFORM_IS_' + string.upper(platform) + ' 0\n')
 
-config_hpp.write('#define VMIME_HAVE_GETADDRINFO 1\n')
-config_hpp.write('#define VMIME_HAVE_PTHREAD 1\n')
+config_hpp.write("""
+#define VMIME_HAVE_GETADDRINFO 1
+#define VMIME_HAVE_PTHREAD 1
+#define VMIME_HAVE_GETTID 0
+#define VMIME_HAVE_SYSCALL 1
+#define VMIME_HAVE_SYSCALL_GETTID 1
+""")
 
 config_hpp.write('\n')
 config_hpp.write('// Miscellaneous flags\n')

@@ -151,7 +151,7 @@ void POP3Store::connect()
 	if (m_isPOP3S)  // dedicated port/POP3S
 	{
 		ref <tls::TLSSession> tlsSession =
-			vmime::create <tls::TLSSession>(getCertificateVerifier());
+			tls::TLSSession::create(getCertificateVerifier());
 
 		ref <tls::TLSSocket> tlsSocket =
 			tlsSession->getSocket(m_socket);
@@ -550,7 +550,7 @@ void POP3Store::startTLS()
 			throw exceptions::command_error("STLS", response);
 
 		ref <tls::TLSSession> tlsSession =
-			vmime::create <tls::TLSSession>(getCertificateVerifier());
+			tls::TLSSession::create(getCertificateVerifier());
 
 		ref <tls::TLSSocket> tlsSocket =
 			tlsSession->getSocket(m_socket);

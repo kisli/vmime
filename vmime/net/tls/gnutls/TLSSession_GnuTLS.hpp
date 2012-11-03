@@ -21,12 +21,22 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#ifndef VMIME_NET_TLS_TLSSESSION_GNUTLS_HPP_INCLUDED
+#define VMIME_NET_TLS_TLSSESSION_GNUTLS_HPP_INCLUDED
+
+
+#ifndef VMIME_BUILDING_DOC
+
+
 #include "vmime/config.hpp"
 
 
-#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT
+#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT && VMIME_TLS_SUPPORT_LIB_IS_GNUTLS
 
 
+#include "vmime/types.hpp"
+
+#include "vmime/net/tls/TLSSession.hpp"
 #include "vmime/net/tls/TLSSocket.hpp"
 
 
@@ -35,10 +45,45 @@ namespace net {
 namespace tls {
 
 
+class TLSSession_GnuTLS : public TLSSession
+{
+	friend class TLSSocket_GnuTLS;
+
+public:
+
+	TLSSession_GnuTLS(ref <security::cert::certificateVerifier> cv);
+	~TLSSession_GnuTLS();
+
+
+	ref <TLSSocket> getSocket(ref <socket> sok);
+
+	ref <security::cert::certificateVerifier> getCertificateVerifier();
+
+private:
+
+	TLSSession_GnuTLS(const TLSSession_GnuTLS&);
+
+	static void throwTLSException(const string& fname, const int code);
+
+
+#ifdef LIBGNUTLS_VERSION
+	gnutls_session* m_gnutlsSession;
+#else
+	void* m_gnutlsSession;
+#endif // LIBGNUTLS_VERSION
+
+	ref <security::cert::certificateVerifier> m_certVerifier;
+};
+
+
 } // tls
 } // net
 } // vmime
 
 
-#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT
+#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT && VMIME_TLS_SUPPORT_LIB_IS_GNUTLS
+
+#endif // VMIME_BUILDING_DOC
+
+#endif // VMIME_NET_TLS_TLSSESSION_GNUTLS_HPP_INCLUDED
 

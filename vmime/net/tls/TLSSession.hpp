@@ -28,7 +28,7 @@
 #include "vmime/config.hpp"
 
 
-#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT && VMIME_TLS_SUPPORT_LIB_IS_GNUTLS
+#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT
 
 
 #include "vmime/types.hpp"
@@ -47,11 +47,7 @@ namespace tls {
   */
 class TLSSession : public object
 {
-	friend class TLSSocket;
-
 public:
-
-	~TLSSession();
 
 	/** Create and initialize a new TLS session.
 	  *
@@ -59,7 +55,7 @@ public:
 	  * sent by the server
 	  * @return a new TLS session
 	  */
-	TLSSession(ref <security::cert::certificateVerifier> cv);
+	static ref <TLSSession> create(ref <security::cert::certificateVerifier> cv);
 
 	/** Create a new socket that adds a TLS security layer around
 	  * an existing socket. You should create only one socket
@@ -68,27 +64,20 @@ public:
 	  * @param sok socket to wrap
 	  * @return TLS socket wrapper
 	  */
-	ref <TLSSocket> getSocket(ref <socket> sok);
+	virtual ref <TLSSocket> getSocket(ref <socket> sok) = 0;
 
 	/** Get the object responsible for verifying certificates when
 	  * using secured connections (TLS/SSL).
 	  */
-	ref <security::cert::certificateVerifier> getCertificateVerifier();
+	virtual ref <security::cert::certificateVerifier> getCertificateVerifier() = 0;
+
+protected:
+
+	TLSSession();
 
 private:
 
 	TLSSession(const TLSSession&);
-
-	static void throwTLSException(const string& fname, const int code);
-
-
-#ifdef LIBGNUTLS_VERSION
-	gnutls_session* m_gnutlsSession;
-#else
-	void* m_gnutlsSession;
-#endif // LIBGNUTLS_VERSION
-
-	ref <security::cert::certificateVerifier> m_certVerifier;
 };
 
 
@@ -97,7 +86,6 @@ private:
 } // vmime
 
 
-#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT && VMIME_TLS_SUPPORT_LIB_IS_GNUTLS
+#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT
 
 #endif // VMIME_NET_TLS_TLSSESSION_HPP_INCLUDED
-

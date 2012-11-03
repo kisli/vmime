@@ -28,7 +28,7 @@
 #include "vmime/config.hpp"
 
 
-#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT && VMIME_TLS_SUPPORT_LIB_IS_GNUTLS
+#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT
 
 
 #include "vmime/exception.hpp"
@@ -51,9 +51,7 @@ class TLSSession;
   */
 class TLSSocket : public socket
 {
-	friend class vmime::creator;
-
-protected:
+public:
 
 	/** Create a new socket object that adds a security layer
 	  * around an existing socket.
@@ -61,12 +59,7 @@ protected:
 	  * @param session TLS session
 	  * @param sok socket to wrap
 	  */
-	TLSSocket(ref <TLSSession> session, ref <socket> sok);
-
-public:
-
-	~TLSSocket();
-
+	static ref <TLSSocket> wrap(ref <TLSSession> session, ref <socket> sok);
 
 	/** Starts a TLS handshake on this connection.
 	  *
@@ -74,53 +67,14 @@ public:
 	  * during the negociation process, exceptions::operation_timed_out
 	  * if a time-out occurs
 	  */
-	void handshake(ref <timeoutHandler> toHandler = NULL);
+	virtual void handshake(ref <timeoutHandler> toHandler = NULL) = 0;
 
 	/** Return the peer's certificate (chain) as sent by the peer.
 	  *
 	  * @return server certificate chain, or NULL if the handshake
 	  * has not been performed yet
 	  */
-	ref <security::cert::certificateChain> getPeerCertificates() const;
-
-
-	// Implementation of 'socket'
-	void connect(const string& address, const port_t port);
-	void disconnect();
-	bool isConnected() const;
-
-	void receive(string& buffer);
-	size_type receiveRaw(char* buffer, const size_type count);
-
-	void send(const string& buffer);
-	void sendRaw(const char* buffer, const size_type count);
-
-	size_type getBlockSize() const;
-
-private:
-
-	void internalThrow();
-
-#ifdef LIBGNUTLS_VERSION
-	static ssize_t gnutlsPushFunc(gnutls_transport_ptr trspt, const void* data, size_t len);
-	static ssize_t gnutlsPullFunc(gnutls_transport_ptr trspt, void* data, size_t len);
-#else
-	static int gnutlsPushFunc(void* trspt, const void* data, size_t len);
-	static int gnutlsPullFunc(void* trspt, void* data, size_t len);
-#endif // LIBGNUTLS_VERSION
-
-
-	ref <TLSSession> m_session;
-	ref <socket> m_wrapped;
-
-	bool m_connected;
-
-	char m_buffer[65536];
-
-	bool m_handshaking;
-	ref <timeoutHandler> m_toHandler;
-
-	exception* m_ex;
+	virtual ref <security::cert::certificateChain> getPeerCertificates() const = 0;
 };
 
 
@@ -129,7 +83,6 @@ private:
 } // vmime
 
 
-#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT && VMIME_TLS_SUPPORT_LIB_IS_GNUTLS
+#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT
 
 #endif // VMIME_NET_TLS_TLSSOCKET_HPP_INCLUDED
-

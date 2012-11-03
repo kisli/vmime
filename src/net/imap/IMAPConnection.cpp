@@ -111,7 +111,7 @@ void IMAPConnection::connect()
 	if (store->isIMAPS())  // dedicated port/IMAPS
 	{
 		ref <tls::TLSSession> tlsSession =
-			vmime::create <tls::TLSSession>(store->getCertificateVerifier());
+			tls::TLSSession::create(store->getCertificateVerifier());
 
 		ref <tls::TLSSocket> tlsSocket =
 			tlsSession->getSocket(m_socket);
@@ -460,7 +460,7 @@ void IMAPConnection::startTLS()
 		}
 
 		ref <tls::TLSSession> tlsSession =
-			vmime::create <tls::TLSSession>(m_store.acquire()->getCertificateVerifier());
+			tls::TLSSession::create(m_store.acquire()->getCertificateVerifier());
 
 		ref <tls::TLSSocket> tlsSocket =
 			tlsSession->getSocket(m_socket);

@@ -21,24 +21,46 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#include "vmime/config.hpp"
+#ifndef VMIME_UTILITY_SYNC_AUTOLOCK_HPP_INCLUDED
+#define VMIME_UTILITY_SYNC_AUTOLOCK_HPP_INCLUDED
 
 
-#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT
-
-
-#include "vmime/net/tls/TLSSocket.hpp"
+#include "vmime/base.hpp"
 
 
 namespace vmime {
-namespace net {
-namespace tls {
+namespace utility {
+namespace sync {
 
 
-} // tls
-} // net
+/** Critical section wrapper class
+  */
+
+template <class M>
+class autoLock : public object
+{
+public:
+
+	autoLock(ref <M> mutex)
+		: m_mutex(mutex)
+	{
+		m_mutex->lock();
+	}
+
+	~autoLock()
+	{
+		m_mutex->unlock();
+	}
+
+private:
+
+	ref <M> m_mutex;
+};
+
+
+} // sync
+} // utility
 } // vmime
 
 
-#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT
-
+#endif // VMIME_UTILITY_SYNC_AUTOLOCK_HPP_INCLUDED

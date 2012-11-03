@@ -25,6 +25,12 @@
 #define VMIME_SECURITY_CERT_X509CERTIFICATE_HPP_INCLUDED
 
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT
+
+
 #include "vmime/security/cert/certificate.hpp"
 
 #include "vmime/utility/stream.hpp"
@@ -42,13 +48,6 @@ namespace cert {
   */
 class X509Certificate : public certificate
 {
-	friend class vmime::creator;
-
-protected:
-
-	X509Certificate();
-	X509Certificate(const X509Certificate&);
-
 public:
 
 	~X509Certificate();
@@ -90,7 +89,7 @@ public:
 	  * @param os output stream into which write data
 	  * @param format output format
 	  */
-	void write(utility::outputStream& os, const Format format) const;
+	virtual void write(utility::outputStream& os, const Format format) const = 0;
 
 	/** Returns the X.509 certificate's serial number. This is obtained
 	  * by the X.509 Certificate 'serialNumber' field. Serial is not
@@ -99,7 +98,7 @@ public:
 	  *
 	  * @return serial number of this certificate
 	  */
-	const byteArray getSerialNumber() const;
+	virtual const byteArray getSerialNumber() const = 0;
 
 	/** Checks if this certificate has the given issuer.
 	  *
@@ -107,45 +106,34 @@ public:
 	  * @return true if this certificate was issued by the given issuer,
 	  * false otherwise
 	  */
-	bool checkIssuer(ref <const X509Certificate> issuer) const;
+	virtual bool checkIssuer(ref <const X509Certificate> issuer) const = 0;
 
 	/** Verifies this certificate against a given trusted one.
 	  *
 	  * @param caCert a certificate that is considered to be trusted one
 	  * @return true if the verification succeeded, false otherwise
 	  */
-	bool verify(ref <const X509Certificate> caCert) const;
+	virtual bool verify(ref <const X509Certificate> caCert) const = 0;
 
 	/** Gets the expiration date of this certificate. This is the date
 	  * at which this certificate will not be valid anymore.
 	  *
 	  * @return expiration date of this certificate
 	  */
-	const datetime getExpirationDate() const;
+	virtual const datetime getExpirationDate() const = 0;
 
 	/** Gets the activation date of this certificate. This is the date
 	  * at which this certificate will be valid.
 	  *
 	  * @return activation date of this certificate
 	  */
-	const datetime getActivationDate() const;
+	virtual const datetime getActivationDate() const = 0;
 
 	/** Returns the fingerprint of this certificate.
 	  *
 	  * @return the fingerprint of this certificate
 	  */
-	const byteArray getFingerprint(const DigestAlgorithm algo) const;
-
-
-	// Implementation of 'certificate'
-	const byteArray getEncoded() const;
-	const string getType() const;
-	int getVersion() const;
-	bool equals(ref <const certificate> other) const;
-
-private:
-
-	struct X509CertificateInternalData* m_data;
+	virtual const byteArray getFingerprint(const DigestAlgorithm algo) const = 0;
 };
 
 
@@ -153,6 +141,8 @@ private:
 } // security
 } // vmime
 
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT
 
 #endif // VMIME_SECURITY_CERT_X509CERTIFICATE_HPP_INCLUDED
 

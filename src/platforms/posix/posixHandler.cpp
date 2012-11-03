@@ -29,8 +29,10 @@
 
 #include "vmime/platforms/posix/posixHandler.hpp"
 
-#include <time.h>
+#include "vmime/platforms/posix/posixCriticalSection.hpp"
 
+#include <time.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <locale.h>
 #include <langinfo.h>
@@ -39,10 +41,15 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#if VMIME_HAVE_SYSCALL
+#	include <sys/syscall.h>
+#endif
+
 #include <netdb.h>
 
 #include <string.h>
 #include <cassert>
+#include <cstdlib>
 
 #if VMIME_HAVE_PTHREAD
 #	include <pthread.h>
@@ -217,6 +224,18 @@ unsigned int posixHandler::getProcessId() const
 }
 
 
+unsigned int posixHandler::getThreadId() const
+{
+#if VMIME_HAVE_GETTID
+	return static_cast <unsigned int>(::gettid());
+#elif VMIME_HAVE_SYSCALL && VMIME_HAVE_SYSCALL_GETTID
+	return static_cast <unsigned int>(::syscall(SYS_gettid));
+#else
+	#error We have no implementation of getThreadId() for this platform!
+#endif
+}
+
+
 #if VMIME_HAVE_MESSAGING_FEATURES
 
 ref <vmime::net::socketFactory> posixHandler::getSocketFactory()
@@ -258,6 +277,29 @@ void posixHandler::wait() const
 	ts.tv_nsec = 500000;  // 500 microseconds
 
 	nanosleep(&ts, NULL);
+}
+
+
+void posixHandler::generateRandomBytes(unsigned char* buffer, const unsigned int count)
+{
+	int fd = open("/dev/urandom", O_RDONLY);
+
+	if (fd != -1)
+	{
+		read(fd, buffer, count);
+		close(fd);
+	}
+	else  // fallback
+	{
+		for (unsigned int i = 0 ; i < count ; ++i)
+			buffer[i] = static_cast <unsigned char>(rand() % 255);
+	}
+}
+
+
+ref <utility::sync::criticalSection> posixHandler::createCriticalSection()
+{
+	return vmime::create <posixCriticalSection>();
 }
 
 

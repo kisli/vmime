@@ -63,6 +63,7 @@ public:
 	const vmime::string getHostName() const;
 
 	unsigned int getProcessId() const;
+	unsigned int getThreadId() const;
 
 #if VMIME_HAVE_MESSAGING_FEATURES
 	ref <vmime::net::socketFactory> getSocketFactory();
@@ -75,6 +76,10 @@ public:
 #endif
 
 	void wait() const;
+
+	void generateRandomBytes(unsigned char* buffer, const unsigned int count);
+
+	ref <utility::sync::criticalSection> createCriticalSection();
 
 private:
 

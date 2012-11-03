@@ -2,7 +2,7 @@
 VMIME AUTHOR
 ============
 
-Vincent Richard <vincent@vincent-richard.net>
+Vincent Richard <vincent@vmime.org>
 Project owner and creator. VMime was created in 1998, and publicly released
 under the GNU GPL license in 2003.
 
@@ -28,9 +28,10 @@ AUTHORS file.
  - Zarafa <http://developer.zarafa.com/VmimePatches>
  - Bartek Szurgot <vempirelord@wp.pl, http://baszerr.org>
  - Achim Brandt <http://sourceforge.net/users/a-brandt/>
+ - Mehmet Bozkurt <mehmet.bozkurt78@gmail.com> (OpenSSL support)
 
 Please apologize if I have forgotten someone here.  ;)  Send me an email
-to <vincent@vincent-richard.net> if you want your name to be listed.
+to <vincent@vmime.org> if you want your name to be listed.
 
-See SVN Changelog for full list.
+See Changelogs for full list.
 

@@ -40,6 +40,8 @@
 	#include "vmime/utility/childProcess.hpp"
 #endif
 
+#include "vmime/utility/sync/criticalSection.hpp"
+
 
 namespace vmime
 {
@@ -89,6 +91,13 @@ public:
 		  */
 		virtual unsigned int getProcessId() const = 0;
 
+		/** Return an unique identifier for the current thread.
+		  * Used for multi-threading synchronization.
+		  *
+		  * @return current thread id
+		  */
+		virtual unsigned int getThreadId() const = 0;
+
 		/** Return the charset used on the system.
 		  *
 		  * @return locale charset
@@ -126,6 +135,16 @@ public:
 		virtual ref <utility::childProcessFactory> getChildProcessFactory() = 0;
 #endif
 
+		/** Fills a buffer with cryptographically random bytes.
+		  *
+		  * @param buffer buffer to fill in with random bytes
+		  * @param count number of random bytes to write in buffer
+		  */
+		virtual void generateRandomBytes(unsigned char* buffer, const unsigned int count) = 0;
+
+		/** Creates and initializes a critical section.
+		  */
+		virtual ref <utility::sync::criticalSection> createCriticalSection() = 0;
 	};
 
 

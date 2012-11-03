@@ -21,24 +21,24 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#include "vmime/config.hpp"
-
-
-#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT
-
-
-#include "vmime/net/tls/TLSSocket.hpp"
+#include "vmime/utility/sync/criticalSection.hpp"
 
 
 namespace vmime {
-namespace net {
-namespace tls {
+namespace utility {
+namespace sync {
 
 
-} // tls
-} // net
+criticalSection::criticalSection()
+{
+}
+
+
+criticalSection::~criticalSection()
+{
+}
+
+
+} // sync
+} // utility
 } // vmime
-
-
-#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT
-

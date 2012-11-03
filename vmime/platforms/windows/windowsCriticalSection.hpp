@@ -21,24 +21,48 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#ifndef VMIME_PLATFORMS_WINDOWS_CRITICALSECTION_HPP_INCLUDED
+#define VMIME_PLATFORMS_WINDOWS_CRITICALSECTION_HPP_INCLUDED
+
+
 #include "vmime/config.hpp"
 
 
-#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT
+#if VMIME_PLATFORM_IS_WINDOWS
 
 
-#include "vmime/net/tls/TLSSocket.hpp"
+#include "vmime/utility/sync/criticalSection.hpp"
+
+
+#include <windows.h>
 
 
 namespace vmime {
-namespace net {
-namespace tls {
+namespace platforms {
+namespace windows {
 
 
-} // tls
-} // net
+class windowsCriticalSection : public utility::sync::criticalSection
+{
+public:
+
+	windowsCriticalSection();
+	~windowsCriticalSection();
+
+	void lock();
+	void unlock();
+
+private:
+
+	CRITICAL_SECTION m_cs;
+};
+
+
+} // windows
+} // platforms
 } // vmime
 
 
-#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT
+#endif // VMIME_PLATFORM_IS_WINDOWS
 
+#endif // VMIME_PLATFORMS_WINDOWS_CRITICALSECTION_HPP_INCLUDED

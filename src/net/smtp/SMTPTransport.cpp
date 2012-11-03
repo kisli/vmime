@@ -114,7 +114,7 @@ void SMTPTransport::connect()
 	if (m_isSMTPS)  // dedicated port/SMTPS
 	{
 		ref <tls::TLSSession> tlsSession =
-			vmime::create <tls::TLSSession>(getCertificateVerifier());
+			tls::TLSSession::create(getCertificateVerifier());
 
 		ref <tls::TLSSocket> tlsSocket =
 			tlsSession->getSocket(m_socket);
@@ -463,7 +463,7 @@ void SMTPTransport::startTLS()
 			throw exceptions::command_error("STARTTLS", resp->getText());
 
 		ref <tls::TLSSession> tlsSession =
-			vmime::create <tls::TLSSession>(getCertificateVerifier());
+			tls::TLSSession::create(getCertificateVerifier());
 
 		ref <tls::TLSSocket> tlsSocket =
 			tlsSession->getSocket(m_socket);

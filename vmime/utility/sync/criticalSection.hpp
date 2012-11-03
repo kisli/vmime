@@ -21,24 +21,45 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#include "vmime/config.hpp"
+#ifndef VMIME_UTILITY_SYNC_CRITICALSECTION_HPP_INCLUDED
+#define VMIME_UTILITY_SYNC_CRITICALSECTION_HPP_INCLUDED
 
 
-#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT
-
-
-#include "vmime/net/tls/TLSSocket.hpp"
+#include "vmime/base.hpp"
 
 
 namespace vmime {
-namespace net {
-namespace tls {
+namespace utility {
+namespace sync {
 
 
-} // tls
-} // net
+/** Critical section class.
+  */
+
+class criticalSection : public object
+{
+public:
+
+	virtual ~criticalSection();
+
+	/** Enters the critical section.
+	  */
+	virtual void lock() = 0;
+
+	/** Leaves the critical section.
+	  */
+	virtual void unlock() = 0;
+
+protected:
+
+	criticalSection();
+	criticalSection(criticalSection&);
+};
+
+
+} // sync
+} // utility
 } // vmime
 
 
-#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT
-
+#endif // VMIME_UTILITY_SYNC_CRITICALSECTION_HPP_INCLUDED

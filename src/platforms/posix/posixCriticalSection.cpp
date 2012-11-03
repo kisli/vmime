@@ -24,21 +24,44 @@
 #include "vmime/config.hpp"
 
 
-#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT
+#if VMIME_PLATFORM_IS_POSIX
 
 
-#include "vmime/net/tls/TLSSocket.hpp"
+#include "vmime/platforms/posix/posixCriticalSection.hpp"
 
 
 namespace vmime {
-namespace net {
-namespace tls {
+namespace platforms {
+namespace posix {
 
 
-} // tls
-} // net
+posixCriticalSection::posixCriticalSection()
+{
+	pthread_mutex_init(&m_cs, NULL);
+}
+
+
+posixCriticalSection::~posixCriticalSection()
+{
+	pthread_mutex_destroy(&m_cs);
+}
+
+
+void posixCriticalSection::lock()
+{
+	pthread_mutex_lock(&m_cs);
+}
+
+
+void posixCriticalSection::unlock()
+{
+	pthread_mutex_unlock(&m_cs);
+}
+
+
+} // posix
+} // platforms
 } // vmime
 
 
-#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT
-
+#endif // VMIME_PLATFORM_IS_POSIX

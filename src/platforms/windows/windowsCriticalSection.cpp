@@ -24,21 +24,44 @@
 #include "vmime/config.hpp"
 
 
-#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT
+#if VMIME_PLATFORM_IS_WINDOWS
 
 
-#include "vmime/net/tls/TLSSocket.hpp"
+#include "vmime/platforms/windows/windowsCriticalSection.hpp"
 
 
 namespace vmime {
-namespace net {
-namespace tls {
+namespace platforms {
+namespace windows {
 
 
-} // tls
-} // net
+windowsCriticalSection::windowsCriticalSection()
+{
+	InitializeCriticalSectionAndSpinCount(&m_cs, 0x400);
+}
+
+
+windowsCriticalSection::~windowsCriticalSection()
+{
+	DeleteCriticalSection(&m_cs)
+}
+
+
+void windowsCriticalSection::lock()
+{
+	EnterCriticalSection(&m_cs);
+}
+
+
+void windowsCriticalSection::unlock()
+{
+	LeaveCriticalSection(&m_cs);
+}
+
+
+} // windows
+} // platforms
 } // vmime
 
 
-#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT
-
+#endif // VMIME_PLATFORM_IS_WINDOWS

@@ -29,6 +29,8 @@
 
 #include "vmime/platforms/windows/windowsHandler.hpp"
 
+#include "vmime/platforms/windows/windowsCriticalSection.hpp"
+
 #include <time.h>
 #include <locale.h>
 #include <process.h>
@@ -239,6 +241,12 @@ unsigned int windowsHandler::getProcessId() const
 }
 
 
+unsigned int windowsHandler::getThreadId() cont
+{
+	return static_cast <unsigned int>(::GetCurrentThreadId());
+}
+
+
 #if VMIME_HAVE_MESSAGING_FEATURES
 
 ref <vmime::net::socketFactory> windowsHandler::getSocketFactory()
@@ -269,6 +277,21 @@ ref <vmime::utility::childProcessFactory> windowsHandler::getChildProcessFactory
 void windowsHandler::wait() const
 {
 	::Sleep(1000);
+}
+
+
+void windowsHandler::generateRandomBytes(unsigned char* buffer, const unsigned int count)
+{
+	HCRYPTPROV cryptProvider = 0;
+	CryptAcquireContext(&cryptProvider, 0, 0, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT);
+	CryptGenRandom(cryptProvider, static_cast <unsigned long>(count), static_cast <unsigned char*>(buffer));
+	CryptReleaseContext(cryptProvider, 0);
+}
+
+
+ref <utility::sync::criticalSection> posixHandler::createCriticalSection()
+{
+	return vmime::create <windowsCriticalSection>();
 }
 
 
