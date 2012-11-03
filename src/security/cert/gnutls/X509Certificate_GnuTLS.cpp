@@ -70,7 +70,7 @@ X509Certificate_GnuTLS::X509Certificate_GnuTLS()
 
 
 X509Certificate_GnuTLS::X509Certificate_GnuTLS(const X509Certificate&)
-	: certificate(), m_data(NULL)
+	: X509Certificate(), m_data(NULL)
 {
 	// Not used
 }
@@ -107,13 +107,13 @@ ref <X509Certificate> X509Certificate::import
 	buffer.size = length;
 
 	// Try DER format
-	ref <X509Certificate> derCert = vmime::create <X509Certificate_GnuTLS>();
+	ref <X509Certificate_GnuTLS> derCert = vmime::create <X509Certificate_GnuTLS>();
 
 	if (gnutls_x509_crt_import(derCert->m_data->cert, &buffer, GNUTLS_X509_FMT_DER) >= 0)
 		return derCert;
 
 	// Try PEM format
-	ref <X509Certificate> pemCert = vmime::create <X509Certificate_GnuTLS>();
+	ref <X509Certificate_GnuTLS> pemCert = vmime::create <X509Certificate_GnuTLS>();
 
 	if (gnutls_x509_crt_import(pemCert->m_data->cert, &buffer, GNUTLS_X509_FMT_PEM) >= 0)
 		return pemCert;
@@ -158,7 +158,7 @@ const byteArray X509Certificate_GnuTLS::getSerialNumber() const
 bool X509Certificate_GnuTLS::checkIssuer(ref <const X509Certificate> issuer_) const
 {
 	ref <const X509Certificate_GnuTLS> issuer =
-		issuer.dynamicCast <const OpenSSLX509Certificate_GnuTLS>();
+		issuer.dynamicCast <const X509Certificate_GnuTLS>();
 
 	return (gnutls_x509_crt_check_issuer
 			(m_data->cert, issuer->m_data->cert) >= 1);
