@@ -158,7 +158,7 @@ const byteArray X509Certificate_GnuTLS::getSerialNumber() const
 bool X509Certificate_GnuTLS::checkIssuer(ref <const X509Certificate> issuer_) const
 {
 	ref <const X509Certificate_GnuTLS> issuer =
-		issuer.dynamicCast <const X509Certificate_GnuTLS>();
+		issuer_.dynamicCast <const X509Certificate_GnuTLS>();
 
 	return (gnutls_x509_crt_check_issuer
 			(m_data->cert, issuer->m_data->cert) >= 1);
