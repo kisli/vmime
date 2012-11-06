@@ -43,7 +43,7 @@ windowsCriticalSection::windowsCriticalSection()
 
 windowsCriticalSection::~windowsCriticalSection()
 {
-	DeleteCriticalSection(&m_cs)
+	DeleteCriticalSection(&m_cs);
 }
 
 

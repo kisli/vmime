@@ -241,7 +241,7 @@ unsigned int windowsHandler::getProcessId() const
 }
 
 
-unsigned int windowsHandler::getThreadId() cont
+unsigned int windowsHandler::getThreadId() const
 {
 	return static_cast <unsigned int>(::GetCurrentThreadId());
 }
@@ -289,7 +289,7 @@ void windowsHandler::generateRandomBytes(unsigned char* buffer, const unsigned i
 }
 
 
-ref <utility::sync::criticalSection> posixHandler::createCriticalSection()
+ref <utility::sync::criticalSection> windowsHandler::createCriticalSection()
 {
 	return vmime::create <windowsCriticalSection>();
 }
