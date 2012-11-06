@@ -1,0 +1,12 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: @VMIME_LIBRARY_NAME@
+Description: @VMIME_PACKAGE_DESCRIPTION@
+Version: @VMIME_PACKAGE_VERSION@
+Requires: @VMIME_PKGCONFIG_REQUIRES@
+Libs: -L${libdir} -lvmime @VMIME_PKGCONFIG_LIBS@
+Cflags: -I${includedir}/ @VMIME_PKGCONFIG_CFLAGS@
+
