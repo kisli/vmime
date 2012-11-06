@@ -34,6 +34,8 @@
 
 #include "vmime/security/cert/openssl/X509Certificate_OpenSSL.hpp"
 
+#include "vmime/net/tls/openssl/OpenSSLInitializer.hpp"
+
 #include "vmime/utility/outputStreamByteArrayAdapter.hpp"
 
 #include "vmime/exception.hpp"
@@ -97,6 +99,9 @@ struct OpenSSLX509CertificateInternalData
 {
 	OpenSSLX509CertificateInternalData()
 	{
+		// Thread-safe OpenSSL initialization
+		static net::tls::OpenSSLInitializer openSSLInitialization;
+
 		cert = 0;
 	}
 

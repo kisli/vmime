@@ -47,10 +47,6 @@ namespace net {
 namespace tls {
 
 
-// Thread-safe OpenSSL initialization
-static OpenSSLInitializer g_openSSLGlobal;
-
-
 // static
 ref <TLSSession> TLSSession::create(ref <security::cert::certificateVerifier> cv)
 {
@@ -61,6 +57,9 @@ ref <TLSSession> TLSSession::create(ref <security::cert::certificateVerifier> cv
 TLSSession_OpenSSL::TLSSession_OpenSSL(ref <vmime::security::cert::certificateVerifier> cv)
 	: m_sslctx(0), m_certVerifier(cv)
 {
+	// Thread-safe OpenSSL initialization
+	static OpenSSLInitializer openSSLInitialization;
+
 	m_sslctx = SSL_CTX_new(SSLv23_client_method());
 	SSL_CTX_set_options(m_sslctx, SSL_OP_ALL | SSL_OP_NO_SSLv2);
 }
