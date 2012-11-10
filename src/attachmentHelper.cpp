@@ -74,6 +74,7 @@ bool attachmentHelper::isBodyPartAnAttachment
 
 	// Assume "attachment" if type is not "text/..." or "multipart/...".
 	mediaType type;
+	bool hasContentTypeName = false;
 
 	try
 	{
@@ -81,6 +82,9 @@ bool attachmentHelper::isBodyPartAnAttachment
 			(*part->getHeader()->findField(fields::CONTENT_TYPE));
 
 		type = *ctf.getValue().dynamicCast <const mediaType>();
+
+		if (ctf.hasParameter("name"))
+			hasContentTypeName = true;
 	}
 	catch (exceptions::no_such_field&)
 	{
@@ -98,6 +102,11 @@ bool attachmentHelper::isBodyPartAnAttachment
 	if (type.getType() != mediaTypes::TEXT &&
 	    type.getType() != mediaTypes::MULTIPART)
 	{
+		// Compatibility with (obsolete) RFC-1341: if there is a "name" parameter
+		// on the "Content-Type" field, then we assume it is an attachment
+		if (hasContentTypeName)
+			return true;
+
 		if ((options & INLINE_OBJECTS) == 0)
 		{
 			// If a "Content-Id" field is present, it might be an
