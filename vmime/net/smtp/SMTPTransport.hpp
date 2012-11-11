@@ -36,14 +36,12 @@
 #include "vmime/net/timeoutHandler.hpp"
 
 #include "vmime/net/smtp/SMTPServiceInfos.hpp"
+#include "vmime/net/smtp/SMTPResponse.hpp"
 
 
 namespace vmime {
 namespace net {
 namespace smtp {
-
-
-class SMTPResponse;
 
 
 /** SMTP transport service.
@@ -101,6 +99,15 @@ private:
 
 	bool m_secured;
 	ref <connectionInfos> m_cntInfos;
+
+	SMTPResponse::state m_responseState;
+
+	// Pipelining
+	std::ostringstream m_pipeline;
+	bool m_pipelineStarted;
+
+	void beginCommandPipeline();
+	void endCommandPipeline();
 
 
 	// Service infos

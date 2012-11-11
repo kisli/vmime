@@ -54,6 +54,12 @@ class SMTPResponse : public object
 
 public:
 
+	/** Current state of response parser. */
+	struct state
+	{
+		string responseBuffer;
+	};
+
 	/** An element of a SMTP response. */
 	class responseLine
 	{
@@ -78,11 +84,12 @@ public:
 	  *
 	  * @param sok socket from which to read
 	  * @param toh time-out handler
+	  * @param st previous state of response parser for the specified socket
 	  * @return SMTP response
 	  * @throws exceptions::operation_timed_out if no data
 	  * has been received within the granted time
 	  */
-	static ref <SMTPResponse> readResponse(ref <socket> sok, ref <timeoutHandler> toh);
+	static ref <SMTPResponse> readResponse(ref <socket> sok, ref <timeoutHandler> toh, const state& st);
 
 	/** Return the SMTP response code.
 	  *
@@ -116,9 +123,15 @@ public:
 	  */
 	const responseLine getLastLine() const;
 
+	/** Returns the current state of the response parser.
+	  *
+	  * @return current parser state
+	  */
+	const state getCurrentState() const;
+
 private:
 
-	SMTPResponse(ref <socket> sok, ref <timeoutHandler> toh);
+	SMTPResponse(ref <socket> sok, ref <timeoutHandler> toh, const state& st);
 	SMTPResponse(const SMTPResponse&);
 
 	void readResponse();

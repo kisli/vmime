@@ -41,9 +41,9 @@ namespace net {
 namespace smtp {
 
 
-SMTPResponse::SMTPResponse(ref <socket> sok, ref <timeoutHandler> toh)
+SMTPResponse::SMTPResponse(ref <socket> sok, ref <timeoutHandler> toh, const state& st)
 	: m_socket(sok), m_timeoutHandler(toh),
-	  m_responseContinues(false)
+	  m_responseBuffer(st.responseBuffer), m_responseContinues(false)
 {
 }
 
@@ -87,9 +87,9 @@ const string SMTPResponse::getText() const
 
 // static
 ref <SMTPResponse> SMTPResponse::readResponse
-	(ref <socket> sok, ref <timeoutHandler> toh)
+	(ref <socket> sok, ref <timeoutHandler> toh, const state& st)
 {
-	ref <SMTPResponse> resp = vmime::create <SMTPResponse>(sok, toh);
+	ref <SMTPResponse> resp = vmime::create <SMTPResponse>(sok, toh, st);
 
 	resp->readResponse();
 
@@ -215,6 +215,15 @@ unsigned int SMTPResponse::getLineCount() const
 const SMTPResponse::responseLine SMTPResponse::getLastLine() const
 {
 	return m_lines[m_lines.size() - 1];
+}
+
+
+const SMTPResponse::state SMTPResponse::getCurrentState() const
+{
+	state st;
+	st.responseBuffer = m_responseBuffer;
+
+	return st;
 }
 
 
