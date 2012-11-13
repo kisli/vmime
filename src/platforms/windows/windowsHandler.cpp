@@ -36,6 +36,7 @@
 #include <process.h>
 #include <windows.h>  // for winnls.h
 #include <winsock2.h> // for WSAStartup()
+#include <wincrypt.h>
 
 #ifdef VMIME_HAVE_MLANG_H
 #   include <mlang.h>
