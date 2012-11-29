@@ -63,8 +63,11 @@ public:
 
 	void send(const string& buffer);
 	void sendRaw(const char* buffer, const size_type count);
+	size_type sendRawNonBlocking(const char* buffer, const size_type count);
 
 	size_type getBlockSize() const;
+
+	unsigned int getStatus() const;
 
 private:
 

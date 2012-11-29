@@ -53,7 +53,7 @@ ref <TLSSocket> TLSSocket::wrap(ref <TLSSession> session, ref <socket> sok)
 
 TLSSocket_GnuTLS::TLSSocket_GnuTLS(ref <TLSSession_GnuTLS> session, ref <socket> sok)
 	: m_session(session), m_wrapped(sok), m_connected(false),
-	  m_handshaking(false), m_ex(NULL)
+	  m_handshaking(false), m_ex(NULL), m_status(0)
 {
 	gnutls_transport_set_ptr(*m_session->m_gnutlsSession, this);
 
@@ -131,6 +131,8 @@ void TLSSocket_GnuTLS::send(const string& buffer)
 
 TLSSocket::size_type TLSSocket_GnuTLS::receiveRaw(char* buffer, const size_type count)
 {
+	m_status &= ~STATUS_WOULDBLOCK;
+
 	const ssize_t ret = gnutls_record_recv
 		(*m_session->m_gnutlsSession,
 		 buffer, static_cast <size_t>(count));
@@ -141,23 +143,67 @@ TLSSocket::size_type TLSSocket_GnuTLS::receiveRaw(char* buffer, const size_type 
 	if (ret < 0)
 	{
 		if (ret == GNUTLS_E_AGAIN)
+		{
+			m_status |= STATUS_WOULDBLOCK;
 			return 0;
+		}
 
 		TLSSession_GnuTLS::throwTLSException("gnutls_record_recv", ret);
 	}
 
-	return static_cast <int>(ret);
+	return static_cast <size_type>(ret);
 }
 
 
 void TLSSocket_GnuTLS::sendRaw(const char* buffer, const size_type count)
 {
-	gnutls_record_send
+	ssize_t ret = gnutls_record_send
 		(*m_session->m_gnutlsSession,
 		 buffer, static_cast <size_t>(count));
 
 	if (m_ex)
 		internalThrow();
+
+	if (ret < 0)
+	{
+		if (ret == GNUTLS_E_AGAIN)
+		{
+			m_status |= STATUS_WOULDBLOCK;
+			return;
+		}
+
+		TLSSession_GnuTLS::throwTLSException("gnutls_record_send", ret);
+	}
+}
+
+
+TLSSocket::size_type TLSSocket_GnuTLS::sendRawNonBlocking(const char* buffer, const size_type count)
+{
+	ssize_t ret = gnutls_record_send
+		(*m_session->m_gnutlsSession,
+		 buffer, static_cast <size_t>(count));
+
+	if (m_ex)
+		internalThrow();
+
+	if (ret < 0)
+	{
+		if (ret == GNUTLS_E_AGAIN)
+		{
+			m_status |= STATUS_WOULDBLOCK;
+			return 0;
+		}
+
+		TLSSession_GnuTLS::throwTLSException("gnutls_record_send", ret);
+	}
+
+	return static_cast <size_type>(ret);
+}
+
+
+unsigned int TLSSocket_GnuTLS::getStatus() const
+{
+	return m_status | m_wrapped->getStatus();
 }
 
 
@@ -290,8 +336,8 @@ ssize_t TLSSocket_GnuTLS::gnutlsPullFunc
 					(reinterpret_cast <char*>(data),
 					 static_cast <int>(len)));
 
-			if (n == 0)
-				return GNUTLS_E_AGAIN;  // This seems like a hack, really...
+			if (n == 0 && sok->m_wrapped->getStatus() & socket::STATUS_WOULDBLOCK)
+				return GNUTLS_E_AGAIN;
 
 			return n;
 		}

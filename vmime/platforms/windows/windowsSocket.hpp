@@ -43,6 +43,7 @@ namespace windows {
 class windowsSocket : public vmime::net::socket
 {
 public:
+
 	windowsSocket();
 	windowsSocket(ref <vmime::net::timeoutHandler> th);
 	~windowsSocket();
@@ -58,8 +59,24 @@ public:
 
 	void send(const vmime::string& buffer);
 	void sendRaw(const char* buffer, const size_type count);
+	size_type sendRawNonBlocking(const char* buffer, const size_type count);
 
 	size_type getBlockSize() const;
+
+	unsigned int getStatus() const;
+
+protected:
+
+	void throwSocketError(const int err);
+
+	enum WaitOpType
+	{
+		READ  = 1,
+		WRITE = 2,
+		BOTH  = 4
+	};
+
+	void waitForData(const WaitOpType t, bool& timedOut);
 
 private:
 
@@ -67,6 +84,8 @@ private:
 
 	char m_buffer[65536];
 	SOCKET m_desc;
+
+	unsigned int m_status;
 };
 
 

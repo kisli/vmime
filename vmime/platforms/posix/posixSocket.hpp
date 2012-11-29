@@ -55,8 +55,11 @@ public:
 
 	void send(const vmime::string& buffer);
 	void sendRaw(const char* buffer, const size_type count);
+	size_type sendRawNonBlocking(const char* buffer, const size_type count);
 
 	size_type getBlockSize() const;
+
+	unsigned int getStatus() const;
 
 protected:
 
@@ -68,6 +71,8 @@ private:
 
 	char m_buffer[65536];
 	int m_desc;
+
+	unsigned int m_status;
 };
 
 

@@ -47,11 +47,17 @@ class socket : public object
 {
 public:
 
+	enum Status
+	{
+		STATUS_WOULDBLOCK = 0x1   /**< The receive operation would block. */
+	};
+
+
 	virtual ~socket() { }
 
 	/** Type used for lengths in streams.
 	  */
-	typedef int size_type;
+	typedef long size_type;
 
 
 	/** Connect to the specified address and port.
@@ -84,7 +90,7 @@ public:
 	  * @param count maximum number of bytes to receive (size of buffer)
 	  * @return number of bytes received/written into output buffer
 	  */
-	virtual int receiveRaw(char* buffer, const size_type count) = 0;
+	virtual size_type receiveRaw(char* buffer, const size_type count) = 0;
 
 	/** Send (text) data to the socket.
 	  *
@@ -99,12 +105,27 @@ public:
 	  */
 	virtual void sendRaw(const char* buffer, const size_type count) = 0;
 
+	/** Send (raw) data to the socket.
+	  * Function may returns before all data is sent.
+	  *
+	  * @param buffer data to send
+	  * @param count number of bytes to send (size of buffer)
+	  * @return number of bytes sent
+	  */
+	virtual size_type sendRawNonBlocking(const char* buffer, const size_type count) = 0;
+
 	/** Return the preferred maximum block size when reading
 	  * from or writing to this stream.
 	  *
 	  * @return block size, in bytes
 	  */
 	virtual size_type getBlockSize() const = 0;
+
+	/** Return the current status of this socket.
+	  *
+	  * @return status flags for this socket
+	  */
+	virtual unsigned int getStatus() const = 0;
 
 protected:
 

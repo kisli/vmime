@@ -62,6 +62,9 @@ TLSSession_OpenSSL::TLSSession_OpenSSL(ref <vmime::security::cert::certificateVe
 
 	m_sslctx = SSL_CTX_new(SSLv23_client_method());
 	SSL_CTX_set_options(m_sslctx, SSL_OP_ALL | SSL_OP_NO_SSLv2);
+	SSL_CTX_set_mode(m_sslctx, SSL_MODE_AUTO_RETRY);
+	SSL_CTX_set_cipher_list(m_sslctx, "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH");
+	SSL_CTX_set_session_cache_mode(m_sslctx, SSL_SESS_CACHE_OFF);
 }
 
 

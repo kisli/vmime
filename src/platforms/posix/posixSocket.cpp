@@ -43,6 +43,13 @@
 #include "vmime/exception.hpp"
 
 
+#if defined(EWOULDBLOCK)
+#   define IS_EAGAIN(x)  ((x) == EAGAIN || (x) == EWOULDBLOCK || (x) == EINTR)
+#else
+#   define IS_EAGAIN(x)  ((x) == EAGAIN || (x) == EINTR)
+#endif
+
+
 namespace vmime {
 namespace platforms {
 namespace posix {
@@ -53,7 +60,7 @@ namespace posix {
 //
 
 posixSocket::posixSocket(ref <vmime::net::timeoutHandler> th)
-	: m_timeoutHandler(th), m_desc(-1)
+	: m_timeoutHandler(th), m_desc(-1), m_status(0)
 {
 }
 
@@ -332,13 +339,15 @@ posixSocket::size_type posixSocket::getBlockSize() const
 
 void posixSocket::receive(vmime::string& buffer)
 {
-	const int size = receiveRaw(m_buffer, sizeof(m_buffer));
+	const size_type size = receiveRaw(m_buffer, sizeof(m_buffer));
 	buffer = vmime::string(m_buffer, size);
 }
 
 
 posixSocket::size_type posixSocket::receiveRaw(char* buffer, const size_type count)
 {
+	m_status &= ~STATUS_WOULDBLOCK;
+
 	// Check whether data is available
 	fd_set fds;
 	FD_ZERO(&fds);
@@ -348,11 +357,11 @@ posixSocket::size_type posixSocket::receiveRaw(char* buffer, const size_type cou
 	tv.tv_sec = 1;
 	tv.tv_usec = 0;
 
-	int ret = ::select(m_desc + 1, &fds, NULL, NULL, &tv);
+	ssize_t ret = ::select(m_desc + 1, &fds, NULL, NULL, &tv);
 
 	if (ret < 0)
 	{
-		if (errno != EAGAIN)
+		if (!IS_EAGAIN(errno))
 			throwSocketError(errno);
 
 		// No data available at this time
@@ -372,6 +381,8 @@ posixSocket::size_type posixSocket::receiveRaw(char* buffer, const size_type cou
 			}
 		}
 
+		m_status |= STATUS_WOULDBLOCK;
+
 		// Continue waiting for data
 		return 0;
 	}
@@ -381,8 +392,26 @@ posixSocket::size_type posixSocket::receiveRaw(char* buffer, const size_type cou
 
 	if (ret < 0)
 	{
-		if (errno != EAGAIN)
+		if (!IS_EAGAIN(errno))
 			throwSocketError(errno);
+
+		// Check if we are timed out
+		if (m_timeoutHandler &&
+		    m_timeoutHandler->isTimeOut())
+		{
+			if (!m_timeoutHandler->handleTimeOut())
+			{
+				// Server did not react within timeout delay
+				throwSocketError(errno);
+			}
+			else
+			{
+				// Reset timeout
+				m_timeoutHandler->resetTimeOut();
+			}
+		}
+
+		m_status |= STATUS_WOULDBLOCK;
 
 		// No data available at this time
 		return 0;
@@ -411,15 +440,17 @@ void posixSocket::send(const vmime::string& buffer)
 
 void posixSocket::sendRaw(const char* buffer, const size_type count)
 {
+	m_status &= ~STATUS_WOULDBLOCK;
+
 	size_type size = count;
 
 	while (size > 0)
 	{
-		const int ret = ::send(m_desc, buffer, size, 0);
+		const ssize_t ret = ::send(m_desc, buffer, size, 0);
 
 		if (ret < 0)
 		{
-			if (errno != EAGAIN)
+			if (!IS_EAGAIN(errno))
 				throwSocketError(errno);
 
 			platform::getHandler()->wait();
@@ -434,6 +465,27 @@ void posixSocket::sendRaw(const char* buffer, const size_type count)
 	// Reset timeout
 	if (m_timeoutHandler)
 		m_timeoutHandler->resetTimeOut();
+}
+
+
+posixSocket::size_type posixSocket::sendRawNonBlocking(const char* buffer, const size_type count)
+{
+	m_status &= ~STATUS_WOULDBLOCK;
+
+	const ssize_t ret = ::send(m_desc, buffer, count, 0);
+
+	if (ret < 0)
+	{
+		if (!IS_EAGAIN(errno))
+			throwSocketError(errno);
+
+		m_status |= STATUS_WOULDBLOCK;
+
+		// No data can be written at this time
+		return 0;
+	}
+
+	return ret;
 }
 
 
@@ -470,6 +522,12 @@ void posixSocket::throwSocketError(const int err)
 	}
 
 	throw exceptions::socket_exception(msg);
+}
+
+
+unsigned int posixSocket::getStatus() const
+{
+	return m_status;
 }
 
 

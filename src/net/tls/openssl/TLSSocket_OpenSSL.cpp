@@ -54,7 +54,7 @@ ref <TLSSocket> TLSSocket::wrap(ref <TLSSession> session, ref <socket> sok)
 
 
 TLSSocket_OpenSSL::TLSSocket_OpenSSL(ref <TLSSession_OpenSSL> session, ref <socket> sok)
-	: m_session(session), m_wrapped(sok), m_connected(false), m_ssl(0)
+	: m_session(session), m_wrapped(sok), m_connected(false), m_ssl(0), m_ex(NULL)
 {
 }
 
@@ -162,8 +162,10 @@ TLSSocket::size_type TLSSocket_OpenSSL::getBlockSize() const
 
 void TLSSocket_OpenSSL::receive(string& buffer)
 {
-	const int size = receiveRaw(m_buffer, sizeof(m_buffer));
-	buffer = vmime::string(m_buffer, size);
+	const size_type size = receiveRaw(m_buffer, sizeof(m_buffer));
+
+	if (size >= 0)
+		buffer = vmime::string(m_buffer, size);
 }
 
 
@@ -175,16 +177,32 @@ void TLSSocket_OpenSSL::send(const string& buffer)
 
 TLSSocket::size_type TLSSocket_OpenSSL::receiveRaw(char* buffer, const size_type count)
 {
-	int rc = SSL_read(m_ssl, buffer, count);
+	int rc = SSL_read(m_ssl, buffer, static_cast <int>(count));
 	handleError(rc);
+
+	if (rc < 0)
+		return 0;
+
 	return rc;
 }
 
 
 void TLSSocket_OpenSSL::sendRaw(const char* buffer, const size_type count)
 {
-	int rc = SSL_write(m_ssl, buffer, count);
+	int rc = SSL_write(m_ssl, buffer, static_cast <int>(count));
 	handleError(rc);
+}
+
+
+TLSSocket_OpenSSL::size_type TLSSocket_OpenSSL::sendRawNonBlocking(const char* buffer, const size_type count)
+{
+	int rc = SSL_write(m_ssl, buffer, static_cast <int>(count));
+	handleError(rc);
+
+	if (rc < 0)
+		rc = 0;
+
+	return rc;
 }
 
 
@@ -260,6 +278,13 @@ ref <security::cert::certificateChain> TLSSocket_OpenSSL::getPeerCertificates() 
 }
 
 
+void TLSSocket_OpenSSL::internalThrow()
+{
+	if (m_ex.get())
+		throw *m_ex;
+}
+
+
 void TLSSocket_OpenSSL::handleError(int rc)
 {
 	if (rc > 0) return;
@@ -277,12 +302,14 @@ void TLSSocket_OpenSSL::handleError(int rc)
 		if (lastError == 0)
 		{
 			if (rc == 0)
+			{
 				throw exceptions::tls_exception("SSL connection unexpectedly closed");
+			}
 			else
 			{
 				vmime::string msg;
 				std::ostringstream oss(msg);
-				oss << "The BIO reported an error: %d" << rc;
+				oss << "The BIO reported an error: " << rc;
 				oss.flush();
 				throw exceptions::tls_exception(oss.str());
 			}
@@ -290,10 +317,16 @@ void TLSSocket_OpenSSL::handleError(int rc)
 		break;
 	}
 
-	//// Follwoing errors should not occur
-	// With SSL_MODE_AUTO_RETRY these should not happen
 	case SSL_ERROR_WANT_READ:
+
+		BIO_set_retry_read(SSL_get_rbio(m_ssl));
+		break;
+
 	case SSL_ERROR_WANT_WRITE:
+
+		BIO_set_retry_write(SSL_get_wbio(m_ssl));
+		break;
+
 	// This happens only for BIOs of type BIO_s_connect() or BIO_s_accept()
 	case SSL_ERROR_WANT_CONNECT:
 	case SSL_ERROR_WANT_ACCEPT:
@@ -319,6 +352,12 @@ void TLSSocket_OpenSSL::handleError(int rc)
 }
 
 
+unsigned int TLSSocket_OpenSSL::getStatus() const
+{
+	return m_wrapped->getStatus();
+}
+
+
 // Implementation of custom BIO methods
 
 
@@ -330,9 +369,28 @@ int TLSSocket_OpenSSL::bio_write(BIO* bio, const char* buf, int len)
 
 	TLSSocket_OpenSSL *sok = reinterpret_cast <TLSSocket_OpenSSL*>(bio->ptr);
 
-	sok->m_wrapped->sendRaw(buf, len);
+	try
+	{
+		BIO_clear_retry_flags(bio);
 
-	return len;
+		const size_type n = sok->m_wrapped->sendRawNonBlocking(buf, len);
+
+		BIO_clear_retry_flags(bio);
+
+		if (n == 0 && sok->m_wrapped->getStatus() & socket::STATUS_WOULDBLOCK)
+		{
+			BIO_set_retry_write(bio);
+			return -1;
+		}
+
+		return static_cast <int>(len);
+	}
+	catch (exception& e)
+	{
+		// Workaround for passing C++ exceptions from C BIO functions
+		sok->m_ex.reset(e.clone());
+		return -1;
+	}
 }
 
 
@@ -344,21 +402,33 @@ int TLSSocket_OpenSSL::bio_read(BIO* bio, char* buf, int len)
 
 	TLSSocket_OpenSSL *sok = reinterpret_cast <TLSSocket_OpenSSL*>(bio->ptr);
 
-	const int n = sok->m_wrapped->receiveRaw(buf, len);
+	try
+	{
+		const size_type n = sok->m_wrapped->receiveRaw(buf, len);
 
-	if (n == 0)
-		BIO_set_retry_read(bio);  // This seems like a hack, really...
-	else
 		BIO_clear_retry_flags(bio);
 
-	return n;
+		if (sok->m_wrapped->getStatus() & socket::STATUS_WOULDBLOCK)
+		{
+			BIO_set_retry_read(bio);
+			return -1;
+		}
+
+		return static_cast <int>(n);
+	}
+	catch (exception& e)
+	{
+		// Workaround for passing C++ exceptions from C BIO functions
+		sok->m_ex.reset(e.clone());
+		return -1;
+	}
 }
 
 
 // static
 int TLSSocket_OpenSSL::bio_puts(BIO* bio, const char* str)
 {
-	return bio_write(bio, str, strlen(str));
+	return bio_write(bio, str, static_cast <int>(strlen(str)));
 }
 
 

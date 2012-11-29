@@ -177,6 +177,40 @@ void SASLSocket::sendRaw(const char* buffer, const size_type count)
 }
 
 
+SASLSocket::size_type SASLSocket::sendRawNonBlocking(const char* buffer, const size_type count)
+{
+	byte_t* output = 0;
+	int outputLen = 0;
+
+	m_session->getMechanism()->encode
+		(m_session, reinterpret_cast <const byte_t*>(buffer), count,
+		 &output, &outputLen);
+
+	size_type bytesSent = 0;
+
+	try
+	{
+		bytesSent = m_wrapped->sendRawNonBlocking
+			(reinterpret_cast <const char*>(output), outputLen);
+	}
+	catch (...)
+	{
+		delete [] output;
+		throw;
+	}
+
+	delete [] output;
+
+	return bytesSent;
+}
+
+
+unsigned int SASLSocket::getStatus() const
+{
+	return m_wrapped->getStatus();
+}
+
+
 } // sasl
 } // security
 } // vmime

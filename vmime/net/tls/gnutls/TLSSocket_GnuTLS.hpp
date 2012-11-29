@@ -70,8 +70,11 @@ public:
 
 	void send(const string& buffer);
 	void sendRaw(const char* buffer, const size_type count);
+	size_type sendRawNonBlocking(const char* buffer, const size_type count);
 
 	size_type getBlockSize() const;
+
+	unsigned int getStatus() const;
 
 private:
 
@@ -97,6 +100,8 @@ private:
 	ref <timeoutHandler> m_toHandler;
 
 	exception* m_ex;
+
+	unsigned int m_status;
 };
 
 

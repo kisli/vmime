@@ -36,6 +36,8 @@
 
 #include "vmime/net/tls/TLSSocket.hpp"
 
+#include <memory>
+
 #include <openssl/ssl.h>
 
 
@@ -72,8 +74,11 @@ public:
 
 	void send(const string& buffer);
 	void sendRaw(const char* buffer, const size_type count);
+	size_type sendRawNonBlocking(const char* buffer, const size_type count);
 
 	size_type getBlockSize() const;
+
+	unsigned int getStatus() const;
 
 private:
 
@@ -87,7 +92,9 @@ private:
 
 	void createSSLHandle();
 
+	void internalThrow();
 	void handleError(int rc);
+
 
 	ref <TLSSession_OpenSSL> m_session;
 
@@ -100,6 +107,9 @@ private:
 	ref <timeoutHandler> m_toHandler;
 
 	SSL* m_ssl;
+
+	// Last exception thrown from C BIO functions
+	std::auto_ptr <std::exception> m_ex;
 };
 
 
