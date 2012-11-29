@@ -93,7 +93,7 @@ public:
 	  * @param output output buffer
 	  * @param outputLen length of output buffer
 	  */
-	void decodeB64(const string& input, byte_t** output, int* outputLen);
+	void decodeB64(const string& input, byte_t** output, long* outputLen);
 
 	/** Helper function for encoding challenge in Base64.
 	  *
@@ -101,7 +101,7 @@ public:
 	  * @param inputLen length of input buffer
 	  * @return Base64-encoded challenge
 	  */
-	const string encodeB64(const byte_t* input, const int inputLen);
+	const string encodeB64(const byte_t* input, const long inputLen);
 
 private:
 

@@ -466,10 +466,10 @@ void POP3Store::authenticateSASL()
 			case RESPONSE_READY:
 			{
 				byte_t* challenge = 0;
-				int challengeLen = 0;
+				long challengeLen = 0;
 
 				byte_t* resp = 0;
-				int respLen = 0;
+				long respLen = 0;
 
 				try
 				{
@@ -749,7 +749,7 @@ void POP3Store::readResponse(string& buffer, const bool multiLine,
                              utility::progressListener* progress)
 {
 	bool foundTerminator = false;
-	int current = 0, total = 0;
+	long current = 0, total = 0;
 
 	if (progress)
 		progress->start(total);
@@ -846,7 +846,7 @@ void POP3Store::readResponse(string& buffer, const bool multiLine,
 void POP3Store::readResponse(utility::outputStream& os,
 	utility::progressListener* progress, const int predictedSize)
 {
-	int current = 0, total = predictedSize;
+	long current = 0, total = predictedSize;
 
 	string temp;
 	bool codeDone = false;

@@ -197,8 +197,8 @@ utility::stream::size_type b64Encoder::decode(utility::inputStream& in,
 
 	// Process the data
 	char buffer[16384];
-	int bufferLength = 0;
-	int bufferPos = 0;
+	utility::stream::size_type bufferLength = 0;
+	utility::stream::size_type bufferPos = 0;
 
 	utility::stream::size_type total = 0;
 	utility::stream::size_type inTotal = 0;

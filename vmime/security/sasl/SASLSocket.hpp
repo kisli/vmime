@@ -75,8 +75,8 @@ private:
 	ref <net::socket> m_wrapped;
 
 	byte_t* m_pendingBuffer;
-	int m_pendingPos;
-	int m_pendingLen;
+	size_type m_pendingPos;
+	size_type m_pendingLen;
 
 	char m_recvBuffer[65536];
 };

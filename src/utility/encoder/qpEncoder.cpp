@@ -178,8 +178,8 @@ utility::stream::size_type qpEncoder::encode(utility::inputStream& in,
 
 	// Process the data
 	char buffer[16384];
-	int bufferLength = 0;
-	int bufferPos = 0;
+	utility::stream::size_type bufferLength = 0;
+	utility::stream::size_type bufferPos = 0;
 
 	string::size_type curCol = 0;
 
@@ -380,8 +380,8 @@ utility::stream::size_type qpEncoder::decode(utility::inputStream& in,
 	const bool rfc2047 = getProperties().getProperty <bool>("rfc2047", false);
 
 	char buffer[16384];
-	int bufferLength = 0;
-	int bufferPos = 0;
+	utility::stream::size_type bufferLength = 0;
+	utility::stream::size_type bufferPos = 0;
 
 	unsigned char outBuffer[16384];
 	int outBufferPos = 0;

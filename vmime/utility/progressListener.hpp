@@ -55,20 +55,20 @@ public:
 	  * @param predictedTotal predicted amount of units (this has
 	  * no concrete meaning: these are not bytes, nor percentage...)
 	  */
-	virtual void start(const int predictedTotal) = 0;
+	virtual void start(const long predictedTotal) = 0;
 
 	/** Called during the operation (can be called several times).
 	  *
 	  * @param current current position
 	  * @param currentTotal adjusted total amount of units
 	  */
-	virtual void progress(const int current, const int currentTotal) = 0;
+	virtual void progress(const long current, const long currentTotal) = 0;
 
 	/** Called at the end of the operation.
 	  *
 	  * @param total final total amount of units
 	  */
-	virtual void stop(const int total) = 0;
+	virtual void stop(const long total) = 0;
 };
 
 
@@ -86,18 +86,18 @@ public:
 	  * @param list wrapped progress listener (can be NULL)
 	  * @param total predicted total
 	  */
-	progressListenerSizeAdapter(progressListener* list, const int total);
+	progressListenerSizeAdapter(progressListener* list, const long total);
 
 	bool cancel() const;
 
-	void start(const int predictedTotal);
-	void progress(const int current, const int currentTotal);
-	void stop(const int total);
+	void start(const long predictedTotal);
+	void progress(const long current, const long currentTotal);
+	void stop(const long total);
 
 private:
 
 	progressListener* m_wrapped;
-	int m_total;
+	long m_total;
 };
 
 

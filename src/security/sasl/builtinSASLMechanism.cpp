@@ -63,8 +63,8 @@ const string builtinSASLMechanism::getName() const
 
 
 bool builtinSASLMechanism::step
-	(ref <SASLSession> sess, const byte_t* challenge, const int challengeLen,
-	 byte_t** response, int* responseLen)
+	(ref <SASLSession> sess, const byte_t* challenge, const long challengeLen,
+	 byte_t** response, long* responseLen)
 {
 	char* output = 0;
 	size_t outputLen = 0;
@@ -121,8 +121,8 @@ bool builtinSASLMechanism::isComplete() const
 
 
 void builtinSASLMechanism::encode
-	(ref <SASLSession> sess, const byte_t* input, const int inputLen,
-	 byte_t** output, int* outputLen)
+	(ref <SASLSession> sess, const byte_t* input, const long inputLen,
+	 byte_t** output, long* outputLen)
 {
 	char* coutput = 0;
 	size_t coutputLen = 0;
@@ -154,8 +154,8 @@ void builtinSASLMechanism::encode
 
 
 void builtinSASLMechanism::decode
-	(ref <SASLSession> sess, const byte_t* input, const int inputLen,
-	 byte_t** output, int* outputLen)
+	(ref <SASLSession> sess, const byte_t* input, const long inputLen,
+	 byte_t** output, long* outputLen)
 {
 	char* coutput = 0;
 	size_t coutputLen = 0;

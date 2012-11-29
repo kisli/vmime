@@ -520,7 +520,7 @@ const string body::generateRandomBoundaryString()
 
 	// Generate a string of random characters
 	unsigned int r = utility::random::getTime();
-	unsigned int m = sizeof(unsigned int);
+	unsigned int m = static_cast <unsigned int>(sizeof(unsigned int));
 
 	for (size_t i = 2 ; i < (sizeof(boundary) / sizeof(boundary[0]) - 1) ; ++i)
 	{
@@ -530,7 +530,7 @@ const string body::generateRandomBoundaryString()
 			if (--m == 0)
 			{
 				r = utility::random::getNext();
-				m = sizeof(unsigned int);
+				m = static_cast <unsigned int>(sizeof(unsigned int));
 			}
 	}
 

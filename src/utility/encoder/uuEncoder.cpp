@@ -52,15 +52,15 @@ const std::vector <string> uuEncoder::getAvailableProperties() const
 
 
 // This is the character encoding function to make a character printable
-static inline unsigned char UUENCODE(const unsigned char c)
+static inline unsigned char UUENCODE(const unsigned long c)
 {
-	return ((c & 077) + ' ');
+	return static_cast <unsigned char>((c & 077) + ' ');
 }
 
 // Single character decoding
-static inline unsigned char UUDECODE(const unsigned char c)
+static inline unsigned char UUDECODE(const unsigned long c)
 {
-	return ((c - ' ') & 077);
+	return static_cast <unsigned char>((c - ' ') & 077);
 }
 
 

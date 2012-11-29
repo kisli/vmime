@@ -83,7 +83,7 @@ SASLSocket::size_type SASLSocket::getBlockSize() const
 
 void SASLSocket::receive(string& buffer)
 {
-	const int n = receiveRaw(m_recvBuffer, sizeof(m_recvBuffer));
+	const size_type n = receiveRaw(m_recvBuffer, sizeof(m_recvBuffer));
 
 	buffer = string(m_recvBuffer, n);
 }
@@ -93,7 +93,7 @@ SASLSocket::size_type SASLSocket::receiveRaw(char* buffer, const size_type count
 {
 	if (m_pendingLen != 0)
 	{
-		const int copyLen =
+		const size_type copyLen =
 			(count >= m_pendingLen ? m_pendingLen : count);
 
 		std::copy(m_pendingBuffer + m_pendingPos,
@@ -115,10 +115,10 @@ SASLSocket::size_type SASLSocket::receiveRaw(char* buffer, const size_type count
 		return copyLen;
 	}
 
-	const int n = m_wrapped->receiveRaw(buffer, count);
+	const size_type n = m_wrapped->receiveRaw(buffer, count);
 
 	byte_t* output = 0;
-	int outputLen = 0;
+	long outputLen = 0;
 
 	m_session->getMechanism()->decode
 		(m_session, reinterpret_cast <const byte_t*>(buffer), n,
@@ -156,7 +156,7 @@ void SASLSocket::send(const string& buffer)
 void SASLSocket::sendRaw(const char* buffer, const size_type count)
 {
 	byte_t* output = 0;
-	int outputLen = 0;
+	long outputLen = 0;
 
 	m_session->getMechanism()->encode
 		(m_session, reinterpret_cast <const byte_t*>(buffer), count,
@@ -180,7 +180,7 @@ void SASLSocket::sendRaw(const char* buffer, const size_type count)
 SASLSocket::size_type SASLSocket::sendRawNonBlocking(const char* buffer, const size_type count)
 {
 	byte_t* output = 0;
-	int outputLen = 0;
+	long outputLen = 0;
 
 	m_session->getMechanism()->encode
 		(m_session, reinterpret_cast <const byte_t*>(buffer), count,

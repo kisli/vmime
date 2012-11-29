@@ -381,10 +381,10 @@ void IMAPConnection::authenticateSASL()
 				}
 
 				byte_t* challenge = 0;
-				int challengeLen = 0;
+				long challengeLen = 0;
 
 				byte_t* resp = 0;
-				int respLen = 0;
+				long respLen = 0;
 
 				try
 				{
