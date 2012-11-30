@@ -144,14 +144,8 @@ void POP3Message::extract(utility::outputStream& os,
 
 	try
 	{
-		POP3Folder::MessageMap::const_iterator it =
-			folder->m_messages.find(const_cast <POP3Message*>(this));
-
-		const int totalSize = (it != folder.constCast <POP3Folder>()->m_messages.end())
-			? (*it).second : 0;
-
 		folder.constCast <POP3Folder>()->m_store.acquire()->
-			readResponse(os, progress, totalSize);
+			readResponse(os, progress, m_size);
 	}
 	catch (exceptions::command_error& e)
 	{
