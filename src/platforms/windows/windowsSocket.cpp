@@ -270,7 +270,7 @@ void windowsSocket::sendRaw(const char* buffer, const size_type count)
 }
 
 
-windowsSocket::size_type windowsSocket::sendRawNonBlocking(const char* buffer, const size_type count, const bool block)
+windowsSocket::size_type windowsSocket::sendRawNonBlocking(const char* buffer, const size_type count)
 {
 	m_status &= ~STATUS_WOULDBLOCK;
 
