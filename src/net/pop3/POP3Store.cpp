@@ -893,10 +893,19 @@ void POP3Store::readResponse(utility::outputStream& os,
 		if (m_timeoutHandler)
 			m_timeoutHandler->resetTimeOut();
 
+		// Notify progress
+		current += read;
+
+		if (progress)
+		{
+			total = std::max(total, current);
+			progress->progress(current, total);
+		}
+
 		// If we don't have extracted the response code yet
 		if (!codeDone)
 		{
-			temp += string(buffer, read);
+			temp.append(buffer, read);
 
 			string firstLine;
 
@@ -917,14 +926,6 @@ void POP3Store::readResponse(utility::outputStream& os,
 		{
 			// Inject the data into the output stream
 			os.write(buffer, read);
-			current += read;
-
-			// Notify progress
-			if (progress)
-			{
-				total = std::max(total, current);
-				progress->progress(current, total);
-			}
 		}
 	}
 
