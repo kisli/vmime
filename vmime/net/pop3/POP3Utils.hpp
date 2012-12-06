@@ -41,6 +41,9 @@ namespace net {
 namespace pop3 {
 
 
+class POP3Response;
+
+
 class POP3Utils
 {
 public:
@@ -59,7 +62,7 @@ public:
 	  * data (either UID or size)
 	  */
 	static void parseMultiListOrUidlResponse
-		(const string& response, std::map <int, string>& result);
+		(ref <POP3Response> response, std::map <int, string>& result);
 };
 
 

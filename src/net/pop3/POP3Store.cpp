@@ -29,14 +29,12 @@
 
 #include "vmime/net/pop3/POP3Store.hpp"
 #include "vmime/net/pop3/POP3Folder.hpp"
+#include "vmime/net/pop3/POP3Response.hpp"
 
 #include "vmime/exception.hpp"
 #include "vmime/platform.hpp"
 #include "vmime/messageId.hpp"
 #include "vmime/security/digest/messageDigestFactory.hpp"
-#include "vmime/utility/filteredStream.hpp"
-#include "vmime/utility/stringUtils.hpp"
-#include "vmime/utility/inputStreamSocketAdapter.hpp"
 
 #include "vmime/net/defaultConnectionInfos.hpp"
 
@@ -174,13 +172,12 @@ void POP3Store::connect()
 	// eg:  C: <connection to server>
 	// ---  S: +OK MailSite POP3 Server 5.3.4.0 Ready <36938848.1056800841.634@somewhere.com>
 
-	string response;
-	readResponse(response, false);
+	ref <POP3Response> response = POP3Response::readResponse(m_socket, m_timeoutHandler);
 
-	if (!isSuccessResponse(response))
+	if (!response->isSuccess())
 	{
 		internalDisconnect();
-		throw exceptions::connection_greeting_error(response);
+		throw exceptions::connection_greeting_error(response->getFirstLine());
 	}
 
 #if VMIME_HAVE_TLS_SUPPORT
@@ -217,7 +214,7 @@ void POP3Store::connect()
 #endif // VMIME_HAVE_TLS_SUPPORT
 
 	// Start authentication process
-	authenticate(messageId(response));
+	authenticate(messageId(response->getText()));
 }
 
 
@@ -265,7 +262,7 @@ void POP3Store::authenticate(const messageId& randomMID)
 	const string username = getAuthenticator()->getUsername();
 	const string password = getAuthenticator()->getPassword();
 
-	string response;
+	ref <POP3Response> response;
 
 	if (GET_PROPERTY(bool, PROPERTY_OPTIONS_APOP))
 	{
@@ -280,9 +277,9 @@ void POP3Store::authenticate(const messageId& randomMID)
 			md5->finalize();
 
 			sendRequest("APOP " + username + " " + md5->getHexDigest());
-			readResponse(response, false);
+			response = POP3Response::readResponse(m_socket, m_timeoutHandler);
 
-			if (isSuccessResponse(response))
+			if (response->isSuccess())
 			{
 				m_authentified = true;
 				return;
@@ -302,20 +299,19 @@ void POP3Store::authenticate(const messageId& randomMID)
 				{
 					// Can't fallback on basic authentication
 					internalDisconnect();
-					throw exceptions::authentication_error(response);
+					throw exceptions::authentication_error(response->getFirstLine());
 				}
 
 				// Ensure connection is valid (cf. note above)
 				try
 				{
-					string response2;
 					sendRequest("NOOP");
-					readResponse(response2, false);
+					POP3Response::readResponse(m_socket, m_timeoutHandler);
 				}
 				catch (exceptions::socket_exception&)
 				{
 					internalDisconnect();
-					throw exceptions::authentication_error(response);
+					throw exceptions::authentication_error(response->getFirstLine());
 				}
 			}
 		}
@@ -339,21 +335,21 @@ void POP3Store::authenticate(const messageId& randomMID)
 	//      C: PASS couic
 	//      S: +OK vincent's maildrop has 2 messages (320 octets)
 	sendRequest("USER " + username);
-	readResponse(response, false);
+	response = POP3Response::readResponse(m_socket, m_timeoutHandler);
 
-	if (!isSuccessResponse(response))
+	if (!response->isSuccess())
 	{
 		internalDisconnect();
-		throw exceptions::authentication_error(response);
+		throw exceptions::authentication_error(response->getFirstLine());
 	}
 
 	sendRequest("PASS " + password);
-	readResponse(response, false);
+	response = POP3Response::readResponse(m_socket, m_timeoutHandler);
 
-	if (!isSuccessResponse(response))
+	if (!response->isSuccess())
 	{
 		internalDisconnect();
-		throw exceptions::authentication_error(response);
+		throw exceptions::authentication_error(response->getFirstLine());
 	}
 
 	m_authentified = true;
@@ -453,17 +449,16 @@ void POP3Store::authenticateSASL()
 
 		for (bool cont = true ; cont ; )
 		{
-			string response;
-			readResponse(response, false);
+			ref <POP3Response> response = POP3Response::readResponse(m_socket, m_timeoutHandler);
 
-			switch (getResponseCode(response))
+			switch (response->getCode())
 			{
-			case RESPONSE_OK:
+			case POP3Response::CODE_OK:
 			{
 				m_socket = saslSession->getSecuredSocket(m_socket);
 				return;
 			}
-			case RESPONSE_READY:
+			case POP3Response::CODE_READY:
 			{
 				byte_t* challenge = 0;
 				long challengeLen = 0;
@@ -474,8 +469,7 @@ void POP3Store::authenticateSASL()
 				try
 				{
 					// Extract challenge
-					stripResponseCode(response, response);
-					saslContext->decodeB64(response, &challenge, &challengeLen);
+					saslContext->decodeB64(response->getText(), &challenge, &challengeLen);
 
 					// Prepare response
 					saslSession->evaluateChallenge
@@ -543,11 +537,10 @@ void POP3Store::startTLS()
 	{
 		sendRequest("STLS");
 
-		string response;
-		readResponse(response, false);
+		ref <POP3Response> response = POP3Response::readResponse(m_socket, m_timeoutHandler);
 
-		if (getResponseCode(response) != RESPONSE_OK)
-			throw exceptions::command_error("STLS", response);
+		if (!response->isSuccess())
+			throw exceptions::command_error("STLS", response->getFirstLine());
 
 		ref <tls::TLSSession> tlsSession =
 			tls::TLSSession::create(getCertificateVerifier());
@@ -641,11 +634,11 @@ void POP3Store::noop()
 {
 	sendRequest("NOOP");
 
-	string response;
-	readResponse(response, false);
+	ref <POP3Response> response =
+		POP3Response::readResponse(m_socket, m_timeoutHandler);
 
-	if (!isSuccessResponse(response))
-		throw exceptions::command_error("NOOP", response);
+	if (!response->isSuccess())
+		throw exceptions::command_error("NOOP", response->getFirstLine());
 }
 
 
@@ -653,86 +646,18 @@ const std::vector <string> POP3Store::getCapabilities()
 {
 	sendRequest("CAPA");
 
-	string response;
-	readResponse(response, true);
+	ref <POP3Response> response =
+		POP3Response::readMultilineResponse(m_socket, m_timeoutHandler);
 
 	std::vector <string> res;
 
-	if (isSuccessResponse(response))
+	if (response->isSuccess())
 	{
-		stripFirstLine(response, response);
-
-		std::istringstream iss(response);
-		string line;
-
-		while (std::getline(iss, line, '\n'))
-			res.push_back(utility::stringUtils::trim(line));
+		for (unsigned int i = 0, n = response->getLineCount() ; i < n ; ++i)
+			res.push_back(response->getLineAt(i));
 	}
 
 	return res;
-}
-
-
-bool POP3Store::isSuccessResponse(const string& buffer)
-{
-	return getResponseCode(buffer) == RESPONSE_OK;
-}
-
-
-bool POP3Store::stripFirstLine(const string& buffer, string& result, string* firstLine)
-{
-	const string::size_type end = buffer.find('\n');
-
-	if (end != string::npos)
-	{
-		if (firstLine) *firstLine = buffer.substr(0, end);
-		result = buffer.substr(end + 1);
-		return (true);
-	}
-	else
-	{
-		result = buffer;
-		return (false);
-	}
-}
-
-
-int POP3Store::getResponseCode(const string& buffer)
-{
-	if (buffer.length() >= 2)
-	{
-		// +[space]
-		if (buffer[0] == '+' &&
-		    (buffer[1] == ' ' || buffer[1] == '\t'))
-		{
-			return RESPONSE_READY;
-		}
-
-		// +OK
-		if (buffer.length() >= 3)
-		{
-			if (buffer[0] == '+' &&
-			    (buffer[1] == 'O' || buffer[1] == 'o') &&
-			    (buffer[2] == 'K' || buffer[1] == 'k'))
-			{
-				return RESPONSE_OK;
-			}
-		}
-	}
-
-	// -ERR or whatever
-	return RESPONSE_ERR;
-}
-
-
-void POP3Store::stripResponseCode(const string& buffer, string& result)
-{
-	const string::size_type pos = buffer.find_first_of(" \t");
-
-	if (pos != string::npos)
-		result = buffer.substr(pos + 1);
-	else
-		result = buffer;
 }
 
 
@@ -742,233 +667,6 @@ void POP3Store::sendRequest(const string& buffer, const bool end)
 		m_socket->send(buffer + "\r\n");
 	else
 		m_socket->send(buffer);
-}
-
-
-void POP3Store::readResponse(string& buffer, const bool multiLine,
-                             utility::progressListener* progress)
-{
-	bool foundTerminator = false;
-	long current = 0, total = 0;
-
-	if (progress)
-		progress->start(total);
-
-	if (m_timeoutHandler)
-		m_timeoutHandler->resetTimeOut();
-
-	buffer.clear();
-
-	string::value_type last1 = '\0', last2 = '\0';
-
-	for ( ; !foundTerminator ; )
-	{
-#if 0 // not supported
-		// Check for possible cancellation
-		if (progress && progress->cancel())
-			throw exceptions::operation_cancelled();
-#endif
-
-		// Check whether the time-out delay is elapsed
-		if (m_timeoutHandler && m_timeoutHandler->isTimeOut())
-		{
-			if (!m_timeoutHandler->handleTimeOut())
-				throw exceptions::operation_timed_out();
-
-			m_timeoutHandler->resetTimeOut();
-		}
-
-		// Receive data from the socket
-		string receiveBuffer;
-		m_socket->receive(receiveBuffer);
-
-		if (receiveBuffer.empty())   // buffer is empty
-		{
-			platform::getHandler()->wait();
-			continue;
-		}
-
-		// We have received data: reset the time-out counter
-		if (m_timeoutHandler)
-			m_timeoutHandler->resetTimeOut();
-
-		// Check for transparent characters: '\n..' becomes '\n.'
-		const string::value_type first = receiveBuffer[0];
-
-		if (first == '.' && last2 == '\n' && last1 == '.')
-		{
-			receiveBuffer.erase(receiveBuffer.begin());
-		}
-		else if (receiveBuffer.length() >= 2 && first == '.' &&
-		         receiveBuffer[1] == '.' && last1 == '\n')
-		{
-			receiveBuffer.erase(receiveBuffer.begin());
-		}
-
-		for (string::size_type trans ;
-		     string::npos != (trans = receiveBuffer.find("\n..")) ; )
-		{
-			receiveBuffer.replace(trans, 3, "\n.");
-		}
-
-		last1 = receiveBuffer[receiveBuffer.length() - 1];
-		last2 = static_cast <char>((receiveBuffer.length() >= 2) ? receiveBuffer[receiveBuffer.length() - 2] : 0);
-
-		// Append the data to the response buffer
-		buffer += receiveBuffer;
-		current += receiveBuffer.length();
-
-		// Check for terminator string (and strip it if present)
-		foundTerminator = checkTerminator(buffer, multiLine);
-
-		// Notify progress
-		if (progress)
-		{
-			total = std::max(total, current);
-			progress->progress(current, total);
-		}
-
-		// If there is an error (-ERR) when executing a command that
-		// requires a multi-line response, the error response will
-		// include only one line, so we stop waiting for a multi-line
-		// terminator and check for a "normal" one.
-		if (multiLine && !foundTerminator && buffer.length() >= 4 && buffer[0] == '-')
-		{
-			foundTerminator = checkTerminator(buffer, false);
-		}
-	}
-
-	if (progress)
-		progress->stop(total);
-}
-
-
-void POP3Store::readResponse(utility::outputStream& os,
-	utility::progressListener* progress, const int predictedSize)
-{
-	long current = 0, total = predictedSize;
-
-	string temp;
-	bool codeDone = false;
-
-	if (progress)
-		progress->start(total);
-
-	if (m_timeoutHandler)
-		m_timeoutHandler->resetTimeOut();
-
-	utility::inputStreamSocketAdapter sis(*m_socket);
-	utility::stopSequenceFilteredInputStream <5> sfis1(sis, "\r\n.\r\n");
-	utility::stopSequenceFilteredInputStream <3> sfis2(sfis1, "\n.\n");
-	utility::dotFilteredInputStream dfis(sfis2);   // "\n.." --> "\n."
-
-	utility::inputStream& is = dfis;
-
-	while (!is.eof())
-	{
-#if 0 // not supported
-		// Check for possible cancellation
-		if (progress && progress->cancel())
-			throw exceptions::operation_cancelled();
-#endif
-
-		// Check whether the time-out delay is elapsed
-		if (m_timeoutHandler && m_timeoutHandler->isTimeOut())
-		{
-			if (!m_timeoutHandler->handleTimeOut())
-				throw exceptions::operation_timed_out();
-		}
-
-		// Receive data from the socket
-		utility::stream::value_type buffer[65536];
-		const utility::stream::size_type read = is.read(buffer, sizeof(buffer));
-
-		if (read == 0)   // buffer is empty
-		{
-			platform::getHandler()->wait();
-			continue;
-		}
-
-		// We have received data: reset the time-out counter
-		if (m_timeoutHandler)
-			m_timeoutHandler->resetTimeOut();
-
-		// Notify progress
-		current += read;
-
-		if (progress)
-		{
-			total = std::max(total, current);
-			progress->progress(current, total);
-		}
-
-		// If we don't have extracted the response code yet
-		if (!codeDone)
-		{
-			temp.append(buffer, read);
-
-			string firstLine;
-
-			if (stripFirstLine(temp, temp, &firstLine) == true)
-			{
-				if (!isSuccessResponse(firstLine))
-					throw exceptions::command_error("?", firstLine);
-
-				codeDone = true;
-
-				os.write(temp.data(), temp.length());
-				temp.clear();
-
-				continue;
-			}
-		}
-		else
-		{
-			// Inject the data into the output stream
-			os.write(buffer, read);
-		}
-	}
-
-	if (progress)
-		progress->stop(total);
-}
-
-
-bool POP3Store::checkTerminator(string& buffer, const bool multiLine)
-{
-	// Multi-line response
-	if (multiLine)
-	{
-		static const string term1("\r\n.\r\n");
-		static const string term2("\n.\n");
-
-		return (checkOneTerminator(buffer, term1) ||
-		        checkOneTerminator(buffer, term2));
-	}
-	// Normal response
-	else
-	{
-		static const string term1("\r\n");
-		static const string term2("\n");
-
-		return (checkOneTerminator(buffer, term1) ||
-		        checkOneTerminator(buffer, term2));
-	}
-
-	return (false);
-}
-
-
-bool POP3Store::checkOneTerminator(string& buffer, const string& term)
-{
-	if (buffer.length() >= term.length() &&
-		std::equal(buffer.end() - term.length(), buffer.end(), term.begin()))
-	{
-		buffer.erase(buffer.end() - term.length(), buffer.end());
-		return (true);
-	}
-
-	return (false);
 }
 
 

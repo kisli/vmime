@@ -87,13 +87,6 @@ public:
 
 private:
 
-	enum ResponseCode
-	{
-		RESPONSE_OK = 0,
-		RESPONSE_READY,
-		RESPONSE_ERR
-	};
-
 	void authenticate(const messageId& randomMID);
 #if VMIME_HAVE_SASL_SUPPORT
 	void authenticateSASL();
@@ -105,17 +98,7 @@ private:
 
 	const std::vector <string> getCapabilities();
 
-	static bool isSuccessResponse(const string& buffer);
-	static bool stripFirstLine(const string& buffer, string& result, string* firstLine = NULL);
-	static void stripResponseCode(const string& buffer, string& result);
-	static int getResponseCode(const string& buffer);
-
 	void sendRequest(const string& buffer, const bool end = true);
-	void readResponse(string& buffer, const bool multiLine, utility::progressListener* progress = NULL);
-	void readResponse(utility::outputStream& os, utility::progressListener* progress = NULL, const int predictedSize = 0);
-
-	static bool checkTerminator(string& buffer, const bool multiLine);
-	static bool checkOneTerminator(string& buffer, const string& term);
 
 	void internalDisconnect();
 

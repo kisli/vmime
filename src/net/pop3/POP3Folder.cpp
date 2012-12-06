@@ -31,6 +31,7 @@
 
 #include "vmime/net/pop3/POP3Store.hpp"
 #include "vmime/net/pop3/POP3Message.hpp"
+#include "vmime/net/pop3/POP3Response.hpp"
 
 #include "vmime/net/pop3/POP3Utils.hpp"
 
@@ -131,19 +132,17 @@ void POP3Folder::open(const int mode, bool failIfModeIsNotAvailable)
 	{
 		store->sendRequest("STAT");
 
-		string response;
-		store->readResponse(response, false);
+		ref <POP3Response> response =
+			POP3Response::readResponse(store->m_socket, store->m_timeoutHandler);
 
-		if (!store->isSuccessResponse(response))
-			throw exceptions::command_error("STAT", response);
+		if (!response->isSuccess())
+			throw exceptions::command_error("STAT", response->getFirstLine());
 
-		store->stripResponseCode(response, response);
-
-		std::istringstream iss(response);
+		std::istringstream iss(response->getText());
 		iss >> m_messageCount;
 
 		if (iss.fail())
-			throw exceptions::invalid_response("STAT", response);
+			throw exceptions::invalid_response("STAT", response->getFirstLine());
 
 		m_open = true;
 		m_mode = mode;
@@ -167,9 +166,7 @@ void POP3Folder::close(const bool expunge)
 	if (!expunge)
 	{
 		store->sendRequest("RSET");
-
-		string response;
-		store->readResponse(response, false);
+		POP3Response::readResponse(store->m_socket, store->m_timeoutHandler);
 	}
 
 	m_open = false;
@@ -371,13 +368,11 @@ void POP3Folder::fetchMessages(std::vector <ref <message> >& msg, const int opti
 		store->sendRequest(command.str());
 
 		// Get the response
-		string response;
-		store->readResponse(response, true, NULL);
+		ref <POP3Response> response =
+			POP3Response::readMultilineResponse(store->m_socket, store->m_timeoutHandler);
 
-		if (store->isSuccessResponse(response))
+		if (response->isSuccess())
 		{
-			store->stripFirstLine(response, response, NULL);
-
 			// C: LIST
 			// S: +OK
 			// S: 1 47548
@@ -416,13 +411,11 @@ void POP3Folder::fetchMessages(std::vector <ref <message> >& msg, const int opti
 		store->sendRequest(command.str());
 
 		// Get the response
-		string response;
-		store->readResponse(response, true, NULL);
+		ref <POP3Response> response =
+			POP3Response::readMultilineResponse(store->m_socket, store->m_timeoutHandler);
 
-		if (store->isSuccessResponse(response))
+		if (response->isSuccess())
 		{
-			store->stripFirstLine(response, response, NULL);
-
 			// C: UIDL
 			// S: +OK
 			// S: 1 whqtswO00WBw418f9t5JxYwZ
@@ -472,26 +465,26 @@ void POP3Folder::fetchMessage(ref <message> msg, const int options)
 		store->sendRequest(command.str());
 
 		// Get the response
-		string response;
-		store->readResponse(response, false, NULL);
+		ref <POP3Response> response =
+			POP3Response::readResponse(store->m_socket, store->m_timeoutHandler);
 
-		if (store->isSuccessResponse(response))
+		if (response->isSuccess())
 		{
-			store->stripResponseCode(response, response);
+			string responseText = response->getText();
 
 			// C: LIST 2
 			// S: +OK 2 4242
-			string::iterator it = response.begin();
+			string::iterator it = responseText.begin();
 
-			while (it != response.end() && (*it == ' ' || *it == '\t')) ++it;
-			while (it != response.end() && !(*it == ' ' || *it == '\t')) ++it;
-			while (it != response.end() && (*it == ' ' || *it == '\t')) ++it;
+			while (it != responseText.end() && (*it == ' ' || *it == '\t')) ++it;
+			while (it != responseText.end() && !(*it == ' ' || *it == '\t')) ++it;
+			while (it != responseText.end() && (*it == ' ' || *it == '\t')) ++it;
 
-			if (it != response.end())
+			if (it != responseText.end())
 			{
 				int size = 0;
 
-				std::istringstream iss(string(it, response.end()));
+				std::istringstream iss(string(it, responseText.end()));
 				iss >> size;
 
 				msg.dynamicCast <POP3Message>()->m_size = size;
@@ -510,25 +503,25 @@ void POP3Folder::fetchMessage(ref <message> msg, const int options)
 		store->sendRequest(command.str());
 
 		// Get the response
-		string response;
-		store->readResponse(response, false, NULL);
+		ref <POP3Response> response =
+			POP3Response::readResponse(store->m_socket, store->m_timeoutHandler);
 
-		if (store->isSuccessResponse(response))
+		if (response->isSuccess())
 		{
-			store->stripResponseCode(response, response);
+			string responseText = response->getText();
 
 			// C: UIDL 2
 			// S: +OK 2 QhdPYR:00WBw1Ph7x7
-			string::iterator it = response.begin();
+			string::iterator it = responseText.begin();
 
-			while (it != response.end() && (*it == ' ' || *it == '\t')) ++it;
-			while (it != response.end() && !(*it == ' ' || *it == '\t')) ++it;
-			while (it != response.end() && (*it == ' ' || *it == '\t')) ++it;
+			while (it != responseText.end() && (*it == ' ' || *it == '\t')) ++it;
+			while (it != responseText.end() && !(*it == ' ' || *it == '\t')) ++it;
+			while (it != responseText.end() && (*it == ' ' || *it == '\t')) ++it;
 
-			if (it != response.end())
+			if (it != responseText.end())
 			{
 				msg.dynamicCast <POP3Message>()->m_uid =
-					string(it, response.end());
+					string(it, responseText.end());
 			}
 		}
 	}
@@ -598,11 +591,11 @@ void POP3Folder::deleteMessage(const int num)
 
 	store->sendRequest(command.str());
 
-	string response;
-	store->readResponse(response, false);
+	ref <POP3Response> response =
+		POP3Response::readResponse(store->m_socket, store->m_timeoutHandler);
 
-	if (!store->isSuccessResponse(response))
-		throw exceptions::command_error("DELE", response);
+	if (!response->isSuccess())
+		throw exceptions::command_error("DELE", response->getFirstLine());
 
 	// Update local flags
 	for (std::map <POP3Message*, int>::iterator it =
@@ -649,11 +642,11 @@ void POP3Folder::deleteMessages(const int from, const int to)
 
 		store->sendRequest(command.str());
 
-		string response;
-		store->readResponse(response, false);
+		ref <POP3Response> response =
+			POP3Response::readResponse(store->m_socket, store->m_timeoutHandler);
 
-		if (!store->isSuccessResponse(response))
-			throw exceptions::command_error("DELE", response);
+		if (!response->isSuccess())
+			throw exceptions::command_error("DELE", response->getFirstLine());
 	}
 
 	// Update local flags
@@ -702,11 +695,11 @@ void POP3Folder::deleteMessages(const std::vector <int>& nums)
 
 		store->sendRequest(command.str());
 
-		string response;
-		store->readResponse(response, false);
+		ref <POP3Response> response =
+			POP3Response::readResponse(store->m_socket, store->m_timeoutHandler);
 
-		if (!store->isSuccessResponse(response))
-			throw exceptions::command_error("DELE", response);
+		if (!response->isSuccess())
+			throw exceptions::command_error("DELE", response->getFirstLine());
 	}
 
 	// Sort message list
@@ -799,15 +792,13 @@ void POP3Folder::status(int& count, int& unseen)
 
 	store->sendRequest("STAT");
 
-	string response;
-	store->readResponse(response, false);
+	ref <POP3Response> response =
+		POP3Response::readResponse(store->m_socket, store->m_timeoutHandler);
 
-	if (!store->isSuccessResponse(response))
-		throw exceptions::command_error("STAT", response);
+	if (!response->isSuccess())
+		throw exceptions::command_error("STAT", response->getFirstLine());
 
-	store->stripResponseCode(response, response);
-
-	std::istringstream iss(response);
+	std::istringstream iss(response->getText());
 	iss >> count;
 
 	unseen = count;

@@ -28,10 +28,12 @@
 
 
 #include "vmime/net/pop3/POP3Message.hpp"
+#include "vmime/net/pop3/POP3Response.hpp"
 #include "vmime/net/pop3/POP3Folder.hpp"
 #include "vmime/net/pop3/POP3Store.hpp"
 
 #include "vmime/utility/outputStreamAdapter.hpp"
+#include "vmime/utility/outputStreamStringAdapter.hpp"
 
 #include <sstream>
 
@@ -140,12 +142,14 @@ void POP3Message::extract(utility::outputStream& os,
 	std::ostringstream oss;
 	oss << "RETR " << m_num;
 
-	folder.constCast <POP3Folder>()->m_store.acquire()->sendRequest(oss.str());
+	ref <POP3Store> store = folder.constCast <POP3Folder>()->m_store.acquire();
+
+	store->sendRequest(oss.str());
 
 	try
 	{
-		folder.constCast <POP3Folder>()->m_store.acquire()->
-			readResponse(os, progress, m_size);
+		POP3Response::readLargeResponse
+			(store->m_socket, store->m_timeoutHandler, os, progress, m_size);
 	}
 	catch (exceptions::command_error& e)
 	{
@@ -197,12 +201,17 @@ void POP3Message::fetch(ref <POP3Folder> msgFolder, const int options)
 	std::ostringstream oss;
 	oss << "TOP " << m_num << " 0";
 
-	folder->m_store.acquire()->sendRequest(oss.str());
+	ref <POP3Store> store = folder->m_store.acquire();
+
+	store->sendRequest(oss.str());
 
 	try
 	{
 		string buffer;
-		folder->m_store.acquire()->readResponse(buffer, true);
+		utility::outputStreamStringAdapter bufferStream(buffer);
+
+		POP3Response::readLargeResponse(store->m_socket, store->m_timeoutHandler,
+			bufferStream, /* progress */ NULL, /* predictedSize */ 0);
 
 		m_header = vmime::create <header>();
 		m_header->parse(buffer);

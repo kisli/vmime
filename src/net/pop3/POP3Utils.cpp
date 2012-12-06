@@ -28,6 +28,7 @@
 
 
 #include "vmime/net/pop3/POP3Utils.hpp"
+#include "vmime/net/pop3/POP3Response.hpp"
 
 #include <sstream>
 
@@ -38,15 +39,13 @@ namespace pop3 {
 
 
 // static
-void POP3Utils::parseMultiListOrUidlResponse(const string& response, std::map <int, string>& result)
+void POP3Utils::parseMultiListOrUidlResponse(ref <POP3Response> response, std::map <int, string>& result)
 {
-	std::istringstream iss(response);
 	std::map <int, string> ids;
 
-	string line;
-
-	while (std::getline(iss, line))
+	for (unsigned int i = 0, n = response->getLineCount() ; i < n ; ++i)
 	{
+		string line = response->getLineAt(i);
 		string::iterator it = line.begin();
 
 		while (it != line.end() && (*it == ' ' || *it == '\t'))
