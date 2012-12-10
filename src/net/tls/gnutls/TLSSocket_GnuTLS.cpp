@@ -116,6 +116,18 @@ TLSSocket::size_type TLSSocket_GnuTLS::getBlockSize() const
 }
 
 
+const string TLSSocket_GnuTLS::getPeerName() const
+{
+	return m_wrapped->getPeerName();
+}
+
+
+const string TLSSocket_OpenSSL::getPeerAddress() const
+{
+	return m_wrapped->getPeerAddress();
+}
+
+
 void TLSSocket_GnuTLS::receive(string& buffer)
 {
 	const int size = receiveRaw(m_buffer, sizeof(m_buffer));
@@ -262,7 +274,7 @@ void TLSSocket_GnuTLS::handshake(ref <timeoutHandler> toHandler)
 	if (certs == NULL)
 		throw exceptions::tls_exception("No peer certificate.");
 
-	m_session->getCertificateVerifier()->verify(certs);
+	m_session->getCertificateVerifier()->verify(certs, getPeerName());
 
 	m_connected = true;
 }

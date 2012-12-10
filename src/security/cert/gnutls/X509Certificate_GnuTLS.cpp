@@ -181,6 +181,12 @@ bool X509Certificate_GnuTLS::verify(ref <const X509Certificate> caCert_) const
 }
 
 
+bool X509Certificate_GnuTLS::verifyHostName(const string& hostname) const
+{
+	return gnutls_x509_crt_check_hostname(m_data->cert, hostname.c_str()) != 0;
+}
+
+
 const datetime X509Certificate_GnuTLS::getActivationDate() const
 {
 	const time_t t = gnutls_x509_crt_get_activation_time(m_data->cert);

@@ -63,7 +63,7 @@ public:
 
 
 	// Implementation of 'certificateVerifier'
-	void verify(ref <certificateChain> chain);
+	void verify(ref <certificateChain> chain, const string& hostname);
 
 private:
 
@@ -71,7 +71,7 @@ private:
 	  *
 	  * @param chain list of X.509 certificates
 	  */
-	void verifyX509(ref <certificateChain> chain);
+	void verifyX509(ref <certificateChain> chain, const string& hostname);
 
 
 	std::vector <ref <X509Certificate> > m_x509RootCAs;

@@ -147,7 +147,7 @@ class interactiveCertificateVerifier : public vmime::security::cert::defaultCert
 {
 public:
 
-	void verify(vmime::ref <vmime::security::cert::certificateChain> chain)
+	void verify(vmime::ref <vmime::security::cert::certificateChain> chain, const vmime::string& hostname)
 	{
 		try
 		{
@@ -176,6 +176,9 @@ public:
 				{
 					m_trustedCerts.push_back(cert.dynamicCast
 						<vmime::security::cert::X509Certificate>());
+
+					setX509TrustedCerts(m_trustedCerts);
+					defaultCertificateVerifier::verify(chain, hostname);
 				}
 
 				return;

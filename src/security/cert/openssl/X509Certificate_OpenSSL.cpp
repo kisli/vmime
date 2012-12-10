@@ -41,6 +41,8 @@
 #include "vmime/exception.hpp"
 
 #include <openssl/x509.h>
+#include <openssl/x509v3.h>
+#include <openssl/conf.h>
 #include <openssl/bio.h>
 #include <openssl/pem.h>
 #include <openssl/err.h>
@@ -327,6 +329,72 @@ bool X509Certificate_OpenSSL::verify(ref <const X509Certificate> caCert_) const
 	}
 
 	return verified && !error;
+}
+
+
+bool X509Certificate_OpenSSL::verifyHostName(const string& hostname) const
+{
+	// First, check subject common name against hostname
+	char CNBuffer[1024];
+	CNBuffer[sizeof(CNBuffer - 1)] = '\0';
+
+	X509_NAME* xname = X509_get_subject_name(m_data->cert);
+
+	if (X509_NAME_get_text_by_NID(xname, NID_commonName, CNBuffer, sizeof(CNBuffer)) != -1)
+	{
+		if (strcasecmp(CNBuffer, hostname.c_str()) == 0)
+			return true;
+	}
+
+	// Now, look in subject alternative names
+	for (int i = 0, extCount = X509_get_ext_count(m_data->cert) ; i < extCount ; ++i)
+	{
+		X509_EXTENSION* ext = X509_get_ext(m_data->cert, i);
+		const char* extStr = OBJ_nid2sn(OBJ_obj2nid(X509_EXTENSION_get_object(ext)));
+
+		if (strcmp(extStr, "subjectAltName") == 0)
+		{
+			const X509V3_EXT_METHOD* method;
+
+			if ((method = X509V3_EXT_get(ext)) != NULL)
+			{
+				const unsigned char* extVal = ext->value->data;
+				void *extValStr;
+
+				if (method->it)
+				{
+					extValStr = ASN1_item_d2i
+						(NULL, &extVal, ext->value->length, ASN1_ITEM_ptr(method->it));
+				}
+				else
+				{
+					extValStr = method->d2i
+						(NULL, &extVal, ext->value->length);
+				}
+
+				if (extValStr && method->i2v)
+				{
+					STACK_OF(CONF_VALUE)* val = method->i2v(method, extValStr, NULL);
+
+					for (int j = 0 ; j < sk_CONF_VALUE_num(val) ; ++j)
+					{
+						CONF_VALUE* cnf = sk_CONF_VALUE_value(val, j);
+
+						if ((strcasecmp(cnf->name, "DNS") == 0 &&
+							 strcasecmp(cnf->value, hostname.c_str()) == 0)
+							 ||
+							(strncasecmp(cnf->name, "IP", 2) == 0 &&
+							 strcasecmp(cnf->value, hostname.c_str()) == 0))
+						{
+							return true;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return false;
 }
 
 

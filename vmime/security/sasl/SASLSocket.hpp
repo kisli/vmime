@@ -69,6 +69,9 @@ public:
 
 	unsigned int getStatus() const;
 
+	const string getPeerName() const;
+	const string getPeerAddress() const;
+
 private:
 
 	ref <SASLSession> m_session;

@@ -50,7 +50,8 @@ defaultCertificateVerifier::defaultCertificateVerifier(const defaultCertificateV
 }
 
 
-void defaultCertificateVerifier::verify(ref <certificateChain> chain)
+void defaultCertificateVerifier::verify
+	(ref <certificateChain> chain, const string& hostname)
 {
 	if (chain->getCount() == 0)
 		return;
@@ -58,13 +59,14 @@ void defaultCertificateVerifier::verify(ref <certificateChain> chain)
 	const string type = chain->getAt(0)->getType();
 
 	if (type == "X.509")
-		verifyX509(chain);
+		verifyX509(chain, hostname);
 	else
 		throw exceptions::unsupported_certificate_type(type);
 }
 
 
-void defaultCertificateVerifier::verifyX509(ref <certificateChain> chain)
+void defaultCertificateVerifier::verifyX509
+	(ref <certificateChain> chain, const string& hostname)
 {
 	// For every certificate in the chain, verify that the certificate
 	// has been issued by the next certificate in the chain
@@ -140,6 +142,13 @@ void defaultCertificateVerifier::verifyX509(ref <certificateChain> chain)
 	{
 		throw exceptions::certificate_verification_exception
 			("Cannot verify certificate against trusted certificates.");
+	}
+
+	// Ensure the first certificate's subject name matches server hostname
+	if (!firstCert->verifyHostName(hostname))
+	{
+		throw exceptions::certificate_verification_exception
+			("Server identity cannot be verified.");
 	}
 }
 

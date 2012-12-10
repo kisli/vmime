@@ -80,6 +80,9 @@ public:
 
 	unsigned int getStatus() const;
 
+	const string getPeerName() const;
+	const string getPeerAddress() const;
+
 private:
 
 	static int bio_write(BIO* bio, const char* buf, int len);

@@ -65,6 +65,9 @@ public:
 
 	unsigned int getStatus() const;
 
+	const string getPeerName() const;
+	const string getPeerAddress() const;
+
 protected:
 
 	void throwSocketError(const int err);
@@ -86,6 +89,8 @@ private:
 	SOCKET m_desc;
 
 	unsigned int m_status;
+
+	string m_serverAddress;
 };
 
 

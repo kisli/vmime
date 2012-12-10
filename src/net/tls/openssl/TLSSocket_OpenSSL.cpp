@@ -160,6 +160,18 @@ TLSSocket::size_type TLSSocket_OpenSSL::getBlockSize() const
 }
 
 
+const string TLSSocket_OpenSSL::getPeerName() const
+{
+	return m_wrapped->getPeerName();
+}
+
+
+const string TLSSocket_OpenSSL::getPeerAddress() const
+{
+	return m_wrapped->getPeerAddress();
+}
+
+
 void TLSSocket_OpenSSL::receive(string& buffer)
 {
 	const size_type size = receiveRaw(m_buffer, sizeof(m_buffer));
@@ -239,7 +251,7 @@ void TLSSocket_OpenSSL::handshake(ref <timeoutHandler> toHandler)
 	if (certs == NULL)
 		throw exceptions::tls_exception("No peer certificate.");
 
-	m_session->getCertificateVerifier()->verify(certs);
+	m_session->getCertificateVerifier()->verify(certs, getPeerName());
 
 	m_connected = true;
 }

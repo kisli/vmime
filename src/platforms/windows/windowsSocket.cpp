@@ -91,6 +91,8 @@ void windowsSocket::connect(const vmime::string& address, const vmime::port_t po
 		memcpy(reinterpret_cast <char*>(&addr.sin_addr), hostInfo->h_addr, hostInfo->h_length);
 	}
 
+	m_serverAddress = address;
+
 	// Get a new socket
 	m_desc = ::socket(AF_INET, SOCK_STREAM, 0);
 
@@ -153,6 +155,71 @@ void windowsSocket::disconnect()
 
 		m_desc = INVALID_SOCKET;
 	}
+}
+
+
+static bool isNumericAddress(const char* address)
+{
+	struct addrinfo hint, *info = NULL;
+	memset(&hint, 0, sizeof(hint));
+
+	hint.ai_family = AF_UNSPEC;
+	hint.ai_flags = AI_NUMERICHOST;
+
+	if (getaddrinfo(address, 0, &hint, &info) == 0)
+	{
+		freeaddrinfo(info);
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+
+const string windowsSocket::getPeerAddress() const
+{
+	// Get address of connected peer
+	sockaddr peer;
+	socklen_t peerLen = sizeof(peer);
+
+	getpeername(m_desc, reinterpret_cast <sockaddr*>(&peer), &peerLen);
+
+	// Convert to numerical presentation format
+	char numericAddress[1024];
+
+	if (inet_ntop(peer.sa_family, &peer, numericAddress, sizeof(numericAddress)) != NULL)
+		return string(numericAddress);
+
+	return "";  // should not happen
+}
+
+
+const string windowsSocket::getPeerName() const
+{
+	// Get address of connected peer
+	sockaddr peer;
+	socklen_t peerLen = sizeof(peer);
+
+	getpeername(m_desc, reinterpret_cast <sockaddr*>(&peer), &peerLen);
+
+	// If server address as specified when connecting is a numeric
+	// address, try to get a host name for it
+	if (isNumericAddress(m_serverAddress.c_str()))
+	{
+		char host[NI_MAXHOST + 1];
+		char service[NI_MAXSERV + 1];
+
+		if (getnameinfo(reinterpret_cast <sockaddr *>(&peer), peerLen,
+				host, sizeof(host), service, sizeof(service),
+				/* flags */ NI_NAMEREQD) == 0)
+		{
+			return string(host);
+		}
+	}
+
+	return m_serverAddress;
 }
 
 

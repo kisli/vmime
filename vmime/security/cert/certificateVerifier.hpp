@@ -44,10 +44,12 @@ public:
 	/** Verify that the specified certificate chain is trusted.
 	  *
 	  * @param chain certificate chain
+	  * @param server hostname
 	  * @throw exceptions::certificate_verification_exception if one
-	  * or more certificates can not be trusted
+	  * or more certificates can not be trusted, or the server identity
+	  * cannot be verified
 	  */
-	virtual void verify(ref <certificateChain> chain) = 0;
+	virtual void verify(ref <certificateChain> chain, const string& hostname) = 0;
 };
 
 

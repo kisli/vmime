@@ -115,6 +115,13 @@ public:
 	  */
 	virtual bool verify(ref <const X509Certificate> caCert) const = 0;
 
+	/** Verify certificate's subject name against the given hostname.
+	  *
+	  * @param hostname DNS name of the server
+	  * @return true if the match is successful, false otherwise
+	  */
+	virtual bool verifyHostName(const string& hostname) const = 0;
+
 	/** Gets the expiration date of this certificate. This is the date
 	  * at which this certificate will not be valid anymore.
 	  *

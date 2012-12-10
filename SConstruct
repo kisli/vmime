@@ -860,6 +860,7 @@ for platform in libvmime_platforms_sources:
 
 config_hpp.write("""
 #define VMIME_HAVE_GETADDRINFO 1
+#define VMIME_HAVE_GETNAMEINFO 1
 #define VMIME_HAVE_PTHREAD 1
 #define VMIME_HAVE_GETTID 0
 #define VMIME_HAVE_SYSCALL 1

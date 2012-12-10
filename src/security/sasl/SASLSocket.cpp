@@ -81,6 +81,18 @@ SASLSocket::size_type SASLSocket::getBlockSize() const
 }
 
 
+const string SASLSocket::getPeerName() const
+{
+	return m_wrapped->getPeerName();
+}
+
+
+const string SASLSocket::getPeerAddress() const
+{
+	return m_wrapped->getPeerAddress();
+}
+
+
 void SASLSocket::receive(string& buffer)
 {
 	const size_type n = receiveRaw(m_recvBuffer, sizeof(m_recvBuffer));

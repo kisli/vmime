@@ -127,6 +127,18 @@ public:
 	  */
 	virtual unsigned int getStatus() const = 0;
 
+	/** Return the hostname of peer this socket is connected to.
+	  *
+	  * @return name of the peer, or numeric address if it cannot be found
+	  */
+	virtual const string getPeerName() const = 0;
+
+	/** Return the address of peer this socket is connected to.
+	  *
+	  * @return numeric address of the peer
+	  */
+	virtual const string getPeerAddress() const = 0;
+
 protected:
 
 	socket() { }

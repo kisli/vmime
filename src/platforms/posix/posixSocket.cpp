@@ -104,6 +104,8 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 		throw vmime::exceptions::connection_error("Cannot resolve address.");
 	}
 
+	m_serverAddress = address;
+
 	// Connect to host
 	int sock = -1;
 	struct ::addrinfo* res = res0;
@@ -268,6 +270,8 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 		::memcpy(reinterpret_cast <char*>(&addr.sin_addr), hostInfo->h_addr, hostInfo->h_length);
 	}
 
+	m_serverAddress = address;
+
 	// Get a new socket
 	m_desc = ::socket(AF_INET, SOCK_STREAM, 0);
 
@@ -328,6 +332,97 @@ void posixSocket::disconnect()
 
 		m_desc = -1;
 	}
+}
+
+
+static bool isNumericAddress(const char* address)
+{
+
+#if VMIME_HAVE_GETADDRINFO
+
+	struct addrinfo hint, *info = NULL;
+	memset(&hint, 0, sizeof(hint));
+
+	hint.ai_family = AF_UNSPEC;
+	hint.ai_flags = AI_NUMERICHOST;
+
+	if (getaddrinfo(address, 0, &hint, &info) == 0)
+	{
+		freeaddrinfo(info);
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+
+#else
+
+	return inet_addr(address) != INADDR_NONE;
+
+#endif
+
+}
+
+
+const string posixSocket::getPeerAddress() const
+{
+	// Get address of connected peer
+	sockaddr peer;
+	socklen_t peerLen = sizeof(peer);
+
+	getpeername(m_desc, reinterpret_cast <sockaddr*>(&peer), &peerLen);
+
+	// Convert to numerical presentation format
+	char numericAddress[1024];
+
+	if (inet_ntop(peer.sa_family, &peer, numericAddress, sizeof(numericAddress)) != NULL)
+		return string(numericAddress);
+
+	return "";  // should not happen
+}
+
+
+const string posixSocket::getPeerName() const
+{
+	// Get address of connected peer
+	sockaddr peer;
+	socklen_t peerLen = sizeof(peer);
+
+	getpeername(m_desc, reinterpret_cast <sockaddr*>(&peer), &peerLen);
+
+	// If server address as specified when connecting is a numeric
+	// address, try to get a host name for it
+	if (isNumericAddress(m_serverAddress.c_str()))
+	{
+
+#if VMIME_HAVE_GETNAMEINFO
+
+		char host[NI_MAXHOST + 1];
+		char service[NI_MAXSERV + 1];
+
+		if (getnameinfo(reinterpret_cast <sockaddr *>(&peer), peerLen,
+				host, sizeof(host), service, sizeof(service),
+				/* flags */ NI_NAMEREQD) == 0)
+		{
+			return string(host);
+		}
+
+#else
+
+		struct hostent *hp;
+
+		if ((hp = gethostbyaddr(reinterpret_cast <const void *>(&peer),
+				sizeof(peer), peer.sa_family)) != NULL)
+		{
+			return string(hp->h_name);
+		}
+
+#endif
+
+	}
+
+	return m_serverAddress;
 }
 
 

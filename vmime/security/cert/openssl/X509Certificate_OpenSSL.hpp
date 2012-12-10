@@ -65,6 +65,8 @@ public:
 
 	bool verify(ref <const X509Certificate> caCert) const;
 
+	bool verifyHostName(const string& hostname) const;
+
 	const datetime getExpirationDate() const;
 	const datetime getActivationDate() const;
 
