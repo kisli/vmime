@@ -51,8 +51,10 @@ VMIME_TEST_SUITE_BEGIN
 
 		socket->localSend("123 Response Text\r\n");
 
+		vmime::net::smtp::SMTPResponse::state responseState;
+
 		vmime::ref <vmime::net::smtp::SMTPResponse> resp =
-			vmime::net::smtp::SMTPResponse::readResponse(socket, toh);
+			vmime::net::smtp::SMTPResponse::readResponse(socket, toh, responseState);
 
 		VASSERT_EQ("Code", 123, resp->getCode());
 		VASSERT_EQ("Lines", 1, resp->getLineCount());
@@ -67,8 +69,10 @@ VMIME_TEST_SUITE_BEGIN
 
 		socket->localSend("123 Response Text\n");
 
+		vmime::net::smtp::SMTPResponse::state responseState;
+
 		vmime::ref <vmime::net::smtp::SMTPResponse> resp =
-			vmime::net::smtp::SMTPResponse::readResponse(socket, toh);
+			vmime::net::smtp::SMTPResponse::readResponse(socket, toh, responseState);
 
 		VASSERT_EQ("Code", 123, resp->getCode());
 		VASSERT_EQ("Lines", 1, resp->getLineCount());
@@ -87,8 +91,10 @@ VMIME_TEST_SUITE_BEGIN
 			"123 Text\r\n"
 		);
 
+		vmime::net::smtp::SMTPResponse::state responseState;
+
 		vmime::ref <vmime::net::smtp::SMTPResponse> resp =
-			vmime::net::smtp::SMTPResponse::readResponse(socket, toh);
+			vmime::net::smtp::SMTPResponse::readResponse(socket, toh, responseState);
 
 		VASSERT_EQ("Code", 123, resp->getCode());
 		VASSERT_EQ("Lines", 2, resp->getLineCount());
@@ -113,8 +119,10 @@ VMIME_TEST_SUITE_BEGIN
 			"456 Text\r\n"
 		);
 
+		vmime::net::smtp::SMTPResponse::state responseState;
+
 		vmime::ref <vmime::net::smtp::SMTPResponse> resp =
-			vmime::net::smtp::SMTPResponse::readResponse(socket, toh);
+			vmime::net::smtp::SMTPResponse::readResponse(socket, toh, responseState);
 
 		VASSERT_EQ("Code", 0, resp->getCode());
 		VASSERT_EQ("Lines", 2, resp->getLineCount());
@@ -140,8 +148,10 @@ VMIME_TEST_SUITE_BEGIN
 			// Missing data
 		);
 
+		vmime::net::smtp::SMTPResponse::state responseState;
+
 		VASSERT_THROW("Incomplete response",
-			vmime::net::smtp::SMTPResponse::readResponse(socket, toh),
+			vmime::net::smtp::SMTPResponse::readResponse(socket, toh, responseState),
 			vmime::exceptions::operation_timed_out);
 	}
 
@@ -157,8 +167,10 @@ VMIME_TEST_SUITE_BEGIN
 			"More information\r\n"
 		);
 
+		vmime::net::smtp::SMTPResponse::state responseState;
+
 		vmime::ref <vmime::net::smtp::SMTPResponse> resp =
-			vmime::net::smtp::SMTPResponse::readResponse(socket, toh);
+			vmime::net::smtp::SMTPResponse::readResponse(socket, toh, responseState);
 
 		VASSERT_EQ("Code", 334, resp->getCode());
 		VASSERT_EQ("Lines", 1, resp->getLineCount());
@@ -176,8 +188,10 @@ VMIME_TEST_SUITE_BEGIN
 			"250\r\n"
 		);
 
+		vmime::net::smtp::SMTPResponse::state responseState;
+
 		vmime::ref <vmime::net::smtp::SMTPResponse> resp =
-			vmime::net::smtp::SMTPResponse::readResponse(socket, toh);
+			vmime::net::smtp::SMTPResponse::readResponse(socket, toh, responseState);
 
 		VASSERT_EQ("Code", 250, resp->getCode());
 		VASSERT_EQ("Lines", 1, resp->getLineCount());

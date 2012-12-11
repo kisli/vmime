@@ -57,6 +57,24 @@ testSocket::size_type testSocket::getBlockSize() const
 }
 
 
+unsigned int testSocket::getStatus() const
+{
+	return 0;
+}
+
+
+const vmime::string testSocket::getPeerName() const
+{
+	return "test.vmime.org";
+}
+
+
+const vmime::string testSocket::getPeerAddress() const
+{
+	return "127.0.0.1";
+}
+
+
 void testSocket::receive(vmime::string& buffer)
 {
 	buffer = m_inBuffer;
@@ -72,9 +90,9 @@ void testSocket::send(const vmime::string& buffer)
 }
 
 
-int testSocket::receiveRaw(char* buffer, const int count)
+testSocket::size_type testSocket::receiveRaw(char* buffer, const size_type count)
 {
-	const int n = std::min(count, static_cast <int>(m_inBuffer.size()));
+	const size_type n = std::min(count, static_cast <size_type>(m_inBuffer.size()));
 
 	std::copy(m_inBuffer.begin(), m_inBuffer.begin() + n, buffer);
 	m_inBuffer.erase(m_inBuffer.begin(), m_inBuffer.begin() + n);
@@ -83,9 +101,15 @@ int testSocket::receiveRaw(char* buffer, const int count)
 }
 
 
-void testSocket::sendRaw(const char* buffer, const int count)
+void testSocket::sendRaw(const char* buffer, const size_type count)
 {
 	send(vmime::string(buffer, count));
+}
+
+
+testSocket::size_type testSocket::sendRawNonBlocking(const char* buffer, const size_type count)
+{
+	sendRaw(buffer, count);
 }
 
 

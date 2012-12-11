@@ -213,10 +213,16 @@ public:
 	void receive(vmime::string& buffer);
 	void send(const vmime::string& buffer);
 
-	int receiveRaw(char* buffer, const int count);
-	void sendRaw(const char* buffer, const int count);
+	size_type receiveRaw(char* buffer, const size_type count);
+	void sendRaw(const char* buffer, const size_type count);
+	size_type sendRawNonBlocking(const char* buffer, const size_type count);
 
 	size_type getBlockSize() const;
+
+	unsigned int getStatus() const;
+
+	const vmime::string getPeerName() const;
+	const vmime::string getPeerAddress() const;
 
 	/** Send data to client.
 	  *
