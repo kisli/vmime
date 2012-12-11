@@ -122,7 +122,7 @@ const string TLSSocket_GnuTLS::getPeerName() const
 }
 
 
-const string TLSSocket_OpenSSL::getPeerAddress() const
+const string TLSSocket_GnuTLS::getPeerAddress() const
 {
 	return m_wrapped->getPeerAddress();
 }
