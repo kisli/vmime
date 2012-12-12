@@ -10,6 +10,7 @@ doc/html/*
 # SConstruct
 .sconsign.dblite
 /options.cache
+/run-tests
 
 # CMake-generated / Build files
 /CMakeFiles/
