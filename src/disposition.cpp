@@ -300,13 +300,22 @@ void disposition::generateImpl(utility::outputStream& os, const string::size_typ
 
 	if (m_modifiers.size() >= 1)
 	{
-		os << "/" << m_modifiers[0];
-		pos += 1 + m_modifiers[0].length();
-
-		for (std::vector <string>::size_type i = 1 ; i < m_modifiers.size() ; ++i)
+		for (std::vector <string>::size_type i = 1, n = 0 ; i < m_modifiers.size() ; ++i)
 		{
-			os << "," << m_modifiers[i];
-			pos += 1 + m_modifiers[i].length();
+			const string mod = utility::stringUtils::trim(m_modifiers[i]);
+
+			if (!mod.empty())
+			{
+				if (n == 0)
+					os << "/";
+				else
+					os << ",";
+
+				os << mod;
+				pos += 1 + mod.length();
+
+				++n;
+			}
 		}
 	}
 
