@@ -187,6 +187,10 @@ const encoding encoding::decideImpl
 const encoding encoding::decide
 	(ref <const contentHandler> data, const EncodingUsage usage)
 {
+	// Do not re-encode data if it is already encoded
+	if (data->isEncoded() && data->getEncoding() == encoding(encodingTypes::BASE64))
+		return data->getEncoding();
+
 	encoding enc;
 
 	if (usage == USAGE_TEXT && data->isBuffered() &&
@@ -215,6 +219,10 @@ const encoding encoding::decide
 const encoding encoding::decide(ref <const contentHandler> data,
 	const charset& chset, const EncodingUsage usage)
 {
+	// Do not re-encode data if it is already encoded
+	if (data->isEncoded() && data->getEncoding() == encoding(encodingTypes::BASE64))
+		return data->getEncoding();
+
 	if (usage == USAGE_TEXT)
 	{
 		encoding recEncoding;
