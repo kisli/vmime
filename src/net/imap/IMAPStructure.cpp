@@ -59,19 +59,19 @@ IMAPStructure::IMAPStructure(ref <IMAPPart> parent, const std::vector <IMAPParse
 }
 
 
-ref <const part> IMAPStructure::getPartAt(const int x) const
+ref <const part> IMAPStructure::getPartAt(const size_t x) const
 {
 	return m_parts[x];
 }
 
 
-ref <part> IMAPStructure::getPartAt(const int x)
+ref <part> IMAPStructure::getPartAt(const size_t x)
 {
 	return m_parts[x];
 }
 
 
-int IMAPStructure::getPartCount() const
+size_t IMAPStructure::getPartCount() const
 {
 	return m_parts.size();
 }

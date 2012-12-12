@@ -165,7 +165,7 @@ bool messageParser::findSubTextParts(ref <const bodyPart> msg, ref <const bodyPa
 
 	std::vector <ref <const bodyPart> > textParts;
 
-	for (int i = 0 ; i < part->getBody()->getPartCount() ; ++i)
+	for (size_t i = 0 ; i < part->getBody()->getPartCount() ; ++i)
 	{
 		const ref <const bodyPart> p = part->getBody()->getPartAt(i);
 
@@ -228,7 +228,7 @@ bool messageParser::findSubTextParts(ref <const bodyPart> msg, ref <const bodyPa
 
 	bool found = false;
 
-	for (int i = 0 ; !found && (i < part->getBody()->getPartCount()) ; ++i)
+	for (size_t i = 0 ; !found && (i < part->getBody()->getPartCount()) ; ++i)
 	{
 		found = findSubTextParts(msg, part->getBody()->getPartAt(i));
 	}
@@ -279,13 +279,13 @@ const std::vector <ref <const attachment> > messageParser::getAttachmentList() c
 }
 
 
-int messageParser::getAttachmentCount() const
+size_t messageParser::getAttachmentCount() const
 {
 	return (m_attach.size());
 }
 
 
-const ref <const attachment> messageParser::getAttachmentAt(const int pos) const
+const ref <const attachment> messageParser::getAttachmentAt(const size_t pos) const
 {
 	return (m_attach[pos]);
 }
@@ -307,13 +307,13 @@ const std::vector <ref <const textPart> > messageParser::getTextPartList() const
 }
 
 
-int messageParser::getTextPartCount() const
+size_t messageParser::getTextPartCount() const
 {
 	return (m_textParts.size());
 }
 
 
-const ref <const textPart> messageParser::getTextPartAt(const int pos) const
+const ref <const textPart> messageParser::getTextPartAt(const size_t pos) const
 {
 	return (m_textParts[pos]);
 }

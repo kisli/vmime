@@ -121,7 +121,7 @@ addressList& addressList::operator=(const mailboxList& other)
 {
 	removeAllAddresses();
 
-	for (int i = 0 ; i < other.getMailboxCount() ; ++i)
+	for (size_t i = 0 ; i < other.getMailboxCount() ; ++i)
 		m_list.push_back(other.getMailboxAt(i)->clone().dynamicCast <address>());
 
 	return (*this);
@@ -152,7 +152,7 @@ void addressList::insertAddressBefore(ref <address> beforeAddress, ref <address>
 }
 
 
-void addressList::insertAddressBefore(const int pos, ref <address> addr)
+void addressList::insertAddressBefore(const size_t pos, ref <address> addr)
 {
 	m_list.insert(m_list.begin() + pos, addr);
 }
@@ -170,7 +170,7 @@ void addressList::insertAddressAfter(ref <address> afterAddress, ref <address> a
 }
 
 
-void addressList::insertAddressAfter(const int pos, ref <address> addr)
+void addressList::insertAddressAfter(const size_t pos, ref <address> addr)
 {
 	m_list.insert(m_list.begin() + pos + 1, addr);
 }
@@ -188,7 +188,7 @@ void addressList::removeAddress(ref <address> addr)
 }
 
 
-void addressList::removeAddress(const int pos)
+void addressList::removeAddress(const size_t pos)
 {
 	const std::vector <ref <address> >::iterator it = m_list.begin() + pos;
 
@@ -202,7 +202,7 @@ void addressList::removeAllAddresses()
 }
 
 
-int addressList::getAddressCount() const
+size_t addressList::getAddressCount() const
 {
 	return (m_list.size());
 }
@@ -214,13 +214,13 @@ bool addressList::isEmpty() const
 }
 
 
-ref <address> addressList::getAddressAt(const int pos)
+ref <address> addressList::getAddressAt(const size_t pos)
 {
 	return (m_list[pos]);
 }
 
 
-const ref <const address> addressList::getAddressAt(const int pos) const
+const ref <const address> addressList::getAddressAt(const size_t pos) const
 {
 	return (m_list[pos]);
 }

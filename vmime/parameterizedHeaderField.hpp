@@ -100,7 +100,7 @@ public:
 	  * the beginning of the list)
 	  * @param param parameter to insert
 	  */
-	void insertParameterBefore(const int pos, ref <parameter> param);
+	void insertParameterBefore(const size_t pos, ref <parameter> param);
 
 	/** Insert a new parameter after the specified parameter.
 	  *
@@ -115,7 +115,7 @@ public:
 	  * @param pos position of the parameter before the new parameter
 	  * @param param parameter to insert
 	  */
-	void insertParameterAfter(const int pos, ref <parameter> param);
+	void insertParameterAfter(const size_t pos, ref <parameter> param);
 
 	/** Remove the specified parameter from the list.
 	  *
@@ -128,7 +128,7 @@ public:
 	  *
 	  * @param pos position of the parameter to remove
 	  */
-	void removeParameter(const int pos);
+	void removeParameter(const size_t pos);
 
 	/** Remove all parameters from the list.
 	  */
@@ -138,7 +138,7 @@ public:
 	  *
 	  * @return number of parameters
 	  */
-	int getParameterCount() const;
+	size_t getParameterCount() const;
 
 	/** Tests whether the list of parameters is empty.
 	  *
@@ -151,14 +151,14 @@ public:
 	  * @param pos position
 	  * @return parameter at position 'pos'
 	  */
-	const ref <parameter> getParameterAt(const int pos);
+	const ref <parameter> getParameterAt(const size_t pos);
 
 	/** Return the parameter at the specified position.
 	  *
 	  * @param pos position
 	  * @return parameter at position 'pos'
 	  */
-	const ref <const parameter> getParameterAt(const int pos) const;
+	const ref <const parameter> getParameterAt(const size_t pos) const;
 
 	/** Return the parameter list.
 	  *

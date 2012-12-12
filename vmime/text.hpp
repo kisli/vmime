@@ -72,20 +72,20 @@ public:
 	  * the beginning of the list)
 	  * @param w word to insert
 	  */
-	void insertWordBefore(const int pos, ref <word> w);
+	void insertWordBefore(const size_t pos, ref <word> w);
 
 	/** Insert a new word after the specified position.
 	  *
 	  * @param pos position of the word before the new word
 	  * @param w word to insert
 	  */
-	void insertWordAfter(const int pos, ref <word> w);
+	void insertWordAfter(const size_t pos, ref <word> w);
 
 	/** Remove the word at the specified position.
 	  *
 	  * @param pos position of the word to remove
 	  */
-	void removeWord(const int pos);
+	void removeWord(const size_t pos);
 
 	/** Remove all words from the list.
 	  */
@@ -95,7 +95,7 @@ public:
 	  *
 	  * @return number of words
 	  */
-	int getWordCount() const;
+	size_t getWordCount() const;
 
 	/** Tests whether the list of words is empty.
 	  *
@@ -108,14 +108,14 @@ public:
 	  * @param pos position
 	  * @return word at position 'pos'
 	  */
-	const ref <word> getWordAt(const int pos);
+	const ref <word> getWordAt(const size_t pos);
 
 	/** Return the word at the specified position.
 	  *
 	  * @param pos position
 	  * @return word at position 'pos'
 	  */
-	const ref <const word> getWordAt(const int pos) const;
+	const ref <const word> getWordAt(const size_t pos) const;
 
 	/** Return the word list.
 	  *

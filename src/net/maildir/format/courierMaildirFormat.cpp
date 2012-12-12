@@ -91,7 +91,7 @@ void courierMaildirFormat::destroyFolder(const folder::path& path)
 	// Recursively delete directories of subfolders
 	const std::vector <folder::path> folders = listFolders(path, true);
 
-	for (unsigned int i = 0, n = folders.size() ; i < n ; ++i)
+	for (std::vector <folder::path>::size_type i = 0, n = folders.size() ; i < n ; ++i)
 	{
 		maildirUtils::recursiveFSDelete(fsf->create
 			(folderPathToFileSystemPath(folders[i], ROOT_DIRECTORY)));
@@ -108,7 +108,7 @@ void courierMaildirFormat::renameFolder
 {
 	const std::vector <folder::path> folders = listFolders(oldPath, true);
 
-	for (unsigned int i = 0, n = folders.size() ; i < n ; ++i)
+	for (std::vector <folder::path>::size_type i = 0, n = folders.size() ; i < n ; ++i)
 	{
 		const folder::path folderOldPath = folders[i];
 
@@ -188,7 +188,7 @@ const utility::file::path courierMaildirFormat::folderPathToFileSystemPath
 	{
 		string folderComp;
 
-		for (int i = 0, n = path.getSize() ; i < n ; ++i)
+		for (size_t i = 0, n = path.getSize() ; i < n ; ++i)
 			folderComp += "." + toModifiedUTF7(path[i]);
 
 		fsPath /= utility::file::path::component(folderComp);
@@ -237,7 +237,7 @@ const std::vector <folder::path> courierMaildirFormat::listFolders
 	// Then, map directories to folders
 	std::vector <folder::path> folders;
 
-	for (unsigned int i = 0, n = dirs.size() ; i < n ; ++i)
+	for (std::vector <string>::size_type i = 0, n = dirs.size() ; i < n ; ++i)
 	{
 		const string dir = dirs[i].substr(1) + ".";
 		folder::path path;
@@ -273,7 +273,7 @@ bool courierMaildirFormat::listDirectories(const folder::path& root,
 
 		if (!root.isRoot())
 		{
-			for (int i = 0, n = root.getSize() ; i < n ; ++i)
+			for (size_t i = 0, n = root.getSize() ; i < n ; ++i)
 				base += "." + toModifiedUTF7(root[i]);
 		}
 

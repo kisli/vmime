@@ -81,7 +81,7 @@ void receivedMDNInfos::extract()
 {
 	const ref <const body> bdy = m_msg->getBody();
 
-	for (int i = 0 ; i < bdy->getPartCount() ; ++i)
+	for (size_t i = 0 ; i < bdy->getPartCount() ; ++i)
 	{
 		const ref <const bodyPart> part = bdy->getPartAt(i);
 

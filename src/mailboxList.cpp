@@ -59,7 +59,7 @@ void mailboxList::insertMailboxBefore(ref <mailbox> beforeMailbox, ref <mailbox>
 }
 
 
-void mailboxList::insertMailboxBefore(const int pos, ref <mailbox> mbox)
+void mailboxList::insertMailboxBefore(const size_t pos, ref <mailbox> mbox)
 {
 	m_list.insertAddressBefore(pos, mbox);
 }
@@ -78,7 +78,7 @@ void mailboxList::insertMailboxAfter(ref <mailbox> afterMailbox, ref <mailbox> m
 }
 
 
-void mailboxList::insertMailboxAfter(const int pos, ref <mailbox> mbox)
+void mailboxList::insertMailboxAfter(const size_t pos, ref <mailbox> mbox)
 {
 	m_list.insertAddressAfter(pos, mbox);
 }
@@ -97,7 +97,7 @@ void mailboxList::removeMailbox(ref <mailbox> mbox)
 }
 
 
-void mailboxList::removeMailbox(const int pos)
+void mailboxList::removeMailbox(const size_t pos)
 {
 	m_list.removeAddress(pos);
 }
@@ -109,7 +109,7 @@ void mailboxList::removeAllMailboxes()
 }
 
 
-int mailboxList::getMailboxCount() const
+size_t mailboxList::getMailboxCount() const
 {
 	return (m_list.getAddressCount());
 }
@@ -121,13 +121,13 @@ bool mailboxList::isEmpty() const
 }
 
 
-ref <mailbox> mailboxList::getMailboxAt(const int pos)
+ref <mailbox> mailboxList::getMailboxAt(const size_t pos)
 {
 	return m_list.getAddressAt(pos).staticCast <mailbox>();
 }
 
 
-const ref <const mailbox> mailboxList::getMailboxAt(const int pos) const
+const ref <const mailbox> mailboxList::getMailboxAt(const size_t pos) const
 {
 	return m_list.getAddressAt(pos).staticCast <const mailbox>();
 }

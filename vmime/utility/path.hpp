@@ -80,14 +80,14 @@ public:
 	  * @param pos position
 	  * @return component at position 'pos'
 	  */
-	const component& getComponentAt(const int pos) const;
+	const component& getComponentAt(const size_t pos) const;
 
 	/** Return the component at the specified position.
 	  *
 	  * @param pos position
 	  * @return component at position 'pos'
 	  */
-	component& getComponentAt(const int pos);
+	component& getComponentAt(const size_t pos);
 
 	/** Test whether this path is empty (root).
 	  *
@@ -117,21 +117,21 @@ public:
 	  *
 	  * @return number of components
 	  */
-	int getSize() const;
+	size_t getSize() const;
 
 	/** Return the specified component of the path (const version).
 	  *
 	  * @param x index of the component
 	  * @return component at the specified index
 	  */
-	const component& operator[](const int x) const;
+	const component& operator[](const size_t x) const;
 
 	/** Return the specified component of the path (non-const version).
 	  *
 	  * @param x index of the component
 	  * @return component at the specified index
 	  */
-	component& operator[](const int x);
+	component& operator[](const size_t x);
 
 	/** Test whether this path is a direct parent of another one.
 	  *

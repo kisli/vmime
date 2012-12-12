@@ -138,14 +138,14 @@ public:
 	  *
 	  * @return number of registered services
 	  */
-	int getServiceCount() const;
+	size_t getServiceCount() const;
 
 	/** Return the registered service at the specified position.
 	  *
 	  * @param pos position of the registered service to return
 	  * @return registered service at the specified position
 	  */
-	ref <const registeredService> getServiceAt(const int pos) const;
+	ref <const registeredService> getServiceAt(const size_t pos) const;
 
 	/** Return a list of all registered services.
 	  *

@@ -137,13 +137,13 @@ public:
 	  * @param pos line index
 	  * @return line at the specified index
 	  */
-	const string getLineAt(const unsigned int pos) const;
+	const string getLineAt(const size_t pos) const;
 
 	/** Return the number of lines in the response.
 	  *
 	  * @return number of lines in the response
 	  */
-	unsigned int getLineCount() const;
+	size_t getLineCount() const;
 
 private:
 
@@ -171,7 +171,7 @@ private:
 	string m_firstLine;
 	ResponseCode m_code;
 	string m_text;
-	
+
 	std::vector <string> m_lines;
 };
 

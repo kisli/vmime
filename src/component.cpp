@@ -110,7 +110,7 @@ void component::offsetParsedBounds(const utility::stream::size_type offset)
 	// Offset parsed bounds of our children
 	std::vector <ref <component> > children = getChildComponents();
 
-	for (unsigned int i = 0, n = children.size() ; i < n ; ++i)
+	for (size_t i = 0, n = children.size() ; i < n ; ++i)
 		children[i]->offsetParsedBounds(offset);
 }
 

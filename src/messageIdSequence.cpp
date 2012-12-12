@@ -148,7 +148,7 @@ void messageIdSequence::insertMessageIdBefore(ref <messageId> beforeMid, ref <me
 }
 
 
-void messageIdSequence::insertMessageIdBefore(const int pos, ref <messageId> mid)
+void messageIdSequence::insertMessageIdBefore(const size_t pos, ref <messageId> mid)
 {
 	m_list.insert(m_list.begin() + pos, mid);
 }
@@ -166,7 +166,7 @@ void messageIdSequence::insertMessageIdAfter(ref <messageId> afterMid, ref <mess
 }
 
 
-void messageIdSequence::insertMessageIdAfter(const int pos, ref <messageId> mid)
+void messageIdSequence::insertMessageIdAfter(const size_t pos, ref <messageId> mid)
 {
 	m_list.insert(m_list.begin() + pos + 1, mid);
 }
@@ -184,7 +184,7 @@ void messageIdSequence::removeMessageId(ref <messageId> mid)
 }
 
 
-void messageIdSequence::removeMessageId(const int pos)
+void messageIdSequence::removeMessageId(const size_t pos)
 {
 	const std::vector <ref <messageId> >::iterator it = m_list.begin() + pos;
 
@@ -198,7 +198,7 @@ void messageIdSequence::removeAllMessageIds()
 }
 
 
-int messageIdSequence::getMessageIdCount() const
+size_t messageIdSequence::getMessageIdCount() const
 {
 	return (m_list.size());
 }
@@ -210,13 +210,13 @@ bool messageIdSequence::isEmpty() const
 }
 
 
-const ref <messageId> messageIdSequence::getMessageIdAt(const int pos)
+const ref <messageId> messageIdSequence::getMessageIdAt(const size_t pos)
 {
 	return (m_list[pos]);
 }
 
 
-const ref <const messageId> messageIdSequence::getMessageIdAt(const int pos) const
+const ref <const messageId> messageIdSequence::getMessageIdAt(const size_t pos) const
 {
 	return (m_list[pos]);
 }

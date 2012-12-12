@@ -143,17 +143,17 @@ public:
 	}
 
 
-	ref <const part> getPartAt(const int x) const
+	ref <const part> getPartAt(const size_t x) const
 	{
 		return m_parts[x];
 	}
 
-	ref <part> getPartAt(const int x)
+	ref <part> getPartAt(const size_t x)
 	{
 		return m_parts[x];
 	}
 
-	int getPartCount() const
+	size_t getPartCount() const
 	{
 		return m_parts.size();
 	}

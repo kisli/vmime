@@ -52,9 +52,9 @@ public:
 	IMAPStructure(const IMAPParser::body* body);
 	IMAPStructure(ref <IMAPPart> parent, const std::vector <IMAPParser::body*>& list);
 
-	ref <const part> getPartAt(const int x) const;
-	ref <part> getPartAt(const int x);
-	int getPartCount() const;
+	ref <const part> getPartAt(const size_t x) const;
+	ref <part> getPartAt(const size_t x);
+	size_t getPartCount() const;
 
 	static ref <IMAPStructure> emptyStructure();
 

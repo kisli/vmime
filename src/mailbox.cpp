@@ -377,7 +377,7 @@ void mailbox::generateImpl(utility::outputStream& os, const string::size_type ma
 		// and/or contain the special chars.
 		bool forceEncode = false;
 
-		for (int w = 0 ; !forceEncode && w != m_name.getWordCount() ; ++w)
+		for (size_t w = 0 ; !forceEncode && w != m_name.getWordCount() ; ++w)
 		{
 			if (m_name.getWordAt(w)->getCharset() == charset(charsets::US_ASCII))
 			{

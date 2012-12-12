@@ -110,6 +110,7 @@ void testSocket::sendRaw(const char* buffer, const size_type count)
 testSocket::size_type testSocket::sendRawNonBlocking(const char* buffer, const size_type count)
 {
 	sendRaw(buffer, count);
+	return count;
 }
 
 

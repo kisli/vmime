@@ -109,13 +109,13 @@ public:
 	  * @param pos line index
 	  * @return line at the specified index
 	  */
-	const responseLine getLineAt(const unsigned int pos) const;
+	const responseLine getLineAt(const size_t pos) const;
 
 	/** Return the number of lines in the response.
 	  *
 	  * @return number of lines in the response
 	  */
-	unsigned int getLineCount() const;
+	size_t getLineCount() const;
 
 	/** Return the last line in the response.
 	  *

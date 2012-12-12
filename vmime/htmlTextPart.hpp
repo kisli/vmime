@@ -121,14 +121,14 @@ public:
 	  *
 	  * @return number of embedded objects
 	  */
-	int getObjectCount() const;
+	size_t getObjectCount() const;
 
 	/** Return the embedded object at the specified position.
 	  *
 	  * @param pos position of the embedded object
 	  * @return embedded object at position 'pos'
 	  */
-	const ref <const embeddedObject> getObjectAt(const int pos) const;
+	const ref <const embeddedObject> getObjectAt(const size_t pos) const;
 
 	/** Embed an object and returns a string which identifies it.
 	  * The returned identifier is suitable for use in the 'src' attribute
@@ -168,7 +168,7 @@ public:
 	const string addObject(ref <contentHandler> data, const encoding& enc, const mediaType& type);
 
 
-	int getPartCount() const;
+	size_t getPartCount() const;
 
 	void generateIn(ref <bodyPart> message, ref <bodyPart> parent) const;
 	void parse(ref <const bodyPart> message, ref <const bodyPart> parent, ref <const bodyPart> textPart);

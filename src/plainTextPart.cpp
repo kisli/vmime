@@ -51,7 +51,7 @@ const mediaType plainTextPart::getType() const
 }
 
 
-int plainTextPart::getPartCount() const
+size_t plainTextPart::getPartCount() const
 {
 	return (1);
 }

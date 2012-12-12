@@ -87,7 +87,7 @@ public:
 	  *
 	  * @return number of body parts
 	  */
-	virtual int getPartCount() const = 0;
+	virtual size_t getPartCount() const = 0;
 
 	/** Generate the text part(s) into the specified message.
 	  *

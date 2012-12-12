@@ -653,7 +653,7 @@ const std::vector <string> POP3Store::getCapabilities()
 
 	if (response->isSuccess())
 	{
-		for (unsigned int i = 0, n = response->getLineCount() ; i < n ; ++i)
+		for (size_t i = 0, n = response->getLineCount() ; i < n ; ++i)
 			res.push_back(response->getLineAt(i));
 	}
 

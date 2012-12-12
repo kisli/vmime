@@ -65,7 +65,7 @@ public:
 	  * @param randomChars list of characters to use
 	  * @return random string
 	  */
-	static const string getString(const int length, const string& randomChars
+	static const string getString(const string::size_type length, const string& randomChars
 		= "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
 
 protected:

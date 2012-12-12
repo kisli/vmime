@@ -341,6 +341,9 @@ SET(
 INCLUDE(cmake/TargetArch.cmake)
 TARGET_ARCHITECTURE(CMAKE_TARGET_ARCHITECTURES)
 
+INCLUDE(CheckTypeSize)
+CHECK_TYPE_SIZE(size_t VMIME_HAVE_SIZE_T)
+
 
 ##############################################################################
 # Sendmail path

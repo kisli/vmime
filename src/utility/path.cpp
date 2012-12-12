@@ -171,19 +171,19 @@ path::component& path::getLastComponent()
 }
 
 
-int path::getSize() const
+size_t path::getSize() const
 {
 	return (m_list.size());
 }
 
 
-const path::component& path::operator[](const int x) const
+const path::component& path::operator[](const size_t x) const
 {
 	return (m_list[x]);
 }
 
 
-path::component& path::operator[](const int x)
+path::component& path::operator[](const size_t x)
 {
 	return (m_list[x]);
 }
@@ -250,13 +250,13 @@ void path::appendComponent(const path::component& c)
 }
 
 
-const path::component& path::getComponentAt(const int pos) const
+const path::component& path::getComponentAt(const size_t pos) const
 {
 	return (m_list[pos]);
 }
 
 
-path::component& path::getComponentAt(const int pos)
+path::component& path::getComponentAt(const size_t pos)
 {
 	return (m_list[pos]);
 }

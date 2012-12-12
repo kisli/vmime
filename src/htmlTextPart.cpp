@@ -56,7 +56,7 @@ const mediaType htmlTextPart::getType() const
 }
 
 
-int htmlTextPart::getPartCount() const
+size_t htmlTextPart::getPartCount() const
 {
 	return (m_plainText->isEmpty() ? 1 : 2);
 }
@@ -131,7 +131,7 @@ void htmlTextPart::generateIn(ref <bodyPart> /* message */, ref <bodyPart> paren
 void htmlTextPart::findEmbeddedParts(const bodyPart& part,
 	std::vector <ref <const bodyPart> >& cidParts, std::vector <ref <const bodyPart> >& locParts)
 {
-	for (int i = 0 ; i < part.getBody()->getPartCount() ; ++i)
+	for (size_t i = 0 ; i < part.getBody()->getPartCount() ; ++i)
 	{
 		ref <const bodyPart> p = part.getBody()->getPartAt(i);
 
@@ -278,7 +278,7 @@ bool htmlTextPart::findPlainTextPart(const bodyPart& part, const bodyPart& paren
 		{
 			ref <const bodyPart> foundPart = NULL;
 
-			for (int i = 0 ; i < part.getBody()->getPartCount() ; ++i)
+			for (size_t i = 0 ; i < part.getBody()->getPartCount() ; ++i)
 			{
 				const ref <const bodyPart> p = part.getBody()->getPartAt(i);
 
@@ -294,7 +294,7 @@ bool htmlTextPart::findPlainTextPart(const bodyPart& part, const bodyPart& paren
 				bool found = false;
 
 				// Now, search for the alternative plain text part
-				for (int i = 0 ; !found && i < part.getBody()->getPartCount() ; ++i)
+				for (size_t i = 0 ; !found && i < part.getBody()->getPartCount() ; ++i)
 				{
 					const ref <const bodyPart> p = part.getBody()->getPartAt(i);
 
@@ -332,7 +332,7 @@ bool htmlTextPart::findPlainTextPart(const bodyPart& part, const bodyPart& paren
 
 	bool found = false;
 
-	for (int i = 0 ; !found && i < part.getBody()->getPartCount() ; ++i)
+	for (size_t i = 0 ; !found && i < part.getBody()->getPartCount() ; ++i)
 	{
 		found = findPlainTextPart(*part.getBody()->getPartAt(i), parent, textPart);
 	}
@@ -377,13 +377,13 @@ void htmlTextPart::setText(ref <contentHandler> text)
 }
 
 
-int htmlTextPart::getObjectCount() const
+size_t htmlTextPart::getObjectCount() const
 {
 	return m_objects.size();
 }
 
 
-const ref <const htmlTextPart::embeddedObject> htmlTextPart::getObjectAt(const int pos) const
+const ref <const htmlTextPart::embeddedObject> htmlTextPart::getObjectAt(const size_t pos) const
 {
 	return m_objects[pos];
 }

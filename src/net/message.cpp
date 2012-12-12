@@ -34,19 +34,19 @@ namespace vmime {
 namespace net {
 
 
-ref <const part> part::getPartAt(const int pos) const
+ref <const part> part::getPartAt(const size_t pos) const
 {
 	return getStructure()->getPartAt(pos);
 }
 
 
-ref <part> part::getPartAt(const int pos)
+ref <part> part::getPartAt(const size_t pos)
 {
 	return getStructure()->getPartAt(pos);
 }
 
 
-int part::getPartCount() const
+size_t part::getPartCount() const
 {
 	return getStructure()->getPartCount();
 }

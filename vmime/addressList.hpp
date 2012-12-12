@@ -79,7 +79,7 @@ public:
 	  * the beginning of the list)
 	  * @param addr address to insert
 	  */
-	void insertAddressBefore(const int pos, ref <address> addr);
+	void insertAddressBefore(const size_t pos, ref <address> addr);
 
 	/** Insert a new address after the specified address.
 	  *
@@ -94,7 +94,7 @@ public:
 	  * @param pos position of the address before the new address
 	  * @param addr address to insert
 	  */
-	void insertAddressAfter(const int pos, ref <address> addr);
+	void insertAddressAfter(const size_t pos, ref <address> addr);
 
 	/** Remove the specified address from the list.
 	  *
@@ -107,7 +107,7 @@ public:
 	  *
 	  * @param pos position of the address to remove
 	  */
-	void removeAddress(const int pos);
+	void removeAddress(const size_t pos);
 
 	/** Remove all addresses from the list.
 	  */
@@ -117,7 +117,7 @@ public:
 	  *
 	  * @return number of addresses
 	  */
-	int getAddressCount() const;
+	size_t getAddressCount() const;
 
 	/** Tests whether the list of addresses is empty.
 	  *
@@ -130,14 +130,14 @@ public:
 	  * @param pos position
 	  * @return address at position 'pos'
 	  */
-	ref <address> getAddressAt(const int pos);
+	ref <address> getAddressAt(const size_t pos);
 
 	/** Return the address at the specified position.
 	  *
 	  * @param pos position
 	  * @return address at position 'pos'
 	  */
-	const ref <const address> getAddressAt(const int pos) const;
+	const ref <const address> getAddressAt(const size_t pos) const;
 
 	/** Return the address list.
 	  *

@@ -105,13 +105,13 @@ ref <const serviceFactory::registeredService> serviceFactory::getServiceByProtoc
 }
 
 
-int serviceFactory::getServiceCount() const
+size_t serviceFactory::getServiceCount() const
 {
 	return (m_services.size());
 }
 
 
-ref <const serviceFactory::registeredService> serviceFactory::getServiceAt(const int pos) const
+ref <const serviceFactory::registeredService> serviceFactory::getServiceAt(const size_t pos) const
 {
 	return (m_services[pos]);
 }

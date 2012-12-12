@@ -232,7 +232,7 @@ void header::insertFieldBefore(ref <headerField> beforeField, ref <headerField> 
 }
 
 
-void header::insertFieldBefore(const int pos, ref <headerField> field)
+void header::insertFieldBefore(const size_t pos, ref <headerField> field)
 {
 	m_fields.insert(m_fields.begin() + pos, field);
 }
@@ -250,7 +250,7 @@ void header::insertFieldAfter(ref <headerField> afterField, ref <headerField> fi
 }
 
 
-void header::insertFieldAfter(const int pos, ref <headerField> field)
+void header::insertFieldAfter(const size_t pos, ref <headerField> field)
 {
 	m_fields.insert(m_fields.begin() + pos + 1, field);
 }
@@ -268,7 +268,7 @@ void header::removeField(ref <headerField> field)
 }
 
 
-void header::removeField(const int pos)
+void header::removeField(const size_t pos)
 {
 	const std::vector <ref <headerField> >::iterator it = m_fields.begin() + pos;
 
@@ -291,7 +291,7 @@ void header::removeAllFields(const string& fieldName)
 }
 
 
-int header::getFieldCount() const
+size_t header::getFieldCount() const
 {
 	return (m_fields.size());
 }
@@ -303,13 +303,13 @@ bool header::isEmpty() const
 }
 
 
-const ref <headerField> header::getFieldAt(const int pos)
+const ref <headerField> header::getFieldAt(const size_t pos)
 {
 	return (m_fields[pos]);
 }
 
 
-const ref <const headerField> header::getFieldAt(const int pos) const
+const ref <const headerField> header::getFieldAt(const size_t pos) const
 {
 	return (m_fields[pos]);
 }

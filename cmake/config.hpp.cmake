@@ -35,6 +35,8 @@ typedef unsigned @VMIME_16BIT_TYPE@ vmime_uint16;
 typedef signed @VMIME_32BIT_TYPE@ vmime_int32;
 typedef unsigned @VMIME_32BIT_TYPE@ vmime_uint32;
 
+#cmakedefine01 VMIME_HAVE_SIZE_T
+
 // Options
 // -- File-system support
 #cmakedefine01 VMIME_HAVE_FILESYSTEM_FEATURES

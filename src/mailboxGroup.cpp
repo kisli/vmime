@@ -90,7 +90,7 @@ void mailboxGroup::parseImpl(const string& buffer, const string::size_type posit
 
 				// Sub-groups are not allowed in mailbox groups: so, we add all
 				// the contents of the sub-group into this group...
-				for (int i = 0 ; i < group->getMailboxCount() ; ++i)
+				for (size_t i = 0 ; i < group->getMailboxCount() ; ++i)
 				{
 					m_list.push_back(group->getMailboxAt(i)->clone().staticCast <mailbox>());
 				}
@@ -123,7 +123,7 @@ void mailboxGroup::generateImpl(utility::outputStream& os, const string::size_ty
 	// and/or contain the special chars.
 	bool forceEncode = false;
 
-	for (int w = 0 ; !forceEncode && w < m_name.getWordCount() ; ++w)
+	for (size_t w = 0 ; !forceEncode && w < m_name.getWordCount() ; ++w)
 	{
 		if (m_name.getWordAt(w)->getCharset() == charset(charsets::US_ASCII))
 		{
@@ -258,7 +258,7 @@ void mailboxGroup::insertMailboxBefore(ref <mailbox> beforeMailbox, ref <mailbox
 }
 
 
-void mailboxGroup::insertMailboxBefore(const int pos, ref <mailbox> mbox)
+void mailboxGroup::insertMailboxBefore(const size_t pos, ref <mailbox> mbox)
 {
 	m_list.insert(m_list.begin() + pos, mbox);
 }
@@ -276,7 +276,7 @@ void mailboxGroup::insertMailboxAfter(ref <mailbox> afterMailbox, ref <mailbox> 
 }
 
 
-void mailboxGroup::insertMailboxAfter(const int pos, ref <mailbox> mbox)
+void mailboxGroup::insertMailboxAfter(const size_t pos, ref <mailbox> mbox)
 {
 	m_list.insert(m_list.begin() + pos + 1, mbox);
 }
@@ -294,7 +294,7 @@ void mailboxGroup::removeMailbox(ref <mailbox> mbox)
 }
 
 
-void mailboxGroup::removeMailbox(const int pos)
+void mailboxGroup::removeMailbox(const size_t pos)
 {
 	const std::vector <ref <mailbox> >::iterator it = m_list.begin() + pos;
 
@@ -308,19 +308,19 @@ void mailboxGroup::removeAllMailboxes()
 }
 
 
-int mailboxGroup::getMailboxCount() const
+size_t mailboxGroup::getMailboxCount() const
 {
 	return (m_list.size());
 }
 
 
-ref <mailbox> mailboxGroup::getMailboxAt(const int pos)
+ref <mailbox> mailboxGroup::getMailboxAt(const size_t pos)
 {
 	return (m_list[pos]);
 }
 
 
-const ref <const mailbox> mailboxGroup::getMailboxAt(const int pos) const
+const ref <const mailbox> mailboxGroup::getMailboxAt(const size_t pos) const
 {
 	return (m_list[pos]);
 }

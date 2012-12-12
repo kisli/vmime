@@ -456,7 +456,7 @@ void parameterizedHeaderField::insertParameterBefore(ref <parameter> beforeParam
 }
 
 
-void parameterizedHeaderField::insertParameterBefore(const int pos, ref <parameter> param)
+void parameterizedHeaderField::insertParameterBefore(const size_t pos, ref <parameter> param)
 {
 	m_params.insert(m_params.begin() + pos, param);
 }
@@ -474,7 +474,7 @@ void parameterizedHeaderField::insertParameterAfter(ref <parameter> afterParam, 
 }
 
 
-void parameterizedHeaderField::insertParameterAfter(const int pos, ref <parameter> param)
+void parameterizedHeaderField::insertParameterAfter(const size_t pos, ref <parameter> param)
 {
 	m_params.insert(m_params.begin() + pos + 1, param);
 }
@@ -492,7 +492,7 @@ void parameterizedHeaderField::removeParameter(ref <parameter> param)
 }
 
 
-void parameterizedHeaderField::removeParameter(const int pos)
+void parameterizedHeaderField::removeParameter(const size_t pos)
 {
 	const std::vector <ref <parameter> >::iterator it = m_params.begin() + pos;
 
@@ -506,7 +506,7 @@ void parameterizedHeaderField::removeAllParameters()
 }
 
 
-int parameterizedHeaderField::getParameterCount() const
+size_t parameterizedHeaderField::getParameterCount() const
 {
 	return (m_params.size());
 }
@@ -518,13 +518,13 @@ bool parameterizedHeaderField::isEmpty() const
 }
 
 
-const ref <parameter> parameterizedHeaderField::getParameterAt(const int pos)
+const ref <parameter> parameterizedHeaderField::getParameterAt(const size_t pos)
 {
 	return (m_params[pos]);
 }
 
 
-const ref <const parameter> parameterizedHeaderField::getParameterAt(const int pos) const
+const ref <const parameter> parameterizedHeaderField::getParameterAt(const size_t pos) const
 {
 	return (m_params[pos]);
 }

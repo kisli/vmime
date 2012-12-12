@@ -590,7 +590,7 @@ std::vector <ref <message> > IMAPFolder::getMessagesByUID(const std::vector <mes
 
 	cmd << "UID FETCH " << IMAPUtils::extractUIDFromGlobalUID(uids[0]);
 
-	for (unsigned int i = 1, n = uids.size() ; i < n ; ++i)
+	for (std::vector <message::uid>::size_type i = 1, n = uids.size() ; i < n ; ++i)
 		cmd << "," << IMAPUtils::extractUIDFromGlobalUID(uids[i]);
 
 	cmd << " UID";

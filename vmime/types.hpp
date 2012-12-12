@@ -44,6 +44,10 @@ namespace vmime
 	typedef vmime_uint8 byte_t;
 	typedef std::vector <byte_t> byteArray;
 
+#if !VMIME_HAVE_SIZE_T
+	typedef unsigned long size_t;
+#endif // !VMIME_HAVE_SIZE_T
+
 	// Some aliases
 	namespace utils = utility;
 

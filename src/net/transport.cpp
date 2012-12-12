@@ -50,7 +50,7 @@ transport::transport(ref <session> sess, const serviceInfos& infos, ref <securit
 static void extractMailboxes
 	(mailboxList& recipients, const addressList& list)
 {
-	for (int i = 0 ; i < list.getAddressCount() ; ++i)
+	for (size_t i = 0 ; i < list.getAddressCount() ; ++i)
 	{
 		ref <mailbox> mbox = list.getAddressAt(i)->clone().dynamicCast <mailbox>();
 

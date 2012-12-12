@@ -233,7 +233,7 @@ void IMAPMessage::fetchPartHeader(ref <part> p)
 
 void IMAPMessage::fetchPartHeaderForStructure(ref <structure> str)
 {
-	for (int i = 0, n = str->getPartCount() ; i < n ; ++i)
+	for (size_t i = 0, n = str->getPartCount() ; i < n ; ++i)
 	{
 		ref <class part> part = str->getPartAt(i);
 
@@ -694,7 +694,7 @@ void IMAPMessage::constructParsedMessage(ref <bodyPart> parentPart, ref <structu
 	}
 	else
 	{
-		for (int i = 0, n = str->getPartCount() ; i < n ; ++i)
+		for (size_t i = 0, n = str->getPartCount() ; i < n ; ++i)
 		{
 			ref <class part> part = str->getPartAt(i);
 

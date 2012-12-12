@@ -127,14 +127,14 @@ public:
 	  *
 	  * @return number of registered encoders
 	  */
-	int getEncoderCount() const;
+	size_t getEncoderCount() const;
 
 	/** Return the registered encoder at the specified position.
 	  *
 	  * @param pos position of the registered encoder to return
 	  * @return registered encoder at the specified position
 	  */
-	const ref <const registeredEncoder> getEncoderAt(const int pos) const;
+	const ref <const registeredEncoder> getEncoderAt(const size_t pos) const;
 
 	/** Return a list of all registered encoders.
 	  *

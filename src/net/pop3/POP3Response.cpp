@@ -136,13 +136,13 @@ const string POP3Response::getText() const
 }
 
 
-const string POP3Response::getLineAt(const unsigned int pos) const
+const string POP3Response::getLineAt(const size_t pos) const
 {
 	return m_lines[pos];
 }
 
 
-unsigned int POP3Response::getLineCount() const
+size_t POP3Response::getLineCount() const
 {
 	return m_lines.size();
 }

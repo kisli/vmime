@@ -183,7 +183,7 @@ const std::vector <ref <const attachment> >
 	{
 		ref <const body> bdy = part->getBody();
 
-		for (int i = 0 ; i < bdy->getPartCount() ; ++i)
+		for (size_t i = 0 ; i < bdy->getPartCount() ; ++i)
 		{
 			std::vector <ref <const attachment> > partAtts =
 				findAttachmentsInBodyPart(bdy->getPartAt(i), options);
@@ -295,7 +295,7 @@ ref <bodyPart> attachmentHelper::findBodyPart
 	// Try in sub-parts
 	ref <body> bdy = part->getBody();
 
-	for (int i = 0 ; i < bdy->getPartCount() ; ++i)
+	for (size_t i = 0 ; i < bdy->getPartCount() ; ++i)
 	{
 		ref <bodyPart> found =
 			findBodyPart(bdy->getPartAt(i), type);

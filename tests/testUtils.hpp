@@ -106,7 +106,7 @@ inline std::ostream& operator<<(std::ostream& os, const vmime::text& txt)
 {
 	os << "[text: [";
 
-	for (int i = 0 ; i < txt.getWordCount() ; ++i)
+	for (size_t i = 0 ; i < txt.getWordCount() ; ++i)
 	{
 		const vmime::word& w = *txt.getWordAt(i);
 
@@ -134,7 +134,7 @@ inline std::ostream& operator<<(std::ostream& os, const vmime::mailboxGroup& gro
 {
 	os << "[mailbox-group: name=" << group.getName() << ", list=[";
 
-	for (int i = 0 ; i < group.getMailboxCount() ; ++i)
+	for (size_t i = 0 ; i < group.getMailboxCount() ; ++i)
 	{
 		if (i != 0)
 			os << ",";
@@ -152,7 +152,7 @@ inline std::ostream& operator<<(std::ostream& os, const vmime::addressList& list
 {
 	os << "[address-list: [";
 
-	for (int i = 0 ; i < list.getAddressCount() ; ++i)
+	for (size_t i = 0 ; i < list.getAddressCount() ; ++i)
 	{
 		const vmime::address& addr = *list.getAddressAt(i);
 

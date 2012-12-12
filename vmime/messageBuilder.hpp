@@ -148,27 +148,27 @@ public:
 	  *
 	  * @param pos position of the attachment to remove
 	  */
-	void removeAttachment(const int pos);
+	void removeAttachment(const size_t pos);
 
 	/** Return the attachment at the specified position.
 	  *
 	  * @param pos position of the attachment
 	  * @return attachment at the specified position
 	  */
-	const ref <const attachment> getAttachmentAt(const int pos) const;
+	const ref <const attachment> getAttachmentAt(const size_t pos) const;
 
 	/** Return the attachment at the specified position.
 	  *
 	  * @param pos position of the attachment
 	  * @return attachment at the specified position
 	  */
-	ref <attachment> getAttachmentAt(const int pos);
+	ref <attachment> getAttachmentAt(const size_t pos);
 
 	/** Return the number of attachments in the message.
 	  *
 	  * @return number of attachments
 	  */
-	int getAttachmentCount() const;
+	size_t getAttachmentCount() const;
 
 	/** Return the list of attachments.
 	  *

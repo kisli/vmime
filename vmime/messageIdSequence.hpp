@@ -72,7 +72,7 @@ public:
 	  * the beginning of the list)
 	  * @param mid message-id to insert
 	  */
-	void insertMessageIdBefore(const int pos, ref <messageId> mid);
+	void insertMessageIdBefore(const size_t pos, ref <messageId> mid);
 
 	/** Insert a new message-id after the specified message-id.
 	  *
@@ -87,7 +87,7 @@ public:
 	  * @param pos position of the message-id before the new message-id
 	  * @param mid message-id to insert
 	  */
-	void insertMessageIdAfter(const int pos, ref <messageId> mid);
+	void insertMessageIdAfter(const size_t pos, ref <messageId> mid);
 
 	/** Remove the specified message-id from the list.
 	  *
@@ -100,7 +100,7 @@ public:
 	  *
 	  * @param pos position of the message-id to remove
 	  */
-	void removeMessageId(const int pos);
+	void removeMessageId(const size_t pos);
 
 	/** Remove all message-ids from the list.
 	  */
@@ -110,7 +110,7 @@ public:
 	  *
 	  * @return number of message-ides
 	  */
-	int getMessageIdCount() const;
+	size_t getMessageIdCount() const;
 
 	/** Tests whether the list of message-ides is empty.
 	  *
@@ -123,14 +123,14 @@ public:
 	  * @param pos position
 	  * @return message-id at position 'pos'
 	  */
-	const ref <messageId> getMessageIdAt(const int pos);
+	const ref <messageId> getMessageIdAt(const size_t pos);
 
 	/** Return the message-id at the specified position.
 	  *
 	  * @param pos position
 	  * @return message-id at position 'pos'
 	  */
-	const ref <const messageId> getMessageIdAt(const int pos) const;
+	const ref <const messageId> getMessageIdAt(const size_t pos) const;
 
 	/** Return the message-id list.
 	  *

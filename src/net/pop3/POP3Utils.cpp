@@ -43,7 +43,7 @@ void POP3Utils::parseMultiListOrUidlResponse(ref <POP3Response> response, std::m
 {
 	std::map <int, string> ids;
 
-	for (unsigned int i = 0, n = response->getLineCount() ; i < n ; ++i)
+	for (size_t i = 0, n = response->getLineCount() ; i < n ; ++i)
 	{
 		string line = response->getLineAt(i);
 		string::iterator it = line.begin();

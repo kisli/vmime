@@ -140,7 +140,7 @@ public:
 	  * the beginning of the list)
 	  * @param field field to insert
 	  */
-	void insertFieldBefore(const int pos, ref <headerField> field);
+	void insertFieldBefore(const size_t pos, ref <headerField> field);
 
 	/** Insert a new field after the specified field.
 	  *
@@ -155,7 +155,7 @@ public:
 	  * @param pos position of the field before the new field
 	  * @param field field to insert
 	  */
-	void insertFieldAfter(const int pos, ref <headerField> field);
+	void insertFieldAfter(const size_t pos, ref <headerField> field);
 
 	/** Remove the specified field from the list.
 	  *
@@ -168,7 +168,7 @@ public:
 	  *
 	  * @param pos position of the field to remove
 	  */
-	void removeField(const int pos);
+	void removeField(const size_t pos);
 
 	/** Remove all fields from the list.
 	  */
@@ -182,7 +182,7 @@ public:
 	  *
 	  * @return number of fields
 	  */
-	int getFieldCount() const;
+	size_t getFieldCount() const;
 
 	/** Tests whether the list of fields is empty.
 	  *
@@ -195,14 +195,14 @@ public:
 	  * @param pos position
 	  * @return field at position 'pos'
 	  */
-	const ref <headerField> getFieldAt(const int pos);
+	const ref <headerField> getFieldAt(const size_t pos);
 
 	/** Return the field at the specified position.
 	  *
 	  * @param pos position
 	  * @return field at position 'pos'
 	  */
-	const ref <const headerField> getFieldAt(const int pos) const;
+	const ref <const headerField> getFieldAt(const size_t pos) const;
 
 	/** Return the field list.
 	  *

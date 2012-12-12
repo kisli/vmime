@@ -231,7 +231,7 @@ void SMTPTransport::helo()
 
 		// Get supported extensions from SMTP response
 		// One extension per line, format is: EXT PARAM1 PARAM2...
-		for (int i = 1, n = resp->getLineCount() ; i < n ; ++i)
+		for (size_t i = 1, n = resp->getLineCount() ; i < n ; ++i)
 		{
 			const string line = resp->getLineAt(i).getText();
 			std::istringstream iss(line);
@@ -582,7 +582,7 @@ void SMTPTransport::send(const mailbox& expeditor, const mailboxList& recipients
 		sendRequest("MAIL FROM:<" + expeditor.getEmail() + ">");
 
 		// Emit a "RCPT TO" command for each recipient
-		for (int i = 0 ; i < recipients.getMailboxCount() ; ++i)
+		for (size_t i = 0 ; i < recipients.getMailboxCount() ; ++i)
 		{
 			const mailbox& mbox = *recipients.getMailboxAt(i);
 
@@ -602,7 +602,7 @@ void SMTPTransport::send(const mailbox& expeditor, const mailboxList& recipients
 		}
 
 		// Read responses for "RCPT TO" commands
-		for (int i = 0 ; i < recipients.getMailboxCount() ; ++i)
+		for (size_t i = 0 ; i < recipients.getMailboxCount() ; ++i)
 		{
 			const mailbox& mbox = *recipients.getMailboxAt(i);
 
@@ -632,7 +632,7 @@ void SMTPTransport::send(const mailbox& expeditor, const mailboxList& recipients
 		}
 
 		// Emit a "RCPT TO" command for each recipient
-		for (int i = 0 ; i < recipients.getMailboxCount() ; ++i)
+		for (size_t i = 0 ; i < recipients.getMailboxCount() ; ++i)
 		{
 			const mailbox& mbox = *recipients.getMailboxAt(i);
 

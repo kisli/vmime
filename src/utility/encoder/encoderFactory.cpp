@@ -89,13 +89,13 @@ const ref <const encoderFactory::registeredEncoder> encoderFactory::getEncoderBy
 }
 
 
-int encoderFactory::getEncoderCount() const
+size_t encoderFactory::getEncoderCount() const
 {
 	return (m_encoders.size());
 }
 
 
-const ref <const encoderFactory::registeredEncoder> encoderFactory::getEncoderAt(const int pos) const
+const ref <const encoderFactory::registeredEncoder> encoderFactory::getEncoderAt(const size_t pos) const
 {
 	return (m_encoders[pos]);
 }

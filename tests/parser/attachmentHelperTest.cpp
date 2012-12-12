@@ -54,7 +54,7 @@ VMIME_TEST_SUITE_BEGIN
 
 		res += "[";
 
-		for (int i = 0 ; i < bdy->getPartCount() ; ++i)
+		for (size_t i = 0 ; i < bdy->getPartCount() ; ++i)
 		{
 			vmime::ref <vmime::bodyPart> subPart = bdy->getPartAt(i);
 

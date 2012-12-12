@@ -810,6 +810,8 @@ config_hpp.write('// -- 32-bit\n')
 config_hpp.write('typedef signed ' + env['pf_32bit_type'] + ' vmime_int32;\n')
 config_hpp.write('typedef unsigned ' + env['pf_32bit_type'] + ' vmime_uint32;\n')
 config_hpp.write('\n')
+config_hpp.write('#define VMIME_HAVE_SIZE_T 1\n')
+config_hpp.write('\n')
 
 config_hpp.write('// Options\n')
 

@@ -211,8 +211,8 @@ void md5MessageDigest::finalize()
 
 	memset(p, 0, padding);
 
-	reinterpret_cast <vmime_uint32*>(m_block)[14] = (m_byteCount << 3);
-	reinterpret_cast <vmime_uint32*>(m_block)[15] = (m_byteCount >> 29);
+	reinterpret_cast <vmime_uint32*>(m_block)[14] = static_cast <vmime_uint32>(m_byteCount << 3);
+	reinterpret_cast <vmime_uint32*>(m_block)[15] = static_cast <vmime_uint32>(m_byteCount >> 29);
 
 #if VMIME_BYTE_ORDER_BIG_ENDIAN
 	swapUint32Array((vmime_uint32*) m_block, (64 - 8) / 4);

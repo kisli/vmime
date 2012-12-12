@@ -76,7 +76,7 @@ public:
 	  * the beginning of the list)
 	  * @param part part to insert
 	  */
-	void insertPartBefore(const int pos, ref <bodyPart> part);
+	void insertPartBefore(const size_t pos, ref <bodyPart> part);
 
 	/** Insert a new part after the specified part.
 	  *
@@ -91,7 +91,7 @@ public:
 	  * @param pos position of the part before the new part
 	  * @param part part to insert
 	  */
-	void insertPartAfter(const int pos, ref <bodyPart> part);
+	void insertPartAfter(const size_t pos, ref <bodyPart> part);
 
 	/** Remove the specified part from the list.
 	  *
@@ -104,7 +104,7 @@ public:
 	  *
 	  * @param pos position of the part to remove
 	  */
-	void removePart(const int pos);
+	void removePart(const size_t pos);
 
 	/** Remove all parts from the list.
 	  */
@@ -114,7 +114,7 @@ public:
 	  *
 	  * @return number of parts
 	  */
-	int getPartCount() const;
+	size_t getPartCount() const;
 
 	/** Tests whether the list of parts is empty.
 	  *
@@ -127,14 +127,14 @@ public:
 	  * @param pos position
 	  * @return part at position 'pos'
 	  */
-	ref <bodyPart> getPartAt(const int pos);
+	ref <bodyPart> getPartAt(const size_t pos);
 
 	/** Return the part at the specified position.
 	  *
 	  * @param pos position
 	  * @return part at position 'pos'
 	  */
-	const ref <const bodyPart> getPartAt(const int pos) const;
+	const ref <const bodyPart> getPartAt(const size_t pos) const;
 
 	/** Return the part list.
 	  *

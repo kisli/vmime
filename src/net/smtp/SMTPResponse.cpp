@@ -200,13 +200,13 @@ int SMTPResponse::extractResponseCode(const string& response)
 }
 
 
-const SMTPResponse::responseLine SMTPResponse::getLineAt(const unsigned int pos) const
+const SMTPResponse::responseLine SMTPResponse::getLineAt(const size_t pos) const
 {
 	return m_lines[pos];
 }
 
 
-unsigned int SMTPResponse::getLineCount() const
+size_t SMTPResponse::getLineCount() const
 {
 	return m_lines.size();
 }

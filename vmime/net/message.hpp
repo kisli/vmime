@@ -105,7 +105,7 @@ public:
 	  * @param pos index of the sub-part
 	  * @return sub-part at position 'pos'
 	  */
-	ref <const part> getPartAt(const int pos) const;
+	ref <const part> getPartAt(const size_t pos) const;
 
 	/** Return the sub-part at the specified position (zero is the
 	  * first part).
@@ -113,13 +113,13 @@ public:
 	  * @param pos index of the sub-part
 	  * @return sub-part at position 'pos'
 	  */
-	ref <part> getPartAt(const int pos);
+	ref <part> getPartAt(const size_t pos);
 
 	/** Return the number of sub-parts in this part.
 	  *
 	  * @return number of sub-parts
 	  */
-	int getPartCount() const;
+	size_t getPartCount() const;
 };
 
 
@@ -143,7 +143,7 @@ public:
 	  * @param pos position
 	  * @return part at position 'pos'
 	  */
-	virtual ref <const part> getPartAt(const int pos) const = 0;
+	virtual ref <const part> getPartAt(const size_t pos) const = 0;
 
 	/** Return the part at the specified position (first
 	  * part is at position 0).
@@ -151,13 +151,13 @@ public:
 	  * @param pos position
 	  * @return part at position 'pos'
 	  */
-	virtual ref <part> getPartAt(const int pos) = 0;
+	virtual ref <part> getPartAt(const size_t pos) = 0;
 
 	/** Return the number of parts in this part.
 	  *
 	  * @return number of parts
 	  */
-	virtual int getPartCount() const = 0;
+	virtual size_t getPartCount() const = 0;
 };
 
 

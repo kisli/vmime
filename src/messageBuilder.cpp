@@ -280,25 +280,25 @@ void messageBuilder::setSubject(const text& subject)
 }
 
 
-void messageBuilder::removeAttachment(const int pos)
+void messageBuilder::removeAttachment(const size_t pos)
 {
 	m_attach.erase(m_attach.begin() + pos);
 }
 
 
-const ref <const attachment> messageBuilder::getAttachmentAt(const int pos) const
+const ref <const attachment> messageBuilder::getAttachmentAt(const size_t pos) const
 {
 	return (m_attach[pos]);
 }
 
 
-ref <attachment> messageBuilder::getAttachmentAt(const int pos)
+ref <attachment> messageBuilder::getAttachmentAt(const size_t pos)
 {
 	return (m_attach[pos]);
 }
 
 
-int messageBuilder::getAttachmentCount() const
+size_t messageBuilder::getAttachmentCount() const
 {
 	return (m_attach.size());
 }

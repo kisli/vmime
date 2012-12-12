@@ -122,7 +122,7 @@ const string IMAPUtils::pathToString
 {
 	string result;
 
-	for (int i = 0 ; i < path.getSize() ; ++i)
+	for (size_t i = 0 ; i < path.getSize() ; ++i)
 	{
 		if (i > 0) result += hierarchySeparator;
 		result += toModifiedUTF7(hierarchySeparator, path[i]);
@@ -556,7 +556,7 @@ const string IMAPUtils::listToSet(const std::vector <message::uid>& list)
 
 	res << extractUIDFromGlobalUID(list[0]);
 
-	for (unsigned int i = 1, n = list.size() ; i < n ; ++i)
+	for (std::vector <message::uid>::size_type i = 1, n = list.size() ; i < n ; ++i)
 		res << "," << extractUIDFromGlobalUID(list[i]);
 
 	return res.str();

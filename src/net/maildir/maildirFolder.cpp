@@ -505,7 +505,7 @@ void maildirFolder::listFolders(std::vector <ref <folder> >& list, const bool re
 
 		list.reserve(pathList.size());
 
-		for (unsigned int i = 0, n = pathList.size() ; i < n ; ++i)
+		for (std::vector <folder::path>::size_type i = 0, n = pathList.size() ; i < n ; ++i)
 		{
 			ref <maildirFolder> subFolder =
 				vmime::create <maildirFolder>(pathList[i], store);
@@ -1264,7 +1264,7 @@ void maildirFolder::expunge()
 
 	if (!nums.empty())
 	{
-		for (int i = nums.size() - 1 ; i >= 0 ; --i)
+		for (std::vector <int>::size_type i = nums.size() - 1 ; i >= 0 ; --i)
 			m_messageInfos.erase(m_messageInfos.begin() + i);
 	}
 

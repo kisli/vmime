@@ -159,19 +159,19 @@ void text::appendWord(ref <word> w)
 }
 
 
-void text::insertWordBefore(const int pos, ref <word> w)
+void text::insertWordBefore(const size_t pos, ref <word> w)
 {
 	m_words.insert(m_words.begin() + pos, w);
 }
 
 
-void text::insertWordAfter(const int pos, ref <word> w)
+void text::insertWordAfter(const size_t pos, ref <word> w)
 {
 	m_words.insert(m_words.begin() + pos + 1, w);
 }
 
 
-void text::removeWord(const int pos)
+void text::removeWord(const size_t pos)
 {
 	const std::vector <ref <word> >::iterator it = m_words.begin() + pos;
 
@@ -185,7 +185,7 @@ void text::removeAllWords()
 }
 
 
-int text::getWordCount() const
+size_t text::getWordCount() const
 {
 	return (m_words.size());
 }
@@ -197,13 +197,13 @@ bool text::isEmpty() const
 }
 
 
-const ref <word> text::getWordAt(const int pos)
+const ref <word> text::getWordAt(const size_t pos)
 {
 	return (m_words[pos]);
 }
 
 
-const ref <const word> text::getWordAt(const int pos) const
+const ref <const word> text::getWordAt(const size_t pos) const
 {
 	return (m_words[pos]);
 }
@@ -354,7 +354,7 @@ void text::encodeAndFold(utility::outputStream& os, const string::size_type maxL
 	string::size_type curLineLength = firstLineOffset;
 	word::generatorState state;
 
-	for (int wi = 0 ; wi < getWordCount() ; ++wi)
+	for (size_t wi = 0 ; wi < getWordCount() ; ++wi)
 	{
 		getWordAt(wi)->generate(os, maxLineLength, curLineLength,
 			&curLineLength, flags, &state);

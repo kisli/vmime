@@ -56,13 +56,13 @@ unsigned int random::getProcess()
 }
 
 
-const string random::getString(const int length, const string& randomChars)
+const string random::getString(const string::size_type length, const string& randomChars)
 {
 	string res;
 	res.resize(length);
 
-	const unsigned int x = randomChars.length();
-	int c = 0;
+	const unsigned int x = static_cast <unsigned int>(randomChars.length());
+	string::size_type c = 0;
 
 	while (c < length)
 	{

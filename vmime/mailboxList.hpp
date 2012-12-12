@@ -73,7 +73,7 @@ public:
 	  * the beginning of the list)
 	  * @param mbox mailbox to insert
 	  */
-	void insertMailboxBefore(const int pos, ref <mailbox> mbox);
+	void insertMailboxBefore(const size_t pos, ref <mailbox> mbox);
 
 	/** Insert a new mailbox after the specified mailbox.
 	  *
@@ -88,7 +88,7 @@ public:
 	  * @param pos position of the mailbox before the new mailbox
 	  * @param mbox mailbox to insert
 	  */
-	void insertMailboxAfter(const int pos, ref <mailbox> mbox);
+	void insertMailboxAfter(const size_t pos, ref <mailbox> mbox);
 
 	/** Remove the specified mailbox from the list.
 	  *
@@ -101,7 +101,7 @@ public:
 	  *
 	  * @param pos position of the mailbox to remove
 	  */
-	void removeMailbox(const int pos);
+	void removeMailbox(const size_t pos);
 
 	/** Remove all mailboxes from the list.
 	  */
@@ -111,7 +111,7 @@ public:
 	  *
 	  * @return number of mailboxes
 	  */
-	int getMailboxCount() const;
+	size_t getMailboxCount() const;
 
 	/** Tests whether the list of mailboxes is empty.
 	  *
@@ -124,14 +124,14 @@ public:
 	  * @param pos position
 	  * @return mailbox at position 'pos'
 	  */
-	ref <mailbox> getMailboxAt(const int pos);
+	ref <mailbox> getMailboxAt(const size_t pos);
 
 	/** Return the mailbox at the specified position.
 	  *
 	  * @param pos position
 	  * @return mailbox at position 'pos'
 	  */
-	const ref <const mailbox> getMailboxAt(const int pos) const;
+	const ref <const mailbox> getMailboxAt(const size_t pos) const;
 
 	/** Return the mailbox list.
 	  *

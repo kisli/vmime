@@ -94,14 +94,14 @@ public:
 	  *
 	  * @return number of attachments
 	  */
-	int getAttachmentCount() const;
+	size_t getAttachmentCount() const;
 
 	/** Return the attachment at the specified position.
 	  *
 	  * @param pos position of the attachment
 	  * @return attachment at position 'pos'
 	  */
-	const ref <const attachment> getAttachmentAt(const int pos) const;
+	const ref <const attachment> getAttachmentAt(const size_t pos) const;
 
 	/** Return the attachments of the message.
 	  *
@@ -119,14 +119,14 @@ public:
 	  *
 	  * @return number of text parts
 	  */
-	int getTextPartCount() const;
+	size_t getTextPartCount() const;
 
 	/** Return the text part at the specified position.
 	  *
 	  * @param pos position of the text part
 	  * @return text part at position 'pos'
 	  */
-	const ref <const textPart> getTextPartAt(const int pos) const;
+	const ref <const textPart> getTextPartAt(const size_t pos) const;
 
 private:
 

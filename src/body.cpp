@@ -446,7 +446,7 @@ void body::generateImpl(utility::outputStream& os, const string::size_type maxLi
 
 		os << "--" << boundary;
 
-		for (int p = 0 ; p < getPartCount() ; ++p)
+		for (size_t p = 0 ; p < getPartCount() ; ++p)
 		{
 			os << CRLF;
 
@@ -705,7 +705,7 @@ void body::copyFrom(const component& other)
 
 	removeAllParts();
 
-	for (int p = 0 ; p < bdy.getPartCount() ; ++p)
+	for (size_t p = 0 ; p < bdy.getPartCount() ; ++p)
 	{
 		ref <bodyPart> part = bdy.getPartAt(p)->clone().dynamicCast <bodyPart>();
 
@@ -854,7 +854,7 @@ void body::insertPartBefore(ref <bodyPart> beforePart, ref <bodyPart> part)
 }
 
 
-void body::insertPartBefore(const int pos, ref <bodyPart> part)
+void body::insertPartBefore(const size_t pos, ref <bodyPart> part)
 {
 	initNewPart(part);
 
@@ -876,7 +876,7 @@ void body::insertPartAfter(ref <bodyPart> afterPart, ref <bodyPart> part)
 }
 
 
-void body::insertPartAfter(const int pos, ref <bodyPart> part)
+void body::insertPartAfter(const size_t pos, ref <bodyPart> part)
 {
 	initNewPart(part);
 
@@ -896,7 +896,7 @@ void body::removePart(ref <bodyPart> part)
 }
 
 
-void body::removePart(const int pos)
+void body::removePart(const size_t pos)
 {
 	m_parts.erase(m_parts.begin() + pos);
 }
@@ -908,7 +908,7 @@ void body::removeAllParts()
 }
 
 
-int body::getPartCount() const
+size_t body::getPartCount() const
 {
 	return (m_parts.size());
 }
@@ -920,13 +920,13 @@ bool body::isEmpty() const
 }
 
 
-ref <bodyPart> body::getPartAt(const int pos)
+ref <bodyPart> body::getPartAt(const size_t pos)
 {
 	return (m_parts[pos]);
 }
 
 
-const ref <const bodyPart> body::getPartAt(const int pos) const
+const ref <const bodyPart> body::getPartAt(const size_t pos) const
 {
 	return (m_parts[pos]);
 }
