@@ -109,10 +109,12 @@ stream::size_type parserInputStreamAdapter::findNext
 		size_type findBufferLen = 0;
 		size_type findBufferOffset = 0;
 
+		bool isEOF = false;
+
 		// Fill in initial buffer
 		findBufferLen = read(findBuffer, BUFFER_SIZE * sizeof(value_type));
 
-		for (;;)
+		while (findBufferLen != 0)
 		{
 			// Find token
 			for (value_type *begin = findBuffer, *end = findBuffer + findBufferLen - token.length() ;
@@ -133,15 +135,23 @@ stream::size_type parserInputStreamAdapter::findNext
 			memcpy(findBuffer1, findBuffer2, (BUFFER_SIZE / 2) * sizeof(value_type));
 
 			// Read more bytes
-			if (findBufferLen < BUFFER_SIZE && eof())
+			if (findBufferLen < BUFFER_SIZE && (eof() || isEOF))
 			{
 				break;
 			}
 			else
 			{
 				const size_type bytesRead = read(findBuffer2, (BUFFER_SIZE / 2) * sizeof(value_type));
-				findBufferLen = (BUFFER_SIZE / 2) + bytesRead;
-				findBufferOffset += (BUFFER_SIZE / 2);
+
+				if (bytesRead == 0)
+				{
+					isEOF = true;
+				}
+				else
+				{
+					findBufferLen = (BUFFER_SIZE / 2) + bytesRead;
+					findBufferOffset += (BUFFER_SIZE / 2);
+				}
 			}
 		}
 
