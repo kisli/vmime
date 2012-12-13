@@ -184,11 +184,24 @@ const encoding encoding::decideImpl
 }
 
 
+bool encoding::shouldReencode() const
+{
+	if (m_name == encodingTypes::BASE64 ||
+	    m_name == encodingTypes::QUOTED_PRINTABLE ||
+	    m_name == encodingTypes::UUENCODE)
+	{
+		return false;
+	}
+
+	return true;
+}
+
+
 const encoding encoding::decide
 	(ref <const contentHandler> data, const EncodingUsage usage)
 {
 	// Do not re-encode data if it is already encoded
-	if (data->isEncoded() && data->getEncoding() == encoding(encodingTypes::BASE64))
+	if (data->isEncoded() && !data->getEncoding().shouldReencode())
 		return data->getEncoding();
 
 	encoding enc;
@@ -220,7 +233,7 @@ const encoding encoding::decide(ref <const contentHandler> data,
 	const charset& chset, const EncodingUsage usage)
 {
 	// Do not re-encode data if it is already encoded
-	if (data->isEncoded() && data->getEncoding() == encoding(encodingTypes::BASE64))
+	if (data->isEncoded() && !data->getEncoding().shouldReencode())
 		return data->getEncoding();
 
 	if (usage == USAGE_TEXT)

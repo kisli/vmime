@@ -130,6 +130,13 @@ private:
 	string m_name;
 	EncodingUsage m_usage;
 
+	/** Determine whether data encoded using this encoding should
+	  * be re-encoded if needed.
+	  *
+	  * @return true if data should be re-encoded, false otherwise
+	  */
+	bool shouldReencode() const;
+
 	/** Decide which encoding to use based on the specified data.
 	  *
 	  * Please note: this will read the whole buffer, so it should be used only
