@@ -73,6 +73,7 @@ stream::size_type inputStreamAdapter::getPosition() const
 
 void inputStreamAdapter::seek(const size_type pos)
 {
+	m_stream.clear();
 	m_stream.seekg(pos, std::ios_base::beg);
 }
 
