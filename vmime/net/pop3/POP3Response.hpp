@@ -37,12 +37,13 @@
 #include "vmime/utility/outputStream.hpp"
 #include "vmime/utility/progressListener.hpp"
 
+#include "vmime/net/socket.hpp"
+
 
 namespace vmime {
 namespace net {
 
 
-class socket;
 class timeoutHandler;
 
 

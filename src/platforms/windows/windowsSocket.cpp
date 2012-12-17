@@ -33,6 +33,8 @@
 
 #include "vmime/exception.hpp"
 
+#include <ws2tcpip.h>
+
 
 namespace vmime {
 namespace platforms {

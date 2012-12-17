@@ -48,6 +48,12 @@
 #include <openssl/err.h>
 
 
+#ifdef WIN32
+#	define strcasecmp _stricmp
+#	define strncasecmp _strnicmp
+#endif
+
+
 namespace vmime {
 namespace security {
 namespace cert {
@@ -85,7 +91,7 @@ public:
 		if (c_it != m_monthMap.end())
 			return c_it->second;
 
-		return -1;	
+		return -1;
 	}
 
 private:
@@ -199,7 +205,7 @@ void X509Certificate_OpenSSL::write
 	unsigned char* out = 0;
 
 	if (format == FORMAT_DER)
-	{	
+	{
 		if ((dataSize = i2d_X509(m_data->cert, &out)) < 0)
 			goto err;
 
@@ -265,7 +271,7 @@ bool X509Certificate_OpenSSL::checkIssuer(ref <const X509Certificate> cert_) con
 
 	// Get issuer for this cert
 	BIO *out;
-	unsigned char *issuer;	
+	unsigned char *issuer;
 
 	out = BIO_new(BIO_s_mem());
 	X509_NAME_print_ex(out, X509_get_issuer_name(m_data->cert), 0, XN_FLAG_RFC2253);
@@ -281,7 +287,7 @@ bool X509Certificate_OpenSSL::checkIssuer(ref <const X509Certificate> cert_) con
 	vmime::string subjOfIssuer((char*)subject, n);
 	BIO_free(out);
 
-	return subjOfIssuer == thisIssuerName;  
+	return subjOfIssuer == thisIssuerName;
 }
 
 
@@ -354,7 +360,11 @@ bool X509Certificate_OpenSSL::verifyHostName(const string& hostname) const
 
 		if (strcmp(extStr, "subjectAltName") == 0)
 		{
+#ifdef WIN32
+			X509V3_EXT_METHOD* method;
+#else
 			const X509V3_EXT_METHOD* method;
+#endif
 
 			if ((method = X509V3_EXT_get(ext)) != NULL)
 			{
@@ -411,8 +421,8 @@ const datetime X509Certificate_OpenSSL::convertX509Date(void* time) const
 	char* dest = new char[sz + 1];
 	dest[sz] = 0;
 	memcpy(dest, buffer, sz);
-	vmime::string t(dest);  
-  
+	vmime::string t(dest);
+
 	BIO_free(out);
 	delete dest;
 
@@ -424,7 +434,7 @@ const datetime X509Certificate_OpenSSL::convertX509Date(void* time) const
 		int nrconv = sscanf(t.c_str(), "%s %2d %02d:%02d:%02d %d%s", month, &day, &hour, &minute, &second,&year,zone);
 
 		if (nrconv >= 6)
-			return datetime(year, sg_monthMap.getMonth(vmime::string(month)), day, hour, minute, second);		
+			return datetime(year, sg_monthMap.getMonth(vmime::string(month)), day, hour, minute, second);
 	}
 
 	// let datetime try and parse it
@@ -480,7 +490,7 @@ const byteArray X509Certificate_OpenSSL::getFingerprint(const DigestAlgorithm al
 	}
 
 	n = BIO_get_mem_data(out, &fingerprint);
-	result = new unsigned char[n];	
+	result = new unsigned char[n];
 	memcpy (result, fingerprint, n);
 	BIO_free(out);
 
@@ -512,7 +522,7 @@ const string X509Certificate_OpenSSL::getType() const
 
 int X509Certificate_OpenSSL::getVersion() const
 {
-	return (int)X509_get_version(m_data->cert);	
+	return (int)X509_get_version(m_data->cert);
 }
 
 
