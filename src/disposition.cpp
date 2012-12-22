@@ -300,7 +300,7 @@ void disposition::generateImpl(utility::outputStream& os, const string::size_typ
 
 	if (m_modifiers.size() >= 1)
 	{
-		for (std::vector <string>::size_type i = 1, n = 0 ; i < m_modifiers.size() ; ++i)
+		for (std::vector <string>::size_type i = 0, n = 0 ; i < m_modifiers.size() ; ++i)
 		{
 			const string mod = utility::stringUtils::trim(m_modifiers[i]);
 
