@@ -80,10 +80,11 @@ utility::stream::size_type b64Encoder::encode(utility::inputStream& in,
 {
 	in.reset();  // may not work...
 
-	const int propMaxLineLength = getProperties().getProperty <int>("maxlinelength", -1);
+	const string::size_type propMaxLineLength =
+		getProperties().getProperty <string::size_type>("maxlinelength", static_cast <string::size_type>(-1));
 
-	const bool cutLines = (propMaxLineLength != -1);
-	const int maxLineLength = std::min(propMaxLineLength, 76);
+	const bool cutLines = (propMaxLineLength != static_cast <string::size_type>(-1));
+	const string::size_type maxLineLength = std::min(propMaxLineLength, static_cast <string::size_type>(76));
 
 	// Process data
 	utility::stream::value_type buffer[65536];
@@ -96,7 +97,7 @@ utility::stream::size_type b64Encoder::encode(utility::inputStream& in,
 	utility::stream::size_type total = 0;
 	utility::stream::size_type inTotal = 0;
 
-	int curCol = 0;
+	string::size_type curCol = 0;
 
 	if (progress)
 		progress->start(0);
@@ -173,7 +174,7 @@ utility::stream::size_type b64Encoder::encode(utility::inputStream& in,
 		total += 4;
 		curCol += 4;
 
-		if (cutLines && curCol >= maxLineLength - 2 /* \r\n */ - 4 /* next bytes */)
+		if (cutLines && curCol + 2 /* \r\n */ + 4 /* next bytes */ >= maxLineLength)
 		{
 			out.write("\r\n", 2);
 			curCol = 0;
