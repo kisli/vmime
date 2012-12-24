@@ -21,6 +21,10 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#include "vmime/config.hpp"
+
+#if VMIME_HAVE_TLS_SUPPORT
+
 #include "vmime/security/cert/defaultCertificateVerifier.hpp"
 
 #include "vmime/security/cert/X509Certificate.hpp"
@@ -171,3 +175,4 @@ void defaultCertificateVerifier::setX509TrustedCerts
 } // security
 } // vmime
 
+#endif
