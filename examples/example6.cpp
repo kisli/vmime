@@ -153,7 +153,7 @@ public:
 		{
 			setX509TrustedCerts(m_trustedCerts);
 
-			defaultCertificateVerifier::verify(chain);
+			defaultCertificateVerifier::verify(chain, hostname);
 		}
 		catch (vmime::exceptions::certificate_verification_exception&)
 		{
