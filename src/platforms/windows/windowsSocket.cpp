@@ -189,10 +189,15 @@ const string windowsSocket::getPeerAddress() const
 	getpeername(m_desc, reinterpret_cast <sockaddr*>(&peer), &peerLen);
 
 	// Convert to numerical presentation format
-	char numericAddress[1024];
+	char host[NI_MAXHOST + 1];
+	char service[NI_MAXSERV + 1];
 
-	if (inet_ntop(peer.sa_family, &peer, numericAddress, sizeof(numericAddress)) != NULL)
-		return string(numericAddress);
+	if (getnameinfo(reinterpret_cast <sockaddr *>(&peer), peerLen,
+			host, sizeof(host), service, sizeof(service),
+			/* flags */ NI_NUMERICHOST) == 0)
+	{
+		return string(host);
+	}
 
 	return "";  // should not happen
 }
