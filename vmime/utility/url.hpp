@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2009 Vincent Richard <vincent@vincent-richard.net>
+// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -71,7 +71,7 @@ public:
 	/** Construct an URL from the components.
 	  *
 	  * @param protocol protocol (eg. "http", "ftp"...)
-	  * @param host host name (eg. "vmime.sourceforge.net", "123.45.67.89")
+	  * @param host host name (eg. "www.vmime.org", "123.45.67.89")
 	  * @param port optional port number (eg. 80, 110 or UNSPECIFIED_PORT to mean "default")
 	  * @param path optional full path (eg. "download.html")
 	  * @param username optional user name
