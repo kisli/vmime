@@ -53,10 +53,10 @@ const serviceInfos::property serviceInfos::property::AUTH_PASSWORD
 #if VMIME_HAVE_TLS_SUPPORT
 
 const serviceInfos::property serviceInfos::property::CONNECTION_TLS
-	("connection.tls", serviceInfos::property::TYPE_BOOL, "false");
+	("connection.tls", serviceInfos::property::TYPE_BOOLEAN, "false");
 
 const serviceInfos::property serviceInfos::property::CONNECTION_TLS_REQUIRED
-	("connection.tls.required", serviceInfos::property::TYPE_BOOL, "false");
+	("connection.tls.required", serviceInfos::property::TYPE_BOOLEAN, "false");
 
 #endif // VMIME_HAVE_TLS_SUPPORT
 

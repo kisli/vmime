@@ -56,8 +56,8 @@ const IMAPServiceInfos::props& IMAPServiceInfos::getProperties() const
 	{
 		// IMAP-specific options
 #if VMIME_HAVE_SASL_SUPPORT
-		property("options.sasl", serviceInfos::property::TYPE_BOOL, "true"),
-		property("options.sasl.fallback", serviceInfos::property::TYPE_BOOL, "true"),
+		property("options.sasl", serviceInfos::property::TYPE_BOOLEAN, "true"),
+		property("options.sasl.fallback", serviceInfos::property::TYPE_BOOLEAN, "true"),
 #endif // VMIME_HAVE_SASL_SUPPORT
 
 		// Common properties
@@ -77,8 +77,8 @@ const IMAPServiceInfos::props& IMAPServiceInfos::getProperties() const
 	{
 		// IMAP-specific options
 #if VMIME_HAVE_SASL_SUPPORT
-		property("options.sasl", serviceInfos::property::TYPE_BOOL, "true"),
-		property("options.sasl.fallback", serviceInfos::property::TYPE_BOOL, "true"),
+		property("options.sasl", serviceInfos::property::TYPE_BOOLEAN, "true"),
+		property("options.sasl.fallback", serviceInfos::property::TYPE_BOOLEAN, "true"),
 #endif // VMIME_HAVE_SASL_SUPPORT
 
 		// Common properties

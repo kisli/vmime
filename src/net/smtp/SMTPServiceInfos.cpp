@@ -55,10 +55,10 @@ const SMTPServiceInfos::props& SMTPServiceInfos::getProperties() const
 	static props smtpProps =
 	{
 		// SMTP-specific options
-		property("options.need-authentication", serviceInfos::property::TYPE_BOOL, "false"),
+		property("options.need-authentication", serviceInfos::property::TYPE_BOOLEAN, "false"),
 #if VMIME_HAVE_SASL_SUPPORT
-		property("options.sasl", serviceInfos::property::TYPE_BOOL, "true"),
-		property("options.sasl.fallback", serviceInfos::property::TYPE_BOOL, "false"),
+		property("options.sasl", serviceInfos::property::TYPE_BOOLEAN, "true"),
+		property("options.sasl.fallback", serviceInfos::property::TYPE_BOOLEAN, "false"),
 #endif // VMIME_HAVE_SASL_SUPPORT
 
 		// Common properties
@@ -77,10 +77,10 @@ const SMTPServiceInfos::props& SMTPServiceInfos::getProperties() const
 	static props smtpsProps =
 	{
 		// SMTP-specific options
-		property("options.need-authentication", serviceInfos::property::TYPE_BOOL, "false"),
+		property("options.need-authentication", serviceInfos::property::TYPE_BOOLEAN, "false"),
 #if VMIME_HAVE_SASL_SUPPORT
-		property("options.sasl", serviceInfos::property::TYPE_BOOL, "true"),
-		property("options.sasl.fallback", serviceInfos::property::TYPE_BOOL, "false"),
+		property("options.sasl", serviceInfos::property::TYPE_BOOLEAN, "true"),
+		property("options.sasl.fallback", serviceInfos::property::TYPE_BOOLEAN, "false"),
 #endif // VMIME_HAVE_SASL_SUPPORT
 
 		// Common properties

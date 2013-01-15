@@ -114,7 +114,7 @@ public:
 		{
 			TYPE_INTEGER,   /*< Integer number. */
 			TYPE_STRING,    /*< Character string. */
-			TYPE_BOOL,      /*< Boolean (true or false). */
+			TYPE_BOOLEAN,   /*< Boolean (true or false). */
 
 			TYPE_DEFAULT = TYPE_STRING
 		};

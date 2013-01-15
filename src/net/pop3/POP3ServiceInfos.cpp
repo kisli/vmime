@@ -55,11 +55,11 @@ const POP3ServiceInfos::props& POP3ServiceInfos::getProperties() const
 	static props pop3Props =
 	{
 		// POP3-specific options
-		property("options.apop", serviceInfos::property::TYPE_BOOL, "true"),
-		property("options.apop.fallback", serviceInfos::property::TYPE_BOOL, "true"),
+		property("options.apop", serviceInfos::property::TYPE_BOOLEAN, "true"),
+		property("options.apop.fallback", serviceInfos::property::TYPE_BOOLEAN, "true"),
 #if VMIME_HAVE_SASL_SUPPORT
-		property("options.sasl", serviceInfos::property::TYPE_BOOL, "true"),
-		property("options.sasl.fallback", serviceInfos::property::TYPE_BOOL, "true"),
+		property("options.sasl", serviceInfos::property::TYPE_BOOLEAN, "true"),
+		property("options.sasl.fallback", serviceInfos::property::TYPE_BOOLEAN, "true"),
 #endif // VMIME_HAVE_SASL_SUPPORT
 
 		// Common properties
@@ -78,11 +78,11 @@ const POP3ServiceInfos::props& POP3ServiceInfos::getProperties() const
 	static props pop3sProps =
 	{
 		// POP3-specific options
-		property("options.apop", serviceInfos::property::TYPE_BOOL, "true"),
-		property("options.apop.fallback", serviceInfos::property::TYPE_BOOL, "true"),
+		property("options.apop", serviceInfos::property::TYPE_BOOLEAN, "true"),
+		property("options.apop.fallback", serviceInfos::property::TYPE_BOOLEAN, "true"),
 #if VMIME_HAVE_SASL_SUPPORT
-		property("options.sasl", serviceInfos::property::TYPE_BOOL, "true"),
-		property("options.sasl.fallback", serviceInfos::property::TYPE_BOOL, "true"),
+		property("options.sasl", serviceInfos::property::TYPE_BOOLEAN, "true"),
+		property("options.sasl.fallback", serviceInfos::property::TYPE_BOOLEAN, "true"),
 #endif // VMIME_HAVE_SASL_SUPPORT
 
 		// Common properties

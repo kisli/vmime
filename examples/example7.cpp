@@ -91,7 +91,7 @@ int main()
 			{
 			case vmime::net::serviceInfos::property::TYPE_INTEGER: type = "TYPE_INTEGER"; break;
 			case vmime::net::serviceInfos::property::TYPE_STRING: type = "TYPE_STRING"; break;
-			case vmime::net::serviceInfos::property::TYPE_BOOL: type = "TYPE_BOOL"; break;
+			case vmime::net::serviceInfos::property::TYPE_BOOLEAN: type = "TYPE_BOOLEAN"; break;
 			default: type = "(unknown)"; break;
 			}
 
