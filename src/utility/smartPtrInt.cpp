@@ -24,12 +24,6 @@
 #include "vmime/utility/smartPtrInt.hpp"
 #include "vmime/object.hpp"
 
-#if defined(_WIN32)
-#	include <windows.h>
-#elif defined(VMIME_HAVE_PTHREAD)
-#	include <pthread.h>
-#endif
-
 
 namespace vmime {
 namespace utility {
