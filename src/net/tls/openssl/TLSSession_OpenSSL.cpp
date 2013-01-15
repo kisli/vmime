@@ -27,12 +27,6 @@
 #if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT && VMIME_TLS_SUPPORT_LIB_IS_OPENSSL
 
 
-#if VMIME_HAVE_PTHREAD
-#	include <pthread.h>
-#	include <gcrypt.h>
-#	include <errno.h>
-#endif // VMIME_HAVE_PTHREAD
-
 #include "vmime/net/tls/openssl/TLSSession_OpenSSL.hpp"
 #include "vmime/net/tls/openssl/OpenSSLInitializer.hpp"
 
