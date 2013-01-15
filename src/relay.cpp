@@ -100,7 +100,7 @@ void relay::parseImpl(const string& buffer, const string::size_type position,
 		{
 			Parts newPart = Part_None;
 
-			if ((cont = ((iss >> word) != 0)))
+			if ((cont = !(iss >> word).fail()))
 			{
 				// A little hack for handling comments
 				if (inComment)
