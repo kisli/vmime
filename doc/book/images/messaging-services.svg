@@ -1,23 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
+
 <svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://web.resource.org/cc/"
+   xmlns:cc="http://creativecommons.org/ns#"
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg"
-   xmlns:sodipodi="http://inkscape.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="629.28000pt"
    height="615.89000pt"
    id="svg2"
    sodipodi:version="0.32"
-   inkscape:version="0.42.2"
-   sodipodi:docbase="/home/vincent/projects/vmime/doc/book/images"
+   inkscape:version="0.48.0 r9654"
    sodipodi:docname="messaging-services.svg"
    inkscape:export-filename="/home/vincent/www/vmime/documentation/images/design-messaging.png"
    inkscape:export-xdpi="74.639999"
-   inkscape:export-ydpi="74.639999">
+   inkscape:export-ydpi="74.639999"
+   version="1.1">
   <defs
      id="defs3">
     <marker
@@ -63,7 +64,7 @@
            style="fill-rule:evenodd;stroke-width:1.0000000pt;marker-end:none" />
         <path
            transform="matrix(6.793608e-17,-1.109517,1.109517,6.793608e-17,25.96648,19.71619)"
-           d="M 16.779951 -28.685045 A 0.60731727 0.60731727 0 1 0 15.565317,-28.685045 A 0.60731727 0.60731727 0 1 0 16.779951 -28.685045 z"
+           d="m 16.779951,-28.685045 c 0,0.335412 -0.271905,0.607317 -0.607317,0.607317 -0.335412,0 -0.607317,-0.271905 -0.607317,-0.607317 0,-0.335412 0.271905,-0.607318 0.607317,-0.607318 0.335412,0 0.607317,0.271906 0.607317,0.607318 z"
            sodipodi:ry="0.60731727"
            sodipodi:rx="0.60731727"
            sodipodi:cy="-28.685045"
@@ -73,7 +74,7 @@
            sodipodi:type="arc" />
         <path
            transform="matrix(6.793608e-17,-1.109517,1.109517,6.793608e-17,26.82450,16.99126)"
-           d="M 16.779951 -28.685045 A 0.60731727 0.60731727 0 1 0 15.565317,-28.685045 A 0.60731727 0.60731727 0 1 0 16.779951 -28.685045 z"
+           d="m 16.779951,-28.685045 c 0,0.335412 -0.271905,0.607317 -0.607317,0.607317 -0.335412,0 -0.607317,-0.271905 -0.607317,-0.607317 0,-0.335412 0.271905,-0.607318 0.607317,-0.607318 0.335412,0 0.607317,0.271906 0.607317,0.607318 z"
            sodipodi:ry="0.60731727"
            sodipodi:rx="0.60731727"
            sodipodi:cy="-28.685045"
@@ -109,11 +110,13 @@
      inkscape:cx="365.32198"
      inkscape:cy="407.27112"
      inkscape:document-units="px"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="svg2"
      inkscape:window-width="1150"
      inkscape:window-height="986"
-     inkscape:window-x="0"
-     inkscape:window-y="30" />
+     inkscape:window-x="69"
+     inkscape:window-y="33"
+     showgrid="false"
+     inkscape:window-maximized="0" />
   <metadata
      id="metadata4">
     <rdf:RDF>
@@ -604,13 +607,6 @@
      id="path5436"
      d="M 325.97175,390.06210 L 661.85821,390.06210"
      style="fill:none;fill-opacity:0.75000000;fill-rule:evenodd;stroke:#000000;stroke-width:1.2515085;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4.0000000;stroke-opacity:1.0000000" />
-  <rect
-     y="102.22088"
-     x="-7.6927943"
-     height="76.000000"
-     width="106.00000"
-     id="rect3358"
-     style="fill:none;fill-opacity:1.0000000;fill-rule:nonzero;stroke:none;stroke-width:1.2500000;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4.0000000;stroke-dashoffset:0.0000000;stroke-opacity:1.0000000" />
   <rect
      y="170.36218"
      x="668.00000"

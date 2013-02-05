@@ -1,30 +1,23 @@
 \documentclass[11pt]{report}
 
 \title{{\Huge VMime Book} \\ \ \\ A Developer's Guide To VMime}
-\author{Vincent Richard \\ vincent@vincent-richard.net}
+\author{Vincent Richard \\ vincent@vmime.org}
 
 \usepackage{graphicx}
 \usepackage{tabularx}
+\usepackage{array}
 \usepackage{listings}
 \usepackage[usenames]{color}
 \usepackage{ucs}
-\usepackage[latin1]{inputenc}
+\usepackage[utf8x]{inputenc}
 \usepackage[vcentering,dvips]{geometry}
 %\usepackage{type1cm}  % scalable Computer Modern fonts
 \usepackage{courier}  % use Adobe Courier instead of Computer Modern Typewriter
 \usepackage{fancyheadings}
 \usepackage{hyperref}
-\usepackage{sverb}
+\usepackage{verbatim}
 \usepackage{footmisc}
 
-
-\addtolength{\parskip}{+0.3cm}
-\linespread{1.05}
-
-\setlength{\skip\footins}{1cm}  % margin between text and footnotes
-
-\clubpenalty=1000
-\widowpenalty=1000
 
 \setcounter{secnumdepth}{10}
 \setcounter{tocdepth}{10}
@@ -40,12 +33,10 @@
 
 \newcommand{\Chapter}[1]{\chapter{#1} \setcounter{figure}{1}}
 
-% 'geometry' configuration
-\geometry{papersize={210mm,297mm},total={160mm,230mm}}
-
 % 'listings' configuration
 \definecolor{listingFrame}{rgb}{0.9,0.9,0.9}
 \lstset{language=C++,showstringspaces=false}
+\lstset{keywordstyle=\bf,commentstyle=\it}
 \lstset{captionpos=b,extendedchars=true,inputencoding=latin1}
 \lstset{fontadjust=true,basewidth={0.5em,0.4em},columns=fixed,flexiblecolumns=false}
 \lstset{frame=leftline,framerule=0.1cm,framesep=0.3cm,rulecolor=\color{listingFrame}}
@@ -56,6 +47,27 @@
    backref=true,pagebackref=true,hyperindex=rue,colorlinks=true,
    breaklinks=true,urlcolor=blue,linkcolor=black,bookmarks=true,bookmarksopen=true
 }
+
+% HTML output configuration
+%HEVEA\renewcommand{\includegraphics}[2][]{\imgsrc{#2}}
+%HEVEA\renewcommand{\verti}[1]{#1}
+%HEVEA\def\vdot{\bullet}
+%HEVEA\newcommand{\linespread}{}
+%HEVEA\newcommand{\clubpenalty}{}
+%HEVEA\newcommand{\widowpenalty}{}
+%HEVEA\newcommand{\geometry}{}
+
+
+% Page layout
+\geometry{papersize={210mm,297mm},total={160mm,230mm}}
+
+% Text layout
+\setlength{\skip\footins}{1cm}  % margin between text and footnotes
+\clubpenalty=1000
+\addtolength{\parskip}{+0.3cm}
+\linespread{1.05}
+\widowpenalty=1000
+
 
 \begin{document}
 
@@ -78,6 +90,9 @@
 \thispagestyle{empty}
 \ \newpage
 
+
+%HEVEA\begin{comment}
+
 % List of listings
 \lstlistoflistings
 \addcontentsline{toc}{chapter}{Listings}
@@ -90,11 +105,14 @@
 \listoftables
 \addcontentsline{toc}{chapter}{List of tables}
 
+%HEVEA\end{comment}
+
+
 % Appendixes
 \appendix
 
 \chapter{The GNU General Public License\label{appendix_license}}
-\verbinput{../../COPYING}
+\verbatiminput{../../COPYING}
 
 \end{document}
 

@@ -48,10 +48,9 @@ namespace with the C++ keywork {\vcode using} (not recommended, though).
 not in a standard path (ie. not in /usr/lib or /usr/local/lib).
 
 \vnote{if you want to link your program with the shared version of VMime
-library, make sure the library has been compiled using the autotools version
-of the build system ({\vcode ./configure}, {\vcode make} and {\vcode make
-install}). When you compile with SCons, only the static library is built and
-installed.}
+library, make sure the library has been compiled using CMake build system
+({\vcode make}, then {\vcode make install}). When you compile with SCons,
+only the static library is built and installed.}
 
 {\bf Linking with the static library (.a):} follow the same procedure as for
 shared linking and append the flag -static to force static linking. Although
@@ -73,9 +72,9 @@ then you are lucky: VMime has built-in support for these platforms. If not,
 don't worry, the sources of the built-in platform handlers are very well
 documented, so writing you own should not be very difficult.
 
-At the beginning of your program (before using \emph{any} VMime object, or
-calling \emph{any} VMime global function), you should tell VMime which
-platform handler you want to use.
+If your VMime version is $<=$ 0.9.1, you should tell VMime which platform
+handler you want to use at the beginning of your program (before using
+\emph{any} VMime object, or calling \emph{any} VMime global function).
 
 So, if your platform is POSIX, your program should look like this:
 
@@ -94,13 +93,17 @@ int main()
 \end{lstlisting}
 
 For using VMime on Windows, include
-$<$vmime/platforms/windows/windowsHandler.hpp$>$ and use the following line
+{\vcode vmime/platforms/windows/windowsHandler.hpp} and use the following line
 to initialize the platform handler:
 
 \begin{lstlisting}
 vmime::platform::
    setHandler <vmime::platforms::windows::windowsHandler>();
 \end{lstlisting}
+
+\vnote{since version 0.9.2, this is not needed any more: the platform
+handler is installed automatically using the platform detected during the
+build configuration.}
 
 \vnote{since version 0.8.1, {\vcode vmime::platformDependant} was renamed
 to {\vcode vmime::platform}. The old name has been kept for compatibility

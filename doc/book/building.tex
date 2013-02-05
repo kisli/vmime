@@ -15,13 +15,13 @@ To build VMime from the sources, you will need the following:
 \begin{itemize}
 \item a working C++ compiler with good STL implementation and also a good
 support for templates (for example, \href{http://gcc.gnu.org/}{GNU GCC}) ;
-\item \href{http://www.scons.org/}{SCons} build system, or the
-autoconf/automake tool chain ;
+\item \href{http://www.cmake.org/}{CMake} build system ;
 \item an usable iconv() implementation (see
 \href{http://www.gnu.org/software/libiconv/}{libiconv of GNU Project}) ;
 \item the \href{http://www.gnu.org/software/gsasl/}{GNU SASL Library} if you
 want SASL\footnote{Simple Authentication and Security Layer} support ;
-\item the \href{http://www.gnu.org/software/gnutls/}{GNU TLS Library} if you
+\item either the \href{http://www.openssl.org}{OpenSSL library} or the
+\href{http://www.gnu.org/software/gnutls/}{GNU TLS Library} if you
 want SSL and TLS\footnote{Transport Layer Security} support ;
 \end{itemize}
 
@@ -31,49 +31,62 @@ want SSL and TLS\footnote{Transport Layer Security} support ;
 You can download a package containing the source files of the latest release
 of the VMime library from the \href{http://www.vmime.org/}{VMime web site}.
 
-You can also obtain the current development version from the CVS. VMime's CVS
-repository can be checked out from anonymous CVS with the following
-instructions. When prompted for a password for {\em anonymous}, simply press
-Enter key.
+You can also obtain the current development version from the Git repository,
+which is currently hosted at GitHub. It can be checked out through anonymous
+access with the following instruction:
 
 \begin{verbatim}
-   cvs -d:pserver:anonymous@cvs.vmime.org:/cvsroot/vmime login
-   cvs -z3 -d:pserver:anonymous@cvs.vmime.org:/cvsroot/vmime co -P vmime
+   git clone git://github.com/kisli/vmime
 \end{verbatim}
 
 % ============================================================================
 \section{Compiling and installing}
 
 There are two possibilities for compiling VMime: using SCons building system,
-or using the Autotools.
-
-\vnote{MS Visual C++ users, you can skip this section as a project file
-is provided in the distribution tarball.}
+or using CMake.
 
 SCons is only used for development purposes, and so it is recommended that you
-use Autotools to build the project as it is a more portable solution, and is
+use CMake to build the project as it is a more portable solution, and is
 likely to work out-of-the-box on your computer. Thus, we will not describe
 the process of compiling VMime using SCons here.
 
-\vnote{Windows users, you can use MinGW and MSYS\footnote{See on the MinGW
-website: http://www.mingw.org/} to install a POSIX compatible environment
-on top of Windows. This allow executing configure scripts and Makefiles on
-Windows}.
+CMake is an open source, cross-platform build system. It will generate all
+build scripts required to compile VMime on your platform.
 
-Before compiling VMime, you should run the {\vcode configure} script to
-detect some parameters specific to your platform. Go into the directory where
-you extracted the tarball and type:
+First, from the directory where you extracted the tarball or checked out
+the sources, run {\vcode cmake} with the {\vcode -G} argument corresponding
+to your platform. For example, if you are on a Unix-compatible platform (like
+GNU/Linux or MacOS), type:
 
 \begin{verbatim}
-   $ ./configure
+   $ cmake -G "Unix Makefiles"
 \end{verbatim}
 
-This will create a file named {\vcode config.hpp} in the {\vcode vmime/}
-directory, with the parameters detected for your platform. You should modify
-this file only if you know what you are doing!
+This will perform some tests on your system to check for libs installed
+and some platform-specific includes. It will then create a Makefile in
+the root directory of VMime.
+
+\vnote{Delete the {\vcode CMakeCache.txt} file if something changed on your
+system, as CMake may cache some values to speed up things.}
+
+This will also create a file named {\vcode config.hpp} in the {\vcode vmime/}
+directory, with the parameters detected for your platform. You should not
+modify this file directly. Instead, you can run again {\vcode cmake} and
+specify your own defines on the command line.
+
+For example, to force using OpenSSL library instead of GnuTLS for TLS
+support, type:
+
+\begin{verbatim}
+   $ cmake -G "Unix Makefiles" -DVMIME_TLS_SUPPORT_LIB_IS_OPENSSL=ON \
+                               -DVMIME_TLS_SUPPORT_LIB_IS_GNUTLS=OFF
+\end{verbatim}
 
 If you want to enable or disable some features in VMime, you can obtain some
-help by typing {\vcode ./configure --help}. The defaults should be OK though.
+help by typing {\vcode cmake -L}. The defaults should be OK though.
+
+For more information about using CMake, go to
+\href{http://www.cmake.org/}{the CMake web site}.
 
 Next, you can start the compilation process:
 
@@ -84,8 +97,8 @@ Next, you can start the compilation process:
 Please wait a few minutes will the compilation runs (you should have some time
 to have a coffee right now!). If you get errors during the compilation, be
 sure your system meet the requirements given at the beginning of the chapter.
-You can also try to get a newer version (from the CVS, for example) or to
-get some help on VMime user forums.
+You can also try to get a newer version (from the Git repository, for example)
+or to get some help on VMime user forums.
 
 If everything has been compiled successfully, you can install the library and
 the development files on your system:

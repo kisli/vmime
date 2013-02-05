@@ -1,0 +1,17 @@
+# PDFLatex
+*.log
+*.aux
+*.toc
+*.out
+*.pdf
+*.lo[flt]
+
+# Hevea
+*.haux
+*.htoc
+book.image.tex
+book.html
+
+images/Makefile2
+images/*.png
+
