@@ -23,6 +23,7 @@
 
 #include <iomanip>
 
+#include "vmime/config.hpp"
 #include "vmime/dateTime.hpp"
 #include "vmime/platform.hpp"
 #include "vmime/parserHelpers.hpp"
@@ -663,7 +664,7 @@ datetime::datetime(const time_t t, const int zone)
 		tms = *gtm;
 	else if (ltm)
 		tms = *ltm;
-#elif defined(_REENTRANT)
+#elif VMIME_HAVE_LOCALTIME_R
 	struct tm tms;
 
 	if (!gmtime_r(&t, &tms))
@@ -678,7 +679,7 @@ datetime::datetime(const time_t t, const int zone)
 		tms = *gtm;
 	else if (ltm)
 		tms = *ltm;
-#endif // _REENTRANT
+#endif
 
 	m_year = tms.tm_year + 1900;
 	m_month = tms.tm_mon + 1;

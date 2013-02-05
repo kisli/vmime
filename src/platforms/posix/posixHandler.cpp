@@ -132,7 +132,7 @@ const vmime::datetime posixHandler::getCurrentLocalTime() const
 	const time_t t(::time(NULL));
 
 	// Get the local time
-#ifdef _REENTRANT
+#if VMIME_HAVE_LOCALTIME_R
 	tm local;
 	::localtime_r(&t, &local);
 #else
@@ -140,7 +140,7 @@ const vmime::datetime posixHandler::getCurrentLocalTime() const
 #endif
 
 	// Get the UTC time
-#ifdef _REENTRANT
+#if VMIME_HAVE_GMTIME_R
 	tm gmt;
 	::gmtime_r(&t, &gmt);
 #else

@@ -16,6 +16,11 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6 FATAL_ERROR)
 
 INCLUDE(cmake/Utils.cmake)
 
+INCLUDE(CheckFunctionExists)
+INCLUDE(CheckSymbolExists)
+INCLUDE(CheckTypeSize)
+
+
 # CMake configuration
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY build/bin)
 SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY build/lib)
@@ -341,7 +346,6 @@ SET(
 INCLUDE(cmake/TargetArch.cmake)
 TARGET_ARCHITECTURE(CMAKE_TARGET_ARCHITECTURES)
 
-INCLUDE(CheckTypeSize)
 CHECK_TYPE_SIZE(size_t VMIME_HAVE_SIZE_T)
 
 
@@ -453,8 +457,6 @@ ENDIF()
 INCLUDE(FindGnuTLS)
 INCLUDE(FindOpenSSL)
 
-
-INCLUDE(CheckFunctionExists)
 SET(CMAKE_REQUIRED_LIBRARIES "${GNUTLS_LIBRARY}")
 CHECK_FUNCTION_EXISTS(gnutls_priority_set_direct VMIME_HAVE_GNUTLS_PRIORITY_FUNCS)
 
@@ -558,10 +560,16 @@ ENDIF()
 
 
 ##############################################################################
-# POSIX-specific checks
+# Platform-specific checks
 
-INCLUDE(CheckFunctionExists)
-INCLUDE(CheckSymbolExists)
+CHECK_FUNCTION_EXISTS(gmtime_s VMIME_HAVE_GMTIME_S)
+CHECK_FUNCTION_EXISTS(gmtime_r VMIME_HAVE_GMTIME_R)
+CHECK_FUNCTION_EXISTS(localtime_s VMIME_HAVE_LOCALTIME_S)
+CHECK_FUNCTION_EXISTS(localtime_r VMIME_HAVE_LOCALTIME_R)
+
+
+##############################################################################
+# POSIX-specific checks
 
 CHECK_FUNCTION_EXISTS(getaddrinfo VMIME_HAVE_GETADDRINFO)
 CHECK_FUNCTION_EXISTS(getnameinfo VMIME_HAVE_GETNAMEINFO)

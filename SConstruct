@@ -867,6 +867,10 @@ config_hpp.write("""
 #define VMIME_HAVE_GETTID 0
 #define VMIME_HAVE_SYSCALL 1
 #define VMIME_HAVE_SYSCALL_GETTID 1
+#define VMIME_HAVE_LOCALTIME_R 1
+#define VMIME_HAVE_LOCALTIME_S 0
+#define VMIME_HAVE_GMTIME_R 1
+#define VMIME_HAVE_GMTIME_S 0
 """)
 
 config_hpp.write('\n')

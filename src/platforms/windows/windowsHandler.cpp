@@ -79,7 +79,10 @@ const vmime::datetime windowsHandler::getCurrentLocalTime() const
 	const time_t t(::time(NULL));
 
 	// Get the local time
-#if defined(_REENTRANT) && defined(localtime_r)
+#if VMIME_HAVE_LOCALTIME_S
+	tm local;
+	::localtime_s(&local, &t);
+#elif VMIME_HAVE_LOCALTIME_R
 	tm local;
 	::localtime_r(&t, &local);
 #else
@@ -87,7 +90,10 @@ const vmime::datetime windowsHandler::getCurrentLocalTime() const
 #endif
 
 	// Get the UTC time
-#if defined(_REENTRANT) && defined(gmtime_r)
+#if VMIME_HAVE_GMTIME_S
+	tm gmt;
+	::gmtime_s(&gmt, &t);
+#elif VMIME_HAVE_GMTIME_R
 	tm gmt;
 	::gmtime_r(&t, &gmt);
 #else
