@@ -81,6 +81,7 @@ public:
 	const string getType() const;
 	int getVersion() const;
 	bool equals(ref <const certificate> other) const;
+	void* getInternalData();
 
 private:
 

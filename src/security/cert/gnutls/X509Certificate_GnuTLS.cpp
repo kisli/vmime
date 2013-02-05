@@ -82,6 +82,12 @@ X509Certificate_GnuTLS::~X509Certificate_GnuTLS()
 }
 
 
+void* X509Certificate_GnuTLS::getInternalData()
+{
+	return &m_data->cert;
+}
+
+
 // static
 ref <X509Certificate> X509Certificate::import(utility::inputStream& is)
 {

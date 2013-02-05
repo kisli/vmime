@@ -151,6 +151,12 @@ X509Certificate_OpenSSL::~X509Certificate_OpenSSL()
 }
 
 
+void* X509Certificate_OpenSSL::getInternalData()
+{
+	return &m_data->cert;
+}
+
+
 // static
 ref <X509Certificate> X509Certificate_OpenSSL::importInternal(X509* cert)
 {
