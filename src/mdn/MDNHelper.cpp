@@ -66,7 +66,7 @@ const std::vector <sendableMDNInfos> MDNHelper::getPossibleMDNs(const ref <const
 		const mailboxList& dnto = *hdr->DispositionNotificationTo()->getValue()
 			.dynamicCast <const mailboxList>();
 
-		for (int i = 0 ; i < dnto.getMailboxCount() ; ++i)
+		for (size_t i = 0 ; i < dnto.getMailboxCount() ; ++i)
 			result.push_back(sendableMDNInfos(msg, *dnto.getMailboxAt(i)));
 	}
 
@@ -151,7 +151,8 @@ ref <message> MDNHelper::buildMDN(const sendableMDNInfos& mdnInfos,
                                   const mailbox& expeditor,
                                   const disposition& dispo,
                                   const string& reportingUA,
-                                  const std::vector <string>& reportingUAProducts)
+                                  const std::vector <string>& reportingUAProducts,
+                                  const std::map <string, string>& fields)
 {
 	// Create a new message
 	ref <message> msg = vmime::create <message>();
@@ -178,7 +179,7 @@ ref <message> MDNHelper::buildMDN(const sendableMDNInfos& mdnInfos,
 
 	msg->getBody()->appendPart(createFirstMDNPart(mdnInfos, text, ch));
 	msg->getBody()->appendPart(createSecondMDNPart(mdnInfos,
-		dispo, reportingUA, reportingUAProducts));
+		dispo, reportingUA, reportingUAProducts, fields));
 	msg->getBody()->appendPart(createThirdMDNPart(mdnInfos));
 
 	return (msg);
@@ -208,7 +209,8 @@ ref <bodyPart> MDNHelper::createFirstMDNPart(const sendableMDNInfos& /* mdnInfos
 ref <bodyPart> MDNHelper::createSecondMDNPart(const sendableMDNInfos& mdnInfos,
                                               const disposition& dispo,
                                               const string& reportingUA,
-                                              const std::vector <string>& reportingUAProducts)
+                                              const std::vector <string>& reportingUAProducts,
+                                              const std::map <string, string>& additionalFields)
 {
 	ref <bodyPart> part = vmime::create <bodyPart>();
 
@@ -280,6 +282,39 @@ ref <bodyPart> MDNHelper::createSecondMDNPart(const sendableMDNInfos& mdnInfos,
 
 	// -- Disposition
 	fields.Disposition()->setValue(dispo);
+
+	// -- Failure, Error and Warning fields
+	std::map <string, string>::const_iterator it;
+
+	if (additionalFields.size() > 0)
+	{
+		it = additionalFields.find(vmime::fields::ERROR);
+		if (it != additionalFields.end())
+		{
+			ref <headerField> error = headerFieldFactory::getInstance()->
+				create(vmime::fields::ERROR);
+			error->setValue(it->second);
+			fields.appendField(error);
+		}
+
+		it = additionalFields.find(vmime::fields::WARNING);
+		if (it != additionalFields.end())
+		{
+			ref <headerField> warn = headerFieldFactory::getInstance()->
+				create(vmime::fields::WARNING);
+			warn->setValue(it->second);
+			fields.appendField(warn);
+		}
+
+		it = additionalFields.find(vmime::fields::FAILURE);
+		if (it != additionalFields.end())
+		{
+			ref <headerField> fail = headerFieldFactory::getInstance()->
+				create(vmime::fields::FAILURE);
+			fail->setValue(it->second);
+			fields.appendField(fail);
+		}
+	}
 
 
 	std::ostringstream oss;

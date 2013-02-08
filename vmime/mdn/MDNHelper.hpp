@@ -102,6 +102,7 @@ public:
 	  * @param dispo disposition information
 	  * @param reportingUA name of reporting user-agent (optional)
 	  * @param reportingUAProducts list of products in the reporting user-agent (optional)
+	  * @param fields additional MDN fields, like "Error", "Warning" or "Failure" (optional)
 	  * @return a new message object containing the MDN
 	  */
 	static ref <message> buildMDN(const sendableMDNInfos& mdnInfos,
@@ -111,7 +112,9 @@ public:
 	                              const disposition& dispo,
 	                              const string& reportingUA = NULL_STRING,
 	                              const std::vector <string>& reportingUAProducts
-	                                   = std::vector <string>());
+	                                   = std::vector <string>(),
+	                              const std::map <string, string>& fields
+	                                   = (std::map <string, string>()));
 
 private:
 
@@ -121,7 +124,9 @@ private:
 	static ref <bodyPart> createSecondMDNPart(const sendableMDNInfos& mdnInfos,
 	                                          const disposition& dispo,
 	                                          const string& reportingUA,
-	                                          const std::vector <string>& reportingUAProducts);
+	                                          const std::vector <string>& reportingUAProducts,
+	                                          const std::map <string, string>& fields);
+
 
 	static ref <bodyPart> createThirdMDNPart(const sendableMDNInfos& mdnInfos);
 };
