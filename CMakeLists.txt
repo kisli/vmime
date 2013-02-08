@@ -19,6 +19,7 @@ INCLUDE(cmake/Utils.cmake)
 INCLUDE(CheckFunctionExists)
 INCLUDE(CheckSymbolExists)
 INCLUDE(CheckTypeSize)
+INCLUDE(CheckLibraryExists)
 
 
 # CMake configuration
@@ -566,6 +567,25 @@ CHECK_FUNCTION_EXISTS(gmtime_s VMIME_HAVE_GMTIME_S)
 CHECK_FUNCTION_EXISTS(gmtime_r VMIME_HAVE_GMTIME_R)
 CHECK_FUNCTION_EXISTS(localtime_s VMIME_HAVE_LOCALTIME_S)
 CHECK_FUNCTION_EXISTS(localtime_r VMIME_HAVE_LOCALTIME_R)
+
+
+##############################################################################
+# Windows-specific checks
+
+IF(WIN32)
+
+	# Winsock
+	CHECK_LIBRARY_EXISTS("ws2_32" getch "${CMAKE_LIBRARY_PATH}" VMIME_HAVE_LIBWS2_32)
+
+	IF(VMIME_HAVE_LIBWS2_32)
+		TARGET_LINK_LIBRARIES(
+			${VMIME_LIBRARY_NAME}
+			${TARGET_LINK_LIBRARIES}
+			"ws2_32"
+		)
+	ENDIF()
+
+ENDIF()
 
 
 ##############################################################################
