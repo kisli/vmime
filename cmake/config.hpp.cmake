@@ -67,6 +67,7 @@ typedef unsigned @VMIME_32BIT_TYPE@ vmime_uint32;
 #cmakedefine01 VMIME_HAVE_GMTIME_R
 #cmakedefine01 VMIME_HAVE_LOCALTIME_S
 #cmakedefine01 VMIME_HAVE_LOCALTIME_R
+#cmakedefine01 VMIME_HAVE_MLANG
 
 
 #define VMIME_SENDMAIL_PATH "@VMIME_SENDMAIL_PATH@"

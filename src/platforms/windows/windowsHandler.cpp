@@ -38,7 +38,7 @@
 #include <winsock2.h> // for WSAStartup()
 #include <wincrypt.h>
 
-#ifdef VMIME_HAVE_MLANG_H
+#if VMIME_HAVE_MLANG
 #   include <mlang.h>
 #endif
 
@@ -117,7 +117,7 @@ const vmime::datetime windowsHandler::getCurrentLocalTime() const
 
 const vmime::charset windowsHandler::getLocaleCharset() const
 {
-#ifdef VMIME_HAVE_MLANG_H
+#if VMIME_HAVE_MLANG
 	char szCharset[256];
 
 	CoInitialize(NULL);
@@ -144,7 +144,7 @@ const vmime::charset windowsHandler::getLocaleCharset() const
 	CoUninitialize();
 
 	return vmime::charset(szCharset);
-#else // VMIME_HAVE_MLANG_H
+#else // VMIME_HAVE_MLANG
 	vmime::string ch = vmime::charsets::ISO8859_1; // default
 
 	switch (GetACP())
