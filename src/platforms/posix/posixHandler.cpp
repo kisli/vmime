@@ -31,6 +31,8 @@
 
 #include "vmime/platforms/posix/posixCriticalSection.hpp"
 
+#include "vmime/utility/stringUtils.hpp"
+
 #include <time.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -174,47 +176,55 @@ const vmime::charset posixHandler::getLocaleCharset() const
 }
 
 
+static inline bool isFQDN(const vmime::string& str)
+{
+	if (utility::stringUtils::isStringEqualNoCase(str, "localhost", 9))
+		return false;
+
+	const vmime::string::size_type p = str.find_first_of(".");
+	return p != vmime::string::npos && p > 0 && p != str.length() - 1;
+}
+
+
 const vmime::string posixHandler::getHostName() const
 {
-	std::vector <vmime::string> hostnames;
-	char buffer[256];
+	char hostname[256];
 
 	// Try with 'gethostname'
-	::gethostname(buffer, sizeof(buffer));
-	buffer[sizeof(buffer) - 1] = '\0';
+	::gethostname(hostname, sizeof(hostname));
+	hostname[sizeof(hostname) - 1] = '\0';
 
-	if (::strlen(buffer) == 0)
-		::strcpy(buffer, "localhost");
+	// If this is a Fully-Qualified Domain Name (FQDN), return immediately
+	if (isFQDN(hostname))
+		return hostname;
 
-	hostnames.push_back(buffer);
+	if (::strlen(hostname) == 0)
+		::strcpy(hostname, "localhost");
 
-	// And with 'gethostbyname'
-	struct hostent* he = ::gethostbyname(buffer);
+	// Try to get canonical name for the hostname
+	struct addrinfo hints;
+	memset(&hints, 0, sizeof hints);
+	hints.ai_family = AF_UNSPEC;  // either IPV4 or IPV6
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_flags = AI_CANONNAME;
 
-	if (he != NULL)
+	struct addrinfo* info;
+
+	if (getaddrinfo(hostname, "http", &hints, &info) == 0)
 	{
-		if (::strlen(he->h_name) != 0)
-			hostnames.push_back(he->h_name);
-
-		char** alias = he->h_aliases;
-
-		while (alias && *alias)
+		for (struct addrinfo* p = info ; p != NULL ; p = p->ai_next)
 		{
-			if (::strlen(*alias) != 0)
-				hostnames.push_back(*alias);
-
-			++alias;
+			if (isFQDN(p->ai_canonname))
+			{
+				freeaddrinfo(info);
+				return p->ai_canonname;
+			}
 		}
+
+		freeaddrinfo(info);
 	}
 
-	// Find a Fully-Qualified Domain Name (FQDN)
-	for (unsigned int i = 0 ; i < hostnames.size() ; ++i)
-	{
-		if (hostnames[i].find_first_of(".") != vmime::string::npos)
-			return (hostnames[i]);
-	}
-
-	return (hostnames[0]);
+	return hostname;
 }
 
 
