@@ -241,8 +241,9 @@ const vmime::string windowsHandler::getHostName() const
 		{
 			if (isFQDN(p->ai_canonname))
 			{
+				const string ret(p->ai_canonname);
 				freeaddrinfo(info);
-				return p->ai_canonname;
+				return ret;
 			}
 		}
 

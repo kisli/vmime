@@ -216,8 +216,9 @@ const vmime::string posixHandler::getHostName() const
 		{
 			if (isFQDN(p->ai_canonname))
 			{
+				const string ret(p->ai_canonname);
 				freeaddrinfo(info);
-				return p->ai_canonname;
+				return ret;
 			}
 		}
 
