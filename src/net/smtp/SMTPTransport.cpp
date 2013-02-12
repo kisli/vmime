@@ -29,6 +29,8 @@
 
 #include "vmime/net/smtp/SMTPTransport.hpp"
 #include "vmime/net/smtp/SMTPResponse.hpp"
+#include "vmime/net/smtp/SMTPCommand.hpp"
+#include "vmime/net/smtp/SMTPCommandSet.hpp"
 
 #include "vmime/exception.hpp"
 #include "vmime/platform.hpp"
@@ -68,7 +70,7 @@ namespace smtp {
 SMTPTransport::SMTPTransport(ref <session> sess, ref <security::authenticator> auth, const bool secured)
 	: transport(sess, getInfosInstance(), auth), m_socket(NULL),
 	  m_authentified(false), m_extendedSMTP(false), m_timeoutHandler(NULL),
-	  m_isSMTPS(secured), m_secured(false), m_pipelineStarted(false)
+	  m_isSMTPS(secured), m_secured(false)
 {
 }
 
@@ -202,7 +204,7 @@ void SMTPTransport::helo()
 	//      S: 250-PIPELINING
 	//      S: 250 SIZE 2555555555
 
-	sendRequest("EHLO " + platform::getHandler()->getHostName());
+	sendRequest(SMTPCommand::EHLO(platform::getHandler()->getHostName()));
 
 	ref <SMTPResponse> resp;
 
@@ -213,7 +215,7 @@ void SMTPTransport::helo()
 		// eg:  C: HELO thismachine.ourdomain.com
 		//      S: 250 OK
 
-		sendRequest("HELO " + platform::getHandler()->getHostName());
+		sendRequest(SMTPCommand::HELO(platform::getHandler()->getHostName()));
 
 		if ((resp = readResponse())->getCode() != 250)
 		{
@@ -365,7 +367,7 @@ void SMTPTransport::authenticateSASL()
 
 		saslSession->init();
 
-		sendRequest("AUTH " + mech->getName());
+		sendRequest(SMTPCommand::AUTH(mech->getName()));
 
 		for (bool cont = true ; cont ; )
 		{
@@ -396,7 +398,7 @@ void SMTPTransport::authenticateSASL()
 						(challenge, challengeLen, &resp, &respLen);
 
 					// Send response
-					sendRequest(saslContext->encodeB64(resp, respLen));
+					m_socket->send(saslContext->encodeB64(resp, respLen) + "\r\n");
 				}
 				catch (exceptions::sasl_exception& e)
 				{
@@ -413,7 +415,7 @@ void SMTPTransport::authenticateSASL()
 					}
 
 					// Cancel SASL exchange
-					sendRequest("*");
+					m_socket->sendRaw("*\r\n", 3);
 				}
 				catch (...)
 				{
@@ -455,7 +457,7 @@ void SMTPTransport::startTLS()
 {
 	try
 	{
-		sendRequest("STARTTLS");
+		sendRequest(SMTPCommand::STARTTLS());
 
 		ref <SMTPResponse> resp = readResponse();
 
@@ -523,7 +525,7 @@ void SMTPTransport::internalDisconnect()
 {
 	try
 	{
-		sendRequest("QUIT");
+		sendRequest(SMTPCommand::QUIT());
 		readResponse();
 	}
 	catch (exception&)
@@ -549,7 +551,7 @@ void SMTPTransport::noop()
 	if (!isConnected())
 		throw exceptions::not_connected();
 
-	sendRequest("NOOP");
+	sendRequest(SMTPCommand::NOOP());
 
 	ref <SMTPResponse> resp = readResponse();
 
@@ -572,87 +574,53 @@ void SMTPTransport::send(const mailbox& expeditor, const mailboxList& recipients
 		throw exceptions::no_expeditor();
 
 
+	const bool hasPipelining =
+		m_extensions.find("PIPELINING") != m_extensions.end();
+
 	ref <SMTPResponse> resp;
+	ref <SMTPCommandSet> commands = SMTPCommandSet::create(hasPipelining);
 
-	if (m_extensions.find("PIPELINING") != m_extensions.end())
+	// Emit the "MAIL" command
+	commands->addCommand(SMTPCommand::MAIL(expeditor));
+
+	// Emit a "RCPT TO" command for each recipient
+	for (size_t i = 0 ; i < recipients.getMailboxCount() ; ++i)
 	{
-		beginCommandPipeline();
+		const mailbox& mbox = *recipients.getMailboxAt(i);
+		commands->addCommand(SMTPCommand::RCPT(mbox));
+	}
 
-		// Emit the "MAIL" command
-		sendRequest("MAIL FROM:<" + expeditor.getEmail() + ">");
+	// Prepare sending of message data
+	commands->addCommand(SMTPCommand::DATA());
 
-		// Emit a "RCPT TO" command for each recipient
-		for (size_t i = 0 ; i < recipients.getMailboxCount() ; ++i)
-		{
-			const mailbox& mbox = *recipients.getMailboxAt(i);
+	// Read response for "MAIL" command
+	commands->writeToSocket(m_socket);
 
-			sendRequest("RCPT TO:<" + mbox.getEmail() + ">");
-		}
+	if ((resp = readResponse())->getCode() != 250)
+	{
+		internalDisconnect();
+		throw exceptions::command_error(commands->getLastCommandSent()->getText(), resp->getText());
+	}
 
-		// Prepare sending of message data
-		sendRequest("DATA");
+	// Read responses for "RCPT TO" commands
+	for (size_t i = 0 ; i < recipients.getMailboxCount() ; ++i)
+	{
+		commands->writeToSocket(m_socket);
 
-		endCommandPipeline();
-
-		// Read response for "MAIL" command
 		if ((resp = readResponse())->getCode() != 250)
 		{
 			internalDisconnect();
-			throw exceptions::command_error("MAIL", resp->getText());
-		}
-
-		// Read responses for "RCPT TO" commands
-		for (size_t i = 0 ; i < recipients.getMailboxCount() ; ++i)
-		{
-			const mailbox& mbox = *recipients.getMailboxAt(i);
-
-			if ((resp = readResponse())->getCode() != 250)
-			{
-				internalDisconnect();
-				throw exceptions::command_error("RCPT TO", resp->getText(), mbox.getEmail());
-			}
-		}
-
-		// Read response for "DATA" command
-		if ((resp = readResponse())->getCode() != 354)
-		{
-			internalDisconnect();
-			throw exceptions::command_error("DATA", resp->getText());
+			throw exceptions::command_error(commands->getLastCommandSent()->getText(), resp->getText());
 		}
 	}
-	else
+
+	// Read response for "DATA" command
+	commands->writeToSocket(m_socket);
+
+	if ((resp = readResponse())->getCode() != 354)
 	{
-		// Emit the "MAIL" command
-		sendRequest("MAIL FROM:<" + expeditor.getEmail() + ">");
-
-		if ((resp = readResponse())->getCode() != 250)
-		{
-			internalDisconnect();
-			throw exceptions::command_error("MAIL", resp->getText());
-		}
-
-		// Emit a "RCPT TO" command for each recipient
-		for (size_t i = 0 ; i < recipients.getMailboxCount() ; ++i)
-		{
-			const mailbox& mbox = *recipients.getMailboxAt(i);
-
-			sendRequest("RCPT TO:<" + mbox.getEmail() + ">");
-
-			if ((resp = readResponse())->getCode() != 250)
-			{
-				internalDisconnect();
-				throw exceptions::command_error("RCPT TO", resp->getText(), mbox.getEmail());
-			}
-		}
-
-		// Prepare sending of message data
-		sendRequest("DATA");
-
-		if ((resp = readResponse())->getCode() != 354)
-		{
-			internalDisconnect();
-			throw exceptions::command_error("DATA", resp->getText());
-		}
+		internalDisconnect();
+		throw exceptions::command_error(commands->getLastCommandSent()->getText(), resp->getText());
 	}
 
 	// Send the message data
@@ -675,41 +643,9 @@ void SMTPTransport::send(const mailbox& expeditor, const mailboxList& recipients
 }
 
 
-void SMTPTransport::beginCommandPipeline()
+void SMTPTransport::sendRequest(ref <SMTPCommand> cmd)
 {
-	m_pipeline.clear();
-	m_pipelineStarted = true;
-}
-
-
-void SMTPTransport::endCommandPipeline()
-{
-	if (m_pipelineStarted)
-	{
-		m_socket->send(m_pipeline.str());
-
-		m_pipeline.clear();
-		m_pipelineStarted = false;
-	}
-}
-
-
-void SMTPTransport::sendRequest(const string& buffer, const bool end)
-{
-	if (m_pipelineStarted)
-	{
-		m_pipeline << buffer;
-
-		if (end)
-			m_pipeline << "\r\n";
-	}
-	else
-	{
-		if (end)
-			m_socket->send(buffer + "\r\n");
-		else
-			m_socket->send(buffer);
-	}
+	cmd->writeToSocket(m_socket);
 }
 
 

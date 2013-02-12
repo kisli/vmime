@@ -44,6 +44,9 @@ namespace net {
 namespace smtp {
 
 
+class SMTPCommand;
+
+
 /** SMTP transport service.
   */
 
@@ -72,7 +75,7 @@ public:
 
 private:
 
-	void sendRequest(const string& buffer, const bool end = true);
+	void sendRequest(ref <SMTPCommand> cmd);
 	ref <SMTPResponse> readResponse();
 
 	void internalDisconnect();
@@ -101,14 +104,6 @@ private:
 	ref <connectionInfos> m_cntInfos;
 
 	SMTPResponse::state m_responseState;
-
-	// Pipelining
-	std::ostringstream m_pipeline;
-	bool m_pipelineStarted;
-
-	void beginCommandPipeline();
-	void endCommandPipeline();
-
 
 	// Service infos
 	static SMTPServiceInfos sm_infos;
