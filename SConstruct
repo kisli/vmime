@@ -377,6 +377,8 @@ libvmimetest_sources = [
 	'tests/security/digest/sha1Test.cpp',
 	# ===============================  Net  ================================
 	'tests/net/smtp/SMTPTransportTest.cpp',
+	'tests/net/smtp/SMTPCommandTest.cpp',
+	'tests/net/smtp/SMTPCommandSetTest.cpp',
 	'tests/net/smtp/SMTPResponseTest.cpp',
 	'tests/net/maildir/maildirStoreTest.cpp'
 ]

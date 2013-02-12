@@ -42,7 +42,12 @@
 #define VASSERT_TRUE(msg, cond) \
 	VASSERT(msg, cond)
 #define VASSERT_FALSE(msg, cond) \
-	VASSERT(!(msg, cond))
+	VASSERT(msg, !(cond))
+
+#define VASSERT_NOT_NULL(msg, cond) \
+	VASSERT(msg, cond != NULL)
+#define VASSERT_NULL(msg, cond) \
+	VASSERT(msg, cond == NULL)
 
 #define VASSERT_EQ(msg, expected, actual) \
 	CPPUNIT_ASSERT_EQUAL_MESSAGE(std::string(msg), expected, actual)
