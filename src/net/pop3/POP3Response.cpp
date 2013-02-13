@@ -324,13 +324,13 @@ bool POP3Response::stripFirstLine
 
 	if (end != string::npos)
 	{
-		if (firstLine) *firstLine = buffer.substr(0, end);
+		if (firstLine) *firstLine = utility::stringUtils::trim(buffer.substr(0, end));
 		result = buffer.substr(end + 1);
 		return true;
 	}
 	else
 	{
-		if (firstLine) *firstLine = buffer;
+		if (firstLine) *firstLine = utility::stringUtils::trim(buffer);
 		result = "";
 		return false;
 	}
