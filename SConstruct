@@ -370,6 +370,9 @@ libvmimetest_sources = [
 	'tests/utility/urlTest.cpp',
 	'tests/utility/smartPtrTest.cpp',
 	'tests/utility/encoderTest.cpp',
+	'tests/utility/outputStreamStringAdapterTest.cpp',
+	'tests/utility/outputStreamSocketAdapterTest.cpp',
+	'tests/utility/outputStreamByteArrayAdapterTest.cpp',
 	# ===============================  Misc  ===============================
 	'tests/misc/importanceHelperTest.cpp',
 	# =============================  Security  =============================
