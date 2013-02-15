@@ -60,6 +60,7 @@ private:
 	ref <seekableInputStream> m_stream;
 	size_type m_begin;
 	size_type m_length;
+	size_type m_position;
 };
 
 

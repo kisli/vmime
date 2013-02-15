@@ -30,49 +30,57 @@ namespace utility {
 
 seekableInputStreamRegionAdapter::seekableInputStreamRegionAdapter
 	(ref <seekableInputStream> stream, const size_type begin, const size_type length)
-	: m_stream(stream), m_begin(begin), m_length(length)
+	: m_stream(stream), m_begin(begin), m_length(length), m_position(0)
 {
 }
 
 
 bool seekableInputStreamRegionAdapter::eof() const
 {
-	return getPosition() >= m_length;
+	return m_position >= m_length;
 }
 
 
 void seekableInputStreamRegionAdapter::reset()
 {
-	m_stream->seek(m_begin);
+	m_position = 0;
 }
 
 
 stream::size_type seekableInputStreamRegionAdapter::read
 	(value_type* const data, const size_type count)
 {
-	if (getPosition() + count >= m_length)
+	m_stream->seek(m_begin + m_position);
+
+	size_type readBytes = 0;
+
+	if (m_position + count >= m_length)
 	{
-		const size_type remaining = m_length - getPosition();
-		return m_stream->read(data, remaining);
+		const size_type remaining = m_length - m_position;
+		readBytes = m_stream->read(data, remaining);
 	}
 	else
 	{
-		return m_stream->read(data, count);
+		readBytes = m_stream->read(data, count);
 	}
+
+	m_position += readBytes;
+
+	return readBytes;
 }
 
 
 stream::size_type seekableInputStreamRegionAdapter::skip(const size_type count)
 {
-	if (getPosition() + count >= m_length)
+	if (m_position + count >= m_length)
 	{
-		const size_type remaining = m_length - getPosition();
-		m_stream->skip(remaining);
+		const size_type remaining = m_length - m_position;
+		m_position += remaining;
 		return remaining;
 	}
 	else
 	{
-		m_stream->skip(count);
+		m_position += count;
 		return count;
 	}
 }
@@ -80,13 +88,16 @@ stream::size_type seekableInputStreamRegionAdapter::skip(const size_type count)
 
 stream::size_type seekableInputStreamRegionAdapter::getPosition() const
 {
-	return m_stream->getPosition() - m_begin;
+	return m_position;
 }
 
 
 void seekableInputStreamRegionAdapter::seek(const size_type pos)
 {
-	m_stream->seek(m_begin + pos);
+	if (pos > m_length)
+		m_position = m_length;
+	else
+		m_position = pos;
 }
 
 
