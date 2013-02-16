@@ -4962,7 +4962,12 @@ private:
 		{
 			resp->go(*this, line, currentPos);
 		}
-		catch (...)
+		catch (exceptions::operation_timed_out& e)
+		{
+			// Always rethrow
+			throw;
+		}
+		catch (exception& e)
 		{
 			*currentPos = oldPos;
 
@@ -4992,7 +4997,12 @@ public:
 			TYPE term;
 			term.go(*this, line, currentPos);
 		}
-		catch (...)
+		catch (exceptions::operation_timed_out& e)
+		{
+			// Always rethrow
+			throw;
+		}
+		catch (exception& e)
 		{
 			*currentPos = oldPos;
 
@@ -5014,7 +5024,12 @@ public:
 			TYPE term(arg);
 			term.go(*this, line, currentPos);
 		}
-		catch (...)
+		catch (exceptions::operation_timed_out& e)
+		{
+			// Always rethrow
+			throw;
+		}
+		catch (exception& e)
 		{
 			*currentPos = oldPos;
 
