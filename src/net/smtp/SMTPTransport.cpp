@@ -70,7 +70,7 @@ namespace smtp {
 SMTPTransport::SMTPTransport(ref <session> sess, ref <security::authenticator> auth, const bool secured)
 	: transport(sess, getInfosInstance(), auth), m_socket(NULL),
 	  m_authentified(false), m_extendedSMTP(false), m_timeoutHandler(NULL),
-	  m_isSMTPS(secured), m_secured(false)
+	  m_isSMTPS(secured), m_secured(false), m_needReset(false)
 {
 }
 
@@ -574,14 +574,22 @@ void SMTPTransport::send(const mailbox& expeditor, const mailboxList& recipients
 		throw exceptions::no_expeditor();
 
 
+	const bool needReset = m_needReset;
 	const bool hasPipelining =
 		m_extensions.find("PIPELINING") != m_extensions.end();
 
 	ref <SMTPResponse> resp;
 	ref <SMTPCommandSet> commands = SMTPCommandSet::create(hasPipelining);
 
+	// Emit a "RSET" command if we previously sent a message on this connection
+	if (needReset)
+		commands->addCommand(SMTPCommand::RSET());
+
 	// Emit the "MAIL" command
 	commands->addCommand(SMTPCommand::MAIL(expeditor));
+
+	// Now, we will need to reset next time
+	m_needReset = true;
 
 	// Emit a "RCPT TO" command for each recipient
 	for (size_t i = 0 ; i < recipients.getMailboxCount() ; ++i)
@@ -592,6 +600,18 @@ void SMTPTransport::send(const mailbox& expeditor, const mailboxList& recipients
 
 	// Prepare sending of message data
 	commands->addCommand(SMTPCommand::DATA());
+
+	// Read response for "RSET" command
+	if (needReset)
+	{
+		commands->writeToSocket(m_socket);
+
+		if ((resp = readResponse())->getCode() != 250)
+		{
+			internalDisconnect();
+			throw exceptions::command_error(commands->getLastCommandSent()->getText(), resp->getText());
+		}
+	}
 
 	// Read response for "MAIL" command
 	commands->writeToSocket(m_socket);

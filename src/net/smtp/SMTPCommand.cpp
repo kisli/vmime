@@ -108,6 +108,13 @@ ref <SMTPCommand> SMTPCommand::RCPT(const mailbox& mbox)
 
 
 // static
+ref <SMTPCommand> SMTPCommand::RSET()
+{
+	return createCommand("RSET");
+}
+
+
+// static
 ref <SMTPCommand> SMTPCommand::DATA()
 {
 	return createCommand("DATA");

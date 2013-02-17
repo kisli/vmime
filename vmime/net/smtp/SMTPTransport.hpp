@@ -105,6 +105,8 @@ private:
 
 	SMTPResponse::state m_responseState;
 
+	bool m_needReset;
+
 	// Service infos
 	static SMTPServiceInfos sm_infos;
 };

@@ -44,6 +44,7 @@ VMIME_TEST_SUITE_BEGIN
 		VMIME_TEST(testSTARTTLS)
 		VMIME_TEST(testMAIL)
 		VMIME_TEST(testRCPT)
+		VMIME_TEST(testRSET)
 		VMIME_TEST(testDATA)
 		VMIME_TEST(testNOOP)
 		VMIME_TEST(testQUIT)
@@ -113,6 +114,14 @@ VMIME_TEST_SUITE_BEGIN
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "RCPT TO:<someone@vmime.org>", cmd->getText());
+	}
+
+	void testRSET()
+	{
+		vmime::ref <SMTPCommand> cmd = SMTPCommand::RSET();
+
+		VASSERT_NOT_NULL("Not null", cmd);
+		VASSERT_EQ("Text", "RSET", cmd->getText());
 	}
 
 	void testDATA()

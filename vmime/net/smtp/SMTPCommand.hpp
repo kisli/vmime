@@ -65,6 +65,7 @@ public:
 	static ref <SMTPCommand> STARTTLS();
 	static ref <SMTPCommand> MAIL(const mailbox& mbox);
 	static ref <SMTPCommand> RCPT(const mailbox& mbox);
+	static ref <SMTPCommand> RSET();
 	static ref <SMTPCommand> DATA();
 	static ref <SMTPCommand> NOOP();
 	static ref <SMTPCommand> QUIT();
