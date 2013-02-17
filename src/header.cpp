@@ -276,6 +276,13 @@ void header::removeField(const size_t pos)
 }
 
 
+void header::replaceField(ref <headerField> field, ref <headerField> newField)
+{
+	insertFieldBefore(field, newField);
+	removeField(field);
+}
+
+
 void header::removeAllFields()
 {
 	m_fields.clear();

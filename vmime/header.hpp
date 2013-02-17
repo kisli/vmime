@@ -170,6 +170,14 @@ public:
 	  */
 	void removeField(const size_t pos);
 
+	/** Replaces a field with another field.
+	  *
+	  * @param field field to be replaced
+	  * @param newField field to replace with
+	  * @throw exceptions::no_such_field if the field is not in the list
+	  */
+	void replaceField(ref <headerField> field, ref <headerField> newField);
+
 	/** Remove all fields from the list.
 	  */
 	void removeAllFields();

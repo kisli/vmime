@@ -43,6 +43,8 @@ VMIME_TEST_SUITE_BEGIN
 		VMIME_TEST(testInsertFieldAfter1)
 		VMIME_TEST(testInsertFieldAfter2)
 
+		VMIME_TEST(testReplaceField)
+
 		VMIME_TEST(testRemoveField1)
 		VMIME_TEST(testRemoveField2)
 
@@ -189,6 +191,23 @@ VMIME_TEST_SUITE_BEGIN
 		VASSERT_EQ("Count", static_cast <unsigned int>(3), res.size());
 		VASSERT_EQ("First value", "A: a", headerTest::getFieldValue(*res[0]));
 		VASSERT_EQ("Second value", "B: b", headerTest::getFieldValue(*res[1]));
+		VASSERT_EQ("Third value", "C: c", headerTest::getFieldValue(*res[2]));
+	}
+
+	// replaceField
+	void testReplaceField()
+	{
+		vmime::header hdr;
+		hdr.parse("A: a\r\nB: b\r\nC: c\r\n");
+
+		vmime::ref <vmime::headerField> hf = vmime::headerFieldFactory::getInstance()->create("Z", "z");
+		hdr.replaceField(hdr.getField("B"), hf);
+
+		std::vector <vmime::ref <vmime::headerField> > res = hdr.getFieldList();
+
+		VASSERT_EQ("Count", static_cast <unsigned int>(3), res.size());
+		VASSERT_EQ("First value", "A: a", headerTest::getFieldValue(*res[0]));
+		VASSERT_EQ("Second value", "Z: z", headerTest::getFieldValue(*res[1]));
 		VASSERT_EQ("Third value", "C: c", headerTest::getFieldValue(*res[2]));
 	}
 
