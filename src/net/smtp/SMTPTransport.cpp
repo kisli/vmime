@@ -627,7 +627,8 @@ void SMTPTransport::send(const mailbox& expeditor, const mailboxList& recipients
 	{
 		commands->writeToSocket(m_socket);
 
-		if ((resp = readResponse())->getCode() != 250)
+		if ((resp = readResponse())->getCode() != 250 &&
+		    (resp = readResponse())->getCode() != 251)
 		{
 			internalDisconnect();
 			throw exceptions::command_error(commands->getLastCommandSent()->getText(), resp->getText());
