@@ -39,6 +39,8 @@
 
 namespace vmime {
 
+class header;
+class headerField;
 class message;
 class mailbox;
 class mailboxList;
@@ -77,6 +79,26 @@ public:
 
 
 	Type getType() const;
+
+protected:
+
+	/** Called by processHeader().
+	  * Decides what to do with the specified header field.
+	  *
+	  * @return NULL if the header should be removed, a reference to a new headerField
+	  * if the field is to be replaced, or a reference to the same headerField
+	  * that was passed if the field should be left as is
+	  */
+	ref <headerField> processHeaderField(ref <headerField> field);
+
+	/** Prepares the header before transmitting the message.
+	  * Removes headers that should not be present (eg. "Bcc", "Return-Path"),
+	  * or adds missing headers that are required/recommended by the RFCs.
+	  * The header is modified inline.
+	  *
+	  * @param header headers to process
+	  */
+	void processHeader(ref <header> header);
 };
 
 

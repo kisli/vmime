@@ -60,6 +60,12 @@ public:
 	  */
 	ref <header> getHeader();
 
+	/** Replaces the header section of this part.
+	  *
+	  * @param header the new header of this part
+	  */
+	void setHeader(ref <header> header);
+
 	/** Return the body section of this part.
 	  *
 	  * @return body section
@@ -71,6 +77,12 @@ public:
 	  * @return body section
 	  */
 	ref <body> getBody();
+
+	/** Replaces the body section of this part.
+	  *
+	  * @param body new body section
+	  */
+	void setBody(ref <body> body);
 
 	/** Return the parent part of this part.
 	  *

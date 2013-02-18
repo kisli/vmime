@@ -32,6 +32,8 @@
 #include "vmime/utility/stream.hpp"
 #include "vmime/mailboxList.hpp"
 #include "vmime/message.hpp"
+#include "vmime/datetime.hpp"
+#include "vmime/messageId.hpp"
 
 #include "vmime/utility/outputStreamAdapter.hpp"
 #include "vmime/utility/inputStreamStringAdapter.hpp"
@@ -44,6 +46,66 @@ namespace net {
 transport::transport(ref <session> sess, const serviceInfos& infos, ref <security::authenticator> auth)
 	: service(sess, infos, auth)
 {
+}
+
+
+ref <headerField> transport::processHeaderField(ref <headerField> field)
+{
+	if (utility::stringUtils::isStringEqualNoCase(field->getName(), fields::BCC))
+	{
+		// Remove Bcc headers from the message, as required by the RFC.
+		// Some SMTP server automatically strip this header (Postfix, qmail),
+		// and others have an option for this (Exim).
+		return NULL;
+	}
+	else if (utility::stringUtils::isStringEqualNoCase(field->getName(), fields::RETURN_PATH))
+	{
+		// RFC-2821: Return-Path header is added by the final transport system
+		// that delivers the message to its recipient. Then, it should not be
+		// transmitted to MSA.
+   		return NULL;
+	}
+	else if (utility::stringUtils::isStringEqualNoCase(field->getName(), fields::ORIGINAL_RECIPIENT))
+	{
+		// RFC-2298: Delivering MTA may add the Original-Recipient header and
+		// discard existing one; so, no need to send it.
+		return NULL;
+	}
+
+	// Leave the header field as is
+	return field;
+}
+
+
+void transport::processHeader(ref <header> header)
+{
+	if (header->getFieldCount() == 0)
+		return;
+
+	// Remove/replace fields
+	for (size_t idx = header->getFieldCount() ; idx != 0 ; --idx)
+	{
+		ref <headerField> field = header->getFieldAt(idx - 1);
+		ref <headerField> newField = processHeaderField(field);
+
+		if (newField == NULL)
+			header->removeField(field);
+		else if (newField != field)
+			header->replaceField(field, newField);
+	}
+
+	// Add missing header fields
+	// -- Date
+	if (!header->hasField(fields::DATE))
+		header->Date()->setValue(datetime::now());
+
+	// -- Mime-Version
+	if (!header->hasField(fields::MIME_VERSION))
+		header->MimeVersion()->setValue(string(SUPPORTED_MIME_VERSION));
+
+	// -- Message-Id
+	if (!header->hasField(fields::MESSAGE_ID))
+		header->MessageId()->setValue(messageId::generateId());
 }
 
 
@@ -107,15 +169,36 @@ void transport::send(ref <vmime::message> msg, utility::progressListener* progre
 	}
 	catch (exceptions::no_such_field&) { }
 
-	// Remove BCC headers from the message we're about to send, as required by the RFC.
-	// Some SMTP server automatically strip this header (Postfix, qmail), and others
-	// have an option for this (Exim).
-	try
+	// Process message header by removing fields that should be removed
+	// before transmitting the message to MSA, and adding missing fields
+	// which are required/recommended by the RFCs.
+	ref <header> hdr = msg->getHeader()->clone().dynamicCast <header>();
+	processHeader(hdr);
+
+	// To avoid cloning message body (too much overhead), use processed
+	// header during the time we are generating the message to a stream.
+	// Revert it back to original header after.
+	struct XChangeMsgHeader
 	{
-		ref <headerField> bcc = msg->getHeader()->findField(fields::BCC);
-		msg->getHeader()->removeField(bcc);
-	}
-	catch (exceptions::no_such_field&) { }
+		XChangeMsgHeader(vmime::ref <vmime::message> _msg,
+		                 vmime::ref <vmime::header> _hdr)
+			: msg(_msg), hdr(msg->getHeader())
+		{
+			// Set new header
+			msg->setHeader(_hdr);
+		}
+
+		~XChangeMsgHeader()
+		{
+			// Revert original header
+			msg->setHeader(hdr);
+		}
+
+	private:
+
+		vmime::ref <vmime::message> msg;
+		vmime::ref <vmime::header> hdr;
+	} headerExchanger(msg, hdr);
 
 	// Generate the message, "stream" it and delegate the sending
 	// to the generic send() function.

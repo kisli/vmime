@@ -674,6 +674,13 @@ void body::setParentPart(ref <bodyPart> parent)
 {
 	m_part = parent;
 	m_header = (parent != NULL ? parent->getHeader() : NULL);
+
+	for (std::vector <ref <bodyPart> >::iterator it = m_parts.begin() ;
+	     it != m_parts.end() ; ++it)
+	{
+		ref <bodyPart> childPart = *it;
+		childPart->m_parent = parent;
+	}
 }
 
 

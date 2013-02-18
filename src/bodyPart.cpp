@@ -121,6 +121,12 @@ ref <header> bodyPart::getHeader()
 }
 
 
+void bodyPart::setHeader(ref <header> h)
+{
+	m_header = h;
+}
+
+
 const ref <const body> bodyPart::getBody() const
 {
 	return (m_body);
@@ -130,6 +136,19 @@ const ref <const body> bodyPart::getBody() const
 ref <body> bodyPart::getBody()
 {
 	return (m_body);
+}
+
+
+void bodyPart::setBody(ref <body> b)
+{
+	ref <bodyPart> oldPart = b->m_part.acquire();
+
+	m_body = b;
+	m_body->setParentPart(thisRef().dynamicCast <bodyPart>());
+
+	// A body is associated to one and only one part
+	if (oldPart != NULL)
+		oldPart->setBody(vmime::create <body>());
 }
 
 
