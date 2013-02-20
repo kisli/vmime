@@ -163,6 +163,12 @@ VMIME_TEST_SUITE_BEGIN
 		testFilteredOutputStreamHelper<FILTER>("3", "foo\n..bar", "foo", "\n.bar");
 		testFilteredOutputStreamHelper<FILTER>("4", "foo\n..bar", "foo", "\n", ".bar");
 		testFilteredOutputStreamHelper<FILTER>("5", "foo\n..bar", "foo", "\n", ".", "bar");
+
+		testFilteredOutputStreamHelper<FILTER>("6", "..\nfoobar", ".\nfoobar");
+		testFilteredOutputStreamHelper<FILTER>("7", "..\r\nfoobar", ".\r\nfoobar");
+		testFilteredOutputStreamHelper<FILTER>("8", "..\r\nfoobar", ".\r", "\nfoobar");
+		testFilteredOutputStreamHelper<FILTER>("9", ".foobar", ".foobar");
+		testFilteredOutputStreamHelper<FILTER>("10", ".foobar", ".", "foobar");
 	}
 
 	void testCRLFToLFFilteredOutputStream()

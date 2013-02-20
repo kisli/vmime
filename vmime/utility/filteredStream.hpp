@@ -123,8 +123,9 @@ public:
 
 private:
 
-        outputStream& m_stream;
+	outputStream& m_stream;
 	value_type m_previousChar;
+	bool m_start;
 };
 
 

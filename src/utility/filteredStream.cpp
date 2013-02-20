@@ -137,7 +137,7 @@ stream::size_type dotFilteredInputStream::skip(const size_type /* count */)
 // dotFilteredOutputStream
 
 dotFilteredOutputStream::dotFilteredOutputStream(outputStream& os)
-	: m_stream(os), m_previousChar('\0')
+	: m_stream(os), m_previousChar('\0'), m_start(true)
 {
 }
 
@@ -158,6 +158,17 @@ void dotFilteredOutputStream::write
 	const value_type* end = data + count;
 	const value_type* start = data;
 
+	if (m_previousChar == '.')
+	{
+		if (data[0] == '\n' || data[0] == '\r')
+		{
+			m_stream.write(".", 1);  // extra <DOT>
+			m_stream.write(data, 1);
+
+			pos = data + 1;
+		}
+	}
+
 	// Replace "\n." with "\n.."
 	while ((pos = std::find(pos, end, '.')) != end)
 	{
@@ -171,12 +182,24 @@ void dotFilteredOutputStream::write
 
 			start = pos + 1;
 		}
+		else if (pos == data && m_start)  // <DOT><CR><LF> at the beginning of content
+		{
+			m_stream.write(start, pos - start);
+
+			if (pos + 1 < end && (*(pos + 1) == '\n' || *(pos + 1) == '\r'))
+				m_stream.write("..", 2);
+			else
+				m_stream.write(".", 1);
+
+			start = pos + 1;
+		}
 
 		++pos;
 	}
 
 	m_stream.write(start, end - start);
 	m_previousChar = data[count - 1];
+	m_start = false;
 }
 
 
