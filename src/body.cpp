@@ -362,9 +362,6 @@ void body::parseImpl
 		{
 			// Defaults to "7bit" (RFC-1521)
 			enc = vmime::encoding(encodingTypes::SEVEN_BIT);
-
-			// Set header field
-			m_header.acquire()->ContentTransferEncoding()->setValue(enc);
 		}
 
 		// Extract the (encoded) contents
