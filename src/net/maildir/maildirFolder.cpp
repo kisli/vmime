@@ -1264,8 +1264,8 @@ void maildirFolder::expunge()
 
 	if (!nums.empty())
 	{
-		for (std::vector <int>::size_type i = nums.size() - 1 ; i >= 0 ; --i)
-			m_messageInfos.erase(m_messageInfos.begin() + i);
+		for (std::vector <int>::size_type i = nums.size() ; i != 0 ; --i)
+			m_messageInfos.erase(m_messageInfos.begin() + (i - 1));
 	}
 
 	m_messageCount -= nums.size();
