@@ -32,7 +32,7 @@
 #include "vmime/utility/stream.hpp"
 #include "vmime/mailboxList.hpp"
 #include "vmime/message.hpp"
-#include "vmime/datetime.hpp"
+#include "vmime/dateTime.hpp"
 #include "vmime/messageId.hpp"
 
 #include "vmime/utility/outputStreamAdapter.hpp"
