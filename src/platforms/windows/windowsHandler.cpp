@@ -38,7 +38,7 @@
 #include <process.h>
 #include <windows.h>  // for winnls.h
 #include <winsock2.h> // for WSAStartup()
-#include <Ws2tcpip.h>
+#include <ws2tcpip.h>
 #include <wincrypt.h>
 
 #if VMIME_HAVE_MLANG
