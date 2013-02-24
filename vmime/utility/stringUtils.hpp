@@ -104,6 +104,14 @@ public:
 	  */
 	static string::size_type countASCIIchars(const string::const_iterator begin, const string::const_iterator end);
 
+	/** Returns whether the specified string is composed exclusively
+	  * of 7-bit ASCII characters.
+	  *
+	  * @param str string to test
+	  * @return true if the string is ASCII-only, false otherwise
+	  */
+	static bool is7bit(const string& str);
+
 	/** Returns the position of the first non 7-bit US-ASCII character in a string.
 	  *
 	  * @param begin start position
@@ -153,6 +161,25 @@ public:
 	  * @return unquoted string
 	  */
 	static const string unquote(const string& str);
+
+	/** Determines whether the specified string needs to be quoted.
+	  *
+	  * @param str string to test
+	  * @param specialChars list of characters that will cause the
+	  * string to be quoted
+	  * @return true if the string needs to be quoted, false otherwise
+	  */
+	static bool needQuoting(const string& str,
+		const string& specialChars = " \t\"(),:;<>@[\\]");
+
+	/** Quotes the specified string.
+	  *
+	  * @param str string to quote
+	  * @param escapeSpecialChars list of characters that will be escaped
+	  * @param escapeChar character that will be used for escaping (eg. '\')
+	  * @return quoted string
+	  */
+	static string quote(const string& str, const string& escapeSpecialChars, const string& escapeChar);
 };
 
 

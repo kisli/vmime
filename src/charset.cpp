@@ -57,8 +57,9 @@ charset::charset(const char* name)
 }
 
 
-void charset::parseImpl(const string& buffer, const string::size_type position,
-	const string::size_type end, string::size_type* newPosition)
+void charset::parseImpl
+	(const parsingContext& /* ctx */, const string& buffer, const string::size_type position,
+	 const string::size_type end, string::size_type* newPosition)
 {
 	m_name = utility::stringUtils::trim
 		(string(buffer.begin() + position, buffer.begin() + end));
@@ -74,8 +75,9 @@ void charset::parseImpl(const string& buffer, const string::size_type position,
 }
 
 
-void charset::generateImpl(utility::outputStream& os, const string::size_type /* maxLineLength */,
-	const string::size_type curLinePos, string::size_type* newLinePos) const
+void charset::generateImpl
+	(const generationContext& /* ctx */, utility::outputStream& os,
+	 const string::size_type curLinePos, string::size_type* newLinePos) const
 {
 	os << m_name;
 
@@ -85,17 +87,25 @@ void charset::generateImpl(utility::outputStream& os, const string::size_type /*
 
 
 void charset::convert(utility::inputStream& in, utility::outputStream& out,
-	const charset& source, const charset& dest)
+	const charset& source, const charset& dest,
+	const charsetConverterOptions& opts)
 {
-	charsetConverter conv(source, dest);
-	conv.convert(in, out);
+	ref <charsetConverter> conv = charsetConverter::create(source, dest, opts);
+	conv->convert(in, out);
 }
 
 
-void charset::convert(const string& in, string& out, const charset& source, const charset& dest)
+void charset::convert(const string& in, string& out, const charset& source, const charset& dest,
+                      const charsetConverterOptions& opts)
 {
-	charsetConverter conv(source, dest);
-	conv.convert(in, out);
+	if (source == dest)
+	{
+		out = in;
+		return;
+	}
+
+	ref <charsetConverter> conv = charsetConverter::create(source, dest, opts);
+	conv->convert(in, out);
 }
 
 

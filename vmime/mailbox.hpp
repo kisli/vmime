@@ -25,6 +25,7 @@
 #define VMIME_MAILBOX_HPP_INCLUDED
 
 
+#include "vmime/emailAddress.hpp"
 #include "vmime/address.hpp"
 #include "vmime/text.hpp"
 
@@ -45,8 +46,8 @@ public:
 
 	mailbox();
 	mailbox(const mailbox& mbox);
-	mailbox(const string& email);
-	mailbox(const text& name, const string& email);
+	mailbox(const emailAddress& email);
+	mailbox(const text& name, const emailAddress& email);
 
 	/** Return the full name of the mailbox (empty if not specified).
 	  *
@@ -64,13 +65,13 @@ public:
 	  *
 	  * @return email of the mailbox
 	  */
-	const string& getEmail() const;
+	const emailAddress& getEmail() const;
 
 	/** Set the email of the mailbox.
 	  *
 	  * @param email email of the mailbox
 	  */
-	void setEmail(const string& email);
+	void setEmail(const emailAddress& email);
 
 	// Comparison
 	bool operator==(const class mailbox& mailbox) const;
@@ -93,7 +94,7 @@ public:
 protected:
 
 	text m_name;
-	string m_email;
+	emailAddress m_email;
 
 public:
 
@@ -102,14 +103,15 @@ public:
 
 	// Component parsing & assembling
 	void parseImpl
-		(const string& buffer,
+		(const parsingContext& ctx,
+		 const string& buffer,
 		 const string::size_type position,
 		 const string::size_type end,
 		 string::size_type* newPosition = NULL);
 
 	void generateImpl
-		(utility::outputStream& os,
-		 const string::size_type maxLineLength = lineLengthLimits::infinite,
+		(const generationContext& ctx,
+		 utility::outputStream& os,
 		 const string::size_type curLinePos = 0,
 		 string::size_type* newLinePos = NULL) const;
 };

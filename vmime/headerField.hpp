@@ -121,20 +121,22 @@ public:
 protected:
 
 	void parseImpl
-		(const string& buffer,
+		(const parsingContext& ctx,
+		 const string& buffer,
 		 const string::size_type position,
 		 const string::size_type end,
 		 string::size_type* newPosition = NULL);
 
 	void generateImpl
-		(utility::outputStream& os,
-		 const string::size_type maxLineLength = lineLengthLimits::infinite,
+		(const generationContext& ctx,
+		 utility::outputStream& os,
 		 const string::size_type curLinePos = 0,
 		 string::size_type* newLinePos = NULL) const;
 
 
 	static ref <headerField> parseNext
-		(const string& buffer,
+		(const parsingContext& ctx,
+		 const string& buffer,
 		 const string::size_type position,
 		 const string::size_type end,
 		 string::size_type* newPosition = NULL);

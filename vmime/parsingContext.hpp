@@ -21,50 +21,39 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#include "vmime/options.hpp"
+#ifndef VMIME_PARSINGCONTEXT_HPP_INCLUDED
+#define VMIME_PARSINGCONTEXT_HPP_INCLUDED
+
+
+#include "vmime/context.hpp"
 
 
 namespace vmime
 {
 
 
-options* options::getInstance()
+/** Holds configuration parameters used for parsing messages.
+  */
+
+class parsingContext : public context
 {
-	static options instance;
-	return (&instance);
-}
+public:
 
+	parsingContext();
+	parsingContext(const parsingContext& ctx);
 
-options::multipartOptions::multipartOptions()
-	: m_prologText("This is a multi-part message in MIME format. Your mail reader " \
-	               "does not understand MIME message format."),
-	  m_epilogText("")
-{
-}
+	/** Returns the default context used for parsing messages.
+	  *
+	  * @return a reference to the default parsing context
+	  */
+	static parsingContext& getDefaultContext();
 
+protected:
 
-const string& options::multipartOptions::getPrologText() const
-{
-	return (m_prologText);
-}
-
-
-void options::multipartOptions::setPrologText(const string& prologText)
-{
-	m_prologText = prologText;
-}
-
-
-const string& options::multipartOptions::getEpilogText() const
-{
-	return (m_epilogText);
-}
-
-
-void options::multipartOptions::setEpilogText(const string& epilogText)
-{
-	m_epilogText = epilogText;
-}
+};
 
 
 } // vmime
+
+
+#endif // VMIME_PARSINGCONTEXT_HPP_INCLUDED

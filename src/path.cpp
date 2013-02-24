@@ -112,8 +112,9 @@ const std::vector <ref <component> > path::getChildComponents()
 }
 
 
-void path::parseImpl(const string& buffer, const string::size_type position,
-	const string::size_type end, string::size_type* newPosition)
+void path::parseImpl
+	(const parsingContext& /* ctx */, const string& buffer, const string::size_type position,
+	 const string::size_type end, string::size_type* newPosition)
 {
 	string::size_type pos = position;
 
@@ -165,8 +166,9 @@ void path::parseImpl(const string& buffer, const string::size_type position,
 }
 
 
-void path::generateImpl(utility::outputStream& os, const string::size_type /* maxLineLength */,
-	const string::size_type curLinePos, string::size_type* newLinePos) const
+void path::generateImpl
+	(const generationContext& /* ctx */, utility::outputStream& os,
+	 const string::size_type curLinePos, string::size_type* newLinePos) const
 {
 	if (m_localPart.empty() && m_domain.empty())
 	{

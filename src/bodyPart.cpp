@@ -47,17 +47,18 @@ bodyPart::bodyPart(weak_ref <vmime::bodyPart> parentPart)
 
 
 void bodyPart::parseImpl
-	(ref <utility::parserInputStreamAdapter> parser,
+	(const parsingContext& ctx,
+	 ref <utility::parserInputStreamAdapter> parser,
 	 const utility::stream::size_type position,
 	 const utility::stream::size_type end,
 	 utility::stream::size_type* newPosition)
 {
 	// Parse the headers
 	string::size_type pos = position;
-	m_header->parse(parser, pos, end, &pos);
+	m_header->parse(ctx, parser, pos, end, &pos);
 
 	// Parse the body contents
-	m_body->parse(parser, pos, end, NULL);
+	m_body->parse(ctx, parser, pos, end, NULL);
 
 	setParsedBounds(position, end);
 
@@ -66,14 +67,15 @@ void bodyPart::parseImpl
 }
 
 
-void bodyPart::generateImpl(utility::outputStream& os, const string::size_type maxLineLength,
-	const string::size_type /* curLinePos */, string::size_type* newLinePos) const
+void bodyPart::generateImpl
+	(const generationContext& ctx, utility::outputStream& os,
+	 const string::size_type /* curLinePos */, string::size_type* newLinePos) const
 {
-	m_header->generate(os, maxLineLength);
+	m_header->generate(ctx, os);
 
 	os << CRLF;
 
-	m_body->generate(os, maxLineLength);
+	m_body->generate(ctx, os);
 
 	if (newLinePos)
 		*newLinePos = 0;

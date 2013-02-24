@@ -52,7 +52,9 @@ protected:
 
 public:
 
-	void parse(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition = NULL);
+	void parse(const parsingContext& ctx, const string& buffer,
+		const string::size_type position, const string::size_type end,
+		string::size_type* newPosition = NULL);
 };
 
 

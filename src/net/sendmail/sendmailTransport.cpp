@@ -152,11 +152,11 @@ void sendmailTransport::send
 
 	args.push_back("-i");
 	args.push_back("-f");
-	args.push_back(expeditor.getEmail());
+	args.push_back(expeditor.getEmail().generate());
 	args.push_back("--");
 
 	for (int i = 0 ; i < recipients.getMailboxCount() ; ++i)
-		args.push_back(recipients.getMailboxAt(i)->getEmail());
+		args.push_back(recipients.getMailboxAt(i)->getEmail().generate());
 
 	// Call sendmail
 	try

@@ -68,8 +68,9 @@ zone = "UT" / "GMT"                               ; Universal Time
 */
 
 
-void datetime::parseImpl(const string& buffer, const string::size_type position,
-	const string::size_type end, string::size_type* newPosition)
+void datetime::parseImpl
+	(const parsingContext& /* ctx */, const string& buffer, const string::size_type position,
+	 const string::size_type end, string::size_type* newPosition)
 {
 	const string::value_type* const pend = buffer.data() + end;
 	const string::value_type* p = buffer.data() + position;
@@ -589,8 +590,9 @@ void datetime::parseImpl(const string& buffer, const string::size_type position,
 }
 
 
-void datetime::generateImpl(utility::outputStream& os, const string::size_type /* maxLineLength */,
-	const string::size_type curLinePos, string::size_type* newLinePos) const
+void datetime::generateImpl
+	(const generationContext& /* ctx */, utility::outputStream& os,
+	 const string::size_type curLinePos, string::size_type* newLinePos) const
 {
 	static const string::value_type* dayNames[] =
 		{ "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };

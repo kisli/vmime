@@ -27,6 +27,7 @@
 
 #include "vmime/headerFieldValue.hpp"
 #include "vmime/charset.hpp"
+#include "vmime/charsetConverterOptions.hpp"
 
 
 namespace vmime
@@ -94,9 +95,11 @@ public:
 	/** Return the contained text converted to the specified charset.
 	  *
 	  * @param dest output charset
+	  * @param opts options for charset conversion
 	  * @return word converted to the specified charset
 	  */
-	const string getConvertedText(const charset& dest) const;
+	const string getConvertedText(const charset& dest,
+		const charsetConverterOptions& opts = charsetConverterOptions()) const;
 
 	/** Replace data in this word by data in other word.
 	  *
@@ -131,14 +134,15 @@ public:
 protected:
 
 	void parseImpl
-		(const string& buffer,
+		(const parsingContext& ctx,
+		 const string& buffer,
 		 const string::size_type position,
 		 const string::size_type end,
 		 string::size_type* newPosition = NULL);
 
 	void generateImpl
-		(utility::outputStream& os,
-		 const string::size_type maxLineLength = lineLengthLimits::infinite,
+		(const generationContext& ctx,
+		 utility::outputStream& os,
 		 const string::size_type curLinePos = 0,
 		 string::size_type* newLinePos = NULL) const;
 
@@ -148,8 +152,8 @@ public:
 
 #ifndef VMIME_BUILDING_DOC
 	void generate
-		(utility::outputStream& os,
-		 const string::size_type maxLineLength,
+		(const generationContext& ctx,
+		 utility::outputStream& os,
 		 const string::size_type curLinePos,
 		 string::size_type* newLinePos,
 		 const int flags,
@@ -161,7 +165,8 @@ public:
 private:
 
 	static ref <word> parseNext
-		(const string& buffer,
+		(const parsingContext& ctx,
+		 const string& buffer,
 		 const string::size_type position,
 		 const string::size_type end,
 		 string::size_type* newPosition,
@@ -170,7 +175,8 @@ private:
 		 bool isFirst);
 
 	static const std::vector <ref <word> > parseMultiple
-		(const string& buffer,
+		(const parsingContext& ctx,
+		 const string& buffer,
 		 const string::size_type position,
 		 const string::size_type end,
 		 string::size_type* newPosition);

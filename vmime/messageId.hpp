@@ -108,14 +108,15 @@ protected:
 
 	// Component parsing & assembling
 	void parseImpl
-		(const string& buffer,
+		(const parsingContext& ctx,
+		 const string& buffer,
 		 const string::size_type position,
 		 const string::size_type end,
 		 string::size_type* newPosition = NULL);
 
 	void generateImpl
-		(utility::outputStream& os,
-		 const string::size_type maxLineLength = lineLengthLimits::infinite,
+		(const generationContext& ctx,
+		 utility::outputStream& os,
 		 const string::size_type curLinePos = 0,
 		 string::size_type* newLinePos = NULL) const;
 
@@ -128,7 +129,8 @@ protected:
 	  * @return a new message-id object, or null if no more message-id can be parsed from the input buffer
 	  */
 	static ref <messageId> parseNext
-		(const string& buffer,
+		(const parsingContext& ctx,
+		 const string& buffer,
 		 const string::size_type position,
 		 const string::size_type end,
 		 string::size_type* newPosition);

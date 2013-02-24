@@ -24,6 +24,7 @@
 #include "vmime/relay.hpp"
 #include "vmime/text.hpp"
 #include "vmime/parserHelpers.hpp"
+#include "vmime/utility/outputStreamAdapter.hpp"
 
 #include <sstream>
 
@@ -57,8 +58,9 @@ relay::relay(const relay& r)
                        ["for"  addr-spec]        ; initial form
 */
 
-void relay::parseImpl(const string& buffer, const string::size_type position,
-	const string::size_type end, string::size_type* newPosition)
+void relay::parseImpl
+	(const parsingContext& ctx, const string& buffer, const string::size_type position,
+	 const string::size_type end, string::size_type* newPosition)
 {
 	const string::value_type* const pend = buffer.data() + end;
 	const string::value_type* const pstart = buffer.data() + position;
@@ -71,7 +73,7 @@ void relay::parseImpl(const string& buffer, const string::size_type position,
 	if (p >= pstart)
 	{
 		// Parse the date/time part
-		m_date.parse(buffer, position + (p - pstart) + 1, end);
+		m_date.parse(ctx, buffer, position + (p - pstart) + 1, end);
 
 		// Parse the components
 		std::istringstream iss(string
@@ -198,8 +200,9 @@ void relay::parseImpl(const string& buffer, const string::size_type position,
 }
 
 
-void relay::generateImpl(utility::outputStream& os, const string::size_type maxLineLength,
-	const string::size_type curLinePos, string::size_type* newLinePos) const
+void relay::generateImpl
+	(const generationContext& ctx, utility::outputStream& os,
+	 const string::size_type curLinePos, string::size_type* newLinePos) const
 {
 	std::ostringstream oss;
 	int count = 0;
@@ -217,9 +220,12 @@ void relay::generateImpl(utility::outputStream& os, const string::size_type maxL
 	if (m_id.length()) oss << (count++ > 0 ? " " : "") << "id " << m_id;
 	if (m_for.length()) oss << (count++ > 0 ? " " : "") << "for " << m_for;
 
-	oss << "; " << m_date.generate();
+	oss << "; ";
 
-	text(oss.str()).encodeAndFold(os, maxLineLength,
+	vmime::utility::outputStreamAdapter dos(oss);
+	m_date.generate(ctx, dos, 0, NULL);
+
+	text(oss.str()).encodeAndFold(ctx, os,
 		curLinePos, newLinePos, text::FORCE_NO_ENCODING);
 }
 

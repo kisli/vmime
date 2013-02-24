@@ -61,8 +61,9 @@ messageId::messageId(const string& left, const string& right)
 	msg-id          =       [CFWS] "<" id-left "@" id-right ">" [CFWS]
 */
 
-void messageId::parseImpl(const string& buffer, const string::size_type position,
-	const string::size_type end, string::size_type* newPosition)
+void messageId::parseImpl
+	(const parsingContext& /* ctx */, const string& buffer, const string::size_type position,
+	 const string::size_type end, string::size_type* newPosition)
 {
 	const string::value_type* const pend = buffer.data() + end;
 	const string::value_type* const pstart = buffer.data() + position;
@@ -145,8 +146,9 @@ void messageId::parseImpl(const string& buffer, const string::size_type position
 }
 
 
-ref <messageId> messageId::parseNext(const string& buffer, const string::size_type position,
-	const string::size_type end, string::size_type* newPosition)
+ref <messageId> messageId::parseNext
+	(const parsingContext& ctx, const string& buffer, const string::size_type position,
+	 const string::size_type end, string::size_type* newPosition)
 {
 	string::size_type pos = position;
 
@@ -161,7 +163,7 @@ ref <messageId> messageId::parseNext(const string& buffer, const string::size_ty
 			++pos;
 
 		ref <messageId> mid = vmime::create <messageId>();
-		mid->parse(buffer, begin, pos, NULL);
+		mid->parse(ctx, buffer, begin, pos, NULL);
 
 		if (newPosition != NULL)
 			*newPosition = pos;
@@ -185,12 +187,13 @@ const string messageId::getId() const
 }
 
 
-void messageId::generateImpl(utility::outputStream& os, const string::size_type maxLineLength,
-	const string::size_type curLinePos, string::size_type* newLinePos) const
+void messageId::generateImpl
+	(const generationContext& ctx, utility::outputStream& os,
+	 const string::size_type curLinePos, string::size_type* newLinePos) const
 {
 	string::size_type pos = curLinePos;
 
-	if (curLinePos + m_left.length() + m_right.length() + 3 > maxLineLength)
+	if (curLinePos + m_left.length() + m_right.length() + 3 > ctx.getMaxLineLength())
 	{
 		os << NEW_LINE_SEQUENCE;
 		pos = NEW_LINE_SEQUENCE_LENGTH;

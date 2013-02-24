@@ -32,6 +32,7 @@
 #include "vmime/net/socket.hpp"
 
 #include "vmime/mailbox.hpp"
+#include "vmime/utility/outputStreamAdapter.hpp"
 
 
 namespace vmime {
@@ -90,7 +91,12 @@ ref <SMTPCommand> SMTPCommand::MAIL(const mailbox& mbox)
 {
 	std::ostringstream cmd;
 	cmd.imbue(std::locale::classic());
-	cmd << "MAIL FROM:<" << mbox.getEmail() << ">";
+	cmd << "MAIL FROM:<";
+
+	vmime::utility::outputStreamAdapter cmd2(cmd);
+	mbox.getEmail().generate(cmd2);
+
+	cmd << ">";
 
 	return createCommand(cmd.str());
 }
@@ -101,7 +107,12 @@ ref <SMTPCommand> SMTPCommand::RCPT(const mailbox& mbox)
 {
 	std::ostringstream cmd;
 	cmd.imbue(std::locale::classic());
-	cmd << "RCPT TO:<" << mbox.getEmail() << ">";
+	cmd << "RCPT TO:<";
+
+	vmime::utility::outputStreamAdapter cmd2(cmd);
+	mbox.getEmail().generate(cmd2);
+
+	cmd << ">";
 
 	return createCommand(cmd.str());
 }

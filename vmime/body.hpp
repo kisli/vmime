@@ -303,14 +303,15 @@ protected:
 
 	// Component parsing & assembling
 	void parseImpl
-		(ref <utility::parserInputStreamAdapter> parser,
+		(const parsingContext& ctx,
+		 ref <utility::parserInputStreamAdapter> parser,
 		 const utility::stream::size_type position,
 		 const utility::stream::size_type end,
 		 utility::stream::size_type* newPosition = NULL);
 
 	void generateImpl
-		(utility::outputStream& os,
-		 const string::size_type maxLineLength = lineLengthLimits::infinite,
+		(const generationContext& ctx,
+		 utility::outputStream& os,
 		 const string::size_type curLinePos = 0,
 		 string::size_type* newLinePos = NULL) const;
 };

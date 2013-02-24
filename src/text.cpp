@@ -67,14 +67,15 @@ text::~text()
 }
 
 
-void text::parseImpl(const string& buffer, const string::size_type position,
-	const string::size_type end, string::size_type* newPosition)
+void text::parseImpl
+	(const parsingContext& ctx, const string& buffer, const string::size_type position,
+	 const string::size_type end, string::size_type* newPosition)
 {
 	removeAllWords();
 
 	string::size_type newPos;
 
-	const std::vector <ref <word> > words = word::parseMultiple(buffer, position, end, &newPos);
+	const std::vector <ref <word> > words = word::parseMultiple(ctx, buffer, position, end, &newPos);
 
 	copy_vector(words, m_words);
 
@@ -85,10 +86,11 @@ void text::parseImpl(const string& buffer, const string::size_type position,
 }
 
 
-void text::generateImpl(utility::outputStream& os, const string::size_type maxLineLength,
-	const string::size_type curLinePos, string::size_type* newLinePos) const
+void text::generateImpl
+	(const generationContext& ctx, utility::outputStream& os,
+	 const string::size_type curLinePos, string::size_type* newLinePos) const
 {
-	encodeAndFold(os, maxLineLength, curLinePos, newLinePos, 0);
+	encodeAndFold(ctx, os, curLinePos, newLinePos, 0);
 }
 
 
@@ -142,12 +144,12 @@ bool text::operator!=(const text& t) const
 }
 
 
-const string text::getConvertedText(const charset& dest) const
+const string text::getConvertedText(const charset& dest, const charsetConverterOptions& opts) const
 {
 	string out;
 
 	for (std::vector <ref <word> >::const_iterator i = m_words.begin() ; i != m_words.end() ; ++i)
-		out += (*i)->getConvertedText(dest);
+		out += (*i)->getConvertedText(dest, opts);
 
 	return (out);
 }
@@ -348,15 +350,16 @@ void text::createFromString(const string& in, const charset& ch)
 }
 
 
-void text::encodeAndFold(utility::outputStream& os, const string::size_type maxLineLength,
-	const string::size_type firstLineOffset, string::size_type* lastLineLength, const int flags) const
+void text::encodeAndFold
+	(const generationContext& ctx, utility::outputStream& os,
+	 const string::size_type firstLineOffset, string::size_type* lastLineLength, const int flags) const
 {
 	string::size_type curLineLength = firstLineOffset;
 	word::generatorState state;
 
 	for (size_t wi = 0 ; wi < getWordCount() ; ++wi)
 	{
-		getWordAt(wi)->generate(os, maxLineLength, curLineLength,
+		getWordAt(wi)->generate(ctx, os, curLineLength,
 			&curLineLength, flags, &state);
 	}
 
@@ -369,7 +372,17 @@ ref <text> text::decodeAndUnfold(const string& in)
 {
 	ref <text> t = vmime::create <text>();
 
-	decodeAndUnfold(in, t.get());
+	decodeAndUnfold(parsingContext::getDefaultContext(), in, t.get());
+
+	return t;
+}
+
+
+ref <text> text::decodeAndUnfold(const parsingContext& ctx, const string& in)
+{
+	ref <text> t = vmime::create <text>();
+
+	decodeAndUnfold(ctx, in, t.get());
 
 	return t;
 }
@@ -377,11 +390,17 @@ ref <text> text::decodeAndUnfold(const string& in)
 
 text* text::decodeAndUnfold(const string& in, text* generateInExisting)
 {
+	return decodeAndUnfold(parsingContext::getDefaultContext(), in, generateInExisting);
+}
+
+
+text* text::decodeAndUnfold(const parsingContext& ctx, const string& in, text* generateInExisting)
+{
 	text* out = (generateInExisting != NULL) ? generateInExisting : new text();
 
 	out->removeAllWords();
 
-	const std::vector <ref <word> > words = word::parseMultiple(in, 0, in.length(), NULL);
+	const std::vector <ref <word> > words = word::parseMultiple(ctx, in, 0, in.length(), NULL);
 
 	copy_vector(words, out->m_words);
 

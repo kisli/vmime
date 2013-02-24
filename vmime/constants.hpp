@@ -164,6 +164,8 @@ namespace vmime
 		extern const string::value_type* const WINDOWS_1256;
 		extern const string::value_type* const WINDOWS_1257;
 		extern const string::value_type* const WINDOWS_1258;
+
+		extern const string::value_type* const IDNA;
 	}
 
 	/** Constants for standard field names. */

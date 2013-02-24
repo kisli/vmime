@@ -47,8 +47,9 @@ contentDisposition::contentDisposition(const contentDisposition& type)
 }
 
 
-void contentDisposition::parseImpl(const string& buffer, const string::size_type position,
-	const string::size_type end, string::size_type* newPosition)
+void contentDisposition::parseImpl
+	(const parsingContext& /* ctx */, const string& buffer, const string::size_type position,
+	 const string::size_type end, string::size_type* newPosition)
 {
 	m_name = utility::stringUtils::trim(utility::stringUtils::toLower
 		(string(buffer.begin() + position, buffer.begin() + end)));
@@ -60,8 +61,9 @@ void contentDisposition::parseImpl(const string& buffer, const string::size_type
 }
 
 
-void contentDisposition::generateImpl(utility::outputStream& os, const string::size_type /* maxLineLength */,
-	const string::size_type curLinePos, string::size_type* newLinePos) const
+void contentDisposition::generateImpl
+	(const generationContext& /* ctx */, utility::outputStream& os,
+	 const string::size_type curLinePos, string::size_type* newLinePos) const
 {
 	os << m_name;
 

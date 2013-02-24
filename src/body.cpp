@@ -24,8 +24,6 @@
 #include "vmime/bodyPart.hpp"
 #include "vmime/body.hpp"
 
-#include "vmime/options.hpp"
-
 #include "vmime/contentTypeField.hpp"
 #include "vmime/text.hpp"
 
@@ -56,7 +54,8 @@ body::~body()
 
 
 void body::parseImpl
-	(ref <utility::parserInputStreamAdapter> parser,
+	(const parsingContext& /* ctx */,
+	 ref <utility::parserInputStreamAdapter> parser,
 	 const utility::stream::size_type position,
 	 const utility::stream::size_type end,
 	 utility::stream::size_type* newPosition)
@@ -381,8 +380,9 @@ void body::parseImpl
 }
 
 
-void body::generateImpl(utility::outputStream& os, const string::size_type maxLineLength,
-	const string::size_type /* curLinePos */, string::size_type* newLinePos) const
+void body::generateImpl
+	(const generationContext& ctx, utility::outputStream& os,
+	 const string::size_type /* curLinePos */, string::size_type* newLinePos) const
 {
 	// MIME-Multipart
 	if (getPartCount() != 0)
@@ -418,7 +418,7 @@ void body::generateImpl(utility::outputStream& os, const string::size_type maxLi
 		const string& prologText =
 			m_prologText.empty()
 				? (isRootPart()
-					? options::getInstance()->multipart.getPrologText()
+					? ctx.getPrologText()
 					: NULL_STRING
 				  )
 				: m_prologText;
@@ -426,7 +426,7 @@ void body::generateImpl(utility::outputStream& os, const string::size_type maxLi
 		const string& epilogText =
 			m_epilogText.empty()
 				? (isRootPart()
-					? options::getInstance()->multipart.getEpilogText()
+					? ctx.getEpilogText()
 					: NULL_STRING
 				  )
 				: m_epilogText;
@@ -435,7 +435,7 @@ void body::generateImpl(utility::outputStream& os, const string::size_type maxLi
 		{
 			text prolog(prologText, vmime::charset("us-ascii"));
 
-			prolog.encodeAndFold(os, maxLineLength, 0,
+			prolog.encodeAndFold(ctx, os, 0,
 				NULL, text::FORCE_NO_ENCODING | text::NO_NEW_LINE_SEQUENCE);
 
 			os << CRLF;
@@ -447,7 +447,7 @@ void body::generateImpl(utility::outputStream& os, const string::size_type maxLi
 		{
 			os << CRLF;
 
-			getPartAt(p)->generate(os, maxLineLength, 0);
+			getPartAt(p)->generate(ctx, os, 0);
 
 			os << CRLF << "--" << boundary;
 		}
@@ -458,7 +458,7 @@ void body::generateImpl(utility::outputStream& os, const string::size_type maxLi
 		{
 			text epilog(epilogText, vmime::charset("us-ascii"));
 
-			epilog.encodeAndFold(os, maxLineLength, 0,
+			epilog.encodeAndFold(ctx, os, 0,
 				NULL, text::FORCE_NO_ENCODING | text::NO_NEW_LINE_SEQUENCE);
 
 			os << CRLF;
@@ -471,7 +471,7 @@ void body::generateImpl(utility::outputStream& os, const string::size_type maxLi
 	else
 	{
 		// Generate the contents
-		m_contents->generate(os, getEncoding(), maxLineLength);
+		m_contents->generate(os, getEncoding(), ctx.getMaxLineLength());
 	}
 }
 

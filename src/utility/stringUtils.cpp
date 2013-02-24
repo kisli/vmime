@@ -151,6 +151,12 @@ string::size_type stringUtils::countASCIIchars
 }
 
 
+bool stringUtils::is7bit(const string& str)
+{
+	return countASCIIchars(str.begin(), str.end()) == str.length();
+}
+
+
 string::size_type stringUtils::findFirstNonASCIIchar
 	(const string::const_iterator begin, const string::const_iterator end)
 {
@@ -202,6 +208,33 @@ const string stringUtils::unquote(const string& str)
 	}
 
 	return res;
+}
+
+
+bool stringUtils::needQuoting(const string& str, const string& specialChars)
+{
+	return str.find_first_of(specialChars.c_str()) != string::npos;
+}
+
+
+string stringUtils::quote
+	(const string& str, const string& escapeSpecialChars, const string& escapeChar)
+{
+	std::ostringstream oss;
+	string::size_type lastPos = 0, pos = 0;
+
+	while ((pos = str.find_first_of(escapeSpecialChars, lastPos)) != string::npos)
+	{
+		oss << str.substr(lastPos, pos - lastPos)
+		    << escapeChar
+		    << str[pos];
+
+		lastPos = pos + 1;
+	}
+
+	oss << str.substr(lastPos);
+
+	return oss.str();
 }
 
 

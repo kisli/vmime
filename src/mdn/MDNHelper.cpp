@@ -269,7 +269,7 @@ ref <bodyPart> MDNHelper::createSecondMDNPart(const sendableMDNInfos& mdnInfos,
 	ref <headerField> fr = headerFieldFactory::getInstance()->
 		create(vmime::fields::FINAL_RECIPIENT);
 
-	fr->setValue("rfc822; " + mdnInfos.getRecipient().getEmail());
+	fr->setValue("rfc822; " + mdnInfos.getRecipient().getEmail().generate());
 
 	fields.appendField(fr);
 

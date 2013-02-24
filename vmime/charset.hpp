@@ -28,6 +28,7 @@
 #include "vmime/base.hpp"
 #include "vmime/utility/inputStream.hpp"
 #include "vmime/utility/outputStream.hpp"
+#include "vmime/charsetConverterOptions.hpp"
 #include "vmime/component.hpp"
 
 
@@ -93,10 +94,13 @@ public:
 	  * @param out output buffer
 	  * @param source input charset
 	  * @param dest output charset
+	  * @param opts conversion options
 	  * @throws exceptions::charset_conv_error if an error occured during
 	  * the conversion
 	  */
-	static void convert(const string& in, string& out, const charset& source, const charset& dest);
+	static void convert(const string& in, string& out,
+		const charset& source, const charset& dest,
+		const charsetConverterOptions& opts = charsetConverterOptions());
 
 	/** Convert the contents of an input stream in a specified charset
 	  * to another charset and write the result to an output stream.
@@ -105,10 +109,13 @@ public:
 	  * @param out output stream to write the converted data
 	  * @param source input charset
 	  * @param dest output charset
+	  * @param opts conversion options
 	  * @throws exceptions::charset_conv_error if an error occured during
 	  * the conversion
 	  */
-	static void convert(utility::inputStream& in, utility::outputStream& out, const charset& source, const charset& dest);
+	static void convert(utility::inputStream& in, utility::outputStream& out,
+		const charset& source, const charset& dest,
+		const charsetConverterOptions& opts = charsetConverterOptions());
 
 	ref <component> clone() const;
 	void copyFrom(const component& other);
@@ -121,14 +128,15 @@ protected:
 
 	// Component parsing & assembling
 	void parseImpl
-		(const string& buffer,
+		(const parsingContext& ctx,
+		 const string& buffer,
 		 const string::size_type position,
 		 const string::size_type end,
 		 string::size_type* newPosition = NULL);
 
 	void generateImpl
-		(utility::outputStream& os,
-		 const string::size_type maxLineLength = lineLengthLimits::infinite,
+		(const generationContext& ctx,
+		 utility::outputStream& os,
 		 const string::size_type curLinePos = 0,
 		 string::size_type* newLinePos = NULL) const;
 };

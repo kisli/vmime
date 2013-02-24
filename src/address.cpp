@@ -66,8 +66,9 @@ address-list    =       (address *("," address)) / obs-addr-list
 
 */
 
-ref <address> address::parseNext(const string& buffer, const string::size_type position,
-	const string::size_type end, string::size_type* newPosition)
+ref <address> address::parseNext
+	(const parsingContext& ctx, const string& buffer, const string::size_type position,
+	 const string::size_type end, string::size_type* newPosition)
 {
 	bool escaped = false;
 	bool quoted = false;
@@ -179,7 +180,7 @@ ref <address> address::parseNext(const string& buffer, const string::size_type p
 			? create <mailboxGroup>().dynamicCast <address>()
 			: create <mailbox>().dynamicCast <address>();
 
-		parsedAddress->parse(buffer, start, pos, NULL);
+		parsedAddress->parse(ctx, buffer, start, pos, NULL);
 		parsedAddress->setParsedBounds(start, pos);
 
 		return (parsedAddress);

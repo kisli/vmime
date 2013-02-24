@@ -153,6 +153,8 @@ namespace charsets
 	const string::value_type* const WINDOWS_1256 = "windows-1256";
 	const string::value_type* const WINDOWS_1257 = "windows-1257";
 	const string::value_type* const WINDOWS_1258 = "windows-1258";
+
+	const string::value_type* const IDNA = "idna";
 }
 
 

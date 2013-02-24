@@ -61,8 +61,9 @@ field-body-contents =
 		 specials tokens, or else consisting of texts>
 */
 
-void header::parseImpl(const string& buffer, const string::size_type position,
-	const string::size_type end, string::size_type* newPosition)
+void header::parseImpl
+	(const parsingContext& ctx, const string& buffer, const string::size_type position,
+	 const string::size_type end, string::size_type* newPosition)
 {
 	string::size_type pos = position;
 
@@ -70,7 +71,7 @@ void header::parseImpl(const string& buffer, const string::size_type position,
 
 	while (pos < end)
 	{
-		ref <headerField> field = headerField::parseNext(buffer, pos, end, &pos);
+		ref <headerField> field = headerField::parseNext(ctx, buffer, pos, end, &pos);
 		if (field == NULL) break;
 
 		m_fields.push_back(field);
@@ -83,14 +84,15 @@ void header::parseImpl(const string& buffer, const string::size_type position,
 }
 
 
-void header::generateImpl(utility::outputStream& os, const string::size_type maxLineLength,
-	const string::size_type /* curLinePos */, string::size_type* newLinePos) const
+void header::generateImpl
+	(const generationContext& ctx, utility::outputStream& os,
+	 const string::size_type /* curLinePos */, string::size_type* newLinePos) const
 {
 	// Generate the fields
 	for (std::vector <ref <headerField> >::const_iterator it = m_fields.begin() ;
 	     it != m_fields.end() ; ++it)
 	{
-		(*it)->generate(os, maxLineLength);
+		(*it)->generate(ctx, os);
 		os << CRLF;
 	}
 

@@ -125,20 +125,21 @@ public:
 protected:
 
 	void parseImpl
-		(const string& buffer,
+		(const parsingContext& ctx,
+		 const string& buffer,
 		 const string::size_type position,
 		 const string::size_type end,
 		 string::size_type* newPosition = NULL);
 
 	void generateImpl
-		(utility::outputStream& os,
-		 const string::size_type maxLineLength = lineLengthLimits::infinite,
+		(const generationContext& ctx,
+		 utility::outputStream& os,
 		 const string::size_type curLinePos = 0,
 		 string::size_type* newLinePos = NULL) const;
 
 private:
 
-	void parse(const std::vector <valueChunk>& chunks);
+	void parse(const parsingContext& ctx, const std::vector <valueChunk>& chunks);
 
 
 	string m_name;

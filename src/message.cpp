@@ -22,7 +22,6 @@
 //
 
 #include "vmime/message.hpp"
-#include "vmime/options.hpp"
 
 #include "vmime/utility/outputStreamAdapter.hpp"
 
@@ -38,37 +37,10 @@ message::message()
 }
 
 
-void message::generate(utility::outputStream& os, const string::size_type maxLineLength,
-	const string::size_type curLinePos, string::size_type* newLinePos) const
-{
-	// We override this function to change the default value for the
-	// "maxLineLength" parameter. So, the user will just have to call
-	// message::generate() without any argument to use the maximum line
-	// length specified in vmime::options...
-	bodyPart::generate(os, maxLineLength, curLinePos, newLinePos);
-}
-
-
 const string message::generate(const string::size_type maxLineLength,
 	const string::size_type curLinePos) const
 {
-	std::ostringstream oss;
-	utility::outputStreamAdapter adapter(oss);
-
-	generate(adapter, maxLineLength, curLinePos, NULL);
-
-	return (oss.str());
-}
-
-
-
-void message::generate
-	(ref <utility::outputStream> os,
-	 const string::size_type maxLineLength,
-	 const string::size_type curLinePos,
-	 string::size_type* newLinePos) const
-{
-	bodyPart::generate(os, maxLineLength, curLinePos, newLinePos);
+	return bodyPart::generate(maxLineLength, curLinePos);
 }
 
 

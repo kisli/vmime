@@ -30,6 +30,8 @@
 #include "vmime/utility/seekableInputStream.hpp"
 #include "vmime/utility/parserInputStreamAdapter.hpp"
 #include "vmime/utility/outputStream.hpp"
+#include "vmime/generationContext.hpp"
+#include "vmime/parsingContext.hpp"
 
 
 namespace vmime
@@ -47,19 +49,31 @@ public:
 	component();
 	virtual ~component();
 
-	/** Parse RFC-822/MIME data for this component.
+	/** Parse RFC-822/MIME data for this component, using the default
+	  * parsing context.
 	  *
 	  * @param buffer input buffer
 	  */
 	void parse(const string& buffer);
 
+	/** Parse RFC-822/MIME data for this component.
+	  *
+	  * @param ctx parsing context
+	  * @param buffer input buffer
+	  */
+	void parse(const parsingContext& ctx, const string& buffer);
+
 	/** Parse RFC-822/MIME data for this component. If stream is not seekable,
 	  * or if length is not specified, entire contents of the stream will
 	  * be loaded into memory before parsing.
+	  *
+	  * @param inputStream stream from which to read data
+	  * @param length data length, in bytes (0 = unknown/not specified)
 	  */
 	void parse(ref <utility::inputStream> inputStream, const utility::stream::size_type length);
 
-	/** Parse RFC-822/MIME data for this component.
+	/** Parse RFC-822/MIME data for this component, using the default
+	  * parsing context.
 	  *
 	  * @param buffer input buffer
 	  * @param position current position in the input buffer
@@ -72,9 +86,25 @@ public:
 		 const string::size_type end,
 		 string::size_type* newPosition = NULL);
 
+	/** Parse RFC-822/MIME data for this component.
+	  *
+	  * @param ctx parsing context
+	  * @param buffer input buffer
+	  * @param position current position in the input buffer
+	  * @param end end position in the input buffer
+	  * @param newPosition will receive the new position in the input buffer
+	  */
+	void parse
+		(const parsingContext& ctx,
+		 const string& buffer,
+		 const string::size_type position,
+		 const string::size_type end,
+		 string::size_type* newPosition = NULL);
+
 	/** Parse RFC-822/MIME data for this component. If stream is not seekable,
 	  * or if end position is not specified, entire contents of the stream will
-	  * be loaded into memory before parsing.
+	  * be loaded into memory before parsing. The default parsing context
+	  * will be used.
 	  *
 	  * @param inputStream stream from which to read data
 	  * @param position current position in the input stream
@@ -83,6 +113,23 @@ public:
 	  */
 	void parse
 		(ref <utility::inputStream> inputStream,
+		 const utility::stream::size_type position,
+		 const utility::stream::size_type end,
+		 utility::stream::size_type* newPosition = NULL);
+
+	/** Parse RFC-822/MIME data for this component. If stream is not seekable,
+	  * or if end position is not specified, entire contents of the stream will
+	  * be loaded into memory before parsing.
+	  *
+	  * @param ctx parsing context
+	  * @param inputStream stream from which to read data
+	  * @param position current position in the input stream
+	  * @param end end position in the input stream
+	  * @param newPosition will receive the new position in the input stream
+	  */
+	void parse
+		(const parsingContext& ctx,
+		 ref <utility::inputStream> inputStream,
 		 const utility::stream::size_type position,
 		 const utility::stream::size_type end,
 		 utility::stream::size_type* newPosition = NULL);
@@ -99,7 +146,7 @@ public:
 		(const string::size_type maxLineLength = lineLengthLimits::infinite,
 		 const string::size_type curLinePos = 0) const;
 
-	/** Generate RFC-2822/MIME data for this component.
+	/** Generate RFC-2822/MIME data for this component, using the default generation context.
 	  *
 	  * @param outputStream output stream
 	  * @param maxLineLength maximum line length for output
@@ -108,20 +155,20 @@ public:
 	  */
 	virtual void generate
 		(utility::outputStream& outputStream,
-		 const string::size_type maxLineLength = lineLengthLimits::infinite,
 		 const string::size_type curLinePos = 0,
 		 string::size_type* newLinePos = NULL) const;
 
-	/** Generate RFC-2822/MIME data for this component.
+	/** Generate RFC-2822/MIME data for this component, using the default generation context.
 	  *
+	  * @param ctx generation context
 	  * @param outputStream output stream
 	  * @param maxLineLength maximum line length for output
 	  * @param curLinePos length of the current line in the output buffer
 	  * @param newLinePos will receive the new line position (length of the last line written)
 	  */
 	virtual void generate
-		(ref <utility::outputStream> outputStream,
-		 const string::size_type maxLineLength = lineLengthLimits::infinite,
+		(const generationContext& ctx,
+		 utility::outputStream& outputStream,
 		 const string::size_type curLinePos = 0,
 		 string::size_type* newLinePos = NULL) const;
 
@@ -168,20 +215,22 @@ protected:
 
 	// AT LEAST ONE of these parseImpl() functions MUST be implemented in derived class
 	virtual void parseImpl
-		(ref <utility::parserInputStreamAdapter> parser,
+		(const parsingContext& ctx,
+		 ref <utility::parserInputStreamAdapter> parser,
 		 const utility::stream::size_type position,
 		 const utility::stream::size_type end,
 		 utility::stream::size_type* newPosition = NULL);
 
 	virtual void parseImpl
-		(const string& buffer,
+		(const parsingContext& ctx,
+		 const string& buffer,
 		 const string::size_type position,
 		 const string::size_type end,
 		 string::size_type* newPosition = NULL);
 
 	virtual void generateImpl
-		(utility::outputStream& os,
-		 const string::size_type maxLineLength = lineLengthLimits::infinite,
+		(const generationContext& ctx,
+		 utility::outputStream& os,
 		 const string::size_type curLinePos = 0,
 		 string::size_type* newLinePos = NULL) const = 0;
 

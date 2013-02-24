@@ -40,7 +40,8 @@
 #include "vmime/utility/encoder/encoderFactory.hpp"
 #include "vmime/headerFieldFactory.hpp"
 #include "vmime/textPartFactory.hpp"
-#include "vmime/options.hpp"
+#include "vmime/generationContext.hpp"
+#include "vmime/parsingContext.hpp"
 
 #if VMIME_HAVE_MESSAGING_FEATURES
 	#include "vmime/net/serviceFactory.hpp"
@@ -132,7 +133,8 @@ public:
 
 	initializer()
 	{
-		options::getInstance();
+		parsingContext::getDefaultContext();
+		generationContext::getDefaultContext();
 
 		utility::encoder::encoderFactory::getInstance();
 		headerFieldFactory::getInstance();

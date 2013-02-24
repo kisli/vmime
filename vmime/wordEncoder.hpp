@@ -75,11 +75,12 @@ public:
 
 	/** Test whether RFC-2047 encoding is needed.
 	  *
+	  * @param ctx generation context
 	  * @param buffer buffer to analyze
 	  * @param charset charset of the buffer
 	  * @return true if encoding is needed, false otherwise.
 	  */
-	static bool isEncodingNeeded(const string& buffer, const charset& charset);
+	static bool isEncodingNeeded(const generationContext& ctx, const string& buffer, const charset& charset);
 
 	/** Guess the best RFC-2047 encoding to use for the specified buffer.
 	  *

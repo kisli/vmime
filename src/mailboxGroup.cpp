@@ -54,8 +54,9 @@ mailboxGroup::~mailboxGroup()
 }
 
 
-void mailboxGroup::parseImpl(const string& buffer, const string::size_type position,
-	const string::size_type end, string::size_type* newPosition)
+void mailboxGroup::parseImpl
+	(const parsingContext& ctx, const string& buffer, const string::size_type position,
+	 const string::size_type end, string::size_type* newPosition)
 {
 	const string::value_type* const pend = buffer.data() + end;
 	const string::value_type* const pstart = buffer.data() + position;
@@ -80,7 +81,7 @@ void mailboxGroup::parseImpl(const string& buffer, const string::size_type posit
 
 	while (pos < end)
 	{
-		ref <address> parsedAddress = address::parseNext(buffer, pos, end, &pos);
+		ref <address> parsedAddress = address::parseNext(ctx, buffer, pos, end, &pos);
 
 		if (parsedAddress)
 		{
@@ -102,7 +103,7 @@ void mailboxGroup::parseImpl(const string& buffer, const string::size_type posit
 		}
 	}
 
-	text::decodeAndUnfold(name, &m_name);
+	text::decodeAndUnfold(ctx, name, &m_name);
 
 	setParsedBounds(position, end);
 
@@ -111,8 +112,9 @@ void mailboxGroup::parseImpl(const string& buffer, const string::size_type posit
 }
 
 
-void mailboxGroup::generateImpl(utility::outputStream& os, const string::size_type maxLineLength,
-	const string::size_type curLinePos, string::size_type* newLinePos) const
+void mailboxGroup::generateImpl
+	(const generationContext& ctx, utility::outputStream& os,
+	 const string::size_type curLinePos, string::size_type* newLinePos) const
 {
 	// We have to encode the name:
 	//   - if it contains characters in a charset different from "US-ASCII",
@@ -156,7 +158,10 @@ void mailboxGroup::generateImpl(utility::outputStream& os, const string::size_ty
 
 	string::size_type pos = curLinePos;
 
-	m_name.encodeAndFold(os, maxLineLength - 2, pos, &pos,
+	generationContext tmpCtx(ctx);
+	tmpCtx.setMaxLineLength(ctx.getMaxLineLength() - 2);
+
+	m_name.encodeAndFold(ctx, os, pos, &pos,
 		forceEncode ? text::FORCE_ENCODING : 0);
 
 	os << ":";
@@ -176,7 +181,7 @@ void mailboxGroup::generateImpl(utility::outputStream& os, const string::size_ty
 			++pos;
 		}
 
-		(*it)->generate(os, maxLineLength - 2, pos, &pos);
+		(*it)->generate(tmpCtx, os, pos, &pos);
 	}
 
 	os << ";";

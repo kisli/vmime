@@ -84,8 +84,9 @@ const std::vector <ref <component> > messageIdSequence::getChildComponents()
 }
 
 
-void messageIdSequence::parseImpl(const string& buffer, const string::size_type position,
-	const string::size_type end, string::size_type* newPosition)
+void messageIdSequence::parseImpl
+	(const parsingContext& ctx, const string& buffer, const string::size_type position,
+	 const string::size_type end, string::size_type* newPosition)
 {
 	removeAllMessageIds();
 
@@ -93,7 +94,7 @@ void messageIdSequence::parseImpl(const string& buffer, const string::size_type 
 
 	while (pos < end)
 	{
-		ref <messageId> parsedMid = messageId::parseNext(buffer, pos, end, &pos);
+		ref <messageId> parsedMid = messageId::parseNext(ctx, buffer, pos, end, &pos);
 
 		if (parsedMid != NULL)
 			m_list.push_back(parsedMid);
@@ -106,16 +107,20 @@ void messageIdSequence::parseImpl(const string& buffer, const string::size_type 
 }
 
 
-void messageIdSequence::generateImpl(utility::outputStream& os, const string::size_type maxLineLength,
-	const string::size_type curLinePos, string::size_type* newLinePos) const
+void messageIdSequence::generateImpl
+	(const generationContext& ctx, utility::outputStream& os,
+	 const string::size_type curLinePos, string::size_type* newLinePos) const
 {
 	string::size_type pos = curLinePos;
 
 	if (!m_list.empty())
 	{
+		generationContext tmpCtx(ctx);
+		tmpCtx.setMaxLineLength(ctx.getMaxLineLength() - 2);
+
 		for (std::vector <ref <messageId> >::const_iterator it = m_list.begin() ; ; )
 		{
-			(*it)->generate(os, maxLineLength - 2, pos, &pos);
+			(*it)->generate(ctx, os, pos, &pos);
 
 			if (++it == m_list.end())
 				break;

@@ -55,6 +55,11 @@ VMIME_TEST_SUITE_BEGIN
 		VMIME_TEST(testForcedNonEncoding)
 
 		VMIME_TEST(testBugFix20110511)
+
+		VMIME_TEST(testInternationalizedEmail_specialChars)
+		VMIME_TEST(testInternationalizedEmail_UTF8)
+		VMIME_TEST(testInternationalizedEmail_nonUTF8)
+		VMIME_TEST(testInternationalizedEmail_folding)
 	VMIME_TEST_LIST_END
 
 
@@ -355,19 +360,22 @@ VMIME_TEST_SUITE_BEGIN
 		std::string str;
 		vmime::utility::outputStreamStringAdapter os(str);
 
+		vmime::generationContext ctx;
+		ctx.setMaxLineLength(1000);
+
 		// ASCII-only text is quotable
 		str.clear();
-		vmime::word("Quoted text").generate(os, 1000, 0, NULL, vmime::text::QUOTE_IF_POSSIBLE, NULL);
+		vmime::word("Quoted text").generate(ctx, os, 0, NULL, vmime::text::QUOTE_IF_POSSIBLE, NULL);
 		VASSERT_EQ("1", "\"Quoted text\"", cleanGeneratedWords(str));
 
 		// Text with CR/LF is not quotable
 		str.clear();
-		vmime::word("Non-quotable\ntext", "us-ascii").generate(os, 1000, 0, NULL, vmime::text::QUOTE_IF_POSSIBLE, NULL);
+		vmime::word("Non-quotable\ntext", "us-ascii").generate(ctx, os, 0, NULL, vmime::text::QUOTE_IF_POSSIBLE, NULL);
 		VASSERT_EQ("2", "=?us-ascii?Q?Non-quotable=0Atext?=", cleanGeneratedWords(str));
 
 		// Text with non-ASCII chars is not quotable
 		str.clear();
-		vmime::word("Non-quotable text \xc3\xa9").generate(os, 1000, 0, NULL, vmime::text::QUOTE_IF_POSSIBLE, NULL);
+		vmime::word("Non-quotable text \xc3\xa9").generate(ctx, os, 0, NULL, vmime::text::QUOTE_IF_POSSIBLE, NULL);
 		VASSERT_EQ("3", "=?UTF-8?Q?Non-quotable_text_=C3=A9?=", cleanGeneratedWords(str));
 	}
 
@@ -491,6 +499,71 @@ VMIME_TEST_SUITE_BEGIN
 
 		// -- getWholeBuffer
 		VASSERT_EQ("decode2", DECODED_TEXT, t.getWholeBuffer());
+	}
+
+	void testInternationalizedEmail_specialChars()
+	{
+		vmime::generationContext ctx(vmime::generationContext::getDefaultContext());
+		ctx.setInternationalizedEmailSupport(true);
+
+		vmime::generationContext::switcher <vmime::generationContext> contextSwitcher(ctx);
+
+		// Special sequence/chars should still be encoded
+		VASSERT_EQ("1", "=?us-ascii?Q?Test=3D=3Frfc2047_sequence?=",
+			vmime::word("Test=?rfc2047 sequence", vmime::charset("us-ascii")).generate());
+
+		VASSERT_EQ("2", "=?us-ascii?Q?Line_One=0ALine_Two?=",
+			vmime::word("Line One\nLine Two", vmime::charset("us-ascii")).generate());
+	}
+
+	void testInternationalizedEmail_UTF8()
+	{
+		vmime::generationContext ctx(vmime::generationContext::getDefaultContext());
+		ctx.setInternationalizedEmailSupport(true);
+
+		vmime::generationContext::switcher <vmime::generationContext> contextSwitcher(ctx);
+
+		// Already UTF-8 encoded text should be left as is
+		VASSERT_EQ("1", "Achim Br\xc3\xa4ndt",
+			vmime::word("Achim Br\xc3\xa4ndt", vmime::charset("utf-8")).generate());
+	}
+
+	void testInternationalizedEmail_nonUTF8()
+	{
+		vmime::generationContext ctx(vmime::generationContext::getDefaultContext());
+		ctx.setInternationalizedEmailSupport(true);
+
+		vmime::generationContext::switcher <vmime::generationContext> contextSwitcher(ctx);
+
+		// Non UTF-8 encoded text should first be converted to UTF-8
+		VASSERT_EQ("1", "Achim Br\xc3\xa4ndt",
+			vmime::word("Achim Br\xe4ndt", vmime::charset("iso-8859-1")).generate());
+	}
+
+	void testInternationalizedEmail_folding()
+	{
+		vmime::generationContext ctx(vmime::generationContext::getDefaultContext());
+		ctx.setInternationalizedEmailSupport(true);
+
+		vmime::generationContext::switcher <vmime::generationContext> contextSwitcher(ctx);
+
+		// RFC-2047 encoding must be performed, as line folding is needed
+		vmime::word w1("01234567890123456789\xc3\xa0x012345678901234567890123456789"
+		               "01234567890123456789\xc3\xa0x012345678901234567890123456789", vmime::charset("utf-8"));
+
+		VASSERT_EQ("1",
+			"=?utf-8?Q?01234567890123456789=C3=A0x01234567890?=\r\n"
+			" =?utf-8?Q?1234567890123456789012345678901234567?=\r\n"
+			" =?utf-8?Q?89=C3=A0x0123456789012345678901234567?=\r\n"
+			" =?utf-8?Q?89?=", w1.generate(50));
+
+		// RFC-2047 encoding will not be forced, as words can be wrapped in a new line
+		vmime::word w2("bla bla bla This is some '\xc3\xa0\xc3\xa7' UTF-8 encoded text", vmime::charset("utf-8"));
+
+		VASSERT_EQ("2",
+			"bla bla bla This is\r\n"
+			" some '\xc3\xa0\xc3\xa7' UTF-8\r\n"
+			" encoded text", w2.generate(20));
 	}
 
 VMIME_TEST_SUITE_END

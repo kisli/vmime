@@ -21,77 +21,67 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#ifndef VMIME_OPTIONS_HPP_INCLUDED
-#define VMIME_OPTIONS_HPP_INCLUDED
-
-
-#include "vmime/base.hpp"
+#include "vmime/context.hpp"
 
 
 namespace vmime
 {
 
 
-/** A class to set global options for VMime.
-  */
-
-class options
+context::context()
+	: m_internationalizedEmail(false)
 {
-protected:
+}
 
-	/** Message-related options.
-	  */
-	class messageOptions
-	{
-	protected:
 
-		friend class options;
+context::context(const context& ctx)
+	: object(),
+	  m_internationalizedEmail(ctx.m_internationalizedEmail)
+{
+}
 
-		messageOptions()
-			: m_maxLineLength(lineLengthLimits::convenient)
-		{
-		}
 
-		string::size_type m_maxLineLength;
+context::~context()
+{
+}
 
-	public:
 
-		const string::size_type& maxLineLength() const { return (m_maxLineLength); }
-		string::size_type& maxLineLength() { return (m_maxLineLength); }
-	};
+bool context::getInternationalizedEmailSupport() const
+{
+	return m_internationalizedEmail;
+}
 
-	/** Multipart-related options.
-	  */
-	class multipartOptions
-	{
-	private:
 
-		friend class options;
+void context::setInternationalizedEmailSupport(const bool support)
+{
+	m_internationalizedEmail = support;
+}
 
-		multipartOptions();
 
-		string m_prologText;
-		string m_epilogText;
+const charsetConverterOptions& context::getCharsetConversionOptions() const
+{
+	return m_charsetConvOptions;
+}
 
-	public:
 
-		const string& getPrologText() const;
-		void setPrologText(const string& prologText);
+void context::setCharsetConversionOptions(const charsetConverterOptions& opts)
+{
+	m_charsetConvOptions = opts;
+}
 
-		const string& getEpilogText() const;
-		void setEpilogText(const string& epilogText);
-	};
 
-public:
+context& context::operator=(const context& ctx)
+{
+	copyFrom(ctx);
+	return *this;
+}
 
-	static options* getInstance();
 
-	multipartOptions multipart;
-	messageOptions message;
-};
+void context::copyFrom(const context& ctx)
+{
+	m_internationalizedEmail = ctx.m_internationalizedEmail;
+	m_charsetConvOptions = ctx.m_charsetConvOptions;
+}
 
 
 } // vmime
-
-
-#endif // VMIME_OPTIONS_HPP_INCLUDED

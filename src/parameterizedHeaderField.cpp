@@ -78,8 +78,9 @@ struct paramInfo
 #endif // VMIME_BUILDING_DOC
 
 
-void parameterizedHeaderField::parseImpl(const string& buffer, const string::size_type position,
-	const string::size_type end, string::size_type* newPosition)
+void parameterizedHeaderField::parseImpl
+	(const parsingContext& ctx, const string& buffer, const string::size_type position,
+	 const string::size_type end, string::size_type* newPosition)
 {
 	const string::value_type* const pend = buffer.data() + end;
 	const string::value_type* const pstart = buffer.data() + position;
@@ -108,7 +109,7 @@ void parameterizedHeaderField::parseImpl(const string& buffer, const string::siz
 		--valueLength;
 
 	// Parse value
-	getValue()->parse(buffer, valueStart, valueStart + valueLength);
+	getValue()->parse(ctx, buffer, valueStart, valueStart + valueLength);
 
 	// Reset parameters
 	removeAllParameters();
@@ -316,7 +317,7 @@ void parameterizedHeaderField::parseImpl(const string& buffer, const string::siz
 			// Append this parameter to the list
 			ref <parameter> param = vmime::create <parameter>((*it).first);
 
-			param->parse(info.value);
+			param->parse(ctx, info.value);
 			param->setParsedBounds(info.start, info.end);
 
 			appendParameter(param);
@@ -328,13 +329,14 @@ void parameterizedHeaderField::parseImpl(const string& buffer, const string::siz
 }
 
 
-void parameterizedHeaderField::generateImpl(utility::outputStream& os, const string::size_type maxLineLength,
-	const string::size_type curLinePos, string::size_type* newLinePos) const
+void parameterizedHeaderField::generateImpl
+	(const generationContext& ctx, utility::outputStream& os,
+	 const string::size_type curLinePos, string::size_type* newLinePos) const
 {
 	string::size_type pos = curLinePos;
 
 	// Parent header field
-	headerField::generateImpl(os, maxLineLength, pos, &pos);
+	headerField::generateImpl(ctx, os, pos, &pos);
 
 	// Parameters
 	for (std::vector <ref <parameter> >::const_iterator
@@ -343,7 +345,7 @@ void parameterizedHeaderField::generateImpl(utility::outputStream& os, const str
 		os << "; ";
 		pos += 2;
 
-		(*it)->generate(os, maxLineLength, pos, &pos);
+		(*it)->generate(ctx, os, pos, &pos);
 	}
 
 	if (newLinePos)

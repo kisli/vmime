@@ -105,6 +105,10 @@ VMIME_TEST_SUITE_BEGIN
 		// Test invalid input
 		VMIME_TEST(testFilterInvalid1)
 
+		// IDNA
+		VMIME_TEST(testEncodeIDNA)
+		VMIME_TEST(testDecodeIDNA)
+
 		// TODO: more tests
 	VMIME_TEST_LIST_END
 
@@ -147,14 +151,18 @@ VMIME_TEST_SUITE_BEGIN
 
 		vmime::string actualOut;
 		vmime::utility::outputStreamStringAdapter osa(actualOut);
-		vmime::utility::charsetFilteredOutputStream os
-			(inputCharset, outputCharset, osa);
+
+		vmime::ref <vmime::charsetConverter> conv =
+			vmime::charsetConverter::create(inputCharset, outputCharset);
+
+		vmime::ref <vmime::utility::charsetFilteredOutputStream> os =
+			conv->getFilteredOutputStream(osa);
 
 		vmime::utility::inputStreamStringAdapter is(in);
 
-		vmime::utility::bufferedStreamCopy(is, os);
+		vmime::utility::bufferedStreamCopy(is, *os);
 
-		os.flush();
+		os->flush();
 
 		VASSERT_EQ("1", toHex(expectedOut), toHex(actualOut));
 	}
@@ -167,17 +175,21 @@ VMIME_TEST_SUITE_BEGIN
 
 		vmime::string actualOut;
 		vmime::utility::outputStreamStringAdapter osa(actualOut);
-		vmime::utility::charsetFilteredOutputStream os
-			(inputCharset, outputCharset, osa);
+
+		vmime::ref <vmime::charsetConverter> conv =
+			vmime::charsetConverter::create(inputCharset, outputCharset);
+
+		vmime::ref <vmime::utility::charsetFilteredOutputStream> os =
+			conv->getFilteredOutputStream(osa);
 
 		vmime::utility::inputStreamStringAdapter is(in);
 
 		vmime::utility::stream::value_type buffer[16];
 
 		for (int i = 0 ; !is.eof() ; ++i)
-			os.write(buffer, is.read(buffer, 1));
+			os->write(buffer, is.read(buffer, 1));
 
-		os.flush();
+		os->flush();
 
 		VASSERT_EQ("1", toHex(expectedOut), toHex(actualOut));
 	}
@@ -190,17 +202,21 @@ VMIME_TEST_SUITE_BEGIN
 
 		vmime::string actualOut;
 		vmime::utility::outputStreamStringAdapter osa(actualOut);
-		vmime::utility::charsetFilteredOutputStream os
-			(inputCharset, outputCharset, osa);
+
+		vmime::ref <vmime::charsetConverter> conv =
+			vmime::charsetConverter::create(inputCharset, outputCharset);
+
+		vmime::ref <vmime::utility::charsetFilteredOutputStream> os =
+			conv->getFilteredOutputStream(osa);
 
 		vmime::utility::inputStreamStringAdapter is(in);
 
 		vmime::utility::stream::value_type buffer[16];
 
 		for (int i = 0 ; !is.eof() ; ++i)
-			os.write(buffer, is.read(buffer, (i % 5) + 1));
+			os->write(buffer, is.read(buffer, (i % 5) + 1));
 
-		os.flush();
+		os->flush();
 
 		VASSERT_EQ("1", toHex(expectedOut), toHex(actualOut));
 	}
@@ -212,18 +228,23 @@ VMIME_TEST_SUITE_BEGIN
 
 		vmime::string actualOut;
 		vmime::utility::outputStreamStringAdapter osa(actualOut);
-		vmime::utility::charsetFilteredOutputStream os
-			(vmime::charset("utf-8"),
-			 vmime::charset("iso-8859-1"), osa);
+
+		vmime::ref <vmime::charsetConverter> conv =
+			vmime::charsetConverter::create
+				(vmime::charset("utf-8"),
+				 vmime::charset("iso-8859-1"));
+
+		vmime::ref <vmime::utility::charsetFilteredOutputStream> os =
+			conv->getFilteredOutputStream(osa);
 
 		vmime::utility::inputStreamStringAdapter is(in);
 
 		vmime::utility::stream::value_type buffer[16];
 
 		for (int i = 0 ; !is.eof() ; ++i)
-			os.write(buffer, is.read(buffer, 1));
+			os->write(buffer, is.read(buffer, 1));
 
-		os.flush();
+		os->flush();
 
 		VASSERT_EQ("1", toHex(expectedOut), toHex(actualOut));
 	}
@@ -274,6 +295,39 @@ VMIME_TEST_SUITE_BEGIN
 		}
 
 		return res;
+	}
+
+	static const vmime::string convertHelper
+		(const vmime::string& in, const vmime::charset& csrc, const vmime::charset& cdest)
+	{
+		vmime::string out;
+		vmime::charset::convert(in, out, csrc, cdest);
+
+		return out;
+	}
+
+	void testEncodeIDNA()
+	{
+		VASSERT_EQ("1", "xn--espaol-zwa", convertHelper("español", "utf-8", "idna"));
+
+		// Tests from ICANN
+		VASSERT_EQ("2.1", "xn--hxajbheg2az3al", convertHelper("παράδειγμα", "utf-8", "idna"));
+		VASSERT_EQ("2.2", "xn--jxalpdlp", convertHelper("δοκιμή", "utf-8", "idna"));
+
+		VASSERT_EQ("3.1", "xn--mgbh0fb", convertHelper("مثال", "utf-8", "idna"));
+		VASSERT_EQ("3.2", "xn--kgbechtv", convertHelper("إختبار", "utf-8", "idna"));
+	}
+
+	void testDecodeIDNA()
+	{
+		VASSERT_EQ("1", "español", convertHelper("xn--espaol-zwa", "idna", "utf-8"));
+
+		// Tests from ICANN
+		VASSERT_EQ("2.1", "παράδειγμα", convertHelper("xn--hxajbheg2az3al", "idna", "utf-8"));
+		VASSERT_EQ("2.2", "δοκιμή", convertHelper("xn--jxalpdlp", "idna", "utf-8"));
+
+		VASSERT_EQ("3.1", "مثال", convertHelper("xn--mgbh0fb", "idna", "utf-8"));
+		VASSERT_EQ("3.2", "إختبار", convertHelper("xn--kgbechtv", "idna", "utf-8"));
 	}
 
 VMIME_TEST_SUITE_END

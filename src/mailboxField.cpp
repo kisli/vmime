@@ -43,15 +43,16 @@ mailboxField::mailboxField(const mailboxField&)
 }
 
 
-void mailboxField::parse(const string& buffer, const string::size_type position,
-	const string::size_type end, string::size_type* newPosition)
+void mailboxField::parse
+	(const parsingContext& ctx, const string& buffer, const string::size_type position,
+	 const string::size_type end, string::size_type* newPosition)
 {
 	ref <mailbox> mbox = vmime::create <mailbox>();
 
 	// Here, we cannot simply call "m_mailbox.parse()" because it
 	// may have more than one address specified (even if this field
 	// should contain only one). We are never too much careful...
-	ref <address> parsedAddress = address::parseNext(buffer, position, end, newPosition);
+	ref <address> parsedAddress = address::parseNext(ctx, buffer, position, end, newPosition);
 
 	if (parsedAddress)
 	{

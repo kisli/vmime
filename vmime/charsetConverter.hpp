@@ -29,11 +29,31 @@
 #include "vmime/component.hpp"
 
 #include "vmime/charset.hpp"
+#include "vmime/charsetConverterOptions.hpp"
 #include "vmime/utility/filteredStream.hpp"
 
 
 namespace vmime
 {
+
+
+namespace utility
+{
+
+
+/** A filtered output stream which applies a charset conversion
+  * to input bytes.
+  *
+  * May throw a exceptions::charset_conv_error if an error
+  * occured when initializing convert, or during charset conversion.
+  */
+
+class charsetFilteredOutputStream : public filteredOutputStream
+{
+};
+
+
+} // utility
 
 
 /** Convert between charsets.
@@ -43,14 +63,15 @@ class charsetConverter : public object
 {
 public:
 
-	/** Construct and initialize a charset converter.
+	/** Construct and initialize an iconv charset converter.
 	  *
 	  * @param source input charset
 	  * @param dest output charset
+	  * @param opts conversion options
 	  */
-	charsetConverter(const charset& source, const charset& dest);
-
-	~charsetConverter();
+	static ref <charsetConverter> create
+		(const charset& source, const charset& dest,
+		 const charsetConverterOptions& opts = charsetConverterOptions());
 
 	/** Convert a string buffer from one charset to another
 	  * charset (in-memory conversion)
@@ -63,7 +84,7 @@ public:
 	  * @throws exceptions::charset_conv_error if an error occured during
 	  * the conversion
 	  */
-	void convert(const string& in, string& out);
+	virtual void convert(const string& in, string& out) = 0;
 
 	/** Convert the contents of an input stream in a specified charset
 	  * to another charset and write the result to an output stream.
@@ -73,78 +94,20 @@ public:
 	  * @throws exceptions::charset_conv_error if an error occured during
 	  * the conversion
 	  */
-	void convert(utility::inputStream& in, utility::outputStream& out);
+	virtual void convert(utility::inputStream& in, utility::outputStream& out) = 0;
 
-private:
-
-	void* m_desc;
-
-	charset m_source;
-	charset m_dest;
-};
-
-
-namespace utility {
-
-
-/** A filtered output stream which applies a charset conversion
-  * to input bytes.
-  *
-  * May throw a exceptions::charset_conv_error if an error
-  * occured when initializing convert, or during charset conversion.
-  */
-
-class charsetFilteredOutputStream : public filteredOutputStream
-{
-public:
-
-	/** Construct a new filter for the specified output stream.
+	/** Returns a filtered output stream which applies a charset
+	  * conversion to input bytes. Please note that it may not be
+	  * supported by the converter.
 	  *
-	  * @param source input charset
-	  * @param dest output charset
-	  * @param os stream into which write filtered data
+	  * @param os stream into which filtered data will be written
+	  * @return a filtered output stream, or NULL if not supported
 	  */
-	charsetFilteredOutputStream
-		(const charset& source, const charset& dest, outputStream& os);
-
-	~charsetFilteredOutputStream();
-
-
-	outputStream& getNextOutputStream();
-
-	void write(const value_type* const data, const size_type count);
-	void flush();
-
-private:
-
-	// Maximum character width in any charset
-	enum { MAX_CHARACTER_WIDTH = 128 };
-
-
-	void* m_desc;
-
-	const charset m_sourceCharset;
-	const charset m_destCharset;
-
-	outputStream& m_stream;
-
-	// Buffer in which unconverted bytes are left until they can
-	// be converted (when more data arrives). The length should be
-	// large enough to contain any character in any charset.
-	value_type m_unconvBuffer[MAX_CHARACTER_WIDTH];
-	size_type m_unconvCount;
-
-	// Buffer used for conversion. Avoids declaring it in write().
-	// Should be at least MAX_CHARACTER_WIDTH * MAX_CHARACTER_WIDTH.
-	value_type m_outputBuffer[32768];
+	virtual ref <utility::charsetFilteredOutputStream> getFilteredOutputStream(utility::outputStream& os) = 0;
 };
-
-
-} // utility
 
 
 } // vmime
 
 
 #endif // VMIME_CHARSETCONVERTER_HPP_INCLUDED
-

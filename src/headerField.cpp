@@ -73,8 +73,9 @@ headerField& headerField::operator=(const headerField& other)
 }
 
 
-ref <headerField> headerField::parseNext(const string& buffer, const string::size_type position,
-	const string::size_type end, string::size_type* newPosition)
+ref <headerField> headerField::parseNext
+	(const parsingContext& ctx, const string& buffer, const string::size_type position,
+	 const string::size_type end, string::size_type* newPosition)
 {
 	string::size_type pos = position;
 
@@ -215,7 +216,7 @@ ref <headerField> headerField::parseNext(const string& buffer, const string::siz
 				// Return a new field
 				ref <headerField> field = headerFieldFactory::getInstance()->create(name);
 
-				field->parse(buffer, contentsStart, contentsEnd, NULL);
+				field->parse(ctx, buffer, contentsStart, contentsEnd, NULL);
 				field->setParsedBounds(nameStart, pos);
 
 				if (newPosition)
@@ -262,19 +263,21 @@ ref <headerField> headerField::parseNext(const string& buffer, const string::siz
 }
 
 
-void headerField::parseImpl(const string& buffer, const string::size_type position, const string::size_type end,
-	string::size_type* newPosition)
+void headerField::parseImpl
+	(const parsingContext& ctx, const string& buffer, const string::size_type position,
+	 const string::size_type end, string::size_type* newPosition)
 {
-	m_value->parse(buffer, position, end, newPosition);
+	m_value->parse(ctx, buffer, position, end, newPosition);
 }
 
 
-void headerField::generateImpl(utility::outputStream& os, const string::size_type maxLineLength,
-	const string::size_type curLinePos, string::size_type* newLinePos) const
+void headerField::generateImpl
+	(const generationContext& ctx, utility::outputStream& os,
+	 const string::size_type curLinePos, string::size_type* newLinePos) const
 {
 	os << m_name + ": ";
 
-	m_value->generate(os, maxLineLength, curLinePos + m_name.length() + 2, newLinePos);
+	m_value->generate(ctx, os, curLinePos + m_name.length() + 2, newLinePos);
 }
 
 

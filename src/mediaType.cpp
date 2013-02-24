@@ -48,8 +48,9 @@ mediaType::mediaType(const string& type, const string& subType)
 }
 
 
-void mediaType::parseImpl(const string& buffer, const string::size_type position,
-	const string::size_type end, string::size_type* newPosition)
+void mediaType::parseImpl
+	(const parsingContext& ctx, const string& buffer, const string::size_type position,
+	 const string::size_type end, string::size_type* newPosition)
 {
 	const string::value_type* const pend = buffer.data() + end;
 	const string::value_type* const pstart = buffer.data() + position;
@@ -82,12 +83,13 @@ void mediaType::parseImpl(const string& buffer, const string::size_type position
 }
 
 
-void mediaType::generateImpl(utility::outputStream& os, const string::size_type maxLineLength,
-	const string::size_type curLinePos, string::size_type* newLinePos) const
+void mediaType::generateImpl
+	(const generationContext& ctx, utility::outputStream& os,
+	 const string::size_type curLinePos, string::size_type* newLinePos) const
 {
 	const string value = m_type + "/" + m_subType;
 
-	if (curLinePos + value.length() > maxLineLength)
+	if (curLinePos + value.length() > ctx.getMaxLineLength())
 	{
 		os << NEW_LINE_SEQUENCE;
 		os << value;

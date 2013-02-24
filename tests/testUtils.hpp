@@ -107,6 +107,13 @@ inline std::ostream& operator<<(std::ostream& os, const vmime::charset& ch)
 }
 
 
+inline std::ostream& operator<<(std::ostream& os, const vmime::word& w)
+{
+	os << "[word: charset=" << w.getCharset().getName() << ", buffer=" << w.getBuffer() << "]";
+	return (os);
+}
+
+
 inline std::ostream& operator<<(std::ostream& os, const vmime::text& txt)
 {
 	os << "[text: [";
@@ -118,10 +125,18 @@ inline std::ostream& operator<<(std::ostream& os, const vmime::text& txt)
 		if (i != 0)
 			os << ",";
 
-		os << "[word: charset=" << w.getCharset().getName() << ", buffer=" << w.getBuffer() << "]";
+		os << w;
 	}
 
 	os << "]]";
+
+	return (os);
+}
+
+
+inline std::ostream& operator<<(std::ostream& os, const vmime::emailAddress& email)
+{
+	os << email.generate();
 
 	return (os);
 }

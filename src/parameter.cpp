@@ -113,18 +113,23 @@ void parameter::setValue(const word& value)
 }
 
 
-void parameter::parseImpl(const string& buffer, const string::size_type position,
-	const string::size_type end, string::size_type* newPosition)
+void parameter::parseImpl
+	(const parsingContext& ctx, const string& buffer, const string::size_type position,
+	 const string::size_type end, string::size_type* newPosition)
 {
 	m_value->setBuffer(string(buffer.begin() + position, buffer.begin() + end));
-	m_value->setCharset(charset(charsets::US_ASCII));
+
+	if (ctx.getInternationalizedEmailSupport())
+		m_value->setCharset(charset(charsets::UTF_8));
+	else
+		m_value->setCharset(charset(charsets::US_ASCII));
 
 	if (newPosition)
 		*newPosition = end;
 }
 
 
-void parameter::parse(const std::vector <valueChunk>& chunks)
+void parameter::parse(const parsingContext& ctx, const std::vector <valueChunk>& chunks)
 {
 	bool foundCharsetChunk = false;
 
@@ -236,7 +241,7 @@ void parameter::parse(const std::vector <valueChunk>& chunks)
 			// if the data is not encoded, because it can recover
 			// from parsing errors.
 			vmime::text t;
-			t.parse(chunk.data);
+			t.parse(ctx, chunk.data);
 
 			if (t.getWordCount() != 0)
 			{
@@ -253,8 +258,9 @@ void parameter::parse(const std::vector <valueChunk>& chunks)
 }
 
 
-void parameter::generateImpl(utility::outputStream& os, const string::size_type maxLineLength,
-	const string::size_type curLinePos, string::size_type* newLinePos) const
+void parameter::generateImpl
+	(const generationContext& ctx, utility::outputStream& os,
+	 const string::size_type curLinePos, string::size_type* newLinePos) const
 {
 	const string& name = m_name;
 	const string& value = m_value->getBuffer();
@@ -276,7 +282,7 @@ void parameter::generateImpl(utility::outputStream& os, const string::size_type 
 
 	string::size_type pos = curLinePos;
 
-	if (pos + name.length() + 10 + value.length() > maxLineLength)
+	if (pos + name.length() + 10 + value.length() > ctx.getMaxLineLength())
 	{
 		sevenBitStream << NEW_LINE_SEQUENCE;
 		pos = NEW_LINE_SEQUENCE_LENGTH;
@@ -287,7 +293,7 @@ void parameter::generateImpl(utility::outputStream& os, const string::size_type 
 	string::size_type valueLength = 0;
 
 	// Use worst-case length name.length()+2 for 'name=' part of line
-	for (string::size_type i = 0 ; (i < value.length()) && (pos + name.length() + 2 + valueLength < maxLineLength - 4) ; ++i, ++valueLength)
+	for (string::size_type i = 0 ; (i < value.length()) && (pos + name.length() + 2 + valueLength < ctx.getMaxLineLength() - 4) ; ++i, ++valueLength)
 	{
 		switch (value[i])
 		{
@@ -431,7 +437,7 @@ void parameter::generateImpl(utility::outputStream& os, const string::size_type 
 			  name.length() + 4 /* *0*= */ + 2 /* '' */
 			+ m_value->getCharset().getName().length();
 
-		if (pos + firstSectionLength + 5 >= maxLineLength)
+		if (pos + firstSectionLength + 5 >= ctx.getMaxLineLength())
 		{
 			os << NEW_LINE_SEQUENCE;
 			pos = NEW_LINE_SEQUENCE_LENGTH;
@@ -448,7 +454,7 @@ void parameter::generateImpl(utility::outputStream& os, const string::size_type 
 		{
 			// Check whether we should start a new line (taking into
 			// account the next character will be encoded = worst case)
-			if (currentSectionLength + 3 >= maxLineLength)
+			if (currentSectionLength + 3 >= ctx.getMaxLineLength())
 			{
 				sectionText.push_back(currentSection);
 				sectionCount++;

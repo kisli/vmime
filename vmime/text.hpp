@@ -135,9 +135,11 @@ public:
 	  * specified destination charset.
 	  *
 	  * @param dest output charset
+	  * @param opts options for charset conversion
 	  * @return text decoded in the specified charset
 	  */
-	const string getConvertedText(const charset& dest) const;
+	const string getConvertedText(const charset& dest,
+		const charsetConverterOptions& opts = charsetConverterOptions()) const;
 
 	/** Return the unconverted (raw) data of all words. This is the
 	  * concatenation of the results returned by getBuffer() on
@@ -194,21 +196,23 @@ public:
 		FORCE_NO_ENCODING = (1 << 0),    /**< Just fold lines, don't encode them. */
 		FORCE_ENCODING = (1 << 1),       /**< Encode lines even if they are plain ASCII text. */
 		NO_NEW_LINE_SEQUENCE = (1 << 2), /**< Use CRLF instead of new-line sequence (CRLF + TAB). */
-		QUOTE_IF_POSSIBLE = (1 << 3)     /**< Use quoting instead of encoding when possible (even if FORCE_ENCODING is specified). */
+		QUOTE_IF_POSSIBLE = (1 << 3),    /**< Use quoting instead of encoding when possible (even if FORCE_ENCODING is specified). */
+		QUOTE_IF_NEEDED = (1 << 4)       /**< Use quoting instead of encoding if needed (eg. whitespaces and/or special chars). */
 	};
 
 	/** Encode and fold text in respect to RFC-2047.
 	  *
+	  * @param ctx generation context
 	  * @param os output stream
 	  * @param maxLineLength maximum line length for output
 	  * @param firstLineOffset the first line length (may be useful if the current output line is not empty)
 	  * @param lastLineLength will receive the length of the last line written
 	  * @param flags encoding flags (see EncodeAndFoldFlags)
 	  */
-	void encodeAndFold(utility::outputStream& os, const string::size_type maxLineLength,
+	void encodeAndFold(const generationContext& ctx, utility::outputStream& os,
 		const string::size_type firstLineOffset, string::size_type* lastLineLength, const int flags) const;
 
-	/** Decode and unfold text (RFC-2047).
+	/** Decode and unfold text (RFC-2047), using the default parsing context.
 	  *
 	  * @param in input string
 	  * @return new text object
@@ -216,6 +220,14 @@ public:
 	static ref <text> decodeAndUnfold(const string& in);
 
 	/** Decode and unfold text (RFC-2047).
+	  *
+	  * @param ctx parsingContext
+	  * @param in input string
+	  * @return new text object
+	  */
+	static ref <text> decodeAndUnfold(const parsingContext& ctx, const string& in);
+
+	/** Decode and unfold text (RFC-2047), using the default parsing context.
 	  *
 	  * @param in input string
 	  * @param generateInExisting if not NULL, the resulting text will be generated
@@ -226,18 +238,31 @@ public:
 	  */
 	static text* decodeAndUnfold(const string& in, text* generateInExisting);
 
+	/** Decode and unfold text (RFC-2047).
+	  *
+	  * @param ctx parsing context
+	  * @param in input string
+	  * @param generateInExisting if not NULL, the resulting text will be generated
+	  * in the specified object instead of a new created object (in this case, the
+	  * function returns the same pointer). Can be used to avoid copying the
+	  * resulting object into an existing object.
+	  * @return new text object or existing object if generateInExisting != NULL
+	  */
+	static text* decodeAndUnfold(const parsingContext& ctx, const string& in, text* generateInExisting);
+
 protected:
 
 	// Component parsing & assembling
 	void parseImpl
-		(const string& buffer,
+		(const parsingContext& ctx,
+		 const string& buffer,
 		 const string::size_type position,
 		 const string::size_type end,
 		 string::size_type* newPosition = NULL);
 
 	void generateImpl
-		(utility::outputStream& os,
-		 const string::size_type maxLineLength = lineLengthLimits::infinite,
+		(const generationContext& ctx,
+		 utility::outputStream& os,
 		 const string::size_type curLinePos = 0,
 		 string::size_type* newLinePos = NULL) const;
 

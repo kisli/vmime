@@ -61,8 +61,9 @@ encoding::encoding(const encoding& enc)
 }
 
 
-void encoding::parseImpl(const string& buffer, const string::size_type position,
-	const string::size_type end, string::size_type* newPosition)
+void encoding::parseImpl
+	(const parsingContext& /* ctx */, const string& buffer, const string::size_type position,
+	 const string::size_type end, string::size_type* newPosition)
 {
 	m_usage = USAGE_UNKNOWN;
 
@@ -80,8 +81,9 @@ void encoding::parseImpl(const string& buffer, const string::size_type position,
 }
 
 
-void encoding::generateImpl(utility::outputStream& os, const string::size_type /* maxLineLength */,
-	const string::size_type curLinePos, string::size_type* newLinePos) const
+void encoding::generateImpl
+	(const generationContext& /* ctx */, utility::outputStream& os,
+	 const string::size_type curLinePos, string::size_type* newLinePos) const
 {
 	os << m_name;
 

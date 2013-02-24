@@ -171,8 +171,9 @@ const std::vector <string> disposition::getModifierList() const
 }
 
 
-void disposition::parseImpl(const string& buffer, const string::size_type position,
-	const string::size_type end, string::size_type* newPosition)
+void disposition::parseImpl
+	(const parsingContext& /* ctx */, const string& buffer, const string::size_type position,
+	 const string::size_type end, string::size_type* newPosition)
 {
 	// disposition-mode ";" disposition-type
 	//      [ "/" disposition-modifier *( "," disposition-modifier ) ]
@@ -276,8 +277,9 @@ void disposition::parseImpl(const string& buffer, const string::size_type positi
 }
 
 
-void disposition::generateImpl(utility::outputStream& os, const string::size_type maxLineLength,
-	const string::size_type curLinePos, string::size_type* newLinePos) const
+void disposition::generateImpl
+	(const generationContext& ctx, utility::outputStream& os,
+	 const string::size_type curLinePos, string::size_type* newLinePos) const
 {
 	string::size_type pos = curLinePos;
 
@@ -287,7 +289,7 @@ void disposition::generateImpl(utility::outputStream& os, const string::size_typ
 	os << actionMode << "/" << sendingMode << ";";
 	pos += actionMode.length() + 1 + sendingMode.length() + 1;
 
-	if (pos > maxLineLength)
+	if (pos > ctx.getMaxLineLength())
 	{
 		os << NEW_LINE_SEQUENCE;
 		pos = NEW_LINE_SEQUENCE_LENGTH;

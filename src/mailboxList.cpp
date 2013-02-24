@@ -196,17 +196,18 @@ const std::vector <ref <component> > mailboxList::getChildComponents()
 }
 
 
-void mailboxList::parseImpl(const string& buffer, const string::size_type position,
-	const string::size_type end, string::size_type* newPosition)
+void mailboxList::parseImpl
+	(const parsingContext& ctx, const string& buffer, const string::size_type position,
+	 const string::size_type end, string::size_type* newPosition)
 {
-	m_list.parse(buffer, position, end, newPosition);
+	m_list.parse(ctx, buffer, position, end, newPosition);
 }
 
 
-void mailboxList::generateImpl(utility::outputStream& os, const string::size_type maxLineLength,
+void mailboxList::generateImpl(const generationContext& ctx, utility::outputStream& os,
 	const string::size_type curLinePos, string::size_type* newLinePos) const
 {
-	m_list.generate(os, maxLineLength, curLinePos, newLinePos);
+	m_list.generate(ctx, os, curLinePos, newLinePos);
 }
 
 

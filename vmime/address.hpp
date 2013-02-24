@@ -65,13 +65,17 @@ public:
 
 	/** Parse an address from an input buffer.
 	  *
+	  * @param ctx parsing context
 	  * @param buffer input buffer
 	  * @param position position in the input buffer
 	  * @param end end position in the input buffer
 	  * @param newPosition will receive the new position in the input buffer
 	  * @return a new address object, or null if no more address is available in the input buffer
 	  */
-	static ref <address> parseNext(const string& buffer, const string::size_type position, const string::size_type end, string::size_type* newPosition);
+	static ref <address> parseNext
+		(const parsingContext& ctx, const string& buffer,
+		 const string::size_type position, const string::size_type end,
+		 string::size_type* newPosition);
 };
 
 

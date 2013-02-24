@@ -31,7 +31,6 @@
 // Base definitions
 #include "vmime/base.hpp"
 #include "vmime/exception.hpp"
-#include "vmime/options.hpp"
 #include "vmime/platform.hpp"
 
 // Base components
@@ -42,6 +41,7 @@
 #include "vmime/text.hpp"
 #include "vmime/encoding.hpp"
 #include "vmime/contentDisposition.hpp"
+#include "vmime/emailAddress.hpp"
 #include "vmime/mailbox.hpp"
 #include "vmime/mailboxGroup.hpp"
 #include "vmime/mailboxList.hpp"
@@ -56,6 +56,9 @@
 #include "vmime/emptyContentHandler.hpp"
 #include "vmime/stringContentHandler.hpp"
 #include "vmime/streamContentHandler.hpp"
+
+#include "vmime/generationContext.hpp"
+#include "vmime/parsingContext.hpp"
 
 // Message components
 #include "vmime/message.hpp"

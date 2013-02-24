@@ -23,6 +23,7 @@
 
 #include "vmime/mailbox.hpp"
 #include "vmime/parserHelpers.hpp"
+#include "vmime/utility/outputStreamStringAdapter.hpp"
 
 
 namespace vmime
@@ -40,13 +41,13 @@ mailbox::mailbox(const mailbox& mbox)
 }
 
 
-mailbox::mailbox(const string& email)
+mailbox::mailbox(const emailAddress& email)
 	: m_email(email)
 {
 }
 
 
-mailbox::mailbox(const text& name, const string& email)
+mailbox::mailbox(const text& name, const emailAddress& email)
 	: m_name(name), m_email(email)
 {
 }
@@ -65,8 +66,9 @@ angle-addr      =       [CFWS] "<" addr-spec ">" [CFWS] / obs-angle-addr
 
 */
 
-void mailbox::parseImpl(const string& buffer, const string::size_type position,
-	const string::size_type end, string::size_type* newPosition)
+void mailbox::parseImpl
+	(const parsingContext& ctx, const string& buffer, const string::size_type position,
+	 const string::size_type end, string::size_type* newPosition)
 {
 	const string::value_type* const pend = buffer.data() + end;
 	const string::value_type* const pstart = buffer.data() + position;
@@ -313,27 +315,13 @@ void mailbox::parseImpl(const string& buffer, const string::size_type position,
 	// (email address is mandatory, whereas name is optional).
 	if (address.empty() && !name.empty() && !hadBrackets)
 	{
-		m_email.clear();
-		m_email.reserve(name.size());
 		m_name.removeAllWords();
-
-		for (string::size_type i = 0 ; i < name.size() ; ++i)
-		{
-			if (!parserHelpers::isSpace(name[i]))
-				m_email += name[i];
-		}
+		m_email.parse(ctx, name);
 	}
 	else
 	{
-		text::decodeAndUnfold(name, &m_name);
-		m_email.clear();
-		m_email.reserve(address.size());
-
-		for (string::size_type i = 0 ; i < address.size() ; ++i)
-		{
-			if (!parserHelpers::isSpace(address[i]))
-				m_email += address[i];
-		}
+		text::decodeAndUnfold(ctx, name, &m_name);
+		m_email.parse(ctx, address);
 	}
 
 	setParsedBounds(position, position + (p - pstart));
@@ -343,28 +331,30 @@ void mailbox::parseImpl(const string& buffer, const string::size_type position,
 }
 
 
-void mailbox::generateImpl(utility::outputStream& os, const string::size_type maxLineLength,
-	const string::size_type curLinePos, string::size_type* newLinePos) const
+void mailbox::generateImpl
+	(const generationContext& ctx, utility::outputStream& os,
+	 const string::size_type curLinePos, string::size_type* newLinePos) const
 {
+	string generatedEmail;
+	utility::outputStreamStringAdapter generatedEmailStream(generatedEmail);
+	m_email.generate(ctx, generatedEmailStream, 0, NULL);
+
 	if (m_name.isEmpty())
 	{
-		bool newLine = false;
+		string::size_type pos = curLinePos;
 
 		// No display name is specified, only email address.
-		if (curLinePos /* + 2 */ + m_email.length() > maxLineLength)
+		if (curLinePos + generatedEmail.length() > ctx.getMaxLineLength())
 		{
 			os << NEW_LINE_SEQUENCE;
-			newLine = true;
+			pos = NEW_LINE_SEQUENCE.length();
 		}
 
-		//os << "<" << m_email << ">";
-		os << m_email;
+		os << generatedEmail;
+		pos += generatedEmail.length();
 
 		if (newLinePos)
-		{
-			*newLinePos = curLinePos + m_email.length() /* + 2 */;
-			if (newLine) *newLinePos += 1;
-		}
+			*newLinePos = pos;
 	}
 	else
 	{
@@ -415,24 +405,21 @@ void mailbox::generateImpl(utility::outputStream& os, const string::size_type ma
 		}
 
 		string::size_type pos = curLinePos;
-		bool newLine = true;
 
-		m_name.encodeAndFold(os, maxLineLength, pos, &pos,
+		m_name.encodeAndFold(ctx, os, pos, &pos,
 			text::QUOTE_IF_POSSIBLE | (forceEncode ? text::FORCE_ENCODING : 0));
 
-		if (pos + m_email.length() + 3 > maxLineLength)
+		if (pos + generatedEmail.length() + 3 > ctx.getMaxLineLength())
 		{
 			os << NEW_LINE_SEQUENCE;
-			newLine = true;
+			pos = NEW_LINE_SEQUENCE.length();
 		}
 
-		os << " <" << m_email << ">";
+		os << " <" << generatedEmail << ">";
+		pos += 2 + generatedEmail.length() + 1;
 
 		if (newLinePos)
-		{
-			*newLinePos = pos + m_email.length() + 3;
-			if (newLine) *newLinePos += NEW_LINE_SEQUENCE.length();
-		}
+			*newLinePos = pos;
 	}
 }
 
@@ -473,14 +460,14 @@ ref <component>mailbox::clone() const
 
 bool mailbox::isEmpty() const
 {
-	return (m_email.empty());
+	return m_email.isEmpty();
 }
 
 
 void mailbox::clear()
 {
 	m_name.removeAllWords();
-	m_email.clear();
+	m_email = emailAddress();
 }
 
 
@@ -502,13 +489,13 @@ void mailbox::setName(const text& name)
 }
 
 
-const string& mailbox::getEmail() const
+const emailAddress& mailbox::getEmail() const
 {
 	return (m_email);
 }
 
 
-void mailbox::setEmail(const string& email)
+void mailbox::setEmail(const emailAddress& email)
 {
 	m_email = email;
 }

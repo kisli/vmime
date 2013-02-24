@@ -57,6 +57,15 @@ void component::parse
 	(ref <utility::inputStream> inputStream, const utility::stream::size_type position,
 	 const utility::stream::size_type end, utility::stream::size_type* newPosition)
 {
+	parse(parsingContext::getDefaultContext(), inputStream, position, end, newPosition);
+}
+
+
+void component::parse
+	(const parsingContext& ctx,
+	 ref <utility::inputStream> inputStream, const utility::stream::size_type position,
+	 const utility::stream::size_type end, utility::stream::size_type* newPosition)
+{
 	m_parsedOffset = m_parsedLength = 0;
 
 	ref <utility::seekableInputStream> seekableStream =
@@ -71,14 +80,14 @@ void component::parse
 		utility::bufferedStreamCopyRange(*inputStream, ossAdapter, position, end - position);
 
 		const string buffer = oss.str();
-		parseImpl(buffer, 0, buffer.length(), NULL);
+		parseImpl(ctx, buffer, 0, buffer.length(), NULL);
 	}
 	else
 	{
 		ref <utility::parserInputStreamAdapter> parser =
 			vmime::create <utility::parserInputStreamAdapter>(seekableStream);
 
-		parseImpl(parser, position, end, newPosition);
+		parseImpl(ctx, parser, position, end, newPosition);
 	}
 }
 
@@ -87,7 +96,15 @@ void component::parse(const string& buffer)
 {
 	m_parsedOffset = m_parsedLength = 0;
 
-	parseImpl(buffer, 0, buffer.length(), NULL);
+	parseImpl(parsingContext::getDefaultContext(), buffer, 0, buffer.length(), NULL);
+}
+
+
+void component::parse(const parsingContext& ctx, const string& buffer)
+{
+	m_parsedOffset = m_parsedLength = 0;
+
+	parseImpl(ctx, buffer, 0, buffer.length(), NULL);
 }
 
 
@@ -97,7 +114,18 @@ void component::parse
 {
 	m_parsedOffset = m_parsedLength = 0;
 
-	parseImpl(buffer, position, end, newPosition);
+	parseImpl(parsingContext::getDefaultContext(), buffer, position, end, newPosition);
+}
+
+
+void component::parse
+	(const parsingContext& ctx,
+	 const string& buffer, const string::size_type position,
+	 const string::size_type end, string::size_type* newPosition)
+{
+	m_parsedOffset = m_parsedLength = 0;
+
+	parseImpl(ctx, buffer, position, end, newPosition);
 }
 
 
@@ -116,11 +144,14 @@ void component::offsetParsedBounds(const utility::stream::size_type offset)
 
 
 void component::parseImpl
-	(ref <utility::parserInputStreamAdapter> parser, const utility::stream::size_type position,
+	(const parsingContext& ctx, ref <utility::parserInputStreamAdapter> parser,
+	 const utility::stream::size_type position,
 	 const utility::stream::size_type end, utility::stream::size_type* newPosition)
 {
+	// This is the default implementation for parsing from an input stream:
+	// actually, we extract the substring and use the "parse from string" implementation
 	const std::string buffer = parser->extract(position, end);
-	parseImpl(buffer, 0, buffer.length(), newPosition);
+	parseImpl(ctx, buffer, 0, buffer.length(), newPosition);
 
 	// Recursivey offset parsed bounds on children
 	if (position != 0)
@@ -132,16 +163,19 @@ void component::parseImpl
 
 
 void component::parseImpl
-	(const string& buffer, const string::size_type position,
+	(const parsingContext& ctx, const string& buffer, const string::size_type position,
 	 const string::size_type end, string::size_type* newPosition)
 {
+	// This is the default implementation for parsing from a string:
+	// actually, we encapsulate the string buffer in an input stream, then use
+	// the "parse from input stream" implementation
 	ref <utility::seekableInputStream> stream =
 		vmime::create <utility::inputStreamStringAdapter>(buffer);
 
 	ref <utility::parserInputStreamAdapter> parser =
 		vmime::create <utility::parserInputStreamAdapter>(stream);
 
-	parseImpl(parser, position, end, newPosition);
+	parseImpl(ctx, parser, position, end, newPosition);
 }
 
 
@@ -151,7 +185,10 @@ const string component::generate(const string::size_type maxLineLength,
 	std::ostringstream oss;
 	utility::outputStreamAdapter adapter(oss);
 
-	generate(adapter, maxLineLength, curLinePos, NULL);
+	generationContext ctx(generationContext::getDefaultContext());
+	ctx.setMaxLineLength(maxLineLength);
+
+	generateImpl(ctx, adapter, curLinePos, NULL);
 
 	return (oss.str());
 }
@@ -159,21 +196,21 @@ const string component::generate(const string::size_type maxLineLength,
 
 void component::generate
 	(utility::outputStream& os,
-	 const string::size_type maxLineLength,
 	 const string::size_type curLinePos,
 	 string::size_type* newLinePos) const
 {
-	generateImpl(os, maxLineLength, curLinePos, newLinePos);
+	generateImpl(generationContext::getDefaultContext(),
+		os, curLinePos, newLinePos);
 }
 
 
 void component::generate
-	(ref <utility::outputStream> os,
-	 const string::size_type maxLineLength,
+	(const generationContext& ctx,
+	 utility::outputStream& outputStream,
 	 const string::size_type curLinePos,
 	 string::size_type* newLinePos) const
 {
-	generateImpl(*os, maxLineLength, curLinePos, newLinePos);
+	generateImpl(ctx, outputStream, curLinePos, newLinePos);
 }
 
 

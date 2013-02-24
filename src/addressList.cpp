@@ -50,8 +50,9 @@ addressList::~addressList()
 }
 
 
-void addressList::parseImpl(const string& buffer, const string::size_type position,
-	const string::size_type end, string::size_type* newPosition)
+void addressList::parseImpl
+	(const parsingContext& ctx, const string& buffer, const string::size_type position,
+	 const string::size_type end, string::size_type* newPosition)
 {
 	removeAllAddresses();
 
@@ -59,7 +60,7 @@ void addressList::parseImpl(const string& buffer, const string::size_type positi
 
 	while (pos < end)
 	{
-		ref <address> parsedAddress = address::parseNext(buffer, pos, end, &pos);
+		ref <address> parsedAddress = address::parseNext(ctx, buffer, pos, end, &pos);
 
 		if (parsedAddress != NULL)
 			m_list.push_back(parsedAddress);
@@ -72,16 +73,20 @@ void addressList::parseImpl(const string& buffer, const string::size_type positi
 }
 
 
-void addressList::generateImpl(utility::outputStream& os, const string::size_type maxLineLength,
-	const string::size_type curLinePos, string::size_type* newLinePos) const
+void addressList::generateImpl
+	(const generationContext& ctx, utility::outputStream& os,
+	 const string::size_type curLinePos, string::size_type* newLinePos) const
 {
 	string::size_type pos = curLinePos;
+
+	generationContext tmpCtx(ctx);
+	tmpCtx.setMaxLineLength(tmpCtx.getMaxLineLength() - 2);
 
 	if (!m_list.empty())
 	{
 		for (std::vector <ref <address> >::const_iterator i = m_list.begin() ; ; )
 		{
-			(*i)->generate(os, maxLineLength - 2, pos, &pos);
+			(*i)->generate(ctx, os, pos, &pos);
 
 			if (++i == m_list.end())
 				break;

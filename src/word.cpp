@@ -66,9 +66,10 @@ word::word(const string& buffer, const charset& charset)
 }
 
 
-ref <word> word::parseNext(const string& buffer, const string::size_type position,
-	const string::size_type end, string::size_type* newPosition,
-	bool prevIsEncoded, bool* isEncoded, bool isFirst)
+ref <word> word::parseNext
+	(const parsingContext& ctx, const string& buffer, const string::size_type position,
+	 const string::size_type end, string::size_type* newPosition,
+	 bool prevIsEncoded, bool* isEncoded, bool isFirst)
 {
 	string::size_type pos = position;
 
@@ -86,6 +87,9 @@ ref <word> word::parseNext(const string& buffer, const string::size_type positio
 
 	string::size_type startPos = pos;
 	string unencoded;
+
+	const charset defaultCharset = ctx.getInternationalizedEmailSupport()
+		? charset(charsets::UTF_8) : charset(charsets::US_ASCII);
 
 	while (pos < end)
 	{
@@ -124,7 +128,7 @@ ref <word> word::parseNext(const string& buffer, const string::size_type positio
 				if (prevIsEncoded)
 					unencoded = whiteSpaces + unencoded;
 
-				ref <word> w = vmime::create <word>(unencoded, charset(charsets::US_ASCII));
+				ref <word> w = vmime::create <word>(unencoded, defaultCharset);
 				w->setParsedBounds(position, pos);
 
 				if (newPosition)
@@ -205,7 +209,7 @@ ref <word> word::parseNext(const string& buffer, const string::size_type positio
 	// Treat unencoded text at the end of the buffer
 	if (!unencoded.empty())
 	{
-		ref <word> w = vmime::create <word>(unencoded, charset(charsets::US_ASCII));
+		ref <word> w = vmime::create <word>(unencoded, defaultCharset);
 		w->setParsedBounds(position, end);
 
 		if (newPosition)
@@ -221,8 +225,9 @@ ref <word> word::parseNext(const string& buffer, const string::size_type positio
 }
 
 
-const std::vector <ref <word> > word::parseMultiple(const string& buffer, const string::size_type position,
-	const string::size_type end, string::size_type* newPosition)
+const std::vector <ref <word> > word::parseMultiple
+	(const parsingContext& ctx, const string& buffer, const string::size_type position,
+	 const string::size_type end, string::size_type* newPosition)
 {
 	std::vector <ref <word> > res;
 	ref <word> w;
@@ -231,7 +236,7 @@ const std::vector <ref <word> > word::parseMultiple(const string& buffer, const 
 
 	bool prevIsEncoded = false;
 
-	while ((w = word::parseNext(buffer, pos, end, &pos, prevIsEncoded, &prevIsEncoded, (w == NULL))) != NULL)
+	while ((w = word::parseNext(ctx, buffer, pos, end, &pos, prevIsEncoded, &prevIsEncoded, (w == NULL))) != NULL)
 		res.push_back(w);
 
 	if (newPosition)
@@ -241,8 +246,9 @@ const std::vector <ref <word> > word::parseMultiple(const string& buffer, const 
 }
 
 
-void word::parseImpl(const string& buffer, const string::size_type position,
-	const string::size_type end, string::size_type* newPosition)
+void word::parseImpl
+	(const parsingContext& ctx, const string& buffer, const string::size_type position,
+	 const string::size_type end, string::size_type* newPosition)
 {
 	if (position + 6 < end && // 6 = "=?(.+)?(.*)?="
 	    buffer[position] == '=' && buffer[position + 1] == '?')
@@ -315,7 +321,8 @@ void word::parseImpl(const string& buffer, const string::size_type position,
 
 	// Unknown encoding or malformed encoded word: treat the buffer as ordinary text (RFC-2047, Page 9).
 	m_buffer = string(buffer.begin() + position, buffer.begin() + end);
-	m_charset = charsets::US_ASCII;
+	m_charset = ctx.getInternationalizedEmailSupport()
+		? charset(charsets::UTF_8) : charset(charsets::US_ASCII);
 
 	setParsedBounds(position, end);
 
@@ -324,14 +331,14 @@ void word::parseImpl(const string& buffer, const string::size_type position,
 }
 
 
-void word::generateImpl(utility::outputStream& os, const string::size_type maxLineLength,
+void word::generateImpl(const generationContext& ctx, utility::outputStream& os,
 	const string::size_type curLinePos, string::size_type* newLinePos) const
 {
-	generate(os, maxLineLength, curLinePos, newLinePos, 0, NULL);
+	generate(ctx, os, curLinePos, newLinePos, 0, NULL);
 }
 
 
-void word::generate(utility::outputStream& os, const string::size_type maxLineLength,
+void word::generate(const generationContext& ctx, utility::outputStream& os,
 	const string::size_type curLinePos, string::size_type* newLinePos, const int flags,
 	generatorState* state) const
 {
@@ -350,17 +357,27 @@ void word::generate(utility::outputStream& os, const string::size_type maxLineLe
 	else if ((flags & text::FORCE_ENCODING) != 0)
 		encodingNeeded = true;
 	else  // auto-detect
-		encodingNeeded = wordEncoder::isEncodingNeeded(m_buffer, m_charset);
+		encodingNeeded = wordEncoder::isEncodingNeeded(ctx, m_buffer, m_charset);
 
+	// If text does not need to be encoded, quote the buffer (no folding is performed).
+	if (!encodingNeeded &&
+	    (flags & text::QUOTE_IF_NEEDED) &&
+	    utility::stringUtils::needQuoting(m_buffer))
+	{
+		const string quoted = utility::stringUtils::quote(m_buffer, "\\\"", "\\");
+
+		os << '"' << quoted << '"';
+		curLineLength += 1 + quoted.length() + 1;
+	}
 	// If possible and requested (with flag), quote the buffer (no folding is performed).
 	// Quoting is possible if and only if:
 	//  - the buffer does not need to be encoded
 	//  - the buffer does not contain quoting character (")
 	//  - there is enough remaining space on the current line to hold the whole buffer
-	if (!encodingNeeded &&
-	    (flags & text::QUOTE_IF_POSSIBLE) &&
-	    m_buffer.find('"') == string::npos &&
-	    (curLineLength + 2 /* 2 x " */ + m_buffer.length()) < maxLineLength)
+	else if (!encodingNeeded &&
+	         (flags & text::QUOTE_IF_POSSIBLE) &&
+	         m_buffer.find('"') == string::npos &&
+	         (curLineLength + 2 /* 2 x " */ + m_buffer.length()) < ctx.getMaxLineLength())
 	{
 		os << '"' << m_buffer << '"';
 		curLineLength += 2 + m_buffer.length();
@@ -368,6 +385,19 @@ void word::generate(utility::outputStream& os, const string::size_type maxLineLe
 	// We will fold lines without encoding them.
 	else if (!encodingNeeded)
 	{
+		string buffer;
+
+		if (ctx.getInternationalizedEmailSupport())
+		{
+			// Convert the buffer to UTF-8
+			charset::convert(m_buffer, buffer, m_charset, charsets::UTF_8);
+		}
+		else
+		{
+			// Leave the buffer as-is
+			buffer = m_buffer;
+		}
+
 		// Here, we could have the following conditions:
 		//
 		//  * a maximum line length of N bytes
@@ -379,7 +409,7 @@ void word::generate(utility::outputStream& os, const string::size_type maxLineLe
 		string::size_type maxRunLength = 0;
 		string::size_type curRunLength = 0;
 
-		for (string::const_iterator p = m_buffer.begin(), end = m_buffer.end() ; p != end ; ++p)
+		for (string::const_iterator p = buffer.begin(), end = buffer.end() ; p != end ; ++p)
 		{
 			if (parserHelpers::isSpace(*p))
 			{
@@ -394,19 +424,19 @@ void word::generate(utility::outputStream& os, const string::size_type maxLineLe
 
 		maxRunLength = std::max(maxRunLength, curRunLength);
 
-		if (((flags & text::FORCE_NO_ENCODING) == 0) && maxRunLength >= maxLineLength - 3)
+		if (((flags & text::FORCE_NO_ENCODING) == 0) && maxRunLength >= ctx.getMaxLineLength() - 3)
 		{
 			// Generate with encoding forced
-			generate(os, maxLineLength, curLinePos, newLinePos, flags | text::FORCE_ENCODING, state);
+			generate(ctx, os, curLinePos, newLinePos, flags | text::FORCE_ENCODING, state);
 			return;
 		}
 
 		// Output runs, and fold line when a whitespace is encountered
-		string::const_iterator lastWSpos = m_buffer.end(); // last white-space position
-		string::const_iterator curLineStart = m_buffer.begin(); // current line start
+		string::const_iterator lastWSpos = buffer.end(); // last white-space position
+		string::const_iterator curLineStart = buffer.begin(); // current line start
 
-		string::const_iterator p = m_buffer.begin();
-		const string::const_iterator end = m_buffer.end();
+		string::const_iterator p = buffer.begin();
+		const string::const_iterator end = buffer.end();
 
 		bool finished = false;
 		bool newLine = false;
@@ -417,7 +447,7 @@ void word::generate(utility::outputStream& os, const string::size_type maxLineLe
 			{
 				// Exceeded maximum line length, but we have found a white-space
 				// where we can cut the line...
-				if (curLineLength >= maxLineLength && lastWSpos != end)
+				if (curLineLength >= ctx.getMaxLineLength() && lastWSpos != end)
 					break;
 
 				if (*p == ' ' || *p == '\t')
@@ -437,7 +467,7 @@ void word::generate(utility::outputStream& os, const string::size_type maxLineLe
 				// we write the full line no matter of the max line length...
 
 				if (!newLine && p != end && lastWSpos == end &&
-				    !state->isFirstWord && curLineStart == m_buffer.begin())
+				    !state->isFirstWord && curLineStart == buffer.begin())
 				{
 					// Here, we are continuing on the line of previous encoded
 					// word, but there is not even enough space to put the
@@ -468,7 +498,7 @@ void word::generate(utility::outputStream& os, const string::size_type maxLineLe
 
 					os << string(curLineStart, p);
 
-					if (p != m_buffer.begin() && parserHelpers::isSpace(*(p - 1)))
+					if (p != buffer.begin() && parserHelpers::isSpace(*(p - 1)))
 						state->lastCharIsSpace = true;
 					else
 						state->lastCharIsSpace = false;
@@ -563,9 +593,9 @@ void word::generate(utility::outputStream& os, const string::size_type maxLineLe
 		*/
 
 		const string::size_type maxLineLength3 =
-			(maxLineLength == lineLengthLimits::infinite)
-				? maxLineLength
-				: std::min(maxLineLength, static_cast <string::size_type>(76));
+			(ctx.getMaxLineLength() == lineLengthLimits::infinite)
+				? ctx.getMaxLineLength()
+				: std::min(ctx.getMaxLineLength(), static_cast <string::size_type>(76));
 
 		wordEncoder wordEnc(m_buffer, m_charset);
 
@@ -691,13 +721,13 @@ bool word::operator!=(const word& w) const
 }
 
 
-const string word::getConvertedText(const charset& dest) const
+const string word::getConvertedText(const charset& dest, const charsetConverterOptions& opts) const
 {
 	string out;
 
 	try
 	{
-		charset::convert(m_buffer, out, m_charset, dest);
+		charset::convert(m_buffer, out, m_charset, dest, opts);
 	}
 	catch (vmime::exceptions::charset_conv_error& e)
 	{

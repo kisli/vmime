@@ -61,7 +61,7 @@ VMIME_TEST_SUITE_BEGIN
 			"[address-list: [[mailbox: name=[text: []], email=john.doe@acme.com]]]",
 
 			// Test 5
-			"John.Doe (ignore) @acme.com (John Doe)",
+			"John.Doe(ignore)@acme.com (John Doe)",
 
 			"[address-list: [[mailbox: name=[text: []], email=John.Doe@acme.com]]]",
 

@@ -168,7 +168,7 @@ const string wordEncoder::getNextChunk(const string::size_type maxLength)
 	// Fully RFC-compliant encoding
 	else
 	{
-		charsetConverter conv(charsets::UTF_8, m_charset);
+		ref <charsetConverter> conv = charsetConverter::create(charsets::UTF_8, m_charset);
 
 		string::size_type inputCount = 0;
 		string::size_type outputCount = 0;
@@ -185,7 +185,7 @@ const string wordEncoder::getNextChunk(const string::size_type maxLength)
 
 			// Convert back to original encoding
 			string encodeBytes;
-			conv.convert(inputChar, encodeBytes);
+			conv->convert(inputChar, encodeBytes);
 
 			encodeBuffer += encodeBytes;
 
@@ -225,21 +225,29 @@ wordEncoder::Encoding wordEncoder::getEncoding() const
 
 
 // static
-bool wordEncoder::isEncodingNeeded(const string& buffer, const charset& charset)
+bool wordEncoder::isEncodingNeeded
+	(const generationContext& ctx, const string& buffer, const charset& charset)
 {
-	// Charset-specific encoding
-	encoding recEncoding;
+	if (!ctx.getInternationalizedEmailSupport())
+	{
+		// Charset-specific encoding
+		encoding recEncoding;
 
-	if (charset.getRecommendedEncoding(recEncoding))
-		return true;
+		if (charset.getRecommendedEncoding(recEncoding))
+			return true;
 
-	// No encoding is needed if the buffer only contains ASCII chars
-	if (utility::stringUtils::findFirstNonASCIIchar(buffer.begin(), buffer.end()) != string::npos)
-		return true;
+		// No encoding is needed if the buffer only contains ASCII chars
+		if (utility::stringUtils::findFirstNonASCIIchar(buffer.begin(), buffer.end()) != string::npos)
+			return true;
+	}
 
 	// Force encoding when there are only ASCII chars, but there is
 	// also at least one of '\n' or '\r' (header fields)
 	if (buffer.find_first_of("\n\r") != string::npos)
+		return true;
+
+	// If any RFC-2047 sequence is found in the buffer, encode it
+	if (buffer.find("=?") != string::npos)
 		return true;
 
 	return false;
