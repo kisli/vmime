@@ -51,7 +51,7 @@ text::text(const string& t, const charset& ch)
 
 text::text(const string& t)
 {
-	createFromString(t, charset::getLocaleCharset());
+	createFromString(t, charset::getLocalCharset());
 }
 
 

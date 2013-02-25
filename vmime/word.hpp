@@ -46,7 +46,7 @@ public:
 
 	word();
 	word(const word& w);
-	word(const string& buffer); // Defaults to locale charset
+	word(const string& buffer); // Defaults to local charset
 	word(const string& buffer, const charset& charset);
 
 	/** Return the raw data for this encoded word.

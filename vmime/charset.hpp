@@ -77,12 +77,12 @@ public:
 
 	/** Returns the default charset used on the system.
 	  *
-	  * This function simply calls <code>platformHandler::getLocaleCharset()</code>
+	  * This function simply calls <code>platformHandler::getLocalCharset()</code>
 	  * and is provided for convenience.
 	  *
 	  * @return system default charset
 	  */
-	static const charset getLocaleCharset();
+	static const charset getLocalCharset();
 
 	/** Convert a string buffer from one charset to another
 	  * charset (in-memory conversion)

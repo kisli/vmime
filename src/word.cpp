@@ -43,7 +43,7 @@ namespace vmime
 
 
 word::word()
-	: m_charset(charset::getLocaleCharset())
+	: m_charset(charset::getLocalCharset())
 {
 }
 
@@ -54,8 +54,8 @@ word::word(const word& w)
 }
 
 
-word::word(const string& buffer) // Defaults to locale charset
-	: m_buffer(buffer), m_charset(charset::getLocaleCharset())
+word::word(const string& buffer) // Defaults to local charset
+	: m_buffer(buffer), m_charset(charset::getLocalCharset())
 {
 }
 
@@ -696,7 +696,7 @@ word& word::operator=(const word& w)
 word& word::operator=(const string& s)
 {
 	m_buffer = s;
-	m_charset = charset::getLocaleCharset();
+	m_charset = charset::getLocalCharset();
 	return (*this);
 }
 

@@ -100,9 +100,9 @@ public:
 
 		/** Return the charset used on the system.
 		  *
-		  * @return locale charset
+		  * @return local charset
 		  */
-		virtual const charset getLocaleCharset() const = 0;
+		virtual const charset getLocalCharset() const = 0;
 
 		/** This function is called when VMime library is waiting for
 		  * something (for example, it is called when there is no data

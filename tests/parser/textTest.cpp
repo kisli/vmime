@@ -92,7 +92,7 @@ VMIME_TEST_SUITE_BEGIN
 
 		VASSERT_EQ("2.1", 1, t2.getWordCount());
 		VASSERT_EQ("2.2", "Test\xa9\xc3", t2.getWordAt(0)->getBuffer());
-		VASSERT_EQ("2.3", vmime::charset::getLocaleCharset(), t2.getWordAt(0)->getCharset());
+		VASSERT_EQ("2.3", vmime::charset::getLocalCharset(), t2.getWordAt(0)->getCharset());
 
 		vmime::text t3("Test\xa9\xc3", vmime::charset(vmime::charsets::ISO8859_13));
 
@@ -241,10 +241,10 @@ VMIME_TEST_SUITE_BEGIN
 
 	void testWordConstructors()
 	{
-		VASSERT_EQ("1.1", vmime::charset::getLocaleCharset(), vmime::word().getCharset());
+		VASSERT_EQ("1.1", vmime::charset::getLocalCharset(), vmime::word().getCharset());
 		VASSERT_EQ("1.2", "", vmime::word().getBuffer());
 
-		VASSERT_EQ("2.1", vmime::charset::getLocaleCharset(), vmime::word("foo").getCharset());
+		VASSERT_EQ("2.1", vmime::charset::getLocalCharset(), vmime::word("foo").getCharset());
 		VASSERT_EQ("2.2", "foo", vmime::word("foo").getBuffer());
 
 		VASSERT_EQ("3.1", "bar", vmime::word("foo", vmime::charset("bar")).getCharset().getName());

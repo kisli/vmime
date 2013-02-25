@@ -118,7 +118,7 @@ const vmime::datetime windowsHandler::getCurrentLocalTime() const
 }
 
 
-const vmime::charset windowsHandler::getLocaleCharset() const
+const vmime::charset windowsHandler::getLocalCharset() const
 {
 #if VMIME_HAVE_MLANG
 	char szCharset[256];

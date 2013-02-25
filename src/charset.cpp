@@ -109,9 +109,9 @@ void charset::convert(const string& in, string& out, const charset& source, cons
 }
 
 
-const charset charset::getLocaleCharset()
+const charset charset::getLocalCharset()
 {
-	return (platform::getHandler()->getLocaleCharset());
+	return (platform::getHandler()->getLocalCharset());
 }
 
 

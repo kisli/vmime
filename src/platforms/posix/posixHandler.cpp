@@ -164,7 +164,7 @@ const vmime::datetime posixHandler::getCurrentLocalTime() const
 }
 
 
-const vmime::charset posixHandler::getLocaleCharset() const
+const vmime::charset posixHandler::getLocalCharset() const
 {
 	const PLockHelper lock;
 
