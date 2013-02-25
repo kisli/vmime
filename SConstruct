@@ -368,6 +368,7 @@ libvmimetest_sources = [
 	'tests/parser/pathTest.cpp',
 	'tests/parser/parameterTest.cpp',
 	'tests/parser/textTest.cpp',
+	'tests/parser/wordEncoderTest.cpp',
 	# ==============================  Utility  =============================
 	'tests/utility/datetimeUtilsTest.cpp',
 	'tests/utility/filteredStreamTest.cpp',
