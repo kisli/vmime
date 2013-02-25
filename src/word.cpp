@@ -696,6 +696,7 @@ word& word::operator=(const word& w)
 word& word::operator=(const string& s)
 {
 	m_buffer = s;
+	m_charset = charset::getLocaleCharset();
 	return (*this);
 }
 
