@@ -655,17 +655,12 @@ datetime::datetime(const datetime& d)
 
 datetime::datetime(const time_t t, const int zone)
 {
-#if defined(_MSC_VER) || defined(__MINGW32__)
-	// These functions are reentrant in MS C runtime library
-	struct tm* gtm = gmtime(&t);
-	struct tm* ltm = localtime(&t);
 
+#if VMIME_HAVE_LOCALTIME_S
 	struct tm tms;
 
-	if (gtm)
-		tms = *gtm;
-	else if (ltm)
-		tms = *ltm;
+	if (!gmtime_r(&tms, &t))
+		localtime_r(&tms, &t);
 #elif VMIME_HAVE_LOCALTIME_R
 	struct tm tms;
 
