@@ -1229,7 +1229,7 @@ public:
 				parser.check <one_char <'?'> >(line, &pos);
 				parser.check <one_char <'='> >(line, &pos);
 			}
-			catch (std::exception& e)
+			catch (std::exception&)
 			{
 				delete (theCharset);
 				delete (theEncoding);
@@ -4962,12 +4962,12 @@ private:
 		{
 			resp->go(*this, line, currentPos);
 		}
-		catch (exceptions::operation_timed_out& e)
+		catch (exceptions::operation_timed_out&)
 		{
 			// Always rethrow
 			throw;
 		}
-		catch (exception& e)
+		catch (exception&)
 		{
 			*currentPos = oldPos;
 
@@ -4997,12 +4997,12 @@ public:
 			TYPE term;
 			term.go(*this, line, currentPos);
 		}
-		catch (exceptions::operation_timed_out& e)
+		catch (exceptions::operation_timed_out&)
 		{
 			// Always rethrow
 			throw;
 		}
-		catch (exception& e)
+		catch (exception&)
 		{
 			*currentPos = oldPos;
 
@@ -5024,12 +5024,12 @@ public:
 			TYPE term(arg);
 			term.go(*this, line, currentPos);
 		}
-		catch (exceptions::operation_timed_out& e)
+		catch (exceptions::operation_timed_out&)
 		{
 			// Always rethrow
 			throw;
 		}
-		catch (exception& e)
+		catch (exception&)
 		{
 			*currentPos = oldPos;
 
