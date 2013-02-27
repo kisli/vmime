@@ -659,8 +659,8 @@ datetime::datetime(const time_t t, const int zone)
 #if VMIME_HAVE_LOCALTIME_S
 	struct tm tms;
 
-	if (!gmtime_r(&tms, &t))
-		localtime_r(&tms, &t);
+	if (!gmtime_s(&tms, &t))
+		localtime_s(&tms, &t);
 #elif VMIME_HAVE_LOCALTIME_R
 	struct tm tms;
 
