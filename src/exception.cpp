@@ -94,15 +94,15 @@ namespace exceptions
 
 
 //
-// bad_field_type
+// bad_field_value_type
 //
 
-bad_field_type::~bad_field_type() throw() {}
-bad_field_type::bad_field_type(const exception& other)
-	: exception("Bad field type.", other) {}
+bad_field_value_type::~bad_field_value_type() throw() {}
+bad_field_value_type::bad_field_value_type(const string& fieldName, const exception& other)
+	: exception("Bad value type for field '" + fieldName + "'.", other) {}
 
-exception* bad_field_type::clone() const { return new bad_field_type(*this); }
-const char* bad_field_type::name() const throw() { return "bad_field_type"; }
+exception* bad_field_value_type::clone() const { return new bad_field_value_type(*this); }
+const char* bad_field_value_type::name() const throw() { return "bad_field_value_type"; }
 
 
 

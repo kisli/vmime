@@ -94,12 +94,16 @@ public:
 
 	/** Set the value of this field.
 	  *
+	  * @throw exceptions::bad_field_value_type if the value type is not
+	  * valid for this header field
 	  * @param value new value
 	  */
 	virtual void setValue(ref <headerFieldValue> value);
 
 	/** Set the value of this field by cloning the specified value.
 	  *
+	  * @throw exceptions::bad_field_value_type if the value type is not
+	  * valid for this header field
 	  * @param value new value
 	  */
 	virtual void setValueConst(ref <const headerFieldValue> value);
@@ -107,6 +111,8 @@ public:
 	/** Set the value of this field (reference version).
 	  * The value will be cloned.
 	  *
+	  * @throw exceptions::bad_field_value_type if the value type is not
+	  * valid for this header field
 	  * @param value new value
 	  */
 	virtual void setValue(const headerFieldValue& value);

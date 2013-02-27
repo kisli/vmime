@@ -98,12 +98,12 @@ namespace exceptions
 {
 
 
-class bad_field_type : public vmime::exception
+class bad_field_value_type : public vmime::exception
 {
 public:
 
-	bad_field_type(const exception& other = NO_EXCEPTION);
-	~bad_field_type() throw();
+	bad_field_value_type(const string& fieldName, const exception& other = NO_EXCEPTION);
+	~bad_field_value_type() throw();
 
 	exception* clone() const;
 	const char* name() const throw();

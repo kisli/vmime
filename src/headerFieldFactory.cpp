@@ -126,11 +126,24 @@ ref <headerFieldValue> headerFieldFactory::createValue(const string& fieldName)
 	ref <headerFieldValue> value = NULL;
 
 	if (pos != m_valueMap.end())
-		value = ((*pos).second)();
+		value = ((*pos).second.allocFunc)();
 	else
 		value = registerer <headerFieldValue, text>::creator();
 
 	return value;
+}
+
+
+bool headerFieldFactory::isValueTypeValid
+	(const headerField& field, const headerFieldValue& value) const
+{
+	ValueMap::const_iterator pos = m_valueMap.find
+		(utility::stringUtils::toLower(field.getName()));
+
+	if (pos != m_valueMap.end())
+		return ((*pos).second.checkTypeFunc)(value);
+
+	return true;  // No info on this field
 }
 
 

@@ -360,6 +360,7 @@ libvmimetest_sources = [
 	'tests/parser/dispositionTest.cpp',
 	'tests/parser/emailAddressTest.cpp',
 	'tests/parser/headerTest.cpp',
+	'tests/parser/headerFieldTest.cpp',
 	'tests/parser/htmlTextPartTest.cpp',
 	'tests/parser/mailboxTest.cpp',
 	'tests/parser/mediaTypeTest.cpp',

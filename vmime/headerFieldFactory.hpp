@@ -48,8 +48,17 @@ protected:
 
 	NameMap m_nameMap;
 
-	typedef ref <headerFieldValue> (*ValueAllocFunc)(void);
-	typedef std::map <string, ValueAllocFunc> ValueMap;
+
+	struct ValueInfo
+	{
+		typedef ref <headerFieldValue> (*ValueAllocFunc)(void);
+		typedef bool (*ValueTypeCheckFunc)(const object&);
+
+		ValueAllocFunc allocFunc;
+		ValueTypeCheckFunc checkTypeFunc;
+	};
+
+	typedef std::map <string, ValueInfo> ValueMap;
 
 	ValueMap m_valueMap;
 
@@ -63,6 +72,12 @@ public:
 	class registerer
 	{
 	public:
+
+		static bool checkType(const object& obj)
+		{
+			const TYPE* typedObj = dynamic_cast <const TYPE*>(&obj);
+			return typedObj != NULL;
+		}
 
 		static ref <BASE_TYPE> creator()
 		{
@@ -94,9 +109,12 @@ public:
 	template <class T>
 	void registerFieldValue(const string& name)
 	{
+		ValueInfo vi;
+		vi.allocFunc = &registerer <headerFieldValue, T>::creator;
+		vi.checkTypeFunc = &registerer <headerField, T>::checkType;
+
 		m_valueMap.insert(ValueMap::value_type
-			(utility::stringUtils::toLower(name),
-			 &registerer <headerFieldValue, T>::creator));
+			(utility::stringUtils::toLower(name), vi));
 	}
 
 	/** Create a new field object for the specified field name.
@@ -116,6 +134,15 @@ public:
 	  * @return a new value object for the field
 	  */
 	ref <headerFieldValue> createValue(const string& fieldName);
+
+	/** Returns whether the specified value type is valid for the specified field.
+	  *
+	  * @param field header field
+	  * @param value value for this header field
+	  * @return true if the value type is compatible with the header field, or
+	  * false otherwise
+	  */
+	bool isValueTypeValid(const headerField& field, const headerFieldValue& value) const;
 };
 
 

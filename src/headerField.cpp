@@ -26,6 +26,8 @@
 
 #include "vmime/parserHelpers.hpp"
 
+#include "vmime/exception.hpp"
+
 
 namespace vmime
 {
@@ -324,6 +326,9 @@ ref <headerFieldValue> headerField::getValue()
 
 void headerField::setValue(ref <headerFieldValue> value)
 {
+	if (!headerFieldFactory::getInstance()->isValueTypeValid(*this, *value))
+		throw exceptions::bad_field_value_type(getName());
+
 	if (value != NULL)
 		m_value = value;
 }
@@ -331,12 +336,18 @@ void headerField::setValue(ref <headerFieldValue> value)
 
 void headerField::setValueConst(ref <const headerFieldValue> value)
 {
+	if (!headerFieldFactory::getInstance()->isValueTypeValid(*this, *value))
+		throw exceptions::bad_field_value_type(getName());
+
 	m_value = value->clone().dynamicCast <headerFieldValue>();
 }
 
 
 void headerField::setValue(const headerFieldValue& value)
 {
+	if (!headerFieldFactory::getInstance()->isValueTypeValid(*this, value))
+		throw exceptions::bad_field_value_type(getName());
+
 	m_value = value.clone().dynamicCast <headerFieldValue>();
 }
 
