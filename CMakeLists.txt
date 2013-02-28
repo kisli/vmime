@@ -568,6 +568,7 @@ CHECK_FUNCTION_EXISTS(gmtime_s VMIME_HAVE_GMTIME_S)
 CHECK_FUNCTION_EXISTS(gmtime_r VMIME_HAVE_GMTIME_R)
 CHECK_FUNCTION_EXISTS(localtime_s VMIME_HAVE_LOCALTIME_S)
 CHECK_FUNCTION_EXISTS(localtime_r VMIME_HAVE_LOCALTIME_R)
+CHECK_FUNCTION_EXISTS(strcpy_s VMIME_HAVE_STRCPY_S)
 
 
 ##############################################################################

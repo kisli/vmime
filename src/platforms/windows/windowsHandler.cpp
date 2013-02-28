@@ -224,7 +224,13 @@ const vmime::string windowsHandler::getHostName() const
 		return hostname;
 
 	if (::strlen(hostname) == 0)
+	{
+#if VMIME_HAVE_STRCPY_S
 		::strcpy_s(hostname, "localhost");
+#else
+		::strcpy(hostname, "localhost");
+#endif // VMIME_HAVE_STRCPY_S
+	}
 
 	// Try to get canonical name for the hostname
 	struct addrinfo hints;
