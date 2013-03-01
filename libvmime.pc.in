@@ -7,6 +7,7 @@ Name: @VMIME_PACKAGE_NAME@
 Description: @VMIME_PACKAGE_DESCRIPTION@
 Version: @VMIME_PACKAGE_VERSION@
 Requires.private: @VMIME_PKGCONFIG_REQUIRES@
-Libs.private: -L${libdir} -l@VMIME_LIBRARY_NAME@ @VMIME_PKGCONFIG_LIBS@
+Libs: -L${libdir} -l@VMIME_LIBRARY_NAME@
+Libs.private: @VMIME_PKGCONFIG_LIBS@
 Cflags: -I${includedir}/ @VMIME_PKGCONFIG_CFLAGS@
 
