@@ -9,12 +9,13 @@ compiler:
 
 # Settings
 env:
-  - OPTIONS="-DCMAKE_BUILD_TYPE=Debug"
+  - OPTIONS="-DVMIME_SENDMAIL_PATH=/path/to/sendmail -DCMAKE_BUILD_TYPE=Debug"
 
-# Make sure some required tools are installed
+# Make sure some required tools/libraries are installed
 install:
   - sudo apt-get update >/dev/null
   - sudo apt-get -q install cmake valgrind
+  - sudo apt-get -q install libgsasl7 libgnutls-dev libssl-dev
 
 # Run the build script
 script:
