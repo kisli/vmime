@@ -26,6 +26,7 @@ INCLUDE(CheckLibraryExists)
 # CMake configuration
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY build/bin)
 SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY build/lib)
+SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY build/lib)
 
 SET(CMAKE_VERBOSE_MAKEFILE ON)
 
@@ -767,7 +768,7 @@ ENDIF()
 
 
 # Set our configure file
-CONFIGURE_FILE(cmake/config.hpp.cmake vmime/config.hpp)
+CONFIGURE_FILE(cmake/config.hpp.cmake ${CMAKE_SOURCE_DIR}/vmime/config.hpp)
 
 # PkgConfig post-configuration
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/libvmime.pc.in ${CMAKE_BINARY_DIR}/libvmime.pc @ONLY)
