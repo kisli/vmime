@@ -68,7 +68,7 @@ stream::size_type bufferedStreamCopyRange(inputStream& is, outputStream& os,
 	while (!is.eof() && total < length)
 	{
 		const stream::size_type remaining = std::min(length - total, blockSize);
-		const stream::size_type read = is.read(buffer, blockSize);
+		const stream::size_type read = is.read(buffer, remaining);
 
 		if (read != 0)
 		{
