@@ -1,0 +1,24 @@
+# Travis-CI build file for VMime
+# See http://travis-ci.org for details
+
+language: cpp
+
+compiler:
+  - gcc
+  - clang
+
+# Settings
+env:
+  - OPTIONS="-DCMAKE_BUILD_TYPE=Debug"
+
+# Make sure some required tools are installed
+install:
+  - sudo apt-get update >/dev/null
+  - sudo apt-get -q install cmake valgrind
+
+# Run the build script
+script:
+  - mkdir _build
+  - cd _build
+  - cmake .. -DCMAKE_INSTALL_PREFIX=../_install $OPTIONS
+  - cmake --build . --target install
