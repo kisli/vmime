@@ -15,7 +15,7 @@ env:
 install:
   - sudo apt-get update >/dev/null
   - sudo apt-get -q install cmake valgrind
-  - sudo apt-get -q install libgsasl7 libgnutls-dev libssl-dev
+  - sudo apt-get -q install libgsasl7-dev libgnutls-dev libssl-dev
 
 # Run the build script
 script:
