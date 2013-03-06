@@ -124,7 +124,7 @@ const string SMTPCommandSet::getText() const
 }
 
 
-const bool SMTPCommandSet::isFinished() const
+bool SMTPCommandSet::isFinished() const
 {
 	return (m_pipeline && m_started) || (m_commands.size() == 0 && m_started);
 }

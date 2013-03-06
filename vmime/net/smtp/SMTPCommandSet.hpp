@@ -70,7 +70,7 @@ public:
 	  * @return true if all commands have been sent,
 	  * or false otherwise
 	  */
-	const bool isFinished() const;
+	bool isFinished() const;
 
 	/** Returns the last command which has been sent.
 	  *

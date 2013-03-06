@@ -49,7 +49,7 @@ mediaType::mediaType(const string& type, const string& subType)
 
 
 void mediaType::parseImpl
-	(const parsingContext& ctx, const string& buffer, const string::size_type position,
+	(const parsingContext& /* ctx */, const string& buffer, const string::size_type position,
 	 const string::size_type end, string::size_type* newPosition)
 {
 	const string::value_type* const pend = buffer.data() + end;
