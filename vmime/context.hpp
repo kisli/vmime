@@ -109,7 +109,7 @@ protected:
 	context(const context& ctx);
 
 	virtual context& operator=(const context& ctx);
-	virtual void copyFrom(const context& ctx);
+	void copyFrom(const context& ctx);
 
 	bool m_internationalizedEmail;
 	charsetConverterOptions m_charsetConvOptions;
