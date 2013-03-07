@@ -296,12 +296,9 @@ SET(VMIME_PKGCONFIG_LIBS     "")
 SET(VMIME_PKGCONFIG_CFLAGS   "")
 SET(VMIME_PKGCONFIG_REQUIRES "")
 
-IF(${UNIX})
+IF (UNIX OR MINGW)
 	SET(libdir ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX})
-ENDIF(${UNIX})
-IF(${WIN32})
-	SET(libdir ${CMAKE_INSTALL_PREFIX}/bin)
-ENDIF(${WIN32})
+ENDIF(UNIX OR MINGW)
 
 
 ##############################################################################
