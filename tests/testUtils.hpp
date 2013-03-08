@@ -33,8 +33,10 @@
 
 
 // CppUnit
+#pragma GCC diagnostic ignored "-Wold-style-cast"
 #include <cppunit/TestAssert.h>
 #include <cppunit/extensions/HelperMacros.h>
+#pragma GCC diagnostic warning "-Wold-style-cast"
 
 #define VASSERT(msg, cond) \
 	CPPUNIT_ASSERT_MESSAGE(std::string(msg), cond)
@@ -57,18 +59,24 @@
 #define VASSERT_NO_THROW(msg, expression) \
 	CPPUNIT_ASSERT_NO_THROW(expression)
 
-#define VMIME_TEST_SUITE_BEGIN \
-	class VMIME_TEST_SUITE : public CppUnit::TestFixture { public:
+#define VMIME_TEST_SUITE_BEGIN(testSuiteName) \
+	class testSuiteName; \
+	typedef testSuiteName VMIME_TEST_SUITE; \
+	class testSuiteName : public CppUnit::TestFixture { public:
 #define VMIME_TEST_SUITE_END \
 	}; \
 	\
-	static CppUnit::AutoRegisterSuite <VMIME_TEST_SUITE>(autoRegisterRegistry1); \
-	static CppUnit::AutoRegisterSuite <VMIME_TEST_SUITE>(autoRegisterRegistry2)(VMIME_TEST_SUITE_MODULE); \
+	/*static CppUnit::AutoRegisterSuite <VMIME_TEST_SUITE>(autoRegisterRegistry1);*/ \
+	/*static CppUnit::AutoRegisterSuite <VMIME_TEST_SUITE>(autoRegisterRegistry2)(VMIME_TEST_SUITE_MODULE);*/ \
 	extern void registerTestModule(const char* name); \
+	extern const char* getTestModuleNameFromSourceFile(const char *path); \
 	template <typename T> \
 	struct AutoRegisterModule { \
 		AutoRegisterModule() { \
-			registerTestModule(VMIME_TEST_SUITE_MODULE); \
+			static const char* moduleName = getTestModuleNameFromSourceFile(__FILE__); \
+			static CppUnit::AutoRegisterSuite <VMIME_TEST_SUITE>(autoRegisterRegistry1); \
+			static CppUnit::AutoRegisterSuite <VMIME_TEST_SUITE>(autoRegisterRegistry2)(moduleName); \
+			registerTestModule(moduleName); \
 		} \
 	}; \
 	static AutoRegisterModule <VMIME_TEST_SUITE> autoRegisterModule;

@@ -346,7 +346,8 @@ libvmime_tests = [
 ]
 
 libvmimetest_common = [
-	'tests/testUtils.hpp'
+	'tests/testUtils.hpp',
+	'tests/utility/encoder/encoderTestUtils.hpp'
 ]
 
 libvmimetest_sources = [
@@ -378,7 +379,8 @@ libvmimetest_sources = [
 	'tests/utility/pathTest.cpp',
 	'tests/utility/urlTest.cpp',
 	'tests/utility/smartPtrTest.cpp',
-	'tests/utility/encoderTest.cpp',
+	'tests/utility/encoder/qpEncoderTest.cpp',
+	'tests/utility/encoder/b64EncoderTest.cpp',
 	'tests/utility/outputStreamStringAdapterTest.cpp',
 	'tests/utility/outputStreamSocketAdapterTest.cpp',
 	'tests/utility/outputStreamByteArrayAdapterTest.cpp',

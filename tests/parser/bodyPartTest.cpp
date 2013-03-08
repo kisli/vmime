@@ -24,11 +24,7 @@
 #include "tests/testUtils.hpp"
 
 
-#define VMIME_TEST_SUITE         bodyPartTest
-#define VMIME_TEST_SUITE_MODULE  "Parser"
-
-
-VMIME_TEST_SUITE_BEGIN
+VMIME_TEST_SUITE_BEGIN(bodyPartTest)
 
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testParse)

@@ -26,11 +26,7 @@
 #include "vmime/misc/importanceHelper.hpp"
 
 
-#define VMIME_TEST_SUITE         importanceHelperTest
-#define VMIME_TEST_SUITE_MODULE  "Misc"
-
-
-VMIME_TEST_SUITE_BEGIN
+VMIME_TEST_SUITE_BEGIN(importanceHelperTest)
 
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testResetImportance)

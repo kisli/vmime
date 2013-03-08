@@ -26,11 +26,7 @@
 #include "vmime/utility/outputStreamSocketAdapter.hpp"
 
 
-#define VMIME_TEST_SUITE         outputStreamSocketAdapterTest
-#define VMIME_TEST_SUITE_MODULE  "Utility"
-
-
-VMIME_TEST_SUITE_BEGIN
+VMIME_TEST_SUITE_BEGIN(outputStreamSocketAdapterTest)
 
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testWrite)

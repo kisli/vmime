@@ -29,11 +29,7 @@
 using namespace vmime::net::smtp;
 
 
-#define VMIME_TEST_SUITE         SMTPCommandTest
-#define VMIME_TEST_SUITE_MODULE  "Net/SMTP"
-
-
-VMIME_TEST_SUITE_BEGIN
+VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testCreateCommand)

@@ -29,10 +29,6 @@
 #include "vmime/net/maildir/maildirFormat.hpp"
 
 
-#define VMIME_TEST_SUITE         maildirStoreTest
-#define VMIME_TEST_SUITE_MODULE  "Net/Maildir"
-
-
 // Shortcuts and helpers
 typedef vmime::utility::file::path fspath;
 typedef vmime::utility::file::path::component fspathc;
@@ -142,7 +138,7 @@ static const vmime::string TEST_MAILDIRFILES_COURIER[] =  // files to create and
 
 
 
-VMIME_TEST_SUITE_BEGIN
+VMIME_TEST_SUITE_BEGIN(maildirStoreTest)
 
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testDetectFormat_KMail)

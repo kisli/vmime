@@ -26,11 +26,7 @@
 #include "vmime/wordEncoder.hpp"
 
 
-#define VMIME_TEST_SUITE         wordEncoderTest
-#define VMIME_TEST_SUITE_MODULE  "Parser"
-
-
-VMIME_TEST_SUITE_BEGIN
+VMIME_TEST_SUITE_BEGIN(wordEncoderTest)
 
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testGetNextChunk)

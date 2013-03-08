@@ -25,11 +25,7 @@
 #include "vmime/htmlTextPart.hpp"
 
 
-#define VMIME_TEST_SUITE         htmlTextPartTest
-#define VMIME_TEST_SUITE_MODULE  "Parser"
-
-
-VMIME_TEST_SUITE_BEGIN
+VMIME_TEST_SUITE_BEGIN(htmlTextPartTest)
 
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testParseText)

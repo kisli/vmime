@@ -26,11 +26,7 @@
 #include "vmime/utility/outputStreamStringAdapter.hpp"
 
 
-#define VMIME_TEST_SUITE         outputStreamStringAdapterTest
-#define VMIME_TEST_SUITE_MODULE  "Utility"
-
-
-VMIME_TEST_SUITE_BEGIN
+VMIME_TEST_SUITE_BEGIN(outputStreamStringAdapterTest)
 
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testWrite)

@@ -24,11 +24,7 @@
 #include "tests/testUtils.hpp"
 
 
-#define VMIME_TEST_SUITE         headerFieldTest
-#define VMIME_TEST_SUITE_MODULE  "Parser"
-
-
-VMIME_TEST_SUITE_BEGIN
+VMIME_TEST_SUITE_BEGIN(headerFieldTest)
 
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testBadValueType)

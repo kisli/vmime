@@ -27,14 +27,10 @@
 #include "vmime/utility/seekableInputStreamRegionAdapter.hpp"
 
 
-#define VMIME_TEST_SUITE         seekableInputStreamRegionAdapterTest
-#define VMIME_TEST_SUITE_MODULE  "Utility"
-
-
 using namespace vmime::utility;
 
 
-VMIME_TEST_SUITE_BEGIN
+VMIME_TEST_SUITE_BEGIN(seekableInputStreamRegionAdapterTest)
 
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testInitialPosition)

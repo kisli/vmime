@@ -26,11 +26,7 @@
 #include "vmime/platform.hpp"
 
 
-#define VMIME_TEST_SUITE         emailAddressTest
-#define VMIME_TEST_SUITE_MODULE  "Parser"
-
-
-VMIME_TEST_SUITE_BEGIN
+VMIME_TEST_SUITE_BEGIN(emailAddressTest)
 
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testParseASCII)

@@ -26,11 +26,7 @@
 #include "vmime/utility/filteredStream.hpp"
 
 
-#define VMIME_TEST_SUITE         filteredStreamTest
-#define VMIME_TEST_SUITE_MODULE  "Utility"
-
-
-VMIME_TEST_SUITE_BEGIN
+VMIME_TEST_SUITE_BEGIN(filteredStreamTest)
 
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testDotFilteredInputStream)

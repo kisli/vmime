@@ -24,11 +24,7 @@
 #include "tests/testUtils.hpp"
 
 
-#define VMIME_TEST_SUITE         stringProxyTest
-#define VMIME_TEST_SUITE_MODULE  "Utility"
-
-
-VMIME_TEST_SUITE_BEGIN
+VMIME_TEST_SUITE_BEGIN(stringProxyTest)
 
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testConstruct)

@@ -24,10 +24,6 @@
 #include "tests/testUtils.hpp"
 
 
-#define VMIME_TEST_SUITE         charsetTest
-#define VMIME_TEST_SUITE_MODULE  "Parser"
-
-
 // Excerpt from http://www.gnu.org/
 static const vmime::charset inputCharset("gb2312");
 static const char inputBytes[] =
@@ -91,7 +87,7 @@ static const char outputBytes[] =
 
 
 
-VMIME_TEST_SUITE_BEGIN
+VMIME_TEST_SUITE_BEGIN(charsetTest)
 
 	VMIME_TEST_LIST_BEGIN
 		// Test valid input

@@ -26,17 +26,13 @@
 #include "vmime/security/digest/messageDigestFactory.hpp"
 
 
-#define VMIME_TEST_SUITE         sha1Test
-#define VMIME_TEST_SUITE_MODULE  "Security/Digest"
-
-
 #define INIT_DIGEST(var, algo) \
 	vmime::ref <vmime::security::digest::messageDigest> var = \
 		vmime::security::digest::messageDigestFactory::getInstance()->create(algo)
 
 
 
-VMIME_TEST_SUITE_BEGIN
+VMIME_TEST_SUITE_BEGIN(sha1Test)
 
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testFIPS180_1)

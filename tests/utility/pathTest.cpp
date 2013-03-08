@@ -26,11 +26,7 @@
 #include "vmime/utility/path.hpp"
 
 
-#define VMIME_TEST_SUITE         pathTest
-#define VMIME_TEST_SUITE_MODULE  "Utility"
-
-
-VMIME_TEST_SUITE_BEGIN
+VMIME_TEST_SUITE_BEGIN(pathTest)
 
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testConstruct1)

@@ -26,11 +26,7 @@
 #include "vmime/net/smtp/SMTPResponse.hpp"
 
 
-#define VMIME_TEST_SUITE         SMTPResponseTest
-#define VMIME_TEST_SUITE_MODULE  "Net/SMTP"
-
-
-VMIME_TEST_SUITE_BEGIN
+VMIME_TEST_SUITE_BEGIN(SMTPResponseTest)
 
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testSingleLineResponse)

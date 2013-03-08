@@ -27,11 +27,7 @@
 #include "vmime/utility/urlUtils.hpp"
 
 
-#define VMIME_TEST_SUITE         urlTest
-#define VMIME_TEST_SUITE_MODULE  "Utility"
-
-
-VMIME_TEST_SUITE_BEGIN
+VMIME_TEST_SUITE_BEGIN(urlTest)
 
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testParse1)

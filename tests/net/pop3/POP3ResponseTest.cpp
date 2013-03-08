@@ -26,14 +26,10 @@
 #include "vmime/net/pop3/POP3Response.hpp"
 
 
-#define VMIME_TEST_SUITE         POP3ResponseTest
-#define VMIME_TEST_SUITE_MODULE  "Net/POP3"
-
-
 using namespace vmime::net::pop3;
 
 
-VMIME_TEST_SUITE_BEGIN
+VMIME_TEST_SUITE_BEGIN(POP3ResponseTest)
 
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testSingleLineResponseOK)

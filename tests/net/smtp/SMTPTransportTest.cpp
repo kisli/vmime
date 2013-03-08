@@ -24,15 +24,11 @@
 #include "tests/testUtils.hpp"
 
 
-#define VMIME_TEST_SUITE         SMTPTransportTest
-#define VMIME_TEST_SUITE_MODULE  "Net/SMTP"
-
-
 class greetingErrorSMTPTestSocket;
 class MAILandRCPTSMTPTestSocket;
 
 
-VMIME_TEST_SUITE_BEGIN
+VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testGreetingError)

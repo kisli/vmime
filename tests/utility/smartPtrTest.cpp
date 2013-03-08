@@ -26,11 +26,7 @@
 #include "vmime/utility/smartPtr.hpp"
 
 
-#define VMIME_TEST_SUITE         smartPtrTest
-#define VMIME_TEST_SUITE_MODULE  "Utility"
-
-
-VMIME_TEST_SUITE_BEGIN
+VMIME_TEST_SUITE_BEGIN(smartPtrTest)
 
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testNull)

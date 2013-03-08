@@ -26,11 +26,7 @@
 #include "vmime/utility/outputStreamByteArrayAdapter.hpp"
 
 
-#define VMIME_TEST_SUITE         outputStreamByteArrayAdapterTest
-#define VMIME_TEST_SUITE_MODULE  "Utility"
-
-
-VMIME_TEST_SUITE_BEGIN
+VMIME_TEST_SUITE_BEGIN(outputStreamByteArrayAdapterTest)
 
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testWrite)

@@ -192,6 +192,55 @@ void registerTestModule(const char* name_)
 }
 
 
+const std::string getNormalizedPath(const std::string& path)
+{
+	std::string res = path;
+
+	for (std::string::size_type i = 0, n = res.length() ; i < n ; ++i)
+	{
+		if (res[i] == '\\')
+			res[i] = '/';
+	}
+
+	return res;
+}
+
+
+const std::string getFileNameFromPath(const std::string& path)
+{
+	const std::string::size_type pos = path.find_last_of('/');
+
+	if (pos == std::string::npos)
+		return "";
+
+	return path.substr(pos + 1);
+}
+
+
+const char* getTestModuleNameFromSourceFile(const char *path_)
+{
+	static std::string moduleName;
+
+	static const std::string testRunnerPath(getNormalizedPath(__FILE__));
+	static const std::string testRunnerFileName(getFileNameFromPath(testRunnerPath));
+
+	const std::string path = getNormalizedPath(path_);
+
+	// "/path/to/testRunner.cpp" --> "/path/to/"
+	const std::string basePath
+		(testRunnerPath.begin(), testRunnerPath.end() - testRunnerFileName.length());
+
+	// "/path/to/module/testFile.cpp" --> "module/testFile.cpp"
+	const std::string testFileName(getFileNameFromPath(path));
+	const std::string testPath(path.begin() + basePath.length(), path.end());
+
+	// "module/testFile.cpp" --> "module"
+	moduleName = testPath.substr(0, testPath.length() - testFileName.length() - 1);
+
+	return moduleName.c_str();
+}
+
+
 int main(int argc, char* argv[])
 {
 	// VMime initialization

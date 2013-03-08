@@ -26,11 +26,7 @@
 #include "vmime/utility/stringUtils.hpp"
 
 
-#define VMIME_TEST_SUITE         stringUtilsTest
-#define VMIME_TEST_SUITE_MODULE  "Utility"
-
-
-VMIME_TEST_SUITE_BEGIN
+VMIME_TEST_SUITE_BEGIN(stringUtilsTest)
 
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testIsStringEqualNoCase1)
