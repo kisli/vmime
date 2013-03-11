@@ -14,7 +14,7 @@ env:
 # Make sure some required tools/libraries are installed
 install:
   - sudo apt-get update >/dev/null
-  - sudo apt-get -q install cmake valgrind
+  - sudo apt-get -q install cmake libcppunit-dev valgrind
   - sudo apt-get -q install libgsasl7-dev libgnutls-dev libssl-dev
 
 # Run the build script
