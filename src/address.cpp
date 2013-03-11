@@ -68,7 +68,7 @@ address-list    =       (address *("," address)) / obs-addr-list
 
 ref <address> address::parseNext
 	(const parsingContext& ctx, const string& buffer, const string::size_type position,
-	 const string::size_type end, string::size_type* newPosition)
+	 const string::size_type end, string::size_type* newPosition, bool *isLastAddressOfGroup)
 {
 	bool escaped = false;
 	bool quoted = false;
@@ -76,6 +76,10 @@ ref <address> address::parseNext
 	bool inRouteAddr = false;
 	bool isGroup = false;
 	bool stop = false;
+	int commentLevel = 0;
+
+	if (isLastAddressOfGroup)
+		*isLastAddressOfGroup = false;
 
 	string::size_type pos = position;
 
@@ -106,9 +110,22 @@ ref <address> address::parseNext
 			case '>':
 				inRouteAddr = false;
 				break;
+
+			case '(':
+
+				++commentLevel;
+				break;
+
+			case ')':
+
+				if (commentLevel > 0)
+					--commentLevel;
+
+				break;
+
 			case '=':
 
-				if (!quoted && !quotedRFC2047 && pos + 1 < end && buffer[pos + 1] == '?')
+				if (commentLevel == 0 && !quoted && !quotedRFC2047 && pos + 1 < end && buffer[pos + 1] == '?')
 				{
 					++pos;
 					quotedRFC2047 = true;
@@ -118,7 +135,7 @@ ref <address> address::parseNext
 
 			case '?':
 
-				if (quotedRFC2047 && pos + 1 < end && buffer[pos + 1] == '=')
+				if (commentLevel == 0 && quotedRFC2047 && pos + 1 < end && buffer[pos + 1] == '=')
 				{
 					++pos;
 					quotedRFC2047 = false;
@@ -128,7 +145,7 @@ ref <address> address::parseNext
 
 			default:
 			{
-				if (!quoted && !quotedRFC2047 && !inRouteAddr)
+				if (commentLevel == 0 && !quoted && !quotedRFC2047 && !inRouteAddr)
 				{
 					switch (buffer[pos])
 					{
@@ -139,6 +156,9 @@ ref <address> address::parseNext
 							if (pos + 1 < end && buffer[pos + 1] == ',')
 								++pos;
 						}
+
+						if (isLastAddressOfGroup)
+							*isLastAddressOfGroup = true;
 
 						stop = true;
 						break;

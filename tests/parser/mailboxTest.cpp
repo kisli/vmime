@@ -29,6 +29,7 @@ VMIME_TEST_SUITE_BEGIN(mailboxTest)
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testParse)
 		VMIME_TEST(testEmptyEmailAddress)
+		VMIME_TEST(testSeparatorInComment)
 	VMIME_TEST_LIST_END
 
 
@@ -122,6 +123,23 @@ VMIME_TEST_SUITE_BEGIN(mailboxTest)
 
 		VASSERT_EQ("name", "Full Name", mbox->getName());
 		VASSERT_EQ("email", "", mbox->getEmail());
+	}
+
+	void testSeparatorInComment()
+	{
+		vmime::addressList addrList;
+		addrList.parse("aaa(comment,comment)@vmime.org, bbb@vmime.org");
+
+		VASSERT_EQ("count", 2, addrList.getAddressCount());
+
+		vmime::ref <vmime::mailbox> mbox1 = addrList.getAddressAt(0).dynamicCast <vmime::mailbox>();
+		vmime::ref <vmime::mailbox> mbox2 = addrList.getAddressAt(1).dynamicCast <vmime::mailbox>();
+
+		VASSERT_EQ("name1", vmime::text(), mbox1->getName());
+		VASSERT_EQ("email1", "aaa@vmime.org", mbox1->getEmail());
+
+		VASSERT_EQ("name2", vmime::text(), mbox2->getName());
+		VASSERT_EQ("email2", "bbb@vmime.org", mbox2->getEmail());
 	}
 
 VMIME_TEST_SUITE_END

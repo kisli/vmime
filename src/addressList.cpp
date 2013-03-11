@@ -60,7 +60,7 @@ void addressList::parseImpl
 
 	while (pos < end)
 	{
-		ref <address> parsedAddress = address::parseNext(ctx, buffer, pos, end, &pos);
+		ref <address> parsedAddress = address::parseNext(ctx, buffer, pos, end, &pos, NULL);
 
 		if (parsedAddress != NULL)
 			m_list.push_back(parsedAddress);

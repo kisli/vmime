@@ -70,12 +70,14 @@ public:
 	  * @param position position in the input buffer
 	  * @param end end position in the input buffer
 	  * @param newPosition will receive the new position in the input buffer
+	  * @param isLastAddressOfGroup will be set to true if this is the last address
+	  * of a group (end delimiter was found), or false otherwise (may be set to NULL)
 	  * @return a new address object, or null if no more address is available in the input buffer
 	  */
 	static ref <address> parseNext
 		(const parsingContext& ctx, const string& buffer,
 		 const string::size_type position, const string::size_type end,
-		 string::size_type* newPosition);
+		 string::size_type* newPosition, bool *isLastAddressOfGroup);
 };
 
 

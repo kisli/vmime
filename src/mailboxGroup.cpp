@@ -78,10 +78,11 @@ void mailboxGroup::parseImpl
 
 
 	string::size_type pos = position + (p - pstart);
+	bool isLastAddressOfGroup = false;
 
-	while (pos < end)
+	while (pos < end && !isLastAddressOfGroup)
 	{
-		ref <address> parsedAddress = address::parseNext(ctx, buffer, pos, end, &pos);
+		ref <address> parsedAddress = address::parseNext(ctx, buffer, pos, end, &pos, &isLastAddressOfGroup);
 
 		if (parsedAddress)
 		{
@@ -103,7 +104,7 @@ void mailboxGroup::parseImpl
 		}
 	}
 
-	text::decodeAndUnfold(ctx, name, &m_name);
+	text::decodeAndUnfold(ctx, utility::stringUtils::trim(name), &m_name);
 
 	setParsedBounds(position, end);
 

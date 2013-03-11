@@ -52,7 +52,7 @@ void mailboxField::parse
 	// Here, we cannot simply call "m_mailbox.parse()" because it
 	// may have more than one address specified (even if this field
 	// should contain only one). We are never too much careful...
-	ref <address> parsedAddress = address::parseNext(ctx, buffer, position, end, newPosition);
+	ref <address> parsedAddress = address::parseNext(ctx, buffer, position, end, newPosition, NULL);
 
 	if (parsedAddress)
 	{
