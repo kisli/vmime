@@ -9,7 +9,7 @@ compiler:
 
 # Settings
 env:
-  - OPTIONS="-DVMIME_SENDMAIL_PATH=/path/to/sendmail -DCMAKE_BUILD_TYPE=Debug"
+  - CTEST_OUTPUT_ON_FAILURE=1 OPTIONS="-DVMIME_SENDMAIL_PATH=/path/to/sendmail -DCMAKE_BUILD_TYPE=Debug -DVMIME_BUILD_TESTS=ON"
 
 # Make sure some required tools/libraries are installed
 install:
@@ -23,3 +23,4 @@ script:
   - cd _build
   - cmake .. -DCMAKE_INSTALL_PREFIX=../_install $OPTIONS
   - cmake --build . --target install
+  - ctest
