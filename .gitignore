@@ -28,6 +28,10 @@ doc/html/*
 /COPYING.txt
 /build/
 
+# CTest-generated files
+/CTestTestfile.cmake
+/Testing/
+
 # Mac
 ._DS_Store
 
