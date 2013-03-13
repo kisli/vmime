@@ -701,8 +701,9 @@ class timeoutHandler : public object
 \end{lstlisting}
 
 While the operation runs, the service calls {\vcode isTimeout()} at variable
-intervals. If the function returns {\vcode true}, then
-{\vcode handleTimeout()} is called. If it also returns {\vcode true}, the
+intervals. If the {\vcode isTimeout()} function returns {\vcode true},
+then {\vcode handleTimeout()} is called. If the {\vcode handleTimeout()}
+function also returns {\vcode true}, the
 operation is cancelled and an {\vcode operation\_timed\_out} exception is
 thrown. The function {\vcode resetTimeout()} is called each time data has
 been received from the server to reset time-out delay.
