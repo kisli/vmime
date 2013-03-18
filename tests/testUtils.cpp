@@ -270,3 +270,39 @@ std::ostream& operator<<(std::ostream& os, const vmime::exception& e)
 }
 
 
+const vmime::string toHex(const vmime::string str)
+{
+	static const char hexChars[] = "0123456789abcdef";
+
+	vmime::string res = "\n";
+
+	for (unsigned int i = 0 ; i < str.length() ; i += 16)
+	{
+		unsigned int r = std::min
+			(static_cast <size_t>(16), str.length() - i);
+
+		vmime::string hex;
+		vmime::string chr;
+
+		for (unsigned int j = 0 ; j < r ; ++j)
+		{
+			const unsigned char c = str[i + j];
+
+			hex += hexChars[c / 16];
+			hex += hexChars[c % 16];
+			hex += " ";
+
+			if (c >= 32 && c <= 127)
+				chr += c;
+			else
+				chr += '.';
+		}
+
+		for (unsigned int j = r ; j < 16 ; ++j)
+			hex += "   ";
+
+		res += hex + "  " + chr + "\n";
+	}
+
+	return res;
+}

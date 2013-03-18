@@ -348,3 +348,6 @@ public:
 // Exception helper
 std::ostream& operator<<(std::ostream& os, const vmime::exception& e);
 
+
+// Conversion to hexadecimal for easier debugging
+const vmime::string toHex(const vmime::string str);
