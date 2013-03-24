@@ -234,7 +234,7 @@ void parameter::parse(const parsingContext& ctx, const std::vector <valueChunk>&
 			// This syntax is non-standard (expressly prohibited
 			// by RFC-2047), but is used by Mozilla:
 			//
-    			// Content-Type: image/png;
+    		// Content-Type: image/png;
 			//    name="=?us-ascii?Q?Logo_VMime=2Epng?="
 
 			// Using 'vmime::text' to parse the data is safe even
@@ -248,7 +248,20 @@ void parameter::parse(const parsingContext& ctx, const std::vector <valueChunk>&
 				value << t.getWholeBuffer();
 
 				if (!foundCharsetChunk)
-					ch = t.getWordAt(0)->getCharset();
+				{
+					// This is still wrong. Each word can have it's own charset, and can
+					// be mixed (eg. iso-8859-1 and iso-2022-jp), but very unlikely. Real
+					// fix is to have parameters store a vmime::text instead of a
+					// vmime::word in m_value. But that changes the interface.
+					for (size_t i = 0 ; i < t.getWordCount() ; ++i)
+					{
+						if (t.getWordAt(i)->getCharset() != ch && ch == charsets::US_ASCII)
+						{
+							ch = t.getWordAt(i)->getCharset();
+							break;
+						}
+					}
+				}
 			}
 		}
 	}
