@@ -23,7 +23,7 @@ doc/html/*
 /Makefile
 /install_manifest*
 /libvmime.a
-/libvmime.pc
+/vmime.pc
 /vmime/config.hpp
 /COPYING.txt
 /build/

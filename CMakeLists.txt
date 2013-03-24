@@ -825,8 +825,8 @@ ENDIF()
 CONFIGURE_FILE(cmake/config.hpp.cmake ${CMAKE_SOURCE_DIR}/vmime/config.hpp)
 
 # PkgConfig post-configuration
-CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/libvmime.pc.in ${CMAKE_BINARY_DIR}/libvmime.pc @ONLY)
-INSTALL(FILES ${CMAKE_BINARY_DIR}/libvmime.pc DESTINATION "${VMIME_INSTALL_LIBDIR}/pkgconfig" COMPONENT headers)
+CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/vmime.pc.in ${CMAKE_BINARY_DIR}/vmime.pc @ONLY)
+INSTALL(FILES ${CMAKE_BINARY_DIR}/vmime.pc DESTINATION "${VMIME_INSTALL_LIBDIR}/pkgconfig" COMPONENT headers)
 
 INCLUDE(CPack)
 
