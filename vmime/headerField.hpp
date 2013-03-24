@@ -124,6 +124,23 @@ public:
 	void setValue(const string& value);
 
 
+	/** Parse a header field from a buffer.
+	  *
+	  * @param ctx parsing context
+	  * @param buffer input buffer
+	  * @param position current position in the input buffer
+	  * @param end end position in the input buffer
+	  * @param newPosition will receive the new position in the input buffer
+	  * @return parsed header field, or NULL if no more header field can be parsed
+	  * in the input buffer
+	  */
+	static ref <headerField> parseNext
+		(const parsingContext& ctx,
+		 const string& buffer,
+		 const string::size_type position,
+		 const string::size_type end,
+		 string::size_type* newPosition = NULL);
+
 protected:
 
 	void parseImpl
@@ -138,14 +155,6 @@ protected:
 		 utility::outputStream& os,
 		 const string::size_type curLinePos = 0,
 		 string::size_type* newLinePos = NULL) const;
-
-
-	static ref <headerField> parseNext
-		(const parsingContext& ctx,
-		 const string& buffer,
-		 const string::size_type position,
-		 const string::size_type end,
-		 string::size_type* newPosition = NULL);
 
 
 	string m_name;

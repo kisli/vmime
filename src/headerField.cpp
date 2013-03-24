@@ -142,7 +142,7 @@ ref <headerField> headerField::parseNext
 					++pos;
 
 				const string::size_type contentsStart = pos;
-				string::size_type contentsEnd = 0;
+				string::size_type contentsEnd = end;
 
 				// Extract the field value
 				while (pos < end)
