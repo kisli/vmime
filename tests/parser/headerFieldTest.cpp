@@ -29,6 +29,7 @@ VMIME_TEST_SUITE_BEGIN(headerFieldTest)
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testBadValueType)
 		VMIME_TEST(testValueOnNextLine)
+		VMIME_TEST(testStripSpacesAtEnd)
 	VMIME_TEST_LIST_END
 
 
@@ -64,6 +65,22 @@ VMIME_TEST_SUITE_BEGIN(headerFieldTest)
 
 		VASSERT_EQ("Field name", "Field", hfield->getName());
 		VASSERT_EQ("Field value", "field data", hvalue->getWholeBuffer());
+	}
+
+	void testStripSpacesAtEnd()
+	{
+		vmime::parsingContext ctx;
+
+		const vmime::string buffer = "Field: \r\n\tfield data   ";
+
+		vmime::ref <vmime::headerField> hfield =
+			vmime::headerField::parseNext(ctx, buffer, 0, buffer.size());
+
+		vmime::ref <vmime::text> hvalue =
+			hfield->getValue().dynamicCast <vmime::text>();
+
+		VASSERT_EQ("Field name", "Field", hfield->getName());
+		VASSERT_EQ("Field value", toHex("field data"), toHex(hvalue->getWholeBuffer()));
 	}
 
 VMIME_TEST_SUITE_END

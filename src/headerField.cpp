@@ -142,7 +142,7 @@ ref <headerField> headerField::parseNext
 					++pos;
 
 				const string::size_type contentsStart = pos;
-				string::size_type contentsEnd = end;
+				string::size_type contentsEnd = 0;
 
 				// Extract the field value
 				while (pos < end)
@@ -213,6 +213,20 @@ ref <headerField> headerField::parseNext
 						// End of this field
 						break;
 					}
+				}
+
+				if (pos == end && contentsEnd == 0)
+				{
+					// End of data, and no CRLF was found at the end
+					contentsEnd = end;
+				}
+
+				// Strip spaces from end of header lines
+				while (contentsEnd > contentsStart &&
+				       (buffer[contentsEnd - 1] == ' ' || buffer[contentsEnd - 1] == '\t' ||
+				        buffer[contentsEnd - 1] == '\r' || buffer[contentsEnd - 1] == '\n'))
+				{
+					contentsEnd--;
 				}
 
 				// Return a new field
