@@ -35,6 +35,7 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 		VMIME_TEST(testParseNonSignificantWS)
 		VMIME_TEST(testEncodeTSpecials)
 		VMIME_TEST(testEncodeTSpecialsInRFC2231)
+		VMIME_TEST(testWhitespaceBreaksTheValue)
 	VMIME_TEST_LIST_END
 
 
@@ -346,6 +347,17 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 	{
 		VASSERT_EQ("1", "filename*=UTF-8''my_file_name_%C3%B6%C3%A4%C3%BC_%281%29.txt",
 			vmime::create <vmime::parameter>("filename", "my_file_name_\xc3\xb6\xc3\xa4\xc3\xbc_(1).txt")->generate());
+	}
+
+	void testWhitespaceBreaksTheValue()
+	{
+		parameterizedHeaderField p;
+		p.parse("xxx yyy; param1=value1 \r\n");
+
+		VASSERT_EQ("count", 1, p.getParameterCount());
+		VASSERT_EQ("value", "xxx", FIELD_VALUE(p));
+		VASSERT_EQ("param1.name", "param1", PARAM_NAME(p, 0));
+		VASSERT_EQ("param1.value", "value1", PARAM_VALUE(p, 0));
 	}
 
 VMIME_TEST_SUITE_END

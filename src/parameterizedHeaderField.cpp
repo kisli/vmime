@@ -98,7 +98,7 @@ void parameterizedHeaderField::parseImpl
 	// Advance up to ';', if any
 	string::size_type valueLength = 0;
 
-	while (p < pend && *p != ';')  // FIXME: support ";" inside quoted or RFC-2047-encoded text
+	while (p < pend && *p != ';' && (!parserHelpers::isSpace(*p)))  // FIXME: support ";" inside quoted or RFC-2047-encoded text
 	{
 		++p;
 		++valueLength;
@@ -118,6 +118,12 @@ void parameterizedHeaderField::parseImpl
 	if (p < pend)
 	{
 		std::map <string, paramInfo> params;
+
+		if (*p != ';')
+		{
+			while (p < pend && *p != ';')  // FIXME: support ";" inside quoted or RFC-2047-encoded text
+				++p;
+		}
 
 		while (*p == ';')
 		{
