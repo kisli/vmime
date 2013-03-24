@@ -5056,7 +5056,6 @@ private:
 
 
 	string m_buffer;
-	int m_pos;
 
 	string m_lastLine;
 

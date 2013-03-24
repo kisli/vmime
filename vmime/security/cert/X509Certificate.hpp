@@ -36,6 +36,7 @@
 #include "vmime/utility/stream.hpp"
 
 #include "vmime/base.hpp"
+#include "vmime/types.hpp"
 #include "vmime/dateTime.hpp"
 
 
@@ -82,7 +83,7 @@ public:
 	  * @return a X.509 certificate, or NULL if the given data does not
 	  * represent a valid certificate
 	  */
-	static ref <X509Certificate> import(const byte_t* data, const unsigned int length);
+	static ref <X509Certificate> import(const byte_t* data, const size_t length);
 
 	/** Exports this X.509 certificate to the specified format.
 	  *

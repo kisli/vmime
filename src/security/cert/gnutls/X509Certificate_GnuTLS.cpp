@@ -96,7 +96,7 @@ ref <X509Certificate> X509Certificate::import(utility::inputStream& is)
 
 	while (!is.eof())
 	{
-		const int len = is.read(chunk, sizeof(chunk));
+		const utility::stream::size_type len = is.read(chunk, sizeof(chunk));
 		bytes.insert(bytes.end(), chunk, chunk + len);
 	}
 
@@ -106,11 +106,11 @@ ref <X509Certificate> X509Certificate::import(utility::inputStream& is)
 
 // static
 ref <X509Certificate> X509Certificate::import
-	(const byte_t* data, const unsigned int length)
+	(const byte_t* data, const size_t length)
 {
 	gnutls_datum buffer;
 	buffer.data = const_cast <byte_t*>(data);
-	buffer.size = length;
+	buffer.size = static_cast <unsigned int>(length);
 
 	// Try DER format
 	ref <X509Certificate_GnuTLS> derCert = vmime::create <X509Certificate_GnuTLS>();

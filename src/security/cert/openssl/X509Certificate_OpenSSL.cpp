@@ -185,7 +185,7 @@ ref <X509Certificate> X509Certificate::import(utility::inputStream& is)
 
 // static
 ref <X509Certificate> X509Certificate::import
-	(const byte_t* data, const unsigned int length)
+	(const byte_t* data, const size_t length)
 {
 	ref <X509Certificate_OpenSSL> cert = vmime::create <X509Certificate_OpenSSL>();
 

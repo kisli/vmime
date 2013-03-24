@@ -51,10 +51,10 @@ VMIME_TEST_SUITE_BEGIN(charsetTest)
 			std::ostringstream testName;
 			testName << i << ": " << entry.fromCharset << " -> " << entry.toCharset;
 
-			const unsigned int inLength = (entry.fromLength == 0 ? strlen(entry.fromBytes) : entry.fromLength);
+			const unsigned long inLength = (entry.fromLength == 0 ? strlen(entry.fromBytes) : entry.fromLength);
 			vmime::string in(entry.fromBytes, entry.fromBytes + inLength);
 
-			const unsigned int outLength = (entry.toLength == 0 ? strlen(entry.toBytes) : entry.toLength);
+			const unsigned long outLength = (entry.toLength == 0 ? strlen(entry.toBytes) : entry.toLength);
 			vmime::string expectedOut(entry.toBytes, entry.toBytes + outLength);
 
 			vmime::string actualOut;
@@ -75,10 +75,10 @@ VMIME_TEST_SUITE_BEGIN(charsetTest)
 			std::ostringstream testName;
 			testName << i << ": " << entry.fromCharset << " -> " << entry.toCharset;
 
-			const unsigned int inLength = (entry.fromLength == 0 ? strlen(entry.fromBytes) : entry.fromLength);
+			const unsigned long inLength = (entry.fromLength == 0 ? strlen(entry.fromBytes) : entry.fromLength);
 			vmime::string in(entry.fromBytes, entry.fromBytes + inLength);
 
-			const unsigned int outLength = (entry.toLength == 0 ? strlen(entry.toBytes) : entry.toLength);
+			const unsigned long outLength = (entry.toLength == 0 ? strlen(entry.toBytes) : entry.toLength);
 			vmime::string expectedOut(entry.toBytes, entry.toBytes + outLength);
 
 			vmime::string actualOut;

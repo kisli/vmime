@@ -206,7 +206,7 @@ TLSSocket::size_type TLSSocket_GnuTLS::sendRawNonBlocking(const char* buffer, co
 			return 0;
 		}
 
-		TLSSession_GnuTLS::throwTLSException("gnutls_record_send", ret);
+		TLSSession_GnuTLS::throwTLSException("gnutls_record_send", static_cast <int>(ret));
 	}
 
 	return static_cast <size_type>(ret);

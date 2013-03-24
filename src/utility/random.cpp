@@ -46,7 +46,7 @@ unsigned int random::getNext()
 
 unsigned int random::getTime()
 {
-	return (platform::getHandler()->getUnixTime());
+	return static_cast <unsigned int>((platform::getHandler()->getUnixTime()));
 }
 
 

@@ -34,7 +34,7 @@ parsingContext::parsingContext()
 
 
 parsingContext::parsingContext(const parsingContext& ctx)
-	: context()
+	: context(ctx)
 {
 }
 

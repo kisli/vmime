@@ -69,7 +69,7 @@ public:
 		  *
 		  * @return UNIX Epoch time
 		  */
-		virtual unsigned int getUnixTime() const = 0;
+		virtual unsigned long getUnixTime() const = 0;
 
 		/** Return the current date and time, in the local time zone.
 		  *

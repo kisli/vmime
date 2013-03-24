@@ -128,7 +128,11 @@ class null_ref
 {
 private:
 
+
+#pragma GCC diagnostic ignored "-Wunused-private-field"
 	int foo;
+#pragma GCC diagnostic warning "-Wunused-private-field"
+
 };
 
 

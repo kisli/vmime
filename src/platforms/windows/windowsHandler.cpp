@@ -71,9 +71,9 @@ windowsHandler::~windowsHandler()
 }
 
 
-unsigned int windowsHandler::getUnixTime() const
+unsigned long windowsHandler::getUnixTime() const
 {
-	return static_cast <unsigned int>(::time(NULL));
+	return static_cast <unsigned long>(::time(NULL));
 }
 
 

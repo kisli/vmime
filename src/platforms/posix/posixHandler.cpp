@@ -123,9 +123,9 @@ posixHandler::~posixHandler()
 }
 
 
-unsigned int posixHandler::getUnixTime() const
+unsigned long posixHandler::getUnixTime() const
 {
-	return ::time(NULL);
+	return static_cast <unsigned long>(::time(NULL));
 }
 
 
@@ -156,7 +156,7 @@ const vmime::datetime posixHandler::getCurrentLocalTime() const
 	gmt.tm_isdst = -1;
 
 	// Calculate the difference (in seconds)
-	const int diff = ::mktime(&local) - ::mktime(&gmt);
+	const long diff = ::mktime(&local) - ::mktime(&gmt);
 
 	// Return the date
 	return vmime::datetime(local.tm_year + 1900, local.tm_mon + 1, local.tm_mday,

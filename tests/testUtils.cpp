@@ -276,15 +276,15 @@ const vmime::string toHex(const vmime::string str)
 
 	vmime::string res = "\n";
 
-	for (unsigned int i = 0 ; i < str.length() ; i += 16)
+	for (size_t i = 0 ; i < str.length() ; i += 16)
 	{
-		unsigned int r = std::min
+		size_t r = std::min
 			(static_cast <size_t>(16), str.length() - i);
 
 		vmime::string hex;
 		vmime::string chr;
 
-		for (unsigned int j = 0 ; j < r ; ++j)
+		for (size_t j = 0 ; j < r ; ++j)
 		{
 			const unsigned char c = str[i + j];
 
@@ -298,7 +298,7 @@ const vmime::string toHex(const vmime::string str)
 				chr += '.';
 		}
 
-		for (unsigned int j = r ; j < 16 ; ++j)
+		for (size_t j = r ; j < 16 ; ++j)
 			hex += "   ";
 
 		res += hex + "  " + chr + "\n";

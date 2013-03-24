@@ -54,7 +54,7 @@ public:
 	windowsHandler();
 	~windowsHandler();
 
-	unsigned int getUnixTime() const;
+	unsigned long getUnixTime() const;
 
 	const vmime::datetime getCurrentLocalTime() const;
 
