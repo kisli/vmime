@@ -125,7 +125,7 @@ ref <word> word::parseNext
 
 			if (!unencoded.empty())
 			{
-				if (prevIsEncoded)
+				if (prevIsEncoded && !isFirst)
 					unencoded = whiteSpaces + unencoded;
 
 				ref <word> w = vmime::create <word>(unencoded, defaultCharset);
@@ -200,11 +200,13 @@ ref <word> word::parseNext
 		++pos;
 	}
 
-	if (startPos != end && !isFirst && prevIsEncoded)
-		unencoded += whiteSpaces;
-
 	if (startPos != end)
+	{
+		if (prevIsEncoded && !isFirst)
+			unencoded = whiteSpaces + unencoded;
+
 		unencoded += buffer.substr(startPos, end - startPos);
+	}
 
 	// Treat unencoded text at the end of the buffer
 	if (!unencoded.empty())
