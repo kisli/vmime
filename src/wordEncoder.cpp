@@ -247,7 +247,7 @@ bool wordEncoder::isEncodingNeeded
 		return true;
 
 	// If any RFC-2047 sequence is found in the buffer, encode it
-	if (buffer.find("=?") != string::npos)
+	if (buffer.find("=?") != string::npos || buffer.find("?=") != string::npos)
 		return true;
 
 	return false;
