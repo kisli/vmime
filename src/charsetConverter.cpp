@@ -23,7 +23,6 @@
 
 #include "vmime/charsetConverter.hpp"
 
-#include "vmime/charsetConverter_iconv.hpp"
 #include "vmime/charsetConverter_idna.hpp"
 
 
@@ -39,7 +38,7 @@ ref <charsetConverter> charsetConverter::create
 	if (source == "idna" || dest == "idna")
 		return vmime::create <charsetConverter_idna>(source, dest, opts);
 	else
-		return vmime::create <charsetConverter_iconv>(source, dest, opts);
+		return createGenericConverter(source, dest, opts);
 }
 
 

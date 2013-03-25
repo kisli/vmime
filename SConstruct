@@ -57,6 +57,7 @@ libvmime_sources = [
 	'charset.cpp', 'charset.hpp',
 	'charsetConverter.cpp', 'charsetConverter.hpp',
 	'charsetConverter_iconv.cpp', 'charsetConverter_iconv.hpp',
+	'charsetConverter_icu.cpp', 'charsetConverter_icu.hpp',
 	'charsetConverter_idna.cpp', 'charsetConverter_idna.hpp',
 	'charsetConverterOptions.cpp', 'charsetConverterOptions.hpp',
 	'component.cpp', 'component.hpp',
@@ -673,6 +674,15 @@ if env['with_tls'] == 'yes':
 
 env.Append(CXXFLAGS = ['-pthread'])
 
+# Charset conversion library
+
+# -- iconv
+if sys.platform == "mac" or sys.platform == "darwin":
+	env.Append(LIBS = ['iconv', 'gcrypt'])
+
+# -- ICU
+env.Append(LIBS = ['icuuc', 'icudata', 'icui18n'])
+
 # Generate help text for command line options
 Help(opts.GenerateHelpText(env))
 
@@ -834,6 +844,11 @@ config_hpp.write('typedef signed ' + env['pf_32bit_type'] + ' vmime_int32;\n')
 config_hpp.write('typedef unsigned ' + env['pf_32bit_type'] + ' vmime_uint32;\n')
 config_hpp.write('\n')
 config_hpp.write('#define VMIME_HAVE_SIZE_T 1\n')
+config_hpp.write('\n')
+
+config_hpp.write('// Charset conversion support\n')
+config_hpp.write('#define VMIME_CHARSETCONV_LIB_IS_ICONV 1\n')
+config_hpp.write('#define VMIME_CHARSETCONV_LIB_IS_ICU 0\n')
 config_hpp.write('\n')
 
 config_hpp.write('// Options\n')

@@ -1,0 +1,202 @@
+//
+// VMime library (http://www.vmime.org)
+// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+//
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License as
+// published by the Free Software Foundation; either version 3 of
+// the License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+//
+// Linking this library statically or dynamically with other modules is making
+// a combined work based on this library.  Thus, the terms and conditions of
+// the GNU General Public License cover the whole combination.
+//
+
+#include "vmime/config.hpp"
+
+
+#if VMIME_CHARSETCONV_LIB_IS_ICU
+
+
+#include "vmime/charsetConverter_icu.hpp"
+
+#include "vmime/exception.hpp"
+#include "vmime/utility/inputStreamStringAdapter.hpp"
+#include "vmime/utility/outputStreamStringAdapter.hpp"
+
+
+extern "C"
+{
+#ifndef VMIME_BUILDING_DOC
+
+	#include <unicode/ucnv.h>
+	#include <unicode/ucnv_err.h>
+
+#endif // VMIME_BUILDING_DOC
+}
+
+
+#include <unicode/unistr.h>
+
+
+namespace vmime
+{
+
+
+// static
+ref <charsetConverter> charsetConverter::createGenericConverter
+	(const charset& source, const charset& dest,
+	 const charsetConverterOptions& opts)
+{
+	return vmime::create <charsetConverter_icu>(source, dest, opts);
+}
+
+
+charsetConverter_icu::charsetConverter_icu
+	(const charset& source, const charset& dest, const charsetConverterOptions& opts)
+	: m_from(NULL), m_to(NULL), m_source(source), m_dest(dest), m_options(opts)
+{
+	UErrorCode err = U_ZERO_ERROR;
+	m_from = ucnv_open(source.getName().c_str(), &err);
+
+	if (err != U_ZERO_ERROR)
+		throw exceptions::charset_conv_error("Cannot initialize ICU [from] converter.");
+
+	m_to = ucnv_open(dest.getName().c_str(), &err);
+
+	if (err != U_ZERO_ERROR)
+		throw exceptions::charset_conv_error("Cannot initialize ICU [to] converter.");
+}
+
+
+charsetConverter_icu::~charsetConverter_icu()
+{
+	ucnv_close(m_from);
+	ucnv_close(m_to);
+}
+
+
+void charsetConverter_icu::convert(utility::inputStream& in, utility::outputStream& out)
+{
+	UErrorCode err = U_ZERO_ERROR;
+
+	// From buffers
+	char cpInBuffer[16]; // stream data put here
+	size_t outSize = ucnv_getMinCharSize(m_from) * sizeof(cpInBuffer) * sizeof(UChar);
+	UChar* uOutBuffer = new UChar[outSize]; // Unicode chars end up here
+
+	// Auto delete Unicode char buffer
+	vmime::utility::auto_ptr<UChar> cleanup(uOutBuffer);
+
+	// To buffers
+	// converted (char) data end up here
+	size_t cpOutBufferSz = ucnv_getMaxCharSize(m_to) * outSize;
+	char* cpOutBuffer = new char[cpOutBufferSz];
+	vmime::utility::auto_ptr<char> cleanupOut(cpOutBuffer);
+
+	// Set replacement chars for when converting from Unicode to codepage
+	icu::UnicodeString substString(m_options.invalidSequence.c_str());
+	ucnv_setSubstString(m_to, substString.getTerminatedBuffer(), -1, &err);
+
+	if (U_FAILURE(err))
+		throw exceptions::charset_conv_error("[ICU] Error setting replacement char.");
+
+	// Input data available
+	while (!in.eof())
+	{
+		// Read input data into buffer
+		size_t inLength = static_cast<size_t>(in.read(cpInBuffer, sizeof(cpInBuffer)));
+
+		// Beginning of read data
+		const char* source = &cpInBuffer[0];
+		const char* sourceLimit = source + inLength; // end + 1
+
+		UBool flush = in.eof();  // is this last run?
+
+		UErrorCode toErr;
+
+		// Loop until all source has been processed
+		do
+		{
+			// Set up target pointers
+			UChar* target = uOutBuffer;
+			UChar* targetLimit = target + outSize;
+
+			toErr = U_ZERO_ERROR;
+			ucnv_toUnicode(m_from, &target, targetLimit,
+			               &source, sourceLimit, NULL, flush, &toErr);
+
+			if (toErr != U_BUFFER_OVERFLOW_ERROR && U_FAILURE(toErr))
+				throw exceptions::charset_conv_error("[ICU] Error converting to Unicode from " + m_source.getName());
+
+			// The Unicode source is the buffer just written and the limit
+			// is where the previous conversion stopped (target is moved in the conversion)
+			const UChar* uSource = uOutBuffer;
+			UChar* uSourceLimit = target;
+			UErrorCode fromErr;
+
+			// Loop until converted chars are fully written
+			do
+			{
+				char* cpTarget = &cpOutBuffer[0];
+				const char* cpTargetLimit = cpOutBuffer + cpOutBufferSz;
+
+				fromErr = U_ZERO_ERROR;
+
+				// Write converted bytes (Unicode) to destination codepage
+				ucnv_fromUnicode(m_to, &cpTarget, cpTargetLimit,
+				                 &uSource, uSourceLimit, NULL, flush, &fromErr);
+
+				if (fromErr != U_BUFFER_OVERFLOW_ERROR && U_FAILURE(fromErr))
+					throw exceptions::charset_conv_error("[ICU] Error converting from Unicode to " + m_dest.getName());
+
+				// Write to destination stream
+				out.write(cpOutBuffer, (cpTarget - cpOutBuffer));
+
+			} while (fromErr == U_BUFFER_OVERFLOW_ERROR);
+
+		} while (toErr == U_BUFFER_OVERFLOW_ERROR);
+	}
+}
+
+
+void charsetConverter_icu::convert(const string& in, string& out)
+{
+	if (m_source == m_dest)
+	{
+		// No conversion needed
+		out = in;
+		return;
+	}
+
+	out.clear();
+
+	utility::inputStreamStringAdapter is(in);
+	utility::outputStreamStringAdapter os(out);
+
+	convert(is, os);
+
+	os.flush();
+}
+
+
+ref <utility::charsetFilteredOutputStream> charsetConverter_icu::getFilteredOutputStream(utility::outputStream& os)
+{
+	// TODO: implement charsetFilteredOutputStream for ICU
+	return NULL;
+}
+
+
+} // vmime
+
+
+#endif // VMIME_CHARSETCONV_LIB_IS_ICU

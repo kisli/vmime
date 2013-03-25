@@ -37,6 +37,10 @@ typedef unsigned @VMIME_32BIT_TYPE@ vmime_uint32;
 
 #cmakedefine01 VMIME_HAVE_SIZE_T
 
+// Charset conversion support
+#cmakedefine01 VMIME_CHARSETCONV_LIB_IS_ICONV
+#cmakedefine01 VMIME_CHARSETCONV_LIB_IS_ICU
+
 // Options
 // -- File-system support
 #cmakedefine01 VMIME_HAVE_FILESYSTEM_FEATURES

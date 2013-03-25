@@ -25,6 +25,12 @@
 #define VMIME_CHARSETCONVERTER_ICONV_HPP_INCLUDED
 
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_CHARSETCONV_LIB_IS_ICONV
+
+
 #include "vmime/charsetConverter.hpp"
 
 
@@ -120,5 +126,7 @@ private:
 
 } // vmime
 
+
+#endif // VMIME_CHARSETCONV_LIB_IS_ICONV
 
 #endif // VMIME_CHARSETCONVERTER_ICONV_HPP_INCLUDED

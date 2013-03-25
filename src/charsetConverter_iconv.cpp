@@ -21,6 +21,12 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_CHARSETCONV_LIB_IS_ICONV
+
+
 #include "vmime/charsetConverter_iconv.hpp"
 
 #include "vmime/exception.hpp"
@@ -80,6 +86,15 @@ void outputInvalidChar(OUTPUT_CLASS& out, ICONV_DESC cd,
 
 namespace vmime
 {
+
+
+// static
+ref <charsetConverter> charsetConverter::createGenericConverter
+	(const charset& source, const charset& dest,
+	 const charsetConverterOptions& opts)
+{
+	return vmime::create <charsetConverter_iconv>(source, dest, opts);
+}
 
 
 charsetConverter_iconv::charsetConverter_iconv
@@ -433,3 +448,6 @@ void charsetFilteredOutputStream_iconv::flush()
 
 
 } // vmime
+
+
+#endif // VMIME_CHARSETCONV_LIB_IS_ICONV

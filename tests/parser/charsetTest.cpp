@@ -141,7 +141,8 @@ VMIME_TEST_SUITE_BEGIN(charsetTest)
 	void testUTF7Support()
 	{
 		// Ensure UTF-7 is supported, because it is used for IMAP
-		VASSERT_EQ("1", "VMime +ACY UTF-7 encoding", convertHelper("VMime & UTF-7 encoding", "utf-8", "utf-7"));
+		VASSERT_EQ("1", "VMime +- UTF-7 encoding", convertHelper("VMime + UTF-7 encoding", "utf-8", "utf-7"));
+		VASSERT_EQ("2", "f+APg-o", convertHelper("\x66\xc3\xb8\x6f", "utf-8", "utf-7"));
 	}
 
 VMIME_TEST_SUITE_END

@@ -104,6 +104,12 @@ public:
 	  * @return a filtered output stream, or NULL if not supported
 	  */
 	virtual ref <utility::charsetFilteredOutputStream> getFilteredOutputStream(utility::outputStream& os) = 0;
+
+private:
+
+	static ref <charsetConverter> createGenericConverter
+		(const charset& source, const charset& dest,
+		 const charsetConverterOptions& opts);
 };
 
 

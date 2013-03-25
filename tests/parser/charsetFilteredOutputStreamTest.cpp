@@ -49,6 +49,8 @@ VMIME_TEST_SUITE_BEGIN(charsetFilteredOutputStreamTest)
 		vmime::utility::outputStreamStringAdapter os(output);
 		vmime::ref <vmime::utility::filteredOutputStream> cfos = cc->getFilteredOutputStream(os);
 
+		VASSERT_NOT_NULL("filteredOutputStream availability", cfos);
+
 		// føo = 66 c3 b8 6f [UTF8]
 		// føo = 66 c3 b8 6f [latin1]
 
@@ -78,6 +80,8 @@ VMIME_TEST_SUITE_BEGIN(charsetFilteredOutputStreamTest)
 
 		vmime::ref <vmime::utility::charsetFilteredOutputStream> os =
 			conv->getFilteredOutputStream(osa);
+
+		VASSERT_NOT_NULL("filteredOutputStream availability", os);
 
 		vmime::utility::inputStreamStringAdapter is(in);
 
@@ -116,6 +120,8 @@ VMIME_TEST_SUITE_BEGIN(charsetFilteredOutputStreamTest)
 			vmime::ref <vmime::utility::charsetFilteredOutputStream> os =
 				conv->getFilteredOutputStream(osa);
 
+			VASSERT_NOT_NULL("filteredOutputStream availability", os);
+
 			vmime::utility::inputStreamStringAdapter is(in);
 
 			vmime::utility::bufferedStreamCopy(is, *os);
@@ -150,6 +156,8 @@ VMIME_TEST_SUITE_BEGIN(charsetFilteredOutputStreamTest)
 
 			vmime::ref <vmime::utility::charsetFilteredOutputStream> os =
 				conv->getFilteredOutputStream(osa);
+
+			VASSERT_NOT_NULL("filteredOutputStream availability", os);
 
 			vmime::utility::inputStreamStringAdapter is(in);
 
@@ -188,6 +196,8 @@ VMIME_TEST_SUITE_BEGIN(charsetFilteredOutputStreamTest)
 
 			vmime::ref <vmime::utility::charsetFilteredOutputStream> os =
 				conv->getFilteredOutputStream(osa);
+
+			VASSERT_NOT_NULL("filteredOutputStream availability", os);
 
 			vmime::utility::inputStreamStringAdapter is(in);
 
