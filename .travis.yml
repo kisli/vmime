@@ -10,12 +10,14 @@ compiler:
 # Settings
 env:
   - CTEST_OUTPUT_ON_FAILURE=1 OPTIONS="-DVMIME_SENDMAIL_PATH=/path/to/sendmail -DCMAKE_BUILD_TYPE=Debug -DVMIME_BUILD_TESTS=ON"
+  - CTEST_OUTPUT_ON_FAILURE=1 OPTIONS="-DVMIME_SENDMAIL_PATH=/path/to/sendmail -DCMAKE_BUILD_TYPE=Debug -DVMIME_BUILD_TESTS=ON -DVMIME_CHARSETCONV_LIB_IS_ICU=YES"
+  - CTEST_OUTPUT_ON_FAILURE=1 OPTIONS="-DVMIME_SENDMAIL_PATH=/path/to/sendmail -DCMAKE_BUILD_TYPE=Debug -DVMIME_BUILD_TESTS=ON -DVMIME_TLS_SUPPORT_LIB_IS_OPENSSL=YES"
 
 # Make sure some required tools/libraries are installed
 install:
   - sudo apt-get update >/dev/null
   - sudo apt-get -q install cmake libcppunit-dev valgrind
-  - sudo apt-get -q install libgsasl7-dev libgnutls-dev libssl-dev
+  - sudo apt-get -q install libgsasl7-dev libgnutls-dev libssl-dev libicu-dev
 
 # Run the build script
 script:
