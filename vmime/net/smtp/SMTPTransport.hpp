@@ -68,7 +68,13 @@ public:
 
 	void noop();
 
-	void send(const mailbox& expeditor, const mailboxList& recipients, utility::inputStream& is, const utility::stream::size_type size, utility::progressListener* progress = NULL);
+	void send
+		(const mailbox& expeditor,
+		 const mailboxList& recipients,
+		 utility::inputStream& is,
+		 const utility::stream::size_type size,
+		 utility::progressListener* progress = NULL,
+		 const mailbox& sender = mailbox());
 
 	bool isSecuredConnection() const;
 	ref <connectionInfos> getConnectionInfos() const;

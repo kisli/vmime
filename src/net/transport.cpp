@@ -139,6 +139,21 @@ void transport::send(ref <vmime::message> msg, utility::progressListener* progre
 		throw exceptions::no_expeditor();
 	}
 
+	// Extract sender
+	mailbox sender;
+
+	try
+	{
+		const mailbox& mbox = *msg->getHeader()->findField(fields::SENDER)->
+			getValue().dynamicCast <const mailbox>();
+
+		sender = mbox;
+	}
+	catch (exceptions::no_such_field&)
+	{
+		sender = expeditor;
+	}
+
 	// Extract recipients
 	mailboxList recipients;
 
@@ -211,7 +226,7 @@ void transport::send(ref <vmime::message> msg, utility::progressListener* progre
 
 	utility::inputStreamStringAdapter isAdapter(str);
 
-	send(expeditor, recipients, isAdapter, str.length(), progress);
+	send(expeditor, recipients, isAdapter, str.length(), progress, sender);
 }
 
 

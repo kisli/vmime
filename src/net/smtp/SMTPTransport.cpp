@@ -560,9 +560,10 @@ void SMTPTransport::noop()
 }
 
 
-void SMTPTransport::send(const mailbox& expeditor, const mailboxList& recipients,
-                         utility::inputStream& is, const utility::stream::size_type size,
-                         utility::progressListener* progress)
+void SMTPTransport::send
+	(const mailbox& expeditor, const mailboxList& recipients,
+	 utility::inputStream& is, const utility::stream::size_type size,
+	 utility::progressListener* progress, const mailbox& sender)
 {
 	if (!isConnected())
 		throw exceptions::not_connected();
@@ -586,7 +587,10 @@ void SMTPTransport::send(const mailbox& expeditor, const mailboxList& recipients
 		commands->addCommand(SMTPCommand::RSET());
 
 	// Emit the "MAIL" command
-	commands->addCommand(SMTPCommand::MAIL(expeditor));
+	if (!sender.isEmpty())
+		commands->addCommand(SMTPCommand::MAIL(sender));
+	else
+		commands->addCommand(SMTPCommand::MAIL(expeditor));
 
 	// Now, we will need to reset next time
 	m_needReset = true;

@@ -74,8 +74,15 @@ public:
 	  * @param is input stream provding message data (header + body)
 	  * @param size size of the message data
 	  * @param progress progress listener, or NULL if not used
+	  * @param sender envelope sender (if empty, expeditor will be used)
 	  */
-	virtual void send(const mailbox& expeditor, const mailboxList& recipients, utility::inputStream& is, const utility::stream::size_type size, utility::progressListener* progress = NULL) = 0;
+	virtual void send
+		(const mailbox& expeditor,
+		 const mailboxList& recipients,
+		 utility::inputStream& is,
+		 const utility::stream::size_type size,
+		 utility::progressListener* progress = NULL,
+		 const mailbox& sender = mailbox()) = 0;
 
 
 	Type getType() const;

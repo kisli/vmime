@@ -139,7 +139,7 @@ void sendmailTransport::noop()
 void sendmailTransport::send
 	(const mailbox& expeditor, const mailboxList& recipients,
 	 utility::inputStream& is, const utility::stream::size_type size,
-         utility::progressListener* progress)
+	 utility::progressListener* progress, const mailbox& sender)
 {
 	// If no recipient/expeditor was found, throw an exception
 	if (recipients.isEmpty())
@@ -152,7 +152,12 @@ void sendmailTransport::send
 
 	args.push_back("-i");
 	args.push_back("-f");
-	args.push_back(expeditor.getEmail().generate());
+
+	if (!sender.isEmpty())
+		args.push_back(expeditor.getEmail().generate());
+	else
+		args.push_back(sender.getEmail().generate());
+
 	args.push_back("--");
 
 	for (int i = 0 ; i < recipients.getMailboxCount() ; ++i)
