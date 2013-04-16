@@ -35,6 +35,8 @@ VMIME_TEST_SUITE_BEGIN(filteredStreamTest)
 		VMIME_TEST(testStopSequenceFilteredInputStream1)
 		VMIME_TEST(testStopSequenceFilteredInputStreamN_2)
 		VMIME_TEST(testStopSequenceFilteredInputStreamN_3)
+		VMIME_TEST(testLFToCRLFFilteredOutputStream_Global)
+		VMIME_TEST(testLFToCRLFFilteredOutputStream_Edge)
 	VMIME_TEST_LIST_END
 
 
@@ -274,6 +276,44 @@ VMIME_TEST_SUITE_BEGIN(filteredStreamTest)
 		testStopSequenceFISHelper <3>("22", "xyz", "", "xyz");
 		testStopSequenceFISHelper <3>("23", "xyz", "", "x", "yz");
 		testStopSequenceFISHelper <3>("24", "xyz", "", "x", "y", "z");
+	}
+
+
+	// LFToCRLFFilteredOutputStream
+
+	void testLFToCRLFFilteredOutputStream_Global()
+	{
+		typedef vmime::utility::LFToCRLFFilteredOutputStream FILTER;
+
+		testFilteredOutputStreamHelper<FILTER>("1",  "ABC\r\nDEF",       "ABC\nDEF");
+		testFilteredOutputStreamHelper<FILTER>("2",  "ABC\r\nDEF",       "ABC\rDEF");
+		testFilteredOutputStreamHelper<FILTER>("3",  "\r\n\r\nAB\r\n\r\nA\r\nB\r\n", "\n\nAB\n\nA\nB\n");
+		testFilteredOutputStreamHelper<FILTER>("4",  "ABCDE\r\nF",       "ABCDE\nF");
+		testFilteredOutputStreamHelper<FILTER>("5",  "ABCDE\r\nF",       "ABCDE\r\nF");
+		testFilteredOutputStreamHelper<FILTER>("6",  "\r\n\r\n\r\n",     "\n\n\n");
+		testFilteredOutputStreamHelper<FILTER>("7",  "\r\n\r\n\r\n",     "\r\r\n\n");
+		testFilteredOutputStreamHelper<FILTER>("8",  "\r\n\r\n\r\n\r\n", "\r\r\r\r");
+		testFilteredOutputStreamHelper<FILTER>("9",  "\r\n\r\n\r\n\r\n", "\n\n\n\n");
+		testFilteredOutputStreamHelper<FILTER>("10", "\r\n\r\n\r\n",     "\r\n\n\n");
+		testFilteredOutputStreamHelper<FILTER>("11", "\r\n\r\n\r\n\r\n", "\n\n\n\r\n");
+	}
+
+	void testLFToCRLFFilteredOutputStream_Edge()
+	{
+		typedef vmime::utility::LFToCRLFFilteredOutputStream FILTER;
+
+		testFilteredOutputStreamHelper<FILTER>("1",  "\r\n\r\n",         "\r", "\r");
+		testFilteredOutputStreamHelper<FILTER>("2",  "\r\n\r\n",         "\r", "\n\r");
+		testFilteredOutputStreamHelper<FILTER>("3",  "ABC\r\n\r\n",      "ABC\r", "\n\r");
+		testFilteredOutputStreamHelper<FILTER>("4",  "ABC\r\n\r\n\r\n",  "ABC\r", "\n\r", "\n\n");
+		testFilteredOutputStreamHelper<FILTER>("5",  "\r\n\r\n",         "\n", "\n");
+		testFilteredOutputStreamHelper<FILTER>("6",  "\r\n\r\n",         "\r\n\r\n");
+		testFilteredOutputStreamHelper<FILTER>("7",  "\r\n\r\n",         "\r\n\r", "\n");
+
+		testFilteredOutputStreamHelper<FILTER>("8",  "A\r\nB\r\nC\r\nD",         "A\rB", "\nC\r\nD");
+		testFilteredOutputStreamHelper<FILTER>("9",  "\r\nA\r\nB\r\nC\r\nD",     "\rA\r", "B\nC\r\nD");
+		testFilteredOutputStreamHelper<FILTER>("10", "\r\nA\r\nB\r\nC\r\nD",     "\nA\r", "B\nC\r\nD");
+		testFilteredOutputStreamHelper<FILTER>("11", "\r\nA\r\nB\r\nC\r\nD\r\n", "\nA\rB", "\nC\r\nD\r");
 	}
 
 VMIME_TEST_SUITE_END

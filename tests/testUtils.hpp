@@ -53,6 +53,8 @@
 
 #define VASSERT_EQ(msg, expected, actual) \
 	CPPUNIT_ASSERT_EQUAL_MESSAGE(std::string(msg), expected, actual)
+#define VASSERT_NEQ(msg, expected, actual) \
+	CPPUNIT_ASSERT_MESSAGE(std::string(msg), (expected) != (actual))
 
 #define VASSERT_THROW(msg, expression, exceptionType) \
 	CPPUNIT_ASSERT_THROW(expression, exceptionType)

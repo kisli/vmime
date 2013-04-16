@@ -286,6 +286,77 @@ void CRLFToLFFilteredOutputStream::flush()
 }
 
 
+// LFToCRLFFilteredOutputStream
+
+LFToCRLFFilteredOutputStream::LFToCRLFFilteredOutputStream(outputStream& os)
+	: m_stream(os), m_previousChar('\0')
+{
+}
+
+
+outputStream& LFToCRLFFilteredOutputStream::getNextOutputStream()
+{
+	return (m_stream);
+}
+
+
+void LFToCRLFFilteredOutputStream::write
+	(const value_type* const data, const size_type count)
+{
+	if (count == 0)
+		return;
+
+	std::string buffer;
+	buffer.reserve(count);
+
+	const value_type* pos = data;
+	const value_type* end = data + count;
+
+	value_type previousChar = m_previousChar;
+
+	while (pos < end)
+	{
+		switch (*pos)
+		{
+		case '\r':
+
+			buffer.append(1, '\r');
+			buffer.append(1, '\n');
+
+			break;
+
+		case '\n':
+
+			if (previousChar != '\r')
+			{
+				buffer.append(1, '\r');
+				buffer.append(1, '\n');
+			}
+
+			break;
+
+		default:
+
+			buffer.append(1, *pos);
+			break;
+		}
+
+		previousChar = *pos;
+		++pos;
+	}
+
+	m_stream.write(&buffer[0], buffer.length());
+
+	m_previousChar = previousChar;
+}
+
+
+void LFToCRLFFilteredOutputStream::flush()
+{
+	m_stream.flush();
+}
+
+
 // stopSequenceFilteredInputStream <1>
 
 template <>

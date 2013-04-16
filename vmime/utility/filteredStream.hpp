@@ -155,6 +155,32 @@ private:
 };
 
 
+/** A filtered output stream which replaces CR or LF characters
+  * with CRLF sequences.
+  */
+
+class LFToCRLFFilteredOutputStream : public filteredOutputStream
+{
+public:
+
+	/** Construct a new filter for the specified output stream.
+	  *
+	  * @param os stream into which write filtered data
+	  */
+	LFToCRLFFilteredOutputStream(outputStream& os);
+
+	outputStream& getNextOutputStream();
+
+	void write(const value_type* const data, const size_type count);
+	void flush();
+
+private:
+
+	outputStream& m_stream;
+	value_type m_previousChar;
+};
+
+
 /** A filtered input stream which stops when a specified sequence
   * is found (eof() method will return 'true').
   */
