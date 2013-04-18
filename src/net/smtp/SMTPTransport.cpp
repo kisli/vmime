@@ -631,8 +631,10 @@ void SMTPTransport::send
 	{
 		commands->writeToSocket(m_socket);
 
-		if ((resp = readResponse())->getCode() != 250 &&
-		    (resp = readResponse())->getCode() != 251)
+		resp = readResponse();
+
+		if (resp->getCode() != 250 &&
+		    resp->getCode() != 251)
 		{
 			internalDisconnect();
 			throw exceptions::command_error(commands->getLastCommandSent()->getText(), resp->getText());
