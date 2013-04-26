@@ -348,7 +348,7 @@ bool X509Certificate_OpenSSL::verifyHostName(const string& hostname) const
 {
 	// First, check subject common name against hostname
 	char CNBuffer[1024];
-	CNBuffer[sizeof(CNBuffer - 1)] = '\0';
+	CNBuffer[sizeof(CNBuffer) - 1] = '\0';
 
 	X509_NAME* xname = X509_get_subject_name(m_data->cert);
 
