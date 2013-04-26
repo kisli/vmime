@@ -85,6 +85,16 @@ public:
 
 private:
 
+	/** Internal utility function to test whether a hostname matches
+	  * the specified X509 Common Name (wildcard is supported).
+	  *
+	  * @param cnBuf pointer to buffer holding Common Name
+	  * @param host pointer to buffer holding host name
+	  * @return true if the hostname matches the Common Name, or
+	  * false otherwise
+	  */
+	static bool cnMatch(const char* cnBuf, const char* host);
+
 	/** Internal utility function to convert ASN1_TIME
 	 *  structs to vmime::datetime
 	 *

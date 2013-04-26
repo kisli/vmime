@@ -344,6 +344,24 @@ bool X509Certificate_OpenSSL::verify(ref <const X509Certificate> caCert_) const
 }
 
 
+// static
+bool X509Certificate_OpenSSL::cnMatch(const char* cnBuf, const char* host)
+{
+	// Right-to-left match, looking for a '*' wildcard
+	const bool hasWildcard = (strlen(cnBuf) > 1 && cnBuf[0] == '*' && cnBuf[1] == '.');
+	const char* cnBufReverseEndPtr = (cnBuf + (hasWildcard ? 2 : 0));
+	const char* hostPtr = host + strlen(host);
+	const char* cnPtr = cnBuf + strlen(cnBuf);
+
+	bool matches = true;
+
+	while (matches && --hostPtr >= host && --cnPtr >= cnBufReverseEndPtr)
+		matches = (toupper(*hostPtr) == toupper(*cnPtr));
+
+	return matches;
+}
+
+
 bool X509Certificate_OpenSSL::verifyHostName(const string& hostname) const
 {
 	// First, check subject common name against hostname
@@ -354,7 +372,7 @@ bool X509Certificate_OpenSSL::verifyHostName(const string& hostname) const
 
 	if (X509_NAME_get_text_by_NID(xname, NID_commonName, CNBuffer, sizeof(CNBuffer)) != -1)
 	{
-		if (strcasecmp(CNBuffer, hostname.c_str()) == 0)
+		if (cnMatch(CNBuffer, hostname.c_str()))
 			return true;
 	}
 
