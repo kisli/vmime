@@ -463,7 +463,7 @@ void IMAPMessage::processFetchResponse
 				mailboxList to;
 				IMAPUtils::convertAddressList(*(env->env_to()), to);
 
-				hdr->To()->setValue(to);
+				hdr->To()->setValue(to.toAddressList());
 
 				// Sender
 				mailboxList sender;
