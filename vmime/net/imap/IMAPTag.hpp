@@ -53,6 +53,7 @@ public:
 	IMAPTag& operator++();           // ++IMAPTag
 	const IMAPTag operator++(int);   // IMAPTag++
 
+	int maximumNumber() const;
 	int number() const;
 
 	operator string() const;

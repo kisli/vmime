@@ -633,8 +633,6 @@ void IMAPConnection::send(bool tag, const string& what, bool end)
 
 	if (tag)
 	{
-		++(*m_tag);
-
 		oss << string(*m_tag);
 		oss << " ";
 	}
@@ -648,8 +646,6 @@ void IMAPConnection::send(bool tag, const string& what, bool end)
 #else
 	if (tag)
 	{
-		++(*m_tag);
-
 		m_socket->send(*m_tag);
 		m_socket->send(" ");
 	}
@@ -661,6 +657,9 @@ void IMAPConnection::send(bool tag, const string& what, bool end)
 		m_socket->send("\r\n");
 	}
 #endif
+
+	if (tag)
+		++(*m_tag);
 }
 
 

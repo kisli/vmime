@@ -42,6 +42,7 @@ IMAPTag::IMAPTag(const int number)
 	: m_number(number)
 {
 	m_tag.resize(4);
+	generate();
 }
 
 
@@ -49,13 +50,15 @@ IMAPTag::IMAPTag(const IMAPTag& tag)
 	: object(), m_number(tag.m_number)
 {
 	m_tag.resize(4);
+	generate();
 }
 
 
 IMAPTag::IMAPTag()
-	: m_number(0)
+	: m_number(1)
 {
 	m_tag.resize(4);
+	generate();
 }
 
 
@@ -77,6 +80,12 @@ const IMAPTag IMAPTag::operator++(int)
 	IMAPTag old(*this);
 	operator++();
 	return (old);
+}
+
+
+int IMAPTag::maximumNumber() const
+{
+	return sm_maxNumber - 1;
 }
 
 
