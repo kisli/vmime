@@ -2111,7 +2111,13 @@ public:
 
 			while (parser.check <SPACE>(line, &pos, true))
 			{
-				capability* cap = parser.get <capability>(line, &pos);
+				capability* cap;
+
+				if (parser.isStrict() || m_capabilities.empty())
+					cap = parser.get <capability>(line, &pos);
+				else
+					cap = parser.get <capability>(line, &pos, /* noThrow */ true);  // allow SPACE at end of line (Apple iCloud IMAP server)
+
 				if (cap == NULL) break;
 
 				m_capabilities.push_back(cap);
@@ -4574,6 +4580,13 @@ public:
 						if (!(m_message_data = parser.get <IMAPParser::message_data>(line, &pos, true)))
 							m_capability_data = parser.get <IMAPParser::capability_data>(line, &pos);
 
+			if (!parser.isStrict())
+			{
+				// Allow SPACEs at end of line
+				while (parser.check <SPACE>(line, &pos, /* noThrow */ true))
+					;
+			}
+
 			parser.check <CRLF>(line, &pos);
 
 			*currentPos = pos;
@@ -4666,6 +4679,13 @@ public:
 
 			m_resp_cond_bye = parser.get <IMAPParser::resp_cond_bye>(line, &pos);
 
+			if (!parser.isStrict())
+			{
+				// Allow SPACEs at end of line
+				while (parser.check <SPACE>(line, &pos, /* noThrow */ true))
+					;
+			}
+
 			parser.check <CRLF>(line, &pos);
 
 			*currentPos = pos;
@@ -4708,6 +4728,14 @@ public:
 			parser.check <IMAPParser::xtag>(line, &pos);
 			parser.check <SPACE>(line, &pos);
 			m_resp_cond_state = parser.get <IMAPParser::resp_cond_state>(line, &pos);
+
+			if (!parser.isStrict())
+			{
+				// Allow SPACEs at end of line
+				while (parser.check <SPACE>(line, &pos, /* noThrow */ true))
+					;
+			}
+
 			parser.check <CRLF>(line, &pos);
 
 			*currentPos = pos;
