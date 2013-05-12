@@ -36,7 +36,7 @@ namespace encoder {
 /** 7-bit encoder.
   */
 
-class sevenBitEncoder : public defaultEncoder
+class VMIME_EXPORT sevenBitEncoder : public defaultEncoder
 {
 public:
 

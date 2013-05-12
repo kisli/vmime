@@ -44,7 +44,7 @@ namespace imap {
 class IMAPPart;
 
 
-class IMAPStructure : public structure
+class VMIME_EXPORT IMAPStructure : public structure
 {
 public:
 

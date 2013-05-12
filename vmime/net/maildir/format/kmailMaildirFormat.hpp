@@ -43,7 +43,7 @@ namespace format {
 /** Reads KMail Maildir format.
   */
 
-class kmailMaildirFormat : public maildirFormat
+class VMIME_EXPORT kmailMaildirFormat : public maildirFormat
 {
 public:
 

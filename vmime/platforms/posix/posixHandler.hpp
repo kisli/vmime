@@ -48,7 +48,7 @@ namespace platforms {
 namespace posix {
 
 
-class posixHandler : public vmime::platform::handler
+class VMIME_EXPORT posixHandler : public vmime::platform::handler
 {
 public:
 

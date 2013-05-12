@@ -42,7 +42,7 @@ namespace maildir {
 /** Information about maildir service.
   */
 
-class maildirServiceInfos : public serviceInfos
+class VMIME_EXPORT maildirServiceInfos : public serviceInfos
 {
 public:
 

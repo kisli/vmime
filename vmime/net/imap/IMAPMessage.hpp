@@ -48,7 +48,7 @@ class IMAPFolder;
 /** IMAP message implementation.
   */
 
-class IMAPMessage : public message
+class VMIME_EXPORT IMAPMessage : public message
 {
 private:
 

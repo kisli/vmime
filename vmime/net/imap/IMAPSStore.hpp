@@ -42,7 +42,7 @@ namespace imap {
 /** IMAPS store service.
   */
 
-class IMAPSStore : public IMAPStore
+class VMIME_EXPORT IMAPSStore : public IMAPStore
 {
 public:
 

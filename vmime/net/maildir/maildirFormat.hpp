@@ -47,7 +47,7 @@ class maildirStore;
 
 /** Interface for an object capable of reading a specific Maildir format. */
 
-class maildirFormat : public object
+class VMIME_EXPORT maildirFormat : public object
 {
 public:
 

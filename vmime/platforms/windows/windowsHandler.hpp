@@ -47,7 +47,7 @@ namespace platforms {
 namespace windows {
 
 
-class windowsHandler : public vmime::platform::handler
+class VMIME_EXPORT windowsHandler : public vmime::platform::handler
 {
 public:
 

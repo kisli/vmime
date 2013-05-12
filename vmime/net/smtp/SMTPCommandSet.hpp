@@ -44,7 +44,7 @@ namespace smtp {
 /** A set of SMTP commands, which may be sent all at once
   * to the server if pipelining is supported.
   */
-class SMTPCommandSet : public SMTPCommand
+class VMIME_EXPORT SMTPCommandSet : public SMTPCommand
 {
 	friend class vmime::creator;
 

@@ -36,7 +36,7 @@ namespace encoder {
 /** Binary encoder.
   */
 
-class binaryEncoder : public defaultEncoder
+class VMIME_EXPORT binaryEncoder : public defaultEncoder
 {
 public:
 

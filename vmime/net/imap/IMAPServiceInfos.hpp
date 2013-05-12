@@ -42,7 +42,7 @@ namespace imap {
 /** Information about IMAP service.
   */
 
-class IMAPServiceInfos : public serviceInfos
+class VMIME_EXPORT IMAPServiceInfos : public serviceInfos
 {
 public:
 

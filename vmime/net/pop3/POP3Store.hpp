@@ -53,7 +53,7 @@ class POP3Folder;
 /** POP3 store service.
   */
 
-class POP3Store : public store
+class VMIME_EXPORT POP3Store : public store
 {
 	friend class POP3Folder;
 	friend class POP3Message;

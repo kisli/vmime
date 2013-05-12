@@ -42,7 +42,7 @@ namespace smtp {
 /** Information about SMTP service.
   */
 
-class SMTPServiceInfos : public serviceInfos
+class VMIME_EXPORT SMTPServiceInfos : public serviceInfos
 {
 public:
 

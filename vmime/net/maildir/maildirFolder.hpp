@@ -53,7 +53,7 @@ class maildirMessage;
 /** maildir folder implementation.
   */
 
-class maildirFolder : public folder
+class VMIME_EXPORT maildirFolder : public folder
 {
 private:
 

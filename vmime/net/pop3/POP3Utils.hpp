@@ -44,7 +44,7 @@ namespace pop3 {
 class POP3Response;
 
 
-class POP3Utils
+class VMIME_EXPORT POP3Utils
 {
 public:
 

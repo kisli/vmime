@@ -36,7 +36,7 @@ namespace encoder {
 /** Quoted-printable encoder.
   */
 
-class qpEncoder : public encoder
+class VMIME_EXPORT qpEncoder : public encoder
 {
 public:
 

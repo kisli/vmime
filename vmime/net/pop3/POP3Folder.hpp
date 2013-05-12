@@ -51,7 +51,7 @@ class POP3Message;
 /** POP3 folder implementation.
   */
 
-class POP3Folder : public folder
+class VMIME_EXPORT POP3Folder : public folder
 {
 private:
 

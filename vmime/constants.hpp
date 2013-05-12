@@ -43,173 +43,173 @@ namespace vmime
 	namespace mediaTypes
 	{
 		// Types
-		extern const string::value_type* const TEXT;
-		extern const string::value_type* const MULTIPART;
-		extern const string::value_type* const MESSAGE;
-		extern const string::value_type* const APPLICATION;
-		extern const string::value_type* const IMAGE;
-		extern const string::value_type* const AUDIO;
-		extern const string::value_type* const VIDEO;
+		extern const string::value_type* VMIME_EXPORT const TEXT;
+		extern const string::value_type* VMIME_EXPORT const MULTIPART;
+		extern const string::value_type* VMIME_EXPORT const MESSAGE;
+		extern const string::value_type* VMIME_EXPORT const APPLICATION;
+		extern const string::value_type* VMIME_EXPORT const IMAGE;
+		extern const string::value_type* VMIME_EXPORT const AUDIO;
+		extern const string::value_type* VMIME_EXPORT const VIDEO;
 
 		// Sub-types
-		extern const string::value_type* const TEXT_PLAIN;
-		extern const string::value_type* const TEXT_HTML;
-		extern const string::value_type* const TEXT_RICHTEXT;
-		extern const string::value_type* const TEXT_ENRICHED;
-		extern const string::value_type* const TEXT_RFC822_HEADERS;  // RFC-1892
-		extern const string::value_type* const TEXT_DIRECTORY;  // RFC-2426
+		extern const string::value_type* VMIME_EXPORT const TEXT_PLAIN;
+		extern const string::value_type* VMIME_EXPORT const TEXT_HTML;
+		extern const string::value_type* VMIME_EXPORT const TEXT_RICHTEXT;
+		extern const string::value_type* VMIME_EXPORT const TEXT_ENRICHED;
+		extern const string::value_type* VMIME_EXPORT const TEXT_RFC822_HEADERS;  // RFC-1892
+		extern const string::value_type* VMIME_EXPORT const TEXT_DIRECTORY;  // RFC-2426
 
-		extern const string::value_type* const MULTIPART_MIXED;
-		extern const string::value_type* const MULTIPART_RELATED;
-		extern const string::value_type* const MULTIPART_ALTERNATIVE;
-		extern const string::value_type* const MULTIPART_PARALLEL;
-		extern const string::value_type* const MULTIPART_DIGEST;
-		extern const string::value_type* const MULTIPART_REPORT;  // RFC-1892
+		extern const string::value_type* VMIME_EXPORT const MULTIPART_MIXED;
+		extern const string::value_type* VMIME_EXPORT const MULTIPART_RELATED;
+		extern const string::value_type* VMIME_EXPORT const MULTIPART_ALTERNATIVE;
+		extern const string::value_type* VMIME_EXPORT const MULTIPART_PARALLEL;
+		extern const string::value_type* VMIME_EXPORT const MULTIPART_DIGEST;
+		extern const string::value_type* VMIME_EXPORT const MULTIPART_REPORT;  // RFC-1892
 
-		extern const string::value_type* const MESSAGE_RFC822;
-		extern const string::value_type* const MESSAGE_PARTIAL;
-		extern const string::value_type* const MESSAGE_EXTERNAL_BODY;
-		extern const string::value_type* const MESSAGE_DISPOSITION_NOTIFICATION;
+		extern const string::value_type* VMIME_EXPORT const MESSAGE_RFC822;
+		extern const string::value_type* VMIME_EXPORT const MESSAGE_PARTIAL;
+		extern const string::value_type* VMIME_EXPORT const MESSAGE_EXTERNAL_BODY;
+		extern const string::value_type* VMIME_EXPORT const MESSAGE_DISPOSITION_NOTIFICATION;
 
-		extern const string::value_type* const APPLICATION_OCTET_STREAM;
+		extern const string::value_type* VMIME_EXPORT const APPLICATION_OCTET_STREAM;
 
-		extern const string::value_type* const IMAGE_JPEG;
-		extern const string::value_type* const IMAGE_GIF;
+		extern const string::value_type* VMIME_EXPORT const IMAGE_JPEG;
+		extern const string::value_type* VMIME_EXPORT const IMAGE_GIF;
 
-		extern const string::value_type* const AUDIO_BASIC;
+		extern const string::value_type* VMIME_EXPORT const AUDIO_BASIC;
 
-		extern const string::value_type* const VIDEO_MPEG;
+		extern const string::value_type* VMIME_EXPORT const VIDEO_MPEG;
 	}
 
 
 	/** Constants for encoding types. */
 	namespace encodingTypes
 	{
-		extern const string::value_type* const SEVEN_BIT;
-		extern const string::value_type* const EIGHT_BIT;
-		extern const string::value_type* const BASE64;
-		extern const string::value_type* const QUOTED_PRINTABLE;
-		extern const string::value_type* const BINARY;
-		extern const string::value_type* const UUENCODE;
+		extern const string::value_type* VMIME_EXPORT const SEVEN_BIT;
+		extern const string::value_type* VMIME_EXPORT const EIGHT_BIT;
+		extern const string::value_type* VMIME_EXPORT const BASE64;
+		extern const string::value_type* VMIME_EXPORT const QUOTED_PRINTABLE;
+		extern const string::value_type* VMIME_EXPORT const BINARY;
+		extern const string::value_type* VMIME_EXPORT const UUENCODE;
 	}
 
 
 	/** Constants for content disposition types (RFC-2183). */
 	namespace contentDispositionTypes
 	{
-		extern const string::value_type* const INLINE;
-		extern const string::value_type* const ATTACHMENT;
+		extern const string::value_type* VMIME_EXPORT const INLINE;
+		extern const string::value_type* VMIME_EXPORT const ATTACHMENT;
 	}
 
 
 	/** Constants for charsets. */
 	namespace charsets
 	{
-		extern const string::value_type* const ISO8859_1;
-		extern const string::value_type* const ISO8859_2;
-		extern const string::value_type* const ISO8859_3;
-		extern const string::value_type* const ISO8859_4;
-		extern const string::value_type* const ISO8859_5;
-		extern const string::value_type* const ISO8859_6;
-		extern const string::value_type* const ISO8859_7;
-		extern const string::value_type* const ISO8859_8;
-		extern const string::value_type* const ISO8859_9;
-		extern const string::value_type* const ISO8859_10;
-		extern const string::value_type* const ISO8859_13;
-		extern const string::value_type* const ISO8859_14;
-		extern const string::value_type* const ISO8859_15;
-		extern const string::value_type* const ISO8859_16;
+		extern const string::value_type* VMIME_EXPORT const ISO8859_1;
+		extern const string::value_type* VMIME_EXPORT const ISO8859_2;
+		extern const string::value_type* VMIME_EXPORT const ISO8859_3;
+		extern const string::value_type* VMIME_EXPORT const ISO8859_4;
+		extern const string::value_type* VMIME_EXPORT const ISO8859_5;
+		extern const string::value_type* VMIME_EXPORT const ISO8859_6;
+		extern const string::value_type* VMIME_EXPORT const ISO8859_7;
+		extern const string::value_type* VMIME_EXPORT const ISO8859_8;
+		extern const string::value_type* VMIME_EXPORT const ISO8859_9;
+		extern const string::value_type* VMIME_EXPORT const ISO8859_10;
+		extern const string::value_type* VMIME_EXPORT const ISO8859_13;
+		extern const string::value_type* VMIME_EXPORT const ISO8859_14;
+		extern const string::value_type* VMIME_EXPORT const ISO8859_15;
+		extern const string::value_type* VMIME_EXPORT const ISO8859_16;
 
-		extern const string::value_type* const CP_437;
-		extern const string::value_type* const CP_737;
-		extern const string::value_type* const CP_775;
-		extern const string::value_type* const CP_850;
-		extern const string::value_type* const CP_852;
-		extern const string::value_type* const CP_853;
-		extern const string::value_type* const CP_855;
-		extern const string::value_type* const CP_857;
-		extern const string::value_type* const CP_858;
-		extern const string::value_type* const CP_860;
-		extern const string::value_type* const CP_861;
-		extern const string::value_type* const CP_862;
-		extern const string::value_type* const CP_863;
-		extern const string::value_type* const CP_864;
-		extern const string::value_type* const CP_865;
-		extern const string::value_type* const CP_866;
-		extern const string::value_type* const CP_869;
-		extern const string::value_type* const CP_874;
-		extern const string::value_type* const CP_1125;
-		extern const string::value_type* const CP_1250;
-		extern const string::value_type* const CP_1251;
-		extern const string::value_type* const CP_1252;
-		extern const string::value_type* const CP_1253;
-		extern const string::value_type* const CP_1254;
-		extern const string::value_type* const CP_1255;
-		extern const string::value_type* const CP_1256;
-		extern const string::value_type* const CP_1257;
+		extern const string::value_type* VMIME_EXPORT const CP_437;
+		extern const string::value_type* VMIME_EXPORT const CP_737;
+		extern const string::value_type* VMIME_EXPORT const CP_775;
+		extern const string::value_type* VMIME_EXPORT const CP_850;
+		extern const string::value_type* VMIME_EXPORT const CP_852;
+		extern const string::value_type* VMIME_EXPORT const CP_853;
+		extern const string::value_type* VMIME_EXPORT const CP_855;
+		extern const string::value_type* VMIME_EXPORT const CP_857;
+		extern const string::value_type* VMIME_EXPORT const CP_858;
+		extern const string::value_type* VMIME_EXPORT const CP_860;
+		extern const string::value_type* VMIME_EXPORT const CP_861;
+		extern const string::value_type* VMIME_EXPORT const CP_862;
+		extern const string::value_type* VMIME_EXPORT const CP_863;
+		extern const string::value_type* VMIME_EXPORT const CP_864;
+		extern const string::value_type* VMIME_EXPORT const CP_865;
+		extern const string::value_type* VMIME_EXPORT const CP_866;
+		extern const string::value_type* VMIME_EXPORT const CP_869;
+		extern const string::value_type* VMIME_EXPORT const CP_874;
+		extern const string::value_type* VMIME_EXPORT const CP_1125;
+		extern const string::value_type* VMIME_EXPORT const CP_1250;
+		extern const string::value_type* VMIME_EXPORT const CP_1251;
+		extern const string::value_type* VMIME_EXPORT const CP_1252;
+		extern const string::value_type* VMIME_EXPORT const CP_1253;
+		extern const string::value_type* VMIME_EXPORT const CP_1254;
+		extern const string::value_type* VMIME_EXPORT const CP_1255;
+		extern const string::value_type* VMIME_EXPORT const CP_1256;
+		extern const string::value_type* VMIME_EXPORT const CP_1257;
 
-		extern const string::value_type* const US_ASCII;
+		extern const string::value_type* VMIME_EXPORT const US_ASCII;
 
-		extern const string::value_type* const UTF_7;
-		extern const string::value_type* const UTF_8;
-		extern const string::value_type* const UTF_16;
-		extern const string::value_type* const UTF_32;
+		extern const string::value_type* VMIME_EXPORT const UTF_7;
+		extern const string::value_type* VMIME_EXPORT const UTF_8;
+		extern const string::value_type* VMIME_EXPORT const UTF_16;
+		extern const string::value_type* VMIME_EXPORT const UTF_32;
 
-		extern const string::value_type* const WINDOWS_1250;
-		extern const string::value_type* const WINDOWS_1251;
-		extern const string::value_type* const WINDOWS_1252;
-		extern const string::value_type* const WINDOWS_1253;
-		extern const string::value_type* const WINDOWS_1254;
-		extern const string::value_type* const WINDOWS_1255;
-		extern const string::value_type* const WINDOWS_1256;
-		extern const string::value_type* const WINDOWS_1257;
-		extern const string::value_type* const WINDOWS_1258;
+		extern const string::value_type* VMIME_EXPORT const WINDOWS_1250;
+		extern const string::value_type* VMIME_EXPORT const WINDOWS_1251;
+		extern const string::value_type* VMIME_EXPORT const WINDOWS_1252;
+		extern const string::value_type* VMIME_EXPORT const WINDOWS_1253;
+		extern const string::value_type* VMIME_EXPORT const WINDOWS_1254;
+		extern const string::value_type* VMIME_EXPORT const WINDOWS_1255;
+		extern const string::value_type* VMIME_EXPORT const WINDOWS_1256;
+		extern const string::value_type* VMIME_EXPORT const WINDOWS_1257;
+		extern const string::value_type* VMIME_EXPORT const WINDOWS_1258;
 
-		extern const string::value_type* const IDNA;
+		extern const string::value_type* VMIME_EXPORT const IDNA;
 	}
 
 	/** Constants for standard field names. */
 	namespace fields
 	{
-		extern const string::value_type* const RECEIVED;
-		extern const string::value_type* const FROM;
-		extern const string::value_type* const SENDER;
-		extern const string::value_type* const REPLY_TO;
-		extern const string::value_type* const TO;
-		extern const string::value_type* const CC;
-		extern const string::value_type* const BCC;
-		extern const string::value_type* const DATE;
-		extern const string::value_type* const SUBJECT;
-		extern const string::value_type* const ORGANIZATION;
-		extern const string::value_type* const USER_AGENT;
-		extern const string::value_type* const DELIVERED_TO;
-		extern const string::value_type* const RETURN_PATH;
-		extern const string::value_type* const MIME_VERSION;
-		extern const string::value_type* const MESSAGE_ID;
-		extern const string::value_type* const CONTENT_TYPE;
-		extern const string::value_type* const CONTENT_TRANSFER_ENCODING;
-		extern const string::value_type* const CONTENT_DESCRIPTION;
-		extern const string::value_type* const CONTENT_DISPOSITION;
-		extern const string::value_type* const CONTENT_ID;
-		extern const string::value_type* const CONTENT_LOCATION;
-		extern const string::value_type* const IN_REPLY_TO;
-		extern const string::value_type* const REFERENCES;
+		extern const string::value_type* VMIME_EXPORT const RECEIVED;
+		extern const string::value_type* VMIME_EXPORT const FROM;
+		extern const string::value_type* VMIME_EXPORT const SENDER;
+		extern const string::value_type* VMIME_EXPORT const REPLY_TO;
+		extern const string::value_type* VMIME_EXPORT const TO;
+		extern const string::value_type* VMIME_EXPORT const CC;
+		extern const string::value_type* VMIME_EXPORT const BCC;
+		extern const string::value_type* VMIME_EXPORT const DATE;
+		extern const string::value_type* VMIME_EXPORT const SUBJECT;
+		extern const string::value_type* VMIME_EXPORT const ORGANIZATION;
+		extern const string::value_type* VMIME_EXPORT const USER_AGENT;
+		extern const string::value_type* VMIME_EXPORT const DELIVERED_TO;
+		extern const string::value_type* VMIME_EXPORT const RETURN_PATH;
+		extern const string::value_type* VMIME_EXPORT const MIME_VERSION;
+		extern const string::value_type* VMIME_EXPORT const MESSAGE_ID;
+		extern const string::value_type* VMIME_EXPORT const CONTENT_TYPE;
+		extern const string::value_type* VMIME_EXPORT const CONTENT_TRANSFER_ENCODING;
+		extern const string::value_type* VMIME_EXPORT const CONTENT_DESCRIPTION;
+		extern const string::value_type* VMIME_EXPORT const CONTENT_DISPOSITION;
+		extern const string::value_type* VMIME_EXPORT const CONTENT_ID;
+		extern const string::value_type* VMIME_EXPORT const CONTENT_LOCATION;
+		extern const string::value_type* VMIME_EXPORT const IN_REPLY_TO;
+		extern const string::value_type* VMIME_EXPORT const REFERENCES;
 
-		extern const string::value_type* const X_MAILER;
-		extern const string::value_type* const X_PRIORITY;
+		extern const string::value_type* VMIME_EXPORT const X_MAILER;
+		extern const string::value_type* VMIME_EXPORT const X_PRIORITY;
 
 		// RFC-3798: Message Disposition Notification
-		extern const string::value_type* const ORIGINAL_MESSAGE_ID;
-		extern const string::value_type* const DISPOSITION_NOTIFICATION_TO;
-		extern const string::value_type* const DISPOSITION_NOTIFICATION_OPTIONS;
-		extern const string::value_type* const DISPOSITION;
-		extern const string::value_type* const FAILURE;
-		extern const string::value_type* const ERROR;
-		extern const string::value_type* const WARNING;
-		extern const string::value_type* const ORIGINAL_RECIPIENT;
-		extern const string::value_type* const FINAL_RECIPIENT;
-		extern const string::value_type* const REPORTING_UA;
-		extern const string::value_type* const MDN_GATEWAY;
+		extern const string::value_type* VMIME_EXPORT const ORIGINAL_MESSAGE_ID;
+		extern const string::value_type* VMIME_EXPORT const DISPOSITION_NOTIFICATION_TO;
+		extern const string::value_type* VMIME_EXPORT const DISPOSITION_NOTIFICATION_OPTIONS;
+		extern const string::value_type* VMIME_EXPORT const DISPOSITION;
+		extern const string::value_type* VMIME_EXPORT const FAILURE;
+		extern const string::value_type* VMIME_EXPORT const ERROR;
+		extern const string::value_type* VMIME_EXPORT const WARNING;
+		extern const string::value_type* VMIME_EXPORT const ORIGINAL_RECIPIENT;
+		extern const string::value_type* VMIME_EXPORT const FINAL_RECIPIENT;
+		extern const string::value_type* VMIME_EXPORT const REPORTING_UA;
+		extern const string::value_type* VMIME_EXPORT const MDN_GATEWAY;
 	}
 
 	/** Constants for disposition action modes (RFC-3978). */
@@ -217,10 +217,10 @@ namespace vmime
 	{
 		/** User implicitely displayed or deleted the message (filter or
 		  * any other automatic action). */
-		extern const string::value_type* const MANUAL;
+		extern const string::value_type* VMIME_EXPORT const MANUAL;
 
 		/** User explicitely displayed or deleted the message (manual action). */
-		extern const string::value_type* const AUTOMATIC;
+		extern const string::value_type* VMIME_EXPORT const AUTOMATIC;
 	}
 
 	/** Constants for disposition sending modes (RFC-3798). */
@@ -228,27 +228,27 @@ namespace vmime
 	{
 		/** The MDN was sent because the MUA had previously been configured
 		  * to do so automatically. */
-		extern const string::value_type* const SENT_MANUALLY;
+		extern const string::value_type* VMIME_EXPORT const SENT_MANUALLY;
 
 		/** User explicitly gave permission for this particular MDN to be sent. */
-		extern const string::value_type* const SENT_AUTOMATICALLY;
+		extern const string::value_type* VMIME_EXPORT const SENT_AUTOMATICALLY;
 	}
 
 	/** Constants for disposition types (RFC-3798). */
 	namespace dispositionTypes
 	{
 		/** Message has been displayed to the user. */
-		extern const string::value_type* const DISPLAYED;
+		extern const string::value_type* VMIME_EXPORT const DISPLAYED;
 		/** Message has been deleted without being displayed. */
-		extern const string::value_type* const DELETED;
+		extern const string::value_type* VMIME_EXPORT const DELETED;
 		/** Message has been denied. */
-		extern const string::value_type* const DENIED;
+		extern const string::value_type* VMIME_EXPORT const DENIED;
 	}
 
 	/** Constants for disposition modifiers (RFC-3798). */
 	namespace dispositionModifiers
 	{
-		extern const string::value_type* const ERROR;
+		extern const string::value_type* VMIME_EXPORT const ERROR;
 	}
 }
 

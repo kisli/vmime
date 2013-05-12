@@ -53,7 +53,7 @@ namespace smtp {
 
 /** A SMTP command, as sent to server.
   */
-class SMTPCommand : public object
+class VMIME_EXPORT SMTPCommand : public object
 {
 	friend class vmime::creator;
 

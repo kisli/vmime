@@ -37,7 +37,7 @@ namespace encoder {
 /** A factory to create 'encoder' objects for the specified encoding.
   */
 
-class encoderFactory
+class VMIME_EXPORT encoderFactory
 {
 private:
 

@@ -50,7 +50,7 @@ class IMAPTag;
 class IMAPStore;
 
 
-class IMAPConnection : public object
+class VMIME_EXPORT IMAPConnection : public object
 {
 public:
 

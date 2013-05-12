@@ -54,7 +54,7 @@ class maildirFolder;
 /** maildir store service.
   */
 
-class maildirStore : public store
+class VMIME_EXPORT maildirStore : public store
 {
 	friend class maildirFolder;
 

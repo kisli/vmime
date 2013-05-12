@@ -46,7 +46,7 @@ class maildirStore;
 /** Miscellaneous helpers functions for maildir messaging system.
   */
 
-class maildirUtils
+class VMIME_EXPORT maildirUtils
 {
 public:
 

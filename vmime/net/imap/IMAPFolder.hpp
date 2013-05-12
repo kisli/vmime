@@ -52,7 +52,7 @@ class IMAPConnection;
 /** IMAP folder implementation.
   */
 
-class IMAPFolder : public folder
+class VMIME_EXPORT IMAPFolder : public folder
 {
 private:
 

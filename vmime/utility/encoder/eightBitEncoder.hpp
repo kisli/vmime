@@ -36,7 +36,7 @@ namespace encoder {
 /** 8-bit encoder.
   */
 
-class eightBitEncoder : public defaultEncoder
+class VMIME_EXPORT eightBitEncoder : public defaultEncoder
 {
 public:
 

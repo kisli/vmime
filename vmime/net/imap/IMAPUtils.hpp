@@ -48,7 +48,7 @@ namespace net {
 namespace imap {
 
 
-class IMAPUtils
+class VMIME_EXPORT IMAPUtils
 {
 public:
 

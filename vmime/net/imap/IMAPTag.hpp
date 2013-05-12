@@ -39,7 +39,7 @@ namespace net {
 namespace imap {
 
 
-class IMAPTag : public object
+class VMIME_EXPORT IMAPTag : public object
 {
 private:
 

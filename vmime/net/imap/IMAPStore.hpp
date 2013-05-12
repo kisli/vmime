@@ -52,7 +52,7 @@ class IMAPFolder;
 /** IMAP store service.
   */
 
-class IMAPStore : public store
+class VMIME_EXPORT IMAPStore : public store
 {
 	friend class IMAPFolder;
 	friend class IMAPMessage;

@@ -36,7 +36,7 @@ namespace encoder {
 /** Base64 encoder.
   */
 
-class b64Encoder : public encoder
+class VMIME_EXPORT b64Encoder : public encoder
 {
 public:
 

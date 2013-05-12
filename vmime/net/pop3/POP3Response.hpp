@@ -52,7 +52,7 @@ namespace pop3 {
 
 /** A POP3 response, as sent by the server.
   */
-class POP3Response : public object
+class VMIME_EXPORT POP3Response : public object
 {
 	friend class vmime::creator;
 

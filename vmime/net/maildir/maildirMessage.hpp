@@ -46,7 +46,7 @@ class maildirFolder;
 /** maildir message implementation.
   */
 
-class maildirMessage : public message
+class VMIME_EXPORT maildirMessage : public message
 {
 	friend class maildirFolder;
 	friend class vmime::creator;  // vmime::create <maildirMessage>

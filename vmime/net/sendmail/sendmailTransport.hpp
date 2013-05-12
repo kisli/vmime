@@ -46,7 +46,7 @@ namespace sendmail {
 /** Sendmail local transport service.
   */
 
-class sendmailTransport : public transport
+class VMIME_EXPORT sendmailTransport : public transport
 {
 public:
 

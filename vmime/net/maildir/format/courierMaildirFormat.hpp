@@ -43,7 +43,7 @@ namespace format {
 /** Reads Courier/QMail Maildir format.
   */
 
-class courierMaildirFormat : public maildirFormat
+class VMIME_EXPORT courierMaildirFormat : public maildirFormat
 {
 public:
 

@@ -48,7 +48,7 @@ namespace smtp {
 
 /** A SMTP response, as sent by the server.
   */
-class SMTPResponse : public object
+class VMIME_EXPORT SMTPResponse : public object
 {
 	friend class vmime::creator;
 

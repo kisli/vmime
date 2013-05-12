@@ -138,7 +138,7 @@ namespace imap {
 #endif
 
 
-class IMAPParser : public object
+class VMIME_EXPORT IMAPParser : public object
 {
 public:
 

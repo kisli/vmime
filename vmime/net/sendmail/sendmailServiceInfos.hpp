@@ -42,7 +42,7 @@ namespace sendmail {
 /** Information about sendmail service.
   */
 
-class sendmailServiceInfos : public serviceInfos
+class VMIME_EXPORT sendmailServiceInfos : public serviceInfos
 {
 public:
 

@@ -55,7 +55,7 @@ namespace vmime
 	using vmime::utility::weak_ref;
 	using vmime::utility::null_ref;
 
-	extern const null_ref null;
+	extern const null_ref VMIME_EXPORT null;
 
 	// For compatibility with versions <= 0.7.1 (deprecated)
 	namespace net { }

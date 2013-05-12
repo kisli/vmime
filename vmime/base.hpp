@@ -46,19 +46,19 @@ namespace vmime
 
 
 	// "Null" strings
-	extern const string NULL_STRING;
+	extern VMIME_EXPORT const string NULL_STRING;
 
-	extern const text NULL_TEXT;
-	extern const word NULL_WORD;
+	extern VMIME_EXPORT const text NULL_TEXT;
+	extern VMIME_EXPORT const word NULL_WORD;
 
 
 	//
 	// Library name and version
 	//
 
-	const string libname();
-	const string libversion();
-	const string libapi();
+	const string VMIME_EXPORT libname();
+	const string VMIME_EXPORT libversion();
+	const string VMIME_EXPORT libapi();
 
 
 	//
@@ -132,7 +132,7 @@ namespace vmime
 
 	namespace lineLengthLimits
 	{
-		extern const string::size_type infinite;
+		extern VMIME_EXPORT const string::size_type infinite;
 
 		enum
 		{
@@ -143,16 +143,16 @@ namespace vmime
 
 
 	// New line sequence to be used when folding header fields.
-	extern const string NEW_LINE_SEQUENCE;
-	extern const string::size_type NEW_LINE_SEQUENCE_LENGTH;
+	extern VMIME_EXPORT const string NEW_LINE_SEQUENCE;
+	extern VMIME_EXPORT const string::size_type NEW_LINE_SEQUENCE_LENGTH;
 
 
 	// CR-LF sequence
-	extern const string CRLF;
+	extern VMIME_EXPORT const string CRLF;
 
 
 	// Mime version
-	extern const string SUPPORTED_MIME_VERSION;
+	extern VMIME_EXPORT const string SUPPORTED_MIME_VERSION;
 
 	/** Utility classes. */
 	namespace utility { }
@@ -164,7 +164,7 @@ namespace vmime
 	  * Make this class a friend if you want to be able to use
 	  * vmime::create() with private/protected constructors.
 	  */
-	class creator
+	class VMIME_EXPORT creator
 	{
 	public:
 

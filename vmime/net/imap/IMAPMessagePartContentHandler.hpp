@@ -40,7 +40,7 @@ namespace net {
 namespace imap {
 
 
-class IMAPMessagePartContentHandler : public contentHandler
+class VMIME_EXPORT IMAPMessagePartContentHandler : public contentHandler
 {
 public:
 

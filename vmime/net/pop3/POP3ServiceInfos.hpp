@@ -42,7 +42,7 @@ namespace pop3 {
 /** Information about POP3 service.
   */
 
-class POP3ServiceInfos : public serviceInfos
+class VMIME_EXPORT POP3ServiceInfos : public serviceInfos
 {
 public:
 

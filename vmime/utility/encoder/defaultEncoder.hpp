@@ -36,7 +36,7 @@ namespace encoder {
 /** Default encoder (simple copy, no encoding/decoding is performed).
   */
 
-class defaultEncoder : public encoder
+class VMIME_EXPORT defaultEncoder : public encoder
 {
 public:
 

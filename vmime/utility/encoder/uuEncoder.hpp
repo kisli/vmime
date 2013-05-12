@@ -36,7 +36,7 @@ namespace encoder {
 /** UUEncode encoder.
   */
 
-class uuEncoder : public encoder
+class VMIME_EXPORT uuEncoder : public encoder
 {
 public:
 

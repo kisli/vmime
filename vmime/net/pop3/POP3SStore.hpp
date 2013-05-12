@@ -42,7 +42,7 @@ namespace pop3 {
 /** POP3S store service.
   */
 
-class POP3SStore : public POP3Store
+class VMIME_EXPORT POP3SStore : public POP3Store
 {
 public:
 

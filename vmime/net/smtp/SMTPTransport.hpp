@@ -50,7 +50,7 @@ class SMTPCommand;
 /** SMTP transport service.
   */
 
-class SMTPTransport : public transport
+class VMIME_EXPORT SMTPTransport : public transport
 {
 public:
 

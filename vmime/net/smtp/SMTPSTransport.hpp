@@ -42,7 +42,7 @@ namespace smtp {
 /** SMTPS transport service.
   */
 
-class SMTPSTransport : public SMTPTransport
+class VMIME_EXPORT SMTPSTransport : public SMTPTransport
 {
 public:
 
