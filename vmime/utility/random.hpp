@@ -67,10 +67,6 @@ public:
 	  */
 	static const string getString(const string::size_type length, const string& randomChars
 		= "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
-
-protected:
-
-	static unsigned int m_next;
 };
 
 

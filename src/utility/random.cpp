@@ -31,16 +31,26 @@ namespace vmime {
 namespace utility {
 
 
-unsigned int random::m_next(static_cast<unsigned int>(::std::time(NULL)));
+static unsigned int getRandomSeed()
+{
+	unsigned int seed;
+
+	platform::getHandler()->generateRandomBytes
+		(reinterpret_cast <unsigned char*>(&seed), sizeof(seed));
+
+	return seed;
+}
 
 
 unsigned int random::getNext()
 {
+	static unsigned int next = getRandomSeed();
+
 	// Park and Miller's minimal standard generator:
 	// xn+1 = (a * xn + b) mod c
 	// xn+1 = (16807 * xn) mod (2^31 - 1)
-	m_next = static_cast<unsigned int>((16807 * m_next) % 2147483647ul);
-	return (m_next);
+	next = static_cast<unsigned int>((16807 * next) % 2147483647ul);
+	return next;
 }
 
 
