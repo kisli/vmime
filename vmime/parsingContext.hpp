@@ -35,7 +35,7 @@ namespace vmime
 /** Holds configuration parameters used for parsing messages.
   */
 
-class parsingContext : public context
+class VMIME_EXPORT parsingContext : public context
 {
 public:
 

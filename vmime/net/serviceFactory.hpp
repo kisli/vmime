@@ -58,7 +58,7 @@ class session;
 /** A factory to create 'service' objects for a specified protocol.
   */
 
-class serviceFactory
+class VMIME_EXPORT serviceFactory
 {
 private:
 

@@ -49,7 +49,7 @@ class SASLContext;
 
 /** Constructs SASL mechanism objects.
   */
-class SASLMechanismFactory : public object
+class VMIME_EXPORT SASLMechanismFactory : public object
 {
 private:
 

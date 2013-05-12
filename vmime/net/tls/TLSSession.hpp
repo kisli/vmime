@@ -45,7 +45,7 @@ namespace tls {
 
 /** Describe a TLS connection between a client and a server.
   */
-class TLSSession : public object
+class VMIME_EXPORT TLSSession : public object
 {
 public:
 

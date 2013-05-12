@@ -35,7 +35,7 @@ namespace vmime
 /** A path: a local part + '@' + a domain.
   */
 
-class path : public headerFieldValue
+class VMIME_EXPORT path : public headerFieldValue
 {
 public:
 

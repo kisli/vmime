@@ -50,7 +50,7 @@ class SASLSession;
   * Usually, you should not inherit from this class, but instead from the
   * more convenient defaultSASLAuthenticator class.
   */
-class SASLAuthenticator : public authenticator
+class VMIME_EXPORT SASLAuthenticator : public authenticator
 {
 public:
 

@@ -34,7 +34,7 @@ namespace vmime
 {
 
 
-class parameter : public component
+class VMIME_EXPORT parameter : public component
 {
 	friend class parameterizedHeaderField;
 

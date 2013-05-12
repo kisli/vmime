@@ -47,7 +47,7 @@ namespace cert {
 
 /** Identity certificate based on X.509 standard.
   */
-class X509Certificate : public certificate
+class VMIME_EXPORT X509Certificate : public certificate
 {
 public:
 

@@ -39,7 +39,7 @@ namespace utility {
   * and/or standard output.
   */
 
-class childProcess : public object
+class VMIME_EXPORT childProcess : public object
 {
 public:
 

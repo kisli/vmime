@@ -37,7 +37,7 @@ namespace sync {
   */
 
 template <class M>
-class autoLock : public object
+class VMIME_EXPORT autoLock : public object
 {
 public:
 

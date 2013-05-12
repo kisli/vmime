@@ -36,7 +36,7 @@ namespace sync {
 /** Critical section class.
   */
 
-class criticalSection : public object
+class VMIME_EXPORT criticalSection : public object
 {
 public:
 

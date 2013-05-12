@@ -40,7 +40,7 @@ namespace mdn {
   * that has been received.
   */
 
-class receivedMDNInfos : public MDNInfos
+class VMIME_EXPORT receivedMDNInfos : public MDNInfos
 {
 public:
 

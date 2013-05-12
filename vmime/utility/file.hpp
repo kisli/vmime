@@ -44,7 +44,7 @@ class file;
 /** File list iterator (see file::getFiles).
   */
 
-class fileIterator : public object
+class VMIME_EXPORT fileIterator : public object
 {
 public:
 
@@ -68,7 +68,7 @@ public:
 /** Write to a file.
   */
 
-class fileWriter : public object
+class VMIME_EXPORT fileWriter : public object
 {
 public:
 
@@ -81,7 +81,7 @@ public:
 /** Read from a file.
   */
 
-class fileReader : public object
+class VMIME_EXPORT fileReader : public object
 {
 public:
 
@@ -94,7 +94,7 @@ public:
 /** Abstract representation of a file or directory.
   */
 
-class file : public object
+class VMIME_EXPORT file : public object
 {
 public:
 
@@ -214,7 +214,7 @@ private:
 /** Constructs 'file' objects.
   */
 
-class fileSystemFactory : public object
+class VMIME_EXPORT fileSystemFactory : public object
 {
 public:
 

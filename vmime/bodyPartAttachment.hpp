@@ -40,7 +40,7 @@ namespace vmime
 
 /** An attachment related to a local body part.
   */
-class bodyPartAttachment : public attachment
+class VMIME_EXPORT bodyPartAttachment : public attachment
 {
 	friend class creator;
 

@@ -37,7 +37,7 @@ namespace vmime
 /** A group of mailboxes (basic type).
   */
 
-class mailboxGroup : public address
+class VMIME_EXPORT mailboxGroup : public address
 {
 public:
 

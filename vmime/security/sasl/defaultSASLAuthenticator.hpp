@@ -43,7 +43,7 @@ namespace sasl {
 /** An authenticator that is capable of providing information
   * for simple authentication mechanisms (username and password).
   */
-class defaultSASLAuthenticator : public SASLAuthenticator
+class VMIME_EXPORT defaultSASLAuthenticator : public SASLAuthenticator
 {
 public:
 

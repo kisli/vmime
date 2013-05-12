@@ -39,7 +39,7 @@ namespace vmime
 /** A MIME part.
   */
 
-class bodyPart : public component
+class VMIME_EXPORT bodyPart : public component
 {
 	friend class body;
 

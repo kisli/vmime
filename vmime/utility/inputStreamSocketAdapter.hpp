@@ -45,7 +45,7 @@ namespace utility {
 /** An input stream that is connected to a socket.
   */
 
-class inputStreamSocketAdapter : public inputStream
+class VMIME_EXPORT inputStreamSocketAdapter : public inputStream
 {
 public:
 

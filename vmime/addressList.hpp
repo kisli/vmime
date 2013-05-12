@@ -41,7 +41,7 @@ class mailboxList;
 /** A list of addresses.
   */
 
-class addressList : public headerFieldValue
+class VMIME_EXPORT addressList : public headerFieldValue
 {
 public:
 

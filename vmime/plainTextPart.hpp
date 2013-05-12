@@ -35,7 +35,7 @@ namespace vmime
 /** Text part of type 'text/plain'.
   */
 
-class plainTextPart : public textPart
+class VMIME_EXPORT plainTextPart : public textPart
 {
 public:
 

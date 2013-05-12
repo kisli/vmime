@@ -35,7 +35,7 @@ namespace vmime
 /** A list of message identifiers (basic type).
   */
 
-class messageIdSequence : public headerFieldValue
+class VMIME_EXPORT messageIdSequence : public headerFieldValue
 {
 public:
 

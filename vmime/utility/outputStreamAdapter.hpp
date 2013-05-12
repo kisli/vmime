@@ -37,7 +37,7 @@ namespace utility {
 /** An adapter class for C++ standard output streams.
   */
 
-class outputStreamAdapter : public outputStream
+class VMIME_EXPORT outputStreamAdapter : public outputStream
 {
 public:
 

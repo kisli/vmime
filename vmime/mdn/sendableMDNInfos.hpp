@@ -38,7 +38,7 @@ namespace mdn {
   * that is to be sent.
   */
 
-class sendableMDNInfos : public MDNInfos
+class VMIME_EXPORT sendableMDNInfos : public MDNInfos
 {
 public:
 

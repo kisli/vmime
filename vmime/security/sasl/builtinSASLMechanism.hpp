@@ -45,7 +45,7 @@ class SASLContext;
 /** A built-in authentication mechanism that relies on
   * the GNU SASL library.
   */
-class builtinSASLMechanism : public SASLMechanism
+class VMIME_EXPORT builtinSASLMechanism : public SASLMechanism
 {
 public:
 

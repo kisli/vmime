@@ -37,7 +37,7 @@ namespace vmime
   * for a header field.
   */
 
-class headerFieldValue : public component
+class VMIME_EXPORT headerFieldValue : public component
 {
 public:
 

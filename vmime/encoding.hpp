@@ -41,7 +41,7 @@ class contentHandler;
 /** Content encoding (basic type).
   */
 
-class encoding : public headerFieldValue
+class VMIME_EXPORT encoding : public headerFieldValue
 {
 public:
 

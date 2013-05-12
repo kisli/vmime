@@ -41,7 +41,7 @@ namespace security {
 /** An authenticator that can provide some basic information by
   * reading in the messaging session properties.
   */
-class defaultAuthenticator : public authenticator
+class VMIME_EXPORT defaultAuthenticator : public authenticator
 {
 public:
 

@@ -36,7 +36,7 @@ namespace vmime
 /** Attachment of type message/rfc822.
   */
 
-class messageAttachment : public attachment
+class VMIME_EXPORT messageAttachment : public attachment
 {
 public:
 

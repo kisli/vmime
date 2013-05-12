@@ -44,7 +44,7 @@ class encoder;
 /** Encodes words following RFC-2047.
   */
 
-class wordEncoder
+class VMIME_EXPORT wordEncoder
 {
 public:
 

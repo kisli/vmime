@@ -36,7 +36,7 @@ namespace vmime
 /** Content media type (basic type).
   */
 
-class mediaType : public headerFieldValue
+class VMIME_EXPORT mediaType : public headerFieldValue
 {
 public:
 

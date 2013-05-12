@@ -37,7 +37,7 @@ namespace vmime
 /** List of encoded-words, as defined in RFC-2047 (basic type).
   */
 
-class text : public headerFieldValue
+class VMIME_EXPORT text : public headerFieldValue
 {
 public:
 

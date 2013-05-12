@@ -49,7 +49,7 @@ class TLSSession;
 
 /** Add a TLS security layer to an existing socket.
   */
-class TLSSocket : public socket
+class VMIME_EXPORT TLSSocket : public socket
 {
 public:
 

@@ -52,7 +52,7 @@ namespace net {
   * Encapsulate protocols that can send messages.
   */
 
-class transport : public service
+class VMIME_EXPORT transport : public service
 {
 protected:
 

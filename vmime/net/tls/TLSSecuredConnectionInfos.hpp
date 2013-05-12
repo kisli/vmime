@@ -47,7 +47,7 @@ class TLSSocket;
 
 /** Information about a TLS-secured connection used by a service.
   */
-class TLSSecuredConnectionInfos : public securedConnectionInfos
+class VMIME_EXPORT TLSSecuredConnectionInfos : public securedConnectionInfos
 {
 public:
 

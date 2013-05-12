@@ -35,7 +35,7 @@ namespace vmime
 /** Holds configuration parameters used for generating messages.
   */
 
-class generationContext : public context
+class VMIME_EXPORT generationContext : public context
 {
 public:
 

@@ -38,7 +38,7 @@ namespace utility {
   * to a "resource" on the World Wide Web).
   */
 
-class url
+class VMIME_EXPORT url
 {
 public:
 

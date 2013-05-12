@@ -43,7 +43,7 @@ namespace vmime
 /** Manage a list of (name,value) pairs.
   */
 
-class propertySet : public object
+class VMIME_EXPORT propertySet : public object
 {
 public:
 

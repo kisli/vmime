@@ -48,7 +48,7 @@ namespace utility
   * occured when initializing convert, or during charset conversion.
   */
 
-class charsetFilteredOutputStream : public filteredOutputStream
+class VMIME_EXPORT charsetFilteredOutputStream : public filteredOutputStream
 {
 };
 
@@ -59,7 +59,7 @@ class charsetFilteredOutputStream : public filteredOutputStream
 /** Convert between charsets.
   */
 
-class charsetConverter : public object
+class VMIME_EXPORT charsetConverter : public object
 {
 public:
 

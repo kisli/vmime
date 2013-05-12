@@ -42,7 +42,7 @@ class encoding;  // forward reference
 /** Charset description (basic type).
   */
 
-class charset : public component
+class VMIME_EXPORT charset : public component
 {
 public:
 

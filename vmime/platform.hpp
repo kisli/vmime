@@ -50,7 +50,7 @@ namespace vmime
 /** Allow setting or getting the current platform handler.
   */
 
-class platform
+class VMIME_EXPORT platform
 {
 public:
 
@@ -58,7 +58,7 @@ public:
 	  * access platform-dependent objects: sockets, date/time, file system, etc.
 	  */
 
-	class handler : public object
+	class VMIME_EXPORT handler : public object
 	{
 	public:
 

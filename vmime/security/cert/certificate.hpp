@@ -35,7 +35,7 @@ namespace cert {
 
 /** Identity certificate for a peer.
   */
-class certificate : public object
+class VMIME_EXPORT certificate : public object
 {
 public:
 

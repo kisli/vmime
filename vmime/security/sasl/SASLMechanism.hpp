@@ -44,7 +44,7 @@ class SASLSession;
 
 /** An SASL mechanism.
   */
-class SASLMechanism : public object
+class VMIME_EXPORT SASLMechanism : public object
 {
 public:
 

@@ -36,7 +36,7 @@ namespace utility {
 /** Miscellaneous functions related to URLs.
   */
 
-class urlUtils
+class VMIME_EXPORT urlUtils
 {
 public:
 

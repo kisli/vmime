@@ -50,7 +50,7 @@ class transport;
   * for connection to a service.
   */
 
-class session : public object
+class VMIME_EXPORT session : public object
 {
 public:
 

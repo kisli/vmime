@@ -42,7 +42,7 @@ namespace vmime
   * It defines methods for parsing and generating a component.
   */
 
-class component : public object
+class VMIME_EXPORT component : public object
 {
 public:
 

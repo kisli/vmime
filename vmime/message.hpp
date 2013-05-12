@@ -36,7 +36,7 @@ namespace vmime
 /** A MIME message.
   */
 
-class message : public bodyPart
+class VMIME_EXPORT message : public bodyPart
 {
 public:
 

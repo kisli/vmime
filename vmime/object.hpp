@@ -39,7 +39,7 @@ namespace vmime
   * reference counting and auto-deletion.
   */
 
-class object
+class VMIME_EXPORT object
 {
 	template <class T> friend class utility::ref;
 	template <class T> friend class utility::weak_ref;

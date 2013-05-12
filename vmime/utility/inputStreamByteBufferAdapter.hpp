@@ -35,7 +35,7 @@ namespace utility {
 /** An adapter class for reading from an array of bytes.
   */
 
-class inputStreamByteBufferAdapter : public seekableInputStream
+class VMIME_EXPORT inputStreamByteBufferAdapter : public seekableInputStream
 {
 public:
 

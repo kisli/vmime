@@ -35,7 +35,7 @@ namespace utility {
 /** Miscellaneous functions related to date/time.
   */
 
-class datetimeUtils
+class VMIME_EXPORT datetimeUtils
 {
 public:
 

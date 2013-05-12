@@ -35,7 +35,7 @@ namespace utility {
 /** An input stream that allows seeking within the input.
   */
 
-class seekableInputStream : public inputStream
+class VMIME_EXPORT seekableInputStream : public inputStream
 {
 public:
 

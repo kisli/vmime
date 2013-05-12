@@ -40,7 +40,7 @@ namespace utility {
 /** Simple output stream.
   */
 
-class outputStream : public stream
+class VMIME_EXPORT outputStream : public stream
 {
 public:
 

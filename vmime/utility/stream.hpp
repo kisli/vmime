@@ -40,7 +40,7 @@ namespace utility {
 /** Base class for input/output stream.
   */
 
-class stream : public object, private noncopyable
+class VMIME_EXPORT stream : public object, private noncopyable
 {
 public:
 

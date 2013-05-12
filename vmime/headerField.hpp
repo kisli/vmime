@@ -37,7 +37,7 @@ namespace vmime
 /** Base class for header fields.
   */
 
-class headerField : public component
+class VMIME_EXPORT headerField : public component
 {
 	friend class headerFieldFactory;
 	friend class header;

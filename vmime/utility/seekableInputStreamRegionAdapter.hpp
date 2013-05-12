@@ -35,7 +35,7 @@ namespace utility {
 /** An adapter for reading a limited region of a seekable input stream.
   */
 
-class seekableInputStreamRegionAdapter : public seekableInputStream
+class VMIME_EXPORT seekableInputStreamRegionAdapter : public seekableInputStream
 {
 public:
 

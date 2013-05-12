@@ -45,7 +45,7 @@ namespace utility {
 /** An output stream that is connected to a socket.
   */
 
-class outputStreamSocketAdapter : public outputStream
+class VMIME_EXPORT outputStreamSocketAdapter : public outputStream
 {
 public:
 

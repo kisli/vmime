@@ -43,7 +43,7 @@ namespace net {
   * Encapsulate protocols that provide access to user's mail drop.
   */
 
-class store : public service
+class VMIME_EXPORT store : public service
 {
 protected:
 

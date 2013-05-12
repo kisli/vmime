@@ -36,7 +36,7 @@ namespace vmime
 /** Default implementation for attachments.
   */
 
-class defaultAttachment : public attachment
+class VMIME_EXPORT defaultAttachment : public attachment
 {
 protected:
 

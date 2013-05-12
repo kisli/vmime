@@ -44,7 +44,7 @@ namespace sasl {
 
 /** An SASL client context.
   */
-class SASLContext : public object
+class VMIME_EXPORT SASLContext : public object
 {
 	friend class SASLSession;
 	friend class builtinSASLMechanism;

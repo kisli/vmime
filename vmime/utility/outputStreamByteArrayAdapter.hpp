@@ -35,7 +35,7 @@ namespace utility {
 /** An adapter class for byte array output.
   */
 
-class outputStreamByteArrayAdapter : public outputStream
+class VMIME_EXPORT outputStreamByteArrayAdapter : public outputStream
 {
 public:
 

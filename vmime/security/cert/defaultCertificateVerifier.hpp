@@ -38,7 +38,7 @@ class X509Certificate;
 
 /** Default implementation for certificate verification.
   */
-class defaultCertificateVerifier : public certificateVerifier
+class VMIME_EXPORT defaultCertificateVerifier : public certificateVerifier
 {
 private:
 

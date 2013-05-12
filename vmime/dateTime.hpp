@@ -38,7 +38,7 @@ namespace vmime
 /** Date and time (basic type).
   */
 
-class datetime : public headerFieldValue
+class VMIME_EXPORT datetime : public headerFieldValue
 {
 public:
 

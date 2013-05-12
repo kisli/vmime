@@ -38,7 +38,7 @@ namespace utility {
 /** Miscellaneous functions related to strings.
   */
 
-class stringUtils
+class VMIME_EXPORT stringUtils
 {
 public:
 

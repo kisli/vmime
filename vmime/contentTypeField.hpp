@@ -35,7 +35,7 @@ namespace vmime
 {
 
 
-class contentTypeField : public parameterizedHeaderField
+class VMIME_EXPORT contentTypeField : public parameterizedHeaderField
 {
 	friend class vmime::creator;  // create ref
 

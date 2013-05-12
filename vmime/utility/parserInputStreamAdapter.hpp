@@ -37,7 +37,7 @@ namespace utility {
 /** An adapter class used for parsing from an input stream.
   */
 
-class parserInputStreamAdapter : public seekableInputStream
+class VMIME_EXPORT parserInputStreamAdapter : public seekableInputStream
 {
 public:
 

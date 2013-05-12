@@ -47,7 +47,7 @@ namespace events {
 /** Event about the message count in a folder.
   */
 
-class messageCountEvent
+class VMIME_EXPORT messageCountEvent
 {
 public:
 
@@ -95,7 +95,7 @@ private:
 /** Listener for events about the message count in a folder.
   */
 
-class messageCountListener
+class VMIME_EXPORT messageCountListener
 {
 protected:
 
@@ -111,7 +111,7 @@ public:
 /** Event occuring on a message.
   */
 
-class messageChangedEvent
+class VMIME_EXPORT messageChangedEvent
 {
 public:
 
@@ -158,7 +158,7 @@ private:
 /** Listener for events occuring on a message.
   */
 
-class messageChangedListener
+class VMIME_EXPORT messageChangedListener
 {
 protected:
 
@@ -173,7 +173,7 @@ public:
 /** Event occuring on a folder.
   */
 
-class folderEvent
+class VMIME_EXPORT folderEvent
 {
 public:
 
@@ -217,7 +217,7 @@ private:
 /** Listener for events occuring on a folder.
   */
 
-class folderListener
+class VMIME_EXPORT folderListener
 {
 protected:
 

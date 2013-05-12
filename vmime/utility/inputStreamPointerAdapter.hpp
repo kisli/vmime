@@ -37,7 +37,7 @@ namespace utility {
 /** An adapter class for pointer to C++ standard input stream.
   */
 
-class inputStreamPointerAdapter : public inputStreamAdapter
+class VMIME_EXPORT inputStreamPointerAdapter : public inputStreamAdapter
 {
 public:
 

@@ -38,7 +38,7 @@ class stringProxy;
 /** An adapter class for stringProxy input.
   */
 
-class inputStreamStringProxyAdapter : public seekableInputStream
+class VMIME_EXPORT inputStreamStringProxyAdapter : public seekableInputStream
 {
 public:
 

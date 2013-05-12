@@ -6,6 +6,9 @@
 #define VMIME_CONFIG_HPP_INCLUDED
 
 
+#include "vmime/export.hpp"
+
+
 // Name of package
 #define VMIME_PACKAGE "@PROJECT_NAME@"
 

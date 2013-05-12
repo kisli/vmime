@@ -41,7 +41,7 @@ namespace vmime
   * and contains multiple addresses.
   */
 
-class mailboxField : public headerField
+class VMIME_EXPORT mailboxField : public headerField
 {
 	friend class vmime::creator;  // create ref
 

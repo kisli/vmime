@@ -44,7 +44,7 @@ namespace vmime
 /** A helper for building MIME messages.
   */
 
-class messageBuilder
+class VMIME_EXPORT messageBuilder
 {
 public:
 

@@ -38,7 +38,7 @@ namespace vmime
 {
 
 
-class contentHandler : public object
+class VMIME_EXPORT contentHandler : public object
 {
 public:
 

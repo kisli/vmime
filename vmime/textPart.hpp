@@ -39,7 +39,7 @@ namespace vmime
 /** Generic text part.
   */
 
-class textPart : public object
+class VMIME_EXPORT textPart : public object
 {
 	friend class textPartFactory;
 	friend class messageBuilder; // for generateIn, getPartCount

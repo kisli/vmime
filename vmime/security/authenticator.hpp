@@ -60,7 +60,7 @@ namespace security {
   * WARNING: an authenticator should be used with one and ONLY ONE messaging
   * service at a time.
   */
-class authenticator : public object
+class VMIME_EXPORT authenticator : public object
 {
 public:
 

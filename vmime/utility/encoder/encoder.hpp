@@ -39,7 +39,7 @@ namespace encoder {
 /** Encode/decode data in different encodings.
   */
 
-class encoder : public object
+class VMIME_EXPORT encoder : public object
 {
 public:
 

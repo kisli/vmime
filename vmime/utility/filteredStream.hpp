@@ -38,7 +38,7 @@ namespace utility {
 /** A stream whose input is filtered.
   */
 
-class filteredInputStream : public inputStream
+class VMIME_EXPORT filteredInputStream : public inputStream
 {
 public:
 
@@ -55,7 +55,7 @@ public:
 /** A stream whose output is filtered.
   */
 
-class filteredOutputStream : public outputStream
+class VMIME_EXPORT filteredOutputStream : public outputStream
 {
 public:
 
@@ -73,7 +73,7 @@ public:
   * sequences with "\n." sequences.
   */
 
-class dotFilteredInputStream : public filteredInputStream
+class VMIME_EXPORT dotFilteredInputStream : public filteredInputStream
 {
 public:
 
@@ -106,7 +106,7 @@ private:
   * sequences with "\n.." sequences.
   */
 
-class dotFilteredOutputStream : public filteredOutputStream
+class VMIME_EXPORT dotFilteredOutputStream : public filteredOutputStream
 {
 public:
 
@@ -133,7 +133,7 @@ private:
   * with single LF characters.
   */
 
-class CRLFToLFFilteredOutputStream : public filteredOutputStream
+class VMIME_EXPORT CRLFToLFFilteredOutputStream : public filteredOutputStream
 {
 public:
 
@@ -159,7 +159,7 @@ private:
   * with CRLF sequences.
   */
 
-class LFToCRLFFilteredOutputStream : public filteredOutputStream
+class VMIME_EXPORT LFToCRLFFilteredOutputStream : public filteredOutputStream
 {
 public:
 
@@ -186,7 +186,7 @@ private:
   */
 
 template <int COUNT>
-class stopSequenceFilteredInputStream : public filteredInputStream
+class VMIME_EXPORT stopSequenceFilteredInputStream : public filteredInputStream
 {
 public:
 

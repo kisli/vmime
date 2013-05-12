@@ -33,7 +33,7 @@ namespace vmime
 {
 
 
-class textPartFactory
+class VMIME_EXPORT textPartFactory
 {
 protected:
 

@@ -48,7 +48,7 @@ class SASLContext;
 
 /** An SASL client session.
   */
-class SASLSession : public object
+class VMIME_EXPORT SASLSession : public object
 {
 	friend class builtinSASLMechanism;
 	friend class SASLSocket;

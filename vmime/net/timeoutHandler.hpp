@@ -41,7 +41,7 @@ namespace net {
 /** A class to manage time-out in messaging services.
   */
 
-class timeoutHandler : public object
+class VMIME_EXPORT timeoutHandler : public object
 {
 public:
 

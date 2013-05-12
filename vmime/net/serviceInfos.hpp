@@ -45,7 +45,7 @@ namespace net {
 /** Stores information about a messaging service.
   */
 
-class serviceInfos
+class VMIME_EXPORT serviceInfos
 {
 	friend class serviceFactory;
 

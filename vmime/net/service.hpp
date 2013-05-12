@@ -55,7 +55,7 @@ namespace net {
 /** Base class for messaging services.
   */
 
-class service : public object
+class VMIME_EXPORT service : public object
 {
 protected:
 

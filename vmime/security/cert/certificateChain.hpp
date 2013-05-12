@@ -38,7 +38,7 @@ namespace cert {
 /** An ordered list of certificates, from the subject certificate to
   * the issuer certificate.
   */
-class certificateChain : public object
+class VMIME_EXPORT certificateChain : public object
 {
 public:
 

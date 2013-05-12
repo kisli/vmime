@@ -36,7 +36,7 @@ namespace vmime
 /** Holds configuration parameters used either for parsing or generating messages.
   */
 
-class context : public object
+class VMIME_EXPORT context : public object
 {
 public:
 

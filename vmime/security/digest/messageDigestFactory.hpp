@@ -38,7 +38,7 @@ namespace digest {
 /** Creates instances of message digest algorithms.
   */
 
-class messageDigestFactory
+class VMIME_EXPORT messageDigestFactory
 {
 private:
 

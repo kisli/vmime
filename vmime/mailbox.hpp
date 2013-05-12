@@ -37,7 +37,7 @@ namespace vmime
 /** A mailbox: full name + email (basic type).
   */
 
-class mailbox : public address
+class VMIME_EXPORT mailbox : public address
 {
 	friend class mailboxGroup;
 	friend class mailboxField;

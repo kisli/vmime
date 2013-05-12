@@ -39,7 +39,7 @@ namespace mdn {
   * Notifications (MDN), as defined in RFC-3798.
   */
 
-class MDNHelper
+class VMIME_EXPORT MDNHelper
 {
 public:
 

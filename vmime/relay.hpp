@@ -38,7 +38,7 @@ namespace vmime
 /** Trace information about a relay (basic type).
   */
 
-class relay : public headerFieldValue
+class VMIME_EXPORT relay : public headerFieldValue
 {
 public:
 

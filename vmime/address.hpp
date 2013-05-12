@@ -39,7 +39,7 @@ namespace vmime
   * and mailboxGroup classes.
   */
 
-class address : public headerFieldValue
+class VMIME_EXPORT address : public headerFieldValue
 {
 protected:
 

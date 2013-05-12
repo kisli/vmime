@@ -43,7 +43,7 @@ namespace net {
 /** Interface for connecting to servers.
   */
 
-class socket : public object
+class VMIME_EXPORT socket : public object
 {
 public:
 

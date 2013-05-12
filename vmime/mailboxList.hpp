@@ -39,7 +39,7 @@ namespace vmime
   * from inserting mailbox groups where it is not allowed by the RFC.
   */
 
-class mailboxList : public headerFieldValue
+class VMIME_EXPORT mailboxList : public headerFieldValue
 {
 public:
 

@@ -35,7 +35,7 @@ namespace utility {
 /** An adapter class for string input.
   */
 
-class inputStreamStringAdapter : public seekableInputStream
+class VMIME_EXPORT inputStreamStringAdapter : public seekableInputStream
 {
 public:
 

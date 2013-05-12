@@ -42,7 +42,7 @@ namespace utility {
   * be used in "std::string" implementation.
   */
 
-class stringProxy
+class VMIME_EXPORT stringProxy
 {
 public:
 

@@ -38,7 +38,7 @@ namespace digest {
   * such as MD5 or SHA.
   */
 
-class messageDigest : public object
+class VMIME_EXPORT messageDigest : public object
 {
 public:
 

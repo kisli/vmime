@@ -44,7 +44,7 @@ namespace vmime
 /** A helper for parsing MIME messages.
   */
 
-class messageParser
+class VMIME_EXPORT messageParser
 {
 public:
 

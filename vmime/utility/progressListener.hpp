@@ -25,6 +25,9 @@
 #define VMIME_UTILITY_PROGRESSLISTENER_HPP_INCLUDED
 
 
+#include "vmime/config.hpp"
+
+
 namespace vmime {
 namespace utility {
 
@@ -33,7 +36,7 @@ namespace utility {
   * of a state of progress by some objects.
   */
 
-class progressListener
+class VMIME_EXPORT progressListener
 {
 protected:
 

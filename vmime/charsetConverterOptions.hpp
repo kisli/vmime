@@ -35,7 +35,7 @@ namespace vmime
 /** Options for charset conversion.
   */
 
-class charsetConverterOptions : public object
+class VMIME_EXPORT charsetConverterOptions : public object
 {
 public:
 

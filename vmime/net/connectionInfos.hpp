@@ -40,7 +40,7 @@ namespace net {
 
 /** Information about the connection used by a service.
   */
-class connectionInfos : public object
+class VMIME_EXPORT connectionInfos : public object
 {
 public:
 

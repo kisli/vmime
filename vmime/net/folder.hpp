@@ -55,7 +55,7 @@ class store;
 /** Abstract representation of a folder in a message store.
   */
 
-class folder : public object
+class VMIME_EXPORT folder : public object
 {
 protected:
 

@@ -36,7 +36,7 @@ namespace mdn {
 /** Holds information about Message Disposition Notifications (MDN).
   */
 
-class MDNInfos : public object
+class VMIME_EXPORT MDNInfos : public object
 {
 public:
 

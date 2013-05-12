@@ -35,7 +35,7 @@ namespace utility {
 /** Simple input stream.
   */
 
-class inputStream : public stream
+class VMIME_EXPORT inputStream : public stream
 {
 public:
 

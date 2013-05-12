@@ -38,7 +38,7 @@ namespace utility {
 /** Abstract representation of a path (filesystem, mailbox, etc).
   */
 
-class path : public object
+class VMIME_EXPORT path : public object
 {
 public:
 

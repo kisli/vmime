@@ -39,7 +39,7 @@ namespace vmime
 /** Text part of type 'text/html'.
   */
 
-class htmlTextPart : public textPart
+class VMIME_EXPORT htmlTextPart : public textPart
 {
 public:
 

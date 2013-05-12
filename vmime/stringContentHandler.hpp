@@ -32,7 +32,7 @@ namespace vmime
 {
 
 
-class stringContentHandler : public contentHandler
+class VMIME_EXPORT stringContentHandler : public contentHandler
 {
 public:
 

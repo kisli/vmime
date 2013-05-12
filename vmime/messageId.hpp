@@ -36,7 +36,7 @@ namespace vmime
 /** Message identifier (basic type).
   */
 
-class messageId : public headerFieldValue
+class VMIME_EXPORT messageId : public headerFieldValue
 {
 	friend class messageIdSequence;
 

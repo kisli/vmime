@@ -36,7 +36,7 @@ namespace vmime
 /** Content disposition (basic type).
   */
 
-class contentDisposition : public headerFieldValue
+class VMIME_EXPORT contentDisposition : public headerFieldValue
 {
 public:
 

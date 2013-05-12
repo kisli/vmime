@@ -39,7 +39,7 @@ namespace misc {
   * and 'Importance' (RFC-1327, RFC-1911) fields.
   */
 
-class importanceHelper
+class VMIME_EXPORT importanceHelper
 {
 public:
 

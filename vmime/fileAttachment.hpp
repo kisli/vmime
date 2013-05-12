@@ -42,7 +42,7 @@ namespace vmime
 /** Attachment of type 'file'.
   */
 
-class fileAttachment : public defaultAttachment
+class VMIME_EXPORT fileAttachment : public defaultAttachment
 {
 public:
 

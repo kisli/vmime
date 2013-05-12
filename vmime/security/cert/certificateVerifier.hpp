@@ -37,7 +37,7 @@ namespace cert {
 
 /** Verify that a certificate path issued by a server can be trusted.
   */
-class certificateVerifier : public object
+class VMIME_EXPORT certificateVerifier : public object
 {
 public:
 

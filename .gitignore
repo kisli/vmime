@@ -25,6 +25,7 @@ doc/html/*
 /libvmime.a
 /vmime.pc
 /vmime/config.hpp
+/vmime/export.hpp
 /COPYING.txt
 /build/
 

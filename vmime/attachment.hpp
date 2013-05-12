@@ -41,7 +41,7 @@ namespace vmime
 /** Base class for all types of attachment.
   */
 
-class attachment : public object
+class VMIME_EXPORT attachment : public object
 {
 	friend class messageBuilder;
 	friend class messageParser;

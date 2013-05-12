@@ -46,7 +46,7 @@ class SASLSession;
 
 /** A socket which provides data integrity and/or privacy protection.
   */
-class SASLSocket : public net::socket
+class VMIME_EXPORT SASLSocket : public net::socket
 {
 public:
 

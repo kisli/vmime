@@ -27,6 +27,8 @@
 
 #include <map>
 
+#include "vmime/config.hpp"
+
 
 // Forward reference to 'object'
 namespace vmime { class object; }
@@ -40,7 +42,7 @@ namespace utility {
   */
 
 template <class T>
-class auto_ptr
+class VMIME_EXPORT auto_ptr
 {
 private:
 
@@ -61,7 +63,7 @@ public:
 /** Manage the life cycle of an object.
   */
 
-class refManager
+class VMIME_EXPORT refManager
 {
 protected:
 
@@ -124,7 +126,7 @@ protected:
 /** Null reference.
   */
 
-class null_ref
+class VMIME_EXPORT null_ref
 {
 };
 
@@ -137,7 +139,7 @@ class weak_ref;
   */
 
 template <class T>
-class ref
+class VMIME_EXPORT ref
 {
 public:
 
@@ -426,7 +428,7 @@ bool operator!=(const null_ref&, const ref <T>& r)
   */
 
 template <class T>
-class weak_ref
+class VMIME_EXPORT weak_ref
 {
 public:
 

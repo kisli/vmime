@@ -39,7 +39,7 @@ namespace vmime
 /** Base class for VMime exceptions.
   */
 
-class exception : public std::exception
+class VMIME_EXPORT exception : public std::exception
 {
 private:
 
@@ -98,7 +98,7 @@ namespace exceptions
 {
 
 
-class bad_field_value_type : public vmime::exception
+class VMIME_EXPORT bad_field_value_type : public vmime::exception
 {
 public:
 
@@ -110,7 +110,7 @@ public:
 };
 
 
-class charset_conv_error : public vmime::exception
+class VMIME_EXPORT charset_conv_error : public vmime::exception
 {
 public:
 
@@ -125,7 +125,7 @@ public:
 /** No encoder has been found for the specified encoding name.
   */
 
-class no_encoder_available : public vmime::exception
+class VMIME_EXPORT no_encoder_available : public vmime::exception
 {
 public:
 
@@ -140,7 +140,7 @@ public:
 /** No algorithm has been found for the specified name.
   */
 
-class no_digest_algorithm_available : public vmime::exception
+class VMIME_EXPORT no_digest_algorithm_available : public vmime::exception
 {
 public:
 
@@ -152,7 +152,7 @@ public:
 };
 
 
-class no_such_parameter : public vmime::exception
+class VMIME_EXPORT no_such_parameter : public vmime::exception
 {
 public:
 
@@ -164,7 +164,7 @@ public:
 };
 
 
-class no_such_field : public vmime::exception
+class VMIME_EXPORT no_such_field : public vmime::exception
 {
 public:
 
@@ -176,7 +176,7 @@ public:
 };
 
 
-class no_such_part : public vmime::exception
+class VMIME_EXPORT no_such_part : public vmime::exception
 {
 public:
 
@@ -188,7 +188,7 @@ public:
 };
 
 
-class no_such_mailbox : public vmime::exception
+class VMIME_EXPORT no_such_mailbox : public vmime::exception
 {
 public:
 
@@ -200,7 +200,7 @@ public:
 };
 
 
-class no_such_message_id : public vmime::exception
+class VMIME_EXPORT no_such_message_id : public vmime::exception
 {
 public:
 
@@ -212,7 +212,7 @@ public:
 };
 
 
-class no_such_address : public vmime::exception
+class VMIME_EXPORT no_such_address : public vmime::exception
 {
 public:
 
@@ -224,7 +224,7 @@ public:
 };
 
 
-class open_file_error : public vmime::exception
+class VMIME_EXPORT open_file_error : public vmime::exception
 {
 public:
 
@@ -236,7 +236,7 @@ public:
 };
 
 
-class no_factory_available : public vmime::exception
+class VMIME_EXPORT no_factory_available : public vmime::exception
 {
 public:
 
@@ -248,7 +248,7 @@ public:
 };
 
 
-class no_platform_handler : public vmime::exception
+class VMIME_EXPORT no_platform_handler : public vmime::exception
 {
 public:
 
@@ -263,7 +263,7 @@ public:
 /** No expeditor specified.
   */
 
-class no_expeditor : public vmime::exception
+class VMIME_EXPORT no_expeditor : public vmime::exception
 {
 public:
 
@@ -278,7 +278,7 @@ public:
 /** No recipient specified.
   */
 
-class no_recipient : public vmime::exception
+class VMIME_EXPORT no_recipient : public vmime::exception
 {
 public:
 
@@ -290,7 +290,7 @@ public:
 };
 
 
-class no_object_found : public vmime::exception
+class VMIME_EXPORT no_object_found : public vmime::exception
 {
 public:
 
@@ -305,7 +305,7 @@ public:
 /** There is no property with that name in the set.
   */
 
-class no_such_property : public vmime::exception
+class VMIME_EXPORT no_such_property : public vmime::exception
 {
 public:
 
@@ -320,7 +320,7 @@ public:
 /** Bad type specified when reading property.
   */
 
-class invalid_property_type : public vmime::exception
+class VMIME_EXPORT invalid_property_type : public vmime::exception
 {
 public:
 
@@ -335,7 +335,7 @@ public:
 /** Bad argument was passed to the function.
   */
 
-class invalid_argument : public vmime::exception
+class VMIME_EXPORT invalid_argument : public vmime::exception
 {
 public:
 
@@ -350,7 +350,7 @@ public:
 /** Underlying operating system error.
   */
 
-class system_error : public vmime::exception
+class VMIME_EXPORT system_error : public vmime::exception
 {
 public:
 
@@ -365,7 +365,7 @@ public:
 /** The URL is malformed.
   */
 
-class malformed_url : public vmime::exception
+class VMIME_EXPORT malformed_url : public vmime::exception
 {
 public:
 
@@ -384,7 +384,7 @@ public:
 /** Base class for exceptions thrown by the networking module.
   */
 
-class net_exception : public vmime::exception
+class VMIME_EXPORT net_exception : public vmime::exception
 {
 public:
 
@@ -405,7 +405,7 @@ typedef net_exception messaging_exception;
 /** Socket error.
   */
 
-class socket_exception : public net_exception
+class VMIME_EXPORT socket_exception : public net_exception
 {
 public:
 
@@ -422,7 +422,7 @@ public:
   * or a connection error (for example, time-out while connecting).
   */
 
-class connection_error : public socket_exception
+class VMIME_EXPORT connection_error : public socket_exception
 {
 public:
 
@@ -437,7 +437,7 @@ public:
 /** Server did not initiated the connection correctly.
   */
 
-class connection_greeting_error : public net_exception
+class VMIME_EXPORT connection_greeting_error : public net_exception
 {
 public:
 
@@ -459,7 +459,7 @@ private:
   * or password, or wrong authentication method).
   */
 
-class authentication_error : public net_exception
+class VMIME_EXPORT authentication_error : public net_exception
 {
 public:
 
@@ -480,7 +480,7 @@ private:
 /** Option not supported.
   */
 
-class unsupported_option : public net_exception
+class VMIME_EXPORT unsupported_option : public net_exception
 {
 public:
 
@@ -495,7 +495,7 @@ public:
 /** No service available for this protocol.
   */
 
-class no_service_available : public net_exception
+class VMIME_EXPORT no_service_available : public net_exception
 {
 public:
 
@@ -511,7 +511,7 @@ public:
   * operation (for example, you try to close a folder which is not open).
   */
 
-class illegal_state : public net_exception
+class VMIME_EXPORT illegal_state : public net_exception
 {
 public:
 
@@ -526,7 +526,7 @@ public:
 /** Folder not found (does not exist).
   */
 
-class folder_not_found : public net_exception
+class VMIME_EXPORT folder_not_found : public net_exception
 {
 public:
 
@@ -541,7 +541,7 @@ public:
 /** Message not found (does not exist).
   */
 
-class message_not_found : public net_exception
+class VMIME_EXPORT message_not_found : public net_exception
 {
 public:
 
@@ -556,7 +556,7 @@ public:
 /** Operation not supported by the underlying protocol.
   */
 
-class operation_not_supported : public net_exception
+class VMIME_EXPORT operation_not_supported : public net_exception
 {
 public:
 
@@ -571,7 +571,7 @@ public:
 /** The operation timed out (time-out delay is elapsed).
   */
 
-class operation_timed_out : public net_exception
+class VMIME_EXPORT operation_timed_out : public net_exception
 {
 public:
 
@@ -586,7 +586,7 @@ public:
 /** The operation has been cancelled.
   */
 
-class operation_cancelled : public net_exception
+class VMIME_EXPORT operation_cancelled : public net_exception
 {
 public:
 
@@ -602,7 +602,7 @@ public:
   * the requested object.
   */
 
-class unfetched_object : public net_exception
+class VMIME_EXPORT unfetched_object : public net_exception
 {
 public:
 
@@ -617,7 +617,7 @@ public:
 /** The service is not currently connected.
   */
 
-class not_connected : public net_exception
+class VMIME_EXPORT not_connected : public net_exception
 {
 public:
 
@@ -632,7 +632,7 @@ public:
 /** The service is already connected (must disconnect before).
   */
 
-class already_connected : public net_exception
+class VMIME_EXPORT already_connected : public net_exception
 {
 public:
 
@@ -647,7 +647,7 @@ public:
 /** Illegal operation: cannot run this operation on the object.
   */
 
-class illegal_operation : public net_exception
+class VMIME_EXPORT illegal_operation : public net_exception
 {
 public:
 
@@ -662,7 +662,7 @@ public:
 /** Command error: operation failed (this is specific to the underlying protocol).
   */
 
-class command_error : public net_exception
+class VMIME_EXPORT command_error : public net_exception
 {
 public:
 
@@ -696,7 +696,7 @@ private:
 /** The server returned an invalid response.
   */
 
-class invalid_response : public net_exception
+class VMIME_EXPORT invalid_response : public net_exception
 {
 public:
 
@@ -730,7 +730,7 @@ private:
 /** Partial fetch is not supported by the underlying protocol.
   */
 
-class partial_fetch_not_supported : public net_exception
+class VMIME_EXPORT partial_fetch_not_supported : public net_exception
 {
 public:
 
@@ -745,7 +745,7 @@ public:
 /** Folder name is invalid.
   */
 
-class invalid_folder_name : public net_exception
+class VMIME_EXPORT invalid_folder_name : public net_exception
 {
 public:
 
@@ -766,7 +766,7 @@ public:
 /** Base class for exceptions thrown by the filesystem features.
   */
 
-class filesystem_exception : public vmime::exception
+class VMIME_EXPORT filesystem_exception : public vmime::exception
 {
 public:
 
@@ -791,7 +791,7 @@ private:
 /** File is not a directory.
   */
 
-class not_a_directory : public filesystem_exception
+class VMIME_EXPORT not_a_directory : public filesystem_exception
 {
 public:
 
@@ -806,7 +806,7 @@ public:
 /** File not found.
   */
 
-class file_not_found : public filesystem_exception
+class VMIME_EXPORT file_not_found : public filesystem_exception
 {
 public:
 
@@ -824,7 +824,7 @@ public:
 /** Authentication exception.
   */
 
-class authentication_exception : public vmime::exception
+class VMIME_EXPORT authentication_exception : public vmime::exception
 {
 public:
 
@@ -839,7 +839,7 @@ public:
 /** The requested information cannot be provided.
   */
 
-class no_auth_information : public authentication_exception
+class VMIME_EXPORT no_auth_information : public authentication_exception
 {
 public:
 
@@ -857,7 +857,7 @@ public:
 /** Base class for exceptions thrown by SASL module.
   */
 
-class sasl_exception : public authentication_exception
+class VMIME_EXPORT sasl_exception : public authentication_exception
 {
 public:
 
@@ -872,7 +872,7 @@ public:
 /** No mechanism is registered with the specified name.
   */
 
-class no_such_mechanism : public sasl_exception
+class VMIME_EXPORT no_such_mechanism : public sasl_exception
 {
 public:
 
@@ -893,7 +893,7 @@ public:
 /** Base class for exceptions thrown by TLS module.
   */
 
-class tls_exception : public vmime::exception
+class VMIME_EXPORT tls_exception : public vmime::exception
 {
 public:
 
@@ -905,7 +905,7 @@ public:
 };
 
 
-class certificate_exception : public tls_exception
+class VMIME_EXPORT certificate_exception : public tls_exception
 {
 public:
 
@@ -917,7 +917,7 @@ public:
 };
 
 
-class certificate_verification_exception : public certificate_exception
+class VMIME_EXPORT certificate_verification_exception : public certificate_exception
 {
 public:
 
@@ -929,7 +929,7 @@ public:
 };
 
 
-class unsupported_certificate_type : public certificate_exception
+class VMIME_EXPORT unsupported_certificate_type : public certificate_exception
 {
 public:
 

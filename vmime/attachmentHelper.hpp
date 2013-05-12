@@ -37,7 +37,7 @@ namespace vmime
 
 /** Retrieve attachment information from message parts.
   */
-class attachmentHelper
+class VMIME_EXPORT attachmentHelper
 {
 public:
 

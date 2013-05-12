@@ -38,7 +38,7 @@ namespace vmime
 
 /** A message attachment that can be extracted from a message.
   */
-class generatedMessageAttachment : public messageAttachment
+class VMIME_EXPORT generatedMessageAttachment : public messageAttachment
 {
 public:
 

@@ -36,7 +36,7 @@ namespace vmime
 /** An email address: local name and domain name (basic type).
   */
 
-class emailAddress : public component
+class VMIME_EXPORT emailAddress : public component
 {
 public:
 

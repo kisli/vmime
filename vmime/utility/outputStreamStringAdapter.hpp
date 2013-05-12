@@ -35,7 +35,7 @@ namespace utility {
 /** An adapter class for string output.
   */
 
-class outputStreamStringAdapter : public outputStream
+class VMIME_EXPORT outputStreamStringAdapter : public outputStream
 {
 public:
 

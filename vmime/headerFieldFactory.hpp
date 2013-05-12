@@ -36,7 +36,7 @@ namespace vmime
 /** Creates header field and header field value objects.
   */
 
-class headerFieldFactory
+class VMIME_EXPORT headerFieldFactory
 {
 protected:
 

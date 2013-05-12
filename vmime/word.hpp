@@ -38,7 +38,7 @@ namespace vmime
   * some text encoded into one specified charset.
   */
 
-class word : public headerFieldValue
+class VMIME_EXPORT word : public headerFieldValue
 {
 	friend class text;
 

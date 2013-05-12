@@ -47,7 +47,7 @@ class bodyPart;
 /** Body section of a MIME part.
   */
 
-class body : public component
+class VMIME_EXPORT body : public component
 {
 	friend class bodyPart;
 

@@ -50,7 +50,7 @@ class structure;
 /** A MIME part in a message.
   */
 
-class part : public object
+class VMIME_EXPORT part : public object
 {
 protected:
 
@@ -126,7 +126,7 @@ public:
 /** Structure of a MIME part/message.
   */
 
-class structure : public object
+class VMIME_EXPORT structure : public object
 {
 protected:
 
@@ -164,7 +164,7 @@ public:
 /** Abstract representation of a message in a store/transport service.
   */
 
-class message : public object
+class VMIME_EXPORT message : public object
 {
 protected:
 

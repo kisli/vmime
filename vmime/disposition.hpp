@@ -38,7 +38,7 @@ namespace vmime
 /** Disposition - from RFC-3798 (basic type).
   */
 
-class disposition : public headerFieldValue
+class VMIME_EXPORT disposition : public headerFieldValue
 {
 public:
 
