@@ -301,7 +301,7 @@ ref <vmime::utility::childProcessFactory> windowsHandler::getChildProcessFactory
 
 void windowsHandler::wait() const
 {
-	::Sleep(1000);
+	::Sleep(100);
 }
 
 
