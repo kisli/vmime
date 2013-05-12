@@ -46,6 +46,21 @@ namespace tls {
 
 
 // static
+BIO_METHOD TLSSocket_OpenSSL::sm_customBIOMethod =
+{
+	100 | BIO_TYPE_SOURCE_SINK,
+	"vmime::socket glue",
+	TLSSocket_OpenSSL::bio_write,
+	TLSSocket_OpenSSL::bio_read,
+	TLSSocket_OpenSSL::bio_puts,
+	TLSSocket_OpenSSL::bio_gets,
+	TLSSocket_OpenSSL::bio_ctrl,
+	TLSSocket_OpenSSL::bio_create,
+	TLSSocket_OpenSSL::bio_destroy
+};
+
+
+// static
 ref <TLSSocket> TLSSocket::wrap(ref <TLSSession> session, ref <socket> sok)
 {
 	return vmime::create <TLSSocket_OpenSSL>
@@ -82,20 +97,7 @@ void TLSSocket_OpenSSL::createSSLHandle()
 {
 	if (m_wrapped->isConnected())
 	{
-		static BIO_METHOD customBIOMethod;
-		::memset(&customBIOMethod, 0, sizeof(customBIOMethod));
-
-		customBIOMethod.type = 100 | BIO_TYPE_SOURCE_SINK;
-		customBIOMethod.name = "vmime::socket glue";
-		customBIOMethod.bwrite = bio_write;
-		customBIOMethod.bread = bio_read;
-		customBIOMethod.bputs = bio_puts;
-		customBIOMethod.bgets = bio_gets;
-		customBIOMethod.ctrl = bio_ctrl;
-		customBIOMethod.create = bio_create;
-		customBIOMethod.destroy = bio_destroy;
-
-		BIO* sockBio = BIO_new(&customBIOMethod);
+		BIO* sockBio = BIO_new(&sm_customBIOMethod);
 		sockBio->ptr = this;
 
 		m_ssl = SSL_new(m_session->getContext());

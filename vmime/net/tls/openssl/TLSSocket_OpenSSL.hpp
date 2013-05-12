@@ -85,6 +85,8 @@ public:
 
 private:
 
+	static BIO_METHOD sm_customBIOMethod;
+
 	static int bio_write(BIO* bio, const char* buf, int len);
 	static int bio_read(BIO* bio, char* buf, int len);
 	static int bio_puts(BIO* bio, const char* str);
