@@ -243,9 +243,6 @@ const char* getTestModuleNameFromSourceFile(const char *path_)
 
 int main(int argc, char* argv[])
 {
-	// VMime initialization
-	vmime::platform::setHandler<vmime::platforms::posix::posixHandler>();
-
 	// Parse arguments
 	bool xmlOutput = false;
 
