@@ -25,6 +25,7 @@
 #include "vmime/parserHelpers.hpp"
 
 #include <algorithm>
+#include <iterator>
 
 
 namespace vmime
