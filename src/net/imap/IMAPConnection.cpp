@@ -66,7 +66,7 @@ namespace imap {
 IMAPConnection::IMAPConnection(ref <IMAPStore> store, ref <security::authenticator> auth)
 	: m_store(store), m_auth(auth), m_socket(NULL), m_parser(NULL), m_tag(NULL),
 	  m_hierarchySeparator('\0'), m_state(STATE_NONE), m_timeoutHandler(NULL),
-	  m_secured(false)
+	  m_secured(false), m_firstTag(true)
 {
 }
 
@@ -628,6 +628,12 @@ void IMAPConnection::initHierarchySeparator()
 
 void IMAPConnection::send(bool tag, const string& what, bool end)
 {
+	if (tag && !m_firstTag)
+	{
+		++(*m_tag);
+		m_firstTag = false;
+	}
+
 #if VMIME_DEBUG
 	std::ostringstream oss;
 
@@ -657,9 +663,6 @@ void IMAPConnection::send(bool tag, const string& what, bool end)
 		m_socket->send("\r\n");
 	}
 #endif
-
-	if (tag)
-		++(*m_tag);
 }
 
 

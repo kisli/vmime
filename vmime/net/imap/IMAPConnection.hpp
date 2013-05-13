@@ -133,6 +133,8 @@ private:
 	bool m_secured;
 	ref <connectionInfos> m_cntInfos;
 
+	bool m_firstTag;
+
 
 	void internalDisconnect();
 
