@@ -24,6 +24,6 @@ script:
   - mkdir _build
   - cd _build
   - cmake .. -DCMAKE_INSTALL_PREFIX=../_install $OPTIONS
-  - cmake -L
+  - cmake .. -L
   - cmake --build . --target install
   - ctest
