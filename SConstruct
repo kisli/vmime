@@ -620,6 +620,8 @@ env.Append(CPPPATH = [ '.' ])
 
 env.Append(CPPDEFINES = ['_REENTRANT=1'])
 
+env.Append(CPPDEFINES = ['VMIME_STATIC'])
+
 env.Append(CXXFLAGS = ['-W'])
 env.Append(CXXFLAGS = ['-Wall'])
 env.Append(CXXFLAGS = ['-ansi'])
@@ -782,6 +784,20 @@ if IsProtocolSupported(messaging_protocols, 'sendmail'):
 print ""
 
 
+################################
+#  Generate export-static.hpp  #
+################################
+
+export_hpp = open('vmime/export-static.hpp', 'w')
+
+export_hpp.write("""
+#define VMIME_EXPORT
+#define VMIME_NO_EXPORT
+""")
+
+export_hpp.close()
+
+
 #########################
 #  Generate config.hpp  #
 #########################
@@ -795,6 +811,9 @@ config_hpp.write("""
 
 #ifndef VMIME_CONFIG_HPP_INCLUDED
 #define VMIME_CONFIG_HPP_INCLUDED
+
+
+#include "vmime/export.hpp"
 
 
 """)
