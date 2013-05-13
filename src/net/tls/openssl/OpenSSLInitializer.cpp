@@ -50,79 +50,69 @@ namespace tls {
 
 
 ref <vmime::utility::sync::criticalSection >* OpenSSLInitializer::sm_mutexes;
-int OpenSSLInitializer::sm_initCount(0);
 
 
-OpenSSLInitializer::OpenSSLInitializer()
+OpenSSLInitializer::autoInitializer::autoInitializer()
+{
+	// The construction of this unique 'oneTimeInitializer' object will be triggered
+	// by the 'autoInitializer' objects from the other translation units
+	static OpenSSLInitializer::oneTimeInitializer oneTimeInitializer;
+}
+
+
+OpenSSLInitializer::autoInitializer::~autoInitializer()
+{
+}
+
+
+OpenSSLInitializer::oneTimeInitializer::oneTimeInitializer()
 {
 	initialize();
 }
 
 
-OpenSSLInitializer::~OpenSSLInitializer()
+OpenSSLInitializer::oneTimeInitializer::~oneTimeInitializer()
 {
 	uninitialize();
 }
 
 
 // static
-ref <vmime::utility::sync::criticalSection> OpenSSLInitializer::getMutex()
-{
-	static ref <vmime::utility::sync::criticalSection> criticalSection
-		= vmime::platform::getHandler()->createCriticalSection();
-
-	return criticalSection;
-}
-
-
-// static
 void OpenSSLInitializer::initialize()
 {
-	ref <vmime::utility::sync::criticalSection> mutex = getMutex();
-	vmime::utility::sync::autoLock <vmime::utility::sync::criticalSection> lock(mutex);
-
-	if (++sm_initCount == 1)
-	{
 #if OPENSSL_VERSION_NUMBER >= 0x0907000L
-		OPENSSL_config(NULL);
+	OPENSSL_config(NULL);
 #endif
 
-		SSL_load_error_strings();
-		SSL_library_init();
-		OpenSSL_add_all_algorithms();
+	SSL_load_error_strings();
+	SSL_library_init();
+	OpenSSL_add_all_algorithms();
 
-		unsigned char seed[SEEDSIZE];
-		vmime::platform::getHandler()->generateRandomBytes(seed, SEEDSIZE);
-		RAND_seed(seed, SEEDSIZE);
+	unsigned char seed[SEEDSIZE];
+	vmime::platform::getHandler()->generateRandomBytes(seed, SEEDSIZE);
+	RAND_seed(seed, SEEDSIZE);
 
-		int numMutexes = CRYPTO_num_locks();
-		sm_mutexes = new ref <vmime::utility::sync::criticalSection>[numMutexes];
+	int numMutexes = CRYPTO_num_locks();
+	sm_mutexes = new ref <vmime::utility::sync::criticalSection>[numMutexes];
 
-		for (int i = 0 ; i < numMutexes ; ++i)
-			sm_mutexes[i] = vmime::platform::getHandler()->createCriticalSection();
+	for (int i = 0 ; i < numMutexes ; ++i)
+		sm_mutexes[i] = vmime::platform::getHandler()->createCriticalSection();
 
-		CRYPTO_set_locking_callback(&OpenSSLInitializer::lock);
-		CRYPTO_set_id_callback(&OpenSSLInitializer::id);
-	}
+	CRYPTO_set_locking_callback(&OpenSSLInitializer::lock);
+	CRYPTO_set_id_callback(&OpenSSLInitializer::id);
 }
 
 
 // static
 void OpenSSLInitializer::uninitialize()
 {
-	ref <vmime::utility::sync::criticalSection> mutex = getMutex();
-	vmime::utility::sync::autoLock <vmime::utility::sync::criticalSection> lock(mutex);
+	EVP_cleanup();
+	ERR_free_strings();
 
-	if (--sm_initCount == 0)
-	{
-		EVP_cleanup();
-		ERR_free_strings();
+	CRYPTO_set_locking_callback(NULL);
+	CRYPTO_set_id_callback(NULL);
 
-		CRYPTO_set_locking_callback(NULL);
-		CRYPTO_set_id_callback(NULL);
-
-		delete [] sm_mutexes;
-	}
+	delete [] sm_mutexes;
 }
 
 

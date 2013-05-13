@@ -59,6 +59,9 @@ namespace security {
 namespace cert {
 
 
+static net::tls::OpenSSLInitializer::autoInitializer openSSLInitializer;
+
+
 #ifndef VMIME_BUILDING_DOC
 
 class monthMap
@@ -107,9 +110,6 @@ struct OpenSSLX509CertificateInternalData
 {
 	OpenSSLX509CertificateInternalData()
 	{
-		// Thread-safe OpenSSL initialization
-		static net::tls::OpenSSLInitializer openSSLInitialization;
-
 		cert = 0;
 	}
 

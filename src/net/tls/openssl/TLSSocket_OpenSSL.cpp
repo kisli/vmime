@@ -32,6 +32,7 @@
 
 #include "vmime/net/tls/openssl/TLSSocket_OpenSSL.hpp"
 #include "vmime/net/tls/openssl/TLSSession_OpenSSL.hpp"
+#include "vmime/net/tls/openssl/OpenSSLInitializer.hpp"
 
 #include "vmime/platform.hpp"
 
@@ -43,6 +44,9 @@
 namespace vmime {
 namespace net {
 namespace tls {
+
+
+static OpenSSLInitializer::autoInitializer openSSLInitializer;
 
 
 // static

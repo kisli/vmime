@@ -48,18 +48,28 @@ namespace tls {
   */
 class OpenSSLInitializer
 {
-
 public:
 
 	/** Automatically initialize OpenSSL
 	  */
-	OpenSSLInitializer();
+	class autoInitializer
+	{
+	public:
 
-	/** Automatically uninitialize OpenSSL
-	  */
-	~OpenSSLInitializer();
+		autoInitializer();
+		~autoInitializer();
+	};
 
 protected:
+
+	class oneTimeInitializer
+	{
+	public:
+
+		oneTimeInitializer();
+		~oneTimeInitializer();
+	};
+
 
 	/** Initializes the OpenSSL lib
 	  */
@@ -85,7 +95,6 @@ protected:
 private:
 
 	static ref <vmime::utility::sync::criticalSection >* sm_mutexes;
-	static int sm_initCount;
 };
 
 
