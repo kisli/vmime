@@ -34,7 +34,6 @@ VMIME_TEST_SUITE_BEGIN(SMTPResponseTest)
 		VMIME_TEST(testMultiLineResponse)
 		VMIME_TEST(testMultiLineResponseDifferentCode)
 		VMIME_TEST(testIncompleteMultiLineResponse)
-		VMIME_TEST(testIntermediateResponse)
 		VMIME_TEST(testNoResponseText)
 	VMIME_TEST_LIST_END
 
@@ -149,28 +148,6 @@ VMIME_TEST_SUITE_BEGIN(SMTPResponseTest)
 		VASSERT_THROW("Incomplete response",
 			vmime::net::smtp::SMTPResponse::readResponse(socket, toh, responseState),
 			vmime::exceptions::operation_timed_out);
-	}
-
-	void testIntermediateResponse()
-	{
-		vmime::ref <testSocket> socket = vmime::create <testSocket>();
-		vmime::ref <vmime::net::timeoutHandler> toh =
-			vmime::create <testTimeoutHandler>(1);
-
-		socket->localSend
-		(
-			"334\r\n"
-			"More information\r\n"
-		);
-
-		vmime::net::smtp::SMTPResponse::state responseState;
-
-		vmime::ref <vmime::net::smtp::SMTPResponse> resp =
-			vmime::net::smtp::SMTPResponse::readResponse(socket, toh, responseState);
-
-		VASSERT_EQ("Code", 334, resp->getCode());
-		VASSERT_EQ("Lines", 1, resp->getLineCount());
-		VASSERT_EQ("Text", "More information", resp->getText());
 	}
 
 	void testNoResponseText()
