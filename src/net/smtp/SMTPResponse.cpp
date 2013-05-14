@@ -168,11 +168,6 @@ const SMTPResponse::responseLine SMTPResponse::getNextResponse()
 	const int code = extractResponseCode(line);
 	string text;
 
-	// Special case where CRLF occurs after response code
-	// in "Positive Intermediate replies" (3yz reply)
-	if (line.length() < 4 && (code / 100) == 3)
-		line = line + '\n' + readResponseLine();
-
 	m_responseContinues = (line.length() >= 4 && line[3] == '-');
 
 	if (line.length() > 4)
