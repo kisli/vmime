@@ -54,7 +54,8 @@ int main()
 
 		std::cout << "  * " << enc->getName() << std::endl;
 
-		vmime::ref <vmime::utility::encoder::encoder> e = enc->create();
+		vmime::ref <vmime::utility::encoder::encoder> e =
+			vmime::utility::encoder::encoderFactory::getInstance()->create(enc->getName());
 
 		std::vector <vmime::string> props = e->getAvailableProperties();
 
