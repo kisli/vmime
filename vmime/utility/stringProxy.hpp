@@ -85,8 +85,8 @@ private:
 };
 
 
-std::ostream& VMIME_EXPORT operator<<(std::ostream& os, const stringProxy& s);
-outputStream& VMIME_EXPORT operator<<(outputStream& os, const stringProxy& s);
+VMIME_EXPORT std::ostream& operator<<(std::ostream& os, const stringProxy& s);
+VMIME_EXPORT outputStream& operator<<(outputStream& os, const stringProxy& s);
 
 
 } // utility
