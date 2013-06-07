@@ -30,6 +30,10 @@ doc/html/*
 /COPYING.txt
 /build/
 
+# Outsourced build test
+/_build/
+/_install/
+
 # CTest-generated files
 /CTestTestfile.cmake
 /Testing/
