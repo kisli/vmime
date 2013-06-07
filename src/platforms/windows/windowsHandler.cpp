@@ -36,8 +36,8 @@
 #include <time.h>
 #include <locale.h>
 #include <process.h>
-#include <windows.h>  // for winnls.h
 #include <winsock2.h> // for WSAStartup()
+#include <windows.h>  // for winnls.h
 #include <ws2tcpip.h>
 #include <wincrypt.h>
 
