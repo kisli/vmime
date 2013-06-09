@@ -78,6 +78,13 @@ public:
 	  */
 	bool isEmpty() const;
 
+	/** Returns the email address as a string, by joining components.
+	  * (ie. the local name, followed by a @ then the domain name.)
+	  *
+	  * @return email address as a string
+	  */
+	const string toString() const;
+
 	// Comparison
 	bool operator==(const class emailAddress& eml) const;
 	bool operator!=(const class emailAddress& eml) const;

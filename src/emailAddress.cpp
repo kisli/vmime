@@ -26,6 +26,7 @@
 #include "vmime/platform.hpp"
 
 #include "vmime/parserHelpers.hpp"
+#include "vmime/utility/outputStreamAdapter.hpp"
 #include "vmime/utility/outputStreamStringAdapter.hpp"
 #include "vmime/utility/stringUtils.hpp"
 
@@ -507,6 +508,20 @@ const std::vector <ref <component> > emailAddress::getChildComponents()
 bool emailAddress::isEmpty() const
 {
 	return m_localName.isEmpty();
+}
+
+
+const string emailAddress::toString() const
+{
+	std::ostringstream oss;
+	utility::outputStreamAdapter adapter(oss);
+
+	generationContext ctx(generationContext::getDefaultContext());
+	ctx.setMaxLineLength(lineLengthLimits::infinite);
+
+	generateImpl(ctx, adapter, 0, NULL);
+
+	return oss.str();
 }
 
 
