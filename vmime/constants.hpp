@@ -217,10 +217,10 @@ namespace vmime
 	{
 		/** User implicitely displayed or deleted the message (filter or
 		  * any other automatic action). */
-		extern const string::value_type* const MANUAL VMIME_EXPORT;
+		extern const string::value_type* const AUTOMATIC VMIME_EXPORT;
 
 		/** User explicitely displayed or deleted the message (manual action). */
-		extern const string::value_type* const AUTOMATIC VMIME_EXPORT;
+		extern const string::value_type* const MANUAL VMIME_EXPORT;
 	}
 
 	/** Constants for disposition sending modes (RFC-3798). */
@@ -228,10 +228,10 @@ namespace vmime
 	{
 		/** The MDN was sent because the MUA had previously been configured
 		  * to do so automatically. */
-		extern const string::value_type* const SENT_MANUALLY VMIME_EXPORT;
+		extern const string::value_type* const SENT_AUTOMATICALLY VMIME_EXPORT;
 
 		/** User explicitly gave permission for this particular MDN to be sent. */
-		extern const string::value_type* const SENT_AUTOMATICALLY VMIME_EXPORT;
+		extern const string::value_type* const SENT_MANUALLY VMIME_EXPORT;
 	}
 
 	/** Constants for disposition types (RFC-3798). */
