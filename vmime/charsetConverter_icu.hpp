@@ -76,6 +76,45 @@ private:
 };
 
 
+namespace utility {
+
+
+class charsetFilteredOutputStream_icu : public charsetFilteredOutputStream
+{
+public:
+
+	/** Construct a new filter for the specified output stream.
+	  *
+	  * @param source input charset
+	  * @param dest output charset
+	  * @param os stream into which write filtered data
+	  */
+	charsetFilteredOutputStream_icu
+		(const charset& source, const charset& dest, outputStream* os);
+
+	~charsetFilteredOutputStream_icu();
+
+
+	outputStream& getNextOutputStream();
+
+	void write(const value_type* const data, const size_type count);
+	void flush();
+
+private:
+
+	UConverter* m_from;
+	UConverter* m_to;
+
+	const charset m_sourceCharset;
+	const charset m_destCharset;
+
+	outputStream& m_stream;
+};
+
+
+} // utility
+
+
 } // vmime
 
 

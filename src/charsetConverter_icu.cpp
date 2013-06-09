@@ -69,19 +69,25 @@ charsetConverter_icu::charsetConverter_icu
 	m_from = ucnv_open(source.getName().c_str(), &err);
 
 	if (err != U_ZERO_ERROR)
-		throw exceptions::charset_conv_error("Cannot initialize ICU [from] converter.");
+	{
+		throw exceptions::charset_conv_error
+			("Cannot initialize ICU converter for source charset '" + source.getName() + "'.");
+	}
 
 	m_to = ucnv_open(dest.getName().c_str(), &err);
 
 	if (err != U_ZERO_ERROR)
-		throw exceptions::charset_conv_error("Cannot initialize ICU [to] converter.");
+	{
+		throw exceptions::charset_conv_error
+			("Cannot initialize ICU converter for destination charset '" + dest.getName() + "'.");
+	}
 }
 
 
 charsetConverter_icu::~charsetConverter_icu()
 {
-	ucnv_close(m_from);
-	ucnv_close(m_to);
+	if (m_from) ucnv_close(m_from);
+	if (m_to) ucnv_close(m_to);
 }
 
 
@@ -191,9 +197,209 @@ void charsetConverter_icu::convert(const string& in, string& out)
 
 ref <utility::charsetFilteredOutputStream> charsetConverter_icu::getFilteredOutputStream(utility::outputStream& os)
 {
-	// TODO: implement charsetFilteredOutputStream for ICU
-	return NULL;
+	return vmime::create <utility::charsetFilteredOutputStream_icu>(m_source, m_dest, &os);
 }
+
+
+
+// charsetFilteredOutputStream_icu
+
+namespace utility {
+
+
+charsetFilteredOutputStream_icu::charsetFilteredOutputStream_icu
+	(const charset& source, const charset& dest, outputStream* os)
+	: m_from(NULL), m_to(NULL), m_sourceCharset(source), m_destCharset(dest), m_stream(*os)
+{
+	UErrorCode err = U_ZERO_ERROR;
+	m_from = ucnv_open(source.getName().c_str(), &err);
+
+	if (err != U_ZERO_ERROR)
+	{
+		throw exceptions::charset_conv_error
+			("Cannot initialize ICU converter for source charset '" + source.getName() + "'.");
+	}
+
+	m_to = ucnv_open(dest.getName().c_str(), &err);
+
+	if (err != U_ZERO_ERROR)
+	{
+		throw exceptions::charset_conv_error
+			("Cannot initialize ICU converter for destination charset '" + dest.getName() + "'.");
+	}
+
+	// Set replacement chars for when converting from Unicode to codepage
+	icu::UnicodeString substString(vmime::charsetConverterOptions().invalidSequence.c_str());
+	ucnv_setSubstString(m_to, substString.getTerminatedBuffer(), -1, &err);
+
+	if (U_FAILURE(err))
+		throw exceptions::charset_conv_error("[ICU] Error setting replacement char.");
+}
+
+
+charsetFilteredOutputStream_icu::~charsetFilteredOutputStream_icu()
+{
+	if (m_from) ucnv_close(m_from);
+	if (m_to) ucnv_close(m_to);
+}
+
+
+outputStream& charsetFilteredOutputStream_icu::getNextOutputStream()
+{
+	return m_stream;
+}
+
+
+void charsetFilteredOutputStream_icu::write
+	(const value_type* const data, const size_type count)
+{
+	if (m_from == NULL || m_to == NULL)
+		throw exceptions::charset_conv_error("Cannot initialize converters.");
+
+	// Allocate buffer for Unicode chars
+	size_t uniSize = ucnv_getMinCharSize(m_from) * count * sizeof(UChar);
+	UChar* uniBuffer = new UChar[uniSize];
+	vmime::utility::auto_ptr <UChar> uniCleanup(uniBuffer);  // auto delete Unicode buffer
+
+	// Conversion loop
+	UErrorCode toErr = U_ZERO_ERROR;
+
+	const char* uniSource = data;
+	const char* uniSourceLimit = data + count;
+
+	do
+	{
+		// Convert from source charset to Unicode
+		UChar* uniTarget = uniBuffer;
+		UChar* uniTargetLimit = uniBuffer + uniSize;
+
+		toErr = U_ZERO_ERROR;
+
+		ucnv_toUnicode(m_from, &uniTarget, uniTargetLimit,
+		               &uniSource, uniSourceLimit, NULL, /* flush */ FALSE, &toErr);
+
+		if (U_FAILURE(toErr) && toErr != U_BUFFER_OVERFLOW_ERROR)
+		{
+			throw exceptions::charset_conv_error
+				("[ICU] Error converting to Unicode from '" + m_sourceCharset.getName() + "'.");
+		}
+
+		const size_t uniLength = uniTarget - uniBuffer;
+
+		// Allocate buffer for destination charset
+		size_t cpSize = ucnv_getMinCharSize(m_to) * uniLength;
+		char* cpBuffer = new char[cpSize];
+		vmime::utility::auto_ptr <char> cpCleanup(cpBuffer);  // auto delete CP buffer
+
+		// Convert from Unicode to destination charset
+		UErrorCode fromErr = U_ZERO_ERROR;
+
+		const UChar* cpSource = uniBuffer;
+		const UChar* cpSourceLimit = uniBuffer + uniLength;
+
+		do
+		{
+			char* cpTarget = cpBuffer;
+			char* cpTargetLimit = cpBuffer + cpSize;
+
+			fromErr = U_ZERO_ERROR;
+
+			ucnv_fromUnicode(m_to, &cpTarget, cpTargetLimit,
+							 &cpSource, cpSourceLimit, NULL, /* flush */ FALSE, &fromErr);
+
+			if (fromErr != U_BUFFER_OVERFLOW_ERROR && U_FAILURE(fromErr))
+			{
+				throw exceptions::charset_conv_error
+					("[ICU] Error converting from Unicode to '" + m_destCharset.getName() + "'.");
+			}
+
+			const size_t cpLength = cpTarget - cpBuffer;
+
+			// Write successfully converted bytes
+			m_stream.write(cpBuffer, cpLength);
+
+		} while (fromErr == U_BUFFER_OVERFLOW_ERROR);
+
+	} while (toErr == U_BUFFER_OVERFLOW_ERROR);
+}
+
+
+void charsetFilteredOutputStream_icu::flush()
+{
+	if (m_from == NULL || m_to == NULL)
+		throw exceptions::charset_conv_error("Cannot initialize converters.");
+
+	// Allocate buffer for Unicode chars
+	size_t uniSize = ucnv_getMinCharSize(m_from) * 1024 * sizeof(UChar);
+	UChar* uniBuffer = new UChar[uniSize];
+	vmime::utility::auto_ptr <UChar> uniCleanup(uniBuffer);  // auto delete Unicode buffer
+
+	// Conversion loop (with flushing)
+	UErrorCode toErr = U_ZERO_ERROR;
+
+	const char* uniSource = 0;
+	const char* uniSourceLimit = 0;
+
+	do
+	{
+		// Convert from source charset to Unicode
+		UChar* uniTarget = uniBuffer;
+		UChar* uniTargetLimit = uniBuffer + uniSize;
+
+		toErr = U_ZERO_ERROR;
+
+		ucnv_toUnicode(m_from, &uniTarget, uniTargetLimit,
+		               &uniSource, uniSourceLimit, NULL, /* flush */ TRUE, &toErr);
+
+		if (U_FAILURE(toErr) && toErr != U_BUFFER_OVERFLOW_ERROR)
+		{
+			throw exceptions::charset_conv_error
+				("[ICU] Error converting to Unicode from '" + m_sourceCharset.getName() + "'.");
+		}
+
+		const size_t uniLength = uniTarget - uniBuffer;
+
+		// Allocate buffer for destination charset
+		size_t cpSize = ucnv_getMinCharSize(m_to) * uniLength;
+		char* cpBuffer = new char[cpSize];
+		vmime::utility::auto_ptr <char> cpCleanup(cpBuffer);  // auto delete CP buffer
+
+		// Convert from Unicode to destination charset
+		UErrorCode fromErr = U_ZERO_ERROR;
+
+		const UChar* cpSource = uniBuffer;
+		const UChar* cpSourceLimit = uniBuffer + uniLength;
+
+		do
+		{
+			char* cpTarget = cpBuffer;
+			char* cpTargetLimit = cpBuffer + cpSize;
+
+			fromErr = U_ZERO_ERROR;
+
+			ucnv_fromUnicode(m_to, &cpTarget, cpTargetLimit,
+							 &cpSource, cpSourceLimit, NULL, /* flush */ TRUE, &fromErr);
+
+			if (fromErr != U_BUFFER_OVERFLOW_ERROR && U_FAILURE(fromErr))
+			{
+				throw exceptions::charset_conv_error
+					("[ICU] Error converting from Unicode to '" + m_destCharset.getName() + "'.");
+			}
+
+			const size_t cpLength = cpTarget - cpBuffer;
+
+			// Write successfully converted bytes
+			m_stream.write(cpBuffer, cpLength);
+
+		} while (fromErr == U_BUFFER_OVERFLOW_ERROR);
+
+	} while (toErr == U_BUFFER_OVERFLOW_ERROR);
+
+	m_stream.flush();
+}
+
+
+} // utility
 
 
 } // vmime
