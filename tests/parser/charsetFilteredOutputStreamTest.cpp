@@ -52,7 +52,7 @@ VMIME_TEST_SUITE_BEGIN(charsetFilteredOutputStreamTest)
 		VASSERT_NOT_NULL("filteredOutputStream availability", cfos);
 
 		// føo = 66 c3 b8 6f [UTF8]
-		// føo = 66 c3 b8 6f [latin1]
+		// føo = 66 f8 6f [latin1]
 
 		cfos->write("\x66\xc3", 2);
 
