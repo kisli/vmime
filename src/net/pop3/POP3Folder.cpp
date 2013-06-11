@@ -31,6 +31,7 @@
 
 #include "vmime/net/pop3/POP3Store.hpp"
 #include "vmime/net/pop3/POP3Message.hpp"
+#include "vmime/net/pop3/POP3Command.hpp"
 #include "vmime/net/pop3/POP3Response.hpp"
 
 #include "vmime/net/pop3/POP3Utils.hpp"
@@ -130,7 +131,7 @@ void POP3Folder::open(const int mode, bool failIfModeIsNotAvailable)
 	}
 	else if (m_path.getSize() == 1 && m_path[0].getBuffer() == "INBOX")
 	{
-		store->sendRequest("STAT");
+		store->sendRequest(POP3Command::STAT());
 
 		ref <POP3Response> response =
 			POP3Response::readResponse(store->m_socket, store->m_timeoutHandler);
@@ -165,7 +166,7 @@ void POP3Folder::close(const bool expunge)
 
 	if (!expunge)
 	{
-		store->sendRequest("RSET");
+		store->sendRequest(POP3Command::RSET());
 		POP3Response::readResponse(store->m_socket, store->m_timeoutHandler);
 	}
 
@@ -362,10 +363,7 @@ void POP3Folder::fetchMessages(std::vector <ref <message> >& msg, const int opti
 	if (options & FETCH_SIZE)
 	{
 		// Send the "LIST" command
-		std::ostringstream command;
-		command << "LIST";
-
-		store->sendRequest(command.str());
+		store->sendRequest(POP3Command::LIST());
 
 		// Get the response
 		ref <POP3Response> response =
@@ -405,10 +403,7 @@ void POP3Folder::fetchMessages(std::vector <ref <message> >& msg, const int opti
 	if (options & FETCH_UID)
 	{
 		// Send the "UIDL" command
-		std::ostringstream command;
-		command << "UIDL";
-
-		store->sendRequest(command.str());
+		store->sendRequest(POP3Command::UIDL());
 
 		// Get the response
 		ref <POP3Response> response =
@@ -457,12 +452,7 @@ void POP3Folder::fetchMessage(ref <message> msg, const int options)
 	if (options & FETCH_SIZE)
 	{
 		// Send the "LIST" command
-		std::ostringstream command;
-		command.imbue(std::locale::classic());
-
-		command << "LIST " << msg->getNumber();
-
-		store->sendRequest(command.str());
+		store->sendRequest(POP3Command::LIST(msg->getNumber()));
 
 		// Get the response
 		ref <POP3Response> response =
@@ -495,12 +485,7 @@ void POP3Folder::fetchMessage(ref <message> msg, const int options)
 	if (options & FETCH_UID)
 	{
 		// Send the "UIDL" command
-		std::ostringstream command;
-		command.imbue(std::locale::classic());
-
-		command << "UIDL " << msg->getNumber();
-
-		store->sendRequest(command.str());
+		store->sendRequest(POP3Command::UIDL(msg->getNumber()));
 
 		// Get the response
 		ref <POP3Response> response =
@@ -584,12 +569,7 @@ void POP3Folder::deleteMessage(const int num)
 	else if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
 
-	std::ostringstream command;
-	command.imbue(std::locale::classic());
-
-	command << "DELE " << num;
-
-	store->sendRequest(command.str());
+	store->sendRequest(POP3Command::DELE(num));
 
 	ref <POP3Response> response =
 		POP3Response::readResponse(store->m_socket, store->m_timeoutHandler);
@@ -635,12 +615,7 @@ void POP3Folder::deleteMessages(const int from, const int to)
 
 	for (int i = from ; i <= to2 ; ++i)
 	{
-		std::ostringstream command;
-		command.imbue(std::locale::classic());
-
-		command << "DELE " << i;
-
-		store->sendRequest(command.str());
+		store->sendRequest(POP3Command::DELE(i));
 
 		ref <POP3Response> response =
 			POP3Response::readResponse(store->m_socket, store->m_timeoutHandler);
@@ -688,12 +663,7 @@ void POP3Folder::deleteMessages(const std::vector <int>& nums)
 	for (std::vector <int>::const_iterator
 	     it = nums.begin() ; it != nums.end() ; ++it)
 	{
-		std::ostringstream command;
-		command.imbue(std::locale::classic());
-
-		command << "DELE " << (*it);
-
-		store->sendRequest(command.str());
+		store->sendRequest(POP3Command::DELE(*it));
 
 		ref <POP3Response> response =
 			POP3Response::readResponse(store->m_socket, store->m_timeoutHandler);
@@ -790,7 +760,7 @@ void POP3Folder::status(int& count, int& unseen)
 	else if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
 
-	store->sendRequest("STAT");
+	store->sendRequest(POP3Command::STAT());
 
 	ref <POP3Response> response =
 		POP3Response::readResponse(store->m_socket, store->m_timeoutHandler);

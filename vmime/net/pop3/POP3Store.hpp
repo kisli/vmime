@@ -48,6 +48,8 @@ namespace pop3 {
 
 
 class POP3Folder;
+class POP3Command;
+class POP3Response;
 
 
 /** POP3 store service.
@@ -98,7 +100,8 @@ private:
 
 	const std::vector <string> getCapabilities();
 
-	void sendRequest(const string& buffer, const bool end = true);
+	void sendRequest(ref <POP3Command> cmd);
+	ref <POP3Response> readResponse();
 
 	void internalDisconnect();
 

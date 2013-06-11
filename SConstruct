@@ -238,6 +238,7 @@ libvmime_messaging_proto_sources = [
 	[
 		'pop3',
 		[
+			'net/pop3/POP3Command.cpp',      'net/pop3/POP3Command.hpp',
 			'net/pop3/POP3ServiceInfos.cpp', 'net/pop3/POP3ServiceInfos.hpp',
 			'net/pop3/POP3Store.cpp',        'net/pop3/POP3Store.hpp',
 			'net/pop3/POP3SStore.cpp',       'net/pop3/POP3SStore.hpp',
@@ -394,6 +395,7 @@ libvmimetest_sources = [
 	'tests/security/digest/md5Test.cpp',
 	'tests/security/digest/sha1Test.cpp',
 	# ===============================  Net  ================================
+	'tests/net/pop3/POP3CommandTest.cpp',
 	'tests/net/pop3/POP3ResponseTest.cpp',
 	'tests/net/pop3/POP3UtilsTest.cpp',
 	'tests/net/imap/IMAPTagTest.cpp',

@@ -29,6 +29,7 @@
 
 #include "vmime/net/pop3/POP3Store.hpp"
 #include "vmime/net/pop3/POP3Folder.hpp"
+#include "vmime/net/pop3/POP3Command.hpp"
 #include "vmime/net/pop3/POP3Response.hpp"
 
 #include "vmime/exception.hpp"
@@ -172,7 +173,7 @@ void POP3Store::connect()
 	// eg:  C: <connection to server>
 	// ---  S: +OK MailSite POP3 Server 5.3.4.0 Ready <36938848.1056800841.634@somewhere.com>
 
-	ref <POP3Response> response = POP3Response::readResponse(m_socket, m_timeoutHandler);
+	ref <POP3Response> response = readResponse();
 
 	if (!response->isSuccess())
 	{
@@ -276,8 +277,8 @@ void POP3Store::authenticate(const messageId& randomMID)
 			md5->update(randomMID.generate() + password);
 			md5->finalize();
 
-			sendRequest("APOP " + username + " " + md5->getHexDigest());
-			response = POP3Response::readResponse(m_socket, m_timeoutHandler);
+			sendRequest(POP3Command::APOP(username, md5->getHexDigest()));
+			response = readResponse();
 
 			if (response->isSuccess())
 			{
@@ -305,8 +306,8 @@ void POP3Store::authenticate(const messageId& randomMID)
 				// Ensure connection is valid (cf. note above)
 				try
 				{
-					sendRequest("NOOP");
-					POP3Response::readResponse(m_socket, m_timeoutHandler);
+					sendRequest(POP3Command::NOOP());
+					readResponse();
 				}
 				catch (exceptions::socket_exception&)
 				{
@@ -334,8 +335,8 @@ void POP3Store::authenticate(const messageId& randomMID)
 	//
 	//      C: PASS couic
 	//      S: +OK vincent's maildrop has 2 messages (320 octets)
-	sendRequest("USER " + username);
-	response = POP3Response::readResponse(m_socket, m_timeoutHandler);
+	sendRequest(POP3Command::USER(username));
+	response = readResponse();
 
 	if (!response->isSuccess())
 	{
@@ -343,8 +344,8 @@ void POP3Store::authenticate(const messageId& randomMID)
 		throw exceptions::authentication_error(response->getFirstLine());
 	}
 
-	sendRequest("PASS " + password);
-	response = POP3Response::readResponse(m_socket, m_timeoutHandler);
+	sendRequest(POP3Command::PASS(password));
+	response = readResponse();
 
 	if (!response->isSuccess())
 	{
@@ -445,11 +446,11 @@ void POP3Store::authenticateSASL()
 
 		saslSession->init();
 
-		sendRequest("AUTH " + mech->getName());
+		sendRequest(POP3Command::AUTH(mech->getName()));
 
 		for (bool cont = true ; cont ; )
 		{
-			ref <POP3Response> response = POP3Response::readResponse(m_socket, m_timeoutHandler);
+			ref <POP3Response> response = readResponse();
 
 			switch (response->getCode())
 			{
@@ -476,7 +477,7 @@ void POP3Store::authenticateSASL()
 						(challenge, challengeLen, &resp, &respLen);
 
 					// Send response
-					sendRequest(saslContext->encodeB64(resp, respLen));
+					m_socket->send(saslContext->encodeB64(resp, respLen) + "\r\n");
 				}
 				catch (exceptions::sasl_exception& e)
 				{
@@ -493,7 +494,7 @@ void POP3Store::authenticateSASL()
 					}
 
 					// Cancel SASL exchange
-					sendRequest("*");
+					m_socket->sendRaw("*\r\n", 3);
 				}
 				catch (...)
 				{
@@ -535,9 +536,9 @@ void POP3Store::startTLS()
 {
 	try
 	{
-		sendRequest("STLS");
+		sendRequest(POP3Command::STLS());
 
-		ref <POP3Response> response = POP3Response::readResponse(m_socket, m_timeoutHandler);
+		ref <POP3Response> response = readResponse();
 
 		if (!response->isSuccess())
 			throw exceptions::command_error("STLS", response->getFirstLine());
@@ -611,7 +612,8 @@ void POP3Store::internalDisconnect()
 
 	try
 	{
-		sendRequest("QUIT");
+		sendRequest(POP3Command::QUIT());
+		readResponse();
 	}
 	catch (exception&)
 	{
@@ -632,10 +634,10 @@ void POP3Store::internalDisconnect()
 
 void POP3Store::noop()
 {
-	sendRequest("NOOP");
+	sendRequest(POP3Command::NOOP());
 
 	ref <POP3Response> response =
-		POP3Response::readResponse(m_socket, m_timeoutHandler);
+		readResponse();
 
 	if (!response->isSuccess())
 		throw exceptions::command_error("NOOP", response->getFirstLine());
@@ -644,7 +646,7 @@ void POP3Store::noop()
 
 const std::vector <string> POP3Store::getCapabilities()
 {
-	sendRequest("CAPA");
+	sendRequest(POP3Command::CAPA());
 
 	ref <POP3Response> response =
 		POP3Response::readMultilineResponse(m_socket, m_timeoutHandler);
@@ -661,12 +663,18 @@ const std::vector <string> POP3Store::getCapabilities()
 }
 
 
-void POP3Store::sendRequest(const string& buffer, const bool end)
+void POP3Store::sendRequest(ref <POP3Command> cmd)
 {
-	if (end)
-		m_socket->send(buffer + "\r\n");
-	else
-		m_socket->send(buffer);
+	cmd->writeToSocket(m_socket);
+}
+
+
+ref <POP3Response> POP3Store::readResponse()
+{
+	ref <POP3Response> resp =
+		readResponse();
+
+	return resp;
 }
 
 

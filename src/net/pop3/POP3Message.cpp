@@ -28,6 +28,7 @@
 
 
 #include "vmime/net/pop3/POP3Message.hpp"
+#include "vmime/net/pop3/POP3Command.hpp"
 #include "vmime/net/pop3/POP3Response.hpp"
 #include "vmime/net/pop3/POP3Folder.hpp"
 #include "vmime/net/pop3/POP3Store.hpp"
@@ -139,12 +140,9 @@ void POP3Message::extract(utility::outputStream& os,
 		throw exceptions::partial_fetch_not_supported();
 
 	// Emit the "RETR" command
-	std::ostringstream oss;
-	oss << "RETR " << m_num;
-
 	ref <POP3Store> store = folder.constCast <POP3Folder>()->m_store.acquire();
 
-	store->sendRequest(oss.str());
+	store->sendRequest(POP3Command::RETR(m_num));
 
 	try
 	{
@@ -198,12 +196,9 @@ void POP3Message::fetch(ref <POP3Folder> msgFolder, const int options)
 	// retrieve the whole header and not fields in particular.
 
 	// Emit the "TOP" command
-	std::ostringstream oss;
-	oss << "TOP " << m_num << " 0";
-
 	ref <POP3Store> store = folder->m_store.acquire();
 
-	store->sendRequest(oss.str());
+	store->sendRequest(POP3Command::TOP(m_num, 0));
 
 	try
 	{
