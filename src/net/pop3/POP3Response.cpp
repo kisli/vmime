@@ -28,6 +28,7 @@
 
 
 #include "vmime/net/pop3/POP3Response.hpp"
+#include "vmime/net/pop3/POP3Connection.hpp"
 
 #include "vmime/platform.hpp"
 
@@ -52,10 +53,10 @@ POP3Response::POP3Response(ref <socket> sok, ref <timeoutHandler> toh)
 
 
 // static
-ref <POP3Response> POP3Response::readResponse
-	(ref <socket> sok, ref <timeoutHandler> toh)
+ref <POP3Response> POP3Response::readResponse(ref <POP3Connection> conn)
 {
-	ref <POP3Response> resp = vmime::create <POP3Response>(sok, toh);
+	ref <POP3Response> resp = vmime::create <POP3Response>
+		(conn->getSocket(), conn->getTimeoutHandler());
 
 	string buffer;
 	resp->readResponseImpl(buffer, /* multiLine */ false);
@@ -69,10 +70,10 @@ ref <POP3Response> POP3Response::readResponse
 
 
 // static
-ref <POP3Response> POP3Response::readMultilineResponse
-	(ref <socket> sok, ref <timeoutHandler> toh)
+ref <POP3Response> POP3Response::readMultilineResponse(ref <POP3Connection> conn)
 {
-	ref <POP3Response> resp = vmime::create <POP3Response>(sok, toh);
+	ref <POP3Response> resp = vmime::create <POP3Response>
+		(conn->getSocket(), conn->getTimeoutHandler());
 
 	string buffer;
 	resp->readResponseImpl(buffer, /* multiLine */ true);
@@ -96,10 +97,11 @@ ref <POP3Response> POP3Response::readMultilineResponse
 
 // static
 ref <POP3Response> POP3Response::readLargeResponse
-	(ref <socket> sok, ref <timeoutHandler> toh,
-	 utility::outputStream& os, utility::progressListener* progress, const long predictedSize)
+	(ref <POP3Connection> conn, utility::outputStream& os,
+	 utility::progressListener* progress, const long predictedSize)
 {
-	ref <POP3Response> resp = vmime::create <POP3Response>(sok, toh);
+	ref <POP3Response> resp = vmime::create <POP3Response>
+		(conn->getSocket(), conn->getTimeoutHandler());
 
 	string firstLine;
 	resp->readResponseImpl(firstLine, os, progress, predictedSize);

@@ -31,13 +31,10 @@
 #if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_POP3
 
 
-#include "vmime/messageId.hpp"
-
 #include "vmime/net/store.hpp"
-#include "vmime/net/socket.hpp"
-#include "vmime/net/timeoutHandler.hpp"
 
 #include "vmime/net/pop3/POP3ServiceInfos.hpp"
+#include "vmime/net/pop3/POP3Connection.hpp"
 
 #include "vmime/utility/stream.hpp"
 
@@ -86,24 +83,13 @@ public:
 
 	bool isSecuredConnection() const;
 	ref <connectionInfos> getConnectionInfos() const;
+	ref <POP3Connection> getConnection();
+
+	bool isPOP3S() const;
 
 private:
 
-	void authenticate(const messageId& randomMID);
-#if VMIME_HAVE_SASL_SUPPORT
-	void authenticateSASL();
-#endif // VMIME_HAVE_SASL_SUPPORT
-
-#if VMIME_HAVE_TLS_SUPPORT
-	void startTLS();
-#endif // VMIME_HAVE_TLS_SUPPORT
-
-	const std::vector <string> getCapabilities();
-
-	void sendRequest(ref <POP3Command> cmd);
-	ref <POP3Response> readResponse();
-
-	void internalDisconnect();
+	ref <POP3Connection> m_connection;
 
 
 	void registerFolder(POP3Folder* folder);
@@ -112,15 +98,7 @@ private:
 	std::list <POP3Folder*> m_folders;
 
 
-	ref <socket> m_socket;
-	bool m_authentified;
-
-	ref <timeoutHandler> m_timeoutHandler;
-
 	const bool m_isPOP3S;
-
-	bool m_secured;
-	ref <connectionInfos> m_cntInfos;
 
 
 	// Service infos

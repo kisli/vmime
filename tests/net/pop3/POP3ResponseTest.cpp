@@ -23,6 +23,8 @@
 
 #include "tests/testUtils.hpp"
 
+#include "tests/net/pop3/POP3TestUtils.hpp"
+
 #include "vmime/net/pop3/POP3Response.hpp"
 
 
@@ -48,10 +50,13 @@ VMIME_TEST_SUITE_BEGIN(POP3ResponseTest)
 		vmime::ref <testSocket> socket = vmime::create <testSocket>();
 		vmime::ref <vmime::net::timeoutHandler> toh = vmime::create <testTimeoutHandler>();
 
+		vmime::ref <POP3ConnectionTest> conn = vmime::create <POP3ConnectionTest>
+			(socket.dynamicCast <vmime::net::socket>(), toh);
+
 		socket->localSend("+OK Response Text\r\n");
 
 		vmime::ref <POP3Response> resp =
-			POP3Response::readResponse(socket, toh);
+			POP3Response::readResponse(conn);
 
 		VASSERT_EQ("Code", POP3Response::CODE_OK, resp->getCode());
 		VASSERT_TRUE("Success", resp->isSuccess());
@@ -65,10 +70,13 @@ VMIME_TEST_SUITE_BEGIN(POP3ResponseTest)
 		vmime::ref <testSocket> socket = vmime::create <testSocket>();
 		vmime::ref <vmime::net::timeoutHandler> toh = vmime::create <testTimeoutHandler>();
 
+		vmime::ref <POP3ConnectionTest> conn = vmime::create <POP3ConnectionTest>
+			(socket.dynamicCast <vmime::net::socket>(), toh);
+
 		socket->localSend("-ERR Response Text\r\n");
 
 		vmime::ref <POP3Response> resp =
-			POP3Response::readResponse(socket, toh);
+			POP3Response::readResponse(conn);
 
 		VASSERT_EQ("Code", POP3Response::CODE_ERR, resp->getCode());
 		VASSERT_FALSE("Success", resp->isSuccess());
@@ -82,10 +90,13 @@ VMIME_TEST_SUITE_BEGIN(POP3ResponseTest)
 		vmime::ref <testSocket> socket = vmime::create <testSocket>();
 		vmime::ref <vmime::net::timeoutHandler> toh = vmime::create <testTimeoutHandler>();
 
+		vmime::ref <POP3ConnectionTest> conn = vmime::create <POP3ConnectionTest>
+			(socket.dynamicCast <vmime::net::socket>(), toh);
+
 		socket->localSend("+ challenge_string\r\n");
 
 		vmime::ref <POP3Response> resp =
-			POP3Response::readResponse(socket, toh);
+			POP3Response::readResponse(conn);
 
 		VASSERT_EQ("Code", POP3Response::CODE_READY, resp->getCode());
 		VASSERT_FALSE("Success", resp->isSuccess());
@@ -99,10 +110,13 @@ VMIME_TEST_SUITE_BEGIN(POP3ResponseTest)
 		vmime::ref <testSocket> socket = vmime::create <testSocket>();
 		vmime::ref <vmime::net::timeoutHandler> toh = vmime::create <testTimeoutHandler>();
 
+		vmime::ref <POP3ConnectionTest> conn = vmime::create <POP3ConnectionTest>
+			(socket.dynamicCast <vmime::net::socket>(), toh);
+
 		socket->localSend("Invalid Response Text\r\n");
 
 		vmime::ref <POP3Response> resp =
-			POP3Response::readResponse(socket, toh);
+			POP3Response::readResponse(conn);
 
 		VASSERT_EQ("Code", POP3Response::CODE_ERR, resp->getCode());
 		VASSERT_FALSE("Success", resp->isSuccess());
@@ -116,10 +130,13 @@ VMIME_TEST_SUITE_BEGIN(POP3ResponseTest)
 		vmime::ref <testSocket> socket = vmime::create <testSocket>();
 		vmime::ref <vmime::net::timeoutHandler> toh = vmime::create <testTimeoutHandler>();
 
+		vmime::ref <POP3ConnectionTest> conn = vmime::create <POP3ConnectionTest>
+			(socket.dynamicCast <vmime::net::socket>(), toh);
+
 		socket->localSend("+OK Response terminated by LF\n");
 
 		vmime::ref <POP3Response> resp =
-			POP3Response::readResponse(socket, toh);
+			POP3Response::readResponse(conn);
 
 		VASSERT_EQ("Code", POP3Response::CODE_OK, resp->getCode());
 		VASSERT_TRUE("Success", resp->isSuccess());
@@ -133,13 +150,16 @@ VMIME_TEST_SUITE_BEGIN(POP3ResponseTest)
 		vmime::ref <testSocket> socket = vmime::create <testSocket>();
 		vmime::ref <vmime::net::timeoutHandler> toh = vmime::create <testTimeoutHandler>();
 
+		vmime::ref <POP3ConnectionTest> conn = vmime::create <POP3ConnectionTest>
+			(socket.dynamicCast <vmime::net::socket>(), toh);
+
 		socket->localSend("+OK Response Text\r\n");
 		socket->localSend("Line 1\r\n");
 		socket->localSend("Line 2\r\n");
 		socket->localSend(".\r\n");
 
 		vmime::ref <POP3Response> resp =
-			POP3Response::readMultilineResponse(socket, toh);
+			POP3Response::readMultilineResponse(conn);
 
 		VASSERT_EQ("Code", POP3Response::CODE_OK, resp->getCode());
 		VASSERT_TRUE("Success", resp->isSuccess());
@@ -155,13 +175,16 @@ VMIME_TEST_SUITE_BEGIN(POP3ResponseTest)
 		vmime::ref <testSocket> socket = vmime::create <testSocket>();
 		vmime::ref <vmime::net::timeoutHandler> toh = vmime::create <testTimeoutHandler>();
 
+		vmime::ref <POP3ConnectionTest> conn = vmime::create <POP3ConnectionTest>
+			(socket.dynamicCast <vmime::net::socket>(), toh);
+
 		socket->localSend("+OK Response Text\n");
 		socket->localSend("Line 1\n");
 		socket->localSend("Line 2\n");
 		socket->localSend(".\n");
 
 		vmime::ref <POP3Response> resp =
-			POP3Response::readMultilineResponse(socket, toh);
+			POP3Response::readMultilineResponse(conn);
 
 		VASSERT_EQ("Code", POP3Response::CODE_OK, resp->getCode());
 		VASSERT_TRUE("Success", resp->isSuccess());
@@ -182,6 +205,9 @@ VMIME_TEST_SUITE_BEGIN(POP3ResponseTest)
 		vmime::ref <testSocket> socket = vmime::create <testSocket>();
 		vmime::ref <vmime::net::timeoutHandler> toh = vmime::create <testTimeoutHandler>();
 
+		vmime::ref <POP3ConnectionTest> conn = vmime::create <POP3ConnectionTest>
+			(socket.dynamicCast <vmime::net::socket>(), toh);
+
 		socket->localSend("+OK Large Response Follows\n");
 		socket->localSend(data.str());
 		socket->localSend("\r\n.\r\n");
@@ -190,7 +216,7 @@ VMIME_TEST_SUITE_BEGIN(POP3ResponseTest)
 		vmime::utility::outputStreamStringAdapter receivedDataStream(receivedData);
 
 		vmime::ref <POP3Response> resp =
-			POP3Response::readLargeResponse(socket, toh, receivedDataStream, NULL, 0);
+			POP3Response::readLargeResponse(conn, receivedDataStream, NULL, 0);
 
 		VASSERT_EQ("Code", POP3Response::CODE_OK, resp->getCode());
 		VASSERT_TRUE("Success", resp->isSuccess());

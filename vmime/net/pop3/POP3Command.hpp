@@ -42,13 +42,10 @@ class mailbox;
 
 
 namespace net {
-
-
-class socket;
-class timeoutHandler;
-
-
 namespace pop3 {
+
+
+class POP3Connection;
 
 
 /** A POP3 command that will be sent to the server.
@@ -84,11 +81,11 @@ public:
 	  */
 	static ref <POP3Command> createCommand(const string& text);
 
-	/** Sends this command to the specified socket.
+	/** Sends this command over the specified connection.
 	  *
-	  * @param sok socket to which the command will be written
+	  * @param conn connection onto which the command will be sent
 	  */
-	virtual void writeToSocket(ref <socket> sok);
+	virtual void send(ref <POP3Connection> conn);
 
 	/** Returns the full text of the command, including command name
 	  * and parameters (if any).

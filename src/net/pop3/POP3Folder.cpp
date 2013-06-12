@@ -131,10 +131,9 @@ void POP3Folder::open(const int mode, bool failIfModeIsNotAvailable)
 	}
 	else if (m_path.getSize() == 1 && m_path[0].getBuffer() == "INBOX")
 	{
-		store->sendRequest(POP3Command::STAT());
+		POP3Command::STAT()->send(store->getConnection());
 
-		ref <POP3Response> response =
-			POP3Response::readResponse(store->m_socket, store->m_timeoutHandler);
+		ref <POP3Response> response = POP3Response::readResponse(store->getConnection());
 
 		if (!response->isSuccess())
 			throw exceptions::command_error("STAT", response->getFirstLine());
@@ -166,8 +165,8 @@ void POP3Folder::close(const bool expunge)
 
 	if (!expunge)
 	{
-		store->sendRequest(POP3Command::RSET());
-		POP3Response::readResponse(store->m_socket, store->m_timeoutHandler);
+		POP3Command::RSET()->send(store->getConnection());
+		POP3Response::readResponse(store->getConnection());
 	}
 
 	m_open = false;
@@ -363,11 +362,11 @@ void POP3Folder::fetchMessages(std::vector <ref <message> >& msg, const int opti
 	if (options & FETCH_SIZE)
 	{
 		// Send the "LIST" command
-		store->sendRequest(POP3Command::LIST());
+		POP3Command::LIST()->send(store->getConnection());
 
 		// Get the response
 		ref <POP3Response> response =
-			POP3Response::readMultilineResponse(store->m_socket, store->m_timeoutHandler);
+			POP3Response::readMultilineResponse(store->getConnection());
 
 		if (response->isSuccess())
 		{
@@ -403,11 +402,11 @@ void POP3Folder::fetchMessages(std::vector <ref <message> >& msg, const int opti
 	if (options & FETCH_UID)
 	{
 		// Send the "UIDL" command
-		store->sendRequest(POP3Command::UIDL());
+		POP3Command::UIDL()->send(store->getConnection());
 
 		// Get the response
 		ref <POP3Response> response =
-			POP3Response::readMultilineResponse(store->m_socket, store->m_timeoutHandler);
+			POP3Response::readMultilineResponse(store->getConnection());
 
 		if (response->isSuccess())
 		{
@@ -452,11 +451,11 @@ void POP3Folder::fetchMessage(ref <message> msg, const int options)
 	if (options & FETCH_SIZE)
 	{
 		// Send the "LIST" command
-		store->sendRequest(POP3Command::LIST(msg->getNumber()));
+		POP3Command::LIST(msg->getNumber())->send(store->getConnection());
 
 		// Get the response
 		ref <POP3Response> response =
-			POP3Response::readResponse(store->m_socket, store->m_timeoutHandler);
+			POP3Response::readResponse(store->getConnection());
 
 		if (response->isSuccess())
 		{
@@ -485,11 +484,11 @@ void POP3Folder::fetchMessage(ref <message> msg, const int options)
 	if (options & FETCH_UID)
 	{
 		// Send the "UIDL" command
-		store->sendRequest(POP3Command::UIDL(msg->getNumber()));
+		POP3Command::UIDL(msg->getNumber())->send(store->getConnection());
 
 		// Get the response
 		ref <POP3Response> response =
-			POP3Response::readResponse(store->m_socket, store->m_timeoutHandler);
+			POP3Response::readResponse(store->getConnection());
 
 		if (response->isSuccess())
 		{
@@ -569,10 +568,10 @@ void POP3Folder::deleteMessage(const int num)
 	else if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
 
-	store->sendRequest(POP3Command::DELE(num));
+	POP3Command::DELE(num)->send(store->getConnection());
 
 	ref <POP3Response> response =
-		POP3Response::readResponse(store->m_socket, store->m_timeoutHandler);
+		POP3Response::readResponse(store->getConnection());
 
 	if (!response->isSuccess())
 		throw exceptions::command_error("DELE", response->getFirstLine());
@@ -615,10 +614,10 @@ void POP3Folder::deleteMessages(const int from, const int to)
 
 	for (int i = from ; i <= to2 ; ++i)
 	{
-		store->sendRequest(POP3Command::DELE(i));
+		POP3Command::DELE(i)->send(store->getConnection());
 
 		ref <POP3Response> response =
-			POP3Response::readResponse(store->m_socket, store->m_timeoutHandler);
+			POP3Response::readResponse(store->getConnection());
 
 		if (!response->isSuccess())
 			throw exceptions::command_error("DELE", response->getFirstLine());
@@ -663,10 +662,10 @@ void POP3Folder::deleteMessages(const std::vector <int>& nums)
 	for (std::vector <int>::const_iterator
 	     it = nums.begin() ; it != nums.end() ; ++it)
 	{
-		store->sendRequest(POP3Command::DELE(*it));
+		POP3Command::DELE(*it)->send(store->getConnection());
 
 		ref <POP3Response> response =
-			POP3Response::readResponse(store->m_socket, store->m_timeoutHandler);
+			POP3Response::readResponse(store->getConnection());
 
 		if (!response->isSuccess())
 			throw exceptions::command_error("DELE", response->getFirstLine());
@@ -760,10 +759,10 @@ void POP3Folder::status(int& count, int& unseen)
 	else if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
 
-	store->sendRequest(POP3Command::STAT());
+	POP3Command::STAT()->send(store->getConnection());
 
 	ref <POP3Response> response =
-		POP3Response::readResponse(store->m_socket, store->m_timeoutHandler);
+		POP3Response::readResponse(store->getConnection());
 
 	if (!response->isSuccess())
 		throw exceptions::command_error("STAT", response->getFirstLine());

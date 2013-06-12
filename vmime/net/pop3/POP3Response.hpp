@@ -50,6 +50,9 @@ class timeoutHandler;
 namespace pop3 {
 
 
+class POP3Connection;
+
+
 /** A POP3 response, as sent by the server.
   */
 class VMIME_EXPORT POP3Response : public object
@@ -68,34 +71,29 @@ public:
 
 
 	/** Receive and parse a POP3 response from the
-	  * specified socket.
+	  * specified connection.
 	  *
-	  * @param sok socket from which to read
-	  * @param toh time-out handler (can be NULL)
+	  * @param conn connection from which to read
 	  * @return POP3 response
 	  * @throws exceptions::operation_timed_out if no data
 	  * has been received within the granted time
 	  */
-	static ref <POP3Response> readResponse
-		(ref <socket> sok, ref <timeoutHandler> toh);
+	static ref <POP3Response> readResponse(ref <POP3Connection> conn);
 
 	/** Receive and parse a multiline POP3 response from
-	  * the specified socket.
+	  * the specified connection.
 	  *
-	  * @param sok socket from which to read
-	  * @param toh time-out handler (can be NULL)
+	  * @param conn connection from which to read
 	  * @return POP3 response
 	  * @throws exceptions::operation_timed_out if no data
 	  * has been received within the granted time
 	  */
-	static ref <POP3Response> readMultilineResponse
-		(ref <socket> sok, ref <timeoutHandler> toh);
+	static ref <POP3Response> readMultilineResponse(ref <POP3Connection> conn);
 
 	/** Receive and parse a large POP3 response (eg. message data)
-	  * from the specified socket.
+	  * from the specified connection.
 	  *
-	  * @param sok socket from which to read
-	  * @param toh time-out handler (can be NULL)
+	  * @param conn connection from which to read
 	  * @param os output stream to which response data will be written
 	  * @param progress progress listener (can be NULL)
 	  * @param predictedSize estimated size of response data (in bytes)
@@ -104,8 +102,7 @@ public:
 	  * has been received within the granted time
 	  */
 	static ref <POP3Response> readLargeResponse
-		(ref <socket> sok, ref <timeoutHandler> toh,
-		 utility::outputStream& os,
+		(ref <POP3Connection> conn, utility::outputStream& os,
 		 utility::progressListener* progress, const long predictedSize);
 
 

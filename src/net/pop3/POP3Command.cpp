@@ -28,6 +28,7 @@
 
 
 #include "vmime/net/pop3/POP3Command.hpp"
+#include "vmime/net/pop3/POP3Connection.hpp"
 
 #include "vmime/net/socket.hpp"
 
@@ -214,9 +215,9 @@ const string POP3Command::getText() const
 }
 
 
-void POP3Command::writeToSocket(ref <socket> sok)
+void POP3Command::send(ref <POP3Connection> conn)
 {
-	sok->send(m_text + "\r\n");
+	conn->getSocket()->send(m_text + "\r\n");
 }
 
 

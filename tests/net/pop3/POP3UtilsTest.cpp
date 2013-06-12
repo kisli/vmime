@@ -23,6 +23,8 @@
 
 #include "tests/testUtils.hpp"
 
+#include "tests/net/pop3/POP3TestUtils.hpp"
+
 #include "vmime/net/pop3/POP3Utils.hpp"
 #include "vmime/net/pop3/POP3Response.hpp"
 
@@ -42,6 +44,9 @@ VMIME_TEST_SUITE_BEGIN(POP3UtilsTest)
 		vmime::ref <testSocket> socket = vmime::create <testSocket>();
 		vmime::ref <vmime::net::timeoutHandler> toh = vmime::create <testTimeoutHandler>();
 
+		vmime::ref <POP3ConnectionTest> conn = vmime::create <POP3ConnectionTest>
+			(socket.dynamicCast <vmime::net::socket>(), toh);
+
 		socket->localSend("+OK Response Text\r\n");
 		socket->localSend("1 abcdef\r\n");
 		socket->localSend("23    ghijkl\r\n");
@@ -51,7 +56,7 @@ VMIME_TEST_SUITE_BEGIN(POP3UtilsTest)
 		socket->localSend(".\r\n");
 
 		vmime::ref <POP3Response> resp =
-			POP3Response::readMultilineResponse(socket, toh);
+			POP3Response::readMultilineResponse(conn);
 
 		std::map <int, vmime::string> result;
 		POP3Utils::parseMultiListOrUidlResponse(resp, result);

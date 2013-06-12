@@ -23,6 +23,8 @@
 
 #include "tests/testUtils.hpp"
 
+#include "tests/net/pop3/POP3TestUtils.hpp"
+
 #include "vmime/net/pop3/POP3Command.hpp"
 
 
@@ -212,7 +214,10 @@ VMIME_TEST_SUITE_BEGIN(POP3CommandTest)
 		vmime::ref <POP3Command> cmd = POP3Command::createCommand("MY_COMMAND param1 param2");
 
 		vmime::ref <testSocket> sok = vmime::create <testSocket>();
-		cmd->writeToSocket(sok);
+		vmime::ref <POP3ConnectionTest> conn = vmime::create <POP3ConnectionTest>
+			(sok.dynamicCast <vmime::net::socket>(), vmime::null);
+
+		cmd->send(conn);
 
 		vmime::string response;
 		sok->localReceive(response);

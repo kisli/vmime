@@ -142,12 +142,12 @@ void POP3Message::extract(utility::outputStream& os,
 	// Emit the "RETR" command
 	ref <POP3Store> store = folder.constCast <POP3Folder>()->m_store.acquire();
 
-	store->sendRequest(POP3Command::RETR(m_num));
+	POP3Command::RETR(m_num)->send(store->getConnection());
 
 	try
 	{
 		POP3Response::readLargeResponse
-			(store->m_socket, store->m_timeoutHandler, os, progress, m_size);
+			(store->getConnection(), os, progress, m_size);
 	}
 	catch (exceptions::command_error& e)
 	{
@@ -198,14 +198,14 @@ void POP3Message::fetch(ref <POP3Folder> msgFolder, const int options)
 	// Emit the "TOP" command
 	ref <POP3Store> store = folder->m_store.acquire();
 
-	store->sendRequest(POP3Command::TOP(m_num, 0));
+	POP3Command::TOP(m_num, 0)->send(store->getConnection());
 
 	try
 	{
 		string buffer;
 		utility::outputStreamStringAdapter bufferStream(buffer);
 
-		POP3Response::readLargeResponse(store->m_socket, store->m_timeoutHandler,
+		POP3Response::readLargeResponse(store->getConnection(),
 			bufferStream, /* progress */ NULL, /* predictedSize */ 0);
 
 		m_header = vmime::create <header>();
