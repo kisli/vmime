@@ -150,7 +150,7 @@ void component::parseImpl
 {
 	// This is the default implementation for parsing from an input stream:
 	// actually, we extract the substring and use the "parse from string" implementation
-	const std::string buffer = parser->extract(position, end);
+	const string buffer = parser->extract(position, end);
 	parseImpl(ctx, buffer, 0, buffer.length(), newPosition);
 
 	// Recursivey offset parsed bounds on children

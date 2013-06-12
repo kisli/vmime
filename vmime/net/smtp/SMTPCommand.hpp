@@ -59,9 +59,9 @@ class VMIME_EXPORT SMTPCommand : public object
 
 public:
 
-	static ref <SMTPCommand> HELO(const std::string& hostname);
-	static ref <SMTPCommand> EHLO(const std::string& hostname);
-	static ref <SMTPCommand> AUTH(const std::string& mechName);
+	static ref <SMTPCommand> HELO(const string& hostname);
+	static ref <SMTPCommand> EHLO(const string& hostname);
+	static ref <SMTPCommand> AUTH(const string& mechName);
 	static ref <SMTPCommand> STARTTLS();
 	static ref <SMTPCommand> MAIL(const mailbox& mbox);
 	static ref <SMTPCommand> RCPT(const mailbox& mbox);
@@ -75,7 +75,7 @@ public:
 	  * @param text command text
 	  * @return a new SMTPCommand object
 	  */
-	static ref <SMTPCommand> createCommand(const std::string& text);
+	static ref <SMTPCommand> createCommand(const string& text);
 
 	/** Sends this command to the specified socket.
 	  *
@@ -92,12 +92,12 @@ public:
 
 protected:
 
-	SMTPCommand(const std::string& text);
+	SMTPCommand(const string& text);
 	SMTPCommand(const SMTPCommand&);
 
 private:
 
-	std::string m_text;
+	string m_text;
 };
 
 

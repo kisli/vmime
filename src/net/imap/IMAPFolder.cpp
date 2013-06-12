@@ -1323,7 +1323,7 @@ void IMAPFolder::addMessage(ref <vmime::message> msg, const int flags,
 
 	msg->generate(ossAdapter);
 
-	const std::string& str = oss.str();
+	const string& str = oss.str();
 	utility::inputStreamStringAdapter strAdapter(str);
 
 	addMessage(strAdapter, str.length(), flags, date, progress);

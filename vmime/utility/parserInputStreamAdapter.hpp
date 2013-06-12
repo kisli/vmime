@@ -157,7 +157,7 @@ public:
 		return pos - initialPos;
 	}
 
-	size_type findNext(const std::string& token, const size_type startPosition = 0);
+	size_type findNext(const string& token, const size_type startPosition = 0);
 
 private:
 

@@ -70,7 +70,7 @@ private:
 	};
 
 
-	typedef std::map <std::string, ref <digestAlgorithmFactory> > MapType;
+	typedef std::map <string, ref <digestAlgorithmFactory> > MapType;
 	MapType m_algos;
 
 public:

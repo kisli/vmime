@@ -306,7 +306,7 @@ void LFToCRLFFilteredOutputStream::write
 	if (count == 0)
 		return;
 
-	std::string buffer;
+	string buffer;
 	buffer.reserve(count);
 
 	const value_type* pos = data;

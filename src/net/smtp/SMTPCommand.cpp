@@ -40,14 +40,14 @@ namespace net {
 namespace smtp {
 
 
-SMTPCommand::SMTPCommand(const std::string& text)
+SMTPCommand::SMTPCommand(const string& text)
 	: m_text(text)
 {
 }
 
 
 // static
-ref <SMTPCommand> SMTPCommand::EHLO(const std::string& hostname)
+ref <SMTPCommand> SMTPCommand::EHLO(const string& hostname)
 {
 	std::ostringstream cmd;
 	cmd.imbue(std::locale::classic());
@@ -58,7 +58,7 @@ ref <SMTPCommand> SMTPCommand::EHLO(const std::string& hostname)
 
 
 // static
-ref <SMTPCommand> SMTPCommand::HELO(const std::string& hostname)
+ref <SMTPCommand> SMTPCommand::HELO(const string& hostname)
 {
 	std::ostringstream cmd;
 	cmd.imbue(std::locale::classic());
@@ -69,7 +69,7 @@ ref <SMTPCommand> SMTPCommand::HELO(const std::string& hostname)
 
 
 // static
-ref <SMTPCommand> SMTPCommand::AUTH(const std::string& mechName)
+ref <SMTPCommand> SMTPCommand::AUTH(const string& mechName)
 {
 	std::ostringstream cmd;
 	cmd.imbue(std::locale::classic());
@@ -147,7 +147,7 @@ ref <SMTPCommand> SMTPCommand::QUIT()
 
 
 // static
-ref <SMTPCommand> SMTPCommand::createCommand(const std::string& text)
+ref <SMTPCommand> SMTPCommand::createCommand(const string& text)
 {
 	return vmime::create <SMTPCommand>(text);
 }

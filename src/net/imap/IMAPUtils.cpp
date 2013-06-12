@@ -634,7 +634,7 @@ const string IMAPUtils::dateTime(const vmime::datetime& date)
 
 // static
 const string IMAPUtils::buildFetchRequestImpl
-	(const std::string& mode, const std::string& set, const int options)
+	(const string& mode, const string& set, const int options)
 {
 	// Example:
 	//   C: A654 FETCH 2:4 (FLAGS BODY[HEADER.FIELDS (DATE FROM)])

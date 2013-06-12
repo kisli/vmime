@@ -143,7 +143,7 @@ public:
 private:
 
 	static const string buildFetchRequestImpl
-		(const std::string& mode, const std::string& set, const int options);
+		(const string& mode, const string& set, const int options);
 };
 
 

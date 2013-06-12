@@ -341,7 +341,7 @@ private:
 
 	private:
 
-		const std::string m_name;
+		const string m_name;
 	};
 
 	ref <property> find(const string& name) const;

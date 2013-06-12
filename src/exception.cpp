@@ -292,7 +292,7 @@ const char* no_object_found::name() const throw() { return "no_object_found"; }
 
 no_such_property::~no_such_property() throw() {}
 no_such_property::no_such_property(const string& name, const exception& other)
-	: exception(std::string("No such property: '") + name + string("'."), other) { }
+	: exception(string("No such property: '") + name + string("'."), other) { }
 
 exception* no_such_property::clone() const { return new no_such_property(*this); }
 const char* no_such_property::name() const throw() { return "no_such_property"; }

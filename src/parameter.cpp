@@ -290,7 +290,7 @@ void parameter::generateImpl
 	// value is to be generated.
 
 	// A stream for a temporary storage
-	std::string sevenBitBuffer;
+	string sevenBitBuffer;
 	utility::outputStreamStringAdapter sevenBitStream(sevenBitBuffer);
 
 	string::size_type pos = curLinePos;

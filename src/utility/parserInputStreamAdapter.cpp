@@ -88,7 +88,7 @@ const string parserInputStreamAdapter::extract(const size_type begin, const size
 
 
 stream::size_type parserInputStreamAdapter::findNext
-	(const std::string& token, const size_type startPosition)
+	(const string& token, const size_type startPosition)
 {
 	static const unsigned int BUFFER_SIZE = 4096;
 

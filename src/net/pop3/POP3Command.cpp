@@ -203,7 +203,7 @@ ref <POP3Command> POP3Command::QUIT()
 
 
 // static
-ref <POP3Command> POP3Command::createCommand(const std::string& text)
+ref <POP3Command> POP3Command::createCommand(const string& text)
 {
 	return vmime::create <POP3Command>(text);
 }
