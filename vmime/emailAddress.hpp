@@ -85,6 +85,13 @@ public:
 	  */
 	const string toString() const;
 
+	/** Returns the email address as multibyte text, by joining components.
+	  * (ie. the local name, followed by a @ then the domain name.)
+	  *
+	  * @return email address as multibyte text
+	  */
+	const text toText() const;
+
 	// Comparison
 	bool operator==(const class emailAddress& eml) const;
 	bool operator!=(const class emailAddress& eml) const;

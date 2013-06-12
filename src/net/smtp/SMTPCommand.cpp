@@ -87,30 +87,47 @@ ref <SMTPCommand> SMTPCommand::STARTTLS()
 
 
 // static
-ref <SMTPCommand> SMTPCommand::MAIL(const mailbox& mbox)
+ref <SMTPCommand> SMTPCommand::MAIL(const mailbox& mbox, const bool utf8)
 {
 	std::ostringstream cmd;
 	cmd.imbue(std::locale::classic());
 	cmd << "MAIL FROM:<";
 
-	vmime::utility::outputStreamAdapter cmd2(cmd);
-	mbox.getEmail().generate(cmd2);
+	if (utf8)
+	{
+		cmd << mbox.getEmail().toText().getConvertedText(vmime::charsets::UTF_8);
+	}
+	else
+	{
+		vmime::utility::outputStreamAdapter cmd2(cmd);
+		mbox.getEmail().generate(cmd2);
+	}
 
 	cmd << ">";
+
+	if (utf8)
+		cmd << " SMTPUTF8";
 
 	return createCommand(cmd.str());
 }
 
 
 // static
-ref <SMTPCommand> SMTPCommand::RCPT(const mailbox& mbox)
+ref <SMTPCommand> SMTPCommand::RCPT(const mailbox& mbox, const bool utf8)
 {
 	std::ostringstream cmd;
 	cmd.imbue(std::locale::classic());
 	cmd << "RCPT TO:<";
 
-	vmime::utility::outputStreamAdapter cmd2(cmd);
-	mbox.getEmail().generate(cmd2);
+	if (utf8)
+	{
+		cmd << mbox.getEmail().toText().getConvertedText(vmime::charsets::UTF_8);
+	}
+	else
+	{
+		vmime::utility::outputStreamAdapter cmd2(cmd);
+		mbox.getEmail().generate(cmd2);
+	}
 
 	cmd << ">";
 

@@ -587,10 +587,13 @@ void SMTPTransport::send
 		commands->addCommand(SMTPCommand::RSET());
 
 	// Emit the "MAIL" command
+	const bool hasSMTPUTF8 =
+		m_extensions.find("SMTPUTF8") != m_extensions.end();
+
 	if (!sender.isEmpty())
-		commands->addCommand(SMTPCommand::MAIL(sender));
+		commands->addCommand(SMTPCommand::MAIL(sender, hasSMTPUTF8));
 	else
-		commands->addCommand(SMTPCommand::MAIL(expeditor));
+		commands->addCommand(SMTPCommand::MAIL(expeditor, hasSMTPUTF8));
 
 	// Now, we will need to reset next time
 	m_needReset = true;
@@ -599,7 +602,7 @@ void SMTPTransport::send
 	for (size_t i = 0 ; i < recipients.getMailboxCount() ; ++i)
 	{
 		const mailbox& mbox = *recipients.getMailboxAt(i);
-		commands->addCommand(SMTPCommand::RCPT(mbox));
+		commands->addCommand(SMTPCommand::RCPT(mbox, hasSMTPUTF8));
 	}
 
 	// Prepare sending of message data

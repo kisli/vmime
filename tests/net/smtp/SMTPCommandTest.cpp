@@ -39,7 +39,11 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 		VMIME_TEST(testAUTH)
 		VMIME_TEST(testSTARTTLS)
 		VMIME_TEST(testMAIL)
+		VMIME_TEST(testMAIL_Encoded)
+		VMIME_TEST(testMAIL_UTF8)
 		VMIME_TEST(testRCPT)
+		VMIME_TEST(testRCPT_Encoded)
+		VMIME_TEST(testRCPT_UTF8)
 		VMIME_TEST(testRSET)
 		VMIME_TEST(testDATA)
 		VMIME_TEST(testNOOP)
@@ -98,18 +102,54 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 	void testMAIL()
 	{
-		vmime::ref <SMTPCommand> cmd = SMTPCommand::MAIL(vmime::mailbox("me@vmime.org"));
+		vmime::ref <SMTPCommand> cmd = SMTPCommand::MAIL(vmime::mailbox("me@vmime.org"), false);
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "MAIL FROM:<me@vmime.org>", cmd->getText());
 	}
 
+	void testMAIL_Encoded()
+	{
+		vmime::ref <SMTPCommand> cmd = SMTPCommand::MAIL
+			(vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), false);
+
+		VASSERT_NOT_NULL("Not null", cmd);
+		VASSERT_EQ("Text", "MAIL FROM:<mailtest@xn--r8jz45g.xn--zckzah>", cmd->getText());
+	}
+
+	void testMAIL_UTF8()
+	{
+		vmime::ref <SMTPCommand> cmd = SMTPCommand::MAIL
+			(vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), true);
+
+		VASSERT_NOT_NULL("Not null", cmd);
+		VASSERT_EQ("Text", "MAIL FROM:<mailtest@例え.テスト> SMTPUTF8", cmd->getText());
+	}
+
 	void testRCPT()
 	{
-		vmime::ref <SMTPCommand> cmd = SMTPCommand::RCPT(vmime::mailbox("someone@vmime.org"));
+		vmime::ref <SMTPCommand> cmd = SMTPCommand::RCPT(vmime::mailbox("someone@vmime.org"), false);
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "RCPT TO:<someone@vmime.org>", cmd->getText());
+	}
+
+	void testRCPT_Encoded()
+	{
+		vmime::ref <SMTPCommand> cmd = SMTPCommand::RCPT
+			(vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), false);
+
+		VASSERT_NOT_NULL("Not null", cmd);
+		VASSERT_EQ("Text", "RCPT TO:<mailtest@xn--r8jz45g.xn--zckzah>", cmd->getText());
+	}
+
+	void testRCPT_UTF8()
+	{
+		vmime::ref <SMTPCommand> cmd = SMTPCommand::RCPT
+			(vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), true);
+
+		VASSERT_NOT_NULL("Not null", cmd);
+		VASSERT_EQ("Text", "RCPT TO:<mailtest@例え.テスト>", cmd->getText());
 	}
 
 	void testRSET()

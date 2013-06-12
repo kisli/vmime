@@ -525,4 +525,15 @@ const string emailAddress::toString() const
 }
 
 
+const text emailAddress::toText() const
+{
+	text txt;
+	txt.appendWord(vmime::create <vmime::word>(m_localName));
+	txt.appendWord(vmime::create <vmime::word>("@", vmime::charsets::US_ASCII));
+	txt.appendWord(vmime::create <vmime::word>(m_domainName));
+
+	return txt;
+}
+
+
 } // vmime

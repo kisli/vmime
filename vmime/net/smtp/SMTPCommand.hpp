@@ -63,8 +63,8 @@ public:
 	static ref <SMTPCommand> EHLO(const string& hostname);
 	static ref <SMTPCommand> AUTH(const string& mechName);
 	static ref <SMTPCommand> STARTTLS();
-	static ref <SMTPCommand> MAIL(const mailbox& mbox);
-	static ref <SMTPCommand> RCPT(const mailbox& mbox);
+	static ref <SMTPCommand> MAIL(const mailbox& mbox, const bool utf8);
+	static ref <SMTPCommand> RCPT(const mailbox& mbox, const bool utf8);
 	static ref <SMTPCommand> RSET();
 	static ref <SMTPCommand> DATA();
 	static ref <SMTPCommand> NOOP();
