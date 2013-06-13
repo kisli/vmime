@@ -30,10 +30,12 @@ VMIME_TEST_SUITE_BEGIN(bodyPartTest)
 		VMIME_TEST(testParse)
 		VMIME_TEST(testGenerate)
 		VMIME_TEST(testParseGuessBoundary)
+		VMIME_TEST(testParseGuessBoundaryWithTransportPadding)
 		VMIME_TEST(testParseMissingLastBoundary)
 		VMIME_TEST(testPrologEpilog)
 		VMIME_TEST(testPrologEncoding)
 		VMIME_TEST(testSuccessiveBoundaries)
+		VMIME_TEST(testTransportPaddingInBoundary)
 		VMIME_TEST(testGenerate7bit)
 		VMIME_TEST(testTextUsageForQPEncoding)
 		VMIME_TEST(testParseVeryBigMessage)
@@ -200,6 +202,24 @@ VMIME_TEST_SUITE_BEGIN(bodyPartTest)
 		VASSERT_EQ("part2-body", "", extractContents(p.getBody()->getPartAt(1)->getBody()->getContents()));
 	}
 
+	void testTransportPaddingInBoundary()
+	{
+		vmime::string str =
+			"Content-Type: multipart/mixed; boundary=\"MY-BOUNDARY\""
+			"\r\n\r\n"
+			"--  \t MY-BOUNDARY\r\nHEADER1\r\n\r\nBODY1\r\n"
+			"--MY-BOUNDARY\r\n"
+			"-- MY-BOUNDARY--\r\n";
+
+		vmime::bodyPart p;
+		p.parse(str);
+
+		VASSERT_EQ("count", 2, p.getBody()->getPartCount());
+
+		VASSERT_EQ("part1-body", "BODY1", extractContents(p.getBody()->getPartAt(0)->getBody()->getContents()));
+		VASSERT_EQ("part2-body", "", extractContents(p.getBody()->getPartAt(1)->getBody()->getContents()));
+	}
+
 	/** Ensure '7bit' encoding is used when body is 7-bit only. */
 	void testGenerate7bit()
 	{
@@ -244,6 +264,28 @@ VMIME_TEST_SUITE_BEGIN(bodyPartTest)
 			"Content-Type: multipart/mixed"
 			"\r\n\r\n"
 			"--UNKNOWN-BOUNDARY\r\nHEADER1\r\n\r\nBODY1\r\n"
+			"--UNKNOWN-BOUNDARY\r\nHEADER2\r\n\r\nBODY2\r\n"
+			"--UNKNOWN-BOUNDARY--";
+
+		vmime::bodyPart p;
+		p.parse(str);
+
+		VASSERT_EQ("count", 2, p.getBody()->getPartCount());
+
+		VASSERT_EQ("part1-body", "BODY1", extractContents(p.getBody()->getPartAt(0)->getBody()->getContents()));
+		VASSERT_EQ("part2-body", "BODY2", extractContents(p.getBody()->getPartAt(1)->getBody()->getContents()));
+	}
+
+	void testParseGuessBoundaryWithTransportPadding()
+	{
+		// Boundary is not specified in "Content-Type" field
+		// Parser will try to guess it from message contents.
+		// Transport padding white spaces should be ignored.
+
+		vmime::string str =
+			"Content-Type: multipart/mixed"
+			"\r\n\r\n"
+			"--  \t UNKNOWN-BOUNDARY\r\nHEADER1\r\n\r\nBODY1\r\n"
 			"--UNKNOWN-BOUNDARY\r\nHEADER2\r\n\r\nBODY2\r\n"
 			"--UNKNOWN-BOUNDARY--";
 

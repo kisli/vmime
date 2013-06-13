@@ -53,6 +53,79 @@ body::~body()
 }
 
 
+// static
+utility::stream::size_type body::findNextBoundaryPosition
+	(ref <utility::parserInputStreamAdapter> parser, const string& boundary,
+	 const utility::stream::size_type position, const utility::stream::size_type end,
+	 utility::stream::size_type* boundaryStart, utility::stream::size_type* boundaryEnd)
+{
+	utility::stream::size_type pos = position;
+
+	while (pos != utility::stream::npos && pos < end)
+	{
+		pos = parser->findNext(boundary, pos);
+
+		if (pos == utility::stream::npos)
+			break;  // not found
+
+		if (pos != 0)
+		{
+			// Skip transport padding bytes (SPACE or HTAB), if any
+			utility::stream::size_type advance = 0;
+
+			while (pos != 0)
+			{
+				parser->seek(pos - advance - 1);
+
+				const utility::stream::value_type c = parser->peekByte();
+
+				if (c == ' ' || c == '\t')
+					++advance;
+				else
+					break;
+			}
+
+			// Ensure the bytes before boundary are "[LF]--": boundary should be
+			// at the beginning of a line, and should start with "--"
+			if (pos - advance >= 3)
+			{
+				parser->seek(pos - advance - 3);
+
+				if (parser->matchBytes("\n--", 3))
+				{
+					parser->seek(pos + boundary.length());
+
+					const utility::stream::value_type next = parser->peekByte();
+
+					// Boundary should be followed by a new line or a dash
+					if (next == '\r' || next == '\n' || next == '-')
+					{
+						// Get rid of the "[CR]" just before "[LF]--", if any
+						if (pos - advance >= 4)
+						{
+							parser->seek(pos - advance - 4);
+
+							if (parser->peekByte() == '\r')
+								advance++;
+						}
+
+						*boundaryStart = pos - advance - 3;
+						*boundaryEnd = pos + boundary.length();
+
+						return pos;
+					}
+				}
+			}
+		}
+
+		// Boundary is a prefix of another, continue the search
+		pos++;
+	}
+
+	return pos;
+}
+
+
 void body::parseImpl
 	(const parsingContext& /* ctx */,
 	 ref <utility::parserInputStreamAdapter> parser,
@@ -126,17 +199,23 @@ void body::parseImpl
 
 					buffer[sizeof(buffer) / sizeof(buffer[0]) - 1] = '\0';
 
+					// Skip transport padding bytes (SPACE or HTAB), if any
+					utility::stream::size_type boundarySkip = 0;
+
+					while (boundarySkip < bufferLen && parserHelpers::isSpace(buffer[boundarySkip]))
+						++boundarySkip;
+
 					// Extract boundary from buffer (stop at first CR or LF).
 					// We have to stop after a reasonnably long boundary length (100)
 					// not to take the whole body contents for a boundary...
 					string::value_type boundaryBytes[100];
 					string::size_type boundaryLen = 0;
 
-					for (string::value_type c = buffer[0] ;
+					for (string::value_type c = buffer[boundarySkip] ;
 					     boundaryLen < bufferLen && boundaryLen < 100 && !(c == '\r' || c == '\n') ;
-					     c = buffer[++boundaryLen])
+					     ++boundaryLen, c = buffer[boundarySkip + boundaryLen])
 					{
-						boundaryBytes[boundaryLen] = buffer[boundaryLen];
+						boundaryBytes[boundaryLen] = c;
 					}
 
 					if (boundaryLen >= 1 && boundaryLen < 100)
@@ -167,104 +246,60 @@ void body::parseImpl
 	// This is a multi-part body
 	if (isMultipart && !boundary.empty())
 	{
-		const string boundarySep("--" + boundary);
-
 		utility::stream::size_type partStart = position;
 		utility::stream::size_type pos = position;
 
 		bool lastPart = false;
 
-		while (pos != utility::stream::npos && pos < end)
-		{
-			pos = parser->findNext(boundarySep, pos);
-
-			if (pos == utility::stream::npos)
-				break;  // not found
-
-			if (pos != 0)
-			{
-				parser->seek(pos - 1);
-
-				if (parser->peekByte() != '\n')
-				{
-					// Boundary is not at a beginning of a line
-					pos++;
-					continue;
-				}
-
-				parser->skip(1 + boundarySep.length());
-			}
-			else
-			{
-				parser->seek(pos + boundarySep.length());
-			}
-
-			const utility::stream::value_type next = parser->peekByte();
-
-			if (next == '\r' || next == '\n' || next == '-')
-				break;
-
-			// Boundary is a prefix of another, continue the search
-			pos++;
-		}
-
-		if (pos != utility::stream::npos && pos < end)
-		{
-			vmime::text text;
-			text.parse(parser, position, pos);
-
-			m_prologText = text.getWholeBuffer();
-		}
+		// Find the first boundary
+		utility::stream::size_type boundaryStart, boundaryEnd;
+		pos = findNextBoundaryPosition(parser, boundary, pos, end, &boundaryStart, &boundaryEnd);
 
 		for (int index = 0 ; !lastPart && (pos != utility::stream::npos) && (pos < end) ; ++index)
 		{
-			utility::stream::size_type partEnd = pos;
-
-			// Get rid of the [CR]LF just before the boundary string
-			if (pos >= (position + 1))
-			{
-				parser->seek(pos - 1);
-
-				if (parser->peekByte() == '\n')
-					--partEnd;
-			}
-
-			if (pos >= (position + 2))
-			{
-				parser->seek(pos - 2);
-
-				if (parser->peekByte() == '\r')
-					--partEnd;
-			}
+			utility::stream::size_type partEnd = boundaryStart;
 
 			// Check whether it is the last part (boundary terminated by "--")
-			pos += boundarySep.length();
-			parser->seek(pos);
+			parser->seek(boundaryEnd);
 
-			if (pos + 1 < end && parser->matchBytes("--", 2))
+			if (boundaryEnd + 1 < end && parser->matchBytes("--", 2))
 			{
 				lastPart = true;
-				pos += 2;
+				boundaryEnd += 2;
 			}
 
 			// RFC #1521, Page 31:
 			// "...(If a boundary appears to end with white space, the
 			//  white space must be presumed to have been added by a
 			//  gateway, and must be deleted.)..."
-			parser->seek(pos);
-			pos += parser->skipIf(parserHelpers::isSpaceOrTab, end);
+			parser->seek(boundaryEnd);
+			boundaryEnd += parser->skipIf(parserHelpers::isSpaceOrTab, end);
 
 			// End of boundary line
-			if (pos + 1 < end && parser->matchBytes("\r\n", 2))
+			if (boundaryEnd + 1 < end && parser->matchBytes("\r\n", 2))
 			{
-				pos += 2;
+				boundaryEnd += 2;
 			}
-			else if (pos < end && parser->peekByte() == '\n')
+			else if (boundaryEnd < end && parser->peekByte() == '\n')
 			{
-				++pos;
+				++boundaryEnd;
 			}
 
-			if (index > 0)
+			if (index == 0)
+			{
+				if (partEnd > partStart)
+				{
+					vmime::text text;
+					text.parse(parser, partStart, partEnd);
+
+					m_prologText = text.getWholeBuffer();
+				}
+				else
+				{
+					m_prologText = "";
+				}
+			}
+			else // index > 0
 			{
 				ref <bodyPart> part = vmime::create <bodyPart>();
 
@@ -279,41 +314,11 @@ void body::parseImpl
 				m_parts.push_back(part);
 			}
 
-			partStart = pos;
+			partStart = boundaryEnd;
 
-			while (pos != utility::stream::npos && pos < end)
-			{
-				pos = parser->findNext(boundarySep, pos);
-
-				if (pos == utility::stream::npos)
-					break;  // not found
-
-				if (pos != 0)
-				{
-					parser->seek(pos - 1);
-
-					if (parser->peekByte() != '\n')
-					{
-						// Boundary is not at a beginning of a line
-						pos++;
-						continue;
-					}
-
-					parser->skip(1 + boundarySep.length());
-				}
-				else
-				{
-					parser->seek(pos + boundarySep.length());
-				}
-
-				const utility::stream::value_type next = parser->peekByte();
-
-				if (next == '\r' || next == '\n' || next == '-')
-					break;
-
-				// Boundary is a prefix of another, continue the search
-				pos++;
-			}
+			// Find the next boundary
+			pos = findNextBoundaryPosition
+				(parser, boundary, boundaryEnd, end, &boundaryStart, &boundaryEnd);
 		}
 
 		m_contents = vmime::create <emptyContentHandler>();

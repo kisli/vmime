@@ -301,6 +301,23 @@ private:
 
 protected:
 
+	/** Finds the next boundary position in the parsing buffer.
+	  *
+	  * @param parser parser object
+	  * @param boundary boundary string (without "--" nor CR/LF)
+	  * @param position start position
+	  * @param end end position
+	  * @param boundaryStart will hold the start position of the boundary (including any
+	  * CR/LF and "--" before the boundary)
+	  * @param boundaryEnd will hold the end position of the boundary (position just
+	  * before the CRLF or "--" which follows)
+	  * @return the position of the boundary string, or stream::npos if not found
+	  */
+	utility::stream::size_type findNextBoundaryPosition
+		(ref <utility::parserInputStreamAdapter> parser, const string& boundary,
+		 const utility::stream::size_type position, const utility::stream::size_type end,
+		 utility::stream::size_type* boundaryStart, utility::stream::size_type* boundaryEnd);
+
 	// Component parsing & assembling
 	void parseImpl
 		(const parsingContext& ctx,
