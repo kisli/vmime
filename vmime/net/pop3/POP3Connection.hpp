@@ -94,6 +94,8 @@ private:
 	void startTLS();
 #endif // VMIME_HAVE_TLS_SUPPORT
 
+	void fetchCapabilities();
+	void invalidateCapabilities();
 	const std::vector <string> getCapabilities();
 
 	void internalDisconnect();
@@ -109,6 +111,9 @@ private:
 	bool m_secured;
 
 	ref <connectionInfos> m_cntInfos;
+
+	std::vector <string> m_capabilities;
+	bool m_capabilitiesFetched;
 };
 
 

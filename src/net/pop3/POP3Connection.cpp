@@ -65,7 +65,7 @@ namespace pop3 {
 
 POP3Connection::POP3Connection(ref <POP3Store> store, ref <security::authenticator> auth)
 	: m_store(store), m_auth(auth), m_socket(NULL), m_timeoutHandler(NULL),
-	  m_authenticated(false), m_secured(false)
+	  m_authenticated(false), m_secured(false), m_capabilitiesFetched(false)
 {
 }
 
@@ -550,6 +550,13 @@ void POP3Connection::startTLS()
 		m_secured = true;
 		m_cntInfos = vmime::create <tls::TLSSecuredConnectionInfos>
 			(m_cntInfos->getHost(), m_cntInfos->getPort(), tlsSession, tlsSocket);
+
+		// " Once TLS has been started, the client MUST discard cached
+		//   information about server capabilities and SHOULD re-issue
+		//   the CAPA command.  This is necessary to protect against
+		//   man-in-the-middle attacks which alter the capabilities list
+		//   prior to STLS. " (RFC-2595)
+		invalidateCapabilities();
 	}
 	catch (exceptions::command_error&)
 	{
@@ -569,6 +576,22 @@ void POP3Connection::startTLS()
 
 const std::vector <string> POP3Connection::getCapabilities()
 {
+	if (!m_capabilitiesFetched)
+		fetchCapabilities();
+
+	return m_capabilities;
+}
+
+
+void POP3Connection::invalidateCapabilities()
+{
+	m_capabilities.clear();
+	m_capabilitiesFetched = false;
+}
+
+
+void POP3Connection::fetchCapabilities()
+{
 	POP3Command::CAPA()->send(thisRef().dynamicCast <POP3Connection>());
 
 	ref <POP3Response> response =
@@ -582,7 +605,8 @@ const std::vector <string> POP3Connection::getCapabilities()
 			res.push_back(response->getLineAt(i));
 	}
 
-	return res;
+	m_capabilities = res;
+	m_capabilitiesFetched = true;
 }
 
 

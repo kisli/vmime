@@ -93,6 +93,8 @@ public:
 
 	ref <session> getSession();
 
+	void fetchCapabilities();
+	void invalidateCapabilities();
 	const std::vector <string> getCapabilities();
 
 	ref <security::authenticator> getAuthenticator();
@@ -134,6 +136,9 @@ private:
 	ref <connectionInfos> m_cntInfos;
 
 	bool m_firstTag;
+
+	std::vector <string> m_capabilities;
+	bool m_capabilitiesFetched;
 
 
 	void internalDisconnect();

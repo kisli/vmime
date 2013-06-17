@@ -66,7 +66,7 @@ namespace imap {
 IMAPConnection::IMAPConnection(ref <IMAPStore> store, ref <security::authenticator> auth)
 	: m_store(store), m_auth(auth), m_socket(NULL), m_parser(NULL), m_tag(NULL),
 	  m_hierarchySeparator('\0'), m_state(STATE_NONE), m_timeoutHandler(NULL),
-	  m_secured(false), m_firstTag(true)
+	  m_secured(false), m_firstTag(true), m_capabilitiesFetched(false)
 {
 }
 
@@ -473,6 +473,13 @@ void IMAPConnection::startTLS()
 		m_secured = true;
 		m_cntInfos = vmime::create <tls::TLSSecuredConnectionInfos>
 			(m_cntInfos->getHost(), m_cntInfos->getPort(), tlsSession, tlsSocket);
+
+		// " Once TLS has been started, the client MUST discard cached
+		//   information about server capabilities and SHOULD re-issue the
+		//   CAPABILITY command.  This is necessary to protect against
+		//   man-in-the-middle attacks which alter the capabilities list prior
+		//   to STARTTLS. " (RFC-2595)
+		invalidateCapabilities();
 	}
 	catch (exceptions::command_error&)
 	{
@@ -491,6 +498,22 @@ void IMAPConnection::startTLS()
 
 
 const std::vector <string> IMAPConnection::getCapabilities()
+{
+	if (!m_capabilitiesFetched)
+		fetchCapabilities();
+
+	return m_capabilities;
+}
+
+
+void IMAPConnection::invalidateCapabilities()
+{
+	m_capabilities.clear();
+	m_capabilitiesFetched = false;
+}
+
+
+void IMAPConnection::fetchCapabilities()
 {
 	send(true, "CAPABILITY", true);
 
@@ -527,7 +550,8 @@ const std::vector <string> IMAPConnection::getCapabilities()
 		}
 	}
 
-	return res;
+	m_capabilities = res;
+	m_capabilitiesFetched = true;
 }
 
 
