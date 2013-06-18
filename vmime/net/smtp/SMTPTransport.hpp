@@ -76,6 +76,13 @@ public:
 		 utility::progressListener* progress = NULL,
 		 const mailbox& sender = mailbox());
 
+	void send
+		(ref <vmime::message> msg,
+		 const mailbox& expeditor,
+		 const mailboxList& recipients,
+		 utility::progressListener* progress = NULL,
+		 const mailbox& sender = mailbox());
+
 	bool isSecuredConnection() const;
 	ref <connectionInfos> getConnectionInfos() const;
 

@@ -215,6 +215,14 @@ void transport::send(ref <vmime::message> msg, utility::progressListener* progre
 		vmime::ref <vmime::header> hdr;
 	} headerExchanger(msg, hdr);
 
+	send(msg, expeditor, recipients, progress, sender);
+}
+
+
+void transport::send
+	(ref <vmime::message> msg, const mailbox& expeditor, const mailboxList& recipients,
+	 utility::progressListener* progress, const mailbox& sender)
+{
 	// Generate the message, "stream" it and delegate the sending
 	// to the generic send() function.
 	std::ostringstream oss;

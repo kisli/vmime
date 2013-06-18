@@ -35,11 +35,14 @@
 #include "vmime/exception.hpp"
 #include "vmime/platform.hpp"
 #include "vmime/mailboxList.hpp"
+#include "vmime/message.hpp"
 
 #include "vmime/utility/filteredStream.hpp"
 #include "vmime/utility/stringUtils.hpp"
 #include "vmime/utility/outputStreamSocketAdapter.hpp"
 #include "vmime/utility/streamUtils.hpp"
+#include "vmime/utility/outputStreamAdapter.hpp"
+#include "vmime/utility/inputStreamStringAdapter.hpp"
 
 #include "vmime/net/defaultConnectionInfos.hpp"
 
@@ -670,6 +673,31 @@ void SMTPTransport::send
 		internalDisconnect();
 		throw exceptions::command_error("DATA", resp->getText());
 	}
+}
+
+
+void SMTPTransport::send
+	(ref <vmime::message> msg, const mailbox& expeditor, const mailboxList& recipients,
+	 utility::progressListener* progress, const mailbox& sender)
+{
+	// Generate the message with Internationalized Email support,
+	// if this is supported by the SMTP server
+	const bool hasSMTPUTF8 =
+		m_extensions.find("SMTPUTF8") != m_extensions.end();
+
+	std::ostringstream oss;
+	utility::outputStreamAdapter ossAdapter(oss);
+
+	generationContext ctx(generationContext::getDefaultContext());
+	ctx.setInternationalizedEmailSupport(hasSMTPUTF8);
+
+	msg->generate(ctx, ossAdapter);
+
+	const string& str(oss.str());
+
+	utility::inputStreamStringAdapter isAdapter(str);
+
+	send(expeditor, recipients, isAdapter, str.length(), progress, sender);
 }
 
 

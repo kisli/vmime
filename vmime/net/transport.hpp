@@ -61,6 +61,8 @@ protected:
 public:
 
 	/** Send a message over this transport service.
+	  * The default implementation simply generates the whole message
+	  * into a string and "streams" it via a inputStreamStringAdapter.
 	  *
 	  * @param msg message to send
 	  * @param progress progress listener, or NULL if not used
@@ -83,6 +85,23 @@ public:
 		 const utility::stream::size_type size,
 		 utility::progressListener* progress = NULL,
 		 const mailbox& sender = mailbox()) = 0;
+
+	/** Send a message over this transport service.
+	  * The default implementation simply generates the whole message
+	  * into a string and "streams" it via a inputStreamStringAdapter.
+	  *
+	  * @param msg message to send
+	  * @param expeditor expeditor mailbox
+	  * @param recipients list of recipient mailboxes
+	  * @param progress progress listener, or NULL if not used
+	  * @param sender envelope sender (if empty, expeditor will be used)
+	  */
+	virtual void send
+		(ref <vmime::message> msg,
+		 const mailbox& expeditor,
+		 const mailboxList& recipients,
+		 utility::progressListener* progress = NULL,
+		 const mailbox& sender = mailbox());
 
 
 	Type getType() const;
