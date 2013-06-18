@@ -212,7 +212,7 @@ void POP3Connection::internalDisconnect()
 
 void POP3Connection::authenticate(const messageId& randomMID)
 {
-	getAuthenticator()->setService(thisRef().dynamicCast <service>());
+	getAuthenticator()->setService(m_store.acquire());
 
 #if VMIME_HAVE_SASL_SUPPORT
 	// First, try SASL authentication
