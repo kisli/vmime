@@ -61,8 +61,8 @@ protected:
 public:
 
 	/** Send a message over this transport service.
-	  * The default implementation simply generates the whole message
-	  * into a string and "streams" it via a inputStreamStringAdapter.
+	  * The default implementation simply generates the whole message into
+	  * a string buffer and "streams" it via a inputStreamStringAdapter.
 	  *
 	  * @param msg message to send
 	  * @param progress progress listener, or NULL if not used
@@ -73,7 +73,7 @@ public:
 	  *
 	  * @param expeditor expeditor mailbox
 	  * @param recipients list of recipient mailboxes
-	  * @param is input stream provding message data (header + body)
+	  * @param is input stream providing message data (header + body)
 	  * @param size size of the message data
 	  * @param progress progress listener, or NULL if not used
 	  * @param sender envelope sender (if empty, expeditor will be used)
@@ -87,8 +87,8 @@ public:
 		 const mailbox& sender = mailbox()) = 0;
 
 	/** Send a message over this transport service.
-	  * The default implementation simply generates the whole message
-	  * into a string and "streams" it via a inputStreamStringAdapter.
+	  * The default implementation simply generates the whole message into
+	  * a string buffer and "streams" it via a inputStreamStringAdapter.
 	  *
 	  * @param msg message to send
 	  * @param expeditor expeditor mailbox
