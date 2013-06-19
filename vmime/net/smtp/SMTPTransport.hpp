@@ -36,7 +36,7 @@
 #include "vmime/net/timeoutHandler.hpp"
 
 #include "vmime/net/smtp/SMTPServiceInfos.hpp"
-#include "vmime/net/smtp/SMTPResponse.hpp"
+#include "vmime/net/smtp/SMTPConnection.hpp"
 
 
 namespace vmime {
@@ -85,38 +85,16 @@ public:
 
 	bool isSecuredConnection() const;
 	ref <connectionInfos> getConnectionInfos() const;
+	ref <SMTPConnection> getConnection();
+
+	bool isSMTPS() const;
 
 private:
 
-	void sendRequest(ref <SMTPCommand> cmd);
-	ref <SMTPResponse> readResponse();
+	ref <SMTPConnection> m_connection;
 
-	void internalDisconnect();
-
-	void helo();
-	void authenticate();
-#if VMIME_HAVE_SASL_SUPPORT
-	void authenticateSASL();
-#endif // VMIME_HAVE_SASL_SUPPORT
-
-#if VMIME_HAVE_TLS_SUPPORT
-	void startTLS();
-#endif // VMIME_HAVE_TLS_SUPPORT
-
-	ref <socket> m_socket;
-	bool m_authentified;
-
-	bool m_extendedSMTP;
-	std::map <string, std::vector <string> > m_extensions;
-
-	ref <timeoutHandler> m_timeoutHandler;
 
 	const bool m_isSMTPS;
-
-	bool m_secured;
-	ref <connectionInfos> m_cntInfos;
-
-	SMTPResponse::state m_responseState;
 
 	bool m_needReset;
 
