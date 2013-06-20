@@ -46,6 +46,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 		VMIME_TEST(testRCPT_UTF8)
 		VMIME_TEST(testRSET)
 		VMIME_TEST(testDATA)
+		VMIME_TEST(testBDAT)
 		VMIME_TEST(testNOOP)
 		VMIME_TEST(testQUIT)
 		VMIME_TEST(testWriteToSocket)
@@ -166,6 +167,19 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "DATA", cmd->getText());
+	}
+
+	void testBDAT()
+	{
+		vmime::ref <SMTPCommand> cmd1 = SMTPCommand::BDAT(12345, false);
+
+		VASSERT_NOT_NULL("Not null", cmd1);
+		VASSERT_EQ("Text", "BDAT 12345", cmd1->getText());
+
+		vmime::ref <SMTPCommand> cmd2 = SMTPCommand::BDAT(67890, true);
+
+		VASSERT_NOT_NULL("Not null", cmd2);
+		VASSERT_EQ("Text", "BDAT 67890 LAST", cmd2->getText());
 	}
 
 	void testNOOP()

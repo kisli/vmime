@@ -31,6 +31,7 @@
 #include "vmime/net/smtp/SMTPResponse.hpp"
 #include "vmime/net/smtp/SMTPCommand.hpp"
 #include "vmime/net/smtp/SMTPCommandSet.hpp"
+#include "vmime/net/smtp/SMTPChunkingOutputStreamAdapter.hpp"
 
 #include "vmime/exception.hpp"
 #include "vmime/mailboxList.hpp"
@@ -155,14 +156,10 @@ void SMTPTransport::noop()
 }
 
 
-void SMTPTransport::send
+void SMTPTransport::sendEnvelope
 	(const mailbox& expeditor, const mailboxList& recipients,
-	 utility::inputStream& is, const utility::stream::size_type size,
-	 utility::progressListener* progress, const mailbox& sender)
+	 const mailbox& sender, bool sendDATACommand)
 {
-	if (!isConnected())
-		throw exceptions::not_connected();
-
 	// If no recipient/expeditor was found, throw an exception
 	if (recipients.isEmpty())
 		throw exceptions::no_recipient();
@@ -199,7 +196,8 @@ void SMTPTransport::send
 	}
 
 	// Prepare sending of message data
-	commands->addCommand(SMTPCommand::DATA());
+	if (sendDATACommand)
+		commands->addCommand(SMTPCommand::DATA());
 
 	// Read response for "RSET" command
 	if (needReset)
@@ -238,13 +236,29 @@ void SMTPTransport::send
 	}
 
 	// Read response for "DATA" command
-	commands->writeToSocket(m_connection->getSocket());
-
-	if ((resp = m_connection->readResponse())->getCode() != 354)
+	if (sendDATACommand)
 	{
-		disconnect();
-		throw exceptions::command_error(commands->getLastCommandSent()->getText(), resp->getText());
+		commands->writeToSocket(m_connection->getSocket());
+
+		if ((resp = m_connection->readResponse())->getCode() != 354)
+		{
+			disconnect();
+			throw exceptions::command_error(commands->getLastCommandSent()->getText(), resp->getText());
+		}
 	}
+}
+
+
+void SMTPTransport::send
+	(const mailbox& expeditor, const mailboxList& recipients,
+	 utility::inputStream& is, const utility::stream::size_type size,
+	 utility::progressListener* progress, const mailbox& sender)
+{
+	if (!isConnected())
+		throw exceptions::not_connected();
+
+	// Send message envelope
+	sendEnvelope(expeditor, recipients, sender, /* sendDATACommand */ true);
 
 	// Send the message data
 	// Stream copy with "\n." to "\n.." transformation
@@ -258,6 +272,8 @@ void SMTPTransport::send
 	// Send end-of-data delimiter
 	m_connection->getSocket()->sendRaw("\r\n.\r\n", 5);
 
+	ref <SMTPResponse> resp;
+
 	if ((resp = m_connection->readResponse())->getCode() != 250)
 	{
 		disconnect();
@@ -270,21 +286,39 @@ void SMTPTransport::send
 	(ref <vmime::message> msg, const mailbox& expeditor, const mailboxList& recipients,
 	 utility::progressListener* progress, const mailbox& sender)
 {
+	if (!isConnected())
+		throw exceptions::not_connected();
+
 	// Generate the message with Internationalized Email support,
 	// if this is supported by the SMTP server
-	std::ostringstream oss;
-	utility::outputStreamAdapter ossAdapter(oss);
-
 	generationContext ctx(generationContext::getDefaultContext());
 	ctx.setInternationalizedEmailSupport(m_connection->hasExtension("SMTPUTF8"));
 
-	msg->generate(ctx, ossAdapter);
+	// If CHUNKING is not supported, generate the message to a temporary
+	// buffer then use the send() method which takes an inputStream
+	if (!m_connection->hasExtension("CHUNKING"))
+	{
+		std::ostringstream oss;
+		utility::outputStreamAdapter ossAdapter(oss);
 
-	const string& str(oss.str());
+		msg->generate(ctx, ossAdapter);
 
-	utility::inputStreamStringAdapter isAdapter(str);
+		const string& str(oss.str());
 
-	send(expeditor, recipients, isAdapter, str.length(), progress, sender);
+		utility::inputStreamStringAdapter isAdapter(str);
+
+		send(expeditor, recipients, isAdapter, str.length(), progress, sender);
+	}
+
+	// Send message envelope
+	sendEnvelope(expeditor, recipients, sender, /* sendDATACommand */ false);
+
+	// Send the message by chunks
+	SMTPChunkingOutputStreamAdapter chunkStream(m_connection);
+
+	msg->generate(ctx, chunkStream);
+
+	chunkStream.flush();
 }
 
 

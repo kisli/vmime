@@ -150,6 +150,20 @@ ref <SMTPCommand> SMTPCommand::DATA()
 
 
 // static
+ref <SMTPCommand> SMTPCommand::BDAT(const unsigned long chunkSize, const bool last)
+{
+	std::ostringstream cmd;
+	cmd.imbue(std::locale::classic());
+	cmd << "BDAT " << chunkSize;
+
+	if (last)
+		cmd << " LAST";
+
+	return createCommand(cmd.str());
+}
+
+
+// static
 ref <SMTPCommand> SMTPCommand::NOOP()
 {
 	return createCommand("NOOP");

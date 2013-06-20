@@ -252,6 +252,7 @@ libvmime_messaging_proto_sources = [
 	[
 		'smtp',
 		[
+			'net/smtp/SMTPChunkingOutputStreamAdapter.cpp', 'net/smtp/SMTPChunkingOutputStreamAdapter.hpp',
 			'net/smtp/SMTPCommand.cpp',      'net/smtp/SMTPCommand.hpp',
 			'net/smtp/SMTPCommandSet.cpp',   'net/smtp/SMTPCommandSet.hpp',
 			'net/smtp/SMTPConnection.cpp',   'net/smtp/SMTPConnection.hpp',

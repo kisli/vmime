@@ -256,15 +256,30 @@ public:
 
 	/** Send data to client.
 	  *
-	  * @buffer data to send
+	  * @param buffer data to send
 	  */
 	void localSend(const vmime::string& buffer);
 
 	/** Receive data from client.
 	  *
-	  * @buffer buffer in which to store received data
+	  * @param buffer buffer in which to store received data
 	  */
 	void localReceive(vmime::string& buffer);
+
+	/** Receive a line from client.
+	  *
+	  * @param buffer buffer in which to store received line
+	  * @return true if a line has been read, or false otherwise
+	  */
+	bool localReceiveLine(vmime::string& buffer);
+
+	/** Receive data from client.
+	  *
+	  * @param buffer buffer in which to store received data
+	  * @param count number of bytes to receive
+	  * @return number of bytes received
+	  */
+	testSocket::size_type localReceiveRaw(char* buffer, const size_type count);
 
 protected:
 

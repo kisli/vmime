@@ -67,6 +67,7 @@ public:
 	static ref <SMTPCommand> RCPT(const mailbox& mbox, const bool utf8);
 	static ref <SMTPCommand> RSET();
 	static ref <SMTPCommand> DATA();
+	static ref <SMTPCommand> BDAT(const unsigned long chunkSize, const bool last);
 	static ref <SMTPCommand> NOOP();
 	static ref <SMTPCommand> QUIT();
 

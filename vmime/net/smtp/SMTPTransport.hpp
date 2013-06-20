@@ -91,6 +91,22 @@ public:
 
 private:
 
+	/** Send the MAIL and RCPT commands to the server, checking the
+	  * response, and using pipelining if supported by the server.
+	  * Optionally, the DATA command can also be sent.
+	  *
+	  * @param expeditor expeditor mailbox
+	  * @param recipients list of recipient mailboxes
+	  * @param sender envelope sender (if empty, expeditor will be used)
+	  * @param sendDATACommand if true, the DATA command will be sent
+	  */
+	void sendEnvelope
+		(const mailbox& expeditor,
+		 const mailboxList& recipients,
+		 const mailbox& sender,
+		 bool sendDATACommand);
+
+
 	ref <SMTPConnection> m_connection;
 
 

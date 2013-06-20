@@ -127,6 +127,42 @@ void testSocket::localReceive(vmime::string& buffer)
 }
 
 
+bool testSocket::localReceiveLine(vmime::string& line)
+{
+	vmime::string::size_type eol;
+
+	if ((eol = m_outBuffer.find('\n')) != vmime::string::npos)
+	{
+		line = vmime::string(m_outBuffer.begin(), m_outBuffer.begin() + eol);
+
+		if (!line.empty() && line[line.length() - 1] == '\r')
+			line.erase(line.end() - 1, line.end());
+
+		m_outBuffer.erase(m_outBuffer.begin(), m_outBuffer.begin() + eol + 1);
+
+		return true;
+	}
+
+	return false;
+}
+
+
+testSocket::size_type testSocket::localReceiveRaw(char* buffer, const size_type count)
+{
+	const size_type received = std::min(count, static_cast <size_type>(m_outBuffer.size()));
+
+	if (received != 0)
+	{
+		if (buffer != NULL)
+			std::copy(m_outBuffer.begin(), m_outBuffer.begin() + received, buffer);
+
+		m_outBuffer.erase(m_outBuffer.begin(), m_outBuffer.begin() + received);
+	}
+
+	return received;
+}
+
+
 void testSocket::onDataReceived()
 {
 	// Override
