@@ -211,6 +211,7 @@ public:
 			else if (cmd == "MAIL")
 			{
 				VASSERT("Client must send the HELO command", m_heloSent);
+				VASSERT("The MAIL command must be sent only one time", !m_mailSent);
 
 				VASSERT_EQ("MAIL", std::string("MAIL FROM:<expeditor@test.vmime.org>"), line);
 
@@ -399,6 +400,8 @@ public:
 			}
 			else if (cmd == "MAIL")
 			{
+				VASSERT("The MAIL command must be sent only one time", !m_mailSent);
+
 				localSend("250 OK\r\n");
 
 				m_mailSent = true;

@@ -308,6 +308,7 @@ void SMTPTransport::send
 		utility::inputStreamStringAdapter isAdapter(str);
 
 		send(expeditor, recipients, isAdapter, str.length(), progress, sender);
+		return;
 	}
 
 	// Send message envelope
