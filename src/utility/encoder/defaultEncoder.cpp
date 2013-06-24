@@ -70,6 +70,18 @@ utility::stream::size_type defaultEncoder::decode(utility::inputStream& in,
 }
 
 
+utility::stream::size_type defaultEncoder::getEncodedSize(const utility::stream::size_type n) const
+{
+	return n;
+}
+
+
+utility::stream::size_type defaultEncoder::getDecodedSize(const utility::stream::size_type n) const
+{
+	return n;
+}
+
+
 } // encoder
 } // utility
 } // vmime

@@ -326,6 +326,22 @@ utility::stream::size_type uuEncoder::decode(utility::inputStream& in,
 }
 
 
+utility::stream::size_type uuEncoder::getEncodedSize(const utility::stream::size_type n) const
+{
+	// 3 bytes of input provide 4 bytes of output.
+	// Count CRLF (2 bytes) for each line of 45 characters.
+	// Also reserve some space for header and footer.
+	return 200 + n * 3 + (n / 45) * 2;
+}
+
+
+utility::stream::size_type uuEncoder::getDecodedSize(const utility::stream::size_type n) const
+{
+	// 4 bytes of input provide 3 bytes of output
+	return (n * 3) / 4;
+}
+
+
 } // encoder
 } // utility
 } // vmime

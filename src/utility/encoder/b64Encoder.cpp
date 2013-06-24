@@ -304,6 +304,27 @@ utility::stream::size_type b64Encoder::decode(utility::inputStream& in,
 }
 
 
+utility::stream::size_type b64Encoder::getEncodedSize(const utility::stream::size_type n) const
+{
+	const string::size_type propMaxLineLength =
+		getProperties().getProperty <string::size_type>("maxlinelength", static_cast <string::size_type>(-1));
+
+	const bool cutLines = (propMaxLineLength != static_cast <string::size_type>(-1));
+	const string::size_type maxLineLength = std::min(propMaxLineLength, static_cast <string::size_type>(76));
+
+	return (n * 4) / 3                               // 3 bytes of input provide 4 bytes of output
+		 + (cutLines ? (n / maxLineLength) * 2 : 0)  // CRLF (2 bytes) for each line.
+		 + 4;                                        // padding
+}
+
+
+utility::stream::size_type b64Encoder::getDecodedSize(const utility::stream::size_type n) const
+{
+	// 4 bytes of input provide 3 bytes of output
+	return (n * 3) / 4;
+}
+
+
 } // encoder
 } // utility
 } // vmime

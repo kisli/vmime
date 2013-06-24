@@ -230,6 +230,8 @@ public:
 
 	const std::vector <ref <component> > getChildComponents();
 
+	utility::stream::size_type getGeneratedSize(const generationContext& ctx);
+
 private:
 
 	std::vector <ref <headerField> > m_fields;

@@ -58,9 +58,6 @@ public:
 	// encoding/decoding will be performed on generate()/extract()). Note that the
 	// data may be re-encoded (that is, decoded and encoded) if the encoding passed
 	// to generate() is different from this one...
-	//
-	// The 'length' parameter is optional (user-defined). You can pass 0 if you want,
-	// VMime does not make use of it.
 	void setData(const utility::stringProxy& str, const vmime::encoding& enc = NO_ENCODING);
 	void setData(const string& buffer, const vmime::encoding& enc = NO_ENCODING);
 	void setData(const string& buffer, const string::size_type start, const string::size_type end, const vmime::encoding& enc = NO_ENCODING);

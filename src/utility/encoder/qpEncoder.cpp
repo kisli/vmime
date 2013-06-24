@@ -532,6 +532,27 @@ utility::stream::size_type qpEncoder::decode(utility::inputStream& in,
 }
 
 
+utility::stream::size_type qpEncoder::getEncodedSize(const utility::stream::size_type n) const
+{
+	const string::size_type propMaxLineLength =
+		getProperties().getProperty <string::size_type>("maxlinelength", static_cast <string::size_type>(-1));
+
+	const bool cutLines = (propMaxLineLength != static_cast <string::size_type>(-1));
+	const string::size_type maxLineLength = std::min(propMaxLineLength, static_cast <string::size_type>(74));
+
+	// Worst cast: 1 byte of input provide 3 bytes of output
+	// Count CRLF (2 bytes) for each line.
+	return n * 3 + (cutLines ? (n / maxLineLength) * 2 : 0);
+}
+
+
+utility::stream::size_type qpEncoder::getDecodedSize(const utility::stream::size_type n) const
+{
+	// Worst case: 1 byte of input equals 1 byte of output
+	return n;
+}
+
+
 } // encoder
 } // utility
 } // vmime

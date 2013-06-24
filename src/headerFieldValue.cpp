@@ -21,32 +21,24 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#ifndef VMIME_HEADERFIELDVALUE_HPP_INCLUDED
-#define VMIME_HEADERFIELDVALUE_HPP_INCLUDED
+#include "vmime/headerFieldValue.hpp"
 
-
-#include "vmime/base.hpp"
-#include "vmime/component.hpp"
+#include "vmime/utility/outputStreamAdapter.hpp"
 
 
 namespace vmime
 {
 
 
-/** Base class for all classes that can be used as a value
-  * for a header field.
-  */
-
-class VMIME_EXPORT headerFieldValue : public component
+utility::stream::size_type headerFieldValue::getGeneratedSize(const generationContext& ctx)
 {
-public:
+	std::ostringstream oss;
+	utility::outputStreamAdapter osa(oss);
 
-	utility::stream::size_type getGeneratedSize(const generationContext& ctx);
-};
+	generate(ctx, osa);
+
+	return oss.str().length();
+}
 
 
 } // vmime
-
-
-#endif // VMIME_HEADERFIELDVALUE_HPP_INCLUDED
-

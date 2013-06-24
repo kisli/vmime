@@ -209,6 +209,16 @@ public:
 	  */
 	virtual const std::vector <ref <component> > getChildComponents() = 0;
 
+	/** Get the number of bytes that will be used by this component when
+	  * it is generated. This may be a heuristically-derived estimate,
+	  * but such an estimated size should always be larger than the actual
+	  * generated size.
+	  *
+	  * @param ctx generation context
+	  * @return component size when generated
+	  */
+	virtual utility::stream::size_type getGeneratedSize(const generationContext& ctx);
+
 protected:
 
 	void setParsedBounds(const utility::stream::size_type start, const utility::stream::size_type end);

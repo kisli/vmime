@@ -91,6 +91,24 @@ public:
 	  */
 	const propertySet& getResults() const;
 
+	/** Return the encoded size for the specified input (decoded) size.
+	  * If the size is not exact, it may be an estimate which should always
+	  * be larger than the actual encoded size.
+	  *
+	  * @param n count of input (decoded) bytes
+	  * @return count of output (encoded) bytes
+	  */
+	virtual utility::stream::size_type getEncodedSize(const utility::stream::size_type n) const = 0;
+
+	/** Return the encoded size for the specified input (encoded) size.
+	  * If the size is not exact, it may be an estimate which should always
+	  * be larger than the actual decoded size.
+	  *
+	  * @param n count of input (encoded) bytes
+	  * @return count of output (decoded) bytes
+	  */
+	virtual utility::stream::size_type getDecodedSize(const utility::stream::size_type n) const = 0;
+
 protected:
 
 	propertySet& getResults();

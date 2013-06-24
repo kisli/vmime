@@ -102,6 +102,12 @@ void header::generateImpl
 }
 
 
+utility::stream::size_type header::getGeneratedSize(const generationContext& ctx)
+{
+	return component::getGeneratedSize(ctx) + 2 * m_fields.size() /* CRLF */;
+}
+
+
 ref <component> header::clone() const
 {
 	ref <header> hdr = vmime::create <header>();

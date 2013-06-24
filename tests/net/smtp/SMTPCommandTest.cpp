@@ -41,6 +41,8 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 		VMIME_TEST(testMAIL)
 		VMIME_TEST(testMAIL_Encoded)
 		VMIME_TEST(testMAIL_UTF8)
+		VMIME_TEST(testMAIL_SIZE)
+		VMIME_TEST(testMAIL_SIZE_UTF8)
 		VMIME_TEST(testRCPT)
 		VMIME_TEST(testRCPT_Encoded)
 		VMIME_TEST(testRCPT_UTF8)
@@ -125,6 +127,24 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "MAIL FROM:<mailtest@例え.テスト> SMTPUTF8", cmd->getText());
+	}
+
+	void testMAIL_SIZE()
+	{
+		vmime::ref <SMTPCommand> cmd = SMTPCommand::MAIL
+			(vmime::mailbox("me@vmime.org"), false, 123456789);
+
+		VASSERT_NOT_NULL("Not null", cmd);
+		VASSERT_EQ("Text", "MAIL FROM:<me@vmime.org> SIZE=123456789", cmd->getText());
+	}
+
+	void testMAIL_SIZE_UTF8()
+	{
+		vmime::ref <SMTPCommand> cmd = SMTPCommand::MAIL
+			(vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), true, 123456789);
+
+		VASSERT_NOT_NULL("Not null", cmd);
+		VASSERT_EQ("Text", "MAIL FROM:<mailtest@例え.テスト> SMTPUTF8 SIZE=123456789", cmd->getText());
 	}
 
 	void testRCPT()

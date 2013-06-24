@@ -64,6 +64,7 @@ public:
 	static ref <SMTPCommand> AUTH(const string& mechName);
 	static ref <SMTPCommand> STARTTLS();
 	static ref <SMTPCommand> MAIL(const mailbox& mbox, const bool utf8);
+	static ref <SMTPCommand> MAIL(const mailbox& mbox, const bool utf8, const unsigned long size);
 	static ref <SMTPCommand> RCPT(const mailbox& mbox, const bool utf8);
 	static ref <SMTPCommand> RSET();
 	static ref <SMTPCommand> DATA();

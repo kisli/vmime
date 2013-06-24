@@ -233,5 +233,17 @@ void component::setParsedBounds(const string::size_type start, const string::siz
 }
 
 
+utility::stream::size_type component::getGeneratedSize(const generationContext& ctx)
+{
+	std::vector <ref <component> > children = getChildComponents();
+	utility::stream::size_type totalSize = 0;
+
+	for (std::vector <ref <component> >::iterator it = children.begin() ; it != children.end() ; ++it)
+		totalSize += (*it)->getGeneratedSize(ctx);
+
+	return totalSize;
+}
+
+
 } // vmime
 

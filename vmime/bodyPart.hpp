@@ -103,6 +103,8 @@ public:
 
 	const std::vector <ref <component> > getChildComponents();
 
+	utility::stream::size_type getGeneratedSize(const generationContext& ctx);
+
 private:
 
 	ref <header> m_header;

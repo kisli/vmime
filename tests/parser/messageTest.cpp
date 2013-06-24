@@ -21,32 +21,37 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#ifndef VMIME_HEADERFIELDVALUE_HPP_INCLUDED
-#define VMIME_HEADERFIELDVALUE_HPP_INCLUDED
+#include "tests/testUtils.hpp"
 
 
-#include "vmime/base.hpp"
-#include "vmime/component.hpp"
+VMIME_TEST_SUITE_BEGIN(messageTest)
+
+	VMIME_TEST_LIST_BEGIN
+		VMIME_TEST(testGetGeneratedSize)
+	VMIME_TEST_LIST_END
 
 
-namespace vmime
-{
+	void testGetGeneratedSize()
+	{
+		vmime::generationContext ctx;
 
+		vmime::ref <vmime::message> msg = vmime::create <vmime::message>();
+		msg->getHeader()->getField("Foo")->setValue(vmime::string("bar"));
 
-/** Base class for all classes that can be used as a value
-  * for a header field.
-  */
+		vmime::htmlTextPart textPart;
+		textPart.setPlainText(vmime::create <vmime::stringContentHandler>("Foo bar bazé foo foo foo"));
+		textPart.setText(vmime::create <vmime::stringContentHandler>("Foo bar <strong>bazé</strong> foo foo foo"));
+		textPart.generateIn(msg, msg);
 
-class VMIME_EXPORT headerFieldValue : public component
-{
-public:
+		// Estimated/computed generated size must be greater than the actual generated size
+		const unsigned long genSize = msg->getGeneratedSize(ctx);
+		const unsigned long actualSize = msg->generate().length();
 
-	utility::stream::size_type getGeneratedSize(const generationContext& ctx);
-};
+		std::ostringstream oss;
+		oss << "estimated size (" << genSize << ") >= actual size (" << actualSize << ")";
 
+		VASSERT(oss.str(), genSize >= actualSize);
+	}
 
-} // vmime
-
-
-#endif // VMIME_HEADERFIELDVALUE_HPP_INCLUDED
+VMIME_TEST_SUITE_END
 

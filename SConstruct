@@ -80,7 +80,7 @@ libvmime_sources = [
 	'header.cpp', 'header.hpp',
 	'headerFieldFactory.cpp', 'headerFieldFactory.hpp',
 	'headerField.cpp', 'headerField.hpp',
-	'headerFieldValue.hpp',
+	'headerFieldValue.cpp', 'headerFieldValue.hpp',
 	'htmlTextPart.cpp', 'htmlTextPart.hpp',
 	'mailbox.cpp', 'mailbox.hpp',
 	'mailboxField.cpp', 'mailboxField.hpp',
@@ -352,6 +352,7 @@ libvmime_tests = [
 
 libvmimetest_common = [
 	'tests/testUtils.hpp',
+	'tests/net/smtp/SMTPTransportTestUtils.hpp',
 	'tests/utility/encoder/encoderTestUtils.hpp'
 ]
 
@@ -374,6 +375,7 @@ libvmimetest_sources = [
 	'tests/parser/mediaTypeTest.cpp',
 	'tests/parser/messageIdTest.cpp',
 	'tests/parser/messageIdSequenceTest.cpp',
+	'tests/parser/messageTest.cpp',
 	'tests/parser/pathTest.cpp',
 	'tests/parser/parameterTest.cpp',
 	'tests/parser/textTest.cpp',

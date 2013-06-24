@@ -297,6 +297,12 @@ void headerField::generateImpl
 }
 
 
+utility::stream::size_type headerField::getGeneratedSize(const generationContext& ctx)
+{
+	return m_name.length() + 2 /* ": " */ + m_value->getGeneratedSize(ctx);
+}
+
+
 const string headerField::getName() const
 {
 	return m_name;

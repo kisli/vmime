@@ -134,6 +134,14 @@ VMIME_TEST_SUITE_BEGIN(qpEncoderTest)
 									encode("quoted-printable",
 										encode("quoted-printable",
 											encode("quoted-printable", decoded)))))))));
+
+			VASSERT(oss.str() + "encoded size",
+				getEncoder("quoted-printable")->getEncodedSize(decoded.length())
+				>= encode("quoted-printable", decoded).length());
+
+			VASSERT(oss.str() + "decoded size",
+				getEncoder("quoted-printable")->getDecodedSize(encoded.length())
+				>= decode("quoted-printable", encoded).length());
 		}
 	}
 

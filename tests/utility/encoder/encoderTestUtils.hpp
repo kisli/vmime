@@ -22,9 +22,9 @@
 //
 
 
-// Encoding helper function
-static const vmime::string encode(const vmime::string& name, const vmime::string& in,
-	int maxLineLength = 0, const vmime::propertySet props = vmime::propertySet())
+// Helper function to obtain an encoder given its name
+static vmime::ref <vmime::utility::encoder::encoder> getEncoder(const vmime::string& name,
+	 int maxLineLength = 0, const vmime::propertySet props = vmime::propertySet())
 {
 	vmime::ref <vmime::utility::encoder::encoder> enc =
 		vmime::utility::encoder::encoderFactory::getInstance()->create(name);
@@ -33,6 +33,16 @@ static const vmime::string encode(const vmime::string& name, const vmime::string
 
 	if (maxLineLength != 0)
 		enc->getProperties()["maxlinelength"] = maxLineLength;
+
+	return enc;
+}
+
+
+// Encoding helper function
+static const vmime::string encode(const vmime::string& name, const vmime::string& in,
+	int maxLineLength = 0, const vmime::propertySet props = vmime::propertySet())
+{
+	vmime::ref <vmime::utility::encoder::encoder> enc = getEncoder(name, maxLineLength, props);
 
 	vmime::utility::inputStreamStringAdapter vin(in);
 
@@ -48,11 +58,7 @@ static const vmime::string encode(const vmime::string& name, const vmime::string
 // Decoding helper function
 static const vmime::string decode(const vmime::string& name, const vmime::string& in, int maxLineLength = 0)
 {
-	vmime::ref <vmime::utility::encoder::encoder> enc =
-		vmime::utility::encoder::encoderFactory::getInstance()->create(name);
-
-	if (maxLineLength != 0)
-		enc->getProperties()["maxlinelength"] = maxLineLength;
+	vmime::ref <vmime::utility::encoder::encoder> enc = getEncoder(name, maxLineLength);
 
 	vmime::utility::inputStreamStringAdapter vin(in);
 

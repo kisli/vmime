@@ -50,6 +50,9 @@ public:
 	static bool RFC2047_isEncodingNeededForChar(const unsigned char c);
 	static int RFC2047_getEncodedLength(const unsigned char c);
 
+	utility::stream::size_type getEncodedSize(const utility::stream::size_type n) const;
+	utility::stream::size_type getDecodedSize(const utility::stream::size_type n) const;
+
 protected:
 
 	static const unsigned char sm_hexDigits[17];

@@ -636,6 +636,34 @@ exception* invalid_folder_name::clone() const { return new invalid_folder_name(*
 const char* invalid_folder_name::name() const throw() { return "invalid_folder_name"; }
 
 
+//
+// message_size_exceeds_max_limits
+//
+
+message_size_exceeds_max_limits::~message_size_exceeds_max_limits() throw() {}
+message_size_exceeds_max_limits::message_size_exceeds_max_limits(const string& error, const exception& other)
+	: net_exception(error.empty()
+		? "Transport error: message size exceeds maximum server limits (permanent error)."
+		: error , other) {}
+
+exception* message_size_exceeds_max_limits::clone() const { return new message_size_exceeds_max_limits(*this); }
+const char* message_size_exceeds_max_limits::name() const throw() { return "message_size_exceeds_max_limits"; }
+
+
+//
+// message_size_exceeds_cur_limits
+//
+
+message_size_exceeds_cur_limits::~message_size_exceeds_cur_limits() throw() {}
+message_size_exceeds_cur_limits::message_size_exceeds_cur_limits(const string& error, const exception& other)
+	: net_exception(error.empty()
+		? "Transport error: message size exceeds current server limits (temporary storage error)."
+		: error, other) {}
+
+exception* message_size_exceeds_cur_limits::clone() const { return new message_size_exceeds_cur_limits(*this); }
+const char* message_size_exceeds_cur_limits::name() const throw() { return "message_size_exceeds_cur_limits"; }
+
+
 #endif // VMIME_HAVE_MESSAGING_FEATURES
 
 

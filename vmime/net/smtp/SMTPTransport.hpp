@@ -99,12 +99,14 @@ private:
 	  * @param recipients list of recipient mailboxes
 	  * @param sender envelope sender (if empty, expeditor will be used)
 	  * @param sendDATACommand if true, the DATA command will be sent
+	  * @param size message size, in bytes (or 0, if not known)
 	  */
 	void sendEnvelope
 		(const mailbox& expeditor,
 		 const mailboxList& recipients,
 		 const mailbox& sender,
-		 bool sendDATACommand);
+		 bool sendDATACommand,
+		 const utility::stream::size_type size);
 
 
 	ref <SMTPConnection> m_connection;

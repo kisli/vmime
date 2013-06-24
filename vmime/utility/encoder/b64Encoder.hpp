@@ -47,6 +47,9 @@ public:
 
 	const std::vector <string> getAvailableProperties() const;
 
+	utility::stream::size_type getEncodedSize(const utility::stream::size_type n) const;
+	utility::stream::size_type getDecodedSize(const utility::stream::size_type n) const;
+
 protected:
 
 	static const unsigned char sm_alphabet[];

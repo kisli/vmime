@@ -141,6 +141,8 @@ public:
 		 const string::size_type end,
 		 string::size_type* newPosition = NULL);
 
+	utility::stream::size_type getGeneratedSize(const generationContext& ctx);
+
 protected:
 
 	void parseImpl

@@ -44,6 +44,9 @@ public:
 
 	utility::stream::size_type encode(utility::inputStream& in, utility::outputStream& out, utility::progressListener* progress = NULL);
 	utility::stream::size_type decode(utility::inputStream& in, utility::outputStream& out, utility::progressListener* progress = NULL);
+
+	utility::stream::size_type getEncodedSize(const utility::stream::size_type n) const;
+	utility::stream::size_type getDecodedSize(const utility::stream::size_type n) const;
 };
 
 

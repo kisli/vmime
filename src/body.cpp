@@ -30,6 +30,7 @@
 #include "vmime/utility/random.hpp"
 
 #include "vmime/utility/seekableInputStreamRegionAdapter.hpp"
+#include "vmime/utility/outputStreamAdapter.hpp"
 
 #include "vmime/parserHelpers.hpp"
 
@@ -385,6 +386,40 @@ void body::parseImpl
 }
 
 
+text body::getActualPrologText(const generationContext& ctx) const
+{
+	const string& prologText =
+		m_prologText.empty()
+			? (isRootPart()
+				? ctx.getPrologText()
+				: NULL_STRING
+			  )
+			: m_prologText;
+
+	if (prologText.empty())
+		return text();
+	else
+		return text(prologText, vmime::charset("us-ascii"));
+}
+
+
+text body::getActualEpilogText(const generationContext& ctx) const
+{
+	const string& epilogText =
+		m_epilogText.empty()
+			? (isRootPart()
+				? ctx.getEpilogText()
+				: NULL_STRING
+			  )
+			: m_epilogText;
+
+	if (epilogText.empty())
+		return text();
+	else
+		return text(epilogText, vmime::charset("us-ascii"));
+}
+
+
 void body::generateImpl
 	(const generationContext& ctx, utility::outputStream& os,
 	 const string::size_type /* curLinePos */, string::size_type* newLinePos) const
@@ -420,27 +455,12 @@ void body::generateImpl
 			}
 		}
 
-		const string& prologText =
-			m_prologText.empty()
-				? (isRootPart()
-					? ctx.getPrologText()
-					: NULL_STRING
-				  )
-				: m_prologText;
+		const text prologText = getActualPrologText(ctx);
+		const text epilogText = getActualEpilogText(ctx);
 
-		const string& epilogText =
-			m_epilogText.empty()
-				? (isRootPart()
-					? ctx.getEpilogText()
-					: NULL_STRING
-				  )
-				: m_epilogText;
-
-		if (!prologText.empty())
+		if (!prologText.isEmpty())
 		{
-			text prolog(prologText, vmime::charset("us-ascii"));
-
-			prolog.encodeAndFold(ctx, os, 0,
+			prologText.encodeAndFold(ctx, os, 0,
 				NULL, text::FORCE_NO_ENCODING | text::NO_NEW_LINE_SEQUENCE);
 
 			os << CRLF;
@@ -459,11 +479,9 @@ void body::generateImpl
 
 		os << "--" << CRLF;
 
-		if (!epilogText.empty())
+		if (!epilogText.isEmpty())
 		{
-			text epilog(epilogText, vmime::charset("us-ascii"));
-
-			epilog.encodeAndFold(ctx, os, 0,
+			epilogText.encodeAndFold(ctx, os, 0,
 				NULL, text::FORCE_NO_ENCODING | text::NO_NEW_LINE_SEQUENCE);
 
 			os << CRLF;
@@ -477,6 +495,60 @@ void body::generateImpl
 	{
 		// Generate the contents
 		m_contents->generate(os, getEncoding(), ctx.getMaxLineLength());
+	}
+}
+
+
+utility::stream::size_type body::getGeneratedSize(const generationContext& ctx)
+{
+	// MIME-Multipart
+	if (getPartCount() != 0)
+	{
+		utility::stream::size_type size = 0;
+
+		// Size of parts and boundaries
+		for (size_t p = 0 ; p < getPartCount() ; ++p)
+		{
+			size += 100;  // boundary, CRLF...
+			size += getPartAt(p)->getGeneratedSize(ctx);
+		}
+
+		// Size of prolog/epilog text
+		const text prologText = getActualPrologText(ctx);
+
+		if (!prologText.isEmpty())
+		{
+			std::ostringstream oss;
+			utility::outputStreamAdapter osa(oss);
+
+			prologText.encodeAndFold(ctx, osa, 0,
+				NULL, text::FORCE_NO_ENCODING | text::NO_NEW_LINE_SEQUENCE);
+
+			size += oss.str().size();
+		}
+
+		const text epilogText = getActualEpilogText(ctx);
+
+		if (!epilogText.isEmpty())
+		{
+			std::ostringstream oss;
+			utility::outputStreamAdapter osa(oss);
+
+			epilogText.encodeAndFold(ctx, osa, 0,
+				NULL, text::FORCE_NO_ENCODING | text::NO_NEW_LINE_SEQUENCE);
+
+			size += oss.str().size();
+		}
+
+		return size;
+	}
+	// Simple body
+	else
+	{
+		ref <utility::encoder::encoder> srcEncoder = m_contents->getEncoding().getEncoder();
+		ref <utility::encoder::encoder> dstEncoder = getEncoding().getEncoder();
+
+		return dstEncoder->getEncodedSize(srcEncoder->getDecodedSize(m_contents->getLength()));
 	}
 }
 

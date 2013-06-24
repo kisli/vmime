@@ -89,6 +89,13 @@ ref <SMTPCommand> SMTPCommand::STARTTLS()
 // static
 ref <SMTPCommand> SMTPCommand::MAIL(const mailbox& mbox, const bool utf8)
 {
+	return MAIL(mbox, utf8, 0);
+}
+
+
+// static
+ref <SMTPCommand> SMTPCommand::MAIL(const mailbox& mbox, const bool utf8, const unsigned long size)
+{
 	std::ostringstream cmd;
 	cmd.imbue(std::locale::classic());
 	cmd << "MAIL FROM:<";
@@ -107,6 +114,9 @@ ref <SMTPCommand> SMTPCommand::MAIL(const mailbox& mbox, const bool utf8)
 
 	if (utf8)
 		cmd << " SMTPUTF8";
+
+	if (size != 0)
+		cmd << " SIZE=" << size;
 
 	return createCommand(cmd.str());
 }

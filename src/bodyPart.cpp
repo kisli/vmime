@@ -82,6 +82,12 @@ void bodyPart::generateImpl
 }
 
 
+utility::stream::size_type bodyPart::getGeneratedSize(const generationContext& ctx)
+{
+	return m_header->getGeneratedSize(ctx) + 2 /* CRLF */ + m_body->getGeneratedSize(ctx);
+}
+
+
 ref <component> bodyPart::clone() const
 {
 	ref <bodyPart> p = vmime::create <bodyPart>();

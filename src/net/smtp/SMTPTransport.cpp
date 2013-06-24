@@ -158,7 +158,8 @@ void SMTPTransport::noop()
 
 void SMTPTransport::sendEnvelope
 	(const mailbox& expeditor, const mailboxList& recipients,
-	 const mailbox& sender, bool sendDATACommand)
+	 const mailbox& sender, bool sendDATACommand,
+	 const utility::stream::size_type size)
 {
 	// If no recipient/expeditor was found, throw an exception
 	if (recipients.isEmpty())
@@ -179,11 +180,12 @@ void SMTPTransport::sendEnvelope
 
 	// Emit the "MAIL" command
 	const bool hasSMTPUTF8 = m_connection->hasExtension("SMTPUTF8");
+	const bool hasSize = m_connection->hasExtension("SIZE");
 
 	if (!sender.isEmpty())
-		commands->addCommand(SMTPCommand::MAIL(sender, hasSMTPUTF8));
+		commands->addCommand(SMTPCommand::MAIL(sender, hasSMTPUTF8, hasSize ? size : 0));
 	else
-		commands->addCommand(SMTPCommand::MAIL(expeditor, hasSMTPUTF8));
+		commands->addCommand(SMTPCommand::MAIL(expeditor, hasSMTPUTF8, hasSize ? size : 0));
 
 	// Now, we will need to reset next time
 	m_needReset = true;
@@ -216,8 +218,26 @@ void SMTPTransport::sendEnvelope
 
 	if ((resp = m_connection->readResponse())->getCode() != 250)
 	{
-		disconnect();
-		throw exceptions::command_error(commands->getLastCommandSent()->getText(), resp->getText());
+		// SIZE extension: insufficient system storage
+		if (resp->getCode() == 452)
+		{
+			disconnect();
+			throw exceptions::message_size_exceeds_cur_limits
+				(commands->getLastCommandSent()->getText(), resp->getText());
+		}
+		// SIZE extension: message size exceeds fixed maximum message size
+		else if (resp->getCode() == 552)
+		{
+			disconnect();
+			throw exceptions::message_size_exceeds_max_limits
+				(commands->getLastCommandSent()->getText(), resp->getText());
+		}
+		// Other error
+		else
+		{
+			disconnect();
+			throw exceptions::command_error(commands->getLastCommandSent()->getText(), resp->getText());
+		}
 	}
 
 	// Read responses for "RCPT TO" commands
@@ -230,8 +250,26 @@ void SMTPTransport::sendEnvelope
 		if (resp->getCode() != 250 &&
 		    resp->getCode() != 251)
 		{
-			disconnect();
-			throw exceptions::command_error(commands->getLastCommandSent()->getText(), resp->getText());
+			// SIZE extension: insufficient system storage
+			if (resp->getCode() == 452)
+			{
+				disconnect();
+				throw exceptions::message_size_exceeds_cur_limits
+					(commands->getLastCommandSent()->getText(), resp->getText());
+			}
+			// SIZE extension: message size exceeds fixed maximum message size
+			else if (resp->getCode() == 552)
+			{
+				disconnect();
+				throw exceptions::message_size_exceeds_max_limits
+					(commands->getLastCommandSent()->getText(), resp->getText());
+			}
+			// Other error
+			else
+			{
+				disconnect();
+				throw exceptions::command_error(commands->getLastCommandSent()->getText(), resp->getText());
+			}
 		}
 	}
 
@@ -258,7 +296,7 @@ void SMTPTransport::send
 		throw exceptions::not_connected();
 
 	// Send message envelope
-	sendEnvelope(expeditor, recipients, sender, /* sendDATACommand */ true);
+	sendEnvelope(expeditor, recipients, sender, /* sendDATACommand */ true, size);
 
 	// Send the message data
 	// Stream copy with "\n." to "\n.." transformation
@@ -312,7 +350,8 @@ void SMTPTransport::send
 	}
 
 	// Send message envelope
-	sendEnvelope(expeditor, recipients, sender, /* sendDATACommand */ false);
+	sendEnvelope(expeditor, recipients, sender,
+		/* sendDATACommand */ false, msg->getGeneratedSize(ctx));
 
 	// Send the message by chunks
 	SMTPChunkingOutputStreamAdapter chunkStream(m_connection);

@@ -138,6 +138,14 @@ VMIME_TEST_SUITE_BEGIN(b64EncoderTest)
 									encode("base64",
 										encode("base64",
 											encode("base64", decoded)))))))));
+
+			VASSERT(oss.str() + "encoded size",
+				getEncoder("base64")->getEncodedSize(decoded.length())
+				>= encode("base64", decoded).length());
+
+			VASSERT(oss.str() + "decoded size",
+				getEncoder("base64")->getDecodedSize(encoded.length())
+				>= decode("base64", encoded).length());
 		}
 	}
 

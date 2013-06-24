@@ -280,7 +280,12 @@ public:
 
 	const std::vector <ref <component> > getChildComponents();
 
+	utility::stream::size_type getGeneratedSize(const generationContext& ctx);
+
 private:
+
+	text getActualPrologText(const generationContext& ctx) const;
+	text getActualEpilogText(const generationContext& ctx) const;
 
 	void setParentPart(ref <bodyPart> parent);
 
