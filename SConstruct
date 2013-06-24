@@ -152,7 +152,7 @@ libvmime_sources = [
 	'utility/encoder/eightBitEncoder.cpp', 'utility/encoder/eightBitEncoder.hpp',
 	'utility/encoder/b64Encoder.cpp', 'utility/encoder/b64Encoder.hpp',
 	'utility/encoder/binaryEncoder.cpp', 'utility/encoder/binaryEncoder.hpp',
-	'utility/encoder/defaultEncoder.cpp', 'utility/encoder/defaultEncoder.hpp',
+	'utility/encoder/noopEncoder.cpp', 'utility/encoder/noopEncoder.hpp',
 	'utility/encoder/encoderFactory.cpp', 'utility/encoder/encoderFactory.hpp',
 	'utility/encoder/qpEncoder.cpp', 'utility/encoder/qpEncoder.hpp',
 	'utility/encoder/uuEncoder.cpp', 'utility/encoder/uuEncoder.hpp',

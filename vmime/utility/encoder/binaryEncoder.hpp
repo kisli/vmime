@@ -25,7 +25,7 @@
 #define VMIME_UTILITY_ENCODER_BINARYENCODER_HPP_INCLUDED
 
 
-#include "vmime/utility/encoder/defaultEncoder.hpp"
+#include "vmime/utility/encoder/noopEncoder.hpp"
 
 
 namespace vmime {
@@ -36,7 +36,7 @@ namespace encoder {
 /** Binary encoder.
   */
 
-class VMIME_EXPORT binaryEncoder : public defaultEncoder
+class VMIME_EXPORT binaryEncoder : public noopEncoder
 {
 public:
 

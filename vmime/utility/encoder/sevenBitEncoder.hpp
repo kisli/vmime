@@ -25,7 +25,7 @@
 #define VMIME_UTILITY_ENCODER_SEVENBITENCODER_HPP_INCLUDED
 
 
-#include "vmime/utility/encoder/defaultEncoder.hpp"
+#include "vmime/utility/encoder/noopEncoder.hpp"
 
 
 namespace vmime {
@@ -36,7 +36,7 @@ namespace encoder {
 /** 7-bit encoder.
   */
 
-class VMIME_EXPORT sevenBitEncoder : public defaultEncoder
+class VMIME_EXPORT sevenBitEncoder : public noopEncoder
 {
 public:
 

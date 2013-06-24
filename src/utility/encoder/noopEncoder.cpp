@@ -21,7 +21,7 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#include "vmime/utility/encoder/defaultEncoder.hpp"
+#include "vmime/utility/encoder/noopEncoder.hpp"
 
 #include "vmime/utility/streamUtils.hpp"
 
@@ -31,12 +31,12 @@ namespace utility {
 namespace encoder {
 
 
-defaultEncoder::defaultEncoder()
+noopEncoder::noopEncoder()
 {
 }
 
 
-utility::stream::size_type defaultEncoder::encode(utility::inputStream& in,
+utility::stream::size_type noopEncoder::encode(utility::inputStream& in,
 	utility::outputStream& out, utility::progressListener* progress)
 {
 	in.reset();  // may not work...
@@ -53,7 +53,7 @@ utility::stream::size_type defaultEncoder::encode(utility::inputStream& in,
 }
 
 
-utility::stream::size_type defaultEncoder::decode(utility::inputStream& in,
+utility::stream::size_type noopEncoder::decode(utility::inputStream& in,
 	utility::outputStream& out, utility::progressListener* progress)
 {
 	in.reset();  // may not work...
@@ -70,13 +70,13 @@ utility::stream::size_type defaultEncoder::decode(utility::inputStream& in,
 }
 
 
-utility::stream::size_type defaultEncoder::getEncodedSize(const utility::stream::size_type n) const
+utility::stream::size_type noopEncoder::getEncodedSize(const utility::stream::size_type n) const
 {
 	return n;
 }
 
 
-utility::stream::size_type defaultEncoder::getDecodedSize(const utility::stream::size_type n) const
+utility::stream::size_type noopEncoder::getDecodedSize(const utility::stream::size_type n) const
 {
 	return n;
 }

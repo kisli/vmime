@@ -21,8 +21,8 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#ifndef VMIME_UTILITY_ENCODER_DEFAULTENCODER_HPP_INCLUDED
-#define VMIME_UTILITY_ENCODER_DEFAULTENCODER_HPP_INCLUDED
+#ifndef VMIME_UTILITY_ENCODER_NOOPENCODER_HPP_INCLUDED
+#define VMIME_UTILITY_ENCODER_NOOPENCODER_HPP_INCLUDED
 
 
 #include "vmime/utility/encoder/encoder.hpp"
@@ -33,14 +33,14 @@ namespace utility {
 namespace encoder {
 
 
-/** Default encoder (simple copy, no encoding/decoding is performed).
+/** Default, no-op encoder (simple copy, no encoding/decoding is performed).
   */
 
-class VMIME_EXPORT defaultEncoder : public encoder
+class VMIME_EXPORT noopEncoder : public encoder
 {
 public:
 
-	defaultEncoder();
+	noopEncoder();
 
 	utility::stream::size_type encode(utility::inputStream& in, utility::outputStream& out, utility::progressListener* progress = NULL);
 	utility::stream::size_type decode(utility::inputStream& in, utility::outputStream& out, utility::progressListener* progress = NULL);
@@ -55,4 +55,4 @@ public:
 } // vmime
 
 
-#endif // VMIME_UTILITY_ENCODER_DEFAULTENCODER_HPP_INCLUDED
+#endif // VMIME_UTILITY_ENCODER_NOOPENCODER_HPP_INCLUDED
