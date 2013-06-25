@@ -32,6 +32,11 @@ namespace vmime
 {
 
 
+stringContentHandler::stringContentHandler()
+{
+}
+
+
 stringContentHandler::stringContentHandler(const string& buffer, const vmime::encoding& enc)
 	: m_encoding(enc), m_string(buffer)
 {
