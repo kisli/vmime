@@ -33,6 +33,8 @@
 
 #include "vmime/defaultAttachment.hpp"
 #include "vmime/dateTime.hpp"
+#include "vmime/contentHandler.hpp"
+#include "vmime/utility/stream.hpp"
 
 
 namespace vmime
@@ -50,9 +52,9 @@ public:
 	fileAttachment(const string& filepath, const mediaType& type, const text& desc);
 	fileAttachment(const string& filepath, const mediaType& type, const text& desc, const encoding& enc);
 
-	fileAttachment(ref <utility::inputStream> is, const word& filename, const mediaType& type);
-	fileAttachment(ref <utility::inputStream> is, const word& filename, const mediaType& type, const text& desc);
-	fileAttachment(ref <utility::inputStream> is, const word& filename, const mediaType& type, const text& desc, const encoding& enc);
+	fileAttachment(ref <contentHandler> cts, const word& filename, const mediaType& type);
+	fileAttachment(ref <contentHandler> cts, const word& filename, const mediaType& type, const text& desc);
+	fileAttachment(ref <contentHandler> cts, const word& filename, const mediaType& type, const text& desc, const encoding& enc);
 
 	/** Stores information about a file attachment.
 	  */
@@ -156,18 +158,18 @@ public:
 		  *
 		  * @return file size
 		  */
-		unsigned int getSize() const;
+		utility::stream::size_type getSize() const;
 
 		/** Set the value of the 'size' property.
 		  *
 		  * @param size file size
 		  */
-		void setSize(const unsigned int& size);
+		void setSize(const utility::stream::size_type size);
 
 	private:
 
 		word* m_filename;
-		unsigned int* m_size;
+		utility::stream::size_type* m_size;
 		datetime* m_creationDate;
 		datetime* m_modifDate;
 		datetime* m_readDate;
@@ -179,7 +181,7 @@ public:
 private:
 
 	void setData(const string& filepath);
-	void setData(ref <utility::inputStream> is);
+	void setData(ref <contentHandler> cts);
 
 	fileInfo m_fileInfo;
 

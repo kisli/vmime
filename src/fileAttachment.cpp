@@ -79,20 +79,20 @@ fileAttachment::fileAttachment(const string& filepath, const mediaType& type,
 }
 
 
-fileAttachment::fileAttachment(ref <utility::inputStream> is, const word& filename, const mediaType& type)
+fileAttachment::fileAttachment(ref <contentHandler> cts, const word& filename, const mediaType& type)
 {
 	if (!filename.isEmpty())
 		m_fileInfo.setFilename(filename);
 
 	m_type = type;
 
-	setData(is);
+	setData(cts);
 
 	m_encoding = encoding::decide(m_data);
 }
 
 
-fileAttachment::fileAttachment(ref <utility::inputStream> is, const word& filename,
+fileAttachment::fileAttachment(ref <contentHandler> cts, const word& filename,
 	const mediaType& type, const text& desc)
 {
 	if (!filename.isEmpty())
@@ -101,13 +101,13 @@ fileAttachment::fileAttachment(ref <utility::inputStream> is, const word& filena
 	m_type = type;
 	m_desc = desc;
 
-	setData(is);
+	setData(cts);
 
 	m_encoding = encoding::decide(m_data);
 }
 
 
-fileAttachment::fileAttachment(ref <utility::inputStream> is, const word& filename,
+fileAttachment::fileAttachment(ref <contentHandler> cts, const word& filename,
 	const mediaType& type, const text& desc, const encoding& enc)
 {
 	if (!filename.isEmpty())
@@ -117,33 +117,33 @@ fileAttachment::fileAttachment(ref <utility::inputStream> is, const word& filena
 	m_desc = desc;
 	m_encoding = enc;
 
-	setData(is);
+	setData(cts);
 }
 
 
 void fileAttachment::setData(const string& filepath)
 {
-	std::ifstream* file = new std::ifstream();
-	file->open(filepath.c_str(), std::ios::in | std::ios::binary);
+	ref <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
+	utility::file::path path = fsf->stringToPath(filepath);
 
-	if (!*file)
-	{
-		delete file;
+	ref <utility::file> file = fsf->create(path);
+
+	if (!file->isFile())
 		throw exceptions::open_file_error();
-	}
 
-	ref <utility::inputStream> is = vmime::create <utility::inputStreamPointerAdapter>(file, true);
+	m_data = vmime::create <streamContentHandler>
+		(file->getFileReader()->getInputStream(), file->getLength());
 
-	setData(is);
-
-	utility::file::path path = platform::getHandler()->getFileSystemFactory()->stringToPath(filepath);
 	m_fileInfo.setFilename(path.getLastComponent());
+	m_fileInfo.setSize(file->getLength());
 }
 
 
-void fileAttachment::setData(ref <utility::inputStream> is)
+void fileAttachment::setData(ref <contentHandler> cts)
 {
-	m_data = vmime::create <streamContentHandler>(is, 0);
+	m_data = cts;
+
+	m_fileInfo.setSize(cts->getLength());
 }
 
 
@@ -212,8 +212,8 @@ const datetime& fileAttachment::fileInfo::getReadDate() const { return (*m_readD
 void fileAttachment::fileInfo::setReadDate(const datetime& date) { if (m_readDate) { *m_readDate = date; } else { m_readDate = new datetime(date); } }
 
 bool fileAttachment::fileInfo::hasSize() const { return (m_size != NULL); }
-unsigned int fileAttachment::fileInfo::getSize() const { return (*m_size); }
-void fileAttachment::fileInfo::setSize(const unsigned int& size) { if (m_size) { *m_size = size; } else { m_size = new unsigned int(size); } }
+utility::stream::size_type fileAttachment::fileInfo::getSize() const { return (*m_size); }
+void fileAttachment::fileInfo::setSize(const utility::stream::size_type size) { if (m_size) { *m_size = size; } else { m_size = new utility::stream::size_type(size); } }
 
 
 } // vmime

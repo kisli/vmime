@@ -75,6 +75,7 @@ libvmime_sources = [
 	'encoding.cpp', 'encoding.hpp',
 	'exception.cpp', 'exception.hpp',
 	'fileAttachment.cpp', 'fileAttachment.hpp',
+	'fileContentHandler.cpp', 'fileContentHandler.hpp',
 	'generatedMessageAttachment.hpp', 'generatedMessageAttachment.cpp',
 	'generationContext.hpp', 'generationContext.cpp',
 	'header.cpp', 'header.hpp',
