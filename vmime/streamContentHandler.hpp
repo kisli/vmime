@@ -32,12 +32,35 @@ namespace vmime
 {
 
 
+/** A content handler which obtains its data from a stream.
+  */
+
 class VMIME_EXPORT streamContentHandler : public contentHandler
 {
 public:
 
+	/** Creates a new empty content handler. No data can be extracted until
+	  * an input stream is set using setData() function.
+	  *
+	  * @return a reference to a new content handler
+	  */
 	streamContentHandler();
-	streamContentHandler(ref <utility::inputStream> is, const utility::stream::size_type length, const vmime::encoding& enc = NO_ENCODING);
+
+	/** Creates a new content handler using an input stream.
+	  *
+	  * @param is input stream from which data will be obtained
+	  * @param length expected stream length. May be zero, but it is highly
+	  * recommended to set this parameter to take part of some optimizations
+	  * and features (eg. SMTP CHUNKING/SIZE extension).
+	  * @param enc set to anything other than NO_ENCODING if the data obtained
+	  * from the stream is already encoded with the specified encoding
+	  *
+	  * @return a reference to a new content handler
+	  */
+	streamContentHandler
+		(ref <utility::inputStream> is,
+		 const utility::stream::size_type length,
+		 const vmime::encoding& enc = NO_ENCODING);
 
 	~streamContentHandler();
 
@@ -46,7 +69,19 @@ public:
 
 	ref <contentHandler> clone() const;
 
-	void setData(ref <utility::inputStream> is, const utility::stream::size_type length, const vmime::encoding& enc = NO_ENCODING);
+	/** Sets the data managed by this content handler.
+	  *
+	  * @param is input stream from which data will be obtained
+	  * @param length expected stream length. May be zero, but it is highly
+	  * recommended to set this parameter to take part of some optimizations
+	  * and features (eg. SMTP CHUNKING/SIZE extension).
+	  * @param enc set to anything other than NO_ENCODING if the data obtained
+	  * from the stream is already encoded with the specified encoding
+	  */
+	void setData
+		(ref <utility::inputStream> is,
+		 const utility::stream::size_type length,
+		 const vmime::encoding& enc = NO_ENCODING);
 
 
 	void generate(utility::outputStream& os, const vmime::encoding& enc, const string::size_type maxLineLength = lineLengthLimits::infinite) const;
