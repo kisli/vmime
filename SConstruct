@@ -368,6 +368,8 @@ libvmimetest_sources = [
 	'tests/parser/datetimeTest.cpp',
 	'tests/parser/dispositionTest.cpp',
 	'tests/parser/emailAddressTest.cpp',
+	'tests/parser/emptyContentHandlerTest.cpp',
+	'tests/parser/fileContentHandlerTest.cpp',
 	'tests/parser/headerTest.cpp',
 	'tests/parser/headerFieldTest.cpp',
 	'tests/parser/htmlTextPartTest.cpp',
@@ -379,6 +381,8 @@ libvmimetest_sources = [
 	'tests/parser/messageTest.cpp',
 	'tests/parser/pathTest.cpp',
 	'tests/parser/parameterTest.cpp',
+	'tests/parser/streamContentHandlerTest.cpp',
+	'tests/parser/stringContentHandlerTest.cpp',
 	'tests/parser/textTest.cpp',
 	'tests/parser/wordEncoderTest.cpp',
 	# ==============================  Utility  =============================

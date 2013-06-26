@@ -84,7 +84,7 @@
 	static AutoRegisterModule <VMIME_TEST_SUITE> autoRegisterModule;
 
 #define VMIME_TEST_LIST_BEGIN       CPPUNIT_TEST_SUITE(VMIME_TEST_SUITE);
-#define VMIME_TEST_LIST_END         CPPUNIT_TEST_SUITE_END();
+#define VMIME_TEST_LIST_END         CPPUNIT_TEST_SUITE_END(); public:
 #define VMIME_TEST(name)            CPPUNIT_TEST(name);
 
 
@@ -216,6 +216,14 @@ inline std::ostream& operator<<(std::ostream& os, const vmime::datetime& d)
 	os << "[datetime: " << d.getYear() << "/" << d.getMonth() << "/" << d.getDay();
 	os << " " << d.getHour() << ":" << d.getMinute() << ":" << d.getSecond();
 	os << " #" << d.getZone() << "]";
+
+	return (os);
+}
+
+
+inline std::ostream& operator<<(std::ostream& os, const vmime::encoding& enc)
+{
+	os << enc.generate();
 
 	return (os);
 }
