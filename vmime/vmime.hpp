@@ -54,6 +54,7 @@
 #include "vmime/path.hpp"
 
 #include "vmime/emptyContentHandler.hpp"
+#include "vmime/fileContentHandler.hpp"
 #include "vmime/stringContentHandler.hpp"
 #include "vmime/streamContentHandler.hpp"
 
