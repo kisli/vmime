@@ -54,6 +54,13 @@ public:
 	bool isEmpty() const;
 
 	bool isBuffered() const;
+
+	void setContentTypeHint(const mediaType& type);
+	const mediaType getContentTypeHint() const;
+
+private:
+
+	mediaType m_contentType;
 };
 
 

@@ -90,6 +90,8 @@ void IMAPMessagePartContentHandler::generate
 
 			ref <utility::encoder::encoder> theEncoder = enc.getEncoder();
 			theEncoder->getProperties()["maxlinelength"] = maxLineLength;
+			theEncoder->getProperties()["text"] = (m_contentType.getType() == mediaTypes::TEXT);
+
 			theEncoder->encode(tempIn, os);
 		}
 		// No encoding to perform
@@ -110,6 +112,7 @@ void IMAPMessagePartContentHandler::generate
 		// Encode temporary buffer to output stream
 		ref <utility::encoder::encoder> theEncoder = enc.getEncoder();
 		theEncoder->getProperties()["maxlinelength"] = maxLineLength;
+		theEncoder->getProperties()["text"] = (m_contentType.getType() == mediaTypes::TEXT);
 
 		utility::inputStreamStringAdapter is(oss.str());
 
@@ -185,6 +188,18 @@ bool IMAPMessagePartContentHandler::isEmpty() const
 bool IMAPMessagePartContentHandler::isBuffered() const
 {
 	return true;
+}
+
+
+void IMAPMessagePartContentHandler::setContentTypeHint(const mediaType& type)
+{
+	m_contentType = type;
+}
+
+
+const mediaType IMAPMessagePartContentHandler::getContentTypeHint() const
+{
+	return m_contentType;
 }
 
 

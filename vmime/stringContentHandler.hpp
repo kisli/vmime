@@ -79,7 +79,12 @@ public:
 
 	bool isBuffered() const;
 
+	void setContentTypeHint(const mediaType& type);
+	const mediaType getContentTypeHint() const;
+
 private:
+
+	mediaType m_contentType;
 
 	// Equals to NO_ENCODING if data is not encoded, otherwise this
 	// specifies the encoding that have been used to encode the data.

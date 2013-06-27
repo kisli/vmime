@@ -52,7 +52,7 @@ streamContentHandler::~streamContentHandler()
 
 
 streamContentHandler::streamContentHandler(const streamContentHandler& cts)
-	: contentHandler(), m_encoding(cts.m_encoding),
+	: contentHandler(), m_encoding(cts.m_encoding), m_contentType(cts.m_contentType),
 	  m_stream(cts.m_stream), m_length(cts.m_length)
 {
 }
@@ -66,6 +66,7 @@ ref <contentHandler> streamContentHandler::clone() const
 
 streamContentHandler& streamContentHandler::operator=(const streamContentHandler& cts)
 {
+	m_contentType = cts.m_contentType;
 	m_encoding = cts.m_encoding;
 
 	m_stream = cts.m_stream;
@@ -103,6 +104,7 @@ void streamContentHandler::generate(utility::outputStream& os, const vmime::enco
 			ref <utility::encoder::encoder> theEncoder = enc.getEncoder();
 
 			theEncoder->getProperties()["maxlinelength"] = maxLineLength;
+			theEncoder->getProperties()["text"] = (m_contentType.getType() == mediaTypes::TEXT);
 
 			m_stream->reset();  // may not work...
 
@@ -129,6 +131,7 @@ void streamContentHandler::generate(utility::outputStream& os, const vmime::enco
 	{
 		ref <utility::encoder::encoder> theEncoder = enc.getEncoder();
 		theEncoder->getProperties()["maxlinelength"] = maxLineLength;
+		theEncoder->getProperties()["text"] = (m_contentType.getType() == mediaTypes::TEXT);
 
 		m_stream->reset();  // may not work...
 
@@ -213,6 +216,18 @@ bool streamContentHandler::isBuffered() const
 
 	// FIXME: some streams can be resetted
 	return false;
+}
+
+
+void streamContentHandler::setContentTypeHint(const mediaType& type)
+{
+	m_contentType = type;
+}
+
+
+const mediaType streamContentHandler::getContentTypeHint() const
+{
+	return m_contentType;
 }
 
 

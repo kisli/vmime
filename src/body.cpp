@@ -494,7 +494,10 @@ void body::generateImpl
 	else
 	{
 		// Generate the contents
-		m_contents->generate(os, getEncoding(), ctx.getMaxLineLength());
+		ref <contentHandler> contents = m_contents->clone();
+		contents->setContentTypeHint(getContentType());
+
+		contents->generate(os, getEncoding(), ctx.getMaxLineLength());
 	}
 }
 

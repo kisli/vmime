@@ -32,6 +32,7 @@
 #include "vmime/utility/smartPtr.hpp"
 #include "vmime/utility/progressListener.hpp"
 #include "vmime/encoding.hpp"
+#include "vmime/mediaType.hpp"
 
 
 namespace vmime
@@ -118,6 +119,18 @@ public:
 	  * if not (ie. streamed data from socket)
 	  */
 	virtual bool isBuffered() const = 0;
+
+	/** Gives a hint about the kind of data managed by this object.
+	  *
+	  * @param type content media type
+	  */
+	virtual void setContentTypeHint(const mediaType& type) = 0;
+
+	/** Returns a hint about the kind of data managed by this object.
+	  *
+	  * @return type content media type
+	  */
+	virtual const mediaType getContentTypeHint() const = 0;
 };
 
 

@@ -44,7 +44,8 @@ stringContentHandler::stringContentHandler(const string& buffer, const vmime::en
 
 
 stringContentHandler::stringContentHandler(const stringContentHandler& cts)
-	: contentHandler(), m_encoding(cts.m_encoding), m_string(cts.m_string)
+	: contentHandler(), m_contentType(cts.m_contentType),
+	  m_encoding(cts.m_encoding), m_string(cts.m_string)
 {
 }
 
@@ -75,6 +76,7 @@ ref <contentHandler> stringContentHandler::clone() const
 
 stringContentHandler& stringContentHandler::operator=(const stringContentHandler& cts)
 {
+	m_contentType = cts.m_contentType;
 	m_encoding = cts.m_encoding;
 	m_string = cts.m_string;
 
@@ -127,6 +129,7 @@ void stringContentHandler::generate(utility::outputStream& os,
 			ref <utility::encoder::encoder> theEncoder = enc.getEncoder();
 
 			theEncoder->getProperties()["maxlinelength"] = maxLineLength;
+			theEncoder->getProperties()["text"] = (m_contentType.getType() == mediaTypes::TEXT);
 
 			utility::inputStreamStringProxyAdapter in(m_string);
 
@@ -151,6 +154,7 @@ void stringContentHandler::generate(utility::outputStream& os,
 	{
 		ref <utility::encoder::encoder> theEncoder = enc.getEncoder();
 		theEncoder->getProperties()["maxlinelength"] = maxLineLength;
+		theEncoder->getProperties()["text"] = (m_contentType.getType() == mediaTypes::TEXT);
 
 		utility::inputStreamStringProxyAdapter in(m_string);
 
@@ -214,6 +218,18 @@ const vmime::encoding& stringContentHandler::getEncoding() const
 bool stringContentHandler::isBuffered() const
 {
 	return true;
+}
+
+
+void stringContentHandler::setContentTypeHint(const mediaType& type)
+{
+	m_contentType = type;
+}
+
+
+const mediaType stringContentHandler::getContentTypeHint() const
+{
+	return m_contentType;
 }
 
 

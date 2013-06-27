@@ -102,4 +102,16 @@ bool emptyContentHandler::isBuffered() const
 }
 
 
+void emptyContentHandler::setContentTypeHint(const mediaType& type)
+{
+	m_contentType = type;
+}
+
+
+const mediaType emptyContentHandler::getContentTypeHint() const
+{
+	return m_contentType;
+}
+
+
 } // vmime

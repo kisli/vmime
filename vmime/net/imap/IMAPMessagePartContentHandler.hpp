@@ -63,12 +63,16 @@ public:
 
 	bool isBuffered() const;
 
+	void setContentTypeHint(const mediaType& type);
+	const mediaType getContentTypeHint() const;
+
 private:
 
 	weak_ref <IMAPMessage> m_message;
 	weak_ref <part> m_part;
 
 	vmime::encoding m_encoding;
+	vmime::mediaType m_contentType;
 };
 
 
