@@ -47,7 +47,6 @@ VMIME_TEST_SUITE_BEGIN(fileContentHandlerTest)
 		testDataDecoded = "ABCDEFGHIJKLMNOPQRSTUVWXYZ \x12\x34\x56\x78\x90 abcdefghijklmnopqrstuvwxyz0123456789";
 		testDataEncoded = "QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVogEjRWeJAgYWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXowMTIzNDU2Nzg5";
 
-//printf("\n %s \n", encode("base64", testDataDecoded).c_str());
 		std::ostringstream testFilePath;
 		testFilePath << "/tmp/vmime_test_" << (rand() % 999999999);
 
