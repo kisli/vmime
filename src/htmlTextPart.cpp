@@ -162,7 +162,8 @@ void htmlTextPart::findEmbeddedParts(const bodyPart& part,
 }
 
 
-void htmlTextPart::addEmbeddedObject(const bodyPart& part, const string& id)
+void htmlTextPart::addEmbeddedObject(const bodyPart& part, const string& id,
+	const embeddedObject::ReferenceType refType)
 {
 	// The object may already exists. This can happen if an object is
 	// identified by both a Content-Id and a Content-Location. In this
@@ -183,7 +184,7 @@ void htmlTextPart::addEmbeddedObject(const bodyPart& part, const string& id)
 
 	m_objects.push_back(vmime::create <embeddedObject>
 		(part.getBody()->getContents()->clone().dynamicCast <contentHandler>(),
-		 part.getBody()->getEncoding(), id, type));
+		 part.getBody()->getEncoding(), id, type, refType));
 }
 
 
@@ -235,7 +236,7 @@ void htmlTextPart::parse(ref <const bodyPart> message, ref <const bodyPart> pare
 		{
 			// This part is referenced in the HTML text.
 			// Add it to the embedded object list.
-			addEmbeddedObject(**p, mid.getId());
+			addEmbeddedObject(**p, mid.getId(), embeddedObject::REFERENCED_BY_ID);
 		}
 	}
 
@@ -251,7 +252,7 @@ void htmlTextPart::parse(ref <const bodyPart> message, ref <const bodyPart> pare
 		{
 			// This part is referenced in the HTML text.
 			// Add it to the embedded object list.
-			addEmbeddedObject(**p, locStr);
+			addEmbeddedObject(**p, locStr, embeddedObject::REFERENCED_BY_LOCATION);
 		}
 	}
 
@@ -353,7 +354,7 @@ void htmlTextPart::setCharset(const charset& ch)
 }
 
 
-const ref <const contentHandler> htmlTextPart::getPlainText() const
+ref <const contentHandler> htmlTextPart::getPlainText() const
 {
 	return m_plainText;
 }
@@ -383,20 +384,18 @@ size_t htmlTextPart::getObjectCount() const
 }
 
 
-const ref <const htmlTextPart::embeddedObject> htmlTextPart::getObjectAt(const size_t pos) const
+ref <const htmlTextPart::embeddedObject> htmlTextPart::getObjectAt(const size_t pos) const
 {
 	return m_objects[pos];
 }
 
 
-const ref <const htmlTextPart::embeddedObject> htmlTextPart::findObject(const string& id_) const
+ref <const htmlTextPart::embeddedObject> htmlTextPart::findObject(const string& id) const
 {
-	const string id = cleanId(id_);
-
 	for (std::vector <ref <embeddedObject> >::const_iterator o = m_objects.begin() ;
 	     o != m_objects.end() ; ++o)
 	{
-		if ((*o)->getId() == id)
+		if ((*o)->matchesId(id))
 			return *o;
 	}
 
@@ -404,14 +403,12 @@ const ref <const htmlTextPart::embeddedObject> htmlTextPart::findObject(const st
 }
 
 
-bool htmlTextPart::hasObject(const string& id_) const
+bool htmlTextPart::hasObject(const string& id) const
 {
-	const string id = cleanId(id_);
-
 	for (std::vector <ref <embeddedObject> >::const_iterator o = m_objects.begin() ;
 	     o != m_objects.end() ; ++o)
 	{
-		if ((*o)->getId() == id)
+		if ((*o)->matchesId(id))
 			return true;
 	}
 
@@ -419,33 +416,99 @@ bool htmlTextPart::hasObject(const string& id_) const
 }
 
 
-const string htmlTextPart::addObject(ref <contentHandler> data,
-	const vmime::encoding& enc, const mediaType& type)
+ref <const htmlTextPart::embeddedObject> htmlTextPart::addObject
+	(ref <contentHandler> data, const vmime::encoding& enc, const mediaType& type)
 {
 	const messageId mid(messageId::generateId());
-	const string id = mid.getId();
 
-	m_objects.push_back(vmime::create <embeddedObject>(data, enc, id, type));
+	ref <embeddedObject> obj = vmime::create <embeddedObject>
+		(data, enc, mid.getId(), type, embeddedObject::REFERENCED_BY_ID);
 
-	return "CID:" + id;
+	m_objects.push_back(obj);
+
+	return obj;
 }
 
 
-const string htmlTextPart::addObject(ref <contentHandler> data, const mediaType& type)
+ref <const htmlTextPart::embeddedObject> htmlTextPart::addObject
+	(ref <contentHandler> data, const mediaType& type)
 {
 	return addObject(data, encoding::decide(data), type);
 }
 
 
-const string htmlTextPart::addObject(const string& data, const mediaType& type)
+ref <const htmlTextPart::embeddedObject> htmlTextPart::addObject
+	(const string& data, const mediaType& type)
 {
 	ref <stringContentHandler> cts = vmime::create <stringContentHandler>(data);
 	return addObject(cts, encoding::decide(cts), type);
 }
 
 
+
+//
+// htmlTextPart::embeddedObject
+//
+
+htmlTextPart::embeddedObject::embeddedObject
+	(ref <contentHandler> data, const encoding& enc,
+	 const string& id, const mediaType& type, const ReferenceType refType)
+	: m_data(data->clone().dynamicCast <contentHandler>()),
+	  m_encoding(enc), m_id(id), m_type(type), m_refType(refType)
+{
+}
+
+
+ref <const contentHandler> htmlTextPart::embeddedObject::getData() const
+{
+	return m_data;
+}
+
+
+const vmime::encoding htmlTextPart::embeddedObject::getEncoding() const
+{
+	return m_encoding;
+}
+
+
+const string htmlTextPart::embeddedObject::getId() const
+{
+	return m_id;
+}
+
+
+const string htmlTextPart::embeddedObject::getReferenceId() const
+{
+	if (m_refType == REFERENCED_BY_ID)
+		return string("CID:") + m_id;
+	else
+		return m_id;
+}
+
+
+const mediaType htmlTextPart::embeddedObject::getType() const
+{
+	return m_type;
+}
+
+
+htmlTextPart::embeddedObject::ReferenceType htmlTextPart::embeddedObject::getReferenceType() const
+{
+	return m_refType;
+}
+
+
+bool htmlTextPart::embeddedObject::matchesId(const string& id) const
+{
+	if (m_refType == REFERENCED_BY_ID)
+		return m_id == cleanId(id);
+	else
+		return m_id == id;
+}
+
+
 // static
-const string htmlTextPart::cleanId(const string& id)
+const string htmlTextPart::embeddedObject::cleanId(const string& id)
 {
 	if (id.length() >= 4 &&
 	    (id[0] == 'c' || id[0] == 'C') &&
@@ -459,44 +522,6 @@ const string htmlTextPart::cleanId(const string& id)
 	{
 		return id;
 	}
-}
-
-
-
-//
-// htmlTextPart::embeddedObject
-//
-
-htmlTextPart::embeddedObject::embeddedObject
-	(ref <contentHandler> data, const encoding& enc,
-	 const string& id, const mediaType& type)
-	: m_data(data->clone().dynamicCast <contentHandler>()),
-	  m_encoding(enc), m_id(id), m_type(type)
-{
-}
-
-
-const ref <const contentHandler> htmlTextPart::embeddedObject::getData() const
-{
-	return m_data;
-}
-
-
-const vmime::encoding& htmlTextPart::embeddedObject::getEncoding() const
-{
-	return m_encoding;
-}
-
-
-const string& htmlTextPart::embeddedObject::getId() const
-{
-	return m_id;
-}
-
-
-const mediaType& htmlTextPart::embeddedObject::getType() const
-{
-	return m_type;
 }
 
 

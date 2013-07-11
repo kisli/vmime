@@ -86,12 +86,13 @@ int main()
 			vmime::create <vmime::streamContentHandler>
 				(fileReader->getInputStream(), imageFile->getLength());
 
-		const vmime::string cid = textPart.addObject(imageCts,
-			vmime::mediaType(vmime::mediaTypes::IMAGE, vmime::mediaTypes::IMAGE_JPEG));
+		vmime::ref <const vmime::htmlTextPart::embeddedObject> obj = textPart.addObject
+			(imageCts, vmime::mediaType(vmime::mediaTypes::IMAGE, vmime::mediaTypes::IMAGE_JPEG));
 
 		// -- message text
 		textPart.setText(vmime::create <vmime::stringContentHandler>
-			(vmime::string("This is the <b>HTML text</b>.<br/><img src=\"") + cid + vmime::string("\"/>")));
+			(vmime::string("This is the <b>HTML text</b>.<br/>"
+				"<img src=\"") + obj->getReferenceId() + vmime::string("\"/>")));
 		textPart.setPlainText(vmime::create <vmime::stringContentHandler>
 			("This is the plain text (without HTML formatting)."));
 

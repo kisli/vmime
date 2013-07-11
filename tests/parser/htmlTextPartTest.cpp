@@ -157,12 +157,14 @@ VMIME_TEST_SUITE_BEGIN(htmlTextPartTest)
 
 		obj = htmlPart.findObject("image1@test");
 
+		VASSERT_EQ("ref-type1", vmime::htmlTextPart::embeddedObject::REFERENCED_BY_ID, obj->getReferenceType());
 		VASSERT_EQ("id-obj1", "image1@test", obj->getId());
 		VASSERT_EQ("data-obj1", "Image1", extractContent(obj->getData()));
 		VASSERT_EQ("type-obj1", "image/png", obj->getType().generate());
 
 		obj = htmlPart.findObject("image2@test");
 
+		VASSERT_EQ("ref-type2", vmime::htmlTextPart::embeddedObject::REFERENCED_BY_ID, obj->getReferenceType());
 		VASSERT_EQ("id-obj2", "image2@test", obj->getId());
 		VASSERT_EQ("data-obj2", "Image2", extractContent(obj->getData()));
 		VASSERT_EQ("type-obj2", "image/jpeg", obj->getType().generate());
@@ -223,6 +225,7 @@ VMIME_TEST_SUITE_BEGIN(htmlTextPartTest)
 
 		obj = htmlPart.findObject("http://www.vmime.org/test/image1.png");
 
+		VASSERT_EQ("ref-type", vmime::htmlTextPart::embeddedObject::REFERENCED_BY_LOCATION, obj->getReferenceType());
 		VASSERT_EQ("id-obj", "http://www.vmime.org/test/image1.png", obj->getId());
 		VASSERT_EQ("data-obj", "Image1", extractContent(obj->getData()));
 		VASSERT_EQ("type-obj", "image/png", obj->getType().generate());
