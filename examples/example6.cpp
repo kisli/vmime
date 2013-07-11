@@ -559,6 +559,7 @@ static void connectStore()
 				choices.push_back("Show message header");
 				choices.push_back("Show message envelope");
 				choices.push_back("Extract whole message");
+				choices.push_back("Status");
 				choices.push_back("List folders");
 				choices.push_back("Change folder");
 				choices.push_back("Return to main menu");
@@ -664,8 +665,17 @@ static void connectStore()
 
 					break;
 				}
-				// List folders
+				// Status
 				case 6:
+				{
+					int count, unseen;
+					f->status(count, unseen);
+
+					std::cout << "Status: count=" << count << ", unseen=" << unseen << std::endl;
+					break;
+				}
+				// List folders
+				case 7:
 				{
 					vmime::ref <vmime::net::folder>
 						root = st->getRootFolder();
@@ -674,7 +684,7 @@ static void connectStore()
 					break;
 				}
 				// Change folder
-				case 7:
+				case 8:
 				{
 					std::cout << "Enter folder path (eg. /root/subfolder):" << std::endl;
 					std::cout.flush();
@@ -712,7 +722,7 @@ static void connectStore()
 					break;
 				}
 				// Main menu
-				case 8:
+				case 9:
 
 					f->close(true);  // 'true' to expunge deleted messages
 					cont = false;
