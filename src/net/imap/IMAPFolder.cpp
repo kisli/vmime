@@ -1816,22 +1816,22 @@ void IMAPFolder::status(int& count, int& unseen)
 		if (responseData->mailbox_data() &&
 			responseData->mailbox_data()->type() == IMAPParser::mailbox_data::STATUS)
 		{
-			const std::vector <IMAPParser::status_info*>& statusList =
-				responseData->mailbox_data()->status_info_list();
+			const IMAPParser::status_att_list* statusAttList =
+				responseData->mailbox_data()->status_att_list();
 
-			for (std::vector <IMAPParser::status_info*>::const_iterator
-			     jt = statusList.begin() ; jt != statusList.end() ; ++jt)
+			for (std::vector <IMAPParser::status_att_val*>::const_iterator
+			     jt = statusAttList->values().begin() ; jt != statusAttList->values().end() ; ++jt)
 			{
-				switch ((*jt)->status_att()->type())
+				switch ((*jt)->type())
 				{
-				case IMAPParser::status_att::MESSAGES:
+				case IMAPParser::status_att_val::MESSAGES:
 
-					count = (*jt)->number()->value();
+					count = (*jt)->value_as_number()->value();
 					break;
 
-				case IMAPParser::status_att::UNSEEN:
+				case IMAPParser::status_att_val::UNSEEN:
 
-					unseen = (*jt)->number()->value();
+					unseen = (*jt)->value_as_number()->value();
 					break;
 
 				default:

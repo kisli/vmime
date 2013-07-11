@@ -553,11 +553,11 @@ public:
 	private:
 
 		const bool m_nonZero;
-		unsigned int m_value;
+		unsigned long m_value;
 
 	public:
 
-		unsigned int value() const { return (m_value); }
+		unsigned long value() const { return (m_value); }
 	};
 
 
@@ -1959,11 +1959,14 @@ public:
 
 
 	//
-	// status_att ::= "MESSAGES" / "RECENT" / "UIDNEXT" /
-	//                "UIDVALIDITY" / "UNSEEN"
+	// status-att-val  = ("MESSAGES" SP number) /
+	//                   ("RECENT" SP number) /
+	//                   ("UIDNEXT" SP nz-number) /
+	//                   ("UIDVALIDITY" SP nz-number) /
+	//                   ("UNSEEN" SP number)
 	//
 
-	class status_att : public component
+	class status_att_val : public component
 	{
 	public:
 
@@ -1995,6 +1998,9 @@ public:
 				m_type = UNSEEN;
 			}
 
+			parser.check <SPACE>(line, &pos);
+			m_value = parser.get <IMAPParser::number>(line, &pos);
+
 			*currentPos = pos;
 		}
 
@@ -2011,10 +2017,55 @@ public:
 	private:
 
 		Type m_type;
+		IMAPParser::component* m_value;
 
 	public:
 
 		Type type() const { return (m_type); }
+
+		const IMAPParser::number* value_as_number() const
+		{
+			return dynamic_cast <IMAPParser::number *>(m_value);
+		}
+	};
+
+
+	// status-att-list = status-att-val *(SP status-att-val)
+
+	class status_att_list : public component
+	{
+	public:
+
+		~status_att_list()
+		{
+			for (std::vector <status_att_val*>::iterator it = m_values.begin() ;
+			     it != m_values.end() ; ++it)
+			{
+				delete *it;
+			}
+		}
+
+		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		{
+			DEBUG_ENTER_COMPONENT("status_att_list");
+
+			string::size_type pos = *currentPos;
+
+			m_values.push_back(parser.get <IMAPParser::status_att_val>(line, &pos));
+
+			while (parser.check <SPACE>(line, &pos, true))
+				m_values.push_back(parser.get <IMAPParser::status_att_val>(line, &pos));
+
+			*currentPos = pos;
+		}
+
+	private:
+
+		std::vector <status_att_val*> m_values;
+
+	public:
+
+		const std::vector <status_att_val*>& values() const { return m_values; }
 	};
 
 
@@ -2210,9 +2261,9 @@ public:
 			parser.check <one_char <'"'> >(line, &pos);
 
 
-			m_datetime.setHour(std::min(std::max(nh->value(), 0u), 23u));
-			m_datetime.setMinute(std::min(std::max(nmi->value(), 0u), 59u));
-			m_datetime.setSecond(std::min(std::max(ns->value(), 0u), 59u));
+			m_datetime.setHour(std::min(std::max(nh->value(), 0ul), 23ul));
+			m_datetime.setMinute(std::min(std::max(nmi->value(), 0ul), 59ul));
+			m_datetime.setSecond(std::min(std::max(ns->value(), 0ul), 59ul));
 
 			const int zone = static_cast <int>(nz->value());
 			const int zh = zone / 100;   // hour offset
@@ -2220,7 +2271,7 @@ public:
 
 			m_datetime.setZone(((zh * 60) + zm) * sign);
 
-			m_datetime.setDay(std::min(std::max(nd->value(), 1u), 31u));
+			m_datetime.setDay(std::min(std::max(nd->value(), 1ul), 31ul));
 			m_datetime.setYear(ny->value());
 
 			const string month(utility::stringUtils::toLower(amo->value()));
@@ -4309,57 +4360,13 @@ public:
 
 
 	//
-	// status_info ::= status_att SPACE number
-	//
-
-	class status_info : public component
-	{
-	public:
-
-		status_info()
-			: m_status_att(NULL), m_number(NULL)
-		{
-		}
-
-		~status_info()
-		{
-			delete (m_status_att);
-			delete (m_number);
-		}
-
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
-		{
-			DEBUG_ENTER_COMPONENT("status_info");
-
-			string::size_type pos = *currentPos;
-
-			m_status_att = parser.get <IMAPParser::status_att>(line, &pos);
-			parser.check <SPACE>(line, &pos);
-			m_number = parser.get <IMAPParser::number>(line, &pos);
-
-			*currentPos = pos;
-		}
-
-	private:
-
-		IMAPParser::status_att* m_status_att;
-		IMAPParser::number* m_number;
-
-	public:
-
-		const IMAPParser::status_att* status_att() const { return (m_status_att); }
-		const IMAPParser::number* number() const { return (m_number); }
-	};
-
-
-	//
 	// mailbox_data ::= "FLAGS" SPACE mailbox_flag_list /
 	//                  "LIST" SPACE mailbox_list /
 	//                  "LSUB" SPACE mailbox_list /
 	//                  "MAILBOX" SPACE text /
 	//                  "SEARCH" [SPACE 1#nz_number] /
 	//                  "STATUS" SPACE mailbox SPACE
-	//                    "(" #<status_att number ")" /
+	//                    "(" [status-att-list] ")" /
 	//                  number SPACE "EXISTS" /
 	//                  number SPACE "RECENT"
 	//
@@ -4370,7 +4377,7 @@ public:
 
 		mailbox_data()
 			: m_number(NULL), m_mailbox_flag_list(NULL), m_mailbox_list(NULL),
-			  m_mailbox(NULL), m_text(NULL)
+			  m_mailbox(NULL), m_text(NULL), m_status_att_list(NULL)
 		{
 		}
 
@@ -4388,11 +4395,7 @@ public:
 				delete (*it);
 			}
 
-			for (std::vector <status_info*>::iterator it = m_status_info_list.begin() ;
-			     it != m_status_info_list.end() ; ++it)
-			{
-				delete (*it);
-			}
+			delete m_status_att_list;
 		}
 
 		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
@@ -4474,9 +4477,7 @@ public:
 					m_type = SEARCH;
 				}
 				// "STATUS" SPACE mailbox SPACE
-				// "(" #<status_att number)] ")"
-				//
-				// "(" [status_att SPACE number *(SPACE status_att SPACE number)] ")"
+				// "(" [status_att_list] ")"
 				else
 				{
 					parser.checkWithArg <special_atom>(line, &pos, "status");
@@ -4485,15 +4486,12 @@ public:
 					m_mailbox = parser.get <IMAPParser::mailbox>(line, &pos);
 
 					parser.check <SPACE>(line, &pos);
+
 					parser.check <one_char <'('> >(line, &pos);
 
-					m_status_info_list.push_back(parser.get <status_info>(line, &pos));
+					m_status_att_list = parser.get <IMAPParser::status_att_list>(line, &pos, true);
 
-					while (!parser.check <one_char <')'> >(line, &pos, true))
-					{
-						parser.check <SPACE>(line, &pos);
-						m_status_info_list.push_back(parser.get <status_info>(line, &pos));
-					}
+					parser.check <one_char <')'> >(line, &pos);
 
 					m_type = STATUS;
 				}
@@ -4525,7 +4523,7 @@ public:
 		IMAPParser::mailbox* m_mailbox;
 		IMAPParser::text* m_text;
 		std::vector <nz_number*> m_search_nz_number_list;
-		std::vector <status_info*> m_status_info_list;
+		IMAPParser::status_att_list* m_status_att_list;
 
 	public:
 
@@ -4537,7 +4535,7 @@ public:
 		const IMAPParser::mailbox* mailbox() const { return (m_mailbox); }
 		const IMAPParser::text* text() const { return (m_text); }
 		const std::vector <nz_number*>& search_nz_number_list() const { return (m_search_nz_number_list); }
-		const std::vector <status_info*>& status_info_list() const { return (m_status_info_list); }
+		const IMAPParser::status_att_list* status_att_list() const { return m_status_att_list; }
 	};
 
 
