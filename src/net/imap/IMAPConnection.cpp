@@ -653,10 +653,7 @@ void IMAPConnection::initHierarchySeparator()
 void IMAPConnection::send(bool tag, const string& what, bool end)
 {
 	if (tag && !m_firstTag)
-	{
 		++(*m_tag);
-		m_firstTag = false;
-	}
 
 #if VMIME_DEBUG
 	std::ostringstream oss;
@@ -687,6 +684,9 @@ void IMAPConnection::send(bool tag, const string& what, bool end)
 		m_socket->send("\r\n");
 	}
 #endif
+
+	if (tag)
+		m_firstTag = false;
 }
 
 
