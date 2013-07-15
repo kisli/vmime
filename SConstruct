@@ -606,6 +606,14 @@ opts.AddVariables(
 		ignorecase = 1
 	),
 	EnumVariable(
+		'pf_64bit_type',
+		'The C-language 64-bit type for your platform',
+		'long',
+		allowed_values = ('char', 'short', 'int', 'long', 'long long'),
+		map = { },
+		ignorecase = 1
+	),
+	EnumVariable(
 		'build_tests',
 		'Build unit tests (run with "scons run-tests")',
 		'no',
@@ -876,6 +884,9 @@ config_hpp.write('typedef unsigned ' + env['pf_16bit_type'] + ' vmime_uint16;\n'
 config_hpp.write('// -- 32-bit\n')
 config_hpp.write('typedef signed ' + env['pf_32bit_type'] + ' vmime_int32;\n')
 config_hpp.write('typedef unsigned ' + env['pf_32bit_type'] + ' vmime_uint32;\n')
+config_hpp.write('// -- 64-bit\n')
+config_hpp.write('typedef signed ' + env['pf_64bit_type'] + ' vmime_int64;\n')
+config_hpp.write('typedef unsigned ' + env['pf_64bit_type'] + ' vmime_uint64;\n')
 config_hpp.write('\n')
 config_hpp.write('#define VMIME_HAVE_SIZE_T 1\n')
 config_hpp.write('\n')
