@@ -84,14 +84,14 @@ public:
 	/** Create the specified folder.
 	  *
 	  * @param path virtual path of the folder
-	  * @throw filesystem_exception, invalid_folder_name
+	  * @throw exceptions::filesystem_exception, invalid_folder_name
 	  */
 	virtual void createFolder(const folder::path& path) = 0;
 
 	/** Destroy the specified folder.
 	  *
 	  * @param path virtual path of the folder
-	  * @throw filesystem_exception
+	  * @throw exceptions::filesystem_exception
 	  */
 	virtual void destroyFolder(const folder::path& path) = 0;
 
@@ -99,7 +99,7 @@ public:
 	  *
 	  * @param oldPath old virtual path of the folder
 	  * @param newPath new virtual path of the folder
-	  * @throw filesystem_exception
+	  * @throw exceptions::filesystem_exception
 	  */
 	virtual void renameFolder(const folder::path& oldPath, const folder::path& newPath) = 0;
 

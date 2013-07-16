@@ -139,7 +139,7 @@ public:
 	  * is not available, a more restricted mode will be selected automatically.
 	  * If set to true and if the requested mode is not available, the opening
 	  * will fail.
-	  * @throw net_exception if an error occurs
+	  * @throw exceptions::net_exception if an error occurs
 	  * @throw exceptions::folder_already_open if the folder is already open
 	  *        in the same session
 	  */
@@ -148,14 +148,14 @@ public:
 	/** Close this folder.
 	  *
 	  * @param expunge if set to true, deleted messages are expunged
-	  * @throw net_exception if an error occurs
+	  * @throw exceptions::net_exception if an error occurs
 	  */
 	virtual void close(const bool expunge) = 0;
 
 	/** Create this folder.
 	  *
 	  * @param type folder type (see folder::Types)
-	  * @throw net_exception if an error occurs
+	  * @throw exceptions::net_exception if an error occurs
 	  */
 	virtual void create(const int type) = 0;
 
@@ -168,7 +168,7 @@ public:
 	/** Delete this folder.
 	  * The folder should be closed before attempting to delete it.
 	  *
-	  * @throw net_exception if an error occurs
+	  * @throw exceptions::net_exception if an error occurs
 	  */
 	virtual void destroy() = 0;
 
@@ -182,7 +182,7 @@ public:
 	  *
 	  * @param num message sequence number
 	  * @return a new object referencing the specified message
-	  * @throw net_exception if an error occurs
+	  * @throw exceptions::net_exception if an error occurs
 	  */
 	virtual ref <message> getMessage(const int num) = 0;
 
@@ -191,7 +191,7 @@ public:
 	  * @param from sequence number of the first message to get
 	  * @param to sequence number of the last message to get
 	  * @return new objects referencing the specified messages
-	  * @throw net_exception if an error occurs
+	  * @throw exceptions::net_exception if an error occurs
 	  */
 	virtual std::vector <ref <message> > getMessages(const int from = 1, const int to = -1) = 0;
 
@@ -199,7 +199,7 @@ public:
 	  *
 	  * @param nums sequence numbers of the messages to retrieve
 	  * @return new objects referencing the specified messages
-	  * @throw net_exception if an error occurs
+	  * @throw exceptions::net_exception if an error occurs
 	  */
 	virtual std::vector <ref <message> > getMessages(const std::vector <int>& nums) = 0;
 
@@ -207,7 +207,7 @@ public:
 	  *
 	  * @param uid UID of message to retrieve
 	  * @return a new object referencing the specified message
-	  * @throw net_exception if an error occurs
+	  * @throw exceptions::net_exception if an error occurs
 	  */
 	virtual ref <message> getMessageByUID(const message::uid& uid) = 0;
 
@@ -215,7 +215,7 @@ public:
 	  *
 	  * @param uids UIDs of messages to retrieve
 	  * @return new objects referencing the specified messages
-	  * @throw net_exception if an error occurs
+	  * @throw exceptions::net_exception if an error occurs
 	  */
 	virtual std::vector <ref <message> > getMessagesByUID(const std::vector <message::uid>& uids) = 0;
 
@@ -229,7 +229,7 @@ public:
 	  *
 	  * @param name sub-folder name
 	  * @return a new object referencing the specified folder
-	  * @throw net_exception if an error occurs
+	  * @throw exceptions::net_exception if an error occurs
 	  */
 	virtual ref <folder> getFolder(const folder::path::component& name) = 0;
 
@@ -238,21 +238,21 @@ public:
 	  * @param recursive if set to true, all the descendant are returned.
 	  * If set to false, only the direct children are returned.
 	  * @return list of sub-folders
-	  * @throw net_exception if an error occurs
+	  * @throw exceptions::net_exception if an error occurs
 	  */
 	virtual std::vector <ref <folder> > getFolders(const bool recursive = false) = 0;
 
 	/** Rename (move) this folder to another location.
 	  *
 	  * @param newPath new path of the folder
-	  * @throw net_exception if an error occurs
+	  * @throw exceptions::net_exception if an error occurs
 	  */
 	virtual void rename(const folder::path& newPath) = 0;
 
 	/** Remove a message in this folder.
 	  *
 	  * @param num sequence number of the message to delete
-	  * @throw net_exception if an error occurs
+	  * @throw exceptions::net_exception if an error occurs
 	  */
 	virtual void deleteMessage(const int num) = 0;
 
@@ -260,14 +260,14 @@ public:
 	  *
 	  * @param from sequence number of the first message to delete
 	  * @param to sequence number of the last message to delete
-	  * @throw net_exception if an error occurs
+	  * @throw exceptions::net_exception if an error occurs
 	  */
 	virtual void deleteMessages(const int from = 1, const int to = -1) = 0;
 
 	/** Remove one or more messages from this folder.
 	  *
 	  * @param nums sequence numbers of the messages to delete
-	  * @throw net_exception if an error occurs
+	  * @throw exceptions::net_exception if an error occurs
 	  */
 	virtual void deleteMessages(const std::vector <int>& nums) = 0;
 
@@ -277,7 +277,7 @@ public:
 	  * @param to sequence number of the last message to modify
 	  * @param flags set of flags (see message::Flags)
 	  * @param mode indicate how to treat old and new flags (see message::FlagsModes)
-	  * @throw net_exception if an error occurs
+	  * @throw exceptions::net_exception if an error occurs
 	  */
 	virtual void setMessageFlags(const int from, const int to, const int flags, const int mode = message::FLAG_MODE_SET) = 0;
 
@@ -286,7 +286,7 @@ public:
 	  * @param nums sequence numbers of the messages to modify
 	  * @param flags set of flags (see message::Flags)
 	  * @param mode indicate how to treat old and new flags (see message::FlagsModes)
-	  * @throw net_exception if an error occurs
+	  * @throw exceptions::net_exception if an error occurs
 	  */
 	virtual void setMessageFlags(const std::vector <int>& nums, const int flags, const int mode = message::FLAG_MODE_SET) = 0;
 
@@ -296,7 +296,7 @@ public:
 	  * @param flags flags for the new message
 	  * @param date date/time for the new message (if NULL, the current time is used)
 	  * @param progress progress listener, or NULL if not used
-	  * @throw net_exception if an error occurs
+	  * @throw exceptions::net_exception if an error occurs
 	  */
 	virtual void addMessage(ref <vmime::message> msg, const int flags = message::FLAG_UNDEFINED, vmime::datetime* date = NULL, utility::progressListener* progress = NULL) = 0;
 
@@ -307,7 +307,7 @@ public:
 	  * @param flags flags for the new message
 	  * @param date date/time for the new message (if NULL, the current time is used)
 	  * @param progress progress listener, or NULL if not used
-	  * @throw net_exception if an error occurs
+	  * @throw exceptions::net_exception if an error occurs
 	  */
 	virtual void addMessage(utility::inputStream& is, const int size, const int flags = message::FLAG_UNDEFINED, vmime::datetime* date = NULL, utility::progressListener* progress = NULL) = 0;
 
@@ -315,7 +315,7 @@ public:
 	  *
 	  * @param dest destination folder path
 	  * @param num sequence number of the message to copy
-	  * @throw net_exception if an error occurs
+	  * @throw exceptions::net_exception if an error occurs
 	  */
 	virtual void copyMessage(const folder::path& dest, const int num) = 0;
 
@@ -324,7 +324,7 @@ public:
 	  * @param dest destination folder path
 	  * @param from sequence number of the first message to copy
 	  * @param to sequence number of the last message to copy
-	  * @throw net_exception if an error occurs
+	  * @throw exceptions::net_exception if an error occurs
 	  */
 	virtual void copyMessages(const folder::path& dest, const int from = 1, const int to = -1) = 0;
 
@@ -332,7 +332,7 @@ public:
 	  *
 	  * @param dest destination folder path
 	  * @param nums sequence numbers of the messages to copy
-	  * @throw net_exception if an error occurs
+	  * @throw exceptions::net_exception if an error occurs
 	  */
 	virtual void copyMessages(const folder::path& dest, const std::vector <int>& nums) = 0;
 
@@ -342,20 +342,20 @@ public:
 	  *
 	  * @param count will receive the number of messages in the folder
 	  * @param unseen will receive the number of unseen messages in the folder
-	  * @throw net_exception if an error occurs
+	  * @throw exceptions::net_exception if an error occurs
 	  */
 	virtual void status(int& count, int& unseen) = 0;
 
 	/** Request folder status without opening it.
 	  *
 	  * @return current folder status
-	  * @throw net_exception if an error occurs
+	  * @throw exceptions::net_exception if an error occurs
 	  */
 	virtual ref <folderStatus> getStatus() = 0;
 
 	/** Expunge deleted messages.
 	  *
-	  * @throw net_exception if an error occurs
+	  * @throw exceptions::net_exception if an error occurs
 	  */
 	virtual void expunge() = 0;
 
@@ -398,7 +398,7 @@ public:
 	  * @param msg list of message sequence numbers
 	  * @param options objects to fetch (combination of folder::FetchOptions flags)
 	  * @param progress progress listener, or NULL if not used
-	  * @throw net_exception if an error occurs
+	  * @throw exceptions::net_exception if an error occurs
 	  */
 	virtual void fetchMessages(std::vector <ref <message> >& msg, const int options, utility::progressListener* progress = NULL) = 0;
 
@@ -406,7 +406,7 @@ public:
 	  *
 	  * @param msg the message
 	  * @param options objects to fetch (combination of folder::FetchOptions flags)
-	  * @throw net_exception if an error occurs
+	  * @throw exceptions::net_exception if an error occurs
 	  */
 	virtual void fetchMessage(ref <message> msg, const int options) = 0;
 
@@ -421,7 +421,7 @@ public:
 	  * the specified UID.
  	  *
  	  * @param uid the uid of the first message
- 	  * @throw net_exception if an error occurs
+ 	  * @throw exceptions::net_exception if an error occurs
  	  */
 	virtual std::vector <int> getMessageNumbersStartingOnUID(const message::uid& uid) = 0;
 
