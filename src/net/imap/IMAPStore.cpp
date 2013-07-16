@@ -198,7 +198,8 @@ void IMAPStore::noop()
 	for (std::list <IMAPFolder*>::iterator it = m_folders.begin() ;
 	     it != m_folders.end() ; ++it)
 	{
-		(*it)->noop();
+		if ((*it)->isOpen())
+			(*it)->noop();
 	}
 }
 
