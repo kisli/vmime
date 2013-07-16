@@ -415,7 +415,8 @@ public:
 	  */
 	virtual int getFetchCapabilities() const = 0;
 
-	/** Return the sequence numbers of messages whose UID equal or greater than uid
+	/** Return the sequence numbers of messages whose UID equal or greater than
+	  * the specified UID.
  	  *
  	  * @param uid the uid of the first message
  	  * @throw net_exception if an error occurs
