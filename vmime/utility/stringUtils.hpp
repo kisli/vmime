@@ -157,7 +157,7 @@ public:
 
 	/** Unquote the specified string and transform escaped characters.
 	  *
-	  * @param string from which to remove quotes
+	  * @param str string from which to remove quotes
 	  * @return unquoted string
 	  */
 	static const string unquote(const string& str);

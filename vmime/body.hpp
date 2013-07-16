@@ -195,7 +195,7 @@ public:
 	  *
 	  * @param contents new body contents
 	  * @param type type of contents
-	  * @param charset charset of contents
+	  * @param chset charset of contents
 	  */
 	void setContents(ref <const contentHandler> contents, const mediaType& type, const charset& chset);
 
@@ -203,8 +203,8 @@ public:
 	  *
 	  * @param contents new body contents
 	  * @param type type of contents
-	  * @param charset charset of contents
-	  * @param encoding contents encoding
+	  * @param chset charset of contents
+	  * @param enc contents encoding
 	  */
 	void setContents(ref <const contentHandler> contents, const mediaType& type,
 		const charset& chset, const encoding& enc);

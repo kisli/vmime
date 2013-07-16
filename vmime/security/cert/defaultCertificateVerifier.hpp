@@ -70,6 +70,7 @@ private:
 	/** Verify a chain of X.509 certificates.
 	  *
 	  * @param chain list of X.509 certificates
+	  * @param hostname server hostname
 	  */
 	void verifyX509(ref <certificateChain> chain, const string& hostname);
 

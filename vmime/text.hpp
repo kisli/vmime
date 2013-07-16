@@ -204,7 +204,6 @@ public:
 	  *
 	  * @param ctx generation context
 	  * @param os output stream
-	  * @param maxLineLength maximum line length for output
 	  * @param firstLineOffset the first line length (may be useful if the current output line is not empty)
 	  * @param lastLineLength will receive the length of the last line written
 	  * @param flags encoding flags (see EncodeAndFoldFlags)

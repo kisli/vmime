@@ -149,7 +149,6 @@ public:
 	/** Generate RFC-2822/MIME data for this component, using the default generation context.
 	  *
 	  * @param outputStream output stream
-	  * @param maxLineLength maximum line length for output
 	  * @param curLinePos length of the current line in the output buffer
 	  * @param newLinePos will receive the new line position (length of the last line written)
 	  */
@@ -162,7 +161,6 @@ public:
 	  *
 	  * @param ctx generation context
 	  * @param outputStream output stream
-	  * @param maxLineLength maximum line length for output
 	  * @param curLinePos length of the current line in the output buffer
 	  * @param newLinePos will receive the new line position (length of the last line written)
 	  */

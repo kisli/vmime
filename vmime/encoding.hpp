@@ -106,7 +106,7 @@ public:
 	/** Decide which encoding to use based on the specified data and charset.
 	  *
 	  * @param data data used to determine encoding
-	  * @param charset charset of data
+	  * @param chset charset of data
 	  * @param usage context of use of data
 	  * @return suitable encoding for specified data and charset
 	  */

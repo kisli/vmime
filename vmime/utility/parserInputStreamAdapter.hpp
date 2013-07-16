@@ -41,9 +41,9 @@ class VMIME_EXPORT parserInputStreamAdapter : public seekableInputStream
 {
 public:
 
-	/** @param is input stream to wrap
+	/** @param stream input stream to wrap
 	  */
-	parserInputStreamAdapter(ref <seekableInputStream> inputStream);
+	parserInputStreamAdapter(ref <seekableInputStream> stream);
 
 	ref <seekableInputStream> getUnderlyingStream();
 

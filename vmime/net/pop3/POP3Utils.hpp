@@ -58,8 +58,8 @@ public:
 	  *    S: .
 	  *
 	  * @param response raw response string as returned by the server
-	  * @return an associative array which map a message number to its
-	  * data (either UID or size)
+	  * @param result points to an associative array which maps a message
+	  * number to its corresponding data (either UID or size)
 	  */
 	static void parseMultiListOrUidlResponse
 		(ref <POP3Response> response, std::map <int, string>& result);

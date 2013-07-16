@@ -55,7 +55,7 @@ public:
 
 	/** Set the local name of the address.
 	  *
-	  * @param name local name of the address
+	  * @param localName local name of the address
 	  */
 	void setLocalName(const word& localName);
 
@@ -67,7 +67,7 @@ public:
 
 	/** Set the domain name of the address.
 	  *
-	  * @param domain domain name of the address
+	  * @param domainName domain name of the address
 	  */
 	void setDomainName(const word& domainName);
 

@@ -44,7 +44,7 @@ public:
 	/** Verify that the specified certificate chain is trusted.
 	  *
 	  * @param chain certificate chain
-	  * @param server hostname
+	  * @param hostname server hostname
 	  * @throw exceptions::certificate_verification_exception if one
 	  * or more certificates can not be trusted, or the server identity
 	  * cannot be verified

@@ -175,7 +175,7 @@ public:
 
 	/** Embed an object and returns a string which identifies it.
 	  * The returned identifier is suitable for use in the 'src' attribute
-	  * of an <img> tag.
+	  * of an &lt;img> tag.
 	  *
 	  * \deprecated Use the addObject() methods which take a 'contentHandler'
 	  * parameter type instead.
@@ -189,7 +189,7 @@ public:
 
 	/** Embed an object and returns a string which identifies it.
 	  * The returned identifier is suitable for use in the 'src' attribute
-	  * of an <img> tag.
+	  * of an &lt;img> tag.
 	  *
 	  * @param data object data
 	  * @param type data type
@@ -200,7 +200,7 @@ public:
 
 	/** Embed an object and returns a string which identifies it.
 	  * The returned identifier is suitable for use in the 'src' attribute
-	  * of an <img> tag.
+	  * of an &lt;img> tag.
 	  *
 	  * @param data object data
 	  * @param enc data encoding
