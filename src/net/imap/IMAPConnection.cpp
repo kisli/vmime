@@ -35,6 +35,8 @@
 #include "vmime/exception.hpp"
 #include "vmime/platform.hpp"
 
+#include "vmime/utility/stringUtils.hpp"
+
 #include "vmime/net/defaultConnectionInfos.hpp"
 
 #if VMIME_HAVE_SASL_SUPPORT
@@ -66,7 +68,7 @@ namespace imap {
 IMAPConnection::IMAPConnection(ref <IMAPStore> store, ref <security::authenticator> auth)
 	: m_store(store), m_auth(auth), m_socket(NULL), m_parser(NULL), m_tag(NULL),
 	  m_hierarchySeparator('\0'), m_state(STATE_NONE), m_timeoutHandler(NULL),
-	  m_secured(false), m_firstTag(true), m_capabilitiesFetched(false)
+	  m_secured(false), m_firstTag(true), m_capabilitiesFetched(false), m_noModSeq(false)
 {
 }
 
@@ -153,6 +155,12 @@ void IMAPConnection::connect()
 	else if (greet->resp_cond_auth()->condition() != IMAPParser::resp_cond_auth::PREAUTH)
 	{
 		needAuth = true;
+	}
+
+	if (greet->resp_cond_auth()->resp_text()->resp_text_code() &&
+	    greet->resp_cond_auth()->resp_text()->resp_text_code()->capability_data())
+	{
+		processCapabilityResponseData(greet->resp_cond_auth()->resp_text()->resp_text_code()->capability_data());
 	}
 
 #if VMIME_HAVE_TLS_SUPPORT
@@ -266,6 +274,10 @@ void IMAPConnection::authenticate()
 		internalDisconnect();
 		throw exceptions::authentication_error(m_parser->lastLine());
 	}
+
+	// Server capabilities may change when logged in
+	if (!processCapabilityResponseData(resp))
+		invalidateCapabilities();
 }
 
 
@@ -397,6 +409,9 @@ void IMAPConnection::authenticateSASL()
 
 					// Send response
 					send(false, saslContext->encodeB64(resp, respLen), true);
+
+					// Server capabilities may change when logged in
+					invalidateCapabilities();
 				}
 				catch (exceptions::sasl_exception& e)
 				{
@@ -506,6 +521,23 @@ const std::vector <string> IMAPConnection::getCapabilities()
 }
 
 
+bool IMAPConnection::hasCapability(const string& capa)
+{
+	if (!m_capabilitiesFetched)
+		fetchCapabilities();
+
+	const string normCapa = utility::stringUtils::toUpper(capa);
+
+	for (unsigned int i = 0, n = m_capabilities.size() ; i < n ; ++i)
+	{
+		if (m_capabilities[i] == normCapa)
+			return true;
+	}
+
+	return false;
+}
+
+
 void IMAPConnection::invalidateCapabilities()
 {
 	m_capabilities.clear();
@@ -519,35 +551,50 @@ void IMAPConnection::fetchCapabilities()
 
 	utility::auto_ptr <IMAPParser::response> resp(m_parser->readResponse());
 
-	std::vector <string> res;
-
 	if (resp->response_done()->response_tagged()->
 		resp_cond_state()->status() == IMAPParser::resp_cond_state::OK)
 	{
-		const std::vector <IMAPParser::continue_req_or_response_data*>& respDataList =
-			resp->continue_req_or_response_data();
+		processCapabilityResponseData(resp);
+	}
+}
 
-		for (unsigned int i = 0 ; i < respDataList.size() ; ++i)
-		{
-			if (respDataList[i]->response_data() == NULL)
-				continue;
 
-			const IMAPParser::capability_data* capaData =
-				respDataList[i]->response_data()->capability_data();
+bool IMAPConnection::processCapabilityResponseData(const IMAPParser::response* resp)
+{
+	const std::vector <IMAPParser::continue_req_or_response_data*>& respDataList =
+		resp->continue_req_or_response_data();
 
-			if (capaData == NULL)
-				continue;
+	for (unsigned int i = 0 ; i < respDataList.size() ; ++i)
+	{
+		if (respDataList[i]->response_data() == NULL)
+			continue;
 
-			std::vector <IMAPParser::capability*> caps = capaData->capabilities();
+		const IMAPParser::capability_data* capaData =
+			respDataList[i]->response_data()->capability_data();
 
-			for (unsigned int j = 0 ; j < caps.size() ; ++j)
-			{
-				if (caps[j]->auth_type())
-					res.push_back("AUTH=" + caps[j]->auth_type()->name());
-				else
-					res.push_back(caps[j]->atom()->value());
-			}
-		}
+		if (capaData == NULL)
+			continue;
+
+		processCapabilityResponseData(capaData);
+		return true;
+	}
+
+	return false;
+}
+
+
+void IMAPConnection::processCapabilityResponseData(const IMAPParser::capability_data* capaData)
+{
+	std::vector <string> res;
+
+	std::vector <IMAPParser::capability*> caps = capaData->capabilities();
+
+	for (unsigned int j = 0 ; j < caps.size() ; ++j)
+	{
+		if (caps[j]->auth_type())
+			res.push_back("AUTH=" + caps[j]->auth_type()->name());
+		else
+			res.push_back(utility::stringUtils::toUpper(caps[j]->atom()->value()));
 	}
 
 	m_capabilities = res;
@@ -753,6 +800,18 @@ ref <session> IMAPConnection::getSession()
 ref <const socket> IMAPConnection::getSocket() const
 {
 	return m_socket;
+}
+
+
+bool IMAPConnection::isMODSEQDisabled() const
+{
+	return m_noModSeq;
+}
+
+
+void IMAPConnection::disableMODSEQ()
+{
+	m_noModSeq = true;
 }
 
 

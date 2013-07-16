@@ -634,7 +634,7 @@ const string IMAPUtils::dateTime(const vmime::datetime& date)
 
 // static
 const string IMAPUtils::buildFetchRequestImpl
-	(const string& mode, const string& set, const int options)
+	(ref <IMAPConnection> cnt, const string& mode, const string& set, const int options)
 {
 	// Example:
 	//   C: A654 FETCH 2:4 (FLAGS BODY[HEADER.FIELDS (DATE FROM)])
@@ -655,7 +655,13 @@ const string IMAPUtils::buildFetchRequestImpl
 		items.push_back("BODYSTRUCTURE");
 
 	if (options & folder::FETCH_UID)
+	{
 		items.push_back("UID");
+
+		// Also fetch MODSEQ if CONDSTORE is supported
+		if (cnt->hasCapability("CONDSTORE") && !cnt->isMODSEQDisabled())
+			items.push_back("MODSEQ");
+	}
 
 	if (options & folder::FETCH_FULL_HEADER)
 		items.push_back("RFC822.HEADER");
@@ -715,16 +721,18 @@ const string IMAPUtils::buildFetchRequestImpl
 
 
 // static
-const string IMAPUtils::buildFetchRequest(const std::vector <int>& list, const int options)
+const string IMAPUtils::buildFetchRequest
+	(ref <IMAPConnection> cnt, const std::vector <int>& list, const int options)
 {
-	return buildFetchRequestImpl("number", listToSet(list, -1, false), options);
+	return buildFetchRequestImpl(cnt, "number", listToSet(list, -1, false), options);
 }
 
 
 // static
-const string IMAPUtils::buildFetchRequest(const std::vector <message::uid>& list, const int options)
+const string IMAPUtils::buildFetchRequest
+	(ref <IMAPConnection> cnt, const std::vector <message::uid>& list, const int options)
 {
-	return buildFetchRequestImpl("uid", listToSet(list), options);
+	return buildFetchRequestImpl(cnt, "uid", listToSet(list), options);
 }
 
 
@@ -749,7 +757,7 @@ void IMAPUtils::convertAddressList
 
 
 // static
-unsigned int IMAPUtils::extractUIDFromGlobalUID(const message::uid& uid)
+vmime_uint32 IMAPUtils::extractUIDFromGlobalUID(const message::uid& uid)
 {
 	message::uid::size_type colonPos = uid.find(':');
 
@@ -758,7 +766,7 @@ unsigned int IMAPUtils::extractUIDFromGlobalUID(const message::uid& uid)
 		std::istringstream iss(uid);
 		iss.imbue(std::locale::classic());
 
-		unsigned int n = 0;
+		vmime_uint32 n = 0;
 		iss >> n;
 
 		return n;
@@ -768,7 +776,7 @@ unsigned int IMAPUtils::extractUIDFromGlobalUID(const message::uid& uid)
 		std::istringstream iss(uid.substr(colonPos + 1));
 		iss.imbue(std::locale::classic());
 
-		unsigned int n = 0;
+		vmime_uint32 n = 0;
 		iss >> n;
 
 		return n;
@@ -777,7 +785,7 @@ unsigned int IMAPUtils::extractUIDFromGlobalUID(const message::uid& uid)
 
 
 // static
-const message::uid IMAPUtils::makeGlobalUID(const unsigned int UIDValidity, const unsigned int messageUID)
+const message::uid IMAPUtils::makeGlobalUID(const vmime_uint32 UIDValidity, const vmime_uint32 messageUID)
 {
 	std::ostringstream oss;
 	oss.imbue(std::locale::classic());

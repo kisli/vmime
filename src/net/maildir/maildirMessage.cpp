@@ -261,7 +261,7 @@ int maildirMessage::getNumber() const
 }
 
 
-const message::uid maildirMessage::getUniqueId() const
+const message::uid maildirMessage::getUID() const
 {
 	return (m_uid);
 }

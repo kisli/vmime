@@ -1288,6 +1288,211 @@ public:
 	};
 
 
+	// seq-number      = nz-number / "*"
+	//                    ; message sequence number (COPY, FETCH, STORE
+	//                    ; commands) or unique identifier (UID COPY,
+	//                    ; UID FETCH, UID STORE commands).
+
+	class seq_number : public component
+	{
+	public:
+
+		seq_number()
+			: m_number(NULL), m_star(false)
+		{
+		}
+
+		~seq_number()
+		{
+			delete m_number;
+		}
+
+		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		{
+			DEBUG_ENTER_COMPONENT("seq_number");
+
+			string::size_type pos = *currentPos;
+
+			if (parser.check <one_char <'*'> >(line, &pos, true))
+			{
+				m_star = true;
+				m_number = NULL;
+			}
+			else
+			{
+				m_star = false;
+				m_number = parser.get <IMAPParser::number>(line, &pos);
+			}
+
+			*currentPos = pos;
+		}
+
+	private:
+
+		IMAPParser::number* m_number;
+		bool m_star;
+
+	public:
+
+		const IMAPParser::number* number() const { return m_number; }
+		bool star() const { return m_star; }
+	};
+
+
+	// seq-range       = seq-number ":" seq-number
+	//                    ; two seq-number values and all values between
+	//                    ; these two regardless of order.
+	//                    ; Example: 2:4 and 4:2 are equivalent and indicate
+	//                    ; values 2, 3, and 4.
+
+	class seq_range : public component
+	{
+	public:
+
+		seq_range()
+			: m_first(NULL), m_last(NULL)
+		{
+		}
+
+		~seq_range()
+		{
+			delete m_first;
+			delete m_last;
+		}
+
+		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		{
+			DEBUG_ENTER_COMPONENT("seq_range");
+
+			string::size_type pos = *currentPos;
+
+			m_first = parser.get <seq_number>(line, &pos);
+
+			parser.check <one_char <'*'> >(line, &pos);
+
+			m_last = parser.get <seq_number>(line, &pos);
+
+			*currentPos = pos;
+		}
+
+	private:
+
+		IMAPParser::seq_number* m_first;
+		IMAPParser::seq_number* m_last;
+
+	public:
+
+		const IMAPParser::seq_number* first() const { return m_first; }
+		const IMAPParser::seq_number* last() const { return m_last; }
+	};
+
+
+	// sequence-set    = (seq-number / seq-range) *("," sequence-set)
+	//                    ; set of seq-number values, regardless of order.
+	//                    ; Servers MAY coalesce overlaps and/or execute the
+	//                    ; sequence in any order.
+	//                    ; Example: a message sequence number set of
+	//                    ; 2,4:7,9,12:* for a mailbox with 15 messages is
+	//                    ; equivalent to 2,4,5,6,7,9,12,13,14,15
+
+	class sequence_set : public component
+	{
+	public:
+
+		sequence_set()
+			: m_number(NULL), m_range(NULL), m_nextSet(NULL)
+		{
+		}
+
+		~sequence_set()
+		{
+			delete m_number;
+			delete m_range;
+			delete m_nextSet;
+		}
+
+		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		{
+			DEBUG_ENTER_COMPONENT("sequence_set");
+
+			string::size_type pos = *currentPos;
+
+			if ((m_range = parser.get <IMAPParser::seq_range>(line, &pos, true)) == NULL)
+				m_number = parser.get <IMAPParser::seq_number>(line, &pos);
+
+			if (parser.check <one_char <','> >(line, &pos, true))
+				m_nextSet = parser.get <sequence_set>(line, &pos);
+
+			*currentPos = pos;
+		}
+
+	private:
+
+		IMAPParser::seq_number* m_number;
+		IMAPParser::seq_range* m_range;
+		IMAPParser::sequence_set* m_nextSet;
+
+	public:
+
+		const IMAPParser::seq_number* seq_number() const { return m_number; }
+		const IMAPParser::seq_range* seq_range() const { return m_range; }
+		const IMAPParser::sequence_set* next_sequence_set() const { return m_nextSet; }
+	};
+
+
+	// mod-sequence-value  = 1*DIGIT
+	//                        ;; Positive unsigned 64-bit integer
+	//                        ;; (mod-sequence)
+	//                        ;; (1 <= n < 18,446,744,073,709,551,615)
+
+	class mod_sequence_value : public component
+	{
+	public:
+
+		mod_sequence_value()
+			: m_value(0)
+		{
+		}
+
+		void go(IMAPParser& /* parser */, string& line, string::size_type* currentPos)
+		{
+			DEBUG_ENTER_COMPONENT("mod_sequence_value");
+
+			string::size_type pos = *currentPos;
+
+			bool valid = true;
+			vmime_uint64 val = 0;
+
+			while (valid && pos < line.length())
+			{
+				const char c = line[pos];
+
+				if (c >= '0' && c <= '9')
+				{
+					val = (val * 10) + (c - '0');
+					++pos;
+				}
+				else
+				{
+					valid = false;
+				}
+			}
+
+			m_value = val;
+
+			*currentPos = pos;
+		}
+
+	private:
+
+		vmime_uint64 m_value;
+
+	public:
+
+		const vmime_uint64 value() const { return m_value; }
+	};
+
+
 	//
 	// flag            ::= "\Answered" / "\Flagged" / "\Deleted" /
 	//                     "\Seen" / "\Draft" / flag_keyword / flag_extension
@@ -1666,249 +1871,6 @@ public:
 
 
 	//
-	// resp_text_code ::= "ALERT" / "PARSE" /
-	//                    "PERMANENTFLAGS" SPACE "(" #(flag / "\*") ")" /
-	//                    "READ-ONLY" / "READ-WRITE" / "TRYCREATE" /
-	//                    "UIDVALIDITY" SPACE nz_number /
-	//                    "UNSEEN" SPACE nz_number /
-	//                    atom [SPACE 1*<any TEXT_CHAR except "]">]
-
-	class resp_text_code : public component
-	{
-	public:
-
-		resp_text_code()
-			: m_nz_number(NULL), m_atom(NULL), m_flag_list(NULL), m_text(NULL)
-		{
-		}
-
-		~resp_text_code()
-		{
-			delete (m_nz_number);
-			delete (m_atom);
-			delete (m_flag_list);
-			delete (m_text);
-		}
-
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
-		{
-			DEBUG_ENTER_COMPONENT("resp_text_code");
-
-			string::size_type pos = *currentPos;
-
-			// "ALERT"
-			if (parser.checkWithArg <special_atom>(line, &pos, "alert", true))
-			{
-				m_type = ALERT;
-			}
-			// "PARSE"
-			else if (parser.checkWithArg <special_atom>(line, &pos, "parse", true))
-			{
-				m_type = PARSE;
-			}
-			// "PERMANENTFLAGS" SPACE flag_list
-			else if (parser.checkWithArg <special_atom>(line, &pos, "permanentflags", true))
-			{
-				m_type = PERMANENTFLAGS;
-
-				parser.check <SPACE>(line, &pos);
-
-				m_flag_list = parser.get <IMAPParser::flag_list>(line, &pos);
-			}
-			// "READ-ONLY"
-			else if (parser.checkWithArg <special_atom>(line, &pos, "read-only", true))
-			{
-				m_type = READ_ONLY;
-			}
-			// "READ-WRITE"
-			else if (parser.checkWithArg <special_atom>(line, &pos, "read-write", true))
-			{
-				m_type = READ_WRITE;
-			}
-			// "TRYCREATE"
-			else if (parser.checkWithArg <special_atom>(line, &pos, "trycreate", true))
-			{
-				m_type = TRYCREATE;
-			}
-			// "UIDVALIDITY" SPACE nz_number
-			else if (parser.checkWithArg <special_atom>(line, &pos, "uidvalidity", true))
-			{
-				m_type = UIDVALIDITY;
-
-				parser.check <SPACE>(line, &pos);
-				m_nz_number = parser.get <IMAPParser::nz_number>(line, &pos);
-			}
-			// "UNSEEN" SPACE nz_number
-			else if (parser.checkWithArg <special_atom>(line, &pos, "unseen", true))
-			{
-				m_type = UNSEEN;
-
-				parser.check <SPACE>(line, &pos);
-				m_nz_number = parser.get <IMAPParser::nz_number>(line, &pos);
-			}
-			// atom [SPACE 1*<any TEXT_CHAR except "]">]
-			else
-			{
-				m_type = OTHER;
-
-				m_atom = parser.get <IMAPParser::atom>(line, &pos);
-
-				if (parser.check <SPACE>(line, &pos, true))
-					m_text = parser.get <text_except <']'> >(line, &pos);
-			}
-
-			*currentPos = pos;
-		}
-
-
-		enum Type
-		{
-			ALERT,
-			PARSE,
-			PERMANENTFLAGS,
-			READ_ONLY,
-			READ_WRITE,
-			TRYCREATE,
-			UIDVALIDITY,
-			UNSEEN,
-			OTHER
-		};
-
-	private:
-
-		Type m_type;
-
-		IMAPParser::nz_number* m_nz_number;
-		IMAPParser::atom* m_atom;
-		IMAPParser::flag_list* m_flag_list;
-		IMAPParser::text* m_text;
-
-	public:
-
-		Type type() const { return (m_type); }
-
-		const IMAPParser::nz_number* nz_number() const { return (m_nz_number); }
-		const IMAPParser::atom* atom() const { return (m_atom); }
-		const IMAPParser::flag_list* flag_list() const { return (m_flag_list); }
-		const IMAPParser::text* text() const { return (m_text); }
-	};
-
-
-	//
-	// resp_text ::= ["[" resp_text_code "]" SPACE] (text_mime2 / text)
-	//               ;; text SHOULD NOT begin with "[" or "="
-
-	class resp_text : public component
-	{
-	public:
-
-		resp_text()
-			: m_resp_text_code(NULL)
-		{
-		}
-
-		~resp_text()
-		{
-			delete (m_resp_text_code);
-		}
-
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
-		{
-			DEBUG_ENTER_COMPONENT("resp_text");
-
-			string::size_type pos = *currentPos;
-
-			if (parser.check <one_char <'['> >(line, &pos, true))
-			{
-				m_resp_text_code = parser.get <IMAPParser::resp_text_code>(line, &pos);
-
-				parser.check <one_char <']'> >(line, &pos);
-				parser.check <SPACE>(line, &pos, true);
-			}
-
-			text_mime2* text1 = parser.get <text_mime2>(line, &pos, true);
-
-			if (text1 != NULL)
-			{
-				m_text = text1->value();
-				delete (text1);
-			}
-			else
-			{
-				IMAPParser::text* text2 =
-					parser.get <IMAPParser::text>(line, &pos, true);
-
-				if (text2 != NULL)
-				{
-					m_text = text2->value();
-					delete (text2);
-				}
-				else
-				{
-					// Empty response text
-				}
-			}
-
-			*currentPos = pos;
-		}
-
-	private:
-
-		IMAPParser::resp_text_code* m_resp_text_code;
-		string m_text;
-
-	public:
-
-		const IMAPParser::resp_text_code* resp_text_code() const { return (m_resp_text_code); }
-		const string& text() const { return (m_text); }
-	};
-
-
-	//
-	// continue_req   ::= "+" SPACE (resp_text / base64)
-	//
-
-	class continue_req : public component
-	{
-	public:
-
-		continue_req()
-			: m_resp_text(NULL)
-		{
-		}
-
-		~continue_req()
-		{
-			delete (m_resp_text);
-		}
-
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
-		{
-			DEBUG_ENTER_COMPONENT("continue_req");
-
-			string::size_type pos = *currentPos;
-
-			parser.check <one_char <'+'> >(line, &pos);
-			parser.check <SPACE>(line, &pos);
-
-			m_resp_text = parser.get <IMAPParser::resp_text>(line, &pos);
-
-			parser.check <CRLF>(line, &pos);
-
-			*currentPos = pos;
-		}
-
-	private:
-
-		IMAPParser::resp_text* m_resp_text;
-
-	public:
-
-		const IMAPParser::resp_text* resp_text() const { return (m_resp_text); }
-	};
-
-
-	//
 	// auth_type ::= atom
 	//               ;; Defined by [IMAP-AUTH]
 	//
@@ -1965,6 +1927,13 @@ public:
 	//                   ("UIDVALIDITY" SP nz-number) /
 	//                   ("UNSEEN" SP number)
 	//
+	// IMAP Extension for Conditional STORE (RFC-4551):
+	//
+	//   status-att-val      =/ "HIGHESTMODSEQ" SP mod-sequence-valzer
+	//                          ;; extends non-terminal defined in [IMAPABNF].
+	//                          ;; Value 0 denotes that the mailbox doesn't
+	//                          ;; support persistent mod-sequences
+	//
 
 	class status_att_val : public component
 	{
@@ -1976,30 +1945,41 @@ public:
 
 			string::size_type pos = *currentPos;
 
-			if (parser.checkWithArg <special_atom>(line, &pos, "messages", true))
+			// "HIGHESTMODSEQ" SP mod-sequence-valzer
+			if (parser.checkWithArg <special_atom>(line, &pos, "highestmodseq", true))
 			{
-				m_type = MESSAGES;
-			}
-			else if (parser.checkWithArg <special_atom>(line, &pos, "recent", true))
-			{
-				m_type = RECENT;
-			}
-			else if (parser.checkWithArg <special_atom>(line, &pos, "uidnext", true))
-			{
-				m_type = UIDNEXT;
-			}
-			else if (parser.checkWithArg <special_atom>(line, &pos, "uidvalidity", true))
-			{
-				m_type = UIDVALIDITY;
+				m_type = HIGHESTMODSEQ;
+
+				parser.check <SPACE>(line, &pos);
+				m_value = parser.get <IMAPParser::mod_sequence_value>(line, &pos);
 			}
 			else
 			{
-				parser.checkWithArg <special_atom>(line, &pos, "unseen");
-				m_type = UNSEEN;
-			}
+				if (parser.checkWithArg <special_atom>(line, &pos, "messages", true))
+				{
+					m_type = MESSAGES;
+				}
+				else if (parser.checkWithArg <special_atom>(line, &pos, "recent", true))
+				{
+					m_type = RECENT;
+				}
+				else if (parser.checkWithArg <special_atom>(line, &pos, "uidnext", true))
+				{
+					m_type = UIDNEXT;
+				}
+				else if (parser.checkWithArg <special_atom>(line, &pos, "uidvalidity", true))
+				{
+					m_type = UIDVALIDITY;
+				}
+				else
+				{
+					parser.checkWithArg <special_atom>(line, &pos, "unseen");
+					m_type = UNSEEN;
+				}
 
-			parser.check <SPACE>(line, &pos);
-			m_value = parser.get <IMAPParser::number>(line, &pos);
+				parser.check <SPACE>(line, &pos);
+				m_value = parser.get <IMAPParser::number>(line, &pos);
+			}
 
 			*currentPos = pos;
 		}
@@ -2007,6 +1987,10 @@ public:
 
 		enum Type
 		{
+			// Extensions
+			HIGHESTMODSEQ,
+
+			// Standard IMAP
 			MESSAGES,
 			RECENT,
 			UIDNEXT,
@@ -2026,6 +2010,11 @@ public:
 		const IMAPParser::number* value_as_number() const
 		{
 			return dynamic_cast <IMAPParser::number *>(m_value);
+		}
+
+		const IMAPParser::mod_sequence_value* value_as_mod_sequence_value() const
+		{
+			return dynamic_cast <IMAPParser::mod_sequence_value *>(m_value);
 		}
 	};
 
@@ -3882,6 +3871,9 @@ public:
 	//                  "BODY" section ["<" number ">"] SPACE nstring /
 	//                  "UID" SPACE uniqueid
 	//
+	// IMAP Extension for Conditional STORE (RFC-4551):
+	//
+	//   msg_att_item      /= "MODSEQ" SP "(" mod_sequence_value ")"
 
 	class msg_att_item : public component
 	{
@@ -3890,7 +3882,7 @@ public:
 		msg_att_item()
 			: m_date_time(NULL), m_number(NULL), m_envelope(NULL),
 			  m_uniqueid(NULL), m_nstring(NULL), m_body(NULL), m_flag_list(NULL),
-			  m_section(NULL)
+			  m_section(NULL), m_mod_sequence_value(NULL)
 
 		{
 		}
@@ -3905,6 +3897,7 @@ public:
 			delete (m_body);
 			delete (m_flag_list);
  			delete (m_section);
+ 			delete m_mod_sequence_value;
 		}
 
 		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
@@ -4015,6 +4008,18 @@ public:
 					m_body = parser.get <IMAPParser::body>(line, &pos);
 				}
 			}
+			// "MODSEQ" SP "(" mod_sequence_value ")"
+			else if (parser.checkWithArg <special_atom>(line, &pos, "modseq", true))
+			{
+				m_type = MODSEQ;
+
+				parser.check <SPACE>(line, &pos);
+				parser.check <one_char <'('> >(line, &pos);
+
+				m_mod_sequence_value = parser.get <IMAPParser::mod_sequence_value>(line, &pos);
+
+				parser.check <one_char <')'> >(line, &pos);
+			}
 			// "UID" SPACE uniqueid
 			else
 			{
@@ -4042,7 +4047,8 @@ public:
 			BODY,
 			BODY_SECTION,
 			BODY_STRUCTURE,
-			UID
+			UID,
+			MODSEQ
 		};
 
 	private:
@@ -4057,6 +4063,7 @@ public:
 		IMAPParser::xbody* m_body;
 		IMAPParser::flag_list* m_flag_list;
 		IMAPParser::section* m_section;
+		IMAPParser::mod_sequence_value* m_mod_sequence_value;
 
 	public:
 
@@ -4070,6 +4077,7 @@ public:
 		const IMAPParser::xbody* body() const { return (m_body); }
 		const IMAPParser::flag_list* flag_list() const { return (m_flag_list); }
 		const IMAPParser::section* section() const { return (m_section); }
+		const IMAPParser::mod_sequence_value* mod_sequence_value() { return m_mod_sequence_value; }
 	};
 
 
@@ -4185,6 +4193,307 @@ public:
 		Type type() const { return (m_type); }
 		unsigned int number() const { return (m_number); }
 		const IMAPParser::msg_att* msg_att() const { return (m_msg_att); }
+	};
+
+
+	//
+	// resp_text_code ::= "ALERT" / "PARSE" /
+	//                    capability-data /
+	//                    "PERMANENTFLAGS" SPACE "(" #(flag / "\*") ")" /
+	//                    "READ-ONLY" / "READ-WRITE" / "TRYCREATE" /
+	//                    "UIDVALIDITY" SPACE nz_number /
+	//                    "UNSEEN" SPACE nz_number /
+	//                    atom [SPACE 1*<any TEXT_CHAR except "]">]
+	//
+	// IMAP Extension for Conditional STORE (RFC-4551):
+	//
+	//   resp-text-code      =/ "HIGHESTMODSEQ" SP mod-sequence-value /
+	//                          "NOMODSEQ" /
+	//                          "MODIFIED" SP set
+
+	class resp_text_code : public component
+	{
+	public:
+
+		resp_text_code()
+			: m_nz_number(NULL), m_atom(NULL), m_flag_list(NULL),
+			  m_text(NULL), m_capability_data(NULL)
+		{
+		}
+
+		~resp_text_code()
+		{
+			delete (m_nz_number);
+			delete (m_atom);
+			delete (m_flag_list);
+			delete (m_text);
+			delete m_capability_data;
+		}
+
+		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		{
+			DEBUG_ENTER_COMPONENT("resp_text_code");
+
+			string::size_type pos = *currentPos;
+
+			// "ALERT"
+			if (parser.checkWithArg <special_atom>(line, &pos, "alert", true))
+			{
+				m_type = ALERT;
+			}
+			// "PARSE"
+			else if (parser.checkWithArg <special_atom>(line, &pos, "parse", true))
+			{
+				m_type = PARSE;
+			}
+			// capability_data
+			else if ((m_capability_data = parser.get <IMAPParser::capability_data>(line, &pos, true)))
+			{
+				m_type = CAPABILITY;
+			}
+			// "PERMANENTFLAGS" SPACE flag_list
+			else if (parser.checkWithArg <special_atom>(line, &pos, "permanentflags", true))
+			{
+				m_type = PERMANENTFLAGS;
+
+				parser.check <SPACE>(line, &pos);
+
+				m_flag_list = parser.get <IMAPParser::flag_list>(line, &pos);
+			}
+			// "READ-ONLY"
+			else if (parser.checkWithArg <special_atom>(line, &pos, "read-only", true))
+			{
+				m_type = READ_ONLY;
+			}
+			// "READ-WRITE"
+			else if (parser.checkWithArg <special_atom>(line, &pos, "read-write", true))
+			{
+				m_type = READ_WRITE;
+			}
+			// "TRYCREATE"
+			else if (parser.checkWithArg <special_atom>(line, &pos, "trycreate", true))
+			{
+				m_type = TRYCREATE;
+			}
+			// "UIDVALIDITY" SPACE nz_number
+			else if (parser.checkWithArg <special_atom>(line, &pos, "uidvalidity", true))
+			{
+				m_type = UIDVALIDITY;
+
+				parser.check <SPACE>(line, &pos);
+				m_nz_number = parser.get <IMAPParser::nz_number>(line, &pos);
+			}
+			// "UIDNEXT" SPACE nz_number
+			else if (parser.checkWithArg <special_atom>(line, &pos, "uidnext", true))
+			{
+				m_type = UIDNEXT;
+
+				parser.check <SPACE>(line, &pos);
+				m_nz_number = parser.get <IMAPParser::nz_number>(line, &pos);
+			}
+			// "UNSEEN" SPACE nz_number
+			else if (parser.checkWithArg <special_atom>(line, &pos, "unseen", true))
+			{
+				m_type = UNSEEN;
+
+				parser.check <SPACE>(line, &pos);
+				m_nz_number = parser.get <IMAPParser::nz_number>(line, &pos);
+			}
+			// "HIGHESTMODSEQ" SP mod-sequence-value
+			else if (parser.checkWithArg <special_atom>(line, &pos, "highestmodseq", true))
+			{
+				m_type = HIGHESTMODSEQ;
+
+				parser.check <SPACE>(line, &pos);
+				m_mod_sequence_value = parser.get <IMAPParser::mod_sequence_value>(line, &pos);
+			}
+			// "NOMODSEQ"
+			else if (parser.checkWithArg <special_atom>(line, &pos, "nomodseq", true))
+			{
+				m_type = NOMODSEQ;
+			}
+			// "MODIFIED" SP sequence-set
+			else if (parser.checkWithArg <special_atom>(line, &pos, "modified", true))
+			{
+				m_type = MODIFIED;
+
+				parser.check <SPACE>(line, &pos);
+
+				m_sequence_set = parser.get <IMAPParser::sequence_set>(line, &pos);
+			}
+			// atom [SPACE 1*<any TEXT_CHAR except "]">]
+			else
+			{
+				m_type = OTHER;
+
+				m_atom = parser.get <IMAPParser::atom>(line, &pos);
+
+				if (parser.check <SPACE>(line, &pos, true))
+					m_text = parser.get <text_except <']'> >(line, &pos);
+			}
+
+			*currentPos = pos;
+		}
+
+
+		enum Type
+		{
+			// Extensions
+			HIGHESTMODSEQ,
+			NOMODSEQ,
+			MODIFIED,
+
+			// Standard IMAP
+			ALERT,
+			PARSE,
+			CAPABILITY,
+			PERMANENTFLAGS,
+			READ_ONLY,
+			READ_WRITE,
+			TRYCREATE,
+			UIDVALIDITY,
+			UIDNEXT,
+			UNSEEN,
+			OTHER
+		};
+
+	private:
+
+		Type m_type;
+
+		IMAPParser::nz_number* m_nz_number;
+		IMAPParser::atom* m_atom;
+		IMAPParser::flag_list* m_flag_list;
+		IMAPParser::text* m_text;
+		IMAPParser::mod_sequence_value* m_mod_sequence_value;
+		IMAPParser::sequence_set* m_sequence_set;
+		IMAPParser::capability_data* m_capability_data;
+
+	public:
+
+		Type type() const { return (m_type); }
+
+		const IMAPParser::nz_number* nz_number() const { return (m_nz_number); }
+		const IMAPParser::atom* atom() const { return (m_atom); }
+		const IMAPParser::flag_list* flag_list() const { return (m_flag_list); }
+		const IMAPParser::text* text() const { return (m_text); }
+		const IMAPParser::mod_sequence_value* mod_sequence_value() const { return m_mod_sequence_value; }
+		const IMAPParser::sequence_set* sequence_set() const { return m_sequence_set; }
+		const IMAPParser::capability_data* capability_data() const { return m_capability_data; }
+	};
+
+
+	//
+	// resp_text ::= ["[" resp_text_code "]" SPACE] (text_mime2 / text)
+	//               ;; text SHOULD NOT begin with "[" or "="
+
+	class resp_text : public component
+	{
+	public:
+
+		resp_text()
+			: m_resp_text_code(NULL)
+		{
+		}
+
+		~resp_text()
+		{
+			delete (m_resp_text_code);
+		}
+
+		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		{
+			DEBUG_ENTER_COMPONENT("resp_text");
+
+			string::size_type pos = *currentPos;
+
+			if (parser.check <one_char <'['> >(line, &pos, true))
+			{
+				m_resp_text_code = parser.get <IMAPParser::resp_text_code>(line, &pos);
+
+				parser.check <one_char <']'> >(line, &pos);
+				parser.check <SPACE>(line, &pos, true);
+			}
+
+			text_mime2* text1 = parser.get <text_mime2>(line, &pos, true);
+
+			if (text1 != NULL)
+			{
+				m_text = text1->value();
+				delete (text1);
+			}
+			else
+			{
+				IMAPParser::text* text2 =
+					parser.get <IMAPParser::text>(line, &pos, true);
+
+				if (text2 != NULL)
+				{
+					m_text = text2->value();
+					delete (text2);
+				}
+				else
+				{
+					// Empty response text
+				}
+			}
+
+			*currentPos = pos;
+		}
+
+	private:
+
+		IMAPParser::resp_text_code* m_resp_text_code;
+		string m_text;
+
+	public:
+
+		const IMAPParser::resp_text_code* resp_text_code() const { return (m_resp_text_code); }
+		const string& text() const { return (m_text); }
+	};
+
+
+	//
+	// continue_req   ::= "+" SPACE (resp_text / base64)
+	//
+
+	class continue_req : public component
+	{
+	public:
+
+		continue_req()
+			: m_resp_text(NULL)
+		{
+		}
+
+		~continue_req()
+		{
+			delete (m_resp_text);
+		}
+
+		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		{
+			DEBUG_ENTER_COMPONENT("continue_req");
+
+			string::size_type pos = *currentPos;
+
+			parser.check <one_char <'+'> >(line, &pos);
+			parser.check <SPACE>(line, &pos);
+
+			m_resp_text = parser.get <IMAPParser::resp_text>(line, &pos);
+
+			parser.check <CRLF>(line, &pos);
+
+			*currentPos = pos;
+		}
+
+	private:
+
+		IMAPParser::resp_text* m_resp_text;
+
+	public:
+
+		const IMAPParser::resp_text* resp_text() const { return (m_resp_text); }
 	};
 
 

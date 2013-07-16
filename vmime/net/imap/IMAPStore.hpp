@@ -86,6 +86,7 @@ public:
 
 	bool isSecuredConnection() const;
 	ref <connectionInfos> getConnectionInfos() const;
+	ref <IMAPConnection> getConnection();
 
 protected:
 

@@ -57,7 +57,7 @@ private:
 	friend class vmime::creator;  // vmime::create <IMAPMessage>
 
 	IMAPMessage(ref <IMAPFolder> folder, const int num);
-	IMAPMessage(ref <IMAPFolder> folder, const int num, const uid& uniqueId);
+	IMAPMessage(ref <IMAPFolder> folder, const int num, const uid& uid);
 	IMAPMessage(const IMAPMessage&) : message() { }
 
 	~IMAPMessage();
@@ -66,7 +66,19 @@ public:
 
 	int getNumber() const;
 
-	const uid getUniqueId() const;
+	const uid getUID() const;
+
+	/** Returns the modification sequence for this message.
+	  *
+	  * Every time metadata for this message changes, the modification
+	  * sequence is updated, and is greater than the previous one. The
+	  * server must support the CONDSTORE extension for this to be
+	  * available.
+	  *
+	  * @return modification sequence, or zero if not supported by
+	  * the underlying protocol
+	  */
+	vmime_uint64 getModSequence() const;
 
 	int getSize() const;
 
@@ -88,8 +100,6 @@ public:
 	ref <vmime::message> getParsedMessage();
 
 private:
-
-	void fetch(ref <IMAPFolder> folder, const int options);
 
 	void processFetchResponse(const int options, const IMAPParser::message_data* msgData);
 
@@ -132,6 +142,7 @@ private:
 	int m_flags;
 	bool m_expunged;
 	uid m_uid;
+	vmime_uint64 m_modseq;
 
 	ref <header> m_header;
 	ref <structure> m_structure;

@@ -96,6 +96,7 @@ public:
 	void fetchCapabilities();
 	void invalidateCapabilities();
 	const std::vector <string> getCapabilities();
+	bool hasCapability(const string& capa);
 
 	ref <security::authenticator> getAuthenticator();
 
@@ -103,6 +104,9 @@ public:
 	ref <connectionInfos> getConnectionInfos() const;
 
 	ref <const socket> getSocket() const;
+
+	bool isMODSEQDisabled() const;
+	void disableMODSEQ();
 
 private:
 
@@ -114,6 +118,9 @@ private:
 #if VMIME_HAVE_TLS_SUPPORT
 	void startTLS();
 #endif // VMIME_HAVE_TLS_SUPPORT
+
+	bool processCapabilityResponseData(const IMAPParser::response* resp);
+	void processCapabilityResponseData(const IMAPParser::capability_data* capaData);
 
 
 	weak_ref <IMAPStore> m_store;
@@ -139,6 +146,8 @@ private:
 
 	std::vector <string> m_capabilities;
 	bool m_capabilitiesFetched;
+
+	bool m_noModSeq;
 
 
 	void internalDisconnect();

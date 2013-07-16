@@ -114,6 +114,7 @@ public:
 	void copyMessages(const folder::path& dest, const std::vector <int>& nums);
 
 	void status(int& count, int& unseen);
+	ref <folderStatus> getStatus();
 
 	void expunge();
 

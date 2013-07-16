@@ -204,11 +204,12 @@ public:
 	  */
 	virtual int getNumber() const = 0;
 
-	/** Return the unique identified of this message (must fetch before).
+	/** Return the unique identifier (UID) of this message in its
+	  * folder (must fetch before).
 	  *
 	  * @return UID of the message
 	  */
-	virtual const uid getUniqueId() const = 0;
+	virtual const uid getUID() const = 0;
 
 	/** Return the size of the message (must fetch before).
 	  *

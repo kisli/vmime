@@ -62,7 +62,7 @@ public:
 
 	int getNumber() const;
 
-	const uid getUniqueId() const;
+	const uid getUID() const;
 
 	int getSize() const;
 

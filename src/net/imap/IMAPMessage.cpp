@@ -98,15 +98,15 @@ private:
 
 IMAPMessage::IMAPMessage(ref <IMAPFolder> folder, const int num)
 	: m_folder(folder), m_num(num), m_size(-1), m_flags(FLAG_UNDEFINED),
-	  m_expunged(false), m_structure(NULL)
+	  m_expunged(false), m_modseq(0), m_structure(NULL)
 {
 	folder->registerMessage(this);
 }
 
 
-IMAPMessage::IMAPMessage(ref <IMAPFolder> folder, const int num, const uid& uniqueId)
+IMAPMessage::IMAPMessage(ref <IMAPFolder> folder, const int num, const uid& uid)
 	: m_folder(folder), m_num(num), m_size(-1), m_flags(FLAG_UNDEFINED),
-	  m_expunged(false), m_uid(uniqueId), m_structure(NULL)
+	  m_expunged(false), m_uid(uid), m_modseq(0), m_structure(NULL)
 {
 	folder->registerMessage(this);
 }
@@ -133,9 +133,15 @@ int IMAPMessage::getNumber() const
 }
 
 
-const message::uid IMAPMessage::getUniqueId() const
+const message::uid IMAPMessage::getUID() const
 {
-	return (m_uid);
+	return m_uid;
+}
+
+
+vmime_uint64 IMAPMessage::getModSequence() const
+{
+	return m_modseq;
 }
 
 
@@ -358,59 +364,6 @@ void IMAPMessage::extractImpl(ref <const part> p, utility::outputStream& os,
 }
 
 
-void IMAPMessage::fetch(ref <IMAPFolder> msgFolder, const int options)
-{
-	ref <IMAPFolder> folder = m_folder.acquire();
-
-	if (folder != msgFolder)
-		throw exceptions::folder_not_found();
-
-	// Send the request
-	std::vector <int> list;
-	list.push_back(m_num);
-
-	const string command = IMAPUtils::buildFetchRequest(list, options);
-
-	folder->m_connection->send(true, command, true);
-
-	// Get the response
-	utility::auto_ptr <IMAPParser::response> resp(folder->m_connection->readResponse());
-
-	if (resp->isBad() || resp->response_done()->response_tagged()->
-		resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
-	{
-		throw exceptions::command_error("FETCH",
-			folder->m_connection->getParser()->lastLine(), "bad response");
-	}
-
-	const std::vector <IMAPParser::continue_req_or_response_data*>& respDataList =
-		resp->continue_req_or_response_data();
-
-	for (std::vector <IMAPParser::continue_req_or_response_data*>::const_iterator
-	     it = respDataList.begin() ; it != respDataList.end() ; ++it)
-	{
-		if ((*it)->response_data() == NULL)
-		{
-			throw exceptions::command_error("FETCH",
-				folder->m_connection->getParser()->lastLine(), "invalid response");
-		}
-
-		const IMAPParser::message_data* messageData =
-			(*it)->response_data()->message_data();
-
-		// We are only interested in responses of type "FETCH"
-		if (messageData == NULL || messageData->type() != IMAPParser::message_data::FETCH)
-			continue;
-
-		if (static_cast <int>(messageData->number()) != m_num)
-			continue;
-
-		// Process fetch response for this message
-		processFetchResponse(options, messageData);
-	}
-}
-
-
 void IMAPMessage::processFetchResponse
 	(const int options, const IMAPParser::message_data* msgData)
 {
@@ -434,6 +387,11 @@ void IMAPMessage::processFetchResponse
 		case IMAPParser::msg_att_item::UID:
 		{
 			m_uid = IMAPUtils::makeGlobalUID(folder->m_uidValidity, (*it)->unique_id()->value());
+			break;
+		}
+		case IMAPParser::msg_att_item::MODSEQ:
+		{
+			m_modseq = (*it)->mod_sequence_value()->value();
 			break;
 		}
 		case IMAPParser::msg_att_item::ENVELOPE:
@@ -731,7 +689,11 @@ ref <vmime::message> IMAPMessage::getParsedMessage()
 	}
 	catch (exceptions::unfetched_object&)
 	{
-		fetch(m_folder.acquire(), IMAPFolder::FETCH_STRUCTURE);
+		std::vector <ref <message> > msgs;
+		msgs.push_back(thisRef().dynamicCast <IMAPMessage>());
+
+		m_folder.acquire()->fetchMessages(msgs, IMAPFolder::FETCH_STRUCTURE, /* progress */ NULL);
+
 		structure = getStructure();
 	}
 

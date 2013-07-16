@@ -33,6 +33,7 @@
 #include "vmime/net/maildir/maildirMessage.hpp"
 #include "vmime/net/maildir/maildirUtils.hpp"
 #include "vmime/net/maildir/maildirFormat.hpp"
+#include "vmime/net/maildir/maildirFolderStatus.hpp"
 
 #include "vmime/utility/smartPtr.hpp"
 
@@ -1163,22 +1164,36 @@ void maildirFolder::notifyMessagesCopied(const folder::path& dest)
 
 void maildirFolder::status(int& count, int& unseen)
 {
+	count = 0;
+	unseen = 0;
+
+	ref <folderStatus> status = getStatus();
+
+	count = status->getMessageCount();
+	unseen = status->getUnseenCount();
+}
+
+
+ref <folderStatus> maildirFolder::getStatus()
+{
 	ref <maildirStore> store = m_store.acquire();
 
 	const int oldCount = m_messageCount;
 
 	scanFolder();
 
-	count = m_messageCount;
-	unseen = m_unreadMessageCount;
+	ref <maildirFolderStatus> status = vmime::create <maildirFolderStatus>();
+
+	status->setMessageCount(m_messageCount);
+	status->setUnseenCount(m_unreadMessageCount);
 
 	// Notify message count changed (new messages)
-	if (count > oldCount)
+	if (m_messageCount > oldCount)
 	{
 		std::vector <int> nums;
-		nums.reserve(count - oldCount);
+		nums.reserve(m_messageCount - oldCount);
 
-		for (int i = oldCount + 1, j = 0 ; i <= count ; ++i, ++j)
+		for (int i = oldCount + 1, j = 0 ; i <= m_messageCount ; ++i, ++j)
 			nums[j] = i;
 
 		events::messageCountEvent event
@@ -1207,6 +1222,8 @@ void maildirFolder::status(int& count, int& unseen)
 			}
 		}
 	}
+
+	return status;
 }
 
 

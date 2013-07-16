@@ -153,6 +153,12 @@ ref <connectionInfos> IMAPStore::getConnectionInfos() const
 }
 
 
+ref <IMAPConnection> IMAPStore::getConnection()
+{
+	return m_connection;
+}
+
+
 void IMAPStore::disconnect()
 {
 	if (!isConnected())
@@ -186,6 +192,13 @@ void IMAPStore::noop()
 			resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
 	{
 		throw exceptions::command_error("NOOP", m_connection->getParser()->lastLine());
+	}
+
+
+	for (std::list <IMAPFolder*>::iterator it = m_folders.begin() ;
+	     it != m_folders.end() ; ++it)
+	{
+		(*it)->noop();
 	}
 }
 

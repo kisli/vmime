@@ -37,6 +37,7 @@
 #include "vmime/net/folder.hpp"
 #include "vmime/net/message.hpp"
 #include "vmime/net/imap/IMAPParser.hpp"
+#include "vmime/net/imap/IMAPConnection.hpp"
 
 #include "vmime/mailboxList.hpp"
 
@@ -104,19 +105,23 @@ public:
 
 	/** Construct a fetch request for the specified messages, designated by their sequence numbers.
 	  *
+	  * @param cnt connection
 	  * @param list list of message numbers
 	  * @param options fetch options
 	  * @return fetch request
 	  */
-	static const string buildFetchRequest(const std::vector <int>& list, const int options);
+	static const string buildFetchRequest
+		(ref <IMAPConnection> cnt, const std::vector <int>& list, const int options);
 
 	/** Construct a fetch request for the specified messages, designated by their UIDs.
 	  *
+	  * @param cnt connection
 	  * @param list list of message UIDs
 	  * @param options fetch options
 	  * @return fetch request
 	  */
-	static const string buildFetchRequest(const std::vector <message::uid>& list, const int options);
+	static const string buildFetchRequest
+		(ref <IMAPConnection> cnt, const std::vector <message::uid>& list, const int options);
 
 	/** Convert a parser-style address list to a mailbox list.
 	  *
@@ -130,7 +135,7 @@ public:
 	  * @param uid globally unique UID (as returned by makeGlobalUID(), for example)
 	  * @return message UID
 	  */
-	static unsigned int extractUIDFromGlobalUID(const message::uid& uid);
+	static vmime_uint32 extractUIDFromGlobalUID(const message::uid& uid);
 
 	/** Construct a globally unique UID from UID Validity and a message UID.
 	  *
@@ -138,12 +143,12 @@ public:
 	  * @param messageUID UID of the message
 	  * @return global UID
 	  */
-	static const message::uid makeGlobalUID(const unsigned int UIDValidity, const unsigned int messageUID);
+	static const message::uid makeGlobalUID(const vmime_uint32 UIDValidity, const vmime_uint32 messageUID);
 
 private:
 
 	static const string buildFetchRequestImpl
-		(const string& mode, const string& set, const int options);
+		(ref <IMAPConnection> cnt, const string& mode, const string& set, const int options);
 };
 
 

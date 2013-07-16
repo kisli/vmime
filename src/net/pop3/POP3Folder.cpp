@@ -33,6 +33,7 @@
 #include "vmime/net/pop3/POP3Message.hpp"
 #include "vmime/net/pop3/POP3Command.hpp"
 #include "vmime/net/pop3/POP3Response.hpp"
+#include "vmime/net/pop3/POP3FolderStatus.hpp"
 
 #include "vmime/net/pop3/POP3Utils.hpp"
 
@@ -752,12 +753,22 @@ void POP3Folder::copyMessages(const folder::path& /* dest */, const std::vector 
 
 void POP3Folder::status(int& count, int& unseen)
 {
+	count = 0;
+	unseen = 0;
+
+	ref <folderStatus> status = getStatus();
+
+	count = status->getMessageCount();
+	unseen = status->getUnseenCount();
+}
+
+
+ref <folderStatus> POP3Folder::getStatus()
+{
 	ref <POP3Store> store = m_store.acquire();
 
 	if (!store)
 		throw exceptions::illegal_state("Store disconnected");
-	else if (!isOpen())
-		throw exceptions::illegal_state("Folder not open");
 
 	POP3Command::STAT()->send(store->getConnection());
 
@@ -767,10 +778,16 @@ void POP3Folder::status(int& count, int& unseen)
 	if (!response->isSuccess())
 		throw exceptions::command_error("STAT", response->getFirstLine());
 
+
+	unsigned int count = 0;
+
 	std::istringstream iss(response->getText());
 	iss >> count;
 
-	unseen = count;
+	ref <POP3FolderStatus> status = vmime::create <POP3FolderStatus>();
+
+	status->setMessageCount(count);
+	status->setUnseenCount(count);
 
 	// Update local message count
 	if (m_messageCount != count)
@@ -811,6 +828,8 @@ void POP3Folder::status(int& count, int& unseen)
 			}
 		}
 	}
+
+	return status;
 }
 
 

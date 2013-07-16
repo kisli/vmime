@@ -39,6 +39,7 @@
 #include "vmime/message.hpp"
 #include "vmime/net/message.hpp"
 #include "vmime/net/events.hpp"
+#include "vmime/net/folderStatus.hpp"
 
 #include "vmime/utility/path.hpp"
 #include "vmime/utility/stream.hpp"
@@ -335,11 +336,20 @@ public:
 
 	/** Request folder status without opening it.
 	  *
+	  * \deprecated Use the new getStatus() method
+	  *
 	  * @param count will receive the number of messages in the folder
 	  * @param unseen will receive the number of unseen messages in the folder
 	  * @throw net_exception if an error occurs
 	  */
 	virtual void status(int& count, int& unseen) = 0;
+
+	/** Request folder status without opening it.
+	  *
+	  * @return current folder status
+	  * @throw net_exception if an error occurs
+	  */
+	virtual ref <folderStatus> getStatus() = 0;
 
 	/** Expunge deleted messages.
 	  *

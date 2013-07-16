@@ -34,6 +34,7 @@
 #include "vmime/net/imap/IMAPMessage.hpp"
 #include "vmime/net/imap/IMAPUtils.hpp"
 #include "vmime/net/imap/IMAPConnection.hpp"
+#include "vmime/net/imap/IMAPFolderStatus.hpp"
 
 #include "vmime/message.hpp"
 
@@ -57,6 +58,8 @@ IMAPFolder::IMAPFolder(const folder::path& path, ref <IMAPStore> store, const in
 	  m_open(false), m_type(type), m_flags(flags), m_messageCount(0), m_uidValidity(0)
 {
 	store->registerFolder(this);
+
+	m_status = vmime::create <IMAPFolderStatus>();
 }
 
 
@@ -176,6 +179,9 @@ void IMAPFolder::open(const int mode, bool failIfModeIsNotAvailable)
 		oss << IMAPUtils::quoteString(IMAPUtils::pathToString
 				(connection->hierarchySeparator(), getFullPath()));
 
+		if (m_connection->hasCapability("CONDSTORE"))
+			oss << " (CONDSTORE)";
+
 		connection->send(true, oss.str(), true);
 
 		// Read the response
@@ -217,6 +223,11 @@ void IMAPFolder::open(const int mode, bool failIfModeIsNotAvailable)
 						m_uidValidity = static_cast <unsigned int>(code->nz_number()->value());
 						break;
 
+					case IMAPParser::resp_text_code::NOMODSEQ:
+
+						connection->disableMODSEQ();
+						break;
+
 					default:
 
 						break;
@@ -254,6 +265,8 @@ void IMAPFolder::open(const int mode, bool failIfModeIsNotAvailable)
 				}
 			}
 		}
+
+		processStatusUpdate(resp);
 
 		// Check for access mode (read-only or read-write)
 		const IMAPParser::resp_text_code* respTextCode = resp->response_done()->
@@ -792,7 +805,7 @@ void IMAPFolder::fetchMessages(std::vector <ref <message> >& msg, const int opti
 	}
 
 	// Send the request
-	const string command = IMAPUtils::buildFetchRequest(list, options);
+	const string command = IMAPUtils::buildFetchRequest(m_connection, list, options);
 	m_connection->send(true, command, true);
 
 	// Get the response
@@ -856,19 +869,17 @@ void IMAPFolder::fetchMessages(std::vector <ref <message> >& msg, const int opti
 
 	if (progress)
 		progress->stop(total);
+
+	processStatusUpdate(resp);
 }
 
 
 void IMAPFolder::fetchMessage(ref <message> msg, const int options)
 {
-	ref <IMAPStore> store = m_store.acquire();
+	std::vector <ref <message> > msgs;
+	msgs.push_back(msg);
 
-	if (!store)
-		throw exceptions::illegal_state("Store disconnected");
-	else if (!isOpen())
-		throw exceptions::illegal_state("Folder not open");
-
-	msg.dynamicCast <IMAPMessage>()->fetch(thisRef().dynamicCast <IMAPFolder>(), options);
+	fetchMessages(msgs, options, /* progress */ NULL);
 }
 
 
@@ -973,6 +984,8 @@ void IMAPFolder::deleteMessage(const int num)
 		 events::messageChangedEvent::TYPE_FLAGS, nums);
 
 	notifyMessageChanged(event);
+
+	processStatusUpdate(resp);
 }
 
 
@@ -1040,6 +1053,8 @@ void IMAPFolder::deleteMessages(const int from, const int to)
 		 events::messageChangedEvent::TYPE_FLAGS, nums);
 
 	notifyMessageChanged(event);
+
+	processStatusUpdate(resp);
 }
 
 
@@ -1103,6 +1118,8 @@ void IMAPFolder::deleteMessages(const std::vector <int>& nums)
 		 events::messageChangedEvent::TYPE_FLAGS, list);
 
 	notifyMessageChanged(event);
+
+	processStatusUpdate(resp);
 }
 
 
@@ -1311,6 +1328,8 @@ void IMAPFolder::setMessageFlags(const string& set, const int flags, const int m
 			throw exceptions::command_error("STORE",
 				m_connection->getParser()->lastLine(), "bad response");
 		}
+
+		processStatusUpdate(resp);
 	}
 }
 
@@ -1455,6 +1474,8 @@ void IMAPFolder::addMessage(utility::inputStream& is, const int size, const int 
 			(*it)->notifyMessageCount(event);
 		}
 	}
+
+	processStatusUpdate(resp);
 }
 
 
@@ -1545,6 +1566,8 @@ void IMAPFolder::expunge()
 			(*it)->notifyMessageCount(event);
 		}
 	}
+
+	processStatusUpdate(resp);
 }
 
 
@@ -1624,6 +1647,8 @@ void IMAPFolder::rename(const folder::path& newPath)
 			(*it)->notifyFolder(event);
 		}
 	}
+
+	processStatusUpdate(resp);
 }
 
 
@@ -1767,15 +1792,29 @@ void IMAPFolder::copyMessages(const string& set, const folder::path& dest)
 		throw exceptions::command_error("COPY",
 			m_connection->getParser()->lastLine(), "bad response");
 	}
+
+	processStatusUpdate(resp);
 }
 
 
 void IMAPFolder::status(int& count, int& unseen)
 {
-	ref <IMAPStore> store = m_store.acquire();
-
 	count = 0;
 	unseen = 0;
+
+	ref <folderStatus> status = getStatus();
+
+	count = status->getMessageCount();
+	unseen = status->getUnseenCount();
+}
+
+
+ref <folderStatus> IMAPFolder::getStatus()
+{
+	ref <IMAPStore> store = m_store.acquire();
+
+	if (!store)
+		throw exceptions::illegal_state("Store disconnected");
 
 	// Build the request text
 	std::ostringstream command;
@@ -1784,7 +1823,14 @@ void IMAPFolder::status(int& count, int& unseen)
 	command << "STATUS ";
 	command << IMAPUtils::quoteString(IMAPUtils::pathToString
 			(m_connection->hierarchySeparator(), getFullPath()));
-	command << " (MESSAGES UNSEEN)";
+	command << " (";
+
+	command << "MESSAGES" << ' ' << "UNSEEN" << ' ' << "UIDNEXT" << ' ' << "UIDVALIDITY";
+
+	if (m_connection->hasCapability("CONDSTORE"))
+		command << ' ' << "HIGHESTMODSEQ";
+
+	command << ")";
 
 	// Send the request
 	m_connection->send(true, command.str(), true);
@@ -1805,81 +1851,47 @@ void IMAPFolder::status(int& count, int& unseen)
 	for (std::vector <IMAPParser::continue_req_or_response_data*>::const_iterator
 	     it = respDataList.begin() ; it != respDataList.end() ; ++it)
 	{
-		if ((*it)->response_data() == NULL)
+		if ((*it)->response_data() != NULL)
 		{
-			throw exceptions::command_error("STATUS",
-				m_connection->getParser()->lastLine(), "invalid response");
-		}
+			const IMAPParser::response_data* responseData = (*it)->response_data();
 
-		const IMAPParser::response_data* responseData = (*it)->response_data();
-
-		if (responseData->mailbox_data() &&
-			responseData->mailbox_data()->type() == IMAPParser::mailbox_data::STATUS)
-		{
-			const IMAPParser::status_att_list* statusAttList =
-				responseData->mailbox_data()->status_att_list();
-
-			for (std::vector <IMAPParser::status_att_val*>::const_iterator
-			     jt = statusAttList->values().begin() ; jt != statusAttList->values().end() ; ++jt)
+			if (responseData->mailbox_data() &&
+				responseData->mailbox_data()->type() == IMAPParser::mailbox_data::STATUS)
 			{
-				switch ((*jt)->type())
-				{
-				case IMAPParser::status_att_val::MESSAGES:
+				ref <IMAPFolderStatus> status = vmime::create <IMAPFolderStatus>();
+				status->updateFromResponse(responseData->mailbox_data());
 
-					count = (*jt)->value_as_number()->value();
-					break;
+				m_messageCount = status->getMessageCount();
+				m_uidValidity = status->getUIDValidity();
 
-				case IMAPParser::status_att_val::UNSEEN:
-
-					unseen = (*jt)->value_as_number()->value();
-					break;
-
-				default:
-
-					break;
-				}
+				return status;
 			}
 		}
 	}
 
-	// Notify message count changed (new messages)
-	if (m_messageCount != count)
+	throw exceptions::command_error("STATUS",
+		m_connection->getParser()->lastLine(), "invalid response");
+}
+
+
+void IMAPFolder::noop()
+{
+	ref <IMAPStore> store = m_store.acquire();
+
+	if (!store)
+		throw exceptions::illegal_state("Store disconnected");
+
+	m_connection->send(true, "NOOP", true);
+
+	utility::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
+
+	if (resp->isBad() || resp->response_done()->response_tagged()->
+			resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
 	{
-		const int oldCount = m_messageCount;
-
-		m_messageCount = count;
-
-		if (count > oldCount)
-		{
-			std::vector <int> nums;
-			nums.reserve(count - oldCount);
-
-			for (int i = oldCount + 1, j = 0 ; i <= count ; ++i, ++j)
-				nums[j] = i;
-
-			events::messageCountEvent event
-				(thisRef().dynamicCast <folder>(),
-				 events::messageCountEvent::TYPE_ADDED, nums);
-
-			notifyMessageCount(event);
-
-			// Notify folders with the same path
-			for (std::list <IMAPFolder*>::iterator it = store->m_folders.begin() ;
-			     it != store->m_folders.end() ; ++it)
-			{
-				if ((*it) != this && (*it)->getFullPath() == m_path)
-				{
-					(*it)->m_messageCount = count;
-
-					events::messageCountEvent event
-						((*it)->thisRef().dynamicCast <folder>(),
-						 events::messageCountEvent::TYPE_ADDED, nums);
-
-					(*it)->notifyMessageCount(event);
-				}
-			}
-		}
+		throw exceptions::command_error("NOOP", m_connection->getParser()->lastLine());
 	}
+
+	processStatusUpdate(resp);
 }
 
 
@@ -1938,6 +1950,39 @@ std::vector <int> IMAPFolder::getMessageNumbersStartingOnUID(const message::uid&
 	return v;
 }
 
+
+void IMAPFolder::processStatusUpdate(const IMAPParser::response* resp)
+{
+	// Process tagged response
+	if (resp->response_done() && resp->response_done()->response_tagged() &&
+	    resp->response_done()->response_tagged()
+	    	->resp_cond_state()->resp_text()->resp_text_code())
+	{
+		const IMAPParser::resp_text_code* code =
+			resp->response_done()->response_tagged()
+				->resp_cond_state()->resp_text()->resp_text_code();
+
+		m_status->updateFromResponse(code);
+	}
+
+	// Process untagged responses
+	for (std::vector <IMAPParser::continue_req_or_response_data*>::const_iterator
+	     it = resp->continue_req_or_response_data().begin() ;
+	     it != resp->continue_req_or_response_data().end() ; ++it)
+	{
+		if ((*it)->response_data() && (*it)->response_data()->resp_cond_state() &&
+		    (*it)->response_data()->resp_cond_state()->resp_text()->resp_text_code())
+		{
+			const IMAPParser::resp_text_code* code =
+				(*it)->response_data()->resp_cond_state()->resp_text()->resp_text_code();
+
+			m_status->updateFromResponse(code);
+		}
+	}
+
+	m_messageCount = m_status->getMessageCount();
+	m_uidValidity = m_status->getUIDValidity();
+}
 
 } // imap
 } // net

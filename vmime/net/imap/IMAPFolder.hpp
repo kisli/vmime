@@ -38,6 +38,8 @@
 
 #include "vmime/net/folder.hpp"
 
+#include "vmime/net/imap/IMAPParser.hpp"
+
 
 namespace vmime {
 namespace net {
@@ -47,6 +49,7 @@ namespace imap {
 class IMAPStore;
 class IMAPMessage;
 class IMAPConnection;
+class IMAPFolderStatus;
 
 
 /** IMAP folder implementation.
@@ -62,7 +65,7 @@ private:
 
 
 	IMAPFolder(const folder::path& path, ref <IMAPStore> store, const int type = TYPE_UNDEFINED, const int flags = FLAG_UNDEFINED);
-	IMAPFolder(const IMAPFolder&) : folder() { }
+	IMAPFolder(const IMAPFolder&);
 
 	~IMAPFolder();
 
@@ -118,6 +121,9 @@ public:
 	void copyMessages(const folder::path& dest, const std::vector <int>& nums);
 
 	void status(int& count, int& unseen);
+	ref <folderStatus> getStatus();
+
+	void noop();
 
 	void expunge();
 
@@ -148,6 +154,18 @@ private:
 	void copyMessages(const string& set, const folder::path& dest);
 
 
+	/** Process status updates ("unsolicited responses") contained in the
+	  * specified response. Example:
+	  *
+	  *    C: a006 NOOP
+	  *    S: * 930 EXISTS       <-- this is a status update
+	  *    S: a006 OK Success
+	  *
+	  * @param resp parsed IMAP response
+	  */
+	void processStatusUpdate(const IMAPParser::response* resp);
+
+
 	weak_ref <IMAPStore> m_store;
 	ref <IMAPConnection> m_connection;
 
@@ -161,8 +179,8 @@ private:
 	int m_flags;
 
 	int m_messageCount;
-
-	unsigned int m_uidValidity;
+	vmime_uint32 m_uidValidity;
+	ref <IMAPFolderStatus> m_status;
 
 	std::vector <IMAPMessage*> m_messages;
 };
