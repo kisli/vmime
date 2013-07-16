@@ -44,7 +44,7 @@ class VMIME_EXPORT IMAPMessagePartContentHandler : public contentHandler
 {
 public:
 
-	IMAPMessagePartContentHandler(ref <IMAPMessage> msg, ref <class part> part, const vmime::encoding& encoding);
+	IMAPMessagePartContentHandler(ref <IMAPMessage> msg, ref <messagePart> part, const vmime::encoding& encoding);
 
 	ref <contentHandler> clone() const;
 
@@ -69,7 +69,7 @@ public:
 private:
 
 	weak_ref <IMAPMessage> m_message;
-	weak_ref <part> m_part;
+	weak_ref <messagePart> m_part;
 
 	vmime::encoding m_encoding;
 	vmime::mediaType m_contentType;

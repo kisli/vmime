@@ -84,8 +84,8 @@ public:
 
 	bool isExpunged() const;
 
-	ref <const structure> getStructure() const;
-	ref <structure> getStructure();
+	ref <const messageStructure> getStructure() const;
+	ref <messageStructure> getStructure();
 
 	ref <const header> getHeader() const;
 
@@ -93,9 +93,9 @@ public:
 	void setFlags(const int flags, const int mode = FLAG_MODE_SET);
 
 	void extract(utility::outputStream& os, utility::progressListener* progress = NULL, const int start = 0, const int length = -1, const bool peek = false) const;
-	void extractPart(ref <const part> p, utility::outputStream& os, utility::progressListener* progress = NULL, const int start = 0, const int length = -1, const bool peek = false) const;
+	void extractPart(ref <const messagePart> p, utility::outputStream& os, utility::progressListener* progress = NULL, const int start = 0, const int length = -1, const bool peek = false) const;
 
-	void fetchPartHeader(ref <part> p);
+	void fetchPartHeader(ref <messagePart> p);
 
 	ref <vmime::message> getParsedMessage();
 
@@ -107,7 +107,7 @@ private:
 	  *
 	  * @param str structure for which to fetch parts headers
 	  */
-	void fetchPartHeaderForStructure(ref <structure> str);
+	void fetchPartHeaderForStructure(ref <messageStructure> str);
 
 	/** Recursively contruct parsed message from structure.
 	  * Called by getParsedMessage().
@@ -116,7 +116,7 @@ private:
 	  * @param str structure for which to construct part
 	  * @param level current nesting level (0 is root)
 	  */
-	void constructParsedMessage(ref <bodyPart> parentPart, ref <structure> str, int level = 0);
+	void constructParsedMessage(ref <bodyPart> parentPart, ref <messageStructure> str, int level = 0);
 
 
 	enum ExtractFlags
@@ -126,7 +126,7 @@ private:
 		EXTRACT_PEEK = 0x10
 	};
 
-	void extractImpl(ref <const part> p, utility::outputStream& os, utility::progressListener* progress,
+	void extractImpl(ref <const messagePart> p, utility::outputStream& os, utility::progressListener* progress,
 		const int start, const int length, const int extractFlags) const;
 
 
@@ -145,7 +145,7 @@ private:
 	vmime_uint64 m_modseq;
 
 	ref <header> m_header;
-	ref <structure> m_structure;
+	ref <messageStructure> m_structure;
 };
 
 

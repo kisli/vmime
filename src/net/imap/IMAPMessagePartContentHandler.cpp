@@ -39,7 +39,7 @@ namespace imap {
 
 
 IMAPMessagePartContentHandler::IMAPMessagePartContentHandler
-	(ref <IMAPMessage> msg, ref <class part> part, const vmime::encoding& encoding)
+	(ref <IMAPMessage> msg, ref <messagePart> part, const vmime::encoding& encoding)
 	: m_message(msg), m_part(part), m_encoding(encoding)
 {
 }
@@ -49,7 +49,7 @@ ref <contentHandler> IMAPMessagePartContentHandler::clone() const
 {
 	return create <IMAPMessagePartContentHandler>
 		(m_message.acquire().constCast <IMAPMessage>(),
-		 m_part.acquire().constCast <part>(),
+		 m_part.acquire().constCast <messagePart>(),
 		 m_encoding);
 }
 
@@ -58,7 +58,7 @@ void IMAPMessagePartContentHandler::generate
 	(utility::outputStream& os, const vmime::encoding& enc, const string::size_type maxLineLength) const
 {
 	ref <IMAPMessage> msg = m_message.acquire().constCast <IMAPMessage>();
-	ref <part> part = m_part.acquire().constCast <class part>();
+	ref <messagePart> part = m_part.acquire().constCast <messagePart>();
 
 	// Data is already encoded
 	if (isEncoded())
@@ -125,7 +125,7 @@ void IMAPMessagePartContentHandler::extract
 	(utility::outputStream& os, utility::progressListener* progress) const
 {
 	ref <IMAPMessage> msg = m_message.acquire().constCast <IMAPMessage>();
-	ref <part> part = m_part.acquire().constCast <class part>();
+	ref <messagePart> part = m_part.acquire().constCast <messagePart>();
 
 	// No decoding to perform
 	if (!isEncoded())
@@ -155,7 +155,7 @@ void IMAPMessagePartContentHandler::extractRaw
 	(utility::outputStream& os, utility::progressListener* progress) const
 {
 	ref <IMAPMessage> msg = m_message.acquire().constCast <IMAPMessage>();
-	ref <part> part = m_part.acquire().constCast <class part>();
+	ref <messagePart> part = m_part.acquire().constCast <messagePart>();
 
 	msg->extractPart(part, os, progress);
 }

@@ -33,8 +33,8 @@
 #include "vmime/net/imap/IMAPStore.hpp"
 #include "vmime/net/imap/IMAPConnection.hpp"
 #include "vmime/net/imap/IMAPUtils.hpp"
-#include "vmime/net/imap/IMAPStructure.hpp"
-#include "vmime/net/imap/IMAPPart.hpp"
+#include "vmime/net/imap/IMAPMessageStructure.hpp"
+#include "vmime/net/imap/IMAPMessagePart.hpp"
 #include "vmime/net/imap/IMAPMessagePartContentHandler.hpp"
 
 #include "vmime/utility/outputStreamAdapter.hpp"
@@ -169,7 +169,7 @@ int IMAPMessage::getFlags() const
 }
 
 
-ref <const structure> IMAPMessage::getStructure() const
+ref <const messageStructure> IMAPMessage::getStructure() const
 {
 	if (m_structure == NULL)
 		throw exceptions::unfetched_object();
@@ -178,7 +178,7 @@ ref <const structure> IMAPMessage::getStructure() const
 }
 
 
-ref <structure> IMAPMessage::getStructure()
+ref <messageStructure> IMAPMessage::getStructure()
 {
 	if (m_structure == NULL)
 		throw exceptions::unfetched_object();
@@ -209,7 +209,7 @@ void IMAPMessage::extract(utility::outputStream& os, utility::progressListener* 
 
 
 void IMAPMessage::extractPart
-	(ref <const part> p, utility::outputStream& os, utility::progressListener* progress,
+	(ref <const messagePart> p, utility::outputStream& os, utility::progressListener* progress,
 	 const int start, const int length, const bool peek) const
 {
 	ref <const IMAPFolder> folder = m_folder.acquire();
@@ -221,7 +221,7 @@ void IMAPMessage::extractPart
 }
 
 
-void IMAPMessage::fetchPartHeader(ref <part> p)
+void IMAPMessage::fetchPartHeader(ref <messagePart> p)
 {
 	ref <IMAPFolder> folder = m_folder.acquire();
 
@@ -233,15 +233,15 @@ void IMAPMessage::fetchPartHeader(ref <part> p)
 
 	extractImpl(p, ossAdapter, NULL, 0, -1, EXTRACT_HEADER | EXTRACT_PEEK);
 
-	p.dynamicCast <IMAPPart>()->getOrCreateHeader().parse(oss.str());
+	p.dynamicCast <IMAPMessagePart>()->getOrCreateHeader().parse(oss.str());
 }
 
 
-void IMAPMessage::fetchPartHeaderForStructure(ref <structure> str)
+void IMAPMessage::fetchPartHeaderForStructure(ref <messageStructure> str)
 {
 	for (size_t i = 0, n = str->getPartCount() ; i < n ; ++i)
 	{
-		ref <class part> part = str->getPartAt(i);
+		ref <messagePart> part = str->getPartAt(i);
 
 		// Fetch header of current part
 		fetchPartHeader(part);
@@ -252,7 +252,7 @@ void IMAPMessage::fetchPartHeaderForStructure(ref <structure> str)
 }
 
 
-void IMAPMessage::extractImpl(ref <const part> p, utility::outputStream& os,
+void IMAPMessage::extractImpl(ref <const messagePart> p, utility::outputStream& os,
 	utility::progressListener* progress, const int start,
 	const int length, const int extractFlags) const
 {
@@ -266,7 +266,7 @@ void IMAPMessage::extractImpl(ref <const part> p, utility::outputStream& os,
 
 	if (p != NULL)
 	{
-		ref <const IMAPPart> currentPart = p.dynamicCast <const IMAPPart>();
+		ref <const IMAPMessagePart> currentPart = p.dynamicCast <const IMAPMessagePart>();
 		std::vector <int> numbers;
 
 		numbers.push_back(currentPart->getNumber());
@@ -456,7 +456,7 @@ void IMAPMessage::processFetchResponse
 		}
 		case IMAPParser::msg_att_item::BODY_STRUCTURE:
 		{
-			m_structure = vmime::create <IMAPStructure>((*it)->body());
+			m_structure = vmime::create <IMAPMessageStructure>((*it)->body());
 			break;
 		}
 		case IMAPParser::msg_att_item::RFC822_HEADER:
@@ -632,11 +632,12 @@ void IMAPMessage::setFlags(const int flags, const int mode)
 }
 
 
-void IMAPMessage::constructParsedMessage(ref <bodyPart> parentPart, ref <structure> str, int level)
+void IMAPMessage::constructParsedMessage
+	(ref <bodyPart> parentPart, ref <messageStructure> str, int level)
 {
 	if (level == 0)
 	{
-		ref <class part> part = str->getPartAt(0);
+		ref <messagePart> part = str->getPartAt(0);
 
 		// Copy header
 		ref <const header> hdr = part->getHeader();
@@ -654,7 +655,7 @@ void IMAPMessage::constructParsedMessage(ref <bodyPart> parentPart, ref <structu
 	{
 		for (size_t i = 0, n = str->getPartCount() ; i < n ; ++i)
 		{
-			ref <class part> part = str->getPartAt(i);
+			ref <messagePart> part = str->getPartAt(i);
 
 			ref <bodyPart> childPart = vmime::create <bodyPart>();
 
@@ -681,7 +682,7 @@ void IMAPMessage::constructParsedMessage(ref <bodyPart> parentPart, ref <structu
 ref <vmime::message> IMAPMessage::getParsedMessage()
 {
 	// Fetch structure
-	ref <structure> structure = NULL;
+	ref <messageStructure> structure = NULL;
 
 	try
 	{

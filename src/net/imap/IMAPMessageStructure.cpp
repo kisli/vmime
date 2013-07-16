@@ -27,8 +27,8 @@
 #if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_IMAP
 
 
-#include "vmime/net/imap/IMAPStructure.hpp"
-#include "vmime/net/imap/IMAPPart.hpp"
+#include "vmime/net/imap/IMAPMessageStructure.hpp"
+#include "vmime/net/imap/IMAPMessagePart.hpp"
 
 
 namespace vmime {
@@ -36,51 +36,51 @@ namespace net {
 namespace imap {
 
 
-IMAPStructure::IMAPStructure()
+IMAPMessageStructure::IMAPMessageStructure()
 {
 }
 
 
-IMAPStructure::IMAPStructure(const IMAPParser::body* body)
+IMAPMessageStructure::IMAPMessageStructure(const IMAPParser::body* body)
 {
-	m_parts.push_back(IMAPPart::create(NULL, 0, body));
+	m_parts.push_back(IMAPMessagePart::create(NULL, 0, body));
 }
 
 
-IMAPStructure::IMAPStructure(ref <IMAPPart> parent, const std::vector <IMAPParser::body*>& list)
+IMAPMessageStructure::IMAPMessageStructure(ref <IMAPMessagePart> parent, const std::vector <IMAPParser::body*>& list)
 {
 	int number = 0;
 
 	for (std::vector <IMAPParser::body*>::const_iterator
 	     it = list.begin() ; it != list.end() ; ++it, ++number)
 	{
-		m_parts.push_back(IMAPPart::create(parent, number, *it));
+		m_parts.push_back(IMAPMessagePart::create(parent, number, *it));
 	}
 }
 
 
-ref <const part> IMAPStructure::getPartAt(const size_t x) const
+ref <const messagePart> IMAPMessageStructure::getPartAt(const size_t x) const
 {
 	return m_parts[x];
 }
 
 
-ref <part> IMAPStructure::getPartAt(const size_t x)
+ref <messagePart> IMAPMessageStructure::getPartAt(const size_t x)
 {
 	return m_parts[x];
 }
 
 
-size_t IMAPStructure::getPartCount() const
+size_t IMAPMessageStructure::getPartCount() const
 {
 	return m_parts.size();
 }
 
 
 // static
-ref <IMAPStructure> IMAPStructure::emptyStructure()
+ref <IMAPMessageStructure> IMAPMessageStructure::emptyStructure()
 {
-	static ref <IMAPStructure> emptyStructure = vmime::create <IMAPStructure>();
+	static ref <IMAPMessageStructure> emptyStructure = vmime::create <IMAPMessageStructure>();
 	return emptyStructure;
 }
 

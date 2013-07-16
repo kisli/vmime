@@ -21,40 +21,55 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#ifndef VMIME_NET_IMAP_IMAPMESSAGESTRUCTURE_HPP_INCLUDED
+#define VMIME_NET_IMAP_IMAPMESSAGESTRUCTURE_HPP_INCLUDED
+
+
 #include "vmime/config.hpp"
 
 
-#if VMIME_HAVE_MESSAGING_FEATURES
+#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_IMAP
 
 
 #include "vmime/net/message.hpp"
 
+#include "vmime/net/imap/IMAPParser.hpp"
+
 
 namespace vmime {
 namespace net {
+namespace imap {
 
 
-ref <const messagePart> messagePart::getPartAt(const size_t pos) const
+class IMAPMessagePart;
+
+
+class VMIME_EXPORT IMAPMessageStructure : public messageStructure
 {
-	return getStructure()->getPartAt(pos);
-}
+public:
+
+	IMAPMessageStructure();
+	IMAPMessageStructure(const IMAPParser::body* body);
+	IMAPMessageStructure(ref <IMAPMessagePart> parent, const std::vector <IMAPParser::body*>& list);
+
+	ref <const messagePart> getPartAt(const size_t x) const;
+	ref <messagePart> getPartAt(const size_t x);
+	size_t getPartCount() const;
+
+	static ref <IMAPMessageStructure> emptyStructure();
+
+private:
+
+	std::vector <ref <IMAPMessagePart> > m_parts;
+};
 
 
-ref <messagePart> messagePart::getPartAt(const size_t pos)
-{
-	return getStructure()->getPartAt(pos);
-}
-
-
-size_t messagePart::getPartCount() const
-{
-	return getStructure()->getPartCount();
-}
-
-
+} // imap
 } // net
 } // vmime
 
 
-#endif // VMIME_HAVE_MESSAGING_FEATURES
+#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_IMAP
+
+#endif // VMIME_NET_IMAP_IMAPMESSAGESTRUCTURE_HPP_INCLUDED
 

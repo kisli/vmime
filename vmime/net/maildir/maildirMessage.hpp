@@ -68,8 +68,8 @@ public:
 
 	bool isExpunged() const;
 
-	ref <const structure> getStructure() const;
-	ref <structure> getStructure();
+	ref <const messageStructure> getStructure() const;
+	ref <messageStructure> getStructure();
 
 	ref <const header> getHeader() const;
 
@@ -77,9 +77,9 @@ public:
 	void setFlags(const int flags, const int mode = FLAG_MODE_SET);
 
 	void extract(utility::outputStream& os, utility::progressListener* progress = NULL, const int start = 0, const int length = -1, const bool peek = false) const;
-	void extractPart(ref <const part> p, utility::outputStream& os, utility::progressListener* progress = NULL, const int start = 0, const int length = -1, const bool peek = false) const;
+	void extractPart(ref <const messagePart> p, utility::outputStream& os, utility::progressListener* progress = NULL, const int start = 0, const int length = -1, const bool peek = false) const;
 
-	void fetchPartHeader(ref <part> p);
+	void fetchPartHeader(ref <messagePart> p);
 
 	ref <vmime::message> getParsedMessage();
 
@@ -103,7 +103,7 @@ private:
 	uid m_uid;
 
 	ref <header> m_header;
-	ref <structure> m_structure;
+	ref <messageStructure> m_structure;
 };
 
 

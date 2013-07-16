@@ -27,8 +27,8 @@
 #if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_IMAP
 
 
-#include "vmime/net/imap/IMAPPart.hpp"
-#include "vmime/net/imap/IMAPStructure.hpp"
+#include "vmime/net/imap/IMAPMessagePart.hpp"
+#include "vmime/net/imap/IMAPMessageStructure.hpp"
 
 
 namespace vmime {
@@ -36,7 +36,7 @@ namespace net {
 namespace imap {
 
 
-IMAPPart::IMAPPart(ref <IMAPPart> parent, const int number, const IMAPParser::body_type_mpart* mpart)
+IMAPMessagePart::IMAPMessagePart(ref <IMAPMessagePart> parent, const int number, const IMAPParser::body_type_mpart* mpart)
 	: m_parent(parent), m_header(NULL), m_number(number), m_size(0)
 {
 	m_mediaType = vmime::mediaType
@@ -44,7 +44,7 @@ IMAPPart::IMAPPart(ref <IMAPPart> parent, const int number, const IMAPParser::bo
 }
 
 
-IMAPPart::IMAPPart(ref <IMAPPart> parent, const int number, const IMAPParser::body_type_1part* part)
+IMAPMessagePart::IMAPMessagePart(ref <IMAPMessagePart> parent, const int number, const IMAPParser::body_type_1part* part)
 	: m_parent(parent), m_header(NULL), m_number(number), m_size(0)
 {
 	if (part->body_type_text())
@@ -74,49 +74,49 @@ IMAPPart::IMAPPart(ref <IMAPPart> parent, const int number, const IMAPParser::bo
 }
 
 
-ref <const structure> IMAPPart::getStructure() const
+ref <const messageStructure> IMAPMessagePart::getStructure() const
 {
 	if (m_structure != NULL)
 		return m_structure;
 	else
-		return IMAPStructure::emptyStructure();
+		return IMAPMessageStructure::emptyStructure();
 }
 
 
-ref <structure> IMAPPart::getStructure()
+ref <messageStructure> IMAPMessagePart::getStructure()
 {
 	if (m_structure != NULL)
 		return m_structure;
 	else
-		return IMAPStructure::emptyStructure();
+		return IMAPMessageStructure::emptyStructure();
 }
 
 
-ref <const IMAPPart> IMAPPart::getParent() const
+ref <const IMAPMessagePart> IMAPMessagePart::getParent() const
 {
 	return m_parent.acquire();
 }
 
 
-const mediaType& IMAPPart::getType() const
+const mediaType& IMAPMessagePart::getType() const
 {
 	return m_mediaType;
 }
 
 
-int IMAPPart::getSize() const
+int IMAPMessagePart::getSize() const
 {
 	return m_size;
 }
 
 
-int IMAPPart::getNumber() const
+int IMAPMessagePart::getNumber() const
 {
 	return m_number;
 }
 
 
-ref <const header> IMAPPart::getHeader() const
+ref <const header> IMAPMessagePart::getHeader() const
 {
 	if (m_header == NULL)
 		throw exceptions::unfetched_object();
@@ -126,24 +126,24 @@ ref <const header> IMAPPart::getHeader() const
 
 
 // static
-ref <IMAPPart> IMAPPart::create
-	(ref <IMAPPart> parent, const int number, const IMAPParser::body* body)
+ref <IMAPMessagePart> IMAPMessagePart::create
+	(ref <IMAPMessagePart> parent, const int number, const IMAPParser::body* body)
 {
 	if (body->body_type_mpart())
 	{
-		ref <IMAPPart> part = vmime::create <IMAPPart>(parent, number, body->body_type_mpart());
-		part->m_structure = vmime::create <IMAPStructure>(part, body->body_type_mpart()->list());
+		ref <IMAPMessagePart> part = vmime::create <IMAPMessagePart>(parent, number, body->body_type_mpart());
+		part->m_structure = vmime::create <IMAPMessageStructure>(part, body->body_type_mpart()->list());
 
 		return part;
 	}
 	else
 	{
-		return vmime::create <IMAPPart>(parent, number, body->body_type_1part());
+		return vmime::create <IMAPMessagePart>(parent, number, body->body_type_1part());
 	}
 }
 
 
-header& IMAPPart::getOrCreateHeader()
+header& IMAPMessagePart::getOrCreateHeader()
 {
 	if (m_header != NULL)
 		return *m_header;

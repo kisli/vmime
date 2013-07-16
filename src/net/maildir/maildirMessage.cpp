@@ -28,6 +28,8 @@
 
 
 #include "vmime/net/maildir/maildirMessage.hpp"
+#include "vmime/net/maildir/maildirMessagePart.hpp"
+#include "vmime/net/maildir/maildirMessageStructure.hpp"
 #include "vmime/net/maildir/maildirFolder.hpp"
 #include "vmime/net/maildir/maildirUtils.hpp"
 #include "vmime/net/maildir/maildirStore.hpp"
@@ -44,193 +46,6 @@ namespace vmime {
 namespace net {
 namespace maildir {
 
-
-//
-// maildirPart
-//
-
-class maildirStructure;
-
-class maildirPart : public part
-{
-public:
-
-	maildirPart(ref <maildirPart> parent, const int number, const bodyPart& part);
-	~maildirPart();
-
-
-	ref <const structure> getStructure() const;
-	ref <structure> getStructure();
-
-	weak_ref <const maildirPart> getParent() const { return (m_parent); }
-
-	const mediaType& getType() const { return (m_mediaType); }
-	int getSize() const { return (m_size); }
-	int getNumber() const { return (m_number); }
-
-	ref <const header> getHeader() const
-	{
-		if (m_header == NULL)
-			throw exceptions::unfetched_object();
-		else
-			return m_header;
-	}
-
-	header& getOrCreateHeader()
-	{
-		if (m_header != NULL)
-			return (*m_header);
-		else
-			return (*(m_header = vmime::create <header>()));
-	}
-
-	int getHeaderParsedOffset() const { return (m_headerParsedOffset); }
-	int getHeaderParsedLength() const { return (m_headerParsedLength); }
-
-	int getBodyParsedOffset() const { return (m_bodyParsedOffset); }
-	int getBodyParsedLength() const { return (m_bodyParsedLength); }
-
-	void initStructure(const bodyPart& part);
-
-private:
-
-	ref <maildirStructure> m_structure;
-	weak_ref <maildirPart> m_parent;
-	ref <header> m_header;
-
-	int m_number;
-	int m_size;
-	mediaType m_mediaType;
-
-	int m_headerParsedOffset;
-	int m_headerParsedLength;
-
-	int m_bodyParsedOffset;
-	int m_bodyParsedLength;
-};
-
-
-
-//
-// maildirStructure
-//
-
-class maildirStructure : public structure
-{
-public:
-
-	maildirStructure()
-	{
-	}
-
-	maildirStructure(ref <maildirPart> parent, const bodyPart& part)
-	{
-		vmime::ref <maildirPart> mpart = vmime::create <maildirPart>(parent, 0, part);
-		mpart->initStructure(part);
-
-		m_parts.push_back(mpart);
-	}
-
-	maildirStructure(ref <maildirPart> parent, const std::vector <ref <const vmime::bodyPart> >& list)
-	{
-		for (unsigned int i = 0 ; i < list.size() ; ++i)
-		{
-			vmime::ref <maildirPart> mpart = vmime::create <maildirPart>(parent, i, *list[i]);
-			mpart->initStructure(*list[i]);
-
-			m_parts.push_back(mpart);
-		}
-	}
-
-
-	ref <const part> getPartAt(const size_t x) const
-	{
-		return m_parts[x];
-	}
-
-	ref <part> getPartAt(const size_t x)
-	{
-		return m_parts[x];
-	}
-
-	size_t getPartCount() const
-	{
-		return m_parts.size();
-	}
-
-
-	static ref <maildirStructure> emptyStructure()
-	{
-		return m_emptyStructure;
-	}
-
-private:
-
-	static ref <maildirStructure> m_emptyStructure;
-
-	std::vector <ref <maildirPart> > m_parts;
-};
-
-
-ref <maildirStructure> maildirStructure::m_emptyStructure = vmime::create <maildirStructure>();
-
-
-
-maildirPart::maildirPart(ref <maildirPart> parent, const int number, const bodyPart& part)
-	: m_parent(parent), m_header(NULL), m_number(number)
-{
-	m_headerParsedOffset = part.getHeader()->getParsedOffset();
-	m_headerParsedLength = part.getHeader()->getParsedLength();
-
-	m_bodyParsedOffset = part.getBody()->getParsedOffset();
-	m_bodyParsedLength = part.getBody()->getParsedLength();
-
-	m_size = part.getBody()->getContents()->getLength();
-
-	m_mediaType = part.getBody()->getContentType();
-}
-
-
-maildirPart::~maildirPart()
-{
-}
-
-
-void maildirPart::initStructure(const bodyPart& part)
-{
-	if (part.getBody()->getPartList().size() == 0)
-		m_structure = NULL;
-	else
-	{
-		m_structure = vmime::create <maildirStructure>
-			(thisRef().dynamicCast <maildirPart>(),
-			 part.getBody()->getPartList());
-	}
-}
-
-
-ref <const structure> maildirPart::getStructure() const
-{
-	if (m_structure != NULL)
-		return m_structure;
-	else
-		return maildirStructure::emptyStructure();
-}
-
-
-ref <structure> maildirPart::getStructure()
-{
-	if (m_structure != NULL)
-		return m_structure;
-	else
-		return maildirStructure::emptyStructure();
-}
-
-
-
-//
-// maildirMessage
-//
 
 maildirMessage::maildirMessage(ref <maildirFolder> folder, const int num)
 	: m_folder(folder), m_num(num), m_size(-1), m_flags(FLAG_UNDEFINED),
@@ -282,7 +97,7 @@ bool maildirMessage::isExpunged() const
 }
 
 
-ref <const structure> maildirMessage::getStructure() const
+ref <const messageStructure> maildirMessage::getStructure() const
 {
 	if (m_structure == NULL)
 		throw exceptions::unfetched_object();
@@ -291,7 +106,7 @@ ref <const structure> maildirMessage::getStructure() const
 }
 
 
-ref <structure> maildirMessage::getStructure()
+ref <messageStructure> maildirMessage::getStructure()
 {
 	if (m_structure == NULL)
 		throw exceptions::unfetched_object();
@@ -337,11 +152,11 @@ void maildirMessage::extract(utility::outputStream& os,
 }
 
 
-void maildirMessage::extractPart(ref <const part> p, utility::outputStream& os,
+void maildirMessage::extractPart(ref <const messagePart> p, utility::outputStream& os,
 	utility::progressListener* progress, const int start,
 	const int length, const bool peek) const
 {
-	ref <const maildirPart> mp = p.dynamicCast <const maildirPart>();
+	ref <const maildirMessagePart> mp = p.dynamicCast <const maildirMessagePart>();
 
 	extractImpl(os, progress, mp->getBodyParsedOffset(), mp->getBodyParsedLength(),
 		start, length, peek);
@@ -395,11 +210,11 @@ void maildirMessage::extractImpl(utility::outputStream& os, utility::progressLis
 }
 
 
-void maildirMessage::fetchPartHeader(ref <part> p)
+void maildirMessage::fetchPartHeader(ref <messagePart> p)
 {
 	ref <maildirFolder> folder = m_folder.acquire();
 
-	ref <maildirPart> mp = p.dynamicCast <maildirPart>();
+	ref <maildirMessagePart> mp = p.dynamicCast <maildirMessagePart>();
 
 	ref <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
@@ -508,7 +323,7 @@ void maildirMessage::fetch(ref <maildirFolder> msgFolder, const int options)
 		// Extract structure
 		if (options & folder::FETCH_STRUCTURE)
 		{
-			m_structure = vmime::create <maildirStructure>(null, msg);
+			m_structure = vmime::create <maildirMessageStructure>(null, msg);
 		}
 
 		// Extract some header fields or whole header

@@ -44,20 +44,20 @@ namespace vmime {
 namespace net {
 
 
-class structure;
+class messageStructure;
 
 
 /** A MIME part in a message.
   */
 
-class VMIME_EXPORT part : public object
+class VMIME_EXPORT messagePart : public object
 {
 protected:
 
-	part() { }
-	part(const part&) : object() { }
+	messagePart() { }
+	messagePart(const messagePart&) : object() { }
 
-	virtual ~part() { }
+	virtual ~messagePart() { }
 
 public:
 
@@ -65,13 +65,13 @@ public:
 	  *
 	  * @return structure of the part
 	  */
-	virtual ref <const structure> getStructure() const = 0;
+	virtual ref <const messageStructure> getStructure() const = 0;
 
 	/** Return the structure of this part.
 	  *
 	  * @return structure of the part
 	  */
-	virtual ref <structure> getStructure() = 0;
+	virtual ref <messageStructure> getStructure() = 0;
 
 	/** Return the header section for this part (you must fetch header
 	  * before using this function: see message::fetchPartHeader).
@@ -105,7 +105,7 @@ public:
 	  * @param pos index of the sub-part
 	  * @return sub-part at position 'pos'
 	  */
-	ref <const part> getPartAt(const size_t pos) const;
+	ref <const messagePart> getPartAt(const size_t pos) const;
 
 	/** Return the sub-part at the specified position (zero is the
 	  * first part).
@@ -113,7 +113,7 @@ public:
 	  * @param pos index of the sub-part
 	  * @return sub-part at position 'pos'
 	  */
-	ref <part> getPartAt(const size_t pos);
+	ref <messagePart> getPartAt(const size_t pos);
 
 	/** Return the number of sub-parts in this part.
 	  *
@@ -126,16 +126,16 @@ public:
 /** Structure of a MIME part/message.
   */
 
-class VMIME_EXPORT structure : public object
+class VMIME_EXPORT messageStructure : public object
 {
 protected:
 
-	structure() { }
-	structure(const structure&) : object() { }
+	messageStructure() { }
+	messageStructure(const messageStructure&) : object() { }
 
 public:
 
-	virtual ~structure() { }
+	virtual ~messageStructure() { }
 
 	/** Return the part at the specified position (first
 	  * part is at position 0).
@@ -143,7 +143,7 @@ public:
 	  * @param pos position
 	  * @return part at position 'pos'
 	  */
-	virtual ref <const part> getPartAt(const size_t pos) const = 0;
+	virtual ref <const messagePart> getPartAt(const size_t pos) const = 0;
 
 	/** Return the part at the specified position (first
 	  * part is at position 0).
@@ -151,7 +151,7 @@ public:
 	  * @param pos position
 	  * @return part at position 'pos'
 	  */
-	virtual ref <part> getPartAt(const size_t pos) = 0;
+	virtual ref <messagePart> getPartAt(const size_t pos) = 0;
 
 	/** Return the number of parts in this part.
 	  *
@@ -183,13 +183,13 @@ public:
 	  *
 	  * @return MIME structure of the message
 	  */
-	virtual ref <const structure> getStructure() const = 0;
+	virtual ref <const messageStructure> getStructure() const = 0;
 
 	/** Return the MIME structure of the message (must fetch before).
 	  *
 	  * @return MIME structure of the message
 	  */
-	virtual ref <structure> getStructure() = 0;
+	virtual ref <messageStructure> getStructure() = 0;
 
 	/** Return a reference to the header fields of the message (must fetch before).
 	  *
@@ -289,13 +289,19 @@ public:
 	  * be supported by the protocol (IMAP supports this), but it will NOT throw
 	  * an exception if not supported.
 	  */
-	virtual void extractPart(ref <const part> p, utility::outputStream& os, utility::progressListener* progress = NULL, const int start = 0, const int length = -1, const bool peek = false) const = 0;
+	virtual void extractPart
+		(ref <const messagePart> p,
+		 utility::outputStream& os,
+		 utility::progressListener* progress = NULL,
+		 const int start = 0,
+		 const int length = -1,
+		 const bool peek = false) const = 0;
 
 	/** Fetch the MIME header for the specified part.
 	  *
 	  * @param p the part for which to fetch the header
 	  */
-	virtual void fetchPartHeader(ref <part> p) = 0;
+	virtual void fetchPartHeader(ref <messagePart> p) = 0;
 
 	/** Get the RFC-822 message for this abstract message.
 	  * Warning: This may require getting some data (ie: structure and headers) from

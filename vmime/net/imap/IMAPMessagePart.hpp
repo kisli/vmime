@@ -21,8 +21,8 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#ifndef VMIME_NET_IMAP_IMAPPART_HPP_INCLUDED
-#define VMIME_NET_IMAP_IMAPPART_HPP_INCLUDED
+#ifndef VMIME_NET_IMAP_IMAPMESSAGEPART_HPP_INCLUDED
+#define VMIME_NET_IMAP_IMAPMESSAGEPART_HPP_INCLUDED
 
 
 #include "vmime/config.hpp"
@@ -41,24 +41,24 @@ namespace net {
 namespace imap {
 
 
-class IMAPStructure;
+class IMAPMessageStructure;
 
 
-class VMIME_EXPORT IMAPPart : public part
+class VMIME_EXPORT IMAPMessagePart : public messagePart
 {
 private:
 
 	friend class vmime::creator;
 
-	IMAPPart(ref <IMAPPart> parent, const int number, const IMAPParser::body_type_mpart* mpart);
-	IMAPPart(ref <IMAPPart> parent, const int number, const IMAPParser::body_type_1part* part);
+	IMAPMessagePart(ref <IMAPMessagePart> parent, const int number, const IMAPParser::body_type_mpart* mpart);
+	IMAPMessagePart(ref <IMAPMessagePart> parent, const int number, const IMAPParser::body_type_1part* part);
 
 public:
 
-	ref <const structure> getStructure() const;
-	ref <structure> getStructure();
+	ref <const messageStructure> getStructure() const;
+	ref <messageStructure> getStructure();
 
-	ref <const IMAPPart> getParent() const;
+	ref <const IMAPMessagePart> getParent() const;
 
 	const mediaType& getType() const;
 	int getSize() const;
@@ -67,16 +67,16 @@ public:
 	ref <const header> getHeader() const;
 
 
-	static ref <IMAPPart> create
-		(ref <IMAPPart> parent, const int number, const IMAPParser::body* body);
+	static ref <IMAPMessagePart> create
+		(ref <IMAPMessagePart> parent, const int number, const IMAPParser::body* body);
 
 
 	header& getOrCreateHeader();
 
 private:
 
-	ref <IMAPStructure> m_structure;
-	weak_ref <IMAPPart> m_parent;
+	ref <IMAPMessageStructure> m_structure;
+	weak_ref <IMAPMessagePart> m_parent;
 	ref <header> m_header;
 
 	int m_number;
@@ -92,5 +92,5 @@ private:
 
 #endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_IMAP
 
-#endif // VMIME_NET_IMAP_IMAPPART_HPP_INCLUDED
+#endif // VMIME_NET_IMAP_IMAPMESSAGEPART_HPP_INCLUDED
 

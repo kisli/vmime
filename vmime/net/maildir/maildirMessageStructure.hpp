@@ -21,55 +21,56 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#ifndef VMIME_NET_IMAP_IMAPSTRUCTURE_HPP_INCLUDED
-#define VMIME_NET_IMAP_IMAPSTRUCTURE_HPP_INCLUDED
+#ifndef VMIME_NET_MAILDIR_MAILDIRMESSAGESTRUCTURE_HPP_INCLUDED
+#define VMIME_NET_MAILDIR_MAILDIRMESSAGESTRUCTURE_HPP_INCLUDED
 
 
 #include "vmime/config.hpp"
 
 
-#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_IMAP
+#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_MAILDIR
 
 
 #include "vmime/net/message.hpp"
 
-#include "vmime/net/imap/IMAPParser.hpp"
-
 
 namespace vmime {
 namespace net {
-namespace imap {
+namespace maildir {
 
 
-class IMAPPart;
+class maildirMessagePart;
 
 
-class VMIME_EXPORT IMAPStructure : public structure
+class maildirMessageStructure : public messageStructure
 {
 public:
 
-	IMAPStructure();
-	IMAPStructure(const IMAPParser::body* body);
-	IMAPStructure(ref <IMAPPart> parent, const std::vector <IMAPParser::body*>& list);
+	maildirMessageStructure();
+	maildirMessageStructure(ref <maildirMessagePart> parent, const bodyPart& part);
+	maildirMessageStructure(ref <maildirMessagePart> parent, const std::vector <ref <const vmime::bodyPart> >& list);
 
-	ref <const part> getPartAt(const size_t x) const;
-	ref <part> getPartAt(const size_t x);
+
+	ref <const messagePart> getPartAt(const size_t x) const;
+	ref <messagePart> getPartAt(const size_t x);
+
 	size_t getPartCount() const;
 
-	static ref <IMAPStructure> emptyStructure();
+	static ref <maildirMessageStructure> emptyStructure();
 
 private:
 
-	std::vector <ref <IMAPPart> > m_parts;
+	static ref <maildirMessageStructure> m_emptyStructure;
+
+	std::vector <ref <maildirMessagePart> > m_parts;
 };
 
 
-} // imap
+} // maildir
 } // net
 } // vmime
 
 
-#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_IMAP
+#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_MAILDIR
 
-#endif // VMIME_NET_IMAP_IMAPSTRUCTURE_HPP_INCLUDED
-
+#endif // VMIME_NET_MAILDIR_MAILDIRMESSAGESTRUCTURE_HPP_INCLUDED
