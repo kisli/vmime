@@ -467,6 +467,18 @@ const char* folder_not_found::name() const throw() { return "folder_not_found"; 
 
 
 //
+// folder_already_open
+//
+
+folder_already_open::~folder_already_open() throw() {}
+folder_already_open::folder_already_open(const exception& other)
+	: net_exception("Folder is already open in the same session.", other) {}
+
+exception* folder_already_open::clone() const { return new folder_already_open(*this); }
+const char* folder_already_open::name() const throw() { return "folder_already_open"; }
+
+
+//
 // message_not_found
 //
 

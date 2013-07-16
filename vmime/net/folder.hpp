@@ -140,6 +140,8 @@ public:
 	  * If set to true and if the requested mode is not available, the opening
 	  * will fail.
 	  * @throw net_exception if an error occurs
+	  * @throw exceptions::folder_already_open if the folder is already open
+	  *        in the same session
 	  */
 	virtual void open(const int mode, bool failIfModeIsNotAvailable = false) = 0;
 

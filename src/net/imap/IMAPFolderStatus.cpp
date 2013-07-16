@@ -35,6 +35,17 @@ namespace net {
 namespace imap {
 
 
+IMAPFolderStatus::IMAPFolderStatus()
+	: m_count(0),
+	  m_unseen(0),
+	  m_recent(0),
+	  m_uidValidity(0),
+	  m_uidNext(0),
+	  m_highestModSeq(0)
+{
+}
+
+
 unsigned int IMAPFolderStatus::getMessageCount() const
 {
 	return m_count;
@@ -73,43 +84,54 @@ vmime_uint64 IMAPFolderStatus::getHighestModSeq() const
 
 void IMAPFolderStatus::updateFromResponse(const IMAPParser::mailbox_data* resp)
 {
-	const IMAPParser::status_att_list* statusAttList = resp->status_att_list();
-
-	for (std::vector <IMAPParser::status_att_val*>::const_iterator
-		 jt = statusAttList->values().begin() ; jt != statusAttList->values().end() ; ++jt)
+	if (resp->type() == IMAPParser::mailbox_data::STATUS)
 	{
-		switch ((*jt)->type())
+		const IMAPParser::status_att_list* statusAttList = resp->status_att_list();
+
+		for (std::vector <IMAPParser::status_att_val*>::const_iterator
+			 jt = statusAttList->values().begin() ; jt != statusAttList->values().end() ; ++jt)
 		{
-		case IMAPParser::status_att_val::MESSAGES:
+			switch ((*jt)->type())
+			{
+			case IMAPParser::status_att_val::MESSAGES:
 
-			m_count = (*jt)->value_as_number()->value();
-			break;
+				m_count = (*jt)->value_as_number()->value();
+				break;
 
-		case IMAPParser::status_att_val::UNSEEN:
+			case IMAPParser::status_att_val::UNSEEN:
 
-			m_unseen = (*jt)->value_as_number()->value();
-			break;
+				m_unseen = (*jt)->value_as_number()->value();
+				break;
 
-		case IMAPParser::status_att_val::RECENT:
+			case IMAPParser::status_att_val::RECENT:
 
-			m_recent = (*jt)->value_as_number()->value();
-			break;
+				m_recent = (*jt)->value_as_number()->value();
+				break;
 
-		case IMAPParser::status_att_val::UIDNEXT:
+			case IMAPParser::status_att_val::UIDNEXT:
 
-			m_uidNext = (*jt)->value_as_number()->value();
-			break;
+				m_uidNext = (*jt)->value_as_number()->value();
+				break;
 
-		case IMAPParser::status_att_val::UIDVALIDITY:
+			case IMAPParser::status_att_val::UIDVALIDITY:
 
-			m_uidValidity = (*jt)->value_as_number()->value();
-			break;
+				m_uidValidity = (*jt)->value_as_number()->value();
+				break;
 
-		case IMAPParser::status_att_val::HIGHESTMODSEQ:
+			case IMAPParser::status_att_val::HIGHESTMODSEQ:
 
-			m_highestModSeq = (*jt)->value_as_mod_sequence_value()->value();
-			break;
+				m_highestModSeq = (*jt)->value_as_mod_sequence_value()->value();
+				break;
+			}
 		}
+	}
+	else if (resp->type() == IMAPParser::mailbox_data::EXISTS)
+	{
+		m_count = resp->number()->value();
+	}
+	else if (resp->type() == IMAPParser::mailbox_data::RECENT)
+	{
+		m_recent = resp->number()->value();
 	}
 }
 

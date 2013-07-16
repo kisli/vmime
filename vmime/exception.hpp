@@ -538,6 +538,21 @@ public:
 };
 
 
+/** Folder is already open in the same session.
+  */
+
+class VMIME_EXPORT folder_already_open : public net_exception
+{
+public:
+
+	folder_already_open(const exception& other = NO_EXCEPTION);
+	~folder_already_open() throw();
+
+	exception* clone() const;
+	const char* name() const throw();
+};
+
+
 /** Message not found (does not exist).
   */
 

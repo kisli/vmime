@@ -55,7 +55,7 @@ namespace imap {
 IMAPFolder::IMAPFolder(const folder::path& path, ref <IMAPStore> store, const int type, const int flags)
 	: m_store(store), m_connection(store->connection()), m_path(path),
 	  m_name(path.isEmpty() ? folder::path::component("") : path.getLastComponent()), m_mode(-1),
-	  m_open(false), m_type(type), m_flags(flags), m_messageCount(0), m_uidValidity(0)
+	  m_open(false), m_type(type), m_flags(flags)
 {
 	store->registerFolder(this);
 
@@ -150,6 +150,14 @@ void IMAPFolder::open(const int mode, bool failIfModeIsNotAvailable)
 	if (!store)
 		throw exceptions::illegal_state("Store disconnected");
 
+	// Ensure this folder is not already open in the same session
+	for (std::list <IMAPFolder*>::iterator it = store->m_folders.begin() ;
+	     it != store->m_folders.end() ; ++it)
+	{
+		if ((*it) != this && (*it)->getFullPath() == m_path)
+			throw exceptions::folder_already_open();
+	}
+
 	// Open a connection for this folder
 	ref <IMAPConnection> connection =
 		vmime::create <IMAPConnection>(store, store->getAuthenticator());
@@ -218,11 +226,6 @@ void IMAPFolder::open(const int mode, bool failIfModeIsNotAvailable)
 				{
 					switch (code->type())
 					{
-					case IMAPParser::resp_text_code::UIDVALIDITY:
-
-						m_uidValidity = static_cast <unsigned int>(code->nz_number()->value());
-						break;
-
 					case IMAPParser::resp_text_code::NOMODSEQ:
 
 						connection->disableMODSEQ();
@@ -249,16 +252,6 @@ void IMAPFolder::open(const int mode, bool failIfModeIsNotAvailable)
 					m_flags = IMAPUtils::folderFlagsFromFlags
 						(responseData->mailbox_data()->mailbox_flag_list());
 
-					break;
-				}
-				case IMAPParser::mailbox_data::EXISTS:
-				{
-					m_messageCount = responseData->mailbox_data()->number()->value();
-					break;
-				}
-				case IMAPParser::mailbox_data::RECENT:
-				{
-					// TODO
 					break;
 				}
 
@@ -328,7 +321,7 @@ void IMAPFolder::close(const bool expunge)
 	m_open = false;
 	m_mode = -1;
 
-	m_uidValidity = 0;
+	m_status = vmime::create <IMAPFolderStatus>();
 
 	onClose();
 }
@@ -527,7 +520,7 @@ ref <message> IMAPFolder::getMessage(const int num)
 	if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
 
-	if (num < 1 || num > m_messageCount)
+	if (num < 1 || num > getMessageCount())
 		throw exceptions::message_not_found();
 
 	return vmime::create <IMAPMessage>(thisRef().dynamicCast <IMAPFolder>(), num);
@@ -654,7 +647,7 @@ std::vector <ref <message> > IMAPFolder::getMessagesByUID(const std::vector <mes
 		{
 			if ((*it)->type() == IMAPParser::msg_att_item::UID)
 			{
-				msgFullUID = IMAPUtils::makeGlobalUID(m_uidValidity, (*it)->unique_id()->value());
+				msgFullUID = IMAPUtils::makeGlobalUID(m_status->getUIDValidity(), (*it)->unique_id()->value());
 				msgUID = (*it)->unique_id()->value();
 
 				break;
@@ -677,7 +670,7 @@ int IMAPFolder::getMessageCount()
 	if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
 
-	return (m_messageCount);
+	return m_status->getMessageCount();
 }
 
 
@@ -1009,7 +1002,7 @@ void IMAPFolder::deleteMessages(const int from, const int to)
 
 	command << "STORE " << from << ":";
 
-	if (to == -1) command << m_messageCount;
+	if (to == -1) command << getMessageCount();
 	else command << to;
 
 	command << " +FLAGS.SILENT (\\Deleted)";
@@ -1028,7 +1021,7 @@ void IMAPFolder::deleteMessages(const int from, const int to)
 	}
 
 	// Update local flags
-	const int to2 = (to == -1) ? m_messageCount : to;
+	const int to2 = (to == -1) ? getMessageCount() : to;
 	const int count = to - from + 1;
 
 	for (std::vector <IMAPMessage*>::iterator it =
@@ -1085,7 +1078,7 @@ void IMAPFolder::deleteMessages(const std::vector <int>& nums)
 	command.imbue(std::locale::classic());
 
 	command << "STORE ";
-	command << IMAPUtils::listToSet(list, m_messageCount, true);
+	command << IMAPUtils::listToSet(list, getMessageCount(), true);
 	command << " +FLAGS.SILENT (\\Deleted)";
 
 	// Send the request
@@ -1148,7 +1141,7 @@ void IMAPFolder::setMessageFlags(const int from, const int to, const int flags, 
 	setMessageFlags(oss.str(), flags, mode);
 
 	// Update local flags
-	const int to2 = (to == -1) ? m_messageCount : to;
+	const int to2 = (to == -1) ? getMessageCount() : to;
 	const int count = to - from + 1;
 
 	switch (mode)
@@ -1234,7 +1227,7 @@ void IMAPFolder::setMessageFlags(const std::vector <int>& nums, const int flags,
 	std::sort(list.begin(), list.end());
 
 	// Delegates call
-	setMessageFlags(IMAPUtils::listToSet(list, m_messageCount, true), flags, mode);
+	setMessageFlags(IMAPUtils::listToSet(list, getMessageCount(), true), flags, mode);
 
 	// Update local flags
 	switch (mode)
@@ -1449,32 +1442,6 @@ void IMAPFolder::addMessage(utility::inputStream& is, const int size, const int 
 			m_connection->getParser()->lastLine(), "bad response");
 	}
 
-	// Notify message added
-	std::vector <int> nums;
-	nums.push_back(m_messageCount + 1);
-
-	events::messageCountEvent event
-		(thisRef().dynamicCast <folder>(),
-		 events::messageCountEvent::TYPE_ADDED, nums);
-
-	m_messageCount++;
-	notifyMessageCount(event);
-
-	// Notify folders with the same path
-	for (std::list <IMAPFolder*>::iterator it = store->m_folders.begin() ;
-	     it != store->m_folders.end() ; ++it)
-	{
-		if ((*it) != this && (*it)->getFullPath() == m_path)
-		{
-			events::messageCountEvent event
-				((*it)->thisRef().dynamicCast <folder>(),
-				 events::messageCountEvent::TYPE_ADDED, nums);
-
-			(*it)->m_messageCount++;
-			(*it)->notifyMessageCount(event);
-		}
-	}
-
 	processStatusUpdate(resp);
 }
 
@@ -1542,31 +1509,6 @@ void IMAPFolder::expunge()
 		}
 	}
 
-	m_messageCount -= nums.size();
-
-	// Notify message expunged
-	events::messageCountEvent event
-		(thisRef().dynamicCast <folder>(),
-		 events::messageCountEvent::TYPE_REMOVED, nums);
-
-	notifyMessageCount(event);
-
-	// Notify folders with the same path
-	for (std::list <IMAPFolder*>::iterator it = store->m_folders.begin() ;
-	     it != store->m_folders.end() ; ++it)
-	{
-		if ((*it) != this && (*it)->getFullPath() == m_path)
-		{
-			(*it)->m_messageCount = m_messageCount;
-
-			events::messageCountEvent event
-				((*it)->thisRef().dynamicCast <folder>(),
-				 events::messageCountEvent::TYPE_REMOVED, nums);
-
-			(*it)->notifyMessageCount(event);
-		}
-	}
-
 	processStatusUpdate(resp);
 }
 
@@ -1619,22 +1561,11 @@ void IMAPFolder::rename(const folder::path& newPath)
 
 	notifyFolder(event);
 
-	// Notify folders with the same path and sub-folders
+	// Notify sub-folders
 	for (std::list <IMAPFolder*>::iterator it = store->m_folders.begin() ;
 	     it != store->m_folders.end() ; ++it)
 	{
-		if ((*it) != this && (*it)->getFullPath() == oldPath)
-		{
-			(*it)->m_path = newPath;
-			(*it)->m_name = newPath.getLastComponent();
-
-			events::folderEvent event
-				((*it)->thisRef().dynamicCast <folder>(),
-				 events::folderEvent::TYPE_RENAMED, oldPath, newPath);
-
-			(*it)->notifyFolder(event);
-		}
-		else if ((*it) != this && oldPath.isParentOf((*it)->getFullPath()))
+		if ((*it) != this && oldPath.isParentOf((*it)->getFullPath()))
 		{
 			folder::path oldPath((*it)->m_path);
 
@@ -1669,24 +1600,6 @@ void IMAPFolder::copyMessage(const folder::path& dest, const int num)
 
 	// Delegate message copy
 	copyMessages(set.str(), dest);
-
-	// Notify message count changed
-	std::vector <int> nums;
-	nums.push_back(num);
-
-	for (std::list <IMAPFolder*>::iterator it = store->m_folders.begin() ;
-	     it != store->m_folders.end() ; ++it)
-	{
-		if ((*it)->getFullPath() == dest)
-		{
-			events::messageCountEvent event
-				((*it)->thisRef().dynamicCast <folder>(),
-				 events::messageCountEvent::TYPE_ADDED, nums);
-
-			(*it)->m_messageCount++;
-			(*it)->notifyMessageCount(event);
-		}
-	}
 }
 
 
@@ -1712,30 +1625,6 @@ void IMAPFolder::copyMessages(const folder::path& dest, const int from, const in
 
 	// Delegate message copy
 	copyMessages(set.str(), dest);
-
-	// Notify message count changed
-	const int to2 = (to == -1) ? m_messageCount : to;
-	const int count = to - from + 1;
-
-	std::vector <int> nums;
-	nums.resize(count);
-
-	for (int i = from, j = 0 ; i <= to2 ; ++i, ++j)
-		nums[j] = i;
-
-	for (std::list <IMAPFolder*>::iterator it = store->m_folders.begin() ;
-	     it != store->m_folders.end() ; ++it)
-	{
-		if ((*it)->getFullPath() == dest)
-		{
-			events::messageCountEvent event
-				((*it)->thisRef().dynamicCast <folder>(),
-				 events::messageCountEvent::TYPE_ADDED, nums);
-
-			(*it)->m_messageCount += count;
-			(*it)->notifyMessageCount(event);
-		}
-	}
 }
 
 
@@ -1749,24 +1638,7 @@ void IMAPFolder::copyMessages(const folder::path& dest, const std::vector <int>&
 		throw exceptions::illegal_state("Folder not open");
 
 	// Delegate message copy
-	copyMessages(IMAPUtils::listToSet(nums, m_messageCount), dest);
-
-	// Notify message count changed
-	const int count = nums.size();
-
-	for (std::list <IMAPFolder*>::iterator it = store->m_folders.begin() ;
-	     it != store->m_folders.end() ; ++it)
-	{
-		if ((*it)->getFullPath() == dest)
-		{
-			events::messageCountEvent event
-				((*it)->thisRef().dynamicCast <folder>(),
-				 events::messageCountEvent::TYPE_ADDED, nums);
-
-			(*it)->m_messageCount += count;
-			(*it)->notifyMessageCount(event);
-		}
-	}
+	copyMessages(IMAPUtils::listToSet(nums, getMessageCount()), dest);
 }
 
 
@@ -1861,8 +1733,7 @@ ref <folderStatus> IMAPFolder::getStatus()
 				ref <IMAPFolderStatus> status = vmime::create <IMAPFolderStatus>();
 				status->updateFromResponse(responseData->mailbox_data());
 
-				m_messageCount = status->getMessageCount();
-				m_uidValidity = status->getUIDValidity();
+				m_status->updateFromResponse(responseData->mailbox_data());
 
 				return status;
 			}
@@ -1978,10 +1849,13 @@ void IMAPFolder::processStatusUpdate(const IMAPParser::response* resp)
 
 			m_status->updateFromResponse(code);
 		}
+		else if ((*it)->response_data() && (*it)->response_data()->mailbox_data())
+		{
+			m_status->updateFromResponse((*it)->response_data()->mailbox_data());
+		}
 	}
 
-	m_messageCount = m_status->getMessageCount();
-	m_uidValidity = m_status->getUIDValidity();
+	// TODO: notification
 }
 
 } // imap

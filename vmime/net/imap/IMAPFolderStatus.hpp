@@ -48,6 +48,8 @@ class VMIME_EXPORT IMAPFolderStatus : public folderStatus
 {
 public:
 
+	IMAPFolderStatus();
+
 	// Inherited from folderStatus
 	unsigned int getMessageCount() const;
 	unsigned int getUnseenCount() const;

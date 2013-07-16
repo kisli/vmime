@@ -30,6 +30,7 @@
 #include "vmime/net/imap/IMAPParser.hpp"
 #include "vmime/net/imap/IMAPMessage.hpp"
 #include "vmime/net/imap/IMAPFolder.hpp"
+#include "vmime/net/imap/IMAPFolderStatus.hpp"
 #include "vmime/net/imap/IMAPStore.hpp"
 #include "vmime/net/imap/IMAPConnection.hpp"
 #include "vmime/net/imap/IMAPUtils.hpp"
@@ -386,7 +387,7 @@ void IMAPMessage::processFetchResponse
 		}
 		case IMAPParser::msg_att_item::UID:
 		{
-			m_uid = IMAPUtils::makeGlobalUID(folder->m_uidValidity, (*it)->unique_id()->value());
+			m_uid = IMAPUtils::makeGlobalUID(folder->m_status->getUIDValidity(), (*it)->unique_id()->value());
 			break;
 		}
 		case IMAPParser::msg_att_item::MODSEQ:

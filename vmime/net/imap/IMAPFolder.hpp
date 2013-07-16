@@ -178,8 +178,6 @@ private:
 	int m_type;
 	int m_flags;
 
-	int m_messageCount;
-	vmime_uint32 m_uidValidity;
 	ref <IMAPFolderStatus> m_status;
 
 	std::vector <IMAPMessage*> m_messages;
