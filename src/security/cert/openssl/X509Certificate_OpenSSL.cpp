@@ -48,7 +48,7 @@
 #include <openssl/err.h>
 
 
-#ifdef WIN32
+#ifdef _WIN32
 #	define strcasecmp _stricmp
 #	define strncasecmp _strnicmp
 #endif
@@ -384,7 +384,7 @@ bool X509Certificate_OpenSSL::verifyHostName(const string& hostname) const
 
 		if (strcmp(extStr, "subjectAltName") == 0)
 		{
-#ifdef WIN32
+#ifdef _WIN32
 			X509V3_EXT_METHOD* method;
 #else
 			const X509V3_EXT_METHOD* method;

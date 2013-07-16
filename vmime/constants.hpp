@@ -31,7 +31,7 @@
 
 
 // Remove Windows defines of ERROR and WARNING
-#ifdef WIN32
+#ifdef _WIN32
 	#undef ERROR
 	#undef WARNING
 #endif
