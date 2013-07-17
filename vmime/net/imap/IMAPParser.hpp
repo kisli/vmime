@@ -181,31 +181,6 @@ public:
 	}
 
 
-	const string lastLine() const
-	{
-		// Remove blanks and new lines at the end of the line.
-		string line(m_lastLine);
-
-		string::const_iterator it = line.end();
-		int count = 0;
-
-		while (it != line.begin())
-		{
-			const unsigned char c = *(it - 1);
-
-			if (!(c == ' ' || c == '\t' || c == '\n' || c == '\r'))
-				break;
-
-			++count;
-			--it;
-		}
-
-		line.resize(line.length() - count);
-
-		return (line);
-	}
-
-
 
 	//
 	// literalHandler : literal content handler
@@ -5176,10 +5151,22 @@ public:
 			return (false);
 		}
 
+		void setErrorLog(const string& errorLog)
+		{
+			m_errorLog = errorLog;
+		}
+
+		const string& getErrorLog() const
+		{
+			return m_errorLog;
+		}
+
 	private:
 
 		std::vector <IMAPParser::continue_req_or_response_data*> m_continue_req_or_response_data;
 		IMAPParser::response_done* m_response_done;
+
+		string m_errorLog;
 
 	public:
 
@@ -5224,10 +5211,22 @@ public:
 			*currentPos = pos;
 		}
 
+		void setErrorLog(const string& errorLog)
+		{
+			m_errorLog = errorLog;
+		}
+
+		const string& getErrorLog() const
+		{
+			return m_errorLog;
+		}
+
 	private:
 
 		IMAPParser::resp_cond_auth* m_resp_cond_auth;
 		IMAPParser::resp_cond_bye* m_resp_cond_bye;
+
+		string m_errorLog;
 
 	public:
 
@@ -5250,6 +5249,8 @@ public:
 		response* resp = get <response>(line, &pos);
 		m_literalHandler = NULL;
 
+		resp->setErrorLog(lastLine());
+
 		return (resp);
 	}
 
@@ -5259,7 +5260,11 @@ public:
 		string::size_type pos = 0;
 		string line = readLine();
 
-		return get <greeting>(line, &pos);
+		greeting* greet = get <greeting>(line, &pos);
+
+		greet->setErrorLog(lastLine());
+
+		return greet;
 	}
 
 
@@ -5314,6 +5319,29 @@ private:
 		return static_cast <TYPE*>(resp);
 	}
 
+	const string lastLine() const
+	{
+		// Remove blanks and new lines at the end of the line.
+		string line(m_lastLine);
+
+		string::const_iterator it = line.end();
+		int count = 0;
+
+		while (it != line.begin())
+		{
+			const unsigned char c = *(it - 1);
+
+			if (!(c == ' ' || c == '\t' || c == '\n' || c == '\r'))
+				break;
+
+			++count;
+			--it;
+		}
+
+		line.resize(line.length() - count);
+
+		return (line);
+	}
 
 public:
 

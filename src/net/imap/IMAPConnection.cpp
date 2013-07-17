@@ -150,7 +150,7 @@ void IMAPConnection::connect()
 	if (greet->resp_cond_bye())
 	{
 		internalDisconnect();
-		throw exceptions::connection_greeting_error(m_parser->lastLine());
+		throw exceptions::connection_greeting_error(greet->getErrorLog());
 	}
 	else if (greet->resp_cond_auth()->condition() != IMAPParser::resp_cond_auth::PREAUTH)
 	{
@@ -266,13 +266,13 @@ void IMAPConnection::authenticate()
 	if (resp->isBad())
 	{
 		internalDisconnect();
-		throw exceptions::command_error("LOGIN", m_parser->lastLine());
+		throw exceptions::command_error("LOGIN", resp->getErrorLog());
 	}
 	else if (resp->response_done()->response_tagged()->
 			resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
 	{
 		internalDisconnect();
-		throw exceptions::authentication_error(m_parser->lastLine());
+		throw exceptions::authentication_error(resp->getErrorLog());
 	}
 
 	// Server capabilities may change when logged in
@@ -471,7 +471,7 @@ void IMAPConnection::startTLS()
 			resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
 		{
 			throw exceptions::command_error
-				("STARTTLS", m_parser->lastLine(), "bad response");
+				("STARTTLS", resp->getErrorLog(), "bad response");
 		}
 
 		ref <tls::TLSSession> tlsSession =
@@ -665,7 +665,7 @@ void IMAPConnection::initHierarchySeparator()
 		resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
 	{
 		internalDisconnect();
-		throw exceptions::command_error("LIST", m_parser->lastLine(), "bad response");
+		throw exceptions::command_error("LIST", resp->getErrorLog(), "bad response");
 	}
 
 	const std::vector <IMAPParser::continue_req_or_response_data*>& respDataList =

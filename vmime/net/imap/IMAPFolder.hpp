@@ -149,9 +149,9 @@ private:
 
 	int testExistAndGetType();
 
-	void setMessageFlags(const string& set, const int flags, const int mode);
+	void setMessageFlagsImpl(const string& set, const int flags, const int mode);
 
-	void copyMessages(const string& set, const folder::path& dest);
+	void copyMessagesImpl(const string& set, const folder::path& dest);
 
 
 	/** Process status updates ("unsolicited responses") contained in the

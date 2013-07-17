@@ -199,7 +199,7 @@ void IMAPFolder::open(const int mode, bool failIfModeIsNotAvailable)
 				resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
 		{
 			throw exceptions::command_error("SELECT",
-				connection->getParser()->lastLine(), "bad response");
+				resp->getErrorLog(), "bad response");
 		}
 
 		const std::vector <IMAPParser::continue_req_or_response_data*>& respDataList =
@@ -211,7 +211,7 @@ void IMAPFolder::open(const int mode, bool failIfModeIsNotAvailable)
 			if ((*it)->response_data() == NULL)
 			{
 				throw exceptions::command_error("SELECT",
-					connection->getParser()->lastLine(), "invalid response");
+					resp->getErrorLog(), "invalid response");
 			}
 
 			const IMAPParser::response_data* responseData = (*it)->response_data();
@@ -377,7 +377,7 @@ void IMAPFolder::create(const int type)
 			resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
 	{
 		throw exceptions::command_error("CREATE",
-			m_connection->getParser()->lastLine(), "bad response");
+			resp->getErrorLog(), "bad response");
 	}
 
 	// Notify folder created
@@ -414,7 +414,7 @@ void IMAPFolder::destroy()
 			resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
 	{
 		throw exceptions::command_error("DELETE",
-			m_connection->getParser()->lastLine(), "bad response");
+			resp->getErrorLog(), "bad response");
 	}
 
 	// Notify folder deleted
@@ -474,7 +474,7 @@ int IMAPFolder::testExistAndGetType()
 			resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
 	{
 		throw exceptions::command_error("LIST",
-			m_connection->getParser()->lastLine(), "bad response");
+			resp->getErrorLog(), "bad response");
 	}
 
 	// Check whether the result mailbox list contains this folder
@@ -487,7 +487,7 @@ int IMAPFolder::testExistAndGetType()
 		if ((*it)->response_data() == NULL)
 		{
 			throw exceptions::command_error("LIST",
-				m_connection->getParser()->lastLine(), "invalid response");
+				resp->getErrorLog(), "invalid response");
 		}
 
 		const IMAPParser::mailbox_data* mailboxData =
@@ -520,7 +520,7 @@ ref <message> IMAPFolder::getMessage(const int num)
 	if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
 
-	if (num < 1 || num > getMessageCount())
+	if (num < 1 || num > m_status->getMessageCount())
 		throw exceptions::message_not_found();
 
 	return vmime::create <IMAPMessage>(thisRef().dynamicCast <IMAPFolder>(), num);
@@ -529,7 +529,7 @@ ref <message> IMAPFolder::getMessage(const int num)
 
 std::vector <ref <message> > IMAPFolder::getMessages(const int from, const int to)
 {
-	const int messageCount = getMessageCount();
+	const int messageCount = m_status->getMessageCount();
 	const int to2 = (to == -1 ? messageCount : to);
 
 	if (!isOpen())
@@ -610,7 +610,7 @@ std::vector <ref <message> > IMAPFolder::getMessagesByUID(const std::vector <mes
 	if (resp->isBad() || resp->response_done()->response_tagged()->
 			resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
 	{
-		throw exceptions::command_error("UID FETCH ... UID", m_connection->getParser()->lastLine(), "bad response");
+		throw exceptions::command_error("UID FETCH ... UID", resp->getErrorLog(), "bad response");
 	}
 
 	// Process the response
@@ -625,7 +625,7 @@ std::vector <ref <message> > IMAPFolder::getMessagesByUID(const std::vector <mes
 		if ((*it)->response_data() == NULL)
 		{
 			throw exceptions::command_error("UID FETCH ... UID",
-				m_connection->getParser()->lastLine(), "invalid response");
+				resp->getErrorLog(), "invalid response");
 		}
 
 		const IMAPParser::message_data* messageData =
@@ -728,7 +728,7 @@ std::vector <ref <folder> > IMAPFolder::getFolders(const bool recursive)
 	if (resp->isBad() || resp->response_done()->response_tagged()->
 			resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
 	{
-		throw exceptions::command_error("LIST", m_connection->getParser()->lastLine(), "bad response");
+		throw exceptions::command_error("LIST", resp->getErrorLog(), "bad response");
 	}
 
 	const std::vector <IMAPParser::continue_req_or_response_data*>& respDataList =
@@ -743,7 +743,7 @@ std::vector <ref <folder> > IMAPFolder::getFolders(const bool recursive)
 		if ((*it)->response_data() == NULL)
 		{
 			throw exceptions::command_error("LIST",
-				m_connection->getParser()->lastLine(), "invalid response");
+				resp->getErrorLog(), "invalid response");
 		}
 
 		const IMAPParser::mailbox_data* mailboxData =
@@ -808,7 +808,7 @@ void IMAPFolder::fetchMessages(std::vector <ref <message> >& msg, const int opti
 		resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
 	{
 		throw exceptions::command_error("FETCH",
-			m_connection->getParser()->lastLine(), "bad response");
+			resp->getErrorLog(), "bad response");
 	}
 
 	const std::vector <IMAPParser::continue_req_or_response_data*>& respDataList =
@@ -828,7 +828,7 @@ void IMAPFolder::fetchMessages(std::vector <ref <message> >& msg, const int opti
 			if ((*it)->response_data() == NULL)
 			{
 				throw exceptions::command_error("FETCH",
-					m_connection->getParser()->lastLine(), "invalid response");
+					resp->getErrorLog(), "invalid response");
 			}
 
 			const IMAPParser::message_data* messageData =
@@ -929,56 +929,7 @@ void IMAPFolder::onStoreDisconnected()
 
 void IMAPFolder::deleteMessage(const int num)
 {
-	ref <IMAPStore> store = m_store.acquire();
-
-	if (!store)
-		throw exceptions::illegal_state("Store disconnected");
-	else if (!isOpen())
-		throw exceptions::illegal_state("Folder not open");
-	else if (m_mode == MODE_READ_ONLY)
-		throw exceptions::illegal_state("Folder is read-only");
-
-	// Build the request text
-	std::ostringstream command;
-	command.imbue(std::locale::classic());
-
-	command << "STORE " << num << " +FLAGS.SILENT (\\Deleted)";
-
-	// Send the request
-	m_connection->send(true, command.str(), true);
-
-	// Get the response
-	utility::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
-
-	if (resp->isBad() || resp->response_done()->response_tagged()->
-		resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
-	{
-		throw exceptions::command_error("STORE",
-			m_connection->getParser()->lastLine(), "bad response");
-	}
-
-	// Update local flags
-	for (std::vector <IMAPMessage*>::iterator it =
-	     m_messages.begin() ; it != m_messages.end() ; ++it)
-	{
-		if ((*it)->getNumber() == num &&
-			(*it)->m_flags != message::FLAG_UNDEFINED)
-		{
-			(*it)->m_flags |= message::FLAG_DELETED;
-		}
-	}
-
-	// Notify message flags changed
-	std::vector <int> nums;
-	nums.push_back(num);
-
-	events::messageChangedEvent event
-		(thisRef().dynamicCast <folder>(),
-		 events::messageChangedEvent::TYPE_FLAGS, nums);
-
-	notifyMessageChanged(event);
-
-	processStatusUpdate(resp);
+	deleteMessages(num, num);
 }
 
 
@@ -1000,10 +951,19 @@ void IMAPFolder::deleteMessages(const int from, const int to)
 	std::ostringstream command;
 	command.imbue(std::locale::classic());
 
-	command << "STORE " << from << ":";
+	command << "STORE ";
 
-	if (to == -1) command << getMessageCount();
-	else command << to;
+	if (from == to)
+	{
+		command << from;
+	}
+	else
+	{
+		command << from << ":";
+
+		if (to == -1) command << m_status->getMessageCount();
+		else command << to;
+	}
 
 	command << " +FLAGS.SILENT (\\Deleted)";
 
@@ -1017,11 +977,11 @@ void IMAPFolder::deleteMessages(const int from, const int to)
 		resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
 	{
 		throw exceptions::command_error("STORE",
-			m_connection->getParser()->lastLine(), "bad response");
+			resp->getErrorLog(), "bad response");
 	}
 
 	// Update local flags
-	const int to2 = (to == -1) ? getMessageCount() : to;
+	const int to2 = (to == -1) ? m_status->getMessageCount() : to;
 	const int count = to - from + 1;
 
 	for (std::vector <IMAPMessage*>::iterator it =
@@ -1078,7 +1038,7 @@ void IMAPFolder::deleteMessages(const std::vector <int>& nums)
 	command.imbue(std::locale::classic());
 
 	command << "STORE ";
-	command << IMAPUtils::listToSet(list, getMessageCount(), true);
+	command << IMAPUtils::listToSet(list, m_status->getMessageCount(), true);
 	command << " +FLAGS.SILENT (\\Deleted)";
 
 	// Send the request
@@ -1091,7 +1051,7 @@ void IMAPFolder::deleteMessages(const std::vector <int>& nums)
 		resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
 	{
 		throw exceptions::command_error("STORE",
-			m_connection->getParser()->lastLine(), "bad response");
+			resp->getErrorLog(), "bad response");
 	}
 
 	// Update local flags
@@ -1138,10 +1098,10 @@ void IMAPFolder::setMessageFlags(const int from, const int to, const int flags, 
 	else
 		oss << from << ":" << to;
 
-	setMessageFlags(oss.str(), flags, mode);
+	setMessageFlagsImpl(oss.str(), flags, mode);
 
 	// Update local flags
-	const int to2 = (to == -1) ? getMessageCount() : to;
+	const int to2 = (to == -1) ? m_status->getMessageCount() : to;
 	const int count = to - from + 1;
 
 	switch (mode)
@@ -1227,7 +1187,7 @@ void IMAPFolder::setMessageFlags(const std::vector <int>& nums, const int flags,
 	std::sort(list.begin(), list.end());
 
 	// Delegates call
-	setMessageFlags(IMAPUtils::listToSet(list, getMessageCount(), true), flags, mode);
+	setMessageFlagsImpl(IMAPUtils::listToSet(list, m_status->getMessageCount(), true), flags, mode);
 
 	// Update local flags
 	switch (mode)
@@ -1287,7 +1247,7 @@ void IMAPFolder::setMessageFlags(const std::vector <int>& nums, const int flags,
 }
 
 
-void IMAPFolder::setMessageFlags(const string& set, const int flags, const int mode)
+void IMAPFolder::setMessageFlagsImpl(const string& set, const int flags, const int mode)
 {
 	// Build the request text
 	std::ostringstream command;
@@ -1319,7 +1279,7 @@ void IMAPFolder::setMessageFlags(const string& set, const int flags, const int m
 			resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
 		{
 			throw exceptions::command_error("STORE",
-				m_connection->getParser()->lastLine(), "bad response");
+				resp->getErrorLog(), "bad response");
 		}
 
 		processStatusUpdate(resp);
@@ -1397,7 +1357,7 @@ void IMAPFolder::addMessage(utility::inputStream& is, const int size, const int 
 	if (!ok)
 	{
 		throw exceptions::command_error("APPEND",
-			m_connection->getParser()->lastLine(), "bad response");
+			resp->getErrorLog(), "bad response");
 	}
 
 	// Send message data
@@ -1439,7 +1399,7 @@ void IMAPFolder::addMessage(utility::inputStream& is, const int size, const int 
 		resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
 	{
 		throw exceptions::command_error("APPEND",
-			m_connection->getParser()->lastLine(), "bad response");
+			resp->getErrorLog(), "bad response");
 	}
 
 	processStatusUpdate(resp);
@@ -1467,7 +1427,7 @@ void IMAPFolder::expunge()
 		resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
 	{
 		throw exceptions::command_error("EXPUNGE",
-			m_connection->getParser()->lastLine(), "bad response");
+			resp->getErrorLog(), "bad response");
 	}
 
 	// Update the numbering of the messages
@@ -1482,7 +1442,7 @@ void IMAPFolder::expunge()
 		if ((*it)->response_data() == NULL)
 		{
 			throw exceptions::command_error("EXPUNGE",
-				m_connection->getParser()->lastLine(), "invalid response");
+				resp->getErrorLog(), "invalid response");
 		}
 
 		const IMAPParser::message_data* messageData =
@@ -1546,7 +1506,7 @@ void IMAPFolder::rename(const folder::path& newPath)
 		resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
 	{
 		throw exceptions::command_error("RENAME",
-			m_connection->getParser()->lastLine(), "bad response");
+			resp->getErrorLog(), "bad response");
 	}
 
 	// Notify folder renamed
@@ -1599,7 +1559,7 @@ void IMAPFolder::copyMessage(const folder::path& dest, const int num)
 	set << num;
 
 	// Delegate message copy
-	copyMessages(set.str(), dest);
+	copyMessagesImpl(set.str(), dest);
 }
 
 
@@ -1624,7 +1584,7 @@ void IMAPFolder::copyMessages(const folder::path& dest, const int from, const in
 		set << from << ":" << to;
 
 	// Delegate message copy
-	copyMessages(set.str(), dest);
+	copyMessagesImpl(set.str(), dest);
 }
 
 
@@ -1638,11 +1598,11 @@ void IMAPFolder::copyMessages(const folder::path& dest, const std::vector <int>&
 		throw exceptions::illegal_state("Folder not open");
 
 	// Delegate message copy
-	copyMessages(IMAPUtils::listToSet(nums, getMessageCount()), dest);
+	copyMessagesImpl(IMAPUtils::listToSet(nums, m_status->getMessageCount()), dest);
 }
 
 
-void IMAPFolder::copyMessages(const string& set, const folder::path& dest)
+void IMAPFolder::copyMessagesImpl(const string& set, const folder::path& dest)
 {
 	// Build the request text
 	std::ostringstream command;
@@ -1662,7 +1622,7 @@ void IMAPFolder::copyMessages(const string& set, const folder::path& dest)
 		resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
 	{
 		throw exceptions::command_error("COPY",
-			m_connection->getParser()->lastLine(), "bad response");
+			resp->getErrorLog(), "bad response");
 	}
 
 	processStatusUpdate(resp);
@@ -1714,7 +1674,7 @@ ref <folderStatus> IMAPFolder::getStatus()
 		resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
 	{
 		throw exceptions::command_error("STATUS",
-			m_connection->getParser()->lastLine(), "bad response");
+			resp->getErrorLog(), "bad response");
 	}
 
 	const std::vector <IMAPParser::continue_req_or_response_data*>& respDataList =
@@ -1741,7 +1701,7 @@ ref <folderStatus> IMAPFolder::getStatus()
 	}
 
 	throw exceptions::command_error("STATUS",
-		m_connection->getParser()->lastLine(), "invalid response");
+		resp->getErrorLog(), "invalid response");
 }
 
 
@@ -1759,7 +1719,7 @@ void IMAPFolder::noop()
 	if (resp->isBad() || resp->response_done()->response_tagged()->
 			resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
 	{
-		throw exceptions::command_error("NOOP", m_connection->getParser()->lastLine());
+		throw exceptions::command_error("NOOP", resp->getErrorLog());
 	}
 
 	processStatusUpdate(resp);
@@ -1785,7 +1745,7 @@ std::vector <int> IMAPFolder::getMessageNumbersStartingOnUID(const message::uid&
 	    resp->response_done()->response_tagged()->resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
 	{
 		throw exceptions::command_error("SEARCH",
-			m_connection->getParser()->lastLine(), "bad response");
+			resp->getErrorLog(), "bad response");
 	}
 
 	const std::vector <IMAPParser::continue_req_or_response_data*>& respDataList = resp->continue_req_or_response_data();
@@ -1796,7 +1756,7 @@ std::vector <int> IMAPFolder::getMessageNumbersStartingOnUID(const message::uid&
 		if ((*it)->response_data() == NULL)
 		{
 			throw exceptions::command_error("SEARCH",
-				m_connection->getParser()->lastLine(), "invalid response");
+				resp->getErrorLog(), "invalid response");
 		}
 
 		const IMAPParser::mailbox_data* mailboxData =

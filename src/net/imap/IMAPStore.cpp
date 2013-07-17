@@ -191,7 +191,7 @@ void IMAPStore::noop()
 	if (resp->isBad() || resp->response_done()->response_tagged()->
 			resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
 	{
-		throw exceptions::command_error("NOOP", m_connection->getParser()->lastLine());
+		throw exceptions::command_error("NOOP", resp->getErrorLog());
 	}
 
 

@@ -354,7 +354,7 @@ void IMAPMessage::extractImpl(ref <const messagePart> p, utility::outputStream& 
 		resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
 	{
 		throw exceptions::command_error("FETCH",
-			folder.constCast <IMAPFolder>()->m_connection->getParser()->lastLine(), "bad response");
+			resp->getErrorLog(), "bad response");
 	}
 
 
@@ -577,7 +577,7 @@ void IMAPMessage::setFlags(const int flags, const int mode)
 			resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
 		{
 			throw exceptions::command_error("STORE",
-				folder->m_connection->getParser()->lastLine(), "bad response");
+				resp->getErrorLog(), "bad response");
 		}
 
 		// Update the local flags for this message
