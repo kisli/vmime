@@ -767,18 +767,6 @@ char IMAPConnection::hierarchySeparator() const
 }
 
 
-ref <const IMAPTag> IMAPConnection::getTag() const
-{
-	return (m_tag);
-}
-
-
-ref <const IMAPParser> IMAPConnection::getParser() const
-{
-	return (m_parser);
-}
-
-
 ref <const IMAPStore> IMAPConnection::getStore() const
 {
 	return m_store.acquire();

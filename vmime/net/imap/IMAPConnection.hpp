@@ -85,9 +85,6 @@ public:
 	IMAPParser::response* readResponse(IMAPParser::literalHandler* lh = NULL);
 
 
-	ref <const IMAPTag> getTag() const;
-	ref <const IMAPParser> getParser() const;
-
 	ref <const IMAPStore> getStore() const;
 	ref <IMAPStore> getStore();
 
