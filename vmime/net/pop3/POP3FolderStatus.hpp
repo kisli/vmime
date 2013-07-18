@@ -46,9 +46,15 @@ class VMIME_EXPORT POP3FolderStatus : public folderStatus
 {
 public:
 
+	POP3FolderStatus();
+	POP3FolderStatus(const POP3FolderStatus& other);
+
 	// Inherited from folderStatus
 	unsigned int getMessageCount() const;
 	unsigned int getUnseenCount() const;
+
+	ref <folderStatus> clone() const;
+
 
 	void setMessageCount(const unsigned int count);
 	void setUnseenCount(const unsigned int unseen);

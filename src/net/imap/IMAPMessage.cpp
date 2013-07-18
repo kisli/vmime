@@ -365,15 +365,14 @@ void IMAPMessage::extractImpl(ref <const messagePart> p, utility::outputStream& 
 }
 
 
-void IMAPMessage::processFetchResponse
+int IMAPMessage::processFetchResponse
 	(const int options, const IMAPParser::message_data* msgData)
 {
 	ref <IMAPFolder> folder = m_folder.acquire();
 
 	// Get message attributes
 	const std::vector <IMAPParser::msg_att_item*> atts = msgData->msg_att()->items();
-
-	int flags = 0;
+	int changes = 0;
 
 	for (std::vector <IMAPParser::msg_att_item*>::const_iterator
 	     it = atts.begin() ; it != atts.end() ; ++it)
@@ -382,7 +381,14 @@ void IMAPMessage::processFetchResponse
 		{
 		case IMAPParser::msg_att_item::FLAGS:
 		{
-			flags |= IMAPUtils::messageFlagsFromFlags((*it)->flag_list());
+			int flags = IMAPUtils::messageFlagsFromFlags((*it)->flag_list());
+
+			if (m_flags != flags)
+			{
+				m_flags = flags;
+				changes |= events::messageChangedEvent::TYPE_FLAGS;
+			}
+
 			break;
 		}
 		case IMAPParser::msg_att_item::UID:
@@ -505,8 +511,7 @@ void IMAPMessage::processFetchResponse
 		}
 	}
 
-	if (options & folder::FETCH_FLAGS)
-		m_flags = flags;
+	return changes;
 }
 
 
@@ -525,111 +530,8 @@ void IMAPMessage::setFlags(const int flags, const int mode)
 
 	if (!folder)
 		throw exceptions::folder_not_found();
-	else if (folder->m_mode == folder::MODE_READ_ONLY)
-		throw exceptions::illegal_state("Folder is read-only");
 
-	// Build the request text
-	std::ostringstream command;
-	command.imbue(std::locale::classic());
-
-	command << "STORE " << m_num;
-
-	switch (mode)
-	{
-	case FLAG_MODE_ADD:    command << " +FLAGS"; break;
-	case FLAG_MODE_REMOVE: command << " -FLAGS"; break;
-	default:
-	case FLAG_MODE_SET:    command << " FLAGS"; break;
-	}
-
-	if (m_flags == FLAG_UNDEFINED)   // Update local flags only if they
-		command << ".SILENT ";      // have been fetched previously
-	else
-		command << " ";
-
-	std::vector <string> flagList;
-
-	if (flags & FLAG_REPLIED) flagList.push_back("\\Answered");
-	if (flags & FLAG_MARKED) flagList.push_back("\\Flagged");
-	if (flags & FLAG_DELETED) flagList.push_back("\\Deleted");
-	if (flags & FLAG_SEEN) flagList.push_back("\\Seen");
-	if (flags & FLAG_DRAFT) flagList.push_back("\\Draft");
-
-	if (!flagList.empty())
-	{
-		command << "(";
-
-		if (flagList.size() >= 2)
-		{
-			std::copy(flagList.begin(), flagList.end() - 1,
-			          std::ostream_iterator <string>(command, " "));
-		}
-
-		command << *(flagList.end() - 1) << ")";
-
-		// Send the request
-		folder->m_connection->send(true, command.str(), true);
-
-		// Get the response
-		utility::auto_ptr <IMAPParser::response> resp(folder->m_connection->readResponse());
-
-		if (resp->isBad() || resp->response_done()->response_tagged()->
-			resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
-		{
-			throw exceptions::command_error("STORE",
-				resp->getErrorLog(), "bad response");
-		}
-
-		// Update the local flags for this message
-		if (m_flags != FLAG_UNDEFINED)
-		{
-			const std::vector <IMAPParser::continue_req_or_response_data*>& respDataList =
-				resp->continue_req_or_response_data();
-
-			int newFlags = 0;
-
-			for (std::vector <IMAPParser::continue_req_or_response_data*>::const_iterator
-			     it = respDataList.begin() ; it != respDataList.end() ; ++it)
-			{
-				if ((*it)->response_data() == NULL)
-					continue;
-
-				const IMAPParser::message_data* messageData =
-					(*it)->response_data()->message_data();
-
-				// We are only interested in responses of type "FETCH"
-				if (messageData == NULL || messageData->type() != IMAPParser::message_data::FETCH)
-					continue;
-
-				// Get message attributes
-				const std::vector <IMAPParser::msg_att_item*> atts =
-					messageData->msg_att()->items();
-
-				for (std::vector <IMAPParser::msg_att_item*>::const_iterator
-				     it = atts.begin() ; it != atts.end() ; ++it)
-				{
-					if ((*it)->type() == IMAPParser::msg_att_item::FLAGS)
-						newFlags |= IMAPUtils::messageFlagsFromFlags((*it)->flag_list());
-				}
-			}
-
-			m_flags = newFlags;
-		}
-
-		// Notify message flags changed
-		std::vector <int> nums;
-		nums.push_back(m_num);
-
-		events::messageChangedEvent event
-			(folder, events::messageChangedEvent::TYPE_FLAGS, nums);
-
-		for (std::list <IMAPFolder*>::iterator it = folder->m_store.acquire()->m_folders.begin() ;
-		     it != folder->m_store.acquire()->m_folders.end() ; ++it)
-		{
-			if ((*it)->getFullPath() == folder->m_path)
-				(*it)->notifyMessageChanged(event);
-		}
-	}
+	folder->setMessageFlags(m_num, m_num, flags, mode);
 }
 
 
@@ -708,6 +610,18 @@ ref <vmime::message> IMAPMessage::getParsedMessage()
 	constructParsedMessage(msg, structure);
 
 	return msg;
+}
+
+
+void IMAPMessage::renumber(const int number)
+{
+	m_num = number;
+}
+
+
+void IMAPMessage::setExpunged()
+{
+	m_expunged = true;
 }
 
 

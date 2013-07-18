@@ -437,9 +437,10 @@ public:
 
 protected:
 
-	void notifyMessageChanged(const events::messageChangedEvent& event);
-	void notifyMessageCount(const events::messageCountEvent& event);
-	void notifyFolder(const events::folderEvent& event);
+	void notifyMessageChanged(ref <events::messageChangedEvent> event);
+	void notifyMessageCount(ref <events::messageCountEvent> event);
+	void notifyFolder(ref <events::folderEvent> event);
+	void notifyEvent(ref <events::event> event);
 
 private:
 

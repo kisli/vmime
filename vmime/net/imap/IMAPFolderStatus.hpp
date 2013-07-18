@@ -49,10 +49,13 @@ class VMIME_EXPORT IMAPFolderStatus : public folderStatus
 public:
 
 	IMAPFolderStatus();
+	IMAPFolderStatus(const IMAPFolderStatus& other);
 
 	// Inherited from folderStatus
 	unsigned int getMessageCount() const;
 	unsigned int getUnseenCount() const;
+
+	ref <folderStatus> clone() const;
 
 	/** Returns the the number of messages with the Recent flag set.
 	  *
@@ -89,14 +92,16 @@ public:
 	/** Reads the folder status from the specified IMAP response.
 	  *
 	  * @param resp parsed IMAP response
+	  * @return true if the status changed, or false otherwise
 	  */
-	void updateFromResponse(const IMAPParser::mailbox_data* resp);
+	bool updateFromResponse(const IMAPParser::mailbox_data* resp);
 
 	/** Reads the folder status from the specified IMAP response.
 	  *
 	  * @param resp parsed IMAP response
+	  * @return true if the status changed, or false otherwise
 	  */
-	void updateFromResponse(const IMAPParser::resp_text_code* resp);
+	bool updateFromResponse(const IMAPParser::resp_text_code* resp);
 
 private:
 

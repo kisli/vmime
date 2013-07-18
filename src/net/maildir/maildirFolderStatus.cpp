@@ -35,6 +35,21 @@ namespace net {
 namespace maildir {
 
 
+maildirFolderStatus::maildirFolderStatus()
+	: m_count(0),
+	  m_unseen(0)
+{
+}
+
+
+maildirFolderStatus::maildirFolderStatus(const maildirFolderStatus& other)
+	: folderStatus(),
+	  m_count(other.m_count),
+	  m_unseen(other.m_unseen)
+{
+}
+
+
 unsigned int maildirFolderStatus::getMessageCount() const
 {
 	return m_count;
@@ -56,6 +71,12 @@ void maildirFolderStatus::setMessageCount(const unsigned int count)
 void maildirFolderStatus::setUnseenCount(const unsigned int unseen)
 {
 	m_unseen = unseen;
+}
+
+
+ref <folderStatus> maildirFolderStatus::clone() const
+{
+	return vmime::create <maildirFolderStatus>(*this);
 }
 
 

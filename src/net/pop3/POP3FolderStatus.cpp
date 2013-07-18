@@ -35,6 +35,21 @@ namespace net {
 namespace pop3 {
 
 
+POP3FolderStatus::POP3FolderStatus()
+	: m_count(0),
+	  m_unseen(0)
+{
+}
+
+
+POP3FolderStatus::POP3FolderStatus(const POP3FolderStatus& other)
+	: folderStatus(),
+	  m_count(other.m_count),
+	  m_unseen(other.m_unseen)
+{
+}
+
+
 unsigned int POP3FolderStatus::getMessageCount() const
 {
 	return m_count;
@@ -56,6 +71,12 @@ void POP3FolderStatus::setMessageCount(const unsigned int count)
 void POP3FolderStatus::setUnseenCount(const unsigned int unseen)
 {
 	m_unseen = unseen;
+}
+
+
+ref <folderStatus> POP3FolderStatus::clone() const
+{
+	return vmime::create <POP3FolderStatus>(*this);
 }
 
 

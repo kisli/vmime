@@ -44,12 +44,29 @@ class folder;
 namespace events {
 
 
+/** Event occurring on folders or messages.
+  */
+
+class VMIME_EXPORT event : public object
+{
+public:
+
+	event();
+	virtual ~event();
+
+	virtual const char* getClass() const = 0;
+};
+
+
 /** Event about the message count in a folder.
   */
 
-class VMIME_EXPORT messageCountEvent
+class VMIME_EXPORT messageCountEvent : public event
 {
 public:
+
+	static const char* EVENT_CLASS;
+
 
 	enum Types
 	{
@@ -82,7 +99,10 @@ public:
 	  *
 	  * @param listener listener to notify
 	  */
-	void dispatch(class messageCountListener* listener) const;
+	void dispatch(class messageCountListener* listener);
+
+
+	const char* getClass() const;
 
 private:
 
@@ -103,17 +123,20 @@ protected:
 
 public:
 
-	virtual void messagesAdded(const messageCountEvent& event) = 0;
-	virtual void messagesRemoved(const messageCountEvent& event) = 0;
+	virtual void messagesAdded(ref <messageCountEvent> event) = 0;
+	virtual void messagesRemoved(ref <messageCountEvent> event) = 0;
 };
 
 
 /** Event occuring on a message.
   */
 
-class VMIME_EXPORT messageChangedEvent
+class VMIME_EXPORT messageChangedEvent : public event
 {
 public:
+
+	static const char* EVENT_CLASS;
+
 
 	enum Types
 	{
@@ -145,7 +168,10 @@ public:
 	  *
 	  * @param listener listener to notify
 	  */
-	void dispatch(class messageChangedListener* listener) const;
+	void dispatch(class messageChangedListener* listener);
+
+
+	const char* getClass() const;
 
 private:
 
@@ -166,16 +192,19 @@ protected:
 
 public:
 
-	virtual void messageChanged(const messageChangedEvent& event) = 0;
+	virtual void messageChanged(ref <messageChangedEvent> event) = 0;
 };
 
 
 /** Event occuring on a folder.
   */
 
-class VMIME_EXPORT folderEvent
+class VMIME_EXPORT folderEvent : public event
 {
 public:
+
+	static const char* EVENT_CLASS;
+
 
 	enum Types
 	{
@@ -203,7 +232,10 @@ public:
 	  *
 	  * @param listener listener to notify
 	  */
-	void dispatch(class folderListener* listener) const;
+	void dispatch(class folderListener* listener);
+
+
+	const char* getClass() const;
 
 private:
 
@@ -225,9 +257,9 @@ protected:
 
 public:
 
-	virtual void folderCreated(const folderEvent& event) = 0;
-	virtual void folderRenamed(const folderEvent& event) = 0;
-	virtual void folderDeleted(const folderEvent& event) = 0;
+	virtual void folderCreated(ref <folderEvent> event) = 0;
+	virtual void folderRenamed(ref <folderEvent> event) = 0;
+	virtual void folderDeleted(ref <folderEvent> event) = 0;
 };
 
 

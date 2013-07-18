@@ -138,6 +138,15 @@ public:
 
 	int getFetchCapabilities() const;
 
+	/** Returns the highest modification sequence of this folder, ie the
+	  * modification sequence of the last message that changed in this
+	  * folder.
+	  *
+	  * @return modification sequence, or zero if not supported by
+	  * the underlying protocol
+	  */
+	vmime_uint64 getHighestModSequence() const;
+
 private:
 
 	void registerMessage(IMAPMessage* msg);

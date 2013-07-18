@@ -56,6 +56,12 @@ public:
 	  * @return number of unseen messages
 	  */
 	virtual unsigned int getUnseenCount() const = 0;
+
+	/** Clones this object.
+	  *
+	  * @return a copy of this object
+	  */
+	virtual ref <folderStatus> clone() const = 0;
 };
 
 

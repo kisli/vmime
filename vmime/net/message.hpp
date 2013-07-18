@@ -217,8 +217,8 @@ public:
 	  */
 	virtual int getSize() const = 0;
 
-	/** Check whether this message has been expunged
-	  * (ie: definitively deleted).
+	/** Check whether this message has been expunged (ie: definitively
+	  * deleted) and does not exist in the folder anymore.
 	  *
 	  * @return true if the message is expunged, false otherwise
 	  */

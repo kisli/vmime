@@ -46,9 +46,15 @@ class VMIME_EXPORT maildirFolderStatus : public folderStatus
 {
 public:
 
+	maildirFolderStatus();
+	maildirFolderStatus(const maildirFolderStatus& other);
+
 	// Inherited from folderStatus
 	unsigned int getMessageCount() const;
 	unsigned int getUnseenCount() const;
+
+	ref <folderStatus> clone() const;
+
 
 	void setMessageCount(const unsigned int count);
 	void setUnseenCount(const unsigned int unseen);

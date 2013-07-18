@@ -46,6 +46,18 @@ IMAPFolderStatus::IMAPFolderStatus()
 }
 
 
+IMAPFolderStatus::IMAPFolderStatus(const IMAPFolderStatus& other)
+	: folderStatus(),
+	  m_count(other.m_count),
+	  m_unseen(other.m_unseen),
+	  m_recent(other.m_recent),
+	  m_uidValidity(other.m_uidValidity),
+	  m_uidNext(other.m_uidNext),
+	  m_highestModSeq(other.m_highestModSeq)
+{
+}
+
+
 unsigned int IMAPFolderStatus::getMessageCount() const
 {
 	return m_count;
@@ -82,8 +94,16 @@ vmime_uint64 IMAPFolderStatus::getHighestModSeq() const
 }
 
 
-void IMAPFolderStatus::updateFromResponse(const IMAPParser::mailbox_data* resp)
+ref <folderStatus> IMAPFolderStatus::clone() const
 {
+	return vmime::create <IMAPFolderStatus>(*this);
+}
+
+
+bool IMAPFolderStatus::updateFromResponse(const IMAPParser::mailbox_data* resp)
+{
+	bool changed = false;
+
 	if (resp->type() == IMAPParser::mailbox_data::STATUS)
 	{
 		const IMAPParser::status_att_list* statusAttList = resp->status_att_list();
@@ -94,81 +114,176 @@ void IMAPFolderStatus::updateFromResponse(const IMAPParser::mailbox_data* resp)
 			switch ((*jt)->type())
 			{
 			case IMAPParser::status_att_val::MESSAGES:
+			{
+				const unsigned int count = (*jt)->value_as_number()->value();
 
-				m_count = (*jt)->value_as_number()->value();
+				if (m_count != count)
+				{
+					m_count = count;
+					changed = true;
+				}
+
 				break;
-
+			}
 			case IMAPParser::status_att_val::UNSEEN:
+			{
+				const unsigned int unseen = (*jt)->value_as_number()->value();
 
-				m_unseen = (*jt)->value_as_number()->value();
+				if (m_unseen != unseen)
+				{
+					m_unseen = unseen;
+					changed = true;
+				}
+
 				break;
-
+			}
 			case IMAPParser::status_att_val::RECENT:
+			{
+				const unsigned int recent = (*jt)->value_as_number()->value();
 
-				m_recent = (*jt)->value_as_number()->value();
+				if (m_recent != recent)
+				{
+					m_recent = recent;
+					changed = true;
+				}
+
 				break;
-
+			}
 			case IMAPParser::status_att_val::UIDNEXT:
+			{
+				const vmime_uint32 uidNext = (*jt)->value_as_number()->value();
 
-				m_uidNext = (*jt)->value_as_number()->value();
+				if (m_uidNext != uidNext)
+				{
+					m_uidNext = uidNext;
+					changed = true;
+				}
+
 				break;
-
+			}
 			case IMAPParser::status_att_val::UIDVALIDITY:
+			{
+				const vmime_uint32 uidValidity = (*jt)->value_as_number()->value();
 
-				m_uidValidity = (*jt)->value_as_number()->value();
+				if (m_uidValidity != uidValidity)
+				{
+					m_uidValidity = uidValidity;
+					changed = true;
+				}
+
 				break;
-
+			}
 			case IMAPParser::status_att_val::HIGHESTMODSEQ:
+			{
+				const vmime_uint64 highestModSeq = (*jt)->value_as_mod_sequence_value()->value();
 
-				m_highestModSeq = (*jt)->value_as_mod_sequence_value()->value();
+				if (m_highestModSeq != highestModSeq)
+				{
+					m_highestModSeq = highestModSeq;
+					changed = true;
+				}
+
 				break;
+			}
+
 			}
 		}
 	}
 	else if (resp->type() == IMAPParser::mailbox_data::EXISTS)
 	{
-		m_count = resp->number()->value();
+		const unsigned int count = resp->number()->value();
+
+		if (m_count != count)
+		{
+			m_count = count;
+			changed = true;
+		}
 	}
 	else if (resp->type() == IMAPParser::mailbox_data::RECENT)
 	{
-		m_recent = resp->number()->value();
+		const unsigned int recent = resp->number()->value();
+
+		if (m_recent != recent)
+		{
+			m_recent = recent;
+			changed = true;
+		}
 	}
+
+	return changed;
 }
 
 
-void IMAPFolderStatus::updateFromResponse(const IMAPParser::resp_text_code* resp)
+bool IMAPFolderStatus::updateFromResponse(const IMAPParser::resp_text_code* resp)
 {
+	bool changed = false;
+
 	switch (resp->type())
 	{
 	case IMAPParser::resp_text_code::UIDVALIDITY:
+	{
+		const vmime_uint32 uidValidity = resp->nz_number()->value();
 
-		m_uidValidity = resp->nz_number()->value();
+		if (m_uidValidity != uidValidity)
+		{
+			m_uidValidity = uidValidity;
+			changed = true;
+		}
+
 		break;
-
+	}
 	case IMAPParser::resp_text_code::UIDNEXT:
+	{
+		const vmime_uint32 uidNext = resp->nz_number()->value();
 
-		m_uidNext = resp->nz_number()->value();
+		if (m_uidNext != uidNext)
+		{
+			m_uidNext = uidNext;
+			changed = true;
+		}
+
 		break;
-
+	}
 	case IMAPParser::resp_text_code::UNSEEN:
+	{
+		const unsigned int unseen = resp->nz_number()->value();
 
-		m_unseen = resp->nz_number()->value();
+		if (m_unseen != unseen)
+		{
+			m_unseen = unseen;
+			changed = true;
+		}
+
 		break;
-
+	}
 	case IMAPParser::resp_text_code::HIGHESTMODSEQ:
+	{
+		const vmime_uint64 highestModSeq = resp->mod_sequence_value()->value();
 
-		m_highestModSeq = resp->mod_sequence_value()->value();
+		if (m_highestModSeq != highestModSeq)
+		{
+			m_highestModSeq = highestModSeq;
+			changed = true;
+		}
+
 		break;
-
+	}
 	case IMAPParser::resp_text_code::NOMODSEQ:
+	{
+		if (m_highestModSeq != 0)
+		{
+			m_highestModSeq = 0;
+			changed = true;
+		}
 
-		m_highestModSeq = 0;
 		break;
-
+	}
 	default:
 
 		break;
 	}
+
+	return changed;
 }
 
 

@@ -101,7 +101,25 @@ public:
 
 private:
 
-	void processFetchResponse(const int options, const IMAPParser::message_data* msgData);
+	/** Renumbers the message.
+	  *
+	  * @param number new sequence number
+	  */
+	void renumber(const int number);
+
+	/** Marks the message as expunged.
+	  */
+	void setExpunged();
+
+	/** Processes the parsed response to fill in the attributes
+	  * and metadata of this message.
+	  *
+	  * @param options one or more fetch options (see folder::FetchOptions)
+	  * @param msgData pointer to message_data component of the parsed response
+	  * @return a combination of flags that specify what changed exactly on
+	  * this message (see events::messageChangedEvent::Types)
+	  */
+	int processFetchResponse(const int options, const IMAPParser::message_data* msgData);
 
 	/** Recursively fetch part header for all parts in the structure.
 	  *

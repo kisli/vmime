@@ -39,8 +39,25 @@ namespace events {
 
 
 //
+// event
+//
+
+event::event()
+{
+}
+
+
+event::~event()
+{
+}
+
+
+//
 // messageCountEvent
 //
+
+const char* messageCountEvent::EVENT_CLASS = "messageCountEvent";
+
 
 messageCountEvent::messageCountEvent
 	(ref <folder> folder, const Types type, const std::vector <int>& nums)
@@ -56,18 +73,27 @@ messageCountEvent::Types messageCountEvent::getType() const { return (m_type); }
 const std::vector <int>& messageCountEvent::getNumbers() const { return (m_nums); }
 
 
-void messageCountEvent::dispatch(messageCountListener* listener) const
+void messageCountEvent::dispatch(messageCountListener* listener)
 {
 	if (m_type == TYPE_ADDED)
-		listener->messagesAdded(*this);
+		listener->messagesAdded(thisRef().dynamicCast <messageCountEvent>());
 	else
-		listener->messagesRemoved(*this);
+		listener->messagesRemoved(thisRef().dynamicCast <messageCountEvent>());
+}
+
+
+const char* messageCountEvent::getClass() const
+{
+	return EVENT_CLASS;
 }
 
 
 //
 // messageChangedEvent
 //
+
+const char* messageChangedEvent::EVENT_CLASS = "messageChangedEvent";
+
 
 messageChangedEvent::messageChangedEvent
 	(ref <folder> folder, const Types type, const std::vector <int>& nums)
@@ -83,15 +109,24 @@ messageChangedEvent::Types messageChangedEvent::getType() const { return (m_type
 const std::vector <int>& messageChangedEvent::getNumbers() const { return (m_nums); }
 
 
-void messageChangedEvent::dispatch(messageChangedListener* listener) const
+void messageChangedEvent::dispatch(messageChangedListener* listener)
 {
-	listener->messageChanged(*this);
+	listener->messageChanged(thisRef().dynamicCast <messageChangedEvent>());
+}
+
+
+const char* messageChangedEvent::getClass() const
+{
+	return EVENT_CLASS;
 }
 
 
 //
 // folderEvent
 //
+
+const char* folderEvent::EVENT_CLASS = "folderEvent";
+
 
 folderEvent::folderEvent
 	(ref <folder> folder, const Types type,
@@ -105,14 +140,20 @@ ref <folder> folderEvent::getFolder() const { return (m_folder); }
 folderEvent::Types folderEvent::getType() const { return (m_type); }
 
 
-void folderEvent::dispatch(folderListener* listener) const
+void folderEvent::dispatch(folderListener* listener)
 {
 	switch (m_type)
 	{
-	case TYPE_CREATED: listener->folderCreated(*this); break;
-	case TYPE_RENAMED: listener->folderRenamed(*this); break;
-	case TYPE_DELETED: listener->folderDeleted(*this); break;
+	case TYPE_CREATED: listener->folderCreated(thisRef().dynamicCast <folderEvent>()); break;
+	case TYPE_RENAMED: listener->folderRenamed(thisRef().dynamicCast <folderEvent>()); break;
+	case TYPE_DELETED: listener->folderDeleted(thisRef().dynamicCast <folderEvent>()); break;
 	}
+}
+
+
+const char* folderEvent::getClass() const
+{
+	return EVENT_CLASS;
 }
 
 

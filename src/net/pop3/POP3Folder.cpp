@@ -591,9 +591,10 @@ void POP3Folder::deleteMessage(const int num)
 	std::vector <int> nums;
 	nums.push_back(num);
 
-	events::messageChangedEvent event
-		(thisRef().dynamicCast <folder>(),
-		 events::messageChangedEvent::TYPE_FLAGS, nums);
+	ref <events::messageChangedEvent> event =
+		vmime::create <events::messageChangedEvent>
+			(thisRef().dynamicCast <folder>(),
+			 events::messageChangedEvent::TYPE_FLAGS, nums);
 
 	notifyMessageChanged(event);
 }
@@ -640,9 +641,10 @@ void POP3Folder::deleteMessages(const int from, const int to)
 	for (int i = from ; i <= to2 ; ++i)
 		nums.push_back(i);
 
-	events::messageChangedEvent event
-		(thisRef().dynamicCast <folder>(),
-		 events::messageChangedEvent::TYPE_FLAGS, nums);
+	ref <events::messageChangedEvent> event =
+		vmime::create <events::messageChangedEvent>
+			(thisRef().dynamicCast <folder>(),
+			 events::messageChangedEvent::TYPE_FLAGS, nums);
 
 	notifyMessageChanged(event);
 }
@@ -691,9 +693,10 @@ void POP3Folder::deleteMessages(const std::vector <int>& nums)
 	}
 
 	// Notify message flags changed
-	events::messageChangedEvent event
-		(thisRef().dynamicCast <folder>(),
-		 events::messageChangedEvent::TYPE_FLAGS, list);
+	ref <events::messageChangedEvent> event =
+		vmime::create <events::messageChangedEvent>
+			(thisRef().dynamicCast <folder>(),
+			 events::messageChangedEvent::TYPE_FLAGS, list);
 
 	notifyMessageChanged(event);
 }
@@ -805,9 +808,10 @@ ref <folderStatus> POP3Folder::getStatus()
 				nums[j] = i;
 
 			// Notify message count changed
-			events::messageCountEvent event
-				(thisRef().dynamicCast <folder>(),
-				 events::messageCountEvent::TYPE_ADDED, nums);
+			ref <events::messageCountEvent> event =
+				vmime::create <events::messageCountEvent>
+					(thisRef().dynamicCast <folder>(),
+					 events::messageCountEvent::TYPE_ADDED, nums);
 
 			notifyMessageCount(event);
 
@@ -819,9 +823,10 @@ ref <folderStatus> POP3Folder::getStatus()
 				{
 					(*it)->m_messageCount = count;
 
-					events::messageCountEvent event
-						((*it)->thisRef().dynamicCast <folder>(),
-						 events::messageCountEvent::TYPE_ADDED, nums);
+					ref <events::messageCountEvent> event =
+						vmime::create <events::messageCountEvent>
+							((*it)->thisRef().dynamicCast <folder>(),
+							 events::messageCountEvent::TYPE_ADDED, nums);
 
 					(*it)->notifyMessageCount(event);
 				}
