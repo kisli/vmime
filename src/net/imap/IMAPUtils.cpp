@@ -554,10 +554,10 @@ const string IMAPUtils::listToSet(const std::vector <message::uid>& list)
 	std::ostringstream res;
 	res.imbue(std::locale::classic());
 
-	res << extractUIDFromGlobalUID(list[0]);
+	res << list[0];
 
 	for (std::vector <message::uid>::size_type i = 1, n = list.size() ; i < n ; ++i)
-		res << "," << extractUIDFromGlobalUID(list[i]);
+		res << "," << list[i];
 
 	return res.str();
 }
@@ -753,46 +753,6 @@ void IMAPUtils::convertAddressList
 
 		dest.appendMailbox(vmime::create <mailbox>(name, email));
 	}
-}
-
-
-// static
-vmime_uint32 IMAPUtils::extractUIDFromGlobalUID(const message::uid& uid)
-{
-	message::uid::size_type colonPos = uid.find(':');
-
-	if (colonPos == message::uid::npos)
-	{
-		std::istringstream iss(uid);
-		iss.imbue(std::locale::classic());
-
-		vmime_uint32 n = 0;
-		iss >> n;
-
-		return n;
-	}
-	else
-	{
-		std::istringstream iss(uid.substr(colonPos + 1));
-		iss.imbue(std::locale::classic());
-
-		vmime_uint32 n = 0;
-		iss >> n;
-
-		return n;
-	}
-}
-
-
-// static
-const message::uid IMAPUtils::makeGlobalUID(const vmime_uint32 UIDValidity, const vmime_uint32 messageUID)
-{
-	std::ostringstream oss;
-	oss.imbue(std::locale::classic());
-
-	oss << UIDValidity << ":" << messageUID;
-
-	return message::uid(oss.str());
 }
 
 

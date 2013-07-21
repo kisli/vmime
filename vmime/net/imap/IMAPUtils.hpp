@@ -130,21 +130,6 @@ public:
 	  */
 	static void convertAddressList(const IMAPParser::address_list& src, mailboxList& dest);
 
-	/** Extract the message UID from a globally unique UID.
-	  *
-	  * @param uid globally unique UID (as returned by makeGlobalUID(), for example)
-	  * @return message UID
-	  */
-	static vmime_uint32 extractUIDFromGlobalUID(const message::uid& uid);
-
-	/** Construct a globally unique UID from UID Validity and a message UID.
-	  *
-	  * @param UIDValidity UID Validity of the folder
-	  * @param messageUID UID of the message
-	  * @return global UID
-	  */
-	static const message::uid makeGlobalUID(const vmime_uint32 UIDValidity, const vmime_uint32 messageUID);
-
 private:
 
 	static const string buildFetchRequestImpl

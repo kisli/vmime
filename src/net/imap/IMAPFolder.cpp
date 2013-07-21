@@ -596,10 +596,10 @@ std::vector <ref <message> > IMAPFolder::getMessagesByUID(const std::vector <mes
 	std::ostringstream cmd;
 	cmd.imbue(std::locale::classic());
 
-	cmd << "UID FETCH " << IMAPUtils::extractUIDFromGlobalUID(uids[0]);
+	cmd << "UID FETCH " << uids[0];
 
 	for (std::vector <message::uid>::size_type i = 1, n = uids.size() ; i < n ; ++i)
-		cmd << "," << IMAPUtils::extractUIDFromGlobalUID(uids[i]);
+		cmd << "," << uids[i];
 
 	cmd << " UID";
 
@@ -639,7 +639,7 @@ std::vector <ref <message> > IMAPFolder::getMessagesByUID(const std::vector <mes
 
 		// Get Process fetch response for this message
 		const int msgNum = static_cast <int>(messageData->number());
-		message::uid msgUID, msgFullUID;
+		message::uid msgUID;
 
 		// Find UID in message attributes
 		const std::vector <IMAPParser::msg_att_item*> atts = messageData->msg_att()->items();
@@ -649,9 +649,7 @@ std::vector <ref <message> > IMAPFolder::getMessagesByUID(const std::vector <mes
 		{
 			if ((*it)->type() == IMAPParser::msg_att_item::UID)
 			{
-				msgFullUID = IMAPUtils::makeGlobalUID(m_status->getUIDValidity(), (*it)->unique_id()->value());
 				msgUID = (*it)->unique_id()->value();
-
 				break;
 			}
 		}
@@ -659,7 +657,7 @@ std::vector <ref <message> > IMAPFolder::getMessagesByUID(const std::vector <mes
 		if (!msgUID.empty())
 		{
 			ref <IMAPFolder> thisFolder = thisRef().dynamicCast <IMAPFolder>();
-			messages.push_back(vmime::create <IMAPMessage>(thisFolder, msgNum, msgFullUID));
+			messages.push_back(vmime::create <IMAPMessage>(thisFolder, msgNum, msgUID));
 		}
 	}
 
@@ -673,6 +671,15 @@ int IMAPFolder::getMessageCount()
 		throw exceptions::illegal_state("Folder not open");
 
 	return m_status->getMessageCount();
+}
+
+
+vmime_uint32 IMAPFolder::getUIDValidity() const
+{
+	if (!isOpen())
+		throw exceptions::illegal_state("Folder not open");
+
+	return m_status->getUIDValidity();
 }
 
 

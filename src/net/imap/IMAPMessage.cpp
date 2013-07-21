@@ -295,7 +295,7 @@ void IMAPMessage::extractImpl(ref <const messagePart> p, utility::outputStream& 
 	if (m_uid.empty())
 		command << "FETCH " << m_num << " BODY";
 	else
-		command << "UID FETCH " << IMAPUtils::extractUIDFromGlobalUID(m_uid) << " BODY";
+		command << "UID FETCH " << m_uid << " BODY";
 
 	/*
 	   BODY[]               header + body
@@ -393,7 +393,7 @@ int IMAPMessage::processFetchResponse
 		}
 		case IMAPParser::msg_att_item::UID:
 		{
-			m_uid = IMAPUtils::makeGlobalUID(folder->m_status->getUIDValidity(), (*it)->unique_id()->value());
+			m_uid = (*it)->unique_id()->value();
 			break;
 		}
 		case IMAPParser::msg_att_item::MODSEQ:

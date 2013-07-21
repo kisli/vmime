@@ -138,6 +138,17 @@ public:
 
 	int getFetchCapabilities() const;
 
+	/** Returns the UID validity of the folder for the current session.
+	  * If the server is capable of persisting UIDs accross sessions,
+	  * this value should never change for a folder. If the UID validity
+	  * differs across sessions, then the UIDs obtained during a previous
+	  * session may not correspond to the UIDs of the same messages in
+	  * this session.
+	  *
+	  * @return UID validity of the folder
+	  */
+	vmime_uint32 getUIDValidity() const;
+
 	/** Returns the highest modification sequence of this folder, ie the
 	  * modification sequence of the last message that changed in this
 	  * folder.
