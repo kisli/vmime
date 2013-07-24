@@ -61,6 +61,9 @@ const SMTPServiceInfos::props& SMTPServiceInfos::getProperties() const
 		property("options.sasl.fallback", serviceInfos::property::TYPE_BOOLEAN, "false"),
 #endif // VMIME_HAVE_SASL_SUPPORT
 
+		property("options.pipelining", serviceInfos::property::TYPE_BOOLEAN, "true"),
+		property("options.chunking", serviceInfos::property::TYPE_BOOLEAN, "true"),
+
 		// Common properties
 		property(serviceInfos::property::AUTH_USERNAME, serviceInfos::property::FLAG_REQUIRED),
 		property(serviceInfos::property::AUTH_PASSWORD, serviceInfos::property::FLAG_REQUIRED),
@@ -82,6 +85,9 @@ const SMTPServiceInfos::props& SMTPServiceInfos::getProperties() const
 		property("options.sasl", serviceInfos::property::TYPE_BOOLEAN, "true"),
 		property("options.sasl.fallback", serviceInfos::property::TYPE_BOOLEAN, "false"),
 #endif // VMIME_HAVE_SASL_SUPPORT
+
+		property("options.pipelining", serviceInfos::property::TYPE_BOOLEAN, "true"),
+		property("options.chunking", serviceInfos::property::TYPE_BOOLEAN, "true"),
 
 		// Common properties
 		property(serviceInfos::property::AUTH_USERNAME, serviceInfos::property::FLAG_REQUIRED),

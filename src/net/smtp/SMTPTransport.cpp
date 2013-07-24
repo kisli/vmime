@@ -169,7 +169,9 @@ void SMTPTransport::sendEnvelope
 
 
 	const bool needReset = m_needReset;
-	const bool hasPipelining = m_connection->hasExtension("PIPELINING");
+	const bool hasPipelining = m_connection->hasExtension("PIPELINING") &&
+		getInfos().getPropertyValue <bool>(getSession(),
+			dynamic_cast <const SMTPServiceInfos&>(getInfos()).getProperties().PROPERTY_OPTIONS_PIPELINING);
 
 	ref <SMTPResponse> resp;
 	ref <SMTPCommandSet> commands = SMTPCommandSet::create(hasPipelining);
@@ -334,7 +336,10 @@ void SMTPTransport::send
 
 	// If CHUNKING is not supported, generate the message to a temporary
 	// buffer then use the send() method which takes an inputStream
-	if (!m_connection->hasExtension("CHUNKING"))
+	if (!m_connection->hasExtension("CHUNKING") ||
+	    !getInfos().getPropertyValue <bool>(getSession(),
+			dynamic_cast <const SMTPServiceInfos&>(getInfos()).getProperties().PROPERTY_OPTIONS_CHUNKING))
+
 	{
 		std::ostringstream oss;
 		utility::outputStreamAdapter ossAdapter(oss);

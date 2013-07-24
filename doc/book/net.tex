@@ -190,6 +190,12 @@ authentication is not used). \\
 transport.smtp.options.need-authentication & bool & Set to \emph{true} if
 the server requires to authenticate before sending messages. \\
 \hline
+transport.smtp.options.pipelining & bool & Set to {\vcode false} to disable
+command pipelining, if the server supports it (default is {\vcode true}). \\
+\hline
+transport.smtp.options.chunking & bool & Set to {\vcode false} to disable
+CHUNKING extension, if the server supports it (default is {\vcode true}). \\
+\hline
 % sendmail
 \multicolumn{3}{|c|}{sendmail} \\
 \hline
