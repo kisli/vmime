@@ -54,7 +54,7 @@ public:
   * sequence number, or by their UID.
   */
 
-class messageRange : public object
+class VMIME_EXPORT messageRange : public object
 {
 public:
 
@@ -81,7 +81,7 @@ protected:
 /** A range of (continuous) messages designated by their sequence number.
   */
 
-class numberMessageRange : public messageRange
+class VMIME_EXPORT numberMessageRange : public messageRange
 {
 public:
 
@@ -132,7 +132,7 @@ private:
 /** A range of (continuous) messages represented by their UID.
   */
 
-class UIDMessageRange : public messageRange
+class VMIME_EXPORT UIDMessageRange : public messageRange
 {
 public:
 
