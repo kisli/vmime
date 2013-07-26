@@ -38,6 +38,7 @@
 
 #include "vmime/message.hpp"
 #include "vmime/net/message.hpp"
+#include "vmime/net/messageSet.hpp"
 #include "vmime/net/events.hpp"
 #include "vmime/net/folderStatus.hpp"
 
@@ -186,38 +187,34 @@ public:
 	  */
 	virtual ref <message> getMessage(const int num) = 0;
 
-	/** Get new references to messages in this folder, given their numbers.
+	/** Get new references to messages in this folder, given either their
+	  * sequence numbers or UIDs.
 	  *
-	  * @param from sequence number of the first message to get
-	  * @param to sequence number of the last message to get
+	  * To retrieve messages by their number, use:
+	  * \code{.cpp}
+	  *    // Get messages from sequence number 5 to sequence number 8 (including)
+	  *    folder->getMessage(vmime::net::messageSet::byNumber(5, 8));
+	  *
+	  *    // Get all messages in the folder, starting from number 42
+	  *    folder->getMessage(vmime::net::messageSet::byNumber(42, -1));
+	  * \endcode
+	  * Or, to retrieve messages by their UID, use:
+	  * \code{.cpp}
+	  *    // Get messages from UID 1000 to UID 1042 (including)
+	  *    folder->getMessage(vmime::net::messageSet::byUID(1000, 1042));
+	  *
+	  *    // Get message with UID 1042
+	  *    folder->getMessage(vmime::net::messageSet::byUID(1042));
+	  *
+	  *    // Get all messages in the folder, starting from UID 1000
+	  *    folder->getMessage(vmime::net::messageSet::byUID(1000, "*"));
+	  * \endcode
+	  *
+	  * @param msgs index set of messages to retrieve
 	  * @return new objects referencing the specified messages
 	  * @throw exceptions::net_exception if an error occurs
 	  */
-	virtual std::vector <ref <message> > getMessages(const int from = 1, const int to = -1) = 0;
-
-	/** Get new references to messages in this folder, given their numbers.
-	  *
-	  * @param nums sequence numbers of the messages to retrieve
-	  * @return new objects referencing the specified messages
-	  * @throw exceptions::net_exception if an error occurs
-	  */
-	virtual std::vector <ref <message> > getMessages(const std::vector <int>& nums) = 0;
-
-	/** Get message in this folder, given its UID.
-	  *
-	  * @param uid UID of message to retrieve
-	  * @return a new object referencing the specified message
-	  * @throw exceptions::net_exception if an error occurs
-	  */
-	virtual ref <message> getMessageByUID(const message::uid& uid) = 0;
-
-	/** Get messages in this folder, given their UIDs.
-	  *
-	  * @param uids UIDs of messages to retrieve
-	  * @return new objects referencing the specified messages
-	  * @throw exceptions::net_exception if an error occurs
-	  */
-	virtual std::vector <ref <message> > getMessagesByUID(const std::vector <message::uid>& uids) = 0;
+	virtual std::vector <ref <message> > getMessages(const messageSet& msgs) = 0;
 
 	/** Return the number of messages in this folder.
 	  *
@@ -249,46 +246,21 @@ public:
 	  */
 	virtual void rename(const folder::path& newPath) = 0;
 
-	/** Remove a message in this folder.
-	  *
-	  * @param num sequence number of the message to delete
-	  * @throw exceptions::net_exception if an error occurs
-	  */
-	virtual void deleteMessage(const int num) = 0;
-
 	/** Remove one or more messages from this folder.
 	  *
-	  * @param from sequence number of the first message to delete
-	  * @param to sequence number of the last message to delete
+	  * @param msgs index set of messages to delete
 	  * @throw exceptions::net_exception if an error occurs
 	  */
-	virtual void deleteMessages(const int from = 1, const int to = -1) = 0;
-
-	/** Remove one or more messages from this folder.
-	  *
-	  * @param nums sequence numbers of the messages to delete
-	  * @throw exceptions::net_exception if an error occurs
-	  */
-	virtual void deleteMessages(const std::vector <int>& nums) = 0;
+	virtual void deleteMessages(const messageSet& msgs) = 0;
 
 	/** Change the flags for one or more messages in this folder.
 	  *
-	  * @param from sequence number of the first message to modify
-	  * @param to sequence number of the last message to modify
+	  * @param msgs index set of messages on which to set the flags
 	  * @param flags set of flags (see message::Flags)
 	  * @param mode indicate how to treat old and new flags (see message::FlagsModes)
 	  * @throw exceptions::net_exception if an error occurs
 	  */
-	virtual void setMessageFlags(const int from, const int to, const int flags, const int mode = message::FLAG_MODE_SET) = 0;
-
-	/** Change the flags for one or more messages in this folder.
-	  *
-	  * @param nums sequence numbers of the messages to modify
-	  * @param flags set of flags (see message::Flags)
-	  * @param mode indicate how to treat old and new flags (see message::FlagsModes)
-	  * @throw exceptions::net_exception if an error occurs
-	  */
-	virtual void setMessageFlags(const std::vector <int>& nums, const int flags, const int mode = message::FLAG_MODE_SET) = 0;
+	virtual void setMessageFlags(const messageSet& msgs, const int flags, const int mode = message::FLAG_MODE_SET) = 0;
 
 	/** Add a message to this folder.
 	  *
@@ -311,30 +283,13 @@ public:
 	  */
 	virtual void addMessage(utility::inputStream& is, const int size, const int flags = message::FLAG_UNDEFINED, vmime::datetime* date = NULL, utility::progressListener* progress = NULL) = 0;
 
-	/** Copy a message from this folder to another folder.
-	  *
-	  * @param dest destination folder path
-	  * @param num sequence number of the message to copy
-	  * @throw exceptions::net_exception if an error occurs
-	  */
-	virtual void copyMessage(const folder::path& dest, const int num) = 0;
-
 	/** Copy messages from this folder to another folder.
 	  *
 	  * @param dest destination folder path
-	  * @param from sequence number of the first message to copy
-	  * @param to sequence number of the last message to copy
+	  * @param msgs index set of messages to copy
 	  * @throw exceptions::net_exception if an error occurs
 	  */
-	virtual void copyMessages(const folder::path& dest, const int from = 1, const int to = -1) = 0;
-
-	/** Copy messages from this folder to another folder.
-	  *
-	  * @param dest destination folder path
-	  * @param nums sequence numbers of the messages to copy
-	  * @throw exceptions::net_exception if an error occurs
-	  */
-	virtual void copyMessages(const folder::path& dest, const std::vector <int>& nums) = 0;
+	virtual void copyMessages(const folder::path& dest, const messageSet& msgs) = 0;
 
 	/** Request folder status without opening it.
 	  *

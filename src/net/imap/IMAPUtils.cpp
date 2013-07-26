@@ -472,98 +472,6 @@ const string IMAPUtils::messageFlagList(const int flags)
 
 
 // static
-const string IMAPUtils::listToSet(const std::vector <int>& list, const int max,
-                                  const bool alreadySorted)
-{
-	// Sort a copy of the list (if not already sorted)
-	std::vector <int> temp;
-
-	if (!alreadySorted)
-	{
-		temp.resize(list.size());
-		std::copy(list.begin(), list.end(), temp.begin());
-
-		std::sort(temp.begin(), temp.end());
-	}
-
-	const std::vector <int>& theList = (alreadySorted ? list : temp);
-
-	// Build the set
-	std::ostringstream res;
-	res.imbue(std::locale::classic());
-
-	int previous = -1, setBegin = -1;
-
-	for (std::vector <int>::const_iterator it = theList.begin() ;
-	     it != theList.end() ; ++it)
-	{
-		const int current = *it;
-
-		if (previous == -1)
-		{
-			res << current;
-
-			previous = current;
-			setBegin = current;
-		}
-		else
-		{
-			if (current == previous + 1)
-			{
-				previous = current;
-			}
-			else
-			{
-				if (setBegin != previous)
-				{
-					res << ":" << previous << "," << current;
-
-					previous = current;
-					setBegin = current;
-				}
-				else
-				{
-					if (setBegin != current)  // skip duplicates
-						res << "," << current;
-
-					previous = current;
-					setBegin = current;
-				}
-			}
-		}
-	}
-
-	if (previous != setBegin)
-	{
-		if (previous == max)
-			res << ":*";
-		else
-			res << ":" << previous;
-	}
-
-	return (res.str());
-}
-
-
-// static
-const string IMAPUtils::listToSet(const std::vector <message::uid>& list)
-{
-	if (list.size() == 0)
-		return "";
-
-	std::ostringstream res;
-	res.imbue(std::locale::classic());
-
-	res << list[0];
-
-	for (std::vector <message::uid>::size_type i = 1, n = list.size() ; i < n ; ++i)
-		res << "," << list[i];
-
-	return res.str();
-}
-
-
-// static
 const string IMAPUtils::dateTime(const vmime::datetime& date)
 {
 	std::ostringstream res;
@@ -633,8 +541,8 @@ const string IMAPUtils::dateTime(const vmime::datetime& date)
 
 
 // static
-const string IMAPUtils::buildFetchRequestImpl
-	(ref <IMAPConnection> cnt, const string& mode, const string& set, const int options)
+const string IMAPUtils::buildFetchRequest
+	(ref <IMAPConnection> cnt, const messageSet& msgs, const int options)
 {
 	// Example:
 	//   C: A654 FETCH 2:4 (FLAGS BODY[HEADER.FIELDS (DATE FROM)])
@@ -702,10 +610,10 @@ const string IMAPUtils::buildFetchRequestImpl
 	std::ostringstream command;
 	command.imbue(std::locale::classic());
 
-	if (mode == "uid")
-		command << "UID FETCH " << set << " (";
+	if (msgs.isUIDSet())
+		command << "UID FETCH " << messageSetToSequenceSet(msgs) << " (";
 	else
-		command << "FETCH " << set << " (";
+		command << "FETCH " << messageSetToSequenceSet(msgs) << " (";
 
 	for (std::vector <string>::const_iterator it = items.begin() ;
 	     it != items.end() ; ++it)
@@ -717,22 +625,6 @@ const string IMAPUtils::buildFetchRequestImpl
 	command << ")";
 
 	return command.str();
-}
-
-
-// static
-const string IMAPUtils::buildFetchRequest
-	(ref <IMAPConnection> cnt, const std::vector <int>& list, const int options)
-{
-	return buildFetchRequestImpl(cnt, "number", listToSet(list, -1, false), options);
-}
-
-
-// static
-const string IMAPUtils::buildFetchRequest
-	(ref <IMAPConnection> cnt, const std::vector <message::uid>& list, const int options)
-{
-	return buildFetchRequestImpl(cnt, "uid", listToSet(list), options);
 }
 
 
@@ -753,6 +645,101 @@ void IMAPUtils::convertAddressList
 
 		dest.appendMailbox(vmime::create <mailbox>(name, email));
 	}
+}
+
+
+
+class IMAPUIDMessageSetEnumerator : public messageSetEnumerator
+{
+public:
+
+	IMAPUIDMessageSetEnumerator()
+		: m_first(true)
+	{
+	}
+
+	void enumerateNumberMessageRange(const vmime::net::numberMessageRange& range)
+	{
+		if (!m_first)
+			m_oss << ",";
+
+		if (range.getFirst() == range.getLast())
+			m_oss << range.getFirst();
+		else
+			m_oss << range.getFirst() << ":" << range.getLast();
+
+		m_first = false;
+	}
+
+	void enumerateUIDMessageRange(const vmime::net::UIDMessageRange& range)
+	{
+		if (!m_first)
+			m_oss << ",";
+
+		if (range.getFirst() == range.getLast())
+			m_oss << range.getFirst();
+		else
+			m_oss << range.getFirst() << ":" << range.getLast();
+
+		m_first = false;
+	}
+
+	const std::string str() const
+	{
+		return m_oss.str();
+	}
+
+private:
+
+	std::ostringstream m_oss;
+	bool m_first;
+};
+
+
+class IMAPMessageSetEnumerator : public messageSetEnumerator
+{
+public:
+
+	void enumerateNumberMessageRange(const vmime::net::numberMessageRange& range)
+	{
+		for (int i = range.getFirst(), last = range.getLast() ; i <= last ; ++i)
+			m_list.push_back(i);
+	}
+
+	void enumerateUIDMessageRange(const vmime::net::UIDMessageRange& /* range */)
+	{
+		// Not used
+	}
+
+	const std::vector <int>& list() const
+	{
+		return m_list;
+	}
+
+public:
+
+	std::vector <int> m_list;
+};
+
+
+
+// static
+const string IMAPUtils::messageSetToSequenceSet(const messageSet& msgs)
+{
+	IMAPUIDMessageSetEnumerator en;
+	msgs.enumerate(en);
+
+	return en.str();
+}
+
+
+// static
+const std::vector <int> IMAPUtils::messageSetToNumberList(const messageSet& msgs)
+{
+	IMAPMessageSetEnumerator en;
+	msgs.enumerate(en);
+
+	return en.list();
 }
 
 

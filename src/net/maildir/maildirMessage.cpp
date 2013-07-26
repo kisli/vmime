@@ -140,7 +140,7 @@ void maildirMessage::setFlags(const int flags, const int mode)
 	if (!folder)
 		throw exceptions::folder_not_found();
 
-	folder->setMessageFlags(m_num, m_num, flags, mode);
+	folder->setMessageFlags(messageSet::byNumber(m_num), flags, mode);
 }
 
 

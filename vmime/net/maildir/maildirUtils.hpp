@@ -34,6 +34,8 @@
 #include "vmime/utility/file.hpp"
 #include "vmime/utility/path.hpp"
 
+#include "vmime/net/messageSet.hpp"
+
 
 namespace vmime {
 namespace net {
@@ -129,6 +131,13 @@ public:
 	  * @param dir directory to delete
 	  */
 	static void recursiveFSDelete(ref <utility::file> dir);
+
+	/** Returns a list of message numbers given a message set.
+	  *
+	  * @param msgs message set
+	  * @return list of message numbers
+	  */
+	static const std::vector <int> messageSetToNumberList(const messageSet& msgs);
 };
 
 

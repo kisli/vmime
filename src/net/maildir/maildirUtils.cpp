@@ -214,6 +214,38 @@ void maildirUtils::recursiveFSDelete(ref <utility::file> dir)
 
 
 
+class maildirMessageSetEnumerator : public messageSetEnumerator
+{
+public:
+
+	void enumerateNumberMessageRange(const vmime::net::numberMessageRange& range)
+	{
+		for (int i = range.getFirst(), last = range.getLast() ; i <= last ; ++i)
+			list.push_back(i);
+	}
+
+	void enumerateUIDMessageRange(const vmime::net::UIDMessageRange& /* range */)
+	{
+		// Not supported
+	}
+
+public:
+
+	std::vector <int> list;
+};
+
+
+// static
+const std::vector <int> maildirUtils::messageSetToNumberList(const messageSet& msgs)
+{
+	maildirMessageSetEnumerator en;
+	msgs.enumerate(en);
+
+	return en.list;
+}
+
+
+
 //
 // messageIdComparator
 //

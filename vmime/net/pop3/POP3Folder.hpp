@@ -86,11 +86,7 @@ public:
 	bool isOpen() const;
 
 	ref <message> getMessage(const int num);
-	std::vector <ref <message> > getMessages(const int from = 1, const int to = -1);
-	std::vector <ref <message> > getMessages(const std::vector <int>& nums);
-
-	ref <message> getMessageByUID(const message::uid& uid);
-	std::vector <ref <message> > getMessagesByUID(const std::vector <message::uid>& uids);
+	std::vector <ref <message> > getMessages(const messageSet& msgs);
 
 	int getMessageCount();
 
@@ -99,19 +95,14 @@ public:
 
 	void rename(const folder::path& newPath);
 
-	void deleteMessage(const int num);
-	void deleteMessages(const int from = 1, const int to = -1);
-	void deleteMessages(const std::vector <int>& nums);
+	void deleteMessages(const messageSet& msgs);
 
-	void setMessageFlags(const int from, const int to, const int flags, const int mode = message::FLAG_MODE_SET);
-	void setMessageFlags(const std::vector <int>& nums, const int flags, const int mode = message::FLAG_MODE_SET);
+	void setMessageFlags(const messageSet& msgs, const int flags, const int mode = message::FLAG_MODE_SET);
 
 	void addMessage(ref <vmime::message> msg, const int flags = message::FLAG_UNDEFINED, vmime::datetime* date = NULL, utility::progressListener* progress = NULL);
 	void addMessage(utility::inputStream& is, const int size, const int flags = message::FLAG_UNDEFINED, vmime::datetime* date = NULL, utility::progressListener* progress = NULL);
 
-	void copyMessage(const folder::path& dest, const int num);
-	void copyMessages(const folder::path& dest, const int from = 1, const int to = -1);
-	void copyMessages(const folder::path& dest, const std::vector <int>& nums);
+	void copyMessages(const folder::path& dest, const messageSet& msgs);
 
 	void status(int& count, int& unseen);
 	ref <folderStatus> getStatus();

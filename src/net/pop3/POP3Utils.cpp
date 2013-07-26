@@ -73,6 +73,38 @@ void POP3Utils::parseMultiListOrUidlResponse(ref <POP3Response> response, std::m
 }
 
 
+
+class POP3MessageSetEnumerator : public messageSetEnumerator
+{
+public:
+
+	void enumerateNumberMessageRange(const vmime::net::numberMessageRange& range)
+	{
+		for (int i = range.getFirst(), last = range.getLast() ; i <= last ; ++i)
+			list.push_back(i);
+	}
+
+	void enumerateUIDMessageRange(const vmime::net::UIDMessageRange& /* range */)
+	{
+		// Not supported
+	}
+
+public:
+
+	std::vector <int> list;
+};
+
+
+// static
+const std::vector <int> POP3Utils::messageSetToNumberList(const messageSet& msgs)
+{
+	POP3MessageSetEnumerator en;
+	msgs.enumerate(en);
+
+	return en.list;
+}
+
+
 } // pop3
 } // net
 } // vmime

@@ -529,135 +529,93 @@ ref <message> IMAPFolder::getMessage(const int num)
 }
 
 
-std::vector <ref <message> > IMAPFolder::getMessages(const int from, const int to)
-{
-	const int messageCount = m_status->getMessageCount();
-	const int to2 = (to == -1 ? messageCount : to);
-
-	if (!isOpen())
-		throw exceptions::illegal_state("Folder not open");
-	else if (to2 < from || from < 1 || to2 < 1 || from > messageCount || to2 > messageCount)
-		throw exceptions::message_not_found();
-
-	std::vector <ref <message> > v;
-	ref <IMAPFolder> thisFolder = thisRef().dynamicCast <IMAPFolder>();
-
-	for (int i = from ; i <= to2 ; ++i)
-		v.push_back(vmime::create <IMAPMessage>(thisFolder, i));
-
-	return (v);
-}
-
-
-std::vector <ref <message> > IMAPFolder::getMessages(const std::vector <int>& nums)
+std::vector <ref <message> > IMAPFolder::getMessages(const messageSet& msgs)
 {
 	if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
 
-	std::vector <ref <message> > v;
-	ref <IMAPFolder> thisFolder = thisRef().dynamicCast <IMAPFolder>();
-
-	for (std::vector <int>::const_iterator it = nums.begin() ; it != nums.end() ; ++it)
-		v.push_back(vmime::create <IMAPMessage>(thisFolder, *it));
-
-	return (v);
-}
-
-
-ref <message> IMAPFolder::getMessageByUID(const message::uid& uid)
-{
-	std::vector <message::uid> uids;
-	uids.push_back(uid);
-
-	std::vector <ref <message> > msgs = getMessagesByUID(uids);
-
-	if (msgs.size() == 0)
-		throw exceptions::message_not_found();
-
-	return msgs[0];
-}
-
-
-std::vector <ref <message> > IMAPFolder::getMessagesByUID(const std::vector <message::uid>& uids)
-{
-	if (!isOpen())
-		throw exceptions::illegal_state("Folder not open");
-
-	if (uids.size() == 0)
+	if (msgs.isEmpty() == 0)
 		return std::vector <ref <message> >();
-
-	//     C: . UID FETCH uuuu1,uuuu2,uuuu3 UID
-	//     S: * nnnn1 FETCH (UID uuuu1)
-	//     S: * nnnn2 FETCH (UID uuuu2)
-	//     S: * nnnn3 FETCH (UID uuuu3)
-	//     S: . OK UID FETCH completed
-
-	// Prepare command and arguments
-	std::ostringstream cmd;
-	cmd.imbue(std::locale::classic());
-
-	cmd << "UID FETCH " << uids[0];
-
-	for (std::vector <message::uid>::size_type i = 1, n = uids.size() ; i < n ; ++i)
-		cmd << "," << uids[i];
-
-	cmd << " UID";
-
-	// Send the request
-	m_connection->send(true, cmd.str(), true);
-
-	// Get the response
-	utility::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
-
-	if (resp->isBad() || resp->response_done()->response_tagged()->
-			resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
-	{
-		throw exceptions::command_error("UID FETCH ... UID", resp->getErrorLog(), "bad response");
-	}
-
-	// Process the response
-	const std::vector <IMAPParser::continue_req_or_response_data*>& respDataList =
-		resp->continue_req_or_response_data();
 
 	std::vector <ref <message> > messages;
 
-	for (std::vector <IMAPParser::continue_req_or_response_data*>::const_iterator
-	     it = respDataList.begin() ; it != respDataList.end() ; ++it)
+	if (msgs.isNumberSet())
 	{
-		if ((*it)->response_data() == NULL)
+		const std::vector <int> numbers = IMAPUtils::messageSetToNumberList(msgs);
+
+		ref <IMAPFolder> thisFolder = thisRef().dynamicCast <IMAPFolder>();
+
+		for (std::vector <int>::const_iterator it = numbers.begin() ; it != numbers.end() ; ++it)
+			messages.push_back(vmime::create <IMAPMessage>(thisFolder, *it));
+	}
+	else if (msgs.isUIDSet())
+	{
+		//     C: . UID FETCH uuuu1,uuuu2,uuuu3 UID
+		//     S: * nnnn1 FETCH (UID uuuu1)
+		//     S: * nnnn2 FETCH (UID uuuu2)
+		//     S: * nnnn3 FETCH (UID uuuu3)
+		//     S: . OK UID FETCH completed
+
+		// Prepare command and arguments
+		std::ostringstream cmd;
+		cmd.imbue(std::locale::classic());
+
+		cmd << "UID FETCH " << IMAPUtils::messageSetToSequenceSet(msgs) << " UID";
+
+		// Send the request
+		m_connection->send(true, cmd.str(), true);
+
+		// Get the response
+		utility::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
+
+		if (resp->isBad() || resp->response_done()->response_tagged()->
+				resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
 		{
-			throw exceptions::command_error("UID FETCH ... UID",
-				resp->getErrorLog(), "invalid response");
+			throw exceptions::command_error("UID FETCH ... UID", resp->getErrorLog(), "bad response");
 		}
 
-		const IMAPParser::message_data* messageData =
-			(*it)->response_data()->message_data();
+		// Process the response
+		const std::vector <IMAPParser::continue_req_or_response_data*>& respDataList =
+			resp->continue_req_or_response_data();
 
-		// We are only interested in responses of type "FETCH"
-		if (messageData == NULL || messageData->type() != IMAPParser::message_data::FETCH)
-			continue;
-
-		// Get Process fetch response for this message
-		const int msgNum = static_cast <int>(messageData->number());
-		message::uid msgUID;
-
-		// Find UID in message attributes
-		const std::vector <IMAPParser::msg_att_item*> atts = messageData->msg_att()->items();
-
-		for (std::vector <IMAPParser::msg_att_item*>::const_iterator
-		     it = atts.begin() ; it != atts.end() ; ++it)
+		for (std::vector <IMAPParser::continue_req_or_response_data*>::const_iterator
+			 it = respDataList.begin() ; it != respDataList.end() ; ++it)
 		{
-			if ((*it)->type() == IMAPParser::msg_att_item::UID)
+			if ((*it)->response_data() == NULL)
 			{
-				msgUID = (*it)->unique_id()->value();
-				break;
+				throw exceptions::command_error("UID FETCH ... UID",
+					resp->getErrorLog(), "invalid response");
 			}
-		}
 
-		if (!msgUID.empty())
-		{
-			ref <IMAPFolder> thisFolder = thisRef().dynamicCast <IMAPFolder>();
-			messages.push_back(vmime::create <IMAPMessage>(thisFolder, msgNum, msgUID));
+			const IMAPParser::message_data* messageData =
+				(*it)->response_data()->message_data();
+
+			// We are only interested in responses of type "FETCH"
+			if (messageData == NULL || messageData->type() != IMAPParser::message_data::FETCH)
+				continue;
+
+			// Get Process fetch response for this message
+			const int msgNum = static_cast <int>(messageData->number());
+			message::uid msgUID;
+
+			// Find UID in message attributes
+			const std::vector <IMAPParser::msg_att_item*> atts = messageData->msg_att()->items();
+
+			for (std::vector <IMAPParser::msg_att_item*>::const_iterator
+				 it = atts.begin() ; it != atts.end() ; ++it)
+			{
+				if ((*it)->type() == IMAPParser::msg_att_item::UID)
+				{
+					msgUID = (*it)->unique_id()->value();
+					break;
+				}
+			}
+
+			if (!msgUID.empty())
+			{
+				ref <IMAPFolder> thisFolder = thisRef().dynamicCast <IMAPFolder>();
+				messages.push_back(vmime::create <IMAPMessage>(thisFolder, msgNum, msgUID));
+			}
 		}
 	}
 
@@ -816,7 +774,9 @@ void IMAPFolder::fetchMessages(std::vector <ref <message> >& msg, const int opti
 	}
 
 	// Send the request
-	const string command = IMAPUtils::buildFetchRequest(m_connection, list, options);
+	const string command = IMAPUtils::buildFetchRequest
+		(m_connection, messageSet::byNumber(list), options);
+
 	m_connection->send(true, command, true);
 
 	// Get the response
@@ -945,17 +905,11 @@ void IMAPFolder::onStoreDisconnected()
 }
 
 
-void IMAPFolder::deleteMessage(const int num)
-{
-	deleteMessages(num, num);
-}
-
-
-void IMAPFolder::deleteMessages(const int from, const int to)
+void IMAPFolder::deleteMessages(const messageSet& msgs)
 {
 	ref <IMAPStore> store = m_store.acquire();
 
-	if (from < 1 || (to < from && to != -1))
+	if (msgs.isEmpty())
 		throw exceptions::invalid_argument();
 
 	if (!store)
@@ -969,19 +923,10 @@ void IMAPFolder::deleteMessages(const int from, const int to)
 	std::ostringstream command;
 	command.imbue(std::locale::classic());
 
-	command << "STORE ";
-
-	if (from == to)
-	{
-		command << from;
-	}
+	if (msgs.isUIDSet())
+		command << "UID STORE" << IMAPUtils::messageSetToSequenceSet(msgs);
 	else
-	{
-		command << from << ":";
-
-		if (to == -1) command << m_status->getMessageCount();
-		else command << to;
-	}
+		command << "STORE" << IMAPUtils::messageSetToSequenceSet(msgs);
 
 	command << " +FLAGS (\\Deleted)";
 
@@ -1002,116 +947,16 @@ void IMAPFolder::deleteMessages(const int from, const int to)
 }
 
 
-void IMAPFolder::deleteMessages(const std::vector <int>& nums)
+void IMAPFolder::setMessageFlags(const messageSet& msgs, const int flags, const int mode)
 {
-	ref <IMAPStore> store = m_store.acquire();
-
-	if (nums.empty())
-		throw exceptions::invalid_argument();
-
-	if (!store)
-		throw exceptions::illegal_state("Store disconnected");
-	else if (!isOpen())
-		throw exceptions::illegal_state("Folder not open");
-	else if (m_mode == MODE_READ_ONLY)
-		throw exceptions::illegal_state("Folder is read-only");
-
-	// Sort the list of message numbers
-	std::vector <int> list;
-
-	list.resize(nums.size());
-	std::copy(nums.begin(), nums.end(), list.begin());
-
-	std::sort(list.begin(), list.end());
-
 	// Build the request text
 	std::ostringstream command;
 	command.imbue(std::locale::classic());
 
-	command << "STORE ";
-	command << IMAPUtils::listToSet(list, m_status->getMessageCount(), true);
-	command << " +FLAGS (\\Deleted)";
-
-	// Send the request
-	m_connection->send(true, command.str(), true);
-
-	// Get the response
-	utility::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
-
-	if (resp->isBad() || resp->response_done()->response_tagged()->
-		resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
-	{
-		throw exceptions::command_error("STORE",
-			resp->getErrorLog(), "bad response");
-	}
-
-	processStatusUpdate(resp);
-}
-
-
-void IMAPFolder::setMessageFlags(const int from, const int to, const int flags, const int mode)
-{
-	ref <IMAPStore> store = m_store.acquire();
-
-	if (from < 1 || (to < from && to != -1))
-		throw exceptions::invalid_argument();
-
-	if (!store)
-		throw exceptions::illegal_state("Store disconnected");
-	else if (!isOpen())
-		throw exceptions::illegal_state("Folder not open");
-	else if (m_mode == MODE_READ_ONLY)
-		throw exceptions::illegal_state("Folder is read-only");
-
-	std::ostringstream oss;
-	oss.imbue(std::locale::classic());
-
-	if (from == to)
-	{
-		oss << from;
-	}
+	if (msgs.isUIDSet())
+		command << "UID STORE " << IMAPUtils::messageSetToSequenceSet(msgs);
 	else
-	{
-		if (to == -1)
-			oss << from << ":*";
-		else
-			oss << from << ":" << to;
-	}
-
-	setMessageFlagsImpl(oss.str(), flags, mode);
-}
-
-
-void IMAPFolder::setMessageFlags(const std::vector <int>& nums, const int flags, const int mode)
-{
-	ref <IMAPStore> store = m_store.acquire();
-
-	if (!store)
-		throw exceptions::illegal_state("Store disconnected");
-	else if (!isOpen())
-		throw exceptions::illegal_state("Folder not open");
-	else if (m_mode == MODE_READ_ONLY)
-		throw exceptions::illegal_state("Folder is read-only");
-
-	// Sort the list of message numbers
-	std::vector <int> list;
-
-	list.resize(nums.size());
-	std::copy(nums.begin(), nums.end(), list.begin());
-	std::sort(list.begin(), list.end());
-
-	// Delegates call
-	setMessageFlagsImpl(IMAPUtils::listToSet(list, m_status->getMessageCount(), true), flags, mode);
-}
-
-
-void IMAPFolder::setMessageFlagsImpl(const string& set, const int flags, const int mode)
-{
-	// Build the request text
-	std::ostringstream command;
-	command.imbue(std::locale::classic());
-
-	command << "STORE " << set;
+		command << "STORE " << IMAPUtils::messageSetToSequenceSet(msgs);
 
 	switch (mode)
 	{
@@ -1364,7 +1209,7 @@ void IMAPFolder::rename(const folder::path& newPath)
 }
 
 
-void IMAPFolder::copyMessage(const folder::path& dest, const int num)
+void IMAPFolder::copyMessages(const folder::path& dest, const messageSet& set)
 {
 	ref <IMAPStore> store = m_store.acquire();
 
@@ -1373,63 +1218,11 @@ void IMAPFolder::copyMessage(const folder::path& dest, const int num)
 	else if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
 
-	// Construct set
-	std::ostringstream set;
-	set.imbue(std::locale::classic());
-
-	set << num;
-
-	// Delegate message copy
-	copyMessagesImpl(set.str(), dest);
-}
-
-
-void IMAPFolder::copyMessages(const folder::path& dest, const int from, const int to)
-{
-	ref <IMAPStore> store = m_store.acquire();
-
-	if (!store)
-		throw exceptions::illegal_state("Store disconnected");
-	else if (!isOpen())
-		throw exceptions::illegal_state("Folder not open");
-	else if (from < 1 || (to < from && to != -1))
-		throw exceptions::invalid_argument();
-
-	// Construct set
-	std::ostringstream set;
-	set.imbue(std::locale::classic());
-
-	if (to == -1)
-		set << from << ":*";
-	else
-		set << from << ":" << to;
-
-	// Delegate message copy
-	copyMessagesImpl(set.str(), dest);
-}
-
-
-void IMAPFolder::copyMessages(const folder::path& dest, const std::vector <int>& nums)
-{
-	ref <IMAPStore> store = m_store.acquire();
-
-	if (!store)
-		throw exceptions::illegal_state("Store disconnected");
-	else if (!isOpen())
-		throw exceptions::illegal_state("Folder not open");
-
-	// Delegate message copy
-	copyMessagesImpl(IMAPUtils::listToSet(nums, m_status->getMessageCount()), dest);
-}
-
-
-void IMAPFolder::copyMessagesImpl(const string& set, const folder::path& dest)
-{
 	// Build the request text
 	std::ostringstream command;
 	command.imbue(std::locale::classic());
 
-	command << "COPY " << set << " ";
+	command << "COPY " << IMAPUtils::messageSetToSequenceSet(set) << " ";
 	command << IMAPUtils::quoteString(IMAPUtils::pathToString
 			(m_connection->hierarchySeparator(), dest));
 
@@ -1598,6 +1391,8 @@ std::vector <int> IMAPFolder::getMessageNumbersStartingOnUID(const message::uid&
 			v.push_back((*it)->value());
 		}
 	}
+
+	processStatusUpdate(resp);
 
 	return v;
 }

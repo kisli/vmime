@@ -206,6 +206,7 @@ libvmime_messaging_sources = [
 	'net/folder.cpp', 'net/folder.hpp',
 	'net/folderStatus.hpp',
 	'net/message.cpp', 'net/message.hpp',
+	'net/messageSet.cpp', 'net/messageSet.hpp',
 	'net/securedConnectionInfos.hpp',
 	'net/service.cpp', 'net/service.hpp',
 	'net/serviceFactory.cpp', 'net/serviceFactory.hpp',
@@ -412,6 +413,7 @@ libvmimetest_sources = [
 	'tests/security/digest/md5Test.cpp',
 	'tests/security/digest/sha1Test.cpp',
 	# ===============================  Net  ================================
+	'tests/net/messageSetTest.cpp',
 	'tests/net/pop3/POP3CommandTest.cpp',
 	'tests/net/pop3/POP3ResponseTest.cpp',
 	'tests/net/pop3/POP3UtilsTest.cpp',

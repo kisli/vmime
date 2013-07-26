@@ -531,7 +531,10 @@ void IMAPMessage::setFlags(const int flags, const int mode)
 	if (!folder)
 		throw exceptions::folder_not_found();
 
-	folder->setMessageFlags(m_num, m_num, flags, mode);
+	if (!m_uid.empty())
+		folder->setMessageFlags(messageSet::byUID(m_uid), flags, mode);
+	else
+		folder->setMessageFlags(messageSet::byNumber(m_num), flags, mode);
 }
 
 

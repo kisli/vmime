@@ -419,49 +419,32 @@ ref <message> maildirFolder::getMessage(const int num)
 }
 
 
-std::vector <ref <message> > maildirFolder::getMessages(const int from, const int to)
-{
-	const int to2 = (to == -1 ? m_messageCount : to);
-
-	if (!isOpen())
-		throw exceptions::illegal_state("Folder not open");
-	else if (to2 < from || from < 1 || to2 < 1 || from > m_messageCount || to2 > m_messageCount)
-		throw exceptions::message_not_found();
-
-	std::vector <ref <message> > v;
-	ref <maildirFolder> thisFolder = thisRef().dynamicCast <maildirFolder>();
-
-	for (int i = from ; i <= to2 ; ++i)
-		v.push_back(vmime::create <maildirMessage>(thisFolder, i));
-
-	return (v);
-}
-
-
-std::vector <ref <message> > maildirFolder::getMessages(const std::vector <int>& nums)
+std::vector <ref <message> > maildirFolder::getMessages(const messageSet& msgs)
 {
 	if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
 
-	std::vector <ref <message> > v;
-	ref <maildirFolder> thisFolder = thisRef().dynamicCast <maildirFolder>();
+	if (msgs.isNumberSet())
+	{
+		const std::vector <int> numbers = maildirUtils::messageSetToNumberList(msgs);
 
-	for (std::vector <int>::const_iterator it = nums.begin() ; it != nums.end() ; ++it)
-		v.push_back(vmime::create <maildirMessage>(thisFolder, *it));
+		std::vector <ref <message> > messages;
+		ref <maildirFolder> thisFolder = thisRef().dynamicCast <maildirFolder>();
 
-	return (v);
-}
+		for (std::vector <int>::const_iterator it = numbers.begin() ; it != numbers.end() ; ++it)
+		{
+			if (*it < 1|| *it > m_messageCount)
+				throw exceptions::message_not_found();
 
+			messages.push_back(vmime::create <maildirMessage>(thisFolder, *it));
+		}
 
-ref <message> maildirFolder::getMessageByUID(const message::uid& /* uid */)
-{
-	throw exceptions::operation_not_supported();
-}
-
-
-std::vector <ref <message> > maildirFolder::getMessagesByUID(const std::vector <message::uid>& /* uids */)
-{
-	throw exceptions::operation_not_supported();
+		return messages;
+	}
+	else
+	{
+		throw exceptions::operation_not_supported();
+	}
 }
 
 
@@ -590,118 +573,15 @@ void maildirFolder::rename(const folder::path& newPath)
 }
 
 
-void maildirFolder::deleteMessage(const int num)
+void maildirFolder::deleteMessages(const messageSet& msgs)
 {
 	// Mark messages as deleted
-	setMessageFlags(num, num, message::FLAG_DELETED, message::FLAG_MODE_ADD);
-}
-
-
-void maildirFolder::deleteMessages(const int from, const int to)
-{
-	// Mark messages as deleted
-	setMessageFlags(from, to, message::FLAG_DELETED, message::FLAG_MODE_ADD);
-}
-
-
-void maildirFolder::deleteMessages(const std::vector <int>& nums)
-{
-	// Mark messages as deleted
-	setMessageFlags(nums, message::FLAG_DELETED, message::FLAG_MODE_ADD);
+	setMessageFlags(msgs, message::FLAG_DELETED, message::FLAG_MODE_ADD);
 }
 
 
 void maildirFolder::setMessageFlags
-	(const int from, const int to, const int flags, const int mode)
-{
-	ref <maildirStore> store = m_store.acquire();
-
-	if (from < 1 || (to < from && to != -1))
-		throw exceptions::invalid_argument();
-
-	if (!store)
-		throw exceptions::illegal_state("Store disconnected");
-	else if (!isOpen())
-		throw exceptions::illegal_state("Folder not open");
-	else if (m_mode == MODE_READ_ONLY)
-		throw exceptions::illegal_state("Folder is read-only");
-
-	// Construct the list of message numbers
-	const int to2 = (to == -1) ? m_messageCount : to;
-	const int count = to - from + 1;
-
-	std::vector <int> nums;
-	nums.resize(count);
-
-	for (int i = from, j = 0 ; i <= to2 ; ++i, ++j)
-		nums[j] = i;
-
-	// Change message flags
-	setMessageFlagsImpl(nums, flags, mode);
-
-	// Update local flags
-	switch (mode)
-	{
-	case message::FLAG_MODE_ADD:
-	{
-		for (std::vector <maildirMessage*>::iterator it =
-		     m_messages.begin() ; it != m_messages.end() ; ++it)
-		{
-			if ((*it)->getNumber() >= from && (*it)->getNumber() <= to2 &&
-			    (*it)->m_flags != message::FLAG_UNDEFINED)
-			{
-				(*it)->m_flags |= flags;
-			}
-		}
-
-		break;
-	}
-	case message::FLAG_MODE_REMOVE:
-	{
-		for (std::vector <maildirMessage*>::iterator it =
-		     m_messages.begin() ; it != m_messages.end() ; ++it)
-		{
-			if ((*it)->getNumber() >= from && (*it)->getNumber() <= to2 &&
-			    (*it)->m_flags != message::FLAG_UNDEFINED)
-			{
-				(*it)->m_flags &= ~flags;
-			}
-		}
-
-		break;
-	}
-	default:
-	case message::FLAG_MODE_SET:
-	{
-		for (std::vector <maildirMessage*>::iterator it =
-		     m_messages.begin() ; it != m_messages.end() ; ++it)
-		{
-			if ((*it)->getNumber() >= from && (*it)->getNumber() <= to2 &&
-			    (*it)->m_flags != message::FLAG_UNDEFINED)
-			{
-				(*it)->m_flags = flags;
-			}
-		}
-
-		break;
-	}
-
-	}
-
-	// Notify message flags changed
-	ref <events::messageChangedEvent> event =
-		vmime::create <events::messageChangedEvent>
-			(thisRef().dynamicCast <folder>(),
-			 events::messageChangedEvent::TYPE_FLAGS, nums);
-
-	notifyMessageChanged(event);
-
-	// TODO: notify other folders with the same path
-}
-
-
-void maildirFolder::setMessageFlags
-	(const std::vector <int>& nums, const int flags, const int mode)
+	(const messageSet& msgs, const int flags, const int mode)
 {
 	ref <maildirStore> store = m_store.acquire();
 
@@ -712,124 +592,116 @@ void maildirFolder::setMessageFlags
 	else if (m_mode == MODE_READ_ONLY)
 		throw exceptions::illegal_state("Folder is read-only");
 
-	// Sort the list of message numbers
-	std::vector <int> list;
-
-	list.resize(nums.size());
-	std::copy(nums.begin(), nums.end(), list.begin());
-
-	std::sort(list.begin(), list.end());
-
-	// Change message flags
-	setMessageFlagsImpl(list, flags, mode);
-
-	// Update local flags
-	switch (mode)
+	if (msgs.isNumberSet())
 	{
-	case message::FLAG_MODE_ADD:
-	{
-		for (std::vector <maildirMessage*>::iterator it =
-		     m_messages.begin() ; it != m_messages.end() ; ++it)
+		const std::vector <int> nums = maildirUtils::messageSetToNumberList(msgs);
+
+		// Change message flags
+		ref <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
+
+		utility::file::path curDirPath = store->getFormat()->
+			folderPathToFileSystemPath(m_path, maildirFormat::CUR_DIRECTORY);
+
+		for (std::vector <int>::const_iterator it =
+			 nums.begin() ; it != nums.end() ; ++it)
 		{
-			if (std::binary_search(list.begin(), list.end(), (*it)->getNumber()) &&
-			    (*it)->m_flags != message::FLAG_UNDEFINED)
+			const int num = *it - 1;
+
+			try
 			{
-				(*it)->m_flags |= flags;
+				const utility::file::path::component path = m_messageInfos[num].path;
+				ref <utility::file> file = fsf->create(curDirPath / path);
+
+				int newFlags = maildirUtils::extractFlags(path);
+
+				switch (mode)
+				{
+				case message::FLAG_MODE_ADD:    newFlags |= flags; break;
+				case message::FLAG_MODE_REMOVE: newFlags &= ~flags; break;
+				default:
+				case message::FLAG_MODE_SET:    newFlags = flags; break;
+				}
+
+				const utility::file::path::component newPath = maildirUtils::buildFilename
+					(maildirUtils::extractId(path), newFlags);
+
+				file->rename(curDirPath / newPath);
+
+				if (flags & message::FLAG_DELETED)
+					m_messageInfos[num].type = messageInfos::TYPE_DELETED;
+				else
+					m_messageInfos[num].type = messageInfos::TYPE_CUR;
+
+				m_messageInfos[num].path = newPath;
+			}
+			catch (exceptions::filesystem_exception& e)
+			{
+				// Ignore (not important)
 			}
 		}
 
-		break;
-	}
-	case message::FLAG_MODE_REMOVE:
-	{
-		for (std::vector <maildirMessage*>::iterator it =
-		     m_messages.begin() ; it != m_messages.end() ; ++it)
+		// Update local flags
+		switch (mode)
 		{
-			if (std::binary_search(list.begin(), list.end(), (*it)->getNumber()) &&
-			    (*it)->m_flags != message::FLAG_UNDEFINED)
-			{
-				(*it)->m_flags &= ~flags;
-			}
-		}
-
-		break;
-	}
-	default:
-	case message::FLAG_MODE_SET:
-	{
-		for (std::vector <maildirMessage*>::iterator it =
-		     m_messages.begin() ; it != m_messages.end() ; ++it)
+		case message::FLAG_MODE_ADD:
 		{
-			if (std::binary_search(list.begin(), list.end(), (*it)->getNumber()) &&
-			    (*it)->m_flags != message::FLAG_UNDEFINED)
+			for (std::vector <maildirMessage*>::iterator it =
+				 m_messages.begin() ; it != m_messages.end() ; ++it)
 			{
-				(*it)->m_flags = flags;
-			}
-		}
-
-		break;
-	}
-
-	}
-
-	// Notify message flags changed
-	ref <events::messageChangedEvent> event =
-		vmime::create <events::messageChangedEvent>
-			(thisRef().dynamicCast <folder>(),
-			 events::messageChangedEvent::TYPE_FLAGS, nums);
-
-	notifyMessageChanged(event);
-
-	// TODO: notify other folders with the same path
-}
-
-
-void maildirFolder::setMessageFlagsImpl
-	(const std::vector <int>& nums, const int flags, const int mode)
-{
-	ref <maildirStore> store = m_store.acquire();
-
-	ref <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
-
-	utility::file::path curDirPath = store->getFormat()->
-		folderPathToFileSystemPath(m_path, maildirFormat::CUR_DIRECTORY);
-
-	for (std::vector <int>::const_iterator it =
-	     nums.begin() ; it != nums.end() ; ++it)
-	{
-		const int num = *it - 1;
-
-		try
-		{
-			const utility::file::path::component path = m_messageInfos[num].path;
-			ref <utility::file> file = fsf->create(curDirPath / path);
-
-			int newFlags = maildirUtils::extractFlags(path);
-
-			switch (mode)
-			{
-			case message::FLAG_MODE_ADD:    newFlags |= flags; break;
-			case message::FLAG_MODE_REMOVE: newFlags &= ~flags; break;
-			default:
-			case message::FLAG_MODE_SET:    newFlags = flags; break;
+				if (std::binary_search(nums.begin(), nums.end(), (*it)->getNumber()) &&
+					(*it)->m_flags != message::FLAG_UNDEFINED)
+				{
+					(*it)->m_flags |= flags;
+				}
 			}
 
-			const utility::file::path::component newPath = maildirUtils::buildFilename
-				(maildirUtils::extractId(path), newFlags);
-
-			file->rename(curDirPath / newPath);
-
-			if (flags & message::FLAG_DELETED)
-				m_messageInfos[num].type = messageInfos::TYPE_DELETED;
-			else
-				m_messageInfos[num].type = messageInfos::TYPE_CUR;
-
-			m_messageInfos[num].path = newPath;
+			break;
 		}
-		catch (exceptions::filesystem_exception& e)
+		case message::FLAG_MODE_REMOVE:
 		{
-			// Ignore (not important)
+			for (std::vector <maildirMessage*>::iterator it =
+				 m_messages.begin() ; it != m_messages.end() ; ++it)
+			{
+				if (std::binary_search(nums.begin(), nums.end(), (*it)->getNumber()) &&
+					(*it)->m_flags != message::FLAG_UNDEFINED)
+				{
+					(*it)->m_flags &= ~flags;
+				}
+			}
+
+			break;
 		}
+		default:
+		case message::FLAG_MODE_SET:
+		{
+			for (std::vector <maildirMessage*>::iterator it =
+				 m_messages.begin() ; it != m_messages.end() ; ++it)
+			{
+				if (std::binary_search(nums.begin(), nums.end(), (*it)->getNumber()) &&
+					(*it)->m_flags != message::FLAG_UNDEFINED)
+				{
+					(*it)->m_flags = flags;
+				}
+			}
+
+			break;
+		}
+
+		}
+
+		// Notify message flags changed
+		ref <events::messageChangedEvent> event =
+			vmime::create <events::messageChangedEvent>
+				(thisRef().dynamicCast <folder>(),
+				 events::messageChangedEvent::TYPE_FLAGS, nums);
+
+		notifyMessageChanged(event);
+
+		// TODO: notify other folders with the same path
+	}
+	else
+	{
+		throw exceptions::operation_not_supported();
 	}
 }
 
@@ -1032,7 +904,7 @@ void maildirFolder::copyMessageImpl(const utility::file::path& tmpDirPath,
 }
 
 
-void maildirFolder::copyMessage(const folder::path& dest, const int num)
+void maildirFolder::copyMessages(const folder::path& dest, const messageSet& msgs)
 {
 	ref <maildirStore> store = m_store.acquire();
 
@@ -1040,54 +912,6 @@ void maildirFolder::copyMessage(const folder::path& dest, const int num)
 		throw exceptions::illegal_state("Store disconnected");
 	else if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
-
-	copyMessages(dest, num, num);
-}
-
-
-void maildirFolder::copyMessages(const folder::path& dest, const int from, const int to)
-{
-	ref <maildirStore> store = m_store.acquire();
-
-	if (!store)
-		throw exceptions::illegal_state("Store disconnected");
-	else if (!isOpen())
-		throw exceptions::illegal_state("Folder not open");
-	else if (from < 1 || (to < from && to != -1))
-		throw exceptions::invalid_argument();
-
-	// Construct the list of message numbers
-	const int to2 = (to == -1) ? m_messageCount : to;
-	const int count = to - from + 1;
-
-	std::vector <int> nums;
-	nums.resize(count);
-
-	for (int i = from, j = 0 ; i <= to2 ; ++i, ++j)
-		nums[j] = i;
-
-	// Copy messages
-	copyMessagesImpl(dest, nums);
-}
-
-
-void maildirFolder::copyMessages(const folder::path& dest, const std::vector <int>& nums)
-{
-	ref <maildirStore> store = m_store.acquire();
-
-	if (!store)
-		throw exceptions::illegal_state("Store disconnected");
-	else if (!isOpen())
-		throw exceptions::illegal_state("Folder not open");
-
-	// Copy messages
-	copyMessagesImpl(dest, nums);
-}
-
-
-void maildirFolder::copyMessagesImpl(const folder::path& dest, const std::vector <int>& nums)
-{
-	ref <maildirStore> store = m_store.acquire();
 
 	ref <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
@@ -1121,6 +945,8 @@ void maildirFolder::copyMessagesImpl(const folder::path& dest, const std::vector
 	}
 
 	// Copy messages
+	const std::vector <int> nums = maildirUtils::messageSetToNumberList(msgs);
+
 	try
 	{
 		for (std::vector <int>::const_iterator it =

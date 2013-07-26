@@ -230,42 +230,7 @@ ref <message> POP3Folder::getMessage(const int num)
 }
 
 
-std::vector <ref <message> > POP3Folder::getMessages(const int from, const int to)
-{
-	ref <POP3Store> store = m_store.acquire();
-
-	const int to2 = (to == -1 ? m_messageCount : to);
-
-	if (!store)
-		throw exceptions::illegal_state("Store disconnected");
-	else if (!isOpen())
-		throw exceptions::illegal_state("Folder not open");
-	else if (to2 < from || from < 1 || to2 < 1 || from > m_messageCount || to2 > m_messageCount)
-		throw exceptions::message_not_found();
-
-	std::vector <ref <message> > v;
-	ref <POP3Folder> thisFolder = thisRef().dynamicCast <POP3Folder>();
-
-	for (int i = from ; i <= to2 ; ++i)
-		v.push_back(vmime::create <POP3Message>(thisFolder, i));
-
-	return (v);
-}
-
-
-ref <message> POP3Folder::getMessageByUID(const message::uid& /* uid */)
-{
-	throw exceptions::operation_not_supported();
-}
-
-
-std::vector <ref <message> > POP3Folder::getMessagesByUID(const std::vector <message::uid>& /* uids */)
-{
-	throw exceptions::operation_not_supported();
-}
-
-
-std::vector <ref <message> > POP3Folder::getMessages(const std::vector <int>& nums)
+std::vector <ref <message> > POP3Folder::getMessages(const messageSet& msgs)
 {
 	ref <POP3Store> store = m_store.acquire();
 
@@ -274,18 +239,27 @@ std::vector <ref <message> > POP3Folder::getMessages(const std::vector <int>& nu
 	else if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
 
-	std::vector <ref <message> > v;
-	ref <POP3Folder> thisFolder = thisRef().dynamicCast <POP3Folder>();
-
-	for (std::vector <int>::const_iterator it = nums.begin() ; it != nums.end() ; ++it)
+	if (msgs.isNumberSet())
 	{
-		if (*it < 1|| *it > m_messageCount)
-			throw exceptions::message_not_found();
+		const std::vector <int> numbers = POP3Utils::messageSetToNumberList(msgs);
 
-		v.push_back(vmime::create <POP3Message>(thisFolder, *it));
+		std::vector <ref <message> > messages;
+		ref <POP3Folder> thisFolder = thisRef().dynamicCast <POP3Folder>();
+
+		for (std::vector <int>::const_iterator it = numbers.begin() ; it != numbers.end() ; ++it)
+		{
+			if (*it < 1|| *it > m_messageCount)
+				throw exceptions::message_not_found();
+
+			messages.push_back(vmime::create <POP3Message>(thisFolder, *it));
+		}
+
+		return messages;
 	}
-
-	return (v);
+	else
+	{
+		throw exceptions::operation_not_supported();
+	}
 }
 
 
@@ -560,99 +534,11 @@ void POP3Folder::onStoreDisconnected()
 }
 
 
-void POP3Folder::deleteMessage(const int num)
+void POP3Folder::deleteMessages(const messageSet& msgs)
 {
 	ref <POP3Store> store = m_store.acquire();
 
-	if (!store)
-		throw exceptions::illegal_state("Store disconnected");
-	else if (!isOpen())
-		throw exceptions::illegal_state("Folder not open");
-
-	POP3Command::DELE(num)->send(store->getConnection());
-
-	ref <POP3Response> response =
-		POP3Response::readResponse(store->getConnection());
-
-	if (!response->isSuccess())
-		throw exceptions::command_error("DELE", response->getFirstLine());
-
-	// Update local flags
-	for (std::map <POP3Message*, int>::iterator it =
-	     m_messages.begin() ; it != m_messages.end() ; ++it)
-	{
-		POP3Message* msg = (*it).first;
-
-		if (msg->getNumber() == num)
-			msg->m_deleted = true;
-	}
-
-	// Notify message flags changed
-	std::vector <int> nums;
-	nums.push_back(num);
-
-	ref <events::messageChangedEvent> event =
-		vmime::create <events::messageChangedEvent>
-			(thisRef().dynamicCast <folder>(),
-			 events::messageChangedEvent::TYPE_FLAGS, nums);
-
-	notifyMessageChanged(event);
-}
-
-
-void POP3Folder::deleteMessages(const int from, const int to)
-{
-	ref <POP3Store> store = m_store.acquire();
-
-	if (from < 1 || (to < from && to != -1))
-		throw exceptions::invalid_argument();
-
-	if (!store)
-		throw exceptions::illegal_state("Store disconnected");
-	else if (!isOpen())
-		throw exceptions::illegal_state("Folder not open");
-
-	const int to2 = (to == -1 ? m_messageCount : to);
-
-	for (int i = from ; i <= to2 ; ++i)
-	{
-		POP3Command::DELE(i)->send(store->getConnection());
-
-		ref <POP3Response> response =
-			POP3Response::readResponse(store->getConnection());
-
-		if (!response->isSuccess())
-			throw exceptions::command_error("DELE", response->getFirstLine());
-	}
-
-	// Update local flags
-	for (std::map <POP3Message*, int>::iterator it =
-	     m_messages.begin() ; it != m_messages.end() ; ++it)
-	{
-		POP3Message* msg = (*it).first;
-
-		if (msg->getNumber() >= from && msg->getNumber() <= to2)
-			msg->m_deleted = true;
-	}
-
-	// Notify message flags changed
-	std::vector <int> nums;
-
-	for (int i = from ; i <= to2 ; ++i)
-		nums.push_back(i);
-
-	ref <events::messageChangedEvent> event =
-		vmime::create <events::messageChangedEvent>
-			(thisRef().dynamicCast <folder>(),
-			 events::messageChangedEvent::TYPE_FLAGS, nums);
-
-	notifyMessageChanged(event);
-}
-
-
-void POP3Folder::deleteMessages(const std::vector <int>& nums)
-{
-	ref <POP3Store> store = m_store.acquire();
+	const std::vector <int> nums = POP3Utils::messageSetToNumberList(msgs);
 
 	if (nums.empty())
 		throw exceptions::invalid_argument();
@@ -702,14 +588,7 @@ void POP3Folder::deleteMessages(const std::vector <int>& nums)
 }
 
 
-void POP3Folder::setMessageFlags(const int /* from */, const int /* to */,
-	const int /* flags */, const int /* mode */)
-{
-	throw exceptions::operation_not_supported();
-}
-
-
-void POP3Folder::setMessageFlags(const std::vector <int>& /* nums */,
+void POP3Folder::setMessageFlags(const messageSet& /* msgs */,
 	const int /* flags */, const int /* mode */)
 {
 	throw exceptions::operation_not_supported();
@@ -736,19 +615,7 @@ void POP3Folder::addMessage(utility::inputStream& /* is */, const int /* size */
 }
 
 
-void POP3Folder::copyMessage(const folder::path& /* dest */, const int /* num */)
-{
-	throw exceptions::operation_not_supported();
-}
-
-
-void POP3Folder::copyMessages(const folder::path& /* dest */, const int /* from */, const int /* to */)
-{
-	throw exceptions::operation_not_supported();
-}
-
-
-void POP3Folder::copyMessages(const folder::path& /* dest */, const std::vector <int>& /* nums */)
+void POP3Folder::copyMessages(const folder::path& /* dest */, const messageSet& /* msgs */)
 {
 	throw exceptions::operation_not_supported();
 }

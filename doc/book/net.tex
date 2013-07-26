@@ -555,7 +555,9 @@ The following code shows how to list all the messages in a folder, and
 retrieve basic information to show them to the user:
 
 \begin{lstlisting}[caption={Fetching information about multiple messages}]
-std::vector <ref <vmime::net::message> > allMessages = folder->getMessages();
+std::vector <ref <vmime::net::message> > allMessages =
+   folder->getMessages(vmime::net::messageSet::byNumber(1, -1));
+      // -1 is a special value to mean "the number of the last message in the folder"
 
 folder->fetchMessages(allMessages,
    vmime::net::folder::FETCH_FLAGS |
@@ -628,17 +630,17 @@ store.
 \begin{lstlisting}[caption={Deleting messages}]
 vmime::ref <vmime::net::folder> folder = store->getDefaultFolder();
 
-folder->deleteMessage(3);
-folder->deleteMessage(2);
+folder->deleteMessages(vmime::net::messageSet::byNumber(/* from */ 2, /* to */ 3));
 
 // This is equivalent
 std::vector <int> nums;
 nums.push_back(2);
 nums.push_back(3);
-folder->deleteMessages(nums);
+folder->deleteMessages(vmime::net::messageSet::byNumber(nums));
 
-// This is also equivalent
-folder->deleteMessages(/* from */ 2, /* to */ 3);
+// This is also equivalent (but will require 2 roundtrips to server)
+folder->deleteMessages(vmime::net::messageSet::byNumber(2));
+folder->deleteMessages(vmime::net::messageSet::byNumber(2)); // renumbered, 3 becomes 2
 \end{lstlisting}
 
 \subsection{Events} % --------------------------------------------------------

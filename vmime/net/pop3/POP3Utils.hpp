@@ -35,6 +35,8 @@
 
 #include "vmime/types.hpp"
 
+#include "vmime/net/messageSet.hpp"
+
 
 namespace vmime {
 namespace net {
@@ -63,6 +65,13 @@ public:
 	  */
 	static void parseMultiListOrUidlResponse
 		(ref <POP3Response> response, std::map <int, string>& result);
+
+	/** Returns a list of message numbers given a message set.
+	  *
+	  * @param msgs message set
+	  * @return list of message numbers
+	  */
+	static const std::vector <int> messageSetToNumberList(const messageSet& msgs);
 };
 
 

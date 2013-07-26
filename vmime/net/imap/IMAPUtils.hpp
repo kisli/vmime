@@ -73,29 +73,6 @@ public:
 
 	static const string messageFlagList(const int flags);
 
-	/** Build an "IMAP set" given a list of message numbers. The function tries
-	  * to group consecutive message numbers to reduce the list.
-	  *
-	  * Example:
-	  *    IN  = "1,2,3,4,5,7,8,13,15,16,17"
-	  *    OUT = "1:5,7:8,13,15:*" for a mailbox with a total of 17 messages (max = 17)
-	  *
-	  * @param list list of message numbers
-	  * @param max number of messages in the mailbox (or -1 if not known)
-	  * @param alreadySorted set to true if the list of message numbers is
-	  * already sorted in ascending order
-	  * @return a set corresponding to the message list
-	  */
-	static const string listToSet(const std::vector <int>& list,
-		const int max = -1, const bool alreadySorted = false);
-
-	/** Build an "IMAP set" set given a list of message UIDs.
-	  *
-	  * @param list list of message UIDs
-	  * @return a set corresponding to the list
-	  */
-	static const string listToSet(const std::vector <message::uid>& list);
-
 	/** Format a date/time to IMAP date/time format.
 	  *
 	  * @param date date/time to format
@@ -103,25 +80,16 @@ public:
 	  */
 	static const string dateTime(const vmime::datetime& date);
 
-	/** Construct a fetch request for the specified messages, designated by their sequence numbers.
+	/** Construct a fetch request for the specified messages, designated
+	  * either by their sequence numbers or their UIDs.
 	  *
 	  * @param cnt connection
-	  * @param list list of message numbers
+	  * @param msgs message set
 	  * @param options fetch options
 	  * @return fetch request
 	  */
 	static const string buildFetchRequest
-		(ref <IMAPConnection> cnt, const std::vector <int>& list, const int options);
-
-	/** Construct a fetch request for the specified messages, designated by their UIDs.
-	  *
-	  * @param cnt connection
-	  * @param list list of message UIDs
-	  * @param options fetch options
-	  * @return fetch request
-	  */
-	static const string buildFetchRequest
-		(ref <IMAPConnection> cnt, const std::vector <message::uid>& list, const int options);
+		(ref <IMAPConnection> cnt, const messageSet& msgs, const int options);
 
 	/** Convert a parser-style address list to a mailbox list.
 	  *
@@ -129,6 +97,20 @@ public:
 	  * @param dest output mailbox list
 	  */
 	static void convertAddressList(const IMAPParser::address_list& src, mailboxList& dest);
+
+	/** Returns an IMAP-formatted sequence set given a message set.
+	  *
+	  * @param msgs message set
+	  * @return IMAP sequence set (eg. "1:5,7,15:*")
+	  */
+	static const string messageSetToSequenceSet(const messageSet& msgs);
+
+	/** Returns a list of message sequence numbers given a message set.
+	  *
+	  * @param msgs message set
+	  * @return list of message numbers
+	  */
+	static const std::vector <int> messageSetToNumberList(const messageSet& msgs);
 
 private:
 
