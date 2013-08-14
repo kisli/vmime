@@ -35,6 +35,8 @@
 #include "vmime/net/socket.hpp"
 #include "vmime/net/timeoutHandler.hpp"
 
+#include <cctype>
+
 
 namespace vmime {
 namespace net {
@@ -68,6 +70,12 @@ int SMTPResponse::getCode() const
 	}
 
 	return firstCode;
+}
+
+
+const SMTPResponse::enhancedStatusCode SMTPResponse::getEnhancedCode() const
+{
+	return m_lines[m_lines.size() - 1].getEnhancedCode();
 }
 
 
@@ -175,7 +183,7 @@ const SMTPResponse::responseLine SMTPResponse::getNextResponse()
 	else
 		text = "";
 
-	return responseLine(code, text);
+	return responseLine(code, text, extractEnhancedCode(text));
 }
 
 
@@ -192,6 +200,33 @@ int SMTPResponse::extractResponseCode(const string& response)
 	}
 
 	return code;
+}
+
+
+// static
+const SMTPResponse::enhancedStatusCode SMTPResponse::extractEnhancedCode(const string& responseText)
+{
+	enhancedStatusCode enhCode;
+
+	std::istringstream iss(responseText);
+
+	if (std::isdigit(iss.peek()))
+	{
+		iss >> enhCode.klass;
+
+		if (iss.get() == '.' && std::isdigit(iss.peek()))
+		{
+			iss >> enhCode.subject;
+
+			if (iss.get() == '.' && std::isdigit(iss.peek()))
+			{
+				iss >> enhCode.detail;
+				return enhCode;
+			}
+		}
+	}
+
+	return enhancedStatusCode();   // no enhanced code found
 }
 
 
@@ -225,8 +260,8 @@ const SMTPResponse::state SMTPResponse::getCurrentState() const
 
 // SMTPResponse::responseLine
 
-SMTPResponse::responseLine::responseLine(const int code, const string& text)
-	: m_code(code), m_text(text)
+SMTPResponse::responseLine::responseLine(const int code, const string& text, const enhancedStatusCode& enhCode)
+	: m_code(code), m_text(text), m_enhCode(enhCode)
 {
 }
 
@@ -243,6 +278,18 @@ int SMTPResponse::responseLine::getCode() const
 }
 
 
+void SMTPResponse::responseLine::setEnhancedCode(const enhancedStatusCode& enhCode)
+{
+	m_enhCode = enhCode;
+}
+
+
+const SMTPResponse::enhancedStatusCode SMTPResponse::responseLine::getEnhancedCode() const
+{
+	return m_enhCode;
+}
+
+
 void SMTPResponse::responseLine::setText(const string& text)
 {
 	m_text = text;
@@ -252,6 +299,22 @@ void SMTPResponse::responseLine::setText(const string& text)
 const string SMTPResponse::responseLine::getText() const
 {
 	return m_text;
+}
+
+
+
+// SMTPResponse::enhancedStatusCode
+
+
+SMTPResponse::enhancedStatusCode::enhancedStatusCode()
+	: klass(0), subject(0), detail(0)
+{
+}
+
+
+SMTPResponse::enhancedStatusCode::enhancedStatusCode(const enhancedStatusCode& enhCode)
+	: klass(enhCode.klass), subject(enhCode.subject), detail(enhCode.detail)
+{
 }
 
 

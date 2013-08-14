@@ -60,15 +60,29 @@ public:
 		string responseBuffer;
 	};
 
+	/** Enhanced status code (as per RFC-3463). */
+	struct enhancedStatusCode
+	{
+		enhancedStatusCode();
+		enhancedStatusCode(const enhancedStatusCode& enhCode);
+
+		unsigned short klass;     /**< Success/failure. */
+		unsigned short subject;   /**< Source of anomaly. */
+		unsigned short detail;    /**< Precise error condition. */
+	};
+
 	/** An element of a SMTP response. */
 	class responseLine
 	{
 	public:
 
-		responseLine(const int code, const string& text);
+		responseLine(const int code, const string& text, const enhancedStatusCode& enhCode);
 
 		void setCode(const int code);
 		int getCode() const;
+
+		void setEnhancedCode(const enhancedStatusCode& enhCode);
+		const enhancedStatusCode getEnhancedCode() const;
 
 		void setText(const string& text);
 		const string getText() const;
@@ -77,6 +91,7 @@ public:
 
 		int m_code;
 		string m_text;
+		enhancedStatusCode m_enhCode;
 	};
 
 	/** Receive and parse a new SMTP response from the
@@ -96,6 +111,12 @@ public:
 	  * @return response code
 	  */
 	int getCode() const;
+
+	/** Return the SMTP enhanced status code, if available.
+	  *
+	  * @return enhanced status code
+	  */
+	const enhancedStatusCode getEnhancedCode() const;
 
 	/** Return the SMTP response text.
 	  * The text of each line is concatenated.
@@ -140,6 +161,7 @@ private:
 	const responseLine getNextResponse();
 
 	static int extractResponseCode(const string& response);
+	static const enhancedStatusCode extractEnhancedCode(const string& responseText);
 
 
 	std::vector <responseLine> m_lines;

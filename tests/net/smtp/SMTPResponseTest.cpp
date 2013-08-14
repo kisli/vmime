@@ -35,6 +35,9 @@ VMIME_TEST_SUITE_BEGIN(SMTPResponseTest)
 		VMIME_TEST(testMultiLineResponseDifferentCode)
 		VMIME_TEST(testIncompleteMultiLineResponse)
 		VMIME_TEST(testNoResponseText)
+		VMIME_TEST(testEnhancedStatusCode)
+		VMIME_TEST(testNoEnhancedStatusCode)
+		VMIME_TEST(testInvalidEnhancedStatusCode)
 	VMIME_TEST_LIST_END
 
 
@@ -171,6 +174,68 @@ VMIME_TEST_SUITE_BEGIN(SMTPResponseTest)
 		VASSERT_EQ("Text", "", resp->getText());
 	}
 
+	void testEnhancedStatusCode()
+	{
+		vmime::ref <testSocket> socket = vmime::create <testSocket>();
+		vmime::ref <vmime::net::timeoutHandler> toh =
+			vmime::create <testTimeoutHandler>();
+
+		socket->localSend("250 2.1.5 OK fu13sm4720601wic.7 - gsmtp\r\n");
+
+		vmime::net::smtp::SMTPResponse::state responseState;
+
+		vmime::ref <vmime::net::smtp::SMTPResponse> resp =
+			vmime::net::smtp::SMTPResponse::readResponse(socket, toh, responseState);
+
+		VASSERT_EQ("Code", 250, resp->getCode());
+		VASSERT_EQ("Lines", 1, resp->getLineCount());
+		VASSERT_EQ("Text", "2.1.5 OK fu13sm4720601wic.7 - gsmtp", resp->getText());
+		VASSERT_EQ("Enh.class", 2, resp->getEnhancedCode().klass);
+		VASSERT_EQ("Enh.subject", 1, resp->getEnhancedCode().subject);
+		VASSERT_EQ("Enh.detail", 5, resp->getEnhancedCode().detail);
+	}
+
+	void testNoEnhancedStatusCode()
+	{
+		vmime::ref <testSocket> socket = vmime::create <testSocket>();
+		vmime::ref <vmime::net::timeoutHandler> toh =
+			vmime::create <testTimeoutHandler>();
+
+		socket->localSend("354  Go ahead fu13sm4720601wic.7 - gsmtp\r\n");
+
+		vmime::net::smtp::SMTPResponse::state responseState;
+
+		vmime::ref <vmime::net::smtp::SMTPResponse> resp =
+			vmime::net::smtp::SMTPResponse::readResponse(socket, toh, responseState);
+
+		VASSERT_EQ("Code", 354, resp->getCode());
+		VASSERT_EQ("Lines", 1, resp->getLineCount());
+		VASSERT_EQ("Text", "Go ahead fu13sm4720601wic.7 - gsmtp", resp->getText());
+		VASSERT_EQ("Enh.class", 0, resp->getEnhancedCode().klass);
+		VASSERT_EQ("Enh.subject", 0, resp->getEnhancedCode().subject);
+		VASSERT_EQ("Enh.detail", 0, resp->getEnhancedCode().detail);
+	}
+
+	void testInvalidEnhancedStatusCode()
+	{
+		vmime::ref <testSocket> socket = vmime::create <testSocket>();
+		vmime::ref <vmime::net::timeoutHandler> toh =
+			vmime::create <testTimeoutHandler>();
+
+		socket->localSend("250 4.2 xxx\r\n");
+
+		vmime::net::smtp::SMTPResponse::state responseState;
+
+		vmime::ref <vmime::net::smtp::SMTPResponse> resp =
+			vmime::net::smtp::SMTPResponse::readResponse(socket, toh, responseState);
+
+		VASSERT_EQ("Code", 250, resp->getCode());
+		VASSERT_EQ("Lines", 1, resp->getLineCount());
+		VASSERT_EQ("Text", "4.2 xxx", resp->getText());
+		VASSERT_EQ("Enh.class", 0, resp->getEnhancedCode().klass);
+		VASSERT_EQ("Enh.subject", 0, resp->getEnhancedCode().subject);
+		VASSERT_EQ("Enh.detail", 0, resp->getEnhancedCode().detail);
+	}
 
 VMIME_TEST_SUITE_END
 
