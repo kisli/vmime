@@ -177,7 +177,30 @@ public:
 
 	/** The type for an unique message identifier.
 	  */
-	typedef string uid;
+	class uid
+	{
+	public:
+
+		uid();
+		uid(const string& uid);
+		uid(const unsigned long uid);
+		uid(const char* uid);
+		uid(const uid& other);
+
+		uid& operator=(const uid& other);
+		uid& operator=(const string& uid);
+		uid& operator=(const unsigned long uid);
+
+		operator string() const;
+
+		bool empty() const;
+
+		bool operator==(const uid& other) const;
+
+	private:
+
+		string m_str;
+	};
 
 	/** Return the MIME structure of the message (must fetch before).
 	  *
@@ -313,6 +336,9 @@ public:
 	  */
 	virtual ref <vmime::message> getParsedMessage() = 0;
 };
+
+
+VMIME_EXPORT std::ostream& operator<<(std::ostream& os, const message::uid& uid);
 
 
 } // net

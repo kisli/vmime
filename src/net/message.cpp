@@ -29,6 +29,8 @@
 
 #include "vmime/net/message.hpp"
 
+#include <sstream>
+
 
 namespace vmime {
 namespace net {
@@ -49,6 +51,94 @@ ref <messagePart> messagePart::getPartAt(const size_t pos)
 size_t messagePart::getPartCount() const
 {
 	return getStructure()->getPartCount();
+}
+
+
+
+// message::uid
+
+
+message::uid::uid()
+{
+}
+
+
+message::uid::uid(const string& uid)
+	: m_str(uid)
+{
+}
+
+
+message::uid::uid(const unsigned long uid)
+{
+	std::ostringstream oss;
+	oss.imbue(std::locale::classic());
+	oss << uid;
+
+	m_str = oss.str();
+}
+
+
+message::uid::uid(const char* uid)
+	: m_str(uid)
+{
+}
+
+
+message::uid::uid(const uid& other)
+{
+	m_str = other.m_str;
+}
+
+
+message::uid& message::uid::operator=(const uid& other)
+{
+	m_str = other.m_str;
+	return *this;
+}
+
+
+message::uid& message::uid::operator=(const string& uid)
+{
+	m_str = uid;
+	return *this;
+}
+
+
+message::uid& message::uid::operator=(const unsigned long uid)
+{
+	std::ostringstream oss;
+	oss.imbue(std::locale::classic());
+	oss << uid;
+
+	m_str = oss.str();
+
+	return *this;
+}
+
+
+message::uid::operator string() const
+{
+	return m_str;
+}
+
+
+bool message::uid::empty() const
+{
+	return m_str.empty();
+}
+
+
+bool message::uid::operator==(const uid& other) const
+{
+	return m_str == other.m_str;
+}
+
+
+std::ostream& operator<<(std::ostream& os, const message::uid& uid)
+{
+	os << static_cast <string>(uid);
+	return os;
 }
 
 
