@@ -32,6 +32,7 @@
 VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 
 	VMIME_TEST_LIST_BEGIN
+		VMIME_TEST(testConnectToInvalidServer)
 		VMIME_TEST(testGreetingError)
 		VMIME_TEST(testMAILandRCPT)
 		VMIME_TEST(testChunking)
@@ -39,6 +40,17 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 		VMIME_TEST(testSize_NoChunking)
 	VMIME_TEST_LIST_END
 
+
+	void testConnectToInvalidServer()
+	{
+		vmime::ref <vmime::net::session> sess
+			= vmime::create <vmime::net::session>();
+
+		vmime::utility::url url("smtp://invalid-smtp-server");
+		vmime::ref <vmime::net::transport> store = sess->getTransport(url);
+
+		VASSERT_THROW("connect", store->connect(), vmime::exceptions::connection_error);
+	}
 
 	void testGreetingError()
 	{
