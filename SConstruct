@@ -416,6 +416,7 @@ libvmimetest_sources = [
 	'tests/net/messageSetTest.cpp',
 	'tests/net/pop3/POP3CommandTest.cpp',
 	'tests/net/pop3/POP3ResponseTest.cpp',
+	'tests/net/pop3/POP3StoreTest.cpp',
 	'tests/net/pop3/POP3UtilsTest.cpp',
 	'tests/net/imap/IMAPTagTest.cpp',
 	'tests/net/imap/IMAPParserTest.cpp',

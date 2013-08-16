@@ -188,18 +188,25 @@ void POP3Connection::disconnect()
 
 void POP3Connection::internalDisconnect()
 {
-	try
+	if (m_socket)
 	{
-		POP3Command::QUIT()->send(thisRef().dynamicCast <POP3Connection>());
-		POP3Response::readResponse(thisRef().dynamicCast <POP3Connection>());
-	}
-	catch (exception&)
-	{
-		// Not important
-	}
+		if (m_socket->isConnected())
+		{
+			try
+			{
+				POP3Command::QUIT()->send(thisRef().dynamicCast <POP3Connection>());
+				POP3Response::readResponse(thisRef().dynamicCast <POP3Connection>());
+			}
+			catch (exception&)
+			{
+				// Not important
+			}
 
-	m_socket->disconnect();
-	m_socket = NULL;
+			m_socket->disconnect();
+		}
+
+		m_socket = NULL;
+	}
 
 	m_timeoutHandler = NULL;
 
