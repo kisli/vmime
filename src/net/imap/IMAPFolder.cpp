@@ -534,7 +534,7 @@ std::vector <ref <message> > IMAPFolder::getMessages(const messageSet& msgs)
 	if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
 
-	if (msgs.isEmpty() == 0)
+	if (msgs.isEmpty())
 		return std::vector <ref <message> >();
 
 	std::vector <ref <message> > messages;
