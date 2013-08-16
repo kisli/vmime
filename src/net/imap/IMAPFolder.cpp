@@ -924,9 +924,9 @@ void IMAPFolder::deleteMessages(const messageSet& msgs)
 	command.imbue(std::locale::classic());
 
 	if (msgs.isUIDSet())
-		command << "UID STORE" << IMAPUtils::messageSetToSequenceSet(msgs);
+		command << "UID STORE " << IMAPUtils::messageSetToSequenceSet(msgs);
 	else
-		command << "STORE" << IMAPUtils::messageSetToSequenceSet(msgs);
+		command << "STORE " << IMAPUtils::messageSetToSequenceSet(msgs);
 
 	command << " +FLAGS (\\Deleted)";
 
