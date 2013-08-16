@@ -244,7 +244,7 @@ bool windowsFile::canRead() const
 	HANDLE hFile = CreateFile(
 		m_nativePath.c_str(),
 		GENERIC_READ,
-		0,
+		FILE_SHARE_READ,
 		NULL,
 		OPEN_EXISTING,
 		FILE_ATTRIBUTE_NORMAL,
@@ -276,7 +276,7 @@ windowsFile::length_type windowsFile::getLength()
 	HANDLE hFile = CreateFile(
 		m_nativePath.c_str(),
 		GENERIC_READ,
-		0,
+		FILE_SHARE_READ,
 		NULL,
 		OPEN_EXISTING,
 		FILE_ATTRIBUTE_NORMAL,
