@@ -207,7 +207,7 @@ void windowsFile::createFile()
 	HANDLE hFile = CreateFile(
 		m_nativePath.c_str(),
 		GENERIC_WRITE,
-		0,
+		FILE_SHARE_READ | FILE_SHARE_WRITE,
 		NULL,
 		CREATE_ALWAYS,
 		FILE_ATTRIBUTE_NORMAL,
@@ -260,7 +260,7 @@ bool windowsFile::canWrite() const
 	HANDLE hFile = CreateFile(
 		m_nativePath.c_str(),
 		GENERIC_WRITE,
-		0,
+		FILE_SHARE_WRITE,
 		NULL,
 		OPEN_ALWAYS,
 		FILE_ATTRIBUTE_NORMAL,
@@ -435,7 +435,7 @@ ref <vmime::utility::inputStream> windowsFileReader::getInputStream()
 	HANDLE hFile = CreateFile(
 		m_nativePath.c_str(),
 		GENERIC_READ,
-		0,
+		FILE_SHARE_READ,
 		NULL,
 		OPEN_EXISTING,
 		0,
@@ -510,7 +510,7 @@ ref <vmime::utility::outputStream> windowsFileWriter::getOutputStream()
 	HANDLE hFile = CreateFile(
 		m_nativePath.c_str(),
 		GENERIC_WRITE,
-		0,
+		FILE_SHARE_WRITE,
 		NULL,
 		CREATE_ALWAYS,
 		FILE_ATTRIBUTE_NORMAL,
