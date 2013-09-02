@@ -63,6 +63,11 @@ public:
 		  */
 		const string& getName() const;
 
+#ifndef _MSC_VER
+
+		// Visual Studio errors on linking with these 2 functions,
+		// whereas GCC and CLang need them.
+
 		/** Return the value of the property as a string.
 		  *
 		  * @return current value of the property
@@ -74,6 +79,8 @@ public:
 		  * @param value new value for property
 		  */
 		void setValue(const string& value);
+
+#endif  // !_MSC_VER
 
 		/** Set the value of the property as a generic type.
 		  *
