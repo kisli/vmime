@@ -28,6 +28,11 @@
 #define VMIME_BYTE_ORDER_LITTLE_ENDIAN  @VMIME_BYTE_ORDER_LITTLE_ENDIAN@
 
 // Generic types
+#cmakedefine01 VMIME_HAVE_CSTDINT
+#if VMIME_HAVE_CSTDINT
+#	include <cstdint>
+#endif
+
 // -- 8-bit
 typedef signed @VMIME_8BIT_TYPE@ vmime_int8;
 typedef unsigned @VMIME_8BIT_TYPE@ vmime_uint8;

@@ -17,6 +17,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.6 FATAL_ERROR)
 INCLUDE(cmake/Utils.cmake)
 
 INCLUDE(CheckIncludeFiles)
+INCLUDE(CheckIncludeFileCxx)
 INCLUDE(CheckFunctionExists)
 INCLUDE(CheckSymbolExists)
 INCLUDE(CheckTypeSize)
@@ -448,12 +449,19 @@ ELSE(BIGENDIAN EQUAL 0)
 ENDIF(BIGENDIAN EQUAL 0)
 
 
+CHECK_INCLUDE_FILE_CXX(cstdint VMIME_HAVE_CSTDINT)
+
 CHECK_TYPE_SIZE("char"      SIZEOF_CHAR)
 CHECK_TYPE_SIZE("short"     SIZEOF_SHORT)
 CHECK_TYPE_SIZE("int"       SIZEOF_INT)
 CHECK_TYPE_SIZE("long"      SIZEOF_LONG)
 CHECK_TYPE_SIZE("long long" SIZEOF_LONG_LONG)
 CHECK_TYPE_SIZE("__int64"   SIZEOF___INT64)
+
+SET(CMAKE_EXTRA_INCLUDE_FILES cstdint)
+CHECK_TYPE_SIZE("int64_t"   SIZEOF_INT64_T)
+SET(CMAKE_EXTRA_INCLUDE_FILES)
+
 
 IF(SIZEOF_CHAR EQUAL 1)
 	SET(VMIME_8BIT_TYPE "char")
@@ -494,10 +502,14 @@ ELSE()
 		IF(SIZEOF_LONG_LONG EQUAL 8)
 			SET(VMIME_64BIT_TYPE "long long")
 		ELSE()
-			IF(SIZEOF___INT64 EQUAL 8)
-				SET(VMIME_64BIT_TYPE "__int64")
+			IF(SIZEOF_INT64_T EQUAL 8)
+				SET(VMIME_64BIT_TYPE "int64_t")
 			ELSE()
-				MESSAGE(FATAL_ERROR "Cannot determine 64-bit type")
+				IF(SIZEOF___INT64 EQUAL 8)
+					SET(VMIME_64BIT_TYPE "__int64")
+				ELSE()
+					MESSAGE(FATAL_ERROR "Cannot determine 64-bit type")
+				ENDIF()
 			ENDIF()
 		ENDIF()
 	ENDIF()
@@ -895,7 +907,7 @@ ELSE()
 
 		SET(
 			CMAKE_CXX_FLAGS
-			"${CMAKE_CXX_FLAGS} -D_REENTRANT=1 -W -Wall -ansi -pedantic -Wpointer-arith -Wold-style-cast -Wconversion -Wcast-align"
+			"${CMAKE_CXX_FLAGS} -D_REENTRANT=1 -W -Wall -ansi -pedantic -Wpointer-arith -Wold-style-cast -Wconversion -Wcast-align -Wno-long-long"
 			CACHE STRING
 			"g++ Compiler Flags"
 			FORCE
