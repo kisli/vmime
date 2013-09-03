@@ -177,7 +177,7 @@ public:
 
 	/** The type for an unique message identifier.
 	  */
-	class uid
+	class VMIME_EXPORT uid
 	{
 	public:
 

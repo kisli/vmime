@@ -42,7 +42,7 @@ namespace utility {
   */
 
 template <class T>
-class VMIME_EXPORT auto_ptr
+class auto_ptr
 {
 private:
 
@@ -139,7 +139,7 @@ class weak_ref;
   */
 
 template <class T>
-class VMIME_EXPORT ref
+class ref
 {
 public:
 
@@ -428,7 +428,7 @@ bool operator!=(const null_ref&, const ref <T>& r)
   */
 
 template <class T>
-class VMIME_EXPORT weak_ref
+class weak_ref
 {
 public:
 

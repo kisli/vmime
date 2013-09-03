@@ -28,6 +28,7 @@
 
 
 #include "vmime/net/imap/IMAPUtils.hpp"
+#include "vmime/net/imap/IMAPStore.hpp"
 #include "vmime/net/message.hpp"
 #include "vmime/net/folder.hpp"
 

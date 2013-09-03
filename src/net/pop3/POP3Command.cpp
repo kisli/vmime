@@ -29,6 +29,8 @@
 
 #include "vmime/net/pop3/POP3Command.hpp"
 #include "vmime/net/pop3/POP3Connection.hpp"
+#include "vmime/net/pop3/POP3Store.hpp"
+
 
 #include "vmime/net/socket.hpp"
 

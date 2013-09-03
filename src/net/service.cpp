@@ -33,12 +33,17 @@
 
 #if VMIME_HAVE_SASL_SUPPORT
 	#include "vmime/security/sasl/defaultSASLAuthenticator.hpp"
+	#include "vmime/security/sasl/SASLMechanism.hpp"
+	#include "vmime/security/sasl/SASLSession.hpp"
+	#include "vmime/security/sasl/SASLContext.hpp"
+
 #else
 	#include "vmime/security/defaultAuthenticator.hpp"
 #endif // VMIME_HAVE_SASL_SUPPORT
 
 #if VMIME_HAVE_TLS_SUPPORT
 	#include "vmime/security/cert/defaultCertificateVerifier.hpp"
+	#include "vmime/security/cert/X509Certificate.hpp"
 #endif // VMIME_HAVE_TLS_SUPPORT
 
 

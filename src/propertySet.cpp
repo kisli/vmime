@@ -275,22 +275,17 @@ const string& propertySet::property::getName() const
 }
 
 
-#ifndef _MSC_VER
-
-
 const string& propertySet::property::getValue() const
 {
 	return (m_value);
 }
 
-
+/*
 void propertySet::property::setValue(const string& value)
 {
 	m_value = value;
 }
-
-
-#endif // !_MSC_VER
+*/
 
 
 #ifndef VMIME_INLINE_TEMPLATE_SPECIALIZATION

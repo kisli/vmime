@@ -35,7 +35,7 @@ namespace utility {
 /** Pseudo-random number generator.
   */
 
-class random
+class VMIME_EXPORT random
 {
 public:
 
