@@ -257,7 +257,7 @@ namespace vmime
 	/** Inherit from this class to indicate the subclass is not copyable,
 	  * ie. you want to prohibit copy construction and copy assignment.
 	  */
-	class noncopyable
+	class VMIME_EXPORT noncopyable
 	{
 	protected:
 
