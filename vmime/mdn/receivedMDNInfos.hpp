@@ -65,6 +65,13 @@ public:
 	  */
 	const disposition getDisposition() const;
 
+	/** Return the Message Integrity Check (MIC), that is the value
+	  * of the "Received-content-MIC" field.
+	  *
+	  * @return MIC hash value, or an empty string if not specified
+	  */
+	const string getContentMIC() const;
+
 private:
 
 	void copyFrom(const receivedMDNInfos& other);
@@ -76,6 +83,7 @@ private:
 
 	disposition m_disp;
 	messageId m_omid;
+	string m_contentMIC;
 };
 
 

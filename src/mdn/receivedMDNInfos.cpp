@@ -69,11 +69,18 @@ const disposition receivedMDNInfos::getDisposition() const
 }
 
 
+const string receivedMDNInfos::getContentMIC() const
+{
+	return m_contentMIC;
+}
+
+
 void receivedMDNInfos::copyFrom(const receivedMDNInfos& other)
 {
 	m_msg = other.m_msg;
 	m_omid = other.m_omid;
 	m_disp = other.m_disp;
+	m_contentMIC = other.m_contentMIC;
 }
 
 
@@ -108,6 +115,13 @@ void receivedMDNInfos::extract()
 			catch (exceptions::no_such_field&) { /* Ignore */ }
 
 			try { m_disp = *fields.Disposition()->getValue().dynamicCast <const disposition>(); }
+			catch (exceptions::no_such_field&) { /* Ignore */ }
+
+			try
+			{
+				text t = *fields.findField("Received-content-MIC")->getValue().dynamicCast <const text>();
+				m_contentMIC = t.generate();
+			}
 			catch (exceptions::no_such_field&) { /* Ignore */ }
 		}
 	}
