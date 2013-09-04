@@ -29,7 +29,7 @@
 
 #include "vmime/net/pop3/POP3Response.hpp"
 #include "vmime/net/pop3/POP3Connection.hpp"
-
+#include "vmime/net/pop3/POP3Store.hpp"
 #include "vmime/platform.hpp"
 
 #include "vmime/utility/stringUtils.hpp"

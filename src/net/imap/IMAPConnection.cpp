@@ -413,7 +413,7 @@ void IMAPConnection::authenticateSASL()
 					// Server capabilities may change when logged in
 					invalidateCapabilities();
 				}
-				catch (exceptions::sasl_exception& e)
+				catch (exceptions::sasl_exception& /*e*/)
 				{
 					if (challenge)
 					{

@@ -29,6 +29,7 @@
 
 #include "vmime/security/sasl/SASLSocket.hpp"
 #include "vmime/security/sasl/SASLSession.hpp"
+#include "vmime/security/sasl/SASLContext.hpp"
 
 #include "vmime/exception.hpp"
 

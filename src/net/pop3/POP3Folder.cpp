@@ -649,7 +649,7 @@ ref <folderStatus> POP3Folder::getStatus()
 		throw exceptions::command_error("STAT", response->getFirstLine());
 
 
-	unsigned int count = 0;
+	int count = 0;
 
 	std::istringstream iss(response->getText());
 	iss >> count;

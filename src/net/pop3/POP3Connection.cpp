@@ -479,7 +479,7 @@ void POP3Connection::authenticateSASL()
 					// Send response
 					m_socket->send(saslContext->encodeB64(resp, respLen) + "\r\n");
 				}
-				catch (exceptions::sasl_exception& e)
+				catch (exceptions::sasl_exception& /*e*/)
 				{
 					if (challenge)
 					{

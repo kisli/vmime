@@ -31,6 +31,12 @@
 
 #include "vmime/utility/outputStreamAdapter.hpp"
 #include "vmime/utility/inputStreamStringProxyAdapter.hpp"
+#include "vmime/net/imap/IMAPFolder.hpp"
+#include "vmime/net/imap/IMAPConnection.hpp"
+#include "vmime/net/imap/IMAPFolderStatus.hpp"
+#include "vmime/net/imap/IMAPStore.hpp"
+
+
 
 
 namespace vmime {
