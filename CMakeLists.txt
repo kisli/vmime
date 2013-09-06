@@ -17,7 +17,7 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.6 FATAL_ERROR)
 INCLUDE(cmake/Utils.cmake)
 
 INCLUDE(CheckIncludeFiles)
-INCLUDE(CheckIncludeFileCxx)
+INCLUDE(CheckIncludeFileCXX)
 INCLUDE(CheckFunctionExists)
 INCLUDE(CheckSymbolExists)
 INCLUDE(CheckTypeSize)
