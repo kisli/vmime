@@ -30,6 +30,7 @@
 #include "vmime/net/imap/IMAPStore.hpp"
 #include "vmime/net/imap/IMAPFolder.hpp"
 #include "vmime/net/imap/IMAPConnection.hpp"
+#include "vmime/net/imap/IMAPFolderStatus.hpp"
 
 #include "vmime/exception.hpp"
 #include "vmime/platform.hpp"

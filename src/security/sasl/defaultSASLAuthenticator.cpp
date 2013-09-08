@@ -31,6 +31,7 @@
 
 #include "vmime/security/sasl/SASLMechanism.hpp"
 #include "vmime/security/sasl/SASLSession.hpp"
+#include "vmime/security/sasl/SASLContext.hpp"
 
 #include "vmime/net/service.hpp"
 
