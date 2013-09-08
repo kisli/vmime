@@ -32,6 +32,7 @@
 #include "vmime/net/smtp/SMTPCommand.hpp"
 #include "vmime/net/smtp/SMTPCommandSet.hpp"
 #include "vmime/net/smtp/SMTPChunkingOutputStreamAdapter.hpp"
+#include "vmime/net/smtp/SMTPExceptions.hpp"
 
 #include "vmime/exception.hpp"
 #include "vmime/mailboxList.hpp"
@@ -152,7 +153,10 @@ void SMTPTransport::noop()
 	ref <SMTPResponse> resp = m_connection->readResponse();
 
 	if (resp->getCode() != 250)
-		throw exceptions::command_error("NOOP", resp->getText());
+	{
+		throw SMTPCommandError
+			("NOOP", resp->getText(), resp->getCode(), resp->getEnhancedCode());
+	}
 }
 
 
@@ -211,7 +215,10 @@ void SMTPTransport::sendEnvelope
 		if ((resp = m_connection->readResponse())->getCode() != 250)
 		{
 			disconnect();
-			throw exceptions::command_error(commands->getLastCommandSent()->getText(), resp->getText());
+
+			throw SMTPCommandError
+				(commands->getLastCommandSent()->getText(), resp->getText(),
+				 resp->getCode(), resp->getEnhancedCode());
 		}
 	}
 
@@ -224,21 +231,28 @@ void SMTPTransport::sendEnvelope
 		if (resp->getCode() == 452)
 		{
 			disconnect();
-			throw exceptions::message_size_exceeds_cur_limits
-				(commands->getLastCommandSent()->getText(), resp->getText());
+
+			throw SMTPMessageSizeExceedsCurLimitsException
+				(SMTPCommandError(commands->getLastCommandSent()->getText(), resp->getText(),
+				 resp->getCode(), resp->getEnhancedCode()));
 		}
 		// SIZE extension: message size exceeds fixed maximum message size
 		else if (resp->getCode() == 552)
 		{
 			disconnect();
-			throw exceptions::message_size_exceeds_max_limits
-				(commands->getLastCommandSent()->getText(), resp->getText());
+
+			throw SMTPMessageSizeExceedsMaxLimitsException
+				(SMTPCommandError(commands->getLastCommandSent()->getText(), resp->getText(),
+				 resp->getCode(), resp->getEnhancedCode()));
 		}
 		// Other error
 		else
 		{
 			disconnect();
-			throw exceptions::command_error(commands->getLastCommandSent()->getText(), resp->getText());
+
+			throw SMTPCommandError
+				(commands->getLastCommandSent()->getText(), resp->getText(),
+				 resp->getCode(), resp->getEnhancedCode());
 		}
 	}
 
@@ -256,21 +270,28 @@ void SMTPTransport::sendEnvelope
 			if (resp->getCode() == 452)
 			{
 				disconnect();
-				throw exceptions::message_size_exceeds_cur_limits
-					(commands->getLastCommandSent()->getText(), resp->getText());
+
+				throw SMTPMessageSizeExceedsCurLimitsException
+					(SMTPCommandError(commands->getLastCommandSent()->getText(), resp->getText(),
+					 resp->getCode(), resp->getEnhancedCode()));
 			}
 			// SIZE extension: message size exceeds fixed maximum message size
 			else if (resp->getCode() == 552)
 			{
 				disconnect();
-				throw exceptions::message_size_exceeds_max_limits
-					(commands->getLastCommandSent()->getText(), resp->getText());
+
+				throw SMTPMessageSizeExceedsMaxLimitsException
+					(SMTPCommandError(commands->getLastCommandSent()->getText(), resp->getText(),
+					 resp->getCode(), resp->getEnhancedCode()));
 			}
 			// Other error
 			else
 			{
 				disconnect();
-				throw exceptions::command_error(commands->getLastCommandSent()->getText(), resp->getText());
+
+				throw SMTPCommandError
+					(commands->getLastCommandSent()->getText(), resp->getText(),
+					 resp->getCode(), resp->getEnhancedCode());
 			}
 		}
 	}
@@ -283,7 +304,10 @@ void SMTPTransport::sendEnvelope
 		if ((resp = m_connection->readResponse())->getCode() != 354)
 		{
 			disconnect();
-			throw exceptions::command_error(commands->getLastCommandSent()->getText(), resp->getText());
+
+			throw SMTPCommandError
+				(commands->getLastCommandSent()->getText(), resp->getText(),
+				 resp->getCode(), resp->getEnhancedCode());
 		}
 	}
 }
@@ -317,7 +341,9 @@ void SMTPTransport::send
 	if ((resp = m_connection->readResponse())->getCode() != 250)
 	{
 		disconnect();
-		throw exceptions::command_error("DATA", resp->getText());
+
+		throw SMTPCommandError
+			("DATA", resp->getText(), resp->getCode(), resp->getEnhancedCode());
 	}
 }
 

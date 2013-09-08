@@ -318,6 +318,13 @@ SMTPResponse::enhancedStatusCode::enhancedStatusCode(const enhancedStatusCode& e
 }
 
 
+std::ostream& operator<<(std::ostream& os, const SMTPResponse::enhancedStatusCode& code)
+{
+	os << code.klass << '.' << code.subject << '.' << code.detail;
+	return os;
+}
+
+
 } // smtp
 } // net
 } // vmime

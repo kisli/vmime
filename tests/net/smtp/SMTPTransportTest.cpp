@@ -25,6 +25,7 @@
 
 #include "vmime/net/smtp/SMTPTransport.hpp"
 #include "vmime/net/smtp/SMTPChunkingOutputStreamAdapter.hpp"
+#include "vmime/net/smtp/SMTPExceptions.hpp"
 
 #include "SMTPTransportTestUtils.hpp"
 
@@ -143,7 +144,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 		vmime::ref <vmime::message> msg = vmime::create <SMTPBigTestMessage4MB>();
 
 		VASSERT_THROW("Connection", tr->send(msg, exp, recips),
-			vmime::exceptions::message_size_exceeds_max_limits);
+			vmime::net::smtp::SMTPMessageSizeExceedsMaxLimitsException);
 	}
 
 	void testSize_NoChunking()
@@ -170,7 +171,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 		vmime::ref <vmime::message> msg = vmime::create <SMTPBigTestMessage4MB>();
 
 		VASSERT_THROW("Connection", tr->send(msg, exp, recips),
-			vmime::exceptions::message_size_exceeds_max_limits);
+			vmime::net::smtp::SMTPMessageSizeExceedsMaxLimitsException);
 	}
 
 VMIME_TEST_SUITE_END

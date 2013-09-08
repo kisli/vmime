@@ -772,36 +772,6 @@ public:
 };
 
 
-/** Transport error: message size exceeds maximum server limits.
-  */
-
-class VMIME_EXPORT message_size_exceeds_max_limits : public net_exception
-{
-public:
-
-	message_size_exceeds_max_limits(const string& error = "", const exception& other = NO_EXCEPTION);
-	~message_size_exceeds_max_limits() throw();
-
-	exception* clone() const;
-	const char* name() const throw();
-};
-
-
-/** Transport error: message size exceeds current server limits.
-  */
-
-class VMIME_EXPORT message_size_exceeds_cur_limits : public net_exception
-{
-public:
-
-	message_size_exceeds_cur_limits(const string& error = "", const exception& other = NO_EXCEPTION);
-	~message_size_exceeds_cur_limits() throw();
-
-	exception* clone() const;
-	const char* name() const throw();
-};
-
-
 #endif // VMIME_HAVE_MESSAGING_FEATURES
 
 

@@ -29,6 +29,7 @@
 
 #include "vmime/net/smtp/SMTPConnection.hpp"
 #include "vmime/net/smtp/SMTPTransport.hpp"
+#include "vmime/net/smtp/SMTPExceptions.hpp"
 
 #include "vmime/exception.hpp"
 #include "vmime/platform.hpp"
@@ -473,7 +474,10 @@ void SMTPConnection::startTLS()
 		ref <SMTPResponse> resp = readResponse();
 
 		if (resp->getCode() != 220)
-			throw exceptions::command_error("STARTTLS", resp->getText());
+		{
+			throw SMTPCommandError("STARTTLS", resp->getText(),
+				resp->getCode(), resp->getEnhancedCode());
+		}
 
 		ref <tls::TLSSession> tlsSession =
 			tls::TLSSession::create(getTransport()->getCertificateVerifier());

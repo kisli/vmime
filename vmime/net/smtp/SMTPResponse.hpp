@@ -174,6 +174,9 @@ private:
 };
 
 
+VMIME_EXPORT std::ostream& operator<<(std::ostream& os, const SMTPResponse::enhancedStatusCode& code);
+
+
 } // smtp
 } // net
 } // vmime
