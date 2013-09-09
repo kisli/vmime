@@ -149,7 +149,7 @@ const string url::build() const
 
 			oss << urlUtils::encode(prop->getName());
 			oss << "=";
-			oss << urlUtils::encode(prop->getValue());
+			oss << urlUtils::encode(prop->getValue <string>());
 		}
 	}
 
