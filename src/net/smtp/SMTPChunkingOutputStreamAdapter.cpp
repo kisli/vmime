@@ -108,7 +108,7 @@ void SMTPChunkingOutputStreamAdapter::write
 		const size_type remaining = sizeof(m_buffer) - m_bufferSize;
 		const size_type bytesToCopy = std::min(remaining, curCount);
 
-		std::copy(data, data + bytesToCopy, m_buffer);
+		std::copy(data, data + bytesToCopy, m_buffer + m_bufferSize);
 
 		m_bufferSize += bytesToCopy;
 		curData += bytesToCopy;
