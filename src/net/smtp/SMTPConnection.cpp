@@ -107,8 +107,9 @@ void SMTPConnection::connect()
 #if VMIME_HAVE_TLS_SUPPORT
 	if (transport->isSMTPS())  // dedicated port/SMTPS
 	{
-		ref <tls::TLSSession> tlsSession =
-			tls::TLSSession::create(transport->getCertificateVerifier());
+		ref <tls::TLSSession> tlsSession = tls::TLSSession::create
+			(transport->getCertificateVerifier(),
+			 transport->getSession()->getTLSProperties());
 
 		ref <tls::TLSSocket> tlsSocket =
 			tlsSession->getSocket(m_socket);
@@ -479,8 +480,9 @@ void SMTPConnection::startTLS()
 				resp->getCode(), resp->getEnhancedCode());
 		}
 
-		ref <tls::TLSSession> tlsSession =
-			tls::TLSSession::create(getTransport()->getCertificateVerifier());
+		ref <tls::TLSSession> tlsSession = tls::TLSSession::create
+			(getTransport()->getCertificateVerifier(),
+			 getTransport()->getSession()->getTLSProperties());
 
 		ref <tls::TLSSocket> tlsSocket =
 			tlsSession->getSocket(m_socket);

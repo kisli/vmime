@@ -49,6 +49,7 @@
 
 #include "vmime/net/tls/gnutls/TLSSession_GnuTLS.hpp"
 #include "vmime/net/tls/gnutls/TLSSocket_GnuTLS.hpp"
+#include "vmime/net/tls/gnutls/TLSProperties_GnuTLS.hpp"
 
 #include "vmime/exception.hpp"
 
@@ -133,14 +134,14 @@ static TLSGlobal g_gnutlsGlobal;
 
 
 // static
-ref <TLSSession> TLSSession::create(ref <security::cert::certificateVerifier> cv)
+ref <TLSSession> TLSSession::create(ref <security::cert::certificateVerifier> cv, ref <TLSProperties> props)
 {
-	return vmime::create <TLSSession_GnuTLS>(cv);
+	return vmime::create <TLSSession_GnuTLS>(cv, props);
 }
 
 
-TLSSession_GnuTLS::TLSSession_GnuTLS(ref <security::cert::certificateVerifier> cv)
-	: m_certVerifier(cv)
+TLSSession_GnuTLS::TLSSession_GnuTLS(ref <security::cert::certificateVerifier> cv, ref <TLSProperties> props)
+	: m_certVerifier(cv), m_props(props)
 {
 	int res;
 
@@ -151,21 +152,16 @@ TLSSession_GnuTLS::TLSSession_GnuTLS(ref <security::cert::certificateVerifier> c
 
 	// Sets some default priority on the ciphers, key exchange methods,
 	// macs and compression methods.
-#if HAVE_GNUTLS_PRIORITY_FUNCS
+#if VMIME_HAVE_GNUTLS_PRIORITY_FUNCS
 	gnutls_dh_set_prime_bits(*m_gnutlsSession, 128);
 
 	if ((res = gnutls_priority_set_direct
-		(*m_gnutlsSession, "NORMAL:%SSL3_RECORD_VERSION", NULL)) != 0)
+		(*m_gnutlsSession, m_props->getCipherSuite().c_str(), NULL)) != 0)
 	{
-		if ((res = gnutls_priority_set_direct
-			(*m_gnutlsSession, "NORMAL", NULL)) != 0)
-		{
-			throwTLSException
-				("gnutls_priority_set_direct", res);
-		}
+		throwTLSException("gnutls_priority_set_direct", res);
 	}
 
-#else  // !HAVE_GNUTLS_PRIORITY_FUNCS
+#else  // !VMIME_HAVE_GNUTLS_PRIORITY_FUNCS
 
 	gnutls_set_default_priority(*m_gnutlsSession);
 
@@ -241,7 +237,7 @@ TLSSession_GnuTLS::TLSSession_GnuTLS(ref <security::cert::certificateVerifier> c
 
 	gnutls_compression_set_priority(*m_gnutlsSession, compressionPriority);
 
-#endif // !HAVE_GNUTLS_PRIORITY_FUNCS
+#endif // !VMIME_HAVE_GNUTLS_PRIORITY_FUNCS
 
 	// Initialize credentials
 	gnutls_credentials_set(*m_gnutlsSession,

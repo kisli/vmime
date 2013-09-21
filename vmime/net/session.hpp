@@ -33,6 +33,8 @@
 
 #include "vmime/security/authenticator.hpp"
 
+#include "vmime/net/tls/TLSProperties.hpp"
+
 #include "vmime/utility/url.hpp"
 
 #include "vmime/propertySet.hpp"
@@ -141,9 +143,23 @@ public:
 	  */
 	propertySet& getProperties();
 
+	/** Set properties for SSL/TLS secured connections in this session.
+	  *
+	  * @param tlsProps SSL/TLS properties
+	  */
+	void setTLSProperties(ref <tls::TLSProperties> tlsProps);
+
+	/** Get properties for SSL/TLS secured connections in this session.
+	  *
+	  * @return SSL/TLS properties
+	  */
+	ref <tls::TLSProperties> getTLSProperties() const;
+
 private:
 
 	propertySet m_props;
+
+	ref <tls::TLSProperties> m_tlsProps;
 };
 
 

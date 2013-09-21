@@ -39,18 +39,19 @@ namespace net {
 
 
 session::session()
+	: m_tlsProps(vmime::create <tls::TLSProperties>())
 {
 }
 
 
 session::session(const session& sess)
-	: object(), m_props(sess.m_props)
+	: object(), m_props(sess.m_props), m_tlsProps(vmime::create <tls::TLSProperties>(*sess.m_tlsProps))
 {
 }
 
 
 session::session(const propertySet& props)
-	: m_props(props)
+	: m_props(props), m_tlsProps(vmime::create <tls::TLSProperties>())
 {
 }
 
@@ -133,6 +134,18 @@ const propertySet& session::getProperties() const
 propertySet& session::getProperties()
 {
 	return (m_props);
+}
+
+
+void session::setTLSProperties(ref <tls::TLSProperties> tlsProps)
+{
+	m_tlsProps = vmime::create <tls::TLSProperties>(*tlsProps);
+}
+
+
+ref <tls::TLSProperties> session::getTLSProperties() const
+{
+	return m_tlsProps;
 }
 
 

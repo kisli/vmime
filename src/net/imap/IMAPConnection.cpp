@@ -112,8 +112,9 @@ void IMAPConnection::connect()
 #if VMIME_HAVE_TLS_SUPPORT
 	if (store->isIMAPS())  // dedicated port/IMAPS
 	{
-		ref <tls::TLSSession> tlsSession =
-			tls::TLSSession::create(store->getCertificateVerifier());
+		ref <tls::TLSSession> tlsSession = tls::TLSSession::create
+			(store->getCertificateVerifier(),
+			 store->getSession()->getTLSProperties());
 
 		ref <tls::TLSSocket> tlsSocket =
 			tlsSession->getSocket(m_socket);
@@ -474,8 +475,9 @@ void IMAPConnection::startTLS()
 				("STARTTLS", resp->getErrorLog(), "bad response");
 		}
 
-		ref <tls::TLSSession> tlsSession =
-			tls::TLSSession::create(m_store.acquire()->getCertificateVerifier());
+		ref <tls::TLSSession> tlsSession = tls::TLSSession::create
+			(m_store.acquire()->getCertificateVerifier(),
+			 m_store.acquire()->getSession()->getTLSProperties());
 
 		ref <tls::TLSSocket> tlsSocket =
 			tlsSession->getSocket(m_socket);

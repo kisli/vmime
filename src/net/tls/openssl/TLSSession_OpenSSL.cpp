@@ -28,6 +28,7 @@
 
 
 #include "vmime/net/tls/openssl/TLSSession_OpenSSL.hpp"
+#include "vmime/net/tls/openssl/TLSProperties_OpenSSL.hpp"
 #include "vmime/net/tls/openssl/OpenSSLInitializer.hpp"
 
 #include "vmime/exception.hpp"
@@ -45,19 +46,19 @@ static OpenSSLInitializer::autoInitializer openSSLInitializer;
 
 
 // static
-ref <TLSSession> TLSSession::create(ref <security::cert::certificateVerifier> cv)
+ref <TLSSession> TLSSession::create(ref <security::cert::certificateVerifier> cv, ref <TLSProperties> props)
 {
-	return vmime::create <TLSSession_OpenSSL>(cv);
+	return vmime::create <TLSSession_OpenSSL>(cv, props);
 }
 
 
-TLSSession_OpenSSL::TLSSession_OpenSSL(ref <vmime::security::cert::certificateVerifier> cv)
-	: m_sslctx(0), m_certVerifier(cv)
+TLSSession_OpenSSL::TLSSession_OpenSSL(ref <vmime::security::cert::certificateVerifier> cv, ref <TLSProperties> props)
+	: m_sslctx(0), m_certVerifier(cv), m_props(props)
 {
 	m_sslctx = SSL_CTX_new(SSLv23_client_method());
 	SSL_CTX_set_options(m_sslctx, SSL_OP_ALL | SSL_OP_NO_SSLv2);
 	SSL_CTX_set_mode(m_sslctx, SSL_MODE_AUTO_RETRY);
-	SSL_CTX_set_cipher_list(m_sslctx, "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH");
+	SSL_CTX_set_cipher_list(m_sslctx, m_props->getCipherSuite().c_str());
 	SSL_CTX_set_session_cache_mode(m_sslctx, SSL_SESS_CACHE_OFF);
 }
 

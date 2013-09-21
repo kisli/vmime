@@ -222,10 +222,13 @@ libvmime_messaging_sources = [
 libvmime_net_tls_sources = [
 	'net/tls/TLSSession.cpp', 'net/tls/TLSSession.hpp',
 	'net/tls/TLSSocket.cpp', 'net/tls/TLSSocket.hpp',
+	'net/tls/TLSProperties.cpp', 'net/tls/TLSProperties.hpp',
 	'net/tls/gnutls/TLSSession_GnuTLS.cpp', 'net/tls/gnutls/TLSSession_GnuTLS.hpp',
 	'net/tls/gnutls/TLSSocket_GnuTLS.cpp', 'net/tls/gnutls/TLSSocket_GnuTLS.hpp',
+	'net/tls/gnutls/TLSProperties_GnuTLS.cpp', 'net/tls/gnutls/TLSProperties_GnuTLS.hpp',
 	'net/tls/openssl/TLSSession_OpenSSL.cpp', 'net/tls/openssl/TLSSession_OpenSSL.hpp',
 	'net/tls/openssl/TLSSocket_OpenSSL.cpp', 'net/tls/openssl/TLSSocket_OpenSSL.hpp',
+	'net/tls/openssl/TLSProperties_OpenSSL.cpp', 'net/tls/openssl/TLSProperties_OpenSSL.hpp',
 	'net/tls/openssl/OpenSSLInitializer.cpp', 'net/tls/openssl/OpenSSLInitializer.hpp',
 	'net/tls/TLSSecuredConnectionInfos.cpp', 'net/tls/TLSSecuredConnectionInfos.hpp',
 	'security/cert/certificateChain.cpp', 'security/cert/certificateChain.hpp',

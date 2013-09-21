@@ -38,6 +38,7 @@
 
 #include "vmime/net/tls/TLSSession.hpp"
 #include "vmime/net/tls/TLSSocket.hpp"
+#include "vmime/net/tls/TLSProperties.hpp"
 
 
 #include <openssl/ssl.h>
@@ -54,7 +55,7 @@ class TLSSession_OpenSSL : public TLSSession
 
 public:
 
-	TLSSession_OpenSSL(const ref <security::cert::certificateVerifier> cv);
+	TLSSession_OpenSSL(const ref <security::cert::certificateVerifier> cv, ref <TLSProperties> props);
 	~TLSSession_OpenSSL();
 
 
@@ -90,6 +91,7 @@ private:
 	SSL_CTX* m_sslctx;
 
 	ref <security::cert::certificateVerifier> m_certVerifier;
+	ref <TLSProperties> m_props;
 };
 
 

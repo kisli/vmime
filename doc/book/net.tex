@@ -1006,3 +1006,68 @@ Finally, to make the service use your own certificate verifier, simply write:
 theService->setCertificateVerifier(vmime::create <myCertVerifier>());
 \end{lstlisting}
 
+\subsection{SSL/TLS Properties} % --------------------------------------------
+
+If you want to customize behavior or set some options on TLS/SSL connection,
+you may use the TLSProperties object, and pass it to the service session. The
+TLS/SSL options must be set {\em before} creating any service with the session
+(ie. before calling either {\vcode getStore()} or {\vcode getTransport()} on
+the session), or they will not be used.
+
+The following example shows how to set the cipher suite preferences for TLS:
+
+\begin{lstlisting}[caption={Setting TLS cipher suite preferences}]
+vmime::ref <vmime::net::session> sess = /* ... */;
+
+vmime::ref <vmime::net::tls::TLSProperties> tlsProps =
+	vmime::create <vmime::net::tls::TLSProperties>();
+
+// for OpenSSL
+tlsProps->setCipherString("HIGH:!ADH:@STRENGTH");
+
+// for GNU TLS
+tlsProps->setCipherString("NORMAL:%SSL3_RECORD_VERSION");
+
+sess->setTLSProperties(tlsProps);
+\end{lstlisting}
+
+Please note that the cipher suite string format and meaning depend on the
+underlying TLS library (either OpenSSL or GNU TLS):
+
+\begin{itemize}
+\item for GNU TLS, read this: \newline
+\url{http://gnutls.org/manual/html\_node/Priority-Strings.html}
+
+\item for OpenSSL, read this: \newline
+\url{http://www.openssl.org/docs/apps/ciphers.html#CIPHER\_STRINGS}
+\end{itemize}
+
+You may also set cipher suite preferences using predefined constants that
+map to generic security modes:
+
+\begin{lstlisting}[caption={Setting TLS cipher suite preferences using predefined modes}]
+sess->setCipherSuite(vmime::net::tls::TLSProperties::CIPHERSUITE_HIGH);
+\end{lstlisting}
+
+The following constants are available:
+
+\noindent\begin{tabularx}{1.0\textwidth}{|l|X|}
+\hline
+	{\bf Constant} &
+	{\bf Meaning} \\
+\hline
+	CIPHERSUITE\_HIGH &
+	High encryption cipher suites ($>$ 128 bits) \\
+\hline
+	CIPHERSUITE\_MEDIUM &
+	Medium encryption cipher suites ($>=$ 128 bits) \\
+\hline
+	CIPHERSUITE\_LOW &
+	Low encryption cipher suites ($>=$ 64 bits) \\
+\hline
+	CIPHERSUITE\_DEFAULT &
+	Default cipher suite (actual cipher suites used depends
+	on the underlying SSL/TLS library) \\
+\hline
+\end{tabularx}
+

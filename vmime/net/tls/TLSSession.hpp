@@ -34,6 +34,7 @@
 #include "vmime/types.hpp"
 
 #include "vmime/net/tls/TLSSocket.hpp"
+#include "vmime/net/tls/TLSProperties.hpp"
 
 #include "vmime/security/cert/certificateVerifier.hpp"
 
@@ -53,9 +54,10 @@ public:
 	  *
 	  * @param cv object responsible for verifying certificates
 	  * sent by the server
+	  * @param props TLS properties for this session
 	  * @return a new TLS session
 	  */
-	static ref <TLSSession> create(ref <security::cert::certificateVerifier> cv);
+	static ref <TLSSession> create(ref <security::cert::certificateVerifier> cv, ref <TLSProperties> props);
 
 	/** Create a new socket that adds a TLS security layer around
 	  * an existing socket. You should create only one socket
