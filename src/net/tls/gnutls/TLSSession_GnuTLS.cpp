@@ -152,7 +152,7 @@ TLSSession_GnuTLS::TLSSession_GnuTLS(ref <security::cert::certificateVerifier> c
 
 	// Sets some default priority on the ciphers, key exchange methods,
 	// macs and compression methods.
-#if VMIME_HAVE_GNUTLS_PRIORITY_FUNCS
+#ifdef VMIME_HAVE_GNUTLS_PRIORITY_FUNCS
 	gnutls_dh_set_prime_bits(*m_gnutlsSession, 128);
 
 	if ((res = gnutls_priority_set_direct
