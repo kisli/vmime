@@ -292,11 +292,11 @@ static std::ostream& operator<<(std::ostream& os, const vmime::exception& e)
   * @param s structure object
   * @param level current depth
   */
-static void printStructure(vmime::ref <const vmime::net::structure> s, const int level = 0)
+static void printStructure(vmime::ref <const vmime::net::messageStructure> s, const int level = 0)
 {
 	for (int i = 0 ; i < s->getPartCount() ; ++i)
 	{
-		vmime::ref <const vmime::net::part> part = s->getPartAt(i);
+		vmime::ref <const vmime::net::messagePart> part = s->getPartAt(i);
 
 		for (int j = 0 ; j < level * 2 ; ++j)
 			std::cout << " ";
