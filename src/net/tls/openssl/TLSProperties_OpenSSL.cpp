@@ -60,23 +60,23 @@ void TLSProperties::setCipherSuite(const GenericCipherSuite cipherSuite)
 	{
 	case CIPHERSUITE_HIGH:
 
-		setCipherSuite("HIGH");
+		setCipherSuite("HIGH:!ADH:@STRENGTH");
 		break;
 
 	case CIPHERSUITE_MEDIUM:
 
-		setCipherSuite("MEDIUM");
+		setCipherSuite("MEDIUM:!ADH:@STRENGTH");
 		break;
 
 	case CIPHERSUITE_LOW:
 
-		setCipherSuite("LOW");
+		setCipherSuite("LOW:!ADH:@STRENGTH");
 		break;
 
 	default:
 	case CIPHERSUITE_DEFAULT:
 
-		setCipherSuite("DEFAULT");
+		setCipherSuite("DEFAULT:!ADH:@STRENGTH");
 		break;
 	}
 }
