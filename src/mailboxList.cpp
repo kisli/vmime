@@ -22,6 +22,7 @@
 //
 
 #include "vmime/mailboxList.hpp"
+#include "vmime/mailboxGroup.hpp"
 #include "vmime/exception.hpp"
 
 
@@ -200,7 +201,36 @@ void mailboxList::parseImpl
 	(const parsingContext& ctx, const string& buffer, const string::size_type position,
 	 const string::size_type end, string::size_type* newPosition)
 {
-	m_list.parse(ctx, buffer, position, end, newPosition);
+	m_list.removeAllAddresses();
+
+	string::size_type pos = position;
+
+	while (pos < end)
+	{
+		ref <address> parsedAddress = address::parseNext(ctx, buffer, pos, end, &pos, NULL);
+
+		if (parsedAddress != NULL)
+		{
+			if (parsedAddress->isGroup())
+			{
+				ref <mailboxGroup> group = parsedAddress.staticCast <mailboxGroup>();
+
+				for (size_t i = 0 ; i < group->getMailboxCount() ; ++i)
+				{
+					m_list.appendAddress(group->getMailboxAt(i));
+				}
+			}
+			else
+			{
+				m_list.appendAddress(parsedAddress);
+			}
+		}
+	}
+
+	setParsedBounds(position, end);
+
+	if (newPosition)
+		*newPosition = end;
 }
 
 
