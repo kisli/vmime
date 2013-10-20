@@ -13,10 +13,10 @@ doc/html/*
 /run-tests
 
 # CMake-generated / Build files
-/CMakeFiles/
-/CMakeCache.txt
+CMakeFiles/
+CMakeCache.txt
 /_CPack_Packages/
-/cmake_install.cmake
+cmake_install.cmake
 /CPackConfig.cmake
 /CPackSourceConfig.cmake
 /Doxyfile
@@ -28,7 +28,8 @@ doc/html/*
 /vmime/export-static.hpp
 /vmime/export-shared.hpp
 /COPYING.txt
-/build/
+build/
+Makefile
 
 # Outsourced build test
 /_build/

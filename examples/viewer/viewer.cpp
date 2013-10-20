@@ -52,14 +52,14 @@ vmime::ref <vmime::message> currentMessage = NULL;
 
 
 
-void insertRowInModel(GtkTreeStore* model, vmime::ref <const vmime::component> comp, GtkTreeIter* parent = NULL)
+void insertRowInModel(GtkTreeStore* model, vmime::ref <vmime::component> comp, GtkTreeIter* parent = NULL)
 {
 	GtkTreeIter iter;
 
 	gtk_tree_store_append(model, &iter, parent);
 	gtk_tree_store_set(model, &iter, 0, typeid(*comp).name(), 1, comp.get(), -1);
 
-	const std::vector <vmime::ref <const vmime::component> > children = comp->getChildComponents();
+	const std::vector <vmime::ref <vmime::component> > children = comp->getChildComponents();
 
 	for (int i = 0 ; i < children.size() ; ++i)
 	{

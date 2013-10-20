@@ -330,6 +330,20 @@ ENDIF()
 
 
 ##############################################################################
+# Examples
+
+OPTION(
+	VMIME_BUILD_SAMPLES
+	"Build samples (in 'examples' directory)"
+	ON
+)
+
+IF(VMIME_BUILD_SAMPLES)
+	ADD_SUBDIRECTORY(examples)
+ENDIF()
+
+
+##############################################################################
 # Packaging / Distribution
 
 # Package information
