@@ -34,6 +34,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <typeinfo>
 
 #include <gtk/gtk.h>
 
