@@ -439,17 +439,17 @@ public:
 
 #ifndef VMIME_INLINE_TEMPLATE_SPECIALIZATION
 
-template <> void propertySet::property::setValue <string>(const string& value);
-template <> void propertySet::property::setValue(const bool& value);
+template <> VMIME_EXPORT void propertySet::property::setValue <string>(const string& value);
+template <> VMIME_EXPORT void propertySet::property::setValue(const bool& value);
 
-template <> string propertySet::property::getValue() const;
-template <> bool propertySet::property::getValue() const;
+template <> VMIME_EXPORT string propertySet::property::getValue() const;
+template <> VMIME_EXPORT bool propertySet::property::getValue() const;
 
-template <> string propertySet::valueFromString(const string& value);
-template <> string propertySet::valueToString(const string& value);
+template <> VMIME_EXPORT string propertySet::valueFromString(const string& value);
+template <> VMIME_EXPORT string propertySet::valueToString(const string& value);
 
-template <> bool propertySet::valueFromString(const string& value);
-template <> string propertySet::valueToString(const bool& value);
+template <> VMIME_EXPORT bool propertySet::valueFromString(const string& value);
+template <> VMIME_EXPORT string propertySet::valueToString(const bool& value);
 
 #endif // VMIME_INLINE_TEMPLATE_SPECIALIZATION
 
