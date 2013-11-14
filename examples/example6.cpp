@@ -608,7 +608,7 @@ static void connectStore()
 				// Show message flags
 				case 1:
 
-					f->fetchMessage(msg, vmime::net::folder::FETCH_FLAGS);
+					f->fetchMessage(msg, vmime::net::fetchAttributes::FLAGS);
 
 					if (msg->getFlags() & vmime::net::message::FLAG_SEEN)
 						std::cout << "FLAG_SEEN" << std::endl;
@@ -628,21 +628,21 @@ static void connectStore()
 				// Show message structure
 				case 2:
 
-					f->fetchMessage(msg, vmime::net::folder::FETCH_STRUCTURE);
+					f->fetchMessage(msg, vmime::net::fetchAttributes::STRUCTURE);
 					printStructure(msg->getStructure());
 					break;
 
 				// Show message header
 				case 3:
 
-					f->fetchMessage(msg, vmime::net::folder::FETCH_FULL_HEADER);
+					f->fetchMessage(msg, vmime::net::fetchAttributes::FULL_HEADER);
 					std::cout << msg->getHeader()->generate() << std::endl;
 					break;
 
 				// Show message envelope
 				case 4:
 
-					f->fetchMessage(msg, vmime::net::folder::FETCH_ENVELOPE);
+					f->fetchMessage(msg, vmime::net::fetchAttributes::ENVELOPE);
 
 #define ENV_HELPER(x) \
 	try { std::cout << msg->getHeader()->x()->generate() << std::endl; } \

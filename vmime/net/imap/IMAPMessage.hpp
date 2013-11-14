@@ -114,12 +114,12 @@ private:
 	/** Processes the parsed response to fill in the attributes
 	  * and metadata of this message.
 	  *
-	  * @param options one or more fetch options (see folder::FetchOptions)
+	  * @param options one or more fetch options (see folder::fetchAttributes)
 	  * @param msgData pointer to message_data component of the parsed response
 	  * @return a combination of flags that specify what changed exactly on
 	  * this message (see events::messageChangedEvent::Types)
 	  */
-	int processFetchResponse(const int options, const IMAPParser::message_data* msgData);
+	int processFetchResponse(const fetchAttributes& options, const IMAPParser::message_data* msgData);
 
 	/** Recursively fetch part header for all parts in the structure.
 	  *

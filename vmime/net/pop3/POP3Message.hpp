@@ -85,7 +85,7 @@ public:
 
 private:
 
-	void fetch(ref <POP3Folder> folder, const int options);
+	void fetch(ref <POP3Folder> folder, const fetchAttributes& options);
 
 	void onFolderClosed();
 

@@ -544,7 +544,7 @@ const string IMAPUtils::dateTime(const vmime::datetime& date)
 
 // static
 const string IMAPUtils::buildFetchRequest
-	(ref <IMAPConnection> cnt, const messageSet& msgs, const int options)
+	(ref <IMAPConnection> cnt, const messageSet& msgs, const fetchAttributes& options)
 {
 	// Example:
 	//   C: A654 FETCH 2:4 (FLAGS BODY[HEADER.FIELDS (DATE FROM)])
@@ -555,16 +555,16 @@ const string IMAPUtils::buildFetchRequest
 
 	std::vector <string> items;
 
-	if (options & folder::FETCH_SIZE)
+	if (options.has(fetchAttributes::SIZE))
 		items.push_back("RFC822.SIZE");
 
-	if (options & folder::FETCH_FLAGS)
+	if (options.has(fetchAttributes::FLAGS))
 		items.push_back("FLAGS");
 
-	if (options & folder::FETCH_STRUCTURE)
+	if (options.has(fetchAttributes::STRUCTURE))
 		items.push_back("BODYSTRUCTURE");
 
-	if (options & folder::FETCH_UID)
+	if (options.has(fetchAttributes::UID))
 	{
 		items.push_back("UID");
 
@@ -573,23 +573,27 @@ const string IMAPUtils::buildFetchRequest
 			items.push_back("MODSEQ");
 	}
 
-	if (options & folder::FETCH_FULL_HEADER)
+	if (options.has(fetchAttributes::FULL_HEADER))
 		items.push_back("RFC822.HEADER");
 	else
 	{
-		if (options & folder::FETCH_ENVELOPE)
+		if (options.has(fetchAttributes::ENVELOPE))
 			items.push_back("ENVELOPE");
 
 		std::vector <string> headerFields;
 
-		if (options & folder::FETCH_CONTENT_INFO)
+		if (options.has(fetchAttributes::CONTENT_INFO))
 			headerFields.push_back("CONTENT_TYPE");
 
-		if (options & folder::FETCH_IMPORTANCE)
+		if (options.has(fetchAttributes::IMPORTANCE))
 		{
 			headerFields.push_back("IMPORTANCE");
 			headerFields.push_back("X-PRIORITY");
 		}
+
+		// Also add custom header fields to fetch, if any
+		const std::vector <string> customHeaderFields = options.getHeaderFields();
+		std::copy(customHeaderFields.begin(), customHeaderFields.end(), std::back_inserter(headerFields));
 
 		if (!headerFields.empty())
 		{

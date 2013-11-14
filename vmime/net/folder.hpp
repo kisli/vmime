@@ -41,6 +41,7 @@
 #include "vmime/net/messageSet.hpp"
 #include "vmime/net/events.hpp"
 #include "vmime/net/folderStatus.hpp"
+#include "vmime/net/fetchAttributes.hpp"
 
 #include "vmime/utility/path.hpp"
 #include "vmime/utility/stream.hpp"
@@ -332,41 +333,25 @@ public:
 	  */
 	virtual ref <store> getStore() = 0;
 
-	/** Fetchable objects.
-	  */
-	enum FetchOptions
-	{
-		FETCH_ENVELOPE = (1 << 0),       /**< Fetch sender, recipients, date, subject. */
-		FETCH_STRUCTURE = (1 << 1),      /**< Fetch structure (body parts). */
-		FETCH_CONTENT_INFO = (1 << 2),   /**< Fetch top-level content type. */
-		FETCH_FLAGS = (1 << 3),          /**< Fetch message flags. */
-		FETCH_SIZE = (1 << 4),           /**< Fetch message size (exact or estimated). */
-		FETCH_FULL_HEADER = (1 << 5),    /**< Fetch full RFC-[2]822 header. */
-		FETCH_UID = (1 << 6),            /**< Fetch unique identifier (protocol specific). */
-		FETCH_IMPORTANCE = (1 << 7),     /**< Fetch header fields suitable for use with misc::importanceHelper. */
-
-		FETCH_CUSTOM = (1 << 16)         /**< Reserved for future use. */
-	};
-
 	/** Fetch objects for the specified messages.
 	  *
 	  * @param msg list of message sequence numbers
-	  * @param options objects to fetch (combination of folder::FetchOptions flags)
+	  * @param attribs set of attributes to fetch
 	  * @param progress progress listener, or NULL if not used
 	  * @throw exceptions::net_exception if an error occurs
 	  */
-	virtual void fetchMessages(std::vector <ref <message> >& msg, const int options, utility::progressListener* progress = NULL) = 0;
+	virtual void fetchMessages(std::vector <ref <message> >& msg, const fetchAttributes& attribs, utility::progressListener* progress = NULL) = 0;
 
 	/** Fetch objects for the specified message.
 	  *
 	  * @param msg the message
-	  * @param options objects to fetch (combination of folder::FetchOptions flags)
+	  * @param attribs set of attributes to fetch
 	  * @throw exceptions::net_exception if an error occurs
 	  */
-	virtual void fetchMessage(ref <message> msg, const int options) = 0;
+	virtual void fetchMessage(ref <message> msg, const fetchAttributes& attribs) = 0;
 
 	/** Return the list of fetchable objects supported by
-	  * the underlying protocol (see folder::FetchOptions).
+	  * the underlying protocol (see folder::fetchAttributes).
 	  *
 	  * @return list of supported fetchable objects
 	  */

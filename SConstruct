@@ -203,6 +203,7 @@ libvmime_messaging_sources = [
 	'net/connectionInfos.hpp',
 	'net/defaultConnectionInfos.cpp', 'net/defaultConnectionInfos.hpp',
 	'net/events.cpp', 'net/events.hpp',
+	'net/fetchAttributes.cpp', 'net/fetchAttributes.hpp',
 	'net/folder.cpp', 'net/folder.hpp',
 	'net/folderStatus.hpp',
 	'net/message.cpp', 'net/message.hpp',
@@ -828,6 +829,12 @@ export_hpp = open('vmime/export-static.hpp', 'w')
 export_hpp.write("""
 #define VMIME_EXPORT
 #define VMIME_NO_EXPORT
+
+#ifndef VMIME_DEPRECATED
+#  define VMIME_DEPRECATED __attribute__ ((__deprecated__))
+#  define VMIME_DEPRECATED_EXPORT VMIME_EXPORT __attribute__ ((__deprecated__))
+#  define VMIME_DEPRECATED_NO_EXPORT VMIME_NO_EXPORT __attribute__ ((__deprecated__))
+#endif
 """)
 
 export_hpp.close()

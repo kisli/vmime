@@ -366,7 +366,7 @@ void IMAPMessage::extractImpl(ref <const messagePart> p, utility::outputStream& 
 
 
 int IMAPMessage::processFetchResponse
-	(const int options, const IMAPParser::message_data* msgData)
+	(const fetchAttributes& options, const IMAPParser::message_data* msgData)
 {
 	ref <IMAPFolder> folder = m_folder.acquire();
 
@@ -403,7 +403,7 @@ int IMAPMessage::processFetchResponse
 		}
 		case IMAPParser::msg_att_item::ENVELOPE:
 		{
-			if (!(options & folder::FETCH_FULL_HEADER))
+			if (!options.has(fetchAttributes::FULL_HEADER))
 			{
 				const IMAPParser::envelope* env = (*it)->envelope();
 				ref <vmime::header> hdr = getOrCreateHeader();
@@ -478,7 +478,7 @@ int IMAPMessage::processFetchResponse
 		}
 		case IMAPParser::msg_att_item::BODY_SECTION:
 		{
-			if (!(options & folder::FETCH_FULL_HEADER))
+			if (!options.has(fetchAttributes::FULL_HEADER))
 			{
 				if ((*it)->section()->section_text1() &&
 				    (*it)->section()->section_text1()->type()
@@ -599,7 +599,8 @@ ref <vmime::message> IMAPMessage::getParsedMessage()
 		std::vector <ref <message> > msgs;
 		msgs.push_back(thisRef().dynamicCast <IMAPMessage>());
 
-		m_folder.acquire()->fetchMessages(msgs, IMAPFolder::FETCH_STRUCTURE, /* progress */ NULL);
+		m_folder.acquire()->fetchMessages
+			(msgs, fetchAttributes(fetchAttributes::STRUCTURE), /* progress */ NULL);
 
 		structure = getStructure();
 	}

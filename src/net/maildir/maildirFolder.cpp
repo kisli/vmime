@@ -1178,7 +1178,7 @@ ref <store> maildirFolder::getStore()
 
 
 void maildirFolder::fetchMessages(std::vector <ref <message> >& msg,
-	const int options, utility::progressListener* progress)
+	const fetchAttributes& options, utility::progressListener* progress)
 {
 	ref <maildirStore> store = m_store.acquire();
 
@@ -1209,7 +1209,7 @@ void maildirFolder::fetchMessages(std::vector <ref <message> >& msg,
 }
 
 
-void maildirFolder::fetchMessage(ref <message> msg, const int options)
+void maildirFolder::fetchMessage(ref <message> msg, const fetchAttributes& options)
 {
 	ref <maildirStore> store = m_store.acquire();
 
@@ -1225,9 +1225,10 @@ void maildirFolder::fetchMessage(ref <message> msg, const int options)
 
 int maildirFolder::getFetchCapabilities() const
 {
-	return (FETCH_ENVELOPE | FETCH_STRUCTURE | FETCH_CONTENT_INFO |
-	        FETCH_FLAGS | FETCH_SIZE | FETCH_FULL_HEADER | FETCH_UID |
-	        FETCH_IMPORTANCE);
+	return fetchAttributes::ENVELOPE | fetchAttributes::STRUCTURE |
+	       fetchAttributes::CONTENT_INFO | fetchAttributes::FLAGS |
+	       fetchAttributes::SIZE | fetchAttributes::FULL_HEADER |
+	       fetchAttributes::UID | fetchAttributes::IMPORTANCE;
 }
 
 

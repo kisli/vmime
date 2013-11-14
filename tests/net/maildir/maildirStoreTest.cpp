@@ -300,7 +300,7 @@ public:
 
 		vmime::ref <vmime::net::message> msg = folder->getMessage(1);
 
-		folder->fetchMessage(msg, vmime::net::folder::FETCH_SIZE);
+		folder->fetchMessage(msg, vmime::net::fetchAttributes::SIZE);
 
 		VASSERT_EQ("Message size", TEST_MESSAGE_1.length(), msg->getSize());
 

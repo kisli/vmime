@@ -560,8 +560,8 @@ std::vector <ref <vmime::net::message> > allMessages =
       // -1 is a special value to mean "the number of the last message in the folder"
 
 folder->fetchMessages(allMessages,
-   vmime::net::folder::FETCH_FLAGS |
-   vmime::net::folder::FETCH_ENVELOPE);
+   vmime::net::fetchAttributes::FLAGS |
+   vmime::net::fetchAttributes::ENVELOPE);
 
 for (unsigned int i = 0 ; i < allMessages.size() ; ++i)
 {
@@ -582,6 +582,21 @@ for (unsigned int i = 0 ; i < allMessages.size() ; ++i)
    std::cout << " - sent by " << hdr->From()->generate() << std::endl;
 }
 \end{lstlisting}
+
+IMAP supports fetching specific header fields of a message. Here is how to use
+the {\vcode fetchAttributes} object to do it:
+
+\begin{lstlisting}[caption={Using fetchAttributes object to fetch specific header fields of a message}]
+
+// Fetch message flags and the "Received" and "X-Mailer" header fields
+vmime::net::fetchAttributes fetchAttribs;
+fetchAttribs.add(vmime::net::fetchAttributes::FLAGS);
+fetchAttribs.add("Received");
+fetchAttribs.add("X-Mailer");
+
+folder->fetchMessages(allMessages, fetchAttribs);
+\end{lstlisting}
+
 
 \subsection{Extracting messages and parts}
 
@@ -605,7 +620,7 @@ and time. The method {\vcode extractPart()} is used in this case:
 
 \begin{lstlisting}[caption={Extracting a specific MIME part of a message}]
 // Fetching structure is required before extracting a part
-folder->fetchMessage(msg, vmime::net::folder::FETCH_STRUCTURE);
+folder->fetchMessage(msg, vmime::net::fetchAttributes::STRUCTURE);
 
 // Now, we can extract the part
 msg->extractPart(msg->getStructure()->getPartAt(0)->getPartAt(1));

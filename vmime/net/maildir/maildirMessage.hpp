@@ -85,7 +85,7 @@ public:
 
 private:
 
-	void fetch(ref <maildirFolder> folder, const int options);
+	void fetch(ref <maildirFolder> folder, const fetchAttributes& options);
 
 	void onFolderClosed();
 

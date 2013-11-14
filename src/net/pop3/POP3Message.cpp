@@ -172,28 +172,28 @@ void POP3Message::fetchPartHeader(ref <messagePart> /* p */)
 }
 
 
-void POP3Message::fetch(ref <POP3Folder> msgFolder, const int options)
+void POP3Message::fetch(ref <POP3Folder> msgFolder, const fetchAttributes& options)
 {
 	ref <POP3Folder> folder = m_folder.acquire();
 
 	if (folder != msgFolder)
 		throw exceptions::folder_not_found();
 
-	// FETCH_STRUCTURE and FETCH_FLAGS are not supported by POP3.
-	if (options & (folder::FETCH_STRUCTURE | folder::FETCH_FLAGS))
+	// STRUCTURE and FLAGS attributes are not supported by POP3
+	if (options.has(fetchAttributes::STRUCTURE | fetchAttributes::FLAGS))
 		throw exceptions::operation_not_supported();
 
 	// Check for the real need to fetch the full header
 	static const int optionsRequiringHeader =
-		folder::FETCH_ENVELOPE | folder::FETCH_CONTENT_INFO |
-		folder::FETCH_FULL_HEADER | folder::FETCH_IMPORTANCE;
+		fetchAttributes::ENVELOPE | fetchAttributes::CONTENT_INFO |
+		fetchAttributes::FULL_HEADER | fetchAttributes::IMPORTANCE;
 
-	if (!(options & optionsRequiringHeader))
+	if (!options.has(optionsRequiringHeader))
 		return;
 
-	// No need to differenciate between FETCH_ENVELOPE,
-	// FETCH_CONTENT_INFO, ... since POP3 only permits to
-	// retrieve the whole header and not fields in particular.
+	// No need to differenciate between ENVELOPE, CONTENT_INFO, ...
+	// since POP3 only permits to retrieve the whole header and not
+	// fields in particular.
 
 	// Emit the "TOP" command
 	ref <POP3Store> store = folder->m_store.acquire();

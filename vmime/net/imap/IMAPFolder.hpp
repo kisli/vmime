@@ -124,8 +124,8 @@ public:
 	ref <store> getStore();
 
 
-	void fetchMessages(std::vector <ref <message> >& msg, const int options, utility::progressListener* progress = NULL);
-	void fetchMessage(ref <message> msg, const int options);
+	void fetchMessages(std::vector <ref <message> >& msg, const fetchAttributes& options, utility::progressListener* progress = NULL);
+	void fetchMessage(ref <message> msg, const fetchAttributes& options);
 
 	int getFetchCapabilities() const;
 

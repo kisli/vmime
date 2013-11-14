@@ -751,7 +751,7 @@ std::vector <ref <folder> > IMAPFolder::getFolders(const bool recursive)
 }
 
 
-void IMAPFolder::fetchMessages(std::vector <ref <message> >& msg, const int options,
+void IMAPFolder::fetchMessages(std::vector <ref <message> >& msg, const fetchAttributes& options,
                                utility::progressListener* progress)
 {
 	ref <IMAPStore> store = m_store.acquire();
@@ -845,7 +845,7 @@ void IMAPFolder::fetchMessages(std::vector <ref <message> >& msg, const int opti
 }
 
 
-void IMAPFolder::fetchMessage(ref <message> msg, const int options)
+void IMAPFolder::fetchMessage(ref <message> msg, const fetchAttributes& options)
 {
 	std::vector <ref <message> > msgs;
 	msgs.push_back(msg);
@@ -856,9 +856,10 @@ void IMAPFolder::fetchMessage(ref <message> msg, const int options)
 
 int IMAPFolder::getFetchCapabilities() const
 {
-	return (FETCH_ENVELOPE | FETCH_CONTENT_INFO | FETCH_STRUCTURE |
-	        FETCH_FLAGS | FETCH_SIZE | FETCH_FULL_HEADER | FETCH_UID |
-	        FETCH_IMPORTANCE);
+	return fetchAttributes::ENVELOPE | fetchAttributes::CONTENT_INFO |
+	       fetchAttributes::STRUCTURE | fetchAttributes::FLAGS |
+	       fetchAttributes::SIZE | fetchAttributes::FULL_HEADER |
+	       fetchAttributes::UID | fetchAttributes::IMPORTANCE;
 }
 
 

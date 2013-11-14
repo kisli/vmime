@@ -246,7 +246,7 @@ void maildirMessage::fetchPartHeader(ref <messagePart> p)
 }
 
 
-void maildirMessage::fetch(ref <maildirFolder> msgFolder, const int options)
+void maildirMessage::fetch(ref <maildirFolder> msgFolder, const fetchAttributes& options)
 {
 	ref <maildirFolder> folder = m_folder.acquire();
 
@@ -258,18 +258,18 @@ void maildirMessage::fetch(ref <maildirFolder> msgFolder, const int options)
 	const utility::file::path path = folder->getMessageFSPath(m_num);
 	ref <utility::file> file = fsf->create(path);
 
-	if (options & folder::FETCH_FLAGS)
+	if (options.has(fetchAttributes::FLAGS))
 		m_flags = maildirUtils::extractFlags(path.getLastComponent());
 
-	if (options & folder::FETCH_SIZE)
+	if (options.has(fetchAttributes::SIZE))
 		m_size = file->getLength();
 
-	if (options & folder::FETCH_UID)
+	if (options.has(fetchAttributes::UID))
 		m_uid = maildirUtils::extractId(path.getLastComponent()).getBuffer();
 
-	if (options & (folder::FETCH_ENVELOPE | folder::FETCH_CONTENT_INFO |
-	               folder::FETCH_FULL_HEADER | folder::FETCH_STRUCTURE |
-	               folder::FETCH_IMPORTANCE))
+	if (options.has(fetchAttributes::ENVELOPE | fetchAttributes::CONTENT_INFO |
+	                fetchAttributes::FULL_HEADER | fetchAttributes::STRUCTURE |
+	                fetchAttributes::IMPORTANCE))
 	{
 		string contents;
 
@@ -277,7 +277,7 @@ void maildirMessage::fetch(ref <maildirFolder> msgFolder, const int options)
 		ref <utility::inputStream> is = reader->getInputStream();
 
 		// Need whole message contents for structure
-		if (options & folder::FETCH_STRUCTURE)
+		if (options.has(fetchAttributes::STRUCTURE))
 		{
 			utility::stream::value_type buffer[16384];
 
@@ -321,16 +321,16 @@ void maildirMessage::fetch(ref <maildirFolder> msgFolder, const int options)
 		msg.parse(contents);
 
 		// Extract structure
-		if (options & folder::FETCH_STRUCTURE)
+		if (options.has(fetchAttributes::STRUCTURE))
 		{
 			m_structure = vmime::create <maildirMessageStructure>(null, msg);
 		}
 
 		// Extract some header fields or whole header
-		if (options & (folder::FETCH_ENVELOPE |
-		               folder::FETCH_CONTENT_INFO |
-		               folder::FETCH_FULL_HEADER |
-		               folder::FETCH_IMPORTANCE))
+		if (options.has(fetchAttributes::ENVELOPE |
+		                fetchAttributes::CONTENT_INFO |
+		                fetchAttributes::FULL_HEADER |
+		                fetchAttributes::IMPORTANCE))
 		{
 			getOrCreateHeader()->copyFrom(*(msg.getHeader()));
 		}

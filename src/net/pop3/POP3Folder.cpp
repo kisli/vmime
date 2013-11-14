@@ -308,7 +308,7 @@ std::vector <ref <folder> > POP3Folder::getFolders(const bool /* recursive */)
 }
 
 
-void POP3Folder::fetchMessages(std::vector <ref <message> >& msg, const int options,
+void POP3Folder::fetchMessages(std::vector <ref <message> >& msg, const fetchAttributes& options,
                                utility::progressListener* progress)
 {
 	ref <POP3Store> store = m_store.acquire();
@@ -334,7 +334,7 @@ void POP3Folder::fetchMessages(std::vector <ref <message> >& msg, const int opti
 			progress->progress(++current, total);
 	}
 
-	if (options & FETCH_SIZE)
+	if (options.has(fetchAttributes::SIZE))
 	{
 		// Send the "LIST" command
 		POP3Command::LIST()->send(store->getConnection());
@@ -374,7 +374,7 @@ void POP3Folder::fetchMessages(std::vector <ref <message> >& msg, const int opti
 
 	}
 
-	if (options & FETCH_UID)
+	if (options.has(fetchAttributes::UID))
 	{
 		// Send the "UIDL" command
 		POP3Command::UIDL()->send(store->getConnection());
@@ -411,7 +411,7 @@ void POP3Folder::fetchMessages(std::vector <ref <message> >& msg, const int opti
 }
 
 
-void POP3Folder::fetchMessage(ref <message> msg, const int options)
+void POP3Folder::fetchMessage(ref <message> msg, const fetchAttributes& options)
 {
 	ref <POP3Store> store = m_store.acquire();
 
@@ -423,7 +423,7 @@ void POP3Folder::fetchMessage(ref <message> msg, const int options)
 	msg.dynamicCast <POP3Message>()->fetch
 		(thisRef().dynamicCast <POP3Folder>(), options);
 
-	if (options & FETCH_SIZE)
+	if (options.has(fetchAttributes::SIZE))
 	{
 		// Send the "LIST" command
 		POP3Command::LIST(msg->getNumber())->send(store->getConnection());
@@ -456,7 +456,7 @@ void POP3Folder::fetchMessage(ref <message> msg, const int options)
 		}
 	}
 
-	if (options & FETCH_UID)
+	if (options.has(fetchAttributes::UID))
 	{
 		// Send the "UIDL" command
 		POP3Command::UIDL(msg->getNumber())->send(store->getConnection());
@@ -489,9 +489,9 @@ void POP3Folder::fetchMessage(ref <message> msg, const int options)
 
 int POP3Folder::getFetchCapabilities() const
 {
-	return (FETCH_ENVELOPE | FETCH_CONTENT_INFO |
-	        FETCH_SIZE | FETCH_FULL_HEADER | FETCH_UID |
-	        FETCH_IMPORTANCE);
+	return fetchAttributes::ENVELOPE | fetchAttributes::CONTENT_INFO |
+	       fetchAttributes::SIZE | fetchAttributes::FULL_HEADER |
+	       fetchAttributes::UID | fetchAttributes::IMPORTANCE;
 }
 
 
