@@ -162,13 +162,13 @@ public:
 	  *
 	  * @return parameters
 	  */
-	const propertySet& getParams() const;
+	const std::map <string, string>& getParams() const;
 
 	/** Return the parameters of the URL.
 	  *
 	  * @return parameters
 	  */
-	propertySet& getParams();
+	std::map <string, string>& getParams();
 
 	/** Build a string URL from this object.
 	  */
@@ -196,7 +196,7 @@ private:
 
 	string m_path;
 
-	propertySet m_params;
+	std::map <string, string> m_params;
 };
 
 

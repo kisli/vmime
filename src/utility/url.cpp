@@ -130,26 +130,23 @@ const string url::build() const
 		oss << urlUtils::encode(m_path);
 	}
 
-	const std::vector <ref <const propertySet::property> > params
-		= m_params.getPropertyList();
 
-	if (!params.empty())
+	if (!m_params.empty())
 	{
 		if (m_path.empty())
 			oss << "/";
 
 		oss << "?";
 
-		for (unsigned int i = 0 ; i < params.size() ; ++i)
+		for (std::map <string, string>::const_iterator it = m_params.begin() ;
+		     it != m_params.end() ; ++it)
 		{
-			const ref <const propertySet::property> prop = params[i];
-
-			if (i != 0)
+			if (it != m_params.begin())
 				oss << "&";
 
-			oss << urlUtils::encode(prop->getName());
+			oss << urlUtils::encode((*it).first);
 			oss << "=";
-			oss << urlUtils::encode(prop->getValue <string>());
+			oss << urlUtils::encode((*it).second);
 		}
 	}
 
@@ -267,7 +264,7 @@ void url::parse(const string& str)
 		portNum = UNSPECIFIED_PORT;
 
 	// Extract parameters
-	m_params.removeAllProperties();
+	m_params.clear();
 
 	if (!params.empty())
 	{
@@ -300,7 +297,7 @@ void url::parse(const string& str)
 			name = urlUtils::decode(name);
 			value = urlUtils::decode(value);
 
-			m_params.setProperty(name, value);
+			m_params[name] = value;
 
 			if (pos != string::npos)
 				++pos;
@@ -393,13 +390,13 @@ void url::setPath(const string& path)
 }
 
 
-const propertySet& url::getParams() const
+const std::map <string, string>& url::getParams() const
 {
 	return (m_params);
 }
 
 
-propertySet& url::getParams()
+std::map <string, string>& url::getParams()
 {
 	return (m_params);
 }

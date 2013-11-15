@@ -164,29 +164,29 @@ VMIME_TEST_SUITE_BEGIN(urlTest)
 		vmime::utility::url u1("", "");
 
 		VASSERT_EQ("1.1", true, parseHelper(u1, "proto://host/path?p1=v1&p2=v2"));
-		VASSERT_EQ("1.2", "v1", u1.getParams().getProperty <vmime::string>("p1"));
-		VASSERT_EQ("1.3", "v2", u1.getParams().getProperty <vmime::string>("p2"));
+		VASSERT_EQ("1.2", "v1", u1.getParams()["p1"]);
+		VASSERT_EQ("1.3", "v2", u1.getParams()["p2"]);
 		VASSERT_EQ("1.4", "/path", u1.getPath());
 
 		vmime::utility::url u2("", "");
 
 		VASSERT_EQ("2.1", true, parseHelper(u2, "proto://host/path?p1=v1&p2"));
-		VASSERT_EQ("2.2", "v1", u2.getParams().getProperty <vmime::string>("p1"));
-		VASSERT_EQ("2.3", "p2", u2.getParams().getProperty <vmime::string>("p2"));
+		VASSERT_EQ("2.2", "v1", u2.getParams()["p1"]);
+		VASSERT_EQ("2.3", "p2", u2.getParams()["p2"]);
 		VASSERT_EQ("2.4", "/path", u2.getPath());
 
 		vmime::utility::url u3("", "");
 
 		VASSERT_EQ("3.1", true, parseHelper(u3, "proto://host/?p1=v1&p2=v2"));
-		VASSERT_EQ("3.2", "v1", u3.getParams().getProperty <vmime::string>("p1"));
-		VASSERT_EQ("3.3", "v2", u3.getParams().getProperty <vmime::string>("p2"));
+		VASSERT_EQ("3.2", "v1", u3.getParams()["p1"]);
+		VASSERT_EQ("3.3", "v2", u3.getParams()["p2"]);
 		VASSERT_EQ("3.4", "", u3.getPath());
 
 		vmime::utility::url u4("", "");
 
 		VASSERT_EQ("4.1", true, parseHelper(u4, "proto://host/path?p1=%3D&%3D=v2"));
-		VASSERT_EQ("4.2", "=", u4.getParams().getProperty <vmime::string>("p1"));
-		VASSERT_EQ("4.3", "v2", u4.getParams().getProperty <vmime::string>("="));
+		VASSERT_EQ("4.2", "=", u4.getParams()["p1"]);
+		VASSERT_EQ("4.3", "v2", u4.getParams()["="]);
 		VASSERT_EQ("4.4", "/path", u4.getPath());
 	}
 
@@ -211,14 +211,17 @@ VMIME_TEST_SUITE_BEGIN(urlTest)
 		VASSERT_EQ("2", "proto://host", static_cast <vmime::string>(u2));
 
 		vmime::utility::url u3("proto", "host");
-		u3.getParams().setProperty("p1", "v1");
+		u3.getParams()["p1"] = "v1";
 		VASSERT_EQ("3.1", "proto://host/?p1=v1",
 			static_cast <vmime::string>(u3));
-		u3.getParams().setProperty("p2", "v2");
+		u3.getParams()["p2"] = "v2";
 		VASSERT_EQ("3.2", "proto://host/?p1=v1&p2=v2",
 			static_cast <vmime::string>(u3));
-		u3.getParams().setProperty("&", "=");
-		VASSERT_EQ("3.3", "proto://host/?p1=v1&p2=v2&%26=%3D",
+
+		// Test special characters
+		u3.getParams().clear();
+		u3.getParams()["&"] = "=";
+		VASSERT_EQ("3.3", "proto://host/?%26=%3D",
 			static_cast <vmime::string>(u3));
 	}
 
