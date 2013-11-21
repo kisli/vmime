@@ -74,8 +74,8 @@ shared_ptr <transport> session::getTransport
 	shared_ptr <session> sess(dynamicCast <session>(shared_from_this()));
 	shared_ptr <service> sv = serviceFactory::getInstance()->create(sess, protocol, auth);
 
-	if (sv->getType() != service::TYPE_TRANSPORT)
-		throw exceptions::no_service_available();
+	if (!sv || sv->getType() != service::TYPE_TRANSPORT)
+		return null;
 
 	return dynamicCast <transport>(sv);
 }
@@ -87,8 +87,8 @@ shared_ptr <transport> session::getTransport
 	shared_ptr <session> sess(dynamicCast <session>(shared_from_this()));
 	shared_ptr <service> sv = serviceFactory::getInstance()->create(sess, url, auth);
 
-	if (sv->getType() != service::TYPE_TRANSPORT)
-		throw exceptions::no_service_available();
+	if (!sv || sv->getType() != service::TYPE_TRANSPORT)
+		return null;
 
 	return dynamicCast <transport>(sv);
 }
@@ -106,8 +106,8 @@ shared_ptr <store> session::getStore
 	shared_ptr <session> sess(dynamicCast <session>(shared_from_this()));
 	shared_ptr <service> sv = serviceFactory::getInstance()->create(sess, protocol, auth);
 
-	if (sv->getType() != service::TYPE_STORE)
-		throw exceptions::no_service_available();
+	if (!sv || sv->getType() != service::TYPE_STORE)
+		return null;
 
 	return dynamicCast <store>(sv);
 }
@@ -119,8 +119,8 @@ shared_ptr <store> session::getStore
 	shared_ptr <session> sess(dynamicCast <session>(shared_from_this()));
 	shared_ptr <service> sv = serviceFactory::getInstance()->create(sess, url, auth);
 
-	if (sv->getType() != service::TYPE_STORE)
-		throw exceptions::no_service_available();
+	if (!sv || sv->getType() != service::TYPE_STORE)
+		return null;
 
 	return dynamicCast <store>(sv);
 }

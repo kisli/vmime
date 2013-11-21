@@ -101,7 +101,7 @@ shared_ptr <const serviceFactory::registeredService> serviceFactory::getServiceB
 			return (*it);
 	}
 
-	throw exceptions::no_service_available(name);
+	return null;
 }
 
 

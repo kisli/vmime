@@ -70,7 +70,8 @@ public:
 	  * @param auth authenticator object to use for the new transport service. If
 	  * NULL, a default one is used. The default authenticator simply return user
 	  * credentials by reading the session properties "auth.username" and "auth.password".
-	  * @return a new transport service
+	  * @return a new transport service, or NULL if no service is registered for this
+	  * protocol or is not a transport protocol
 	  */
 	shared_ptr <transport> getTransport
 		(shared_ptr <security::authenticator> auth = null);
@@ -81,7 +82,8 @@ public:
 	  * @param auth authenticator object to use for the new transport service. If
 	  * NULL, a default one is used. The default authenticator simply return user
 	  * credentials by reading the session properties "auth.username" and "auth.password".
-	  * @return a new transport service
+	  * @return a new transport service, or NULL if no service is registered for this
+	  * protocol or is not a transport protocol
 	  */
 	shared_ptr <transport> getTransport
 		(const string& protocol,
@@ -93,7 +95,8 @@ public:
 	  * @param auth authenticator object to use for the new transport service. If
 	  * NULL, a default one is used. The default authenticator simply return user
 	  * credentials by reading the session properties "auth.username" and "auth.password".
-	  * @return a new transport service
+	  * @return a new transport service, or NULL if no service is registered for this
+	  * protocol or is not a transport protocol
 	  */
 	shared_ptr <transport> getTransport
 		(const utility::url& url,
@@ -107,7 +110,8 @@ public:
 	  * @param auth authenticator object to use for the new store service. If
 	  * NULL, a default one is used. The default authenticator simply return user
 	  * credentials by reading the session properties "auth.username" and "auth.password".
-	  * @return a new store service
+	  * @return a new store service, or NULL if no service is registered for this
+	  * protocol or is not a store protocol
 	  */
 	shared_ptr <store> getStore(shared_ptr <security::authenticator> auth = null);
 
@@ -117,7 +121,8 @@ public:
 	  * @param auth authenticator object to use for the new store service. If
 	  * NULL, a default one is used. The default authenticator simply return user
 	  * credentials by reading the session properties "auth.username" and "auth.password".
-	  * @return a new store service
+	  * @return a new store service, or NULL if no service is registered for this
+	  * protocol or is not a store protocol
 	  */
 	shared_ptr <store> getStore
 		(const string& protocol,
@@ -129,7 +134,8 @@ public:
 	  * @param auth authenticator object to use for the new store service. If
 	  * NULL, a default one is used. The default authenticator simply return user
 	  * credentials by reading the session properties "auth.username" and "auth.password".
-	  * @return a new store service
+	  * @return a new store service, or NULL if no service is registered for this
+	  * protocol or is not a store protocol
 	  */
 	shared_ptr <store> getStore
 		(const utility::url& url,

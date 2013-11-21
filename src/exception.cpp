@@ -429,20 +429,6 @@ const char* unsupported_option::name() const throw() { return "unsupported_optio
 
 
 //
-// no_service_available
-//
-
-no_service_available::~no_service_available() throw() {}
-no_service_available::no_service_available(const string& proto, const exception& other)
-	: net_exception(proto.empty()
-		? "No service available for this protocol."
-		: "No service available for this protocol: '" + proto + "'.", other) {}
-
-exception* no_service_available::clone() const { return new no_service_available(*this); }
-const char* no_service_available::name() const throw() { return "no_service_available"; }
-
-
-//
 // illegal_state
 //
 

@@ -492,21 +492,6 @@ public:
 };
 
 
-/** No service available for this protocol.
-  */
-
-class VMIME_EXPORT no_service_available : public net_exception
-{
-public:
-
-	no_service_available(const string& proto = "", const exception& other = NO_EXCEPTION);
-	~no_service_available() throw();
-
-	exception* clone() const;
-	const char* name() const throw();
-};
-
-
 /** The current state of the object does not permit to execute the
   * operation (for example, you try to close a folder which is not open).
   */

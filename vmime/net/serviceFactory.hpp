@@ -101,9 +101,8 @@ public:
 	  * @param sess session
 	  * @param protocol protocol name (eg. "pop3")
 	  * @param auth authenticator used to provide credentials (can be NULL if not used)
-	  * @return a new service instance for the specified protocol
-	  * @throw exceptions::no_service_available if no service is registered
-	  * for this protocol
+	  * @return a new service instance for the specified protocol, or NULL if no service
+	  * is registered for this protocol
 	  */
 	shared_ptr <service> create
 		(shared_ptr <session> sess,
@@ -116,9 +115,8 @@ public:
 	  * @param u full URL with at least protocol and server (you can also specify
 	  * port, username and password)
 	  * @param auth authenticator used to provide credentials (can be NULL if not used)
-	  * @return a new service instance for the specified protocol
-	  * @throw exceptions::no_service_available if no service is registered
-	  * for this protocol
+	  * @return a new service instance for the specified protocol or NULL if no service
+	  * is registered for this protocol
 	  */
 	shared_ptr <service> create
 		(shared_ptr <session> sess,
@@ -128,8 +126,7 @@ public:
 	/** Return information about a registered protocol.
 	  *
 	  * @param protocol protocol name
-	  * @return information about this protocol
-	  * @throw exceptions::no_service_available if no service is registered
+	  * @return information about this protocol, or NULL if no service is registered
 	  * for this protocol
 	  */
 	shared_ptr <const registeredService> getServiceByProtocol(const string& protocol) const;
