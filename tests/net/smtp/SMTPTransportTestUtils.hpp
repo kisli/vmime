@@ -456,13 +456,11 @@ public:
 	bigMessageSMTPTestSocket()
 	{
 		m_state = STATE_NOT_CONNECTED;
-		m_bdatChunkCount = 0;
 		m_ehloSent = m_mailSent = m_rcptSent = m_quitSent = false;
 	}
 
 	~bigMessageSMTPTestSocket()
 	{
-		VASSERT_EQ("BDAT chunk count", 3, m_bdatChunkCount);
 		VASSERT("Client must send the QUIT command", m_quitSent);
 	}
 
@@ -476,22 +474,6 @@ public:
 
 	void onDataReceived()
 	{
-		if (m_state == STATE_DATA)
-		{
-			if (m_bdatChunkReceived != m_bdatChunkSize)
-			{
-				const size_type remaining = m_bdatChunkSize - m_bdatChunkReceived;
-				const size_type received = localReceiveRaw(NULL, remaining);
-
-				m_bdatChunkReceived += received;
-			}
-
-			if (m_bdatChunkReceived == m_bdatChunkSize)
-			{
-				m_state = STATE_COMMAND;
-			}
-		}
-
 		processCommand();
 	}
 
@@ -584,8 +566,6 @@ private:
 	};
 
 	int m_state;
-	int m_bdatChunkCount;
-	int m_bdatChunkSize, m_bdatChunkReceived;
 
 	bool m_ehloSent, m_mailSent, m_rcptSent, m_quitSent;
 };
