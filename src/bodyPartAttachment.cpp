@@ -28,7 +28,7 @@ namespace vmime
 {
 
 
-bodyPartAttachment::bodyPartAttachment(ref <const bodyPart> part)
+bodyPartAttachment::bodyPartAttachment(shared_ptr <const bodyPart> part)
 	: m_part(part)
 {
 }
@@ -40,7 +40,7 @@ const mediaType bodyPartAttachment::getType() const
 
 	try
 	{
-		type = *getContentType()->getValue().dynamicCast <const mediaType>();
+		type = *getContentType()->getValue <mediaType>();
 	}
 	catch (exceptions::no_such_field&)
 	{
@@ -76,7 +76,7 @@ const word bodyPartAttachment::getName() const
 	{
 		try
 		{
-			ref <parameter> prm = getContentType()->findParameter("name");
+			shared_ptr <parameter> prm = getContentType()->findParameter("name");
 
 			if (prm != NULL)
 				name = prm->getValue();
@@ -101,10 +101,10 @@ const text bodyPartAttachment::getDescription() const
 
 	try
 	{
-		ref <const headerField> cd =
+		shared_ptr <const headerField> cd =
 			getHeader()->findField(fields::CONTENT_DESCRIPTION);
 
-		description = *cd->getValue().dynamicCast <const text>();
+		description = *cd->getValue <text>();
 	}
 	catch (exceptions::no_such_field&)
 	{
@@ -121,39 +121,37 @@ const encoding bodyPartAttachment::getEncoding() const
 }
 
 
-const ref <const contentHandler> bodyPartAttachment::getData() const
+const shared_ptr <const contentHandler> bodyPartAttachment::getData() const
 {
 	return m_part->getBody()->getContents();
 }
 
 
-ref <const object> bodyPartAttachment::getPart() const
+shared_ptr <const object> bodyPartAttachment::getPart() const
 {
 	return m_part;
 }
 
 
-ref <const header> bodyPartAttachment::getHeader() const
+shared_ptr <const header> bodyPartAttachment::getHeader() const
 {
 	return m_part->getHeader();
 }
 
 
-ref <const contentDispositionField> bodyPartAttachment::getContentDisposition() const
+shared_ptr <const contentDispositionField> bodyPartAttachment::getContentDisposition() const
 {
-	return getHeader()->findField(fields::CONTENT_DISPOSITION).
-		dynamicCast <const contentDispositionField>();
+	return getHeader()->findField <contentDispositionField>(fields::CONTENT_DISPOSITION);
 }
 
 
-ref <const contentTypeField> bodyPartAttachment::getContentType() const
+shared_ptr <const contentTypeField> bodyPartAttachment::getContentType() const
 {
-	return getHeader()->findField(fields::CONTENT_TYPE).
-		dynamicCast <const contentTypeField>();
+	return getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
 }
 
 
-void bodyPartAttachment::generateIn(ref <bodyPart> /* parent */) const
+void bodyPartAttachment::generateIn(shared_ptr <bodyPart> /* parent */) const
 {
 	// Not used
 }

@@ -79,7 +79,7 @@ fileAttachment::fileAttachment(const string& filepath, const mediaType& type,
 }
 
 
-fileAttachment::fileAttachment(ref <contentHandler> cts, const word& filename, const mediaType& type)
+fileAttachment::fileAttachment(shared_ptr <contentHandler> cts, const word& filename, const mediaType& type)
 {
 	if (!filename.isEmpty())
 		m_fileInfo.setFilename(filename);
@@ -92,7 +92,7 @@ fileAttachment::fileAttachment(ref <contentHandler> cts, const word& filename, c
 }
 
 
-fileAttachment::fileAttachment(ref <contentHandler> cts, const word& filename,
+fileAttachment::fileAttachment(shared_ptr <contentHandler> cts, const word& filename,
 	const mediaType& type, const text& desc)
 {
 	if (!filename.isEmpty())
@@ -107,7 +107,7 @@ fileAttachment::fileAttachment(ref <contentHandler> cts, const word& filename,
 }
 
 
-fileAttachment::fileAttachment(ref <contentHandler> cts, const word& filename,
+fileAttachment::fileAttachment(shared_ptr <contentHandler> cts, const word& filename,
 	const mediaType& type, const text& desc, const encoding& enc)
 {
 	if (!filename.isEmpty())
@@ -123,15 +123,15 @@ fileAttachment::fileAttachment(ref <contentHandler> cts, const word& filename,
 
 void fileAttachment::setData(const string& filepath)
 {
-	ref <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
+	shared_ptr <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 	utility::file::path path = fsf->stringToPath(filepath);
 
-	ref <utility::file> file = fsf->create(path);
+	shared_ptr <utility::file> file = fsf->create(path);
 
 	if (!file->isFile())
 		throw exceptions::open_file_error();
 
-	m_data = vmime::create <streamContentHandler>
+	m_data = make_shared <streamContentHandler>
 		(file->getFileReader()->getInputStream(), file->getLength());
 
 	m_fileInfo.setFilename(path.getLastComponent());
@@ -139,7 +139,7 @@ void fileAttachment::setData(const string& filepath)
 }
 
 
-void fileAttachment::setData(ref <contentHandler> cts)
+void fileAttachment::setData(shared_ptr <contentHandler> cts)
 {
 	m_data = cts;
 
@@ -147,12 +147,12 @@ void fileAttachment::setData(ref <contentHandler> cts)
 }
 
 
-void fileAttachment::generatePart(ref <bodyPart> part) const
+void fileAttachment::generatePart(shared_ptr <bodyPart> part) const
 {
 	defaultAttachment::generatePart(part);
 
-	ref <contentDispositionField> cdf = part->getHeader()->ContentDisposition().
-		dynamicCast <contentDispositionField>();
+	shared_ptr <contentDispositionField> cdf =
+		dynamicCast <contentDispositionField>(part->getHeader()->ContentDisposition());
 
 	if (m_fileInfo.hasSize()) cdf->setSize(utility::stringUtils::toString(m_fileInfo.getSize()));
 	if (m_fileInfo.hasFilename() && !m_fileInfo.getFilename().isEmpty()) cdf->setFilename(m_fileInfo.getFilename());

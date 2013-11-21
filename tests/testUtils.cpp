@@ -243,9 +243,9 @@ bool testTimeoutHandler::handleTimeOut()
 
 // testTimeoutHandlerFactory : public vmime::net::timeoutHandlerFactory
 
-vmime::ref <vmime::net::timeoutHandler> testTimeoutHandlerFactory::create()
+vmime::shared_ptr <vmime::net::timeoutHandler> testTimeoutHandlerFactory::create()
 {
-	return vmime::create <testTimeoutHandler>();
+	return vmime::make_shared <testTimeoutHandler>();
 }
 
 

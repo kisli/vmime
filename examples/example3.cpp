@@ -52,12 +52,12 @@ int main()
 		mb.setExpeditor(vmime::mailbox("me@somewhere.com"));
 
 		vmime::addressList to;
-		to.appendAddress(vmime::create <vmime::mailbox>("you@elsewhere.com"));
+		to.appendAddress(vmime::make_shared <vmime::mailbox>("you@elsewhere.com"));
 
 		mb.setRecipients(to);
 
 		vmime::addressList bcc;
-		bcc.appendAddress(vmime::create <vmime::mailbox>("you-bcc@nowhere.com"));
+		bcc.appendAddress(vmime::make_shared <vmime::mailbox>("you-bcc@nowhere.com"));
 
 		mb.setBlindCopyRecipients(bcc);
 
@@ -69,35 +69,35 @@ int main()
 
 		// Fill in the text part: the message is available in two formats: HTML and plain text.
 		// HTML text part also includes an inline image (embedded into the message).
-		vmime::htmlTextPart& textPart = *mb.getTextPart().dynamicCast <vmime::htmlTextPart>();
+		vmime::htmlTextPart& textPart = *vmime::dynamicCast <vmime::htmlTextPart>(mb.getTextPart());
 
 		// -- embed an image (the returned "CID" (content identifier) is used to reference
 		// -- the image into HTML content).
-		vmime::ref <vmime::utility::fileSystemFactory> fs =
+		vmime::shared_ptr <vmime::utility::fileSystemFactory> fs =
 			vmime::platform::getHandler()->getFileSystemFactory();
 
-		vmime::ref <vmime::utility::file> imageFile =
+		vmime::shared_ptr <vmime::utility::file> imageFile =
 			fs->create(fs->stringToPath("/path/to/image.jpg"));
 
-		vmime::ref <vmime::utility::fileReader> fileReader =
+		vmime::shared_ptr <vmime::utility::fileReader> fileReader =
 			imageFile->getFileReader();
 
-		vmime::ref <vmime::contentHandler> imageCts =
-			vmime::create <vmime::streamContentHandler>
+		vmime::shared_ptr <vmime::contentHandler> imageCts =
+			vmime::make_shared <vmime::streamContentHandler>
 				(fileReader->getInputStream(), imageFile->getLength());
 
-		vmime::ref <const vmime::htmlTextPart::embeddedObject> obj = textPart.addObject
+		vmime::shared_ptr <const vmime::htmlTextPart::embeddedObject> obj = textPart.addObject
 			(imageCts, vmime::mediaType(vmime::mediaTypes::IMAGE, vmime::mediaTypes::IMAGE_JPEG));
 
 		// -- message text
-		textPart.setText(vmime::create <vmime::stringContentHandler>
+		textPart.setText(vmime::make_shared <vmime::stringContentHandler>
 			(vmime::string("This is the <b>HTML text</b>.<br/>"
 				"<img src=\"") + obj->getReferenceId() + vmime::string("\"/>")));
-		textPart.setPlainText(vmime::create <vmime::stringContentHandler>
+		textPart.setPlainText(vmime::make_shared <vmime::stringContentHandler>
 			("This is the plain text (without HTML formatting)."));
 
 		// Construction
-		vmime::ref <vmime::message> msg = mb.construct();
+		vmime::shared_ptr <vmime::message> msg = mb.construct();
 
 		// Raw text generation
 		vmime::string dataToSend = msg->generate();

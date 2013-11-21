@@ -55,8 +55,8 @@ public:
 	~header();
 
 #define FIELD_ACCESS(methodName, fieldName) \
-	ref <headerField> methodName() { return getField(fields::fieldName); } \
-	ref <const headerField> methodName() const { return findField(fields::fieldName); }
+	shared_ptr <headerField> methodName() { return getField(fields::fieldName); } \
+	shared_ptr <const headerField> methodName() const { return findField(fields::fieldName); }
 
 	FIELD_ACCESS(From,                         FROM)
 	FIELD_ACCESS(Sender,                       SENDER)
@@ -102,14 +102,26 @@ public:
 	  * @throw exceptions::no_such_field if no field with this name exists
 	  * @return first field with the specified name
 	  */
-	ref <headerField> findField(const string& fieldName) const;
+	shared_ptr <headerField> findField(const string& fieldName) const;
+
+	/** Find the first field that matches the specified name,
+	  * casted to the specified type.
+	  * If no field is found, an exception is thrown.
+	  *
+	  * @return value object
+	  */
+	template <typename T>
+	shared_ptr <T> findField(const string& fieldName) const
+	{
+		return dynamicCast <T>(findField(fieldName));
+	}
 
 	/** Find all fields that match the specified name.
 	  * If no field is found, an empty vector is returned.
 	  *
 	  * @return list of fields with the specified name
 	  */
-	std::vector <ref <headerField> > findAllFields(const string& fieldName);
+	std::vector <shared_ptr <headerField> > findAllFields(const string& fieldName);
 
 	/** Find the first field that matches the specified name.
 	  * If no field is found, one will be created and inserted into
@@ -118,13 +130,27 @@ public:
 	  * @return first field with the specified name or a new field
 	  * if no field is found
 	  */
-	ref <headerField> getField(const string& fieldName);
+	shared_ptr <headerField> getField(const string& fieldName);
+
+	/** Find the first field that matches the specified name,
+	  * casted to the specified type.
+	  * If no field is found, one will be created and inserted into
+	  * the header.
+	  *
+	  * @return first field with the specified name or a new field
+	  * if no field is found
+	  */
+	template <typename T>
+	shared_ptr <T> getField(const string& fieldName)
+	{
+		return dynamicCast <T>(getField(fieldName));
+	}
 
 	/** Add a field at the end of the list.
 	  *
 	  * @param field field to append
 	  */
-	void appendField(ref <headerField> field);
+	void appendField(shared_ptr <headerField> field);
 
 	/** Insert a new field before the specified field.
 	  *
@@ -132,7 +158,7 @@ public:
 	  * @param field field to insert
 	  * @throw exceptions::no_such_field if the field is not in the list
 	  */
-	void insertFieldBefore(ref <headerField> beforeField, ref <headerField> field);
+	void insertFieldBefore(shared_ptr <headerField> beforeField, shared_ptr <headerField> field);
 
 	/** Insert a new field before the specified position.
 	  *
@@ -140,7 +166,7 @@ public:
 	  * the beginning of the list)
 	  * @param field field to insert
 	  */
-	void insertFieldBefore(const size_t pos, ref <headerField> field);
+	void insertFieldBefore(const size_t pos, shared_ptr <headerField> field);
 
 	/** Insert a new field after the specified field.
 	  *
@@ -148,21 +174,21 @@ public:
 	  * @param field field to insert
 	  * @throw exceptions::no_such_field if the field is not in the list
 	  */
-	void insertFieldAfter(ref <headerField> afterField, ref <headerField> field);
+	void insertFieldAfter(shared_ptr <headerField> afterField, shared_ptr <headerField> field);
 
 	/** Insert a new field after the specified position.
 	  *
 	  * @param pos position of the field before the new field
 	  * @param field field to insert
 	  */
-	void insertFieldAfter(const size_t pos, ref <headerField> field);
+	void insertFieldAfter(const size_t pos, shared_ptr <headerField> field);
 
 	/** Remove the specified field from the list.
 	  *
 	  * @param field field to remove
 	  * @throw exceptions::no_such_field if the field is not in the list
 	  */
-	void removeField(ref <headerField> field);
+	void removeField(shared_ptr <headerField> field);
 
 	/** Remove the field at the specified position.
 	  *
@@ -176,7 +202,7 @@ public:
 	  * @param newField field to replace with
 	  * @throw exceptions::no_such_field if the field is not in the list
 	  */
-	void replaceField(ref <headerField> field, ref <headerField> newField);
+	void replaceField(shared_ptr <headerField> field, shared_ptr <headerField> newField);
 
 	/** Remove all fields from the list.
 	  */
@@ -203,38 +229,38 @@ public:
 	  * @param pos position
 	  * @return field at position 'pos'
 	  */
-	const ref <headerField> getFieldAt(const size_t pos);
+	const shared_ptr <headerField> getFieldAt(const size_t pos);
 
 	/** Return the field at the specified position.
 	  *
 	  * @param pos position
 	  * @return field at position 'pos'
 	  */
-	const ref <const headerField> getFieldAt(const size_t pos) const;
+	const shared_ptr <const headerField> getFieldAt(const size_t pos) const;
 
 	/** Return the field list.
 	  *
 	  * @return list of fields
 	  */
-	const std::vector <ref <const headerField> > getFieldList() const;
+	const std::vector <shared_ptr <const headerField> > getFieldList() const;
 
 	/** Return the field list.
 	  *
 	  * @return list of fields
 	  */
-	const std::vector <ref <headerField> > getFieldList();
+	const std::vector <shared_ptr <headerField> > getFieldList();
 
-	ref <component> clone() const;
+	shared_ptr <component> clone() const;
 	void copyFrom(const component& other);
 	header& operator=(const header& other);
 
-	const std::vector <ref <component> > getChildComponents();
+	const std::vector <shared_ptr <component> > getChildComponents();
 
 	utility::stream::size_type getGeneratedSize(const generationContext& ctx);
 
 private:
 
-	std::vector <ref <headerField> > m_fields;
+	std::vector <shared_ptr <headerField> > m_fields;
 
 
 	class fieldHasName
@@ -242,7 +268,7 @@ private:
 	public:
 
 		fieldHasName(const string& name);
-		bool operator() (const ref <const headerField>& field);
+		bool operator() (const shared_ptr <const headerField>& field);
 
 	private:
 
@@ -254,7 +280,7 @@ private:
 	public:
 
 		fieldHasNotName(const string& name);
-		bool operator() (const ref <const headerField>& field);
+		bool operator() (const shared_ptr <const headerField>& field);
 
 	private:
 

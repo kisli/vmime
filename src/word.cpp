@@ -25,7 +25,6 @@
 #include "vmime/text.hpp"
 
 #include "vmime/utility/stringUtils.hpp"
-#include "vmime/utility/smartPtr.hpp"
 #include "vmime/parserHelpers.hpp"
 
 #include "vmime/utility/outputStreamStringAdapter.hpp"
@@ -66,7 +65,7 @@ word::word(const string& buffer, const charset& charset)
 }
 
 
-ref <word> word::parseNext
+shared_ptr <word> word::parseNext
 	(const parsingContext& ctx, const string& buffer, const string::size_type position,
 	 const string::size_type end, string::size_type* newPosition,
 	 bool prevIsEncoded, bool* isEncoded, bool isFirst)
@@ -128,7 +127,7 @@ ref <word> word::parseNext
 				if (prevIsEncoded && !isFirst)
 					unencoded = whiteSpaces + unencoded;
 
-				ref <word> w = vmime::create <word>(unencoded, defaultCharset);
+				shared_ptr <word> w = make_shared <word>(unencoded, defaultCharset);
 				w->setParsedBounds(position, pos);
 
 				if (newPosition)
@@ -185,7 +184,7 @@ ref <word> word::parseNext
 
 			pos += 2; // ?=
 
-			ref <word> w = vmime::create <word>();
+			shared_ptr <word> w = make_shared <word>();
 			w->parse(buffer, wordStart, pos, NULL);
 
 			if (newPosition)
@@ -211,7 +210,7 @@ ref <word> word::parseNext
 	// Treat unencoded text at the end of the buffer
 	if (!unencoded.empty())
 	{
-		ref <word> w = vmime::create <word>(unencoded, defaultCharset);
+		shared_ptr <word> w = make_shared <word>(unencoded, defaultCharset);
 		w->setParsedBounds(position, end);
 
 		if (newPosition)
@@ -227,12 +226,12 @@ ref <word> word::parseNext
 }
 
 
-const std::vector <ref <word> > word::parseMultiple
+const std::vector <shared_ptr <word> > word::parseMultiple
 	(const parsingContext& ctx, const string& buffer, const string::size_type position,
 	 const string::size_type end, string::size_type* newPosition)
 {
-	std::vector <ref <word> > res;
-	ref <word> w;
+	std::vector <shared_ptr <word> > res;
+	shared_ptr <word> w;
 
 	string::size_type pos = position;
 
@@ -743,9 +742,9 @@ const string word::getConvertedText(const charset& dest, const charsetConverterO
 }
 
 
-ref <component> word::clone() const
+shared_ptr <component> word::clone() const
 {
-	return vmime::create <word>(m_buffer, m_charset);
+	return make_shared <word>(m_buffer, m_charset);
 }
 
 
@@ -785,9 +784,9 @@ void word::setBuffer(const string& buffer)
 }
 
 
-const std::vector <ref <component> > word::getChildComponents()
+const std::vector <shared_ptr <component> > word::getChildComponents()
 {
-	return std::vector <ref <component> >();
+	return std::vector <shared_ptr <component> >();
 }
 
 

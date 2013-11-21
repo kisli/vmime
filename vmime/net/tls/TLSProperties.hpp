@@ -91,7 +91,7 @@ public:
 
 private:
 
-	ref <object> m_data;
+	shared_ptr <object> m_data;
 };
 
 

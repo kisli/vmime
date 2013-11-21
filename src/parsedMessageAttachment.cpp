@@ -33,7 +33,7 @@ namespace vmime
 {
 
 
-parsedMessageAttachment::parsedMessageAttachment(ref <message> msg)
+parsedMessageAttachment::parsedMessageAttachment(shared_ptr <message> msg)
 	: m_msg(msg)
 {
 }
@@ -57,7 +57,7 @@ const word parsedMessageAttachment::getName() const
 }
 
 
-const ref <const contentHandler> parsedMessageAttachment::getData() const
+const shared_ptr <const contentHandler> parsedMessageAttachment::getData() const
 {
 	if (m_data == NULL)
 	{
@@ -66,7 +66,7 @@ const ref <const contentHandler> parsedMessageAttachment::getData() const
 
 		m_msg->generate(os);
 
-		m_data = vmime::create <stringContentHandler>(oss.str());
+		m_data = make_shared <stringContentHandler>(oss.str());
 	}
 
 	return m_data;
@@ -79,28 +79,28 @@ const encoding parsedMessageAttachment::getEncoding() const
 }
 
 
-ref <const object> parsedMessageAttachment::getPart() const
+shared_ptr <const object> parsedMessageAttachment::getPart() const
 {
-	return NULL;
+	return null;
 }
 
 
-ref <const header> parsedMessageAttachment::getHeader() const
+shared_ptr <const header> parsedMessageAttachment::getHeader() const
 {
-	return NULL;
+	return null;
 }
 
 
-ref <message> parsedMessageAttachment::getMessage() const
+shared_ptr <message> parsedMessageAttachment::getMessage() const
 {
 	return m_msg;
 }
 
 
-void parsedMessageAttachment::generateIn(ref <bodyPart> parent) const
+void parsedMessageAttachment::generateIn(shared_ptr <bodyPart> parent) const
 {
 	// Create and append a new part for this attachment
-	ref <bodyPart> part = vmime::create <bodyPart>();
+	shared_ptr <bodyPart> part = make_shared <bodyPart>();
 	parent->getBody()->appendPart(part);
 
 	// Set header fields

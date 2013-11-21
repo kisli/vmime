@@ -46,7 +46,7 @@ class windowsFileSystemFactory : public vmime::utility::fileSystemFactory
 {
 public:
 
-	ref <vmime::utility::file> create(const vmime::utility::file::path& path) const;
+	shared_ptr <vmime::utility::file> create(const vmime::utility::file::path& path) const;
 
 	const vmime::utility::file::path stringToPath(const vmime::string& str) const;
 	const vmime::string pathToString(const vmime::utility::file::path& path) const;
@@ -84,16 +84,16 @@ public:
 
 	bool exists() const;
 
-	ref <file> getParent() const;
+	shared_ptr <file> getParent() const;
 
 	void rename(const path& newName);
 	void remove();
 
-	ref <vmime::utility::fileWriter> getFileWriter();
+	shared_ptr <vmime::utility::fileWriter> getFileWriter();
 
-	ref <vmime::utility::fileReader> getFileReader();
+	shared_ptr <vmime::utility::fileReader> getFileReader();
 
-	ref <vmime::utility::fileIterator> getFiles() const;
+	shared_ptr <vmime::utility::fileIterator> getFiles() const;
 
 private:
 
@@ -114,7 +114,7 @@ public:
 	~windowsFileIterator();
 
 	bool hasMoreElements() const;
-	vmime::ref <vmime::utility::file> nextElement();
+	shared_ptr <vmime::utility::file> nextElement();
 
 private:
 
@@ -140,7 +140,7 @@ public:
 
 public:
 
-	ref <vmime::utility::inputStream> getInputStream();
+	shared_ptr <vmime::utility::inputStream> getInputStream();
 
 private:
 
@@ -180,7 +180,7 @@ public:
 
 public:
 
-	ref <vmime::utility::outputStream> getOutputStream();
+	shared_ptr <vmime::utility::outputStream> getOutputStream();
 
 private:
 

@@ -25,79 +25,29 @@
 #include "vmime/object.hpp"
 
 
-#ifndef VMIME_BUILDING_DOC
-
-
 namespace vmime
 {
 
 
 object::object()
-	: m_refMgr(utility::refManager::create(this))
 {
 }
 
 
 object::object(const object&)
-	: m_refMgr(utility::refManager::create(this))
 {
 }
 
 
 object& object::operator=(const object&)
 {
-	// Do _NOT_ copy 'm_refMgr'
 	return *this;
 }
 
 
 object::~object()
 {
-	delete m_refMgr;
-	m_refMgr = 0;
-}
-
-
-ref <object> object::thisRef()
-{
-	m_refMgr->addStrong();
-	return ref <object>::fromPtr(this);
-}
-
-
-ref <const object> object::thisRef() const
-{
-	m_refMgr->addStrong();
-	return ref <const object>::fromPtr(this);
-}
-
-
-weak_ref <object> object::thisWeakRef()
-{
-	return weak_ref <object>(thisRef());
-}
-
-
-weak_ref <const object> object::thisWeakRef() const
-{
-	return weak_ref <const object>(thisRef());
-}
-
-
-void object::setRefManager(utility::refManager* mgr)
-{
-	m_refMgr = mgr;
-}
-
-
-utility::refManager* object::getRefManager() const
-{
-	return m_refMgr;
 }
 
 
 } // vmime
-
-
-#endif // VMIME_BUILDING_DOC
-

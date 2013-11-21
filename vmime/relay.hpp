@@ -47,11 +47,11 @@ public:
 
 public:
 
-	ref <component> clone() const;
+	shared_ptr <component> clone() const;
 	void copyFrom(const component& other);
 	relay& operator=(const relay& other);
 
-	const std::vector <ref <component> > getChildComponents();
+	const std::vector <shared_ptr <component> > getChildComponents();
 
 	const string& getFrom() const;
 	void setFrom(const string& from);

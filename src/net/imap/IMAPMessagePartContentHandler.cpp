@@ -43,17 +43,17 @@ namespace imap {
 
 
 IMAPMessagePartContentHandler::IMAPMessagePartContentHandler
-	(ref <IMAPMessage> msg, ref <messagePart> part, const vmime::encoding& encoding)
+	(shared_ptr <IMAPMessage> msg, shared_ptr <messagePart> part, const vmime::encoding& encoding)
 	: m_message(msg), m_part(part), m_encoding(encoding)
 {
 }
 
 
-ref <contentHandler> IMAPMessagePartContentHandler::clone() const
+shared_ptr <contentHandler> IMAPMessagePartContentHandler::clone() const
 {
-	return create <IMAPMessagePartContentHandler>
-		(m_message.acquire().constCast <IMAPMessage>(),
-		 m_part.acquire().constCast <messagePart>(),
+	return make_shared <IMAPMessagePartContentHandler>
+		(constCast <IMAPMessage>(m_message.lock()),
+		 constCast <messagePart>(m_part.lock()),
 		 m_encoding);
 }
 
@@ -61,8 +61,8 @@ ref <contentHandler> IMAPMessagePartContentHandler::clone() const
 void IMAPMessagePartContentHandler::generate
 	(utility::outputStream& os, const vmime::encoding& enc, const string::size_type maxLineLength) const
 {
-	ref <IMAPMessage> msg = m_message.acquire().constCast <IMAPMessage>();
-	ref <messagePart> part = m_part.acquire().constCast <messagePart>();
+	shared_ptr <IMAPMessage> msg = constCast <IMAPMessage>(m_message.lock());
+	shared_ptr <messagePart> part = constCast <messagePart>(m_part.lock());
 
 	// Data is already encoded
 	if (isEncoded())
@@ -85,14 +85,14 @@ void IMAPMessagePartContentHandler::generate
 			std::ostringstream oss2;
 			utility::outputStreamAdapter tmp2(oss2);
 
-			ref <utility::encoder::encoder> theDecoder = m_encoding.getEncoder();
+			shared_ptr <utility::encoder::encoder> theDecoder = m_encoding.getEncoder();
 			theDecoder->decode(in, tmp2);
 
 			// Reencode to output stream
 			string str = oss2.str();
 			utility::inputStreamStringAdapter tempIn(str);
 
-			ref <utility::encoder::encoder> theEncoder = enc.getEncoder();
+			shared_ptr <utility::encoder::encoder> theEncoder = enc.getEncoder();
 			theEncoder->getProperties()["maxlinelength"] = maxLineLength;
 			theEncoder->getProperties()["text"] = (m_contentType.getType() == mediaTypes::TEXT);
 
@@ -114,7 +114,7 @@ void IMAPMessagePartContentHandler::generate
 		msg->extractPart(part, tmp, NULL);
 
 		// Encode temporary buffer to output stream
-		ref <utility::encoder::encoder> theEncoder = enc.getEncoder();
+		shared_ptr <utility::encoder::encoder> theEncoder = enc.getEncoder();
 		theEncoder->getProperties()["maxlinelength"] = maxLineLength;
 		theEncoder->getProperties()["text"] = (m_contentType.getType() == mediaTypes::TEXT);
 
@@ -128,8 +128,8 @@ void IMAPMessagePartContentHandler::generate
 void IMAPMessagePartContentHandler::extract
 	(utility::outputStream& os, utility::progressListener* progress) const
 {
-	ref <IMAPMessage> msg = m_message.acquire().constCast <IMAPMessage>();
-	ref <messagePart> part = m_part.acquire().constCast <messagePart>();
+	shared_ptr <IMAPMessage> msg = constCast <IMAPMessage>(m_message.lock());
+	shared_ptr <messagePart> part = constCast <messagePart>(m_part.lock());
 
 	// No decoding to perform
 	if (!isEncoded())
@@ -149,7 +149,7 @@ void IMAPMessagePartContentHandler::extract
 		utility::inputStreamStringAdapter is(oss.str());
 		utility::progressListenerSizeAdapter plsa(progress, getLength());
 
-		ref <utility::encoder::encoder> theDecoder = m_encoding.getEncoder();
+		shared_ptr <utility::encoder::encoder> theDecoder = m_encoding.getEncoder();
 		theDecoder->decode(is, os, &plsa);
 	}
 }
@@ -158,8 +158,8 @@ void IMAPMessagePartContentHandler::extract
 void IMAPMessagePartContentHandler::extractRaw
 	(utility::outputStream& os, utility::progressListener* progress) const
 {
-	ref <IMAPMessage> msg = m_message.acquire().constCast <IMAPMessage>();
-	ref <messagePart> part = m_part.acquire().constCast <messagePart>();
+	shared_ptr <IMAPMessage> msg = constCast <IMAPMessage>(m_message.lock());
+	shared_ptr <messagePart> part = constCast <messagePart>(m_part.lock());
 
 	msg->extractPart(part, os, progress);
 }
@@ -167,7 +167,7 @@ void IMAPMessagePartContentHandler::extractRaw
 
 string::size_type IMAPMessagePartContentHandler::getLength() const
 {
-	return m_part.acquire()->getSize();
+	return m_part.lock()->getSize();
 }
 
 

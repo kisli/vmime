@@ -89,7 +89,7 @@ public:
 	  * @return fetch request
 	  */
 	static const string buildFetchRequest
-		(ref <IMAPConnection> cnt, const messageSet& msgs, const fetchAttributes& options);
+		(shared_ptr <IMAPConnection> cnt, const messageSet& msgs, const fetchAttributes& options);
 
 	/** Convert a parser-style address list to a mailbox list.
 	  *
@@ -115,7 +115,7 @@ public:
 private:
 
 	static const string buildFetchRequestImpl
-		(ref <IMAPConnection> cnt, const string& mode, const string& set, const int options);
+		(shared_ptr <IMAPConnection> cnt, const string& mode, const string& set, const int options);
 };
 
 

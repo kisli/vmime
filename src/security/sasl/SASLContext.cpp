@@ -62,27 +62,27 @@ SASLContext::~SASLContext()
 }
 
 
-ref <SASLSession> SASLContext::createSession
+shared_ptr <SASLSession> SASLContext::createSession
 	(const string& serviceName,
-	 ref <authenticator> auth, ref <SASLMechanism> mech)
+	 shared_ptr <authenticator> auth, shared_ptr <SASLMechanism> mech)
 {
-	return vmime::create <SASLSession>
-		(serviceName, thisRef().dynamicCast <SASLContext>(), auth, mech);
+	return make_shared <SASLSession>
+		(serviceName, dynamicCast <SASLContext>(shared_from_this()), auth, mech);
 }
 
 
-ref <SASLMechanism> SASLContext::createMechanism(const string& name)
+shared_ptr <SASLMechanism> SASLContext::createMechanism(const string& name)
 {
 	return SASLMechanismFactory::getInstance()->create
-		(thisRef().dynamicCast <SASLContext>(), name);
+		(dynamicCast <SASLContext>(shared_from_this()), name);
 }
 
 
-ref <SASLMechanism> SASLContext::suggestMechanism
-	(const std::vector <ref <SASLMechanism> >& mechs)
+shared_ptr <SASLMechanism> SASLContext::suggestMechanism
+	(const std::vector <shared_ptr <SASLMechanism> >& mechs)
 {
 	if (mechs.empty())
-		return 0;
+		return null;
 
 	std::ostringstream oss;
 
@@ -102,7 +102,7 @@ ref <SASLMechanism> SASLContext::suggestMechanism
 		}
 	}
 
-	return 0;
+	return null;
 }
 
 
@@ -113,7 +113,7 @@ void SASLContext::decodeB64(const string& input, byte_t** output, long* outputLe
 	utility::inputStreamStringAdapter is(input);
 	utility::outputStreamStringAdapter os(res);
 
-	ref <utility::encoder::encoder> dec =
+	shared_ptr <utility::encoder::encoder> dec =
 		utility::encoder::encoderFactory::getInstance()->create("base64");
 
 	dec->decode(is, os);
@@ -134,7 +134,7 @@ const string SASLContext::encodeB64(const byte_t* input, const long inputLen)
 	utility::inputStreamByteBufferAdapter is(input, inputLen);
 	utility::outputStreamStringAdapter os(res);
 
-	ref <utility::encoder::encoder> enc =
+	shared_ptr <utility::encoder::encoder> enc =
 		utility::encoder::encoderFactory::getInstance()->create("base64");
 
 	enc->encode(is, os);

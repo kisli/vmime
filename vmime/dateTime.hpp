@@ -224,7 +224,7 @@ public:
 
 	void copyFrom(const component& other);
 
-	ref <component> clone() const;
+	shared_ptr <component> clone() const;
 
 	// Comparison
 	bool operator==(const datetime& other) const;
@@ -237,7 +237,7 @@ public:
 	// Current date and time
 	static const datetime now();
 
-	const std::vector <ref <component> > getChildComponents();
+	const std::vector <shared_ptr <component> > getChildComponents();
 
 protected:
 

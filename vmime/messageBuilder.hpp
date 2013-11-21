@@ -136,13 +136,13 @@ public:
 	  *
 	  * @param attach new attachment
 	  */
-	void attach(ref <attachment> attach);
+	void attach(shared_ptr <attachment> attach);
 
 	/** Attach a new object to the message.
 	  *
 	  * @param attach new attachment
 	  */
-	void appendAttachment(ref <attachment> attach);
+	void appendAttachment(shared_ptr <attachment> attach);
 
 	/** Remove the attachment at the specified position.
 	  *
@@ -155,14 +155,14 @@ public:
 	  * @param pos position of the attachment
 	  * @return attachment at the specified position
 	  */
-	const ref <const attachment> getAttachmentAt(const size_t pos) const;
+	const shared_ptr <const attachment> getAttachmentAt(const size_t pos) const;
 
 	/** Return the attachment at the specified position.
 	  *
 	  * @param pos position of the attachment
 	  * @return attachment at the specified position
 	  */
-	ref <attachment> getAttachmentAt(const size_t pos);
+	shared_ptr <attachment> getAttachmentAt(const size_t pos);
 
 	/** Return the number of attachments in the message.
 	  *
@@ -174,13 +174,13 @@ public:
 	  *
 	  * @return list of attachments
 	  */
-	const std::vector <ref <const attachment> > getAttachmentList() const;
+	const std::vector <shared_ptr <const attachment> > getAttachmentList() const;
 
 	/** Return the list of attachments.
 	  *
 	  * @return list of attachments
 	  */
-	const std::vector <ref <attachment> > getAttachmentList();
+	const std::vector <shared_ptr <attachment> > getAttachmentList();
 
 	/** Change the type of the text part and construct a new part.
 	  *
@@ -192,14 +192,14 @@ public:
 	  *
 	  * @return text part of the message
 	  */
-	ref <textPart> getTextPart();
+	shared_ptr <textPart> getTextPart();
 
 	/** Construct a new message based on the information specified
 	  * in this object.
 	  *
 	  * @return a new message
 	  */
-	ref <message> construct() const;
+	shared_ptr <message> construct() const;
 
 private:
 
@@ -211,9 +211,9 @@ private:
 
 	text m_subject;
 
-	ref <textPart> m_textPart;
+	shared_ptr <textPart> m_textPart;
 
-	std::vector <ref <attachment> > m_attach;
+	std::vector <shared_ptr <attachment> > m_attach;
 };
 
 

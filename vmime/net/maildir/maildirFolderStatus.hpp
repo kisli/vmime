@@ -53,7 +53,7 @@ public:
 	unsigned int getMessageCount() const;
 	unsigned int getUnseenCount() const;
 
-	ref <folderStatus> clone() const;
+	shared_ptr <folderStatus> clone() const;
 
 
 	void setMessageCount(const unsigned int count);

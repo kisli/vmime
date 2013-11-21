@@ -51,19 +51,19 @@ public:
 	~addressList();
 
 
-	ref <component> clone() const;
+	shared_ptr <component> clone() const;
 	void copyFrom(const component& other);
 	addressList& operator=(const addressList& other);
 	addressList& operator=(const mailboxList& other);
 
-	const std::vector <ref <component> > getChildComponents();
+	const std::vector <shared_ptr <component> > getChildComponents();
 
 
 	/** Add a address at the end of the list.
 	  *
 	  * @param addr address to append
 	  */
-	void appendAddress(ref <address> addr);
+	void appendAddress(shared_ptr <address> addr);
 
 	/** Insert a new address before the specified address.
 	  *
@@ -71,7 +71,7 @@ public:
 	  * @param addr address to insert
 	  * @throw exceptions::no_such_address if the address is not in the list
 	  */
-	void insertAddressBefore(ref <address> beforeAddress, ref <address> addr);
+	void insertAddressBefore(shared_ptr <address> beforeAddress, shared_ptr <address> addr);
 
 	/** Insert a new address before the specified position.
 	  *
@@ -79,7 +79,7 @@ public:
 	  * the beginning of the list)
 	  * @param addr address to insert
 	  */
-	void insertAddressBefore(const size_t pos, ref <address> addr);
+	void insertAddressBefore(const size_t pos, shared_ptr <address> addr);
 
 	/** Insert a new address after the specified address.
 	  *
@@ -87,21 +87,21 @@ public:
 	  * @param addr address to insert
 	  * @throw exceptions::no_such_address if the address is not in the list
 	  */
-	void insertAddressAfter(ref <address> afterAddress, ref <address> addr);
+	void insertAddressAfter(shared_ptr <address> afterAddress, shared_ptr <address> addr);
 
 	/** Insert a new address after the specified position.
 	  *
 	  * @param pos position of the address before the new address
 	  * @param addr address to insert
 	  */
-	void insertAddressAfter(const size_t pos, ref <address> addr);
+	void insertAddressAfter(const size_t pos, shared_ptr <address> addr);
 
 	/** Remove the specified address from the list.
 	  *
 	  * @param addr address to remove
 	  * @throw exceptions::no_such_address if the address is not in the list
 	  */
-	void removeAddress(ref <address> addr);
+	void removeAddress(shared_ptr <address> addr);
 
 	/** Remove the address at the specified position.
 	  *
@@ -130,26 +130,26 @@ public:
 	  * @param pos position
 	  * @return address at position 'pos'
 	  */
-	ref <address> getAddressAt(const size_t pos);
+	shared_ptr <address> getAddressAt(const size_t pos);
 
 	/** Return the address at the specified position.
 	  *
 	  * @param pos position
 	  * @return address at position 'pos'
 	  */
-	const ref <const address> getAddressAt(const size_t pos) const;
+	const shared_ptr <const address> getAddressAt(const size_t pos) const;
 
 	/** Return the address list.
 	  *
 	  * @return list of addresses
 	  */
-	const std::vector <ref <const address> > getAddressList() const;
+	const std::vector <shared_ptr <const address> > getAddressList() const;
 
 	/** Return the address list.
 	  *
 	  * @return list of addresses
 	  */
-	const std::vector <ref <address> > getAddressList();
+	const std::vector <shared_ptr <address> > getAddressList();
 
 	/** Return a list of mailboxes.
 	  * If some addresses are actually groups, mailboxes are recursively
@@ -157,11 +157,11 @@ public:
 	  *
 	  * @return list of mailboxes
 	  */
-	ref <mailboxList> toMailboxList() const;
+	shared_ptr <mailboxList> toMailboxList() const;
 
 private:
 
-	std::vector <ref <address> > m_list;
+	std::vector <shared_ptr <address> > m_list;
 
 protected:
 

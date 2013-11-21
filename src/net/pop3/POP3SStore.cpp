@@ -35,7 +35,7 @@ namespace net {
 namespace pop3 {
 
 
-POP3SStore::POP3SStore(ref <session> sess, ref <security::authenticator> auth)
+POP3SStore::POP3SStore(shared_ptr <session> sess, shared_ptr <security::authenticator> auth)
 	: POP3Store(sess, auth, true)
 {
 }

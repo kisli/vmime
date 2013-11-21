@@ -47,7 +47,7 @@ class VMIME_EXPORT store : public service
 {
 protected:
 
-	store(ref <session> sess, const serviceInfos& infos, ref <security::authenticator> auth)
+	store(shared_ptr <session> sess, const serviceInfos& infos, shared_ptr <security::authenticator> auth)
 		: service(sess, infos, auth) { }
 
 public:
@@ -57,21 +57,21 @@ public:
 	  *
 	  * @return default folder
 	  */
-	virtual ref <folder> getDefaultFolder() = 0;
+	virtual shared_ptr <folder> getDefaultFolder() = 0;
 
 	/** Return the root folder. This is protocol dependent
 	  * and usually is the user's mail drop root folder.
 	  *
 	  * @return root folder
 	  */
-	virtual ref <folder> getRootFolder() = 0;
+	virtual shared_ptr <folder> getRootFolder() = 0;
 
 	/** Return the folder specified by the path.
 	  *
 	  * @param path absolute folder path
 	  * @return folder at the specified path
 	  */
-	virtual ref <folder> getFolder(const folder::path& path) = 0;
+	virtual shared_ptr <folder> getFolder(const folder::path& path) = 0;
 
 	/** Test whether the specified folder name is a syntactically
 	  * a valid name.

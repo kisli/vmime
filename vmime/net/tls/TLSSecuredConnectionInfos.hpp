@@ -52,7 +52,7 @@ class VMIME_EXPORT TLSSecuredConnectionInfos : public securedConnectionInfos
 public:
 
 	TLSSecuredConnectionInfos(const string& host, const port_t port,
-		ref <TLSSession> tlsSession, ref <TLSSocket> tlsSocket);
+		shared_ptr <TLSSession> tlsSession, shared_ptr <TLSSocket> tlsSocket);
 
 	const string getHost() const;
 	port_t getPort() const;
@@ -61,15 +61,15 @@ public:
 	  *
 	  * @return server certificate chain
 	  */
-	ref <const security::cert::certificateChain> getPeerCertificates() const;
+	shared_ptr <const security::cert::certificateChain> getPeerCertificates() const;
 
 private:
 
 	string m_host;
 	port_t m_port;
 
-	ref <TLSSession> m_tlsSession;
-	ref <TLSSocket> m_tlsSocket;
+	shared_ptr <TLSSession> m_tlsSession;
+	shared_ptr <TLSSocket> m_tlsSocket;
 };
 
 

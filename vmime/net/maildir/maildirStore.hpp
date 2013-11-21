@@ -60,14 +60,14 @@ class VMIME_EXPORT maildirStore : public store
 
 public:
 
-	maildirStore(ref <session> sess, ref <security::authenticator> auth);
+	maildirStore(shared_ptr <session> sess, shared_ptr <security::authenticator> auth);
 	~maildirStore();
 
 	const string getProtocolName() const;
 
-	ref <folder> getDefaultFolder();
-	ref <folder> getRootFolder();
-	ref <folder> getFolder(const folder::path& path);
+	shared_ptr <folder> getDefaultFolder();
+	shared_ptr <folder> getRootFolder();
+	shared_ptr <folder> getFolder(const folder::path& path);
 
 	bool isValidFolderName(const folder::path::component& name) const;
 
@@ -85,10 +85,10 @@ public:
 	int getCapabilities() const;
 
 	bool isSecuredConnection() const;
-	ref <connectionInfos> getConnectionInfos() const;
+	shared_ptr <connectionInfos> getConnectionInfos() const;
 
-	ref <maildirFormat> getFormat();
-	ref <const maildirFormat> getFormat() const;
+	shared_ptr <maildirFormat> getFormat();
+	shared_ptr <const maildirFormat> getFormat() const;
 
 private:
 
@@ -98,7 +98,7 @@ private:
 
 	std::list <maildirFolder*> m_folders;
 
-	ref <maildirFormat> m_format;
+	shared_ptr <maildirFormat> m_format;
 
 	bool m_connected;
 

@@ -16,13 +16,16 @@ To build VMime from the sources, you will need the following:
 \item a working C++ compiler with good STL implementation and also a good
 support for templates (for example, \href{http://gcc.gnu.org/}{GNU GCC}) ;
 \item \href{http://www.cmake.org/}{CMake} build system ;
-\item an usable iconv() implementation (see
+\item either \href{http://www.icu-project.org}{ICU library} or an usable
+{\vcode iconv()} implementation (see
 \href{http://www.gnu.org/software/libiconv/}{libiconv of GNU Project}) ;
 \item the \href{http://www.gnu.org/software/gsasl/}{GNU SASL Library} if you
 want SASL\footnote{Simple Authentication and Security Layer} support ;
 \item either the \href{http://www.openssl.org}{OpenSSL library} or the
 \href{http://www.gnu.org/software/gnutls/}{GNU TLS Library} if you
 want SSL and TLS\footnote{Transport Layer Security} support ;
+\item the \href{http://www.boost.org}{Boost C++ library} if you are not using
+C++11 (or your compiler does not support it), for {\vcode shared\_ptr<>}.
 \end{itemize}
 
 % ============================================================================
@@ -113,3 +116,41 @@ the library into the default location (ie: /usr/lib and /usr/include).}
 Now, you are done! You can jump to the next chapter to know how to use VMime
 in your program...
 
+% ============================================================================
+\section{Build options}
+
+Some options can be given to CMake to control the build:
+
+\begin{table}[!ht]
+\noindent\begin{tabularx}{1.0\textwidth}{|l|X|}
+\hline
+	{\bf Option name} &
+	{\bf Description} \\
+\hline
+\hline
+VMIME\_BUILD\_SHARED\_LIBRARY &
+Set to ON to build a shared version (.so) of the library (default is ON). \\
+\hline
+VMIME\_BUILD\_STATIC\_LIBRARY &
+Set to ON to build a static version (.a) of the library (default is ON). \\
+\hline
+VMIME\_BUILD\_TESTS &
+Set to ON to build unit tests (default is OFF). \\
+\hline
+VMIME\_TLS\_SUPPORT\_LIB\_IS\_OPENSSL \\ VMIME\_TLS\_SUPPORT\_LIB\_IS\_GNUTLS &
+Set either the one or the other (but not both) to ON to force using either OpenSSL
+or GNU TLS as the SSL library (default depends on which libraries are available on
+your system). \\
+\hline
+VMIME\_CHARSETCONV\_LIB\_IS\_ICONV \\ VMIME\_CHARSETCONV\_LIB\_IS\_ICU &
+Set either the one or the other (but not both) to ON to force using either iconv
+or ICU as the charset conversion library (default depends on which libraries are
+available on your system). \\
+\hline
+CMAKE\_BUILD\_TYPE &
+Set the build type: either "Release" or "Debug". In Debug build, optimizations
+are disabled and debugging information are enabled. \\
+\hline
+\end{tabularx}
+\caption{CMake build options}
+\end{table}

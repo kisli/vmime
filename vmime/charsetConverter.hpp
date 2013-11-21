@@ -69,7 +69,7 @@ public:
 	  * @param dest output charset
 	  * @param opts conversion options
 	  */
-	static ref <charsetConverter> create
+	static shared_ptr <charsetConverter> create
 		(const charset& source, const charset& dest,
 		 const charsetConverterOptions& opts = charsetConverterOptions());
 
@@ -103,11 +103,11 @@ public:
 	  * @param os stream into which filtered data will be written
 	  * @return a filtered output stream, or NULL if not supported
 	  */
-	virtual ref <utility::charsetFilteredOutputStream> getFilteredOutputStream(utility::outputStream& os) = 0;
+	virtual shared_ptr <utility::charsetFilteredOutputStream> getFilteredOutputStream(utility::outputStream& os) = 0;
 
 private:
 
-	static ref <charsetConverter> createGenericConverter
+	static shared_ptr <charsetConverter> createGenericConverter
 		(const charset& source, const charset& dest,
 		 const charsetConverterOptions& opts);
 };

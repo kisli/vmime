@@ -56,7 +56,7 @@ public:
 	  * @return a reference to a new content handler
 	  */
 	fileContentHandler
-		(ref <utility::file> file,
+		(shared_ptr <utility::file> file,
 		 const vmime::encoding& enc = NO_ENCODING);
 
 	~fileContentHandler();
@@ -64,7 +64,7 @@ public:
 	fileContentHandler(const fileContentHandler& cts);
 	fileContentHandler& operator=(const fileContentHandler& cts);
 
-	ref <contentHandler> clone() const;
+	shared_ptr <contentHandler> clone() const;
 
 	/** Sets the data managed by this content handler.
 	  *
@@ -73,7 +73,7 @@ public:
 	  * in the file is already encoded with the specified encoding
 	  */
 	void setData
-		(ref <utility::file> file,
+		(shared_ptr <utility::file> file,
 		 const vmime::encoding& enc = NO_ENCODING);
 
 private:
@@ -83,7 +83,7 @@ private:
 	vmime::encoding m_encoding;
 
 	// Actual data
-	ref <utility::file> m_file;
+	shared_ptr <utility::file> m_file;
 };
 
 

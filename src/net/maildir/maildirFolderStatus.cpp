@@ -74,9 +74,9 @@ void maildirFolderStatus::setUnseenCount(const unsigned int unseen)
 }
 
 
-ref <folderStatus> maildirFolderStatus::clone() const
+shared_ptr <folderStatus> maildirFolderStatus::clone() const
 {
-	return vmime::create <maildirFolderStatus>(*this);
+	return make_shared <maildirFolderStatus>(*this);
 }
 
 

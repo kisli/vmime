@@ -79,9 +79,9 @@ bool posixFileIterator::hasMoreElements() const
 }
 
 
-ref <vmime::utility::file> posixFileIterator::nextElement()
+shared_ptr <vmime::utility::file> posixFileIterator::nextElement()
 {
-	ref <posixFile> file = vmime::create <posixFile>
+	shared_ptr <posixFile> file = make_shared <posixFile>
 		(m_path / vmime::utility::file::path::component(m_dirEntry->d_name));
 
 	getNextElement();
@@ -258,14 +258,14 @@ posixFileWriter::posixFileWriter(const vmime::utility::file::path& path, const v
 }
 
 
-ref <vmime::utility::outputStream> posixFileWriter::getOutputStream()
+shared_ptr <vmime::utility::outputStream> posixFileWriter::getOutputStream()
 {
 	int fd = 0;
 
 	if ((fd = ::open(m_nativePath.c_str(), O_WRONLY, 0660)) == -1)
 		posixFileSystemFactory::reportError(m_path, errno);
 
-	return vmime::create <posixFileWriterOutputStream>(m_path, fd);
+	return make_shared <posixFileWriterOutputStream>(m_path, fd);
 }
 
 
@@ -280,14 +280,14 @@ posixFileReader::posixFileReader(const vmime::utility::file::path& path, const v
 }
 
 
-ref <vmime::utility::inputStream> posixFileReader::getInputStream()
+shared_ptr <vmime::utility::inputStream> posixFileReader::getInputStream()
 {
 	int fd = 0;
 
 	if ((fd = ::open(m_nativePath.c_str(), O_RDONLY, 0640)) == -1)
 		posixFileSystemFactory::reportError(m_path, errno);
 
-	return vmime::create <posixFileReaderInputStream>(m_path, fd);
+	return make_shared <posixFileReaderInputStream>(m_path, fd);
 }
 
 
@@ -417,12 +417,12 @@ bool posixFile::exists() const
 }
 
 
-ref <vmime::utility::file> posixFile::getParent() const
+shared_ptr <vmime::utility::file> posixFile::getParent() const
 {
 	if (m_path.isEmpty())
-		return NULL;
+		return null;
 	else
-		return vmime::create <posixFile>(m_path.getParent());
+		return make_shared <posixFile>(m_path.getParent());
 }
 
 
@@ -465,24 +465,24 @@ void posixFile::remove()
 }
 
 
-ref <vmime::utility::fileWriter> posixFile::getFileWriter()
+shared_ptr <vmime::utility::fileWriter> posixFile::getFileWriter()
 {
-	return vmime::create <posixFileWriter>(m_path, m_nativePath);
+	return make_shared <posixFileWriter>(m_path, m_nativePath);
 }
 
 
-ref <vmime::utility::fileReader> posixFile::getFileReader()
+shared_ptr <vmime::utility::fileReader> posixFile::getFileReader()
 {
-	return vmime::create <posixFileReader>(m_path, m_nativePath);
+	return make_shared <posixFileReader>(m_path, m_nativePath);
 }
 
 
-ref <vmime::utility::fileIterator> posixFile::getFiles() const
+shared_ptr <vmime::utility::fileIterator> posixFile::getFiles() const
 {
 	if (!isDirectory())
 		throw vmime::exceptions::not_a_directory(m_path);
 
-	return vmime::create <posixFileIterator>(m_path, m_nativePath);
+	return make_shared <posixFileIterator>(m_path, m_nativePath);
 }
 
 
@@ -508,9 +508,9 @@ void posixFile::createDirectoryImpl(const vmime::utility::file::path& fullPath,
 // posixFileSystemFactory
 //
 
-ref <vmime::utility::file> posixFileSystemFactory::create(const vmime::utility::file::path& path) const
+shared_ptr <vmime::utility::file> posixFileSystemFactory::create(const vmime::utility::file::path& path) const
 {
-	return vmime::create <posixFile>(path);
+	return make_shared <posixFile>(path);
 }
 
 

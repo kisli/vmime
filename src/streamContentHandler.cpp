@@ -34,12 +34,12 @@ namespace vmime
 
 
 streamContentHandler::streamContentHandler()
-	: m_encoding(NO_ENCODING), m_stream(null)
+	: m_encoding(NO_ENCODING), m_stream(null), m_length(0)
 {
 }
 
 
-streamContentHandler::streamContentHandler(ref <utility::inputStream> is,
+streamContentHandler::streamContentHandler(shared_ptr <utility::inputStream> is,
 	const utility::stream::size_type length, const vmime::encoding& enc)
 {
 	setData(is, length, enc);
@@ -58,9 +58,9 @@ streamContentHandler::streamContentHandler(const streamContentHandler& cts)
 }
 
 
-ref <contentHandler> streamContentHandler::clone() const
+shared_ptr <contentHandler> streamContentHandler::clone() const
 {
-	return vmime::create <streamContentHandler>(*this);
+	return make_shared <streamContentHandler>(*this);
 }
 
 
@@ -76,7 +76,7 @@ streamContentHandler& streamContentHandler::operator=(const streamContentHandler
 }
 
 
-void streamContentHandler::setData(ref <utility::inputStream> is,
+void streamContentHandler::setData(shared_ptr <utility::inputStream> is,
 	const utility::stream::size_type length, const vmime::encoding& enc)
 {
 	m_encoding = enc;
@@ -100,8 +100,8 @@ void streamContentHandler::generate(utility::outputStream& os, const vmime::enco
 		// buffer, and then re-encode to output stream...
 		if (m_encoding != enc)
 		{
-			ref <utility::encoder::encoder> theDecoder = m_encoding.getEncoder();
-			ref <utility::encoder::encoder> theEncoder = enc.getEncoder();
+			shared_ptr <utility::encoder::encoder> theDecoder = m_encoding.getEncoder();
+			shared_ptr <utility::encoder::encoder> theEncoder = enc.getEncoder();
 
 			theEncoder->getProperties()["maxlinelength"] = maxLineLength;
 			theEncoder->getProperties()["text"] = (m_contentType.getType() == mediaTypes::TEXT);
@@ -129,7 +129,7 @@ void streamContentHandler::generate(utility::outputStream& os, const vmime::enco
 	// Need to encode data before
 	else
 	{
-		ref <utility::encoder::encoder> theEncoder = enc.getEncoder();
+		shared_ptr <utility::encoder::encoder> theEncoder = enc.getEncoder();
 		theEncoder->getProperties()["maxlinelength"] = maxLineLength;
 		theEncoder->getProperties()["text"] = (m_contentType.getType() == mediaTypes::TEXT);
 
@@ -159,7 +159,7 @@ void streamContentHandler::extract(utility::outputStream& os,
 	// Need to decode data
 	else
 	{
-		ref <utility::encoder::encoder> theDecoder = m_encoding.getEncoder();
+		shared_ptr <utility::encoder::encoder> theDecoder = m_encoding.getEncoder();
 
 		m_stream->reset();  // may not work...
 
@@ -211,7 +211,7 @@ const vmime::encoding& streamContentHandler::getEncoding() const
 
 bool streamContentHandler::isBuffered() const
 {
-	if (m_stream.dynamicCast <utility::seekableInputStream>() != NULL)
+	if (dynamicCast <utility::seekableInputStream>(m_stream) != NULL)
 		return true;
 
 	// FIXME: some streams can be resetted

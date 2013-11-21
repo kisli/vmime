@@ -30,7 +30,51 @@
 #include <vector>
 
 #include "vmime/config.hpp"
-#include "vmime/utility/smartPtr.hpp"
+
+
+#ifndef VMIME_BUILDING_DOC
+
+#if VMIME_SHARED_PTR_USE_CXX
+	// If we are compiling with C++11, use shared_ptr<> from the standard lib
+	#include <memory>
+
+	#define VMIME_SHARED_PTR_NAMESPACE std
+#elif VMIME_SHARED_PTR_USE_BOOST
+	// Else, use boost's shared_ptr<>
+	#include <boost/shared_ptr.hpp>
+	#include <boost/weak_ptr.hpp>
+	#include <boost/make_shared.hpp>
+	#include <boost/enable_shared_from_this.hpp>
+	#include <boost/shared_ptr.hpp>
+
+	#define VMIME_SHARED_PTR_NAMESPACE boost
+#else
+	#error Either VMIME_SHAREDPTR_USE_CXX or VMIME_SHAREDPTR_USE_BOOST must be set to ON
+#endif
+
+namespace vmime
+{
+	using VMIME_SHARED_PTR_NAMESPACE::shared_ptr;
+	using VMIME_SHARED_PTR_NAMESPACE::weak_ptr;
+	using VMIME_SHARED_PTR_NAMESPACE::make_shared;
+	using VMIME_SHARED_PTR_NAMESPACE::enable_shared_from_this;
+	using VMIME_SHARED_PTR_NAMESPACE::dynamic_pointer_cast;
+	using VMIME_SHARED_PTR_NAMESPACE::const_pointer_cast;
+
+	/** Custom deleter to be used with shared_ptr.
+	  * This is does not actually delete the pointer, and is used
+	  * only for the singleton classes allocated on the stack.
+	  */
+	template <typename T>
+	struct noop_shared_ptr_deleter
+	{
+		void operator()(T*) const {}
+	};
+}
+
+#undef VMIME_SHARED_PTR_NAMESPACE
+
+#endif // VMIME_BUILDING_DOC
 
 
 namespace vmime
@@ -48,22 +92,12 @@ namespace vmime
 	typedef unsigned long size_t;
 #endif // !VMIME_HAVE_SIZE_T
 
-	// Some aliases
-	namespace utils = utility;
-
-	using vmime::utility::ref;
-	using vmime::utility::weak_ref;
-	using vmime::utility::null_ref;
-
-	extern const null_ref VMIME_EXPORT null;
-
 	// For compatibility with versions <= 0.7.1 (deprecated)
 	namespace net { }
 	namespace messaging = net;
 }
 
 
-// This is here because 'vmime::ref' need to be declared...
 #include "vmime/object.hpp"
 
 

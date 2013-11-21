@@ -53,17 +53,17 @@ public:
 	  *
 	  * @param trustedCerts list of trusted certificates
 	  */
-	void setX509TrustedCerts(const std::vector <ref <X509Certificate> >& trustedCerts);
+	void setX509TrustedCerts(const std::vector <shared_ptr <X509Certificate> >& trustedCerts);
 
 	/** Sets the X.509 root CAs used for certificate verification.
 	  *
 	  * @param caCerts list of root CAs
 	  */
-	void setX509RootCAs(const std::vector <ref <X509Certificate> >& caCerts);
+	void setX509RootCAs(const std::vector <shared_ptr <X509Certificate> >& caCerts);
 
 
 	// Implementation of 'certificateVerifier'
-	void verify(ref <certificateChain> chain, const string& hostname);
+	void verify(shared_ptr <certificateChain> chain, const string& hostname);
 
 private:
 
@@ -72,11 +72,11 @@ private:
 	  * @param chain list of X.509 certificates
 	  * @param hostname server hostname
 	  */
-	void verifyX509(ref <certificateChain> chain, const string& hostname);
+	void verifyX509(shared_ptr <certificateChain> chain, const string& hostname);
 
 
-	std::vector <ref <X509Certificate> > m_x509RootCAs;
-	std::vector <ref <X509Certificate> > m_x509TrustedCerts;
+	std::vector <shared_ptr <X509Certificate> > m_x509RootCAs;
+	std::vector <shared_ptr <X509Certificate> > m_x509TrustedCerts;
 };
 
 

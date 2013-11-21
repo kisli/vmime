@@ -89,7 +89,7 @@ void* X509Certificate_GnuTLS::getInternalData()
 
 
 // static
-ref <X509Certificate> X509Certificate::import(utility::inputStream& is)
+shared_ptr <X509Certificate> X509Certificate::import(utility::inputStream& is)
 {
 	byteArray bytes;
 	utility::stream::value_type chunk[4096];
@@ -105,7 +105,7 @@ ref <X509Certificate> X509Certificate::import(utility::inputStream& is)
 
 
 // static
-ref <X509Certificate> X509Certificate::import
+shared_ptr <X509Certificate> X509Certificate::import
 	(const byte_t* data, const size_t length)
 {
 	gnutls_datum buffer;
@@ -113,18 +113,18 @@ ref <X509Certificate> X509Certificate::import
 	buffer.size = static_cast <unsigned int>(length);
 
 	// Try DER format
-	ref <X509Certificate_GnuTLS> derCert = vmime::create <X509Certificate_GnuTLS>();
+	shared_ptr <X509Certificate_GnuTLS> derCert = make_shared <X509Certificate_GnuTLS>();
 
 	if (gnutls_x509_crt_import(derCert->m_data->cert, &buffer, GNUTLS_X509_FMT_DER) >= 0)
 		return derCert;
 
 	// Try PEM format
-	ref <X509Certificate_GnuTLS> pemCert = vmime::create <X509Certificate_GnuTLS>();
+	shared_ptr <X509Certificate_GnuTLS> pemCert = make_shared <X509Certificate_GnuTLS>();
 
 	if (gnutls_x509_crt_import(pemCert->m_data->cert, &buffer, GNUTLS_X509_FMT_PEM) >= 0)
 		return pemCert;
 
-	return NULL;
+	return null;
 }
 
 
@@ -161,20 +161,20 @@ const byteArray X509Certificate_GnuTLS::getSerialNumber() const
 }
 
 
-bool X509Certificate_GnuTLS::checkIssuer(ref <const X509Certificate> issuer_) const
+bool X509Certificate_GnuTLS::checkIssuer(shared_ptr <const X509Certificate> issuer_) const
 {
-	ref <const X509Certificate_GnuTLS> issuer =
-		issuer_.dynamicCast <const X509Certificate_GnuTLS>();
+	shared_ptr <const X509Certificate_GnuTLS> issuer =
+		dynamicCast <const X509Certificate_GnuTLS>(issuer_);
 
 	return (gnutls_x509_crt_check_issuer
 			(m_data->cert, issuer->m_data->cert) >= 1);
 }
 
 
-bool X509Certificate_GnuTLS::verify(ref <const X509Certificate> caCert_) const
+bool X509Certificate_GnuTLS::verify(shared_ptr <const X509Certificate> caCert_) const
 {
-	ref <const X509Certificate_GnuTLS> caCert =
-		caCert_.dynamicCast <const X509Certificate_GnuTLS>();
+	shared_ptr <const X509Certificate_GnuTLS> caCert =
+		dynamicCast <const X509Certificate_GnuTLS>(caCert_);
 
 	unsigned int verify = 0;
 
@@ -267,10 +267,10 @@ int X509Certificate_GnuTLS::getVersion() const
 }
 
 
-bool X509Certificate_GnuTLS::equals(ref <const certificate> other) const
+bool X509Certificate_GnuTLS::equals(shared_ptr <const certificate> other) const
 {
-	ref <const X509Certificate_GnuTLS> otherX509 =
-		other.dynamicCast <const X509Certificate_GnuTLS>();
+	shared_ptr <const X509Certificate_GnuTLS> otherX509 =
+		dynamicCast <const X509Certificate_GnuTLS>(other);
 
 	if (!otherX509)
 		return false;

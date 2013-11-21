@@ -61,24 +61,24 @@ encoderFactory::~encoderFactory()
 }
 
 
-encoderFactory* encoderFactory::getInstance()
+shared_ptr <encoderFactory> encoderFactory::getInstance()
 {
 	static encoderFactory instance;
-	return (&instance);
+	return shared_ptr <encoderFactory>(&instance, noop_shared_ptr_deleter <encoderFactory>());
 }
 
 
-ref <encoder> encoderFactory::create(const string& name)
+shared_ptr <encoder> encoderFactory::create(const string& name)
 {
 	return (getEncoderByName(name)->create());
 }
 
 
-const ref <const encoderFactory::registeredEncoder> encoderFactory::getEncoderByName(const string& name) const
+const shared_ptr <const encoderFactory::registeredEncoder> encoderFactory::getEncoderByName(const string& name) const
 {
 	const string lcName(utility::stringUtils::toLower(name));
 
-	for (std::vector <ref <registeredEncoder> >::const_iterator it = m_encoders.begin() ;
+	for (std::vector <shared_ptr <registeredEncoder> >::const_iterator it = m_encoders.begin() ;
 	     it != m_encoders.end() ; ++it)
 	{
 		if ((*it)->getName() == lcName)
@@ -95,17 +95,17 @@ size_t encoderFactory::getEncoderCount() const
 }
 
 
-const ref <const encoderFactory::registeredEncoder> encoderFactory::getEncoderAt(const size_t pos) const
+const shared_ptr <const encoderFactory::registeredEncoder> encoderFactory::getEncoderAt(const size_t pos) const
 {
 	return (m_encoders[pos]);
 }
 
 
-const std::vector <ref <const encoderFactory::registeredEncoder> > encoderFactory::getEncoderList() const
+const std::vector <shared_ptr <const encoderFactory::registeredEncoder> > encoderFactory::getEncoderList() const
 {
-	std::vector <ref <const registeredEncoder> > res;
+	std::vector <shared_ptr <const registeredEncoder> > res;
 
-	for (std::vector <ref <registeredEncoder> >::const_iterator it = m_encoders.begin() ;
+	for (std::vector <shared_ptr <registeredEncoder> >::const_iterator it = m_encoders.begin() ;
 	     it != m_encoders.end() ; ++it)
 	{
 		res.push_back(*it);

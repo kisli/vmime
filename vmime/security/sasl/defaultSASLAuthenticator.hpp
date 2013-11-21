@@ -50,9 +50,9 @@ public:
 	defaultSASLAuthenticator();
 	~defaultSASLAuthenticator();
 
-	const std::vector <ref <SASLMechanism> > getAcceptableMechanisms
-		(const std::vector <ref <SASLMechanism> >& available,
-	         ref <SASLMechanism> suggested) const;
+	const std::vector <shared_ptr <SASLMechanism> > getAcceptableMechanisms
+		(const std::vector <shared_ptr <SASLMechanism> >& available,
+	         shared_ptr <SASLMechanism> suggested) const;
 
 	const string getUsername() const;
 	const string getPassword() const;
@@ -60,22 +60,22 @@ public:
 	const string getAnonymousToken() const;
 	const string getServiceName() const;
 
-	void setService(ref <net::service> serv);
-	weak_ref <net::service> getService() const;
+	void setService(shared_ptr <net::service> serv);
+	weak_ptr <net::service> getService() const;
 
-	void setSASLSession(ref <SASLSession> sess);
-	ref <SASLSession> getSASLSession() const;
+	void setSASLSession(shared_ptr <SASLSession> sess);
+	shared_ptr <SASLSession> getSASLSession() const;
 
-	void setSASLMechanism(ref <SASLMechanism> mech);
-	ref <SASLMechanism> getSASLMechanism() const;
+	void setSASLMechanism(shared_ptr <SASLMechanism> mech);
+	shared_ptr <SASLMechanism> getSASLMechanism() const;
 
 private:
 
 	defaultAuthenticator m_default;
 
-	weak_ref <net::service> m_service;
-	weak_ref <SASLSession> m_saslSession;
-	ref <SASLMechanism> m_saslMech;
+	weak_ptr <net::service> m_service;
+	weak_ptr <SASLSession> m_saslSession;
+	shared_ptr <SASLMechanism> m_saslMech;
 };
 
 

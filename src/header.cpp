@@ -72,7 +72,7 @@ void header::parseImpl
 
 	while (pos < end)
 	{
-		ref <headerField> field = headerField::parseNext(ctx, buffer, pos, end, &pos);
+		shared_ptr <headerField> field = headerField::parseNext(ctx, buffer, pos, end, &pos);
 		if (field == NULL) break;
 
 		m_fields.push_back(field);
@@ -90,7 +90,7 @@ void header::generateImpl
 	 const string::size_type /* curLinePos */, string::size_type* newLinePos) const
 {
 	// Generate the fields
-	for (std::vector <ref <headerField> >::const_iterator it = m_fields.begin() ;
+	for (std::vector <shared_ptr <headerField> >::const_iterator it = m_fields.begin() ;
 	     it != m_fields.end() ; ++it)
 	{
 		(*it)->generate(ctx, os);
@@ -108,16 +108,16 @@ utility::stream::size_type header::getGeneratedSize(const generationContext& ctx
 }
 
 
-ref <component> header::clone() const
+shared_ptr <component> header::clone() const
 {
-	ref <header> hdr = vmime::create <header>();
+	shared_ptr <header> hdr = make_shared <header>();
 
 	hdr->m_fields.reserve(m_fields.size());
 
-	for (std::vector <ref <headerField> >::const_iterator it = m_fields.begin() ;
+	for (std::vector <shared_ptr <headerField> >::const_iterator it = m_fields.begin() ;
 	     it != m_fields.end() ; ++it)
 	{
-		hdr->m_fields.push_back((*it)->clone().dynamicCast <headerField>());
+		hdr->m_fields.push_back(vmime::clone(*it));
 	}
 
 	return (hdr);
@@ -128,14 +128,14 @@ void header::copyFrom(const component& other)
 {
 	const header& h = dynamic_cast <const header&>(other);
 
-	std::vector <ref <headerField> > fields;
+	std::vector <shared_ptr <headerField> > fields;
 
 	fields.reserve(h.m_fields.size());
 
-	for (std::vector <ref <headerField> >::const_iterator it = h.m_fields.begin() ;
+	for (std::vector <shared_ptr <headerField> >::const_iterator it = h.m_fields.begin() ;
 	     it != h.m_fields.end() ; ++it)
 	{
-		fields.push_back((*it)->clone().dynamicCast <headerField>());
+		fields.push_back(vmime::clone(*it));
 	}
 
 	m_fields.clear();
@@ -154,7 +154,7 @@ header& header::operator=(const header& other)
 
 bool header::hasField(const string& fieldName) const
 {
-	std::vector <ref <headerField> >::const_iterator pos =
+	std::vector <shared_ptr <headerField> >::const_iterator pos =
 		std::find_if(m_fields.begin(), m_fields.end(),
 		             fieldHasName(utility::stringUtils::toLower(fieldName)));
 
@@ -162,10 +162,10 @@ bool header::hasField(const string& fieldName) const
 }
 
 
-ref <headerField> header::findField(const string& fieldName) const
+shared_ptr <headerField> header::findField(const string& fieldName) const
 {
 	// Find the first field that matches the specified name
-	std::vector <ref <headerField> >::const_iterator pos =
+	std::vector <shared_ptr <headerField> >::const_iterator pos =
 		std::find_if(m_fields.begin(), m_fields.end(),
 		             fieldHasName(utility::stringUtils::toLower(fieldName)));
 
@@ -182,10 +182,10 @@ ref <headerField> header::findField(const string& fieldName) const
 }
 
 
-std::vector <ref <headerField> > header::findAllFields(const string& fieldName)
+std::vector <shared_ptr <headerField> > header::findAllFields(const string& fieldName)
 {
-	std::vector <ref <headerField> > result;
-	std::back_insert_iterator <std::vector <ref <headerField> > > back(result);
+	std::vector <shared_ptr <headerField> > result;
+	std::back_insert_iterator <std::vector <shared_ptr <headerField> > > back(result);
 
 	std::remove_copy_if(m_fields.begin(), m_fields.end(), back,
 	                    fieldHasNotName(utility::stringUtils::toLower(fieldName)));
@@ -194,13 +194,13 @@ std::vector <ref <headerField> > header::findAllFields(const string& fieldName)
 }
 
 
-ref <headerField> header::getField(const string& fieldName)
+shared_ptr <headerField> header::getField(const string& fieldName)
 {
 	const string name = utility::stringUtils::toLower(fieldName);
 
 	// Find the first field that matches the specified name
-	std::vector <ref <headerField> >::const_iterator pos = m_fields.begin();
-	const std::vector <ref <headerField> >::const_iterator end = m_fields.end();
+	std::vector <shared_ptr <headerField> >::const_iterator pos = m_fields.begin();
+	const std::vector <shared_ptr <headerField> >::const_iterator end = m_fields.end();
 
 	while (pos != end && utility::stringUtils::toLower((*pos)->getName()) != name)
 		++pos;
@@ -208,7 +208,7 @@ ref <headerField> header::getField(const string& fieldName)
 	// If no field with this name can be found, create a new one
 	if (pos == end)
 	{
-		ref <headerField> field = headerFieldFactory::getInstance()->create(fieldName);
+		shared_ptr <headerField> field = headerFieldFactory::getInstance()->create(fieldName);
 
 		appendField(field);
 
@@ -223,15 +223,15 @@ ref <headerField> header::getField(const string& fieldName)
 }
 
 
-void header::appendField(ref <headerField> field)
+void header::appendField(shared_ptr <headerField> field)
 {
 	m_fields.push_back(field);
 }
 
 
-void header::insertFieldBefore(ref <headerField> beforeField, ref <headerField> field)
+void header::insertFieldBefore(shared_ptr <headerField> beforeField, shared_ptr <headerField> field)
 {
-	const std::vector <ref <headerField> >::iterator it = std::find
+	const std::vector <shared_ptr <headerField> >::iterator it = std::find
 		(m_fields.begin(), m_fields.end(), beforeField);
 
 	if (it == m_fields.end())
@@ -241,15 +241,15 @@ void header::insertFieldBefore(ref <headerField> beforeField, ref <headerField> 
 }
 
 
-void header::insertFieldBefore(const size_t pos, ref <headerField> field)
+void header::insertFieldBefore(const size_t pos, shared_ptr <headerField> field)
 {
 	m_fields.insert(m_fields.begin() + pos, field);
 }
 
 
-void header::insertFieldAfter(ref <headerField> afterField, ref <headerField> field)
+void header::insertFieldAfter(shared_ptr <headerField> afterField, shared_ptr <headerField> field)
 {
-	const std::vector <ref <headerField> >::iterator it = std::find
+	const std::vector <shared_ptr <headerField> >::iterator it = std::find
 		(m_fields.begin(), m_fields.end(), afterField);
 
 	if (it == m_fields.end())
@@ -259,15 +259,15 @@ void header::insertFieldAfter(ref <headerField> afterField, ref <headerField> fi
 }
 
 
-void header::insertFieldAfter(const size_t pos, ref <headerField> field)
+void header::insertFieldAfter(const size_t pos, shared_ptr <headerField> field)
 {
 	m_fields.insert(m_fields.begin() + pos + 1, field);
 }
 
 
-void header::removeField(ref <headerField> field)
+void header::removeField(shared_ptr <headerField> field)
 {
-	const std::vector <ref <headerField> >::iterator it = std::find
+	const std::vector <shared_ptr <headerField> >::iterator it = std::find
 		(m_fields.begin(), m_fields.end(), field);
 
 	if (it == m_fields.end())
@@ -279,13 +279,13 @@ void header::removeField(ref <headerField> field)
 
 void header::removeField(const size_t pos)
 {
-	const std::vector <ref <headerField> >::iterator it = m_fields.begin() + pos;
+	const std::vector <shared_ptr <headerField> >::iterator it = m_fields.begin() + pos;
 
 	m_fields.erase(it);
 }
 
 
-void header::replaceField(ref <headerField> field, ref <headerField> newField)
+void header::replaceField(shared_ptr <headerField> field, shared_ptr <headerField> newField)
 {
 	insertFieldBefore(field, newField);
 	removeField(field);
@@ -300,7 +300,7 @@ void header::removeAllFields()
 
 void header::removeAllFields(const string& fieldName)
 {
-	std::vector <ref <headerField> > fields = findAllFields(fieldName);
+	std::vector <shared_ptr <headerField> > fields = findAllFields(fieldName);
 
 	for (unsigned int i = 0 ; i < fields.size() ; ++i)
 		removeField(fields[i]);
@@ -319,25 +319,25 @@ bool header::isEmpty() const
 }
 
 
-const ref <headerField> header::getFieldAt(const size_t pos)
+const shared_ptr <headerField> header::getFieldAt(const size_t pos)
 {
 	return (m_fields[pos]);
 }
 
 
-const ref <const headerField> header::getFieldAt(const size_t pos) const
+const shared_ptr <const headerField> header::getFieldAt(const size_t pos) const
 {
 	return (m_fields[pos]);
 }
 
 
-const std::vector <ref <const headerField> > header::getFieldList() const
+const std::vector <shared_ptr <const headerField> > header::getFieldList() const
 {
-	std::vector <ref <const headerField> > list;
+	std::vector <shared_ptr <const headerField> > list;
 
 	list.reserve(m_fields.size());
 
-	for (std::vector <ref <headerField> >::const_iterator it = m_fields.begin() ;
+	for (std::vector <shared_ptr <headerField> >::const_iterator it = m_fields.begin() ;
 	     it != m_fields.end() ; ++it)
 	{
 		list.push_back(*it);
@@ -347,15 +347,15 @@ const std::vector <ref <const headerField> > header::getFieldList() const
 }
 
 
-const std::vector <ref <headerField> > header::getFieldList()
+const std::vector <shared_ptr <headerField> > header::getFieldList()
 {
 	return (m_fields);
 }
 
 
-const std::vector <ref <component> > header::getChildComponents()
+const std::vector <shared_ptr <component> > header::getChildComponents()
 {
-	std::vector <ref <component> > list;
+	std::vector <shared_ptr <component> > list;
 
 	copy_vector(m_fields, list);
 
@@ -372,7 +372,7 @@ header::fieldHasName::fieldHasName(const string& name)
 {
 }
 
-bool header::fieldHasName::operator() (const ref <const headerField>& field)
+bool header::fieldHasName::operator() (const shared_ptr <const headerField>& field)
 {
 	return utility::stringUtils::toLower(field->getName()) == m_name;
 }
@@ -383,7 +383,7 @@ header::fieldHasNotName::fieldHasNotName(const string& name)
 {
 }
 
-bool header::fieldHasNotName::operator() (const ref <const headerField>& field)
+bool header::fieldHasNotName::operator() (const shared_ptr <const headerField>& field)
 {
 	return utility::stringUtils::toLower(field->getName()) != m_name;
 }

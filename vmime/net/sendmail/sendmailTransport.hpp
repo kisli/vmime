@@ -50,7 +50,7 @@ class VMIME_EXPORT sendmailTransport : public transport
 {
 public:
 
-	sendmailTransport(ref <session> sess, ref <security::authenticator> auth);
+	sendmailTransport(shared_ptr <session> sess, shared_ptr <security::authenticator> auth);
 	~sendmailTransport();
 
 	const string getProtocolName() const;
@@ -73,7 +73,7 @@ public:
 		 const mailbox& sender = mailbox());
 
 	bool isSecuredConnection() const;
-	ref <connectionInfos> getConnectionInfos() const;
+	shared_ptr <connectionInfos> getConnectionInfos() const;
 
 private:
 

@@ -254,9 +254,9 @@ relay& relay::operator=(const relay& other)
 }
 
 
-ref <component> relay::clone() const
+shared_ptr <component> relay::clone() const
 {
-	return vmime::create <relay>(*this);
+	return make_shared <relay>(*this);
 }
 
 
@@ -344,10 +344,10 @@ std::vector <string>& relay::getWithList()
 }
 
 
-const std::vector <ref <component> > relay::getChildComponents()
+const std::vector <shared_ptr <component> > relay::getChildComponents()
 {
 	// TODO: should fields inherit from 'component'? (using typeAdapter)
-	return std::vector <ref <component> >();
+	return std::vector <shared_ptr <component> >();
 }
 
 

@@ -75,13 +75,13 @@ public:
 	};
 
 
-	messageCountEvent(ref <folder> folder, const Types type, const std::vector <int>& nums);
+	messageCountEvent(shared_ptr <folder> folder, const Types type, const std::vector <int>& nums);
 
 	/** Return the folder in which messages have been added/removed.
 	  *
 	  * @return folder in which message count changed
 	  */
-	ref <folder> getFolder() const;
+	shared_ptr <folder> getFolder() const;
 
 	/** Return the event type.
 	  *
@@ -106,7 +106,7 @@ public:
 
 private:
 
-	ref <folder> m_folder;
+	shared_ptr <folder> m_folder;
 	const Types m_type;
 	std::vector <int> m_nums;
 };
@@ -123,8 +123,8 @@ protected:
 
 public:
 
-	virtual void messagesAdded(ref <messageCountEvent> event) = 0;
-	virtual void messagesRemoved(ref <messageCountEvent> event) = 0;
+	virtual void messagesAdded(shared_ptr <messageCountEvent> event) = 0;
+	virtual void messagesRemoved(shared_ptr <messageCountEvent> event) = 0;
 };
 
 
@@ -144,13 +144,13 @@ public:
 	};
 
 
-	messageChangedEvent(ref <folder> folder, const Types type, const std::vector <int>& nums);
+	messageChangedEvent(shared_ptr <folder> folder, const Types type, const std::vector <int>& nums);
 
 	/** Return the folder in which messages have changed.
 	  *
 	  * @return folder in which message count changed
 	  */
-	ref <folder> getFolder() const;
+	shared_ptr <folder> getFolder() const;
 
 	/** Return the event type.
 	  *
@@ -175,7 +175,7 @@ public:
 
 private:
 
-	ref <folder> m_folder;
+	shared_ptr <folder> m_folder;
 	const Types m_type;
 	std::vector <int> m_nums;
 };
@@ -192,7 +192,7 @@ protected:
 
 public:
 
-	virtual void messageChanged(ref <messageChangedEvent> event) = 0;
+	virtual void messageChanged(shared_ptr <messageChangedEvent> event) = 0;
 };
 
 
@@ -214,13 +214,13 @@ public:
 	};
 
 
-	folderEvent(ref <folder> folder, const Types type, const utility::path& oldPath, const utility::path& newPath);
+	folderEvent(shared_ptr <folder> folder, const Types type, const utility::path& oldPath, const utility::path& newPath);
 
 	/** Return the folder on which the event occured.
 	  *
 	  * @return folder on which the event occured
 	  */
-	ref <folder> getFolder() const;
+	shared_ptr <folder> getFolder() const;
 
 	/** Return the event type.
 	  *
@@ -239,7 +239,7 @@ public:
 
 private:
 
-	ref <folder> m_folder;
+	shared_ptr <folder> m_folder;
 	const Types m_type;
 	const utility::path m_oldPath;
 	const utility::path m_newPath;
@@ -257,9 +257,9 @@ protected:
 
 public:
 
-	virtual void folderCreated(ref <folderEvent> event) = 0;
-	virtual void folderRenamed(ref <folderEvent> event) = 0;
-	virtual void folderDeleted(ref <folderEvent> event) = 0;
+	virtual void folderCreated(shared_ptr <folderEvent> event) = 0;
+	virtual void folderRenamed(shared_ptr <folderEvent> event) = 0;
+	virtual void folderDeleted(shared_ptr <folderEvent> event) = 0;
 };
 
 

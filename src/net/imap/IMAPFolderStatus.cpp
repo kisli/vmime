@@ -94,9 +94,9 @@ vmime_uint64 IMAPFolderStatus::getHighestModSeq() const
 }
 
 
-ref <folderStatus> IMAPFolderStatus::clone() const
+shared_ptr <folderStatus> IMAPFolderStatus::clone() const
 {
-	return vmime::create <IMAPFolderStatus>(*this);
+	return make_shared <IMAPFolderStatus>(*this);
 }
 
 

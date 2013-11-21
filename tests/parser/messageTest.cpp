@@ -35,12 +35,12 @@ VMIME_TEST_SUITE_BEGIN(messageTest)
 	{
 		vmime::generationContext ctx;
 
-		vmime::ref <vmime::message> msg = vmime::create <vmime::message>();
+		vmime::shared_ptr <vmime::message> msg = vmime::make_shared <vmime::message>();
 		msg->getHeader()->getField("Foo")->setValue(vmime::string("bar"));
 
 		vmime::htmlTextPart textPart;
-		textPart.setPlainText(vmime::create <vmime::stringContentHandler>("Foo bar bazé foo foo foo"));
-		textPart.setText(vmime::create <vmime::stringContentHandler>("Foo bar <strong>bazé</strong> foo foo foo"));
+		textPart.setPlainText(vmime::make_shared <vmime::stringContentHandler>("Foo bar bazé foo foo foo"));
+		textPart.setText(vmime::make_shared <vmime::stringContentHandler>("Foo bar <strong>bazé</strong> foo foo foo"));
 		textPart.generateIn(msg, msg);
 
 		// Estimated/computed generated size must be greater than the actual generated size

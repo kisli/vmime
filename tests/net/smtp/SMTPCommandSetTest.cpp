@@ -46,7 +46,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandSetTest)
 
 	void testCreate()
 	{
-		vmime::ref <SMTPCommandSet> cset = SMTPCommandSet::create(/* pipelining */ false);
+		vmime::shared_ptr <SMTPCommandSet> cset = SMTPCommandSet::create(/* pipelining */ false);
 
 		VASSERT_NOT_NULL("Not null", cset);
 		VASSERT_FALSE("Finished", cset->isFinished());
@@ -54,7 +54,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandSetTest)
 
 	void testCreatePipeline()
 	{
-		vmime::ref <SMTPCommandSet> cset = SMTPCommandSet::create(/* pipelining */ true);
+		vmime::shared_ptr <SMTPCommandSet> cset = SMTPCommandSet::create(/* pipelining */ true);
 
 		VASSERT_NOT_NULL("Not null", cset);
 		VASSERT_FALSE("Finished", cset->isFinished());
@@ -62,14 +62,14 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandSetTest)
 
 	void testAddCommand()
 	{
-		vmime::ref <SMTPCommandSet> cset = SMTPCommandSet::create(/* pipelining */ false);
+		vmime::shared_ptr <SMTPCommandSet> cset = SMTPCommandSet::create(/* pipelining */ false);
 
 		VASSERT_NO_THROW("No throw 1", cset->addCommand(SMTPCommand::createCommand("MY_COMMAND1")));
 		VASSERT_EQ("Text", "MY_COMMAND1\r\n", cset->getText());
 		VASSERT_NO_THROW("No throw 2", cset->addCommand(SMTPCommand::createCommand("MY_COMMAND2")));
 		VASSERT_EQ("Text", "MY_COMMAND1\r\nMY_COMMAND2\r\n", cset->getText());
 
-		vmime::ref <testSocket> sok = vmime::create <testSocket>();
+		vmime::shared_ptr <testSocket> sok = vmime::make_shared <testSocket>();
 
 		cset->writeToSocket(sok);
 		VASSERT_FALSE("Finished", cset->isFinished());
@@ -83,14 +83,14 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandSetTest)
 
 	void testAddCommandPipeline()
 	{
-		vmime::ref <SMTPCommandSet> cset = SMTPCommandSet::create(/* pipelining */ true);
+		vmime::shared_ptr <SMTPCommandSet> cset = SMTPCommandSet::create(/* pipelining */ true);
 
 		VASSERT_NO_THROW("No throw 1", cset->addCommand(SMTPCommand::createCommand("MY_COMMAND1")));
 		VASSERT_EQ("Text", "MY_COMMAND1\r\n", cset->getText());
 		VASSERT_NO_THROW("No throw 2", cset->addCommand(SMTPCommand::createCommand("MY_COMMAND2")));
 		VASSERT_EQ("Text", "MY_COMMAND1\r\nMY_COMMAND2\r\n", cset->getText());
 
-		vmime::ref <testSocket> sok = vmime::create <testSocket>();
+		vmime::shared_ptr <testSocket> sok = vmime::make_shared <testSocket>();
 		vmime::string response;
 
 		cset->writeToSocket(sok);
@@ -105,12 +105,12 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandSetTest)
 
 	void testWriteToSocket()
 	{
-		vmime::ref <SMTPCommandSet> cset = SMTPCommandSet::create(/* pipelining */ false);
+		vmime::shared_ptr <SMTPCommandSet> cset = SMTPCommandSet::create(/* pipelining */ false);
 
 		cset->addCommand(SMTPCommand::createCommand("MY_COMMAND1"));
 		cset->addCommand(SMTPCommand::createCommand("MY_COMMAND2"));
 
-		vmime::ref <testSocket> sok = vmime::create <testSocket>();
+		vmime::shared_ptr <testSocket> sok = vmime::make_shared <testSocket>();
 		vmime::string response;
 
 		cset->writeToSocket(sok);
@@ -126,12 +126,12 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandSetTest)
 
 	void testWriteToSocketPipeline()
 	{
-		vmime::ref <SMTPCommandSet> cset = SMTPCommandSet::create(/* pipelining */ true);
+		vmime::shared_ptr <SMTPCommandSet> cset = SMTPCommandSet::create(/* pipelining */ true);
 
 		cset->addCommand(SMTPCommand::createCommand("MY_COMMAND1"));
 		cset->addCommand(SMTPCommand::createCommand("MY_COMMAND2"));
 
-		vmime::ref <testSocket> sok = vmime::create <testSocket>();
+		vmime::shared_ptr <testSocket> sok = vmime::make_shared <testSocket>();
 		vmime::string response;
 
 		cset->writeToSocket(sok);
@@ -142,12 +142,12 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandSetTest)
 
 	void testGetLastCommandSent()
 	{
-		vmime::ref <SMTPCommandSet> cset = SMTPCommandSet::create(/* pipelining */ false);
+		vmime::shared_ptr <SMTPCommandSet> cset = SMTPCommandSet::create(/* pipelining */ false);
 
 		cset->addCommand(SMTPCommand::createCommand("MY_COMMAND1"));
 		cset->addCommand(SMTPCommand::createCommand("MY_COMMAND2"));
 
-		vmime::ref <testSocket> sok = vmime::create <testSocket>();
+		vmime::shared_ptr <testSocket> sok = vmime::make_shared <testSocket>();
 
 		cset->writeToSocket(sok);
 		VASSERT_EQ("Cmd 1", "MY_COMMAND1", cset->getLastCommandSent()->getText());
@@ -158,12 +158,12 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandSetTest)
 
 	void testGetLastCommandSentPipeline()
 	{
-		vmime::ref <SMTPCommandSet> cset = SMTPCommandSet::create(/* pipelining */ true);
+		vmime::shared_ptr <SMTPCommandSet> cset = SMTPCommandSet::create(/* pipelining */ true);
 
 		cset->addCommand(SMTPCommand::createCommand("MY_COMMAND1"));
 		cset->addCommand(SMTPCommand::createCommand("MY_COMMAND2"));
 
-		vmime::ref <testSocket> sok = vmime::create <testSocket>();
+		vmime::shared_ptr <testSocket> sok = vmime::make_shared <testSocket>();
 
 		cset->writeToSocket(sok);
 		VASSERT_EQ("Cmd 1", "MY_COMMAND1", cset->getLastCommandSent()->getText());

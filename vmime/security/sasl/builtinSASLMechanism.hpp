@@ -49,30 +49,30 @@ class VMIME_EXPORT builtinSASLMechanism : public SASLMechanism
 {
 public:
 
-	builtinSASLMechanism(ref <SASLContext> ctx, const string& name);
+	builtinSASLMechanism(shared_ptr <SASLContext> ctx, const string& name);
 	~builtinSASLMechanism();
 
 
 	const string getName() const;
 
-	bool step(ref <SASLSession> sess,
+	bool step(shared_ptr <SASLSession> sess,
 		 const byte_t* challenge, const long challengeLen,
 		 byte_t** response, long* responseLen);
 
 	bool isComplete() const;
 
-	void encode(ref <SASLSession> sess,
+	void encode(shared_ptr <SASLSession> sess,
 		const byte_t* input, const long inputLen,
 		byte_t** output, long* outputLen);
 
-	void decode(ref <SASLSession> sess,
+	void decode(shared_ptr <SASLSession> sess,
 		const byte_t* input, const long inputLen,
 		byte_t** output, long* outputLen);
 
 private:
 
 	/** SASL context */
-	ref <SASLContext> m_context;
+	shared_ptr <SASLContext> m_context;
 
 	/** Mechanism name */
 	const string m_name;

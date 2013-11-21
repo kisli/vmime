@@ -50,7 +50,7 @@ class VMIME_EXPORT SASLSocket : public net::socket
 {
 public:
 
-	SASLSocket(ref <SASLSession> sess, ref <net::socket> wrapped);
+	SASLSocket(shared_ptr <SASLSession> sess, shared_ptr <net::socket> wrapped);
 	~SASLSocket();
 
 	void connect(const string& address, const port_t port);
@@ -74,8 +74,8 @@ public:
 
 private:
 
-	ref <SASLSession> m_session;
-	ref <net::socket> m_wrapped;
+	shared_ptr <SASLSession> m_session;
+	shared_ptr <net::socket> m_wrapped;
 
 	byte_t* m_pendingBuffer;
 	size_type m_pendingPos;

@@ -41,7 +41,7 @@ namespace vmime
 
 class VMIME_EXPORT parameterizedHeaderField : virtual public headerField
 {
-	friend class vmime::creator;  // create ref
+	friend class headerFieldFactory;
 
 protected:
 
@@ -69,7 +69,7 @@ public:
 	  * @throw exceptions::no_such_parameter if no parameter with this name exists
 	  * @return first parameter with the specified name
 	  */
-	ref <parameter> findParameter(const string& paramName) const;
+	shared_ptr <parameter> findParameter(const string& paramName) const;
 
 	/** Find the first parameter that matches the specified name.
 	  * If no parameter is found, one will be created and inserted into
@@ -78,13 +78,13 @@ public:
 	  * @return first parameter with the specified name or a new field
 	  * if no parameter is found
 	  */
-	ref <parameter> getParameter(const string& paramName);
+	shared_ptr <parameter> getParameter(const string& paramName);
 
 	/** Add a parameter at the end of the list.
 	  *
 	  * @param param parameter to append
 	  */
-	void appendParameter(ref <parameter> param);
+	void appendParameter(shared_ptr <parameter> param);
 
 	/** Insert a new parameter before the specified parameter.
 	  *
@@ -92,7 +92,7 @@ public:
 	  * @param param parameter to insert
 	  * @throw exceptions::no_such_parameter if the parameter is not in the list
 	  */
-	void insertParameterBefore(ref <parameter> beforeParam, ref <parameter> param);
+	void insertParameterBefore(shared_ptr <parameter> beforeParam, shared_ptr <parameter> param);
 
 	/** Insert a new parameter before the specified position.
 	  *
@@ -100,7 +100,7 @@ public:
 	  * the beginning of the list)
 	  * @param param parameter to insert
 	  */
-	void insertParameterBefore(const size_t pos, ref <parameter> param);
+	void insertParameterBefore(const size_t pos, shared_ptr <parameter> param);
 
 	/** Insert a new parameter after the specified parameter.
 	  *
@@ -108,21 +108,21 @@ public:
 	  * @param param parameter to insert
 	  * @throw exceptions::no_such_parameter if the parameter is not in the list
 	  */
-	void insertParameterAfter(ref <parameter> afterParam, ref <parameter> param);
+	void insertParameterAfter(shared_ptr <parameter> afterParam, shared_ptr <parameter> param);
 
 	/** Insert a new parameter after the specified position.
 	  *
 	  * @param pos position of the parameter before the new parameter
 	  * @param param parameter to insert
 	  */
-	void insertParameterAfter(const size_t pos, ref <parameter> param);
+	void insertParameterAfter(const size_t pos, shared_ptr <parameter> param);
 
 	/** Remove the specified parameter from the list.
 	  *
 	  * @param param parameter to remove
 	  * @throw exceptions::no_such_parameter if the parameter is not in the list
 	  */
-	void removeParameter(ref <parameter> param);
+	void removeParameter(shared_ptr <parameter> param);
 
 	/** Remove the parameter at the specified position.
 	  *
@@ -151,32 +151,32 @@ public:
 	  * @param pos position
 	  * @return parameter at position 'pos'
 	  */
-	const ref <parameter> getParameterAt(const size_t pos);
+	const shared_ptr <parameter> getParameterAt(const size_t pos);
 
 	/** Return the parameter at the specified position.
 	  *
 	  * @param pos position
 	  * @return parameter at position 'pos'
 	  */
-	const ref <const parameter> getParameterAt(const size_t pos) const;
+	const shared_ptr <const parameter> getParameterAt(const size_t pos) const;
 
 	/** Return the parameter list.
 	  *
 	  * @return list of parameters
 	  */
-	const std::vector <ref <const parameter> > getParameterList() const;
+	const std::vector <shared_ptr <const parameter> > getParameterList() const;
 
 	/** Return the parameter list.
 	  *
 	  * @return list of parameters
 	  */
-	const std::vector <ref <parameter> > getParameterList();
+	const std::vector <shared_ptr <parameter> > getParameterList();
 
-	const std::vector <ref <component> > getChildComponents();
+	const std::vector <shared_ptr <component> > getChildComponents();
 
 private:
 
-	std::vector <ref <parameter> > m_params;
+	std::vector <shared_ptr <parameter> > m_params;
 
 protected:
 

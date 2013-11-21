@@ -40,7 +40,7 @@ protected:
 	textPartFactory();
 	~textPartFactory();
 
-	typedef ref <textPart> (*AllocFunc)(void);
+	typedef shared_ptr <textPart> (*AllocFunc)(void);
 	typedef std::vector <std::pair <mediaType, AllocFunc> > MapType;
 
 	MapType m_map;
@@ -51,10 +51,10 @@ protected:
 	{
 	public:
 
-		static ref <textPart> creator()
+		static shared_ptr <textPart> creator()
 		{
 			// Allocate a new object
-			return vmime::create <TYPE>();
+			return vmime::make_shared <TYPE>();
 		}
 	};
 #endif // VMIME_BUILDING_DOC
@@ -69,7 +69,7 @@ public:
 		m_map.push_back(MapType::value_type(type, &registerer<T>::creator));
 	}
 
-	ref <textPart> create(const mediaType& type);
+	shared_ptr <textPart> create(const mediaType& type);
 };
 
 

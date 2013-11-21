@@ -47,7 +47,7 @@ SMTPCommand::SMTPCommand(const string& text)
 
 
 // static
-ref <SMTPCommand> SMTPCommand::EHLO(const string& hostname)
+shared_ptr <SMTPCommand> SMTPCommand::EHLO(const string& hostname)
 {
 	std::ostringstream cmd;
 	cmd.imbue(std::locale::classic());
@@ -58,7 +58,7 @@ ref <SMTPCommand> SMTPCommand::EHLO(const string& hostname)
 
 
 // static
-ref <SMTPCommand> SMTPCommand::HELO(const string& hostname)
+shared_ptr <SMTPCommand> SMTPCommand::HELO(const string& hostname)
 {
 	std::ostringstream cmd;
 	cmd.imbue(std::locale::classic());
@@ -69,7 +69,7 @@ ref <SMTPCommand> SMTPCommand::HELO(const string& hostname)
 
 
 // static
-ref <SMTPCommand> SMTPCommand::AUTH(const string& mechName)
+shared_ptr <SMTPCommand> SMTPCommand::AUTH(const string& mechName)
 {
 	std::ostringstream cmd;
 	cmd.imbue(std::locale::classic());
@@ -80,21 +80,21 @@ ref <SMTPCommand> SMTPCommand::AUTH(const string& mechName)
 
 
 // static
-ref <SMTPCommand> SMTPCommand::STARTTLS()
+shared_ptr <SMTPCommand> SMTPCommand::STARTTLS()
 {
 	return createCommand("STARTTLS");
 }
 
 
 // static
-ref <SMTPCommand> SMTPCommand::MAIL(const mailbox& mbox, const bool utf8)
+shared_ptr <SMTPCommand> SMTPCommand::MAIL(const mailbox& mbox, const bool utf8)
 {
 	return MAIL(mbox, utf8, 0);
 }
 
 
 // static
-ref <SMTPCommand> SMTPCommand::MAIL(const mailbox& mbox, const bool utf8, const unsigned long size)
+shared_ptr <SMTPCommand> SMTPCommand::MAIL(const mailbox& mbox, const bool utf8, const unsigned long size)
 {
 	std::ostringstream cmd;
 	cmd.imbue(std::locale::classic());
@@ -123,7 +123,7 @@ ref <SMTPCommand> SMTPCommand::MAIL(const mailbox& mbox, const bool utf8, const 
 
 
 // static
-ref <SMTPCommand> SMTPCommand::RCPT(const mailbox& mbox, const bool utf8)
+shared_ptr <SMTPCommand> SMTPCommand::RCPT(const mailbox& mbox, const bool utf8)
 {
 	std::ostringstream cmd;
 	cmd.imbue(std::locale::classic());
@@ -146,21 +146,21 @@ ref <SMTPCommand> SMTPCommand::RCPT(const mailbox& mbox, const bool utf8)
 
 
 // static
-ref <SMTPCommand> SMTPCommand::RSET()
+shared_ptr <SMTPCommand> SMTPCommand::RSET()
 {
 	return createCommand("RSET");
 }
 
 
 // static
-ref <SMTPCommand> SMTPCommand::DATA()
+shared_ptr <SMTPCommand> SMTPCommand::DATA()
 {
 	return createCommand("DATA");
 }
 
 
 // static
-ref <SMTPCommand> SMTPCommand::BDAT(const unsigned long chunkSize, const bool last)
+shared_ptr <SMTPCommand> SMTPCommand::BDAT(const unsigned long chunkSize, const bool last)
 {
 	std::ostringstream cmd;
 	cmd.imbue(std::locale::classic());
@@ -174,23 +174,23 @@ ref <SMTPCommand> SMTPCommand::BDAT(const unsigned long chunkSize, const bool la
 
 
 // static
-ref <SMTPCommand> SMTPCommand::NOOP()
+shared_ptr <SMTPCommand> SMTPCommand::NOOP()
 {
 	return createCommand("NOOP");
 }
 
 
 // static
-ref <SMTPCommand> SMTPCommand::QUIT()
+shared_ptr <SMTPCommand> SMTPCommand::QUIT()
 {
 	return createCommand("QUIT");
 }
 
 
 // static
-ref <SMTPCommand> SMTPCommand::createCommand(const string& text)
+shared_ptr <SMTPCommand> SMTPCommand::createCommand(const string& text)
 {
-	return vmime::create <SMTPCommand>(text);
+	return shared_ptr <SMTPCommand>(new SMTPCommand(text));
 }
 
 
@@ -200,7 +200,7 @@ const string SMTPCommand::getText() const
 }
 
 
-void SMTPCommand::writeToSocket(ref <socket> sok)
+void SMTPCommand::writeToSocket(shared_ptr <socket> sok)
 {
 	sok->send(m_text + "\r\n");
 }

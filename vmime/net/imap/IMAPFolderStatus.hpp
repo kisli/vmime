@@ -55,7 +55,7 @@ public:
 	unsigned int getMessageCount() const;
 	unsigned int getUnseenCount() const;
 
-	ref <folderStatus> clone() const;
+	shared_ptr <folderStatus> clone() const;
 
 	/** Returns the the number of messages with the Recent flag set.
 	  *

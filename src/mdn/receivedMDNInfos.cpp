@@ -30,7 +30,7 @@ namespace vmime {
 namespace mdn {
 
 
-receivedMDNInfos::receivedMDNInfos(const ref <const message> msg)
+receivedMDNInfos::receivedMDNInfos(const shared_ptr <const message> msg)
 	: m_msg(msg)
 {
 	extract();
@@ -51,7 +51,7 @@ receivedMDNInfos& receivedMDNInfos::operator=(const receivedMDNInfos& other)
 }
 
 
-const ref <const message> receivedMDNInfos::getMessage() const
+const shared_ptr <const message> receivedMDNInfos::getMessage() const
 {
 	return (m_msg);
 }
@@ -86,17 +86,16 @@ void receivedMDNInfos::copyFrom(const receivedMDNInfos& other)
 
 void receivedMDNInfos::extract()
 {
-	const ref <const body> bdy = m_msg->getBody();
+	const shared_ptr <const body> bdy = m_msg->getBody();
 
 	for (size_t i = 0 ; i < bdy->getPartCount() ; ++i)
 	{
-		const ref <const bodyPart> part = bdy->getPartAt(i);
+		const shared_ptr <const bodyPart> part = bdy->getPartAt(i);
 
 		if (!part->getHeader()->hasField(fields::CONTENT_TYPE))
 			continue;
 
-		const mediaType& type = *part->getHeader()->ContentType()->
-			getValue().dynamicCast <const mediaType>();
+		const mediaType& type = *part->getHeader()->ContentType()->getValue <mediaType>();
 
 		// Extract from second part (message/disposition-notification)
 		if (type.getType() == vmime::mediaTypes::MESSAGE &&
@@ -111,15 +110,15 @@ void receivedMDNInfos::extract()
 			header fields;
 			fields.parse(oss.str());
 
-			try { m_omid = *fields.OriginalMessageId()->getValue().dynamicCast <const messageId>(); }
+			try { m_omid = *fields.OriginalMessageId()->getValue <messageId>(); }
 			catch (exceptions::no_such_field&) { /* Ignore */ }
 
-			try { m_disp = *fields.Disposition()->getValue().dynamicCast <const disposition>(); }
+			try { m_disp = *fields.Disposition()->getValue <disposition>(); }
 			catch (exceptions::no_such_field&) { /* Ignore */ }
 
 			try
 			{
-				text t = *fields.findField("Received-content-MIC")->getValue().dynamicCast <const text>();
+				text t = *fields.findField("Received-content-MIC")->getValue <text>();
 				m_contentMIC = t.generate();
 			}
 			catch (exceptions::no_such_field&) { /* Ignore */ }

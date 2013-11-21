@@ -55,7 +55,7 @@ defaultCertificateVerifier::defaultCertificateVerifier(const defaultCertificateV
 
 
 void defaultCertificateVerifier::verify
-	(ref <certificateChain> chain, const string& hostname)
+	(shared_ptr <certificateChain> chain, const string& hostname)
 {
 	if (chain->getCount() == 0)
 		return;
@@ -70,7 +70,7 @@ void defaultCertificateVerifier::verify
 
 
 void defaultCertificateVerifier::verifyX509
-	(ref <certificateChain> chain, const string& hostname)
+	(shared_ptr <certificateChain> chain, const string& hostname)
 {
 	// For every certificate in the chain, verify that the certificate
 	// has been issued by the next certificate in the chain
@@ -78,11 +78,11 @@ void defaultCertificateVerifier::verifyX509
 	{
 		for (unsigned int i = 0 ; i < chain->getCount() - 1 ; ++i)
 		{
-			ref <X509Certificate> cert =
-				chain->getAt(i).dynamicCast <X509Certificate>();
+			shared_ptr <X509Certificate> cert =
+				dynamicCast <X509Certificate>(chain->getAt(i));
 
-			ref <X509Certificate> next =
-				chain->getAt(i + 1).dynamicCast <X509Certificate>();
+			shared_ptr <X509Certificate> next =
+				dynamicCast <X509Certificate>(chain->getAt(i + 1));
 
 			if (!cert->checkIssuer(next))
 			{
@@ -98,8 +98,8 @@ void defaultCertificateVerifier::verifyX509
 
 	for (unsigned int i = 0 ; i < chain->getCount() ; ++i)
 	{
-		ref <X509Certificate> cert =
-			chain->getAt(i).dynamicCast <X509Certificate>();
+		shared_ptr <X509Certificate> cert =
+			dynamicCast <X509Certificate>(chain->getAt(i));
 
 		const datetime begin = cert->getActivationDate();
 		const datetime end = cert->getExpirationDate();
@@ -115,14 +115,14 @@ void defaultCertificateVerifier::verifyX509
 
 	// -- First, verify that the the last certificate in the chain was
 	// -- issued by a third-party that we trust
-	ref <X509Certificate> lastCert =
-		chain->getAt(chain->getCount() - 1).dynamicCast <X509Certificate>();
+	shared_ptr <X509Certificate> lastCert =
+		dynamicCast <X509Certificate>(chain->getAt(chain->getCount() - 1));
 
 	bool trusted = false;
 
 	for (unsigned int i = 0 ; !trusted && i < m_x509RootCAs.size() ; ++i)
 	{
-		ref <X509Certificate> rootCa = m_x509RootCAs[i];
+		shared_ptr <X509Certificate> rootCa = m_x509RootCAs[i];
 
 		if (lastCert->verify(rootCa))
 			trusted = true;
@@ -131,12 +131,12 @@ void defaultCertificateVerifier::verifyX509
 	// -- Next, if the issuer certificate cannot be verified against
 	// -- root CAs, compare the subject's certificate against the
 	// -- trusted certificates
-	ref <X509Certificate> firstCert =
-		chain->getAt(0).dynamicCast <X509Certificate>();
+	shared_ptr <X509Certificate> firstCert =
+		dynamicCast <X509Certificate>(chain->getAt(0));
 
 	for (unsigned int i = 0 ; !trusted && i < m_x509TrustedCerts.size() ; ++i)
 	{
-		ref <X509Certificate> cert = m_x509TrustedCerts[i];
+		shared_ptr <X509Certificate> cert = m_x509TrustedCerts[i];
 
 		if (firstCert->equals(cert))
 			trusted = true;
@@ -158,14 +158,14 @@ void defaultCertificateVerifier::verifyX509
 
 
 void defaultCertificateVerifier::setX509RootCAs
-	(const std::vector <ref <X509Certificate> >& caCerts)
+	(const std::vector <shared_ptr <X509Certificate> >& caCerts)
 {
 	m_x509RootCAs = caCerts;
 }
 
 
 void defaultCertificateVerifier::setX509TrustedCerts
-	(const std::vector <ref <X509Certificate> >& trustedCerts)
+	(const std::vector <shared_ptr <X509Certificate> >& trustedCerts)
 {
 	m_x509TrustedCerts = trustedCerts;
 }

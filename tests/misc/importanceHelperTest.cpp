@@ -49,7 +49,7 @@ VMIME_TEST_SUITE_BEGIN(importanceHelperTest)
 
 	void testResetImportance()
 	{
-		vmime::ref <vmime::header> hdr = vmime::create <vmime::header>();
+		vmime::shared_ptr <vmime::header> hdr = vmime::make_shared <vmime::header>();
 
 		hdr->getField("Importance")->setValue("xxx");
 		hdr->getField("X-Priority")->setValue("yyy");
@@ -69,7 +69,7 @@ VMIME_TEST_SUITE_BEGIN(importanceHelperTest)
 	void testSetImportanceImpl(const vmime::misc::importanceHelper::Importance i,
 		const std::string& ImportanceValue, const std::string& XPriorityValue)
 	{
-		vmime::ref <vmime::header> hdr = vmime::create <vmime::header>();
+		vmime::shared_ptr <vmime::header> hdr = vmime::make_shared <vmime::header>();
 
 		vmime::misc::importanceHelper::setImportanceHeader(hdr, i);
 
@@ -117,12 +117,12 @@ VMIME_TEST_SUITE_BEGIN(importanceHelperTest)
 		const vmime::misc::importanceHelper::Importance i2,
 		const std::string& ImportanceValue, const std::string& XPriorityValue)
 	{
-		vmime::ref <vmime::header> hdr1 = vmime::create <vmime::header>();
+		vmime::shared_ptr <vmime::header> hdr1 = vmime::make_shared <vmime::header>();
 
 		hdr1->getField("Importance")->setValue(ImportanceValue);
 		VASSERT_EQ("1", i1, vmime::misc::importanceHelper::getImportanceHeader(hdr1));
 
-		vmime::ref <vmime::header> hdr2 = vmime::create <vmime::header>();
+		vmime::shared_ptr <vmime::header> hdr2 = vmime::make_shared <vmime::header>();
 
 		hdr2->getField("X-Priority")->setValue(XPriorityValue);
 		VASSERT_EQ("2", i2, vmime::misc::importanceHelper::getImportanceHeader(hdr2));

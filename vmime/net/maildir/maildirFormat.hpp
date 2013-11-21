@@ -55,13 +55,13 @@ public:
 	{
 	public:
 
-		context(ref <maildirStore> store);
+		context(shared_ptr <maildirStore> store);
 
-		ref <maildirStore> getStore() const;
+		shared_ptr <maildirStore> getStore() const;
 
 	private:
 
-		weak_ref <maildirStore> m_store;
+		weak_ptr <maildirStore> m_store;
 	};
 
 
@@ -146,7 +146,7 @@ public:
 	  * @param store of which to detect format
 	  * @return a Maildir format implementation for the specified store
 	  */
-	static ref <maildirFormat> detect(ref <maildirStore> store);
+	static shared_ptr <maildirFormat> detect(shared_ptr <maildirStore> store);
 
 protected:
 
@@ -155,20 +155,20 @@ protected:
 	static const utility::file::path::component NEW_DIR;  /**< Unread messages. */
 
 
-	maildirFormat(ref <context> ctx);
+	maildirFormat(shared_ptr <context> ctx);
 
 
 	/** Returns the current context.
 	  *
 	  * @return current context
 	  */
-	ref <context> getContext();
+	shared_ptr <context> getContext();
 
 	/** Returns the current context (const version).
 	  *
 	  * @return current context
 	  */
-	ref <const context> getContext() const;
+	shared_ptr <const context> getContext() const;
 
 	/** Quick checks whether this implementation can read the Maildir
 	  * format in the specified directory.
@@ -180,7 +180,7 @@ protected:
 
 private:
 
-	ref <context> m_context;
+	shared_ptr <context> m_context;
 };
 
 

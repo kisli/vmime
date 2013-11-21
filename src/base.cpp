@@ -98,9 +98,13 @@ const string CRLF = "\r\n";
 const string SUPPORTED_MIME_VERSION = "1.0";
 
 
-/** Null reference.
+#ifndef VMIME_BUILDING_DOC
+
+/** Null shared pointer.
   */
-const null_ref null = null_ref();
+nullPtrType null;
+
+#endif // VMIME_BUILDING_DOC
 
 
 // Line length limits

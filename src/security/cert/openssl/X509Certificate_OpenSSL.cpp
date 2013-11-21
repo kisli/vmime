@@ -158,17 +158,17 @@ void* X509Certificate_OpenSSL::getInternalData()
 
 
 // static
-ref <X509Certificate> X509Certificate_OpenSSL::importInternal(X509* cert)
+shared_ptr <X509Certificate> X509Certificate_OpenSSL::importInternal(X509* cert)
 {
 	if (cert)
-		return vmime::create <X509Certificate_OpenSSL>(reinterpret_cast <X509 *>(cert));
+		return make_shared <X509Certificate_OpenSSL>(reinterpret_cast <X509 *>(cert));
 
-	return NULL;
+	return null;
 }
 
 
 // static
-ref <X509Certificate> X509Certificate::import(utility::inputStream& is)
+shared_ptr <X509Certificate> X509Certificate::import(utility::inputStream& is)
 {
 	byteArray bytes;
 	utility::stream::value_type chunk[4096];
@@ -184,17 +184,17 @@ ref <X509Certificate> X509Certificate::import(utility::inputStream& is)
 
 
 // static
-ref <X509Certificate> X509Certificate::import
+shared_ptr <X509Certificate> X509Certificate::import
 	(const byte_t* data, const size_t length)
 {
-	ref <X509Certificate_OpenSSL> cert = vmime::create <X509Certificate_OpenSSL>();
+	shared_ptr <X509Certificate_OpenSSL> cert = make_shared <X509Certificate_OpenSSL>();
 
 	BIO* membio = BIO_new_mem_buf(const_cast <byte_t*>(data), length);
 
 	if (!PEM_read_bio_X509(membio, &(cert->m_data->cert), 0, 0))
 	{
 		BIO_vfree(membio);
-		return NULL;
+		return null;
 	}
 
 	BIO_vfree(membio);
@@ -270,10 +270,10 @@ const byteArray X509Certificate_OpenSSL::getSerialNumber() const
 }
 
 
-bool X509Certificate_OpenSSL::checkIssuer(ref <const X509Certificate> cert_) const
+bool X509Certificate_OpenSSL::checkIssuer(shared_ptr <const X509Certificate> cert_) const
 {
-	ref <const X509Certificate_OpenSSL> cert =
-		cert_.dynamicCast <const X509Certificate_OpenSSL>();
+	shared_ptr <const X509Certificate_OpenSSL> cert =
+		dynamicCast <const X509Certificate_OpenSSL>(cert_);
 
 	// Get issuer for this cert
 	BIO *out;
@@ -297,10 +297,10 @@ bool X509Certificate_OpenSSL::checkIssuer(ref <const X509Certificate> cert_) con
 }
 
 
-bool X509Certificate_OpenSSL::verify(ref <const X509Certificate> caCert_) const
+bool X509Certificate_OpenSSL::verify(shared_ptr <const X509Certificate> caCert_) const
 {
-	ref <const X509Certificate_OpenSSL> caCert =
-		caCert_.dynamicCast <const X509Certificate_OpenSSL>();
+	shared_ptr <const X509Certificate_OpenSSL> caCert =
+		dynamicCast <const X509Certificate_OpenSSL>(caCert_);
 
 
 	bool verified = false;
@@ -550,10 +550,10 @@ int X509Certificate_OpenSSL::getVersion() const
 }
 
 
-bool X509Certificate_OpenSSL::equals(ref <const certificate> other) const
+bool X509Certificate_OpenSSL::equals(shared_ptr <const certificate> other) const
 {
-	ref <const X509Certificate_OpenSSL> otherX509 =
-		other.dynamicCast <const X509Certificate_OpenSSL>();
+	shared_ptr <const X509Certificate_OpenSSL> otherX509 =
+		dynamicCast <const X509Certificate_OpenSSL>(other);
 
 	if (!otherX509)
 		return false;

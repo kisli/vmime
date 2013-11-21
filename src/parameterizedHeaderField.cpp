@@ -321,7 +321,7 @@ void parameterizedHeaderField::parseImpl
 			const paramInfo& info = (*it).second;
 
 			// Append this parameter to the list
-			ref <parameter> param = vmime::create <parameter>((*it).first);
+			shared_ptr <parameter> param = make_shared <parameter>((*it).first);
 
 			param->parse(ctx, info.value);
 			param->setParsedBounds(info.start, info.end);
@@ -345,7 +345,7 @@ void parameterizedHeaderField::generateImpl
 	headerField::generateImpl(ctx, os, pos, &pos);
 
 	// Parameters
-	for (std::vector <ref <parameter> >::const_iterator
+	for (std::vector <shared_ptr <parameter> >::const_iterator
 	     it = m_params.begin() ; it != m_params.end() ; ++it)
 	{
 		os << "; ";
@@ -367,10 +367,10 @@ void parameterizedHeaderField::copyFrom(const component& other)
 
 	removeAllParameters();
 
-	for (std::vector <ref <parameter> >::const_iterator i = source.m_params.begin() ;
+	for (std::vector <shared_ptr <parameter> >::const_iterator i = source.m_params.begin() ;
 	     i != source.m_params.end() ; ++i)
 	{
-		appendParameter((*i)->clone().dynamicCast <parameter>());
+		appendParameter(vmime::clone(*i));
 	}
 }
 
@@ -386,8 +386,8 @@ bool parameterizedHeaderField::hasParameter(const string& paramName) const
 {
 	const string name = utility::stringUtils::toLower(paramName);
 
-	std::vector <ref <parameter> >::const_iterator pos = m_params.begin();
-	const std::vector <ref <parameter> >::const_iterator end = m_params.end();
+	std::vector <shared_ptr <parameter> >::const_iterator pos = m_params.begin();
+	const std::vector <shared_ptr <parameter> >::const_iterator end = m_params.end();
 
 	for ( ; pos != end && utility::stringUtils::toLower((*pos)->getName()) != name ; ++pos) {}
 
@@ -395,13 +395,13 @@ bool parameterizedHeaderField::hasParameter(const string& paramName) const
 }
 
 
-ref <parameter> parameterizedHeaderField::findParameter(const string& paramName) const
+shared_ptr <parameter> parameterizedHeaderField::findParameter(const string& paramName) const
 {
 	const string name = utility::stringUtils::toLower(paramName);
 
 	// Find the first parameter that matches the specified name
-	std::vector <ref <parameter> >::const_iterator pos = m_params.begin();
-	const std::vector <ref <parameter> >::const_iterator end = m_params.end();
+	std::vector <shared_ptr <parameter> >::const_iterator pos = m_params.begin();
+	const std::vector <shared_ptr <parameter> >::const_iterator end = m_params.end();
 
 	for ( ; pos != end && utility::stringUtils::toLower((*pos)->getName()) != name ; ++pos) {}
 
@@ -418,20 +418,20 @@ ref <parameter> parameterizedHeaderField::findParameter(const string& paramName)
 }
 
 
-ref <parameter> parameterizedHeaderField::getParameter(const string& paramName)
+shared_ptr <parameter> parameterizedHeaderField::getParameter(const string& paramName)
 {
 	const string name = utility::stringUtils::toLower(paramName);
 
 	// Find the first parameter that matches the specified name
-	std::vector <ref <parameter> >::const_iterator pos = m_params.begin();
-	const std::vector <ref <parameter> >::const_iterator end = m_params.end();
+	std::vector <shared_ptr <parameter> >::const_iterator pos = m_params.begin();
+	const std::vector <shared_ptr <parameter> >::const_iterator end = m_params.end();
 
 	for ( ; pos != end && utility::stringUtils::toLower((*pos)->getName()) != name ; ++pos) {}
 
 	// If no parameter with this name can be found, create a new one
 	if (pos == end)
 	{
-		ref <parameter> param = vmime::create <parameter>(paramName);
+		shared_ptr <parameter> param = make_shared <parameter>(paramName);
 
 		appendParameter(param);
 
@@ -446,15 +446,15 @@ ref <parameter> parameterizedHeaderField::getParameter(const string& paramName)
 }
 
 
-void parameterizedHeaderField::appendParameter(ref <parameter> param)
+void parameterizedHeaderField::appendParameter(shared_ptr <parameter> param)
 {
 	m_params.push_back(param);
 }
 
 
-void parameterizedHeaderField::insertParameterBefore(ref <parameter> beforeParam, ref <parameter> param)
+void parameterizedHeaderField::insertParameterBefore(shared_ptr <parameter> beforeParam, shared_ptr <parameter> param)
 {
-	const std::vector <ref <parameter> >::iterator it = std::find
+	const std::vector <shared_ptr <parameter> >::iterator it = std::find
 		(m_params.begin(), m_params.end(), beforeParam);
 
 	if (it == m_params.end())
@@ -464,15 +464,15 @@ void parameterizedHeaderField::insertParameterBefore(ref <parameter> beforeParam
 }
 
 
-void parameterizedHeaderField::insertParameterBefore(const size_t pos, ref <parameter> param)
+void parameterizedHeaderField::insertParameterBefore(const size_t pos, shared_ptr <parameter> param)
 {
 	m_params.insert(m_params.begin() + pos, param);
 }
 
 
-void parameterizedHeaderField::insertParameterAfter(ref <parameter> afterParam, ref <parameter> param)
+void parameterizedHeaderField::insertParameterAfter(shared_ptr <parameter> afterParam, shared_ptr <parameter> param)
 {
-	const std::vector <ref <parameter> >::iterator it = std::find
+	const std::vector <shared_ptr <parameter> >::iterator it = std::find
 		(m_params.begin(), m_params.end(), afterParam);
 
 	if (it == m_params.end())
@@ -482,15 +482,15 @@ void parameterizedHeaderField::insertParameterAfter(ref <parameter> afterParam, 
 }
 
 
-void parameterizedHeaderField::insertParameterAfter(const size_t pos, ref <parameter> param)
+void parameterizedHeaderField::insertParameterAfter(const size_t pos, shared_ptr <parameter> param)
 {
 	m_params.insert(m_params.begin() + pos + 1, param);
 }
 
 
-void parameterizedHeaderField::removeParameter(ref <parameter> param)
+void parameterizedHeaderField::removeParameter(shared_ptr <parameter> param)
 {
-	const std::vector <ref <parameter> >::iterator it = std::find
+	const std::vector <shared_ptr <parameter> >::iterator it = std::find
 		(m_params.begin(), m_params.end(), param);
 
 	if (it == m_params.end())
@@ -502,7 +502,7 @@ void parameterizedHeaderField::removeParameter(ref <parameter> param)
 
 void parameterizedHeaderField::removeParameter(const size_t pos)
 {
-	const std::vector <ref <parameter> >::iterator it = m_params.begin() + pos;
+	const std::vector <shared_ptr <parameter> >::iterator it = m_params.begin() + pos;
 
 	m_params.erase(it);
 }
@@ -526,25 +526,25 @@ bool parameterizedHeaderField::isEmpty() const
 }
 
 
-const ref <parameter> parameterizedHeaderField::getParameterAt(const size_t pos)
+const shared_ptr <parameter> parameterizedHeaderField::getParameterAt(const size_t pos)
 {
 	return (m_params[pos]);
 }
 
 
-const ref <const parameter> parameterizedHeaderField::getParameterAt(const size_t pos) const
+const shared_ptr <const parameter> parameterizedHeaderField::getParameterAt(const size_t pos) const
 {
 	return (m_params[pos]);
 }
 
 
-const std::vector <ref <const parameter> > parameterizedHeaderField::getParameterList() const
+const std::vector <shared_ptr <const parameter> > parameterizedHeaderField::getParameterList() const
 {
-	std::vector <ref <const parameter> > list;
+	std::vector <shared_ptr <const parameter> > list;
 
 	list.reserve(m_params.size());
 
-	for (std::vector <ref <parameter> >::const_iterator it = m_params.begin() ;
+	for (std::vector <shared_ptr <parameter> >::const_iterator it = m_params.begin() ;
 	     it != m_params.end() ; ++it)
 	{
 		list.push_back(*it);
@@ -554,17 +554,17 @@ const std::vector <ref <const parameter> > parameterizedHeaderField::getParamete
 }
 
 
-const std::vector <ref <parameter> > parameterizedHeaderField::getParameterList()
+const std::vector <shared_ptr <parameter> > parameterizedHeaderField::getParameterList()
 {
 	return (m_params);
 }
 
 
-const std::vector <ref <component> > parameterizedHeaderField::getChildComponents()
+const std::vector <shared_ptr <component> > parameterizedHeaderField::getChildComponents()
 {
-	std::vector <ref <component> > list = headerField::getChildComponents();
+	std::vector <shared_ptr <component> > list = headerField::getChildComponents();
 
-	for (std::vector <ref <parameter> >::iterator it = m_params.begin() ;
+	for (std::vector <shared_ptr <parameter> >::iterator it = m_params.begin() ;
 	     it != m_params.end() ; ++it)
 	{
 		list.push_back(*it);

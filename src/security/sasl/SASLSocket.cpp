@@ -43,7 +43,7 @@ namespace sasl {
 
 
 
-SASLSocket::SASLSocket(ref <SASLSession> sess, ref <net::socket> wrapped)
+SASLSocket::SASLSocket(shared_ptr <SASLSession> sess, shared_ptr <net::socket> wrapped)
 	: m_session(sess), m_wrapped(wrapped),
 	  m_pendingBuffer(0), m_pendingPos(0), m_pendingLen(0)
 {

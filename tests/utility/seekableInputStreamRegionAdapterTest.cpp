@@ -42,16 +42,16 @@ VMIME_TEST_SUITE_BEGIN(seekableInputStreamRegionAdapterTest)
 	VMIME_TEST_LIST_END
 
 
-	vmime::ref <seekableInputStreamRegionAdapter> createStream
-		(vmime::ref <seekableInputStream>* underlyingStream = NULL)
+	vmime::shared_ptr <seekableInputStreamRegionAdapter> createStream
+		(vmime::shared_ptr <seekableInputStream>* underlyingStream = NULL)
 	{
 		vmime::string buffer("THIS IS A TEST BUFFER");
 
-		vmime::ref <seekableInputStream> strStream =
-			vmime::create <inputStreamStringAdapter>(buffer);
+		vmime::shared_ptr <seekableInputStream> strStream =
+			vmime::make_shared <inputStreamStringAdapter>(buffer);
 
-		vmime::ref <seekableInputStreamRegionAdapter> rgnStream =
-			vmime::create <seekableInputStreamRegionAdapter>(strStream, 10, 11);
+		vmime::shared_ptr <seekableInputStreamRegionAdapter> rgnStream =
+			vmime::make_shared <seekableInputStreamRegionAdapter>(strStream, 10, 11);
 
 		if (underlyingStream)
 			*underlyingStream = strStream;
@@ -61,7 +61,7 @@ VMIME_TEST_SUITE_BEGIN(seekableInputStreamRegionAdapterTest)
 
 	void testInitialPosition()
 	{
-		vmime::ref <seekableInputStreamRegionAdapter> stream = createStream();
+		vmime::shared_ptr <seekableInputStreamRegionAdapter> stream = createStream();
 
 		VASSERT_EQ("Pos", 0, stream->getPosition());
 		VASSERT_FALSE("EOF", stream->eof());
@@ -69,7 +69,7 @@ VMIME_TEST_SUITE_BEGIN(seekableInputStreamRegionAdapterTest)
 
 	void testSeekAndGetPosition()
 	{
-		vmime::ref <seekableInputStreamRegionAdapter> stream = createStream();
+		vmime::shared_ptr <seekableInputStreamRegionAdapter> stream = createStream();
 
 		stream->seek(5);
 
@@ -84,11 +84,12 @@ VMIME_TEST_SUITE_BEGIN(seekableInputStreamRegionAdapterTest)
 
 	void testRead()
 	{
-		vmime::ref <seekableInputStreamRegionAdapter> stream = createStream();
+		vmime::shared_ptr <seekableInputStreamRegionAdapter> stream = createStream();
 
 		stream->seek(5);
 
 		stream::value_type buffer[100];
+		std::fill(vmime::begin(buffer), vmime::end(buffer), 0);
 		stream::size_type read = stream->read(buffer, 6);
 
 		VASSERT_EQ("Pos", 11, stream->getPosition());
@@ -99,7 +100,7 @@ VMIME_TEST_SUITE_BEGIN(seekableInputStreamRegionAdapterTest)
 
 	void testSkip()
 	{
-		vmime::ref <seekableInputStreamRegionAdapter> stream = createStream();
+		vmime::shared_ptr <seekableInputStreamRegionAdapter> stream = createStream();
 
 		stream->skip(5);
 
@@ -107,6 +108,7 @@ VMIME_TEST_SUITE_BEGIN(seekableInputStreamRegionAdapterTest)
 		VASSERT_FALSE("EOF 1", stream->eof());
 
 		stream::value_type buffer[100];
+		std::fill(vmime::begin(buffer), vmime::end(buffer), 0);
 		stream::size_type read = stream->read(buffer, 3);
 
 		VASSERT_EQ("Pos 2", 8, stream->getPosition());
@@ -122,7 +124,7 @@ VMIME_TEST_SUITE_BEGIN(seekableInputStreamRegionAdapterTest)
 
 	void testReset()
 	{
-		vmime::ref <seekableInputStreamRegionAdapter> stream = createStream();
+		vmime::shared_ptr <seekableInputStreamRegionAdapter> stream = createStream();
 
 		stream->skip(100);
 		stream->reset();
@@ -136,15 +138,17 @@ VMIME_TEST_SUITE_BEGIN(seekableInputStreamRegionAdapterTest)
 		// seekableInputStreamRegionAdapter should keep track of its own position
 		// in the underlying stream, and not be affected by possible seek/read
 		// operations on it...
-		vmime::ref <seekableInputStream> ustream;
-		vmime::ref <seekableInputStreamRegionAdapter> stream = createStream(&ustream);
+		vmime::shared_ptr <seekableInputStream> ustream;
+		vmime::shared_ptr <seekableInputStreamRegionAdapter> stream = createStream(&ustream);
 
 		stream->seek(5);
 
 		stream::value_type buffer1[100];
+		std::fill(vmime::begin(buffer1), vmime::end(buffer1), 0);
 		stream::size_type read = ustream->read(buffer1, 7);
 
 		stream::value_type buffer2[100];
+		std::fill(vmime::begin(buffer2), vmime::end(buffer2), 0);
 		stream::size_type read2 = stream->read(buffer2, 6);
 
 		VASSERT_EQ("Buffer 1", "THIS IS", vmime::string(buffer1, 0, 7));

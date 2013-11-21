@@ -43,11 +43,11 @@ IMAPMessageStructure::IMAPMessageStructure()
 
 IMAPMessageStructure::IMAPMessageStructure(const IMAPParser::body* body)
 {
-	m_parts.push_back(IMAPMessagePart::create(NULL, 0, body));
+	m_parts.push_back(IMAPMessagePart::create(null, 0, body));
 }
 
 
-IMAPMessageStructure::IMAPMessageStructure(ref <IMAPMessagePart> parent, const std::vector <IMAPParser::body*>& list)
+IMAPMessageStructure::IMAPMessageStructure(shared_ptr <IMAPMessagePart> parent, const std::vector <IMAPParser::body*>& list)
 {
 	int number = 0;
 
@@ -59,13 +59,13 @@ IMAPMessageStructure::IMAPMessageStructure(ref <IMAPMessagePart> parent, const s
 }
 
 
-ref <const messagePart> IMAPMessageStructure::getPartAt(const size_t x) const
+shared_ptr <const messagePart> IMAPMessageStructure::getPartAt(const size_t x) const
 {
 	return m_parts[x];
 }
 
 
-ref <messagePart> IMAPMessageStructure::getPartAt(const size_t x)
+shared_ptr <messagePart> IMAPMessageStructure::getPartAt(const size_t x)
 {
 	return m_parts[x];
 }
@@ -78,9 +78,9 @@ size_t IMAPMessageStructure::getPartCount() const
 
 
 // static
-ref <IMAPMessageStructure> IMAPMessageStructure::emptyStructure()
+shared_ptr <IMAPMessageStructure> IMAPMessageStructure::emptyStructure()
 {
-	static ref <IMAPMessageStructure> emptyStructure = vmime::create <IMAPMessageStructure>();
+	static shared_ptr <IMAPMessageStructure> emptyStructure = make_shared <IMAPMessageStructure>();
 	return emptyStructure;
 }
 

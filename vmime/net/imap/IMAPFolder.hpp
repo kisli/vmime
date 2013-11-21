@@ -61,15 +61,14 @@ private:
 
 	friend class IMAPStore;
 	friend class IMAPMessage;
-	friend class vmime::creator;  // vmime::create <IMAPFolder>
 
-
-	IMAPFolder(const folder::path& path, ref <IMAPStore> store, const int type = TYPE_UNDEFINED, const int flags = FLAG_UNDEFINED);
 	IMAPFolder(const IMAPFolder&);
 
-	~IMAPFolder();
-
 public:
+
+	IMAPFolder(const folder::path& path, shared_ptr <IMAPStore> store, const int type = TYPE_UNDEFINED, const int flags = FLAG_UNDEFINED);
+
+	~IMAPFolder();
 
 	int getMode() const;
 
@@ -90,15 +89,15 @@ public:
 
 	bool isOpen() const;
 
-	ref <message> getMessage(const int num);
-	std::vector <ref <message> > getMessages(const messageSet& msgs);
+	shared_ptr <message> getMessage(const int num);
+	std::vector <shared_ptr <message> > getMessages(const messageSet& msgs);
 
 	std::vector <int> getMessageNumbersStartingOnUID(const message::uid& uid);
 
 	int getMessageCount();
 
-	ref <folder> getFolder(const folder::path::component& name);
-	std::vector <ref <folder> > getFolders(const bool recursive = false);
+	shared_ptr <folder> getFolder(const folder::path::component& name);
+	std::vector <shared_ptr <folder> > getFolders(const bool recursive = false);
 
 	void rename(const folder::path& newPath);
 
@@ -106,26 +105,26 @@ public:
 
 	void setMessageFlags(const messageSet& msgs, const int flags, const int mode = message::FLAG_MODE_SET);
 
-	void addMessage(ref <vmime::message> msg, const int flags = message::FLAG_UNDEFINED, vmime::datetime* date = NULL, utility::progressListener* progress = NULL);
+	void addMessage(shared_ptr <vmime::message> msg, const int flags = message::FLAG_UNDEFINED, vmime::datetime* date = NULL, utility::progressListener* progress = NULL);
 	void addMessage(utility::inputStream& is, const int size, const int flags = message::FLAG_UNDEFINED, vmime::datetime* date = NULL, utility::progressListener* progress = NULL);
 
 	void copyMessages(const folder::path& dest, const messageSet& msgs);
 
 	void status(int& count, int& unseen);
-	ref <folderStatus> getStatus();
+	shared_ptr <folderStatus> getStatus();
 
 	void noop();
 
 	void expunge();
 
-	ref <folder> getParent();
+	shared_ptr <folder> getParent();
 
-	ref <const store> getStore() const;
-	ref <store> getStore();
+	shared_ptr <const store> getStore() const;
+	shared_ptr <store> getStore();
 
 
-	void fetchMessages(std::vector <ref <message> >& msg, const fetchAttributes& options, utility::progressListener* progress = NULL);
-	void fetchMessage(ref <message> msg, const fetchAttributes& options);
+	void fetchMessages(std::vector <shared_ptr <message> >& msg, const fetchAttributes& options, utility::progressListener* progress = NULL);
+	void fetchMessage(shared_ptr <message> msg, const fetchAttributes& options);
 
 	int getFetchCapabilities() const;
 
@@ -177,8 +176,8 @@ private:
 	void processStatusUpdate(const IMAPParser::response* resp);
 
 
-	weak_ref <IMAPStore> m_store;
-	ref <IMAPConnection> m_connection;
+	weak_ptr <IMAPStore> m_store;
+	shared_ptr <IMAPConnection> m_connection;
 
 	folder::path m_path;
 	folder::path::component m_name;
@@ -189,7 +188,7 @@ private:
 	int m_type;
 	int m_flags;
 
-	ref <IMAPFolderStatus> m_status;
+	shared_ptr <IMAPFolderStatus> m_status;
 
 	std::vector <IMAPMessage*> m_messages;
 };

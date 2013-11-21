@@ -42,8 +42,6 @@ class VMIME_EXPORT headerField : public component
 	friend class headerFieldFactory;
 	friend class header;
 
-	friend class vmime::creator;  // create ref
-
 protected:
 
 	// Protected constructor to prevent the user from creating
@@ -55,11 +53,11 @@ public:
 
 	~headerField();
 
-	ref <component> clone() const;
+	shared_ptr <component> clone() const;
 	void copyFrom(const component& other);
 	headerField& operator=(const headerField& other);
 
-	const std::vector <ref <component> > getChildComponents();
+	const std::vector <shared_ptr <component> > getChildComponents();
 
 	/** Sets the name of this field.
 	  *
@@ -84,13 +82,35 @@ public:
 	  *
 	  * @return read-only value object
 	  */
-	virtual ref <const headerFieldValue> getValue() const;
+	virtual shared_ptr <const headerFieldValue> getValue() const;
+
+	/** Return the read-only value object attached to this field,
+	  * casted to the specified type.
+	  *
+	  * @return value object
+	  */
+	template <typename T>
+	shared_ptr <const T> getValue() const
+	{
+		return dynamicCast <const T>(m_value);
+	}
 
 	/** Return the value object attached to this field.
 	  *
 	  * @return value object
 	  */
-	virtual ref <headerFieldValue> getValue();
+	virtual shared_ptr <headerFieldValue> getValue();
+
+	/** Return the value object attached to this field,
+	  * casted to the specified type.
+	  *
+	  * @return value object
+	  */
+	template <typename T>
+	shared_ptr <T> getValue()
+	{
+		return dynamicCast <T>(m_value);
+	}
 
 	/** Set the value of this field.
 	  *
@@ -98,7 +118,7 @@ public:
 	  * valid for this header field
 	  * @param value new value
 	  */
-	virtual void setValue(ref <headerFieldValue> value);
+	virtual void setValue(shared_ptr <headerFieldValue> value);
 
 	/** Set the value of this field by cloning the specified value.
 	  *
@@ -106,7 +126,7 @@ public:
 	  * valid for this header field
 	  * @param value new value
 	  */
-	virtual void setValueConst(ref <const headerFieldValue> value);
+	virtual void setValueConst(shared_ptr <const headerFieldValue> value);
 
 	/** Set the value of this field (reference version).
 	  * The value will be cloned.
@@ -134,7 +154,7 @@ public:
 	  * @return parsed header field, or NULL if no more header field can be parsed
 	  * in the input buffer
 	  */
-	static ref <headerField> parseNext
+	static shared_ptr <headerField> parseNext
 		(const parsingContext& ctx,
 		 const string& buffer,
 		 const string::size_type position,
@@ -160,7 +180,7 @@ protected:
 
 
 	string m_name;
-	ref <headerFieldValue> m_value;
+	shared_ptr <headerFieldValue> m_value;
 };
 
 

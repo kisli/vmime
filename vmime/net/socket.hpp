@@ -162,14 +162,14 @@ public:
 	  *
 	  * @return a new socket
 	  */
-	virtual ref <socket> create() = 0;
+	virtual shared_ptr <socket> create() = 0;
 
 	/** Creates a socket with the specified timeout handler.
 	  *
 	  * @param th timeout handler
 	  * @return a new socket
 	  */
-	virtual ref <socket> create(ref <timeoutHandler> th) = 0;
+	virtual shared_ptr <socket> create(shared_ptr <timeoutHandler> th) = 0;
 };
 
 

@@ -79,7 +79,7 @@ public:
 	  *
 	  * @return attachment data
 	  */
-	virtual const ref <const contentHandler> getData() const = 0;
+	virtual const shared_ptr <const contentHandler> getData() const = 0;
 
 	/** Return the encoding used for this attachment.
 	  *
@@ -93,14 +93,14 @@ public:
 	  * @return attachment part or NULL if the attachment is not
 	  * attached to a part
 	  */
-	virtual ref <const object> getPart() const = 0;
+	virtual shared_ptr <const object> getPart() const = 0;
 
 	/** Return the header of the attachment part.
 	  *
 	  * @return attachment part header or NULL if the attachment
 	  * is not attached to a part
 	  */
-	virtual ref <const header> getHeader() const = 0;
+	virtual shared_ptr <const header> getHeader() const = 0;
 
 protected:
 
@@ -108,7 +108,7 @@ protected:
 	  *
 	  * @param parent body part in which to generate the attachment
 	  */
-	virtual void generateIn(ref <bodyPart> parent) const = 0;
+	virtual void generateIn(shared_ptr <bodyPart> parent) const = 0;
 };
 
 

@@ -49,16 +49,15 @@ class maildirFolder;
 class VMIME_EXPORT maildirMessage : public message
 {
 	friend class maildirFolder;
-	friend class vmime::creator;  // vmime::create <maildirMessage>
 
-private:
-
-	maildirMessage(ref <maildirFolder> folder, const int num);
 	maildirMessage(const maildirMessage&) : message() { }
+
+public:
+
+	maildirMessage(shared_ptr <maildirFolder> folder, const int num);
 
 	~maildirMessage();
 
-public:
 
 	int getNumber() const;
 
@@ -68,33 +67,33 @@ public:
 
 	bool isExpunged() const;
 
-	ref <const messageStructure> getStructure() const;
-	ref <messageStructure> getStructure();
+	shared_ptr <const messageStructure> getStructure() const;
+	shared_ptr <messageStructure> getStructure();
 
-	ref <const header> getHeader() const;
+	shared_ptr <const header> getHeader() const;
 
 	int getFlags() const;
 	void setFlags(const int flags, const int mode = FLAG_MODE_SET);
 
 	void extract(utility::outputStream& os, utility::progressListener* progress = NULL, const int start = 0, const int length = -1, const bool peek = false) const;
-	void extractPart(ref <const messagePart> p, utility::outputStream& os, utility::progressListener* progress = NULL, const int start = 0, const int length = -1, const bool peek = false) const;
+	void extractPart(shared_ptr <const messagePart> p, utility::outputStream& os, utility::progressListener* progress = NULL, const int start = 0, const int length = -1, const bool peek = false) const;
 
-	void fetchPartHeader(ref <messagePart> p);
+	void fetchPartHeader(shared_ptr <messagePart> p);
 
-	ref <vmime::message> getParsedMessage();
+	shared_ptr <vmime::message> getParsedMessage();
 
 private:
 
-	void fetch(ref <maildirFolder> folder, const fetchAttributes& options);
+	void fetch(shared_ptr <maildirFolder> folder, const fetchAttributes& options);
 
 	void onFolderClosed();
 
-	ref <header> getOrCreateHeader();
+	shared_ptr <header> getOrCreateHeader();
 
 	void extractImpl(utility::outputStream& os, utility::progressListener* progress, const int start, const int length, const int partialStart, const int partialLength, const bool peek) const;
 
 
-	weak_ref <maildirFolder> m_folder;
+	weak_ptr <maildirFolder> m_folder;
 
 	int m_num;
 	int m_size;
@@ -102,8 +101,8 @@ private:
 	bool m_expunged;
 	uid m_uid;
 
-	ref <header> m_header;
-	ref <messageStructure> m_structure;
+	shared_ptr <header> m_header;
+	shared_ptr <messageStructure> m_structure;
 };
 
 

@@ -101,7 +101,7 @@ private:
 	charset m_charset;
 	Encoding m_encoding;
 
-	ref <utility::encoder::encoder> m_encoder;
+	shared_ptr <utility::encoder::encoder> m_encoder;
 };
 
 

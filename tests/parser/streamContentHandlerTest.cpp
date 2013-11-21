@@ -51,8 +51,8 @@ VMIME_TEST_SUITE_BEGIN(streamContentHandlerTest)
 	void testGetLength()
 	{
 		vmime::string data("Test Data");
-		vmime::ref <vmime::utility::inputStream> stream =
-			vmime::create <vmime::utility::inputStreamStringAdapter>(data);
+		vmime::shared_ptr <vmime::utility::inputStream> stream =
+			vmime::make_shared <vmime::utility::inputStreamStringAdapter>(data);
 
 		vmime::streamContentHandler cth(stream, data.length());
 
@@ -63,8 +63,8 @@ VMIME_TEST_SUITE_BEGIN(streamContentHandlerTest)
 	void testIsEncoded()
 	{
 		vmime::string data("Test Data");
-		vmime::ref <vmime::utility::inputStream> stream =
-			vmime::create <vmime::utility::inputStreamStringAdapter>(data);
+		vmime::shared_ptr <vmime::utility::inputStream> stream =
+			vmime::make_shared <vmime::utility::inputStreamStringAdapter>(data);
 
 		vmime::streamContentHandler cth(stream, data.length());
 
@@ -73,8 +73,8 @@ VMIME_TEST_SUITE_BEGIN(streamContentHandlerTest)
 
 
 		vmime::string data2("Zm9vEjRWYmFy=");
-		vmime::ref <vmime::utility::inputStream> stream2 =
-			vmime::create <vmime::utility::inputStreamStringAdapter>(data2);
+		vmime::shared_ptr <vmime::utility::inputStream> stream2 =
+			vmime::make_shared <vmime::utility::inputStreamStringAdapter>(data2);
 
 		vmime::streamContentHandler cth2(stream2, data2.length(), vmime::encoding("base64"));
 
@@ -85,8 +85,8 @@ VMIME_TEST_SUITE_BEGIN(streamContentHandlerTest)
 	void testGetLength_Encoded()
 	{
 		vmime::string data("foo=12=34=56bar");
-		vmime::ref <vmime::utility::inputStream> stream =
-			vmime::create <vmime::utility::inputStreamStringAdapter>(data);
+		vmime::shared_ptr <vmime::utility::inputStream> stream =
+			vmime::make_shared <vmime::utility::inputStreamStringAdapter>(data);
 
 		vmime::streamContentHandler cth(stream, data.length(), vmime::encoding("quoted-printable"));
 
@@ -97,8 +97,8 @@ VMIME_TEST_SUITE_BEGIN(streamContentHandlerTest)
 	void testExtract()
 	{
 		vmime::string data("Test Data");
-		vmime::ref <vmime::utility::inputStream> stream =
-			vmime::create <vmime::utility::inputStreamStringAdapter>(data);
+		vmime::shared_ptr <vmime::utility::inputStream> stream =
+			vmime::make_shared <vmime::utility::inputStreamStringAdapter>(data);
 
 		vmime::streamContentHandler cth(stream, data.length());
 
@@ -114,8 +114,8 @@ VMIME_TEST_SUITE_BEGIN(streamContentHandlerTest)
 	{
 		vmime::string data
 			("QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVphYmNkZWZnaGlqa2xtbm9wcXJzdHV2d3h5ejAxMjM0NTY3ODk=");
-		vmime::ref <vmime::utility::inputStream> stream =
-			vmime::create <vmime::utility::inputStreamStringAdapter>(data);
+		vmime::shared_ptr <vmime::utility::inputStream> stream =
+			vmime::make_shared <vmime::utility::inputStreamStringAdapter>(data);
 
 		vmime::streamContentHandler cth(stream, data.length(), vmime::encoding("base64"));
 
@@ -133,8 +133,8 @@ VMIME_TEST_SUITE_BEGIN(streamContentHandlerTest)
 	{
 		vmime::string data
 			("QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVphYmNkZWZnaGlqa2xtbm9wcXJzdHV2d3h5ejAxMjM0NTY3ODk=");
-		vmime::ref <vmime::utility::inputStream> stream =
-			vmime::create <vmime::utility::inputStreamStringAdapter>(data);
+		vmime::shared_ptr <vmime::utility::inputStream> stream =
+			vmime::make_shared <vmime::utility::inputStreamStringAdapter>(data);
 
 		vmime::streamContentHandler cth(stream, data.length(), vmime::encoding("base64"));
 
@@ -151,8 +151,8 @@ VMIME_TEST_SUITE_BEGIN(streamContentHandlerTest)
 	void testGenerate()
 	{
 		vmime::string data("foo\x12\x34\x56 bar");
-		vmime::ref <vmime::utility::inputStream> stream =
-			vmime::create <vmime::utility::inputStreamStringAdapter>(data);
+		vmime::shared_ptr <vmime::utility::inputStream> stream =
+			vmime::make_shared <vmime::utility::inputStreamStringAdapter>(data);
 
 		vmime::streamContentHandler cth(stream, data.length());
 
@@ -168,8 +168,8 @@ VMIME_TEST_SUITE_BEGIN(streamContentHandlerTest)
 	void testGenerate_Encoded()
 	{
 		vmime::string data("foo=12=34=56bar");
-		vmime::ref <vmime::utility::inputStream> stream =
-			vmime::create <vmime::utility::inputStreamStringAdapter>(data);
+		vmime::shared_ptr <vmime::utility::inputStream> stream =
+			vmime::make_shared <vmime::utility::inputStreamStringAdapter>(data);
 
 		vmime::streamContentHandler cth(stream, data.length(), vmime::encoding("quoted-printable"));
 

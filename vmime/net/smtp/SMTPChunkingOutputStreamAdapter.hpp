@@ -46,11 +46,9 @@ class SMTPConnection;
   */
 class VMIME_EXPORT SMTPChunkingOutputStreamAdapter : public utility::outputStream
 {
-	friend class vmime::creator;
-
 public:
 
-	SMTPChunkingOutputStreamAdapter(ref <SMTPConnection> conn);
+	SMTPChunkingOutputStreamAdapter(shared_ptr <SMTPConnection> conn);
 
 	void write(const value_type* const data, const size_type count);
 	void flush();
@@ -65,7 +63,7 @@ private:
 	void sendChunk(const value_type* const data, const size_type count, const bool last);
 
 
-	ref <SMTPConnection> m_connection;
+	shared_ptr <SMTPConnection> m_connection;
 
 	value_type m_buffer[262144];  // 256 KB
 	size_type m_bufferSize;

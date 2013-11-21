@@ -92,9 +92,9 @@ void encoding::generateImpl
 }
 
 
-ref <utility::encoder::encoder> encoding::getEncoder() const
+shared_ptr <utility::encoder::encoder> encoding::getEncoder() const
 {
-	ref <utility::encoder::encoder> encoder =
+	shared_ptr <utility::encoder::encoder> encoder =
 		utility::encoder::encoderFactory::getInstance()->create(generate());
 
 	// FIXME: this should not be here (move me into QP encoder instead?)
@@ -200,7 +200,7 @@ bool encoding::shouldReencode() const
 
 
 const encoding encoding::decide
-	(ref <const contentHandler> data, const EncodingUsage usage)
+	(shared_ptr <const contentHandler> data, const EncodingUsage usage)
 {
 	// Do not re-encode data if it is already encoded
 	if (data->isEncoded() && !data->getEncoding().shouldReencode())
@@ -231,7 +231,7 @@ const encoding encoding::decide
 }
 
 
-const encoding encoding::decide(ref <const contentHandler> data,
+const encoding encoding::decide(shared_ptr <const contentHandler> data,
 	const charset& chset, const EncodingUsage usage)
 {
 	// Do not re-encode data if it is already encoded
@@ -253,9 +253,9 @@ const encoding encoding::decide(ref <const contentHandler> data,
 }
 
 
-ref <component> encoding::clone() const
+shared_ptr <component> encoding::clone() const
 {
-	return vmime::create <encoding>(*this);
+	return make_shared <encoding>(*this);
 }
 
 
@@ -291,9 +291,9 @@ void encoding::setUsage(const EncodingUsage usage)
 }
 
 
-const std::vector <ref <component> > encoding::getChildComponents()
+const std::vector <shared_ptr <component> > encoding::getChildComponents()
 {
-	return std::vector <ref <component> >();
+	return std::vector <shared_ptr <component> >();
 }
 
 

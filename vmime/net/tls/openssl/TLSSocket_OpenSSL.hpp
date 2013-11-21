@@ -52,17 +52,15 @@ class TLSSession_OpenSSL;
 
 class TLSSocket_OpenSSL : public TLSSocket
 {
-	friend class vmime::creator;
-
 public:
 
-	TLSSocket_OpenSSL(ref <TLSSession_OpenSSL> session, ref <socket> sok);
+	TLSSocket_OpenSSL(shared_ptr <TLSSession_OpenSSL> session, shared_ptr <socket> sok);
 	~TLSSocket_OpenSSL();
 
 
-	void handshake(ref <timeoutHandler> toHandler = NULL);
+	void handshake(shared_ptr <timeoutHandler> toHandler = null);
 
-	ref <security::cert::certificateChain> getPeerCertificates() const;
+	shared_ptr <security::cert::certificateChain> getPeerCertificates() const;
 
 	// Implementation of 'socket'
 	void connect(const string& address, const port_t port);
@@ -101,15 +99,15 @@ private:
 	void handleError(int rc);
 
 
-	ref <TLSSession_OpenSSL> m_session;
+	shared_ptr <TLSSession_OpenSSL> m_session;
 
-	ref <socket> m_wrapped;
+	shared_ptr <socket> m_wrapped;
 
 	bool m_connected;
 
 	char m_buffer[65536];
 
-	ref <timeoutHandler> m_toHandler;
+	shared_ptr <timeoutHandler> m_toHandler;
 
 	SSL* m_ssl;
 

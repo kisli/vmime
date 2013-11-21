@@ -1,0 +1,7 @@
+These things need to be changed when this module is merged into CMake:
+
+-change include(CheckCXXCompilerFlag) in CheckCXX11Features.cmake to
+ include(${CMAKE_CURRENT_LIST_DIR}/CheckCXXCompilerFlag.cmake)
+-remove the setting of CMAKE_MODULE_PATH from the testcase CMakeLists.txt
+-change all tabs to spaces in the cpp files
+

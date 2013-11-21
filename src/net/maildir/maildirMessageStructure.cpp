@@ -36,7 +36,7 @@ namespace net {
 namespace maildir {
 
 
-ref <maildirMessageStructure> maildirMessageStructure::m_emptyStructure = vmime::create <maildirMessageStructure>();
+shared_ptr <maildirMessageStructure> maildirMessageStructure::m_emptyStructure = make_shared <maildirMessageStructure>();
 
 
 maildirMessageStructure::maildirMessageStructure()
@@ -44,20 +44,20 @@ maildirMessageStructure::maildirMessageStructure()
 }
 
 
-maildirMessageStructure::maildirMessageStructure(ref <maildirMessagePart> parent, const bodyPart& part)
+maildirMessageStructure::maildirMessageStructure(shared_ptr <maildirMessagePart> parent, const bodyPart& part)
 {
-	vmime::ref <maildirMessagePart> mpart = vmime::create <maildirMessagePart>(parent, 0, part);
+	shared_ptr <maildirMessagePart> mpart = make_shared <maildirMessagePart>(parent, 0, part);
 	mpart->initStructure(part);
 
 	m_parts.push_back(mpart);
 }
 
 
-maildirMessageStructure::maildirMessageStructure(ref <maildirMessagePart> parent, const std::vector <ref <const vmime::bodyPart> >& list)
+maildirMessageStructure::maildirMessageStructure(shared_ptr <maildirMessagePart> parent, const std::vector <shared_ptr <const vmime::bodyPart> >& list)
 {
 	for (unsigned int i = 0 ; i < list.size() ; ++i)
 	{
-		vmime::ref <maildirMessagePart> mpart = vmime::create <maildirMessagePart>(parent, i, *list[i]);
+		shared_ptr <maildirMessagePart> mpart = make_shared <maildirMessagePart>(parent, i, *list[i]);
 		mpart->initStructure(*list[i]);
 
 		m_parts.push_back(mpart);
@@ -65,13 +65,13 @@ maildirMessageStructure::maildirMessageStructure(ref <maildirMessagePart> parent
 }
 
 
-ref <const messagePart> maildirMessageStructure::getPartAt(const size_t x) const
+shared_ptr <const messagePart> maildirMessageStructure::getPartAt(const size_t x) const
 {
 	return m_parts[x];
 }
 
 
-ref <messagePart> maildirMessageStructure::getPartAt(const size_t x)
+shared_ptr <messagePart> maildirMessageStructure::getPartAt(const size_t x)
 {
 	return m_parts[x];
 }
@@ -84,7 +84,7 @@ size_t maildirMessageStructure::getPartCount() const
 
 
 // static
-ref <maildirMessageStructure> maildirMessageStructure::emptyStructure()
+shared_ptr <maildirMessageStructure> maildirMessageStructure::emptyStructure()
 {
 	return m_emptyStructure;
 }

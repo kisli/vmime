@@ -62,7 +62,7 @@ public:
 	void convert(const string& in, string& out);
 	void convert(utility::inputStream& in, utility::outputStream& out);
 
-	ref <utility::charsetFilteredOutputStream> getFilteredOutputStream(utility::outputStream& os);
+	shared_ptr <utility::charsetFilteredOutputStream> getFilteredOutputStream(utility::outputStream& os);
 
 private:
 

@@ -59,14 +59,14 @@ class VMIME_EXPORT POP3Store : public store
 
 public:
 
-	POP3Store(ref <session> sess, ref <security::authenticator> auth, const bool secured = false);
+	POP3Store(shared_ptr <session> sess, shared_ptr <security::authenticator> auth, const bool secured = false);
 	~POP3Store();
 
 	const string getProtocolName() const;
 
-	ref <folder> getDefaultFolder();
-	ref <folder> getRootFolder();
-	ref <folder> getFolder(const folder::path& path);
+	shared_ptr <folder> getDefaultFolder();
+	shared_ptr <folder> getRootFolder();
+	shared_ptr <folder> getFolder(const folder::path& path);
 
 	bool isValidFolderName(const folder::path::component& name) const;
 
@@ -82,14 +82,14 @@ public:
 	int getCapabilities() const;
 
 	bool isSecuredConnection() const;
-	ref <connectionInfos> getConnectionInfos() const;
-	ref <POP3Connection> getConnection();
+	shared_ptr <connectionInfos> getConnectionInfos() const;
+	shared_ptr <POP3Connection> getConnection();
 
 	bool isPOP3S() const;
 
 private:
 
-	ref <POP3Connection> m_connection;
+	shared_ptr <POP3Connection> m_connection;
 
 
 	void registerFolder(POP3Folder* folder);

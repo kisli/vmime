@@ -90,18 +90,18 @@ headerFieldFactory::~headerFieldFactory()
 }
 
 
-headerFieldFactory* headerFieldFactory::getInstance()
+shared_ptr <headerFieldFactory> headerFieldFactory::getInstance()
 {
 	static headerFieldFactory instance;
-	return (&instance);
+	return shared_ptr <headerFieldFactory>(&instance, noop_shared_ptr_deleter <headerFieldFactory>());
 }
 
 
-ref <headerField> headerFieldFactory::create
+shared_ptr <headerField> headerFieldFactory::create
 	(const string& name, const string& body)
 {
 	NameMap::const_iterator pos = m_nameMap.find(utility::stringUtils::toLower(name));
-	ref <headerField> field = NULL;
+	shared_ptr <headerField> field;
 
 	if (pos != m_nameMap.end())
 		field = ((*pos).second)();
@@ -118,12 +118,12 @@ ref <headerField> headerFieldFactory::create
 }
 
 
-ref <headerFieldValue> headerFieldFactory::createValue(const string& fieldName)
+shared_ptr <headerFieldValue> headerFieldFactory::createValue(const string& fieldName)
 {
 	ValueMap::const_iterator pos = m_valueMap.find
 		(utility::stringUtils::toLower(fieldName));
 
-	ref <headerFieldValue> value = NULL;
+	shared_ptr <headerFieldValue> value;
 
 	if (pos != m_valueMap.end())
 		value = ((*pos).second.allocFunc)();

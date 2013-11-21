@@ -32,8 +32,6 @@
 #include "vmime/net/maildir/maildirFolder.hpp"
 #include "vmime/net/maildir/maildirFormat.hpp"
 
-#include "vmime/utility/smartPtr.hpp"
-
 #include "vmime/exception.hpp"
 #include "vmime/platform.hpp"
 
@@ -54,7 +52,7 @@ namespace net {
 namespace maildir {
 
 
-maildirStore::maildirStore(ref <session> sess, ref <security::authenticator> auth)
+maildirStore::maildirStore(shared_ptr <session> sess, shared_ptr <security::authenticator> auth)
 	: store(sess, getInfosInstance(), auth), m_connected(false)
 {
 }
@@ -80,33 +78,35 @@ const string maildirStore::getProtocolName() const
 }
 
 
-ref <folder> maildirStore::getRootFolder()
+shared_ptr <folder> maildirStore::getRootFolder()
 {
 	if (!isConnected())
 		throw exceptions::illegal_state("Not connected");
 
-	return vmime::create <maildirFolder>(folder::path(),
-		thisRef().dynamicCast <maildirStore>());
+	return make_shared <maildirFolder>
+		(folder::path(),
+		 dynamicCast <maildirStore>(shared_from_this()));
 }
 
 
-ref <folder> maildirStore::getDefaultFolder()
+shared_ptr <folder> maildirStore::getDefaultFolder()
 {
 	if (!isConnected())
 		throw exceptions::illegal_state("Not connected");
 
-	return vmime::create <maildirFolder>(folder::path::component("inbox"),
-		thisRef().dynamicCast <maildirStore>());
+	return make_shared <maildirFolder>
+		(folder::path::component("inbox"),
+		 dynamicCast <maildirStore>(shared_from_this()));
 }
 
 
-ref <folder> maildirStore::getFolder(const folder::path& path)
+shared_ptr <folder> maildirStore::getFolder(const folder::path& path)
 {
 	if (!isConnected())
 		throw exceptions::illegal_state("Not connected");
 
-	return vmime::create <maildirFolder>(path,
-		thisRef().dynamicCast <maildirStore>());
+	return make_shared <maildirFolder>
+		(path, dynamicCast <maildirStore>(shared_from_this()));
 }
 
 
@@ -138,11 +138,11 @@ void maildirStore::connect()
 		throw exceptions::already_connected();
 
 	// Get root directory
-	ref <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
+	shared_ptr <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
 	m_fsPath = fsf->stringToPath(GET_PROPERTY(string, PROPERTY_SERVER_ROOTPATH));
 
-	ref <utility::file> rootDir = fsf->create(m_fsPath);
+	shared_ptr <utility::file> rootDir = fsf->create(m_fsPath);
 
 	// Try to create the root directory if it does not exist
 	if (!(rootDir->exists() && rootDir->isDirectory()))
@@ -157,7 +157,7 @@ void maildirStore::connect()
 		}
 	}
 
-	m_format = maildirFormat::detect(thisRef().dynamicCast <maildirStore>());
+	m_format = maildirFormat::detect(dynamicCast <maildirStore>(shared_from_this()));
 
 	m_connected = true;
 }
@@ -175,9 +175,9 @@ bool maildirStore::isSecuredConnection() const
 }
 
 
-ref <connectionInfos> maildirStore::getConnectionInfos() const
+shared_ptr <connectionInfos> maildirStore::getConnectionInfos() const
 {
-	return vmime::create <defaultConnectionInfos>("localhost", static_cast <port_t>(0));
+	return make_shared <defaultConnectionInfos>("localhost", static_cast <port_t>(0));
 }
 
 
@@ -201,13 +201,13 @@ void maildirStore::noop()
 }
 
 
-ref <maildirFormat> maildirStore::getFormat()
+shared_ptr <maildirFormat> maildirStore::getFormat()
 {
 	return m_format;
 }
 
 
-ref <const maildirFormat> maildirStore::getFormat() const
+shared_ptr <const maildirFormat> maildirStore::getFormat() const
 {
 	return m_format;
 }

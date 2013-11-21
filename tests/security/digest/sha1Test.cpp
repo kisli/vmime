@@ -27,7 +27,7 @@
 
 
 #define INIT_DIGEST(var, algo) \
-	vmime::ref <vmime::security::digest::messageDigest> var = \
+	vmime::shared_ptr <vmime::security::digest::messageDigest> var = \
 		vmime::security::digest::messageDigestFactory::getInstance()->create(algo)
 
 

@@ -544,7 +544,7 @@ const string IMAPUtils::dateTime(const vmime::datetime& date)
 
 // static
 const string IMAPUtils::buildFetchRequest
-	(ref <IMAPConnection> cnt, const messageSet& msgs, const fetchAttributes& options)
+	(shared_ptr <IMAPConnection> cnt, const messageSet& msgs, const fetchAttributes& options)
 {
 	// Example:
 	//   C: A654 FETCH 2:4 (FLAGS BODY[HEADER.FIELDS (DATE FROM)])
@@ -649,7 +649,7 @@ void IMAPUtils::convertAddressList
 		string email = addr.addr_mailbox()->value()
 			+ "@" + addr.addr_host()->value();
 
-		dest.appendMailbox(vmime::create <mailbox>(name, email));
+		dest.appendMailbox(make_shared <mailbox>(name, email));
 	}
 }
 

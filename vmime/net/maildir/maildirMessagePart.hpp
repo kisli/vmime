@@ -46,20 +46,20 @@ class maildirMessagePart : public messagePart
 {
 public:
 
-	maildirMessagePart(ref <maildirMessagePart> parent, const int number, const bodyPart& part);
+	maildirMessagePart(shared_ptr <maildirMessagePart> parent, const int number, const bodyPart& part);
 	~maildirMessagePart();
 
 
-	ref <const messageStructure> getStructure() const;
-	ref <messageStructure> getStructure();
+	shared_ptr <const messageStructure> getStructure() const;
+	shared_ptr <messageStructure> getStructure();
 
-	weak_ref <const maildirMessagePart> getParent() const { return (m_parent); }
+	weak_ptr <const maildirMessagePart> getParent() const { return (m_parent); }
 
 	const mediaType& getType() const;
 	int getSize() const;
 	int getNumber() const;
 
-	ref <const header> getHeader() const;
+	shared_ptr <const header> getHeader() const;
 
 	header& getOrCreateHeader();
 
@@ -73,9 +73,9 @@ public:
 
 private:
 
-	ref <maildirMessageStructure> m_structure;
-	weak_ref <maildirMessagePart> m_parent;
-	ref <header> m_header;
+	shared_ptr <maildirMessageStructure> m_structure;
+	weak_ptr <maildirMessagePart> m_parent;
+	shared_ptr <header> m_header;
 
 	int m_number;
 	int m_size;

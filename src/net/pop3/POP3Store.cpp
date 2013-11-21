@@ -42,7 +42,7 @@ namespace net {
 namespace pop3 {
 
 
-POP3Store::POP3Store(ref <session> sess, ref <security::authenticator> auth, const bool secured)
+POP3Store::POP3Store(shared_ptr <session> sess, shared_ptr <security::authenticator> auth, const bool secured)
 	: store(sess, getInfosInstance(), auth), m_isPOP3S(secured)
 {
 }
@@ -68,33 +68,34 @@ const string POP3Store::getProtocolName() const
 }
 
 
-ref <folder> POP3Store::getDefaultFolder()
+shared_ptr <folder> POP3Store::getDefaultFolder()
 {
 	if (!isConnected())
 		throw exceptions::illegal_state("Not connected");
 
-	return vmime::create <POP3Folder>(folder::path(folder::path::component("INBOX")),
-		thisRef().dynamicCast <POP3Store>());
+	return make_shared <POP3Folder>
+		(folder::path(folder::path::component("INBOX")),
+		 dynamicCast <POP3Store>(shared_from_this()));
 }
 
 
-ref <folder> POP3Store::getRootFolder()
+shared_ptr <folder> POP3Store::getRootFolder()
 {
 	if (!isConnected())
 		throw exceptions::illegal_state("Not connected");
 
-	return vmime::create <POP3Folder>(folder::path(),
-		thisRef().dynamicCast <POP3Store>());
+	return make_shared <POP3Folder>
+		(folder::path(), dynamicCast <POP3Store>(shared_from_this()));
 }
 
 
-ref <folder> POP3Store::getFolder(const folder::path& path)
+shared_ptr <folder> POP3Store::getFolder(const folder::path& path)
 {
 	if (!isConnected())
 		throw exceptions::illegal_state("Not connected");
 
-	return vmime::create <POP3Folder>(path,
-		thisRef().dynamicCast <POP3Store>());
+	return make_shared <POP3Folder>
+		(path, dynamicCast <POP3Store>(shared_from_this()));
 }
 
 
@@ -109,8 +110,8 @@ void POP3Store::connect()
 	if (isConnected())
 		throw exceptions::already_connected();
 
-	m_connection = vmime::create <POP3Connection>
-		(thisRef().dynamicCast <POP3Store>(), getAuthenticator());
+	m_connection = make_shared <POP3Connection>
+		(dynamicCast <POP3Store>(shared_from_this()), getAuthenticator());
 
 	try
 	{
@@ -118,7 +119,7 @@ void POP3Store::connect()
 	}
 	catch (std::exception&)
 	{
-		m_connection = NULL;
+		m_connection = null;
 		throw;
 	}
 }
@@ -145,16 +146,16 @@ bool POP3Store::isSecuredConnection() const
 }
 
 
-ref <connectionInfos> POP3Store::getConnectionInfos() const
+shared_ptr <connectionInfos> POP3Store::getConnectionInfos() const
 {
 	if (m_connection == NULL)
-		return NULL;
+		return null;
 
 	return m_connection->getConnectionInfos();
 }
 
 
-ref <POP3Connection> POP3Store::getConnection()
+shared_ptr <POP3Connection> POP3Store::getConnection()
 {
 	return m_connection;
 }
@@ -175,7 +176,7 @@ void POP3Store::disconnect()
 
 
 	m_connection->disconnect();
-	m_connection = NULL;
+	m_connection = null;
 }
 
 
@@ -186,7 +187,7 @@ void POP3Store::noop()
 
 	POP3Command::NOOP()->send(m_connection);
 
-	ref <POP3Response> response = POP3Response::readResponse(m_connection);
+	shared_ptr <POP3Response> response = POP3Response::readResponse(m_connection);
 
 	if (!response->isSuccess())
 		throw exceptions::command_error("NOOP", response->getFirstLine());

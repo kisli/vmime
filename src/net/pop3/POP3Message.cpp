@@ -44,7 +44,7 @@ namespace net {
 namespace pop3 {
 
 
-POP3Message::POP3Message(ref <POP3Folder> folder, const int num)
+POP3Message::POP3Message(shared_ptr <POP3Folder> folder, const int num)
 	: m_folder(folder), m_num(num), m_size(-1), m_deleted(false)
 {
 	folder->registerMessage(this);
@@ -53,7 +53,7 @@ POP3Message::POP3Message(ref <POP3Folder> folder, const int num)
 
 POP3Message::~POP3Message()
 {
-	ref <POP3Folder> folder = m_folder.acquire();
+	shared_ptr <POP3Folder> folder = m_folder.lock();
 
 	if (folder)
 		folder->unregisterMessage(this);
@@ -62,7 +62,7 @@ POP3Message::~POP3Message()
 
 void POP3Message::onFolderClosed()
 {
-	m_folder = NULL;
+	m_folder.reset();
 }
 
 
@@ -104,19 +104,19 @@ int POP3Message::getFlags() const
 }
 
 
-ref <const messageStructure> POP3Message::getStructure() const
+shared_ptr <const messageStructure> POP3Message::getStructure() const
 {
 	throw exceptions::operation_not_supported();
 }
 
 
-ref <messageStructure> POP3Message::getStructure()
+shared_ptr <messageStructure> POP3Message::getStructure()
 {
 	throw exceptions::operation_not_supported();
 }
 
 
-ref <const header> POP3Message::getHeader() const
+shared_ptr <const header> POP3Message::getHeader() const
 {
 	if (m_header == NULL)
 		throw exceptions::unfetched_object();
@@ -129,7 +129,7 @@ void POP3Message::extract(utility::outputStream& os,
 	utility::progressListener* progress, const int start,
 	const int length, const bool /* peek */) const
 {
-	ref <const POP3Folder> folder = m_folder.acquire();
+	shared_ptr <const POP3Folder> folder = m_folder.lock();
 
 	if (!folder)
 		throw exceptions::illegal_state("Folder closed");
@@ -140,7 +140,7 @@ void POP3Message::extract(utility::outputStream& os,
 		throw exceptions::partial_fetch_not_supported();
 
 	// Emit the "RETR" command
-	ref <POP3Store> store = folder.constCast <POP3Folder>()->m_store.acquire();
+	shared_ptr <POP3Store> store = constCast <POP3Folder>(folder)->m_store.lock();
 
 	POP3Command::RETR(m_num)->send(store->getConnection());
 
@@ -157,7 +157,7 @@ void POP3Message::extract(utility::outputStream& os,
 
 
 void POP3Message::extractPart
-	(ref <const messagePart> /* p */, utility::outputStream& /* os */,
+	(shared_ptr <const messagePart> /* p */, utility::outputStream& /* os */,
 	 utility::progressListener* /* progress */,
 	 const int /* start */, const int /* length */,
 	 const bool /* peek */) const
@@ -166,15 +166,15 @@ void POP3Message::extractPart
 }
 
 
-void POP3Message::fetchPartHeader(ref <messagePart> /* p */)
+void POP3Message::fetchPartHeader(shared_ptr <messagePart> /* p */)
 {
 	throw exceptions::operation_not_supported();
 }
 
 
-void POP3Message::fetch(ref <POP3Folder> msgFolder, const fetchAttributes& options)
+void POP3Message::fetch(shared_ptr <POP3Folder> msgFolder, const fetchAttributes& options)
 {
-	ref <POP3Folder> folder = m_folder.acquire();
+	shared_ptr <POP3Folder> folder = m_folder.lock();
 
 	if (folder != msgFolder)
 		throw exceptions::folder_not_found();
@@ -196,7 +196,7 @@ void POP3Message::fetch(ref <POP3Folder> msgFolder, const fetchAttributes& optio
 	// fields in particular.
 
 	// Emit the "TOP" command
-	ref <POP3Store> store = folder->m_store.acquire();
+	shared_ptr <POP3Store> store = folder->m_store.lock();
 
 	POP3Command::TOP(m_num, 0)->send(store->getConnection());
 
@@ -208,7 +208,7 @@ void POP3Message::fetch(ref <POP3Folder> msgFolder, const fetchAttributes& optio
 		POP3Response::readLargeResponse(store->getConnection(),
 			bufferStream, /* progress */ NULL, /* predictedSize */ 0);
 
-		m_header = vmime::create <header>();
+		m_header = make_shared <header>();
 		m_header->parse(buffer);
 	}
 	catch (exceptions::command_error& e)
@@ -224,14 +224,14 @@ void POP3Message::setFlags(const int /* flags */, const int /* mode */)
 }
 
 
-ref <vmime::message> POP3Message::getParsedMessage()
+shared_ptr <vmime::message> POP3Message::getParsedMessage()
 {
 	std::ostringstream oss;
 	utility::outputStreamAdapter os(oss);
 
 	extract(os);
 
-	vmime::ref <vmime::message> msg = vmime::create <vmime::message>();
+	shared_ptr <vmime::message> msg = make_shared <vmime::message>();
 	msg->parse(oss.str());
 
 	return msg;

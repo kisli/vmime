@@ -55,35 +55,33 @@ namespace smtp {
   */
 class VMIME_EXPORT SMTPCommand : public object
 {
-	friend class vmime::creator;
-
 public:
 
-	static ref <SMTPCommand> HELO(const string& hostname);
-	static ref <SMTPCommand> EHLO(const string& hostname);
-	static ref <SMTPCommand> AUTH(const string& mechName);
-	static ref <SMTPCommand> STARTTLS();
-	static ref <SMTPCommand> MAIL(const mailbox& mbox, const bool utf8);
-	static ref <SMTPCommand> MAIL(const mailbox& mbox, const bool utf8, const unsigned long size);
-	static ref <SMTPCommand> RCPT(const mailbox& mbox, const bool utf8);
-	static ref <SMTPCommand> RSET();
-	static ref <SMTPCommand> DATA();
-	static ref <SMTPCommand> BDAT(const unsigned long chunkSize, const bool last);
-	static ref <SMTPCommand> NOOP();
-	static ref <SMTPCommand> QUIT();
+	static shared_ptr <SMTPCommand> HELO(const string& hostname);
+	static shared_ptr <SMTPCommand> EHLO(const string& hostname);
+	static shared_ptr <SMTPCommand> AUTH(const string& mechName);
+	static shared_ptr <SMTPCommand> STARTTLS();
+	static shared_ptr <SMTPCommand> MAIL(const mailbox& mbox, const bool utf8);
+	static shared_ptr <SMTPCommand> MAIL(const mailbox& mbox, const bool utf8, const unsigned long size);
+	static shared_ptr <SMTPCommand> RCPT(const mailbox& mbox, const bool utf8);
+	static shared_ptr <SMTPCommand> RSET();
+	static shared_ptr <SMTPCommand> DATA();
+	static shared_ptr <SMTPCommand> BDAT(const unsigned long chunkSize, const bool last);
+	static shared_ptr <SMTPCommand> NOOP();
+	static shared_ptr <SMTPCommand> QUIT();
 
 	/** Creates a new SMTP command with the specified text.
 	  *
 	  * @param text command text
 	  * @return a new SMTPCommand object
 	  */
-	static ref <SMTPCommand> createCommand(const string& text);
+	static shared_ptr <SMTPCommand> createCommand(const string& text);
 
 	/** Sends this command to the specified socket.
 	  *
 	  * @param sok socket to which the command will be written
 	  */
-	virtual void writeToSocket(ref <socket> sok);
+	virtual void writeToSocket(shared_ptr <socket> sok);
 
 	/** Returns the full text of the command, including command name
 	  * and parameters (if any).

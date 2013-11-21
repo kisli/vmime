@@ -57,8 +57,8 @@ VMIME_TEST_SUITE_BEGIN(mailboxGroupTest)
 		VASSERT_EQ("count", 1, addrs.getAddressCount());
 		VASSERT_TRUE("is group", addrs.getAddressAt(0)->isGroup());
 
-		vmime::ref <vmime::mailboxGroup> mgrp =
-			addrs.getAddressAt(0).dynamicCast <vmime::mailboxGroup>();
+		vmime::shared_ptr <vmime::mailboxGroup> mgrp =
+			vmime::dynamicCast <vmime::mailboxGroup>(addrs.getAddressAt(0));
 
 		VASSERT_EQ("name", "group", mgrp->getName().getWholeBuffer());
 		VASSERT_EQ("count", 2, mgrp->getMailboxCount());

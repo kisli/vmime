@@ -57,10 +57,10 @@ windowsHandler::windowsHandler()
 	WSAStartup(MAKEWORD(1, 1), &wsaData);
 
 #if VMIME_HAVE_MESSAGING_FEATURES
-	m_socketFactory = vmime::create <windowsSocketFactory>();
+	m_socketFactory = make_shared <windowsSocketFactory>();
 #endif
 #if VMIME_HAVE_FILESYSTEM_FEATURES
-	m_fileSysFactory = vmime::create <windowsFileSystemFactory>();
+	m_fileSysFactory = make_shared <windowsFileSystemFactory>();
 #endif
 }
 
@@ -274,7 +274,7 @@ unsigned int windowsHandler::getThreadId() const
 
 #if VMIME_HAVE_MESSAGING_FEATURES
 
-ref <vmime::net::socketFactory> windowsHandler::getSocketFactory()
+shared_ptr <vmime::net::socketFactory> windowsHandler::getSocketFactory()
 {
 	return m_socketFactory;
 }
@@ -284,13 +284,13 @@ ref <vmime::net::socketFactory> windowsHandler::getSocketFactory()
 
 #if VMIME_HAVE_FILESYSTEM_FEATURES
 
-ref <vmime::utility::fileSystemFactory> windowsHandler::getFileSystemFactory()
+shared_ptr <vmime::utility::fileSystemFactory> windowsHandler::getFileSystemFactory()
 {
 	return m_fileSysFactory;
 }
 
 
-ref <vmime::utility::childProcessFactory> windowsHandler::getChildProcessFactory()
+shared_ptr <vmime::utility::childProcessFactory> windowsHandler::getChildProcessFactory()
 {
 	// TODO: Not implemented
 	return (NULL);
@@ -314,9 +314,9 @@ void windowsHandler::generateRandomBytes(unsigned char* buffer, const unsigned i
 }
 
 
-ref <utility::sync::criticalSection> windowsHandler::createCriticalSection()
+shared_ptr <utility::sync::criticalSection> windowsHandler::createCriticalSection()
 {
-	return vmime::create <windowsCriticalSection>();
+	return make_shared <windowsCriticalSection>();
 }
 
 

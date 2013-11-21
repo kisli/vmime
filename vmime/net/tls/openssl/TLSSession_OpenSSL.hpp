@@ -55,13 +55,13 @@ class TLSSession_OpenSSL : public TLSSession
 
 public:
 
-	TLSSession_OpenSSL(const ref <security::cert::certificateVerifier> cv, ref <TLSProperties> props);
+	TLSSession_OpenSSL(const shared_ptr <security::cert::certificateVerifier> cv, shared_ptr <TLSProperties> props);
 	~TLSSession_OpenSSL();
 
 
-	ref <TLSSocket> getSocket(ref <socket> sok);
+	shared_ptr <TLSSocket> getSocket(shared_ptr <socket> sok);
 
-	ref <security::cert::certificateVerifier> getCertificateVerifier();
+	shared_ptr <security::cert::certificateVerifier> getCertificateVerifier();
 
 
 	/** Set the private key to use if server requires a client certificate.
@@ -90,8 +90,8 @@ private:
 
 	SSL_CTX* m_sslctx;
 
-	ref <security::cert::certificateVerifier> m_certVerifier;
-	ref <TLSProperties> m_props;
+	shared_ptr <security::cert::certificateVerifier> m_certVerifier;
+	shared_ptr <TLSProperties> m_props;
 };
 
 

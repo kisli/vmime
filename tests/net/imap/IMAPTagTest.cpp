@@ -38,16 +38,16 @@ VMIME_TEST_SUITE_BEGIN(imapTagTest)
 
 	void testConstruct()
 	{
-		vmime::ref <vmime::net::imap::IMAPTag> tag =
-			vmime::create <vmime::net::imap::IMAPTag>();
+		vmime::shared_ptr <vmime::net::imap::IMAPTag> tag =
+			vmime::make_shared <vmime::net::imap::IMAPTag>();
 
 		VASSERT_EQ("init", "a001", static_cast <vmime::string>(*tag));
 	}
 
 	void testIncrement()
 	{
-		vmime::ref <vmime::net::imap::IMAPTag> tag =
-			vmime::create <vmime::net::imap::IMAPTag>();
+		vmime::shared_ptr <vmime::net::imap::IMAPTag> tag =
+			vmime::make_shared <vmime::net::imap::IMAPTag>();
 
 		(*tag)++;
 		VASSERT_EQ("init", "a002", static_cast <vmime::string>(*tag));
@@ -61,8 +61,8 @@ VMIME_TEST_SUITE_BEGIN(imapTagTest)
 
 	void testReset()
 	{
-		vmime::ref <vmime::net::imap::IMAPTag> tag =
-			vmime::create <vmime::net::imap::IMAPTag>();
+		vmime::shared_ptr <vmime::net::imap::IMAPTag> tag =
+			vmime::make_shared <vmime::net::imap::IMAPTag>();
 
 		for (int i = tag->number() ; i < tag->maximumNumber() ; ++i)
 			(*tag)++;
@@ -76,8 +76,8 @@ VMIME_TEST_SUITE_BEGIN(imapTagTest)
 
 	void testNumber()
 	{
-		vmime::ref <vmime::net::imap::IMAPTag> tag =
-			vmime::create <vmime::net::imap::IMAPTag>();
+		vmime::shared_ptr <vmime::net::imap::IMAPTag> tag =
+			vmime::make_shared <vmime::net::imap::IMAPTag>();
 
 		for (int i = 0 ; i < 41 ; ++i)
 			(*tag)++;

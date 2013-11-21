@@ -49,7 +49,7 @@ namespace net {
 namespace tls {
 
 
-ref <vmime::utility::sync::criticalSection >* OpenSSLInitializer::sm_mutexes;
+shared_ptr <vmime::utility::sync::criticalSection >* OpenSSLInitializer::sm_mutexes;
 
 
 OpenSSLInitializer::autoInitializer::autoInitializer()
@@ -93,7 +93,7 @@ void OpenSSLInitializer::initialize()
 	RAND_seed(seed, SEEDSIZE);
 
 	int numMutexes = CRYPTO_num_locks();
-	sm_mutexes = new ref <vmime::utility::sync::criticalSection>[numMutexes];
+	sm_mutexes = new shared_ptr <vmime::utility::sync::criticalSection>[numMutexes];
 
 	for (int i = 0 ; i < numMutexes ; ++i)
 		sm_mutexes[i] = vmime::platform::getHandler()->createCriticalSection();

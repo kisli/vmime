@@ -59,15 +59,15 @@ private:
 
 	friend class maildirStore;
 	friend class maildirMessage;
-	friend class vmime::creator;  // vmime::create <maildirFolder>
 
-
-	maildirFolder(const folder::path& path, ref <maildirStore> store);
 	maildirFolder(const maildirFolder&) : folder() { }
+
+public:
+
+	maildirFolder(const folder::path& path, shared_ptr <maildirStore> store);
 
 	~maildirFolder();
 
-public:
 
 	int getMode() const;
 
@@ -88,13 +88,13 @@ public:
 
 	bool isOpen() const;
 
-	ref <message> getMessage(const int num);
-	std::vector <ref <message> > getMessages(const messageSet& msgs);
+	shared_ptr <message> getMessage(const int num);
+	std::vector <shared_ptr <message> > getMessages(const messageSet& msgs);
 
 	int getMessageCount();
 
-	ref <folder> getFolder(const folder::path::component& name);
-	std::vector <ref <folder> > getFolders(const bool recursive = false);
+	shared_ptr <folder> getFolder(const folder::path::component& name);
+	std::vector <shared_ptr <folder> > getFolders(const bool recursive = false);
 
 	void rename(const folder::path& newPath);
 
@@ -102,24 +102,24 @@ public:
 
 	void setMessageFlags(const messageSet& msgs, const int flags, const int mode = message::FLAG_MODE_SET);
 
-	void addMessage(ref <vmime::message> msg, const int flags = message::FLAG_UNDEFINED, vmime::datetime* date = NULL, utility::progressListener* progress = NULL);
+	void addMessage(shared_ptr <vmime::message> msg, const int flags = message::FLAG_UNDEFINED, vmime::datetime* date = NULL, utility::progressListener* progress = NULL);
 	void addMessage(utility::inputStream& is, const int size, const int flags = message::FLAG_UNDEFINED, vmime::datetime* date = NULL, utility::progressListener* progress = NULL);
 
 	void copyMessages(const folder::path& dest, const messageSet& msgs);
 
 	void status(int& count, int& unseen);
-	ref <folderStatus> getStatus();
+	shared_ptr <folderStatus> getStatus();
 
 	void expunge();
 
-	ref <folder> getParent();
+	shared_ptr <folder> getParent();
 
-	ref <const store> getStore() const;
-	ref <store> getStore();
+	shared_ptr <const store> getStore() const;
+	shared_ptr <store> getStore();
 
 
-	void fetchMessages(std::vector <ref <message> >& msg, const fetchAttributes& options, utility::progressListener* progress = NULL);
-	void fetchMessage(ref <message> msg, const fetchAttributes& options);
+	void fetchMessages(std::vector <shared_ptr <message> >& msg, const fetchAttributes& options, utility::progressListener* progress = NULL);
+	void fetchMessage(shared_ptr <message> msg, const fetchAttributes& options);
 
 	int getFetchCapabilities() const;
 
@@ -129,7 +129,7 @@ private:
 
 	void scanFolder();
 
-	void listFolders(std::vector <ref <folder> >& list, const bool recursive);
+	void listFolders(std::vector <shared_ptr <folder> >& list, const bool recursive);
 
 	void registerMessage(maildirMessage* msg);
 	void unregisterMessage(maildirMessage* msg);
@@ -149,7 +149,7 @@ private:
 	void notifyMessagesCopied(const folder::path& dest);
 
 
-	weak_ref <maildirStore> m_store;
+	weak_ptr <maildirStore> m_store;
 
 	folder::path m_path;
 	folder::path::component m_name;

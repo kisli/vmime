@@ -50,11 +50,11 @@
 
 // Helpers for service properties
 #define GET_PROPERTY(type, prop) \
-	(m_store.acquire()->getInfos().getPropertyValue <type>(getSession(), \
-		dynamic_cast <const POP3ServiceInfos&>(m_store.acquire()->getInfos()).getProperties().prop))
+	(m_store.lock()->getInfos().getPropertyValue <type>(getSession(), \
+		dynamic_cast <const POP3ServiceInfos&>(m_store.lock()->getInfos()).getProperties().prop))
 #define HAS_PROPERTY(prop) \
-	(m_store.acquire()->getInfos().hasProperty(getSession(), \
-		dynamic_cast <const POP3ServiceInfos&>(m_store.acquire()->getInfos()).getProperties().prop))
+	(m_store.lock()->getInfos().hasProperty(getSession(), \
+		dynamic_cast <const POP3ServiceInfos&>(m_store.lock()->getInfos()).getProperties().prop))
 
 
 namespace vmime {
@@ -63,8 +63,8 @@ namespace pop3 {
 
 
 
-POP3Connection::POP3Connection(ref <POP3Store> store, ref <security::authenticator> auth)
-	: m_store(store), m_auth(auth), m_socket(NULL), m_timeoutHandler(NULL),
+POP3Connection::POP3Connection(shared_ptr <POP3Store> store, shared_ptr <security::authenticator> auth)
+	: m_store(store), m_auth(auth), m_socket(null), m_timeoutHandler(null),
 	  m_authenticated(false), m_secured(false), m_capabilitiesFetched(false)
 {
 }
@@ -94,7 +94,7 @@ void POP3Connection::connect()
 	const string address = GET_PROPERTY(string, PROPERTY_SERVER_ADDRESS);
 	const port_t port = GET_PROPERTY(port_t, PROPERTY_SERVER_PORT);
 
-	ref <POP3Store> store = m_store.acquire();
+	shared_ptr <POP3Store> store = m_store.lock();
 
 	// Create the time-out handler
 	if (store->getTimeoutHandlerFactory())
@@ -106,22 +106,22 @@ void POP3Connection::connect()
 #if VMIME_HAVE_TLS_SUPPORT
 	if (store->isPOP3S())  // dedicated port/POP3S
 	{
-		ref <tls::TLSSession> tlsSession = tls::TLSSession::create
+		shared_ptr <tls::TLSSession> tlsSession = tls::TLSSession::create
 			(store->getCertificateVerifier(),
 			 store->getSession()->getTLSProperties());
 
-		ref <tls::TLSSocket> tlsSocket =
+		shared_ptr <tls::TLSSocket> tlsSocket =
 			tlsSession->getSocket(m_socket);
 
 		m_socket = tlsSocket;
 
 		m_secured = true;
-		m_cntInfos = vmime::create <tls::TLSSecuredConnectionInfos>(address, port, tlsSession, tlsSocket);
+		m_cntInfos = make_shared <tls::TLSSecuredConnectionInfos>(address, port, tlsSession, tlsSocket);
 	}
 	else
 #endif // VMIME_HAVE_TLS_SUPPORT
 	{
-		m_cntInfos = vmime::create <defaultConnectionInfos>(address, port);
+		m_cntInfos = make_shared <defaultConnectionInfos>(address, port);
 	}
 
 	m_socket->connect(address, port);
@@ -131,8 +131,8 @@ void POP3Connection::connect()
 	// eg:  C: <connection to server>
 	// ---  S: +OK MailSite POP3 Server 5.3.4.0 Ready <36938848.1056800841.634@somewhere.com>
 
-	ref <POP3Response> response = POP3Response::readResponse
-		(thisRef().dynamicCast <POP3Connection>());
+	shared_ptr <POP3Response> response = POP3Response::readResponse
+		(dynamicCast <POP3Connection>(shared_from_this()));
 
 	if (!response->isSuccess())
 	{
@@ -195,8 +195,8 @@ void POP3Connection::internalDisconnect()
 		{
 			try
 			{
-				POP3Command::QUIT()->send(thisRef().dynamicCast <POP3Connection>());
-				POP3Response::readResponse(thisRef().dynamicCast <POP3Connection>());
+				POP3Command::QUIT()->send(dynamicCast <POP3Connection>(shared_from_this()));
+				POP3Response::readResponse(dynamicCast <POP3Connection>(shared_from_this()));
 			}
 			catch (exception&)
 			{
@@ -206,21 +206,21 @@ void POP3Connection::internalDisconnect()
 			m_socket->disconnect();
 		}
 
-		m_socket = NULL;
+		m_socket = null;
 	}
 
-	m_timeoutHandler = NULL;
+	m_timeoutHandler = null;
 
 	m_authenticated = false;
 	m_secured = false;
 
-	m_cntInfos = NULL;
+	m_cntInfos = null;
 }
 
 
 void POP3Connection::authenticate(const messageId& randomMID)
 {
-	getAuthenticator()->setService(m_store.acquire());
+	getAuthenticator()->setService(m_store.lock());
 
 #if VMIME_HAVE_SASL_SUPPORT
 	// First, try SASL authentication
@@ -262,8 +262,8 @@ void POP3Connection::authenticate(const messageId& randomMID)
 	const string username = getAuthenticator()->getUsername();
 	const string password = getAuthenticator()->getPassword();
 
-	ref <POP3Connection> conn = thisRef().dynamicCast <POP3Connection>();
-	ref <POP3Response> response;
+	shared_ptr <POP3Connection> conn = dynamicCast <POP3Connection>(shared_from_this());
+	shared_ptr <POP3Response> response;
 
 	if (GET_PROPERTY(bool, PROPERTY_OPTIONS_APOP))
 	{
@@ -271,7 +271,7 @@ void POP3Connection::authenticate(const messageId& randomMID)
 		    randomMID.getRight().length() != 0)
 		{
 			// <digest> is the result of MD5 applied to "<message-id>password"
-			ref <security::digest::messageDigest> md5 =
+			shared_ptr <security::digest::messageDigest> md5 =
 				security::digest::messageDigestFactory::getInstance()->create("md5");
 
 			md5->update(randomMID.generate() + password);
@@ -361,7 +361,7 @@ void POP3Connection::authenticate(const messageId& randomMID)
 
 void POP3Connection::authenticateSASL()
 {
-	if (!getAuthenticator().dynamicCast <security::sasl::SASLAuthenticator>())
+	if (!dynamicCast <security::sasl::SASLAuthenticator>(getAuthenticator()))
 		throw exceptions::authentication_error("No SASL authenticator available.");
 
 	std::vector <string> capa = getCapabilities();
@@ -401,10 +401,10 @@ void POP3Connection::authenticateSASL()
 	if (saslMechs.empty())
 		throw exceptions::authentication_error("No SASL mechanism available.");
 
-	std::vector <ref <security::sasl::SASLMechanism> > mechList;
+	std::vector <shared_ptr <security::sasl::SASLMechanism> > mechList;
 
-	ref <security::sasl::SASLContext> saslContext =
-		vmime::create <security::sasl::SASLContext>();
+	shared_ptr <security::sasl::SASLContext> saslContext =
+		make_shared <security::sasl::SASLContext>();
 
 	for (unsigned int i = 0 ; i < saslMechs.size() ; ++i)
 	{
@@ -423,14 +423,14 @@ void POP3Connection::authenticateSASL()
 		throw exceptions::authentication_error("No SASL mechanism available.");
 
 	// Try to suggest a mechanism among all those supported
-	ref <security::sasl::SASLMechanism> suggestedMech =
+	shared_ptr <security::sasl::SASLMechanism> suggestedMech =
 		saslContext->suggestMechanism(mechList);
 
 	if (!suggestedMech)
 		throw exceptions::authentication_error("Unable to suggest SASL mechanism.");
 
 	// Allow application to choose which mechanisms to use
-	mechList = getAuthenticator().dynamicCast <security::sasl::SASLAuthenticator>()->
+	mechList = dynamicCast <security::sasl::SASLAuthenticator>(getAuthenticator())->
 		getAcceptableMechanisms(mechList, suggestedMech);
 
 	if (mechList.empty())
@@ -439,19 +439,19 @@ void POP3Connection::authenticateSASL()
 	// Try each mechanism in the list in turn
 	for (unsigned int i = 0 ; i < mechList.size() ; ++i)
 	{
-		ref <security::sasl::SASLMechanism> mech = mechList[i];
+		shared_ptr <security::sasl::SASLMechanism> mech = mechList[i];
 
-		ref <security::sasl::SASLSession> saslSession =
+		shared_ptr <security::sasl::SASLSession> saslSession =
 			saslContext->createSession("pop3", getAuthenticator(), mech);
 
 		saslSession->init();
 
-		POP3Command::AUTH(mech->getName())->send(thisRef().dynamicCast <POP3Connection>());
+		POP3Command::AUTH(mech->getName())->send(dynamicCast <POP3Connection>(shared_from_this()));
 
 		for (bool cont = true ; cont ; )
 		{
-			ref <POP3Response> response =
-				POP3Response::readResponse(thisRef().dynamicCast <POP3Connection>());
+			shared_ptr <POP3Response> response =
+				POP3Response::readResponse(dynamicCast <POP3Connection>(shared_from_this()));
 
 			switch (response->getCode())
 			{
@@ -537,19 +537,19 @@ void POP3Connection::startTLS()
 {
 	try
 	{
-		POP3Command::STLS()->send(thisRef().dynamicCast <POP3Connection>());
+		POP3Command::STLS()->send(dynamicCast <POP3Connection>(shared_from_this()));
 
-		ref <POP3Response> response =
-			POP3Response::readResponse(thisRef().dynamicCast <POP3Connection>());
+		shared_ptr <POP3Response> response =
+			POP3Response::readResponse(dynamicCast <POP3Connection>(shared_from_this()));
 
 		if (!response->isSuccess())
 			throw exceptions::command_error("STLS", response->getFirstLine());
 
-		ref <tls::TLSSession> tlsSession = tls::TLSSession::create
-			(m_store.acquire()->getCertificateVerifier(),
-			 m_store.acquire()->getSession()->getTLSProperties());
+		shared_ptr <tls::TLSSession> tlsSession = tls::TLSSession::create
+			(m_store.lock()->getCertificateVerifier(),
+			 m_store.lock()->getSession()->getTLSProperties());
 
-		ref <tls::TLSSocket> tlsSocket =
+		shared_ptr <tls::TLSSocket> tlsSocket =
 			tlsSession->getSocket(m_socket);
 
 		tlsSocket->handshake(m_timeoutHandler);
@@ -557,7 +557,7 @@ void POP3Connection::startTLS()
 		m_socket = tlsSocket;
 
 		m_secured = true;
-		m_cntInfos = vmime::create <tls::TLSSecuredConnectionInfos>
+		m_cntInfos = make_shared <tls::TLSSecuredConnectionInfos>
 			(m_cntInfos->getHost(), m_cntInfos->getPort(), tlsSession, tlsSocket);
 
 		// " Once TLS has been started, the client MUST discard cached
@@ -601,10 +601,10 @@ void POP3Connection::invalidateCapabilities()
 
 void POP3Connection::fetchCapabilities()
 {
-	POP3Command::CAPA()->send(thisRef().dynamicCast <POP3Connection>());
+	POP3Command::CAPA()->send(dynamicCast <POP3Connection>(shared_from_this()));
 
-	ref <POP3Response> response =
-		POP3Response::readMultilineResponse(thisRef().dynamicCast <POP3Connection>());
+	shared_ptr <POP3Response> response =
+		POP3Response::readMultilineResponse(dynamicCast <POP3Connection>(shared_from_this()));
 
 	std::vector <string> res;
 
@@ -631,37 +631,37 @@ bool POP3Connection::isSecuredConnection() const
 }
 
 
-ref <connectionInfos> POP3Connection::getConnectionInfos() const
+shared_ptr <connectionInfos> POP3Connection::getConnectionInfos() const
 {
 	return m_cntInfos;
 }
 
 
-ref <POP3Store> POP3Connection::getStore()
+shared_ptr <POP3Store> POP3Connection::getStore()
 {
-	return m_store.acquire();
+	return m_store.lock();
 }
 
 
-ref <session> POP3Connection::getSession()
+shared_ptr <session> POP3Connection::getSession()
 {
-	return m_store.acquire()->getSession();
+	return m_store.lock()->getSession();
 }
 
 
-ref <socket> POP3Connection::getSocket()
+shared_ptr <socket> POP3Connection::getSocket()
 {
 	return m_socket;
 }
 
 
-ref <timeoutHandler> POP3Connection::getTimeoutHandler()
+shared_ptr <timeoutHandler> POP3Connection::getTimeoutHandler()
 {
 	return m_timeoutHandler;
 }
 
 
-ref <security::authenticator> POP3Connection::getAuthenticator()
+shared_ptr <security::authenticator> POP3Connection::getAuthenticator()
 {
 	return m_auth;
 }

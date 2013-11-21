@@ -119,7 +119,8 @@ VMIME_TEST_SUITE_BEGIN(mailboxTest)
 		VASSERT_EQ("count", 1, addrList.getAddressCount());
 		VASSERT_EQ("!group", false, addrList.getAddressAt(0)->isGroup());
 
-		vmime::ref <vmime::mailbox> mbox = addrList.getAddressAt(0).dynamicCast <vmime::mailbox>();
+		vmime::shared_ptr <vmime::mailbox> mbox =
+			vmime::dynamicCast <vmime::mailbox>(addrList.getAddressAt(0));
 
 		VASSERT_EQ("name", "Full Name", mbox->getName());
 		VASSERT_EQ("email", "", mbox->getEmail());
@@ -132,8 +133,10 @@ VMIME_TEST_SUITE_BEGIN(mailboxTest)
 
 		VASSERT_EQ("count", 2, addrList.getAddressCount());
 
-		vmime::ref <vmime::mailbox> mbox1 = addrList.getAddressAt(0).dynamicCast <vmime::mailbox>();
-		vmime::ref <vmime::mailbox> mbox2 = addrList.getAddressAt(1).dynamicCast <vmime::mailbox>();
+		vmime::shared_ptr <vmime::mailbox> mbox1 =
+			vmime::dynamicCast <vmime::mailbox>(addrList.getAddressAt(0));
+		vmime::shared_ptr <vmime::mailbox> mbox2 =
+			vmime::dynamicCast <vmime::mailbox>(addrList.getAddressAt(1));
 
 		VASSERT_EQ("name1", vmime::text(), mbox1->getName());
 		VASSERT_EQ("email1", "aaa@vmime.org", mbox1->getEmail());

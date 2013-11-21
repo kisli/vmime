@@ -41,11 +41,11 @@ VMIME_TEST_SUITE_BEGIN(POP3UtilsTest)
 
 	void testParseMultiListOrUidlResponse()
 	{
-		vmime::ref <testSocket> socket = vmime::create <testSocket>();
-		vmime::ref <vmime::net::timeoutHandler> toh = vmime::create <testTimeoutHandler>();
+		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
+		vmime::shared_ptr <vmime::net::timeoutHandler> toh = vmime::make_shared <testTimeoutHandler>();
 
-		vmime::ref <POP3ConnectionTest> conn = vmime::create <POP3ConnectionTest>
-			(socket.dynamicCast <vmime::net::socket>(), toh);
+		vmime::shared_ptr <POP3ConnectionTest> conn = vmime::make_shared <POP3ConnectionTest>
+			(vmime::dynamicCast <vmime::net::socket>(socket), toh);
 
 		socket->localSend("+OK Response Text\r\n");
 		socket->localSend("1 abcdef\r\n");
@@ -55,7 +55,7 @@ VMIME_TEST_SUITE_BEGIN(POP3UtilsTest)
 		socket->localSend("8 yz   \r\n");
 		socket->localSend(".\r\n");
 
-		vmime::ref <POP3Response> resp =
+		vmime::shared_ptr <POP3Response> resp =
 			POP3Response::readMultilineResponse(conn);
 
 		std::map <int, vmime::string> result;

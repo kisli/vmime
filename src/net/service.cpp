@@ -46,23 +46,23 @@ namespace vmime {
 namespace net {
 
 
-service::service(ref <session> sess, const serviceInfos& /* infos */,
-                 ref <security::authenticator> auth)
+service::service(shared_ptr <session> sess, const serviceInfos& /* infos */,
+                 shared_ptr <security::authenticator> auth)
 	: m_session(sess), m_auth(auth)
 {
 	if (!auth)
 	{
 #if VMIME_HAVE_SASL_SUPPORT
-		m_auth = vmime::create
+		m_auth = make_shared
 			<security::sasl::defaultSASLAuthenticator>();
 #else
-		m_auth = vmime::create
+		m_auth = make_shared
 			<security::defaultAuthenticator>();
 #endif // VMIME_HAVE_SASL_SUPPORT
 	}
 
 #if VMIME_HAVE_TLS_SUPPORT
-	m_certVerifier = vmime::create <security::cert::defaultCertificateVerifier>();
+	m_certVerifier = make_shared <security::cert::defaultCertificateVerifier>();
 #endif // VMIME_HAVE_TLS_SUPPORT
 
 	m_socketFactory = platform::getHandler()->getSocketFactory();
@@ -74,31 +74,31 @@ service::~service()
 }
 
 
-ref <const session> service::getSession() const
+shared_ptr <const session> service::getSession() const
 {
 	return (m_session);
 }
 
 
-ref <session> service::getSession()
+shared_ptr <session> service::getSession()
 {
 	return (m_session);
 }
 
 
-ref <const security::authenticator> service::getAuthenticator() const
+shared_ptr <const security::authenticator> service::getAuthenticator() const
 {
 	return (m_auth);
 }
 
 
-ref <security::authenticator> service::getAuthenticator()
+shared_ptr <security::authenticator> service::getAuthenticator()
 {
 	return (m_auth);
 }
 
 
-void service::setAuthenticator(ref <security::authenticator> auth)
+void service::setAuthenticator(shared_ptr <security::authenticator> auth)
 {
 	m_auth = auth;
 }
@@ -106,13 +106,13 @@ void service::setAuthenticator(ref <security::authenticator> auth)
 
 #if VMIME_HAVE_TLS_SUPPORT
 
-void service::setCertificateVerifier(ref <security::cert::certificateVerifier> cv)
+void service::setCertificateVerifier(shared_ptr <security::cert::certificateVerifier> cv)
 {
 	m_certVerifier = cv;
 }
 
 
-ref <security::cert::certificateVerifier> service::getCertificateVerifier()
+shared_ptr <security::cert::certificateVerifier> service::getCertificateVerifier()
 {
 	return m_certVerifier;
 }
@@ -120,25 +120,25 @@ ref <security::cert::certificateVerifier> service::getCertificateVerifier()
 #endif // VMIME_HAVE_TLS_SUPPORT
 
 
-void service::setSocketFactory(ref <socketFactory> sf)
+void service::setSocketFactory(shared_ptr <socketFactory> sf)
 {
 	m_socketFactory = sf;
 }
 
 
-ref <socketFactory> service::getSocketFactory()
+shared_ptr <socketFactory> service::getSocketFactory()
 {
 	return m_socketFactory;
 }
 
 
-void service::setTimeoutHandlerFactory(ref <timeoutHandlerFactory> thf)
+void service::setTimeoutHandlerFactory(shared_ptr <timeoutHandlerFactory> thf)
 {
 	m_toHandlerFactory = thf;
 }
 
 
-ref <timeoutHandlerFactory> service::getTimeoutHandlerFactory()
+shared_ptr <timeoutHandlerFactory> service::getTimeoutHandlerFactory()
 {
 	return m_toHandlerFactory;
 }

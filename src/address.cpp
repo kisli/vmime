@@ -66,7 +66,7 @@ address-list    =       (address *("," address)) / obs-addr-list
 
 */
 
-ref <address> address::parseNext
+shared_ptr <address> address::parseNext
 	(const parsingContext& ctx, const string& buffer, const string::size_type position,
 	 const string::size_type end, string::size_type* newPosition, bool *isLastAddressOfGroup)
 {
@@ -196,9 +196,12 @@ ref <address> address::parseNext
 	// Parse extracted address (mailbox or group)
 	if (pos != start)
 	{
-		ref <address> parsedAddress = isGroup
-			? create <mailboxGroup>().dynamicCast <address>()
-			: create <mailbox>().dynamicCast <address>();
+		shared_ptr <address> parsedAddress;
+
+		if (isGroup)
+			parsedAddress = make_shared <mailboxGroup>();
+		else
+			parsedAddress = make_shared <mailbox>();
 
 		parsedAddress->parse(ctx, buffer, start, pos, NULL);
 		parsedAddress->setParsedBounds(start, pos);
@@ -206,7 +209,7 @@ ref <address> address::parseNext
 		return (parsedAddress);
 	}
 
-	return (NULL);
+	return null;
 }
 
 

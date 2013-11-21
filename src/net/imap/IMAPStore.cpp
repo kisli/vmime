@@ -43,8 +43,8 @@ namespace net {
 namespace imap {
 
 
-IMAPStore::IMAPStore(ref <session> sess, ref <security::authenticator> auth, const bool secured)
-	: store(sess, getInfosInstance(), auth), m_connection(NULL), m_isIMAPS(secured)
+IMAPStore::IMAPStore(shared_ptr <session> sess, shared_ptr <security::authenticator> auth, const bool secured)
+	: store(sess, getInfosInstance(), auth), m_connection(null), m_isIMAPS(secured)
 {
 }
 
@@ -69,32 +69,35 @@ const string IMAPStore::getProtocolName() const
 }
 
 
-ref <folder> IMAPStore::getRootFolder()
+shared_ptr <folder> IMAPStore::getRootFolder()
 {
 	if (!isConnected())
 		throw exceptions::illegal_state("Not connected");
 
-	return vmime::create <IMAPFolder>(folder::path(),
-		thisRef().dynamicCast <IMAPStore>());
+	return make_shared <IMAPFolder>
+		(folder::path(),
+		 dynamicCast <IMAPStore>(shared_from_this()));
 }
 
 
-ref <folder> IMAPStore::getDefaultFolder()
+shared_ptr <folder> IMAPStore::getDefaultFolder()
 {
 	if (!isConnected())
 		throw exceptions::illegal_state("Not connected");
 
-	return vmime::create <IMAPFolder>(folder::path::component("INBOX"),
-		thisRef().dynamicCast <IMAPStore>());
+	return make_shared <IMAPFolder>
+		(folder::path::component("INBOX"),
+		 dynamicCast <IMAPStore>(shared_from_this()));
 }
 
 
-ref <folder> IMAPStore::getFolder(const folder::path& path)
+shared_ptr <folder> IMAPStore::getFolder(const folder::path& path)
 {
 	if (!isConnected())
 		throw exceptions::illegal_state("Not connected");
 
-	return vmime::create <IMAPFolder>(path, thisRef().dynamicCast <IMAPStore>());
+	return make_shared <IMAPFolder>
+		(path, dynamicCast <IMAPStore>(shared_from_this()));
 }
 
 
@@ -109,8 +112,8 @@ void IMAPStore::connect()
 	if (isConnected())
 		throw exceptions::already_connected();
 
-	m_connection = vmime::create <IMAPConnection>
-		(thisRef().dynamicCast <IMAPStore>(), getAuthenticator());
+	m_connection = make_shared <IMAPConnection>
+		(dynamicCast <IMAPStore>(shared_from_this()), getAuthenticator());
 
 	try
 	{
@@ -118,7 +121,7 @@ void IMAPStore::connect()
 	}
 	catch (std::exception&)
 	{
-		m_connection = NULL;
+		m_connection = null;
 		throw;
 	}
 }
@@ -145,16 +148,16 @@ bool IMAPStore::isSecuredConnection() const
 }
 
 
-ref <connectionInfos> IMAPStore::getConnectionInfos() const
+shared_ptr <connectionInfos> IMAPStore::getConnectionInfos() const
 {
 	if (m_connection == NULL)
-		return NULL;
+		return null;
 
 	return m_connection->getConnectionInfos();
 }
 
 
-ref <IMAPConnection> IMAPStore::getConnection()
+shared_ptr <IMAPConnection> IMAPStore::getConnection()
 {
 	return m_connection;
 }
@@ -176,7 +179,7 @@ void IMAPStore::disconnect()
 
 	m_connection->disconnect();
 
-	m_connection = NULL;
+	m_connection = null;
 }
 
 
@@ -187,7 +190,7 @@ void IMAPStore::noop()
 
 	m_connection->send(true, "NOOP", true);
 
-	utility::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
+	std::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
 
 	if (resp->isBad() || resp->response_done()->response_tagged()->
 			resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
@@ -205,7 +208,7 @@ void IMAPStore::noop()
 }
 
 
-ref <IMAPConnection> IMAPStore::connection()
+shared_ptr <IMAPConnection> IMAPStore::connection()
 {
 	return (m_connection);
 }

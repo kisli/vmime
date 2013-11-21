@@ -57,7 +57,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 	void testCreateCommand()
 	{
-		vmime::ref <SMTPCommand> cmd = SMTPCommand::createCommand("MY_COMMAND");
+		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::createCommand("MY_COMMAND");
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "MY_COMMAND", cmd->getText());
@@ -65,7 +65,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 	void testCreateCommandParams()
 	{
-		vmime::ref <SMTPCommand> cmd = SMTPCommand::createCommand("MY_COMMAND param1 param2");
+		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::createCommand("MY_COMMAND param1 param2");
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "MY_COMMAND param1 param2", cmd->getText());
@@ -73,7 +73,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 	void testHELO()
 	{
-		vmime::ref <SMTPCommand> cmd = SMTPCommand::HELO("hostname");
+		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::HELO("hostname");
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "HELO hostname", cmd->getText());
@@ -81,7 +81,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 	void testEHLO()
 	{
-		vmime::ref <SMTPCommand> cmd = SMTPCommand::EHLO("hostname");
+		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::EHLO("hostname");
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "EHLO hostname", cmd->getText());
@@ -89,7 +89,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 	void testAUTH()
 	{
-		vmime::ref <SMTPCommand> cmd = SMTPCommand::AUTH("saslmechanism");
+		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::AUTH("saslmechanism");
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "AUTH saslmechanism", cmd->getText());
@@ -97,7 +97,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 	void testSTARTTLS()
 	{
-		vmime::ref <SMTPCommand> cmd = SMTPCommand::STARTTLS();
+		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::STARTTLS();
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "STARTTLS", cmd->getText());
@@ -105,7 +105,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 	void testMAIL()
 	{
-		vmime::ref <SMTPCommand> cmd = SMTPCommand::MAIL(vmime::mailbox("me@vmime.org"), false);
+		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::MAIL(vmime::mailbox("me@vmime.org"), false);
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "MAIL FROM:<me@vmime.org>", cmd->getText());
@@ -113,7 +113,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 	void testMAIL_Encoded()
 	{
-		vmime::ref <SMTPCommand> cmd = SMTPCommand::MAIL
+		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::MAIL
 			(vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), false);
 
 		VASSERT_NOT_NULL("Not null", cmd);
@@ -122,7 +122,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 	void testMAIL_UTF8()
 	{
-		vmime::ref <SMTPCommand> cmd = SMTPCommand::MAIL
+		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::MAIL
 			(vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), true);
 
 		VASSERT_NOT_NULL("Not null", cmd);
@@ -131,7 +131,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 	void testMAIL_SIZE()
 	{
-		vmime::ref <SMTPCommand> cmd = SMTPCommand::MAIL
+		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::MAIL
 			(vmime::mailbox("me@vmime.org"), false, 123456789);
 
 		VASSERT_NOT_NULL("Not null", cmd);
@@ -140,7 +140,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 	void testMAIL_SIZE_UTF8()
 	{
-		vmime::ref <SMTPCommand> cmd = SMTPCommand::MAIL
+		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::MAIL
 			(vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), true, 123456789);
 
 		VASSERT_NOT_NULL("Not null", cmd);
@@ -149,7 +149,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 	void testRCPT()
 	{
-		vmime::ref <SMTPCommand> cmd = SMTPCommand::RCPT(vmime::mailbox("someone@vmime.org"), false);
+		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::RCPT(vmime::mailbox("someone@vmime.org"), false);
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "RCPT TO:<someone@vmime.org>", cmd->getText());
@@ -157,7 +157,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 	void testRCPT_Encoded()
 	{
-		vmime::ref <SMTPCommand> cmd = SMTPCommand::RCPT
+		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::RCPT
 			(vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), false);
 
 		VASSERT_NOT_NULL("Not null", cmd);
@@ -166,7 +166,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 	void testRCPT_UTF8()
 	{
-		vmime::ref <SMTPCommand> cmd = SMTPCommand::RCPT
+		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::RCPT
 			(vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), true);
 
 		VASSERT_NOT_NULL("Not null", cmd);
@@ -175,7 +175,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 	void testRSET()
 	{
-		vmime::ref <SMTPCommand> cmd = SMTPCommand::RSET();
+		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::RSET();
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "RSET", cmd->getText());
@@ -183,7 +183,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 	void testDATA()
 	{
-		vmime::ref <SMTPCommand> cmd = SMTPCommand::DATA();
+		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::DATA();
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "DATA", cmd->getText());
@@ -191,12 +191,12 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 	void testBDAT()
 	{
-		vmime::ref <SMTPCommand> cmd1 = SMTPCommand::BDAT(12345, false);
+		vmime::shared_ptr <SMTPCommand> cmd1 = SMTPCommand::BDAT(12345, false);
 
 		VASSERT_NOT_NULL("Not null", cmd1);
 		VASSERT_EQ("Text", "BDAT 12345", cmd1->getText());
 
-		vmime::ref <SMTPCommand> cmd2 = SMTPCommand::BDAT(67890, true);
+		vmime::shared_ptr <SMTPCommand> cmd2 = SMTPCommand::BDAT(67890, true);
 
 		VASSERT_NOT_NULL("Not null", cmd2);
 		VASSERT_EQ("Text", "BDAT 67890 LAST", cmd2->getText());
@@ -204,7 +204,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 	void testNOOP()
 	{
-		vmime::ref <SMTPCommand> cmd = SMTPCommand::NOOP();
+		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::NOOP();
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "NOOP", cmd->getText());
@@ -212,7 +212,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 	void testQUIT()
 	{
-		vmime::ref <SMTPCommand> cmd = SMTPCommand::QUIT();
+		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::QUIT();
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "QUIT", cmd->getText());
@@ -220,9 +220,9 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 	void testWriteToSocket()
 	{
-		vmime::ref <SMTPCommand> cmd = SMTPCommand::createCommand("MY_COMMAND param1 param2");
+		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::createCommand("MY_COMMAND param1 param2");
 
-		vmime::ref <testSocket> sok = vmime::create <testSocket>();
+		vmime::shared_ptr <testSocket> sok = vmime::make_shared <testSocket>();
 		cmd->writeToSocket(sok);
 
 		vmime::string response;

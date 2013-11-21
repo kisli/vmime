@@ -60,14 +60,14 @@ class VMIME_EXPORT IMAPStore : public store
 
 public:
 
-	IMAPStore(ref <session> sess, ref <security::authenticator> auth, const bool secured = false);
+	IMAPStore(shared_ptr <session> sess, shared_ptr <security::authenticator> auth, const bool secured = false);
 	~IMAPStore();
 
 	const string getProtocolName() const;
 
-	ref <folder> getDefaultFolder();
-	ref <folder> getRootFolder();
-	ref <folder> getFolder(const folder::path& path);
+	shared_ptr <folder> getDefaultFolder();
+	shared_ptr <folder> getRootFolder();
+	shared_ptr <folder> getFolder(const folder::path& path);
 
 	bool isValidFolderName(const folder::path::component& name) const;
 
@@ -85,17 +85,17 @@ public:
 	bool isIMAPS() const;
 
 	bool isSecuredConnection() const;
-	ref <connectionInfos> getConnectionInfos() const;
-	ref <IMAPConnection> getConnection();
+	shared_ptr <connectionInfos> getConnectionInfos() const;
+	shared_ptr <IMAPConnection> getConnection();
 
 protected:
 
 	// Connection
-	ref <IMAPConnection> m_connection;
+	shared_ptr <IMAPConnection> m_connection;
 
 
 
-	ref <IMAPConnection> connection();
+	shared_ptr <IMAPConnection> connection();
 
 
 	void registerFolder(IMAPFolder* folder);

@@ -175,14 +175,14 @@ const utility::file::path::component maildirUtils::generateId()
 }
 
 
-void maildirUtils::recursiveFSDelete(ref <utility::file> dir)
+void maildirUtils::recursiveFSDelete(shared_ptr <utility::file> dir)
 {
-	ref <utility::fileIterator> files = dir->getFiles();
+	shared_ptr <utility::fileIterator> files = dir->getFiles();
 
 	// First, delete files and subdirectories in this directory
 	while (files->hasMoreElements())
 	{
-		ref <utility::file> file = files->nextElement();
+		shared_ptr <utility::file> file = files->nextElement();
 
 		if (file->isDirectory())
 		{

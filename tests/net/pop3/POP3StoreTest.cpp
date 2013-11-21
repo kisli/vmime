@@ -39,29 +39,29 @@ VMIME_TEST_SUITE_BEGIN(POP3StoreTest)
 
 	void testCreateFromURL()
 	{
-		vmime::ref <vmime::net::session> sess
-			= vmime::create <vmime::net::session>();
+		vmime::shared_ptr <vmime::net::session> sess
+			= vmime::make_shared <vmime::net::session>();
 
 		// POP3
 		vmime::utility::url url("pop3://pop3.vmime.org");
-		vmime::ref <vmime::net::store> store = sess->getStore(url);
+		vmime::shared_ptr <vmime::net::store> store = sess->getStore(url);
 
 		VASSERT_TRUE("pop3", typeid(*store) == typeid(vmime::net::pop3::POP3Store));
 
 		// POP3S
 		vmime::utility::url url2("pop3s://pop3s.vmime.org");
-		vmime::ref <vmime::net::store> store2 = sess->getStore(url2);
+		vmime::shared_ptr <vmime::net::store> store2 = sess->getStore(url2);
 
 		VASSERT_TRUE("pop3s", typeid(*store2) == typeid(vmime::net::pop3::POP3SStore));
 	}
 
 	void testConnectToInvalidServer()
 	{
-		vmime::ref <vmime::net::session> sess
-			= vmime::create <vmime::net::session>();
+		vmime::shared_ptr <vmime::net::session> sess
+			= vmime::make_shared <vmime::net::session>();
 
 		vmime::utility::url url("pop3://invalid-pop3-server");
-		vmime::ref <vmime::net::store> store = sess->getStore(url);
+		vmime::shared_ptr <vmime::net::store> store = sess->getStore(url);
 
 		VASSERT_THROW("connect", store->connect(), vmime::exceptions::connection_error);
 	}

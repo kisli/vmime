@@ -61,7 +61,7 @@ public:
 	  *
 	  * @return next file or NULL
 	  */
-	virtual ref <file> nextElement() = 0;
+	virtual shared_ptr <file> nextElement() = 0;
 };
 
 
@@ -74,7 +74,7 @@ public:
 
 	virtual ~fileWriter() { }
 
-	virtual ref <utility::outputStream> getOutputStream() = 0;
+	virtual shared_ptr <utility::outputStream> getOutputStream() = 0;
 };
 
 
@@ -87,7 +87,7 @@ public:
 
 	virtual ~fileReader() { }
 
-	virtual ref <utility::inputStream> getInputStream() = 0;
+	virtual shared_ptr <utility::inputStream> getInputStream() = 0;
 };
 
 
@@ -165,7 +165,7 @@ public:
 	  *
 	  * @return parent directory (or NULL if root)
 	  */
-	virtual ref <file> getParent() const = 0;
+	virtual shared_ptr <file> getParent() const = 0;
 
 	/** Rename the file/directory.
 	  *
@@ -185,13 +185,13 @@ public:
 	  *
 	  * @return file writer object
 	  */
-	virtual ref <fileWriter> getFileWriter() = 0;
+	virtual shared_ptr <fileWriter> getFileWriter() = 0;
 
 	/** Return an object capable of reading from this file.
 	  *
 	  * @return file reader object
 	  */
-	virtual ref <fileReader> getFileReader() = 0;
+	virtual shared_ptr <fileReader> getFileReader() = 0;
 
 	/** Enumerate files contained in this directory.
 	  *
@@ -199,7 +199,7 @@ public:
 	  * @throw exceptions::not_a_directory if this is not a directory,
 	  * exceptions::filesystem_exception if another error occurs
 	  */
-	virtual ref <fileIterator> getFiles() const = 0;
+	virtual shared_ptr <fileIterator> getFiles() const = 0;
 
 protected:
 
@@ -225,7 +225,7 @@ public:
 	  * @param path full path (absolute) of the file
 	  * @return new file object for the path
 	  */
-	virtual ref <file> create(const file::path& path) const = 0;
+	virtual shared_ptr <file> create(const file::path& path) const = 0;
 
 	/** Parse a path contained in a string.
 	  *

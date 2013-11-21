@@ -47,7 +47,7 @@ public:
 	  *
 	  * @return related message
 	  */
-	virtual const ref <const message> getMessage() const = 0;
+	virtual const shared_ptr <const message> getMessage() const = 0;
 };
 
 

@@ -452,9 +452,9 @@ mailbox& mailbox::operator=(const mailbox& other)
 }
 
 
-ref <component>mailbox::clone() const
+shared_ptr <component>mailbox::clone() const
 {
-	return vmime::create <mailbox>(*this);
+	return make_shared <mailbox>(*this);
 }
 
 
@@ -501,9 +501,9 @@ void mailbox::setEmail(const emailAddress& email)
 }
 
 
-const std::vector <ref <component> > mailbox::getChildComponents()
+const std::vector <shared_ptr <component> > mailbox::getChildComponents()
 {
-	return std::vector <ref <component> >();
+	return std::vector <shared_ptr <component> >();
 }
 
 

@@ -41,9 +41,9 @@ namespace platforms {
 namespace windows {
 
 
-ref <vmime::utility::file> windowsFileSystemFactory::create(const vmime::utility::file::path& path) const
+shared_ptr <vmime::utility::file> windowsFileSystemFactory::create(const vmime::utility::file::path& path) const
 {
-	return vmime::create <windowsFile>(path);
+	return make_shared <windowsFile>(path);
 }
 
 
@@ -307,12 +307,12 @@ bool windowsFile::exists() const
 	return false;
 }
 
-ref <vmime::utility::file> windowsFile::getParent() const
+shared_ptr <vmime::utility::file> windowsFile::getParent() const
 {
 	if (m_path.isEmpty())
 		return NULL;
 	else
-		return vmime::create <windowsFile>(m_path.getParent());
+		return make_shared <windowsFile>(m_path.getParent());
 }
 
 void windowsFile::rename(const path& newName)
@@ -333,19 +333,19 @@ void windowsFile::remove()
 		windowsFileSystemFactory::reportError(m_path, GetLastError());
 }
 
-ref <vmime::utility::fileWriter> windowsFile::getFileWriter()
+shared_ptr <vmime::utility::fileWriter> windowsFile::getFileWriter()
 {
-	return vmime::create <windowsFileWriter>(m_path, m_nativePath);
+	return make_shared <windowsFileWriter>(m_path, m_nativePath);
 }
 
-ref <vmime::utility::fileReader> windowsFile::getFileReader()
+shared_ptr <vmime::utility::fileReader> windowsFile::getFileReader()
 {
-	return vmime::create <windowsFileReader>(m_path, m_nativePath);
+	return make_shared <windowsFileReader>(m_path, m_nativePath);
 }
 
-ref <vmime::utility::fileIterator> windowsFile::getFiles() const
+shared_ptr <vmime::utility::fileIterator> windowsFile::getFiles() const
 {
-	return vmime::create <windowsFileIterator>(m_path, m_nativePath);
+	return make_shared <windowsFileIterator>(m_path, m_nativePath);
 }
 
 void windowsFile::createDirectoryImpl(const vmime::utility::file::path& fullPath, const vmime::utility::file::path& path, const bool recursive)
@@ -380,9 +380,9 @@ bool windowsFileIterator::hasMoreElements() const
 	return m_moreElements;
 }
 
-ref <vmime::utility::file> windowsFileIterator::nextElement()
+shared_ptr <vmime::utility::file> windowsFileIterator::nextElement()
 {
-	ref <vmime::utility::file> pFile = vmime::create <windowsFile>
+	shared_ptr <vmime::utility::file> pFile = make_shared <windowsFile>
 		(m_path / vmime::utility::file::path::component(m_findData.cFileName));
 
 	findNext();
@@ -430,7 +430,7 @@ windowsFileReader::windowsFileReader(const vmime::utility::file::path& path, con
 {
 }
 
-ref <vmime::utility::inputStream> windowsFileReader::getInputStream()
+shared_ptr <vmime::utility::inputStream> windowsFileReader::getInputStream()
 {
 	HANDLE hFile = CreateFile(
 		m_nativePath.c_str(),
@@ -442,7 +442,7 @@ ref <vmime::utility::inputStream> windowsFileReader::getInputStream()
 		NULL);
 	if (hFile == INVALID_HANDLE_VALUE)
 		windowsFileSystemFactory::reportError(m_path, GetLastError());
-	return vmime::create <windowsFileReaderInputStream>(m_path, hFile);
+	return make_shared <windowsFileReaderInputStream>(m_path, hFile);
 }
 
 windowsFileReaderInputStream::windowsFileReaderInputStream(const vmime::utility::file::path& path, HANDLE hFile)
@@ -505,7 +505,7 @@ windowsFileWriter::windowsFileWriter(const vmime::utility::file::path& path, con
 {
 }
 
-ref <vmime::utility::outputStream> windowsFileWriter::getOutputStream()
+shared_ptr <vmime::utility::outputStream> windowsFileWriter::getOutputStream()
 {
 	HANDLE hFile = CreateFile(
 		m_nativePath.c_str(),
@@ -517,7 +517,7 @@ ref <vmime::utility::outputStream> windowsFileWriter::getOutputStream()
 		NULL);
 	if (hFile == INVALID_HANDLE_VALUE)
 		windowsFileSystemFactory::reportError(m_path, GetLastError());
-	return vmime::create <windowsFileWriterOutputStream>(m_path, hFile);
+	return make_shared <windowsFileWriterOutputStream>(m_path, hFile);
 }
 
 windowsFileWriterOutputStream::windowsFileWriterOutputStream(const vmime::utility::file::path& path, HANDLE hFile)

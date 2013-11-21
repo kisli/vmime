@@ -46,11 +46,11 @@ public:
 	disposition(const string& actionMode, const string& sendingMode, const string& type, const string& modifier);
 
 
-	ref <component> clone() const;
+	shared_ptr <component> clone() const;
 	void copyFrom(const component& other);
 	disposition& operator=(const disposition& other);
 
-	const std::vector <ref <component> > getChildComponents();
+	const std::vector <shared_ptr <component> > getChildComponents();
 
 
 	/** Set the disposition action mode.

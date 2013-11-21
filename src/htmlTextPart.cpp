@@ -39,8 +39,8 @@ namespace vmime
 
 
 htmlTextPart::htmlTextPart()
-	: m_plainText(vmime::create <emptyContentHandler>()),
-	  m_text(vmime::create <emptyContentHandler>())
+	: m_plainText(make_shared <emptyContentHandler>()),
+	  m_text(make_shared <emptyContentHandler>())
 {
 }
 
@@ -62,13 +62,13 @@ size_t htmlTextPart::getPartCount() const
 }
 
 
-void htmlTextPart::generateIn(ref <bodyPart> /* message */, ref <bodyPart> parent) const
+void htmlTextPart::generateIn(shared_ptr <bodyPart> /* message */, shared_ptr <bodyPart> parent) const
 {
 	// Plain text
 	if (!m_plainText->isEmpty())
 	{
 		// -- Create a new part
-		ref <bodyPart> part = vmime::create <bodyPart>();
+		shared_ptr <bodyPart> part = make_shared <bodyPart>();
 		parent->getBody()->appendPart(part);
 
 		// -- Set contents
@@ -79,7 +79,7 @@ void htmlTextPart::generateIn(ref <bodyPart> /* message */, ref <bodyPart> paren
 
 	// HTML text
 	// -- Create a new part
-	ref <bodyPart> htmlPart = vmime::create <bodyPart>();
+	shared_ptr <bodyPart> htmlPart = make_shared <bodyPart>();
 
 	// -- Set contents
 	htmlPart->getBody()->setContents(m_text,
@@ -90,7 +90,7 @@ void htmlTextPart::generateIn(ref <bodyPart> /* message */, ref <bodyPart> paren
 	if (!m_objects.empty())
 	{
 		// Create a "multipart/related" body part
-		ref <bodyPart> relPart = vmime::create <bodyPart>();
+		shared_ptr <bodyPart> relPart = make_shared <bodyPart>();
 		parent->getBody()->appendPart(relPart);
 
 		relPart->getHeader()->ContentType()->
@@ -100,10 +100,10 @@ void htmlTextPart::generateIn(ref <bodyPart> /* message */, ref <bodyPart> paren
 		relPart->getBody()->appendPart(htmlPart);
 
 		// Also add objects into this part
-		for (std::vector <ref <embeddedObject> >::const_iterator it = m_objects.begin() ;
+		for (std::vector <shared_ptr <embeddedObject> >::const_iterator it = m_objects.begin() ;
 		     it != m_objects.end() ; ++it)
 		{
-			ref <bodyPart> objPart = vmime::create <bodyPart>();
+			shared_ptr <bodyPart> objPart = make_shared <bodyPart>();
 			relPart->getBody()->appendPart(objPart);
 
 			string id = (*it)->getId();
@@ -129,11 +129,11 @@ void htmlTextPart::generateIn(ref <bodyPart> /* message */, ref <bodyPart> paren
 
 
 void htmlTextPart::findEmbeddedParts(const bodyPart& part,
-	std::vector <ref <const bodyPart> >& cidParts, std::vector <ref <const bodyPart> >& locParts)
+	std::vector <shared_ptr <const bodyPart> >& cidParts, std::vector <shared_ptr <const bodyPart> >& locParts)
 {
 	for (size_t i = 0 ; i < part.getBody()->getPartCount() ; ++i)
 	{
-		ref <const bodyPart> p = part.getBody()->getPartAt(i);
+		shared_ptr <const bodyPart> p = part.getBody()->getPartAt(i);
 
 		// For a part to be an embedded object, it must have a
 		// Content-Id field or a Content-Location field.
@@ -174,25 +174,25 @@ void htmlTextPart::addEmbeddedObject(const bodyPart& part, const string& id,
 
 	try
 	{
-		const ref <const headerField> ctf = part.getHeader()->ContentType();
-		type = *ctf->getValue().dynamicCast <const mediaType>();
+		const shared_ptr <const headerField> ctf = part.getHeader()->ContentType();
+		type = *ctf->getValue <mediaType>();
 	}
 	catch (exceptions::no_such_field)
 	{
 		// No "Content-type" field: assume "application/octet-stream".
 	}
 
-	m_objects.push_back(vmime::create <embeddedObject>
-		(part.getBody()->getContents()->clone().dynamicCast <contentHandler>(),
+	m_objects.push_back(make_shared <embeddedObject>
+		(vmime::clone(part.getBody()->getContents()),
 		 part.getBody()->getEncoding(), id, type, refType));
 }
 
 
-void htmlTextPart::parse(ref <const bodyPart> message, ref <const bodyPart> parent, ref <const bodyPart> textPart)
+void htmlTextPart::parse(shared_ptr <const bodyPart> message, shared_ptr <const bodyPart> parent, shared_ptr <const bodyPart> textPart)
 {
 	// Search for possible embedded objects in the _whole_ message.
-	std::vector <ref <const bodyPart> > cidParts;
-	std::vector <ref <const bodyPart> > locParts;
+	std::vector <shared_ptr <const bodyPart> > cidParts;
+	std::vector <shared_ptr <const bodyPart> > locParts;
 
 	findEmbeddedParts(*message, cidParts, locParts);
 
@@ -208,8 +208,8 @@ void htmlTextPart::parse(ref <const bodyPart> message, ref <const bodyPart> pare
 
 	try
 	{
-		const ref <const contentTypeField> ctf =
-			textPart->getHeader()->findField(fields::CONTENT_TYPE).dynamicCast <contentTypeField>();
+		const shared_ptr <const contentTypeField> ctf =
+			textPart->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
 
 		m_charset = ctf->getCharset();
 	}
@@ -224,12 +224,12 @@ void htmlTextPart::parse(ref <const bodyPart> message, ref <const bodyPart> pare
 
 	// Extract embedded objects. The algorithm is quite simple: for each previously
 	// found inline part, we check if its CID/Location is contained in the HTML text.
-	for (std::vector <ref <const bodyPart> >::const_iterator p = cidParts.begin() ; p != cidParts.end() ; ++p)
+	for (std::vector <shared_ptr <const bodyPart> >::const_iterator p = cidParts.begin() ; p != cidParts.end() ; ++p)
 	{
-		const ref <const headerField> midField =
+		const shared_ptr <const headerField> midField =
 			(*p)->getHeader()->findField(fields::CONTENT_ID);
 
-		const messageId mid = *midField->getValue().dynamicCast <const messageId>();
+		const messageId mid = *midField->getValue <messageId>();
 
 		if (data.find("CID:" + mid.getId()) != string::npos ||
 		    data.find("cid:" + mid.getId()) != string::npos)
@@ -240,12 +240,12 @@ void htmlTextPart::parse(ref <const bodyPart> message, ref <const bodyPart> pare
 		}
 	}
 
-	for (std::vector <ref <const bodyPart> >::const_iterator p = locParts.begin() ; p != locParts.end() ; ++p)
+	for (std::vector <shared_ptr <const bodyPart> >::const_iterator p = locParts.begin() ; p != locParts.end() ; ++p)
 	{
-		const ref <const headerField> locField =
+		const shared_ptr <const headerField> locField =
 			(*p)->getHeader()->findField(fields::CONTENT_LOCATION);
 
-		const text loc = *locField->getValue().dynamicCast <const text>();
+		const text loc = *locField->getValue <text>();
 		const string locStr = loc.getWholeBuffer();
 
 		if (data.find(locStr) != string::npos)
@@ -259,7 +259,7 @@ void htmlTextPart::parse(ref <const bodyPart> message, ref <const bodyPart> pare
 	// Extract plain text, if any.
 	if (!findPlainTextPart(*message, *parent, *textPart))
 	{
-		m_plainText = vmime::create <emptyContentHandler>();
+		m_plainText = make_shared <emptyContentHandler>();
 	}
 }
 
@@ -269,22 +269,22 @@ bool htmlTextPart::findPlainTextPart(const bodyPart& part, const bodyPart& paren
 	// We search for the nearest "multipart/alternative" part.
 	try
 	{
-		const ref <const headerField> ctf =
+		const shared_ptr <const headerField> ctf =
 			part.getHeader()->findField(fields::CONTENT_TYPE);
 
-		const mediaType type = *ctf->getValue().dynamicCast <const mediaType>();
+		const mediaType type = *ctf->getValue <mediaType>();
 
 		if (type.getType() == mediaTypes::MULTIPART &&
 		    type.getSubType() == mediaTypes::MULTIPART_ALTERNATIVE)
 		{
-			ref <const bodyPart> foundPart = NULL;
+			shared_ptr <const bodyPart> foundPart;
 
 			for (size_t i = 0 ; i < part.getBody()->getPartCount() ; ++i)
 			{
-				const ref <const bodyPart> p = part.getBody()->getPartAt(i);
+				const shared_ptr <const bodyPart> p = part.getBody()->getPartAt(i);
 
-				if (p == &parent ||     // if "text/html" is in "multipart/related"
-				    p == &textPart)     // if not...
+				if (p.get() == &parent ||     // if "text/html" is in "multipart/related"
+				    p.get() == &textPart)     // if not...
 				{
 					foundPart = p;
 				}
@@ -297,14 +297,14 @@ bool htmlTextPart::findPlainTextPart(const bodyPart& part, const bodyPart& paren
 				// Now, search for the alternative plain text part
 				for (size_t i = 0 ; !found && i < part.getBody()->getPartCount() ; ++i)
 				{
-					const ref <const bodyPart> p = part.getBody()->getPartAt(i);
+					const shared_ptr <const bodyPart> p = part.getBody()->getPartAt(i);
 
 					try
 					{
-						const ref <const headerField> ctf =
+						const shared_ptr <const headerField> ctf =
 							p->getHeader()->findField(fields::CONTENT_TYPE);
 
-						const mediaType type = *ctf->getValue().dynamicCast <const mediaType>();
+						const mediaType type = *ctf->getValue <mediaType>();
 
 						if (type.getType() == mediaTypes::TEXT &&
 						    type.getSubType() == mediaTypes::TEXT_PLAIN)
@@ -354,25 +354,25 @@ void htmlTextPart::setCharset(const charset& ch)
 }
 
 
-ref <const contentHandler> htmlTextPart::getPlainText() const
+shared_ptr <const contentHandler> htmlTextPart::getPlainText() const
 {
 	return m_plainText;
 }
 
 
-void htmlTextPart::setPlainText(ref <contentHandler> plainText)
+void htmlTextPart::setPlainText(shared_ptr <contentHandler> plainText)
 {
 	m_plainText = plainText->clone();
 }
 
 
-const ref <const contentHandler> htmlTextPart::getText() const
+const shared_ptr <const contentHandler> htmlTextPart::getText() const
 {
 	return m_text;
 }
 
 
-void htmlTextPart::setText(ref <contentHandler> text)
+void htmlTextPart::setText(shared_ptr <contentHandler> text)
 {
 	m_text = text->clone();
 }
@@ -384,15 +384,15 @@ size_t htmlTextPart::getObjectCount() const
 }
 
 
-ref <const htmlTextPart::embeddedObject> htmlTextPart::getObjectAt(const size_t pos) const
+shared_ptr <const htmlTextPart::embeddedObject> htmlTextPart::getObjectAt(const size_t pos) const
 {
 	return m_objects[pos];
 }
 
 
-ref <const htmlTextPart::embeddedObject> htmlTextPart::findObject(const string& id) const
+shared_ptr <const htmlTextPart::embeddedObject> htmlTextPart::findObject(const string& id) const
 {
-	for (std::vector <ref <embeddedObject> >::const_iterator o = m_objects.begin() ;
+	for (std::vector <shared_ptr <embeddedObject> >::const_iterator o = m_objects.begin() ;
 	     o != m_objects.end() ; ++o)
 	{
 		if ((*o)->matchesId(id))
@@ -405,7 +405,7 @@ ref <const htmlTextPart::embeddedObject> htmlTextPart::findObject(const string& 
 
 bool htmlTextPart::hasObject(const string& id) const
 {
-	for (std::vector <ref <embeddedObject> >::const_iterator o = m_objects.begin() ;
+	for (std::vector <shared_ptr <embeddedObject> >::const_iterator o = m_objects.begin() ;
 	     o != m_objects.end() ; ++o)
 	{
 		if ((*o)->matchesId(id))
@@ -416,12 +416,12 @@ bool htmlTextPart::hasObject(const string& id) const
 }
 
 
-ref <const htmlTextPart::embeddedObject> htmlTextPart::addObject
-	(ref <contentHandler> data, const vmime::encoding& enc, const mediaType& type)
+shared_ptr <const htmlTextPart::embeddedObject> htmlTextPart::addObject
+	(shared_ptr <contentHandler> data, const vmime::encoding& enc, const mediaType& type)
 {
 	const messageId mid(messageId::generateId());
 
-	ref <embeddedObject> obj = vmime::create <embeddedObject>
+	shared_ptr <embeddedObject> obj = make_shared <embeddedObject>
 		(data, enc, mid.getId(), type, embeddedObject::REFERENCED_BY_ID);
 
 	m_objects.push_back(obj);
@@ -430,17 +430,17 @@ ref <const htmlTextPart::embeddedObject> htmlTextPart::addObject
 }
 
 
-ref <const htmlTextPart::embeddedObject> htmlTextPart::addObject
-	(ref <contentHandler> data, const mediaType& type)
+shared_ptr <const htmlTextPart::embeddedObject> htmlTextPart::addObject
+	(shared_ptr <contentHandler> data, const mediaType& type)
 {
 	return addObject(data, encoding::decide(data), type);
 }
 
 
-ref <const htmlTextPart::embeddedObject> htmlTextPart::addObject
+shared_ptr <const htmlTextPart::embeddedObject> htmlTextPart::addObject
 	(const string& data, const mediaType& type)
 {
-	ref <stringContentHandler> cts = vmime::create <stringContentHandler>(data);
+	shared_ptr <stringContentHandler> cts = make_shared <stringContentHandler>(data);
 	return addObject(cts, encoding::decide(cts), type);
 }
 
@@ -451,15 +451,15 @@ ref <const htmlTextPart::embeddedObject> htmlTextPart::addObject
 //
 
 htmlTextPart::embeddedObject::embeddedObject
-	(ref <contentHandler> data, const encoding& enc,
+	(shared_ptr <contentHandler> data, const encoding& enc,
 	 const string& id, const mediaType& type, const ReferenceType refType)
-	: m_data(data->clone().dynamicCast <contentHandler>()),
+	: m_data(vmime::clone(data)),
 	  m_encoding(enc), m_id(id), m_type(type), m_refType(refType)
 {
 }
 
 
-ref <const contentHandler> htmlTextPart::embeddedObject::getData() const
+shared_ptr <const contentHandler> htmlTextPart::embeddedObject::getData() const
 {
 	return m_data;
 }

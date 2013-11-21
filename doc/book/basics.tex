@@ -6,7 +6,7 @@
 \subsection{Introduction} % --------------------------------------------------
 
 Since version 0.7.2cvs, VMime use smart pointers to simplify memory
-management. VMime's smart pointer implementation relies on
+management. Smart pointers rely on
 RAII\footnote{Ressource Allocation is Initialisation} so that we do not need
 to bother with deleting an object (freeing memory) when it is not used
 anymore.
@@ -21,8 +21,20 @@ An object is destroyed as soon as the last strong reference to it is released.
 At the same tine, all weak references (if any) are automatically set to point
 to \vnull.
 
-In VMime, these two types of references are known as {\vcode vmime::ref}
-and {\vcode vmime::weak\_ref}, respectively.
+In VMime, these two types of references are known as {\vcode vmime::shared\_ptr}
+and {\vcode vmime::weak\_ptr}, respectively.
+
+\vnote{since November 2013, we switched from an old, intrusive implementation
+of smart pointers to a more standard one: either Boost {\vcode shared\_ptr<>}
+implementation or standard C++ one if we are compiling in C++11. Here are the
+changes:
+
+{\vcode vmime::ref <>} is replaced with {\vcode vmime::shared\_ptr <>}
+
+{\vcode vmime::weak\_ref <>} is replaced with {\vcode vmime::weak\_ptr <>}
+
+{\vcode vmime::create <>} is replaced with {\vcode vmime::make\_shared <>}
+}
 
 \subsection{Instanciating reference-counted objects} % -----------------------
 
@@ -30,7 +42,7 @@ In VMime, all objects that support reference counting inherit from the
 {\vcode vmime::object} class, which is responsible for
 incrementing/decrementing the counter and managing the object's life cycle.
 If you want to create a smart pointer to a new object instance, you should
-use the function {\vcode vmime::create} instead of the {\vcode new}
+use the function {\vcode vmime::make\_shared} instead of the {\vcode new}
 operator.
 
 \begin{lstlisting}[caption={Smarts pointers and creating objects}]
@@ -55,8 +67,8 @@ private:
 
 int main()
 {
-   vmime::ref <myObject> obj =
-      vmime::create <myObject>("world");
+   vmime::shared_ptr <myObject> obj =
+      vmime::make_shared <myObject>("world");
 
    obj->sayHello();
 
@@ -72,20 +84,20 @@ you would use normal ("raw") C++ pointers (eg. you can write
 \lstinline{!ptr, ptr != NULL, ptr->method(), *ptr}...).
 
 Type safety is also guaranteed, and you can type cast smart pointers using
-the {\vcode staticCast()}, {\vcode dynamicCast()} and {\vcode constCast()}
-equivalents on {\vcode vmime::ref} and {\vcode vmime::weak\_ref} objects:
+the {\vcode static\_cast()}, {\vcode dynamic\_cast()} and {\vcode const\_cast()}
+equivalents on {\vcode vmime::shared\_ptr} and {\vcode vmime::weak\_ptr} objects:
 
 \begin{lstlisting}[caption={Casting smart pointers}]
 class myBase : public vmime::object { }
 class myObject : public myBase { }
 
-vmime::ref <myObject> obj = vmime::create <myObject>();
+vmime::shared_ptr <myObject> obj = vmime::make_shared <myObject>();
 
 // Implicit downcast
-vmime::ref <myBase> base = obj;
+vmime::shared_ptr <myBase> base = obj;
 
 // Explicit upcast
-vmime::ref <myObject> obj2 = base.dynamicCast <myObject>();
+vmime::shared_ptr <myObject> obj2 = vmime::dynamicCast <myObject>(base);
 \end{lstlisting}
 
 Weak references are used to resolve reference cycles (an object which refers
@@ -97,34 +109,34 @@ class parent : public vmime::object
 {
 public:
 
-   void createChild(vmime::ref <child> c)
+   void createChild(vmime::shared_ptr <child> c)
    {
       m_child = c;
    }
 
 private:
 
-   vmime::ref <child> m_child;
+   vmime::shared_ptr <child> m_child;
 };
 
 class child : public vmime::object
 {
 public:
 
-   child(vmime::ref <parent> p)
+   child(vmime::shared_ptr <parent> p)
       : m_parent(p)
    {
    }
 
 private:
 
-   vmime::ref <parent> m_parent;
+   vmime::shared_ptr <parent> m_parent;
 };
 
 int main()
 {
-   vmime::ref <parent> p = vmime::create <parent>();
-   vmime::ref <child> c = vmime::create <child>();
+   vmime::shared_ptr <parent> p = vmime::make_shared <parent>();
+   vmime::shared_ptr <child> c = vmime::make_shared <child>();
 
    p->setChild(c);
 }
@@ -136,7 +148,7 @@ exiting {\vcode main()}. That's because {\vcode p} indirectly points to itself
 reference to the parent:
 
 \begin{lstlisting}
-vmime::weak_ref <parent> m_parent;
+vmime::weak_ptr <parent> m_parent;
 \end{lstlisting}
 
 The decision to make the parent or the child a weak reference is purely
@@ -216,7 +228,7 @@ provides additional functions to get some information about the parsing
 process or the structure (methods {\vcode getParsedOffset()},
 {\vcode getParsedLength()} and {\vcode getChildComponents()}).
 
-Vmime also provides a set of classes corresponding to the basic types found
+VMime also provides a set of classes corresponding to the basic types found
 in a message; for example a mailbox, a mailbox list, date/time information,
 media type, etc. They all inherit from {\vcode component} too.
 
@@ -284,12 +296,12 @@ an email address (mandatory) and possibly a name. A mailbox group is simply
 a named list of mailboxes (see Figure \ref{uml_addr_mbox_mboxgroup}).
 
 \begin{lstlisting}[caption={Using mailboxes and mailbox groups}]
-vmime::ref <vmime::mailbox> mbox1 = vmime::create <vmime::mailbox>
+vmime::shared_ptr <vmime::mailbox> mbox1 = vmime::make_shared <vmime::mailbox>
     (/* name */ vmime::text("John Doe"), /* email */ "john.doe@acme.com");
-vmime::ref <vmime::mailbox> mbox2 = vmime::create <vmime::mailbox>
+vmime::shared_ptr <vmime::mailbox> mbox2 = vmime::make_shared <vmime::mailbox>
     (/* no name, email only */ "bill@acme.com");
 
-vmime::ref <vmime::mailboxGroup> grp = vmime::create <vmime::mailboxGroup>();
+vmime::shared_ptr <vmime::mailboxGroup> grp = vmime::make_shared <vmime::mailboxGroup>();
 grp->appendMailbox(mbox1);
 grp->appendMailbox(mbox2);
 \end{lstlisting}
@@ -402,12 +414,11 @@ convert automatically from basic types to text, and \emph{vice versa}. The
 following example illustrates it:
 
 \begin{lstlisting}[caption={Getting and setting parameter value in fields}]
-vmime::ref <vmime::parameterizedField> field =
-   header->findField("X-Field-That-Contains-Parameters")
-      .dynamicCast <vmime::parameterizedField>();
+vmime::shared_ptr <vmime::parameterizedField> field =
+   header->findField <vmime::parameterizedField>("X-Field-That-Contains-Parameters");
 
 // Use setValue() to convert from a basic type to 'text'
-vmime::ref <vmime::parameter> prm = field->getParameter("my-date-param");
+vmime::shared_ptr <vmime::parameter> prm = field->getParameter("my-date-param");
 prm->setValue(vmime::datetime::now());
 
 // Use getValueAs() to convert from 'text' to a basic type
@@ -421,12 +432,11 @@ Table \ref{standard-prm-fields}). This avoids finding the parameter and
 illustrates how to use it:
 
 \begin{lstlisting}
-vmime::ref <vmime::contentTypeField> field =
-   header->getField(vmime::fields::CONTENT_TYPE)
-      .dynamicCast <vmime::contentTypeField>();
+vmime::shared_ptr <vmime::contentTypeField> field =
+   header->getField <vmime::contentTypeField>(vmime::fields::CONTENT_TYPE);
 
 // 1. First solution: the "hard" way
-vmime::ref <vmime::parameter> prm = field->findParameter("charset");
+vmime::shared_ptr <vmime::parameter> prm = field->findParameter("charset");
 const charset ch1 = prm->getValueAs <vmime::charset>();
 
 // 2. Second solution: the simple way
@@ -541,11 +551,11 @@ writing it to the standard output with charset conversion:
 \begin{lstlisting}[caption={Using content handlers to extract body text from
 a message}]
 // Suppose we already have a message
-vmime::ref <vmime::message> msg;
+vmime::shared_ptr <vmime::message> msg;
 
 // Obtains a reference to the body contents
-vmime::ref <vmime::body> body = msg->getBody();
-vmime::ref <vmime::contentHandler> cts = body->getContents();
+vmime::shared_ptr <vmime::body> body = msg->getBody();
+vmime::shared_ptr <vmime::contentHandler> cts = body->getContents();
 
 vmime::utility::outputStreamAdapter out(std::cout);
 cts->extract(out);
@@ -563,11 +573,11 @@ if you want to set the contents of a body part. The following code snippet
 shows how to set the body text of a part from a string:
 
 \begin{lstlisting}[caption={Setting the contents of a body part}]
-vmime::ref <vmime::bodyPart> part;  // suppose we have a body part
+vmime::shared_ptr <vmime::bodyPart> part;  // suppose we have a body part
 
 // Create a new content handler from a string
-vmime::ref <vmime::contentHandler> cth =
-   vmime::create <vmime::stringContentHandler>("Put body contents here");
+vmime::shared_ptr <vmime::contentHandler> cth =
+   vmime::make_shared <vmime::stringContentHandler>("Put body contents here");
 
 // Set the contents
 part->getBody()->setContents(cth);
@@ -585,18 +595,18 @@ fileStream->open("/home/vincent/paris.jpg", std::ios::binary);
 if (!*fileStream)
    // handle error
 
-vmime::ref <utility::stream> dataStream =
-   vmime::create <vmime::utility::inputStreamPointerAdapter>(fileStream);
+vmime::shared_ptr <utility::stream> dataStream =
+   vmime::make_shared <vmime::utility::inputStreamPointerAdapter>(fileStream);
 
    // NOTE: 'fileStream' will be automatically deleted
    // when 'dataStream' is deleted
 
 // Create a new content handler
-vmime::ref <contentHandler> data =
-   vmime::create <vmime::streamContentHandler>(dataStream, 0);
+vmime::shared_ptr <contentHandler> data =
+   vmime::make_shared <vmime::streamContentHandler>(dataStream, 0);
 
 // Now create the attachment
-ref <vmime::attachment> att = vmime::create <vmime::defaultAttachment>
+ref <vmime::attachment> att = vmime::make_shared <vmime::defaultAttachment>
    (
    	/* attachment data */ data,
 	/* content type */    vmime::mediaType("image/jpeg"),
@@ -627,11 +637,11 @@ to UTF-8 charset:
 
 \begin{lstlisting}[caption={Extracting and converting body contents to a
 specified charset}]
-vmime::ref <vmime::message> msg;  // we have a message
+vmime::shared_ptr <vmime::message> msg;  // we have a message
 
 // Obtain the content handler first
-vmime::ref <vmime::body> body = msg->getBody();
-vmime::ref <const vmime::contentHandler> cth = body->getContents();
+vmime::shared_ptr <vmime::body> body = msg->getBody();
+vmime::shared_ptr <const vmime::contentHandler> cth = body->getContents();
 
 // Then, extract and convert the contents
 vmime::utility::outputStreamAdapter out(std::cout);
@@ -676,7 +686,7 @@ outText.createFromString(inText, inCharset);
 //    . <utf-8>      "téléphone "
 //    . <us-ascii>   "mobile"
 
-vmime::ref <vmime::header> header = myMessage->getHeader();
+vmime::shared_ptr <vmime::header> header = myMessage->getHeader();
 header->Subject()->setValue(outText);
 \end{lstlisting}
 
@@ -707,7 +717,7 @@ text stored in the Subject field of a message:
 
 \begin{lstlisting}[caption={Converting data in a {\vcode vmime::text} to a
 specified charset}]
-vmime::ref <vmime::message> msg;  // we have a message
+vmime::shared_ptr <vmime::message> msg;  // we have a message
 
 vmime::text subject = msg->getHeader()->Subject()->getValue();
 
@@ -739,7 +749,7 @@ The following example creates an instance of the Base64 encoder to encode
 some data:
 
 \begin{lstlisting}[caption={A simple example of using an encoder}]
-vmime::ref <vmime::utility::encoder::encoder> enc =
+vmime::shared_ptr <vmime::utility::encoder::encoder> enc =
     vmime::utility::encoder::encoderFactory::getInstance()->create("base64");
 
 vmime::string inString("Some data to encode");
@@ -761,7 +771,7 @@ an excerpt from {\vexample example6}} enumerates available encoders and the
 supported properties for each of them:
 
 \begin{lstlisting}[caption={Enumerating encoders and their properties}]
-vmime::utility::encoder::encoderFactory* ef =
+vmime::shared_ptr <vmime::utility::encoder::encoderFactory> ef =
    vmime::utility::encoder::encoderFactory::getInstance();
 
 std::cout << "Available encoders:" << std::endl;
@@ -769,13 +779,13 @@ std::cout << "Available encoders:" << std::endl;
 for (int i = 0 ; i < ef->getEncoderCount() ; ++i)
 {
    // Output encoder name
-   vmime::ref <const vmime::utility::encoder::encoderFactory::registeredEncoder>
+   vmime::shared_ptr <const vmime::utility::encoder::encoderFactory::registeredEncoder>
       enc = ef->getEncoderAt(i);
 
    std::cout << "  * " << enc->getName() << std::endl;
 
    // Create an instance of the encoder to get its properties
-   vmime::ref <vmime::utility::encoder::encoder> e = enc->create();
+   vmime::shared_ptr <vmime::utility::encoder::encoder> e = enc->create();
 
    std::vector <vmime::string> props = e->getAvailableProperties();
    std::vector <vmime::string>::const_iterator it;

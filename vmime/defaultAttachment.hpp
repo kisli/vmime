@@ -45,8 +45,8 @@ protected:
 
 public:
 
-	defaultAttachment(ref <const contentHandler> data, const encoding& enc, const mediaType& type, const text& desc = NULL_TEXT, const word& name = NULL_WORD);
-	defaultAttachment(ref <const contentHandler> data, const mediaType& type, const text& desc = NULL_TEXT, const word& name = NULL_WORD);
+	defaultAttachment(shared_ptr <const contentHandler> data, const encoding& enc, const mediaType& type, const text& desc = NULL_TEXT, const word& name = NULL_WORD);
+	defaultAttachment(shared_ptr <const contentHandler> data, const mediaType& type, const text& desc = NULL_TEXT, const word& name = NULL_WORD);
 	defaultAttachment(const defaultAttachment& attach);
 
 	~defaultAttachment();
@@ -56,29 +56,29 @@ public:
 	const mediaType getType() const;
 	const text getDescription() const;
 	const word getName() const;
-	const ref <const contentHandler> getData() const;
+	const shared_ptr <const contentHandler> getData() const;
 	const encoding getEncoding() const;
 
-	ref <const object> getPart() const;
+	shared_ptr <const object> getPart() const;
 
-	ref <const header> getHeader() const;
+	shared_ptr <const header> getHeader() const;
 
 protected:
 
 	mediaType m_type;                   /**< Media type (eg. "application/octet-stream") */
 	text m_desc;                        /**< Description (eg. "The image you requested") */
-	ref <const contentHandler> m_data;  /**< Attachment data (eg. the file contents) */
+	shared_ptr <const contentHandler> m_data;  /**< Attachment data (eg. the file contents) */
 	encoding m_encoding;                /**< Encoding */
 	word m_name;                        /**< Name/filename (eg. "sunset.jpg") */
 
 private:
 
 	// No need to override "generateIn", use "generatePart" instead (see below).
-	void generateIn(ref <bodyPart> parent) const;
+	void generateIn(shared_ptr <bodyPart> parent) const;
 
 protected:
 
-	virtual void generatePart(ref <bodyPart> part) const;
+	virtual void generatePart(shared_ptr <bodyPart> part) const;
 };
 
 

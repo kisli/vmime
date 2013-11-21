@@ -43,7 +43,7 @@ namespace net {
 namespace smtp {
 
 
-SMTPResponse::SMTPResponse(ref <socket> sok, ref <timeoutHandler> toh, const state& st)
+SMTPResponse::SMTPResponse(shared_ptr <socket> sok, shared_ptr <timeoutHandler> toh, const state& st)
 	: m_socket(sok), m_timeoutHandler(toh),
 	  m_responseBuffer(st.responseBuffer), m_responseContinues(false)
 {
@@ -94,10 +94,10 @@ const string SMTPResponse::getText() const
 
 
 // static
-ref <SMTPResponse> SMTPResponse::readResponse
-	(ref <socket> sok, ref <timeoutHandler> toh, const state& st)
+shared_ptr <SMTPResponse> SMTPResponse::readResponse
+	(shared_ptr <socket> sok, shared_ptr <timeoutHandler> toh, const state& st)
 {
-	ref <SMTPResponse> resp = vmime::create <SMTPResponse>(sok, toh, st);
+	shared_ptr <SMTPResponse> resp = shared_ptr <SMTPResponse>(new SMTPResponse(sok, toh, st));
 
 	resp->readResponse();
 

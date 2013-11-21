@@ -68,11 +68,11 @@ wordEncoder::wordEncoder(const string& buffer, const charset& charset, const Enc
 
 	if (m_encoding == ENCODING_B64)
 	{
-		m_encoder = vmime::create <utility::encoder::b64Encoder>();
+		m_encoder = make_shared <utility::encoder::b64Encoder>();
 	}
 	else // ENCODING_QP
 	{
-		m_encoder = vmime::create <utility::encoder::qpEncoder>();
+		m_encoder = make_shared <utility::encoder::qpEncoder>();
 		m_encoder->getProperties()["rfc2047"] = true;
 	}
 }
@@ -168,7 +168,7 @@ const string wordEncoder::getNextChunk(const string::size_type maxLength)
 	// Fully RFC-compliant encoding
 	else
 	{
-		ref <charsetConverter> conv = charsetConverter::create(charsets::UTF_8, m_charset);
+		shared_ptr <charsetConverter> conv = charsetConverter::create(charsets::UTF_8, m_charset);
 
 		string::size_type inputCount = 0;
 		string::size_type outputCount = 0;

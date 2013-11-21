@@ -100,10 +100,10 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 		vmime::header hdr;
 		hdr.parse("");
 
-		vmime::ref <vmime::headerField> hf = vmime::headerFieldFactory::getInstance()->create("A", "a");
+		vmime::shared_ptr <vmime::headerField> hf = vmime::headerFieldFactory::getInstance()->create("A", "a");
 		hdr.appendField(hf);
 
-		std::vector <vmime::ref <vmime::headerField> > res = hdr.getFieldList();
+		std::vector <vmime::shared_ptr <vmime::headerField> > res = hdr.getFieldList();
 
 		VASSERT_EQ("Count", static_cast <unsigned int>(1), res.size());
 		VASSERT_EQ("First value", "A: a", headerTest::getFieldValue(*res[0]));
@@ -114,10 +114,10 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 		vmime::header hdr;
 		hdr.parse("A: a\r\n");
 
-		vmime::ref <vmime::headerField> hf = vmime::headerFieldFactory::getInstance()->create("B", "b");
+		vmime::shared_ptr <vmime::headerField> hf = vmime::headerFieldFactory::getInstance()->create("B", "b");
 		hdr.appendField(hf);
 
-		std::vector <vmime::ref <vmime::headerField> > res = hdr.getFieldList();
+		std::vector <vmime::shared_ptr <vmime::headerField> > res = hdr.getFieldList();
 
 		VASSERT_EQ("Count", static_cast <unsigned int>(2), res.size());
 		VASSERT_EQ("First value", "A: a", headerTest::getFieldValue(*res[0]));
@@ -130,10 +130,10 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 		vmime::header hdr;
 		hdr.parse("A: a\r\nC: c\r\n");
 
-		vmime::ref <vmime::headerField> hf = vmime::headerFieldFactory::getInstance()->create("B", "b");
+		vmime::shared_ptr <vmime::headerField> hf = vmime::headerFieldFactory::getInstance()->create("B", "b");
 		hdr.insertFieldBefore(hdr.getField("C"), hf);
 
-		std::vector <vmime::ref <vmime::headerField> > res = hdr.getFieldList();
+		std::vector <vmime::shared_ptr <vmime::headerField> > res = hdr.getFieldList();
 
 		VASSERT_EQ("Count", static_cast <unsigned int>(3), res.size());
 		VASSERT_EQ("First value", "A: a", headerTest::getFieldValue(*res[0]));
@@ -146,10 +146,10 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 		vmime::header hdr;
 		hdr.parse("A: a\r\nC: c\r\n");
 
-		vmime::ref <vmime::headerField> hf = vmime::headerFieldFactory::getInstance()->create("B", "b");
+		vmime::shared_ptr <vmime::headerField> hf = vmime::headerFieldFactory::getInstance()->create("B", "b");
 		hdr.insertFieldBefore(1, hf);
 
-		std::vector <vmime::ref <vmime::headerField> > res = hdr.getFieldList();
+		std::vector <vmime::shared_ptr <vmime::headerField> > res = hdr.getFieldList();
 
 		VASSERT_EQ("Count", static_cast <unsigned int>(3), res.size());
 		VASSERT_EQ("First value", "A: a", headerTest::getFieldValue(*res[0]));
@@ -163,10 +163,10 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 		vmime::header hdr;
 		hdr.parse("A: a\r\nC: c\r\n");
 
-		vmime::ref <vmime::headerField> hf = vmime::headerFieldFactory::getInstance()->create("B", "b");
+		vmime::shared_ptr <vmime::headerField> hf = vmime::headerFieldFactory::getInstance()->create("B", "b");
 		hdr.insertFieldAfter(hdr.getField("A"), hf);
 
-		std::vector <vmime::ref <vmime::headerField> > res = hdr.getFieldList();
+		std::vector <vmime::shared_ptr <vmime::headerField> > res = hdr.getFieldList();
 
 		VASSERT_EQ("Count", static_cast <unsigned int>(3), res.size());
 		VASSERT_EQ("First value", "A: a", headerTest::getFieldValue(*res[0]));
@@ -179,10 +179,10 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 		vmime::header hdr;
 		hdr.parse("A: a\r\nC: c\r\n");
 
-		vmime::ref <vmime::headerField> hf = vmime::headerFieldFactory::getInstance()->create("B", "b");
+		vmime::shared_ptr <vmime::headerField> hf = vmime::headerFieldFactory::getInstance()->create("B", "b");
 		hdr.insertFieldAfter(0, hf);
 
-		std::vector <vmime::ref <vmime::headerField> > res = hdr.getFieldList();
+		std::vector <vmime::shared_ptr <vmime::headerField> > res = hdr.getFieldList();
 
 		VASSERT_EQ("Count", static_cast <unsigned int>(3), res.size());
 		VASSERT_EQ("First value", "A: a", headerTest::getFieldValue(*res[0]));
@@ -196,10 +196,10 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 		vmime::header hdr;
 		hdr.parse("A: a\r\nB: b\r\nC: c\r\n");
 
-		vmime::ref <vmime::headerField> hf = vmime::headerFieldFactory::getInstance()->create("Z", "z");
+		vmime::shared_ptr <vmime::headerField> hf = vmime::headerFieldFactory::getInstance()->create("Z", "z");
 		hdr.replaceField(hdr.getField("B"), hf);
 
-		std::vector <vmime::ref <vmime::headerField> > res = hdr.getFieldList();
+		std::vector <vmime::shared_ptr <vmime::headerField> > res = hdr.getFieldList();
 
 		VASSERT_EQ("Count", static_cast <unsigned int>(3), res.size());
 		VASSERT_EQ("First value", "A: a", headerTest::getFieldValue(*res[0]));
@@ -217,13 +217,13 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 		hdr1.removeField(hdr1.getField("B"));
 		hdr2.removeField(1);
 
-		std::vector <vmime::ref <vmime::headerField> > res1 = hdr1.getFieldList();
+		std::vector <vmime::shared_ptr <vmime::headerField> > res1 = hdr1.getFieldList();
 
 		VASSERT_EQ("Count", static_cast <unsigned int>(2), res1.size());
 		VASSERT_EQ("First value", "A: a", headerTest::getFieldValue(*res1[0]));
 		VASSERT_EQ("Second value", "C: c", headerTest::getFieldValue(*res1[1]));
 
-		std::vector <vmime::ref <vmime::headerField> > res2 = hdr2.getFieldList();
+		std::vector <vmime::shared_ptr <vmime::headerField> > res2 = hdr2.getFieldList();
 
 		VASSERT_EQ("Count", static_cast <unsigned int>(2), res2.size());
 		VASSERT_EQ("First value", "A: a", headerTest::getFieldValue(*res2[0]));
@@ -239,10 +239,10 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 		hdr1.removeField(hdr1.getField("A"));
 		hdr2.removeField(0);
 
-		std::vector <vmime::ref <vmime::headerField> > res1 = hdr1.getFieldList();
+		std::vector <vmime::shared_ptr <vmime::headerField> > res1 = hdr1.getFieldList();
 		VASSERT_EQ("Count", static_cast <unsigned int>(0), res1.size());
 
-		std::vector <vmime::ref <vmime::headerField> > res2 = hdr2.getFieldList();
+		std::vector <vmime::shared_ptr <vmime::headerField> > res2 = hdr2.getFieldList();
 		VASSERT_EQ("Count", static_cast <unsigned int>(0), res2.size());
 	}
 
@@ -256,10 +256,10 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 		hdr1.removeAllFields();
 		hdr2.removeAllFields();
 
-		std::vector <vmime::ref <vmime::headerField> > res1 = hdr1.getFieldList();
+		std::vector <vmime::shared_ptr <vmime::headerField> > res1 = hdr1.getFieldList();
 		VASSERT_EQ("Count", static_cast <unsigned int>(0), res1.size());
 
-		std::vector <vmime::ref <vmime::headerField> > res2 = hdr2.getFieldList();
+		std::vector <vmime::shared_ptr <vmime::headerField> > res2 = hdr2.getFieldList();
 		VASSERT_EQ("Count", static_cast <unsigned int>(0), res2.size());
 	}
 
@@ -295,7 +295,7 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 		vmime::header hdr;
 		hdr.parse("B: b\r\nA: a\r\nC: c\r\n");
 
-		vmime::ref <vmime::headerField> res = hdr.getFieldAt(2);
+		vmime::shared_ptr <vmime::headerField> res = hdr.getFieldAt(2);
 
 		VASSERT_EQ("Value", "C: c", getFieldValue(*res));
 	}
@@ -306,7 +306,7 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 		vmime::header hdr;
 		hdr.parse("A: a\r\nB: b1\r\nC: c\r\nB: b2\r\n");
 
-		std::vector <vmime::ref <vmime::headerField> > res = hdr.getFieldList();
+		std::vector <vmime::shared_ptr <vmime::headerField> > res = hdr.getFieldList();
 
 		VASSERT_EQ("Count", static_cast <unsigned int>(4), res.size());
 		VASSERT_EQ("First value", "A: a", headerTest::getFieldValue(*res[0]));
@@ -320,7 +320,7 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 		vmime::header hdr;
 		hdr.parse("\r\n");
 
-		std::vector <vmime::ref <vmime::headerField> > res = hdr.getFieldList();
+		std::vector <vmime::shared_ptr <vmime::headerField> > res = hdr.getFieldList();
 
 		VASSERT_EQ("Count", static_cast <unsigned int>(0), res.size());
 	}
@@ -331,7 +331,7 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 		vmime::header hdr;
 		hdr.parse("A: a\r\nB: b\r\nC: c\r\nB: d\r\n");
 
-		vmime::ref <vmime::headerField> res = hdr.findField("B");
+		vmime::shared_ptr <vmime::headerField> res = hdr.findField("B");
 
 		VASSERT_EQ("Value", "B: b", getFieldValue(*res));
 	}
@@ -342,7 +342,7 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 		vmime::header hdr;
 		hdr.parse("A: a1\nC: c1\n");
 
-		std::vector <vmime::ref <vmime::headerField> > res = hdr.findAllFields("B");
+		std::vector <vmime::shared_ptr <vmime::headerField> > res = hdr.findAllFields("B");
 
 		VASSERT_EQ("Count", static_cast <unsigned int>(0), res.size());
 	}
@@ -352,7 +352,7 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 		vmime::header hdr;
 		hdr.parse("A: a1\nB: b1\nB: b2\nC: c1\n");
 
-		std::vector <vmime::ref <vmime::headerField> > res = hdr.findAllFields("B");
+		std::vector <vmime::shared_ptr <vmime::headerField> > res = hdr.findAllFields("B");
 
 		VASSERT_EQ("Count", static_cast <unsigned int>(2), res.size());
 		VASSERT_EQ("First value", "B: b1", headerTest::getFieldValue(*res[0]));
@@ -364,7 +364,7 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 		vmime::header hdr;
 		hdr.parse("A: a1\nB: b1\nB: b2\nC: c1\nC: c3\nC: c2\n");
 
-		std::vector <vmime::ref <vmime::headerField> > res = hdr.findAllFields("C");
+		std::vector <vmime::shared_ptr <vmime::headerField> > res = hdr.findAllFields("C");
 
 		VASSERT_EQ("Count", static_cast <unsigned int>(3), res.size());
 		VASSERT_EQ("First value", "C: c1", headerTest::getFieldValue(*res[0]));

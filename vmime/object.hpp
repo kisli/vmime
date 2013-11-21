@@ -28,24 +28,15 @@
 #include "vmime/types.hpp"
 
 
-#include <vector>
-
-
 namespace vmime
 {
 
 
-/** Base object for all objects in the library. This implements
-  * reference counting and auto-deletion.
+/** Base object for all objects in the library.
   */
 
-class VMIME_EXPORT object
+class VMIME_EXPORT object : public enable_shared_from_this <object>
 {
-	template <class T> friend class utility::ref;
-	template <class T> friend class utility::weak_ref;
-
-	friend class utility::refManager;
-
 protected:
 
 	object();
@@ -54,42 +45,6 @@ protected:
 	object& operator=(const object&);
 
 	virtual ~object();
-
-#ifndef VMIME_BUILDING_DOC
-
-	/** Return a reference to this object.
-	  *
-	  * @return reference to self
-	  */
-	ref <object> thisRef();
-
-	/** Return a reference to this object (const version).
-	  *
-	  * @return reference to self
-	  */
-	ref <const object> thisRef() const;
-
-	/** Return a weak reference to this object.
-	  *
-	  * @return weak reference to self
-	  */
-	weak_ref <object> thisWeakRef();
-
-	/** Return a weak reference to this object (const version).
-	  *
-	  * @return weak reference to self
-	  */
-	weak_ref <const object> thisWeakRef() const;
-
-
-	void setRefManager(utility::refManager* mgr);
-	utility::refManager* getRefManager() const;
-
-#endif // VMIME_BUILDING_DOC
-
-private:
-
-	mutable utility::refManager* m_refMgr;
 };
 
 

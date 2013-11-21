@@ -51,7 +51,7 @@ namespace net {
 namespace smtp {
 
 
-SMTPTransport::SMTPTransport(ref <session> sess, ref <security::authenticator> auth, const bool secured)
+SMTPTransport::SMTPTransport(shared_ptr <session> sess, shared_ptr <security::authenticator> auth, const bool secured)
 	: transport(sess, getInfosInstance(), auth), m_isSMTPS(secured), m_needReset(false)
 {
 }
@@ -88,8 +88,8 @@ void SMTPTransport::connect()
 	if (isConnected())
 		throw exceptions::already_connected();
 
-	m_connection = vmime::create <SMTPConnection>
-		(thisRef().dynamicCast <SMTPTransport>(), getAuthenticator());
+	m_connection = make_shared <SMTPConnection>
+		(dynamicCast <SMTPTransport>(shared_from_this()), getAuthenticator());
 
 	try
 	{
@@ -97,7 +97,7 @@ void SMTPTransport::connect()
 	}
 	catch (std::exception&)
 	{
-		m_connection = NULL;
+		m_connection = null;
 		throw;
 	}
 }
@@ -118,16 +118,16 @@ bool SMTPTransport::isSecuredConnection() const
 }
 
 
-ref <connectionInfos> SMTPTransport::getConnectionInfos() const
+shared_ptr <connectionInfos> SMTPTransport::getConnectionInfos() const
 {
 	if (m_connection == NULL)
-		return NULL;
+		return null;
 
 	return m_connection->getConnectionInfos();
 }
 
 
-ref <SMTPConnection> SMTPTransport::getConnection()
+shared_ptr <SMTPConnection> SMTPTransport::getConnection()
 {
 	return m_connection;
 }
@@ -139,7 +139,7 @@ void SMTPTransport::disconnect()
 		throw exceptions::not_connected();
 
 	m_connection->disconnect();
-	m_connection = NULL;
+	m_connection = null;
 }
 
 
@@ -150,7 +150,7 @@ void SMTPTransport::noop()
 
 	m_connection->sendRequest(SMTPCommand::NOOP());
 
-	ref <SMTPResponse> resp = m_connection->readResponse();
+	shared_ptr <SMTPResponse> resp = m_connection->readResponse();
 
 	if (resp->getCode() != 250)
 	{
@@ -177,8 +177,8 @@ void SMTPTransport::sendEnvelope
 		getInfos().getPropertyValue <bool>(getSession(),
 			dynamic_cast <const SMTPServiceInfos&>(getInfos()).getProperties().PROPERTY_OPTIONS_PIPELINING);
 
-	ref <SMTPResponse> resp;
-	ref <SMTPCommandSet> commands = SMTPCommandSet::create(hasPipelining);
+	shared_ptr <SMTPResponse> resp;
+	shared_ptr <SMTPCommandSet> commands = SMTPCommandSet::create(hasPipelining);
 
 	// Emit a "RSET" command if we previously sent a message on this connection
 	if (needReset)
@@ -336,7 +336,7 @@ void SMTPTransport::send
 	// Send end-of-data delimiter
 	m_connection->getSocket()->sendRaw("\r\n.\r\n", 5);
 
-	ref <SMTPResponse> resp;
+	shared_ptr <SMTPResponse> resp;
 
 	if ((resp = m_connection->readResponse())->getCode() != 250)
 	{
@@ -349,7 +349,7 @@ void SMTPTransport::send
 
 
 void SMTPTransport::send
-	(ref <vmime::message> msg, const mailbox& expeditor, const mailboxList& recipients,
+	(shared_ptr <vmime::message> msg, const mailbox& expeditor, const mailboxList& recipients,
 	 utility::progressListener* progress, const mailbox& sender)
 {
 	if (!isConnected())

@@ -47,7 +47,7 @@ class VMIME_EXPORT courierMaildirFormat : public maildirFormat
 {
 public:
 
-	courierMaildirFormat(ref <context> ctx);
+	courierMaildirFormat(shared_ptr <context> ctx);
 
 
 	/* Folder types:

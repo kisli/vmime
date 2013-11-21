@@ -48,17 +48,15 @@ class TLSSession_GnuTLS;
 
 class TLSSocket_GnuTLS : public TLSSocket
 {
-	friend class vmime::creator;
-
 public:
 
-	TLSSocket_GnuTLS(ref <TLSSession_GnuTLS> session, ref <socket> sok);
+	TLSSocket_GnuTLS(shared_ptr <TLSSession_GnuTLS> session, shared_ptr <socket> sok);
 	~TLSSocket_GnuTLS();
 
 
-	void handshake(ref <timeoutHandler> toHandler = NULL);
+	void handshake(shared_ptr <timeoutHandler> toHandler = null);
 
-	ref <security::cert::certificateChain> getPeerCertificates() const;
+	shared_ptr <security::cert::certificateChain> getPeerCertificates() const;
 
 	// Implementation of 'socket'
 	void connect(const string& address, const port_t port);
@@ -92,15 +90,15 @@ private:
 #endif // LIBGNUTLS_VERSION
 
 
-	ref <TLSSession_GnuTLS> m_session;
-	ref <socket> m_wrapped;
+	shared_ptr <TLSSession_GnuTLS> m_session;
+	shared_ptr <socket> m_wrapped;
 
 	bool m_connected;
 
 	char m_buffer[65536];
 
 	bool m_handshaking;
-	ref <timeoutHandler> m_toHandler;
+	shared_ptr <timeoutHandler> m_toHandler;
 
 	exception* m_ex;
 

@@ -70,7 +70,7 @@ public:
 	  * @param inputStream stream from which to read data
 	  * @param length data length, in bytes (0 = unknown/not specified)
 	  */
-	void parse(ref <utility::inputStream> inputStream, const utility::stream::size_type length);
+	void parse(shared_ptr <utility::inputStream> inputStream, const utility::stream::size_type length);
 
 	/** Parse RFC-822/MIME data for this component, using the default
 	  * parsing context.
@@ -112,7 +112,7 @@ public:
 	  * @param newPosition will receive the new position in the input stream
 	  */
 	void parse
-		(ref <utility::inputStream> inputStream,
+		(shared_ptr <utility::inputStream> inputStream,
 		 const utility::stream::size_type position,
 		 const utility::stream::size_type end,
 		 utility::stream::size_type* newPosition = NULL);
@@ -129,7 +129,7 @@ public:
 	  */
 	void parse
 		(const parsingContext& ctx,
-		 ref <utility::inputStream> inputStream,
+		 shared_ptr <utility::inputStream> inputStream,
 		 const utility::stream::size_type position,
 		 const utility::stream::size_type end,
 		 utility::stream::size_type* newPosition = NULL);
@@ -174,7 +174,7 @@ public:
 	  *
 	  * @return a copy of this component
 	  */
-	virtual ref <component> clone() const = 0;
+	virtual shared_ptr <component> clone() const = 0;
 
 	/** Replace data in this component by data in other component.
 	  * Both components must be of the same type.
@@ -205,7 +205,7 @@ public:
 	  *
 	  * @return list of child components
 	  */
-	virtual const std::vector <ref <component> > getChildComponents() = 0;
+	virtual const std::vector <shared_ptr <component> > getChildComponents() = 0;
 
 	/** Get the number of bytes that will be used by this component when
 	  * it is generated. This may be a heuristically-derived estimate,
@@ -224,7 +224,7 @@ protected:
 	// AT LEAST ONE of these parseImpl() functions MUST be implemented in derived class
 	virtual void parseImpl
 		(const parsingContext& ctx,
-		 ref <utility::parserInputStreamAdapter> parser,
+		 shared_ptr <utility::parserInputStreamAdapter> parser,
 		 const utility::stream::size_type position,
 		 const utility::stream::size_type end,
 		 utility::stream::size_type* newPosition = NULL);

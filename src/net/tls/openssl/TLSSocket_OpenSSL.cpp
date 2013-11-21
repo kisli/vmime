@@ -65,14 +65,14 @@ BIO_METHOD TLSSocket_OpenSSL::sm_customBIOMethod =
 
 
 // static
-ref <TLSSocket> TLSSocket::wrap(ref <TLSSession> session, ref <socket> sok)
+shared_ptr <TLSSocket> TLSSocket::wrap(shared_ptr <TLSSession> session, shared_ptr <socket> sok)
 {
-	return vmime::create <TLSSocket_OpenSSL>
-		(session.dynamicCast <TLSSession_OpenSSL>(), sok);
+	return make_shared <TLSSocket_OpenSSL>
+		(dynamicCast <TLSSession_OpenSSL>(session), sok);
 }
 
 
-TLSSocket_OpenSSL::TLSSocket_OpenSSL(ref <TLSSession_OpenSSL> session, ref <socket> sok)
+TLSSocket_OpenSSL::TLSSocket_OpenSSL(shared_ptr <TLSSession_OpenSSL> session, shared_ptr <socket> sok)
 	: m_session(session), m_wrapped(sok), m_connected(false), m_ssl(0), m_ex(NULL)
 {
 }
@@ -128,7 +128,7 @@ void TLSSocket_OpenSSL::connect(const string& address, const port_t port)
 
 	createSSLHandle();
 
-	handshake(NULL);
+	handshake(null);
 
 	m_connected = true;
 }
@@ -224,7 +224,7 @@ TLSSocket_OpenSSL::size_type TLSSocket_OpenSSL::sendRawNonBlocking(const char* b
 }
 
 
-void TLSSocket_OpenSSL::handshake(ref <timeoutHandler> toHandler)
+void TLSSocket_OpenSSL::handshake(shared_ptr <timeoutHandler> toHandler)
 {
 	if (toHandler)
 		toHandler->resetTimeOut();
@@ -245,14 +245,14 @@ void TLSSocket_OpenSSL::handshake(ref <timeoutHandler> toHandler)
 	{
 		SSL_free(m_ssl);
 		m_ssl = 0;
-		m_toHandler = NULL;
+		m_toHandler = null;
 		throw;
 	}
 
-	m_toHandler = NULL;
+	m_toHandler = null;
 
 	// Verify server's certificate(s)
-	ref <security::cert::certificateChain> certs = getPeerCertificates();
+	shared_ptr <security::cert::certificateChain> certs = getPeerCertificates();
 
 	if (certs == NULL)
 		throw exceptions::tls_exception("No peer certificate.");
@@ -263,24 +263,24 @@ void TLSSocket_OpenSSL::handshake(ref <timeoutHandler> toHandler)
 }
 
 
-ref <security::cert::certificateChain> TLSSocket_OpenSSL::getPeerCertificates() const
+shared_ptr <security::cert::certificateChain> TLSSocket_OpenSSL::getPeerCertificates() const
 {
 	STACK_OF(X509)* chain = SSL_get_peer_cert_chain(m_ssl);
 
 	if (chain == NULL)
-		return NULL;
+		return null;
 
 	int certCount = sk_X509_num(chain);
 
 	if (certCount == 0)
-		return NULL;
+		return null;
 
 	bool error = false;
-	std::vector <ref <security::cert::certificate> > certs;
+	std::vector <shared_ptr <security::cert::certificate> > certs;
 
 	for (int i = 0; i < certCount && !error; i++)
 	{
-		ref <vmime::security::cert::X509Certificate> cert =
+		shared_ptr <vmime::security::cert::X509Certificate> cert =
 			vmime::security::cert::X509Certificate_OpenSSL::importInternal(sk_X509_value(chain, i));
 
 		if (cert)
@@ -290,9 +290,9 @@ ref <security::cert::certificateChain> TLSSocket_OpenSSL::getPeerCertificates() 
 	}
 
 	if (error)
-		return NULL;
+		return null;
 
-	return vmime::create <security::cert::certificateChain>(certs);
+	return make_shared <security::cert::certificateChain>(certs);
 }
 
 

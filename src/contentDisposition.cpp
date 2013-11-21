@@ -91,9 +91,9 @@ bool contentDisposition::operator!=(const contentDisposition& value) const
 }
 
 
-ref <component> contentDisposition::clone() const
+shared_ptr <component> contentDisposition::clone() const
 {
-	return vmime::create <contentDisposition>(*this);
+	return make_shared <contentDisposition>(*this);
 }
 
 
@@ -124,9 +124,9 @@ void contentDisposition::setName(const string& name)
 }
 
 
-const std::vector <ref <component> > contentDisposition::getChildComponents()
+const std::vector <shared_ptr <component> > contentDisposition::getChildComponents()
 {
-	return std::vector <ref <component> >();
+	return std::vector <shared_ptr <component> >();
 }
 
 

@@ -49,18 +49,18 @@ GtkWidget* textArea = NULL;
 
 GtkTreeStore* treeModel = NULL;
 
-vmime::ref <vmime::message> currentMessage = NULL;
+vmime::shared_ptr <vmime::message> currentMessage;
 
 
 
-void insertRowInModel(GtkTreeStore* model, vmime::ref <vmime::component> comp, GtkTreeIter* parent = NULL)
+void insertRowInModel(GtkTreeStore* model, vmime::shared_ptr <vmime::component> comp, GtkTreeIter* parent = NULL)
 {
 	GtkTreeIter iter;
 
 	gtk_tree_store_append(model, &iter, parent);
 	gtk_tree_store_set(model, &iter, 0, typeid(*comp).name(), 1, comp.get(), -1);
 
-	const std::vector <vmime::ref <vmime::component> > children = comp->getChildComponents();
+	const std::vector <vmime::shared_ptr <vmime::component> > children = comp->getChildComponents();
 
 	for (int i = 0 ; i < children.size() ; ++i)
 	{
@@ -139,7 +139,7 @@ void openFile(const std::string& filename)
 	}
 	while (file.gcount());
 
-	vmime::ref <vmime::message> msg = vmime::create <vmime::message>();
+	vmime::shared_ptr <vmime::message> msg = vmime::make_shared <vmime::message>();
 	msg->parse(data);
 
 	currentMessage = msg;

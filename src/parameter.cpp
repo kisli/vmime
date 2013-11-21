@@ -36,19 +36,19 @@ namespace vmime
 
 
 parameter::parameter(const string& name)
-	: m_name(name), m_value(vmime::create <word>())
+	: m_name(name), m_value(make_shared <word>())
 {
 }
 
 
 parameter::parameter(const string& name, const word& value)
-	: m_name(name), m_value(vmime::create <word>(value))
+	: m_name(name), m_value(make_shared <word>(value))
 {
 }
 
 
 parameter::parameter(const string& name, const string& value)
-	: m_name(name), m_value(vmime::create <word>(value))
+	: m_name(name), m_value(make_shared <word>(value))
 {
 }
 
@@ -59,9 +59,9 @@ parameter::parameter(const parameter&)
 }
 
 
-ref <component> parameter::clone() const
+shared_ptr <component> parameter::clone() const
 {
-	ref <parameter> p = vmime::create <parameter>(m_name);
+	shared_ptr <parameter> p = make_shared <parameter>(m_name);
 	p->copyFrom(*this);
 
 	return (p);
@@ -589,9 +589,9 @@ void parameter::generateImpl
 }
 
 
-const std::vector <ref <component> > parameter::getChildComponents()
+const std::vector <shared_ptr <component> > parameter::getChildComponents()
 {
-	std::vector <ref <component> > list;
+	std::vector <shared_ptr <component> > list;
 
 	list.push_back(m_value);
 

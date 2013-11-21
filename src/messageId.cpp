@@ -146,7 +146,7 @@ void messageId::parseImpl
 }
 
 
-ref <messageId> messageId::parseNext
+shared_ptr <messageId> messageId::parseNext
 	(const parsingContext& ctx, const string& buffer, const string::size_type position,
 	 const string::size_type end, string::size_type* newPosition)
 {
@@ -162,7 +162,7 @@ ref <messageId> messageId::parseNext
 		while (pos < end && !parserHelpers::isSpace(buffer[pos]))
 			++pos;
 
-		ref <messageId> mid = vmime::create <messageId>();
+		shared_ptr <messageId> mid = make_shared <messageId>();
 		mid->parse(ctx, buffer, begin, pos, NULL);
 
 		if (newPosition != NULL)
@@ -174,7 +174,7 @@ ref <messageId> messageId::parseNext
 	if (newPosition != NULL)
 		*newPosition = end;
 
-	return (NULL);
+	return null;
 }
 
 
@@ -245,9 +245,9 @@ bool messageId::operator!=(const messageId& mid) const
 }
 
 
-ref <component> messageId::clone() const
+shared_ptr <component> messageId::clone() const
 {
-	return vmime::create <messageId>(*this);
+	return make_shared <messageId>(*this);
 }
 
 
@@ -291,9 +291,9 @@ void messageId::setRight(const string& right)
 }
 
 
-const std::vector <ref <component> > messageId::getChildComponents()
+const std::vector <shared_ptr <component> > messageId::getChildComponents()
 {
-	return std::vector <ref <component> >();
+	return std::vector <shared_ptr <component> >();
 }
 
 

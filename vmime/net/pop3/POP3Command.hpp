@@ -52,40 +52,38 @@ class POP3Connection;
   */
 class VMIME_EXPORT POP3Command : public object
 {
-	friend class vmime::creator;
-
 public:
 
-	static ref <POP3Command> CAPA();
-	static ref <POP3Command> NOOP();
-	static ref <POP3Command> AUTH(const string& mechName);
-	static ref <POP3Command> STLS();
-	static ref <POP3Command> APOP(const string& username, const string& digest);
-	static ref <POP3Command> USER(const string& username);
-	static ref <POP3Command> PASS(const string& password);
-	static ref <POP3Command> STAT();
-	static ref <POP3Command> LIST();
-	static ref <POP3Command> LIST(const unsigned long msg);
-	static ref <POP3Command> UIDL();
-	static ref <POP3Command> UIDL(const unsigned long msg);
-	static ref <POP3Command> DELE(const unsigned long msg);
-	static ref <POP3Command> RETR(const unsigned long msg);
-	static ref <POP3Command> TOP(const unsigned long msg, const unsigned long lines);
-	static ref <POP3Command> RSET();
-	static ref <POP3Command> QUIT();
+	static shared_ptr <POP3Command> CAPA();
+	static shared_ptr <POP3Command> NOOP();
+	static shared_ptr <POP3Command> AUTH(const string& mechName);
+	static shared_ptr <POP3Command> STLS();
+	static shared_ptr <POP3Command> APOP(const string& username, const string& digest);
+	static shared_ptr <POP3Command> USER(const string& username);
+	static shared_ptr <POP3Command> PASS(const string& password);
+	static shared_ptr <POP3Command> STAT();
+	static shared_ptr <POP3Command> LIST();
+	static shared_ptr <POP3Command> LIST(const unsigned long msg);
+	static shared_ptr <POP3Command> UIDL();
+	static shared_ptr <POP3Command> UIDL(const unsigned long msg);
+	static shared_ptr <POP3Command> DELE(const unsigned long msg);
+	static shared_ptr <POP3Command> RETR(const unsigned long msg);
+	static shared_ptr <POP3Command> TOP(const unsigned long msg, const unsigned long lines);
+	static shared_ptr <POP3Command> RSET();
+	static shared_ptr <POP3Command> QUIT();
 
 	/** Creates a new POP3 command with the specified text.
 	  *
 	  * @param text command text
 	  * @return a new POP3Command object
 	  */
-	static ref <POP3Command> createCommand(const string& text);
+	static shared_ptr <POP3Command> createCommand(const string& text);
 
 	/** Sends this command over the specified connection.
 	  *
 	  * @param conn connection onto which the command will be sent
 	  */
-	virtual void send(ref <POP3Connection> conn);
+	virtual void send(shared_ptr <POP3Connection> conn);
 
 	/** Returns the full text of the command, including command name
 	  * and parameters (if any).

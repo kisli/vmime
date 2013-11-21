@@ -43,8 +43,8 @@ namespace security {
 namespace sasl {
 
 
-SASLSession::SASLSession(const string& serviceName, ref <SASLContext> ctx,
-                 ref <authenticator> auth, ref <SASLMechanism> mech)
+SASLSession::SASLSession(const string& serviceName, shared_ptr <SASLContext> ctx,
+                 shared_ptr <authenticator> auth, shared_ptr <SASLMechanism> mech)
 	: m_serviceName(serviceName), m_context(ctx), m_auth(auth),
 	  m_mech(mech), m_gsaslContext(0), m_gsaslSession(0)
 {
@@ -61,38 +61,38 @@ SASLSession::SASLSession(const string& serviceName, ref <SASLContext> ctx,
 SASLSession::~SASLSession()
 {
 	gsasl_finish(m_gsaslSession);
-	m_gsaslSession = 0;
+	m_gsaslSession = NULL;
 
 	gsasl_done(m_gsaslContext);
-	m_gsaslContext = 0;
+	m_gsaslContext = NULL;
 }
 
 
 void SASLSession::init()
 {
-	ref <SASLAuthenticator> saslAuth = m_auth.dynamicCast <SASLAuthenticator>();
+	shared_ptr <SASLAuthenticator> saslAuth = dynamicCast <SASLAuthenticator>(m_auth);
 
 	if (saslAuth)
 	{
 		saslAuth->setSASLMechanism(m_mech);
-		saslAuth->setSASLSession(thisRef().dynamicCast <SASLSession>());
+		saslAuth->setSASLSession(dynamicCast <SASLSession>(shared_from_this()));
 	}
 }
 
 
-ref <authenticator> SASLSession::getAuthenticator()
+shared_ptr <authenticator> SASLSession::getAuthenticator()
 {
 	return m_auth;
 }
 
 
-ref <SASLMechanism> SASLSession::getMechanism()
+shared_ptr <SASLMechanism> SASLSession::getMechanism()
 {
 	return m_mech;
 }
 
 
-ref <SASLContext> SASLSession::getContext()
+shared_ptr <SASLContext> SASLSession::getContext()
 {
 	return m_context;
 }
@@ -102,14 +102,14 @@ bool SASLSession::evaluateChallenge
 	(const byte_t* challenge, const long challengeLen,
 	 byte_t** response, long* responseLen)
 {
-	return m_mech->step(thisRef().dynamicCast <SASLSession>(),
+	return m_mech->step(dynamicCast <SASLSession>(shared_from_this()),
 		challenge, challengeLen, response, responseLen);
 }
 
 
-ref <net::socket> SASLSession::getSecuredSocket(ref <net::socket> sok)
+shared_ptr <net::socket> SASLSession::getSecuredSocket(shared_ptr <net::socket> sok)
 {
-	return vmime::create <SASLSocket>(thisRef().dynamicCast <SASLSession>(), sok);
+	return make_shared <SASLSocket>(dynamicCast <SASLSession>(shared_from_this()), sok);
 }
 
 
@@ -126,7 +126,7 @@ int SASLSession::gsaslCallback
 	SASLSession* sess = reinterpret_cast <SASLSession*>(gsasl_callback_hook_get(ctx));
 	if (!sess) return GSASL_AUTHENTICATION_ERROR;
 
-	ref <authenticator> auth = sess->getAuthenticator();
+	shared_ptr <authenticator> auth = sess->getAuthenticator();
 
 	try
 	{

@@ -57,8 +57,6 @@ class POP3Connection;
   */
 class VMIME_EXPORT POP3Response : public object
 {
-	friend class vmime::creator;
-
 public:
 
 	/** Possible response codes. */
@@ -78,7 +76,7 @@ public:
 	  * @throws exceptions::operation_timed_out if no data
 	  * has been received within the granted time
 	  */
-	static ref <POP3Response> readResponse(ref <POP3Connection> conn);
+	static shared_ptr <POP3Response> readResponse(shared_ptr <POP3Connection> conn);
 
 	/** Receive and parse a multiline POP3 response from
 	  * the specified connection.
@@ -88,7 +86,7 @@ public:
 	  * @throws exceptions::operation_timed_out if no data
 	  * has been received within the granted time
 	  */
-	static ref <POP3Response> readMultilineResponse(ref <POP3Connection> conn);
+	static shared_ptr <POP3Response> readMultilineResponse(shared_ptr <POP3Connection> conn);
 
 	/** Receive and parse a large POP3 response (eg. message data)
 	  * from the specified connection.
@@ -101,8 +99,8 @@ public:
 	  * @throws exceptions::operation_timed_out if no data
 	  * has been received within the granted time
 	  */
-	static ref <POP3Response> readLargeResponse
-		(ref <POP3Connection> conn, utility::outputStream& os,
+	static shared_ptr <POP3Response> readLargeResponse
+		(shared_ptr <POP3Connection> conn, utility::outputStream& os,
 		 utility::progressListener* progress, const long predictedSize);
 
 
@@ -145,7 +143,7 @@ public:
 
 private:
 
-	POP3Response(ref <socket> sok, ref <timeoutHandler> toh);
+	POP3Response(shared_ptr <socket> sok, shared_ptr <timeoutHandler> toh);
 
 	void readResponseImpl(string& buffer, const bool multiLine);
 	void readResponseImpl
@@ -163,8 +161,8 @@ private:
 	static bool checkOneTerminator(string& buffer, const string& term);
 
 
-	ref <socket> m_socket;
-	ref <timeoutHandler> m_timeoutHandler;
+	shared_ptr <socket> m_socket;
+	shared_ptr <timeoutHandler> m_timeoutHandler;
 
 	string m_firstLine;
 	ResponseCode m_code;

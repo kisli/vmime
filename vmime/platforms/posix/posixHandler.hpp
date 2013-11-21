@@ -67,30 +67,30 @@ public:
 	unsigned int getThreadId() const;
 
 #if VMIME_HAVE_MESSAGING_FEATURES
-	ref <vmime::net::socketFactory> getSocketFactory();
+	shared_ptr <vmime::net::socketFactory> getSocketFactory();
 #endif
 
 #if VMIME_HAVE_FILESYSTEM_FEATURES
-	ref <vmime::utility::fileSystemFactory> getFileSystemFactory();
+	shared_ptr <vmime::utility::fileSystemFactory> getFileSystemFactory();
 
-	ref <vmime::utility::childProcessFactory> getChildProcessFactory();
+	shared_ptr <vmime::utility::childProcessFactory> getChildProcessFactory();
 #endif
 
 	void wait() const;
 
 	void generateRandomBytes(unsigned char* buffer, const unsigned int count);
 
-	ref <utility::sync::criticalSection> createCriticalSection();
+	shared_ptr <utility::sync::criticalSection> createCriticalSection();
 
 private:
 
 #if VMIME_HAVE_MESSAGING_FEATURES
-	ref <posixSocketFactory> m_socketFactory;
+	shared_ptr <posixSocketFactory> m_socketFactory;
 #endif
 
 #if VMIME_HAVE_FILESYSTEM_FEATURES
-	ref <posixFileSystemFactory> m_fileSysFactory;
-	ref <posixChildProcessFactory> m_childProcFactory;
+	shared_ptr <posixFileSystemFactory> m_fileSysFactory;
+	shared_ptr <posixChildProcessFactory> m_childProcFactory;
 #endif
 };
 

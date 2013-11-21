@@ -46,8 +46,6 @@ namespace smtp {
   */
 class VMIME_EXPORT SMTPCommandSet : public SMTPCommand
 {
-	friend class vmime::creator;
-
 public:
 
 	/** Creates a new set of SMTP commands.
@@ -55,7 +53,7 @@ public:
 	  * @param pipeline set to true if the server supports pipelining
 	  * @return a new SMTPCommandSet object
 	  */
-	static ref <SMTPCommandSet> create(const bool pipeline);
+	static shared_ptr <SMTPCommandSet> create(const bool pipeline);
 
 	/** Adds a new command to this set.
 	  * If one or more comments have already been sent to the server,
@@ -63,7 +61,7 @@ public:
 	  *
 	  * @param cmd command to add
 	  */
-	void addCommand(ref <SMTPCommand> cmd);
+	void addCommand(shared_ptr <SMTPCommand> cmd);
 
 	/** Tests whether all commands have been sent.
 	  *
@@ -77,10 +75,10 @@ public:
 	  * @return a pointer to a SMTPCommand, of NULL if no command
 	  * has been sent yet
 	  */
-	ref <SMTPCommand> getLastCommandSent() const;
+	shared_ptr <SMTPCommand> getLastCommandSent() const;
 
 
-	void writeToSocket(ref <socket> sok);
+	void writeToSocket(shared_ptr <socket> sok);
 
 	const string getText() const;
 
@@ -92,8 +90,8 @@ private:
 
 	bool m_pipeline;
 	bool m_started;
-	std::list <ref <SMTPCommand> > m_commands;
-	ref <SMTPCommand> m_lastCommandSent;
+	std::list <shared_ptr <SMTPCommand> > m_commands;
+	shared_ptr <SMTPCommand> m_lastCommandSent;
 };
 
 

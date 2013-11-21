@@ -42,12 +42,12 @@ VMIME_TEST_SUITE_BEGIN(charsetFilteredOutputStreamTest)
 
 	void testInputBufferUnderflow()
 	{
-		vmime::ref <vmime::charsetConverter> cc =
+		vmime::shared_ptr <vmime::charsetConverter> cc =
 			vmime::charsetConverter::create("utf-8", "iso-8859-1");
 
 		vmime::string output;
 		vmime::utility::outputStreamStringAdapter os(output);
-		vmime::ref <vmime::utility::filteredOutputStream> cfos = cc->getFilteredOutputStream(os);
+		vmime::shared_ptr <vmime::utility::filteredOutputStream> cfos = cc->getFilteredOutputStream(os);
 
 		VASSERT_NOT_NULL("filteredOutputStream availability", cfos);
 
@@ -73,12 +73,12 @@ VMIME_TEST_SUITE_BEGIN(charsetFilteredOutputStreamTest)
 		vmime::string actualOut;
 		vmime::utility::outputStreamStringAdapter osa(actualOut);
 
-		vmime::ref <vmime::charsetConverter> conv =
+		vmime::shared_ptr <vmime::charsetConverter> conv =
 			vmime::charsetConverter::create
 				(vmime::charset("utf-8"),
 				 vmime::charset("iso-8859-1"));
 
-		vmime::ref <vmime::utility::charsetFilteredOutputStream> os =
+		vmime::shared_ptr <vmime::utility::charsetFilteredOutputStream> os =
 			conv->getFilteredOutputStream(osa);
 
 		VASSERT_NOT_NULL("filteredOutputStream availability", os);
@@ -114,10 +114,10 @@ VMIME_TEST_SUITE_BEGIN(charsetFilteredOutputStreamTest)
 			vmime::string actualOut;
 			vmime::utility::outputStreamStringAdapter osa(actualOut);
 
-			vmime::ref <vmime::charsetConverter> conv =
+			vmime::shared_ptr <vmime::charsetConverter> conv =
 				vmime::charsetConverter::create(entry.fromCharset, entry.toCharset);
 
-			vmime::ref <vmime::utility::charsetFilteredOutputStream> os =
+			vmime::shared_ptr <vmime::utility::charsetFilteredOutputStream> os =
 				conv->getFilteredOutputStream(osa);
 
 			VASSERT_NOT_NULL("filteredOutputStream availability", os);
@@ -151,10 +151,10 @@ VMIME_TEST_SUITE_BEGIN(charsetFilteredOutputStreamTest)
 			vmime::string actualOut;
 			vmime::utility::outputStreamStringAdapter osa(actualOut);
 
-			vmime::ref <vmime::charsetConverter> conv =
+			vmime::shared_ptr <vmime::charsetConverter> conv =
 				vmime::charsetConverter::create(entry.fromCharset, entry.toCharset);
 
-			vmime::ref <vmime::utility::charsetFilteredOutputStream> os =
+			vmime::shared_ptr <vmime::utility::charsetFilteredOutputStream> os =
 				conv->getFilteredOutputStream(osa);
 
 			VASSERT_NOT_NULL("filteredOutputStream availability", os);
@@ -191,10 +191,10 @@ VMIME_TEST_SUITE_BEGIN(charsetFilteredOutputStreamTest)
 			vmime::string actualOut;
 			vmime::utility::outputStreamStringAdapter osa(actualOut);
 
-			vmime::ref <vmime::charsetConverter> conv =
+			vmime::shared_ptr <vmime::charsetConverter> conv =
 				vmime::charsetConverter::create(entry.fromCharset, entry.toCharset);
 
-			vmime::ref <vmime::utility::charsetFilteredOutputStream> os =
+			vmime::shared_ptr <vmime::utility::charsetFilteredOutputStream> os =
 				conv->getFilteredOutputStream(osa);
 
 			VASSERT_NOT_NULL("filteredOutputStream availability", os);

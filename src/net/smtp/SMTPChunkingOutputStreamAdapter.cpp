@@ -40,7 +40,7 @@ namespace net {
 namespace smtp {
 
 
-SMTPChunkingOutputStreamAdapter::SMTPChunkingOutputStreamAdapter(ref <SMTPConnection> conn)
+SMTPChunkingOutputStreamAdapter::SMTPChunkingOutputStreamAdapter(shared_ptr <SMTPConnection> conn)
 	: m_connection(conn), m_bufferSize(0), m_chunkCount(0)
 {
 }
@@ -64,7 +64,7 @@ void SMTPChunkingOutputStreamAdapter::sendChunk
 	// If PIPELINING is not supported, read one response for this BDAT command
 	if (!m_connection->hasExtension("PIPELINING"))
 	{
-		ref <SMTPResponse> resp = m_connection->readResponse();
+		shared_ptr <SMTPResponse> resp = m_connection->readResponse();
 
 		if (resp->getCode() != 250)
 		{
@@ -77,7 +77,7 @@ void SMTPChunkingOutputStreamAdapter::sendChunk
 	else if (last)
 	{
 		bool invalidReply = false;
-		ref <SMTPResponse> resp;
+		shared_ptr <SMTPResponse> resp;
 
 		for (unsigned int i = 0 ; i < m_chunkCount ; ++i)
 		{

@@ -50,7 +50,7 @@ defaultAuthenticator::~defaultAuthenticator()
 
 const string defaultAuthenticator::getUsername() const
 {
-	ref <const net::service> service = m_service.acquire();
+	shared_ptr <const net::service> service = m_service.lock();
 
 	const string prefix = service->getInfos().getPropertyPrefix();
 	const propertySet& props = service->getSession()->getProperties();
@@ -64,7 +64,7 @@ const string defaultAuthenticator::getUsername() const
 
 const string defaultAuthenticator::getPassword() const
 {
-	ref <const net::service> service = m_service.acquire();
+	shared_ptr <const net::service> service = m_service.lock();
 
 	const string prefix = service->getInfos().getPropertyPrefix();
 	const propertySet& props = service->getSession()->getProperties();
@@ -95,13 +95,13 @@ const string defaultAuthenticator::getServiceName() const
 }
 
 
-void defaultAuthenticator::setService(ref <net::service> serv)
+void defaultAuthenticator::setService(shared_ptr <net::service> serv)
 {
 	m_service = serv;
 }
 
 
-weak_ref <net::service> defaultAuthenticator::getService() const
+weak_ptr <net::service> defaultAuthenticator::getService() const
 {
 	return m_service;
 }

@@ -58,7 +58,7 @@ public:
 	  * @return a reference to a new content handler
 	  */
 	streamContentHandler
-		(ref <utility::inputStream> is,
+		(shared_ptr <utility::inputStream> is,
 		 const utility::stream::size_type length,
 		 const vmime::encoding& enc = NO_ENCODING);
 
@@ -67,7 +67,7 @@ public:
 	streamContentHandler(const streamContentHandler& cts);
 	streamContentHandler& operator=(const streamContentHandler& cts);
 
-	ref <contentHandler> clone() const;
+	shared_ptr <contentHandler> clone() const;
 
 	/** Sets the data managed by this content handler.
 	  *
@@ -79,7 +79,7 @@ public:
 	  * from the stream is already encoded with the specified encoding
 	  */
 	void setData
-		(ref <utility::inputStream> is,
+		(shared_ptr <utility::inputStream> is,
 		 const utility::stream::size_type length,
 		 const vmime::encoding& enc = NO_ENCODING);
 
@@ -111,7 +111,7 @@ private:
 	vmime::encoding m_encoding;
 
 	// Actual data
-	mutable ref <utility::inputStream> m_stream;
+	mutable shared_ptr <utility::inputStream> m_stream;
 	string::size_type m_length;
 };
 

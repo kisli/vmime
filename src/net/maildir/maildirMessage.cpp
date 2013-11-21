@@ -47,9 +47,9 @@ namespace net {
 namespace maildir {
 
 
-maildirMessage::maildirMessage(ref <maildirFolder> folder, const int num)
+maildirMessage::maildirMessage(shared_ptr <maildirFolder> folder, const int num)
 	: m_folder(folder), m_num(num), m_size(-1), m_flags(FLAG_UNDEFINED),
-	  m_expunged(false), m_structure(NULL)
+	  m_expunged(false), m_structure(null)
 {
 	folder->registerMessage(this);
 }
@@ -57,7 +57,7 @@ maildirMessage::maildirMessage(ref <maildirFolder> folder, const int num)
 
 maildirMessage::~maildirMessage()
 {
-	ref <maildirFolder> folder = m_folder.acquire();
+	shared_ptr <maildirFolder> folder = m_folder.lock();
 
 	if (folder)
 		folder->unregisterMessage(this);
@@ -66,7 +66,7 @@ maildirMessage::~maildirMessage()
 
 void maildirMessage::onFolderClosed()
 {
-	m_folder = NULL;
+	m_folder.reset();
 }
 
 
@@ -97,7 +97,7 @@ bool maildirMessage::isExpunged() const
 }
 
 
-ref <const messageStructure> maildirMessage::getStructure() const
+shared_ptr <const messageStructure> maildirMessage::getStructure() const
 {
 	if (m_structure == NULL)
 		throw exceptions::unfetched_object();
@@ -106,7 +106,7 @@ ref <const messageStructure> maildirMessage::getStructure() const
 }
 
 
-ref <messageStructure> maildirMessage::getStructure()
+shared_ptr <messageStructure> maildirMessage::getStructure()
 {
 	if (m_structure == NULL)
 		throw exceptions::unfetched_object();
@@ -115,7 +115,7 @@ ref <messageStructure> maildirMessage::getStructure()
 }
 
 
-ref <const header> maildirMessage::getHeader() const
+shared_ptr <const header> maildirMessage::getHeader() const
 {
 	if (m_header == NULL)
 		throw exceptions::unfetched_object();
@@ -135,7 +135,7 @@ int maildirMessage::getFlags() const
 
 void maildirMessage::setFlags(const int flags, const int mode)
 {
-	ref <maildirFolder> folder = m_folder.acquire();
+	shared_ptr <maildirFolder> folder = m_folder.lock();
 
 	if (!folder)
 		throw exceptions::folder_not_found();
@@ -152,11 +152,11 @@ void maildirMessage::extract(utility::outputStream& os,
 }
 
 
-void maildirMessage::extractPart(ref <const messagePart> p, utility::outputStream& os,
+void maildirMessage::extractPart(shared_ptr <const messagePart> p, utility::outputStream& os,
 	utility::progressListener* progress, const int start,
 	const int length, const bool peek) const
 {
-	ref <const maildirMessagePart> mp = p.dynamicCast <const maildirMessagePart>();
+	shared_ptr <const maildirMessagePart> mp = dynamicCast <const maildirMessagePart>(p);
 
 	extractImpl(os, progress, mp->getBodyParsedOffset(), mp->getBodyParsedLength(),
 		start, length, peek);
@@ -167,15 +167,15 @@ void maildirMessage::extractImpl(utility::outputStream& os, utility::progressLis
 	const int start, const int length, const int partialStart, const int partialLength,
 	const bool /* peek */) const
 {
-	ref <const maildirFolder> folder = m_folder.acquire();
+	shared_ptr <const maildirFolder> folder = m_folder.lock();
 
-	ref <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
+	shared_ptr <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
 	const utility::file::path path = folder->getMessageFSPath(m_num);
-	ref <utility::file> file = fsf->create(path);
+	shared_ptr <utility::file> file = fsf->create(path);
 
-	ref <utility::fileReader> reader = file->getFileReader();
-	ref <utility::inputStream> is = reader->getInputStream();
+	shared_ptr <utility::fileReader> reader = file->getFileReader();
+	shared_ptr <utility::inputStream> is = reader->getInputStream();
 
 	is->skip(start + partialStart);
 
@@ -210,19 +210,19 @@ void maildirMessage::extractImpl(utility::outputStream& os, utility::progressLis
 }
 
 
-void maildirMessage::fetchPartHeader(ref <messagePart> p)
+void maildirMessage::fetchPartHeader(shared_ptr <messagePart> p)
 {
-	ref <maildirFolder> folder = m_folder.acquire();
+	shared_ptr <maildirFolder> folder = m_folder.lock();
 
-	ref <maildirMessagePart> mp = p.dynamicCast <maildirMessagePart>();
+	shared_ptr <maildirMessagePart> mp = dynamicCast <maildirMessagePart>(p);
 
-	ref <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
+	shared_ptr <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
 	const utility::file::path path = folder->getMessageFSPath(m_num);
-	ref <utility::file> file = fsf->create(path);
+	shared_ptr <utility::file> file = fsf->create(path);
 
-	ref <utility::fileReader> reader = file->getFileReader();
-	ref <utility::inputStream> is = reader->getInputStream();
+	shared_ptr <utility::fileReader> reader = file->getFileReader();
+	shared_ptr <utility::inputStream> is = reader->getInputStream();
 
 	is->skip(mp->getHeaderParsedOffset());
 
@@ -246,17 +246,17 @@ void maildirMessage::fetchPartHeader(ref <messagePart> p)
 }
 
 
-void maildirMessage::fetch(ref <maildirFolder> msgFolder, const fetchAttributes& options)
+void maildirMessage::fetch(shared_ptr <maildirFolder> msgFolder, const fetchAttributes& options)
 {
-	ref <maildirFolder> folder = m_folder.acquire();
+	shared_ptr <maildirFolder> folder = m_folder.lock();
 
 	if (folder != msgFolder)
 		throw exceptions::folder_not_found();
 
-	ref <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
+	shared_ptr <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
 	const utility::file::path path = folder->getMessageFSPath(m_num);
-	ref <utility::file> file = fsf->create(path);
+	shared_ptr <utility::file> file = fsf->create(path);
 
 	if (options.has(fetchAttributes::FLAGS))
 		m_flags = maildirUtils::extractFlags(path.getLastComponent());
@@ -273,8 +273,8 @@ void maildirMessage::fetch(ref <maildirFolder> msgFolder, const fetchAttributes&
 	{
 		string contents;
 
-		ref <utility::fileReader> reader = file->getFileReader();
-		ref <utility::inputStream> is = reader->getInputStream();
+		shared_ptr <utility::fileReader> reader = file->getFileReader();
+		shared_ptr <utility::inputStream> is = reader->getInputStream();
 
 		// Need whole message contents for structure
 		if (options.has(fetchAttributes::STRUCTURE))
@@ -323,7 +323,7 @@ void maildirMessage::fetch(ref <maildirFolder> msgFolder, const fetchAttributes&
 		// Extract structure
 		if (options.has(fetchAttributes::STRUCTURE))
 		{
-			m_structure = vmime::create <maildirMessageStructure>(null, msg);
+			m_structure = make_shared <maildirMessageStructure>(shared_ptr <maildirMessagePart>(), msg);
 		}
 
 		// Extract some header fields or whole header
@@ -338,23 +338,23 @@ void maildirMessage::fetch(ref <maildirFolder> msgFolder, const fetchAttributes&
 }
 
 
-ref <header> maildirMessage::getOrCreateHeader()
+shared_ptr <header> maildirMessage::getOrCreateHeader()
 {
 	if (m_header != NULL)
 		return (m_header);
 	else
-		return (m_header = vmime::create <header>());
+		return (m_header = make_shared <header>());
 }
 
 
-ref <vmime::message> maildirMessage::getParsedMessage()
+shared_ptr <vmime::message> maildirMessage::getParsedMessage()
 {
 	std::ostringstream oss;
 	utility::outputStreamAdapter os(oss);
 
 	extract(os);
 
-	vmime::ref <vmime::message> msg = vmime::create <vmime::message>();
+	shared_ptr <vmime::message> msg = make_shared <vmime::message>();
 	msg->parse(oss.str());
 
 	return msg;

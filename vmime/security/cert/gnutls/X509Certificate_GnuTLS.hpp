@@ -41,15 +41,13 @@ namespace cert {
 
 class X509Certificate_GnuTLS : public X509Certificate
 {
-	friend class vmime::creator;
 	friend class X509Certificate;
 
-protected:
-
-	X509Certificate_GnuTLS();
 	X509Certificate_GnuTLS(const X509Certificate&);
 
 public:
+
+	X509Certificate_GnuTLS();
 
 	~X509Certificate_GnuTLS();
 
@@ -58,9 +56,9 @@ public:
 
 	const byteArray getSerialNumber() const;
 
-	bool checkIssuer(ref <const X509Certificate> issuer) const;
+	bool checkIssuer(shared_ptr <const X509Certificate> issuer) const;
 
-	bool verify(ref <const X509Certificate> caCert) const;
+	bool verify(shared_ptr <const X509Certificate> caCert) const;
 
 	bool verifyHostName(const string& hostname) const;
 
@@ -74,7 +72,7 @@ public:
 	const byteArray getEncoded() const;
 	const string getType() const;
 	int getVersion() const;
-	bool equals(ref <const certificate> other) const;
+	bool equals(shared_ptr <const certificate> other) const;
 	void* getInternalData();
 
 private:

@@ -35,7 +35,7 @@ namespace vmime
 
 
 plainTextPart::plainTextPart()
-	: m_text(vmime::create <emptyContentHandler>())
+	: m_text(make_shared <emptyContentHandler>())
 {
 }
 
@@ -57,10 +57,10 @@ size_t plainTextPart::getPartCount() const
 }
 
 
-void plainTextPart::generateIn(ref <bodyPart> /* message */, ref <bodyPart> parent) const
+void plainTextPart::generateIn(shared_ptr <bodyPart> /* message */, shared_ptr <bodyPart> parent) const
 {
 	// Create a new part
-	ref <bodyPart> part = vmime::create <bodyPart>();
+	shared_ptr <bodyPart> part = make_shared <bodyPart>();
 	parent->getBody()->appendPart(part);
 
 	// Set contents
@@ -70,15 +70,15 @@ void plainTextPart::generateIn(ref <bodyPart> /* message */, ref <bodyPart> pare
 }
 
 
-void plainTextPart::parse(ref <const bodyPart> /* message */,
-	ref <const bodyPart> /* parent */, ref <const bodyPart> textPart)
+void plainTextPart::parse(shared_ptr <const bodyPart> /* message */,
+	shared_ptr <const bodyPart> /* parent */, shared_ptr <const bodyPart> textPart)
 {
-	m_text = textPart->getBody()->getContents()->clone().dynamicCast <contentHandler>();
+	m_text = vmime::clone(textPart->getBody()->getContents());
 
 	try
 	{
-		const contentTypeField& ctf = dynamic_cast<contentTypeField&>
-			(*textPart->getHeader()->findField(fields::CONTENT_TYPE));
+		const contentTypeField& ctf =
+			*textPart->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
 
 		m_charset = ctf.getCharset();
 	}
@@ -105,15 +105,15 @@ void plainTextPart::setCharset(const charset& ch)
 }
 
 
-const ref <const contentHandler> plainTextPart::getText() const
+const shared_ptr <const contentHandler> plainTextPart::getText() const
 {
 	return (m_text);
 }
 
 
-void plainTextPart::setText(ref <contentHandler> text)
+void plainTextPart::setText(shared_ptr <contentHandler> text)
 {
-	m_text = text->clone().dynamicCast <contentHandler>();
+	m_text = vmime::clone(text);
 }
 
 

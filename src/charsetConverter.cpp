@@ -31,12 +31,12 @@ namespace vmime
 
 
 // static
-ref <charsetConverter> charsetConverter::create
+shared_ptr <charsetConverter> charsetConverter::create
 	(const charset& source, const charset& dest,
 	 const charsetConverterOptions& opts)
 {
 	if (source == "idna" || dest == "idna")
-		return vmime::create <charsetConverter_idna>(source, dest, opts);
+		return make_shared <charsetConverter_idna>(source, dest, opts);
 	else
 		return createGenericConverter(source, dest, opts);
 }

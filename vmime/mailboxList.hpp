@@ -47,17 +47,17 @@ public:
 	mailboxList(const mailboxList& mboxList);
 
 
-	ref <component> clone() const;
+	shared_ptr <component> clone() const;
 	void copyFrom(const component& other);
 	mailboxList& operator=(const mailboxList& other);
 
-	const std::vector <ref <component> > getChildComponents();
+	const std::vector <shared_ptr <component> > getChildComponents();
 
 	/** Add a mailbox at the end of the list.
 	  *
 	  * @param mbox mailbox to append
 	  */
-	void appendMailbox(ref <mailbox> mbox);
+	void appendMailbox(shared_ptr <mailbox> mbox);
 
 	/** Insert a new mailbox before the specified mailbox.
 	  *
@@ -65,7 +65,7 @@ public:
 	  * @param mbox mailbox to insert
 	  * @throw exceptions::no_such_mailbox if the mailbox is not in the list
 	  */
-	void insertMailboxBefore(ref <mailbox> beforeMailbox, ref <mailbox> mbox);
+	void insertMailboxBefore(shared_ptr <mailbox> beforeMailbox, shared_ptr <mailbox> mbox);
 
 	/** Insert a new mailbox before the specified position.
 	  *
@@ -73,7 +73,7 @@ public:
 	  * the beginning of the list)
 	  * @param mbox mailbox to insert
 	  */
-	void insertMailboxBefore(const size_t pos, ref <mailbox> mbox);
+	void insertMailboxBefore(const size_t pos, shared_ptr <mailbox> mbox);
 
 	/** Insert a new mailbox after the specified mailbox.
 	  *
@@ -81,21 +81,21 @@ public:
 	  * @param mbox mailbox to insert
 	  * @throw exceptions::no_such_mailbox if the mailbox is not in the list
 	  */
-	void insertMailboxAfter(ref <mailbox> afterMailbox, ref <mailbox> mbox);
+	void insertMailboxAfter(shared_ptr <mailbox> afterMailbox, shared_ptr <mailbox> mbox);
 
 	/** Insert a new mailbox after the specified position.
 	  *
 	  * @param pos position of the mailbox before the new mailbox
 	  * @param mbox mailbox to insert
 	  */
-	void insertMailboxAfter(const size_t pos, ref <mailbox> mbox);
+	void insertMailboxAfter(const size_t pos, shared_ptr <mailbox> mbox);
 
 	/** Remove the specified mailbox from the list.
 	  *
 	  * @param mbox mailbox to remove
 	  * @throw exceptions::no_such_mailbox if the mailbox is not in the list
 	  */
-	void removeMailbox(ref <mailbox> mbox);
+	void removeMailbox(shared_ptr <mailbox> mbox);
 
 	/** Remove the mailbox at the specified position.
 	  *
@@ -124,32 +124,32 @@ public:
 	  * @param pos position
 	  * @return mailbox at position 'pos'
 	  */
-	ref <mailbox> getMailboxAt(const size_t pos);
+	shared_ptr <mailbox> getMailboxAt(const size_t pos);
 
 	/** Return the mailbox at the specified position.
 	  *
 	  * @param pos position
 	  * @return mailbox at position 'pos'
 	  */
-	const ref <const mailbox> getMailboxAt(const size_t pos) const;
+	const shared_ptr <const mailbox> getMailboxAt(const size_t pos) const;
 
 	/** Return the mailbox list.
 	  *
 	  * @return list of mailboxes
 	  */
-	const std::vector <ref <const mailbox> > getMailboxList() const;
+	const std::vector <shared_ptr <const mailbox> > getMailboxList() const;
 
 	/** Return the mailbox list.
 	  *
 	  * @return list of mailboxes
 	  */
-	const std::vector <ref <mailbox> > getMailboxList();
+	const std::vector <shared_ptr <mailbox> > getMailboxList();
 
 	/** Return a list of addresses.
 	  *
 	  * @return list of addresses
 	  */
-	ref <addressList> toAddressList() const;
+	shared_ptr <addressList> toAddressList() const;
 
 private:
 

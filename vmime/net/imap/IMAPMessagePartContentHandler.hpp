@@ -44,9 +44,9 @@ class VMIME_EXPORT IMAPMessagePartContentHandler : public contentHandler
 {
 public:
 
-	IMAPMessagePartContentHandler(ref <IMAPMessage> msg, ref <messagePart> part, const vmime::encoding& encoding);
+	IMAPMessagePartContentHandler(shared_ptr <IMAPMessage> msg, shared_ptr <messagePart> part, const vmime::encoding& encoding);
 
-	ref <contentHandler> clone() const;
+	shared_ptr <contentHandler> clone() const;
 
 	void generate(utility::outputStream& os, const vmime::encoding& enc, const string::size_type maxLineLength = lineLengthLimits::infinite) const;
 
@@ -68,8 +68,8 @@ public:
 
 private:
 
-	weak_ref <IMAPMessage> m_message;
-	weak_ref <messagePart> m_part;
+	weak_ptr <IMAPMessage> m_message;
+	weak_ptr <messagePart> m_part;
 
 	vmime::encoding m_encoding;
 	vmime::mediaType m_contentType;

@@ -117,7 +117,7 @@ public:
 		  *
 		  * @return socket factory
 		  */
-		virtual ref <net::socketFactory> getSocketFactory() = 0;
+		virtual shared_ptr <net::socketFactory> getSocketFactory() = 0;
 #endif
 
 #if VMIME_HAVE_FILESYSTEM_FEATURES
@@ -125,14 +125,14 @@ public:
 		  *
 		  * @return file-system factory
 		  */
-		virtual ref <utility::fileSystemFactory> getFileSystemFactory() = 0;
+		virtual shared_ptr <utility::fileSystemFactory> getFileSystemFactory() = 0;
 
 		/** Return a pointer to a factory that creates child process objects,
 		  * which are used to spawn processes (run executable files).
 		  *
 		  * @return child process factory
 		  */
-		virtual ref <utility::childProcessFactory> getChildProcessFactory() = 0;
+		virtual shared_ptr <utility::childProcessFactory> getChildProcessFactory() = 0;
 #endif
 
 		/** Fills a buffer with cryptographically random bytes.
@@ -144,22 +144,22 @@ public:
 
 		/** Creates and initializes a critical section.
 		  */
-		virtual ref <utility::sync::criticalSection> createCriticalSection() = 0;
+		virtual shared_ptr <utility::sync::criticalSection> createCriticalSection() = 0;
 	};
 
 
 	template <class TYPE>
 	static void setHandler()
 	{
-		sm_handler = vmime::create <TYPE>();
+		sm_handler = vmime::make_shared <TYPE>();
 	}
 
-	static ref <handler> getDefaultHandler();
-	static ref <handler> getHandler();
+	static shared_ptr <handler> getDefaultHandler();
+	static shared_ptr <handler> getHandler();
 
 private:
 
-	static ref <handler> sm_handler;
+	static shared_ptr <handler> sm_handler;
 };
 
 

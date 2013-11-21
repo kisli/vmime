@@ -37,18 +37,19 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 	// For Apple iCloud IMAP server
 	void testExtraSpaceInCapaResponse()
 	{
-		vmime::ref <testSocket> socket = vmime::create <testSocket>();
-		vmime::ref <vmime::net::timeoutHandler> toh = vmime::create <testTimeoutHandler>();
+		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
+		vmime::shared_ptr <vmime::net::timeoutHandler> toh = vmime::make_shared <testTimeoutHandler>();
 
-		vmime::ref <vmime::net::imap::IMAPTag> tag =
-			vmime::create <vmime::net::imap::IMAPTag>();
+		vmime::shared_ptr <vmime::net::imap::IMAPTag> tag =
+			vmime::make_shared <vmime::net::imap::IMAPTag>();
 
 		socket->localSend(
 			"* CAPABILITY IMAP4rev1 AUTH=ATOKEN AUTH=PLAIN \r\n"  // extra space at end
 			"a001 OK Capability completed.\r\n");
 
-		vmime::ref <vmime::net::imap::IMAPParser> parser =
-			vmime::create <vmime::net::imap::IMAPParser>(tag, socket.dynamicCast <vmime::net::socket>(), toh);
+		vmime::shared_ptr <vmime::net::imap::IMAPParser> parser =
+			vmime::make_shared <vmime::net::imap::IMAPParser>
+				(tag, vmime::dynamicCast <vmime::net::socket>(socket), toh);
 
 		parser->setStrict(false);
 		VASSERT_NO_THROW("non-strict mode", parser->readResponse(/* literalHandler */ NULL));

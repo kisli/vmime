@@ -43,8 +43,8 @@ propertySet::propertySet(const string& props)
 propertySet::propertySet(const propertySet& set)
 	: object()
 {
-	for (std::list <ref <property> >::const_iterator it = set.m_props.begin() ; it != set.m_props.end() ; ++it)
-		m_props.push_back(vmime::create <property>(**it));
+	for (std::list <shared_ptr <property> >::const_iterator it = set.m_props.begin() ; it != set.m_props.end() ; ++it)
+		m_props.push_back(make_shared <property>(**it));
 }
 
 
@@ -58,8 +58,8 @@ propertySet& propertySet::operator=(const propertySet& set)
 {
 	removeAllProperties();
 
-	for (std::list <ref <property> >::const_iterator it = set.m_props.begin() ; it != set.m_props.end() ; ++it)
-		m_props.push_back(vmime::create <property>(**it));
+	for (std::list <shared_ptr <property> >::const_iterator it = set.m_props.begin() ; it != set.m_props.end() ; ++it)
+		m_props.push_back(make_shared <property>(**it));
 
 	return (*this);
 }
@@ -79,7 +79,7 @@ void propertySet::removeAllProperties()
 
 void propertySet::removeProperty(const string& name)
 {
-	std::list <ref <property> >::iterator it = std::find_if
+	std::list <shared_ptr <property> >::iterator it = std::find_if
 		(m_props.begin(), m_props.end(), propFinder(name));
 
 	if (it != m_props.end())
@@ -174,24 +174,24 @@ void propertySet::parse(const string& props)
 				}
 			}
 
-			m_props.push_back(vmime::create <property>(option, value));
+			m_props.push_back(make_shared <property>(option, value));
 		}
 	}
 }
 
 
-ref <propertySet::property> propertySet::find(const string& name) const
+shared_ptr <propertySet::property> propertySet::find(const string& name) const
 {
-	std::list <ref <property> >::const_iterator it = std::find_if
+	std::list <shared_ptr <property> >::const_iterator it = std::find_if
 		(m_props.begin(), m_props.end(), propFinder(name));
 
-	return (it != m_props.end() ? *it : NULL);
+	return (it != m_props.end() ? *it : null);
 }
 
 
-ref <propertySet::property> propertySet::findOrCreate(const string& name)
+shared_ptr <propertySet::property> propertySet::findOrCreate(const string& name)
 {
-	std::list <ref <property> >::const_iterator it = std::find_if
+	std::list <shared_ptr <property> >::const_iterator it = std::find_if
 		(m_props.begin(), m_props.end(), propFinder(name));
 
 	if (it != m_props.end())
@@ -200,7 +200,7 @@ ref <propertySet::property> propertySet::findOrCreate(const string& name)
 	}
 	else
 	{
-		ref <property> prop = vmime::create <property>(name, "");
+		shared_ptr <property> prop = make_shared <property>(name, "");
 		m_props.push_back(prop);
 		return (prop);
 	}
@@ -225,9 +225,9 @@ bool propertySet::hasProperty(const string& name) const
 }
 
 
-const std::vector <ref <const propertySet::property> > propertySet::getPropertyList() const
+const std::vector <shared_ptr <const propertySet::property> > propertySet::getPropertyList() const
 {
-	std::vector <ref <const property> > res;
+	std::vector <shared_ptr <const property> > res;
 
 	for (list_type::const_iterator it = m_props.begin() ; it != m_props.end() ; ++it)
 		res.push_back(*it);
@@ -236,9 +236,9 @@ const std::vector <ref <const propertySet::property> > propertySet::getPropertyL
 }
 
 
-const std::vector <ref <propertySet::property> > propertySet::getPropertyList()
+const std::vector <shared_ptr <propertySet::property> > propertySet::getPropertyList()
 {
-	std::vector <ref <property> > res;
+	std::vector <shared_ptr <property> > res;
 
 	for (list_type::const_iterator it = m_props.begin() ; it != m_props.end() ; ++it)
 		res.push_back(*it);

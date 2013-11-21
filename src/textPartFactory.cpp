@@ -53,7 +53,7 @@ textPartFactory* textPartFactory::getInstance()
 }
 
 
-ref <textPart> textPartFactory::create(const mediaType& type)
+shared_ptr <textPart> textPartFactory::create(const mediaType& type)
 {
 	for (MapType::const_iterator it = m_map.begin() ;
 	     it != m_map.end() ; ++it)

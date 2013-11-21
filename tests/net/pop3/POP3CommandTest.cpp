@@ -59,7 +59,7 @@ VMIME_TEST_SUITE_BEGIN(POP3CommandTest)
 
 	void testCreateCommand()
 	{
-		vmime::ref <POP3Command> cmd = POP3Command::createCommand("MY_COMMAND");
+		vmime::shared_ptr <POP3Command> cmd = POP3Command::createCommand("MY_COMMAND");
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "MY_COMMAND", cmd->getText());
@@ -67,7 +67,7 @@ VMIME_TEST_SUITE_BEGIN(POP3CommandTest)
 
 	void testCreateCommandParams()
 	{
-		vmime::ref <POP3Command> cmd = POP3Command::createCommand("MY_COMMAND param1 param2");
+		vmime::shared_ptr <POP3Command> cmd = POP3Command::createCommand("MY_COMMAND param1 param2");
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "MY_COMMAND param1 param2", cmd->getText());
@@ -75,7 +75,7 @@ VMIME_TEST_SUITE_BEGIN(POP3CommandTest)
 
 	void testCAPA()
 	{
-		vmime::ref <POP3Command> cmd = POP3Command::CAPA();
+		vmime::shared_ptr <POP3Command> cmd = POP3Command::CAPA();
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "CAPA", cmd->getText());
@@ -83,7 +83,7 @@ VMIME_TEST_SUITE_BEGIN(POP3CommandTest)
 
 	void testNOOP()
 	{
-		vmime::ref <POP3Command> cmd = POP3Command::NOOP();
+		vmime::shared_ptr <POP3Command> cmd = POP3Command::NOOP();
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "NOOP", cmd->getText());
@@ -91,7 +91,7 @@ VMIME_TEST_SUITE_BEGIN(POP3CommandTest)
 
 	void testAUTH()
 	{
-		vmime::ref <POP3Command> cmd = POP3Command::AUTH("saslmechanism");
+		vmime::shared_ptr <POP3Command> cmd = POP3Command::AUTH("saslmechanism");
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "AUTH saslmechanism", cmd->getText());
@@ -99,7 +99,7 @@ VMIME_TEST_SUITE_BEGIN(POP3CommandTest)
 
 	void testSTLS()
 	{
-		vmime::ref <POP3Command> cmd = POP3Command::STLS();
+		vmime::shared_ptr <POP3Command> cmd = POP3Command::STLS();
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "STLS", cmd->getText());
@@ -107,7 +107,7 @@ VMIME_TEST_SUITE_BEGIN(POP3CommandTest)
 
 	void testAPOP()
 	{
-		vmime::ref <POP3Command> cmd = POP3Command::APOP("user", "digest");
+		vmime::shared_ptr <POP3Command> cmd = POP3Command::APOP("user", "digest");
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "APOP user digest", cmd->getText());
@@ -115,7 +115,7 @@ VMIME_TEST_SUITE_BEGIN(POP3CommandTest)
 
 	void testUSER()
 	{
-		vmime::ref <POP3Command> cmd = POP3Command::USER("user");
+		vmime::shared_ptr <POP3Command> cmd = POP3Command::USER("user");
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "USER user", cmd->getText());
@@ -123,7 +123,7 @@ VMIME_TEST_SUITE_BEGIN(POP3CommandTest)
 
 	void testPASS()
 	{
-		vmime::ref <POP3Command> cmd = POP3Command::PASS("pass");
+		vmime::shared_ptr <POP3Command> cmd = POP3Command::PASS("pass");
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "PASS pass", cmd->getText());
@@ -131,7 +131,7 @@ VMIME_TEST_SUITE_BEGIN(POP3CommandTest)
 
 	void testSTAT()
 	{
-		vmime::ref <POP3Command> cmd = POP3Command::STAT();
+		vmime::shared_ptr <POP3Command> cmd = POP3Command::STAT();
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "STAT", cmd->getText());
@@ -139,7 +139,7 @@ VMIME_TEST_SUITE_BEGIN(POP3CommandTest)
 
 	void testLIST()
 	{
-		vmime::ref <POP3Command> cmd = POP3Command::LIST();
+		vmime::shared_ptr <POP3Command> cmd = POP3Command::LIST();
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "LIST", cmd->getText());
@@ -147,7 +147,7 @@ VMIME_TEST_SUITE_BEGIN(POP3CommandTest)
 
 	void testLISTMessage()
 	{
-		vmime::ref <POP3Command> cmd = POP3Command::LIST(42);
+		vmime::shared_ptr <POP3Command> cmd = POP3Command::LIST(42);
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "LIST 42", cmd->getText());
@@ -155,7 +155,7 @@ VMIME_TEST_SUITE_BEGIN(POP3CommandTest)
 
 	void testUIDL()
 	{
-		vmime::ref <POP3Command> cmd = POP3Command::UIDL();
+		vmime::shared_ptr <POP3Command> cmd = POP3Command::UIDL();
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "UIDL", cmd->getText());
@@ -163,7 +163,7 @@ VMIME_TEST_SUITE_BEGIN(POP3CommandTest)
 
 	void testUIDLMessage()
 	{
-		vmime::ref <POP3Command> cmd = POP3Command::UIDL(42);
+		vmime::shared_ptr <POP3Command> cmd = POP3Command::UIDL(42);
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "UIDL 42", cmd->getText());
@@ -171,7 +171,7 @@ VMIME_TEST_SUITE_BEGIN(POP3CommandTest)
 
 	void testDELE()
 	{
-		vmime::ref <POP3Command> cmd = POP3Command::DELE(42);
+		vmime::shared_ptr <POP3Command> cmd = POP3Command::DELE(42);
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "DELE 42", cmd->getText());
@@ -179,7 +179,7 @@ VMIME_TEST_SUITE_BEGIN(POP3CommandTest)
 
 	void testRETR()
 	{
-		vmime::ref <POP3Command> cmd = POP3Command::RETR(42);
+		vmime::shared_ptr <POP3Command> cmd = POP3Command::RETR(42);
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "RETR 42", cmd->getText());
@@ -187,7 +187,7 @@ VMIME_TEST_SUITE_BEGIN(POP3CommandTest)
 
 	void testTOP()
 	{
-		vmime::ref <POP3Command> cmd = POP3Command::TOP(42, 567);
+		vmime::shared_ptr <POP3Command> cmd = POP3Command::TOP(42, 567);
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "TOP 42 567", cmd->getText());
@@ -195,7 +195,7 @@ VMIME_TEST_SUITE_BEGIN(POP3CommandTest)
 
 	void testRSET()
 	{
-		vmime::ref <POP3Command> cmd = POP3Command::RSET();
+		vmime::shared_ptr <POP3Command> cmd = POP3Command::RSET();
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "RSET", cmd->getText());
@@ -203,7 +203,7 @@ VMIME_TEST_SUITE_BEGIN(POP3CommandTest)
 
 	void testQUIT()
 	{
-		vmime::ref <POP3Command> cmd = POP3Command::QUIT();
+		vmime::shared_ptr <POP3Command> cmd = POP3Command::QUIT();
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "QUIT", cmd->getText());
@@ -211,11 +211,12 @@ VMIME_TEST_SUITE_BEGIN(POP3CommandTest)
 
 	void testWriteToSocket()
 	{
-		vmime::ref <POP3Command> cmd = POP3Command::createCommand("MY_COMMAND param1 param2");
+		vmime::shared_ptr <POP3Command> cmd = POP3Command::createCommand("MY_COMMAND param1 param2");
 
-		vmime::ref <testSocket> sok = vmime::create <testSocket>();
-		vmime::ref <POP3ConnectionTest> conn = vmime::create <POP3ConnectionTest>
-			(sok.dynamicCast <vmime::net::socket>(), vmime::null);
+		vmime::shared_ptr <testSocket> sok = vmime::make_shared <testSocket>();
+		vmime::shared_ptr <POP3ConnectionTest> conn = vmime::make_shared <POP3ConnectionTest>
+			(vmime::dynamicCast <vmime::net::socket>(sok),
+			 vmime::shared_ptr <vmime::net::timeoutHandler>());
 
 		cmd->send(conn);
 

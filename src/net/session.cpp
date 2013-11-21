@@ -39,19 +39,20 @@ namespace net {
 
 
 session::session()
-	: m_tlsProps(vmime::create <tls::TLSProperties>())
+	: m_tlsProps(make_shared <tls::TLSProperties>())
 {
 }
 
 
 session::session(const session& sess)
-	: object(), m_props(sess.m_props), m_tlsProps(vmime::create <tls::TLSProperties>(*sess.m_tlsProps))
+	: object(), m_props(sess.m_props),
+	  m_tlsProps(make_shared <tls::TLSProperties>(*sess.m_tlsProps))
 {
 }
 
 
 session::session(const propertySet& props)
-	: m_props(props), m_tlsProps(vmime::create <tls::TLSProperties>())
+	: m_props(props), m_tlsProps(make_shared <tls::TLSProperties>())
 {
 }
 
@@ -61,67 +62,67 @@ session::~session()
 }
 
 
-ref <transport> session::getTransport(ref <security::authenticator> auth)
+shared_ptr <transport> session::getTransport(shared_ptr <security::authenticator> auth)
 {
 	return (getTransport(m_props["transport.protocol"], auth));
 }
 
 
-ref <transport> session::getTransport
-	(const string& protocol, ref <security::authenticator> auth)
+shared_ptr <transport> session::getTransport
+	(const string& protocol, shared_ptr <security::authenticator> auth)
 {
-	ref <session> sess = thisRef().dynamicCast <session>();
-	ref <service> sv = serviceFactory::getInstance()->create(sess, protocol, auth);
+	shared_ptr <session> sess(dynamicCast <session>(shared_from_this()));
+	shared_ptr <service> sv = serviceFactory::getInstance()->create(sess, protocol, auth);
 
 	if (sv->getType() != service::TYPE_TRANSPORT)
 		throw exceptions::no_service_available();
 
-	return sv.staticCast <transport>();
+	return dynamicCast <transport>(sv);
 }
 
 
-ref <transport> session::getTransport
-	(const utility::url& url, ref <security::authenticator> auth)
+shared_ptr <transport> session::getTransport
+	(const utility::url& url, shared_ptr <security::authenticator> auth)
 {
-	ref <session> sess = thisRef().dynamicCast <session>();
-	ref <service> sv = serviceFactory::getInstance()->create(sess, url, auth);
+	shared_ptr <session> sess(dynamicCast <session>(shared_from_this()));
+	shared_ptr <service> sv = serviceFactory::getInstance()->create(sess, url, auth);
 
 	if (sv->getType() != service::TYPE_TRANSPORT)
 		throw exceptions::no_service_available();
 
-	return sv.staticCast <transport>();
+	return dynamicCast <transport>(sv);
 }
 
 
-ref <store> session::getStore(ref <security::authenticator> auth)
+shared_ptr <store> session::getStore(shared_ptr <security::authenticator> auth)
 {
 	return (getStore(m_props["store.protocol"], auth));
 }
 
 
-ref <store> session::getStore
-	(const string& protocol, ref <security::authenticator> auth)
+shared_ptr <store> session::getStore
+	(const string& protocol, shared_ptr <security::authenticator> auth)
 {
-	ref <session> sess = thisRef().dynamicCast <session>();
-	ref <service> sv = serviceFactory::getInstance()->create(sess, protocol, auth);
+	shared_ptr <session> sess(dynamicCast <session>(shared_from_this()));
+	shared_ptr <service> sv = serviceFactory::getInstance()->create(sess, protocol, auth);
 
 	if (sv->getType() != service::TYPE_STORE)
 		throw exceptions::no_service_available();
 
-	return sv.staticCast <store>();
+	return dynamicCast <store>(sv);
 }
 
 
-ref <store> session::getStore
-	(const utility::url& url, ref <security::authenticator> auth)
+shared_ptr <store> session::getStore
+	(const utility::url& url, shared_ptr <security::authenticator> auth)
 {
-	ref <session> sess = thisRef().dynamicCast <session>();
-	ref <service> sv = serviceFactory::getInstance()->create(sess, url, auth);
+	shared_ptr <session> sess(dynamicCast <session>(shared_from_this()));
+	shared_ptr <service> sv = serviceFactory::getInstance()->create(sess, url, auth);
 
 	if (sv->getType() != service::TYPE_STORE)
 		throw exceptions::no_service_available();
 
-	return sv.staticCast <store>();
+	return dynamicCast <store>(sv);
 }
 
 
@@ -137,13 +138,13 @@ propertySet& session::getProperties()
 }
 
 
-void session::setTLSProperties(ref <tls::TLSProperties> tlsProps)
+void session::setTLSProperties(shared_ptr <tls::TLSProperties> tlsProps)
 {
-	m_tlsProps = vmime::create <tls::TLSProperties>(*tlsProps);
+	m_tlsProps = make_shared <tls::TLSProperties>(*tlsProps);
 }
 
 
-ref <tls::TLSProperties> session::getTLSProperties() const
+shared_ptr <tls::TLSProperties> session::getTLSProperties() const
 {
 	return m_tlsProps;
 }

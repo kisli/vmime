@@ -35,7 +35,7 @@ fileContentHandler::fileContentHandler()
 
 
 fileContentHandler::fileContentHandler
-	(ref <utility::file> file, const vmime::encoding& enc)
+	(shared_ptr <utility::file> file, const vmime::encoding& enc)
 {
 	setData(file, enc);
 }
@@ -61,14 +61,14 @@ fileContentHandler& fileContentHandler::operator=(const fileContentHandler& cts)
 }
 
 
-ref <contentHandler> fileContentHandler::clone() const
+shared_ptr <contentHandler> fileContentHandler::clone() const
 {
-	return vmime::create <fileContentHandler>(*this);
+	return make_shared <fileContentHandler>(*this);
 }
 
 
 void fileContentHandler::setData
-	(ref <utility::file> file, const vmime::encoding& enc)
+	(shared_ptr <utility::file> file, const vmime::encoding& enc)
 {
 	m_file = file;
 	m_encoding = enc;

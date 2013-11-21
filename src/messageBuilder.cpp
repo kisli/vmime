@@ -43,10 +43,10 @@ messageBuilder::~messageBuilder()
 }
 
 
-ref <message> messageBuilder::construct() const
+shared_ptr <message> messageBuilder::construct() const
 {
 	// Create a new message
-	ref <message> msg = vmime::create <message>();
+	shared_ptr <message> msg = make_shared <message>();
 
 	// Generate the header fields
 	msg->getHeader()->Subject()->setValue(m_subject);
@@ -101,7 +101,7 @@ ref <message> messageBuilder::construct() const
 			(mediaType(mediaTypes::MULTIPART, mediaTypes::MULTIPART_MIXED));
 
 		// Create a sub-part "multipart/alternative" for text parts
-		ref <bodyPart> subPart = vmime::create <bodyPart>();
+		shared_ptr <bodyPart> subPart = make_shared <bodyPart>();
 		msg->getBody()->appendPart(subPart);
 
 		subPart->getHeader()->ContentType()->setValue
@@ -133,7 +133,7 @@ ref <message> messageBuilder::construct() const
 	// Generate the attachments
 	if (!m_attach.empty())
 	{
-		for (std::vector <ref <attachment> >::const_iterator a = m_attach.begin() ;
+		for (std::vector <shared_ptr <attachment> >::const_iterator a = m_attach.begin() ;
 		     a != m_attach.end() ; ++a)
 		{
 			(*a)->generateIn(msg);
@@ -147,12 +147,12 @@ ref <message> messageBuilder::construct() const
 		const bodyPart& part = *msg->getBody()->getPartAt(0);
 
 		// Make a full copy of the body, otherwise the copyFrom() will delete the body we're copying
-		ref <body> bodyCopy = part.getBody()->clone().dynamicCast <body>();
+		shared_ptr <body> bodyCopy = vmime::clone(part.getBody());
 
 		// First, copy (and replace) the header fields
-		const std::vector <ref <const headerField> > fields = part.getHeader()->getFieldList();
+		const std::vector <shared_ptr <const headerField> > fields = part.getHeader()->getFieldList();
 
-		for (std::vector <ref <const headerField> >::const_iterator it = fields.begin() ;
+		for (std::vector <shared_ptr <const headerField> >::const_iterator it = fields.begin() ;
 		     it != fields.end() ; ++it)
 		{
 			*(msg->getHeader()->getField((*it)->getName())) = **it;
@@ -167,13 +167,13 @@ ref <message> messageBuilder::construct() const
 }
 
 
-void messageBuilder::attach(ref <attachment> attach)
+void messageBuilder::attach(shared_ptr <attachment> attach)
 {
 	appendAttachment(attach);
 }
 
 
-void messageBuilder::appendAttachment(ref <attachment> attach)
+void messageBuilder::appendAttachment(shared_ptr <attachment> attach)
 {
 	m_attach.push_back(attach);
 }
@@ -181,7 +181,7 @@ void messageBuilder::appendAttachment(ref <attachment> attach)
 
 void messageBuilder::constructTextPart(const mediaType& type)
 {
-	ref <textPart> part = NULL;
+	shared_ptr <textPart> part;
 
 	try
 	{
@@ -196,7 +196,7 @@ void messageBuilder::constructTextPart(const mediaType& type)
 }
 
 
-ref <textPart> messageBuilder::getTextPart()
+shared_ptr <textPart> messageBuilder::getTextPart()
 {
 	return (m_textPart);
 }
@@ -286,13 +286,13 @@ void messageBuilder::removeAttachment(const size_t pos)
 }
 
 
-const ref <const attachment> messageBuilder::getAttachmentAt(const size_t pos) const
+const shared_ptr <const attachment> messageBuilder::getAttachmentAt(const size_t pos) const
 {
 	return (m_attach[pos]);
 }
 
 
-ref <attachment> messageBuilder::getAttachmentAt(const size_t pos)
+shared_ptr <attachment> messageBuilder::getAttachmentAt(const size_t pos)
 {
 	return (m_attach[pos]);
 }
@@ -304,13 +304,13 @@ size_t messageBuilder::getAttachmentCount() const
 }
 
 
-const std::vector <ref <const attachment> > messageBuilder::getAttachmentList() const
+const std::vector <shared_ptr <const attachment> > messageBuilder::getAttachmentList() const
 {
-	std::vector <ref <const attachment> > res;
+	std::vector <shared_ptr <const attachment> > res;
 
 	res.reserve(m_attach.size());
 
-	for (std::vector <ref <attachment> >::const_iterator it = m_attach.begin() ;
+	for (std::vector <shared_ptr <attachment> >::const_iterator it = m_attach.begin() ;
 	     it != m_attach.end() ; ++it)
 	{
 		res.push_back(*it);
@@ -320,7 +320,7 @@ const std::vector <ref <const attachment> > messageBuilder::getAttachmentList() 
 }
 
 
-const std::vector <ref <attachment> > messageBuilder::getAttachmentList()
+const std::vector <shared_ptr <attachment> > messageBuilder::getAttachmentList()
 {
 	return (m_attach);
 }

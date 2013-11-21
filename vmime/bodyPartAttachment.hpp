@@ -42,33 +42,29 @@ namespace vmime
   */
 class VMIME_EXPORT bodyPartAttachment : public attachment
 {
-	friend class creator;
-
-protected:
-
-	bodyPartAttachment(ref <const bodyPart> part);
-
 public:
+
+	bodyPartAttachment(shared_ptr <const bodyPart> part);
 
 	const mediaType getType() const;
 	const word getName() const;
 	const text getDescription() const;
 	const encoding getEncoding() const;
 
-	const ref <const contentHandler> getData() const;
+	const shared_ptr <const contentHandler> getData() const;
 
-	ref <const object> getPart() const;
-	ref <const header> getHeader() const;
+	shared_ptr <const object> getPart() const;
+	shared_ptr <const header> getHeader() const;
 
 private:
 
-	void generateIn(ref <bodyPart> parent) const;
+	void generateIn(shared_ptr <bodyPart> parent) const;
 
-	ref <const contentDispositionField> getContentDisposition() const;
-	ref <const contentTypeField> getContentType() const;
+	shared_ptr <const contentDispositionField> getContentDisposition() const;
+	shared_ptr <const contentTypeField> getContentType() const;
 
 
-	ref <const bodyPart> m_part;
+	shared_ptr <const bodyPart> m_part;
 };
 
 

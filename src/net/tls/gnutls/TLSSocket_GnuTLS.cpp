@@ -44,14 +44,14 @@ namespace tls {
 
 
 // static
-ref <TLSSocket> TLSSocket::wrap(ref <TLSSession> session, ref <socket> sok)
+shared_ptr <TLSSocket> TLSSocket::wrap(shared_ptr <TLSSession> session, shared_ptr <socket> sok)
 {
-	return vmime::create <TLSSocket_GnuTLS>
-		(session.dynamicCast <TLSSession_GnuTLS>(), sok);
+	return make_shared <TLSSocket_GnuTLS>
+		(dynamicCast <TLSSession_GnuTLS>(session), sok);
 }
 
 
-TLSSocket_GnuTLS::TLSSocket_GnuTLS(ref <TLSSession_GnuTLS> session, ref <socket> sok)
+TLSSocket_GnuTLS::TLSSocket_GnuTLS(shared_ptr <TLSSession_GnuTLS> session, shared_ptr <socket> sok)
 	: m_session(session), m_wrapped(sok), m_connected(false),
 	  m_handshaking(false), m_ex(NULL), m_status(0)
 {
@@ -85,7 +85,7 @@ void TLSSocket_GnuTLS::connect(const string& address, const port_t port)
 {
 	m_wrapped->connect(address, port);
 
-	handshake(NULL);
+	handshake(null);
 
 	m_connected = true;
 }
@@ -219,7 +219,7 @@ unsigned int TLSSocket_GnuTLS::getStatus() const
 }
 
 
-void TLSSocket_GnuTLS::handshake(ref <timeoutHandler> toHandler)
+void TLSSocket_GnuTLS::handshake(shared_ptr <timeoutHandler> toHandler)
 {
 	if (toHandler)
 		toHandler->resetTimeOut();
@@ -260,16 +260,16 @@ void TLSSocket_GnuTLS::handshake(ref <timeoutHandler> toHandler)
 	catch (...)
 	{
 		m_handshaking = false;
-		m_toHandler = NULL;
+		m_toHandler = null;
 
 		throw;
 	}
 
 	m_handshaking = false;
-	m_toHandler = NULL;
+	m_toHandler = null;
 
 	// Verify server's certificate(s)
-	ref <security::cert::certificateChain> certs = getPeerCertificates();
+	shared_ptr <security::cert::certificateChain> certs = getPeerCertificates();
 
 	if (certs == NULL)
 		throw exceptions::tls_exception("No peer certificate.");
@@ -364,14 +364,14 @@ ssize_t TLSSocket_GnuTLS::gnutlsPullFunc
 }
 
 
-ref <security::cert::certificateChain> TLSSocket_GnuTLS::getPeerCertificates() const
+shared_ptr <security::cert::certificateChain> TLSSocket_GnuTLS::getPeerCertificates() const
 {
 	unsigned int certCount = 0;
 	const gnutls_datum* rawData = gnutls_certificate_get_peers
 		(*m_session->m_gnutlsSession, &certCount);
 
 	if (rawData == NULL)
-		return NULL;
+		return null;
 
 	// Try X.509
 	gnutls_x509_crt* x509Certs = new gnutls_x509_crt[certCount];
@@ -387,12 +387,12 @@ ref <security::cert::certificateChain> TLSSocket_GnuTLS::getPeerCertificates() c
 		{
 			// XXX more fine-grained error reporting?
 			delete [] x509Certs;
-			return NULL;
+			return null;
 		}
 	}
 
 	{
-		std::vector <ref <security::cert::certificate> > certs;
+		std::vector <shared_ptr <security::cert::certificate> > certs;
 		bool error = false;
 
 		for (unsigned int i = 0 ; i < certCount ; ++i)
@@ -407,7 +407,7 @@ ref <security::cert::certificateChain> TLSSocket_GnuTLS::getPeerCertificates() c
 			gnutls_x509_crt_export(x509Certs[i],
 				GNUTLS_X509_FMT_DER, &data[0], &dataSize);
 
-			ref <security::cert::X509Certificate> cert =
+			shared_ptr <security::cert::X509Certificate> cert =
 				security::cert::X509Certificate::import(&data[0], dataSize);
 
 			if (cert != NULL)
@@ -421,14 +421,14 @@ ref <security::cert::certificateChain> TLSSocket_GnuTLS::getPeerCertificates() c
 		delete [] x509Certs;
 
 		if (error)
-			return NULL;
+			return null;
 
-		return vmime::create <security::cert::certificateChain>(certs);
+		return make_shared <security::cert::certificateChain>(certs);
 	}
 
 	delete [] x509Certs;
 
-	return NULL;
+	return null;
 }
 
 
@@ -457,7 +457,7 @@ private:
 
 void TLSSocket_GnuTLS::internalThrow()
 {
-	static std::vector <ref <TLSSocket_DeleteExWrapper> > exToDelete;
+	static std::vector <shared_ptr <TLSSocket_DeleteExWrapper> > exToDelete;
 
 	if (m_ex)
 	{
@@ -467,7 +467,7 @@ void TLSSocket_GnuTLS::internalThrow()
 		m_ex = NULL;
 
 		// To avoid memory leaks
-		exToDelete.push_back(vmime::create <TLSSocket_DeleteExWrapper>(ex));
+		exToDelete.push_back(make_shared <TLSSocket_DeleteExWrapper>(ex));
 
 		throw *ex;
 	}

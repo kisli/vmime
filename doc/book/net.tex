@@ -68,7 +68,7 @@ services. Before using a messaging service, you must create and
 initialize a session object:
 
 \begin{lstlisting}
-vmime::ref <net::session> theSession = vmime::create <net::session>();
+vmime::shared_ptr <net::session> theSession = vmime::make_shared <net::session>();
 \end{lstlisting}
 
 Session properties include:
@@ -251,14 +251,14 @@ Depending on the type of service, you will use either {\vcode getStore()} or
 
 \begin{lstlisting}
 vmime::utility:url url("imap://user:pass@imap.example.com");
-vmime::ref <vmime::net::store> st = sess->getStore(url);
+vmime::shared_ptr <vmime::net::store> st = sess->getStore(url);
 \end{lstlisting}
 
 and for transport services:
 
 \begin{lstlisting}
 vmime::utility:url url("smtp://smtp.example.com");
-vmime::ref <vmime::net::transport> tr = sess->getTransport(url);
+vmime::shared_ptr <vmime::net::transport> tr = sess->getTransport(url);
 \end{lstlisting}
 
 
@@ -271,7 +271,7 @@ properties or by using a custom authenticator (callback).
 
 \begin{lstlisting}[caption={Setting user credentials using session
 properties}]
-vmime::ref <vmime::net::session> sess;  // Suppose we have a session
+vmime::shared_ptr <vmime::net::session> sess;  // Suppose we have a session
 
 sess->getProperties()["store.imap.auth.username"] = "vincent";
 sess->getProperties()["store.imap.auth.password"] = "my-password";
@@ -328,13 +328,13 @@ This is how to use it:
 
 \begin{lstlisting}
 // First, create a session
-vmime::ref <vmime::net::session> sess =
-   vmime::create <vmime::net::session>();
+vmime::shared_ptr <vmime::net::session> sess =
+   vmime::make_shared <vmime::net::session>();
 
 // Next, initialize a service which will use our authenticator
-vmime::ref <vmime::net::store> st =
+vmime::shared_ptr <vmime::net::store> st =
    sess->getStore(vmime::utility::url("imap://imap.example.com"),
-      /* use our authenticator */ vmime::create <myAuthenticator>());
+      /* use our authenticator */ vmime::make_shared <myAuthenticator>());
 \end{lstlisting}
 
 \vnote{An authenticator object should be used with one and only one service
@@ -359,9 +359,9 @@ class mySASLAuthenticator : public vmime::security::sasl::defaultSASLAuthenticat
 {
    typedef vmime::security::sasl::SASLMechanism mechanism;  // save us typing
 
-   const std::vector <vmime::ref <mechanism > getAcceptableMechanisms
-         (const std::vector <vmime::ref <mechanism> >& available,
-          vmime::ref <mechanism> suggested) const
+   const std::vector <vmime::shared_ptr <mechanism> > getAcceptableMechanisms
+         (const std::vector <vmime::shared_ptr <mechanism> >& available,
+          vmime::shared_ptr <mechanism> suggested) const
    {
       // Here, you can sort the SASL mechanisms in the order they will be
       // tried. If no SASL mechanism is acceptable (ie. for example, not
@@ -373,7 +373,7 @@ class mySASLAuthenticator : public vmime::security::sasl::defaultSASLAuthenticat
          getAcceptableMechanisms(available, suggested);
    }
 
-   void setSASLMechanism(vmime::ref <mechanism> mech)
+   void setSASLMechanism(vmime::shared_ptr <mechanism> mech)
    {
       // This is called when the authentication process is going to
       // try the specified mechanism.
@@ -417,11 +417,11 @@ const vmime::string msgData =
 // Create a new session
 vmime::utility::url url("smtp://example.com");
 
-vmime::ref <vmime::net::session> sess =
-   vmime::create <vmime::net::session>();
+vmime::shared_ptr <vmime::net::session> sess =
+   vmime::make_shared <vmime::net::session>();
 
 // Create an instance of the transport service
-vmime::ref <vmime::net::transport> tr = sess->getTransport(url);
+vmime::shared_ptr <vmime::net::transport> tr = sess->getTransport(url);
 
 // Connect it
 tr->connect();
@@ -431,7 +431,7 @@ vmime::utility::inputStreamStringAdapter is(msgData);
 
 vmime::mailbox from("me@example.org");
 vmime::mailboxList to;
-to.appendMailbox(vmime::create <vmime::mailbox>("you@example.org"));
+to.appendMailbox(vmime::make_shared <vmime::mailbox>("you@example.org"));
 
 tr->send(
    /* expeditor */    from,
@@ -471,11 +471,11 @@ store service:
 // Create a new session
 vmime::utility::url url("imap://vincent:password@imap:example.org");
 
-vmime::ref <vmime::net::session> sess =
-   vmime::create <vmime::net::session>();
+vmime::shared_ptr <vmime::net::session> sess =
+   vmime::make_shared <vmime::net::session>();
 
 // Create an instance of the transport service
-vmime::ref <vmime::net::store> store = sess->getStore(url);
+vmime::shared_ptr <vmime::net::store> store = sess->getStore(url);
 
 // Connect it
 store->connect();
@@ -514,7 +514,7 @@ vmime::net::folder::path path;
 path /= vmime::net::folder::path::component("foo");
 path /= vmime::net::folder::path::component("bar");
 
-vmime::ref <vmime::net::folder> fld = store->getFolder(path);
+vmime::shared_ptr <vmime::net::folder> fld = store->getFolder(path);
 fld->open(vmime::net::folder::MODE_READ_WRITE);
 \end{lstlisting}
 
@@ -565,7 +565,7 @@ folder->fetchMessages(allMessages,
 
 for (unsigned int i = 0 ; i < allMessages.size() ; ++i)
 {
-   vmime::ref <vmime::net::message> msg = allMessages[i];
+   vmime::shared_ptr <vmime::net::message> msg = allMessages[i];
 
    const int flags = msg->getFlags();
 
@@ -576,7 +576,7 @@ for (unsigned int i = 0 ; i < allMessages.size() ; ++i)
    if (flags & vmime::net::message::FLAG_DELETED)
       std::cout << " - is deleted" << std::endl;
 
-   vmime::ref <const vmime::header> hdr = msg->getHeader();
+   vmime::shared_ptr <const vmime::header> hdr = msg->getHeader();
 
    std::cout << " - sent on " << hdr->Date()->generate() << std::endl;
    std::cout << " - sent by " << hdr->From()->generate() << std::endl;
@@ -606,8 +606,8 @@ following example extracts the first message in the default folder:
 
 \begin{lstlisting}[caption={Extracting messages}]
 // Get a reference to the folder and to its first message
-vmime::ref <vmime::net::folder> folder = store->getDefaultFolder();
-vmime::ref <vmime::net::message> msg = folder->getMessage(1);
+vmime::shared_ptr <vmime::net::folder> folder = store->getDefaultFolder();
+vmime::shared_ptr <vmime::net::message> msg = folder->getMessage(1);
 
 // Write the message contents to the standard output
 vmime::utility::outputStreamAdapter out(std::cout);
@@ -643,7 +643,7 @@ The following example will delete the second and the third message from the
 store.
 
 \begin{lstlisting}[caption={Deleting messages}]
-vmime::ref <vmime::net::folder> folder = store->getDefaultFolder();
+vmime::shared_ptr <vmime::net::folder> folder = store->getDefaultFolder();
 
 folder->deleteMessages(vmime::net::messageSet::byNumber(/* from */ 2, /* to */ 3));
 
@@ -785,7 +785,7 @@ public:
 
    ref <timeoutHandler> create()
    {
-      return vmime::create <myTimeoutHandler>();
+      return vmime::make_shared <myTimeoutHandler>();
    }
 };
 \end{lstlisting}
@@ -794,7 +794,7 @@ Then, call the {\vcode setTimeoutHandlerFactory()} method on the service object
 to set the time-out handler factory to use during the session:
 
 \begin{lstlisting}
-theService->setTimeoutHandlerFactory(vmime::create <myTimeoutHandlerFactory>());
+theService->setTimeoutHandlerFactory(vmime::make_shared <myTimeoutHandlerFactory>());
 \end{lstlisting}
 
 
@@ -846,7 +846,7 @@ to connect to the server (eg. \emph{imaps} instead of \emph{imap}). This is
 currently available for SMTP, POP3 and IMAP.
 
 \begin{lstlisting}
-vmime::ref <vmime::net::store> store =
+vmime::shared_ptr <vmime::net::store> store =
    theSession->getStore(vmime::utility::url("imaps://example.org"));
 \end{lstlisting}
 
@@ -913,7 +913,7 @@ at the current time;
 First, we need some code to load existing X.509 certificates:
 
 \begin{lstlisting}[caption={Reading a X.509 certificate from a file}]
-vmime::ref <vmime::security::cert::X509Certificate>
+vmime::shared_ptr <vmime::security::cert::X509Certificate>
    loadX509CertificateFromFile(const std::string& path)
 {
    std::ifstream certFile;
@@ -925,7 +925,7 @@ vmime::ref <vmime::security::cert::X509Certificate>
    }
 
    vmime::utility::inputStreamAdapter is(certFile);
-   vmime::ref <vmime::security::cert::X509Certificate> cert;
+   vmime::shared_ptr <vmime::security::cert::X509Certificate> cert;
 
    // Try DER format
    cert = vmime::security::cert::X509Certificate::import
@@ -947,11 +947,11 @@ Then, we can use the {\vcode loadX509CertificateFromFile} function to load
 certificates and initialize the certificate verifier:
 
 \begin{lstlisting}[caption={Using the default certificate verifier}]
-vmime::ref <vmime::security::cert::defaultCertificateVerifier> vrf =
-   vmime::create <vmime::security::cert::defaultCertificateVerifier>();
+vmime::shared_ptr <vmime::security::cert::defaultCertificateVerifier> vrf =
+   vmime::make_shared <vmime::security::cert::defaultCertificateVerifier>();
 
 // Load root CAs (such as Verisign or Thawte)
-std::vector <vmime::ref <vmime::security::cert::X509Certificate> > rootCAs;
+std::vector <vmime::shared_ptr <vmime::security::cert::X509Certificate> > rootCAs;
 
 rootCAs.push_back(loadX509CertificateFromFile("/path/to/root-ca1.cer");
 rootCAs.push_back(loadX509CertificateFromFile("/path/to/root-ca2.cer");
@@ -960,7 +960,7 @@ rootCAs.push_back(loadX509CertificateFromFile("/path/to/root-ca3.cer");
 vrf->setX509RootCAs(rootCAs);
 
 // Then, load certificates that the user explicitely chose to trust
-std::vector <vmime::ref <vmime::security::cert::X509Certificate> > trusted;
+std::vector <vmime::shared_ptr <vmime::security::cert::X509Certificate> > trusted;
 
 trusted.push_back(loadX509CertificateFromFile("/path/to/trusted-site1.cer");
 trusted.push_back(loadX509CertificateFromFile("/path/to/trusted-site2.cer");
@@ -988,10 +988,10 @@ class myCertVerifier : public vmime::security::cert::certificateVerifier
 {
 public:
 
-   void verify(vmime::ref <certificateChain> certs)
+   void verify(vmime::shared_ptr <certificateChain> certs)
    {
       // Obtain the subject's certificate
-      vmime::ref <vmime::security::cert::certificate> cert = chain->getAt(0);
+      vmime::shared_ptr <vmime::security::cert::certificate> cert = chain->getAt(0);
 
       std::cout << std::endl;
       std::cout << "Server sent a '" << cert->getType() << "'"
@@ -1018,7 +1018,7 @@ a basic cache implementation.}
 Finally, to make the service use your own certificate verifier, simply write:
 
 \begin{lstlisting}
-theService->setCertificateVerifier(vmime::create <myCertVerifier>());
+theService->setCertificateVerifier(vmime::make_shared <myCertVerifier>());
 \end{lstlisting}
 
 \subsection{SSL/TLS Properties} % --------------------------------------------
@@ -1032,10 +1032,10 @@ the session), or they will not be used.
 The following example shows how to set the cipher suite preferences for TLS:
 
 \begin{lstlisting}[caption={Setting TLS cipher suite preferences}]
-vmime::ref <vmime::net::session> sess = /* ... */;
+vmime::shared_ptr <vmime::net::session> sess = /* ... */;
 
-vmime::ref <vmime::net::tls::TLSProperties> tlsProps =
-	vmime::create <vmime::net::tls::TLSProperties>();
+vmime::shared_ptr <vmime::net::tls::TLSProperties> tlsProps =
+	vmime::make_shared <vmime::net::tls::TLSProperties>();
 
 // for OpenSSL
 tlsProps->setCipherString("HIGH:!ADH:@STRENGTH");

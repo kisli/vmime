@@ -33,9 +33,9 @@ emptyContentHandler::emptyContentHandler()
 }
 
 
-ref <contentHandler> emptyContentHandler::clone() const
+shared_ptr <contentHandler> emptyContentHandler::clone() const
 {
-	return vmime::create <emptyContentHandler>();
+	return make_shared <emptyContentHandler>();
 }
 
 

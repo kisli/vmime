@@ -109,11 +109,11 @@ namespace posix {
 posixHandler::posixHandler()
 {
 #if VMIME_HAVE_MESSAGING_FEATURES
-	m_socketFactory = vmime::create <posixSocketFactory>();
+	m_socketFactory = make_shared <posixSocketFactory>();
 #endif
 #if VMIME_HAVE_FILESYSTEM_FEATURES
-	m_fileSysFactory = vmime::create <posixFileSystemFactory>();
-	m_childProcFactory = vmime::create <posixChildProcessFactory>();
+	m_fileSysFactory = make_shared <posixFileSystemFactory>();
+	m_childProcFactory = make_shared <posixChildProcessFactory>();
 #endif
 }
 
@@ -249,7 +249,7 @@ unsigned int posixHandler::getThreadId() const
 
 #if VMIME_HAVE_MESSAGING_FEATURES
 
-ref <vmime::net::socketFactory> posixHandler::getSocketFactory()
+shared_ptr <vmime::net::socketFactory> posixHandler::getSocketFactory()
 {
 	return m_socketFactory;
 }
@@ -259,13 +259,13 @@ ref <vmime::net::socketFactory> posixHandler::getSocketFactory()
 
 #if VMIME_HAVE_FILESYSTEM_FEATURES
 
-ref <vmime::utility::fileSystemFactory> posixHandler::getFileSystemFactory()
+shared_ptr <vmime::utility::fileSystemFactory> posixHandler::getFileSystemFactory()
 {
 	return m_fileSysFactory;
 }
 
 
-ref <vmime::utility::childProcessFactory> posixHandler::getChildProcessFactory()
+shared_ptr <vmime::utility::childProcessFactory> posixHandler::getChildProcessFactory()
 {
 	return m_childProcFactory;
 }
@@ -308,9 +308,9 @@ void posixHandler::generateRandomBytes(unsigned char* buffer, const unsigned int
 }
 
 
-ref <utility::sync::criticalSection> posixHandler::createCriticalSection()
+shared_ptr <utility::sync::criticalSection> posixHandler::createCriticalSection()
 {
-	return vmime::create <posixCriticalSection>();
+	return make_shared <posixCriticalSection>();
 }
 
 

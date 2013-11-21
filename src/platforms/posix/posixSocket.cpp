@@ -59,7 +59,7 @@ namespace posix {
 // posixSocket
 //
 
-posixSocket::posixSocket(ref <vmime::net::timeoutHandler> th)
+posixSocket::posixSocket(shared_ptr <vmime::net::timeoutHandler> th)
 	: m_timeoutHandler(th), m_desc(-1), m_status(0)
 {
 }
@@ -631,16 +631,16 @@ unsigned int posixSocket::getStatus() const
 // posixSocketFactory
 //
 
-ref <vmime::net::socket> posixSocketFactory::create()
+shared_ptr <vmime::net::socket> posixSocketFactory::create()
 {
-	ref <vmime::net::timeoutHandler> th = NULL;
-	return vmime::create <posixSocket>(th);
+	shared_ptr <vmime::net::timeoutHandler> th;
+	return make_shared <posixSocket>(th);
 }
 
 
-ref <vmime::net::socket> posixSocketFactory::create(ref <vmime::net::timeoutHandler> th)
+shared_ptr <vmime::net::socket> posixSocketFactory::create(shared_ptr <vmime::net::timeoutHandler> th)
 {
-	return vmime::create <posixSocket>(th);
+	return make_shared <posixSocket>(th);
 }
 
 

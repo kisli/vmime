@@ -59,11 +59,11 @@ public:
 	  */
 	void setName(const string& name);
 
-	ref <component> clone() const;
+	shared_ptr <component> clone() const;
 	void copyFrom(const component& other);
 	contentDisposition& operator=(const contentDisposition& other);
 
-	const std::vector <ref <component> > getChildComponents();
+	const std::vector <shared_ptr <component> > getChildComponents();
 
 
 	contentDisposition& operator=(const string& name);

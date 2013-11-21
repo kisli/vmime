@@ -35,7 +35,6 @@
 #include "vmime/config.hpp"
 #include "vmime/types.hpp"
 #include "vmime/constants.hpp"
-#include "vmime/utility/smartPtr.hpp"
 
 
 namespace vmime
@@ -50,6 +49,19 @@ namespace vmime
 
 	extern VMIME_EXPORT const text NULL_TEXT;
 	extern VMIME_EXPORT const word NULL_WORD;
+
+#ifndef VMIME_BUILDING_DOC
+
+	// Null pointer
+	struct nullPtrType
+	{
+		template<typename T>
+	    operator shared_ptr <T>() { return shared_ptr <T>(); }
+	};
+
+	extern nullPtrType VMIME_EXPORT null;
+
+#endif // VMIME_BUILDING_DOC
 
 
 	//
@@ -66,13 +78,25 @@ namespace vmime
 	//
 
 	template <typename T, size_t N>
-	inline T const* begin(T const (&array)[N])
+	inline T const* cbegin(T const (&array)[N])
 	{
 		return (array);
 	}
 
 	template <typename T, size_t N>
-	inline T const* end(T const (&array)[N])
+	inline T const* cend(T const (&array)[N])
+	{
+		return (array + N);
+	}
+
+	template <typename T, size_t N>
+	inline T* begin(T (&array)[N])
+	{
+		return (array);
+	}
+
+	template <typename T, size_t N>
+	inline T* end(T (&array)[N])
 	{
 		return (array + N);
 	}
@@ -158,100 +182,49 @@ namespace vmime
 	namespace utility { }
 
 
-#ifndef VMIME_BUILDING_DOC
-	/** Work-around for friend template functions.
-	  *
-	  * Make this class a friend if you want to be able to use
-	  * vmime::create() with private/protected constructors.
-	  */
-	class VMIME_EXPORT creator
-	{
-	public:
-
-		template <class T>
-		static ref <T> create() { return ref <T>::fromPtr(new T); }
-
-		template <class T, class P0>
-		static ref <T> create(const P0& p0) { return ref <T>::fromPtr(new T(p0)); }
-
-		template <class T, class P0, class P1>
-		static ref <T> create(const P0& p0, const P1& p1) { return ref <T>::fromPtr(new T(p0, p1)); }
-
-		template <class T, class P0, class P1, class P2>
-		static ref <T> create(const P0& p0, const P1& p1, const P2& p2) { return ref <T>::fromPtr(new T(p0, p1, p2)); }
-
-		template <class T, class P0, class P1, class P2, class P3>
-		static ref <T> create(const P0& p0, const P1& p1, const P2& p2, const P3& p3) { return ref <T>::fromPtr(new T(p0, p1, p2, p3)); }
-
-		template <class T, class P0, class P1, class P2, class P3, class P4>
-		static ref <T> create(const P0& p0, const P1& p1, const P2& p2, const P3& p3, const P4& p4) { return ref <T>::fromPtr(new T(p0, p1, p2, p3, p4)); }
-	};
-#endif // VMIME_BUILDING_DOC
-
-	/** Create a new object and return a reference to it.
-	  * @return reference to the new object
+	/** Clone helper (using a shared_ptr).
+	  * This is an alias for dynamic_pointer_cast <T>(obj->clone()).
 	  */
 	template <class T>
-	static ref <T> create() { return creator::create <T>(); }
-
-	/** Create a new object and return a reference to it.
-	  * @return reference to the new object
-	  */
-	template <class T, class P0>
-	static ref <T> create(const P0& p0) { return creator::create <T, P0>(p0); }
-
-	/** Create a new object and return a reference to it.
-	  * @return reference to the new object
-	  */
-	template <class T, class P0, class P1>
-	static ref <T> create(const P0& p0, const P1& p1) { return creator::create <T, P0, P1>(p0, p1); }
-
-	/** Create a new object and return a reference to it.
-	  * @return reference to the new object
-	  */
-	template <class T, class P0, class P1, class P2>
-	static ref <T> create(const P0& p0, const P1& p1, const P2& p2) { return creator::create <T, P0, P1, P2>(p0, p1, p2); }
-
-	/** Create a new object and return a reference to it.
-	  * @return reference to the new object
-	  */
-	template <class T, class P0, class P1, class P2, class P3>
-	static ref <T> create(const P0& p0, const P1& p1, const P2& p2, const P3& p3) { return creator::create <T, P0, P1, P2, P3>(p0, p1, p2, p3); }
-
-	/** Create a new object and return a reference to it.
-	  * @return reference to the new object
-	  */
-	template <class T, class P0, class P1, class P2, class P3, class P4>
-	static ref <T> create(const P0& p0, const P1& p1, const P2& p2, const P3& p3, const P4& p4) { return creator::create <T, P0, P1, P2, P3, P4>(p0, p1, p2, p3, p4); }
-
-
-	/** Clone helper.
-	  * Use "vmime::clone(obj)" instead of "obj->clone().cast <objtype>()".
-	  */
-	template <class T>
-	ref <T> clone(ref <const T> x)
+	shared_ptr <T> clone(shared_ptr <T> obj)
 	{
-		return x->clone().template dynamicCast <T>();
+		return dynamic_pointer_cast <T>(obj->clone());
 	}
 
-	/** Clone helper.
-	  * Use "vmime::clone(obj)" instead of "obj.clone().cast <objtype>()".
+	/** Clone helper (using a const shared_ptr).
+	  * This is an alias for dynamic_pointer_cast <T>(obj->clone()).
 	  */
 	template <class T>
-	ref <T> clone(const T& x)
+	shared_ptr <T> clone(shared_ptr <const T> obj)
 	{
-		return x.clone().template dynamicCast <T>();
+		return dynamic_pointer_cast <T>(obj->clone());
 	}
 
+	/** Clone helper (using a const reference).
+	  * This is an alias for dynamic_pointer_cast <T>(obj.clone()).
+	  */
+	template <class T>
+	shared_ptr <T> clone(const T& obj)
+	{
+		return dynamic_pointer_cast <T>(obj.clone());
+	}
 
 	/** Downcast helper.
 	  * Usage: vmime::dynamicCast <DerivedType>(obj), where 'obj' is of
 	  * type Type, and DerivedType is derived from Type.
 	  */
 	template <class X, class Y>
-	ref <X> dynamicCast(ref <Y> y)
+	shared_ptr <X> dynamicCast(shared_ptr <Y> obj)
 	{
-		return y.template dynamicCast <X>();
+		return dynamic_pointer_cast <X, Y>(obj);
+	}
+
+	/** Const cast helper.
+	  */
+	template <class X, class Y>
+	shared_ptr <X> constCast(const shared_ptr <Y>& obj)
+	{
+		return const_pointer_cast <X, Y>(obj);
 	}
 
 	/** Inherit from this class to indicate the subclass is not copyable,

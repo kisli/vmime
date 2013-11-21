@@ -62,11 +62,9 @@ class SMTPTransport;
   */
 class VMIME_EXPORT SMTPConnection : public object
 {
-	friend class vmime::creator;
-
 public:
 
-	SMTPConnection(ref <SMTPTransport> transport, ref <security::authenticator> auth);
+	SMTPConnection(shared_ptr <SMTPTransport> transport, shared_ptr <security::authenticator> auth);
 	virtual ~SMTPConnection();
 
 
@@ -75,16 +73,16 @@ public:
 	virtual void disconnect();
 
 	bool isSecuredConnection() const;
-	ref <connectionInfos> getConnectionInfos() const;
+	shared_ptr <connectionInfos> getConnectionInfos() const;
 
-	virtual ref <SMTPTransport> getTransport();
-	virtual ref <socket> getSocket();
-	virtual ref <timeoutHandler> getTimeoutHandler();
-	virtual ref <security::authenticator> getAuthenticator();
-	virtual ref <session> getSession();
+	virtual shared_ptr <SMTPTransport> getTransport();
+	virtual shared_ptr <socket> getSocket();
+	virtual shared_ptr <timeoutHandler> getTimeoutHandler();
+	virtual shared_ptr <security::authenticator> getAuthenticator();
+	virtual shared_ptr <session> getSession();
 
-	void sendRequest(ref <SMTPCommand> cmd);
-	ref <SMTPResponse> readResponse();
+	void sendRequest(shared_ptr <SMTPCommand> cmd);
+	shared_ptr <SMTPResponse> readResponse();
 
 	bool hasExtension(const std::string& extName, std::vector <string>* params = NULL) const;
 
@@ -103,18 +101,18 @@ private:
 #endif // VMIME_HAVE_TLS_SUPPORT
 
 
-	weak_ref <SMTPTransport> m_transport;
+	weak_ptr <SMTPTransport> m_transport;
 
-	ref <security::authenticator> m_auth;
-	ref <socket> m_socket;
-	ref <timeoutHandler> m_timeoutHandler;
+	shared_ptr <security::authenticator> m_auth;
+	shared_ptr <socket> m_socket;
+	shared_ptr <timeoutHandler> m_timeoutHandler;
 
 	SMTPResponse::state m_responseState;
 
 	bool m_authenticated;
 	bool m_secured;
 
-	ref <connectionInfos> m_cntInfos;
+	shared_ptr <connectionInfos> m_cntInfos;
 
 	bool m_extendedSMTP;
 	std::map <string, std::vector <string> > m_extensions;

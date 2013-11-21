@@ -41,7 +41,7 @@ class VMIME_EXPORT autoLock : public object
 {
 public:
 
-	autoLock(ref <M> mutex)
+	autoLock(shared_ptr <M> mutex)
 		: m_mutex(mutex)
 	{
 		m_mutex->lock();
@@ -54,7 +54,7 @@ public:
 
 private:
 
-	ref <M> m_mutex;
+	shared_ptr <M> m_mutex;
 };
 
 

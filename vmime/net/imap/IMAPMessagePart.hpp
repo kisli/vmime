@@ -46,38 +46,34 @@ class IMAPMessageStructure;
 
 class VMIME_EXPORT IMAPMessagePart : public messagePart
 {
-private:
-
-	friend class vmime::creator;
-
-	IMAPMessagePart(ref <IMAPMessagePart> parent, const int number, const IMAPParser::body_type_mpart* mpart);
-	IMAPMessagePart(ref <IMAPMessagePart> parent, const int number, const IMAPParser::body_type_1part* part);
-
 public:
 
-	ref <const messageStructure> getStructure() const;
-	ref <messageStructure> getStructure();
+	IMAPMessagePart(shared_ptr <IMAPMessagePart> parent, const int number, const IMAPParser::body_type_mpart* mpart);
+	IMAPMessagePart(shared_ptr <IMAPMessagePart> parent, const int number, const IMAPParser::body_type_1part* part);
 
-	ref <const IMAPMessagePart> getParent() const;
+	shared_ptr <const messageStructure> getStructure() const;
+	shared_ptr <messageStructure> getStructure();
+
+	shared_ptr <const IMAPMessagePart> getParent() const;
 
 	const mediaType& getType() const;
 	int getSize() const;
 	int getNumber() const;
 
-	ref <const header> getHeader() const;
+	shared_ptr <const header> getHeader() const;
 
 
-	static ref <IMAPMessagePart> create
-		(ref <IMAPMessagePart> parent, const int number, const IMAPParser::body* body);
+	static shared_ptr <IMAPMessagePart> create
+		(shared_ptr <IMAPMessagePart> parent, const int number, const IMAPParser::body* body);
 
 
 	header& getOrCreateHeader();
 
 private:
 
-	ref <IMAPMessageStructure> m_structure;
-	weak_ref <IMAPMessagePart> m_parent;
-	ref <header> m_header;
+	shared_ptr <IMAPMessageStructure> m_structure;
+	weak_ptr <IMAPMessagePart> m_parent;
+	shared_ptr <header> m_header;
 
 	int m_number;
 	int m_size;

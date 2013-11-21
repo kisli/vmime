@@ -776,15 +776,15 @@ const datetime datetime::now()
 }
 
 
-ref <component> datetime::clone() const
+shared_ptr <component> datetime::clone() const
 {
-	return vmime::create <datetime>(*this);
+	return make_shared <datetime>(*this);
 }
 
 
-const std::vector <ref <component> > datetime::getChildComponents()
+const std::vector <shared_ptr <component> > datetime::getChildComponents()
 {
-	return std::vector <ref <component> >();
+	return std::vector <shared_ptr <component> >();
 }
 
 

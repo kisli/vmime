@@ -59,7 +59,7 @@ public:
 	  * @param session TLS session
 	  * @param sok socket to wrap
 	  */
-	static ref <TLSSocket> wrap(ref <TLSSession> session, ref <socket> sok);
+	static shared_ptr <TLSSocket> wrap(shared_ptr <TLSSession> session, shared_ptr <socket> sok);
 
 	/** Starts a TLS handshake on this connection.
 	  *
@@ -67,14 +67,14 @@ public:
 	  * during the negociation process, exceptions::operation_timed_out
 	  * if a time-out occurs
 	  */
-	virtual void handshake(ref <timeoutHandler> toHandler = NULL) = 0;
+	virtual void handshake(shared_ptr <timeoutHandler> toHandler = null) = 0;
 
 	/** Return the peer's certificate (chain) as sent by the peer.
 	  *
 	  * @return server certificate chain, or NULL if the handshake
 	  * has not been performed yet
 	  */
-	virtual ref <security::cert::certificateChain> getPeerCertificates() const = 0;
+	virtual shared_ptr <security::cert::certificateChain> getPeerCertificates() const = 0;
 };
 
 

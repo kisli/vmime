@@ -36,7 +36,6 @@
 #include "vmime/charset.hpp"
 #include "vmime/exception.hpp"
 
-#include "vmime/utility/smartPtr.hpp"
 #include "vmime/utility/stringUtils.hpp"
 #include "vmime/utility/progressListener.hpp"
 
@@ -55,6 +54,7 @@
 
 #include <vector>
 #include <stdexcept>
+#include <memory>
 
 
 //#define DEBUG_RESPONSE 1
@@ -142,19 +142,19 @@ class VMIME_EXPORT IMAPParser : public object
 {
 public:
 
-	IMAPParser(weak_ref <IMAPTag> tag, weak_ref <socket> sok, weak_ref <timeoutHandler> _timeoutHandler)
+	IMAPParser(weak_ptr <IMAPTag> tag, weak_ptr <socket> sok, weak_ptr <timeoutHandler> _timeoutHandler)
 		: m_tag(tag), m_socket(sok), m_progress(NULL), m_strict(false),
 		  m_literalHandler(NULL), m_timeoutHandler(_timeoutHandler)
 	{
 	}
 
 
-	ref <const IMAPTag> getTag() const
+	shared_ptr <const IMAPTag> getTag() const
 	{
-		return m_tag.acquire();
+		return m_tag.lock();
 	}
 
-	void setSocket(ref <socket> sok)
+	void setSocket(shared_ptr <socket> sok)
 	{
 		m_socket = sok;
 	}
@@ -871,7 +871,7 @@ public:
 				// quoted ::= <"> *QUOTED_CHAR <">
 				if (parser.check <one_char <'"'> >(line, &pos, true))
 				{
-					utility::auto_ptr <quoted_text> text(parser.get <quoted_text>(line, &pos));
+					std::auto_ptr <quoted_text> text(parser.get <quoted_text>(line, &pos));
 					parser.check <one_char <'"'> >(line, &pos);
 
 					if (parser.m_literalHandler != NULL)
@@ -2189,28 +2189,28 @@ public:
 			parser.check <one_char <'"'> >(line, &pos);
 			parser.check <SPACE>(line, &pos, true);
 
-			utility::auto_ptr <number> nd(parser.get <number>(line, &pos));
+			std::auto_ptr <number> nd(parser.get <number>(line, &pos));
 
 			parser.check <one_char <'-'> >(line, &pos);
 
-			utility::auto_ptr <atom> amo(parser.get <atom>(line, &pos));
+			std::auto_ptr <atom> amo(parser.get <atom>(line, &pos));
 
 			parser.check <one_char <'-'> >(line, &pos);
 
-			utility::auto_ptr <number> ny(parser.get <number>(line, &pos));
+			std::auto_ptr <number> ny(parser.get <number>(line, &pos));
 
 			parser.check <SPACE>(line, &pos, true);
 
 			// 2digit ":" 2digit ":" 2digit
-			utility::auto_ptr <number> nh(parser.get <number>(line, &pos));
+			std::auto_ptr <number> nh(parser.get <number>(line, &pos));
 
 			parser.check <one_char <':'> >(line, &pos);
 
-			utility::auto_ptr <number> nmi(parser.get <number>(line, &pos));
+			std::auto_ptr <number> nmi(parser.get <number>(line, &pos));
 
 			parser.check <one_char <':'> >(line, &pos);
 
-			utility::auto_ptr <number> ns(parser.get <number>(line, &pos));
+			std::auto_ptr <number> ns(parser.get <number>(line, &pos));
 
 			parser.check <SPACE>(line, &pos, true);
 
@@ -2220,7 +2220,7 @@ public:
 			if (!(parser.check <one_char <'+'> >(line, &pos, true)))
 				parser.check <one_char <'-'> >(line, &pos);
 
-			utility::auto_ptr <number> nz(parser.get <number>(line, &pos));
+			std::auto_ptr <number> nz(parser.get <number>(line, &pos));
 
 			parser.check <one_char <'"'> >(line, &pos);
 
@@ -5406,8 +5406,8 @@ public:
 
 private:
 
-	weak_ref <IMAPTag> m_tag;
-	weak_ref <socket> m_socket;
+	weak_ptr <IMAPTag> m_tag;
+	weak_ptr <socket> m_socket;
 
 	utility::progressListener* m_progress;
 
@@ -5415,7 +5415,7 @@ private:
 
 	literalHandler* m_literalHandler;
 
-	weak_ref <timeoutHandler> m_timeoutHandler;
+	weak_ptr <timeoutHandler> m_timeoutHandler;
 
 
 	string m_buffer;
@@ -5461,8 +5461,8 @@ public:
 	{
 		string receiveBuffer;
 
-		ref <timeoutHandler> toh = m_timeoutHandler.acquire();
-		ref <socket> sok = m_socket.acquire();
+		shared_ptr <timeoutHandler> toh = m_timeoutHandler.lock();
+		shared_ptr <socket> sok = m_socket.lock();
 
 		if (toh)
 			toh->resetTimeOut();
@@ -5499,8 +5499,8 @@ public:
 		string::size_type len = 0;
 		string receiveBuffer;
 
-		ref <timeoutHandler> toh = m_timeoutHandler.acquire();
-		ref <socket> sok = m_socket.acquire();
+		shared_ptr <timeoutHandler> toh = m_timeoutHandler.lock();
+		shared_ptr <socket> sok = m_socket.lock();
 
 		if (m_progress)
 			m_progress->start(count);

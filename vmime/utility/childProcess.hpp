@@ -65,13 +65,13 @@ public:
 	  *
 	  * @return output stream wrapper for child's stdin
 	  */
-	virtual ref <utility::outputStream> getStdIn() = 0;
+	virtual shared_ptr <utility::outputStream> getStdIn() = 0;
 
 	/** Return a wrapper to the child process standard output.
 	  *
 	  * @return input stream wrapper for child's stdout
 	  */
-	virtual ref <utility::inputStream> getStdOut() = 0;
+	virtual shared_ptr <utility::inputStream> getStdOut() = 0;
 
 	/** Wait for the process to finish.
 	  *
@@ -95,7 +95,7 @@ public:
 	  *
 	  * @param path full path of the process executable file
 	  */
-	virtual ref <childProcess> create(const utility::file::path& path) const = 0;
+	virtual shared_ptr <childProcess> create(const utility::file::path& path) const = 0;
 };
 
 

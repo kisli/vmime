@@ -74,7 +74,7 @@ public:
 	  * @return a X.509 certificate, or NULL if the given data does not
 	  * represent a valid certificate
 	  */
-	static ref <X509Certificate> import(utility::inputStream& is);
+	static shared_ptr <X509Certificate> import(utility::inputStream& is);
 
 	/** Imports a DER or PEM encoded X.509 certificate.
 	  *
@@ -83,7 +83,7 @@ public:
 	  * @return a X.509 certificate, or NULL if the given data does not
 	  * represent a valid certificate
 	  */
-	static ref <X509Certificate> import(const byte_t* data, const size_t length);
+	static shared_ptr <X509Certificate> import(const byte_t* data, const size_t length);
 
 	/** Exports this X.509 certificate to the specified format.
 	  *
@@ -107,14 +107,14 @@ public:
 	  * @return true if this certificate was issued by the given issuer,
 	  * false otherwise
 	  */
-	virtual bool checkIssuer(ref <const X509Certificate> issuer) const = 0;
+	virtual bool checkIssuer(shared_ptr <const X509Certificate> issuer) const = 0;
 
 	/** Verifies this certificate against a given trusted one.
 	  *
 	  * @param caCert a certificate that is considered to be trusted one
 	  * @return true if the verification succeeded, false otherwise
 	  */
-	virtual bool verify(ref <const X509Certificate> caCert) const = 0;
+	virtual bool verify(shared_ptr <const X509Certificate> caCert) const = 0;
 
 	/** Verify certificate's subject name against the given hostname.
 	  *

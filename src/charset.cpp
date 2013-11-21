@@ -90,7 +90,7 @@ void charset::convert(utility::inputStream& in, utility::outputStream& out,
 	const charset& source, const charset& dest,
 	const charsetConverterOptions& opts)
 {
-	ref <charsetConverter> conv = charsetConverter::create(source, dest, opts);
+	shared_ptr <charsetConverter> conv = charsetConverter::create(source, dest, opts);
 	conv->convert(in, out);
 }
 
@@ -104,7 +104,7 @@ void charset::convert(const string& in, string& out, const charset& source, cons
 		return;
 	}
 
-	ref <charsetConverter> conv = charsetConverter::create(source, dest, opts);
+	shared_ptr <charsetConverter> conv = charsetConverter::create(source, dest, opts);
 	conv->convert(in, out);
 }
 
@@ -134,9 +134,9 @@ bool charset::operator!=(const charset& value) const
 }
 
 
-ref <component> charset::clone() const
+shared_ptr <component> charset::clone() const
 {
-	return vmime::create <charset>(m_name);
+	return make_shared <charset>(m_name);
 }
 
 
@@ -152,9 +152,9 @@ void charset::copyFrom(const component& other)
 }
 
 
-const std::vector <ref <component> > charset::getChildComponents()
+const std::vector <shared_ptr <component> > charset::getChildComponents()
 {
-	return std::vector <ref <component> >();
+	return std::vector <shared_ptr <component> >();
 }
 
 

@@ -197,19 +197,19 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 	{
 		// Simple parameter/value
 		parameterizedHeaderField p1;
-		p1.appendParameter(vmime::create <vmime::parameter>("param1", "value1"));
+		p1.appendParameter(vmime::make_shared <vmime::parameter>("param1", "value1"));
 
 		VASSERT_EQ("1", "F: X; param1=value1", p1.generate());
 
 		// Value that needs quoting (1/2)
 		parameterizedHeaderField p2a;
-		p2a.appendParameter(vmime::create <vmime::parameter>("param1", "value1a;value1b"));
+		p2a.appendParameter(vmime::make_shared <vmime::parameter>("param1", "value1a;value1b"));
 
 		VASSERT_EQ("2a", "F: X; param1=\"value1a;value1b\"", p2a.generate());
 
 		// Value that needs quoting (2/2)
 		parameterizedHeaderField p2b;
-		p2b.appendParameter(vmime::create <vmime::parameter>("param1", "va\\lue\"1"));
+		p2b.appendParameter(vmime::make_shared <vmime::parameter>("param1", "va\\lue\"1"));
 
 		VASSERT_EQ("2b", "F: X; param1=\"va\\\\lue\\\"1\"", p2b.generate());
 	}
@@ -218,7 +218,7 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 	{
 		// Extended parameter with charset specifier
 		parameterizedHeaderField p1;
-		p1.appendParameter(vmime::create <vmime::parameter>("param1",
+		p1.appendParameter(vmime::make_shared <vmime::parameter>("param1",
 			vmime::word("value 1\xe9", vmime::charset("charset"))));
 
 #if VMIME_ALWAYS_GENERATE_7BIT_PARAMETER
@@ -229,7 +229,7 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 
 		// Value that spans on multiple lines
 		parameterizedHeaderField p2;
-		p2.appendParameter(vmime::create <vmime::parameter>("param1",
+		p2.appendParameter(vmime::make_shared <vmime::parameter>("param1",
 			vmime::word("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
 				    vmime::charset("charset"))));
 
@@ -256,7 +256,7 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 
 		// Non-ASCII parameter value
 		parameterizedHeaderField p3;
-		p3.appendParameter(vmime::create <vmime::parameter>("param1",
+		p3.appendParameter(vmime::make_shared <vmime::parameter>("param1",
 			vmime::word("δσσσσσσσσσσσσσσσσσσσσδσδα δσαδσδσαδσαδασδασ δσαδασδσα δσαδασδσα δασδασδασ δασαχφδδσα 2008.doc",
 				vmime::charset("utf-8"))));
 
@@ -325,28 +325,28 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 	// Encode "tspecials"
 	void testEncodeTSpecials()
 	{
-		VASSERT_EQ(" 1", "p=\"val(ue\"",  vmime::create <vmime::parameter>("p", "val(ue")->generate());
-		VASSERT_EQ(" 2", "p=\"val)ue\"",  vmime::create <vmime::parameter>("p", "val)ue")->generate());
-		VASSERT_EQ(" 3", "p=\"val<ue\"",  vmime::create <vmime::parameter>("p", "val<ue")->generate());
-		VASSERT_EQ(" 4", "p=\"val>ue\"",  vmime::create <vmime::parameter>("p", "val>ue")->generate());
-		VASSERT_EQ(" 5", "p=\"val@ue\"",  vmime::create <vmime::parameter>("p", "val@ue")->generate());
-		VASSERT_EQ(" 6", "p=\"val,ue\"",  vmime::create <vmime::parameter>("p", "val,ue")->generate());
-		VASSERT_EQ(" 7", "p=\"val;ue\"",  vmime::create <vmime::parameter>("p", "val;ue")->generate());
-		VASSERT_EQ(" 8", "p=\"val:ue\"",  vmime::create <vmime::parameter>("p", "val:ue")->generate());
-		VASSERT_EQ(" 9", "p=\"val/ue\"",  vmime::create <vmime::parameter>("p", "val/ue")->generate());
-		VASSERT_EQ("10", "p=\"val[ue\"",  vmime::create <vmime::parameter>("p", "val[ue")->generate());
-		VASSERT_EQ("11", "p=\"val]ue\"",  vmime::create <vmime::parameter>("p", "val]ue")->generate());
-		VASSERT_EQ("12", "p=\"val?ue\"",  vmime::create <vmime::parameter>("p", "val?ue")->generate());
-		VASSERT_EQ("13", "p=\"val=ue\"",  vmime::create <vmime::parameter>("p", "val=ue")->generate());
-		VASSERT_EQ("14", "p=\"val ue\"",  vmime::create <vmime::parameter>("p", "val ue")->generate());
-		VASSERT_EQ("15", "p=\"val\tue\"", vmime::create <vmime::parameter>("p", "val\tue")->generate());
+		VASSERT_EQ(" 1", "p=\"val(ue\"",  vmime::make_shared <vmime::parameter>("p", "val(ue")->generate());
+		VASSERT_EQ(" 2", "p=\"val)ue\"",  vmime::make_shared <vmime::parameter>("p", "val)ue")->generate());
+		VASSERT_EQ(" 3", "p=\"val<ue\"",  vmime::make_shared <vmime::parameter>("p", "val<ue")->generate());
+		VASSERT_EQ(" 4", "p=\"val>ue\"",  vmime::make_shared <vmime::parameter>("p", "val>ue")->generate());
+		VASSERT_EQ(" 5", "p=\"val@ue\"",  vmime::make_shared <vmime::parameter>("p", "val@ue")->generate());
+		VASSERT_EQ(" 6", "p=\"val,ue\"",  vmime::make_shared <vmime::parameter>("p", "val,ue")->generate());
+		VASSERT_EQ(" 7", "p=\"val;ue\"",  vmime::make_shared <vmime::parameter>("p", "val;ue")->generate());
+		VASSERT_EQ(" 8", "p=\"val:ue\"",  vmime::make_shared <vmime::parameter>("p", "val:ue")->generate());
+		VASSERT_EQ(" 9", "p=\"val/ue\"",  vmime::make_shared <vmime::parameter>("p", "val/ue")->generate());
+		VASSERT_EQ("10", "p=\"val[ue\"",  vmime::make_shared <vmime::parameter>("p", "val[ue")->generate());
+		VASSERT_EQ("11", "p=\"val]ue\"",  vmime::make_shared <vmime::parameter>("p", "val]ue")->generate());
+		VASSERT_EQ("12", "p=\"val?ue\"",  vmime::make_shared <vmime::parameter>("p", "val?ue")->generate());
+		VASSERT_EQ("13", "p=\"val=ue\"",  vmime::make_shared <vmime::parameter>("p", "val=ue")->generate());
+		VASSERT_EQ("14", "p=\"val ue\"",  vmime::make_shared <vmime::parameter>("p", "val ue")->generate());
+		VASSERT_EQ("15", "p=\"val\tue\"", vmime::make_shared <vmime::parameter>("p", "val\tue")->generate());
 	}
 
 	// http://sourceforge.net/projects/vmime/forums/forum/237356/topic/3812278
 	void testEncodeTSpecialsInRFC2231()
 	{
 		VASSERT_EQ("1", "filename*=UTF-8''my_file_name_%C3%B6%C3%A4%C3%BC_%281%29.txt",
-			vmime::create <vmime::parameter>("filename", "my_file_name_\xc3\xb6\xc3\xa4\xc3\xbc_(1).txt")->generate());
+			vmime::make_shared <vmime::parameter>("filename", "my_file_name_\xc3\xb6\xc3\xa4\xc3\xbc_(1).txt")->generate());
 	}
 
 	void testWhitespaceBreaksTheValue()

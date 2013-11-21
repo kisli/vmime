@@ -43,33 +43,33 @@ namespace vmime {
 namespace net {
 
 
-transport::transport(ref <session> sess, const serviceInfos& infos, ref <security::authenticator> auth)
+transport::transport(shared_ptr <session> sess, const serviceInfos& infos, shared_ptr <security::authenticator> auth)
 	: service(sess, infos, auth)
 {
 }
 
 
-ref <headerField> transport::processHeaderField(ref <headerField> field)
+shared_ptr <headerField> transport::processHeaderField(shared_ptr <headerField> field)
 {
 	if (utility::stringUtils::isStringEqualNoCase(field->getName(), fields::BCC))
 	{
 		// Remove Bcc headers from the message, as required by the RFC.
 		// Some SMTP server automatically strip this header (Postfix, qmail),
 		// and others have an option for this (Exim).
-		return NULL;
+		return null;
 	}
 	else if (utility::stringUtils::isStringEqualNoCase(field->getName(), fields::RETURN_PATH))
 	{
 		// RFC-2821: Return-Path header is added by the final transport system
 		// that delivers the message to its recipient. Then, it should not be
 		// transmitted to MSA.
-   		return NULL;
+   		return null;
 	}
 	else if (utility::stringUtils::isStringEqualNoCase(field->getName(), fields::ORIGINAL_RECIPIENT))
 	{
 		// RFC-2298: Delivering MTA may add the Original-Recipient header and
 		// discard existing one; so, no need to send it.
-		return NULL;
+		return null;
 	}
 
 	// Leave the header field as is
@@ -77,7 +77,7 @@ ref <headerField> transport::processHeaderField(ref <headerField> field)
 }
 
 
-void transport::processHeader(ref <header> header)
+void transport::processHeader(shared_ptr <header> header)
 {
 	if (header->getFieldCount() == 0)
 		return;
@@ -85,8 +85,8 @@ void transport::processHeader(ref <header> header)
 	// Remove/replace fields
 	for (size_t idx = header->getFieldCount() ; idx != 0 ; --idx)
 	{
-		ref <headerField> field = header->getFieldAt(idx - 1);
-		ref <headerField> newField = processHeaderField(field);
+		shared_ptr <headerField> field = header->getFieldAt(idx - 1);
+		shared_ptr <headerField> newField = processHeaderField(field);
 
 		if (newField == NULL)
 			header->removeField(field);
@@ -114,7 +114,7 @@ static void extractMailboxes
 {
 	for (size_t i = 0 ; i < list.getAddressCount() ; ++i)
 	{
-		ref <mailbox> mbox = list.getAddressAt(i)->clone().dynamicCast <mailbox>();
+		shared_ptr <mailbox> mbox = dynamicCast <mailbox>(list.getAddressAt(i)->clone());
 
 		if (mbox != NULL)
 			recipients.appendMailbox(mbox);
@@ -122,15 +122,15 @@ static void extractMailboxes
 }
 
 
-void transport::send(ref <vmime::message> msg, utility::progressListener* progress)
+void transport::send(shared_ptr <vmime::message> msg, utility::progressListener* progress)
 {
 	// Extract expeditor
 	mailbox expeditor;
 
 	try
 	{
-		const mailbox& mbox = *msg->getHeader()->findField(fields::FROM)->
-			getValue().dynamicCast <const mailbox>();
+		const mailbox& mbox =
+			*msg->getHeader()->findField(fields::FROM)->getValue <mailbox>();
 
 		expeditor = mbox;
 	}
@@ -144,8 +144,8 @@ void transport::send(ref <vmime::message> msg, utility::progressListener* progre
 
 	try
 	{
-		const mailbox& mbox = *msg->getHeader()->findField(fields::SENDER)->
-			getValue().dynamicCast <const mailbox>();
+		const mailbox& mbox =
+			*msg->getHeader()->findField(fields::SENDER)->getValue <mailbox>();
 
 		sender = mbox;
 	}
@@ -159,8 +159,8 @@ void transport::send(ref <vmime::message> msg, utility::progressListener* progre
 
 	try
 	{
-		const addressList& to = *msg->getHeader()->findField(fields::TO)->
-			getValue().dynamicCast <const addressList>();
+		const addressList& to =
+			*msg->getHeader()->findField(fields::TO)->getValue <addressList>();
 
 		extractMailboxes(recipients, to);
 	}
@@ -168,8 +168,8 @@ void transport::send(ref <vmime::message> msg, utility::progressListener* progre
 
 	try
 	{
-		const addressList& cc = *msg->getHeader()->findField(fields::CC)->
-			getValue().dynamicCast <const addressList>();
+		const addressList& cc =
+			*msg->getHeader()->findField(fields::CC)->getValue <addressList>();
 
 		extractMailboxes(recipients, cc);
 	}
@@ -177,8 +177,8 @@ void transport::send(ref <vmime::message> msg, utility::progressListener* progre
 
 	try
 	{
-		const addressList& bcc = *msg->getHeader()->findField(fields::BCC)->
-			getValue().dynamicCast <const addressList>();
+		const addressList& bcc =
+			*msg->getHeader()->findField(fields::BCC)->getValue <addressList>();
 
 		extractMailboxes(recipients, bcc);
 	}
@@ -187,7 +187,7 @@ void transport::send(ref <vmime::message> msg, utility::progressListener* progre
 	// Process message header by removing fields that should be removed
 	// before transmitting the message to MSA, and adding missing fields
 	// which are required/recommended by the RFCs.
-	ref <header> hdr = msg->getHeader()->clone().dynamicCast <header>();
+	shared_ptr <header> hdr = vmime::clone(msg->getHeader());
 	processHeader(hdr);
 
 	// To avoid cloning message body (too much overhead), use processed
@@ -195,8 +195,8 @@ void transport::send(ref <vmime::message> msg, utility::progressListener* progre
 	// Revert it back to original header after.
 	struct XChangeMsgHeader
 	{
-		XChangeMsgHeader(vmime::ref <vmime::message> _msg,
-		                 vmime::ref <vmime::header> _hdr)
+		XChangeMsgHeader(shared_ptr <vmime::message> _msg,
+		                 shared_ptr <vmime::header> _hdr)
 			: msg(_msg), hdr(msg->getHeader())
 		{
 			// Set new header
@@ -211,8 +211,8 @@ void transport::send(ref <vmime::message> msg, utility::progressListener* progre
 
 	private:
 
-		vmime::ref <vmime::message> msg;
-		vmime::ref <vmime::header> hdr;
+		shared_ptr <vmime::message> msg;
+		shared_ptr <vmime::header> hdr;
 	} headerExchanger(msg, hdr);
 
 	send(msg, expeditor, recipients, progress, sender);
@@ -220,7 +220,7 @@ void transport::send(ref <vmime::message> msg, utility::progressListener* progre
 
 
 void transport::send
-	(ref <vmime::message> msg, const mailbox& expeditor, const mailboxList& recipients,
+	(shared_ptr <vmime::message> msg, const mailbox& expeditor, const mailboxList& recipients,
 	 utility::progressListener* progress, const mailbox& sender)
 {
 	// Generate the message, "stream" it and delegate the sending

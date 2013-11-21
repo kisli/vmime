@@ -45,7 +45,7 @@ namespace windows {
 // windowsSocket
 //
 
-windowsSocket::windowsSocket(ref <vmime::net::timeoutHandler> th)
+windowsSocket::windowsSocket(shared_ptr <vmime::net::timeoutHandler> th)
 	: m_timeoutHandler(th), m_desc(INVALID_SOCKET), m_status(0)
 {
 	WSAData wsaData;
@@ -438,15 +438,15 @@ void windowsSocket::waitForData(const WaitOpType t, bool& timedOut)
 // posixSocketFactory
 //
 
-ref <vmime::net::socket> windowsSocketFactory::create()
+shared_ptr <vmime::net::socket> windowsSocketFactory::create()
 {
-	ref <vmime::net::timeoutHandler> th = NULL;
-	return vmime::create <windowsSocket>(th);
+	shared_ptr <vmime::net::timeoutHandler> th = NULL;
+	return make_shared <windowsSocket>(th);
 }
 
-ref <vmime::net::socket> windowsSocketFactory::create(ref <vmime::net::timeoutHandler> th)
+shared_ptr <vmime::net::socket> windowsSocketFactory::create(shared_ptr <vmime::net::timeoutHandler> th)
 {
-    return vmime::create <windowsSocket>(th);
+    return make_shared <windowsSocket>(th);
 }
 
 } // posix

@@ -469,9 +469,9 @@ emailAddress& emailAddress::operator=(const emailAddress& other)
 }
 
 
-ref <component>emailAddress::clone() const
+shared_ptr <component>emailAddress::clone() const
 {
-	return vmime::create <emailAddress>(*this);
+	return make_shared <emailAddress>(*this);
 }
 
 
@@ -499,9 +499,9 @@ void emailAddress::setDomainName(const word& domainName)
 }
 
 
-const std::vector <ref <component> > emailAddress::getChildComponents()
+const std::vector <shared_ptr <component> > emailAddress::getChildComponents()
 {
-	return std::vector <ref <component> >();
+	return std::vector <shared_ptr <component> >();
 }
 
 
@@ -528,9 +528,9 @@ const string emailAddress::toString() const
 const text emailAddress::toText() const
 {
 	text txt;
-	txt.appendWord(vmime::create <vmime::word>(m_localName));
-	txt.appendWord(vmime::create <vmime::word>("@", vmime::charsets::US_ASCII));
-	txt.appendWord(vmime::create <vmime::word>(m_domainName));
+	txt.appendWord(make_shared <vmime::word>(m_localName));
+	txt.appendWord(make_shared <vmime::word>("@", vmime::charsets::US_ASCII));
+	txt.appendWord(make_shared <vmime::word>(m_domainName));
 
 	return txt;
 }

@@ -43,7 +43,7 @@ class posixSocket : public vmime::net::socket
 {
 public:
 
-	posixSocket(ref <vmime::net::timeoutHandler> th);
+	posixSocket(shared_ptr <vmime::net::timeoutHandler> th);
 	~posixSocket();
 
 	void connect(const vmime::string& address, const vmime::port_t port);
@@ -70,7 +70,7 @@ protected:
 
 private:
 
-	ref <vmime::net::timeoutHandler> m_timeoutHandler;
+	shared_ptr <vmime::net::timeoutHandler> m_timeoutHandler;
 
 	char m_buffer[65536];
 	int m_desc;
@@ -86,8 +86,8 @@ class posixSocketFactory : public vmime::net::socketFactory
 {
 public:
 
-	ref <vmime::net::socket> create();
-	ref <vmime::net::socket> create(ref <vmime::net::timeoutHandler> th);
+	shared_ptr <vmime::net::socket> create();
+	shared_ptr <vmime::net::socket> create(shared_ptr <vmime::net::timeoutHandler> th);
 };
 
 

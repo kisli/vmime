@@ -46,17 +46,17 @@ namespace net {
 namespace pop3 {
 
 
-POP3Response::POP3Response(ref <socket> sok, ref <timeoutHandler> toh)
+POP3Response::POP3Response(shared_ptr <socket> sok, shared_ptr <timeoutHandler> toh)
 	: m_socket(sok), m_timeoutHandler(toh)
 {
 }
 
 
 // static
-ref <POP3Response> POP3Response::readResponse(ref <POP3Connection> conn)
+shared_ptr <POP3Response> POP3Response::readResponse(shared_ptr <POP3Connection> conn)
 {
-	ref <POP3Response> resp = vmime::create <POP3Response>
-		(conn->getSocket(), conn->getTimeoutHandler());
+	shared_ptr <POP3Response> resp = shared_ptr <POP3Response>
+		(new POP3Response(conn->getSocket(), conn->getTimeoutHandler()));
 
 	string buffer;
 	resp->readResponseImpl(buffer, /* multiLine */ false);
@@ -70,10 +70,10 @@ ref <POP3Response> POP3Response::readResponse(ref <POP3Connection> conn)
 
 
 // static
-ref <POP3Response> POP3Response::readMultilineResponse(ref <POP3Connection> conn)
+shared_ptr <POP3Response> POP3Response::readMultilineResponse(shared_ptr <POP3Connection> conn)
 {
-	ref <POP3Response> resp = vmime::create <POP3Response>
-		(conn->getSocket(), conn->getTimeoutHandler());
+	shared_ptr <POP3Response> resp = shared_ptr <POP3Response>
+		(new POP3Response(conn->getSocket(), conn->getTimeoutHandler()));
 
 	string buffer;
 	resp->readResponseImpl(buffer, /* multiLine */ true);
@@ -96,12 +96,12 @@ ref <POP3Response> POP3Response::readMultilineResponse(ref <POP3Connection> conn
 
 
 // static
-ref <POP3Response> POP3Response::readLargeResponse
-	(ref <POP3Connection> conn, utility::outputStream& os,
+shared_ptr <POP3Response> POP3Response::readLargeResponse
+	(shared_ptr <POP3Connection> conn, utility::outputStream& os,
 	 utility::progressListener* progress, const long predictedSize)
 {
-	ref <POP3Response> resp = vmime::create <POP3Response>
-		(conn->getSocket(), conn->getTimeoutHandler());
+	shared_ptr <POP3Response> resp = shared_ptr <POP3Response>
+		(new POP3Response(conn->getSocket(), conn->getTimeoutHandler()));
 
 	string firstLine;
 	resp->readResponseImpl(firstLine, os, progress, predictedSize);

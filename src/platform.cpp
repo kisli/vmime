@@ -32,7 +32,7 @@ namespace vmime
 {
 
 
-ref <platform::handler> platform::sm_handler = NULL;
+shared_ptr <platform::handler> platform::sm_handler;
 
 
 platform::handler::~handler()
@@ -41,29 +41,29 @@ platform::handler::~handler()
 
 
 // static
-ref <platform::handler> platform::getDefaultHandler()
+shared_ptr <platform::handler> platform::getDefaultHandler()
 {
 
 #if VMIME_PLATFORM_IS_WINDOWS
-	return vmime::create <platforms::windows::windowsHandler>();
+	return make_shared <platforms::windows::windowsHandler>();
 #elif VMIME_PLATFORM_IS_POSIX
-	return vmime::create <platforms::posix::posixHandler>();
+	return make_shared <platforms::posix::posixHandler>();
 #else
-	return NULL;
+	return null;
 #endif
 
 }
 
 
 // static
-ref <platform::handler> platform::getHandler()
+shared_ptr <platform::handler> platform::getHandler()
 {
 	// If a custom platform handler is installed, return it
 	if (sm_handler)
 		return sm_handler;
 
 	// Else, use the default handler for this platform
-	ref <handler> defaultHandler = getDefaultHandler();
+	shared_ptr <handler> defaultHandler = getDefaultHandler();
 
 	if (defaultHandler)
 	{

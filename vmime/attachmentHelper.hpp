@@ -59,7 +59,7 @@ public:
 	  * @param options search options (see FindOptions)
 	  * @return true if the part is an attachment, false otherwise
 	  */
-	static bool isBodyPartAnAttachment(ref <const bodyPart> part, const unsigned int options = 0);
+	static bool isBodyPartAnAttachment(shared_ptr <const bodyPart> part, const unsigned int options = 0);
 
 	/** Return attachment information in the specified body part.
 	  * If the specified body part does not contain attachment
@@ -69,8 +69,8 @@ public:
 	  * @param options search options (see FindOptions)
 	  * @return attachment found in the part, or NULL
 	  */
-	static ref <const attachment>
-		getBodyPartAttachment(ref <const bodyPart> part, const unsigned int options = 0);
+	static shared_ptr <const attachment>
+		getBodyPartAttachment(shared_ptr <const bodyPart> part, const unsigned int options = 0);
 
 	/** Find all attachments contained in the specified part
 	  * and all its children parts.
@@ -80,8 +80,8 @@ public:
 	  * @param options search options (see FindOptions)
 	  * @return a list of attachments found
 	  */
-	static const std::vector <ref <const attachment> >
-		findAttachmentsInBodyPart(ref <const bodyPart> part, const unsigned int options = 0);
+	static const std::vector <shared_ptr <const attachment> >
+		findAttachmentsInBodyPart(shared_ptr <const bodyPart> part, const unsigned int options = 0);
 
 	/** Find all attachments contained in the specified message.
 	  * This is simply a recursive call to getBodyPartAttachment().
@@ -90,27 +90,27 @@ public:
 	  * @param options search options (see FindOptions)
 	  * @return a list of attachments found
 	  */
-	static const std::vector <ref <const attachment> >
-		findAttachmentsInMessage(ref <const message> msg, const unsigned int options = 0);
+	static const std::vector <shared_ptr <const attachment> >
+		findAttachmentsInMessage(shared_ptr <const message> msg, const unsigned int options = 0);
 
 	/** Add an attachment to the specified message.
 	  *
 	  * @param msg message into which to add the attachment
 	  * @param att attachment to add
 	  */
-	static void addAttachment(ref <message> msg, ref <attachment> att);
+	static void addAttachment(shared_ptr <message> msg, shared_ptr <attachment> att);
 
 	/** Add a message attachment to the specified message.
 	  *
 	  * @param msg message into which to add the attachment
 	  * @param amsg message to attach
 	  */
-	static void addAttachment(ref <message> msg, ref <message> amsg);
+	static void addAttachment(shared_ptr <message> msg, shared_ptr <message> amsg);
 
 protected:
 
-	static ref <bodyPart> findBodyPart
-		(ref <bodyPart> part, const mediaType& type);
+	static shared_ptr <bodyPart> findBodyPart
+		(shared_ptr <bodyPart> part, const mediaType& type);
 };
 
 

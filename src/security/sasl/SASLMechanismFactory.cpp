@@ -68,15 +68,15 @@ SASLMechanismFactory* SASLMechanismFactory::getInstance()
 }
 
 
-ref <SASLMechanism> SASLMechanismFactory::create
-	(ref <SASLContext> ctx, const string& name_)
+shared_ptr <SASLMechanism> SASLMechanismFactory::create
+	(shared_ptr <SASLContext> ctx, const string& name_)
 {
 	const string name(utility::stringUtils::toUpper(name_));
 
 	// Check for built-in mechanisms
 	if (isMechanismSupported(name))
 	{
-		return vmime::create <builtinSASLMechanism>(ctx, name);
+		return make_shared <builtinSASLMechanism>(ctx, name);
 	}
 	// Check for registered mechanisms
 	else
@@ -88,7 +88,7 @@ ref <SASLMechanism> SASLMechanismFactory::create
 	}
 
 	throw exceptions::no_such_mechanism(name);
-	return 0;
+	return null;
 }
 
 

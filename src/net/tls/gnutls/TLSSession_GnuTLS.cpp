@@ -134,13 +134,13 @@ static TLSGlobal g_gnutlsGlobal;
 
 
 // static
-ref <TLSSession> TLSSession::create(ref <security::cert::certificateVerifier> cv, ref <TLSProperties> props)
+shared_ptr <TLSSession> TLSSession::create(shared_ptr <security::cert::certificateVerifier> cv, shared_ptr <TLSProperties> props)
 {
-	return vmime::create <TLSSession_GnuTLS>(cv, props);
+	return make_shared <TLSSession_GnuTLS>(cv, props);
 }
 
 
-TLSSession_GnuTLS::TLSSession_GnuTLS(ref <security::cert::certificateVerifier> cv, ref <TLSProperties> props)
+TLSSession_GnuTLS::TLSSession_GnuTLS(shared_ptr <security::cert::certificateVerifier> cv, shared_ptr <TLSProperties> props)
 	: m_certVerifier(cv), m_props(props)
 {
 	int res;
@@ -267,13 +267,13 @@ TLSSession_GnuTLS::~TLSSession_GnuTLS()
 }
 
 
-ref <TLSSocket> TLSSession_GnuTLS::getSocket(ref <socket> sok)
+shared_ptr <TLSSocket> TLSSession_GnuTLS::getSocket(shared_ptr <socket> sok)
 {
-	return TLSSocket::wrap(thisRef().dynamicCast <TLSSession>(), sok);
+	return TLSSocket::wrap(dynamicCast <TLSSession>(shared_from_this()), sok);
 }
 
 
-ref <security::cert::certificateVerifier> TLSSession_GnuTLS::getCertificateVerifier()
+shared_ptr <security::cert::certificateVerifier> TLSSession_GnuTLS::getCertificateVerifier()
 {
 	return m_certVerifier;
 }

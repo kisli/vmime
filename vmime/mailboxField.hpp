@@ -43,7 +43,7 @@ namespace vmime
 
 class VMIME_EXPORT mailboxField : public headerField
 {
-	friend class vmime::creator;  // create ref
+	friend class headerFieldFactory;
 
 protected:
 

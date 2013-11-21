@@ -51,14 +51,15 @@ class VMIME_EXPORT POP3Message : public message
 private:
 
 	friend class POP3Folder;
-	friend class vmime::creator;  // vmime::create <POP3Message>
 
-	POP3Message(ref <POP3Folder> folder, const int num);
-	POP3Message(const POP3Message&) : message() { }
+	POP3Message(const POP3Message&);
+
+public:
+
+	POP3Message(shared_ptr <POP3Folder> folder, const int num);
 
 	~POP3Message();
 
-public:
 
 	int getNumber() const;
 
@@ -68,35 +69,35 @@ public:
 
 	bool isExpunged() const;
 
-	ref <const messageStructure> getStructure() const;
-	ref <messageStructure> getStructure();
+	shared_ptr <const messageStructure> getStructure() const;
+	shared_ptr <messageStructure> getStructure();
 
-	ref <const header> getHeader() const;
+	shared_ptr <const header> getHeader() const;
 
 	int getFlags() const;
 	void setFlags(const int flags, const int mode = FLAG_MODE_SET);
 
 	void extract(utility::outputStream& os, utility::progressListener* progress = NULL, const int start = 0, const int length = -1, const bool peek = false) const;
-	void extractPart(ref <const messagePart> p, utility::outputStream& os, utility::progressListener* progress = NULL, const int start = 0, const int length = -1, const bool peek = false) const;
+	void extractPart(shared_ptr <const messagePart> p, utility::outputStream& os, utility::progressListener* progress = NULL, const int start = 0, const int length = -1, const bool peek = false) const;
 
-	void fetchPartHeader(ref <messagePart> p);
+	void fetchPartHeader(shared_ptr <messagePart> p);
 
-	ref <vmime::message> getParsedMessage();
+	shared_ptr <vmime::message> getParsedMessage();
 
 private:
 
-	void fetch(ref <POP3Folder> folder, const fetchAttributes& options);
+	void fetch(shared_ptr <POP3Folder> folder, const fetchAttributes& options);
 
 	void onFolderClosed();
 
-	weak_ref <POP3Folder> m_folder;
+	weak_ptr <POP3Folder> m_folder;
 	int m_num;
 	uid m_uid;
 	int m_size;
 
 	bool m_deleted;
 
-	ref <header> m_header;
+	shared_ptr <header> m_header;
 };
 
 

@@ -61,7 +61,7 @@ public:
 	  *
 	  * @return a copy of this object
 	  */
-	virtual ref <folderStatus> clone() const = 0;
+	virtual shared_ptr <folderStatus> clone() const = 0;
 };
 
 

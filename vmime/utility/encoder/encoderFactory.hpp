@@ -46,10 +46,10 @@ private:
 
 public:
 
-	static encoderFactory* getInstance();
+	static shared_ptr <encoderFactory> getInstance();
 
 	/** Information about a registered encoder. */
-	class registeredEncoder : public object
+	class VMIME_EXPORT registeredEncoder : public object
 	{
 	protected:
 
@@ -57,7 +57,7 @@ public:
 
 	public:
 
-		virtual ref <encoder> create() const = 0;
+		virtual shared_ptr <encoder> create() const = 0;
 
 		virtual const string& getName() const = 0;
 	};
@@ -67,17 +67,13 @@ private:
 	template <class E>
 	class registeredEncoderImpl : public registeredEncoder
 	{
-		friend class vmime::creator;
-
-	protected:
+	public:
 
 		registeredEncoderImpl(const string& name) : m_name(name) { }
 
-	public:
-
-		ref <encoder> create() const
+		shared_ptr <encoder> create() const
 		{
-			return vmime::create <E>();
+			return vmime::make_shared <E>();
 		}
 
 		const string& getName() const
@@ -91,7 +87,7 @@ private:
 	};
 
 
-	std::vector <ref <registeredEncoder> > m_encoders;
+	std::vector <shared_ptr <registeredEncoder> > m_encoders;
 
 public:
 
@@ -102,7 +98,7 @@ public:
 	template <class E>
 	void registerName(const string& name)
 	{
-		m_encoders.push_back(vmime::create <registeredEncoderImpl <E> >(utility::stringUtils::toLower(name)));
+		m_encoders.push_back(vmime::make_shared <registeredEncoderImpl <E> >(utility::stringUtils::toLower(name)));
 	}
 
 	/** Create a new encoder instance from an encoding name.
@@ -112,7 +108,7 @@ public:
 	  * @throw exceptions::no_encoder_available if no encoder is registered
 	  * for this encoding
 	  */
-	ref <encoder> create(const string& name);
+	shared_ptr <encoder> create(const string& name);
 
 	/** Return information about a registered encoder.
 	  *
@@ -121,7 +117,7 @@ public:
 	  * @throw exceptions::no_encoder_available if no encoder is registered
 	  * for this encoding
 	  */
-	const ref <const registeredEncoder> getEncoderByName(const string& name) const;
+	const shared_ptr <const registeredEncoder> getEncoderByName(const string& name) const;
 
 	/** Return the number of registered encoders.
 	  *
@@ -134,13 +130,13 @@ public:
 	  * @param pos position of the registered encoder to return
 	  * @return registered encoder at the specified position
 	  */
-	const ref <const registeredEncoder> getEncoderAt(const size_t pos) const;
+	const shared_ptr <const registeredEncoder> getEncoderAt(const size_t pos) const;
 
 	/** Return a list of all registered encoders.
 	  *
 	  * @return list of registered encoders
 	  */
-	const std::vector <ref <const registeredEncoder> > getEncoderList() const;
+	const std::vector <shared_ptr <const registeredEncoder> > getEncoderList() const;
 };
 
 

@@ -60,7 +60,7 @@ public:
 	  *
 	  * @param part part to append
 	  */
-	void appendPart(ref <bodyPart> part);
+	void appendPart(shared_ptr <bodyPart> part);
 
 	/** Insert a new part before the specified part.
 	  *
@@ -68,7 +68,7 @@ public:
 	  * @param part part to insert
 	  * @throw exceptions::no_such_part if the part is not in the list
 	  */
-	void insertPartBefore(ref <bodyPart> beforePart, ref <bodyPart> part);
+	void insertPartBefore(shared_ptr <bodyPart> beforePart, shared_ptr <bodyPart> part);
 
 	/** Insert a new part before the specified position.
 	  *
@@ -76,7 +76,7 @@ public:
 	  * the beginning of the list)
 	  * @param part part to insert
 	  */
-	void insertPartBefore(const size_t pos, ref <bodyPart> part);
+	void insertPartBefore(const size_t pos, shared_ptr <bodyPart> part);
 
 	/** Insert a new part after the specified part.
 	  *
@@ -84,21 +84,21 @@ public:
 	  * @param part part to insert
 	  * @throw exceptions::no_such_part if the part is not in the list
 	  */
-	void insertPartAfter(ref <bodyPart> afterPart, ref <bodyPart> part);
+	void insertPartAfter(shared_ptr <bodyPart> afterPart, shared_ptr <bodyPart> part);
 
 	/** Insert a new part after the specified position.
 	  *
 	  * @param pos position of the part before the new part
 	  * @param part part to insert
 	  */
-	void insertPartAfter(const size_t pos, ref <bodyPart> part);
+	void insertPartAfter(const size_t pos, shared_ptr <bodyPart> part);
 
 	/** Remove the specified part from the list.
 	  *
 	  * @param part part to remove
 	  * @throw exceptions::no_such_part if the part is not in the list
 	  */
-	void removePart(ref <bodyPart> part);
+	void removePart(shared_ptr <bodyPart> part);
 
 	/** Remove the part at the specified position.
 	  *
@@ -127,26 +127,26 @@ public:
 	  * @param pos position
 	  * @return part at position 'pos'
 	  */
-	ref <bodyPart> getPartAt(const size_t pos);
+	shared_ptr <bodyPart> getPartAt(const size_t pos);
 
 	/** Return the part at the specified position.
 	  *
 	  * @param pos position
 	  * @return part at position 'pos'
 	  */
-	const ref <const bodyPart> getPartAt(const size_t pos) const;
+	const shared_ptr <const bodyPart> getPartAt(const size_t pos) const;
 
 	/** Return the part list.
 	  *
 	  * @return list of parts
 	  */
-	const std::vector <ref <const bodyPart> > getPartList() const;
+	const std::vector <shared_ptr <const bodyPart> > getPartList() const;
 
 	/** Return the part list.
 	  *
 	  * @return list of parts
 	  */
-	const std::vector <ref <bodyPart> > getPartList();
+	const std::vector <shared_ptr <bodyPart> > getPartList();
 
 	/** Return the prolog text.
 	  *
@@ -176,20 +176,20 @@ public:
 	  *
 	  * @return read-only body contents
 	  */
-	const ref <const contentHandler> getContents() const;
+	const shared_ptr <const contentHandler> getContents() const;
 
 	/** Set the body contents.
 	  *
 	  * @param contents new body contents
 	  */
-	void setContents(ref <const contentHandler> contents);
+	void setContents(shared_ptr <const contentHandler> contents);
 
 	/** Set the body contents and type.
 	  *
 	  * @param contents new body contents
 	  * @param type type of contents
 	  */
-	void setContents(ref <const contentHandler> contents, const mediaType& type);
+	void setContents(shared_ptr <const contentHandler> contents, const mediaType& type);
 
 	/** Set the body contents, type and charset.
 	  *
@@ -197,7 +197,7 @@ public:
 	  * @param type type of contents
 	  * @param chset charset of contents
 	  */
-	void setContents(ref <const contentHandler> contents, const mediaType& type, const charset& chset);
+	void setContents(shared_ptr <const contentHandler> contents, const mediaType& type, const charset& chset);
 
 	/** Set the body contents, type, charset and encoding.
 	  *
@@ -206,7 +206,7 @@ public:
 	  * @param chset charset of contents
 	  * @param enc contents encoding
 	  */
-	void setContents(ref <const contentHandler> contents, const mediaType& type,
+	void setContents(shared_ptr <const contentHandler> contents, const mediaType& type,
 		const charset& chset, const encoding& enc);
 
 	/** Set the MIME type and charset of contents.
@@ -274,11 +274,11 @@ public:
 	  */
 	static bool isValidBoundary(const string& boundary);
 
-	ref <component> clone() const;
+	shared_ptr <component> clone() const;
 	void copyFrom(const component& other);
 	body& operator=(const body& other);
 
-	const std::vector <ref <component> > getChildComponents();
+	const std::vector <shared_ptr <component> > getChildComponents();
 
 	utility::stream::size_type getGeneratedSize(const generationContext& ctx);
 
@@ -287,22 +287,21 @@ private:
 	text getActualPrologText(const generationContext& ctx) const;
 	text getActualEpilogText(const generationContext& ctx) const;
 
-	void setParentPart(ref <bodyPart> parent);
+	void setParentPart(bodyPart* parent);
 
 
 	string m_prologText;
 	string m_epilogText;
 
-	ref <const contentHandler> m_contents;
+	shared_ptr <const contentHandler> m_contents;
 
-	weak_ref <bodyPart> m_part;
-	weak_ref <header> m_header;
+	bodyPart* m_part;
 
-	std::vector <ref <bodyPart> > m_parts;
+	std::vector <shared_ptr <bodyPart> > m_parts;
 
 	bool isRootPart() const;
 
-	void initNewPart(ref <bodyPart> part);
+	void initNewPart(shared_ptr <bodyPart> part);
 
 protected:
 
@@ -319,14 +318,14 @@ protected:
 	  * @return the position of the boundary string, or stream::npos if not found
 	  */
 	utility::stream::size_type findNextBoundaryPosition
-		(ref <utility::parserInputStreamAdapter> parser, const string& boundary,
+		(shared_ptr <utility::parserInputStreamAdapter> parser, const string& boundary,
 		 const utility::stream::size_type position, const utility::stream::size_type end,
 		 utility::stream::size_type* boundaryStart, utility::stream::size_type* boundaryEnd);
 
 	// Component parsing & assembling
 	void parseImpl
 		(const parsingContext& ctx,
-		 ref <utility::parserInputStreamAdapter> parser,
+		 shared_ptr <utility::parserInputStreamAdapter> parser,
 		 const utility::stream::size_type position,
 		 const utility::stream::size_type end,
 		 utility::stream::size_type* newPosition = NULL);

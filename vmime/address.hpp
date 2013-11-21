@@ -61,7 +61,7 @@ public:
 	  */
 	virtual bool isGroup() const = 0;
 
-	virtual ref <component> clone() const = 0;
+	virtual shared_ptr <component> clone() const = 0;
 
 	/** Parse an address from an input buffer.
 	  *
@@ -74,7 +74,7 @@ public:
 	  * of a group (end delimiter was found), or false otherwise (may be set to NULL)
 	  * @return a new address object, or null if no more address is available in the input buffer
 	  */
-	static ref <address> parseNext
+	static shared_ptr <address> parseNext
 		(const parsingContext& ctx, const string& buffer,
 		 const string::size_type position, const string::size_type end,
 		 string::size_type* newPosition, bool *isLastAddressOfGroup);

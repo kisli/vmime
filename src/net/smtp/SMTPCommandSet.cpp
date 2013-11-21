@@ -49,13 +49,13 @@ SMTPCommandSet::SMTPCommandSet(const bool pipeline)
 
 
 // static
-ref <SMTPCommandSet> SMTPCommandSet::create(const bool pipeline)
+shared_ptr <SMTPCommandSet> SMTPCommandSet::create(const bool pipeline)
 {
-	return vmime::create <SMTPCommandSet>(pipeline);
+	return shared_ptr <SMTPCommandSet>(new SMTPCommandSet(pipeline));
 }
 
 
-void SMTPCommandSet::addCommand(ref <SMTPCommand> cmd)
+void SMTPCommandSet::addCommand(shared_ptr <SMTPCommand> cmd)
 {
 	if (m_started)
 	{
@@ -67,17 +67,17 @@ void SMTPCommandSet::addCommand(ref <SMTPCommand> cmd)
 }
 
 
-void SMTPCommandSet::writeToSocket(ref <socket> sok)
+void SMTPCommandSet::writeToSocket(shared_ptr <socket> sok)
 {
 	if (m_pipeline)
 	{
 		if (!m_started)
 		{
 			// Send all commands at once
-			for (std::list <ref <SMTPCommand> >::const_iterator it = m_commands.begin() ;
+			for (std::list <shared_ptr <SMTPCommand> >::const_iterator it = m_commands.begin() ;
 			     it != m_commands.end() ; ++it)
 			{
-				ref <SMTPCommand> cmd = *it;
+				shared_ptr <SMTPCommand> cmd = *it;
 				cmd->writeToSocket(sok);
 			}
 		}
@@ -85,7 +85,7 @@ void SMTPCommandSet::writeToSocket(ref <socket> sok)
 		if (!m_commands.empty())
 		{
 			// Advance the pointer to last command sent
-			ref <SMTPCommand> cmd = m_commands.front();
+			shared_ptr <SMTPCommand> cmd = m_commands.front();
 			m_commands.pop_front();
 
 			m_lastCommandSent = cmd;
@@ -96,7 +96,7 @@ void SMTPCommandSet::writeToSocket(ref <socket> sok)
 		if (!m_commands.empty())
 		{
 			// Send only one command
-			ref <SMTPCommand> cmd = m_commands.front();
+			shared_ptr <SMTPCommand> cmd = m_commands.front();
 			m_commands.pop_front();
 
 			cmd->writeToSocket(sok);
@@ -114,7 +114,7 @@ const string SMTPCommandSet::getText() const
 	std::ostringstream cmd;
 	cmd.imbue(std::locale::classic());
 
-	for (std::list <ref <SMTPCommand> >::const_iterator it = m_commands.begin() ;
+	for (std::list <shared_ptr <SMTPCommand> >::const_iterator it = m_commands.begin() ;
 	     it != m_commands.end() ; ++it)
 	{
 		cmd << (*it)->getText() << "\r\n";
@@ -130,7 +130,7 @@ bool SMTPCommandSet::isFinished() const
 }
 
 
-ref <SMTPCommand> SMTPCommandSet::getLastCommandSent() const
+shared_ptr <SMTPCommand> SMTPCommandSet::getLastCommandSent() const
 {
 	return m_lastCommandSent;
 }

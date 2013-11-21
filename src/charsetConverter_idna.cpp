@@ -159,9 +159,9 @@ void charsetConverter_idna::convert(const string& in, string& out)
 }
 
 
-ref <utility::charsetFilteredOutputStream> charsetConverter_idna::getFilteredOutputStream(utility::outputStream& /* os */)
+shared_ptr <utility::charsetFilteredOutputStream> charsetConverter_idna::getFilteredOutputStream(utility::outputStream& /* os */)
 {
-	return NULL;
+	return null;
 }
 
 

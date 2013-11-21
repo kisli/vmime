@@ -314,8 +314,8 @@ messageSet messageSet::byUID(const std::vector <message::uid>& uids)
 			else
 			{
 				set.m_ranges.push_back(new UIDMessageRange
-					(static_cast <std::ostringstream*>(&(std::ostringstream() << rangeStart))->str(),
-					 static_cast <std::ostringstream*>(&(std::ostringstream() << previous))->str()));
+					(utility::stringUtils::toString(rangeStart),
+					 utility::stringUtils::toString(previous)));
 
 				previous = current;
 				rangeStart = current;
@@ -324,8 +324,8 @@ messageSet messageSet::byUID(const std::vector <message::uid>& uids)
 	}
 
 	set.m_ranges.push_back(new UIDMessageRange
-		(static_cast <std::ostringstream*>(&(std::ostringstream() << rangeStart))->str(),
-		 static_cast <std::ostringstream*>(&(std::ostringstream() << previous))->str()));
+		(utility::stringUtils::toString(rangeStart),
+	     utility::stringUtils::toString(previous)));
 
 	return set;
 }

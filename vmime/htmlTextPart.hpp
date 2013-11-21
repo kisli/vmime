@@ -51,11 +51,11 @@ public:
 	const charset& getCharset() const;
 	void setCharset(const charset& ch);
 
-	ref <const contentHandler> getPlainText() const;
-	void setPlainText(ref <contentHandler> plainText);
+	shared_ptr <const contentHandler> getPlainText() const;
+	void setPlainText(shared_ptr <contentHandler> plainText);
 
-	const ref <const contentHandler> getText() const;
-	void setText(ref <contentHandler> text);
+	const shared_ptr <const contentHandler> getText() const;
+	void setText(shared_ptr <contentHandler> text);
 
 	/** Embedded object (eg: image for &lt;IMG> tag).
 	  */
@@ -79,7 +79,7 @@ public:
 		  * @param refType reference type
 		  * @return a reference to a new embedded object
 		  */
-		embeddedObject(ref <contentHandler> data, const encoding& enc,
+		embeddedObject(shared_ptr <contentHandler> data, const encoding& enc,
 		               const string& id, const mediaType& type,
 		               const ReferenceType refType);
 
@@ -87,7 +87,7 @@ public:
 		  *
 		  * @return stored data
 		  */
-		ref <const contentHandler> getData() const;
+		shared_ptr <const contentHandler> getData() const;
 
 		/** Return the encoding used for data in this
 		  * embedded object.
@@ -136,7 +136,7 @@ public:
 
 		static const string cleanId(const string& id);
 
-		ref <contentHandler> m_data;
+		shared_ptr <contentHandler> m_data;
 		encoding m_encoding;
 		string m_id;
 		mediaType m_type;
@@ -158,7 +158,7 @@ public:
 	  * @param id object identifier
 	  * @return embedded object with the specified identifier
 	  */
-	ref <const embeddedObject> findObject(const string& id) const;
+	shared_ptr <const embeddedObject> findObject(const string& id) const;
 
 	/** Return the number of embedded objects.
 	  *
@@ -171,7 +171,7 @@ public:
 	  * @param pos position of the embedded object
 	  * @return embedded object at position 'pos'
 	  */
-	ref <const embeddedObject> getObjectAt(const size_t pos) const;
+	shared_ptr <const embeddedObject> getObjectAt(const size_t pos) const;
 
 	/** Embed an object and returns a string which identifies it.
 	  * The returned identifier is suitable for use in the 'src' attribute
@@ -185,7 +185,7 @@ public:
 	  * @return an unique object identifier used to identify the new
 	  * object among all other embedded objects
 	  */
-	ref <const embeddedObject> addObject(const string& data, const mediaType& type);
+	shared_ptr <const embeddedObject> addObject(const string& data, const mediaType& type);
 
 	/** Embed an object and returns a string which identifies it.
 	  * The returned identifier is suitable for use in the 'src' attribute
@@ -196,7 +196,7 @@ public:
 	  * @return an unique object identifier used to identify the new
 	  * object among all other embedded objects
 	  */
-	ref <const embeddedObject> addObject(ref <contentHandler> data, const mediaType& type);
+	shared_ptr <const embeddedObject> addObject(shared_ptr <contentHandler> data, const mediaType& type);
 
 	/** Embed an object and returns a string which identifies it.
 	  * The returned identifier is suitable for use in the 'src' attribute
@@ -208,23 +208,23 @@ public:
 	  * @return an unique object identifier used to identify the new
 	  * object among all other embedded objects
 	  */
-	ref <const embeddedObject> addObject(ref <contentHandler> data, const encoding& enc, const mediaType& type);
+	shared_ptr <const embeddedObject> addObject(shared_ptr <contentHandler> data, const encoding& enc, const mediaType& type);
 
 
 	size_t getPartCount() const;
 
-	void generateIn(ref <bodyPart> message, ref <bodyPart> parent) const;
-	void parse(ref <const bodyPart> message, ref <const bodyPart> parent, ref <const bodyPart> textPart);
+	void generateIn(shared_ptr <bodyPart> message, shared_ptr <bodyPart> parent) const;
+	void parse(shared_ptr <const bodyPart> message, shared_ptr <const bodyPart> parent, shared_ptr <const bodyPart> textPart);
 
 private:
 
-	ref <contentHandler> m_plainText;
-	ref <contentHandler> m_text;
+	shared_ptr <contentHandler> m_plainText;
+	shared_ptr <contentHandler> m_text;
 	charset m_charset;
 
-	std::vector <ref <embeddedObject> > m_objects;
+	std::vector <shared_ptr <embeddedObject> > m_objects;
 
-	void findEmbeddedParts(const bodyPart& part, std::vector <ref <const bodyPart> >& cidParts, std::vector <ref <const bodyPart> >& locParts);
+	void findEmbeddedParts(const bodyPart& part, std::vector <shared_ptr <const bodyPart> >& cidParts, std::vector <shared_ptr <const bodyPart> >& locParts);
 	void addEmbeddedObject(const bodyPart& part, const string& id, const embeddedObject::ReferenceType refType);
 
 	bool findPlainTextPart(const bodyPart& part, const bodyPart& parent, const bodyPart& textPart);

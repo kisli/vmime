@@ -46,78 +46,97 @@ class VMIME_EXPORT bodyPart : public component
 public:
 
 	bodyPart();
-	bodyPart(weak_ref <vmime::bodyPart> parentPart);
 
 	/** Return the header section of this part.
 	  *
 	  * @return header section
 	  */
-	const ref <const header> getHeader() const;
+	const shared_ptr <const header> getHeader() const;
 
 	/** Return the header section of this part.
 	  *
 	  * @return header section
 	  */
-	ref <header> getHeader();
+	shared_ptr <header> getHeader();
 
 	/** Replaces the header section of this part.
 	  *
 	  * @param header the new header of this part
 	  */
-	void setHeader(ref <header> header);
+	void setHeader(shared_ptr <header> header);
 
 	/** Return the body section of this part.
 	  *
 	  * @return body section
 	  */
-	const ref <const body> getBody() const;
+	const shared_ptr <const body> getBody() const;
 
 	/** Return the body section of this part.
 	  *
 	  * @return body section
 	  */
-	ref <body> getBody();
+	shared_ptr <body> getBody();
 
 	/** Replaces the body section of this part.
 	  *
 	  * @param body new body section
 	  */
-	void setBody(ref <body> body);
+	void setBody(shared_ptr <body> body);
 
 	/** Return the parent part of this part.
 	  *
 	  * @return parent part or NULL if not known
 	  */
-	ref <bodyPart> getParentPart();
+	bodyPart* getParentPart();
 
 	/** Return the parent part of this part (const version).
 	  *
 	  * @return parent part or NULL if not known
 	  */
-	ref <const bodyPart> getParentPart() const;
+	const bodyPart* getParentPart() const;
 
 
-	ref <component> clone() const;
+	shared_ptr <component> clone() const;
 	void copyFrom(const component& other);
 	bodyPart& operator=(const bodyPart& other);
 
-	const std::vector <ref <component> > getChildComponents();
+	const std::vector <shared_ptr <component> > getChildComponents();
 
 	utility::stream::size_type getGeneratedSize(const generationContext& ctx);
 
 private:
 
-	ref <header> m_header;
-	ref <body> m_body;
+	shared_ptr <header> m_header;
+	mutable shared_ptr <body> m_body;
 
-	weak_ref <bodyPart> m_parent;
+	// We can't use a weak_ptr<> here as the parent part may
+	// have been allocated on the stack
+	bodyPart* m_parent;
 
 protected:
+
+	/** Creates and returns a new part and set this part as its
+	  * parent. The newly created sub-part should then be added
+	  * to this part by calling getBody()->appendPart(). Called
+	  * by the body class.
+	  *
+	  * @return child part
+	  */
+	shared_ptr <bodyPart> createChildPart();
+
+	/** Detach the specified part from its current parent part (if
+	  * any) and attach it to this part by setting this part as its
+	  * new parent. The sub-part should then be added to this part
+	  * by calling getBody()->appendPart(). Called by body class.
+	  *
+	  * @param part child part to attach
+	  */
+	void importChildPart(shared_ptr <bodyPart> part);
 
 	// Component parsing & assembling
 	void parseImpl
 		(const parsingContext& ctx,
-		 ref <utility::parserInputStreamAdapter> parser,
+		 shared_ptr <utility::parserInputStreamAdapter> parser,
 		 const utility::stream::size_type position,
 		 const utility::stream::size_type end,
 		 utility::stream::size_type* newPosition = NULL);

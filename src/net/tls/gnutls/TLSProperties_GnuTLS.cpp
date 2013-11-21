@@ -42,7 +42,7 @@ namespace tls {
 
 
 TLSProperties::TLSProperties()
-	: m_data(vmime::create <TLSProperties_GnuTLS>())
+	: m_data(make_shared <TLSProperties_GnuTLS>())
 {
 	setCipherSuite(CIPHERSUITE_DEFAULT);
 }
@@ -50,9 +50,9 @@ TLSProperties::TLSProperties()
 
 TLSProperties::TLSProperties(const TLSProperties& props)
 	: object(),
-	  m_data(vmime::create <TLSProperties_GnuTLS>())
+	  m_data(make_shared <TLSProperties_GnuTLS>())
 {
-	*m_data.dynamicCast <TLSProperties_GnuTLS>() = *props.m_data.dynamicCast <TLSProperties_GnuTLS>();
+	*dynamicCast <TLSProperties_GnuTLS>(m_data) = *dynamicCast <TLSProperties_GnuTLS>(props.m_data);
 }
 
 
@@ -86,13 +86,13 @@ void TLSProperties::setCipherSuite(const GenericCipherSuite cipherSuite)
 
 void TLSProperties::setCipherSuite(const string& cipherSuite)
 {
-	m_data.dynamicCast <TLSProperties_GnuTLS>()->cipherSuite = cipherSuite;
+	dynamicCast <TLSProperties_GnuTLS>(m_data)->cipherSuite = cipherSuite;
 }
 
 
 const string TLSProperties::getCipherSuite() const
 {
-	return m_data.dynamicCast <TLSProperties_GnuTLS>()->cipherSuite;
+	return dynamicCast <TLSProperties_GnuTLS>(m_data)->cipherSuite;
 }
 
 

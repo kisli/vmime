@@ -44,7 +44,7 @@ namespace vmime
 
 
 body::body()
-	: m_contents(create <emptyContentHandler>()), m_part(NULL), m_header(NULL)
+	: m_contents(make_shared <emptyContentHandler>())
 {
 }
 
@@ -56,7 +56,7 @@ body::~body()
 
 // static
 utility::stream::size_type body::findNextBoundaryPosition
-	(ref <utility::parserInputStreamAdapter> parser, const string& boundary,
+	(shared_ptr <utility::parserInputStreamAdapter> parser, const string& boundary,
 	 const utility::stream::size_type position, const utility::stream::size_type end,
 	 utility::stream::size_type* boundaryStart, utility::stream::size_type* boundaryEnd)
 {
@@ -129,7 +129,7 @@ utility::stream::size_type body::findNextBoundaryPosition
 
 void body::parseImpl
 	(const parsingContext& /* ctx */,
-	 ref <utility::parserInputStreamAdapter> parser,
+	 shared_ptr <utility::parserInputStreamAdapter> parser,
 	 const utility::stream::size_type position,
 	 const utility::stream::size_type end,
 	 utility::stream::size_type* newPosition)
@@ -156,10 +156,10 @@ void body::parseImpl
 
 	try
 	{
-		const ref <const contentTypeField> ctf =
-			m_header.acquire()->findField(fields::CONTENT_TYPE).dynamicCast <contentTypeField>();
+		const shared_ptr <const contentTypeField> ctf =
+			m_part->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
 
-		const mediaType type = *ctf->getValue().dynamicCast <const mediaType>();
+		const mediaType type = *ctf->getValue <mediaType>();
 
 		if (type.getType() == mediaTypes::MULTIPART)
 		{
@@ -302,7 +302,7 @@ void body::parseImpl
 			}
 			else // index > 0
 			{
-				ref <bodyPart> part = vmime::create <bodyPart>();
+				shared_ptr <bodyPart> part = m_part->createChildPart();
 
 				// End before start may happen on empty bodyparts (directly
 				// successive boundaries without even a line-break)
@@ -310,7 +310,6 @@ void body::parseImpl
 					std::swap(partStart, partEnd);
 
 				part->parse(parser, partStart, partEnd, NULL);
-				part->m_parent = m_part;
 
 				m_parts.push_back(part);
 			}
@@ -322,12 +321,12 @@ void body::parseImpl
 				(parser, boundary, boundaryEnd, end, &boundaryStart, &boundaryEnd);
 		}
 
-		m_contents = vmime::create <emptyContentHandler>();
+		m_contents = make_shared <emptyContentHandler>();
 
 		// Last part was not found: recover from missing boundary
 		if (!lastPart && pos == utility::stream::npos)
 		{
-			ref <bodyPart> part = vmime::create <bodyPart>();
+			shared_ptr <bodyPart> part = m_part->createChildPart();
 
 			try
 			{
@@ -337,8 +336,6 @@ void body::parseImpl
 			{
 				throw;
 			}
-
-			part->m_parent = m_part;
 
 			m_parts.push_back(part);
 		}
@@ -358,10 +355,10 @@ void body::parseImpl
 
 		try
 		{
-			const ref <const headerField> cef =
-				m_header.acquire()->findField(fields::CONTENT_TRANSFER_ENCODING);
+			const shared_ptr <headerField> cef =
+				m_part->getHeader()->findField(fields::CONTENT_TRANSFER_ENCODING);
 
-			enc = *cef->getValue().dynamicCast <const encoding>();
+			enc = *cef->getValue <encoding>();
 		}
 		catch (exceptions::no_such_field&)
 		{
@@ -372,11 +369,11 @@ void body::parseImpl
 		// Extract the (encoded) contents
 		const utility::stream::size_type length = end - position;
 
-		ref <utility::inputStream> contentStream =
-			vmime::create <utility::seekableInputStreamRegionAdapter>
+		shared_ptr <utility::inputStream> contentStream =
+			make_shared <utility::seekableInputStreamRegionAdapter>
 				(parser->getUnderlyingStream(), position, length);
 
-		m_contents = vmime::create <streamContentHandler>(contentStream, length, enc);
+		m_contents = make_shared <streamContentHandler>(contentStream, length, enc);
 	}
 
 	setParsedBounds(position, end);
@@ -429,7 +426,7 @@ void body::generateImpl
 	{
 		string boundary;
 
-		if (m_header.acquire() == NULL)
+		if (!m_part)
 		{
 			boundary = generateRandomBoundaryString();
 		}
@@ -437,9 +434,8 @@ void body::generateImpl
 		{
 			try
 			{
-				ref <const contentTypeField> ctf =
-					m_header.acquire()->findField(fields::CONTENT_TYPE)
-						.dynamicCast <const contentTypeField>();
+				shared_ptr <contentTypeField> ctf =
+					m_part->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
 
 				boundary = ctf->getBoundary();
 			}
@@ -494,7 +490,7 @@ void body::generateImpl
 	else
 	{
 		// Generate the contents
-		ref <contentHandler> contents = m_contents->clone();
+		shared_ptr <contentHandler> contents = m_contents->clone();
 		contents->setContentTypeHint(getContentType());
 
 		contents->generate(os, getEncoding(), ctx.getMaxLineLength());
@@ -548,8 +544,8 @@ utility::stream::size_type body::getGeneratedSize(const generationContext& ctx)
 	// Simple body
 	else
 	{
-		ref <utility::encoder::encoder> srcEncoder = m_contents->getEncoding().getEncoder();
-		ref <utility::encoder::encoder> dstEncoder = getEncoding().getEncoder();
+		shared_ptr <utility::encoder::encoder> srcEncoder = m_contents->getEncoding().getEncoder();
+		shared_ptr <utility::encoder::encoder> dstEncoder = getEncoding().getEncoder();
 
 		return dstEncoder->getEncodedSize(srcEncoder->getDecodedSize(m_contents->getLength()));
 	}
@@ -646,7 +642,8 @@ bool body::isValidBoundary(const string& boundary)
 
 void body::setContentType(const mediaType& type, const charset& chset)
 {
-	ref <contentTypeField> ctf = m_header.acquire()->ContentType().dynamicCast <contentTypeField>();
+	shared_ptr <contentTypeField> ctf =
+		dynamicCast <contentTypeField>(m_part->getHeader()->ContentType());
 
 	ctf->setValue(type);
 	ctf->setCharset(chset);
@@ -655,7 +652,7 @@ void body::setContentType(const mediaType& type, const charset& chset)
 
 void body::setContentType(const mediaType& type)
 {
-	m_header.acquire()->ContentType()->setValue(type);
+	m_part->getHeader()->ContentType()->setValue(type);
 }
 
 
@@ -663,10 +660,10 @@ const mediaType body::getContentType() const
 {
 	try
 	{
-		ref <const contentTypeField> ctf =
-			m_header.acquire()->findField(fields::CONTENT_TYPE).dynamicCast <const contentTypeField>();
+		shared_ptr <const contentTypeField> ctf =
+			m_part->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
 
-		return (*ctf->getValue().dynamicCast <const mediaType>());
+		return (*ctf->getValue <mediaType>());
 	}
 	catch (exceptions::no_such_field&)
 	{
@@ -681,8 +678,8 @@ void body::setCharset(const charset& chset)
 	// If a Content-Type field exists, set charset
 	try
 	{
-		ref <contentTypeField> ctf =
-			m_header.acquire()->findField(fields::CONTENT_TYPE).dynamicCast <contentTypeField>();
+		shared_ptr <contentTypeField> ctf =
+			m_part->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
 
 		ctf->setCharset(chset);
 	}
@@ -699,8 +696,8 @@ const charset body::getCharset() const
 {
 	try
 	{
-		const ref <const contentTypeField> ctf =
-			m_header.acquire()->findField(fields::CONTENT_TYPE).dynamicCast <contentTypeField>();
+		const shared_ptr <const contentTypeField> ctf =
+			m_part->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
 
 		return (ctf->getCharset());
 	}
@@ -719,7 +716,7 @@ const charset body::getCharset() const
 
 void body::setEncoding(const encoding& enc)
 {
-	m_header.acquire()->ContentTransferEncoding()->setValue(enc);
+	m_part->getHeader()->ContentTransferEncoding()->setValue(enc);
 }
 
 
@@ -727,10 +724,10 @@ const encoding body::getEncoding() const
 {
 	try
 	{
-		const ref <const headerField> cef =
-			m_header.acquire()->findField(fields::CONTENT_TRANSFER_ENCODING);
+		const shared_ptr <const headerField> cef =
+			m_part->getHeader()->findField(fields::CONTENT_TRANSFER_ENCODING);
 
-		return (*cef->getValue().dynamicCast <const encoding>());
+		return *cef->getValue <encoding>();
 	}
 	catch (exceptions::no_such_field&)
 	{
@@ -747,30 +744,28 @@ const encoding body::getEncoding() const
 }
 
 
-void body::setParentPart(ref <bodyPart> parent)
+void body::setParentPart(bodyPart* parent)
 {
 	m_part = parent;
-	m_header = (parent != NULL ? parent->getHeader() : NULL);
 
-	for (std::vector <ref <bodyPart> >::iterator it = m_parts.begin() ;
+	for (std::vector <shared_ptr <bodyPart> >::iterator it = m_parts.begin() ;
 	     it != m_parts.end() ; ++it)
 	{
-		ref <bodyPart> childPart = *it;
-		childPart->m_parent = parent;
+		shared_ptr <bodyPart> childPart = *it;
+		parent->importChildPart(childPart);
 	}
 }
 
 
 bool body::isRootPart() const
 {
-	ref <const bodyPart> part = m_part.acquire();
-	return (part == NULL || part->getParentPart() == NULL);
+	return (m_part == NULL || m_part->getParentPart() == NULL);
 }
 
 
-ref <component> body::clone() const
+shared_ptr <component> body::clone() const
 {
-	ref <body> bdy = vmime::create <body>();
+	shared_ptr <body> bdy = make_shared <body>();
 
 	bdy->copyFrom(*this);
 
@@ -791,9 +786,9 @@ void body::copyFrom(const component& other)
 
 	for (size_t p = 0 ; p < bdy.getPartCount() ; ++p)
 	{
-		ref <bodyPart> part = bdy.getPartAt(p)->clone().dynamicCast <bodyPart>();
+		shared_ptr <bodyPart> part = m_part->createChildPart();
 
-		part->m_parent = m_part;
+		part->copyFrom(*bdy.getPartAt(p));
 
 		m_parts.push_back(part);
 	}
@@ -831,19 +826,19 @@ void body::setEpilogText(const string& epilogText)
 }
 
 
-const ref <const contentHandler> body::getContents() const
+const shared_ptr <const contentHandler> body::getContents() const
 {
 	return (m_contents);
 }
 
 
-void body::setContents(ref <const contentHandler> contents)
+void body::setContents(shared_ptr <const contentHandler> contents)
 {
 	m_contents = contents;
 }
 
 
-void body::setContents(ref <const contentHandler> contents, const mediaType& type)
+void body::setContents(shared_ptr <const contentHandler> contents, const mediaType& type)
 {
 	m_contents = contents;
 
@@ -851,7 +846,7 @@ void body::setContents(ref <const contentHandler> contents, const mediaType& typ
 }
 
 
-void body::setContents(ref <const contentHandler> contents, const mediaType& type, const charset& chset)
+void body::setContents(shared_ptr <const contentHandler> contents, const mediaType& type, const charset& chset)
 {
 	m_contents = contents;
 
@@ -859,7 +854,7 @@ void body::setContents(ref <const contentHandler> contents, const mediaType& typ
 }
 
 
-void body::setContents(ref <const contentHandler> contents, const mediaType& type,
+void body::setContents(shared_ptr <const contentHandler> contents, const mediaType& type,
 	const charset& chset, const encoding& enc)
 {
 	m_contents = contents;
@@ -869,19 +864,25 @@ void body::setContents(ref <const contentHandler> contents, const mediaType& typ
 }
 
 
-void body::initNewPart(ref <bodyPart> part)
+void body::initNewPart(shared_ptr <bodyPart> part)
 {
-	part->m_parent = m_part;
+	// A part can be in only one body at the same time: if part is
+	// already attached to a parent part, remove it from the current
+	// parent part
+	if (part->getParentPart())
+		part->getParentPart()->getBody()->removePart(part);
 
-	ref <header> hdr = m_header.acquire();
-
-	if (hdr != NULL)
+	if (m_part != NULL)
 	{
+		m_part->importChildPart(part);
+
+		shared_ptr <header> hdr = m_part->getHeader();
+
 		// Check whether we have a boundary string
 		try
 		{
-			ref <contentTypeField> ctf =
-				hdr->findField(fields::CONTENT_TYPE).dynamicCast <contentTypeField>();
+			shared_ptr <contentTypeField> ctf =
+				hdr->findField <contentTypeField>(fields::CONTENT_TYPE);
 
 			try
 			{
@@ -896,7 +897,7 @@ void body::initNewPart(ref <bodyPart> part)
 				ctf->setBoundary(generateRandomBoundaryString());
 			}
 
-			if (ctf->getValue().dynamicCast <const mediaType>()->getType() != mediaTypes::MULTIPART)
+			if (ctf->getValue <mediaType>()->getType() != mediaTypes::MULTIPART)
 			{
 				// Warning: multi-part body but the Content-Type is
 				// not specified as "multipart/..."
@@ -906,8 +907,8 @@ void body::initNewPart(ref <bodyPart> part)
 		{
 			// No "Content-Type" field: create a new one and generate
 			// a random boundary string.
-			ref <contentTypeField> ctf =
-				hdr->getField(fields::CONTENT_TYPE).dynamicCast <contentTypeField>();
+			shared_ptr <contentTypeField> ctf =
+				hdr->getField <contentTypeField>(fields::CONTENT_TYPE);
 
 			ctf->setValue(mediaType(mediaTypes::MULTIPART, mediaTypes::MULTIPART_MIXED));
 			ctf->setBoundary(generateRandomBoundaryString());
@@ -916,7 +917,7 @@ void body::initNewPart(ref <bodyPart> part)
 }
 
 
-void body::appendPart(ref <bodyPart> part)
+void body::appendPart(shared_ptr <bodyPart> part)
 {
 	initNewPart(part);
 
@@ -924,11 +925,11 @@ void body::appendPart(ref <bodyPart> part)
 }
 
 
-void body::insertPartBefore(ref <bodyPart> beforePart, ref <bodyPart> part)
+void body::insertPartBefore(shared_ptr <bodyPart> beforePart, shared_ptr <bodyPart> part)
 {
 	initNewPart(part);
 
-	const std::vector <ref <bodyPart> >::iterator it = std::find
+	const std::vector <shared_ptr <bodyPart> >::iterator it = std::find
 		(m_parts.begin(), m_parts.end(), beforePart);
 
 	if (it == m_parts.end())
@@ -938,7 +939,7 @@ void body::insertPartBefore(ref <bodyPart> beforePart, ref <bodyPart> part)
 }
 
 
-void body::insertPartBefore(const size_t pos, ref <bodyPart> part)
+void body::insertPartBefore(const size_t pos, shared_ptr <bodyPart> part)
 {
 	initNewPart(part);
 
@@ -946,11 +947,11 @@ void body::insertPartBefore(const size_t pos, ref <bodyPart> part)
 }
 
 
-void body::insertPartAfter(ref <bodyPart> afterPart, ref <bodyPart> part)
+void body::insertPartAfter(shared_ptr <bodyPart> afterPart, shared_ptr <bodyPart> part)
 {
 	initNewPart(part);
 
-	const std::vector <ref <bodyPart> >::iterator it = std::find
+	const std::vector <shared_ptr <bodyPart> >::iterator it = std::find
 		(m_parts.begin(), m_parts.end(), afterPart);
 
 	if (it == m_parts.end())
@@ -960,7 +961,7 @@ void body::insertPartAfter(ref <bodyPart> afterPart, ref <bodyPart> part)
 }
 
 
-void body::insertPartAfter(const size_t pos, ref <bodyPart> part)
+void body::insertPartAfter(const size_t pos, shared_ptr <bodyPart> part)
 {
 	initNewPart(part);
 
@@ -968,9 +969,9 @@ void body::insertPartAfter(const size_t pos, ref <bodyPart> part)
 }
 
 
-void body::removePart(ref <bodyPart> part)
+void body::removePart(shared_ptr <bodyPart> part)
 {
-	const std::vector <ref <bodyPart> >::iterator it = std::find
+	const std::vector <shared_ptr <bodyPart> >::iterator it = std::find
 		(m_parts.begin(), m_parts.end(), part);
 
 	if (it == m_parts.end())
@@ -1004,25 +1005,25 @@ bool body::isEmpty() const
 }
 
 
-ref <bodyPart> body::getPartAt(const size_t pos)
+shared_ptr <bodyPart> body::getPartAt(const size_t pos)
 {
 	return (m_parts[pos]);
 }
 
 
-const ref <const bodyPart> body::getPartAt(const size_t pos) const
+const shared_ptr <const bodyPart> body::getPartAt(const size_t pos) const
 {
 	return (m_parts[pos]);
 }
 
 
-const std::vector <ref <const bodyPart> > body::getPartList() const
+const std::vector <shared_ptr <const bodyPart> > body::getPartList() const
 {
-	std::vector <ref <const bodyPart> > list;
+	std::vector <shared_ptr <const bodyPart> > list;
 
 	list.reserve(m_parts.size());
 
-	for (std::vector <ref <bodyPart> >::const_iterator it = m_parts.begin() ;
+	for (std::vector <shared_ptr <bodyPart> >::const_iterator it = m_parts.begin() ;
 	     it != m_parts.end() ; ++it)
 	{
 		list.push_back(*it);
@@ -1032,15 +1033,15 @@ const std::vector <ref <const bodyPart> > body::getPartList() const
 }
 
 
-const std::vector <ref <bodyPart> > body::getPartList()
+const std::vector <shared_ptr <bodyPart> > body::getPartList()
 {
 	return (m_parts);
 }
 
 
-const std::vector <ref <component> > body::getChildComponents()
+const std::vector <shared_ptr <component> > body::getChildComponents()
 {
-	std::vector <ref <component> > list;
+	std::vector <shared_ptr <component> > list;
 
 	copy_vector(m_parts, list);
 

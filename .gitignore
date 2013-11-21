@@ -30,6 +30,8 @@ cmake_install.cmake
 /COPYING.txt
 build/
 Makefile
+export-shared.hpp
+export-static.hpp
 
 # Outsourced build test
 /_build/

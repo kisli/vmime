@@ -93,9 +93,9 @@ void path::copyFrom(const component& other)
 }
 
 
-ref <component> path::clone() const
+shared_ptr <component> path::clone() const
 {
-	return vmime::create <path>(*this);
+	return make_shared <path>(*this);
 }
 
 
@@ -106,9 +106,9 @@ path& path::operator=(const path& other)
 }
 
 
-const std::vector <ref <component> > path::getChildComponents()
+const std::vector <shared_ptr <component> > path::getChildComponents()
 {
-	return std::vector <ref <component> >();
+	return std::vector <shared_ptr <component> >();
 }
 
 

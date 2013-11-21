@@ -104,7 +104,7 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		VASSERT_EQ("4.3", w1.getCharset(), t4.getWordAt(0)->getCharset());
 
 		vmime::word w2("Other", vmime::charset(vmime::charsets::US_ASCII));
-		t4.appendWord(vmime::create <vmime::word>(w2));
+		t4.appendWord(vmime::make_shared <vmime::word>(w2));
 
 		vmime::text t5(t4);
 
@@ -296,8 +296,8 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 
 		// White-space between two encoded words
 		vmime::text txt;
-		txt.appendWord(vmime::create <vmime::word>("\xc3\x89t\xc3\xa9", "utf-8"));
-		txt.appendWord(vmime::create <vmime::word>("Fran\xc3\xa7ois", "utf-8"));
+		txt.appendWord(vmime::make_shared <vmime::word>("\xc3\x89t\xc3\xa9", "utf-8"));
+		txt.appendWord(vmime::make_shared <vmime::word>("Fran\xc3\xa7ois", "utf-8"));
 
 		const vmime::string decoded = "\xc3\x89t\xc3\xa9""Fran\xc3\xa7ois";
 		const vmime::string encoded = "=?utf-8?B?w4l0w6k=?= =?utf-8?Q?Fran=C3=A7ois?=";
@@ -319,11 +319,11 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 	{
 		// White-space between two encoded words (#2)
 		vmime::text txt;
-		txt.appendWord(vmime::create <vmime::word>("Facture ", "utf-8"));
-		txt.appendWord(vmime::create <vmime::word>("\xc3\xa0", "utf-8"));
-		txt.appendWord(vmime::create <vmime::word>(" envoyer ", "utf-8"));
-		txt.appendWord(vmime::create <vmime::word>("\xc3\xa0", "utf-8"));
-		txt.appendWord(vmime::create <vmime::word>(" Martine", "utf-8"));
+		txt.appendWord(vmime::make_shared <vmime::word>("Facture ", "utf-8"));
+		txt.appendWord(vmime::make_shared <vmime::word>("\xc3\xa0", "utf-8"));
+		txt.appendWord(vmime::make_shared <vmime::word>(" envoyer ", "utf-8"));
+		txt.appendWord(vmime::make_shared <vmime::word>("\xc3\xa0", "utf-8"));
+		txt.appendWord(vmime::make_shared <vmime::word>(" Martine", "utf-8"));
 
 		const vmime::string decoded = "Facture ""\xc3\xa0"" envoyer ""\xc3\xa0"" Martine";
 		const vmime::string encoded = "Facture =?utf-8?B?w6A=?= envoyer =?utf-8?B?w6A=?= Martine";
@@ -422,8 +422,8 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		VASSERT_EQ("generate1", "=?us-ascii?Q?Achim_?= =?utf-8?Q?Br=C3=A4ndt?= <me@vmime.org>", mbox.generate());
 
 		vmime::text txt;
-		txt.appendWord(vmime::create <vmime::word>("Achim ", "us-ascii"));
-		txt.appendWord(vmime::create <vmime::word>("Br\xc3\xa4ndt", "utf-8"));
+		txt.appendWord(vmime::make_shared <vmime::word>("Achim ", "us-ascii"));
+		txt.appendWord(vmime::make_shared <vmime::word>("Br\xc3\xa4ndt", "utf-8"));
 		mbox = vmime::mailbox(txt, "me@vmime.org");
 		VASSERT_EQ("generate2", "=?us-ascii?Q?Achim_?= =?utf-8?Q?Br=C3=A4ndt?= <me@vmime.org>", mbox.generate());
 

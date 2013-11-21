@@ -50,8 +50,6 @@ namespace smtp {
   */
 class VMIME_EXPORT SMTPResponse : public object
 {
-	friend class vmime::creator;
-
 public:
 
 	/** Current state of response parser. */
@@ -104,7 +102,7 @@ public:
 	  * @throws exceptions::operation_timed_out if no data
 	  * has been received within the granted time
 	  */
-	static ref <SMTPResponse> readResponse(ref <socket> sok, ref <timeoutHandler> toh, const state& st);
+	static shared_ptr <SMTPResponse> readResponse(shared_ptr <socket> sok, shared_ptr <timeoutHandler> toh, const state& st);
 
 	/** Return the SMTP response code.
 	  *
@@ -152,7 +150,7 @@ public:
 
 private:
 
-	SMTPResponse(ref <socket> sok, ref <timeoutHandler> toh, const state& st);
+	SMTPResponse(shared_ptr <socket> sok, shared_ptr <timeoutHandler> toh, const state& st);
 	SMTPResponse(const SMTPResponse&);
 
 	void readResponse();
@@ -166,8 +164,8 @@ private:
 
 	std::vector <responseLine> m_lines;
 
-	ref <socket> m_socket;
-	ref <timeoutHandler> m_timeoutHandler;
+	shared_ptr <socket> m_socket;
+	shared_ptr <timeoutHandler> m_timeoutHandler;
 
 	string m_responseBuffer;
 	bool m_responseContinues;

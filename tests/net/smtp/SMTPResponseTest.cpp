@@ -43,15 +43,15 @@ VMIME_TEST_SUITE_BEGIN(SMTPResponseTest)
 
 	void testSingleLineResponse()
 	{
-		vmime::ref <testSocket> socket = vmime::create <testSocket>();
-		vmime::ref <vmime::net::timeoutHandler> toh =
-			vmime::create <testTimeoutHandler>();
+		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
+		vmime::shared_ptr <vmime::net::timeoutHandler> toh =
+			vmime::make_shared <testTimeoutHandler>();
 
 		socket->localSend("123 Response Text\r\n");
 
 		vmime::net::smtp::SMTPResponse::state responseState;
 
-		vmime::ref <vmime::net::smtp::SMTPResponse> resp =
+		vmime::shared_ptr <vmime::net::smtp::SMTPResponse> resp =
 			vmime::net::smtp::SMTPResponse::readResponse(socket, toh, responseState);
 
 		VASSERT_EQ("Code", 123, resp->getCode());
@@ -61,15 +61,15 @@ VMIME_TEST_SUITE_BEGIN(SMTPResponseTest)
 
 	void testSingleLineResponseLF()
 	{
-		vmime::ref <testSocket> socket = vmime::create <testSocket>();
-		vmime::ref <vmime::net::timeoutHandler> toh =
-			vmime::create <testTimeoutHandler>();
+		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
+		vmime::shared_ptr <vmime::net::timeoutHandler> toh =
+			vmime::make_shared <testTimeoutHandler>();
 
 		socket->localSend("123 Response Text\n");
 
 		vmime::net::smtp::SMTPResponse::state responseState;
 
-		vmime::ref <vmime::net::smtp::SMTPResponse> resp =
+		vmime::shared_ptr <vmime::net::smtp::SMTPResponse> resp =
 			vmime::net::smtp::SMTPResponse::readResponse(socket, toh, responseState);
 
 		VASSERT_EQ("Code", 123, resp->getCode());
@@ -79,9 +79,9 @@ VMIME_TEST_SUITE_BEGIN(SMTPResponseTest)
 
 	void testMultiLineResponse()
 	{
-		vmime::ref <testSocket> socket = vmime::create <testSocket>();
-		vmime::ref <vmime::net::timeoutHandler> toh =
-			vmime::create <testTimeoutHandler>();
+		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
+		vmime::shared_ptr <vmime::net::timeoutHandler> toh =
+			vmime::make_shared <testTimeoutHandler>();
 
 		socket->localSend
 		(
@@ -91,7 +91,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPResponseTest)
 
 		vmime::net::smtp::SMTPResponse::state responseState;
 
-		vmime::ref <vmime::net::smtp::SMTPResponse> resp =
+		vmime::shared_ptr <vmime::net::smtp::SMTPResponse> resp =
 			vmime::net::smtp::SMTPResponse::readResponse(socket, toh, responseState);
 
 		VASSERT_EQ("Code", 123, resp->getCode());
@@ -107,9 +107,9 @@ VMIME_TEST_SUITE_BEGIN(SMTPResponseTest)
 
 	void testMultiLineResponseDifferentCode()
 	{
-		vmime::ref <testSocket> socket = vmime::create <testSocket>();
-		vmime::ref <vmime::net::timeoutHandler> toh =
-			vmime::create <testTimeoutHandler>();
+		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
+		vmime::shared_ptr <vmime::net::timeoutHandler> toh =
+			vmime::make_shared <testTimeoutHandler>();
 
 		socket->localSend
 		(
@@ -119,7 +119,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPResponseTest)
 
 		vmime::net::smtp::SMTPResponse::state responseState;
 
-		vmime::ref <vmime::net::smtp::SMTPResponse> resp =
+		vmime::shared_ptr <vmime::net::smtp::SMTPResponse> resp =
 			vmime::net::smtp::SMTPResponse::readResponse(socket, toh, responseState);
 
 		VASSERT_EQ("Code", 0, resp->getCode());
@@ -135,9 +135,9 @@ VMIME_TEST_SUITE_BEGIN(SMTPResponseTest)
 
 	void testIncompleteMultiLineResponse()
 	{
-		vmime::ref <testSocket> socket = vmime::create <testSocket>();
-		vmime::ref <vmime::net::timeoutHandler> toh =
-			vmime::create <testTimeoutHandler>(1);
+		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
+		vmime::shared_ptr <vmime::net::timeoutHandler> toh =
+			vmime::make_shared <testTimeoutHandler>(1);
 
 		socket->localSend
 		(
@@ -155,9 +155,9 @@ VMIME_TEST_SUITE_BEGIN(SMTPResponseTest)
 
 	void testNoResponseText()
 	{
-		vmime::ref <testSocket> socket = vmime::create <testSocket>();
-		vmime::ref <vmime::net::timeoutHandler> toh =
-			vmime::create <testTimeoutHandler>(1);
+		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
+		vmime::shared_ptr <vmime::net::timeoutHandler> toh =
+			vmime::make_shared <testTimeoutHandler>(1);
 
 		socket->localSend
 		(
@@ -166,7 +166,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPResponseTest)
 
 		vmime::net::smtp::SMTPResponse::state responseState;
 
-		vmime::ref <vmime::net::smtp::SMTPResponse> resp =
+		vmime::shared_ptr <vmime::net::smtp::SMTPResponse> resp =
 			vmime::net::smtp::SMTPResponse::readResponse(socket, toh, responseState);
 
 		VASSERT_EQ("Code", 250, resp->getCode());
@@ -176,15 +176,15 @@ VMIME_TEST_SUITE_BEGIN(SMTPResponseTest)
 
 	void testEnhancedStatusCode()
 	{
-		vmime::ref <testSocket> socket = vmime::create <testSocket>();
-		vmime::ref <vmime::net::timeoutHandler> toh =
-			vmime::create <testTimeoutHandler>();
+		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
+		vmime::shared_ptr <vmime::net::timeoutHandler> toh =
+			vmime::make_shared <testTimeoutHandler>();
 
 		socket->localSend("250 2.1.5 OK fu13sm4720601wic.7 - gsmtp\r\n");
 
 		vmime::net::smtp::SMTPResponse::state responseState;
 
-		vmime::ref <vmime::net::smtp::SMTPResponse> resp =
+		vmime::shared_ptr <vmime::net::smtp::SMTPResponse> resp =
 			vmime::net::smtp::SMTPResponse::readResponse(socket, toh, responseState);
 
 		VASSERT_EQ("Code", 250, resp->getCode());
@@ -197,15 +197,15 @@ VMIME_TEST_SUITE_BEGIN(SMTPResponseTest)
 
 	void testNoEnhancedStatusCode()
 	{
-		vmime::ref <testSocket> socket = vmime::create <testSocket>();
-		vmime::ref <vmime::net::timeoutHandler> toh =
-			vmime::create <testTimeoutHandler>();
+		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
+		vmime::shared_ptr <vmime::net::timeoutHandler> toh =
+			vmime::make_shared <testTimeoutHandler>();
 
 		socket->localSend("354  Go ahead fu13sm4720601wic.7 - gsmtp\r\n");
 
 		vmime::net::smtp::SMTPResponse::state responseState;
 
-		vmime::ref <vmime::net::smtp::SMTPResponse> resp =
+		vmime::shared_ptr <vmime::net::smtp::SMTPResponse> resp =
 			vmime::net::smtp::SMTPResponse::readResponse(socket, toh, responseState);
 
 		VASSERT_EQ("Code", 354, resp->getCode());
@@ -218,15 +218,15 @@ VMIME_TEST_SUITE_BEGIN(SMTPResponseTest)
 
 	void testInvalidEnhancedStatusCode()
 	{
-		vmime::ref <testSocket> socket = vmime::create <testSocket>();
-		vmime::ref <vmime::net::timeoutHandler> toh =
-			vmime::create <testTimeoutHandler>();
+		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
+		vmime::shared_ptr <vmime::net::timeoutHandler> toh =
+			vmime::make_shared <testTimeoutHandler>();
 
 		socket->localSend("250 4.2 xxx\r\n");
 
 		vmime::net::smtp::SMTPResponse::state responseState;
 
-		vmime::ref <vmime::net::smtp::SMTPResponse> resp =
+		vmime::shared_ptr <vmime::net::smtp::SMTPResponse> resp =
 			vmime::net::smtp::SMTPResponse::readResponse(socket, toh, responseState);
 
 		VASSERT_EQ("Code", 250, resp->getCode());

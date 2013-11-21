@@ -31,17 +31,17 @@ namespace vmime {
 namespace misc {
 
 
-void importanceHelper::resetImportance(ref <message> msg)
+void importanceHelper::resetImportance(shared_ptr <message> msg)
 {
 	resetImportanceHeader(msg->getHeader());
 }
 
 
-void importanceHelper::resetImportanceHeader(ref <header> hdr)
+void importanceHelper::resetImportanceHeader(shared_ptr <header> hdr)
 {
 	try
 	{
-		ref <headerField> fld = hdr->findField("X-Priority");
+		shared_ptr <headerField> fld = hdr->findField("X-Priority");
 		hdr->removeField(fld);
 	}
 	catch (exceptions::no_such_field)
@@ -51,7 +51,7 @@ void importanceHelper::resetImportanceHeader(ref <header> hdr)
 
 	try
 	{
-		ref <headerField> fld = hdr->findField("Importance");
+		shared_ptr <headerField> fld = hdr->findField("Importance");
 		hdr->removeField(fld);
 	}
 	catch (exceptions::no_such_field)
@@ -61,19 +61,19 @@ void importanceHelper::resetImportanceHeader(ref <header> hdr)
 }
 
 
-importanceHelper::Importance importanceHelper::getImportance(ref <const message> msg)
+importanceHelper::Importance importanceHelper::getImportance(shared_ptr <const message> msg)
 {
 	return getImportanceHeader(msg->getHeader());
 }
 
 
-importanceHelper::Importance importanceHelper::getImportanceHeader(ref <const header> hdr)
+importanceHelper::Importance importanceHelper::getImportanceHeader(shared_ptr <const header> hdr)
 {
 	// Try "X-Priority" field
 	try
 	{
-		const ref <const headerField> fld = hdr->findField("X-Priority");
-		const string value = fld->getValue().dynamicCast <const text>()->getWholeBuffer();
+		const shared_ptr <const headerField> fld = hdr->findField("X-Priority");
+		const string value = fld->getValue <text>()->getWholeBuffer();
 
 		int n = IMPORTANCE_NORMAL;
 
@@ -98,9 +98,9 @@ importanceHelper::Importance importanceHelper::getImportanceHeader(ref <const he
 		// Try "Importance" field
 		try
 		{
-			const ref <const headerField> fld = hdr->findField("Importance");
+			const shared_ptr <const headerField> fld = hdr->findField("Importance");
 			const string value = utility::stringUtils::toLower(utility::stringUtils::trim
-				(fld->getValue().dynamicCast <const text>()->getWholeBuffer()));
+				(fld->getValue <text>()->getWholeBuffer()));
 
 			if (value == "low")
 				return (IMPORTANCE_LOWEST);
@@ -121,16 +121,16 @@ importanceHelper::Importance importanceHelper::getImportanceHeader(ref <const he
 }
 
 
-void importanceHelper::setImportance(ref <message> msg, const Importance i)
+void importanceHelper::setImportance(shared_ptr <message> msg, const Importance i)
 {
 	setImportanceHeader(msg->getHeader(), i);
 }
 
 
-void importanceHelper::setImportanceHeader(ref <header> hdr, const Importance i)
+void importanceHelper::setImportanceHeader(shared_ptr <header> hdr, const Importance i)
 {
 	// "X-Priority:" Field
-	ref <headerField> fld = hdr->getField("X-Priority");
+	shared_ptr <headerField> fld = hdr->getField("X-Priority");
 
 	switch (i)
 	{

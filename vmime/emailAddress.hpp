@@ -98,10 +98,10 @@ public:
 
 	// Assignment
 	void copyFrom(const component& other);
-	ref <component> clone() const;
+	shared_ptr <component> clone() const;
 	emailAddress& operator=(const emailAddress& other);
 
-	const std::vector <ref <component> > getChildComponents();
+	const std::vector <shared_ptr <component> > getChildComponents();
 
 protected:
 

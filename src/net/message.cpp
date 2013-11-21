@@ -36,13 +36,13 @@ namespace vmime {
 namespace net {
 
 
-ref <const messagePart> messagePart::getPartAt(const size_t pos) const
+shared_ptr <const messagePart> messagePart::getPartAt(const size_t pos) const
 {
 	return getStructure()->getPartAt(pos);
 }
 
 
-ref <messagePart> messagePart::getPartAt(const size_t pos)
+shared_ptr <messagePart> messagePart::getPartAt(const size_t pos)
 {
 	return getStructure()->getPartAt(pos);
 }

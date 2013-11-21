@@ -111,7 +111,7 @@ public:
 	  *
 	  * @return a copy of this word
 	  */
-	ref <component> clone() const;
+	shared_ptr <component> clone() const;
 
 
 #ifndef VMIME_BUILDING_DOC
@@ -160,11 +160,11 @@ public:
 		 generatorState* state) const;
 #endif
 
-	const std::vector <ref <component> > getChildComponents();
+	const std::vector <shared_ptr <component> > getChildComponents();
 
 private:
 
-	static ref <word> parseNext
+	static shared_ptr <word> parseNext
 		(const parsingContext& ctx,
 		 const string& buffer,
 		 const string::size_type position,
@@ -174,7 +174,7 @@ private:
 		 bool* isEncoded,
 		 bool isFirst);
 
-	static const std::vector <ref <word> > parseMultiple
+	static const std::vector <shared_ptr <word> > parseMultiple
 		(const parsingContext& ctx,
 		 const string& buffer,
 		 const string::size_type position,

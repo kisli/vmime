@@ -49,7 +49,7 @@ public:
 	  * or more certificates can not be trusted, or the server identity
 	  * cannot be verified
 	  */
-	virtual void verify(ref <certificateChain> chain, const string& hostname) = 0;
+	virtual void verify(shared_ptr <certificateChain> chain, const string& hostname) = 0;
 };
 
 

@@ -48,7 +48,7 @@ void folder::removeMessageChangedListener(events::messageChangedListener* l)
 }
 
 
-void folder::notifyMessageChanged(ref <events::messageChangedEvent> event)
+void folder::notifyMessageChanged(shared_ptr <events::messageChangedEvent> event)
 {
 	for (std::list <events::messageChangedListener*>::iterator
 	     it = m_messageChangedListeners.begin() ; it != m_messageChangedListeners.end() ; ++it)
@@ -70,7 +70,7 @@ void folder::removeMessageCountListener(events::messageCountListener* l)
 }
 
 
-void folder::notifyMessageCount(ref <events::messageCountEvent> event)
+void folder::notifyMessageCount(shared_ptr <events::messageCountEvent> event)
 {
 	for (std::list <events::messageCountListener*>::iterator
 	     it = m_messageCountListeners.begin() ; it != m_messageCountListeners.end() ; ++it)
@@ -92,7 +92,7 @@ void folder::removeFolderListener(events::folderListener* l)
 }
 
 
-void folder::notifyFolder(ref <events::folderEvent> event)
+void folder::notifyFolder(shared_ptr <events::folderEvent> event)
 {
 	for (std::list <events::folderListener*>::iterator
 	     it = m_folderListeners.begin() ; it != m_folderListeners.end() ; ++it)
@@ -102,19 +102,19 @@ void folder::notifyFolder(ref <events::folderEvent> event)
 }
 
 
-void folder::notifyEvent(ref <events::event> event)
+void folder::notifyEvent(shared_ptr <events::event> event)
 {
 	if (event->getClass() == events::messageCountEvent::EVENT_CLASS)
 	{
-		notifyMessageCount(event.dynamicCast <events::messageCountEvent>());
+		notifyMessageCount(dynamicCast <events::messageCountEvent>(event));
 	}
 	else if (event->getClass() == events::messageChangedEvent::EVENT_CLASS)
 	{
-		notifyMessageChanged(event.dynamicCast <events::messageChangedEvent>());
+		notifyMessageChanged(dynamicCast <events::messageChangedEvent>(event));
 	}
 	else if (event->getClass() == events::folderEvent::EVENT_CLASS)
 	{
-		notifyFolder(event.dynamicCast <events::folderEvent>());
+		notifyFolder(dynamicCast <events::folderEvent>(event));
 	}
 }
 

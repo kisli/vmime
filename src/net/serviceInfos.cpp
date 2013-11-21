@@ -85,7 +85,7 @@ serviceInfos::~serviceInfos()
 }
 
 
-bool serviceInfos::hasProperty(ref <session> s, const property& p) const
+bool serviceInfos::hasProperty(shared_ptr <session> s, const property& p) const
 {
 	return s->getProperties().hasProperty(getPropertyPrefix() + p.getName());
 }

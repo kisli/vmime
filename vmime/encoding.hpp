@@ -93,7 +93,7 @@ public:
 	bool operator==(const encoding& value) const;
 	bool operator!=(const encoding& value) const;
 
-	const std::vector <ref <component> > getChildComponents();
+	const std::vector <shared_ptr <component> > getChildComponents();
 
 	/** Decide which encoding to use based on the specified data.
 	  *
@@ -101,7 +101,7 @@ public:
 	  * @param usage context of use of data
 	  * @return suitable encoding for specified data
 	  */
-	static const encoding decide(ref <const contentHandler> data, const EncodingUsage usage = USAGE_BINARY_DATA);
+	static const encoding decide(shared_ptr <const contentHandler> data, const EncodingUsage usage = USAGE_BINARY_DATA);
 
 	/** Decide which encoding to use based on the specified data and charset.
 	  *
@@ -110,10 +110,10 @@ public:
 	  * @param usage context of use of data
 	  * @return suitable encoding for specified data and charset
 	  */
-	static const encoding decide(ref <const contentHandler> data, const charset& chset, const EncodingUsage usage = USAGE_BINARY_DATA);
+	static const encoding decide(shared_ptr <const contentHandler> data, const charset& chset, const EncodingUsage usage = USAGE_BINARY_DATA);
 
 
-	ref <component> clone() const;
+	shared_ptr <component> clone() const;
 	void copyFrom(const component& other);
 
 	/** Use encoderFactory to obtain an encoder/decoder object
@@ -123,7 +123,7 @@ public:
 	  * is registered for the encoding
 	  * @return a new encoder object for the encoding type
 	  */
-	ref <utility::encoder::encoder> getEncoder() const;
+	shared_ptr <utility::encoder::encoder> getEncoder() const;
 
 private:
 

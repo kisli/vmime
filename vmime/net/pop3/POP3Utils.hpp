@@ -64,7 +64,7 @@ public:
 	  * number to its corresponding data (either UID or size)
 	  */
 	static void parseMultiListOrUidlResponse
-		(ref <POP3Response> response, std::map <int, string>& result);
+		(shared_ptr <POP3Response> response, std::map <int, string>& result);
 
 	/** Returns a list of message numbers given a message set.
 	  *

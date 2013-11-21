@@ -62,11 +62,9 @@ class POP3Store;
   */
 class VMIME_EXPORT POP3Connection : public object
 {
-	friend class vmime::creator;
-
 public:
 
-	POP3Connection(ref <POP3Store> store, ref <security::authenticator> auth);
+	POP3Connection(shared_ptr <POP3Store> store, shared_ptr <security::authenticator> auth);
 	virtual ~POP3Connection();
 
 
@@ -75,13 +73,13 @@ public:
 	virtual void disconnect();
 
 	bool isSecuredConnection() const;
-	ref <connectionInfos> getConnectionInfos() const;
+	shared_ptr <connectionInfos> getConnectionInfos() const;
 
-	virtual ref <POP3Store> getStore();
-	virtual ref <socket> getSocket();
-	virtual ref <timeoutHandler> getTimeoutHandler();
-	virtual ref <security::authenticator> getAuthenticator();
-	virtual ref <session> getSession();
+	virtual shared_ptr <POP3Store> getStore();
+	virtual shared_ptr <socket> getSocket();
+	virtual shared_ptr <timeoutHandler> getTimeoutHandler();
+	virtual shared_ptr <security::authenticator> getAuthenticator();
+	virtual shared_ptr <session> getSession();
 
 private:
 
@@ -101,16 +99,16 @@ private:
 	void internalDisconnect();
 
 
-	weak_ref <POP3Store> m_store;
+	weak_ptr <POP3Store> m_store;
 
-	ref <security::authenticator> m_auth;
-	ref <socket> m_socket;
-	ref <timeoutHandler> m_timeoutHandler;
+	shared_ptr <security::authenticator> m_auth;
+	shared_ptr <socket> m_socket;
+	shared_ptr <timeoutHandler> m_timeoutHandler;
 
 	bool m_authenticated;
 	bool m_secured;
 
-	ref <connectionInfos> m_cntInfos;
+	shared_ptr <connectionInfos> m_cntInfos;
 
 	std::vector <string> m_capabilities;
 	bool m_capabilitiesFetched;

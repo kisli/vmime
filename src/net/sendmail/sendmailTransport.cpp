@@ -36,7 +36,6 @@
 
 #include "vmime/utility/filteredStream.hpp"
 #include "vmime/utility/childProcess.hpp"
-#include "vmime/utility/smartPtr.hpp"
 
 #include "vmime/utility/streamUtils.hpp"
 
@@ -59,7 +58,7 @@ namespace net {
 namespace sendmail {
 
 
-sendmailTransport::sendmailTransport(ref <session> sess, ref <security::authenticator> auth)
+sendmailTransport::sendmailTransport(shared_ptr <session> sess, shared_ptr <security::authenticator> auth)
 	: transport(sess, getInfosInstance(), auth), m_connected(false)
 {
 }
@@ -109,9 +108,9 @@ bool sendmailTransport::isSecuredConnection() const
 }
 
 
-ref <connectionInfos> sendmailTransport::getConnectionInfos() const
+shared_ptr <connectionInfos> sendmailTransport::getConnectionInfos() const
 {
-	return vmime::create <defaultConnectionInfos>("localhost", static_cast <port_t>(0));
+	return make_shared <defaultConnectionInfos>("localhost", static_cast <port_t>(0));
 }
 
 
@@ -182,7 +181,7 @@ void sendmailTransport::internalSend
 	const utility::file::path path = vmime::platform::getHandler()->
 		getFileSystemFactory()->stringToPath(m_sendmailPath);
 
-	ref <utility::childProcess> proc =
+	shared_ptr <utility::childProcess> proc =
 		vmime::platform::getHandler()->
 			getChildProcessFactory()->create(path);
 

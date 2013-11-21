@@ -43,7 +43,7 @@ protected:
 	headerFieldFactory();
 	~headerFieldFactory();
 
-	typedef ref <headerField> (*AllocFunc)(void);
+	typedef shared_ptr <headerField> (*AllocFunc)(void);
 	typedef std::map <string, AllocFunc> NameMap;
 
 	NameMap m_nameMap;
@@ -51,7 +51,7 @@ protected:
 
 	struct ValueInfo
 	{
-		typedef ref <headerFieldValue> (*ValueAllocFunc)(void);
+		typedef shared_ptr <headerFieldValue> (*ValueAllocFunc)(void);
 		typedef bool (*ValueTypeCheckFunc)(const object&);
 
 		ValueAllocFunc allocFunc;
@@ -64,7 +64,7 @@ protected:
 
 public:
 
-	static headerFieldFactory* getInstance();
+	static shared_ptr <headerFieldFactory> getInstance();
 
 #ifndef VMIME_BUILDING_DOC
 	// TYPE must inherit from BASE_TYPE
@@ -79,10 +79,10 @@ public:
 			return typedObj != NULL;
 		}
 
-		static ref <BASE_TYPE> creator()
+		static shared_ptr <BASE_TYPE> creator()
 		{
 			// Allocate a new object
-			return vmime::create <TYPE>();
+			return shared_ptr <BASE_TYPE>(new TYPE());
 		}
 	};
 #endif // VMIME_BUILDING_DOC
@@ -126,14 +126,14 @@ public:
 	  * the value of the field
 	  * @return a new field object
 	  */
-	ref <headerField> create(const string& name, const string& body = NULL_STRING);
+	shared_ptr <headerField> create(const string& name, const string& body = NULL_STRING);
 
 	/** Create a new field value for the specified field.
 	  *
 	  * @param fieldName name of the field for which to create value
 	  * @return a new value object for the field
 	  */
-	ref <headerFieldValue> createValue(const string& fieldName);
+	shared_ptr <headerFieldValue> createValue(const string& fieldName);
 
 	/** Returns whether the specified value type is valid for the specified field.
 	  *

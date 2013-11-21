@@ -52,7 +52,7 @@ messageDigestFactory* messageDigestFactory::getInstance()
 }
 
 
-ref <messageDigest> messageDigestFactory::create(const string& name)
+shared_ptr <messageDigest> messageDigestFactory::create(const string& name)
 {
 	const MapType::const_iterator it = m_algos.find
 		(utility::stringUtils::toLower(name));

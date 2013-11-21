@@ -29,7 +29,7 @@ namespace security {
 namespace cert {
 
 
-certificateChain::certificateChain(const std::vector <ref <certificate> >& certs)
+certificateChain::certificateChain(const std::vector <shared_ptr <certificate> >& certs)
 	: m_certs(certs)
 {
 }
@@ -41,7 +41,7 @@ unsigned int certificateChain::getCount() const
 }
 
 
-ref <certificate> certificateChain::getAt(const unsigned int index)
+shared_ptr <certificate> certificateChain::getAt(const unsigned int index)
 {
 	return m_certs[index];
 }

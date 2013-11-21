@@ -76,7 +76,7 @@ public:
 
 	virtual ~timeoutHandlerFactory() { }
 
-	virtual ref <timeoutHandler> create() = 0;
+	virtual shared_ptr <timeoutHandler> create() = 0;
 };
 
 

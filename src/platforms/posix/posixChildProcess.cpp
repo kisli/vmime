@@ -32,8 +32,6 @@
 
 #include "vmime/exception.hpp"
 
-#include "vmime/utility/smartPtr.hpp"
-
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
@@ -49,9 +47,9 @@ namespace posix {
 
 // posixChildProcessFactory
 
-ref <utility::childProcess> posixChildProcessFactory::create(const utility::file::path& path) const
+shared_ptr <utility::childProcess> posixChildProcessFactory::create(const utility::file::path& path) const
 {
-	return vmime::create <posixChildProcess>(path);
+	return make_shared <posixChildProcess>(path);
 }
 
 
@@ -215,7 +213,7 @@ private:
 
 posixChildProcess::posixChildProcess(const utility::file::path& path)
 	: m_processPath(path), m_started(false),
-	  m_stdIn(NULL), m_stdOut(NULL), m_pid(0), m_argArray(NULL)
+	  m_stdIn(null), m_stdOut(null), m_pid(0), m_argArray(NULL)
 {
 	m_pipe[0] = 0;
 	m_pipe[1] = 0;
@@ -319,7 +317,7 @@ void posixChildProcess::start(const std::vector <string> args, const int flags)
 
 	if (flags & FLAG_REDIRECT_STDIN)
 	{
-		m_stdIn = vmime::create <outputStreamPosixPipeAdapter>(m_pipe[1]);
+		m_stdIn = make_shared <outputStreamPosixPipeAdapter>(m_pipe[1]);
 	}
 	else
 	{
@@ -329,7 +327,7 @@ void posixChildProcess::start(const std::vector <string> args, const int flags)
 
 	if (flags & FLAG_REDIRECT_STDOUT)
 	{
-		m_stdOut = vmime::create <inputStreamPosixPipeAdapter>(m_pipe[0]);
+		m_stdOut = make_shared <inputStreamPosixPipeAdapter>(m_pipe[0]);
 	}
 	else
 	{
@@ -342,13 +340,13 @@ void posixChildProcess::start(const std::vector <string> args, const int flags)
 }
 
 
-ref <utility::outputStream> posixChildProcess::getStdIn()
+shared_ptr <utility::outputStream> posixChildProcess::getStdIn()
 {
 	return (m_stdIn);
 }
 
 
-ref <utility::inputStream> posixChildProcess::getStdOut()
+shared_ptr <utility::inputStream> posixChildProcess::getStdOut()
 {
 	return (m_stdOut);
 }
@@ -377,8 +375,7 @@ void posixChildProcess::waitForFinish()
 	{
 		if (WEXITSTATUS(wstat) == 255)
 		{
-			vmime::utility::auto_ptr <posixFileSystemFactory> pfsf
-				= new posixFileSystemFactory();
+			std::auto_ptr <posixFileSystemFactory> pfsf(new posixFileSystemFactory());
 
 			throw exceptions::system_error("Could not execute '"
 				+ pfsf->pathToString(m_processPath) + "'");

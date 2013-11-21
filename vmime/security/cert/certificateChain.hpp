@@ -47,7 +47,7 @@ public:
 	  *
 	  * @param certs chain of certificates
 	  */
-	certificateChain(const std::vector <ref <certificate> >& certs);
+	certificateChain(const std::vector <shared_ptr <certificate> >& certs);
 
 	/** Return the number of certificates in the chain.
 	  *
@@ -62,11 +62,11 @@ public:
 	  * @param index position at which to retrieve certificate
 	  * @return certificate at the specified position
 	  */
-	ref <certificate> getAt(const unsigned int index);
+	shared_ptr <certificate> getAt(const unsigned int index);
 
 protected:
 
-	std::vector <ref <certificate> > m_certs;
+	std::vector <shared_ptr <certificate> > m_certs;
 };
 
 

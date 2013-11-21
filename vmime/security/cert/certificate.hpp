@@ -64,7 +64,7 @@ public:
 	  * @return true if the two certificates are the same,
 	  * false otherwise
 	  */
-	virtual bool equals(ref <const certificate> other) const = 0;
+	virtual bool equals(shared_ptr <const certificate> other) const = 0;
 
 	/** Returns a pointer to internal binary data for this certificate.
 	  * The actual type of data depends on the library used for TLS support.

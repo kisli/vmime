@@ -35,16 +35,17 @@ VMIME_TEST_SUITE_BEGIN(headerFieldTest)
 
 	void testBadValueType()
 	{
-		vmime::headerFieldFactory *hfactory = vmime::headerFieldFactory::getInstance();
+		vmime::shared_ptr <vmime::headerFieldFactory> hfactory =
+			vmime::headerFieldFactory::getInstance();
 
 		// "To" header field accepts values of type "addressList"
-		vmime::ref <vmime::headerField> to = hfactory->create(vmime::fields::TO);
+		vmime::shared_ptr <vmime::headerField> to = hfactory->create(vmime::fields::TO);
 		VASSERT_THROW("to",
 			to->setValue(vmime::mailbox("email@vmime.org")),
 			vmime::exceptions::bad_field_value_type);
 
 		// Unregistered header field accepts any value type
-		vmime::ref <vmime::headerField> custom = hfactory->create("X-MyCustomHeader");
+		vmime::shared_ptr <vmime::headerField> custom = hfactory->create("X-MyCustomHeader");
 		VASSERT_NO_THROW("custom/1",
 			custom->setValue(vmime::mailbox("email@vmime.org")));
 		VASSERT_NO_THROW("custom/2",
@@ -57,11 +58,11 @@ VMIME_TEST_SUITE_BEGIN(headerFieldTest)
 
 		const vmime::string buffer = "Field: \r\n\tfield data";
 
-		vmime::ref <vmime::headerField> hfield =
+		vmime::shared_ptr <vmime::headerField> hfield =
 			vmime::headerField::parseNext(ctx, buffer, 0, buffer.size());
 
-		vmime::ref <vmime::text> hvalue =
-			hfield->getValue().dynamicCast <vmime::text>();
+		vmime::shared_ptr <vmime::text> hvalue =
+			hfield->getValue <vmime::text>();
 
 		VASSERT_EQ("Field name", "Field", hfield->getName());
 		VASSERT_EQ("Field value", "field data", hvalue->getWholeBuffer());
@@ -73,11 +74,11 @@ VMIME_TEST_SUITE_BEGIN(headerFieldTest)
 
 		const vmime::string buffer = "Field: \r\n\tfield data   ";
 
-		vmime::ref <vmime::headerField> hfield =
+		vmime::shared_ptr <vmime::headerField> hfield =
 			vmime::headerField::parseNext(ctx, buffer, 0, buffer.size());
 
-		vmime::ref <vmime::text> hvalue =
-			hfield->getValue().dynamicCast <vmime::text>();
+		vmime::shared_ptr <vmime::text> hvalue =
+			hfield->getValue <vmime::text>();
 
 		VASSERT_EQ("Field name", "Field", hfield->getName());
 		VASSERT_EQ("Field value", toHex("field data"), toHex(hvalue->getWholeBuffer()));

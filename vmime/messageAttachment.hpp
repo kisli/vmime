@@ -44,7 +44,7 @@ public:
 	  *
 	  * @return encapsulated message
 	  */
-	virtual ref <message> getMessage() const = 0;
+	virtual shared_ptr <message> getMessage() const = 0;
 };
 
 

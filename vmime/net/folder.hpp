@@ -186,7 +186,7 @@ public:
 	  * @return a new object referencing the specified message
 	  * @throw exceptions::net_exception if an error occurs
 	  */
-	virtual ref <message> getMessage(const int num) = 0;
+	virtual shared_ptr <message> getMessage(const int num) = 0;
 
 	/** Get new references to messages in this folder, given either their
 	  * sequence numbers or UIDs.
@@ -215,7 +215,7 @@ public:
 	  * @return new objects referencing the specified messages
 	  * @throw exceptions::net_exception if an error occurs
 	  */
-	virtual std::vector <ref <message> > getMessages(const messageSet& msgs) = 0;
+	virtual std::vector <shared_ptr <message> > getMessages(const messageSet& msgs) = 0;
 
 	/** Return the number of messages in this folder.
 	  *
@@ -229,7 +229,7 @@ public:
 	  * @return a new object referencing the specified folder
 	  * @throw exceptions::net_exception if an error occurs
 	  */
-	virtual ref <folder> getFolder(const folder::path::component& name) = 0;
+	virtual shared_ptr <folder> getFolder(const folder::path::component& name) = 0;
 
 	/** Get the list of all sub-folders in this folder.
 	  *
@@ -238,7 +238,7 @@ public:
 	  * @return list of sub-folders
 	  * @throw exceptions::net_exception if an error occurs
 	  */
-	virtual std::vector <ref <folder> > getFolders(const bool recursive = false) = 0;
+	virtual std::vector <shared_ptr <folder> > getFolders(const bool recursive = false) = 0;
 
 	/** Rename (move) this folder to another location.
 	  *
@@ -271,7 +271,7 @@ public:
 	  * @param progress progress listener, or NULL if not used
 	  * @throw exceptions::net_exception if an error occurs
 	  */
-	virtual void addMessage(ref <vmime::message> msg, const int flags = message::FLAG_UNDEFINED, vmime::datetime* date = NULL, utility::progressListener* progress = NULL) = 0;
+	virtual void addMessage(shared_ptr <vmime::message> msg, const int flags = message::FLAG_UNDEFINED, vmime::datetime* date = NULL, utility::progressListener* progress = NULL) = 0;
 
 	/** Add a message to this folder.
 	  *
@@ -307,7 +307,7 @@ public:
 	  * @return current folder status
 	  * @throw exceptions::net_exception if an error occurs
 	  */
-	virtual ref <folderStatus> getStatus() = 0;
+	virtual shared_ptr <folderStatus> getStatus() = 0;
 
 	/** Expunge deleted messages.
 	  *
@@ -319,19 +319,19 @@ public:
 	  *
 	  * @return parent folder object
 	  */
-	virtual ref <folder> getParent() = 0;
+	virtual shared_ptr <folder> getParent() = 0;
 
 	/** Return a reference to the store to which this folder belongs.
 	  *
 	  * @return the store object to which this folder is attached
 	  */
-	virtual ref <const store> getStore() const = 0;
+	virtual shared_ptr <const store> getStore() const = 0;
 
 	/** Return a reference to the store to which this folder belongs.
 	  *
 	  * @return the store object to which this folder is attached
 	  */
-	virtual ref <store> getStore() = 0;
+	virtual shared_ptr <store> getStore() = 0;
 
 	/** Fetch objects for the specified messages.
 	  *
@@ -340,7 +340,7 @@ public:
 	  * @param progress progress listener, or NULL if not used
 	  * @throw exceptions::net_exception if an error occurs
 	  */
-	virtual void fetchMessages(std::vector <ref <message> >& msg, const fetchAttributes& attribs, utility::progressListener* progress = NULL) = 0;
+	virtual void fetchMessages(std::vector <shared_ptr <message> >& msg, const fetchAttributes& attribs, utility::progressListener* progress = NULL) = 0;
 
 	/** Fetch objects for the specified message.
 	  *
@@ -348,7 +348,7 @@ public:
 	  * @param attribs set of attributes to fetch
 	  * @throw exceptions::net_exception if an error occurs
 	  */
-	virtual void fetchMessage(ref <message> msg, const fetchAttributes& attribs) = 0;
+	virtual void fetchMessage(shared_ptr <message> msg, const fetchAttributes& attribs) = 0;
 
 	/** Return the list of fetchable objects supported by
 	  * the underlying protocol (see folder::fetchAttributes).
@@ -377,10 +377,10 @@ public:
 
 protected:
 
-	void notifyMessageChanged(ref <events::messageChangedEvent> event);
-	void notifyMessageCount(ref <events::messageCountEvent> event);
-	void notifyFolder(ref <events::folderEvent> event);
-	void notifyEvent(ref <events::event> event);
+	void notifyMessageChanged(shared_ptr <events::messageChangedEvent> event);
+	void notifyMessageCount(shared_ptr <events::messageCountEvent> event);
+	void notifyFolder(shared_ptr <events::folderEvent> event);
+	void notifyEvent(shared_ptr <events::event> event);
 
 private:
 

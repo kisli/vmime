@@ -41,13 +41,13 @@ mailboxList::mailboxList(const mailboxList& mboxList)
 }
 
 
-void mailboxList::appendMailbox(ref <mailbox> mbox)
+void mailboxList::appendMailbox(shared_ptr <mailbox> mbox)
 {
 	m_list.appendAddress(mbox);
 }
 
 
-void mailboxList::insertMailboxBefore(ref <mailbox> beforeMailbox, ref <mailbox> mbox)
+void mailboxList::insertMailboxBefore(shared_ptr <mailbox> beforeMailbox, shared_ptr <mailbox> mbox)
 {
 	try
 	{
@@ -60,13 +60,13 @@ void mailboxList::insertMailboxBefore(ref <mailbox> beforeMailbox, ref <mailbox>
 }
 
 
-void mailboxList::insertMailboxBefore(const size_t pos, ref <mailbox> mbox)
+void mailboxList::insertMailboxBefore(const size_t pos, shared_ptr <mailbox> mbox)
 {
 	m_list.insertAddressBefore(pos, mbox);
 }
 
 
-void mailboxList::insertMailboxAfter(ref <mailbox> afterMailbox, ref <mailbox> mbox)
+void mailboxList::insertMailboxAfter(shared_ptr <mailbox> afterMailbox, shared_ptr <mailbox> mbox)
 {
 	try
 	{
@@ -79,13 +79,13 @@ void mailboxList::insertMailboxAfter(ref <mailbox> afterMailbox, ref <mailbox> m
 }
 
 
-void mailboxList::insertMailboxAfter(const size_t pos, ref <mailbox> mbox)
+void mailboxList::insertMailboxAfter(const size_t pos, shared_ptr <mailbox> mbox)
 {
 	m_list.insertAddressAfter(pos, mbox);
 }
 
 
-void mailboxList::removeMailbox(ref <mailbox> mbox)
+void mailboxList::removeMailbox(shared_ptr <mailbox> mbox)
 {
 	try
 	{
@@ -122,27 +122,27 @@ bool mailboxList::isEmpty() const
 }
 
 
-ref <mailbox> mailboxList::getMailboxAt(const size_t pos)
+shared_ptr <mailbox> mailboxList::getMailboxAt(const size_t pos)
 {
-	return m_list.getAddressAt(pos).staticCast <mailbox>();
+	return dynamicCast <mailbox>(m_list.getAddressAt(pos));
 }
 
 
-const ref <const mailbox> mailboxList::getMailboxAt(const size_t pos) const
+const shared_ptr <const mailbox> mailboxList::getMailboxAt(const size_t pos) const
 {
-	return m_list.getAddressAt(pos).staticCast <const mailbox>();
+	return dynamicCast <const mailbox>(m_list.getAddressAt(pos));
 }
 
 
-const std::vector <ref <const mailbox> > mailboxList::getMailboxList() const
+const std::vector <shared_ptr <const mailbox> > mailboxList::getMailboxList() const
 {
-	const std::vector <ref <const address> > addrList = m_list.getAddressList();
-	std::vector <ref <const mailbox> > res;
+	const std::vector <shared_ptr <const address> > addrList = m_list.getAddressList();
+	std::vector <shared_ptr <const mailbox> > res;
 
-	for (std::vector <ref <const address> >::const_iterator it = addrList.begin() ;
+	for (std::vector <shared_ptr <const address> >::const_iterator it = addrList.begin() ;
 	     it != addrList.end() ; ++it)
 	{
-		const ref <const mailbox> mbox = (*it).dynamicCast <const mailbox>();
+		const shared_ptr <const mailbox> mbox = dynamicCast <const mailbox>(*it);
 
 		if (mbox != NULL)
 			res.push_back(mbox);
@@ -152,15 +152,15 @@ const std::vector <ref <const mailbox> > mailboxList::getMailboxList() const
 }
 
 
-const std::vector <ref <mailbox> > mailboxList::getMailboxList()
+const std::vector <shared_ptr <mailbox> > mailboxList::getMailboxList()
 {
-	const std::vector <ref <address> > addrList = m_list.getAddressList();
-	std::vector <ref <mailbox> > res;
+	const std::vector <shared_ptr <address> > addrList = m_list.getAddressList();
+	std::vector <shared_ptr <mailbox> > res;
 
-	for (std::vector <ref <address> >::const_iterator it = addrList.begin() ;
+	for (std::vector <shared_ptr <address> >::const_iterator it = addrList.begin() ;
 	     it != addrList.end() ; ++it)
 	{
-		const ref <mailbox> mbox = (*it).dynamicCast <mailbox>();
+		const shared_ptr <mailbox> mbox = dynamicCast <mailbox>(*it);
 
 		if (mbox != NULL)
 			res.push_back(mbox);
@@ -170,9 +170,9 @@ const std::vector <ref <mailbox> > mailboxList::getMailboxList()
 }
 
 
-ref <component> mailboxList::clone() const
+shared_ptr <component> mailboxList::clone() const
 {
-	return vmime::create <mailboxList>(*this);
+	return make_shared <mailboxList>(*this);
 }
 
 
@@ -191,7 +191,7 @@ mailboxList& mailboxList::operator=(const mailboxList& other)
 }
 
 
-const std::vector <ref <component> > mailboxList::getChildComponents()
+const std::vector <shared_ptr <component> > mailboxList::getChildComponents()
 {
 	return (m_list.getChildComponents());
 }
@@ -207,13 +207,13 @@ void mailboxList::parseImpl
 
 	while (pos < end)
 	{
-		ref <address> parsedAddress = address::parseNext(ctx, buffer, pos, end, &pos, NULL);
+		shared_ptr <address> parsedAddress = address::parseNext(ctx, buffer, pos, end, &pos, NULL);
 
 		if (parsedAddress != NULL)
 		{
 			if (parsedAddress->isGroup())
 			{
-				ref <mailboxGroup> group = parsedAddress.staticCast <mailboxGroup>();
+				shared_ptr <mailboxGroup> group = dynamicCast <mailboxGroup>(parsedAddress);
 
 				for (size_t i = 0 ; i < group->getMailboxCount() ; ++i)
 				{
@@ -241,9 +241,9 @@ void mailboxList::generateImpl(const generationContext& ctx, utility::outputStre
 }
 
 
-ref <addressList> mailboxList::toAddressList() const
+shared_ptr <addressList> mailboxList::toAddressList() const
 {
-	return m_list.clone().dynamicCast <addressList>();
+	return vmime::clone(m_list);
 }
 
 

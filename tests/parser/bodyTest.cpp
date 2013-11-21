@@ -40,7 +40,7 @@ VMIME_TEST_SUITE_BEGIN(bodyTest)
 		// Quoted-Printable encoding
 
 		vmime::bodyPart p;
-		p.getBody()->setContents(vmime::create <vmime::stringContentHandler>
+		p.getBody()->setContents(vmime::make_shared <vmime::stringContentHandler>
 			("Foo éé\r\né bar\r\nbaz"), vmime::mediaType("text", "plain"),
 			 vmime::charset("utf-8"), vmime::encoding("quoted-printable"));
 
@@ -54,7 +54,7 @@ VMIME_TEST_SUITE_BEGIN(bodyTest)
 	void testGenerate_NonText()
 	{
 		vmime::bodyPart p;
-		p.getBody()->setContents(vmime::create <vmime::stringContentHandler>
+		p.getBody()->setContents(vmime::make_shared <vmime::stringContentHandler>
 			("Binary\xfa\xfb\r\ndata\r\n\r\n\xfc"), vmime::mediaType("application", "octet-stream"),
 			 vmime::charset("utf-8"), vmime::encoding("quoted-printable"));
 

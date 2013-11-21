@@ -29,25 +29,26 @@ class POP3ConnectionTest : public vmime::net::pop3::POP3Connection
 {
 public:
 
-	POP3ConnectionTest(vmime::ref <vmime::net::socket> socket,
-	                   vmime::ref <vmime::net::timeoutHandler> timeoutHandler)
-		: POP3Connection(NULL, NULL),
+	POP3ConnectionTest(vmime::shared_ptr <vmime::net::socket> socket,
+	                   vmime::shared_ptr <vmime::net::timeoutHandler> timeoutHandler)
+		: POP3Connection(vmime::shared_ptr <vmime::net::pop3::POP3Store>(),
+		                 vmime::shared_ptr <vmime::security::authenticator>()),
 		  m_socket(socket), m_timeoutHandler(timeoutHandler)
 	{
 	}
 
-	vmime::ref <vmime::net::socket> getSocket()
+	vmime::shared_ptr <vmime::net::socket> getSocket()
 	{
 		return m_socket;
 	}
 
-	vmime::ref <vmime::net::timeoutHandler> getTimeoutHandler()
+	vmime::shared_ptr <vmime::net::timeoutHandler> getTimeoutHandler()
 	{
 		return m_timeoutHandler;
 	}
 
 private:
 
-	vmime::ref <vmime::net::socket> m_socket;
-	vmime::ref <vmime::net::timeoutHandler> m_timeoutHandler;
+	vmime::shared_ptr <vmime::net::socket> m_socket;
+	vmime::shared_ptr <vmime::net::timeoutHandler> m_timeoutHandler;
 };

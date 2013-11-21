@@ -50,9 +50,9 @@ headerField::~headerField()
 }
 
 
-ref <component> headerField::clone() const
+shared_ptr <component> headerField::clone() const
 {
-	ref <headerField> field = headerFieldFactory::getInstance()->create(m_name);
+	shared_ptr <headerField> field = headerFieldFactory::getInstance()->create(m_name);
 
 	field->copyFrom(*this);
 
@@ -75,7 +75,7 @@ headerField& headerField::operator=(const headerField& other)
 }
 
 
-ref <headerField> headerField::parseNext
+shared_ptr <headerField> headerField::parseNext
 	(const parsingContext& ctx, const string& buffer, const string::size_type position,
 	 const string::size_type end, string::size_type* newPosition)
 {
@@ -93,14 +93,14 @@ ref <headerField> headerField::parseNext
 			if (newPosition)
 				*newPosition = pos + 1;   // LF: illegal
 
-			return (NULL);
+			return null;
 		}
 		else if (c == '\r' && pos + 1 < end && buffer[pos + 1] == '\n')
 		{
 			if (newPosition)
 				*newPosition = pos + 2;   // CR+LF
 
-			return (NULL);
+			return null;
 		}
 
 		// This line may be a field description
@@ -230,7 +230,7 @@ ref <headerField> headerField::parseNext
 				}
 
 				// Return a new field
-				ref <headerField> field = headerFieldFactory::getInstance()->create(name);
+				shared_ptr <headerField> field = headerFieldFactory::getInstance()->create(name);
 
 				field->parse(ctx, buffer, contentsStart, contentsEnd, NULL);
 				field->setParsedBounds(nameStart, pos);
@@ -253,14 +253,14 @@ ref <headerField> headerField::parseNext
 				if (newPosition)
 					*newPosition = pos + 1;   // LF: illegal
 
-				return NULL;
+				return null;
 			}
 			else if (pos + 1 < end && buffer[pos] == '\r' && buffer[pos + 1] == '\n')
 			{
 				if (newPosition)
 					*newPosition = pos + 2;   // CR+LF
 
-				return NULL;
+				return null;
 			}
 
 			// Skip this error and advance to the next line
@@ -275,7 +275,7 @@ ref <headerField> headerField::parseNext
 	if (newPosition)
 		*newPosition = pos;
 
-	return (NULL);
+	return null;
 }
 
 
@@ -321,9 +321,9 @@ bool headerField::isCustom() const
 }
 
 
-const std::vector <ref <component> > headerField::getChildComponents()
+const std::vector <shared_ptr <component> > headerField::getChildComponents()
 {
-	std::vector <ref <component> > list;
+	std::vector <shared_ptr <component> > list;
 
 	if (m_value)
 		list.push_back(m_value);
@@ -332,19 +332,19 @@ const std::vector <ref <component> > headerField::getChildComponents()
 }
 
 
-ref <const headerFieldValue> headerField::getValue() const
+shared_ptr <const headerFieldValue> headerField::getValue() const
 {
 	return m_value;
 }
 
 
-ref <headerFieldValue> headerField::getValue()
+shared_ptr <headerFieldValue> headerField::getValue()
 {
 	return m_value;
 }
 
 
-void headerField::setValue(ref <headerFieldValue> value)
+void headerField::setValue(shared_ptr <headerFieldValue> value)
 {
 	if (!headerFieldFactory::getInstance()->isValueTypeValid(*this, *value))
 		throw exceptions::bad_field_value_type(getName());
@@ -354,12 +354,12 @@ void headerField::setValue(ref <headerFieldValue> value)
 }
 
 
-void headerField::setValueConst(ref <const headerFieldValue> value)
+void headerField::setValueConst(shared_ptr <const headerFieldValue> value)
 {
 	if (!headerFieldFactory::getInstance()->isValueTypeValid(*this, *value))
 		throw exceptions::bad_field_value_type(getName());
 
-	m_value = value->clone().dynamicCast <headerFieldValue>();
+	m_value = vmime::clone(value);
 }
 
 
@@ -368,7 +368,7 @@ void headerField::setValue(const headerFieldValue& value)
 	if (!headerFieldFactory::getInstance()->isValueTypeValid(*this, value))
 		throw exceptions::bad_field_value_type(getName());
 
-	m_value = value.clone().dynamicCast <headerFieldValue>();
+	m_value = vmime::clone(value);
 }
 
 

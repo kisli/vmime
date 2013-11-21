@@ -51,11 +51,11 @@
 
 // Helpers for service properties
 #define GET_PROPERTY(type, prop) \
-	(m_transport.acquire()->getInfos().getPropertyValue <type>(getSession(), \
-		dynamic_cast <const SMTPServiceInfos&>(m_transport.acquire()->getInfos()).getProperties().prop))
+	(m_transport.lock()->getInfos().getPropertyValue <type>(getSession(), \
+		dynamic_cast <const SMTPServiceInfos&>(m_transport.lock()->getInfos()).getProperties().prop))
 #define HAS_PROPERTY(prop) \
-	(m_transport.acquire()->getInfos().hasProperty(getSession(), \
-		dynamic_cast <const SMTPServiceInfos&>(m_transport.acquire()->getInfos()).getProperties().prop))
+	(m_transport.lock()->getInfos().hasProperty(getSession(), \
+		dynamic_cast <const SMTPServiceInfos&>(m_transport.lock()->getInfos()).getProperties().prop))
 
 
 namespace vmime {
@@ -64,8 +64,8 @@ namespace smtp {
 
 
 
-SMTPConnection::SMTPConnection(ref <SMTPTransport> transport, ref <security::authenticator> auth)
-	: m_transport(transport), m_auth(auth), m_socket(NULL), m_timeoutHandler(NULL),
+SMTPConnection::SMTPConnection(shared_ptr <SMTPTransport> transport, shared_ptr <security::authenticator> auth)
+	: m_transport(transport), m_auth(auth), m_socket(null), m_timeoutHandler(null),
 	  m_authenticated(false), m_secured(false), m_extendedSMTP(false)
 {
 }
@@ -95,7 +95,7 @@ void SMTPConnection::connect()
 	const string address = GET_PROPERTY(string, PROPERTY_SERVER_ADDRESS);
 	const port_t port = GET_PROPERTY(port_t, PROPERTY_SERVER_PORT);
 
-	ref <SMTPTransport> transport = m_transport.acquire();
+	shared_ptr <SMTPTransport> transport = m_transport.lock();
 
 	// Create the time-out handler
 	if (transport->getTimeoutHandlerFactory())
@@ -107,22 +107,22 @@ void SMTPConnection::connect()
 #if VMIME_HAVE_TLS_SUPPORT
 	if (transport->isSMTPS())  // dedicated port/SMTPS
 	{
-		ref <tls::TLSSession> tlsSession = tls::TLSSession::create
+		shared_ptr <tls::TLSSession> tlsSession = tls::TLSSession::create
 			(transport->getCertificateVerifier(),
 			 transport->getSession()->getTLSProperties());
 
-		ref <tls::TLSSocket> tlsSocket =
+		shared_ptr <tls::TLSSocket> tlsSocket =
 			tlsSession->getSocket(m_socket);
 
 		m_socket = tlsSocket;
 
 		m_secured = true;
-		m_cntInfos = vmime::create <tls::TLSSecuredConnectionInfos>(address, port, tlsSession, tlsSocket);
+		m_cntInfos = make_shared <tls::TLSSecuredConnectionInfos>(address, port, tlsSession, tlsSocket);
 	}
 	else
 #endif // VMIME_HAVE_TLS_SUPPORT
 	{
-		m_cntInfos = vmime::create <defaultConnectionInfos>(address, port);
+		m_cntInfos = make_shared <defaultConnectionInfos>(address, port);
 	}
 
 	m_socket->connect(address, port);
@@ -132,7 +132,7 @@ void SMTPConnection::connect()
 	// eg:  C: <connection to server>
 	// ---  S: 220 smtp.domain.com Service ready
 
-	ref <SMTPResponse> resp;
+	shared_ptr <SMTPResponse> resp;
 
 	if ((resp = readResponse())->getCode() != 220)
 	{
@@ -199,7 +199,7 @@ void SMTPConnection::helo()
 
 	sendRequest(SMTPCommand::EHLO(platform::getHandler()->getHostName()));
 
-	ref <SMTPResponse> resp;
+	shared_ptr <SMTPResponse> resp;
 
 	if ((resp = readResponse())->getCode() != 250)
 	{
@@ -281,7 +281,7 @@ void SMTPConnection::authenticate()
 		throw exceptions::command_error("AUTH", "ESMTP not supported.");
 	}
 
-	getAuthenticator()->setService(m_transport.acquire());
+	getAuthenticator()->setService(m_transport.lock());
 
 #if VMIME_HAVE_SASL_SUPPORT
 	// First, try SASL authentication
@@ -325,7 +325,7 @@ void SMTPConnection::authenticate()
 
 void SMTPConnection::authenticateSASL()
 {
-	if (!getAuthenticator().dynamicCast <security::sasl::SASLAuthenticator>())
+	if (!dynamicCast <security::sasl::SASLAuthenticator>(getAuthenticator()))
 		throw exceptions::authentication_error("No SASL authenticator available.");
 
 	// Obtain SASL mechanisms supported by server from ESMTP extensions
@@ -335,10 +335,10 @@ void SMTPConnection::authenticateSASL()
 	if (saslMechs.empty())
 		throw exceptions::authentication_error("No SASL mechanism available.");
 
-	std::vector <ref <security::sasl::SASLMechanism> > mechList;
+	std::vector <shared_ptr <security::sasl::SASLMechanism> > mechList;
 
-	ref <security::sasl::SASLContext> saslContext =
-		vmime::create <security::sasl::SASLContext>();
+	shared_ptr <security::sasl::SASLContext> saslContext =
+		make_shared <security::sasl::SASLContext>();
 
 	for (unsigned int i = 0 ; i < saslMechs.size() ; ++i)
 	{
@@ -357,14 +357,14 @@ void SMTPConnection::authenticateSASL()
 		throw exceptions::authentication_error("No SASL mechanism available.");
 
 	// Try to suggest a mechanism among all those supported
-	ref <security::sasl::SASLMechanism> suggestedMech =
+	shared_ptr <security::sasl::SASLMechanism> suggestedMech =
 		saslContext->suggestMechanism(mechList);
 
 	if (!suggestedMech)
 		throw exceptions::authentication_error("Unable to suggest SASL mechanism.");
 
 	// Allow application to choose which mechanisms to use
-	mechList = getAuthenticator().dynamicCast <security::sasl::SASLAuthenticator>()->
+	mechList = dynamicCast <security::sasl::SASLAuthenticator>(getAuthenticator())->
 		getAcceptableMechanisms(mechList, suggestedMech);
 
 	if (mechList.empty())
@@ -373,9 +373,9 @@ void SMTPConnection::authenticateSASL()
 	// Try each mechanism in the list in turn
 	for (unsigned int i = 0 ; i < mechList.size() ; ++i)
 	{
-		ref <security::sasl::SASLMechanism> mech = mechList[i];
+		shared_ptr <security::sasl::SASLMechanism> mech = mechList[i];
 
-		ref <security::sasl::SASLSession> saslSession =
+		shared_ptr <security::sasl::SASLSession> saslSession =
 			saslContext->createSession("smtp", getAuthenticator(), mech);
 
 		saslSession->init();
@@ -384,7 +384,7 @@ void SMTPConnection::authenticateSASL()
 
 		for (bool cont = true ; cont ; )
 		{
-			ref <SMTPResponse> response = readResponse();
+			shared_ptr <SMTPResponse> response = readResponse();
 
 			switch (response->getCode())
 			{
@@ -472,7 +472,7 @@ void SMTPConnection::startTLS()
 	{
 		sendRequest(SMTPCommand::STARTTLS());
 
-		ref <SMTPResponse> resp = readResponse();
+		shared_ptr <SMTPResponse> resp = readResponse();
 
 		if (resp->getCode() != 220)
 		{
@@ -480,11 +480,11 @@ void SMTPConnection::startTLS()
 				resp->getCode(), resp->getEnhancedCode());
 		}
 
-		ref <tls::TLSSession> tlsSession = tls::TLSSession::create
+		shared_ptr <tls::TLSSession> tlsSession = tls::TLSSession::create
 			(getTransport()->getCertificateVerifier(),
 			 getTransport()->getSession()->getTLSProperties());
 
-		ref <tls::TLSSocket> tlsSocket =
+		shared_ptr <tls::TLSSocket> tlsSocket =
 			tlsSession->getSocket(m_socket);
 
 		tlsSocket->handshake(m_timeoutHandler);
@@ -492,7 +492,7 @@ void SMTPConnection::startTLS()
 		m_socket = tlsSocket;
 
 		m_secured = true;
-		m_cntInfos = vmime::create <tls::TLSSecuredConnectionInfos>
+		m_cntInfos = make_shared <tls::TLSSecuredConnectionInfos>
 			(m_cntInfos->getHost(), m_cntInfos->getPort(), tlsSession, tlsSocket);
 	}
 	catch (exceptions::command_error&)
@@ -533,27 +533,27 @@ void SMTPConnection::internalDisconnect()
 	}
 
 	m_socket->disconnect();
-	m_socket = NULL;
+	m_socket = null;
 
-	m_timeoutHandler = NULL;
+	m_timeoutHandler = null;
 
 	m_authenticated = false;
 	m_extendedSMTP = false;
 
 	m_secured = false;
-	m_cntInfos = NULL;
+	m_cntInfos = null;
 }
 
 
-void SMTPConnection::sendRequest(ref <SMTPCommand> cmd)
+void SMTPConnection::sendRequest(shared_ptr <SMTPCommand> cmd)
 {
 	cmd->writeToSocket(m_socket);
 }
 
 
-ref <SMTPResponse> SMTPConnection::readResponse()
+shared_ptr <SMTPResponse> SMTPConnection::readResponse()
 {
-	ref <SMTPResponse> resp = SMTPResponse::readResponse
+	shared_ptr <SMTPResponse> resp = SMTPResponse::readResponse
 		(m_socket, m_timeoutHandler, m_responseState);
 
 	m_responseState = resp->getCurrentState();
@@ -574,37 +574,37 @@ bool SMTPConnection::isSecuredConnection() const
 }
 
 
-ref <connectionInfos> SMTPConnection::getConnectionInfos() const
+shared_ptr <connectionInfos> SMTPConnection::getConnectionInfos() const
 {
 	return m_cntInfos;
 }
 
 
-ref <SMTPTransport> SMTPConnection::getTransport()
+shared_ptr <SMTPTransport> SMTPConnection::getTransport()
 {
-	return m_transport.acquire();
+	return m_transport.lock();
 }
 
 
-ref <session> SMTPConnection::getSession()
+shared_ptr <session> SMTPConnection::getSession()
 {
-	return m_transport.acquire()->getSession();
+	return m_transport.lock()->getSession();
 }
 
 
-ref <socket> SMTPConnection::getSocket()
+shared_ptr <socket> SMTPConnection::getSocket()
 {
 	return m_socket;
 }
 
 
-ref <timeoutHandler> SMTPConnection::getTimeoutHandler()
+shared_ptr <timeoutHandler> SMTPConnection::getTimeoutHandler()
 {
 	return m_timeoutHandler;
 }
 
 
-ref <security::authenticator> SMTPConnection::getAuthenticator()
+shared_ptr <security::authenticator> SMTPConnection::getAuthenticator()
 {
 	return m_auth;
 }

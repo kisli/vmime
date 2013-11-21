@@ -74,9 +74,9 @@ void POP3FolderStatus::setUnseenCount(const unsigned int unseen)
 }
 
 
-ref <folderStatus> POP3FolderStatus::clone() const
+shared_ptr <folderStatus> POP3FolderStatus::clone() const
 {
-	return vmime::create <POP3FolderStatus>(*this);
+	return make_shared <POP3FolderStatus>(*this);
 }
 
 

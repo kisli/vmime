@@ -42,12 +42,12 @@ class VMIME_EXPORT sendableMDNInfos : public MDNInfos
 {
 public:
 
-	sendableMDNInfos(const ref <const message> msg, const mailbox& mbox);
+	sendableMDNInfos(const shared_ptr <const message> msg, const mailbox& mbox);
 	sendableMDNInfos(const sendableMDNInfos& other);
 
 	sendableMDNInfos& operator=(const sendableMDNInfos& other);
 
-	const ref <const message> getMessage() const;
+	const shared_ptr <const message> getMessage() const;
 
 	/** Return the recipient of the MDN (the mailbox that will receive
 	  * the notification message).
@@ -61,7 +61,7 @@ private:
 	void copyFrom(const sendableMDNInfos& other);
 
 
-	ref <const message> m_msg;
+	shared_ptr <const message> m_msg;
 	mailbox m_mailbox;
 };
 

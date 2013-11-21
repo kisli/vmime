@@ -68,9 +68,9 @@ stringContentHandler::~stringContentHandler()
 }
 
 
-ref <contentHandler> stringContentHandler::clone() const
+shared_ptr <contentHandler> stringContentHandler::clone() const
 {
-	return vmime::create <stringContentHandler>(*this);
+	return make_shared <stringContentHandler>(*this);
 }
 
 
@@ -125,8 +125,8 @@ void stringContentHandler::generate(utility::outputStream& os,
 		// buffer, and then re-encode to output stream...
 		if (m_encoding != enc)
 		{
-			ref <utility::encoder::encoder> theDecoder = m_encoding.getEncoder();
-			ref <utility::encoder::encoder> theEncoder = enc.getEncoder();
+			shared_ptr <utility::encoder::encoder> theDecoder = m_encoding.getEncoder();
+			shared_ptr <utility::encoder::encoder> theEncoder = enc.getEncoder();
 
 			theEncoder->getProperties()["maxlinelength"] = maxLineLength;
 			theEncoder->getProperties()["text"] = (m_contentType.getType() == mediaTypes::TEXT);
@@ -152,7 +152,7 @@ void stringContentHandler::generate(utility::outputStream& os,
 	// Need to encode data before
 	else
 	{
-		ref <utility::encoder::encoder> theEncoder = enc.getEncoder();
+		shared_ptr <utility::encoder::encoder> theEncoder = enc.getEncoder();
 		theEncoder->getProperties()["maxlinelength"] = maxLineLength;
 		theEncoder->getProperties()["text"] = (m_contentType.getType() == mediaTypes::TEXT);
 
@@ -174,7 +174,7 @@ void stringContentHandler::extract(utility::outputStream& os,
 	// Need to decode data
 	else
 	{
-		ref <utility::encoder::encoder> theDecoder = m_encoding.getEncoder();
+		shared_ptr <utility::encoder::encoder> theDecoder = m_encoding.getEncoder();
 
 		utility::inputStreamStringProxyAdapter in(m_string);
 		utility::progressListenerSizeAdapter plsa(progress, getLength());

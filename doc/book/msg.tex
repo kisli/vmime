@@ -36,22 +36,22 @@ vmime::utility::outputStreamStringAdapter os(data);
 vmime::utility::bufferedStreamCopy(is, os);
 
 // Actually parse the message
-vmime::ref <vmime::message> msg = vmime::create <vmime::message>();
+vmime::shared_ptr <vmime::message> msg = vmime::make_shared <vmime::message>();
 msg->parse(data);
 
-vmime::ref <vmime::header> hdr = msg->getHeader();
-vmime::ref <vmime::body> bdy = msg->getBody();
+vmime::shared_ptr <vmime::header> hdr = msg->getHeader();
+vmime::shared_ptr <vmime::body> bdy = msg->getBody();
 
 // Now, you can extract some of its components
 vmime::charset ch(vmime::charsets::UTF_8);
 
 std::cout
    << "The subject of the message is: "
-   << hdr->Subject()->getValue().dynamicCast <vmime::text>()->getConvertedText(ch)
+   << hdr->Subject()->getValue <vmime::text>()->getConvertedText(ch)
    << std::endl
    << "It was sent by: "
-   << hdr->From()->getValue().dynamicCast <vmime::mailbox>()->getName().getConvertedText(ch)
-   << " (email: " << hdr->From()->getValue().dynamicCast<vmime::mailbox>()->getEmail() << ")"
+   << hdr->From()->getValue <vmime::mailbox>()->getName().getConvertedText(ch)
+   << " (email: " << hdr->From()->getValue <vmime::mailbox>()->getEmail() << ")"
    << std::endl;
 \end{lstlisting}
 
@@ -84,7 +84,7 @@ vmime::utility::outputStreamStringAdapter os(data);
 vmime::utility::bufferedStreamCopy(is, os);
 
 // Actually parse the message
-vmime::ref <vmime::message> msg = vmime::create <vmime::message>();
+vmime::shared_ptr <vmime::message> msg = vmime::make_shared <vmime::message>();
 msg->parse(data);
 
 // Here start the differences with the previous example
@@ -96,7 +96,7 @@ std::cout << "Message has " << mp.getAttachmentCount()
 
 for (int i = 0 ; i < mp.getAttachmentCount() ; ++i)
 {
-   vmime::ref <const vmime::attachment> att = mp.getAttachmentAt(i);
+   vmime::shared_ptr <const vmime::attachment> att = mp.getAttachmentAt(i);
    std::cout << "   - " << att->getType().generate() << std::endl;
 }
 
@@ -106,13 +106,13 @@ std::cout << "Message has " << mp.getTextPartCount()
 
 for (int i = 0 ; i < mp.getTextPartCount() ; ++i)
 {
-   vmime::ref <const vmime::textPart> tp = mp.getTextPartAt(i);
+   vmime::shared_ptr <const vmime::textPart> tp = mp.getTextPartAt(i);
 
    // text/html
    if (tp->getType().getSubType() == vmime::mediaTypes::TEXT_HTML)
    {
-      vmime::ref <const vmime::htmlTextPart> htp =
-         tp.dynamicCast <const vmime::htmlTextPart>();
+      vmime::shared_ptr <const vmime::htmlTextPart> htp =
+         vmime::dynamicCast <const vmime::htmlTextPart>(tp);
 
       // HTML text is in tp->getText()
       // Plain text is in tp->getPlainText()
@@ -120,7 +120,7 @@ for (int i = 0 ; i < mp.getTextPartCount() ; ++i)
       // Enumerate embedded objects
       for (int j = 0 ; j < htp->getObjectCount() ; ++j)
       {
-         vmime::ref <const vmime::htmlTextPart::embeddedObject> obj =
+         vmime::shared_ptr <const vmime::htmlTextPart::embeddedObject> obj =
             htp->getObjectAt(j);
 
          // Identifier (Content-Id or Content-Location) is obj->getId()
@@ -146,51 +146,51 @@ objects that compose it (parts, fields, etc.). The following is an example of
 how to achieve it:
 
 \begin{lstlisting}[caption={Building a simple message from scratch}]
-vmime::ref <vmime::message> msg = vmime::create <vmime::message>();
+vmime::shared_ptr <vmime::message> msg = vmime::make_shared <vmime::message>();
 
-vmime::ref <vmime::header> hdr = msg->getHeader();
-vmime::ref <vmime::body> bdy = msg->getBody();
+vmime::shared_ptr <vmime::header> hdr = msg->getHeader();
+vmime::shared_ptr <vmime::body> bdy = msg->getBody();
 
-vmime::headerFieldFactory* hfFactory =
+vmime::shared_ptr <vmime::headerFieldFactory> hfFactory =
    vmime::headerFieldFactory::getInstance();
 
 // Append a 'Date:' field
-vmime::ref <vmime::headerField> dateField =
+vmime::shared_ptr <vmime::headerField> dateField =
    hfFactory->create(vmime::fields::DATE);
 
 dateField->setValue(vmime::datetime::now());
 hdr->appendField(dateField);
 
 // Append a 'Subject:' field
-vmime::ref <vmime::headerField> subjectField =
+vmime::shared_ptr <vmime::headerField> subjectField =
    hfFactory->create(vmime::fields::SUBJECT);
 
 subjectField->setValue(vmime::text("Message subject"));
 hdr->appendField(subjectField);
 
 // Append a 'From:' field
-vmime::ref <vmime::headerField> fromField =
+vmime::shared_ptr <vmime::headerField> fromField =
    hfFactory->create(vmime::fields::FROM);
 
 fromField->setValue
-   (vmime::create <vmime::mailbox>("me@vmime.org"));
+   (vmime::make_shared <vmime::mailbox>("me@vmime.org"));
 hdr->appendField(fromField);
 
 // Append a 'To:' field
-vmime::ref <vmime::headerField> toField =
+vmime::shared_ptr <vmime::headerField> toField =
    hfFactory->create(vmime::fields::TO);
 
-vmime::ref <vmime::mailboxList> recipients =
-   vmime::create <vmime::mailboxList>();
+vmime::shared_ptr <vmime::mailboxList> recipients =
+   vmime::make_shared <vmime::mailboxList>();
 
 recipients->appendMailbox
-   (vmime::create <vmime::mailbox>("you@vmime.org"));
+   (vmime::make_shared <vmime::mailbox>("you@vmime.org"));
 
 toField->setValue(recipients);
 hdr->appendField(toField);
 
 // Set the body contents
-bdy->setContents(vmime::create <vmime::stringContentHandler>
+bdy->setContents(vmime::make_shared <vmime::stringContentHandler>
    ("This is the text of your message..."));
 
 // Output raw message data to standard output
@@ -215,14 +215,14 @@ try
    mb.setSubject(vmime::text("Message subject"));
    mb.setExpeditor(vmime::mailbox("me@vmime.org"));
    mb.getRecipients().appendAddress
-      (vmime::create <vmime::mailbox>("you@vmime.org"));
+      (vmime::make_shared <vmime::mailbox>("you@vmime.org"));
 
    mb.getTextPart()->setCharset(vmime::charsets::ISO8859_15);
-   mb.getTextPart()->setText(vmime::create <vmime::stringContentHandler>
+   mb.getTextPart()->setText(vmime::make_shared <vmime::stringContentHandler>
    	("This is the text of your message..."));
 
    // Message construction
-   vmime::ref <vmime::message> msg = mb.construct();
+   vmime::shared_ptr <vmime::message> msg = mb.construct();
 
    // Output raw message data to standard output
    vmime::utility::outputStreamAdapter out(std::cout);
@@ -249,8 +249,8 @@ previous example to attach a file to the message:
 \begin{lstlisting}[caption={Building a message with an attachment using
 {\vcode vmime::messageBuilder}}]
 // Create an attachment
-vmime::ref <vmime::fileAttachment> att =
-   vmime::create <vmime::fileAttachment>
+vmime::shared_ptr <vmime::fileAttachment> att =
+   vmime::make_shared <vmime::fileAttachment>
    (
      /* full path to file */  "/home/vincent/paris.jpg",
      /* content type */       vmime::mediaType("image/jpeg),
@@ -284,7 +284,7 @@ using the {\vcode vmime::messageBuilder}}]
 mb.setSubject(vmime::text("An HTML message"));
 mb.setExpeditor(vmime::mailbox("me@vmime.org"));
 mb.getRecipients().appendAddress
-   (vmime::create <vmime::mailbox>("you@vmime.org"));
+   (vmime::make_shared <vmime::mailbox>("you@vmime.org"));
 
 // Set the content-type to "text/html": a text part factory must be
 // available for the type you are using. The following code will make
@@ -294,8 +294,8 @@ mb.constructTextPart(vmime::mediaType
 
 // Set contents of the text parts; the message is available in two formats:
 // HTML and plain text. The HTML format also includes an embedded image.
-vmime::ref <vmime::htmlTextPart> textPart =
-   mb.getTextPart().dynamicCast <vmime::htmlTextPart>();
+vmime::shared_ptr <vmime::htmlTextPart> textPart =
+   vmime::dynamicCast <vmime::htmlTextPart>(mb.getTextPart());
 
 // -- Add the JPEG image (the returned identifier is used to identify the
 // -- embedded object in the HTML text, the famous "CID", or "Content-Id").
@@ -306,11 +306,11 @@ const vmime::string id = textPart->addObject("<...image data...>",
 // -- Set the text
 textPart->setCharset(vmime::charsets::ISO8859_15);
 
-textPart->setText(vmime::create <vmime::stringContentHandler>
+textPart->setText(vmime::make_shared <vmime::stringContentHandler>
    ("This is the <b>HTML text</b>, and the image:<br/>"
     "<img src=\"") + id + vmime::string("\"/>"));
 
-textPart->setPlainText(vmime::create <vmime::stringContentHandler>
+textPart->setPlainText(vmime::make_shared <vmime::stringContentHandler>
    ("This is the plain text."));
 \end{lstlisting}
 
@@ -332,11 +332,11 @@ input stream, then add an embedded object:
 vmime::utility::fileSystemFactory* fs =
    vmime::platform::getHandler()->getFileSystemFactory();
 
-vmime::ref <vmime::utility::file> imageFile =
+vmime::shared_ptr <vmime::utility::file> imageFile =
    fs->create(fs->stringToPath("/path/to/image.jpg"));
 
-vmime::ref <vmime::contentHandler> imageCts =
-   vmime::create <vmime::streamContentHandler>
+vmime::shared_ptr <vmime::contentHandler> imageCts =
+   vmime::make_shared <vmime::streamContentHandler>
       (imageFile->getFileReader()->getInputStream(), imageFile->getLength());
 
 const vmime::string cid = textPart.addObject(imageCts,
@@ -359,12 +359,12 @@ The following code snippet tests if a body part is an attachment, and if so,
 extract its contents to the standard output:
 
 \begin{lstlisting}[caption={Testing if a body part is an attachment}]
-vmime::ref <vmime::bodyPart> part;  // suppose we have a body part
+vmime::shared_ptr <vmime::bodyPart> part;  // suppose we have a body part
 
 if (vmime::attachmentHelper::isBodyPartAnAttachment(part))
 {
    // The body part contains an attachment, get it
-   vmime::ref <const vmime::attachment> attach =
+   vmime::shared_ptr <const vmime::attachment> attach =
       attachmentHelper::getBodyPartAttachment(part);
 
    // Extract attachment data to standard output
@@ -376,7 +376,7 @@ if (vmime::attachmentHelper::isBodyPartAnAttachment(part))
 You can also easily extract all attachments from a message:
 
 \begin{lstlisting}[caption={Extracting all attachments from a message}]
-vmime::ref <vmime::message> msg;  // suppose we have a message
+vmime::shared_ptr <vmime::message> msg;  // suppose we have a message
 
 const std::vector <ref <const attachment> > atts =
    attachmentHelper::findAttachmentsInMessage(msg);
@@ -390,11 +390,11 @@ exists in the message). Simply call the {\vcode addAttachment}
 function:
 
 \begin{lstlisting}[caption={Adding an attachment to an existing message}]
-vmime::ref <vmime::message> msg;  // suppose we have a message
+vmime::shared_ptr <vmime::message> msg;  // suppose we have a message
 
 // Create an attachment
-vmime::ref <vmime::fileAttachment> att =
-   vmime::create <vmime::fileAttachment>
+vmime::shared_ptr <vmime::fileAttachment> att =
+   vmime::make_shared <vmime::fileAttachment>
    (
      /* full path to file */  "/home/vincent/paris.jpg",
      /* content type */       vmime::mediaType("image/jpeg),

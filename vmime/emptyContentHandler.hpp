@@ -38,7 +38,7 @@ public:
 
 	emptyContentHandler();
 
-	ref <contentHandler> clone() const;
+	shared_ptr <contentHandler> clone() const;
 
 	void generate(utility::outputStream& os, const vmime::encoding& enc, const string::size_type maxLineLength = lineLengthLimits::infinite) const;
 

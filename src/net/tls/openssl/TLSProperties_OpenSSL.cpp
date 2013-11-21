@@ -40,7 +40,7 @@ namespace tls {
 
 
 TLSProperties::TLSProperties()
-	: m_data(vmime::create <TLSProperties_OpenSSL>())
+	: m_data(make_shared <TLSProperties_OpenSSL>())
 {
 	setCipherSuite(CIPHERSUITE_DEFAULT);
 }
@@ -48,9 +48,9 @@ TLSProperties::TLSProperties()
 
 TLSProperties::TLSProperties(const TLSProperties& props)
 	: object(),
-	  m_data(vmime::create <TLSProperties_OpenSSL>())
+	  m_data(make_shared <TLSProperties_OpenSSL>())
 {
-	*m_data.dynamicCast <TLSProperties_OpenSSL>() = *props.m_data.dynamicCast <TLSProperties_OpenSSL>();
+	*dynamicCast <TLSProperties_OpenSSL>(m_data) = *dynamicCast <TLSProperties_OpenSSL>(props.m_data);
 }
 
 
@@ -84,13 +84,13 @@ void TLSProperties::setCipherSuite(const GenericCipherSuite cipherSuite)
 
 void TLSProperties::setCipherSuite(const string& cipherSuite)
 {
-	m_data.dynamicCast <TLSProperties_OpenSSL>()->cipherSuite = cipherSuite;
+	dynamicCast <TLSProperties_OpenSSL>(m_data)->cipherSuite = cipherSuite;
 }
 
 
 const string TLSProperties::getCipherSuite() const
 {
-	return m_data.dynamicCast <TLSProperties_OpenSSL>()->cipherSuite;
+	return dynamicCast <TLSProperties_OpenSSL>(m_data)->cipherSuite;
 }
 
 

@@ -31,8 +31,8 @@
 
 
 // Global session object
-static vmime::ref <vmime::net::session> g_session
-	= vmime::create <vmime::net::session>();
+static vmime::shared_ptr <vmime::net::session> g_session
+	= vmime::make_shared <vmime::net::session>();
 
 
 #if VMIME_HAVE_SASL_SUPPORT
@@ -40,9 +40,9 @@ static vmime::ref <vmime::net::session> g_session
 // SASL authentication handler
 class interactiveAuthenticator : public vmime::security::sasl::defaultSASLAuthenticator
 {
-	const std::vector <vmime::ref <vmime::security::sasl::SASLMechanism> > getAcceptableMechanisms
-		(const std::vector <vmime::ref <vmime::security::sasl::SASLMechanism> >& available,
-		 vmime::ref <vmime::security::sasl::SASLMechanism> suggested) const
+	const std::vector <vmime::shared_ptr <vmime::security::sasl::SASLMechanism> > getAcceptableMechanisms
+		(const std::vector <vmime::shared_ptr <vmime::security::sasl::SASLMechanism> >& available,
+		 vmime::shared_ptr <vmime::security::sasl::SASLMechanism> suggested) const
 	{
 		std::cout << std::endl << "Available SASL mechanisms:" << std::endl;
 
@@ -59,7 +59,7 @@ class interactiveAuthenticator : public vmime::security::sasl::defaultSASLAuthen
 		return defaultSASLAuthenticator::getAcceptableMechanisms(available, suggested);
 	}
 
-	void setSASLMechanism(vmime::ref <vmime::security::sasl::SASLMechanism> mech)
+	void setSASLMechanism(vmime::shared_ptr <vmime::security::sasl::SASLMechanism> mech)
 	{
 		std::cout << "Trying '" << mech->getName() << "' authentication mechanism" << std::endl;
 
@@ -147,7 +147,7 @@ class interactiveCertificateVerifier : public vmime::security::cert::defaultCert
 {
 public:
 
-	void verify(vmime::ref <vmime::security::cert::certificateChain> chain, const vmime::string& hostname)
+	void verify(vmime::shared_ptr <vmime::security::cert::certificateChain> chain, const vmime::string& hostname)
 	{
 		try
 		{
@@ -158,7 +158,7 @@ public:
 		catch (vmime::exceptions::certificate_verification_exception&)
 		{
 			// Obtain subject's certificate
-			vmime::ref <vmime::security::cert::certificate> cert = chain->getAt(0);
+			vmime::shared_ptr <vmime::security::cert::certificate> cert = chain->getAt(0);
 
 			std::cout << std::endl;
 			std::cout << "Server sent a '" << cert->getType() << "'" << " certificate." << std::endl;
@@ -174,8 +174,8 @@ public:
 				// Accept it, and remember user's choice for later
 				if (cert->getType() == "X.509")
 				{
-					m_trustedCerts.push_back(cert.dynamicCast
-						<vmime::security::cert::X509Certificate>());
+					m_trustedCerts.push_back(vmime::dynamicCast
+						<vmime::security::cert::X509Certificate>(cert));
 
 					setX509TrustedCerts(m_trustedCerts);
 					defaultCertificateVerifier::verify(chain, hostname);
@@ -191,11 +191,11 @@ public:
 
 private:
 
-	static std::vector <vmime::ref <vmime::security::cert::X509Certificate> > m_trustedCerts;
+	static std::vector <vmime::shared_ptr <vmime::security::cert::X509Certificate> > m_trustedCerts;
 };
 
 
-std::vector <vmime::ref <vmime::security::cert::X509Certificate> >
+std::vector <vmime::shared_ptr <vmime::security::cert::X509Certificate> >
 	interactiveCertificateVerifier::m_trustedCerts;
 
 #endif // VMIME_HAVE_TLS_SUPPORT
@@ -208,7 +208,8 @@ std::vector <vmime::ref <vmime::security::cert::X509Certificate> >
   */
 static const std::string findAvailableProtocols(const vmime::net::service::Type type)
 {
-	vmime::net::serviceFactory* sf = vmime::net::serviceFactory::getInstance();
+	vmime::shared_ptr <vmime::net::serviceFactory> sf =
+		vmime::net::serviceFactory::getInstance();
 
 	std::ostringstream res;
 	int count = 0;
@@ -292,11 +293,11 @@ static std::ostream& operator<<(std::ostream& os, const vmime::exception& e)
   * @param s structure object
   * @param level current depth
   */
-static void printStructure(vmime::ref <const vmime::net::messageStructure> s, const int level = 0)
+static void printStructure(vmime::shared_ptr <const vmime::net::messageStructure> s, const int level = 0)
 {
 	for (int i = 0 ; i < s->getPartCount() ; ++i)
 	{
-		vmime::ref <const vmime::net::messagePart> part = s->getPartAt(i);
+		vmime::shared_ptr <const vmime::net::messagePart> part = s->getPartAt(i);
 
 		for (int j = 0 ; j < level * 2 ; ++j)
 			std::cout << " ";
@@ -311,7 +312,7 @@ static void printStructure(vmime::ref <const vmime::net::messageStructure> s, co
 }
 
 
-static const vmime::string getFolderPathString(vmime::ref <vmime::net::folder> f)
+static const vmime::string getFolderPathString(vmime::shared_ptr <vmime::net::folder> f)
 {
 	const vmime::string n = f->getName().getBuffer();
 
@@ -321,7 +322,7 @@ static const vmime::string getFolderPathString(vmime::ref <vmime::net::folder> f
 	}
 	else
 	{
-		vmime::ref <vmime::net::folder> p = f->getParent();
+		vmime::shared_ptr <vmime::net::folder> p = f->getParent();
 		return getFolderPathString(p) + n + "/";
 	}
 }
@@ -331,14 +332,14 @@ static const vmime::string getFolderPathString(vmime::ref <vmime::net::folder> f
   *
   * @param folder current folder
   */
-static void printFolders(vmime::ref <vmime::net::folder> folder, const int level = 0)
+static void printFolders(vmime::shared_ptr <vmime::net::folder> folder, const int level = 0)
 {
 	for (int j = 0 ; j < level * 2 ; ++j)
 		std::cout << " ";
 
 	std::cout << getFolderPathString(folder) << std::endl;
 
-	std::vector <vmime::ref <vmime::net::folder> > subFolders = folder->getFolders(false);
+	std::vector <vmime::shared_ptr <vmime::net::folder> > subFolders = folder->getFolders(false);
 
 	for (unsigned int i = 0 ; i < subFolders.size() ; ++i)
 		printFolders(subFolders[i], level + 1);
@@ -395,8 +396,8 @@ static void sendMessage()
 
 		vmime::utility::url url(urlString);
 
-		vmime::ref <vmime::net::transport> tr =
-			g_session->getTransport(url, vmime::create <interactiveAuthenticator>());
+		vmime::shared_ptr <vmime::net::transport> tr =
+			g_session->getTransport(url, vmime::make_shared <interactiveAuthenticator>());
 
 #if VMIME_HAVE_TLS_SUPPORT
 
@@ -406,7 +407,7 @@ static void sendMessage()
 		// Set the object responsible for verifying certificates, in the
 		// case a secured connection is used (TLS/SSL)
 		tr->setCertificateVerifier
-			(vmime::create <interactiveCertificateVerifier>());
+			(vmime::make_shared <interactiveCertificateVerifier>());
 
 #endif // VMIME_HAVE_TLS_SUPPORT
 
@@ -435,7 +436,7 @@ static void sendMessage()
 			cont = (toString.size() != 0);
 
 			if (cont)
-				to.appendMailbox(vmime::create <vmime::mailbox>(toString));
+				to.appendMailbox(vmime::make_shared <vmime::mailbox>(toString));
 		}
 
 		std::cout << "Enter message data, including headers (end with '.' on a single line):" << std::endl;
@@ -505,10 +506,10 @@ static void connectStore()
 		// If no authenticator is given in argument to getStore(), a default one
 		// is used. Its behaviour is to get the user credentials from the
 		// session properties "auth.username" and "auth.password".
-		vmime::ref <vmime::net::store> st;
+		vmime::shared_ptr <vmime::net::store> st;
 
 		if (url.getUsername().empty() || url.getPassword().empty())
-			st = g_session->getStore(url, vmime::create <interactiveAuthenticator>());
+			st = g_session->getStore(url, vmime::make_shared <interactiveAuthenticator>());
 		else
 			st = g_session->getStore(url);
 
@@ -520,7 +521,7 @@ static void connectStore()
 		// Set the object responsible for verifying certificates, in the
 		// case a secured connection is used (TLS/SSL)
 		st->setCertificateVerifier
-			(vmime::create <interactiveCertificateVerifier>());
+			(vmime::make_shared <interactiveCertificateVerifier>());
 
 #endif // VMIME_HAVE_TLS_SUPPORT
 
@@ -528,15 +529,15 @@ static void connectStore()
 		st->connect();
 
 		// Display some information about the connection
-		vmime::ref <vmime::net::connectionInfos> ci = st->getConnectionInfos();
+		vmime::shared_ptr <vmime::net::connectionInfos> ci = st->getConnectionInfos();
 
 		std::cout << std::endl;
 		std::cout << "Connected to '" << ci->getHost() << "' (port " << ci->getPort() << ")" << std::endl;
 		std::cout << "Connection is " << (st->isSecuredConnection() ? "" : "NOT ") << "secured." << std::endl;
 
 		// Open the default folder in this store
-		vmime::ref <vmime::net::folder> f = st->getDefaultFolder();
-//		vmime::ref <vmime::net::folder> f = st->getFolder(vmime::utility::path("a"));
+		vmime::shared_ptr <vmime::net::folder> f = st->getDefaultFolder();
+//		vmime::shared_ptr <vmime::net::folder> f = st->getFolder(vmime::utility::path("a"));
 
 		f->open(vmime::net::folder::MODE_READ_WRITE);
 
@@ -547,7 +548,7 @@ static void connectStore()
 
 		for (bool cont = true ; cont ; )
 		{
-			typedef std::map <int, vmime::ref <vmime::net::message> > MessageList;
+			typedef std::map <int, vmime::shared_ptr <vmime::net::message> > MessageList;
 			MessageList msgList;
 
 			try
@@ -567,7 +568,7 @@ static void connectStore()
 				const int choice = printMenu(choices);
 
 				// Request message number
-				vmime::ref <vmime::net::message> msg;
+				vmime::shared_ptr <vmime::net::message> msg;
 
 				if (choice != 6 && choice != 7 && choice != 8)
 				{
@@ -677,7 +678,7 @@ static void connectStore()
 				// List folders
 				case 7:
 				{
-					vmime::ref <vmime::net::folder>
+					vmime::shared_ptr <vmime::net::folder>
 						root = st->getRootFolder();
 
 					printFolders(root);
@@ -692,7 +693,7 @@ static void connectStore()
 					std::string path;
 					std::getline(std::cin, path);
 
-					vmime::ref <vmime::net::folder> newFolder = st->getRootFolder();
+					vmime::shared_ptr <vmime::net::folder> newFolder = st->getRootFolder();
 
 					for (std::string::size_type s = 0, p = 0 ; ; s = p + 1)
 					{
@@ -744,16 +745,16 @@ static void connectStore()
 
 		// Folder renaming
 		{
-			vmime::ref <vmime::net::folder> f = st->getFolder(vmime::net::folder::path("c"));
+			vmime::shared_ptr <vmime::net::folder> f = st->getFolder(vmime::net::folder::path("c"));
 			f->rename(vmime::net::folder::path("c2"));
 
-			vmime::ref <vmime::net::folder> g = st->getFolder(vmime::net::folder::path("c2"));
+			vmime::shared_ptr <vmime::net::folder> g = st->getFolder(vmime::net::folder::path("c2"));
 			g->rename(vmime::net::folder::path("c"));
 		}
 
 		// Message copy: copy all messages from 'f' to 'g'
 		{
-			vmime::ref <vmime::net::folder> g = st->getFolder(vmime::net::folder::path("TEMP"));
+			vmime::shared_ptr <vmime::net::folder> g = st->getFolder(vmime::net::folder::path("TEMP"));
 
 			if (!g->exists())
 				g->create(vmime::net::folder::TYPE_CONTAINS_MESSAGES);

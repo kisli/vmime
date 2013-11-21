@@ -89,11 +89,11 @@ namespace vmime
 
 
 // static
-ref <charsetConverter> charsetConverter::createGenericConverter
+shared_ptr <charsetConverter> charsetConverter::createGenericConverter
 	(const charset& source, const charset& dest,
 	 const charsetConverterOptions& opts)
 {
-	return vmime::create <charsetConverter_iconv>(source, dest, opts);
+	return make_shared <charsetConverter_iconv>(source, dest, opts);
 }
 
 
@@ -222,9 +222,9 @@ void charsetConverter_iconv::convert(const string& in, string& out)
 }
 
 
-ref <utility::charsetFilteredOutputStream> charsetConverter_iconv::getFilteredOutputStream(utility::outputStream& os)
+shared_ptr <utility::charsetFilteredOutputStream> charsetConverter_iconv::getFilteredOutputStream(utility::outputStream& os)
 {
-	return vmime::create <utility::charsetFilteredOutputStream_iconv>(m_source, m_dest, &os);
+	return make_shared <utility::charsetFilteredOutputStream_iconv>(m_source, m_dest, &os);
 }
 
 

@@ -46,7 +46,7 @@ class VMIME_EXPORT SMTPSTransport : public SMTPTransport
 {
 public:
 
-	SMTPSTransport(ref <session> sess, ref <security::authenticator> auth);
+	SMTPSTransport(shared_ptr <session> sess, shared_ptr <security::authenticator> auth);
 	~SMTPSTransport();
 
 	const string getProtocolName() const;

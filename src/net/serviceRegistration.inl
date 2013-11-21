@@ -41,11 +41,11 @@ public:
 	{
 	}
 
-	ref <service> create
-		(ref <session> sess,
-		 ref <security::authenticator> auth) const
+	shared_ptr <service> create
+		(shared_ptr <session> sess,
+		 shared_ptr <security::authenticator> auth) const
 	{
-		return vmime::create <S>(sess, auth);
+		return make_shared <S>(sess, auth);
 	}
 
 	const serviceInfos& getInfos() const
@@ -80,7 +80,7 @@ public:
 	serviceRegisterer(const string& protocol, const service::Type type)
 	{
 		serviceFactory::getInstance()->registerService
-			(vmime::create <vmime::net::registeredServiceImpl <S> >(protocol, type));
+			(make_shared <registeredServiceImpl <S> >(protocol, type));
 	}
 };
 

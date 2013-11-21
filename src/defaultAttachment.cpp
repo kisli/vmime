@@ -37,14 +37,14 @@ defaultAttachment::defaultAttachment()
 }
 
 
-defaultAttachment::defaultAttachment(ref <const contentHandler> data,
+defaultAttachment::defaultAttachment(shared_ptr <const contentHandler> data,
 	const encoding& enc, const mediaType& type, const text& desc, const word& name)
 	: m_type(type), m_desc(desc), m_data(data), m_encoding(enc), m_name(name)
 {
 }
 
 
-defaultAttachment::defaultAttachment(ref <const contentHandler> data,
+defaultAttachment::defaultAttachment(shared_ptr <const contentHandler> data,
 	const mediaType& type, const text& desc, const word& name)
 	: m_type(type), m_desc(desc), m_data(data),
 	  m_encoding(encoding::decide(data)), m_name(name)
@@ -54,7 +54,7 @@ defaultAttachment::defaultAttachment(ref <const contentHandler> data,
 
 defaultAttachment::defaultAttachment(const defaultAttachment& attach)
 	: attachment(), m_type(attach.m_type), m_desc(attach.m_desc),
-	  m_data(attach.m_data->clone().dynamicCast <contentHandler>()),
+	  m_data(vmime::clone(attach.m_data)),
 	  m_encoding(attach.m_encoding), m_name(attach.m_name)
 {
 }
@@ -70,31 +70,31 @@ defaultAttachment& defaultAttachment::operator=(const defaultAttachment& attach)
 	m_type = attach.m_type;
 	m_desc = attach.m_desc;
 	m_name = attach.m_name;
-	m_data = attach.m_data->clone().dynamicCast <contentHandler>();
+	m_data = vmime::clone(attach.m_data);
 	m_encoding = attach.m_encoding;
 
 	return (*this);
 }
 
 
-void defaultAttachment::generateIn(ref <bodyPart> parent) const
+void defaultAttachment::generateIn(shared_ptr <bodyPart> parent) const
 {
 	// Create and append a new part for this attachment
-	ref <bodyPart> part = vmime::create <bodyPart>();
+	shared_ptr <bodyPart> part = make_shared <bodyPart>();
 	parent->getBody()->appendPart(part);
 
 	generatePart(part);
 }
 
 
-void defaultAttachment::generatePart(ref <bodyPart> part) const
+void defaultAttachment::generatePart(shared_ptr <bodyPart> part) const
 {
 	// Set header fields
 	part->getHeader()->ContentType()->setValue(m_type);
 	if (!m_desc.isEmpty()) part->getHeader()->ContentDescription()->setValue(m_desc);
 	part->getHeader()->ContentTransferEncoding()->setValue(m_encoding);
 	part->getHeader()->ContentDisposition()->setValue(contentDisposition(contentDispositionTypes::ATTACHMENT));
-	part->getHeader()->ContentDisposition().dynamicCast <contentDispositionField>()->setFilename(m_name);
+	dynamicCast <contentDispositionField>(part->getHeader()->ContentDisposition())->setFilename(m_name);
 
 	// Set contents
 	part->getBody()->setContents(m_data);
@@ -119,7 +119,7 @@ const word defaultAttachment::getName() const
 }
 
 
-const ref <const contentHandler> defaultAttachment::getData() const
+const shared_ptr <const contentHandler> defaultAttachment::getData() const
 {
 	return m_data;
 }
@@ -131,15 +131,15 @@ const encoding defaultAttachment::getEncoding() const
 }
 
 
-ref <const object> defaultAttachment::getPart() const
+shared_ptr <const object> defaultAttachment::getPart() const
 {
-	return NULL;
+	return null;
 }
 
 
-ref <const header> defaultAttachment::getHeader() const
+shared_ptr <const header> defaultAttachment::getHeader() const
 {
-	return NULL;
+	return null;
 }
 
 

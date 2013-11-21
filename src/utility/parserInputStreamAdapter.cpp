@@ -28,7 +28,7 @@ namespace vmime {
 namespace utility {
 
 
-parserInputStreamAdapter::parserInputStreamAdapter(ref <seekableInputStream> stream)
+parserInputStreamAdapter::parserInputStreamAdapter(shared_ptr <seekableInputStream> stream)
 	: m_stream(stream)
 {
 }
@@ -53,7 +53,7 @@ stream::size_type parserInputStreamAdapter::read
 }
 
 
-ref <seekableInputStream> parserInputStreamAdapter::getUnderlyingStream()
+shared_ptr <seekableInputStream> parserInputStreamAdapter::getUnderlyingStream()
 {
 	return m_stream;
 }

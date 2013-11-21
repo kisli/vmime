@@ -52,24 +52,24 @@ int main()
 		mb.setExpeditor(vmime::mailbox("me@somewhere.com"));
 
 		vmime::addressList to;
-		to.appendAddress(vmime::create <vmime::mailbox>("you@elsewhere.com"));
+		to.appendAddress(vmime::make_shared <vmime::mailbox>("you@elsewhere.com"));
 
 		mb.setRecipients(to);
 
 		vmime::addressList bcc;
-		bcc.appendAddress(vmime::create <vmime::mailbox>("you-bcc@nowhere.com"));
+		bcc.appendAddress(vmime::make_shared <vmime::mailbox>("you-bcc@nowhere.com"));
 
 		mb.setBlindCopyRecipients(bcc);
 
 		mb.setSubject(vmime::text("My first message generated with vmime::messageBuilder"));
 
 		// Message body
-		mb.getTextPart()->setText(vmime::create <vmime::stringContentHandler>(
+		mb.getTextPart()->setText(vmime::make_shared <vmime::stringContentHandler>(
 			"I'm writing this short text to test message construction " \
 			"using the vmime::messageBuilder component."));
 
 		// Construction
-		vmime::ref <vmime::message> msg = mb.construct();
+		vmime::shared_ptr <vmime::message> msg = mb.construct();
 
 		// Raw text generation
 		std::cout << "Generated message:" << std::endl;

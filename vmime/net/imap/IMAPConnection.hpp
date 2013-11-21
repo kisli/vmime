@@ -54,7 +54,7 @@ class VMIME_EXPORT IMAPConnection : public object
 {
 public:
 
-	IMAPConnection(ref <IMAPStore> store, ref <security::authenticator> auth);
+	IMAPConnection(shared_ptr <IMAPStore> store, shared_ptr <security::authenticator> auth);
 	~IMAPConnection();
 
 
@@ -85,22 +85,22 @@ public:
 	IMAPParser::response* readResponse(IMAPParser::literalHandler* lh = NULL);
 
 
-	ref <const IMAPStore> getStore() const;
-	ref <IMAPStore> getStore();
+	shared_ptr <const IMAPStore> getStore() const;
+	shared_ptr <IMAPStore> getStore();
 
-	ref <session> getSession();
+	shared_ptr <session> getSession();
 
 	void fetchCapabilities();
 	void invalidateCapabilities();
 	const std::vector <string> getCapabilities();
 	bool hasCapability(const string& capa);
 
-	ref <security::authenticator> getAuthenticator();
+	shared_ptr <security::authenticator> getAuthenticator();
 
 	bool isSecuredConnection() const;
-	ref <connectionInfos> getConnectionInfos() const;
+	shared_ptr <connectionInfos> getConnectionInfos() const;
 
-	ref <const socket> getSocket() const;
+	shared_ptr <const socket> getSocket() const;
 
 	bool isMODSEQDisabled() const;
 	void disableMODSEQ();
@@ -120,24 +120,24 @@ private:
 	void processCapabilityResponseData(const IMAPParser::capability_data* capaData);
 
 
-	weak_ref <IMAPStore> m_store;
+	weak_ptr <IMAPStore> m_store;
 
-	ref <security::authenticator> m_auth;
+	shared_ptr <security::authenticator> m_auth;
 
-	ref <socket> m_socket;
+	shared_ptr <socket> m_socket;
 
-	ref <IMAPParser> m_parser;
+	shared_ptr <IMAPParser> m_parser;
 
-	ref <IMAPTag> m_tag;
+	shared_ptr <IMAPTag> m_tag;
 
 	char m_hierarchySeparator;
 
 	ProtocolStates m_state;
 
-	ref <timeoutHandler> m_timeoutHandler;
+	shared_ptr <timeoutHandler> m_timeoutHandler;
 
 	bool m_secured;
-	ref <connectionInfos> m_cntInfos;
+	shared_ptr <connectionInfos> m_cntInfos;
 
 	bool m_firstTag;
 

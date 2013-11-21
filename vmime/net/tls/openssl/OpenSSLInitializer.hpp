@@ -80,7 +80,7 @@ protected:
 	static void uninitialize();
 
 
-	static ref <vmime::utility::sync::criticalSection> getMutex();
+	static shared_ptr <vmime::utility::sync::criticalSection> getMutex();
 
 	enum
 	{
@@ -94,7 +94,7 @@ protected:
 
 private:
 
-	static ref <vmime::utility::sync::criticalSection >* sm_mutexes;
+	static shared_ptr <vmime::utility::sync::criticalSection >* sm_mutexes;
 };
 
 

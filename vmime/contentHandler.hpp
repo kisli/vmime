@@ -29,7 +29,6 @@
 
 #include "vmime/base.hpp"
 #include "vmime/utility/stringProxy.hpp"
-#include "vmime/utility/smartPtr.hpp"
 #include "vmime/utility/progressListener.hpp"
 #include "vmime/encoding.hpp"
 #include "vmime/mediaType.hpp"
@@ -53,7 +52,7 @@ public:
 	  *
 	  * @return copy of this object
 	  */
-	virtual ref <contentHandler> clone() const = 0;
+	virtual shared_ptr <contentHandler> clone() const = 0;
 
 	/** Output the contents into the specified stream. Data will be
 	  * encoded before being written into the stream. This is used internally

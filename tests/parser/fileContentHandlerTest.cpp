@@ -38,7 +38,7 @@ VMIME_TEST_SUITE_BEGIN(fileContentHandlerTest)
 	VMIME_TEST_LIST_END
 
 
-	vmime::ref <vmime::utility::file> testFile;
+	vmime::shared_ptr <vmime::utility::file> testFile;
 	vmime::string testDataEncoded, testDataDecoded;
 
 
@@ -50,7 +50,7 @@ VMIME_TEST_SUITE_BEGIN(fileContentHandlerTest)
 		std::ostringstream testFilePath;
 		testFilePath << "/tmp/vmime_test_" << (rand() % 999999999);
 
-		vmime::ref <vmime::utility::fileSystemFactory> fsf =
+		vmime::shared_ptr <vmime::utility::fileSystemFactory> fsf =
 			vmime::platform::getHandler()->getFileSystemFactory();
 
 		testFile = fsf->create(fsf->stringToPath(testFilePath.str()));
@@ -61,7 +61,7 @@ VMIME_TEST_SUITE_BEGIN(fileContentHandlerTest)
 	void tearDown()
 	{
 		testFile->remove();
-		testFile = NULL;
+		testFile = vmime::null;
 	}
 
 

@@ -41,7 +41,7 @@ namespace maildir {
 namespace format {
 
 
-courierMaildirFormat::courierMaildirFormat(ref <context> ctx)
+courierMaildirFormat::courierMaildirFormat(shared_ptr <context> ctx)
 	: maildirFormat(ctx)
 {
 }
@@ -55,19 +55,19 @@ const string courierMaildirFormat::getName() const
 
 void courierMaildirFormat::createFolder(const folder::path& path)
 {
-	ref <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
+	shared_ptr <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
 	if (!fsf->isValidPath(folderPathToFileSystemPath(path, ROOT_DIRECTORY)))
 		throw exceptions::invalid_folder_name();
 
-	ref <utility::file> rootDir = fsf->create
+	shared_ptr <utility::file> rootDir = fsf->create
 		(folderPathToFileSystemPath(path, ROOT_DIRECTORY));
 
-	ref <utility::file> newDir = fsf->create
+	shared_ptr <utility::file> newDir = fsf->create
 		(folderPathToFileSystemPath(path, NEW_DIRECTORY));
-	ref <utility::file> tmpDir = fsf->create
+	shared_ptr <utility::file> tmpDir = fsf->create
 		(folderPathToFileSystemPath(path, TMP_DIRECTORY));
-	ref <utility::file> curDir = fsf->create
+	shared_ptr <utility::file> curDir = fsf->create
 		(folderPathToFileSystemPath(path, CUR_DIRECTORY));
 
 	rootDir->createDirectory(true);
@@ -76,7 +76,7 @@ void courierMaildirFormat::createFolder(const folder::path& path)
 	tmpDir->createDirectory(false);
 	curDir->createDirectory(false);
 
-	ref <utility::file> maildirFile = fsf->create
+	shared_ptr <utility::file> maildirFile = fsf->create
 		(folderPathToFileSystemPath(path, ROOT_DIRECTORY)
 		 	/ utility::file::path::component("maildirfolder"));
 
@@ -86,7 +86,7 @@ void courierMaildirFormat::createFolder(const folder::path& path)
 
 void courierMaildirFormat::destroyFolder(const folder::path& path)
 {
-	ref <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
+	shared_ptr <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
 	// Recursively delete directories of subfolders
 	const std::vector <folder::path> folders = listFolders(path, true);
@@ -125,7 +125,7 @@ void courierMaildirFormat::renameFolder
 void courierMaildirFormat::renameFolderImpl
 	(const folder::path& oldPath, const folder::path& newPath)
 {
-	ref <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
+	shared_ptr <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
 	const utility::file::path oldFSPath =
 		folderPathToFileSystemPath(oldPath, ROOT_DIRECTORY);
@@ -133,26 +133,26 @@ void courierMaildirFormat::renameFolderImpl
 	const utility::file::path newFSPath =
 		folderPathToFileSystemPath(newPath, ROOT_DIRECTORY);
 
-	ref <utility::file> rootDir = fsf->create(oldFSPath);
+	shared_ptr <utility::file> rootDir = fsf->create(oldFSPath);
 	rootDir->rename(newFSPath);
 }
 
 
 bool courierMaildirFormat::folderExists(const folder::path& path) const
 {
-	ref <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
+	shared_ptr <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
-	ref <utility::file> rootDir = fsf->create
+	shared_ptr <utility::file> rootDir = fsf->create
 		(folderPathToFileSystemPath(path, ROOT_DIRECTORY));
 
-	ref <utility::file> newDir = fsf->create
+	shared_ptr <utility::file> newDir = fsf->create
 		(folderPathToFileSystemPath(path, NEW_DIRECTORY));
-	ref <utility::file> tmpDir = fsf->create
+	shared_ptr <utility::file> tmpDir = fsf->create
 		(folderPathToFileSystemPath(path, TMP_DIRECTORY));
-	ref <utility::file> curDir = fsf->create
+	shared_ptr <utility::file> curDir = fsf->create
 		(folderPathToFileSystemPath(path, CUR_DIRECTORY));
 
-	ref <utility::file> maildirFile = fsf->create
+	shared_ptr <utility::file> maildirFile = fsf->create
 		(folderPathToFileSystemPath(path, ROOT_DIRECTORY)
 		 	/ utility::file::path::component("maildirfolder"));
 
@@ -260,9 +260,9 @@ const std::vector <folder::path> courierMaildirFormat::listFolders
 bool courierMaildirFormat::listDirectories(const folder::path& root,
 	std::vector <string>& dirs, const bool onlyTestForExistence) const
 {
-	ref <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
+	shared_ptr <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
-	ref <utility::file> rootDir = fsf->create
+	shared_ptr <utility::file> rootDir = fsf->create
 		(getContext()->getStore()->getFileSystemPath());
 
 	if (rootDir->exists())
@@ -278,11 +278,11 @@ bool courierMaildirFormat::listDirectories(const folder::path& root,
 		}
 
 		// Enumerate directories
-		ref <utility::fileIterator> it = rootDir->getFiles();
+		shared_ptr <utility::fileIterator> it = rootDir->getFiles();
 
 		while (it->hasMoreElements())
 		{
-			ref <utility::file> file = it->nextElement();
+			shared_ptr <utility::file> file = it->nextElement();
 
 			if (isSubfolderDirectory(*file))
 			{
@@ -502,24 +502,24 @@ const folder::path::component courierMaildirFormat::fromModifiedUTF7(const strin
 
 bool courierMaildirFormat::supports() const
 {
-	ref <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
+	shared_ptr <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
-	ref <utility::file> rootDir = fsf->create
+	shared_ptr <utility::file> rootDir = fsf->create
 		(getContext()->getStore()->getFileSystemPath());
 
 	if (rootDir->exists())
 	{
 		// Try to find a file named "maildirfolder", which indicates
 		// the Maildir is in Courier format
-		ref <utility::fileIterator> it = rootDir->getFiles();
+		shared_ptr <utility::fileIterator> it = rootDir->getFiles();
 
 		while (it->hasMoreElements())
 		{
-			ref <utility::file> file = it->nextElement();
+			shared_ptr <utility::file> file = it->nextElement();
 
 			if (isSubfolderDirectory(*file))
 			{
-				ref <utility::file> folderFile = fsf->create
+				shared_ptr <utility::file> folderFile = fsf->create
 					(file->getFullPath() / utility::file::path::component("maildirfolder"));
 
 				if (folderFile->exists() && folderFile->isFile())

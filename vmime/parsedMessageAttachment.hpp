@@ -41,30 +41,30 @@ class VMIME_EXPORT parsedMessageAttachment : public messageAttachment
 {
 public:
 
-	parsedMessageAttachment(ref <message> msg);
+	parsedMessageAttachment(shared_ptr <message> msg);
 
 	const mediaType getType() const;
 	const text getDescription() const;
 	const word getName() const;
 
-	const ref <const contentHandler> getData() const;
+	const shared_ptr <const contentHandler> getData() const;
 
 	const encoding getEncoding() const;
 
-	ref <const object> getPart() const;
+	shared_ptr <const object> getPart() const;
 
-	ref <const header> getHeader() const;
+	shared_ptr <const header> getHeader() const;
 
-	ref <message> getMessage() const;
+	shared_ptr <message> getMessage() const;
 
 protected:
 
-	void generateIn(ref <bodyPart> parent) const;
+	void generateIn(shared_ptr <bodyPart> parent) const;
 
 private:
 
-	ref <message> m_msg;
-	mutable ref <contentHandler> m_data;
+	shared_ptr <message> m_msg;
+	mutable shared_ptr <contentHandler> m_data;
 };
 
 

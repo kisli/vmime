@@ -36,8 +36,8 @@ namespace net {
 namespace maildir {
 
 
-maildirMessagePart::maildirMessagePart(ref <maildirMessagePart> parent, const int number, const bodyPart& part)
-	: m_parent(parent), m_header(NULL), m_number(number)
+maildirMessagePart::maildirMessagePart(shared_ptr <maildirMessagePart> parent, const int number, const bodyPart& part)
+	: m_parent(parent), m_header(null), m_number(number)
 {
 	m_headerParsedOffset = part.getHeader()->getParsedOffset();
 	m_headerParsedLength = part.getHeader()->getParsedLength();
@@ -59,17 +59,17 @@ maildirMessagePart::~maildirMessagePart()
 void maildirMessagePart::initStructure(const bodyPart& part)
 {
 	if (part.getBody()->getPartList().size() == 0)
-		m_structure = NULL;
+		m_structure = null;
 	else
 	{
-		m_structure = vmime::create <maildirMessageStructure>
-			(thisRef().dynamicCast <maildirMessagePart>(),
+		m_structure = make_shared <maildirMessageStructure>
+			(dynamicCast <maildirMessagePart>(shared_from_this()),
 			 part.getBody()->getPartList());
 	}
 }
 
 
-ref <const messageStructure> maildirMessagePart::getStructure() const
+shared_ptr <const messageStructure> maildirMessagePart::getStructure() const
 {
 	if (m_structure != NULL)
 		return m_structure;
@@ -78,7 +78,7 @@ ref <const messageStructure> maildirMessagePart::getStructure() const
 }
 
 
-ref <messageStructure> maildirMessagePart::getStructure()
+shared_ptr <messageStructure> maildirMessagePart::getStructure()
 {
 	if (m_structure != NULL)
 		return m_structure;
@@ -105,7 +105,7 @@ int maildirMessagePart::getNumber() const
 }
 
 
-ref <const header> maildirMessagePart::getHeader() const
+shared_ptr <const header> maildirMessagePart::getHeader() const
 {
 	if (m_header == NULL)
 		throw exceptions::unfetched_object();
@@ -119,7 +119,7 @@ header& maildirMessagePart::getOrCreateHeader()
 	if (m_header != NULL)
 		return *m_header;
 	else
-		return *(m_header = vmime::create <header>());
+		return *(m_header = make_shared <header>());
 }
 
 
