@@ -101,13 +101,13 @@ void charsetConverter_icu::convert(utility::inputStream& in, utility::outputStre
 	UChar* uOutBuffer = new UChar[outSize]; // Unicode chars end up here
 
 	// Auto delete Unicode char buffer
-	vmime::utility::auto_ptr<UChar> cleanup(uOutBuffer);
+	std::auto_ptr<UChar> cleanup(uOutBuffer);
 
 	// To buffers
 	// converted (char) data end up here
 	size_t cpOutBufferSz = ucnv_getMaxCharSize(m_to) * outSize;
 	char* cpOutBuffer = new char[cpOutBufferSz];
-	vmime::utility::auto_ptr<char> cleanupOut(cpOutBuffer);
+	std::auto_ptr<char> cleanupOut(cpOutBuffer);
 
 	// Set replacement chars for when converting from Unicode to codepage
 	icu::UnicodeString substString(m_options.invalidSequence.c_str());
@@ -259,7 +259,7 @@ void charsetFilteredOutputStream_icu::write
 	// Allocate buffer for Unicode chars
 	size_t uniSize = ucnv_getMinCharSize(m_from) * count * sizeof(UChar);
 	UChar* uniBuffer = new UChar[uniSize];
-	vmime::utility::auto_ptr <UChar> uniCleanup(uniBuffer);  // auto delete Unicode buffer
+	std::auto_ptr <UChar> uniCleanup(uniBuffer);  // auto delete Unicode buffer
 
 	// Conversion loop
 	UErrorCode toErr = U_ZERO_ERROR;
@@ -289,7 +289,7 @@ void charsetFilteredOutputStream_icu::write
 		// Allocate buffer for destination charset
 		size_t cpSize = ucnv_getMinCharSize(m_to) * uniLength;
 		char* cpBuffer = new char[cpSize];
-		vmime::utility::auto_ptr <char> cpCleanup(cpBuffer);  // auto delete CP buffer
+		std::auto_ptr <char> cpCleanup(cpBuffer);  // auto delete CP buffer
 
 		// Convert from Unicode to destination charset
 		UErrorCode fromErr = U_ZERO_ERROR;
@@ -332,7 +332,7 @@ void charsetFilteredOutputStream_icu::flush()
 	// Allocate buffer for Unicode chars
 	size_t uniSize = ucnv_getMinCharSize(m_from) * 1024 * sizeof(UChar);
 	UChar* uniBuffer = new UChar[uniSize];
-	vmime::utility::auto_ptr <UChar> uniCleanup(uniBuffer);  // auto delete Unicode buffer
+	std::auto_ptr <UChar> uniCleanup(uniBuffer);  // auto delete Unicode buffer
 
 	// Conversion loop (with flushing)
 	UErrorCode toErr = U_ZERO_ERROR;
@@ -362,7 +362,7 @@ void charsetFilteredOutputStream_icu::flush()
 		// Allocate buffer for destination charset
 		size_t cpSize = ucnv_getMinCharSize(m_to) * uniLength;
 		char* cpBuffer = new char[cpSize];
-		vmime::utility::auto_ptr <char> cpCleanup(cpBuffer);  // auto delete CP buffer
+		std::auto_ptr <char> cpCleanup(cpBuffer);  // auto delete CP buffer
 
 		// Convert from Unicode to destination charset
 		UErrorCode fromErr = U_ZERO_ERROR;
