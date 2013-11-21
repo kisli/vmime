@@ -20,7 +20,7 @@ env:
 install:
   - sudo apt-get update >/dev/null
   - sudo apt-get -q install cmake libcppunit-dev valgrind
-  - sudo apt-get -q install libgsasl7-dev libgnutls-dev libssl-dev libicu-dev
+  - sudo apt-get -q install libgsasl7-dev libgnutls-dev libssl-dev libicu-dev libboost-dev
   # -- for the samples
   - sudo apt-get -q install libgtk-3-dev
 
