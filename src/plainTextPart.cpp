@@ -75,20 +75,23 @@ void plainTextPart::parse(shared_ptr <const bodyPart> /* message */,
 {
 	m_text = vmime::clone(textPart->getBody()->getContents());
 
-	try
-	{
-		const contentTypeField& ctf =
-			*textPart->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
+	shared_ptr <const contentTypeField> ctf =
+		textPart->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
 
-		m_charset = ctf.getCharset();
+	if (ctf)
+	{
+		try
+		{
+			m_charset = ctf->getCharset();
+		}
+		catch (exceptions::no_such_parameter&)
+		{
+			// No "charset" parameter.
+		}
 	}
-	catch (exceptions::no_such_field&)
+	else
 	{
 		// No "Content-type" field.
-	}
-	catch (exceptions::no_such_parameter&)
-	{
-		// No "charset" parameter.
 	}
 }
 

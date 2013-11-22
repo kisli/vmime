@@ -63,8 +63,11 @@ void messageParser::parse(shared_ptr <const message> msg)
 #ifndef VMIME_BUILDING_DOC
 
 #define TRY_FIELD(var, type, name) \
-	try { var = *msg->getHeader()->findField(name)->getValue <type>(); } \
-	catch (exceptions::no_such_field) { }
+	{ \
+		shared_ptr <type> fldValue = msg->getHeader()->findFieldValue <type>(name); \
+		if (fldValue) \
+			var = *fldValue; \
+	}
 
 	TRY_FIELD(m_from, mailbox, fields::FROM);
 
@@ -79,22 +82,20 @@ void messageParser::parse(shared_ptr <const message> msg)
 #endif // VMIME_BUILDING_DOC
 
 	// Date
-	try
+	shared_ptr <const headerField> recv = msg->getHeader()->findField(fields::RECEIVED);
+
+	if (recv)
 	{
-		const headerField& recv = *msg->getHeader()->findField(fields::RECEIVED);
-		m_date = recv.getValue <relay>()->getDate();
+		m_date = recv->getValue <relay>()->getDate();
 	}
-	catch (vmime::exceptions::no_such_field&)
+	else
 	{
-		try
-		{
-			const headerField& date = *msg->getHeader()->findField(fields::DATE);
-			m_date = *date.getValue <datetime>();
-		}
-		catch (vmime::exceptions::no_such_field&)
-		{
+		shared_ptr <const headerField> date = msg->getHeader()->findField(fields::DATE);
+
+		if (date)
+			m_date = *date->getValue <datetime>();
+		else
 			m_date = datetime::now();
-		}
 	}
 
 	// Attachments
@@ -120,13 +121,12 @@ void messageParser::findTextParts(shared_ptr <const bodyPart> msg, shared_ptr <c
 		mediaType type(mediaTypes::TEXT, mediaTypes::TEXT_PLAIN);
 		bool accept = false;
 
-		try
-		{
-			const contentTypeField& ctf =
-				*msg->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
+		shared_ptr <const contentTypeField> ctf =
+			msg->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
 
-			const mediaType ctfType =
-				*ctf.getValue <mediaType>();
+		if (ctf)
+		{
+			const mediaType ctfType = *ctf->getValue <mediaType>();
 
 			if (ctfType.getType() == mediaTypes::TEXT)
 			{
@@ -134,7 +134,7 @@ void messageParser::findTextParts(shared_ptr <const bodyPart> msg, shared_ptr <c
 				accept = true;
 			}
 		}
-		catch (exceptions::no_such_field&)
+		else
 		{
 			// No "Content-type" field: assume "text/plain".
 			accept = true;
@@ -169,24 +169,24 @@ bool messageParser::findSubTextParts(shared_ptr <const bodyPart> msg, shared_ptr
 	{
 		const shared_ptr <const bodyPart> p = part->getBody()->getPartAt(i);
 
-		try
-		{
-			const contentTypeField& ctf =
-				*p->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
+		shared_ptr <const contentTypeField> ctf =
+			p->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
 
-			const mediaType type = *ctf.getValue <mediaType>();
+		if (ctf)
+		{
+			const mediaType type = *ctf->getValue <mediaType>();
 			contentDisposition disp; // default should be inline
 
 			if (type.getType() == mediaTypes::TEXT)
 			{
-				try
-				{
-					shared_ptr <const contentDispositionField> cdf = p->getHeader()->
-						findField <contentDispositionField>(fields::CONTENT_DISPOSITION);
+				shared_ptr <const contentDispositionField> cdf = p->getHeader()->
+					findField <contentDispositionField>(fields::CONTENT_DISPOSITION);
 
+				if (cdf)
+				{
 					disp = *cdf->getValue <contentDisposition>();
 				}
-				catch (exceptions::no_such_field&)
+				else
 				{
 					// No "Content-Disposition" field, assume default
 				}
@@ -195,7 +195,7 @@ bool messageParser::findSubTextParts(shared_ptr <const bodyPart> msg, shared_ptr
 					textParts.push_back(p);
 			}
 		}
-		catch (exceptions::no_such_field&)
+		else
 		{
 			// No "Content-type" field.
 		}

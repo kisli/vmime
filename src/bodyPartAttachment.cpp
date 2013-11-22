@@ -36,20 +36,18 @@ bodyPartAttachment::bodyPartAttachment(shared_ptr <const bodyPart> part)
 
 const mediaType bodyPartAttachment::getType() const
 {
-	mediaType type;
+	shared_ptr <const contentTypeField> ctf = getContentType();
 
-	try
+	if (ctf)
 	{
-		type = *getContentType()->getValue <mediaType>();
+		return *ctf->getValue <mediaType>();
 	}
-	catch (exceptions::no_such_field&)
+	else
 	{
 		// No "Content-type" field: assume "application/octet-stream".
-		type = mediaType(mediaTypes::APPLICATION,
-				 mediaTypes::APPLICATION_OCTET_STREAM);
+		return mediaType(mediaTypes::APPLICATION,
+		                 mediaTypes::APPLICATION_OCTET_STREAM);
 	}
-
-	return type;
 }
 
 
@@ -58,36 +56,46 @@ const word bodyPartAttachment::getName() const
 	word name;
 
 	// Try the 'filename' parameter of 'Content-Disposition' field
-	try
+	shared_ptr <const contentDispositionField> cdf = getContentDisposition();
+
+	if (cdf)
 	{
-		name = getContentDisposition()->getFilename();
+		try
+		{
+			name = cdf->getFilename();
+		}
+		catch (exceptions::no_such_parameter&)
+		{
+			// No 'filename' parameter
+		}
 	}
-	catch (exceptions::no_such_field&)
+	else
 	{
 		// No 'Content-Disposition' field
-	}
-	catch (exceptions::no_such_parameter&)
-	{
-		// No 'filename' parameter
 	}
 
 	// Try the 'name' parameter of 'Content-Type' field
 	if (name.getBuffer().empty())
 	{
-		try
-		{
-			shared_ptr <parameter> prm = getContentType()->findParameter("name");
+		shared_ptr <const contentTypeField> ctf = getContentType();
 
-			if (prm != NULL)
-				name = prm->getValue();
+		if (ctf)
+		{
+			try
+			{
+				shared_ptr <const parameter> prm = ctf->findParameter("name");
+
+				if (prm != NULL)
+					name = prm->getValue();
+			}
+			catch (exceptions::no_such_parameter&)
+			{
+				// No attachment name available
+			}
 		}
-		catch (exceptions::no_such_field&)
+		else
 		{
 			// No 'Content-Type' field
-		}
-		catch (exceptions::no_such_parameter&)
-		{
-			// No attachment name available
 		}
 	}
 
@@ -99,14 +107,14 @@ const text bodyPartAttachment::getDescription() const
 {
 	text description;
 
-	try
-	{
-		shared_ptr <const headerField> cd =
-			getHeader()->findField(fields::CONTENT_DESCRIPTION);
+	shared_ptr <const headerField> cd =
+		getHeader()->findField(fields::CONTENT_DESCRIPTION);
 
+	if (cd)
+	{
 		description = *cd->getValue <text>();
 	}
-	catch (exceptions::no_such_field&)
+	else
 	{
 		// No description available.
 	}

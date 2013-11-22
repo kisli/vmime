@@ -59,8 +59,8 @@ VMIME_TEST_SUITE_BEGIN(importanceHelperTest)
 
 		vmime::misc::importanceHelper::resetImportanceHeader(hdr);
 
-		VASSERT_THROW("3", hdr->findField("Importance"), vmime::exceptions::no_such_field);
-		VASSERT_THROW("4", hdr->findField("X-Priority"), vmime::exceptions::no_such_field);
+		VASSERT_NULL("3", hdr->findField("Importance"));
+		VASSERT_NULL("4", hdr->findField("X-Priority"));
 	}
 
 

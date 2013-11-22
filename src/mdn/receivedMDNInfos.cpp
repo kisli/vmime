@@ -110,18 +110,23 @@ void receivedMDNInfos::extract()
 			header fields;
 			fields.parse(oss.str());
 
-			try { m_omid = *fields.OriginalMessageId()->getValue <messageId>(); }
-			catch (exceptions::no_such_field&) { /* Ignore */ }
+			shared_ptr <messageId> omid =
+				fields.findFieldValue <messageId>(fields::ORIGINAL_MESSAGE_ID);
 
-			try { m_disp = *fields.Disposition()->getValue <disposition>(); }
-			catch (exceptions::no_such_field&) { /* Ignore */ }
+			if (omid)
+				m_omid = *omid;
 
-			try
-			{
-				text t = *fields.findField("Received-content-MIC")->getValue <text>();
-				m_contentMIC = t.generate();
-			}
-			catch (exceptions::no_such_field&) { /* Ignore */ }
+			shared_ptr <disposition> disp =
+				fields.findFieldValue <disposition>(fields::DISPOSITION);
+
+			if (disp)
+				m_disp = *disp;
+
+			shared_ptr <text> contentMIC =
+				fields.findFieldValue <text>("Received-content-MIC");
+
+			if (contentMIC)
+				m_contentMIC = contentMIC->generate();
 		}
 	}
 }

@@ -171,14 +171,10 @@ shared_ptr <headerField> header::findField(const string& fieldName) const
 
 	// No field with this name can be found
 	if (pos == m_fields.end())
-	{
-		throw exceptions::no_such_field();
-	}
+		return null;
+
 	// Else, return a reference to the existing field
-	else
-	{
-		return (*pos);
-	}
+	return (*pos);
 }
 
 

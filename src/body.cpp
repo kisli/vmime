@@ -150,15 +150,16 @@ void body::parseImpl
 		return;
 	}
 
-	// Check whether the body is a MIME-multipart
+	// Check whether the body is a MIME-multipart.
+	// If it is, also get (or try to guess) the boundary separator.
 	bool isMultipart = false;
 	string boundary;
 
-	try
-	{
-		const shared_ptr <const contentTypeField> ctf =
-			m_part->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
+	shared_ptr <const contentTypeField> ctf =
+		m_part->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
 
+	if (ctf)
+	{
 		const mediaType type = *ctf->getValue <mediaType>();
 
 		if (type.getType() == mediaTypes::MULTIPART)
@@ -239,10 +240,6 @@ void body::parseImpl
 			}
 		}
  	}
-	catch (exceptions::no_such_field&)
-	{
-		// No "Content-Type" field...
-	}
 
 	// This is a multi-part body
 	if (isMultipart && !boundary.empty())
@@ -353,14 +350,14 @@ void body::parseImpl
 	{
 		encoding enc;
 
-		try
-		{
-			const shared_ptr <headerField> cef =
-				m_part->getHeader()->findField(fields::CONTENT_TRANSFER_ENCODING);
+		shared_ptr <const headerField> cef =
+			m_part->getHeader()->findField(fields::CONTENT_TRANSFER_ENCODING);
 
+		if (cef)
+		{
 			enc = *cef->getValue <encoding>();
 		}
-		catch (exceptions::no_such_field&)
+		else
 		{
 			// Defaults to "7bit" (RFC-1521)
 			enc = vmime::encoding(encodingTypes::SEVEN_BIT);
@@ -432,21 +429,26 @@ void body::generateImpl
 		}
 		else
 		{
-			try
-			{
-				shared_ptr <contentTypeField> ctf =
-					m_part->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
+			// Use current boundary string, if specified. If no "Content-Type" field is
+			// present, or the boundary is not specified, generate a random one
+			shared_ptr <contentTypeField> ctf =
+				m_part->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
 
-				boundary = ctf->getBoundary();
-			}
-			catch (exceptions::no_such_field&)
+			if (ctf)
 			{
-				// Warning: no content-type and no boundary string specified!
-				boundary = generateRandomBoundaryString();
+				try
+				{
+					boundary = ctf->getBoundary();
+				}
+				catch (exceptions::no_such_parameter&)
+				{
+					// No boundary string specified
+					boundary = generateRandomBoundaryString();
+				}
 			}
-			catch (exceptions::no_such_parameter&)
+			else
 			{
-				// Warning: no boundary string specified!
+				// No Content-Type (and no boundary string specified)
 				boundary = generateRandomBoundaryString();
 			}
 		}
@@ -658,14 +660,14 @@ void body::setContentType(const mediaType& type)
 
 const mediaType body::getContentType() const
 {
-	try
-	{
-		shared_ptr <const contentTypeField> ctf =
-			m_part->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
+	shared_ptr <const contentTypeField> ctf =
+		m_part->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
 
-		return (*ctf->getValue <mediaType>());
+	if (ctf)
+	{
+		return *ctf->getValue <mediaType>();
 	}
-	catch (exceptions::no_such_field&)
+	else
 	{
 		// Defaults to "text/plain" (RFC-1521)
 		return (mediaType(mediaTypes::TEXT, mediaTypes::TEXT_PLAIN));
@@ -675,17 +677,17 @@ const mediaType body::getContentType() const
 
 void body::setCharset(const charset& chset)
 {
-	// If a Content-Type field exists, set charset
-	try
-	{
-		shared_ptr <contentTypeField> ctf =
-			m_part->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
+	shared_ptr <contentTypeField> ctf =
+		m_part->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
 
+	// If a Content-Type field exists, set charset
+	if (ctf)
+	{
 		ctf->setCharset(chset);
 	}
 	// Else, create a new Content-Type field of default type "text/plain"
 	// and set charset on it
-	catch (exceptions::no_such_field&)
+	else
 	{
 		setContentType(mediaType(mediaTypes::TEXT, mediaTypes::TEXT_PLAIN), chset);
 	}
@@ -694,19 +696,22 @@ void body::setCharset(const charset& chset)
 
 const charset body::getCharset() const
 {
-	try
-	{
-		const shared_ptr <const contentTypeField> ctf =
-			m_part->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
+	const shared_ptr <const contentTypeField> ctf =
+		m_part->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
 
-		return (ctf->getCharset());
-	}
-	catch (exceptions::no_such_parameter&)
+	if (ctf)
 	{
-		// Defaults to "us-ascii" (RFC-1521)
-		return (vmime::charset(charsets::US_ASCII));
+		try
+		{
+			return (ctf->getCharset());
+		}
+		catch (exceptions::no_such_parameter&)
+		{
+			// Defaults to "us-ascii" (RFC-1521)
+			return (vmime::charset(charsets::US_ASCII));
+		}
 	}
-	catch (exceptions::no_such_field&)
+	else
 	{
 		// Defaults to "us-ascii" (RFC-1521)
 		return (vmime::charset(charsets::US_ASCII));
@@ -722,25 +727,21 @@ void body::setEncoding(const encoding& enc)
 
 const encoding body::getEncoding() const
 {
-	try
-	{
-		const shared_ptr <const headerField> cef =
-			m_part->getHeader()->findField(fields::CONTENT_TRANSFER_ENCODING);
+	shared_ptr <const headerField> cef =
+		m_part->getHeader()->findField(fields::CONTENT_TRANSFER_ENCODING);
 
+	if (cef)
+	{
 		return *cef->getValue <encoding>();
 	}
-	catch (exceptions::no_such_field&)
+	else
 	{
 		if (m_contents->isEncoded())
-		{
 			return m_contents->getEncoding();
-		}
-		else
-		{
-			// Defaults to "7bit" (RFC-1521)
-			return vmime::encoding(encodingTypes::SEVEN_BIT);
-		}
 	}
+
+	// Defaults to "7bit" (RFC-1521)
+	return vmime::encoding(encodingTypes::SEVEN_BIT);
 }
 
 
@@ -879,11 +880,11 @@ void body::initNewPart(shared_ptr <bodyPart> part)
 		shared_ptr <header> hdr = m_part->getHeader();
 
 		// Check whether we have a boundary string
-		try
-		{
-			shared_ptr <contentTypeField> ctf =
-				hdr->findField <contentTypeField>(fields::CONTENT_TYPE);
+		shared_ptr <contentTypeField> ctf =
+			hdr->findField <contentTypeField>(fields::CONTENT_TYPE);
 
+		if (ctf)
+		{
 			try
 			{
 				const string boundary = ctf->getBoundary();
@@ -903,12 +904,11 @@ void body::initNewPart(shared_ptr <bodyPart> part)
 				// not specified as "multipart/..."
 			}
 		}
-		catch (exceptions::no_such_field&)
+		else
 		{
 			// No "Content-Type" field: create a new one and generate
 			// a random boundary string.
-			shared_ptr <contentTypeField> ctf =
-				hdr->getField <contentTypeField>(fields::CONTENT_TYPE);
+			ctf = hdr->getField <contentTypeField>(fields::CONTENT_TYPE);
 
 			ctf->setValue(mediaType(mediaTypes::MULTIPART, mediaTypes::MULTIPART_MIXED));
 			ctf->setBoundary(generateRandomBoundaryString());

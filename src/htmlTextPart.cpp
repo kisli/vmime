@@ -135,27 +135,13 @@ void htmlTextPart::findEmbeddedParts(const bodyPart& part,
 	{
 		shared_ptr <const bodyPart> p = part.getBody()->getPartAt(i);
 
-		// For a part to be an embedded object, it must have a
+		// For a part to be an embedded object, it must have either a
 		// Content-Id field or a Content-Location field.
-		try
-		{
-			p->getHeader()->findField(fields::CONTENT_ID);
+		if (p->getHeader()->hasField(fields::CONTENT_ID))
 			cidParts.push_back(p);
-		}
-		catch (exceptions::no_such_field)
-		{
-			// No "Content-id" field.
-		}
 
-		try
-		{
-			p->getHeader()->findField(fields::CONTENT_LOCATION);
+		if (p->getHeader()->hasField(fields::CONTENT_LOCATION))
 			locParts.push_back(p);
-		}
-		catch (exceptions::no_such_field)
-		{
-			// No "Content-Location" field.
-		}
 
 		findEmbeddedParts(*p, cidParts, locParts);
 	}
@@ -172,12 +158,14 @@ void htmlTextPart::addEmbeddedObject(const bodyPart& part, const string& id,
 
 	mediaType type;
 
-	try
+	shared_ptr <const headerField> ctf =
+		part.getHeader()->findField(fields::CONTENT_TYPE);
+
+	if (ctf)
 	{
-		const shared_ptr <const headerField> ctf = part.getHeader()->ContentType();
 		type = *ctf->getValue <mediaType>();
 	}
-	catch (exceptions::no_such_field)
+	else
 	{
 		// No "Content-type" field: assume "application/octet-stream".
 	}
@@ -206,20 +194,24 @@ void htmlTextPart::parse(shared_ptr <const bodyPart> message, shared_ptr <const 
 
 	m_text = textPart->getBody()->getContents()->clone();
 
-	try
-	{
-		const shared_ptr <const contentTypeField> ctf =
-			textPart->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
+	// Find charset
+	shared_ptr <const contentTypeField> ctf =
+		textPart->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
 
-		m_charset = ctf->getCharset();
+	if (ctf)
+	{
+		try
+		{
+			m_charset = ctf->getCharset();
+		}
+		catch (exceptions::no_such_parameter)
+		{
+			// No "charset" parameter.
+		}
 	}
-	catch (exceptions::no_such_field)
+	else
 	{
 		// No "Content-type" field.
-	}
-	catch (exceptions::no_such_parameter)
-	{
-		// No "charset" parameter.
 	}
 
 	// Extract embedded objects. The algorithm is quite simple: for each previously
@@ -267,11 +259,11 @@ void htmlTextPart::parse(shared_ptr <const bodyPart> message, shared_ptr <const 
 bool htmlTextPart::findPlainTextPart(const bodyPart& part, const bodyPart& parent, const bodyPart& textPart)
 {
 	// We search for the nearest "multipart/alternative" part.
-	try
-	{
-		const shared_ptr <const headerField> ctf =
-			part.getHeader()->findField(fields::CONTENT_TYPE);
+	const shared_ptr <const headerField> ctf =
+		part.getHeader()->findField(fields::CONTENT_TYPE);
 
+	if (ctf)
+	{
 		const mediaType type = *ctf->getValue <mediaType>();
 
 		if (type.getType() == mediaTypes::MULTIPART &&
@@ -299,10 +291,11 @@ bool htmlTextPart::findPlainTextPart(const bodyPart& part, const bodyPart& paren
 				{
 					const shared_ptr <const bodyPart> p = part.getBody()->getPartAt(i);
 
-					try
+					const shared_ptr <const headerField> ctf =
+						p->getHeader()->findField(fields::CONTENT_TYPE);
+
+					if (ctf)
 					{
-						const shared_ptr <const headerField> ctf =
-							p->getHeader()->findField(fields::CONTENT_TYPE);
 
 						const mediaType type = *ctf->getValue <mediaType>();
 
@@ -313,7 +306,7 @@ bool htmlTextPart::findPlainTextPart(const bodyPart& part, const bodyPart& paren
 							found = true;
 						}
 					}
-					catch (exceptions::no_such_field)
+					else
 					{
 						// No "Content-type" field.
 					}
@@ -326,7 +319,7 @@ bool htmlTextPart::findPlainTextPart(const bodyPart& part, const bodyPart& paren
 			}
 		}
 	}
-	catch (exceptions::no_such_field)
+	else
 	{
 		// No "Content-type" field.
 	}

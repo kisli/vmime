@@ -90,6 +90,7 @@ public:
 #undef FIELD_ACCESS
 
 	/** Checks whether (at least) one field with this name exists.
+	  * Field name is case-insensitive.
 	  *
 	  * @return true if at least one field with the specified name
 	  * exists, or false otherwise
@@ -97,23 +98,46 @@ public:
 	bool hasField(const string& fieldName) const;
 
 	/** Find the first field that matches the specified name.
-	  * If no field is found, an exception is thrown.
+	  * Field name is case-insensitive.
+	  * If no field is found, NULL is returned.
 	  *
-	  * @throw exceptions::no_such_field if no field with this name exists
-	  * @return first field with the specified name
+	  * @return first field with the specified name, or NULL if no field
+	  * with this name was found
 	  */
 	shared_ptr <headerField> findField(const string& fieldName) const;
 
 	/** Find the first field that matches the specified name,
-	  * casted to the specified type.
-	  * If no field is found, an exception is thrown.
+	  * casted to the specified field type. Field name is case-insensitive.
+	  * If no field is found, or the field is not of the specified type,
+	  * NULL is returned.
 	  *
-	  * @return value object
+	  * @return first field with the specified name, or NULL if no field
+	  * with this name was found
 	  */
 	template <typename T>
 	shared_ptr <T> findField(const string& fieldName) const
 	{
 		return dynamicCast <T>(findField(fieldName));
+	}
+
+	/** Find the value of the first field that matches the specified name,
+	  * casted to the specified value type. Field name is case-insensitive.
+	  * If no field is found, or the field value is not of the specified
+	  * type, NULL is returned.
+	  *
+	  * @return value of the first field with the specified name, or NULL
+	  * if no field with this name was found, or the value is not of the
+	  * specified type
+	  */
+	template <typename T>
+	shared_ptr <T> findFieldValue(const string& fieldName) const
+	{
+		shared_ptr <headerField> field = findField(fieldName);
+
+		if (field)
+			return dynamicCast <T>(field->getValue());
+		else
+			return null;
 	}
 
 	/** Find all fields that match the specified name.

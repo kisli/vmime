@@ -125,64 +125,48 @@ static void extractMailboxes
 void transport::send(shared_ptr <vmime::message> msg, utility::progressListener* progress)
 {
 	// Extract expeditor
-	mailbox expeditor;
+	shared_ptr <mailbox> fromMbox =
+		msg->getHeader()->findFieldValue <mailbox>(fields::FROM);
 
-	try
-	{
-		const mailbox& mbox =
-			*msg->getHeader()->findField(fields::FROM)->getValue <mailbox>();
-
-		expeditor = mbox;
-	}
-	catch (exceptions::no_such_field&)
-	{
+	if (!fromMbox)
 		throw exceptions::no_expeditor();
-	}
+
+	mailbox expeditor = *fromMbox;
 
 	// Extract sender
+	shared_ptr <mailbox> senderMbox =
+		msg->getHeader()->findFieldValue <mailbox>(fields::SENDER);
+
 	mailbox sender;
 
-	try
-	{
-		const mailbox& mbox =
-			*msg->getHeader()->findField(fields::SENDER)->getValue <mailbox>();
-
-		sender = mbox;
-	}
-	catch (exceptions::no_such_field&)
-	{
+	if (!senderMbox)
 		sender = expeditor;
-	}
+	else
+		sender = *senderMbox;
 
 	// Extract recipients
 	mailboxList recipients;
 
-	try
-	{
-		const addressList& to =
-			*msg->getHeader()->findField(fields::TO)->getValue <addressList>();
+	// -- "To" field
+	shared_ptr <addressList> addresses =
+		msg->getHeader()->findFieldValue <addressList>(fields::TO);
 
-		extractMailboxes(recipients, to);
-	}
-	catch (exceptions::no_such_field&) { }
+	if (addresses)
+		extractMailboxes(recipients, *addresses);
 
-	try
-	{
-		const addressList& cc =
-			*msg->getHeader()->findField(fields::CC)->getValue <addressList>();
+	// -- "Cc" field
+	addresses =
+		msg->getHeader()->findFieldValue <addressList>(fields::CC);
 
-		extractMailboxes(recipients, cc);
-	}
-	catch (exceptions::no_such_field&) { }
+	if (addresses)
+		extractMailboxes(recipients, *addresses);
 
-	try
-	{
-		const addressList& bcc =
-			*msg->getHeader()->findField(fields::BCC)->getValue <addressList>();
+	// -- "Bcc" field
+	addresses =
+		msg->getHeader()->findFieldValue <addressList>(fields::BCC);
 
-		extractMailboxes(recipients, bcc);
-	}
-	catch (exceptions::no_such_field&) { }
+	if (addresses)
+		extractMailboxes(recipients, *addresses);
 
 	// Process message header by removing fields that should be removed
 	// before transmitting the message to MSA, and adding missing fields

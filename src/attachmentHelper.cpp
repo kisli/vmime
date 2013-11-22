@@ -41,12 +41,14 @@ namespace vmime
 bool attachmentHelper::isBodyPartAnAttachment
 	(shared_ptr <const bodyPart> part, const unsigned int options)
 {
-	try
-	{
-		const contentDispositionField& cdf =
-			*part->getHeader()->findField <contentDispositionField>(fields::CONTENT_DISPOSITION);
+	// First, try with "Content-Disposition" field.
+	// If not present, we will try with "Content-Type" field.
+	shared_ptr <const contentDispositionField> cdf =
+		part->getHeader()->findField <contentDispositionField>(fields::CONTENT_DISPOSITION);
 
-		const contentDisposition disp = *cdf.getValue <const contentDisposition>();
+	if (cdf)
+	{
+		const contentDisposition disp = *cdf->getValue <contentDisposition>();
 
 		if (disp.getName() != contentDispositionTypes::INLINE)
 			return true;
@@ -68,26 +70,22 @@ bool attachmentHelper::isBodyPartAnAttachment
 			return false;
 		}
 	}
-	catch (exceptions::no_such_field&)
-	{
-		// Will try using Content-Type
-	}
 
 	// Assume "attachment" if type is not "text/..." or "multipart/...".
 	mediaType type;
 	bool hasContentTypeName = false;
 
-	try
+	shared_ptr <const contentTypeField> ctf =
+		part->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
+
+	if (ctf)
 	{
-		const contentTypeField& ctf =
-			*part->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
+		type = *ctf->getValue <mediaType>();
 
-		type = *ctf.getValue <const mediaType>();
-
-		if (ctf.hasParameter("name"))
+		if (ctf->hasParameter("name"))
 			hasContentTypeName = true;
 	}
-	catch (exceptions::no_such_field&)
+	else
 	{
 		// If this is the root part and no Content-Type field is present,
 		// then this may not be a MIME message, so do not assume it is
@@ -132,14 +130,14 @@ shared_ptr <const attachment> attachmentHelper::getBodyPartAttachment
 
 	mediaType type;
 
-	try
-	{
-		const contentTypeField& ctf =
-			*part->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
+	shared_ptr <const contentTypeField> ctf =
+		part->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
 
-		type = *ctf.getValue <mediaType>();
+	if (ctf)
+	{
+		type = *ctf->getValue <mediaType>();
 	}
-	catch (exceptions::no_such_field&)
+	else
 	{
 		// No "Content-type" field: assume "application/octet-stream".
 		type = mediaType(mediaTypes::APPLICATION,
@@ -217,23 +215,16 @@ void attachmentHelper::addAttachment(shared_ptr <message> msg, shared_ptr <attac
 			// the root part of the message
 			shared_ptr <bodyPart> container = make_shared <bodyPart>();
 
-			try
+			if (msg->getHeader()->hasField(fields::CONTENT_TYPE))
 			{
-				if (msg->getHeader()->hasField(fields::CONTENT_TYPE))
-				{
-					container->getHeader()->ContentType()->setValue
-						(msg->getHeader()->ContentType()->getValue());
-				}
-
-				if (msg->getHeader()->hasField(fields::CONTENT_TRANSFER_ENCODING))
-				{
-					container->getHeader()->ContentTransferEncoding()->setValue
-						(msg->getHeader()->ContentTransferEncoding()->getValue());
-				}
+				container->getHeader()->ContentType()->setValue
+					(msg->getHeader()->ContentType()->getValue());
 			}
-			catch (exceptions::no_such_field&)
+
+			if (msg->getHeader()->hasField(fields::CONTENT_TRANSFER_ENCODING))
 			{
-				// Ignore
+				container->getHeader()->ContentTransferEncoding()->setValue
+					(msg->getHeader()->ContentTransferEncoding()->getValue());
 			}
 
 			// Move parts from the root part to this new part

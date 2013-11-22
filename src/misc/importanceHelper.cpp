@@ -39,25 +39,13 @@ void importanceHelper::resetImportance(shared_ptr <message> msg)
 
 void importanceHelper::resetImportanceHeader(shared_ptr <header> hdr)
 {
-	try
-	{
-		shared_ptr <headerField> fld = hdr->findField("X-Priority");
-		hdr->removeField(fld);
-	}
-	catch (exceptions::no_such_field)
-	{
-		// Ignore
-	}
+	shared_ptr <headerField> fld;
 
-	try
-	{
-		shared_ptr <headerField> fld = hdr->findField("Importance");
+	if ((fld = hdr->findField("X-Priority")))
 		hdr->removeField(fld);
-	}
-	catch (exceptions::no_such_field)
-	{
-		// Ignore
-	}
+
+	if ((fld = hdr->findField("Importance")))
+		hdr->removeField(fld);
 }
 
 
@@ -70,9 +58,10 @@ importanceHelper::Importance importanceHelper::getImportance(shared_ptr <const m
 importanceHelper::Importance importanceHelper::getImportanceHeader(shared_ptr <const header> hdr)
 {
 	// Try "X-Priority" field
-	try
+	shared_ptr <const headerField> fld = hdr->findField("X-Priority");
+
+	if (fld)
 	{
-		const shared_ptr <const headerField> fld = hdr->findField("X-Priority");
 		const string value = fld->getValue <text>()->getWholeBuffer();
 
 		int n = IMPORTANCE_NORMAL;
@@ -93,12 +82,13 @@ importanceHelper::Importance importanceHelper::getImportanceHeader(shared_ptr <c
 
 		return (i);
 	}
-	catch (exceptions::no_such_field)
+	else
 	{
 		// Try "Importance" field
-		try
+		fld = hdr->findField("Importance");
+
+		if (fld)
 		{
-			const shared_ptr <const headerField> fld = hdr->findField("Importance");
 			const string value = utility::stringUtils::toLower(utility::stringUtils::trim
 				(fld->getValue <text>()->getWholeBuffer()));
 
@@ -109,7 +99,7 @@ importanceHelper::Importance importanceHelper::getImportanceHeader(shared_ptr <c
 			else
 				return (IMPORTANCE_NORMAL);
 		}
-		catch (exceptions::no_such_field)
+		else
 		{
 			// Default
 			return (IMPORTANCE_NORMAL);
