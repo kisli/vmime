@@ -58,44 +58,21 @@ const word bodyPartAttachment::getName() const
 	// Try the 'filename' parameter of 'Content-Disposition' field
 	shared_ptr <const contentDispositionField> cdf = getContentDisposition();
 
-	if (cdf)
+	if (cdf && cdf->hasFilename())
 	{
-		try
-		{
-			name = cdf->getFilename();
-		}
-		catch (exceptions::no_such_parameter&)
-		{
-			// No 'filename' parameter
-		}
+		name = cdf->getFilename();
 	}
-	else
-	{
-		// No 'Content-Disposition' field
-	}
-
 	// Try the 'name' parameter of 'Content-Type' field
-	if (name.getBuffer().empty())
+	else
 	{
 		shared_ptr <const contentTypeField> ctf = getContentType();
 
 		if (ctf)
 		{
-			try
-			{
-				shared_ptr <const parameter> prm = ctf->findParameter("name");
+			shared_ptr <const parameter> prm = ctf->findParameter("name");
 
-				if (prm != NULL)
-					name = prm->getValue();
-			}
-			catch (exceptions::no_such_parameter&)
-			{
-				// No attachment name available
-			}
-		}
-		else
-		{
-			// No 'Content-Type' field
+			if (prm != NULL)
+				name = prm->getValue();
 		}
 	}
 

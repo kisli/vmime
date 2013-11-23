@@ -407,14 +407,10 @@ shared_ptr <parameter> parameterizedHeaderField::findParameter(const string& par
 
 	// No parameter with this name can be found
 	if (pos == end)
-	{
-		throw exceptions::no_such_parameter(paramName);
-	}
+		return null;
+
 	// Else, return a reference to the existing parameter
-	else
-	{
-		return (*pos);
-	}
+	return (*pos);
 }
 
 

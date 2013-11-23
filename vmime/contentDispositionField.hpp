@@ -36,6 +36,9 @@ namespace vmime
 {
 
 
+/** Describes presentation information, as per RFC-2183.
+  */
+
 class VMIME_EXPORT contentDispositionField : public parameterizedHeaderField
 {
 	friend class headerFieldFactory;
@@ -47,10 +50,15 @@ protected:
 
 public:
 
+	/** Test whether the "creation-date" parameter is set.
+	  *
+	  * @return true if the "creation-date" parameter is set, or false otherwise
+	  */
+	bool hasCreationDate() const;
+
 	/** Return the value of the "creation-date" parameter.
 	  *
 	  * @return value of the "creation-date" parameter
-	  * @throw exceptions::no_such_parameter if the parameter does not exist
 	  */
 	const datetime getCreationDate() const;
 
@@ -60,10 +68,15 @@ public:
 	  */
 	void setCreationDate(const datetime& creationDate);
 
+	/** Test whether the "modification-date" parameter is set.
+	  *
+	  * @return true if the "modification-date" parameter is set, or false otherwise
+	  */
+	bool hasModificationDate() const;
+
 	/** Return the value of the "modification-date" parameter.
 	  *
 	  * @return value of the "modification-date" parameter
-	  * @throw exceptions::no_such_parameter if the parameter does not exist
 	  */
 	const datetime getModificationDate() const;
 
@@ -73,10 +86,15 @@ public:
 	  */
 	void setModificationDate(const datetime& modificationDate);
 
+	/** Test whether the "read-date" parameter is set.
+	  *
+	  * @return true if the "read-date" parameter is set, or false otherwise
+	  */
+	bool hasReadDate() const;
+
 	/** Return the value of the "read-date" parameter.
 	  *
 	  * @return value of the "read-date" parameter
-	  * @throw exceptions::no_such_parameter if the parameter does not exist
 	  */
 	const datetime getReadDate() const;
 
@@ -86,10 +104,15 @@ public:
 	  */
 	void setReadDate(const datetime& readDate);
 
+	/** Test whether the "filename" parameter is set.
+	  *
+	  * @return true if the "filename" parameter is set, or false otherwise
+	  */
+	bool hasFilename() const;
+
 	/** Return the value of the "filename" parameter.
 	  *
 	  * @return value of the "filename" parameter
-	  * @throw exceptions::no_such_parameter if the parameter does not exist
 	  */
 	const word getFilename() const;
 
@@ -99,10 +122,15 @@ public:
 	  */
 	void setFilename(const word& filename);
 
+	/** Test whether the "size" parameter is set.
+	  *
+	  * @return true if the "size" parameter is set, or false otherwise
+	  */
+	bool hasSize() const;
+
 	/** Return the value of the "size" parameter.
 	  *
 	  * @return value of the "size" parameter
-	  * @throw exceptions::no_such_parameter if the parameter does not exist
 	  */
 	const string getSize() const;
 

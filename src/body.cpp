@@ -166,11 +166,11 @@ void body::parseImpl
 		{
 			isMultipart = true;
 
-			try
+			if (ctf->hasBoundary())
 			{
 				boundary = ctf->getBoundary();
 			}
-			catch (exceptions::no_such_parameter&)
+			else
 			{
 				// No "boundary" parameter specified: we can try to
 				// guess it by scanning the body contents...
@@ -436,11 +436,11 @@ void body::generateImpl
 
 			if (ctf)
 			{
-				try
+				if (ctf->hasBoundary())
 				{
 					boundary = ctf->getBoundary();
 				}
-				catch (exceptions::no_such_parameter&)
+				else
 				{
 					// No boundary string specified
 					boundary = generateRandomBoundaryString();
@@ -701,11 +701,11 @@ const charset body::getCharset() const
 
 	if (ctf)
 	{
-		try
+		if (ctf->hasCharset())
 		{
 			return (ctf->getCharset());
 		}
-		catch (exceptions::no_such_parameter&)
+		else
 		{
 			// Defaults to "us-ascii" (RFC-1521)
 			return (vmime::charset(charsets::US_ASCII));
@@ -885,14 +885,14 @@ void body::initNewPart(shared_ptr <bodyPart> part)
 
 		if (ctf)
 		{
-			try
+			if (ctf->hasBoundary())
 			{
 				const string boundary = ctf->getBoundary();
 
 				if (boundary.empty() || !isValidBoundary(boundary))
 					ctf->setBoundary(generateRandomBoundaryString());
 			}
-			catch (exceptions::no_such_parameter&)
+			else
 			{
 				// No "boundary" parameter: generate a random one.
 				ctf->setBoundary(generateRandomBoundaryString());

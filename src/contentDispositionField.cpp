@@ -40,9 +40,20 @@ contentDispositionField::contentDispositionField(contentDispositionField&)
 }
 
 
+bool contentDispositionField::hasCreationDate() const
+{
+	return findParameter("creation-date");
+}
+
+
 const datetime contentDispositionField::getCreationDate() const
 {
-	return findParameter("creation-date")->getValueAs <datetime>();
+	shared_ptr <parameter> param = findParameter("creation-date");
+
+	if (param)
+		return param->getValueAs <datetime>();
+	else
+		return datetime::now();
 }
 
 
@@ -52,9 +63,20 @@ void contentDispositionField::setCreationDate(const datetime& creationDate)
 }
 
 
+bool contentDispositionField::hasModificationDate() const
+{
+	return findParameter("modification-date");
+}
+
+
 const datetime contentDispositionField::getModificationDate() const
 {
-	return findParameter("modification-date")->getValueAs <datetime>();
+	shared_ptr <parameter> param = findParameter("modification-date");
+
+	if (param)
+		return param->getValueAs <datetime>();
+	else
+		return datetime::now();
 }
 
 
@@ -64,9 +86,20 @@ void contentDispositionField::setModificationDate(const datetime& modificationDa
 }
 
 
+bool contentDispositionField::hasReadDate() const
+{
+	return findParameter("read-date");
+}
+
+
 const datetime contentDispositionField::getReadDate() const
 {
-	return findParameter("read-date")->getValueAs <datetime>();
+	shared_ptr <parameter> param = findParameter("read-date");
+
+	if (param)
+		return param->getValueAs <datetime>();
+	else
+		return datetime::now();
 }
 
 
@@ -76,9 +109,20 @@ void contentDispositionField::setReadDate(const datetime& readDate)
 }
 
 
+bool contentDispositionField::hasFilename() const
+{
+	return findParameter("filename");
+}
+
+
 const word contentDispositionField::getFilename() const
 {
-	return findParameter("filename")->getValue();
+	shared_ptr <parameter> param = findParameter("filename");
+
+	if (param)
+		return param->getValue();
+	else
+		return word();
 }
 
 
@@ -88,9 +132,20 @@ void contentDispositionField::setFilename(const word& filename)
 }
 
 
+bool contentDispositionField::hasSize() const
+{
+	return findParameter("size");
+}
+
+
 const string contentDispositionField::getSize() const
 {
-	return findParameter("size")->getValue().getBuffer();
+	shared_ptr <parameter> param = findParameter("size");
+
+	if (param)
+		return param->getValue().getBuffer();
+	else
+		return "";
 }
 
 

@@ -64,10 +64,11 @@ public:
 	bool hasParameter(const string& paramName) const;
 
 	/** Find the first parameter that matches the specified name.
-	  * If no parameter is found, an exception is thrown.
+	  * If no parameter is found, NULL is returned.
 	  *
-	  * @throw exceptions::no_such_parameter if no parameter with this name exists
-	  * @return first parameter with the specified name
+	  * @param paramName parameter name
+	  * @return first parameter with the specified name, or NULL if
+	  * no parameter with this name exists
 	  */
 	shared_ptr <parameter> findParameter(const string& paramName) const;
 
@@ -75,6 +76,7 @@ public:
 	  * If no parameter is found, one will be created and inserted into
 	  * the parameter list.
 	  *
+	  * @param paramName parameter name
 	  * @return first parameter with the specified name or a new field
 	  * if no parameter is found
 	  */

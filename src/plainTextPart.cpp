@@ -78,21 +78,10 @@ void plainTextPart::parse(shared_ptr <const bodyPart> /* message */,
 	shared_ptr <const contentTypeField> ctf =
 		textPart->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
 
-	if (ctf)
-	{
-		try
-		{
-			m_charset = ctf->getCharset();
-		}
-		catch (exceptions::no_such_parameter&)
-		{
-			// No "charset" parameter.
-		}
-	}
+	if (ctf && ctf->hasCharset())
+		m_charset = ctf->getCharset();
 	else
-	{
-		// No "Content-type" field.
-	}
+		m_charset = charset();
 }
 
 

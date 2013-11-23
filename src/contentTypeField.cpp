@@ -40,9 +40,20 @@ contentTypeField::contentTypeField(contentTypeField&)
 }
 
 
+bool contentTypeField::hasBoundary() const
+{
+	return findParameter("boundary");
+}
+
+
 const string contentTypeField::getBoundary() const
 {
-	return findParameter("boundary")->getValue().getBuffer();
+	shared_ptr <parameter> param = findParameter("boundary");
+
+	if (param)
+		return param->getValue().getBuffer();
+	else
+		return "";
 }
 
 
@@ -52,9 +63,20 @@ void contentTypeField::setBoundary(const string& boundary)
 }
 
 
+bool contentTypeField::hasCharset() const
+{
+	return findParameter("charset");
+}
+
+
 const charset contentTypeField::getCharset() const
 {
-	return findParameter("charset")->getValueAs <charset>();
+	shared_ptr <parameter> param = findParameter("charset");
+
+	if (param)
+		return param->getValueAs <charset>();
+	else
+		return charset();
 }
 
 
@@ -64,9 +86,20 @@ void contentTypeField::setCharset(const charset& ch)
 }
 
 
+bool contentTypeField::hasReportType() const
+{
+	return findParameter("report-type");
+}
+
+
 const string contentTypeField::getReportType() const
 {
-	return findParameter("report-type")->getValue().getBuffer();
+	shared_ptr <parameter> param = findParameter("report-type");
+
+	if (param)
+		return param->getValue().getBuffer();
+	else
+		return "";
 }
 
 

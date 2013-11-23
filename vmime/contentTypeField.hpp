@@ -46,11 +46,16 @@ protected:
 
 public:
 
+	/** Test whether the "boundary" parameter is set.
+	  *
+	  * @return true if the "boundary" parameter is set, or false otherwise
+	  */
+	bool hasBoundary() const;
+
 	/** Return the value of the "boundary" parameter. Boundary is a
 	  * random string used to separate body parts.
 	  *
 	  * @return value of the "boundary" parameter
-	  * @throw exceptions::no_such_parameter if the parameter does not exist
 	  */
 	const string getBoundary() const;
 
@@ -63,11 +68,16 @@ public:
 	  */
 	void setBoundary(const string& boundary);
 
+	/** Test whether the "charset" parameter is set.
+	  *
+	  * @return true if the "charset" parameter is set, or false otherwise
+	  */
+	bool hasCharset() const;
+
 	/** Return the value of the "charset" parameter. It specifies the
 	  * charset used in the body part contents.
 	  *
 	  * @return value of the "charset" parameter
-	  * @throw exceptions::no_such_parameter if the parameter does not exist
 	  */
 	const charset getCharset() const;
 
@@ -78,10 +88,15 @@ public:
 	  */
 	void setCharset(const charset& ch);
 
+	/** Test whether the "report-type" parameter is set.
+	  *
+	  * @return true if the "report-type" parameter is set, or false otherwise
+	  */
+	bool hasReportType() const;
+
 	/** Return the value of the "report-type" parameter (RFC-1892).
 	  *
 	  * @return value of the "report-type" parameter
-	  * @throw exceptions::no_such_parameter if the parameter does not exist
 	  */
 	const string getReportType() const;
 
