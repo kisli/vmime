@@ -188,36 +188,12 @@ public:
 };
 
 
-class VMIME_EXPORT no_such_mailbox : public vmime::exception
-{
-public:
-
-	no_such_mailbox(const exception& other = NO_EXCEPTION);
-	~no_such_mailbox() throw();
-
-	exception* clone() const;
-	const char* name() const throw();
-};
-
-
 class VMIME_EXPORT no_such_message_id : public vmime::exception
 {
 public:
 
 	no_such_message_id(const exception& other = NO_EXCEPTION);
 	~no_such_message_id() throw();
-
-	exception* clone() const;
-	const char* name() const throw();
-};
-
-
-class VMIME_EXPORT no_such_address : public vmime::exception
-{
-public:
-
-	no_such_address(const exception& other = NO_EXCEPTION);
-	~no_such_address() throw();
 
 	exception* clone() const;
 	const char* name() const throw();

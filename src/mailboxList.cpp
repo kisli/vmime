@@ -49,14 +49,7 @@ void mailboxList::appendMailbox(shared_ptr <mailbox> mbox)
 
 void mailboxList::insertMailboxBefore(shared_ptr <mailbox> beforeMailbox, shared_ptr <mailbox> mbox)
 {
-	try
-	{
-		m_list.insertAddressBefore(beforeMailbox, mbox);
-	}
-	catch (exceptions::no_such_address&)
-	{
-		throw exceptions::no_such_mailbox();
-	}
+	m_list.insertAddressBefore(beforeMailbox, mbox);
 }
 
 
@@ -68,14 +61,7 @@ void mailboxList::insertMailboxBefore(const size_t pos, shared_ptr <mailbox> mbo
 
 void mailboxList::insertMailboxAfter(shared_ptr <mailbox> afterMailbox, shared_ptr <mailbox> mbox)
 {
-	try
-	{
-		m_list.insertAddressAfter(afterMailbox, mbox);
-	}
-	catch (exceptions::no_such_address&)
-	{
-		throw exceptions::no_such_mailbox();
-	}
+	m_list.insertAddressAfter(afterMailbox, mbox);
 }
 
 
@@ -87,14 +73,7 @@ void mailboxList::insertMailboxAfter(const size_t pos, shared_ptr <mailbox> mbox
 
 void mailboxList::removeMailbox(shared_ptr <mailbox> mbox)
 {
-	try
-	{
-		m_list.removeAddress(mbox);
-	}
-	catch (exceptions::no_such_address&)
-	{
-		throw exceptions::no_such_mailbox();
-	}
+	m_list.removeAddress(mbox);
 }
 
 

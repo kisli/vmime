@@ -69,7 +69,7 @@ public:
 	  *
 	  * @param beforeAddress address before which the new address will be inserted
 	  * @param addr address to insert
-	  * @throw exceptions::no_such_address if the address is not in the list
+	  * @throw std::out_of_range if the address is not in the list
 	  */
 	void insertAddressBefore(shared_ptr <address> beforeAddress, shared_ptr <address> addr);
 
@@ -78,6 +78,7 @@ public:
 	  * @param pos position at which to insert the new address (0 to insert at
 	  * the beginning of the list)
 	  * @param addr address to insert
+	  * @throw std::out_of_range if the position is out of range
 	  */
 	void insertAddressBefore(const size_t pos, shared_ptr <address> addr);
 
@@ -85,7 +86,7 @@ public:
 	  *
 	  * @param afterAddress address after which the new address will be inserted
 	  * @param addr address to insert
-	  * @throw exceptions::no_such_address if the address is not in the list
+	  * @throw std::out_of_range if the address is not in the list
 	  */
 	void insertAddressAfter(shared_ptr <address> afterAddress, shared_ptr <address> addr);
 
@@ -93,19 +94,21 @@ public:
 	  *
 	  * @param pos position of the address before the new address
 	  * @param addr address to insert
+	  * @throw std::out_of_range if the position is out of range
 	  */
 	void insertAddressAfter(const size_t pos, shared_ptr <address> addr);
 
 	/** Remove the specified address from the list.
 	  *
 	  * @param addr address to remove
-	  * @throw exceptions::no_such_address if the address is not in the list
+	  * @throw std::out_of_range if the address is not in the list
 	  */
 	void removeAddress(shared_ptr <address> addr);
 
 	/** Remove the address at the specified position.
 	  *
 	  * @param pos position of the address to remove
+	  * @throw std::out_of_range if the position is out of range
 	  */
 	void removeAddress(const size_t pos);
 
@@ -129,6 +132,7 @@ public:
 	  *
 	  * @param pos position
 	  * @return address at position 'pos'
+	  * @throw std::out_of_range if the position is out of range
 	  */
 	shared_ptr <address> getAddressAt(const size_t pos);
 
@@ -136,6 +140,7 @@ public:
 	  *
 	  * @param pos position
 	  * @return address at position 'pos'
+	  * @throw std::out_of_range if the position is out of range
 	  */
 	const shared_ptr <const address> getAddressAt(const size_t pos) const;
 

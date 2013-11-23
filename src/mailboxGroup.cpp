@@ -258,7 +258,7 @@ void mailboxGroup::insertMailboxBefore(shared_ptr <mailbox> beforeMailbox, share
 		(m_list.begin(), m_list.end(), beforeMailbox);
 
 	if (it == m_list.end())
-		throw exceptions::no_such_mailbox();
+		throw std::out_of_range();
 
 	m_list.insert(it, mbox);
 }
@@ -266,6 +266,9 @@ void mailboxGroup::insertMailboxBefore(shared_ptr <mailbox> beforeMailbox, share
 
 void mailboxGroup::insertMailboxBefore(const size_t pos, shared_ptr <mailbox> mbox)
 {
+	if (pos >= m_list.size())
+		throw std::out_of_range();
+
 	m_list.insert(m_list.begin() + pos, mbox);
 }
 
@@ -276,7 +279,7 @@ void mailboxGroup::insertMailboxAfter(shared_ptr <mailbox> afterMailbox, shared_
 		(m_list.begin(), m_list.end(), afterMailbox);
 
 	if (it == m_list.end())
-		throw exceptions::no_such_mailbox();
+		throw std::out_of_range();
 
 	m_list.insert(it + 1, mbox);
 }
@@ -284,6 +287,9 @@ void mailboxGroup::insertMailboxAfter(shared_ptr <mailbox> afterMailbox, shared_
 
 void mailboxGroup::insertMailboxAfter(const size_t pos, shared_ptr <mailbox> mbox)
 {
+	if (pos >= m_list.size())
+		throw std::out_of_range();
+
 	m_list.insert(m_list.begin() + pos + 1, mbox);
 }
 
@@ -294,7 +300,7 @@ void mailboxGroup::removeMailbox(shared_ptr <mailbox> mbox)
 		(m_list.begin(), m_list.end(), mbox);
 
 	if (it == m_list.end())
-		throw exceptions::no_such_mailbox();
+		throw std::out_of_range();
 
 	m_list.erase(it);
 }
@@ -302,6 +308,9 @@ void mailboxGroup::removeMailbox(shared_ptr <mailbox> mbox)
 
 void mailboxGroup::removeMailbox(const size_t pos)
 {
+	if (pos >= m_list.size())
+		throw std::out_of_range();
+
 	const std::vector <shared_ptr <mailbox> >::iterator it = m_list.begin() + pos;
 
 	m_list.erase(it);

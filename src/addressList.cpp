@@ -151,7 +151,7 @@ void addressList::insertAddressBefore(shared_ptr <address> beforeAddress, shared
 		(m_list.begin(), m_list.end(), beforeAddress);
 
 	if (it == m_list.end())
-		throw exceptions::no_such_address();
+		throw std::out_of_range();
 
 	m_list.insert(it, addr);
 }
@@ -159,6 +159,9 @@ void addressList::insertAddressBefore(shared_ptr <address> beforeAddress, shared
 
 void addressList::insertAddressBefore(const size_t pos, shared_ptr <address> addr)
 {
+	if (pos >= m_list.size())
+		throw std::out_of_range();
+
 	m_list.insert(m_list.begin() + pos, addr);
 }
 
@@ -169,7 +172,7 @@ void addressList::insertAddressAfter(shared_ptr <address> afterAddress, shared_p
 		(m_list.begin(), m_list.end(), afterAddress);
 
 	if (it == m_list.end())
-		throw exceptions::no_such_address();
+		throw std::out_of_range();
 
 	m_list.insert(it + 1, addr);
 }
@@ -177,6 +180,9 @@ void addressList::insertAddressAfter(shared_ptr <address> afterAddress, shared_p
 
 void addressList::insertAddressAfter(const size_t pos, shared_ptr <address> addr)
 {
+	if (pos >= m_list.size())
+		throw std::out_of_range();
+
 	m_list.insert(m_list.begin() + pos + 1, addr);
 }
 
@@ -187,7 +193,7 @@ void addressList::removeAddress(shared_ptr <address> addr)
 		(m_list.begin(), m_list.end(), addr);
 
 	if (it == m_list.end())
-		throw exceptions::no_such_address();
+		throw std::out_of_range();
 
 	m_list.erase(it);
 }
@@ -195,6 +201,9 @@ void addressList::removeAddress(shared_ptr <address> addr)
 
 void addressList::removeAddress(const size_t pos)
 {
+	if (pos >= m_list.size())
+		throw std::out_of_range();
+
 	const std::vector <shared_ptr <address> >::iterator it = m_list.begin() + pos;
 
 	m_list.erase(it);

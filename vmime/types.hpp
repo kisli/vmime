@@ -28,6 +28,7 @@
 #include <limits>
 #include <string>
 #include <vector>
+#include <stdexcept>
 
 #include "vmime/config.hpp"
 

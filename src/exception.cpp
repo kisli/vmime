@@ -179,18 +179,6 @@ const char* no_such_part::name() const throw() { return "no_such_part"; }
 
 
 //
-// no_such_mailbox
-//
-
-no_such_mailbox::~no_such_mailbox() throw() {}
-no_such_mailbox::no_such_mailbox(const exception& other)
-	: exception("Mailbox not found.", other) {}
-
-exception* no_such_mailbox::clone() const { return new no_such_mailbox(*this); }
-const char* no_such_mailbox::name() const throw() { return "no_such_mailbox"; }
-
-
-//
 // no_such_message_id
 //
 
@@ -200,18 +188,6 @@ no_such_message_id::no_such_message_id(const exception& other)
 
 exception* no_such_message_id::clone() const { return new no_such_message_id(*this); }
 const char* no_such_message_id::name() const throw() { return "no_such_message_id"; }
-
-
-//
-// no_such_address
-//
-
-no_such_address::~no_such_address() throw() {}
-no_such_address::no_such_address(const exception& other)
-	: exception("Address not found.", other) {}
-
-exception* no_such_address::clone() const { return new no_such_address(*this); }
-const char* no_such_address::name() const throw() { return "no_such_address"; }
 
 
 //

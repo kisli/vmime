@@ -76,7 +76,7 @@ public:
 	  *
 	  * @param beforeMailbox mailbox before which the new mailbox will be inserted
 	  * @param mbox mailbox to insert
-	  * @throw exceptions::no_such_mailbox if the mailbox is not in the list
+	  * @throw std::out_of_range if the mailbox is not in the list
 	  */
 	void insertMailboxBefore(shared_ptr <mailbox> beforeMailbox, shared_ptr <mailbox> mbox);
 
@@ -85,6 +85,7 @@ public:
 	  * @param pos position at which to insert the new mailbox (0 to insert at
 	  * the beginning of the list)
 	  * @param mbox mailbox to insert
+	  * @throw std::out_of_range if the position is out of range
 	  */
 	void insertMailboxBefore(const size_t pos, shared_ptr <mailbox> mbox);
 
@@ -92,7 +93,7 @@ public:
 	  *
 	  * @param afterMailbox mailbox after which the new mailbox will be inserted
 	  * @param mbox mailbox to insert
-	  * @throw exceptions::no_such_mailbox if the mailbox is not in the list
+	  * @throw std::out_of_range if the mailbox is not in the list
 	  */
 	void insertMailboxAfter(shared_ptr <mailbox> afterMailbox, shared_ptr <mailbox> mbox);
 
@@ -100,19 +101,21 @@ public:
 	  *
 	  * @param pos position of the mailbox before the new mailbox
 	  * @param mbox mailbox to insert
+	  * @throw std::out_of_range if the position is out of range
 	  */
 	void insertMailboxAfter(const size_t pos, shared_ptr <mailbox> mbox);
 
 	/** Remove the specified mailbox from the list.
 	  *
 	  * @param mbox mailbox to remove
-	  * @throw exceptions::no_such_mailbox if the mailbox is not in the list
+	  * @throw std::out_of_range if the mailbox is not in the list
 	  */
 	void removeMailbox(shared_ptr <mailbox> mbox);
 
 	/** Remove the mailbox at the specified position.
 	  *
 	  * @param pos position of the mailbox to remove
+	  * @throw std::out_of_range if the position is out of range
 	  */
 	void removeMailbox(const size_t pos);
 
@@ -136,6 +139,7 @@ public:
 	  *
 	  * @param pos position
 	  * @return mailbox at position 'pos'
+	  * @throw std::out_of_range if the position is out of range
 	  */
 	shared_ptr <mailbox> getMailboxAt(const size_t pos);
 
@@ -143,6 +147,7 @@ public:
 	  *
 	  * @param pos position
 	  * @return mailbox at position 'pos'
+	  * @throw std::out_of_range if the position is out of range
 	  */
 	const shared_ptr <const mailbox> getMailboxAt(const size_t pos) const;
 
