@@ -275,18 +275,6 @@ const char* no_recipient::name() const throw() { return "no_recipient"; }
 
 
 //
-// no_object_found
-//
-
-no_object_found::~no_object_found() throw() {}
-no_object_found::no_object_found(const exception& other)
-	: exception("No object found.", other) {}
-
-exception* no_object_found::clone() const { return new no_object_found(*this); }
-const char* no_object_found::name() const throw() { return "no_object_found"; }
-
-
-//
 // no_such_property
 //
 

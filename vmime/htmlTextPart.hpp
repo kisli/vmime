@@ -154,9 +154,9 @@ public:
 
 	/** Return the embedded object with the specified identifier.
 	  *
-	  * @throw exceptions::no_object_found() if no object has been found
 	  * @param id object identifier
-	  * @return embedded object with the specified identifier
+	  * @return embedded object with the specified identifier, or NULL if
+	  * no object has been found
 	  */
 	shared_ptr <const embeddedObject> findObject(const string& id) const;
 

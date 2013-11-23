@@ -381,7 +381,7 @@ shared_ptr <const htmlTextPart::embeddedObject> htmlTextPart::findObject(const s
 			return *o;
 	}
 
-	throw exceptions::no_object_found();
+	return null;
 }
 
 

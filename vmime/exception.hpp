@@ -290,18 +290,6 @@ public:
 };
 
 
-class VMIME_EXPORT no_object_found : public vmime::exception
-{
-public:
-
-	no_object_found(const exception& other = NO_EXCEPTION);
-	~no_object_found() throw();
-
-	exception* clone() const;
-	const char* name() const throw();
-};
-
-
 /** There is no property with that name in the set.
   */
 
