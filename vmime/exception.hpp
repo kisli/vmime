@@ -152,18 +152,6 @@ public:
 };
 
 
-class VMIME_EXPORT no_such_parameter : public vmime::exception
-{
-public:
-
-	no_such_parameter(const string& name, const exception& other = NO_EXCEPTION);
-	~no_such_parameter() throw();
-
-	exception* clone() const;
-	const char* name() const throw();
-};
-
-
 class VMIME_EXPORT no_such_field : public vmime::exception
 {
 public:

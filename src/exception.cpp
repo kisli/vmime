@@ -143,18 +143,6 @@ const char* no_digest_algorithm_available::name() const throw() { return "no_dig
 
 
 //
-// no_such_parameter
-//
-
-no_such_parameter::~no_such_parameter() throw() {}
-no_such_parameter::no_such_parameter(const string& name, const exception& other)
-	: exception(string("Parameter not found: '") + name + string("'."), other) {}
-
-exception* no_such_parameter::clone() const { return new no_such_parameter(*this); }
-const char* no_such_parameter::name() const throw() { return "no_such_parameter"; }
-
-
-//
 // no_such_field
 //
 

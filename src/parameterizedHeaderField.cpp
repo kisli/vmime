@@ -454,7 +454,7 @@ void parameterizedHeaderField::insertParameterBefore(shared_ptr <parameter> befo
 		(m_params.begin(), m_params.end(), beforeParam);
 
 	if (it == m_params.end())
-		throw exceptions::no_such_parameter(beforeParam->getName());
+		throw std::out_of_range("Invalid position");
 
 	m_params.insert(it, param);
 }
@@ -462,6 +462,9 @@ void parameterizedHeaderField::insertParameterBefore(shared_ptr <parameter> befo
 
 void parameterizedHeaderField::insertParameterBefore(const size_t pos, shared_ptr <parameter> param)
 {
+	if (pos >= m_params.size())
+		throw std::out_of_range("Invalid position");
+
 	m_params.insert(m_params.begin() + pos, param);
 }
 
@@ -472,7 +475,7 @@ void parameterizedHeaderField::insertParameterAfter(shared_ptr <parameter> after
 		(m_params.begin(), m_params.end(), afterParam);
 
 	if (it == m_params.end())
-		throw exceptions::no_such_parameter(afterParam->getName());
+		throw std::out_of_range("Invalid position");
 
 	m_params.insert(it + 1, param);
 }
@@ -480,6 +483,9 @@ void parameterizedHeaderField::insertParameterAfter(shared_ptr <parameter> after
 
 void parameterizedHeaderField::insertParameterAfter(const size_t pos, shared_ptr <parameter> param)
 {
+	if (pos >= m_params.size())
+		throw std::out_of_range("Invalid position");
+
 	m_params.insert(m_params.begin() + pos + 1, param);
 }
 
@@ -490,7 +496,7 @@ void parameterizedHeaderField::removeParameter(shared_ptr <parameter> param)
 		(m_params.begin(), m_params.end(), param);
 
 	if (it == m_params.end())
-		throw exceptions::no_such_parameter(param->getName());
+		throw std::out_of_range("Invalid position");
 
 	m_params.erase(it);
 }

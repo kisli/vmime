@@ -92,7 +92,7 @@ public:
 	  *
 	  * @param beforeParam parameter before which the new parameter will be inserted
 	  * @param param parameter to insert
-	  * @throw exceptions::no_such_parameter if the parameter is not in the list
+	  * @throw std::out_of_range if the parameter is not in the list
 	  */
 	void insertParameterBefore(shared_ptr <parameter> beforeParam, shared_ptr <parameter> param);
 
@@ -101,6 +101,7 @@ public:
 	  * @param pos position at which to insert the new parameter (0 to insert at
 	  * the beginning of the list)
 	  * @param param parameter to insert
+	  * @throw std::out_of_range if the position is out of range
 	  */
 	void insertParameterBefore(const size_t pos, shared_ptr <parameter> param);
 
@@ -108,7 +109,7 @@ public:
 	  *
 	  * @param afterParam parameter after which the new parameter will be inserted
 	  * @param param parameter to insert
-	  * @throw exceptions::no_such_parameter if the parameter is not in the list
+	  * @throw std::out_of_range if the parameter is not in the list
 	  */
 	void insertParameterAfter(shared_ptr <parameter> afterParam, shared_ptr <parameter> param);
 
@@ -116,13 +117,14 @@ public:
 	  *
 	  * @param pos position of the parameter before the new parameter
 	  * @param param parameter to insert
+	  * @throw std::out_of_range if the position is out of range
 	  */
 	void insertParameterAfter(const size_t pos, shared_ptr <parameter> param);
 
 	/** Remove the specified parameter from the list.
 	  *
 	  * @param param parameter to remove
-	  * @throw exceptions::no_such_parameter if the parameter is not in the list
+	  * @throw std::out_of_range if the parameter is not in the list
 	  */
 	void removeParameter(shared_ptr <parameter> param);
 
