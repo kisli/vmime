@@ -57,14 +57,16 @@ public:
 	parameterizedHeaderField& operator=(const parameterizedHeaderField& other);
 
 	/** Checks whether (at least) one parameter with this name exists.
+	  * Parameter name is case-insensitive.
 	  *
+	  * @param paramName parameter name
 	  * @return true if at least one parameter with the specified name
 	  * exists, or false otherwise
 	  */
 	bool hasParameter(const string& paramName) const;
 
-	/** Find the first parameter that matches the specified name.
-	  * If no parameter is found, NULL is returned.
+	/** Find the first parameter that matches the specified name. Parameter name
+	  * is case-insensitive. If no parameter is found, NULL is returned.
 	  *
 	  * @param paramName parameter name
 	  * @return first parameter with the specified name, or NULL if
@@ -73,6 +75,7 @@ public:
 	shared_ptr <parameter> findParameter(const string& paramName) const;
 
 	/** Find the first parameter that matches the specified name.
+	  * Parameter name is case-insensitive.
 	  * If no parameter is found, one will be created and inserted into
 	  * the parameter list.
 	  *

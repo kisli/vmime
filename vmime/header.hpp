@@ -101,6 +101,8 @@ public:
 	  * Field name is case-insensitive.
 	  * If no field is found, NULL is returned.
 	  *
+	  * @param fieldName name of field to return (eg: "X-Mailer" or "From",
+	  * common field names are available in the vmime::fields namespace)
 	  * @return first field with the specified name, or NULL if no field
 	  * with this name was found
 	  */
@@ -111,6 +113,9 @@ public:
 	  * If no field is found, or the field is not of the specified type,
 	  * NULL is returned.
 	  *
+	  * @param fieldName name of field whose value is to be returned
+	  * (eg: "X-Mailer" or "From", common field names are available in
+	  * the vmime::fields namespace)
 	  * @return first field with the specified name, or NULL if no field
 	  * with this name was found
 	  */
@@ -125,6 +130,8 @@ public:
 	  * If no field is found, or the field value is not of the specified
 	  * type, NULL is returned.
 	  *
+	  * @param fieldName name of field to return (eg: "X-Mailer" or "From",
+	  * common field names are available in the vmime::fields namespace)
 	  * @return value of the first field with the specified name, or NULL
 	  * if no field with this name was found, or the value is not of the
 	  * specified type
@@ -143,6 +150,8 @@ public:
 	/** Find all fields that match the specified name.
 	  * If no field is found, an empty vector is returned.
 	  *
+	  * @param fieldName name of field to return (eg: "X-Mailer" or "From",
+	  * common field names are available in the vmime::fields namespace)
 	  * @return list of fields with the specified name
 	  */
 	std::vector <shared_ptr <headerField> > findAllFields(const string& fieldName);
@@ -151,6 +160,8 @@ public:
 	  * If no field is found, one will be created and inserted into
 	  * the header.
 	  *
+	  * @param fieldName name of field to return (eg: "X-Mailer" or "From",
+	  * common field names are available in the vmime::fields namespace)
 	  * @return first field with the specified name or a new field
 	  * if no field is found
 	  */
