@@ -217,10 +217,11 @@ const std::string getFileNameFromPath(const std::string& path)
 }
 
 
+static char g_moduleNameBuffer[2048];
+
+
 const char* getTestModuleNameFromSourceFile(const char *path_)
 {
-	static std::string moduleName;
-
 	static const std::string testRunnerPath(getNormalizedPath(__FILE__));
 	static const std::string testRunnerFileName(getFileNameFromPath(testRunnerPath));
 
@@ -235,9 +236,11 @@ const char* getTestModuleNameFromSourceFile(const char *path_)
 	const std::string testPath(path.begin() + basePath.length(), path.end());
 
 	// "module/testFile.cpp" --> "module"
-	moduleName = testPath.substr(0, testPath.length() - testFileName.length() - 1);
+	const std::string moduleName(testPath.substr(0, testPath.length() - testFileName.length() - 1));
+	std::copy(moduleName.begin(), moduleName.end(), g_moduleNameBuffer);
+	g_moduleNameBuffer[moduleName.length()] = 0;
 
-	return moduleName.c_str();
+	return g_moduleNameBuffer;
 }
 
 
