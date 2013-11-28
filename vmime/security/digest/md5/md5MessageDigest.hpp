@@ -63,8 +63,14 @@ protected:
 
 	vmime_uint32 m_hash[4];
 
+	union BlockType
+	{
+		vmime_uint32 b32[16];
+		vmime_uint8 b8[64];
+	};
+
 	unsigned long m_byteCount;
-	vmime_uint8 m_block[64];
+	BlockType m_block;
 
 	bool m_finalized;
 };

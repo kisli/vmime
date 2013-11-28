@@ -147,11 +147,11 @@ void md5MessageDigest::update(const byte_t* data, const unsigned long length)
 
 	if (avail > len)
 	{
-		copyUint8Array(m_block + (64 - avail), data, len);
+		copyUint8Array(m_block.b8 + (64 - avail), data, len);
 		return;
 	}
 
-	copyUint8Array(m_block + (64 - avail), data, avail);
+	copyUint8Array(m_block.b8 + (64 - avail), data, avail);
 	transformHelper();
 
 	data += avail;
@@ -159,14 +159,14 @@ void md5MessageDigest::update(const byte_t* data, const unsigned long length)
 
 	while (len >= 64)
 	{
-		copyUint8Array(m_block, data, 64);
+		copyUint8Array(m_block.b8, data, 64);
 		transformHelper();
 
 		data += 64;
 		len -= 64;
 	}
 
-	copyUint8Array(m_block, data, len);
+	copyUint8Array(m_block.b8, data, len);
 }
 
 
@@ -196,7 +196,7 @@ void md5MessageDigest::finalize()
 {
 	const long offset = m_byteCount & 0x3f;
 
-	vmime_uint8* p = m_block + offset;
+	vmime_uint8* p = m_block.b8 + offset;
 	long padding = 56 - (offset + 1);
 
 	*p++ = 0x80;
@@ -205,23 +205,23 @@ void md5MessageDigest::finalize()
 	{
 		memset(p, 0x00, padding + 8);
 		transformHelper();
-		p = m_block;
+		p = m_block.b8;
 		padding = 56;
 	}
 
 	memset(p, 0, padding);
 
-	reinterpret_cast <vmime_uint32*>(m_block)[14] = static_cast <vmime_uint32>(m_byteCount << 3);
-	reinterpret_cast <vmime_uint32*>(m_block)[15] = static_cast <vmime_uint32>(m_byteCount >> 29);
+	m_block.b32[14] = static_cast <vmime_uint32>(m_byteCount << 3);
+	m_block.b32[15] = static_cast <vmime_uint32>(m_byteCount >> 29);
 
 #if VMIME_BYTE_ORDER_BIG_ENDIAN
-	swapUint32Array((vmime_uint32*) m_block, (64 - 8) / 4);
+	swapUint32Array(m_block.b32, (64 - 8) / 4);
 #endif
 
 	transform();
 
 #if VMIME_BYTE_ORDER_BIG_ENDIAN
-	swapUint32Array((vmime_uint32*) m_hash, 4);
+	swapUint32Array(m_hash, 4);
 #endif
 
 	m_finalized = true;
@@ -231,7 +231,7 @@ void md5MessageDigest::finalize()
 void md5MessageDigest::transformHelper()
 {
 #if VMIME_BYTE_ORDER_BIG_ENDIAN
-	swapUint32Array((vmime_uint32*) m_block, 64 / 4);
+	swapUint32Array(m_block.b32, 64 / 4);
 #endif
 	transform();
 }
@@ -239,7 +239,7 @@ void md5MessageDigest::transformHelper()
 
 void md5MessageDigest::transform()
 {
-	const vmime_uint32* const in = reinterpret_cast <vmime_uint32*>(m_block);
+	const vmime_uint32* const in = m_block.b32;
 
 	vmime_uint32 a = m_hash[0];
 	vmime_uint32 b = m_hash[1];
