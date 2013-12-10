@@ -136,15 +136,15 @@ protected:
 	void parseImpl
 		(const parsingContext& ctx,
 		 const string& buffer,
-		 const string::size_type position,
-		 const string::size_type end,
-		 string::size_type* newPosition = NULL);
+		 const size_t position,
+		 const size_t end,
+		 size_t* newPosition = NULL);
 
 	void generateImpl
 		(const generationContext& ctx,
 		 utility::outputStream& os,
-		 const string::size_type curLinePos = 0,
-		 string::size_type* newLinePos = NULL) const;
+		 const size_t curLinePos = 0,
+		 size_t* newLinePos = NULL) const;
 
 public:
 
@@ -154,8 +154,8 @@ public:
 	void generate
 		(const generationContext& ctx,
 		 utility::outputStream& os,
-		 const string::size_type curLinePos,
-		 string::size_type* newLinePos,
+		 const size_t curLinePos,
+		 size_t* newLinePos,
 		 const int flags,
 		 generatorState* state) const;
 #endif
@@ -167,9 +167,9 @@ private:
 	static shared_ptr <word> parseNext
 		(const parsingContext& ctx,
 		 const string& buffer,
-		 const string::size_type position,
-		 const string::size_type end,
-		 string::size_type* newPosition,
+		 const size_t position,
+		 const size_t end,
+		 size_t* newPosition,
 		 bool prevIsEncoded,
 		 bool* isEncoded,
 		 bool isFirst);
@@ -177,9 +177,9 @@ private:
 	static const std::vector <shared_ptr <word> > parseMultiple
 		(const parsingContext& ctx,
 		 const string& buffer,
-		 const string::size_type position,
-		 const string::size_type end,
-		 string::size_type* newPosition);
+		 const size_t position,
+		 const size_t end,
+		 size_t* newPosition);
 
 
 	// The "m_buffer" of this word holds the data, and this data is encoded

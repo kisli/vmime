@@ -44,7 +44,7 @@ public:
 	  * @return the offset from the beginning of the stream, in bytes,
 	  * at which the next read occurs
 	  */
-	virtual size_type getPosition() const = 0;
+	virtual size_t getPosition() const = 0;
 
 	/** Sets the position, measured from the beginning of this stream,
 	  * at which the next read occurs.
@@ -52,7 +52,7 @@ public:
 	  * @param pos the offset position, measured in bytes from the
 	  * beginning of the stream, at which to set the stream pointer.
 	  */
-	virtual void seek(const size_type pos) = 0;
+	virtual void seek(const size_t pos) = 0;
 };
 
 

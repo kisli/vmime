@@ -32,7 +32,7 @@ namespace utility {
 
 // filteredInputStream
 
-stream::size_type filteredInputStream::getBlockSize()
+size_t filteredInputStream::getBlockSize()
 {
 	return std::min(inputStream::getBlockSize(), getPreviousInputStream().getBlockSize());
 }
@@ -40,7 +40,7 @@ stream::size_type filteredInputStream::getBlockSize()
 
 // filteredOutputStream
 
-stream::size_type filteredOutputStream::getBlockSize()
+size_t filteredOutputStream::getBlockSize()
 {
 	return std::min(outputStream::getBlockSize(), getNextOutputStream().getBlockSize());
 }
@@ -75,26 +75,26 @@ void dotFilteredInputStream::reset()
 }
 
 
-stream::size_type dotFilteredInputStream::read(value_type* const data, const size_type count)
+size_t dotFilteredInputStream::read(byte_t* const data, const size_t count)
 {
-	const stream::size_type read = m_stream.read(data, count);
+	const size_t read = m_stream.read(data, count);
 
-	const value_type* readPtr = data;
-	value_type* writePtr = data;
+	const byte_t* readPtr = data;
+	byte_t* writePtr = data;
 
-	const value_type* end = data + read;
+	const byte_t* end = data + read;
 
-	stream::size_type written = 0;
+	size_t written = 0;
 
 	// Replace "\n.." with "\n."
 	while (readPtr < end)
 	{
 		if (*readPtr == '.')
 		{
-			const value_type prevChar2 =
+			const byte_t prevChar2 =
 				(readPtr == data + 1 ? m_previousChar1 :
 				 readPtr == data ? m_previousChar2 : *(readPtr - 2));
-			const value_type prevChar1 =
+			const byte_t prevChar1 =
 				(readPtr == data ? m_previousChar1 : *(readPtr - 1));
 
 			if (prevChar2 == '\n' && prevChar1 == '.')
@@ -127,7 +127,7 @@ stream::size_type dotFilteredInputStream::read(value_type* const data, const siz
 }
 
 
-stream::size_type dotFilteredInputStream::skip(const size_type /* count */)
+size_t dotFilteredInputStream::skip(const size_t /* count */)
 {
 	// Skipping bytes is not supported
 	return 0;
@@ -148,15 +148,15 @@ outputStream& dotFilteredOutputStream::getNextOutputStream()
 }
 
 
-void dotFilteredOutputStream::write
-	(const value_type* const data, const size_type count)
+void dotFilteredOutputStream::writeImpl
+	(const byte_t* const data, const size_t count)
 {
 	if (count == 0)
 		return;
 
-	const value_type* pos = data;
-	const value_type* end = data + count;
-	const value_type* start = data;
+	const byte_t* pos = data;
+	const byte_t* end = data + count;
+	const byte_t* start = data;
 
 	if (m_previousChar == '.')
 	{
@@ -172,7 +172,7 @@ void dotFilteredOutputStream::write
 	// Replace "\n." with "\n.."
 	while ((pos = std::find(pos, end, '.')) != end)
 	{
-		const value_type previousChar =
+		const byte_t previousChar =
 			(pos == data ? m_previousChar : *(pos - 1));
 
 		if (previousChar == '\n')
@@ -224,15 +224,15 @@ outputStream& CRLFToLFFilteredOutputStream::getNextOutputStream()
 }
 
 
-void CRLFToLFFilteredOutputStream::write
-	(const value_type* const data, const size_type count)
+void CRLFToLFFilteredOutputStream::writeImpl
+	(const byte_t* const data, const size_t count)
 {
 	if (count == 0)
 		return;
 
-	const value_type* pos = data;
-	const value_type* end = data + count;
-	const value_type* start = data;
+	const byte_t* pos = data;
+	const byte_t* end = data + count;
+	const byte_t* start = data;
 
 	// Warning: if the whole buffer finishes with '\r', this
 	// last character will not be written back if flush() is
@@ -249,7 +249,7 @@ void CRLFToLFFilteredOutputStream::write
 	// Replace "\r\n" (CRLF) with "\n" (LF)
 	while ((pos = std::find(pos, end, '\n')) != end)
 	{
-		const value_type previousChar =
+		const byte_t previousChar =
 			(pos == data ? m_previousChar : *(pos - 1));
 
 		if (previousChar == '\r')
@@ -300,8 +300,8 @@ outputStream& LFToCRLFFilteredOutputStream::getNextOutputStream()
 }
 
 
-void LFToCRLFFilteredOutputStream::write
-	(const value_type* const data, const size_type count)
+void LFToCRLFFilteredOutputStream::writeImpl
+	(const byte_t* const data, const size_t count)
 {
 	if (count == 0)
 		return;
@@ -309,10 +309,10 @@ void LFToCRLFFilteredOutputStream::write
 	string buffer;
 	buffer.reserve(count);
 
-	const value_type* pos = data;
-	const value_type* end = data + count;
+	const byte_t* pos = data;
+	const byte_t* end = data + count;
 
-	value_type previousChar = m_previousChar;
+	byte_t previousChar = m_previousChar;
 
 	while (pos < end)
 	{
@@ -360,8 +360,8 @@ void LFToCRLFFilteredOutputStream::flush()
 // stopSequenceFilteredInputStream <1>
 
 template <>
-stream::size_type stopSequenceFilteredInputStream <1>::read
-	(value_type* const data, const size_type count)
+size_t stopSequenceFilteredInputStream <1>::read
+	(byte_t* const data, const size_t count)
 {
 	if (eof() || m_stream.eof())
 	{
@@ -369,10 +369,10 @@ stream::size_type stopSequenceFilteredInputStream <1>::read
 		return 0;
 	}
 
-	const size_type read = m_stream.read(data, count);
-	value_type* end = data + read;
+	const size_t read = m_stream.read(data, count);
+	byte_t* end = data + read;
 
-	value_type* pos = std::find(data, end, m_sequence[0]);
+	byte_t* pos = std::find(data, end, m_sequence[0]);
 
 	if (pos == end)
 	{

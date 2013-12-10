@@ -59,7 +59,7 @@ shared_ptr <contentHandler> IMAPMessagePartContentHandler::clone() const
 
 
 void IMAPMessagePartContentHandler::generate
-	(utility::outputStream& os, const vmime::encoding& enc, const string::size_type maxLineLength) const
+	(utility::outputStream& os, const vmime::encoding& enc, const size_t maxLineLength) const
 {
 	shared_ptr <IMAPMessage> msg = constCast <IMAPMessage>(m_message.lock());
 	shared_ptr <messagePart> part = constCast <messagePart>(m_part.lock());
@@ -165,7 +165,7 @@ void IMAPMessagePartContentHandler::extractRaw
 }
 
 
-string::size_type IMAPMessagePartContentHandler::getLength() const
+size_t IMAPMessagePartContentHandler::getLength() const
 {
 	return m_part.lock()->getSize();
 }

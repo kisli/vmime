@@ -40,6 +40,8 @@
 #include <errno.h>
 #include <string.h>
 
+#include "vmime/utility/stringUtils.hpp"
+
 #include "vmime/exception.hpp"
 
 
@@ -426,7 +428,7 @@ const string posixSocket::getPeerName() const
 }
 
 
-posixSocket::size_type posixSocket::getBlockSize() const
+size_t posixSocket::getBlockSize() const
 {
 	return 16384;  // 16 KB
 }
@@ -434,12 +436,12 @@ posixSocket::size_type posixSocket::getBlockSize() const
 
 void posixSocket::receive(vmime::string& buffer)
 {
-	const size_type size = receiveRaw(m_buffer, sizeof(m_buffer));
-	buffer = vmime::string(m_buffer, size);
+	const size_t size = receiveRaw(m_buffer, sizeof(m_buffer));
+	buffer = utility::stringUtils::makeStringFromBytes(m_buffer, size);
 }
 
 
-posixSocket::size_type posixSocket::receiveRaw(char* buffer, const size_type count)
+size_t posixSocket::receiveRaw(byte_t* buffer, const size_t count)
 {
 	m_status &= ~STATUS_WOULDBLOCK;
 
@@ -529,15 +531,21 @@ posixSocket::size_type posixSocket::receiveRaw(char* buffer, const size_type cou
 
 void posixSocket::send(const vmime::string& buffer)
 {
-	sendRaw(buffer.data(), buffer.length());
+	sendRaw(reinterpret_cast <const byte_t*>(buffer.data()), buffer.length());
 }
 
 
-void posixSocket::sendRaw(const char* buffer, const size_type count)
+void posixSocket::send(const char* str)
+{
+	sendRaw(reinterpret_cast <const byte_t*>(str), ::strlen(str));
+}
+
+
+void posixSocket::sendRaw(const byte_t* buffer, const size_t count)
 {
 	m_status &= ~STATUS_WOULDBLOCK;
 
-	size_type size = count;
+	size_t size = count;
 
 	while (size > 0)
 	{
@@ -563,7 +571,7 @@ void posixSocket::sendRaw(const char* buffer, const size_type count)
 }
 
 
-posixSocket::size_type posixSocket::sendRawNonBlocking(const char* buffer, const size_type count)
+size_t posixSocket::sendRawNonBlocking(const byte_t* buffer, const size_t count)
 {
 	m_status &= ~STATUS_WOULDBLOCK;
 

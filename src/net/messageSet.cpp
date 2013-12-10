@@ -151,14 +151,14 @@ messageSet::messageSet(const messageSet& other)
 {
 	m_ranges.resize(other.m_ranges.size());
 
-	for (unsigned int i = 0, n = other.m_ranges.size() ; i < n ; ++i)
+	for (size_t i = 0, n = other.m_ranges.size() ; i < n ; ++i)
 		m_ranges[i] = other.m_ranges[i]->clone();
 }
 
 
 messageSet::~messageSet()
 {
-	for (unsigned int i = 0, n = m_ranges.size() ; i < n ; ++i)
+	for (size_t i = 0, n = m_ranges.size() ; i < n ; ++i)
 		delete m_ranges[i];
 }
 
@@ -256,12 +256,12 @@ messageSet messageSet::byUID(const std::vector <message::uid>& uids)
 {
 	std::vector <vmime_uint32> numericUIDs;
 
-	for (unsigned int i = 0, n = uids.size() ; i < n ; ++i)
+	for (size_t i = 0, n = uids.size() ; i < n ; ++i)
 	{
 		const string uid = uids[i];
 		int numericUID = 0;
 
-		const string::value_type* p = uid.c_str();
+		const char* p = uid.c_str();
 
 		for ( ; *p >= '0' && *p <= '9' ; ++p)
 			 numericUID = (numericUID * 10) + (*p - '0');
@@ -271,7 +271,7 @@ messageSet messageSet::byUID(const std::vector <message::uid>& uids)
 			messageSet set;
 
 			// Non-numeric UID, fall back to plain UID list (single-UID ranges)
-			for (unsigned int i = 0, n = uids.size() ; i < n ; ++i)
+			for (size_t i = 0, n = uids.size() ; i < n ; ++i)
 				set.m_ranges.push_back(new UIDMessageRange(uids[i]));
 
 			return set;
@@ -342,7 +342,7 @@ void messageSet::addRange(const messageRange& range)
 
 void messageSet::enumerate(messageSetEnumerator& en) const
 {
-	for (unsigned int i = 0, n = m_ranges.size() ; i < n ; ++i)
+	for (size_t i = 0, n = m_ranges.size() ; i < n ; ++i)
 		m_ranges[i]->enumerate(en);
 }
 

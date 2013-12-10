@@ -318,8 +318,8 @@ void POP3Folder::fetchMessages(std::vector <shared_ptr <message> >& msg, const f
 	else if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
 
-	const int total = msg.size();
-	int current = 0;
+	const size_t total = msg.size();
+	size_t current = 0;
 
 	if (progress)
 		progress->start(total);
@@ -362,7 +362,7 @@ void POP3Folder::fetchMessages(std::vector <shared_ptr <message> >& msg, const f
 
 				if (x != result.end())
 				{
-					int size = 0;
+					size_t size = 0;
 
 					std::istringstream iss((*x).second);
 					iss >> size;
@@ -446,7 +446,7 @@ void POP3Folder::fetchMessage(shared_ptr <message> msg, const fetchAttributes& o
 
 			if (it != responseText.end())
 			{
-				int size = 0;
+				size_t size = 0;
 
 				std::istringstream iss(string(it, responseText.end()));
 				iss >> size;
@@ -601,15 +601,17 @@ void POP3Folder::rename(const folder::path& /* newPath */)
 }
 
 
-void POP3Folder::addMessage(shared_ptr <vmime::message> /* msg */, const int /* flags */,
-	vmime::datetime* /* date */, utility::progressListener* /* progress */)
+void POP3Folder::addMessage
+	(shared_ptr <vmime::message> /* msg */, const int /* flags */,
+	 vmime::datetime* /* date */, utility::progressListener* /* progress */)
 {
 	throw exceptions::operation_not_supported();
 }
 
 
-void POP3Folder::addMessage(utility::inputStream& /* is */, const int /* size */, const int /* flags */,
-	vmime::datetime* /* date */, utility::progressListener* /* progress */)
+void POP3Folder::addMessage
+	(utility::inputStream& /* is */, const size_t /* size */, const int /* flags */,
+	 vmime::datetime* /* date */, utility::progressListener* /* progress */)
 {
 	throw exceptions::operation_not_supported();
 }

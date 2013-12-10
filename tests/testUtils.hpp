@@ -250,12 +250,13 @@ public:
 
 	void receive(vmime::string& buffer);
 	void send(const vmime::string& buffer);
+	void send(const char* str);
 
-	size_type receiveRaw(char* buffer, const size_type count);
-	void sendRaw(const char* buffer, const size_type count);
-	size_type sendRawNonBlocking(const char* buffer, const size_type count);
+	size_t receiveRaw(vmime::byte_t* buffer, const size_t count);
+	void sendRaw(const vmime::byte_t* buffer, const size_t count);
+	size_t sendRawNonBlocking(const vmime::byte_t* buffer, const size_t count);
 
-	size_type getBlockSize() const;
+	size_t getBlockSize() const;
 
 	unsigned int getStatus() const;
 
@@ -287,7 +288,7 @@ public:
 	  * @param count number of bytes to receive
 	  * @return number of bytes received
 	  */
-	testSocket::size_type localReceiveRaw(char* buffer, const size_type count);
+	vmime::size_t localReceiveRaw(vmime::byte_t* buffer, const size_t count);
 
 protected:
 
@@ -349,7 +350,7 @@ class testTimeoutHandler : public vmime::net::timeoutHandler
 {
 public:
 
-	testTimeoutHandler(const unsigned int delay = 3);
+	testTimeoutHandler(const unsigned long delay = 3);
 
 	bool isTimeOut();
 	void resetTimeOut();
@@ -357,8 +358,8 @@ public:
 
 private:
 
-	unsigned int m_delay;
-	unsigned int m_start;
+	unsigned long m_delay;
+	unsigned long m_start;
 };
 
 

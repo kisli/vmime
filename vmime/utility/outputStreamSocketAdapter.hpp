@@ -51,10 +51,13 @@ public:
 
 	outputStreamSocketAdapter(net::socket& sok);
 
-	void write(const value_type* const data, const size_type count);
 	void flush();
 
-	size_type getBlockSize();
+	size_t getBlockSize();
+
+protected:
+
+	void writeImpl(const byte_t* const data, const size_t count);
 
 private:
 

@@ -95,14 +95,14 @@ void sha1MessageDigest::update(const string& s)
 }
 
 
-void sha1MessageDigest::update(const byte_t* buffer, const unsigned long offset,
+void sha1MessageDigest::update(const byte_t* buffer, const size_t offset,
 	const unsigned long len)
 {
 	update(buffer + offset, len);
 }
 
 
-void sha1MessageDigest::update(const byte_t* buffer, const unsigned long len)
+void sha1MessageDigest::update(const byte_t* buffer, const size_t len)
 {
 	unsigned int i, j;
 
@@ -174,7 +174,7 @@ void sha1MessageDigest::finalize(const string& s)
 }
 
 
-void sha1MessageDigest::finalize(const byte_t* buffer, const unsigned long len)
+void sha1MessageDigest::finalize(const byte_t* buffer, const size_t len)
 {
 	update(buffer, len);
 	finalize();
@@ -182,7 +182,7 @@ void sha1MessageDigest::finalize(const byte_t* buffer, const unsigned long len)
 
 
 void sha1MessageDigest::finalize(const byte_t* buffer,
-	const unsigned long offset, const unsigned long len)
+	const size_t offset, const size_t len)
 {
 	finalize(buffer + offset, len);
 }
@@ -251,7 +251,7 @@ void sha1MessageDigest::transform
 }
 
 
-int sha1MessageDigest::getDigestLength() const
+size_t sha1MessageDigest::getDigestLength() const
 {
 	return 20;
 }

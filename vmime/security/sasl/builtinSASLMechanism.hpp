@@ -56,18 +56,18 @@ public:
 	const string getName() const;
 
 	bool step(shared_ptr <SASLSession> sess,
-		 const byte_t* challenge, const long challengeLen,
-		 byte_t** response, long* responseLen);
+		 const byte_t* challenge, const size_t challengeLen,
+		 byte_t** response, size_t* responseLen);
 
 	bool isComplete() const;
 
 	void encode(shared_ptr <SASLSession> sess,
-		const byte_t* input, const long inputLen,
-		byte_t** output, long* outputLen);
+		const byte_t* input, const size_t inputLen,
+		byte_t** output, size_t* outputLen);
 
 	void decode(shared_ptr <SASLSession> sess,
-		const byte_t* input, const long inputLen,
-		byte_t** output, long* outputLen);
+		const byte_t* input, const size_t inputLen,
+		byte_t** output, size_t* outputLen);
 
 private:
 

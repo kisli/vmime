@@ -99,8 +99,8 @@ shared_ptr <SASLContext> SASLSession::getContext()
 
 
 bool SASLSession::evaluateChallenge
-	(const byte_t* challenge, const long challengeLen,
-	 byte_t** response, long* responseLen)
+	(const byte_t* challenge, const size_t challengeLen,
+	 byte_t** response, size_t* responseLen)
 {
 	return m_mech->step(dynamicCast <SASLSession>(shared_from_this()),
 		challenge, challengeLen, response, responseLen);

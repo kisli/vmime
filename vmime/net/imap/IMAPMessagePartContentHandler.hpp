@@ -48,12 +48,12 @@ public:
 
 	shared_ptr <contentHandler> clone() const;
 
-	void generate(utility::outputStream& os, const vmime::encoding& enc, const string::size_type maxLineLength = lineLengthLimits::infinite) const;
+	void generate(utility::outputStream& os, const vmime::encoding& enc, const size_t maxLineLength = lineLengthLimits::infinite) const;
 
 	void extract(utility::outputStream& os, utility::progressListener* progress = NULL) const;
 	void extractRaw(utility::outputStream& os, utility::progressListener* progress = NULL) const;
 
-	string::size_type getLength() const;
+	size_t getLength() const;
 
 	bool isEncoded() const;
 

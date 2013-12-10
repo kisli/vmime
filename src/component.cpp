@@ -47,15 +47,15 @@ component::~component()
 
 
 void component::parse
-	(shared_ptr <utility::inputStream> inputStream, const utility::stream::size_type length)
+	(shared_ptr <utility::inputStream> inputStream, const size_t length)
 {
 	parse(inputStream, 0, length, NULL);
 }
 
 
 void component::parse
-	(shared_ptr <utility::inputStream> inputStream, const utility::stream::size_type position,
-	 const utility::stream::size_type end, utility::stream::size_type* newPosition)
+	(shared_ptr <utility::inputStream> inputStream, const size_t position,
+	 const size_t end, size_t* newPosition)
 {
 	parse(parsingContext::getDefaultContext(), inputStream, position, end, newPosition);
 }
@@ -63,8 +63,8 @@ void component::parse
 
 void component::parse
 	(const parsingContext& ctx,
-	 shared_ptr <utility::inputStream> inputStream, const utility::stream::size_type position,
-	 const utility::stream::size_type end, utility::stream::size_type* newPosition)
+	 shared_ptr <utility::inputStream> inputStream, const size_t position,
+	 const size_t end, size_t* newPosition)
 {
 	m_parsedOffset = m_parsedLength = 0;
 
@@ -109,8 +109,8 @@ void component::parse(const parsingContext& ctx, const string& buffer)
 
 
 void component::parse
-	(const string& buffer, const string::size_type position,
-	 const string::size_type end, string::size_type* newPosition)
+	(const string& buffer, const size_t position,
+	 const size_t end, size_t* newPosition)
 {
 	m_parsedOffset = m_parsedLength = 0;
 
@@ -120,8 +120,8 @@ void component::parse
 
 void component::parse
 	(const parsingContext& ctx,
-	 const string& buffer, const string::size_type position,
-	 const string::size_type end, string::size_type* newPosition)
+	 const string& buffer, const size_t position,
+	 const size_t end, size_t* newPosition)
 {
 	m_parsedOffset = m_parsedLength = 0;
 
@@ -129,7 +129,7 @@ void component::parse
 }
 
 
-void component::offsetParsedBounds(const utility::stream::size_type offset)
+void component::offsetParsedBounds(const size_t offset)
 {
 	// Offset parsed bounds of this component
 	if (m_parsedLength != 0)
@@ -145,8 +145,7 @@ void component::offsetParsedBounds(const utility::stream::size_type offset)
 
 void component::parseImpl
 	(const parsingContext& ctx, shared_ptr <utility::parserInputStreamAdapter> parser,
-	 const utility::stream::size_type position,
-	 const utility::stream::size_type end, utility::stream::size_type* newPosition)
+	 const size_t position, const size_t end, size_t* newPosition)
 {
 	// This is the default implementation for parsing from an input stream:
 	// actually, we extract the substring and use the "parse from string" implementation
@@ -163,8 +162,8 @@ void component::parseImpl
 
 
 void component::parseImpl
-	(const parsingContext& ctx, const string& buffer, const string::size_type position,
-	 const string::size_type end, string::size_type* newPosition)
+	(const parsingContext& ctx, const string& buffer, const size_t position,
+	 const size_t end, size_t* newPosition)
 {
 	// This is the default implementation for parsing from a string:
 	// actually, we encapsulate the string buffer in an input stream, then use
@@ -179,8 +178,8 @@ void component::parseImpl
 }
 
 
-const string component::generate(const string::size_type maxLineLength,
-	const string::size_type curLinePos) const
+const string component::generate
+	(const size_t maxLineLength, const size_t curLinePos) const
 {
 	std::ostringstream oss;
 	utility::outputStreamAdapter adapter(oss);
@@ -195,9 +194,7 @@ const string component::generate(const string::size_type maxLineLength,
 
 
 void component::generate
-	(utility::outputStream& os,
-	 const string::size_type curLinePos,
-	 string::size_type* newLinePos) const
+	(utility::outputStream& os, const size_t curLinePos, size_t* newLinePos) const
 {
 	generateImpl(generationContext::getDefaultContext(),
 		os, curLinePos, newLinePos);
@@ -205,38 +202,36 @@ void component::generate
 
 
 void component::generate
-	(const generationContext& ctx,
-	 utility::outputStream& outputStream,
-	 const string::size_type curLinePos,
-	 string::size_type* newLinePos) const
+	(const generationContext& ctx, utility::outputStream& outputStream,
+	 const size_t curLinePos, size_t* newLinePos) const
 {
 	generateImpl(ctx, outputStream, curLinePos, newLinePos);
 }
 
 
-string::size_type component::getParsedOffset() const
+size_t component::getParsedOffset() const
 {
 	return (m_parsedOffset);
 }
 
 
-string::size_type component::getParsedLength() const
+size_t component::getParsedLength() const
 {
 	return (m_parsedLength);
 }
 
 
-void component::setParsedBounds(const string::size_type start, const string::size_type end)
+void component::setParsedBounds(const size_t start, const size_t end)
 {
 	m_parsedOffset = start;
 	m_parsedLength = end - start;
 }
 
 
-utility::stream::size_type component::getGeneratedSize(const generationContext& ctx)
+size_t component::getGeneratedSize(const generationContext& ctx)
 {
 	std::vector <shared_ptr <component> > children = getChildComponents();
-	utility::stream::size_type totalSize = 0;
+	size_t totalSize = 0;
 
 	for (std::vector <shared_ptr <component> >::iterator it = children.begin() ; it != children.end() ; ++it)
 		totalSize += (*it)->getGeneratedSize(ctx);

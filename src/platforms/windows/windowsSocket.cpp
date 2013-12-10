@@ -230,7 +230,7 @@ const string windowsSocket::getPeerName() const
 }
 
 
-windowsSocket::size_type windowsSocket::getBlockSize() const
+size_t windowsSocket::getBlockSize() const
 {
 	return 16384;  // 16 KB
 }
@@ -238,12 +238,12 @@ windowsSocket::size_type windowsSocket::getBlockSize() const
 
 void windowsSocket::receive(vmime::string& buffer)
 {
-	const size_type size = receiveRaw(m_buffer, sizeof(m_buffer));
+	const size_t size = receiveRaw(m_buffer, sizeof(m_buffer));
 	buffer = vmime::string(m_buffer, size);
 }
 
 
-windowsSocket::size_type windowsSocket::receiveRaw(char* buffer, const size_type count)
+size_t windowsSocket::receiveRaw(char* buffer, const size_t count)
 {
 	m_status &= ~STATUS_WOULDBLOCK;
 
@@ -307,15 +307,21 @@ windowsSocket::size_type windowsSocket::receiveRaw(char* buffer, const size_type
 
 void windowsSocket::send(const vmime::string& buffer)
 {
-	sendRaw(buffer.data(), buffer.length());
+	sendRaw(reinterpret_cast <const byte_t*>(buffer.data()), buffer.length());
 }
 
 
-void windowsSocket::sendRaw(const char* buffer, const size_type count)
+void windowsSocket::send(const char* str)
+{
+	sendRaw(reinterpret_cast <const byte_t*>(str), strlen(str));
+}
+
+
+void windowsSocket::sendRaw(const char* buffer, const size_t count)
 {
 	m_status &= ~STATUS_WOULDBLOCK;
 
-	size_type size = count;
+	size_t size = count;
 
 	while (size > 0)
 	{
@@ -344,7 +350,7 @@ void windowsSocket::sendRaw(const char* buffer, const size_type count)
 }
 
 
-windowsSocket::size_type windowsSocket::sendRawNonBlocking(const char* buffer, const size_type count)
+size_t windowsSocket::sendRawNonBlocking(const char* buffer, const size_t count)
 {
 	m_status &= ~STATUS_WOULDBLOCK;
 

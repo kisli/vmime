@@ -56,18 +56,18 @@ public:
 	weak_ptr <const maildirMessagePart> getParent() const { return (m_parent); }
 
 	const mediaType& getType() const;
-	int getSize() const;
+	size_t getSize() const;
 	int getNumber() const;
 
 	shared_ptr <const header> getHeader() const;
 
 	header& getOrCreateHeader();
 
-	int getHeaderParsedOffset() const;
-	int getHeaderParsedLength() const;
+	size_t getHeaderParsedOffset() const;
+	size_t getHeaderParsedLength() const;
 
-	int getBodyParsedOffset() const;
-	int getBodyParsedLength() const;
+	size_t getBodyParsedOffset() const;
+	size_t getBodyParsedLength() const;
 
 	void initStructure(const bodyPart& part);
 
@@ -78,14 +78,14 @@ private:
 	shared_ptr <header> m_header;
 
 	int m_number;
-	int m_size;
+	size_t m_size;
 	mediaType m_mediaType;
 
-	int m_headerParsedOffset;
-	int m_headerParsedLength;
+	size_t m_headerParsedOffset;
+	size_t m_headerParsedLength;
 
-	int m_bodyParsedOffset;
-	int m_bodyParsedLength;
+	size_t m_bodyParsedOffset;
+	size_t m_bodyParsedLength;
 };
 
 

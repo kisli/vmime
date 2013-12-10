@@ -31,7 +31,7 @@ namespace utility {
 // progressListenerSizeAdapter
 
 progressListenerSizeAdapter::progressListenerSizeAdapter
-	(progressListener* list, const long total)
+	(progressListener* list, const size_t total)
 	: m_wrapped(list), m_total(total)
 {
 }
@@ -43,14 +43,14 @@ bool progressListenerSizeAdapter::cancel() const
 }
 
 
-void progressListenerSizeAdapter::start(const long predictedTotal)
+void progressListenerSizeAdapter::start(const size_t predictedTotal)
 {
 	if (m_wrapped)
 		m_wrapped->start(predictedTotal);
 }
 
 
-void progressListenerSizeAdapter::progress(const long current, const long currentTotal)
+void progressListenerSizeAdapter::progress(const size_t current, const size_t currentTotal)
 {
 	if (m_wrapped)
 	{
@@ -62,7 +62,7 @@ void progressListenerSizeAdapter::progress(const long current, const long curren
 }
 
 
-void progressListenerSizeAdapter::stop(const long total)
+void progressListenerSizeAdapter::stop(const size_t total)
 {
 	if (m_wrapped)
 	{

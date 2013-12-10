@@ -67,8 +67,8 @@ address-list    =       (address *("," address)) / obs-addr-list
 */
 
 shared_ptr <address> address::parseNext
-	(const parsingContext& ctx, const string& buffer, const string::size_type position,
-	 const string::size_type end, string::size_type* newPosition, bool *isLastAddressOfGroup)
+	(const parsingContext& ctx, const string& buffer, const size_t position,
+	 const size_t end, size_t* newPosition, bool *isLastAddressOfGroup)
 {
 	bool escaped = false;
 	bool quoted = false;
@@ -81,12 +81,12 @@ shared_ptr <address> address::parseNext
 	if (isLastAddressOfGroup)
 		*isLastAddressOfGroup = false;
 
-	string::size_type pos = position;
+	size_t pos = position;
 
 	while (pos < end && parserHelpers::isSpace(buffer[pos]))
 		++pos;
 
-	const string::size_type start = pos;
+	const size_t start = pos;
 
 	while (!stop && pos < end)
 	{

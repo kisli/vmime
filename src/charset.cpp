@@ -58,8 +58,8 @@ charset::charset(const char* name)
 
 
 void charset::parseImpl
-	(const parsingContext& /* ctx */, const string& buffer, const string::size_type position,
-	 const string::size_type end, string::size_type* newPosition)
+	(const parsingContext& /* ctx */, const string& buffer, const size_t position,
+	 const size_t end, size_t* newPosition)
 {
 	m_name = utility::stringUtils::trim
 		(string(buffer.begin() + position, buffer.begin() + end));
@@ -77,7 +77,7 @@ void charset::parseImpl
 
 void charset::generateImpl
 	(const generationContext& /* ctx */, utility::outputStream& os,
-	 const string::size_type curLinePos, string::size_type* newLinePos) const
+	 const size_t curLinePos, size_t* newLinePos) const
 {
 	os << m_name;
 

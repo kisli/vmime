@@ -163,7 +163,7 @@ void SMTPTransport::noop()
 void SMTPTransport::sendEnvelope
 	(const mailbox& expeditor, const mailboxList& recipients,
 	 const mailbox& sender, bool sendDATACommand,
-	 const utility::stream::size_type size)
+	 const size_t size)
 {
 	// If no recipient/expeditor was found, throw an exception
 	if (recipients.isEmpty())
@@ -315,7 +315,7 @@ void SMTPTransport::sendEnvelope
 
 void SMTPTransport::send
 	(const mailbox& expeditor, const mailboxList& recipients,
-	 utility::inputStream& is, const utility::stream::size_type size,
+	 utility::inputStream& is, const size_t size,
 	 utility::progressListener* progress, const mailbox& sender)
 {
 	if (!isConnected())
@@ -334,7 +334,7 @@ void SMTPTransport::send
 	fos.flush();
 
 	// Send end-of-data delimiter
-	m_connection->getSocket()->sendRaw("\r\n.\r\n", 5);
+	m_connection->getSocket()->send("\r\n.\r\n");
 
 	shared_ptr <SMTPResponse> resp;
 

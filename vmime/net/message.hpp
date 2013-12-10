@@ -90,7 +90,7 @@ public:
 	  *
 	  * @return size of the part (in bytes)
 	  */
-	virtual int getSize() const = 0;
+	virtual size_t getSize() const = 0;
 
 	/** Return the part sequence number (index).
 	  * The first part is at index zero.
@@ -238,7 +238,7 @@ public:
 	  *
 	  * @return size of the message (in bytes)
 	  */
-	virtual int getSize() const = 0;
+	virtual size_t getSize() const = 0;
 
 	/** Check whether this message has been expunged (ie: definitively
 	  * deleted) and does not exist in the folder anymore.
@@ -297,7 +297,12 @@ public:
 	  * be supported by the protocol (IMAP supports this), but it will NOT throw
 	  * an exception if not supported.
 	  */
-	virtual void extract(utility::outputStream& os, utility::progressListener* progress = NULL, const int start = 0, const int length = -1, const bool peek = false) const = 0;
+	virtual void extract
+		(utility::outputStream& os,
+		 utility::progressListener* progress = NULL,
+		 const size_t start = 0,
+		 const size_t length = -1,
+		 const bool peek = false) const = 0;
 
 	/** Extract the specified MIME part of the message (header + contents).
 	  *
@@ -316,8 +321,8 @@ public:
 		(shared_ptr <const messagePart> p,
 		 utility::outputStream& os,
 		 utility::progressListener* progress = NULL,
-		 const int start = 0,
-		 const int length = -1,
+		 const size_t start = 0,
+		 const size_t length = -1,
 		 const bool peek = false) const = 0;
 
 	/** Fetch the MIME header for the specified part.

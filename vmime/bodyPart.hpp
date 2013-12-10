@@ -102,7 +102,7 @@ public:
 
 	const std::vector <shared_ptr <component> > getChildComponents();
 
-	utility::stream::size_type getGeneratedSize(const generationContext& ctx);
+	size_t getGeneratedSize(const generationContext& ctx);
 
 private:
 
@@ -137,15 +137,15 @@ protected:
 	void parseImpl
 		(const parsingContext& ctx,
 		 shared_ptr <utility::parserInputStreamAdapter> parser,
-		 const utility::stream::size_type position,
-		 const utility::stream::size_type end,
-		 utility::stream::size_type* newPosition = NULL);
+		 const size_t position,
+		 const size_t end,
+		 size_t* newPosition = NULL);
 
 	void generateImpl
 		(const generationContext& ctx,
 		 utility::outputStream& os,
-		 const string::size_type curLinePos = 0,
-		 string::size_type* newLinePos = NULL) const;
+		 const size_t curLinePos = 0,
+		 size_t* newLinePos = NULL) const;
 };
 
 

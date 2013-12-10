@@ -40,7 +40,7 @@ shared_ptr <contentHandler> emptyContentHandler::clone() const
 
 
 void emptyContentHandler::generate(utility::outputStream& /* os */, const vmime::encoding& /* enc */,
-	const string::size_type /* maxLineLength */) const
+	const size_t /* maxLineLength */) const
 {
 	// Nothing to do.
 }
@@ -72,7 +72,7 @@ void emptyContentHandler::extractRaw(utility::outputStream& /* os */,
 }
 
 
-string::size_type emptyContentHandler::getLength() const
+size_t emptyContentHandler::getLength() const
 {
 	return (0);
 }

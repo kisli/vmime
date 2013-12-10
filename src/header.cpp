@@ -63,10 +63,10 @@ field-body-contents =
 */
 
 void header::parseImpl
-	(const parsingContext& ctx, const string& buffer, const string::size_type position,
-	 const string::size_type end, string::size_type* newPosition)
+	(const parsingContext& ctx, const string& buffer, const size_t position,
+	 const size_t end, size_t* newPosition)
 {
-	string::size_type pos = position;
+	size_t pos = position;
 
 	removeAllFields();
 
@@ -87,7 +87,7 @@ void header::parseImpl
 
 void header::generateImpl
 	(const generationContext& ctx, utility::outputStream& os,
-	 const string::size_type /* curLinePos */, string::size_type* newLinePos) const
+	 const size_t /* curLinePos */, size_t* newLinePos) const
 {
 	// Generate the fields
 	for (std::vector <shared_ptr <headerField> >::const_iterator it = m_fields.begin() ;
@@ -102,7 +102,7 @@ void header::generateImpl
 }
 
 
-utility::stream::size_type header::getGeneratedSize(const generationContext& ctx)
+size_t header::getGeneratedSize(const generationContext& ctx)
 {
 	return component::getGeneratedSize(ctx) + 2 * m_fields.size() /* CRLF */;
 }

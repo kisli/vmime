@@ -69,7 +69,7 @@ const unsigned char qpEncoder::sm_hexDigits[] = "0123456789ABCDEF";
 // This is a quick lookup table:
 //   '1' means "encode", '0' means "no encoding"
 //
-const unsigned char qpEncoder::sm_RFC2047EncodeTable[] =
+const vmime_uint8 qpEncoder::sm_RFC2047EncodeTable[] =
 {
 	/*   0  NUL */ 1, /*   1  SOH */ 1, /*   2  STX */ 1, /*   3  ETX */ 1, /*   4  EOT */ 1, /*   5  ENQ */ 1,
 	/*   6  ACK */ 1, /*   7  BEL */ 1, /*   8   BS */ 1, /*   9  TAB */ 1, /*  10   LF */ 1, /*  11   VT */ 1,
@@ -97,7 +97,7 @@ const unsigned char qpEncoder::sm_RFC2047EncodeTable[] =
 
 
 // Hex-decoding table
-const unsigned char qpEncoder::sm_hexDecodeTable[256] =
+const vmime_uint8 qpEncoder::sm_hexDecodeTable[256] =
 {
 	 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
 	 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -119,14 +119,14 @@ const unsigned char qpEncoder::sm_hexDecodeTable[256] =
 
 
 // static
-bool qpEncoder::RFC2047_isEncodingNeededForChar(const unsigned char c)
+bool qpEncoder::RFC2047_isEncodingNeededForChar(const byte_t c)
 {
 	return (c >= 128 || sm_RFC2047EncodeTable[c] != 0);
 }
 
 
 // static
-int qpEncoder::RFC2047_getEncodedLength(const unsigned char c)
+int qpEncoder::RFC2047_getEncodedLength(const byte_t c)
 {
 	if (c >= 128 || sm_RFC2047EncodeTable[c] != 0)
 	{
@@ -157,37 +157,37 @@ int qpEncoder::RFC2047_getEncodedLength(const unsigned char c)
 	outBufferPos += 3;                                       \
 	curCol += 3
 
-#define QP_WRITE(s, x, l) s.write(reinterpret_cast <utility::stream::value_type*>(x), l)
+#define QP_WRITE(s, x, l) s.write(reinterpret_cast <byte_t*>(x), l)
 
 #endif // VMIME_BUILDING_DOC
 
 
-utility::stream::size_type qpEncoder::encode(utility::inputStream& in,
+size_t qpEncoder::encode(utility::inputStream& in,
 	utility::outputStream& out, utility::progressListener* progress)
 {
 	in.reset();  // may not work...
 
-	const string::size_type propMaxLineLength =
-		getProperties().getProperty <string::size_type>("maxlinelength", static_cast <string::size_type>(-1));
+	const size_t propMaxLineLength =
+		getProperties().getProperty <size_t>("maxlinelength", static_cast <size_t>(-1));
 
 	const bool rfc2047 = getProperties().getProperty <bool>("rfc2047", false);
 	const bool text = getProperties().getProperty <bool>("text", false);  // binary mode by default
 
-	const bool cutLines = (propMaxLineLength != static_cast <string::size_type>(-1));
-	const string::size_type maxLineLength = std::min(propMaxLineLength, static_cast <string::size_type>(74));
+	const bool cutLines = (propMaxLineLength != static_cast <size_t>(-1));
+	const size_t maxLineLength = std::min(propMaxLineLength, static_cast <size_t>(74));
 
 	// Process the data
-	char buffer[16384];
-	utility::stream::size_type bufferLength = 0;
-	utility::stream::size_type bufferPos = 0;
+	byte_t buffer[16384];
+	size_t bufferLength = 0;
+	size_t bufferPos = 0;
 
-	string::size_type curCol = 0;
+	size_t curCol = 0;
 
-	unsigned char outBuffer[16384];
-	int outBufferPos = 0;
+	byte_t outBuffer[16384];
+	size_t outBufferPos = 0;
 
-	utility::stream::size_type total = 0;
-	utility::stream::size_type inTotal = 0;
+	size_t total = 0;
+	size_t inTotal = 0;
 
 	if (progress)
 		progress->start(0);
@@ -215,7 +215,7 @@ utility::stream::size_type qpEncoder::encode(utility::inputStream& in,
 		}
 
 		// Get the next char and encode it
-		const unsigned char c = static_cast <unsigned char>(buffer[bufferPos++]);
+		const byte_t c = buffer[bufferPos++];
 
 		if (rfc2047)
 		{
@@ -371,7 +371,7 @@ utility::stream::size_type qpEncoder::encode(utility::inputStream& in,
 }
 
 
-utility::stream::size_type qpEncoder::decode(utility::inputStream& in,
+size_t qpEncoder::decode(utility::inputStream& in,
 	utility::outputStream& out, utility::progressListener* progress)
 {
 	in.reset();  // may not work...
@@ -379,20 +379,20 @@ utility::stream::size_type qpEncoder::decode(utility::inputStream& in,
 	// Process the data
 	const bool rfc2047 = getProperties().getProperty <bool>("rfc2047", false);
 
-	char buffer[16384];
-	utility::stream::size_type bufferLength = 0;
-	utility::stream::size_type bufferPos = 0;
+	byte_t buffer[16384];
+	size_t bufferLength = 0;
+	size_t bufferPos = 0;
 
-	unsigned char outBuffer[16384];
-	int outBufferPos = 0;
+	byte_t outBuffer[16384];
+	size_t outBufferPos = 0;
 
-	utility::stream::size_type total = 0;
-	utility::stream::size_type inTotal = 0;
+	size_t total = 0;
+	size_t inTotal = 0;
 
 	while (bufferPos < bufferLength || !in.eof())
 	{
 		// Flush current output buffer
-		if (outBufferPos >= static_cast <int>(sizeof(outBuffer)))
+		if (outBufferPos >= sizeof(outBuffer))
 		{
 			QP_WRITE(out, outBuffer, outBufferPos);
 
@@ -412,7 +412,7 @@ utility::stream::size_type qpEncoder::decode(utility::inputStream& in,
 		}
 
 		// Decode the next sequence (hex-encoded byte or printable character)
-		unsigned char c = static_cast <unsigned char>(buffer[bufferPos++]);
+		byte_t c = buffer[bufferPos++];
 
 		++inTotal;
 
@@ -428,7 +428,7 @@ utility::stream::size_type qpEncoder::decode(utility::inputStream& in,
 
 			if (bufferPos < bufferLength)
 			{
-				c = static_cast <unsigned char>(buffer[bufferPos++]);
+				c = buffer[bufferPos++];
 
 				++inTotal;
 
@@ -468,11 +468,11 @@ utility::stream::size_type qpEncoder::decode(utility::inputStream& in,
 
 					if (bufferPos < bufferLength)
 					{
-						const unsigned char next = static_cast <unsigned char>(buffer[bufferPos++]);
+						const byte_t next = buffer[bufferPos++];
 
 						++inTotal;
 
-						const unsigned char value = static_cast <unsigned char>
+						const byte_t value = static_cast <byte_t>
 							(sm_hexDecodeTable[c] * 16 + sm_hexDecodeTable[next]);
 
 						outBuffer[outBufferPos++] = value;
@@ -532,13 +532,13 @@ utility::stream::size_type qpEncoder::decode(utility::inputStream& in,
 }
 
 
-utility::stream::size_type qpEncoder::getEncodedSize(const utility::stream::size_type n) const
+size_t qpEncoder::getEncodedSize(const size_t n) const
 {
-	const string::size_type propMaxLineLength =
-		getProperties().getProperty <string::size_type>("maxlinelength", static_cast <string::size_type>(-1));
+	const size_t propMaxLineLength =
+		getProperties().getProperty <size_t>("maxlinelength", static_cast <size_t>(-1));
 
-	const bool cutLines = (propMaxLineLength != static_cast <string::size_type>(-1));
-	const string::size_type maxLineLength = std::min(propMaxLineLength, static_cast <string::size_type>(74));
+	const bool cutLines = (propMaxLineLength != static_cast <size_t>(-1));
+	const size_t maxLineLength = std::min(propMaxLineLength, static_cast <size_t>(74));
 
 	// Worst cast: 1 byte of input provide 3 bytes of output
 	// Count CRLF (2 bytes) for each line.
@@ -546,7 +546,7 @@ utility::stream::size_type qpEncoder::getEncodedSize(const utility::stream::size
 }
 
 
-utility::stream::size_type qpEncoder::getDecodedSize(const utility::stream::size_type n) const
+size_t qpEncoder::getDecodedSize(const size_t n) const
 {
 	// Worst case: 1 byte of input equals 1 byte of output
 	return n;

@@ -719,7 +719,7 @@ void maildirFolder::addMessage(shared_ptr <vmime::message> msg, const int flags,
 }
 
 
-void maildirFolder::addMessage(utility::inputStream& is, const int size,
+void maildirFolder::addMessage(utility::inputStream& is, const size_t size,
 	const int flags, vmime::datetime* /* date */, utility::progressListener* progress)
 {
 	shared_ptr <maildirStore> store = m_store.lock();
@@ -816,7 +816,7 @@ void maildirFolder::addMessage(utility::inputStream& is, const int size,
 void maildirFolder::copyMessageImpl(const utility::file::path& tmpDirPath,
 	const utility::file::path& dstDirPath,
 	const utility::file::path::component& filename,
-	utility::inputStream& is, const utility::stream::size_type size,
+	utility::inputStream& is, const size_t size,
 	utility::progressListener* progress)
 {
 	shared_ptr <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
@@ -834,12 +834,12 @@ void maildirFolder::copyMessageImpl(const utility::file::path& tmpDirPath,
 		shared_ptr <utility::fileWriter> fw = file->getFileWriter();
 		shared_ptr <utility::outputStream> os = fw->getOutputStream();
 
-		utility::stream::value_type buffer[65536];
-		utility::stream::size_type total = 0;
+		byte_t buffer[65536];
+		size_t total = 0;
 
 		while (!is.eof())
 		{
-			const utility::stream::size_type read = is.read(buffer, sizeof(buffer));
+			const size_t read = is.read(buffer, sizeof(buffer));
 
 			if (read != 0)
 			{
@@ -1185,8 +1185,8 @@ void maildirFolder::fetchMessages(std::vector <shared_ptr <message> >& msg,
 	else if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
 
-	const int total = msg.size();
-	int current = 0;
+	const size_t total = msg.size();
+	size_t current = 0;
 
 	if (progress)
 		progress->start(total);

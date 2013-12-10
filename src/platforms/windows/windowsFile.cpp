@@ -61,8 +61,8 @@ const vmime::string windowsFileSystemFactory::pathToString(const vmime::utility:
 
 const vmime::utility::file::path windowsFileSystemFactory::stringToPathImpl(const vmime::string& str)
 {
-	vmime::string::size_type offset = 0;
-	vmime::string::size_type prev = 0;
+	vmime::size_t offset = 0;
+	vmime::size_t prev = 0;
 
 	vmime::utility::file::path path;
 
@@ -117,7 +117,7 @@ bool windowsFileSystemFactory::isValidPathComponent(
 	}
 
 	// Check for invalid characters
-	for (string::size_type i = 0 ; i < buffer.length() ; ++i)
+	for (size_t i = 0 ; i < buffer.length() ; ++i)
 	{
 		const unsigned char c = buffer[i];
 
@@ -467,7 +467,7 @@ void windowsFileReaderInputStream::reset()
 	SetFilePointer(m_hFile, 0, NULL, FILE_BEGIN);
 }
 
-vmime::utility::stream::size_type windowsFileReaderInputStream::read(value_type* const data, const size_type count)
+size_t windowsFileReaderInputStream::read(byte_t* const data, const size_t count)
 {
 	DWORD dwBytesRead;
 	if (!ReadFile(m_hFile, (LPVOID)data, (DWORD)count, &dwBytesRead, NULL))
@@ -475,24 +475,24 @@ vmime::utility::stream::size_type windowsFileReaderInputStream::read(value_type*
 	return dwBytesRead;
 }
 
-vmime::utility::stream::size_type windowsFileReaderInputStream::skip(const size_type count)
+size_t windowsFileReaderInputStream::skip(const size_t count)
 {
 	DWORD dwCurPos = SetFilePointer(m_hFile, 0, NULL, FILE_CURRENT);
 	DWORD dwNewPos = SetFilePointer(m_hFile, (LONG)count, NULL, FILE_CURRENT);
 	return (dwNewPos - dwCurPos);
 }
 
-vmime::utility::stream::size_type windowsFileReaderInputStream::getPosition() const
+size_t windowsFileReaderInputStream::getPosition() const
 {
 	DWORD dwCurPos = SetFilePointer(m_hFile, 0, NULL, FILE_CURRENT);
 
 	if (dwCurPos == INVALID_SET_FILE_POINTER)
 		windowsFileSystemFactory::reportError(m_path, GetLastError());
 
-	return static_cast <size_type>(dwCurPos);
+	return static_cast <size_t>(dwCurPos);
 }
 
-void windowsFileReaderInputStream::seek(const size_type pos)
+void windowsFileReaderInputStream::seek(const size_t pos)
 {
 	DWORD dwNewPos = SetFilePointer(m_hFile, (LONG)pos, NULL, FILE_BEGIN);
 
@@ -530,7 +530,7 @@ windowsFileWriterOutputStream::~windowsFileWriterOutputStream()
 	CloseHandle(m_hFile);
 }
 
-void windowsFileWriterOutputStream::write(const value_type* const data, const size_type count)
+void windowsFileWriterOutputStream::writeImpl(const byte_t* const data, const size_t count)
 {
 	DWORD dwBytesWritten;
 	if (!WriteFile(m_hFile, data, (DWORD)count, &dwBytesWritten, NULL))

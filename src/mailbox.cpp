@@ -67,12 +67,12 @@ angle-addr      =       [CFWS] "<" addr-spec ">" [CFWS] / obs-angle-addr
 */
 
 void mailbox::parseImpl
-	(const parsingContext& ctx, const string& buffer, const string::size_type position,
-	 const string::size_type end, string::size_type* newPosition)
+	(const parsingContext& ctx, const string& buffer, const size_t position,
+	 const size_t end, size_t* newPosition)
 {
-	const string::value_type* const pend = buffer.data() + end;
-	const string::value_type* const pstart = buffer.data() + position;
-	const string::value_type* p = pstart;
+	const char* const pend = buffer.data() + end;
+	const char* const pstart = buffer.data() + position;
+	const char* p = pstart;
 
 	// Ignore blank spaces at the beginning
 	while (p < pend && parserHelpers::isSpace(*p)) ++p;
@@ -333,7 +333,7 @@ void mailbox::parseImpl
 
 void mailbox::generateImpl
 	(const generationContext& ctx, utility::outputStream& os,
-	 const string::size_type curLinePos, string::size_type* newLinePos) const
+	 const size_t curLinePos, size_t* newLinePos) const
 {
 	string generatedEmail;
 	utility::outputStreamStringAdapter generatedEmailStream(generatedEmail);
@@ -341,7 +341,7 @@ void mailbox::generateImpl
 
 	if (m_name.isEmpty())
 	{
-		string::size_type pos = curLinePos;
+		size_t pos = curLinePos;
 
 		// No display name is specified, only email address.
 		if (curLinePos + generatedEmail.length() > ctx.getMaxLineLength())
@@ -404,7 +404,7 @@ void mailbox::generateImpl
 			}
 		}
 
-		string::size_type pos = curLinePos;
+		size_t pos = curLinePos;
 
 		m_name.encodeAndFold(ctx, os, pos, &pos,
 			text::QUOTE_IF_POSSIBLE | (forceEncode ? text::FORCE_ENCODING : 0));

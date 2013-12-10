@@ -62,12 +62,12 @@ messageId::messageId(const string& left, const string& right)
 */
 
 void messageId::parseImpl
-	(const parsingContext& /* ctx */, const string& buffer, const string::size_type position,
-	 const string::size_type end, string::size_type* newPosition)
+	(const parsingContext& /* ctx */, const string& buffer, const size_t position,
+	 const size_t end, size_t* newPosition)
 {
-	const string::value_type* const pend = buffer.data() + end;
-	const string::value_type* const pstart = buffer.data() + position;
-	const string::value_type* p = pstart;
+	const char* const pend = buffer.data() + end;
+	const char* const pstart = buffer.data() + position;
+	const char* p = pstart;
 
 	m_left.clear();
 	m_right.clear();
@@ -117,7 +117,7 @@ void messageId::parseImpl
 	if (p < pend)
 	{
 		// Extract left part
-		const string::size_type leftStart = position + (p - pstart);
+		const size_t leftStart = position + (p - pstart);
 
 		while (p < pend && *p != '@' && *p != '>') ++p;
 
@@ -130,7 +130,7 @@ void messageId::parseImpl
 			++p;
 
 			// Extract right part
-			const string::size_type rightStart = position + (p - pstart);
+			const size_t rightStart = position + (p - pstart);
 
 			while (p < pend && *p != '>' && (hasBrackets || !parserHelpers::isSpace(*p))) ++p;
 
@@ -147,17 +147,17 @@ void messageId::parseImpl
 
 
 shared_ptr <messageId> messageId::parseNext
-	(const parsingContext& ctx, const string& buffer, const string::size_type position,
-	 const string::size_type end, string::size_type* newPosition)
+	(const parsingContext& ctx, const string& buffer, const size_t position,
+	 const size_t end, size_t* newPosition)
 {
-	string::size_type pos = position;
+	size_t pos = position;
 
 	while (pos < end && parserHelpers::isSpace(buffer[pos]))
 		++pos;
 
 	if (pos != end)
 	{
-		const string::size_type begin = pos;
+		const size_t begin = pos;
 
 		while (pos < end && !parserHelpers::isSpace(buffer[pos]))
 			++pos;
@@ -189,9 +189,9 @@ const string messageId::getId() const
 
 void messageId::generateImpl
 	(const generationContext& ctx, utility::outputStream& os,
-	 const string::size_type curLinePos, string::size_type* newLinePos) const
+	 const size_t curLinePos, size_t* newLinePos) const
 {
-	string::size_type pos = curLinePos;
+	size_t pos = curLinePos;
 
 	if (curLinePos + m_left.length() + m_right.length() + 3 > ctx.getMaxLineLength())
 	{

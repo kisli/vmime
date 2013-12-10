@@ -42,7 +42,7 @@ class VMIME_EXPORT filteredInputStream : public inputStream
 {
 public:
 
-	virtual size_type getBlockSize();
+	virtual size_t getBlockSize();
 
 	/** Return a reference to the stream being filtered.
 	  *
@@ -59,7 +59,7 @@ class VMIME_EXPORT filteredOutputStream : public outputStream
 {
 public:
 
-	virtual size_type getBlockSize();
+	virtual size_t getBlockSize();
 
 	/** Return a reference to the stream being filtered.
 	  *
@@ -89,16 +89,16 @@ public:
 
 	void reset();
 
-	size_type read(value_type* const data, const size_type count);
+	size_t read(byte_t* const data, const size_t count);
 
-	size_type skip(const size_type count);
+	size_t skip(const size_t count);
 
 private:
 
 	inputStream& m_stream;
 
-	value_type m_previousChar2; // (N - 1)th character of previous buffer
-	value_type m_previousChar1; // (N)th (last) character of previous buffer
+	byte_t m_previousChar2; // (N - 1)th character of previous buffer
+	byte_t m_previousChar1; // (N)th (last) character of previous buffer
 };
 
 
@@ -118,13 +118,16 @@ public:
 
 	outputStream& getNextOutputStream();
 
-	void write(const value_type* const data, const size_type count);
 	void flush();
+
+protected:
+
+	void writeImpl(const byte_t* const data, const size_t count);
 
 private:
 
 	outputStream& m_stream;
-	value_type m_previousChar;
+	byte_t m_previousChar;
 	bool m_start;
 };
 
@@ -145,13 +148,16 @@ public:
 
 	outputStream& getNextOutputStream();
 
-	void write(const value_type* const data, const size_type count);
 	void flush();
+
+protected:
+
+	void writeImpl(const byte_t* const data, const size_t count);
 
 private:
 
         outputStream& m_stream;
-	value_type m_previousChar;
+	byte_t m_previousChar;
 };
 
 
@@ -171,13 +177,16 @@ public:
 
 	outputStream& getNextOutputStream();
 
-	void write(const value_type* const data, const size_type count);
 	void flush();
+
+protected:
+
+	void writeImpl(const byte_t* const data, const size_t count);
 
 private:
 
 	outputStream& m_stream;
-	value_type m_previousChar;
+	byte_t m_previousChar;
 };
 
 
@@ -195,8 +204,19 @@ public:
 	  * @param is stream from which to read data to be filtered
 	  * @param sequence sequence on which to stop
 	  */
-	stopSequenceFilteredInputStream(inputStream& is, const value_type* sequence)
+	stopSequenceFilteredInputStream(inputStream& is, const byte_t* sequence)
 		: m_stream(is), m_sequence(sequence), m_found(0), m_eof(false)
+	{
+	}
+
+	/** Construct a new filter for the specified input stream.
+	  *
+	  * @param is stream from which to read data to be filtered
+	  * @param sequence sequence on which to stop
+	  */
+	stopSequenceFilteredInputStream(inputStream& is, const char* sequence)
+		: m_stream(is), m_sequence(reinterpret_cast <const byte_t*>(sequence)),
+		  m_found(0), m_eof(false)
 	{
 	}
 
@@ -216,9 +236,9 @@ public:
 		m_stream.reset();
 	}
 
-	size_type read(value_type* const data, const size_type count);
+	size_t read(byte_t* const data, const size_t count);
 
-	size_type skip(const size_type /* count */)
+	size_t skip(const size_t /* count */)
 	{
 		// Not supported
 		return 0;
@@ -228,21 +248,21 @@ private:
 
 	inputStream& m_stream;
 
-	const value_type* m_sequence;
-	size_type m_found;
+	const byte_t* m_sequence;
+	size_t m_found;
 
 	bool m_eof;
 };
 
 
 template <>
-stream::size_type stopSequenceFilteredInputStream <1>::read
-	(value_type* const data, const size_type count);
+size_t stopSequenceFilteredInputStream <1>::read
+	(byte_t* const data, const size_t count);
 
 
 template <int COUNT>
-stream::size_type stopSequenceFilteredInputStream <COUNT>::read
-	(value_type* const data, const size_type count)
+size_t stopSequenceFilteredInputStream <COUNT>::read
+	(byte_t* const data, const size_t count)
 {
 	// Read buffer must be at least 'COUNT' size + 1 byte
 	if (eof() || count <= COUNT)
@@ -252,9 +272,9 @@ stream::size_type stopSequenceFilteredInputStream <COUNT>::read
 	{
 		if (m_found != 0)
 		{
-			const size_type found = m_found;
+			const size_t found = m_found;
 
-			for (size_type f = 0 ; f < found ; ++f)
+			for (size_t f = 0 ; f < found ; ++f)
 				data[f] = m_sequence[f];
 
 			m_found = 0;
@@ -269,10 +289,10 @@ stream::size_type stopSequenceFilteredInputStream <COUNT>::read
 		}
 	}
 
-	size_type read = m_stream.read(data, count - COUNT);
+	size_t read = m_stream.read(data, count - COUNT);
 
-	value_type* end = data + read;
-	value_type* pos = data;
+	byte_t* end = data + read;
+	byte_t* pos = data;
 
 	while (pos < end)
 	{
@@ -344,12 +364,12 @@ stream::size_type stopSequenceFilteredInputStream <COUNT>::read
 					// the stream data
 
 					// -- shift right data
-					const size_type n = pos - data;
+					const size_t n = pos - data;
 
-					value_type* newEnd = data + read + m_found - n;
-					value_type* oldEnd = data + read;
+					byte_t* newEnd = data + read + m_found - n;
+					byte_t* oldEnd = data + read;
 
-					for (size_type i = 0 ; i < read - n ; ++i)
+					for (size_t i = 0 ; i < read - n ; ++i)
 					{
 						--newEnd;
 						--oldEnd;
@@ -358,7 +378,7 @@ stream::size_type stopSequenceFilteredInputStream <COUNT>::read
 					}
 
 					// -- copy the prefix just before data
-					for (size_type f = 0 ; f < m_found ; ++f)
+					for (size_t f = 0 ; f < m_found ; ++f)
 						data[f] = m_sequence[f];
 
 					read += m_found - n;

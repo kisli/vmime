@@ -69,11 +69,11 @@ zone = "UT" / "GMT"                               ; Universal Time
 
 
 void datetime::parseImpl
-	(const parsingContext& /* ctx */, const string& buffer, const string::size_type position,
-	 const string::size_type end, string::size_type* newPosition)
+	(const parsingContext& /* ctx */, const string& buffer, const size_t position,
+	 const size_t end, size_t* newPosition)
 {
-	const string::value_type* const pend = buffer.data() + end;
-	const string::value_type* p = buffer.data() + position;
+	const char* const pend = buffer.data() + end;
+	const char* p = buffer.data() + position;
 
 	// Parse the date and time value
 	while (p < pend && parserHelpers::isSpace(*p)) ++p;
@@ -592,11 +592,11 @@ void datetime::parseImpl
 
 void datetime::generateImpl
 	(const generationContext& /* ctx */, utility::outputStream& os,
-	 const string::size_type curLinePos, string::size_type* newLinePos) const
+	 const size_t curLinePos, size_t* newLinePos) const
 {
-	static const string::value_type* dayNames[] =
+	static const char* dayNames[] =
 		{ "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
-	static const string::value_type* monthNames[] =
+	static const char* monthNames[] =
 		{ "Jan", "Feb", "Mar", "Apr", "May", "Jun",
 		  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 

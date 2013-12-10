@@ -30,7 +30,7 @@ namespace utility {
 
 
 bool stringUtils::isStringEqualNoCase
-	(const string& s1, const char* s2, const string::size_type n)
+	(const string& s1, const char* s2, const size_t n)
 {
 	// 'n' is the number of characters to compare
 	// 's2' must be in lowercase letters only
@@ -42,7 +42,7 @@ bool stringUtils::isStringEqualNoCase
 
 	bool equal = true;
 
-	for (string::size_type i = 0 ; equal && i < n ; ++i)
+	for (size_t i = 0 ; equal && i < n ; ++i)
 		equal = (fac.tolower(static_cast <unsigned char>(s1[i])) == s2[i]);
 
 	return (equal);
@@ -69,9 +69,9 @@ bool stringUtils::isStringEqualNoCase(const string& s1, const string& s2)
 
 bool stringUtils::isStringEqualNoCase
 	(const string::const_iterator begin, const string::const_iterator end,
-	 const char* s, const string::size_type n)
+	 const char* s, const size_t n)
 {
-	if (static_cast <string::size_type>(end - begin) < n)
+	if (static_cast <size_t>(end - begin) < n)
 		return (false);
 
 	const std::ctype <char>& fac =
@@ -79,7 +79,7 @@ bool stringUtils::isStringEqualNoCase
 
 	bool equal = true;
 	char* c = const_cast<char*>(s);
-	string::size_type r = n;
+	size_t r = n;
 
 	for (string::const_iterator i = begin ; equal && r && *c ; ++i, ++c, --r)
 		equal = (fac.tolower(static_cast <unsigned char>(*i)) == static_cast <unsigned char>(*c));
@@ -96,7 +96,7 @@ const string stringUtils::toLower(const string& str)
 	string out;
 	out.resize(str.size());
 
-	for (string::size_type i = 0, len = str.length() ; i < len ; ++i)
+	for (size_t i = 0, len = str.length() ; i < len ; ++i)
 		out[i] = fac.tolower(static_cast <unsigned char>(str[i]));
 
 	return out;
@@ -111,7 +111,7 @@ const string stringUtils::toUpper(const string& str)
 	string out;
 	out.resize(str.size());
 
-	for (string::size_type i = 0, len = str.length() ; i < len ; ++i)
+	for (size_t i = 0, len = str.length() ; i < len ; ++i)
 		out[i] = fac.toupper(static_cast <unsigned char>(str[i]));
 
 	return out;
@@ -133,10 +133,10 @@ const string stringUtils::trim(const string& str)
 }
 
 
-string::size_type stringUtils::countASCIIchars
+size_t stringUtils::countASCIIchars
 	(const string::const_iterator begin, const string::const_iterator end)
 {
-	string::size_type count = 0;
+	size_t count = 0;
 
 	for (string::const_iterator i = begin ; i != end ; ++i)
 	{
@@ -157,10 +157,10 @@ bool stringUtils::is7bit(const string& str)
 }
 
 
-string::size_type stringUtils::findFirstNonASCIIchar
+size_t stringUtils::findFirstNonASCIIchar
 	(const string::const_iterator begin, const string::const_iterator end)
 {
-	string::size_type pos = string::npos;
+	size_t pos = string::npos;
 
 	for (string::const_iterator i = begin ; i != end ; ++i)
 	{
@@ -190,7 +190,7 @@ const string stringUtils::unquote(const string& str)
 
 	for (string::const_iterator it = str.begin() + 1, end = str.end() - 1 ; it != end ; ++it)
 	{
-		const string::value_type c = *it;
+		const char c = *it;
 
 		if (escaped)
 		{
@@ -221,7 +221,7 @@ string stringUtils::quote
 	(const string& str, const string& escapeSpecialChars, const string& escapeChar)
 {
 	std::ostringstream oss;
-	string::size_type lastPos = 0, pos = 0;
+	size_t lastPos = 0, pos = 0;
 
 	while ((pos = str.find_first_of(escapeSpecialChars, lastPos)) != string::npos)
 	{

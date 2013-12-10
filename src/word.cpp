@@ -66,11 +66,11 @@ word::word(const string& buffer, const charset& charset)
 
 
 shared_ptr <word> word::parseNext
-	(const parsingContext& ctx, const string& buffer, const string::size_type position,
-	 const string::size_type end, string::size_type* newPosition,
+	(const parsingContext& ctx, const string& buffer, const size_t position,
+	 const size_t end, size_t* newPosition,
 	 bool prevIsEncoded, bool* isEncoded, bool isFirst)
 {
-	string::size_type pos = position;
+	size_t pos = position;
 
 	// Ignore white-spaces:
 	//   - before the first word
@@ -84,7 +84,7 @@ shared_ptr <word> word::parseNext
 		++pos;
 	}
 
-	string::size_type startPos = pos;
+	size_t startPos = pos;
 	string unencoded;
 
 	const charset defaultCharset = ctx.getInternationalizedEmailSupport()
@@ -96,7 +96,7 @@ shared_ptr <word> word::parseNext
 		// used to remove folding white-spaces from unencoded text.
 		if (buffer[pos] == '\n')
 		{
-			string::size_type endPos = pos;
+			size_t endPos = pos;
 
 			if (pos > position && buffer[pos - 1] == '\r')
 			{
@@ -140,7 +140,7 @@ shared_ptr <word> word::parseNext
 			}
 
 			// ...else find the finish sequence '?=' and return an encoded word
-			const string::size_type wordStart = pos;
+			const size_t wordStart = pos;
 
 			pos += 2;
 
@@ -227,13 +227,13 @@ shared_ptr <word> word::parseNext
 
 
 const std::vector <shared_ptr <word> > word::parseMultiple
-	(const parsingContext& ctx, const string& buffer, const string::size_type position,
-	 const string::size_type end, string::size_type* newPosition)
+	(const parsingContext& ctx, const string& buffer, const size_t position,
+	 const size_t end, size_t* newPosition)
 {
 	std::vector <shared_ptr <word> > res;
 	shared_ptr <word> w;
 
-	string::size_type pos = position;
+	size_t pos = position;
 
 	bool prevIsEncoded = false;
 
@@ -248,8 +248,8 @@ const std::vector <shared_ptr <word> > word::parseMultiple
 
 
 void word::parseImpl
-	(const parsingContext& ctx, const string& buffer, const string::size_type position,
-	 const string::size_type end, string::size_type* newPosition)
+	(const parsingContext& ctx, const string& buffer, const size_t position,
+	 const size_t end, size_t* newPosition)
 {
 	if (position + 6 < end && // 6 = "=?(.+)?(.*)?="
 	    buffer[position] == '=' && buffer[position + 1] == '?')
@@ -333,17 +333,17 @@ void word::parseImpl
 
 
 void word::generateImpl(const generationContext& ctx, utility::outputStream& os,
-	const string::size_type curLinePos, string::size_type* newLinePos) const
+	const size_t curLinePos, size_t* newLinePos) const
 {
 	generate(ctx, os, curLinePos, newLinePos, 0, NULL);
 }
 
 
 void word::generate(const generationContext& ctx, utility::outputStream& os,
-	const string::size_type curLinePos, string::size_type* newLinePos, const int flags,
+	const size_t curLinePos, size_t* newLinePos, const int flags,
 	generatorState* state) const
 {
-	string::size_type curLineLength = curLinePos;
+	size_t curLineLength = curLinePos;
 
 	generatorState defaultGeneratorState;
 
@@ -407,8 +407,8 @@ void word::generate(const generationContext& ctx, utility::outputStream& os,
 		// Look in the buffer for any run (ie. whitespace-separated sequence) which
 		// is longer than the maximum line length. If there is one, then force encoding,
 		// so that no generated line is longer than the maximum line length.
-		string::size_type maxRunLength = 0;
-		string::size_type curRunLength = 0;
+		size_t maxRunLength = 0;
+		size_t curRunLength = 0;
 
 		for (string::const_iterator p = buffer.begin(), end = buffer.end() ; p != end ; ++p)
 		{
@@ -593,10 +593,10 @@ void word::generate(const generationContext& ctx, utility::outputStream& os,
 			  'encoded-word's is limited to 76 characters. "
 		*/
 
-		const string::size_type maxLineLength3 =
+		const size_t maxLineLength3 =
 			(ctx.getMaxLineLength() == lineLengthLimits::infinite)
 				? ctx.getMaxLineLength()
-				: std::min(ctx.getMaxLineLength(), static_cast <string::size_type>(76));
+				: std::min(ctx.getMaxLineLength(), static_cast <size_t>(76));
 
 		wordEncoder wordEnc(m_buffer, m_charset);
 
@@ -604,8 +604,8 @@ void word::generate(const generationContext& ctx, utility::outputStream& os,
 			(wordEnc.getEncoding() == wordEncoder::ENCODING_B64 ? 'B' : 'Q') + "?");
 		const string wordEnd("?=");
 
-		const string::size_type minWordLength = wordStart.length() + wordEnd.length();
-		const string::size_type maxLineLength2 = (maxLineLength3 < minWordLength + 1)
+		const size_t minWordLength = wordStart.length() + wordEnd.length();
+		const size_t maxLineLength2 = (maxLineLength3 < minWordLength + 1)
 			? maxLineLength3 + minWordLength + 1 : maxLineLength3;
 
 		// Checks whether remaining space on this line is usable. If too few
@@ -614,7 +614,7 @@ void word::generate(const generationContext& ctx, utility::outputStream& os,
 
 		if (curLineLength + 2 < maxLineLength2)
 		{
-			const string::size_type remainingSpaceOnLine = maxLineLength2 - curLineLength - 2;
+			const size_t remainingSpaceOnLine = maxLineLength2 - curLineLength - 2;
 
 			if (remainingSpaceOnLine < minWordLength + 10)
 			{
@@ -649,7 +649,7 @@ void word::generate(const generationContext& ctx, utility::outputStream& os,
 		for (unsigned int i = 0 ; ; ++i)
 		{
 			// Compute the number of encoded chars that will fit on this line
-			const string::size_type fit = maxLineLength2 - minWordLength
+			const size_t fit = maxLineLength2 - minWordLength
 				- (i == 0 ? curLineLength : NEW_LINE_SEQUENCE_LENGTH);
 
 			// Get the next encoded chunk

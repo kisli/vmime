@@ -52,19 +52,19 @@ const std::vector <string> uuEncoder::getAvailableProperties() const
 
 
 // This is the character encoding function to make a character printable
-static inline unsigned char UUENCODE(const unsigned long c)
+static inline byte_t UUENCODE(const unsigned int c)
 {
-	return static_cast <unsigned char>((c & 077) + ' ');
+	return static_cast <byte_t>((c & 077) + ' ');
 }
 
 // Single character decoding
-static inline unsigned char UUDECODE(const unsigned long c)
+static inline unsigned int UUDECODE(const unsigned int c)
 {
-	return static_cast <unsigned char>((c - ' ') & 077);
+	return (c - ' ') & 077;
 }
 
 
-utility::stream::size_type uuEncoder::encode(utility::inputStream& in,
+size_t uuEncoder::encode(utility::inputStream& in,
 	utility::outputStream& out, utility::progressListener* progress)
 {
 	in.reset();  // may not work...
@@ -72,12 +72,11 @@ utility::stream::size_type uuEncoder::encode(utility::inputStream& in,
 	const string propFilename = getProperties().getProperty <string>("filename", "");
 	const string propMode = getProperties().getProperty <string>("mode", "644");
 
-	const string::size_type maxLineLength =
-		std::min(getProperties().getProperty <string::size_type>("maxlinelength", 46),
-		         static_cast <string::size_type>(46));
+	const size_t maxLineLength =
+		std::min(getProperties().getProperty <size_t>("maxlinelength", 46), static_cast <size_t>(46));
 
-	utility::stream::size_type total = 0;
-	utility::stream::size_type inTotal = 0;
+	size_t total = 0;
+	size_t inTotal = 0;
 
 	// Output the prelude text ("begin [mode] [filename]")
 	out << "begin";
@@ -92,8 +91,8 @@ utility::stream::size_type uuEncoder::encode(utility::inputStream& in,
 	total += 7;
 
 	// Process the data
-	utility::stream::value_type inBuffer[64];
-	utility::stream::value_type outBuffer[64];
+	byte_t inBuffer[64];
+	byte_t outBuffer[64];
 
 	if (progress)
 		progress->start(0);
@@ -103,17 +102,17 @@ utility::stream::size_type uuEncoder::encode(utility::inputStream& in,
 		// Process up to 45 characters per line
 		std::fill(inBuffer, inBuffer + sizeof(inBuffer), 0);
 
-		const utility::stream::size_type inLength = in.read(inBuffer, maxLineLength - 1);
+		const size_t inLength = in.read(inBuffer, maxLineLength - 1);
 
-		outBuffer[0] = UUENCODE(inLength); // Line length
+		outBuffer[0] = UUENCODE(static_cast <unsigned int>(inLength)); // Line length
 
-		utility::stream::size_type j = 1;
+		size_t j = 1;
 
-		for (utility::stream::size_type i = 0 ; i < inLength ; i += 3, j += 4)
+		for (size_t i = 0 ; i < inLength ; i += 3, j += 4)
 		{
-			const unsigned char c1 = static_cast <unsigned char>(inBuffer[i]);
-			const unsigned char c2 = static_cast <unsigned char>(inBuffer[i + 1]);
-			const unsigned char c3 = static_cast <unsigned char>(inBuffer[i + 2]);
+			const byte_t c1 = inBuffer[i];
+			const byte_t c2 = inBuffer[i + 1];
+			const byte_t c3 = inBuffer[i + 2];
 
 			outBuffer[j]     = UUENCODE(c1 >> 2);
 			outBuffer[j + 1] = UUENCODE(((c1 << 4) & 060) | ((c2 >> 4) & 017));
@@ -143,17 +142,17 @@ utility::stream::size_type uuEncoder::encode(utility::inputStream& in,
 }
 
 
-utility::stream::size_type uuEncoder::decode(utility::inputStream& in,
+size_t uuEncoder::decode(utility::inputStream& in,
 	utility::outputStream& out, utility::progressListener* progress)
 {
 	in.reset();  // may not work...
 
 	// Process the data
-	utility::stream::value_type inBuffer[64];
-	utility::stream::value_type outBuffer[64];
+	byte_t inBuffer[64];
+	byte_t outBuffer[64];
 
-	utility::stream::size_type total = 0;
-	utility::stream::size_type inTotal = 0;
+	size_t total = 0;
+	size_t inTotal = 0;
 
 	bool stop = false;
 
@@ -165,15 +164,14 @@ utility::stream::size_type uuEncoder::decode(utility::inputStream& in,
 	while (!stop && !in.eof())
 	{
 		// Get the line length
-		utility::stream::value_type lengthChar;
+		byte_t lengthChar;
 
 		if (in.read(&lengthChar, 1) == 0)
 			break;
 
-		const utility::stream::size_type outLength = UUDECODE(lengthChar);
-		const utility::stream::size_type inLength =
-			std::min((outLength * 4) / 3, static_cast <utility::stream::size_type>(64));
-		utility::stream::size_type inPos = 0;
+		const size_t outLength = UUDECODE(lengthChar);
+		const size_t inLength = std::min((outLength * 4) / 3, static_cast <size_t>(64));
+		size_t inPos = 0;
 
 		switch (lengthChar)
 		{
@@ -199,10 +197,10 @@ utility::stream::size_type uuEncoder::decode(utility::inputStream& in,
 			{
 				inTotal += 5;
 
-				utility::stream::value_type c = 0;
+				byte_t c = 0;
 
-				utility::stream::size_type count = 0;
-				utility::stream::value_type buffer[512];
+				size_t count = 0;
+				byte_t buffer[512];
 
 				while (count < sizeof(buffer) - 1 && in.read(&c, 1) == 1)
 				{
@@ -229,11 +227,11 @@ utility::stream::size_type uuEncoder::decode(utility::inputStream& in,
 				{
 					buffer[count] = '\0';
 
-					utility::stream::value_type* p = buffer;
+					byte_t* p = buffer;
 
 					while (*p && parserHelpers::isSpace(*p)) ++p;
 
-					utility::stream::value_type* modeStart = buffer;
+					byte_t* modeStart = buffer;
 
 					while (*p && !parserHelpers::isSpace(*p)) ++p;
 
@@ -241,7 +239,7 @@ utility::stream::size_type uuEncoder::decode(utility::inputStream& in,
 
 					while (*p && parserHelpers::isSpace(*p)) ++p;
 
-					utility::stream::value_type* filenameStart = buffer;
+					byte_t* filenameStart = buffer;
 
 					while (*p && !(*p == '\r' || *p == '\n')) ++p;
 
@@ -289,22 +287,21 @@ utility::stream::size_type uuEncoder::decode(utility::inputStream& in,
 		inTotal += (inLength - inPos);
 
 		// Decode data
-		for (utility::stream::size_type i = 0, j = 0 ; i < inLength ; i += 4, j += 3)
+		for (size_t i = 0, j = 0 ; i < inLength ; i += 4, j += 3)
 		{
-			const unsigned char c1 = static_cast <unsigned char>(inBuffer[i]);
-			const unsigned char c2 = static_cast <unsigned char>(inBuffer[i + 1]);
-			const unsigned char c3 = static_cast <unsigned char>(inBuffer[i + 2]);
-			const unsigned char c4 = static_cast <unsigned char>(inBuffer[i + 3]);
+			const byte_t c1 = inBuffer[i];
+			const byte_t c2 = inBuffer[i + 1];
+			const byte_t c3 = inBuffer[i + 2];
+			const byte_t c4 = inBuffer[i + 3];
 
-			const utility::stream::size_type n =
-				std::min(inLength - i, static_cast <utility::stream::size_type>(3));
+			const size_t n = std::min(inLength - i, static_cast <size_t>(3));
 
 			switch (n)
 			{
 			default:
-			case 3: outBuffer[j + 2] = static_cast <unsigned char>(UUDECODE(c3) << 6 | UUDECODE(c4));
-			case 2: outBuffer[j + 1] = static_cast <unsigned char>(UUDECODE(c2) << 4 | UUDECODE(c3) >> 2);
-			case 1: outBuffer[j]     = static_cast <unsigned char>(UUDECODE(c1) << 2 | UUDECODE(c2) >> 4);
+			case 3: outBuffer[j + 2] = static_cast <byte_t>(UUDECODE(c3) << 6 | UUDECODE(c4));
+			case 2: outBuffer[j + 1] = static_cast <byte_t>(UUDECODE(c2) << 4 | UUDECODE(c3) >> 2);
+			case 1: outBuffer[j]     = static_cast <byte_t>(UUDECODE(c1) << 2 | UUDECODE(c2) >> 4);
 			case 0: break;
 			}
 
@@ -326,7 +323,7 @@ utility::stream::size_type uuEncoder::decode(utility::inputStream& in,
 }
 
 
-utility::stream::size_type uuEncoder::getEncodedSize(const utility::stream::size_type n) const
+size_t uuEncoder::getEncodedSize(const size_t n) const
 {
 	// 3 bytes of input provide 4 bytes of output.
 	// Count CRLF (2 bytes) for each line of 45 characters.
@@ -335,7 +332,7 @@ utility::stream::size_type uuEncoder::getEncodedSize(const utility::stream::size
 }
 
 
-utility::stream::size_type uuEncoder::getDecodedSize(const utility::stream::size_type n) const
+size_t uuEncoder::getDecodedSize(const size_t n) const
 {
 	// 4 bytes of input provide 3 bytes of output
 	return (n * 3) / 4;

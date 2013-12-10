@@ -42,6 +42,30 @@ class VMIME_EXPORT stringUtils
 {
 public:
 
+	/** Makes a string from bytes.
+	  *
+	  * @param data pointer to buffer containing data
+	  * @param count number of bytes to use from buffer
+	  * @return a string object containing a copy of the specified data
+	  */
+	static const string makeStringFromBytes(const byte_t* data, const size_t count)
+	{
+		return string(reinterpret_cast <const char*>(data), count);
+	}
+
+	/** Appends bytes to a string.
+	  *
+	  * @param str string to which append data
+	  * @param data pointer to buffer containing data
+	  * @param count number of bytes to use from buffer
+	  * @return a reference to modified string
+	  */
+	static string& appendBytesToString(string& str, const byte_t* data, const size_t count)
+	{
+		str.append(reinterpret_cast <const char*>(data), count);
+		return str;
+	}
+
 	/** Test two strings for equality (case insensitive).
 	  * \warning Use this with ASCII-only strings.
 	  *
@@ -50,7 +74,7 @@ public:
 	  * @param n length of the second string
 	  * @return true if the two strings compare equally, false otherwise
 	  */
-	static bool isStringEqualNoCase(const string& s1, const char* s2, const string::size_type n);
+	static bool isStringEqualNoCase(const string& s1, const char* s2, const size_t n);
 
 	/** Test two strings for equality (case insensitive).
 	  * \warning Use this with ASCII-only strings.
@@ -70,7 +94,7 @@ public:
 	  * @param n length of the second string
 	  * @return true if the two strings compare equally, false otherwise
 	  */
-	static bool isStringEqualNoCase(const string::const_iterator begin, const string::const_iterator end, const char* s, const string::size_type n);
+	static bool isStringEqualNoCase(const string::const_iterator begin, const string::const_iterator end, const char* s, const size_t n);
 
 	/** Transform all the characters in a string to lower-case.
 	  * \warning Use this with ASCII-only strings.
@@ -102,7 +126,7 @@ public:
 	  * @param end end position
 	  * @return number of ASCII characters
 	  */
-	static string::size_type countASCIIchars(const string::const_iterator begin, const string::const_iterator end);
+	static size_t countASCIIchars(const string::const_iterator begin, const string::const_iterator end);
 
 	/** Returns whether the specified string is composed exclusively
 	  * of 7-bit ASCII characters.
@@ -118,7 +142,7 @@ public:
 	  * @param end end position
 	  * @return position since begin, or string::npos
 	  */
-	static string::size_type findFirstNonASCIIchar(const string::const_iterator begin, const string::const_iterator end);
+	static size_t findFirstNonASCIIchar(const string::const_iterator begin, const string::const_iterator end);
 
 	/** Convert the specified value to a string value.
 	  *

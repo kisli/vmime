@@ -65,7 +65,7 @@ public:
 	  * @param maxLength maximal length of the chunk
 	  * @return next chunk, of maximal length 'maxLength' if possible
 	  */
-	const string getNextChunk(const string::size_type maxLength);
+	const string getNextChunk(const size_t maxLength);
 
 	/** Return the encoding used.
 	  *
@@ -93,8 +93,8 @@ public:
 private:
 
 	string m_buffer;
-	string::size_type m_pos;
-	string::size_type m_length;
+	size_t m_pos;
+	size_t m_length;
 
 	bool m_simple;
 

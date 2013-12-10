@@ -51,6 +51,7 @@ fetchAttributes::fetchAttributes(const int attribs)
 
 
 fetchAttributes::fetchAttributes(const fetchAttributes& attribs)
+	: object()
 {
 	m_predefinedAttribs = attribs.m_predefinedAttribs;
 	m_headers = attribs.m_headers;

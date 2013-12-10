@@ -86,7 +86,7 @@ const string libapi() { return (VMIME_API); }
 
 // New line sequence to be used when folding header fields.
 const string NEW_LINE_SEQUENCE = "\r\n ";
-const string::size_type NEW_LINE_SEQUENCE_LENGTH = 1;   // space
+const size_t NEW_LINE_SEQUENCE_LENGTH = 1;   // space
 
 /** The CR-LF sequence.
   */
@@ -110,8 +110,11 @@ nullPtrType null;
 // Line length limits
 namespace lineLengthLimits
 {
-	const string::size_type infinite = std::numeric_limits <string::size_type>::max();
+	const size_t infinite = std::numeric_limits <size_t>::max();
 }
+
+
+const size_t npos = std::numeric_limits <size_t>::max();
 
 
 

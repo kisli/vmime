@@ -100,4 +100,4 @@ static const charsetTestSuiteStruct charsetTestSuites[] =
 
 };
 
-static const unsigned int charsetTestSuitesCount = sizeof(charsetTestSuites) / sizeof(charsetTestSuites[0]);
+static const vmime::size_t charsetTestSuitesCount = sizeof(charsetTestSuites) / sizeof(charsetTestSuites[0]);

@@ -83,7 +83,7 @@ void md5MessageDigest::init()
 }
 
 
-static void copyUint8Array(vmime_uint8* dest, const vmime_uint8* src, unsigned long count)
+static void copyUint8Array(vmime_uint8* dest, const vmime_uint8* src, size_t count)
 {
 	for ( ; count >= 4 ; count -= 4, dest += 4, src += 4)
 	{
@@ -104,7 +104,7 @@ static inline vmime_uint32 swapUint32(const vmime_uint32 D)
 }
 
 
-static inline void swapUint32Array(vmime_uint32* buf, unsigned long words)
+static inline void swapUint32Array(vmime_uint32* buf, size_t words)
 {
 	for ( ; words >= 4 ; words -= 4, buf += 4)
 	{
@@ -131,17 +131,16 @@ void md5MessageDigest::update(const string& s)
 }
 
 
-void md5MessageDigest::update(const byte_t* data, const unsigned long offset,
-	const unsigned long len)
+void md5MessageDigest::update(const byte_t* data, const size_t offset, const size_t len)
 {
 	update(data + offset, len);
 }
 
 
-void md5MessageDigest::update(const byte_t* data, const unsigned long length)
+void md5MessageDigest::update(const byte_t* data, const size_t length)
 {
-	const unsigned long avail = 64 - (m_byteCount & 0x3f);
-	unsigned long len = length;
+	const size_t avail = 64 - (m_byteCount & 0x3f);
+	size_t len = length;
 
 	m_byteCount += len;
 
@@ -177,7 +176,7 @@ void md5MessageDigest::finalize(const string& s)
 }
 
 
-void md5MessageDigest::finalize(const byte_t* buffer, const unsigned long len)
+void md5MessageDigest::finalize(const byte_t* buffer, const size_t len)
 {
 	update(buffer, len);
 	finalize();
@@ -185,7 +184,7 @@ void md5MessageDigest::finalize(const byte_t* buffer, const unsigned long len)
 
 
 void md5MessageDigest::finalize(const byte_t* buffer,
-	const unsigned long offset, const unsigned long len)
+	const size_t offset, const size_t len)
 {
 	update(buffer, offset, len);
 	finalize();
@@ -329,7 +328,7 @@ void md5MessageDigest::transform()
 }
 
 
-int md5MessageDigest::getDigestLength() const
+size_t md5MessageDigest::getDigestLength() const
 {
 	return 16;
 }

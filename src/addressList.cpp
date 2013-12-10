@@ -51,12 +51,12 @@ addressList::~addressList()
 
 
 void addressList::parseImpl
-	(const parsingContext& ctx, const string& buffer, const string::size_type position,
-	 const string::size_type end, string::size_type* newPosition)
+	(const parsingContext& ctx, const string& buffer, const size_t position,
+	 const size_t end, size_t* newPosition)
 {
 	removeAllAddresses();
 
-	string::size_type pos = position;
+	size_t pos = position;
 
 	while (pos < end)
 	{
@@ -75,9 +75,9 @@ void addressList::parseImpl
 
 void addressList::generateImpl
 	(const generationContext& ctx, utility::outputStream& os,
-	 const string::size_type curLinePos, string::size_type* newLinePos) const
+	 const size_t curLinePos, size_t* newLinePos) const
 {
-	string::size_type pos = curLinePos;
+	size_t pos = curLinePos;
 
 	generationContext tmpCtx(ctx);
 	tmpCtx.setMaxLineLength(tmpCtx.getMaxLineLength() - 2);

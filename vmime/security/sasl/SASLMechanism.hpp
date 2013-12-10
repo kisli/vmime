@@ -72,8 +72,8 @@ public:
 	  */
 	virtual bool step
 		(shared_ptr <SASLSession> sess,
-		 const byte_t* challenge, const long challengeLen,
-		 byte_t** response, long* responseLen) = 0;
+		 const byte_t* challenge, const size_t challengeLen,
+		 byte_t** response, size_t* responseLen) = 0;
 
 	/** Check whether authentication has completed. If false, more
 	  * calls to evaluateChallenge() are needed to complete the
@@ -98,8 +98,8 @@ public:
 	  * 'outputLen' are undetermined)
 	  */
 	virtual void encode(shared_ptr <SASLSession> sess,
-		const byte_t* input, const long inputLen,
-		byte_t** output, long* outputLen) = 0;
+		const byte_t* input, const size_t inputLen,
+		byte_t** output, size_t* outputLen) = 0;
 
 	/** Decode data according to negotiated SASL mechanism. This
 	  * might mean that data is integrity or privacy protected.
@@ -115,8 +115,8 @@ public:
 	  * 'outputLen' are undetermined)
 	  */
 	virtual void decode(shared_ptr <SASLSession> sess,
-		const byte_t* input, const long inputLen,
-		byte_t** output, long* outputLen) = 0;
+		const byte_t* input, const size_t inputLen,
+		byte_t** output, size_t* outputLen) = 0;
 };
 
 

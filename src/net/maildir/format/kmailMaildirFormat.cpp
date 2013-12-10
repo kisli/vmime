@@ -118,11 +118,12 @@ const utility::file::path kmailMaildirFormat::folderPathToFileSystemPath
 	// Root path
 	utility::file::path fsPath = getContext()->getStore()->getFileSystemPath();
 
-	const int count = (type == CONTAINER_DIRECTORY
-		? path.getSize() : path.getSize() - 1);
+	const size_t pathSize = path.getSize();
+	const size_t count = (type == CONTAINER_DIRECTORY
+		? pathSize : (pathSize >= 1 ? pathSize - 1 : 0));
 
 	// Parent folders
-	for (int i = 0 ; i < count ; ++i)
+	for (size_t i = 0 ; i < count ; ++i)
 	{
 		utility::file::path::component comp(path[i]);
 

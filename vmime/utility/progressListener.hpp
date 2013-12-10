@@ -26,6 +26,7 @@
 
 
 #include "vmime/config.hpp"
+#include "vmime/types.hpp"
 
 
 namespace vmime {
@@ -58,20 +59,20 @@ public:
 	  * @param predictedTotal predicted amount of units (this has
 	  * no concrete meaning: these are not bytes, nor percentage...)
 	  */
-	virtual void start(const long predictedTotal) = 0;
+	virtual void start(const size_t predictedTotal) = 0;
 
 	/** Called during the operation (can be called several times).
 	  *
 	  * @param current current position
 	  * @param currentTotal adjusted total amount of units
 	  */
-	virtual void progress(const long current, const long currentTotal) = 0;
+	virtual void progress(const size_t current, const size_t currentTotal) = 0;
 
 	/** Called at the end of the operation.
 	  *
 	  * @param total final total amount of units
 	  */
-	virtual void stop(const long total) = 0;
+	virtual void stop(const size_t total) = 0;
 };
 
 
@@ -80,7 +81,7 @@ public:
   * receiver, but not by the notifier.
   */
 
-class progressListenerSizeAdapter : public progressListener
+class VMIME_EXPORT progressListenerSizeAdapter : public progressListener
 {
 public:
 
@@ -89,18 +90,18 @@ public:
 	  * @param list wrapped progress listener (can be NULL)
 	  * @param total predicted total
 	  */
-	progressListenerSizeAdapter(progressListener* list, const long total);
+	progressListenerSizeAdapter(progressListener* list, const size_t total);
 
 	bool cancel() const;
 
-	void start(const long predictedTotal);
-	void progress(const long current, const long currentTotal);
-	void stop(const long total);
+	void start(const size_t predictedTotal);
+	void progress(const size_t current, const size_t currentTotal);
+	void stop(const size_t total);
 
 private:
 
 	progressListener* m_wrapped;
-	long m_total;
+	size_t m_total;
 };
 
 

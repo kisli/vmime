@@ -76,8 +76,8 @@ public:
 	  */
 	static shared_ptr <address> parseNext
 		(const parsingContext& ctx, const string& buffer,
-		 const string::size_type position, const string::size_type end,
-		 string::size_type* newPosition, bool *isLastAddressOfGroup);
+		 const size_t position, const size_t end,
+		 size_t* newPosition, bool *isLastAddressOfGroup);
 };
 
 

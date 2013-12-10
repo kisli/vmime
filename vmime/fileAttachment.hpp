@@ -158,18 +158,18 @@ public:
 		  *
 		  * @return file size
 		  */
-		utility::stream::size_type getSize() const;
+		size_t getSize() const;
 
 		/** Set the value of the 'size' property.
 		  *
 		  * @param size file size
 		  */
-		void setSize(const utility::stream::size_type size);
+		void setSize(const size_t size);
 
 	private:
 
 		word* m_filename;
-		utility::stream::size_type* m_size;
+		size_t * m_size;
 		datetime* m_creationDate;
 		datetime* m_modifDate;
 		datetime* m_readDate;

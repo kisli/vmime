@@ -43,16 +43,18 @@ VMIME_TEST_SUITE_BEGIN(outputStreamStringAdapterTest)
 		stream << "additional data";
 		stream.flush();
 
-		VASSERT_EQ("Write 1", "initial dataadditional data", str);
+		VASSERT_EQ("Write 1 len", 27, str.length());
+		VASSERT_EQ("Write 1 data", "initial dataadditional data", str);
 
-		stream.write("more data", 9);
+		stream.write("more data");
 
-		VASSERT_EQ("Write 2", "initial dataadditional datamore data", str);
+		VASSERT_EQ("Write 2 len", 36, str.length());
+		VASSERT_EQ("Write 2 data", "initial dataadditional datamore data", str);
 	}
 
 	void testWriteBinary()
 	{
-		const vmime::string::value_type binaryData[] =
+		const vmime::byte_t binaryData[] =
 			"\xc5\x9a\xc3\xb8\xc9\xb1\xc9\x9b\x20\xc9\x93\xc9\xa8\xc9\xb2\xc9"
 			"\x91\xc5\x95\xc9\xa3\x20\xc9\x96\xc9\x90\xca\x88\xc9\x92";
 

@@ -34,14 +34,14 @@ namespace digest {
 const string messageDigest::getHexDigest() const
 {
 	const byte_t* hash = getDigest();
-	const int len = getDigestLength();
+	const size_t len = getDigestLength();
 
 	static const unsigned char hex[] = "0123456789abcdef";
 
 	std::ostringstream oss;
 	oss.imbue(std::locale::classic());
 
-	for (int i = 0 ; i < len ; ++i)
+	for (size_t i = 0 ; i < len ; ++i)
 	{
 		oss << hex[(hash[i] & 0xf0) >> 4];
 		oss << hex[(hash[i] & 0x0f)];

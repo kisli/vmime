@@ -30,7 +30,7 @@ namespace vmime
 {
 
 
-utility::stream::size_type headerFieldValue::getGeneratedSize(const generationContext& ctx)
+size_t headerFieldValue::getGeneratedSize(const generationContext& ctx)
 {
 	std::ostringstream oss;
 	utility::outputStreamAdapter osa(oss);

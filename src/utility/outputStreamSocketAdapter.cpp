@@ -40,8 +40,8 @@ outputStreamSocketAdapter::outputStreamSocketAdapter(net::socket& sok)
 }
 
 
-void outputStreamSocketAdapter::write
-	(const value_type* const data, const size_type count)
+void outputStreamSocketAdapter::writeImpl
+	(const byte_t* const data, const size_t count)
 {
 	m_socket.sendRaw(data, count);
 }
@@ -53,7 +53,7 @@ void outputStreamSocketAdapter::flush()
 }
 
 
-stream::size_type outputStreamSocketAdapter::getBlockSize()
+size_t outputStreamSocketAdapter::getBlockSize()
 {
 	return m_socket.getBlockSize();
 }

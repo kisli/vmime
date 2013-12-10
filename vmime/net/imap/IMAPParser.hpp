@@ -78,7 +78,7 @@ namespace imap {
 	{
 	public:
 
-		IMAPParserDebugResponse(const string& name, string& line, const string::size_type currentPos)
+		IMAPParserDebugResponse(const string& name, string& line, const size_t currentPos)
 			: m_name(name), m_line(line), m_pos(currentPos)
 		{
 			++IMAPParserDebugResponse_level;
@@ -100,7 +100,7 @@ namespace imap {
 			std::cout << string(m_line.begin() + (m_pos < 30 ? 0U : m_pos - 30),
 				m_line.begin() + std::min(m_line.length(), m_pos + 30)) << std::endl;
 
-			for (string::size_type i = (m_pos < 30 ? m_pos : (m_pos - (m_pos - 30))) ; i != 0 ; --i)
+			for (size_t i = (m_pos < 30 ? m_pos : (m_pos - (m_pos - 30))) ; i != 0 ; --i)
 				std::cout << " ";
 
 			std::cout << "^" << std::endl;
@@ -123,7 +123,7 @@ namespace imap {
 
 		const string& m_name;
 		string& m_line;
-		string::size_type m_pos;
+		size_t m_pos;
 	};
 
 
@@ -287,11 +287,11 @@ public:
 		component() { }
 		virtual ~component() { }
 
-		virtual void go(IMAPParser& parser, string& line, string::size_type* currentPos) = 0;
+		virtual void go(IMAPParser& parser, string& line, size_t* currentPos) = 0;
 
 
 		const string makeResponseLine(const string& comp, const string& line,
-		                              const string::size_type pos)
+		                              const size_t pos)
 		{
 #if DEBUG_RESPONSE
 			if (pos > line.length())
@@ -311,7 +311,7 @@ public:
 #define COMPONENT_ALIAS(parent, name) \
 	class name : public parent \
 	{ \
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos) \
+		void go(IMAPParser& parser, string& line, size_t* currentPos) \
 		{ \
 			DEBUG_ENTER_COMPONENT(#name); \
 			parent::go(parser, line, currentPos); \
@@ -328,11 +328,11 @@ public:
 	{
 	public:
 
-		void go(IMAPParser& /* parser */, string& line, string::size_type* currentPos)
+		void go(IMAPParser& /* parser */, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT(string("one_char <") + C + ">: current='" + ((*currentPos < line.length() ? line[*currentPos] : '?')) + "'");
 
-			const string::size_type pos = *currentPos;
+			const size_t pos = *currentPos;
 
 			if (pos < line.length() && line[pos] == C)
 				*currentPos = pos + 1;
@@ -350,11 +350,11 @@ public:
 	{
 	public:
 
-		void go(IMAPParser& /* parser */, string& line, string::size_type* currentPos)
+		void go(IMAPParser& /* parser */, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("SPACE");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			while (pos < line.length() && (line[pos] == ' ' || line[pos] == '\t'))
 				++pos;
@@ -377,11 +377,11 @@ public:
 	{
 	public:
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("CRLF");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			parser.check <SPACE>(line, &pos, true);
 
@@ -414,11 +414,11 @@ public:
 	{
 	public:
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("tag");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			bool end = false;
 
@@ -489,11 +489,11 @@ public:
 		{
 		}
 
-		void go(IMAPParser& /* parser */, string& line, string::size_type* currentPos)
+		void go(IMAPParser& /* parser */, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("number");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			bool valid = true;
 			unsigned int val = 0;
@@ -567,12 +567,12 @@ public:
 		{
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("text");
 
-			string::size_type pos = *currentPos;
-			string::size_type len = 0;
+			size_t pos = *currentPos;
+			size_t len = 0;
 
 			if (m_allow8bits || !parser.isStrict())
 			{
@@ -681,11 +681,11 @@ public:
 	{
 	public:
 
-		void go(IMAPParser& /* parser */, string& line, string::size_type* currentPos)
+		void go(IMAPParser& /* parser */, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("quoted_char");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			const unsigned char c = static_cast <unsigned char>(pos < line.length() ? line[pos] : 0);
 
@@ -730,12 +730,12 @@ public:
 	{
 	public:
 
-		void go(IMAPParser& /* parser */, string& line, string::size_type* currentPos)
+		void go(IMAPParser& /* parser */, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("quoted_text");
 
-			string::size_type pos = *currentPos;
-			string::size_type len = 0;
+			size_t pos = *currentPos;
+			size_t len = 0;
 			bool valid = false;
 
 			m_value.reserve(line.length() - pos);
@@ -817,11 +817,11 @@ public:
 	{
 	public:
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("NIL");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			parser.checkWithArg <special_atom>(line, &pos, "nil");
 
@@ -853,11 +853,11 @@ public:
 		{
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("string");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			if (m_canBeNIL &&
 			    parser.checkWithArg <special_atom>(line, &pos, "nil", true))
@@ -883,7 +883,7 @@ public:
 						{
 							m_value = "[literal-handler]";
 
-							const string::size_type length = text->value().length();
+							const size_t length = text->value().length();
 							utility::progressListener* progress = target->progressListener();
 
 							if (progress)
@@ -920,7 +920,7 @@ public:
 
 					number* num = parser.get <number>(line, &pos);
 
-					const string::size_type length = num->value();
+					const size_t length = num->value();
 					delete (num);
 
 					parser.check <one_char <'}'> >(line, &pos);
@@ -1001,11 +1001,11 @@ public:
 	{
 	public:
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("astring");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			xstring* str = NULL;
 
@@ -1050,12 +1050,12 @@ public:
 	{
 	public:
 
-		void go(IMAPParser& /* parser */, string& line, string::size_type* currentPos)
+		void go(IMAPParser& /* parser */, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("atom");
 
-			string::size_type pos = *currentPos;
-			string::size_type len = 0;
+			size_t pos = *currentPos;
+			size_t len = 0;
 
 			for (bool end = false ; !end && pos < line.length() ; )
 			{
@@ -1131,11 +1131,11 @@ public:
 		{
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT(string("special_atom(") + m_string + ")");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			atom::go(parser, line, &pos);
 
@@ -1177,11 +1177,11 @@ public:
 	{
 	public:
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("text_mime2");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			atom* theCharset = NULL, *theEncoding = NULL;
 			text* theText = NULL;
@@ -1282,11 +1282,11 @@ public:
 			delete m_number;
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("seq_number");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			if (parser.check <one_char <'*'> >(line, &pos, true))
 			{
@@ -1335,11 +1335,11 @@ public:
 			delete m_last;
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("seq_range");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			m_first = parser.get <seq_number>(line, &pos);
 
@@ -1386,11 +1386,11 @@ public:
 			delete m_nextSet;
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("sequence_set");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			if ((m_range = parser.get <IMAPParser::seq_range>(line, &pos, true)) == NULL)
 				m_number = parser.get <IMAPParser::seq_number>(line, &pos);
@@ -1429,11 +1429,11 @@ public:
 		{
 		}
 
-		void go(IMAPParser& /* parser */, string& line, string::size_type* currentPos)
+		void go(IMAPParser& /* parser */, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("mod_sequence_value");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			bool valid = true;
 			vmime_uint64 val = 0;
@@ -1464,7 +1464,7 @@ public:
 
 	public:
 
-		const vmime_uint64 value() const { return m_value; }
+		vmime_uint64 value() const { return m_value; }
 	};
 
 
@@ -1497,11 +1497,11 @@ public:
 			delete (m_flag_keyword);
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("flag_keyword");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			if (parser.check <one_char <'\\'> >(line, &pos, true))
 			{
@@ -1587,11 +1587,11 @@ public:
 			}
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("flag_list");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			parser.check <one_char <'('> >(line, &pos);
 
@@ -1626,11 +1626,11 @@ public:
 	{
 	public:
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("mailbox");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			if (parser.checkWithArg <special_atom>(line, &pos, "inbox", true))
 			{
@@ -1677,11 +1677,11 @@ public:
 	{
 	public:
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("mailbox_flag");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			if (parser.check <one_char <'\\'> >(line, &pos, true))
 			{
@@ -1755,11 +1755,11 @@ public:
 			}
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("mailbox_flag_list");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			parser.check <one_char <'('> >(line, &pos);
 
@@ -1803,11 +1803,11 @@ public:
 			delete (m_mailbox);
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("mailbox_list");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			m_mailbox_flag_list = parser.get <IMAPParser::mailbox_flag_list>(line, &pos);
 
@@ -1854,7 +1854,7 @@ public:
 	{
 	public:
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("auth_type");
 
@@ -1914,11 +1914,11 @@ public:
 	{
 	public:
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("status_att");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			// "HIGHESTMODSEQ" SP mod-sequence-valzer
 			if (parser.checkWithArg <special_atom>(line, &pos, "highestmodseq", true))
@@ -2009,11 +2009,11 @@ public:
 			}
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("status_att_list");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			m_values.push_back(parser.get <IMAPParser::status_att_val>(line, &pos));
 
@@ -2054,11 +2054,11 @@ public:
 			delete (m_atom);
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("capability");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			class atom* at = parser.get <IMAPParser::atom>(line, &pos);
 
@@ -2071,7 +2071,7 @@ public:
 			    (str[3] == 'h' || str[3] == 'H') &&
 			    (str[4] == '='))
 			{
-				string::size_type pos = 5;
+				size_t pos = 5;
 				m_auth_type = parser.get <IMAPParser::auth_type>(value, &pos);
 				delete (at);
 			}
@@ -2116,11 +2116,11 @@ public:
 			}
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("capability_data");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			parser.checkWithArg <special_atom>(line, &pos, "capability");
 
@@ -2179,11 +2179,11 @@ public:
 	{
 	public:
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("date_time");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			// <"> date_day_fixed "-" date_month "-" date_year
 			parser.check <one_char <'"'> >(line, &pos);
@@ -2225,9 +2225,9 @@ public:
 			parser.check <one_char <'"'> >(line, &pos);
 
 
-			m_datetime.setHour(std::min(std::max(nh->value(), 0ul), 23ul));
-			m_datetime.setMinute(std::min(std::max(nmi->value(), 0ul), 59ul));
-			m_datetime.setSecond(std::min(std::max(ns->value(), 0ul), 59ul));
+			m_datetime.setHour(static_cast <int>(std::min(std::max(nh->value(), 0ul), 23ul)));
+			m_datetime.setMinute(static_cast <int>(std::min(std::max(nmi->value(), 0ul), 59ul)));
+			m_datetime.setSecond(static_cast <int>(std::min(std::max(ns->value(), 0ul), 59ul)));
 
 			const int zone = static_cast <int>(nz->value());
 			const int zh = zone / 100;   // hour offset
@@ -2235,8 +2235,8 @@ public:
 
 			m_datetime.setZone(((zh * 60) + zm) * sign);
 
-			m_datetime.setDay(std::min(std::max(nd->value(), 1ul), 31ul));
-			m_datetime.setYear(ny->value());
+			m_datetime.setDay(static_cast <int>(std::min(std::max(nd->value(), 1ul), 31ul)));
+			m_datetime.setYear(static_cast <int>(ny->value()));
 
 			const string month(utility::stringUtils::toLower(amo->value()));
 			int mon = vmime::datetime::JANUARY;
@@ -2328,11 +2328,11 @@ public:
 			}
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("header_list");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			parser.check <one_char <'('> >(line, &pos);
 
@@ -2386,9 +2386,9 @@ public:
 			}
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			if (parser.check <one_char <'('> >(line, &pos, true))
 			{
@@ -2445,11 +2445,11 @@ public:
 			delete (m_header_list);
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("section_text");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			// "HEADER.FIELDS" [".NOT"] SPACE header_list
 			const bool b1 = parser.checkWithArg <special_atom>(line, &pos, "header.fields.not", true);
@@ -2525,11 +2525,11 @@ public:
 			delete (m_section_text2);
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("section");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			parser.check <one_char <'['> >(line, &pos);
 
@@ -2538,14 +2538,14 @@ public:
 				if (!(m_section_text1 = parser.get <section_text>(line, &pos, true)))
 				{
 					nz_number* num = parser.get <nz_number>(line, &pos);
-					m_nz_numbers.push_back(num->value());
+					m_nz_numbers.push_back(static_cast <unsigned int>(num->value()));
 					delete (num);
 
 					while (parser.check <one_char <'.'> >(line, &pos, true))
 					{
 						if ((num = parser.get <nz_number>(line, &pos, true)))
 						{
-							m_nz_numbers.push_back(num->value());
+							m_nz_numbers.push_back(static_cast <unsigned int>(num->value()));
 							delete (num);
 						}
 						else
@@ -2617,11 +2617,11 @@ public:
 			delete (m_addr_host);
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("address");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			parser.check <one_char <'('> >(line, &pos);
 			m_addr_name = parser.get <nstring>(line, &pos);
@@ -2669,11 +2669,11 @@ public:
 			}
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("address_list");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			if (!parser.check <NIL>(line, &pos, true))
 			{
@@ -2802,11 +2802,11 @@ public:
 			delete (m_env_message_id);
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("envelope");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			parser.check <one_char <'('> >(line, &pos);
 
@@ -2934,11 +2934,11 @@ public:
 			delete (m_string2);
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("body_fld_param_item");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			m_string1 = parser.get <xstring>(line, &pos);
 			parser.check <SPACE>(line, &pos);
@@ -2978,11 +2978,11 @@ public:
 			}
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("body_fld_param");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			if (parser.check <one_char <'('> >(line, &pos, true))
 			{
@@ -3031,11 +3031,11 @@ public:
 			delete (m_body_fld_param);
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("body_fld_dsp");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			if (parser.check <one_char <'('> >(line, &pos, true))
 			{
@@ -3081,11 +3081,11 @@ public:
 			}
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("body_fld_lang");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			if (parser.check <one_char <'('> >(line, &pos, true))
 			{
@@ -3140,11 +3140,11 @@ public:
 			delete (m_body_fld_octets);
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("body_fields");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			m_body_fld_param = parser.get <IMAPParser::body_fld_param>(line, &pos);
 			parser.check <SPACE>(line, &pos);
@@ -3204,11 +3204,11 @@ public:
 			delete (m_media_subtype);
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("media_text");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			parser.check <one_char <'"'> >(line, &pos);
 			parser.checkWithArg <special_atom>(line, &pos, "text");
@@ -3249,11 +3249,11 @@ public:
 			delete m_media_subtype;
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("media_message");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			parser.check <one_char <'"'> >(line, &pos);
 			parser.checkWithArg <special_atom>(line, &pos, "message");
@@ -3300,11 +3300,11 @@ public:
 			delete (m_media_subtype);
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("media_basic");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			m_media_type = parser.get <xstring>(line, &pos);
 
@@ -3357,11 +3357,11 @@ public:
 			}
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("body_ext_1part");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			m_body_fld_md5 = parser.get <IMAPParser::body_fld_md5>(line, &pos);
 
@@ -3444,11 +3444,11 @@ public:
 			}
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("body_ext_mpart");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			m_body_fld_param = parser.get <IMAPParser::body_fld_param>(line, &pos);
 
@@ -3518,11 +3518,11 @@ public:
 			delete (m_body_fields);
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("body_type_basic");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			m_media_basic = parser.get <IMAPParser::media_basic>(line, &pos);
 			parser.check <SPACE>(line, &pos);
@@ -3570,11 +3570,11 @@ public:
 			delete (m_body_fld_lines);
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("body_type_msg");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			m_media_message = parser.get <IMAPParser::media_message>(line, &pos);
 			parser.check <SPACE>(line, &pos);
@@ -3631,11 +3631,11 @@ public:
 			delete (m_body_fld_lines);
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("body_type_text");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			m_media_text = parser.get <IMAPParser::media_text>(line, &pos);
 			parser.check <SPACE>(line, &pos);
@@ -3684,11 +3684,11 @@ public:
 			delete (m_body_ext_1part);
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("body_type_1part");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			if (!(m_body_type_text = parser.get <IMAPParser::body_type_text>(line, &pos, true)))
 				if (!(m_body_type_msg = parser.get <IMAPParser::body_type_msg>(line, &pos, true)))
@@ -3749,11 +3749,11 @@ public:
 			}
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("body_type_mpart");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			m_list.push_back(parser.get <xbody>(line, &pos));
 
@@ -3805,11 +3805,11 @@ public:
 			delete (m_body_type_mpart);
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("body");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			parser.check <one_char <'('> >(line, &pos);
 
@@ -3875,11 +3875,11 @@ public:
  			delete m_mod_sequence_value;
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("msg_att_item");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			// "ENVELOPE" SPACE envelope
 			if (parser.checkWithArg <special_atom>(line, &pos, "envelope", true))
@@ -4073,11 +4073,11 @@ public:
 			}
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("msg_att");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			parser.check <one_char <'('> >(line, &pos);
 
@@ -4121,14 +4121,14 @@ public:
 			delete (m_msg_att);
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("message_data");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			nz_number* num = parser.get <nz_number>(line, &pos);
-			m_number = num->value();
+			m_number = static_cast <unsigned int>(num->value());
 			delete (num);
 
 			parser.check <SPACE>(line, &pos);
@@ -4205,11 +4205,11 @@ public:
 			delete m_capability_data;
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("resp_text_code");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			// "ALERT"
 			if (parser.checkWithArg <special_atom>(line, &pos, "alert", true))
@@ -4376,11 +4376,11 @@ public:
 			delete (m_resp_text_code);
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("resp_text");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			if (parser.check <one_char <'['> >(line, &pos, true))
 			{
@@ -4446,11 +4446,11 @@ public:
 			delete (m_resp_text);
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("continue_req");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			parser.check <one_char <'+'> >(line, &pos);
 			parser.check <SPACE>(line, &pos);
@@ -4491,11 +4491,11 @@ public:
 			delete (m_resp_text);
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("resp_cond_state");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			if (parser.checkWithArg <special_atom>(line, &pos, "ok", true))
 			{
@@ -4556,11 +4556,11 @@ public:
 			delete (m_resp_text);
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("resp_cond_bye");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			parser.checkWithArg <special_atom>(line, &pos, "bye");
 
@@ -4600,11 +4600,11 @@ public:
 			delete (m_resp_text);
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("resp_cond_auth");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			if (parser.checkWithArg <special_atom>(line, &pos, "ok", true))
 			{
@@ -4682,11 +4682,11 @@ public:
 			delete m_status_att_list;
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("mailbox_data");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			m_number = parser.get <IMAPParser::number>(line, &pos, true);
 
@@ -4847,11 +4847,11 @@ public:
 			delete (m_capability_data);
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("response_data");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			parser.check <one_char <'*'> >(line, &pos);
 			parser.check <SPACE>(line, &pos);
@@ -4907,11 +4907,11 @@ public:
 			delete (m_response_data);
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("continue_req_or_response_data");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			if (!(m_continue_req = parser.get <IMAPParser::continue_req>(line, &pos, true)))
 				m_response_data = parser.get <IMAPParser::response_data>(line, &pos);
@@ -4950,11 +4950,11 @@ public:
 			delete (m_resp_cond_bye);
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("response_fatal");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			parser.check <one_char <'*'> >(line, &pos);
 			parser.check <SPACE>(line, &pos);
@@ -5001,11 +5001,11 @@ public:
 			delete (m_resp_cond_state);
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("response_tagged");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			parser.check <IMAPParser::xtag>(line, &pos);
 			parser.check <SPACE>(line, &pos);
@@ -5052,11 +5052,11 @@ public:
 			delete (m_response_fatal);
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("response_done");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			if (!(m_response_tagged = parser.get <IMAPParser::response_tagged>(line, &pos, true)))
 				m_response_fatal = parser.get <IMAPParser::response_fatal>(line, &pos);
@@ -5101,11 +5101,11 @@ public:
 			delete (m_response_done);
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("response");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 			string curLine = line;
 			bool partial = false;  // partial response
 
@@ -5194,11 +5194,11 @@ public:
 			delete (m_resp_cond_bye);
 		}
 
-		void go(IMAPParser& parser, string& line, string::size_type* currentPos)
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			DEBUG_ENTER_COMPONENT("greeting");
 
-			string::size_type pos = *currentPos;
+			size_t pos = *currentPos;
 
 			parser.check <one_char <'*'> >(line, &pos);
 			parser.check <SPACE>(line, &pos);
@@ -5242,7 +5242,7 @@ public:
 
 	response* readResponse(literalHandler* lh = NULL)
 	{
-		string::size_type pos = 0;
+		size_t pos = 0;
 		string line = readLine();
 
 		m_literalHandler = lh;
@@ -5257,7 +5257,7 @@ public:
 
 	greeting* readGreeting()
 	{
-		string::size_type pos = 0;
+		size_t pos = 0;
 		string line = readLine();
 
 		greeting* greet = get <greeting>(line, &pos);
@@ -5273,7 +5273,7 @@ public:
 	//
 
 	template <class TYPE>
-	TYPE* get(string& line, string::size_type* currentPos,
+	TYPE* get(string& line, size_t* currentPos,
 	          const bool noThrow = false)
 	{
 		component* resp = new TYPE;
@@ -5282,7 +5282,7 @@ public:
 
 
 	template <class TYPE, class ARG1_TYPE, class ARG2_TYPE>
-	TYPE* getWithArgs(string& line, string::size_type* currentPos,
+	TYPE* getWithArgs(string& line, size_t* currentPos,
 	                  ARG1_TYPE arg1, ARG2_TYPE arg2, const bool noThrow = false)
 	{
 		component* resp = new TYPE(arg1, arg2);
@@ -5293,10 +5293,10 @@ public:
 private:
 
 	template <class TYPE>
-	TYPE* internalGet(component* resp, string& line, string::size_type* currentPos,
+	TYPE* internalGet(component* resp, string& line, size_t* currentPos,
 	                  const bool noThrow = false)
 	{
-		const string::size_type oldPos = *currentPos;
+		const size_t oldPos = *currentPos;
 
 		try
 		{
@@ -5350,10 +5350,10 @@ public:
 	//
 
 	template <class TYPE>
-	bool check(string& line, string::size_type* currentPos,
+	bool check(string& line, size_t* currentPos,
 	                 const bool noThrow = false)
 	{
-		const string::size_type oldPos = *currentPos;
+		const size_t oldPos = *currentPos;
 
 		try
 		{
@@ -5377,10 +5377,10 @@ public:
 	}
 
 	template <class TYPE, class ARG_TYPE>
-	bool checkWithArg(string& line, string::size_type* currentPos,
+	bool checkWithArg(string& line, size_t* currentPos,
 	                        const ARG_TYPE arg, const bool noThrow = false)
 	{
-		const string::size_type oldPos = *currentPos;
+		const size_t oldPos = *currentPos;
 
 		try
 		{
@@ -5430,7 +5430,7 @@ public:
 
 	const string readLine()
 	{
-		string::size_type pos;
+		size_t pos;
 
 		while ((pos = m_buffer.find('\n')) == string::npos)
 		{
@@ -5494,9 +5494,9 @@ public:
 	}
 
 
-	void readLiteral(literalHandler::target& buffer, string::size_type count)
+	void readLiteral(literalHandler::target& buffer, size_t count)
 	{
-		string::size_type len = 0;
+		size_t len = 0;
 		string receiveBuffer;
 
 		shared_ptr <timeoutHandler> toh = m_timeoutHandler.lock();
@@ -5550,7 +5550,7 @@ public:
 
 			if (len + receiveBuffer.length() > count)
 			{
-				const string::size_type remaining = count - len;
+				const size_t remaining = count - len;
 
 				// Get the needed amount of data
 				buffer.putData(string(receiveBuffer.begin(), receiveBuffer.begin() + remaining));

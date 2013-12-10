@@ -104,7 +104,7 @@ const mediaType& IMAPMessagePart::getType() const
 }
 
 
-int IMAPMessagePart::getSize() const
+size_t IMAPMessagePart::getSize() const
 {
 	return m_size;
 }

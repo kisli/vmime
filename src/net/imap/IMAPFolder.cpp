@@ -791,8 +791,8 @@ void IMAPFolder::fetchMessages(std::vector <shared_ptr <message> >& msg, const f
 	const std::vector <IMAPParser::continue_req_or_response_data*>& respDataList =
 		resp->continue_req_or_response_data();
 
-	const int total = msg.size();
-	int current = 0;
+	const size_t total = msg.size();
+	size_t current = 0;
 
 	if (progress)
 		progress->start(total);
@@ -1005,7 +1005,7 @@ void IMAPFolder::addMessage(shared_ptr <vmime::message> msg, const int flags,
 }
 
 
-void IMAPFolder::addMessage(utility::inputStream& is, const int size, const int flags,
+void IMAPFolder::addMessage(utility::inputStream& is, const size_t size, const int flags,
                             vmime::datetime* date, utility::progressListener* progress)
 {
 	shared_ptr <IMAPStore> store = m_store.lock();
@@ -1064,22 +1064,22 @@ void IMAPFolder::addMessage(utility::inputStream& is, const int size, const int 
 	}
 
 	// Send message data
-	const int total = size;
-	int current = 0;
+	const size_t total = size;
+	size_t current = 0;
 
 	if (progress)
 		progress->start(total);
 
-	const socket::size_type blockSize = std::min(is.getBlockSize(),
+	const size_t blockSize = std::min(is.getBlockSize(),
 		static_cast <size_t>(m_connection->getSocket()->getBlockSize()));
 
-	std::vector <char> vbuffer(blockSize);
-	char* buffer = &vbuffer.front();
+	std::vector <byte_t> vbuffer(blockSize);
+	byte_t* buffer = &vbuffer.front();
 
 	while (!is.eof())
 	{
 		// Read some data from the input stream
-		const int read = is.read(buffer, sizeof(buffer));
+		const size_t read = is.read(buffer, sizeof(buffer));
 		current += read;
 
 		// Put read data into socket output stream

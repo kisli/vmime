@@ -50,23 +50,26 @@ public:
 
 	SMTPChunkingOutputStreamAdapter(shared_ptr <SMTPConnection> conn);
 
-	void write(const value_type* const data, const size_type count);
 	void flush();
 
-	size_type getBlockSize();
+	size_t getBlockSize();
+
+protected:
+
+	void writeImpl(const byte_t* const data, const size_t count);
 
 private:
 
 	SMTPChunkingOutputStreamAdapter(const SMTPChunkingOutputStreamAdapter&);
 
 
-	void sendChunk(const value_type* const data, const size_type count, const bool last);
+	void sendChunk(const byte_t* const data, const size_t count, const bool last);
 
 
 	shared_ptr <SMTPConnection> m_connection;
 
-	value_type m_buffer[262144];  // 256 KB
-	size_type m_bufferSize;
+	byte_t m_buffer[262144];  // 256 KB
+	size_t m_bufferSize;
 
 	unsigned int m_chunkCount;
 };

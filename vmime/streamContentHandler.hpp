@@ -59,7 +59,7 @@ public:
 	  */
 	streamContentHandler
 		(shared_ptr <utility::inputStream> is,
-		 const utility::stream::size_type length,
+		 const size_t length,
 		 const vmime::encoding& enc = NO_ENCODING);
 
 	~streamContentHandler();
@@ -80,16 +80,16 @@ public:
 	  */
 	void setData
 		(shared_ptr <utility::inputStream> is,
-		 const utility::stream::size_type length,
+		 const size_t length,
 		 const vmime::encoding& enc = NO_ENCODING);
 
 
-	void generate(utility::outputStream& os, const vmime::encoding& enc, const string::size_type maxLineLength = lineLengthLimits::infinite) const;
+	void generate(utility::outputStream& os, const vmime::encoding& enc, const size_t maxLineLength = lineLengthLimits::infinite) const;
 
 	void extract(utility::outputStream& os, utility::progressListener* progress = NULL) const;
 	void extractRaw(utility::outputStream& os, utility::progressListener* progress = NULL) const;
 
-	string::size_type getLength() const;
+	size_t getLength() const;
 
 	bool isEncoded() const;
 
@@ -112,7 +112,7 @@ private:
 
 	// Actual data
 	mutable shared_ptr <utility::inputStream> m_stream;
-	string::size_type m_length;
+	size_t m_length;
 };
 
 

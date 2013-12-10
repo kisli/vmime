@@ -85,7 +85,7 @@ VMIME_TEST_SUITE_BEGIN(charsetFilteredOutputStreamTest)
 
 		vmime::utility::inputStreamStringAdapter is(in);
 
-		vmime::utility::stream::value_type buffer[16];
+		vmime::byte_t buffer[16];
 
 		for (int i = 0 ; !is.eof() ; ++i)
 			os->write(buffer, is.read(buffer, 1));
@@ -161,7 +161,7 @@ VMIME_TEST_SUITE_BEGIN(charsetFilteredOutputStreamTest)
 
 			vmime::utility::inputStreamStringAdapter is(in);
 
-			vmime::utility::stream::value_type buffer[16];
+			vmime::byte_t buffer[16];
 
 			for (int i = 0 ; !is.eof() ; ++i)
 				os->write(buffer, is.read(buffer, 1));
@@ -201,7 +201,7 @@ VMIME_TEST_SUITE_BEGIN(charsetFilteredOutputStreamTest)
 
 			vmime::utility::inputStreamStringAdapter is(in);
 
-			vmime::utility::stream::value_type buffer[16];
+			vmime::byte_t buffer[16];
 
 			for (int i = 0 ; !is.eof() ; ++i)
 				os->write(buffer, is.read(buffer, (i % 5) + 1));

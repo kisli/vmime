@@ -242,7 +242,7 @@ const std::vector <folder::path> courierMaildirFormat::listFolders
 		const string dir = dirs[i].substr(1) + ".";
 		folder::path path;
 
-		for (string::size_type pos = dir.find("."), prev = 0 ;
+		for (size_t pos = dir.find("."), prev = 0 ;
 		     pos != string::npos ; prev = pos + 1, pos = dir.find(".", pos + 1))
 		{
 			const string comp = dir.substr(prev, pos - prev);

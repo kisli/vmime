@@ -34,11 +34,11 @@ outputStreamAdapter::outputStreamAdapter(std::ostream& os)
 }
 
 
-void outputStreamAdapter::write
-	(const value_type* const data, const size_type count)
+void outputStreamAdapter::writeImpl
+	(const byte_t* const data, const size_t count)
 {
 	m_stream.exceptions(std::ios_base::badbit);
-	m_stream.write(data, count);
+	m_stream.write(reinterpret_cast <const char*>(data), count);
 }
 
 

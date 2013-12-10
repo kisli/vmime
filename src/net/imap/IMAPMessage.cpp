@@ -98,7 +98,7 @@ private:
 
 
 IMAPMessage::IMAPMessage(shared_ptr <IMAPFolder> folder, const int num)
-	: m_folder(folder), m_num(num), m_size(-1), m_flags(FLAG_UNDEFINED),
+	: m_folder(folder), m_num(num), m_size(-1U), m_flags(FLAG_UNDEFINED),
 	  m_expunged(false), m_modseq(0), m_structure(null)
 {
 	folder->registerMessage(this);
@@ -146,9 +146,9 @@ vmime_uint64 IMAPMessage::getModSequence() const
 }
 
 
-int IMAPMessage::getSize() const
+size_t IMAPMessage::getSize() const
 {
-	if (m_size == -1)
+	if (m_size == -1U)
 		throw exceptions::unfetched_object();
 
 	return (m_size);
@@ -197,28 +197,36 @@ shared_ptr <const header> IMAPMessage::getHeader() const
 }
 
 
-void IMAPMessage::extract(utility::outputStream& os, utility::progressListener* progress,
-                          const int start, const int length, const bool peek) const
+void IMAPMessage::extract
+	(utility::outputStream& os,
+	 utility::progressListener* progress,
+     const size_t start, const size_t length,
+     const bool peek) const
 {
 	shared_ptr <const IMAPFolder> folder = m_folder.lock();
 
 	if (!folder)
 		throw exceptions::folder_not_found();
 
-	extractImpl(null, os, progress, start, length, EXTRACT_HEADER | EXTRACT_BODY | (peek ? EXTRACT_PEEK : 0));
+	extractImpl(null, os, progress, start, length,
+		EXTRACT_HEADER | EXTRACT_BODY | (peek ? EXTRACT_PEEK : 0));
 }
 
 
 void IMAPMessage::extractPart
-	(shared_ptr <const messagePart> p, utility::outputStream& os, utility::progressListener* progress,
-	 const int start, const int length, const bool peek) const
+	(shared_ptr <const messagePart> p,
+	 utility::outputStream& os,
+	 utility::progressListener* progress,
+	 const size_t start, const size_t length,
+	 const bool peek) const
 {
 	shared_ptr <const IMAPFolder> folder = m_folder.lock();
 
 	if (!folder)
 		throw exceptions::folder_not_found();
 
-	extractImpl(p, os, progress, start, length, EXTRACT_HEADER | EXTRACT_BODY | (peek ? EXTRACT_PEEK : 0));
+	extractImpl(p, os, progress, start, length,
+		EXTRACT_HEADER | EXTRACT_BODY | (peek ? EXTRACT_PEEK : 0));
 }
 
 
@@ -253,9 +261,12 @@ void IMAPMessage::fetchPartHeaderForStructure(shared_ptr <messageStructure> str)
 }
 
 
-void IMAPMessage::extractImpl(shared_ptr <const messagePart> p, utility::outputStream& os,
-	utility::progressListener* progress, const int start,
-	const int length, const int extractFlags) const
+void IMAPMessage::extractImpl
+	(shared_ptr <const messagePart> p,
+	 utility::outputStream& os,
+	 utility::progressListener* progress,
+	 const size_t start, const size_t length,
+	 const int extractFlags) const
 {
 	shared_ptr <const IMAPFolder> folder = m_folder.lock();
 
@@ -340,7 +351,7 @@ void IMAPMessage::extractImpl(shared_ptr <const messagePart> p, utility::outputS
 
 	command << "]";
 
-	if (start != 0 || length != -1)
+	if (start != 0 || length != static_cast <size_t>(-1))
 		command << "<" << start << "." << length << ">";
 
 	// Send the request
@@ -473,7 +484,7 @@ int IMAPMessage::processFetchResponse
 		}
 		case IMAPParser::msg_att_item::RFC822_SIZE:
 		{
-			m_size = (*it)->number()->value();
+			m_size = static_cast <size_t>((*it)->number()->value());
 			break;
 		}
 		case IMAPParser::msg_att_item::BODY_SECTION:

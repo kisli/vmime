@@ -47,7 +47,7 @@ SMTPChunkingOutputStreamAdapter::SMTPChunkingOutputStreamAdapter(shared_ptr <SMT
 
 
 void SMTPChunkingOutputStreamAdapter::sendChunk
-	(const value_type* const data, const size_type count, const bool last)
+	(const byte_t* const data, const size_t count, const bool last)
 {
 	if (count == 0 && !last)
 	{
@@ -96,17 +96,17 @@ void SMTPChunkingOutputStreamAdapter::sendChunk
 }
 
 
-void SMTPChunkingOutputStreamAdapter::write
-	(const value_type* const data, const size_type count)
+void SMTPChunkingOutputStreamAdapter::writeImpl
+	(const byte_t* const data, const size_t count)
 {
-	const value_type* curData = data;
-	size_type curCount = count;
+	const byte_t* curData = data;
+	size_t curCount = count;
 
 	while (curCount != 0)
 	{
 		// Fill the buffer
-		const size_type remaining = sizeof(m_buffer) - m_bufferSize;
-		const size_type bytesToCopy = std::min(remaining, curCount);
+		const size_t remaining = sizeof(m_buffer) - m_bufferSize;
+		const size_t bytesToCopy = std::min(remaining, curCount);
 
 		std::copy(data, data + bytesToCopy, m_buffer + m_bufferSize);
 
@@ -131,7 +131,7 @@ void SMTPChunkingOutputStreamAdapter::flush()
 }
 
 
-utility::stream::size_type SMTPChunkingOutputStreamAdapter::getBlockSize()
+size_t SMTPChunkingOutputStreamAdapter::getBlockSize()
 {
 	return sizeof(m_buffer);
 }

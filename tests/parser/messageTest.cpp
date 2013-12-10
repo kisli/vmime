@@ -44,8 +44,8 @@ VMIME_TEST_SUITE_BEGIN(messageTest)
 		textPart.generateIn(msg, msg);
 
 		// Estimated/computed generated size must be greater than the actual generated size
-		const unsigned long genSize = msg->getGeneratedSize(ctx);
-		const unsigned long actualSize = msg->generate().length();
+		const vmime::size_t genSize = msg->getGeneratedSize(ctx);
+		const vmime::size_t actualSize = msg->generate().length();
 
 		std::ostringstream oss;
 		oss << "estimated size (" << genSize << ") >= actual size (" << actualSize << ")";

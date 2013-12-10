@@ -48,16 +48,16 @@ void inputStreamAdapter::reset()
 }
 
 
-stream::size_type inputStreamAdapter::read
-	(value_type* const data, const size_type count)
+size_t inputStreamAdapter::read
+	(byte_t* const data, const size_t count)
 {
 	m_stream.exceptions(std::ios_base::badbit);
-	m_stream.read(data, count);
+	m_stream.read(reinterpret_cast <char*>(data), count);
 	return (m_stream.gcount());
 }
 
 
-stream::size_type inputStreamAdapter::skip(const size_type count)
+size_t inputStreamAdapter::skip(const size_t count)
 {
 	m_stream.exceptions(std::ios_base::badbit);
 	m_stream.ignore(count);
@@ -65,13 +65,13 @@ stream::size_type inputStreamAdapter::skip(const size_type count)
 }
 
 
-stream::size_type inputStreamAdapter::getPosition() const
+size_t inputStreamAdapter::getPosition() const
 {
 	return m_stream.tellg();
 }
 
 
-void inputStreamAdapter::seek(const size_type pos)
+void inputStreamAdapter::seek(const size_t pos)
 {
 	m_stream.clear();
 	m_stream.seekg(pos, std::ios_base::beg);

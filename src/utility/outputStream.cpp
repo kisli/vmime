@@ -28,6 +28,18 @@ namespace vmime {
 namespace utility {
 
 
+void outputStream::write(const byte_t* const data, const size_t count)
+{
+	writeImpl(data, count);
+}
+
+
+void outputStream::write(const char* const data, const size_t count)
+{
+	writeImpl(reinterpret_cast <const byte_t*>(data), count);
+}
+
+
 } // utility
 } // vmime
 

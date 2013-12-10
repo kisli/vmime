@@ -78,9 +78,9 @@ const message::uid POP3Message::getUID() const
 }
 
 
-int POP3Message::getSize() const
+size_t POP3Message::getSize() const
 {
-	if (m_size == -1)
+	if (m_size == static_cast <size_t>(-1))
 		throw exceptions::unfetched_object();
 
 	return (m_size);
@@ -125,9 +125,11 @@ shared_ptr <const header> POP3Message::getHeader() const
 }
 
 
-void POP3Message::extract(utility::outputStream& os,
-	utility::progressListener* progress, const int start,
-	const int length, const bool /* peek */) const
+void POP3Message::extract
+	(utility::outputStream& os,
+	 utility::progressListener* progress,
+	 const size_t start, const size_t length,
+	 const bool /* peek */) const
 {
 	shared_ptr <const POP3Folder> folder = m_folder.lock();
 
@@ -136,7 +138,7 @@ void POP3Message::extract(utility::outputStream& os,
 	else if (!folder->getStore())
 		throw exceptions::illegal_state("Store disconnected");
 
-	if (start != 0 && length != -1)
+	if (start != 0 && length != static_cast <size_t>(-1))
 		throw exceptions::partial_fetch_not_supported();
 
 	// Emit the "RETR" command
@@ -157,9 +159,10 @@ void POP3Message::extract(utility::outputStream& os,
 
 
 void POP3Message::extractPart
-	(shared_ptr <const messagePart> /* p */, utility::outputStream& /* os */,
+	(shared_ptr <const messagePart> /* p */,
+	 utility::outputStream& /* os */,
 	 utility::progressListener* /* progress */,
-	 const int /* start */, const int /* length */,
+	 const size_t /* start */, const size_t /* length */,
 	 const bool /* peek */) const
 {
 	throw exceptions::operation_not_supported();

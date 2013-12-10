@@ -35,7 +35,7 @@ inputStreamStringAdapter::inputStreamStringAdapter(const string& buffer)
 
 
 inputStreamStringAdapter::inputStreamStringAdapter(const string& buffer,
-	const string::size_type begin, const string::size_type end)
+	const size_t begin, const size_t end)
 	: m_buffer(buffer), m_begin(begin), m_end(end), m_pos(begin)
 {
 }
@@ -53,12 +53,12 @@ void inputStreamStringAdapter::reset()
 }
 
 
-stream::size_type inputStreamStringAdapter::read
-	(value_type* const data, const size_type count)
+size_t inputStreamStringAdapter::read
+	(byte_t* const data, const size_t count)
 {
 	if (m_pos + count >= m_end)
 	{
-		const size_type remaining = m_end - m_pos;
+		const size_t remaining = m_end - m_pos;
 
 		std::copy(m_buffer.begin() + m_pos, m_buffer.end(), data);
 		m_pos = m_end;
@@ -73,11 +73,11 @@ stream::size_type inputStreamStringAdapter::read
 }
 
 
-stream::size_type inputStreamStringAdapter::skip(const size_type count)
+size_t inputStreamStringAdapter::skip(const size_t count)
 {
 	if (m_pos + count >= m_end)
 	{
-		const size_type remaining = m_end - m_pos;
+		const size_t remaining = m_end - m_pos;
 		m_pos = m_end;
 		return (remaining);
 	}
@@ -89,13 +89,13 @@ stream::size_type inputStreamStringAdapter::skip(const size_type count)
 }
 
 
-stream::size_type inputStreamStringAdapter::getPosition() const
+size_t inputStreamStringAdapter::getPosition() const
 {
 	return m_pos - m_begin;
 }
 
 
-void inputStreamStringAdapter::seek(const size_type pos)
+void inputStreamStringAdapter::seek(const size_t pos)
 {
 	if (m_begin + pos <= m_end)
 		m_pos = m_begin + pos;

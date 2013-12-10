@@ -38,7 +38,10 @@
 
 #include "vmime/security/cert/openssl/X509Certificate_OpenSSL.hpp"
 
+#include "vmime/utility/stringUtils.hpp"
+
 #include <vector>
+#include <cstring>
 
 
 namespace vmime {
@@ -60,7 +63,8 @@ BIO_METHOD TLSSocket_OpenSSL::sm_customBIOMethod =
 	TLSSocket_OpenSSL::bio_gets,
 	TLSSocket_OpenSSL::bio_ctrl,
 	TLSSocket_OpenSSL::bio_create,
-	TLSSocket_OpenSSL::bio_destroy
+	TLSSocket_OpenSSL::bio_destroy,
+	0
 };
 
 
@@ -160,7 +164,7 @@ bool TLSSocket_OpenSSL::isConnected() const
 }
 
 
-TLSSocket::size_type TLSSocket_OpenSSL::getBlockSize() const
+size_t TLSSocket_OpenSSL::getBlockSize() const
 {
 	return 16384;  // 16 KB
 }
@@ -180,20 +184,28 @@ const string TLSSocket_OpenSSL::getPeerAddress() const
 
 void TLSSocket_OpenSSL::receive(string& buffer)
 {
-	const size_type size = receiveRaw(m_buffer, sizeof(m_buffer));
+	const size_t size = receiveRaw(m_buffer, sizeof(m_buffer));
 
-	if (size >= 0)
-		buffer = vmime::string(m_buffer, size);
+	if (size != 0)
+		buffer = utility::stringUtils::makeStringFromBytes(m_buffer, size);
+	else
+		buffer.clear();
 }
 
 
 void TLSSocket_OpenSSL::send(const string& buffer)
 {
-	sendRaw(buffer.data(), buffer.length());
+	sendRaw(reinterpret_cast <const byte_t*>(buffer.data()), buffer.length());
 }
 
 
-TLSSocket::size_type TLSSocket_OpenSSL::receiveRaw(char* buffer, const size_type count)
+void TLSSocket_OpenSSL::send(const char* str)
+{
+	sendRaw(reinterpret_cast <const byte_t*>(str), ::strlen(str));
+}
+
+
+size_t TLSSocket_OpenSSL::receiveRaw(byte_t* buffer, const size_t count)
 {
 	int rc = SSL_read(m_ssl, buffer, static_cast <int>(count));
 	handleError(rc);
@@ -205,14 +217,14 @@ TLSSocket::size_type TLSSocket_OpenSSL::receiveRaw(char* buffer, const size_type
 }
 
 
-void TLSSocket_OpenSSL::sendRaw(const char* buffer, const size_type count)
+void TLSSocket_OpenSSL::sendRaw(const byte_t* buffer, const size_t count)
 {
 	int rc = SSL_write(m_ssl, buffer, static_cast <int>(count));
 	handleError(rc);
 }
 
 
-TLSSocket_OpenSSL::size_type TLSSocket_OpenSSL::sendRawNonBlocking(const char* buffer, const size_type count)
+size_t TLSSocket_OpenSSL::sendRawNonBlocking(const byte_t* buffer, const size_t count)
 {
 	int rc = SSL_write(m_ssl, buffer, static_cast <int>(count));
 	handleError(rc);
@@ -391,7 +403,8 @@ int TLSSocket_OpenSSL::bio_write(BIO* bio, const char* buf, int len)
 	{
 		BIO_clear_retry_flags(bio);
 
-		const size_type n = sok->m_wrapped->sendRawNonBlocking(buf, len);
+		const size_t n = sok->m_wrapped->sendRawNonBlocking
+			(reinterpret_cast <const byte_t*>(buf), len);
 
 		BIO_clear_retry_flags(bio);
 
@@ -422,7 +435,8 @@ int TLSSocket_OpenSSL::bio_read(BIO* bio, char* buf, int len)
 
 	try
 	{
-		const size_type n = sok->m_wrapped->receiveRaw(buf, len);
+		const size_t n = sok->m_wrapped->receiveRaw
+			(reinterpret_cast <byte_t*>(buf), len);
 
 		BIO_clear_retry_flags(bio);
 

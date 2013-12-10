@@ -37,8 +37,8 @@ message::message()
 }
 
 
-const string message::generate(const string::size_type maxLineLength,
-	const string::size_type curLinePos) const
+const string message::generate
+	(const size_t maxLineLength, const size_t curLinePos) const
 {
 	return bodyPart::generate(maxLineLength, curLinePos);
 }

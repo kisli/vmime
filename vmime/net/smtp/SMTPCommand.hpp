@@ -62,11 +62,11 @@ public:
 	static shared_ptr <SMTPCommand> AUTH(const string& mechName);
 	static shared_ptr <SMTPCommand> STARTTLS();
 	static shared_ptr <SMTPCommand> MAIL(const mailbox& mbox, const bool utf8);
-	static shared_ptr <SMTPCommand> MAIL(const mailbox& mbox, const bool utf8, const unsigned long size);
+	static shared_ptr <SMTPCommand> MAIL(const mailbox& mbox, const bool utf8, const size_t size);
 	static shared_ptr <SMTPCommand> RCPT(const mailbox& mbox, const bool utf8);
 	static shared_ptr <SMTPCommand> RSET();
 	static shared_ptr <SMTPCommand> DATA();
-	static shared_ptr <SMTPCommand> BDAT(const unsigned long chunkSize, const bool last);
+	static shared_ptr <SMTPCommand> BDAT(const size_t chunkSize, const bool last);
 	static shared_ptr <SMTPCommand> NOOP();
 	static shared_ptr <SMTPCommand> QUIT();
 

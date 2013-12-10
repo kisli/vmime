@@ -42,15 +42,15 @@ public:
 
 	void update(const byte_t b);
 	void update(const string& s);
-	void update(const byte_t* buffer, const unsigned long len);
-	void update(const byte_t* buffer, const unsigned long offset, const unsigned long len);
+	void update(const byte_t* buffer, const size_t len);
+	void update(const byte_t* buffer, const size_t offset, const size_t len);
 
 	void finalize();
 	void finalize(const string& s);
-	void finalize(const byte_t* buffer, const unsigned long len);
-	void finalize(const byte_t* buffer, const unsigned long offset, const unsigned long len);
+	void finalize(const byte_t* buffer, const size_t len);
+	void finalize(const byte_t* buffer, const size_t offset, const size_t len);
 
-	int getDigestLength() const;
+	size_t getDigestLength() const;
 	const byte_t* getDigest() const;
 
 	void reset();
@@ -69,7 +69,7 @@ protected:
 		vmime_uint8 b8[64];
 	};
 
-	unsigned long m_byteCount;
+	size_t m_byteCount;
 	BlockType m_block;
 
 	bool m_finalized;

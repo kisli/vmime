@@ -212,8 +212,8 @@ const datetime& fileAttachment::fileInfo::getReadDate() const { return (*m_readD
 void fileAttachment::fileInfo::setReadDate(const datetime& date) { if (m_readDate) { *m_readDate = date; } else { m_readDate = new datetime(date); } }
 
 bool fileAttachment::fileInfo::hasSize() const { return (m_size != NULL); }
-utility::stream::size_type fileAttachment::fileInfo::getSize() const { return (*m_size); }
-void fileAttachment::fileInfo::setSize(const utility::stream::size_type size) { if (m_size) { *m_size = size; } else { m_size = new utility::stream::size_type(size); } }
+size_t fileAttachment::fileInfo::getSize() const { return (*m_size); }
+void fileAttachment::fileInfo::setSize(const size_t size) { if (m_size) { *m_size = size; } else { m_size = new size_t(size); } }
 
 
 } // vmime

@@ -25,6 +25,7 @@
 
 #include "vmime/utility/inputStreamStringAdapter.hpp"
 #include "vmime/utility/seekableInputStreamRegionAdapter.hpp"
+#include "vmime/utility/stringUtils.hpp"
 
 
 using namespace vmime::utility;
@@ -88,14 +89,15 @@ VMIME_TEST_SUITE_BEGIN(seekableInputStreamRegionAdapterTest)
 
 		stream->seek(5);
 
-		stream::value_type buffer[100];
+		vmime::byte_t buffer[100];
 		std::fill(vmime::begin(buffer), vmime::end(buffer), 0);
-		stream::size_type read = stream->read(buffer, 6);
+		vmime::size_t read = stream->read(buffer, 6);
 
 		VASSERT_EQ("Pos", 11, stream->getPosition());
 		VASSERT_EQ("Read", 6, read);
 		VASSERT_TRUE("EOF", stream->eof());
-		VASSERT_EQ("Buffer", "BUFFER", vmime::string(buffer, 0, 6));
+		VASSERT_EQ("Buffer", "BUFFER",
+			vmime::utility::stringUtils::makeStringFromBytes(buffer, 6));
 	}
 
 	void testSkip()
@@ -107,14 +109,15 @@ VMIME_TEST_SUITE_BEGIN(seekableInputStreamRegionAdapterTest)
 		VASSERT_EQ("Pos 1", 5, stream->getPosition());
 		VASSERT_FALSE("EOF 1", stream->eof());
 
-		stream::value_type buffer[100];
+		vmime::byte_t buffer[100];
 		std::fill(vmime::begin(buffer), vmime::end(buffer), 0);
-		stream::size_type read = stream->read(buffer, 3);
+		vmime::size_t read = stream->read(buffer, 3);
 
 		VASSERT_EQ("Pos 2", 8, stream->getPosition());
 		VASSERT_EQ("Read", 3, read);
 		VASSERT_FALSE("EOF 2", stream->eof());
-		VASSERT_EQ("Buffer", "BUF", vmime::string(buffer, 0, 3));
+		VASSERT_EQ("Buffer", "BUF",
+			vmime::utility::stringUtils::makeStringFromBytes(buffer, 3));
 
 		stream->skip(50);
 
@@ -143,16 +146,18 @@ VMIME_TEST_SUITE_BEGIN(seekableInputStreamRegionAdapterTest)
 
 		stream->seek(5);
 
-		stream::value_type buffer1[100];
+		vmime::byte_t buffer1[100];
 		std::fill(vmime::begin(buffer1), vmime::end(buffer1), 0);
-		stream::size_type read = ustream->read(buffer1, 7);
+		vmime::size_t read = ustream->read(buffer1, 7);
 
-		stream::value_type buffer2[100];
+		vmime::byte_t buffer2[100];
 		std::fill(vmime::begin(buffer2), vmime::end(buffer2), 0);
-		stream::size_type read2 = stream->read(buffer2, 6);
+		vmime::size_t read2 = stream->read(buffer2, 6);
 
-		VASSERT_EQ("Buffer 1", "THIS IS", vmime::string(buffer1, 0, 7));
-		VASSERT_EQ("Buffer 2", "BUFFER", vmime::string(buffer2, 0, 6));
+		VASSERT_EQ("Buffer 1", "THIS IS",
+			vmime::utility::stringUtils::makeStringFromBytes(buffer1, 7));
+		VASSERT_EQ("Buffer 2", "BUFFER",
+			vmime::utility::stringUtils::makeStringFromBytes(buffer2, 6));
 
 		// ...but the underlying stream position is affected by read operations
 		// from the region adapter (FIXME?)

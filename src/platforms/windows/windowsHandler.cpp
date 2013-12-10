@@ -206,7 +206,7 @@ static inline bool isFQDN(const vmime::string& str)
 	if (utility::stringUtils::isStringEqualNoCase(str, "localhost", 9))
 		return false;
 
-	const vmime::string::size_type p = str.find_first_of(".");
+	const vmime::size_t p = str.find_first_of(".");
 	return p != vmime::string::npos && p > 0 && p != str.length() - 1;
 }
 

@@ -95,8 +95,8 @@ void charsetConverter_idna::convert(const string& in, string& out)
 		string inUTF8;
 		charset::convert(in, inUTF8, m_source, vmime::charsets::UTF_8);
 
-		const string::value_type* ch = inUTF8.c_str();
-		const string::value_type* end = inUTF8.c_str() + inUTF8.length();
+		const char* ch = inUTF8.c_str();
+		const char* end = inUTF8.c_str() + inUTF8.length();
 
 		std::vector <punycode_uint> unichars;
 		unichars.reserve(inUTF8.length());
@@ -139,8 +139,8 @@ void charsetConverter_idna::convert(const string& in, string& out)
 
 		if (status == punycode_success)
 		{
-			std::vector <string::value_type> outUTF8Bytes(outputLen * 4);
-			string::value_type* p = &outUTF8Bytes[0];
+			std::vector <char> outUTF8Bytes(outputLen * 4);
+			char* p = &outUTF8Bytes[0];
 
 			for (std::vector <punycode_uint>::const_iterator it = output.begin() ;
 			     it != output.begin() + outputLen ; ++it)

@@ -76,10 +76,10 @@ headerField& headerField::operator=(const headerField& other)
 
 
 shared_ptr <headerField> headerField::parseNext
-	(const parsingContext& ctx, const string& buffer, const string::size_type position,
-	 const string::size_type end, string::size_type* newPosition)
+	(const parsingContext& ctx, const string& buffer, const size_t position,
+	 const size_t end, size_t* newPosition)
 {
-	string::size_type pos = position;
+	size_t pos = position;
 
 	while (pos < end)
 	{
@@ -106,12 +106,12 @@ shared_ptr <headerField> headerField::parseNext
 		// This line may be a field description
 		if (!parserHelpers::isSpace(c))
 		{
-			const string::size_type nameStart = pos;  // remember the start position of the line
+			const size_t nameStart = pos;  // remember the start position of the line
 
 			while (pos < end && (buffer[pos] != ':' && !parserHelpers::isSpace(buffer[pos])))
 				++pos;
 
-			const string::size_type nameEnd = pos;
+			const size_t nameEnd = pos;
 
 			while (pos < end && (buffer[pos] == ' ' || buffer[pos] == '\t'))
 				++pos;
@@ -141,8 +141,8 @@ shared_ptr <headerField> headerField::parseNext
 				while (pos < end && (buffer[pos] == ' ' || buffer[pos] == '\t'))
 					++pos;
 
-				const string::size_type contentsStart = pos;
-				string::size_type contentsEnd = 0;
+				const size_t contentsStart = pos;
+				size_t contentsEnd = 0;
 
 				// Extract the field value
 				while (pos < end)
@@ -280,8 +280,8 @@ shared_ptr <headerField> headerField::parseNext
 
 
 void headerField::parseImpl
-	(const parsingContext& ctx, const string& buffer, const string::size_type position,
-	 const string::size_type end, string::size_type* newPosition)
+	(const parsingContext& ctx, const string& buffer, const size_t position,
+	 const size_t end, size_t* newPosition)
 {
 	m_value->parse(ctx, buffer, position, end, newPosition);
 }
@@ -289,7 +289,7 @@ void headerField::parseImpl
 
 void headerField::generateImpl
 	(const generationContext& ctx, utility::outputStream& os,
-	 const string::size_type curLinePos, string::size_type* newLinePos) const
+	 const size_t curLinePos, size_t* newLinePos) const
 {
 	os << m_name + ": ";
 
@@ -297,7 +297,7 @@ void headerField::generateImpl
 }
 
 
-utility::stream::size_type headerField::getGeneratedSize(const generationContext& ctx)
+size_t headerField::getGeneratedSize(const generationContext& ctx)
 {
 	return m_name.length() + 2 /* ": " */ + m_value->getGeneratedSize(ctx);
 }

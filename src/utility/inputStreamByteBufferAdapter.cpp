@@ -28,7 +28,7 @@ namespace vmime {
 namespace utility {
 
 
-inputStreamByteBufferAdapter::inputStreamByteBufferAdapter(const byte_t* buffer, const size_type length)
+inputStreamByteBufferAdapter::inputStreamByteBufferAdapter(const byte_t* buffer, const size_t length)
 	: m_buffer(buffer), m_length(length), m_pos(0)
 {
 }
@@ -46,10 +46,10 @@ void inputStreamByteBufferAdapter::reset()
 }
 
 
-stream::size_type inputStreamByteBufferAdapter::read
-	(value_type* const data, const size_type count)
+size_t inputStreamByteBufferAdapter::read
+	(byte_t* const data, const size_t count)
 {
-	const size_type remaining = m_length - m_pos;
+	const size_t remaining = m_length - m_pos;
 
 	if (remaining < count)
 	{
@@ -68,9 +68,9 @@ stream::size_type inputStreamByteBufferAdapter::read
 }
 
 
-stream::size_type inputStreamByteBufferAdapter::skip(const size_type count)
+size_t inputStreamByteBufferAdapter::skip(const size_t count)
 {
-	const size_type remaining = m_length - m_pos;
+	const size_t remaining = m_length - m_pos;
 
 	if (remaining < count)
 	{
@@ -85,13 +85,13 @@ stream::size_type inputStreamByteBufferAdapter::skip(const size_type count)
 }
 
 
-stream::size_type inputStreamByteBufferAdapter::getPosition() const
+size_t inputStreamByteBufferAdapter::getPosition() const
 {
 	return m_pos;
 }
 
 
-void inputStreamByteBufferAdapter::seek(const size_type pos)
+void inputStreamByteBufferAdapter::seek(const size_t pos)
 {
 	if (pos <= m_length)
 		m_pos = pos;

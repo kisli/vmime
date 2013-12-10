@@ -55,12 +55,12 @@ mailboxGroup::~mailboxGroup()
 
 
 void mailboxGroup::parseImpl
-	(const parsingContext& ctx, const string& buffer, const string::size_type position,
-	 const string::size_type end, string::size_type* newPosition)
+	(const parsingContext& ctx, const string& buffer, const size_t position,
+	 const size_t end, size_t* newPosition)
 {
-	const string::value_type* const pend = buffer.data() + end;
-	const string::value_type* const pstart = buffer.data() + position;
-	const string::value_type* p = pstart;
+	const char* const pend = buffer.data() + end;
+	const char* const pstart = buffer.data() + position;
+	const char* p = pstart;
 
 	while (p < pend && parserHelpers::isSpace(*p))
 		++p;
@@ -77,7 +77,7 @@ void mailboxGroup::parseImpl
 		++p;
 
 
-	string::size_type pos = position + (p - pstart);
+	size_t pos = position + (p - pstart);
 	bool isLastAddressOfGroup = false;
 
 	while (pos < end && !isLastAddressOfGroup)
@@ -115,7 +115,7 @@ void mailboxGroup::parseImpl
 
 void mailboxGroup::generateImpl
 	(const generationContext& ctx, utility::outputStream& os,
-	 const string::size_type curLinePos, string::size_type* newLinePos) const
+	 const size_t curLinePos, size_t* newLinePos) const
 {
 	// We have to encode the name:
 	//   - if it contains characters in a charset different from "US-ASCII",
@@ -157,7 +157,7 @@ void mailboxGroup::generateImpl
 		}
 	}
 
-	string::size_type pos = curLinePos;
+	size_t pos = curLinePos;
 
 	generationContext tmpCtx(ctx);
 	tmpCtx.setMaxLineLength(ctx.getMaxLineLength() - 2);

@@ -196,7 +196,7 @@ const std::string getNormalizedPath(const std::string& path)
 {
 	std::string res = path;
 
-	for (std::string::size_type i = 0, n = res.length() ; i < n ; ++i)
+	for (std::size_t i = 0, n = res.length() ; i < n ; ++i)
 	{
 		if (res[i] == '\\')
 			res[i] = '/';
@@ -208,7 +208,7 @@ const std::string getNormalizedPath(const std::string& path)
 
 const std::string getFileNameFromPath(const std::string& path)
 {
-	const std::string::size_type pos = path.find_last_of('/');
+	const std::size_t pos = path.find_last_of('/');
 
 	if (pos == std::string::npos)
 		return "";

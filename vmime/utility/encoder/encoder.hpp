@@ -54,7 +54,7 @@ public:
 	  * want to receive progress notifications
 	  * @return number of bytes written into output stream
 	  */
-	virtual utility::stream::size_type encode(utility::inputStream& in, utility::outputStream& out, utility::progressListener* progress = NULL) = 0;
+	virtual size_t encode(utility::inputStream& in, utility::outputStream& out, utility::progressListener* progress = NULL) = 0;
 
 	/** Decode data.
 	  *
@@ -64,7 +64,7 @@ public:
 	  * want to receive progress notifications
 	  * @return number of bytes written into output stream
 	  */
-	virtual utility::stream::size_type decode(utility::inputStream& in, utility::outputStream& out, utility::progressListener* progress = NULL) = 0;
+	virtual size_t decode(utility::inputStream& in, utility::outputStream& out, utility::progressListener* progress = NULL) = 0;
 
 	/** Return the properties of the encoder.
 	  *
@@ -98,7 +98,7 @@ public:
 	  * @param n count of input (decoded) bytes
 	  * @return count of output (encoded) bytes
 	  */
-	virtual utility::stream::size_type getEncodedSize(const utility::stream::size_type n) const = 0;
+	virtual size_t getEncodedSize(const size_t n) const = 0;
 
 	/** Return the encoded size for the specified input (encoded) size.
 	  * If the size is not exact, it may be an estimate which should always
@@ -107,7 +107,7 @@ public:
 	  * @param n count of input (encoded) bytes
 	  * @return count of output (decoded) bytes
 	  */
-	virtual utility::stream::size_type getDecodedSize(const utility::stream::size_type n) const = 0;
+	virtual size_t getDecodedSize(const size_t n) const = 0;
 
 protected:
 

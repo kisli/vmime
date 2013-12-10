@@ -40,6 +40,7 @@
 #include "vmime/platform.hpp"
 
 #include "vmime/utility/outputStreamAdapter.hpp"
+#include "vmime/utility/stringUtils.hpp"
 
 
 namespace vmime {
@@ -82,9 +83,9 @@ const message::uid maildirMessage::getUID() const
 }
 
 
-int maildirMessage::getSize() const
+size_t maildirMessage::getSize() const
 {
-	if (m_size == -1)
+	if (m_size == static_cast <size_t>(-1))
 		throw exceptions::unfetched_object();
 
 	return (m_size);
@@ -145,16 +146,16 @@ void maildirMessage::setFlags(const int flags, const int mode)
 
 
 void maildirMessage::extract(utility::outputStream& os,
-	utility::progressListener* progress, const int start,
-	const int length, const bool peek) const
+	utility::progressListener* progress, const size_t start,
+	const size_t length, const bool peek) const
 {
 	extractImpl(os, progress, 0, m_size, start, length, peek);
 }
 
 
 void maildirMessage::extractPart(shared_ptr <const messagePart> p, utility::outputStream& os,
-	utility::progressListener* progress, const int start,
-	const int length, const bool peek) const
+	utility::progressListener* progress, const size_t start,
+	const size_t length, const bool peek) const
 {
 	shared_ptr <const maildirMessagePart> mp = dynamicCast <const maildirMessagePart>(p);
 
@@ -164,7 +165,7 @@ void maildirMessage::extractPart(shared_ptr <const messagePart> p, utility::outp
 
 
 void maildirMessage::extractImpl(utility::outputStream& os, utility::progressListener* progress,
-	const int start, const int length, const int partialStart, const int partialLength,
+	const size_t start, const size_t length, const size_t partialStart, const size_t partialLength,
 	const bool /* peek */) const
 {
 	shared_ptr <const maildirFolder> folder = m_folder.lock();
@@ -179,20 +180,19 @@ void maildirMessage::extractImpl(utility::outputStream& os, utility::progressLis
 
 	is->skip(start + partialStart);
 
-	utility::stream::value_type buffer[8192];
-	utility::stream::size_type remaining = (partialLength == -1 ? length
-		: std::min(partialLength, length));
+	byte_t buffer[8192];
+	size_t remaining = (partialLength == static_cast <size_t>(-1)
+		? length : std::min(partialLength, length));
 
-	const int total = remaining;
-	int current = 0;
+	const size_t total = remaining;
+	size_t current = 0;
 
 	if (progress)
 		progress->start(total);
 
 	while (!is->eof() && remaining > 0)
 	{
-		const utility::stream::size_type read =
-			is->read(buffer, std::min(remaining, sizeof(buffer)));
+		const size_t read = is->read(buffer, std::min(remaining, sizeof(buffer)));
 
 		remaining -= read;
 		current += read;
@@ -226,20 +226,19 @@ void maildirMessage::fetchPartHeader(shared_ptr <messagePart> p)
 
 	is->skip(mp->getHeaderParsedOffset());
 
-	utility::stream::value_type buffer[1024];
-	utility::stream::size_type remaining = mp->getHeaderParsedLength();
+	byte_t buffer[1024];
+	size_t remaining = mp->getHeaderParsedLength();
 
 	string contents;
 	contents.reserve(remaining);
 
 	while (!is->eof() && remaining > 0)
 	{
-		const utility::stream::size_type read =
-			is->read(buffer, std::min(remaining, sizeof(buffer)));
+		const size_t read = is->read(buffer, std::min(remaining, sizeof(buffer)));
 
 		remaining -= read;
 
-		contents.append(buffer, read);
+		vmime::utility::stringUtils::appendBytesToString(contents, buffer, read);
 	}
 
 	mp->getOrCreateHeader().parse(contents);
@@ -279,30 +278,30 @@ void maildirMessage::fetch(shared_ptr <maildirFolder> msgFolder, const fetchAttr
 		// Need whole message contents for structure
 		if (options.has(fetchAttributes::STRUCTURE))
 		{
-			utility::stream::value_type buffer[16384];
+			byte_t buffer[16384];
 
 			contents.reserve(file->getLength());
 
 			while (!is->eof())
 			{
-				const utility::stream::size_type read = is->read(buffer, sizeof(buffer));
-				contents.append(buffer, read);
+				const size_t read = is->read(buffer, sizeof(buffer));
+				vmime::utility::stringUtils::appendBytesToString(contents, buffer, read);
 			}
 		}
 		// Need only header
 		else
 		{
-			utility::stream::value_type buffer[1024];
+			byte_t buffer[1024];
 
 			contents.reserve(4096);
 
 			while (!is->eof())
 			{
-				const utility::stream::size_type read = is->read(buffer, sizeof(buffer));
-				contents.append(buffer, read);
+				const size_t read = is->read(buffer, sizeof(buffer));
+				vmime::utility::stringUtils::appendBytesToString(contents, buffer, read);
 
-				const string::size_type sep1 = contents.rfind("\r\n\r\n");
-				const string::size_type sep2 = contents.rfind("\n\n");
+				const size_t sep1 = contents.rfind("\r\n\r\n");
+				const size_t sep2 = contents.rfind("\n\n");
 
 				if (sep1 != string::npos)
 				{

@@ -171,11 +171,11 @@ shared_ptr <X509Certificate> X509Certificate_OpenSSL::importInternal(X509* cert)
 shared_ptr <X509Certificate> X509Certificate::import(utility::inputStream& is)
 {
 	byteArray bytes;
-	utility::stream::value_type chunk[4096];
+	byte_t chunk[4096];
 
 	while (!is.eof())
 	{
-		const int len = is.read(chunk, sizeof(chunk));
+		const size_t len = is.read(chunk, sizeof(chunk));
 		bytes.insert(bytes.end(), chunk, chunk + len);
 	}
 
@@ -189,7 +189,7 @@ shared_ptr <X509Certificate> X509Certificate::import
 {
 	shared_ptr <X509Certificate_OpenSSL> cert = make_shared <X509Certificate_OpenSSL>();
 
-	BIO* membio = BIO_new_mem_buf(const_cast <byte_t*>(data), length);
+	BIO* membio = BIO_new_mem_buf(const_cast <byte_t*>(data), static_cast <int>(length));
 
 	if (!PEM_read_bio_X509(membio, &(cert->m_data->cert), 0, 0))
 	{
@@ -207,7 +207,7 @@ void X509Certificate_OpenSSL::write
 	(utility::outputStream& os, const Format format) const
 {
 	BIO* membio = 0;
-	int dataSize = 0;
+	long dataSize = 0;
 	unsigned char* out = 0;
 
 	if (format == FORMAT_DER)
@@ -215,7 +215,7 @@ void X509Certificate_OpenSSL::write
 		if ((dataSize = i2d_X509(m_data->cert, &out)) < 0)
 			goto err;
 
-		os.write(reinterpret_cast <utility::stream::value_type*>(out), dataSize);
+		os.write(reinterpret_cast <byte_t*>(out), dataSize);
 		os.flush();
 		OPENSSL_free(out);
 	}
@@ -228,7 +228,7 @@ void X509Certificate_OpenSSL::write
 			goto pem_err;
 
 		dataSize = BIO_get_mem_data(membio, &out);
-		os.write(reinterpret_cast <utility::stream::value_type*>(out), dataSize);
+		os.write(reinterpret_cast <byte_t*>(out), dataSize);
 		os.flush();
 		BIO_vfree(membio);
 	}
@@ -281,7 +281,7 @@ bool X509Certificate_OpenSSL::checkIssuer(shared_ptr <const X509Certificate> cer
 
 	out = BIO_new(BIO_s_mem());
 	X509_NAME_print_ex(out, X509_get_issuer_name(m_data->cert), 0, XN_FLAG_RFC2253);
-	int n = BIO_get_mem_data(out, &issuer);
+	long n = BIO_get_mem_data(out, &issuer);
 	vmime::string thisIssuerName((char*)issuer, n);
 	BIO_free(out);
 

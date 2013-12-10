@@ -24,6 +24,7 @@
 #include "tests/testUtils.hpp"
 
 #include "vmime/utility/filteredStream.hpp"
+#include "vmime/utility/stringUtils.hpp"
 
 
 VMIME_TEST_SUITE_BEGIN(filteredStreamTest)
@@ -45,7 +46,7 @@ VMIME_TEST_SUITE_BEGIN(filteredStreamTest)
 	private:
 
 		std::vector <std::string> m_chunks;
-		std::vector <std::string>::size_type m_index;
+		size_t m_index;
 
 	public:
 
@@ -56,7 +57,7 @@ VMIME_TEST_SUITE_BEGIN(filteredStreamTest)
 		bool eof() const { return (m_index >= m_chunks.size()); }
 		void reset() { m_index = 0; }
 
-		size_type read(value_type* const data, const size_type /* count */)
+		vmime::size_t read(vmime::byte_t* const data, const vmime::size_t /* count */)
 		{
 			if (eof())
 				return 0;
@@ -72,7 +73,7 @@ VMIME_TEST_SUITE_BEGIN(filteredStreamTest)
 			return chunk.length();
 		}
 
-		size_type skip(const size_type /* count */)
+		vmime::size_t skip(const vmime::size_t /* count */)
 		{
 			// Not supported
 			return 0;
@@ -82,15 +83,14 @@ VMIME_TEST_SUITE_BEGIN(filteredStreamTest)
 
 	const std::string readWhole(vmime::utility::inputStream& is)
 	{
-		vmime::utility::stream::value_type buffer[256];
+		vmime::byte_t buffer[256];
 		std::string whole;
 
 		while (!is.eof())
 		{
-			const vmime::utility::stream::size_type read =
-				is.read(buffer, sizeof(buffer));
+			const vmime::size_t read = is.read(buffer, sizeof(buffer));
 
-			whole += std::string(buffer, read);
+			whole += vmime::utility::stringUtils::makeStringFromBytes(buffer, read);
 		}
 
 		return (whole);

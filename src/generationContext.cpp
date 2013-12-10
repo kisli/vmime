@@ -53,13 +53,13 @@ generationContext& generationContext::getDefaultContext()
 }
 
 
-string::size_type generationContext::getMaxLineLength() const
+size_t generationContext::getMaxLineLength() const
 {
 	return m_maxLineLength;
 }
 
 
-void generationContext::setMaxLineLength(const string::size_type maxLineLength)
+void generationContext::setMaxLineLength(const size_t maxLineLength)
 {
 	m_maxLineLength = maxLineLength;
 }

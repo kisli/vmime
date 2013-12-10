@@ -190,9 +190,9 @@ const string IMAPUtils::toModifiedUTF7
 	int b = 0, k = 0;
 	bool base64 = false;
 
-	string::size_type remaining = cvt.length();
+	size_t remaining = cvt.length();
 
-	for (string::size_type i = 0, len = cvt.length() ; i < len ; )
+	for (size_t i = 0, len = cvt.length() ; i < len ; )
 	{
 		const unsigned char c = cvt[i];
 
@@ -206,7 +206,7 @@ const string IMAPUtils::toModifiedUTF7
 			continue;
 		}
 
-		string::size_type n = 0;
+		size_t n = 0;
 		int ch = 0;
 
 		if (c < 0x80)
@@ -232,7 +232,7 @@ const string IMAPUtils::toModifiedUTF7
 		++i;
 		--remaining;
 
-		for (string::size_type j = 0 ; j < n ; j++)
+		for (size_t j = 0 ; j < n ; j++)
 		{
 			if ((cvt[i + j] & 0xc0) != 0x80)
 				return "";  // error
@@ -280,7 +280,7 @@ const string IMAPUtils::toModifiedUTF7
 				base64 = false;
 			}
 
-			out += static_cast <string::value_type>(ch);
+			out += static_cast <char>(ch);
 
 			if (ch == '&')
 				out += '-';

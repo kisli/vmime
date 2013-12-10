@@ -32,205 +32,205 @@ namespace vmime
 namespace mediaTypes
 {
 	// Types
-	const string::value_type* const TEXT = "text";
-	const string::value_type* const MULTIPART = "multipart";
-	const string::value_type* const MESSAGE = "message";
-	const string::value_type* const APPLICATION = "application";
-	const string::value_type* const IMAGE = "image";
-	const string::value_type* const AUDIO = "audio";
-	const string::value_type* const VIDEO = "video";
+	const char* const TEXT = "text";
+	const char* const MULTIPART = "multipart";
+	const char* const MESSAGE = "message";
+	const char* const APPLICATION = "application";
+	const char* const IMAGE = "image";
+	const char* const AUDIO = "audio";
+	const char* const VIDEO = "video";
 
 	// Sub-types
-	const string::value_type* const TEXT_PLAIN = "plain";
-	const string::value_type* const TEXT_HTML = "html";
-	const string::value_type* const TEXT_RICHTEXT = "richtext";
-	const string::value_type* const TEXT_ENRICHED = "enriched";
-	const string::value_type* const TEXT_RFC822_HEADERS = "rfc822-headers";  // RFC-1892
-	const string::value_type* const TEXT_DIRECTORY = "directory";  // RFC-2426
+	const char* const TEXT_PLAIN = "plain";
+	const char* const TEXT_HTML = "html";
+	const char* const TEXT_RICHTEXT = "richtext";
+	const char* const TEXT_ENRICHED = "enriched";
+	const char* const TEXT_RFC822_HEADERS = "rfc822-headers";  // RFC-1892
+	const char* const TEXT_DIRECTORY = "directory";  // RFC-2426
 
-	const string::value_type* const MULTIPART_MIXED = "mixed";
-	const string::value_type* const MULTIPART_RELATED = "related";
-	const string::value_type* const MULTIPART_ALTERNATIVE = "alternative";
-	const string::value_type* const MULTIPART_PARALLEL = "parallel";
-	const string::value_type* const MULTIPART_DIGEST = "digest";
-	const string::value_type* const MULTIPART_REPORT = "report";  // RFC-1892
+	const char* const MULTIPART_MIXED = "mixed";
+	const char* const MULTIPART_RELATED = "related";
+	const char* const MULTIPART_ALTERNATIVE = "alternative";
+	const char* const MULTIPART_PARALLEL = "parallel";
+	const char* const MULTIPART_DIGEST = "digest";
+	const char* const MULTIPART_REPORT = "report";  // RFC-1892
 
-	const string::value_type* const MESSAGE_RFC822 = "rfc822";
-	const string::value_type* const MESSAGE_PARTIAL = "partial";
-	const string::value_type* const MESSAGE_EXTERNAL_BODY = "external-body";
-	const string::value_type* const MESSAGE_DISPOSITION_NOTIFICATION = "disposition-notification";
+	const char* const MESSAGE_RFC822 = "rfc822";
+	const char* const MESSAGE_PARTIAL = "partial";
+	const char* const MESSAGE_EXTERNAL_BODY = "external-body";
+	const char* const MESSAGE_DISPOSITION_NOTIFICATION = "disposition-notification";
 
-	const string::value_type* const APPLICATION_OCTET_STREAM = "octet-stream";
+	const char* const APPLICATION_OCTET_STREAM = "octet-stream";
 
-	const string::value_type* const IMAGE_JPEG = "jpeg";
-	const string::value_type* const IMAGE_GIF = "gif";
+	const char* const IMAGE_JPEG = "jpeg";
+	const char* const IMAGE_GIF = "gif";
 
-	const string::value_type* const AUDIO_BASIC = "basic";
+	const char* const AUDIO_BASIC = "basic";
 
-	const string::value_type* const VIDEO_MPEG = "mpeg";
+	const char* const VIDEO_MPEG = "mpeg";
 }
 
 
 // Encoding types
 namespace encodingTypes
 {
-	const string::value_type* const SEVEN_BIT = "7bit";
-	const string::value_type* const EIGHT_BIT = "8bit";
-	const string::value_type* const BASE64 = "base64";
-	const string::value_type* const QUOTED_PRINTABLE = "quoted-printable";
-	const string::value_type* const BINARY = "binary";
-	const string::value_type* const UUENCODE = "uuencode";
+	const char* const SEVEN_BIT = "7bit";
+	const char* const EIGHT_BIT = "8bit";
+	const char* const BASE64 = "base64";
+	const char* const QUOTED_PRINTABLE = "quoted-printable";
+	const char* const BINARY = "binary";
+	const char* const UUENCODE = "uuencode";
 }
 
 
 // Content disposition types
 namespace contentDispositionTypes
 {
-	const string::value_type* const INLINE = "inline";
-	const string::value_type* const ATTACHMENT = "attachment";
+	const char* const INLINE = "inline";
+	const char* const ATTACHMENT = "attachment";
 }
 
 
 // Charsets
 namespace charsets
 {
-	const string::value_type* const ISO8859_1 = "iso-8859-1";
-	const string::value_type* const ISO8859_2 = "iso-8859-2";
-	const string::value_type* const ISO8859_3 = "iso-8859-3";
-	const string::value_type* const ISO8859_4 = "iso-8859-4";
-	const string::value_type* const ISO8859_5 = "iso-8859-5";
-	const string::value_type* const ISO8859_6 = "iso-8859-6";
-	const string::value_type* const ISO8859_7 = "iso-8859-7";
-	const string::value_type* const ISO8859_8 = "iso-8859-8";
-	const string::value_type* const ISO8859_9 = "iso-8859-9";
-	const string::value_type* const ISO8859_10 = "iso-8859-10";
-	const string::value_type* const ISO8859_13 = "iso-8859-13";
-	const string::value_type* const ISO8859_14 = "iso-8859-14";
-	const string::value_type* const ISO8859_15 = "iso-8859-15";
-	const string::value_type* const ISO8859_16 = "iso-8859-16";
+	const char* const ISO8859_1 = "iso-8859-1";
+	const char* const ISO8859_2 = "iso-8859-2";
+	const char* const ISO8859_3 = "iso-8859-3";
+	const char* const ISO8859_4 = "iso-8859-4";
+	const char* const ISO8859_5 = "iso-8859-5";
+	const char* const ISO8859_6 = "iso-8859-6";
+	const char* const ISO8859_7 = "iso-8859-7";
+	const char* const ISO8859_8 = "iso-8859-8";
+	const char* const ISO8859_9 = "iso-8859-9";
+	const char* const ISO8859_10 = "iso-8859-10";
+	const char* const ISO8859_13 = "iso-8859-13";
+	const char* const ISO8859_14 = "iso-8859-14";
+	const char* const ISO8859_15 = "iso-8859-15";
+	const char* const ISO8859_16 = "iso-8859-16";
 
-	const string::value_type* const CP_437 = "cp437";
-	const string::value_type* const CP_737 = "cp737";
-	const string::value_type* const CP_775 = "cp775";
-	const string::value_type* const CP_850 = "cp850";
-	const string::value_type* const CP_852 = "cp852";
-	const string::value_type* const CP_853 = "cp853";
-	const string::value_type* const CP_855 = "cp855";
-	const string::value_type* const CP_857 = "cp857";
-	const string::value_type* const CP_858 = "cp858";
-	const string::value_type* const CP_860 = "cp860";
-	const string::value_type* const CP_861 = "cp861";
-	const string::value_type* const CP_862 = "cp862";
-	const string::value_type* const CP_863 = "cp863";
-	const string::value_type* const CP_864 = "cp864";
-	const string::value_type* const CP_865 = "cp865";
-	const string::value_type* const CP_866 = "cp866";
-	const string::value_type* const CP_869 = "cp869";
-	const string::value_type* const CP_874 = "cp874";
-	const string::value_type* const CP_1125 = "cp1125";
-	const string::value_type* const CP_1250 = "cp1250";
-	const string::value_type* const CP_1251 = "cp1251";
-	const string::value_type* const CP_1252 = "cp1252";
-	const string::value_type* const CP_1253 = "cp1253";
-	const string::value_type* const CP_1254 = "cp1254";
-	const string::value_type* const CP_1255 = "cp1255";
-	const string::value_type* const CP_1256 = "cp1256";
-	const string::value_type* const CP_1257 = "cp1257";
+	const char* const CP_437 = "cp437";
+	const char* const CP_737 = "cp737";
+	const char* const CP_775 = "cp775";
+	const char* const CP_850 = "cp850";
+	const char* const CP_852 = "cp852";
+	const char* const CP_853 = "cp853";
+	const char* const CP_855 = "cp855";
+	const char* const CP_857 = "cp857";
+	const char* const CP_858 = "cp858";
+	const char* const CP_860 = "cp860";
+	const char* const CP_861 = "cp861";
+	const char* const CP_862 = "cp862";
+	const char* const CP_863 = "cp863";
+	const char* const CP_864 = "cp864";
+	const char* const CP_865 = "cp865";
+	const char* const CP_866 = "cp866";
+	const char* const CP_869 = "cp869";
+	const char* const CP_874 = "cp874";
+	const char* const CP_1125 = "cp1125";
+	const char* const CP_1250 = "cp1250";
+	const char* const CP_1251 = "cp1251";
+	const char* const CP_1252 = "cp1252";
+	const char* const CP_1253 = "cp1253";
+	const char* const CP_1254 = "cp1254";
+	const char* const CP_1255 = "cp1255";
+	const char* const CP_1256 = "cp1256";
+	const char* const CP_1257 = "cp1257";
 
-	const string::value_type* const US_ASCII = "us-ascii";
+	const char* const US_ASCII = "us-ascii";
 
-	const string::value_type* const UTF_7 = "utf-7";
-	const string::value_type* const UTF_8 = "utf-8";
-	const string::value_type* const UTF_16 = "utf-16";
-	const string::value_type* const UTF_32 = "utf-32";
+	const char* const UTF_7 = "utf-7";
+	const char* const UTF_8 = "utf-8";
+	const char* const UTF_16 = "utf-16";
+	const char* const UTF_32 = "utf-32";
 
-	const string::value_type* const WINDOWS_1250 = "windows-1250";
-	const string::value_type* const WINDOWS_1251 = "windows-1251";
-	const string::value_type* const WINDOWS_1252 = "windows-1252";
-	const string::value_type* const WINDOWS_1253 = "windows-1253";
-	const string::value_type* const WINDOWS_1254 = "windows-1254";
-	const string::value_type* const WINDOWS_1255 = "windows-1255";
-	const string::value_type* const WINDOWS_1256 = "windows-1256";
-	const string::value_type* const WINDOWS_1257 = "windows-1257";
-	const string::value_type* const WINDOWS_1258 = "windows-1258";
+	const char* const WINDOWS_1250 = "windows-1250";
+	const char* const WINDOWS_1251 = "windows-1251";
+	const char* const WINDOWS_1252 = "windows-1252";
+	const char* const WINDOWS_1253 = "windows-1253";
+	const char* const WINDOWS_1254 = "windows-1254";
+	const char* const WINDOWS_1255 = "windows-1255";
+	const char* const WINDOWS_1256 = "windows-1256";
+	const char* const WINDOWS_1257 = "windows-1257";
+	const char* const WINDOWS_1258 = "windows-1258";
 
-	const string::value_type* const IDNA = "idna";
+	const char* const IDNA = "idna";
 }
 
 
 // Fields
 namespace fields
 {
-	const string::value_type* const RECEIVED = "Received";
-	const string::value_type* const FROM = "From";
-	const string::value_type* const SENDER = "Sender";
-	const string::value_type* const REPLY_TO = "Reply-To";
-	const string::value_type* const TO = "To";
-	const string::value_type* const CC = "Cc";
-	const string::value_type* const BCC = "Bcc";
-	const string::value_type* const DATE = "Date";
-	const string::value_type* const SUBJECT = "Subject";
-	const string::value_type* const ORGANIZATION = "Organization";
-	const string::value_type* const USER_AGENT = "User-Agent";
-	const string::value_type* const DELIVERED_TO = "Delivered-To";
-	const string::value_type* const RETURN_PATH = "Return-Path";
-	const string::value_type* const MIME_VERSION = "Mime-Version";
-	const string::value_type* const MESSAGE_ID = "Message-Id";
-	const string::value_type* const CONTENT_TYPE = "Content-Type";
-	const string::value_type* const CONTENT_TRANSFER_ENCODING = "Content-Transfer-Encoding";
-	const string::value_type* const CONTENT_DESCRIPTION = "Content-Description";
-	const string::value_type* const CONTENT_DISPOSITION = "Content-Disposition";
-	const string::value_type* const CONTENT_ID = "Content-Id";
-	const string::value_type* const CONTENT_LOCATION = "Content-Location";
-	const string::value_type* const IN_REPLY_TO = "In-Reply-To";
-	const string::value_type* const REFERENCES = "References";
+	const char* const RECEIVED = "Received";
+	const char* const FROM = "From";
+	const char* const SENDER = "Sender";
+	const char* const REPLY_TO = "Reply-To";
+	const char* const TO = "To";
+	const char* const CC = "Cc";
+	const char* const BCC = "Bcc";
+	const char* const DATE = "Date";
+	const char* const SUBJECT = "Subject";
+	const char* const ORGANIZATION = "Organization";
+	const char* const USER_AGENT = "User-Agent";
+	const char* const DELIVERED_TO = "Delivered-To";
+	const char* const RETURN_PATH = "Return-Path";
+	const char* const MIME_VERSION = "Mime-Version";
+	const char* const MESSAGE_ID = "Message-Id";
+	const char* const CONTENT_TYPE = "Content-Type";
+	const char* const CONTENT_TRANSFER_ENCODING = "Content-Transfer-Encoding";
+	const char* const CONTENT_DESCRIPTION = "Content-Description";
+	const char* const CONTENT_DISPOSITION = "Content-Disposition";
+	const char* const CONTENT_ID = "Content-Id";
+	const char* const CONTENT_LOCATION = "Content-Location";
+	const char* const IN_REPLY_TO = "In-Reply-To";
+	const char* const REFERENCES = "References";
 
-	const string::value_type* const X_MAILER = "X-Mailer";
-	const string::value_type* const X_PRIORITY = "X-Priority";
+	const char* const X_MAILER = "X-Mailer";
+	const char* const X_PRIORITY = "X-Priority";
 
 	// RFC-3798: Message Disposition
-	const string::value_type* const ORIGINAL_MESSAGE_ID = "Original-Message-ID";
-	const string::value_type* const DISPOSITION_NOTIFICATION_TO = "Disposition-Notification-To";
-	const string::value_type* const DISPOSITION_NOTIFICATION_OPTIONS = "Disposition-Notification-Options";
-	const string::value_type* const DISPOSITION = "Disposition";
-	const string::value_type* const FAILURE = "Failure";
-	const string::value_type* const ERROR = "Error";
-	const string::value_type* const WARNING = "Warning";
-	const string::value_type* const ORIGINAL_RECIPIENT = "Original-Recipient";
-	const string::value_type* const FINAL_RECIPIENT = "Final-Recipient";
-	const string::value_type* const REPORTING_UA = "Reporting-UA";
-	const string::value_type* const MDN_GATEWAY = "MDN-Gateway";
+	const char* const ORIGINAL_MESSAGE_ID = "Original-Message-ID";
+	const char* const DISPOSITION_NOTIFICATION_TO = "Disposition-Notification-To";
+	const char* const DISPOSITION_NOTIFICATION_OPTIONS = "Disposition-Notification-Options";
+	const char* const DISPOSITION = "Disposition";
+	const char* const FAILURE = "Failure";
+	const char* const ERROR = "Error";
+	const char* const WARNING = "Warning";
+	const char* const ORIGINAL_RECIPIENT = "Original-Recipient";
+	const char* const FINAL_RECIPIENT = "Final-Recipient";
+	const char* const REPORTING_UA = "Reporting-UA";
+	const char* const MDN_GATEWAY = "MDN-Gateway";
 }
 
 
 // Constants for disposition action modes (RFC-3978).
 namespace dispositionActionModes
 {
-	const string::value_type* const MANUAL = "manual";
-	const string::value_type* const AUTOMATIC = "automatic";
+	const char* const MANUAL = "manual";
+	const char* const AUTOMATIC = "automatic";
 }
 
 
 // Constants for disposition sending modes (RFC-3798).
 namespace dispositionSendingModes
 {
-	const string::value_type* const SENT_MANUALLY = "MDN-sent-manually";
-	const string::value_type* const SENT_AUTOMATICALLY ="MDN-sent-automatically";
+	const char* const SENT_MANUALLY = "MDN-sent-manually";
+	const char* const SENT_AUTOMATICALLY ="MDN-sent-automatically";
 }
 
 
 // Constants for disposition types (RFC-3798).
 namespace dispositionTypes
 {
-	const string::value_type* const DISPLAYED = "displayed";
-	const string::value_type* const DELETED = "deleted";
+	const char* const DISPLAYED = "displayed";
+	const char* const DELETED = "deleted";
 }
 
 
 // Constants for disposition modifiers (RFC-3798).
 namespace dispositionModifiers
 {
-	const string::value_type* const ERROR = "error";
+	const char* const ERROR = "error";
 }
 
 

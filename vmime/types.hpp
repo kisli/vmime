@@ -29,6 +29,7 @@
 #include <string>
 #include <vector>
 #include <stdexcept>
+#include <cstddef>
 
 #include "vmime/config.hpp"
 
@@ -89,9 +90,7 @@ namespace vmime
 	typedef vmime_uint8 byte_t;
 	typedef std::vector <byte_t> byteArray;
 
-#if !VMIME_HAVE_SIZE_T
-	typedef unsigned long size_t;
-#endif // !VMIME_HAVE_SIZE_T
+	typedef std::size_t size_t;
 
 	// For compatibility with versions <= 0.7.1 (deprecated)
 	namespace net { }

@@ -63,7 +63,7 @@ public:
 	  * @param enc encoding for output
 	  * @param maxLineLength maximum line length for output
 	  */
-	virtual void generate(utility::outputStream& os, const vmime::encoding& enc, const string::size_type maxLineLength = lineLengthLimits::infinite) const = 0;
+	virtual void generate(utility::outputStream& os, const vmime::encoding& enc, const size_t maxLineLength = lineLengthLimits::infinite) const = 0;
 
 	/** Extract the contents into the specified stream. If needed, data
 	  * will be decoded before being written into the stream.
@@ -92,7 +92,7 @@ public:
 	  *
 	  * @return length of data
 	  */
-	virtual string::size_type getLength() const = 0;
+	virtual size_t getLength() const = 0;
 
 	/** Returns 'true' if data managed by this object is encoded.
 	  *

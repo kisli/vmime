@@ -42,7 +42,7 @@ namespace utility {
   * @return number of bytes copied
   */
 
-VMIME_EXPORT stream::size_type bufferedStreamCopy(inputStream& is, outputStream& os);
+VMIME_EXPORT size_t bufferedStreamCopy(inputStream& is, outputStream& os);
 
 /** Copy data from one stream into another stream using a buffered method
   * and copying only a specified range of data.
@@ -54,8 +54,8 @@ VMIME_EXPORT stream::size_type bufferedStreamCopy(inputStream& is, outputStream&
   * @return number of bytes copied
   */
 
-VMIME_EXPORT stream::size_type bufferedStreamCopyRange(inputStream& is, outputStream& os,
-	const stream::size_type start, const stream::size_type length);
+VMIME_EXPORT size_t bufferedStreamCopyRange(inputStream& is, outputStream& os,
+	const size_t start, const size_t length);
 
 /** Copy data from one stream into another stream using a buffered method
   * and notify progress state of the operation.
@@ -67,8 +67,8 @@ VMIME_EXPORT stream::size_type bufferedStreamCopyRange(inputStream& is, outputSt
   * @return number of bytes copied
   */
 
-VMIME_EXPORT stream::size_type bufferedStreamCopy(inputStream& is, outputStream& os,
-	const stream::size_type length, progressListener* progress);
+VMIME_EXPORT size_t bufferedStreamCopy(inputStream& is, outputStream& os,
+	const size_t length, progressListener* progress);
 
 
 } // utility

@@ -46,42 +46,38 @@ class VMIME_EXPORT stringProxy
 {
 public:
 
-	typedef string::size_type size_type;
-	typedef string string_type;
-
-
 	// Consruction
 	stringProxy();
 	stringProxy(const stringProxy& s);
-	stringProxy(const string_type& s, const size_type start = 0, const size_type end = std::numeric_limits <size_type>::max());
+	stringProxy(const string& s, const size_t start = 0, const size_t end = std::numeric_limits <size_t>::max());
 
 	// Assignment
-	void set(const string_type& s, const size_type start = 0, const size_type end = std::numeric_limits <size_type>::max());
+	void set(const string& s, const size_t start = 0, const size_t end = std::numeric_limits <size_t>::max());
 	void detach();
 
 	stringProxy& operator=(const stringProxy& s);
-	stringProxy& operator=(const string_type& s);
+	stringProxy& operator=(const string& s);
 
 	// Extract some portion (or whole) of the string
 	// and output it into a stream.
-	void extract(outputStream& os, const size_type start = 0, const size_type end = std::numeric_limits <size_type>::max(), utility::progressListener* progress = NULL) const;
+	void extract(outputStream& os, const size_t start = 0, const size_t end = std::numeric_limits <size_t>::max(), utility::progressListener* progress = NULL) const;
 
 	// Return the "virtual" length of the string
-	size_type length() const;
+	size_t length() const;
 
 	// Return the boundaries of the "virtual" string
-	size_type start() const;
-	size_type end() const;
+	size_t start() const;
+	size_t end() const;
 
 	string::const_iterator it_begin() const { return (m_buffer.begin() + m_start); }
 	string::const_iterator it_end() const { return (m_buffer.begin() + m_end); }
 
 private:
 
-	string_type m_buffer;
+	string m_buffer;
 
-	size_type m_start;
-	size_type m_end;
+	size_t m_start;
+	size_t m_end;
 };
 
 

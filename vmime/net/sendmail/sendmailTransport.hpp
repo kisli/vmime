@@ -68,7 +68,7 @@ public:
 		(const mailbox& expeditor,
 		 const mailboxList& recipients,
 		 utility::inputStream& is,
-		 const utility::stream::size_type size,
+		 const size_t size,
 		 utility::progressListener* progress = NULL,
 		 const mailbox& sender = mailbox());
 
@@ -80,7 +80,7 @@ private:
 	void internalDisconnect();
 
 	void internalSend(const std::vector <string> args, utility::inputStream& is,
-		const utility::stream::size_type size, utility::progressListener* progress);
+		const size_t size, utility::progressListener* progress);
 
 
 	string m_sendmailPath;

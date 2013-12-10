@@ -23,6 +23,8 @@
 
 #include "vmime/utility/outputStreamStringAdapter.hpp"
 
+#include "vmime/utility/stringUtils.hpp"
+
 
 namespace vmime {
 namespace utility {
@@ -34,9 +36,10 @@ outputStreamStringAdapter::outputStreamStringAdapter(string& buffer)
 }
 
 
-void outputStreamStringAdapter::write(const value_type* const data, const size_type count)
+void outputStreamStringAdapter::writeImpl
+	(const byte_t* const data, const size_t count)
 {
-	m_buffer.append(data, count);
+	vmime::utility::stringUtils::appendBytesToString(m_buffer, data, count);
 }
 
 

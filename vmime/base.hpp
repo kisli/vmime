@@ -156,7 +156,7 @@ namespace vmime
 
 	namespace lineLengthLimits
 	{
-		extern VMIME_EXPORT const string::size_type infinite;
+		extern VMIME_EXPORT const size_t infinite;
 
 		enum
 		{
@@ -168,7 +168,7 @@ namespace vmime
 
 	// New line sequence to be used when folding header fields.
 	extern VMIME_EXPORT const string NEW_LINE_SEQUENCE;
-	extern VMIME_EXPORT const string::size_type NEW_LINE_SEQUENCE_LENGTH;
+	extern VMIME_EXPORT const size_t NEW_LINE_SEQUENCE_LENGTH;
 
 
 	// CR-LF sequence
@@ -180,6 +180,12 @@ namespace vmime
 
 	/** Utility classes. */
 	namespace utility { }
+
+
+	/** Constant value with the greatest possible value for an element
+	  * of type size_t. The meaning is "infinite" or "until the end".
+	  */
+	extern VMIME_EXPORT const size_t npos;
 
 
 	/** Clone helper (using a shared_ptr).

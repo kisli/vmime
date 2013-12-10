@@ -62,8 +62,8 @@ encoding::encoding(const encoding& enc)
 
 
 void encoding::parseImpl
-	(const parsingContext& /* ctx */, const string& buffer, const string::size_type position,
-	 const string::size_type end, string::size_type* newPosition)
+	(const parsingContext& /* ctx */, const string& buffer, const size_t position,
+	 const size_t end, size_t* newPosition)
 {
 	m_usage = USAGE_UNKNOWN;
 
@@ -83,7 +83,7 @@ void encoding::parseImpl
 
 void encoding::generateImpl
 	(const generationContext& /* ctx */, utility::outputStream& os,
-	 const string::size_type curLinePos, string::size_type* newLinePos) const
+	 const size_t curLinePos, size_t* newLinePos) const
 {
 	os << m_name;
 
@@ -146,8 +146,8 @@ const encoding encoding::decideImpl
 		// "lineLengthLimits::convenient" characters (7-bit requires that)
 		string::const_iterator p = begin;
 
-		const string::size_type maxLen = lineLengthLimits::convenient;
-		string::size_type len = 0;
+		const size_t maxLen = lineLengthLimits::convenient;
+		size_t len = 0;
 
 		for ( ; p != end && len <= maxLen ; )
 		{

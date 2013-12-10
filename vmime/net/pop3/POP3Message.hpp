@@ -65,7 +65,7 @@ public:
 
 	const uid getUID() const;
 
-	int getSize() const;
+	size_t getSize() const;
 
 	bool isExpunged() const;
 
@@ -77,8 +77,18 @@ public:
 	int getFlags() const;
 	void setFlags(const int flags, const int mode = FLAG_MODE_SET);
 
-	void extract(utility::outputStream& os, utility::progressListener* progress = NULL, const int start = 0, const int length = -1, const bool peek = false) const;
-	void extractPart(shared_ptr <const messagePart> p, utility::outputStream& os, utility::progressListener* progress = NULL, const int start = 0, const int length = -1, const bool peek = false) const;
+	void extract
+		(utility::outputStream& os,
+		 utility::progressListener* progress = NULL,
+		 const size_t start = 0, const size_t length = -1,
+		 const bool peek = false) const;
+
+	void extractPart
+		(shared_ptr <const messagePart> p,
+		 utility::outputStream& os,
+		 utility::progressListener* progress = NULL,
+		 const size_t start = 0, const size_t length = -1,
+		 const bool peek = false) const;
 
 	void fetchPartHeader(shared_ptr <messagePart> p);
 
@@ -93,7 +103,7 @@ private:
 	weak_ptr <POP3Folder> m_folder;
 	int m_num;
 	uid m_uid;
-	int m_size;
+	size_t m_size;
 
 	bool m_deleted;
 

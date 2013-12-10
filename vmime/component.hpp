@@ -70,7 +70,7 @@ public:
 	  * @param inputStream stream from which to read data
 	  * @param length data length, in bytes (0 = unknown/not specified)
 	  */
-	void parse(shared_ptr <utility::inputStream> inputStream, const utility::stream::size_type length);
+	void parse(shared_ptr <utility::inputStream> inputStream, const size_t length);
 
 	/** Parse RFC-822/MIME data for this component, using the default
 	  * parsing context.
@@ -82,9 +82,9 @@ public:
 	  */
 	void parse
 		(const string& buffer,
-		 const string::size_type position,
-		 const string::size_type end,
-		 string::size_type* newPosition = NULL);
+		 const size_t position,
+		 const size_t end,
+		 size_t* newPosition = NULL);
 
 	/** Parse RFC-822/MIME data for this component.
 	  *
@@ -97,9 +97,9 @@ public:
 	void parse
 		(const parsingContext& ctx,
 		 const string& buffer,
-		 const string::size_type position,
-		 const string::size_type end,
-		 string::size_type* newPosition = NULL);
+		 const size_t position,
+		 const size_t end,
+		 size_t* newPosition = NULL);
 
 	/** Parse RFC-822/MIME data for this component. If stream is not seekable,
 	  * or if end position is not specified, entire contents of the stream will
@@ -113,9 +113,9 @@ public:
 	  */
 	void parse
 		(shared_ptr <utility::inputStream> inputStream,
-		 const utility::stream::size_type position,
-		 const utility::stream::size_type end,
-		 utility::stream::size_type* newPosition = NULL);
+		 const size_t position,
+		 const size_t end,
+		 size_t* newPosition = NULL);
 
 	/** Parse RFC-822/MIME data for this component. If stream is not seekable,
 	  * or if end position is not specified, entire contents of the stream will
@@ -130,9 +130,9 @@ public:
 	void parse
 		(const parsingContext& ctx,
 		 shared_ptr <utility::inputStream> inputStream,
-		 const utility::stream::size_type position,
-		 const utility::stream::size_type end,
-		 utility::stream::size_type* newPosition = NULL);
+		 const size_t position,
+		 const size_t end,
+		 size_t* newPosition = NULL);
 
 	/** Generate RFC-2822/MIME data for this component.
 	  *
@@ -143,8 +143,8 @@ public:
 	  * @return generated data
 	  */
 	virtual const string generate
-		(const string::size_type maxLineLength = lineLengthLimits::infinite,
-		 const string::size_type curLinePos = 0) const;
+		(const size_t maxLineLength = lineLengthLimits::infinite,
+		 const size_t curLinePos = 0) const;
 
 	/** Generate RFC-2822/MIME data for this component, using the default generation context.
 	  *
@@ -154,8 +154,8 @@ public:
 	  */
 	virtual void generate
 		(utility::outputStream& outputStream,
-		 const string::size_type curLinePos = 0,
-		 string::size_type* newLinePos = NULL) const;
+		 const size_t curLinePos = 0,
+		 size_t* newLinePos = NULL) const;
 
 	/** Generate RFC-2822/MIME data for this component, using the default generation context.
 	  *
@@ -167,8 +167,8 @@ public:
 	virtual void generate
 		(const generationContext& ctx,
 		 utility::outputStream& outputStream,
-		 const string::size_type curLinePos = 0,
-		 string::size_type* newLinePos = NULL) const;
+		 const size_t curLinePos = 0,
+		 size_t* newLinePos = NULL) const;
 
 	/** Clone this component.
 	  *
@@ -191,7 +191,7 @@ public:
 	  * @return start position in parsed buffer
 	  * or 0 if this component has not been parsed
 	  */
-	utility::stream::size_type getParsedOffset() const;
+	size_t getParsedOffset() const;
 
 	/** Return the length of this component in the
 	  * parsed message contents. Use for debugging only.
@@ -199,7 +199,7 @@ public:
 	  * @return length of the component in parsed buffer
 	  * or 0 if this component has not been parsed
 	  */
-	utility::stream::size_type getParsedLength() const;
+	size_t getParsedLength() const;
 
 	/** Return the list of children of this component.
 	  *
@@ -215,39 +215,39 @@ public:
 	  * @param ctx generation context
 	  * @return component size when generated
 	  */
-	virtual utility::stream::size_type getGeneratedSize(const generationContext& ctx);
+	virtual size_t getGeneratedSize(const generationContext& ctx);
 
 protected:
 
-	void setParsedBounds(const utility::stream::size_type start, const utility::stream::size_type end);
+	void setParsedBounds(const size_t start, const size_t end);
 
 	// AT LEAST ONE of these parseImpl() functions MUST be implemented in derived class
 	virtual void parseImpl
 		(const parsingContext& ctx,
 		 shared_ptr <utility::parserInputStreamAdapter> parser,
-		 const utility::stream::size_type position,
-		 const utility::stream::size_type end,
-		 utility::stream::size_type* newPosition = NULL);
+		 const size_t position,
+		 const size_t end,
+		 size_t* newPosition = NULL);
 
 	virtual void parseImpl
 		(const parsingContext& ctx,
 		 const string& buffer,
-		 const string::size_type position,
-		 const string::size_type end,
-		 string::size_type* newPosition = NULL);
+		 const size_t position,
+		 const size_t end,
+		 size_t* newPosition = NULL);
 
 	virtual void generateImpl
 		(const generationContext& ctx,
 		 utility::outputStream& os,
-		 const string::size_type curLinePos = 0,
-		 string::size_type* newLinePos = NULL) const = 0;
+		 const size_t curLinePos = 0,
+		 size_t* newLinePos = NULL) const = 0;
 
 private:
 
-	void offsetParsedBounds(const utility::stream::size_type offset);
+	void offsetParsedBounds(const size_t offset);
 
-	utility::stream::size_type m_parsedOffset;
-	utility::stream::size_type m_parsedLength;
+	size_t m_parsedOffset;
+	size_t m_parsedLength;
 };
 
 

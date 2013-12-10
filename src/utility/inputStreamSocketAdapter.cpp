@@ -53,22 +53,22 @@ void inputStreamSocketAdapter::reset()
 }
 
 
-stream::size_type inputStreamSocketAdapter::read
-	(value_type* const data, const size_type count)
+size_t inputStreamSocketAdapter::read
+	(byte_t* const data, const size_t count)
 {
 	return m_socket.receiveRaw(data, count);
 }
 
 
-stream::size_type inputStreamSocketAdapter::skip
-	(const size_type /* count */)
+size_t inputStreamSocketAdapter::skip
+	(const size_t /* count */)
 {
 	// Not supported
 	return 0;
 }
 
 
-stream::size_type inputStreamSocketAdapter::getBlockSize()
+size_t inputStreamSocketAdapter::getBlockSize()
 {
 	return m_socket.getBlockSize();
 }

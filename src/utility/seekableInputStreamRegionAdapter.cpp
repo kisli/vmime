@@ -29,7 +29,7 @@ namespace utility {
 
 
 seekableInputStreamRegionAdapter::seekableInputStreamRegionAdapter
-	(shared_ptr <seekableInputStream> stream, const size_type begin, const size_type length)
+	(shared_ptr <seekableInputStream> stream, const size_t begin, const size_t length)
 	: m_stream(stream), m_begin(begin), m_length(length), m_position(0)
 {
 }
@@ -47,16 +47,16 @@ void seekableInputStreamRegionAdapter::reset()
 }
 
 
-stream::size_type seekableInputStreamRegionAdapter::read
-	(value_type* const data, const size_type count)
+size_t seekableInputStreamRegionAdapter::read
+	(byte_t* const data, const size_t count)
 {
 	m_stream->seek(m_begin + m_position);
 
-	size_type readBytes = 0;
+	size_t readBytes = 0;
 
 	if (m_position + count >= m_length)
 	{
-		const size_type remaining = m_length - m_position;
+		const size_t remaining = m_length - m_position;
 		readBytes = m_stream->read(data, remaining);
 	}
 	else
@@ -70,11 +70,11 @@ stream::size_type seekableInputStreamRegionAdapter::read
 }
 
 
-stream::size_type seekableInputStreamRegionAdapter::skip(const size_type count)
+size_t seekableInputStreamRegionAdapter::skip(const size_t count)
 {
 	if (m_position + count >= m_length)
 	{
-		const size_type remaining = m_length - m_position;
+		const size_t remaining = m_length - m_position;
 		m_position += remaining;
 		return remaining;
 	}
@@ -86,13 +86,13 @@ stream::size_type seekableInputStreamRegionAdapter::skip(const size_type count)
 }
 
 
-stream::size_type seekableInputStreamRegionAdapter::getPosition() const
+size_t seekableInputStreamRegionAdapter::getPosition() const
 {
 	return m_position;
 }
 
 
-void seekableInputStreamRegionAdapter::seek(const size_type pos)
+void seekableInputStreamRegionAdapter::seek(const size_t pos)
 {
 	if (pos > m_length)
 		m_position = m_length;

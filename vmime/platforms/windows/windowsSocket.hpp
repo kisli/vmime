@@ -55,13 +55,13 @@ public:
 	void disconnect();
 
 	void receive(vmime::string& buffer);
-	size_type receiveRaw(char* buffer, const size_type count);
+	size_t receiveRaw(char* buffer, const size_t count);
 
 	void send(const vmime::string& buffer);
-	void sendRaw(const char* buffer, const size_type count);
-	size_type sendRawNonBlocking(const char* buffer, const size_type count);
+	void sendRaw(const char* buffer, const size_t count);
+	size_t sendRawNonBlocking(const char* buffer, const size_t count);
 
-	size_type getBlockSize() const;
+	size_t getBlockSize() const;
 
 	unsigned int getStatus() const;
 

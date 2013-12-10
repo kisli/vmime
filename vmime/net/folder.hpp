@@ -282,7 +282,7 @@ public:
 	  * @param progress progress listener, or NULL if not used
 	  * @throw exceptions::net_exception if an error occurs
 	  */
-	virtual void addMessage(utility::inputStream& is, const int size, const int flags = message::FLAG_UNDEFINED, vmime::datetime* date = NULL, utility::progressListener* progress = NULL) = 0;
+	virtual void addMessage(utility::inputStream& is, const size_t size, const int flags = message::FLAG_UNDEFINED, vmime::datetime* date = NULL, utility::progressListener* progress = NULL) = 0;
 
 	/** Copy messages from this folder to another folder.
 	  *

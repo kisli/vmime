@@ -157,17 +157,17 @@ const string url::build() const
 void url::parse(const string& str)
 {
 	// Protocol
-	const string::size_type protoEnd = str.find("://");
+	const size_t protoEnd = str.find("://");
 	if (protoEnd == string::npos) throw exceptions::malformed_url("No protocol separator");
 
 	const string proto =
 		utility::stringUtils::toLower(string(str.begin(), str.begin() + protoEnd));
 
 	// Username/password
-	string::size_type slashPos = str.find('/', protoEnd + 3);
+	size_t slashPos = str.find('/', protoEnd + 3);
 	if (slashPos == string::npos) slashPos = str.length();
 
-	string::size_type atPos = str.rfind('@', slashPos);
+	size_t atPos = str.rfind('@', slashPos);
 	string hostPart;
 
 	string username;
@@ -183,7 +183,7 @@ void url::parse(const string& str)
 		if (atPos != string::npos && atPos < slashPos)
 		{
 			const string userPart(str.begin() + protoEnd + 3, str.begin() + atPos);
-			const string::size_type colonPos = userPart.find(':');
+			const size_t colonPos = userPart.find(':');
 
 			if (colonPos == string::npos)
 			{
@@ -204,7 +204,7 @@ void url::parse(const string& str)
 	}
 
 	// Host/port
-	const string::size_type colonPos = hostPart.find(':');
+	const size_t colonPos = hostPart.find(':');
 
 	string host;
 	string port;
@@ -223,7 +223,7 @@ void url::parse(const string& str)
 	string path = utility::stringUtils::trim(string(str.begin() + slashPos, str.end()));
 	string params;
 
-	string::size_type paramSep = path.find_first_of('?');
+	size_t paramSep = path.find_first_of('?');
 
 	if (paramSep != string::npos)
 	{
@@ -268,16 +268,16 @@ void url::parse(const string& str)
 
 	if (!params.empty())
 	{
-		string::size_type pos = 0;
+		size_t pos = 0;
 
 		do
 		{
-			const string::size_type start = pos;
+			const size_t start = pos;
 
 			pos = params.find_first_of('&', pos);
 
-			const string::size_type equal = params.find_first_of('=', start);
-			const string::size_type end =
+			const size_t equal = params.find_first_of('=', start);
+			const size_t end =
 				(pos == string::npos ? params.length() : pos);
 
 			string name;

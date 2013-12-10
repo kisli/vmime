@@ -30,9 +30,12 @@
 #include "vmime/security/sasl/SASLSocket.hpp"
 #include "vmime/security/sasl/SASLSession.hpp"
 
+#include "vmime/utility/stringUtils.hpp"
+
 #include "vmime/exception.hpp"
 
 #include <algorithm>
+#include <cstring>
 
 #include <gsasl.h>
 
@@ -75,7 +78,7 @@ bool SASLSocket::isConnected() const
 }
 
 
-SASLSocket::size_type SASLSocket::getBlockSize() const
+size_t SASLSocket::getBlockSize() const
 {
 	return m_wrapped->getBlockSize();
 }
@@ -95,17 +98,17 @@ const string SASLSocket::getPeerAddress() const
 
 void SASLSocket::receive(string& buffer)
 {
-	const size_type n = receiveRaw(m_recvBuffer, sizeof(m_recvBuffer));
+	const size_t n = receiveRaw(m_recvBuffer, sizeof(m_recvBuffer));
 
-	buffer = string(m_recvBuffer, n);
+	buffer = utility::stringUtils::makeStringFromBytes(m_recvBuffer, n);
 }
 
 
-SASLSocket::size_type SASLSocket::receiveRaw(char* buffer, const size_type count)
+size_t SASLSocket::receiveRaw(byte_t* buffer, const size_t count)
 {
 	if (m_pendingLen != 0)
 	{
-		const size_type copyLen =
+		const size_t copyLen =
 			(count >= m_pendingLen ? m_pendingLen : count);
 
 		std::copy(m_pendingBuffer + m_pendingPos,
@@ -127,14 +130,13 @@ SASLSocket::size_type SASLSocket::receiveRaw(char* buffer, const size_type count
 		return copyLen;
 	}
 
-	const size_type n = m_wrapped->receiveRaw(buffer, count);
+	const size_t n = m_wrapped->receiveRaw(buffer, count);
 
 	byte_t* output = 0;
-	long outputLen = 0;
+	size_t outputLen = 0;
 
 	m_session->getMechanism()->decode
-		(m_session, reinterpret_cast <const byte_t*>(buffer), n,
-		 &output, &outputLen);
+		(m_session, buffer, n, &output, &outputLen);
 
 	// If we can not copy all decoded data into the output buffer, put
 	// remaining data into a pending buffer for next calls to receive()
@@ -161,23 +163,27 @@ SASLSocket::size_type SASLSocket::receiveRaw(char* buffer, const size_type count
 
 void SASLSocket::send(const string& buffer)
 {
-	sendRaw(buffer.data(), buffer.length());
+	sendRaw(reinterpret_cast <const byte_t*>(buffer.data()), buffer.length());
 }
 
 
-void SASLSocket::sendRaw(const char* buffer, const size_type count)
+void SASLSocket::send(const char* str)
+{
+	sendRaw(reinterpret_cast <const byte_t*>(str), strlen(str));
+}
+
+
+void SASLSocket::sendRaw(const byte_t* buffer, const size_t count)
 {
 	byte_t* output = 0;
-	long outputLen = 0;
+	size_t outputLen = 0;
 
 	m_session->getMechanism()->encode
-		(m_session, reinterpret_cast <const byte_t*>(buffer), count,
-		 &output, &outputLen);
+		(m_session, buffer, count, &output, &outputLen);
 
 	try
 	{
-		m_wrapped->sendRaw
-			(reinterpret_cast <const char*>(output), outputLen);
+		m_wrapped->sendRaw(output, outputLen);
 	}
 	catch (...)
 	{
@@ -189,21 +195,19 @@ void SASLSocket::sendRaw(const char* buffer, const size_type count)
 }
 
 
-SASLSocket::size_type SASLSocket::sendRawNonBlocking(const char* buffer, const size_type count)
+size_t SASLSocket::sendRawNonBlocking(const byte_t* buffer, const size_t count)
 {
 	byte_t* output = 0;
-	long outputLen = 0;
+	size_t outputLen = 0;
 
 	m_session->getMechanism()->encode
-		(m_session, reinterpret_cast <const byte_t*>(buffer), count,
-		 &output, &outputLen);
+		(m_session, buffer, count, &output, &outputLen);
 
-	size_type bytesSent = 0;
+	size_t bytesSent = 0;
 
 	try
 	{
-		bytesSent = m_wrapped->sendRawNonBlocking
-			(reinterpret_cast <const char*>(output), outputLen);
+		bytesSent = m_wrapped->sendRawNonBlocking(output, outputLen);
 	}
 	catch (...)
 	{

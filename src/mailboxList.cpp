@@ -177,12 +177,12 @@ const std::vector <shared_ptr <component> > mailboxList::getChildComponents()
 
 
 void mailboxList::parseImpl
-	(const parsingContext& ctx, const string& buffer, const string::size_type position,
-	 const string::size_type end, string::size_type* newPosition)
+	(const parsingContext& ctx, const string& buffer, const size_t position,
+	 const size_t end, size_t* newPosition)
 {
 	m_list.removeAllAddresses();
 
-	string::size_type pos = position;
+	size_t pos = position;
 
 	while (pos < end)
 	{
@@ -214,7 +214,7 @@ void mailboxList::parseImpl
 
 
 void mailboxList::generateImpl(const generationContext& ctx, utility::outputStream& os,
-	const string::size_type curLinePos, string::size_type* newLinePos) const
+	const size_t curLinePos, size_t* newLinePos) const
 {
 	m_list.generate(ctx, os, curLinePos, newLinePos);
 }

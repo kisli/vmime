@@ -47,10 +47,10 @@ void inputStreamStringProxyAdapter::reset()
 }
 
 
-stream::size_type inputStreamStringProxyAdapter::read
-	(value_type* const data, const size_type count)
+size_t inputStreamStringProxyAdapter::read
+	(byte_t* const data, const size_t count)
 {
-	const size_type remaining = m_buffer.length() - m_pos;
+	const size_t remaining = m_buffer.length() - m_pos;
 
 	if (count > remaining)
 	{
@@ -67,9 +67,9 @@ stream::size_type inputStreamStringProxyAdapter::read
 }
 
 
-stream::size_type inputStreamStringProxyAdapter::skip(const size_type count)
+size_t inputStreamStringProxyAdapter::skip(const size_t count)
 {
-	const size_type remaining = m_buffer.length() - m_pos;
+	const size_t remaining = m_buffer.length() - m_pos;
 
 	if (count > remaining)
 	{
@@ -84,13 +84,13 @@ stream::size_type inputStreamStringProxyAdapter::skip(const size_type count)
 }
 
 
-stream::size_type inputStreamStringProxyAdapter::getPosition() const
+size_t inputStreamStringProxyAdapter::getPosition() const
 {
 	return m_pos;
 }
 
 
-void inputStreamStringProxyAdapter::seek(const size_type pos)
+void inputStreamStringProxyAdapter::seek(const size_t pos)
 {
 	if (pos <= m_buffer.length())
 		m_pos = pos;

@@ -44,8 +44,8 @@ mailboxField::mailboxField(const mailboxField&)
 
 
 void mailboxField::parse
-	(const parsingContext& ctx, const string& buffer, const string::size_type position,
-	 const string::size_type end, string::size_type* newPosition)
+	(const parsingContext& ctx, const string& buffer, const size_t position,
+	 const size_t end, size_t* newPosition)
 {
 	shared_ptr <mailbox> mbox = make_shared <mailbox>();
 

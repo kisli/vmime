@@ -106,7 +106,7 @@ shared_ptr <SASLMechanism> SASLContext::suggestMechanism
 }
 
 
-void SASLContext::decodeB64(const string& input, byte_t** output, long* outputLen)
+void SASLContext::decodeB64(const string& input, byte_t** output, size_t* outputLen)
 {
 	string res;
 
@@ -127,7 +127,7 @@ void SASLContext::decodeB64(const string& input, byte_t** output, long* outputLe
 }
 
 
-const string SASLContext::encodeB64(const byte_t* input, const long inputLen)
+const string SASLContext::encodeB64(const byte_t* input, const size_t inputLen)
 {
 	string res;
 

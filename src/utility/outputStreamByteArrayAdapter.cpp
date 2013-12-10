@@ -34,7 +34,8 @@ outputStreamByteArrayAdapter::outputStreamByteArrayAdapter(byteArray& array)
 }
 
 
-void outputStreamByteArrayAdapter::write(const value_type* const data, const size_type count)
+void outputStreamByteArrayAdapter::writeImpl
+	(const byte_t* const data, const size_t count)
 {
 	m_array.insert(m_array.end(), data, data + count);
 }

@@ -131,7 +131,7 @@ void propertySet::parse(const string& props)
 					{
 						value.reserve(50);
 
-						const string::value_type quoteChar = *pos;
+						const char quoteChar = *pos;
 						bool theEnd = false;
 						bool escape = false;
 

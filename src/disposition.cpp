@@ -172,22 +172,22 @@ const std::vector <string> disposition::getModifierList() const
 
 
 void disposition::parseImpl
-	(const parsingContext& /* ctx */, const string& buffer, const string::size_type position,
-	 const string::size_type end, string::size_type* newPosition)
+	(const parsingContext& /* ctx */, const string& buffer, const size_t position,
+	 const size_t end, size_t* newPosition)
 {
 	// disposition-mode ";" disposition-type
 	//      [ "/" disposition-modifier *( "," disposition-modifier ) ]
 	//
 	// disposition-mode = action-mode "/" sending-mode
 
-	string::size_type pos = position;
+	size_t pos = position;
 
 	while (pos < end && parserHelpers::isSpace(buffer[pos]))
 		++pos;
 
 	// -- disposition-mode
-	const string::size_type modeStart = pos;
-	string::size_type modeEnd = pos;
+	const size_t modeStart = pos;
+	size_t modeEnd = pos;
 
 	while (pos < end && buffer[pos] != ';')
 	{
@@ -199,7 +199,7 @@ void disposition::parseImpl
 		--modeEnd;
 
 	const string mode = string(buffer.begin() + modeStart, buffer.begin() + modeEnd);
-	const string::size_type slash = mode.find('/');
+	const size_t slash = mode.find('/');
 
 	if (slash != string::npos)
 	{
@@ -222,8 +222,8 @@ void disposition::parseImpl
 		++pos;
 
 	// -- disposition-type
-	const string::size_type typeStart = pos;
-	string::size_type typeEnd = pos;
+	const size_t typeStart = pos;
+	size_t typeEnd = pos;
 
 	while (pos < end && buffer[pos] != '/')
 	{
@@ -248,8 +248,8 @@ void disposition::parseImpl
 			while (pos < end && parserHelpers::isSpace(buffer[pos]))
 				++pos;
 
-			const string::size_type modifierStart = pos;
-			string::size_type modifierEnd = pos;
+			const size_t modifierStart = pos;
+			size_t modifierEnd = pos;
 
 			while (pos < end && buffer[pos] != ',')
 			{
@@ -279,9 +279,9 @@ void disposition::parseImpl
 
 void disposition::generateImpl
 	(const generationContext& ctx, utility::outputStream& os,
-	 const string::size_type curLinePos, string::size_type* newLinePos) const
+	 const size_t curLinePos, size_t* newLinePos) const
 {
-	string::size_type pos = curLinePos;
+	size_t pos = curLinePos;
 
 	const string actionMode = (m_actionMode.empty() ? "automatic-action" : m_actionMode);
 	const string sendingMode = (m_sendingMode.empty() ? "MDN-sent-automatically" : m_sendingMode);

@@ -113,10 +113,10 @@ const std::vector <shared_ptr <component> > path::getChildComponents()
 
 
 void path::parseImpl
-	(const parsingContext& /* ctx */, const string& buffer, const string::size_type position,
-	 const string::size_type end, string::size_type* newPosition)
+	(const parsingContext& /* ctx */, const string& buffer, const size_t position,
+	 const size_t end, size_t* newPosition)
 {
-	string::size_type pos = position;
+	size_t pos = position;
 
 	while (pos < end && parserHelpers::isSpace(buffer[pos]))
 		++pos;
@@ -131,12 +131,12 @@ void path::parseImpl
 		while (pos < end && parserHelpers::isSpace(buffer[pos]))
 			++pos;
 
-		const string::size_type addrStart = pos;
+		const size_t addrStart = pos;
 
 		while (pos < end && buffer[pos] != '>')
 			++pos;
 
-		string::size_type addrEnd = pos;
+		size_t addrEnd = pos;
 
 		while (addrEnd > addrStart && parserHelpers::isSpace(buffer[addrEnd - 1]))
 			addrEnd--;
@@ -148,7 +148,7 @@ void path::parseImpl
 		addrSpec = string(buffer.begin() + position, buffer.begin() + end);
 	}
 
-	const string::size_type at = addrSpec.find_first_of('@');
+	const size_t at = addrSpec.find_first_of('@');
 
 	if (at != string::npos)
 	{
@@ -168,7 +168,7 @@ void path::parseImpl
 
 void path::generateImpl
 	(const generationContext& /* ctx */, utility::outputStream& os,
-	 const string::size_type curLinePos, string::size_type* newLinePos) const
+	 const size_t curLinePos, size_t* newLinePos) const
 {
 	if (m_localPart.empty() && m_domain.empty())
 	{

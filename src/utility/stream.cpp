@@ -29,10 +29,7 @@ namespace vmime {
 namespace utility {
 
 
-const stream::size_type stream::npos = static_cast <size_type>(vmime::string::npos);
-
-
-stream::size_type stream::getBlockSize()
+size_t stream::getBlockSize()
 {
 	return 32768;  // 32 KB
 }

@@ -394,10 +394,10 @@ void IMAPConnection::authenticateSASL()
 				}
 
 				byte_t* challenge = 0;
-				long challengeLen = 0;
+				size_t challengeLen = 0;
 
 				byte_t* resp = 0;
-				long respLen = 0;
+				size_t respLen = 0;
 
 				try
 				{
@@ -530,7 +530,7 @@ bool IMAPConnection::hasCapability(const string& capa)
 
 	const string normCapa = utility::stringUtils::toUpper(capa);
 
-	for (unsigned int i = 0, n = m_capabilities.size() ; i < n ; ++i)
+	for (size_t i = 0, n = m_capabilities.size() ; i < n ; ++i)
 	{
 		if (m_capabilities[i] == normCapa)
 			return true;
@@ -566,7 +566,7 @@ bool IMAPConnection::processCapabilityResponseData(const IMAPParser::response* r
 	const std::vector <IMAPParser::continue_req_or_response_data*>& respDataList =
 		resp->continue_req_or_response_data();
 
-	for (unsigned int i = 0 ; i < respDataList.size() ; ++i)
+	for (size_t i = 0 ; i < respDataList.size() ; ++i)
 	{
 		if (respDataList[i]->response_data() == NULL)
 			continue;
@@ -739,7 +739,7 @@ void IMAPConnection::send(bool tag, const string& what, bool end)
 }
 
 
-void IMAPConnection::sendRaw(const char* buffer, const int count)
+void IMAPConnection::sendRaw(const byte_t* buffer, const size_t count)
 {
 	m_socket->sendRaw(buffer, count);
 }

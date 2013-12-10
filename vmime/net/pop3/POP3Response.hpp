@@ -101,7 +101,7 @@ public:
 	  */
 	static shared_ptr <POP3Response> readLargeResponse
 		(shared_ptr <POP3Connection> conn, utility::outputStream& os,
-		 utility::progressListener* progress, const long predictedSize);
+		 utility::progressListener* progress, const size_t predictedSize);
 
 
 	/** Returns whether the response is successful ("OK").
@@ -148,7 +148,7 @@ private:
 	void readResponseImpl(string& buffer, const bool multiLine);
 	void readResponseImpl
 		(string& firstLine, utility::outputStream& os,
-		 utility::progressListener* progress, const long predictedSize);
+		 utility::progressListener* progress, const size_t predictedSize);
 
 
 	static bool stripFirstLine(const string& buffer, string& result, string* firstLine);

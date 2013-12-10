@@ -463,10 +463,10 @@ void POP3Connection::authenticateSASL()
 			case POP3Response::CODE_READY:
 			{
 				byte_t* challenge = 0;
-				long challengeLen = 0;
+				size_t challengeLen = 0;
 
 				byte_t* resp = 0;
-				long respLen = 0;
+				size_t respLen = 0;
 
 				try
 				{
@@ -495,7 +495,7 @@ void POP3Connection::authenticateSASL()
 					}
 
 					// Cancel SASL exchange
-					m_socket->sendRaw("*\r\n", 3);
+					m_socket->send("*\r\n");
 				}
 				catch (...)
 				{

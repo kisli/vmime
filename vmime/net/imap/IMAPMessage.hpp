@@ -80,7 +80,7 @@ public:
 	  */
 	vmime_uint64 getModSequence() const;
 
-	int getSize() const;
+	size_t getSize() const;
 
 	bool isExpunged() const;
 
@@ -92,8 +92,18 @@ public:
 	int getFlags() const;
 	void setFlags(const int flags, const int mode = FLAG_MODE_SET);
 
-	void extract(utility::outputStream& os, utility::progressListener* progress = NULL, const int start = 0, const int length = -1, const bool peek = false) const;
-	void extractPart(shared_ptr <const messagePart> p, utility::outputStream& os, utility::progressListener* progress = NULL, const int start = 0, const int length = -1, const bool peek = false) const;
+	void extract
+		(utility::outputStream& os,
+		 utility::progressListener* progress = NULL,
+		 const size_t start = 0, const size_t length = -1,
+		 const bool peek = false) const;
+
+	void extractPart
+		(shared_ptr <const messagePart> p,
+		 utility::outputStream& os,
+		 utility::progressListener* progress = NULL,
+		 const size_t start = 0, const size_t length = -1,
+		 const bool peek = false) const;
 
 	void fetchPartHeader(shared_ptr <messagePart> p);
 
@@ -144,8 +154,12 @@ private:
 		EXTRACT_PEEK = 0x10
 	};
 
-	void extractImpl(shared_ptr <const messagePart> p, utility::outputStream& os, utility::progressListener* progress,
-		const int start, const int length, const int extractFlags) const;
+	void extractImpl
+		(shared_ptr <const messagePart> p,
+		 utility::outputStream& os,
+		 utility::progressListener* progress,
+		 const size_t start, const size_t length,
+		 const int extractFlags) const;
 
 
 	shared_ptr <header> getOrCreateHeader();
@@ -156,7 +170,7 @@ private:
 	weak_ptr <IMAPFolder> m_folder;
 
 	int m_num;
-	int m_size;
+	size_t m_size;
 	int m_flags;
 	bool m_expunged;
 	uid m_uid;

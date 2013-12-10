@@ -78,8 +78,8 @@ wordEncoder::wordEncoder(const string& buffer, const charset& charset, const Enc
 }
 
 
-static string::size_type getUTF8CharLength
-	(const string& buffer, const string::size_type pos, const string::size_type length)
+static size_t getUTF8CharLength
+	(const string& buffer, const size_t pos, const size_t length)
 {
 	// Gives the number of extra bytes in a UTF8 char, given the leading char
 	static const unsigned char UTF8_EXTRA_BYTES[256] =
@@ -112,9 +112,9 @@ static string::size_type getUTF8CharLength
 }
 
 
-const string wordEncoder::getNextChunk(const string::size_type maxLength)
+const string wordEncoder::getNextChunk(const size_t maxLength)
 {
-	const string::size_type remaining = m_length - m_pos;
+	const size_t remaining = m_length - m_pos;
 
 	if (remaining == 0)
 		return string();
@@ -133,7 +133,7 @@ const string wordEncoder::getNextChunk(const string::size_type maxLength)
 			// Here, we have a formula to compute the maximum number of source
 			// bytes to encode knowing the maximum number of encoded chars. In
 			// Base64 encoding, 3 bytes of input provide 4 bytes of output.
-			const string::size_type inputCount =
+			const size_t inputCount =
 				std::min(remaining, (maxLength > 1) ? ((maxLength - 1) * 3) / 4 : 1);
 
 			// Encode chunk
@@ -147,8 +147,8 @@ const string wordEncoder::getNextChunk(const string::size_type maxLength)
 			// Compute exactly how much input bytes are needed to have an output
 			// string length of less than 'maxLength' bytes. In Quoted-Printable
 			// encoding, encoded bytes take 3 bytes.
-			string::size_type inputCount = 0;
-			string::size_type outputCount = 0;
+			size_t inputCount = 0;
+			size_t outputCount = 0;
 
 			while ((inputCount == 0 || outputCount < maxLength) && (inputCount < remaining))
 			{
@@ -170,14 +170,14 @@ const string wordEncoder::getNextChunk(const string::size_type maxLength)
 	{
 		shared_ptr <charsetConverter> conv = charsetConverter::create(charsets::UTF_8, m_charset);
 
-		string::size_type inputCount = 0;
-		string::size_type outputCount = 0;
+		size_t inputCount = 0;
+		size_t outputCount = 0;
 		string encodeBuffer;
 
 		while ((inputCount == 0 || outputCount < maxLength) && (inputCount < remaining))
 		{
 			// Get the next UTF8 character
-			const string::size_type inputCharLength =
+			const size_t inputCharLength =
 				getUTF8CharLength(m_buffer, m_pos + inputCount, m_length);
 
 			const string inputChar(m_buffer.begin() + m_pos + inputCount,
@@ -192,12 +192,12 @@ const string wordEncoder::getNextChunk(const string::size_type maxLength)
 			// Compute number of output bytes
 			if (m_encoding == ENCODING_B64)
 			{
-				outputCount = std::max(static_cast <string::size_type>(4),
+				outputCount = std::max(static_cast <size_t>(4),
 					(encodeBuffer.length() * 4) / 3);
 			}
 			else // ENCODING_QP
 			{
-				for (string::size_type i = 0, n = encodeBytes.length() ; i < n ; ++i)
+				for (size_t i = 0, n = encodeBytes.length() ; i < n ; ++i)
 				{
 					const unsigned char c = encodeBytes[i];
 					outputCount += utility::encoder::qpEncoder::RFC2047_getEncodedLength(c);
@@ -270,10 +270,10 @@ wordEncoder::Encoding wordEncoder::guessBestEncoding
 	}
 
 	// Use Base64 if more than 40% non-ASCII, or Quoted-Printable else (default)
-	const string::size_type asciiCount =
+	const size_t asciiCount =
 		utility::stringUtils::countASCIIchars(buffer.begin(), buffer.end());
 
-	const string::size_type asciiPercent =
+	const size_t asciiPercent =
 		(buffer.length() == 0 ? 100 : (100 * asciiCount) / buffer.length());
 
 	if (asciiPercent < 60)

@@ -38,14 +38,11 @@ bodyPart::bodyPart()
 
 
 void bodyPart::parseImpl
-	(const parsingContext& ctx,
-	 shared_ptr <utility::parserInputStreamAdapter> parser,
-	 const utility::stream::size_type position,
-	 const utility::stream::size_type end,
-	 utility::stream::size_type* newPosition)
+	(const parsingContext& ctx, shared_ptr <utility::parserInputStreamAdapter> parser,
+	 const size_t position, const size_t end, size_t* newPosition)
 {
 	// Parse the headers
-	string::size_type pos = position;
+	size_t pos = position;
 	m_header->parse(ctx, parser, pos, end, &pos);
 
 	// Parse the body contents
@@ -60,7 +57,7 @@ void bodyPart::parseImpl
 
 void bodyPart::generateImpl
 	(const generationContext& ctx, utility::outputStream& os,
-	 const string::size_type /* curLinePos */, string::size_type* newLinePos) const
+	 const size_t /* curLinePos */, size_t* newLinePos) const
 {
 	m_header->generate(ctx, os);
 
@@ -73,7 +70,7 @@ void bodyPart::generateImpl
 }
 
 
-utility::stream::size_type bodyPart::getGeneratedSize(const generationContext& ctx)
+size_t bodyPart::getGeneratedSize(const generationContext& ctx)
 {
 	return m_header->getGeneratedSize(ctx) + 2 /* CRLF */ + m_body->getGeneratedSize(ctx);
 }

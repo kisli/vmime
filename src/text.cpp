@@ -68,12 +68,12 @@ text::~text()
 
 
 void text::parseImpl
-	(const parsingContext& ctx, const string& buffer, const string::size_type position,
-	 const string::size_type end, string::size_type* newPosition)
+	(const parsingContext& ctx, const string& buffer, const size_t position,
+	 const size_t end, size_t* newPosition)
 {
 	removeAllWords();
 
-	string::size_type newPos;
+	size_t newPos;
 
 	const std::vector <shared_ptr <word> > words = word::parseMultiple(ctx, buffer, position, end, &newPos);
 
@@ -88,7 +88,7 @@ void text::parseImpl
 
 void text::generateImpl
 	(const generationContext& ctx, utility::outputStream& os,
-	 const string::size_type curLinePos, string::size_type* newLinePos) const
+	 const size_t curLinePos, size_t* newLinePos) const
 {
 	encodeAndFold(ctx, os, curLinePos, newLinePos, 0);
 }
@@ -251,8 +251,8 @@ shared_ptr <text> text::newFromString(const string& in, const charset& ch)
 
 void text::createFromString(const string& in, const charset& ch)
 {
-	string::size_type asciiCount = 0;
-	string::size_type asciiPercent = 0;
+	size_t asciiCount = 0;
+	size_t asciiPercent = 0;
 
 	removeAllWords();
 
@@ -281,7 +281,7 @@ void text::createFromString(const string& in, const charset& ch)
 		bool prevIs8bit = false; // is previous word 8-bit?
 		unsigned int count = 0;  // total number of words
 
-		for (string::size_type end = in.size(), pos = 0, start = 0 ; ; )
+		for (size_t end = in.size(), pos = 0, start = 0 ; ; )
 		{
 			if (pos == end || parserHelpers::isSpace(in[pos]))
 			{
@@ -352,9 +352,9 @@ void text::createFromString(const string& in, const charset& ch)
 
 void text::encodeAndFold
 	(const generationContext& ctx, utility::outputStream& os,
-	 const string::size_type firstLineOffset, string::size_type* lastLineLength, const int flags) const
+	 const size_t firstLineOffset, size_t* lastLineLength, const int flags) const
 {
-	string::size_type curLineLength = firstLineOffset;
+	size_t curLineLength = firstLineOffset;
 	word::generatorState state;
 
 	for (size_t wi = 0 ; wi < getWordCount() ; ++wi)

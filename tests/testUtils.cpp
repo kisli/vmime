@@ -23,6 +23,10 @@
 
 #include "testUtils.hpp"
 
+#include "vmime/utility/stringUtils.hpp"
+
+#include <cstring>
+
 
 
 // testSocket
@@ -51,7 +55,7 @@ bool testSocket::isConnected() const
 }
 
 
-testSocket::size_type testSocket::getBlockSize() const
+vmime::size_t testSocket::getBlockSize() const
 {
 	return 16384;
 }
@@ -90,9 +94,15 @@ void testSocket::send(const vmime::string& buffer)
 }
 
 
-testSocket::size_type testSocket::receiveRaw(char* buffer, const size_type count)
+void testSocket::send(const char* str)
 {
-	const size_type n = std::min(count, static_cast <size_type>(m_inBuffer.size()));
+	sendRaw(reinterpret_cast <const vmime::byte_t*>(str), strlen(str));
+}
+
+
+vmime::size_t testSocket::receiveRaw(vmime::byte_t* buffer, const size_t count)
+{
+	const size_t n = std::min(count, static_cast <size_t>(m_inBuffer.size()));
 
 	std::copy(m_inBuffer.begin(), m_inBuffer.begin() + n, buffer);
 	m_inBuffer.erase(m_inBuffer.begin(), m_inBuffer.begin() + n);
@@ -101,13 +111,13 @@ testSocket::size_type testSocket::receiveRaw(char* buffer, const size_type count
 }
 
 
-void testSocket::sendRaw(const char* buffer, const size_type count)
+void testSocket::sendRaw(const vmime::byte_t* buffer, const size_t count)
 {
-	send(vmime::string(buffer, count));
+	send(vmime::utility::stringUtils::makeStringFromBytes(buffer, count));
 }
 
 
-testSocket::size_type testSocket::sendRawNonBlocking(const char* buffer, const size_type count)
+vmime::size_t testSocket::sendRawNonBlocking(const vmime::byte_t* buffer, const size_t count)
 {
 	sendRaw(buffer, count);
 	return count;
@@ -129,7 +139,7 @@ void testSocket::localReceive(vmime::string& buffer)
 
 bool testSocket::localReceiveLine(vmime::string& line)
 {
-	vmime::string::size_type eol;
+	vmime::size_t eol;
 
 	if ((eol = m_outBuffer.find('\n')) != vmime::string::npos)
 	{
@@ -147,9 +157,9 @@ bool testSocket::localReceiveLine(vmime::string& line)
 }
 
 
-testSocket::size_type testSocket::localReceiveRaw(char* buffer, const size_type count)
+vmime::size_t testSocket::localReceiveRaw(vmime::byte_t* buffer, const size_t count)
 {
-	const size_type received = std::min(count, static_cast <size_type>(m_outBuffer.size()));
+	const size_t received = std::min(count, static_cast <size_t>(m_outBuffer.size()));
 
 	if (received != 0)
 	{
@@ -184,7 +194,7 @@ void lineBasedTestSocket::onDataReceived()
 
 	m_buffer += chunk;
 
-	vmime::string::size_type eol;
+	vmime::size_t eol;
 
 	while ((eol = m_buffer.find('\n')) != vmime::string::npos)
 	{
@@ -217,7 +227,7 @@ bool lineBasedTestSocket::haveMoreLines() const
 
 // testTimeoutHandler
 
-testTimeoutHandler::testTimeoutHandler(const unsigned int delay)
+testTimeoutHandler::testTimeoutHandler(const unsigned long delay)
 	: m_delay(delay), m_start(0)
 {
 }

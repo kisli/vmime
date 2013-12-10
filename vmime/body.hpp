@@ -280,7 +280,7 @@ public:
 
 	const std::vector <shared_ptr <component> > getChildComponents();
 
-	utility::stream::size_type getGeneratedSize(const generationContext& ctx);
+	size_t getGeneratedSize(const generationContext& ctx);
 
 private:
 
@@ -315,26 +315,26 @@ protected:
 	  * CR/LF and "--" before the boundary)
 	  * @param boundaryEnd will hold the end position of the boundary (position just
 	  * before the CRLF or "--" which follows)
-	  * @return the position of the boundary string, or stream::npos if not found
+	  * @return the position of the boundary string, or npos if not found
 	  */
-	utility::stream::size_type findNextBoundaryPosition
+	size_t findNextBoundaryPosition
 		(shared_ptr <utility::parserInputStreamAdapter> parser, const string& boundary,
-		 const utility::stream::size_type position, const utility::stream::size_type end,
-		 utility::stream::size_type* boundaryStart, utility::stream::size_type* boundaryEnd);
+		 const size_t position, const size_t end,
+		 size_t* boundaryStart, size_t* boundaryEnd);
 
 	// Component parsing & assembling
 	void parseImpl
 		(const parsingContext& ctx,
 		 shared_ptr <utility::parserInputStreamAdapter> parser,
-		 const utility::stream::size_type position,
-		 const utility::stream::size_type end,
-		 utility::stream::size_type* newPosition = NULL);
+		 const size_t position,
+		 const size_t end,
+		 size_t* newPosition = NULL);
 
 	void generateImpl
 		(const generationContext& ctx,
 		 utility::outputStream& os,
-		 const string::size_type curLinePos = 0,
-		 string::size_type* newLinePos = NULL) const;
+		 const size_t curLinePos = 0,
+		 size_t* newLinePos = NULL) const;
 };
 
 

@@ -44,11 +44,15 @@ extern "C"
 	// HACK: prototypes may differ depending on the compiler and/or system (the
 	// second parameter may or may not be 'const'). This relies on the compiler
 	// for choosing the right type.
-	class ICONV_HACK
+
+	class ICONV_IN_TYPE
 	{
 	public:
 
-		ICONV_HACK(const char** ptr) : m_ptr(ptr) { }
+		ICONV_IN_TYPE(const char** ptr) : m_ptr(ptr) { }
+
+		ICONV_IN_TYPE(const vmime::byte_t** ptr)
+			: m_ptr(reinterpret_cast <const char**>(ptr)) { }
 
 		operator const char**() { return m_ptr; }
 		operator char**() { return const_cast <char**>(m_ptr); }
@@ -56,6 +60,22 @@ extern "C"
 	private:
 
 		const char** m_ptr;
+	};
+
+	class ICONV_OUT_TYPE
+	{
+	public:
+
+		ICONV_OUT_TYPE(char** ptr) : m_ptr(ptr) { }
+
+		ICONV_OUT_TYPE(vmime::byte_t** ptr)
+			: m_ptr(reinterpret_cast <char**>(ptr)) { }
+
+		operator char**() { return m_ptr; }
+
+	private:
+
+		char** m_ptr;
 	};
 
 #endif // VMIME_BUILDING_DOC
@@ -69,14 +89,14 @@ void outputInvalidChar(OUTPUT_CLASS& out, ICONV_DESC cd,
                        const vmime::charsetConverterOptions& opts = vmime::charsetConverterOptions())
 {
 	const char* invalidCharIn = opts.invalidSequence.c_str();
-	size_t invalidCharInLen = opts.invalidSequence.length();
+	vmime::size_t invalidCharInLen = opts.invalidSequence.length();
 
-	char invalidCharOutBuffer[16];
-	char* invalidCharOutPtr = invalidCharOutBuffer;
-	size_t invalidCharOutLen = 16;
+	vmime::byte_t invalidCharOutBuffer[16];
+	vmime::byte_t* invalidCharOutPtr = invalidCharOutBuffer;
+	vmime::size_t invalidCharOutLen = 16;
 
-	if (iconv(cd, ICONV_HACK(&invalidCharIn), &invalidCharInLen,
-		&invalidCharOutPtr, &invalidCharOutLen) != static_cast <size_t>(-1))
+	if (iconv(cd, ICONV_IN_TYPE(&invalidCharIn), &invalidCharInLen,
+		ICONV_OUT_TYPE(&invalidCharOutPtr), &invalidCharOutLen) != static_cast <size_t>(-1))
 	{
 		out.write(invalidCharOutBuffer, 16 - invalidCharOutLen);
 	}
@@ -134,8 +154,8 @@ void charsetConverter_iconv::convert(utility::inputStream& in, utility::outputSt
 
 	const iconv_t cd = *static_cast <iconv_t*>(m_desc);
 
-	char inBuffer[32768];
-	char outBuffer[32768];
+	byte_t inBuffer[32768];
+	byte_t outBuffer[32768];
 	size_t inPos = 0;
 
 	bool prevIsInvalid = false;
@@ -147,13 +167,13 @@ void charsetConverter_iconv::convert(utility::inputStream& in, utility::outputSt
 		size_t inLength = static_cast <size_t>(in.read(inBuffer + inPos, sizeof(inBuffer) - inPos) + inPos);
 		size_t outLength = sizeof(outBuffer);
 
-		const char* inPtr = breakAfterNext ? NULL : inBuffer;
+		const byte_t* inPtr = breakAfterNext ? NULL : inBuffer;
 		size_t *ptrLength = breakAfterNext ? NULL : &inLength;
-		char* outPtr = outBuffer;
+		byte_t* outPtr = outBuffer;
 
 		// Convert input bytes
-		if (iconv(cd, ICONV_HACK(&inPtr), ptrLength,
-			      &outPtr, &outLength) == static_cast <size_t>(-1))
+		if (iconv(cd, ICONV_IN_TYPE(&inPtr), ptrLength,
+			      ICONV_OUT_TYPE(&outPtr), &outLength) == static_cast <size_t>(-1))
 		{
 			// Illegal input sequence or input sequence has no equivalent
 			// sequence in the destination charset.
@@ -167,7 +187,7 @@ void charsetConverter_iconv::convert(utility::inputStream& in, utility::outputSt
 				outputInvalidChar(out, cd, m_options);
 
 				// Skip a byte and leave unconverted bytes in the input buffer
-				std::copy(const_cast <char*>(inPtr + 1), inBuffer + sizeof(inBuffer), inBuffer);
+				std::copy(const_cast <byte_t*>(inPtr + 1), inBuffer + sizeof(inBuffer), inBuffer);
 				inPos = inLength - 1;
 			}
 			else
@@ -176,7 +196,7 @@ void charsetConverter_iconv::convert(utility::inputStream& in, utility::outputSt
 				out.write(outBuffer, sizeof(outBuffer) - outLength);
 
 				// Leave unconverted bytes in the input buffer
-				std::copy(const_cast <char*>(inPtr), inBuffer + sizeof(inBuffer), inBuffer);
+				std::copy(const_cast <byte_t*>(inPtr), inBuffer + sizeof(inBuffer), inBuffer);
 				inPos = inLength;
 
 				if (errno != E2BIG)
@@ -271,16 +291,16 @@ outputStream& charsetFilteredOutputStream_iconv::getNextOutputStream()
 }
 
 
-void charsetFilteredOutputStream_iconv::write
-	(const value_type* const data, const size_type count)
+void charsetFilteredOutputStream_iconv::writeImpl
+	(const byte_t* const data, const size_t count)
 {
 	if (m_desc == NULL)
 		throw exceptions::charset_conv_error("Cannot initialize converter.");
 
 	const iconv_t cd = *static_cast <iconv_t*>(m_desc);
 
-	const value_type* curData = data;
-	size_type curDataLen = count;
+	const byte_t* curData = data;
+	size_t curDataLen = count;
 
 	// If there is some unconverted bytes left, add more data from this
 	// chunk to see if it can now be converted.
@@ -303,7 +323,7 @@ void charsetFilteredOutputStream_iconv::write
 			}
 
 			// Get more data
-			const size_type remaining =
+			const size_t remaining =
 				std::min(curDataLen, sizeof(m_unconvBuffer) - m_unconvCount);
 
 			std::copy(curData, curData + remaining, m_unconvBuffer + m_unconvCount);
@@ -316,14 +336,15 @@ void charsetFilteredOutputStream_iconv::write
 				return;  // no more data
 
 			// Try a conversion
-			const char* inPtr = m_unconvBuffer;
+			const byte_t* inPtr = m_unconvBuffer;
 			size_t inLength = m_unconvCount;
-			char* outPtr = m_outputBuffer;
+			byte_t* outPtr = m_outputBuffer;
 			size_t outLength = sizeof(m_outputBuffer);
 
 			const size_t inLength0 = inLength;
 
-			if (iconv(cd, ICONV_HACK(&inPtr), &inLength, &outPtr, &outLength) == static_cast <size_t>(-1))
+			if (iconv(cd, ICONV_IN_TYPE(&inPtr), &inLength,
+			          ICONV_OUT_TYPE(&outPtr), &outLength) == static_cast <size_t>(-1))
 			{
 				const size_t inputConverted = inLength0 - inLength;
 
@@ -350,14 +371,15 @@ void charsetFilteredOutputStream_iconv::write
 			return;  // no more data
 
 		// Now, convert the current data buffer
-		const char* inPtr = curData;
+		const byte_t* inPtr = curData;
 		size_t inLength = std::min(curDataLen, sizeof(m_outputBuffer) / MAX_CHARACTER_WIDTH);
-		char* outPtr = m_outputBuffer;
+		byte_t* outPtr = m_outputBuffer;
 		size_t outLength = sizeof(m_outputBuffer);
 
 		const size_t inLength0 = inLength;
 
-		if (iconv(cd, ICONV_HACK(&inPtr), &inLength, &outPtr, &outLength) == static_cast <size_t>(-1))
+		if (iconv(cd, ICONV_IN_TYPE(&inPtr), &inLength,
+		          ICONV_OUT_TYPE(&outPtr), &outLength) == static_cast <size_t>(-1))
 		{
 			// Write successfully converted bytes
 			m_stream.write(m_outputBuffer, sizeof(m_outputBuffer) - outLength);
@@ -403,14 +425,14 @@ void charsetFilteredOutputStream_iconv::flush()
 	while (m_unconvCount != 0)
 	{
 		// Try a conversion
-		const char* inPtr = m_unconvBuffer + offset;
+		const byte_t* inPtr = m_unconvBuffer + offset;
 		size_t inLength = m_unconvCount;
-		char* outPtr = m_outputBuffer;
+		byte_t* outPtr = m_outputBuffer;
 		size_t outLength = sizeof(m_outputBuffer);
 
 		const size_t inLength0 = inLength;
 
-		if (iconv(cd, ICONV_HACK(&inPtr), &inLength, &outPtr, &outLength) == static_cast <size_t>(-1))
+		if (iconv(cd, ICONV_IN_TYPE(&inPtr), &inLength, ICONV_OUT_TYPE(&outPtr), &outLength) == static_cast <size_t>(-1))
 		{
 			const size_t inputConverted = inLength0 - inLength;
 

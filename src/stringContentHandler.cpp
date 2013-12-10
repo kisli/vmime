@@ -56,8 +56,8 @@ stringContentHandler::stringContentHandler(const utility::stringProxy& str, cons
 }
 
 
-stringContentHandler::stringContentHandler(const string& buffer, const string::size_type start,
-	const string::size_type end, const vmime::encoding& enc)
+stringContentHandler::stringContentHandler(const string& buffer, const size_t start,
+	const size_t end, const vmime::encoding& enc)
 	: m_encoding(enc), m_string(buffer, start, end)
 {
 }
@@ -98,8 +98,8 @@ void stringContentHandler::setData(const string& buffer, const vmime::encoding& 
 }
 
 
-void stringContentHandler::setData(const string& buffer, const string::size_type start,
-	const string::size_type end, const vmime::encoding& enc)
+void stringContentHandler::setData(const string& buffer, const size_t start,
+	const size_t end, const vmime::encoding& enc)
 {
 	m_encoding = enc;
 	m_string.set(buffer, start, end);
@@ -114,7 +114,7 @@ stringContentHandler& stringContentHandler::operator=(const string& buffer)
 
 
 void stringContentHandler::generate(utility::outputStream& os,
-	const vmime::encoding& enc, const string::size_type maxLineLength) const
+	const vmime::encoding& enc, const size_t maxLineLength) const
 {
 	// Managed data is already encoded
 	if (isEncoded())
@@ -191,7 +191,7 @@ void stringContentHandler::extractRaw(utility::outputStream& os,
 }
 
 
-string::size_type stringContentHandler::getLength() const
+size_t stringContentHandler::getLength() const
 {
 	return (m_string.length());
 }

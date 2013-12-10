@@ -46,8 +46,8 @@ void parserInputStreamAdapter::reset()
 }
 
 
-stream::size_type parserInputStreamAdapter::read
-	(value_type* const data, const size_type count)
+size_t parserInputStreamAdapter::read
+	(byte_t* const data, const size_t count)
 {
 	return m_stream->read(data, count);
 }
@@ -59,17 +59,19 @@ shared_ptr <seekableInputStream> parserInputStreamAdapter::getUnderlyingStream()
 }
 
 
-const string parserInputStreamAdapter::extract(const size_type begin, const size_type end) const
+const string parserInputStreamAdapter::extract(const size_t begin, const size_t end) const
 {
-	const size_type initialPos = m_stream->getPosition();
+	const size_t initialPos = m_stream->getPosition();
+
+	byte_t *buffer = NULL;
 
 	try
 	{
-		value_type *buffer = new value_type[end - begin + 1];
+		buffer = new byte_t[end - begin + 1];
 
 		m_stream->seek(begin);
 
-		const size_type readBytes = m_stream->read(buffer, end - begin);
+		const size_t readBytes = m_stream->read(buffer, end - begin);
 		buffer[readBytes] = '\0';
 
 		m_stream->seek(initialPos);
@@ -81,14 +83,16 @@ const string parserInputStreamAdapter::extract(const size_type begin, const size
 	}
 	catch (...)
 	{
+		delete [] buffer;
+
 		m_stream->seek(initialPos);
 		throw;
 	}
 }
 
 
-stream::size_type parserInputStreamAdapter::findNext
-	(const string& token, const size_type startPosition)
+size_t parserInputStreamAdapter::findNext
+	(const string& token, const size_t startPosition)
 {
 	static const unsigned int BUFFER_SIZE = 4096;
 
@@ -96,28 +100,28 @@ stream::size_type parserInputStreamAdapter::findNext
 	if (token.empty() || token.length() > BUFFER_SIZE / 2)
 		return npos;
 
-	const size_type initialPos = getPosition();
+	const size_t initialPos = getPosition();
 
 	seek(startPosition);
 
 	try
 	{
-		value_type findBuffer[BUFFER_SIZE];
-		value_type* findBuffer1 = findBuffer;
-		value_type* findBuffer2 = findBuffer + (BUFFER_SIZE / 2) * sizeof(value_type);
+		byte_t findBuffer[BUFFER_SIZE];
+		byte_t* findBuffer1 = findBuffer;
+		byte_t* findBuffer2 = findBuffer + (BUFFER_SIZE / 2);
 
-		size_type findBufferLen = 0;
-		size_type findBufferOffset = 0;
+		size_t findBufferLen = 0;
+		size_t findBufferOffset = 0;
 
 		bool isEOF = false;
 
 		// Fill in initial buffer
-		findBufferLen = read(findBuffer, BUFFER_SIZE * sizeof(value_type));
+		findBufferLen = read(findBuffer, BUFFER_SIZE);
 
 		while (findBufferLen != 0)
 		{
 			// Find token
-			for (value_type *begin = findBuffer, *end = findBuffer + findBufferLen - token.length() ;
+			for (byte_t *begin = findBuffer, *end = findBuffer + findBufferLen - token.length() ;
 			     begin <= end ; ++begin)
 			{
 				if (begin[0] == token[0] &&
@@ -132,7 +136,7 @@ stream::size_type parserInputStreamAdapter::findNext
 			}
 
 			// Rotate buffer
-			memcpy(findBuffer1, findBuffer2, (BUFFER_SIZE / 2) * sizeof(value_type));
+			memcpy(findBuffer1, findBuffer2, (BUFFER_SIZE / 2));
 
 			// Read more bytes
 			if (findBufferLen < BUFFER_SIZE && (eof() || isEOF))
@@ -141,7 +145,7 @@ stream::size_type parserInputStreamAdapter::findNext
 			}
 			else
 			{
-				const size_type bytesRead = read(findBuffer2, (BUFFER_SIZE / 2) * sizeof(value_type));
+				const size_t bytesRead = read(findBuffer2, BUFFER_SIZE / 2);
 
 				if (bytesRead == 0)
 				{

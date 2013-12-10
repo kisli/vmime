@@ -49,15 +49,15 @@ mediaType::mediaType(const string& type, const string& subType)
 
 
 void mediaType::parseImpl
-	(const parsingContext& /* ctx */, const string& buffer, const string::size_type position,
-	 const string::size_type end, string::size_type* newPosition)
+	(const parsingContext& /* ctx */, const string& buffer, const size_t position,
+	 const size_t end, size_t* newPosition)
 {
-	const string::value_type* const pend = buffer.data() + end;
-	const string::value_type* const pstart = buffer.data() + position;
-	const string::value_type* p = pstart;
+	const char* const pend = buffer.data() + end;
+	const char* const pstart = buffer.data() + position;
+	const char* p = pstart;
 
 	// Extract the type
-	const string::size_type typeStart = position;
+	const size_t typeStart = position;
 
 	while (p < pend && *p != '/') ++p;
 
@@ -85,7 +85,7 @@ void mediaType::parseImpl
 
 void mediaType::generateImpl
 	(const generationContext& ctx, utility::outputStream& os,
-	 const string::size_type curLinePos, string::size_type* newLinePos) const
+	 const size_t curLinePos, size_t* newLinePos) const
 {
 	const string value = m_type + "/" + m_subType;
 

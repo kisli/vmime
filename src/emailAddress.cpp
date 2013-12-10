@@ -72,12 +72,12 @@ emailAddress::emailAddress(const word& localName, const word& domainName)
 
 
 void emailAddress::parseImpl
-	(const parsingContext& /* ctx */, const string& buffer, const string::size_type position,
-	 const string::size_type end, string::size_type* newPosition)
+	(const parsingContext& /* ctx */, const string& buffer, const size_t position,
+	 const size_t end, size_t* newPosition)
 {
-	const string::value_type* const pend = buffer.data() + end;
-	const string::value_type* const pstart = buffer.data() + position;
-	const string::value_type* p = pstart;
+	const char* const pend = buffer.data() + end;
+	const char* const pstart = buffer.data() + position;
+	const char* p = pstart;
 
 	enum ParserStates
 	{
@@ -104,7 +104,7 @@ void emailAddress::parseImpl
 
 	while (p < pend && !stop)
 	{
-		const string::value_type c = *p;
+		const char c = *p;
 
 		if ((localPart.str().length() + domainPart.str().length()) >= 256)
 		{
@@ -371,9 +371,9 @@ void emailAddress::parseImpl
 static const string domainNameToIDNA(const string& domainName)
 {
 	std::ostringstream idnaDomain;
-	string::size_type p = 0;
+	size_t p = 0;
 
-	for (string::size_type n = domainName.find('.', p) ;
+	for (size_t n = domainName.find('.', p) ;
 	     (n = domainName.find('.', p)) != string::npos ; p = n + 1)
 	{
 		string idnaPart;
@@ -398,7 +398,7 @@ static const string domainNameToIDNA(const string& domainName)
 
 void emailAddress::generateImpl
 	(const generationContext& ctx, utility::outputStream& os,
-	 const string::size_type curLinePos, string::size_type* newLinePos) const
+	 const size_t curLinePos, size_t* newLinePos) const
 {
 	string localPart, domainPart;
 

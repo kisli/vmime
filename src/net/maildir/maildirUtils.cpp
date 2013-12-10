@@ -71,7 +71,7 @@ bool maildirUtils::isMessageFile(const utility::file& file)
 const utility::file::path::component maildirUtils::extractId
 	(const utility::file::path::component& filename)
 {
-	string::size_type sep = filename.getBuffer().rfind(':');  // try colon
+	size_t sep = filename.getBuffer().rfind(':');  // try colon
 
 	if (sep == string::npos)
 	{
@@ -86,7 +86,7 @@ const utility::file::path::component maildirUtils::extractId
 
 int maildirUtils::extractFlags(const utility::file::path::component& comp)
 {
-	string::size_type sep = comp.getBuffer().rfind(':');  // try colon
+	size_t sep = comp.getBuffer().rfind(':');  // try colon
 
 	if (sep == string::npos)
 	{
@@ -95,11 +95,11 @@ int maildirUtils::extractFlags(const utility::file::path::component& comp)
 	}
 
 	const string flagsString(comp.getBuffer().begin() + sep + 1, comp.getBuffer().end());
-	const string::size_type count = flagsString.length();
+	const size_t count = flagsString.length();
 
 	int flags = 0;
 
-	for (string::size_type i = 0 ; i < count ; ++i)
+	for (size_t i = 0 ; i < count ; ++i)
 	{
 		switch (flagsString[i])
 		{

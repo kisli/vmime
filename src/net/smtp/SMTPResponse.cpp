@@ -128,11 +128,11 @@ const string SMTPResponse::readResponseLine()
 	while (true)
 	{
 		// Get a line from the response buffer
-		const string::size_type lineEnd = currentBuffer.find_first_of('\n');
+		const size_t lineEnd = currentBuffer.find_first_of('\n');
 
 		if (lineEnd != string::npos)
 		{
-			string::size_type actualLineEnd = lineEnd;
+			size_t actualLineEnd = lineEnd;
 
 			if (actualLineEnd != 0 && currentBuffer[actualLineEnd - 1] == '\r')  // CRLF case
 				actualLineEnd--;

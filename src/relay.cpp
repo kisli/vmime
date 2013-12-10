@@ -59,12 +59,12 @@ relay::relay(const relay& r)
 */
 
 void relay::parseImpl
-	(const parsingContext& ctx, const string& buffer, const string::size_type position,
-	 const string::size_type end, string::size_type* newPosition)
+	(const parsingContext& ctx, const string& buffer, const size_t position,
+	 const size_t end, size_t* newPosition)
 {
-	const string::value_type* const pend = buffer.data() + end;
-	const string::value_type* const pstart = buffer.data() + position;
-	const string::value_type* p = pend - 1;
+	const char* const pend = buffer.data() + end;
+	const char* const pstart = buffer.data() + position;
+	const char* p = pend - 1;
 
 	// Find the beginning of the date part
 	while (p >= pstart && *p != ';')
@@ -107,7 +107,7 @@ void relay::parseImpl
 				// A little hack for handling comments
 				if (inComment)
 				{
-					string::size_type par = word.find(')');
+					size_t par = word.find(')');
 
 					if (par != string::npos)
 					{
@@ -202,7 +202,7 @@ void relay::parseImpl
 
 void relay::generateImpl
 	(const generationContext& ctx, utility::outputStream& os,
-	 const string::size_type curLinePos, string::size_type* newLinePos) const
+	 const size_t curLinePos, size_t* newLinePos) const
 {
 	std::ostringstream oss;
 	int count = 0;

@@ -98,7 +98,7 @@ shared_ptr <POP3Response> POP3Response::readMultilineResponse(shared_ptr <POP3Co
 // static
 shared_ptr <POP3Response> POP3Response::readLargeResponse
 	(shared_ptr <POP3Connection> conn, utility::outputStream& os,
-	 utility::progressListener* progress, const long predictedSize)
+	 utility::progressListener* progress, const size_t predictedSize)
 {
 	shared_ptr <POP3Response> resp = shared_ptr <POP3Response>
 		(new POP3Response(conn->getSocket(), conn->getTimeoutHandler()));
@@ -159,7 +159,7 @@ void POP3Response::readResponseImpl(string& buffer, const bool multiLine)
 
 	buffer.clear();
 
-	string::value_type last1 = '\0', last2 = '\0';
+	char last1 = '\0', last2 = '\0';
 
 	for ( ; !foundTerminator ; )
 	{
@@ -187,7 +187,7 @@ void POP3Response::readResponseImpl(string& buffer, const bool multiLine)
 			m_timeoutHandler->resetTimeOut();
 
 		// Check for transparent characters: '\n..' becomes '\n.'
-		const string::value_type first = receiveBuffer[0];
+		const char first = receiveBuffer[0];
 
 		if (first == '.' && last2 == '\n' && last1 == '.')
 		{
@@ -199,7 +199,7 @@ void POP3Response::readResponseImpl(string& buffer, const bool multiLine)
 			receiveBuffer.erase(receiveBuffer.begin());
 		}
 
-		for (string::size_type trans ;
+		for (size_t trans ;
 		     string::npos != (trans = receiveBuffer.find("\n..")) ; )
 		{
 			receiveBuffer.replace(trans, 3, "\n.");
@@ -228,9 +228,9 @@ void POP3Response::readResponseImpl(string& buffer, const bool multiLine)
 
 void POP3Response::readResponseImpl
 	(string& firstLine, utility::outputStream& os,
-	 utility::progressListener* progress, const long predictedSize)
+	 utility::progressListener* progress, const size_t predictedSize)
 {
-	long current = 0, total = predictedSize;
+	size_t current = 0, total = predictedSize;
 
 	string temp;
 	bool codeDone = false;
@@ -264,8 +264,8 @@ void POP3Response::readResponseImpl
 		}
 
 		// Receive data from the socket
-		utility::stream::value_type buffer[65536];
-		const utility::stream::size_type read = is.read(buffer, sizeof(buffer));
+		byte_t buffer[65536];
+		const size_t read = is.read(buffer, sizeof(buffer));
 
 		if (read == 0)   // buffer is empty
 		{
@@ -289,7 +289,7 @@ void POP3Response::readResponseImpl
 		// If we don't have extracted the response code yet
 		if (!codeDone)
 		{
-			temp.append(buffer, read);
+			vmime::utility::stringUtils::appendBytesToString(temp, buffer, read);
 
 			string responseData;
 
@@ -322,7 +322,7 @@ void POP3Response::readResponseImpl
 bool POP3Response::stripFirstLine
 	(const string& buffer, string& result, string* firstLine)
 {
-	const string::size_type end = buffer.find('\n');
+	const size_t end = buffer.find('\n');
 
 	if (end != string::npos)
 	{
@@ -371,7 +371,7 @@ POP3Response::ResponseCode POP3Response::getResponseCode(const string& buffer)
 // static
 void POP3Response::stripResponseCode(const string& buffer, string& result)
 {
-	const string::size_type pos = buffer.find_first_of(" \t");
+	const size_t pos = buffer.find_first_of(" \t");
 
 	if (pos != string::npos)
 		result = buffer.substr(pos + 1);

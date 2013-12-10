@@ -96,7 +96,7 @@ void charsetConverter_icu::convert(utility::inputStream& in, utility::outputStre
 	UErrorCode err = U_ZERO_ERROR;
 
 	// From buffers
-	char cpInBuffer[16]; // stream data put here
+	byte_t cpInBuffer[16]; // stream data put here
 	size_t outSize = ucnv_getMinCharSize(m_from) * sizeof(cpInBuffer) * sizeof(UChar);
 	UChar* uOutBuffer = new UChar[outSize]; // Unicode chars end up here
 
@@ -120,10 +120,10 @@ void charsetConverter_icu::convert(utility::inputStream& in, utility::outputStre
 	while (!in.eof())
 	{
 		// Read input data into buffer
-		size_t inLength = static_cast<size_t>(in.read(cpInBuffer, sizeof(cpInBuffer)));
+		size_t inLength = in.read(cpInBuffer, sizeof(cpInBuffer));
 
 		// Beginning of read data
-		const char* source = &cpInBuffer[0];
+		const char* source = reinterpret_cast <const char*>(&cpInBuffer[0]);
 		const char* sourceLimit = source + inLength; // end + 1
 
 		UBool flush = in.eof();  // is this last run?
@@ -250,8 +250,8 @@ outputStream& charsetFilteredOutputStream_icu::getNextOutputStream()
 }
 
 
-void charsetFilteredOutputStream_icu::write
-	(const value_type* const data, const size_type count)
+void charsetFilteredOutputStream_icu::writeImpl
+	(const byte_t* const data, const size_t count)
 {
 	if (m_from == NULL || m_to == NULL)
 		throw exceptions::charset_conv_error("Cannot initialize converters.");
@@ -264,8 +264,8 @@ void charsetFilteredOutputStream_icu::write
 	// Conversion loop
 	UErrorCode toErr = U_ZERO_ERROR;
 
-	const char* uniSource = data;
-	const char* uniSourceLimit = data + count;
+	const char* uniSource = reinterpret_cast <const char*>(data);
+	const char* uniSourceLimit = uniSource + count;
 
 	do
 	{

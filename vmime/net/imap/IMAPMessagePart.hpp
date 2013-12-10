@@ -57,7 +57,7 @@ public:
 	shared_ptr <const IMAPMessagePart> getParent() const;
 
 	const mediaType& getType() const;
-	int getSize() const;
+	size_t getSize() const;
 	int getNumber() const;
 
 	shared_ptr <const header> getHeader() const;
@@ -76,7 +76,7 @@ private:
 	shared_ptr <header> m_header;
 
 	int m_number;
-	int m_size;
+	size_t m_size;
 	mediaType m_mediaType;
 };
 

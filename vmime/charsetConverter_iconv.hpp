@@ -93,8 +93,11 @@ public:
 
 	outputStream& getNextOutputStream();
 
-	void write(const value_type* const data, const size_type count);
 	void flush();
+
+protected:
+
+	void writeImpl(const byte_t* const data, const size_t count);
 
 private:
 
@@ -112,12 +115,12 @@ private:
 	// Buffer in which unconverted bytes are left until they can
 	// be converted (when more data arrives). The length should be
 	// large enough to contain any character in any charset.
-	value_type m_unconvBuffer[MAX_CHARACTER_WIDTH];
-	size_type m_unconvCount;
+	byte_t m_unconvBuffer[MAX_CHARACTER_WIDTH];
+	size_t m_unconvCount;
 
 	// Buffer used for conversion. Avoids declaring it in write().
 	// Should be at least MAX_CHARACTER_WIDTH * MAX_CHARACTER_WIDTH.
-	value_type m_outputBuffer[32768];
+	byte_t m_outputBuffer[32768];
 };
 
 

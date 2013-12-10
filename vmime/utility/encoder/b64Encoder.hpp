@@ -42,13 +42,13 @@ public:
 
 	b64Encoder();
 
-	utility::stream::size_type encode(utility::inputStream& in, utility::outputStream& out, utility::progressListener* progress = NULL);
-	utility::stream::size_type decode(utility::inputStream& in, utility::outputStream& out, utility::progressListener* progress = NULL);
+	size_t encode(utility::inputStream& in, utility::outputStream& out, utility::progressListener* progress = NULL);
+	size_t decode(utility::inputStream& in, utility::outputStream& out, utility::progressListener* progress = NULL);
 
 	const std::vector <string> getAvailableProperties() const;
 
-	utility::stream::size_type getEncodedSize(const utility::stream::size_type n) const;
-	utility::stream::size_type getDecodedSize(const utility::stream::size_type n) const;
+	size_t getEncodedSize(const size_t n) const;
+	size_t getDecodedSize(const size_t n) const;
 
 protected:
 

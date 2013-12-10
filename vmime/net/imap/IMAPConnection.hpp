@@ -80,7 +80,7 @@ public:
 
 
 	void send(bool tag, const string& what, bool end);
-	void sendRaw(const char* buffer, const int count);
+	void sendRaw(const byte_t* buffer, const size_t count);
 
 	IMAPParser::response* readResponse(IMAPParser::literalHandler* lh = NULL);
 

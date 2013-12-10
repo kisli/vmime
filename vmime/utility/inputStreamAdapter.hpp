@@ -47,10 +47,10 @@ public:
 
 	bool eof() const;
 	void reset();
-	size_type read(value_type* const data, const size_type count);
-	size_type skip(const size_type count);
-	size_type getPosition() const;
-	void seek(const size_type pos);
+	size_t read(byte_t* const data, const size_t count);
+	size_t skip(const size_t count);
+	size_t getPosition() const;
+	void seek(const size_t pos);
 
 private:
 

@@ -71,23 +71,23 @@ struct paramInfo
 {
 	bool extended;
 	std::vector <parameter::valueChunk> value;
-	string::size_type start;
-	string::size_type end;
+	size_t start;
+	size_t end;
 };
 
 #endif // VMIME_BUILDING_DOC
 
 
 void parameterizedHeaderField::parseImpl
-	(const parsingContext& ctx, const string& buffer, const string::size_type position,
-	 const string::size_type end, string::size_type* newPosition)
+	(const parsingContext& ctx, const string& buffer, const size_t position,
+	 const size_t end, size_t* newPosition)
 {
-	const string::value_type* const pend = buffer.data() + end;
-	const string::value_type* const pstart = buffer.data() + position;
-	const string::value_type* p = pstart;
+	const char* const pend = buffer.data() + end;
+	const char* const pstart = buffer.data() + position;
+	const char* p = pstart;
 
 	// Skip non-significant whitespaces
-	string::size_type valueStart = position;
+	size_t valueStart = position;
 
 	while (p < pend && parserHelpers::isSpace(*p))
 	{
@@ -96,7 +96,7 @@ void parameterizedHeaderField::parseImpl
 	}
 
 	// Advance up to ';', if any
-	string::size_type valueLength = 0;
+	size_t valueLength = 0;
 
 	while (p < pend && *p != ';' && (!parserHelpers::isSpace(*p)))  // FIXME: support ";" inside quoted or RFC-2047-encoded text
 	{
@@ -132,7 +132,7 @@ void parameterizedHeaderField::parseImpl
 
 			while (p < pend && parserHelpers::isSpace(*p)) ++p;
 
-			const string::size_type attrStart = position + (p - pstart);
+			const size_t attrStart = position + (p - pstart);
 
 			while (p < pend && !(*p == ';' || *p == '='))
 				++p;
@@ -148,7 +148,7 @@ void parameterizedHeaderField::parseImpl
 			else
 			{
 				// Extract the attribute name
-				string::size_type attrEnd = position + (p - pstart);
+				size_t attrEnd = position + (p - pstart);
 
 				while (attrEnd != attrStart && parserHelpers::isSpace(buffer[attrEnd - 1]))
 					--attrEnd;
@@ -173,7 +173,7 @@ void parameterizedHeaderField::parseImpl
 					bool stop = false;
 
 					std::ostringstream ss;
-					string::size_type start = position + (p - pstart);
+					size_t start = position + (p - pstart);
 
 					for ( ; p < pend && !stop ; ++p)
 					{
@@ -218,12 +218,12 @@ void parameterizedHeaderField::parseImpl
 				// -- the value is a simple token
 				else
 				{
-					const string::size_type valStart = position + (p - pstart);
+					const size_t valStart = position + (p - pstart);
 
 					while (p < pend && *p != ';')
 						++p;
 
-					string::size_type valEnd = position + (p - pstart);
+					size_t valEnd = position + (p - pstart);
 
 					while (valEnd != valStart && parserHelpers::isSpace(buffer[valEnd - 1]))
 						--valEnd;
@@ -250,13 +250,13 @@ void parameterizedHeaderField::parseImpl
 					}
 
 					// Check for RFC-2231 multi-section parameters
-					const string::size_type star = name.find_last_of('*');
+					const size_t star = name.find_last_of('*');
 
 					if (star != string::npos)
 					{
 						bool allDigits = true;
 
-						for (string::size_type i = star + 1 ; allDigits && (i < name.length()) ; ++i)
+						for (size_t i = star + 1 ; allDigits && (i < name.length()) ; ++i)
 							allDigits = parserHelpers::isDigit(name[i]);
 
 						if (allDigits)
@@ -337,9 +337,9 @@ void parameterizedHeaderField::parseImpl
 
 void parameterizedHeaderField::generateImpl
 	(const generationContext& ctx, utility::outputStream& os,
-	 const string::size_type curLinePos, string::size_type* newLinePos) const
+	 const size_t curLinePos, size_t* newLinePos) const
 {
-	string::size_type pos = curLinePos;
+	size_t pos = curLinePos;
 
 	// Parent header field
 	headerField::generateImpl(ctx, os, pos, &pos);

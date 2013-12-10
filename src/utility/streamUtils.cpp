@@ -32,7 +32,7 @@ namespace vmime {
 namespace utility {
 
 
-outputStream& operator<<(outputStream& os, const stream::value_type c)
+outputStream& operator<<(outputStream& os, const byte_t c)
 {
 	os.write(&c, 1);
 	return (os);
@@ -46,29 +46,29 @@ outputStream& operator<<(outputStream& os, const string& str)
 }
 
 
-stream::size_type bufferedStreamCopy(inputStream& is, outputStream& os)
+size_t bufferedStreamCopy(inputStream& is, outputStream& os)
 {
 	return bufferedStreamCopy(is, os, 0, NULL);
 }
 
 
-stream::size_type bufferedStreamCopyRange(inputStream& is, outputStream& os,
-	const stream::size_type start, const stream::size_type length)
+size_t bufferedStreamCopyRange(inputStream& is, outputStream& os,
+	const size_t start, const size_t length)
 {
-	const stream::size_type blockSize =
+	const size_t blockSize =
 		std::min(is.getBlockSize(), os.getBlockSize());
 
 	is.skip(start);
 
-	std::vector <stream::value_type> vbuffer(blockSize);
+	std::vector <byte_t> vbuffer(blockSize);
 
-	stream::value_type* buffer = &vbuffer.front();
-	stream::size_type total = 0;
+	byte_t* buffer = &vbuffer.front();
+	size_t total = 0;
 
 	while (!is.eof() && total < length)
 	{
-		const stream::size_type remaining = std::min(length - total, blockSize);
-		const stream::size_type read = is.read(buffer, remaining);
+		const size_t remaining = std::min(length - total, blockSize);
+		const size_t read = is.read(buffer, remaining);
 
 		if (read != 0)
 		{
@@ -81,23 +81,23 @@ stream::size_type bufferedStreamCopyRange(inputStream& is, outputStream& os,
 }
 
 
-stream::size_type bufferedStreamCopy(inputStream& is, outputStream& os,
-	const stream::size_type length, progressListener* progress)
+size_t bufferedStreamCopy(inputStream& is, outputStream& os,
+	const size_t length, progressListener* progress)
 {
-	const stream::size_type blockSize =
+	const size_t blockSize =
 		std::min(is.getBlockSize(), os.getBlockSize());
 
-	std::vector <stream::value_type> vbuffer(blockSize);
+	std::vector <byte_t> vbuffer(blockSize);
 
-	stream::value_type* buffer = &vbuffer.front();
-	stream::size_type total = 0;
+	byte_t* buffer = &vbuffer.front();
+	size_t total = 0;
 
 	if (progress != NULL)
 		progress->start(length);
 
 	while (!is.eof())
 	{
-		const stream::size_type read = is.read(buffer, blockSize);
+		const size_t read = is.read(buffer, blockSize);
 
 		if (read != 0)
 		{

@@ -63,7 +63,7 @@ public:
 
 	const uid getUID() const;
 
-	int getSize() const;
+	size_t getSize() const;
 
 	bool isExpunged() const;
 
@@ -75,8 +75,8 @@ public:
 	int getFlags() const;
 	void setFlags(const int flags, const int mode = FLAG_MODE_SET);
 
-	void extract(utility::outputStream& os, utility::progressListener* progress = NULL, const int start = 0, const int length = -1, const bool peek = false) const;
-	void extractPart(shared_ptr <const messagePart> p, utility::outputStream& os, utility::progressListener* progress = NULL, const int start = 0, const int length = -1, const bool peek = false) const;
+	void extract(utility::outputStream& os, utility::progressListener* progress = NULL, const size_t start = 0, const size_t length = -1, const bool peek = false) const;
+	void extractPart(shared_ptr <const messagePart> p, utility::outputStream& os, utility::progressListener* progress = NULL, const size_t start = 0, const size_t length = -1, const bool peek = false) const;
 
 	void fetchPartHeader(shared_ptr <messagePart> p);
 
@@ -90,13 +90,13 @@ private:
 
 	shared_ptr <header> getOrCreateHeader();
 
-	void extractImpl(utility::outputStream& os, utility::progressListener* progress, const int start, const int length, const int partialStart, const int partialLength, const bool peek) const;
+	void extractImpl(utility::outputStream& os, utility::progressListener* progress, const size_t start, const size_t length, const size_t partialStart, const size_t partialLength, const bool peek) const;
 
 
 	weak_ptr <maildirFolder> m_folder;
 
 	int m_num;
-	int m_size;
+	size_t m_size;
 	int m_flags;
 	bool m_expunged;
 	uid m_uid;

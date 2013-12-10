@@ -70,34 +70,34 @@ const unsigned char b64Encoder::sm_decodeMap[256] =
 };
 
 #ifndef VMIME_BUILDING_DOC
-	#define B64_WRITE(s, x, l) s.write(reinterpret_cast <utility::stream::value_type*>(x), l)
+	#define B64_WRITE(s, x, l) s.write(reinterpret_cast <byte_t*>(x), l)
 #endif // VMIME_BUILDING_DOC
 
 
 
-utility::stream::size_type b64Encoder::encode(utility::inputStream& in,
+size_t b64Encoder::encode(utility::inputStream& in,
 	utility::outputStream& out, utility::progressListener* progress)
 {
 	in.reset();  // may not work...
 
-	const string::size_type propMaxLineLength =
-		getProperties().getProperty <string::size_type>("maxlinelength", static_cast <string::size_type>(-1));
+	const size_t propMaxLineLength =
+		getProperties().getProperty <size_t>("maxlinelength", static_cast <size_t>(-1));
 
-	const bool cutLines = (propMaxLineLength != static_cast <string::size_type>(-1));
-	const string::size_type maxLineLength = std::min(propMaxLineLength, static_cast <string::size_type>(76));
+	const bool cutLines = (propMaxLineLength != static_cast <size_t>(-1));
+	const size_t maxLineLength = std::min(propMaxLineLength, static_cast <size_t>(76));
 
 	// Process data
-	utility::stream::value_type buffer[65536];
-	utility::stream::size_type bufferLength = 0;
-	utility::stream::size_type bufferPos = 0;
+	byte_t buffer[65536];
+	size_t bufferLength = 0;
+	size_t bufferPos = 0;
 
-	unsigned char bytes[3];
-	unsigned char output[4];
+	byte_t bytes[3];
+	byte_t output[4];
 
-	utility::stream::size_type total = 0;
-	utility::stream::size_type inTotal = 0;
+	size_t total = 0;
+	size_t inTotal = 0;
 
-	string::size_type curCol = 0;
+	size_t curCol = 0;
 
 	if (progress)
 		progress->start(0);
@@ -191,21 +191,21 @@ utility::stream::size_type b64Encoder::encode(utility::inputStream& in,
 }
 
 
-utility::stream::size_type b64Encoder::decode(utility::inputStream& in,
+size_t b64Encoder::decode(utility::inputStream& in,
 	utility::outputStream& out, utility::progressListener* progress)
 {
 	in.reset();  // may not work...
 
 	// Process the data
-	char buffer[16384];
-	utility::stream::size_type bufferLength = 0;
-	utility::stream::size_type bufferPos = 0;
+	byte_t buffer[16384];
+	size_t bufferLength = 0;
+	size_t bufferPos = 0;
 
-	utility::stream::size_type total = 0;
-	utility::stream::size_type inTotal = 0;
+	size_t total = 0;
+	size_t inTotal = 0;
 
-	unsigned char bytes[4];
-	unsigned char output[3];
+	byte_t bytes[4];
+	byte_t output[3];
 
 	if (progress)
 		progress->start(0);
@@ -234,7 +234,7 @@ utility::stream::size_type b64Encoder::decode(utility::inputStream& in,
 
 		while (count < 4 && bufferPos < bufferLength)
 		{
-			const unsigned char c = buffer[bufferPos++];
+			const byte_t c = buffer[bufferPos++];
 
 			if (!parserHelpers::isSpace(c))
 				bytes[count++] = c;
@@ -250,7 +250,7 @@ utility::stream::size_type b64Encoder::decode(utility::inputStream& in,
 
 				while (count < 4 && bufferPos < bufferLength)
 				{
-					const unsigned char c = buffer[bufferPos++];
+					const byte_t c = buffer[bufferPos++];
 
 					if (!parserHelpers::isSpace(c))
 						bytes[count++] = c;
@@ -259,13 +259,13 @@ utility::stream::size_type b64Encoder::decode(utility::inputStream& in,
 		}
 
 		// Decode the bytes
-		unsigned char c1 = bytes[0];
-		unsigned char c2 = bytes[1];
+		byte_t c1 = bytes[0];
+		byte_t c2 = bytes[1];
 
 		if (c1 == '=' || c2 == '=')  // end
 			break;
 
-		output[0] = static_cast <unsigned char>((sm_decodeMap[c1] << 2) | ((sm_decodeMap[c2] & 0x30) >> 4));
+		output[0] = static_cast <byte_t>((sm_decodeMap[c1] << 2) | ((sm_decodeMap[c2] & 0x30) >> 4));
 
 		c1 = bytes[2];
 
@@ -276,7 +276,7 @@ utility::stream::size_type b64Encoder::decode(utility::inputStream& in,
 			break;
 		}
 
-		output[1] = static_cast <unsigned char>(((sm_decodeMap[c2] & 0xf) << 4) | ((sm_decodeMap[c1] & 0x3c) >> 2));
+		output[1] = static_cast <byte_t>(((sm_decodeMap[c2] & 0xf) << 4) | ((sm_decodeMap[c1] & 0x3c) >> 2));
 
 		c2 = bytes[3];
 
@@ -287,7 +287,7 @@ utility::stream::size_type b64Encoder::decode(utility::inputStream& in,
 			break;
 		}
 
-		output[2] = static_cast <unsigned char>(((sm_decodeMap[c1] & 0x03) << 6) | sm_decodeMap[c2]);
+		output[2] = static_cast <byte_t>(((sm_decodeMap[c1] & 0x03) << 6) | sm_decodeMap[c2]);
 
 		B64_WRITE(out, output, 3);
 		total += 3;
@@ -304,13 +304,13 @@ utility::stream::size_type b64Encoder::decode(utility::inputStream& in,
 }
 
 
-utility::stream::size_type b64Encoder::getEncodedSize(const utility::stream::size_type n) const
+size_t b64Encoder::getEncodedSize(const size_t n) const
 {
-	const string::size_type propMaxLineLength =
-		getProperties().getProperty <string::size_type>("maxlinelength", static_cast <string::size_type>(-1));
+	const size_t propMaxLineLength =
+		getProperties().getProperty <size_t>("maxlinelength", static_cast <size_t>(-1));
 
-	const bool cutLines = (propMaxLineLength != static_cast <string::size_type>(-1));
-	const string::size_type maxLineLength = std::min(propMaxLineLength, static_cast <string::size_type>(76));
+	const bool cutLines = (propMaxLineLength != static_cast <size_t>(-1));
+	const size_t maxLineLength = std::min(propMaxLineLength, static_cast <size_t>(76));
 
 	return (n * 4) / 3                               // 3 bytes of input provide 4 bytes of output
 		 + (cutLines ? (n / maxLineLength) * 2 : 0)  // CRLF (2 bytes) for each line.
@@ -318,7 +318,7 @@ utility::stream::size_type b64Encoder::getEncodedSize(const utility::stream::siz
 }
 
 
-utility::stream::size_type b64Encoder::getDecodedSize(const utility::stream::size_type n) const
+size_t b64Encoder::getDecodedSize(const size_t n) const
 {
 	// 4 bytes of input provide 3 bytes of output
 	return (n * 3) / 4;

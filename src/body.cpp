@@ -55,30 +55,30 @@ body::~body()
 
 
 // static
-utility::stream::size_type body::findNextBoundaryPosition
+size_t body::findNextBoundaryPosition
 	(shared_ptr <utility::parserInputStreamAdapter> parser, const string& boundary,
-	 const utility::stream::size_type position, const utility::stream::size_type end,
-	 utility::stream::size_type* boundaryStart, utility::stream::size_type* boundaryEnd)
+	 const size_t position, const size_t end,
+	 size_t* boundaryStart, size_t* boundaryEnd)
 {
-	utility::stream::size_type pos = position;
+	size_t pos = position;
 
-	while (pos != utility::stream::npos && pos < end)
+	while (pos != npos && pos < end)
 	{
 		pos = parser->findNext(boundary, pos);
 
-		if (pos == utility::stream::npos)
+		if (pos == npos)
 			break;  // not found
 
 		if (pos != 0)
 		{
 			// Skip transport padding bytes (SPACE or HTAB), if any
-			utility::stream::size_type advance = 0;
+			size_t advance = 0;
 
 			while (pos != 0)
 			{
 				parser->seek(pos - advance - 1);
 
-				const utility::stream::value_type c = parser->peekByte();
+				const byte_t c = parser->peekByte();
 
 				if (c == ' ' || c == '\t')
 					++advance;
@@ -96,7 +96,7 @@ utility::stream::size_type body::findNextBoundaryPosition
 				{
 					parser->seek(pos + boundary.length());
 
-					const utility::stream::value_type next = parser->peekByte();
+					const byte_t next = parser->peekByte();
 
 					// Boundary should be followed by a new line or a dash
 					if (next == '\r' || next == '\n' || next == '-')
@@ -130,9 +130,7 @@ utility::stream::size_type body::findNextBoundaryPosition
 void body::parseImpl
 	(const parsingContext& /* ctx */,
 	 shared_ptr <utility::parserInputStreamAdapter> parser,
-	 const utility::stream::size_type position,
-	 const utility::stream::size_type end,
-	 utility::stream::size_type* newPosition)
+	 const size_t position, const size_t end, size_t* newPosition)
 {
 	removeAllParts();
 
@@ -174,7 +172,7 @@ void body::parseImpl
 			{
 				// No "boundary" parameter specified: we can try to
 				// guess it by scanning the body contents...
-				utility::stream::size_type pos = position;
+				size_t pos = position;
 
 				parser->seek(pos);
 
@@ -186,23 +184,23 @@ void body::parseImpl
 				{
 					pos = parser->findNext("\n--", position);
 
-					if ((pos != utility::stream::npos) && (pos + 3 < end))
+					if ((pos != npos) && (pos + 3 < end))
 						pos += 3;  // skip \n--
 				}
 
-				if ((pos != utility::stream::npos) && (pos < end))
+				if ((pos != npos) && (pos < end))
 				{
 					parser->seek(pos);
 
 					// Read some bytes after boundary separator
-					utility::stream::value_type buffer[256];
-					const utility::stream::size_type bufferLen =
+					byte_t buffer[256];
+					const size_t bufferLen =
 						parser->read(buffer, std::min(end - pos, sizeof(buffer) / sizeof(buffer[0])));
 
 					buffer[sizeof(buffer) / sizeof(buffer[0]) - 1] = '\0';
 
 					// Skip transport padding bytes (SPACE or HTAB), if any
-					utility::stream::size_type boundarySkip = 0;
+					size_t boundarySkip = 0;
 
 					while (boundarySkip < bufferLen && parserHelpers::isSpace(buffer[boundarySkip]))
 						++boundarySkip;
@@ -210,10 +208,10 @@ void body::parseImpl
 					// Extract boundary from buffer (stop at first CR or LF).
 					// We have to stop after a reasonnably long boundary length (100)
 					// not to take the whole body contents for a boundary...
-					string::value_type boundaryBytes[100];
-					string::size_type boundaryLen = 0;
+					byte_t boundaryBytes[100];
+					size_t boundaryLen = 0;
 
-					for (string::value_type c = buffer[boundarySkip] ;
+					for (byte_t c = buffer[boundarySkip] ;
 					     boundaryLen < bufferLen && boundaryLen < 100 && !(c == '\r' || c == '\n') ;
 					     ++boundaryLen, c = buffer[boundarySkip + boundaryLen])
 					{
@@ -244,18 +242,18 @@ void body::parseImpl
 	// This is a multi-part body
 	if (isMultipart && !boundary.empty())
 	{
-		utility::stream::size_type partStart = position;
-		utility::stream::size_type pos = position;
+		size_t partStart = position;
+		size_t pos = position;
 
 		bool lastPart = false;
 
 		// Find the first boundary
-		utility::stream::size_type boundaryStart, boundaryEnd;
+		size_t boundaryStart, boundaryEnd;
 		pos = findNextBoundaryPosition(parser, boundary, pos, end, &boundaryStart, &boundaryEnd);
 
-		for (int index = 0 ; !lastPart && (pos != utility::stream::npos) && (pos < end) ; ++index)
+		for (int index = 0 ; !lastPart && (pos != npos) && (pos < end) ; ++index)
 		{
-			utility::stream::size_type partEnd = boundaryStart;
+			size_t partEnd = boundaryStart;
 
 			// Check whether it is the last part (boundary terminated by "--")
 			parser->seek(boundaryEnd);
@@ -321,7 +319,7 @@ void body::parseImpl
 		m_contents = make_shared <emptyContentHandler>();
 
 		// Last part was not found: recover from missing boundary
-		if (!lastPart && pos == utility::stream::npos)
+		if (!lastPart && pos == npos)
 		{
 			shared_ptr <bodyPart> part = m_part->createChildPart();
 
@@ -364,7 +362,7 @@ void body::parseImpl
 		}
 
 		// Extract the (encoded) contents
-		const utility::stream::size_type length = end - position;
+		const size_t length = end - position;
 
 		shared_ptr <utility::inputStream> contentStream =
 			make_shared <utility::seekableInputStreamRegionAdapter>
@@ -416,7 +414,7 @@ text body::getActualEpilogText(const generationContext& ctx) const
 
 void body::generateImpl
 	(const generationContext& ctx, utility::outputStream& os,
-	 const string::size_type /* curLinePos */, string::size_type* newLinePos) const
+	 const size_t /* curLinePos */, size_t* newLinePos) const
 {
 	// MIME-Multipart
 	if (getPartCount() != 0)
@@ -500,12 +498,12 @@ void body::generateImpl
 }
 
 
-utility::stream::size_type body::getGeneratedSize(const generationContext& ctx)
+size_t body::getGeneratedSize(const generationContext& ctx)
 {
 	// MIME-Multipart
 	if (getPartCount() != 0)
 	{
-		utility::stream::size_type size = 0;
+		size_t size = 0;
 
 		// Size of parts and boundaries
 		for (size_t p = 0 ; p < getPartCount() ; ++p)
@@ -588,7 +586,7 @@ const string body::generateRandomBoundaryString()
 		this document.)
 	*/
 
-	string::value_type boundary[2 + 48 + 1] = { 0 };
+	char boundary[2 + 48 + 1] = { 0 };
 
 	boundary[0] = '=';
 	boundary[1] = '_';
@@ -622,7 +620,7 @@ bool body::isValidBoundary(const string& boundary)
 
 	if (boundary.length() > 0 && boundary.length() < 70)
 	{
-		const string::value_type last = *(end - 1);
+		const char last = *(end - 1);
 
 		if (!(last == ' ' || last == '\t' || last == '\n'))
 		{

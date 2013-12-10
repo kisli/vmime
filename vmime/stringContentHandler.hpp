@@ -39,7 +39,7 @@ public:
 	stringContentHandler();
 	stringContentHandler(const string& buffer, const vmime::encoding& enc = NO_ENCODING);
 	stringContentHandler(const utility::stringProxy& str, const vmime::encoding& enc = NO_ENCODING);
-	stringContentHandler(const string& buffer, const string::size_type start, const string::size_type end, const vmime::encoding& enc = NO_ENCODING);
+	stringContentHandler(const string& buffer, const size_t start, const size_t end, const vmime::encoding& enc = NO_ENCODING);
 
 	~stringContentHandler();
 
@@ -60,16 +60,16 @@ public:
 	// to generate() is different from this one...
 	void setData(const utility::stringProxy& str, const vmime::encoding& enc = NO_ENCODING);
 	void setData(const string& buffer, const vmime::encoding& enc = NO_ENCODING);
-	void setData(const string& buffer, const string::size_type start, const string::size_type end, const vmime::encoding& enc = NO_ENCODING);
+	void setData(const string& buffer, const size_t start, const size_t end, const vmime::encoding& enc = NO_ENCODING);
 
 	stringContentHandler& operator=(const string& buffer);
 
-	void generate(utility::outputStream& os, const vmime::encoding& enc, const string::size_type maxLineLength = lineLengthLimits::infinite) const;
+	void generate(utility::outputStream& os, const vmime::encoding& enc, const size_t maxLineLength = lineLengthLimits::infinite) const;
 
 	void extract(utility::outputStream& os, utility::progressListener* progress = NULL) const;
 	void extractRaw(utility::outputStream& os, utility::progressListener* progress = NULL) const;
 
-	string::size_type getLength() const;
+	size_t getLength() const;
 
 	bool isEncoded() const;
 

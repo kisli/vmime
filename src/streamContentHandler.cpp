@@ -40,7 +40,7 @@ streamContentHandler::streamContentHandler()
 
 
 streamContentHandler::streamContentHandler(shared_ptr <utility::inputStream> is,
-	const utility::stream::size_type length, const vmime::encoding& enc)
+	const size_t length, const vmime::encoding& enc)
 {
 	setData(is, length, enc);
 }
@@ -52,7 +52,7 @@ streamContentHandler::~streamContentHandler()
 
 
 streamContentHandler::streamContentHandler(const streamContentHandler& cts)
-	: contentHandler(), m_encoding(cts.m_encoding), m_contentType(cts.m_contentType),
+	: contentHandler(), m_contentType(cts.m_contentType), m_encoding(cts.m_encoding),
 	  m_stream(cts.m_stream), m_length(cts.m_length)
 {
 }
@@ -77,7 +77,7 @@ streamContentHandler& streamContentHandler::operator=(const streamContentHandler
 
 
 void streamContentHandler::setData(shared_ptr <utility::inputStream> is,
-	const utility::stream::size_type length, const vmime::encoding& enc)
+	const size_t length, const vmime::encoding& enc)
 {
 	m_encoding = enc;
 	m_length = length;
@@ -86,7 +86,7 @@ void streamContentHandler::setData(shared_ptr <utility::inputStream> is,
 
 
 void streamContentHandler::generate(utility::outputStream& os, const vmime::encoding& enc,
-	const string::size_type maxLineLength) const
+	const size_t maxLineLength) const
 {
 	if (!m_stream)
 		return;
@@ -185,7 +185,7 @@ void streamContentHandler::extractRaw(utility::outputStream& os,
 }
 
 
-string::size_type streamContentHandler::getLength() const
+size_t streamContentHandler::getLength() const
 {
 	return (m_length);
 }

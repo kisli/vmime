@@ -40,23 +40,23 @@ class VMIME_EXPORT inputStreamStringAdapter : public seekableInputStream
 public:
 
 	inputStreamStringAdapter(const string& buffer);
-	inputStreamStringAdapter(const string& buffer, const string::size_type begin, const string::size_type end);
+	inputStreamStringAdapter(const string& buffer, const size_t begin, const size_t end);
 
 	bool eof() const;
 	void reset();
-	size_type read(value_type* const data, const size_type count);
-	size_type skip(const size_type count);
-	size_type getPosition() const;
-	void seek(const size_type pos);
+	size_t read(byte_t* const data, const size_t count);
+	size_t skip(const size_t count);
+	size_t getPosition() const;
+	void seek(const size_t pos);
 
 private:
 
 	inputStreamStringAdapter(const inputStreamStringAdapter&);
 
 	const string m_buffer;  // do _NOT_ keep a reference...
-	const string::size_type m_begin;
-	const string::size_type m_end;
-	string::size_type m_pos;
+	const size_t m_begin;
+	const size_t m_end;
+	size_t m_pos;
 };
 
 

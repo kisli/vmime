@@ -42,15 +42,15 @@ public:
 
 	void update(const byte_t b);
 	void update(const string& s);
-	void update(const byte_t* buffer, const unsigned long len);
-	void update(const byte_t* buffer, const unsigned long offset, const unsigned long len);
+	void update(const byte_t* buffer, const size_t len);
+	void update(const byte_t* buffer, const size_t offset, const size_t len);
 
 	void finalize();
 	void finalize(const string& s);
-	void finalize(const byte_t* buffer, const unsigned long len);
-	void finalize(const byte_t* buffer, const unsigned long offset, const unsigned long len);
+	void finalize(const byte_t* buffer, const size_t len);
+	void finalize(const byte_t* buffer, const size_t offset, const size_t len);
 
-	int getDigestLength() const;
+	size_t getDigestLength() const;
 	const byte_t* getDigest() const;
 
 	void reset();

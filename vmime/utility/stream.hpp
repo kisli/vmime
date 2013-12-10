@@ -46,24 +46,12 @@ public:
 
 	virtual ~stream() { }
 
-	/** Type used to read/write one byte in the stream.
-	  */
-	typedef string::value_type value_type;
-
-	/** Type used for lengths in streams.
-	  */
-	typedef string::size_type size_type;
-
-	/** Constant value with the greatest possible value for an element of type size_type.
-	  */
-	static const size_type npos;
-
 	/** Return the preferred maximum block size when reading
 	  * from or writing to this stream.
 	  *
 	  * @return block size, in bytes
 	  */
-	virtual size_type getBlockSize();
+	virtual size_t getBlockSize();
 };
 
 

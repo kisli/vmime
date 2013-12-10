@@ -55,10 +55,6 @@ public:
 
 	virtual ~socket() { }
 
-	/** Type used for lengths in streams.
-	  */
-	typedef long size_type;
-
 
 	/** Connect to the specified address and port.
 	  *
@@ -78,48 +74,54 @@ public:
 	  */
 	virtual bool isConnected() const = 0;
 
-	/** Receive (text) data from the socket.
+	/** Receive text data from the socket.
 	  *
 	  * @param buffer buffer in which to write received data
 	  */
 	virtual void receive(string& buffer) = 0;
 
-	/** Receive (raw) data from the socket.
+	/** Receive raw data from the socket.
 	  *
 	  * @param buffer buffer in which to write received data
 	  * @param count maximum number of bytes to receive (size of buffer)
 	  * @return number of bytes received/written into output buffer
 	  */
-	virtual size_type receiveRaw(char* buffer, const size_type count) = 0;
+	virtual size_t receiveRaw(byte_t* buffer, const size_t count) = 0;
 
-	/** Send (text) data to the socket.
+	/** Send text data to the socket.
 	  *
 	  * @param buffer data to send
 	  */
 	virtual void send(const string& buffer) = 0;
 
-	/** Send (raw) data to the socket.
+	/** Send text data to the socket.
+	  *
+	  * @param str null-terminated string
+	  */
+	virtual void send(const char* str) = 0;
+
+	/** Send raw data to the socket.
 	  *
 	  * @param buffer data to send
 	  * @param count number of bytes to send (size of buffer)
 	  */
-	virtual void sendRaw(const char* buffer, const size_type count) = 0;
+	virtual void sendRaw(const byte_t* buffer, const size_t count) = 0;
 
-	/** Send (raw) data to the socket.
+	/** Send raw data to the socket.
 	  * Function may returns before all data is sent.
 	  *
 	  * @param buffer data to send
 	  * @param count number of bytes to send (size of buffer)
 	  * @return number of bytes sent
 	  */
-	virtual size_type sendRawNonBlocking(const char* buffer, const size_type count) = 0;
+	virtual size_t sendRawNonBlocking(const byte_t* buffer, const size_t count) = 0;
 
 	/** Return the preferred maximum block size when reading
 	  * from or writing to this stream.
 	  *
 	  * @return block size, in bytes
 	  */
-	virtual size_type getBlockSize() const = 0;
+	virtual size_t getBlockSize() const = 0;
 
 	/** Return the current status of this socket.
 	  *

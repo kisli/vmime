@@ -49,26 +49,55 @@ public:
 	  * @param data buffer containing data to write
 	  * @param count number of bytes to write
 	  */
-	virtual void write(const value_type* const data, const size_type count) = 0;
+	void write(const byte_t* const data, const size_t count);
+
+	/** Write data to the stream.
+	  *
+	  * @param data buffer containing data to write
+	  * @param count number of bytes to write
+	  */
+	void write(const char* const data, const size_t count);
+
+	/** Write data to the stream.
+	  *
+	  * @param data buffer containing data to write
+	  * @param N number of bytes to write, including terminating
+	  * null (value is induced by compiler)
+	  */
+	template <int N>
+	void write(const char (&data)[N])
+	{
+		write(data, N - 1);
+	}
 
 	/** Flush this output stream and forces any buffered output
 	  * bytes to be written out to the stream.
 	  */
 	virtual void flush() = 0;
+
+protected:
+
+	/** Write data to the stream.
+	  * This is the method to be implemented is subclasses.
+	  *
+	  * @param data buffer containing data to write
+	  * @param count number of bytes to write
+	  */
+	virtual void writeImpl(const byte_t* const data, const size_t count) = 0;
 };
 
 
 // Helpers functions
 
 VMIME_EXPORT outputStream& operator<<(outputStream& os, const string& str);
-VMIME_EXPORT outputStream& operator<<(outputStream& os, const stream::value_type c);
+VMIME_EXPORT outputStream& operator<<(outputStream& os, const byte_t c);
 
 
 #if defined(_MSC_VER) && (_MSC_VER <= 1200)  // Internal compiler error with VC++6
 
 inline outputStream& operator<<(outputStream& os, const char* str)
 {
-	os.write(str, ::strlen(str));
+	os.write(reinterpret_cast <const byte_t*>(str), ::strlen(str));
 	return (os);
 }
 
@@ -77,7 +106,7 @@ inline outputStream& operator<<(outputStream& os, const char* str)
 template <int N>
 outputStream& operator<<(outputStream& os, const char (&str)[N])
 {
-	os.write(str, N - 1);
+	os.write(reinterpret_cast <const byte_t*>(str), N - 1);
 	return (os);
 }
 

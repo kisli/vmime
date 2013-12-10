@@ -166,15 +166,15 @@ protected:
 	void parseImpl
 		(const parsingContext& ctx,
 		 const string& buffer,
-		 const string::size_type position,
-		 const string::size_type end,
-		 string::size_type* newPosition = NULL);
+		 const size_t position,
+		 const size_t end,
+		 size_t* newPosition = NULL);
 
 	void generateImpl
 		(const generationContext& ctx,
 		 utility::outputStream& os,
-		 const string::size_type curLinePos = 0,
-		 string::size_type* newLinePos = NULL) const;
+		 const size_t curLinePos = 0,
+		 size_t* newLinePos = NULL) const;
 };
 
 

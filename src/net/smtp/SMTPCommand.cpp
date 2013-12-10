@@ -94,7 +94,7 @@ shared_ptr <SMTPCommand> SMTPCommand::MAIL(const mailbox& mbox, const bool utf8)
 
 
 // static
-shared_ptr <SMTPCommand> SMTPCommand::MAIL(const mailbox& mbox, const bool utf8, const unsigned long size)
+shared_ptr <SMTPCommand> SMTPCommand::MAIL(const mailbox& mbox, const bool utf8, const size_t size)
 {
 	std::ostringstream cmd;
 	cmd.imbue(std::locale::classic());
@@ -160,7 +160,7 @@ shared_ptr <SMTPCommand> SMTPCommand::DATA()
 
 
 // static
-shared_ptr <SMTPCommand> SMTPCommand::BDAT(const unsigned long chunkSize, const bool last)
+shared_ptr <SMTPCommand> SMTPCommand::BDAT(const size_t chunkSize, const bool last)
 {
 	std::ostringstream cmd;
 	cmd.imbue(std::locale::classic());

@@ -114,8 +114,8 @@ void parameter::setValue(const word& value)
 
 
 void parameter::parseImpl
-	(const parsingContext& ctx, const string& buffer, const string::size_type position,
-	 const string::size_type end, string::size_type* newPosition)
+	(const parsingContext& ctx, const string& buffer, const size_t position,
+	 const size_t end, size_t* newPosition)
 {
 	m_value->setBuffer(string(buffer.begin() + position, buffer.begin() + end));
 
@@ -145,15 +145,15 @@ void parameter::parse(const parsingContext& ctx, const std::vector <valueChunk>&
 		// Decode following data
 		if (chunk.encoded)
 		{
-			const string::size_type len = chunk.data.length();
-			string::size_type pos = 0;
+			const size_t len = chunk.data.length();
+			size_t pos = 0;
 
 			// If this is the first encoded chunk, extract charset
 			// and language information
 			if (!foundCharsetChunk)
 			{
 				// Eg. "us-ascii'en'This%20is%20even%20more%20"
-				string::size_type q = chunk.data.find_first_of('\'');
+				size_t q = chunk.data.find_first_of('\'');
 
 				if (q != string::npos)
 				{
@@ -178,9 +178,9 @@ void parameter::parse(const parsingContext& ctx, const std::vector <valueChunk>&
 				foundCharsetChunk = true;
 			}
 
-			for (string::size_type i = pos ; i < len ; ++i)
+			for (size_t i = pos ; i < len ; ++i)
 			{
-				const string::value_type c = chunk.data[i];
+				const char c = chunk.data[i];
 
 				if (c == '%' && i + 2 < len)
 				{
@@ -218,7 +218,7 @@ void parameter::parse(const parsingContext& ctx, const std::vector <valueChunk>&
 						break;
 					}
 
-					value << static_cast <string::value_type>(v);
+					value << static_cast <char>(v);
 
 					i += 2; // skip next 2 chars
 				}
@@ -273,7 +273,7 @@ void parameter::parse(const parsingContext& ctx, const std::vector <valueChunk>&
 
 void parameter::generateImpl
 	(const generationContext& ctx, utility::outputStream& os,
-	 const string::size_type curLinePos, string::size_type* newLinePos) const
+	 const size_t curLinePos, size_t* newLinePos) const
 {
 	const string& name = m_name;
 	const string& value = m_value->getBuffer();
@@ -293,7 +293,7 @@ void parameter::generateImpl
 	string sevenBitBuffer;
 	utility::outputStreamStringAdapter sevenBitStream(sevenBitBuffer);
 
-	string::size_type pos = curLinePos;
+	size_t pos = curLinePos;
 
 	if (pos + name.length() + 10 + value.length() > ctx.getMaxLineLength())
 	{
@@ -303,10 +303,10 @@ void parameter::generateImpl
 
 	bool needQuoting = false;
 	bool needQuotedPrintable = false;
-	string::size_type valueLength = 0;
+	size_t valueLength = 0;
 
 	// Use worst-case length name.length()+2 for 'name=' part of line
-	for (string::size_type i = 0 ; (i < value.length()) && (pos + name.length() + 2 + valueLength < ctx.getMaxLineLength() - 4) ; ++i, ++valueLength)
+	for (size_t i = 0 ; (i < value.length()) && (pos + name.length() + 2 + valueLength < ctx.getMaxLineLength() - 4) ; ++i, ++valueLength)
 	{
 		switch (value[i])
 		{
@@ -378,7 +378,7 @@ void parameter::generateImpl
 	else
 	{
 		// Do not chop off this value, but just add the complete name as one header line.
-		for (string::size_type i = 0 ; i < value.length() ; ++i)
+		for (size_t i = 0 ; i < value.length() ; ++i)
 		{
 			const char_t c = value[i];
 
@@ -446,7 +446,7 @@ void parameter::generateImpl
 		// Check whether there is enough space for the first section:
 		// parameter name, section identifier, charset and separators
 		// + at least 5 characters for the value
-		const string::size_type firstSectionLength =
+		const size_t firstSectionLength =
 			  name.length() + 4 /* *0*= */ + 2 /* '' */
 			+ m_value->getCharset().getName().length();
 
@@ -461,9 +461,9 @@ void parameter::generateImpl
 		std::vector <string> sectionText;
 
 		string currentSection;
-		string::size_type currentSectionLength = firstSectionLength;
+		size_t currentSectionLength = firstSectionLength;
 
-		for (string::size_type i = 0 ; i < value.length() ; ++i)
+		for (size_t i = 0 ; i < value.length() ; ++i)
 		{
 			// Check whether we should start a new line (taking into
 			// account the next character will be encoded = worst case)

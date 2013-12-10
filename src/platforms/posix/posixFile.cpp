@@ -97,7 +97,7 @@ void posixFileIterator::getNextElement()
 	while ((m_dirEntry = ::readdir(m_dir)) != NULL)
 	{
 		const char* name = m_dirEntry->d_name;
-		const int len = ::strlen(name);
+		const size_t len = ::strlen(name);
 
 		if (!(len == 1 && name[0] == '.') &&
 		    !(len == 2 && name[0] == '.' && name[1] == '.'))
@@ -128,9 +128,10 @@ posixFileWriterOutputStream::~posixFileWriterOutputStream()
 }
 
 
-void posixFileWriterOutputStream::write(const value_type* const data, const size_type count)
+void posixFileWriterOutputStream::writeImpl
+	(const byte_t* const data, const size_t count)
 {
-	const value_type* array = data;
+	const byte_t* array = data;
 	size_t size = count;
 
 	while (1)
@@ -196,8 +197,8 @@ void posixFileReaderInputStream::reset()
 }
 
 
-vmime::utility::stream::size_type posixFileReaderInputStream::read
-	(value_type* const data, const size_type count)
+size_t posixFileReaderInputStream::read
+	(byte_t* const data, const size_t count)
 {
 	ssize_t c = 0;
 
@@ -207,11 +208,11 @@ vmime::utility::stream::size_type posixFileReaderInputStream::read
 	if (c == 0 && count != 0)
 		m_eof = true;
 
-	return static_cast <size_type>(c);
+	return static_cast <size_t>(c);
 }
 
 
-vmime::utility::stream::size_type posixFileReaderInputStream::skip(const size_type count)
+size_t posixFileReaderInputStream::skip(const size_t count)
 {
 	const off_t curPos = ::lseek(m_fd, 0, SEEK_CUR);
 
@@ -223,22 +224,22 @@ vmime::utility::stream::size_type posixFileReaderInputStream::skip(const size_ty
 	if (newPos == off_t(-1))
 		posixFileSystemFactory::reportError(m_path, errno);
 
-	return static_cast <size_type>(newPos - curPos);
+	return static_cast <size_t>(newPos - curPos);
 }
 
 
-vmime::utility::stream::size_type posixFileReaderInputStream::getPosition() const
+size_t posixFileReaderInputStream::getPosition() const
 {
 	const off_t curPos = ::lseek(m_fd, 0, SEEK_CUR);
 
 	if (curPos == off_t(-1))
 		posixFileSystemFactory::reportError(m_path, errno);
 
-	return static_cast <size_type>(curPos);
+	return static_cast <size_t>(curPos);
 }
 
 
-void posixFileReaderInputStream::seek(const size_type pos)
+void posixFileReaderInputStream::seek(const size_t pos)
 {
 	const off_t newPos = ::lseek(m_fd, pos, SEEK_SET);
 
@@ -528,8 +529,8 @@ const vmime::string posixFileSystemFactory::pathToString(const vmime::utility::f
 
 const vmime::utility::file::path posixFileSystemFactory::stringToPathImpl(const vmime::string& str)
 {
-	vmime::string::size_type offset = 0;
-	vmime::string::size_type prev = 0;
+	vmime::size_t offset = 0;
+	vmime::size_t prev = 0;
 
 	vmime::utility::file::path path;
 

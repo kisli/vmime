@@ -37,6 +37,10 @@
 
 #include "vmime/security/cert/X509Certificate.hpp"
 
+#include "vmime/utility/stringUtils.hpp"
+
+#include <cstring>
+
 
 namespace vmime {
 namespace net {
@@ -110,7 +114,7 @@ bool TLSSocket_GnuTLS::isConnected() const
 }
 
 
-TLSSocket::size_type TLSSocket_GnuTLS::getBlockSize() const
+size_t TLSSocket_GnuTLS::getBlockSize() const
 {
 	return 16384;  // 16 KB
 }
@@ -130,18 +134,24 @@ const string TLSSocket_GnuTLS::getPeerAddress() const
 
 void TLSSocket_GnuTLS::receive(string& buffer)
 {
-	const int size = receiveRaw(m_buffer, sizeof(m_buffer));
-	buffer = vmime::string(m_buffer, size);
+	const size_t size = receiveRaw(m_buffer, sizeof(m_buffer));
+	buffer = utility::stringUtils::makeStringFromBytes(m_buffer, size);
 }
 
 
 void TLSSocket_GnuTLS::send(const string& buffer)
 {
-	sendRaw(buffer.data(), buffer.length());
+	sendRaw(reinterpret_cast <const byte_t*>(buffer.data()), buffer.length());
 }
 
 
-TLSSocket::size_type TLSSocket_GnuTLS::receiveRaw(char* buffer, const size_type count)
+void TLSSocket_GnuTLS::send(const char* str)
+{
+	sendRaw(reinterpret_cast <const byte_t*>(str), ::strlen(str));
+}
+
+
+size_t TLSSocket_GnuTLS::receiveRaw(byte_t* buffer, const size_t count)
 {
 	m_status &= ~STATUS_WOULDBLOCK;
 
@@ -160,14 +170,14 @@ TLSSocket::size_type TLSSocket_GnuTLS::receiveRaw(char* buffer, const size_type 
 			return 0;
 		}
 
-		TLSSession_GnuTLS::throwTLSException("gnutls_record_recv", ret);
+		TLSSession_GnuTLS::throwTLSException("gnutls_record_recv", static_cast <int>(ret));
 	}
 
-	return static_cast <size_type>(ret);
+	return static_cast <size_t>(ret);
 }
 
 
-void TLSSocket_GnuTLS::sendRaw(const char* buffer, const size_type count)
+void TLSSocket_GnuTLS::sendRaw(const byte_t* buffer, const size_t count)
 {
 	ssize_t ret = gnutls_record_send
 		(*m_session->m_gnutlsSession,
@@ -184,12 +194,12 @@ void TLSSocket_GnuTLS::sendRaw(const char* buffer, const size_type count)
 			return;
 		}
 
-		TLSSession_GnuTLS::throwTLSException("gnutls_record_send", ret);
+		TLSSession_GnuTLS::throwTLSException("gnutls_record_send", static_cast <int>(ret));
 	}
 }
 
 
-TLSSocket::size_type TLSSocket_GnuTLS::sendRawNonBlocking(const char* buffer, const size_type count)
+size_t TLSSocket_GnuTLS::sendRawNonBlocking(const byte_t* buffer, const size_t count)
 {
 	ssize_t ret = gnutls_record_send
 		(*m_session->m_gnutlsSession,
@@ -209,7 +219,7 @@ TLSSocket::size_type TLSSocket_GnuTLS::sendRawNonBlocking(const char* buffer, co
 		TLSSession_GnuTLS::throwTLSException("gnutls_record_send", static_cast <int>(ret));
 	}
 
-	return static_cast <size_type>(ret);
+	return static_cast <size_t>(ret);
 }
 
 
@@ -288,7 +298,7 @@ ssize_t TLSSocket_GnuTLS::gnutlsPushFunc
 	try
 	{
 		sok->m_wrapped->sendRaw
-			(reinterpret_cast <const char*>(data), static_cast <int>(len));
+			(reinterpret_cast <const byte_t*>(data), len);
 	}
 	catch (exception& e)
 	{
@@ -318,8 +328,7 @@ ssize_t TLSSocket_GnuTLS::gnutlsPullFunc
 			{
 				const ssize_t ret = static_cast <ssize_t>
 					(sok->m_wrapped->receiveRaw
-						(reinterpret_cast <char*>(data),
-						 static_cast <int>(len)));
+						(reinterpret_cast <byte_t*>(data), len));
 
 				if (ret == 0)
 				{
@@ -345,8 +354,7 @@ ssize_t TLSSocket_GnuTLS::gnutlsPullFunc
 		{
 			const ssize_t n = static_cast <ssize_t>
 				(sok->m_wrapped->receiveRaw
-					(reinterpret_cast <char*>(data),
-					 static_cast <int>(len)));
+					(reinterpret_cast <byte_t*>(data), len));
 
 			if (n == 0 && sok->m_wrapped->getStatus() & socket::STATUS_WOULDBLOCK)
 				return GNUTLS_E_AGAIN;

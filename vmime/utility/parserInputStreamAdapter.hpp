@@ -49,19 +49,19 @@ public:
 
 	bool eof() const;
 	void reset();
-	size_type read(value_type* const data, const size_type count);
+	size_t read(byte_t* const data, const size_t count);
 
-	void seek(const size_type pos)
+	void seek(const size_t pos)
 	{
 		m_stream->seek(pos);
 	}
 
-	size_type skip(const size_type count)
+	size_t skip(const size_t count)
 	{
 		return m_stream->skip(count);
 	}
 
-	size_type getPosition() const
+	size_t getPosition() const
 	{
 		return m_stream->getPosition();
 	}
@@ -71,18 +71,18 @@ public:
 	  *
 	  * @return byte at the current position
 	  */
-	value_type peekByte() const
+	byte_t peekByte() const
 	{
-		const size_type initialPos = m_stream->getPosition();
+		const size_t initialPos = m_stream->getPosition();
 
 		try
 		{
-			value_type buffer[1];
-			const size_type readBytes = m_stream->read(buffer, 1);
+			byte_t buffer[1];
+			const size_t readBytes = m_stream->read(buffer, 1);
 
 			m_stream->seek(initialPos);
 
-			return (readBytes == 1 ? buffer[0] : static_cast <value_type>(0));
+			return (readBytes == 1 ? buffer[0] : static_cast <byte_t>(0));
 		}
 		catch (...)
 		{
@@ -96,12 +96,12 @@ public:
 	  *
 	  * @return byte at the current position
 	  */
-	value_type getByte()
+	byte_t getByte()
 	{
-		value_type buffer[1];
-		const size_type readBytes = m_stream->read(buffer, 1);
+		byte_t buffer[1];
+		const size_t readBytes = m_stream->read(buffer, 1);
 
-		return (readBytes == 1 ? buffer[0] : static_cast <value_type>(0));
+		return (readBytes == 1 ? buffer[0] : static_cast <byte_t>(0));
 	}
 
 	/** Check whether the bytes following the current position match
@@ -111,14 +111,15 @@ public:
 	  * @param length number of bytes
 	  * @return true if the next bytes match the pattern, false otherwise
 	  */
-	bool matchBytes(const value_type* bytes, const size_type length) const
+	template <typename T>
+	bool matchBytes(const T* bytes, const size_t length) const
 	{
-		const size_type initialPos = m_stream->getPosition();
+		const size_t initialPos = m_stream->getPosition();
 
 		try
 		{
-			value_type buffer[32];
-			const size_type readBytes = m_stream->read(buffer, length);
+			byte_t buffer[32];
+			const size_t readBytes = m_stream->read(buffer, length);
 
 			m_stream->seek(initialPos);
 
@@ -132,7 +133,7 @@ public:
 		}
 	}
 
-	const string extract(const size_type begin, const size_type end) const;
+	const string extract(const size_t begin, const size_t end) const;
 
 	/** Skips bytes matching a predicate from the current position.
 	  * The current position is updated to the next following byte
@@ -144,10 +145,10 @@ public:
 	  * @return number of bytes skipped
 	  */
 	template <typename PREDICATE>
-	size_type skipIf(PREDICATE pred, const size_type endPosition)
+	size_t skipIf(PREDICATE pred, const size_t endPosition)
 	{
-		const size_type initialPos = getPosition();
-		size_type pos = initialPos;
+		const size_t initialPos = getPosition();
+		size_t pos = initialPos;
 
 		while (!m_stream->eof() && pos < endPosition && pred(getByte()))
 			++pos;
@@ -157,7 +158,7 @@ public:
 		return pos - initialPos;
 	}
 
-	size_type findNext(const string& token, const size_type startPosition = 0);
+	size_t findNext(const string& token, const size_t startPosition = 0);
 
 private:
 

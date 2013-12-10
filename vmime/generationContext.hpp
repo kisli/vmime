@@ -46,7 +46,7 @@ public:
 	  *
 	  * @return current maximum line length, in bytes
 	  */
-	string::size_type getMaxLineLength() const;
+	size_t getMaxLineLength() const;
 
 	/** Sets the maximum line length used when generating messages.
 	  * You may use the constants lineLengthLimits::convenient,
@@ -54,7 +54,7 @@ public:
 	  *
 	  * @param maxLineLength new maximum line length, in bytes
 	  */
-	void setMaxLineLength(const string::size_type maxLineLength);
+	void setMaxLineLength(const size_t maxLineLength);
 
 	/** Returns the current prolog text used when generating MIME body parts.
 	  *
@@ -93,7 +93,7 @@ public:
 
 protected:
 
-	string::size_type m_maxLineLength;
+	size_t m_maxLineLength;
 
 	string m_prologText;
 	string m_epilogText;

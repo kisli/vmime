@@ -92,11 +92,11 @@ void* X509Certificate_GnuTLS::getInternalData()
 shared_ptr <X509Certificate> X509Certificate::import(utility::inputStream& is)
 {
 	byteArray bytes;
-	utility::stream::value_type chunk[4096];
+	byte_t chunk[4096];
 
 	while (!is.eof())
 	{
-		const utility::stream::size_type len = is.read(chunk, sizeof(chunk));
+		const size_t len = is.read(chunk, sizeof(chunk));
 		bytes.insert(bytes.end(), chunk, chunk + len);
 	}
 
@@ -146,7 +146,7 @@ void X509Certificate_GnuTLS::write
 
 	gnutls_x509_crt_export(m_data->cert, fmt, &data[0], &dataSize);
 
-	os.write(reinterpret_cast <utility::stream::value_type*>(&data[0]), dataSize);
+	os.write(reinterpret_cast <byte_t*>(&data[0]), dataSize);
 }
 
 

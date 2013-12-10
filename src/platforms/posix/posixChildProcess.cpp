@@ -118,18 +118,20 @@ public:
 	{
 	}
 
-	void write(const value_type* const data, const size_type count)
+	void flush()
+	{
+		::fsync(m_desc);
+	}
+
+protected:
+
+	void writeImpl(const byte_t* const data, const size_t count)
 	{
 		if (::write(m_desc, data, count) == -1)
 		{
 			const string errorMsg = getPosixErrorMessage(errno);
 			throw exceptions::system_error(errorMsg);
 		}
-	}
-
-	void flush()
-	{
-		::fsync(m_desc);
 	}
 
 private:
@@ -159,13 +161,13 @@ public:
 		// Do nothing: unsupported
 	}
 
-	size_type skip(const size_type count)
+	size_t skip(const size_t count)
 	{
 		// TODO: not tested
-		value_type buffer[4096];
+		byte_t buffer[4096];
 
-		int bytesSkipped = 0;
-		int bytesRead = 0;
+		ssize_t bytesSkipped = 0;
+		ssize_t bytesRead = 0;
 
 		while ((bytesRead = ::read(m_desc, buffer,
 			std::min(sizeof(buffer), count - bytesSkipped))) != 0)
@@ -179,12 +181,12 @@ public:
 			bytesSkipped += bytesRead;
 		}
 
-		return static_cast <size_type>(bytesSkipped);
+		return static_cast <size_t>(bytesSkipped);
 	}
 
-	size_type read(value_type* const data, const size_type count)
+	size_t read(byte_t* const data, const size_t count)
 	{
-		int bytesRead = 0;
+		ssize_t bytesRead = 0;
 
 		if ((bytesRead = ::read(m_desc, data, count)) == -1)
 		{
@@ -194,7 +196,7 @@ public:
 
 		m_eof = (bytesRead == 0);
 
-		return static_cast <size_type>(bytesRead);
+		return static_cast <size_t>(bytesRead);
 	}
 
 private:

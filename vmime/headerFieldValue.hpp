@@ -41,7 +41,7 @@ class VMIME_EXPORT headerFieldValue : public component
 {
 public:
 
-	utility::stream::size_type getGeneratedSize(const generationContext& ctx);
+	size_t getGeneratedSize(const generationContext& ctx);
 };
 
 

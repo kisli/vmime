@@ -41,8 +41,11 @@ public:
 
 	outputStreamByteArrayAdapter(byteArray& array);
 
-	void write(const value_type* const data, const size_type count);
 	void flush();
+
+protected:
+
+	void writeImpl(const byte_t* const data, const size_t count);
 
 private:
 

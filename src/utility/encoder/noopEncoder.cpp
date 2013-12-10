@@ -36,13 +36,13 @@ noopEncoder::noopEncoder()
 }
 
 
-utility::stream::size_type noopEncoder::encode(utility::inputStream& in,
+size_t noopEncoder::encode(utility::inputStream& in,
 	utility::outputStream& out, utility::progressListener* progress)
 {
 	in.reset();  // may not work...
 
 	// No encoding performed
-	utility::stream::size_type res = 0;
+	size_t res = 0;
 
 	if (progress)
 		res = utility::bufferedStreamCopy(in, out, 0, progress);
@@ -53,13 +53,13 @@ utility::stream::size_type noopEncoder::encode(utility::inputStream& in,
 }
 
 
-utility::stream::size_type noopEncoder::decode(utility::inputStream& in,
+size_t noopEncoder::decode(utility::inputStream& in,
 	utility::outputStream& out, utility::progressListener* progress)
 {
 	in.reset();  // may not work...
 
 	// No decoding performed
-	utility::stream::size_type res = 0;
+	size_t res = 0;
 
 	if (progress)
 		res = utility::bufferedStreamCopy(in, out, 0, progress);
@@ -70,13 +70,13 @@ utility::stream::size_type noopEncoder::decode(utility::inputStream& in,
 }
 
 
-utility::stream::size_type noopEncoder::getEncodedSize(const utility::stream::size_type n) const
+size_t noopEncoder::getEncodedSize(const size_t n) const
 {
 	return n;
 }
 
 
-utility::stream::size_type noopEncoder::getDecodedSize(const utility::stream::size_type n) const
+size_t noopEncoder::getDecodedSize(const size_t n) const
 {
 	return n;
 }

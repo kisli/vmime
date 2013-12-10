@@ -93,7 +93,7 @@ const mediaType& maildirMessagePart::getType() const
 }
 
 
-int maildirMessagePart::getSize() const
+size_t maildirMessagePart::getSize() const
 {
 	return m_size;
 }
@@ -123,25 +123,25 @@ header& maildirMessagePart::getOrCreateHeader()
 }
 
 
-int maildirMessagePart::getHeaderParsedOffset() const
+size_t maildirMessagePart::getHeaderParsedOffset() const
 {
 	return m_headerParsedOffset;
 }
 
 
-int maildirMessagePart::getHeaderParsedLength() const
+size_t maildirMessagePart::getHeaderParsedLength() const
 {
 	return m_headerParsedLength;
 }
 
 
-int maildirMessagePart::getBodyParsedOffset() const
+size_t maildirMessagePart::getBodyParsedOffset() const
 {
 	return m_bodyParsedOffset;
 }
 
 
-int maildirMessagePart::getBodyParsedLength() const
+size_t maildirMessagePart::getBodyParsedLength() const
 {
 	return m_bodyParsedLength;
 }

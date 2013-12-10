@@ -45,19 +45,19 @@ stringProxy::stringProxy(const stringProxy& s)
 }
 
 
-stringProxy::stringProxy(const string_type& s, const size_type start, const size_type end)
+stringProxy::stringProxy(const string& s, const size_t start, const size_t end)
 	: m_buffer(s), m_start(start),
-	  m_end(end == std::numeric_limits <size_type>::max() ? s.length() : end)
+	  m_end(end == std::numeric_limits <size_t>::max() ? s.length() : end)
 {
 }
 
 
-void stringProxy::set(const string_type& s, const size_type start, const size_type end)
+void stringProxy::set(const string& s, const size_t start, const size_t end)
 {
 	m_buffer = s;
 	m_start = start;
 
-	if (end == std::numeric_limits <size_type>::max())
+	if (end == std::numeric_limits <size_t>::max())
 		m_end = s.length();
 	else
 		m_end = end;
@@ -81,7 +81,7 @@ stringProxy& stringProxy::operator=(const stringProxy& s)
 }
 
 
-stringProxy& stringProxy::operator=(const string_type& s)
+stringProxy& stringProxy::operator=(const string& s)
 {
 	m_buffer = s;
 	m_start = 0;
@@ -91,12 +91,12 @@ stringProxy& stringProxy::operator=(const string_type& s)
 }
 
 
-void stringProxy::extract(outputStream& os, const size_type start, const size_type end,
+void stringProxy::extract(outputStream& os, const size_t start, const size_t end,
 	utility::progressListener* progress) const
 {
-	size_type len = 0;
+	size_t len = 0;
 
-	if (end == std::numeric_limits <size_type>::max())
+	if (end == std::numeric_limits <size_t>::max())
 		len = m_end - start - m_start;
 	else if (end > start)
 		len = end - start;
@@ -114,19 +114,19 @@ void stringProxy::extract(outputStream& os, const size_type start, const size_ty
 }
 
 
-stringProxy::size_type stringProxy::length() const
+size_t stringProxy::length() const
 {
 	return (m_end - m_start);
 }
 
 
-stringProxy::size_type stringProxy::start() const
+size_t stringProxy::start() const
 {
 	return (m_start);
 }
 
 
-stringProxy::size_type stringProxy::end() const
+size_t stringProxy::end() const
 {
 	return (m_end);
 }

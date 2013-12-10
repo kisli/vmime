@@ -51,7 +51,7 @@ VMIME_TEST_SUITE_BEGIN(outputStreamSocketAdapterTest)
 
 	void testWriteBinary()
 	{
-		const vmime::string::value_type binaryData[] =
+		const char binaryData[] =
 			"\xc5\x9a\xc3\xb8\xc9\xb1\xc9\x9b\x20\xc9\x93\xc9\xa8\xc9\xb2\xc9"
 			"\x91\xc5\x95\xc9\xa3\x20\xc9\x96\xc9\x90\xca\x88\xc9\x92";
 

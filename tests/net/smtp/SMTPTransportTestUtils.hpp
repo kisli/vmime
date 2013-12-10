@@ -131,8 +131,8 @@ public:
 			}
 			else if (cmd == "RCPT")
 			{
-				const vmime::string::size_type lt = line.find('<');
-				const vmime::string::size_type gt = line.find('>');
+				const vmime::size_t lt = line.find('<');
+				const vmime::size_t gt = line.find('>');
 
 				VASSERT("RCPT <", lt != vmime::string::npos);
 				VASSERT("RCPT >", gt != vmime::string::npos);
@@ -261,8 +261,8 @@ public:
 		{
 			if (m_bdatChunkReceived != m_bdatChunkSize)
 			{
-				const size_type remaining = m_bdatChunkSize - m_bdatChunkReceived;
-				const size_type received = localReceiveRaw(NULL, remaining);
+				const size_t remaining = m_bdatChunkSize - m_bdatChunkReceived;
+				const size_t received = localReceiveRaw(NULL, remaining);
 
 				m_bdatChunkReceived += received;
 			}
@@ -408,7 +408,7 @@ class SMTPTestMessage : public vmime::message
 {
 public:
 
-	vmime::utility::stream::size_type getChunkBufferSize() const
+	vmime::size_t getChunkBufferSize() const
 	{
 		static vmime::net::smtp::SMTPChunkingOutputStreamAdapter chunkStream(vmime::null);
 		return chunkStream.getBlockSize();
@@ -429,10 +429,9 @@ public:
 		return chunks;
 	}
 
-	void generateImpl(const vmime::generationContext& /* ctx */,
-		 vmime::utility::outputStream& outputStream,
-		 const vmime::string::size_type /* curLinePos */ = 0,
-		 vmime::string::size_type* /* newLinePos */ = NULL) const
+	void generateImpl
+		(const vmime::generationContext& /* ctx */, vmime::utility::outputStream& outputStream,
+		 const size_t /* curLinePos */ = 0, size_t* /* newLinePos */ = NULL) const
 	{
 		for (unsigned int i = 0, n = getChunks().size() ; i < n ; ++i)
 		{
@@ -576,16 +575,15 @@ class SMTPBigTestMessage : public vmime::message
 {
 public:
 
-	vmime::utility::stream::size_type getGeneratedSize
-		(const vmime::generationContext& /* ctx */)
+	size_t getGeneratedSize(const vmime::generationContext& /* ctx */)
 	{
 		return SIZE;
 	}
 
 	void generateImpl(const vmime::generationContext& /* ctx */,
 		 vmime::utility::outputStream& outputStream,
-		 const vmime::string::size_type /* curLinePos */ = 0,
-		 vmime::string::size_type* /* newLinePos */ = NULL) const
+		 const vmime::size_t /* curLinePos */ = 0,
+		 vmime::size_t* /* newLinePos */ = NULL) const
 	{
 		for (unsigned int i = 0, n = SIZE ; i < n ; ++i)
 			outputStream.write("X", 1);
