@@ -803,6 +803,12 @@ ENDIF()
 INCLUDE(cmake/cmake-cxx11/Modules/CheckCXX11Features.cmake)
 
 # Smart pointers
+#
+# If a C++11-compliant compiler is available and supports std::shared_ptr<>,
+# use the standard implementation. Else, use boost::shared_ptr<>.
+# In any case, let the user override the choice with VMIME_SHARED_PTR_USE_CXX
+# and VMIME_SHARED_PTR_USE_BOOST variables.
+
 CHECK_CXX_SOURCE_COMPILES(
 	"
 	#include <memory>
@@ -815,7 +821,35 @@ CHECK_CXX_SOURCE_COMPILES(
 	VMIME_HAS_CXX11_SHARED_PTR
 )
 
-IF(CXX11_COMPILER_FLAGS AND VMIME_HAS_CXX11_SHARED_PTR)
+IF(NOT VMIME_SHARED_PTR_USE_CXX AND NOT VMIME_SHARED_PTR_USE_BOOST)
+	IF(CXX11_COMPILER_FLAGS AND VMIME_HAS_CXX11_SHARED_PTR)
+		# If std::shared_ptr<> is available, use it by default
+		SET(VMIME_SHARED_PTR_USE_CXX_DEFAULT     ON)
+		SET(VMIME_SHARED_PTR_USE_BOOST_DEFAULT  OFF)
+	ELSE()
+		# Else, set default to boost::shared_ptr<>
+		SET(VMIME_SHARED_PTR_USE_CXX_DEFAULT    OFF)
+		SET(VMIME_SHARED_PTR_USE_BOOST_DEFAULT   ON)
+	ENDIF()
+ENDIF()
+
+OPTION(
+	VMIME_SHARED_PTR_USE_CXX
+	"Use standard std::shared_ptr<> (requires a C++11 compiler)"
+	${VMIME_SHARED_PTR_USE_CXX_DEFAULT}
+)
+
+OPTION(
+	VMIME_SHARED_PTR_USE_BOOST
+	"Use boost::shared_ptr<> (requires Boost)"
+	${VMIME_SHARED_PTR_USE_BOOST_DEFAULT}
+)
+
+IF(VMIME_SHARED_PTR_USE_CXX AND VMIME_SHARED_PTR_USE_BOOST)
+	MESSAGE(FATAL_ERROR "Options VMIME_SHARED_PTR_USE_CXX and VMIME_SHARED_PTR_USE_BOOST are mutually exclusive (select one or the other, but not both!)")
+ENDIF()
+
+IF(VMIME_SHARED_PTR_USE_CXX)
 
 	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX11_COMPILER_FLAGS}")
 
@@ -825,10 +859,7 @@ IF(CXX11_COMPILER_FLAGS AND VMIME_HAS_CXX11_SHARED_PTR)
 
 	MESSAGE(STATUS "Checking support for shared_ptr<>: built-in (C++11)")
 
-	SET(VMIME_SHARED_PTR_USE_CXX   ON)
-	SET(VMIME_SHARED_PTR_USE_BOOST OFF)
-
-ELSE()
+ELSEIF(VMIME_SHARED_PTR_USE_BOOST)
 
 	# Depends on Boost library if C++11 is not supported
 	FIND_PACKAGE(Boost)
@@ -841,8 +872,9 @@ ELSE()
 
 	MESSAGE(STATUS "Checking support for shared_ptr<>: boost library")
 
-	SET(VMIME_SHARED_PTR_USE_CXX   OFF)
-	SET(VMIME_SHARED_PTR_USE_BOOST ON)
+ELSE()
+
+	MESSAGE(FATAL_ERROR "No implementation for shared_ptr<> was selected/found")
 
 ENDIF()
 
