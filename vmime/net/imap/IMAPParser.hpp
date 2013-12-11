@@ -975,6 +975,7 @@ public:
 	public:
 
 		const string& value() const { return (m_value); }
+		void setValue(const string& val) { m_value = val; }
 	};
 
 
@@ -2940,7 +2941,23 @@ public:
 
 			size_t pos = *currentPos;
 
-			m_string1 = parser.get <xstring>(line, &pos);
+			if (!parser.isStrict())
+			{
+				// Some servers send an <atom> instead of a <string> here:
+				// eg. ... (CHARSET "X-UNKNOWN") ...
+				if (!(m_string1 = parser.get <xstring>(line, &pos, true)))
+				{
+					std::auto_ptr <atom> at(parser.get <atom>(line, &pos));
+
+					m_string1 = new xstring();
+					m_string1->setValue(at->value());
+				}
+			}
+			else
+			{
+				m_string1 = parser.get <xstring>(line, &pos);
+			}
+
 			parser.check <SPACE>(line, &pos);
 			m_string2 = parser.get <xstring>(line, &pos);
 
@@ -4453,9 +4470,21 @@ public:
 			size_t pos = *currentPos;
 
 			parser.check <one_char <'+'> >(line, &pos);
-			parser.check <SPACE>(line, &pos);
 
-			m_resp_text = parser.get <IMAPParser::resp_text>(line, &pos);
+			if (!parser.isStrict())
+			{
+				// Some servers do not send SPACE when response text is empty
+				if (parser.check <SPACE>(line, &pos, true))
+					m_resp_text = parser.get <IMAPParser::resp_text>(line, &pos);
+				else
+					m_resp_text = new IMAPParser::resp_text();  // empty
+			}
+			else
+			{
+				parser.check <SPACE>(line, &pos);
+
+				m_resp_text = parser.get <IMAPParser::resp_text>(line, &pos);
+			}
 
 			parser.check <CRLF>(line, &pos);
 
