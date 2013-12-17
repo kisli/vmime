@@ -46,9 +46,9 @@
 
 
 #if defined(EWOULDBLOCK)
-#   define IS_EAGAIN(x)  ((x) == EAGAIN || (x) == EWOULDBLOCK || (x) == EINTR)
+#   define IS_EAGAIN(x)  ((x) == EAGAIN || (x) == EWOULDBLOCK || (x) == EINTR || (x) == EINPROGRESS)
 #else
-#   define IS_EAGAIN(x)  ((x) == EAGAIN || (x) == EINTR)
+#   define IS_EAGAIN(x)  ((x) == EAGAIN || (x) == EINTR || (x) == EINPROGRESS)
 #endif
 
 
@@ -551,9 +551,9 @@ void posixSocket::sendRaw(const byte_t* buffer, const size_t count)
 	{
 		const ssize_t ret = ::send(m_desc, buffer, size, 0);
 
-		if (ret < 0)
+		if (ret <= 0)
 		{
-			if (!IS_EAGAIN(errno))
+			if (ret < 0 && !IS_EAGAIN(errno))
 				throwSocketError(errno);
 
 			platform::getHandler()->wait();
@@ -577,9 +577,9 @@ size_t posixSocket::sendRawNonBlocking(const byte_t* buffer, const size_t count)
 
 	const ssize_t ret = ::send(m_desc, buffer, count, 0);
 
-	if (ret < 0)
+	if (ret <= 0)
 	{
-		if (!IS_EAGAIN(errno))
+		if (ret < 0 && !IS_EAGAIN(errno))
 			throwSocketError(errno);
 
 		m_status |= STATUS_WOULDBLOCK;
