@@ -362,6 +362,22 @@ size_t windowsSocket::sendRawNonBlocking(const char* buffer, const size_t count)
 
 		if (err == WSAEWOULDBLOCK)
 		{
+			// Check if we are timed out
+			if (m_timeoutHandler &&
+			    m_timeoutHandler->isTimeOut())
+			{
+				if (!m_timeoutHandler->handleTimeOut())
+				{
+					// Could not send data within timeout delay
+					throwSocketError(err);
+				}
+				else
+				{
+					// Reset timeout
+					m_timeoutHandler->resetTimeOut();
+				}
+			}
+
 			m_status |= STATUS_WOULDBLOCK;
 
 			// No data can be written at this time
@@ -372,6 +388,10 @@ size_t windowsSocket::sendRawNonBlocking(const char* buffer, const size_t count)
 			throwSocketError(err);
 		}
 	}
+
+	// Reset timeout
+	if (m_timeoutHandler)
+		m_timeoutHandler->resetTimeOut();
 
 	return ret;
 }

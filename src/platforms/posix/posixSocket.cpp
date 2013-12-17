@@ -582,11 +582,31 @@ size_t posixSocket::sendRawNonBlocking(const byte_t* buffer, const size_t count)
 		if (ret < 0 && !IS_EAGAIN(errno))
 			throwSocketError(errno);
 
+		// Check if we are timed out
+		if (m_timeoutHandler &&
+		    m_timeoutHandler->isTimeOut())
+		{
+			if (!m_timeoutHandler->handleTimeOut())
+			{
+				// Could not send data within timeout delay
+				throwSocketError(errno);
+			}
+			else
+			{
+				// Reset timeout
+				m_timeoutHandler->resetTimeOut();
+			}
+		}
+
 		m_status |= STATUS_WOULDBLOCK;
 
 		// No data can be written at this time
 		return 0;
 	}
+
+	// Reset timeout
+	if (m_timeoutHandler)
+		m_timeoutHandler->resetTimeOut();
 
 	return ret;
 }
