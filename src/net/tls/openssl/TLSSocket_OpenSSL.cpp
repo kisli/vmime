@@ -319,6 +319,8 @@ void TLSSocket_OpenSSL::handleError(int rc)
 {
 	if (rc > 0) return;
 
+	internalThrow();
+
 	int  sslError   = SSL_get_error(m_ssl, rc);
 	long lastError  = ERR_get_error();
 
@@ -401,20 +403,16 @@ int TLSSocket_OpenSSL::bio_write(BIO* bio, const char* buf, int len)
 
 	try
 	{
-		BIO_clear_retry_flags(bio);
-
-		const size_t n = sok->m_wrapped->sendRawNonBlocking
-			(reinterpret_cast <const byte_t*>(buf), len);
-
-		BIO_clear_retry_flags(bio);
-
-		if (n == 0 && sok->m_wrapped->getStatus() & socket::STATUS_WOULDBLOCK)
+		while (true)
 		{
-			BIO_set_retry_write(bio);
-			return -1;
-		}
+			const size_t n = sok->m_wrapped->sendRawNonBlocking
+				(reinterpret_cast <const byte_t*>(buf), len);
 
-		return static_cast <int>(len);
+			if (n == 0 && sok->m_wrapped->getStatus() & socket::STATUS_WOULDBLOCK)
+				continue;
+
+			return static_cast <int>(len);
+		}
 	}
 	catch (exception& e)
 	{
@@ -435,18 +433,16 @@ int TLSSocket_OpenSSL::bio_read(BIO* bio, char* buf, int len)
 
 	try
 	{
-		const size_t n = sok->m_wrapped->receiveRaw
-			(reinterpret_cast <byte_t*>(buf), len);
-
-		BIO_clear_retry_flags(bio);
-
-		if (sok->m_wrapped->getStatus() & socket::STATUS_WOULDBLOCK)
+		while (true)
 		{
-			BIO_set_retry_read(bio);
-			return -1;
-		}
+			const size_t n = sok->m_wrapped->receiveRaw
+				(reinterpret_cast <byte_t*>(buf), len);
 
-		return static_cast <int>(n);
+			if (n == 0 && sok->m_wrapped->getStatus() & socket::STATUS_WOULDBLOCK)
+				continue;
+
+			return static_cast <int>(n);
+		}
 	}
 	catch (exception& e)
 	{
