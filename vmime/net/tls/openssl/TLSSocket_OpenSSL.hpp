@@ -112,6 +112,8 @@ private:
 
 	SSL* m_ssl;
 
+	unsigned long m_status;
+
 	// Last exception thrown from C BIO functions
 	std::auto_ptr <std::exception> m_ex;
 };
