@@ -185,7 +185,7 @@ shared_ptr <word> word::parseNext
 			pos += 2; // ?=
 
 			shared_ptr <word> w = make_shared <word>();
-			w->parse(buffer, wordStart, pos, NULL);
+			w->parse(ctx, buffer, wordStart, pos, NULL);
 
 			if (newPosition)
 				*newPosition = pos;
