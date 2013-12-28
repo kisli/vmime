@@ -30,6 +30,7 @@
 #include <vector>
 #include <stdexcept>
 #include <cstddef>
+#include <utility>
 
 #include "vmime/config.hpp"
 
@@ -95,6 +96,16 @@ namespace vmime
 	// For compatibility with versions <= 0.7.1 (deprecated)
 	namespace net { }
 	namespace messaging = net;
+
+	// For (minimal) compatibility with legacy smart pointers (<= 0.9.1)
+	// Your compiler must have support for C++11
+#if VMIME_COMPAT_LEGACY_SMART_POINTERS
+	template <typename T> using ref = shared_ptr <T>;
+	class creator {}; // unused
+	template <typename T, typename... Args>
+	inline shared_ptr <T> create(Args&&... args) { return make_shared <T>(args...); }
+#endif
+
 }
 
 
