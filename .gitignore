@@ -7,11 +7,6 @@
 # Doxygen-generated
 doc/html/*
 
-# SConstruct
-.sconsign.dblite
-/options.cache
-/run-tests
-
 # CMake-generated / Build files
 CMakeFiles/
 CMakeCache.txt
@@ -24,9 +19,9 @@ cmake_install.cmake
 /install_manifest*
 /libvmime.a
 /vmime.pc
-/vmime/config.hpp
-/vmime/export-static.hpp
-/vmime/export-shared.hpp
+/src/vmime/config.hpp
+/src/vmime/export-static.hpp
+/src/vmime/export-shared.hpp
 /COPYING.txt
 build/
 Makefile
