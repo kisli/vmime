@@ -1,4 +1,3 @@
-
 This file contains coding guidelines for VMime. You should follow them
 if you want to contribute to VMime. The rules below are not guidelines
 or recommendations, but strict rules.
@@ -7,7 +6,7 @@ or recommendations, but strict rules.
 1. General rules
      1.1. Language
      1.2. Unit tests
-     1.3. CVS
+     1.3. Version Control
      1.4. ChangeLog
      1.5. Warnings
 2. Style, indentation and braces
@@ -53,8 +52,8 @@ When you fix a bug, also add a new test case to ensure the bug will not
 happen anymore.
 
 
-1.3. SVN
---------
+1.3. Version Control
+--------------------
 
 Each commit MUST be done with a message ('-m' flag) that briefly describes what
 changes have been done.
@@ -276,8 +275,7 @@ Files have to be named exactly like the class they define. For example, class
 "mailboxList" should be declared in "mailboxList.hpp" and implemented in
 "mailboxList.cpp".
 
-Header files must be placed in 'vmime/' directory.
-Implementation files must be placed in 'src/' directory.
+Both header and implementation files must be placed in 'src/vmime/' directory.
 
 
 3.5. Namespaces
@@ -310,17 +308,21 @@ Tabs should NOT be used to indent at the end of a line:
        int m_secondMember;    // second member
    };
 
+Note about special comment blocks: Doxygen is used to generate documentation
+from annotated C++ sources, so be sure to use available markings to annotate
+the purpose of the functions/classes and the meaning of the parameters.
 
 
 5. Miscellaneous
 ================
 
 * No code should be put in header files, only declarations (except for
-  templates).
+  templates and inline functions).
 
 * Try to avoid public member variables. Write accessors instead (get/set).
 
-* Do NOT use 'using namespace'. All namespaces should be explicitely named.
+* Do NOT use 'using namespace' (and especially not in header files). All
+  namespaces should be explicitely named.
 
 * Use the 'get' and 'set' prefix for accessors:
 
