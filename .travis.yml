@@ -30,12 +30,8 @@ script:
   - cd _build
   - cmake .. -DCMAKE_INSTALL_PREFIX=../_install $OPTIONS
   - cmake .. -L
-  - echo "============================== config.hpp =============================="
-  - cat ../vmime/config.hpp
-  - echo "========================== export-shared.hpp ==========================="
-  - cat ../vmime/export-shared.hpp
-  - echo "========================== export-static.hpp ==========================="
-  - cat ../vmime/export-static.hpp
-  - echo "================================ BUILD ================================="
+  - cat ../src/vmime/config.hpp
+  - cat ../src/vmime/export-shared.hpp
+  - cat ../src/vmime/export-static.hpp
   - cmake --build . --target install
   - ctest
