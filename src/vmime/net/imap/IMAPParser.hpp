@@ -552,6 +552,119 @@ public:
 
 
 	//
+	// uniqueid    ::= nz_number
+	//                 ;; Strictly ascending
+	//
+
+	class uniqueid : public nz_number
+	{
+	public:
+
+		uniqueid() : nz_number()
+		{
+		}
+	};
+
+
+	// uid-range       = (uniqueid ":" uniqueid)
+	//                   ; two uniqueid values and all values
+	//                   ; between these two regards of order.
+	//                   ; Example: 2:4 and 4:2 are equivalent.
+
+	class uid_range : public component
+	{
+	public:
+
+		uid_range()
+			: m_uniqueid1(NULL), m_uniqueid2(NULL)
+		{
+		}
+
+		~uid_range()
+		{
+			delete m_uniqueid1;
+			delete m_uniqueid2;
+		}
+
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		{
+			DEBUG_ENTER_COMPONENT("uid_range");
+
+			size_t pos = *currentPos;
+
+			m_uniqueid1 = parser.get <uniqueid>(line, &pos);
+			parser.check <one_char <','> >(line, &pos);
+			m_uniqueid2 = parser.get <uniqueid>(line, &pos);
+
+			*currentPos = pos;
+		}
+
+	private:
+
+		uniqueid* m_uniqueid1;
+		uniqueid* m_uniqueid2;
+
+	public:
+
+		uniqueid* uniqueid1() const { return m_uniqueid1; }
+		uniqueid* uniqueid2() const { return m_uniqueid2; }
+	};
+
+
+	//
+	// uid-set         = (uniqueid / uid-range) *("," uid-set)
+	//
+
+	class uid_set : public component
+	{
+	public:
+
+		uid_set()
+			: m_uniqueid(NULL), m_uid_range(NULL), m_next_uid_set(NULL)
+		{
+		}
+
+		~uid_set()
+		{
+			delete m_uniqueid;
+			delete m_uid_range;
+			delete m_next_uid_set;
+		}
+
+		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		{
+			DEBUG_ENTER_COMPONENT("uid_set");
+
+			size_t pos = *currentPos;
+
+			// We have either a 'uid_range' or a 'uniqueid'
+			if (!(m_uid_range = parser.get <IMAPParser::uid_range>(line, &pos, true)))
+				m_uniqueid = parser.get <IMAPParser::uniqueid>(line, &pos);
+
+			// And maybe another 'uid-set' following
+			if (parser.check <one_char <','> >(line, &pos, true))
+				m_next_uid_set = parser.get <IMAPParser::uid_set>(line, &pos);
+
+			*currentPos = pos;
+		}
+
+	private:
+
+		IMAPParser::uniqueid* m_uniqueid;
+		IMAPParser::uid_range* m_uid_range;
+
+		IMAPParser::uid_set* m_next_uid_set;
+
+	public:
+
+		IMAPParser::uniqueid* uniqueid() const { return m_uniqueid; }
+		IMAPParser::uid_range* uid_range() const { return m_uid_range; }
+
+		IMAPParser::uid_set* next_uid_set() const { return m_next_uid_set; }
+	};
+
+
+	//
 	// text       ::= 1*TEXT_CHAR
 	//
 	// CHAR       ::= <any 7-bit US-ASCII character except NUL, 0x01 - 0x7f>
@@ -3850,10 +3963,6 @@ public:
 	};
 
 
-	//
-	// uniqueid    ::= nz_number
-	//                 ;; Strictly ascending
-	//
 	// msg_att_item ::= "ENVELOPE" SPACE envelope /
 	//                  "FLAGS" SPACE "(" #(flag / "\Recent") ")" /
 	//                  "INTERNALDATE" SPACE date_time /
@@ -4020,7 +4129,7 @@ public:
 				parser.checkWithArg <special_atom>(line, &pos, "uid");
 				parser.check <SPACE>(line, &pos);
 
-				m_uniqueid = parser.get <nz_number>(line, &pos);
+				m_uniqueid = parser.get <uniqueid>(line, &pos);
 			}
 
 			*currentPos = pos;
@@ -4050,7 +4159,7 @@ public:
 		IMAPParser::date_time* m_date_time;
 		IMAPParser::number* m_number;
 		IMAPParser::envelope* m_envelope;
-		IMAPParser::nz_number* m_uniqueid;
+		IMAPParser::uniqueid* m_uniqueid;
 		IMAPParser::nstring* m_nstring;
 		IMAPParser::xbody* m_body;
 		IMAPParser::flag_list* m_flag_list;
@@ -4064,7 +4173,7 @@ public:
 		const IMAPParser::date_time* date_time() const { return (m_date_time); }
 		const IMAPParser::number* number() const { return (m_number); }
 		const IMAPParser::envelope* envelope() const { return (m_envelope); }
-		const IMAPParser::nz_number* unique_id() const { return (m_uniqueid); }
+		const IMAPParser::uniqueid* unique_id() const { return (m_uniqueid); }
 		const IMAPParser::nstring* nstring() const { return (m_nstring); }
 		const IMAPParser::xbody* body() const { return (m_body); }
 		const IMAPParser::flag_list* flag_list() const { return (m_flag_list); }
@@ -4195,6 +4304,7 @@ public:
 	//                    "READ-ONLY" / "READ-WRITE" / "TRYCREATE" /
 	//                    "UIDVALIDITY" SPACE nz_number /
 	//                    "UNSEEN" SPACE nz_number /
+	//                    "UIDNEXT" SPACE nz-number /
 	//                    atom [SPACE 1*<any TEXT_CHAR except "]">]
 	//
 	// IMAP Extension for Conditional STORE (RFC-4551):
@@ -4202,6 +4312,12 @@ public:
 	//   resp-text-code      =/ "HIGHESTMODSEQ" SP mod-sequence-value /
 	//                          "NOMODSEQ" /
 	//                          "MODIFIED" SP set
+	//
+	// IMAP UIDPLUS Extension (RFC-4315):
+	//
+	//   resp-text-code      =/ "APPENDUID" SP nz-number SP append-uid /
+	//                          "COPYUID" SP nz-number SP uid-set SP uid-set /
+	//                          "UIDNOTSTICKY"
 
 	class resp_text_code : public component
 	{
@@ -4313,6 +4429,33 @@ public:
 
 				m_sequence_set = parser.get <IMAPParser::sequence_set>(line, &pos);
 			}
+			// "APPENDUID" SP nz-number SP append-uid
+			else if (parser.checkWithArg <special_atom>(line, &pos, "appenduid", true))
+			{
+				m_type = APPENDUID;
+
+				parser.check <SPACE>(line, &pos);
+				m_nz_number = parser.get <IMAPParser::nz_number>(line, &pos);
+				parser.check <SPACE>(line, &pos);
+				m_uid_set = parser.get <IMAPParser::uid_set>(line, &pos);
+			}
+			// "COPYUID" SP nz-number SP uid-set SP uid-set
+			else if (parser.checkWithArg <special_atom>(line, &pos, "copyuid", true))
+			{
+				m_type = COPYUID;
+
+				parser.check <SPACE>(line, &pos);
+				m_nz_number = parser.get <IMAPParser::nz_number>(line, &pos);
+				parser.check <SPACE>(line, &pos);
+				m_uid_set = parser.get <IMAPParser::uid_set>(line, &pos);
+				parser.check <SPACE>(line, &pos);
+				m_uid_set2 = parser.get <IMAPParser::uid_set>(line, &pos);
+			}
+			// "UIDNOTSTICKY"
+			else if (parser.checkWithArg <special_atom>(line, &pos, "uidnotsticky", true))
+			{
+				m_type = UIDNOTSTICKY;
+			}
 			// atom [SPACE 1*<any TEXT_CHAR except "]">]
 			else
 			{
@@ -4334,6 +4477,9 @@ public:
 			HIGHESTMODSEQ,
 			NOMODSEQ,
 			MODIFIED,
+			APPENDUID,
+			COPYUID,
+			UIDNOTSTICKY,
 
 			// Standard IMAP
 			ALERT,
@@ -4360,6 +4506,8 @@ public:
 		IMAPParser::mod_sequence_value* m_mod_sequence_value;
 		IMAPParser::sequence_set* m_sequence_set;
 		IMAPParser::capability_data* m_capability_data;
+		IMAPParser::uid_set* m_uid_set;
+		IMAPParser::uid_set* m_uid_set2;
 
 	public:
 
@@ -4372,6 +4520,8 @@ public:
 		const IMAPParser::mod_sequence_value* mod_sequence_value() const { return m_mod_sequence_value; }
 		const IMAPParser::sequence_set* sequence_set() const { return m_sequence_set; }
 		const IMAPParser::capability_data* capability_data() const { return m_capability_data; }
+		const IMAPParser::uid_set* uid_set() const { return (m_uid_set); }
+		const IMAPParser::uid_set* uid_set2() const { return (m_uid_set2); }
 	};
 
 

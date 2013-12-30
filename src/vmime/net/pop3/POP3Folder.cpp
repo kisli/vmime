@@ -601,7 +601,7 @@ void POP3Folder::rename(const folder::path& /* newPath */)
 }
 
 
-void POP3Folder::addMessage
+messageSet POP3Folder::addMessage
 	(shared_ptr <vmime::message> /* msg */, const int /* flags */,
 	 vmime::datetime* /* date */, utility::progressListener* /* progress */)
 {
@@ -609,7 +609,7 @@ void POP3Folder::addMessage
 }
 
 
-void POP3Folder::addMessage
+messageSet POP3Folder::addMessage
 	(utility::inputStream& /* is */, const size_t /* size */, const int /* flags */,
 	 vmime::datetime* /* date */, utility::progressListener* /* progress */)
 {
@@ -617,7 +617,8 @@ void POP3Folder::addMessage
 }
 
 
-void POP3Folder::copyMessages(const folder::path& /* dest */, const messageSet& /* msgs */)
+messageSet POP3Folder::copyMessages
+	(const folder::path& /* dest */, const messageSet& /* msgs */)
 {
 	throw exceptions::operation_not_supported();
 }

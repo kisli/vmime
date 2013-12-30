@@ -749,6 +749,30 @@ const std::vector <int> IMAPUtils::messageSetToNumberList(const messageSet& msgs
 }
 
 
+// static
+messageSet IMAPUtils::buildMessageSet(const IMAPParser::uid_set* uidSet)
+{
+	messageSet set = messageSet::empty();
+
+	for ( ; uidSet ; uidSet = uidSet->next_uid_set())
+	{
+		if (uidSet->uid_range())
+		{
+			set.addRange(UIDMessageRange
+				(message::uid(uidSet->uid_range()->uniqueid1()->value()),
+				 message::uid(uidSet->uid_range()->uniqueid2()->value())));
+		}
+		else
+		{
+			set.addRange(UIDMessageRange
+				(message::uid(uidSet->uniqueid()->value())));
+		}
+	}
+
+	return set;
+}
+
+
 } // imap
 } // net
 } // vmime

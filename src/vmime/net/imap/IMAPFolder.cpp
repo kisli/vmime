@@ -990,8 +990,9 @@ void IMAPFolder::setMessageFlags(const messageSet& msgs, const int flags, const 
 }
 
 
-void IMAPFolder::addMessage(shared_ptr <vmime::message> msg, const int flags,
-                            vmime::datetime* date, utility::progressListener* progress)
+messageSet IMAPFolder::addMessage
+	(shared_ptr <vmime::message> msg, const int flags,
+	 vmime::datetime* date, utility::progressListener* progress)
 {
 	std::ostringstream oss;
 	utility::outputStreamAdapter ossAdapter(oss);
@@ -1001,12 +1002,13 @@ void IMAPFolder::addMessage(shared_ptr <vmime::message> msg, const int flags,
 	const string& str = oss.str();
 	utility::inputStreamStringAdapter strAdapter(str);
 
-	addMessage(strAdapter, str.length(), flags, date, progress);
+	return addMessage(strAdapter, str.length(), flags, date, progress);
 }
 
 
-void IMAPFolder::addMessage(utility::inputStream& is, const size_t size, const int flags,
-                            vmime::datetime* date, utility::progressListener* progress)
+messageSet IMAPFolder::addMessage
+	(utility::inputStream& is, const size_t size, const int flags,
+	 vmime::datetime* date, utility::progressListener* progress)
 {
 	shared_ptr <IMAPStore> store = m_store.lock();
 
@@ -1063,6 +1065,8 @@ void IMAPFolder::addMessage(utility::inputStream& is, const size_t size, const i
 			resp->getErrorLog(), "bad response");
 	}
 
+	processStatusUpdate(resp.get());
+
 	// Send message data
 	const size_t total = size;
 	size_t current = 0;
@@ -1105,7 +1109,15 @@ void IMAPFolder::addMessage(utility::inputStream& is, const size_t size, const i
 			resp->getErrorLog(), "bad response");
 	}
 
-	processStatusUpdate(resp.get());
+	processStatusUpdate(finalResp.get());
+
+	const IMAPParser::resp_text_code* respTextCode =
+		finalResp->response_done()->response_tagged()->resp_cond_state()->resp_text()->resp_text_code();
+
+	if (respTextCode->type() == IMAPParser::resp_text_code::APPENDUID)
+		return IMAPUtils::buildMessageSet(respTextCode->uid_set());
+
+	return messageSet::empty();
 }
 
 
@@ -1209,7 +1221,7 @@ void IMAPFolder::rename(const folder::path& newPath)
 }
 
 
-void IMAPFolder::copyMessages(const folder::path& dest, const messageSet& set)
+messageSet IMAPFolder::copyMessages(const folder::path& dest, const messageSet& set)
 {
 	shared_ptr <IMAPStore> store = m_store.lock();
 
@@ -1240,6 +1252,14 @@ void IMAPFolder::copyMessages(const folder::path& dest, const messageSet& set)
 	}
 
 	processStatusUpdate(resp.get());
+
+	const IMAPParser::resp_text_code* respTextCode =
+		resp->response_done()->response_tagged()->resp_cond_state()->resp_text()->resp_text_code();
+
+	if (respTextCode->type() == IMAPParser::resp_text_code::COPYUID)
+		return IMAPUtils::buildMessageSet(respTextCode->uid_set2());
+
+	return messageSet::empty();
 }
 
 

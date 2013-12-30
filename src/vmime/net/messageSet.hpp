@@ -214,6 +214,12 @@ public:
 
 	messageSet(const messageSet& other);
 
+	/** Constructs an empty set.
+	  *
+	  * @return new empty message set
+	  */
+	static messageSet empty();
+
 	/** Constructs a new message set and initializes it with a single
 	  * message represented by its sequence number.
 	  *
@@ -319,6 +325,19 @@ public:
 	  * or false otherwise
 	  */
 	bool isUIDSet() const;
+
+	/** Returns the number of ranges contained in this set.
+	  *
+	  * @return range count
+	  */
+	size_t getRangeCount() const;
+
+	/** Returns the message range at the specified index.
+	  *
+	  * @param i range index (from 0 to getRangeCount())
+	  * @return a reference to the message range at the specified index
+	  */
+	const messageRange& getRangeAt(const size_t i) const;
 
 private:
 

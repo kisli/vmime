@@ -704,8 +704,9 @@ void maildirFolder::setMessageFlags
 }
 
 
-void maildirFolder::addMessage(shared_ptr <vmime::message> msg, const int flags,
-	vmime::datetime* date, utility::progressListener* progress)
+messageSet maildirFolder::addMessage
+	(shared_ptr <vmime::message> msg, const int flags,
+	 vmime::datetime* date, utility::progressListener* progress)
 {
 	std::ostringstream oss;
 	utility::outputStreamAdapter ossAdapter(oss);
@@ -715,12 +716,13 @@ void maildirFolder::addMessage(shared_ptr <vmime::message> msg, const int flags,
 	const string& str = oss.str();
 	utility::inputStreamStringAdapter strAdapter(str);
 
-	addMessage(strAdapter, str.length(), flags, date, progress);
+	return addMessage(strAdapter, str.length(), flags, date, progress);
 }
 
 
-void maildirFolder::addMessage(utility::inputStream& is, const size_t size,
-	const int flags, vmime::datetime* /* date */, utility::progressListener* progress)
+messageSet maildirFolder::addMessage
+	(utility::inputStream& is, const size_t size,
+	 const int flags, vmime::datetime* /* date */, utility::progressListener* progress)
 {
 	shared_ptr <maildirStore> store = m_store.lock();
 
@@ -810,6 +812,8 @@ void maildirFolder::addMessage(utility::inputStream& is, const size_t size,
 			(*it)->notifyMessageCount(event);
 		}
 	}
+
+	return messageSet::empty();
 }
 
 
@@ -902,7 +906,7 @@ void maildirFolder::copyMessageImpl(const utility::file::path& tmpDirPath,
 }
 
 
-void maildirFolder::copyMessages(const folder::path& dest, const messageSet& msgs)
+messageSet maildirFolder::copyMessages(const folder::path& dest, const messageSet& msgs)
 {
 	shared_ptr <maildirStore> store = m_store.lock();
 
@@ -972,6 +976,8 @@ void maildirFolder::copyMessages(const folder::path& dest, const messageSet& msg
 	}
 
 	notifyMessagesCopied(dest);
+
+	return messageSet::empty();
 }
 
 

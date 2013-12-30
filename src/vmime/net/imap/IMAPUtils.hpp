@@ -112,6 +112,13 @@ public:
 	  */
 	static const std::vector <int> messageSetToNumberList(const messageSet& msgs);
 
+	/** Constructs a message set from a parser 'uid_set' structure.
+	  *
+	  * @param uidSet UID set, as returned by the parser
+	  * @return message set
+	  */
+	static messageSet buildMessageSet(const IMAPParser::uid_set* uidSet);
+
 private:
 
 	static const string buildFetchRequestImpl

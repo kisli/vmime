@@ -164,6 +164,13 @@ messageSet::~messageSet()
 
 
 // static
+messageSet messageSet::empty()
+{
+	return messageSet();
+}
+
+
+// static
 messageSet messageSet::byNumber(const int number)
 {
 	messageSet set;
@@ -362,6 +369,18 @@ bool messageSet::isNumberSet() const
 bool messageSet::isUIDSet() const
 {
 	return !isEmpty() && dynamic_cast <UIDMessageRange*>(m_ranges[0]) != NULL;
+}
+
+
+size_t messageSet::getRangeCount() const
+{
+	return m_ranges.size();
+}
+
+
+const messageRange& messageSet::getRangeAt(const size_t i) const
+{
+	return *m_ranges[i];
 }
 
 

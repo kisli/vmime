@@ -563,6 +563,8 @@ static void connectStore()
 				choices.push_back("Status");
 				choices.push_back("List folders");
 				choices.push_back("Change folder");
+				choices.push_back("Add message (to the current folder)");
+				choices.push_back("Copy message (into the current folder)");
 				choices.push_back("Return to main menu");
 
 				const int choice = printMenu(choices);
@@ -570,7 +572,7 @@ static void connectStore()
 				// Request message number
 				vmime::shared_ptr <vmime::net::message> msg;
 
-				if (choice != 6 && choice != 7 && choice != 8)
+				if (choice == 1 || choice == 2 || choice == 3 || choice == 4 || choice == 5 || choice == 10)
 				{
 					std::cout << "Enter message number: ";
 					std::cout.flush();
@@ -583,7 +585,7 @@ static void connectStore()
 					int num = 0;
 					iss >> num;
 
-					if (num < 1 || num > count)
+					if (num < 1 || num > f->getMessageCount())
 					{
 						std::cerr << "Invalid message number." << std::endl;
 						continue;
@@ -722,8 +724,91 @@ static void connectStore()
 
 					break;
 				}
-				// Main menu
+				// Add message
 				case 9:
+				{
+					vmime::messageBuilder mb;
+
+					mb.setExpeditor(vmime::mailbox("me@somewhere.com"));
+
+					vmime::addressList to;
+					to.appendAddress(vmime::make_shared <vmime::mailbox>("you@elsewhere.com"));
+					mb.setRecipients(to);
+
+					mb.setSubject(vmime::text("Test message from VMime example6"));
+					mb.getTextPart()->setText(vmime::make_shared <vmime::stringContentHandler>(
+						"Body of test message from VMime example6."));
+
+					vmime::shared_ptr <vmime::message> msg = mb.construct();
+
+					vmime::net::messageSet set = f->addMessage(msg);
+
+					if (set.isEmpty())
+					{
+						std::cout << "Message has successfully been added, "
+						          << "but its UID/number is not known." << std::endl;
+					}
+					else
+					{
+						const vmime::net::messageRange& range = set.getRangeAt(0);
+
+						if (set.isUIDSet())
+						{
+							const vmime::net::message::uid uid =
+								dynamic_cast <const vmime::net::UIDMessageRange&>(range).getFirst();
+
+							std::cout << "Message has successfully been added, "
+							          << "its UID is '" << uid << "'." << std::endl;
+						}
+						else
+						{
+							const int number =
+								dynamic_cast <const vmime::net::numberMessageRange&>(range).getFirst();
+
+							std::cout << "Message has successfully been added, "
+							          << "its number is '" << number << "'." << std::endl;
+						}
+					}
+
+					break;
+				}
+				// Copy message
+				case 10:
+				{
+					vmime::net::messageSet set = f->copyMessages(f->getFullPath(),
+						vmime::net::messageSet::byNumber(msg->getNumber()));
+
+					if (set.isEmpty())
+					{
+						std::cout << "Message has successfully been copied, "
+						          << "but its UID/number is not known." << std::endl;
+					}
+					else
+					{
+						const vmime::net::messageRange& range = set.getRangeAt(0);
+
+						if (set.isUIDSet())
+						{
+							const vmime::net::message::uid uid =
+								dynamic_cast <const vmime::net::UIDMessageRange&>(range).getFirst();
+
+							std::cout << "Message has successfully been copied, "
+							          << "its UID is '" << uid << "'." << std::endl;
+						}
+						else
+						{
+							const int number =
+								dynamic_cast <const vmime::net::numberMessageRange&>(range).getFirst();
+
+							std::cout << "Message has successfully been copied, "
+							          << "its number is '" << number << "'." << std::endl;
+						}
+					}
+
+					break;
+				}
+				// Main menu
+				case 11:
 
 					f->close(true);  // 'true' to expunge deleted messages
 					cont = false;

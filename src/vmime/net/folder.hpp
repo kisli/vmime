@@ -269,9 +269,16 @@ public:
 	  * @param flags flags for the new message
 	  * @param date date/time for the new message (if NULL, the current time is used)
 	  * @param progress progress listener, or NULL if not used
+	  * @return a message set containing the number or UID of the new message, or
+	  * an empty set if the information could not be obtained (ie. the server does not
+	  * support returning the number or UID of an added message)
 	  * @throw exceptions::net_exception if an error occurs
 	  */
-	virtual void addMessage(shared_ptr <vmime::message> msg, const int flags = message::FLAG_UNDEFINED, vmime::datetime* date = NULL, utility::progressListener* progress = NULL) = 0;
+	virtual messageSet addMessage
+		(shared_ptr <vmime::message> msg,
+		 const int flags = message::FLAG_UNDEFINED,
+		 vmime::datetime* date = NULL,
+		 utility::progressListener* progress = NULL) = 0;
 
 	/** Add a message to this folder.
 	  *
@@ -280,17 +287,29 @@ public:
 	  * @param flags flags for the new message
 	  * @param date date/time for the new message (if NULL, the current time is used)
 	  * @param progress progress listener, or NULL if not used
+	  * @return a message set containing the number or UID of the new message, or
+	  * an empty set if the information could not be obtained (ie. the server does not
+	  * support returning the number or UID of an added message)
 	  * @throw exceptions::net_exception if an error occurs
 	  */
-	virtual void addMessage(utility::inputStream& is, const size_t size, const int flags = message::FLAG_UNDEFINED, vmime::datetime* date = NULL, utility::progressListener* progress = NULL) = 0;
+	virtual messageSet addMessage
+		(utility::inputStream& is,
+		 const size_t size,
+		 const int flags = message::FLAG_UNDEFINED,
+		 vmime::datetime* date = NULL,
+		 utility::progressListener* progress = NULL) = 0;
 
 	/** Copy messages from this folder to another folder.
 	  *
 	  * @param dest destination folder path
 	  * @param msgs index set of messages to copy
+	  * @return a message set containing the number(s) or UID(s) of the copied message(s),
+	  * or an empty set if the information could not be obtained (ie. the server does not
+	  * support returning the number or UID of a copied message)
 	  * @throw exceptions::net_exception if an error occurs
 	  */
-	virtual void copyMessages(const folder::path& dest, const messageSet& msgs) = 0;
+	virtual messageSet copyMessages
+		(const folder::path& dest, const messageSet& msgs) = 0;
 
 	/** Request folder status without opening it.
 	  *
