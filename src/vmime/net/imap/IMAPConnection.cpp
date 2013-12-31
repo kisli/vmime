@@ -540,6 +540,20 @@ bool IMAPConnection::hasCapability(const string& capa)
 }
 
 
+bool IMAPConnection::hasCapability(const string& capa) const
+{
+	const string normCapa = utility::stringUtils::toUpper(capa);
+
+	for (size_t i = 0, n = m_capabilities.size() ; i < n ; ++i)
+	{
+		if (m_capabilities[i] == normCapa)
+			return true;
+	}
+
+	return false;
+}
+
+
 void IMAPConnection::invalidateCapabilities()
 {
 	m_capabilities.clear();

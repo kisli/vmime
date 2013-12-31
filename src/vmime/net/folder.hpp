@@ -97,8 +97,8 @@ public:
 	  */
 	enum Flags
 	{
-		FLAG_CHILDREN = (1 << 0),   /**< Folder contains subfolders. */
-		FLAG_NO_OPEN  = (1 << 1),   /**< Folder cannot be open. */
+		FLAG_HAS_CHILDREN = (1 << 0),        /**< Folder contains subfolders. */
+		FLAG_NO_OPEN  = (1 << 1),            /**< Folder cannot be open. */
 
 		FLAG_UNDEFINED = 9999       /**< Used internally (this should not be returned
 		                                 by the type() function). */

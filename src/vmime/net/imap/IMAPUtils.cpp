@@ -386,10 +386,16 @@ int IMAPUtils::folderTypeFromFlags(const IMAPParser::mailbox_flag_list* list)
 }
 
 
-int IMAPUtils::folderFlagsFromFlags(const IMAPParser::mailbox_flag_list* list)
+int IMAPUtils::folderFlagsFromFlags
+	(shared_ptr <const IMAPConnection> cnt, const IMAPParser::mailbox_flag_list* list)
 {
-	// Get folder flags
-	int folderFlags = folder::FLAG_CHILDREN;
+	int folderFlags = 0;
+
+	// If CHILDREN extension (RFC-3348) is not supported, assume folder has children
+	// as we have no hint about it
+	if (!cnt->hasCapability("CHILDREN"))
+		folderFlags |= folder::FLAG_HAS_CHILDREN;
+
 	const std::vector <IMAPParser::mailbox_flag*>& flags = list->flags();
 
 	for (std::vector <IMAPParser::mailbox_flag*>::const_iterator it = flags.begin() ;
@@ -398,7 +404,11 @@ int IMAPUtils::folderFlagsFromFlags(const IMAPParser::mailbox_flag_list* list)
 		if ((*it)->type() == IMAPParser::mailbox_flag::NOSELECT)
 			folderFlags |= folder::FLAG_NO_OPEN;
 		else if ((*it)->type() == IMAPParser::mailbox_flag::NOINFERIORS)
-			folderFlags &= ~folder::FLAG_CHILDREN;
+			folderFlags &= ~folder::FLAG_HAS_CHILDREN;
+		else if ((*it)->type() == IMAPParser::mailbox_flag::HASNOCHILDREN)
+			folderFlags &= ~folder::FLAG_HAS_CHILDREN;
+		else if ((*it)->type() == IMAPParser::mailbox_flag::HASCHILDREN)
+			folderFlags |= folder::FLAG_HAS_CHILDREN;
 	}
 
 	return (folderFlags);

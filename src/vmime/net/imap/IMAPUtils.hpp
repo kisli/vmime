@@ -67,7 +67,9 @@ public:
 	static const string quoteString(const string& text);
 
 	static int folderTypeFromFlags(const IMAPParser::mailbox_flag_list* list);
-	static int folderFlagsFromFlags(const IMAPParser::mailbox_flag_list* list);
+	static int folderFlagsFromFlags
+		(shared_ptr <const IMAPConnection> cnt,
+		 const IMAPParser::mailbox_flag_list* list);
 
 	static int messageFlagsFromFlags(const IMAPParser::flag_list* list);
 

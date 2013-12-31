@@ -118,7 +118,7 @@ int IMAPFolder::getFlags()
 	// Root folder
 	if (m_path.isEmpty())
 	{
-		return (FLAG_CHILDREN | FLAG_NO_OPEN);
+		return (FLAG_HAS_CHILDREN | FLAG_NO_OPEN);
 	}
 	else
 	{
@@ -249,7 +249,7 @@ void IMAPFolder::open(const int mode, bool failIfModeIsNotAvailable)
 						(responseData->mailbox_data()->mailbox_flag_list());
 
 					m_flags = IMAPUtils::folderFlagsFromFlags
-						(responseData->mailbox_data()->mailbox_flag_list());
+						(connection, responseData->mailbox_data()->mailbox_flag_list());
 
 					break;
 				}
@@ -502,7 +502,7 @@ int IMAPFolder::testExistAndGetType()
 				(mailboxData->mailbox_list()->mailbox_flag_list());
 
 			m_flags = IMAPUtils::folderFlagsFromFlags
-				(mailboxData->mailbox_list()->mailbox_flag_list());
+				(m_connection, mailboxData->mailbox_list()->mailbox_flag_list());
 		}
 	}
 
@@ -742,7 +742,7 @@ std::vector <shared_ptr <folder> > IMAPFolder::getFolders(const bool recursive)
 
 			v.push_back(make_shared <IMAPFolder>(path, store,
 				IMAPUtils::folderTypeFromFlags(mailbox_flag_list),
-				IMAPUtils::folderFlagsFromFlags(mailbox_flag_list)));
+				IMAPUtils::folderFlagsFromFlags(m_connection, mailbox_flag_list)));
 		}
 	}
 

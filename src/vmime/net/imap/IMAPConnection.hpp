@@ -94,6 +94,7 @@ public:
 	void invalidateCapabilities();
 	const std::vector <string> getCapabilities();
 	bool hasCapability(const string& capa);
+	bool hasCapability(const string& capa) const;
 
 	shared_ptr <security::authenticator> getAuthenticator();
 

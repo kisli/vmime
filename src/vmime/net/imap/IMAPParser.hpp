@@ -1811,6 +1811,10 @@ public:
 					m_type = NOSELECT;
 				else if (name == "unmarked")
 					m_type = UNMARKED;
+				else if (name == "haschildren")
+					m_type = HASCHILDREN;
+				else if (name == "hasnochildren")
+					m_type = HASNOCHILDREN;
 				else
 				{
 					m_type = UNKNOWN;
@@ -1833,6 +1837,11 @@ public:
 
 		enum Type
 		{
+			// RFC-3348 - Child Mailbox Extension
+			HASCHILDREN,
+			HASNOCHILDREN,
+
+			// Standard mailbox flags
 			UNKNOWN,
 			MARKED,
 			NOINFERIORS,

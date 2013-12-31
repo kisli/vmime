@@ -105,7 +105,7 @@ int maildirFolder::getFlags()
 	int flags = 0;
 
 	if (m_store.lock()->getFormat()->folderHasSubfolders(m_path))
-		flags |= FLAG_CHILDREN; // Contains at least one sub-folder
+		flags |= FLAG_HAS_CHILDREN; // Contains at least one sub-folder
 
 	return (flags);
 }
