@@ -99,8 +99,8 @@ public:
 
 	void setMessageFlags(const messageSet& msgs, const int flags, const int mode = message::FLAG_MODE_SET);
 
-	messageSet addMessage(shared_ptr <vmime::message> msg, const int flags = message::FLAG_UNDEFINED, vmime::datetime* date = NULL, utility::progressListener* progress = NULL);
-	messageSet addMessage(utility::inputStream& is, const size_t size, const int flags = message::FLAG_UNDEFINED, vmime::datetime* date = NULL, utility::progressListener* progress = NULL);
+	messageSet addMessage(shared_ptr <vmime::message> msg, const int flags = -1, vmime::datetime* date = NULL, utility::progressListener* progress = NULL);
+	messageSet addMessage(utility::inputStream& is, const size_t size, const int flags = -1, vmime::datetime* date = NULL, utility::progressListener* progress = NULL);
 
 	messageSet copyMessages(const folder::path& dest, const messageSet& msgs);
 

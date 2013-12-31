@@ -65,6 +65,15 @@ protected:
 	folder(const folder&) : object() { }
 	folder() { }
 
+
+	enum PrivateConstants
+	{
+		TYPE_UNDEFINED = 9999,      /**< Used internally to indicate type has not
+		                                 been initialized yet. */
+		FLAG_UNDEFINED = 9999       /**< Used internally to indicate flags have not
+		                                 been initialized yet. */
+	};
+
 public:
 
 	virtual ~folder() { }
@@ -87,10 +96,7 @@ public:
 	enum Types
 	{
 		TYPE_CONTAINS_FOLDERS  = (1 << 0),   /**< Folder can contain folders. */
-		TYPE_CONTAINS_MESSAGES = (1 << 1),   /**< Folder can contain messages. */
-
-		TYPE_UNDEFINED = 9999                /**< Used internally (this should not be returned
-		                                          by the type() function). */
+		TYPE_CONTAINS_MESSAGES = (1 << 1)    /**< Folder can contain messages. */
 	};
 
 	/** Folder flags.
@@ -98,10 +104,7 @@ public:
 	enum Flags
 	{
 		FLAG_HAS_CHILDREN = (1 << 0),        /**< Folder contains subfolders. */
-		FLAG_NO_OPEN  = (1 << 1),            /**< Folder cannot be open. */
-
-		FLAG_UNDEFINED = 9999       /**< Used internally (this should not be returned
-		                                 by the type() function). */
+		FLAG_NO_OPEN  = (1 << 1)             /**< Folder cannot be open. */
 	};
 
 	/** Return the type of this folder.
@@ -266,7 +269,7 @@ public:
 	/** Add a message to this folder.
 	  *
 	  * @param msg message to add (data: header + body)
-	  * @param flags flags for the new message
+	  * @param flags flags for the new message (if -1, default flags are used)
 	  * @param date date/time for the new message (if NULL, the current time is used)
 	  * @param progress progress listener, or NULL if not used
 	  * @return a message set containing the number or UID of the new message, or
@@ -276,7 +279,7 @@ public:
 	  */
 	virtual messageSet addMessage
 		(shared_ptr <vmime::message> msg,
-		 const int flags = message::FLAG_UNDEFINED,
+		 const int flags = -1,
 		 vmime::datetime* date = NULL,
 		 utility::progressListener* progress = NULL) = 0;
 
@@ -284,7 +287,7 @@ public:
 	  *
 	  * @param is message to add (data: header + body)
 	  * @param size size of the message to add (in bytes)
-	  * @param flags flags for the new message
+	  * @param flags flags for the new message (if -1, default flags are used)
 	  * @param date date/time for the new message (if NULL, the current time is used)
 	  * @param progress progress listener, or NULL if not used
 	  * @return a message set containing the number or UID of the new message, or
@@ -295,7 +298,7 @@ public:
 	virtual messageSet addMessage
 		(utility::inputStream& is,
 		 const size_t size,
-		 const int flags = message::FLAG_UNDEFINED,
+		 const int flags = -1,
 		 vmime::datetime* date = NULL,
 		 utility::progressListener* progress = NULL) = 0;
 

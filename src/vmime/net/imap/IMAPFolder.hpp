@@ -107,14 +107,14 @@ public:
 
 	messageSet addMessage
 		(shared_ptr <vmime::message> msg,
-		 const int flags = message::FLAG_UNDEFINED,
+		 const int flags = -1,
 		 vmime::datetime* date = NULL,
 		 utility::progressListener* progress = NULL);
 
 	messageSet addMessage
 		(utility::inputStream& is,
 		 const size_t size,
-		 const int flags = message::FLAG_UNDEFINED,
+		 const int flags = -1,
 		 vmime::datetime* date = NULL,
 		 utility::progressListener* progress = NULL);
 

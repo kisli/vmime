@@ -647,7 +647,7 @@ void maildirFolder::setMessageFlags
 				 m_messages.begin() ; it != m_messages.end() ; ++it)
 			{
 				if (std::binary_search(nums.begin(), nums.end(), (*it)->getNumber()) &&
-					(*it)->m_flags != message::FLAG_UNDEFINED)
+					(*it)->m_flags != maildirMessage::FLAG_UNDEFINED)
 				{
 					(*it)->m_flags |= flags;
 				}
@@ -661,7 +661,7 @@ void maildirFolder::setMessageFlags
 				 m_messages.begin() ; it != m_messages.end() ; ++it)
 			{
 				if (std::binary_search(nums.begin(), nums.end(), (*it)->getNumber()) &&
-					(*it)->m_flags != message::FLAG_UNDEFINED)
+					(*it)->m_flags != maildirMessage::FLAG_UNDEFINED)
 				{
 					(*it)->m_flags &= ~flags;
 				}
@@ -676,7 +676,7 @@ void maildirFolder::setMessageFlags
 				 m_messages.begin() ; it != m_messages.end() ; ++it)
 			{
 				if (std::binary_search(nums.begin(), nums.end(), (*it)->getNumber()) &&
-					(*it)->m_flags != message::FLAG_UNDEFINED)
+					(*it)->m_flags != maildirMessage::FLAG_UNDEFINED)
 				{
 					(*it)->m_flags = flags;
 				}
@@ -745,7 +745,7 @@ messageSet maildirFolder::addMessage
 
 	const utility::file::path::component filename =
 		maildirUtils::buildFilename(maildirUtils::generateId(),
-			((flags == message::FLAG_UNDEFINED) ? 0 : flags));
+			((flags == -1) ? 0 : flags));
 
 	try
 	{
@@ -778,7 +778,7 @@ messageSet maildirFolder::addMessage
 	m_messageInfos.push_back(msgInfos);
 	m_messageCount++;
 
-	if ((flags == message::FLAG_UNDEFINED) || !(flags & message::FLAG_SEEN))
+	if ((flags == -1) || !(flags & message::FLAG_SEEN))
 		m_unreadMessageCount++;
 
 	// Notification

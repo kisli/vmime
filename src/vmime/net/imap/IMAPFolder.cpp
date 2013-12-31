@@ -1028,7 +1028,7 @@ messageSet IMAPFolder::addMessage
 
 	const string flagList = IMAPUtils::messageFlagList(flags);
 
-	if (flags != message::FLAG_UNDEFINED && !flagList.empty())
+	if (flags != -1 && !flagList.empty())
 	{
 		command << flagList;
 		command << ' ';
