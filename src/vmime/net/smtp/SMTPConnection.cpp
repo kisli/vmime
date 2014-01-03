@@ -525,7 +525,9 @@ void SMTPConnection::internalDisconnect()
 	try
 	{
 		sendRequest(SMTPCommand::QUIT());
-		readResponse();
+
+		// Do not wait for server response. This is contrary to the RFC, but
+		// some servers never send a response to a QUIT command.
 	}
 	catch (exception&)
 	{
