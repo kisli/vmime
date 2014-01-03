@@ -119,6 +119,7 @@ void TLSSocket_OpenSSL::createSSLHandle()
 
 		SSL_set_bio(m_ssl, sockBio, sockBio);
 		SSL_set_connect_state(m_ssl);
+		SSL_set_mode(m_ssl, SSL_MODE_ENABLE_PARTIAL_WRITE | SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER);
 	}
 	else
 	{
@@ -234,7 +235,30 @@ size_t TLSSocket_OpenSSL::receiveRaw(byte_t* buffer, const size_t count)
 
 void TLSSocket_OpenSSL::sendRaw(const byte_t* buffer, const size_t count)
 {
-	sendRawNonBlocking(buffer, count);
+	m_status &= ~STATUS_WOULDBLOCK;
+
+	for (size_t size = count ; size > 0 ; )
+	{
+		int rc = SSL_write(m_ssl, buffer, static_cast <int>(size));
+
+		if (rc <= 0)
+		{
+			int error = SSL_get_error(m_ssl, rc);
+
+			if (error == SSL_ERROR_WANT_WRITE || error == SSL_ERROR_WANT_READ)
+			{
+				platform::getHandler()->wait();
+				continue;
+			}
+
+			handleError(rc);
+		}
+		else
+		{
+			buffer += rc;
+			size -= rc;
+		}
+	}
 }
 
 

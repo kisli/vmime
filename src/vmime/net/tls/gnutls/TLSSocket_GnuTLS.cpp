@@ -179,22 +179,32 @@ size_t TLSSocket_GnuTLS::receiveRaw(byte_t* buffer, const size_t count)
 
 void TLSSocket_GnuTLS::sendRaw(const byte_t* buffer, const size_t count)
 {
-	ssize_t ret = gnutls_record_send
-		(*m_session->m_gnutlsSession,
-		 buffer, static_cast <size_t>(count));
+	m_status &= ~STATUS_WOULDBLOCK;
 
-	if (m_ex)
-		internalThrow();
-
-	if (ret < 0)
+	for (size_t size = count ; size > 0 ; )
 	{
-		if (ret == GNUTLS_E_AGAIN)
-		{
-			m_status |= STATUS_WOULDBLOCK;
-			return;
-		}
+		ssize_t ret = gnutls_record_send
+			(*m_session->m_gnutlsSession,
+			 buffer, static_cast <size_t>(size));
 
-		TLSSession_GnuTLS::throwTLSException("gnutls_record_send", static_cast <int>(ret));
+		if (m_ex)
+			internalThrow();
+
+		if (ret < 0)
+		{
+			if (ret == GNUTLS_E_AGAIN)
+			{
+				platform::getHandler()->wait();
+				continue;
+			}
+
+			TLSSession_GnuTLS::throwTLSException("gnutls_record_send", static_cast <int>(ret));
+		}
+		else
+		{
+			buffer += ret;
+			size -= ret;
+		}
 	}
 }
 
