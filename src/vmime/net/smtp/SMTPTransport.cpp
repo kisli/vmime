@@ -212,7 +212,11 @@ void SMTPTransport::sendEnvelope
 	{
 		commands->writeToSocket(m_connection->getSocket());
 
-		if ((resp = m_connection->readResponse())->getCode() != 250)
+		resp = m_connection->readResponse();
+
+		if (resp->getCode() != 250 &&
+		    resp->getCode() != 200)   // RFC-876: << In reply to a RSET and/or a NOOP command,
+		                              //             some servers reply "200" >>
 		{
 			disconnect();
 
