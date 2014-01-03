@@ -234,8 +234,6 @@ void SMTPTransport::sendEnvelope
 		// SIZE extension: insufficient system storage
 		if (resp->getCode() == 452)
 		{
-			disconnect();
-
 			throw SMTPMessageSizeExceedsCurLimitsException
 				(SMTPCommandError(commands->getLastCommandSent()->getText(), resp->getText(),
 				 resp->getCode(), resp->getEnhancedCode()));
@@ -243,8 +241,6 @@ void SMTPTransport::sendEnvelope
 		// SIZE extension: message size exceeds fixed maximum message size
 		else if (resp->getCode() == 552)
 		{
-			disconnect();
-
 			throw SMTPMessageSizeExceedsMaxLimitsException
 				(SMTPCommandError(commands->getLastCommandSent()->getText(), resp->getText(),
 				 resp->getCode(), resp->getEnhancedCode()));
@@ -252,8 +248,6 @@ void SMTPTransport::sendEnvelope
 		// Other error
 		else
 		{
-			disconnect();
-
 			throw SMTPCommandError
 				(commands->getLastCommandSent()->getText(), resp->getText(),
 				 resp->getCode(), resp->getEnhancedCode());
@@ -273,8 +267,6 @@ void SMTPTransport::sendEnvelope
 			// SIZE extension: insufficient system storage
 			if (resp->getCode() == 452)
 			{
-				disconnect();
-
 				throw SMTPMessageSizeExceedsCurLimitsException
 					(SMTPCommandError(commands->getLastCommandSent()->getText(), resp->getText(),
 					 resp->getCode(), resp->getEnhancedCode()));
@@ -282,8 +274,6 @@ void SMTPTransport::sendEnvelope
 			// SIZE extension: message size exceeds fixed maximum message size
 			else if (resp->getCode() == 552)
 			{
-				disconnect();
-
 				throw SMTPMessageSizeExceedsMaxLimitsException
 					(SMTPCommandError(commands->getLastCommandSent()->getText(), resp->getText(),
 					 resp->getCode(), resp->getEnhancedCode()));
@@ -291,8 +281,6 @@ void SMTPTransport::sendEnvelope
 			// Other error
 			else
 			{
-				disconnect();
-
 				throw SMTPCommandError
 					(commands->getLastCommandSent()->getText(), resp->getText(),
 					 resp->getCode(), resp->getEnhancedCode());
@@ -307,8 +295,6 @@ void SMTPTransport::sendEnvelope
 
 		if ((resp = m_connection->readResponse())->getCode() != 354)
 		{
-			disconnect();
-
 			throw SMTPCommandError
 				(commands->getLastCommandSent()->getText(), resp->getText(),
 				 resp->getCode(), resp->getEnhancedCode());
@@ -344,8 +330,6 @@ void SMTPTransport::send
 
 	if ((resp = m_connection->readResponse())->getCode() != 250)
 	{
-		disconnect();
-
 		throw SMTPCommandError
 			("DATA", resp->getText(), resp->getCode(), resp->getEnhancedCode());
 	}
