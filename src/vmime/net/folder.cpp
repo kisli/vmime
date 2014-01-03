@@ -36,6 +36,18 @@ namespace vmime {
 namespace net {
 
 
+int folder::getType()
+{
+	return getAttributes().getType();
+}
+
+
+int folder::getFlags()
+{
+	return getAttributes().getFlags();
+}
+
+
 void folder::addMessageChangedListener(events::messageChangedListener* l)
 {
 	m_messageChangedListeners.push_back(l);

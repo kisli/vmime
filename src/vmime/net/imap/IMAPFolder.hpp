@@ -66,22 +66,20 @@ private:
 
 public:
 
-	IMAPFolder(const folder::path& path, shared_ptr <IMAPStore> store, const int type = TYPE_UNDEFINED, const int flags = FLAG_UNDEFINED);
+	IMAPFolder(const folder::path& path, shared_ptr <IMAPStore> store, shared_ptr <folderAttributes> attribs);
 
 	~IMAPFolder();
 
 	int getMode() const;
 
-	int getType();
-
-	int getFlags();
+	const folderAttributes getAttributes();
 
 	const folder::path::component getName() const;
 	const folder::path getFullPath() const;
 
 	void open(const int mode, bool failIfModeIsNotAvailable = false);
 	void close(const bool expunge);
-	void create(const int type);
+	void create(const folderAttributes& attribs);
 
 	bool exists();
 
@@ -195,8 +193,7 @@ private:
 	int m_mode;
 	bool m_open;
 
-	int m_type;
-	int m_flags;
+	shared_ptr <folderAttributes> m_attribs;
 
 	shared_ptr <IMAPFolderStatus> m_status;
 

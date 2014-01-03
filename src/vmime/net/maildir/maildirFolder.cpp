@@ -91,23 +91,19 @@ int maildirFolder::getMode() const
 }
 
 
-int maildirFolder::getType()
+const folderAttributes maildirFolder::getAttributes()
 {
+	folderAttributes attribs;
+
 	if (m_path.isEmpty())
-		return (TYPE_CONTAINS_FOLDERS);
+		attribs.setType(folderAttributes::TYPE_CONTAINS_FOLDERS);
 	else
-		return (TYPE_CONTAINS_FOLDERS | TYPE_CONTAINS_MESSAGES);
-}
-
-
-int maildirFolder::getFlags()
-{
-	int flags = 0;
+		attribs.setType(folderAttributes::TYPE_CONTAINS_FOLDERS | folderAttributes::TYPE_CONTAINS_MESSAGES);
 
 	if (m_store.lock()->getFormat()->folderHasSubfolders(m_path))
-		flags |= FLAG_HAS_CHILDREN; // Contains at least one sub-folder
+		attribs.setFlags(folderAttributes::FLAG_HAS_CHILDREN);  // contains at least one sub-folder
 
-	return (flags);
+	return attribs;
 }
 
 
@@ -189,7 +185,7 @@ void maildirFolder::unregisterMessage(maildirMessage* msg)
 }
 
 
-void maildirFolder::create(const int /* type */)
+void maildirFolder::create(const folderAttributes& /* attribs */)
 {
 	shared_ptr <maildirStore> store = m_store.lock();
 

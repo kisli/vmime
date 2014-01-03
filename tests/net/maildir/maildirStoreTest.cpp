@@ -456,8 +456,10 @@ public:
 
 		VASSERT("Before", !store->getFolder(fpath() / "Folder" / "NewFolder")->exists());
 
-		VASSERT_NO_THROW("Creation", store->getFolder(fpath() / "Folder" / "NewFolder")->
-			create(vmime::net::folder::TYPE_CONTAINS_MESSAGES));
+		vmime::net::folderAttributes attribs;
+		attribs.setType(vmime::net::folderAttributes::TYPE_CONTAINS_MESSAGES);
+
+		VASSERT_NO_THROW("Creation", store->getFolder(fpath() / "Folder" / "NewFolder")->create(attribs));
 
 		VASSERT("After", store->getFolder(fpath() / "Folder" / "NewFolder")->exists());
 

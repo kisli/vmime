@@ -51,10 +51,10 @@ namespace net {
 namespace imap {
 
 
-IMAPFolder::IMAPFolder(const folder::path& path, shared_ptr <IMAPStore> store, const int type, const int flags)
+IMAPFolder::IMAPFolder(const folder::path& path, shared_ptr <IMAPStore> store, shared_ptr <folderAttributes> attribs)
 	: m_store(store), m_connection(store->connection()), m_path(path),
 	  m_name(path.isEmpty() ? folder::path::component("") : path.getLastComponent()), m_mode(-1),
-	  m_open(false), m_type(type), m_flags(flags)
+	  m_open(false), m_attribs(attribs)
 {
 	store->registerFolder(this);
 
@@ -90,7 +90,7 @@ int IMAPFolder::getMode() const
 }
 
 
-int IMAPFolder::getType()
+const folderAttributes IMAPFolder::getAttributes()
 {
 	if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
@@ -98,34 +98,18 @@ int IMAPFolder::getType()
 	// Root folder
 	if (m_path.isEmpty())
 	{
-		return (TYPE_CONTAINS_FOLDERS);
+		folderAttributes attribs;
+		attribs.setType(folderAttributes::TYPE_CONTAINS_FOLDERS);
+		attribs.setFlags(folderAttributes::FLAG_HAS_CHILDREN | folderAttributes::FLAG_NO_OPEN);
+
+		return attribs;
 	}
 	else
 	{
-		if (m_type == TYPE_UNDEFINED)
+		if (!m_attribs)
 			testExistAndGetType();
 
-		return (m_type);
-	}
-}
-
-
-int IMAPFolder::getFlags()
-{
-	if (!isOpen())
-		throw exceptions::illegal_state("Folder not open");
-
-	// Root folder
-	if (m_path.isEmpty())
-	{
-		return (FLAG_HAS_CHILDREN | FLAG_NO_OPEN);
-	}
-	else
-	{
-		if (m_flags == FLAG_UNDEFINED)
-			testExistAndGetType();
-
-		return (m_flags);
+		return *m_attribs;
 	}
 }
 
@@ -245,11 +229,11 @@ void IMAPFolder::open(const int mode, bool failIfModeIsNotAvailable)
 
 				case IMAPParser::mailbox_data::FLAGS:
 				{
-					m_type = IMAPUtils::folderTypeFromFlags
-						(responseData->mailbox_data()->mailbox_flag_list());
+					if (!m_attribs)
+						m_attribs = make_shared <folderAttributes>();
 
-					m_flags = IMAPUtils::folderFlagsFromFlags
-						(connection, responseData->mailbox_data()->mailbox_flag_list());
+					IMAPUtils::mailboxFlagsToFolderAttributes
+						(connection, responseData->mailbox_data()->mailbox_flag_list(), *m_attribs);
 
 					break;
 				}
@@ -338,7 +322,7 @@ void IMAPFolder::onClose()
 }
 
 
-void IMAPFolder::create(const int type)
+void IMAPFolder::create(const folderAttributes& attribs)
 {
 	shared_ptr <IMAPStore> store = m_store.lock();
 
@@ -361,11 +345,35 @@ void IMAPFolder::create(const int type)
 	string mailbox = IMAPUtils::pathToString
 		(m_connection->hierarchySeparator(), getFullPath());
 
-	if (type & TYPE_CONTAINS_FOLDERS)
+	if (attribs.getType() & folderAttributes::TYPE_CONTAINS_FOLDERS)
 		mailbox += m_connection->hierarchySeparator();
 
 	std::ostringstream oss;
 	oss << "CREATE " << IMAPUtils::quoteString(mailbox);
+
+	if (attribs.getSpecialUse() != folderAttributes::SPECIALUSE_NONE)
+	{
+		if (!m_connection->hasCapability("CREATE-SPECIAL-USE"))
+			throw exceptions::operation_not_supported();
+
+		// C: t2 CREATE MySpecial (USE (\Drafts \Sent))
+		oss << "(USE (";
+
+		switch (attribs.getSpecialUse())
+		{
+		case folderAttributes::SPECIALUSE_NONE:      // should not happen
+		case folderAttributes::SPECIALUSE_ALL:       oss << "\\All"; break;
+		case folderAttributes::SPECIALUSE_ARCHIVE:   oss << "\\Archive"; break;
+		case folderAttributes::SPECIALUSE_DRAFTS:    oss << "\\Drafts"; break;
+		case folderAttributes::SPECIALUSE_FLAGGED:   oss << "\\Flagged"; break;
+		case folderAttributes::SPECIALUSE_JUNK:      oss << "\\Junk"; break;
+		case folderAttributes::SPECIALUSE_SENT:      oss << "\\Sent"; break;
+		case folderAttributes::SPECIALUSE_TRASH:     oss << "\\Trash"; break;
+		case folderAttributes::SPECIALUSE_IMPORTANT: oss << "\\Important"; break;
+		}
+
+		oss << "))";
+	}
 
 	m_connection->send(true, oss.str(), true);
 
@@ -434,14 +442,12 @@ bool IMAPFolder::exists()
 	if (!isOpen() && !store)
 		throw exceptions::illegal_state("Store disconnected");
 
-	return (testExistAndGetType() != TYPE_UNDEFINED);
+	return testExistAndGetType() != -1;
 }
 
 
 int IMAPFolder::testExistAndGetType()
 {
-	m_type = TYPE_UNDEFINED;
-
 	// To test whether a folder exists, we simple list it using
 	// the "LIST" command, and there should be one unique mailbox
 	// with this name...
@@ -482,6 +488,9 @@ int IMAPFolder::testExistAndGetType()
 	const std::vector <IMAPParser::continue_req_or_response_data*>& respDataList =
 		resp->continue_req_or_response_data();
 
+	folderAttributes attribs;
+	attribs.setType(-1);
+
 	for (std::vector <IMAPParser::continue_req_or_response_data*>::const_iterator
 	     it = respDataList.begin() ; it != respDataList.end() ; ++it)
 	{
@@ -498,15 +507,14 @@ int IMAPFolder::testExistAndGetType()
 		if (mailboxData != NULL && mailboxData->type() == IMAPParser::mailbox_data::LIST)
 		{
 			// Get the folder type/flags at the same time
-			m_type = IMAPUtils::folderTypeFromFlags
-				(mailboxData->mailbox_list()->mailbox_flag_list());
-
-			m_flags = IMAPUtils::folderFlagsFromFlags
-				(m_connection, mailboxData->mailbox_list()->mailbox_flag_list());
+			IMAPUtils::mailboxFlagsToFolderAttributes
+				(m_connection, mailboxData->mailbox_list()->mailbox_flag_list(), attribs);
 		}
 	}
 
-	return (m_type);
+	m_attribs = make_shared <folderAttributes>(attribs);
+
+	return m_attribs->getType();
 }
 
 
@@ -656,7 +664,7 @@ shared_ptr <folder> IMAPFolder::getFolder(const folder::path::component& name)
 	if (!store)
 		throw exceptions::illegal_state("Store disconnected");
 
-	return make_shared <IMAPFolder>(m_path / name, store);
+	return make_shared <IMAPFolder>(m_path / name, store, shared_ptr <folderAttributes>());
 }
 
 
@@ -740,9 +748,11 @@ std::vector <shared_ptr <folder> > IMAPFolder::getFolders(const bool recursive)
 			const class IMAPParser::mailbox_flag_list* mailbox_flag_list =
 				mailboxData->mailbox_list()->mailbox_flag_list();
 
-			v.push_back(make_shared <IMAPFolder>(path, store,
-				IMAPUtils::folderTypeFromFlags(mailbox_flag_list),
-				IMAPUtils::folderFlagsFromFlags(m_connection, mailbox_flag_list)));
+			shared_ptr <folderAttributes> attribs = make_shared <folderAttributes>();
+			IMAPUtils::mailboxFlagsToFolderAttributes
+				(m_connection, mailbox_flag_list, *attribs);
+
+			v.push_back(make_shared <IMAPFolder>(path, store, attribs));
 		}
 	}
 
@@ -867,7 +877,7 @@ shared_ptr <folder> IMAPFolder::getParent()
 	if (m_path.isEmpty())
 		return null;
 	else
-		return make_shared <IMAPFolder>(m_path.getParent(), m_store.lock());
+		return make_shared <IMAPFolder>(m_path.getParent(), m_store.lock(), shared_ptr <folderAttributes>());
 }
 
 
@@ -1453,6 +1463,16 @@ void IMAPFolder::processStatusUpdate(const IMAPParser::response* resp)
 		else if ((*it)->response_data() && (*it)->response_data()->mailbox_data())
 		{
 			m_status->updateFromResponse((*it)->response_data()->mailbox_data());
+
+			// Update folder attributes, if available
+			if ((*it)->response_data()->mailbox_data()->type() == IMAPParser::mailbox_data::LIST)
+			{
+				folderAttributes attribs;
+				IMAPUtils::mailboxFlagsToFolderAttributes
+					(m_connection, (*it)->response_data()->mailbox_data()->mailbox_list()->mailbox_flag_list(), attribs);
+
+				m_attribs = make_shared <folderAttributes>(attribs);
+			}
 		}
 		else if ((*it)->response_data() && (*it)->response_data()->message_data())
 		{

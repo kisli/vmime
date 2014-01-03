@@ -68,16 +68,14 @@ public:
 
 	int getMode() const;
 
-	int getType();
-
-	int getFlags();
+	const folderAttributes getAttributes();
 
 	const folder::path::component getName() const;
 	const folder::path getFullPath() const;
 
 	void open(const int mode, bool failIfModeIsNotAvailable = false);
 	void close(const bool expunge);
-	void create(const int type);
+	void create(const folderAttributes& attribs);
 
 	bool exists();
 

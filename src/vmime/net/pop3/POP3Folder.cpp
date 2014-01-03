@@ -81,23 +81,23 @@ int POP3Folder::getMode() const
 }
 
 
-int POP3Folder::getType()
+const folderAttributes POP3Folder::getAttributes()
 {
 	if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
 
+	folderAttributes attribs;
+
 	if (m_path.isEmpty())
-		return (TYPE_CONTAINS_FOLDERS);
+		attribs.setType(folderAttributes::TYPE_CONTAINS_FOLDERS);
 	else if (m_path.getSize() == 1 && m_path[0].getBuffer() == "INBOX")
-		return (TYPE_CONTAINS_MESSAGES);
+		attribs.setType(folderAttributes::TYPE_CONTAINS_MESSAGES);
 	else
 		throw exceptions::folder_not_found();
-}
 
+	attribs.setFlags(0);
 
-int POP3Folder::getFlags()
-{
-	return (0);
+	return attribs;
 }
 
 
@@ -186,7 +186,7 @@ void POP3Folder::onClose()
 }
 
 
-void POP3Folder::create(const int /* type */)
+void POP3Folder::create(const folderAttributes& /* attribs */)
 {
 	throw exceptions::operation_not_supported();
 }

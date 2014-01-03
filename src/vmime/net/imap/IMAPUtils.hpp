@@ -66,10 +66,16 @@ public:
 	  */
 	static const string quoteString(const string& text);
 
-	static int folderTypeFromFlags(const IMAPParser::mailbox_flag_list* list);
-	static int folderFlagsFromFlags
+	/** Parse mailbox flags and fill in folder attributes.
+	  *
+	  * @param cnt reference to current IMAP connection (for testing capabilities)
+	  * @param list list of mailbox flags
+	  * @param attribs reference to an object holding folder attributes
+	  */
+	static void mailboxFlagsToFolderAttributes
 		(shared_ptr <const IMAPConnection> cnt,
-		 const IMAPParser::mailbox_flag_list* list);
+		 const IMAPParser::mailbox_flag_list* list,
+		 folderAttributes& attribs);
 
 	static int messageFlagsFromFlags(const IMAPParser::flag_list* list);
 

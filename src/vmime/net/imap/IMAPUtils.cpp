@@ -366,52 +366,89 @@ const folder::path::component IMAPUtils::fromModifiedUTF7(const string& text)
 }
 
 
-int IMAPUtils::folderTypeFromFlags(const IMAPParser::mailbox_flag_list* list)
+// static
+void IMAPUtils::mailboxFlagsToFolderAttributes
+	(shared_ptr <const IMAPConnection> cnt, const IMAPParser::mailbox_flag_list* list,
+	 folderAttributes& attribs)
 {
-	// Get folder type
-	int type = folder::TYPE_CONTAINS_MESSAGES | folder::TYPE_CONTAINS_FOLDERS;
-	const std::vector <IMAPParser::mailbox_flag*>& flags = list->flags();
-
-	for (std::vector <IMAPParser::mailbox_flag*>::const_iterator it = flags.begin() ;
-	     it != flags.end() ; ++it)
-	{
-		if ((*it)->type() == IMAPParser::mailbox_flag::NOSELECT)
-			type &= ~folder::TYPE_CONTAINS_MESSAGES;
-	}
-
-	if (type & folder::TYPE_CONTAINS_MESSAGES)
-		type &= ~folder::TYPE_CONTAINS_FOLDERS;
-
-	return (type);
-}
-
-
-int IMAPUtils::folderFlagsFromFlags
-	(shared_ptr <const IMAPConnection> cnt, const IMAPParser::mailbox_flag_list* list)
-{
-	int folderFlags = 0;
+	int specialUse = folderAttributes::SPECIALUSE_NONE;
+	int type = folderAttributes::TYPE_CONTAINS_MESSAGES | folderAttributes::TYPE_CONTAINS_FOLDERS;
+	int flags = 0;
 
 	// If CHILDREN extension (RFC-3348) is not supported, assume folder has children
 	// as we have no hint about it
 	if (!cnt->hasCapability("CHILDREN"))
-		folderFlags |= folder::FLAG_HAS_CHILDREN;
+		flags |= folderAttributes::FLAG_HAS_CHILDREN;
 
-	const std::vector <IMAPParser::mailbox_flag*>& flags = list->flags();
+	const std::vector <IMAPParser::mailbox_flag*>& mailboxFlags = list->flags();
 
-	for (std::vector <IMAPParser::mailbox_flag*>::const_iterator it = flags.begin() ;
-	     it != flags.end() ; ++it)
+	for (std::vector <IMAPParser::mailbox_flag*>::const_iterator it = mailboxFlags.begin() ;
+	     it != mailboxFlags.end() ; ++it)
 	{
-		if ((*it)->type() == IMAPParser::mailbox_flag::NOSELECT)
-			folderFlags |= folder::FLAG_NO_OPEN;
-		else if ((*it)->type() == IMAPParser::mailbox_flag::NOINFERIORS)
-			folderFlags &= ~folder::FLAG_HAS_CHILDREN;
-		else if ((*it)->type() == IMAPParser::mailbox_flag::HASNOCHILDREN)
-			folderFlags &= ~folder::FLAG_HAS_CHILDREN;
-		else if ((*it)->type() == IMAPParser::mailbox_flag::HASCHILDREN)
-			folderFlags |= folder::FLAG_HAS_CHILDREN;
+		switch ((*it)->type())
+		{
+		case IMAPParser::mailbox_flag::NOSELECT:
+
+			type &= ~folderAttributes::TYPE_CONTAINS_MESSAGES;
+			flags |= folderAttributes::FLAG_NO_OPEN;
+			break;
+
+		case IMAPParser::mailbox_flag::NOINFERIORS:
+		case IMAPParser::mailbox_flag::HASNOCHILDREN:
+
+			flags &= ~folderAttributes::FLAG_HAS_CHILDREN;
+			break;
+
+		case IMAPParser::mailbox_flag::HASCHILDREN:
+
+			flags |= folderAttributes::FLAG_HAS_CHILDREN;
+			break;
+
+		case IMAPParser::mailbox_flag::SPECIALUSE_ALL:
+
+			specialUse = folderAttributes::SPECIALUSE_ALL;
+			break;
+
+		case IMAPParser::mailbox_flag::SPECIALUSE_ARCHIVE:
+
+			specialUse = folderAttributes::SPECIALUSE_ARCHIVE;
+			break;
+
+		case IMAPParser::mailbox_flag::SPECIALUSE_DRAFTS:
+
+			specialUse = folderAttributes::SPECIALUSE_DRAFTS;
+			break;
+
+		case IMAPParser::mailbox_flag::SPECIALUSE_FLAGGED:
+
+			specialUse = folderAttributes::SPECIALUSE_FLAGGED;
+			break;
+
+		case IMAPParser::mailbox_flag::SPECIALUSE_JUNK:
+
+			specialUse = folderAttributes::SPECIALUSE_JUNK;
+			break;
+
+		case IMAPParser::mailbox_flag::SPECIALUSE_SENT:
+
+			specialUse = folderAttributes::SPECIALUSE_SENT;
+			break;
+
+		case IMAPParser::mailbox_flag::SPECIALUSE_TRASH:
+
+			specialUse = folderAttributes::SPECIALUSE_TRASH;
+			break;
+
+		case IMAPParser::mailbox_flag::SPECIALUSE_IMPORTANT:
+
+			specialUse = folderAttributes::SPECIALUSE_IMPORTANT;
+			break;
+		}
 	}
 
-	return (folderFlags);
+	attribs.setSpecialUse(specialUse);
+	attribs.setType(type);
+	attribs.setFlags(flags);
 }
 
 

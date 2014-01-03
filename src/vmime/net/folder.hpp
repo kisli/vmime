@@ -42,6 +42,7 @@
 #include "vmime/net/events.hpp"
 #include "vmime/net/folderStatus.hpp"
 #include "vmime/net/fetchAttributes.hpp"
+#include "vmime/net/folderAttributes.hpp"
 
 #include "vmime/utility/path.hpp"
 #include "vmime/utility/stream.hpp"
@@ -91,33 +92,28 @@ public:
 		MODE_READ_WRITE    /**< Full access mode (read and write). */
 	};
 
-	/** Folder types.
-	  */
-	enum Types
-	{
-		TYPE_CONTAINS_FOLDERS  = (1 << 0),   /**< Folder can contain folders. */
-		TYPE_CONTAINS_MESSAGES = (1 << 1)    /**< Folder can contain messages. */
-	};
-
-	/** Folder flags.
-	  */
-	enum Flags
-	{
-		FLAG_HAS_CHILDREN = (1 << 0),        /**< Folder contains subfolders. */
-		FLAG_NO_OPEN  = (1 << 1)             /**< Folder cannot be open. */
-	};
 
 	/** Return the type of this folder.
 	  *
-	  * @return folder type (see folder::Types)
+	  * \deprecated Use the getAttributes().getType() method instead
+	  *
+	  * @return folder type (see folderAttributes::Types enum)
 	  */
-	virtual int getType() = 0;
+	int getType();
 
 	/** Return the flags of this folder.
 	  *
-	  * @return folder flags (see folder::Flags)
+	  * \deprecated Use the getAttributes().getFlags() method instead
+	  *
+	  * @return folder flags (see folderAttributes::Flags enum)
 	  */
-	virtual int getFlags() = 0;
+	int getFlags();
+
+	/** Return the attributes of the folder.
+	  *
+	  * @return folder attributes (see folder::Flags)
+	  */
+	virtual const folderAttributes getAttributes() = 0;
 
 	/** Return the mode in which the folder has been open.
 	  *
@@ -159,10 +155,10 @@ public:
 
 	/** Create this folder.
 	  *
-	  * @param type folder type (see folder::Types)
+	  * @param attribs attributes of the new folder
 	  * @throw exceptions::net_exception if an error occurs
 	  */
-	virtual void create(const int type) = 0;
+	virtual void create(const folderAttributes& attribs) = 0;
 
 	/** Test whether this folder exists.
 	  *

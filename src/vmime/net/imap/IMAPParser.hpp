@@ -1803,23 +1803,92 @@ public:
 				const string name = utility::stringUtils::toLower(at->value());
 				delete (at);
 
-				if (name == "marked")
-					m_type = MARKED;
-				else if (name == "noinferiors")
-					m_type = NOINFERIORS;
-				else if (name == "noselect")
-					m_type = NOSELECT;
-				else if (name == "unmarked")
-					m_type = UNMARKED;
-				else if (name == "haschildren")
-					m_type = HASCHILDREN;
-				else if (name == "hasnochildren")
-					m_type = HASNOCHILDREN;
-				else
+				m_type = UNKNOWN;  // default
+
+				switch (name[0])
 				{
-					m_type = UNKNOWN;
-					m_name = "\\" + name;
+				case 'a':
+
+					if (name == "all")
+						m_type = SPECIALUSE_ALL;
+					else if (name == "archive")
+						m_type = SPECIALUSE_ARCHIVE;
+
+					break;
+
+				case 'd':
+
+					if (name == "drafts")
+						m_type = SPECIALUSE_DRAFTS;
+
+					break;
+
+				case 'f':
+
+					if (name == "flagged")
+						m_type = SPECIALUSE_FLAGGED;
+
+					break;
+
+				case 'h':
+
+					if (name == "haschildren")
+						m_type = HASCHILDREN;
+					else if (name == "hasnochildren")
+						m_type = HASNOCHILDREN;
+
+					break;
+
+				case 'i':
+
+					if (name == "important")
+						m_type = SPECIALUSE_IMPORTANT;
+
+					break;
+
+				case 'j':
+
+					if (name == "junk")
+						m_type = SPECIALUSE_JUNK;
+
+					break;
+
+				case 'm':
+
+					if (name == "marked")
+						m_type = MARKED;
+
+				case 'n':
+
+					if (name == "noinferiors")
+						m_type = NOINFERIORS;
+					else if (name == "noselect")
+						m_type = NOSELECT;
+
+				case 's':
+
+					if (name == "sent")
+						m_type = SPECIALUSE_SENT;
+
+					break;
+
+				case 't':
+
+					if (name == "trash")
+						m_type = SPECIALUSE_TRASH;
+
+					break;
+
+				case 'u':
+
+					if (name == "unmarked")
+						m_type = UNMARKED;
+
+					break;
 				}
+
+				if (m_type == UNKNOWN)
+					m_name = "\\" + name;
 			}
 			else
 			{
@@ -1840,6 +1909,16 @@ public:
 			// RFC-3348 - Child Mailbox Extension
 			HASCHILDREN,
 			HASNOCHILDREN,
+
+			// RFC-6154 - Special-Use Mailboxes
+			SPECIALUSE_ALL,
+			SPECIALUSE_ARCHIVE,
+			SPECIALUSE_DRAFTS,
+			SPECIALUSE_FLAGGED,
+			SPECIALUSE_JUNK,
+			SPECIALUSE_SENT,
+			SPECIALUSE_TRASH,
+			SPECIALUSE_IMPORTANT,    // draft
 
 			// Standard mailbox flags
 			UNKNOWN,
