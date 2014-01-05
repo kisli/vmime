@@ -141,7 +141,8 @@ void SMTPChunkingOutputStreamAdapter::flush()
 	sendChunk(m_buffer, m_bufferSize, /* last */ true);
 	m_bufferSize = 0;
 
-	m_progress->stop(m_totalSize);
+	if (m_progress)
+		m_progress->stop(m_totalSize);
 }
 
 
