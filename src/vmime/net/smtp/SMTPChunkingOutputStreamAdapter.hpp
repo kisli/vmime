@@ -32,6 +32,7 @@
 
 
 #include "vmime/utility/outputStream.hpp"
+#include "vmime/utility/progressListener.hpp"
 
 
 namespace vmime {
@@ -48,7 +49,8 @@ class VMIME_EXPORT SMTPChunkingOutputStreamAdapter : public utility::outputStrea
 {
 public:
 
-	SMTPChunkingOutputStreamAdapter(shared_ptr <SMTPConnection> conn);
+	SMTPChunkingOutputStreamAdapter(shared_ptr <SMTPConnection> conn,
+		const size_t size, utility::progressListener* progress);
 
 	void flush();
 
@@ -72,6 +74,10 @@ private:
 	size_t m_bufferSize;
 
 	unsigned int m_chunkCount;
+
+	size_t m_totalSize;
+	size_t m_totalSent;
+	utility::progressListener* m_progress;
 };
 
 

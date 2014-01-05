@@ -410,7 +410,7 @@ public:
 
 	vmime::size_t getChunkBufferSize() const
 	{
-		static vmime::net::smtp::SMTPChunkingOutputStreamAdapter chunkStream(vmime::null);
+		static vmime::net::smtp::SMTPChunkingOutputStreamAdapter chunkStream(vmime::null, 0, NULL);
 		return chunkStream.getBlockSize();
 	}
 

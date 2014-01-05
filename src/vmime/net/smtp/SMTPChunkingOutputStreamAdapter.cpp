@@ -40,9 +40,13 @@ namespace net {
 namespace smtp {
 
 
-SMTPChunkingOutputStreamAdapter::SMTPChunkingOutputStreamAdapter(shared_ptr <SMTPConnection> conn)
-	: m_connection(conn), m_bufferSize(0), m_chunkCount(0)
+SMTPChunkingOutputStreamAdapter::SMTPChunkingOutputStreamAdapter
+	(shared_ptr <SMTPConnection> conn, const size_t size, utility::progressListener* progress)
+	: m_connection(conn), m_bufferSize(0), m_chunkCount(0),
+	  m_totalSize(size), m_totalSent(0), m_progress(progress)
 {
+	if (progress)
+		progress->start(size);
 }
 
 
@@ -60,6 +64,14 @@ void SMTPChunkingOutputStreamAdapter::sendChunk
 	m_connection->getSocket()->sendRaw(data, count);
 
 	++m_chunkCount;
+
+	if (m_progress)
+	{
+		m_totalSent += count;
+		m_totalSize = std::max(m_totalSize, m_totalSent);
+
+		m_progress->progress(m_totalSent, m_totalSize);
+	}
 
 	// If PIPELINING is not supported, read one response for this BDAT command
 	if (!m_connection->hasExtension("PIPELINING"))
@@ -128,6 +140,8 @@ void SMTPChunkingOutputStreamAdapter::flush()
 {
 	sendChunk(m_buffer, m_bufferSize, /* last */ true);
 	m_bufferSize = 0;
+
+	m_progress->stop(m_totalSize);
 }
 
 

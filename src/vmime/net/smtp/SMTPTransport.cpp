@@ -369,11 +369,13 @@ void SMTPTransport::send
 	}
 
 	// Send message envelope
+	const size_t msgSize = msg->getGeneratedSize(ctx);
+
 	sendEnvelope(expeditor, recipients, sender,
-		/* sendDATACommand */ false, msg->getGeneratedSize(ctx));
+		/* sendDATACommand */ false, msgSize);
 
 	// Send the message by chunks
-	SMTPChunkingOutputStreamAdapter chunkStream(m_connection);
+	SMTPChunkingOutputStreamAdapter chunkStream(m_connection, msgSize, progress);
 
 	msg->generate(ctx, chunkStream);
 
