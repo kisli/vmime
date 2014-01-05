@@ -210,6 +210,12 @@ void dotFilteredOutputStream::flush()
 }
 
 
+size_t dotFilteredOutputStream::getBlockSize()
+{
+	return m_stream.getBlockSize();
+}
+
+
 // CRLFToLFFilteredOutputStream
 
 CRLFToLFFilteredOutputStream::CRLFToLFFilteredOutputStream(outputStream& os)
@@ -286,6 +292,12 @@ void CRLFToLFFilteredOutputStream::flush()
 }
 
 
+size_t CRLFToLFFilteredOutputStream::getBlockSize()
+{
+	return m_stream.getBlockSize();
+}
+
+
 // LFToCRLFFilteredOutputStream
 
 LFToCRLFFilteredOutputStream::LFToCRLFFilteredOutputStream(outputStream& os)
@@ -354,6 +366,12 @@ void LFToCRLFFilteredOutputStream::writeImpl
 void LFToCRLFFilteredOutputStream::flush()
 {
 	m_stream.flush();
+}
+
+
+size_t LFToCRLFFilteredOutputStream::getBlockSize()
+{
+	return m_stream.getBlockSize();
 }
 
 

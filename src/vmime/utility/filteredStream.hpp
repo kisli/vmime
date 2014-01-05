@@ -120,6 +120,8 @@ public:
 
 	void flush();
 
+	size_t getBlockSize();
+
 protected:
 
 	void writeImpl(const byte_t* const data, const size_t count);
@@ -150,6 +152,8 @@ public:
 
 	void flush();
 
+	size_t getBlockSize();
+
 protected:
 
 	void writeImpl(const byte_t* const data, const size_t count);
@@ -178,6 +182,8 @@ public:
 	outputStream& getNextOutputStream();
 
 	void flush();
+
+	size_t getBlockSize();
 
 protected:
 
