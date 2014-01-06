@@ -307,8 +307,14 @@ ssize_t TLSSocket_GnuTLS::gnutlsPushFunc
 
 	try
 	{
-		sok->m_wrapped->sendRaw
-			(reinterpret_cast <const byte_t*>(data), len);
+		const ssize_t ret = static_cast <ssize_t>
+			(sok->m_wrapped->sendRawNonBlocking
+				(reinterpret_cast <const byte_t*>(data), len));
+
+		if (ret == 0 && sok->m_wrapped->getStatus() & socket::STATUS_WOULDBLOCK)
+			return GNUTLS_E_AGAIN;
+
+		return ret;
 	}
 	catch (exception& e)
 	{
@@ -317,8 +323,6 @@ ssize_t TLSSocket_GnuTLS::gnutlsPushFunc
 		sok->m_ex = e.clone();
 		return -1;
 	}
-
-	return len;
 }
 
 
