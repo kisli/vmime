@@ -108,8 +108,14 @@ void htmlTextPart::generateIn(shared_ptr <bodyPart> /* message */, shared_ptr <b
 
 			string id = (*it)->getId();
 
-			if (id.substr(0, 4) == "CID:")
+			if (id.length() >= 4 &&
+			    (id[0] == 'c' || id[0] == 'C') &&
+			    (id[1] == 'i' || id[1] == 'I') &&
+			    (id[2] == 'd' || id[2] == 'D') &&
+			    id[3] == ':')
+			{
 				id = id.substr(4);
+			}
 
 			objPart->getHeader()->ContentType()->setValue((*it)->getType());
 			objPart->getHeader()->ContentId()->setValue(messageId("<" + id + ">"));
@@ -462,7 +468,7 @@ const string htmlTextPart::embeddedObject::getId() const
 const string htmlTextPart::embeddedObject::getReferenceId() const
 {
 	if (m_refType == REFERENCED_BY_ID)
-		return string("CID:") + m_id;
+		return string("cid:") + m_id;
 	else
 		return m_id;
 }
