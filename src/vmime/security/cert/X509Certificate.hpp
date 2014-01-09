@@ -101,6 +101,13 @@ public:
 	  */
 	virtual const byteArray getSerialNumber() const = 0;
 
+	/** Returns the distinguished name of the issuer of this certificate.
+	  * Eg. "C=US,O=VeriSign\, Inc.,OU=Class 1 Public Primary Certification Authority"
+	  *
+	  * @return distinguished name of the certificate issuer, as a string
+	  */
+	const string getIssuerString() const;
+
 	/** Checks if this certificate has the given issuer.
 	  *
 	  * @param issuer certificate of a possible issuer
@@ -119,9 +126,13 @@ public:
 	/** Verify certificate's subject name against the given hostname.
 	  *
 	  * @param hostname DNS name of the server
+	  * @param nonMatchingNames if not NULL, will contain the names that do
+	  * not match the identities in the certificate
 	  * @return true if the match is successful, false otherwise
 	  */
-	virtual bool verifyHostName(const string& hostname) const = 0;
+	virtual bool verifyHostName
+		(const string& hostname,
+		 std::vector <std::string>* nonMatchingNames = NULL) const = 0;
 
 	/** Gets the expiration date of this certificate. This is the date
 	  * at which this certificate will not be valid anymore.

@@ -59,11 +59,14 @@ public:
 
 	const byteArray getSerialNumber() const;
 
+	const string getIssuerString() const;
 	bool checkIssuer(shared_ptr <const X509Certificate> issuer) const;
 
 	bool verify(shared_ptr <const X509Certificate> caCert) const;
 
-	bool verifyHostName(const string& hostname) const;
+	bool verifyHostName
+		(const string& hostname,
+		 std::vector <std::string>* nonMatchingNames = NULL) const;
 
 	const datetime getExpirationDate() const;
 	const datetime getActivationDate() const;

@@ -362,7 +362,8 @@ bool X509Certificate_OpenSSL::cnMatch(const char* cnBuf, const char* host)
 }
 
 
-bool X509Certificate_OpenSSL::verifyHostName(const string& hostname) const
+bool X509Certificate_OpenSSL::verifyHostName
+	(const string& hostname, std::vector <std::string>* nonMatchingNames) const
 {
 	// First, check subject common name against hostname
 	char CNBuffer[1024];
@@ -374,6 +375,9 @@ bool X509Certificate_OpenSSL::verifyHostName(const string& hostname) const
 	{
 		if (cnMatch(CNBuffer, hostname.c_str()))
 			return true;
+
+		if (nonMatchingNames)
+			nonMatchingNames->push_back(CNBuffer);
 	}
 
 	// Now, look in subject alternative names
@@ -422,6 +426,9 @@ bool X509Certificate_OpenSSL::verifyHostName(const string& hostname) const
 						{
 							return true;
 						}
+
+						if (nonMatchingNames)
+							nonMatchingNames->push_back(cnf->value);
 					}
 				}
 			}
@@ -535,6 +542,22 @@ const byteArray X509Certificate_OpenSSL::getEncoded() const
 	write(os, FORMAT_DER);
 
 	return bytes;
+}
+
+
+const string X509Certificate_OpenSSL::getIssuerString() const
+{
+	// Get issuer for this cert
+	BIO* out = BIO_new(BIO_s_mem());
+	X509_NAME_print_ex(out, X509_get_issuer_name(m_data->cert), 0, XN_FLAG_RFC2253);
+
+	unsigned char* issuer;
+	const int n = BIO_get_mem_data(out, &issuer);
+
+	vmime::string name(reinterpret_cast <char*>(issuer), n);
+	BIO_free(out);
+
+	return name;
 }
 
 

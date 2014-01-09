@@ -187,9 +187,36 @@ bool X509Certificate_GnuTLS::verify(shared_ptr <const X509Certificate> caCert_) 
 }
 
 
-bool X509Certificate_GnuTLS::verifyHostName(const string& hostname) const
+bool X509Certificate_GnuTLS::verifyHostName
+	(const string& hostname, std::vector <std::string>* nonMatchingNames) const
 {
-	return gnutls_x509_crt_check_hostname(m_data->cert, hostname.c_str()) != 0;
+	if (gnutls_x509_crt_check_hostname(m_data->cert, hostname.c_str()) != 0)
+		return true;
+
+	if (nonMatchingNames)
+	{
+		const int MAX_CN = 256;
+		const char* OID_X520_COMMON_NAME = "2.5.4.3";
+
+		char dnsName[MAX_CN];
+		size_t dnsNameLength;
+
+		dnsNameLength = sizeof(dnsName);
+
+		if (gnutls_x509_crt_get_dn_by_oid(m_data->cert, OID_X520_COMMON_NAME, 0, 0, dnsName, &dnsNameLength) >= 0) 
+			nonMatchingNames->push_back(dnsName);
+
+		for (int i = 0, ret = 0 ; ret >= 0 ; ++i) 
+		{
+			dnsNameLength = sizeof(dnsName);
+			ret = gnutls_x509_crt_get_subject_alt_name(m_data->cert, i, dnsName, &dnsNameLength, NULL);
+
+			if (ret == GNUTLS_SAN_DNSNAME) 
+				nonMatchingNames->push_back(dnsName);
+		}
+	}
+
+	return false;
 }
 
 
@@ -252,6 +279,18 @@ const byteArray X509Certificate_GnuTLS::getEncoded() const
 	write(os, FORMAT_DER);
 
 	return bytes;
+}
+
+
+const string X509Certificate_GnuTLS::getIssuerString() const
+{
+	char buffer[4096];
+	size_t bufferSize = sizeof(buffer);
+
+	if (gnutls_x509_crt_get_issuer_dn(m_data->cert, buffer, &bufferSize) != GNUTLS_E_SUCCESS)
+		return "";
+
+	return buffer;
 }
 
 
