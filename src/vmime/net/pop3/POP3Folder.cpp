@@ -672,7 +672,7 @@ shared_ptr <folderStatus> POP3Folder::getStatus()
 		if (count > oldCount)
 		{
 			std::vector <int> nums;
-			nums.reserve(count - oldCount);
+			nums.resize(count - oldCount);
 
 			for (int i = oldCount + 1, j = 0 ; i <= count ; ++i, ++j)
 				nums[j] = i;
