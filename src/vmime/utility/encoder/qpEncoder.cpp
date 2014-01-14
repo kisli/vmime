@@ -299,6 +299,9 @@ size_t qpEncoder::encode(utility::inputStream& in,
 				{
 					outBuffer[outBufferPos++] = c;
 					++curCol;
+
+					if (c == 10)
+						curCol = 0;  // reset current line length
 				}
 				// Binary data
 				else

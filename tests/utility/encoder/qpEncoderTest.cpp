@@ -31,6 +31,8 @@ VMIME_TEST_SUITE_BEGIN(qpEncoderTest)
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testQuotedPrintable)
 		VMIME_TEST(testQuotedPrintable_SoftLineBreaks)
+		VMIME_TEST(testQuotedPrintable_HardLineBreakEncode)
+		VMIME_TEST(testQuotedPrintable_HardLineBreakDecode)
 		VMIME_TEST(testQuotedPrintable_CRLF)
 		VMIME_TEST(testQuotedPrintable_RFC2047)
 	VMIME_TEST_LIST_END
@@ -156,6 +158,42 @@ VMIME_TEST_SUITE_BEGIN(qpEncoderTest)
 		                encode("quoted-printable", "Now's the time for all folk "
 		                                           "to come to the aid of their country.", 15));
 	}
+
+	void testQuotedPrintable_HardLineBreakEncode()
+	{
+		const std::string data =
+			"If you believe that truth=beauty,"
+			" then surely mathematics\r\nis the most"
+			" beautiful branch of philosophy.";
+
+		const std::string expected = 
+			"If you believe that truth=3Dbeauty=\r\n"
+			", then surely mathematics\r\n"
+			"is the most beautiful branch of ph=\r\n"
+			"ilosophy.";
+
+		vmime::propertySet encProps;
+		encProps["text"] = true;
+
+		VASSERT_EQ("1", expected, encode("quoted-printable", data, 35, encProps));
+	}
+
+	void testQuotedPrintable_HardLineBreakDecode()
+	{
+		const std::string expected =
+			"If you believe that truth=beauty,"
+			" then surely mathematics\r\nis the most"
+			" beautiful branch of philosophy.";
+
+		const std::string data = 
+			"If you believe that truth=3Dbeauty=\r\n"
+			", then surely mathematics\r\n"
+			"is the most beautiful branch of ph=\r\n"
+			"ilosophy.";
+
+		VASSERT_EQ("1", expected, decode("quoted-printable", data, 35));
+	}
+
 
 	/** In text mode, ensure line breaks in QP-encoded text are represented
 	  * by a CRLF sequence, as per RFC-2047/6.7(4). */
