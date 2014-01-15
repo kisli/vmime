@@ -731,6 +731,9 @@ bool word::isEquivalent(const word& other) const
 
 const string word::getConvertedText(const charset& dest, const charsetConverterOptions& opts) const
 {
+	if (dest == m_charset)
+		return m_buffer;  // no conversion needed
+
 	string out;
 
 	try
