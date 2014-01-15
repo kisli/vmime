@@ -85,6 +85,14 @@ public:
 	  */
 	void setCharset(const charset& ch);
 
+	/** Returns whether two words actually represent the same text,
+	  * regardless of their charset.
+	  *
+	  * @param other word to compare to
+	  * @return true if the two words represent the same text, or false otherwise
+	  */
+	bool isEquivalent(const word& other) const;
+
 
 	word& operator=(const word& w);
 	word& operator=(const string& s);

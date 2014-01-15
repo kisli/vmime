@@ -723,6 +723,12 @@ bool word::operator!=(const word& w) const
 }
 
 
+bool word::isEquivalent(const word& other) const
+{
+	return getConvertedText(charset(charsets::UTF_8)) == other.getConvertedText(charset(charsets::UTF_8));
+}
+
+
 const string word::getConvertedText(const charset& dest, const charsetConverterOptions& opts) const
 {
 	string out;

@@ -134,8 +134,7 @@ bool path::operator==(const path& p) const
 	bool equal = true;
 
 	for ( ; equal && i != m_list.end() ; ++i, ++j)
-		//equal = (*i == *j);
-		equal = ((*i).getBuffer() == (*j).getBuffer());
+		equal = ((*i).isEquivalent(*j));
 
 	return (equal);
 }
@@ -197,7 +196,7 @@ bool path::isDirectParentOf(const path& p) const
 	bool equal = true;
 
 	for (list::size_type i = 0 ; equal && i < m_list.size() ; ++i)
-		equal = (m_list[i] == p.m_list[i]);
+		equal = (m_list[i].isEquivalent(p.m_list[i]));
 
 	return (equal);
 }
@@ -211,7 +210,7 @@ bool path::isParentOf(const path& p) const
 	bool equal = true;
 
 	for (list::size_type i = 0 ; equal && i < m_list.size() ; ++i)
-		equal = (m_list[i] == p.m_list[i]);
+		equal = (m_list[i].isEquivalent(p.m_list[i]));
 
 	return (equal);
 }
@@ -226,7 +225,7 @@ void path::renameParent(const path& oldPath, const path& newPath)
 	list::size_type i;
 
 	for (i = 0 ; equal && i < oldPath.m_list.size() ; ++i)
-		equal = (m_list[i] == oldPath.m_list[i]);
+		equal = (m_list[i].isEquivalent(oldPath.m_list[i]));
 
 	if (i != oldPath.m_list.size())
 		return;
