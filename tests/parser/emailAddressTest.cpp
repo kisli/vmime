@@ -25,6 +25,9 @@
 
 #include "vmime/platform.hpp"
 
+#include <locale>
+#include <clocale>
+
 
 VMIME_TEST_SUITE_BEGIN(emailAddressTest)
 
@@ -39,6 +42,27 @@ VMIME_TEST_SUITE_BEGIN(emailAddressTest)
 		VMIME_TEST(testParseCommentInDomainPart)
 		VMIME_TEST(testGenerateSpecialChars)
 	VMIME_TEST_LIST_END
+
+
+	void setUp()
+	{
+		// Set the global C and C++ locale to the user-configured locale.
+		// The locale should use UTF-8 encoding for these tests to run successfully.
+		try
+		{
+			std::locale::global(std::locale(""));
+		}
+		catch (std::exception &)
+		{
+			std::setlocale(LC_ALL, "");
+		}
+	}
+
+	void tearDown()
+	{
+		// Restore default locale
+		std::locale::global(std::locale("C"));
+	}
 
 
 	void testParseASCII()

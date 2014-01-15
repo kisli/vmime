@@ -25,6 +25,8 @@
 #include <sstream>
 #include <vector>
 #include <map>
+#include <locale>
+#include <clocale>
 
 #include "vmime/vmime.hpp"
 #include "vmime/platforms/posix/posixHandler.hpp"
@@ -916,8 +918,16 @@ static bool menu()
 
 int main()
 {
-	// VMime initialization
-	vmime::platform::setHandler<vmime::platforms::posix::posixHandler>();
+	// Set the global C and C++ locale to the user-configured locale.
+	// The locale should use UTF-8 encoding for these tests to run successfully.
+	try
+	{
+		std::locale::global(std::locale(""));
+	}
+	catch (std::exception &)
+	{
+		std::setlocale(LC_ALL, "");
+	}
 
 	for (bool quit = false ; !quit ; )
 	{
