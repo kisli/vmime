@@ -42,7 +42,7 @@ contentDispositionField::contentDispositionField(contentDispositionField&)
 
 bool contentDispositionField::hasCreationDate() const
 {
-	return findParameter("creation-date");
+	return hasParameter("creation-date");
 }
 
 
@@ -65,7 +65,7 @@ void contentDispositionField::setCreationDate(const datetime& creationDate)
 
 bool contentDispositionField::hasModificationDate() const
 {
-	return findParameter("modification-date");
+	return hasParameter("modification-date");
 }
 
 
@@ -88,7 +88,7 @@ void contentDispositionField::setModificationDate(const datetime& modificationDa
 
 bool contentDispositionField::hasReadDate() const
 {
-	return findParameter("read-date");
+	return hasParameter("read-date");
 }
 
 
@@ -111,7 +111,7 @@ void contentDispositionField::setReadDate(const datetime& readDate)
 
 bool contentDispositionField::hasFilename() const
 {
-	return findParameter("filename");
+	return hasParameter("filename");
 }
 
 
@@ -134,7 +134,7 @@ void contentDispositionField::setFilename(const word& filename)
 
 bool contentDispositionField::hasSize() const
 {
-	return findParameter("size");
+	return hasParameter("size");
 }
 
 
