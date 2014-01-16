@@ -55,11 +55,12 @@ public:
 	void disconnect();
 
 	void receive(vmime::string& buffer);
-	size_t receiveRaw(char* buffer, const size_t count);
-
+	size_t receiveRaw(byte_t* buffer, const size_t count);
+	
 	void send(const vmime::string& buffer);
-	void sendRaw(const char* buffer, const size_t count);
-	size_t sendRawNonBlocking(const char* buffer, const size_t count);
+	void send(const char* str);
+	void sendRaw(const byte_t* buffer, const size_t count);
+	size_t sendRawNonBlocking(const byte_t* buffer, const size_t count);
 
 	size_t getBlockSize() const;
 
@@ -85,7 +86,7 @@ private:
 
 	shared_ptr <vmime::net::timeoutHandler> m_timeoutHandler;
 
-	char m_buffer[65536];
+	byte_t m_buffer[65536];
 	SOCKET m_desc;
 
 	unsigned int m_status;

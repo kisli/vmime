@@ -31,6 +31,7 @@
 
 #include "vmime/platforms/windows/windowsSocket.hpp"
 
+#include "vmime/utility/stringUtils.hpp"
 #include "vmime/exception.hpp"
 
 #include <ws2tcpip.h>
@@ -239,11 +240,11 @@ size_t windowsSocket::getBlockSize() const
 void windowsSocket::receive(vmime::string& buffer)
 {
 	const size_t size = receiveRaw(m_buffer, sizeof(m_buffer));
-	buffer = vmime::string(m_buffer, size);
+	buffer = utility::stringUtils::makeStringFromBytes(m_buffer, size);
 }
 
 
-size_t windowsSocket::receiveRaw(char* buffer, const size_t count)
+size_t windowsSocket::receiveRaw(byte_t* buffer, const size_t count)
 {
 	m_status &= ~STATUS_WOULDBLOCK;
 
@@ -275,7 +276,7 @@ size_t windowsSocket::receiveRaw(char* buffer, const size_t count)
 	}
 
 	// Read available data
-	int ret = ::recv(m_desc, buffer, count, 0);
+	int ret = ::recv(m_desc, reinterpret_cast <char*>(buffer), count, 0);
 
 	if (ret == SOCKET_ERROR)
 	{
@@ -317,7 +318,7 @@ void windowsSocket::send(const char* str)
 }
 
 
-void windowsSocket::sendRaw(const char* buffer, const size_t count)
+void windowsSocket::sendRaw(const byte_t* buffer, const size_t count)
 {
 	m_status &= ~STATUS_WOULDBLOCK;
 
@@ -325,7 +326,7 @@ void windowsSocket::sendRaw(const char* buffer, const size_t count)
 
 	while (size > 0)
 	{
-		const int ret = ::send(m_desc, buffer, size, 0);
+		const int ret = ::send(m_desc, reinterpret_cast <const char*>(buffer), size, 0);
 
 		if (ret == SOCKET_ERROR)
 		{
@@ -350,11 +351,11 @@ void windowsSocket::sendRaw(const char* buffer, const size_t count)
 }
 
 
-size_t windowsSocket::sendRawNonBlocking(const char* buffer, const size_t count)
+size_t windowsSocket::sendRawNonBlocking(const byte_t* buffer, const size_t count)
 {
 	m_status &= ~STATUS_WOULDBLOCK;
 
-	const int ret = ::send(m_desc, buffer, count, 0);
+	const int ret = ::send(m_desc, reinterpret_cast <const char*>(buffer), count, 0);
 
 	if (ret == SOCKET_ERROR)
 	{

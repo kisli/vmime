@@ -32,6 +32,8 @@
 //
 
 #include <iostream>
+#include <locale>
+#include <clocale>
 
 #include "vmime/vmime.hpp"
 #include "vmime/platforms/posix/posixHandler.hpp"
@@ -39,9 +41,6 @@
 
 int main()
 {
-	// VMime initialization
-	vmime::platform::setHandler<vmime::platforms::posix::posixHandler>();
-
 	// Enumerate encoders
 	vmime::shared_ptr <vmime::utility::encoder::encoderFactory> ef =
 		vmime::utility::encoder::encoderFactory::getInstance();

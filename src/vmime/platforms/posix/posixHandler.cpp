@@ -168,11 +168,7 @@ const vmime::charset posixHandler::getLocalCharset() const
 {
 	const PLockHelper lock;
 
-	const char* prevLocale = ::setlocale(LC_ALL, "");
-	vmime::charset ch(::nl_langinfo(CODESET));
-	::setlocale(LC_ALL, prevLocale);
-
-	return (ch);
+	return vmime::charset(::nl_langinfo(CODESET));
 }
 
 

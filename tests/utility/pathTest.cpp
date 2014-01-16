@@ -26,7 +26,7 @@
 #include "vmime/utility/path.hpp"
 
 
-VMIME_TEST_SUITE_BEGIN(pathTest)
+VMIME_TEST_SUITE_BEGIN(utilityPathTest)
 
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testConstruct1)
@@ -50,6 +50,7 @@ VMIME_TEST_SUITE_BEGIN(pathTest)
 
 		VMIME_TEST(testIsDirectParentOf)
 		VMIME_TEST(testIsParentOf)
+		VMIME_TEST(testIsParentOf_EquivalentCharset)
 
 		VMIME_TEST(testRenameParent)
 	VMIME_TEST_LIST_END
@@ -269,6 +270,19 @@ VMIME_TEST_SUITE_BEGIN(pathTest)
 		VASSERT_EQ("2", true, p2.isParentOf(p3));
 		VASSERT_EQ("3", true, p1.isParentOf(p3));
 		VASSERT_EQ("4", false, p2.isParentOf(p1));
+	}
+
+	void testIsParentOf_EquivalentCharset()
+	{
+		path p1;
+		p1.appendComponent(comp("foo", "us-ascii"));
+
+		path p2;
+		p2.appendComponent(comp("foo", "utf-8"));
+		p2.appendComponent(comp("bar"));
+		p2.appendComponent(comp("baz"));
+
+		VASSERT_EQ("1", true, p1.isParentOf(p2));
 	}
 
 	void testRenameParent()
