@@ -42,7 +42,7 @@ contentTypeField::contentTypeField(contentTypeField&)
 
 bool contentTypeField::hasBoundary() const
 {
-	return findParameter("boundary");
+	return hasParameter("boundary");
 }
 
 
@@ -65,7 +65,7 @@ void contentTypeField::setBoundary(const string& boundary)
 
 bool contentTypeField::hasCharset() const
 {
-	return findParameter("charset");
+	return hasParameter("charset");
 }
 
 
@@ -88,7 +88,7 @@ void contentTypeField::setCharset(const charset& ch)
 
 bool contentTypeField::hasReportType() const
 {
-	return findParameter("report-type");
+	return hasParameter("report-type");
 }
 
 

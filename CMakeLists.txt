@@ -815,7 +815,7 @@ CHECK_CXX_SOURCE_COMPILES(
 	#include <memory>
 	struct A { int foo; };
 	int main() {
-		std::shared_ptr <A> a = std::make_shared <A>(a);
+		std::shared_ptr <A> a = std::make_shared <A>();
 		return 0;
 	}
 	"
