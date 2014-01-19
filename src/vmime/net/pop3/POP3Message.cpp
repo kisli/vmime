@@ -95,7 +95,7 @@ bool POP3Message::isExpunged() const
 
 int POP3Message::getFlags() const
 {
-	int flags = FLAG_RECENT;
+	int flags = 0;
 
 	if (m_deleted)
 		flags |= FLAG_DELETED;
