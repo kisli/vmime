@@ -284,7 +284,7 @@ void SMTPConnection::authenticate()
 	getAuthenticator()->setService(m_transport.lock());
 
 #if VMIME_HAVE_SASL_SUPPORT
-	// First, try SASL authentication
+	// Try SASL authentication
 	if (GET_PROPERTY(bool, PROPERTY_OPTIONS_SASL))
 	{
 		try
@@ -293,19 +293,6 @@ void SMTPConnection::authenticate()
 
 			m_authenticated = true;
 			return;
-		}
-		catch (exceptions::authentication_error& e)
-		{
-			if (!GET_PROPERTY(bool, PROPERTY_OPTIONS_SASL_FALLBACK))
-			{
-				// Can't fallback on normal authentication
-				internalDisconnect();
-				throw e;
-			}
-			else
-			{
-				// Ignore, will try normal authentication
-			}
 		}
 		catch (exception& e)
 		{
