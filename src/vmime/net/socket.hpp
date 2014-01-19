@@ -141,6 +141,12 @@ public:
 	  */
 	virtual const string getPeerAddress() const = 0;
 
+	/** Return the timeout handler associated with this socket.
+	  *
+	  * @return timeout handler, or NULL if none is set
+	  */
+	virtual shared_ptr <timeoutHandler> getTimeoutHandler() = 0;
+
 protected:
 
 	socket() { }

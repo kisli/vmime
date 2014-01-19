@@ -654,6 +654,12 @@ unsigned int posixSocket::getStatus() const
 }
 
 
+shared_ptr <net::timeoutHandler> posixSocket::getTimeoutHandler()
+{
+	return m_timeoutHandler;
+}
+
+
 
 //
 // posixSocketFactory

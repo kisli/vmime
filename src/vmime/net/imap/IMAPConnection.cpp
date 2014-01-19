@@ -482,7 +482,7 @@ void IMAPConnection::startTLS()
 		shared_ptr <tls::TLSSocket> tlsSocket =
 			tlsSession->getSocket(m_socket);
 
-		tlsSocket->handshake(m_timeoutHandler);
+		tlsSocket->handshake();
 
 		m_socket = tlsSocket;
 		m_parser->setSocket(m_socket);

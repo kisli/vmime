@@ -65,6 +65,8 @@ public:
 	const string getPeerName() const;
 	const string getPeerAddress() const;
 
+	shared_ptr <net::timeoutHandler> getTimeoutHandler();
+
 protected:
 
 	static void throwSocketError(const int err);

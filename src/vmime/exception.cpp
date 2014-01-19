@@ -328,6 +328,19 @@ const char* socket_exception::name() const throw() { return "socket_exception"; 
 
 
 //
+// socket_not_connected_exception
+//
+
+socket_not_connected_exception::~socket_not_connected_exception() throw() {}
+socket_not_connected_exception::socket_not_connected_exception(const string& what, const exception& other)
+	: socket_exception(what.empty()
+		? "Socket is not connected." : what, other) {}
+
+exception* socket_not_connected_exception::clone() const { return new socket_not_connected_exception(*this); }
+const char* socket_not_connected_exception::name() const throw() { return "socket_not_connected_exception"; }
+
+
+//
 // connection_error
 //
 

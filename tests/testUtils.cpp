@@ -79,6 +79,12 @@ const vmime::string testSocket::getPeerAddress() const
 }
 
 
+vmime::shared_ptr <vmime::net::timeoutHandler> testSocket::getTimeoutHandler()
+{
+	return vmime::null;
+}
+
+
 void testSocket::receive(vmime::string& buffer)
 {
 	buffer = m_inBuffer;

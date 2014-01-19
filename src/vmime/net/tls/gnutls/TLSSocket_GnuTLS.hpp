@@ -54,7 +54,7 @@ public:
 	~TLSSocket_GnuTLS();
 
 
-	void handshake(shared_ptr <timeoutHandler> toHandler = null);
+	void handshake();
 
 	shared_ptr <security::cert::certificateChain> getPeerCertificates() const;
 
@@ -78,6 +78,8 @@ public:
 	const string getPeerName() const;
 	const string getPeerAddress() const;
 
+	shared_ptr <timeoutHandler> getTimeoutHandler();
+
 private:
 
 	void internalThrow();
@@ -99,7 +101,6 @@ private:
 	byte_t m_buffer[65536];
 
 	bool m_handshaking;
-	shared_ptr <timeoutHandler> m_toHandler;
 
 	exception* m_ex;
 

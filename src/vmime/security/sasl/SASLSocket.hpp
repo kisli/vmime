@@ -73,6 +73,8 @@ public:
 	const string getPeerName() const;
 	const string getPeerAddress() const;
 
+	shared_ptr <net::timeoutHandler> getTimeoutHandler();
+
 private:
 
 	shared_ptr <SASLSession> m_session;
