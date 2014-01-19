@@ -158,6 +158,25 @@ public:
 	  */
 	void renameParent(const path& oldPath, const path& newPath);
 
+	/** Construct a new path from a string.
+	  *
+	  * @param str string representation of the path
+	  * @param sep separator string (eg: "/")
+	  * @param cset charset in which the path is encoded (use the value returned by
+	  * vmime::charset::getLocalCharset() to use the default charset of your system)
+	  * @return a new path corresponding to the specified string
+	  */
+	static path fromString(const string& str, const string& sep, const charset& cset);
+
+	/** Returns a string representation of this path.
+	  *
+	  * @param sep separator string (eg: "/")
+	  * @param cset charset in which to encode the components (use the value returned by
+	  * vmime::charset::getLocalCharset() to use the default charset of your system)
+	  * @return a string representing this path
+	  */
+	const string toString(const string& sep, const charset& cset);
+
 private:
 
 	list m_list;
