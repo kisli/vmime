@@ -487,7 +487,7 @@ void SMTPConnection::startTLS()
 		shared_ptr <tls::TLSSocket> tlsSocket =
 			tlsSession->getSocket(m_socket);
 
-		tlsSocket->handshake(m_timeoutHandler);
+		tlsSocket->handshake();
 
 		m_socket = tlsSocket;
 
