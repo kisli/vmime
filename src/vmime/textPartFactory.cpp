@@ -62,7 +62,7 @@ shared_ptr <textPart> textPartFactory::create(const mediaType& type)
 			return ((*it).second)();
 	}
 
-	throw exceptions::no_factory_available();
+	throw exceptions::no_factory_available("No 'textPart' class registered for media type '" + type.generate() + "'.");
 }
 
 
