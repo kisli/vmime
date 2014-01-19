@@ -233,23 +233,23 @@ void POP3Connection::authenticate(const messageId& randomMID)
 			m_authenticated = true;
 			return;
 		}
-		catch (exceptions::authentication_error& e)
+		catch (exceptions::authentication_error&)
 		{
 			if (!GET_PROPERTY(bool, PROPERTY_OPTIONS_SASL_FALLBACK))
 			{
 				// Can't fallback on APOP/normal authentication
 				internalDisconnect();
-				throw e;
+				throw;
 			}
 			else
 			{
 				// Ignore, will try APOP/normal authentication
 			}
 		}
-		catch (exception& e)
+		catch (exception&)
 		{
 			internalDisconnect();
-			throw e;
+			throw;
 		}
 	}
 #endif // VMIME_HAVE_SASL_SUPPORT

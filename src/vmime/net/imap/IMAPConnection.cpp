@@ -234,23 +234,23 @@ void IMAPConnection::authenticate()
 			authenticateSASL();
 			return;
 		}
-		catch (exceptions::authentication_error& e)
+		catch (exceptions::authentication_error&)
 		{
 			if (!GET_PROPERTY(bool, PROPERTY_OPTIONS_SASL_FALLBACK))
 			{
 				// Can't fallback on normal authentication
 				internalDisconnect();
-				throw e;
+				throw;
 			}
 			else
 			{
 				// Ignore, will try normal authentication
 			}
 		}
-		catch (exception& e)
+		catch (exception&)
 		{
 			internalDisconnect();
-			throw e;
+			throw;
 		}
 	}
 #endif // VMIME_HAVE_SASL_SUPPORT

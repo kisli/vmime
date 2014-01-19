@@ -294,10 +294,10 @@ void SMTPConnection::authenticate()
 			m_authenticated = true;
 			return;
 		}
-		catch (exception& e)
+		catch (exception&)
 		{
 			internalDisconnect();
-			throw e;
+			throw;
 		}
 	}
 #endif // VMIME_HAVE_SASL_SUPPORT
