@@ -522,16 +522,19 @@ void SMTPConnection::disconnect()
 
 void SMTPConnection::internalDisconnect()
 {
-	try
+	if (isConnected())
 	{
-		sendRequest(SMTPCommand::QUIT());
+		try
+		{
+			sendRequest(SMTPCommand::QUIT());
 
-		// Do not wait for server response. This is contrary to the RFC, but
-		// some servers never send a response to a QUIT command.
-	}
-	catch (exception&)
-	{
-		// Not important
+			// Do not wait for server response. This is contrary to the RFC, but
+			// some servers never send a response to a QUIT command.
+		}
+		catch (exception&)
+		{
+			// Not important
+		}
 	}
 
 	m_socket->disconnect();
