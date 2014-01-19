@@ -92,9 +92,6 @@ int IMAPFolder::getMode() const
 
 const folderAttributes IMAPFolder::getAttributes()
 {
-	if (!isOpen())
-		throw exceptions::illegal_state("Folder not open");
-
 	// Root folder
 	if (m_path.isEmpty())
 	{
