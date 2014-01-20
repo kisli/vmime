@@ -263,6 +263,8 @@ public:
 	const vmime::string getPeerName() const;
 	const vmime::string getPeerAddress() const;
 
+	vmime::shared_ptr <vmime::net::timeoutHandler> getTimeoutHandler();
+
 	/** Send data to client.
 	  *
 	  * @param buffer data to send

@@ -460,6 +460,12 @@ void windowsSocket::waitForData(const WaitOpType t, bool& timedOut)
 }
 
 
+shared_ptr <net::timeoutHandler> windowsSocket::getTimeoutHandler()
+{
+	return m_timeoutHandler;
+}
+
+
 
 //
 // posixSocketFactory

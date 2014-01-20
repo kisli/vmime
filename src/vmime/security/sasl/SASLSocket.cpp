@@ -96,6 +96,12 @@ const string SASLSocket::getPeerAddress() const
 }
 
 
+shared_ptr <net::timeoutHandler> SASLSocket::getTimeoutHandler()
+{
+	return m_wrapped->getTimeoutHandler();
+}
+
+
 void SASLSocket::receive(string& buffer)
 {
 	const size_t n = receiveRaw(m_recvBuffer, sizeof(m_recvBuffer));

@@ -87,11 +87,17 @@ TLSSocket_GnuTLS::~TLSSocket_GnuTLS()
 
 void TLSSocket_GnuTLS::connect(const string& address, const port_t port)
 {
-	m_wrapped->connect(address, port);
+	try
+	{
+		m_wrapped->connect(address, port);
 
-	handshake(null);
-
-	m_connected = true;
+		handshake();
+	}
+	catch (...)
+	{
+		disconnect();
+		throw;
+	}
 }
 
 
@@ -129,6 +135,12 @@ const string TLSSocket_GnuTLS::getPeerName() const
 const string TLSSocket_GnuTLS::getPeerAddress() const
 {
 	return m_wrapped->getPeerAddress();
+}
+
+
+shared_ptr <timeoutHandler> TLSSocket_GnuTLS::getTimeoutHandler()
+{
+	return m_wrapped->getTimeoutHandler();
 }
 
 
@@ -239,14 +251,15 @@ unsigned int TLSSocket_GnuTLS::getStatus() const
 }
 
 
-void TLSSocket_GnuTLS::handshake(shared_ptr <timeoutHandler> toHandler)
+void TLSSocket_GnuTLS::handshake()
 {
+	shared_ptr <timeoutHandler> toHandler = m_wrapped->getTimeoutHandler();
+
 	if (toHandler)
 		toHandler->resetTimeOut();
 
 	// Start handshaking process
 	m_handshaking = true;
-	m_toHandler = toHandler;
 
 	try
 	{
@@ -280,13 +293,10 @@ void TLSSocket_GnuTLS::handshake(shared_ptr <timeoutHandler> toHandler)
 	catch (...)
 	{
 		m_handshaking = false;
-		m_toHandler = null;
-
 		throw;
 	}
 
 	m_handshaking = false;
-	m_toHandler = null;
 
 	// Verify server's certificate(s)
 	shared_ptr <security::cert::certificateChain> certs = getPeerCertificates();
@@ -338,6 +348,8 @@ ssize_t TLSSocket_GnuTLS::gnutlsPullFunc
 		// returns -1 and errno is set to EGAIN...
 		if (sok->m_handshaking)
 		{
+			shared_ptr <timeoutHandler> toHandler = sok->m_wrapped->getTimeoutHandler();
+
 			while (true)
 			{
 				const ssize_t ret = static_cast <ssize_t>
@@ -355,12 +367,12 @@ ssize_t TLSSocket_GnuTLS::gnutlsPullFunc
 				}
 
 				// Check whether the time-out delay is elapsed
-				if (sok->m_toHandler && sok->m_toHandler->isTimeOut())
+				if (toHandler && toHandler->isTimeOut())
 				{
-					if (!sok->m_toHandler->handleTimeOut())
+					if (!toHandler->handleTimeOut())
 						throw exceptions::operation_timed_out();
 
-					sok->m_toHandler->resetTimeOut();
+					toHandler->resetTimeOut();
 				}
 			}
 		}

@@ -83,9 +83,6 @@ int POP3Folder::getMode() const
 
 const folderAttributes POP3Folder::getAttributes()
 {
-	if (!isOpen())
-		throw exceptions::illegal_state("Folder not open");
-
 	folderAttributes attribs;
 
 	if (m_path.isEmpty())

@@ -284,7 +284,7 @@ void SMTPConnection::authenticate()
 	getAuthenticator()->setService(m_transport.lock());
 
 #if VMIME_HAVE_SASL_SUPPORT
-	// First, try SASL authentication
+	// Try SASL authentication
 	if (GET_PROPERTY(bool, PROPERTY_OPTIONS_SASL))
 	{
 		try
@@ -294,23 +294,10 @@ void SMTPConnection::authenticate()
 			m_authenticated = true;
 			return;
 		}
-		catch (exceptions::authentication_error& e)
-		{
-			if (!GET_PROPERTY(bool, PROPERTY_OPTIONS_SASL_FALLBACK))
-			{
-				// Can't fallback on normal authentication
-				internalDisconnect();
-				throw e;
-			}
-			else
-			{
-				// Ignore, will try normal authentication
-			}
-		}
-		catch (exception& e)
+		catch (exception&)
 		{
 			internalDisconnect();
-			throw e;
+			throw;
 		}
 	}
 #endif // VMIME_HAVE_SASL_SUPPORT
@@ -487,7 +474,7 @@ void SMTPConnection::startTLS()
 		shared_ptr <tls::TLSSocket> tlsSocket =
 			tlsSession->getSocket(m_socket);
 
-		tlsSocket->handshake(m_timeoutHandler);
+		tlsSocket->handshake();
 
 		m_socket = tlsSocket;
 
@@ -522,16 +509,19 @@ void SMTPConnection::disconnect()
 
 void SMTPConnection::internalDisconnect()
 {
-	try
+	if (isConnected())
 	{
-		sendRequest(SMTPCommand::QUIT());
+		try
+		{
+			sendRequest(SMTPCommand::QUIT());
 
-		// Do not wait for server response. This is contrary to the RFC, but
-		// some servers never send a response to a QUIT command.
-	}
-	catch (exception&)
-	{
-		// Not important
+			// Do not wait for server response. This is contrary to the RFC, but
+			// some servers never send a response to a QUIT command.
+		}
+		catch (exception&)
+		{
+			// Not important
+		}
 	}
 
 	m_socket->disconnect();

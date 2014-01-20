@@ -92,9 +92,6 @@ int IMAPFolder::getMode() const
 
 const folderAttributes IMAPFolder::getAttributes()
 {
-	if (!isOpen())
-		throw exceptions::illegal_state("Folder not open");
-
 	// Root folder
 	if (m_path.isEmpty())
 	{
@@ -1124,7 +1121,7 @@ messageSet IMAPFolder::addMessage
 	const IMAPParser::resp_text_code* respTextCode =
 		finalResp->response_done()->response_tagged()->resp_cond_state()->resp_text()->resp_text_code();
 
-	if (respTextCode->type() == IMAPParser::resp_text_code::APPENDUID)
+	if (respTextCode && respTextCode->type() == IMAPParser::resp_text_code::APPENDUID)
 		return IMAPUtils::buildMessageSet(respTextCode->uid_set());
 
 	return messageSet::empty();
@@ -1266,7 +1263,7 @@ messageSet IMAPFolder::copyMessages(const folder::path& dest, const messageSet& 
 	const IMAPParser::resp_text_code* respTextCode =
 		resp->response_done()->response_tagged()->resp_cond_state()->resp_text()->resp_text_code();
 
-	if (respTextCode->type() == IMAPParser::resp_text_code::COPYUID)
+	if (respTextCode && respTextCode->type() == IMAPParser::resp_text_code::COPYUID)
 		return IMAPUtils::buildMessageSet(respTextCode->uid_set2());
 
 	return messageSet::empty();

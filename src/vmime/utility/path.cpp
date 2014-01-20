@@ -261,5 +261,52 @@ path::component& path::getComponentAt(const size_t pos)
 }
 
 
+// static
+path path::fromString(const string& str, const string& sep, const charset& cset)
+{
+	path p;
+
+	size_t start = 0;
+	size_t end = 0;
+
+	do
+	{
+		end = str.find(sep, start);
+
+		string comp;
+
+		if (end == string::npos)
+			comp = str.substr(start);
+		else
+			comp = str.substr(start, end - start);
+
+		// Skip leading or trailing separators
+		if (comp.length())
+		   p.appendComponent(component(comp, cset));
+
+		start = end + 1;
+	}
+	while (end != string::npos);
+
+	return p;
+}
+
+
+const string path::toString(const string& sep, const charset& cset)
+{
+	string str;
+
+	for (size_t i = 0 ; i < m_list.size() ; ++i)
+	{
+		if (i != 0)
+			str += sep;
+
+		str += m_list[i].getConvertedText(cset);
+	}
+
+	return str;
+}
+
+
 } // utility
 } // vmime

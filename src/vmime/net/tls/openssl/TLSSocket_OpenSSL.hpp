@@ -58,7 +58,7 @@ public:
 	~TLSSocket_OpenSSL();
 
 
-	void handshake(shared_ptr <timeoutHandler> toHandler = null);
+	void handshake();
 
 	shared_ptr <security::cert::certificateChain> getPeerCertificates() const;
 
@@ -81,6 +81,8 @@ public:
 
 	const string getPeerName() const;
 	const string getPeerAddress() const;
+
+	shared_ptr <timeoutHandler> getTimeoutHandler();
 
 private:
 
@@ -107,8 +109,6 @@ private:
 	bool m_connected;
 
 	byte_t m_buffer[65536];
-
-	shared_ptr <timeoutHandler> m_toHandler;
 
 	SSL* m_ssl;
 

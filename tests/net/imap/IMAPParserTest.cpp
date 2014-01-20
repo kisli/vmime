@@ -31,6 +31,7 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testExtraSpaceInCapaResponse)
+		VMIME_TEST(testContinueReqWithoutSpace)
 	VMIME_TEST_LIST_END
 
 
@@ -62,6 +63,42 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 
 		parser->setStrict(true);
 		VASSERT_THROW("strict mode", parser->readResponse(/* literalHandler */ NULL), vmime::exceptions::invalid_response);
+	}
+
+	// For Apple iCloud/Exchange IMAP server
+	void testContinueReqWithoutSpace()
+	{
+		// continue_req   ::= "+" SPACE (resp_text / base64)
+		//
+		// Some servers do not send SPACE when response text is empty.
+		// IMAP parser should allow this in non-strict mode.
+		//
+		// Eg:
+		//
+		//   C: a002 AUTHENTICATE xxx[CR][LF]
+		//   S: +[CR][LF]
+
+		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
+		vmime::shared_ptr <vmime::net::timeoutHandler> toh = vmime::make_shared <testTimeoutHandler>();
+
+		vmime::shared_ptr <vmime::net::imap::IMAPTag> tag =
+				vmime::make_shared <vmime::net::imap::IMAPTag>();
+
+		socket->localSend("+\r\n");
+
+		vmime::shared_ptr <vmime::net::imap::IMAPParser> parser =
+				vmime::make_shared <vmime::net::imap::IMAPParser>
+						(tag, vmime::dynamicCast <vmime::net::socket>(socket), toh);
+
+		parser->setStrict(false);
+		VASSERT_NO_THROW("non-strict mode", parser->readResponse());
+
+		++(*tag);
+
+		socket->localSend("+\r\n");
+
+		parser->setStrict(true);
+		VASSERT_THROW("strict mode", parser->readResponse(), vmime::exceptions::invalid_response);
 	}
 
 VMIME_TEST_SUITE_END

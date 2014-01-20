@@ -370,6 +370,23 @@ public:
 };
 
 
+/** Socket not connected: you are trying to write to/read from a socket which
+  * is not connected to a peer.
+  */
+
+class VMIME_EXPORT socket_not_connected_exception : public socket_exception
+{
+public:
+
+	socket_not_connected_exception(const string& what = "", const exception& other = NO_EXCEPTION);
+	~socket_not_connected_exception() throw();
+
+	exception* clone() const;
+	const char* name() const throw();
+
+};
+
+
 /** Error while connecting to the server: this may be a DNS resolution error
   * or a connection error (for example, time-out while connecting).
   */

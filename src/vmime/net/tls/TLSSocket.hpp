@@ -67,7 +67,7 @@ public:
 	  * during the negociation process, exceptions::operation_timed_out
 	  * if a time-out occurs
 	  */
-	virtual void handshake(shared_ptr <timeoutHandler> toHandler = null) = 0;
+	virtual void handshake() = 0;
 
 	/** Return the peer's certificate (chain) as sent by the peer.
 	  *
