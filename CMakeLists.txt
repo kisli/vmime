@@ -340,10 +340,6 @@ OPTION(
 	ON
 )
 
-IF(VMIME_BUILD_SAMPLES)
-	ADD_SUBDIRECTORY(examples)
-ENDIF()
-
 
 ##############################################################################
 # Packaging / Distribution
@@ -1061,6 +1057,14 @@ IF(VMIME_HAVE_MESSAGING_PROTO_SENDMAIL)
 	IF(NOT VMIME_SENDMAIL_PATH OR VMIME_SENDMAIL_PATH STREQUAL "")
 		MESSAGE(FATAL_ERROR "Enabling Sendmail protocol requires that you specify path to 'sendmail' binary.")
 	ENDIF()
+ENDIF()
+
+
+##############################################################################
+# Build examples
+
+IF(VMIME_BUILD_SAMPLES)
+	ADD_SUBDIRECTORY(examples)
 ENDIF()
 
 
