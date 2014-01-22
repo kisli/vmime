@@ -460,14 +460,14 @@ int IMAPMessage::processFetchResponse
 				IMAPUtils::convertAddressList(*(env->env_cc()), cc);
 
 				if (!cc.isEmpty())
-					hdr->Cc()->setValue(cc);
+					hdr->Cc()->setValue(cc.toAddressList());
 
 				// Bcc
 				mailboxList bcc;
 				IMAPUtils::convertAddressList(*(env->env_bcc()), bcc);
 
 				if (!bcc.isEmpty())
-					hdr->Bcc()->setValue(bcc);
+					hdr->Bcc()->setValue(bcc.toAddressList());
 			}
 
 			break;
