@@ -292,7 +292,7 @@ path path::fromString(const string& str, const string& sep, const charset& cset)
 }
 
 
-const string path::toString(const string& sep, const charset& cset)
+const string path::toString(const string& sep, const charset& cset) const
 {
 	string str;
 
