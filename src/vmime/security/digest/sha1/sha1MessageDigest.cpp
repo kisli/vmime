@@ -95,8 +95,7 @@ void sha1MessageDigest::update(const string& s)
 }
 
 
-void sha1MessageDigest::update(const byte_t* buffer, const size_t offset,
-	const unsigned long len)
+void sha1MessageDigest::update(const byte_t* buffer, const size_t offset, const size_t len)
 {
 	update(buffer + offset, len);
 }
