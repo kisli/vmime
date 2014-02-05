@@ -113,7 +113,7 @@ void TLSSocket_OpenSSL::createSSLHandle()
 
 		SSL_set_bio(m_ssl, sockBio, sockBio);
 		SSL_set_connect_state(m_ssl);
-		SSL_set_mode(m_ssl, SSL_MODE_ENABLE_PARTIAL_WRITE | SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER);
+		SSL_set_mode(m_ssl, SSL_MODE_AUTO_RETRY | SSL_MODE_ENABLE_PARTIAL_WRITE | SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER);
 	}
 	else
 	{
@@ -193,6 +193,18 @@ shared_ptr <timeoutHandler> TLSSocket_OpenSSL::getTimeoutHandler()
 }
 
 
+bool TLSSocket_OpenSSL::waitForRead(const int msecs)
+{
+	return m_wrapped->waitForRead(msecs);
+}
+
+
+bool TLSSocket_OpenSSL::waitForWrite(const int msecs)
+{
+	return m_wrapped->waitForWrite(msecs);
+}
+
+
 void TLSSocket_OpenSSL::receive(string& buffer)
 {
 	const size_t size = receiveRaw(m_buffer, sizeof(m_buffer));
@@ -221,7 +233,7 @@ size_t TLSSocket_OpenSSL::receiveRaw(byte_t* buffer, const size_t count)
 	if (!m_ssl)
 		throw exceptions::socket_not_connected_exception();
 
-	m_status &= ~STATUS_WOULDBLOCK;
+	m_status &= ~(STATUS_WANT_WRITE | STATUS_WANT_READ);
 
 	int rc = SSL_read(m_ssl, buffer, static_cast <int>(count));
 
@@ -232,9 +244,14 @@ size_t TLSSocket_OpenSSL::receiveRaw(byte_t* buffer, const size_t count)
 	{
 		int error = SSL_get_error(m_ssl, rc);
 
-		if (error == SSL_ERROR_WANT_WRITE || error == SSL_ERROR_WANT_READ)
+		if (error == SSL_ERROR_WANT_WRITE)
 		{
-			m_status |= STATUS_WOULDBLOCK;
+			m_status |= STATUS_WANT_WRITE;
+			return 0;
+		}
+		else if (error == SSL_ERROR_WANT_READ)
+		{
+			m_status |= STATUS_WANT_READ;
 			return 0;
 		}
 
@@ -250,7 +267,7 @@ void TLSSocket_OpenSSL::sendRaw(const byte_t* buffer, const size_t count)
 	if (!m_ssl)
 		throw exceptions::socket_not_connected_exception();
 
-	m_status &= ~STATUS_WOULDBLOCK;
+	m_status &= ~(STATUS_WANT_WRITE | STATUS_WANT_READ);
 
 	for (size_t size = count ; size > 0 ; )
 	{
@@ -260,9 +277,14 @@ void TLSSocket_OpenSSL::sendRaw(const byte_t* buffer, const size_t count)
 		{
 			int error = SSL_get_error(m_ssl, rc);
 
-			if (error == SSL_ERROR_WANT_WRITE || error == SSL_ERROR_WANT_READ)
+			if (error == SSL_ERROR_WANT_READ)
 			{
-				platform::getHandler()->wait();
+				m_wrapped->waitForRead();
+				continue;
+			}
+			else if (error == SSL_ERROR_WANT_WRITE)
+			{
+				m_wrapped->waitForWrite();
 				continue;
 			}
 
@@ -282,7 +304,7 @@ size_t TLSSocket_OpenSSL::sendRawNonBlocking(const byte_t* buffer, const size_t 
 	if (!m_ssl)
 		throw exceptions::socket_not_connected_exception();
 
-	m_status &= ~STATUS_WOULDBLOCK;
+	m_status &= ~(STATUS_WANT_WRITE | STATUS_WANT_READ);
 
 	int rc = SSL_write(m_ssl, buffer, static_cast <int>(count));
 
@@ -293,9 +315,14 @@ size_t TLSSocket_OpenSSL::sendRawNonBlocking(const byte_t* buffer, const size_t 
 	{
 		int error = SSL_get_error(m_ssl, rc);
 
-		if (error == SSL_ERROR_WANT_WRITE || error == SSL_ERROR_WANT_READ)
+		if (error == SSL_ERROR_WANT_WRITE)
 		{
-			m_status |= STATUS_WOULDBLOCK;
+			m_status |= STATUS_WANT_WRITE;
+			return 0;
+		}
+		else if (error == SSL_ERROR_WANT_READ)
+		{
+			m_status |= STATUS_WANT_READ;
 			return 0;
 		}
 
@@ -328,15 +355,12 @@ void TLSSocket_OpenSSL::handshake()
 		{
 			const int err = SSL_get_error(m_ssl, rc);
 
- 			if (err == SSL_ERROR_WANT_READ || err == SSL_ERROR_WANT_WRITE)
- 			{
-				// No data available yet
-				platform::getHandler()->wait();
- 			}
- 			else
- 			{
- 				handleError(rc);
- 			}
+			if (err == SSL_ERROR_WANT_READ)
+				m_wrapped->waitForRead();
+			else if (err == SSL_ERROR_WANT_WRITE)
+				m_wrapped->waitForWrite();
+			else
+				handleError(rc);
 
 			// Check whether the time-out delay is elapsed
 			if (toHandler && toHandler->isTimeOut())

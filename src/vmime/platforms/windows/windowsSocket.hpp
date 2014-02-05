@@ -54,6 +54,9 @@ public:
 	bool isConnected() const;
 	void disconnect();
 
+	bool waitForRead(const int msecs = 30000);
+	bool waitForWrite(const int msecs = 30000);
+
 	void receive(vmime::string& buffer);
 	size_t receiveRaw(byte_t* buffer, const size_t count);
 	
@@ -75,14 +78,7 @@ protected:
 
 	void throwSocketError(const int err);
 
-	enum WaitOpType
-	{
-		READ  = 1,
-		WRITE = 2,
-		BOTH  = 4
-	};
-
-	void waitForData(const WaitOpType t, bool& timedOut);
+	bool waitForData(const bool read, const bool write, const int msecs);
 
 private:
 

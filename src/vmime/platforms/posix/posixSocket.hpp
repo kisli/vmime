@@ -50,6 +50,9 @@ public:
 	bool isConnected() const;
 	void disconnect();
 
+	bool waitForRead(const int msecs = 30000);
+	bool waitForWrite(const int msecs = 30000);
+
 	void receive(vmime::string& buffer);
 	size_t receiveRaw(byte_t* buffer, const size_t count);
 
@@ -68,6 +71,8 @@ public:
 	shared_ptr <net::timeoutHandler> getTimeoutHandler();
 
 protected:
+
+	bool waitForData(const bool read, const bool write, const int msecs);
 
 	static void throwSocketError(const int err);
 

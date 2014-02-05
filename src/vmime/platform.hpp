@@ -104,13 +104,6 @@ public:
 		  */
 		virtual const charset getLocalCharset() const = 0;
 
-		/** This function is called when VMime library is waiting for
-		  * something (for example, it is called when there is no data
-		  * available in a socket). On POSIX-compliant systems, a
-		  * simple call to sched_yield() should suffice.
-		  */
-		virtual void wait() const = 0;
-
 #if VMIME_HAVE_MESSAGING_FEATURES
 		/** Return a pointer to the default socket factory for
 		  * this platform.

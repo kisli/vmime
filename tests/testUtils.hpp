@@ -248,6 +248,9 @@ public:
 
 	bool isConnected() const;
 
+	bool waitForWrite(const int msecs = 30000);
+	bool waitForRead(const int msecs = 30000);
+
 	void receive(vmime::string& buffer);
 	void send(const vmime::string& buffer);
 	void send(const char* str);

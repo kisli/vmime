@@ -299,12 +299,6 @@ shared_ptr <vmime::utility::childProcessFactory> windowsHandler::getChildProcess
 #endif
 
 
-void windowsHandler::wait() const
-{
-	::Sleep(100);
-}
-
-
 void windowsHandler::generateRandomBytes(unsigned char* buffer, const unsigned int count)
 {
 	HCRYPTPROV cryptProvider = 0;

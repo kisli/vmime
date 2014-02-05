@@ -85,6 +85,18 @@ vmime::shared_ptr <vmime::net::timeoutHandler> testSocket::getTimeoutHandler()
 }
 
 
+bool testSocket::waitForRead(const int msecs)
+{
+	return true;
+}
+
+
+bool testSocket::waitForWrite(const int msecs)
+{
+	return true;
+}
+
+
 void testSocket::receive(vmime::string& buffer)
 {
 	buffer = m_inBuffer;

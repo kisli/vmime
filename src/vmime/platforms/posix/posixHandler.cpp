@@ -269,24 +269,6 @@ shared_ptr <vmime::utility::childProcessFactory> posixHandler::getChildProcessFa
 #endif
 
 
-void posixHandler::wait() const
-{
-/*
-#ifdef _POSIX_PRIORITY_SCHEDULING
-	::sched_yield();
-#else
-	::sleep(1);
-#endif // _POSIX_PRIORITY_SCHEDULING
-*/
-
-	struct timespec ts;
-	ts.tv_sec = 0;
-	ts.tv_nsec = 500000;  // 500 microseconds
-
-	nanosleep(&ts, NULL);
-}
-
-
 void posixHandler::generateRandomBytes(unsigned char* buffer, const unsigned int count)
 {
 	int fd = open("/dev/urandom", O_RDONLY);

@@ -63,6 +63,9 @@ public:
 	void disconnect();
 	bool isConnected() const;
 
+	bool waitForRead(const int msecs = 30000);
+	bool waitForWrite(const int msecs = 30000);
+
 	void receive(string& buffer);
 	size_t receiveRaw(byte_t* buffer, const size_t count);
 
@@ -99,8 +102,6 @@ private:
 	bool m_connected;
 
 	byte_t m_buffer[65536];
-
-	bool m_handshaking;
 
 	exception* m_ex;
 

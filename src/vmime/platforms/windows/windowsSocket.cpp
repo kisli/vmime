@@ -249,10 +249,7 @@ size_t windowsSocket::receiveRaw(byte_t* buffer, const size_t count)
 	m_status &= ~STATUS_WOULDBLOCK;
 
 	// Check whether data is available
-	bool timedout;
-	waitForData(READ, timedout);
-
-	if (timedout)
+	if (!waitForRead(50 /* msecs */))
 	{
 		// No data available at this time
 		// Check if we are timed out
@@ -335,8 +332,7 @@ void windowsSocket::sendRaw(const byte_t* buffer, const size_t count)
 			if (err != WSAEWOULDBLOCK)
 				throwSocketError(err);
 
-			bool timedout;
-			waitForData(WRITE, timedout);
+			waitForWrite(50 /* msecs */);
 		}
 		else
 		{
@@ -430,33 +426,62 @@ void windowsSocket::throwSocketError(const int err)
 }
 
 
-void windowsSocket::waitForData(const WaitOpType t, bool& timedOut)
+bool windowsSocket::waitForData(const bool read, const bool write, const int msecs)
 {
-	// Check whether data is available
-	fd_set fds;
-	FD_ZERO(&fds);
-	FD_SET(m_desc, &fds);
-
-	struct timeval tv;
-	tv.tv_sec = 1;
-	tv.tv_usec = 0;
-
-	int ret;
-
-	if (t & READ)
-		ret = ::select(m_desc + 1, &fds, NULL, NULL, &tv);
-	else if (t & WRITE)
-		ret = ::select(m_desc + 1, NULL, &fds, NULL, &tv);
-	else
-		ret = ::select(m_desc + 1, &fds, &fds, NULL, &tv);
-
-	timedOut = (ret == 0);
-
-	if (ret == SOCKET_ERROR)
+	for (int i = 0 ; i <= msecs / 10 ; ++i)
 	{
-		int err = WSAGetLastError();
-		throwSocketError(err);
+		// Check whether data is available
+		fd_set fds;
+		FD_ZERO(&fds);
+		FD_SET(m_desc, &fds);
+
+		struct timeval tv;
+		tv.tv_sec = 0;
+		tv.tv_usec = 10000;  // 10 ms
+
+		ssize_t ret = ::select(m_desc + 1, read ? &fds : NULL, write ? &fds : NULL, NULL, &tv);
+
+		if (ret == SOCKET_ERROR)
+		{
+			int err = WSAGetLastError();
+			throwSocketError(err);
+		}
+		else if (ret > 0)
+		{
+			return true;
+		}
+
+		// No data available at this time
+		// Check if we are timed out
+		if (m_timeoutHandler &&
+		    m_timeoutHandler->isTimeOut())
+		{
+			if (!m_timeoutHandler->handleTimeOut())
+			{
+				// Server did not react within timeout delay
+				throw exceptions::operation_timed_out();
+			}
+			else
+			{
+				// Reset timeout
+				m_timeoutHandler->resetTimeOut();
+			}
+		}
 	}
+
+	return false;  // time out
+}
+
+
+bool windowsSocket::waitForRead(const int msecs)
+{
+	return waitForData(/* read */ true, /* write */ false, msecs);
+}
+
+
+bool windowsSocket::waitForWrite(const int msecs = 30000)
+{
+	return waitForData(/* read */ false, /* write */ true, msecs);
 }
 
 

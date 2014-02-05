@@ -160,7 +160,7 @@ const string SMTPResponse::readResponseLine()
 
 		if (receiveBuffer.empty())   // buffer is empty
 		{
-			platform::getHandler()->wait();
+			m_socket->waitForRead();
 			continue;
 		}
 

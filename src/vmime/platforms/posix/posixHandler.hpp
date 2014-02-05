@@ -76,8 +76,6 @@ public:
 	shared_ptr <vmime::utility::childProcessFactory> getChildProcessFactory();
 #endif
 
-	void wait() const;
-
 	void generateRandomBytes(unsigned char* buffer, const unsigned int count);
 
 	shared_ptr <utility::sync::criticalSection> createCriticalSection();

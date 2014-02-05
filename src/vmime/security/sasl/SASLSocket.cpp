@@ -102,6 +102,18 @@ shared_ptr <net::timeoutHandler> SASLSocket::getTimeoutHandler()
 }
 
 
+bool SASLSocket::waitForRead(const int msecs)
+{
+	return m_wrapped->waitForRead(msecs);
+}
+
+
+bool SASLSocket::waitForWrite(const int msecs)
+{
+	return m_wrapped->waitForWrite(msecs);
+}
+
+
 void SASLSocket::receive(string& buffer)
 {
 	const size_t n = receiveRaw(m_recvBuffer, sizeof(m_recvBuffer));

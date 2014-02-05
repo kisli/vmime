@@ -5748,7 +5748,11 @@ public:
 
 			if (receiveBuffer.empty())   // buffer is empty
 			{
-				platform::getHandler()->wait();
+				if (sok->getStatus() & socket::STATUS_WANT_WRITE)
+					sok->waitForWrite();
+				else
+					sok->waitForRead();
+
 				continue;
 			}
 
@@ -5807,7 +5811,11 @@ public:
 
 			if (receiveBuffer.empty())   // buffer is empty
 			{
-				platform::getHandler()->wait();
+				if (sok->getStatus() & socket::STATUS_WANT_WRITE)
+					sok->waitForWrite();
+				else
+					sok->waitForRead();
+
 				continue;
 			}
 

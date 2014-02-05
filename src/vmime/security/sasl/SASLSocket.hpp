@@ -58,6 +58,9 @@ public:
 
 	bool isConnected() const;
 
+	bool waitForRead(const int msecs = 30000);
+	bool waitForWrite(const int msecs = 30000);
+
 	void receive(string& buffer);
 	size_t receiveRaw(byte_t* buffer, const size_t count);
 

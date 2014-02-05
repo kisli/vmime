@@ -178,7 +178,11 @@ void POP3Response::readResponseImpl(string& buffer, const bool multiLine)
 
 		if (receiveBuffer.empty())   // buffer is empty
 		{
-			platform::getHandler()->wait();
+			if (m_socket->getStatus() & socket::STATUS_WANT_WRITE)
+				m_socket->waitForWrite();
+			else
+				m_socket->waitForRead();
+
 			continue;
 		}
 
@@ -269,7 +273,11 @@ void POP3Response::readResponseImpl
 
 		if (read == 0)   // buffer is empty
 		{
-			platform::getHandler()->wait();
+			if (m_socket->getStatus() & socket::STATUS_WANT_WRITE)
+				m_socket->waitForWrite();
+			else
+				m_socket->waitForRead();
+
 			continue;
 		}
 

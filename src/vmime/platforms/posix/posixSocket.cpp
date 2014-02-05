@@ -34,6 +34,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
+#include <sys/time.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <fcntl.h>
@@ -111,13 +112,23 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 	// Connect to host
 	int sock = -1;
 	struct ::addrinfo* res = res0;
+	int connectErrno = 0;
 
-	for ( ; sock == -1 && res != NULL ; res = res->ai_next)
+	if (m_timeoutHandler != NULL)
+		m_timeoutHandler->resetTimeOut();
+
+	for ( ; sock == -1 && res != NULL ; res = res->ai_next, connectErrno = ETIMEDOUT)
 	{
+		if (res->ai_family != AF_INET && res->ai_family != AF_INET6)
+			continue;
+
 		sock = ::socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 
 		if (sock < 0)
+		{
+			connectErrno = errno;
 			continue;  // try next
+		}
 
 		if (m_timeoutHandler != NULL)
 		{
@@ -142,37 +153,51 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 
 				default:
 
+					connectErrno = errno;
 					::close(sock);
 					sock = -1;
 					continue;  // try next
 				}
 
 				// Wait for socket to be connected.
-				// We will check for time out every second.
-				fd_set fds;
-				FD_ZERO(&fds);
-				FD_SET(sock, &fds);
-
-				fd_set fdsError;
-				FD_ZERO(&fdsError);
-				FD_SET(sock, &fdsError);
-
-				struct timeval tm;
-				tm.tv_sec = 1;
-				tm.tv_usec = 0;
-
-				m_timeoutHandler->resetTimeOut();
-
 				bool connected = false;
+
+				const int selectTimeout = 1000;   // select() timeout (ms)
+				const int tryNextTimeout = 5000;  // maximum time before trying next (ms)
+
+				timeval startTime = { 0, 0 };
+				gettimeofday(&startTime, /* timezone */ NULL);
 
 				do
 				{
-					const int ret = select(sock + 1, NULL, &fds, &fdsError, &tm);
+					struct timeval tm;
+					tm.tv_sec = selectTimeout / 1000;
+					tm.tv_usec = selectTimeout % 1000;
+
+					fd_set fds;
+					FD_ZERO(&fds);
+					FD_SET(sock, &fds);
+
+					const int ret = select(sock + 1, NULL, &fds, NULL, &tm);
 
 					// Success
 					if (ret > 0)
 					{
-						connected = true;
+						int error = 0;
+						socklen_t len = sizeof(error);
+
+						if (getsockopt(sock, SOL_SOCKET, SO_ERROR, &error, &len) < 0)
+						{
+							connectErrno = errno;
+						}
+						else
+						{
+							if (error != 0)
+								connectErrno = error;
+							else
+								connected = true;
+						}
+
 						break;
 					}
 					// Error
@@ -181,10 +206,11 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 						if (errno != EINTR)
 						{
 							// Cancel connection
+							connectErrno = errno;
 							break;
 						}
 					}
-					// 1-second timeout
+					// Check for timeout
 					else if (ret == 0)
 					{
 						if (m_timeoutHandler->isTimeOut())
@@ -192,6 +218,7 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 							if (!m_timeoutHandler->handleTimeOut())
 							{
 								// Cancel connection
+								connectErrno = ETIMEDOUT;
 								break;
 							}
 							else
@@ -206,7 +233,15 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 						}
 					}
 
-					::sched_yield();
+					timeval curTime = { 0, 0 };
+					gettimeofday(&curTime, /* timezone */ NULL);
+
+					if (res->ai_next != NULL &&
+						curTime.tv_usec - startTime.tv_usec >= tryNextTimeout * 1000)
+					{
+						connectErrno = ETIMEDOUT;
+						break;
+					}
 
 				} while (true);
 
@@ -219,11 +254,17 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 
 				break;
 			}
+			else
+			{
+				// Connection successful
+				break;
+			}
 		}
 		else
 		{
 			if (::connect(sock, res->ai_addr, res->ai_addrlen) < 0)
 			{
+				connectErrno = errno;
 				::close(sock);
 				sock = -1;
 				continue;  // try next
@@ -237,7 +278,7 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 	{
 		try
 		{
-			throwSocketError(errno);
+			throwSocketError(connectErrno);
 		}
 		catch (exceptions::socket_exception& e)
 		{
@@ -434,6 +475,65 @@ size_t posixSocket::getBlockSize() const
 }
 
 
+bool posixSocket::waitForData(const bool read, const bool write, const int msecs)
+{
+	for (int i = 0 ; i <= msecs / 10 ; ++i)
+	{
+		// Check whether data is available
+		fd_set fds;
+		FD_ZERO(&fds);
+		FD_SET(m_desc, &fds);
+
+		struct timeval tv;
+		tv.tv_sec = 0;
+		tv.tv_usec = 10000;  // 10 ms
+
+		ssize_t ret = ::select(m_desc + 1, read ? &fds : NULL, write ? &fds : NULL, NULL, &tv);
+
+		if (ret <= 0)
+		{
+			if (ret < 0 && !IS_EAGAIN(errno))
+				throwSocketError(errno);
+
+			// No data available at this time
+			// Check if we are timed out
+			if (m_timeoutHandler &&
+			    m_timeoutHandler->isTimeOut())
+			{
+				if (!m_timeoutHandler->handleTimeOut())
+				{
+					// Server did not react within timeout delay
+					throw exceptions::operation_timed_out();
+				}
+				else
+				{
+					// Reset timeout
+					m_timeoutHandler->resetTimeOut();
+				}
+			}
+		}
+		else if (ret > 0)
+		{
+			return true;
+		}
+	}
+
+	return false;  // time out
+}
+
+
+bool posixSocket::waitForRead(const int msecs)
+{
+	return waitForData(/* read */ true, /* write */ false, msecs);
+}
+
+
+bool posixSocket::waitForWrite(const int msecs)
+{
+	return waitForData(/* read */ false, /* write */ true, msecs);
+}
+
+
 void posixSocket::receive(vmime::string& buffer)
 {
 	const size_t size = receiveRaw(m_buffer, sizeof(m_buffer));
@@ -446,38 +546,8 @@ size_t posixSocket::receiveRaw(byte_t* buffer, const size_t count)
 	m_status &= ~STATUS_WOULDBLOCK;
 
 	// Check whether data is available
-	fd_set fds;
-	FD_ZERO(&fds);
-	FD_SET(m_desc, &fds);
-
-	struct timeval tv;
-	tv.tv_sec = 1;
-	tv.tv_usec = 0;
-
-	ssize_t ret = ::select(m_desc + 1, &fds, NULL, NULL, &tv);
-
-	if (ret < 0)
+	if (!waitForRead(50 /* msecs */))
 	{
-		if (!IS_EAGAIN(errno))
-			throwSocketError(errno);
-
-		// No data available at this time
-		// Check if we are timed out
-		if (m_timeoutHandler &&
-		    m_timeoutHandler->isTimeOut())
-		{
-			if (!m_timeoutHandler->handleTimeOut())
-			{
-				// Server did not react within timeout delay
-				throwSocketError(errno);
-			}
-			else
-			{
-				// Reset timeout
-				m_timeoutHandler->resetTimeOut();
-			}
-		}
-
 		m_status |= STATUS_WOULDBLOCK;
 
 		// Continue waiting for data
@@ -485,7 +555,7 @@ size_t posixSocket::receiveRaw(byte_t* buffer, const size_t count)
 	}
 
 	// Read available data
-	ret = ::recv(m_desc, buffer, count, 0);
+	ssize_t ret = ::recv(m_desc, buffer, count, 0);
 
 	if (ret < 0)
 	{
@@ -556,7 +626,7 @@ void posixSocket::sendRaw(const byte_t* buffer, const size_t count)
 			if (ret < 0 && !IS_EAGAIN(errno))
 				throwSocketError(errno);
 
-			platform::getHandler()->wait();
+			waitForWrite(50 /* msecs */);
 		}
 		else
 		{
@@ -589,7 +659,7 @@ size_t posixSocket::sendRawNonBlocking(const byte_t* buffer, const size_t count)
 			if (!m_timeoutHandler->handleTimeOut())
 			{
 				// Could not send data within timeout delay
-				throwSocketError(errno);
+				throw exceptions::operation_timed_out();
 			}
 			else
 			{

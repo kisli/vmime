@@ -49,7 +49,9 @@ public:
 
 	enum Status
 	{
-		STATUS_WOULDBLOCK = 0x1   /**< The receive operation would block. */
+		STATUS_WOULDBLOCK = 0xf,    /**< The operation would block. Retry later. */
+		STATUS_WANT_READ = 0x1,     /**< The socket wants to read data, retry when data is available. */
+		STATUS_WANT_WRITE = 0x2     /**< The socket wants to write data, retry when data can be written. */
 	};
 
 
@@ -73,6 +75,25 @@ public:
 	  * @return true if the socket is connected, false otherwise
 	  */
 	virtual bool isConnected() const = 0;
+
+	/** Block until new data is available for reading. The function will
+	  * timeout after msecs milliseconds.
+	  *
+	  * @param timeout maximum wait time, in milliseconds (default is 30000);
+	  * resolution is 10ms
+	  * @return true if data is available, or false if the operation timed out
+	  */
+	virtual bool waitForRead(const int msecs = 30000) = 0;
+
+	/** Block until pending data has been written and new data can be written.
+	  * The function will timeout after msecs milliseconds.
+	  *
+	  * @param timeout maximum wait time, in milliseconds (default is 30000);
+	  * resolution is 10ms
+	  * @return true if new data can be written immediately, or false if the
+	  * operation timed out
+	  */
+	virtual bool waitForWrite(const int msecs = 30000) = 0;
 
 	/** Receive text data from the socket.
 	  *
