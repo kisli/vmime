@@ -293,7 +293,7 @@ shared_ptr <vmime::utility::fileSystemFactory> windowsHandler::getFileSystemFact
 shared_ptr <vmime::utility::childProcessFactory> windowsHandler::getChildProcessFactory()
 {
 	// TODO: Not implemented
-	return (NULL);
+	return null;
 }
 
 #endif
