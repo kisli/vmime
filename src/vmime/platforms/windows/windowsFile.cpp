@@ -310,7 +310,7 @@ bool windowsFile::exists() const
 shared_ptr <vmime::utility::file> windowsFile::getParent() const
 {
 	if (m_path.isEmpty())
-		return NULL;
+		return null;
 	else
 		return make_shared <windowsFile>(m_path.getParent());
 }

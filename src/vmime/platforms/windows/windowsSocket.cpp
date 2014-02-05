@@ -473,7 +473,7 @@ shared_ptr <net::timeoutHandler> windowsSocket::getTimeoutHandler()
 
 shared_ptr <vmime::net::socket> windowsSocketFactory::create()
 {
-	shared_ptr <vmime::net::timeoutHandler> th = NULL;
+	shared_ptr <vmime::net::timeoutHandler> th;
 	return make_shared <windowsSocket>(th);
 }
 
