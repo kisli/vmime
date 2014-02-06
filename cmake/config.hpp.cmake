@@ -51,6 +51,7 @@ typedef unsigned @VMIME_64BIT_TYPE@ vmime_uint64;
 // Charset conversion support
 #cmakedefine01 VMIME_CHARSETCONV_LIB_IS_ICONV
 #cmakedefine01 VMIME_CHARSETCONV_LIB_IS_ICU
+#cmakedefine01 VMIME_CHARSETCONV_LIB_IS_WIN
 
 // Options
 // -- File-system support
