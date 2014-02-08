@@ -341,9 +341,6 @@ void IMAPMessage::extractImpl
 		// header + body
 		if ((extractFlags & EXTRACT_HEADER) && (extractFlags & EXTRACT_BODY))
 			throw exceptions::operation_not_supported();
-		// body only
-		else if (extractFlags & EXTRACT_BODY)
-			command << ".TEXT";
 		// header only
 		else if (extractFlags & EXTRACT_HEADER)
 			command << ".MIME";   // "MIME" not "HEADER" for parts
