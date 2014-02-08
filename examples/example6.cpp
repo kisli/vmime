@@ -615,6 +615,7 @@ static void connectStore()
 				choices.push_back("Show message header");
 				choices.push_back("Show message envelope");
 				choices.push_back("Extract whole message");
+				choices.push_back("Extract attachments");
 				choices.push_back("Status");
 				choices.push_back("List folders");
 				choices.push_back("Change folder");
@@ -627,7 +628,8 @@ static void connectStore()
 				// Request message number
 				vmime::shared_ptr <vmime::net::message> msg;
 
-				if (choice == 1 || choice == 2 || choice == 3 || choice == 4 || choice == 5 || choice == 10)
+				if (choice == 1 || choice == 2 || choice == 3 || choice == 4 ||
+				    choice == 5 || choice == 6 || choice == 11)
 				{
 					std::cout << "Enter message number: ";
 					std::cout.flush();
@@ -723,8 +725,72 @@ static void connectStore()
 
 					break;
 				}
-				// Status
+				// Extract attachments
 				case 6:
+				{
+					vmime::shared_ptr <vmime::message> parsedMsg = msg->getParsedMessage();
+
+					std::vector <vmime::shared_ptr <const vmime::attachment> > attchs = 
+						vmime::attachmentHelper::findAttachmentsInMessage(parsedMsg);
+
+					if (attchs.size() > 0)
+					{
+						std::cout << attchs.size() << " attachments found." << std::endl;
+
+						for (std::vector <vmime::shared_ptr <const vmime::attachment> >::iterator
+						     it = attchs.begin() ; it != attchs.end() ; ++it)
+						{
+							vmime::shared_ptr <const vmime::attachment> att = *it;
+
+							// Get attachment size
+							vmime::size_t size = 0;
+
+							if (att->getData()->isEncoded())
+								size = att->getData()->getEncoding().getEncoder()->getDecodedSize(att->getData()->getLength());
+							else
+								size = att->getData()->getLength();
+
+							std::cout << "Found attachment '" << att->getName().getBuffer() << "'"
+							          << ", size is " << size << " bytes:" << std::endl;
+
+							// Get attachment data
+							std::cout << std::endl;
+							std::cout << "========== BEGIN CONTENT ==========" << std::endl;
+
+							vmime::utility::outputStreamAdapter osa(std::cout);
+							att->getData()->extract(osa);
+
+							std::cout << std::endl;
+							std::cout << "========== END CONTENT ==========" << std::endl;
+
+							// Or write it to a file
+							/*
+							vmime::shared_ptr <vmime::utility::fileSystemFactory> fsf
+								= vmime::platform::getHandler()->getFileSystemFactory();
+
+							vmime::shared_ptr <vmime::utility::file> file
+								= fsf->create(vmime::utility::path::fromString
+									("/path/to/attachment-file", "/", vmime::charsets::UTF_8));
+							// -or- ("C:\\Temp\\attachment-file", "\\", vmime::charsets::UTF_8));
+
+							file->createFile();
+
+							vmime::shared_ptr <vmime::utility::outputStream> output =
+								file->getFileWriter()->getOutputStream();
+
+							att->getData()->extract(*output.get());
+							*/
+						}
+					}
+					else
+					{
+						std::cout << "No attachments found." << std::endl;
+					}
+
+					break;
+				}
+				// Status
+				case 7:
 				{
 					int count, unseen;
 					f->status(count, unseen);
@@ -733,7 +799,7 @@ static void connectStore()
 					break;
 				}
 				// List folders
-				case 7:
+				case 8:
 				{
 					vmime::shared_ptr <vmime::net::folder>
 						root = st->getRootFolder();
@@ -742,7 +808,7 @@ static void connectStore()
 					break;
 				}
 				// Change folder
-				case 8:
+				case 9:
 				{
 					std::cout << "Enter folder path (eg. /root/subfolder):" << std::endl;
 					std::cout.flush();
@@ -780,7 +846,7 @@ static void connectStore()
 					break;
 				}
 				// Add message
-				case 9:
+				case 10:
 				{
 					vmime::messageBuilder mb;
 
@@ -828,7 +894,7 @@ static void connectStore()
 					break;
 				}
 				// Copy message
-				case 10:
+				case 11:
 				{
 					vmime::net::messageSet set = f->copyMessages(f->getFullPath(),
 						vmime::net::messageSet::byNumber(msg->getNumber()));
@@ -863,7 +929,7 @@ static void connectStore()
 					break;
 				}
 				// Main menu
-				case 11:
+				case 12:
 
 					f->close(true);  // 'true' to expunge deleted messages
 					cont = false;
