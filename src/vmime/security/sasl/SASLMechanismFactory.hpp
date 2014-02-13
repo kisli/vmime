@@ -121,6 +121,15 @@ public:
 	  */
 	bool isMechanismSupported(const string& name) const;
 
+	/** Test whether an authentication mechanism is directly supported
+	  * by the underlying SASL library.
+	  *
+	  * @param name mechanism name
+	  * @return true if the specified mechanism is built-in,
+	  * or false otherwise
+	  */
+	bool isBuiltinMechanism(const string& name) const;
+
 private:
 
 #ifdef GSASL_VERSION

@@ -73,19 +73,15 @@ shared_ptr <SASLMechanism> SASLMechanismFactory::create
 {
 	const string name(utility::stringUtils::toUpper(name_));
 
-	// Check for built-in mechanisms
-	if (isMechanismSupported(name))
-	{
-		return make_shared <builtinSASLMechanism>(ctx, name);
-	}
 	// Check for registered mechanisms
-	else
-	{
-		MapType::iterator it = m_mechs.find(name);
+	MapType::iterator it = m_mechs.find(name);
 
-		if (it != m_mechs.end())
-			return (*it).second->create(ctx, name);
-	}
+	if (it != m_mechs.end())
+		return (*it).second->create(ctx, name);
+
+	// Check for built-in mechanisms
+	if (isBuiltinMechanism(name))
+		return make_shared <builtinSASLMechanism>(ctx, name);
 
 	throw exceptions::no_such_mechanism(name);
 	return null;
@@ -130,8 +126,13 @@ const std::vector <string> SASLMechanismFactory::getSupportedMechanisms() const
 
 bool SASLMechanismFactory::isMechanismSupported(const string& name) const
 {
-	return (gsasl_client_support_p(m_gsaslContext, name.c_str()) != 0 ||
-		m_mechs.find(name) != m_mechs.end());
+	return isBuiltinMechanism(name) || m_mechs.find(name) != m_mechs.end();
+}
+
+
+bool SASLMechanismFactory::isBuiltinMechanism(const string& name) const
+{
+	return gsasl_client_support_p(m_gsaslContext, name.c_str()) != 0;
 }
 
 
