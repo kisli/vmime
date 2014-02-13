@@ -37,6 +37,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 		VMIME_TEST(testHELO)
 		VMIME_TEST(testEHLO)
 		VMIME_TEST(testAUTH)
+		VMIME_TEST(testAUTH_InitialResponse)
 		VMIME_TEST(testSTARTTLS)
 		VMIME_TEST(testMAIL)
 		VMIME_TEST(testMAIL_Encoded)
@@ -93,6 +94,14 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "AUTH saslmechanism", cmd->getText());
+	}
+
+	void testAUTH_InitialResponse()
+	{
+		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::AUTH("saslmechanism", "initial-response");
+
+		VASSERT_NOT_NULL("Not null", cmd);
+		VASSERT_EQ("Text", "AUTH saslmechanism initial-response", cmd->getText());
 	}
 
 	void testSTARTTLS()

@@ -58,6 +58,9 @@ public:
 	  * server (challenge), process it and return data to be returned
 	  * in response to the server.
 	  *
+	  * If the challenge is empty (challengeLen == 0), the initial
+	  * response is returned, if this mechanism has one.
+	  *
 	  * @param sess SASL session
 	  * @param challenge challenge sent from the server
 	  * @param challengeLen length of challenge
@@ -83,6 +86,15 @@ public:
 	  * otherwise
 	  */
 	virtual bool isComplete() const = 0;
+
+	/** Determine if this mechanism has an optional initial response.
+	  * If true, caller should call step() with an empty challenge to
+	  * get the initial response.
+	  *
+	  * @return true if this mechanism has an initial response, or
+	  * false otherwise
+	  */
+	virtual bool hasInitialResponse() const = 0;
 
 	/** Encode data according to negotiated SASL mechanism. This
 	  * might mean that data is integrity or privacy protected.

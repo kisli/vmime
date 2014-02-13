@@ -60,6 +60,7 @@ public:
 	static shared_ptr <SMTPCommand> HELO(const string& hostname);
 	static shared_ptr <SMTPCommand> EHLO(const string& hostname);
 	static shared_ptr <SMTPCommand> AUTH(const string& mechName);
+	static shared_ptr <SMTPCommand> AUTH(const string& mechName, const std::string& initialResponse);
 	static shared_ptr <SMTPCommand> STARTTLS();
 	static shared_ptr <SMTPCommand> MAIL(const mailbox& mbox, const bool utf8);
 	static shared_ptr <SMTPCommand> MAIL(const mailbox& mbox, const bool utf8, const size_t size);

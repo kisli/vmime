@@ -120,6 +120,13 @@ bool builtinSASLMechanism::isComplete() const
 }
 
 
+bool builtinSASLMechanism::hasInitialResponse() const
+{
+	// It seems GNU SASL does not support initial response
+	return false;
+}
+
+
 void builtinSASLMechanism::encode
 	(shared_ptr <SASLSession> sess, const byte_t* input, const size_t inputLen,
 	 byte_t** output, size_t* outputLen)

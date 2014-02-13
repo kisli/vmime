@@ -57,6 +57,7 @@ public:
 	static shared_ptr <POP3Command> CAPA();
 	static shared_ptr <POP3Command> NOOP();
 	static shared_ptr <POP3Command> AUTH(const string& mechName);
+	static shared_ptr <POP3Command> AUTH(const string& mechName, const string& initialResponse);
 	static shared_ptr <POP3Command> STLS();
 	static shared_ptr <POP3Command> APOP(const string& username, const string& digest);
 	static shared_ptr <POP3Command> USER(const string& username);

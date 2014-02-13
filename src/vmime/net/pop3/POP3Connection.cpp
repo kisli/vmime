@@ -446,7 +446,29 @@ void POP3Connection::authenticateSASL()
 
 		saslSession->init();
 
-		POP3Command::AUTH(mech->getName())->send(dynamicCast <POP3Connection>(shared_from_this()));
+		shared_ptr <POP3Command> authCmd;
+
+		if (saslSession->getMechanism()->hasInitialResponse())
+		{
+			byte_t* initialResp = 0;
+			size_t initialRespLen = 0;
+
+			saslSession->evaluateChallenge(NULL, 0, &initialResp, &initialRespLen);
+
+			string encodedInitialResp(saslContext->encodeB64(initialResp, initialRespLen));
+			delete [] initialResp;
+
+			if (encodedInitialResp.empty())
+				authCmd = POP3Command::AUTH(mech->getName(), "=");
+			else
+				authCmd = POP3Command::AUTH(mech->getName(), encodedInitialResp);
+		}
+		else
+		{
+			authCmd = POP3Command::AUTH(mech->getName());
+		}
+
+		authCmd->send(dynamicCast <POP3Connection>(shared_from_this()));
 
 		for (bool cont = true ; cont ; )
 		{

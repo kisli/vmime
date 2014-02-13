@@ -74,6 +74,17 @@ shared_ptr <POP3Command> POP3Command::AUTH(const string& mechName)
 
 
 // static
+shared_ptr <POP3Command> POP3Command::AUTH(const string& mechName, const string& initialResponse)
+{
+	std::ostringstream cmd;
+	cmd.imbue(std::locale::classic());
+	cmd << "AUTH " << mechName << " " << initialResponse;
+
+	return createCommand(cmd.str());
+}
+
+
+// static
 shared_ptr <POP3Command> POP3Command::STLS()
 {
 	return createCommand("STLS");

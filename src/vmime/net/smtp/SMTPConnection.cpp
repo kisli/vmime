@@ -367,7 +367,25 @@ void SMTPConnection::authenticateSASL()
 
 		saslSession->init();
 
-		sendRequest(SMTPCommand::AUTH(mech->getName()));
+		if (saslSession->getMechanism()->hasInitialResponse())
+		{
+			byte_t* initialResp = 0;
+			size_t initialRespLen = 0;
+
+			saslSession->evaluateChallenge(NULL, 0, &initialResp, &initialRespLen);
+
+			string encodedInitialResp(saslContext->encodeB64(initialResp, initialRespLen));
+			delete [] initialResp;
+
+			if (encodedInitialResp.empty())
+				sendRequest(SMTPCommand::AUTH(mech->getName(), "="));
+			else
+				sendRequest(SMTPCommand::AUTH(mech->getName(), encodedInitialResp));
+		}
+		else
+		{
+			sendRequest(SMTPCommand::AUTH(mech->getName()));
+		}
 
 		for (bool cont = true ; cont ; )
 		{

@@ -61,6 +61,8 @@ public:
 
 	bool isComplete() const;
 
+	bool hasInitialResponse() const;
+
 	void encode(shared_ptr <SASLSession> sess,
 		const byte_t* input, const size_t inputLen,
 		byte_t** output, size_t* outputLen);

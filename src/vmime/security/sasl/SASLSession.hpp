@@ -96,6 +96,9 @@ public:
 	  * server (challenge), process it and return data to be returned
 	  * in response to the server.
 	  *
+	  * If the challenge is empty (challengeLen == 0), the initial
+	  * response is returned, if the mechanism has one.
+	  *
 	  * @param challenge challenge sent from the server
 	  * @param challengeLen length of challenge
 	  * @param response response to send to the server (allocated by

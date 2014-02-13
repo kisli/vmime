@@ -355,7 +355,26 @@ void IMAPConnection::authenticateSASL()
 
 		saslSession->init();
 
-		send(true, "AUTHENTICATE " + mech->getName(), true);
+		std::ostringstream cmd;
+		cmd << "AUTHENTICATE " << mech->getName();
+
+		if (saslSession->getMechanism()->hasInitialResponse())
+		{
+			byte_t* initialResp = 0;
+			size_t initialRespLen = 0;
+
+			saslSession->evaluateChallenge(NULL, 0, &initialResp, &initialRespLen);
+
+			string encodedInitialResp(saslContext->encodeB64(initialResp, initialRespLen));
+			delete [] initialResp;
+
+			if (encodedInitialResp.empty())
+				cmd << " =";
+			else
+				cmd << " " << encodedInitialResp;
+		}
+
+		send(true, cmd.str(), true);
 
 		for (bool cont = true ; cont ; )
 		{

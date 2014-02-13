@@ -39,6 +39,7 @@ VMIME_TEST_SUITE_BEGIN(POP3CommandTest)
 		VMIME_TEST(testCAPA)
 		VMIME_TEST(testNOOP)
 		VMIME_TEST(testAUTH)
+		VMIME_TEST(testAUTH_InitialResponse)
 		VMIME_TEST(testSTLS)
 		VMIME_TEST(testAPOP)
 		VMIME_TEST(testUSER)
@@ -95,6 +96,14 @@ VMIME_TEST_SUITE_BEGIN(POP3CommandTest)
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "AUTH saslmechanism", cmd->getText());
+	}
+
+	void testAUTH_InitialResponse()
+	{
+		vmime::shared_ptr <POP3Command> cmd = POP3Command::AUTH("saslmechanism", "initial-response");
+
+		VASSERT_NOT_NULL("Not null", cmd);
+		VASSERT_EQ("Text", "AUTH saslmechanism initial-response", cmd->getText());
 	}
 
 	void testSTLS()
