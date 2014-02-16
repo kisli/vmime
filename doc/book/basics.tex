@@ -506,6 +506,8 @@ std::cout << std::endl;
 vmime::string dateStr;
 vmime::utility::outputStreamStringAdapter outStr(dateStr);
 
+date.generate(outStr);
+
 std::cout << "Current date is: " << dateStr << std::endl;
 \end{lstlisting}
 
@@ -675,7 +677,7 @@ the encoding/decoding process is done internally by VMime, so creating text
 objects is fairly simple:
 
 \begin{lstlisting}[caption={Creating \vcode{vmime::text} objects}]
-vmime::string inText = "Linux dans un téléphone mobile";
+vmime::string inText = "Linux dans un tÃ©lÃ©phone mobile";
 vmime::charset inCharset = "utf-8";
 
 vmime::text outText;
@@ -683,7 +685,7 @@ outText.createFromString(inText, inCharset);
 
 // 'outText' now contains 3 words:
 //    . <us-ascii>   "Linux dans un "
-//    . <utf-8>      "téléphone "
+//    . <utf-8>      "tÃ©lÃ©phone "
 //    . <us-ascii>   "mobile"
 
 vmime::shared_ptr <vmime::header> header = myMessage->getHeader();
