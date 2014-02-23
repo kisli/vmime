@@ -60,7 +60,10 @@ shared_ptr <service> serviceFactory::create
 	(shared_ptr <session> sess, const string& protocol,
 	 shared_ptr <security::authenticator> auth)
 {
-	return (getServiceByProtocol(protocol)->create(sess, auth));
+	shared_ptr <const serviceFactory::registeredService> rserv = getServiceByProtocol(protocol);
+	if(!rserv)
+		throw exception("Service not found for protocol: "+protocol);
+	return rserv->create(sess, auth);
 }
 
 
