@@ -65,6 +65,100 @@
 #endif
 
 
+/** Make the parsing of a component fail.
+  */
+#define VIMAP_PARSER_FAIL() \
+	{  \
+		parser.m_errorResponseLine = makeResponseLine(getComponentName(), line, pos);  \
+		return false;  \
+	}
+
+/** Make the parsing of a component fail if a condition is not matched.
+  * If the specified expression does not resolve to "true", the parsing
+  * will fail.
+  *
+  * @param cond condition expression
+  */
+#define VIMAP_PARSER_FAIL_UNLESS(cond) \
+	if (!(cond))  \
+	{  \
+		VIMAP_PARSER_FAIL();  \
+	}
+
+/** Check for a token and advance.
+  * If the token is not matched, parsing will fail.
+  *
+  * @param type token class
+  */
+#define VIMAP_PARSER_CHECK(type) \
+	VIMAP_PARSER_FAIL_UNLESS(parser.check <type>(line, &pos))
+
+/** Check for an optional token and advance.
+  * If the token is not matched, parsing will continue anyway.
+  *
+  * @param type token class
+  */
+#define VIMAP_PARSER_TRY_CHECK(type) \
+	(parser.check <type>(line, &pos))
+
+/** Get a token and advance.
+  * If the token is not matched, parsing will fail.
+  *
+  * @param type token class
+  * @param variable variable which will receive pointer to the retrieved token
+  */
+#define VIMAP_PARSER_GET(type, variable)  /* raw pointer version */ \
+	{  \
+		VIMAP_PARSER_FAIL_UNLESS(variable = parser.get <type>(line, &pos));  \
+	}
+
+#define VIMAP_PARSER_GET_PTR(type, variable)  /* auto_ptr/shared_ptr version */ \
+	{ \
+		variable.reset(parser.get <type>(line, &pos));  \
+		VIMAP_PARSER_FAIL_UNLESS(variable.get());  \
+	}
+
+/** Get an optional token and advance.
+  * If the token is not matched, parsing will continue anyway.
+  */
+#define VIMAP_PARSER_TRY_GET(type, variable)  /* raw pointer version */ \
+	(variable = parser.get <type>(line, &pos))
+
+#define VIMAP_PARSER_TRY_GET_PTR(type, variable) /* auto_ptr/shared_ptr version */ \
+	(variable.reset(parser.get <type>(line, &pos)), variable.get())
+
+/** Get a token and advance. Token will be pushed back to a vector.
+  * If the token is not matched, parsing will fail.
+  *
+  * @param type token class
+  * @param variable variable of type std::vector<> to which the retrieved
+  * token will be pushed
+  */
+#define VIMAP_PARSER_GET_PUSHBACK(type, variable) \
+	{  \
+		std::auto_ptr <type> v(parser.get <type>(line, &pos));  \
+		VIMAP_PARSER_FAIL_UNLESS(v.get());  \
+		variable.push_back(v.release());  \
+	}
+
+/** Check for a token which takes an argument and advance.
+  * If the token is not matched, parsing will fail.
+  *
+  * @param type token class
+  */
+#define VIMAP_PARSER_CHECK_WITHARG(type, arg) \
+	VIMAP_PARSER_FAIL_UNLESS(parser.checkWithArg <type>(line, &pos, arg))
+
+/** Check for an optional token which takes an argument and advance.
+  * If the token is not matched, parsing will continue anyway.
+  *
+  * @param type token class
+  */
+#define VIMAP_PARSER_TRY_CHECK_WITHARG(type, arg) \
+	(parser.checkWithArg <type>(line, &pos, arg))
+
+
+
 namespace vmime {
 namespace net {
 namespace imap {
@@ -78,8 +172,8 @@ namespace imap {
 	{
 	public:
 
-		IMAPParserDebugResponse(const string& name, string& line, const size_t currentPos)
-			: m_name(name), m_line(line), m_pos(currentPos)
+		IMAPParserDebugResponse(const string& name, string& line, const size_t currentPos, const bool &result)
+			: m_name(name), m_line(line), m_pos(currentPos), m_result(result)
 		{
 			++IMAPParserDebugResponse_level;
 			IMAPParserDebugResponse_stack.push_back(name);
@@ -112,7 +206,7 @@ namespace imap {
 				std::cout << "  ";
 
 			std::cout << "LEAVE(" << m_name << "), result=";
-			std::cout << (std::uncaught_exception() ? "FALSE" : "TRUE") << ", pos=" << m_pos;
+			std::cout << (m_result ? "TRUE" : "FALSE") << ", pos=" << m_pos;
 			std::cout << std::endl;
 
 			--IMAPParserDebugResponse_level;
@@ -124,16 +218,17 @@ namespace imap {
 		const string& m_name;
 		string& m_line;
 		size_t m_pos;
+		const bool& m_result;
 	};
 
 
-	#define DEBUG_ENTER_COMPONENT(x) \
-		IMAPParserDebugResponse dbg(x, line, *currentPos)
+	#define DEBUG_ENTER_COMPONENT(x, result) \
+		IMAPParserDebugResponse dbg(x, line, *currentPos, result)
 
 	#define DEBUG_FOUND(x, y) \
 		std::cout << "FOUND: " << x << ": " << y << std::endl;
 #else
-	#define DEBUG_ENTER_COMPONENT(x)
+	#define DEBUG_ENTER_COMPONENT(x, result)
 	#define DEBUG_FOUND(x, y)
 #endif
 
@@ -287,7 +382,17 @@ public:
 		component() { }
 		virtual ~component() { }
 
-		virtual void go(IMAPParser& parser, string& line, size_t* currentPos) = 0;
+		virtual const string getComponentName() const = 0;
+
+		bool parse(IMAPParser& parser, string& line, size_t* currentPos)
+		{
+			bool res = false;
+			DEBUG_ENTER_COMPONENT(getComponentName(), res);
+			res = parseImpl(parser, line, currentPos);
+			return res;
+		}
+
+		virtual bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) = 0;
 
 
 		const string makeResponseLine(const string& comp, const string& line,
@@ -311,12 +416,19 @@ public:
 #define COMPONENT_ALIAS(parent, name) \
 	class name : public parent \
 	{ \
-		void go(IMAPParser& parser, string& line, size_t* currentPos) \
+		virtual const string getComponentName() const { return #name; }  \
+	public: \
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) \
 		{ \
-			DEBUG_ENTER_COMPONENT(#name); \
-			parent::go(parser, line, currentPos); \
+			return parent::parseImpl(parser, line, currentPos); \
 		} \
 	}
+
+#define DECLARE_COMPONENT(name) \
+	class name : public component  \
+	{  \
+		virtual const string getComponentName() const { return #name; }  \
+	public:
 
 
 	//
@@ -328,16 +440,24 @@ public:
 	{
 	public:
 
-		void go(IMAPParser& /* parser */, string& line, size_t* currentPos)
+		const string getComponentName() const
 		{
-			DEBUG_ENTER_COMPONENT(string("one_char <") + C + ">: current='" + ((*currentPos < line.length() ? line[*currentPos] : '?')) + "'");
+			return string("one_char <") + C + ">";
+		}
 
+		bool parseImpl(IMAPParser& /* parser */, string& line, size_t* currentPos)
+		{
 			const size_t pos = *currentPos;
 
 			if (pos < line.length() && line[pos] == C)
+			{
 				*currentPos = pos + 1;
+				return true;
+			}
 			else
-				throw exceptions::invalid_response("", makeResponseLine("", line, pos));
+			{
+				return false;
+			}
 		}
 	};
 
@@ -346,23 +466,24 @@ public:
 	// SPACE  ::= <ASCII SP, space, 0x20>
 	//
 
-	class SPACE : public component
-	{
-	public:
+	DECLARE_COMPONENT(SPACE)
 
-		void go(IMAPParser& /* parser */, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& /* parser */, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("SPACE");
-
 			size_t pos = *currentPos;
 
 			while (pos < line.length() && (line[pos] == ' ' || line[pos] == '\t'))
 				++pos;
 
 			if (pos > *currentPos)
+			{
 				*currentPos = pos;
+				return true;
+			}
 			else
-				throw exceptions::invalid_response("", makeResponseLine("SPACE", line, pos));
+			{
+				return false;
+			}
 		}
 	};
 
@@ -373,26 +494,23 @@ public:
 	// CRLF  ::= CR LF
 	//
 
-	class CRLF : public component
-	{
-	public:
+	DECLARE_COMPONENT(CRLF)
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("CRLF");
-
 			size_t pos = *currentPos;
 
-			parser.check <SPACE>(line, &pos, true);
+			VIMAP_PARSER_TRY_CHECK(SPACE);
 
 			if (pos + 1 < line.length() &&
 			    line[pos] == 0x0d && line[pos + 1] == 0x0a)
 			{
 				*currentPos = pos + 2;
+				return true;
 			}
 			else
 			{
-				throw exceptions::invalid_response("", makeResponseLine("CRLF", line, pos));
+				return false;
 			}
 		}
 	};
@@ -410,14 +528,10 @@ public:
 	// tag             ::= 1*<any ATOM_CHAR except "+">    (named "xtag")
 	//
 
-	class xtag : public component
-	{
-	public:
+	DECLARE_COMPONENT(xtag)
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("tag");
-
 			size_t pos = *currentPos;
 
 			bool end = false;
@@ -461,11 +575,12 @@ public:
 			if (tagString == string(*parser.getTag()))
 			{
 				*currentPos = pos;
+				return true;
 			}
 			else
 			{
 				// Invalid tag
-				throw exceptions::invalid_response("", makeResponseLine("tag", line, pos));
+				return false;
 			}
 		}
 	};
@@ -480,19 +595,15 @@ public:
 	//               ;; (0 <= n < 4,294,967,296)
 	//
 
-	class number : public component
-	{
-	public:
+	DECLARE_COMPONENT(number)
 
 		number(const bool nonZero = false)
 			: m_nonZero(nonZero), m_value(0)
 		{
 		}
 
-		void go(IMAPParser& /* parser */, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& /* parser */, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("number");
-
 			size_t pos = *currentPos;
 
 			bool valid = true;
@@ -518,10 +629,11 @@ public:
 			{
 				m_value = val;
 				*currentPos = pos;
+				return true;
 			}
 			else
 			{
-				throw exceptions::invalid_response("", makeResponseLine("number", line, pos));
+				return false;
 			}
 		}
 
@@ -571,9 +683,7 @@ public:
 	//                   ; between these two regards of order.
 	//                   ; Example: 2:4 and 4:2 are equivalent.
 
-	class uid_range : public component
-	{
-	public:
+	DECLARE_COMPONENT(uid_range)
 
 		uid_range()
 			: m_uniqueid1(NULL), m_uniqueid2(NULL)
@@ -586,17 +696,17 @@ public:
 			delete m_uniqueid2;
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("uid_range");
-
 			size_t pos = *currentPos;
 
-			m_uniqueid1 = parser.get <uniqueid>(line, &pos);
-			parser.check <one_char <','> >(line, &pos);
-			m_uniqueid2 = parser.get <uniqueid>(line, &pos);
+			VIMAP_PARSER_GET(uniqueid, m_uniqueid1);
+			VIMAP_PARSER_CHECK(one_char <','>);
+			VIMAP_PARSER_GET(uniqueid, m_uniqueid2);
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -615,9 +725,7 @@ public:
 	// uid-set         = (uniqueid / uid-range) *("," uid-set)
 	//
 
-	class uid_set : public component
-	{
-	public:
+	DECLARE_COMPONENT(uid_set)
 
 		uid_set()
 			: m_uniqueid(NULL), m_uid_range(NULL), m_next_uid_set(NULL)
@@ -631,21 +739,21 @@ public:
 			delete m_next_uid_set;
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("uid_set");
-
 			size_t pos = *currentPos;
 
 			// We have either a 'uid_range' or a 'uniqueid'
-			if (!(m_uid_range = parser.get <IMAPParser::uid_range>(line, &pos, true)))
-				m_uniqueid = parser.get <IMAPParser::uniqueid>(line, &pos);
+			if (!VIMAP_PARSER_TRY_GET(IMAPParser::uid_range, m_uid_range))
+				VIMAP_PARSER_GET(IMAPParser::uniqueid, m_uniqueid);
 
 			// And maybe another 'uid-set' following
-			if (parser.check <one_char <','> >(line, &pos, true))
-				m_next_uid_set = parser.get <IMAPParser::uid_set>(line, &pos);
+			if (VIMAP_PARSER_TRY_CHECK(one_char <','>))
+				VIMAP_PARSER_GET(IMAPParser::uid_set, m_next_uid_set);
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -671,19 +779,15 @@ public:
 	// TEXT_CHAR  ::= <any CHAR except CR and LF>
 	//
 
-	class text : public component
-	{
-	public:
+	DECLARE_COMPONENT(text)
 
 		text(bool allow8bits = false, const char except = 0)
 			: m_allow8bits(allow8bits), m_except(except)
 		{
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("text");
-
 			size_t pos = *currentPos;
 			size_t len = 0;
 
@@ -726,17 +830,15 @@ public:
 				}
 			}
 
-			if (len != 0)
-			{
-				m_value.resize(len);
-				std::copy(line.begin() + *currentPos, line.begin() + pos, m_value.begin());
+			if (len == 0)
+				VIMAP_PARSER_FAIL();
 
-				*currentPos = pos;
-			}
-			else
-			{
-				throw exceptions::invalid_response("", makeResponseLine("text", line, pos));
-			}
+			m_value.resize(len);
+			std::copy(line.begin() + *currentPos, line.begin() + pos, m_value.begin());
+
+			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -790,14 +892,10 @@ public:
 	// CHAR            ::= <any 7-bit US-ASCII character except NUL, 0x01 - 0x7f>
 	//
 
-	class QUOTED_CHAR : public component
-	{
-	public:
+	DECLARE_COMPONENT(QUOTED_CHAR)
 
-		void go(IMAPParser& /* parser */, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("quoted_char");
-
 			size_t pos = *currentPos;
 
 			const unsigned char c = static_cast <unsigned char>(pos < line.length() ? line[pos] : 0);
@@ -817,8 +915,10 @@ public:
 			}
 			else
 			{
-				throw exceptions::invalid_response("", makeResponseLine("QUOTED_CHAR", line, pos));
+				VIMAP_PARSER_FAIL();
 			}
+
+			return true;
 		}
 
 	private:
@@ -839,14 +939,10 @@ public:
 	// CHAR            ::= <any 7-bit US-ASCII character except NUL, 0x01 - 0x7f>
 	//
 
-	class quoted_text : public component
-	{
-	public:
+	DECLARE_COMPONENT(quoted_text)
 
-		void go(IMAPParser& /* parser */, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("quoted_text");
-
 			size_t pos = *currentPos;
 			size_t len = 0;
 			bool valid = false;
@@ -902,14 +998,12 @@ public:
 				}
 			}
 
-			if (valid)
-			{
-				*currentPos = pos;
-			}
-			else
-			{
-				throw exceptions::invalid_response("", makeResponseLine("quoted_text", line, pos));
-			}
+			if (!valid)
+				VIMAP_PARSER_FAIL();
+
+			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -926,19 +1020,17 @@ public:
 	// nil  ::= "NIL"
 	//
 
-	class NIL : public component
-	{
-	public:
+	DECLARE_COMPONENT(NIL)
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("NIL");
-
 			size_t pos = *currentPos;
 
-			parser.checkWithArg <special_atom>(line, &pos, "nil");
+			VIMAP_PARSER_CHECK_WITHARG(special_atom, "nil");
 
 			*currentPos = pos;
+
+			return true;
 		}
 	};
 
@@ -957,23 +1049,19 @@ public:
 	// CHAR8           ::= <any 8-bit octet except NUL, 0x01 - 0xff>
 	//
 
-	class xstring : public component
-	{
-	public:
+	DECLARE_COMPONENT(xstring)
 
 		xstring(const bool canBeNIL = false, component* comp = NULL, const int data = 0)
 			: m_canBeNIL(canBeNIL), m_component(comp), m_data(data)
 		{
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("string");
-
 			size_t pos = *currentPos;
 
 			if (m_canBeNIL &&
-			    parser.checkWithArg <special_atom>(line, &pos, "nil", true))
+			    VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "nil"))
 			{
 				// NIL
 			}
@@ -982,10 +1070,11 @@ public:
 				pos = *currentPos;
 
 				// quoted ::= <"> *QUOTED_CHAR <">
-				if (parser.check <one_char <'"'> >(line, &pos, true))
+				if (VIMAP_PARSER_TRY_CHECK(one_char <'"'>))
 				{
-					std::auto_ptr <quoted_text> text(parser.get <quoted_text>(line, &pos));
-					parser.check <one_char <'"'> >(line, &pos);
+					shared_ptr <quoted_text> text;
+					VIMAP_PARSER_GET_PTR(quoted_text, text);
+					VIMAP_PARSER_CHECK(one_char <'"'>);
 
 					if (parser.m_literalHandler != NULL)
 					{
@@ -1029,16 +1118,16 @@ public:
 				// literal ::= "{" number "}" CRLF *CHAR8
 				else
 				{
-					parser.check <one_char <'{'> >(line, &pos);
+					VIMAP_PARSER_CHECK(one_char <'{'>);
 
-					number* num = parser.get <number>(line, &pos);
+					shared_ptr <number> num;
+					VIMAP_PARSER_GET_PTR(number, num);
 
 					const size_t length = num->value();
-					delete (num);
 
-					parser.check <one_char <'}'> >(line, &pos);
+					VIMAP_PARSER_CHECK(one_char <'}'> );
 
-					parser.check <CRLF>(line, &pos);
+					VIMAP_PARSER_CHECK(CRLF);
 
 
 					if (parser.m_literalHandler != NULL)
@@ -1075,6 +1164,8 @@ public:
 			}
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -1111,31 +1202,29 @@ public:
 	// astring ::= atom / string
 	//
 
-	class astring : public component
-	{
-	public:
+	DECLARE_COMPONENT(astring)
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("astring");
-
 			size_t pos = *currentPos;
 
-			xstring* str = NULL;
+			shared_ptr <xstring> str;
+			VIMAP_PARSER_TRY_GET_PTR(xstring, str);
 
-			if ((str = parser.get <xstring>(line, &pos, true)))
+			if (str)
 			{
 				m_value = str->value();
-				delete (str);
 			}
 			else
 			{
-				atom* at = parser.get <atom>(line, &pos);
+				shared_ptr <atom> at;
+				VIMAP_PARSER_GET_PTR(atom, at);
 				m_value = at->value();
-				delete (at);
 			}
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -1160,14 +1249,10 @@ public:
 	// SPACE           ::= <ASCII SP, space, 0x20>
 	//
 
-	class atom : public component
-	{
-	public:
+	DECLARE_COMPONENT(atom)
 
-		void go(IMAPParser& /* parser */, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("atom");
-
 			size_t pos = *currentPos;
 			size_t len = 0;
 
@@ -1213,8 +1298,10 @@ public:
 			}
 			else
 			{
-				throw exceptions::invalid_response("", makeResponseLine("atom", line, pos));
+				VIMAP_PARSER_FAIL();
 			}
+
+			return true;
 		}
 
 	private:
@@ -1240,18 +1327,22 @@ public:
 	{
 	public:
 
+		const std::string getComponentName() const
+		{
+			return string("special_atom <") + m_string + ">";
+		}
+
 		special_atom(const char* str)
 			: m_string(str)   // 'string' must be in lower-case
 		{
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT(string("special_atom(") + m_string + ")");
-
 			size_t pos = *currentPos;
 
-			atom::go(parser, line, &pos);
+			if (!atom::parseImpl(parser, line, &pos))
+				return false;
 
 			const char* cmp = value().c_str();
 			const char* with = m_string;
@@ -1267,13 +1358,11 @@ public:
 			}
 
 			if (!ok || *cmp || *with)
-			{
-				throw exceptions::invalid_response("", makeResponseLine(string("special_atom <") + m_string + ">", line, pos));
-			}
-			else
-			{
-				*currentPos = pos;
-			}
+				VIMAP_PARSER_FAIL();
+
+			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -1287,71 +1376,54 @@ public:
 	//                ;; Syntax defined in [MIME-HDRS]
 	//
 
-	class text_mime2 : public component
-	{
-	public:
+	DECLARE_COMPONENT(text_mime2)
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("text_mime2");
-
 			size_t pos = *currentPos;
 
-			atom* theCharset = NULL, *theEncoding = NULL;
-			text* theText = NULL;
+			shared_ptr <atom> theCharset, theEncoding;
+			shared_ptr <text> theText;
 
-			try
-			{
-				parser.check <one_char <'='> >(line, &pos);
-				parser.check <one_char <'?'> >(line, &pos);
+			VIMAP_PARSER_CHECK(one_char <'='> );
+			VIMAP_PARSER_CHECK(one_char <'?'> );
 
-				theCharset = parser.get <atom>(line, &pos);
+			VIMAP_PARSER_GET_PTR(atom, theCharset);
 
-				parser.check <one_char <'?'> >(line, &pos);
+			VIMAP_PARSER_CHECK(one_char <'?'> );
 
-				theEncoding = parser.get <atom>(line, &pos);
+			VIMAP_PARSER_GET_PTR(atom, theEncoding);
 
-				parser.check <one_char <'?'> >(line, &pos);
+			VIMAP_PARSER_CHECK(one_char <'?'> );
 
-				theText = parser.get <text8_except <'?'> >(line, &pos);
+			VIMAP_PARSER_GET_PTR(text8_except <'?'> , theText);
 
-				parser.check <one_char <'?'> >(line, &pos);
-				parser.check <one_char <'='> >(line, &pos);
-			}
-			catch (std::exception&)
-			{
-				delete (theCharset);
-				delete (theEncoding);
-				delete (theText);
-
-				throw;
-			}
+			VIMAP_PARSER_CHECK(one_char <'?'> );
+			VIMAP_PARSER_CHECK(one_char <'='> );
 
 			m_charset = theCharset->value();
-			delete (theCharset);
 
 			// Decode text
-			utility::encoder::encoder* theEncoder = NULL;
+			std::auto_ptr <utility::encoder::encoder> theEncoder;
 
 			if (theEncoding->value()[0] == 'q' || theEncoding->value()[0] == 'Q')
 			{
 				// Quoted-printable
-				theEncoder = new utility::encoder::qpEncoder();
+				theEncoder.reset(new utility::encoder::qpEncoder());
 				theEncoder->getProperties()["rfc2047"] = true;
 			}
 			else if (theEncoding->value()[0] == 'b' || theEncoding->value()[0] == 'B')
 			{
 				// Base64
-				theEncoder = new utility::encoder::b64Encoder();
+				theEncoder.reset(new utility::encoder::b64Encoder());
 			}
 
-			if (theEncoder)
+			if (theEncoder.get())
 			{
 				utility::inputStreamStringAdapter in(theText->value());
 				utility::outputStreamStringAdapter out(m_value);
 
 				theEncoder->decode(in, out);
-				delete (theEncoder);
 			}
 			// No decoder available
 			else
@@ -1359,10 +1431,9 @@ public:
 				m_value = theText->value();
 			}
 
-			delete (theEncoding);
-			delete (theText);
-
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -1382,9 +1453,7 @@ public:
 	//                    ; commands) or unique identifier (UID COPY,
 	//                    ; UID FETCH, UID STORE commands).
 
-	class seq_number : public component
-	{
-	public:
+	DECLARE_COMPONENT(seq_number)
 
 		seq_number()
 			: m_number(NULL), m_star(false)
@@ -1396,13 +1465,11 @@ public:
 			delete m_number;
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("seq_number");
-
 			size_t pos = *currentPos;
 
-			if (parser.check <one_char <'*'> >(line, &pos, true))
+			if (VIMAP_PARSER_TRY_CHECK(one_char <'*'> ))
 			{
 				m_star = true;
 				m_number = NULL;
@@ -1410,10 +1477,12 @@ public:
 			else
 			{
 				m_star = false;
-				m_number = parser.get <IMAPParser::number>(line, &pos);
+				VIMAP_PARSER_GET(IMAPParser::number, m_number);
 			}
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -1434,9 +1503,7 @@ public:
 	//                    ; Example: 2:4 and 4:2 are equivalent and indicate
 	//                    ; values 2, 3, and 4.
 
-	class seq_range : public component
-	{
-	public:
+	DECLARE_COMPONENT(seq_range)
 
 		seq_range()
 			: m_first(NULL), m_last(NULL)
@@ -1449,19 +1516,19 @@ public:
 			delete m_last;
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("seq_range");
-
 			size_t pos = *currentPos;
 
-			m_first = parser.get <seq_number>(line, &pos);
+			VIMAP_PARSER_GET(seq_number, m_first);
 
-			parser.check <one_char <'*'> >(line, &pos);
+			VIMAP_PARSER_CHECK(one_char <'*'> );
 
-			m_last = parser.get <seq_number>(line, &pos);
+			VIMAP_PARSER_GET(seq_number, m_last);
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -1484,9 +1551,7 @@ public:
 	//                    ; 2,4:7,9,12:* for a mailbox with 15 messages is
 	//                    ; equivalent to 2,4,5,6,7,9,12,13,14,15
 
-	class sequence_set : public component
-	{
-	public:
+	DECLARE_COMPONENT(sequence_set)
 
 		sequence_set()
 			: m_number(NULL), m_range(NULL), m_nextSet(NULL)
@@ -1500,19 +1565,19 @@ public:
 			delete m_nextSet;
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("sequence_set");
-
 			size_t pos = *currentPos;
 
-			if ((m_range = parser.get <IMAPParser::seq_range>(line, &pos, true)) == NULL)
-				m_number = parser.get <IMAPParser::seq_number>(line, &pos);
+			if (!VIMAP_PARSER_TRY_GET(IMAPParser::seq_range, m_range))
+				VIMAP_PARSER_GET(IMAPParser::seq_number, m_number);
 
-			if (parser.check <one_char <','> >(line, &pos, true))
-				m_nextSet = parser.get <sequence_set>(line, &pos);
+			if (VIMAP_PARSER_TRY_CHECK(one_char <','> ))
+				VIMAP_PARSER_GET(sequence_set, m_nextSet);
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -1534,19 +1599,15 @@ public:
 	//                        ;; (mod-sequence)
 	//                        ;; (1 <= n < 18,446,744,073,709,551,615)
 
-	class mod_sequence_value : public component
-	{
-	public:
+	DECLARE_COMPONENT(mod_sequence_value)
 
 		mod_sequence_value()
 			: m_value(0)
 		{
 		}
 
-		void go(IMAPParser& /* parser */, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& /* parser */, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("mod_sequence_value");
-
 			size_t pos = *currentPos;
 
 			bool valid = true;
@@ -1570,6 +1631,8 @@ public:
 			m_value = val;
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -1597,9 +1660,7 @@ public:
 	// flag_keyword    ::= atom
 	//
 
-	class flag : public component
-	{
-	public:
+	DECLARE_COMPONENT(flag)
 
 		flag()
 			: m_type(UNKNOWN), m_flag_keyword(NULL)
@@ -1611,23 +1672,22 @@ public:
 			delete (m_flag_keyword);
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("flag_keyword");
-
 			size_t pos = *currentPos;
 
-			if (parser.check <one_char <'\\'> >(line, &pos, true))
+			if (VIMAP_PARSER_TRY_CHECK(one_char <'\\'> ))
 			{
-				if (parser.check <one_char <'*'> >(line, &pos, true))
+				if (VIMAP_PARSER_TRY_CHECK(one_char <'*'> ))
 				{
 					m_type = STAR;
 				}
 				else
 				{
-					atom* at = parser.get <atom>(line, &pos);
+					shared_ptr <atom> at;
+					VIMAP_PARSER_GET_PTR(atom, at);
+
 					const string name = utility::stringUtils::toLower(at->value());
-					delete (at);
 
 					if (name == "answered")
 						m_type = ANSWERED;
@@ -1649,10 +1709,12 @@ public:
 			else
 			{
 				m_type = KEYWORD_OR_EXTENSION;
-				m_flag_keyword = parser.get <atom>(line, &pos);
+				VIMAP_PARSER_GET(atom, m_flag_keyword);
 			}
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 
@@ -1688,9 +1750,7 @@ public:
 	// flag_list ::= "(" #flag ")"
 	//
 
-	class flag_list : public component
-	{
-	public:
+	DECLARE_COMPONENT(flag_list)
 
 		~flag_list()
 		{
@@ -1701,21 +1761,21 @@ public:
 			}
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("flag_list");
-
 			size_t pos = *currentPos;
 
-			parser.check <one_char <'('> >(line, &pos);
+			VIMAP_PARSER_CHECK(one_char <'('> );
 
-			while (!parser.check <one_char <')'> >(line, &pos, true))
+			while (!VIMAP_PARSER_TRY_CHECK(one_char <')'> ))
 			{
-				m_flags.push_back(parser.get <flag>(line, &pos));
-				parser.check <SPACE>(line, &pos, true);
+				VIMAP_PARSER_GET_PUSHBACK(flag, m_flags);
+				VIMAP_PARSER_TRY_CHECK(SPACE);
 			}
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -1736,17 +1796,13 @@ public:
 	//             ;; further semantic details of mailbox names.
 	//
 
-	class mailbox : public component
-	{
-	public:
+	DECLARE_COMPONENT(mailbox)
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("mailbox");
-
 			size_t pos = *currentPos;
 
-			if (parser.checkWithArg <special_atom>(line, &pos, "inbox", true))
+			if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "inbox"))
 			{
 				m_type = INBOX;
 				m_name = "INBOX";
@@ -1755,12 +1811,14 @@ public:
 			{
 				m_type = OTHER;
 
-				astring* astr = parser.get <astring>(line, &pos);
+				shared_ptr <astring> astr;
+				VIMAP_PARSER_GET_PTR(astring, astr);
 				m_name = astr->value();
-				delete (astr);
 			}
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 
@@ -1787,21 +1845,17 @@ public:
 	//                 "\Noselect" / "\Unmarked" / flag_extension
 	//
 
-	class mailbox_flag : public component
-	{
-	public:
+	DECLARE_COMPONENT(mailbox_flag)
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("mailbox_flag");
-
 			size_t pos = *currentPos;
 
-			if (parser.check <one_char <'\\'> >(line, &pos, true))
+			if (VIMAP_PARSER_TRY_CHECK(one_char <'\\'> ))
 			{
-				atom* at = parser.get <atom>(line, &pos);
+				shared_ptr <atom> at;
+				VIMAP_PARSER_GET_PTR(atom, at);
 				const string name = utility::stringUtils::toLower(at->value());
-				delete (at);
 
 				m_type = UNKNOWN;  // default
 
@@ -1892,15 +1946,17 @@ public:
 			}
 			else
 			{
-				atom* at = parser.get <atom>(line, &pos);
+				shared_ptr <atom> at;
+				VIMAP_PARSER_GET_PTR(atom, at);
 				const string name = utility::stringUtils::toLower(at->value());
-				delete (at);
 
 				m_type = UNKNOWN;
 				m_name = name;
 			}
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 
@@ -1944,9 +2000,7 @@ public:
 	// mailbox_flag_list ::= "(" #(mailbox_flag) ")"
 	//
 
-	class mailbox_flag_list : public component
-	{
-	public:
+	DECLARE_COMPONENT(mailbox_flag_list)
 
 		~mailbox_flag_list()
 		{
@@ -1957,21 +2011,21 @@ public:
 			}
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("mailbox_flag_list");
-
 			size_t pos = *currentPos;
 
-			parser.check <one_char <'('> >(line, &pos);
+			VIMAP_PARSER_CHECK(one_char <'('> );
 
-			while (!parser.check <one_char <')'> >(line, &pos, true))
+			while (!VIMAP_PARSER_TRY_CHECK(one_char <')'> ))
 			{
-				m_flags.push_back(parser.get <mailbox_flag>(line, &pos));
-				parser.check <SPACE>(line, &pos, true);
+				VIMAP_PARSER_GET_PUSHBACK(mailbox_flag, m_flags);
+				VIMAP_PARSER_TRY_CHECK(SPACE);
 			}
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -1989,9 +2043,7 @@ public:
 	//                  (<"> QUOTED_CHAR <"> / nil) SPACE mailbox
 	//
 
-	class mailbox_list : public component
-	{
-	public:
+	DECLARE_COMPONENT(mailbox_list)
 
 		mailbox_list()
 			: m_mailbox_flag_list(NULL),
@@ -2005,32 +2057,32 @@ public:
 			delete (m_mailbox);
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("mailbox_list");
-
 			size_t pos = *currentPos;
 
-			m_mailbox_flag_list = parser.get <IMAPParser::mailbox_flag_list>(line, &pos);
+			VIMAP_PARSER_GET(IMAPParser::mailbox_flag_list, m_mailbox_flag_list);
 
-			parser.check <SPACE>(line, &pos);
+			VIMAP_PARSER_CHECK(SPACE);
 
-			if (!parser.check <NIL>(line, &pos, true))
+			if (!VIMAP_PARSER_TRY_CHECK(NIL))
 			{
-				parser.check <one_char <'"'> >(line, &pos);
+				VIMAP_PARSER_CHECK(one_char <'"'> );
 
-				QUOTED_CHAR* qc = parser.get <QUOTED_CHAR>(line, &pos);
+				shared_ptr <QUOTED_CHAR> qc;
+				VIMAP_PARSER_GET_PTR(QUOTED_CHAR, qc);
 				m_quoted_char = qc->value();
-				delete (qc);
 
-				parser.check <one_char <'"'> >(line, &pos);
+				VIMAP_PARSER_CHECK(one_char <'"'> );
 			}
 
-			parser.check <SPACE>(line, &pos);
+			VIMAP_PARSER_CHECK(SPACE);
 
-			m_mailbox = parser.get <IMAPParser::mailbox>(line, &pos);
+			VIMAP_PARSER_GET(IMAPParser::mailbox, m_mailbox);
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -2052,17 +2104,15 @@ public:
 	//               ;; Defined by [IMAP-AUTH]
 	//
 
-	class auth_type : public component
-	{
-	public:
+	DECLARE_COMPONENT(auth_type)
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("auth_type");
+			size_t pos = *currentPos;
 
-			atom* at = parser.get <atom>(line, currentPos);
+			shared_ptr <atom> at;
+			VIMAP_PARSER_GET_PTR(atom, at);
 			m_name = utility::stringUtils::toLower(at->value());
-			delete (at);
 
 			if (m_name == "kerberos_v4")
 				m_type = KERBEROS_V4;
@@ -2072,6 +2122,8 @@ public:
 				m_type = SKEY;
 			else
 				m_type = UNKNOWN;
+
+			return true;
 		}
 
 
@@ -2112,53 +2164,51 @@ public:
 	//                          ;; support persistent mod-sequences
 	//
 
-	class status_att_val : public component
-	{
-	public:
+	DECLARE_COMPONENT(status_att_val)
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("status_att");
-
 			size_t pos = *currentPos;
 
 			// "HIGHESTMODSEQ" SP mod-sequence-valzer
-			if (parser.checkWithArg <special_atom>(line, &pos, "highestmodseq", true))
+			if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "highestmodseq"))
 			{
 				m_type = HIGHESTMODSEQ;
 
-				parser.check <SPACE>(line, &pos);
-				m_value = parser.get <IMAPParser::mod_sequence_value>(line, &pos);
+				VIMAP_PARSER_CHECK(SPACE);
+				VIMAP_PARSER_GET(IMAPParser::mod_sequence_value, m_value);
 			}
 			else
 			{
-				if (parser.checkWithArg <special_atom>(line, &pos, "messages", true))
+				if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "messages"))
 				{
 					m_type = MESSAGES;
 				}
-				else if (parser.checkWithArg <special_atom>(line, &pos, "recent", true))
+				else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "recent"))
 				{
 					m_type = RECENT;
 				}
-				else if (parser.checkWithArg <special_atom>(line, &pos, "uidnext", true))
+				else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "uidnext"))
 				{
 					m_type = UIDNEXT;
 				}
-				else if (parser.checkWithArg <special_atom>(line, &pos, "uidvalidity", true))
+				else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "uidvalidity"))
 				{
 					m_type = UIDVALIDITY;
 				}
 				else
 				{
-					parser.checkWithArg <special_atom>(line, &pos, "unseen");
+					VIMAP_PARSER_CHECK_WITHARG(special_atom, "unseen");
 					m_type = UNSEEN;
 				}
 
-				parser.check <SPACE>(line, &pos);
-				m_value = parser.get <IMAPParser::number>(line, &pos);
+				VIMAP_PARSER_CHECK(SPACE);
+				VIMAP_PARSER_GET(IMAPParser::number, m_value);
 			}
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 
@@ -2198,9 +2248,7 @@ public:
 
 	// status-att-list = status-att-val *(SP status-att-val)
 
-	class status_att_list : public component
-	{
-	public:
+	DECLARE_COMPONENT(status_att_list)
 
 		~status_att_list()
 		{
@@ -2211,18 +2259,18 @@ public:
 			}
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("status_att_list");
-
 			size_t pos = *currentPos;
 
-			m_values.push_back(parser.get <IMAPParser::status_att_val>(line, &pos));
+			VIMAP_PARSER_GET_PUSHBACK(IMAPParser::status_att_val, m_values);
 
-			while (parser.check <SPACE>(line, &pos, true))
-				m_values.push_back(parser.get <IMAPParser::status_att_val>(line, &pos));
+			while (VIMAP_PARSER_TRY_CHECK(SPACE))
+				VIMAP_PARSER_GET_PUSHBACK(IMAPParser::status_att_val, m_values);
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -2241,9 +2289,7 @@ public:
 	//                ;; registered with IANA as standard or standards-track
 	//
 
-	class capability : public component
-	{
-	public:
+	DECLARE_COMPONENT(capability)
 
 		capability()
 			: m_auth_type(NULL), m_atom(NULL)
@@ -2256,13 +2302,12 @@ public:
 			delete (m_atom);
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("capability");
-
 			size_t pos = *currentPos;
 
-			class atom* at = parser.get <IMAPParser::atom>(line, &pos);
+			std::auto_ptr <IMAPParser::atom> at;
+			VIMAP_PARSER_GET_PTR(IMAPParser::atom, at);
 
 			string value = at->value();
 			const char* str = value.c_str();
@@ -2275,14 +2320,15 @@ public:
 			{
 				size_t pos = 5;
 				m_auth_type = parser.get <IMAPParser::auth_type>(value, &pos);
-				delete (at);
 			}
 			else
 			{
-				m_atom = at;
+				m_atom = at.release();
 			}
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -2305,9 +2351,7 @@ public:
 	//                     ;; capability.
 	//
 
-	class capability_data : public component
-	{
-	public:
+	DECLARE_COMPONENT(capability_data)
 
 		~capability_data()
 		{
@@ -2318,29 +2362,34 @@ public:
 			}
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("capability_data");
-
 			size_t pos = *currentPos;
 
-			parser.checkWithArg <special_atom>(line, &pos, "capability");
+			VIMAP_PARSER_CHECK_WITHARG(special_atom, "capability");
 
-			while (parser.check <SPACE>(line, &pos, true))
+			while (VIMAP_PARSER_TRY_CHECK(SPACE))
 			{
 				capability* cap;
 
 				if (parser.isStrict() || m_capabilities.empty())
-					cap = parser.get <capability>(line, &pos);
+				{
+					VIMAP_PARSER_GET(capability, cap);
+				}
 				else
-					cap = parser.get <capability>(line, &pos, /* noThrow */ true);  // allow SPACE at end of line (Apple iCloud IMAP server)
+				{
+					VIMAP_PARSER_TRY_GET(capability, cap);  // allow SPACE at end of line (Apple iCloud IMAP server)
+				}
 
-				if (cap == NULL) break;
+				if (!cap)
+					break;
 
 				m_capabilities.push_back(cap);
 			}
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -2377,54 +2426,57 @@ public:
 	//                     SPACE time SPACE zone <">
 	//
 
-	class date_time : public component
-	{
-	public:
+	DECLARE_COMPONENT(date_time)
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("date_time");
-
 			size_t pos = *currentPos;
 
 			// <"> date_day_fixed "-" date_month "-" date_year
-			parser.check <one_char <'"'> >(line, &pos);
-			parser.check <SPACE>(line, &pos, true);
+			VIMAP_PARSER_CHECK(one_char <'"'> );
+			VIMAP_PARSER_TRY_CHECK(SPACE);
 
-			std::auto_ptr <number> nd(parser.get <number>(line, &pos));
+			shared_ptr <number> nd;
+			VIMAP_PARSER_GET_PTR(number, nd);
 
-			parser.check <one_char <'-'> >(line, &pos);
+			VIMAP_PARSER_CHECK(one_char <'-'> );
 
-			std::auto_ptr <atom> amo(parser.get <atom>(line, &pos));
+			shared_ptr <atom> amo;
+			VIMAP_PARSER_GET_PTR(atom, amo);
 
-			parser.check <one_char <'-'> >(line, &pos);
+			VIMAP_PARSER_CHECK(one_char <'-'> );
 
-			std::auto_ptr <number> ny(parser.get <number>(line, &pos));
+			shared_ptr <number> ny;
+			VIMAP_PARSER_GET_PTR(number, ny);
 
-			parser.check <SPACE>(line, &pos, true);
+			VIMAP_PARSER_TRY_CHECK(SPACE);
 
 			// 2digit ":" 2digit ":" 2digit
-			std::auto_ptr <number> nh(parser.get <number>(line, &pos));
+			shared_ptr <number> nh;
+			VIMAP_PARSER_GET_PTR(number, nh);
 
-			parser.check <one_char <':'> >(line, &pos);
+			VIMAP_PARSER_CHECK(one_char <':'> );
 
-			std::auto_ptr <number> nmi(parser.get <number>(line, &pos));
+			shared_ptr <number> nmi;
+			VIMAP_PARSER_GET_PTR(number, nmi);
 
-			parser.check <one_char <':'> >(line, &pos);
+			VIMAP_PARSER_CHECK(one_char <':'> );
 
-			std::auto_ptr <number> ns(parser.get <number>(line, &pos));
+			shared_ptr <number> ns;
+			VIMAP_PARSER_GET_PTR(number, ns);
 
-			parser.check <SPACE>(line, &pos, true);
+			VIMAP_PARSER_TRY_CHECK(SPACE);
 
 			// ("+" / "-") 4digit
 			int sign = 1;
 
-			if (!(parser.check <one_char <'+'> >(line, &pos, true)))
-				parser.check <one_char <'-'> >(line, &pos);
+			if (!(VIMAP_PARSER_TRY_CHECK(one_char <'+'> )))
+				VIMAP_PARSER_CHECK(one_char <'-'> );
 
-			std::auto_ptr <number> nz(parser.get <number>(line, &pos));
+			shared_ptr <number> nz;
+			VIMAP_PARSER_GET_PTR(number, nz);
 
-			parser.check <one_char <'"'> >(line, &pos);
+			VIMAP_PARSER_CHECK(one_char <'"'> );
 
 
 			m_datetime.setHour(static_cast <int>(std::min(std::max(nh->value(), 0ul), 23ul)));
@@ -2498,6 +2550,8 @@ public:
 			m_datetime.setMonth(mon);
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -2517,9 +2571,7 @@ public:
 	// header_list     ::= "(" 1#header_fld_name ")"
 	//
 
-	class header_list : public component
-	{
-	public:
+	DECLARE_COMPONENT(header_list)
 
 		~header_list()
 		{
@@ -2530,21 +2582,21 @@ public:
 			}
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("header_list");
-
 			size_t pos = *currentPos;
 
-			parser.check <one_char <'('> >(line, &pos);
+			VIMAP_PARSER_CHECK(one_char <'('> );
 
-			while (!parser.check <one_char <')'> >(line, &pos, true))
+			while (!VIMAP_PARSER_TRY_CHECK(one_char <')'> ))
 			{
-				m_fld_names.push_back(parser.get <header_fld_name>(line, &pos));
-				parser.check <SPACE>(line, &pos, true);
+				VIMAP_PARSER_GET_PUSHBACK(header_fld_name, m_fld_names);
+				VIMAP_PARSER_TRY_CHECK(SPACE);
 			}
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -2567,9 +2619,7 @@ public:
 	//                     ;; revisions of this specification.
 	//
 
-	class body_extension : public component
-	{
-	public:
+	DECLARE_COMPONENT(body_extension)
 
 		body_extension()
 			: m_nstring(NULL), m_number(NULL)
@@ -2588,28 +2638,29 @@ public:
 			}
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			size_t pos = *currentPos;
 
-			if (parser.check <one_char <'('> >(line, &pos, true))
+			if (VIMAP_PARSER_TRY_CHECK(one_char <'('> ))
 			{
-				m_body_extensions.push_back
-					(parser.get <body_extension>(line, &pos));
+				VIMAP_PARSER_GET_PUSHBACK(body_extension, m_body_extensions);
 
-				while (!parser.check <one_char <')'> >(line, &pos, true))
+				while (!VIMAP_PARSER_TRY_CHECK(one_char <')'> ))
 				{
-					m_body_extensions.push_back(parser.get <body_extension>(line, &pos));
-					parser.check <SPACE>(line, &pos, true);
+					VIMAP_PARSER_GET_PUSHBACK(body_extension, m_body_extensions);
+					VIMAP_PARSER_TRY_CHECK(SPACE);
 				}
 			}
 			else
 			{
-				if (!(m_nstring = parser.get <IMAPParser::nstring>(line, &pos, true)))
-					m_number = parser.get <IMAPParser::number>(line, &pos);
+				if (!VIMAP_PARSER_TRY_GET(IMAPParser::nstring, m_nstring))
+					VIMAP_PARSER_GET(IMAPParser::number, m_number);
 			}
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -2633,9 +2684,7 @@ public:
 	//                     SPACE header_list / "TEXT" / "MIME"
 	//
 
-	class section_text : public component
-	{
-	public:
+	DECLARE_COMPONENT(section_text)
 
 		section_text()
 			: m_header_list(NULL)
@@ -2647,30 +2696,28 @@ public:
 			delete (m_header_list);
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("section_text");
-
 			size_t pos = *currentPos;
 
 			// "HEADER.FIELDS" [".NOT"] SPACE header_list
-			const bool b1 = parser.checkWithArg <special_atom>(line, &pos, "header.fields.not", true);
-			const bool b2 = (b1 ? false : parser.checkWithArg <special_atom>(line, &pos, "header.fields", true));
+			const bool b1 = VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "header.fields.not");
+			const bool b2 = (b1 ? false : VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "header.fields"));
 
 			if (b1 || b2)
 			{
 				m_type = b1 ? HEADER_FIELDS_NOT : HEADER_FIELDS;
 
-				parser.check <SPACE>(line, &pos);
-				m_header_list = parser.get <IMAPParser::header_list>(line, &pos);
+				VIMAP_PARSER_CHECK(SPACE);
+				VIMAP_PARSER_GET(IMAPParser::header_list, m_header_list);
 			}
 			// "HEADER"
-			else if (parser.checkWithArg <special_atom>(line, &pos, "header", true))
+			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "header"))
 			{
 				m_type = HEADER;
 			}
 			// "MIME"
-			else if (parser.checkWithArg <special_atom>(line, &pos, "mime", true))
+			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "mime"))
 			{
 				m_type = MIME;
 			}
@@ -2679,10 +2726,12 @@ public:
 			{
 				m_type = TEXT;
 
-				parser.checkWithArg <special_atom>(line, &pos, "text");
+				VIMAP_PARSER_CHECK_WITHARG(special_atom, "text");
 			}
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 
@@ -2712,9 +2761,7 @@ public:
 	//                     ["." (section_text / "MIME")])] "]"
 	//
 
-	class section : public component
-	{
-	public:
+	DECLARE_COMPONENT(section)
 
 		section()
 			: m_section_text1(NULL), m_section_text2(NULL)
@@ -2727,41 +2774,40 @@ public:
 			delete (m_section_text2);
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("section");
-
 			size_t pos = *currentPos;
 
-			parser.check <one_char <'['> >(line, &pos);
+			VIMAP_PARSER_CHECK(one_char <'['> );
 
-			if (!parser.check <one_char <']'> >(line, &pos, true))
+			if (!VIMAP_PARSER_TRY_CHECK(one_char <']'> ))
 			{
-				if (!(m_section_text1 = parser.get <section_text>(line, &pos, true)))
+				if (!VIMAP_PARSER_TRY_GET(section_text, m_section_text1))
 				{
-					nz_number* num = parser.get <nz_number>(line, &pos);
+					shared_ptr <nz_number> num;
+					VIMAP_PARSER_GET_PTR(nz_number, num);
 					m_nz_numbers.push_back(static_cast <unsigned int>(num->value()));
-					delete (num);
 
-					while (parser.check <one_char <'.'> >(line, &pos, true))
+					while (VIMAP_PARSER_TRY_CHECK(one_char <'.'> ))
 					{
-						if ((num = parser.get <nz_number>(line, &pos, true)))
+						if (VIMAP_PARSER_TRY_GET_PTR(nz_number, num))
 						{
 							m_nz_numbers.push_back(static_cast <unsigned int>(num->value()));
-							delete (num);
 						}
 						else
 						{
-							m_section_text2 = parser.get <section_text>(line, &pos);
+							VIMAP_PARSER_GET(section_text, m_section_text2);
 							break;
 						}
 					}
 				}
 
-				parser.check <one_char <']'> >(line, &pos);
+				VIMAP_PARSER_CHECK(one_char <']'> );
 			}
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -2801,9 +2847,7 @@ public:
 	//                     SPACE addr_host ")"
 	//
 
-	class address : public component
-	{
-	public:
+	DECLARE_COMPONENT(address)
 
 		address()
 			: m_addr_name(NULL), m_addr_adl(NULL),
@@ -2819,23 +2863,23 @@ public:
 			delete (m_addr_host);
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("address");
-
 			size_t pos = *currentPos;
 
-			parser.check <one_char <'('> >(line, &pos);
-			m_addr_name = parser.get <nstring>(line, &pos);
-			parser.check <SPACE>(line, &pos);
-			m_addr_adl = parser.get <nstring>(line, &pos);
-			parser.check <SPACE>(line, &pos);
-			m_addr_mailbox = parser.get <nstring>(line, &pos);
-			parser.check <SPACE>(line, &pos);
-			m_addr_host = parser.get <nstring>(line, &pos);
-			parser.check <one_char <')'> >(line, &pos);
+			VIMAP_PARSER_CHECK(one_char <'('> );
+			VIMAP_PARSER_GET(nstring, m_addr_name);
+			VIMAP_PARSER_CHECK(SPACE);
+			VIMAP_PARSER_GET(nstring, m_addr_adl);
+			VIMAP_PARSER_CHECK(SPACE);
+			VIMAP_PARSER_GET(nstring, m_addr_mailbox);
+			VIMAP_PARSER_CHECK(SPACE);
+			VIMAP_PARSER_GET(nstring, m_addr_host);
+			VIMAP_PARSER_CHECK(one_char <')'> );
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -2858,9 +2902,7 @@ public:
 	// address_list ::= "(" 1*address ")" / nil
 	//
 
-	class address_list : public component
-	{
-	public:
+	DECLARE_COMPONENT(address_list)
 
 		~address_list()
 		{
@@ -2871,24 +2913,24 @@ public:
 			}
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("address_list");
-
 			size_t pos = *currentPos;
 
-			if (!parser.check <NIL>(line, &pos, true))
+			if (!VIMAP_PARSER_TRY_CHECK(NIL))
 			{
-				parser.check <one_char <'('> >(line, &pos);
+				VIMAP_PARSER_CHECK(one_char <'('> );
 
-				while (!parser.check <one_char <')'> >(line, &pos, true))
+				while (!VIMAP_PARSER_TRY_CHECK(one_char <')'> ))
 				{
-					m_addresses.push_back(parser.get <address>(line, &pos));
-					parser.check <SPACE>(line, &pos, true);
+					VIMAP_PARSER_GET_PUSHBACK(address, m_addresses);
+					VIMAP_PARSER_TRY_CHECK(SPACE);
 				}
 			}
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -2978,9 +3020,7 @@ public:
 	//              SPACE env_message_id ")"
 	//
 
-	class envelope : public component
-	{
-	public:
+	DECLARE_COMPONENT(envelope)
 
 		envelope()
 			: m_env_date(NULL), m_env_subject(NULL),
@@ -3004,46 +3044,46 @@ public:
 			delete (m_env_message_id);
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("envelope");
-
 			size_t pos = *currentPos;
 
-			parser.check <one_char <'('> >(line, &pos);
+			VIMAP_PARSER_CHECK(one_char <'('> );
 
-			m_env_date = parser.get <IMAPParser::env_date>(line, &pos);
-			parser.check <SPACE>(line, &pos);
+			VIMAP_PARSER_GET(IMAPParser::env_date, m_env_date);
+			VIMAP_PARSER_CHECK(SPACE);
 
-			m_env_subject = parser.get <IMAPParser::env_subject>(line, &pos);
-			parser.check <SPACE>(line, &pos);
+			VIMAP_PARSER_GET(IMAPParser::env_subject, m_env_subject);
+			VIMAP_PARSER_CHECK(SPACE);
 
-			m_env_from = parser.get <IMAPParser::env_from>(line, &pos);
-			parser.check <SPACE>(line, &pos);
+			VIMAP_PARSER_GET(IMAPParser::env_from, m_env_from);
+			VIMAP_PARSER_CHECK(SPACE);
 
-			m_env_sender = parser.get <IMAPParser::env_sender>(line, &pos);
-			parser.check <SPACE>(line, &pos);
+			VIMAP_PARSER_GET(IMAPParser::env_sender, m_env_sender);
+			VIMAP_PARSER_CHECK(SPACE);
 
-			m_env_reply_to = parser.get <IMAPParser::env_reply_to>(line, &pos);
-			parser.check <SPACE>(line, &pos);
+			VIMAP_PARSER_GET(IMAPParser::env_reply_to, m_env_reply_to);
+			VIMAP_PARSER_CHECK(SPACE);
 
-			m_env_to = parser.get <IMAPParser::env_to>(line, &pos);
-			parser.check <SPACE>(line, &pos);
+			VIMAP_PARSER_GET(IMAPParser::env_to, m_env_to);
+			VIMAP_PARSER_CHECK(SPACE);
 
-			m_env_cc = parser.get <IMAPParser::env_cc>(line, &pos);
-			parser.check <SPACE>(line, &pos);
+			VIMAP_PARSER_GET(IMAPParser::env_cc, m_env_cc);
+			VIMAP_PARSER_CHECK(SPACE);
 
-			m_env_bcc = parser.get <IMAPParser::env_bcc>(line, &pos);
-			parser.check <SPACE>(line, &pos);
+			VIMAP_PARSER_GET(IMAPParser::env_bcc, m_env_bcc);
+			VIMAP_PARSER_CHECK(SPACE);
 
-			m_env_in_reply_to = parser.get <IMAPParser::env_in_reply_to>(line, &pos);
-			parser.check <SPACE>(line, &pos);
+			VIMAP_PARSER_GET(IMAPParser::env_in_reply_to, m_env_in_reply_to);
+			VIMAP_PARSER_CHECK(SPACE);
 
-			m_env_message_id = parser.get <IMAPParser::env_message_id>(line, &pos);
+			VIMAP_PARSER_GET(IMAPParser::env_message_id, m_env_message_id);
 
-			parser.check <one_char <')'> >(line, &pos);
+			VIMAP_PARSER_CHECK(one_char <')'> );
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -3121,9 +3161,7 @@ public:
 	// body_fld_param_item ::= string SPACE string
 	//
 
-	class body_fld_param_item : public component
-	{
-	public:
+	DECLARE_COMPONENT(body_fld_param_item)
 
 		body_fld_param_item()
 			: m_string1(NULL), m_string2(NULL)
@@ -3136,19 +3174,18 @@ public:
 			delete (m_string2);
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("body_fld_param_item");
-
 			size_t pos = *currentPos;
 
 			if (!parser.isStrict())
 			{
 				// Some servers send an <atom> instead of a <string> here:
 				// eg. ... (CHARSET "X-UNKNOWN") ...
-				if (!(m_string1 = parser.get <xstring>(line, &pos, true)))
+				if (!VIMAP_PARSER_TRY_GET(xstring, m_string1))
 				{
-					std::auto_ptr <atom> at(parser.get <atom>(line, &pos));
+					shared_ptr <atom> at;
+					VIMAP_PARSER_GET_PTR(atom, at);
 
 					m_string1 = new xstring();
 					m_string1->setValue(at->value());
@@ -3156,15 +3193,17 @@ public:
 			}
 			else
 			{
-				m_string1 = parser.get <xstring>(line, &pos);
+				VIMAP_PARSER_GET(xstring, m_string1);
 			}
 
-			parser.check <SPACE>(line, &pos);
-			m_string2 = parser.get <xstring>(line, &pos);
+			VIMAP_PARSER_CHECK(SPACE);
+			VIMAP_PARSER_GET(xstring, m_string2);
 
 			DEBUG_FOUND("body_fld_param_item", "<" << m_string1->value() << ", " << m_string2->value() << ">");
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -3183,9 +3222,7 @@ public:
 	// body_fld_param  ::= "(" 1#(body_fld_param_item) ")" / nil
 	//
 
-	class body_fld_param : public component
-	{
-	public:
+	DECLARE_COMPONENT(body_fld_param)
 
 		~body_fld_param()
 		{
@@ -3196,28 +3233,28 @@ public:
 			}
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("body_fld_param");
-
 			size_t pos = *currentPos;
 
-			if (parser.check <one_char <'('> >(line, &pos, true))
+			if (VIMAP_PARSER_TRY_CHECK(one_char <'('> ))
 			{
-				m_items.push_back(parser.get <body_fld_param_item>(line, &pos));
+				VIMAP_PARSER_GET_PUSHBACK(body_fld_param_item, m_items);
 
-				while (!parser.check <one_char <')'> >(line, &pos, true))
+				while (!VIMAP_PARSER_TRY_CHECK(one_char <')'> ))
 				{
-					parser.check <SPACE>(line, &pos);
-					m_items.push_back(parser.get <body_fld_param_item>(line, &pos));
+					VIMAP_PARSER_CHECK(SPACE);
+					VIMAP_PARSER_GET_PUSHBACK(body_fld_param_item, m_items);
 				}
 			}
 			else
 			{
-				parser.check <NIL>(line, &pos);
+				VIMAP_PARSER_CHECK(NIL);
 			}
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -3234,9 +3271,7 @@ public:
 	// body_fld_dsp    ::= "(" string SPACE body_fld_param ")" / nil
 	//
 
-	class body_fld_dsp : public component
-	{
-	public:
+	DECLARE_COMPONENT(body_fld_dsp)
 
 		body_fld_dsp()
 			: m_string(NULL), m_body_fld_param(NULL)
@@ -3249,25 +3284,25 @@ public:
 			delete (m_body_fld_param);
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("body_fld_dsp");
-
 			size_t pos = *currentPos;
 
-			if (parser.check <one_char <'('> >(line, &pos, true))
+			if (VIMAP_PARSER_TRY_CHECK(one_char <'('> ))
 			{
-				m_string = parser.get <xstring>(line, &pos);
-				parser.check <SPACE>(line, &pos);
-				m_body_fld_param = parser.get <class body_fld_param>(line, &pos);
-				parser.check <one_char <')'> >(line, &pos);
+				VIMAP_PARSER_GET(xstring, m_string);
+				VIMAP_PARSER_CHECK(SPACE);
+				VIMAP_PARSER_GET(class body_fld_param, m_body_fld_param);
+				VIMAP_PARSER_CHECK(one_char <')'> );
 			}
 			else
 			{
-				parser.check <NIL>(line, &pos);
+				VIMAP_PARSER_CHECK(NIL);
 			}
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -3286,9 +3321,7 @@ public:
 	// body_fld_lang   ::= nstring / "(" 1#string ")"
 	//
 
-	class body_fld_lang : public component
-	{
-	public:
+	DECLARE_COMPONENT(body_fld_lang)
 
 		~body_fld_lang()
 		{
@@ -3299,28 +3332,28 @@ public:
 			}
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("body_fld_lang");
-
 			size_t pos = *currentPos;
 
-			if (parser.check <one_char <'('> >(line, &pos, true))
+			if (VIMAP_PARSER_TRY_CHECK(one_char <'('> ))
 			{
-				m_strings.push_back(parser.get <class xstring>(line, &pos));
+				VIMAP_PARSER_GET_PUSHBACK(xstring, m_strings);
 
-				while (!parser.check <one_char <')'> >(line, &pos, true))
+				while (!VIMAP_PARSER_TRY_CHECK(one_char <')'> ))
 				{
-					parser.check <SPACE>(line, &pos);
-					m_strings.push_back(parser.get <class xstring>(line, &pos));
+					VIMAP_PARSER_CHECK(SPACE);
+					VIMAP_PARSER_GET_PUSHBACK(xstring, m_strings);
 				}
 			}
 			else
 			{
-				m_strings.push_back(parser.get <class nstring>(line, &pos));
+				VIMAP_PARSER_GET_PUSHBACK(nstring, m_strings);
 			}
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -3339,9 +3372,7 @@ public:
 	//                     body_fld_octets
 	//
 
-	class body_fields : public component
-	{
-	public:
+	DECLARE_COMPONENT(body_fields)
 
 		body_fields()
 			: m_body_fld_param(NULL), m_body_fld_id(NULL),
@@ -3358,23 +3389,23 @@ public:
 			delete (m_body_fld_octets);
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("body_fields");
-
 			size_t pos = *currentPos;
 
-			m_body_fld_param = parser.get <IMAPParser::body_fld_param>(line, &pos);
-			parser.check <SPACE>(line, &pos);
-			m_body_fld_id = parser.get <IMAPParser::body_fld_id>(line, &pos);
-			parser.check <SPACE>(line, &pos);
-			m_body_fld_desc = parser.get <IMAPParser::body_fld_desc>(line, &pos);
-			parser.check <SPACE>(line, &pos);
-			m_body_fld_enc = parser.get <IMAPParser::body_fld_enc>(line, &pos);
-			parser.check <SPACE>(line, &pos);
-			m_body_fld_octets = parser.get <IMAPParser::body_fld_octets>(line, &pos);
+			VIMAP_PARSER_GET(IMAPParser::body_fld_param, m_body_fld_param);
+			VIMAP_PARSER_CHECK(SPACE);
+			VIMAP_PARSER_GET(IMAPParser::body_fld_id, m_body_fld_id);
+			VIMAP_PARSER_CHECK(SPACE);
+			VIMAP_PARSER_GET(IMAPParser::body_fld_desc, m_body_fld_desc);
+			VIMAP_PARSER_CHECK(SPACE);
+			VIMAP_PARSER_GET(IMAPParser::body_fld_enc, m_body_fld_enc);
+			VIMAP_PARSER_CHECK(SPACE);
+			VIMAP_PARSER_GET(IMAPParser::body_fld_octets, m_body_fld_octets);
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -3408,9 +3439,7 @@ public:
 	//                     ;; Defined in [MIME-IMT]
 	//
 
-	class media_text : public component
-	{
-	public:
+	DECLARE_COMPONENT(media_text)
 
 		media_text()
 			: m_media_subtype(NULL)
@@ -3422,20 +3451,20 @@ public:
 			delete (m_media_subtype);
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("media_text");
-
 			size_t pos = *currentPos;
 
-			parser.check <one_char <'"'> >(line, &pos);
-			parser.checkWithArg <special_atom>(line, &pos, "text");
-			parser.check <one_char <'"'> >(line, &pos);
-			parser.check <SPACE>(line, &pos);
+			VIMAP_PARSER_CHECK(one_char <'"'> );
+			VIMAP_PARSER_CHECK_WITHARG(special_atom, "text");
+			VIMAP_PARSER_CHECK(one_char <'"'> );
+			VIMAP_PARSER_CHECK(SPACE);
 
-			m_media_subtype = parser.get <IMAPParser::media_subtype>(line, &pos);
+			VIMAP_PARSER_GET(IMAPParser::media_subtype, m_media_subtype);
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -3453,9 +3482,7 @@ public:
 	//                     ;; Defined in [MIME-IMT]
 	//
 
-	class media_message : public component
-	{
-	public:
+	DECLARE_COMPONENT(media_message)
 
 		media_message()
 			: m_media_subtype(NULL)
@@ -3467,24 +3494,24 @@ public:
 			delete m_media_subtype;
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("media_message");
-
 			size_t pos = *currentPos;
 
-			parser.check <one_char <'"'> >(line, &pos);
-			parser.checkWithArg <special_atom>(line, &pos, "message");
-			parser.check <one_char <'"'> >(line, &pos);
-			parser.check <SPACE>(line, &pos);
+			VIMAP_PARSER_CHECK(one_char <'"'> );
+			VIMAP_PARSER_CHECK_WITHARG(special_atom, "message");
+			VIMAP_PARSER_CHECK(one_char <'"'> );
+			VIMAP_PARSER_CHECK(SPACE);
 
-			//parser.check <one_char <'"'> >(line, &pos);
-			//parser.checkWithArg <special_atom>(line, &pos, "rfc822");
-			//parser.check <one_char <'"'> >(line, &pos);
+			//VIMAP_PARSER_CHECK(one_char <'"'> );
+			//VIMAP_PARSER_CHECK_WITHARG(special_atom, "rfc822");
+			//VIMAP_PARSER_CHECK(one_char <'"'> );
 
-			m_media_subtype = parser.get <IMAPParser::media_subtype>(line, &pos);
+			VIMAP_PARSER_GET(IMAPParser::media_subtype, m_media_subtype);
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -3503,9 +3530,7 @@ public:
 	//                     SPACE media_subtype
 	//                     ;; Defined in [MIME-IMT]
 
-	class media_basic : public component
-	{
-	public:
+	DECLARE_COMPONENT(media_basic)
 
 		media_basic()
 			: m_media_type(NULL), m_media_subtype(NULL)
@@ -3518,19 +3543,19 @@ public:
 			delete (m_media_subtype);
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("media_basic");
-
 			size_t pos = *currentPos;
 
-			m_media_type = parser.get <xstring>(line, &pos);
+			VIMAP_PARSER_GET(xstring, m_media_type);
 
-			parser.check <SPACE>(line, &pos);
+			VIMAP_PARSER_CHECK(SPACE);
 
-			m_media_subtype = parser.get <IMAPParser::media_subtype>(line, &pos);
+			VIMAP_PARSER_GET(IMAPParser::media_subtype, m_media_subtype);
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -3553,9 +3578,7 @@ public:
 	//                     ;; "BODY" fetch
 	//
 
-	class body_ext_1part : public component
-	{
-	public:
+	DECLARE_COMPONENT(body_ext_1part)
 
 		body_ext_1part()
 			: m_body_fld_md5(NULL), m_body_fld_dsp(NULL), m_body_fld_lang(NULL)
@@ -3575,44 +3598,36 @@ public:
 			}
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("body_ext_1part");
-
 			size_t pos = *currentPos;
 
-			m_body_fld_md5 = parser.get <IMAPParser::body_fld_md5>(line, &pos);
+			VIMAP_PARSER_GET(IMAPParser::body_fld_md5, m_body_fld_md5);
 
 			// [SPACE body_fld_dsp
-			if (parser.check <SPACE>(line, &pos, true))
+			if (VIMAP_PARSER_TRY_CHECK(SPACE))
 			{
-				m_body_fld_dsp = parser.get <IMAPParser::body_fld_dsp>(line, &pos);
+				VIMAP_PARSER_GET(IMAPParser::body_fld_dsp, m_body_fld_dsp);
 
 				// [SPACE body_fld_lang
-				if (parser.check <SPACE>(line, &pos, true))
+				if (VIMAP_PARSER_TRY_CHECK(SPACE))
 				{
-					m_body_fld_lang = parser.get <IMAPParser::body_fld_lang>(line, &pos);
+					VIMAP_PARSER_GET(IMAPParser::body_fld_lang, m_body_fld_lang);
 
 					// [SPACE 1#body_extension]
-					if (parser.check <SPACE>(line, &pos, true))
+					if (VIMAP_PARSER_TRY_CHECK(SPACE))
 					{
-						m_body_extensions.push_back
-							(parser.get <body_extension>(line, &pos));
+						VIMAP_PARSER_GET_PUSHBACK(body_extension, m_body_extensions);
 
-						parser.check <SPACE>(line, &pos, true);
-
-						body_extension* ext = NULL;
-
-						while ((ext = parser.get <body_extension>(line, &pos, true)) != NULL)
-						{
-							m_body_extensions.push_back(ext);
-							parser.check <SPACE>(line, &pos, true);
-						}
+						while (VIMAP_PARSER_TRY_CHECK(SPACE))
+							VIMAP_PARSER_GET_PUSHBACK(body_extension, m_body_extensions);
 					}
 				}
 			}
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -3640,9 +3655,7 @@ public:
 	//                     ;; MUST NOT be returned on non-extensible
 	//                     ;; "BODY" fetch
 
-	class body_ext_mpart : public component
-	{
-	public:
+	DECLARE_COMPONENT(body_ext_mpart)
 
 		body_ext_mpart()
 			: m_body_fld_param(NULL), m_body_fld_dsp(NULL), m_body_fld_lang(NULL)
@@ -3662,40 +3675,32 @@ public:
 			}
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("body_ext_mpart");
-
 			size_t pos = *currentPos;
 
-			m_body_fld_param = parser.get <IMAPParser::body_fld_param>(line, &pos);
+			VIMAP_PARSER_GET(IMAPParser::body_fld_param, m_body_fld_param);
 
 			// [SPACE body_fld_dsp SPACE body_fld_lang [SPACE 1#body_extension]]
-			if (parser.check <SPACE>(line, &pos, true))
+			if (VIMAP_PARSER_TRY_CHECK(SPACE))
 			{
-				m_body_fld_dsp = parser.get <IMAPParser::body_fld_dsp>(line, &pos);
-				parser.check <SPACE>(line, &pos);
-				m_body_fld_lang = parser.get <IMAPParser::body_fld_lang>(line, &pos);
+				VIMAP_PARSER_GET(IMAPParser::body_fld_dsp, m_body_fld_dsp);
+				VIMAP_PARSER_CHECK(SPACE);
+				VIMAP_PARSER_GET(IMAPParser::body_fld_lang, m_body_fld_lang);
 
 				// [SPACE 1#body_extension]
-				if (parser.check <SPACE>(line, &pos, true))
+				if (VIMAP_PARSER_TRY_CHECK(SPACE))
 				{
-					m_body_extensions.push_back
-						(parser.get <body_extension>(line, &pos));
+					VIMAP_PARSER_GET_PUSHBACK(body_extension, m_body_extensions);
 
-					parser.check <SPACE>(line, &pos, true);
-
-					body_extension* ext = NULL;
-
-					while ((ext = parser.get <body_extension>(line, &pos, true)) != NULL)
-					{
-						m_body_extensions.push_back(ext);
-						parser.check <SPACE>(line, &pos, true);
-					}
+					while (VIMAP_PARSER_TRY_CHECK(SPACE))
+						VIMAP_PARSER_GET_PUSHBACK(body_extension, m_body_extensions);
 				}
 			}
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -3721,9 +3726,7 @@ public:
 	//                     ;; MESSAGE subtype MUST NOT be "RFC822"
 	//
 
-	class body_type_basic : public component
-	{
-	public:
+	DECLARE_COMPONENT(body_type_basic)
 
 		body_type_basic()
 			: m_media_basic(NULL), m_body_fields(NULL)
@@ -3736,17 +3739,17 @@ public:
 			delete (m_body_fields);
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("body_type_basic");
-
 			size_t pos = *currentPos;
 
-			m_media_basic = parser.get <IMAPParser::media_basic>(line, &pos);
-			parser.check <SPACE>(line, &pos);
-			m_body_fields = parser.get <IMAPParser::body_fields>(line, &pos);
+			VIMAP_PARSER_GET(IMAPParser::media_basic, m_media_basic);
+			VIMAP_PARSER_CHECK(SPACE);
+			VIMAP_PARSER_GET(IMAPParser::body_fields, m_body_fields);
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -3769,9 +3772,7 @@ public:
 	class xbody;
 	typedef xbody body;
 
-	class body_type_msg : public component
-	{
-	public:
+	DECLARE_COMPONENT(body_type_msg)
 
 		body_type_msg()
 			: m_media_message(NULL), m_body_fields(NULL),
@@ -3788,26 +3789,26 @@ public:
 			delete (m_body_fld_lines);
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("body_type_msg");
-
 			size_t pos = *currentPos;
 
-			m_media_message = parser.get <IMAPParser::media_message>(line, &pos);
-			parser.check <SPACE>(line, &pos);
-			m_body_fields = parser.get <IMAPParser::body_fields>(line, &pos);
-			parser.check <SPACE>(line, &pos);
+			VIMAP_PARSER_GET(IMAPParser::media_message, m_media_message);
+			VIMAP_PARSER_CHECK(SPACE);
+			VIMAP_PARSER_GET(IMAPParser::body_fields, m_body_fields);
+			VIMAP_PARSER_CHECK(SPACE);
 
 			// BUGFIX: made SPACE optional. This is not standard, but some servers
 			// seem to return responses like that...
-			m_envelope = parser.get <IMAPParser::envelope>(line, &pos);
-			parser.check <SPACE>(line, &pos, true);
-			m_body = parser.get <IMAPParser::xbody>(line, &pos);
-			parser.check <SPACE>(line, &pos, true);
-			m_body_fld_lines = parser.get <IMAPParser::body_fld_lines>(line, &pos);
+			VIMAP_PARSER_GET(IMAPParser::envelope, m_envelope);
+			VIMAP_PARSER_TRY_CHECK(SPACE);
+			VIMAP_PARSER_GET(IMAPParser::xbody, m_body);
+			VIMAP_PARSER_TRY_CHECK(SPACE);
+			VIMAP_PARSER_GET(IMAPParser::body_fld_lines, m_body_fld_lines);
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -3832,9 +3833,7 @@ public:
 	// body_type_text  ::= media_text SPACE body_fields SPACE body_fld_lines
 	//
 
-	class body_type_text : public component
-	{
-	public:
+	DECLARE_COMPONENT(body_type_text)
 
 		body_type_text()
 			: m_media_text(NULL),
@@ -3849,19 +3848,19 @@ public:
 			delete (m_body_fld_lines);
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("body_type_text");
-
 			size_t pos = *currentPos;
 
-			m_media_text = parser.get <IMAPParser::media_text>(line, &pos);
-			parser.check <SPACE>(line, &pos);
-			m_body_fields = parser.get <IMAPParser::body_fields>(line, &pos);
-			parser.check <SPACE>(line, &pos);
-			m_body_fld_lines = parser.get <IMAPParser::body_fld_lines>(line, &pos);
+			VIMAP_PARSER_GET(IMAPParser::media_text, m_media_text);
+			VIMAP_PARSER_CHECK(SPACE);
+			VIMAP_PARSER_GET(IMAPParser::body_fields, m_body_fields);
+			VIMAP_PARSER_CHECK(SPACE);
+			VIMAP_PARSER_GET(IMAPParser::body_fld_lines, m_body_fld_lines);
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -3883,9 +3882,7 @@ public:
 	//                     [SPACE body_ext_1part]
 	//
 
-	class body_type_1part : public component
-	{
-	public:
+	DECLARE_COMPONENT(body_type_1part)
 
 		body_type_1part()
 			: m_body_type_basic(NULL), m_body_type_msg(NULL),
@@ -3902,25 +3899,23 @@ public:
 			delete (m_body_ext_1part);
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("body_type_1part");
-
 			size_t pos = *currentPos;
 
-			if (!(m_body_type_text = parser.get <IMAPParser::body_type_text>(line, &pos, true)))
-				if (!(m_body_type_msg = parser.get <IMAPParser::body_type_msg>(line, &pos, true)))
-					m_body_type_basic = parser.get <IMAPParser::body_type_basic>(line, &pos);
+			if (!VIMAP_PARSER_TRY_GET(IMAPParser::body_type_text, m_body_type_text))
+				if (!VIMAP_PARSER_TRY_GET(IMAPParser::body_type_msg, m_body_type_msg))
+					VIMAP_PARSER_GET(IMAPParser::body_type_basic, m_body_type_basic);
 
-			if (parser.check <SPACE>(line, &pos, true))
+			if (VIMAP_PARSER_TRY_CHECK(SPACE))
 			{
-				m_body_ext_1part = parser.get <IMAPParser::body_ext_1part>(line, &pos, true);
-
-				if (!m_body_ext_1part)
+				if (!VIMAP_PARSER_TRY_GET(IMAPParser::body_ext_1part, m_body_ext_1part))
 					--pos;
 			}
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -3946,9 +3941,7 @@ public:
 	//                     [SPACE body_ext_mpart]
 	//
 
-	class body_type_mpart : public component
-	{
-	public:
+	DECLARE_COMPONENT(body_type_mpart)
 
 		body_type_mpart()
 			: m_media_subtype(NULL), m_body_ext_mpart(NULL)
@@ -3967,25 +3960,33 @@ public:
 			}
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("body_type_mpart");
-
 			size_t pos = *currentPos;
 
-			m_list.push_back(parser.get <xbody>(line, &pos));
+			VIMAP_PARSER_GET_PUSHBACK(xbody, m_list);
 
-			for (xbody* b ; (b = parser.get <xbody>(line, &pos, true)) ; )
-				m_list.push_back(b);
+			while (true)
+			{
+				std::auto_ptr <xbody> b;
+				VIMAP_PARSER_TRY_GET_PTR(xbody, b);
 
-			parser.check <SPACE>(line, &pos);
+				if (!b.get())
+					break;
 
-			m_media_subtype = parser.get <IMAPParser::media_subtype>(line, &pos);
+				m_list.push_back(b.release());
+			}
 
-			if (parser.check <SPACE>(line, &pos, true))
-				m_body_ext_mpart = parser.get <IMAPParser::body_ext_mpart>(line, &pos);
+			VIMAP_PARSER_CHECK(SPACE);
+
+			VIMAP_PARSER_GET(IMAPParser::media_subtype, m_media_subtype);
+
+			if (VIMAP_PARSER_TRY_CHECK(SPACE))
+				VIMAP_PARSER_GET(IMAPParser::body_ext_mpart, m_body_ext_mpart);
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -4008,9 +4009,7 @@ public:
 	// xbody ::= "(" body_type_1part / body_type_mpart ")"
 	//
 
-	class xbody : public component
-	{
-	public:
+	DECLARE_COMPONENT(xbody)
 
 		xbody()
 			: m_body_type_1part(NULL), m_body_type_mpart(NULL)
@@ -4023,20 +4022,20 @@ public:
 			delete (m_body_type_mpart);
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("body");
-
 			size_t pos = *currentPos;
 
-			parser.check <one_char <'('> >(line, &pos);
+			VIMAP_PARSER_CHECK(one_char <'('> );
 
-			if (!(m_body_type_mpart = parser.get <IMAPParser::body_type_mpart>(line, &pos, true)))
-				m_body_type_1part = parser.get <IMAPParser::body_type_1part>(line, &pos);
+			if (!VIMAP_PARSER_TRY_GET(IMAPParser::body_type_mpart, m_body_type_mpart))
+				VIMAP_PARSER_GET(IMAPParser::body_type_1part, m_body_type_1part);
 
-			parser.check <one_char <')'> >(line, &pos);
+			VIMAP_PARSER_CHECK(one_char <')'> );
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -4064,9 +4063,7 @@ public:
 	//
 	//   msg_att_item      /= "MODSEQ" SP "(" mod_sequence_value ")"
 
-	class msg_att_item : public component
-	{
-	public:
+	DECLARE_COMPONENT(msg_att_item)
 
 		msg_att_item()
 			: m_date_time(NULL), m_number(NULL), m_envelope(NULL),
@@ -4089,138 +4086,142 @@ public:
  			delete m_mod_sequence_value;
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("msg_att_item");
-
 			size_t pos = *currentPos;
 
 			// "ENVELOPE" SPACE envelope
-			if (parser.checkWithArg <special_atom>(line, &pos, "envelope", true))
+			if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "envelope"))
 			{
 				m_type = ENVELOPE;
 
-				parser.check <SPACE>(line, &pos);
-				m_envelope = parser.get <IMAPParser::envelope>(line, &pos);
+				VIMAP_PARSER_CHECK(SPACE);
+				VIMAP_PARSER_GET(IMAPParser::envelope, m_envelope);
 			}
 			// "FLAGS" SPACE "(" #(flag / "\Recent") ")"
-			else if (parser.checkWithArg <special_atom>(line, &pos, "flags", true))
+			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "flags"))
 			{
 				m_type = FLAGS;
 
-				parser.check <SPACE>(line, &pos);
+				VIMAP_PARSER_CHECK(SPACE);
 
-				m_flag_list = parser.get <IMAPParser::flag_list>(line, &pos);
+				VIMAP_PARSER_GET(IMAPParser::flag_list, m_flag_list);
 			}
 			// "INTERNALDATE" SPACE date_time
-			else if (parser.checkWithArg <special_atom>(line, &pos, "internaldate", true))
+			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "internaldate"))
 			{
 				m_type = INTERNALDATE;
 
-				parser.check <SPACE>(line, &pos);
-				m_date_time = parser.get <IMAPParser::date_time>(line, &pos);
+				VIMAP_PARSER_CHECK(SPACE);
+				VIMAP_PARSER_GET(IMAPParser::date_time, m_date_time);
 			}
 			// "RFC822" ".HEADER" SPACE nstring
-			else if (parser.checkWithArg <special_atom>(line, &pos, "rfc822.header", true))
+			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "rfc822.header"))
 			{
 				m_type = RFC822_HEADER;
 
-				parser.check <SPACE>(line, &pos);
+				VIMAP_PARSER_CHECK(SPACE);
 
-				m_nstring = parser.get <IMAPParser::nstring>(line, &pos);
+				VIMAP_PARSER_GET(IMAPParser::nstring, m_nstring);
 			}
 			// "RFC822" ".TEXT" SPACE nstring
-			else if (parser.checkWithArg <special_atom>(line, &pos, "rfc822.text", true))
+			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "rfc822.text"))
 			{
 				m_type = RFC822_TEXT;
 
-				parser.check <SPACE>(line, &pos);
+				VIMAP_PARSER_CHECK(SPACE);
 
 				m_nstring = parser.getWithArgs <IMAPParser::nstring>
 					(line, &pos, this, RFC822_TEXT);
+
+				VIMAP_PARSER_FAIL_UNLESS(m_nstring);
 			}
 			// "RFC822.SIZE" SPACE number
-			else if (parser.checkWithArg <special_atom>(line, &pos, "rfc822.size", true))
+			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "rfc822.size"))
 			{
 				m_type = RFC822_SIZE;
 
-				parser.check <SPACE>(line, &pos);
-				m_number = parser.get <IMAPParser::number>(line, &pos);
+				VIMAP_PARSER_CHECK(SPACE);
+				VIMAP_PARSER_GET(IMAPParser::number, m_number);
 			}
 			// "RFC822" SPACE nstring
-			else if (parser.checkWithArg <special_atom>(line, &pos, "rfc822", true))
+			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "rfc822"))
 			{
 				m_type = RFC822;
 
-				parser.check <SPACE>(line, &pos);
+				VIMAP_PARSER_CHECK(SPACE);
 
-				m_nstring = parser.get <IMAPParser::nstring>(line, &pos);
+				VIMAP_PARSER_GET(IMAPParser::nstring, m_nstring);
 			}
 			// "BODY" "STRUCTURE" SPACE body
-			else if (parser.checkWithArg <special_atom>(line, &pos, "bodystructure", true))
+			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "bodystructure"))
 			{
 				m_type = BODY_STRUCTURE;
 
-				parser.check <SPACE>(line, &pos);
+				VIMAP_PARSER_CHECK(SPACE);
 
-				m_body = parser.get <IMAPParser::body>(line, &pos);
+				VIMAP_PARSER_GET(IMAPParser::body, m_body);
 			}
 			// "BODY" section ["<" number ">"] SPACE nstring
 			// "BODY" SPACE body
-			else if (parser.checkWithArg <special_atom>(line, &pos, "body", true))
+			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "body"))
 			{
-				m_section = parser.get <IMAPParser::section>(line, &pos, true);
+				VIMAP_PARSER_TRY_GET(IMAPParser::section, m_section);
 
 				// "BODY" section ["<" number ">"] SPACE nstring
 				if (m_section != NULL)
 				{
 					m_type = BODY_SECTION;
 
-					if (parser.check <one_char <'<'> >(line, &pos, true))
+					if (VIMAP_PARSER_TRY_CHECK(one_char <'<'> ))
 					{
-						m_number = parser.get <IMAPParser::number>(line, &pos);
-						parser.check <one_char <'>'> >(line, &pos);
+						VIMAP_PARSER_GET(IMAPParser::number, m_number);
+						VIMAP_PARSER_CHECK(one_char <'>'> );
 					}
 
-					parser.check <SPACE>(line, &pos);
+					VIMAP_PARSER_CHECK(SPACE);
 
 					m_nstring = parser.getWithArgs <IMAPParser::nstring>
 						(line, &pos, this, BODY_SECTION);
+
+					VIMAP_PARSER_FAIL_UNLESS(m_nstring);
 				}
 				// "BODY" SPACE body
 				else
 				{
 					m_type = BODY;
 
-					parser.check <SPACE>(line, &pos);
+					VIMAP_PARSER_CHECK(SPACE);
 
-					m_body = parser.get <IMAPParser::body>(line, &pos);
+					VIMAP_PARSER_GET(IMAPParser::body, m_body);
 				}
 			}
 			// "MODSEQ" SP "(" mod_sequence_value ")"
-			else if (parser.checkWithArg <special_atom>(line, &pos, "modseq", true))
+			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "modseq"))
 			{
 				m_type = MODSEQ;
 
-				parser.check <SPACE>(line, &pos);
-				parser.check <one_char <'('> >(line, &pos);
+				VIMAP_PARSER_CHECK(SPACE);
+				VIMAP_PARSER_CHECK(one_char <'('> );
 
-				m_mod_sequence_value = parser.get <IMAPParser::mod_sequence_value>(line, &pos);
+				VIMAP_PARSER_GET(IMAPParser::mod_sequence_value, m_mod_sequence_value);
 
-				parser.check <one_char <')'> >(line, &pos);
+				VIMAP_PARSER_CHECK(one_char <')'> );
 			}
 			// "UID" SPACE uniqueid
 			else
 			{
 				m_type = UID;
 
-				parser.checkWithArg <special_atom>(line, &pos, "uid");
-				parser.check <SPACE>(line, &pos);
+				VIMAP_PARSER_CHECK_WITHARG(special_atom, "uid");
+				VIMAP_PARSER_CHECK(SPACE);
 
-				m_uniqueid = parser.get <uniqueid>(line, &pos);
+				VIMAP_PARSER_GET(uniqueid, m_uniqueid);
 			}
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 
@@ -4274,9 +4275,7 @@ public:
 	// msg_att ::= "(" 1#(msg_att_item) ")"
 	//
 
-	class msg_att : public component
-	{
-	public:
+	DECLARE_COMPONENT(msg_att)
 
 		~msg_att()
 		{
@@ -4287,23 +4286,23 @@ public:
 			}
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("msg_att");
-
 			size_t pos = *currentPos;
 
-			parser.check <one_char <'('> >(line, &pos);
+			VIMAP_PARSER_CHECK(one_char <'('> );
 
 			m_items.push_back(parser.get <msg_att_item>(line, &pos));
 
-			while (!parser.check <one_char <')'> >(line, &pos, true))
+			while (!VIMAP_PARSER_TRY_CHECK(one_char <')'> ))
 			{
-				parser.check <SPACE>(line, &pos);
-				m_items.push_back(parser.get <msg_att_item>(line, &pos));
+				VIMAP_PARSER_CHECK(SPACE);
+				VIMAP_PARSER_GET_PUSHBACK(msg_att_item, m_items);
 			}
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -4321,9 +4320,7 @@ public:
 	//                  ("FETCH" SPACE msg_att))
 	//
 
-	class message_data : public component
-	{
-	public:
+	DECLARE_COMPONENT(message_data)
 
 		message_data()
 			: m_number(0), m_msg_att(NULL)
@@ -4335,33 +4332,32 @@ public:
 			delete (m_msg_att);
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("message_data");
-
 			size_t pos = *currentPos;
 
-			nz_number* num = parser.get <nz_number>(line, &pos);
+			std::auto_ptr <nz_number> num;
+			VIMAP_PARSER_GET_PTR(nz_number, num);
 			m_number = static_cast <unsigned int>(num->value());
-			delete (num);
 
-			parser.check <SPACE>(line, &pos);
+			VIMAP_PARSER_CHECK(SPACE);
 
-			if (parser.checkWithArg <special_atom>(line, &pos, "expunge", true))
+			if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "expunge"))
 			{
 				m_type = EXPUNGE;
 			}
 			else
 			{
-				parser.checkWithArg <special_atom>(line, &pos, "fetch");
-
-				parser.check <SPACE>(line, &pos);
-
 				m_type = FETCH;
-				m_msg_att = parser.get <IMAPParser::msg_att>(line, &pos);
+
+				VIMAP_PARSER_CHECK_WITHARG(special_atom, "fetch");
+				VIMAP_PARSER_CHECK(SPACE);
+				VIMAP_PARSER_GET(IMAPParser::msg_att, m_msg_att);
 			}
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 
@@ -4407,9 +4403,7 @@ public:
 	//                          "COPYUID" SP nz-number SP uid-set SP uid-set /
 	//                          "UIDNOTSTICKY"
 
-	class resp_text_code : public component
-	{
-	public:
+	DECLARE_COMPONENT(resp_text_code)
 
 		resp_text_code()
 			: m_nz_number(NULL), m_atom(NULL), m_flag_list(NULL),
@@ -4426,121 +4420,119 @@ public:
 			delete m_capability_data;
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("resp_text_code");
-
 			size_t pos = *currentPos;
 
 			// "ALERT"
-			if (parser.checkWithArg <special_atom>(line, &pos, "alert", true))
+			if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "alert"))
 			{
 				m_type = ALERT;
 			}
 			// "PARSE"
-			else if (parser.checkWithArg <special_atom>(line, &pos, "parse", true))
+			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "parse"))
 			{
 				m_type = PARSE;
 			}
 			// capability_data
-			else if ((m_capability_data = parser.get <IMAPParser::capability_data>(line, &pos, true)))
+			else if (VIMAP_PARSER_TRY_GET(IMAPParser::capability_data, m_capability_data))
 			{
 				m_type = CAPABILITY;
 			}
 			// "PERMANENTFLAGS" SPACE flag_list
-			else if (parser.checkWithArg <special_atom>(line, &pos, "permanentflags", true))
+			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "permanentflags"))
 			{
 				m_type = PERMANENTFLAGS;
 
-				parser.check <SPACE>(line, &pos);
+				VIMAP_PARSER_CHECK(SPACE);
 
-				m_flag_list = parser.get <IMAPParser::flag_list>(line, &pos);
+				VIMAP_PARSER_GET(IMAPParser::flag_list, m_flag_list);
 			}
 			// "READ-ONLY"
-			else if (parser.checkWithArg <special_atom>(line, &pos, "read-only", true))
+			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "read-only"))
 			{
 				m_type = READ_ONLY;
 			}
 			// "READ-WRITE"
-			else if (parser.checkWithArg <special_atom>(line, &pos, "read-write", true))
+			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "read-write"))
 			{
 				m_type = READ_WRITE;
 			}
 			// "TRYCREATE"
-			else if (parser.checkWithArg <special_atom>(line, &pos, "trycreate", true))
+			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "trycreate"))
 			{
 				m_type = TRYCREATE;
 			}
 			// "UIDVALIDITY" SPACE nz_number
-			else if (parser.checkWithArg <special_atom>(line, &pos, "uidvalidity", true))
+			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "uidvalidity"))
 			{
 				m_type = UIDVALIDITY;
 
-				parser.check <SPACE>(line, &pos);
-				m_nz_number = parser.get <IMAPParser::nz_number>(line, &pos);
+				VIMAP_PARSER_CHECK(SPACE);
+				VIMAP_PARSER_GET(IMAPParser::nz_number, m_nz_number);
 			}
 			// "UIDNEXT" SPACE nz_number
-			else if (parser.checkWithArg <special_atom>(line, &pos, "uidnext", true))
+			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "uidnext"))
 			{
 				m_type = UIDNEXT;
 
-				parser.check <SPACE>(line, &pos);
-				m_nz_number = parser.get <IMAPParser::nz_number>(line, &pos);
+				VIMAP_PARSER_CHECK(SPACE);
+				VIMAP_PARSER_GET(IMAPParser::nz_number, m_nz_number);
 			}
 			// "UNSEEN" SPACE nz_number
-			else if (parser.checkWithArg <special_atom>(line, &pos, "unseen", true))
+			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "unseen"))
 			{
 				m_type = UNSEEN;
 
-				parser.check <SPACE>(line, &pos);
-				m_nz_number = parser.get <IMAPParser::nz_number>(line, &pos);
+				VIMAP_PARSER_CHECK(SPACE);
+				VIMAP_PARSER_GET(IMAPParser::nz_number, m_nz_number);
 			}
 			// "HIGHESTMODSEQ" SP mod-sequence-value
-			else if (parser.checkWithArg <special_atom>(line, &pos, "highestmodseq", true))
+			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "highestmodseq"))
 			{
 				m_type = HIGHESTMODSEQ;
 
-				parser.check <SPACE>(line, &pos);
-				m_mod_sequence_value = parser.get <IMAPParser::mod_sequence_value>(line, &pos);
+				VIMAP_PARSER_CHECK(SPACE);
+				VIMAP_PARSER_GET(IMAPParser::mod_sequence_value, m_mod_sequence_value);
 			}
 			// "NOMODSEQ"
-			else if (parser.checkWithArg <special_atom>(line, &pos, "nomodseq", true))
+			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "nomodseq"))
 			{
 				m_type = NOMODSEQ;
 			}
 			// "MODIFIED" SP sequence-set
-			else if (parser.checkWithArg <special_atom>(line, &pos, "modified", true))
+			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "modified"))
 			{
 				m_type = MODIFIED;
 
-				parser.check <SPACE>(line, &pos);
+				VIMAP_PARSER_CHECK(SPACE);
 
-				m_sequence_set = parser.get <IMAPParser::sequence_set>(line, &pos);
+				VIMAP_PARSER_GET(IMAPParser::sequence_set, m_sequence_set);
 			}
 			// "APPENDUID" SP nz-number SP append-uid
-			else if (parser.checkWithArg <special_atom>(line, &pos, "appenduid", true))
+			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "appenduid"))
 			{
 				m_type = APPENDUID;
 
-				parser.check <SPACE>(line, &pos);
-				m_nz_number = parser.get <IMAPParser::nz_number>(line, &pos);
-				parser.check <SPACE>(line, &pos);
-				m_uid_set = parser.get <IMAPParser::uid_set>(line, &pos);
+				VIMAP_PARSER_CHECK(SPACE);
+				VIMAP_PARSER_GET(IMAPParser::nz_number, m_nz_number);
+				VIMAP_PARSER_CHECK(SPACE);
+				VIMAP_PARSER_GET(IMAPParser::uid_set, m_uid_set);
 			}
 			// "COPYUID" SP nz-number SP uid-set SP uid-set
-			else if (parser.checkWithArg <special_atom>(line, &pos, "copyuid", true))
+			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "copyuid"))
 			{
 				m_type = COPYUID;
 
-				parser.check <SPACE>(line, &pos);
-				m_nz_number = parser.get <IMAPParser::nz_number>(line, &pos);
-				parser.check <SPACE>(line, &pos);
-				m_uid_set = parser.get <IMAPParser::uid_set>(line, &pos);
-				parser.check <SPACE>(line, &pos);
-				m_uid_set2 = parser.get <IMAPParser::uid_set>(line, &pos);
+				VIMAP_PARSER_CHECK(SPACE);
+				VIMAP_PARSER_GET(IMAPParser::nz_number, m_nz_number);
+				VIMAP_PARSER_CHECK(SPACE);
+				VIMAP_PARSER_GET(IMAPParser::uid_set, m_uid_set);
+				VIMAP_PARSER_CHECK(SPACE);
+				VIMAP_PARSER_GET(IMAPParser::uid_set, m_uid_set2);
 			}
 			// "UIDNOTSTICKY"
-			else if (parser.checkWithArg <special_atom>(line, &pos, "uidnotsticky", true))
+			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "uidnotsticky"))
 			{
 				m_type = UIDNOTSTICKY;
 			}
@@ -4549,13 +4541,15 @@ public:
 			{
 				m_type = OTHER;
 
-				m_atom = parser.get <IMAPParser::atom>(line, &pos);
+				VIMAP_PARSER_GET(IMAPParser::atom, m_atom);
 
-				if (parser.check <SPACE>(line, &pos, true))
-					m_text = parser.get <text_except <']'> >(line, &pos);
+				if (VIMAP_PARSER_TRY_CHECK(SPACE))
+					VIMAP_PARSER_GET(text_except <']'> , m_text);
 			}
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 
@@ -4617,9 +4611,7 @@ public:
 	// resp_text ::= ["[" resp_text_code "]" SPACE] (text_mime2 / text)
 	//               ;; text SHOULD NOT begin with "[" or "="
 
-	class resp_text : public component
-	{
-	public:
+	DECLARE_COMPONENT(resp_text)
 
 		resp_text()
 			: m_resp_text_code(NULL)
@@ -4631,36 +4623,33 @@ public:
 			delete (m_resp_text_code);
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("resp_text");
-
 			size_t pos = *currentPos;
 
-			if (parser.check <one_char <'['> >(line, &pos, true))
+			if (VIMAP_PARSER_TRY_CHECK(one_char <'['> ))
 			{
-				m_resp_text_code = parser.get <IMAPParser::resp_text_code>(line, &pos);
+				VIMAP_PARSER_GET(IMAPParser::resp_text_code, m_resp_text_code);
 
-				parser.check <one_char <']'> >(line, &pos);
-				parser.check <SPACE>(line, &pos, true);
+				VIMAP_PARSER_CHECK(one_char <']'> );
+				VIMAP_PARSER_TRY_CHECK(SPACE);
 			}
 
-			text_mime2* text1 = parser.get <text_mime2>(line, &pos, true);
+			std::auto_ptr <text_mime2> text1;
+			VIMAP_PARSER_TRY_GET_PTR(text_mime2, text1);
 
-			if (text1 != NULL)
+			if (text1.get())
 			{
 				m_text = text1->value();
-				delete (text1);
 			}
 			else
 			{
-				IMAPParser::text* text2 =
-					parser.get <IMAPParser::text>(line, &pos, true);
+				std::auto_ptr <IMAPParser::text> text2;
+				VIMAP_PARSER_TRY_GET_PTR(IMAPParser::text, text2);
 
-				if (text2 != NULL)
+				if (text2.get())
 				{
 					m_text = text2->value();
-					delete (text2);
 				}
 				else
 				{
@@ -4669,6 +4658,8 @@ public:
 			}
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -4687,9 +4678,7 @@ public:
 	// continue_req   ::= "+" SPACE (resp_text / base64)
 	//
 
-	class continue_req : public component
-	{
-	public:
+	DECLARE_COMPONENT(continue_req)
 
 		continue_req()
 			: m_resp_text(NULL)
@@ -4701,32 +4690,36 @@ public:
 			delete (m_resp_text);
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("continue_req");
-
 			size_t pos = *currentPos;
 
-			parser.check <one_char <'+'> >(line, &pos);
+			VIMAP_PARSER_CHECK(one_char <'+'> );
 
 			if (!parser.isStrict())
 			{
 				// Some servers do not send SPACE when response text is empty
-				if (parser.check <SPACE>(line, &pos, true))
-					m_resp_text = parser.get <IMAPParser::resp_text>(line, &pos);
+				if (VIMAP_PARSER_TRY_CHECK(SPACE))
+				{
+					VIMAP_PARSER_GET(IMAPParser::resp_text, m_resp_text);
+				}
 				else
+				{
 					m_resp_text = new IMAPParser::resp_text();  // empty
+				}
 			}
 			else
 			{
-				parser.check <SPACE>(line, &pos);
+				VIMAP_PARSER_CHECK(SPACE);
 
-				m_resp_text = parser.get <IMAPParser::resp_text>(line, &pos);
+				VIMAP_PARSER_GET(IMAPParser::resp_text, m_resp_text);
 			}
 
-			parser.check <CRLF>(line, &pos);
+			VIMAP_PARSER_CHECK(CRLF);
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -4744,9 +4737,7 @@ public:
 	//                     ;; Status condition
 	//
 
-	class resp_cond_state : public component
-	{
-	public:
+	DECLARE_COMPONENT(resp_cond_state)
 
 		resp_cond_state()
 			: m_resp_text(NULL), m_status(BAD)
@@ -4758,31 +4749,31 @@ public:
 			delete (m_resp_text);
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("resp_cond_state");
-
 			size_t pos = *currentPos;
 
-			if (parser.checkWithArg <special_atom>(line, &pos, "ok", true))
+			if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "ok"))
 			{
 				m_status = OK;
 			}
-			else if (parser.checkWithArg <special_atom>(line, &pos, "no", true))
+			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "no"))
 			{
 				m_status = NO;
 			}
 			else
 			{
-				parser.checkWithArg <special_atom>(line, &pos, "bad");
+				VIMAP_PARSER_CHECK_WITHARG(special_atom, "bad");
 				m_status = BAD;
 			}
 
-			parser.check <SPACE>(line, &pos);
+			VIMAP_PARSER_CHECK(SPACE);
 
-			m_resp_text = parser.get <IMAPParser::resp_text>(line, &pos);
+			VIMAP_PARSER_GET(IMAPParser::resp_text, m_resp_text);
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 
@@ -4809,9 +4800,7 @@ public:
 	// resp_cond_bye ::= "BYE" SPACE resp_text
 	//
 
-	class resp_cond_bye : public component
-	{
-	public:
+	DECLARE_COMPONENT(resp_cond_bye)
 
 		resp_cond_bye()
 			: m_resp_text(NULL)
@@ -4823,19 +4812,19 @@ public:
 			delete (m_resp_text);
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("resp_cond_bye");
-
 			size_t pos = *currentPos;
 
-			parser.checkWithArg <special_atom>(line, &pos, "bye");
+			VIMAP_PARSER_CHECK_WITHARG(special_atom, "bye");
 
-			parser.check <SPACE>(line, &pos);
+			VIMAP_PARSER_CHECK(SPACE);
 
-			m_resp_text = parser.get <IMAPParser::resp_text>(line, &pos);
+			VIMAP_PARSER_GET(IMAPParser::resp_text, m_resp_text);
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -4853,9 +4842,7 @@ public:
 	//                     ;; Authentication condition
 	//
 
-	class resp_cond_auth : public component
-	{
-	public:
+	DECLARE_COMPONENT(resp_cond_auth)
 
 		resp_cond_auth()
 			: m_resp_text(NULL)
@@ -4867,28 +4854,28 @@ public:
 			delete (m_resp_text);
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("resp_cond_auth");
-
 			size_t pos = *currentPos;
 
-			if (parser.checkWithArg <special_atom>(line, &pos, "ok", true))
+			if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "ok"))
 			{
 				m_cond = OK;
 			}
 			else
 			{
-				parser.checkWithArg <special_atom>(line, &pos, "preauth");
+				VIMAP_PARSER_CHECK_WITHARG(special_atom, "preauth");
 
 				m_cond = PREAUTH;
 			}
 
-			parser.check <SPACE>(line, &pos);
+			VIMAP_PARSER_CHECK(SPACE);
 
-			m_resp_text = parser.get <IMAPParser::resp_text>(line, &pos);
+			VIMAP_PARSER_GET(IMAPParser::resp_text, m_resp_text);
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 
@@ -4922,9 +4909,7 @@ public:
 	//                  number SPACE "RECENT"
 	//
 
-	class mailbox_data : public component
-	{
-	public:
+	DECLARE_COMPONENT(mailbox_data)
 
 		mailbox_data()
 			: m_number(NULL), m_mailbox_flag_list(NULL), m_mailbox_list(NULL),
@@ -4949,25 +4934,21 @@ public:
 			delete m_status_att_list;
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("mailbox_data");
-
 			size_t pos = *currentPos;
 
-			m_number = parser.get <IMAPParser::number>(line, &pos, true);
-
-			if (m_number)
+			if (VIMAP_PARSER_TRY_GET(IMAPParser::number, m_number))
 			{
-				parser.check <SPACE>(line, &pos);
+				VIMAP_PARSER_CHECK(SPACE);
 
-				if (parser.checkWithArg <special_atom>(line, &pos, "exists", true))
+				if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "exists"))
 				{
 					m_type = EXISTS;
 				}
 				else
 				{
-					parser.checkWithArg <special_atom>(line, &pos, "recent");
+					VIMAP_PARSER_CHECK_WITHARG(special_atom, "recent");
 
 					m_type = RECENT;
 				}
@@ -4975,54 +4956,50 @@ public:
 			else
 			{
 				// "FLAGS" SPACE mailbox_flag_list
-				if (parser.checkWithArg <special_atom>(line, &pos, "flags", true))
+				if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "flags"))
 				{
-					parser.check <SPACE>(line, &pos);
+					VIMAP_PARSER_CHECK(SPACE);
 
-					m_mailbox_flag_list = parser.get <IMAPParser::mailbox_flag_list>(line, &pos);
+					VIMAP_PARSER_GET(IMAPParser::mailbox_flag_list, m_mailbox_flag_list);
 
 					m_type = FLAGS;
 				}
 				// "LIST" SPACE mailbox_list
-				else if (parser.checkWithArg <special_atom>(line, &pos, "list", true))
+				else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "list"))
 				{
-					parser.check <SPACE>(line, &pos);
+					VIMAP_PARSER_CHECK(SPACE);
 
-					m_mailbox_list = parser.get <IMAPParser::mailbox_list>(line, &pos);
+					VIMAP_PARSER_GET(IMAPParser::mailbox_list, m_mailbox_list);
 
 					m_type = LIST;
 				}
 				// "LSUB" SPACE mailbox_list
-				else if (parser.checkWithArg <special_atom>(line, &pos, "lsub", true))
+				else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "lsub"))
 				{
-					parser.check <SPACE>(line, &pos);
+					VIMAP_PARSER_CHECK(SPACE);
 
-					m_mailbox_list = parser.get <IMAPParser::mailbox_list>(line, &pos);
+					VIMAP_PARSER_GET(IMAPParser::mailbox_list, m_mailbox_list);
 
 					m_type = LSUB;
 				}
 				// "MAILBOX" SPACE text
-				else if (parser.checkWithArg <special_atom>(line, &pos, "mailbox", true))
+				else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "mailbox"))
 				{
-					parser.check <SPACE>(line, &pos);
+					VIMAP_PARSER_CHECK(SPACE);
 
-					m_text = parser.get <IMAPParser::text>(line, &pos);
+					VIMAP_PARSER_GET(IMAPParser::text, m_text);
 
 					m_type = MAILBOX;
 				}
 				// "SEARCH" [SPACE 1#nz_number]
-				else if (parser.checkWithArg <special_atom>(line, &pos, "search", true))
+				else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "search"))
 				{
-					if (parser.check <SPACE>(line, &pos, true))
+					if (VIMAP_PARSER_TRY_CHECK(SPACE))
 					{
-						m_search_nz_number_list.push_back
-							(parser.get <nz_number>(line, &pos));
+						VIMAP_PARSER_GET_PUSHBACK(nz_number, m_search_nz_number_list);
 
-						while (parser.check <SPACE>(line, &pos, true))
-						{
-							m_search_nz_number_list.push_back
-								(parser.get <nz_number>(line, &pos));
-						}
+						while (VIMAP_PARSER_TRY_CHECK(SPACE))
+							VIMAP_PARSER_GET_PUSHBACK(nz_number, m_search_nz_number_list);
 					}
 
 					m_type = SEARCH;
@@ -5031,24 +5008,24 @@ public:
 				// "(" [status_att_list] ")"
 				else
 				{
-					parser.checkWithArg <special_atom>(line, &pos, "status");
-					parser.check <SPACE>(line, &pos);
+					VIMAP_PARSER_CHECK_WITHARG(special_atom, "status");
+					VIMAP_PARSER_CHECK(SPACE);
 
-					m_mailbox = parser.get <IMAPParser::mailbox>(line, &pos);
+					VIMAP_PARSER_GET(IMAPParser::mailbox, m_mailbox);
 
-					parser.check <SPACE>(line, &pos);
+					VIMAP_PARSER_CHECK(SPACE);
 
-					parser.check <one_char <'('> >(line, &pos);
-
-					m_status_att_list = parser.get <IMAPParser::status_att_list>(line, &pos, true);
-
-					parser.check <one_char <')'> >(line, &pos);
+					VIMAP_PARSER_CHECK(one_char <'('> );
+					VIMAP_PARSER_TRY_GET(IMAPParser::status_att_list, m_status_att_list);
+					VIMAP_PARSER_CHECK(one_char <')'> );
 
 					m_type = STATUS;
 				}
 			}
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 
@@ -5095,9 +5072,7 @@ public:
 	//                    mailbox_data / message_data / capability_data) CRLF
 	//
 
-	class response_data : public component
-	{
-	public:
+	DECLARE_COMPONENT(response_data)
 
 		response_data()
 			: m_resp_cond_state(NULL), m_resp_cond_bye(NULL),
@@ -5114,31 +5089,31 @@ public:
 			delete (m_capability_data);
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("response_data");
-
 			size_t pos = *currentPos;
 
-			parser.check <one_char <'*'> >(line, &pos);
-			parser.check <SPACE>(line, &pos);
+			VIMAP_PARSER_CHECK(one_char <'*'> );
+			VIMAP_PARSER_CHECK(SPACE);
 
-			if (!(m_resp_cond_state = parser.get <IMAPParser::resp_cond_state>(line, &pos, true)))
-				if (!(m_resp_cond_bye = parser.get <IMAPParser::resp_cond_bye>(line, &pos, true)))
-					if (!(m_mailbox_data = parser.get <IMAPParser::mailbox_data>(line, &pos, true)))
-						if (!(m_message_data = parser.get <IMAPParser::message_data>(line, &pos, true)))
-							m_capability_data = parser.get <IMAPParser::capability_data>(line, &pos);
+			if (!VIMAP_PARSER_TRY_GET(IMAPParser::resp_cond_state, m_resp_cond_state))
+				if (!VIMAP_PARSER_TRY_GET(IMAPParser::resp_cond_bye, m_resp_cond_bye))
+					if (!VIMAP_PARSER_TRY_GET(IMAPParser::mailbox_data, m_mailbox_data))
+						if (!VIMAP_PARSER_TRY_GET(IMAPParser::message_data, m_message_data))
+							VIMAP_PARSER_GET(IMAPParser::capability_data, m_capability_data);
 
 			if (!parser.isStrict())
 			{
 				// Allow SPACEs at end of line
-				while (parser.check <SPACE>(line, &pos, /* noThrow */ true))
+				while (VIMAP_PARSER_TRY_CHECK(SPACE))
 					;
 			}
 
-			parser.check <CRLF>(line, &pos);
+			VIMAP_PARSER_CHECK(CRLF);
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -5159,9 +5134,7 @@ public:
 	};
 
 
-	class continue_req_or_response_data : public component
-	{
-	public:
+	DECLARE_COMPONENT(continue_req_or_response_data)
 
 		continue_req_or_response_data()
 			: m_continue_req(NULL), m_response_data(NULL)
@@ -5174,16 +5147,16 @@ public:
 			delete (m_response_data);
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("continue_req_or_response_data");
-
 			size_t pos = *currentPos;
 
-			if (!(m_continue_req = parser.get <IMAPParser::continue_req>(line, &pos, true)))
-				m_response_data = parser.get <IMAPParser::response_data>(line, &pos);
+			if (!VIMAP_PARSER_TRY_GET(IMAPParser::continue_req, m_continue_req))
+				VIMAP_PARSER_GET(IMAPParser::response_data, m_response_data);
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -5203,9 +5176,7 @@ public:
 	//                    ;; Server closes connection immediately
 	//
 
-	class response_fatal : public component
-	{
-	public:
+	DECLARE_COMPONENT(response_fatal)
 
 		response_fatal()
 			: m_resp_cond_bye(NULL)
@@ -5217,27 +5188,27 @@ public:
 			delete (m_resp_cond_bye);
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("response_fatal");
-
 			size_t pos = *currentPos;
 
-			parser.check <one_char <'*'> >(line, &pos);
-			parser.check <SPACE>(line, &pos);
+			VIMAP_PARSER_CHECK(one_char <'*'> );
+			VIMAP_PARSER_CHECK(SPACE);
 
-			m_resp_cond_bye = parser.get <IMAPParser::resp_cond_bye>(line, &pos);
+			VIMAP_PARSER_GET(IMAPParser::resp_cond_bye, m_resp_cond_bye);
 
 			if (!parser.isStrict())
 			{
 				// Allow SPACEs at end of line
-				while (parser.check <SPACE>(line, &pos, /* noThrow */ true))
+				while (VIMAP_PARSER_TRY_CHECK(SPACE))
 					;
 			}
 
-			parser.check <CRLF>(line, &pos);
+			VIMAP_PARSER_CHECK(CRLF);
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -5254,9 +5225,7 @@ public:
 	// response_tagged ::= tag SPACE resp_cond_state CRLF
 	//
 
-	class response_tagged : public component
-	{
-	public:
+	DECLARE_COMPONENT(response_tagged)
 
 		response_tagged()
 			: m_resp_cond_state(NULL)
@@ -5268,26 +5237,26 @@ public:
 			delete (m_resp_cond_state);
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("response_tagged");
-
 			size_t pos = *currentPos;
 
-			parser.check <IMAPParser::xtag>(line, &pos);
-			parser.check <SPACE>(line, &pos);
-			m_resp_cond_state = parser.get <IMAPParser::resp_cond_state>(line, &pos);
+			VIMAP_PARSER_CHECK(IMAPParser::xtag);
+			VIMAP_PARSER_CHECK(SPACE);
+			VIMAP_PARSER_GET(IMAPParser::resp_cond_state, m_resp_cond_state);
 
 			if (!parser.isStrict())
 			{
 				// Allow SPACEs at end of line
-				while (parser.check <SPACE>(line, &pos, /* noThrow */ true))
+				while (VIMAP_PARSER_TRY_CHECK(SPACE))
 					;
 			}
 
-			parser.check <CRLF>(line, &pos);
+			VIMAP_PARSER_CHECK(CRLF);
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -5304,9 +5273,7 @@ public:
 	// response_done ::= response_tagged / response_fatal
 	//
 
-	class response_done : public component
-	{
-	public:
+	DECLARE_COMPONENT(response_done)
 
 		response_done()
 			: m_response_tagged(NULL), m_response_fatal(NULL)
@@ -5319,16 +5286,16 @@ public:
 			delete (m_response_fatal);
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("response_done");
-
 			size_t pos = *currentPos;
 
-			if (!(m_response_tagged = parser.get <IMAPParser::response_tagged>(line, &pos, true)))
-				m_response_fatal = parser.get <IMAPParser::response_fatal>(line, &pos);
+			if (!VIMAP_PARSER_TRY_GET(IMAPParser::response_tagged, m_response_tagged))
+				VIMAP_PARSER_GET(IMAPParser::response_fatal, m_response_fatal);
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 	private:
@@ -5347,9 +5314,7 @@ public:
 	// response ::= *(continue_req / response_data) response_done
 	//
 
-	class response : public component
-	{
-	public:
+	DECLARE_COMPONENT(response)
 
 		response()
 			: m_response_done(NULL)
@@ -5368,17 +5333,15 @@ public:
 			delete (m_response_done);
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("response");
-
 			size_t pos = *currentPos;
 			string curLine = line;
 			bool partial = false;  // partial response
 
 			IMAPParser::continue_req_or_response_data* resp = NULL;
 
-			while ((resp = parser.get <IMAPParser::continue_req_or_response_data>(curLine, &pos, true)) != NULL)
+			while ((resp = parser.get <IMAPParser::continue_req_or_response_data>(curLine, &pos)))
 			{
 				m_continue_req_or_response_data.push_back(resp);
 
@@ -5395,9 +5358,14 @@ public:
 			}
 
 			if (!partial)
+			{
 				m_response_done = parser.get <IMAPParser::response_done>(curLine, &pos);
+				VIMAP_PARSER_FAIL_UNLESS(m_response_done);
+			}
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 
@@ -5446,9 +5414,7 @@ public:
 	// greeting ::= "*" SPACE (resp_cond_auth / resp_cond_bye) CRLF
 	//
 
-	class greeting : public component
-	{
-	public:
+	DECLARE_COMPONENT(greeting)
 
 		greeting()
 			: m_resp_cond_auth(NULL), m_resp_cond_bye(NULL)
@@ -5461,21 +5427,21 @@ public:
 			delete (m_resp_cond_bye);
 		}
 
-		void go(IMAPParser& parser, string& line, size_t* currentPos)
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
-			DEBUG_ENTER_COMPONENT("greeting");
-
 			size_t pos = *currentPos;
 
-			parser.check <one_char <'*'> >(line, &pos);
-			parser.check <SPACE>(line, &pos);
+			VIMAP_PARSER_CHECK(one_char <'*'> );
+			VIMAP_PARSER_CHECK(SPACE);
 
-			if (!(m_resp_cond_auth = parser.get <IMAPParser::resp_cond_auth>(line, &pos, true)))
-				m_resp_cond_bye = parser.get <IMAPParser::resp_cond_bye>(line, &pos);
+			if (!VIMAP_PARSER_TRY_GET(IMAPParser::resp_cond_auth, m_resp_cond_auth))
+				VIMAP_PARSER_GET(IMAPParser::resp_cond_bye, m_resp_cond_bye);
 
-			parser.check <CRLF>(line, &pos);
+			VIMAP_PARSER_CHECK(CRLF);
 
 			*currentPos = pos;
+
+			return true;
 		}
 
 		void setErrorLog(const string& errorLog)
@@ -5516,6 +5482,9 @@ public:
 		response* resp = get <response>(line, &pos);
 		m_literalHandler = NULL;
 
+		if (!resp)
+			throw exceptions::invalid_response("", m_errorResponseLine);
+
 		resp->setErrorLog(lastLine());
 
 		return (resp);
@@ -5529,58 +5498,68 @@ public:
 
 		greeting* greet = get <greeting>(line, &pos);
 
+		if (!greet)
+			throw exceptions::invalid_response("", m_errorResponseLine);
+
 		greet->setErrorLog(lastLine());
 
 		return greet;
 	}
 
 
-	//
-	// Get a token and advance
-	//
-
+	/** Parse a token and advance.
+	  * If the token has been parsed successfully, a raw pointer to it
+	  * will be returned. The caller is responsible to free the memory.
+	  *
+	  * @param TYPE token type (class)
+	  * @param line line which is currently being parsed
+	  * @param currentPos current position in the line (will be updated
+	  * when the function returns)
+	  * @return a raw pointer to the parsed token, or NULL otherwise
+	  */
 	template <class TYPE>
-	TYPE* get(string& line, size_t* currentPos,
-	          const bool noThrow = false)
+	TYPE* get(string& line, size_t* currentPos)
 	{
 		component* resp = new TYPE;
-		return internalGet <TYPE>(resp, line, currentPos, noThrow);
+		return internalGet <TYPE>(resp, line, currentPos);
 	}
 
-
+	/** Parse a token which takes 2 arguments and advance.
+	  * If the token has been parsed successfully, a raw pointer to it
+	  * will be returned. The caller is responsible to free the memory.
+	  *
+	  * @param TYPE token type (class)
+	  * @param ARG1_TYPE type of argument #1 (class)
+	  * @param ARG2_TYPE type of argument #2 (class)
+	  * @param line line which is currently being parsed
+	  * @param currentPos current position in the line (will be updated
+	  * when the function returns)
+	  * @param arg1 value of argument 1 to be passed to the token
+	  * @param arg2 value of argument 2 to be passed to the token
+	  * @return a raw pointer to the parsed token, or NULL otherwise
+	  */
 	template <class TYPE, class ARG1_TYPE, class ARG2_TYPE>
 	TYPE* getWithArgs(string& line, size_t* currentPos,
-	                  ARG1_TYPE arg1, ARG2_TYPE arg2, const bool noThrow = false)
+	                  ARG1_TYPE arg1, ARG2_TYPE arg2)
 	{
 		component* resp = new TYPE(arg1, arg2);
-		return internalGet <TYPE>(resp, line, currentPos, noThrow);
+		return internalGet <TYPE>(resp, line, currentPos);
 	}
-
 
 private:
 
 	template <class TYPE>
-	TYPE* internalGet(component* resp, string& line, size_t* currentPos,
-	                  const bool noThrow = false)
+	TYPE* internalGet(component* resp, string& line, size_t* currentPos)
 	{
 		const size_t oldPos = *currentPos;
 
-		try
-		{
-			resp->go(*this, line, currentPos);
-		}
-		catch (exceptions::operation_timed_out&)
-		{
-			// Always rethrow
-			throw;
-		}
-		catch (exception&)
+		if (!resp->parse(*this, line, currentPos))
 		{
 			*currentPos = oldPos;
 
 			delete (resp);
-			if (!noThrow) throw;
-			return (NULL);
+
+			return NULL;
 		}
 
 		return static_cast <TYPE*>(resp);
@@ -5612,62 +5591,58 @@ private:
 
 public:
 
-	//
-	// Check a token and advance
-	//
-
+	/** Check for a token and advance.
+	  *
+	  * @param TYPE token type (class)
+	  * @param line line which is currently being parsed
+	  * @param currentPos current position in the line (will be updated
+	  * when the function returns)
+	  * @return true if the token has been parsed, or false otherwise
+	  */
 	template <class TYPE>
-	bool check(string& line, size_t* currentPos,
-	                 const bool noThrow = false)
+	bool check(string& line, size_t* currentPos)
 	{
 		const size_t oldPos = *currentPos;
 
-		try
-		{
-			TYPE term;
-			term.go(*this, line, currentPos);
-		}
-		catch (exceptions::operation_timed_out&)
-		{
-			// Always rethrow
-			throw;
-		}
-		catch (exception&)
+		TYPE term;
+
+		if (!term.parse(*this, line, currentPos))
 		{
 			*currentPos = oldPos;
-
-			if (!noThrow) throw;
 			return false;
 		}
-
-		return true;
+		else
+		{
+			return true;
+		}
 	}
 
+	/** Check for a token which takes an argument and advance.
+	  *
+	  * @param TYPE token type (class)
+	  * @param ARG_TYPE argument type (class)
+	  * @param line line which is currently being parsed
+	  * @param currentPos current position in the line (will be updated
+	  * when the function returns)
+	  * @param arg argument to be passed to the token
+	  * @return true if the token has been parsed, or false otherwise
+	  */
 	template <class TYPE, class ARG_TYPE>
-	bool checkWithArg(string& line, size_t* currentPos,
-	                        const ARG_TYPE arg, const bool noThrow = false)
+	bool checkWithArg(string& line, size_t* currentPos, const ARG_TYPE arg)
 	{
 		const size_t oldPos = *currentPos;
 
-		try
-		{
-			TYPE term(arg);
-			term.go(*this, line, currentPos);
-		}
-		catch (exceptions::operation_timed_out&)
-		{
-			// Always rethrow
-			throw;
-		}
-		catch (exception&)
+		TYPE term(arg);
+		
+		if (!term.parse(*this, line, currentPos))
 		{
 			*currentPos = oldPos;
-
-			if (!noThrow) throw;
 			return false;
 		}
-
-		return true;
+		else
+		{
+			return true;
+		}
 	}
 
 
@@ -5688,13 +5663,16 @@ private:
 	string m_buffer;
 
 	string m_lastLine;
+	string m_errorResponseLine;
 
 public:
 
-	//
-	// Read one line
-	//
-
+	/** Read a line from the input buffer. The function blocks until a
+	  * complete line is read from the buffer. Position in input buffer
+	  * will be updated.
+	  *
+	  * @return next line
+	  */
 	const string readLine()
 	{
 		size_t pos;
@@ -5719,11 +5697,9 @@ public:
 		return (line);
 	}
 
-
-	//
-	// Read available data from socket stream
-	//
-
+	/** Fill in the input buffer with data available from the socket stream.
+	  * The function blocks until some data is available.
+	  */
 	void read()
 	{
 		string receiveBuffer;
@@ -5856,6 +5832,19 @@ public:
 } // imap
 } // net
 } // vmime
+
+
+#undef VIMAP_PARSER_FAIL
+#undef VIMAP_PARSER_FAIL_UNLESS
+#undef VIMAP_PARSER_CHECK
+#undef VIMAP_PARSER_TRY_CHECK
+#undef VIMAP_PARSER_GET
+#undef VIMAP_PARSER_GET_PTR
+#undef VIMAP_PARSER_TRY_GET
+#undef VIMAP_PARSER_TRY_GET_PTR
+#undef VIMAP_PARSER_GET_PUSHBACK
+#undef VIMAP_PARSER_CHECK_WITHARG
+#undef VIMAP_PARSER_TRY_CHECK_WITHARG
 
 
 #endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_MESSAGING_PROTO_IMAP
