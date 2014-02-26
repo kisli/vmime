@@ -439,7 +439,7 @@ bool windowsSocket::waitForData(const bool read, const bool write, const int mse
 		tv.tv_sec = 0;
 		tv.tv_usec = 10000;  // 10 ms
 
-		ssize_t ret = ::select(m_desc + 1, read ? &fds : NULL, write ? &fds : NULL, NULL, &tv);
+		int ret = ::select(m_desc + 1, read ? &fds : NULL, write ? &fds : NULL, NULL, &tv);
 
 		if (ret == SOCKET_ERROR)
 		{
@@ -479,7 +479,7 @@ bool windowsSocket::waitForRead(const int msecs)
 }
 
 
-bool windowsSocket::waitForWrite(const int msecs = 30000)
+bool windowsSocket::waitForWrite(const int msecs)
 {
 	return waitForData(/* read */ false, /* write */ true, msecs);
 }
