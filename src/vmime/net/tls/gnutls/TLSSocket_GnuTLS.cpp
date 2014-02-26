@@ -59,12 +59,13 @@ shared_ptr <TLSSocket> TLSSocket::wrap(shared_ptr <TLSSession> session, shared_p
 
 TLSSocket_GnuTLS::TLSSocket_GnuTLS(shared_ptr <TLSSession_GnuTLS> session, shared_ptr <socket> sok)
 	: m_session(session), m_wrapped(sok), m_connected(false),
-	  m_ex(NULL), m_status(0)
+	  m_ex(NULL), m_status(0), m_errno(0)
 {
 	gnutls_transport_set_ptr(*m_session->m_gnutlsSession, this);
 
 	gnutls_transport_set_push_function(*m_session->m_gnutlsSession, gnutlsPushFunc);
 	gnutls_transport_set_pull_function(*m_session->m_gnutlsSession, gnutlsPullFunc);
+	gnutls_transport_set_errno_function(*m_session->m_gnutlsSession, gnutlsErrnoFunc);
 }
 
 
@@ -308,7 +309,6 @@ void TLSSocket_GnuTLS::handshake()
 				else if (ret == GNUTLS_E_INTERRUPTED)
 				{
 					// Non-fatal error
-					m_wrapped->waitForRead();
 				}
 				else
 				{
@@ -339,6 +339,13 @@ void TLSSocket_GnuTLS::handshake()
 }
 
 
+int TLSSocket_GnuTLS::gnutlsErrnoFunc(gnutls_transport_ptr trspt)
+{
+	TLSSocket_GnuTLS* sok = reinterpret_cast <TLSSocket_GnuTLS*>(trspt);
+	return sok->m_errno;
+}
+
+
 ssize_t TLSSocket_GnuTLS::gnutlsPushFunc
 	(gnutls_transport_ptr trspt, const void* data, size_t len)
 {
@@ -352,11 +359,8 @@ ssize_t TLSSocket_GnuTLS::gnutlsPushFunc
 
 		if (ret == 0)
 		{
-			if (sok->m_wrapped->getStatus() & socket::STATUS_WOULDBLOCK)
-				gnutls_transport_set_errno(*sok->m_session->m_gnutlsSession, EAGAIN);
-			else
-				gnutls_transport_set_errno(*sok->m_session->m_gnutlsSession, 0);
-
+			gnutls_transport_set_errno(*sok->m_session->m_gnutlsSession, EAGAIN);
+			sok->m_errno = EAGAIN;
 			return -1;
 		}
 
@@ -385,11 +389,8 @@ ssize_t TLSSocket_GnuTLS::gnutlsPullFunc
 
 		if (n == 0)
 		{
-			if (sok->m_wrapped->getStatus() & socket::STATUS_WOULDBLOCK)
-				gnutls_transport_set_errno(*sok->m_session->m_gnutlsSession, EAGAIN);
-			else
-				gnutls_transport_set_errno(*sok->m_session->m_gnutlsSession, 0);
-
+			gnutls_transport_set_errno(*sok->m_session->m_gnutlsSession, EAGAIN);
+			sok->m_errno = EAGAIN;
 			return -1;
 		}
 

@@ -90,9 +90,11 @@ private:
 #ifdef LIBGNUTLS_VERSION
 	static ssize_t gnutlsPushFunc(gnutls_transport_ptr trspt, const void* data, size_t len);
 	static ssize_t gnutlsPullFunc(gnutls_transport_ptr trspt, void* data, size_t len);
+	static int gnutlsErrnoFunc(gnutls_transport_ptr trspt);
 #else
 	static int gnutlsPushFunc(void* trspt, const void* data, size_t len);
 	static int gnutlsPullFunc(void* trspt, void* data, size_t len);
+	static int gnutlsErrnoFunc(void* trspt);
 #endif // LIBGNUTLS_VERSION
 
 
@@ -106,6 +108,7 @@ private:
 	exception* m_ex;
 
 	unsigned int m_status;
+	int m_errno;
 };
 
 
