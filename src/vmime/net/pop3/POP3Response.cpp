@@ -274,9 +274,19 @@ void POP3Response::readResponseImpl
 		if (read == 0)   // buffer is empty
 		{
 			if (m_socket->getStatus() & socket::STATUS_WANT_WRITE)
+			{
 				m_socket->waitForWrite();
-			else
+			}
+			else if (m_socket->getStatus() & socket::STATUS_WANT_READ)
+			{
 				m_socket->waitForRead();
+			}
+			else
+			{
+				// Input stream needs more bytes to continue, but there
+				// is enough data into socket buffer. Do not waitForRead(),
+				// just retry read()ing on the stream.
+			}
 
 			continue;
 		}
