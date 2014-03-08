@@ -2166,6 +2166,16 @@ public:
 
 	DECLARE_COMPONENT(status_att_val)
 
+		status_att_val()
+			: m_value(NULL)
+		{
+		}
+
+		~status_att_val()
+		{
+			delete m_value;
+		}
+
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			size_t pos = *currentPos;
