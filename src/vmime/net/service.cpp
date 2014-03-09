@@ -31,6 +31,8 @@
 
 #include "vmime/platform.hpp"
 
+#include "vmime/net/defaultTimeoutHandler.hpp"
+
 #if VMIME_HAVE_SASL_SUPPORT
 	#include "vmime/security/sasl/defaultSASLAuthenticator.hpp"
 #else
@@ -66,6 +68,8 @@ service::service(shared_ptr <session> sess, const serviceInfos& /* infos */,
 #endif // VMIME_HAVE_TLS_SUPPORT
 
 	m_socketFactory = platform::getHandler()->getSocketFactory();
+
+	m_toHandlerFactory = make_shared <defaultTimeoutHandlerFactory>();
 }
 
 

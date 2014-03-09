@@ -685,7 +685,7 @@ information, please read the class documentation for
 
 
 % ============================================================================
-\section{Handling time-outs}
+\section{Handling timeouts}
 
 Unexpected errors can occur while messaging services are performing
 operations and waiting a response from the server (eg. server stops
@@ -705,18 +705,18 @@ class timeoutHandler : public object
 {
    /** Called to test if the time limit has been reached.
      *
-     * @return true if the time-out delay is elapsed
+     * @return true if the timeout delay is elapsed
      */
    virtual const bool isTimeOut() = 0;
 
-   /** Called to reset the time-out counter.
+   /** Called to reset the timeout counter.
      */
    virtual void resetTimeOut() = 0;
 
    /** Called when the time limit has been reached (when
      * isTimeOut() returned true).
      *
-     * @return true to continue (and reset the time-out)
+     * @return true to continue (and reset the timeout)
      * or false to cancel the current operation
      */
    virtual const bool handleTimeOut() = 0;
@@ -729,25 +729,35 @@ then {\vcode handleTimeout()} is called. If the {\vcode handleTimeout()}
 function returns {\vcode false}, the operation is cancelled and
 an {\vcode operation\_timed\_out} exception is thrown. Else, if
 {\vcode handleTimeout()} returns true, the operation continues and the
-time-out count is reset.
+timeout counter is reset.
 The function {\vcode resetTimeout()} is called each time data has
-been received from the server to reset time-out delay.
+been received from the server to reset the timeout delay.
 
-The following example shows how to implement a simple time-out handler:
+When using a service, a default timeout handler is set: if an operation
+is blocked for more than 30 seconds (ie. network link is down and no data
+was received since 30 seconds), an {\vcode operation\_timed\_out} exception
+is thrown.
 
-\begin{lstlisting}[caption={Implementing a simple time-out handler}]
+The following example shows how to implement a simple timeout handler:
+
+\begin{lstlisting}[caption={Implementing a simple timeout handler}]
 class myTimeoutHandler : public vmime::net::timeoutHandler
 {
 public:
 
+   myTimeoutHandler()
+   {
+      m_startTime = time(NULL);
+   }
+
    const bool isTimeOut()
    {
-      return (getTime() >= m_last + 30);  // 30 seconds time-out
+      return (time(NULL) >= m_startTime + 30);  // 30 seconds timeout
    }
 
    void resetTimeOut()
    {
-      m_last = getTime();
+      m_startTime = time(NULL);
    }
 
    const bool handleTimeOut()
@@ -764,19 +774,14 @@ public:
 
 private:
 
-   const unsigned int getTime() const
-   {
-      return vmime::platform::getHandler()->getUnixTime();
-   }
-
-   unsigned int m_last;
+   time_t m_startTime;
 };
 \end{lstlisting}
 
-To make the service use your time-out handler, you need to write a factory
+To make the service use your timeout handler, you need to write a factory
 class, to allow the service to create instances of the handler class. This
 is required because the service can use several connections to the server
-simultaneously, and each connection needs its own time-out handler.
+simultaneously, and each connection needs its own timeout handler.
 
 \begin{lstlisting}
 class myTimeoutHandlerFactory : public vmime::net::timeoutHandlerFactory
@@ -791,7 +796,7 @@ public:
 \end{lstlisting}
 
 Then, call the {\vcode setTimeoutHandlerFactory()} method on the service object
-to set the time-out handler factory to use during the session:
+to set the timeout handler factory to use during the session:
 
 \begin{lstlisting}
 theService->setTimeoutHandlerFactory(vmime::make_shared <myTimeoutHandlerFactory>());

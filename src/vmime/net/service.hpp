@@ -169,8 +169,8 @@ public:
 	shared_ptr <socketFactory> getSocketFactory();
 
 	/** Set the factory used to create timeoutHandler objects for
-	  * this service. By default, no timeout handler is used. Not all
-	  * services support timeout handling.
+	  * this service. By default, the defaultTimeoutHandler class
+	  * is used. Not all services support timeout handling.
 	  *
 	  * @param thf timeoutHandler factory
 	  */

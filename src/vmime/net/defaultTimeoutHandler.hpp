@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002-2014 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -21,8 +21,8 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#ifndef VMIME_NET_TIMEOUTHANDLER_HPP_INCLUDED
-#define VMIME_NET_TIMEOUTHANDLER_HPP_INCLUDED
+#ifndef VMIME_NET_DEFAULTTIMEOUTHANDLER_HPP_INCLUDED
+#define VMIME_NET_DEFAULTTIMEOUTHANDLER_HPP_INCLUDED
 
 
 #include "vmime/config.hpp"
@@ -31,54 +31,45 @@
 #if VMIME_HAVE_MESSAGING_FEATURES
 
 
-#include "vmime/types.hpp"
+#include "vmime/net/timeoutHandler.hpp"
+
+#include <ctime>
 
 
 namespace vmime {
 namespace net {
 
 
-/** A class to manage timeouts in messaging services. This can be used
-  * to stop operations that takes too much time to complete (ie. no data
-  * received from the server for a long time if the network link is down).
+/** A default timeout handler for messaging services. The default action
+  * is to throw a exceptions::operation_timed_out exception when an
+  * operation is blocked for more than 30 seconds.
   */
 
-class VMIME_EXPORT timeoutHandler : public object
+class VMIME_EXPORT defaultTimeoutHandler : public timeoutHandler
 {
 public:
 
-	virtual ~timeoutHandler() { }
+	defaultTimeoutHandler();
+	~defaultTimeoutHandler();
 
-	/** Called to test if the time limit has been reached.
-	  *
-	  * @return true if the timeout delay is elapsed
-	  */
-	virtual bool isTimeOut() = 0;
+	bool isTimeOut();
+	void resetTimeOut();
+	bool handleTimeOut();
 
-	/** Called to reset the timeout counter.
-	  */
-	virtual void resetTimeOut() = 0;
+private:
 
-	/** Called when the time limit has been reached (when
-	  * isTimeOut() returned true).
-	  *
-	  * @return true to continue (and reset the timeout)
-	  * or false to cancel the current operation
-	  */
-	virtual bool handleTimeOut() = 0;
+	time_t m_startTime;
 };
 
 
-/** A class to create 'timeoutHandler' objects.
+/** A class that creates default timeout handlers.
   */
 
-class timeoutHandlerFactory : public object
+class defaultTimeoutHandlerFactory : public timeoutHandlerFactory
 {
 public:
 
-	virtual ~timeoutHandlerFactory() { }
-
-	virtual shared_ptr <timeoutHandler> create() = 0;
+	shared_ptr <timeoutHandler> create();
 };
 
 
@@ -88,4 +79,4 @@ public:
 
 #endif // VMIME_HAVE_MESSAGING_FEATURES
 
-#endif // VMIME_NET_TIMEOUTHANDLER_HPP_INCLUDED
+#endif // VMIME_NET_DEFAULTTIMEOUTHANDLER_HPP_INCLUDED
