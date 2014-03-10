@@ -116,6 +116,9 @@ public:
 	void fetchMessages(std::vector <shared_ptr <message> >& msg, const fetchAttributes& options, utility::progressListener* progress = NULL);
 	void fetchMessage(shared_ptr <message> msg, const fetchAttributes& options);
 
+	std::vector <shared_ptr <message> > getAndFetchMessages
+		(const messageSet& msgs, const fetchAttributes& attribs);
+
 	int getFetchCapabilities() const;
 
 	std::vector <int> getMessageNumbersStartingOnUID(const message::uid& uid);

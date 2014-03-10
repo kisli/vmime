@@ -484,6 +484,16 @@ void POP3Folder::fetchMessage(shared_ptr <message> msg, const fetchAttributes& o
 }
 
 
+std::vector <shared_ptr <message> > POP3Folder::getAndFetchMessages
+	(const messageSet& msgs, const fetchAttributes& attribs)
+{
+	std::vector <shared_ptr <message> > messages = getMessages(msgs);
+	fetchMessages(messages, attribs);
+
+	return messages;
+}
+
+
 int POP3Folder::getFetchCapabilities() const
 {
 	return fetchAttributes::ENVELOPE | fetchAttributes::CONTENT_INFO |

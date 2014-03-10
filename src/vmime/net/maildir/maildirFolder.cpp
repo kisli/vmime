@@ -1223,6 +1223,16 @@ void maildirFolder::fetchMessage(shared_ptr <message> msg, const fetchAttributes
 }
 
 
+std::vector <shared_ptr <message> > maildirFolder::getAndFetchMessages
+	(const messageSet& msgs, const fetchAttributes& attribs)
+{
+	std::vector <shared_ptr <message> > messages = getMessages(msgs);
+	fetchMessages(messages, attribs);
+
+	return messages;
+}
+
+
 int maildirFolder::getFetchCapabilities() const
 {
 	return fetchAttributes::ENVELOPE | fetchAttributes::STRUCTURE |

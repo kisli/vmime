@@ -368,6 +368,19 @@ public:
 	  */
 	virtual void fetchMessage(shared_ptr <message> msg, const fetchAttributes& attribs) = 0;
 
+	/** Get new references to messages in this folder, given either their
+	  * sequence numbers or UIDs, and fetch objects for them at the same time.
+	  *
+	  * @param msgs index set of messages to retrieve
+	  * @param attribs set of attributes to fetch
+	  * @return new objects referencing the specified messages
+	  * @throw exceptions::net_exception if an error occurs
+	  * @see folder::getMessages()
+	  * @see folder::fetchMessages()
+	  */
+	virtual std::vector <shared_ptr <message> > getAndFetchMessages
+		(const messageSet& msgs, const fetchAttributes& attribs) = 0;
+
 	/** Return the list of fetchable objects supported by
 	  * the underlying protocol (see folder::fetchAttributes).
 	  *

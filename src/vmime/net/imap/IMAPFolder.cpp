@@ -860,6 +860,90 @@ void IMAPFolder::fetchMessage(shared_ptr <message> msg, const fetchAttributes& o
 }
 
 
+std::vector <shared_ptr <message> > IMAPFolder::getAndFetchMessages
+	(const messageSet& msgs, const fetchAttributes& attribs)
+{
+	shared_ptr <IMAPStore> store = m_store.lock();
+
+	if (!store)
+		throw exceptions::illegal_state("Store disconnected");
+	else if (!isOpen())
+		throw exceptions::illegal_state("Folder not open");
+
+	// Ensure we also get the UID for each message
+	fetchAttributes attribsWithUID(attribs);
+	attribsWithUID.add(fetchAttributes::UID);
+
+	// Send the request
+	const string command = IMAPUtils::buildFetchRequest
+		(m_connection, msgs, attribsWithUID);
+
+	m_connection->send(true, command, true);
+
+	// Get the response
+	std::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
+
+	if (resp->isBad() || resp->response_done()->response_tagged()->
+		resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
+	{
+		throw exceptions::command_error("FETCH",
+			resp->getErrorLog(), "bad response");
+	}
+
+	const std::vector <IMAPParser::continue_req_or_response_data*>& respDataList =
+		resp->continue_req_or_response_data();
+
+	std::vector <shared_ptr <message> > messages;
+
+	for (std::vector <IMAPParser::continue_req_or_response_data*>::const_iterator
+	     it = respDataList.begin() ; it != respDataList.end() ; ++it)
+	{
+		if ((*it)->response_data() == NULL)
+		{
+			throw exceptions::command_error("FETCH",
+				resp->getErrorLog(), "invalid response");
+		}
+
+		const IMAPParser::message_data* messageData =
+			(*it)->response_data()->message_data();
+
+		// We are only interested in responses of type "FETCH"
+		if (messageData == NULL || messageData->type() != IMAPParser::message_data::FETCH)
+			continue;
+
+		// Get message number
+		const int msgNum = static_cast <int>(messageData->number());
+
+		// Get message UID
+		const std::vector <IMAPParser::msg_att_item*> atts = messageData->msg_att()->items();
+		message::uid msgUID;
+
+		for (std::vector <IMAPParser::msg_att_item*>::const_iterator
+			 it = atts.begin() ; it != atts.end() ; ++it)
+		{
+			if ((*it)->type() == IMAPParser::msg_att_item::UID)
+			{
+				msgUID = (*it)->unique_id()->value();
+				break;
+			}
+		}
+
+		// Create a new message reference
+		shared_ptr <IMAPFolder> thisFolder = dynamicCast <IMAPFolder>(shared_from_this());
+		shared_ptr <IMAPMessage> msg = make_shared <IMAPMessage>(thisFolder, msgNum, msgUID);
+
+		messages.push_back(msg);
+
+		// Process fetch response for this message
+		msg->processFetchResponse(attribsWithUID, messageData);
+	}
+
+	processStatusUpdate(resp.get());
+
+	return messages;
+}
+
+
 int IMAPFolder::getFetchCapabilities() const
 {
 	return fetchAttributes::ENVELOPE | fetchAttributes::CONTENT_INFO |
