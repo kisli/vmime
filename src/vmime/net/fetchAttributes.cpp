@@ -60,7 +60,7 @@ fetchAttributes::fetchAttributes(const fetchAttributes& attribs)
 
 void fetchAttributes::add(const int attribs)
 {
-	m_predefinedAttribs = attribs;
+	m_predefinedAttribs |= attribs;
 }
 
 
