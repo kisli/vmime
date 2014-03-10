@@ -767,6 +767,9 @@ void IMAPFolder::fetchMessages(std::vector <shared_ptr <message> >& msg, const f
 	else if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
 
+	if (msg.empty())
+		return;
+
 	// Build message numbers list
 	std::vector <int> list;
 	list.reserve(msg.size());
@@ -869,6 +872,9 @@ std::vector <shared_ptr <message> > IMAPFolder::getAndFetchMessages
 		throw exceptions::illegal_state("Store disconnected");
 	else if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
+
+	if (msgs.isEmpty())
+		return std::vector <shared_ptr <message> >();
 
 	// Ensure we also get the UID for each message
 	fetchAttributes attribsWithUID(attribs);

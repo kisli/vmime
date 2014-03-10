@@ -1187,6 +1187,9 @@ void maildirFolder::fetchMessages(std::vector <shared_ptr <message> >& msg,
 	else if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
 
+	if (msg.empty())
+		return;
+
 	const size_t total = msg.size();
 	size_t current = 0;
 
@@ -1226,6 +1229,9 @@ void maildirFolder::fetchMessage(shared_ptr <message> msg, const fetchAttributes
 std::vector <shared_ptr <message> > maildirFolder::getAndFetchMessages
 	(const messageSet& msgs, const fetchAttributes& attribs)
 {
+	if (msgs.isEmpty())
+		return std::vector <shared_ptr <message> >();
+
 	std::vector <shared_ptr <message> > messages = getMessages(msgs);
 	fetchMessages(messages, attribs);
 
