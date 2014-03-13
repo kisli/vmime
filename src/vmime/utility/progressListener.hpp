@@ -45,15 +45,6 @@ protected:
 
 public:
 
-	/** Allow the caller object to cancel the current operation.
-	  *
-	  * @warning WARNING: this is implementation-dependent: cancelling
-	  * may not be supported by the notifier object.
-	  *
-	  * @return true to cancel the operation, false otherwise
-	  */
-	virtual bool cancel() const = 0;
-
 	/** Called at the beginning of the operation.
 	  *
 	  * @param predictedTotal predicted amount of units (this has
@@ -91,8 +82,6 @@ public:
 	  * @param total predicted total
 	  */
 	progressListenerSizeAdapter(progressListener* list, const size_t total);
-
-	bool cancel() const;
 
 	void start(const size_t predictedTotal);
 	void progress(const size_t current, const size_t currentTotal);

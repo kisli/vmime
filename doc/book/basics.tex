@@ -806,8 +806,6 @@ of progress when they are performing an operation.
 The {\vcode vmime::utility::progressListener} interface is rather simple:
 
 \begin{lstlisting}
-const bool cancel() const;
-
 void start(const int predictedTotal);
 void progress(const int current, const int currentTotal);
 void stop(const int total);
@@ -818,8 +816,3 @@ of the operation, respectively. {\vcode progress()} is called each time the
 status of progress changes (eg. a chunk of data has been processed). There is
 no unit specified for the values passed in argument. It depends on the
 notifier: it can be bytes, percent, number of messages...
-
-Your listener can return {\vcode} in the {\vcode cancel()} method to cancel
-the operation. However, be warned that cancelling is not always supported by
-the source object.
-

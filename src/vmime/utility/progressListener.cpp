@@ -37,12 +37,6 @@ progressListenerSizeAdapter::progressListenerSizeAdapter
 }
 
 
-bool progressListenerSizeAdapter::cancel() const
-{
-	return (m_wrapped ? m_wrapped->cancel() : false);
-}
-
-
 void progressListenerSizeAdapter::start(const size_t predictedTotal)
 {
 	if (m_wrapped)

@@ -254,12 +254,6 @@ void POP3Response::readResponseImpl
 
 	while (!is.eof())
 	{
-#if 0 // not supported
-		// Check for possible cancellation
-		if (progress && progress->cancel())
-			throw exceptions::operation_cancelled();
-#endif
-
 		// Check whether the time-out delay is elapsed
 		if (m_timeoutHandler && m_timeoutHandler->isTimeOut())
 		{
