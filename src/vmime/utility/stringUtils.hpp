@@ -53,6 +53,26 @@ public:
 		return string(reinterpret_cast <const char*>(data), count);
 	}
 
+	/** Casts a string to bytes.
+	  *
+	  * @param str string
+	  * @return pointer to the first byte of the string
+	  */
+	static const byte_t* bytesFromString(const string& str)
+	{
+		return reinterpret_cast <const byte_t*>(str.data());
+	}
+
+	/** Casts a NULL-terminated string to bytes.
+	  *
+	  * @param str string
+	  * @return pointer to the first byte of the string
+	  */
+	static const byte_t* bytesFromString(const char* str)
+	{
+		return reinterpret_cast <const byte_t*>(str);
+	}
+
 	/** Appends bytes to a string.
 	  *
 	  * @param str string to which append data

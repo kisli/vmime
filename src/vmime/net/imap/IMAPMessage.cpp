@@ -299,15 +299,7 @@ void IMAPMessage::extractImpl
 		}
 	}
 
-	// Build the request text
-	std::ostringstream command;
-	command.imbue(std::locale::classic());
-
-	if (m_uid.empty())
-		command << "FETCH " << m_num << " BODY";
-	else
-		command << "UID FETCH " << m_uid << " BODY";
-
+	// Build the body descriptor for FETCH
 	/*
 	   BODY[]               header + body
 	   BODY.PEEK[]          header + body (peek)
@@ -316,43 +308,53 @@ void IMAPMessage::extractImpl
 	   BODY[TEXT]           body
 	   BODY.PEEK[TEXT]      body (peek)
 	*/
+	std::ostringstream bodyDesc;
+	bodyDesc.imbue(std::locale::classic());
+
+	bodyDesc << "BODY";
 
 	if (extractFlags & EXTRACT_PEEK)
-		command << ".PEEK";
+		bodyDesc << ".PEEK";
 
-	command << "[";
+	bodyDesc << "[";
 
 	if (section.str().empty())
 	{
 		// header + body
 		if ((extractFlags & EXTRACT_HEADER) && (extractFlags & EXTRACT_BODY))
-			command << "";
+			bodyDesc << "";
 		// body only
 		else if (extractFlags & EXTRACT_BODY)
-			command << "TEXT";
+			bodyDesc << "TEXT";
 		// header only
 		else if (extractFlags & EXTRACT_HEADER)
-			command << "HEADER";
+			bodyDesc << "HEADER";
 	}
 	else
 	{
-		command << section.str();
+		bodyDesc << section.str();
 
 		// header + body
 		if ((extractFlags & EXTRACT_HEADER) && (extractFlags & EXTRACT_BODY))
 			throw exceptions::operation_not_supported();
 		// header only
 		else if (extractFlags & EXTRACT_HEADER)
-			command << ".MIME";   // "MIME" not "HEADER" for parts
+			bodyDesc << ".MIME";   // "MIME" not "HEADER" for parts
 	}
 
-	command << "]";
+	bodyDesc << "]";
 
 	if (start != 0 || length != static_cast <size_t>(-1))
-		command << "<" << start << "." << length << ">";
+		bodyDesc << "<" << start << "." << length << ">";
+
+	std::vector <std::string> fetchParams;
+	fetchParams.push_back(bodyDesc.str());
 
 	// Send the request
-	constCast <IMAPFolder>(folder)->m_connection->send(true, command.str(), true);
+	IMAPCommand::FETCH(
+		m_uid.empty() ? messageSet::byNumber(m_num) : messageSet::byUID(m_uid),
+		fetchParams
+	)->send(constCast <IMAPFolder>(folder)->m_connection);
 
 	// Get the response
 	std::auto_ptr <IMAPParser::response> resp

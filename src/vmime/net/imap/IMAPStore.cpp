@@ -31,6 +31,7 @@
 #include "vmime/net/imap/IMAPFolder.hpp"
 #include "vmime/net/imap/IMAPConnection.hpp"
 #include "vmime/net/imap/IMAPFolderStatus.hpp"
+#include "vmime/net/imap/IMAPCommand.hpp"
 
 #include "vmime/exception.hpp"
 #include "vmime/platform.hpp"
@@ -192,7 +193,7 @@ void IMAPStore::noop()
 	if (!isConnected())
 		throw exceptions::not_connected();
 
-	m_connection->send(true, "NOOP", true);
+	IMAPCommand::NOOP()->send(m_connection);
 
 	std::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
 

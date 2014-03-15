@@ -488,9 +488,13 @@ int IMAPUtils::messageFlagsFromFlags(const IMAPParser::flag_list* list)
 }
 
 
-const string IMAPUtils::messageFlagList(const int flags)
+// static
+const std::vector <string> IMAPUtils::messageFlagList(const int flags)
 {
 	std::vector <string> flagList;
+
+	if (flags == -1)
+		return flagList;  // default flags
 
 	if (flags & message::FLAG_REPLIED) flagList.push_back("\\Answered");
 	if (flags & message::FLAG_MARKED) flagList.push_back("\\Flagged");
@@ -498,25 +502,7 @@ const string IMAPUtils::messageFlagList(const int flags)
 	if (flags & message::FLAG_SEEN) flagList.push_back("\\Seen");
 	if (flags & message::FLAG_DRAFT) flagList.push_back("\\Draft");
 
-	if (!flagList.empty())
-	{
-		std::ostringstream res;
-		res.imbue(std::locale::classic());
-
-		res << "(";
-
-		if (flagList.size() >= 2)
-		{
-			std::copy(flagList.begin(), flagList.end() - 1,
-			          std::ostream_iterator <string>(res, " "));
-		}
-
-		res << *(flagList.end() - 1) << ")";
-
-		return (res.str());
-	}
-
-	return "";
+	return flagList;
 }
 
 
@@ -590,7 +576,7 @@ const string IMAPUtils::dateTime(const vmime::datetime& date)
 
 
 // static
-const string IMAPUtils::buildFetchRequest
+shared_ptr <IMAPCommand> IMAPUtils::buildFetchCommand
 	(shared_ptr <IMAPConnection> cnt, const messageSet& msgs, const fetchAttributes& options)
 {
 	// Example:
@@ -659,25 +645,7 @@ const string IMAPUtils::buildFetchRequest
 		}
 	}
 
-	// Build the request text
-	std::ostringstream command;
-	command.imbue(std::locale::classic());
-
-	if (msgs.isUIDSet())
-		command << "UID FETCH " << messageSetToSequenceSet(msgs) << " (";
-	else
-		command << "FETCH " << messageSetToSequenceSet(msgs) << " (";
-
-	for (std::vector <string>::const_iterator it = items.begin() ;
-	     it != items.end() ; ++it)
-	{
-		if (it != items.begin()) command << " ";
-		command << *it;
-	}
-
-	command << ")";
-
-	return command.str();
+	return IMAPCommand::FETCH(msgs, items);
 }
 
 

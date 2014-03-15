@@ -35,6 +35,7 @@
 #include "vmime/net/imap/IMAPUtils.hpp"
 #include "vmime/net/imap/IMAPConnection.hpp"
 #include "vmime/net/imap/IMAPFolderStatus.hpp"
+#include "vmime/net/imap/IMAPCommand.hpp"
 
 #include "vmime/message.hpp"
 
@@ -157,20 +158,16 @@ void IMAPFolder::open(const int mode, bool failIfModeIsNotAvailable)
 		//           S: * OK [PERMANENTFLAGS (\Deleted \Seen \*)] Limited
 		//           S: A142 OK [READ-WRITE] SELECT completed
 
-		std::ostringstream oss;
-
-		if (mode == MODE_READ_ONLY)
-			oss << "EXAMINE ";
-		else
-			oss << "SELECT ";
-
-		oss << IMAPUtils::quoteString(IMAPUtils::pathToString
-				(connection->hierarchySeparator(), getFullPath()));
+		std::vector <string> selectParams;
 
 		if (m_connection->hasCapability("CONDSTORE"))
-			oss << " (CONDSTORE)";
+			selectParams.push_back("CONDSTORE");
 
-		connection->send(true, oss.str(), true);
+		IMAPCommand::SELECT(
+			mode == MODE_READ_ONLY,
+			IMAPUtils::pathToString(connection->hierarchySeparator(), getFullPath()),
+			selectParams
+		)->send(connection);
 
 		// Read the response
 		std::auto_ptr <IMAPParser::response> resp(connection->readResponse());
@@ -289,7 +286,7 @@ void IMAPFolder::close(const bool expunge)
 		if (m_mode == MODE_READ_ONLY)
 			throw exceptions::operation_not_supported();
 
-		oldConnection->send(true, "CLOSE", true);
+		IMAPCommand::CLOSE()->send(oldConnection);
 	}
 
 	// Close this folder connection
@@ -345,8 +342,7 @@ void IMAPFolder::create(const folderAttributes& attribs)
 	if (attribs.getType() & folderAttributes::TYPE_CONTAINS_FOLDERS)
 		mailbox += m_connection->hierarchySeparator();
 
-	std::ostringstream oss;
-	oss << "CREATE " << IMAPUtils::quoteString(mailbox);
+	std::vector <string> createParams;
 
 	if (attribs.getSpecialUse() != folderAttributes::SPECIALUSE_NONE)
 	{
@@ -354,7 +350,8 @@ void IMAPFolder::create(const folderAttributes& attribs)
 			throw exceptions::operation_not_supported();
 
 		// C: t2 CREATE MySpecial (USE (\Drafts \Sent))
-		oss << "(USE (";
+		std::ostringstream oss;
+		oss << "USE (";
 
 		switch (attribs.getSpecialUse())
 		{
@@ -369,10 +366,12 @@ void IMAPFolder::create(const folderAttributes& attribs)
 		case folderAttributes::SPECIALUSE_IMPORTANT: oss << "\\Important"; break;
 		}
 
-		oss << "))";
+		oss << ")";
+
+		createParams.push_back(oss.str());
 	}
 
-	m_connection->send(true, oss.str(), true);
+	IMAPCommand::CREATE(mailbox, createParams)->send(m_connection);
 
 
 	std::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
@@ -407,10 +406,7 @@ void IMAPFolder::destroy()
 	const string mailbox = IMAPUtils::pathToString
 		(m_connection->hierarchySeparator(), getFullPath());
 
-	std::ostringstream oss;
-	oss << "DELETE " << IMAPUtils::quoteString(mailbox);
-
-	m_connection->send(true, oss.str(), true);
+	IMAPCommand::DELETE(mailbox)->send(m_connection);
 
 
 	std::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
@@ -464,12 +460,8 @@ int IMAPFolder::testExistAndGetType()
 	//
 	// ==> NO, does not exist
 
-	std::ostringstream oss;
-	oss << "LIST \"\" ";
-	oss << IMAPUtils::quoteString(IMAPUtils::pathToString
-		(m_connection->hierarchySeparator(), getFullPath()));
-
-	m_connection->send(true, oss.str(), true);
+	IMAPCommand::LIST("", IMAPUtils::pathToString
+		(m_connection->hierarchySeparator(), getFullPath()))->send(m_connection);
 
 
 	std::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
@@ -560,14 +552,10 @@ std::vector <shared_ptr <message> > IMAPFolder::getMessages(const messageSet& ms
 		//     S: * nnnn3 FETCH (UID uuuu3)
 		//     S: . OK UID FETCH completed
 
-		// Prepare command and arguments
-		std::ostringstream cmd;
-		cmd.imbue(std::locale::classic());
+		std::vector <string> params;
+		params.push_back("UID");
 
-		cmd << "UID FETCH " << IMAPUtils::messageSetToSequenceSet(msgs) << " UID";
-
-		// Send the request
-		m_connection->send(true, cmd.str(), true);
+		IMAPCommand::FETCH(msgs, params)->send(m_connection);
 
 		// Get the response
 		std::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
@@ -679,28 +667,22 @@ std::vector <shared_ptr <folder> > IMAPFolder::getFolders(const bool recursive)
 	//     S: * LIST (\NoInferiors) "/" foo/bar/zap
 	//     S: a005 OK LIST completed
 
-	std::ostringstream oss;
-	oss << "LIST ";
+	shared_ptr <IMAPCommand> cmd;
 
 	const string pathString = IMAPUtils::pathToString
 		(m_connection->hierarchySeparator(), getFullPath());
 
 	if (recursive)
 	{
-		oss << IMAPUtils::quoteString(pathString);
-		oss << " *";
+		cmd = IMAPCommand::LIST(pathString, "*");
 	}
 	else
 	{
-		if (pathString.empty()) // don't add sep for root folder
-			oss << "\"\"";
-		else
-			oss << IMAPUtils::quoteString(pathString + m_connection->hierarchySeparator());
-
-		oss << " %";
+		cmd = IMAPCommand::LIST
+			(pathString.empty() ? "" : (pathString + m_connection->hierarchySeparator()), "%");
 	}
 
-	m_connection->send(true, oss.str(), true);
+	cmd->send(m_connection);
 
 
 	std::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
@@ -783,10 +765,8 @@ void IMAPFolder::fetchMessages(std::vector <shared_ptr <message> >& msg, const f
 	}
 
 	// Send the request
-	const string command = IMAPUtils::buildFetchRequest
-		(m_connection, messageSet::byNumber(list), options);
-
-	m_connection->send(true, command, true);
+	IMAPUtils::buildFetchCommand
+		(m_connection, messageSet::byNumber(list), options)->send(m_connection);
 
 	// Get the response
 	std::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
@@ -881,10 +861,8 @@ std::vector <shared_ptr <message> > IMAPFolder::getAndFetchMessages
 	attribsWithUID.add(fetchAttributes::UID);
 
 	// Send the request
-	const string command = IMAPUtils::buildFetchRequest
-		(m_connection, msgs, attribsWithUID);
-
-	m_connection->send(true, command, true);
+	IMAPUtils::buildFetchCommand
+		(m_connection, msgs, attribsWithUID)->send(m_connection);
 
 	// Get the response
 	std::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
@@ -1016,19 +994,11 @@ void IMAPFolder::deleteMessages(const messageSet& msgs)
 	else if (m_mode == MODE_READ_ONLY)
 		throw exceptions::illegal_state("Folder is read-only");
 
-	// Build the request text
-	std::ostringstream command;
-	command.imbue(std::locale::classic());
-
-	if (msgs.isUIDSet())
-		command << "UID STORE " << IMAPUtils::messageSetToSequenceSet(msgs);
-	else
-		command << "STORE " << IMAPUtils::messageSetToSequenceSet(msgs);
-
-	command << " +FLAGS (\\Deleted)";
-
 	// Send the request
-	m_connection->send(true, command.str(), true);
+	IMAPCommand::STORE(
+		msgs, message::FLAG_MODE_ADD,
+		IMAPUtils::messageFlagList(message::FLAG_DELETED)
+	)->send(m_connection);
 
 	// Get the response
 	std::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
@@ -1046,31 +1016,12 @@ void IMAPFolder::deleteMessages(const messageSet& msgs)
 
 void IMAPFolder::setMessageFlags(const messageSet& msgs, const int flags, const int mode)
 {
-	// Build the request text
-	std::ostringstream command;
-	command.imbue(std::locale::classic());
-
-	if (msgs.isUIDSet())
-		command << "UID STORE " << IMAPUtils::messageSetToSequenceSet(msgs);
-	else
-		command << "STORE " << IMAPUtils::messageSetToSequenceSet(msgs);
-
-	switch (mode)
-	{
-	case message::FLAG_MODE_ADD:    command << " +FLAGS "; break;
-	case message::FLAG_MODE_REMOVE: command << " -FLAGS "; break;
-	default:
-	case message::FLAG_MODE_SET:    command << " FLAGS "; break;
-	}
-
-	const string flagList = IMAPUtils::messageFlagList(flags);
+	const std::vector <string> flagList = IMAPUtils::messageFlagList(flags);
 
 	if (!flagList.empty())
 	{
-		command << flagList;
-
 		// Send the request
-		m_connection->send(true, command.str(), true);
+		IMAPCommand::STORE(msgs, mode, flagList)->send(m_connection);
 
 		// Get the response
 		std::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
@@ -1116,31 +1067,11 @@ messageSet IMAPFolder::addMessage
 	else if (m_mode == MODE_READ_ONLY)
 		throw exceptions::illegal_state("Folder is read-only");
 
-	// Build the request text
-	std::ostringstream command;
-	command.imbue(std::locale::classic());
-
-	command << "APPEND " << IMAPUtils::quoteString(IMAPUtils::pathToString
-			(m_connection->hierarchySeparator(), getFullPath())) << ' ';
-
-	const string flagList = IMAPUtils::messageFlagList(flags);
-
-	if (flags != -1 && !flagList.empty())
-	{
-		command << flagList;
-		command << ' ';
-	}
-
-	if (date != NULL)
-	{
-		command << IMAPUtils::dateTime(*date);
-		command << ' ';
-	}
-
-	command << '{' << size << '}';
-
 	// Send the request
-	m_connection->send(true, command.str(), true);
+	IMAPCommand::APPEND(
+		IMAPUtils::pathToString(m_connection->hierarchySeparator(), getFullPath()),
+		IMAPUtils::messageFlagList(flags), date, size
+	)->send(m_connection);
 
 	// Get the response
 	std::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
@@ -1191,7 +1122,7 @@ messageSet IMAPFolder::addMessage
 			progress->progress(current, total);
 	}
 
-	m_connection->send(false, "", true);
+	m_connection->sendRaw(utility::stringUtils::bytesFromString("\r\n"), 2);
 
 	if (progress)
 		progress->stop(total);
@@ -1230,7 +1161,7 @@ void IMAPFolder::expunge()
 		throw exceptions::illegal_state("Folder is read-only");
 
 	// Send the request
-	m_connection->send(true, "EXPUNGE", true);
+	IMAPCommand::EXPUNGE()->send(m_connection);
 
 	// Get the response
 	std::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
@@ -1259,18 +1190,11 @@ void IMAPFolder::rename(const folder::path& newPath)
 	else if (!store->isValidFolderName(newPath.getLastComponent()))
 		throw exceptions::invalid_folder_name();
 
-	// Build the request text
-	std::ostringstream command;
-	command.imbue(std::locale::classic());
-
-	command << "RENAME ";
-	command << IMAPUtils::quoteString(IMAPUtils::pathToString
-			(m_connection->hierarchySeparator(), getFullPath())) << " ";
-	command << IMAPUtils::quoteString(IMAPUtils::pathToString
-			(m_connection->hierarchySeparator(), newPath));
-
 	// Send the request
-	m_connection->send(true, command.str(), true);
+	IMAPCommand::RENAME(
+		IMAPUtils::pathToString(m_connection->hierarchySeparator(), getFullPath()),
+		IMAPUtils::pathToString(m_connection->hierarchySeparator(), newPath)
+	)->send(m_connection);
 
 	// Get the response
 	std::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
@@ -1327,16 +1251,11 @@ messageSet IMAPFolder::copyMessages(const folder::path& dest, const messageSet& 
 	else if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
 
-	// Build the request text
-	std::ostringstream command;
-	command.imbue(std::locale::classic());
-
-	command << "COPY " << IMAPUtils::messageSetToSequenceSet(set) << " ";
-	command << IMAPUtils::quoteString(IMAPUtils::pathToString
-			(m_connection->hierarchySeparator(), dest));
-
 	// Send the request
-	m_connection->send(true, command.str(), true);
+	IMAPCommand::COPY(
+		set,
+		IMAPUtils::pathToString(m_connection->hierarchySeparator(), dest)
+	)->send(m_connection);
 
 	// Get the response
 	std::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
@@ -1379,24 +1298,22 @@ shared_ptr <folderStatus> IMAPFolder::getStatus()
 	if (!store)
 		throw exceptions::illegal_state("Store disconnected");
 
-	// Build the request text
-	std::ostringstream command;
-	command.imbue(std::locale::classic());
+	// Build the attributes list
+	std::vector <string> attribs;
 
-	command << "STATUS ";
-	command << IMAPUtils::quoteString(IMAPUtils::pathToString
-			(m_connection->hierarchySeparator(), getFullPath()));
-	command << " (";
-
-	command << "MESSAGES" << ' ' << "UNSEEN" << ' ' << "UIDNEXT" << ' ' << "UIDVALIDITY";
+	attribs.push_back("MESSAGES");
+	attribs.push_back("UNSEEN");
+	attribs.push_back("UIDNEXT");
+	attribs.push_back("UIDVALIDITY");
 
 	if (m_connection->hasCapability("CONDSTORE"))
-		command << ' ' << "HIGHESTMODSEQ";
-
-	command << ")";
+		attribs.push_back("HIGHESTMODSEQ");
 
 	// Send the request
-	m_connection->send(true, command.str(), true);
+	IMAPCommand::STATUS(
+		IMAPUtils::pathToString(m_connection->hierarchySeparator(), getFullPath()),
+		attribs
+	)->send(m_connection);
 
 	// Get the response
 	std::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
@@ -1443,7 +1360,7 @@ void IMAPFolder::noop()
 	if (!store)
 		throw exceptions::illegal_state("Store disconnected");
 
-	m_connection->send(true, "NOOP", true);
+	IMAPCommand::NOOP()->send(m_connection);
 
 	std::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
 
@@ -1459,15 +1376,15 @@ void IMAPFolder::noop()
 
 std::vector <int> IMAPFolder::getMessageNumbersStartingOnUID(const message::uid& uid)
 {
-	std::vector<int> v;
-
-	std::ostringstream command;
-	command.imbue(std::locale::classic());
-
-	command << "SEARCH UID " << uid << ":*";
-
 	// Send the request
-	m_connection->send(true, command.str(), true);
+	std::ostringstream uidSearchKey;
+	uidSearchKey.imbue(std::locale::classic());
+	uidSearchKey << "UID " << uid << ":*";
+
+	std::vector <string> searchKeys;
+	searchKeys.push_back(uidSearchKey.str());
+
+	IMAPCommand::SEARCH(searchKeys, /* charset */ NULL)->send(m_connection);
 
 	// Get the response
 	std::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
@@ -1480,6 +1397,7 @@ std::vector <int> IMAPFolder::getMessageNumbersStartingOnUID(const message::uid&
 	}
 
 	const std::vector <IMAPParser::continue_req_or_response_data*>& respDataList = resp->continue_req_or_response_data();
+	std::vector <int> seqNumbers;
 
 	for (std::vector <IMAPParser::continue_req_or_response_data*>::const_iterator
 	     it = respDataList.begin() ; it != respDataList.end() ; ++it)
@@ -1505,13 +1423,13 @@ std::vector <int> IMAPFolder::getMessageNumbersStartingOnUID(const message::uid&
 		     it != mailboxData->search_nz_number_list().end();
 		     ++it)
 		{
-			v.push_back((*it)->value());
+			seqNumbers.push_back((*it)->value());
 		}
 	}
 
 	processStatusUpdate(resp.get());
 
-	return v;
+	return seqNumbers;
 }
 
 

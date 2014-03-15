@@ -31,6 +31,7 @@
 #include "vmime/net/imap/IMAPConnection.hpp"
 #include "vmime/net/imap/IMAPUtils.hpp"
 #include "vmime/net/imap/IMAPStore.hpp"
+#include "vmime/net/imap/IMAPCommand.hpp"
 
 #include "vmime/exception.hpp"
 #include "vmime/platform.hpp"
@@ -70,6 +71,7 @@ IMAPConnection::IMAPConnection(shared_ptr <IMAPStore> store, shared_ptr <securit
 	  m_hierarchySeparator('\0'), m_state(STATE_NONE), m_timeoutHandler(null),
 	  m_secured(false), m_firstTag(true), m_capabilitiesFetched(false), m_noModSeq(false)
 {
+	m_tag = make_shared <IMAPTag>();
 }
 
 
@@ -133,7 +135,6 @@ void IMAPConnection::connect()
 	m_socket->connect(address, port);
 
 
-	m_tag = make_shared <IMAPTag>();
 	m_parser = make_shared <IMAPParser>(m_tag, m_socket, m_timeoutHandler);
 
 
@@ -259,8 +260,8 @@ void IMAPConnection::authenticate()
 	const string username = getAuthenticator()->getUsername();
 	const string password = getAuthenticator()->getPassword();
 
-	send(true, "LOGIN " + IMAPUtils::quoteString(username)
-		+ " " + IMAPUtils::quoteString(password), true);
+	shared_ptr <IMAPConnection> conn = dynamicCast <IMAPConnection>(shared_from_this());
+	IMAPCommand::LOGIN(username, password)->send(conn);
 
 	std::auto_ptr <IMAPParser::response> resp(m_parser->readResponse());
 
@@ -355,8 +356,7 @@ void IMAPConnection::authenticateSASL()
 
 		saslSession->init();
 
-		std::ostringstream cmd;
-		cmd << "AUTHENTICATE " << mech->getName();
+		shared_ptr <IMAPCommand> authCmd;
 
 		if (saslSession->getMechanism()->hasInitialResponse())
 		{
@@ -369,12 +369,16 @@ void IMAPConnection::authenticateSASL()
 			delete [] initialResp;
 
 			if (encodedInitialResp.empty())
-				cmd << " =";
+				authCmd = IMAPCommand::AUTHENTICATE(mech->getName(), "=");
 			else
-				cmd << " " << encodedInitialResp;
+				authCmd = IMAPCommand::AUTHENTICATE(mech->getName(), encodedInitialResp);
+		}
+		else
+		{
+			authCmd = IMAPCommand::AUTHENTICATE(mech->getName());
 		}
 
-		send(true, cmd.str(), true);
+		authCmd->send(dynamicCast <IMAPConnection>(shared_from_this()));
 
 		for (bool cont = true ; cont ; )
 		{
@@ -428,7 +432,8 @@ void IMAPConnection::authenticateSASL()
 						(challenge, challengeLen, &resp, &respLen);
 
 					// Send response
-					send(false, saslContext->encodeB64(resp, respLen), true);
+					const string respB64 = saslContext->encodeB64(resp, respLen) + "\r\n";
+					sendRaw(utility::stringUtils::bytesFromString(respB64), respB64.length());
 
 					// Server capabilities may change when logged in
 					invalidateCapabilities();
@@ -448,7 +453,7 @@ void IMAPConnection::authenticateSASL()
 					}
 
 					// Cancel SASL exchange
-					send(false, "*", true);
+					sendRaw(utility::stringUtils::bytesFromString("*\r\n"), 3);
 				}
 				catch (...)
 				{
@@ -483,7 +488,7 @@ void IMAPConnection::startTLS()
 {
 	try
 	{
-		send(true, "STARTTLS", true);
+		IMAPCommand::STARTTLS()->send(dynamicCast <IMAPConnection>(shared_from_this()));
 
 		std::auto_ptr <IMAPParser::response> resp(m_parser->readResponse());
 
@@ -582,7 +587,7 @@ void IMAPConnection::invalidateCapabilities()
 
 void IMAPConnection::fetchCapabilities()
 {
-	send(true, "CAPABILITY", true);
+	IMAPCommand::CAPABILITY()->send(dynamicCast <IMAPConnection>(shared_from_this()));
 
 	std::auto_ptr <IMAPParser::response> resp(m_parser->readResponse());
 
@@ -675,7 +680,7 @@ void IMAPConnection::internalDisconnect()
 {
 	if (isConnected())
 	{
-		send(true, "LOGOUT", true);
+		IMAPCommand::LOGOUT()->send(dynamicCast <IMAPConnection>(shared_from_this()));
 
 		m_socket->disconnect();
 		m_socket = null;
@@ -692,7 +697,7 @@ void IMAPConnection::internalDisconnect()
 
 void IMAPConnection::initHierarchySeparator()
 {
-	send(true, "LIST \"\" \"\"", true);
+	IMAPCommand::LIST("", "")->send(dynamicCast <IMAPConnection>(shared_from_this()));
 
 	std::auto_ptr <IMAPParser::response> resp(m_parser->readResponse());
 
@@ -732,43 +737,17 @@ void IMAPConnection::initHierarchySeparator()
 }
 
 
-void IMAPConnection::send(bool tag, const string& what, bool end)
+void IMAPConnection::sendCommand(shared_ptr <IMAPCommand> cmd)
 {
-	if (tag && !m_firstTag)
+	if (!m_firstTag)
 		++(*m_tag);
 
-#if VMIME_DEBUG
-	std::ostringstream oss;
+	m_socket->send(*m_tag);
+	m_socket->send(" ");
+	m_socket->send(cmd->getText());
+	m_socket->send("\r\n");
 
-	if (tag)
-	{
-		oss << string(*m_tag);
-		oss << " ";
-	}
-
-	oss << what;
-
-	if (end)
-		oss << "\r\n";
-
-	m_socket->send(oss.str());
-#else
-	if (tag)
-	{
-		m_socket->send(*m_tag);
-		m_socket->send(" ");
-	}
-
-	m_socket->send(what);
-
-	if (end)
-	{
-		m_socket->send("\r\n");
-	}
-#endif
-
-	if (tag)
-		m_firstTag = false;
+	m_firstTag = false;
 }
 
 
@@ -823,6 +802,18 @@ shared_ptr <session> IMAPConnection::getSession()
 shared_ptr <const socket> IMAPConnection::getSocket() const
 {
 	return m_socket;
+}
+
+
+void IMAPConnection::setSocket(shared_ptr <socket> sok)
+{
+	m_socket = sok;
+}
+
+
+shared_ptr <IMAPTag> IMAPConnection::getTag()
+{
+	return m_tag;
 }
 
 

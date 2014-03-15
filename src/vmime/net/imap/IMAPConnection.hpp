@@ -48,6 +48,7 @@ namespace imap {
 
 class IMAPTag;
 class IMAPStore;
+class IMAPCommand;
 
 
 class VMIME_EXPORT IMAPConnection : public object
@@ -79,7 +80,7 @@ public:
 	char hierarchySeparator() const;
 
 
-	void send(bool tag, const string& what, bool end);
+	void sendCommand(shared_ptr <IMAPCommand> cmd);
 	void sendRaw(const byte_t* buffer, const size_t count);
 
 	IMAPParser::response* readResponse(IMAPParser::literalHandler* lh = NULL);
@@ -102,6 +103,9 @@ public:
 	shared_ptr <connectionInfos> getConnectionInfos() const;
 
 	shared_ptr <const socket> getSocket() const;
+	void setSocket(shared_ptr <socket> sok);
+
+	shared_ptr <IMAPTag> getTag();
 
 	bool isMODSEQDisabled() const;
 	void disableMODSEQ();

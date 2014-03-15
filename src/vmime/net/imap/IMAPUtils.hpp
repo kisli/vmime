@@ -38,6 +38,7 @@
 #include "vmime/net/message.hpp"
 #include "vmime/net/imap/IMAPParser.hpp"
 #include "vmime/net/imap/IMAPConnection.hpp"
+#include "vmime/net/imap/IMAPCommand.hpp"
 
 #include "vmime/mailboxList.hpp"
 
@@ -79,7 +80,7 @@ public:
 
 	static int messageFlagsFromFlags(const IMAPParser::flag_list* list);
 
-	static const string messageFlagList(const int flags);
+	static const std::vector <string> messageFlagList(const int flags);
 
 	/** Format a date/time to IMAP date/time format.
 	  *
@@ -96,7 +97,7 @@ public:
 	  * @param options fetch options
 	  * @return fetch request
 	  */
-	static const string buildFetchRequest
+	static shared_ptr <IMAPCommand> buildFetchCommand
 		(shared_ptr <IMAPConnection> cnt, const messageSet& msgs, const fetchAttributes& options);
 
 	/** Convert a parser-style address list to a mailbox list.
