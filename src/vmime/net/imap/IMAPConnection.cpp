@@ -72,6 +72,9 @@ IMAPConnection::IMAPConnection(shared_ptr <IMAPStore> store, shared_ptr <securit
 	  m_secured(false), m_firstTag(true), m_capabilitiesFetched(false), m_noModSeq(false)
 {
 	m_tag = make_shared <IMAPTag>();
+
+	m_parser = make_shared <IMAPParser>();
+	m_parser->setTag(m_tag);
 }
 
 
@@ -135,7 +138,8 @@ void IMAPConnection::connect()
 	m_socket->connect(address, port);
 
 
-	m_parser = make_shared <IMAPParser>(m_tag, m_socket, m_timeoutHandler);
+	m_parser->setSocket(m_socket);
+	m_parser->setTimeoutHandler(m_timeoutHandler);
 
 
 	setState(STATE_NON_AUTHENTICATED);
@@ -808,6 +812,7 @@ shared_ptr <const socket> IMAPConnection::getSocket() const
 void IMAPConnection::setSocket(shared_ptr <socket> sok)
 {
 	m_socket = sok;
+	m_parser->setSocket(sok);
 }
 
 

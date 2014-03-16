@@ -49,8 +49,11 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 			"a001 OK Capability completed.\r\n");
 
 		vmime::shared_ptr <vmime::net::imap::IMAPParser> parser =
-			vmime::make_shared <vmime::net::imap::IMAPParser>
-				(tag, vmime::dynamicCast <vmime::net::socket>(socket), toh);
+			vmime::make_shared <vmime::net::imap::IMAPParser>();
+
+		parser->setTag(tag);
+		parser->setSocket(socket);
+		parser->setTimeoutHandler(toh);
 
 		parser->setStrict(false);
 		VASSERT_NO_THROW("non-strict mode", parser->readResponse(/* literalHandler */ NULL));
@@ -87,8 +90,11 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 		socket->localSend("+\r\n");
 
 		vmime::shared_ptr <vmime::net::imap::IMAPParser> parser =
-				vmime::make_shared <vmime::net::imap::IMAPParser>
-						(tag, vmime::dynamicCast <vmime::net::socket>(socket), toh);
+			vmime::make_shared <vmime::net::imap::IMAPParser>();
+
+		parser->setTag(tag);
+		parser->setSocket(socket);
+		parser->setTimeoutHandler(toh);
 
 		parser->setStrict(false);
 		VASSERT_NO_THROW("non-strict mode", parser->readResponse());
