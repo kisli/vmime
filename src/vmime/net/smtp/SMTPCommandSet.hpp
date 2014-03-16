@@ -78,9 +78,10 @@ public:
 	shared_ptr <SMTPCommand> getLastCommandSent() const;
 
 
-	void writeToSocket(shared_ptr <socket> sok);
+	void writeToSocket(shared_ptr <socket> sok, shared_ptr <tracer> tr);
 
 	const string getText() const;
+	const string getTraceText() const;
 
 private:
 

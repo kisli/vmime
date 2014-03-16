@@ -149,7 +149,7 @@ void POP3Message::extract
 	try
 	{
 		POP3Response::readLargeResponse
-			(store->getConnection(), os, progress, m_size);
+			(store->getConnection(), os, progress, m_size == -1 ? 0 : m_size);
 	}
 	catch (exceptions::command_error& e)
 	{

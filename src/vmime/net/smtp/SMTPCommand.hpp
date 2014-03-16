@@ -46,6 +46,7 @@ namespace net {
 
 class socket;
 class timeoutHandler;
+class tracer;
 
 
 namespace smtp {
@@ -76,13 +77,14 @@ public:
 	  * @param text command text
 	  * @return a new SMTPCommand object
 	  */
-	static shared_ptr <SMTPCommand> createCommand(const string& text);
+	static shared_ptr <SMTPCommand> createCommand(const string& text, const string& traceText = "");
 
 	/** Sends this command to the specified socket.
 	  *
 	  * @param sok socket to which the command will be written
+	  * @param tr tracer
 	  */
-	virtual void writeToSocket(shared_ptr <socket> sok);
+	virtual void writeToSocket(shared_ptr <socket> sok, shared_ptr <tracer> tr);
 
 	/** Returns the full text of the command, including command name
 	  * and parameters (if any).
@@ -91,14 +93,22 @@ public:
 	  */
 	virtual const string getText() const;
 
+	/** Returns the full text of the command, suitable for outputing
+	  * to the tracer.
+	  *
+	  * @return trace text (eg. "LOGIN myusername ***")
+	  */
+	virtual const string getTraceText() const;
+
 protected:
 
-	SMTPCommand(const string& text);
+	SMTPCommand(const string& text, const string& traceText);
 	SMTPCommand(const SMTPCommand&);
 
 private:
 
 	string m_text;
+	string m_traceText;
 };
 
 

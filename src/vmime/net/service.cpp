@@ -136,6 +136,18 @@ shared_ptr <socketFactory> service::getSocketFactory()
 }
 
 
+void service::setTracerFactory(shared_ptr <tracerFactory> tf)
+{
+	m_tracerFactory = tf;
+}
+
+
+shared_ptr <tracerFactory> service::getTracerFactory()
+{
+	return m_tracerFactory;
+}
+
+
 void service::setTimeoutHandlerFactory(shared_ptr <timeoutHandlerFactory> thf)
 {
 	m_toHandlerFactory = thf;

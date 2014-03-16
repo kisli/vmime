@@ -31,176 +31,15 @@
 #include "vmime/vmime.hpp"
 #include "vmime/platforms/posix/posixHandler.hpp"
 
+#include "example6_tracer.hpp"
+#include "example6_authenticator.hpp"
+#include "example6_certificateVerifier.hpp"
+#include "example6_timeoutHandler.hpp"
+
 
 // Global session object
 static vmime::shared_ptr <vmime::net::session> g_session
 	= vmime::make_shared <vmime::net::session>();
-
-
-#if VMIME_HAVE_SASL_SUPPORT
-
-// SASL authentication handler
-class interactiveAuthenticator : public vmime::security::sasl::defaultSASLAuthenticator
-{
-	const std::vector <vmime::shared_ptr <vmime::security::sasl::SASLMechanism> > getAcceptableMechanisms
-		(const std::vector <vmime::shared_ptr <vmime::security::sasl::SASLMechanism> >& available,
-		 vmime::shared_ptr <vmime::security::sasl::SASLMechanism> suggested) const
-	{
-		std::cout << std::endl << "Available SASL mechanisms:" << std::endl;
-
-		for (unsigned int i = 0 ; i < available.size() ; ++i)
-		{
-			std::cout << "  " << available[i]->getName();
-
-			if (suggested && available[i]->getName() == suggested->getName())
-				std::cout << "(suggested)";
-		}
-
-		std::cout << std::endl << std::endl;
-
-		return defaultSASLAuthenticator::getAcceptableMechanisms(available, suggested);
-	}
-
-	void setSASLMechanism(vmime::shared_ptr <vmime::security::sasl::SASLMechanism> mech)
-	{
-		std::cout << "Trying '" << mech->getName() << "' authentication mechanism" << std::endl;
-
-		defaultSASLAuthenticator::setSASLMechanism(mech);
-	}
-
-	const vmime::string getUsername() const
-	{
-		if (m_username.empty())
-			m_username = getUserInput("Username");
-
-		return m_username;
-	}
-
-	const vmime::string getPassword() const
-	{
-		if (m_password.empty())
-			m_password = getUserInput("Password");
-
-		return m_password;
-	}
-
-	static const vmime::string getUserInput(const std::string& prompt)
-	{
-		std::cout << prompt << ": ";
-		std::cout.flush();
-
-		vmime::string res;
-		std::getline(std::cin, res);
-
-		return res;
-	}
-
-private:
-
-	mutable vmime::string m_username;
-	mutable vmime::string m_password;
-};
-
-#else // !VMIME_HAVE_SASL_SUPPORT
-
-// Simple authentication handler
-class interactiveAuthenticator : public vmime::security::defaultAuthenticator
-{
-	const vmime::string getUsername() const
-	{
-		if (m_username.empty())
-			m_username = getUserInput("Username");
-
-		return m_username;
-	}
-
-	const vmime::string getPassword() const
-	{
-		if (m_password.empty())
-			m_password = getUserInput("Password");
-
-		return m_password;
-	}
-
-	static const vmime::string getUserInput(const std::string& prompt)
-	{
-		std::cout << prompt << ": ";
-		std::cout.flush();
-
-		vmime::string res;
-		std::getline(std::cin, res);
-
-		return res;
-	}
-
-private:
-
-	mutable vmime::string m_username;
-	mutable vmime::string m_password;
-};
-
-#endif // VMIME_HAVE_SASL_SUPPORT
-
-
-#if VMIME_HAVE_TLS_SUPPORT
-
-// Certificate verifier (TLS/SSL)
-class interactiveCertificateVerifier : public vmime::security::cert::defaultCertificateVerifier
-{
-public:
-
-	void verify(vmime::shared_ptr <vmime::security::cert::certificateChain> chain, const vmime::string& hostname)
-	{
-		try
-		{
-			setX509TrustedCerts(m_trustedCerts);
-
-			defaultCertificateVerifier::verify(chain, hostname);
-		}
-		catch (vmime::exceptions::certificate_verification_exception&)
-		{
-			// Obtain subject's certificate
-			vmime::shared_ptr <vmime::security::cert::certificate> cert = chain->getAt(0);
-
-			std::cout << std::endl;
-			std::cout << "Server sent a '" << cert->getType() << "'" << " certificate." << std::endl;
-			std::cout << "Do you want to accept this certificate? (Y/n) ";
-			std::cout.flush();
-
-			std::string answer;
-			std::getline(std::cin, answer);
-
-			if (answer.length() != 0 &&
-			    (answer[0] == 'Y' || answer[0] == 'y'))
-			{
-				// Accept it, and remember user's choice for later
-				if (cert->getType() == "X.509")
-				{
-					m_trustedCerts.push_back(vmime::dynamicCast
-						<vmime::security::cert::X509Certificate>(cert));
-
-					setX509TrustedCerts(m_trustedCerts);
-					defaultCertificateVerifier::verify(chain, hostname);
-				}
-
-				return;
-			}
-
-			throw vmime::exceptions::certificate_verification_exception
-				("User did not accept the certificate.");
-		}
-	}
-
-private:
-
-	static std::vector <vmime::shared_ptr <vmime::security::cert::X509Certificate> > m_trustedCerts;
-};
-
-
-std::vector <vmime::shared_ptr <vmime::security::cert::X509Certificate> >
-	interactiveCertificateVerifier::m_trustedCerts;
-
-#endif // VMIME_HAVE_TLS_SUPPORT
 
 
 /** Returns the messaging protocols supported by VMime.
@@ -288,53 +127,6 @@ static std::ostream& operator<<(std::ostream& os, const vmime::exception& e)
 
 	return os;
 }
-
-
-/** Time out handler.
-  * Used to stop the current operation after too much time, or if the user
-  * requested cancellation.
-  */
-class timeoutHandler : public vmime::net::timeoutHandler
-{
-public:
-
-	bool isTimeOut()
-	{
-		// This is a cancellation point: return true if you want to cancel
-		// the current operation. If you return true, handleTimeOut() will
-		// be called just after this, and before actually cancelling the
-		// operation
-		return false;
-	}
-
-	void resetTimeOut()
-	{
-		// Called at the beginning of an operation (eg. connecting,
-		// a read() or a write() on a socket...)
-	}
-
-	bool handleTimeOut()
-	{
-		// If isTimeOut() returned true, this function will be called. This
-		// allows you to interact with the user, ie. display a prompt to
-		// know whether he wants to cancel the operation.
-
-		// If you return true here, the operation will be actually cancelled.
-		// If not, the time out is reset and the operation continues.
-		return true;
-	}
-};
-
-
-class timeoutHandlerFactory : public vmime::net::timeoutHandlerFactory
-{
-public:
-
-	vmime::shared_ptr <vmime::net::timeoutHandler> create()
-	{
-		return vmime::make_shared <timeoutHandler>();
-	}
-};
 
 
 /** Print the MIME structure of a message on the standard output.
@@ -445,8 +237,12 @@ static void sendMessage()
 
 		vmime::utility::url url(urlString);
 
-		vmime::shared_ptr <vmime::net::transport> tr =
-			g_session->getTransport(url, vmime::make_shared <interactiveAuthenticator>());
+		vmime::shared_ptr <vmime::net::transport> tr;
+
+		if (url.getUsername().empty() || url.getPassword().empty())
+			tr = g_session->getTransport(url, vmime::make_shared <interactiveAuthenticator>());
+		else
+			tr = g_session->getTransport(url);
 
 #if VMIME_HAVE_TLS_SUPPORT
 
@@ -465,7 +261,12 @@ static void sendMessage()
 
 		// You can also set some properties (see example7 to know the properties
 		// available for each service). For example, for SMTP:
-//		tr->setProperty("options.need-authentication", true);
+		if (!url.getUsername().empty() || !url.getPassword().empty())
+			tr->setProperty("options.need-authentication", true);
+
+		// Trace communication between client and server
+		vmime::shared_ptr <std::ostringstream> traceStream = vmime::make_shared <std::ostringstream>();
+		tr->setTracerFactory(vmime::make_shared <myTracerFactory>(traceStream));
 
 		// Information about the mail
 		std::cout << "Enter email of the expeditor (eg. me@somewhere.com): ";
@@ -519,6 +320,12 @@ static void sendMessage()
 		//     vmime::message msg;
 		//     ...
 		//     tr->send(&msg);
+
+		// Display connection log
+		std::cout << std::endl;
+		std::cout << "Connection Trace:" << std::endl;
+		std::cout << "=================" << std::endl;
+		std::cout << traceStream->str();
 
 		tr->disconnect();
 	}
@@ -580,6 +387,10 @@ static void connectStore()
 
 #endif // VMIME_HAVE_TLS_SUPPORT
 
+		// Trace communication between client and server
+		vmime::shared_ptr <std::ostringstream> traceStream = vmime::make_shared <std::ostringstream>();
+		st->setTracerFactory(vmime::make_shared <myTracerFactory>(traceStream));
+
 		// Connect to the mail store
 		st->connect();
 
@@ -621,6 +432,7 @@ static void connectStore()
 				choices.push_back("Change folder");
 				choices.push_back("Add message (to the current folder)");
 				choices.push_back("Copy message (into the current folder)");
+				choices.push_back("Display trace output");
 				choices.push_back("Return to main menu");
 
 				const int choice = printMenu(choices);
@@ -928,8 +740,17 @@ static void connectStore()
 
 					break;
 				}
-				// Main menu
+				// Display trace output
 				case 12:
+
+					std::cout << std::endl;
+					std::cout << "Connection Trace:" << std::endl;
+					std::cout << "=================" << std::endl;
+					std::cout << traceStream->str();
+					break;
+
+				// Main menu
+				case 13:
 
 					f->close(true);  // 'true' to expunge deleted messages
 					cont = false;
@@ -979,7 +800,9 @@ static void connectStore()
 				std::cerr << std::endl;
 				std::cerr << "std::exception: " << e.what() << std::endl;
 			}
-		}
+		} // for(cont)
+
+		st->disconnect();
 	}
 	catch (vmime::exception& e)
 	{

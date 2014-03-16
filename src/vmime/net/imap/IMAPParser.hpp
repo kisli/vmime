@@ -49,6 +49,7 @@
 
 #include "vmime/net/timeoutHandler.hpp"
 #include "vmime/net/socket.hpp"
+#include "vmime/net/tracer.hpp"
 
 #include "vmime/net/imap/IMAPTag.hpp"
 
@@ -279,6 +280,15 @@ public:
 	void setTimeoutHandler(shared_ptr <timeoutHandler> toh)
 	{
 		m_timeoutHandler = toh;
+	}
+
+	/** Set the tracer currently used by this parser.
+	  *
+	  * @param tr tracer
+	  */
+	void setTracer(shared_ptr <tracer> tr)
+	{
+		m_tracer = tr;
 	}
 
 	/** Set whether we operate in strict mode (this may not work
@@ -5687,6 +5697,7 @@ private:
 
 	weak_ptr <IMAPTag> m_tag;
 	weak_ptr <socket> m_socket;
+	shared_ptr <tracer> m_tracer;
 
 	utility::progressListener* m_progress;
 
@@ -5730,6 +5741,13 @@ public:
 #if DEBUG_RESPONSE
 		std::cout << std::endl << "Read line:" << std::endl << line << std::endl;
 #endif
+
+		if (m_tracer)
+		{
+			string::size_type len = line.length();
+			while (len != 0 && (line[len - 1] == '\r' || line[len - 1] == '\n')) --len;
+			m_tracer->traceReceive(line.substr(0, len));
+		}
 
 		return (line);
 	}
@@ -5859,6 +5877,9 @@ public:
 			if (m_progress)
 				m_progress->progress(len, count);
 		}
+
+		if (m_tracer)
+			m_tracer->traceReceiveBytes(count);
 
 		if (m_progress)
 			m_progress->stop(count);

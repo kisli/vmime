@@ -231,8 +231,10 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 	{
 		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::createCommand("MY_COMMAND param1 param2");
 
+		vmime::shared_ptr <vmime::net::tracer> tracer;
 		vmime::shared_ptr <testSocket> sok = vmime::make_shared <testSocket>();
-		cmd->writeToSocket(sok);
+
+		cmd->writeToSocket(sok, tracer);
 
 		vmime::string response;
 		sok->localReceive(response);

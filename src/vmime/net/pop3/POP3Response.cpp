@@ -46,8 +46,8 @@ namespace net {
 namespace pop3 {
 
 
-POP3Response::POP3Response(shared_ptr <socket> sok, shared_ptr <timeoutHandler> toh)
-	: m_socket(sok), m_timeoutHandler(toh)
+POP3Response::POP3Response(shared_ptr <socket> sok, shared_ptr <timeoutHandler> toh, shared_ptr <tracer> tracer)
+	: m_socket(sok), m_timeoutHandler(toh), m_tracer(tracer)
 {
 }
 
@@ -56,7 +56,7 @@ POP3Response::POP3Response(shared_ptr <socket> sok, shared_ptr <timeoutHandler> 
 shared_ptr <POP3Response> POP3Response::readResponse(shared_ptr <POP3Connection> conn)
 {
 	shared_ptr <POP3Response> resp = shared_ptr <POP3Response>
-		(new POP3Response(conn->getSocket(), conn->getTimeoutHandler()));
+		(new POP3Response(conn->getSocket(), conn->getTimeoutHandler(), conn->getTracer()));
 
 	string buffer;
 	resp->readResponseImpl(buffer, /* multiLine */ false);
@@ -64,6 +64,9 @@ shared_ptr <POP3Response> POP3Response::readResponse(shared_ptr <POP3Connection>
 	resp->m_firstLine = buffer;
 	resp->m_code = getResponseCode(buffer);
 	stripResponseCode(buffer, resp->m_text);
+
+	if (resp->m_tracer)
+		resp->m_tracer->traceReceive(buffer);
 
 	return resp;
 }
@@ -73,7 +76,7 @@ shared_ptr <POP3Response> POP3Response::readResponse(shared_ptr <POP3Connection>
 shared_ptr <POP3Response> POP3Response::readMultilineResponse(shared_ptr <POP3Connection> conn)
 {
 	shared_ptr <POP3Response> resp = shared_ptr <POP3Response>
-		(new POP3Response(conn->getSocket(), conn->getTimeoutHandler()));
+		(new POP3Response(conn->getSocket(), conn->getTimeoutHandler(), conn->getTracer()));
 
 	string buffer;
 	resp->readResponseImpl(buffer, /* multiLine */ true);
@@ -88,8 +91,20 @@ shared_ptr <POP3Response> POP3Response::readMultilineResponse(shared_ptr <POP3Co
 	std::istringstream iss(nextLines);
 	string line;
 
+	if (resp->m_tracer)
+		resp->m_tracer->traceReceive(firstLine);
+
 	while (std::getline(iss, line, '\n'))
-		resp->m_lines.push_back(utility::stringUtils::trim(line));
+	{
+		line = utility::stringUtils::trim(line);
+		resp->m_lines.push_back(line);
+
+		if (resp->m_tracer)
+			resp->m_tracer->traceReceive(line);
+	}
+
+	if (resp->m_tracer)
+		resp->m_tracer->traceReceive(".");
 
 	return resp;
 }
@@ -101,14 +116,21 @@ shared_ptr <POP3Response> POP3Response::readLargeResponse
 	 utility::progressListener* progress, const size_t predictedSize)
 {
 	shared_ptr <POP3Response> resp = shared_ptr <POP3Response>
-		(new POP3Response(conn->getSocket(), conn->getTimeoutHandler()));
+		(new POP3Response(conn->getSocket(), conn->getTimeoutHandler(), conn->getTracer()));
 
 	string firstLine;
-	resp->readResponseImpl(firstLine, os, progress, predictedSize);
+	const size_t length = resp->readResponseImpl(firstLine, os, progress, predictedSize);
 
 	resp->m_firstLine = firstLine;
 	resp->m_code = getResponseCode(firstLine);
 	stripResponseCode(firstLine, resp->m_text);
+
+	if (resp->m_tracer)
+	{
+		resp->m_tracer->traceReceive(firstLine);
+		resp->m_tracer->traceReceiveBytes(length - firstLine.length());
+		resp->m_tracer->traceReceive(".");
+	}
 
 	return resp;
 }
@@ -230,7 +252,7 @@ void POP3Response::readResponseImpl(string& buffer, const bool multiLine)
 }
 
 
-void POP3Response::readResponseImpl
+size_t POP3Response::readResponseImpl
 	(string& firstLine, utility::outputStream& os,
 	 utility::progressListener* progress, const size_t predictedSize)
 {
@@ -327,6 +349,8 @@ void POP3Response::readResponseImpl
 
 	if (progress)
 		progress->stop(total);
+
+	return current;
 }
 
 

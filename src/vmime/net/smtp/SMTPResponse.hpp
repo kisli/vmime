@@ -41,6 +41,7 @@ namespace net {
 
 class socket;
 class timeoutHandler;
+class tracer;
 
 
 namespace smtp {
@@ -95,6 +96,7 @@ public:
 	/** Receive and parse a new SMTP response from the
 	  * specified socket.
 	  *
+	  * @param tr tracer
 	  * @param sok socket from which to read
 	  * @param toh time-out handler
 	  * @param st previous state of response parser for the specified socket
@@ -102,7 +104,9 @@ public:
 	  * @throws exceptions::operation_timed_out if no data
 	  * has been received within the granted time
 	  */
-	static shared_ptr <SMTPResponse> readResponse(shared_ptr <socket> sok, shared_ptr <timeoutHandler> toh, const state& st);
+	static shared_ptr <SMTPResponse> readResponse
+		(shared_ptr <tracer> tr, shared_ptr <socket> sok,
+		 shared_ptr <timeoutHandler> toh, const state& st);
 
 	/** Return the SMTP response code.
 	  *
@@ -150,7 +154,7 @@ public:
 
 private:
 
-	SMTPResponse(shared_ptr <socket> sok, shared_ptr <timeoutHandler> toh, const state& st);
+	SMTPResponse(shared_ptr <tracer> tr, shared_ptr <socket> sok, shared_ptr <timeoutHandler> toh, const state& st);
 	SMTPResponse(const SMTPResponse&);
 
 	void readResponse();
@@ -166,6 +170,7 @@ private:
 
 	shared_ptr <socket> m_socket;
 	shared_ptr <timeoutHandler> m_timeoutHandler;
+	shared_ptr <tracer> m_tracer;
 
 	string m_responseBuffer;
 	bool m_responseContinues;

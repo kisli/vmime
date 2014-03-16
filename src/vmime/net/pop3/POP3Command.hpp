@@ -76,9 +76,10 @@ public:
 	/** Creates a new POP3 command with the specified text.
 	  *
 	  * @param text command text
+	  * @param traceText trace text (if empty, command text is used)
 	  * @return a new POP3Command object
 	  */
-	static shared_ptr <POP3Command> createCommand(const string& text);
+	static shared_ptr <POP3Command> createCommand(const string& text, const string& traceText = "");
 
 	/** Sends this command over the specified connection.
 	  *
@@ -93,14 +94,22 @@ public:
 	  */
 	virtual const string getText() const;
 
+	/** Returns the full text of the command, suitable for outputing
+	  * to the tracer.
+	  *
+	  * @return trace text (eg. "USER myusername")
+	  */
+	virtual const string getTraceText() const;
+
 protected:
 
-	POP3Command(const string& text);
+	POP3Command(const string& text, const string& traceText);
 	POP3Command(const POP3Command&);
 
 private:
 
 	string m_text;
+	string m_traceText;
 };
 
 

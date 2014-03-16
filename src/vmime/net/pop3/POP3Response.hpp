@@ -38,6 +38,7 @@
 #include "vmime/utility/progressListener.hpp"
 
 #include "vmime/net/socket.hpp"
+#include "vmime/net/tracer.hpp"
 
 
 namespace vmime {
@@ -143,10 +144,10 @@ public:
 
 private:
 
-	POP3Response(shared_ptr <socket> sok, shared_ptr <timeoutHandler> toh);
+	POP3Response(shared_ptr <socket> sok, shared_ptr <timeoutHandler> toh, shared_ptr <tracer> tracer);
 
 	void readResponseImpl(string& buffer, const bool multiLine);
-	void readResponseImpl
+	size_t readResponseImpl
 		(string& firstLine, utility::outputStream& os,
 		 utility::progressListener* progress, const size_t predictedSize);
 
@@ -163,6 +164,7 @@ private:
 
 	shared_ptr <socket> m_socket;
 	shared_ptr <timeoutHandler> m_timeoutHandler;
+	shared_ptr <tracer> m_tracer;
 
 	string m_firstLine;
 	ResponseCode m_code;

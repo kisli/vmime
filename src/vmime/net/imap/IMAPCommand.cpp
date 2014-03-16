@@ -56,7 +56,7 @@ shared_ptr <IMAPCommand> IMAPCommand::LOGIN(const string& username, const string
 
 	std::ostringstream trace;
 	trace.imbue(std::locale::classic());
-	trace << "LOGIN <username> <password>";
+	trace << "LOGIN {username} {password}";
 
 	return createCommand(cmd.str(), trace.str());
 }

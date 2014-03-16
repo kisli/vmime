@@ -1124,6 +1124,9 @@ messageSet IMAPFolder::addMessage
 
 	m_connection->sendRaw(utility::stringUtils::bytesFromString("\r\n"), 2);
 
+	if (m_connection->getTracer())
+		m_connection->getTracer()->traceSendBytes(current);
+
 	if (progress)
 		progress->stop(total);
 

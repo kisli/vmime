@@ -69,15 +69,16 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandSetTest)
 		VASSERT_NO_THROW("No throw 2", cset->addCommand(SMTPCommand::createCommand("MY_COMMAND2")));
 		VASSERT_EQ("Text", "MY_COMMAND1\r\nMY_COMMAND2\r\n", cset->getText());
 
+		vmime::shared_ptr <vmime::net::tracer> tracer;
 		vmime::shared_ptr <testSocket> sok = vmime::make_shared <testSocket>();
 
-		cset->writeToSocket(sok);
+		cset->writeToSocket(sok, tracer);
 		VASSERT_FALSE("Finished", cset->isFinished());
 
 		// Can't add commands when writing to socket has started
 		VASSERT_THROW("Throw", cset->addCommand(SMTPCommand::createCommand("MY_COMMAND3")), std::runtime_error);
 
-		cset->writeToSocket(sok);
+		cset->writeToSocket(sok, tracer);
 		VASSERT_TRUE("Finished", cset->isFinished());
 	}
 
@@ -90,10 +91,11 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandSetTest)
 		VASSERT_NO_THROW("No throw 2", cset->addCommand(SMTPCommand::createCommand("MY_COMMAND2")));
 		VASSERT_EQ("Text", "MY_COMMAND1\r\nMY_COMMAND2\r\n", cset->getText());
 
+		vmime::shared_ptr <vmime::net::tracer> tracer;
 		vmime::shared_ptr <testSocket> sok = vmime::make_shared <testSocket>();
 		vmime::string response;
 
-		cset->writeToSocket(sok);
+		cset->writeToSocket(sok, tracer);
 		VASSERT_TRUE("Finished", cset->isFinished());
 
 		sok->localReceive(response);
@@ -110,15 +112,16 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandSetTest)
 		cset->addCommand(SMTPCommand::createCommand("MY_COMMAND1"));
 		cset->addCommand(SMTPCommand::createCommand("MY_COMMAND2"));
 
+		vmime::shared_ptr <vmime::net::tracer> tracer;
 		vmime::shared_ptr <testSocket> sok = vmime::make_shared <testSocket>();
 		vmime::string response;
 
-		cset->writeToSocket(sok);
+		cset->writeToSocket(sok, tracer);
 
 		sok->localReceive(response);
 		VASSERT_EQ("Receive cmd 1", "MY_COMMAND1\r\n", response);
 
-		cset->writeToSocket(sok);
+		cset->writeToSocket(sok, tracer);
 
 		sok->localReceive(response);
 		VASSERT_EQ("Receive cmd 2", "MY_COMMAND2\r\n", response);
@@ -131,10 +134,11 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandSetTest)
 		cset->addCommand(SMTPCommand::createCommand("MY_COMMAND1"));
 		cset->addCommand(SMTPCommand::createCommand("MY_COMMAND2"));
 
+		vmime::shared_ptr <vmime::net::tracer> tracer;
 		vmime::shared_ptr <testSocket> sok = vmime::make_shared <testSocket>();
 		vmime::string response;
 
-		cset->writeToSocket(sok);
+		cset->writeToSocket(sok, tracer);
 
 		sok->localReceive(response);
 		VASSERT_EQ("Receive cmds", "MY_COMMAND1\r\nMY_COMMAND2\r\n", response);
@@ -147,12 +151,13 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandSetTest)
 		cset->addCommand(SMTPCommand::createCommand("MY_COMMAND1"));
 		cset->addCommand(SMTPCommand::createCommand("MY_COMMAND2"));
 
+		vmime::shared_ptr <vmime::net::tracer> tracer;
 		vmime::shared_ptr <testSocket> sok = vmime::make_shared <testSocket>();
 
-		cset->writeToSocket(sok);
+		cset->writeToSocket(sok, tracer);
 		VASSERT_EQ("Cmd 1", "MY_COMMAND1", cset->getLastCommandSent()->getText());
 
-		cset->writeToSocket(sok);
+		cset->writeToSocket(sok, tracer);
 		VASSERT_EQ("Cmd 2", "MY_COMMAND2", cset->getLastCommandSent()->getText());
 	}
 
@@ -163,12 +168,13 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandSetTest)
 		cset->addCommand(SMTPCommand::createCommand("MY_COMMAND1"));
 		cset->addCommand(SMTPCommand::createCommand("MY_COMMAND2"));
 
+		vmime::shared_ptr <vmime::net::tracer> tracer;
 		vmime::shared_ptr <testSocket> sok = vmime::make_shared <testSocket>();
 
-		cset->writeToSocket(sok);
+		cset->writeToSocket(sok, tracer);
 		VASSERT_EQ("Cmd 1", "MY_COMMAND1", cset->getLastCommandSent()->getText());
 
-		cset->writeToSocket(sok);
+		cset->writeToSocket(sok, tracer);
 		VASSERT_EQ("Cmd 2", "MY_COMMAND2", cset->getLastCommandSent()->getText());
 	}
 

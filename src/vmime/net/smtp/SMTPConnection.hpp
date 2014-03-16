@@ -37,6 +37,7 @@
 #include "vmime/net/timeoutHandler.hpp"
 #include "vmime/net/session.hpp"
 #include "vmime/net/connectionInfos.hpp"
+#include "vmime/net/tracer.hpp"
 
 #include "vmime/net/smtp/SMTPCommand.hpp"
 #include "vmime/net/smtp/SMTPResponse.hpp"
@@ -80,6 +81,7 @@ public:
 	virtual shared_ptr <timeoutHandler> getTimeoutHandler();
 	virtual shared_ptr <security::authenticator> getAuthenticator();
 	virtual shared_ptr <session> getSession();
+	virtual shared_ptr <tracer> getTracer();
 
 	void sendRequest(shared_ptr <SMTPCommand> cmd);
 	shared_ptr <SMTPResponse> readResponse();
@@ -106,6 +108,7 @@ private:
 	shared_ptr <security::authenticator> m_auth;
 	shared_ptr <socket> m_socket;
 	shared_ptr <timeoutHandler> m_timeoutHandler;
+	shared_ptr <tracer> m_tracer;
 
 	SMTPResponse::state m_responseState;
 

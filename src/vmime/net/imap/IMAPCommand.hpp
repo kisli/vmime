@@ -98,7 +98,7 @@ public:
 	/** Returns the full text of the command, suitable for outputing
 	  * to the tracer.
 	  *
-	  * @return trace text (eg. "LOGIN myusername ***")
+	  * @return trace text (eg. "LOGIN {username} {password}")
 	  */
 	virtual const string getTraceText() const;
 

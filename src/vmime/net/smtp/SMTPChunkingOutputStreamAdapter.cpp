@@ -73,6 +73,9 @@ void SMTPChunkingOutputStreamAdapter::sendChunk
 		m_progress->progress(m_totalSent, m_totalSize);
 	}
 
+	if (m_connection->getTracer())
+		m_connection->getTracer()->traceSendBytes(count);
+
 	// If PIPELINING is not supported, read one response for this BDAT command
 	if (!m_connection->hasExtension("PIPELINING"))
 	{
@@ -143,6 +146,9 @@ void SMTPChunkingOutputStreamAdapter::flush()
 
 	if (m_progress)
 		m_progress->stop(m_totalSize);
+
+	if (m_connection->getTracer())
+		m_connection->getTracer()->traceSendBytes(m_bufferSize);
 }
 
 

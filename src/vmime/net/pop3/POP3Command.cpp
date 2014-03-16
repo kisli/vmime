@@ -42,8 +42,8 @@ namespace net {
 namespace pop3 {
 
 
-POP3Command::POP3Command(const string& text)
-	: m_text(text)
+POP3Command::POP3Command(const string& text, const string& traceText)
+	: m_text(text), m_traceText(traceText)
 {
 }
 
@@ -109,7 +109,11 @@ shared_ptr <POP3Command> POP3Command::USER(const string& username)
 	cmd.imbue(std::locale::classic());
 	cmd << "USER " << username;
 
-	return createCommand(cmd.str());
+	std::ostringstream trace;
+	trace.imbue(std::locale::classic());
+	trace << "USER {username}";
+
+	return createCommand(cmd.str(), trace.str());
 }
 
 
@@ -120,7 +124,11 @@ shared_ptr <POP3Command> POP3Command::PASS(const string& password)
 	cmd.imbue(std::locale::classic());
 	cmd << "PASS " << password;
 
-	return createCommand(cmd.str());
+	std::ostringstream trace;
+	trace.imbue(std::locale::classic());
+	trace << "PASS {password}";
+
+	return createCommand(cmd.str(), trace.str());
 }
 
 
@@ -215,9 +223,13 @@ shared_ptr <POP3Command> POP3Command::QUIT()
 
 
 // static
-shared_ptr <POP3Command> POP3Command::createCommand(const string& text)
+shared_ptr <POP3Command> POP3Command::createCommand
+	(const string& text, const string& traceText)
 {
-	return shared_ptr <POP3Command>(new POP3Command(text));
+	if (traceText.empty())
+		return shared_ptr <POP3Command>(new POP3Command(text, text));
+	else
+		return shared_ptr <POP3Command>(new POP3Command(text, traceText));
 }
 
 
@@ -227,9 +239,18 @@ const string POP3Command::getText() const
 }
 
 
+const string POP3Command::getTraceText() const
+{
+	return m_traceText;
+}
+
+
 void POP3Command::send(shared_ptr <POP3Connection> conn)
 {
 	conn->getSocket()->send(m_text + "\r\n");
+
+	if (conn->getTracer())
+		conn->getTracer()->traceSend(m_traceText);
 }
 
 

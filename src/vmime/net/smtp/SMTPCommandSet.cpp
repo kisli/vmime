@@ -42,7 +42,7 @@ namespace smtp {
 
 
 SMTPCommandSet::SMTPCommandSet(const bool pipeline)
-	: SMTPCommand(""), m_pipeline(pipeline),
+	: SMTPCommand("", ""), m_pipeline(pipeline),
 	  m_started(false), m_lastCommandSent()
 {
 }
@@ -67,7 +67,7 @@ void SMTPCommandSet::addCommand(shared_ptr <SMTPCommand> cmd)
 }
 
 
-void SMTPCommandSet::writeToSocket(shared_ptr <socket> sok)
+void SMTPCommandSet::writeToSocket(shared_ptr <socket> sok, shared_ptr <tracer> tr)
 {
 	if (m_pipeline)
 	{
@@ -78,7 +78,7 @@ void SMTPCommandSet::writeToSocket(shared_ptr <socket> sok)
 			     it != m_commands.end() ; ++it)
 			{
 				shared_ptr <SMTPCommand> cmd = *it;
-				cmd->writeToSocket(sok);
+				cmd->writeToSocket(sok, tr);
 			}
 		}
 
@@ -99,7 +99,7 @@ void SMTPCommandSet::writeToSocket(shared_ptr <socket> sok)
 			shared_ptr <SMTPCommand> cmd = m_commands.front();
 			m_commands.pop_front();
 
-			cmd->writeToSocket(sok);
+			cmd->writeToSocket(sok, tr);
 
 			m_lastCommandSent = cmd;
 		}
@@ -118,6 +118,21 @@ const string SMTPCommandSet::getText() const
 	     it != m_commands.end() ; ++it)
 	{
 		cmd << (*it)->getText() << "\r\n";
+	}
+
+	return cmd.str();
+}
+
+
+const string SMTPCommandSet::getTraceText() const
+{
+	std::ostringstream cmd;
+	cmd.imbue(std::locale::classic());
+
+	for (std::list <shared_ptr <SMTPCommand> >::const_iterator it = m_commands.begin() ;
+	     it != m_commands.end() ; ++it)
+	{
+		cmd << (*it)->getTraceText() << "\r\n";
 	}
 
 	return cmd.str();

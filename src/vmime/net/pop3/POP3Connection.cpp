@@ -67,6 +67,10 @@ POP3Connection::POP3Connection(shared_ptr <POP3Store> store, shared_ptr <securit
 	: m_store(store), m_auth(auth), m_socket(null), m_timeoutHandler(null),
 	  m_authenticated(false), m_secured(false), m_capabilitiesFetched(false)
 {
+	static int connectionId = 0;
+
+	if (store->getTracerFactory())
+		m_tracer = store->getTracerFactory()->create(store, ++connectionId);
 }
 
 
@@ -500,7 +504,11 @@ void POP3Connection::authenticateSASL()
 						(challenge, challengeLen, &resp, &respLen);
 
 					// Send response
-					m_socket->send(saslContext->encodeB64(resp, respLen) + "\r\n");
+					const string respB64 = saslContext->encodeB64(resp, respLen) + "\r\n";
+					m_socket->sendRaw(utility::stringUtils::bytesFromString(respB64), respB64.length());
+
+					if (m_tracer)
+						m_tracer->traceSendBytes(respB64.length() - 2, "SASL exchange");
 				}
 				catch (exceptions::sasl_exception& e)
 				{
@@ -518,6 +526,9 @@ void POP3Connection::authenticateSASL()
 
 					// Cancel SASL exchange
 					m_socket->send("*\r\n");
+
+					if (m_tracer)
+						m_tracer->traceSend("*");
 				}
 				catch (...)
 				{
@@ -674,6 +685,12 @@ shared_ptr <session> POP3Connection::getSession()
 shared_ptr <socket> POP3Connection::getSocket()
 {
 	return m_socket;
+}
+
+
+shared_ptr <tracer> POP3Connection::getTracer()
+{
+	return m_tracer;
 }
 
 

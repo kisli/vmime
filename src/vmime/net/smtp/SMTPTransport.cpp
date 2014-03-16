@@ -210,7 +210,7 @@ void SMTPTransport::sendEnvelope
 	// Read response for "RSET" command
 	if (needReset)
 	{
-		commands->writeToSocket(m_connection->getSocket());
+		commands->writeToSocket(m_connection->getSocket(), m_connection->getTracer());
 
 		resp = m_connection->readResponse();
 
@@ -227,7 +227,7 @@ void SMTPTransport::sendEnvelope
 	}
 
 	// Read response for "MAIL" command
-	commands->writeToSocket(m_connection->getSocket());
+	commands->writeToSocket(m_connection->getSocket(), m_connection->getTracer());
 
 	if ((resp = m_connection->readResponse())->getCode() != 250)
 	{
@@ -257,7 +257,7 @@ void SMTPTransport::sendEnvelope
 	// Read responses for "RCPT TO" commands
 	for (size_t i = 0 ; i < recipients.getMailboxCount() ; ++i)
 	{
-		commands->writeToSocket(m_connection->getSocket());
+		commands->writeToSocket(m_connection->getSocket(), m_connection->getTracer());
 
 		resp = m_connection->readResponse();
 
@@ -291,7 +291,7 @@ void SMTPTransport::sendEnvelope
 	// Read response for "DATA" command
 	if (sendDATACommand)
 	{
-		commands->writeToSocket(m_connection->getSocket());
+		commands->writeToSocket(m_connection->getSocket(), m_connection->getTracer());
 
 		if ((resp = m_connection->readResponse())->getCode() != 354)
 		{
@@ -325,6 +325,12 @@ void SMTPTransport::send
 
 	// Send end-of-data delimiter
 	m_connection->getSocket()->send("\r\n.\r\n");
+
+	if (m_connection->getTracer())
+	{
+		m_connection->getTracer()->traceSendBytes(size);
+		m_connection->getTracer()->traceSend(".");
+	}
 
 	shared_ptr <SMTPResponse> resp;
 

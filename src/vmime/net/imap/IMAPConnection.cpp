@@ -71,10 +71,16 @@ IMAPConnection::IMAPConnection(shared_ptr <IMAPStore> store, shared_ptr <securit
 	  m_hierarchySeparator('\0'), m_state(STATE_NONE), m_timeoutHandler(null),
 	  m_secured(false), m_firstTag(true), m_capabilitiesFetched(false), m_noModSeq(false)
 {
+	static int connectionId = 0;
+
 	m_tag = make_shared <IMAPTag>();
+
+	if (store->getTracerFactory())
+		m_tracer = store->getTracerFactory()->create(store, ++connectionId);
 
 	m_parser = make_shared <IMAPParser>();
 	m_parser->setTag(m_tag);
+	m_parser->setTracer(m_tracer);
 }
 
 
@@ -439,6 +445,9 @@ void IMAPConnection::authenticateSASL()
 					const string respB64 = saslContext->encodeB64(resp, respLen) + "\r\n";
 					sendRaw(utility::stringUtils::bytesFromString(respB64), respB64.length());
 
+					if (m_tracer)
+						m_tracer->traceSendBytes(respB64.length() - 2, "SASL exchange");
+
 					// Server capabilities may change when logged in
 					invalidateCapabilities();
 				}
@@ -458,6 +467,9 @@ void IMAPConnection::authenticateSASL()
 
 					// Cancel SASL exchange
 					sendRaw(utility::stringUtils::bytesFromString("*\r\n"), 3);
+
+					if (m_tracer)
+						m_tracer->traceSend("*");
 				}
 				catch (...)
 				{
@@ -752,6 +764,14 @@ void IMAPConnection::sendCommand(shared_ptr <IMAPCommand> cmd)
 	m_socket->send("\r\n");
 
 	m_firstTag = false;
+
+	if (m_tracer)
+	{
+		std::ostringstream oss;
+		oss << string(*m_tag) << " " << cmd->getText();
+
+		m_tracer->traceSend(oss.str());
+	}
 }
 
 
@@ -813,6 +833,12 @@ void IMAPConnection::setSocket(shared_ptr <socket> sok)
 {
 	m_socket = sok;
 	m_parser->setSocket(sok);
+}
+
+
+shared_ptr <tracer> IMAPConnection::getTracer()
+{
+	return m_tracer;
 }
 
 

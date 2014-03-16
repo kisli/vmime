@@ -68,6 +68,10 @@ SMTPConnection::SMTPConnection(shared_ptr <SMTPTransport> transport, shared_ptr 
 	: m_transport(transport), m_auth(auth), m_socket(null), m_timeoutHandler(null),
 	  m_authenticated(false), m_secured(false), m_extendedSMTP(false)
 {
+	static int connectionId = 0;
+
+	if (transport->getTracerFactory())
+		m_tracer = transport->getTracerFactory()->create(transport, ++connectionId);
 }
 
 
@@ -416,7 +420,11 @@ void SMTPConnection::authenticateSASL()
 						(challenge, challengeLen, &resp, &respLen);
 
 					// Send response
-					m_socket->send(saslContext->encodeB64(resp, respLen) + "\r\n");
+					const string respB64 = saslContext->encodeB64(resp, respLen) + "\r\n";
+					m_socket->sendRaw(utility::stringUtils::bytesFromString(respB64), respB64.length());
+
+					if (m_tracer)
+						m_tracer->traceSendBytes(respB64.length() - 2, "SASL exchange");
 				}
 				catch (exceptions::sasl_exception& e)
 				{
@@ -434,6 +442,9 @@ void SMTPConnection::authenticateSASL()
 
 					// Cancel SASL exchange
 					m_socket->send("*\r\n");
+
+					if (m_tracer)
+						m_tracer->traceSend("*");
 				}
 				catch (...)
 				{
@@ -557,14 +568,14 @@ void SMTPConnection::internalDisconnect()
 
 void SMTPConnection::sendRequest(shared_ptr <SMTPCommand> cmd)
 {
-	cmd->writeToSocket(m_socket);
+	cmd->writeToSocket(m_socket, m_tracer);
 }
 
 
 shared_ptr <SMTPResponse> SMTPConnection::readResponse()
 {
 	shared_ptr <SMTPResponse> resp = SMTPResponse::readResponse
-		(m_socket, m_timeoutHandler, m_responseState);
+		(m_tracer, m_socket, m_timeoutHandler, m_responseState);
 
 	m_responseState = resp->getCurrentState();
 
@@ -605,6 +616,12 @@ shared_ptr <session> SMTPConnection::getSession()
 shared_ptr <socket> SMTPConnection::getSocket()
 {
 	return m_socket;
+}
+
+
+shared_ptr <tracer> SMTPConnection::getTracer()
+{
+	return m_tracer;
 }
 
 

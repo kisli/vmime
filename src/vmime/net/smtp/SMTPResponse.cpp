@@ -34,6 +34,7 @@
 
 #include "vmime/net/socket.hpp"
 #include "vmime/net/timeoutHandler.hpp"
+#include "vmime/net/tracer.hpp"
 
 #include <cctype>
 
@@ -43,8 +44,10 @@ namespace net {
 namespace smtp {
 
 
-SMTPResponse::SMTPResponse(shared_ptr <socket> sok, shared_ptr <timeoutHandler> toh, const state& st)
-	: m_socket(sok), m_timeoutHandler(toh),
+SMTPResponse::SMTPResponse
+	(shared_ptr <tracer> tr, shared_ptr <socket> sok,
+	 shared_ptr <timeoutHandler> toh, const state& st)
+	: m_socket(sok), m_timeoutHandler(toh), m_tracer(tr),
 	  m_responseBuffer(st.responseBuffer), m_responseContinues(false)
 {
 }
@@ -95,9 +98,11 @@ const string SMTPResponse::getText() const
 
 // static
 shared_ptr <SMTPResponse> SMTPResponse::readResponse
-	(shared_ptr <socket> sok, shared_ptr <timeoutHandler> toh, const state& st)
+	(shared_ptr <tracer> tr, shared_ptr <socket> sok,
+	 shared_ptr <timeoutHandler> toh, const state& st)
 {
-	shared_ptr <SMTPResponse> resp = shared_ptr <SMTPResponse>(new SMTPResponse(sok, toh, st));
+	shared_ptr <SMTPResponse> resp =
+		shared_ptr <SMTPResponse>(new SMTPResponse(tr, sok, toh, st));
 
 	resp->readResponse();
 
@@ -141,6 +146,9 @@ const string SMTPResponse::readResponseLine()
 
 			currentBuffer.erase(currentBuffer.begin(), currentBuffer.begin() + lineEnd + 1);
 			m_responseBuffer = currentBuffer;
+
+			if (m_tracer)
+				m_tracer->traceReceive(line);
 
 			return line;
 		}

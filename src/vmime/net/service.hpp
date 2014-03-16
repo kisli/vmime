@@ -40,6 +40,7 @@
 
 #include "vmime/net/socket.hpp"
 #include "vmime/net/timeoutHandler.hpp"
+#include "vmime/net/tracer.hpp"
 
 #if VMIME_HAVE_TLS_SUPPORT
 	#include "vmime/security/cert/certificateVerifier.hpp"
@@ -183,6 +184,11 @@ public:
 	  */
 	shared_ptr <timeoutHandlerFactory> getTimeoutHandlerFactory();
 
+
+	void setTracerFactory(shared_ptr <tracerFactory> tf);
+
+	shared_ptr <tracerFactory> getTracerFactory();
+
 	/** Set a property for this service (service prefix is added automatically).
 	  *
 	  * WARNING: this sets the property on the session object, so all service
@@ -219,8 +225,8 @@ private:
 #endif // VMIME_HAVE_TLS_SUPPORT
 
 	shared_ptr <socketFactory> m_socketFactory;
-
 	shared_ptr <timeoutHandlerFactory> m_toHandlerFactory;
+	shared_ptr <tracerFactory> m_tracerFactory;
 };
 
 

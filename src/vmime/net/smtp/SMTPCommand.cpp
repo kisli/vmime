@@ -30,6 +30,7 @@
 #include "vmime/net/smtp/SMTPCommand.hpp"
 
 #include "vmime/net/socket.hpp"
+#include "vmime/net/tracer.hpp"
 
 #include "vmime/mailbox.hpp"
 #include "vmime/utility/outputStreamAdapter.hpp"
@@ -40,8 +41,8 @@ namespace net {
 namespace smtp {
 
 
-SMTPCommand::SMTPCommand(const string& text)
-	: m_text(text)
+SMTPCommand::SMTPCommand(const string& text, const string& traceText)
+	: m_text(text), m_traceText(traceText)
 {
 }
 
@@ -199,9 +200,12 @@ shared_ptr <SMTPCommand> SMTPCommand::QUIT()
 
 
 // static
-shared_ptr <SMTPCommand> SMTPCommand::createCommand(const string& text)
+shared_ptr <SMTPCommand> SMTPCommand::createCommand(const string& text, const string& traceText)
 {
-	return shared_ptr <SMTPCommand>(new SMTPCommand(text));
+	if (traceText.empty())
+		return shared_ptr <SMTPCommand>(new SMTPCommand(text, text));
+	else
+		return shared_ptr <SMTPCommand>(new SMTPCommand(text, traceText));
 }
 
 
@@ -211,9 +215,18 @@ const string SMTPCommand::getText() const
 }
 
 
-void SMTPCommand::writeToSocket(shared_ptr <socket> sok)
+const string SMTPCommand::getTraceText() const
+{
+	return m_traceText;
+}
+
+
+void SMTPCommand::writeToSocket(shared_ptr <socket> sok, shared_ptr <tracer> tr)
 {
 	sok->send(m_text + "\r\n");
+
+	if (tr)
+		tr->traceSend(m_traceText);
 }
 
 
