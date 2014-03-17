@@ -602,7 +602,7 @@ shared_ptr <IMAPCommand> IMAPUtils::buildFetchCommand
 		items.push_back("UID");
 
 		// Also fetch MODSEQ if CONDSTORE is supported
-		if (cnt->hasCapability("CONDSTORE") && !cnt->isMODSEQDisabled())
+		if (cnt && cnt->hasCapability("CONDSTORE") && !cnt->isMODSEQDisabled())
 			items.push_back("MODSEQ");
 	}
 
