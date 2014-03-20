@@ -33,7 +33,7 @@
 
 #include "vmime/object.hpp"
 #include "vmime/base.hpp"
-#include "vmime/datetime.hpp"
+#include "vmime/dateTime.hpp"
 
 #include "vmime/net/messageSet.hpp"
 
