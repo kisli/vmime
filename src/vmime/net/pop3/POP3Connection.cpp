@@ -106,6 +106,7 @@ void POP3Connection::connect()
 
 	// Create and connect the socket
 	m_socket = store->getSocketFactory()->create(m_timeoutHandler);
+	m_socket->setTracer(m_tracer);
 
 #if VMIME_HAVE_TLS_SUPPORT
 	if (store->isPOP3S())  // dedicated port/POP3S

@@ -84,6 +84,14 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 		m_desc = -1;
 	}
 
+	if (m_tracer)
+	{
+		std::ostringstream trace;
+		trace << "Connecting to " << address << ", port " << port;
+
+		m_tracer->traceSend(trace.str());
+	}
+
 #if VMIME_HAVE_GETADDRINFO  // use thread-safe and IPv6-aware getaddrinfo() if available
 
 	// Resolve address, if needed
@@ -370,6 +378,9 @@ void posixSocket::disconnect()
 {
 	if (m_desc != -1)
 	{
+		if (m_tracer)
+			m_tracer->traceSend("Disconnecting");
+
 		::shutdown(m_desc, SHUT_RDWR);
 		::close(m_desc);
 
@@ -727,6 +738,18 @@ unsigned int posixSocket::getStatus() const
 shared_ptr <net::timeoutHandler> posixSocket::getTimeoutHandler()
 {
 	return m_timeoutHandler;
+}
+
+
+void posixSocket::setTracer(shared_ptr <net::tracer> tracer)
+{
+	m_tracer = tracer;
+}
+
+
+shared_ptr <net::tracer> posixSocket::getTracer()
+{
+	return m_tracer;
 }
 
 

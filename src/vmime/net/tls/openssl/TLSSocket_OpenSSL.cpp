@@ -193,6 +193,18 @@ shared_ptr <timeoutHandler> TLSSocket_OpenSSL::getTimeoutHandler()
 }
 
 
+void TLSSocket_OpenSSL::setTracer(shared_ptr <net::tracer> tracer)
+{
+	m_wrapped->setTracer(tracer);
+}
+
+
+shared_ptr <net::tracer> TLSSocket_OpenSSL::getTracer()
+{
+	return m_wrapped->getTracer();
+}
+
+
 bool TLSSocket_OpenSSL::waitForRead(const int msecs)
 {
 	return m_wrapped->waitForRead(msecs);
@@ -343,6 +355,9 @@ void TLSSocket_OpenSSL::handshake()
 	if (toHandler)
 		toHandler->resetTimeOut();
 
+	if (getTracer())
+		getTracer()->traceSend("Beginning SSL/TLS handshake");
+
 	// Start handshaking process
 	if (!m_ssl)
 		createSSLHandle();
@@ -389,8 +404,11 @@ void TLSSocket_OpenSSL::handshake()
 }
 
 
-shared_ptr <security::cert::certificateChain> TLSSocket_OpenSSL::getPeerCertificates() const
+shared_ptr <security::cert::certificateChain> TLSSocket_OpenSSL::getPeerCertificates()
 {
+	if (getTracer())
+		getTracer()->traceSend("Getting peer certificates");
+
 	STACK_OF(X509)* chain = SSL_get_peer_cert_chain(m_ssl);
 
 	if (chain == NULL)

@@ -107,6 +107,7 @@ void SMTPConnection::connect()
 
 	// Create and connect the socket
 	m_socket = transport->getSocketFactory()->create(m_timeoutHandler);
+	m_socket->setTracer(m_tracer);
 
 #if VMIME_HAVE_TLS_SUPPORT
 	if (transport->isSMTPS())  // dedicated port/SMTPS

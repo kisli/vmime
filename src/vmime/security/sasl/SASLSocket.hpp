@@ -78,6 +78,9 @@ public:
 
 	shared_ptr <net::timeoutHandler> getTimeoutHandler();
 
+	void setTracer(shared_ptr <net::tracer> tracer);
+	shared_ptr <net::tracer> getTracer();
+
 private:
 
 	shared_ptr <SASLSession> m_session;

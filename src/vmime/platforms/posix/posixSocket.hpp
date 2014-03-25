@@ -70,6 +70,9 @@ public:
 
 	shared_ptr <net::timeoutHandler> getTimeoutHandler();
 
+	void setTracer(shared_ptr <net::tracer> tracer);
+	shared_ptr <net::tracer> getTracer();
+
 protected:
 
 	bool waitForData(const bool read, const bool write, const int msecs);
@@ -79,6 +82,7 @@ protected:
 private:
 
 	shared_ptr <vmime::net::timeoutHandler> m_timeoutHandler;
+	shared_ptr <net::tracer> m_tracer;
 
 	byte_t m_buffer[65536];
 	int m_desc;

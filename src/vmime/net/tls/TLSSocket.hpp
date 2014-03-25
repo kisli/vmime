@@ -74,7 +74,7 @@ public:
 	  * @return server certificate chain, or NULL if the handshake
 	  * has not been performed yet
 	  */
-	virtual shared_ptr <security::cert::certificateChain> getPeerCertificates() const = 0;
+	virtual shared_ptr <security::cert::certificateChain> getPeerCertificates() = 0;
 };
 
 

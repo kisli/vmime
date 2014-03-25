@@ -34,6 +34,7 @@
 #include "vmime/base.hpp"
 
 #include "vmime/net/timeoutHandler.hpp"
+#include "vmime/net/tracer.hpp"
 
 
 namespace vmime {
@@ -167,6 +168,20 @@ public:
 	  * @return timeout handler, or NULL if none is set
 	  */
 	virtual shared_ptr <timeoutHandler> getTimeoutHandler() = 0;
+
+	/** Set the tracer used by this socket. Tracer will only be used
+	  * to report socket-specific events such as connection (not when
+	  * sending/receiving data).
+	  *
+	  * @param tracer tracer to use
+	  */
+	virtual void setTracer(shared_ptr <tracer> tracer) = 0;
+
+	/** Return the tracer used by this socket.
+	  *
+	  * @return tracer, or NULL if none is set
+	  */
+	virtual shared_ptr <tracer> getTracer() = 0;
 
 protected:
 

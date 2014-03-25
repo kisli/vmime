@@ -60,7 +60,7 @@ public:
 
 	void handshake();
 
-	shared_ptr <security::cert::certificateChain> getPeerCertificates() const;
+	shared_ptr <security::cert::certificateChain> getPeerCertificates();
 
 	// Implementation of 'socket'
 	void connect(const string& address, const port_t port);
@@ -86,6 +86,9 @@ public:
 	const string getPeerAddress() const;
 
 	shared_ptr <timeoutHandler> getTimeoutHandler();
+
+	void setTracer(shared_ptr <net::tracer> tracer);
+	shared_ptr <net::tracer> getTracer();
 
 private:
 

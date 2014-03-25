@@ -147,6 +147,18 @@ shared_ptr <timeoutHandler> TLSSocket_GnuTLS::getTimeoutHandler()
 }
 
 
+void TLSSocket_GnuTLS::setTracer(shared_ptr <net::tracer> tracer)
+{
+	m_wrapped->setTracer(tracer);
+}
+
+
+shared_ptr <net::tracer> TLSSocket_GnuTLS::getTracer()
+{
+	return m_wrapped->getTracer();
+}
+
+
 bool TLSSocket_GnuTLS::waitForRead(const int msecs)
 {
 	return m_wrapped->waitForRead(msecs);
@@ -287,6 +299,9 @@ void TLSSocket_GnuTLS::handshake()
 	if (toHandler)
 		toHandler->resetTimeOut();
 
+	if (getTracer())
+		getTracer()->traceSend("Beginning SSL/TLS handshake");
+
 	// Start handshaking process
 	try
 	{
@@ -406,8 +421,11 @@ ssize_t TLSSocket_GnuTLS::gnutlsPullFunc
 }
 
 
-shared_ptr <security::cert::certificateChain> TLSSocket_GnuTLS::getPeerCertificates() const
+shared_ptr <security::cert::certificateChain> TLSSocket_GnuTLS::getPeerCertificates()
 {
+	if (getTracer())
+		getTracer()->traceSend("Getting peer certificates");
+
 	unsigned int certCount = 0;
 	const gnutls_datum* rawData = gnutls_certificate_get_peers
 		(*m_session->m_gnutlsSession, &certCount);

@@ -74,6 +74,9 @@ public:
 
 	shared_ptr <net::timeoutHandler> getTimeoutHandler();
 
+	void setTracer(shared_ptr <net::tracer> tracer);
+	shared_ptr <net::tracer> getTracer();
+
 protected:
 
 	void throwSocketError(const int err);

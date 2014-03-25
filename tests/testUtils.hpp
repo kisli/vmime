@@ -268,6 +268,9 @@ public:
 
 	vmime::shared_ptr <vmime::net::timeoutHandler> getTimeoutHandler();
 
+	void setTracer(vmime::shared_ptr <vmime::net::tracer> tracer);
+	vmime::shared_ptr <vmime::net::tracer> getTracer();
+
 	/** Send data to client.
 	  *
 	  * @param buffer data to send

@@ -102,6 +102,18 @@ shared_ptr <net::timeoutHandler> SASLSocket::getTimeoutHandler()
 }
 
 
+void SASLSocket::setTracer(shared_ptr <net::tracer> tracer)
+{
+	m_wrapped->setTracer(tracer);
+}
+
+
+shared_ptr <net::tracer> SASLSocket::getTracer()
+{
+	return m_wrapped->getTracer();
+}
+
+
 bool SASLSocket::waitForRead(const int msecs)
 {
 	return m_wrapped->waitForRead(msecs);

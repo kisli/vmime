@@ -81,6 +81,14 @@ void windowsSocket::connect(const vmime::string& address, const vmime::port_t po
 	addr.sin_port = htons(static_cast <unsigned short>(port));
 	addr.sin_addr.s_addr = ::inet_addr(address.c_str());
 
+	if (m_tracer)
+	{
+		std::ostringstream trace;
+		trace << "Connecting to " << address << ", port " << port;
+
+		m_tracer->traceSend(trace.str());
+	}
+
 	if (addr.sin_addr.s_addr == static_cast <int>(-1))
 	{
 		::hostent* hostInfo = ::gethostbyname(address.c_str());
@@ -153,6 +161,9 @@ void windowsSocket::disconnect()
 {
 	if (m_desc != INVALID_SOCKET)
 	{
+		if (m_tracer)
+			m_tracer->traceSend("Disconnecting");
+
 		::shutdown(m_desc, SD_BOTH);
 		::closesocket(m_desc);
 
@@ -488,6 +499,18 @@ bool windowsSocket::waitForWrite(const int msecs)
 shared_ptr <net::timeoutHandler> windowsSocket::getTimeoutHandler()
 {
 	return m_timeoutHandler;
+}
+
+
+void windowsSocket::setTracer(shared_ptr <net::tracer> tracer)
+{
+	m_tracer = tracer;
+}
+
+
+shared_ptr <net::tracer> windowsSocket::getTracer()
+{
+	return m_tracer;
 }
 
 
