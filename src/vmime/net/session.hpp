@@ -149,6 +149,7 @@ public:
 	  */
 	propertySet& getProperties();
 
+#if VMIME_HAVE_TLS_SUPPORT
 	/** Set properties for SSL/TLS secured connections in this session.
 	  *
 	  * @param tlsProps SSL/TLS properties
@@ -160,12 +161,15 @@ public:
 	  * @return SSL/TLS properties
 	  */
 	shared_ptr <tls::TLSProperties> getTLSProperties() const;
+#endif
 
 private:
 
 	propertySet m_props;
 
+#if VMIME_HAVE_TLS_SUPPORT
 	shared_ptr <tls::TLSProperties> m_tlsProps;
+#endif
 };
 
 
