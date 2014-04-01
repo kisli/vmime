@@ -39,20 +39,27 @@ namespace net {
 
 
 session::session()
+#if VMIME_HAVE_TLS_SUPPORT
 	: m_tlsProps(make_shared <tls::TLSProperties>())
+#endif
 {
 }
 
 
 session::session(const session& sess)
-	: object(), m_props(sess.m_props),
-	  m_tlsProps(make_shared <tls::TLSProperties>(*sess.m_tlsProps))
+	: object(), m_props(sess.m_props)
+#if VMIME_HAVE_TLS_SUPPORT
+	  , m_tlsProps(make_shared <tls::TLSProperties>(*sess.m_tlsProps))
+#endif
 {
 }
 
 
 session::session(const propertySet& props)
-	: m_props(props), m_tlsProps(make_shared <tls::TLSProperties>())
+	: m_props(props)
+#if VMIME_HAVE_TLS_SUPPORT
+          , m_tlsProps(make_shared <tls::TLSProperties>())
+#endif
 {
 }
 
@@ -138,6 +145,7 @@ propertySet& session::getProperties()
 }
 
 
+#if VMIME_HAVE_TLS_SUPPORT
 void session::setTLSProperties(shared_ptr <tls::TLSProperties> tlsProps)
 {
 	m_tlsProps = make_shared <tls::TLSProperties>(*tlsProps);
@@ -148,7 +156,7 @@ shared_ptr <tls::TLSProperties> session::getTLSProperties() const
 {
 	return m_tlsProps;
 }
-
+#endif
 
 } // net
 } // vmime
