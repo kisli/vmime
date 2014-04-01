@@ -59,7 +59,7 @@ public:
 
 	/** Embedded object (eg: image for &lt;IMG> tag).
 	  */
-	class embeddedObject : public object
+	class VMIME_EXPORT embeddedObject : public object
 	{
 	public:
 

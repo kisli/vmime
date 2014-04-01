@@ -58,7 +58,7 @@ public:
 
 	/** Stores information about a file attachment.
 	  */
-	class fileInfo
+	class VMIME_EXPORT fileInfo
 	{
 	public:
 
