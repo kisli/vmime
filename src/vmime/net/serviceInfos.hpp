@@ -65,7 +65,7 @@ public:
 
 	/** A service property.
 	  */
-	class property
+	class VMIME_EXPORT property
 	{
 	public:
 

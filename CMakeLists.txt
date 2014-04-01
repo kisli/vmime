@@ -1020,7 +1020,7 @@ ELSE()
 
 		SET(
 			CMAKE_CXX_FLAGS
-			"${CMAKE_CXX_FLAGS} -D_REENTRANT=1 -W -Wall -ansi -pedantic -Wpointer-arith -Wold-style-cast -Wconversion -Wcast-align -Wno-long-long"
+			"${CMAKE_CXX_FLAGS} -D_REENTRANT=1 -W -Wall -pedantic -Wpointer-arith -Wold-style-cast -Wconversion -Wcast-align -Wno-long-long"
 			CACHE STRING
 			"g++ Compiler Flags"
 			FORCE

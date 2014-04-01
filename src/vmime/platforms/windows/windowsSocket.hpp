@@ -73,6 +73,7 @@ public:
 	const string getPeerAddress() const;
 
 	shared_ptr <net::timeoutHandler> getTimeoutHandler();
+	shared_ptr <net::tracer> m_tracer;
 
 	void setTracer(shared_ptr <net::tracer> tracer);
 	shared_ptr <net::tracer> getTracer();
