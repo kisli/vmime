@@ -33,7 +33,9 @@
 
 #include "vmime/security/authenticator.hpp"
 
-#include "vmime/net/tls/TLSProperties.hpp"
+#if VMIME_HAVE_TLS_SUPPORT
+#	include "vmime/net/tls/TLSProperties.hpp"
+#endif // VMIME_HAVE_TLS_SUPPORT
 
 #include "vmime/utility/url.hpp"
 
@@ -149,6 +151,8 @@ public:
 	  */
 	propertySet& getProperties();
 
+#if VMIME_HAVE_TLS_SUPPORT
+
 	/** Set properties for SSL/TLS secured connections in this session.
 	  *
 	  * @param tlsProps SSL/TLS properties
@@ -161,11 +165,16 @@ public:
 	  */
 	shared_ptr <tls::TLSProperties> getTLSProperties() const;
 
+#endif // VMIME_HAVE_TLS_SUPPORT
+
 private:
 
 	propertySet m_props;
 
+#if VMIME_HAVE_TLS_SUPPORT
 	shared_ptr <tls::TLSProperties> m_tlsProps;
+#endif // VMIME_HAVE_TLS_SUPPORT
+
 };
 
 
