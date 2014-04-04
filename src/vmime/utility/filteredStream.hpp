@@ -265,6 +265,8 @@ template <>
 size_t stopSequenceFilteredInputStream <1>::read
 	(byte_t* const data, const size_t count);
 
+#ifdef vmime_EXPORTS
+    /* We are building this library */
 
 template <int COUNT>
 size_t stopSequenceFilteredInputStream <COUNT>::read
@@ -402,6 +404,18 @@ size_t stopSequenceFilteredInputStream <COUNT>::read
 
 	return read;
 }
+
+#else
+/* 
+ * We are usring this library
+ * on Windows, definition of dllimport function is not allowed
+ */
+
+template <int COUNT>
+size_t stopSequenceFilteredInputStream <COUNT>::read
+(byte_t* const data, const size_t count);
+
+#endif
 
 
 } // utility

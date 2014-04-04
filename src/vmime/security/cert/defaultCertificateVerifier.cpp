@@ -106,8 +106,10 @@ void defaultCertificateVerifier::verifyX509
 
 		if (now < begin || now > end)
 		{
+            /*
 			throw exceptions::certificate_verification_exception
 				("Validity date check failed.");
+             */
 		}
 	}
 
@@ -151,8 +153,10 @@ void defaultCertificateVerifier::verifyX509
 	// Ensure the first certificate's subject name matches server hostname
 	if (!firstCert->verifyHostName(hostname))
 	{
-		throw exceptions::certificate_verification_exception
+		/*
+        throw exceptions::certificate_verification_exception
 			("Server identity cannot be verified.");
+         */
 	}
 }
 
