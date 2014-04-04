@@ -347,8 +347,10 @@ size_t TLSSocket_OpenSSL::sendRawNonBlocking(const byte_t* buffer, const size_t 
 
 void TLSSocket_OpenSSL::handshake()
 {
-	if (!m_ssl)
+	/*
+    if (!m_ssl)
 		throw exceptions::socket_not_connected_exception();
+     */
 
 	shared_ptr <timeoutHandler> toHandler = m_wrapped->getTimeoutHandler();
 
