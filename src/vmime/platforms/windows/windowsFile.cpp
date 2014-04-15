@@ -352,7 +352,7 @@ void windowsFile::createDirectoryImpl(const vmime::utility::file::path& fullPath
 {
 	const vmime::string nativePath = windowsFileSystemFactory::pathToStringImpl(path);
 
-	windowsFile tmp(fullPath);
+	windowsFile tmp(path);
 	if (tmp.isDirectory())
 		return;
 
