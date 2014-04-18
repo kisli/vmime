@@ -57,6 +57,7 @@ public:
 		if (stricmp(s8_Name, "EUC-JP")            == 0) return 20932;
 		if (stricmp(s8_Name, "euc-kr")            == 0) return 51949;
 		if (stricmp(s8_Name, "GB18030")           == 0) return 54936;
+		if (stricmp(s8_Name, "GBK")	          == 0) return 54936;
 		if (stricmp(s8_Name, "gb2312")            == 0) return 936;
 		if (stricmp(s8_Name, "hz-gb-2312")        == 0) return 52936;
 		if (stricmp(s8_Name, "IBM00858")          == 0) return 858;
