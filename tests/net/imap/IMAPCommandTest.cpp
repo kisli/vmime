@@ -82,7 +82,7 @@ VMIME_TEST_SUITE_BEGIN(IMAPCommandTest)
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "LOGIN username password", cmd->getText());
-		VASSERT_EQ("Trace Text", "LOGIN <username> <password>", cmd->getTraceText());
+		VASSERT_EQ("Trace Text", "LOGIN {username} {password}", cmd->getTraceText());
 	}
 
 	void testAUTHENTICATE()
