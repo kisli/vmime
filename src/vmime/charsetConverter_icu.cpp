@@ -97,17 +97,13 @@ void charsetConverter_icu::convert(utility::inputStream& in, utility::outputStre
 
 	// From buffers
 	byte_t cpInBuffer[16]; // stream data put here
-	size_t outSize = ucnv_getMinCharSize(m_from) * sizeof(cpInBuffer) * sizeof(UChar);
-	UChar* uOutBuffer = new UChar[outSize]; // Unicode chars end up here
-
-	// Auto delete Unicode char buffer
-	std::auto_ptr<UChar> cleanup(uOutBuffer);
+	const size_t outSize = ucnv_getMinCharSize(m_from) * sizeof(cpInBuffer) * sizeof(UChar);
+	UChar uOutBuffer[outSize]; // Unicode chars end up here
 
 	// To buffers
 	// converted (char) data end up here
-	size_t cpOutBufferSz = ucnv_getMaxCharSize(m_to) * outSize;
-	char* cpOutBuffer = new char[cpOutBufferSz];
-	std::auto_ptr<char> cleanupOut(cpOutBuffer);
+	const size_t cpOutBufferSz = ucnv_getMaxCharSize(m_to) * outSize;
+	char cpOutBuffer[cpOutBufferSz];
 
 	// Set replacement chars for when converting from Unicode to codepage
 	icu::UnicodeString substString(m_options.invalidSequence.c_str());
@@ -257,9 +253,8 @@ void charsetFilteredOutputStream_icu::writeImpl
 		throw exceptions::charset_conv_error("Cannot initialize converters.");
 
 	// Allocate buffer for Unicode chars
-	size_t uniSize = ucnv_getMinCharSize(m_from) * count * sizeof(UChar);
-	UChar* uniBuffer = new UChar[uniSize];
-	std::auto_ptr <UChar> uniCleanup(uniBuffer);  // auto delete Unicode buffer
+	const size_t uniSize = ucnv_getMinCharSize(m_from) * count * sizeof(UChar);
+	UChar uniBuffer[uniSize];
 
 	// Conversion loop
 	UErrorCode toErr = U_ZERO_ERROR;
@@ -287,9 +282,8 @@ void charsetFilteredOutputStream_icu::writeImpl
 		const size_t uniLength = uniTarget - uniBuffer;
 
 		// Allocate buffer for destination charset
-		size_t cpSize = ucnv_getMinCharSize(m_to) * uniLength;
-		char* cpBuffer = new char[cpSize];
-		std::auto_ptr <char> cpCleanup(cpBuffer);  // auto delete CP buffer
+		const size_t cpSize = ucnv_getMinCharSize(m_to) * uniLength;
+		char cpBuffer[cpSize];
 
 		// Convert from Unicode to destination charset
 		UErrorCode fromErr = U_ZERO_ERROR;
@@ -330,9 +324,8 @@ void charsetFilteredOutputStream_icu::flush()
 		throw exceptions::charset_conv_error("Cannot initialize converters.");
 
 	// Allocate buffer for Unicode chars
-	size_t uniSize = ucnv_getMinCharSize(m_from) * 1024 * sizeof(UChar);
-	UChar* uniBuffer = new UChar[uniSize];
-	std::auto_ptr <UChar> uniCleanup(uniBuffer);  // auto delete Unicode buffer
+	const size_t uniSize = ucnv_getMinCharSize(m_from) * 1024 * sizeof(UChar);
+	UChar uniBuffer[uniSize];
 
 	// Conversion loop (with flushing)
 	UErrorCode toErr = U_ZERO_ERROR;
@@ -360,9 +353,8 @@ void charsetFilteredOutputStream_icu::flush()
 		const size_t uniLength = uniTarget - uniBuffer;
 
 		// Allocate buffer for destination charset
-		size_t cpSize = ucnv_getMinCharSize(m_to) * uniLength;
-		char* cpBuffer = new char[cpSize];
-		std::auto_ptr <char> cpCleanup(cpBuffer);  // auto delete CP buffer
+		const size_t cpSize = ucnv_getMinCharSize(m_to) * uniLength;
+		char cpBuffer[cpSize];
 
 		// Convert from Unicode to destination charset
 		UErrorCode fromErr = U_ZERO_ERROR;
