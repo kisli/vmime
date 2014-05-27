@@ -1,4 +1,5 @@
-\chapter{Building and Installing VMime\label{chapter_building}}
+\label{chapter_building}
+\chapter{Building and Installing VMime}
 
 % ============================================================================
 \section{Introduction}
@@ -137,15 +138,15 @@ Set to ON to build a static version (.a) of the library (default is ON). \\
 VMIME\_BUILD\_TESTS &
 Set to ON to build unit tests (default is OFF). \\
 \hline
-VMIME\_TLS\_SUPPORT\_LIB\_IS\_OPENSSL \\ VMIME\_TLS\_SUPPORT\_LIB\_IS\_GNUTLS &
-Set either the one or the other (but not both) to ON to force using either OpenSSL
-or GNU TLS as the SSL library (default depends on which libraries are available on
+VMIME\_TLS\_SUPPORT\_LIB &
+Set to either "openssl" or "gnutls" to force using either OpenSSL or GNU TLS
+for SSL/TLS support (default depends on which libraries are available on
 your system). \\
 \hline
-VMIME\_CHARSETCONV\_LIB\_IS\_ICONV \\ VMIME\_CHARSETCONV\_LIB\_IS\_ICU &
-Set either the one or the other (but not both) to ON to force using either iconv
-or ICU as the charset conversion library (default depends on which libraries are
-available on your system). \\
+VMIME\_CHARSETCONV\_LIB &
+Set to either "iconv", "icu" or "win" (Windows only) to force using iconv, ICU
+or Windows built-in API for converting between charsets (default value depends
+on which libraries are available on your system). \\
 \hline
 CMAKE\_BUILD\_TYPE &
 Set the build type: either "Release" or "Debug". In Debug build, optimizations
