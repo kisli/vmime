@@ -68,18 +68,18 @@ charsetConverter_icu::charsetConverter_icu
 	UErrorCode err = U_ZERO_ERROR;
 	m_from = ucnv_open(source.getName().c_str(), &err);
 
-	if (err != U_ZERO_ERROR)
+	if (!U_SUCCESS(err))
 	{
 		throw exceptions::charset_conv_error
-			("Cannot initialize ICU converter for source charset '" + source.getName() + "'.");
+			("Cannot initialize ICU converter for source charset '" + source.getName() + "' (error code: " + u_errorName(err) + ".");
 	}
 
 	m_to = ucnv_open(dest.getName().c_str(), &err);
 
-	if (err != U_ZERO_ERROR)
+	if (!U_SUCCESS(err))
 	{
 		throw exceptions::charset_conv_error
-			("Cannot initialize ICU converter for destination charset '" + dest.getName() + "'.");
+			("Cannot initialize ICU converter for destination charset '" + dest.getName() + "' (error code: " + u_errorName(err) + ".");
 	}
 }
 
@@ -214,18 +214,18 @@ charsetFilteredOutputStream_icu::charsetFilteredOutputStream_icu
 	UErrorCode err = U_ZERO_ERROR;
 	m_from = ucnv_open(source.getName().c_str(), &err);
 
-	if (err != U_ZERO_ERROR)
+	if (!U_SUCCESS(err))
 	{
 		throw exceptions::charset_conv_error
-			("Cannot initialize ICU converter for source charset '" + source.getName() + "'.");
+			("Cannot initialize ICU converter for source charset '" + source.getName() + "' (error code: " + u_errorName(err) + ".");
 	}
 
 	m_to = ucnv_open(dest.getName().c_str(), &err);
 
-	if (err != U_ZERO_ERROR)
+	if (!U_SUCCESS(err))
 	{
 		throw exceptions::charset_conv_error
-			("Cannot initialize ICU converter for destination charset '" + dest.getName() + "'.");
+			("Cannot initialize ICU converter for destination charset '" + dest.getName() + "' (error code: " + u_errorName(err) + ".");
 	}
 
 	// Set replacement chars for when converting from Unicode to codepage
