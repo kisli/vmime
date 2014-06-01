@@ -87,6 +87,45 @@ public:
 		const unsigned int x = static_cast <unsigned int>(c);
 		return (x >= 0x20 && x <= 0x7E);
 	}
+
+
+	/** Finds the next EOL sequence in the specified buffer.
+	  * An EOL sequence may be a CR+LF sequence, or a LF sequence.
+	  *
+	  * @param buffer search buffer
+	  * @param currentPos start searching from this position
+	  * @param end stop searching at this position
+	  * @param eol will receive the position after the EOL sequence
+	  * @return true if an EOL sequence has been found, or false if
+	  * no EOL sequence was found before the end of the buffer
+	  */
+	static bool findEOL(const string& buffer, const size_t currentPos, const size_t end, size_t* eol)
+	{
+		size_t pos = currentPos;
+
+		if (pos == end)
+			return false;
+
+		while (pos < end)
+		{
+			if (buffer[pos] == '\r' && pos + 1 < end && buffer[pos + 1] == '\n')
+			{
+				*eol = pos + 2;
+				return true;
+			}
+			else if (buffer[pos] == '\n')
+			{
+				*eol = pos + 1;
+				return true;
+			}
+
+			++pos;
+		}
+
+		*eol = end;
+
+		return true;
+	}
 };
 
 

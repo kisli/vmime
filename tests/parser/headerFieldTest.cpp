@@ -30,6 +30,7 @@ VMIME_TEST_SUITE_BEGIN(headerFieldTest)
 		VMIME_TEST(testBadValueType)
 		VMIME_TEST(testValueOnNextLine)
 		VMIME_TEST(testStripSpacesAtEnd)
+		VMIME_TEST(testValueWithEmptyLine)
 	VMIME_TEST_LIST_END
 
 
@@ -82,6 +83,22 @@ VMIME_TEST_SUITE_BEGIN(headerFieldTest)
 
 		VASSERT_EQ("Field name", "Field", hfield->getName());
 		VASSERT_EQ("Field value", toHex("field data"), toHex(hvalue->getWholeBuffer()));
+	}
+
+	void testValueWithEmptyLine()
+	{
+		vmime::parsingContext ctx;
+
+		const vmime::string buffer = "Field: \r\n\tdata1\r\n\tdata2\r\n\t\r\n\tdata3";
+
+		vmime::shared_ptr <vmime::headerField> hfield =
+			vmime::headerField::parseNext(ctx, buffer, 0, buffer.size());
+
+		vmime::shared_ptr <vmime::text> hvalue =
+			hfield->getValue <vmime::text>();
+
+		VASSERT_EQ("Field name", "Field", hfield->getName());
+		VASSERT_EQ("Field value", "data1 data2 data3", hvalue->getWholeBuffer());
 	}
 
 VMIME_TEST_SUITE_END

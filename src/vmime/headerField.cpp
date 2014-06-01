@@ -144,75 +144,18 @@ shared_ptr <headerField> headerField::parseNext
 				const size_t contentsStart = pos;
 				size_t contentsEnd = 0;
 
-				// Extract the field value
-				while (pos < end)
+				bool firstLine = true;
+
+				// Parse field value, taking care of line folding (value on multiple lines)
+				for (size_t eol = 0 ; parserHelpers::findEOL(buffer, pos, end, &eol) ; pos = eol)
 				{
-					c = buffer[pos];
-
-					// Check for folded line
-					if (c == '\r' && pos + 2 < end && buffer[pos + 1] == '\n' &&
-						(buffer[pos + 2] == ' ' || buffer[pos + 2] == '\t'))
-					{
-						pos += 3;
-					}
-					// Check for end of contents
-					if (c == '\r' && pos + 1 < end && buffer[pos + 1] == '\n')
-					{
-						contentsEnd = pos;
-						pos += 2;
+					// If the line does not start with a folding indicator (SPACE or TAB),
+					// and this is not the first line, then stop parsing lines
+					if (!firstLine && !(buffer[pos] == ' ' || buffer[pos] == '\t'))
 						break;
-					}
-					else if (c == '\n')
-					{
-						contentsEnd = pos;
-						++pos;
-						break;
-					}
 
-					while (pos < end)
-					{
-						c = buffer[pos];
-
-						// Check for end of line
-						if (c == '\r' && pos + 1 < end && buffer[pos + 1] == '\n')
-						{
-							contentsEnd = pos;
-							pos += 2;
-							break;
-						}
-						else if (c == '\n')
-						{
-							contentsEnd = pos;
-							++pos;
-							break;
-						}
-
-						++pos;
-					}
-
-					// Handle the case of folded lines
-					if (buffer[pos] == ' ' || buffer[pos] == '\t')
-					{
-						// This is a folding white-space: we keep it as is and
-						// we continue with contents parsing...
-
-						// If the line contains only space characters, we assume it is
-						// the end of the headers. This is not strictly standard-compliant
-						// but, hey, we can't fail when parsing some malformed mails...
-						while (pos < end && (buffer[pos] == ' ' || buffer[pos] == '\t'))
-							++pos;
-
-						if ((pos < end && buffer[pos] == '\n') ||
-						    (pos + 1 < end && buffer[pos] == '\r' && buffer[pos + 1] == '\n'))
-						{
-							break;
-						}
-					}
-					else
-					{
-						// End of this field
-						break;
-					}
+					contentsEnd = eol;
+					firstLine = false;
 				}
 
 				if (pos == end && contentsEnd == 0)
