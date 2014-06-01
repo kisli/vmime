@@ -25,13 +25,25 @@
 #include "vmime/net/pop3/POP3Store.hpp"
 
 
+class POP3TestStore : public vmime::net::pop3::POP3Store
+{
+public:
+
+	POP3TestStore()
+		: POP3Store(vmime::make_shared <vmime::net::session>(),
+		            vmime::shared_ptr <vmime::security::authenticator>())
+	{
+	}
+};
+
+
 class POP3ConnectionTest : public vmime::net::pop3::POP3Connection
 {
 public:
 
 	POP3ConnectionTest(vmime::shared_ptr <vmime::net::socket> socket,
 	                   vmime::shared_ptr <vmime::net::timeoutHandler> timeoutHandler)
-		: POP3Connection(vmime::shared_ptr <vmime::net::pop3::POP3Store>(),
+		: POP3Connection(vmime::make_shared <POP3TestStore>(),
 		                 vmime::shared_ptr <vmime::security::authenticator>()),
 		  m_socket(socket), m_timeoutHandler(timeoutHandler)
 	{
