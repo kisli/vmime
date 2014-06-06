@@ -48,8 +48,8 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 	public:
 
 		parameterizedHeaderField()
-			: headerField("F")
 		{
+			setName("F");
 			setValue(vmime::headerFieldFactory::getInstance()->createValue(getName()));
 			setValue(vmime::word("X"));
 		}

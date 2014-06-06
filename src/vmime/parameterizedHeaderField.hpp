@@ -39,7 +39,7 @@ namespace vmime
   * Parameters can be created using vmime::parameterFactory.
   */
 
-class VMIME_EXPORT parameterizedHeaderField : virtual public headerField
+class VMIME_EXPORT parameterizedHeaderField : public headerField
 {
 	friend class headerFieldFactory;
 

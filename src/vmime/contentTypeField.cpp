@@ -35,7 +35,7 @@ contentTypeField::contentTypeField()
 
 
 contentTypeField::contentTypeField(contentTypeField&)
-	: headerField(), parameterizedHeaderField()
+	: parameterizedHeaderField()
 {
 }
 
