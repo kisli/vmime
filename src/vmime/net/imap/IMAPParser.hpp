@@ -1089,7 +1089,7 @@ public:
 	DECLARE_COMPONENT(xstring)
 
 		xstring(const bool canBeNIL = false, component* comp = NULL, const int data = 0)
-			: m_canBeNIL(canBeNIL), m_component(comp), m_data(data)
+			: m_canBeNIL(canBeNIL), m_isNIL(true), m_component(comp), m_data(data)
 		{
 		}
 
@@ -1101,10 +1101,13 @@ public:
 			    VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "nil"))
 			{
 				// NIL
+				m_isNIL = true;
 			}
 			else
 			{
 				pos = *currentPos;
+
+				m_isNIL = false;
 
 				// quoted ::= <"> *QUOTED_CHAR <">
 				if (VIMAP_PARSER_TRY_CHECK(one_char <'"'>))
@@ -1208,12 +1211,15 @@ public:
 	private:
 
 		bool m_canBeNIL;
+		bool m_isNIL;
 		string m_value;
 
 		component* m_component;
 		const int m_data;
 
 	public:
+
+		bool isNIL() const { return m_isNIL; }
 
 		const string& value() const { return (m_value); }
 		void setValue(const string& val) { m_value = val; }
@@ -1227,6 +1233,11 @@ public:
 	class nstring : public xstring
 	{
 	public:
+
+		const string getComponentName() const
+		{
+			return "nstring";
+		}
 
 		nstring(component* comp = NULL, const int data = 0)
 			: xstring(true, comp, data)
@@ -2611,7 +2622,7 @@ public:
 	// header_fld_name ::= astring
 	//
 
-	typedef astring header_fld_name;
+	COMPONENT_ALIAS(astring, header_fld_name);
 
 
 	//
@@ -3165,35 +3176,35 @@ public:
 	// body_fld_desc   ::= nstring
 	//
 
-	typedef nstring body_fld_desc;
+	COMPONENT_ALIAS(nstring, body_fld_desc);
 
 
 	//
 	// body_fld_id     ::= nstring
 	//
 
-	typedef nstring body_fld_id;
+	COMPONENT_ALIAS(nstring, body_fld_id);
 
 
 	//
 	// body_fld_md5    ::= nstring
 	//
 
-	typedef nstring body_fld_md5;
+	COMPONENT_ALIAS(nstring, body_fld_md5);
 
 
 	//
 	// body_fld_octets ::= number
 	//
 
-	typedef number body_fld_octets;
+	COMPONENT_ALIAS(number, body_fld_octets);
 
 
 	//
 	// body_fld_lines  ::= number
 	//
 
-	typedef number body_fld_lines;
+	COMPONENT_ALIAS(number, body_fld_lines);
 
 
 	//
@@ -3201,7 +3212,42 @@ public:
 	//                     "QUOTED-PRINTABLE") <">) / string
 	//
 
-	typedef xstring body_fld_enc;
+	class body_fld_enc : public nstring
+	{
+	public:
+
+		const string getComponentName() const
+		{
+			return "body_fld_enc";
+		}
+
+		body_fld_enc()
+		{
+		}
+
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
+		{
+			size_t pos = *currentPos;
+
+			if (!xstring::parseImpl(parser, line, &pos))
+				return false;
+
+			// " When an IMAP4 client sends a FETCH (bodystructure) request
+			//   to a server that is running the Exchange Server 2007 IMAP4
+			//   service, a corrupted response is sent as a reply "
+			//   (see http://support.microsoft.com/kb/975918/en-us)
+			//
+			// Fail in strict mode
+			if (isNIL() && parser.isStrict())
+			{
+				VIMAP_PARSER_FAIL();
+			}
+
+			*currentPos = pos;
+
+			return true;
+		}
+	};
 
 
 	//
@@ -3478,7 +3524,7 @@ public:
 	//                     ;; Defined in [MIME-IMT]
 	//
 
-	typedef xstring media_subtype;
+	COMPONENT_ALIAS(xstring, media_subtype);
 
 
 	//

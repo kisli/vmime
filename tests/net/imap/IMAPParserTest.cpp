@@ -32,6 +32,7 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testExtraSpaceInCapaResponse)
 		VMIME_TEST(testContinueReqWithoutSpace)
+		VMIME_TEST(testNILValueInBodyFldEnc)
 	VMIME_TEST_LIST_END
 
 
@@ -102,6 +103,40 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 		++(*tag);
 
 		socket->localSend("+\r\n");
+
+		parser->setStrict(true);
+		VASSERT_THROW("strict mode", parser->readResponse(), vmime::exceptions::invalid_response);
+	}
+
+	// When an IMAP4 client sends a FETCH (bodystructure) request to a server
+	// that is running the Exchange Server 2007 IMAP4 service, a corrupted
+	// response is sent as a reply
+	// --> http://support.microsoft.com/kb/975918/en-us
+	void testNILValueInBodyFldEnc()
+	{
+		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
+		vmime::shared_ptr <vmime::net::timeoutHandler> toh = vmime::make_shared <testTimeoutHandler>();
+
+		vmime::shared_ptr <vmime::net::imap::IMAPTag> tag =
+				vmime::make_shared <vmime::net::imap::IMAPTag>();
+
+		const char* resp = "* 7970 FETCH (UID 8036 FLAGS () BODYSTRUCTURE (\"text\" \"html\" (\"charset\" \"utf-8\") NIL NIL NIL 175501 1651 NIL NIL NIL NIL) RFC822.HEADER {3}\r\nx\r\n)\r\na001 OK FETCH complete\r\n";
+
+		socket->localSend(resp);
+
+		vmime::shared_ptr <vmime::net::imap::IMAPParser> parser =
+			vmime::make_shared <vmime::net::imap::IMAPParser>();
+
+		parser->setTag(tag);
+		parser->setSocket(socket);
+		parser->setTimeoutHandler(toh);
+
+		parser->setStrict(false);
+		VASSERT_NO_THROW("non-strict mode", parser->readResponse());
+
+		++(*tag);
+
+		socket->localSend(resp);
 
 		parser->setStrict(true);
 		VASSERT_THROW("strict mode", parser->readResponse(), vmime::exceptions::invalid_response);
