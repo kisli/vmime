@@ -210,7 +210,7 @@ const vmime::string posixHandler::getHostName() const
 	{
 		for (struct addrinfo* p = info ; p != NULL ; p = p->ai_next)
 		{
-			if (isFQDN(p->ai_canonname))
+			if (p->ai_canonname && isFQDN(p->ai_canonname))
 			{
 				const string ret(p->ai_canonname);
 				freeaddrinfo(info);
