@@ -306,6 +306,7 @@ const folder::path::component IMAPUtils::fromModifiedUTF7(const string& text)
 	out.reserve(text.length());
 
 	bool inB64sequence = false;
+	bool plusOutput = false;
 	unsigned char prev = 0;
 
 	for (string::const_iterator it = text.begin() ; it != text.end() ; ++it)
@@ -320,7 +321,7 @@ const folder::path::component IMAPUtils::fromModifiedUTF7(const string& text)
 			if (!inB64sequence)
 			{
 				inB64sequence = true;
-				out += '+';
+				plusOutput = false;
 			}
 			else
 			{
@@ -332,7 +333,7 @@ const folder::path::component IMAPUtils::fromModifiedUTF7(const string& text)
 		// End of Base64 sequence (or "&-" --> "&")
 		case '-':
 		{
-			if (inB64sequence && prev == '&')
+			if (inB64sequence && prev == '&')  // special case "&-" --> "&"
 				out += '&';
 			else
 				out += '-';
@@ -343,11 +344,23 @@ const folder::path::component IMAPUtils::fromModifiedUTF7(const string& text)
 		// ',' is used instead of '/' in modified Base64
 		case ',':
 		{
+			if (inB64sequence && !plusOutput)
+			{
+				out += '+';
+				plusOutput = true;
+			}
+
 			out += (inB64sequence ? '/' : ',');
 			break;
 		}
 		default:
 		{
+			if (inB64sequence && !plusOutput)
+			{
+				out += '+';
+				plusOutput = true;
+			}
+
 			out += c;
 			break;
 		}
