@@ -53,6 +53,26 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 			setValue(vmime::headerFieldFactory::getInstance()->createValue(getName()));
 			setValue(vmime::word("X"));
 		}
+
+		using vmime::parameterizedHeaderField::generate;
+
+		const vmime::string generate
+			(const vmime::generationContext::EncodedParameterValueModes genMode,
+			 const vmime::size_t maxLineLength = 0) const
+		{
+			vmime::generationContext ctx(vmime::generationContext::getDefaultContext());
+			ctx.setEncodedParameterValueMode(genMode);
+
+			if (maxLineLength != 0)
+				ctx.setMaxLineLength(maxLineLength);
+
+			std::ostringstream oss;
+			vmime::utility::outputStreamAdapter adapter(oss);
+
+			vmime::parameterizedHeaderField::generate(ctx, adapter);
+
+			return oss.str();
+		}
 	};
 
 
@@ -245,11 +265,17 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 		p1.appendParameter(vmime::make_shared <vmime::parameter>("param1",
 			vmime::word("value 1\xe9", vmime::charset("charset"))));
 
-#if VMIME_ALWAYS_GENERATE_7BIT_PARAMETER
-		VASSERT_EQ("1", "F: X; param1=\"value 1\";param1*=charset''value%201%E9", p1.generate());
-#else
-		VASSERT_EQ("1", "F: X; param1*=charset''value%201%E9", p1.generate());
-#endif
+		VASSERT_EQ("1.no-encoding", "F: X; param1=\"value 1\"",
+			p1.generate(vmime::generationContext::PARAMETER_VALUE_NO_ENCODING));
+
+		VASSERT_EQ("1.rfc2047", "F: X; param1=\"=?charset?Q?value_1=E9?=\"",
+			p1.generate(vmime::generationContext::PARAMETER_VALUE_RFC2047_ONLY));
+
+		VASSERT_EQ("1.rfc2231", "F: X; param1*=charset''value%201%E9",
+			p1.generate(vmime::generationContext::PARAMETER_VALUE_RFC2231_ONLY));
+
+		VASSERT_EQ("1.both", "F: X; param1=\"=?charset?Q?value_1=E9?=\";param1*=charset''value%201%E9",
+			p1.generate(vmime::generationContext::PARAMETER_VALUE_RFC2231_AND_RFC2047));
 
 		// Value that spans on multiple lines
 		parameterizedHeaderField p2;
@@ -257,26 +283,34 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 			vmime::word("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
 				    vmime::charset("charset"))));
 
-#if VMIME_ALWAYS_GENERATE_7BIT_PARAMETER
-		VASSERT_EQ("2", "F: X; \r\n "
-			"param1=abcdefghijklm;\r\n "
+		VASSERT_EQ("2.no-encoding", "F: X; \r\n "
+			"param1=abcdefghijkl",
+			p2.generate(vmime::generationContext::PARAMETER_VALUE_NO_ENCODING, 25));  // max line length = 25
+
+		VASSERT_EQ("2.rfc2047", "F: X; \r\n "
+			"param1=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+			p2.generate(vmime::generationContext::PARAMETER_VALUE_RFC2047_ONLY, 25));  // max line length = 25
+
+		VASSERT_EQ("2.rfc2231", "F: X; \r\n "
 			"param1*0*=charset''abc;\r\n "
 			"param1*1*=defghijkl;\r\n "
 			"param1*2*=mnopqrstu;\r\n "
 			"param1*3*=vwxyzABCD;\r\n "
 			"param1*4*=EFGHIJKLM;\r\n "
 			"param1*5*=NOPQRSTUV;\r\n "
-			"param1*6*=WXYZ", p2.generate(25));  // max line length = 25
-#else
-		VASSERT_EQ("2", "F: X; \r\n "
+			"param1*6*=WXYZ",
+			p2.generate(vmime::generationContext::PARAMETER_VALUE_RFC2231_ONLY, 25));  // max line length = 25
+
+		VASSERT_EQ("2.both", "F: X; \r\n "
+			"param1=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ;\r\n "
 			"param1*0*=charset''abc;\r\n "
 			"param1*1*=defghijkl;\r\n "
 			"param1*2*=mnopqrstu;\r\n "
 			"param1*3*=vwxyzABCD;\r\n "
 			"param1*4*=EFGHIJKLM;\r\n "
 			"param1*5*=NOPQRSTUV;\r\n "
-			"param1*6*=WXYZ", p2.generate(25));  // max line length = 25
-#endif
+			"param1*6*=WXYZ",
+			p2.generate(vmime::generationContext::PARAMETER_VALUE_RFC2231_AND_RFC2047, 25));  // max line length = 25
 
 		// Non-ASCII parameter value
 		parameterizedHeaderField p3;
@@ -284,26 +318,58 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 			vmime::word("δσσσσσσσσσσσσσσσσσσσσδσδα δσαδσδσαδσαδασδασ δσαδασδσα δσαδασδσα δασδασδασ δασαχφδδσα 2008.doc",
 				vmime::charset("utf-8"))));
 
-#if VMIME_ALWAYS_GENERATE_7BIT_PARAMETER
-		VASSERT_EQ("3", "F: X; \r\n "
-			"param1=\"      2008.doc\";param1*0*=utf-8''%CE%B4%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83;\r\n "
+		VASSERT_EQ("3.no-encoding", "F: X; \r\n "
+			"param1=\"      2008.doc\"",
+			p3.generate(vmime::generationContext::PARAMETER_VALUE_NO_ENCODING, 80));  // max line length = 80
+
+		VASSERT_EQ("3.7bit-only", "F: X; \r\n "
+			"param1=\"=?utf-8?B?zrTPg8+Dz4PPg8+Dz4PPg8+Dz4PPg8+Dz4PPg8+Dz4PPg8+Dz4PPg8+DzrTPg860?=\r\n "
+			"=?utf-8?B?zrEgzrTPg86xzrTPg860z4POsc60z4POsc60zrHPg860zrHPgyDOtM+DzrHOtM6x?=\r\n "
+			"=?utf-8?B?z4POtM+DzrEgzrTPg86xzrTOsc+DzrTPg86xIM60zrHPg860zrHPg860zrHPgyDOtA==?=\r\n "
+			"=?utf-8?B?zrHPg86xz4fPhs60zrTPg86xIDIwMDguZG9j?=\"",
+			p3.generate(vmime::generationContext::PARAMETER_VALUE_RFC2047_ONLY, 80));  // max line length = 80
+
+		VASSERT_EQ("3.both", "F: X; \r\n "
+			"param1=\"=?utf-8?B?zrTPg8+Dz4PPg8+Dz4PPg8+Dz4PPg8+Dz4PPg8+Dz4PPg8+Dz4PPg8+DzrTPg860?=\r\n "
+			"=?utf-8?B?zrEgzrTPg86xzrTPg860z4POsc60z4POsc60zrHPg860zrHPgyDOtM+DzrHOtM6x?=\r\n "
+			"=?utf-8?B?z4POtM+DzrEgzrTPg86xzrTOsc+DzrTPg86xIM60zrHPg860zrHPg860zrHPgyDOtA==?=\r\n "
+			"=?utf-8?B?zrHPg86xz4fPhs60zrTPg86xIDIwMDguZG9j?=\";\r\n "
+			"param1*0*=utf-8''%CE%B4%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83;\r\n "
 			"param1*1*=%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83;\r\n "
 			"param1*2*=%CE%B4%CF%83%CE%B4%CE%B1%20%CE%B4%CF%83%CE%B1%CE%B4%CF%83%CE%B4%CF;\r\n "
 			"param1*3*=%83%CE%B1%CE%B4%CF%83%CE%B1%CE%B4%CE%B1%CF%83%CE%B4%CE%B1%CF%83%20;\r\n "
 			"param1*4*=%CE%B4%CF%83%CE%B1%CE%B4%CE%B1%CF%83%CE%B4%CF%83%CE%B1%20%CE%B4%CF;\r\n "
 			"param1*5*=%83%CE%B1%CE%B4%CE%B1%CF%83%CE%B4%CF%83%CE%B1%20%CE%B4%CE%B1%CF%83;\r\n "
 			"param1*6*=%CE%B4%CE%B1%CF%83%CE%B4%CE%B1%CF%83%20%CE%B4%CE%B1%CF%83%CE%B1%CF;\r\n "
-			"param1*7*=%87%CF%86%CE%B4%CE%B4%CF%83%CE%B1%202008.doc", p3.generate(80));
-#else
-		VASSERT_EQ("3", "F: X; param1*0*=utf-8''%CE%B4%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83;\r\n "
+			"param1*7*=%87%CF%86%CE%B4%CE%B4%CF%83%CE%B1%202008.doc",
+			p3.generate(vmime::generationContext::PARAMETER_VALUE_RFC2231_AND_RFC2047, 80));  // max line length = 80
+
+		VASSERT_EQ("3.either", "F: X; param1*0*=utf-8''%CE%B4%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83;\r\n "
 			"param1*1*=%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83;\r\n "
 			"param1*2*=%CE%B4%CF%83%CE%B4%CE%B1%20%CE%B4%CF%83%CE%B1%CE%B4%CF%83%CE%B4%CF;\r\n "
 			"param1*3*=%83%CE%B1%CE%B4%CF%83%CE%B1%CE%B4%CE%B1%CF%83%CE%B4%CE%B1%CF%83%20;\r\n "
 			"param1*4*=%CE%B4%CF%83%CE%B1%CE%B4%CE%B1%CF%83%CE%B4%CF%83%CE%B1%20%CE%B4%CF;\r\n "
 			"param1*5*=%83%CE%B1%CE%B4%CE%B1%CF%83%CE%B4%CF%83%CE%B1%20%CE%B4%CE%B1%CF%83;\r\n "
 			"param1*6*=%CE%B4%CE%B1%CF%83%CE%B4%CE%B1%CF%83%20%CE%B4%CE%B1%CF%83%CE%B1%CF;\r\n "
-			"param1*7*=%87%CF%86%CE%B4%CE%B4%CF%83%CE%B1%202008.doc", p3.generate(80));
-#endif
+			"param1*7*=%87%CF%86%CE%B4%CE%B4%CF%83%CE%B1%202008.doc",
+			p3.generate(vmime::generationContext::PARAMETER_VALUE_RFC2231_ONLY, 80));  // max line length = 80
+
+		// No encoding needed
+		parameterizedHeaderField p4;
+		p4.appendParameter(vmime::make_shared <vmime::parameter>("param1",
+			vmime::word("va lue", vmime::charset("charset"))));
+
+		VASSERT_EQ("4.no-encoding", "F: X; param1=\"va lue\"",
+			p4.generate(vmime::generationContext::PARAMETER_VALUE_NO_ENCODING));
+
+		VASSERT_EQ("4.rfc2047", "F: X; param1=\"va lue\"",
+			p4.generate(vmime::generationContext::PARAMETER_VALUE_RFC2047_ONLY));
+
+		VASSERT_EQ("4.rfc2231", "F: X; param1=\"va lue\"",
+			p4.generate(vmime::generationContext::PARAMETER_VALUE_RFC2231_ONLY));
+
+		VASSERT_EQ("4.both", "F: X; param1=\"va lue\"",
+			p4.generate(vmime::generationContext::PARAMETER_VALUE_RFC2231_AND_RFC2047));
 	}
 
 	void testNonStandardEncodedParam()

@@ -82,6 +82,51 @@ public:
 	  */
 	void setEpilogText(const string& epilogText);
 
+	/** Modes available for generating values in parameterized header fields.
+	  */
+	enum EncodedParameterValueModes
+	{
+		PARAMETER_VALUE_NO_ENCODING,          /**< Only generate 7-bit (ASCII-only) values,
+		                                           even if the value contains non-ASCII chars or
+		                                           if folding is needed. */
+		PARAMETER_VALUE_RFC2047_ONLY,         /**< Only generate RFC-2047 values (do not use
+		                                           RFC-2231). This is non-standard but most
+		                                           mail clients support it. */
+		PARAMETER_VALUE_RFC2231_ONLY,         /**< Only generate RFC-2231 values (do not use
+		                                           RFC-2047). Some mail clients may not support
+		                                           it. This is the default. */
+		PARAMETER_VALUE_RFC2231_AND_RFC2047   /**< Generate both RFC-2047- and RFC-2231-encoded
+		                                           values. */
+	};
+
+	/** Sets the mode used for generating parameter values in a parameterized
+	  * header field (see parameterizedHeaderField class).
+	  *
+	  * PARAMETER_VALUE_NO_ENCODING or PARAMETER_VALUE_RFC2047_ONLY
+	  * can be used for compatibility with implementations that do not
+	  * understand RFC-2231, to generate a normal parameter value.
+	  * PARAMETER_VALUE_RFC2047_ONLY is non-standard (and expressly
+	  * prohibited by the RFC) but most mail clients support it.
+	  *
+	  * Notice: if both the normal value and the extended value are present,
+	  * the latter can be ignored by mail processing systems. This may lead
+	  * to annoying problems, for example, with strange names of attachments
+	  * with all but 7-bit ascii characters removed, etc. Either
+	  * PARAMETER_VALUE_RFC2231_ONLY or PARAMETER_VALUE_RFC2047_ONLY should
+	  * be preferred over PARAMETER_VALUE_RFC2231_AND_RFC2047, not to create
+	  * a normal value if the extended value is to be generated.
+	  *
+	  * @param mode parameter value generation mode
+	  */
+	void setEncodedParameterValueMode(const EncodedParameterValueModes mode);
+
+	/** Returns the mode used for generating parameter values in a parameterized
+	  * header field (see parameterizedHeaderField class).
+	  *
+	  * @return parameter value generation mode
+	  */
+	EncodedParameterValueModes getEncodedParameterValueMode() const;
+
 	/** Returns the default context used for generating messages.
 	  *
 	  * @return a reference to the default generation context
@@ -97,6 +142,8 @@ protected:
 
 	string m_prologText;
 	string m_epilogText;
+
+	EncodedParameterValueModes m_paramValueMode;
 };
 
 

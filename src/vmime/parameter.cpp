@@ -279,7 +279,13 @@ void parameter::generateImpl
 	const string& value = m_value->getBuffer();
 
 	// For compatibility with implementations that do not understand RFC-2231,
-	// also generate a normal "7bit/us-ascii" parameter
+	// we may also generate a normal "7bit/us-ascii" parameter
+	generationContext::EncodedParameterValueModes
+		genMode = ctx.getEncodedParameterValueMode();
+
+#if VMIME_ALWAYS_GENERATE_7BIT_PARAMETER
+	genMode = generationContext::PARAMETER_VALUE_RFC2231_AND_RFC2047;
+#endif
 
 	// [By Eugene A. Shatokhin]
 	// Note that if both the normal "7bit/us-ascii" value and the extended
@@ -366,7 +372,8 @@ void parameter::generateImpl
 	const bool alwaysEncode = m_value->getCharset().getRecommendedEncoding(recommendedEnc);
 	bool extended = alwaysEncode;
 
-	if (needQuotedPrintable)
+	if ((needQuotedPrintable || cutValue) &&
+	    genMode != generationContext::PARAMETER_VALUE_NO_ENCODING)
 	{
 		// Send the name in quoted-printable, so outlook express et.al.
 		// will understand the real filename
@@ -378,7 +385,8 @@ void parameter::generateImpl
 	else
 	{
 		// Do not chop off this value, but just add the complete name as one header line.
-		for (size_t i = 0 ; i < value.length() ; ++i)
+		for (size_t i = 0, n = value.length(), curValueLength = 0 ;
+		     i < n && curValueLength < valueLength ; ++i)
 		{
 			const char_t c = value[i];
 
@@ -391,6 +399,7 @@ void parameter::generateImpl
 			{
 				sevenBitStream << value[i];
 				++pos;
+				++curValueLength;
 			}
 			else
 			{
@@ -406,26 +415,29 @@ void parameter::generateImpl
 		++pos;
 	}
 
-#if VMIME_ALWAYS_GENERATE_7BIT_PARAMETER
-	os << sevenBitBuffer;
-#endif // !VMIME_ALWAYS_GENERATE_7BIT_PARAMETER
+	if (genMode == generationContext::PARAMETER_VALUE_RFC2047_ONLY ||
+	    genMode == generationContext::PARAMETER_VALUE_RFC2231_AND_RFC2047)
+	{
+		os << sevenBitBuffer;
+	}
 
 	// Also generate an extended parameter if the value contains 8-bit characters
 	// or is too long for a single line
-	if (extended || cutValue)
+	if ((extended || cutValue) &&
+		genMode != generationContext::PARAMETER_VALUE_NO_ENCODING &&
+	    genMode != generationContext::PARAMETER_VALUE_RFC2047_ONLY)
 	{
 
-#if VMIME_ALWAYS_GENERATE_7BIT_PARAMETER
-
-		os << ';';
-		++pos;
-
-#else // !VMIME_ALWAYS_GENERATE_7BIT_PARAMETER
-
-		// The data output to 'sevenBitBuffer' will be discarded in this case
-		pos = curLinePos;
-
-#endif // VMIME_ALWAYS_GENERATE_7BIT_PARAMETER
+		if (genMode == generationContext::PARAMETER_VALUE_RFC2231_AND_RFC2047)
+		{
+			os << ';';
+			++pos;
+		}
+		else
+		{
+			// The data output to 'sevenBitBuffer' will be discarded in this case
+			pos = curLinePos;
+		}
 
 		/* RFC-2231
 		 * ========
@@ -572,8 +584,8 @@ void parameter::generateImpl
 			}
 		}
 	}
-#if !VMIME_ALWAYS_GENERATE_7BIT_PARAMETER
-	else
+	else if (!(genMode == generationContext::PARAMETER_VALUE_RFC2047_ONLY ||
+	           genMode == generationContext::PARAMETER_VALUE_RFC2231_AND_RFC2047))
 	{
 		// The value does not contain 8-bit characters and
 		// is short enough for a single line.
@@ -582,7 +594,6 @@ void parameter::generateImpl
 		// Output what has been stored in temporary buffer so far
 		os << sevenBitBuffer;
 	}
-#endif // !VMIME_ALWAYS_GENERATE_7BIT_PARAMETER
 
 	if (newLinePos)
 		*newLinePos = pos;
