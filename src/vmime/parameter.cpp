@@ -134,6 +134,7 @@ void parameter::parse(const parsingContext& ctx, const std::vector <valueChunk>&
 	bool foundCharsetChunk = false;
 
 	charset ch(charsets::US_ASCII);
+	string lang;
 
 	std::ostringstream value;
 	value.imbue(std::locale::classic());
@@ -170,7 +171,9 @@ void parameter::parse(const parsingContext& ctx, const std::vector <valueChunk>&
 
 				if (q != string::npos)
 				{
-					// Ignore language
+					// Extract language
+					lang = chunk.data.substr(pos, q - pos);
+
 					++q;
 					pos = q;
 				}
@@ -268,6 +271,7 @@ void parameter::parse(const parsingContext& ctx, const std::vector <valueChunk>&
 
 	m_value->setBuffer(value.str());
 	m_value->setCharset(ch);
+	m_value->setLanguage(lang);
 }
 
 
@@ -372,7 +376,7 @@ void parameter::generateImpl
 	const bool alwaysEncode = m_value->getCharset().getRecommendedEncoding(recommendedEnc);
 	bool extended = alwaysEncode;
 
-	if ((needQuotedPrintable || cutValue) &&
+	if ((needQuotedPrintable || cutValue || !m_value->getLanguage().empty()) &&
 	    genMode != generationContext::PARAMETER_VALUE_NO_ENCODING)
 	{
 		// Send the name in quoted-printable, so outlook express et.al.

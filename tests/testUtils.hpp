@@ -119,7 +119,14 @@ inline std::ostream& operator<<(std::ostream& os, const vmime::charset& ch)
 
 inline std::ostream& operator<<(std::ostream& os, const vmime::word& w)
 {
-	os << "[word: charset=" << w.getCharset().getName() << ", buffer=" << w.getBuffer() << "]";
+	os << "[word: charset=" << w.getCharset().getName()
+	   << ", buffer=" << w.getBuffer();
+
+	if (!w.getLanguage().empty())
+		os << ", lang=" << w.getLanguage();
+
+	os << "]";
+
 	return (os);
 }
 

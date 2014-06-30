@@ -226,7 +226,8 @@ wordEncoder::Encoding wordEncoder::getEncoding() const
 
 // static
 bool wordEncoder::isEncodingNeeded
-	(const generationContext& ctx, const string& buffer, const charset& charset)
+	(const generationContext& ctx, const string& buffer,
+	 const charset& charset, const string& lang)
 {
 	if (!ctx.getInternationalizedEmailSupport())
 	{
@@ -248,6 +249,10 @@ bool wordEncoder::isEncodingNeeded
 
 	// If any RFC-2047 sequence is found in the buffer, encode it
 	if (buffer.find("=?") != string::npos || buffer.find("?=") != string::npos)
+		return true;
+
+	// If a language is specified, force encoding
+	if (!lang.empty())
 		return true;
 
 	return false;

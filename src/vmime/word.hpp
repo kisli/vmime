@@ -48,6 +48,7 @@ public:
 	word(const word& w);
 	word(const string& buffer); // Defaults to local charset
 	word(const string& buffer, const charset& charset);
+	word(const string& buffer, const charset& charset, const string& lang);
 
 	/** Return the raw data for this encoded word.
 	  *
@@ -84,6 +85,20 @@ public:
 	  * @param ch charset of this word
 	  */
 	void setCharset(const charset& ch);
+
+	/** Return the language used in this word (optional).
+	  * If not specified, the value is empty.
+	  *
+	  * @return language tag for this word, in the format specified
+	  * by RFC-1766
+	  */
+	const string getLanguage() const;
+
+	/** Set the language used in this word (optional).
+	  *
+	  * @param lang language tag, in the format specified by RFC-1766
+	  */
+	void setLanguage(const string& lang);
 
 	/** Returns whether two words actually represent the same text,
 	  * regardless of their charset.
@@ -194,6 +209,7 @@ private:
 	// in the specified "m_charset".
 	string m_buffer;
 	charset m_charset;
+	string m_lang;
 };
 
 

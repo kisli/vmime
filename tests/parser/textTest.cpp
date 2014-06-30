@@ -221,12 +221,21 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		VASSERT_EQ("6", "[text: [[word: charset=iso-8859-1, buffer=Know wh\xe4t? It works!]]]",
 			parseText("=?iso-8859-1?Q?Know_wh=E4t?_It_works!?="));
 
-		// TODO: add more
+		// With language specifier
+		VASSERT_EQ("7", "[text: [[word: charset=US-ASCII, buffer=Keith Moore, lang=EN]]]",
+			parseText("=?US-ASCII*EN?Q?Keith_Moore?="));
 	}
 
 	void testGenerate()
 	{
 		// TODO
+
+		// With language specifier
+		vmime::word wlang1("Émeline", vmime::charset("UTF-8"), "FR");
+		VASSERT_EQ("lang1", "=?UTF-8*FR?Q?=C3=89meline?=", wlang1.generate());
+
+		vmime::word wlang2("Keith Moore", vmime::charset("US-ASCII"), "EN");
+		VASSERT_EQ("lang2", "=?US-ASCII*EN?Q?Keith_Moore?=", wlang2.generate());
 	}
 
 	void testDisplayForm()

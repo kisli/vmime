@@ -78,9 +78,11 @@ public:
 	  * @param ctx generation context
 	  * @param buffer buffer to analyze
 	  * @param charset charset of the buffer
+	  * @param lang language code, in the format specified by RFC-1766
 	  * @return true if encoding is needed, false otherwise.
 	  */
-	static bool isEncodingNeeded(const generationContext& ctx, const string& buffer, const charset& charset);
+	static bool isEncodingNeeded(const generationContext& ctx, const string& buffer,
+		const charset& charset, const string& lang);
 
 	/** Guess the best RFC-2047 encoding to use for the specified buffer.
 	  *

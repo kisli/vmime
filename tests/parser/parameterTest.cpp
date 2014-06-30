@@ -81,6 +81,8 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 #define PARAM_NAME(p, n) (p.getParameterAt(n)->getName())
 #define PARAM_CHARSET(p, n) \
 	(p.getParameterAt(n)->getValue().getCharset().generate())
+#define PARAM_LANG(p, n) \
+	(p.getParameterAt(n)->getValue().getLanguage())
 #define PARAM_BUFFER(p, n) \
 	(p.getParameterAt(n)->getValue().getBuffer())
 
@@ -235,6 +237,16 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 		VASSERT_EQ("5.2", "param1", PARAM_NAME(p5, 0));
 		VASSERT_EQ("5.3", "us-ascii", PARAM_CHARSET(p5, 0));
 		VASSERT_EQ("5.4", "value1", PARAM_BUFFER(p5, 0));
+
+		// Language specification
+		parameterizedHeaderField p6;
+		p6.parse("X; param1*=us-ascii'en-us'This%20is%20%2A%2A%2Afun%2A%2A%2A");
+
+		VASSERT_EQ("6.1", 1, p6.getParameterCount());
+		VASSERT_EQ("6.2", "param1", PARAM_NAME(p6, 0));
+		VASSERT_EQ("6.3", "us-ascii", PARAM_CHARSET(p6, 0));
+		VASSERT_EQ("6.4", "en-us", PARAM_LANG(p6, 0));
+		VASSERT_EQ("6.5", "This is ***fun***", PARAM_BUFFER(p6, 0));
 	}
 
 	void testGenerate()
@@ -370,6 +382,25 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 
 		VASSERT_EQ("4.both", "F: X; param1=\"va lue\"",
 			p4.generate(vmime::generationContext::PARAMETER_VALUE_RFC2231_AND_RFC2047));
+
+		// Language specification
+		parameterizedHeaderField p5;
+		p5.appendParameter(vmime::make_shared <vmime::parameter>("param1",
+			vmime::word("This is ***fun***", vmime::charset("us-ascii"), "en-us")));
+
+		VASSERT_EQ("5.no-encoding", "F: X; param1=\"This is ***fun***\"",
+			p5.generate(vmime::generationContext::PARAMETER_VALUE_NO_ENCODING));
+
+		VASSERT_EQ("5.rfc2047", "F: X; param1=\"=?us-ascii*en-us?Q?This_is_***fun***?=\"",
+			p5.generate(vmime::generationContext::PARAMETER_VALUE_RFC2047_ONLY));
+
+		VASSERT_EQ("5.rfc2231", "F: X; param1*=us-ascii''This%20is%20***fun***",
+			p5.generate(vmime::generationContext::PARAMETER_VALUE_RFC2231_ONLY));
+
+		VASSERT_EQ("5.both", "F: X; "
+				"param1=\"=?us-ascii*en-us?Q?This_is_***fun***?=\";\r\n "
+				"param1*=us-ascii''This%20is%20***fun***",
+			p5.generate(vmime::generationContext::PARAMETER_VALUE_RFC2231_AND_RFC2047));
 	}
 
 	void testNonStandardEncodedParam()

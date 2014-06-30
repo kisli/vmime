@@ -32,6 +32,7 @@ VMIME_TEST_SUITE_BEGIN(wordEncoderTest)
 		VMIME_TEST(testGetNextChunk)
 		VMIME_TEST(testGetNextChunk_integral)
 		VMIME_TEST(testIsEncodingNeeded_ascii)
+		VMIME_TEST(testIsEncodingNeeded_withLanguage)
 		VMIME_TEST(testIsEncodingNeeded_specialChars)
 		VMIME_TEST(testGuessBestEncoding_QP)
 		VMIME_TEST(testGuessBestEncoding_B64)
@@ -70,25 +71,31 @@ VMIME_TEST_SUITE_BEGIN(wordEncoderTest)
 		ctx.setInternationalizedEmailSupport(false);
 
 		VASSERT_FALSE("ascii", vmime::wordEncoder::isEncodingNeeded
-			(ctx, "ASCII-only buffer", vmime::charset("utf-8")));
+			(ctx, "ASCII-only buffer", vmime::charset("utf-8"), ""));
 
 		VASSERT_TRUE("non-ascii", vmime::wordEncoder::isEncodingNeeded
-			(ctx, "Buffer with some UTF-8 '\xc3\xa0'", vmime::charset("utf-8")));
+			(ctx, "Buffer with some UTF-8 '\xc3\xa0'", vmime::charset("utf-8"), ""));
+	}
+
+	void testIsEncodingNeeded_withLanguage()
+	{
+		VASSERT_TRUE("ascii", vmime::wordEncoder::isEncodingNeeded
+			(vmime::generationContext::getDefaultContext(), "ASCII-only buffer", vmime::charset("utf-8"), "en"));
 	}
 
 	void testIsEncodingNeeded_specialChars()
 	{
 		VASSERT_TRUE("rfc2047", vmime::wordEncoder::isEncodingNeeded
 			(vmime::generationContext::getDefaultContext(),
-			 "foo bar =? foo bar", vmime::charset("us-ascii")));
+			 "foo bar =? foo bar", vmime::charset("us-ascii"), ""));
 
 		VASSERT_TRUE("new line 1", vmime::wordEncoder::isEncodingNeeded
 			(vmime::generationContext::getDefaultContext(),
-			 "foo bar \n foo bar", vmime::charset("us-ascii")));
+			 "foo bar \n foo bar", vmime::charset("us-ascii"), ""));
 
 		VASSERT_TRUE("new line 2", vmime::wordEncoder::isEncodingNeeded
 			(vmime::generationContext::getDefaultContext(),
-			 "foo bar \r foo bar", vmime::charset("us-ascii")));
+			 "foo bar \r foo bar", vmime::charset("us-ascii"), ""));
 	}
 
 	void testGuessBestEncoding_QP()

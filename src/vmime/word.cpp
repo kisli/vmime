@@ -48,7 +48,8 @@ word::word()
 
 
 word::word(const word& w)
-	: headerFieldValue(), m_buffer(w.m_buffer), m_charset(w.m_charset)
+	: headerFieldValue(), m_buffer(w.m_buffer),
+	  m_charset(w.m_charset), m_lang(w.m_lang)
 {
 }
 
@@ -61,6 +62,12 @@ word::word(const string& buffer) // Defaults to local charset
 
 word::word(const string& buffer, const charset& charset)
 	: m_buffer(buffer), m_charset(charset)
+{
+}
+
+
+word::word(const string& buffer, const charset& charset, const string& lang)
+	: m_buffer(buffer), m_charset(charset), m_lang(lang)
 {
 }
 
@@ -296,6 +303,21 @@ void word::parseImpl
 
 					if (theEncoder)
 					{
+						// Extract charset and language
+						const string charsetAndLang(charsetPos, charsetEnd);
+						const string::size_type asteriskPos = charsetAndLang.find('*');
+
+						if (asteriskPos != string::npos)
+						{
+							m_charset = charset(string(charsetAndLang.begin(), charsetAndLang.begin() + asteriskPos));
+							m_lang = string(charsetAndLang.begin() + asteriskPos + 1, charsetAndLang.end());
+						}
+						else
+						{
+							m_charset = charset(charsetAndLang);
+							m_lang.clear();
+						}
+
 						// Decode text
 						string decodedBuffer;
 
@@ -306,7 +328,6 @@ void word::parseImpl
 						delete (theEncoder);
 
 						m_buffer = decodedBuffer;
-						m_charset = charset(string(charsetPos, charsetEnd));
 
 						setParsedBounds(position, p - buffer.begin());
 
@@ -358,7 +379,7 @@ void word::generate(const generationContext& ctx, utility::outputStream& os,
 	else if ((flags & text::FORCE_ENCODING) != 0)
 		encodingNeeded = true;
 	else  // auto-detect
-		encodingNeeded = wordEncoder::isEncodingNeeded(ctx, m_buffer, m_charset);
+		encodingNeeded = wordEncoder::isEncodingNeeded(ctx, m_buffer, m_charset, m_lang);
 
 	// If text does not need to be encoded, quote the buffer (no folding is performed).
 	if (!encodingNeeded &&
@@ -600,8 +621,12 @@ void word::generate(const generationContext& ctx, utility::outputStream& os,
 
 		wordEncoder wordEnc(m_buffer, m_charset);
 
-		const string wordStart("=?" + m_charset.getName() + "?" +
-			(wordEnc.getEncoding() == wordEncoder::ENCODING_B64 ? 'B' : 'Q') + "?");
+		const string wordStart("=?"
+			+ m_charset.getName()
+			+ (m_lang.empty() ? "" : string("*") + m_lang)
+			+ "?"
+			+ (wordEnc.getEncoding() == wordEncoder::ENCODING_B64 ? 'B' : 'Q')
+			+ "?");
 		const string wordEnd("?=");
 
 		const size_t minWordLength = wordStart.length() + wordEnd.length();
@@ -690,6 +715,7 @@ word& word::operator=(const word& w)
 {
 	m_buffer = w.m_buffer;
 	m_charset = w.m_charset;
+	m_lang = w.m_lang;
 	return (*this);
 }
 
@@ -698,6 +724,7 @@ word& word::operator=(const string& s)
 {
 	m_buffer = s;
 	m_charset = charset::getLocalCharset();
+	m_lang.clear();
 	return (*this);
 }
 
@@ -708,18 +735,19 @@ void word::copyFrom(const component& other)
 
 	m_buffer = w.m_buffer;
 	m_charset = w.m_charset;
+	m_lang = w.m_lang;
 }
 
 
 bool word::operator==(const word& w) const
 {
-	return (m_charset == w.m_charset && m_buffer == w.m_buffer);
+	return (m_charset == w.m_charset && m_buffer == w.m_buffer && m_lang == w.m_lang);
 }
 
 
 bool word::operator!=(const word& w) const
 {
-	return (m_charset != w.m_charset || m_buffer != w.m_buffer);
+	return (m_charset != w.m_charset || m_buffer != w.m_buffer || m_lang != w.m_lang);
 }
 
 
@@ -766,6 +794,18 @@ const charset& word::getCharset() const
 void word::setCharset(const charset& ch)
 {
 	m_charset = ch;
+}
+
+
+const string word::getLanguage() const
+{
+	return m_lang;
+}
+
+
+void word::setLanguage(const string& lang)
+{
+	m_lang = lang;
 }
 
 
