@@ -277,6 +277,11 @@ IF(VMIME_BUILD_TESTS)
 		${CMAKE_SOURCE_DIR}/tests/*Test.cpp
 	)
 
+	ADD_LIBRARY(
+		test-runner
+		${CMAKE_SOURCE_DIR}/tests/testRunner.cpp ${CMAKE_SOURCE_DIR}/tests/testUtils.cpp
+	)
+
 	# Build one file for each test
 	FOREACH(VMIME_TEST_SRC_FILE ${VMIME_TESTS_SRC_FILES})
 
@@ -290,13 +295,13 @@ IF(VMIME_BUILD_TESTS)
 
 		ADD_EXECUTABLE(
 			${VMIME_TEST_NAME}
-			${VMIME_TEST_SRC_FILE} ${CMAKE_SOURCE_DIR}/tests/testRunner.cpp ${CMAKE_SOURCE_DIR}/tests/testUtils.cpp
+			${VMIME_TEST_SRC_FILE}
 		)
 
 		TARGET_LINK_LIBRARIES(
 			${VMIME_TEST_NAME}
 			${VMIME_LIBRARY_NAME}
-			${CPPUNIT_LIBRARY}
+			${CPPUNIT_LIBRARY} test-runner
 		)
 
 		ADD_DEPENDENCIES(
@@ -314,13 +319,13 @@ IF(VMIME_BUILD_TESTS)
 	# Build one file for all tests
 	ADD_EXECUTABLE(
 		"run-tests"
-		${VMIME_TESTS_SRC_FILES} ${CMAKE_SOURCE_DIR}/tests/testRunner.cpp ${CMAKE_SOURCE_DIR}/tests/testUtils.cpp
+		${VMIME_TESTS_SRC_FILES}
 	)
 
 	TARGET_LINK_LIBRARIES(
 		"run-tests"
 		${VMIME_LIBRARY_NAME}
-		${CPPUNIT_LIBRARY}
+		${CPPUNIT_LIBRARY} test-runner
 	)
 
 	ADD_DEPENDENCIES(
