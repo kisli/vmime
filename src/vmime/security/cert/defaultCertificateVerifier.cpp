@@ -65,7 +65,7 @@ void defaultCertificateVerifier::verify
 	if (type == "X.509")
 		verifyX509(chain, hostname);
 	else
-		throw exceptions::unsupported_certificate_type(type);
+		throw unsupportedCertificateTypeException(type);
 }
 
 
@@ -86,29 +86,22 @@ void defaultCertificateVerifier::verifyX509
 
 			if (!cert->checkIssuer(next))
 			{
-				throw exceptions::certificate_verification_exception
-					("Subject/issuer verification failed.");
+				certificateIssuerVerificationException ex;
+				ex.setCertificate(cert);
+
+				throw ex;
 			}
 		}
 	}
 
 	// For every certificate in the chain, verify that the certificate
 	// is valid at the current time
-	const datetime now = datetime::now();
-
 	for (unsigned int i = 0 ; i < chain->getCount() ; ++i)
 	{
 		shared_ptr <X509Certificate> cert =
 			dynamicCast <X509Certificate>(chain->getAt(i));
 
-		const datetime begin = cert->getActivationDate();
-		const datetime end = cert->getExpirationDate();
-
-		if (now < begin || now > end)
-		{
-			throw exceptions::certificate_verification_exception
-				("Validity date check failed.");
-		}
+		cert->checkValidity();
 	}
 
 	// Check whether the certificate can be trusted
@@ -144,15 +137,19 @@ void defaultCertificateVerifier::verifyX509
 
 	if (!trusted)
 	{
-		throw exceptions::certificate_verification_exception
-			("Cannot verify certificate against trusted certificates.");
+		certificateNotTrustedException ex;
+		ex.setCertificate(firstCert);
+
+		throw ex;
 	}
 
 	// Ensure the first certificate's subject name matches server hostname
 	if (!firstCert->verifyHostName(hostname))
 	{
-		throw exceptions::certificate_verification_exception
-			("Server identity cannot be verified.");
+		serverIdentityException ex;
+		ex.setCertificate(firstCert);
+
+		throw ex;
 	}
 }
 

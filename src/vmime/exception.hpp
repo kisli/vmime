@@ -39,11 +39,10 @@ namespace vmime
 /** Base class for VMime exceptions.
   */
 
-class VMIME_EXPORT exception : public std::exception
+class VMIME_EXPORT exception : public std::runtime_error
 {
 private:
 
-	string m_what;
 	exception* m_other;
 
 	exception();
@@ -55,19 +54,14 @@ public:
 
 	virtual ~exception() throw();
 
-	/** Return a description of the error.
+	/** Chain the specified exception with this exception.
 	  *
-	  * @return error message
+	  * @param other next exception in the chain
 	  */
-	const char* what() const throw();
+	void chainException(const exception& other);
 
-	/** Return a description of the error.
-	  *
-	  * @return error message
-	  */
-	const char* what() throw();
-
-	/** Return the next exception in the chain (encapsulated exception).
+	/** Return the next exception in the chain, that is the exception
+	  * that caused this exception. This permits nesting exceptions.
 	  *
 	  * @return next exception in the chain
 	  */
@@ -871,42 +865,6 @@ public:
 
 	exception* clone() const;
 	const char* name() const throw();
-};
-
-
-class VMIME_EXPORT certificate_exception : public tls_exception
-{
-public:
-
-	certificate_exception(const string& what, const exception& other = NO_EXCEPTION);
-	~certificate_exception() throw();
-
-	exception* clone() const;
-	const char* name() const throw();
-};
-
-
-class VMIME_EXPORT certificate_verification_exception : public certificate_exception
-{
-public:
-
-	certificate_verification_exception(const string& what, const exception& other = NO_EXCEPTION);
-	~certificate_verification_exception() throw ();
-
-	exception* clone() const;
-	const char* name() const throw ();
-};
-
-
-class VMIME_EXPORT unsupported_certificate_type : public certificate_exception
-{
-public:
-
-	unsupported_certificate_type(const string& type, const exception& other = NO_EXCEPTION);
-	~unsupported_certificate_type() throw ();
-
-	exception* clone() const;
-	const char* name() const throw ();
 };
 
 

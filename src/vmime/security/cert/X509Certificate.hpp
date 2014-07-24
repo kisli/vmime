@@ -153,6 +153,15 @@ public:
 	  * @return the fingerprint of this certificate
 	  */
 	virtual const byteArray getFingerprint(const DigestAlgorithm algo) const = 0;
+
+	/** Checks that the certificate is currently valid. For the certificate
+	  * to be valid, the current date and time must be in the validity period
+	  * specified in the certificate.
+	  *
+	  * @throw certificateExpiredException if the certificate has expired
+	  * @throw certificateNotYetValidException if the certificate is not yet valid
+	  */
+	virtual void checkValidity();
 };
 
 

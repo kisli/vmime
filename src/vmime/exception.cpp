@@ -35,19 +35,19 @@ const exception exception::NO_EXCEPTION;
 
 
 exception::exception()
-	: m_what(""), m_other(NULL)
+	: std::runtime_error(""), m_other(NULL)
 {
 }
 
 
 exception::exception(const string& what, const exception& other)
-	: m_what(what), m_other(&other != &NO_EXCEPTION ? other.clone() : NULL)
+	: std::runtime_error(what), m_other(&other != &NO_EXCEPTION ? other.clone() : NULL)
 {
 }
 
 
 exception::exception(const exception& e)
-	: std::exception(), m_what(e.what()), m_other(e.m_other == NULL ? NULL : e.m_other->clone())
+	: std::runtime_error(e.what()), m_other(e.m_other == NULL ? NULL : e.m_other->clone())
 {
 }
 
@@ -58,15 +58,12 @@ exception::~exception() throw()
 }
 
 
-const char* exception::what() const throw()
+void exception::chainException(const exception& other)
 {
-	return (m_what.c_str());
-}
+	exception* e = other.clone();
 
-
-const char* exception::what() throw()
-{
-	return (m_what.c_str());
+	delete m_other;
+	m_other = e;
 }
 
 
@@ -713,42 +710,6 @@ tls_exception::tls_exception(const string& what, const exception& other)
 
 exception* tls_exception::clone() const { return new tls_exception(*this); }
 const char* tls_exception::name() const throw() { return "tls_exception"; }
-
-
-//
-// certificate_exception
-//
-
-certificate_exception::~certificate_exception() throw() {}
-certificate_exception::certificate_exception(const string& what, const exception& other)
-	: tls_exception(what, other) {}
-
-exception* certificate_exception::clone() const { return new certificate_exception(*this); }
-const char* certificate_exception::name() const throw() { return "certificate_exception"; }
-
-
-//
-// certificate_verification_exception
-//
-
-certificate_verification_exception::~certificate_verification_exception() throw() {}
-certificate_verification_exception::certificate_verification_exception(const string& what, const exception& other)
-	: certificate_exception(what, other) {}
-
-exception* certificate_verification_exception::clone() const { return new certificate_verification_exception(*this); }
-const char* certificate_verification_exception::name() const throw() { return "certificate_verification_exception"; }
-
-
-//
-// unsupported_certificate_type
-//
-
-unsupported_certificate_type::~unsupported_certificate_type() throw() {}
-unsupported_certificate_type::unsupported_certificate_type(const string& type, const exception& other)
-	: certificate_exception("Unsupported certificate type: '" + type + "'", other) {}
-
-exception* unsupported_certificate_type::clone() const { return new unsupported_certificate_type(*this); }
-const char* unsupported_certificate_type::name() const throw() { return "unsupported_certificate_type"; }
 
 
 #endif // VMIME_HAVE_TLS_SUPPORT

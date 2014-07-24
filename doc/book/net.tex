@@ -874,7 +874,7 @@ default behaviour is to fallback on a normal connection. To make
 \subsubsection{How it works} % ...............................................
 
 If you tried the previous examples, a
-{\vcode certificate\_verification\_exception} might have been thrown.
+{\vcode certificateException} might have been thrown.
 This is because the default certificate verifier in VMime did not manage to
 verify the certificate, and so could not trust it.
 
@@ -905,6 +905,8 @@ used is quite simple:
 issued by the next certificate in the chain;
 \item for every certificate in the chain, verify that the certificate is valid
 at the current time;
+\item ensure that the first certificate's subject name matches the hostname
+of the server;
 \item decide whether the subject's certificate can be trusted:
 	\begin{itemize}
 	\item first, verify that the the last certificate in the chain was
@@ -981,7 +983,7 @@ write your own verifier. Your verifier should inherit from the
 {\vcode vmime::security::cert::certificateVerifier} class and implement the
 method {\vcode verify()}. Then, if the specified certificate chain is trusted,
 simply return from the function, or else throw a
-{\vcode certificate\_verification\_exception}.
+{\vcode certificateException}.
 
 The following example shows how to implement an interactive certificate
 verifier which relies on the user's decision, and nothing else (you SHOULD NOT
@@ -1011,7 +1013,7 @@ public:
          return;  // OK, we trust the certificate
 
       // Don't trust this certificate
-      throw exceptions::certificate_verification_exception();
+      throw vmime::security::cert::certificateException();
    }
 };
 \end{lstlisting}

@@ -15,7 +15,7 @@ public:
 
 			defaultCertificateVerifier::verify(chain, hostname);
 		}
-		catch (vmime::exceptions::certificate_verification_exception&)
+		catch (vmime::security::cert::certificateException&)
 		{
 			// Obtain subject's certificate
 			vmime::shared_ptr <vmime::security::cert::certificate> cert = chain->getAt(0);
@@ -44,7 +44,7 @@ public:
 				return;
 			}
 
-			throw vmime::exceptions::certificate_verification_exception
+			throw vmime::security::cert::certificateException
 				("User did not accept the certificate.");
 		}
 	}

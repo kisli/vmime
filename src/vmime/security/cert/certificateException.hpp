@@ -21,16 +21,19 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#ifndef VMIME_SECURITY_CERT_CERTIFICATEEXCEPTION_HPP_INCLUDED
+#define VMIME_SECURITY_CERT_CERTIFICATEEXCEPTION_HPP_INCLUDED
+
+
 #include "vmime/config.hpp"
 
 
 #if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT
 
 
-#include "vmime/security/cert/X509Certificate.hpp"
+#include "vmime/security/cert/certificate.hpp"
 
-#include "vmime/security/cert/certificateNotYetValidException.hpp"
-#include "vmime/security/cert/certificateExpiredException.hpp"
+#include "vmime/exception.hpp"
 
 
 namespace vmime {
@@ -38,30 +41,42 @@ namespace security {
 namespace cert {
 
 
-X509Certificate::~X509Certificate()
+/** Thrown to indicate a problem with a certificate or certificate verification.
+  */
+class VMIME_EXPORT certificateException : public exception
 {
-}
+public:
 
+	/** Constructs a certificateException with no detail message.
+	  */
+	certificateException();
 
-void X509Certificate::checkValidity()
-{
-	const datetime now = datetime::now();
+	/** Constructs a certificateException with a detail message.
+	  *
+	  * @param what a message that describes this exception
+	  */
+	certificateException(const std::string& what);
 
-	if (now < getActivationDate())
-	{
-		certificateNotYetValidException ex;
-		ex.setCertificate(dynamicCast <certificate>(shared_from_this()));
+	~certificateException() throw();
 
-		throw ex;
-	}
-	else if (now > getExpirationDate())
-	{
-		certificateExpiredException ex;
-		ex.setCertificate(dynamicCast <certificate>(shared_from_this()));
+	exception* clone() const;
 
-		throw ex;
-	}
-}
+	/** Sets the certificate on which the problem occured.
+	  *
+	  * @param cert certificate
+	  */
+	void setCertificate(shared_ptr <certificate> cert);
+
+	/** Returns the certificate on which the problem occured.
+	  *
+	  * @return certificate
+	  */
+	shared_ptr <certificate> getCertificate();
+
+private:
+
+	shared_ptr <certificate> m_cert;
+};
 
 
 } // cert
@@ -70,3 +85,5 @@ void X509Certificate::checkValidity()
 
 
 #endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT
+
+#endif // VMIME_SECURITY_CERT_CERTIFICATEEXCEPTION_HPP_INCLUDED

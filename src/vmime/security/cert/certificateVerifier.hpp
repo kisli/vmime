@@ -29,6 +29,11 @@
 
 #include "vmime/security/cert/certificateChain.hpp"
 
+#include "vmime/security/cert/unsupportedCertificateTypeException.hpp"
+#include "vmime/security/cert/certificateIssuerVerificationException.hpp"
+#include "vmime/security/cert/certificateNotTrustedException.hpp"
+#include "vmime/security/cert/serverIdentityException.hpp"
+
 
 namespace vmime {
 namespace security {
@@ -45,9 +50,18 @@ public:
 	  *
 	  * @param chain certificate chain
 	  * @param hostname server hostname
-	  * @throw exceptions::certificate_verification_exception if one
-	  * or more certificates can not be trusted, or the server identity
-	  * cannot be verified
+	  * @throw unsupportedCertificateTypeException if a certificate in the
+	  * chain is of unsupported format
+	  * @throw certificateExpiredException if a certificate in the chain
+	  * has expired
+	  * @throw certificateNotYetValidException if a certificate in the chain
+	  * is not yet valid
+	  * @throw certificateNotTrustedException if a certificate in the chain
+	  * cannot be verified against root and/or trusted certificates
+	  * @throw certificateIssuerVerificationException if a certificate in the
+	  * chain cannot be verified against the next certificate (issuer)
+	  * @throw serverIdentityException if the subject name of the certificate
+	  * does not match the hostname of the server
 	  */
 	virtual void verify(shared_ptr <certificateChain> chain, const string& hostname) = 0;
 };

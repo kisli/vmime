@@ -27,10 +27,7 @@
 #if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT
 
 
-#include "vmime/security/cert/X509Certificate.hpp"
-
-#include "vmime/security/cert/certificateNotYetValidException.hpp"
-#include "vmime/security/cert/certificateExpiredException.hpp"
+#include "vmime/security/cert/certificateIssuerVerificationException.hpp"
 
 
 namespace vmime {
@@ -38,29 +35,15 @@ namespace security {
 namespace cert {
 
 
-X509Certificate::~X509Certificate()
+certificateIssuerVerificationException::certificateIssuerVerificationException()
+	: certificateException("Certificate subject/issuer verification failed.")
 {
 }
 
 
-void X509Certificate::checkValidity()
+exception* certificateIssuerVerificationException::clone() const
 {
-	const datetime now = datetime::now();
-
-	if (now < getActivationDate())
-	{
-		certificateNotYetValidException ex;
-		ex.setCertificate(dynamicCast <certificate>(shared_from_this()));
-
-		throw ex;
-	}
-	else if (now > getExpirationDate())
-	{
-		certificateExpiredException ex;
-		ex.setCertificate(dynamicCast <certificate>(shared_from_this()));
-
-		throw ex;
-	}
+	return new certificateIssuerVerificationException();
 }
 
 

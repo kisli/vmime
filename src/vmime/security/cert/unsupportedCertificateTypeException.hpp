@@ -21,16 +21,18 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#ifndef VMIME_SECURITY_CERT_UNSUPPORTEDCERTIFICATETYPEEXCEPTION_HPP_INCLUDED
+#define VMIME_SECURITY_CERT_UNSUPPORTEDCERTIFICATETYPEEXCEPTION_HPP_INCLUDED
+
+
 #include "vmime/config.hpp"
 
 
 #if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT
 
 
-#include "vmime/security/cert/X509Certificate.hpp"
-
-#include "vmime/security/cert/certificateNotYetValidException.hpp"
-#include "vmime/security/cert/certificateExpiredException.hpp"
+#include "vmime/security/cert/certificate.hpp"
+#include "vmime/security/cert/certificateException.hpp"
 
 
 namespace vmime {
@@ -38,30 +40,26 @@ namespace security {
 namespace cert {
 
 
-X509Certificate::~X509Certificate()
+/** Thrown when a certificate is of unsupported format.
+  */
+class VMIME_EXPORT unsupportedCertificateTypeException : public certificateException
 {
-}
+public:
 
+	/** Constructs a unsupportedCertificateTypeException.
+	  *
+	  * @param type certificate type
+	  */
+	unsupportedCertificateTypeException(const string& type);
 
-void X509Certificate::checkValidity()
-{
-	const datetime now = datetime::now();
+	~unsupportedCertificateTypeException() throw();
 
-	if (now < getActivationDate())
-	{
-		certificateNotYetValidException ex;
-		ex.setCertificate(dynamicCast <certificate>(shared_from_this()));
+	exception* clone() const;
 
-		throw ex;
-	}
-	else if (now > getExpirationDate())
-	{
-		certificateExpiredException ex;
-		ex.setCertificate(dynamicCast <certificate>(shared_from_this()));
+private:
 
-		throw ex;
-	}
-}
+	string m_type;
+};
 
 
 } // cert
@@ -70,3 +68,5 @@ void X509Certificate::checkValidity()
 
 
 #endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT
+
+#endif // VMIME_SECURITY_CERT_UNSUPPORTEDCERTIFICATETYPEEXCEPTION_HPP_INCLUDED

@@ -21,16 +21,18 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#ifndef VMIME_SECURITY_CERT_CERTIFICATENOTYETVALIDEXCEPTION_HPP_INCLUDED
+#define VMIME_SECURITY_CERT_CERTIFICATENOTYETVALIDEXCEPTION_HPP_INCLUDED
+
+
 #include "vmime/config.hpp"
 
 
 #if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT
 
 
-#include "vmime/security/cert/X509Certificate.hpp"
-
-#include "vmime/security/cert/certificateNotYetValidException.hpp"
-#include "vmime/security/cert/certificateExpiredException.hpp"
+#include "vmime/security/cert/certificate.hpp"
+#include "vmime/security/cert/certificateException.hpp"
 
 
 namespace vmime {
@@ -38,30 +40,19 @@ namespace security {
 namespace cert {
 
 
-X509Certificate::~X509Certificate()
+/** Thrown when the current date and time is before the validity period
+  * specified in the certificate.
+  */
+class VMIME_EXPORT certificateNotYetValidException : public certificateException
 {
-}
+public:
 
+	/** Constructs a certificateNotYetValidException with no detail message.
+	  */
+	certificateNotYetValidException();
 
-void X509Certificate::checkValidity()
-{
-	const datetime now = datetime::now();
-
-	if (now < getActivationDate())
-	{
-		certificateNotYetValidException ex;
-		ex.setCertificate(dynamicCast <certificate>(shared_from_this()));
-
-		throw ex;
-	}
-	else if (now > getExpirationDate())
-	{
-		certificateExpiredException ex;
-		ex.setCertificate(dynamicCast <certificate>(shared_from_this()));
-
-		throw ex;
-	}
-}
+	exception* clone() const;
+};
 
 
 } // cert
@@ -70,3 +61,5 @@ void X509Certificate::checkValidity()
 
 
 #endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT
+
+#endif // VMIME_SECURITY_CERT_CERTIFICATENOTYETVALIDEXCEPTION_HPP_INCLUDED
