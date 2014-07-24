@@ -35,13 +35,13 @@ certificateChain::certificateChain(const std::vector <shared_ptr <certificate> >
 }
 
 
-unsigned int certificateChain::getCount() const
+size_t certificateChain::getCount() const
 {
-	return static_cast <unsigned int>(m_certs.size());
+	return m_certs.size();
 }
 
 
-shared_ptr <certificate> certificateChain::getAt(const unsigned int index)
+shared_ptr <certificate> certificateChain::getAt(const size_t index)
 {
 	return m_certs[index];
 }

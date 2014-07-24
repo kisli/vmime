@@ -76,7 +76,7 @@ void defaultCertificateVerifier::verifyX509
 	// has been issued by the next certificate in the chain
 	if (chain->getCount() >= 2)
 	{
-		for (unsigned int i = 0 ; i < chain->getCount() - 1 ; ++i)
+		for (size_t i = 0 ; i < chain->getCount() - 1 ; ++i)
 		{
 			shared_ptr <X509Certificate> cert =
 				dynamicCast <X509Certificate>(chain->getAt(i));
@@ -96,7 +96,7 @@ void defaultCertificateVerifier::verifyX509
 
 	// For every certificate in the chain, verify that the certificate
 	// is valid at the current time
-	for (unsigned int i = 0 ; i < chain->getCount() ; ++i)
+	for (size_t i = 0 ; i < chain->getCount() ; ++i)
 	{
 		shared_ptr <X509Certificate> cert =
 			dynamicCast <X509Certificate>(chain->getAt(i));
@@ -113,7 +113,7 @@ void defaultCertificateVerifier::verifyX509
 
 	bool trusted = false;
 
-	for (unsigned int i = 0 ; !trusted && i < m_x509RootCAs.size() ; ++i)
+	for (size_t i = 0 ; !trusted && i < m_x509RootCAs.size() ; ++i)
 	{
 		shared_ptr <X509Certificate> rootCa = m_x509RootCAs[i];
 
@@ -127,7 +127,7 @@ void defaultCertificateVerifier::verifyX509
 	shared_ptr <X509Certificate> firstCert =
 		dynamicCast <X509Certificate>(chain->getAt(0));
 
-	for (unsigned int i = 0 ; !trusted && i < m_x509TrustedCerts.size() ; ++i)
+	for (size_t i = 0 ; !trusted && i < m_x509TrustedCerts.size() ; ++i)
 	{
 		shared_ptr <X509Certificate> cert = m_x509TrustedCerts[i];
 

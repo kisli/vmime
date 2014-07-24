@@ -53,7 +53,7 @@ public:
 	  *
 	  * @return number of certificates in the chain
 	  */
-	unsigned int getCount() const;
+	size_t getCount() const;
 
 	/** Return the certificate at the specified position. 0 is the
 	  * subject certificate, 1 is the issuer's certificate, 2 is
@@ -62,7 +62,7 @@ public:
 	  * @param index position at which to retrieve certificate
 	  * @return certificate at the specified position
 	  */
-	shared_ptr <certificate> getAt(const unsigned int index);
+	shared_ptr <certificate> getAt(const size_t index);
 
 protected:
 
