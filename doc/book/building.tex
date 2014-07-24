@@ -82,12 +82,13 @@ For example, to force using OpenSSL library instead of GnuTLS for TLS
 support, type:
 
 \begin{verbatim}
-   $ cmake -G "Unix Makefiles" -DVMIME_TLS_SUPPORT_LIB_IS_OPENSSL=ON \
-                               -DVMIME_TLS_SUPPORT_LIB_IS_GNUTLS=OFF
+   $ cmake -G "Unix Makefiles" -DVMIME_TLS_SUPPORT_LIB=openssl
 \end{verbatim}
 
 If you want to enable or disable some features in VMime, you can obtain some
-help by typing {\vcode cmake -L}. The defaults should be OK though.
+help by typing {\vcode cmake -L}. The defaults should be OK though. For a list
+of build options, you can also refer to section \ref{build-options}, page
+\pageref{build-options}.
 
 For more information about using CMake, go to
 \href{http://www.cmake.org/}{the CMake web site}.
@@ -118,7 +119,7 @@ Now, you are done! You can jump to the next chapter to know how to use VMime
 in your program...
 
 % ============================================================================
-\section{Build options}
+\section{\label{build-options}Build options}
 
 Some options can be given to CMake to control the build:
 
