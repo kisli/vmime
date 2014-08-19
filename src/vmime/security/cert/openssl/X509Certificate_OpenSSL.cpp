@@ -416,10 +416,10 @@ bool X509Certificate_OpenSSL::verifyHostName
 						CONF_VALUE* cnf = sk_CONF_VALUE_value(val, j);
 
 						if ((strcasecmp(cnf->name, "DNS") == 0 &&
-							 strcasecmp(cnf->value, hostname.c_str()) == 0)
-							 ||
-							(strncasecmp(cnf->name, "IP", 2) == 0 &&
-							 strcasecmp(cnf->value, hostname.c_str()) == 0))
+						     cnMatch(cnf->value, hostname.c_str()))
+						     ||
+						    (strncasecmp(cnf->name, "IP", 2) == 0 &&
+						     cnMatch(cnf->value, hostname.c_str())))
 						{
 							return true;
 						}
