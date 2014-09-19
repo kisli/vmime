@@ -3743,8 +3743,8 @@ public:
 
 	//
 	// body_ext_mpart  ::= body_fld_param
-	//                     [SPACE body_fld_dsp SPACE body_fld_lang
-	//                     [SPACE 1#body_extension]]
+	//                     [SPACE body_fld_dsp [SPACE body_fld_lang
+	//                     [SPACE 1#body_extension]]]
 	//                     ;; MUST NOT be returned on non-extensible
 	//                     ;; "BODY" fetch
 
@@ -3774,20 +3774,23 @@ public:
 
 			VIMAP_PARSER_GET(IMAPParser::body_fld_param, m_body_fld_param);
 
-			// [SPACE body_fld_dsp SPACE body_fld_lang [SPACE 1#body_extension]]
+			// [SPACE body_fld_dsp [SPACE body_fld_lang [SPACE 1#body_extension]]]
 			if (VIMAP_PARSER_TRY_CHECK(SPACE))
 			{
 				VIMAP_PARSER_GET(IMAPParser::body_fld_dsp, m_body_fld_dsp);
-				VIMAP_PARSER_CHECK(SPACE);
-				VIMAP_PARSER_GET(IMAPParser::body_fld_lang, m_body_fld_lang);
 
-				// [SPACE 1#body_extension]
 				if (VIMAP_PARSER_TRY_CHECK(SPACE))
 				{
-					VIMAP_PARSER_GET_PUSHBACK(body_extension, m_body_extensions);
+					VIMAP_PARSER_GET(IMAPParser::body_fld_lang, m_body_fld_lang);
 
-					while (VIMAP_PARSER_TRY_CHECK(SPACE))
+					// [SPACE 1#body_extension]
+					if (VIMAP_PARSER_TRY_CHECK(SPACE))
+					{
 						VIMAP_PARSER_GET_PUSHBACK(body_extension, m_body_extensions);
+
+						while (VIMAP_PARSER_TRY_CHECK(SPACE))
+							VIMAP_PARSER_GET_PUSHBACK(body_extension, m_body_extensions);
+					}
 				}
 			}
 

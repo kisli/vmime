@@ -33,6 +33,7 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 		VMIME_TEST(testExtraSpaceInCapaResponse)
 		VMIME_TEST(testContinueReqWithoutSpace)
 		VMIME_TEST(testNILValueInBodyFldEnc)
+		VMIME_TEST(testFETCHResponse_optional_body_fld_lang)
 	VMIME_TEST_LIST_END
 
 
@@ -140,6 +141,29 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 
 		parser->setStrict(true);
 		VASSERT_THROW("strict mode", parser->readResponse(), vmime::exceptions::invalid_response);
+	}
+
+	// "body_fld_lang" is optional after "body_fld_dsp" in "body_ext_mpart" (Yahoo)
+	void testFETCHResponse_optional_body_fld_lang()
+	{
+		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
+		vmime::shared_ptr <vmime::net::timeoutHandler> toh = vmime::make_shared <testTimeoutHandler>();
+
+		vmime::shared_ptr <vmime::net::imap::IMAPTag> tag =
+				vmime::make_shared <vmime::net::imap::IMAPTag>();
+
+		const char* resp = "* 1 FETCH (UID 7 RFC822.SIZE 694142 BODYSTRUCTURE (((\"text\" \"plain\" (\"charset\" \"utf-8\") NIL NIL \"7bit\" 0 0 NIL NIL NIL NIL)(\"text\" \"html\" (\"charset\" \"utf-8\") NIL NIL \"7bit\" 193 0 NIL NIL NIL NIL) \"alternative\" (\"boundary\" \"----=_Part_536_109505883.1410847112666\") NIL)(\"image\" \"jpeg\" NIL \"<4db20d0e-e9f8-729b-aaf7-688b5956d0bc@yahoo.com>\" NIL \"base64\" 351784 NIL (\"attachment\" (\"name\" \"att2\" \"filename\" \"9.jpg\")) NIL NIL)(\"image\" \"jpeg\" NIL \"<542417d7-c0ed-db72-f9fc-d9ab2c7e0a6f@yahoo.com>\" NIL \"base64\" 337676 NIL (\"attachment\" (\"name\" \"att3\" \"filename\" \"10.jpg\")) NIL NIL) \"mixed\" (\"boundary\" \"----=_Part_537_1371134700.1410847112668\") NIL) RFC822.HEADER {3}\r\nx\r\n)\r\na001 OK FETCH complete\r\n";
+
+		socket->localSend(resp);
+
+		vmime::shared_ptr <vmime::net::imap::IMAPParser> parser =
+			vmime::make_shared <vmime::net::imap::IMAPParser>();
+
+		parser->setTag(tag);
+		parser->setSocket(socket);
+		parser->setTimeoutHandler(toh);
+
+		VASSERT_NO_THROW("parse", parser->readResponse());
 	}
 
 VMIME_TEST_SUITE_END
