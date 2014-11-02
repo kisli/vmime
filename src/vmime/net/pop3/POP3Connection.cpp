@@ -83,9 +83,9 @@ POP3Connection::~POP3Connection()
 		else if (m_socket)
 			internalDisconnect();
 	}
-	catch (vmime::exception&)
+	catch (...)
 	{
-		// Ignore
+		// Don't throw in destructor
 	}
 }
 

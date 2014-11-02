@@ -257,12 +257,19 @@ TLSSession_GnuTLS::TLSSession_GnuTLS(const TLSSession_GnuTLS&)
 
 TLSSession_GnuTLS::~TLSSession_GnuTLS()
 {
-	if (m_gnutlsSession)
+	try
 	{
-		gnutls_deinit(*m_gnutlsSession);
+		if (m_gnutlsSession)
+		{
+			gnutls_deinit(*m_gnutlsSession);
 
-		delete m_gnutlsSession;
-		m_gnutlsSession = NULL;
+			delete m_gnutlsSession;
+			m_gnutlsSession = NULL;
+		}
+	}
+	catch (...)
+	{
+		// Don't throw in destructor
 	}
 }
 

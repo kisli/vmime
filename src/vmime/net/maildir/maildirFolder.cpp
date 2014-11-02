@@ -60,18 +60,25 @@ maildirFolder::maildirFolder(const folder::path& path, shared_ptr <maildirStore>
 
 maildirFolder::~maildirFolder()
 {
-	shared_ptr <maildirStore> store = m_store.lock();
-
-	if (store)
+	try
 	{
-		if (m_open)
+		shared_ptr <maildirStore> store = m_store.lock();
+
+		if (store)
+		{
+			if (m_open)
+				close(false);
+
+			store->unregisterFolder(this);
+		}
+		else if (m_open)
+		{
 			close(false);
-
-		store->unregisterFolder(this);
+		}
 	}
-	else if (m_open)
+	catch (...)
 	{
-		close(false);
+		// Don't throw in destructor
 	}
 }
 

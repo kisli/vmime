@@ -64,9 +64,9 @@ SMTPTransport::~SMTPTransport()
 		if (isConnected())
 			disconnect();
 	}
-	catch (vmime::exception&)
+	catch (...)
 	{
-		// Ignore
+		// Don't throw in destructor
 	}
 }
 
@@ -91,15 +91,7 @@ void SMTPTransport::connect()
 	m_connection = make_shared <SMTPConnection>
 		(dynamicCast <SMTPTransport>(shared_from_this()), getAuthenticator());
 
-	try
-	{
-		m_connection->connect();
-	}
-	catch (std::exception&)
-	{
-		m_connection = null;
-		throw;
-	}
+	m_connection->connect();
 }
 
 

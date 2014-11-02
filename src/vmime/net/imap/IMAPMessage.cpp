@@ -115,10 +115,17 @@ IMAPMessage::IMAPMessage(shared_ptr <IMAPFolder> folder, const int num, const ui
 
 IMAPMessage::~IMAPMessage()
 {
-	shared_ptr <IMAPFolder> folder = m_folder.lock();
+	try
+	{
+		shared_ptr <IMAPFolder> folder = m_folder.lock();
 
-	if (folder)
-		folder->unregisterMessage(this);
+		if (folder)
+			folder->unregisterMessage(this);
+	}
+	catch (...)
+	{
+		// Don't throw in destructor
+	}
 }
 
 

@@ -56,18 +56,25 @@ POP3Folder::POP3Folder(const folder::path& path, shared_ptr <POP3Store> store)
 
 POP3Folder::~POP3Folder()
 {
-	shared_ptr <POP3Store> store = m_store.lock();
-
-	if (store)
+	try
 	{
-		if (m_open)
-			close(false);
+		shared_ptr <POP3Store> store = m_store.lock();
 
-		store->unregisterFolder(this);
+		if (store)
+		{
+			if (m_open)
+				close(false);
+
+			store->unregisterFolder(this);
+		}
+		else if (m_open)
+		{
+			onClose();
+		}
 	}
-	else if (m_open)
+	catch (...)
 	{
-		onClose();
+		// Don't throw in destructor
 	}
 }
 

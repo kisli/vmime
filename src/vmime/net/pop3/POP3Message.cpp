@@ -53,10 +53,17 @@ POP3Message::POP3Message(shared_ptr <POP3Folder> folder, const int num)
 
 POP3Message::~POP3Message()
 {
-	shared_ptr <POP3Folder> folder = m_folder.lock();
+	try
+	{
+		shared_ptr <POP3Folder> folder = m_folder.lock();
 
-	if (folder)
-		folder->unregisterMessage(this);
+		if (folder)
+			folder->unregisterMessage(this);
+	}
+	catch (...)
+	{
+		// Don't throw in destructor
+	}
 }
 
 

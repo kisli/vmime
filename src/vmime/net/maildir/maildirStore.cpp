@@ -65,9 +65,9 @@ maildirStore::~maildirStore()
 		if (isConnected())
 			disconnect();
 	}
-	catch (vmime::exception&)
+	catch (...)
 	{
-		// Ignore
+		// Don't throw in destructor
 	}
 }
 

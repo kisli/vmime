@@ -65,19 +65,26 @@ IMAPFolder::IMAPFolder(const folder::path& path, shared_ptr <IMAPStore> store, s
 
 IMAPFolder::~IMAPFolder()
 {
-	shared_ptr <IMAPStore> store = m_store.lock();
-
-	if (store)
+	try
 	{
-		if (m_open)
-			close(false);
+		shared_ptr <IMAPStore> store = m_store.lock();
 
-		store->unregisterFolder(this);
+		if (store)
+		{
+			if (m_open)
+				close(false);
+
+			store->unregisterFolder(this);
+		}
+		else if (m_open)
+		{
+			m_connection = null;
+			onClose();
+		}
 	}
-	else if (m_open)
+	catch (...)
 	{
-		m_connection = null;
-		onClose();
+		// Don't throw in destructor
 	}
 }
 

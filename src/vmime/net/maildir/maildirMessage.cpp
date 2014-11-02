@@ -58,10 +58,17 @@ maildirMessage::maildirMessage(shared_ptr <maildirFolder> folder, const int num)
 
 maildirMessage::~maildirMessage()
 {
-	shared_ptr <maildirFolder> folder = m_folder.lock();
+	try
+	{
+		shared_ptr <maildirFolder> folder = m_folder.lock();
 
-	if (folder)
-		folder->unregisterMessage(this);
+		if (folder)
+			folder->unregisterMessage(this);
+	}
+	catch (...)
+	{
+		// Don't throw in destructor
+	}
 }
 
 
