@@ -25,6 +25,12 @@
 #define VMIME_SECURITY_CERT_DEFAULTCERTIFICATEVERIFIER_HPP_INCLUDED
 
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT
+
+
 #include "vmime/security/cert/certificateVerifier.hpp"
 
 
@@ -83,6 +89,9 @@ private:
 } // cert
 } // security
 } // vmime
+
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT
 
 
 #endif // VMIME_SECURITY_CERT_DEFAULTCERTIFICATEVERIFIER_HPP_INCLUDED

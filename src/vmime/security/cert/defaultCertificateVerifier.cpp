@@ -23,7 +23,9 @@
 
 #include "vmime/config.hpp"
 
-#if VMIME_HAVE_TLS_SUPPORT
+
+#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT
+
 
 #include "vmime/security/cert/defaultCertificateVerifier.hpp"
 
@@ -172,4 +174,5 @@ void defaultCertificateVerifier::setX509TrustedCerts
 } // security
 } // vmime
 
-#endif
+
+#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT
