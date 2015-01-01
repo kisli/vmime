@@ -21,6 +21,12 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#include "vmime/config.hpp"
+
+
+#if VMIME_HAVE_FILESYSTEM_FEATURES
+
+
 #include "vmime/fileContentHandler.hpp"
 
 
@@ -79,3 +85,6 @@ void fileContentHandler::setData
 
 
 } // vmime
+
+
+#endif // VMIME_HAVE_FILESYSTEM_FEATURES

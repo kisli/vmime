@@ -1073,6 +1073,11 @@ IF(VMIME_HAVE_MESSAGING_FEATURES AND VMIME_HAVE_MESSAGING_PROTO_MAILDIR AND NOT 
 	MESSAGE(FATAL_ERROR "Maildir protocol requires file-system support (VMIME_HAVE_FILESYSTEM_FEATURES must be set to ON).")
 ENDIF()
 
+# Sendmail protocol is available only if file-system features are enabled
+IF(VMIME_HAVE_MESSAGING_FEATURES AND VMIME_HAVE_MESSAGING_PROTO_SENDMAIL AND NOT VMIME_HAVE_FILESYSTEM_FEATURES)
+	MESSAGE(FATAL_ERROR "Sendmail protocol requires file-system support (VMIME_HAVE_FILESYSTEM_FEATURES must be set to ON).")
+ENDIF()
+
 # Path to 'sendmail' must be specified if Sendmail protocol is enabled
 IF(VMIME_HAVE_MESSAGING_PROTO_SENDMAIL)
 	IF(NOT VMIME_SENDMAIL_PATH OR VMIME_SENDMAIL_PATH STREQUAL "")
