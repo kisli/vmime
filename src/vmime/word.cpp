@@ -287,17 +287,17 @@ void word::parseImpl
 					const string::const_iterator dataEnd = p;
 					p += 2; // skip '?='
 
-					utility::encoder::encoder* theEncoder = NULL;
+					scoped_ptr <utility::encoder::encoder> theEncoder;
 
 					// Base-64 encoding
 					if (*encPos == 'B' || *encPos == 'b')
 					{
-						theEncoder = new utility::encoder::b64Encoder();
+						theEncoder.reset(new utility::encoder::b64Encoder());
 					}
 					// Quoted-Printable encoding
 					else if (*encPos == 'Q' || *encPos == 'q')
 					{
-						theEncoder = new utility::encoder::qpEncoder();
+						theEncoder.reset(new utility::encoder::qpEncoder());
 						theEncoder->getProperties()["rfc2047"] = true;
 					}
 
@@ -325,7 +325,6 @@ void word::parseImpl
 						utility::outputStreamStringAdapter eout(decodedBuffer);
 
 						theEncoder->decode(ein, eout);
-						delete (theEncoder);
 
 						m_buffer = decodedBuffer;
 

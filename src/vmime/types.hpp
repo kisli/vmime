@@ -49,6 +49,7 @@
 	#include <boost/make_shared.hpp>
 	#include <boost/enable_shared_from_this.hpp>
 	#include <boost/shared_ptr.hpp>
+	#include <boost/scoped_ptr.hpp>
 
 	#define VMIME_SHARED_PTR_NAMESPACE boost
 #else
@@ -73,6 +74,12 @@ namespace vmime
 	{
 		void operator()(T*) const {}
 	};
+
+#if VMIME_SHARED_PTR_USE_CXX
+	template <typename T> using scoped_ptr = std::unique_ptr <T>;
+#else
+	using VMIME_SHARED_PTR_NAMESPACE::scoped_ptr;
+#endif
 }
 
 #undef VMIME_SHARED_PTR_NAMESPACE
