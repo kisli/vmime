@@ -258,6 +258,9 @@ size_t b64Encoder::decode(utility::inputStream& in,
 			}
 		}
 
+		if (count != 4)  // input length is not a multiple of 4 bytes
+			break;
+
 		// Decode the bytes
 		byte_t c1 = bytes[0];
 		byte_t c2 = bytes[1];
