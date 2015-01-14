@@ -59,6 +59,8 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		VMIME_TEST(testInternationalizedEmail_UTF8)
 		VMIME_TEST(testInternationalizedEmail_nonUTF8)
 		VMIME_TEST(testInternationalizedEmail_folding)
+
+		VMIME_TEST(testWronglyPaddedB64Words)
 	VMIME_TEST_LIST_END
 
 
@@ -593,6 +595,26 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 			"bla bla bla This is\r\n"
 			" some '\xc3\xa0\xc3\xa7' UTF-8\r\n"
 			" encoded text", w2.generate(20));
+	}
+
+	void testWronglyPaddedB64Words()
+	{
+		vmime::text outText;
+
+		vmime::text::decodeAndUnfold("=?utf-8?B?5Lit5?=\n =?utf-8?B?paH?=", &outText);
+
+		VASSERT_EQ("1", "\xe4\xb8\xad\xe6\x96\x87",
+			outText.getConvertedText(vmime::charset("utf-8")));
+
+		vmime::text::decodeAndUnfold("=?utf-8?B?5Lit5p?=\n =?utf-8?B?aH?=", &outText);
+
+		VASSERT_EQ("2", "\xe4\xb8\xad\xe6\x96\x87",
+			outText.getConvertedText(vmime::charset("utf-8")));
+
+		vmime::text::decodeAndUnfold("=?utf-8?B?5Lit5pa?=\n =?utf-8?B?H?=", &outText);
+
+		VASSERT_EQ("3", "\xe4\xb8\xad\xe6\x96\x87",
+			outText.getConvertedText(vmime::charset("utf-8")));
 	}
 
 VMIME_TEST_SUITE_END

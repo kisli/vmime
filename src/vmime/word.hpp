@@ -151,6 +151,20 @@ public:
 		bool prevWordIsEncoded;
 		bool lastCharIsSpace;
 	};
+
+	class parserState
+	{
+	public:
+
+		parserState()
+			: prevIsEncoded(false), isFirst(true)
+		{
+		}
+
+		bool prevIsEncoded;
+		bool isFirst;
+		std::string undecodedBytes;
+	};
 #endif
 
 
@@ -168,6 +182,14 @@ protected:
 		 utility::outputStream& os,
 		 const size_t curLinePos = 0,
 		 size_t* newLinePos = NULL) const;
+
+	void parseWithState
+		(const parsingContext& ctx,
+		 const string& buffer,
+		 const size_t position,
+		 const size_t end,
+		 size_t* newPosition,
+		 parserState* state);
 
 public:
 
@@ -193,9 +215,7 @@ private:
 		 const size_t position,
 		 const size_t end,
 		 size_t* newPosition,
-		 bool prevIsEncoded,
-		 bool* isEncoded,
-		 bool isFirst);
+		 parserState* state);
 
 	static const std::vector <shared_ptr <word> > parseMultiple
 		(const parsingContext& ctx,

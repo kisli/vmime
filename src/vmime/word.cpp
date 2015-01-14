@@ -74,8 +74,7 @@ word::word(const string& buffer, const charset& charset, const string& lang)
 
 shared_ptr <word> word::parseNext
 	(const parsingContext& ctx, const string& buffer, const size_t position,
-	 const size_t end, size_t* newPosition,
-	 bool prevIsEncoded, bool* isEncoded, bool isFirst)
+	 const size_t end, size_t* newPosition, parserState* state)
 {
 	size_t pos = position;
 
@@ -131,7 +130,7 @@ shared_ptr <word> word::parseNext
 
 			if (!unencoded.empty())
 			{
-				if (prevIsEncoded && !isFirst)
+				if (state->prevIsEncoded && !state->isFirst)
 					unencoded = whiteSpaces + unencoded;
 
 				shared_ptr <word> w = make_shared <word>(unencoded, defaultCharset);
@@ -140,8 +139,8 @@ shared_ptr <word> word::parseNext
 				if (newPosition)
 					*newPosition = pos;
 
-				if (isEncoded)
-					*isEncoded = false;
+				state->prevIsEncoded = false;
+				state->isFirst = false;
 
 				return (w);
 			}
@@ -192,13 +191,13 @@ shared_ptr <word> word::parseNext
 			pos += 2; // ?=
 
 			shared_ptr <word> w = make_shared <word>();
-			w->parse(ctx, buffer, wordStart, pos, NULL);
+			w->parseWithState(ctx, buffer, wordStart, pos, NULL, state);
 
 			if (newPosition)
 				*newPosition = pos;
 
-			if (isEncoded)
-				*isEncoded = true;
+			state->prevIsEncoded = true;
+			state->isFirst = false;
 
 			return (w);
 		}
@@ -208,7 +207,7 @@ shared_ptr <word> word::parseNext
 
 	if (startPos != end)
 	{
-		if (prevIsEncoded && !isFirst)
+		if (state->prevIsEncoded && !state->isFirst)
 			unencoded = whiteSpaces + unencoded;
 
 		unencoded += buffer.substr(startPos, end - startPos);
@@ -223,8 +222,8 @@ shared_ptr <word> word::parseNext
 		if (newPosition)
 			*newPosition = end;
 
-		if (isEncoded)
-			*isEncoded = false;
+		state->prevIsEncoded = false;
+		state->isFirst = false;
 
 		return (w);
 	}
@@ -242,9 +241,9 @@ const std::vector <shared_ptr <word> > word::parseMultiple
 
 	size_t pos = position;
 
-	bool prevIsEncoded = false;
+	parserState state;
 
-	while ((w = word::parseNext(ctx, buffer, pos, end, &pos, prevIsEncoded, &prevIsEncoded, (w == NULL))) != NULL)
+	while ((w = word::parseNext(ctx, buffer, pos, end, &pos, &state)) != NULL)
 		res.push_back(w);
 
 	if (newPosition)
@@ -257,6 +256,14 @@ const std::vector <shared_ptr <word> > word::parseMultiple
 void word::parseImpl
 	(const parsingContext& ctx, const string& buffer, const size_t position,
 	 const size_t end, size_t* newPosition)
+{
+	parseWithState(ctx, buffer, position, end, newPosition, NULL);
+}
+
+
+void word::parseWithState
+	(const parsingContext& ctx, const string& buffer, const size_t position,
+	 const size_t end, size_t* newPosition, parserState* state)
 {
 	if (position + 6 < end && // 6 = "=?(.+)?(.*)?="
 	    buffer[position] == '=' && buffer[position + 1] == '?')
@@ -319,12 +326,19 @@ void word::parseImpl
 						}
 
 						// Decode text
+						string encodedBuffer(dataPos, dataEnd);
 						string decodedBuffer;
 
-						utility::inputStreamStringAdapter ein(string(dataPos, dataEnd));
+						if (state && !state->undecodedBytes.empty())
+						{
+							encodedBuffer = state->undecodedBytes + encodedBuffer;
+							state->undecodedBytes.clear();
+						}
+
+						utility::inputStreamStringAdapter ein(encodedBuffer);
 						utility::outputStreamStringAdapter eout(decodedBuffer);
 
-						theEncoder->decode(ein, eout);
+						const size_t decodedLen = theEncoder->decode(ein, eout);
 
 						m_buffer = decodedBuffer;
 
@@ -332,6 +346,21 @@ void word::parseImpl
 
 						if (newPosition)
 							*newPosition = (p - buffer.begin());
+
+						// For Base64 encoding, ensure all bytes have been decoded.
+						// If there are remaining bytes, keep them for the next run.
+						//
+						// This allows decoding some insanities like:
+						//     =?utf-8?B?5Lit5?= =?utf-8?B?paH?=
+						if (*encPos == 'B' || *encPos == 'b')
+						{
+							const size_t actualEncodedLen = encodedBuffer.length();
+							const size_t theoricalEncodedLen =
+								((decodedLen + ((decodedLen % 3) ? (3 - (decodedLen % 3)) : 0) ) / 3) * 4;
+
+							if (state && actualEncodedLen != theoricalEncodedLen)
+								state->undecodedBytes.assign(dataPos + theoricalEncodedLen, dataEnd);
+						}
 
 						return;
 					}
