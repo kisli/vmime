@@ -43,6 +43,7 @@ encoderFactory::encoderFactory()
 	registerName <b64Encoder>("base64");
 	registerName <qpEncoder>("quoted-printable");
 	registerName <uuEncoder>("uuencode");
+	registerName <uuEncoder>("x-uuencode");
 	registerName <sevenBitEncoder>("7bit");
 	registerName <eightBitEncoder>("8bit");
 	registerName <binaryEncoder>("binary");
