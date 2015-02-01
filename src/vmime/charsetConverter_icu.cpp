@@ -98,12 +98,12 @@ void charsetConverter_icu::convert(utility::inputStream& in, utility::outputStre
 	// From buffers
 	byte_t cpInBuffer[16]; // stream data put here
 	const size_t outSize = ucnv_getMinCharSize(m_from) * sizeof(cpInBuffer) * sizeof(UChar);
-	UChar uOutBuffer[outSize]; // Unicode chars end up here
+	std::vector <UChar> uOutBuffer(outSize); // Unicode chars end up here
 
 	// To buffers
 	// converted (char) data end up here
 	const size_t cpOutBufferSz = ucnv_getMaxCharSize(m_to) * outSize;
-	char cpOutBuffer[cpOutBufferSz];
+	std::vector <char> cpOutBuffer(cpOutBufferSz);
 
 	// Set replacement chars for when converting from Unicode to codepage
 	icu::UnicodeString substString(m_options.invalidSequence.c_str());
@@ -130,8 +130,8 @@ void charsetConverter_icu::convert(utility::inputStream& in, utility::outputStre
 		do
 		{
 			// Set up target pointers
-			UChar* target = uOutBuffer;
-			UChar* targetLimit = target + outSize;
+			UChar* target = &uOutBuffer[0];
+			UChar* targetLimit = &target[0] + outSize;
 
 			toErr = U_ZERO_ERROR;
 			ucnv_toUnicode(m_from, &target, targetLimit,
@@ -142,15 +142,15 @@ void charsetConverter_icu::convert(utility::inputStream& in, utility::outputStre
 
 			// The Unicode source is the buffer just written and the limit
 			// is where the previous conversion stopped (target is moved in the conversion)
-			const UChar* uSource = uOutBuffer;
-			UChar* uSourceLimit = target;
+			const UChar* uSource = &uOutBuffer[0];
+			UChar* uSourceLimit = &target[0];
 			UErrorCode fromErr;
 
 			// Loop until converted chars are fully written
 			do
 			{
 				char* cpTarget = &cpOutBuffer[0];
-				const char* cpTargetLimit = cpOutBuffer + cpOutBufferSz;
+				const char* cpTargetLimit = &cpOutBuffer[0] + cpOutBufferSz;
 
 				fromErr = U_ZERO_ERROR;
 
@@ -162,7 +162,7 @@ void charsetConverter_icu::convert(utility::inputStream& in, utility::outputStre
 					throw exceptions::charset_conv_error("[ICU] Error converting from Unicode to " + m_dest.getName());
 
 				// Write to destination stream
-				out.write(cpOutBuffer, (cpTarget - cpOutBuffer));
+				out.write(&cpOutBuffer[0], (cpTarget - &cpOutBuffer[0]));
 
 			} while (fromErr == U_BUFFER_OVERFLOW_ERROR);
 
@@ -254,7 +254,7 @@ void charsetFilteredOutputStream_icu::writeImpl
 
 	// Allocate buffer for Unicode chars
 	const size_t uniSize = ucnv_getMinCharSize(m_from) * count * sizeof(UChar);
-	UChar uniBuffer[uniSize];
+	std::vector <UChar> uniBuffer(uniSize);
 
 	// Conversion loop
 	UErrorCode toErr = U_ZERO_ERROR;
@@ -265,8 +265,8 @@ void charsetFilteredOutputStream_icu::writeImpl
 	do
 	{
 		// Convert from source charset to Unicode
-		UChar* uniTarget = uniBuffer;
-		UChar* uniTargetLimit = uniBuffer + uniSize;
+		UChar* uniTarget = &uniBuffer[0];
+		UChar* uniTargetLimit = &uniBuffer[0] + uniSize;
 
 		toErr = U_ZERO_ERROR;
 
@@ -279,22 +279,22 @@ void charsetFilteredOutputStream_icu::writeImpl
 				("[ICU] Error converting to Unicode from '" + m_sourceCharset.getName() + "'.");
 		}
 
-		const size_t uniLength = uniTarget - uniBuffer;
+		const size_t uniLength = uniTarget - &uniBuffer[0];
 
 		// Allocate buffer for destination charset
 		const size_t cpSize = ucnv_getMinCharSize(m_to) * uniLength;
-		char cpBuffer[cpSize];
+		std::vector <char> cpBuffer(cpSize);
 
 		// Convert from Unicode to destination charset
 		UErrorCode fromErr = U_ZERO_ERROR;
 
-		const UChar* cpSource = uniBuffer;
-		const UChar* cpSourceLimit = uniBuffer + uniLength;
+		const UChar* cpSource = &uniBuffer[0];
+		const UChar* cpSourceLimit = &uniBuffer[0] + uniLength;
 
 		do
 		{
-			char* cpTarget = cpBuffer;
-			char* cpTargetLimit = cpBuffer + cpSize;
+			char* cpTarget = &cpBuffer[0];
+			char* cpTargetLimit = &cpBuffer[0] + cpSize;
 
 			fromErr = U_ZERO_ERROR;
 
@@ -307,10 +307,10 @@ void charsetFilteredOutputStream_icu::writeImpl
 					("[ICU] Error converting from Unicode to '" + m_destCharset.getName() + "'.");
 			}
 
-			const size_t cpLength = cpTarget - cpBuffer;
+			const size_t cpLength = cpTarget - &cpBuffer[0];
 
 			// Write successfully converted bytes
-			m_stream.write(cpBuffer, cpLength);
+			m_stream.write(&cpBuffer[0], cpLength);
 
 		} while (fromErr == U_BUFFER_OVERFLOW_ERROR);
 
@@ -325,7 +325,7 @@ void charsetFilteredOutputStream_icu::flush()
 
 	// Allocate buffer for Unicode chars
 	const size_t uniSize = ucnv_getMinCharSize(m_from) * 1024 * sizeof(UChar);
-	UChar uniBuffer[uniSize];
+	std::vector <UChar> uniBuffer(uniSize);
 
 	// Conversion loop (with flushing)
 	UErrorCode toErr = U_ZERO_ERROR;
@@ -336,8 +336,8 @@ void charsetFilteredOutputStream_icu::flush()
 	do
 	{
 		// Convert from source charset to Unicode
-		UChar* uniTarget = uniBuffer;
-		UChar* uniTargetLimit = uniBuffer + uniSize;
+		UChar* uniTarget = &uniBuffer[0];
+		UChar* uniTargetLimit = &uniBuffer[0] + uniSize;
 
 		toErr = U_ZERO_ERROR;
 
@@ -350,22 +350,22 @@ void charsetFilteredOutputStream_icu::flush()
 				("[ICU] Error converting to Unicode from '" + m_sourceCharset.getName() + "'.");
 		}
 
-		const size_t uniLength = uniTarget - uniBuffer;
+		const size_t uniLength = uniTarget - &uniBuffer[0];
 
 		// Allocate buffer for destination charset
 		const size_t cpSize = ucnv_getMinCharSize(m_to) * uniLength;
-		char cpBuffer[cpSize];
+		std::vector <char> cpBuffer(cpSize);
 
 		// Convert from Unicode to destination charset
 		UErrorCode fromErr = U_ZERO_ERROR;
 
-		const UChar* cpSource = uniBuffer;
-		const UChar* cpSourceLimit = uniBuffer + uniLength;
+		const UChar* cpSource = &uniBuffer[0];
+		const UChar* cpSourceLimit = &uniBuffer[0] + uniLength;
 
 		do
 		{
-			char* cpTarget = cpBuffer;
-			char* cpTargetLimit = cpBuffer + cpSize;
+			char* cpTarget = &cpBuffer[0];
+			char* cpTargetLimit = &cpBuffer[0] + cpSize;
 
 			fromErr = U_ZERO_ERROR;
 
@@ -378,10 +378,10 @@ void charsetFilteredOutputStream_icu::flush()
 					("[ICU] Error converting from Unicode to '" + m_destCharset.getName() + "'.");
 			}
 
-			const size_t cpLength = cpTarget - cpBuffer;
+			const size_t cpLength = cpTarget - &cpBuffer[0];
 
 			// Write successfully converted bytes
-			m_stream.write(cpBuffer, cpLength);
+			m_stream.write(&cpBuffer[0], cpLength);
 
 		} while (fromErr == U_BUFFER_OVERFLOW_ERROR);
 
