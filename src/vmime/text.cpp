@@ -423,7 +423,17 @@ void text::fixBrokenWords(std::vector <shared_ptr <word> >& words)
 		shared_ptr <word> w2 = words[i + 1];
 
 		// Check whether the word is valid
-		bool valid = w1->getCharset().isValidText(w1->getBuffer(), NULL);
+		bool valid = false;
+
+		try
+		{
+			valid = w1->getCharset().isValidText(w1->getBuffer(), NULL);
+		}
+		catch (vmime::exceptions::charset_conv_error& e)
+		{
+			// Unknown charset or unexpected conversion error: assume word is valid
+			valid = true;
+		}
 
 		// If the current word is not valid, try to grab some bytes
 		// from the next word, to see whether it becomes valid.
