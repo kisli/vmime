@@ -61,6 +61,7 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		VMIME_TEST(testInternationalizedEmail_folding)
 
 		VMIME_TEST(testWronglyPaddedB64Words)
+		VMIME_TEST(testFixBrokenWords)
 	VMIME_TEST_LIST_END
 
 
@@ -615,6 +616,51 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 
 		VASSERT_EQ("3", "\xe4\xb8\xad\xe6\x96\x87",
 			outText.getConvertedText(vmime::charset("utf-8")));
+	}
+
+	// Ensure that words which encode a non-integral number of characters
+	// are correctly decoded.
+	void testFixBrokenWords()
+	{
+		vmime::text outText;
+
+		vmime::charsetConverterOptions opts;
+		opts.silentlyReplaceInvalidSequences = false;  // just to be sure that broken words are actually fixed
+
+		// Test case 1
+		vmime::text::decodeAndUnfold
+			("=?utf-8?Q?Gwena=C3?="
+			 "=?utf-8?Q?=ABl?=", &outText);
+
+		VASSERT_EQ("1", "Gwena\xebl",
+			outText.getConvertedText(vmime::charset("iso-8859-1"), opts));
+
+		// Test case 2
+		vmime::text::decodeAndUnfold
+			("=?utf-8?B?5Lit6Yu85qmf5qKw6JGj5LqL5pyDMTAz5bm056ysMDXlsYbn?="
+			 "=?utf-8?B?rKwwN+asoeitsOeoiw==?=", &outText);
+
+		VASSERT_EQ("2", "\xe4\xb8\xad\xe9\x8b\xbc\xe6\xa9\x9f\xe6\xa2\xb0"
+			"\xe8\x91\xa3\xe4\xba\x8b\xe6\x9c\x83\x31\x30\x33\xe5\xb9\xb4"
+			"\xe7\xac\xac\x30\x35\xe5\xb1\x86\xe7\xac\xac\x30\x37\xe6\xac"
+			"\xa1\xe8\xad\xb0\xe7\xa8\x8b",
+			outText.getConvertedText(vmime::charset("utf-8")));
+
+		// Test case 3 (a character spanning over 3 words: 'を' = E3 82 92)
+		vmime::text::decodeAndUnfold
+			("=?utf-8?Q?abc=E3?="
+			 "=?utf-8?Q?=82?="
+			 "=?utf-8?Q?=92xyz?=", &outText);
+
+		std::string out;  // decode as UTF-16 then rencode to UTF-8 for easier comparison
+		vmime::charset::convert(
+			outText.getConvertedText(vmime::charset("utf-16"), opts),
+			out,
+			vmime::charset("utf-16"),
+			vmime::charset("utf-8")
+		);
+
+		VASSERT_EQ("3", "abc﻿\xe3\x82\x92xyz", out);
 	}
 
 VMIME_TEST_SUITE_END

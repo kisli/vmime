@@ -116,6 +116,18 @@ public:
 };
 
 
+class VMIME_EXPORT illegal_byte_sequence_for_charset : public vmime::exception
+{
+public:
+
+	illegal_byte_sequence_for_charset(const string& what = "", const exception& other = NO_EXCEPTION);
+	~illegal_byte_sequence_for_charset() throw();
+
+	exception* clone() const;
+	const char* name() const throw();
+};
+
+
 /** No encoder has been found for the specified encoding name.
   */
 

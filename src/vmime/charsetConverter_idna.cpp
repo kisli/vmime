@@ -57,8 +57,11 @@ charsetConverter_idna::~charsetConverter_idna()
 }
 
 
-void charsetConverter_idna::convert(utility::inputStream& in, utility::outputStream& out)
+void charsetConverter_idna::convert(utility::inputStream& in, utility::outputStream& out, status* st)
 {
+	if (st)
+		new (st) status();
+
 	// IDNA should be used for short strings, so it does not matter if we
 	// do not work directly on the stream
 	string inStr;
@@ -66,20 +69,16 @@ void charsetConverter_idna::convert(utility::inputStream& in, utility::outputStr
 	vmime::utility::bufferedStreamCopy(in, os);
 
 	string outStr;
-	convert(inStr, outStr);
+	convert(inStr, outStr, st);
 
 	out << outStr;
 }
 
 
-void charsetConverter_idna::convert(const string& in, string& out)
+void charsetConverter_idna::convert(const string& in, string& out, status* st)
 {
-	if (m_source == m_dest)
-	{
-		// No conversion needed
-		out = in;
-		return;
-	}
+	if (st)
+		new (st) status();
 
 	out.clear();
 
@@ -87,6 +86,12 @@ void charsetConverter_idna::convert(const string& in, string& out)
 	{
 		if (utility::stringUtils::is7bit(in))
 		{
+			if (st)
+			{
+				st->inputBytesRead = in.length();
+				st->outputBytesWritten = in.length();
+			}
+
 			// No need to encode as Punycode
 			out = in;
 			return;
@@ -107,6 +112,9 @@ void charsetConverter_idna::convert(const string& in, string& out)
 			unichars.push_back(uc);
 		}
 
+		if (st)
+			st->inputBytesRead = in.length();
+
 		std::vector <char> output(inUTF8.length() * 2);
 		punycode_uint outputLen = output.size();
 
@@ -116,6 +124,9 @@ void charsetConverter_idna::convert(const string& in, string& out)
 		if (status == punycode_success)
 		{
 			out = string("xn--") + string(output.begin(), output.begin() + outputLen);
+
+			if (st)
+				st->outputBytesWritten = out.length();
 		}
 		else
 		{
@@ -126,6 +137,12 @@ void charsetConverter_idna::convert(const string& in, string& out)
 	{
 		if (in.length() < 5 || in.substr(0, 4) != "xn--")
 		{
+			if (st)
+			{
+				st->inputBytesRead = in.length();
+				st->outputBytesWritten = in.length();
+			}
+
 			// Not an IDNA string
 			out = in;
 			return;
@@ -136,6 +153,9 @@ void charsetConverter_idna::convert(const string& in, string& out)
 
 		const punycode_status status = punycode_decode
 			(in.length() - 4, &in[4], &outputLen, &output[0], /* case_flags */ NULL);
+
+		if (st)
+			st->inputBytesRead = in.length();
 
 		if (status == punycode_success)
 		{
@@ -150,6 +170,9 @@ void charsetConverter_idna::convert(const string& in, string& out)
 
 			string outUTF8(&outUTF8Bytes[0], p);
 			charset::convert(outUTF8, out, vmime::charsets::UTF_8, m_dest);
+
+			if (st)
+				st->outputBytesWritten = out.length();
 		}
 		else
 		{
@@ -159,7 +182,9 @@ void charsetConverter_idna::convert(const string& in, string& out)
 }
 
 
-shared_ptr <utility::charsetFilteredOutputStream> charsetConverter_idna::getFilteredOutputStream(utility::outputStream& /* os */)
+shared_ptr <utility::charsetFilteredOutputStream>
+	charsetConverter_idna::getFilteredOutputStream
+		(utility::outputStream& /* os */, const charsetConverterOptions& /* opts */)
 {
 	return null;
 }

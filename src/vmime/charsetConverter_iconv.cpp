@@ -147,8 +147,12 @@ charsetConverter_iconv::~charsetConverter_iconv()
 }
 
 
-void charsetConverter_iconv::convert(utility::inputStream& in, utility::outputStream& out)
+void charsetConverter_iconv::convert
+	(utility::inputStream& in, utility::outputStream& out, status* st)
 {
+	if (st)
+		new (st) status();
+
 	if (m_desc == NULL)
 		throw exceptions::charset_conv_error("Cannot initialize converter.");
 
@@ -175,12 +179,21 @@ void charsetConverter_iconv::convert(utility::inputStream& in, utility::outputSt
 		if (iconv(cd, ICONV_IN_TYPE(&inPtr), ptrLength,
 			      ICONV_OUT_TYPE(&outPtr), &outLength) == static_cast <size_t>(-1))
 		{
+			if (st && inPtr)
+			{
+				st->inputBytesRead += (inPtr - inBuffer);
+				st->outputBytesWritten += (outPtr - outBuffer);
+			}
+
 			// Illegal input sequence or input sequence has no equivalent
 			// sequence in the destination charset.
 			if (prevIsInvalid)
 			{
 				// Write successfully converted bytes
 				out.write(outBuffer, sizeof(outBuffer) - outLength);
+
+				if (!m_options.silentlyReplaceInvalidSequences)
+					throw exceptions::illegal_byte_sequence_for_charset();
 
 				// Output a special character to indicate we don't known how to
 				// convert the sequence at this position
@@ -208,6 +221,12 @@ void charsetConverter_iconv::convert(utility::inputStream& in, utility::outputSt
 			// Write successfully converted bytes
 			out.write(outBuffer, sizeof(outBuffer) - outLength);
 
+			if (st && inPtr)
+			{
+				st->inputBytesRead += (inPtr - inBuffer);
+				st->outputBytesWritten += (outPtr - outBuffer);
+			}
+
 			inPos = 0;
 			prevIsInvalid = false;
 		}
@@ -222,29 +241,27 @@ void charsetConverter_iconv::convert(utility::inputStream& in, utility::outputSt
 }
 
 
-void charsetConverter_iconv::convert(const string& in, string& out)
+void charsetConverter_iconv::convert(const string& in, string& out, status* st)
 {
-	if (m_source == m_dest)
-	{
-		// No conversion needed
-		out = in;
-		return;
-	}
+	if (st)
+		new (st) status();
 
 	out.clear();
 
 	utility::inputStreamStringAdapter is(in);
 	utility::outputStreamStringAdapter os(out);
 
-	convert(is, os);
+	convert(is, os, st);
 
 	os.flush();
 }
 
 
-shared_ptr <utility::charsetFilteredOutputStream> charsetConverter_iconv::getFilteredOutputStream(utility::outputStream& os)
+shared_ptr <utility::charsetFilteredOutputStream>
+	charsetConverter_iconv::getFilteredOutputStream
+		(utility::outputStream& os, const charsetConverterOptions& opts)
 {
-	return make_shared <utility::charsetFilteredOutputStream_iconv>(m_source, m_dest, &os);
+	return make_shared <utility::charsetFilteredOutputStream_iconv>(m_source, m_dest, &os, opts);
 }
 
 
@@ -255,9 +272,10 @@ namespace utility {
 
 
 charsetFilteredOutputStream_iconv::charsetFilteredOutputStream_iconv
-	(const charset& source, const charset& dest, outputStream* os)
+	(const charset& source, const charset& dest, outputStream* os,
+	 const charsetConverterOptions& opts)
 	: m_desc(NULL), m_sourceCharset(source), m_destCharset(dest),
-	  m_stream(*os), m_unconvCount(0)
+	  m_stream(*os), m_unconvCount(0), m_options(opts)
 {
 	// Get an iconv descriptor
 	const iconv_t cd = iconv_open(dest.getName().c_str(), source.getName().c_str());
@@ -314,6 +332,9 @@ void charsetFilteredOutputStream_iconv::writeImpl
 			// character and skip one byte in the invalid sequence.
 			if (m_unconvCount >= sizeof(m_unconvBuffer))
 			{
+				if (!m_options.silentlyReplaceInvalidSequences)
+					throw exceptions::illegal_byte_sequence_for_charset();
+
 				outputInvalidChar(m_stream, cd);
 
 				std::copy(m_unconvBuffer + 1,
@@ -439,6 +460,9 @@ void charsetFilteredOutputStream_iconv::flush()
 			// Skip a "blocking" character
 			if (inputConverted == 0)
 			{
+				if (!m_options.silentlyReplaceInvalidSequences)
+					throw exceptions::illegal_byte_sequence_for_charset();
+
 				outputInvalidChar(m_stream, cd);
 
 				offset++;

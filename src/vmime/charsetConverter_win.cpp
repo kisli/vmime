@@ -69,8 +69,12 @@ charsetConverter_win::charsetConverter_win
 }
 
 
-void charsetConverter_win::convert(utility::inputStream& in, utility::outputStream& out)
+void charsetConverter_win::convert
+	(utility::inputStream& in, utility::outputStream& out, status* st)
 {
+	if (st)
+		new (st) status();
+
 	byte_t buffer[32768];
 	string inStr, outStr;
 
@@ -80,20 +84,16 @@ void charsetConverter_win::convert(utility::inputStream& in, utility::outputStre
 		utility::stringUtils::appendBytesToString(inStr, buffer, len);
 	}
 
-	convert(inStr, outStr);
+	convert(inStr, outStr, st);
 
 	out.write(outStr.data(), outStr.length());
 }
 
 
-void charsetConverter_win::convert(const string& in, string& out)
+void charsetConverter_win::convert(const string& in, string& out, status* st)
 {
-	if (m_source == m_dest)
-	{
-		// No conversion needed
-		out = in;
-		return;
-	}
+	if (st)
+		new (st) status();
 
 	const int sourceCodePage = getCodePage(m_source.getName().c_str());
 	const int destCodePage = getCodePage(m_dest.getName().c_str());
@@ -113,10 +113,27 @@ void charsetConverter_win::convert(const string& in, string& out)
 		const size_t bufferSize = in.length() * 2;  // in wide characters
 		unicodeBuffer.resize(bufferSize);
 
+		DWORD flags = 0;
+
+		if (!m_options.silentlyReplaceInvalidSequences)
+			flags |= MB_ERR_INVALID_CHARS;
+
 		unicodePtr = reinterpret_cast <const WCHAR*>(&unicodeBuffer[0]);
 		unicodeLen = MultiByteToWideChar
 			(sourceCodePage, 0, in.c_str(), static_cast <int>(in.length()),
 			 reinterpret_cast <WCHAR*>(&unicodeBuffer[0]), static_cast <int>(bufferSize));
+
+		if (unicodeLen == 0)
+		{
+			if (GetLastError() == ERROR_NO_UNICODE_TRANSLATION)
+			{
+				throw exceptions::illegal_byte_sequence_in_charset();
+			}
+			else
+			{
+				throw exceptions::charset_conv_error("MultiByteToWideChar() failed when converting to Unicode from " + m_source.getName());
+			}
+		}
 	}
 
 	// Convert from Unicode to destination charset
@@ -134,6 +151,18 @@ void charsetConverter_win::convert(const string& in, string& out)
 		const size_t len = WideCharToMultiByte
 			(destCodePage, 0, unicodePtr, static_cast <int>(unicodeLen),
 			 &buffer[0], static_cast <int>(bufferSize), 0, NULL);
+
+		if (len == 0)
+		{
+			if (GetLastError() == ERROR_NO_UNICODE_TRANSLATION)
+			{
+				throw exceptions::illegal_byte_sequence_in_charset();
+			}
+			else
+			{
+				throw exceptions::charset_conv_error("WideCharToMultiByte() failed when converting from Unicode to " + m_source.getName());
+			}
+		}
 
 		out.assign(&buffer[0], len);
 	}
@@ -158,7 +187,8 @@ int charsetConverter_win::getCodePage(const char* name)
 
 
 shared_ptr <utility::charsetFilteredOutputStream>
-	charsetConverter_win::getFilteredOutputStream(utility::outputStream& /* os */)
+	charsetConverter_win::getFilteredOutputStream
+		(utility::outputStream& /* os */, const charsetConverterOptions& /* opts */)
 {
 	// TODO: implement me!
 	return null;

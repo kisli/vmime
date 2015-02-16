@@ -21,6 +21,8 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#include <algorithm>
+
 #include "tests/testUtils.hpp"
 
 #include "charsetTestSuites.hpp"
@@ -39,6 +41,14 @@ VMIME_TEST_SUITE_BEGIN(charsetTest)
 		VMIME_TEST(testDecodeIDNA)
 
 		VMIME_TEST(testUTF7Support)
+
+		VMIME_TEST(testReplaceInvalidSequence)
+		VMIME_TEST(testStopOnInvalidSequence)
+
+		VMIME_TEST(testStatus)
+		VMIME_TEST(testStatusWithInvalidSequence)
+
+		VMIME_TEST(testIsValidText)
 	VMIME_TEST_LIST_END
 
 
@@ -106,10 +116,15 @@ VMIME_TEST_SUITE_BEGIN(charsetTest)
 	}
 
 	static const vmime::string convertHelper
-		(const vmime::string& in, const vmime::charset& csrc, const vmime::charset& cdest)
+		(const vmime::string& in, const vmime::charset& csrc, const vmime::charset& cdest,
+		 const vmime::charsetConverterOptions& opts = vmime::charsetConverterOptions(),
+		 vmime::charsetConverter::status* st = NULL)
 	{
+		vmime::shared_ptr <vmime::charsetConverter> conv =
+			vmime::charsetConverter::create(csrc, cdest, opts);
+
 		vmime::string out;
-		vmime::charset::convert(in, out, csrc, cdest);
+		conv->convert(in, out, st);
 
 		return out;
 	}
@@ -143,6 +158,92 @@ VMIME_TEST_SUITE_BEGIN(charsetTest)
 		// Ensure UTF-7 is supported, because it is used for IMAP
 		VASSERT_EQ("1", "VMime +- UTF-7 encoding", convertHelper("VMime + UTF-7 encoding", "utf-8", "utf-7"));
 		VASSERT_EQ("2", "f+APg-o", convertHelper("\x66\xc3\xb8\x6f", "utf-8", "utf-7"));
+	}
+
+	void testReplaceInvalidSequence()
+	{
+		vmime::charsetConverterOptions opts;
+		opts.silentlyReplaceInvalidSequences = true;
+		opts.invalidSequence = "?";
+
+		vmime::string res = convertHelper
+			("\x61\xf1\x80\x80\xe1\x80\xc2\x62\x80\x63\x80\xbf\x64", "utf-8", "iso-8859-1", opts);
+
+		// Result should be in the form "a???b?c??d" or "a??????b?c??d"...
+		// Remove consecutive question marks for easier matching.
+		res.erase(std::unique(res.begin(), res.end()), res.end());
+
+		VASSERT_EQ(
+			"Illegal UTF-8 sequence",
+			"a?b?c?d",
+			res
+		);
+	}
+
+	void testStopOnInvalidSequence()
+	{
+		vmime::charsetConverterOptions opts;
+		opts.silentlyReplaceInvalidSequences = false;
+
+		VASSERT_THROW(
+			"Illegal UTF-8 sequence",
+			convertHelper("\x61\xf1\x80\x80\xe1\x80\xc2\x62\x80\x63\x80\xbf\x64", "utf-8", "iso-8859-1", opts),
+			vmime::exceptions::illegal_byte_sequence_for_charset
+		);
+	}
+
+	void testStatus()
+	{
+		vmime::charsetConverterOptions opts;
+		opts.silentlyReplaceInvalidSequences = false;
+
+		vmime::charsetConverter::status st;
+
+		//             012345   6   7
+		convertHelper("Gwena\xc3\xabl", "utf-8", "iso-8859-1", opts, &st);
+
+		VASSERT_EQ("inputBytesRead", 8, st.inputBytesRead);
+		VASSERT_EQ("outputBytesWritten", 7, st.outputBytesWritten);
+	}
+
+	void testStatusWithInvalidSequence()
+	{
+		vmime::charsetConverterOptions opts;
+		opts.silentlyReplaceInvalidSequences = false;
+
+		vmime::charsetConverter::status st;
+
+		try
+		{
+			//             01234   5   6789   0   1
+			convertHelper("Fran\xc3\xa7ois\xf1\x80\x65", "utf-8", "iso-8859-1", opts, &st);
+		}
+		catch (vmime::exceptions::illegal_byte_sequence_for_charset& e)
+		{
+		}
+		catch (...)
+		{
+			throw;
+		}
+
+		VASSERT_EQ("inputBytesRead", 9, st.inputBytesRead);
+		VASSERT_EQ("outputBytesWritten", 8, st.outputBytesWritten);
+	}
+
+	void testIsValidText()
+	{
+		// Invalid text
+		const vmime::string invalidText("Fran\xc3\xa7ois\xf1\x80\x65");
+		vmime::string::size_type firstInvalidByte;
+
+		VASSERT_EQ("invalid.isValidText", false, vmime::charset("utf-8").isValidText(invalidText, &firstInvalidByte));
+		VASSERT_EQ("invalid.firstInvalidByte", 9, firstInvalidByte);
+
+		// Valid text
+		const vmime::string validText("Gwena\xc3\xabl");
+
+		VASSERT_EQ("valid.isValidText", true, vmime::charset("utf-8").isValidText(validText, &firstInvalidByte));
+		VASSERT_EQ("valid.firstInvalidByte", 8, firstInvalidByte);
 	}
 
 VMIME_TEST_SUITE_END

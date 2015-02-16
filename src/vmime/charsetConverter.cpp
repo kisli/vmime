@@ -42,4 +42,11 @@ shared_ptr <charsetConverter> charsetConverter::create
 }
 
 
+charsetConverter::status::status()
+	: inputBytesRead(0), outputBytesWritten(0)
+{
+
+}
+
+
 } // vmime

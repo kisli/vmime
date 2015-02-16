@@ -56,10 +56,12 @@ public:
 
 	~charsetConverter_iconv();
 
-	void convert(const string& in, string& out);
-	void convert(utility::inputStream& in, utility::outputStream& out);
+	void convert(const string& in, string& out, status* st = NULL);
+	void convert(utility::inputStream& in, utility::outputStream& out, status* st = NULL);
 
-	shared_ptr <utility::charsetFilteredOutputStream> getFilteredOutputStream(utility::outputStream& os);
+	shared_ptr <utility::charsetFilteredOutputStream> getFilteredOutputStream
+		(utility::outputStream& os,
+		 const charsetConverterOptions& opts = charsetConverterOptions());
 
 private:
 
@@ -84,9 +86,11 @@ public:
 	  * @param source input charset
 	  * @param dest output charset
 	  * @param os stream into which write filtered data
+	  * @param opts conversion options
 	  */
 	charsetFilteredOutputStream_iconv
-		(const charset& source, const charset& dest, outputStream* os);
+		(const charset& source, const charset& dest, outputStream* os,
+		 const charsetConverterOptions& opts = charsetConverterOptions());
 
 	~charsetFilteredOutputStream_iconv();
 
@@ -121,6 +125,8 @@ private:
 	// Buffer used for conversion. Avoids declaring it in write().
 	// Should be at least MAX_CHARACTER_WIDTH * MAX_CHARACTER_WIDTH.
 	byte_t m_outputBuffer[32768];
+
+	charsetConverterOptions m_options;
 };
 
 

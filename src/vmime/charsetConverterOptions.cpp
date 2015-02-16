@@ -29,7 +29,8 @@ namespace vmime
 
 
 charsetConverterOptions::charsetConverterOptions()
-	: invalidSequence("?")
+	: silentlyReplaceInvalidSequences(true),
+	  invalidSequence("?")
 {
 }
 

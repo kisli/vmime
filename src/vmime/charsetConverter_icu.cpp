@@ -91,9 +91,16 @@ charsetConverter_icu::~charsetConverter_icu()
 }
 
 
-void charsetConverter_icu::convert(utility::inputStream& in, utility::outputStream& out)
+void charsetConverter_icu::convert
+	(utility::inputStream& in, utility::outputStream& out, status* st)
 {
 	UErrorCode err = U_ZERO_ERROR;
+
+	ucnv_reset(m_from);
+	ucnv_reset(m_to);
+
+	if (st)
+		new (st) status();
 
 	// From buffers
 	byte_t cpInBuffer[16]; // stream data put here
@@ -105,12 +112,31 @@ void charsetConverter_icu::convert(utility::inputStream& in, utility::outputStre
 	const size_t cpOutBufferSz = ucnv_getMaxCharSize(m_to) * outSize;
 	std::vector <char> cpOutBuffer(cpOutBufferSz);
 
-	// Set replacement chars for when converting from Unicode to codepage
-	icu::UnicodeString substString(m_options.invalidSequence.c_str());
-	ucnv_setSubstString(m_to, substString.getTerminatedBuffer(), -1, &err);
+	// Tell ICU what to do when encountering an illegal byte sequence
+	if (m_options.silentlyReplaceInvalidSequences)
+	{
+		// Set replacement chars for when converting from Unicode to codepage
+		icu::UnicodeString substString(m_options.invalidSequence.c_str());
+		ucnv_setSubstString(m_to, substString.getTerminatedBuffer(), -1, &err);
 
-	if (U_FAILURE(err))
-		throw exceptions::charset_conv_error("[ICU] Error setting replacement char.");
+		if (U_FAILURE(err))
+			throw exceptions::charset_conv_error("[ICU] Error when setting substitution string.");
+	}
+	else
+	{
+		// Tell ICU top stop (and return an error) on illegal byte sequences
+		ucnv_setToUCallBack
+			(m_from, UCNV_TO_U_CALLBACK_STOP, UCNV_SUB_STOP_ON_ILLEGAL, NULL, NULL, &err);
+
+		if (U_FAILURE(err))
+			throw exceptions::charset_conv_error("[ICU] Error when setting ToU callback.");
+
+		ucnv_setFromUCallBack
+			(m_to, UCNV_FROM_U_CALLBACK_STOP, UCNV_SUB_STOP_ON_ILLEGAL, NULL, NULL, &err);
+
+		if (U_FAILURE(err))
+			throw exceptions::charset_conv_error("[ICU] Error when setting FromU callback.");
+	}
 
 	// Input data available
 	while (!in.eof())
@@ -137,8 +163,22 @@ void charsetConverter_icu::convert(utility::inputStream& in, utility::outputStre
 			ucnv_toUnicode(m_from, &target, targetLimit,
 			               &source, sourceLimit, NULL, flush, &toErr);
 
+			if (st)
+				st->inputBytesRead += (source - reinterpret_cast <const char*>(&cpInBuffer[0]));
+
 			if (toErr != U_BUFFER_OVERFLOW_ERROR && U_FAILURE(toErr))
-				throw exceptions::charset_conv_error("[ICU] Error converting to Unicode from " + m_source.getName());
+			{
+				if (toErr == U_INVALID_CHAR_FOUND ||
+				    toErr == U_TRUNCATED_CHAR_FOUND ||
+				    toErr == U_ILLEGAL_CHAR_FOUND)
+				{
+					// Error will be thrown later (*)
+				}
+				else
+				{
+					throw exceptions::charset_conv_error("[ICU] Error converting to Unicode from " + m_source.getName());
+				}
+			}
 
 			// The Unicode source is the buffer just written and the limit
 			// is where the previous conversion stopped (target is moved in the conversion)
@@ -158,8 +198,40 @@ void charsetConverter_icu::convert(utility::inputStream& in, utility::outputStre
 				ucnv_fromUnicode(m_to, &cpTarget, cpTargetLimit,
 				                 &uSource, uSourceLimit, NULL, flush, &fromErr);
 
+				if (st)
+				{
+					// Decrement input bytes count by the number of input bytes in error
+					char errBytes[16];
+					int8_t errBytesLen = sizeof(errBytes);
+					UErrorCode errBytesErr = U_ZERO_ERROR;
+
+	 				ucnv_getInvalidChars(m_from, errBytes, &errBytesLen, &errBytesErr);
+
+					st->inputBytesRead -= errBytesLen;
+					st->outputBytesWritten += cpTarget - &cpOutBuffer[0];
+				}
+
+				// (*) If an error occured while converting from input charset, throw it now
+				if (toErr == U_INVALID_CHAR_FOUND ||
+				    toErr == U_TRUNCATED_CHAR_FOUND ||
+				    toErr == U_ILLEGAL_CHAR_FOUND)
+				{
+					throw exceptions::illegal_byte_sequence_for_charset();
+				}
+
 				if (fromErr != U_BUFFER_OVERFLOW_ERROR && U_FAILURE(fromErr))
-					throw exceptions::charset_conv_error("[ICU] Error converting from Unicode to " + m_dest.getName());
+				{
+					if (fromErr == U_INVALID_CHAR_FOUND ||
+					    fromErr == U_TRUNCATED_CHAR_FOUND ||
+					    fromErr == U_ILLEGAL_CHAR_FOUND)
+					{
+						throw exceptions::illegal_byte_sequence_for_charset();
+					}
+					else
+					{
+						throw exceptions::charset_conv_error("[ICU] Error converting from Unicode to " + m_dest.getName());
+					}
+				}
 
 				// Write to destination stream
 				out.write(&cpOutBuffer[0], (cpTarget - &cpOutBuffer[0]));
@@ -171,29 +243,27 @@ void charsetConverter_icu::convert(utility::inputStream& in, utility::outputStre
 }
 
 
-void charsetConverter_icu::convert(const string& in, string& out)
+void charsetConverter_icu::convert(const string& in, string& out, status* st)
 {
-	if (m_source == m_dest)
-	{
-		// No conversion needed
-		out = in;
-		return;
-	}
+	if (st)
+		new (st) status();
 
 	out.clear();
 
 	utility::inputStreamStringAdapter is(in);
 	utility::outputStreamStringAdapter os(out);
 
-	convert(is, os);
+	convert(is, os, st);
 
 	os.flush();
 }
 
 
-shared_ptr <utility::charsetFilteredOutputStream> charsetConverter_icu::getFilteredOutputStream(utility::outputStream& os)
+shared_ptr <utility::charsetFilteredOutputStream>
+	charsetConverter_icu::getFilteredOutputStream
+		(utility::outputStream& os, const charsetConverterOptions& opts)
 {
-	return make_shared <utility::charsetFilteredOutputStream_icu>(m_source, m_dest, &os);
+	return make_shared <utility::charsetFilteredOutputStream_icu>(m_source, m_dest, &os, opts);
 }
 
 
@@ -204,8 +274,10 @@ namespace utility {
 
 
 charsetFilteredOutputStream_icu::charsetFilteredOutputStream_icu
-	(const charset& source, const charset& dest, outputStream* os)
-	: m_from(NULL), m_to(NULL), m_sourceCharset(source), m_destCharset(dest), m_stream(*os)
+	(const charset& source, const charset& dest, outputStream* os,
+	 const charsetConverterOptions& opts)
+	: m_from(NULL), m_to(NULL), m_sourceCharset(source),
+	  m_destCharset(dest), m_stream(*os), m_options(opts)
 {
 	UErrorCode err = U_ZERO_ERROR;
 	m_from = ucnv_open(source.getName().c_str(), &err);
@@ -224,12 +296,31 @@ charsetFilteredOutputStream_icu::charsetFilteredOutputStream_icu
 			("Cannot initialize ICU converter for destination charset '" + dest.getName() + "' (error code: " + u_errorName(err) + ".");
 	}
 
-	// Set replacement chars for when converting from Unicode to codepage
-	icu::UnicodeString substString(vmime::charsetConverterOptions().invalidSequence.c_str());
-	ucnv_setSubstString(m_to, substString.getTerminatedBuffer(), -1, &err);
+	// Tell ICU what to do when encountering an illegal byte sequence
+	if (m_options.silentlyReplaceInvalidSequences)
+	{
+		// Set replacement chars for when converting from Unicode to codepage
+		icu::UnicodeString substString(m_options.invalidSequence.c_str());
+		ucnv_setSubstString(m_to, substString.getTerminatedBuffer(), -1, &err);
 
-	if (U_FAILURE(err))
-		throw exceptions::charset_conv_error("[ICU] Error setting replacement char.");
+		if (U_FAILURE(err))
+			throw exceptions::charset_conv_error("[ICU] Error when setting substitution string.");
+	}
+	else
+	{
+		// Tell ICU top stop (and return an error) on illegal byte sequences
+		ucnv_setToUCallBack
+			(m_to, UCNV_TO_U_CALLBACK_STOP, UCNV_SUB_STOP_ON_ILLEGAL, NULL, NULL, &err);
+
+		if (U_FAILURE(err))
+			throw exceptions::charset_conv_error("[ICU] Error when setting ToU callback.");
+
+		ucnv_setFromUCallBack
+			(m_to, UCNV_FROM_U_CALLBACK_STOP, UCNV_SUB_STOP_ON_ILLEGAL, NULL, NULL, &err);
+
+		if (U_FAILURE(err))
+			throw exceptions::charset_conv_error("[ICU] Error when setting FromU callback.");
+	}
 }
 
 
@@ -275,8 +366,17 @@ void charsetFilteredOutputStream_icu::writeImpl
 
 		if (U_FAILURE(toErr) && toErr != U_BUFFER_OVERFLOW_ERROR)
 		{
-			throw exceptions::charset_conv_error
-				("[ICU] Error converting to Unicode from '" + m_sourceCharset.getName() + "'.");
+			if (toErr == U_INVALID_CHAR_FOUND ||
+			    toErr == U_TRUNCATED_CHAR_FOUND ||
+			    toErr == U_ILLEGAL_CHAR_FOUND)
+			{
+				throw exceptions::illegal_byte_sequence_for_charset();
+			}
+			else
+			{
+				throw exceptions::charset_conv_error
+					("[ICU] Error converting to Unicode from '" + m_sourceCharset.getName() + "'.");
+			}
 		}
 
 		const size_t uniLength = uniTarget - &uniBuffer[0];
@@ -303,8 +403,17 @@ void charsetFilteredOutputStream_icu::writeImpl
 
 			if (fromErr != U_BUFFER_OVERFLOW_ERROR && U_FAILURE(fromErr))
 			{
-				throw exceptions::charset_conv_error
-					("[ICU] Error converting from Unicode to '" + m_destCharset.getName() + "'.");
+				if (fromErr == U_INVALID_CHAR_FOUND ||
+				    fromErr == U_TRUNCATED_CHAR_FOUND ||
+				    fromErr == U_ILLEGAL_CHAR_FOUND)
+				{
+					throw exceptions::illegal_byte_sequence_for_charset();
+				}
+				else
+				{
+					throw exceptions::charset_conv_error
+						("[ICU] Error converting from Unicode to '" + m_destCharset.getName() + "'.");
+				}
 			}
 
 			const size_t cpLength = cpTarget - &cpBuffer[0];

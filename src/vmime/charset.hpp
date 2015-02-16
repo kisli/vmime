@@ -95,8 +95,12 @@ public:
 	  * @param source input charset
 	  * @param dest output charset
 	  * @param opts conversion options
-	  * @throws exceptions::charset_conv_error if an error occured during
-	  * the conversion
+	  * @throws exceptions::illegal_byte_sequence_for_charset if an illegal
+	  * byte sequence was found in the input bytes, and the
+	  * 'silentlyReplaceInvalidSequences' flag is set to false in
+	  * the charsetConverterOptions
+	  * @throws exceptions::charset_conv_error if an unexpected error occured
+	  * during the conversion
 	  */
 	static void convert(const string& in, string& out,
 		const charset& source, const charset& dest,
@@ -110,12 +114,28 @@ public:
 	  * @param source input charset
 	  * @param dest output charset
 	  * @param opts conversion options
-	  * @throws exceptions::charset_conv_error if an error occured during
-	  * the conversion
+	  * @throws exceptions::illegal_byte_sequence_for_charset if an illegal
+	  * byte sequence was found in the input bytes, and the
+	  * 'silentlyReplaceInvalidSequences' flag is set to false in
+	  * the charsetConverterOptions
+	  * @throws exceptions::charset_conv_error if an unexpected error occured
+	  * during the conversion
 	  */
 	static void convert(utility::inputStream& in, utility::outputStream& out,
 		const charset& source, const charset& dest,
 		const charsetConverterOptions& opts = charsetConverterOptions());
+
+	/** Checks whether the specified text is valid in this charset.
+	  *
+	  * @param text input text
+	  * @param firstInvalidByte if the function returns false, will contain
+	  * the index of the first invalid byte in the string. Can be NULL if
+	  * not used.
+	  * @return true if the text is perfectly valid in this charset,
+	  * or false otherwise (eg. it contains illegal sequences)
+	  */
+	bool isValidText(const string& text, string::size_type* firstInvalidByte) const;
+
 
 	shared_ptr <component> clone() const;
 	void copyFrom(const component& other);

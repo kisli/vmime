@@ -400,11 +400,54 @@ text* text::decodeAndUnfold(const parsingContext& ctx, const string& in, text* g
 
 	out->removeAllWords();
 
-	const std::vector <shared_ptr <word> > words = word::parseMultiple(ctx, in, 0, in.length(), NULL);
+	std::vector <shared_ptr <word> > words = word::parseMultiple(ctx, in, 0, in.length(), NULL);
+	fixBrokenWords(words);
 
 	copy_vector(words, out->m_words);
 
 	return (out);
+}
+
+
+// static
+void text::fixBrokenWords(std::vector <shared_ptr <word> >& words)
+{
+	if (words.size() < 2)
+		return;
+
+	// Fix words which encode a non-integral number of characters.
+	// This is not RFC-compliant, but we should be able to recover from it.
+	for (size_t i = 0, n = words.size() - 1 ; i < n ; ++i)
+	{
+		shared_ptr <word> w1 = words[i];
+		shared_ptr <word> w2 = words[i + 1];
+
+		// Check whether the word is valid
+		bool valid = w1->getCharset().isValidText(w1->getBuffer(), NULL);
+
+		// If the current word is not valid, try to grab some bytes
+		// from the next word, to see whether it becomes valid.
+		if (!valid)
+		{
+			string buffer(w1->getBuffer());
+			buffer += w2->getBuffer();
+
+			string::size_type firstInvalidByte;
+			valid = w1->getCharset().isValidText(buffer, &firstInvalidByte);
+
+			// Current word with additional bytes from the next word
+			// is now valid: adjust buffers of both words.
+			w1->setBuffer(string(buffer.begin(), buffer.begin() + firstInvalidByte));
+			w2->setBuffer(string(buffer.begin() + firstInvalidByte, buffer.end()));
+
+			// If the next word is now empty, remove it
+			if (w2->getBuffer().empty())
+			{
+				words.erase(words.begin() + i + 1);
+				--n;
+			}
+		}
+	}
 }
 
 

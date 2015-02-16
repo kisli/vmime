@@ -115,6 +115,20 @@ exception* charset_conv_error::clone() const { return new charset_conv_error(*th
 const char* charset_conv_error::name() const throw() { return "charset_conv_error"; }
 
 
+
+//
+// illegal_byte_sequence_for_charset
+//
+
+illegal_byte_sequence_for_charset::~illegal_byte_sequence_for_charset() throw() {}
+illegal_byte_sequence_for_charset::illegal_byte_sequence_for_charset(const string& what, const exception& other)
+	: exception(what.empty() ? "Found illegal byte sequence for this charset." : what, other) {}
+
+exception* illegal_byte_sequence_for_charset::clone() const { return new illegal_byte_sequence_for_charset(*this); }
+const char* illegal_byte_sequence_for_charset::name() const throw() { return "illegal_byte_sequence_for_charset"; }
+
+
+
 //
 // no_encoder_available
 //

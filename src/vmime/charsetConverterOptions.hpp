@@ -42,7 +42,15 @@ public:
 	charsetConverterOptions();
 
 
-	/** Replace invalid sequences with this string. */
+	/** If true, invalid sequences will be silently replaced with
+	  * a string when possible (see 'invalidSequence').
+	  * Default is true.
+	  */
+	bool silentlyReplaceInvalidSequences;
+
+	/** Replace invalid sequences with this string.
+	  * Default is '?'.
+	  */
 	string invalidSequence;
 };
 

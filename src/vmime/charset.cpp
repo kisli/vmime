@@ -109,6 +109,43 @@ void charset::convert(const string& in, string& out, const charset& source, cons
 }
 
 
+bool charset::isValidText
+	(const string& text, string::size_type* firstInvalidByte) const
+{
+	charsetConverterOptions opts;
+	opts.silentlyReplaceInvalidSequences = false;
+
+	charsetConverter::status st;
+
+	try
+	{
+		std::string out;
+
+		// Try converting to UTF-8
+		shared_ptr <charsetConverter> conv = charsetConverter::create(*this, vmime::charset("utf-8"), opts);
+		conv->convert(text, out, &st);
+	}
+	catch (exceptions::illegal_byte_sequence_for_charset& e)
+	{
+		// An illegal byte sequence was found in the input buffer
+		if (firstInvalidByte)
+		{
+			if (st.inputBytesRead < text.length())
+				*firstInvalidByte = st.inputBytesRead;
+			else
+				*firstInvalidByte = text.length();
+		}
+
+		return false;
+	}
+
+	if (firstInvalidByte)
+		*firstInvalidByte = text.length();
+
+	return true;
+}
+
+
 const charset charset::getLocalCharset()
 {
 	return (platform::getHandler()->getLocalCharset());

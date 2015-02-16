@@ -38,7 +38,16 @@ namespace vmime
 {
 
 
-/** A generic charset converter which uses Windows MultiByteToWideChar.
+/** A generic charset converter which uses Windows MultiByteToWideChar
+  * and WideCharToMultiByte API functions.
+  *
+  * ICU or iconv library should always be preferred over this one, even
+  * on Windows platform, as MultiByteToWideChar() and WideCharToMultiByte()
+  * functions cannot be used easily with streams (no context). Moreover,
+  * error handling is very poor, in particular when an invalid sequence
+  * is found...
+  *
+  * Also, "status" is not supported by this converter for the same reason.
   */
 
 class charsetConverter_win : public charsetConverter
@@ -54,8 +63,8 @@ public:
 	charsetConverter_win(const charset& source, const charset& dest,
 		const charsetConverterOptions& opts = charsetConverterOptions());
 
-	void convert(const string& in, string& out);
-	void convert(utility::inputStream& in, utility::outputStream& out);
+	void convert(const string& in, string& out, status* st);
+	void convert(utility::inputStream& in, utility::outputStream& out, status* st);
 
 	shared_ptr <utility::charsetFilteredOutputStream>
 		getFilteredOutputStream(utility::outputStream& os);

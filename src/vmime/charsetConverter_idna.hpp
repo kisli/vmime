@@ -50,10 +50,12 @@ public:
 
 	~charsetConverter_idna();
 
-	void convert(const string& in, string& out);
-	void convert(utility::inputStream& in, utility::outputStream& out);
+	void convert(const string& in, string& out, status* st = NULL);
+	void convert(utility::inputStream& in, utility::outputStream& out, status* st = NULL);
 
-	shared_ptr <utility::charsetFilteredOutputStream> getFilteredOutputStream(utility::outputStream& os);
+	shared_ptr <utility::charsetFilteredOutputStream> getFilteredOutputStream
+		(utility::outputStream& os,
+		 const charsetConverterOptions& opts = charsetConverterOptions());
 
 private:
 

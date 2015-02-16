@@ -251,6 +251,9 @@ public:
 
 protected:
 
+	static void fixBrokenWords(std::vector <shared_ptr <word> >& words);
+
+
 	// Component parsing & assembling
 	void parseImpl
 		(const parsingContext& ctx,
