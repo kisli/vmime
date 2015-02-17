@@ -44,10 +44,34 @@ class VMIME_EXPORT word : public headerFieldValue
 
 public:
 
+	/** Construct an empty word.
+	  * Charset is set to the current locale charset.
+	  */
 	word();
+
+	/** Construct a word by copying another word.
+	  */
 	word(const word& w);
-	word(const string& buffer); // Defaults to local charset
+
+	/** Construct a word using a string buffer.
+	  * Charset is set to the current locale charset.
+	  */
+	explicit word(const string& buffer);
+
+	/** Construct a word using a string buffer and a specified charset.
+	  *
+	  * @param buffer string buffer
+	  * @param charset charset in which the string is encoded
+	  */
 	word(const string& buffer, const charset& charset);
+
+	/** Construct a word using a string buffer and a specified charset
+	  * and language tag (RFC-1766).
+	  *
+	  * @param buffer string buffer
+	  * @param charset charset in which the string is encoded
+	  * @param lang language tag, in the format specified by RFC-1766
+	  */
 	word(const string& buffer, const charset& charset, const string& lang);
 
 	/** Return the raw data for this encoded word.

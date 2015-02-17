@@ -44,7 +44,7 @@ private:
 
 public:
 
-	parameter(const string& name);
+	explicit parameter(const string& name);
 	parameter(const string& name, const word& value);
 	parameter(const string& name, const string& value);
 

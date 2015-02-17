@@ -69,14 +69,22 @@ const vmime::utility::file::path windowsFileSystemFactory::stringToPathImpl(cons
 	while ((offset = str.find_first_of("\\", offset)) != vmime::string::npos)
 	{
 		if (offset != prev)
-			path.appendComponent(vmime::string(str.begin() + prev, str.begin() + offset));
+		{
+			path.appendComponent
+				(vmime::utility::file::path::component
+					(vmime::string(str.begin() + prev, str.begin() + offset)));
+		}
 
 		prev = offset + 1;
 		offset++;
 	}
 
 	if (prev < str.length())
-		path.appendComponent(vmime::string(str.begin() + prev, str.end()));
+	{
+		path.appendComponent
+			(vmime::utility::file::path::component
+				(vmime::string(str.begin() + prev, str.end())));
+	}
 
 	return (path);
 }

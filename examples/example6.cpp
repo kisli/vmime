@@ -639,7 +639,7 @@ static void connectStore()
 							: std::string(path.begin() + s, path.begin() + p);
 
 						if (!x.empty())
-							newFolder = newFolder->getFolder(x);
+							newFolder = newFolder->getFolder(vmime::utility::path::component(x));
 
 						if (p == std::string::npos)
 							break;
