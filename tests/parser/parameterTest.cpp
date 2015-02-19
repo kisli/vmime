@@ -467,7 +467,9 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 	void testEncodeTSpecialsInRFC2231()
 	{
 		VASSERT_EQ("1", "filename*=UTF-8''my_file_name_%C3%B6%C3%A4%C3%BC_%281%29.txt",
-			vmime::make_shared <vmime::parameter>("filename", "my_file_name_\xc3\xb6\xc3\xa4\xc3\xbc_(1).txt")->generate());
+			vmime::make_shared <vmime::parameter>
+				("filename",
+				 vmime::word("my_file_name_\xc3\xb6\xc3\xa4\xc3\xbc_(1).txt", "UTF-8"))->generate());
 	}
 
 	void testWhitespaceBreaksTheValue()
