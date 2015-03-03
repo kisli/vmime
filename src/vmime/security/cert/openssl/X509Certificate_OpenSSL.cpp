@@ -445,7 +445,7 @@ const datetime X509Certificate_OpenSSL::convertX509Date(void* time) const
 	ASN1_TIME* asn1_time = reinterpret_cast<ASN1_TIME*>(time);
 	ASN1_TIME_print(out, asn1_time);
 
-	int sz = BIO_get_mem_data(out, &buffer);
+	const long sz = BIO_get_mem_data(out, &buffer);
 	char* dest = new char[sz + 1];
 	dest[sz] = 0;
 	memcpy(dest, buffer, sz);
@@ -488,7 +488,7 @@ const byteArray X509Certificate_OpenSSL::getFingerprint(const DigestAlgorithm al
 	int j;
 	unsigned int n;
 	const EVP_MD *digest;
-	unsigned char * fingerprint, *result;
+	unsigned char * fingerprint;
 	unsigned char md[EVP_MAX_MD_SIZE];
 
 	switch (algo)
@@ -517,13 +517,13 @@ const byteArray X509Certificate_OpenSSL::getFingerprint(const DigestAlgorithm al
 		}
 	}
 
-	n = BIO_get_mem_data(out, &fingerprint);
-	result = new unsigned char[n];
-	memcpy (result, fingerprint, n);
+	const long resultLen = BIO_get_mem_data(out, &fingerprint);
+	unsigned char* result = new unsigned char[resultLen];
+	memcpy(result, fingerprint, resultLen);
 	BIO_free(out);
 
 	byteArray res;
-	res.insert(res.end(), &result[0], &result[0] + n);
+	res.insert(res.end(), &result[0], &result[0] + resultLen);
 
 	delete [] result;
 
@@ -549,7 +549,7 @@ const string X509Certificate_OpenSSL::getIssuerString() const
 	X509_NAME_print_ex(out, X509_get_issuer_name(m_data->cert), 0, XN_FLAG_RFC2253);
 
 	unsigned char* issuer;
-	const int n = BIO_get_mem_data(out, &issuer);
+	const long n = BIO_get_mem_data(out, &issuer);
 
 	vmime::string name(reinterpret_cast <char*>(issuer), n);
 	BIO_free(out);
