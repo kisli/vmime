@@ -123,6 +123,15 @@ struct OpenSSLX509CertificateInternalData
 	X509* cert;
 };
 
+
+// Workaround for i2v() taking either a const or a non-const 'method' on some platforms
+template <typename M>
+STACK_OF(CONF_VALUE)* call_i2v(M m, void* p1, STACK_OF(CONF_VALUE)* p2)
+{
+	return m->i2v(m, p1, p2);
+}
+
+
 #endif // VMIME_BUILDING_DOC
 
 
@@ -409,7 +418,7 @@ bool X509Certificate_OpenSSL::verifyHostName
 
 				if (extValStr && method->i2v)
 				{
-					STACK_OF(CONF_VALUE)* val = method->i2v(method, extValStr, NULL);
+ 					STACK_OF(CONF_VALUE)* val = call_i2v(method, extValStr, 0);
 
 					for (int j = 0 ; j < sk_CONF_VALUE_num(val) ; ++j)
 					{
