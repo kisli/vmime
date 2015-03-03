@@ -178,7 +178,37 @@ static void printFolders(vmime::shared_ptr <vmime::net::folder> folder, const in
 	for (int j = 0 ; j < level * 2 ; ++j)
 		std::cout << " ";
 
-	std::cout << getFolderPathString(folder) << std::endl;
+	const vmime::net::folderAttributes attr = folder->getAttributes();
+	std::ostringstream attrStr;
+
+	if (attr.getSpecialUse() == vmime::net::folderAttributes::SPECIALUSE_ALL)
+		attrStr << " \\use:All";
+	else if (attr.getSpecialUse() == vmime::net::folderAttributes::SPECIALUSE_ARCHIVE)
+		attrStr << " \\use:Archive";
+	else if (attr.getSpecialUse() == vmime::net::folderAttributes::SPECIALUSE_DRAFTS)
+		attrStr << " \\use:Drafts";
+	else if (attr.getSpecialUse() == vmime::net::folderAttributes::SPECIALUSE_FLAGGED)
+		attrStr << " \\use:Flagged";
+	else if (attr.getSpecialUse() == vmime::net::folderAttributes::SPECIALUSE_JUNK)
+		attrStr << " \\use:Junk";
+	else if (attr.getSpecialUse() == vmime::net::folderAttributes::SPECIALUSE_SENT)
+		attrStr << " \\use:Sent";
+	else if (attr.getSpecialUse() == vmime::net::folderAttributes::SPECIALUSE_TRASH)
+		attrStr << " \\use:Trash";
+	else if (attr.getSpecialUse() == vmime::net::folderAttributes::SPECIALUSE_IMPORTANT)
+		attrStr << " \\use:Important";
+
+	if (attr.getFlags() & vmime::net::folderAttributes::FLAG_HAS_CHILDREN)
+		attrStr << " \\flag:HasChildren";
+	if (attr.getFlags() & vmime::net::folderAttributes::FLAG_NO_OPEN)
+		attrStr << " \\flag:NoOpen";
+
+	for (size_t i = 0, n = attr.getUserFlags().size() ; i < n ; ++i)
+		attrStr << " \\" << attr.getUserFlags()[i];
+
+	std::cout << getFolderPathString(folder);
+	std::cout << " " << attrStr.str();
+	std::cout << std::endl;
 
 	std::vector <vmime::shared_ptr <vmime::net::folder> > subFolders = folder->getFolders(false);
 
