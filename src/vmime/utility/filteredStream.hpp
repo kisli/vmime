@@ -242,7 +242,140 @@ public:
 		m_stream.reset();
 	}
 
-	size_t read(byte_t* const data, const size_t count);
+	size_t read(byte_t* const data, const size_t count)
+	{
+		// Read buffer must be at least 'COUNT' size + 1 byte
+		if (eof() || count <= COUNT)
+			return 0;
+
+		if (m_stream.eof())
+		{
+			if (m_found != 0)
+			{
+				const size_t found = m_found;
+
+				for (size_t f = 0 ; f < found ; ++f)
+					data[f] = m_sequence[f];
+
+				m_found = 0;
+				m_eof = true;
+
+				return (found);
+			}
+			else
+			{
+				m_eof = true;
+				return 0;
+			}
+		}
+
+		size_t read = m_stream.read(data, count - COUNT);
+
+		byte_t* end = data + read;
+		byte_t* pos = data;
+
+		while (pos < end)
+		{
+			// Very simple case, search for the whole sequence
+			if (m_found == 0)
+			{
+				while (pos < end)
+				{
+					pos = std::find(pos, end, m_sequence[0]);
+
+					if (pos == end)
+						return (read);
+
+					m_found = 1;
+					++pos;
+
+					while (pos < end && m_found < COUNT && m_sequence[m_found] == *pos)
+					{
+						++m_found;
+						++pos;
+					}
+
+					// Didn't found whole sequence
+					if (m_found != COUNT)
+					{
+						// We reached the end of the buffer
+						if (pos == end)
+						{
+							return (read - m_found);
+						}
+						// Common prefix but not whole sequence
+						else
+						{
+							m_found = 0;
+						}
+					}
+					// Whole sequence found
+					else
+					{
+						// End of stream
+						return (pos - data - m_found);
+					}
+				}
+			}
+			// More complex case: search for a sequence which has begun
+			// in a previous buffer
+			else
+			{
+				// Search for the end of the previously started sequence
+				while (pos < end && m_found < COUNT && m_sequence[m_found] == *pos)
+				{
+					++m_found;
+					++pos;
+				}
+
+				if (m_found != COUNT)
+				{
+					// End of buffer
+					if (pos == end)
+					{
+						// No data: this buffer is a sub-sequence of the
+						// searched sequence
+						return 0;
+					}
+					// Common prefix
+					else
+					{
+						// We have to reinject the incomplete sequence into
+						// the stream data
+
+						// -- shift right data
+						const size_t n = pos - data;
+
+						byte_t* newEnd = data + read + m_found - n;
+						byte_t* oldEnd = data + read;
+
+						for (size_t i = 0 ; i < read - n ; ++i)
+						{
+							--newEnd;
+							--oldEnd;
+
+							*newEnd = *oldEnd;
+						}
+
+						// -- copy the prefix just before data
+						for (size_t f = 0 ; f < m_found ; ++f)
+							data[f] = m_sequence[f];
+
+						read += m_found - n;
+						end += m_found - n;
+
+						m_found = 0;
+					}
+				}
+				else
+				{
+					return 0;  // no more data
+				}
+			}
+		}
+
+		return read;
+	}
 
 	size_t skip(const size_t /* count */)
 	{
@@ -264,144 +397,6 @@ private:
 template <>
 size_t stopSequenceFilteredInputStream <1>::read
 	(byte_t* const data, const size_t count);
-
-
-template <int COUNT>
-size_t stopSequenceFilteredInputStream <COUNT>::read
-	(byte_t* const data, const size_t count)
-{
-	// Read buffer must be at least 'COUNT' size + 1 byte
-	if (eof() || count <= COUNT)
-		return 0;
-
-	if (m_stream.eof())
-	{
-		if (m_found != 0)
-		{
-			const size_t found = m_found;
-
-			for (size_t f = 0 ; f < found ; ++f)
-				data[f] = m_sequence[f];
-
-			m_found = 0;
-			m_eof = true;
-
-			return (found);
-		}
-		else
-		{
-			m_eof = true;
-			return 0;
-		}
-	}
-
-	size_t read = m_stream.read(data, count - COUNT);
-
-	byte_t* end = data + read;
-	byte_t* pos = data;
-
-	while (pos < end)
-	{
-		// Very simple case, search for the whole sequence
-		if (m_found == 0)
-		{
-			while (pos < end)
-			{
-				pos = std::find(pos, end, m_sequence[0]);
-
-				if (pos == end)
-					return (read);
-
-				m_found = 1;
-				++pos;
-
-				while (pos < end && m_found < COUNT && m_sequence[m_found] == *pos)
-				{
-					++m_found;
-					++pos;
-				}
-
-				// Didn't found whole sequence
-				if (m_found != COUNT)
-				{
-					// We reached the end of the buffer
-					if (pos == end)
-					{
-						return (read - m_found);
-					}
-					// Common prefix but not whole sequence
-					else
-					{
-						m_found = 0;
-					}
-				}
-				// Whole sequence found
-				else
-				{
-					// End of stream
-					return (pos - data - m_found);
-				}
-			}
-		}
-		// More complex case: search for a sequence which has begun
-		// in a previous buffer
-		else
-		{
-			// Search for the end of the previously started sequence
-			while (pos < end && m_found < COUNT && m_sequence[m_found] == *pos)
-			{
-				++m_found;
-				++pos;
-			}
-
-			if (m_found != COUNT)
-			{
-				// End of buffer
-				if (pos == end)
-				{
-					// No data: this buffer is a sub-sequence of the
-					// searched sequence
-					return 0;
-				}
-				// Common prefix
-				else
-				{
-					// We have to reinject the incomplete sequence into
-					// the stream data
-
-					// -- shift right data
-					const size_t n = pos - data;
-
-					byte_t* newEnd = data + read + m_found - n;
-					byte_t* oldEnd = data + read;
-
-					for (size_t i = 0 ; i < read - n ; ++i)
-					{
-						--newEnd;
-						--oldEnd;
-
-						*newEnd = *oldEnd;
-					}
-
-					// -- copy the prefix just before data
-					for (size_t f = 0 ; f < m_found ; ++f)
-						data[f] = m_sequence[f];
-
-					read += m_found - n;
-					end += m_found - n;
-
-					m_found = 0;
-				}
-			}
-			else
-			{
-				return 0;  // no more data
-			}
-		}
-	}
-
-	return read;
-}
 
 
 } // utility
