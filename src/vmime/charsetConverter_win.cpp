@@ -127,7 +127,7 @@ void charsetConverter_win::convert(const string& in, string& out, status* st)
 		{
 			if (GetLastError() == ERROR_NO_UNICODE_TRANSLATION)
 			{
-				throw exceptions::illegal_byte_sequence_in_charset();
+				throw exceptions::illegal_byte_sequence_for_charset();
 			}
 			else
 			{
@@ -156,7 +156,7 @@ void charsetConverter_win::convert(const string& in, string& out, status* st)
 		{
 			if (GetLastError() == ERROR_NO_UNICODE_TRANSLATION)
 			{
-				throw exceptions::illegal_byte_sequence_in_charset();
+				throw exceptions::illegal_byte_sequence_for_charset();
 			}
 			else
 			{
