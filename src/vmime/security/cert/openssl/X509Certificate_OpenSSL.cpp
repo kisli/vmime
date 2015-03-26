@@ -125,8 +125,13 @@ struct OpenSSLX509CertificateInternalData
 
 
 // Workaround for i2v() taking either a const or a non-const 'method' on some platforms
-template <typename M>
-STACK_OF(CONF_VALUE)* call_i2v(M m, void* p1, STACK_OF(CONF_VALUE)* p2)
+STACK_OF(CONF_VALUE)* call_i2v(const X509V3_EXT_METHOD* m, void* p1, STACK_OF(CONF_VALUE)* p2)
+{
+	return m->i2v(m, p1, p2);
+}
+
+
+STACK_OF(CONF_VALUE)* call_i2v(X509V3_EXT_METHOD* m, void* p1, STACK_OF(CONF_VALUE)* p2)
 {
 	return m->i2v(m, p1, p2);
 }
