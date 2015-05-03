@@ -35,6 +35,98 @@ namespace vmime
 {
 
 
+/** Decode an IDNA-encoded domain name ("xn--5rtw95l.xn--wgv71a")
+  * to a fully decoded domain name in UTF-8 ("黒川.日本").
+  *
+  * @param idnaDomain domain name encoded with IDNA
+  * @return decoded domain name in UTF-8
+  */
+static const string domainNameFromIDNA(const string& idnaDomain)
+{
+	std::ostringstream domainName;
+	size_t p = 0;
+
+	for (size_t n = idnaDomain.find('.', p) ;
+	     (n = idnaDomain.find('.', p)) != string::npos ; p = n + 1)
+	{
+		const string encodedPart(idnaDomain.begin() + p, idnaDomain.begin() + n);
+
+		if (encodedPart.length() > 4 &&
+		    encodedPart[0] == 'x' && encodedPart[1] == 'n' &&
+		    encodedPart[2] == '-' && encodedPart[3] == '-')
+		{
+			string decodedPart;
+			charset::convert(encodedPart, decodedPart,
+				vmime::charsets::IDNA, vmime::charsets::UTF_8);
+
+			domainName << decodedPart << '.';
+		}
+		else
+		{
+			domainName << encodedPart << '.';  // not encoded
+		}
+	}
+
+	if (p < idnaDomain.length())
+	{
+		const string encodedPart(idnaDomain.begin() + p, idnaDomain.end());
+
+		if (encodedPart.length() > 4 &&
+		    encodedPart[0] == 'x' && encodedPart[1] == 'n' &&
+		    encodedPart[2] == '-' && encodedPart[3] == '-')
+		{
+			string decodedPart;
+			charset::convert(encodedPart, decodedPart,
+				vmime::charsets::IDNA, vmime::charsets::UTF_8);
+
+			domainName << decodedPart;
+		}
+		else
+		{
+			domainName << encodedPart;  // not encoded
+		}
+	}
+
+	return domainName.str();
+}
+
+
+/** Encode an UTF-8 domain name ("黒川.日本") to an IDNA-encoded
+  * domain name ("xn--5rtw95l.xn--wgv71a").
+  *
+  * @param domainName domain name in UTF-8
+  * @return domain name encoded with IDNA
+  */
+static const string domainNameToIDNA(const string& domainName)
+{
+	std::ostringstream idnaDomain;
+	size_t p = 0;
+
+	for (size_t n = domainName.find('.', p) ;
+	     (n = domainName.find('.', p)) != string::npos ; p = n + 1)
+	{
+		string idnaPart;
+		charset::convert(string(domainName.begin() + p, domainName.begin() + n),
+			idnaPart, vmime::charsets::UTF_8, vmime::charsets::IDNA);
+
+		idnaDomain << idnaPart << '.';
+	}
+
+	if (p < domainName.length())
+	{
+		string idnaPart;
+		charset::convert(string(domainName.begin() + p, domainName.end()),
+			idnaPart, vmime::charsets::UTF_8, vmime::charsets::IDNA);
+
+		idnaDomain << idnaPart;
+	}
+
+	return idnaDomain.str();
+}
+
+
+
+
 emailAddress::emailAddress()
 {
 }
@@ -86,6 +178,10 @@ void emailAddress::parseImpl
 		State_LocalPartMiddle,
 		State_LocalPartComment,
 		State_LocalPartQuoted,
+		State_LocalPartRFC2047Start,
+		State_LocalPartRFC2047Middle,
+		State_LocalPartRFC2047MiddleQM,
+		State_LocalPartRFC2047End,
 		State_DomainPartStart,
 		State_DomainPartMiddle,
 		State_DomainPartComment,
@@ -101,6 +197,7 @@ void emailAddress::parseImpl
 	bool atFound = false;
 	bool stop = false;
 	int commentLevel = 0;
+	bool localPartIsRFC2047 = false;
 
 	while (p < pend && !stop)
 	{
@@ -126,6 +223,11 @@ void emailAddress::parseImpl
 			if (c == '"')
 			{
 				state = State_LocalPartQuoted;
+				++p;
+			}
+			else if (c == '=')
+			{
+				state = State_LocalPartRFC2047Start;
 				++p;
 			}
 			else if (c == '(')
@@ -214,6 +316,25 @@ void emailAddress::parseImpl
 
 			break;
 
+		case State_LocalPartRFC2047Start:
+
+			if (c == '?')
+			{
+				state = State_LocalPartRFC2047Middle;
+				localPart << "=?";
+				localPartIsRFC2047 = true;
+				++p;
+			}
+			else
+			{
+				state = State_LocalPartMiddle;
+				localPart << '=';
+				localPart << c;
+				++p;
+			}
+
+			break;
+
 		case State_LocalPartMiddle:
 
 			if (c == '.')
@@ -252,6 +373,55 @@ void emailAddress::parseImpl
 				prevIsDot = false;
 				localPart << c;
 				++p;
+			}
+
+			break;
+
+		case State_LocalPartRFC2047Middle:
+
+			if (c == '?')
+			{
+				state = State_LocalPartRFC2047MiddleQM;
+				++p;
+			}
+			else
+			{
+				localPart << c;
+				++p;
+			}
+
+			break;
+
+		case State_LocalPartRFC2047MiddleQM:
+
+			if (c == '=')
+			{
+				// End of RFC-2047 encoded word
+				state = State_LocalPartRFC2047End;
+				localPart << "?=";
+				++p;
+			}
+			else
+			{
+				state = State_LocalPartRFC2047Middle;
+				localPart << '?';
+				localPart << c;
+				++p;
+			}
+
+			break;
+
+		case State_LocalPartRFC2047End:
+
+			if (c == '@')
+			{
+				atFound = true;
+				state = State_DomainPartStart;
+				++p;
+			}
+			else
+			{
+				state = State_End;
 			}
 
 			break;
@@ -357,42 +527,18 @@ void emailAddress::parseImpl
 		if (domainPart.str().empty() && !atFound)
 			domainPart << platform::getHandler()->getHostName();
 
-		m_localName = word(localPart.str(), vmime::charsets::UTF_8);
-		m_domainName = word(domainPart.str(), vmime::charsets::UTF_8);
+		if (localPartIsRFC2047)
+			m_localName.parse(localPart.str());
+		else
+			m_localName = word(localPart.str(), vmime::charsets::UTF_8);
+
+		m_domainName = word(domainNameFromIDNA(domainPart.str()), vmime::charsets::UTF_8);
 	}
 
 	setParsedBounds(position, p - pend);
 
 	if (newPosition)
 		*newPosition = p - pend;
-}
-
-
-static const string domainNameToIDNA(const string& domainName)
-{
-	std::ostringstream idnaDomain;
-	size_t p = 0;
-
-	for (size_t n = domainName.find('.', p) ;
-	     (n = domainName.find('.', p)) != string::npos ; p = n + 1)
-	{
-		string idnaPart;
-		charset::convert(string(domainName.begin() + p, domainName.begin() + n),
-			idnaPart, vmime::charsets::UTF_8, vmime::charsets::IDNA);
-
-		idnaDomain << idnaPart << '.';
-	}
-
-	if (p < domainName.length())
-	{
-		string idnaPart;
-		charset::convert(string(domainName.begin() + p, domainName.end()),
-			idnaPart, vmime::charsets::UTF_8, vmime::charsets::IDNA);
-
-		idnaDomain << idnaPart;
-	}
-
-	return idnaDomain.str();
 }
 
 

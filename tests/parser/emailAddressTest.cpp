@@ -40,6 +40,7 @@ VMIME_TEST_SUITE_BEGIN(emailAddressTest)
 		VMIME_TEST(testParseSpecialChars)
 		VMIME_TEST(testParseCommentInLocalPart)
 		VMIME_TEST(testParseCommentInDomainPart)
+		VMIME_TEST(testParseRFC2047EncodedLocalPart)
 		VMIME_TEST(testGenerateSpecialChars)
 	VMIME_TEST_LIST_END
 
@@ -196,6 +197,21 @@ VMIME_TEST_SUITE_BEGIN(emailAddressTest)
 		vmime::emailAddress eml4("john.smith@(comment \\) end comment)example.com");
 		VASSERT_EQ("4/local", "john.smith", eml4.getLocalName());
 		VASSERT_EQ("4/domain", "example.com", eml4.getDomainName());
+	}
+
+	void testParseRFC2047EncodedLocalPart()
+	{
+		vmime::emailAddress eml1("=?utf-8?Q?Pel=C3=A9?=@example.com");
+		VASSERT_EQ("1/local", "Pelé", eml1.getLocalName());
+		VASSERT_EQ("1/domain", "example.com", eml1.getDomainName());
+
+		vmime::emailAddress eml2("=?utf-8?B?55Sy5paQ?=@xn--5rtw95l.xn--wgv71a");
+		VASSERT_EQ("2/local", "甲斐", eml2.getLocalName());
+		VASSERT_EQ("2/domain", "黒川.日本", eml2.getDomainName());
+
+		vmime::emailAddress eml3("=?utf-8?B?55Sy5paQ?=@xn--5rtw95l.com");
+		VASSERT_EQ("3/local", "甲斐", eml3.getLocalName());
+		VASSERT_EQ("3/domain", "黒川.com", eml3.getDomainName());
 	}
 
 	void testGenerateASCII()
