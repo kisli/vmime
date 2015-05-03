@@ -42,7 +42,8 @@ generationContext::generationContext(const generationContext& ctx)
 	: context(ctx),
 	  m_maxLineLength(ctx.m_maxLineLength),
 	  m_prologText(ctx.m_prologText),
-	  m_epilogText(ctx.m_epilogText)
+	  m_epilogText(ctx.m_epilogText),
+	  m_paramValueMode(ctx.m_paramValueMode)
 {
 }
 
