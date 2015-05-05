@@ -547,7 +547,7 @@ int TLSSocket_OpenSSL::bio_write(BIO* bio, const char* buf, int len)
 			return -1;
 		}
 
-		return static_cast <int>(len);
+		return static_cast <int>(n);
 	}
 	catch (exception& e)
 	{
