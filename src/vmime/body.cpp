@@ -544,10 +544,18 @@ size_t body::getGeneratedSize(const generationContext& ctx)
 	// Simple body
 	else
 	{
-		shared_ptr <utility::encoder::encoder> srcEncoder = m_contents->getEncoding().getEncoder();
-		shared_ptr <utility::encoder::encoder> dstEncoder = getEncoding().getEncoder();
+		if (getEncoding() == m_contents->getEncoding())
+		{
+			// No re-encoding has to be performed
+			return m_contents->getLength();
+		}
+		else
+		{
+			shared_ptr <utility::encoder::encoder> srcEncoder = m_contents->getEncoding().getEncoder();
+			shared_ptr <utility::encoder::encoder> dstEncoder = getEncoding().getEncoder();
 
-		return dstEncoder->getEncodedSize(srcEncoder->getDecodedSize(m_contents->getLength()));
+			return dstEncoder->getEncodedSize(srcEncoder->getDecodedSize(m_contents->getLength()));
+		}
 	}
 }
 
