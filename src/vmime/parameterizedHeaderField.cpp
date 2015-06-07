@@ -359,6 +359,21 @@ void parameterizedHeaderField::generateImpl
 }
 
 
+size_t parameterizedHeaderField::getGeneratedSize(const generationContext& ctx)
+{
+	size_t size = headerField::getGeneratedSize(ctx);
+
+	for (std::vector <shared_ptr <parameter> >::const_iterator
+	     it = m_params.begin() ; it != m_params.end() ; ++it)
+	{
+		size += 2;  // "; "
+		size += (*it)->getGeneratedSize(ctx);
+	}
+
+	return size;
+}
+
+
 void parameterizedHeaderField::copyFrom(const component& other)
 {
 	headerField::copyFrom(other);

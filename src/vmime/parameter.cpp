@@ -604,6 +604,40 @@ void parameter::generateImpl
 }
 
 
+size_t parameter::getGeneratedSize(const generationContext& ctx)
+{
+	const string& name = m_name;
+	const string& value = m_value->getBuffer();
+
+	const size_t bytesNeedingEncoding =
+		value.length() - utility::stringUtils::countASCIIchars(value.begin(), value.end());
+
+	const size_t valueLength = value.length();
+
+	// Compute generated length in the very worst case
+
+	// Non-encoded parameter + value (worst case: quoting + QP)
+	size_t len = name.length() + 1 /* = */ + 2 /* "" */ + 7 /* =?...?Q?...?= */
+		+ m_value->getCharset().getName().length() + valueLength + bytesNeedingEncoding * 2 + 1 /* ; */;
+
+	// Encoded parameter + value
+	const size_t maxEncodedValueLengthOnLine =
+		  ctx.getMaxLineLength() - 2 /* CRLF */ - NEW_LINE_SEQUENCE_LENGTH
+		- name.length() - 5 /* *00*= */ - 1 /* ; */;
+
+	const size_t encodedValueLength = (valueLength + bytesNeedingEncoding * 2)
+		+ m_value->getCharset().getName().length() + m_value->getLanguage().length() + 2 /* 2 x ' */;
+
+	const size_t numberOfSections = 1 /* worst case: generation starts at the end of a line */
+		+ std::max(size_t(1), encodedValueLength / maxEncodedValueLengthOnLine);
+
+	len += numberOfSections * (name.length() + 5 /* *00*= */ + 1 /* ; */ + 2 /* CRLF */ + NEW_LINE_SEQUENCE_LENGTH) + encodedValueLength;
+
+	return len;
+
+}
+
+
 const std::vector <shared_ptr <component> > parameter::getChildComponents()
 {
 	std::vector <shared_ptr <component> > list;

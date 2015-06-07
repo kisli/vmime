@@ -33,7 +33,9 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 		VMIME_TEST(testParse)
 		VMIME_TEST(testParseRFC2231)
 		VMIME_TEST(testGenerate)
+		VMIME_TEST(testGetGeneratedSize)
 		VMIME_TEST(testGenerateRFC2231)
+		VMIME_TEST(testGetGeneratedSizeRFC2231)
 		VMIME_TEST(testNonStandardEncodedParam)
 		VMIME_TEST(testParseNonSignificantWS)
 		VMIME_TEST(testEncodeTSpecials)
@@ -74,6 +76,25 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 			return oss.str();
 		}
 	};
+
+
+	const vmime::string generateParameter
+		(const vmime::parameter& param,
+		 const vmime::generationContext& ctx,
+		 const vmime::size_t maxLineLength = 0) const
+	{
+		vmime::generationContext ctx2(ctx);
+
+		if (maxLineLength != 0)
+			ctx2.setMaxLineLength(maxLineLength);
+
+		std::ostringstream oss;
+		vmime::utility::outputStreamAdapter adapter(oss);
+
+		param.generate(ctx2, adapter);
+
+		return oss.str();
+	}
 
 
 #define FIELD_VALUE(f) (f.getValue()->generate())
@@ -270,6 +291,20 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 		VASSERT_EQ("2b", "F: X; param1=\"va\\\\lue\\\"1\"", p2b.generate());
 	}
 
+	void testGetGeneratedSize()
+	{
+		vmime::generationContext ctx(vmime::generationContext::getDefaultContext());
+
+		vmime::parameter p1("param1", "value1");
+		VASSERT("1", p1.getGeneratedSize(ctx) >= generateParameter(p1, ctx).length());
+
+		vmime::parameter p2a("param1", "value1a;value1b");
+		VASSERT("2&", p2a.getGeneratedSize(ctx) >= generateParameter(p2a, ctx).length());
+
+		vmime::parameter p2b("param1", "va\\lue\"1");
+		VASSERT("1", p2b.getGeneratedSize(ctx) >= generateParameter(p2b, ctx).length());
+	}
+
 	void testGenerateRFC2231()
 	{
 		// Extended parameter with charset specifier
@@ -401,6 +436,111 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 				"param1=\"=?us-ascii*en-us?Q?This_is_***fun***?=\";\r\n "
 				"param1*=us-ascii''This%20is%20***fun***",
 			p5.generate(vmime::generationContext::PARAMETER_VALUE_RFC2231_AND_RFC2047));
+	}
+
+	void testGetGeneratedSizeRFC2231()
+	{
+		vmime::generationContext ctx(vmime::generationContext::getDefaultContext());
+
+		// Extended parameter with charset specifier
+		vmime::parameter p1(
+			"param1",
+			vmime::word("value 1\xe9", vmime::charset("charset"))
+		);
+
+		ctx.setEncodedParameterValueMode(vmime::generationContext::PARAMETER_VALUE_NO_ENCODING);
+		VASSERT("1.no-encoding", p1.getGeneratedSize(ctx) >= generateParameter(p1, ctx).length());
+
+		ctx.setEncodedParameterValueMode(vmime::generationContext::PARAMETER_VALUE_RFC2047_ONLY);
+		VASSERT("1.rfc2047", p1.getGeneratedSize(ctx) >= generateParameter(p1, ctx).length());
+
+		ctx.setEncodedParameterValueMode(vmime::generationContext::PARAMETER_VALUE_RFC2231_ONLY);
+		VASSERT("1.rfc2231", p1.getGeneratedSize(ctx) >= generateParameter(p1, ctx).length());
+
+		ctx.setEncodedParameterValueMode(vmime::generationContext::PARAMETER_VALUE_RFC2231_AND_RFC2047);
+		VASSERT("1.both", p1.getGeneratedSize(ctx) >= generateParameter(p1, ctx).length());
+
+		// Value that spans on multiple lines
+		vmime::parameter p2(
+			"param1",
+			vmime::word(
+				"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+				vmime::charset("charset")
+			)
+		);
+
+		ctx.setMaxLineLength(25);
+		ctx.setEncodedParameterValueMode(vmime::generationContext::PARAMETER_VALUE_NO_ENCODING);
+		VASSERT("2.no-encoding", p2.getGeneratedSize(ctx) >= generateParameter(p2, ctx).length());
+
+		ctx.setEncodedParameterValueMode(vmime::generationContext::PARAMETER_VALUE_RFC2047_ONLY);
+		VASSERT("2.rfc2047", p2.getGeneratedSize(ctx) >= generateParameter(p2, ctx).length());
+
+		ctx.setEncodedParameterValueMode(vmime::generationContext::PARAMETER_VALUE_RFC2231_ONLY);
+		VASSERT("2.rfc2231", p2.getGeneratedSize(ctx) >= generateParameter(p2, ctx).length());
+
+		ctx.setEncodedParameterValueMode(vmime::generationContext::PARAMETER_VALUE_RFC2231_AND_RFC2047);
+		VASSERT("2.both", p2.getGeneratedSize(ctx) >= generateParameter(p2, ctx).length());
+
+		// Non-ASCII parameter value
+		vmime::parameter p3(
+			"param1",
+			vmime::word(
+				"δσσσσσσσσσσσσσσσσσσσσδσδα δσαδσδσαδσαδασδασ δσαδασδσα δσαδασδσα δασδασδασ δασαχφδδσα 2008.doc",
+				vmime::charset("utf-8")
+			)
+		);
+
+		ctx.setMaxLineLength(vmime::generationContext::getDefaultContext().getMaxLineLength());
+		ctx.setEncodedParameterValueMode(vmime::generationContext::PARAMETER_VALUE_NO_ENCODING);
+		VASSERT("3.no-encoding", p3.getGeneratedSize(ctx) >= generateParameter(p3, ctx).length());
+
+		ctx.setEncodedParameterValueMode(vmime::generationContext::PARAMETER_VALUE_RFC2047_ONLY);
+		VASSERT("3.rfc2047", p3.getGeneratedSize(ctx) >= generateParameter(p3, ctx).length());
+
+		ctx.setEncodedParameterValueMode(vmime::generationContext::PARAMETER_VALUE_RFC2231_ONLY);
+		VASSERT("3.rfc2231", p3.getGeneratedSize(ctx) >= generateParameter(p3, ctx).length());
+
+		ctx.setEncodedParameterValueMode(vmime::generationContext::PARAMETER_VALUE_RFC2231_AND_RFC2047);
+		VASSERT("3.both", p3.getGeneratedSize(ctx) >= generateParameter(p3, ctx).length());
+
+		// No encoding needed
+		vmime::parameter p4(
+			"param1",
+			vmime::word("va lue", vmime::charset("charset"))
+		);
+
+		ctx.setMaxLineLength(vmime::generationContext::getDefaultContext().getMaxLineLength());
+		ctx.setEncodedParameterValueMode(vmime::generationContext::PARAMETER_VALUE_NO_ENCODING);
+		VASSERT("4.no-encoding", p4.getGeneratedSize(ctx) >= generateParameter(p4, ctx).length());
+
+		ctx.setEncodedParameterValueMode(vmime::generationContext::PARAMETER_VALUE_RFC2047_ONLY);
+		VASSERT("4.rfc2047", p4.getGeneratedSize(ctx) >= generateParameter(p4, ctx).length());
+
+		ctx.setEncodedParameterValueMode(vmime::generationContext::PARAMETER_VALUE_RFC2231_ONLY);
+		VASSERT("4.rfc2231", p4.getGeneratedSize(ctx) >= generateParameter(p4, ctx).length());
+
+		ctx.setEncodedParameterValueMode(vmime::generationContext::PARAMETER_VALUE_RFC2231_AND_RFC2047);
+		VASSERT("4.both", p4.getGeneratedSize(ctx) >= generateParameter(p4, ctx).length());
+
+		// Language specification
+		vmime::parameter p5(
+			"param1",
+			vmime::word("This is ***fun***", vmime::charset("us-ascii"), "en-us")
+		);
+
+		ctx.setMaxLineLength(vmime::generationContext::getDefaultContext().getMaxLineLength());
+		ctx.setEncodedParameterValueMode(vmime::generationContext::PARAMETER_VALUE_NO_ENCODING);
+		VASSERT("5.no-encoding", p5.getGeneratedSize(ctx) >= generateParameter(p5, ctx).length());
+
+		ctx.setEncodedParameterValueMode(vmime::generationContext::PARAMETER_VALUE_RFC2047_ONLY);
+		VASSERT("5.rfc2047", p5.getGeneratedSize(ctx) >= generateParameter(p5, ctx).length());
+
+		ctx.setEncodedParameterValueMode(vmime::generationContext::PARAMETER_VALUE_RFC2231_ONLY);
+		VASSERT("5.rfc2231", p5.getGeneratedSize(ctx) >= generateParameter(p5, ctx).length());
+
+		ctx.setEncodedParameterValueMode(vmime::generationContext::PARAMETER_VALUE_RFC2231_AND_RFC2047);
+		VASSERT("5.both", p5.getGeneratedSize(ctx) >= generateParameter(p5, ctx).length());
 	}
 
 	void testNonStandardEncodedParam()

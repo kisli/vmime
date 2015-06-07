@@ -179,6 +179,8 @@ public:
 	  */
 	const std::vector <shared_ptr <parameter> > getParameterList();
 
+	size_t getGeneratedSize(const generationContext& ctx);
+
 	const std::vector <shared_ptr <component> > getChildComponents();
 
 private:

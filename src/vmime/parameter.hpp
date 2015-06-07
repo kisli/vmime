@@ -85,6 +85,8 @@ public:
 	void copyFrom(const component& other);
 	parameter& operator=(const parameter& other);
 
+	size_t getGeneratedSize(const generationContext& ctx);
+
 	const std::vector <shared_ptr <component> > getChildComponents();
 
 	/** Return the name of this parameter.
