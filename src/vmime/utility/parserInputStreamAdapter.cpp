@@ -148,14 +148,10 @@ size_t parserInputStreamAdapter::findNext
 				const size_t bytesRead = read(findBuffer2, BUFFER_SIZE / 2);
 
 				if (bytesRead == 0)
-				{
 					isEOF = true;
-				}
-				else
-				{
-					findBufferLen = (BUFFER_SIZE / 2) + bytesRead;
-					findBufferOffset += (BUFFER_SIZE / 2);
-				}
+
+				findBufferLen = (BUFFER_SIZE / 2) + bytesRead;
+				findBufferOffset += (BUFFER_SIZE / 2);
 			}
 		}
 
