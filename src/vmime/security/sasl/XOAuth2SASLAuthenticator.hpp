@@ -21,8 +21,8 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#ifndef VMIME_SECURITY_SASL_DEFAULTSASLAUTHENTICATOR_HPP_INCLUDED
-#define VMIME_SECURITY_SASL_DEFAULTSASLAUTHENTICATOR_HPP_INCLUDED
+#ifndef VMIME_SECURITY_SASL_XOAUTH2SASLAUTHENTICATOR_HPP_INCLUDED
+#define VMIME_SECURITY_SASL_XOAUTH2SASLAUTHENTICATOR_HPP_INCLUDED
 
 
 #include "vmime/config.hpp"
@@ -31,8 +31,7 @@
 #if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_SASL_SUPPORT
 
 
-#include "vmime/security/sasl/SASLAuthenticator.hpp"
-#include "vmime/security/defaultAuthenticator.hpp"
+#include "vmime/security/sasl/defaultSASLAuthenticator.hpp"
 
 
 namespace vmime {
@@ -41,42 +40,30 @@ namespace sasl {
 
 
 /** An authenticator that is capable of providing information
-  * for simple authentication mechanisms (username and password).
+  * for XOAuth2 authentication mechanisms (username and access token).
+  * This authenticator force using the XOAUTH2 mechanism.
   */
-class VMIME_EXPORT defaultSASLAuthenticator : public SASLAuthenticator
+class VMIME_EXPORT XOAuth2SASLAuthenticator : public defaultSASLAuthenticator
 {
 public:
 
-	defaultSASLAuthenticator();
-	~defaultSASLAuthenticator();
+	enum Mode
+	{
+		MODE_SUGGEST,    /**< Try XOAUTH2 before other mechanisms. */
+		MODE_EXCLUSIVE   /**< Use XOAUTH2 and nothing else. */
+	};
+
+
+	XOAuth2SASLAuthenticator(const Mode mode);
+	~XOAuth2SASLAuthenticator();
 
 	const std::vector <shared_ptr <SASLMechanism> > getAcceptableMechanisms
 		(const std::vector <shared_ptr <SASLMechanism> >& available,
-	         shared_ptr <SASLMechanism> suggested) const;
-
-	const string getUsername() const;
-	const string getPassword() const;
-	const string getHostname() const;
-	const string getAnonymousToken() const;
-	const string getServiceName() const;
-	const string getAccessToken() const;
-
-	void setService(shared_ptr <net::service> serv);
-	weak_ptr <net::service> getService() const;
-
-	void setSASLSession(shared_ptr <SASLSession> sess);
-	shared_ptr <SASLSession> getSASLSession() const;
-
-	void setSASLMechanism(shared_ptr <SASLMechanism> mech);
-	shared_ptr <SASLMechanism> getSASLMechanism() const;
+		 shared_ptr <SASLMechanism> suggested) const;
 
 private:
 
-	defaultAuthenticator m_default;
-
-	weak_ptr <net::service> m_service;
-	weak_ptr <SASLSession> m_saslSession;
-	shared_ptr <SASLMechanism> m_saslMech;
+	Mode m_mode;
 };
 
 
@@ -87,5 +74,5 @@ private:
 
 #endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_SASL_SUPPORT
 
-#endif // VMIME_SECURITY_SASL_DEFAULTSASLAUTHENTICATOR_HPP_INCLUDED
+#endif // VMIME_SECURITY_SASL_XOAUTH2SASLAUTHENTICATOR_HPP_INCLUDED
 

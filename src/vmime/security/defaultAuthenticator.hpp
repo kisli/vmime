@@ -53,6 +53,7 @@ public:
 	const string getHostname() const;
 	const string getAnonymousToken() const;
 	const string getServiceName() const;
+	const string getAccessToken() const;
 
 	void setService(shared_ptr <net::service> serv);
 	weak_ptr <net::service> getService() const;

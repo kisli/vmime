@@ -90,6 +90,10 @@ public:
 		  * password used to authenticate with the server. */
 		static const property AUTH_PASSWORD;
 
+		/** The common property 'auth.accesstoken' which is the
+		  * access token used to authenticate with the server. */
+		static const property AUTH_ACCESS_TOKEN;
+
 #if VMIME_HAVE_TLS_SUPPORT
 
 		/** The common property 'connection.tls': this is used to

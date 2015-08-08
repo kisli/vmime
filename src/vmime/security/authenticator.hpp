@@ -81,6 +81,15 @@ public:
 	  */
 	virtual const string getPassword() const = 0;
 
+	/** Return the optional access token for authentication. This is
+	  * used for example with XOAuth2 SASL authentication.
+	  *
+	  * @return access token
+	  * @throw exceptions::no_auth_information if the information
+	  * could not be provided
+	  */
+	virtual const string getAccessToken() const = 0;
+
 	/** Return the local host name of the machine.
 	  *
 	  * @return hostname

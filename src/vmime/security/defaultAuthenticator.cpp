@@ -76,6 +76,20 @@ const string defaultAuthenticator::getPassword() const
 }
 
 
+const string defaultAuthenticator::getAccessToken() const
+{
+	shared_ptr <const net::service> service = m_service.lock();
+
+	const string prefix = service->getInfos().getPropertyPrefix();
+	const propertySet& props = service->getSession()->getProperties();
+
+	if (props.hasProperty(prefix + net::serviceInfos::property::AUTH_ACCESS_TOKEN.getName()))
+		return props[prefix + net::serviceInfos::property::AUTH_ACCESS_TOKEN.getName()];
+
+	throw exceptions::no_auth_information();
+}
+
+
 const string defaultAuthenticator::getHostname() const
 {
 	return platform::getHandler()->getHostName();

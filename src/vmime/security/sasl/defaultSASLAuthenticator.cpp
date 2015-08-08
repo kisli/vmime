@@ -89,6 +89,12 @@ const string defaultSASLAuthenticator::getPassword() const
 }
 
 
+const string defaultSASLAuthenticator::getAccessToken() const
+{
+	return m_default.getAccessToken();
+}
+
+
 const string defaultSASLAuthenticator::getHostname() const
 {
 	return m_default.getHostname();
