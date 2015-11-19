@@ -67,7 +67,7 @@ public:
 	void convert(utility::inputStream& in, utility::outputStream& out, status* st);
 
 	shared_ptr <utility::charsetFilteredOutputStream>
-		getFilteredOutputStream(utility::outputStream& os);
+		getFilteredOutputStream(utility::outputStream& os, const charsetConverterOptions& opts);
 
 private:
 
