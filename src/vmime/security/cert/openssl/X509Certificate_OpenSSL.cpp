@@ -396,57 +396,45 @@ bool X509Certificate_OpenSSL::verifyHostName
 	}
 
 	// Now, look in subject alternative names
-	for (int i = 0, extCount = X509_get_ext_count(m_data->cert) ; i < extCount ; ++i)
+	bool verify = false;
+
+	STACK_OF(GENERAL_NAME)* altNames = static_cast <GENERAL_NAMES*>
+		(X509_get_ext_d2i(m_data->cert, NID_subject_alt_name, NULL, NULL));
+
+	if (altNames == NULL)
+		return false;
+
+	// Check each name within the extension
+	for (int i = 0, n = sk_GENERAL_NAME_num(altNames) ; i < n ; ++i)
 	{
-		X509_EXTENSION* ext = X509_get_ext(m_data->cert, i);
-		const char* extStr = OBJ_nid2sn(OBJ_obj2nid(X509_EXTENSION_get_object(ext)));
+		const GENERAL_NAME* currentName = sk_GENERAL_NAME_value(altNames, i);
 
-		if (strcmp(extStr, "subjectAltName") == 0)
+		if (currentName->type == GEN_DNS)
 		{
-			const X509V3_EXT_METHOD* method;
+			// Current name is a DNS name, let's check it
+			char *DNSName = (char *) ASN1_STRING_data(currentName->d.dNSName);
 
-			if ((method = X509V3_EXT_get(ext)) != NULL)
+			// Make sure there isn't an embedded NUL character in the DNS name
+			if (ASN1_STRING_length(currentName->d.dNSName) != strlen(DNSName))
 			{
-				const unsigned char* extVal = ext->value->data;
-				void *extValStr;
-
-				if (method->it)
-				{
-					extValStr = ASN1_item_d2i
-						(NULL, &extVal, ext->value->length, ASN1_ITEM_ptr(method->it));
-				}
-				else
-				{
-					extValStr = method->d2i
-						(NULL, &extVal, ext->value->length);
-				}
-
-				if (extValStr && method->i2v)
-				{
- 					STACK_OF(CONF_VALUE)* val = call_i2v(method, extValStr, 0);
-
-					for (int j = 0 ; j < sk_CONF_VALUE_num(val) ; ++j)
-					{
-						CONF_VALUE* cnf = sk_CONF_VALUE_value(val, j);
-
-						if ((strcasecmp(cnf->name, "DNS") == 0 &&
-						     cnMatch(cnf->value, hostname.c_str()))
-						     ||
-						    (strncasecmp(cnf->name, "IP", 2) == 0 &&
-						     cnMatch(cnf->value, hostname.c_str())))
-						{
-							return true;
-						}
-
-						if (nonMatchingNames)
-							nonMatchingNames->push_back(cnf->value);
-					}
-				}
+				// Malformed certificate
+				break;
 			}
+
+			if (cnMatch(DNSName, hostname.c_str()))
+			{
+				verify = true;
+				break;
+			}
+
+			if (nonMatchingNames)
+				nonMatchingNames->push_back(DNSName);
 		}
 	}
 
-	return false;
+	sk_GENERAL_NAME_pop_free(altNames, GENERAL_NAME_free);
+
+	return verify;
 }
 
 
