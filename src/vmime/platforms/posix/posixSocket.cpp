@@ -138,6 +138,16 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 			continue;  // try next
 		}
 
+#if VMIME_HAVE_SO_KEEPALIVE
+
+		// Enable TCP Keepalive
+		int keepAlive_optval = 1;
+		socklen_t keepAlive_optlen = sizeof(keepAlive_optval);
+
+		::setsockopt(sock, SOL_SOCKET, SO_KEEPALIVE, &keepAlive_optval, keepAlive_optlen);
+
+#endif // VMIME_HAVE_SO_KEEPALIVE
+
 		if (m_timeoutHandler != NULL)
 		{
 			::fcntl(sock, F_SETFL, ::fcntl(sock, F_GETFL) | O_NONBLOCK);
