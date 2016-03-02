@@ -1003,6 +1003,19 @@ ELSE(PTHREAD_LIB)
 	SET(VMIME_HAVE_PTHREAD 0)
 ENDIF(PTHREAD_LIB)
 
+# getaddrinfo_a() - GNU libc
+LIST(APPEND CMAKE_REQUIRED_DEFINITIONS -D_GNU_SOURCE)
+LIST(APPEND CMAKE_REQUIRED_LIBRARIES anl)
+CHECK_SYMBOL_EXISTS(getaddrinfo_a netdb.h VMIME_HAVE_GETADDRINFO_A)
+
+IF(VMIME_HAVE_GETADDRINFO_A)
+	TARGET_LINK_LIBRARIES(
+		${VMIME_LIBRARY_NAME}
+		${TARGET_LINK_LIBRARIES}
+		anl
+	)
+ENDIF()
+
 
 ##############################################################################
 # Additional compiler flags

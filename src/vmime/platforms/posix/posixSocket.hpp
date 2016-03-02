@@ -34,6 +34,9 @@
 #include "vmime/net/socket.hpp"
 
 
+struct addrinfo;
+
+
 namespace vmime {
 namespace platforms {
 namespace posix {
@@ -74,6 +77,8 @@ public:
 	shared_ptr <net::tracer> getTracer();
 
 protected:
+
+	void resolve(struct ::addrinfo** addrInfo, const vmime::string& address, const vmime::port_t port);
 
 	bool waitForData(const bool read, const bool write, const int msecs);
 

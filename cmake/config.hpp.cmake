@@ -76,6 +76,7 @@ typedef unsigned @VMIME_64BIT_TYPE@ vmime_uint64;
 #cmakedefine01 VMIME_PLATFORM_IS_WINDOWS
 #cmakedefine01 VMIME_HAVE_PTHREAD
 #cmakedefine01 VMIME_HAVE_GETADDRINFO
+#cmakedefine01 VMIME_HAVE_GETADDRINFO_A
 #cmakedefine01 VMIME_HAVE_GETTID
 #cmakedefine01 VMIME_HAVE_SYSCALL
 #cmakedefine01 VMIME_HAVE_SYSCALL_GETTID

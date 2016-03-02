@@ -30,6 +30,10 @@
 #include "vmime/platforms/posix/posixSocket.hpp"
 #include "vmime/platforms/posix/posixHandler.hpp"
 
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE  // for getaddrinfo_a() in <netdb.h>
+#endif
+
 #include <unistd.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -95,42 +99,26 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 #if VMIME_HAVE_GETADDRINFO  // use thread-safe and IPv6-aware getaddrinfo() if available
 
 	// Resolve address, if needed
-	struct ::addrinfo hints;
-	memset(&hints, 0, sizeof(hints));
-
-	hints.ai_flags = AI_CANONNAME;
-	hints.ai_family = PF_UNSPEC;
-	hints.ai_socktype = SOCK_STREAM;
-
-	std::ostringstream portStr;
-	portStr.imbue(std::locale::classic());
-
-	portStr << port;
-
-	struct ::addrinfo* res0;
-
-	if (::getaddrinfo(address.c_str(), portStr.str().c_str(), &hints, &res0) != 0)
-	{
-		// Error: cannot resolve address
-		throw vmime::exceptions::connection_error("Cannot resolve address.");
-	}
-
 	m_serverAddress = address;
+
+	struct ::addrinfo* addrInfo = NULL;  // resolved addresses
+	resolve(&addrInfo, address, port);
 
 	// Connect to host
 	int sock = -1;
-	struct ::addrinfo* res = res0;
 	int connectErrno = 0;
 
 	if (m_timeoutHandler != NULL)
 		m_timeoutHandler->resetTimeOut();
 
-	for ( ; sock == -1 && res != NULL ; res = res->ai_next, connectErrno = ETIMEDOUT)
+	for (struct ::addrinfo* curAddrInfo = addrInfo ;
+	     sock == -1 && curAddrInfo != NULL ;
+	     curAddrInfo = curAddrInfo->ai_next, connectErrno = ETIMEDOUT)
 	{
-		if (res->ai_family != AF_INET && res->ai_family != AF_INET6)
+		if (curAddrInfo->ai_family != AF_INET && curAddrInfo->ai_family != AF_INET6)
 			continue;
 
-		sock = ::socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+		sock = ::socket(curAddrInfo->ai_family, curAddrInfo->ai_socktype, curAddrInfo->ai_protocol);
 
 		if (sock < 0)
 		{
@@ -152,7 +140,7 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 		{
 			::fcntl(sock, F_SETFL, ::fcntl(sock, F_GETFL) | O_NONBLOCK);
 
-			if (::connect(sock, res->ai_addr, res->ai_addrlen) < 0)
+			if (::connect(sock, curAddrInfo->ai_addr, curAddrInfo->ai_addrlen) < 0)
 			{
 				switch (errno)
 				{
@@ -254,7 +242,7 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 					timeval curTime = { 0, 0 };
 					gettimeofday(&curTime, /* timezone */ NULL);
 
-					if (res->ai_next != NULL &&
+					if (curAddrInfo->ai_next != NULL &&
 						curTime.tv_usec - startTime.tv_usec >= tryNextTimeout * 1000)
 					{
 						connectErrno = ETIMEDOUT;
@@ -280,7 +268,7 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 		}
 		else
 		{
-			if (::connect(sock, res->ai_addr, res->ai_addrlen) < 0)
+			if (::connect(sock, curAddrInfo->ai_addr, curAddrInfo->ai_addrlen) < 0)
 			{
 				connectErrno = errno;
 				::close(sock);
@@ -290,7 +278,7 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 		}
 	}
 
-	::freeaddrinfo(res0);
+	::freeaddrinfo(addrInfo);
 
 	if (sock == -1)
 	{
@@ -370,6 +358,101 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 #endif // VMIME_HAVE_GETADDRINFO
 
 	::fcntl(m_desc, F_SETFL, ::fcntl(m_desc, F_GETFL) | O_NONBLOCK);
+}
+
+
+void posixSocket::resolve(struct ::addrinfo** addrInfo, const vmime::string& address, const vmime::port_t port)
+{
+	std::ostringstream portStr;
+	portStr.imbue(std::locale::classic());
+	portStr << port;
+
+
+	struct ::addrinfo hints;
+	memset(&hints, 0, sizeof(hints));
+
+	hints.ai_flags = AI_CANONNAME | AI_NUMERICSERV;
+	hints.ai_family = PF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+
+#if VMIME_HAVE_GETADDRINFO_A
+
+	// If getaddrinfo_a() is available, use asynchronous resolving to allow
+	// the timeout handler to cancel the operation
+
+	struct ::gaicb gaiRequest;
+	memset(&gaiRequest, 0, sizeof(gaiRequest));
+
+	gaiRequest.ar_name = address.c_str();
+	gaiRequest.ar_service = portStr.str().c_str();
+	gaiRequest.ar_request = &hints;
+
+	struct ::gaicb* gaiRequests = &gaiRequest;
+	int gaiError;
+
+	if ((gaiError = getaddrinfo_a(GAI_NOWAIT, &gaiRequests, 1, NULL)) != 0)
+	{
+		throw vmime::exceptions::connection_error
+			("getaddrinfo_a() failed: " + std::string(gai_strerror(gaiError)));
+	}
+
+	if (m_timeoutHandler != NULL)
+		m_timeoutHandler->resetTimeOut();
+
+	while (true)
+	{
+		struct timespec gaiTimeout;
+		gaiTimeout.tv_sec = 1;  // query timeout handler every second
+		gaiTimeout.tv_nsec = 0;
+
+		gaiError = gai_suspend(&gaiRequests, 1, &gaiTimeout);
+
+		if (gaiError == 0 || gaiError == EAI_ALLDONE)
+		{
+			const int ret = gai_error(&gaiRequest);
+
+			if (ret != 0)
+			{
+				throw vmime::exceptions::connection_error
+					("getaddrinfo_a() request failed: " + std::string(gai_strerror(ret)));
+			}
+			else
+			{
+				*addrInfo = gaiRequest.ar_result;
+				break;
+			}
+		}
+		else if (gaiError != EAI_AGAIN)
+		{
+			throw vmime::exceptions::connection_error
+				("gai_suspend() failed: " + std::string(gai_strerror(gaiError)));
+		}
+
+		// Check for timeout
+		if (m_timeoutHandler && m_timeoutHandler->isTimeOut())
+		{
+			if (!m_timeoutHandler->handleTimeOut())
+			{
+				throw exceptions::operation_timed_out();
+			}
+			else
+			{
+				// Reset timeout and keep waiting for connection
+				m_timeoutHandler->resetTimeOut();
+			}
+		}
+	}
+
+#else  // !VMIME_HAVE_GETADDRINFO_A
+
+	if (::getaddrinfo(address.c_str(), portStr.str().c_str(), &hints, addrInfo) != 0)
+	{
+		// Error: cannot resolve address
+		throw vmime::exceptions::connection_error("Cannot resolve address.");
+	}
+
+#endif  // VMIME_HAVE_GETADDRINFO_A
+
 }
 
 
