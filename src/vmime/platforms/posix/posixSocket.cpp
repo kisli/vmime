@@ -723,7 +723,7 @@ void posixSocket::sendRaw(const byte_t* buffer, const size_t count)
 
 	while (size > 0)
 	{
-		const ssize_t ret = ::send(m_desc, buffer, size, 0);
+		const ssize_t ret = ::send(m_desc, buffer, size, MSG_NOSIGNAL);
 
 		if (ret <= 0)
 		{
@@ -749,7 +749,7 @@ size_t posixSocket::sendRawNonBlocking(const byte_t* buffer, const size_t count)
 {
 	m_status &= ~STATUS_WOULDBLOCK;
 
-	const ssize_t ret = ::send(m_desc, buffer, count, 0);
+	const ssize_t ret = ::send(m_desc, buffer, count, MSG_NOSIGNAL);
 
 	if (ret <= 0)
 	{
