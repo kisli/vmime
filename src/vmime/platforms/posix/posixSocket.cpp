@@ -44,6 +44,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "vmime/utility/stringUtils.hpp"
 
@@ -363,9 +364,8 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 
 void posixSocket::resolve(struct ::addrinfo** addrInfo, const vmime::string& address, const vmime::port_t port)
 {
-	std::ostringstream portStr;
-	portStr.imbue(std::locale::classic());
-	portStr << port;
+	char portStr[16];
+	snprintf(portStr, sizeof(portStr), "%u", static_cast <unsigned int>(port));
 
 
 	struct ::addrinfo hints;
@@ -384,7 +384,7 @@ void posixSocket::resolve(struct ::addrinfo** addrInfo, const vmime::string& add
 	memset(&gaiRequest, 0, sizeof(gaiRequest));
 
 	gaiRequest.ar_name = address.c_str();
-	gaiRequest.ar_service = portStr.str().c_str();
+	gaiRequest.ar_service = portStr;
 	gaiRequest.ar_request = &hints;
 
 	struct ::gaicb* gaiRequests = &gaiRequest;
