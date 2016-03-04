@@ -45,6 +45,7 @@
 #include <errno.h>
 #include <string.h>
 #include <stdio.h>
+#include <poll.h>
 
 #include "vmime/utility/stringUtils.hpp"
 
@@ -169,7 +170,7 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 				// Wait for socket to be connected.
 				bool connected = false;
 
-				const int selectTimeout = 1000;   // select() timeout (ms)
+				const int pollTimeout = 1000;   // poll() timeout (ms)
 				const int tryNextTimeout = 5000;  // maximum time before trying next (ms)
 
 				timeval startTime = { 0, 0 };
@@ -177,32 +178,31 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 
 				do
 				{
-					struct timeval tm;
-					tm.tv_sec = selectTimeout / 1000;
-					tm.tv_usec = selectTimeout % 1000;
+					pollfd fds[1];
+					fds[0].fd = sock;
+					fds[0].events = POLLIN | POLLOUT;
 
-					fd_set fds;
-					FD_ZERO(&fds);
-					FD_SET(sock, &fds);
-
-					const int ret = select(sock + 1, NULL, &fds, NULL, &tm);
+					const int ret = ::poll(fds, sizeof(fds) / sizeof(fds[0]), pollTimeout);
 
 					// Success
 					if (ret > 0)
 					{
-						int error = 0;
-						socklen_t len = sizeof(error);
+						if (fds[0].revents & (POLLIN | POLLOUT))
+						{
+							int error = 0;
+							socklen_t len = sizeof(error);
 
-						if (getsockopt(sock, SOL_SOCKET, SO_ERROR, &error, &len) < 0)
-						{
-							connectErrno = errno;
-						}
-						else
-						{
-							if (error != 0)
-								connectErrno = error;
+							if (getsockopt(sock, SOL_SOCKET, SO_ERROR, &error, &len) < 0)
+							{
+								connectErrno = errno;
+							}
 							else
-								connected = true;
+							{
+								if (error != 0)
+									connectErrno = error;
+								else
+									connected = true;
+							}
 						}
 
 						break;
@@ -210,34 +210,32 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 					// Error
 					else if (ret < -1)
 					{
-						if (errno != EINTR)
+						if (errno != EAGAIN && errno != EINTR)
 						{
 							// Cancel connection
 							connectErrno = errno;
 							break;
 						}
 					}
+
 					// Check for timeout
-					else if (ret == 0)
+					if (m_timeoutHandler->isTimeOut())
 					{
-						if (m_timeoutHandler->isTimeOut())
+						if (!m_timeoutHandler->handleTimeOut())
 						{
-							if (!m_timeoutHandler->handleTimeOut())
-							{
-								// Cancel connection
-								connectErrno = ETIMEDOUT;
-								break;
-							}
-							else
-							{
-								// Reset timeout and keep waiting for connection
-								m_timeoutHandler->resetTimeOut();
-							}
+							// Cancel connection
+							connectErrno = ETIMEDOUT;
+							break;
 						}
 						else
 						{
-							// Keep waiting for connection
+							// Reset timeout and keep waiting for connection
+							m_timeoutHandler->resetTimeOut();
 						}
+					}
+					else
+					{
+						// Keep waiting for connection
 					}
 
 					timeval curTime = { 0, 0 };
@@ -584,41 +582,44 @@ bool posixSocket::waitForData(const bool read, const bool write, const int msecs
 	for (int i = 0 ; i <= msecs / 10 ; ++i)
 	{
 		// Check whether data is available
-		fd_set fds;
-		FD_ZERO(&fds);
-		FD_SET(m_desc, &fds);
+		pollfd fds[1];
+		fds[0].fd = m_desc;
+		fds[0].events = 0;
 
-		struct timeval tv;
-		tv.tv_sec = 0;
-		tv.tv_usec = 10000;  // 10 ms
+		if (read)
+			fds[0].events |= POLLIN;
 
-		ssize_t ret = ::select(m_desc + 1, read ? &fds : NULL, write ? &fds : NULL, NULL, &tv);
+		if (write)
+			fds[0].events |= POLLOUT;
 
-		if (ret <= 0)
+		const int ret = ::poll(fds, sizeof(fds) / sizeof(fds[0]), 10 /* ms */);
+
+		if (ret < 0)
 		{
-			if (ret < 0 && !IS_EAGAIN(errno))
+			if (errno != EAGAIN && errno != EINTR)
 				throwSocketError(errno);
-
-			// No data available at this time
-			// Check if we are timed out
-			if (m_timeoutHandler &&
-			    m_timeoutHandler->isTimeOut())
-			{
-				if (!m_timeoutHandler->handleTimeOut())
-				{
-					// Server did not react within timeout delay
-					throw exceptions::operation_timed_out();
-				}
-				else
-				{
-					// Reset timeout
-					m_timeoutHandler->resetTimeOut();
-				}
-			}
 		}
 		else if (ret > 0)
 		{
-			return true;
+			if (fds[0].revents & (POLLIN | POLLOUT))
+				return true;
+		}
+
+		// No data available at this time
+		// Check if we are timed out
+		if (m_timeoutHandler &&
+		    m_timeoutHandler->isTimeOut())
+		{
+			if (!m_timeoutHandler->handleTimeOut())
+			{
+				// Server did not react within timeout delay
+				throw exceptions::operation_timed_out();
+			}
+			else
+			{
+				// Reset timeout
+				m_timeoutHandler->resetTimeOut();
+			}
 		}
 	}
 
