@@ -80,11 +80,12 @@ FILE(
 	${CMAKE_CURRENT_SOURCE_DIR}/src/vmime/*.hpp
 )
 
-LIST(APPEND VMIME_LIBRARY_GENERATED_INCLUDE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/vmime/config.hpp")
+LIST(APPEND VMIME_LIBRARY_GENERATED_INCLUDE_FILES "${CMAKE_BINARY_DIR}/src/vmime/config.hpp")
 
 INCLUDE_DIRECTORIES(
 	${CMAKE_CURRENT_SOURCE_DIR}          # for "contrib/"
 	${CMAKE_CURRENT_SOURCE_DIR}/src      # for "vmime/
+	${CMAKE_BINARY_DIR}/src              # for "config.hpp"
 )
 
 INCLUDE(GenerateExportHeader)
@@ -1114,7 +1115,7 @@ ENDIF()
 
 
 # Set our configure file
-CONFIGURE_FILE(cmake/config.hpp.cmake ${CMAKE_SOURCE_DIR}/src/vmime/config.hpp)
+CONFIGURE_FILE(cmake/config.hpp.cmake ${CMAKE_BINARY_DIR}/src/vmime/config.hpp)
 
 # PkgConfig post-configuration
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/vmime.pc.in ${CMAKE_BINARY_DIR}/vmime.pc @ONLY)
