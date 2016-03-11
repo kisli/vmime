@@ -46,66 +46,43 @@ access with the following instruction:
 % ============================================================================
 \section{Compiling and installing}
 
-There are two possibilities for compiling VMime: using SCons building system,
-or using CMake.
+VMime relies on CMake for building. CMake is an open source, cross-platform
+build system. It will generate all build scripts required to compile VMime on
+your platform.
 
-SCons is only used for development purposes, and so it is recommended that you
-use CMake to build the project as it is a more portable solution, and is
-likely to work out-of-the-box on your computer. Thus, we will not describe
-the process of compiling VMime using SCons here.
+First, extract the tarball or checkout the VMime source code into a directory
+somewhere on your system, let's call it {\vcode /path/to/vmime-source}. Then,
+create a build directory, which will contain all intermediate build files and
+the final libraries, let's call it {\vcode /path/to/vmime-build}.
 
-CMake is an open source, cross-platform build system. It will generate all
-build scripts required to compile VMime on your platform.
-
-First, from the directory where you extracted the tarball or checked out
-the sources, run {\vcode cmake} with the {\vcode -G} argument corresponding
-to your platform. For example, if you are on a Unix-compatible platform (like
-GNU/Linux or MacOS), type:
+From the build directory, run {\vcode cmake} with the {\vcode -G} argument
+corresponding to your platform/choice. For example, if you are on a
+Unix-compatible platform (like GNU/Linux or MacOS) and want to use the
+{\vcode make} utility for building, type:
 
 \begin{verbatim}
-   $ cmake -G "Unix Makefiles"
+   $ cd /path/to/vmime-build
+   $ cmake -G "Unix Makefiles" /path/to/vmime-source
 \end{verbatim}
 
-This will perform some tests on your system to check for libs installed
-and some platform-specific includes. It will then create a Makefile in
-the root directory of VMime.
-
-\vnote{Delete the {\vcode CMakeCache.txt} file if something changed on your
-system, as CMake may cache some values to speed up things.}
-
-This will also create a file named {\vcode config.hpp} in the {\vcode vmime/}
-directory, with the parameters detected for your platform. You should not
-modify this file directly. Instead, you can run again {\vcode cmake} and
-specify your own defines on the command line.
-
-For example, to force using OpenSSL library instead of GnuTLS for TLS
-support, type:
-
-\begin{verbatim}
-   $ cmake -G "Unix Makefiles" -DVMIME_TLS_SUPPORT_LIB=openssl
-\end{verbatim}
-
-If you want to enable or disable some features in VMime, you can obtain some
-help by typing {\vcode cmake -L}. The defaults should be OK though. For a list
-of build options, you can also refer to section \ref{build-options}, page
-\pageref{build-options}.
-
-For more information about using CMake, go to
-\href{http://www.cmake.org/}{the CMake web site}.
+CMake will perform some tests on your system to check for libs installed
+and some platform-specific includes, and create all files needed for
+compiling the project. Additionally, a {\vcode src/vmime/config.hpp} file
+with the parameters detected for your system will be created.
 
 Next, you can start the compilation process:
 
 \begin{verbatim}
-   $ make
+   $ cmake --build .
 \end{verbatim}
 
-Please wait a few minutes will the compilation runs (you should have some time
-to have a coffee right now!). If you get errors during the compilation, be
-sure your system meet the requirements given at the beginning of the chapter.
-You can also try to get a newer version (from the Git repository, for example)
-or to get some help on VMime user forums.
+Please wait a few minutes while the compilation runs (you should have some
+time to have a coffee right now!). If you get errors during the compilation,
+be sure your system meet the requirements given at the beginning of the
+chapter. You can also try to get a newer version (from the Git repository, for
+example) or to get some help on VMime user forums.
 
-If everything has been compiled successfully, you can install the library and
+If everything compiled successfully, you can install the library and
 the development files on your system:
 
 \begin{verbatim}
@@ -117,6 +94,48 @@ the library into the default location (ie: /usr/lib and /usr/include).}
 
 Now, you are done! You can jump to the next chapter to know how to use VMime
 in your program...
+
+
+% ============================================================================
+\section{\label{custom-build}Customizing build}
+
+You should not modify the {\vcode config.hpp} file directly. Instead, you
+should run {\vcode cmake} again, and specify your build options on the command
+line. For example, to force using OpenSSL library instead of GnuTLS for TLS
+support, type:
+
+\begin{verbatim}
+   $ cmake -G "Unix Makefiles" -DVMIME_TLS_SUPPORT_LIB=openssl
+\end{verbatim}
+
+If you want to enable or disable some features in VMime, you can obtain some
+help by typing {\vcode cmake -L}. The defaults should be OK though. For a
+complate list of build options, you can also refer to section
+\ref{build-options}, page \pageref{build-options}. For more information about
+using CMake, go to \href{http://www.cmake.org/}{the CMake web site}.
+
+\vnote{Delete the {\vcode CMakeCache.txt} file if you changed configuration
+or if something changed on your system, as CMake may cache some values to
+speed things up.}
+
+You can also use another build backend, like
+Ninja\footnote{\url{https://ninja-build.org/}}, if you have it on your system:
+
+\begin{verbatim}
+   $ cd /path/to/vmime-build
+   $ cmake -G Ninja /path/to/vmime-source
+   $ ninja
+   # ninja install
+\end{verbatim}
+
+To install VMime in a directory different from the default directory
+({\vcode /usr} on GNU/Linux systems), set the
+{\vcode CMAKE\_INSTALL\_PREFIX} option:
+
+\begin{verbatim}
+   $ cmake -DCMAKE_INSTALL_PREFIX=/opt/ ...
+\end{verbatim}
+
 
 % ============================================================================
 \section{\label{build-options}Build options}
