@@ -562,7 +562,7 @@ const vmime::string posixFileSystemFactory::pathToStringImpl(const vmime::utilit
 {
 	vmime::string native = "/";
 
-	for (int i = 0 ; i < path.getSize() ; ++i)
+	for (size_t i = 0 ; i < path.getSize() ; ++i)
 	{
 		if (i > 0)
 			native += "/";
@@ -582,7 +582,7 @@ bool posixFileSystemFactory::isValidPathComponent(const vmime::utility::file::pa
 
 bool posixFileSystemFactory::isValidPath(const vmime::utility::file::path& path) const
 {
-	for (int i = 0 ; i < path.getSize() ; ++i)
+	for (size_t i = 0 ; i < path.getSize() ; ++i)
 	{
 		if (!isValidPathComponent(path[i]))
 			return false;

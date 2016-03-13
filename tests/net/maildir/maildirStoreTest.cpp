@@ -488,7 +488,7 @@ private:
 		(const std::vector <vmime::shared_ptr <vmime::net::folder> >& folders,
 		 const vmime::net::folder::path& path)
 	{
-		for (unsigned int i = 0, n = folders.size() ; i < n ; ++i)
+		for (size_t i = 0, n = folders.size() ; i < n ; ++i)
 		{
 			if (folders[i]->getFullPath() == path)
 				return folders[i];

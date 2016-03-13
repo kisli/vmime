@@ -308,7 +308,7 @@ VMIME_TEST_SUITE_BEGIN(bodyPartTest)
 		static const std::string BODY1_LINE = "BODY1BODY1BODY1BODY1BODY1BODY1BODY1BODY1BODY1BODY1BODY1BODY1BODY1";
 		static const std::string BODY1_END = "END1END1";
 		static const unsigned int BODY1_REPEAT = 35000;
-		static const unsigned int BODY1_LENGTH =
+		static const size_t BODY1_LENGTH =
 			BODY1_BEGIN.length() + BODY1_LINE.length() * BODY1_REPEAT + BODY1_END.length();
 
 		static const std::string BODY2_LINE = "BODY2BODY2BODY2BODY2BODY2BODY2BODY2BODY2BODY2BODY2BODY2BODY2BODY2";

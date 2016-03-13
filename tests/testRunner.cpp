@@ -269,17 +269,17 @@ int main(int argc, char* argv[])
 				getRegistry(getTestModules()[i]).makeTest());
 		}
 
-		std::auto_ptr <XmlTestListener> xmlListener(new XmlTestListener);
+		XmlTestListener xmlListener;
 
 		CppUnit::TestResult controller;
-		controller.addListener(xmlListener.get());
+		controller.addListener(&xmlListener);
 
 		CppUnit::TestResultCollector result;
 		controller.addListener(&result);
 
 		runner.run(controller);
 
-		xmlListener->output(std::cout);
+		xmlListener.output(std::cout);
 
 		// Return error code 1 if a test failed
 		return result.wasSuccessful() ? 0 : 1;

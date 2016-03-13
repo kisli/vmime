@@ -398,7 +398,7 @@ private:
 
 	int m_state;
 	int m_bdatChunkCount;
-	int m_bdatChunkSize, m_bdatChunkReceived;
+	size_t m_bdatChunkSize, m_bdatChunkReceived;
 
 	bool m_ehloSent, m_mailSent, m_rcptSent, m_quitSent;
 };
@@ -433,7 +433,7 @@ public:
 		(const vmime::generationContext& /* ctx */, vmime::utility::outputStream& outputStream,
 		 const size_t /* curLinePos */ = 0, size_t* /* newLinePos */ = NULL) const
 	{
-		for (unsigned int i = 0, n = getChunks().size() ; i < n ; ++i)
+		for (size_t i = 0, n = getChunks().size() ; i < n ; ++i)
 		{
 			const vmime::string& chunk = getChunks()[i];
 			outputStream.write(chunk.data(), chunk.size());

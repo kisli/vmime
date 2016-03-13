@@ -148,11 +148,13 @@ VMIME_TEST_SUITE_BEGIN(seekableInputStreamRegionAdapterTest)
 
 		vmime::byte_t buffer1[100];
 		std::fill(vmime::begin(buffer1), vmime::end(buffer1), 0);
-		vmime::size_t read = ustream->read(buffer1, 7);
+
+		VASSERT_EQ("Read 1", 7, ustream->read(buffer1, 7));
 
 		vmime::byte_t buffer2[100];
 		std::fill(vmime::begin(buffer2), vmime::end(buffer2), 0);
-		vmime::size_t read2 = stream->read(buffer2, 6);
+
+		VASSERT_EQ("Read 2", 6, stream->read(buffer2, 6));
 
 		VASSERT_EQ("Buffer 1", "THIS IS",
 			vmime::utility::stringUtils::makeStringFromBytes(buffer1, 7));

@@ -85,7 +85,7 @@ vmime::shared_ptr <vmime::net::timeoutHandler> testSocket::getTimeoutHandler()
 }
 
 
-void testSocket::setTracer(vmime::shared_ptr <vmime::net::tracer> tracer)
+void testSocket::setTracer(vmime::shared_ptr <vmime::net::tracer> /* tracer */)
 {
 }
 
@@ -96,13 +96,13 @@ vmime::shared_ptr <vmime::net::tracer> testSocket::getTracer()
 }
 
 
-bool testSocket::waitForRead(const int msecs)
+bool testSocket::waitForRead(const int /* msecs */)
 {
 	return true;
 }
 
 
-bool testSocket::waitForWrite(const int msecs)
+bool testSocket::waitForWrite(const int /* msecs */)
 {
 	return true;
 }

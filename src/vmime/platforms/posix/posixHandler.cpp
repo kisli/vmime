@@ -156,11 +156,13 @@ const vmime::datetime posixHandler::getCurrentLocalTime() const
 	gmt.tm_isdst = -1;
 
 	// Calculate the difference (in seconds)
-	const long diff = ::mktime(&local) - ::mktime(&gmt);
+	const time_t diff = ::mktime(&local) - ::mktime(&gmt);
 
 	// Return the date
-	return vmime::datetime(local.tm_year + 1900, local.tm_mon + 1, local.tm_mday,
-					local.tm_hour, local.tm_min, local.tm_sec, diff / 60);  // minutes needed
+	return vmime::datetime(
+		local.tm_year + 1900, local.tm_mon + 1, local.tm_mday,
+		local.tm_hour, local.tm_min, local.tm_sec, static_cast <int>(diff / 60)
+	);
 }
 
 
