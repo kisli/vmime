@@ -121,7 +121,7 @@ private:
 	unsigned long m_status;
 
 	// Last exception thrown from C BIO functions
-	std::auto_ptr <exception> m_ex;
+	scoped_ptr <exception> m_ex;
 };
 
 

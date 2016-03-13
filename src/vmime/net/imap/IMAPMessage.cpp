@@ -364,7 +364,7 @@ void IMAPMessage::extractImpl
 	)->send(constCast <IMAPFolder>(folder)->m_connection);
 
 	// Get the response
-	std::auto_ptr <IMAPParser::response> resp
+	scoped_ptr <IMAPParser::response> resp
 		(constCast <IMAPFolder>(folder)->m_connection->readResponse(&literalHandler));
 
 	if (resp->isBad() || resp->response_done()->response_tagged()->

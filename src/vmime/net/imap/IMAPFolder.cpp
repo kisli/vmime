@@ -177,7 +177,7 @@ void IMAPFolder::open(const int mode, bool failIfModeIsNotAvailable)
 		)->send(connection);
 
 		// Read the response
-		std::auto_ptr <IMAPParser::response> resp(connection->readResponse());
+		scoped_ptr <IMAPParser::response> resp(connection->readResponse());
 
 		if (resp->isBad() || resp->response_done()->response_tagged()->
 				resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
@@ -381,7 +381,7 @@ void IMAPFolder::create(const folderAttributes& attribs)
 	IMAPCommand::CREATE(mailbox, createParams)->send(m_connection);
 
 
-	std::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
+	scoped_ptr <IMAPParser::response> resp(m_connection->readResponse());
 
 	if (resp->isBad() || resp->response_done()->response_tagged()->
 			resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
@@ -416,7 +416,7 @@ void IMAPFolder::destroy()
 	IMAPCommand::DELETE(mailbox)->send(m_connection);
 
 
-	std::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
+	scoped_ptr <IMAPParser::response> resp(m_connection->readResponse());
 
 	if (resp->isBad() || resp->response_done()->response_tagged()->
 			resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
@@ -471,7 +471,7 @@ int IMAPFolder::testExistAndGetType()
 		(m_connection->hierarchySeparator(), getFullPath()))->send(m_connection);
 
 
-	std::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
+	scoped_ptr <IMAPParser::response> resp(m_connection->readResponse());
 
 	if (resp->isBad() || resp->response_done()->response_tagged()->
 			resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
@@ -565,7 +565,7 @@ std::vector <shared_ptr <message> > IMAPFolder::getMessages(const messageSet& ms
 		IMAPCommand::FETCH(msgs, params)->send(m_connection);
 
 		// Get the response
-		std::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
+		scoped_ptr <IMAPParser::response> resp(m_connection->readResponse());
 
 		if (resp->isBad() || resp->response_done()->response_tagged()->
 				resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
@@ -692,7 +692,7 @@ std::vector <shared_ptr <folder> > IMAPFolder::getFolders(const bool recursive)
 	cmd->send(m_connection);
 
 
-	std::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
+	scoped_ptr <IMAPParser::response> resp(m_connection->readResponse());
 
 	if (resp->isBad() || resp->response_done()->response_tagged()->
 			resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
@@ -776,7 +776,7 @@ void IMAPFolder::fetchMessages(std::vector <shared_ptr <message> >& msg, const f
 		(m_connection, messageSet::byNumber(list), options)->send(m_connection);
 
 	// Get the response
-	std::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
+	scoped_ptr <IMAPParser::response> resp(m_connection->readResponse());
 
 	if (resp->isBad() || resp->response_done()->response_tagged()->
 		resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
@@ -872,7 +872,7 @@ std::vector <shared_ptr <message> > IMAPFolder::getAndFetchMessages
 		(m_connection, msgs, attribsWithUID)->send(m_connection);
 
 	// Get the response
-	std::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
+	scoped_ptr <IMAPParser::response> resp(m_connection->readResponse());
 
 	if (resp->isBad() || resp->response_done()->response_tagged()->
 		resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
@@ -1008,7 +1008,7 @@ void IMAPFolder::deleteMessages(const messageSet& msgs)
 	)->send(m_connection);
 
 	// Get the response
-	std::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
+	scoped_ptr <IMAPParser::response> resp(m_connection->readResponse());
 
 	if (resp->isBad() || resp->response_done()->response_tagged()->
 		resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
@@ -1031,7 +1031,7 @@ void IMAPFolder::setMessageFlags(const messageSet& msgs, const int flags, const 
 		IMAPCommand::STORE(msgs, mode, flagList)->send(m_connection);
 
 		// Get the response
-		std::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
+		scoped_ptr <IMAPParser::response> resp(m_connection->readResponse());
 
 		if (resp->isBad() || resp->response_done()->response_tagged()->
 			resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
@@ -1081,7 +1081,7 @@ messageSet IMAPFolder::addMessage
 	)->send(m_connection);
 
 	// Get the response
-	std::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
+	scoped_ptr <IMAPParser::response> resp(m_connection->readResponse());
 
 	bool ok = false;
 	const std::vector <IMAPParser::continue_req_or_response_data*>& respList
@@ -1138,7 +1138,7 @@ messageSet IMAPFolder::addMessage
 		progress->stop(total);
 
 	// Get the response
-	std::auto_ptr <IMAPParser::response> finalResp(m_connection->readResponse());
+	scoped_ptr <IMAPParser::response> finalResp(m_connection->readResponse());
 
 	if (finalResp->isBad() || finalResp->response_done()->response_tagged()->
 		resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
@@ -1174,7 +1174,7 @@ void IMAPFolder::expunge()
 	IMAPCommand::EXPUNGE()->send(m_connection);
 
 	// Get the response
-	std::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
+	scoped_ptr <IMAPParser::response> resp(m_connection->readResponse());
 
 	if (resp->isBad() || resp->response_done()->response_tagged()->
 		resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
@@ -1207,7 +1207,7 @@ void IMAPFolder::rename(const folder::path& newPath)
 	)->send(m_connection);
 
 	// Get the response
-	std::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
+	scoped_ptr <IMAPParser::response> resp(m_connection->readResponse());
 
 	if (resp->isBad() || resp->response_done()->response_tagged()->
 		resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
@@ -1268,7 +1268,7 @@ messageSet IMAPFolder::copyMessages(const folder::path& dest, const messageSet& 
 	)->send(m_connection);
 
 	// Get the response
-	std::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
+	scoped_ptr <IMAPParser::response> resp(m_connection->readResponse());
 
 	if (resp->isBad() || resp->response_done()->response_tagged()->
 		resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
@@ -1326,7 +1326,7 @@ shared_ptr <folderStatus> IMAPFolder::getStatus()
 	)->send(m_connection);
 
 	// Get the response
-	std::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
+	scoped_ptr <IMAPParser::response> resp(m_connection->readResponse());
 
 	if (resp->isBad() || resp->response_done()->response_tagged()->
 		resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
@@ -1372,7 +1372,7 @@ void IMAPFolder::noop()
 
 	IMAPCommand::NOOP()->send(m_connection);
 
-	std::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
+	scoped_ptr <IMAPParser::response> resp(m_connection->readResponse());
 
 	if (resp->isBad() || resp->response_done()->response_tagged()->
 			resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
@@ -1397,7 +1397,7 @@ std::vector <int> IMAPFolder::getMessageNumbersStartingOnUID(const message::uid&
 	IMAPCommand::SEARCH(searchKeys, /* charset */ NULL)->send(m_connection);
 
 	// Get the response
-	std::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
+	scoped_ptr <IMAPParser::response> resp(m_connection->readResponse());
 
 	if (resp->isBad() ||
 	    resp->response_done()->response_tagged()->resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)

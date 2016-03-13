@@ -187,7 +187,7 @@ void IMAPStore::noop()
 
 	IMAPCommand::NOOP()->send(m_connection);
 
-	std::auto_ptr <IMAPParser::response> resp(m_connection->readResponse());
+	scoped_ptr <IMAPParser::response> resp(m_connection->readResponse());
 
 	if (resp->isBad() || resp->response_done()->response_tagged()->
 			resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)

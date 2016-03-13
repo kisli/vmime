@@ -113,7 +113,7 @@
 		VIMAP_PARSER_FAIL_UNLESS(variable = parser.get <type>(line, &pos));  \
 	}
 
-#define VIMAP_PARSER_GET_PTR(type, variable)  /* auto_ptr/shared_ptr version */ \
+#define VIMAP_PARSER_GET_PTR(type, variable)  /* scoped_ptr/shared_ptr version */ \
 	{ \
 		variable.reset(parser.get <type>(line, &pos));  \
 		VIMAP_PARSER_FAIL_UNLESS(variable.get());  \
@@ -125,8 +125,35 @@
 #define VIMAP_PARSER_TRY_GET(type, variable)  /* raw pointer version */ \
 	(variable = parser.get <type>(line, &pos))
 
-#define VIMAP_PARSER_TRY_GET_PTR(type, variable) /* auto_ptr/shared_ptr version */ \
+#define VIMAP_PARSER_TRY_GET_PTR(type, variable) /* scoped_ptr/shared_ptr version */ \
 	(variable.reset(parser.get <type>(line, &pos)), variable.get())
+
+/** Get an optional token and advance. If found, token will be pushed back
+  * to a vector. If the token is not matched, stopInstr will be executed.
+  *
+  * @param type token class
+  * @param variable variable of type std::vector<> to which the retrieved
+  * token will be pushed
+  * @param stopInstr instruction to execute if token is not found
+  */
+#define VIMAP_PARSER_TRY_GET_PUSHBACK_OR_ELSE(type, variable, stopInstr) \
+	{  \
+		type* v = NULL;  \
+		try  \
+		{  \
+			v = parser.get <type>(line, &pos);  \
+			if (!v)  \
+			{  \
+				stopInstr;  \
+			}  \
+			variable.push_back(v);  \
+		}  \
+		catch (...)  \
+		{  \
+			delete v;  \
+			throw;  \
+		}  \
+	}
 
 /** Get a token and advance. Token will be pushed back to a vector.
   * If the token is not matched, parsing will fail.
@@ -136,11 +163,8 @@
   * token will be pushed
   */
 #define VIMAP_PARSER_GET_PUSHBACK(type, variable) \
-	{  \
-		std::auto_ptr <type> v(parser.get <type>(line, &pos));  \
-		VIMAP_PARSER_FAIL_UNLESS(v.get());  \
-		variable.push_back(v.release());  \
-	}
+	VIMAP_PARSER_TRY_GET_PUSHBACK_OR_ELSE(type, variable, VIMAP_PARSER_FAIL())
+
 
 /** Check for a token which takes an argument and advance.
   * If the token is not matched, parsing will fail.
@@ -1452,7 +1476,7 @@ public:
 			m_charset = theCharset->value();
 
 			// Decode text
-			std::auto_ptr <utility::encoder::encoder> theEncoder;
+			scoped_ptr <utility::encoder::encoder> theEncoder;
 
 			if (theEncoding->value()[0] == 'q' || theEncoding->value()[0] == 'Q')
 			{
@@ -2364,10 +2388,9 @@ public:
 		{
 			size_t pos = *currentPos;
 
-			std::auto_ptr <IMAPParser::atom> at;
-			VIMAP_PARSER_GET_PTR(IMAPParser::atom, at);
+			VIMAP_PARSER_GET(IMAPParser::atom, m_atom);
 
-			string value = at->value();
+			string value = m_atom->value();
 			const char* str = value.c_str();
 
 			if ((str[0] == 'a' || str[0] == 'A') &&
@@ -2378,10 +2401,9 @@ public:
 			{
 				size_t pos = 5;
 				m_auth_type = parser.get <IMAPParser::auth_type>(value, &pos);
-			}
-			else
-			{
-				m_atom = at.release();
+
+				delete m_atom;
+				m_atom = NULL;
 			}
 
 			*currentPos = pos;
@@ -4064,13 +4086,7 @@ public:
 
 			while (true)
 			{
-				std::auto_ptr <xbody> b;
-				VIMAP_PARSER_TRY_GET_PTR(xbody, b);
-
-				if (!b.get())
-					break;
-
-				m_list.push_back(b.release());
+				VIMAP_PARSER_TRY_GET_PUSHBACK_OR_ELSE(xbody, m_list, break);
 			}
 
 			VIMAP_PARSER_CHECK(SPACE);
@@ -4432,7 +4448,7 @@ public:
 		{
 			size_t pos = *currentPos;
 
-			std::auto_ptr <nz_number> num;
+			scoped_ptr <nz_number> num;
 			VIMAP_PARSER_GET_PTR(nz_number, num);
 			m_number = static_cast <unsigned int>(num->value());
 
@@ -4731,7 +4747,7 @@ public:
 				VIMAP_PARSER_TRY_CHECK(SPACE);
 			}
 
-			std::auto_ptr <text_mime2> text1;
+			scoped_ptr <text_mime2> text1;
 			VIMAP_PARSER_TRY_GET_PTR(text_mime2, text1);
 
 			if (text1.get())
@@ -4740,7 +4756,7 @@ public:
 			}
 			else
 			{
-				std::auto_ptr <IMAPParser::text> text2;
+				scoped_ptr <IMAPParser::text> text2;
 				VIMAP_PARSER_TRY_GET_PTR(IMAPParser::text, text2);
 
 				if (text2.get())
@@ -5729,7 +5745,7 @@ public:
 		const size_t oldPos = *currentPos;
 
 		TYPE term(arg);
-		
+
 		if (!term.parse(*this, line, currentPos))
 		{
 			*currentPos = oldPos;

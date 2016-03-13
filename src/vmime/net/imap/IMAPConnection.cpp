@@ -157,7 +157,7 @@ void IMAPConnection::connect()
 	// eg:  C: <connection to server>
 	// ---  S: * OK mydomain.org IMAP4rev1 v12.256 server ready
 
-	std::auto_ptr <IMAPParser::greeting> greet(m_parser->readGreeting());
+	scoped_ptr <IMAPParser::greeting> greet(m_parser->readGreeting());
 	bool needAuth = false;
 
 	if (greet->resp_cond_bye())
@@ -274,7 +274,7 @@ void IMAPConnection::authenticate()
 	shared_ptr <IMAPConnection> conn = dynamicCast <IMAPConnection>(shared_from_this());
 	IMAPCommand::LOGIN(username, password)->send(conn);
 
-	std::auto_ptr <IMAPParser::response> resp(m_parser->readResponse());
+	scoped_ptr <IMAPParser::response> resp(m_parser->readResponse());
 
 	if (resp->isBad())
 	{
@@ -393,7 +393,7 @@ void IMAPConnection::authenticateSASL()
 
 		for (bool cont = true ; cont ; )
 		{
-			std::auto_ptr <IMAPParser::response> resp(m_parser->readResponse());
+			scoped_ptr <IMAPParser::response> resp(m_parser->readResponse());
 
 			if (resp->response_done() &&
 			    resp->response_done()->response_tagged() &&
@@ -507,7 +507,7 @@ void IMAPConnection::startTLS()
 	{
 		IMAPCommand::STARTTLS()->send(dynamicCast <IMAPConnection>(shared_from_this()));
 
-		std::auto_ptr <IMAPParser::response> resp(m_parser->readResponse());
+		scoped_ptr <IMAPParser::response> resp(m_parser->readResponse());
 
 		if (resp->isBad() || resp->response_done()->response_tagged()->
 			resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
@@ -606,7 +606,7 @@ void IMAPConnection::fetchCapabilities()
 {
 	IMAPCommand::CAPABILITY()->send(dynamicCast <IMAPConnection>(shared_from_this()));
 
-	std::auto_ptr <IMAPParser::response> resp(m_parser->readResponse());
+	scoped_ptr <IMAPParser::response> resp(m_parser->readResponse());
 
 	if (resp->response_done()->response_tagged()->
 		resp_cond_state()->status() == IMAPParser::resp_cond_state::OK)
@@ -716,7 +716,7 @@ void IMAPConnection::initHierarchySeparator()
 {
 	IMAPCommand::LIST("", "")->send(dynamicCast <IMAPConnection>(shared_from_this()));
 
-	std::auto_ptr <IMAPParser::response> resp(m_parser->readResponse());
+	scoped_ptr <IMAPParser::response> resp(m_parser->readResponse());
 
 	if (resp->isBad() || resp->response_done()->response_tagged()->
 		resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)

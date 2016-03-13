@@ -77,7 +77,7 @@ shared_ptr <TLSSocket> TLSSocket::wrap(shared_ptr <TLSSession> session, shared_p
 
 
 TLSSocket_OpenSSL::TLSSocket_OpenSSL(shared_ptr <TLSSession_OpenSSL> session, shared_ptr <socket> sok)
-	: m_session(session), m_wrapped(sok), m_connected(false), m_ssl(0), m_status(0), m_ex(NULL)
+	: m_session(session), m_wrapped(sok), m_connected(false), m_ssl(0), m_status(0), m_ex()
 {
 }
 

@@ -377,7 +377,7 @@ void posixChildProcess::waitForFinish()
 	{
 		if (WEXITSTATUS(wstat) == 255)
 		{
-			std::auto_ptr <posixFileSystemFactory> pfsf(new posixFileSystemFactory());
+			scoped_ptr <posixFileSystemFactory> pfsf(new posixFileSystemFactory());
 
 			throw exceptions::system_error("Could not execute '"
 				+ pfsf->pathToString(m_processPath) + "'");
