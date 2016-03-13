@@ -118,7 +118,7 @@ private:
 
 	SSL* m_ssl;
 
-	unsigned long m_status;
+	unsigned int m_status;
 
 	// Last exception thrown from C BIO functions
 	scoped_ptr <exception> m_ex;

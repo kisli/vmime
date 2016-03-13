@@ -601,7 +601,7 @@ int TLSSocket_OpenSSL::bio_puts(BIO* bio, const char* str)
 
 
 // static
-long TLSSocket_OpenSSL::bio_ctrl(BIO* bio, int cmd, long num, void* ptr)
+long TLSSocket_OpenSSL::bio_ctrl(BIO* bio, int cmd, long num, void* /* ptr */)
 {
 	long ret = 1;
 

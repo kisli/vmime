@@ -45,7 +45,8 @@ folderAttributes::folderAttributes()
 
 
 folderAttributes::folderAttributes(const folderAttributes& attribs)
-	: m_type(attribs.m_type),
+	: object(),
+	  m_type(attribs.m_type),
 	  m_flags(attribs.m_flags),
 	  m_userFlags(attribs.m_userFlags),
 	  m_specialUse(attribs.m_specialUse)

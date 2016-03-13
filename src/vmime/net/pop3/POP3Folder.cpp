@@ -672,10 +672,13 @@ shared_ptr <folderStatus> POP3Folder::getStatus()
 		throw exceptions::command_error("STAT", response->getFirstLine());
 
 
-	unsigned int count = 0;
+	int count = 0;
 
 	std::istringstream iss(response->getText());
 	iss >> count;
+
+	if (count < 0)
+		throw exceptions::invalid_response("STAT", response->getText());
 
 	shared_ptr <POP3FolderStatus> status = make_shared <POP3FolderStatus>();
 

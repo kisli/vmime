@@ -123,7 +123,7 @@ bool maildirStore::isValidFolderName(const folder::path::component& name) const
 
 	// Name cannot start with '.'
 	const size_t length = buf.length();
-	int pos = 0;
+	size_t pos = 0;
 
 	while ((pos < length) && (buf[pos] == '.'))
 		++pos;

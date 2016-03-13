@@ -456,6 +456,10 @@ void IMAPUtils::mailboxFlagsToFolderAttributes
 
 			specialUse = folderAttributes::SPECIALUSE_IMPORTANT;
 			break;
+
+		default:
+
+			break;
 		}
 	}
 
