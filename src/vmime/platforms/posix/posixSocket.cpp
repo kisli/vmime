@@ -516,15 +516,20 @@ const string posixSocket::getPeerAddress() const
 	sockaddr peer;
 	socklen_t peerLen = sizeof(peer);
 
-	getpeername(m_desc, reinterpret_cast <sockaddr*>(&peer), &peerLen);
+	if (getpeername(m_desc, &peer, &peerLen) != 0)
+	{
+		throwSocketError(errno);
+	}
 
 	// Convert to numerical presentation format
-	char numericAddress[1024];
+	char buf[INET6_ADDRSTRLEN];
 
-	if (inet_ntop(peer.sa_family, &peer, numericAddress, sizeof(numericAddress)) != NULL)
-		return string(numericAddress);
+	if (!inet_ntop(peer.sa_family, &(reinterpret_cast <struct sockaddr_in *>(&peer))->sin_addr, buf, sizeof(buf)))
+	{
+		throwSocketError(errno);
+	}
 
-	return "";  // should not happen
+	return string(buf);
 }
 
 
@@ -534,7 +539,10 @@ const string posixSocket::getPeerName() const
 	sockaddr peer;
 	socklen_t peerLen = sizeof(peer);
 
-	getpeername(m_desc, reinterpret_cast <sockaddr*>(&peer), &peerLen);
+	if (getpeername(m_desc, &peer, &peerLen) != 0)
+	{
+		throwSocketError(errno);
+	}
 
 	// If server address as specified when connecting is a numeric
 	// address, try to get a host name for it
