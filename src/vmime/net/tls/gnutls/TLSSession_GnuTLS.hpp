@@ -68,7 +68,7 @@ private:
 
 
 #ifdef LIBGNUTLS_VERSION
-	gnutls_session* m_gnutlsSession;
+	gnutls_session_t* m_gnutlsSession;
 #else
 	void* m_gnutlsSession;
 #endif // LIBGNUTLS_VERSION

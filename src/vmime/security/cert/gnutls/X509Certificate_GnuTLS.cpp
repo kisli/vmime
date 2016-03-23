@@ -57,7 +57,7 @@ struct GnuTLSX509CertificateInternalData
 	}
 
 
-	gnutls_x509_crt cert;
+	gnutls_x509_crt_t cert;
 };
 
 #endif // VMIME_BUILDING_DOC
@@ -108,7 +108,7 @@ shared_ptr <X509Certificate> X509Certificate::import(utility::inputStream& is)
 shared_ptr <X509Certificate> X509Certificate::import
 	(const byte_t* data, const size_t length)
 {
-	gnutls_datum buffer;
+	gnutls_datum_t buffer;
 	buffer.data = const_cast <byte_t*>(data);
 	buffer.size = static_cast <unsigned int>(length);
 
@@ -132,7 +132,7 @@ void X509Certificate_GnuTLS::write
 	(utility::outputStream& os, const Format format) const
 {
 	size_t dataSize = 0;
-	gnutls_x509_crt_fmt fmt = GNUTLS_X509_FMT_DER;
+	gnutls_x509_crt_fmt_t fmt = GNUTLS_X509_FMT_DER;
 
 	switch (format)
 	{
@@ -203,15 +203,15 @@ bool X509Certificate_GnuTLS::verifyHostName
 
 		dnsNameLength = sizeof(dnsName);
 
-		if (gnutls_x509_crt_get_dn_by_oid(m_data->cert, OID_X520_COMMON_NAME, 0, 0, dnsName, &dnsNameLength) >= 0) 
+		if (gnutls_x509_crt_get_dn_by_oid(m_data->cert, OID_X520_COMMON_NAME, 0, 0, dnsName, &dnsNameLength) >= 0)
 			nonMatchingNames->push_back(dnsName);
 
-		for (int i = 0, ret = 0 ; ret >= 0 ; ++i) 
+		for (int i = 0, ret = 0 ; ret >= 0 ; ++i)
 		{
 			dnsNameLength = sizeof(dnsName);
 			ret = gnutls_x509_crt_get_subject_alt_name(m_data->cert, i, dnsName, &dnsNameLength, NULL);
 
-			if (ret == GNUTLS_SAN_DNSNAME) 
+			if (ret == GNUTLS_SAN_DNSNAME)
 				nonMatchingNames->push_back(dnsName);
 		}
 	}
@@ -236,7 +236,7 @@ const datetime X509Certificate_GnuTLS::getExpirationDate() const
 
 const byteArray X509Certificate_GnuTLS::getFingerprint(const DigestAlgorithm algo) const
 {
-	gnutls_digest_algorithm galgo;
+	gnutls_digest_algorithm_t galgo;
 
 	switch (algo)
 	{

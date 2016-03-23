@@ -354,7 +354,7 @@ void TLSSocket_GnuTLS::handshake()
 }
 
 
-int TLSSocket_GnuTLS::gnutlsErrnoFunc(gnutls_transport_ptr trspt)
+int TLSSocket_GnuTLS::gnutlsErrnoFunc(gnutls_transport_ptr_t trspt)
 {
 	TLSSocket_GnuTLS* sok = reinterpret_cast <TLSSocket_GnuTLS*>(trspt);
 	return sok->m_errno;
@@ -362,7 +362,7 @@ int TLSSocket_GnuTLS::gnutlsErrnoFunc(gnutls_transport_ptr trspt)
 
 
 ssize_t TLSSocket_GnuTLS::gnutlsPushFunc
-	(gnutls_transport_ptr trspt, const void* data, size_t len)
+	(gnutls_transport_ptr_t trspt, const void* data, size_t len)
 {
 	TLSSocket_GnuTLS* sok = reinterpret_cast <TLSSocket_GnuTLS*>(trspt);
 
@@ -392,7 +392,7 @@ ssize_t TLSSocket_GnuTLS::gnutlsPushFunc
 
 
 ssize_t TLSSocket_GnuTLS::gnutlsPullFunc
-	(gnutls_transport_ptr trspt, void* data, size_t len)
+	(gnutls_transport_ptr_t trspt, void* data, size_t len)
 {
 	TLSSocket_GnuTLS* sok = reinterpret_cast <TLSSocket_GnuTLS*>(trspt);
 
@@ -427,14 +427,14 @@ shared_ptr <security::cert::certificateChain> TLSSocket_GnuTLS::getPeerCertifica
 		getTracer()->traceSend("Getting peer certificates");
 
 	unsigned int certCount = 0;
-	const gnutls_datum* rawData = gnutls_certificate_get_peers
+	const gnutls_datum_t* rawData = gnutls_certificate_get_peers
 		(*m_session->m_gnutlsSession, &certCount);
 
 	if (rawData == NULL)
 		return null;
 
 	// Try X.509
-	gnutls_x509_crt* x509Certs = new gnutls_x509_crt[certCount];
+	gnutls_x509_crt_t* x509Certs = new gnutls_x509_crt_t[certCount];
 
 	for (unsigned int i = 0; i < certCount; ++i)
 	{

@@ -122,8 +122,8 @@ struct TLSGlobal
 #endif // VMIME_DEBUG && GNUTLS_DEBUG
 
 
-	gnutls_anon_client_credentials anonCred;
-	gnutls_certificate_credentials certCred;
+	gnutls_anon_client_credentials_t anonCred;
+	gnutls_certificate_credentials_t certCred;
 };
 
 static TLSGlobal g_gnutlsGlobal;
@@ -145,7 +145,7 @@ TLSSession_GnuTLS::TLSSession_GnuTLS(shared_ptr <security::cert::certificateVeri
 {
 	int res;
 
-	m_gnutlsSession = new gnutls_session;
+	m_gnutlsSession = new gnutls_session_t;
 
 	if (gnutls_init(m_gnutlsSession, GNUTLS_CLIENT) != 0)
 		throw std::bad_alloc();

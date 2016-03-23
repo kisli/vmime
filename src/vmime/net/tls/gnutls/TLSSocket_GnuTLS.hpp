@@ -91,9 +91,9 @@ private:
 	void internalThrow();
 
 #ifdef LIBGNUTLS_VERSION
-	static ssize_t gnutlsPushFunc(gnutls_transport_ptr trspt, const void* data, size_t len);
-	static ssize_t gnutlsPullFunc(gnutls_transport_ptr trspt, void* data, size_t len);
-	static int gnutlsErrnoFunc(gnutls_transport_ptr trspt);
+	static ssize_t gnutlsPushFunc(gnutls_transport_ptr_t trspt, const void* data, size_t len);
+	static ssize_t gnutlsPullFunc(gnutls_transport_ptr_t trspt, void* data, size_t len);
+	static int gnutlsErrnoFunc(gnutls_transport_ptr_t trspt);
 #else
 	static int gnutlsPushFunc(void* trspt, const void* data, size_t len);
 	static int gnutlsPullFunc(void* trspt, void* data, size_t len);
