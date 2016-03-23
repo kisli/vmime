@@ -47,7 +47,7 @@ int main()
 
 	std::cout << "Available encoders:" << std::endl;
 
-	for (int i = 0 ; i < ef->getEncoderCount() ; ++i)
+	for (size_t i = 0 ; i < ef->getEncoderCount() ; ++i)
 	{
 		vmime::shared_ptr <const vmime::utility::encoder::encoderFactory::registeredEncoder>
 			enc = ef->getEncoderAt(i);
@@ -71,7 +71,7 @@ int main()
 
 	std::cout << "Available messaging services:" << std::endl;
 
-	for (int i = 0 ; i < sf->getServiceCount() ; ++i)
+	for (size_t i = 0 ; i < sf->getServiceCount() ; ++i)
 	{
 		const vmime::net::serviceFactory::registeredService& serv = *sf->getServiceAt(i);
 

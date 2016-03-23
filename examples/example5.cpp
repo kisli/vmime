@@ -59,7 +59,7 @@ int main()
 		vmime::messageParser mp("<...MIME message content...>");
 
 		// Enumerate attachments
-		for (int i = 0 ; i < mp.getAttachmentCount() ; ++i)
+		for (size_t i = 0 ; i < mp.getAttachmentCount() ; ++i)
 		{
 			const vmime::attachment& att = *mp.getAttachmentAt(i);
 

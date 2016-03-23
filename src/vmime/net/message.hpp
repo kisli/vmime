@@ -97,7 +97,7 @@ public:
 	  *
 	  * @return part number
 	  */
-	virtual int getNumber() const = 0;
+	virtual size_t getNumber() const = 0;
 
 	/** Return the sub-part at the specified position (zero is the
 	  * first part).
@@ -231,7 +231,7 @@ public:
 	  *
 	  * @return sequence number of the message
 	  */
-	virtual int getNumber() const = 0;
+	virtual size_t getNumber() const = 0;
 
 	/** Return the unique identifier (UID) of this message in its
 	  * folder (must fetch before).

@@ -87,12 +87,12 @@ public:
 
 	bool isOpen() const;
 
-	shared_ptr <message> getMessage(const int num);
+	shared_ptr <message> getMessage(const size_t num);
 	std::vector <shared_ptr <message> > getMessages(const messageSet& msgs);
 
-	std::vector <int> getMessageNumbersStartingOnUID(const message::uid& uid);
+	std::vector <size_t> getMessageNumbersStartingOnUID(const message::uid& uid);
 
-	int getMessageCount();
+	size_t getMessageCount();
 
 	shared_ptr <folder> getFolder(const folder::path::component& name);
 	std::vector <shared_ptr <folder> > getFolders(const bool recursive = false);
@@ -118,7 +118,7 @@ public:
 
 	messageSet copyMessages(const folder::path& dest, const messageSet& msgs);
 
-	void status(int& count, int& unseen);
+	void status(size_t& count, size_t& unseen);
 	shared_ptr <folderStatus> getStatus();
 
 	void noop();

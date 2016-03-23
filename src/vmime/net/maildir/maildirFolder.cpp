@@ -312,7 +312,7 @@ void maildirFolder::scanFolder()
 		}
 
 		// Update/delete existing messages (found in previous scan)
-		for (unsigned int i = 0 ; i < m_messageInfos.size() ; ++i)
+		for (size_t i = 0 ; i < m_messageInfos.size() ; ++i)
 		{
 			messageInfos& msgInfos = m_messageInfos[i];
 
@@ -388,7 +388,7 @@ void maildirFolder::scanFolder()
 		}
 
 		// Update message count
-		int unreadMessageCount = 0;
+		size_t unreadMessageCount = 0;
 
 		for (std::vector <messageInfos>::const_iterator
 		     it = m_messageInfos.begin() ; it != m_messageInfos.end() ; ++it)
@@ -398,7 +398,7 @@ void maildirFolder::scanFolder()
 		}
 
 		m_unreadMessageCount = unreadMessageCount;
-		m_messageCount = m_messageInfos.size();
+		m_messageCount = static_cast <size_t>(m_messageInfos.size());
 	}
 	catch (exceptions::filesystem_exception&)
 	{
@@ -407,7 +407,7 @@ void maildirFolder::scanFolder()
 }
 
 
-shared_ptr <message> maildirFolder::getMessage(const int num)
+shared_ptr <message> maildirFolder::getMessage(const size_t num)
 {
 	if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
@@ -427,12 +427,12 @@ std::vector <shared_ptr <message> > maildirFolder::getMessages(const messageSet&
 
 	if (msgs.isNumberSet())
 	{
-		const std::vector <int> numbers = maildirUtils::messageSetToNumberList(msgs);
+		const std::vector <size_t> numbers = maildirUtils::messageSetToNumberList(msgs);
 
 		std::vector <shared_ptr <message> > messages;
 		shared_ptr <maildirFolder> thisFolder = dynamicCast <maildirFolder>(shared_from_this());
 
-		for (std::vector <int>::const_iterator it = numbers.begin() ; it != numbers.end() ; ++it)
+		for (std::vector <size_t>::const_iterator it = numbers.begin() ; it != numbers.end() ; ++it)
 		{
 			if (*it < 1|| *it > m_messageCount)
 				throw exceptions::message_not_found();
@@ -449,7 +449,7 @@ std::vector <shared_ptr <message> > maildirFolder::getMessages(const messageSet&
 }
 
 
-int maildirFolder::getMessageCount()
+size_t maildirFolder::getMessageCount()
 {
 	return (m_messageCount);
 }
@@ -595,7 +595,7 @@ void maildirFolder::setMessageFlags
 
 	if (msgs.isNumberSet())
 	{
-		const std::vector <int> nums = maildirUtils::messageSetToNumberList(msgs);
+		const std::vector <size_t> nums = maildirUtils::messageSetToNumberList(msgs);
 
 		// Change message flags
 		shared_ptr <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
@@ -603,10 +603,10 @@ void maildirFolder::setMessageFlags
 		utility::file::path curDirPath = store->getFormat()->
 			folderPathToFileSystemPath(m_path, maildirFormat::CUR_DIRECTORY);
 
-		for (std::vector <int>::const_iterator it =
+		for (std::vector <size_t>::const_iterator it =
 			 nums.begin() ; it != nums.end() ; ++it)
 		{
-			const int num = *it - 1;
+			const size_t num = *it - 1;
 
 			try
 			{
@@ -785,7 +785,7 @@ messageSet maildirFolder::addMessage
 		m_unreadMessageCount++;
 
 	// Notification
-	std::vector <int> nums;
+	std::vector <size_t> nums;
 	nums.push_back(m_messageCount);
 
 	shared_ptr <events::messageCountEvent> event =
@@ -950,14 +950,14 @@ messageSet maildirFolder::copyMessages(const folder::path& dest, const messageSe
 	}
 
 	// Copy messages
-	const std::vector <int> nums = maildirUtils::messageSetToNumberList(msgs);
+	const std::vector <size_t> nums = maildirUtils::messageSetToNumberList(msgs);
 
 	try
 	{
-		for (std::vector <int>::const_iterator it =
+		for (std::vector <size_t>::const_iterator it =
 		     nums.begin() ; it != nums.end() ; ++it)
 		{
-			const int num = *it;
+			const size_t num = *it;
 			const messageInfos& msg = m_messageInfos[num - 1];
 			const int flags = maildirUtils::extractFlags(msg.path);
 
@@ -995,7 +995,7 @@ void maildirFolder::notifyMessagesCopied(const folder::path& dest)
 		{
 			// We only need to update the first folder we found as calling
 			// status() will notify all the folders with the same path.
-			int count, unseen;
+			size_t count, unseen;
 			(*it)->status(count, unseen);
 
 			return;
@@ -1004,7 +1004,7 @@ void maildirFolder::notifyMessagesCopied(const folder::path& dest)
 }
 
 
-void maildirFolder::status(int& count, int& unseen)
+void maildirFolder::status(size_t& count, size_t& unseen)
 {
 	count = 0;
 	unseen = 0;
@@ -1020,7 +1020,7 @@ shared_ptr <folderStatus> maildirFolder::getStatus()
 {
 	shared_ptr <maildirStore> store = m_store.lock();
 
-	const int oldCount = m_messageCount;
+	const size_t oldCount = m_messageCount;
 
 	scanFolder();
 
@@ -1032,10 +1032,10 @@ shared_ptr <folderStatus> maildirFolder::getStatus()
 	// Notify message count changed (new messages)
 	if (m_messageCount > oldCount)
 	{
-		std::vector <int> nums;
+		std::vector <size_t> nums;
 		nums.reserve(m_messageCount - oldCount);
 
-		for (int i = oldCount + 1, j = 0 ; i <= m_messageCount ; ++i, ++j)
+		for (size_t i = oldCount + 1, j = 0 ; i <= m_messageCount ; ++i, ++j)
 			nums[j] = i;
 
 		shared_ptr <events::messageCountEvent> event =
@@ -1087,10 +1087,10 @@ void maildirFolder::expunge()
 	utility::file::path curDirPath = store->getFormat()->
 		folderPathToFileSystemPath(m_path, maildirFormat::CUR_DIRECTORY);
 
-	std::vector <int> nums;
-	int unreadCount = 0;
+	std::vector <size_t> nums;
+	size_t unreadCount = 0;
 
-	for (int num = 1 ; num <= m_messageCount ; ++num)
+	for (size_t num = 1 ; num <= m_messageCount ; ++num)
 	{
 		messageInfos& infos = m_messageInfos[num - 1];
 
@@ -1125,11 +1125,11 @@ void maildirFolder::expunge()
 
 	if (!nums.empty())
 	{
-		for (std::vector <int>::size_type i = nums.size() ; i != 0 ; --i)
+		for (std::vector <size_t>::size_type i = nums.size() ; i != 0 ; --i)
 			m_messageInfos.erase(m_messageInfos.begin() + (i - 1));
 	}
 
-	m_messageCount -= nums.size();
+	m_messageCount -= static_cast <size_t>(nums.size());
 	m_unreadMessageCount -= unreadCount;
 
 	// Notify message expunged
@@ -1255,7 +1255,7 @@ int maildirFolder::getFetchCapabilities() const
 }
 
 
-const utility::file::path maildirFolder::getMessageFSPath(const int number) const
+const utility::file::path maildirFolder::getMessageFSPath(const size_t number) const
 {
 	utility::file::path curDirPath = m_store.lock()->getFormat()->
 		folderPathToFileSystemPath(m_path, maildirFormat::CUR_DIRECTORY);
@@ -1264,7 +1264,7 @@ const utility::file::path maildirFolder::getMessageFSPath(const int number) cons
 }
 
 
-std::vector <int> maildirFolder::getMessageNumbersStartingOnUID(const message::uid& /* uid */)
+std::vector <size_t> maildirFolder::getMessageNumbersStartingOnUID(const message::uid& /* uid */)
 {
 	throw exceptions::operation_not_supported();
 }

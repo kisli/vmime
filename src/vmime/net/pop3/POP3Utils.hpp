@@ -64,14 +64,14 @@ public:
 	  * number to its corresponding data (either UID or size)
 	  */
 	static void parseMultiListOrUidlResponse
-		(shared_ptr <POP3Response> response, std::map <int, string>& result);
+		(shared_ptr <POP3Response> response, std::map <size_t, string>& result);
 
 	/** Returns a list of message numbers given a message set.
 	  *
 	  * @param msgs message set
 	  * @return list of message numbers
 	  */
-	static const std::vector <int> messageSetToNumberList(const messageSet& msgs);
+	static const std::vector <size_t> messageSetToNumberList(const messageSet& msgs);
 };
 
 

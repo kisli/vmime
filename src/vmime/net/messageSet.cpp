@@ -52,7 +52,7 @@ messageRange::~messageRange()
 
 // numberMessageRange
 
-numberMessageRange::numberMessageRange(const int number)
+numberMessageRange::numberMessageRange(const size_t number)
 	: m_first(number), m_last(number)
 {
 	if (number < 1)
@@ -60,12 +60,12 @@ numberMessageRange::numberMessageRange(const int number)
 }
 
 
-numberMessageRange::numberMessageRange(const int first, const int last)
+numberMessageRange::numberMessageRange(const size_t first, const size_t last)
 	: m_first(first), m_last(last)
 {
 	if (first < 1)
 		throw std::invalid_argument("first");
-	else if (last != -1 && last < first)
+	else if (last != -1U && last < first)
 		throw std::invalid_argument("last");
 }
 
@@ -76,13 +76,13 @@ numberMessageRange::numberMessageRange(const numberMessageRange& other)
 }
 
 
-int numberMessageRange::getFirst() const
+size_t numberMessageRange::getFirst() const
 {
 	return m_first;
 }
 
 
-int numberMessageRange::getLast() const
+size_t numberMessageRange::getLast() const
 {
 	return m_last;
 }
@@ -177,7 +177,7 @@ messageSet messageSet::empty()
 
 
 // static
-messageSet messageSet::byNumber(const int number)
+messageSet messageSet::byNumber(const size_t number)
 {
 	messageSet set;
 	set.m_ranges.push_back(new numberMessageRange(number));
@@ -187,7 +187,7 @@ messageSet messageSet::byNumber(const int number)
 
 
 // static
-messageSet messageSet::byNumber(const int first, const int last)
+messageSet messageSet::byNumber(const size_t first, const size_t last)
 {
 	messageSet set;
 	set.m_ranges.push_back(new numberMessageRange(first, last));
@@ -197,10 +197,10 @@ messageSet messageSet::byNumber(const int first, const int last)
 
 
 // static
-messageSet messageSet::byNumber(const std::vector <int>& numbers)
+messageSet messageSet::byNumber(const std::vector <size_t>& numbers)
 {
 	// Sort a copy of the list
-	std::vector <int> sortedNumbers;
+	std::vector <size_t> sortedNumbers;
 
 	sortedNumbers.resize(numbers.size());
 
@@ -208,18 +208,18 @@ messageSet messageSet::byNumber(const std::vector <int>& numbers)
 	std::sort(sortedNumbers.begin(), sortedNumbers.end());
 
 	// Build the set by detecting ranges of continuous numbers
-	int previous = -1, rangeStart = -1;
+	size_t previous = -1U, rangeStart = -1U;
 	messageSet set;
 
-	for (std::vector <int>::const_iterator it = sortedNumbers.begin() ;
+	for (std::vector <size_t>::const_iterator it = sortedNumbers.begin() ;
 	     it != sortedNumbers.end() ; ++it)
 	{
-		const int current = *it;
+		const size_t current = *it;
 
 		if (current == previous)
 			continue;  // skip duplicates
 
-		if (previous == -1)
+		if (previous == -1U)
 		{
 			previous = current;
 			rangeStart = current;

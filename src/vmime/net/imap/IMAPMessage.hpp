@@ -59,12 +59,12 @@ private:
 
 public:
 
-	IMAPMessage(shared_ptr <IMAPFolder> folder, const int num);
-	IMAPMessage(shared_ptr <IMAPFolder> folder, const int num, const uid& uid);
+	IMAPMessage(shared_ptr <IMAPFolder> folder, const size_t num);
+	IMAPMessage(shared_ptr <IMAPFolder> folder, const size_t num, const uid& uid);
 
 	~IMAPMessage();
 
-	int getNumber() const;
+	size_t getNumber() const;
 
 	const uid getUID() const;
 
@@ -115,7 +115,7 @@ private:
 	  *
 	  * @param number new sequence number
 	  */
-	void renumber(const int number);
+	void renumber(const size_t number);
 
 	/** Marks the message as expunged.
 	  */
@@ -169,7 +169,7 @@ private:
 
 	weak_ptr <IMAPFolder> m_folder;
 
-	int m_num;
+	size_t m_num;
 	size_t m_size;
 	int m_flags;
 	bool m_expunged;

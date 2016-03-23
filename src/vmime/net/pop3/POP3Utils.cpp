@@ -39,9 +39,9 @@ namespace pop3 {
 
 
 // static
-void POP3Utils::parseMultiListOrUidlResponse(shared_ptr <POP3Response> response, std::map <int, string>& result)
+void POP3Utils::parseMultiListOrUidlResponse(shared_ptr <POP3Response> response, std::map <size_t, string>& result)
 {
-	std::map <int, string> ids;
+	std::map <size_t, string> ids;
 
 	for (size_t i = 0, n = response->getLineCount() ; i < n ; ++i)
 	{
@@ -53,7 +53,7 @@ void POP3Utils::parseMultiListOrUidlResponse(shared_ptr <POP3Response> response,
 
 		if (it != line.end())
 		{
-			int number = 0;
+			size_t number = 0;
 
 			while (it != line.end() && (*it >= '0' && *it <= '9'))
 			{
@@ -66,7 +66,7 @@ void POP3Utils::parseMultiListOrUidlResponse(shared_ptr <POP3Response> response,
 
 			if (it != line.end())
 			{
-				result.insert(std::map <int, string>::value_type(number, string(it, line.end())));
+				result.insert(std::map <size_t, string>::value_type(number, string(it, line.end())));
 			}
 		}
 	}
@@ -80,7 +80,7 @@ public:
 
 	void enumerateNumberMessageRange(const vmime::net::numberMessageRange& range)
 	{
-		for (int i = range.getFirst(), last = range.getLast() ; i <= last ; ++i)
+		for (size_t i = range.getFirst(), last = range.getLast() ; i <= last ; ++i)
 			list.push_back(i);
 	}
 
@@ -91,12 +91,12 @@ public:
 
 public:
 
-	std::vector <int> list;
+	std::vector <size_t> list;
 };
 
 
 // static
-const std::vector <int> POP3Utils::messageSetToNumberList(const messageSet& msgs)
+const std::vector <size_t> POP3Utils::messageSetToNumberList(const messageSet& msgs)
 {
 	POP3MessageSetEnumerator en;
 	msgs.enumerate(en);

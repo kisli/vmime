@@ -95,7 +95,7 @@ public:
 	  *
 	  * @param number message number (numbering starts at 1, not 0)
 	  */
-	numberMessageRange(const int number);
+	numberMessageRange(const size_t number);
 
 	/** Constructs a message range for multiple messages.
 	  *
@@ -104,7 +104,7 @@ public:
 	  * @param last number of the last message in the range, or use the
 	  * special value -1 to designate the last message in the folder
 	  */
-	numberMessageRange(const int first, const int last);
+	numberMessageRange(const size_t first, const size_t last);
 
 	/** Constructs a message range by copying from another range.
 	  *
@@ -116,14 +116,14 @@ public:
 	  *
 	  * @return number of the first message
 	  */
-	int getFirst() const;
+	size_t getFirst() const;
 
 	/** Returns the number of the last message in the range, or -1
 	  * to designate the last message in the folder
 	  *
 	  * @return number of the last message
 	  */
-	int getLast() const;
+	size_t getLast() const;
 
 	void enumerate(messageSetEnumerator& en) const;
 
@@ -131,7 +131,7 @@ public:
 
 private:
 
-	int m_first, m_last;
+	size_t m_first, m_last;
 };
 
 
@@ -232,7 +232,7 @@ public:
 	  * @param number message number (numbering starts at 1, not 0)
 	  * @return new message set
 	  */
-	static messageSet byNumber(const int number);
+	static messageSet byNumber(const size_t number);
 
 	/** Constructs a new message set and initializes it with a range
 	  * of messages represented by their sequence number.
@@ -243,7 +243,7 @@ public:
 	  * special value -1 to designate the last message in the folder
 	  * @return new message set
 	  */
-	static messageSet byNumber(const int first, const int last);
+	static messageSet byNumber(const size_t first, const size_t last);
 
 	/** Constructs a new message set and initializes it with a possibly
 	  * unsorted list of messages represented by their sequence number.
@@ -258,7 +258,7 @@ public:
 	  * @param numbers a vector containing numbers of the messages
 	  * @return new message set
 	  */
-	static messageSet byNumber(const std::vector <int>& numbers);
+	static messageSet byNumber(const std::vector <size_t>& numbers);
 
 	/** Constructs a new message set and initializes it with a single
 	  * message represented by its UID.

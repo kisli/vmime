@@ -48,7 +48,7 @@ namespace net {
 namespace maildir {
 
 
-maildirMessage::maildirMessage(shared_ptr <maildirFolder> folder, const int num)
+maildirMessage::maildirMessage(shared_ptr <maildirFolder> folder, const size_t num)
 	: m_folder(folder), m_num(num), m_size(-1), m_flags(FLAG_UNDEFINED),
 	  m_expunged(false), m_structure(null)
 {
@@ -78,7 +78,7 @@ void maildirMessage::onFolderClosed()
 }
 
 
-int maildirMessage::getNumber() const
+size_t maildirMessage::getNumber() const
 {
 	return (m_num);
 }

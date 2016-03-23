@@ -58,19 +58,19 @@ IMAPFolderStatus::IMAPFolderStatus(const IMAPFolderStatus& other)
 }
 
 
-unsigned int IMAPFolderStatus::getMessageCount() const
+size_t IMAPFolderStatus::getMessageCount() const
 {
 	return m_count;
 }
 
 
-unsigned int IMAPFolderStatus::getUnseenCount() const
+size_t IMAPFolderStatus::getUnseenCount() const
 {
 	return m_unseen;
 }
 
 
-unsigned int IMAPFolderStatus::getRecentCount() const
+size_t IMAPFolderStatus::getRecentCount() const
 {
 	return m_recent;
 }
@@ -115,8 +115,8 @@ bool IMAPFolderStatus::updateFromResponse(const IMAPParser::mailbox_data* resp)
 			{
 			case IMAPParser::status_att_val::MESSAGES:
 			{
-				const unsigned int count =
-					static_cast <unsigned int>((*jt)->value_as_number()->value());
+				const size_t count =
+					static_cast <size_t>((*jt)->value_as_number()->value());
 
 				if (m_count != count)
 				{
@@ -128,8 +128,8 @@ bool IMAPFolderStatus::updateFromResponse(const IMAPParser::mailbox_data* resp)
 			}
 			case IMAPParser::status_att_val::UNSEEN:
 			{
-				const unsigned int unseen =
-					static_cast <unsigned int>((*jt)->value_as_number()->value());
+				const size_t unseen =
+					static_cast <size_t>((*jt)->value_as_number()->value());
 
 				if (m_unseen != unseen)
 				{
@@ -141,8 +141,8 @@ bool IMAPFolderStatus::updateFromResponse(const IMAPParser::mailbox_data* resp)
 			}
 			case IMAPParser::status_att_val::RECENT:
 			{
-				const unsigned int recent =
-					static_cast <unsigned int>((*jt)->value_as_number()->value());
+				const size_t recent =
+					static_cast <size_t>((*jt)->value_as_number()->value());
 
 				if (m_recent != recent)
 				{
@@ -197,8 +197,8 @@ bool IMAPFolderStatus::updateFromResponse(const IMAPParser::mailbox_data* resp)
 	}
 	else if (resp->type() == IMAPParser::mailbox_data::EXISTS)
 	{
-		const unsigned int count =
-			static_cast <unsigned int>(resp->number()->value());
+		const size_t count =
+			static_cast <size_t>(resp->number()->value());
 
 		if (m_count != count)
 		{
@@ -208,8 +208,8 @@ bool IMAPFolderStatus::updateFromResponse(const IMAPParser::mailbox_data* resp)
 	}
 	else if (resp->type() == IMAPParser::mailbox_data::RECENT)
 	{
-		const unsigned int recent =
-			static_cast <unsigned int>(resp->number()->value());
+		const size_t recent =
+			static_cast <size_t>(resp->number()->value());
 
 		if (m_recent != recent)
 		{
@@ -256,8 +256,8 @@ bool IMAPFolderStatus::updateFromResponse(const IMAPParser::resp_text_code* resp
 	}
 	case IMAPParser::resp_text_code::UNSEEN:
 	{
-		const unsigned int unseen =
-			static_cast <unsigned int>(resp->nz_number()->value());
+		const size_t unseen =
+			static_cast <size_t>(resp->nz_number()->value());
 
 		if (m_unseen != unseen)
 		{

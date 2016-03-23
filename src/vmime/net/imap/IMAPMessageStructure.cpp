@@ -49,7 +49,7 @@ IMAPMessageStructure::IMAPMessageStructure(const IMAPParser::body* body)
 
 IMAPMessageStructure::IMAPMessageStructure(shared_ptr <IMAPMessagePart> parent, const std::vector <IMAPParser::body*>& list)
 {
-	int number = 0;
+	size_t number = 0;
 
 	for (std::vector <IMAPParser::body*>::const_iterator
 	     it = list.begin() ; it != list.end() ; ++it, ++number)

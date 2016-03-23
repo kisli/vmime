@@ -740,7 +740,7 @@ public:
 
 	void enumerateNumberMessageRange(const vmime::net::numberMessageRange& range)
 	{
-		for (int i = range.getFirst(), last = range.getLast() ; i <= last ; ++i)
+		for (size_t i = range.getFirst(), last = range.getLast() ; i <= last ; ++i)
 			m_list.push_back(i);
 	}
 
@@ -749,14 +749,14 @@ public:
 		// Not used
 	}
 
-	const std::vector <int>& list() const
+	const std::vector <size_t>& list() const
 	{
 		return m_list;
 	}
 
 public:
 
-	std::vector <int> m_list;
+	std::vector <size_t> m_list;
 };
 
 
@@ -772,7 +772,7 @@ const string IMAPUtils::messageSetToSequenceSet(const messageSet& msgs)
 
 
 // static
-const std::vector <int> IMAPUtils::messageSetToNumberList(const messageSet& msgs)
+const std::vector <size_t> IMAPUtils::messageSetToNumberList(const messageSet& msgs)
 {
 	IMAPMessageSetEnumerator en;
 	msgs.enumerate(en);

@@ -49,13 +49,13 @@ public:
 	  *
 	  * @return number of messages
 	  */
-	virtual unsigned int getMessageCount() const = 0;
+	virtual size_t getMessageCount() const = 0;
 
 	/** Returns the number of unseen messages in the folder.
 	  *
 	  * @return number of unseen messages
 	  */
-	virtual unsigned int getUnseenCount() const = 0;
+	virtual size_t getUnseenCount() const = 0;
 
 	/** Clones this object.
 	  *

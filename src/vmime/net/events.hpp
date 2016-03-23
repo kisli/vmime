@@ -75,7 +75,7 @@ public:
 	};
 
 
-	messageCountEvent(shared_ptr <folder> folder, const Types type, const std::vector <int>& nums);
+	messageCountEvent(shared_ptr <folder> folder, const Types type, const std::vector <size_t>& nums);
 
 	/** Return the folder in which messages have been added/removed.
 	  *
@@ -93,7 +93,7 @@ public:
 	  *
 	  * @return a list of message numbers
 	  */
-	const std::vector <int>& getNumbers() const;
+	const std::vector <size_t>& getNumbers() const;
 
 	/** Dispatch the event to the specified listener.
 	  *
@@ -108,7 +108,7 @@ private:
 
 	shared_ptr <folder> m_folder;
 	const Types m_type;
-	std::vector <int> m_nums;
+	std::vector <size_t> m_nums;
 };
 
 
@@ -144,7 +144,7 @@ public:
 	};
 
 
-	messageChangedEvent(shared_ptr <folder> folder, const Types type, const std::vector <int>& nums);
+	messageChangedEvent(shared_ptr <folder> folder, const Types type, const std::vector <size_t>& nums);
 
 	/** Return the folder in which messages have changed.
 	  *
@@ -162,7 +162,7 @@ public:
 	  *
 	  * @return a list of message numbers
 	  */
-	const std::vector <int>& getNumbers() const;
+	const std::vector <size_t>& getNumbers() const;
 
 	/** Dispatch the event to the specified listener.
 	  *
@@ -177,7 +177,7 @@ private:
 
 	shared_ptr <folder> m_folder;
 	const Types m_type;
-	std::vector <int> m_nums;
+	std::vector <size_t> m_nums;
 };
 
 

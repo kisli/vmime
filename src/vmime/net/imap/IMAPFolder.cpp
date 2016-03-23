@@ -520,7 +520,7 @@ bool IMAPFolder::isOpen() const
 }
 
 
-shared_ptr <message> IMAPFolder::getMessage(const int num)
+shared_ptr <message> IMAPFolder::getMessage(const size_t num)
 {
 	if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
@@ -544,11 +544,11 @@ std::vector <shared_ptr <message> > IMAPFolder::getMessages(const messageSet& ms
 
 	if (msgs.isNumberSet())
 	{
-		const std::vector <int> numbers = IMAPUtils::messageSetToNumberList(msgs);
+		const std::vector <size_t> numbers = IMAPUtils::messageSetToNumberList(msgs);
 
 		shared_ptr <IMAPFolder> thisFolder = dynamicCast <IMAPFolder>(shared_from_this());
 
-		for (std::vector <int>::const_iterator it = numbers.begin() ; it != numbers.end() ; ++it)
+		for (std::vector <size_t>::const_iterator it = numbers.begin() ; it != numbers.end() ; ++it)
 			messages.push_back(make_shared <IMAPMessage>(thisFolder, *it));
 	}
 	else if (msgs.isUIDSet())
@@ -594,7 +594,7 @@ std::vector <shared_ptr <message> > IMAPFolder::getMessages(const messageSet& ms
 				continue;
 
 			// Get Process fetch response for this message
-			const int msgNum = static_cast <int>(messageData->number());
+			const size_t msgNum = messageData->number();
 			message::uid msgUID;
 
 			// Find UID in message attributes
@@ -622,7 +622,7 @@ std::vector <shared_ptr <message> > IMAPFolder::getMessages(const messageSet& ms
 }
 
 
-int IMAPFolder::getMessageCount()
+size_t IMAPFolder::getMessageCount()
 {
 	if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
@@ -760,10 +760,10 @@ void IMAPFolder::fetchMessages(std::vector <shared_ptr <message> >& msg, const f
 		return;
 
 	// Build message numbers list
-	std::vector <int> list;
+	std::vector <size_t> list;
 	list.reserve(msg.size());
 
-	std::map <int, shared_ptr <IMAPMessage> > numberToMsg;
+	std::map <size_t, shared_ptr <IMAPMessage> > numberToMsg;
 
 	for (std::vector <shared_ptr <message> >::iterator it = msg.begin() ; it != msg.end() ; ++it)
 	{
@@ -813,9 +813,9 @@ void IMAPFolder::fetchMessages(std::vector <shared_ptr <message> >& msg, const f
 				continue;
 
 			// Process fetch response for this message
-			const int num = static_cast <int>(messageData->number());
+			const size_t num = messageData->number();
 
-			std::map <int, shared_ptr <IMAPMessage> >::iterator msg = numberToMsg.find(num);
+			std::map <size_t, shared_ptr <IMAPMessage> >::iterator msg = numberToMsg.find(num);
 
 			if (msg != numberToMsg.end())
 			{
@@ -903,7 +903,7 @@ std::vector <shared_ptr <message> > IMAPFolder::getAndFetchMessages
 			continue;
 
 		// Get message number
-		const int msgNum = static_cast <int>(messageData->number());
+		const size_t msgNum = messageData->number();
 
 		// Get message UID
 		const std::vector <IMAPParser::msg_att_item*> atts = messageData->msg_att()->items();
@@ -1289,7 +1289,7 @@ messageSet IMAPFolder::copyMessages(const folder::path& dest, const messageSet& 
 }
 
 
-void IMAPFolder::status(int& count, int& unseen)
+void IMAPFolder::status(size_t& count, size_t& unseen)
 {
 	count = 0;
 	unseen = 0;
@@ -1384,7 +1384,7 @@ void IMAPFolder::noop()
 }
 
 
-std::vector <int> IMAPFolder::getMessageNumbersStartingOnUID(const message::uid& uid)
+std::vector <size_t> IMAPFolder::getMessageNumbersStartingOnUID(const message::uid& uid)
 {
 	// Send the request
 	std::ostringstream uidSearchKey;
@@ -1407,7 +1407,7 @@ std::vector <int> IMAPFolder::getMessageNumbersStartingOnUID(const message::uid&
 	}
 
 	const std::vector <IMAPParser::continue_req_or_response_data*>& respDataList = resp->continue_req_or_response_data();
-	std::vector <int> seqNumbers;
+	std::vector <size_t> seqNumbers;
 
 	for (std::vector <IMAPParser::continue_req_or_response_data*>::const_iterator
 	     it = respDataList.begin() ; it != respDataList.end() ; ++it)
@@ -1492,7 +1492,7 @@ void IMAPFolder::processStatusUpdate(const IMAPParser::response* resp)
 		else if ((*it)->response_data() && (*it)->response_data()->message_data())
 		{
 			const IMAPParser::message_data* msgData = (*it)->response_data()->message_data();
-			const int msgNumber = msgData->number();
+			const size_t msgNumber = msgData->number();
 
 			if ((*it)->response_data()->message_data()->type() == IMAPParser::message_data::FETCH)
 			{
@@ -1507,7 +1507,7 @@ void IMAPFolder::processStatusUpdate(const IMAPParser::response* resp)
 				events.push_back(make_shared <events::messageChangedEvent>
 					(dynamicCast <folder>(shared_from_this()),
 					 events::messageChangedEvent::TYPE_FLAGS,
-					 std::vector <int>(1, msgNumber)));
+					 std::vector <size_t>(1, msgNumber)));
 			}
 			else if ((*it)->response_data()->message_data()->type() == IMAPParser::message_data::EXPUNGE)
 			{
@@ -1524,7 +1524,7 @@ void IMAPFolder::processStatusUpdate(const IMAPParser::response* resp)
 				events.push_back(make_shared <events::messageCountEvent>
 					(dynamicCast <folder>(shared_from_this()),
 					 events::messageCountEvent::TYPE_REMOVED,
-					 std::vector <int>(1, msgNumber)));
+					 std::vector <size_t>(1, msgNumber)));
 
 				expungedMessageCount++;
 			}
@@ -1534,9 +1534,9 @@ void IMAPFolder::processStatusUpdate(const IMAPParser::response* resp)
 	// New messages arrived
 	if (m_status->getMessageCount() > oldStatus->getMessageCount() - expungedMessageCount)
 	{
-		std::vector <int> newMessageNumbers;
+		std::vector <size_t> newMessageNumbers;
 
-		for (int msgNumber = oldStatus->getMessageCount() - expungedMessageCount ;
+		for (size_t msgNumber = oldStatus->getMessageCount() - expungedMessageCount ;
 		     msgNumber <= m_status->getMessageCount() ; ++msgNumber)
 		{
 			newMessageNumbers.push_back(msgNumber);

@@ -116,7 +116,7 @@ VMIME_TEST_SUITE_BEGIN(messageSetTest)
 
 	void testNumberSet_Multiple()
 	{
-		std::vector <int> numbers;
+		std::vector <vmime::index_t> numbers;
 		numbers.push_back(1);    // test grouping 1:3
 		numbers.push_back(89);   // test sorting
 		numbers.push_back(2);

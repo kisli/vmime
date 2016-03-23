@@ -220,7 +220,7 @@ public:
 
 	void enumerateNumberMessageRange(const vmime::net::numberMessageRange& range)
 	{
-		for (int i = range.getFirst(), last = range.getLast() ; i <= last ; ++i)
+		for (size_t i = range.getFirst(), last = range.getLast() ; i <= last ; ++i)
 			list.push_back(i);
 	}
 
@@ -231,12 +231,12 @@ public:
 
 public:
 
-	std::vector <int> list;
+	std::vector <size_t> list;
 };
 
 
 // static
-const std::vector <int> maildirUtils::messageSetToNumberList(const messageSet& msgs)
+const std::vector <size_t> maildirUtils::messageSetToNumberList(const messageSet& msgs)
 {
 	maildirMessageSetEnumerator en;
 	msgs.enumerate(en);

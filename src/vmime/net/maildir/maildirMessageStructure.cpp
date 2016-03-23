@@ -55,7 +55,7 @@ maildirMessageStructure::maildirMessageStructure(shared_ptr <maildirMessagePart>
 
 maildirMessageStructure::maildirMessageStructure(shared_ptr <maildirMessagePart> parent, const std::vector <shared_ptr <const vmime::bodyPart> >& list)
 {
-	for (unsigned int i = 0 ; i < list.size() ; ++i)
+	for (size_t i = 0 ; i < list.size() ; ++i)
 	{
 		shared_ptr <maildirMessagePart> mpart = make_shared <maildirMessagePart>(parent, i, *list[i]);
 		mpart->initStructure(*list[i]);

@@ -97,7 +97,7 @@ private:
 //
 
 
-IMAPMessage::IMAPMessage(shared_ptr <IMAPFolder> folder, const int num)
+IMAPMessage::IMAPMessage(shared_ptr <IMAPFolder> folder, const size_t num)
 	: m_folder(folder), m_num(num), m_size(-1U), m_flags(FLAG_UNDEFINED),
 	  m_expunged(false), m_modseq(0), m_structure(null)
 {
@@ -105,7 +105,7 @@ IMAPMessage::IMAPMessage(shared_ptr <IMAPFolder> folder, const int num)
 }
 
 
-IMAPMessage::IMAPMessage(shared_ptr <IMAPFolder> folder, const int num, const uid& uid)
+IMAPMessage::IMAPMessage(shared_ptr <IMAPFolder> folder, const size_t num, const uid& uid)
 	: m_folder(folder), m_num(num), m_size(-1), m_flags(FLAG_UNDEFINED),
 	  m_expunged(false), m_uid(uid), m_modseq(0), m_structure(null)
 {
@@ -135,7 +135,7 @@ void IMAPMessage::onFolderClosed()
 }
 
 
-int IMAPMessage::getNumber() const
+size_t IMAPMessage::getNumber() const
 {
 	return (m_num);
 }
@@ -286,7 +286,7 @@ void IMAPMessage::extractImpl
 	if (p != NULL)
 	{
 		shared_ptr <const IMAPMessagePart> currentPart = dynamicCast <const IMAPMessagePart>(p);
-		std::vector <int> numbers;
+		std::vector <size_t> numbers;
 
 		numbers.push_back(currentPart->getNumber());
 		currentPart = currentPart->getParent();
@@ -299,7 +299,7 @@ void IMAPMessage::extractImpl
 
 		numbers.erase(numbers.end() - 1);
 
-		for (std::vector <int>::reverse_iterator it = numbers.rbegin() ; it != numbers.rend() ; ++it)
+		for (std::vector <size_t>::reverse_iterator it = numbers.rbegin() ; it != numbers.rend() ; ++it)
 		{
 			if (it != numbers.rbegin()) section << ".";
 			section << (*it + 1);
@@ -634,7 +634,7 @@ shared_ptr <vmime::message> IMAPMessage::getParsedMessage()
 }
 
 
-void IMAPMessage::renumber(const int number)
+void IMAPMessage::renumber(const size_t number)
 {
 	m_num = number;
 }

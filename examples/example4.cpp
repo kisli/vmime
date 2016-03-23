@@ -59,7 +59,7 @@ int main()
 		vmime::messageParser mp("<...MIME message content...>");
 
 		// Enumerate text parts
-		for (int i = 0 ; i < mp.getTextPartCount() ; ++i)
+		for (size_t i = 0 ; i < mp.getTextPartCount() ; ++i)
 		{
 			const vmime::textPart& part = *mp.getTextPartAt(i);
 
@@ -75,7 +75,7 @@ int main()
 				// Corresponding plain text is in "hp.getPlainText()"
 
 				// Enumerate embedded objects (eg. images)
-				for (int j = 0 ; j < hp.getObjectCount() ; ++j)
+				for (size_t j = 0 ; j < hp.getObjectCount() ; ++j)
 				{
 					const vmime::htmlTextPart::embeddedObject& obj = *hp.getObjectAt(j);
 

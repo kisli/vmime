@@ -53,9 +53,9 @@ static const std::string findAvailableProtocols(const vmime::net::service::Type 
 		vmime::net::serviceFactory::getInstance();
 
 	std::ostringstream res;
-	int count = 0;
+	size_t count = 0;
 
-	for (int i = 0 ; i < sf->getServiceCount() ; ++i)
+	for (size_t i = 0 ; i < sf->getServiceCount() ; ++i)
 	{
 		const vmime::net::serviceFactory::registeredService& serv = *sf->getServiceAt(i);
 
@@ -136,7 +136,7 @@ static std::ostream& operator<<(std::ostream& os, const vmime::exception& e)
   */
 static void printStructure(vmime::shared_ptr <const vmime::net::messageStructure> s, const int level = 0)
 {
-	for (int i = 0 ; i < s->getPartCount() ; ++i)
+	for (size_t i = 0 ; i < s->getPartCount() ; ++i)
 	{
 		vmime::shared_ptr <const vmime::net::messagePart> part = s->getPartAt(i);
 
@@ -437,14 +437,14 @@ static void connectStore()
 
 		f->open(vmime::net::folder::MODE_READ_WRITE);
 
-		int count = f->getMessageCount();
+		vmime::size_t count = f->getMessageCount();
 
 		std::cout << std::endl;
 		std::cout << count << " message(s) in your inbox" << std::endl;
 
 		for (bool cont = true ; cont ; )
 		{
-			typedef std::map <int, vmime::shared_ptr <vmime::net::message> > MessageList;
+			typedef std::map <vmime::size_t, vmime::shared_ptr <vmime::net::message> > MessageList;
 			MessageList msgList;
 
 			try
@@ -481,7 +481,7 @@ static void connectStore()
 
 					std::istringstream iss(line);
 
-					int num = 0;
+					vmime::size_t num = 0;
 					iss >> num;
 
 					if (num < 1 || num > f->getMessageCount())
@@ -572,7 +572,7 @@ static void connectStore()
 				{
 					vmime::shared_ptr <vmime::message> parsedMsg = msg->getParsedMessage();
 
-					std::vector <vmime::shared_ptr <const vmime::attachment> > attchs = 
+					std::vector <vmime::shared_ptr <const vmime::attachment> > attchs =
 						vmime::attachmentHelper::findAttachmentsInMessage(parsedMsg);
 
 					if (attchs.size() > 0)
@@ -634,7 +634,7 @@ static void connectStore()
 				// Status
 				case 7:
 				{
-					int count, unseen;
+					vmime::size_t count, unseen;
 					f->status(count, unseen);
 
 					std::cout << "Status: count=" << count << ", unseen=" << unseen << std::endl;
@@ -725,7 +725,7 @@ static void connectStore()
 						}
 						else
 						{
-							const int number =
+							const vmime::size_t number =
 								dynamic_cast <const vmime::net::numberMessageRange&>(range).getFirst();
 
 							std::cout << "Message has successfully been added, "
@@ -760,7 +760,7 @@ static void connectStore()
 						}
 						else
 						{
-							const int number =
+							const vmime::size_t number =
 								dynamic_cast <const vmime::net::numberMessageRange&>(range).getFirst();
 
 							std::cout << "Message has successfully been copied, "

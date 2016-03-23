@@ -60,7 +60,7 @@ const char* messageCountEvent::EVENT_CLASS = "messageCountEvent";
 
 
 messageCountEvent::messageCountEvent
-	(shared_ptr <folder> folder, const Types type, const std::vector <int>& nums)
+	(shared_ptr <folder> folder, const Types type, const std::vector <size_t>& nums)
 		: m_folder(folder), m_type(type)
 {
 	m_nums.resize(nums.size());
@@ -70,7 +70,7 @@ messageCountEvent::messageCountEvent
 
 shared_ptr <folder> messageCountEvent::getFolder() const { return (m_folder); }
 messageCountEvent::Types messageCountEvent::getType() const { return (m_type); }
-const std::vector <int>& messageCountEvent::getNumbers() const { return (m_nums); }
+const std::vector <size_t>& messageCountEvent::getNumbers() const { return (m_nums); }
 
 
 void messageCountEvent::dispatch(messageCountListener* listener)
@@ -96,7 +96,7 @@ const char* messageChangedEvent::EVENT_CLASS = "messageChangedEvent";
 
 
 messageChangedEvent::messageChangedEvent
-	(shared_ptr <folder> folder, const Types type, const std::vector <int>& nums)
+	(shared_ptr <folder> folder, const Types type, const std::vector <size_t>& nums)
 		: m_folder(folder), m_type(type)
 {
 	m_nums.resize(nums.size());
@@ -106,7 +106,7 @@ messageChangedEvent::messageChangedEvent
 
 shared_ptr <folder> messageChangedEvent::getFolder() const { return (m_folder); }
 messageChangedEvent::Types messageChangedEvent::getType() const { return (m_type); }
-const std::vector <int>& messageChangedEvent::getNumbers() const { return (m_nums); }
+const std::vector <size_t>& messageChangedEvent::getNumbers() const { return (m_nums); }
 
 
 void messageChangedEvent::dispatch(messageChangedListener* listener)

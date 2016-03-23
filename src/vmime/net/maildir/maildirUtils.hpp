@@ -137,7 +137,7 @@ public:
 	  * @param msgs message set
 	  * @return list of message numbers
 	  */
-	static const std::vector <int> messageSetToNumberList(const messageSet& msgs);
+	static const std::vector <size_t> messageSetToNumberList(const messageSet& msgs);
 };
 
 

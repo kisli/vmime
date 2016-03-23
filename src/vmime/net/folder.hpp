@@ -185,7 +185,7 @@ public:
 	  * @return a new object referencing the specified message
 	  * @throw exceptions::net_exception if an error occurs
 	  */
-	virtual shared_ptr <message> getMessage(const int num) = 0;
+	virtual shared_ptr <message> getMessage(const size_t num) = 0;
 
 	/** Get new references to messages in this folder, given either their
 	  * sequence numbers or UIDs.
@@ -220,7 +220,7 @@ public:
 	  *
 	  * @return number of messages in the folder
 	  */
-	virtual int getMessageCount() = 0;
+	virtual size_t getMessageCount() = 0;
 
 	/** Get a new reference to a sub-folder in this folder.
 	  *
@@ -318,7 +318,7 @@ public:
 	  * @param unseen will receive the number of unseen messages in the folder
 	  * @throw exceptions::net_exception if an error occurs
 	  */
-	virtual void status(int& count, int& unseen) = 0;
+	virtual void status(size_t& count, size_t& unseen) = 0;
 
 	/** Request folder status without opening it.
 	  *
@@ -394,7 +394,7 @@ public:
  	  * @param uid the uid of the first message
  	  * @throw exceptions::net_exception if an error occurs
  	  */
-	virtual std::vector <int> getMessageNumbersStartingOnUID(const message::uid& uid) = 0;
+	virtual std::vector <size_t> getMessageNumbersStartingOnUID(const message::uid& uid) = 0;
 
 	// Event listeners
 	void addMessageChangedListener(events::messageChangedListener* l);

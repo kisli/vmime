@@ -219,7 +219,7 @@ bool POP3Folder::isOpen() const
 }
 
 
-shared_ptr <message> POP3Folder::getMessage(const int num)
+shared_ptr <message> POP3Folder::getMessage(const size_t num)
 {
 	shared_ptr <POP3Store> store = m_store.lock();
 
@@ -245,12 +245,12 @@ std::vector <shared_ptr <message> > POP3Folder::getMessages(const messageSet& ms
 
 	if (msgs.isNumberSet())
 	{
-		const std::vector <int> numbers = POP3Utils::messageSetToNumberList(msgs);
+		const std::vector <size_t> numbers = POP3Utils::messageSetToNumberList(msgs);
 
 		std::vector <shared_ptr <message> > messages;
 		shared_ptr <POP3Folder> thisFolder(dynamicCast <POP3Folder>(shared_from_this()));
 
-		for (std::vector <int>::const_iterator it = numbers.begin() ; it != numbers.end() ; ++it)
+		for (std::vector <size_t>::const_iterator it = numbers.begin() ; it != numbers.end() ; ++it)
 		{
 			if (*it < 1|| *it > m_messageCount)
 				throw exceptions::message_not_found();
@@ -267,7 +267,7 @@ std::vector <shared_ptr <message> > POP3Folder::getMessages(const messageSet& ms
 }
 
 
-int POP3Folder::getMessageCount()
+size_t POP3Folder::getMessageCount()
 {
 	shared_ptr <POP3Store> store = m_store.lock();
 
@@ -357,7 +357,7 @@ void POP3Folder::fetchMessages(std::vector <shared_ptr <message> >& msg, const f
 			// S: 1 47548
 			// S: 2 12653
 			// S: .
-			std::map <int, string> result;
+			std::map <size_t, string> result;
 			POP3Utils::parseMultiListOrUidlResponse(response, result);
 
 			for (std::vector <shared_ptr <message> >::iterator it = msg.begin() ;
@@ -365,7 +365,7 @@ void POP3Folder::fetchMessages(std::vector <shared_ptr <message> >& msg, const f
 			{
 				shared_ptr <POP3Message> m = dynamicCast <POP3Message>(*it);
 
-				std::map <int, string>::const_iterator x = result.find(m->m_num);
+				std::map <size_t, string>::const_iterator x = result.find(m->m_num);
 
 				if (x != result.end())
 				{
@@ -397,7 +397,7 @@ void POP3Folder::fetchMessages(std::vector <shared_ptr <message> >& msg, const f
 			// S: 1 whqtswO00WBw418f9t5JxYwZ
 			// S: 2 QhdPYR:00WBw1Ph7x7
 			// S: .
-			std::map <int, string> result;
+			std::map <size_t, string> result;
 			POP3Utils::parseMultiListOrUidlResponse(response, result);
 
 			for (std::vector <shared_ptr <message> >::iterator it = msg.begin() ;
@@ -405,7 +405,7 @@ void POP3Folder::fetchMessages(std::vector <shared_ptr <message> >& msg, const f
 			{
 				shared_ptr <POP3Message> m = dynamicCast <POP3Message>(*it);
 
-				std::map <int, string>::const_iterator x = result.find(m->m_num);
+				std::map <size_t, string>::const_iterator x = result.find(m->m_num);
 
 				if (x != result.end())
 					m->m_uid = (*x).second;
@@ -558,7 +558,7 @@ void POP3Folder::deleteMessages(const messageSet& msgs)
 {
 	shared_ptr <POP3Store> store = m_store.lock();
 
-	const std::vector <int> nums = POP3Utils::messageSetToNumberList(msgs);
+	const std::vector <size_t> nums = POP3Utils::messageSetToNumberList(msgs);
 
 	if (nums.empty())
 		throw exceptions::invalid_argument();
@@ -568,7 +568,7 @@ void POP3Folder::deleteMessages(const messageSet& msgs)
 	else if (!isOpen())
 		throw exceptions::illegal_state("Folder not open");
 
-	for (std::vector <int>::const_iterator
+	for (std::vector <size_t>::const_iterator
 	     it = nums.begin() ; it != nums.end() ; ++it)
 	{
 		POP3Command::DELE(*it)->send(store->getConnection());
@@ -581,7 +581,7 @@ void POP3Folder::deleteMessages(const messageSet& msgs)
 	}
 
 	// Sort message list
-	std::vector <int> list;
+	std::vector <size_t> list;
 
 	list.resize(nums.size());
 	std::copy(nums.begin(), nums.end(), list.begin());
@@ -589,7 +589,7 @@ void POP3Folder::deleteMessages(const messageSet& msgs)
 	std::sort(list.begin(), list.end());
 
 	// Update local flags
-	for (std::map <POP3Message*, int>::iterator it =
+	for (std::map <POP3Message*, size_t>::iterator it =
 	     m_messages.begin() ; it != m_messages.end() ; ++it)
 	{
 		POP3Message* msg = (*it).first;
@@ -644,7 +644,7 @@ messageSet POP3Folder::copyMessages
 }
 
 
-void POP3Folder::status(int& count, int& unseen)
+void POP3Folder::status(size_t& count, size_t& unseen)
 {
 	count = 0;
 	unseen = 0;
@@ -672,13 +672,10 @@ shared_ptr <folderStatus> POP3Folder::getStatus()
 		throw exceptions::command_error("STAT", response->getFirstLine());
 
 
-	int count = 0;
+	size_t count = 0;
 
 	std::istringstream iss(response->getText());
 	iss >> count;
-
-	if (count < 0)
-		throw exceptions::invalid_response("STAT", response->getText());
 
 	shared_ptr <POP3FolderStatus> status = make_shared <POP3FolderStatus>();
 
@@ -688,16 +685,16 @@ shared_ptr <folderStatus> POP3Folder::getStatus()
 	// Update local message count
 	if (m_messageCount != count)
 	{
-		const int oldCount = m_messageCount;
+		const size_t oldCount = m_messageCount;
 
 		m_messageCount = count;
 
 		if (count > oldCount)
 		{
-			std::vector <int> nums;
+			std::vector <size_t> nums;
 			nums.resize(count - oldCount);
 
-			for (int i = oldCount + 1, j = 0 ; i <= count ; ++i, ++j)
+			for (size_t i = oldCount + 1, j = 0 ; i <= count ; ++i, ++j)
 				nums[j] = i;
 
 			// Notify message count changed
@@ -738,7 +735,7 @@ void POP3Folder::expunge()
 }
 
 
-std::vector <int> POP3Folder::getMessageNumbersStartingOnUID(const message::uid& /* uid */)
+std::vector <size_t> POP3Folder::getMessageNumbersStartingOnUID(const message::uid& /* uid */)
 {
 	throw exceptions::operation_not_supported();
 }

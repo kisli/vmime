@@ -54,12 +54,12 @@ class VMIME_EXPORT maildirMessage : public message
 
 public:
 
-	maildirMessage(shared_ptr <maildirFolder> folder, const int num);
+	maildirMessage(shared_ptr <maildirFolder> folder, const size_t num);
 
 	~maildirMessage();
 
 
-	int getNumber() const;
+	size_t getNumber() const;
 
 	const uid getUID() const;
 
@@ -95,7 +95,7 @@ private:
 
 	weak_ptr <maildirFolder> m_folder;
 
-	int m_num;
+	size_t m_num;
 	size_t m_size;
 	int m_flags;
 	bool m_expunged;

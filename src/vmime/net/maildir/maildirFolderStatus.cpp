@@ -50,25 +50,25 @@ maildirFolderStatus::maildirFolderStatus(const maildirFolderStatus& other)
 }
 
 
-unsigned int maildirFolderStatus::getMessageCount() const
+size_t maildirFolderStatus::getMessageCount() const
 {
 	return m_count;
 }
 
 
-unsigned int maildirFolderStatus::getUnseenCount() const
+size_t maildirFolderStatus::getUnseenCount() const
 {
 	return m_unseen;
 }
 
 
-void maildirFolderStatus::setMessageCount(const unsigned int count)
+void maildirFolderStatus::setMessageCount(const size_t count)
 {
 	m_count = count;
 }
 
 
-void maildirFolderStatus::setUnseenCount(const unsigned int unseen)
+void maildirFolderStatus::setUnseenCount(const size_t unseen)
 {
 	m_unseen = unseen;
 }

@@ -50,25 +50,25 @@ POP3FolderStatus::POP3FolderStatus(const POP3FolderStatus& other)
 }
 
 
-unsigned int POP3FolderStatus::getMessageCount() const
+size_t POP3FolderStatus::getMessageCount() const
 {
 	return m_count;
 }
 
 
-unsigned int POP3FolderStatus::getUnseenCount() const
+size_t POP3FolderStatus::getUnseenCount() const
 {
 	return m_unseen;
 }
 
 
-void POP3FolderStatus::setMessageCount(const unsigned int count)
+void POP3FolderStatus::setMessageCount(const size_t count)
 {
 	m_count = count;
 }
 
 
-void POP3FolderStatus::setUnseenCount(const unsigned int unseen)
+void POP3FolderStatus::setUnseenCount(const size_t unseen)
 {
 	m_unseen = unseen;
 }

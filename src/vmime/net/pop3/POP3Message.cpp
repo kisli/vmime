@@ -44,7 +44,7 @@ namespace net {
 namespace pop3 {
 
 
-POP3Message::POP3Message(shared_ptr <POP3Folder> folder, const int num)
+POP3Message::POP3Message(shared_ptr <POP3Folder> folder, const size_t num)
 	: m_folder(folder), m_num(num), m_size(-1), m_deleted(false)
 {
 	folder->registerMessage(this);
@@ -73,7 +73,7 @@ void POP3Message::onFolderClosed()
 }
 
 
-int POP3Message::getNumber() const
+size_t POP3Message::getNumber() const
 {
 	return (m_num);
 }

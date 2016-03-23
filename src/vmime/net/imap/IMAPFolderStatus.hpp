@@ -52,8 +52,8 @@ public:
 	IMAPFolderStatus(const IMAPFolderStatus& other);
 
 	// Inherited from folderStatus
-	unsigned int getMessageCount() const;
-	unsigned int getUnseenCount() const;
+	size_t getMessageCount() const;
+	size_t getUnseenCount() const;
 
 	shared_ptr <folderStatus> clone() const;
 
@@ -61,7 +61,7 @@ public:
 	  *
 	  * @return number of messages flagged Recent
 	  */
-	unsigned int getRecentCount() const;
+	size_t getRecentCount() const;
 
 	/** Returns the UID validity of the folder for the current session.
 	  * If the server is capable of persisting UIDs accross sessions,
@@ -105,9 +105,9 @@ public:
 
 private:
 
-	unsigned int m_count;
-	unsigned int m_unseen;
-	unsigned int m_recent;
+	size_t m_count;
+	size_t m_unseen;
+	size_t m_recent;
 	vmime_uint32 m_uidValidity;
 	vmime_uint32 m_uidNext;
 	vmime_uint64 m_highestModSeq;

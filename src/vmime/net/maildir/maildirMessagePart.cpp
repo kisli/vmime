@@ -36,7 +36,7 @@ namespace net {
 namespace maildir {
 
 
-maildirMessagePart::maildirMessagePart(shared_ptr <maildirMessagePart> parent, const int number, const bodyPart& part)
+maildirMessagePart::maildirMessagePart(shared_ptr <maildirMessagePart> parent, const size_t number, const bodyPart& part)
 	: m_parent(parent), m_header(null), m_number(number)
 {
 	m_headerParsedOffset = part.getHeader()->getParsedOffset();
@@ -99,7 +99,7 @@ size_t maildirMessagePart::getSize() const
 }
 
 
-int maildirMessagePart::getNumber() const
+size_t maildirMessagePart::getNumber() const
 {
 	return m_number;
 }

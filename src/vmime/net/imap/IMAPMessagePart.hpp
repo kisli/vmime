@@ -48,8 +48,8 @@ class VMIME_EXPORT IMAPMessagePart : public messagePart
 {
 public:
 
-	IMAPMessagePart(shared_ptr <IMAPMessagePart> parent, const int number, const IMAPParser::body_type_mpart* mpart);
-	IMAPMessagePart(shared_ptr <IMAPMessagePart> parent, const int number, const IMAPParser::body_type_1part* part);
+	IMAPMessagePart(shared_ptr <IMAPMessagePart> parent, const size_t number, const IMAPParser::body_type_mpart* mpart);
+	IMAPMessagePart(shared_ptr <IMAPMessagePart> parent, const size_t number, const IMAPParser::body_type_1part* part);
 
 	shared_ptr <const messageStructure> getStructure() const;
 	shared_ptr <messageStructure> getStructure();
@@ -58,13 +58,13 @@ public:
 
 	const mediaType& getType() const;
 	size_t getSize() const;
-	int getNumber() const;
+	size_t getNumber() const;
 
 	shared_ptr <const header> getHeader() const;
 
 
 	static shared_ptr <IMAPMessagePart> create
-		(shared_ptr <IMAPMessagePart> parent, const int number, const IMAPParser::body* body);
+		(shared_ptr <IMAPMessagePart> parent, const size_t number, const IMAPParser::body* body);
 
 
 	header& getOrCreateHeader();
@@ -75,7 +75,7 @@ private:
 	weak_ptr <IMAPMessagePart> m_parent;
 	shared_ptr <header> m_header;
 
-	int m_number;
+	size_t m_number;
 	size_t m_size;
 	mediaType m_mediaType;
 };

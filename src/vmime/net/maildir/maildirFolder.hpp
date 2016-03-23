@@ -86,10 +86,10 @@ public:
 
 	bool isOpen() const;
 
-	shared_ptr <message> getMessage(const int num);
+	shared_ptr <message> getMessage(const size_t num);
 	std::vector <shared_ptr <message> > getMessages(const messageSet& msgs);
 
-	int getMessageCount();
+	size_t getMessageCount();
 
 	shared_ptr <folder> getFolder(const folder::path::component& name);
 	std::vector <shared_ptr <folder> > getFolders(const bool recursive = false);
@@ -105,7 +105,7 @@ public:
 
 	messageSet copyMessages(const folder::path& dest, const messageSet& msgs);
 
-	void status(int& count, int& unseen);
+	void status(size_t& count, size_t& unseen);
 	shared_ptr <folderStatus> getStatus();
 
 	void expunge();
@@ -124,7 +124,7 @@ public:
 
 	int getFetchCapabilities() const;
 
-	std::vector <int> getMessageNumbersStartingOnUID(const message::uid& uid);
+	std::vector <size_t> getMessageNumbersStartingOnUID(const message::uid& uid);
 
 private:
 
@@ -135,16 +135,16 @@ private:
 	void registerMessage(maildirMessage* msg);
 	void unregisterMessage(maildirMessage* msg);
 
-	const utility::file::path getMessageFSPath(const int number) const;
+	const utility::file::path getMessageFSPath(const size_t number) const;
 
 	void onStoreDisconnected();
 
 	void onClose();
 
-	void deleteMessagesImpl(const std::vector <int>& nums);
-	void setMessageFlagsImpl(const std::vector <int>& nums, const int flags, const int mode);
+	void deleteMessagesImpl(const std::vector <size_t>& nums);
+	void setMessageFlagsImpl(const std::vector <size_t>& nums, const int flags, const int mode);
 
-	void copyMessagesImpl(const folder::path& dest, const std::vector <int>& nums);
+	void copyMessagesImpl(const folder::path& dest, const std::vector <size_t>& nums);
 	void copyMessageImpl(const utility::file::path& tmpDirPath, const utility::file::path& curDirPath, const utility::file::path::component& filename, utility::inputStream& is, const size_t size, utility::progressListener* progress);
 
 	void notifyMessagesCopied(const folder::path& dest);
@@ -158,8 +158,8 @@ private:
 	int m_mode;
 	bool m_open;
 
-	int m_unreadMessageCount;
-	int m_messageCount;
+	size_t m_unreadMessageCount;
+	size_t m_messageCount;
 
 	// Store information about scanned messages
 	struct messageInfos

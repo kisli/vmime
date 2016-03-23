@@ -50,19 +50,19 @@ public:
 	POP3FolderStatus(const POP3FolderStatus& other);
 
 	// Inherited from folderStatus
-	unsigned int getMessageCount() const;
-	unsigned int getUnseenCount() const;
+	size_t getMessageCount() const;
+	size_t getUnseenCount() const;
 
 	shared_ptr <folderStatus> clone() const;
 
 
-	void setMessageCount(const unsigned int count);
-	void setUnseenCount(const unsigned int unseen);
+	void setMessageCount(const size_t count);
+	void setUnseenCount(const size_t unseen);
 
 private:
 
-	unsigned int m_count;
-	unsigned int m_unseen;
+	size_t m_count;
+	size_t m_unseen;
 };
 
 

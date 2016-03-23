@@ -56,12 +56,12 @@ private:
 
 public:
 
-	POP3Message(shared_ptr <POP3Folder> folder, const int num);
+	POP3Message(shared_ptr <POP3Folder> folder, const size_t num);
 
 	~POP3Message();
 
 
-	int getNumber() const;
+	size_t getNumber() const;
 
 	const uid getUID() const;
 
@@ -101,7 +101,7 @@ private:
 	void onFolderClosed();
 
 	weak_ptr <POP3Folder> m_folder;
-	int m_num;
+	size_t m_num;
 	uid m_uid;
 	size_t m_size;
 
