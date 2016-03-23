@@ -58,7 +58,7 @@ VMIME_TEST_SUITE_BEGIN(POP3UtilsTest)
 		vmime::shared_ptr <POP3Response> resp =
 			POP3Response::readMultilineResponse(conn);
 
-		std::map <vmime::index_t, vmime::string> result;
+		std::map <vmime::size_t, vmime::string> result;
 		POP3Utils::parseMultiListOrUidlResponse(resp, result);
 
 		VASSERT_EQ("Count", 5, result.size());

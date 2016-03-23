@@ -291,7 +291,7 @@ public:
 		vmime::shared_ptr <vmime::net::folder> folder = store->getFolder
 			(fpath() / "Folder" / "SubFolder" / "SubSubFolder2");
 
-		vmime::index_t count, unseen;
+		vmime::size_t count, unseen;
 		folder->status(count, unseen);
 
 		VASSERT_EQ("Message count", 1, count);
