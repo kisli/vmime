@@ -39,7 +39,7 @@ static punycode_uint decode_digit(punycode_uint cp)
 
 static char encode_digit(punycode_uint d, int flag)
 {
-  return d + 22 + 75 * (d < 26) - ((flag != 0) << 5);
+  return char(d + 22 + 75 * (d < 26) - ((flag != 0) << 5));
   /*  0..25 map to ASCII a..z or A..Z */
   /* 26..35 map to ASCII 0..9         */
 }
@@ -59,7 +59,7 @@ static char encode_digit(punycode_uint d, int flag)
 static char encode_basic(punycode_uint bcp, int flag)
 {
   bcp -= (bcp - 97 < 26) << 5;
-  return bcp + ((!flag && (bcp - 65 < 26)) << 5);
+  return char(bcp + ((!flag && (bcp - 65 < 26)) << 5));
 }
 
 /*** Platform-specific constants ***/
@@ -109,8 +109,9 @@ enum punycode_status punycode_encode(
   for (j = 0;  j < input_length;  ++j) {
     if (basic(input[j])) {
       if (max_out - out < 2) return punycode_big_output;
-      output[out++] =
-        case_flags ?  encode_basic(input[j], case_flags[j]) : input[j];
+      output[out++] = char(
+        case_flags ?  encode_basic(input[j], case_flags[j]) : input[j]
+      );
     }
     /* else if (input[j] < n) return punycode_bad_input; */
     /* (not needed for Punycode with unsigned code points) */

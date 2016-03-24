@@ -115,11 +115,13 @@ void charsetConverter_idna::convert(const string& in, string& out, status* st)
 		if (st)
 			st->inputBytesRead = in.length();
 
+		punycode_uint inputLen = static_cast <punycode_uint>(unichars.size());
+
 		std::vector <char> output(inUTF8.length() * 2);
-		punycode_uint outputLen = output.size();
+		punycode_uint outputLen = static_cast <punycode_uint>(output.size());
 
 		const punycode_status status = punycode_encode
-			(unichars.size(), &unichars[0], /* case_flags */ NULL, &outputLen, &output[0]);
+			(inputLen, &unichars[0], /* case_flags */ NULL, &outputLen, &output[0]);
 
 		if (status == punycode_success)
 		{
@@ -148,11 +150,13 @@ void charsetConverter_idna::convert(const string& in, string& out, status* st)
 			return;
 		}
 
+		punycode_uint inputLen = static_cast <punycode_uint>(in.length() - 4);
+
 		std::vector <punycode_uint> output(in.length() - 4);
-		punycode_uint outputLen = output.size();
+		punycode_uint outputLen = static_cast <punycode_uint>(output.size());
 
 		const punycode_status status = punycode_decode
-			(in.length() - 4, &in[4], &outputLen, &output[0], /* case_flags */ NULL);
+			(inputLen, &in[4], &outputLen, &output[0], /* case_flags */ NULL);
 
 		if (st)
 			st->inputBytesRead = in.length();
