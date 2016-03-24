@@ -31,6 +31,8 @@ VMIME_TEST_SUITE_BEGIN(messageSetTest)
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testNumberSet_Single)
 		VMIME_TEST(testNumberSet_Range)
+		VMIME_TEST(testNumberSet_InvalidRange)
+		VMIME_TEST(testNumberSet_InvalidFirst)
 		VMIME_TEST(testNumberSet_InfiniteRange)
 		VMIME_TEST(testNumberSet_Multiple)
 		VMIME_TEST(testUIDSet_Single)
@@ -40,6 +42,7 @@ VMIME_TEST_SUITE_BEGIN(messageSetTest)
 		VMIME_TEST(testUIDSet_MultipleNonNumeric)
 		VMIME_TEST(testIsNumberSet)
 		VMIME_TEST(testIsUIDSet)
+		VMIME_TEST(testMixedRanges)
 	VMIME_TEST_LIST_END
 
 
@@ -59,6 +62,8 @@ VMIME_TEST_SUITE_BEGIN(messageSetTest)
 
 			if (range.getFirst() == range.getLast())
 				m_oss << range.getFirst();
+			else if (range.getLast() == size_t(-1))
+				m_oss << range.getFirst() << ":(LAST)";
 			else
 				m_oss << range.getFirst() << ":" << range.getLast();
 
@@ -72,6 +77,8 @@ VMIME_TEST_SUITE_BEGIN(messageSetTest)
 
 			if (range.getFirst() == range.getLast())
 				m_oss << range.getFirst();
+			else if (range.getLast() == size_t(-1))
+				m_oss << range.getFirst() << ":(LAST)";
 			else
 				m_oss << range.getFirst() << ":" << range.getLast();
 
@@ -109,9 +116,19 @@ VMIME_TEST_SUITE_BEGIN(messageSetTest)
 		VASSERT_EQ("str", "42:100", enumerateAsString(vmime::net::messageSet::byNumber(42, 100)));
 	}
 
+	void testNumberSet_InvalidRange()
+	{
+		VASSERT_THROW("first > last", vmime::net::messageSet::byNumber(100, 42), std::invalid_argument);
+	}
+
+	void testNumberSet_InvalidFirst()
+	{
+		VASSERT_THROW("first == -1", vmime::net::messageSet::byNumber(-1, 42), std::invalid_argument);
+	}
+
 	void testNumberSet_InfiniteRange()
 	{
-		VASSERT_EQ("str", "42:-1", enumerateAsString(vmime::net::messageSet::byNumber(42, -1)));
+		VASSERT_EQ("str", "42:(LAST)", enumerateAsString(vmime::net::messageSet::byNumber(42, -1)));
 	}
 
 	void testNumberSet_Multiple()
@@ -195,6 +212,14 @@ VMIME_TEST_SUITE_BEGIN(messageSetTest)
 
 		VASSERT_FALSE("number2", vmime::net::messageSet::byNumber(42, -1).isUIDSet());
 		VASSERT_TRUE("uid2", vmime::net::messageSet::byUID("42", "*").isUIDSet());
+	}
+
+	void testMixedRanges()
+	{
+		vmime::net::messageSet set = vmime::net::messageSet::byNumber(1, 5);
+		set.addRange(vmime::net::numberMessageRange(6, 8));
+
+		VASSERT_THROW("mixed ranges", set.addRange(vmime::net::UIDMessageRange("123")), std::invalid_argument);
 	}
 
 VMIME_TEST_SUITE_END

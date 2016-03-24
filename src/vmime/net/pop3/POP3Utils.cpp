@@ -78,9 +78,18 @@ class POP3MessageSetEnumerator : public messageSetEnumerator
 {
 public:
 
+	POP3MessageSetEnumerator(const size_t msgCount)
+		: m_msgCount(msgCount)
+	{
+
+	}
+
 	void enumerateNumberMessageRange(const vmime::net::numberMessageRange& range)
 	{
-		for (size_t i = range.getFirst(), last = range.getLast() ; i <= last ; ++i)
+		size_t last = range.getLast();
+		if (last == size_t(-1)) last = m_msgCount;
+
+		for (size_t i = range.getFirst() ; i <= last ; ++i)
 			list.push_back(i);
 	}
 
@@ -92,13 +101,17 @@ public:
 public:
 
 	std::vector <size_t> list;
+
+private:
+
+	size_t m_msgCount;
 };
 
 
 // static
-const std::vector <size_t> POP3Utils::messageSetToNumberList(const messageSet& msgs)
+const std::vector <size_t> POP3Utils::messageSetToNumberList(const messageSet& msgs, const size_t msgCount)
 {
-	POP3MessageSetEnumerator en;
+	POP3MessageSetEnumerator en(msgCount);
 	msgs.enumerate(en);
 
 	return en.list;

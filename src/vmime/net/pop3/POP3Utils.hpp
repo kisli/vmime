@@ -69,9 +69,10 @@ public:
 	/** Returns a list of message numbers given a message set.
 	  *
 	  * @param msgs message set
+	  * @param msgCount number of messages in folder
 	  * @return list of message numbers
 	  */
-	static const std::vector <size_t> messageSetToNumberList(const messageSet& msgs);
+	static const std::vector <size_t> messageSetToNumberList(const messageSet& msgs, const size_t msgCount);
 };
 
 

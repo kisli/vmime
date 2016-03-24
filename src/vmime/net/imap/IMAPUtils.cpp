@@ -703,6 +703,8 @@ public:
 
 		if (range.getFirst() == range.getLast())
 			m_oss << range.getFirst();
+		else if (range.getLast() == size_t(-1))
+			m_oss << range.getFirst() << ":*";
 		else
 			m_oss << range.getFirst() << ":" << range.getLast();
 
@@ -716,6 +718,8 @@ public:
 
 		if (range.getFirst() == range.getLast())
 			m_oss << range.getFirst();
+		else if (range.getLast() == size_t(-1))
+			m_oss << range.getFirst() << ":*";
 		else
 			m_oss << range.getFirst() << ":" << range.getLast();
 
@@ -768,16 +772,6 @@ const string IMAPUtils::messageSetToSequenceSet(const messageSet& msgs)
 	msgs.enumerate(en);
 
 	return en.str();
-}
-
-
-// static
-const std::vector <size_t> IMAPUtils::messageSetToNumberList(const messageSet& msgs)
-{
-	IMAPMessageSetEnumerator en;
-	msgs.enumerate(en);
-
-	return en.list();
 }
 
 

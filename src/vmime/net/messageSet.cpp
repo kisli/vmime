@@ -63,9 +63,9 @@ numberMessageRange::numberMessageRange(const size_t number)
 numberMessageRange::numberMessageRange(const size_t first, const size_t last)
 	: m_first(first), m_last(last)
 {
-	if (first < 1)
+	if (first < 1 || first == static_cast <size_t>(-1))
 		throw std::invalid_argument("first");
-	else if (last != -1U && last < first)
+	else if (last != static_cast <size_t>(-1) && last < first)
 		throw std::invalid_argument("last");
 }
 
@@ -208,7 +208,7 @@ messageSet messageSet::byNumber(const std::vector <size_t>& numbers)
 	std::sort(sortedNumbers.begin(), sortedNumbers.end());
 
 	// Build the set by detecting ranges of continuous numbers
-	size_t previous = -1U, rangeStart = -1U;
+	size_t previous = static_cast <size_t>(-1), rangeStart = static_cast <size_t>(-1);
 	messageSet set;
 
 	for (std::vector <size_t>::const_iterator it = sortedNumbers.begin() ;
@@ -219,7 +219,10 @@ messageSet messageSet::byNumber(const std::vector <size_t>& numbers)
 		if (current == previous)
 			continue;  // skip duplicates
 
-		if (previous == -1U)
+		if (current == static_cast <size_t>(-1))
+			throw std::invalid_argument("numbers");
+
+		if (previous == static_cast <size_t>(-1))
 		{
 			previous = current;
 			rangeStart = current;
@@ -302,7 +305,7 @@ messageSet messageSet::byUID(const std::vector <message::uid>& uids)
 	std::sort(sortedUIDs.begin(), sortedUIDs.end());
 
 	// Build the set by detecting ranges of continuous numbers
-	vmime_uint32 previous = -1U, rangeStart = -1U;
+	vmime_uint32 previous = static_cast <vmime_uint32>(-1), rangeStart = static_cast <vmime_uint32>(-1);
 	messageSet set;
 
 	for (std::vector <vmime_uint32>::const_iterator it = sortedUIDs.begin() ;
@@ -313,7 +316,7 @@ messageSet messageSet::byUID(const std::vector <message::uid>& uids)
 		if (current == previous)
 			continue;  // skip duplicates
 
-		if (previous == -1U)
+		if (previous == static_cast <vmime_uint32>(-1))
 		{
 			previous = current;
 			rangeStart = current;

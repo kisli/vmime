@@ -23,57 +23,23 @@
 
 #include "tests/testUtils.hpp"
 
-#include "tests/net/pop3/POP3TestUtils.hpp"
-
-#include "vmime/net/pop3/POP3Utils.hpp"
-#include "vmime/net/pop3/POP3Response.hpp"
+#include "vmime/net/maildir/maildirUtils.hpp"
 
 
-using namespace vmime::net::pop3;
+using namespace vmime::net::maildir;
 
 
-VMIME_TEST_SUITE_BEGIN(POP3UtilsTest)
+VMIME_TEST_SUITE_BEGIN(maildirUtilsTest)
 
 	VMIME_TEST_LIST_BEGIN
-		VMIME_TEST(testParseMultiListOrUidlResponse)
 		VMIME_TEST(testMessageSetToNumberList)
 	VMIME_TEST_LIST_END
 
 
-	void testParseMultiListOrUidlResponse()
-	{
-		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
-		vmime::shared_ptr <vmime::net::timeoutHandler> toh = vmime::make_shared <testTimeoutHandler>();
-
-		vmime::shared_ptr <POP3ConnectionTest> conn = vmime::make_shared <POP3ConnectionTest>
-			(vmime::dynamicCast <vmime::net::socket>(socket), toh);
-
-		socket->localSend("+OK Response Text\r\n");
-		socket->localSend("1 abcdef\r\n");
-		socket->localSend("23    ghijkl\r\n");
-		socket->localSend("4\tmnopqr\r\n");
-		socket->localSend("567xx\tstuvwx\r\n");
-		socket->localSend("8 yz   \r\n");
-		socket->localSend(".\r\n");
-
-		vmime::shared_ptr <POP3Response> resp =
-			POP3Response::readMultilineResponse(conn);
-
-		std::map <vmime::size_t, vmime::string> result;
-		POP3Utils::parseMultiListOrUidlResponse(resp, result);
-
-		VASSERT_EQ("Count", 5, result.size());
-		VASSERT_EQ("1", "abcdef", result[1]);
-		VASSERT_EQ("2 (multiple spaces)", "ghijkl", result[23]);
-		VASSERT_EQ("3 (with tab)", "mnopqr", result[4]);
-		VASSERT_EQ("4 (with invalid digit)", "stuvwx", result[567]);
-		VASSERT_EQ("5 (with extra space)", "yz", result[8]);
-	}
-
 	void testMessageSetToNumberList()
 	{
 		const std::vector <size_t> msgNums =
-			POP3Utils::messageSetToNumberList
+			maildirUtils::messageSetToNumberList
 				(vmime::net::messageSet::byNumber(5, -1), /* msgCount */ 8);
 
 		VASSERT_EQ("Count", 4, msgNums.size());

@@ -427,7 +427,7 @@ std::vector <shared_ptr <message> > maildirFolder::getMessages(const messageSet&
 
 	if (msgs.isNumberSet())
 	{
-		const std::vector <size_t> numbers = maildirUtils::messageSetToNumberList(msgs);
+		const std::vector <size_t> numbers = maildirUtils::messageSetToNumberList(msgs, m_messageCount);
 
 		std::vector <shared_ptr <message> > messages;
 		shared_ptr <maildirFolder> thisFolder = dynamicCast <maildirFolder>(shared_from_this());
@@ -595,7 +595,7 @@ void maildirFolder::setMessageFlags
 
 	if (msgs.isNumberSet())
 	{
-		const std::vector <size_t> nums = maildirUtils::messageSetToNumberList(msgs);
+		const std::vector <size_t> nums = maildirUtils::messageSetToNumberList(msgs, m_messageCount);
 
 		// Change message flags
 		shared_ptr <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
@@ -950,7 +950,7 @@ messageSet maildirFolder::copyMessages(const folder::path& dest, const messageSe
 	}
 
 	// Copy messages
-	const std::vector <size_t> nums = maildirUtils::messageSetToNumberList(msgs);
+	const std::vector <size_t> nums = maildirUtils::messageSetToNumberList(msgs, m_messageCount);
 
 	try
 	{
@@ -1013,6 +1013,8 @@ void maildirFolder::status(size_t& count, size_t& unseen)
 
 	count = status->getMessageCount();
 	unseen = status->getUnseenCount();
+
+	m_messageCount = count;
 }
 
 

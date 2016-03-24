@@ -114,13 +114,6 @@ public:
 	  */
 	static const string messageSetToSequenceSet(const messageSet& msgs);
 
-	/** Returns a list of message sequence numbers given a message set.
-	  *
-	  * @param msgs message set
-	  * @return list of message numbers
-	  */
-	static const std::vector <size_t> messageSetToNumberList(const messageSet& msgs);
-
 	/** Constructs a message set from a parser 'uid_set' structure.
 	  *
 	  * @param uidSet UID set, as returned by the parser

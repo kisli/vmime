@@ -542,79 +542,75 @@ std::vector <shared_ptr <message> > IMAPFolder::getMessages(const messageSet& ms
 
 	std::vector <shared_ptr <message> > messages;
 
-	if (msgs.isNumberSet())
+	// Sequence number message set:
+	//     C: . FETCH uuuu1,uuuu2,uuuu3 UID
+	//     S: * nnnn1 FETCH (UID uuuu1)
+	//     S: * nnnn2 FETCH (UID uuuu2)
+	//     S: * nnnn3 FETCH (UID uuuu3)
+	//     S: . OK FETCH completed
+
+	// UID message set:
+	//     C: . UID FETCH uuuu1,uuuu2,uuuu3 UID
+	//     S: * nnnn1 FETCH (UID uuuu1)
+	//     S: * nnnn2 FETCH (UID uuuu2)
+	//     S: * nnnn3 FETCH (UID uuuu3)
+	//     S: . OK UID FETCH completed
+
+	std::vector <string> params;
+	params.push_back("UID");
+
+	IMAPCommand::FETCH(msgs, params)->send(m_connection);
+
+	// Get the response
+	scoped_ptr <IMAPParser::response> resp(m_connection->readResponse());
+
+	if (resp->isBad() || resp->response_done()->response_tagged()->
+			resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
 	{
-		const std::vector <size_t> numbers = IMAPUtils::messageSetToNumberList(msgs);
-
-		shared_ptr <IMAPFolder> thisFolder = dynamicCast <IMAPFolder>(shared_from_this());
-
-		for (std::vector <size_t>::const_iterator it = numbers.begin() ; it != numbers.end() ; ++it)
-			messages.push_back(make_shared <IMAPMessage>(thisFolder, *it));
+		throw exceptions::command_error("UID FETCH ... UID", resp->getErrorLog(), "bad response");
 	}
-	else if (msgs.isUIDSet())
+
+	// Process the response
+	const std::vector <IMAPParser::continue_req_or_response_data*>& respDataList =
+		resp->continue_req_or_response_data();
+
+	for (std::vector <IMAPParser::continue_req_or_response_data*>::const_iterator
+		 it = respDataList.begin() ; it != respDataList.end() ; ++it)
 	{
-		//     C: . UID FETCH uuuu1,uuuu2,uuuu3 UID
-		//     S: * nnnn1 FETCH (UID uuuu1)
-		//     S: * nnnn2 FETCH (UID uuuu2)
-		//     S: * nnnn3 FETCH (UID uuuu3)
-		//     S: . OK UID FETCH completed
-
-		std::vector <string> params;
-		params.push_back("UID");
-
-		IMAPCommand::FETCH(msgs, params)->send(m_connection);
-
-		// Get the response
-		scoped_ptr <IMAPParser::response> resp(m_connection->readResponse());
-
-		if (resp->isBad() || resp->response_done()->response_tagged()->
-				resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
+		if ((*it)->response_data() == NULL)
 		{
-			throw exceptions::command_error("UID FETCH ... UID", resp->getErrorLog(), "bad response");
+			throw exceptions::command_error("UID FETCH ... UID",
+				resp->getErrorLog(), "invalid response");
 		}
 
-		// Process the response
-		const std::vector <IMAPParser::continue_req_or_response_data*>& respDataList =
-			resp->continue_req_or_response_data();
+		const IMAPParser::message_data* messageData =
+			(*it)->response_data()->message_data();
 
-		for (std::vector <IMAPParser::continue_req_or_response_data*>::const_iterator
-			 it = respDataList.begin() ; it != respDataList.end() ; ++it)
+		// We are only interested in responses of type "FETCH"
+		if (messageData == NULL || messageData->type() != IMAPParser::message_data::FETCH)
+			continue;
+
+		// Get Process fetch response for this message
+		const size_t msgNum = messageData->number();
+		message::uid msgUID;
+
+		// Find UID in message attributes
+		const std::vector <IMAPParser::msg_att_item*> atts = messageData->msg_att()->items();
+
+		for (std::vector <IMAPParser::msg_att_item*>::const_iterator
+			 it = atts.begin() ; it != atts.end() ; ++it)
 		{
-			if ((*it)->response_data() == NULL)
+			if ((*it)->type() == IMAPParser::msg_att_item::UID)
 			{
-				throw exceptions::command_error("UID FETCH ... UID",
-					resp->getErrorLog(), "invalid response");
+				msgUID = (*it)->unique_id()->value();
+				break;
 			}
+		}
 
-			const IMAPParser::message_data* messageData =
-				(*it)->response_data()->message_data();
-
-			// We are only interested in responses of type "FETCH"
-			if (messageData == NULL || messageData->type() != IMAPParser::message_data::FETCH)
-				continue;
-
-			// Get Process fetch response for this message
-			const size_t msgNum = messageData->number();
-			message::uid msgUID;
-
-			// Find UID in message attributes
-			const std::vector <IMAPParser::msg_att_item*> atts = messageData->msg_att()->items();
-
-			for (std::vector <IMAPParser::msg_att_item*>::const_iterator
-				 it = atts.begin() ; it != atts.end() ; ++it)
-			{
-				if ((*it)->type() == IMAPParser::msg_att_item::UID)
-				{
-					msgUID = (*it)->unique_id()->value();
-					break;
-				}
-			}
-
-			if (!msgUID.empty())
-			{
-				shared_ptr <IMAPFolder> thisFolder = dynamicCast <IMAPFolder>(shared_from_this());
-				messages.push_back(make_shared <IMAPMessage>(thisFolder, msgNum, msgUID));
-			}
+		if (!msgUID.empty())
+		{
+			shared_ptr <IMAPFolder> thisFolder = dynamicCast <IMAPFolder>(shared_from_this());
+			messages.push_back(make_shared <IMAPMessage>(thisFolder, msgNum, msgUID));
 		}
 	}
 

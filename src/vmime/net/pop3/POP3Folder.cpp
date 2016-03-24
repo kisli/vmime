@@ -245,7 +245,7 @@ std::vector <shared_ptr <message> > POP3Folder::getMessages(const messageSet& ms
 
 	if (msgs.isNumberSet())
 	{
-		const std::vector <size_t> numbers = POP3Utils::messageSetToNumberList(msgs);
+		const std::vector <size_t> numbers = POP3Utils::messageSetToNumberList(msgs, m_messageCount);
 
 		std::vector <shared_ptr <message> > messages;
 		shared_ptr <POP3Folder> thisFolder(dynamicCast <POP3Folder>(shared_from_this()));
@@ -558,7 +558,7 @@ void POP3Folder::deleteMessages(const messageSet& msgs)
 {
 	shared_ptr <POP3Store> store = m_store.lock();
 
-	const std::vector <size_t> nums = POP3Utils::messageSetToNumberList(msgs);
+	const std::vector <size_t> nums = POP3Utils::messageSetToNumberList(msgs, m_messageCount);
 
 	if (nums.empty())
 		throw exceptions::invalid_argument();
@@ -653,6 +653,8 @@ void POP3Folder::status(size_t& count, size_t& unseen)
 
 	count = status->getMessageCount();
 	unseen = status->getUnseenCount();
+
+	m_messageCount = count;
 }
 
 
