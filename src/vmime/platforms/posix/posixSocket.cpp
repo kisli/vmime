@@ -114,8 +114,8 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 		m_timeoutHandler->resetTimeOut();
 
 	for (struct ::addrinfo* curAddrInfo = addrInfo ;
-		 sock == -1 && curAddrInfo != NULL ;
-		 curAddrInfo = curAddrInfo->ai_next, connectErrno = ETIMEDOUT)
+	     sock == -1 && curAddrInfo != NULL ;
+	     curAddrInfo = curAddrInfo->ai_next, connectErrno = ETIMEDOUT)
 	{
 		if (curAddrInfo->ai_family != AF_INET && curAddrInfo->ai_family != AF_INET6)
 			continue;
@@ -634,7 +634,7 @@ bool posixSocket::waitForData(const bool read, const bool write, const int msecs
 		// No data available at this time
 		// Check if we are timed out
 		if (m_timeoutHandler &&
-			m_timeoutHandler->isTimeOut())
+		    m_timeoutHandler->isTimeOut())
 		{
 			if (!m_timeoutHandler->handleTimeOut())
 			{
@@ -695,7 +695,7 @@ size_t posixSocket::receiveRaw(byte_t* buffer, const size_t count)
 
 		// Check if we are timed out
 		if (m_timeoutHandler &&
-			m_timeoutHandler->isTimeOut())
+		    m_timeoutHandler->isTimeOut())
 		{
 			if (!m_timeoutHandler->handleTimeOut())
 			{
@@ -785,7 +785,7 @@ size_t posixSocket::sendRawNonBlocking(const byte_t* buffer, const size_t count)
 
 		// Check if we are timed out
 		if (m_timeoutHandler &&
-			m_timeoutHandler->isTimeOut())
+		    m_timeoutHandler->isTimeOut())
 		{
 			if (!m_timeoutHandler->handleTimeOut())
 			{
