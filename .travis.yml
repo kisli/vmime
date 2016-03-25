@@ -30,8 +30,8 @@ script:
   - cd _build
   - cmake .. -DCMAKE_INSTALL_PREFIX=../_install $OPTIONS
   - cmake .. -L
-  - cat ../src/vmime/config.hpp
-  - cat ../src/vmime/export-shared.hpp
-  - cat ../src/vmime/export-static.hpp
+  - cat ./src/vmime/config.hpp
+  - cat ./src/vmime/export-shared.hpp
+  - cat ./src/vmime/export-static.hpp
   - cmake --build . --target install
   - ctest
