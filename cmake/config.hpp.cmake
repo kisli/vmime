@@ -84,6 +84,7 @@ typedef unsigned @VMIME_64BIT_TYPE@ vmime_uint64;
 #cmakedefine01 VMIME_HAVE_GMTIME_R
 #cmakedefine01 VMIME_HAVE_LOCALTIME_S
 #cmakedefine01 VMIME_HAVE_LOCALTIME_R
+#cmakedefine01 VMIME_HAVE_STRERROR_R
 #cmakedefine01 VMIME_HAVE_MLANG
 #cmakedefine01 VMIME_HAVE_SO_KEEPALIVE
 #cmakedefine01 VMIME_SHARED_PTR_USE_CXX

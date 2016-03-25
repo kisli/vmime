@@ -114,8 +114,8 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 		m_timeoutHandler->resetTimeOut();
 
 	for (struct ::addrinfo* curAddrInfo = addrInfo ;
-	     sock == -1 && curAddrInfo != NULL ;
-	     curAddrInfo = curAddrInfo->ai_next, connectErrno = ETIMEDOUT)
+		 sock == -1 && curAddrInfo != NULL ;
+		 curAddrInfo = curAddrInfo->ai_next, connectErrno = ETIMEDOUT)
 	{
 		if (curAddrInfo->ai_family != AF_INET && curAddrInfo->ai_family != AF_INET6)
 			continue;
@@ -422,8 +422,26 @@ void posixSocket::resolve(struct ::addrinfo** addrInfo, const vmime::string& add
 		}
 		else if (gaiError != EAI_AGAIN)
 		{
-			throw vmime::exceptions::connection_error
-				("gai_suspend() failed: " + std::string(gai_strerror(gaiError)));
+			if (gaiError == EAI_SYSTEM)
+			{
+				if (errno != 0)
+				{
+					try
+					{
+						throwSocketError(errno);
+					}
+					catch (exceptions::socket_exception& e)
+					{
+						throw vmime::exceptions::connection_error
+							("Error while connecting socket.", e);
+					}
+				}
+			}
+			else
+			{
+				throw vmime::exceptions::connection_error
+					("gai_suspend() failed: " + std::string(gai_strerror(gaiError)));
+			}
 		}
 
 		// Check for timeout
@@ -616,7 +634,7 @@ bool posixSocket::waitForData(const bool read, const bool write, const int msecs
 		// No data available at this time
 		// Check if we are timed out
 		if (m_timeoutHandler &&
-		    m_timeoutHandler->isTimeOut())
+			m_timeoutHandler->isTimeOut())
 		{
 			if (!m_timeoutHandler->handleTimeOut())
 			{
@@ -677,7 +695,7 @@ size_t posixSocket::receiveRaw(byte_t* buffer, const size_t count)
 
 		// Check if we are timed out
 		if (m_timeoutHandler &&
-		    m_timeoutHandler->isTimeOut())
+			m_timeoutHandler->isTimeOut())
 		{
 			if (!m_timeoutHandler->handleTimeOut())
 			{
@@ -767,7 +785,7 @@ size_t posixSocket::sendRawNonBlocking(const byte_t* buffer, const size_t count)
 
 		// Check if we are timed out
 		if (m_timeoutHandler &&
-		    m_timeoutHandler->isTimeOut())
+			m_timeoutHandler->isTimeOut())
 		{
 			if (!m_timeoutHandler->handleTimeOut())
 			{
@@ -797,7 +815,7 @@ size_t posixSocket::sendRawNonBlocking(const byte_t* buffer, const size_t count)
 
 void posixSocket::throwSocketError(const int err)
 {
-	string msg;
+	const char* msg = NULL;
 
 	switch (err)
 	{
@@ -815,19 +833,46 @@ void posixSocket::throwSocketError(const int err)
 	case EMSGSIZE:        msg = "EMSGSIZE: message cannot be sent atomically"; break;
 	case ENOBUFS:         msg = "ENOBUFS: output queue is full"; break;
 	case ENOMEM:          msg = "ENOMEM: out of memory"; break;
-	case EPIPE:
+	case EPIPE:           msg = "EPIPE: broken pipe"; break;
 	case ENOTCONN:        msg = "ENOTCONN: not connected"; break;
 	case ECONNREFUSED:    msg = "ECONNREFUSED: connection refused"; break;
-	default:
-
-		std::ostringstream oss;
-		oss << ::strerror(err);
-
-		msg = oss.str();
-		break;
 	}
 
-	throw exceptions::socket_exception(msg);
+	if (msg)
+	{
+		throw exceptions::socket_exception(msg);
+	}
+	else
+	{
+
+		// Use strerror() to get string describing error number
+
+#if VMIME_HAVE_STRERROR_R
+
+		char errbuf[512];
+
+	#if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600) && ! _GNU_SOURCE
+
+		// XSI-compliant strerror_r()
+		strerror_r(err, errbuf, sizeof(errbuf));
+		throw exceptions::socket_exception(errbuf);
+
+	#else
+
+		// GNU-specific strerror_r()
+		const std::string strmsg(strerror_r(err, errbuf, sizeof(errbuf)));
+		throw exceptions::socket_exception(strmsg);
+
+	#endif
+
+#else  // !VMIME_HAVE_STRERROR_R
+
+		const std::string strmsg(strerror(err));
+		throw exceptions::socket_exception(strmsg);
+
+#endif  // VMIME_HAVE_STRERROR_R
+
+	}
 }
 
 
