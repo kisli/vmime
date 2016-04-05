@@ -54,15 +54,24 @@ class transport;
   * for connection to a service.
   */
 
-class VMIME_EXPORT session : public object
+class VMIME_EXPORT session : public object, public enable_shared_from_this <session>
 {
 public:
 
-	session();
-	session(const session& sess);
-	session(const propertySet& props);
+	/** Construct a new session.
+	  *
+	  * @return pointer to a new session
+	  */
+	static shared_ptr <session> create();
 
-	virtual ~session();
+	/** Construct a new session given properties.
+	  *
+	  * @param props session properties
+	  * @return pointer to a new session
+	  */
+	static shared_ptr <session> create(const propertySet& props);
+
+	~session();
 
 	/** Return a transport service instance for the protocol specified
 	  * in the session properties.
@@ -168,6 +177,10 @@ public:
 #endif // VMIME_HAVE_TLS_SUPPORT
 
 private:
+
+	session();
+	session(const propertySet& props);
+
 
 	propertySet m_props;
 

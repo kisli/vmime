@@ -44,7 +44,7 @@ namespace sasl {
 
 /** An SASL client context.
   */
-class VMIME_EXPORT SASLContext : public object
+class VMIME_EXPORT SASLContext : public object, public enable_shared_from_this <SASLContext>
 {
 	friend class SASLSession;
 	friend class builtinSASLMechanism;
@@ -54,8 +54,10 @@ public:
 	~SASLContext();
 
 	/** Construct and initialize a new SASL context.
+	  *
+	  * @return pointer to a new SASL context
 	  */
-	SASLContext();
+	static shared_ptr <SASLContext> create();
 
 	/** Create and initialize a new SASL session.
 	  *
@@ -104,6 +106,10 @@ public:
 	const string encodeB64(const byte_t* input, const size_t inputLen);
 
 private:
+
+	SASLContext();
+	SASLContext(SASLContext&);
+
 
 	static const string getErrorMessage(const string& fname, const int code);
 

@@ -462,7 +462,7 @@ shared_ptr <folder> maildirFolder::getFolder(const folder::path::component& name
 	if (!store)
 		throw exceptions::illegal_state("Store disconnected");
 
-	return make_shared <maildirFolder>(m_path / name, store);
+	return shared_ptr <maildirFolder>(new maildirFolder(m_path / name, store));
 }
 
 
@@ -495,7 +495,7 @@ void maildirFolder::listFolders(std::vector <shared_ptr <folder> >& list, const 
 		for (std::vector <folder::path>::size_type i = 0, n = pathList.size() ; i < n ; ++i)
 		{
 			shared_ptr <maildirFolder> subFolder =
-				make_shared <maildirFolder>(pathList[i], store);
+				shared_ptr <maildirFolder>(new maildirFolder(pathList[i], store));
 
 			list.push_back(subFolder);
 		}
@@ -1170,7 +1170,7 @@ shared_ptr <folder> maildirFolder::getParent()
 	if (m_path.isEmpty())
 		return null;
 	else
-		return make_shared <maildirFolder>(m_path.getParent(), m_store.lock());
+		return shared_ptr <maildirFolder>(new maildirFolder(m_path.getParent(), m_store.lock()));
 }
 
 

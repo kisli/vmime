@@ -35,7 +35,6 @@ object::object()
 
 
 object::object(const object&)
-	: enable_shared_from_this <object>()
 {
 }
 

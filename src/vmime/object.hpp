@@ -35,7 +35,7 @@ namespace vmime
 /** Base object for all objects in the library.
   */
 
-class VMIME_EXPORT object : public enable_shared_from_this <object>
+class VMIME_EXPORT object
 {
 protected:
 

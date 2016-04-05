@@ -33,9 +33,10 @@
 
 #include "vmime/types.hpp"
 
+#include "vmime/net/socket.hpp"
+
 #include "vmime/security/sasl/SASLAuthenticator.hpp"
 #include "vmime/security/sasl/SASLMechanism.hpp"
-#include "vmime/security/sasl/SASLSocket.hpp"
 
 
 namespace vmime {
@@ -48,7 +49,7 @@ class SASLContext;
 
 /** An SASL client session.
   */
-class VMIME_EXPORT SASLSession : public object
+class VMIME_EXPORT SASLSession : public object, public enable_shared_from_this <SASLSession>
 {
 	friend class builtinSASLMechanism;
 	friend class SASLSocket;
@@ -64,8 +65,9 @@ public:
 	  * @param auth authenticator to use for this session
 	  * @param mech SASL mechanism
 	  */
-	SASLSession(const string& serviceName, shared_ptr <SASLContext> ctx,
-	        shared_ptr <authenticator> auth, shared_ptr <SASLMechanism> mech);
+	static shared_ptr <SASLSession> create
+		(const string& serviceName, shared_ptr <SASLContext> ctx,
+	     shared_ptr <authenticator> auth, shared_ptr <SASLMechanism> mech);
 
 	/** Initialize this SASL session. This must be called before
 	  * calling any other method on this object (except accessors).
@@ -132,6 +134,11 @@ public:
 	const string getServiceName() const;
 
 private:
+
+	SASLSession
+		(const string& serviceName, shared_ptr <SASLContext> ctx,
+	     shared_ptr <authenticator> auth, shared_ptr <SASLMechanism> mech);
+
 
 	const string m_serviceName;
 

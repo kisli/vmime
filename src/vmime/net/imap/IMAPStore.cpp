@@ -75,10 +75,10 @@ shared_ptr <folder> IMAPStore::getRootFolder()
 	if (!isConnected())
 		throw exceptions::illegal_state("Not connected");
 
-	return make_shared <IMAPFolder>
-		(folder::path(),
-		 dynamicCast <IMAPStore>(shared_from_this()),
-		 shared_ptr <folderAttributes>());
+	return shared_ptr <IMAPFolder>
+		(new IMAPFolder(folder::path(),
+		                dynamicCast <IMAPStore>(shared_from_this()),
+		                shared_ptr <folderAttributes>()));
 }
 
 
@@ -87,10 +87,10 @@ shared_ptr <folder> IMAPStore::getDefaultFolder()
 	if (!isConnected())
 		throw exceptions::illegal_state("Not connected");
 
-	return make_shared <IMAPFolder>
-		(folder::path::component("INBOX"),
-		 dynamicCast <IMAPStore>(shared_from_this()),
-		 shared_ptr <folderAttributes>());
+	return shared_ptr <IMAPFolder>
+		(new IMAPFolder(folder::path::component("INBOX"),
+		                dynamicCast <IMAPStore>(shared_from_this()),
+		                shared_ptr <folderAttributes>()));
 }
 
 
@@ -99,10 +99,10 @@ shared_ptr <folder> IMAPStore::getFolder(const folder::path& path)
 	if (!isConnected())
 		throw exceptions::illegal_state("Not connected");
 
-	return make_shared <IMAPFolder>
-		(path,
-		 dynamicCast <IMAPStore>(shared_from_this()),
-		 shared_ptr <folderAttributes>());
+	return shared_ptr <IMAPFolder>
+		(new IMAPFolder(path,
+		                dynamicCast <IMAPStore>(shared_from_this()),
+		                shared_ptr <folderAttributes>()));
 }
 
 

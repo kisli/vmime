@@ -38,8 +38,7 @@
 
 
 // Global session object
-static vmime::shared_ptr <vmime::net::session> g_session
-	= vmime::make_shared <vmime::net::session>();
+static vmime::shared_ptr <vmime::net::session> g_session = vmime::net::session::create();
 
 
 /** Returns the messaging protocols supported by VMime.

@@ -83,9 +83,9 @@ shared_ptr <folder> maildirStore::getRootFolder()
 	if (!isConnected())
 		throw exceptions::illegal_state("Not connected");
 
-	return make_shared <maildirFolder>
-		(folder::path(),
-		 dynamicCast <maildirStore>(shared_from_this()));
+	return shared_ptr <maildirFolder>
+		(new maildirFolder(folder::path(),
+		                   dynamicCast <maildirStore>(shared_from_this())));
 }
 
 
@@ -94,9 +94,9 @@ shared_ptr <folder> maildirStore::getDefaultFolder()
 	if (!isConnected())
 		throw exceptions::illegal_state("Not connected");
 
-	return make_shared <maildirFolder>
-		(folder::path::component("inbox"),
-		 dynamicCast <maildirStore>(shared_from_this()));
+	return shared_ptr <maildirFolder>
+		(new maildirFolder(folder::path::component("inbox"),
+		                   dynamicCast <maildirStore>(shared_from_this())));
 }
 
 
@@ -105,8 +105,8 @@ shared_ptr <folder> maildirStore::getFolder(const folder::path& path)
 	if (!isConnected())
 		throw exceptions::illegal_state("Not connected");
 
-	return make_shared <maildirFolder>
-		(path, dynamicCast <maildirStore>(shared_from_this()));
+	return shared_ptr <maildirFolder>
+		(new maildirFolder(path, dynamicCast <maildirStore>(shared_from_this())));
 }
 
 

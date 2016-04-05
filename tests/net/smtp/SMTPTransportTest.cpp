@@ -44,8 +44,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 
 	void testConnectToInvalidServer()
 	{
-		vmime::shared_ptr <vmime::net::session> sess
-			= vmime::make_shared <vmime::net::session>();
+		vmime::shared_ptr <vmime::net::session> sess = vmime::net::session::create();
 
 		vmime::utility::url url("smtp://invalid-smtp-server");
 		vmime::shared_ptr <vmime::net::transport> store = sess->getTransport(url);
@@ -55,8 +54,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 
 	void testGreetingError()
 	{
-		vmime::shared_ptr <vmime::net::session> session =
-			vmime::make_shared <vmime::net::session>();
+		vmime::shared_ptr <vmime::net::session> session = vmime::net::session::create();
 
 		vmime::shared_ptr <vmime::net::transport> tr = session->getTransport
 			(vmime::utility::url("smtp://localhost"));
@@ -70,8 +68,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 
 	void testMAILandRCPT()
 	{
-		vmime::shared_ptr <vmime::net::session> session =
-			vmime::make_shared <vmime::net::session>();
+		vmime::shared_ptr <vmime::net::session> session = vmime::net::session::create();
 
 		vmime::shared_ptr <vmime::net::transport> tr = session->getTransport
 			(vmime::utility::url("smtp://localhost"));
@@ -96,8 +93,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 
 	void testChunking()
 	{
-		vmime::shared_ptr <vmime::net::session> session =
-			vmime::make_shared <vmime::net::session>();
+		vmime::shared_ptr <vmime::net::session> session = vmime::net::session::create();
 
 		vmime::shared_ptr <vmime::net::transport> tr = session->getTransport
 			(vmime::utility::url("smtp://localhost"));
@@ -122,8 +118,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 
 	void testSize_Chunking()
 	{
-		vmime::shared_ptr <vmime::net::session> session =
-			vmime::make_shared <vmime::net::session>();
+		vmime::shared_ptr <vmime::net::session> session = vmime::net::session::create();
 
 		vmime::shared_ptr <vmime::net::transport> tr = session->getTransport
 			(vmime::utility::url("smtp://localhost"));
@@ -149,8 +144,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 
 	void testSize_NoChunking()
 	{
-		vmime::shared_ptr <vmime::net::session> session =
-			vmime::make_shared <vmime::net::session>();
+		vmime::shared_ptr <vmime::net::session> session = vmime::net::session::create();
 
 		vmime::shared_ptr <vmime::net::transport> tr = session->getTransport
 			(vmime::utility::url("smtp://localhost"));

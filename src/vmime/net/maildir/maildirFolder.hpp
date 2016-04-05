@@ -61,10 +61,9 @@ private:
 	friend class maildirMessage;
 
 	maildirFolder(const maildirFolder&) : folder() { }
+	maildirFolder(const folder::path& path, shared_ptr <maildirStore> store);
 
 public:
-
-	maildirFolder(const folder::path& path, shared_ptr <maildirStore> store);
 
 	~maildirFolder();
 

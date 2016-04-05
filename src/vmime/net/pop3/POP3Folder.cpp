@@ -287,7 +287,7 @@ shared_ptr <folder> POP3Folder::getFolder(const folder::path::component& name)
 	if (!store)
 		throw exceptions::illegal_state("Store disconnected");
 
-	return make_shared <POP3Folder>(m_path / name, store);
+	return shared_ptr <POP3Folder>(new POP3Folder(m_path / name, store));
 }
 
 
@@ -301,7 +301,7 @@ std::vector <shared_ptr <folder> > POP3Folder::getFolders(const bool /* recursiv
 	if (m_path.isEmpty())
 	{
 		std::vector <shared_ptr <folder> > v;
-		v.push_back(make_shared <POP3Folder>(folder::path::component("INBOX"), store));
+		v.push_back(shared_ptr <POP3Folder>(new POP3Folder(folder::path::component("INBOX"), store)));
 		return (v);
 	}
 	else
@@ -520,7 +520,7 @@ shared_ptr <folder> POP3Folder::getParent()
 	if (m_path.isEmpty())
 		return null;
 	else
-		return make_shared <POP3Folder>(m_path.getParent(), m_store.lock());
+		return shared_ptr <POP3Folder>(new POP3Folder(m_path.getParent(), m_store.lock()));
 }
 
 

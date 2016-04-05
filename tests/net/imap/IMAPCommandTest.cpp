@@ -458,8 +458,7 @@ VMIME_TEST_SUITE_BEGIN(IMAPCommandTest)
 	{
 		vmime::shared_ptr <IMAPCommand> cmd = IMAPCommand::createCommand("MY_COMMAND param1 param2");
 
-		vmime::shared_ptr <vmime::net::session> sess =
-			vmime::make_shared <vmime::net::session>();
+		vmime::shared_ptr <vmime::net::session> sess = vmime::net::session::create();
 
 		vmime::shared_ptr <vmime::security::authenticator> auth =
 			vmime::make_shared <vmime::security::defaultAuthenticator>();

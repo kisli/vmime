@@ -59,11 +59,11 @@ class store;
 /** Abstract representation of a folder in a message store.
   */
 
-class VMIME_EXPORT folder : public object
+class VMIME_EXPORT folder : public object, public enable_shared_from_this <folder>
 {
 protected:
 
-	folder(const folder&) : object() { }
+	folder(const folder&) : object(), enable_shared_from_this <folder>() { }
 	folder() { }
 
 

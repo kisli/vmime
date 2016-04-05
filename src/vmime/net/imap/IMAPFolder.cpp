@@ -652,7 +652,7 @@ shared_ptr <folder> IMAPFolder::getFolder(const folder::path::component& name)
 	if (!store)
 		throw exceptions::illegal_state("Store disconnected");
 
-	return make_shared <IMAPFolder>(m_path / name, store, shared_ptr <folderAttributes>());
+	return shared_ptr <IMAPFolder>(new IMAPFolder(m_path / name, store, shared_ptr <folderAttributes>()));
 }
 
 
@@ -734,7 +734,7 @@ std::vector <shared_ptr <folder> > IMAPFolder::getFolders(const bool recursive)
 			IMAPUtils::mailboxFlagsToFolderAttributes
 				(m_connection, mailbox_flag_list, *attribs);
 
-			v.push_back(make_shared <IMAPFolder>(path, store, attribs));
+			v.push_back(shared_ptr <IMAPFolder>(new IMAPFolder(path, store, attribs)));
 		}
 	}
 
@@ -945,7 +945,9 @@ shared_ptr <folder> IMAPFolder::getParent()
 	if (m_path.isEmpty())
 		return null;
 	else
-		return make_shared <IMAPFolder>(m_path.getParent(), m_store.lock(), shared_ptr <folderAttributes>());
+		return shared_ptr <IMAPFolder>(
+			new IMAPFolder(m_path.getParent(), m_store.lock(), shared_ptr <folderAttributes>())
+		);
 }
 
 

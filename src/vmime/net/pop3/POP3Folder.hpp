@@ -59,10 +59,9 @@ private:
 	friend class POP3Message;
 
 	POP3Folder(const POP3Folder&);
+	POP3Folder(const folder::path& path, shared_ptr <POP3Store> store);
 
 public:
-
-	POP3Folder(const folder::path& path, shared_ptr <POP3Store> store);
 
 	~POP3Folder();
 

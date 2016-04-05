@@ -52,7 +52,7 @@ class IMAPStore;
 class IMAPCommand;
 
 
-class VMIME_EXPORT IMAPConnection : public object
+class VMIME_EXPORT IMAPConnection : public object, public enable_shared_from_this <IMAPConnection>
 {
 public:
 

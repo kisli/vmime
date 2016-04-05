@@ -39,8 +39,7 @@ VMIME_TEST_SUITE_BEGIN(POP3StoreTest)
 
 	void testCreateFromURL()
 	{
-		vmime::shared_ptr <vmime::net::session> sess
-			= vmime::make_shared <vmime::net::session>();
+		vmime::shared_ptr <vmime::net::session> sess = vmime::net::session::create();
 
 		// POP3
 		vmime::utility::url url("pop3://pop3.vmime.org");
@@ -57,8 +56,7 @@ VMIME_TEST_SUITE_BEGIN(POP3StoreTest)
 
 	void testConnectToInvalidServer()
 	{
-		vmime::shared_ptr <vmime::net::session> sess
-			= vmime::make_shared <vmime::net::session>();
+		vmime::shared_ptr <vmime::net::session> sess = vmime::net::session::create();
 
 		vmime::utility::url url("pop3://invalid-pop3-server");
 		vmime::shared_ptr <vmime::net::store> store = sess->getStore(url);

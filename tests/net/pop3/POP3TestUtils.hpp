@@ -30,7 +30,7 @@ class POP3TestStore : public vmime::net::pop3::POP3Store
 public:
 
 	POP3TestStore()
-		: POP3Store(vmime::make_shared <vmime::net::session>(),
+		: POP3Store(vmime::net::session::create(),
 		            vmime::shared_ptr <vmime::security::authenticator>())
 	{
 	}

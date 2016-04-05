@@ -62,11 +62,18 @@ SASLContext::~SASLContext()
 }
 
 
+// static
+shared_ptr <SASLContext> SASLContext::create()
+{
+	return shared_ptr <SASLContext>(new SASLContext());
+}
+
+
 shared_ptr <SASLSession> SASLContext::createSession
 	(const string& serviceName,
 	 shared_ptr <authenticator> auth, shared_ptr <SASLMechanism> mech)
 {
-	return make_shared <SASLSession>
+	return SASLSession::create
 		(serviceName, dynamicCast <SASLContext>(shared_from_this()), auth, mech);
 }
 

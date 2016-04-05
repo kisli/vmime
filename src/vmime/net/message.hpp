@@ -50,12 +50,12 @@ class messageStructure;
 /** A MIME part in a message.
   */
 
-class VMIME_EXPORT messagePart : public object
+class VMIME_EXPORT messagePart : public object, public enable_shared_from_this <messagePart>
 {
 protected:
 
 	messagePart() { }
-	messagePart(const messagePart&) : object() { }
+	messagePart(const messagePart&) : object(), enable_shared_from_this <messagePart>() { }
 
 	virtual ~messagePart() { }
 
@@ -126,12 +126,12 @@ public:
 /** Structure of a MIME part/message.
   */
 
-class VMIME_EXPORT messageStructure : public object
+class VMIME_EXPORT messageStructure : public object, public enable_shared_from_this <messageStructure>
 {
 protected:
 
 	messageStructure() { }
-	messageStructure(const messageStructure&) : object() { }
+	messageStructure(const messageStructure&) : object(), enable_shared_from_this <messageStructure>() { }
 
 public:
 
@@ -164,12 +164,12 @@ public:
 /** Abstract representation of a message in a store/transport service.
   */
 
-class VMIME_EXPORT message : public object
+class VMIME_EXPORT message : public object, public enable_shared_from_this <message>
 {
 protected:
 
 	message() { }
-	message(const message&) : object() { }
+	message(const message&) : object(), enable_shared_from_this <message>() { }
 
 	enum PrivateConstants
 	{

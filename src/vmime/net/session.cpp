@@ -48,17 +48,6 @@ session::session()
 }
 
 
-session::session(const session& sess)
-	: object(), m_props(sess.m_props)
-{
-
-#if VMIME_HAVE_TLS_SUPPORT
-	m_tlsProps = make_shared <tls::TLSProperties>(*sess.m_tlsProps);
-#endif // VMIME_HAVE_TLS_SUPPORT
-
-}
-
-
 session::session(const propertySet& props)
 	: m_props(props)
 {
@@ -72,6 +61,20 @@ session::session(const propertySet& props)
 
 session::~session()
 {
+}
+
+
+// static
+shared_ptr <session> session::create()
+{
+	return shared_ptr <session>(new session());
+}
+
+
+// static
+shared_ptr <session> session::create(const propertySet& props)
+{
+	return shared_ptr <session>(new session(props));
 }
 
 

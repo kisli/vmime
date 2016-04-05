@@ -48,7 +48,7 @@ class IMAPConnection;
 
 /** An IMAP command that will be sent to the server.
   */
-class VMIME_EXPORT IMAPCommand : public object
+class VMIME_EXPORT IMAPCommand : public object, public enable_shared_from_this <IMAPCommand>
 {
 public:
 

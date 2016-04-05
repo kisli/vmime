@@ -330,7 +330,7 @@ void SMTPConnection::authenticateSASL()
 	std::vector <shared_ptr <security::sasl::SASLMechanism> > mechList;
 
 	shared_ptr <security::sasl::SASLContext> saslContext =
-		make_shared <security::sasl::SASLContext>();
+		security::sasl::SASLContext::create();
 
 	for (unsigned int i = 0 ; i < saslMechs.size() ; ++i)
 	{

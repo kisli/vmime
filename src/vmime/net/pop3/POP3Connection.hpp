@@ -61,7 +61,7 @@ class POP3Store;
 
 /** Manage connection to a POP3 server.
   */
-class VMIME_EXPORT POP3Connection : public object
+class VMIME_EXPORT POP3Connection : public object, public enable_shared_from_this <POP3Connection>
 {
 public:
 

@@ -68,7 +68,7 @@ services. Before using a messaging service, you must create and
 initialize a session object:
 
 \begin{lstlisting}
-vmime::shared_ptr <net::session> theSession = vmime::make_shared <net::session>();
+vmime::shared_ptr <vmime::net::session> theSession = vmime::net::session::create();
 \end{lstlisting}
 
 Session properties include:
@@ -328,8 +328,7 @@ This is how to use it:
 
 \begin{lstlisting}
 // First, create a session
-vmime::shared_ptr <vmime::net::session> sess =
-   vmime::make_shared <vmime::net::session>();
+vmime::shared_ptr <vmime::net::session> sess = vmime::net::session::create();
 
 // Next, initialize a service which will use our authenticator
 vmime::shared_ptr <vmime::net::store> st =
@@ -417,8 +416,7 @@ const vmime::string msgData =
 // Create a new session
 vmime::utility::url url("smtp://example.com");
 
-vmime::shared_ptr <vmime::net::session> sess =
-   vmime::make_shared <vmime::net::session>();
+vmime::shared_ptr <vmime::net::session> sess = vmime::net::session::create();
 
 // Create an instance of the transport service
 vmime::shared_ptr <vmime::net::transport> tr = sess->getTransport(url);
@@ -471,8 +469,7 @@ store service:
 // Create a new session
 vmime::utility::url url("imap://vincent:password@imap:example.org");
 
-vmime::shared_ptr <vmime::net::session> sess =
-   vmime::make_shared <vmime::net::session>();
+vmime::shared_ptr <vmime::net::session> sess = vmime::net::session::create();
 
 // Create an instance of the transport service
 vmime::shared_ptr <vmime::net::store> store = sess->getStore(url);

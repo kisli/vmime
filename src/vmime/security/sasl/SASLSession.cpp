@@ -68,6 +68,15 @@ SASLSession::~SASLSession()
 }
 
 
+// static
+shared_ptr <SASLSession> SASLSession::create
+	(const string& serviceName, shared_ptr <SASLContext> ctx,
+	 shared_ptr <authenticator> auth, shared_ptr <SASLMechanism> mech)
+{
+	return shared_ptr <SASLSession>(new SASLSession(serviceName, ctx, auth, mech));
+}
+
+
 void SASLSession::init()
 {
 	shared_ptr <SASLAuthenticator> saslAuth = dynamicCast <SASLAuthenticator>(m_auth);

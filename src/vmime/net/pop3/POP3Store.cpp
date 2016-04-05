@@ -73,9 +73,9 @@ shared_ptr <folder> POP3Store::getDefaultFolder()
 	if (!isConnected())
 		throw exceptions::illegal_state("Not connected");
 
-	return make_shared <POP3Folder>
-		(folder::path(folder::path::component("INBOX")),
-		 dynamicCast <POP3Store>(shared_from_this()));
+	return shared_ptr <POP3Folder>
+		(new POP3Folder(folder::path(folder::path::component("INBOX")),
+		                dynamicCast <POP3Store>(shared_from_this())));
 }
 
 
@@ -84,8 +84,8 @@ shared_ptr <folder> POP3Store::getRootFolder()
 	if (!isConnected())
 		throw exceptions::illegal_state("Not connected");
 
-	return make_shared <POP3Folder>
-		(folder::path(), dynamicCast <POP3Store>(shared_from_this()));
+	return shared_ptr <POP3Folder>
+		(new POP3Folder(folder::path(), dynamicCast <POP3Store>(shared_from_this())));
 }
 
 
@@ -94,8 +94,8 @@ shared_ptr <folder> POP3Store::getFolder(const folder::path& path)
 	if (!isConnected())
 		throw exceptions::illegal_state("Not connected");
 
-	return make_shared <POP3Folder>
-		(path, dynamicCast <POP3Store>(shared_from_this()));
+	return shared_ptr <POP3Folder>
+		(new POP3Folder(path, dynamicCast <POP3Store>(shared_from_this())));
 }
 
 

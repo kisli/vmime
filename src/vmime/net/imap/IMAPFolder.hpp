@@ -63,10 +63,9 @@ private:
 	friend class IMAPMessage;
 
 	IMAPFolder(const IMAPFolder&);
+	IMAPFolder(const folder::path& path, shared_ptr <IMAPStore> store, shared_ptr <folderAttributes> attribs);
 
 public:
-
-	IMAPFolder(const folder::path& path, shared_ptr <IMAPStore> store, shared_ptr <folderAttributes> attribs);
 
 	~IMAPFolder();
 

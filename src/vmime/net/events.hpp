@@ -47,7 +47,7 @@ namespace events {
 /** Event occurring on folders or messages.
   */
 
-class VMIME_EXPORT event : public object
+class VMIME_EXPORT event : public object, public enable_shared_from_this <event>
 {
 public:
 
