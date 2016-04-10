@@ -461,7 +461,7 @@ void posixSocket::resolve(struct ::addrinfo** addrInfo, const vmime::string& add
 
 #else  // !VMIME_HAVE_GETADDRINFO_A
 
-	if (::getaddrinfo(address.c_str(), portStr.str().c_str(), &hints, addrInfo) != 0)
+	if (::getaddrinfo(address.c_str(), portStr, &hints, addrInfo) != 0)
 	{
 		// Error: cannot resolve address
 		throw vmime::exceptions::connection_error("Cannot resolve address.");
