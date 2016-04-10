@@ -217,6 +217,7 @@ const SMTPResponse::enhancedStatusCode SMTPResponse::extractEnhancedCode(const s
 	enhancedStatusCode enhCode;
 
 	std::istringstream iss(responseText);
+	iss.imbue(std::locale::classic());
 
 	if (std::isdigit(iss.peek()))
 	{

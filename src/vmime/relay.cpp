@@ -79,6 +79,8 @@ void relay::parseImpl
 		std::istringstream iss(string
 			(buffer.begin() + position, buffer.begin() + position + (p - pstart)));
 
+		iss.imbue(std::locale::classic());
+
 		string word;
 		std::vector <string> previous;
 

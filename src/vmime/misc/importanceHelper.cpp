@@ -67,6 +67,8 @@ importanceHelper::Importance importanceHelper::getImportanceHeader(shared_ptr <c
 		int n = IMPORTANCE_NORMAL;
 
 		std::istringstream iss(value);
+		iss.imbue(std::locale::classic());
+
 		iss >> n;
 
 		Importance i = IMPORTANCE_NORMAL;

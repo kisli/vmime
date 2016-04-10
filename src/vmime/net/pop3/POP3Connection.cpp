@@ -396,6 +396,8 @@ void POP3Connection::authenticateSASL()
 			const string list(x.begin() + 5, x.end());
 
 			std::istringstream iss(list);
+			iss.imbue(std::locale::classic());
+
 			string mech;
 
 			while (iss >> mech)

@@ -256,8 +256,9 @@ void url::parse(const string& str)
 		throw exceptions::malformed_url("Port can only contain digits");
 
 	std::istringstream iss(port);
-	port_t portNum = 0;
+	iss.imbue(std::locale::classic());
 
+	port_t portNum = 0;
 	iss >> portNum;
 
 	if (portNum == 0)

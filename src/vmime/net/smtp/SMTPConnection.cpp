@@ -234,7 +234,9 @@ void SMTPConnection::helo()
 		for (size_t i = 1, n = resp->getLineCount() ; i < n ; ++i)
 		{
 			const string line = resp->getLineAt(i).getText();
+
 			std::istringstream iss(line);
+			iss.imbue(std::locale::classic());
 
 			string ext;
 			iss >> ext;

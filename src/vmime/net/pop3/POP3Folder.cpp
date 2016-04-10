@@ -144,6 +144,7 @@ void POP3Folder::open(const int mode, bool failIfModeIsNotAvailable)
 			throw exceptions::command_error("STAT", response->getFirstLine());
 
 		std::istringstream iss(response->getText());
+		iss.imbue(std::locale::classic());
 		iss >> m_messageCount;
 
 		if (iss.fail())
@@ -372,6 +373,7 @@ void POP3Folder::fetchMessages(std::vector <shared_ptr <message> >& msg, const f
 					size_t size = 0;
 
 					std::istringstream iss((*x).second);
+					iss.imbue(std::locale::classic());
 					iss >> size;
 
 					m->m_size = size;
@@ -456,6 +458,7 @@ void POP3Folder::fetchMessage(shared_ptr <message> msg, const fetchAttributes& o
 				size_t size = 0;
 
 				std::istringstream iss(string(it, responseText.end()));
+				iss.imbue(std::locale::classic());
 				iss >> size;
 
 				dynamicCast <POP3Message>(msg)->m_size = size;
@@ -677,6 +680,7 @@ shared_ptr <folderStatus> POP3Folder::getStatus()
 	size_t count = 0;
 
 	std::istringstream iss(response->getText());
+	iss.imbue(std::locale::classic());
 	iss >> count;
 
 	shared_ptr <POP3FolderStatus> status = make_shared <POP3FolderStatus>();
