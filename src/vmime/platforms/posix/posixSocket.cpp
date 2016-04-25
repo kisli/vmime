@@ -138,6 +138,17 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 
 #endif // VMIME_HAVE_SO_KEEPALIVE
 
+#if VMIME_HAVE_SO_NOSIGPIPE
+
+		// Return EPIPE instead of generating SIGPIPE
+		int nosigpipe_optval = 1;
+		socklen_t nosigpipe_optlen = sizeof(nosigpipe_optval);
+
+		::setsockopt(sock, SOL_SOCKET, SO_NOSIGPIPE, &nosigpipe_optval, nosigpipe_optlen);
+
+#endif // VMIME_HAVE_SO_NOSIGPIPE
+
+
 		if (m_timeoutHandler != NULL)
 		{
 			::fcntl(sock, F_SETFL, ::fcntl(sock, F_GETFL) | O_NONBLOCK);
@@ -750,7 +761,12 @@ void posixSocket::sendRaw(const byte_t* buffer, const size_t count)
 
 	while (size > 0)
 	{
+
+#if VMIME_HAVE_MSG_NOSIGNAL
 		const ssize_t ret = ::send(m_desc, buffer, size, MSG_NOSIGNAL);
+#else
+		const ssize_t ret = ::send(m_desc, buffer, size, 0);
+#endif
 
 		if (ret <= 0)
 		{
@@ -776,7 +792,11 @@ size_t posixSocket::sendRawNonBlocking(const byte_t* buffer, const size_t count)
 {
 	m_status &= ~STATUS_WOULDBLOCK;
 
+#if VMIME_HAVE_MSG_NOSIGNAL
 	const ssize_t ret = ::send(m_desc, buffer, count, MSG_NOSIGNAL);
+#else
+	const ssize_t ret = ::send(m_desc, buffer, count, 0);
+#endif
 
 	if (ret <= 0)
 	{

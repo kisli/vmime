@@ -87,6 +87,8 @@ typedef unsigned @VMIME_64BIT_TYPE@ vmime_uint64;
 #cmakedefine01 VMIME_HAVE_STRERROR_R
 #cmakedefine01 VMIME_HAVE_MLANG
 #cmakedefine01 VMIME_HAVE_SO_KEEPALIVE
+#cmakedefine01 VMIME_HAVE_SO_NOSIGPIPE
+#cmakedefine01 VMIME_HAVE_MSG_NOSIGNAL
 #cmakedefine01 VMIME_SHARED_PTR_USE_CXX
 #cmakedefine01 VMIME_SHARED_PTR_USE_BOOST
 
