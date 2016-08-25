@@ -71,11 +71,7 @@ TLSSocket_GnuTLS::TLSSocket_GnuTLS(shared_ptr <TLSSession_GnuTLS> session, share
 
 TLSSocket_GnuTLS::~TLSSocket_GnuTLS()
 {
-	if (m_ex)
-	{
-		delete m_ex;
-		m_ex = NULL;
-	}
+	resetException();
 
 	try
 	{
@@ -194,12 +190,13 @@ size_t TLSSocket_GnuTLS::receiveRaw(byte_t* buffer, const size_t count)
 {
 	m_status &= ~(STATUS_WANT_WRITE | STATUS_WANT_READ);
 
+	resetException();
+
 	const ssize_t ret = gnutls_record_recv
 		(*m_session->m_gnutlsSession,
 		 buffer, static_cast <size_t>(count));
 
-	if (m_ex)
-		internalThrow();
+	throwException();
 
 	if (ret < 0)
 	{
@@ -226,12 +223,13 @@ void TLSSocket_GnuTLS::sendRaw(const byte_t* buffer, const size_t count)
 
 	for (size_t size = count ; size > 0 ; )
 	{
+		resetException();
+
 		ssize_t ret = gnutls_record_send
 			(*m_session->m_gnutlsSession,
 			 buffer, static_cast <size_t>(size));
 
-		if (m_ex)
-			internalThrow();
+		throwException();
 
 		if (ret < 0)
 		{
@@ -260,12 +258,13 @@ size_t TLSSocket_GnuTLS::sendRawNonBlocking(const byte_t* buffer, const size_t c
 {
 	m_status &= ~(STATUS_WANT_WRITE | STATUS_WANT_READ);
 
+	resetException();
+
 	ssize_t ret = gnutls_record_send
 		(*m_session->m_gnutlsSession,
 		 buffer, static_cast <size_t>(count));
 
-	if (m_ex)
-		internalThrow();
+	throwException();
 
 	if (ret < 0)
 	{
@@ -307,10 +306,11 @@ void TLSSocket_GnuTLS::handshake()
 	{
 		while (true)
 		{
+			resetException();
+
 			const int ret = gnutls_handshake(*m_session->m_gnutlsSession);
 
-			if (m_ex)
-				internalThrow();
+			throwException();
 
 			if (ret < 0)
 			{
@@ -498,38 +498,21 @@ shared_ptr <security::cert::certificateChain> TLSSocket_GnuTLS::getPeerCertifica
 // gnutls_record_recv() calls TLSSocket::gnutlsPullFunc, and exceptions
 // thrown by the socket can not be caught.
 
-#ifndef VMIME_BUILDING_DOC
-
-class TLSSocket_DeleteExWrapper : public object
+void TLSSocket_GnuTLS::throwException()
 {
-public:
-
-	TLSSocket_DeleteExWrapper(exception* ex) : m_ex(ex) { }
-	~TLSSocket_DeleteExWrapper() { delete m_ex; }
-
-private:
-
-	exception* m_ex;
-};
-
-#endif // VMIME_BUILDING_DOC
-
-
-void TLSSocket_GnuTLS::internalThrow()
-{
-	static std::vector <shared_ptr <TLSSocket_DeleteExWrapper> > exToDelete;
-
 	if (m_ex)
 	{
-		// Reset the current exception pointer to prevent the same
-		// exception from being thrown again later
-		exception* ex = m_ex;
+		throw *m_ex;
+	}
+}
+
+
+void TLSSocket_GnuTLS::resetException()
+{
+	if (m_ex)
+	{
+		delete m_ex;
 		m_ex = NULL;
-
-		// To avoid memory leaks
-		exToDelete.push_back(make_shared <TLSSocket_DeleteExWrapper>(ex));
-
-		throw *ex;
 	}
 }
 

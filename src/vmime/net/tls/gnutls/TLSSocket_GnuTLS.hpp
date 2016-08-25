@@ -88,7 +88,8 @@ public:
 
 private:
 
-	void internalThrow();
+	void resetException();
+	void throwException();
 
 #ifdef LIBGNUTLS_VERSION
 	static ssize_t gnutlsPushFunc(gnutls_transport_ptr_t trspt, const void* data, size_t len);
