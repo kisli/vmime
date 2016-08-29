@@ -58,7 +58,7 @@
 #include <memory>
 
 
-//#define DEBUG_RESPONSE 1
+#define DEBUG_RESPONSE 1
 
 
 #if DEBUG_RESPONSE
@@ -762,7 +762,7 @@ public:
 			size_t pos = *currentPos;
 
 			VIMAP_PARSER_GET(uniqueid, m_uniqueid1);
-			VIMAP_PARSER_CHECK(one_char <','>);
+			VIMAP_PARSER_CHECK(one_char <':'>);
 			VIMAP_PARSER_GET(uniqueid, m_uniqueid2);
 
 			*currentPos = pos;
