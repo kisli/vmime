@@ -435,7 +435,9 @@ void posixSocket::resolve(struct ::addrinfo** addrInfo, const vmime::string& add
 		{
 			if (gaiError == EAI_SYSTEM)
 			{
-				if (errno != 0)
+				const int ret = gai_error(&gaiRequest);
+
+				if (ret != EAI_INPROGRESS && errno != 0)
 				{
 					try
 					{
