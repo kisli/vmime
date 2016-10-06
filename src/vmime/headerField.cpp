@@ -135,7 +135,8 @@ shared_ptr <headerField> headerField::parseNext
 				                  buffer.begin() + nameEnd);
 
 				// Skip ':' character
-				++pos;
+				while (pos < end && buffer[pos] == ':')
+					++pos;
 
 				// Skip spaces between ':' and the field contents
 				while (pos < end && (buffer[pos] == ' ' || buffer[pos] == '\t'))
