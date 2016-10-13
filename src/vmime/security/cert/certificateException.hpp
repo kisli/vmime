@@ -73,6 +73,12 @@ public:
 	  */
 	shared_ptr <certificate> getCertificate();
 
+	/** Returns the certificate on which the problem occured.
+	  *
+	  * @return certificate
+	  */
+	shared_ptr <const certificate> getCertificate() const;
+
 private:
 
 	shared_ptr <certificate> m_cert;

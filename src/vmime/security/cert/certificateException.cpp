@@ -70,6 +70,12 @@ shared_ptr <certificate> certificateException::getCertificate()
 }
 
 
+shared_ptr <const certificate> certificateException::getCertificate() const
+{
+	return m_cert;
+}
+
+
 } // cert
 } // security
 } // vmime
