@@ -62,6 +62,7 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 
 		VMIME_TEST(testWronglyPaddedB64Words)
 		VMIME_TEST(testFixBrokenWords)
+		VMIME_TEST(testUnknownCharset)
 	VMIME_TEST_LIST_END
 
 
@@ -632,19 +633,21 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 			("=?utf-8?Q?Gwena=C3?="
 			 "=?utf-8?Q?=ABl?=", &outText);
 
-		VASSERT_EQ("1", "Gwena\xebl",
-			outText.getConvertedText(vmime::charset("iso-8859-1"), opts));
+		VASSERT_EQ("1.1", 1, outText.getWordCount());
+		VASSERT_EQ("1.2", "Gwena\xc3\xabl", outText.getWordAt(0)->getBuffer());
+		VASSERT_EQ("1.3", vmime::charset("utf-8"), outText.getWordAt(0)->getCharset());
 
 		// Test case 2
 		vmime::text::decodeAndUnfold
 			("=?utf-8?B?5Lit6Yu85qmf5qKw6JGj5LqL5pyDMTAz5bm056ysMDXlsYbn?="
 			 "=?utf-8?B?rKwwN+asoeitsOeoiw==?=", &outText);
 
-		VASSERT_EQ("2", "\xe4\xb8\xad\xe9\x8b\xbc\xe6\xa9\x9f\xe6\xa2\xb0"
+		VASSERT_EQ("2.1", 1, outText.getWordCount());
+		VASSERT_EQ("2.2", "\xe4\xb8\xad\xe9\x8b\xbc\xe6\xa9\x9f\xe6\xa2\xb0"
 			"\xe8\x91\xa3\xe4\xba\x8b\xe6\x9c\x83\x31\x30\x33\xe5\xb9\xb4"
 			"\xe7\xac\xac\x30\x35\xe5\xb1\x86\xe7\xac\xac\x30\x37\xe6\xac"
-			"\xa1\xe8\xad\xb0\xe7\xa8\x8b",
-			outText.getConvertedText(vmime::charset("utf-8")));
+			"\xa1\xe8\xad\xb0\xe7\xa8\x8b", outText.getWordAt(0)->getBuffer());
+		VASSERT_EQ("2.3", vmime::charset("utf-8"), outText.getWordAt(0)->getCharset());
 
 		// Test case 3 (a character spanning over 3 words: 'を' = E3 82 92)
 		vmime::text::decodeAndUnfold
@@ -652,15 +655,65 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 			 "=?utf-8?Q?=82?="
 			 "=?utf-8?Q?=92xyz?=", &outText);
 
-		std::string out;  // decode as UTF-16 then rencode to UTF-8 for easier comparison
-		vmime::charset::convert(
-			outText.getConvertedText(vmime::charset("utf-16"), opts),
-			out,
-			vmime::charset("utf-16"),
-			vmime::charset("utf-8")
-		);
+		VASSERT_EQ("3.1", 1, outText.getWordCount());
+		VASSERT_EQ("3.2", "abc\xe3\x82\x92xyz", outText.getWordAt(0)->getBuffer());
+		VASSERT_EQ("3.3", vmime::charset("utf-8"), outText.getWordAt(0)->getCharset());
 
-		VASSERT_EQ("3", "abc﻿\xe3\x82\x92xyz", out);
+		// Test case 4 (remains invalid)
+		vmime::text::decodeAndUnfold
+			("=?utf-8?Q?abc=E3?="
+			 "=?utf-8?Q?=82?="
+			 "=?utf-8?Q?xy?="
+			 "=?utf-8?Q?z?=", &outText);
+
+		VASSERT_EQ("4.1", 2, outText.getWordCount());
+		VASSERT_EQ("4.2", "abc", outText.getWordAt(0)->getBuffer());
+		VASSERT_EQ("4.3", vmime::charset("utf-8"), outText.getWordAt(0)->getCharset());
+		VASSERT_EQ("4.4", "\xe3\x82xyz", outText.getWordAt(1)->getBuffer());
+		VASSERT_EQ("4.5", vmime::charset("utf-8"), outText.getWordAt(1)->getCharset());
+
+		// Test case 5 (remains partially invalid)
+		vmime::text::decodeAndUnfold
+			("=?utf-8?Q?abc=E3?="
+			 "=?utf-8?Q?=82?="
+			 "=?utf-8?Q?\x92xy?="
+			 "=?utf-8?Q?z\xc3?=", &outText);
+
+		VASSERT_EQ("5.1", 2, outText.getWordCount());
+		VASSERT_EQ("5.2", "abc\xe3\x82\x92xyz", outText.getWordAt(0)->getBuffer());
+		VASSERT_EQ("5.3", vmime::charset("utf-8"), outText.getWordAt(0)->getCharset());
+		VASSERT_EQ("5.4", "\xc3", outText.getWordAt(1)->getBuffer());
+		VASSERT_EQ("5.5", vmime::charset("utf-8"), outText.getWordAt(1)->getCharset());
+	}
+
+	void testUnknownCharset()
+	{
+		vmime::text t;
+		vmime::text::decodeAndUnfold("=?gb2312?B?wdaRY8PA?=", &t);
+
+		VASSERT_EQ("1.1", 1, t.getWordCount());
+		VASSERT_EQ("1.2", "\xc1\xd6\x91\x63\xc3\xc0", t.getWordAt(0)->getBuffer());
+		VASSERT_EQ("1.3", vmime::charset("gb2312"), t.getWordAt(0)->getCharset());
+
+
+
+		vmime::parsingContext ctx;
+
+		const vmime::string hfieldBuffer = "From: '=?gb2312?B?wdaRY8PA?=' <a.b@c.de>";
+
+		vmime::shared_ptr <vmime::headerField> hfield =
+			vmime::headerField::parseNext(ctx, hfieldBuffer, 0, hfieldBuffer.size());
+
+		vmime::shared_ptr <vmime::mailbox> hvalue =
+			hfield->getValue <vmime::mailbox>();
+
+		VASSERT_EQ("2.1", 3, hvalue->getName().getWordCount());
+		VASSERT_EQ("2.2", "'", hvalue->getName().getWordAt(0)->getBuffer());
+		VASSERT_EQ("2.3", vmime::charset("us-ascii"), hvalue->getName().getWordAt(0)->getCharset());
+		VASSERT_EQ("2.4", "\xc1\xd6\x91\x63\xc3\xc0", hvalue->getName().getWordAt(1)->getBuffer());
+		VASSERT_EQ("2.5", vmime::charset("gb2312"), hvalue->getName().getWordAt(1)->getCharset());
+		VASSERT_EQ("2.6", "'", hvalue->getName().getWordAt(2)->getBuffer());
+		VASSERT_EQ("2.7", vmime::charset("us-ascii"), hvalue->getName().getWordAt(2)->getCharset());
 	}
 
 VMIME_TEST_SUITE_END

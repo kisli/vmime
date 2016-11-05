@@ -417,10 +417,9 @@ void text::fixBrokenWords(std::vector <shared_ptr <word> >& words)
 
 	// Fix words which encode a non-integral number of characters.
 	// This is not RFC-compliant, but we should be able to recover from it.
-	for (size_t i = 0, n = words.size() - 1 ; i < n ; ++i)
+	for (size_t i = 0, n = words.size() ; i < n - 1 ; ++i)
 	{
 		shared_ptr <word> w1 = words[i];
-		shared_ptr <word> w2 = words[i + 1];
 
 		// Check whether the word is valid
 		bool valid = false;
@@ -436,22 +435,46 @@ void text::fixBrokenWords(std::vector <shared_ptr <word> >& words)
 		}
 
 		// If the current word is not valid, try to grab some bytes
-		// from the next word, to see whether it becomes valid.
+		// from the next words, to see whether it becomes valid.
 		if (!valid)
 		{
 			string buffer(w1->getBuffer());
-			buffer += w2->getBuffer();
+			size_t mergeWords = 1;  // number of adjacent words to merge
+
+			for (size_t j = i + 1 ; j < n ; ++j)
+			{
+				shared_ptr <word> nextWord = words[j];
+
+				if (nextWord->getCharset() != w1->getCharset())
+					break;
+
+				buffer += nextWord->getBuffer();
+				++mergeWords;
+			}
+
+			if (mergeWords == 1)
+			{
+				// No adjacent word with same charset found
+				continue;
+			}
 
 			string::size_type firstInvalidByte;
 			valid = w1->getCharset().isValidText(buffer, &firstInvalidByte);
 
-			// Current word with additional bytes from the next word
-			// is now valid: adjust buffers of both words.
+			// Current word with additional bytes from the next words
+			// is now valid: adjust buffers of words.
 			w1->setBuffer(string(buffer.begin(), buffer.begin() + firstInvalidByte));
-			w2->setBuffer(string(buffer.begin() + firstInvalidByte, buffer.end()));
+			words[i + 1]->setBuffer(string(buffer.begin() + firstInvalidByte, buffer.end()));
+
+			// Remove unused words
+			for (size_t j = 0 ; j < mergeWords - 2 ; ++j)
+			{
+				words.erase(words.begin() + i + 2);
+				--n;
+			}
 
 			// If the next word is now empty, remove it
-			if (w2->getBuffer().empty())
+			if (words[i + 1]->getBuffer().empty())
 			{
 				words.erase(words.begin() + i + 1);
 				--n;
