@@ -1032,10 +1032,7 @@ IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 
 	SET(
 		CMAKE_CXX_FLAGS
-		"-D_REENTRANT=1 -W -Wall -pedantic -Warray-bounds-pointer-arithmetic -Wold-style-cast -Wconversion -Wcast-align -Wno-sign-conversion"
-		CACHE STRING
-		"C++ Compiler Flags"
-		FORCE
+		"${CMAKE_CXX_FLAGS} -D_REENTRANT=1 -W -Wall -pedantic -Warray-bounds-pointer-arithmetic -Wold-style-cast -Wconversion -Wcast-align -Wno-sign-conversion"
 	)
 
 	SET(CMAKE_CXX_FLAGS_RELEASE "-O2")
@@ -1050,10 +1047,7 @@ ELSE()
 
 		SET(
 			CMAKE_CXX_FLAGS
-			"-D_REENTRANT=1 -W -Wall -pedantic -Wpointer-arith -Wold-style-cast -Wconversion -Wcast-align -Wno-long-long"
-			CACHE STRING
-			"C++ Compiler Flags"
-			FORCE
+			"${CMAKE_CXX_FLAGS} -D_REENTRANT=1 -W -Wall -pedantic -Wpointer-arith -Wold-style-cast -Wconversion -Wcast-align -Wno-long-long"
 		)
 
 		SET(CMAKE_CXX_FLAGS_RELEASE "-O2")
