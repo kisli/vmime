@@ -269,6 +269,10 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		// Whitespaces and multiline
 		VASSERT_EQ("16", "a b c d e", DISPLAY_FORM("=?ISO-8859-1?Q?a_b_?=c\n\t=?ISO-8859-1?Q?d_?=e"));
 
+		// Ignored newlines
+		VASSERT_EQ("17", "ab", DISPLAY_FORM("=?ISO-8859-1?Q?a?=\r\nb"));
+		VASSERT_EQ("18", "a b", DISPLAY_FORM("=?ISO-8859-1?Q?a?= \r\nb"));
+
 #undef DISPLAY_FORM
 	}
 

@@ -82,11 +82,14 @@ shared_ptr <word> word::parseNext
 	//   - before the first word
 	//   - between two encoded words
 	//   - after the last word
+	// Always ignore newlines
 	string whiteSpaces;
 
 	while (pos < end && parserHelpers::isSpace(buffer[pos]))
 	{
-		whiteSpaces += buffer[pos];
+		if (buffer[pos] != '\r' && buffer[pos] != '\n') // do not include newlines
+			whiteSpaces += buffer[pos];
+
 		++pos;
 	}
 
