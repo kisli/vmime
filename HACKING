@@ -7,8 +7,7 @@ or recommendations, but strict rules.
      1.1. Language
      1.2. Unit tests
      1.3. Version Control
-     1.4. ChangeLog
-     1.5. Warnings
+     1.4. Warnings
 2. Style, indentation and braces
      2.1. Indentation
      2.2. Brace position
@@ -61,16 +60,7 @@ changes have been done.
 DO NOT use commit messages like -m "Updated"!
 
 
-1.4. ChangeLog
---------------
-
-ChangeLog must be updated when a major change has occured. It is not required
-(but not forbidden) to report minor bug fixes in the ChangeLog.
-
-Each ChangeLog entry must have an author and a date.
-
-
-1.5. Warnings
+1.4. Warnings
 -------------
 
 The code should compile WITHOUT ANY WARNING, even those for unused parameters!
