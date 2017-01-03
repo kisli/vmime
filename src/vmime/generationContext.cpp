@@ -33,6 +33,7 @@ generationContext::generationContext()
 	  m_prologText("This is a multi-part message in MIME format. Your mail reader " \
 	               "does not understand MIME message format."),
 	  m_epilogText(""),
+	  m_wrapMessageId(true),
 	  m_paramValueMode(PARAMETER_VALUE_RFC2231_ONLY)
 {
 }
@@ -43,6 +44,7 @@ generationContext::generationContext(const generationContext& ctx)
 	  m_maxLineLength(ctx.m_maxLineLength),
 	  m_prologText(ctx.m_prologText),
 	  m_epilogText(ctx.m_epilogText),
+	  m_wrapMessageId(ctx.m_wrapMessageId),
 	  m_paramValueMode(ctx.m_paramValueMode)
 {
 }
@@ -65,6 +67,7 @@ void generationContext::setMaxLineLength(const size_t maxLineLength)
 {
 	m_maxLineLength = maxLineLength;
 }
+
 
 
 const string generationContext::getPrologText() const
@@ -90,6 +93,15 @@ void generationContext::setEpilogText(const string& epilogText)
 	m_epilogText = epilogText;
 }
 
+bool generationContext::getWrapMessageId() const
+{
+	return m_wrapMessageId;
+}
+
+void generationContext::setWrapMessageId(const bool& wrapMessageId) 
+{
+	m_wrapMessageId = wrapMessageId;
+}
 
 void generationContext::setEncodedParameterValueMode(const EncodedParameterValueModes mode)
 {
