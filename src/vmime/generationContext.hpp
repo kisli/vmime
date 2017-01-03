@@ -82,6 +82,25 @@ public:
 	  */
 	void setEpilogText(const string& epilogText);
 
+	/** Returns a boolean variable that indicates whether the
+	  * message id can be wrapped or not, i.e. from
+	  *
+	  * Message-Id: <very very long@domain>
+          *
+          * to
+          *
+          * Message-Id:
+          *  <very very long@domain>
+	  *
+	  * @return boolean indicating if the Message-Id can be wrapped
+	  */
+	bool getWrapMessageId() const;
+
+	/** Sets the boolean variable that indicates whether the
+	  * Message-Id can be wrapped or not
+          */
+	void setWrapMessageId(const bool& wrapMessageId);
+
 	/** Modes available for generating values in parameterized header fields.
 	  */
 	enum EncodedParameterValueModes
@@ -142,6 +161,7 @@ protected:
 
 	string m_prologText;
 	string m_epilogText;
+	bool m_wrapMessageId;
 
 	EncodedParameterValueModes m_paramValueMode;
 };

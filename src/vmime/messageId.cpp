@@ -193,7 +193,7 @@ void messageId::generateImpl
 {
 	size_t pos = curLinePos;
 
-	if (curLinePos + m_left.length() + m_right.length() + 3 > ctx.getMaxLineLength())
+	if (ctx.getWrapMessageId() && (curLinePos + m_left.length() + m_right.length() + 3 > ctx.getMaxLineLength()))
 	{
 		os << NEW_LINE_SEQUENCE;
 		pos = NEW_LINE_SEQUENCE_LENGTH;
