@@ -46,13 +46,13 @@ SET(VMIME_VERSION_MICRO  2)
 # Increment this number only immediately before a public release.
 # This is independent from package version number.
 #
-# See: http://www.gnu.org/software/libtool/manual.html#Libtool-versioning
+# See: http://semver.org/
 #
 # . Implementation changed (eg. bug/security fix):  REVISION++
 # . Interfaces added/removed/changed:               CURRENT++, REVISION=0
 # . Interfaces added (upward-compatible changes):   AGE++
 # . Interfaces removed:                             AGE=0
-SET(VMIME_API_VERSION_CURRENT   0)
+SET(VMIME_API_VERSION_CURRENT   1)
 SET(VMIME_API_VERSION_REVISION  0)
 SET(VMIME_API_VERSION_AGE       0)
 
