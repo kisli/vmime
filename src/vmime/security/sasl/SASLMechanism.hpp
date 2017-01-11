@@ -69,7 +69,7 @@ public:
 	  * @param responseLen length of response buffer
 	  * @return true if authentication terminated successfully, or
 	  * false if the authentication process should continue
-	  * @throw exceptions::sasl_exception if an error occured during
+	  * @throw exceptions::sasl_exception if an error occurred during
 	  * authentication (in this case, the values in 'response' and
 	  * 'responseLen' are undetermined)
 	  */
@@ -105,7 +105,7 @@ public:
 	  * @param output output buffer (allocated bu the function,
 	  * free with delete[])
 	  * @param outputLen length of output buffer
-	  * @throw exceptions::sasl_exception if an error occured during
+	  * @throw exceptions::sasl_exception if an error occurred during
 	  * the encoding of data (in this case, the values in 'output' and
 	  * 'outputLen' are undetermined)
 	  */
@@ -122,7 +122,7 @@ public:
 	  * @param output output buffer (allocated bu the function,
 	  * free with delete[])
 	  * @param outputLen length of output buffer
-	  * @throw exceptions::sasl_exception if an error occured during
+	  * @throw exceptions::sasl_exception if an error occurred during
 	  * the encoding of data (in this case, the values in 'output' and
 	  * 'outputLen' are undetermined)
 	  */

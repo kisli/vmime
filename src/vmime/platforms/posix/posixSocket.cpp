@@ -850,7 +850,7 @@ void posixSocket::throwSocketError(const int err)
 	case EBADF:           msg = "EBADF: invalid descriptor"; break;
 	case ECONNRESET:      msg = "ECONNRESET: connection reset by peer"; break;
 	case EFAULT:          msg = "EFAULT: bad user space address"; break;
-	case EINTR:           msg = "EINTR: signal occured before transmission"; break;
+	case EINTR:           msg = "EINTR: signal occurred before transmission"; break;
 	case EINVAL:          msg = "EINVAL: invalid argument"; break;
 	case EMSGSIZE:        msg = "EMSGSIZE: message cannot be sent atomically"; break;
 	case ENOBUFS:         msg = "ENOBUFS: output queue is full"; break;

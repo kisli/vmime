@@ -99,7 +99,7 @@ public:
 	  * byte sequence was found in the input bytes, and the
 	  * 'silentlyReplaceInvalidSequences' flag is set to false in
 	  * the charsetConverterOptions
-	  * @throws exceptions::charset_conv_error if an unexpected error occured
+	  * @throws exceptions::charset_conv_error if an unexpected error occurred
 	  * during the conversion
 	  */
 	static void convert(const string& in, string& out,
@@ -118,7 +118,7 @@ public:
 	  * byte sequence was found in the input bytes, and the
 	  * 'silentlyReplaceInvalidSequences' flag is set to false in
 	  * the charsetConverterOptions
-	  * @throws exceptions::charset_conv_error if an unexpected error occured
+	  * @throws exceptions::charset_conv_error if an unexpected error occurred
 	  * during the conversion
 	  */
 	static void convert(utility::inputStream& in, utility::outputStream& out,

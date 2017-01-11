@@ -216,9 +216,9 @@ public:
 
 	folderEvent(shared_ptr <folder> folder, const Types type, const utility::path& oldPath, const utility::path& newPath);
 
-	/** Return the folder on which the event occured.
+	/** Return the folder on which the event occurred.
 	  *
-	  * @return folder on which the event occured
+	  * @return folder on which the event occurred
 	  */
 	shared_ptr <folder> getFolder() const;
 

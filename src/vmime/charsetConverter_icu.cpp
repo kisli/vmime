@@ -211,7 +211,7 @@ void charsetConverter_icu::convert
 					st->outputBytesWritten += cpTarget - &cpOutBuffer[0];
 				}
 
-				// (*) If an error occured while converting from input charset, throw it now
+				// (*) If an error occurred while converting from input charset, throw it now
 				if (toErr == U_INVALID_CHAR_FOUND ||
 				    toErr == U_TRUNCATED_CHAR_FOUND ||
 				    toErr == U_ILLEGAL_CHAR_FOUND)

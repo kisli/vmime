@@ -108,7 +108,7 @@ public:
 	  * @param responseLen length of response buffer
 	  * @return true if authentication terminated successfully, or
 	  * false if the authentication process should continue
-	  * @throw exceptions::sasl_exception if an error occured during
+	  * @throw exceptions::sasl_exception if an error occurred during
 	  * authentication (in this case, the values in 'response' and
 	  * 'responseLen' are undetermined)
 	  */

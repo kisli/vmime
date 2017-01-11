@@ -36,7 +36,7 @@ namespace cert {
 
 
 certificateException::certificateException()
-	: exception("A problem occured with a certificate.")
+	: exception("A problem occurred with a certificate.")
 {
 }
 

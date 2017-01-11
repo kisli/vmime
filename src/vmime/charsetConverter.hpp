@@ -45,7 +45,7 @@ namespace utility
   * to input bytes.
   *
   * May throw a exceptions::charset_conv_error if an unexpected error
-  * occured when initializing convert, or during charset conversion.
+  * occurred when initializing convert, or during charset conversion.
   *
   * May also throw a exceptions::illegal_byte_sequence_for_charset
   * if an illegal byte sequence was found in the input bytes, and the
@@ -109,7 +109,7 @@ public:
 	  * byte sequence was found in the input bytes, and the
 	  * 'silentlyReplaceInvalidSequences' flag is set to false in
 	  * the charsetConverterOptions
-	  * @throws exceptions::charset_conv_error if an unexpected error occured
+	  * @throws exceptions::charset_conv_error if an unexpected error occurred
 	  * during the conversion
 	  */
 	virtual void convert(const string& in, string& out, status* st = NULL) = 0;
@@ -125,7 +125,7 @@ public:
 	  * byte sequence was found in the input bytes, and the
 	  * 'silentlyReplaceInvalidSequences' flag is set to false in
 	  * the charsetConverterOptions
-	  * @throws exceptions::charset_conv_error if an unexpected error occured
+	  * @throws exceptions::charset_conv_error if an unexpected error occurred
 	  * during the conversion
 	  */
 	virtual void convert(utility::inputStream& in, utility::outputStream& out, status* st = NULL) = 0;
