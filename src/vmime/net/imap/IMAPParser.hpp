@@ -368,6 +368,8 @@ public:
 
 			virtual void putData(const string& chunk) = 0;
 
+			virtual size_t getBytesWritten() const = 0;
+
 		private:
 
 			utility::progressListener* m_progress;
@@ -380,7 +382,7 @@ public:
 		public:
 
 			targetString(utility::progressListener* progress, vmime::string& str)
-				: target(progress), m_string(str) { }
+				: target(progress), m_string(str), m_bytesWritten(0) { }
 
 			const vmime::string& string() const { return (m_string); }
 			vmime::string& string() { return (m_string); }
@@ -389,11 +391,18 @@ public:
 			void putData(const vmime::string& chunk)
 			{
 				m_string += chunk;
+				m_bytesWritten += chunk.length();
+			}
+
+			size_t getBytesWritten() const
+			{
+				return m_bytesWritten;
 			}
 
 		private:
 
 			vmime::string& m_string;
+			size_t m_bytesWritten;
 		};
 
 
@@ -403,7 +412,7 @@ public:
 		public:
 
 			targetStream(utility::progressListener* progress, utility::outputStream& stream)
-				: target(progress), m_stream(stream) { }
+				: target(progress), m_stream(stream), m_bytesWritten(0) { }
 
 			const utility::outputStream& stream() const { return (m_stream); }
 			utility::outputStream& stream() { return (m_stream); }
@@ -412,11 +421,18 @@ public:
 			void putData(const string& chunk)
 			{
 				m_stream.write(chunk.data(), chunk.length());
+				m_bytesWritten += chunk.length();
+			}
+
+			size_t getBytesWritten() const
+			{
+				return m_bytesWritten;
 			}
 
 		private:
 
 			utility::outputStream& m_stream;
+			size_t m_bytesWritten;
 		};
 
 
@@ -428,7 +444,7 @@ public:
 		//    . == NULL to put the literal into the response
 		//    . != NULL to redirect the literal to the specified target
 
-		virtual target* targetFor(const component& comp, const int data) = 0;
+		virtual shared_ptr <target> targetFor(const component& comp, const int data) = 0;
 	};
 
 
@@ -1142,7 +1158,7 @@ public:
 
 					if (parser.m_literalHandler != NULL)
 					{
-						literalHandler::target* target =
+						shared_ptr <literalHandler::target> target =
 							parser.m_literalHandler->targetFor(*m_component, m_data);
 
 						if (target != NULL)
@@ -1164,8 +1180,6 @@ public:
 								progress->progress(length, length);
 								progress->stop(length);
 							}
-
-							delete (target);
 						}
 						else
 						{
@@ -1196,7 +1210,7 @@ public:
 
 					if (parser.m_literalHandler != NULL)
 					{
-						literalHandler::target* target =
+						shared_ptr <literalHandler::target> target =
 							parser.m_literalHandler->targetFor(*m_component, m_data);
 
 						if (target != NULL)
@@ -1206,8 +1220,6 @@ public:
 							parser.m_progress = target->progressListener();
 							parser.readLiteral(*target, length);
 							parser.m_progress = NULL;
-
-							delete (target);
 						}
 						else
 						{

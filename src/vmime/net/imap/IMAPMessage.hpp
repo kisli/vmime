@@ -154,7 +154,7 @@ private:
 		EXTRACT_PEEK = 0x10
 	};
 
-	void extractImpl
+	size_t extractImpl
 		(shared_ptr <const messagePart> p,
 		 utility::outputStream& os,
 		 utility::progressListener* progress,

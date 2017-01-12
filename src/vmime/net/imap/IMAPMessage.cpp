@@ -61,11 +61,11 @@ class IMAPMessage_literalHandler : public IMAPParser::literalHandler
 public:
 
 	IMAPMessage_literalHandler(utility::outputStream& os, utility::progressListener* progress)
-		: m_os(os), m_progress(progress)
 	{
+		m_target = shared_ptr <target>(new targetStream(progress, os));
 	}
 
-	target* targetFor(const IMAPParser::component& comp, const int /* data */)
+	shared_ptr <target> targetFor(const IMAPParser::component& comp, const int /* data */)
 	{
 		if (typeid(comp) == typeid(IMAPParser::msg_att_item))
 		{
@@ -75,17 +75,21 @@ public:
 			if (type == IMAPParser::msg_att_item::BODY_SECTION ||
 			    type == IMAPParser::msg_att_item::RFC822_TEXT)
 			{
-				return new targetStream(m_progress, m_os);
+				return m_target;
 			}
 		}
 
-		return (NULL);
+		return shared_ptr <target>();
+	}
+
+	shared_ptr <target> getTarget()
+	{
+		return m_target;
 	}
 
 private:
 
-	utility::outputStream& m_os;
-	utility::progressListener* m_progress;
+	shared_ptr <target> m_target;
 };
 
 #endif // VMIME_BUILDING_DOC
@@ -268,7 +272,7 @@ void IMAPMessage::fetchPartHeaderForStructure(shared_ptr <messageStructure> str)
 }
 
 
-void IMAPMessage::extractImpl
+size_t IMAPMessage::extractImpl
 	(shared_ptr <const messagePart> p,
 	 utility::outputStream& os,
 	 utility::progressListener* progress,
@@ -278,6 +282,9 @@ void IMAPMessage::extractImpl
 	shared_ptr <const IMAPFolder> folder = m_folder.lock();
 
 	IMAPMessage_literalHandler literalHandler(os, progress);
+
+	if (length == 0)
+		return 0;
 
 	// Construct section identifier
 	std::ostringstream section;
@@ -343,16 +350,62 @@ void IMAPMessage::extractImpl
 
 		// header + body
 		if ((extractFlags & EXTRACT_HEADER) && (extractFlags & EXTRACT_BODY))
-			throw exceptions::operation_not_supported();
+		{
+			// First, extract header
+			std::ostringstream header;
+			utility::outputStreamAdapter headerStream(header);
+
+			const size_t headerLength = extractImpl
+				(p, headerStream, /* progress */ NULL,
+				 /* start */ 0, /* length */ -1, extractFlags & ~EXTRACT_BODY);
+
+			size_t s = start;
+			size_t l = length;
+
+			if (s < headerLength)
+			{
+				if (l == static_cast <size_t>(-1))
+				{
+					os.write(header.str().data() + s, headerLength - s);
+				}
+				else
+				{
+					size_t headerCopyLength = l;
+
+					if (start + headerCopyLength > headerLength)
+						headerCopyLength = headerLength - start;
+
+					os.write(header.str().data() + s, headerCopyLength);
+
+					l -= headerCopyLength;
+				}
+
+				s = 0;
+			}
+			else
+			{
+				s -= headerLength;
+			}
+
+			// Then, extract body
+			return extractImpl(p, os, progress, s, l, extractFlags & ~EXTRACT_HEADER);
+		}
 		// header only
 		else if (extractFlags & EXTRACT_HEADER)
+		{
 			bodyDesc << ".MIME";   // "MIME" not "HEADER" for parts
+		}
 	}
 
 	bodyDesc << "]";
 
 	if (start != 0 || length != static_cast <size_t>(-1))
-		bodyDesc << "<" << start << "." << length << ">";
+	{
+		if (length == static_cast <size_t>(-1))
+			bodyDesc << "<" << start << "." << static_cast <unsigned int>(-1) << ">";
+		else
+			bodyDesc << "<" << start << "." << length << ">";
+	}
 
 	std::vector <std::string> fetchParams;
 	fetchParams.push_back(bodyDesc.str());
@@ -379,6 +432,8 @@ void IMAPMessage::extractImpl
 	{
 		// TODO: update the flags (eg. flag "\Seen" may have been set)
 	}
+
+	return literalHandler.getTarget()->getBytesWritten();
 }
 
 
