@@ -240,8 +240,8 @@ namespace imap {
 
 	private:
 
-		const string& m_name;
-		string& m_line;
+		const string m_name;
+		string m_line;
 		size_t m_pos;
 		const bool& m_result;
 	};
