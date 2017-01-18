@@ -3324,7 +3324,20 @@ public:
 			}
 
 			VIMAP_PARSER_CHECK(SPACE);
-			VIMAP_PARSER_GET(xstring, m_string2);
+
+			if (!parser.isStrict())
+			{
+				// In non-strict mode, allow NIL in value
+				shared_ptr <nstring> nstr;
+				VIMAP_PARSER_GET_PTR(nstring, nstr);
+
+				m_string2 = new xstring();
+				m_string2->setValue(nstr->value());
+			}
+			else
+			{
+				VIMAP_PARSER_GET(xstring, m_string2);
+			}
 
 			DEBUG_FOUND("body_fld_param_item", "<" << m_string1->value() << ", " << m_string2->value() << ">");
 

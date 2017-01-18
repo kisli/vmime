@@ -34,6 +34,7 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 		VMIME_TEST(testContinueReqWithoutSpace)
 		VMIME_TEST(testNILValueInBodyFldEnc)
 		VMIME_TEST(testFETCHResponse_optional_body_fld_lang)
+		VMIME_TEST(testFETCHBodyStructure_NIL_body_fld_param_value)
 	VMIME_TEST_LIST_END
 
 
@@ -164,6 +165,39 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 		parser->setTimeoutHandler(toh);
 
 		VASSERT_NO_THROW("parse", parser->readResponse());
+	}
+
+	// Support for NIL boundary, for mail.ru IMAP server:
+	// https://www.ietf.org/mail-archive/web/imapext/current/msg05442.html
+	void testFETCHBodyStructure_NIL_body_fld_param_value()
+	{
+		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
+		vmime::shared_ptr <vmime::net::timeoutHandler> toh = vmime::make_shared <testTimeoutHandler>();
+
+		vmime::shared_ptr <vmime::net::imap::IMAPTag> tag =
+				vmime::make_shared <vmime::net::imap::IMAPTag>();
+
+		// ...("boundary" NIL)))... is an invalid syntax for a "body_fld_param_item"
+		const char* resp = "* 1 FETCH (BODYSTRUCTURE ((\"text\" \"plain\" (\"charset\" \"utf-8\") NIL NIL \"8bit\" 536 0 NIL NIL NIL NIL)(\"text\" \"html\" (\"charset\" \"utf-8\") NIL NIL \"8bit\" 7130 0 NIL NIL NIL NIL) \"alternative\" (\"boundary\" NIL)))\r\na001 OK FETCH complete\r\n";
+
+		socket->localSend(resp);
+
+		vmime::shared_ptr <vmime::net::imap::IMAPParser> parser =
+			vmime::make_shared <vmime::net::imap::IMAPParser>();
+
+		parser->setTag(tag);
+		parser->setSocket(socket);
+		parser->setTimeoutHandler(toh);
+
+		parser->setStrict(false);
+		VASSERT_NO_THROW("non-strict mode", parser->readResponse());
+
+		++(*tag);
+
+		socket->localSend(resp);
+
+		parser->setStrict(true);
+		VASSERT_THROW("strict mode", parser->readResponse(), vmime::exceptions::invalid_response);
 	}
 
 VMIME_TEST_SUITE_END
