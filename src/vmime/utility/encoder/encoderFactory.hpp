@@ -88,6 +88,7 @@ private:
 
 
 	std::vector <shared_ptr <registeredEncoder> > m_encoders;
+	shared_ptr <encoder> m_defaultEncoder;
 
 public:
 
@@ -137,6 +138,20 @@ public:
 	  * @return list of registered encoders
 	  */
 	const std::vector <shared_ptr <const registeredEncoder> > getEncoderList() const;
+
+	/** Set the default encoder to use when no other encoder
+	  * is registered for an encoding (fallback).
+	  *
+	  * @param enc default encoder
+	  */
+	void setDefaultEncoder(const shared_ptr <encoder>& enc);
+
+	/** Return the default encoder to use when no other encoder
+	  * is registered for an encoding (fallback).
+	  *
+	  * @return default encoder
+	  */
+	shared_ptr <encoder> getDefaultEncoder() const;
 };
 
 

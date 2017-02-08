@@ -71,7 +71,17 @@ shared_ptr <encoderFactory> encoderFactory::getInstance()
 
 shared_ptr <encoder> encoderFactory::create(const string& name)
 {
-	return (getEncoderByName(name)->create());
+	try
+	{
+		return (getEncoderByName(name)->create());
+	}
+	catch (exceptions::no_encoder_available &) {
+
+		if (m_defaultEncoder)
+			return m_defaultEncoder;
+
+		throw;
+	}
 }
 
 
@@ -113,6 +123,18 @@ const std::vector <shared_ptr <const encoderFactory::registeredEncoder> > encode
 	}
 
 	return (res);
+}
+
+
+void encoderFactory::setDefaultEncoder(const shared_ptr <encoder>& enc)
+{
+	m_defaultEncoder = enc;
+}
+
+
+shared_ptr <encoder> encoderFactory::getDefaultEncoder() const
+{
+	return m_defaultEncoder;
 }
 
 
