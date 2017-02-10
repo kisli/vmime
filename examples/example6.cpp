@@ -542,22 +542,18 @@ static void connectStore()
 
 				// Show message envelope
 				case 4:
+				{
+					vmime::net::fetchAttributes attr(vmime::net::fetchAttributes::ENVELOPE);
 
-					f->fetchMessage(msg, vmime::net::fetchAttributes::ENVELOPE);
+					// If you also want to fetch "Received: " fields:
+					//attr.add("Received");
 
-#define ENV_HELPER(x) \
-	try { std::cout << msg->getHeader()->x()->generate() << std::endl; } \
-	catch (vmime::exception) { /* In case the header field does not exist. */ }
+					f->fetchMessage(msg, attr);
 
-					ENV_HELPER(From)
-					ENV_HELPER(To)
-					ENV_HELPER(Date)
-					ENV_HELPER(Subject)
-
-#undef ENV_HELPER
+					std::cout << msg->getHeader()->generate() << std::endl;
 
 					break;
-
+				}
 				// Extract whole message
 				case 5:
 				{
