@@ -201,62 +201,40 @@ const vmime::charset windowsHandler::getLocalCharset() const
 }
 
 
-static inline bool isFQDN(const vmime::string& str)
-{
-	if (utility::stringUtils::isStringEqualNoCase(str, "localhost", 9))
-		return false;
-
-	const vmime::size_t p = str.find_first_of(".");
-	return p != vmime::string::npos && p > 0 && p != str.length() - 1;
-}
-
-
 const vmime::string windowsHandler::getHostName() const
 {
-	char hostname[256];
+	char hostname[1024];
+	DWORD hostnameLen;
 
-	// Try with 'gethostname'
-	::gethostname(hostname, sizeof(hostname));
-	hostname[sizeof(hostname) - 1] = '\0';
-
-	// If this is a Fully-Qualified Domain Name (FQDN), return immediately
-	if (isFQDN(hostname))
-		return hostname;
-
-	if (::strlen(hostname) == 0)
+	// First, try to get a Fully-Qualified Domain Name (FQDN)
+	for (int cnf = ComputerNameDnsHostname ; cnf <= ComputerNameDnsFullyQualified ; ++cnf)
 	{
-#if VMIME_HAVE_STRCPY_S
-		::strcpy_s(hostname, "localhost");
-#else
-		::strcpy(hostname, "localhost");
-#endif // VMIME_HAVE_STRCPY_S
-	}
+		hostnameLen = sizeof(hostname);
 
-	// Try to get canonical name for the hostname
-	struct addrinfo hints;
-	memset(&hints, 0, sizeof hints);
-	hints.ai_family = AF_UNSPEC;  // either IPV4 or IPV6
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_flags = AI_CANONNAME;
-
-	struct addrinfo* info;
-
-	if (getaddrinfo(hostname, "http", &hints, &info) == 0)
-	{
-		for (struct addrinfo* p = info ; p != NULL ; p = p->ai_next)
+		if (GetComputerNameEx((COMPUTER_NAME_FORMAT) cnf, hostname, &hostnameLen))
 		{
-			if (p->ai_canonname && isFQDN(p->ai_canonname))
-			{
-				const string ret(p->ai_canonname);
-				freeaddrinfo(info);
-				return ret;
-			}
-		}
+			const vmime::string hostnameStr(hostname);
 
-		freeaddrinfo(info);
+			if (utility::stringUtils::isValidFQDN(hostnameStr))
+				return hostnameStr;
+		}
 	}
 
-	return hostname;
+	// Anything else will be OK, as long as it is a valid hostname
+	for (int cnf = 0 ; cnf < ComputerNameMax ; ++cnf)
+	{
+		hostnameLen = sizeof(hostname);
+
+		if (GetComputerNameEx((COMPUTER_NAME_FORMAT) cnf, hostname, &hostnameLen))
+		{
+			const vmime::string hostnameStr(hostname);
+
+			if (utility::stringUtils::isValidHostname(hostnameStr))
+				return hostnameStr;
+		}
+	}
+
+	return "localhost.localdomain";
 }
 
 

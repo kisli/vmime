@@ -39,6 +39,7 @@
 #include <locale.h>
 #include <langinfo.h>
 #include <errno.h>
+#include <limits.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -174,32 +175,23 @@ const vmime::charset posixHandler::getLocalCharset() const
 }
 
 
-static inline bool isFQDN(const vmime::string& str)
+static inline bool isAcceptableHostname(const vmime::string& str)
 {
-	if (utility::stringUtils::isStringEqualNoCase(str, "localhost", 9))
+	// At least, try to find something better than "localhost"
+	if (utility::stringUtils::isStringEqualNoCase(str, "localhost", 9) ||
+	    utility::stringUtils::isStringEqualNoCase(str, "localhost.localdomain", 21))
+	{
 		return false;
+	}
 
-	const vmime::size_t p = str.find_first_of(".");
-	return p != vmime::string::npos && p > 0 && p != str.length() - 1;
+	// Anything else will be OK, as long as it is a valid hostname
+	return utility::stringUtils::isValidHostname(str);
 }
 
 
 const vmime::string posixHandler::getHostName() const
 {
-	char hostname[256];
-
-	// Try with 'gethostname'
-	::gethostname(hostname, sizeof(hostname));
-	hostname[sizeof(hostname) - 1] = '\0';
-
-	// If this is a Fully-Qualified Domain Name (FQDN), return immediately
-	if (isFQDN(hostname))
-		return hostname;
-
-	if (::strlen(hostname) == 0)
-		::strcpy(hostname, "localhost");
-
-	// Try to get canonical name for the hostname
+	// Try to get official canonical name of this host
 	struct addrinfo hints;
 	memset(&hints, 0, sizeof hints);
 	hints.ai_family = AF_UNSPEC;  // either IPV4 or IPV6
@@ -208,20 +200,48 @@ const vmime::string posixHandler::getHostName() const
 
 	struct addrinfo* info;
 
-	if (getaddrinfo(hostname, "http", &hints, &info) == 0)
+	if (getaddrinfo(NULL, "http", &hints, &info) == 0)
 	{
+		// First, try to get a Fully-Qualified Domain Name (FQDN)
 		for (struct addrinfo* p = info ; p != NULL ; p = p->ai_next)
 		{
-			if (p->ai_canonname && isFQDN(p->ai_canonname))
+			if (p->ai_canonname)
 			{
-				const string ret(p->ai_canonname);
-				freeaddrinfo(info);
-				return ret;
+				const string hn(p->ai_canonname);
+
+				if (utility::stringUtils::isValidFQDN(hn))
+				{
+					freeaddrinfo(info);
+					return hn;
+				}
+			}
+		}
+
+		// Then, try to find an acceptable host name
+		for (struct addrinfo* p = info ; p != NULL ; p = p->ai_next)
+		{
+			if (p->ai_canonname)
+			{
+				const string hn(p->ai_canonname);
+
+				if (isAcceptableHostname(hn))
+				{
+					freeaddrinfo(info);
+					return hn;
+				}
 			}
 		}
 
 		freeaddrinfo(info);
 	}
+
+	// Get host name
+	char hostname[HOST_NAME_MAX];
+	::gethostname(hostname, sizeof(hostname));
+	hostname[sizeof(hostname) - 1] = '\0';
+
+	if (::strlen(hostname) == 0 || !isAcceptableHostname(hostname))
+		::strcpy(hostname, "localhost.localdomain");
 
 	return hostname;
 }

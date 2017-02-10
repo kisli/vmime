@@ -238,5 +238,82 @@ string stringUtils::quote
 }
 
 
+bool stringUtils::isValidHostname(const vmime::string& hostname)
+{
+	short numberOfDots = 0;
+	return isValidFQDNImpl(hostname, &numberOfDots);
+}
+
+
+bool stringUtils::isValidFQDN(const vmime::string& fqdn)
+{
+	short numberOfDots = 0;
+	return isValidFQDNImpl(fqdn, &numberOfDots) && numberOfDots >= 2;
+}
+
+
+bool stringUtils::isValidFQDNImpl(const vmime::string& fqdn, short* numberOfDots)
+{
+	bool alphanumOnly = true;
+	bool invalid = false;
+	bool previousIsDot = true;  // dot is not allowed as the first char
+	bool previousIsDash = true;  // dash is not allowed as the first char
+
+	*numberOfDots = 0;
+
+	for (size_t i = 0, n = fqdn.length() ; alphanumOnly && !invalid && i < n ; ++i)
+	{
+		const char c = fqdn[i];
+
+		alphanumOnly = (
+			   (c >= '0' && c <= '9')  // DIGIT
+			|| (c >= 'a' && c <= 'z')  // ALPHA
+			|| (c >= 'A' && c <= 'Z')  // ALPHA
+			|| (c == '.')
+			|| (c == '-')
+		);
+
+		if (c == '-')
+		{
+			if (previousIsDot)
+			{
+				invalid = true;  // dash is not allowed as the first char
+			}
+
+			previousIsDot = false;
+			previousIsDash = true;
+		}
+		else if (c == '.')
+		{
+			if (previousIsDash)
+			{
+				invalid = true;  // dash is not allowed as the first char
+			}
+			else if (previousIsDot)
+			{
+				invalid = true;  // consecutive dots are not allowed
+			}
+			else
+			{
+				++*numberOfDots;
+				previousIsDot = true;
+			}
+
+			previousIsDash = false;
+		}
+		else
+		{
+			previousIsDot = false;
+			previousIsDash = false;
+		}
+	}
+
+	return alphanumOnly &&
+	       !previousIsDot &&
+	       !previousIsDash &&
+	       !invalid;
+}
+
+
 } // utility
 } // vmime

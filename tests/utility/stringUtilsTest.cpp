@@ -43,6 +43,9 @@ VMIME_TEST_SUITE_BEGIN(stringUtilsTest)
 		VMIME_TEST(testCountASCIIChars)
 
 		VMIME_TEST(testUnquote)
+
+		VMIME_TEST(testIsValidHostname)
+		VMIME_TEST(testIsValidFQDN)
 	VMIME_TEST_LIST_END
 
 
@@ -158,6 +161,31 @@ VMIME_TEST_SUITE_BEGIN(stringUtilsTest)
 		VASSERT_EQ("2", "\"not quoted", stringUtils::unquote("\"not quoted"));  // "not quoted
 		VASSERT_EQ("3", "not quoted\"", stringUtils::unquote("not quoted\""));  // not quoted"
 		VASSERT_EQ("4", "quoted with \"escape\"", stringUtils::unquote("\"quoted with \\\"escape\\\"\""));  // "quoted with \"escape\""
+	}
+
+	void testIsValidHostname()
+	{
+		VASSERT_TRUE ("1", stringUtils::isValidHostname("localhost"));
+		VASSERT_TRUE ("2", stringUtils::isValidHostname("localhost.localdomain"));
+		VASSERT_TRUE ("3", stringUtils::isValidHostname("example.com"));
+		VASSERT_TRUE ("4", stringUtils::isValidHostname("host.example.com"));
+		VASSERT_FALSE("5", stringUtils::isValidHostname(".example.com"));
+		VASSERT_FALSE("6", stringUtils::isValidHostname(".-example.com"));
+		VASSERT_FALSE("7", stringUtils::isValidHostname(".example-.com"));
+		VASSERT_FALSE("8", stringUtils::isValidHostname(".exa--mple.com"));
+		VASSERT_FALSE("9", stringUtils::isValidHostname("-example.com"));
+	}
+
+	void testIsValidFQDN()
+	{
+		VASSERT_FALSE("1", stringUtils::isValidFQDN("localhost"));
+		VASSERT_FALSE("2", stringUtils::isValidFQDN("localhost.localdomain"));
+		VASSERT_FALSE("3", stringUtils::isValidFQDN("example.com"));
+		VASSERT_TRUE ("4", stringUtils::isValidFQDN("host.example.com"));
+		VASSERT_FALSE("5", stringUtils::isValidFQDN(".example.com"));
+		VASSERT_FALSE("6", stringUtils::isValidFQDN(".-example.com"));
+		VASSERT_FALSE("7", stringUtils::isValidFQDN(".example-.com"));
+		VASSERT_FALSE("8", stringUtils::isValidFQDN(".exa--mple.com"));
 	}
 
 VMIME_TEST_SUITE_END

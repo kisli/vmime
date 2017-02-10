@@ -224,6 +224,27 @@ public:
 	  * @return quoted string
 	  */
 	static string quote(const string& str, const string& escapeSpecialChars, const string& escapeChar);
+
+	/** Return whether the specified string is a valid host name
+	  * or domain name.
+	  *
+	  * @param hostname string to test
+	  * @return true if the string is a valid host name or domain
+	  * name, or false otherwise
+	  */
+	static bool isValidHostname(const vmime::string& hostname);
+
+	/** Return whether the specified string is a valid fully
+	  * qualified domain name (FQDN).
+	  *
+	  * @param fqdn string to test
+	  * @return true if the string seems to be a FQDN, false otherwise
+	  */
+	static bool isValidFQDN(const vmime::string& fqdn);
+
+private:
+
+	static bool isValidFQDNImpl(const vmime::string& fqdn, short* minNumberOfDots);
 };
 
 
