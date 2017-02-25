@@ -128,7 +128,7 @@ size_t body::findNextBoundaryPosition
 
 
 void body::parseImpl
-	(const parsingContext& /* ctx */,
+	(const parsingContext& ctx,
 	 shared_ptr <utility::parserInputStreamAdapter> parser,
 	 const size_t position, const size_t end, size_t* newPosition)
 {
@@ -286,7 +286,7 @@ void body::parseImpl
 				if (partEnd > partStart)
 				{
 					vmime::text text;
-					text.parse(parser, partStart, partEnd);
+					text.parse(ctx, parser, partStart, partEnd);
 
 					m_prologText = text.getWholeBuffer();
 				}
@@ -304,7 +304,7 @@ void body::parseImpl
 				if (partEnd < partStart)
 					std::swap(partStart, partEnd);
 
-				part->parse(parser, partStart, partEnd, NULL);
+				part->parse(ctx, parser, partStart, partEnd, NULL);
 
 				m_parts.push_back(part);
 			}
@@ -325,7 +325,7 @@ void body::parseImpl
 
 			try
 			{
-				part->parse(parser, partStart, end);
+				part->parse(ctx, parser, partStart, end);
 			}
 			catch (std::exception&)
 			{
@@ -338,7 +338,7 @@ void body::parseImpl
 		else if (partStart < end)
 		{
 			vmime::text text;
-			text.parse(parser, partStart, end);
+			text.parse(ctx, parser, partStart, end);
 
 			m_epilogText = text.getWholeBuffer();
 		}
