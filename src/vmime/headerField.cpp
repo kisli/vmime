@@ -103,33 +103,33 @@ shared_ptr <headerField> headerField::parseNext
 			return null;
 		}
 
-    // This line may be a field description
-    if (!parserHelpers::isSpace(c))
-    {
-      const size_t nameStart = pos;  // remember the start position of the line
+		// This line may be a field description
+		if (!parserHelpers::isSpace(c))
+		{
+			const size_t nameStart = pos;  // remember the start position of the line
 
-      while (pos < end && (buffer[pos] != ':' && !parserHelpers::isSpace(buffer[pos])))
+			while (pos < end && (buffer[pos] != ':' && !parserHelpers::isSpace(buffer[pos])))
+				++pos;
+
+			const size_t nameEnd = pos;
+
+			while (pos < end && (buffer[pos] == ' ' || buffer[pos] == '\t'))
         ++pos;
 
-      const size_t nameEnd = pos;
-
-      while (pos < end && (buffer[pos] == ' ' || buffer[pos] == '\t'))
-        ++pos;
-
-      if (buffer[pos] != ':')
-      {
-        switch (ctx.getHeaderParseErrorRecoveryMethod()) {
+			if (buffer[pos] != ':')
+			{
+				switch (ctx.getHeaderParseErrorRecoveryMethod()) {
           case vmime::headerParseRecoveryMethod::SKIP_LINE:
-            // Humm...does not seem to be a valid header line.
-            // Skip this error and advance to the next line
-            pos = nameStart;
+          // Humm...does not seem to be a valid header line.
+          // Skip this error and advance to the next line
+          pos = nameStart;
 
-            while (pos < end && buffer[pos] != '\n')
-              ++pos;
+          while (pos < end && buffer[pos] != '\n')
+            ++pos;
 
-            if (pos < end && buffer[pos] == '\n')
-              ++pos;
-            break;
+          if (pos < end && buffer[pos] == '\n')
+            ++pos;
+              break;
 
 //          case vmime::headerParseRecoveryMethod::APPEND_TO_PREVIOUS_LINE:
 //            // TODO Implement this...
@@ -139,93 +139,93 @@ shared_ptr <headerField> headerField::parseNext
             return null;
             break;
         }
-      }
-      else
-      {
-        // Extract the field name
-        const string name(buffer.begin() + nameStart,
-                          buffer.begin() + nameEnd);
+			}
+			else
+			{
+				// Extract the field name
+				const string name(buffer.begin() + nameStart,
+				                  buffer.begin() + nameEnd);
 
-        // Skip ':' character
-        while (pos < end && buffer[pos] == ':')
-          ++pos;
+				// Skip ':' character
+				while (pos < end && buffer[pos] == ':')
+					++pos;
 
-        // Skip spaces between ':' and the field contents
-        while (pos < end && (buffer[pos] == ' ' || buffer[pos] == '\t'))
-          ++pos;
+				// Skip spaces between ':' and the field contents
+				while (pos < end && (buffer[pos] == ' ' || buffer[pos] == '\t'))
+					++pos;
 
-        const size_t contentsStart = pos;
-        size_t contentsEnd = 0;
+				const size_t contentsStart = pos;
+				size_t contentsEnd = 0;
 
-        bool firstLine = true;
+				bool firstLine = true;
 
-        // Parse field value, taking care of line folding (value on multiple lines)
-        for (size_t eol = 0 ; parserHelpers::findEOL(buffer, pos, end, &eol) ; pos = eol)
-        {
-          // If the line does not start with a folding indicator (SPACE or TAB),
-          // and this is not the first line, then stop parsing lines
-          if (!firstLine && !(buffer[pos] == ' ' || buffer[pos] == '\t'))
-            break;
+				// Parse field value, taking care of line folding (value on multiple lines)
+				for (size_t eol = 0 ; parserHelpers::findEOL(buffer, pos, end, &eol) ; pos = eol)
+				{
+					// If the line does not start with a folding indicator (SPACE or TAB),
+					// and this is not the first line, then stop parsing lines
+					if (!firstLine && !(buffer[pos] == ' ' || buffer[pos] == '\t'))
+						break;
 
-          contentsEnd = eol;
-          firstLine = false;
-        }
+					contentsEnd = eol;
+					firstLine = false;
+				}
 
-        if (pos == end && contentsEnd == 0)
-        {
-          // End of data, and no CRLF was found at the end
-          contentsEnd = end;
-        }
+				if (pos == end && contentsEnd == 0)
+				{
+					// End of data, and no CRLF was found at the end
+					contentsEnd = end;
+				}
 
-        // Strip spaces from end of header lines
-        while (contentsEnd > contentsStart &&
-               (buffer[contentsEnd - 1] == ' ' || buffer[contentsEnd - 1] == '\t' ||
-                buffer[contentsEnd - 1] == '\r' || buffer[contentsEnd - 1] == '\n'))
-        {
-          contentsEnd--;
-        }
+				// Strip spaces from end of header lines
+				while (contentsEnd > contentsStart &&
+				       (buffer[contentsEnd - 1] == ' ' || buffer[contentsEnd - 1] == '\t' ||
+				        buffer[contentsEnd - 1] == '\r' || buffer[contentsEnd - 1] == '\n'))
+				{
+					contentsEnd--;
+				}
 
-        // Return a new field
-        shared_ptr <headerField> field = headerFieldFactory::getInstance()->create(name);
+				// Return a new field
+				shared_ptr <headerField> field = headerFieldFactory::getInstance()->create(name);
 
-        field->parse(ctx, buffer, contentsStart, contentsEnd, NULL);
-        field->setParsedBounds(nameStart, pos);
+				field->parse(ctx, buffer, contentsStart, contentsEnd, NULL);
+				field->setParsedBounds(nameStart, pos);
 
-        if (newPosition)
-          *newPosition = pos;
+				if (newPosition)
+					*newPosition = pos;
 
-        return (field);
-      }
-    }
-    else
-    {
-      // If the line contains only space characters, we assume it is
-      // the end of the headers.
-      while (pos < end && (buffer[pos] == ' ' || buffer[pos] == '\t'))
-        ++pos;
+				return (field);
+			}
+		}
+		else
+		{
+			// If the line contains only space characters, we assume it is
+			// the end of the headers.
+			while (pos < end && (buffer[pos] == ' ' || buffer[pos] == '\t'))
+				++pos;
 
-      if (pos < end && buffer[pos] == '\n')
-      {
-        if (newPosition)
-          *newPosition = pos + 1;   // LF: illegal
+			if (pos < end && buffer[pos] == '\n')
+			{
+				if (newPosition)
+					*newPosition = pos + 1;   // LF: illegal
 
-        return null;
-      }
-      else if (pos + 1 < end && buffer[pos] == '\r' && buffer[pos + 1] == '\n')
-      {
-        if (newPosition)
-          *newPosition = pos + 2;   // CR+LF
+				return null;
+			}
+			else if (pos + 1 < end && buffer[pos] == '\r' && buffer[pos + 1] == '\n')
+			{
+				if (newPosition)
+					*newPosition = pos + 2;   // CR+LF
 
-        return null;
-      }
+				return null;
+			}
 
-      // Skip this error and advance to the next line
-      while (pos < end && buffer[pos] != '\n')
-        ++pos;
+			// Skip this error and advance to the next line
+			while (pos < end && buffer[pos] != '\n')
+				++pos;
 
-      if (buffer[pos] == '\n')
-        ++pos;
-    }
+			if (buffer[pos] == '\n')
+				++pos;
+		}
 	}
 
 	if (newPosition)
