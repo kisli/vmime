@@ -114,31 +114,31 @@ shared_ptr <headerField> headerField::parseNext
 			const size_t nameEnd = pos;
 
 			while (pos < end && (buffer[pos] == ' ' || buffer[pos] == '\t'))
-        ++pos;
+				++pos;
 
 			if (buffer[pos] != ':')
 			{
 				switch (ctx.getHeaderParseErrorRecoveryMethod()) {
-          case vmime::headerParseRecoveryMethod::SKIP_LINE:
-          // Humm...does not seem to be a valid header line.
-          // Skip this error and advance to the next line
-          pos = nameStart;
+					case vmime::headerParseRecoveryMethod::SKIP_LINE:
+						// Humm...does not seem to be a valid header line.
+						// Skip this error and advance to the next line
+						pos = nameStart;
 
-          while (pos < end && buffer[pos] != '\n')
-            ++pos;
+						while (pos < end && buffer[pos] != '\n')
+							++pos;
 
-          if (pos < end && buffer[pos] == '\n')
-            ++pos;
-              break;
+						if (pos < end && buffer[pos] == '\n')
+							++pos;
+						break;
 
-//          case vmime::headerParseRecoveryMethod::APPEND_TO_PREVIOUS_LINE:
-//            // TODO Implement this...
-//            break;
+//					case vmime::headerParseRecoveryMethod::APPEND_TO_PREVIOUS_LINE:
+//						// TODO Implement this...
+//						break;
 
-          case vmime::headerParseRecoveryMethod::ASSUME_END_OF_HEADERS:
-            return null;
-            break;
-        }
+					case vmime::headerParseRecoveryMethod::ASSUME_END_OF_HEADERS:
+						return null;
+						break;
+				}
 			}
 			else
 			{
