@@ -53,7 +53,7 @@ headerParseRecoveryMethod::headerLineError parsingContext::getHeaderParseErrorRe
 
 void parsingContext::setHeaderParseErrorRecoveryMethod(headerParseRecoveryMethod::headerLineError recoveryMethod)
 {
-	m_headrParseErrorRecovery = recoveryMethod;
+	m_headerParseErrorRecovery = recoveryMethod;
 }
 
 
