@@ -47,13 +47,13 @@ parsingContext& parsingContext::getDefaultContext()
 
 headerParseRecoveryMethod::headerLineError parsingContext::getHeaderParseErrorRecoveryMethod() const
 {
-  return m_headerParseErrorRecovery;
+	return m_headerParseErrorRecovery;
 }
 
 
 void parsingContext::setHeaderParseErrorRecoveryMethod(headerParseRecoveryMethod::headerLineError recoveryMethod)
 {
-  m_headerParseErrorRecovery = recoveryMethod;
+	m_headrParseErrorRecovery = recoveryMethod;
 }
 
 
