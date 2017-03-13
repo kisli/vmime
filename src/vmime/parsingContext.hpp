@@ -31,6 +31,15 @@
 namespace vmime
 {
 
+	/** Provides runtime configurable options to provide flexibility in header parsing
+	 */
+	struct headerParseRecoveryMethod {
+		enum headerLineError {
+			SKIP_LINE = 0,
+			/* APPEND_TO_PREVIOUS_LINE = 1, */
+			ASSUME_END_OF_HEADERS = 2
+		};
+	};
 
 /** Holds configuration parameters used for parsing messages.
   */
@@ -48,8 +57,22 @@ public:
 	  */
 	static parsingContext& getDefaultContext();
 
+	/** Sets the recovery method when parsing a header encounters an error such as a failed fold or missing new line.
+	  *
+	  * @param recoveryMethod is one of vmime::headerParseRecoveryMethod.  Defaults to vmime::headerParseRecoveryMethod::SKIP_LINE.
+	  */
+	void setHeaderParseErrorRecoveryMethod(headerParseRecoveryMethod::headerLineError recoveryMethod);
+
+	/** Return the recovery method when parsing a header encounters an error.
+	  *
+	  * @return is an enum from vmime::headerParseRecoveryMethod
+	  */
+	headerParseRecoveryMethod::headerLineError getHeaderParseErrorRecoveryMethod() const;
+
+
 protected:
 
+	headerParseRecoveryMethod::headerLineError m_headerParseErrorRecovery;
 };
 
 
