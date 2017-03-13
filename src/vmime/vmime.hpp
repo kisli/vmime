@@ -26,135 +26,135 @@
 
 
 // Configuration
-#include "vmime/config.hpp"
+#include "config.hpp"
 
 // Base definitions
-#include "vmime/base.hpp"
-#include "vmime/exception.hpp"
-#include "vmime/platform.hpp"
+#include "base.hpp"
+#include "exception.hpp"
+#include "platform.hpp"
 
 // Base components
-#include "vmime/dateTime.hpp"
-#include "vmime/message.hpp"
-#include "vmime/bodyPart.hpp"
-#include "vmime/charset.hpp"
-#include "vmime/text.hpp"
-#include "vmime/encoding.hpp"
-#include "vmime/contentDisposition.hpp"
-#include "vmime/emailAddress.hpp"
-#include "vmime/mailbox.hpp"
-#include "vmime/mailboxGroup.hpp"
-#include "vmime/mailboxList.hpp"
-#include "vmime/addressList.hpp"
-#include "vmime/mediaType.hpp"
-#include "vmime/messageId.hpp"
-#include "vmime/messageIdSequence.hpp"
-#include "vmime/relay.hpp"
-#include "vmime/disposition.hpp"
-#include "vmime/path.hpp"
+#include "dateTime.hpp"
+#include "message.hpp"
+#include "bodyPart.hpp"
+#include "charset.hpp"
+#include "text.hpp"
+#include "encoding.hpp"
+#include "contentDisposition.hpp"
+#include "emailAddress.hpp"
+#include "mailbox.hpp"
+#include "mailboxGroup.hpp"
+#include "mailboxList.hpp"
+#include "addressList.hpp"
+#include "mediaType.hpp"
+#include "messageId.hpp"
+#include "messageIdSequence.hpp"
+#include "relay.hpp"
+#include "disposition.hpp"
+#include "path.hpp"
 
-#include "vmime/emptyContentHandler.hpp"
-#include "vmime/fileContentHandler.hpp"
-#include "vmime/stringContentHandler.hpp"
-#include "vmime/streamContentHandler.hpp"
+#include "emptyContentHandler.hpp"
+#include "fileContentHandler.hpp"
+#include "stringContentHandler.hpp"
+#include "streamContentHandler.hpp"
 
-#include "vmime/generationContext.hpp"
-#include "vmime/parsingContext.hpp"
+#include "generationContext.hpp"
+#include "parsingContext.hpp"
 
 // Message components
-#include "vmime/message.hpp"
+#include "message.hpp"
 
 // Header fields
-#include "vmime/headerFieldFactory.hpp"
-#include "vmime/mailboxField.hpp"
-#include "vmime/parameterizedHeaderField.hpp"
+#include "headerFieldFactory.hpp"
+#include "mailboxField.hpp"
+#include "parameterizedHeaderField.hpp"
 
 // Encoders
-#include "vmime/utility/encoder/encoderFactory.hpp"
+#include "utility/encoder/encoderFactory.hpp"
 
 // Streams
-#include "vmime/utility/filteredStream.hpp"
-#include "vmime/utility/inputStream.hpp"
-#include "vmime/utility/inputStreamAdapter.hpp"
-#include "vmime/utility/inputStreamByteBufferAdapter.hpp"
-#include "vmime/utility/inputStreamPointerAdapter.hpp"
-#include "vmime/utility/inputStreamSocketAdapter.hpp"
-#include "vmime/utility/inputStreamStringAdapter.hpp"
-#include "vmime/utility/inputStreamStringProxyAdapter.hpp"
-#include "vmime/utility/outputStream.hpp"
-#include "vmime/utility/outputStreamAdapter.hpp"
-#include "vmime/utility/outputStreamByteArrayAdapter.hpp"
-#include "vmime/utility/outputStreamSocketAdapter.hpp"
-#include "vmime/utility/outputStreamStringAdapter.hpp"
-#include "vmime/utility/streamUtils.hpp"
+#include "utility/filteredStream.hpp"
+#include "utility/inputStream.hpp"
+#include "utility/inputStreamAdapter.hpp"
+#include "utility/inputStreamByteBufferAdapter.hpp"
+#include "utility/inputStreamPointerAdapter.hpp"
+#include "utility/inputStreamSocketAdapter.hpp"
+#include "utility/inputStreamStringAdapter.hpp"
+#include "utility/inputStreamStringProxyAdapter.hpp"
+#include "utility/outputStream.hpp"
+#include "utility/outputStreamAdapter.hpp"
+#include "utility/outputStreamByteArrayAdapter.hpp"
+#include "utility/outputStreamSocketAdapter.hpp"
+#include "utility/outputStreamStringAdapter.hpp"
+#include "utility/streamUtils.hpp"
 
 // Message builder/parser
-#include "vmime/messageBuilder.hpp"
-#include "vmime/messageParser.hpp"
+#include "messageBuilder.hpp"
+#include "messageParser.hpp"
 
-#include "vmime/fileAttachment.hpp"
-#include "vmime/defaultAttachment.hpp"
-#include "vmime/messageAttachment.hpp"
+#include "fileAttachment.hpp"
+#include "defaultAttachment.hpp"
+#include "messageAttachment.hpp"
 
-#include "vmime/plainTextPart.hpp"
-#include "vmime/htmlTextPart.hpp"
+#include "plainTextPart.hpp"
+#include "htmlTextPart.hpp"
 
-#include "vmime/attachmentHelper.hpp"
+#include "attachmentHelper.hpp"
 
 // MDN
-#include "vmime/mdn/MDNHelper.hpp"
+#include "mdn/MDNHelper.hpp"
 
 // Misc
-#include "vmime/misc/importanceHelper.hpp"
+#include "misc/importanceHelper.hpp"
 
 // Property set
-#include "vmime/propertySet.hpp"
+#include "propertySet.hpp"
 
 // Utilities
-#include "vmime/utility/datetimeUtils.hpp"
-#include "vmime/utility/filteredStream.hpp"
-#include "vmime/charsetConverter.hpp"
+#include "utility/datetimeUtils.hpp"
+#include "utility/filteredStream.hpp"
+#include "charsetConverter.hpp"
 
 // Security
-#include "vmime/security/authenticator.hpp"
-#include "vmime/security/defaultAuthenticator.hpp"
+#include "security/authenticator.hpp"
+#include "security/defaultAuthenticator.hpp"
 
 // Security/digest
-#include "vmime/security/digest/messageDigestFactory.hpp"
+#include "security/digest/messageDigestFactory.hpp"
 
 // Security/SASL
 #if VMIME_HAVE_SASL_SUPPORT
-	#include "vmime/security/sasl/SASLAuthenticator.hpp"
-	#include "vmime/security/sasl/defaultSASLAuthenticator.hpp"
-	#include "vmime/security/sasl/SASLContext.hpp"
-	#include "vmime/security/sasl/SASLSession.hpp"
+	#include "security/sasl/SASLAuthenticator.hpp"
+	#include "security/sasl/defaultSASLAuthenticator.hpp"
+	#include "security/sasl/SASLContext.hpp"
+	#include "security/sasl/SASLSession.hpp"
 #endif // VMIME_HAVE_SASL_SUPPORT
 
 // Messaging features
 #if VMIME_HAVE_MESSAGING_FEATURES
-	#include "vmime/net/socket.hpp"
+	#include "net/socket.hpp"
 
-	#include "vmime/net/serviceFactory.hpp"
-	#include "vmime/net/store.hpp"
-	#include "vmime/net/transport.hpp"
+	#include "net/serviceFactory.hpp"
+	#include "net/store.hpp"
+	#include "net/transport.hpp"
 
-	#include "vmime/net/session.hpp"
+	#include "net/session.hpp"
 
-	#include "vmime/net/folder.hpp"
-	#include "vmime/net/message.hpp"
+	#include "net/folder.hpp"
+	#include "net/message.hpp"
 #endif // VMIME_HAVE_MESSAGING_FEATURES
 
 // Net/TLS
 #if VMIME_HAVE_TLS_SUPPORT
-	#include "vmime/security/cert/certificate.hpp"
-	#include "vmime/security/cert/certificateChain.hpp"
-	#include "vmime/security/cert/certificateVerifier.hpp"
+	#include "security/cert/certificate.hpp"
+	#include "security/cert/certificateChain.hpp"
+	#include "security/cert/certificateVerifier.hpp"
 
-	#include "vmime/security/cert/X509Certificate.hpp"
+	#include "security/cert/X509Certificate.hpp"
 
-	#include "vmime/security/cert/defaultCertificateVerifier.hpp"
+	#include "security/cert/defaultCertificateVerifier.hpp"
 
-	#include "vmime/net/tls/TLSSession.hpp"
+	#include "net/tls/TLSSession.hpp"
 #endif // VMIME_HAVE_TLS_SUPPORT
 
 

@@ -86,6 +86,7 @@ INCLUDE_DIRECTORIES(
 	${CMAKE_CURRENT_SOURCE_DIR}          # for "contrib/"
 	${CMAKE_CURRENT_SOURCE_DIR}/src      # for "vmime/
 	${CMAKE_BINARY_DIR}/src              # for "config.hpp"
+	${CMAKE_BINARY_DIR}/src/vmime        # for "config.hpp"
 )
 
 INCLUDE(GenerateExportHeader)
