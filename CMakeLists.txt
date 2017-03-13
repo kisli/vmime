@@ -344,7 +344,7 @@ ENDIF()
 OPTION(
 	VMIME_BUILD_SAMPLES
 	"Build samples (in 'examples' directory)"
-	ON
+	OFF
 )
 
 
