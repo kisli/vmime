@@ -86,28 +86,17 @@ size_t dotFilteredInputStream::read(byte_t* const data, const size_t count)
 
 	size_t written = 0;
 
+	byte_t prevChar2 = m_previousChar2;
+	byte_t prevChar1 = m_previousChar1;
+
 	// Replace "\n.." with "\n."
 	while (readPtr < end)
 	{
-		if (*readPtr == '.')
+		if (*readPtr == '.' && prevChar2 == '\n' && prevChar1 == '.')
 		{
-			const byte_t prevChar2 =
-				(readPtr == data + 1 ? m_previousChar1 :
-				 readPtr == data ? m_previousChar2 : *(readPtr - 2));
-			const byte_t prevChar1 =
-				(readPtr == data ? m_previousChar1 : *(readPtr - 1));
-
-			if (prevChar2 == '\n' && prevChar1 == '.')
-			{
-				// Ignore last dot
-			}
-			else
-			{
-				*writePtr = *readPtr;
-
-				++writePtr;
-				++written;
-			}
+			// Ignore last dot
+			prevChar2 = '\0';
+			prevChar1 = '.';
 		}
 		else
 		{
@@ -115,13 +104,16 @@ size_t dotFilteredInputStream::read(byte_t* const data, const size_t count)
 
 			++writePtr;
 			++written;
+
+			prevChar2 = prevChar1;
+			prevChar1 = *readPtr;
 		}
 
 		++readPtr;
 	}
 
-	m_previousChar2 = (read >= 2 ? data[read - 2] : m_previousChar1);
-	m_previousChar1 = (read >= 1 ? data[read - 1] : '\0');
+	m_previousChar2 = prevChar2;
+	m_previousChar1 = prevChar1;
 
 	return (written);
 }

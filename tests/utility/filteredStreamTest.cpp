@@ -128,6 +128,12 @@ VMIME_TEST_SUITE_BEGIN(filteredStreamTest)
 		testDotFilteredInputStreamHelper("4", "foo\n.bar", "foo\n..", "bar");
 		testDotFilteredInputStreamHelper("5", "foo\n.bar", "foo\n", ".", ".bar");
 		testDotFilteredInputStreamHelper("6", "foo\n.bar", "foo\n", ".", ".", "bar");
+
+		testDotFilteredInputStreamHelper("7", "\x0d\x0a.", "\x0d\x0a..");
+		testDotFilteredInputStreamHelper("8", "\x0d\x0a.\x0d\x0a", "\x0d\x0a..\x0d\x0a");
+		testDotFilteredInputStreamHelper("9", "\x0d\x0a.\x0d\x0a.", "\x0d\x0a..\x0d\x0a.");
+		testDotFilteredInputStreamHelper("10", "\x0d\x0a.\x0d\x0a.\x0d\x0ax", "\x0d\x0a..\x0d\x0a.\x0d\x0ax");
+		testDotFilteredInputStreamHelper("11", "this is the first line\x0d\x0a.\x0d\x0aone dot\x0d\x0a..\x0d\x0atwo dots\x0d\x0a...\x0d\x0athree... \x0d\x0a.\x0d\x0a.\x0d\x0a", "this is the first line\x0d\x0a..\x0d\x0aone dot\x0d\x0a...\x0d\x0atwo dots\x0d\x0a....\x0d\x0athree... \x0d\x0a..\x0d\x0a.\x0d\x0a");
 	}
 
 	// dotFilteredOutputStream
@@ -167,6 +173,8 @@ VMIME_TEST_SUITE_BEGIN(filteredStreamTest)
 		testFilteredOutputStreamHelper<FILTER>("8", "..\r\nfoobar", ".\r", "\nfoobar");
 		testFilteredOutputStreamHelper<FILTER>("9", ".foobar", ".foobar");
 		testFilteredOutputStreamHelper<FILTER>("10", ".foobar", ".", "foobar");
+
+		testFilteredOutputStreamHelper<FILTER>("11", "this is the first line\x0d\x0a...\x0d\x0aone dot\x0d\x0a....\x0d\x0atwo dots\x0d\x0a.....\x0d\x0athree... \x0d\x0a...\x0d\x0a..\x0d\x0a", "this is the first line\x0d\x0a..\x0d\x0aone dot\x0d\x0a...\x0d\x0atwo dots\x0d\x0a....\x0d\x0athree... \x0d\x0a..\x0d\x0a.\x0d\x0a");
 	}
 
 	void testCRLFToLFFilteredOutputStream()
