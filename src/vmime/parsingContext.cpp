@@ -28,13 +28,13 @@ namespace vmime
 {
 
 
-parsingContext::parsingContext()
+parsingContext::parsingContext() : m_headerParseErrorRecovery(vmime::headerParseRecoveryMethod::SKIP_LINE)
 {
 }
 
 
 parsingContext::parsingContext(const parsingContext& ctx)
-	: context(ctx)
+	: context(ctx), m_headerParseErrorRecovery(vmime::headerParseRecoveryMethod::SKIP_LINE)
 {
 }
 
@@ -43,6 +43,17 @@ parsingContext& parsingContext::getDefaultContext()
 {
 	static parsingContext ctx;
 	return ctx;
+}
+
+headerParseRecoveryMethod::headerLineError parsingContext::getHeaderParseErrorRecoveryMethod() const
+{
+	return m_headerParseErrorRecovery;
+}
+
+
+void parsingContext::setHeaderParseErrorRecoveryMethod(headerParseRecoveryMethod::headerLineError recoveryMethod)
+{
+	m_headerParseErrorRecovery = recoveryMethod;
 }
 
 
