@@ -16,10 +16,6 @@
 #define VMIME_VERSION "@VMIME_VERSION@"
 #define VMIME_API "@VMIME_API_VERSION@"
 
-// Target OS and architecture
-#define VMIME_TARGET_ARCH "@CMAKE_TARGET_ARCHITECTURES@"
-#define VMIME_TARGET_OS "@CMAKE_SYSTEM_NAME@"
-
 // Set to 1 if debugging should be activated
 #define VMIME_DEBUG @VMIME_DEBUG@
 
