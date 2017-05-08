@@ -59,6 +59,32 @@
 #endif
 
 
+// Workaround for detection of strerror_r variants
+#if VMIME_HAVE_STRERROR_R
+
+namespace
+{
+
+char* vmime_strerror_r_result(int /* res */, char* buf)
+{
+	// XSI-compliant prototype:
+	// int strerror_r(int errnum, char *buf, size_t buflen);
+	return buf;
+}
+
+char* vmime_strerror_r_result(char* res, char* /* buf */)
+{
+	// GNU-specific prototype:
+	// char *strerror_r(int errnum, char *buf, size_t buflen);
+	return res;
+}
+
+}
+
+#endif // VMIME_HAVE_STRERROR_R
+
+
+
 namespace vmime {
 namespace platforms {
 namespace posix {
@@ -872,20 +898,7 @@ void posixSocket::throwSocketError(const int err)
 #if VMIME_HAVE_STRERROR_R
 
 		char errbuf[512];
-
-	#if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600) && ! _GNU_SOURCE
-
-		// XSI-compliant strerror_r()
-		strerror_r(err, errbuf, sizeof(errbuf));
-		throw exceptions::socket_exception(errbuf);
-
-	#else
-
-		// GNU-specific strerror_r()
-		const std::string strmsg(strerror_r(err, errbuf, sizeof(errbuf)));
-		throw exceptions::socket_exception(strmsg);
-
-	#endif
+		throw exceptions::socket_exception(vmime_strerror_r_result(strerror_r(err, errbuf, sizeof(errbuf)), errbuf));
 
 #else  // !VMIME_HAVE_STRERROR_R
 
