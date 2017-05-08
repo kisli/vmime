@@ -236,7 +236,7 @@ const vmime::string posixHandler::getHostName() const
 	}
 
 	// Get host name
-	char hostname[HOST_NAME_MAX];
+	char hostname[256];
 	::gethostname(hostname, sizeof(hostname));
 	hostname[sizeof(hostname) - 1] = '\0';
 
