@@ -43,6 +43,7 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/socket.h>
 
 #if VMIME_HAVE_SYSCALL
 #	include <sys/syscall.h>
