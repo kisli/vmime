@@ -247,6 +247,7 @@ size_t TLSSocket_OpenSSL::receiveRaw(byte_t* buffer, const size_t count)
 
 	m_status &= ~(STATUS_WANT_WRITE | STATUS_WANT_READ);
 
+	ERR_clear_error();
 	int rc = SSL_read(m_ssl, buffer, static_cast <int>(count));
 
 	if (m_ex.get())
@@ -283,6 +284,7 @@ void TLSSocket_OpenSSL::sendRaw(const byte_t* buffer, const size_t count)
 
 	for (size_t size = count ; size > 0 ; )
 	{
+		ERR_clear_error();
 		int rc = SSL_write(m_ssl, buffer, static_cast <int>(size));
 
 		if (rc <= 0)
@@ -318,6 +320,7 @@ size_t TLSSocket_OpenSSL::sendRawNonBlocking(const byte_t* buffer, const size_t 
 
 	m_status &= ~(STATUS_WANT_WRITE | STATUS_WANT_READ);
 
+	ERR_clear_error();
 	int rc = SSL_write(m_ssl, buffer, static_cast <int>(count));
 
 	if (m_ex.get())
@@ -363,6 +366,8 @@ void TLSSocket_OpenSSL::handshake()
 	{
 		int rc;
 
+		ERR_clear_error();
+
 		while ((rc = SSL_do_handshake(m_ssl)) <= 0)
 		{
 			const int err = SSL_get_error(m_ssl, rc);
@@ -382,6 +387,8 @@ void TLSSocket_OpenSSL::handshake()
 
 				toHandler->resetTimeOut();
 			}
+
+			ERR_clear_error();
 		}
 	}
 	catch (...)

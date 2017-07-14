@@ -90,6 +90,8 @@ shared_ptr <security::cert::certificateVerifier> TLSSession_OpenSSL::getCertific
 
 void TLSSession_OpenSSL::usePrivateKeyFile(const vmime::string& keyfile)
 {
+	ERR_clear_error();
+
 	if (SSL_CTX_use_PrivateKey_file(m_sslctx, keyfile.c_str(), SSL_FILETYPE_PEM) != 1)
 	{
 		unsigned long errCode = ERR_get_error();
@@ -106,6 +108,8 @@ void TLSSession_OpenSSL::usePrivateKeyFile(const vmime::string& keyfile)
 
 void TLSSession_OpenSSL::useCertificateChainFile(const vmime::string& chainFile)
 {
+	ERR_clear_error();
+
 	if (SSL_CTX_use_certificate_chain_file(m_sslctx, chainFile.c_str()) != 1)
 	{
 		unsigned long errCode = ERR_get_error();
