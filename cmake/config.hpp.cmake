@@ -76,6 +76,7 @@ typedef unsigned @VMIME_64BIT_TYPE@ vmime_uint64;
 #cmakedefine01 VMIME_HAVE_GETTID
 #cmakedefine01 VMIME_HAVE_SYSCALL
 #cmakedefine01 VMIME_HAVE_SYSCALL_GETTID
+#cmakedefine01 VMIME_HAVE_GETTHRID
 #cmakedefine01 VMIME_HAVE_GMTIME_S
 #cmakedefine01 VMIME_HAVE_GMTIME_R
 #cmakedefine01 VMIME_HAVE_LOCALTIME_S

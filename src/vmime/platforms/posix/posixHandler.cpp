@@ -260,6 +260,8 @@ unsigned int posixHandler::getThreadId() const
 	return static_cast <unsigned int>(::gettid());
 #elif VMIME_HAVE_SYSCALL && VMIME_HAVE_SYSCALL_GETTID
 	return static_cast <unsigned int>(::syscall(SYS_gettid));
+#elif VMIME_HAVE_GETTHRID  // OpenBSD
+	return static_cast <unsigned int>(::getthrid());
 #else
 	#error We have no implementation of getThreadId() for this platform!
 #endif
