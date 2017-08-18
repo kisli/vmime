@@ -1116,7 +1116,7 @@ messageSet IMAPFolder::addMessage
 	while (!is.eof())
 	{
 		// Read some data from the input stream
-		const size_t read = is.read(buffer, sizeof(buffer));
+		const size_t read = is.read(buffer, blockSize);
 		current += read;
 
 		// Put read data into socket output stream
