@@ -110,7 +110,10 @@ void charsetConverter_win::convert(const string& in, string& out, status* st)
 	}
 	else
 	{
-		const size_t bufferSize = in.length() * 2;  // in wide characters
+ 		const size_t bufferSize = MultiByteToWideChar
+ 			(sourceCodePage, 0, in.c_str(), static_cast <int>(in.length()),
+ 			 NULL, 0) * sizeof(WCHAR); // in wide characters
+
 		unicodeBuffer.resize(bufferSize);
 
 		DWORD flags = 0;
@@ -143,7 +146,9 @@ void charsetConverter_win::convert(const string& in, string& out, status* st)
 	}
 	else
 	{
-		const size_t bufferSize = unicodeLen * 6;  // in multibyte characters
+		const size_t bufferSize = WideCharToMultiByte
+			(destCodePage, 0, unicodePtr, static_cast <int>(unicodeLen),
+			 NULL, 0, 0, NULL);  // in multibyte characters
 
 		std::vector <char> buffer;
 		buffer.resize(bufferSize);
