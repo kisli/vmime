@@ -58,8 +58,6 @@ public:
 	encoding(const string& name, const EncodingUsage usage);
 	encoding(const encoding& enc);
 
-public:
-
 	/** Return the name of the encoding.
 	  * See the constants in vmime::encodingTypes.
 	  *
