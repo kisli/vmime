@@ -73,7 +73,10 @@ public:
 		utility::inputStream& is,
 		const size_t size,
 		utility::progressListener* progress = NULL,
-		const mailbox& sender = mailbox()
+		const mailbox& sender = mailbox(),
+		const std::string& dsnNotify = std::string(),
+		const std::string& dsnRet = std::string(),
+		const std::string& dsnEnvelopId = std::string()
 	);
 
 	bool isSecuredConnection() const;

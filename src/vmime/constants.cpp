@@ -58,6 +58,7 @@ namespace mediaTypes {
 	const char* const MESSAGE_PARTIAL = "partial";
 	const char* const MESSAGE_EXTERNAL_BODY = "external-body";
 	const char* const MESSAGE_DISPOSITION_NOTIFICATION = "disposition-notification";
+	const char* const MESSAGE_DELIVERY_STATUS = "delivery-status";
 
 	const char* const APPLICATION_OCTET_STREAM = "octet-stream";
 
@@ -232,5 +233,19 @@ namespace dispositionModifiers {
 	const char* const ERROR = "error";
 }
 
+// Constants for DSN (delivery status notification)
+namespace dsn
+{
+	const char* const NOTIFY = "NOTIFY";
+	const char* const NEVER = "NEVER";
+	const char* const SUCCESS = "SUCCESS";
+	const char* const FAILURE = "FAILURE";
+	const char* const DELAY = "DELAY";
+	const char* const ORCPT = "ORCPT";
+	const char* const RET = "RET";
+	const char* const FULL = "FULL";
+	const char* const HDRS = "HDRS";
+	const char* const ENVID = "ENVID";
+}
 
 } // vmime

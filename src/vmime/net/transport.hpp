@@ -69,10 +69,16 @@ public:
 	  *
 	  * @param msg message to send
 	  * @param progress progress listener, or NULL if not used
+	  * @param dsnNotify comma separated list of notification conditions as specified in RFC 1891
+	  * @param dsnRet content of DSN - full message or headers only ("FULL" or "HDRS")
+	  * @param dsnEnvelopId envelop ID to be able to pair the DSN with original message
 	  */
 	virtual void send(
 		const shared_ptr <vmime::message>& msg,
-		utility::progressListener* progress = NULL
+		utility::progressListener* progress = NULL,
+		const std::string& dsnNotify = std::string(),
+		const std::string& dsnRet = std::string(),
+		const std::string& dsnEnvelopId = std::string()
 	);
 
 	/** Send a message over this transport service.
@@ -83,6 +89,10 @@ public:
 	  * @param size size of the message data
 	  * @param progress progress listener, or NULL if not used
 	  * @param sender envelope sender (if empty, expeditor will be used)
+	  * @param dsnNotify comma separated list of notification conditions as specified in RFC 1891
+	  * @param dsnRet content of DSN - full message or headers only ("FULL" or "HDRS")
+	  * @param dsnEnvelopId envelope identifier to be transmitted along with the message
+	  * 					to be able to pair the DSN with original message (plain text not in "<" ">")
 	  */
 	virtual void send(
 		const mailbox& expeditor,
@@ -90,7 +100,10 @@ public:
 		utility::inputStream& is,
 		const size_t size,
 		utility::progressListener* progress = NULL,
-		const mailbox& sender = mailbox()
+		const mailbox& sender = mailbox(),
+		const std::string& dsnNotify = std::string(),
+		const std::string& dsnRet = std::string(),
+		const std::string& dsnEnvelopId = std::string()
 	) = 0;
 
 	/** Send a message over this transport service.
@@ -108,7 +121,10 @@ public:
 		const mailbox& expeditor,
 		const mailboxList& recipients,
 		utility::progressListener* progress = NULL,
-		const mailbox& sender = mailbox()
+		const mailbox& sender = mailbox(),
+		const std::string& dsnNotify = std::string(),
+		const std::string& dsnRet = std::string(),
+		const std::string& dsnEnvelopId = std::string()
 	);
 
 
