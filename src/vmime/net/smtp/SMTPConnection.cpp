@@ -40,13 +40,16 @@
 
 #if VMIME_HAVE_SASL_SUPPORT
 	#include "vmime/security/sasl/SASLContext.hpp"
+#else
+	#include "vmime/utility/encoder/b64Encoder.hpp"
+	#include "vmime/utility/inputStreamStringAdapter.hpp"
+	#include "vmime/utility/outputStreamStringAdapter.hpp"
 #endif // VMIME_HAVE_SASL_SUPPORT
 
 #if VMIME_HAVE_TLS_SUPPORT
 	#include "vmime/net/tls/TLSSession.hpp"
 	#include "vmime/net/tls/TLSSecuredConnectionInfos.hpp"
 #endif // VMIME_HAVE_TLS_SUPPORT
-
 
 
 // Helpers for service properties
@@ -307,6 +310,39 @@ void SMTPConnection::authenticate()
 			throw;
 		}
 	}
+#else  // no SASL
+
+	// allow AUTH PLAIN over TLS - it is a popular and simple mechanism
+	if (m_secured)
+	{
+		std::vector <string> authMechs;
+		hasExtension("AUTH", &authMechs);
+
+		if (authMechs.empty())
+			throw exceptions::authentication_error("No AUTH mechanism available.");
+
+		const string plain("PLAIN");
+		if (std::find(authMechs.begin(), authMechs.end(), plain) != authMechs.end())
+		{
+			const string username = getAuthenticator()->getUsername();
+			const string password = getAuthenticator()->getPassword();
+			const string authToken = username + '\0' + username + '\0' + password;
+			auto encoder = new vmime::utility::encoder::b64Encoder();
+			utility::inputStreamStringAdapter in(authToken);
+			string authTokenBase64;
+			utility::outputStreamStringAdapter out(authTokenBase64);
+			encoder->encode(in, out);
+			sendRequest(SMTPCommand::AUTH(plain, authTokenBase64));
+			shared_ptr <SMTPResponse> response = readResponse();
+			const int code = response ? response->getCode() : -1;
+			if (code == 235)
+			{
+				m_authenticated = true;
+				return;
+			}
+		}
+	}
+
 #endif // VMIME_HAVE_SASL_SUPPORT
 
 	// No other authentication method is possible
