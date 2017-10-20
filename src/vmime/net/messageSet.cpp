@@ -37,6 +37,11 @@
 namespace vmime {
 namespace net {
 
+// messageSetEnumerator
+
+messageSetEnumerator::~messageSetEnumerator()
+{
+}
 
 // messageRange
 
