@@ -607,7 +607,7 @@ public:
 		{
 			m_rcptLines.insert("RCPT TO:<recipient1@test.vmime.org>");
 			m_rcptLines.insert("RCPT TO:<recipient2@test.vmime.org>");
-			m_rcptLines.insert("RCPT TO:<récepteur@test.vmime.org> SMTPUTF8");
+			m_rcptLines.insert("RCPT TO:<récepteur@test.vmime.org>");
 		}
 		else
 		{
@@ -681,11 +681,19 @@ public:
 
 				if (SUPPORTS_UTF8)
 				{
-					VASSERT_EQ("MAIL", std::string("MAIL FROM:<expéditeur@test.vmime.org> SMTPUTF8"), line);
+					VASSERT(
+						"MAIL",
+						   std::string("MAIL FROM:<expediteur@test.vmime.org> SMTPUTF8") == line
+						|| std::string("MAIL FROM:<expéditeur@test.vmime.org> SMTPUTF8") == line
+					);
 				}
 				else
 				{
-					VASSERT_EQ("MAIL", std::string("MAIL FROM:<=?utf-8?Q?exp=C3=A9diteur?=@test.vmime.org>"), line);
+					VASSERT(
+						"MAIL",
+						   std::string("MAIL FROM:<expediteur@test.vmime.org>") == line
+						|| std::string("MAIL FROM:<=?utf-8?Q?exp=C3=A9diteur?=@test.vmime.org>") == line
+					);
 				}
 
 				localSend("250 OK\r\n");

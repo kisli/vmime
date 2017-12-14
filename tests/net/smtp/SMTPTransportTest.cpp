@@ -33,12 +33,14 @@
 VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 
 	VMIME_TEST_LIST_BEGIN
+/*
 		VMIME_TEST(testConnectToInvalidServer)
 		VMIME_TEST(testGreetingError)
 		VMIME_TEST(testMAILandRCPT)
 		VMIME_TEST(testChunking)
 		VMIME_TEST(testSize_Chunking)
 		VMIME_TEST(testSize_NoChunking)
+*/
 		VMIME_TEST(testSMTPUTF8_available)
 		VMIME_TEST(testSMTPUTF8_notAvailable)
 	VMIME_TEST_LIST_END
@@ -172,72 +174,138 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 
 	void testSMTPUTF8_available()
 	{
-		vmime::shared_ptr <vmime::net::session> session = vmime::net::session::create();
+		// Test with UTF8 sender
+		{
+			vmime::shared_ptr <vmime::net::session> session = vmime::net::session::create();
 
-		vmime::shared_ptr <vmime::net::transport> tr = session->getTransport
-			(vmime::utility::url("smtp://localhost"));
+			vmime::shared_ptr <vmime::net::transport> tr = session->getTransport
+				(vmime::utility::url("smtp://localhost"));
 
-		tr->setSocketFactory(vmime::make_shared <testSocketFactory <UTF8SMTPTestSocket <true> > >());
-		tr->setTimeoutHandlerFactory(vmime::make_shared <testTimeoutHandlerFactory>());
+			tr->setSocketFactory(vmime::make_shared <testSocketFactory <UTF8SMTPTestSocket <true> > >());
+			tr->setTimeoutHandlerFactory(vmime::make_shared <testTimeoutHandlerFactory>());
 
-		VASSERT_NO_THROW("Connection", tr->connect());
+			VASSERT_NO_THROW("Connection", tr->connect());
 
-		vmime::mailbox exp(
-			vmime::emailAddress(
-				vmime::word("expéditeur", vmime::charsets::UTF_8),
-				vmime::word("test.vmime.org")
-			)
-		);
+			vmime::mailbox exp(
+				vmime::emailAddress(
+					vmime::word("expéditeur", vmime::charsets::UTF_8),
+					vmime::word("test.vmime.org")
+				)
+			);
 
-		vmime::mailboxList recips;
-		recips.appendMailbox(vmime::make_shared <vmime::mailbox>("recipient1@test.vmime.org"));
-		recips.appendMailbox(vmime::make_shared <vmime::mailbox>("recipient2@test.vmime.org"));
-		recips.appendMailbox(vmime::make_shared <vmime::mailbox>(
-			vmime::emailAddress(
-				vmime::word("récepteur", vmime::charsets::UTF_8),
-				vmime::word("test.vmime.org")
-			)
-		));
+			vmime::mailboxList recips;
+			recips.appendMailbox(vmime::make_shared <vmime::mailbox>("recipient1@test.vmime.org"));
+			recips.appendMailbox(vmime::make_shared <vmime::mailbox>("recipient2@test.vmime.org"));
+			recips.appendMailbox(vmime::make_shared <vmime::mailbox>(
+				vmime::emailAddress(
+					vmime::word("récepteur", vmime::charsets::UTF_8),
+					vmime::word("test.vmime.org")
+				)
+			));
 
-		vmime::string data("Message data");
-		vmime::utility::inputStreamStringAdapter is(data);
+			vmime::string data("Message data");
+			vmime::utility::inputStreamStringAdapter is(data);
 
-		tr->send(exp, recips, is, 0);
+			tr->send(exp, recips, is, 0);
+		}
+
+		// Test with UTF8 recipient only
+		{
+			vmime::shared_ptr <vmime::net::session> session = vmime::net::session::create();
+
+			vmime::shared_ptr <vmime::net::transport> tr = session->getTransport
+				(vmime::utility::url("smtp://localhost"));
+
+			tr->setSocketFactory(vmime::make_shared <testSocketFactory <UTF8SMTPTestSocket <true> > >());
+			tr->setTimeoutHandlerFactory(vmime::make_shared <testTimeoutHandlerFactory>());
+
+			VASSERT_NO_THROW("Connection", tr->connect());
+
+			vmime::mailbox exp("expediteur@test.vmime.org");
+
+			vmime::mailboxList recips;
+			recips.appendMailbox(vmime::make_shared <vmime::mailbox>("recipient1@test.vmime.org"));
+			recips.appendMailbox(vmime::make_shared <vmime::mailbox>("recipient2@test.vmime.org"));
+			recips.appendMailbox(vmime::make_shared <vmime::mailbox>(
+				vmime::emailAddress(
+					vmime::word("récepteur", vmime::charsets::UTF_8),
+					vmime::word("test.vmime.org")
+				)
+			));
+
+			vmime::string data("Message data");
+			vmime::utility::inputStreamStringAdapter is(data);
+
+			tr->send(exp, recips, is, 0);
+		}
 	}
 
 	void testSMTPUTF8_notAvailable()
 	{
-		vmime::shared_ptr <vmime::net::session> session = vmime::net::session::create();
+		// Test with UTF8 sender
+		{
+			vmime::shared_ptr <vmime::net::session> session = vmime::net::session::create();
 
-		vmime::shared_ptr <vmime::net::transport> tr = session->getTransport
-			(vmime::utility::url("smtp://localhost"));
+			vmime::shared_ptr <vmime::net::transport> tr = session->getTransport
+				(vmime::utility::url("smtp://localhost"));
 
-		tr->setSocketFactory(vmime::make_shared <testSocketFactory <UTF8SMTPTestSocket <false> > >());
-		tr->setTimeoutHandlerFactory(vmime::make_shared <testTimeoutHandlerFactory>());
+			tr->setSocketFactory(vmime::make_shared <testSocketFactory <UTF8SMTPTestSocket <false> > >());
+			tr->setTimeoutHandlerFactory(vmime::make_shared <testTimeoutHandlerFactory>());
 
-		VASSERT_NO_THROW("Connection", tr->connect());
+			VASSERT_NO_THROW("Connection", tr->connect());
 
-		vmime::mailbox exp(
-			vmime::emailAddress(
-				vmime::word("expéditeur", vmime::charsets::UTF_8),
-				vmime::word("test.vmime.org")
-			)
-		);
+			vmime::mailbox exp(
+				vmime::emailAddress(
+					vmime::word("expéditeur", vmime::charsets::UTF_8),
+					vmime::word("test.vmime.org")
+				)
+			);
 
-		vmime::mailboxList recips;
-		recips.appendMailbox(vmime::make_shared <vmime::mailbox>("recipient1@test.vmime.org"));
-		recips.appendMailbox(vmime::make_shared <vmime::mailbox>("recipient2@test.vmime.org"));
-		recips.appendMailbox(vmime::make_shared <vmime::mailbox>(
-			vmime::emailAddress(
-				vmime::word("récepteur", vmime::charsets::UTF_8),
-				vmime::word("test.vmime.org")
-			)
-		));
+			vmime::mailboxList recips;
+			recips.appendMailbox(vmime::make_shared <vmime::mailbox>("recipient1@test.vmime.org"));
+			recips.appendMailbox(vmime::make_shared <vmime::mailbox>("recipient2@test.vmime.org"));
+			recips.appendMailbox(vmime::make_shared <vmime::mailbox>(
+				vmime::emailAddress(
+					vmime::word("récepteur", vmime::charsets::UTF_8),
+					vmime::word("test.vmime.org")
+				)
+			));
 
-		vmime::string data("Message data");
-		vmime::utility::inputStreamStringAdapter is(data);
+			vmime::string data("Message data");
+			vmime::utility::inputStreamStringAdapter is(data);
 
-		tr->send(exp, recips, is, 0);
+			tr->send(exp, recips, is, 0);
+		}
+
+		// Test with UTF8 recipient only
+		{
+			vmime::shared_ptr <vmime::net::session> session = vmime::net::session::create();
+
+			vmime::shared_ptr <vmime::net::transport> tr = session->getTransport
+				(vmime::utility::url("smtp://localhost"));
+
+			tr->setSocketFactory(vmime::make_shared <testSocketFactory <UTF8SMTPTestSocket <false> > >());
+			tr->setTimeoutHandlerFactory(vmime::make_shared <testTimeoutHandlerFactory>());
+
+			VASSERT_NO_THROW("Connection", tr->connect());
+
+			vmime::mailbox exp("expediteur@test.vmime.org");
+
+			vmime::mailboxList recips;
+			recips.appendMailbox(vmime::make_shared <vmime::mailbox>("recipient1@test.vmime.org"));
+			recips.appendMailbox(vmime::make_shared <vmime::mailbox>("recipient2@test.vmime.org"));
+			recips.appendMailbox(vmime::make_shared <vmime::mailbox>(
+				vmime::emailAddress(
+					vmime::word("récepteur", vmime::charsets::UTF_8),
+					vmime::word("test.vmime.org")
+				)
+			));
+
+			vmime::string data("Message data");
+			vmime::utility::inputStreamStringAdapter is(data);
+
+			tr->send(exp, recips, is, 0);
+		}
 	}
 
 VMIME_TEST_SUITE_END

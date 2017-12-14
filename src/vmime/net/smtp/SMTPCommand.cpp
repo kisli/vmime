@@ -153,9 +153,6 @@ shared_ptr <SMTPCommand> SMTPCommand::RCPT(const mailbox& mbox, const bool utf8)
 
 	cmd << ">";
 
-	if (utf8)
-		cmd << " SMTPUTF8";
-
 	return createCommand(cmd.str());
 }
 

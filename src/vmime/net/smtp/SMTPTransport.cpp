@@ -192,15 +192,29 @@ void SMTPTransport::sendEnvelope
 	if (needReset)
 		commands->addCommand(SMTPCommand::RSET());
 
-	// Emit the "MAIL" command
+	// Check whether we need SMTPUTF8
 	const bool hasSMTPUTF8 = m_connection->hasExtension("SMTPUTF8");
+	bool needSMTPUTF8 = false;
+
+	if (!sender.isEmpty())
+		needSMTPUTF8 = needSMTPUTF8 || mailboxNeedsUTF8(sender);
+	else
+		needSMTPUTF8 = needSMTPUTF8 || mailboxNeedsUTF8(expeditor);
+
+	for (size_t i = 0 ; i < recipients.getMailboxCount() ; ++i)
+	{
+		const mailbox& mbox = *recipients.getMailboxAt(i);
+		needSMTPUTF8 = needSMTPUTF8 || mailboxNeedsUTF8(mbox);
+	}
+
+	// Emit the "MAIL" command
 	const bool hasSize = m_connection->hasExtension("SIZE");
 
 	if (!sender.isEmpty())
 	{
 		commands->addCommand(
 			SMTPCommand::MAIL(
-				sender, hasSMTPUTF8 && mailboxNeedsUTF8(sender), hasSize ? size : 0
+				sender, hasSMTPUTF8 && needSMTPUTF8, hasSize ? size : 0
 			)
 		);
 	}
@@ -208,7 +222,7 @@ void SMTPTransport::sendEnvelope
 	{
 		commands->addCommand(
 			SMTPCommand::MAIL(
-				expeditor, hasSMTPUTF8 && mailboxNeedsUTF8(expeditor), hasSize ? size : 0
+				expeditor, hasSMTPUTF8 && needSMTPUTF8, hasSize ? size : 0
 			)
 		);
 	}
@@ -220,7 +234,7 @@ void SMTPTransport::sendEnvelope
 	for (size_t i = 0 ; i < recipients.getMailboxCount() ; ++i)
 	{
 		const mailbox& mbox = *recipients.getMailboxAt(i);
-		commands->addCommand(SMTPCommand::RCPT(mbox, hasSMTPUTF8 && mailboxNeedsUTF8(mbox)));
+		commands->addCommand(SMTPCommand::RCPT(mbox, hasSMTPUTF8 && needSMTPUTF8));
 	}
 
 	// Prepare sending of message data
