@@ -591,3 +591,185 @@ public:
 };
 
 typedef SMTPBigTestMessage <4194304> SMTPBigTestMessage4MB;
+
+
+
+/** SMTP test server for SMTPUTF8 extension.
+  */
+template <bool SUPPORTS_UTF8>
+class UTF8SMTPTestSocket : public lineBasedTestSocket
+{
+public:
+
+	UTF8SMTPTestSocket()
+	{
+		if (SUPPORTS_UTF8)
+		{
+			m_rcptLines.insert("RCPT TO:<recipient1@test.vmime.org>");
+			m_rcptLines.insert("RCPT TO:<recipient2@test.vmime.org>");
+			m_rcptLines.insert("RCPT TO:<récepteur@test.vmime.org> SMTPUTF8");
+		}
+		else
+		{
+			m_rcptLines.insert("RCPT TO:<recipient1@test.vmime.org>");
+			m_rcptLines.insert("RCPT TO:<recipient2@test.vmime.org>");
+			m_rcptLines.insert("RCPT TO:<=?utf-8?Q?r=C3=A9cepteur?=@test.vmime.org>");
+		}
+
+		m_state = STATE_NOT_CONNECTED;
+		m_ehloSent = m_mailSent = m_rcptSent = m_dataSent = m_quitSent = false;
+	}
+
+	~UTF8SMTPTestSocket()
+	{
+	}
+
+	void onConnected()
+	{
+		localSend("220 test.vmime.org Service ready\r\n");
+		processCommand();
+
+		m_state = STATE_COMMAND;
+	}
+
+	void processCommand()
+	{
+		if (!haveMoreLines())
+			return;
+
+		vmime::string line = getNextLine();
+		std::istringstream iss(line);
+
+		switch (m_state)
+		{
+		case STATE_NOT_CONNECTED:
+
+			localSend("451 Requested action aborted: invalid state\r\n");
+			break;
+
+		case STATE_COMMAND:
+		{
+			std::string cmd;
+			iss >> cmd;
+
+			if (cmd.empty())
+			{
+				localSend("500 Syntax error, command unrecognized\r\n");
+			}
+			else if (cmd == "EHLO")
+			{
+				if (SUPPORTS_UTF8)
+				{
+					localSend("250-test.vmime.org\r\n");
+					localSend("250 SMTPUTF8\r\n");
+				}
+				else
+				{
+					localSend("250 test.vmime.org\r\n");
+				}
+
+				m_ehloSent = true;
+			}
+			else if (cmd == "HELO")
+			{
+				VASSERT("Client must not send the HELO command, as EHLO succeeded", false);
+			}
+			else if (cmd == "MAIL")
+			{
+				VASSERT("Client must send the EHLO command", m_ehloSent);
+				VASSERT("The MAIL command must be sent only one time", !m_mailSent);
+
+				if (SUPPORTS_UTF8)
+				{
+					VASSERT_EQ("MAIL", std::string("MAIL FROM:<expéditeur@test.vmime.org> SMTPUTF8"), line);
+				}
+				else
+				{
+					VASSERT_EQ("MAIL", std::string("MAIL FROM:<=?utf-8?Q?exp=C3=A9diteur?=@test.vmime.org>"), line);
+				}
+
+				localSend("250 OK\r\n");
+
+				m_mailSent = true;
+			}
+			else if (cmd == "RCPT")
+			{
+				std::set <vmime::string>::iterator it = m_rcptLines.find(line);
+
+				VASSERT(std::string("RCPT not found: '") + line + "'", it != m_rcptLines.end());
+
+				m_rcptLines.erase(it);
+
+				localSend("250 OK, recipient accepted\r\n");
+
+				m_rcptSent = true;
+			}
+			else if (cmd == "DATA")
+			{
+				VASSERT("Client must send the MAIL command", m_mailSent);
+				VASSERT("Client must send the RCPT command", m_rcptSent);
+				VASSERT("All recipients", m_rcptLines.empty());
+
+				localSend("354 Ready to accept data; end with <CRLF>.<CRLF>\r\n");
+
+				m_state = STATE_DATA;
+				m_msgData.clear();
+
+				m_dataSent = true;
+			}
+			else if (cmd == "NOOP")
+			{
+				localSend("250 Completed\r\n");
+			}
+			else if (cmd == "QUIT")
+			{
+				m_quitSent = true;
+
+				localSend("221 test.vmime.org Service closing transmission channel\r\n");
+			}
+			else
+			{
+				localSend("502 Command not implemented\r\n");
+			}
+
+			break;
+		}
+		case STATE_DATA:
+		{
+			if (line == ".")
+			{
+				VASSERT_EQ("Data", "Message data\r\n", m_msgData);
+
+				localSend("250 Message accepted for delivery\r\n");
+				m_state = STATE_COMMAND;
+			}
+			else
+			{
+				m_msgData += line + "\r\n";
+			}
+
+			break;
+		}
+
+		}
+
+		processCommand();
+	}
+
+private:
+
+	enum State
+	{
+		STATE_NOT_CONNECTED,
+		STATE_COMMAND,
+		STATE_DATA
+	};
+
+	int m_state;
+
+	std::set <vmime::string> m_rcptLines;
+
+	std::string m_msgData;
+
+	bool m_ehloSent, m_mailSent, m_rcptSent, m_dataSent, m_quitSent;
+};

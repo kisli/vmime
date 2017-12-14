@@ -152,6 +152,22 @@ void SMTPTransport::noop()
 }
 
 
+// static
+bool SMTPTransport::mailboxNeedsUTF8(const mailbox& mb)
+{
+	bool all7bit =
+		   utility::stringUtils::is7bit(mb.getEmail().getLocalName().getBuffer())
+		&& utility::stringUtils::is7bit(mb.getEmail().getDomainName().getBuffer());
+
+	for (size_t i = 0, n = mb.getName().getWordCount() ; all7bit && i != n ; ++i)
+	{
+		all7bit = utility::stringUtils::is7bit(mb.getName().getWordAt(i)->getBuffer());
+	}
+
+	return !all7bit;
+}
+
+
 void SMTPTransport::sendEnvelope
 	(const mailbox& expeditor, const mailboxList& recipients,
 	 const mailbox& sender, bool sendDATACommand,
@@ -181,9 +197,21 @@ void SMTPTransport::sendEnvelope
 	const bool hasSize = m_connection->hasExtension("SIZE");
 
 	if (!sender.isEmpty())
-		commands->addCommand(SMTPCommand::MAIL(sender, hasSMTPUTF8, hasSize ? size : 0));
+	{
+		commands->addCommand(
+			SMTPCommand::MAIL(
+				sender, hasSMTPUTF8 && mailboxNeedsUTF8(sender), hasSize ? size : 0
+			)
+		);
+	}
 	else
-		commands->addCommand(SMTPCommand::MAIL(expeditor, hasSMTPUTF8, hasSize ? size : 0));
+	{
+		commands->addCommand(
+			SMTPCommand::MAIL(
+				expeditor, hasSMTPUTF8 && mailboxNeedsUTF8(expeditor), hasSize ? size : 0
+			)
+		);
+	}
 
 	// Now, we will need to reset next time
 	m_needReset = true;
@@ -192,7 +220,7 @@ void SMTPTransport::sendEnvelope
 	for (size_t i = 0 ; i < recipients.getMailboxCount() ; ++i)
 	{
 		const mailbox& mbox = *recipients.getMailboxAt(i);
-		commands->addCommand(SMTPCommand::RCPT(mbox, hasSMTPUTF8));
+		commands->addCommand(SMTPCommand::RCPT(mbox, hasSMTPUTF8 && mailboxNeedsUTF8(mbox)));
 	}
 
 	// Prepare sending of message data

@@ -91,6 +91,8 @@ public:
 
 private:
 
+	static bool mailboxNeedsUTF8(const mailbox& mb);
+
 	/** Send the MAIL and RCPT commands to the server, checking the
 	  * response, and using pipelining if supported by the server.
 	  * Optionally, the DATA command can also be sent.

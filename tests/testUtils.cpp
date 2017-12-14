@@ -26,6 +26,11 @@
 #include "vmime/utility/stringUtils.hpp"
 
 #include <cstring>
+#include <iostream>
+
+
+// Enable to output socket send/receive on standard output
+#define DEBUG_SOCKET_IN_OUT  0
 
 
 
@@ -156,6 +161,11 @@ vmime::size_t testSocket::sendRawNonBlocking(const vmime::byte_t* buffer, const 
 void testSocket::localSend(const vmime::string& buffer)
 {
 	m_inBuffer += buffer;
+
+#if DEBUG_SOCKET_IN_OUT
+	std::cout << "> " << vmime::utility::stringUtils::trim(buffer) << std::endl;
+#endif // DEBUG_SOCKET_IN_OUT
+
 }
 
 
@@ -231,6 +241,10 @@ void lineBasedTestSocket::onDataReceived()
 
 		if (!line.empty() && line[line.length() - 1] == '\r')
 			line.erase(line.end() - 1, line.end());
+
+#if DEBUG_SOCKET_IN_OUT
+		std::cout << "< " << vmime::utility::stringUtils::trim(line) << std::endl;
+#endif // DEBUG_SOCKET_IN_OUT
 
 		m_lines.push_back(line);
 		m_buffer.erase(m_buffer.begin(), m_buffer.begin() + eol + 1);
