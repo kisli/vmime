@@ -931,17 +931,7 @@ vmime::shared_ptr <vmime::security::cert::X509Certificate>
    vmime::utility::inputStreamAdapter is(certFile);
    vmime::shared_ptr <vmime::security::cert::X509Certificate> cert;
 
-   // Try DER format
-   cert = vmime::security::cert::X509Certificate::import
-      (is, vmime::security::cert::X509Certificate::FORMAT_DER);
-
-   if (cert != NULL)
-      return cert;
-
-   // Try PEM format
-   is.reset();
-   cert = vmime::security::cert::X509Certificate::import
-      (is, vmime::security::cert::X509Certificate::FORMAT_PEM);
+   cert = vmime::security::cert::X509Certificate::import(is);
 
    return cert;
 }
