@@ -234,8 +234,6 @@ void mailbox::parseImpl
 
 					++p;
 				}
-
-				break;
 			}
 			else
 			{
@@ -245,10 +243,6 @@ void mailbox::parseImpl
 		}
 		else if (state == State_Address)
 		{
-			// Skip '<' character
-			if (*p == '<')
-				++p;
-
 			bool escaped = false;
 			int comment = 0;
 
