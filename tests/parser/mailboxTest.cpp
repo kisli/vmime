@@ -30,6 +30,7 @@ VMIME_TEST_SUITE_BEGIN(mailboxTest)
 		VMIME_TEST(testParse)
 		VMIME_TEST(testEmptyEmailAddress)
 		VMIME_TEST(testSeparatorInComment)
+		VMIME_TEST(testAddressInName)
 	VMIME_TEST_LIST_END
 
 
@@ -143,6 +144,15 @@ VMIME_TEST_SUITE_BEGIN(mailboxTest)
 
 		VASSERT_EQ("name2", vmime::text(), mbox2->getName());
 		VASSERT_EQ("email2", "bbb@vmime.org", mbox2->getEmail());
+	}
+
+	void testAddressInName()
+	{
+		vmime::mailbox mbox;
+		mbox.parse("a@b.c <e@f.g>");
+
+		VASSERT_EQ("name", vmime::text("a@b.c"), mbox.getName());
+		VASSERT_EQ("email", "e@f.g", mbox.getEmail());
 	}
 
 VMIME_TEST_SUITE_END
