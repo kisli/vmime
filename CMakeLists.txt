@@ -931,12 +931,12 @@ IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 
 	SET(
 		CMAKE_CXX_FLAGS
-		"${CMAKE_CXX_FLAGS} -D_REENTRANT=1 -W -Wall -pedantic -Warray-bounds-pointer-arithmetic -Wold-style-cast -Wconversion -Wcast-align -Wno-sign-conversion"
+		"-D_REENTRANT=1 -W -Wall -pedantic -Warray-bounds-pointer-arithmetic -Wold-style-cast -Wconversion -Wcast-align -Wno-sign-conversion ${CMAKE_CXX_FLAGS}"
 	)
 
-	SET(CMAKE_CXX_FLAGS_RELEASE "-O2")
-	SET(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
-	SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g")
+	SET(CMAKE_CXX_FLAGS_RELEASE "-O2 ${CMAKE_CXX_FLAGS_RELEASE}")
+	SET(CMAKE_CXX_FLAGS_DEBUG "-O0 ${CMAKE_CXX_FLAGS_DEBUG}")
+	SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
 
 	#SET(CMAKE_EXE_LINKER_FLAGS "-s")
 
@@ -946,12 +946,12 @@ ELSE()
 
 		SET(
 			CMAKE_CXX_FLAGS
-			"${CMAKE_CXX_FLAGS} -D_REENTRANT=1 -W -Wall -pedantic -Wpointer-arith -Wold-style-cast -Wconversion -Wcast-align -Wno-long-long"
+			"-D_REENTRANT=1 -W -Wall -pedantic -Wpointer-arith -Wold-style-cast -Wconversion -Wcast-align -Wno-long-long ${CMAKE_CXX_FLAGS}"
 		)
 
-		SET(CMAKE_CXX_FLAGS_RELEASE "-O2")
-		SET(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
-		SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g")
+		SET(CMAKE_CXX_FLAGS_RELEASE "-O2 ${CMAKE_CXX_FLAGS_RELEASE}")
+		SET(CMAKE_CXX_FLAGS_DEBUG "-O0 ${CMAKE_CXX_FLAGS_DEBUG}")
+		SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
 
 		#SET(CMAKE_EXE_LINKER_FLAGS "-s")
 
