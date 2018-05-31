@@ -56,6 +56,11 @@ struct GnuTLSX509CertificateInternalData
 		gnutls_x509_crt_deinit(cert);
 	}
 
+	void swap(gnutls_x509_crt_t to) {
+		gnutls_x509_crt_deinit(cert);
+		cert = to;
+	}
+
 
 	gnutls_x509_crt_t cert;
 };
@@ -125,6 +130,49 @@ shared_ptr <X509Certificate> X509Certificate::import
 		return pemCert;
 
 	return null;
+}
+
+
+// static
+void X509Certificate::import(utility::inputStream& is,
+	std::vector <shared_ptr <X509Certificate> >& certs)
+{
+	byteArray bytes;
+	byte_t chunk[4096];
+
+	while (!is.eof())
+	{
+		const size_t len = is.read(chunk, sizeof(chunk));
+		bytes.insert(bytes.end(), chunk, chunk + len);
+	}
+
+	import(&bytes[0], bytes.size(), certs);
+}
+
+
+// static
+void X509Certificate::import(const byte_t* data, const size_t length,
+	std::vector <shared_ptr <X509Certificate> >& certs)
+{
+	gnutls_datum_t buffer;
+	buffer.data = const_cast <byte_t*>(data);
+	buffer.size = static_cast <unsigned int>(length);
+
+	unsigned int size = 1024;
+	gnutls_x509_crt_t x509[1024];
+
+	// Try DER format
+	if (gnutls_x509_crt_list_import(x509, &size, &buffer, GNUTLS_X509_FMT_DER, 0) < 0)
+
+		// Try PEM format
+		if (gnutls_x509_crt_list_import(x509, &size, &buffer, GNUTLS_X509_FMT_PEM, 0) < 0)
+			return;
+
+	for (unsigned int i = 0; i < size; i += 1) {
+		auto c = make_shared <X509Certificate_GnuTLS>();
+		c->m_data->swap(x509[i]);
+		certs.push_back(c);
+	}
 }
 
 

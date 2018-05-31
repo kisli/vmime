@@ -85,6 +85,23 @@ public:
 	  */
 	static shared_ptr <X509Certificate> import(const byte_t* data, const size_t length);
 
+	/** Imports a DER or PEM encoded X.509 certificate.
+	  *
+	  * @param is input stream to read data from
+	  * @param certs the resulting list of certificates
+	  */
+	static void import(utility::inputStream& is,
+		std::vector <shared_ptr <X509Certificate> >& certs);
+
+	/** Imports a DER or PEM encoded X.509 certificate.
+	 *
+	 * @param data points to raw data
+	 * @param length size of data
+	 * @param certs the resulting list of certificates
+	 */
+	static void import(const byte_t* data, const size_t length,
+		std::vector <shared_ptr <X509Certificate> >& certs);
+
 	/** Exports this X.509 certificate to the specified format.
 	  *
 	  * @param os output stream into which write data

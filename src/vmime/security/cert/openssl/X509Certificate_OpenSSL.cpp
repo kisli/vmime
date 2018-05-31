@@ -218,6 +218,41 @@ shared_ptr <X509Certificate> X509Certificate::import
 }
 
 
+// static
+void X509Certificate::import(utility::inputStream& is,
+	std::vector <shared_ptr <X509Certificate> >& certs)
+{
+	byteArray bytes;
+	byte_t chunk[4096];
+
+	while (!is.eof())
+	{
+		const size_t len = is.read(chunk, sizeof(chunk));
+		bytes.insert(bytes.end(), chunk, chunk + len);
+	}
+
+	import(&bytes[0], bytes.size(), certs);
+}
+
+
+// static
+void X509Certificate::import(const byte_t* data, const size_t length,
+	std::vector <shared_ptr <X509Certificate> >& certs)
+{
+
+	BIO* membio = BIO_new_mem_buf(const_cast <byte_t*>(data), static_cast <int>(length));
+	shared_ptr <X509Certificate_OpenSSL> cert = null;
+
+	while (true) {
+		cert = make_shared <X509Certificate_OpenSSL>();
+		if (!PEM_read_bio_X509(membio, &(cert->m_data->cert), 0, 0)) break;
+		certs.push_back(cert);
+	}
+
+	BIO_vfree(membio);
+}
+
+
 void X509Certificate_OpenSSL::write
 	(utility::outputStream& os, const Format format) const
 {
