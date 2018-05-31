@@ -106,7 +106,7 @@ public:
 	  *
 	  * @return distinguished name of the certificate issuer, as a string
 	  */
-	const string getIssuerString() const;
+	virtual const string getIssuerString() const = 0;
 
 	/** Checks if this certificate has the given issuer.
 	  *
