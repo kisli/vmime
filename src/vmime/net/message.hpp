@@ -99,6 +99,16 @@ public:
 	  */
 	virtual size_t getNumber() const = 0;
 
+	/** Return the name of this part. In particular, this corresponds to
+	 * the attachment file name for attachment parts.
+	 *
+	 * The part name may be empty if the part does not advertise it or
+	 * if the underlying protocol does not support it.
+	 *
+	 * @return part name
+	 */
+	virtual string getName() const;
+
 	/** Return the sub-part at the specified position (zero is the
 	  * first part).
 	  *
