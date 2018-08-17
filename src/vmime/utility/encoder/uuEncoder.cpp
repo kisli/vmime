@@ -296,14 +296,12 @@ size_t uuEncoder::decode(utility::inputStream& in,
 
 			const size_t n = std::min(inLength - i, static_cast <size_t>(3));
 
-			switch (n)
-			{
-			default:
-			case 3: outBuffer[j + 2] = static_cast <byte_t>(UUDECODE(c3) << 6 | UUDECODE(c4));
-			case 2: outBuffer[j + 1] = static_cast <byte_t>(UUDECODE(c2) << 4 | UUDECODE(c3) >> 2);
-			case 1: outBuffer[j]     = static_cast <byte_t>(UUDECODE(c1) << 2 | UUDECODE(c2) >> 4);
-			case 0: break;
-			}
+			if (n >= 3)
+				outBuffer[j + 2] = static_cast <byte_t>(UUDECODE(c3) << 6 | UUDECODE(c4));
+			if (n >= 2)
+				outBuffer[j + 1] = static_cast <byte_t>(UUDECODE(c2) << 4 | UUDECODE(c3) >> 2);
+			if (n >= 1)
+				outBuffer[j]     = static_cast <byte_t>(UUDECODE(c1) << 2 | UUDECODE(c2) >> 4);
 
 			total += n;
 		}

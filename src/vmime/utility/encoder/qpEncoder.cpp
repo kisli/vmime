@@ -508,7 +508,8 @@ size_t qpEncoder::decode(utility::inputStream& in,
 				break;
 			}
 
-			// no break here...
+			outBuffer[outBufferPos++] = c;
+			break;
 		}
 		default:
 		{

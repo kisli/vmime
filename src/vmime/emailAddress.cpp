@@ -218,6 +218,8 @@ void emailAddress::parseImpl
 			else
 				state = State_LocalPartStart;
 
+			break;
+
 		case State_LocalPartStart:
 
 			if (c == '"')

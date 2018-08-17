@@ -1996,12 +1996,16 @@ public:
 					if (name == "marked")
 						m_type = MARKED;
 
+					break;
+
 				case 'n':
 
 					if (name == "noinferiors")
 						m_type = NOINFERIORS;
 					else if (name == "noselect")
 						m_type = NOSELECT;
+
+					break;
 
 				case 's':
 
