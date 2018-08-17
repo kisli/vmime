@@ -52,6 +52,8 @@ namespace tls {
 static OpenSSLInitializer::autoInitializer openSSLInitializer;
 
 
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+
 // static
 BIO_METHOD TLSSocket_OpenSSL::sm_customBIOMethod =
 {
@@ -66,6 +68,22 @@ BIO_METHOD TLSSocket_OpenSSL::sm_customBIOMethod =
 	TLSSocket_OpenSSL::bio_destroy,
 	0
 };
+
+#define BIO_set_init(b, val) b->init = val
+#define BIO_set_data(b, val) b->ptr = val
+#define BIO_set_num(b, val) b->num = val
+#define BIO_set_flags(b, val) b->flags = val
+#define BIO_set_shutdown(b, val) b->shutdown = val
+#define BIO_get_init(b) b->init
+#define BIO_get_data(b) b->ptr
+#define BIO_get_shutdown(b) b->shutdown
+
+#else
+
+#define BIO_set_num(b, val)
+
+#endif
+
 
 
 // static
@@ -99,9 +117,40 @@ void TLSSocket_OpenSSL::createSSLHandle()
 {
 	if (m_wrapped->isConnected())
 	{
+
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+
 		BIO* sockBio = BIO_new(&sm_customBIOMethod);
 		sockBio->ptr = this;
 		sockBio->init = 1;
+
+#else
+
+		BIO_METHOD* bioMeth = BIO_meth_new(BIO_TYPE_SOURCE_SINK | BIO_get_new_index(), "vmime::socket glue");
+
+		if (!bioMeth)
+		{
+			BIO_meth_free(bioMeth);
+			throw exceptions::tls_exception("BIO_meth_new() failed");
+		}
+
+		BIO_meth_set_write(bioMeth, TLSSocket_OpenSSL::bio_write);
+		BIO_meth_set_read(bioMeth, TLSSocket_OpenSSL::bio_read);
+		BIO_meth_set_puts(bioMeth, TLSSocket_OpenSSL::bio_puts);
+		BIO_meth_set_ctrl(bioMeth, TLSSocket_OpenSSL::bio_ctrl);
+		BIO_meth_set_create(bioMeth, TLSSocket_OpenSSL::bio_create);
+		BIO_meth_set_destroy(bioMeth, TLSSocket_OpenSSL::bio_destroy);
+
+		BIO* sockBio = BIO_new(bioMeth);
+		BIO_set_data(sockBio, this);
+		BIO_set_init(sockBio, 1);
+
+#endif
+
+		if (!sockBio)
+		{
+			throw exceptions::tls_exception("BIO_new() failed");
+		}
 
 		m_ssl = SSL_new(m_session->getContext());
 
@@ -538,9 +587,9 @@ int TLSSocket_OpenSSL::bio_write(BIO* bio, const char* buf, int len)
 	if (buf == NULL || len <= 0)
 		return -1;
 
-	TLSSocket_OpenSSL *sok = reinterpret_cast <TLSSocket_OpenSSL*>(bio->ptr);
+	TLSSocket_OpenSSL *sok = reinterpret_cast <TLSSocket_OpenSSL*>(BIO_get_data(bio));
 
-	if (!bio->init || !sok)
+	if (!BIO_get_init(bio) || !sok)
 		return -1;
 
 	try
@@ -573,9 +622,9 @@ int TLSSocket_OpenSSL::bio_read(BIO* bio, char* buf, int len)
 	if (buf == NULL || len <= 0)
 		return -1;
 
-	TLSSocket_OpenSSL *sok = reinterpret_cast <TLSSocket_OpenSSL*>(bio->ptr);
+	TLSSocket_OpenSSL *sok = reinterpret_cast <TLSSocket_OpenSSL*>(BIO_get_data(bio));
 
-	if (!bio->init || !sok)
+	if (!BIO_get_init(bio) || !sok)
 		return -1;
 
 	try
@@ -621,12 +670,12 @@ long TLSSocket_OpenSSL::bio_ctrl(BIO* bio, int cmd, long num, void* /* ptr */)
 
 	case BIO_CTRL_GET_CLOSE:
 
-		ret = bio->shutdown;
+		ret = BIO_get_shutdown(bio);
 		break;
 
 	case BIO_CTRL_SET_CLOSE:
 
-		bio->shutdown = static_cast <int>(num);
+		BIO_set_shutdown(bio, static_cast <int>(num));
 		break;
 
 	case BIO_CTRL_PENDING:
@@ -654,10 +703,10 @@ long TLSSocket_OpenSSL::bio_ctrl(BIO* bio, int cmd, long num, void* /* ptr */)
 // static
 int TLSSocket_OpenSSL::bio_create(BIO* bio)
 {
-	bio->init = 0;
-	bio->num = 0;
-	bio->ptr = NULL;
-	bio->flags = 0;
+	BIO_set_init(bio, 0);
+	BIO_set_num(bio, 0);
+	BIO_set_data(bio, NULL);
+	BIO_set_flags(bio, 0);
 
 	return 1;
 }
@@ -669,11 +718,11 @@ int TLSSocket_OpenSSL::bio_destroy(BIO* bio)
 	if (bio == NULL)
 		return 0;
 
-	if (bio->shutdown)
+	if (BIO_get_shutdown(bio))
 	{
-		bio->ptr = NULL;
-		bio->init = 0;
-		bio->flags = 0;
+		BIO_set_data(bio, NULL);
+		BIO_set_init(bio, 0);
+		BIO_set_flags(bio, 0);
 	}
 
 	return 1;
