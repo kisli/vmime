@@ -694,6 +694,7 @@ public:
 	IMAPUIDMessageSetEnumerator()
 		: m_first(true)
 	{
+		m_oss.imbue(std::locale::classic());
 	}
 
 	void enumerateNumberMessageRange(const vmime::net::numberMessageRange& range)
