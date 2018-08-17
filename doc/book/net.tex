@@ -1080,3 +1080,114 @@ The following constants are available:
 \hline
 \end{tabularx}
 
+
+% ============================================================================
+\section{Tracing connection}
+
+Connection tracing is used to log what is sent and received on the wire
+between the client and the server, and may help debugging.
+
+First, you have to create your own tracer, which must implement the
+{\vcode vmime::net::tracer} interface. Here is an example of a tracer which
+simply logs to the standard output:
+
+\begin{lstlisting}[caption={A simple tracer}]
+class myTracer : public vmime::net::tracer
+{
+public:
+
+   myTracer(const vmime::string& proto, const int connectionId)
+      : m_proto(proto), m_connectionId(connectionId)
+   {
+   }
+
+   // Called by VMime to trace what is sent on the socket
+   void traceSend(const vmime::string& line)
+   {
+      std::cout << "[" << m_proto << ":" << m_connectionId
+                << "] C: " << line << std::endl;
+   }
+
+   // Called by VMime to trace what is received from the socket
+   void traceReceive(const vmime::string& line)
+   {
+      std::cout << "[" < < m_proto << ":" << m_connectionId
+                << "] S: " << line << std::endl;
+   }
+
+private:
+
+   const vmime::string m_proto;
+   const int m_connectionId;
+};
+\end{lstlisting}
+
+Also create a factory class, used to instanciate your tracer objects:
+
+\begin{lstlisting}
+class myTracerFactory : public vmime::net::tracerFactory
+{
+public:
+
+   vmime::shared_ptr <vmime::net::tracer> create
+      (vmime::shared_ptr <vmime::net::service> serv,
+       const int connectionId)
+   {
+      return vmime::make_shared <myTracer>
+         (serv->getProtocolName(), connectionId);
+   }
+};
+\end{lstlisting}
+
+Next, we have to tell VMime to use it. When you create your service
+(either store or transport), simply call the {\vcode setTracerFactory}
+on the service and pass an instance of your factory class:
+
+\begin{lstlisting}[caption={Enabling tracer on a connection}]
+vmime::shared_ptr <vmime::net::transport> store =
+   session->getStore("imaps://user:password@imap.myserver.com");
+
+// Enable tracing communication between client and server
+store->setTracerFactory(vmime::make_shared <myTracerFactory>());
+\end{lstlisting}
+
+That's all! Now, everything which is sent on/received from the socket
+will be logged using your tracer object. Here is an example of a trace
+session for IMAP:
+
+\begin{verbatim}
+[imaps:1] S: * OK [CAPABILITY IMAP4rev1 LITERAL+ SASL-IR
+   LOGIN-REFERRALS ID ENABLE IDLE AUTH=PLAIN] Dovecot ready.
+[imaps:1] C: a001 AUTHENTICATE PLAIN
+[imaps:1] S: +
+[imaps:1] C: {...SASL exchange: 52 bytes of data...}
+[imaps:1] S: a001 OK [CAPABILITY IMAP4rev1 LITERAL+ SASL-IR
+   LOGIN-REFERRALS ID ENABLE IDLE SORT SPECIAL-USE QUOTA] Logged in
+[imaps:1] C: a002 LIST "" ""
+[imaps:1] S: * LIST (\Noselect) "." ""
+[imaps:1] S: a002 OK List completed.
+[imaps:1] C: a003 CAPABILITY
+[imaps:1] S: * CAPABILITY IMAP4rev1 LITERAL+ SASL-IR
+   LOGIN-REFERRALS ID ENABLE IDLE SORT SPECIAL-USE QUOTA
+[imaps:1] S: a003 OK Capability completed.
+[imaps:1] C: a003 SELECT INBOX (CONDSTORE)
+[imaps:1] S: * FLAGS (\Answered \Flagged \Deleted \Seen \Draft
+   $NotJunk NonJunk JunkRecorded $MDNSent NotJunk $Forwarded
+   Junk $Junk Forwarded $MailFlagBit1)
+[imaps:1] S: * OK [PERMANENTFLAGS (\Answered \Flagged \Deleted
+   \Seen \Draft $NotJunk NonJunk JunkRecorded $MDNSent NotJunk
+   $Forwarded Junk $Junk Forwarded $MailFlagBit1 \*)]
+   Flags permitted.
+[imaps:1] S: * 104 EXISTS
+[imaps:1] S: * 0 RECENT
+[imaps:1] S: * OK [UNSEEN 6] First unseen.
+[imaps:1] S: * OK [UIDVALIDITY 1268127585] UIDs valid
+[imaps:1] S: * OK [UIDNEXT 32716] Predicted next UID
+[imaps:1] S: * OK [HIGHESTMODSEQ 148020] Highest
+[imaps:1] S: a003 OK [READ-WRITE] Select completed.
+\end{verbatim}
+
+Please note that no sensitive data (ie. login or password) will be traced.
+Same, {\em blob} data such as message content or SASL exchanges will be logged
+as a marker which indicates how many bytes were sent/received (eg. "{...SASL
+exchange: 52 bytes of data...}"").
