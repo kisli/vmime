@@ -454,7 +454,7 @@ const datetime X509Certificate_OpenSSL::convertX509Date(void* time) const
 	vmime::string t(dest);
 
 	BIO_free(out);
-	delete dest;
+	delete [] dest;
 
 	if (t.size() > 0)
 	{
