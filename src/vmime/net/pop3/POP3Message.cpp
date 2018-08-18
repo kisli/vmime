@@ -149,7 +149,7 @@ void POP3Message::extract
 		throw exceptions::partial_fetch_not_supported();
 
 	// Emit the "RETR" command
-	shared_ptr <POP3Store> store = constCast <POP3Folder>(folder)->m_store.lock();
+	shared_ptr <POP3Store> store = folder->m_store.lock();
 
 	POP3Command::RETR(m_num)->send(store->getConnection());
 

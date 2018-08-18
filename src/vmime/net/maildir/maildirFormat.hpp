@@ -57,7 +57,7 @@ public:
 
 		context(const shared_ptr <maildirStore>& store);
 
-		shared_ptr <maildirStore> getStore() const;
+		shared_ptr <maildirStore> getStore();
 
 	private:
 
@@ -162,13 +162,7 @@ protected:
 	  *
 	  * @return current context
 	  */
-	shared_ptr <context> getContext();
-
-	/** Returns the current context (const version).
-	  *
-	  * @return current context
-	  */
-	shared_ptr <const context> getContext() const;
+	shared_ptr <context> getContext() const;
 
 	/** Quick checks whether this implementation can read the Maildir
 	  * format in the specified directory.

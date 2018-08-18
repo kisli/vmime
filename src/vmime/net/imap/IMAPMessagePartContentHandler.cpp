@@ -52,17 +52,15 @@ IMAPMessagePartContentHandler::IMAPMessagePartContentHandler
 shared_ptr <contentHandler> IMAPMessagePartContentHandler::clone() const
 {
 	return make_shared <IMAPMessagePartContentHandler>
-		(constCast <IMAPMessage>(m_message.lock()),
-		 constCast <messagePart>(m_part.lock()),
-		 m_encoding);
+		(m_message.lock(), m_part.lock(), m_encoding);
 }
 
 
 void IMAPMessagePartContentHandler::generate
 	(utility::outputStream& os, const vmime::encoding& enc, const size_t maxLineLength) const
 {
-	shared_ptr <IMAPMessage> msg = constCast <IMAPMessage>(m_message.lock());
-	shared_ptr <messagePart> part = constCast <messagePart>(m_part.lock());
+	shared_ptr <IMAPMessage> msg = m_message.lock();
+	shared_ptr <messagePart> part = m_part.lock();
 
 	// Data is already encoded
 	if (isEncoded())
@@ -128,8 +126,8 @@ void IMAPMessagePartContentHandler::generate
 void IMAPMessagePartContentHandler::extract
 	(utility::outputStream& os, utility::progressListener* progress) const
 {
-	shared_ptr <IMAPMessage> msg = constCast <IMAPMessage>(m_message.lock());
-	shared_ptr <messagePart> part = constCast <messagePart>(m_part.lock());
+	shared_ptr <IMAPMessage> msg = m_message.lock();
+	shared_ptr <messagePart> part = m_part.lock();
 
 	// No decoding to perform
 	if (!isEncoded())
@@ -158,8 +156,8 @@ void IMAPMessagePartContentHandler::extract
 void IMAPMessagePartContentHandler::extractRaw
 	(utility::outputStream& os, utility::progressListener* progress) const
 {
-	shared_ptr <IMAPMessage> msg = constCast <IMAPMessage>(m_message.lock());
-	shared_ptr <messagePart> part = constCast <messagePart>(m_part.lock());
+	shared_ptr <IMAPMessage> msg = m_message.lock();
+	shared_ptr <messagePart> part = m_part.lock();
 
 	msg->extractPart(part, os, progress);
 }

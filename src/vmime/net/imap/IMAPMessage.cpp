@@ -414,11 +414,11 @@ size_t IMAPMessage::extractImpl
 	IMAPCommand::FETCH(
 		m_uid.empty() ? messageSet::byNumber(m_num) : messageSet::byUID(m_uid),
 		fetchParams
-	)->send(constCast <IMAPFolder>(folder)->m_connection);
+	)->send(folder->m_connection);
 
 	// Get the response
 	scoped_ptr <IMAPParser::response> resp
-		(constCast <IMAPFolder>(folder)->m_connection->readResponse(&literalHandler));
+		(folder->m_connection->readResponse(&literalHandler));
 
 	if (resp->isBad() || resp->response_done()->response_tagged()->
 		resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)

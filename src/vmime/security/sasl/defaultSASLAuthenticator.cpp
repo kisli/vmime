@@ -134,7 +134,7 @@ void defaultSASLAuthenticator::setSASLSession(const shared_ptr <SASLSession>& se
 
 shared_ptr <SASLSession> defaultSASLAuthenticator::getSASLSession() const
 {
-	return constCast <SASLSession>(m_saslSession.lock());
+	return m_saslSession.lock();
 }
 
 

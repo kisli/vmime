@@ -56,9 +56,9 @@ maildirFormat::context::context(const shared_ptr <maildirStore>& store)
 }
 
 
-shared_ptr <maildirStore> maildirFormat::context::getStore() const
+shared_ptr <maildirStore> maildirFormat::context::getStore()
 {
-	return constCast <maildirStore>(m_store.lock());
+	return m_store.lock();
 }
 
 
@@ -72,13 +72,7 @@ maildirFormat::maildirFormat(const shared_ptr <context>& ctx)
 }
 
 
-shared_ptr <maildirFormat::context> maildirFormat::getContext()
-{
-	return m_context;
-}
-
-
-shared_ptr <const maildirFormat::context> maildirFormat::getContext() const
+shared_ptr <maildirFormat::context> maildirFormat::getContext() const
 {
 	return m_context;
 }
