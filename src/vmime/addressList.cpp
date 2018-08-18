@@ -139,13 +139,13 @@ shared_ptr <component> addressList::clone() const
 }
 
 
-void addressList::appendAddress(shared_ptr <address> addr)
+void addressList::appendAddress(const shared_ptr <address> &addr)
 {
 	m_list.push_back(addr);
 }
 
 
-void addressList::insertAddressBefore(shared_ptr <address> beforeAddress, shared_ptr <address> addr)
+void addressList::insertAddressBefore(const shared_ptr <address>& beforeAddress, const shared_ptr <address>& addr)
 {
 	const std::vector <shared_ptr <address> >::iterator it = std::find
 		(m_list.begin(), m_list.end(), beforeAddress);
@@ -157,7 +157,7 @@ void addressList::insertAddressBefore(shared_ptr <address> beforeAddress, shared
 }
 
 
-void addressList::insertAddressBefore(const size_t pos, shared_ptr <address> addr)
+void addressList::insertAddressBefore(const size_t pos, const shared_ptr <address>& addr)
 {
 	if (pos >= m_list.size())
 		throw std::out_of_range("Invalid position");
@@ -166,7 +166,7 @@ void addressList::insertAddressBefore(const size_t pos, shared_ptr <address> add
 }
 
 
-void addressList::insertAddressAfter(shared_ptr <address> afterAddress, shared_ptr <address> addr)
+void addressList::insertAddressAfter(const shared_ptr <address>& afterAddress, const shared_ptr <address>& addr)
 {
 	const std::vector <shared_ptr <address> >::iterator it = std::find
 		(m_list.begin(), m_list.end(), afterAddress);
@@ -178,7 +178,7 @@ void addressList::insertAddressAfter(shared_ptr <address> afterAddress, shared_p
 }
 
 
-void addressList::insertAddressAfter(const size_t pos, shared_ptr <address> addr)
+void addressList::insertAddressAfter(const size_t pos, const shared_ptr <address>& addr)
 {
 	if (pos >= m_list.size())
 		throw std::out_of_range("Invalid position");
@@ -187,7 +187,7 @@ void addressList::insertAddressAfter(const size_t pos, shared_ptr <address> addr
 }
 
 
-void addressList::removeAddress(shared_ptr <address> addr)
+void addressList::removeAddress(const shared_ptr <address>& addr)
 {
 	const std::vector <shared_ptr <address> >::iterator it = std::find
 		(m_list.begin(), m_list.end(), addr);

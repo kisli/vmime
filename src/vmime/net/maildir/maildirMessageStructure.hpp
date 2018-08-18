@@ -47,8 +47,8 @@ class maildirMessageStructure : public messageStructure
 public:
 
 	maildirMessageStructure();
-	maildirMessageStructure(shared_ptr <maildirMessagePart> parent, const bodyPart& part);
-	maildirMessageStructure(shared_ptr <maildirMessagePart> parent, const std::vector <shared_ptr <const vmime::bodyPart> >& list);
+	maildirMessageStructure(const shared_ptr <maildirMessagePart>& parent, const bodyPart& part);
+	maildirMessageStructure(const shared_ptr <maildirMessagePart>& parent, const std::vector <shared_ptr <const vmime::bodyPart> >& list);
 
 
 	shared_ptr <const messagePart> getPartAt(const size_t x) const;

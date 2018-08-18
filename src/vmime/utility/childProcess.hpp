@@ -59,7 +59,7 @@ public:
 	  * @throws exceptions::system_error if the an error occurs
 	  * before the process can be started
 	  */
-	virtual void start(const std::vector <string> args, const int flags = 0) = 0;
+	virtual void start(const std::vector <string>& args, const int flags = 0) = 0;
 
 	/** Return a wrapper to the child process standard input.
 	  *

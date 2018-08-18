@@ -99,7 +99,7 @@ public:
 	  * @param usage context of use of data
 	  * @return suitable encoding for specified data
 	  */
-	static const encoding decide(shared_ptr <const contentHandler> data, const EncodingUsage usage = USAGE_BINARY_DATA);
+	static const encoding decide(const shared_ptr <const contentHandler>& data, const EncodingUsage usage = USAGE_BINARY_DATA);
 
 	/** Decide which encoding to use based on the specified data and charset.
 	  *
@@ -108,7 +108,7 @@ public:
 	  * @param usage context of use of data
 	  * @return suitable encoding for specified data and charset
 	  */
-	static const encoding decide(shared_ptr <const contentHandler> data, const charset& chset, const EncodingUsage usage = USAGE_BINARY_DATA);
+	static const encoding decide(const shared_ptr <const contentHandler>& data, const charset& chset, const EncodingUsage usage = USAGE_BINARY_DATA);
 
 
 	shared_ptr <component> clone() const;

@@ -81,8 +81,8 @@ public:
 	public:
 
 		virtual shared_ptr <service> create
-			(shared_ptr <session> sess,
-			 shared_ptr <security::authenticator> auth) const = 0;
+			(const shared_ptr <session>& sess,
+			 const shared_ptr <security::authenticator>& auth) const = 0;
 
 		virtual int getType() const = 0;
 		virtual const string& getName() const = 0;
@@ -94,7 +94,7 @@ public:
 	  *
 	  * @param reg service registration infos
 	  */
-	void registerService(shared_ptr <registeredService> reg);
+	void registerService(const shared_ptr <registeredService>& reg);
 
 	/** Create a new service instance from a protocol name.
 	  *
@@ -105,9 +105,9 @@ public:
 	  * is registered for this protocol
 	  */
 	shared_ptr <service> create
-		(shared_ptr <session> sess,
+		(const shared_ptr <session>& sess,
 		 const string& protocol,
-		 shared_ptr <security::authenticator> auth = null);
+		 const shared_ptr <security::authenticator>& auth = null);
 
 	/** Create a new service instance from a URL.
 	  *
@@ -119,9 +119,9 @@ public:
 	  * is registered for this protocol
 	  */
 	shared_ptr <service> create
-		(shared_ptr <session> sess,
+		(const shared_ptr <session>& sess,
 		 const utility::url& u,
-		 shared_ptr <security::authenticator> auth = null);
+		 const shared_ptr <security::authenticator>& auth = null);
 
 	/** Return information about a registered protocol.
 	  *

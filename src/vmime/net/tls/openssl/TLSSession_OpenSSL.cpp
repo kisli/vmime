@@ -46,13 +46,13 @@ static OpenSSLInitializer::autoInitializer openSSLInitializer;
 
 
 // static
-shared_ptr <TLSSession> TLSSession::create(shared_ptr <security::cert::certificateVerifier> cv, shared_ptr <TLSProperties> props)
+shared_ptr <TLSSession> TLSSession::create(const shared_ptr <security::cert::certificateVerifier>& cv, const shared_ptr <TLSProperties>& props)
 {
 	return make_shared <TLSSession_OpenSSL>(cv, props);
 }
 
 
-TLSSession_OpenSSL::TLSSession_OpenSSL(shared_ptr <vmime::security::cert::certificateVerifier> cv, shared_ptr <TLSProperties> props)
+TLSSession_OpenSSL::TLSSession_OpenSSL(const shared_ptr <vmime::security::cert::certificateVerifier>& cv, const shared_ptr <TLSProperties>& props)
 	: m_sslctx(0), m_certVerifier(cv), m_props(props)
 {
 	m_sslctx = SSL_CTX_new(SSLv23_client_method());
@@ -76,7 +76,7 @@ TLSSession_OpenSSL::~TLSSession_OpenSSL()
 }
 
 
-shared_ptr <TLSSocket> TLSSession_OpenSSL::getSocket(shared_ptr <socket> sok)
+shared_ptr <TLSSocket> TLSSession_OpenSSL::getSocket(const shared_ptr <socket>& sok)
 {
 	return TLSSocket::wrap(dynamicCast <TLSSession>(shared_from_this()), sok);
 }

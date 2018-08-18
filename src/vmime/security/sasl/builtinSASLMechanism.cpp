@@ -45,7 +45,7 @@ namespace security {
 namespace sasl {
 
 
-builtinSASLMechanism::builtinSASLMechanism(shared_ptr <SASLContext> ctx, const string& name)
+builtinSASLMechanism::builtinSASLMechanism(const shared_ptr <SASLContext>& ctx, const string& name)
 	: m_context(ctx), m_name(name), m_complete(false)
 {
 }
@@ -63,7 +63,7 @@ const string builtinSASLMechanism::getName() const
 
 
 bool builtinSASLMechanism::step
-	(shared_ptr <SASLSession> sess, const byte_t* challenge, const size_t challengeLen,
+	(const shared_ptr <SASLSession>& sess, const byte_t* challenge, const size_t challengeLen,
 	 byte_t** response, size_t* responseLen)
 {
 	char* output = 0;
@@ -128,7 +128,7 @@ bool builtinSASLMechanism::hasInitialResponse() const
 
 
 void builtinSASLMechanism::encode
-	(shared_ptr <SASLSession> sess, const byte_t* input, const size_t inputLen,
+	(const shared_ptr <SASLSession>& sess, const byte_t* input, const size_t inputLen,
 	 byte_t** output, size_t* outputLen)
 {
 	char* coutput = 0;
@@ -161,7 +161,7 @@ void builtinSASLMechanism::encode
 
 
 void builtinSASLMechanism::decode
-	(shared_ptr <SASLSession> sess, const byte_t* input, const size_t inputLen,
+	(const shared_ptr <SASLSession>& sess, const byte_t* input, const size_t inputLen,
 	 byte_t** output, size_t* outputLen)
 {
 	char* coutput = 0;

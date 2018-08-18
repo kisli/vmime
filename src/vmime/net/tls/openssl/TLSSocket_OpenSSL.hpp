@@ -54,7 +54,7 @@ class TLSSocket_OpenSSL : public TLSSocket
 {
 public:
 
-	TLSSocket_OpenSSL(shared_ptr <TLSSession_OpenSSL> session, shared_ptr <socket> sok);
+	TLSSocket_OpenSSL(const shared_ptr <TLSSession_OpenSSL>& session, const shared_ptr <socket>& sok);
 	~TLSSocket_OpenSSL();
 
 
@@ -87,7 +87,7 @@ public:
 
 	shared_ptr <timeoutHandler> getTimeoutHandler();
 
-	void setTracer(shared_ptr <net::tracer> tracer);
+	void setTracer(const shared_ptr <net::tracer>& tracer);
 	shared_ptr <net::tracer> getTracer();
 
 private:

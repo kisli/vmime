@@ -78,14 +78,14 @@ shared_ptr <session> session::create(const propertySet& props)
 }
 
 
-shared_ptr <transport> session::getTransport(shared_ptr <security::authenticator> auth)
+shared_ptr <transport> session::getTransport(const shared_ptr <security::authenticator>& auth)
 {
 	return (getTransport(m_props["transport.protocol"], auth));
 }
 
 
 shared_ptr <transport> session::getTransport
-	(const string& protocol, shared_ptr <security::authenticator> auth)
+	(const string& protocol, const shared_ptr <security::authenticator>& auth)
 {
 	shared_ptr <session> sess(dynamicCast <session>(shared_from_this()));
 	shared_ptr <service> sv = serviceFactory::getInstance()->create(sess, protocol, auth);
@@ -98,7 +98,7 @@ shared_ptr <transport> session::getTransport
 
 
 shared_ptr <transport> session::getTransport
-	(const utility::url& url, shared_ptr <security::authenticator> auth)
+	(const utility::url& url, const shared_ptr <security::authenticator>& auth)
 {
 	shared_ptr <session> sess(dynamicCast <session>(shared_from_this()));
 	shared_ptr <service> sv = serviceFactory::getInstance()->create(sess, url, auth);
@@ -110,14 +110,14 @@ shared_ptr <transport> session::getTransport
 }
 
 
-shared_ptr <store> session::getStore(shared_ptr <security::authenticator> auth)
+shared_ptr <store> session::getStore(const shared_ptr <security::authenticator>& auth)
 {
 	return (getStore(m_props["store.protocol"], auth));
 }
 
 
 shared_ptr <store> session::getStore
-	(const string& protocol, shared_ptr <security::authenticator> auth)
+	(const string& protocol, const shared_ptr <security::authenticator>& auth)
 {
 	shared_ptr <session> sess(dynamicCast <session>(shared_from_this()));
 	shared_ptr <service> sv = serviceFactory::getInstance()->create(sess, protocol, auth);
@@ -130,7 +130,7 @@ shared_ptr <store> session::getStore
 
 
 shared_ptr <store> session::getStore
-	(const utility::url& url, shared_ptr <security::authenticator> auth)
+	(const utility::url& url, const shared_ptr <security::authenticator>& auth)
 {
 	shared_ptr <session> sess(dynamicCast <session>(shared_from_this()));
 	shared_ptr <service> sv = serviceFactory::getInstance()->create(sess, url, auth);
@@ -156,7 +156,7 @@ propertySet& session::getProperties()
 
 #if VMIME_HAVE_TLS_SUPPORT
 
-void session::setTLSProperties(shared_ptr <tls::TLSProperties> tlsProps)
+void session::setTLSProperties(const shared_ptr <tls::TLSProperties>& tlsProps)
 {
 	m_tlsProps = make_shared <tls::TLSProperties>(*tlsProps);
 }

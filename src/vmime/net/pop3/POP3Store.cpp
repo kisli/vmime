@@ -42,7 +42,7 @@ namespace net {
 namespace pop3 {
 
 
-POP3Store::POP3Store(shared_ptr <session> sess, shared_ptr <security::authenticator> auth, const bool secured)
+POP3Store::POP3Store(const shared_ptr <session>& sess, const shared_ptr <security::authenticator>& auth, const bool secured)
 	: store(sess, getInfosInstance(), auth), m_isPOP3S(secured)
 {
 }

@@ -62,7 +62,7 @@ size_t htmlTextPart::getPartCount() const
 }
 
 
-void htmlTextPart::generateIn(shared_ptr <bodyPart> /* message */, shared_ptr <bodyPart> parent) const
+void htmlTextPart::generateIn(const shared_ptr <bodyPart>& /* message */, const shared_ptr <bodyPart>& parent) const
 {
 	// Plain text
 	if (!m_plainText->isEmpty())
@@ -182,7 +182,7 @@ void htmlTextPart::addEmbeddedObject(const bodyPart& part, const string& id,
 }
 
 
-void htmlTextPart::parse(shared_ptr <const bodyPart> message, shared_ptr <const bodyPart> parent, shared_ptr <const bodyPart> textPart)
+void htmlTextPart::parse(const shared_ptr <const bodyPart>& message, const shared_ptr <const bodyPart>& parent, const shared_ptr <const bodyPart>& textPart)
 {
 	// Search for possible embedded objects in the _whole_ message.
 	std::vector <shared_ptr <const bodyPart> > cidParts;
@@ -348,7 +348,7 @@ shared_ptr <const contentHandler> htmlTextPart::getPlainText() const
 }
 
 
-void htmlTextPart::setPlainText(shared_ptr <contentHandler> plainText)
+void htmlTextPart::setPlainText(const shared_ptr <contentHandler>& plainText)
 {
 	m_plainText = plainText->clone();
 }
@@ -360,7 +360,7 @@ const shared_ptr <const contentHandler> htmlTextPart::getText() const
 }
 
 
-void htmlTextPart::setText(shared_ptr <contentHandler> text)
+void htmlTextPart::setText(const shared_ptr <contentHandler>& text)
 {
 	m_text = text->clone();
 }
@@ -405,7 +405,7 @@ bool htmlTextPart::hasObject(const string& id) const
 
 
 shared_ptr <const htmlTextPart::embeddedObject> htmlTextPart::addObject
-	(shared_ptr <contentHandler> data, const vmime::encoding& enc, const mediaType& type)
+	(const shared_ptr <contentHandler>& data, const vmime::encoding& enc, const mediaType& type)
 {
 	const messageId mid(messageId::generateId());
 
@@ -419,7 +419,7 @@ shared_ptr <const htmlTextPart::embeddedObject> htmlTextPart::addObject
 
 
 shared_ptr <const htmlTextPart::embeddedObject> htmlTextPart::addObject
-	(shared_ptr <contentHandler> data, const mediaType& type)
+	(const shared_ptr <contentHandler>& data, const mediaType& type)
 {
 	return addObject(data, encoding::decide(data), type);
 }
@@ -439,7 +439,7 @@ shared_ptr <const htmlTextPart::embeddedObject> htmlTextPart::addObject
 //
 
 htmlTextPart::embeddedObject::embeddedObject
-	(shared_ptr <contentHandler> data, const encoding& enc,
+	(const shared_ptr <contentHandler>& data, const encoding& enc,
 	 const string& id, const mediaType& type, const ReferenceType refType)
 	: m_data(vmime::clone(data)),
 	  m_encoding(enc), m_id(id), m_type(type), m_refType(refType)

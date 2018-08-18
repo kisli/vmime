@@ -50,7 +50,7 @@ class VMIME_EXPORT SASLSocket : public net::socket
 {
 public:
 
-	SASLSocket(shared_ptr <SASLSession> sess, shared_ptr <net::socket> wrapped);
+	SASLSocket(const shared_ptr <SASLSession>& sess, const shared_ptr <net::socket>& wrapped);
 	~SASLSocket();
 
 	void connect(const string& address, const port_t port);
@@ -78,7 +78,7 @@ public:
 
 	shared_ptr <net::timeoutHandler> getTimeoutHandler();
 
-	void setTracer(shared_ptr <net::tracer> tracer);
+	void setTracer(const shared_ptr <net::tracer>& tracer);
 	shared_ptr <net::tracer> getTracer();
 
 private:

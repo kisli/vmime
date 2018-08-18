@@ -46,7 +46,7 @@ messageParser::messageParser(const string& buffer)
 }
 
 
-messageParser::messageParser(shared_ptr <const message> msg)
+messageParser::messageParser(const shared_ptr <const message>& msg)
 {
 	parse(msg);
 }
@@ -57,7 +57,7 @@ messageParser::~messageParser()
 }
 
 
-void messageParser::parse(shared_ptr <const message> msg)
+void messageParser::parse(const shared_ptr <const message>& msg)
 {
 	// Header fields (if field is present, copy its value, else do nothing)
 #ifndef VMIME_BUILDING_DOC
@@ -106,13 +106,13 @@ void messageParser::parse(shared_ptr <const message> msg)
 }
 
 
-void messageParser::findAttachments(shared_ptr <const message> msg)
+void messageParser::findAttachments(const shared_ptr <const message>& msg)
 {
 	m_attach = attachmentHelper::findAttachmentsInMessage(msg);
 }
 
 
-void messageParser::findTextParts(shared_ptr <const bodyPart> msg, shared_ptr <const bodyPart> part)
+void messageParser::findTextParts(const shared_ptr <const bodyPart>& msg, const shared_ptr <const bodyPart>& part)
 {
 	// Handle the case in which the message is not multipart: if the body part is
 	// "text/*", take this part.
@@ -156,7 +156,7 @@ void messageParser::findTextParts(shared_ptr <const bodyPart> msg, shared_ptr <c
 }
 
 
-bool messageParser::findSubTextParts(shared_ptr <const bodyPart> msg, shared_ptr <const bodyPart> part)
+bool messageParser::findSubTextParts(const shared_ptr <const bodyPart>& msg, const shared_ptr <const bodyPart>& part)
 {
 	// In general, all the text parts are contained in parallel in the same
 	// parent part (or message).

@@ -69,7 +69,7 @@ public:
 
 
 	// Implementation of 'certificateVerifier'
-	void verify(shared_ptr <certificateChain> chain, const string& hostname);
+	void verify(const shared_ptr <certificateChain>& chain, const string& hostname);
 
 private:
 
@@ -78,7 +78,7 @@ private:
 	  * @param chain list of X.509 certificates
 	  * @param hostname server hostname
 	  */
-	void verifyX509(shared_ptr <certificateChain> chain, const string& hostname);
+	void verifyX509(const shared_ptr <certificateChain>& chain, const string& hostname);
 
 
 	std::vector <shared_ptr <X509Certificate> > m_x509RootCAs;

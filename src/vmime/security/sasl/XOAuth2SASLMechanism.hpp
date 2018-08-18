@@ -48,13 +48,13 @@ class VMIME_EXPORT XOAuth2SASLMechanism : public SASLMechanism
 {
 public:
 
-	XOAuth2SASLMechanism(shared_ptr <SASLContext> ctx, const string& name);
+	XOAuth2SASLMechanism(const shared_ptr <SASLContext>& ctx, const string& name);
 	~XOAuth2SASLMechanism();
 
 
 	const string getName() const;
 
-	bool step(shared_ptr <SASLSession> sess,
+	bool step(const shared_ptr <SASLSession>& sess,
 		 const byte_t* challenge, const size_t challengeLen,
 		 byte_t** response, size_t* responseLen);
 
@@ -62,11 +62,11 @@ public:
 
 	bool hasInitialResponse() const;
 
-	void encode(shared_ptr <SASLSession> sess,
+	void encode(const shared_ptr <SASLSession>& sess,
 		const byte_t* input, const size_t inputLen,
 		byte_t** output, size_t* outputLen);
 
-	void decode(shared_ptr <SASLSession> sess,
+	void decode(const shared_ptr <SASLSession>& sess,
 		const byte_t* input, const size_t inputLen,
 		byte_t** output, size_t* outputLen);
 

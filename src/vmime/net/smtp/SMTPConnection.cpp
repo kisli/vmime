@@ -67,7 +67,7 @@ namespace smtp {
 
 
 
-SMTPConnection::SMTPConnection(shared_ptr <SMTPTransport> transport, shared_ptr <security::authenticator> auth)
+SMTPConnection::SMTPConnection(const shared_ptr <SMTPTransport>& transport, const shared_ptr <security::authenticator>& auth)
 	: m_transport(transport), m_auth(auth), m_socket(null), m_timeoutHandler(null),
 	  m_authenticated(false), m_secured(false), m_extendedSMTP(false)
 {
@@ -605,7 +605,7 @@ void SMTPConnection::internalDisconnect()
 }
 
 
-void SMTPConnection::sendRequest(shared_ptr <SMTPCommand> cmd)
+void SMTPConnection::sendRequest(const shared_ptr <SMTPCommand>& cmd)
 {
 	cmd->writeToSocket(m_socket, m_tracer);
 }

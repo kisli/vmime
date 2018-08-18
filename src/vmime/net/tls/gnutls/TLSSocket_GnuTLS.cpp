@@ -50,14 +50,14 @@ namespace tls {
 
 
 // static
-shared_ptr <TLSSocket> TLSSocket::wrap(shared_ptr <TLSSession> session, shared_ptr <socket> sok)
+shared_ptr <TLSSocket> TLSSocket::wrap(const shared_ptr <TLSSession>& session, const shared_ptr <socket>& sok)
 {
 	return make_shared <TLSSocket_GnuTLS>
 		(dynamicCast <TLSSession_GnuTLS>(session), sok);
 }
 
 
-TLSSocket_GnuTLS::TLSSocket_GnuTLS(shared_ptr <TLSSession_GnuTLS> session, shared_ptr <socket> sok)
+TLSSocket_GnuTLS::TLSSocket_GnuTLS(const shared_ptr <TLSSession_GnuTLS>& session, const shared_ptr <socket>& sok)
 	: m_session(session), m_wrapped(sok), m_connected(false),
 	  m_ex(NULL), m_status(0), m_errno(0)
 {
@@ -143,7 +143,7 @@ shared_ptr <timeoutHandler> TLSSocket_GnuTLS::getTimeoutHandler()
 }
 
 
-void TLSSocket_GnuTLS::setTracer(shared_ptr <net::tracer> tracer)
+void TLSSocket_GnuTLS::setTracer(const shared_ptr <net::tracer>& tracer)
 {
 	m_wrapped->setTracer(tracer);
 }

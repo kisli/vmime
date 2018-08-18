@@ -49,7 +49,7 @@ namespace net {
 namespace maildir {
 
 
-maildirFolder::maildirFolder(const folder::path& path, shared_ptr <maildirStore> store)
+maildirFolder::maildirFolder(const folder::path& path, const shared_ptr <maildirStore>& store)
 	: m_store(store), m_path(path),
 	  m_name(path.isEmpty() ? folder::path::component("") : path.getLastComponent()),
 	  m_mode(-1), m_open(false), m_unreadMessageCount(0), m_messageCount(0)
@@ -708,7 +708,7 @@ void maildirFolder::setMessageFlags
 
 
 messageSet maildirFolder::addMessage
-	(shared_ptr <vmime::message> msg, const int flags,
+	(const shared_ptr <vmime::message>& msg, const int flags,
 	 vmime::datetime* date, utility::progressListener* progress)
 {
 	std::ostringstream oss;
@@ -1221,7 +1221,7 @@ void maildirFolder::fetchMessages(std::vector <shared_ptr <message> >& msg,
 }
 
 
-void maildirFolder::fetchMessage(shared_ptr <message> msg, const fetchAttributes& options)
+void maildirFolder::fetchMessage(const shared_ptr <message>& msg, const fetchAttributes& options)
 {
 	shared_ptr <maildirStore> store = m_store.lock();
 

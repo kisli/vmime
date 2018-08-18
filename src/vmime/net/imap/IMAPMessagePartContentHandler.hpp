@@ -44,7 +44,7 @@ class VMIME_EXPORT IMAPMessagePartContentHandler : public contentHandler
 {
 public:
 
-	IMAPMessagePartContentHandler(shared_ptr <IMAPMessage> msg, shared_ptr <messagePart> part, const vmime::encoding& encoding);
+	IMAPMessagePartContentHandler(const shared_ptr <IMAPMessage>& msg, const shared_ptr <messagePart>& part, const vmime::encoding& encoding);
 
 	shared_ptr <contentHandler> clone() const;
 

@@ -73,7 +73,7 @@ public:
 
 	shared_ptr <net::timeoutHandler> getTimeoutHandler();
 
-	void setTracer(shared_ptr <net::tracer> tracer);
+	void setTracer(const shared_ptr <net::tracer>& tracer);
 	shared_ptr <net::tracer> getTracer();
 
 protected:
@@ -104,7 +104,7 @@ class posixSocketFactory : public vmime::net::socketFactory
 public:
 
 	shared_ptr <vmime::net::socket> create();
-	shared_ptr <vmime::net::socket> create(shared_ptr <vmime::net::timeoutHandler> th);
+	shared_ptr <vmime::net::socket> create(const shared_ptr <vmime::net::timeoutHandler>& th);
 };
 
 

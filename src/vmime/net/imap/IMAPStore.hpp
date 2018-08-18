@@ -60,7 +60,7 @@ class VMIME_EXPORT IMAPStore : public store
 
 public:
 
-	IMAPStore(shared_ptr <session> sess, shared_ptr <security::authenticator> auth, const bool secured = false);
+	IMAPStore(const shared_ptr <session>& sess, const shared_ptr <security::authenticator>& auth, const bool secured = false);
 	~IMAPStore();
 
 	const string getProtocolName() const;

@@ -55,7 +55,7 @@ shared_ptr <SMTPCommandSet> SMTPCommandSet::create(const bool pipeline)
 }
 
 
-void SMTPCommandSet::addCommand(shared_ptr <SMTPCommand> cmd)
+void SMTPCommandSet::addCommand(const shared_ptr <SMTPCommand>& cmd)
 {
 	if (m_started)
 	{
@@ -67,7 +67,7 @@ void SMTPCommandSet::addCommand(shared_ptr <SMTPCommand> cmd)
 }
 
 
-void SMTPCommandSet::writeToSocket(shared_ptr <socket> sok, shared_ptr <tracer> tr)
+void SMTPCommandSet::writeToSocket(const shared_ptr <socket>& sok, const shared_ptr <tracer>& tr)
 {
 	if (m_pipeline)
 	{

@@ -43,8 +43,8 @@ namespace security {
 namespace sasl {
 
 
-SASLSession::SASLSession(const string& serviceName, shared_ptr <SASLContext> ctx,
-                 shared_ptr <authenticator> auth, shared_ptr <SASLMechanism> mech)
+SASLSession::SASLSession(const string& serviceName, const shared_ptr <SASLContext>& ctx,
+                 const shared_ptr <authenticator>& auth, const shared_ptr <SASLMechanism>& mech)
 	: m_serviceName(serviceName), m_context(ctx), m_auth(auth),
 	  m_mech(mech), m_gsaslContext(0), m_gsaslSession(0)
 {
@@ -70,8 +70,8 @@ SASLSession::~SASLSession()
 
 // static
 shared_ptr <SASLSession> SASLSession::create
-	(const string& serviceName, shared_ptr <SASLContext> ctx,
-	 shared_ptr <authenticator> auth, shared_ptr <SASLMechanism> mech)
+	(const string& serviceName, const shared_ptr <SASLContext>& ctx,
+	 const shared_ptr <authenticator>& auth, const shared_ptr <SASLMechanism>& mech)
 {
 	return shared_ptr <SASLSession>(new SASLSession(serviceName, ctx, auth, mech));
 }
@@ -116,7 +116,7 @@ bool SASLSession::evaluateChallenge
 }
 
 
-shared_ptr <net::socket> SASLSession::getSecuredSocket(shared_ptr <net::socket> sok)
+shared_ptr <net::socket> SASLSession::getSecuredSocket(const shared_ptr <net::socket>& sok)
 {
 	return make_shared <SASLSocket>(dynamicCast <SASLSession>(shared_from_this()), sok);
 }

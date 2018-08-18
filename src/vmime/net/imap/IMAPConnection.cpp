@@ -66,7 +66,7 @@ namespace net {
 namespace imap {
 
 
-IMAPConnection::IMAPConnection(shared_ptr <IMAPStore> store, shared_ptr <security::authenticator> auth)
+IMAPConnection::IMAPConnection(const shared_ptr <IMAPStore>& store, const shared_ptr <security::authenticator>& auth)
 	: m_store(store), m_auth(auth), m_socket(null), m_parser(null), m_tag(null),
 	  m_hierarchySeparator('\0'), m_state(STATE_NONE), m_timeoutHandler(null),
 	  m_secured(false), m_firstTag(true), m_capabilitiesFetched(false), m_noModSeq(false)
@@ -754,7 +754,7 @@ void IMAPConnection::initHierarchySeparator()
 }
 
 
-void IMAPConnection::sendCommand(shared_ptr <IMAPCommand> cmd)
+void IMAPConnection::sendCommand(const shared_ptr <IMAPCommand>& cmd)
 {
 	if (!m_firstTag)
 		++(*m_tag);
@@ -830,7 +830,7 @@ shared_ptr <const socket> IMAPConnection::getSocket() const
 }
 
 
-void IMAPConnection::setSocket(shared_ptr <socket> sok)
+void IMAPConnection::setSocket(const shared_ptr <socket>& sok)
 {
 	m_socket = sok;
 	m_parser->setSocket(sok);

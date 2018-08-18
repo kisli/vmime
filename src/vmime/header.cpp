@@ -219,13 +219,13 @@ shared_ptr <headerField> header::getField(const string& fieldName)
 }
 
 
-void header::appendField(shared_ptr <headerField> field)
+void header::appendField(const shared_ptr <headerField>& field)
 {
 	m_fields.push_back(field);
 }
 
 
-void header::insertFieldBefore(shared_ptr <headerField> beforeField, shared_ptr <headerField> field)
+void header::insertFieldBefore(const shared_ptr <headerField>& beforeField, const shared_ptr <headerField>& field)
 {
 	const std::vector <shared_ptr <headerField> >::iterator it = std::find
 		(m_fields.begin(), m_fields.end(), beforeField);
@@ -237,13 +237,13 @@ void header::insertFieldBefore(shared_ptr <headerField> beforeField, shared_ptr 
 }
 
 
-void header::insertFieldBefore(const size_t pos, shared_ptr <headerField> field)
+void header::insertFieldBefore(const size_t pos, const shared_ptr <headerField>& field)
 {
 	m_fields.insert(m_fields.begin() + pos, field);
 }
 
 
-void header::insertFieldAfter(shared_ptr <headerField> afterField, shared_ptr <headerField> field)
+void header::insertFieldAfter(const shared_ptr <headerField>& afterField, const shared_ptr <headerField>& field)
 {
 	const std::vector <shared_ptr <headerField> >::iterator it = std::find
 		(m_fields.begin(), m_fields.end(), afterField);
@@ -255,13 +255,13 @@ void header::insertFieldAfter(shared_ptr <headerField> afterField, shared_ptr <h
 }
 
 
-void header::insertFieldAfter(const size_t pos, shared_ptr <headerField> field)
+void header::insertFieldAfter(const size_t pos, const shared_ptr <headerField>& field)
 {
 	m_fields.insert(m_fields.begin() + pos + 1, field);
 }
 
 
-void header::removeField(shared_ptr <headerField> field)
+void header::removeField(const shared_ptr <headerField>& field)
 {
 	const std::vector <shared_ptr <headerField> >::iterator it = std::find
 		(m_fields.begin(), m_fields.end(), field);
@@ -281,7 +281,7 @@ void header::removeField(const size_t pos)
 }
 
 
-void header::replaceField(shared_ptr <headerField> field, shared_ptr <headerField> newField)
+void header::replaceField(const shared_ptr <headerField>& field, const shared_ptr <headerField>& newField)
 {
 	insertFieldBefore(field, newField);
 	removeField(field);

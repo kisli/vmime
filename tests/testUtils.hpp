@@ -275,7 +275,7 @@ public:
 
 	vmime::shared_ptr <vmime::net::timeoutHandler> getTimeoutHandler();
 
-	void setTracer(vmime::shared_ptr <vmime::net::tracer> tracer);
+	void setTracer(const vmime::shared_ptr <vmime::net::tracer>& tracer);
 	vmime::shared_ptr <vmime::net::tracer> getTracer();
 
 	/** Send data to client.
@@ -336,7 +336,7 @@ public:
 		return vmime::make_shared <T>();
 	}
 
-	vmime::shared_ptr <vmime::net::socket> create(vmime::shared_ptr <vmime::net::timeoutHandler> /* th */)
+	vmime::shared_ptr <vmime::net::socket> create(const vmime::shared_ptr <vmime::net::timeoutHandler>& /* th */)
 	{
 		return vmime::make_shared <T>();
 	}

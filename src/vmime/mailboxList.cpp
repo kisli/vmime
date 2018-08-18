@@ -41,37 +41,37 @@ mailboxList::mailboxList(const mailboxList& mboxList)
 }
 
 
-void mailboxList::appendMailbox(shared_ptr <mailbox> mbox)
+void mailboxList::appendMailbox(const shared_ptr <mailbox>& mbox)
 {
 	m_list.appendAddress(mbox);
 }
 
 
-void mailboxList::insertMailboxBefore(shared_ptr <mailbox> beforeMailbox, shared_ptr <mailbox> mbox)
+void mailboxList::insertMailboxBefore(const shared_ptr <mailbox>& beforeMailbox, const shared_ptr <mailbox>& mbox)
 {
 	m_list.insertAddressBefore(beforeMailbox, mbox);
 }
 
 
-void mailboxList::insertMailboxBefore(const size_t pos, shared_ptr <mailbox> mbox)
+void mailboxList::insertMailboxBefore(const size_t pos, const shared_ptr <mailbox>& mbox)
 {
 	m_list.insertAddressBefore(pos, mbox);
 }
 
 
-void mailboxList::insertMailboxAfter(shared_ptr <mailbox> afterMailbox, shared_ptr <mailbox> mbox)
+void mailboxList::insertMailboxAfter(const shared_ptr <mailbox>& afterMailbox, const shared_ptr <mailbox>& mbox)
 {
 	m_list.insertAddressAfter(afterMailbox, mbox);
 }
 
 
-void mailboxList::insertMailboxAfter(const size_t pos, shared_ptr <mailbox> mbox)
+void mailboxList::insertMailboxAfter(const size_t pos, const shared_ptr <mailbox>& mbox)
 {
 	m_list.insertAddressAfter(pos, mbox);
 }
 
 
-void mailboxList::removeMailbox(shared_ptr <mailbox> mbox)
+void mailboxList::removeMailbox(const shared_ptr <mailbox>& mbox)
 {
 	m_list.removeAddress(mbox);
 }

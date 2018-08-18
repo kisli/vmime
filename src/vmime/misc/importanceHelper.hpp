@@ -58,13 +58,13 @@ public:
 	  *
 	  * @param msg message on which to reset importance
 	  */
-	static void resetImportance(shared_ptr <message> msg);
+	static void resetImportance(const shared_ptr <message>& msg);
 
 	/** Reset the importance of a message to the default importance.
 	  *
 	  * @param hdr message header on which to reset importance
 	  */
-	static void resetImportanceHeader(shared_ptr <header> hdr);
+	static void resetImportanceHeader(const shared_ptr <header>& hdr);
 
 	/** Return the importance of the specified message.
 	  *
@@ -72,7 +72,7 @@ public:
 	  * @return importance of the message, or default importance is no
 	  * information about importance is given in the message
 	  */
-	static Importance getImportance(shared_ptr <const message> msg);
+	static Importance getImportance(const shared_ptr <const message>& msg);
 
 	/** Return the importance of a message, given its header.
 	  *
@@ -80,21 +80,21 @@ public:
 	  * @return importance of the message, or default importance is no
 	  * information about importance is given in the message
 	  */
-	static Importance getImportanceHeader(shared_ptr <const header> hdr);
+	static Importance getImportanceHeader(const shared_ptr <const header>& hdr);
 
 	/** Set the importance of the specified message.
 	  *
 	  * @param msg message on which to set importance
 	  * @param i new message importance
 	  */
-	static void setImportance(shared_ptr <message> msg, const Importance i);
+	static void setImportance(const shared_ptr <message>& msg, const Importance i);
 
 	/** Set the importance of a message, given its header.
 	  *
 	  * @param hdr message header on which to set importance
 	  * @param i new message importance
 	  */
-	static void setImportanceHeader(shared_ptr <header> hdr, const Importance i);
+	static void setImportanceHeader(const shared_ptr <header>& hdr, const Importance i);
 };
 
 

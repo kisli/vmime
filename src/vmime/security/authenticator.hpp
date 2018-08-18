@@ -123,7 +123,7 @@ public:
 	  *
 	  * @param serv messaging service instance
 	  */
-	virtual void setService(shared_ptr <net::service> serv) = 0;
+	virtual void setService(const shared_ptr <net::service>& serv) = 0;
 };
 
 

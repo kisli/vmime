@@ -39,7 +39,7 @@ VMIME_TEST_SUITE_BEGIN(attachmentHelperTest)
 	VMIME_TEST_LIST_END
 
 
-	static const vmime::string getStructure(vmime::shared_ptr <vmime::bodyPart> part)
+	static const vmime::string getStructure(const vmime::shared_ptr <vmime::bodyPart>& part)
 	{
 		vmime::shared_ptr <vmime::body> bdy = part->getBody();
 
@@ -63,7 +63,7 @@ VMIME_TEST_SUITE_BEGIN(attachmentHelperTest)
 		return res + "]";
 	}
 
-	static const vmime::string extractBodyContents(vmime::shared_ptr <const vmime::bodyPart> part)
+	static const vmime::string extractBodyContents(const vmime::shared_ptr <const vmime::bodyPart>& part)
 	{
 		vmime::shared_ptr <const vmime::contentHandler> cth = part->getBody()->getContents();
 

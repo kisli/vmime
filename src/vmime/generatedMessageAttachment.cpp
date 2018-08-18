@@ -30,7 +30,7 @@ namespace vmime
 {
 
 
-generatedMessageAttachment::generatedMessageAttachment(shared_ptr <const bodyPart> part)
+generatedMessageAttachment::generatedMessageAttachment(const shared_ptr <const bodyPart>& part)
 	: m_bpa(make_shared <bodyPartAttachment>(part))
 {
 }
@@ -97,7 +97,7 @@ shared_ptr <message> generatedMessageAttachment::getMessage() const
 }
 
 
-void generatedMessageAttachment::generateIn(shared_ptr <bodyPart> /* parent */) const
+void generatedMessageAttachment::generateIn(const shared_ptr <bodyPart>& /* parent */) const
 {
 	// Not used (see 'parsedMessageAttachment')
 }

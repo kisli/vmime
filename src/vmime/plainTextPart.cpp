@@ -57,7 +57,7 @@ size_t plainTextPart::getPartCount() const
 }
 
 
-void plainTextPart::generateIn(shared_ptr <bodyPart> /* message */, shared_ptr <bodyPart> parent) const
+void plainTextPart::generateIn(const shared_ptr <bodyPart>& /* message */, const shared_ptr <bodyPart>& parent) const
 {
 	// Create a new part
 	shared_ptr <bodyPart> part = make_shared <bodyPart>();
@@ -70,8 +70,8 @@ void plainTextPart::generateIn(shared_ptr <bodyPart> /* message */, shared_ptr <
 }
 
 
-void plainTextPart::parse(shared_ptr <const bodyPart> /* message */,
-	shared_ptr <const bodyPart> /* parent */, shared_ptr <const bodyPart> textPart)
+void plainTextPart::parse(const shared_ptr <const bodyPart>& /* message */,
+	const shared_ptr <const bodyPart>& /* parent */, const shared_ptr <const bodyPart>& textPart)
 {
 	m_text = vmime::clone(textPart->getBody()->getContents());
 
@@ -103,7 +103,7 @@ const shared_ptr <const contentHandler> plainTextPart::getText() const
 }
 
 
-void plainTextPart::setText(shared_ptr <contentHandler> text)
+void plainTextPart::setText(const shared_ptr <contentHandler>& text)
 {
 	m_text = vmime::clone(text);
 }

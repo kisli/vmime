@@ -62,7 +62,7 @@ public:
 	  * @return a reference to a new content handler
 	  */
 	fileContentHandler
-		(shared_ptr <utility::file> file,
+		(const shared_ptr <utility::file>& file,
 		 const vmime::encoding& enc = NO_ENCODING);
 
 	~fileContentHandler();
@@ -79,7 +79,7 @@ public:
 	  * in the file is already encoded with the specified encoding
 	  */
 	void setData
-		(shared_ptr <utility::file> file,
+		(const shared_ptr <utility::file>& file,
 		 const vmime::encoding& enc = NO_ENCODING);
 
 private:

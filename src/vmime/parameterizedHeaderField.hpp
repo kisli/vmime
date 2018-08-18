@@ -89,7 +89,7 @@ public:
 	  *
 	  * @param param parameter to append
 	  */
-	void appendParameter(shared_ptr <parameter> param);
+	void appendParameter(const shared_ptr <parameter>& param);
 
 	/** Insert a new parameter before the specified parameter.
 	  *
@@ -97,7 +97,7 @@ public:
 	  * @param param parameter to insert
 	  * @throw std::out_of_range if the parameter is not in the list
 	  */
-	void insertParameterBefore(shared_ptr <parameter> beforeParam, shared_ptr <parameter> param);
+	void insertParameterBefore(const shared_ptr <parameter>& beforeParam, const shared_ptr <parameter>& param);
 
 	/** Insert a new parameter before the specified position.
 	  *
@@ -106,7 +106,7 @@ public:
 	  * @param param parameter to insert
 	  * @throw std::out_of_range if the position is out of range
 	  */
-	void insertParameterBefore(const size_t pos, shared_ptr <parameter> param);
+	void insertParameterBefore(const size_t pos, const shared_ptr <parameter>& param);
 
 	/** Insert a new parameter after the specified parameter.
 	  *
@@ -114,7 +114,7 @@ public:
 	  * @param param parameter to insert
 	  * @throw std::out_of_range if the parameter is not in the list
 	  */
-	void insertParameterAfter(shared_ptr <parameter> afterParam, shared_ptr <parameter> param);
+	void insertParameterAfter(const shared_ptr <parameter>& afterParam, const shared_ptr <parameter>& param);
 
 	/** Insert a new parameter after the specified position.
 	  *
@@ -122,14 +122,14 @@ public:
 	  * @param param parameter to insert
 	  * @throw std::out_of_range if the position is out of range
 	  */
-	void insertParameterAfter(const size_t pos, shared_ptr <parameter> param);
+	void insertParameterAfter(const size_t pos, const shared_ptr <parameter>& param);
 
 	/** Remove the specified parameter from the list.
 	  *
 	  * @param param parameter to remove
 	  * @throw std::out_of_range if the parameter is not in the list
 	  */
-	void removeParameter(shared_ptr <parameter> param);
+	void removeParameter(const shared_ptr <parameter>& param);
 
 	/** Remove the parameter at the specified position.
 	  *

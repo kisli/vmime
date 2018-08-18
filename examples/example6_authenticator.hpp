@@ -7,7 +7,7 @@ class interactiveAuthenticator : public vmime::security::sasl::defaultSASLAuthen
 {
 	const std::vector <vmime::shared_ptr <vmime::security::sasl::SASLMechanism> > getAcceptableMechanisms
 		(const std::vector <vmime::shared_ptr <vmime::security::sasl::SASLMechanism> >& available,
-		 vmime::shared_ptr <vmime::security::sasl::SASLMechanism> suggested) const
+		 const vmime::shared_ptr <vmime::security::sasl::SASLMechanism>& suggested) const
 	{
 		std::cout << std::endl << "Available SASL mechanisms:" << std::endl;
 
@@ -24,7 +24,7 @@ class interactiveAuthenticator : public vmime::security::sasl::defaultSASLAuthen
 		return defaultSASLAuthenticator::getAcceptableMechanisms(available, suggested);
 	}
 
-	void setSASLMechanism(vmime::shared_ptr <vmime::security::sasl::SASLMechanism> mech)
+	void setSASLMechanism(const vmime::shared_ptr <vmime::security::sasl::SASLMechanism>& mech)
 	{
 		std::cout << "Trying '" << mech->getName() << "' authentication mechanism" << std::endl;
 

@@ -52,7 +52,7 @@ public:
 
 	const std::vector <shared_ptr <SASLMechanism> > getAcceptableMechanisms
 		(const std::vector <shared_ptr <SASLMechanism> >& available,
-	         shared_ptr <SASLMechanism> suggested) const;
+	         const shared_ptr <SASLMechanism>& suggested) const;
 
 	const string getUsername() const;
 	const string getPassword() const;
@@ -61,13 +61,13 @@ public:
 	const string getServiceName() const;
 	const string getAccessToken() const;
 
-	void setService(shared_ptr <net::service> serv);
+	void setService(const shared_ptr <net::service>& serv);
 	weak_ptr <net::service> getService() const;
 
-	void setSASLSession(shared_ptr <SASLSession> sess);
+	void setSASLSession(const shared_ptr <SASLSession>& sess);
 	shared_ptr <SASLSession> getSASLSession() const;
 
-	void setSASLMechanism(shared_ptr <SASLMechanism> mech);
+	void setSASLMechanism(const shared_ptr <SASLMechanism>& mech);
 	shared_ptr <SASLMechanism> getSASLMechanism() const;
 
 private:

@@ -74,7 +74,7 @@ public:
 	  * 'responseLen' are undetermined)
 	  */
 	virtual bool step
-		(shared_ptr <SASLSession> sess,
+		(const shared_ptr <SASLSession>& sess,
 		 const byte_t* challenge, const size_t challengeLen,
 		 byte_t** response, size_t* responseLen) = 0;
 
@@ -109,7 +109,7 @@ public:
 	  * the encoding of data (in this case, the values in 'output' and
 	  * 'outputLen' are undetermined)
 	  */
-	virtual void encode(shared_ptr <SASLSession> sess,
+	virtual void encode(const shared_ptr <SASLSession>& sess,
 		const byte_t* input, const size_t inputLen,
 		byte_t** output, size_t* outputLen) = 0;
 
@@ -126,7 +126,7 @@ public:
 	  * the encoding of data (in this case, the values in 'output' and
 	  * 'outputLen' are undetermined)
 	  */
-	virtual void decode(shared_ptr <SASLSession> sess,
+	virtual void decode(const shared_ptr <SASLSession>& sess,
 		const byte_t* input, const size_t inputLen,
 		byte_t** output, size_t* outputLen) = 0;
 };

@@ -38,7 +38,7 @@ namespace vmime {
 namespace mdn {
 
 
-void MDNHelper::attachMDNRequest(shared_ptr <message> msg, const mailboxList& mailboxes)
+void MDNHelper::attachMDNRequest(const shared_ptr <message>& msg, const mailboxList& mailboxes)
 {
 	shared_ptr <header> hdr = msg->getHeader();
 
@@ -46,7 +46,7 @@ void MDNHelper::attachMDNRequest(shared_ptr <message> msg, const mailboxList& ma
 }
 
 
-void MDNHelper::attachMDNRequest(shared_ptr <message> msg, const mailbox& mbox)
+void MDNHelper::attachMDNRequest(const shared_ptr <message>& msg, const mailbox& mbox)
 {
 	mailboxList mboxList;
 	mboxList.appendMailbox(vmime::clone(mbox));
@@ -55,7 +55,7 @@ void MDNHelper::attachMDNRequest(shared_ptr <message> msg, const mailbox& mbox)
 }
 
 
-const std::vector <sendableMDNInfos> MDNHelper::getPossibleMDNs(const shared_ptr <const message> msg)
+const std::vector <sendableMDNInfos> MDNHelper::getPossibleMDNs(const shared_ptr <const message>& msg)
 {
 	std::vector <sendableMDNInfos> result;
 
@@ -74,7 +74,7 @@ const std::vector <sendableMDNInfos> MDNHelper::getPossibleMDNs(const shared_ptr
 }
 
 
-bool MDNHelper::isMDN(const shared_ptr <const message> msg)
+bool MDNHelper::isMDN(const shared_ptr <const message>& msg)
 {
 	const shared_ptr <const header> hdr = msg->getHeader();
 
@@ -103,7 +103,7 @@ bool MDNHelper::isMDN(const shared_ptr <const message> msg)
 }
 
 
-receivedMDNInfos MDNHelper::getReceivedMDN(const shared_ptr <const message> msg)
+receivedMDNInfos MDNHelper::getReceivedMDN(const shared_ptr <const message>& msg)
 {
 	if (!isMDN(msg))
 		throw exceptions::invalid_argument();
@@ -112,7 +112,7 @@ receivedMDNInfos MDNHelper::getReceivedMDN(const shared_ptr <const message> msg)
 }
 
 
-bool MDNHelper::needConfirmation(const shared_ptr <const message> msg)
+bool MDNHelper::needConfirmation(const shared_ptr <const message>& msg)
 {
 	shared_ptr <const header> hdr = msg->getHeader();
 

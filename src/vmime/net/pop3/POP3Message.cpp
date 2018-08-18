@@ -44,7 +44,7 @@ namespace net {
 namespace pop3 {
 
 
-POP3Message::POP3Message(shared_ptr <POP3Folder> folder, const size_t num)
+POP3Message::POP3Message(const shared_ptr <POP3Folder>& folder, const size_t num)
 	: m_folder(folder), m_num(num), m_size(-1), m_deleted(false)
 {
 	folder->registerMessage(this);
@@ -166,7 +166,7 @@ void POP3Message::extract
 
 
 void POP3Message::extractPart
-	(shared_ptr <const messagePart> /* p */,
+	(const shared_ptr <const messagePart>& /* p */,
 	 utility::outputStream& /* os */,
 	 utility::progressListener* /* progress */,
 	 const size_t /* start */, const size_t /* length */,
@@ -176,13 +176,13 @@ void POP3Message::extractPart
 }
 
 
-void POP3Message::fetchPartHeader(shared_ptr <messagePart> /* p */)
+void POP3Message::fetchPartHeader(const shared_ptr <messagePart>& /* p */)
 {
 	throw exceptions::operation_not_supported();
 }
 
 
-void POP3Message::fetch(shared_ptr <POP3Folder> msgFolder, const fetchAttributes& options)
+void POP3Message::fetch(const shared_ptr <POP3Folder>& msgFolder, const fetchAttributes& options)
 {
 	shared_ptr <POP3Folder> folder = m_folder.lock();
 

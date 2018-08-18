@@ -36,7 +36,7 @@ namespace net {
 namespace imap {
 
 
-IMAPMessagePart::IMAPMessagePart(shared_ptr <IMAPMessagePart> parent, const size_t number, const IMAPParser::body_type_mpart* mpart)
+IMAPMessagePart::IMAPMessagePart(const shared_ptr <IMAPMessagePart>& parent, const size_t number, const IMAPParser::body_type_mpart* mpart)
 	: m_parent(parent), m_header(null), m_number(number), m_size(0)
 {
 	m_mediaType = vmime::mediaType
@@ -44,7 +44,7 @@ IMAPMessagePart::IMAPMessagePart(shared_ptr <IMAPMessagePart> parent, const size
 }
 
 
-IMAPMessagePart::IMAPMessagePart(shared_ptr <IMAPMessagePart> parent, const size_t number, const IMAPParser::body_type_1part* part)
+IMAPMessagePart::IMAPMessagePart(const shared_ptr <IMAPMessagePart>& parent, const size_t number, const IMAPParser::body_type_1part* part)
 	: m_parent(parent), m_header(null), m_number(number), m_size(0)
 {
 	if (part->body_type_text())
@@ -127,7 +127,7 @@ shared_ptr <const header> IMAPMessagePart::getHeader() const
 
 // static
 shared_ptr <IMAPMessagePart> IMAPMessagePart::create
-	(shared_ptr <IMAPMessagePart> parent, const size_t number, const IMAPParser::body* body)
+	(const shared_ptr <IMAPMessagePart>& parent, const size_t number, const IMAPParser::body* body)
 {
 	if (body->body_type_mpart())
 	{

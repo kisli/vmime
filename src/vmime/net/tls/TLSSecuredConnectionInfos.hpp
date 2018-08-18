@@ -52,7 +52,7 @@ class VMIME_EXPORT TLSSecuredConnectionInfos : public securedConnectionInfos
 public:
 
 	TLSSecuredConnectionInfos(const string& host, const port_t port,
-		shared_ptr <TLSSession> tlsSession, shared_ptr <TLSSocket> tlsSocket);
+		const shared_ptr <TLSSession>& tlsSession, const shared_ptr <TLSSocket>& tlsSocket);
 
 	const string getHost() const;
 	port_t getPort() const;

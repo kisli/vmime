@@ -185,7 +185,7 @@ public:
 	  *
 	  * @param field field to append
 	  */
-	void appendField(shared_ptr <headerField> field);
+	void appendField(const shared_ptr <headerField>& field);
 
 	/** Insert a new field before the specified field.
 	  *
@@ -193,7 +193,7 @@ public:
 	  * @param field field to insert
 	  * @throw exceptions::no_such_field if the field is not in the list
 	  */
-	void insertFieldBefore(shared_ptr <headerField> beforeField, shared_ptr <headerField> field);
+	void insertFieldBefore(const shared_ptr <headerField>& beforeField, const shared_ptr <headerField>& field);
 
 	/** Insert a new field before the specified position.
 	  *
@@ -201,7 +201,7 @@ public:
 	  * the beginning of the list)
 	  * @param field field to insert
 	  */
-	void insertFieldBefore(const size_t pos, shared_ptr <headerField> field);
+	void insertFieldBefore(const size_t pos, const shared_ptr <headerField>& field);
 
 	/** Insert a new field after the specified field.
 	  *
@@ -209,21 +209,21 @@ public:
 	  * @param field field to insert
 	  * @throw exceptions::no_such_field if the field is not in the list
 	  */
-	void insertFieldAfter(shared_ptr <headerField> afterField, shared_ptr <headerField> field);
+	void insertFieldAfter(const shared_ptr <headerField>& afterField, const shared_ptr <headerField>& field);
 
 	/** Insert a new field after the specified position.
 	  *
 	  * @param pos position of the field before the new field
 	  * @param field field to insert
 	  */
-	void insertFieldAfter(const size_t pos, shared_ptr <headerField> field);
+	void insertFieldAfter(const size_t pos, const shared_ptr <headerField>& field);
 
 	/** Remove the specified field from the list.
 	  *
 	  * @param field field to remove
 	  * @throw exceptions::no_such_field if the field is not in the list
 	  */
-	void removeField(shared_ptr <headerField> field);
+	void removeField(const shared_ptr <headerField>& field);
 
 	/** Remove the field at the specified position.
 	  *
@@ -237,7 +237,7 @@ public:
 	  * @param newField field to replace with
 	  * @throw exceptions::no_such_field if the field is not in the list
 	  */
-	void replaceField(shared_ptr <headerField> field, shared_ptr <headerField> newField);
+	void replaceField(const shared_ptr <headerField>& field, const shared_ptr <headerField>& newField);
 
 	/** Remove all fields from the list.
 	  */

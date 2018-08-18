@@ -46,7 +46,7 @@ namespace sasl {
 
 
 
-SASLSocket::SASLSocket(shared_ptr <SASLSession> sess, shared_ptr <net::socket> wrapped)
+SASLSocket::SASLSocket(const shared_ptr <SASLSession>& sess, const shared_ptr <net::socket>& wrapped)
 	: m_session(sess), m_wrapped(wrapped),
 	  m_pendingBuffer(0), m_pendingPos(0), m_pendingLen(0)
 {
@@ -102,7 +102,7 @@ shared_ptr <net::timeoutHandler> SASLSocket::getTimeoutHandler()
 }
 
 
-void SASLSocket::setTracer(shared_ptr <net::tracer> tracer)
+void SASLSocket::setTracer(const shared_ptr <net::tracer>& tracer)
 {
 	m_wrapped->setTracer(tracer);
 }

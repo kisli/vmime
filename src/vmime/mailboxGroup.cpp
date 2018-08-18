@@ -246,13 +246,13 @@ bool mailboxGroup::isEmpty() const
 }
 
 
-void mailboxGroup::appendMailbox(shared_ptr <mailbox> mbox)
+void mailboxGroup::appendMailbox(const shared_ptr <mailbox>& mbox)
 {
 	m_list.push_back(mbox);
 }
 
 
-void mailboxGroup::insertMailboxBefore(shared_ptr <mailbox> beforeMailbox, shared_ptr <mailbox> mbox)
+void mailboxGroup::insertMailboxBefore(const shared_ptr <mailbox>& beforeMailbox, const shared_ptr <mailbox>& mbox)
 {
 	const std::vector <shared_ptr <mailbox> >::iterator it = std::find
 		(m_list.begin(), m_list.end(), beforeMailbox);
@@ -264,7 +264,7 @@ void mailboxGroup::insertMailboxBefore(shared_ptr <mailbox> beforeMailbox, share
 }
 
 
-void mailboxGroup::insertMailboxBefore(const size_t pos, shared_ptr <mailbox> mbox)
+void mailboxGroup::insertMailboxBefore(const size_t pos, const shared_ptr <mailbox>& mbox)
 {
 	if (pos >= m_list.size())
 		throw std::out_of_range("Invalid position");
@@ -273,7 +273,7 @@ void mailboxGroup::insertMailboxBefore(const size_t pos, shared_ptr <mailbox> mb
 }
 
 
-void mailboxGroup::insertMailboxAfter(shared_ptr <mailbox> afterMailbox, shared_ptr <mailbox> mbox)
+void mailboxGroup::insertMailboxAfter(const shared_ptr <mailbox>& afterMailbox, const shared_ptr <mailbox>& mbox)
 {
 	const std::vector <shared_ptr <mailbox> >::iterator it = std::find
 		(m_list.begin(), m_list.end(), afterMailbox);
@@ -285,7 +285,7 @@ void mailboxGroup::insertMailboxAfter(shared_ptr <mailbox> afterMailbox, shared_
 }
 
 
-void mailboxGroup::insertMailboxAfter(const size_t pos, shared_ptr <mailbox> mbox)
+void mailboxGroup::insertMailboxAfter(const size_t pos, const shared_ptr <mailbox>& mbox)
 {
 	if (pos >= m_list.size())
 		throw std::out_of_range("Invalid position");
@@ -294,7 +294,7 @@ void mailboxGroup::insertMailboxAfter(const size_t pos, shared_ptr <mailbox> mbo
 }
 
 
-void mailboxGroup::removeMailbox(shared_ptr <mailbox> mbox)
+void mailboxGroup::removeMailbox(const shared_ptr <mailbox>& mbox)
 {
 	const std::vector <shared_ptr <mailbox> >::iterator it = std::find
 		(m_list.begin(), m_list.end(), mbox);

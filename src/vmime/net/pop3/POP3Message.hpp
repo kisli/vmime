@@ -56,7 +56,7 @@ private:
 
 public:
 
-	POP3Message(shared_ptr <POP3Folder> folder, const size_t num);
+	POP3Message(const shared_ptr <POP3Folder>& folder, const size_t num);
 
 	~POP3Message();
 
@@ -84,19 +84,19 @@ public:
 		 const bool peek = false) const;
 
 	void extractPart
-		(shared_ptr <const messagePart> p,
+		(const shared_ptr <const messagePart>& p,
 		 utility::outputStream& os,
 		 utility::progressListener* progress = NULL,
 		 const size_t start = 0, const size_t length = -1,
 		 const bool peek = false) const;
 
-	void fetchPartHeader(shared_ptr <messagePart> p);
+	void fetchPartHeader(const shared_ptr <messagePart>& p);
 
 	shared_ptr <vmime::message> getParsedMessage();
 
 private:
 
-	void fetch(shared_ptr <POP3Folder> folder, const fetchAttributes& options);
+	void fetch(const shared_ptr <POP3Folder>& folder, const fetchAttributes& options);
 
 	void onFolderClosed();
 

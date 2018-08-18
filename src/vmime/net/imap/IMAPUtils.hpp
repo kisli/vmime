@@ -74,7 +74,7 @@ public:
 	  * @param attribs reference to an object holding folder attributes
 	  */
 	static void mailboxFlagsToFolderAttributes
-		(shared_ptr <const IMAPConnection> cnt,
+		(const shared_ptr <const IMAPConnection>& cnt,
 		 const IMAPParser::mailbox_flag_list* list,
 		 folderAttributes& attribs);
 
@@ -98,7 +98,7 @@ public:
 	  * @return fetch request
 	  */
 	static shared_ptr <IMAPCommand> buildFetchCommand
-		(shared_ptr <IMAPConnection> cnt, const messageSet& msgs, const fetchAttributes& options);
+		(const shared_ptr <IMAPConnection>& cnt, const messageSet& msgs, const fetchAttributes& options);
 
 	/** Convert a parser-style address list to a mailbox list.
 	  *
@@ -124,7 +124,7 @@ public:
 private:
 
 	static const string buildFetchRequestImpl
-		(shared_ptr <IMAPConnection> cnt, const string& mode, const string& set, const int options);
+		(const shared_ptr <IMAPConnection>& cnt, const string& mode, const string& set, const int options);
 };
 
 

@@ -29,7 +29,7 @@ namespace utility {
 
 
 seekableInputStreamRegionAdapter::seekableInputStreamRegionAdapter
-	(shared_ptr <seekableInputStream> stream, const size_t begin, const size_t length)
+	(const shared_ptr <seekableInputStream>& stream, const size_t begin, const size_t length)
 	: m_stream(stream), m_begin(begin), m_length(length), m_position(0)
 {
 }

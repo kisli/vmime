@@ -457,13 +457,13 @@ shared_ptr <parameter> parameterizedHeaderField::getParameter(const string& para
 }
 
 
-void parameterizedHeaderField::appendParameter(shared_ptr <parameter> param)
+void parameterizedHeaderField::appendParameter(const shared_ptr <parameter>& param)
 {
 	m_params.push_back(param);
 }
 
 
-void parameterizedHeaderField::insertParameterBefore(shared_ptr <parameter> beforeParam, shared_ptr <parameter> param)
+void parameterizedHeaderField::insertParameterBefore(const shared_ptr <parameter>& beforeParam, const shared_ptr <parameter>& param)
 {
 	const std::vector <shared_ptr <parameter> >::iterator it = std::find
 		(m_params.begin(), m_params.end(), beforeParam);
@@ -475,7 +475,7 @@ void parameterizedHeaderField::insertParameterBefore(shared_ptr <parameter> befo
 }
 
 
-void parameterizedHeaderField::insertParameterBefore(const size_t pos, shared_ptr <parameter> param)
+void parameterizedHeaderField::insertParameterBefore(const size_t pos, const shared_ptr <parameter>& param)
 {
 	if (pos >= m_params.size())
 		throw std::out_of_range("Invalid position");
@@ -484,7 +484,7 @@ void parameterizedHeaderField::insertParameterBefore(const size_t pos, shared_pt
 }
 
 
-void parameterizedHeaderField::insertParameterAfter(shared_ptr <parameter> afterParam, shared_ptr <parameter> param)
+void parameterizedHeaderField::insertParameterAfter(const shared_ptr <parameter>& afterParam, const shared_ptr <parameter>& param)
 {
 	const std::vector <shared_ptr <parameter> >::iterator it = std::find
 		(m_params.begin(), m_params.end(), afterParam);
@@ -496,7 +496,7 @@ void parameterizedHeaderField::insertParameterAfter(shared_ptr <parameter> after
 }
 
 
-void parameterizedHeaderField::insertParameterAfter(const size_t pos, shared_ptr <parameter> param)
+void parameterizedHeaderField::insertParameterAfter(const size_t pos, const shared_ptr <parameter>& param)
 {
 	if (pos >= m_params.size())
 		throw std::out_of_range("Invalid position");
@@ -505,7 +505,7 @@ void parameterizedHeaderField::insertParameterAfter(const size_t pos, shared_ptr
 }
 
 
-void parameterizedHeaderField::removeParameter(shared_ptr <parameter> param)
+void parameterizedHeaderField::removeParameter(const shared_ptr <parameter>& param)
 {
 	const std::vector <shared_ptr <parameter> >::iterator it = std::find
 		(m_params.begin(), m_params.end(), param);

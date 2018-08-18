@@ -341,7 +341,7 @@ private:
 
 		propFinder(const string& name) : m_name(utility::stringUtils::toLower(name)) { }
 
-		bool operator()(shared_ptr <property> p) const
+		bool operator()(const shared_ptr <property>& p) const
 		{
 			return (utility::stringUtils::toLower(p->getName()) == m_name);
 		}

@@ -37,14 +37,14 @@ defaultAttachment::defaultAttachment()
 }
 
 
-defaultAttachment::defaultAttachment(shared_ptr <const contentHandler> data,
+defaultAttachment::defaultAttachment(const shared_ptr <const contentHandler>& data,
 	const encoding& enc, const mediaType& type, const text& desc, const word& name)
 	: m_type(type), m_desc(desc), m_data(data), m_encoding(enc), m_name(name)
 {
 }
 
 
-defaultAttachment::defaultAttachment(shared_ptr <const contentHandler> data,
+defaultAttachment::defaultAttachment(const shared_ptr <const contentHandler>& data,
 	const mediaType& type, const text& desc, const word& name)
 	: m_type(type), m_desc(desc), m_data(data),
 	  m_encoding(encoding::decide(data)), m_name(name)
@@ -77,7 +77,7 @@ defaultAttachment& defaultAttachment::operator=(const defaultAttachment& attach)
 }
 
 
-void defaultAttachment::generateIn(shared_ptr <bodyPart> parent) const
+void defaultAttachment::generateIn(const shared_ptr <bodyPart>& parent) const
 {
 	// Create and append a new part for this attachment
 	shared_ptr <bodyPart> part = make_shared <bodyPart>();
@@ -87,7 +87,7 @@ void defaultAttachment::generateIn(shared_ptr <bodyPart> parent) const
 }
 
 
-void defaultAttachment::generatePart(shared_ptr <bodyPart> part) const
+void defaultAttachment::generatePart(const shared_ptr <bodyPart>& part) const
 {
 	// Set header fields
 	part->getHeader()->ContentType()->setValue(m_type);

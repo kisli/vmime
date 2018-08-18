@@ -63,7 +63,7 @@ private:
 	friend class IMAPMessage;
 
 	IMAPFolder(const IMAPFolder&);
-	IMAPFolder(const folder::path& path, shared_ptr <IMAPStore> store, shared_ptr <folderAttributes> attribs);
+	IMAPFolder(const folder::path& path, const shared_ptr <IMAPStore>& store, const shared_ptr <folderAttributes>& attribs);
 
 public:
 
@@ -103,7 +103,7 @@ public:
 	void setMessageFlags(const messageSet& msgs, const int flags, const int mode = message::FLAG_MODE_SET);
 
 	messageSet addMessage
-		(shared_ptr <vmime::message> msg,
+		(const shared_ptr <vmime::message>& msg,
 		 const int flags = -1,
 		 vmime::datetime* date = NULL,
 		 utility::progressListener* progress = NULL);
@@ -131,7 +131,7 @@ public:
 
 
 	void fetchMessages(std::vector <shared_ptr <message> >& msg, const fetchAttributes& options, utility::progressListener* progress = NULL);
-	void fetchMessage(shared_ptr <message> msg, const fetchAttributes& options);
+	void fetchMessage(const shared_ptr <message>& msg, const fetchAttributes& options);
 
 	std::vector <shared_ptr <message> > getAndFetchMessages
 		(const messageSet& msgs, const fetchAttributes& attribs);

@@ -54,7 +54,7 @@ class VMIME_EXPORT maildirMessage : public message
 
 public:
 
-	maildirMessage(shared_ptr <maildirFolder> folder, const size_t num);
+	maildirMessage(const shared_ptr <maildirFolder>& folder, const size_t num);
 
 	~maildirMessage();
 
@@ -76,15 +76,15 @@ public:
 	void setFlags(const int flags, const int mode = FLAG_MODE_SET);
 
 	void extract(utility::outputStream& os, utility::progressListener* progress = NULL, const size_t start = 0, const size_t length = -1, const bool peek = false) const;
-	void extractPart(shared_ptr <const messagePart> p, utility::outputStream& os, utility::progressListener* progress = NULL, const size_t start = 0, const size_t length = -1, const bool peek = false) const;
+	void extractPart(const shared_ptr <const messagePart>& p, utility::outputStream& os, utility::progressListener* progress = NULL, const size_t start = 0, const size_t length = -1, const bool peek = false) const;
 
-	void fetchPartHeader(shared_ptr <messagePart> p);
+	void fetchPartHeader(const shared_ptr <messagePart>& p);
 
 	shared_ptr <vmime::message> getParsedMessage();
 
 private:
 
-	void fetch(shared_ptr <maildirFolder> folder, const fetchAttributes& options);
+	void fetch(const shared_ptr <maildirFolder>& folder, const fetchAttributes& options);
 
 	void onFolderClosed();
 

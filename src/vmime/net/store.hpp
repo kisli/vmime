@@ -47,7 +47,7 @@ class VMIME_EXPORT store : public service
 {
 protected:
 
-	store(shared_ptr <session> sess, const serviceInfos& infos, shared_ptr <security::authenticator> auth)
+	store(const shared_ptr <session>& sess, const serviceInfos& infos, const shared_ptr <security::authenticator>& auth)
 		: service(sess, infos, auth) { }
 
 public:

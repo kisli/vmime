@@ -57,7 +57,7 @@ public:
 	  * @param props TLS properties for this session
 	  * @return a new TLS session
 	  */
-	static shared_ptr <TLSSession> create(shared_ptr <security::cert::certificateVerifier> cv, shared_ptr <TLSProperties> props);
+	static shared_ptr <TLSSession> create(const shared_ptr <security::cert::certificateVerifier>& cv, const shared_ptr <TLSProperties>& props);
 
 	/** Create a new socket that adds a TLS security layer around
 	  * an existing socket. You should create only one socket
@@ -66,7 +66,7 @@ public:
 	  * @param sok socket to wrap
 	  * @return TLS socket wrapper
 	  */
-	virtual shared_ptr <TLSSocket> getSocket(shared_ptr <socket> sok) = 0;
+	virtual shared_ptr <TLSSocket> getSocket(const shared_ptr <socket>& sok) = 0;
 
 	/** Get the object responsible for verifying certificates when
 	  * using secured connections (TLS/SSL).

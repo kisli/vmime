@@ -46,14 +46,14 @@ namespace net {
 namespace pop3 {
 
 
-POP3Response::POP3Response(shared_ptr <socket> sok, shared_ptr <timeoutHandler> toh, shared_ptr <tracer> tracer)
+POP3Response::POP3Response(const shared_ptr <socket>& sok, const shared_ptr <timeoutHandler>& toh, const shared_ptr <tracer>& tracer)
 	: m_socket(sok), m_timeoutHandler(toh), m_tracer(tracer)
 {
 }
 
 
 // static
-shared_ptr <POP3Response> POP3Response::readResponse(shared_ptr <POP3Connection> conn)
+shared_ptr <POP3Response> POP3Response::readResponse(const shared_ptr <POP3Connection>& conn)
 {
 	shared_ptr <POP3Response> resp = shared_ptr <POP3Response>
 		(new POP3Response(conn->getSocket(), conn->getTimeoutHandler(), conn->getTracer()));
@@ -73,7 +73,7 @@ shared_ptr <POP3Response> POP3Response::readResponse(shared_ptr <POP3Connection>
 
 
 // static
-shared_ptr <POP3Response> POP3Response::readMultilineResponse(shared_ptr <POP3Connection> conn)
+shared_ptr <POP3Response> POP3Response::readMultilineResponse(const shared_ptr <POP3Connection>& conn)
 {
 	shared_ptr <POP3Response> resp = shared_ptr <POP3Response>
 		(new POP3Response(conn->getSocket(), conn->getTimeoutHandler(), conn->getTracer()));
@@ -112,7 +112,7 @@ shared_ptr <POP3Response> POP3Response::readMultilineResponse(shared_ptr <POP3Co
 
 // static
 shared_ptr <POP3Response> POP3Response::readLargeResponse
-	(shared_ptr <POP3Connection> conn, utility::outputStream& os,
+	(const shared_ptr <POP3Connection>& conn, utility::outputStream& os,
 	 utility::progressListener* progress, const size_t predictedSize)
 {
 	shared_ptr <POP3Response> resp = shared_ptr <POP3Response>

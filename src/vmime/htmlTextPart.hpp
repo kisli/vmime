@@ -52,10 +52,10 @@ public:
 	void setCharset(const charset& ch);
 
 	shared_ptr <const contentHandler> getPlainText() const;
-	void setPlainText(shared_ptr <contentHandler> plainText);
+	void setPlainText(const shared_ptr <contentHandler>& plainText);
 
 	const shared_ptr <const contentHandler> getText() const;
-	void setText(shared_ptr <contentHandler> text);
+	void setText(const shared_ptr <contentHandler>& text);
 
 	/** Embedded object (eg: image for &lt;IMG> tag).
 	  */
@@ -79,7 +79,7 @@ public:
 		  * @param refType reference type
 		  * @return a reference to a new embedded object
 		  */
-		embeddedObject(shared_ptr <contentHandler> data, const encoding& enc,
+		embeddedObject(const shared_ptr <contentHandler>& data, const encoding& enc,
 		               const string& id, const mediaType& type,
 		               const ReferenceType refType);
 
@@ -196,7 +196,7 @@ public:
 	  * @return an unique object identifier used to identify the new
 	  * object among all other embedded objects
 	  */
-	shared_ptr <const embeddedObject> addObject(shared_ptr <contentHandler> data, const mediaType& type);
+	shared_ptr <const embeddedObject> addObject(const shared_ptr <contentHandler>& data, const mediaType& type);
 
 	/** Embed an object and returns a string which identifies it.
 	  * The returned identifier is suitable for use in the 'src' attribute
@@ -208,13 +208,13 @@ public:
 	  * @return an unique object identifier used to identify the new
 	  * object among all other embedded objects
 	  */
-	shared_ptr <const embeddedObject> addObject(shared_ptr <contentHandler> data, const encoding& enc, const mediaType& type);
+	shared_ptr <const embeddedObject> addObject(const shared_ptr <contentHandler>& data, const encoding& enc, const mediaType& type);
 
 
 	size_t getPartCount() const;
 
-	void generateIn(shared_ptr <bodyPart> message, shared_ptr <bodyPart> parent) const;
-	void parse(shared_ptr <const bodyPart> message, shared_ptr <const bodyPart> parent, shared_ptr <const bodyPart> textPart);
+	void generateIn(const shared_ptr <bodyPart>& message, const shared_ptr <bodyPart>& parent) const;
+	void parse(const shared_ptr <const bodyPart>& message, const shared_ptr <const bodyPart>& parent, const shared_ptr <const bodyPart>& textPart);
 
 private:
 

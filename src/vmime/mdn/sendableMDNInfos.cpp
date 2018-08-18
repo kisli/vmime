@@ -28,7 +28,7 @@ namespace vmime {
 namespace mdn {
 
 
-sendableMDNInfos::sendableMDNInfos(const shared_ptr <const message> msg, const mailbox& mbox)
+sendableMDNInfos::sendableMDNInfos(const shared_ptr <const message>& msg, const mailbox& mbox)
 	: m_msg(msg), m_mailbox(mbox)
 {
 }

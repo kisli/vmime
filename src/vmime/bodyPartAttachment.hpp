@@ -44,7 +44,7 @@ class VMIME_EXPORT bodyPartAttachment : public attachment
 {
 public:
 
-	bodyPartAttachment(shared_ptr <const bodyPart> part);
+	bodyPartAttachment(const shared_ptr <const bodyPart>& part);
 
 	const mediaType getType() const;
 	const word getName() const;
@@ -58,7 +58,7 @@ public:
 
 private:
 
-	void generateIn(shared_ptr <bodyPart> parent) const;
+	void generateIn(const shared_ptr <bodyPart>& parent) const;
 
 	shared_ptr <const contentDispositionField> getContentDisposition() const;
 	shared_ptr <const contentTypeField> getContentType() const;

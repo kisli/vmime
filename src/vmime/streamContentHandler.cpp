@@ -39,7 +39,7 @@ streamContentHandler::streamContentHandler()
 }
 
 
-streamContentHandler::streamContentHandler(shared_ptr <utility::inputStream> is,
+streamContentHandler::streamContentHandler(const shared_ptr <utility::inputStream>& is,
 	const size_t length, const vmime::encoding& enc)
 {
 	setData(is, length, enc);
@@ -76,7 +76,7 @@ streamContentHandler& streamContentHandler::operator=(const streamContentHandler
 }
 
 
-void streamContentHandler::setData(shared_ptr <utility::inputStream> is,
+void streamContentHandler::setData(const shared_ptr <utility::inputStream>& is,
 	const size_t length, const vmime::encoding& enc)
 {
 	m_encoding = enc;

@@ -45,8 +45,8 @@ namespace smtp {
 
 
 SMTPResponse::SMTPResponse
-	(shared_ptr <tracer> tr, shared_ptr <socket> sok,
-	 shared_ptr <timeoutHandler> toh, const state& st)
+	(const shared_ptr <tracer>& tr, const shared_ptr <socket>& sok,
+	 const shared_ptr <timeoutHandler>& toh, const state& st)
 	: m_socket(sok), m_timeoutHandler(toh), m_tracer(tr),
 	  m_responseBuffer(st.responseBuffer), m_responseContinues(false)
 {
@@ -98,8 +98,8 @@ const string SMTPResponse::getText() const
 
 // static
 shared_ptr <SMTPResponse> SMTPResponse::readResponse
-	(shared_ptr <tracer> tr, shared_ptr <socket> sok,
-	 shared_ptr <timeoutHandler> toh, const state& st)
+	(const shared_ptr <tracer>& tr, const shared_ptr <socket>& sok,
+	 const shared_ptr <timeoutHandler>& toh, const state& st)
 {
 	shared_ptr <SMTPResponse> resp =
 		shared_ptr <SMTPResponse>(new SMTPResponse(tr, sok, toh, st));

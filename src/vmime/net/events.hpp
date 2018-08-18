@@ -75,7 +75,7 @@ public:
 	};
 
 
-	messageCountEvent(shared_ptr <folder> folder, const Types type, const std::vector <size_t>& nums);
+	messageCountEvent(const shared_ptr <folder>& folder, const Types type, const std::vector <size_t>& nums);
 
 	/** Return the folder in which messages have been added/removed.
 	  *
@@ -123,8 +123,8 @@ protected:
 
 public:
 
-	virtual void messagesAdded(shared_ptr <messageCountEvent> event) = 0;
-	virtual void messagesRemoved(shared_ptr <messageCountEvent> event) = 0;
+	virtual void messagesAdded(const shared_ptr <messageCountEvent>& event) = 0;
+	virtual void messagesRemoved(const shared_ptr <messageCountEvent>& event) = 0;
 };
 
 
@@ -144,7 +144,7 @@ public:
 	};
 
 
-	messageChangedEvent(shared_ptr <folder> folder, const Types type, const std::vector <size_t>& nums);
+	messageChangedEvent(const shared_ptr <folder>& folder, const Types type, const std::vector <size_t>& nums);
 
 	/** Return the folder in which messages have changed.
 	  *
@@ -192,7 +192,7 @@ protected:
 
 public:
 
-	virtual void messageChanged(shared_ptr <messageChangedEvent> event) = 0;
+	virtual void messageChanged(const shared_ptr <messageChangedEvent>& event) = 0;
 };
 
 
@@ -214,7 +214,7 @@ public:
 	};
 
 
-	folderEvent(shared_ptr <folder> folder, const Types type, const utility::path& oldPath, const utility::path& newPath);
+	folderEvent(const shared_ptr <folder>& folder, const Types type, const utility::path& oldPath, const utility::path& newPath);
 
 	/** Return the folder on which the event occurred.
 	  *
@@ -257,9 +257,9 @@ protected:
 
 public:
 
-	virtual void folderCreated(shared_ptr <folderEvent> event) = 0;
-	virtual void folderRenamed(shared_ptr <folderEvent> event) = 0;
-	virtual void folderDeleted(shared_ptr <folderEvent> event) = 0;
+	virtual void folderCreated(const shared_ptr <folderEvent>& event) = 0;
+	virtual void folderRenamed(const shared_ptr <folderEvent>& event) = 0;
+	virtual void folderDeleted(const shared_ptr <folderEvent>& event) = 0;
 };
 
 

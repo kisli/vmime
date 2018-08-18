@@ -285,7 +285,7 @@ const byteArray X509Certificate_OpenSSL::getSerialNumber() const
 }
 
 
-bool X509Certificate_OpenSSL::checkIssuer(shared_ptr <const X509Certificate> cert_) const
+bool X509Certificate_OpenSSL::checkIssuer(const shared_ptr <const X509Certificate>& cert_) const
 {
 	shared_ptr <const X509Certificate_OpenSSL> cert =
 		dynamicCast <const X509Certificate_OpenSSL>(cert_);
@@ -312,7 +312,7 @@ bool X509Certificate_OpenSSL::checkIssuer(shared_ptr <const X509Certificate> cer
 }
 
 
-bool X509Certificate_OpenSSL::verify(shared_ptr <const X509Certificate> caCert_) const
+bool X509Certificate_OpenSSL::verify(const shared_ptr <const X509Certificate>& caCert_) const
 {
 	shared_ptr <const X509Certificate_OpenSSL> caCert =
 		dynamicCast <const X509Certificate_OpenSSL>(caCert_);
@@ -572,7 +572,7 @@ int X509Certificate_OpenSSL::getVersion() const
 }
 
 
-bool X509Certificate_OpenSSL::equals(shared_ptr <const certificate> other) const
+bool X509Certificate_OpenSSL::equals(const shared_ptr <const certificate>& other) const
 {
 	shared_ptr <const X509Certificate_OpenSSL> otherX509 =
 		dynamicCast <const X509Certificate_OpenSSL>(other);

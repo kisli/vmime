@@ -54,7 +54,7 @@ class VMIME_EXPORT SMTPTransport : public transport
 {
 public:
 
-	SMTPTransport(shared_ptr <session> sess, shared_ptr <security::authenticator> auth, const bool secured = false);
+	SMTPTransport(const shared_ptr <session>& sess, const shared_ptr <security::authenticator>& auth, const bool secured = false);
 	~SMTPTransport();
 
 	const string getProtocolName() const;
@@ -77,7 +77,7 @@ public:
 		 const mailbox& sender = mailbox());
 
 	void send
-		(shared_ptr <vmime::message> msg,
+		(const shared_ptr <vmime::message>& msg,
 		 const mailbox& expeditor,
 		 const mailboxList& recipients,
 		 utility::progressListener* progress = NULL,

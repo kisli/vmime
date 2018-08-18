@@ -59,7 +59,7 @@ class VMIME_EXPORT POP3Store : public store
 
 public:
 
-	POP3Store(shared_ptr <session> sess, shared_ptr <security::authenticator> auth, const bool secured = false);
+	POP3Store(const shared_ptr <session>& sess, const shared_ptr <security::authenticator>& auth, const bool secured = false);
 	~POP3Store();
 
 	const string getProtocolName() const;

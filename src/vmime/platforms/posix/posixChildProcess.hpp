@@ -49,7 +49,7 @@ public:
 	posixChildProcess(const utility::file::path& path);
 	~posixChildProcess();
 
-	void start(const std::vector <string> args, const int flags = 0);
+	void start(const std::vector <string>& args, const int flags = 0);
 
 	shared_ptr <utility::outputStream> getStdIn();
 	shared_ptr <utility::inputStream> getStdOut();

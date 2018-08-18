@@ -56,7 +56,7 @@ class VMIME_EXPORT IMAPConnection : public object, public enable_shared_from_thi
 {
 public:
 
-	IMAPConnection(shared_ptr <IMAPStore> store, shared_ptr <security::authenticator> auth);
+	IMAPConnection(const shared_ptr <IMAPStore>& store, const shared_ptr <security::authenticator>& auth);
 	~IMAPConnection();
 
 
@@ -81,7 +81,7 @@ public:
 	char hierarchySeparator() const;
 
 
-	void sendCommand(shared_ptr <IMAPCommand> cmd);
+	void sendCommand(const shared_ptr <IMAPCommand>& cmd);
 	void sendRaw(const byte_t* buffer, const size_t count);
 
 	IMAPParser::response* readResponse(IMAPParser::literalHandler* lh = NULL);
@@ -104,7 +104,7 @@ public:
 	shared_ptr <connectionInfos> getConnectionInfos() const;
 
 	shared_ptr <const socket> getSocket() const;
-	void setSocket(shared_ptr <socket> sok);
+	void setSocket(const shared_ptr <socket>& sok);
 
 	shared_ptr <tracer> getTracer();
 

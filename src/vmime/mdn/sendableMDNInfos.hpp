@@ -42,7 +42,7 @@ class VMIME_EXPORT sendableMDNInfos : public MDNInfos
 {
 public:
 
-	sendableMDNInfos(const shared_ptr <const message> msg, const mailbox& mbox);
+	sendableMDNInfos(const shared_ptr <const message>& msg, const mailbox& mbox);
 	sendableMDNInfos(const sendableMDNInfos& other);
 
 	sendableMDNInfos& operator=(const sendableMDNInfos& other);

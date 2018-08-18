@@ -54,7 +54,7 @@ defaultSASLAuthenticator::~defaultSASLAuthenticator()
 const std::vector <shared_ptr <SASLMechanism> >
 	defaultSASLAuthenticator::getAcceptableMechanisms
 		(const std::vector <shared_ptr <SASLMechanism> >& available,
-		 shared_ptr <SASLMechanism> suggested) const
+		 const shared_ptr <SASLMechanism>& suggested) const
 {
 	if (suggested)
 	{
@@ -113,7 +113,7 @@ const string defaultSASLAuthenticator::getServiceName() const
 }
 
 
-void defaultSASLAuthenticator::setService(shared_ptr <net::service> serv)
+void defaultSASLAuthenticator::setService(const shared_ptr <net::service>& serv)
 {
 	m_service = serv;
 	m_default.setService(serv);
@@ -126,7 +126,7 @@ weak_ptr <net::service> defaultSASLAuthenticator::getService() const
 }
 
 
-void defaultSASLAuthenticator::setSASLSession(shared_ptr <SASLSession> sess)
+void defaultSASLAuthenticator::setSASLSession(const shared_ptr <SASLSession>& sess)
 {
 	m_saslSession = sess;
 }
@@ -138,7 +138,7 @@ shared_ptr <SASLSession> defaultSASLAuthenticator::getSASLSession() const
 }
 
 
-void defaultSASLAuthenticator::setSASLMechanism(shared_ptr <SASLMechanism> mech)
+void defaultSASLAuthenticator::setSASLMechanism(const shared_ptr <SASLMechanism>& mech)
 {
 	m_saslMech = mech;
 }

@@ -65,7 +65,7 @@ class VMIME_EXPORT SMTPConnection : public object
 {
 public:
 
-	SMTPConnection(shared_ptr <SMTPTransport> transport, shared_ptr <security::authenticator> auth);
+	SMTPConnection(const shared_ptr <SMTPTransport>& transport, const shared_ptr <security::authenticator>& auth);
 	virtual ~SMTPConnection();
 
 
@@ -83,7 +83,7 @@ public:
 	virtual shared_ptr <session> getSession();
 	virtual shared_ptr <tracer> getTracer();
 
-	void sendRequest(shared_ptr <SMTPCommand> cmd);
+	void sendRequest(const shared_ptr <SMTPCommand>& cmd);
 	shared_ptr <SMTPResponse> readResponse();
 
 	bool hasExtension(const std::string& extName, std::vector <string>* params = NULL) const;

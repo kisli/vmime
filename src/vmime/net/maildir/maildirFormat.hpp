@@ -55,7 +55,7 @@ public:
 	{
 	public:
 
-		context(shared_ptr <maildirStore> store);
+		context(const shared_ptr <maildirStore>& store);
 
 		shared_ptr <maildirStore> getStore() const;
 
@@ -146,7 +146,7 @@ public:
 	  * @param store of which to detect format
 	  * @return a Maildir format implementation for the specified store
 	  */
-	static shared_ptr <maildirFormat> detect(shared_ptr <maildirStore> store);
+	static shared_ptr <maildirFormat> detect(const shared_ptr <maildirStore>& store);
 
 protected:
 
@@ -155,7 +155,7 @@ protected:
 	static const utility::file::path::component NEW_DIR;  /**< Unread messages. */
 
 
-	maildirFormat(shared_ptr <context> ctx);
+	maildirFormat(const shared_ptr <context>& ctx);
 
 
 	/** Returns the current context.

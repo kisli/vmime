@@ -63,7 +63,7 @@ public:
 	  * @throw serverIdentityException if the subject name of the certificate
 	  * does not match the hostname of the server
 	  */
-	virtual void verify(shared_ptr <certificateChain> chain, const string& hostname) = 0;
+	virtual void verify(const shared_ptr <certificateChain>& chain, const string& hostname) = 0;
 };
 
 

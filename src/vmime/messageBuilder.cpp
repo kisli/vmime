@@ -167,13 +167,13 @@ shared_ptr <message> messageBuilder::construct() const
 }
 
 
-void messageBuilder::attach(shared_ptr <attachment> attach)
+void messageBuilder::attach(const shared_ptr <attachment>& attach)
 {
 	appendAttachment(attach);
 }
 
 
-void messageBuilder::appendAttachment(shared_ptr <attachment> attach)
+void messageBuilder::appendAttachment(const shared_ptr <attachment>& attach)
 {
 	m_attach.push_back(attach);
 }

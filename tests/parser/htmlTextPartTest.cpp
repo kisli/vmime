@@ -35,7 +35,7 @@ VMIME_TEST_SUITE_BEGIN(htmlTextPartTest)
 
 
 	static const vmime::string extractContent
-		(vmime::shared_ptr <const vmime::contentHandler> cth)
+		(const vmime::shared_ptr <const vmime::contentHandler>& cth)
 	{
 		std::ostringstream oss;
 		vmime::utility::outputStreamAdapter osa(oss);

@@ -62,7 +62,7 @@ public:
 	  * @param index position at which to retrieve certificate
 	  * @return certificate at the specified position
 	  */
-	shared_ptr <certificate> getAt(const size_t index);
+	const shared_ptr <certificate>& getAt(const size_t index);
 
 protected:
 

@@ -33,7 +33,7 @@ namespace vmime
 {
 
 
-parsedMessageAttachment::parsedMessageAttachment(shared_ptr <message> msg)
+parsedMessageAttachment::parsedMessageAttachment(const shared_ptr <message>& msg)
 	: m_msg(msg)
 {
 }
@@ -97,7 +97,7 @@ shared_ptr <message> parsedMessageAttachment::getMessage() const
 }
 
 
-void parsedMessageAttachment::generateIn(shared_ptr <bodyPart> parent) const
+void parsedMessageAttachment::generateIn(const shared_ptr <bodyPart>& parent) const
 {
 	// Create and append a new part for this attachment
 	shared_ptr <bodyPart> part = make_shared <bodyPart>();

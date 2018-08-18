@@ -48,12 +48,12 @@ public:
 	void setCharset(const charset& ch);
 
 	const shared_ptr <const contentHandler> getText() const;
-	void setText(shared_ptr <contentHandler> text);
+	void setText(const shared_ptr <contentHandler>& text);
 
 	size_t getPartCount() const;
 
-	void generateIn(shared_ptr <bodyPart> message, shared_ptr <bodyPart> parent) const;
-	void parse(shared_ptr <const bodyPart> message, shared_ptr <const bodyPart> parent, shared_ptr <const bodyPart> textPart);
+	void generateIn(const shared_ptr <bodyPart>& message, const shared_ptr <bodyPart>& parent) const;
+	void parse(const shared_ptr <const bodyPart>& message, const shared_ptr <const bodyPart>& parent, const shared_ptr <const bodyPart>& textPart);
 
 private:
 

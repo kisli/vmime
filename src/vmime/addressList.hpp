@@ -63,7 +63,7 @@ public:
 	  *
 	  * @param addr address to append
 	  */
-	void appendAddress(shared_ptr <address> addr);
+	void appendAddress(const shared_ptr <address>& addr);
 
 	/** Insert a new address before the specified address.
 	  *
@@ -71,7 +71,7 @@ public:
 	  * @param addr address to insert
 	  * @throw std::out_of_range if the address is not in the list
 	  */
-	void insertAddressBefore(shared_ptr <address> beforeAddress, shared_ptr <address> addr);
+	void insertAddressBefore(const shared_ptr <address>& beforeAddress, const shared_ptr <address>& addr);
 
 	/** Insert a new address before the specified position.
 	  *
@@ -80,7 +80,7 @@ public:
 	  * @param addr address to insert
 	  * @throw std::out_of_range if the position is out of range
 	  */
-	void insertAddressBefore(const size_t pos, shared_ptr <address> addr);
+	void insertAddressBefore(const size_t pos, const shared_ptr <address>& addr);
 
 	/** Insert a new address after the specified address.
 	  *
@@ -88,7 +88,7 @@ public:
 	  * @param addr address to insert
 	  * @throw std::out_of_range if the address is not in the list
 	  */
-	void insertAddressAfter(shared_ptr <address> afterAddress, shared_ptr <address> addr);
+	void insertAddressAfter(const shared_ptr <address>& afterAddress, const shared_ptr <address>& addr);
 
 	/** Insert a new address after the specified position.
 	  *
@@ -96,14 +96,14 @@ public:
 	  * @param addr address to insert
 	  * @throw std::out_of_range if the position is out of range
 	  */
-	void insertAddressAfter(const size_t pos, shared_ptr <address> addr);
+	void insertAddressAfter(const size_t pos, const shared_ptr <address>& addr);
 
 	/** Remove the specified address from the list.
 	  *
 	  * @param addr address to remove
 	  * @throw std::out_of_range if the address is not in the list
 	  */
-	void removeAddress(shared_ptr <address> addr);
+	void removeAddress(const shared_ptr <address>& addr);
 
 	/** Remove the address at the specified position.
 	  *

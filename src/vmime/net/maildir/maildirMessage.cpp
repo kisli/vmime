@@ -48,7 +48,7 @@ namespace net {
 namespace maildir {
 
 
-maildirMessage::maildirMessage(shared_ptr <maildirFolder> folder, const size_t num)
+maildirMessage::maildirMessage(const shared_ptr <maildirFolder>& folder, const size_t num)
 	: m_folder(folder), m_num(num), m_size(-1), m_flags(FLAG_UNDEFINED),
 	  m_expunged(false), m_structure(null)
 {
@@ -160,7 +160,7 @@ void maildirMessage::extract(utility::outputStream& os,
 }
 
 
-void maildirMessage::extractPart(shared_ptr <const messagePart> p, utility::outputStream& os,
+void maildirMessage::extractPart(const shared_ptr <const messagePart>& p, utility::outputStream& os,
 	utility::progressListener* progress, const size_t start,
 	const size_t length, const bool peek) const
 {
@@ -217,7 +217,7 @@ void maildirMessage::extractImpl(utility::outputStream& os, utility::progressLis
 }
 
 
-void maildirMessage::fetchPartHeader(shared_ptr <messagePart> p)
+void maildirMessage::fetchPartHeader(const shared_ptr <messagePart>& p)
 {
 	shared_ptr <maildirFolder> folder = m_folder.lock();
 
@@ -252,7 +252,7 @@ void maildirMessage::fetchPartHeader(shared_ptr <messagePart> p)
 }
 
 
-void maildirMessage::fetch(shared_ptr <maildirFolder> msgFolder, const fetchAttributes& options)
+void maildirMessage::fetch(const shared_ptr <maildirFolder>& msgFolder, const fetchAttributes& options)
 {
 	shared_ptr <maildirFolder> folder = m_folder.lock();
 

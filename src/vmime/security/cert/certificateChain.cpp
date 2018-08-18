@@ -41,7 +41,7 @@ size_t certificateChain::getCount() const
 }
 
 
-shared_ptr <certificate> certificateChain::getAt(const size_t index)
+const shared_ptr <certificate>& certificateChain::getAt(const size_t index)
 {
 	return m_certs[index];
 }

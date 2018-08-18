@@ -49,7 +49,7 @@ VMIME_TEST_SUITE_BEGIN(bodyPartTest)
 		                     buffer.begin() + c.getParsedOffset() + c.getParsedLength());
 	}
 
-	static const vmime::string extractContents(const vmime::shared_ptr <const vmime::contentHandler> cts)
+	static const vmime::string extractContents(const vmime::shared_ptr <const vmime::contentHandler>& cts)
 	{
 		std::ostringstream oss;
 		vmime::utility::outputStreamAdapter os(oss);

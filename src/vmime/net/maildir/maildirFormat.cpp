@@ -50,7 +50,7 @@ const utility::file::path::component maildirFormat::NEW_DIR("new", vmime::charse
 // maildirFormat::context
 //
 
-maildirFormat::context::context(shared_ptr <maildirStore> store)
+maildirFormat::context::context(const shared_ptr <maildirStore>& store)
 	: m_store(store)
 {
 }
@@ -66,7 +66,7 @@ shared_ptr <maildirStore> maildirFormat::context::getStore() const
 // maildirFormat
 //
 
-maildirFormat::maildirFormat(shared_ptr <context> ctx)
+maildirFormat::maildirFormat(const shared_ptr <context>& ctx)
 	: m_context(ctx)
 {
 }
@@ -85,7 +85,7 @@ shared_ptr <const maildirFormat::context> maildirFormat::getContext() const
 
 
 // static
-shared_ptr <maildirFormat> maildirFormat::detect(shared_ptr <maildirStore> store)
+shared_ptr <maildirFormat> maildirFormat::detect(const shared_ptr <maildirStore>& store)
 {
 	shared_ptr <context> ctx = make_shared <context>(store);
 

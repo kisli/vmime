@@ -108,7 +108,7 @@ protected:
 	  *
 	  * @param parent body part in which to generate the attachment
 	  */
-	virtual void generateIn(shared_ptr <bodyPart> parent) const = 0;
+	virtual void generateIn(const shared_ptr <bodyPart>& parent) const = 0;
 };
 
 

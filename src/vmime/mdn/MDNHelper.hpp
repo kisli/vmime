@@ -48,14 +48,14 @@ public:
 	  * @param msg message in which to add a MDN request
 	  * @param mailboxes list of mailboxes to which the MDN will be sent
 	  */
-	static void attachMDNRequest(shared_ptr <message> msg, const mailboxList& mailboxes);
+	static void attachMDNRequest(const shared_ptr <message>& msg, const mailboxList& mailboxes);
 
 	/** Attach a MDN request to the specified message.
 	  *
 	  * @param msg message in which to add a MDN request
 	  * @param mbox mailbox to which the MDN will be sent
 	  */
-	static void attachMDNRequest(shared_ptr <message> msg, const mailbox& mbox);
+	static void attachMDNRequest(const shared_ptr <message>& msg, const mailbox& mbox);
 
 	/** Return a list of possible MDNs that can be generated
 	  * for the specified message.
@@ -63,14 +63,14 @@ public:
 	  * @param msg message for which to send a MDN
 	  * @return list of possible MDNs
 	  */
-	static const std::vector <sendableMDNInfos> getPossibleMDNs(const shared_ptr <const message> msg);
+	static const std::vector <sendableMDNInfos> getPossibleMDNs(const shared_ptr <const message>& msg);
 
 	/** Test whether the specified message is a MDN.
 	  *
 	  * @param msg message
 	  * @return true if the message is a MDN, false otherwise
 	  */
-	static bool isMDN(const shared_ptr <const message> msg);
+	static bool isMDN(const shared_ptr <const message>& msg);
 
 	/** If the specified message is a MDN, return information
 	  * about it.
@@ -79,7 +79,7 @@ public:
 	  * @throw exceptions::invalid_argument if the message is not a MDN
 	  * @return information about the MDN
 	  */
-	static receivedMDNInfos getReceivedMDN(const shared_ptr <const message> msg);
+	static receivedMDNInfos getReceivedMDN(const shared_ptr <const message>& msg);
 
 	/** Check whether we need user confirmation for sending a MDN even
 	  * if he/she explicitely allowed automatic send of MDNs. This can
@@ -88,7 +88,7 @@ public:
 	  * @param msg message for which to send a MDN
 	  * @return true if user confirmation should be asked, false otherwise
 	  */
-	static bool needConfirmation(const shared_ptr <const message> msg);
+	static bool needConfirmation(const shared_ptr <const message>& msg);
 
 	/** Build a new MDN for the message. The resulting MDN can then be
 	  * sent over SMTP transport service.

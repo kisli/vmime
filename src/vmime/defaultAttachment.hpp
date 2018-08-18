@@ -45,8 +45,8 @@ protected:
 
 public:
 
-	defaultAttachment(shared_ptr <const contentHandler> data, const encoding& enc, const mediaType& type, const text& desc = NULL_TEXT, const word& name = NULL_WORD);
-	defaultAttachment(shared_ptr <const contentHandler> data, const mediaType& type, const text& desc = NULL_TEXT, const word& name = NULL_WORD);
+	defaultAttachment(const shared_ptr <const contentHandler>& data, const encoding& enc, const mediaType& type, const text& desc = NULL_TEXT, const word& name = NULL_WORD);
+	defaultAttachment(const shared_ptr <const contentHandler>& data, const mediaType& type, const text& desc = NULL_TEXT, const word& name = NULL_WORD);
 	defaultAttachment(const defaultAttachment& attach);
 
 	~defaultAttachment();
@@ -74,11 +74,11 @@ protected:
 private:
 
 	// No need to override "generateIn", use "generatePart" instead (see below).
-	void generateIn(shared_ptr <bodyPart> parent) const;
+	void generateIn(const shared_ptr <bodyPart>& parent) const;
 
 protected:
 
-	virtual void generatePart(shared_ptr <bodyPart> part) const;
+	virtual void generatePart(const shared_ptr <bodyPart>& part) const;
 };
 
 

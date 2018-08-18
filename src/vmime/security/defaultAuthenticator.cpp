@@ -109,7 +109,7 @@ const string defaultAuthenticator::getServiceName() const
 }
 
 
-void defaultAuthenticator::setService(shared_ptr <net::service> serv)
+void defaultAuthenticator::setService(const shared_ptr <net::service>& serv)
 {
 	m_service = serv;
 }

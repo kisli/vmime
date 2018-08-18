@@ -57,7 +57,7 @@ public:
 	  *
 	  * @param mbox mailbox to append
 	  */
-	void appendMailbox(shared_ptr <mailbox> mbox);
+	void appendMailbox(const shared_ptr <mailbox>& mbox);
 
 	/** Insert a new mailbox before the specified mailbox.
 	  *
@@ -65,7 +65,7 @@ public:
 	  * @param mbox mailbox to insert
 	  * @throw std::out_of_range if the mailbox is not in the list
 	  */
-	void insertMailboxBefore(shared_ptr <mailbox> beforeMailbox, shared_ptr <mailbox> mbox);
+	void insertMailboxBefore(const shared_ptr <mailbox>& beforeMailbox, const shared_ptr <mailbox>& mbox);
 
 	/** Insert a new mailbox before the specified position.
 	  *
@@ -74,7 +74,7 @@ public:
 	  * @param mbox mailbox to insert
 	  * @throw std::out_of_range if the position is out of range
 	  */
-	void insertMailboxBefore(const size_t pos, shared_ptr <mailbox> mbox);
+	void insertMailboxBefore(const size_t pos, const shared_ptr <mailbox>& mbox);
 
 	/** Insert a new mailbox after the specified mailbox.
 	  *
@@ -82,7 +82,7 @@ public:
 	  * @param mbox mailbox to insert
 	  * @throw std::out_of_range if the mailbox is not in the list
 	  */
-	void insertMailboxAfter(shared_ptr <mailbox> afterMailbox, shared_ptr <mailbox> mbox);
+	void insertMailboxAfter(const shared_ptr <mailbox>& afterMailbox, const shared_ptr <mailbox>& mbox);
 
 	/** Insert a new mailbox after the specified position.
 	  *
@@ -90,14 +90,14 @@ public:
 	  * @param mbox mailbox to insert
 	  * @throw std::out_of_range if the position is out of range
 	  */
-	void insertMailboxAfter(const size_t pos, shared_ptr <mailbox> mbox);
+	void insertMailboxAfter(const size_t pos, const shared_ptr <mailbox>& mbox);
 
 	/** Remove the specified mailbox from the list.
 	  *
 	  * @param mbox mailbox to remove
 	  * @throw std::out_of_range if the mailbox is not in the list
 	  */
-	void removeMailbox(shared_ptr <mailbox> mbox);
+	void removeMailbox(const shared_ptr <mailbox>& mbox);
 
 	/** Remove the mailbox at the specified position.
 	  *

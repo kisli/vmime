@@ -28,7 +28,7 @@ namespace vmime
 {
 
 
-bodyPartAttachment::bodyPartAttachment(shared_ptr <const bodyPart> part)
+bodyPartAttachment::bodyPartAttachment(const shared_ptr <const bodyPart>& part)
 	: m_part(part)
 {
 }
@@ -136,7 +136,7 @@ shared_ptr <const contentTypeField> bodyPartAttachment::getContentType() const
 }
 
 
-void bodyPartAttachment::generateIn(shared_ptr <bodyPart> /* parent */) const
+void bodyPartAttachment::generateIn(const shared_ptr <bodyPart>& /* parent */) const
 {
 	// Not used
 }

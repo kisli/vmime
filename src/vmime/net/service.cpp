@@ -48,8 +48,8 @@ namespace vmime {
 namespace net {
 
 
-service::service(shared_ptr <session> sess, const serviceInfos& /* infos */,
-                 shared_ptr <security::authenticator> auth)
+service::service(const shared_ptr <session>& sess, const serviceInfos& /* infos */,
+                 const shared_ptr <security::authenticator>& auth)
 	: m_session(sess), m_auth(auth)
 {
 	if (!auth)
@@ -102,7 +102,7 @@ shared_ptr <security::authenticator> service::getAuthenticator()
 }
 
 
-void service::setAuthenticator(shared_ptr <security::authenticator> auth)
+void service::setAuthenticator(const shared_ptr <security::authenticator>& auth)
 {
 	m_auth = auth;
 }
@@ -110,7 +110,7 @@ void service::setAuthenticator(shared_ptr <security::authenticator> auth)
 
 #if VMIME_HAVE_TLS_SUPPORT
 
-void service::setCertificateVerifier(shared_ptr <security::cert::certificateVerifier> cv)
+void service::setCertificateVerifier(const shared_ptr <security::cert::certificateVerifier>& cv)
 {
 	m_certVerifier = cv;
 }
@@ -124,7 +124,7 @@ shared_ptr <security::cert::certificateVerifier> service::getCertificateVerifier
 #endif // VMIME_HAVE_TLS_SUPPORT
 
 
-void service::setSocketFactory(shared_ptr <socketFactory> sf)
+void service::setSocketFactory(const shared_ptr <socketFactory>& sf)
 {
 	m_socketFactory = sf;
 }
@@ -136,7 +136,7 @@ shared_ptr <socketFactory> service::getSocketFactory()
 }
 
 
-void service::setTracerFactory(shared_ptr <tracerFactory> tf)
+void service::setTracerFactory(const shared_ptr <tracerFactory>& tf)
 {
 	m_tracerFactory = tf;
 }
@@ -148,7 +148,7 @@ shared_ptr <tracerFactory> service::getTracerFactory()
 }
 
 
-void service::setTimeoutHandlerFactory(shared_ptr <timeoutHandlerFactory> thf)
+void service::setTimeoutHandlerFactory(const shared_ptr <timeoutHandlerFactory>& thf)
 {
 	m_toHandlerFactory = thf;
 }

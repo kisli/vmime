@@ -59,7 +59,7 @@ public:
 
 	const std::vector <shared_ptr <SASLMechanism> > getAcceptableMechanisms
 		(const std::vector <shared_ptr <SASLMechanism> >& available,
-		 shared_ptr <SASLMechanism> suggested) const;
+		 const shared_ptr <SASLMechanism>& suggested) const;
 
 private:
 

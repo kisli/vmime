@@ -56,7 +56,7 @@ class VMIME_EXPORT transport : public service
 {
 protected:
 
-	transport(shared_ptr <session> sess, const serviceInfos& infos, shared_ptr <security::authenticator> auth);
+	transport(const shared_ptr <session>& sess, const serviceInfos& infos, const shared_ptr <security::authenticator>& auth);
 
 public:
 
@@ -67,7 +67,7 @@ public:
 	  * @param msg message to send
 	  * @param progress progress listener, or NULL if not used
 	  */
-	virtual void send(shared_ptr <vmime::message> msg, utility::progressListener* progress = NULL);
+	virtual void send(const shared_ptr <vmime::message>& msg, utility::progressListener* progress = NULL);
 
 	/** Send a message over this transport service.
 	  *
@@ -97,7 +97,7 @@ public:
 	  * @param sender envelope sender (if empty, expeditor will be used)
 	  */
 	virtual void send
-		(shared_ptr <vmime::message> msg,
+		(const shared_ptr <vmime::message>& msg,
 		 const mailbox& expeditor,
 		 const mailboxList& recipients,
 		 utility::progressListener* progress = NULL,
@@ -115,7 +115,7 @@ protected:
 	  * if the field is to be replaced, or a reference to the same headerField
 	  * that was passed if the field should be left as is
 	  */
-	shared_ptr <headerField> processHeaderField(shared_ptr <headerField> field);
+	shared_ptr <headerField> processHeaderField(const shared_ptr <headerField>& field);
 
 	/** Prepares the header before transmitting the message.
 	  * Removes headers that should not be present (eg. "Bcc", "Return-Path"),
@@ -124,7 +124,7 @@ protected:
 	  *
 	  * @param header headers to process
 	  */
-	void processHeader(shared_ptr <header> header);
+	void processHeader(const shared_ptr <header>& header);
 };
 
 

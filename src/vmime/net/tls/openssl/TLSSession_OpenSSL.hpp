@@ -55,11 +55,11 @@ class TLSSession_OpenSSL : public TLSSession
 
 public:
 
-	TLSSession_OpenSSL(const shared_ptr <security::cert::certificateVerifier> cv, shared_ptr <TLSProperties> props);
+	TLSSession_OpenSSL(const shared_ptr <security::cert::certificateVerifier>& cv, const shared_ptr <TLSProperties>& props);
 	~TLSSession_OpenSSL();
 
 
-	shared_ptr <TLSSocket> getSocket(shared_ptr <socket> sok);
+	shared_ptr <TLSSocket> getSocket(const shared_ptr <socket>& sok);
 
 	shared_ptr <security::cert::certificateVerifier> getCertificateVerifier();
 

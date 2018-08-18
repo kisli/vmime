@@ -49,7 +49,7 @@ class VMIME_EXPORT messageParser
 public:
 
 	messageParser(const string& buffer);
-	messageParser(shared_ptr <const message> msg);
+	messageParser(const shared_ptr <const message>& msg);
 	~messageParser();
 
 public:
@@ -144,12 +144,12 @@ private:
 
 	std::vector <shared_ptr <textPart> > m_textParts;
 
-	void parse(shared_ptr <const message> msg);
+	void parse(const shared_ptr <const message>& msg);
 
-	void findAttachments(shared_ptr <const message> msg);
+	void findAttachments(const shared_ptr <const message>& msg);
 
-	void findTextParts(shared_ptr <const bodyPart> msg, shared_ptr <const bodyPart> part);
-	bool findSubTextParts(shared_ptr <const bodyPart> msg, shared_ptr <const bodyPart> part);
+	void findTextParts(const shared_ptr <const bodyPart>& msg, const shared_ptr <const bodyPart>& part);
+	bool findSubTextParts(const shared_ptr <const bodyPart>& msg, const shared_ptr <const bodyPart>& part);
 };
 
 

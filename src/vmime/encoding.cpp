@@ -200,7 +200,7 @@ bool encoding::shouldReencode() const
 
 
 const encoding encoding::decide
-	(shared_ptr <const contentHandler> data, const EncodingUsage usage)
+	(const shared_ptr <const contentHandler>& data, const EncodingUsage usage)
 {
 	// Do not re-encode data if it is already encoded
 	if (data->isEncoded() && !data->getEncoding().shouldReencode())
@@ -231,7 +231,7 @@ const encoding encoding::decide
 }
 
 
-const encoding encoding::decide(shared_ptr <const contentHandler> data,
+const encoding encoding::decide(const shared_ptr <const contentHandler>& data,
 	const charset& chset, const EncodingUsage usage)
 {
 	// Do not re-encode data if it is already encoded

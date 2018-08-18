@@ -79,7 +79,7 @@ fileAttachment::fileAttachment(const string& filepath, const mediaType& type,
 }
 
 
-fileAttachment::fileAttachment(shared_ptr <contentHandler> cts, const word& filename, const mediaType& type)
+fileAttachment::fileAttachment(const shared_ptr <contentHandler>& cts, const word& filename, const mediaType& type)
 {
 	if (!filename.isEmpty())
 		m_fileInfo.setFilename(filename);
@@ -92,7 +92,7 @@ fileAttachment::fileAttachment(shared_ptr <contentHandler> cts, const word& file
 }
 
 
-fileAttachment::fileAttachment(shared_ptr <contentHandler> cts, const word& filename,
+fileAttachment::fileAttachment(const shared_ptr <contentHandler>& cts, const word& filename,
 	const mediaType& type, const text& desc)
 {
 	if (!filename.isEmpty())
@@ -107,7 +107,7 @@ fileAttachment::fileAttachment(shared_ptr <contentHandler> cts, const word& file
 }
 
 
-fileAttachment::fileAttachment(shared_ptr <contentHandler> cts, const word& filename,
+fileAttachment::fileAttachment(const shared_ptr <contentHandler>& cts, const word& filename,
 	const mediaType& type, const text& desc, const encoding& enc)
 {
 	if (!filename.isEmpty())
@@ -139,7 +139,7 @@ void fileAttachment::setData(const string& filepath)
 }
 
 
-void fileAttachment::setData(shared_ptr <contentHandler> cts)
+void fileAttachment::setData(const shared_ptr <contentHandler>& cts)
 {
 	m_data = cts;
 
@@ -147,7 +147,7 @@ void fileAttachment::setData(shared_ptr <contentHandler> cts)
 }
 
 
-void fileAttachment::generatePart(shared_ptr <bodyPart> part) const
+void fileAttachment::generatePart(const shared_ptr <bodyPart>& part) const
 {
 	defaultAttachment::generatePart(part);
 

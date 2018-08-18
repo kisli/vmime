@@ -300,7 +300,7 @@ shared_ptr <headerFieldValue> headerField::getValue()
 }
 
 
-void headerField::setValue(shared_ptr <headerFieldValue> value)
+void headerField::setValue(const shared_ptr <headerFieldValue>& value)
 {
 	if (!headerFieldFactory::getInstance()->isValueTypeValid(*this, *value))
 		throw exceptions::bad_field_value_type(getName());
@@ -310,7 +310,7 @@ void headerField::setValue(shared_ptr <headerFieldValue> value)
 }
 
 
-void headerField::setValueConst(shared_ptr <const headerFieldValue> value)
+void headerField::setValueConst(const shared_ptr <const headerFieldValue>& value)
 {
 	if (!headerFieldFactory::getInstance()->isValueTypeValid(*this, *value))
 		throw exceptions::bad_field_value_type(getName());

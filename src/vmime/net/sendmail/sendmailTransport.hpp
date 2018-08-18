@@ -50,7 +50,7 @@ class VMIME_EXPORT sendmailTransport : public transport
 {
 public:
 
-	sendmailTransport(shared_ptr <session> sess, shared_ptr <security::authenticator> auth);
+	sendmailTransport(const shared_ptr <session>& sess, const shared_ptr <security::authenticator>& auth);
 	~sendmailTransport();
 
 	const string getProtocolName() const;
@@ -79,7 +79,7 @@ private:
 
 	void internalDisconnect();
 
-	void internalSend(const std::vector <string> args, utility::inputStream& is,
+	void internalSend(const std::vector <string>& args, utility::inputStream& is,
 		const size_t size, utility::progressListener* progress);
 
 

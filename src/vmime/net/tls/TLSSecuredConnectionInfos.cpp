@@ -38,7 +38,7 @@ namespace tls {
 
 TLSSecuredConnectionInfos::TLSSecuredConnectionInfos
 	(const string& host, const port_t port,
-	 shared_ptr <TLSSession> tlsSession, shared_ptr <TLSSocket> tlsSocket)
+	 const shared_ptr <TLSSession>& tlsSession, const shared_ptr <TLSSocket>& tlsSocket)
 	: m_host(host), m_port(port),
 	  m_tlsSession(tlsSession), m_tlsSocket(tlsSocket)
 {

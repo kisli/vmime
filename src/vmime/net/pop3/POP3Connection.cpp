@@ -63,7 +63,7 @@ namespace pop3 {
 
 
 
-POP3Connection::POP3Connection(shared_ptr <POP3Store> store, shared_ptr <security::authenticator> auth)
+POP3Connection::POP3Connection(const shared_ptr <POP3Store>& store, const shared_ptr <security::authenticator>& auth)
 	: m_store(store), m_auth(auth), m_socket(null), m_timeoutHandler(null),
 	  m_authenticated(false), m_secured(false), m_capabilitiesFetched(false)
 {

@@ -57,7 +57,7 @@ defaultCertificateVerifier::defaultCertificateVerifier(const defaultCertificateV
 
 
 void defaultCertificateVerifier::verify
-	(shared_ptr <certificateChain> chain, const string& hostname)
+	(const shared_ptr <certificateChain>& chain, const string& hostname)
 {
 	if (chain->getCount() == 0)
 		return;
@@ -72,7 +72,7 @@ void defaultCertificateVerifier::verify
 
 
 void defaultCertificateVerifier::verifyX509
-	(shared_ptr <certificateChain> chain, const string& hostname)
+	(const shared_ptr <certificateChain>& chain, const string& hostname)
 {
 	// For every certificate in the chain, verify that the certificate
 	// has been issued by the next certificate in the chain

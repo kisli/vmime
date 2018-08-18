@@ -274,7 +274,7 @@ public:
 	  * @throw exceptions::net_exception if an error occurs
 	  */
 	virtual messageSet addMessage
-		(shared_ptr <vmime::message> msg,
+		(const shared_ptr <vmime::message>& msg,
 		 const int flags = -1,
 		 vmime::datetime* date = NULL,
 		 utility::progressListener* progress = NULL) = 0;
@@ -366,7 +366,7 @@ public:
 	  * @param attribs set of attributes to fetch
 	  * @throw exceptions::net_exception if an error occurs
 	  */
-	virtual void fetchMessage(shared_ptr <message> msg, const fetchAttributes& attribs) = 0;
+	virtual void fetchMessage(const shared_ptr <message>& msg, const fetchAttributes& attribs) = 0;
 
 	/** Get new references to messages in this folder, given either their
 	  * sequence numbers or UIDs, and fetch objects for them at the same time.
@@ -408,10 +408,10 @@ public:
 
 protected:
 
-	void notifyMessageChanged(shared_ptr <events::messageChangedEvent> event);
-	void notifyMessageCount(shared_ptr <events::messageCountEvent> event);
-	void notifyFolder(shared_ptr <events::folderEvent> event);
-	void notifyEvent(shared_ptr <events::event> event);
+	void notifyMessageChanged(const shared_ptr <events::messageChangedEvent>& event);
+	void notifyMessageCount(const shared_ptr <events::messageCountEvent>& event);
+	void notifyFolder(const shared_ptr <events::folderEvent>& event);
+	void notifyEvent(const shared_ptr <events::event>& event);
 
 private:
 

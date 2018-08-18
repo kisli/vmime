@@ -60,7 +60,7 @@ const char* messageCountEvent::EVENT_CLASS = "messageCountEvent";
 
 
 messageCountEvent::messageCountEvent
-	(shared_ptr <folder> folder, const Types type, const std::vector <size_t>& nums)
+	(const shared_ptr <folder>& folder, const Types type, const std::vector <size_t>& nums)
 		: m_folder(folder), m_type(type)
 {
 	m_nums.resize(nums.size());
@@ -96,7 +96,7 @@ const char* messageChangedEvent::EVENT_CLASS = "messageChangedEvent";
 
 
 messageChangedEvent::messageChangedEvent
-	(shared_ptr <folder> folder, const Types type, const std::vector <size_t>& nums)
+	(const shared_ptr <folder>& folder, const Types type, const std::vector <size_t>& nums)
 		: m_folder(folder), m_type(type)
 {
 	m_nums.resize(nums.size());
@@ -129,7 +129,7 @@ const char* folderEvent::EVENT_CLASS = "folderEvent";
 
 
 folderEvent::folderEvent
-	(shared_ptr <folder> folder, const Types type,
+	(const shared_ptr <folder>& folder, const Types type,
 	 const utility::path& oldPath, const utility::path& newPath)
 	: m_folder(folder), m_type(type), m_oldPath(oldPath), m_newPath(newPath)
 {

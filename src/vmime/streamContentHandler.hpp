@@ -58,7 +58,7 @@ public:
 	  * @return a reference to a new content handler
 	  */
 	streamContentHandler
-		(shared_ptr <utility::inputStream> is,
+		(const shared_ptr <utility::inputStream>& is,
 		 const size_t length,
 		 const vmime::encoding& enc = NO_ENCODING);
 
@@ -79,7 +79,7 @@ public:
 	  * from the stream is already encoded with the specified encoding
 	  */
 	void setData
-		(shared_ptr <utility::inputStream> is,
+		(const shared_ptr <utility::inputStream>& is,
 		 const size_t length,
 		 const vmime::encoding& enc = NO_ENCODING);
 

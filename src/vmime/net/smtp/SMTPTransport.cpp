@@ -51,7 +51,7 @@ namespace net {
 namespace smtp {
 
 
-SMTPTransport::SMTPTransport(shared_ptr <session> sess, shared_ptr <security::authenticator> auth, const bool secured)
+SMTPTransport::SMTPTransport(const shared_ptr <session>& sess, const shared_ptr <security::authenticator>& auth, const bool secured)
 	: transport(sess, getInfosInstance(), auth), m_isSMTPS(secured), m_needReset(false)
 {
 }
@@ -377,7 +377,7 @@ void SMTPTransport::send
 
 
 void SMTPTransport::send
-	(shared_ptr <vmime::message> msg, const mailbox& expeditor, const mailboxList& recipients,
+	(const shared_ptr <vmime::message>& msg, const mailbox& expeditor, const mailboxList& recipients,
 	 utility::progressListener* progress, const mailbox& sender)
 {
 	if (!isConnected())

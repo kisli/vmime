@@ -60,9 +60,9 @@ public:
 	const byteArray getSerialNumber() const;
 
 	const string getIssuerString() const;
-	bool checkIssuer(shared_ptr <const X509Certificate> issuer) const;
+	bool checkIssuer(const shared_ptr <const X509Certificate>& issuer) const;
 
-	bool verify(shared_ptr <const X509Certificate> caCert) const;
+	bool verify(const shared_ptr <const X509Certificate>& caCert) const;
 
 	bool verifyHostName
 		(const string& hostname,
@@ -81,7 +81,7 @@ public:
 	const byteArray getEncoded() const;
 	const string getType() const;
 	int getVersion() const;
-	bool equals(shared_ptr <const certificate> other) const;
+	bool equals(const shared_ptr <const certificate>& other) const;
 	void* getInternalData();
 
 private:

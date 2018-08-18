@@ -58,7 +58,7 @@ exception* certificateException::clone() const
 }
 
 
-void certificateException::setCertificate(shared_ptr <certificate> cert)
+void certificateException::setCertificate(const shared_ptr <certificate>& cert)
 {
 	m_cert = cert;
 }

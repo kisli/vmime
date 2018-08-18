@@ -47,7 +47,7 @@ IMAPMessageStructure::IMAPMessageStructure(const IMAPParser::body* body)
 }
 
 
-IMAPMessageStructure::IMAPMessageStructure(shared_ptr <IMAPMessagePart> parent, const std::vector <IMAPParser::body*>& list)
+IMAPMessageStructure::IMAPMessageStructure(const shared_ptr <IMAPMessagePart>& parent, const std::vector <IMAPParser::body*>& list)
 {
 	size_t number = 0;
 

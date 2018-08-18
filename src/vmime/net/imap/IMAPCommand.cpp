@@ -396,7 +396,7 @@ const string IMAPCommand::getTraceText() const
 }
 
 
-void IMAPCommand::send(shared_ptr <IMAPConnection> conn)
+void IMAPCommand::send(const shared_ptr <IMAPConnection>& conn)
 {
 	conn->sendCommand(dynamicCast <IMAPCommand>(shared_from_this()));
 }

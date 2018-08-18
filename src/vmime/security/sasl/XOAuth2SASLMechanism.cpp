@@ -42,7 +42,7 @@ namespace security {
 namespace sasl {
 
 
-XOAuth2SASLMechanism::XOAuth2SASLMechanism(shared_ptr <SASLContext> ctx, const string& /* name */)
+XOAuth2SASLMechanism::XOAuth2SASLMechanism(const shared_ptr <SASLContext>& ctx, const string& /* name */)
 	: m_context(ctx), m_complete(false)
 {
 }
@@ -60,7 +60,7 @@ const string XOAuth2SASLMechanism::getName() const
 
 
 bool XOAuth2SASLMechanism::step
-	(shared_ptr <SASLSession> sess,
+	(const shared_ptr <SASLSession>& sess,
 	 const byte_t* /* challenge */, const size_t /* challengeLen */,
 	 byte_t** response, size_t* responseLen)
 {
@@ -107,7 +107,7 @@ bool XOAuth2SASLMechanism::hasInitialResponse() const
 
 
 void XOAuth2SASLMechanism::encode
-	(shared_ptr <SASLSession> /* sess */,
+	(const shared_ptr <SASLSession>& /* sess */,
 	 const byte_t* input, const size_t inputLen,
 	 byte_t** output, size_t* outputLen)
 {
@@ -121,7 +121,7 @@ void XOAuth2SASLMechanism::encode
 
 
 void XOAuth2SASLMechanism::decode
-	(shared_ptr <SASLSession> /* sess */,
+	(const shared_ptr <SASLSession>& /* sess */,
 	 const byte_t* input, const size_t inputLen,
 	 byte_t** output, size_t* outputLen)
 {

@@ -77,7 +77,7 @@ public:
 	  * @throws exceptions::operation_timed_out if no data
 	  * has been received within the granted time
 	  */
-	static shared_ptr <POP3Response> readResponse(shared_ptr <POP3Connection> conn);
+	static shared_ptr <POP3Response> readResponse(const shared_ptr <POP3Connection>& conn);
 
 	/** Receive and parse a multiline POP3 response from
 	  * the specified connection.
@@ -87,7 +87,7 @@ public:
 	  * @throws exceptions::operation_timed_out if no data
 	  * has been received within the granted time
 	  */
-	static shared_ptr <POP3Response> readMultilineResponse(shared_ptr <POP3Connection> conn);
+	static shared_ptr <POP3Response> readMultilineResponse(const shared_ptr <POP3Connection>& conn);
 
 	/** Receive and parse a large POP3 response (eg. message data)
 	  * from the specified connection.
@@ -101,7 +101,7 @@ public:
 	  * has been received within the granted time
 	  */
 	static shared_ptr <POP3Response> readLargeResponse
-		(shared_ptr <POP3Connection> conn, utility::outputStream& os,
+		(const shared_ptr <POP3Connection>& conn, utility::outputStream& os,
 		 utility::progressListener* progress, const size_t predictedSize);
 
 
@@ -144,7 +144,7 @@ public:
 
 private:
 
-	POP3Response(shared_ptr <socket> sok, shared_ptr <timeoutHandler> toh, shared_ptr <tracer> tracer);
+	POP3Response(const shared_ptr <socket>& sok, const shared_ptr <timeoutHandler>& toh, const shared_ptr <tracer>& tracer);
 
 	void readResponseImpl(string& buffer, const bool multiLine);
 	size_t readResponseImpl

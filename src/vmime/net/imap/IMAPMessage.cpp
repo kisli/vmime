@@ -101,7 +101,7 @@ private:
 //
 
 
-IMAPMessage::IMAPMessage(shared_ptr <IMAPFolder> folder, const size_t num)
+IMAPMessage::IMAPMessage(const shared_ptr <IMAPFolder>& folder, const size_t num)
 	: m_folder(folder), m_num(num), m_size(-1U), m_flags(FLAG_UNDEFINED),
 	  m_expunged(false), m_modseq(0), m_structure(null)
 {
@@ -109,7 +109,7 @@ IMAPMessage::IMAPMessage(shared_ptr <IMAPFolder> folder, const size_t num)
 }
 
 
-IMAPMessage::IMAPMessage(shared_ptr <IMAPFolder> folder, const size_t num, const uid& uid)
+IMAPMessage::IMAPMessage(const shared_ptr <IMAPFolder>& folder, const size_t num, const uid& uid)
 	: m_folder(folder), m_num(num), m_size(-1), m_flags(FLAG_UNDEFINED),
 	  m_expunged(false), m_uid(uid), m_modseq(0), m_structure(null)
 {
@@ -225,7 +225,7 @@ void IMAPMessage::extract
 
 
 void IMAPMessage::extractPart
-	(shared_ptr <const messagePart> p,
+	(const shared_ptr <const messagePart>& p,
 	 utility::outputStream& os,
 	 utility::progressListener* progress,
 	 const size_t start, const size_t length,
@@ -241,7 +241,7 @@ void IMAPMessage::extractPart
 }
 
 
-void IMAPMessage::fetchPartHeader(shared_ptr <messagePart> p)
+void IMAPMessage::fetchPartHeader(const shared_ptr <messagePart>& p)
 {
 	shared_ptr <IMAPFolder> folder = m_folder.lock();
 
@@ -257,7 +257,7 @@ void IMAPMessage::fetchPartHeader(shared_ptr <messagePart> p)
 }
 
 
-void IMAPMessage::fetchPartHeaderForStructure(shared_ptr <messageStructure> str)
+void IMAPMessage::fetchPartHeaderForStructure(const shared_ptr <messageStructure>& str)
 {
 	for (size_t i = 0, n = str->getPartCount() ; i < n ; ++i)
 	{
@@ -273,7 +273,7 @@ void IMAPMessage::fetchPartHeaderForStructure(shared_ptr <messageStructure> str)
 
 
 size_t IMAPMessage::extractImpl
-	(shared_ptr <const messagePart> p,
+	(const shared_ptr <const messagePart>& p,
 	 utility::outputStream& os,
 	 utility::progressListener* progress,
 	 const size_t start, const size_t length,
@@ -611,7 +611,7 @@ void IMAPMessage::setFlags(const int flags, const int mode)
 
 
 void IMAPMessage::constructParsedMessage
-	(shared_ptr <bodyPart> parentPart, shared_ptr <messageStructure> str, int level)
+	(const shared_ptr <bodyPart>& parentPart, const shared_ptr <messageStructure>& str, int level)
 {
 	if (level == 0)
 	{

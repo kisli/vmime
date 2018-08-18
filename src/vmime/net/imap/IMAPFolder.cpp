@@ -52,7 +52,7 @@ namespace net {
 namespace imap {
 
 
-IMAPFolder::IMAPFolder(const folder::path& path, shared_ptr <IMAPStore> store, shared_ptr <folderAttributes> attribs)
+IMAPFolder::IMAPFolder(const folder::path& path, const shared_ptr <IMAPStore>& store, const shared_ptr <folderAttributes>& attribs)
 	: m_store(store), m_connection(store->connection()), m_path(path),
 	  m_name(path.isEmpty() ? folder::path::component("") : path.getLastComponent()), m_mode(-1),
 	  m_open(false), m_attribs(attribs)
@@ -837,7 +837,7 @@ void IMAPFolder::fetchMessages(std::vector <shared_ptr <message> >& msg, const f
 }
 
 
-void IMAPFolder::fetchMessage(shared_ptr <message> msg, const fetchAttributes& options)
+void IMAPFolder::fetchMessage(const shared_ptr <message>& msg, const fetchAttributes& options)
 {
 	std::vector <shared_ptr <message> > msgs;
 	msgs.push_back(msg);
@@ -1044,7 +1044,7 @@ void IMAPFolder::setMessageFlags(const messageSet& msgs, const int flags, const 
 
 
 messageSet IMAPFolder::addMessage
-	(shared_ptr <vmime::message> msg, const int flags,
+	(const shared_ptr <vmime::message>& msg, const int flags,
 	 vmime::datetime* date, utility::progressListener* progress)
 {
 	std::ostringstream oss;

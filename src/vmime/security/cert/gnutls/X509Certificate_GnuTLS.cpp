@@ -161,7 +161,7 @@ const byteArray X509Certificate_GnuTLS::getSerialNumber() const
 }
 
 
-bool X509Certificate_GnuTLS::checkIssuer(shared_ptr <const X509Certificate> issuer_) const
+bool X509Certificate_GnuTLS::checkIssuer(const shared_ptr <const X509Certificate>& issuer_) const
 {
 	shared_ptr <const X509Certificate_GnuTLS> issuer =
 		dynamicCast <const X509Certificate_GnuTLS>(issuer_);
@@ -171,7 +171,7 @@ bool X509Certificate_GnuTLS::checkIssuer(shared_ptr <const X509Certificate> issu
 }
 
 
-bool X509Certificate_GnuTLS::verify(shared_ptr <const X509Certificate> caCert_) const
+bool X509Certificate_GnuTLS::verify(const shared_ptr <const X509Certificate>& caCert_) const
 {
 	shared_ptr <const X509Certificate_GnuTLS> caCert =
 		dynamicCast <const X509Certificate_GnuTLS>(caCert_);
@@ -306,7 +306,7 @@ int X509Certificate_GnuTLS::getVersion() const
 }
 
 
-bool X509Certificate_GnuTLS::equals(shared_ptr <const certificate> other) const
+bool X509Certificate_GnuTLS::equals(const shared_ptr <const certificate>& other) const
 {
 	shared_ptr <const X509Certificate_GnuTLS> otherX509 =
 		dynamicCast <const X509Certificate_GnuTLS>(other);

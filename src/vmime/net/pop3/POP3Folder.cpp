@@ -45,7 +45,7 @@ namespace net {
 namespace pop3 {
 
 
-POP3Folder::POP3Folder(const folder::path& path, shared_ptr <POP3Store> store)
+POP3Folder::POP3Folder(const folder::path& path, const shared_ptr <POP3Store>& store)
 	: m_store(store), m_path(path),
 	  m_name(path.isEmpty() ? folder::path::component("") : path.getLastComponent()),
 	  m_mode(-1), m_open(false)
@@ -420,7 +420,7 @@ void POP3Folder::fetchMessages(std::vector <shared_ptr <message> >& msg, const f
 }
 
 
-void POP3Folder::fetchMessage(shared_ptr <message> msg, const fetchAttributes& options)
+void POP3Folder::fetchMessage(const shared_ptr <message>& msg, const fetchAttributes& options)
 {
 	shared_ptr <POP3Store> store = m_store.lock();
 
@@ -625,7 +625,7 @@ void POP3Folder::rename(const folder::path& /* newPath */)
 
 
 messageSet POP3Folder::addMessage
-	(shared_ptr <vmime::message> /* msg */, const int /* flags */,
+	(const shared_ptr <vmime::message>& /* msg */, const int /* flags */,
 	 vmime::datetime* /* date */, utility::progressListener* /* progress */)
 {
 	throw exceptions::operation_not_supported();

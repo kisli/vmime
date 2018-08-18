@@ -87,14 +87,14 @@ BIO_METHOD TLSSocket_OpenSSL::sm_customBIOMethod =
 
 
 // static
-shared_ptr <TLSSocket> TLSSocket::wrap(shared_ptr <TLSSession> session, shared_ptr <socket> sok)
+shared_ptr <TLSSocket> TLSSocket::wrap(const shared_ptr <TLSSession>& session, const shared_ptr <socket>& sok)
 {
 	return make_shared <TLSSocket_OpenSSL>
 		(dynamicCast <TLSSession_OpenSSL>(session), sok);
 }
 
 
-TLSSocket_OpenSSL::TLSSocket_OpenSSL(shared_ptr <TLSSession_OpenSSL> session, shared_ptr <socket> sok)
+TLSSocket_OpenSSL::TLSSocket_OpenSSL(const shared_ptr <TLSSession_OpenSSL>& session, const shared_ptr <socket>& sok)
 	: m_session(session), m_wrapped(sok), m_connected(false), m_ssl(0), m_status(0), m_ex()
 {
 }
@@ -242,7 +242,7 @@ shared_ptr <timeoutHandler> TLSSocket_OpenSSL::getTimeoutHandler()
 }
 
 
-void TLSSocket_OpenSSL::setTracer(shared_ptr <net::tracer> tracer)
+void TLSSocket_OpenSSL::setTracer(const shared_ptr <net::tracer>& tracer)
 {
 	m_wrapped->setTracer(tracer);
 }

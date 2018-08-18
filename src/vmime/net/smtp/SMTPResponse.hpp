@@ -105,8 +105,8 @@ public:
 	  * has been received within the granted time
 	  */
 	static shared_ptr <SMTPResponse> readResponse
-		(shared_ptr <tracer> tr, shared_ptr <socket> sok,
-		 shared_ptr <timeoutHandler> toh, const state& st);
+		(const shared_ptr <tracer>& tr, const shared_ptr <socket>& sok,
+		 const shared_ptr <timeoutHandler>& toh, const state& st);
 
 	/** Return the SMTP response code.
 	  *
@@ -154,7 +154,7 @@ public:
 
 private:
 
-	SMTPResponse(shared_ptr <tracer> tr, shared_ptr <socket> sok, shared_ptr <timeoutHandler> toh, const state& st);
+	SMTPResponse(const shared_ptr <tracer>& tr, const shared_ptr <socket>& sok, const shared_ptr <timeoutHandler>& toh, const state& st);
 	SMTPResponse(const SMTPResponse&);
 
 	void readResponse();

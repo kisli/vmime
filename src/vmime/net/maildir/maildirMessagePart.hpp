@@ -46,7 +46,7 @@ class maildirMessagePart : public messagePart
 {
 public:
 
-	maildirMessagePart(shared_ptr <maildirMessagePart> parent, const size_t number, const bodyPart& part);
+	maildirMessagePart(const shared_ptr <maildirMessagePart>& parent, const size_t number, const bodyPart& part);
 	~maildirMessagePart();
 
 

@@ -38,7 +38,7 @@ bodyPart::bodyPart()
 
 
 void bodyPart::parseImpl
-	(const parsingContext& ctx, shared_ptr <utility::parserInputStreamAdapter> parser,
+	(const parsingContext& ctx, const shared_ptr <utility::parserInputStreamAdapter>& parser,
 	 const size_t position, const size_t end, size_t* newPosition)
 {
 	// Parse the headers
@@ -117,7 +117,7 @@ shared_ptr <header> bodyPart::getHeader()
 }
 
 
-void bodyPart::setHeader(shared_ptr <header> h)
+void bodyPart::setHeader(const shared_ptr <header>& h)
 {
 	m_header = h;
 }
@@ -135,7 +135,7 @@ shared_ptr <body> bodyPart::getBody()
 }
 
 
-void bodyPart::setBody(shared_ptr <body> b)
+void bodyPart::setBody(const shared_ptr <body>& b)
 {
 	bodyPart* oldPart = b->m_part;
 
@@ -169,7 +169,7 @@ shared_ptr <bodyPart> bodyPart::createChildPart()
 }
 
 
-void bodyPart::importChildPart(shared_ptr <bodyPart> part)
+void bodyPart::importChildPart(const shared_ptr <bodyPart>& part)
 {
 	part->m_parent = this;
 }

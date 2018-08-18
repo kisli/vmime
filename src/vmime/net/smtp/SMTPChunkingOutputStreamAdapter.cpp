@@ -41,7 +41,7 @@ namespace smtp {
 
 
 SMTPChunkingOutputStreamAdapter::SMTPChunkingOutputStreamAdapter
-	(shared_ptr <SMTPConnection> conn, const size_t size, utility::progressListener* progress)
+	(const shared_ptr <SMTPConnection>& conn, const size_t size, utility::progressListener* progress)
 	: m_connection(conn), m_bufferSize(0), m_chunkCount(0),
 	  m_totalSize(size), m_totalSent(0), m_progress(progress)
 {

@@ -130,7 +130,7 @@ public:
 	  *
 	  * @param dir directory to delete
 	  */
-	static void recursiveFSDelete(shared_ptr <utility::file> dir);
+	static void recursiveFSDelete(const shared_ptr <utility::file>& dir);
 
 	/** Returns a list of message numbers given a message set.
 	  *

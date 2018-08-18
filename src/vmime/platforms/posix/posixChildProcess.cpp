@@ -245,7 +245,7 @@ posixChildProcess::~posixChildProcess()
 // Original authors: Dan Winship <danw@ximian.com>
 // Copyright 2000 Ximian, Inc. (www.ximian.com)
 
-void posixChildProcess::start(const std::vector <string> args, const int flags)
+void posixChildProcess::start(const std::vector <string>& args, const int flags)
 {
 	if (m_started)
 		return;

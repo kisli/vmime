@@ -43,7 +43,7 @@ namespace imap {
 
 
 IMAPMessagePartContentHandler::IMAPMessagePartContentHandler
-	(shared_ptr <IMAPMessage> msg, shared_ptr <messagePart> part, const vmime::encoding& encoding)
+	(const shared_ptr <IMAPMessage>& msg, const shared_ptr <messagePart>& part, const vmime::encoding& encoding)
 	: m_message(msg), m_part(part), m_encoding(encoding)
 {
 }

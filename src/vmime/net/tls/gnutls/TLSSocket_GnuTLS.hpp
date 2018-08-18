@@ -50,7 +50,7 @@ class TLSSocket_GnuTLS : public TLSSocket
 {
 public:
 
-	TLSSocket_GnuTLS(shared_ptr <TLSSession_GnuTLS> session, shared_ptr <socket> sok);
+	TLSSocket_GnuTLS(const shared_ptr <TLSSession_GnuTLS>& session, const shared_ptr <socket>& sok);
 	~TLSSocket_GnuTLS();
 
 
@@ -83,7 +83,7 @@ public:
 
 	shared_ptr <timeoutHandler> getTimeoutHandler();
 
-	void setTracer(shared_ptr <net::tracer> tracer);
+	void setTracer(const shared_ptr <net::tracer>& tracer);
 	shared_ptr <net::tracer> getTracer();
 
 private:

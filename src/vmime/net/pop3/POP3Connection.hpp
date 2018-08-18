@@ -65,7 +65,7 @@ class VMIME_EXPORT POP3Connection : public object, public enable_shared_from_thi
 {
 public:
 
-	POP3Connection(shared_ptr <POP3Store> store, shared_ptr <security::authenticator> auth);
+	POP3Connection(const shared_ptr <POP3Store>& store, const shared_ptr <security::authenticator>& auth);
 	virtual ~POP3Connection();
 
 

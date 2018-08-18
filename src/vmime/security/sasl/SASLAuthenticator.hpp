@@ -66,13 +66,13 @@ public:
 	  */
 	virtual const std::vector <shared_ptr <SASLMechanism> > getAcceptableMechanisms
 		(const std::vector <shared_ptr <SASLMechanism> >& available,
-	         shared_ptr <SASLMechanism> suggested) const = 0;
+	         const shared_ptr <SASLMechanism>& suggested) const = 0;
 
 	/** Set the SASL session which is using this authenticator.
 	  *
 	  * @param sess SASL session
 	  */
-	virtual void setSASLSession(shared_ptr <SASLSession> sess) = 0;
+	virtual void setSASLSession(const shared_ptr <SASLSession>& sess) = 0;
 
 	/** Set the SASL mechanism which has been selected for the
 	  * SASL authentication process. This may be called several times
@@ -81,7 +81,7 @@ public:
 	  *
 	  * @param mech SASL mechanism
 	  */
-	virtual void setSASLMechanism(shared_ptr <SASLMechanism> mech) = 0;
+	virtual void setSASLMechanism(const shared_ptr <SASLMechanism>& mech) = 0;
 };
 
 

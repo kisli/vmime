@@ -7,7 +7,7 @@ class interactiveCertificateVerifier : public vmime::security::cert::defaultCert
 {
 public:
 
-	void verify(vmime::shared_ptr <vmime::security::cert::certificateChain> chain, const vmime::string& hostname)
+	void verify(const vmime::shared_ptr <vmime::security::cert::certificateChain>& chain, const vmime::string& hostname)
 	{
 		try
 		{

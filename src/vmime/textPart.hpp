@@ -79,7 +79,7 @@ public:
 	  *
 	  * @param text text of the part
 	  */
-	virtual void setText(shared_ptr <contentHandler> text) = 0;
+	virtual void setText(const shared_ptr <contentHandler>& text) = 0;
 
 	/** Return the actual body parts this text part is composed of.
 	  * For example, HTML parts are composed of two parts: one "text/html"
@@ -94,7 +94,7 @@ public:
 	  * @param message the message
 	  * @param parent body part into which generate this part
 	  */
-	virtual void generateIn(shared_ptr <bodyPart> message, shared_ptr <bodyPart> parent) const = 0;
+	virtual void generateIn(const shared_ptr <bodyPart>& message, const shared_ptr <bodyPart>& parent) const = 0;
 
 	/** Parse the text part(s) from the specified message.
 	  *
@@ -102,7 +102,7 @@ public:
 	  * @param parent part containing the text part
 	  * @param textPart actual text part
 	  */
-	virtual void parse(shared_ptr <const bodyPart> message, shared_ptr <const bodyPart> parent, shared_ptr <const bodyPart> textPart) = 0;
+	virtual void parse(const shared_ptr <const bodyPart>& message, const shared_ptr <const bodyPart>& parent, const shared_ptr <const bodyPart>& textPart) = 0;
 };
 
 

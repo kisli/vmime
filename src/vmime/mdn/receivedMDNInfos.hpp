@@ -44,7 +44,7 @@ class VMIME_EXPORT receivedMDNInfos : public MDNInfos
 {
 public:
 
-	receivedMDNInfos(const shared_ptr <const message> msg);
+	receivedMDNInfos(const shared_ptr <const message>& msg);
 	receivedMDNInfos(const receivedMDNInfos& other);
 
 	receivedMDNInfos& operator=(const receivedMDNInfos& other);

@@ -47,14 +47,14 @@ component::~component()
 
 
 void component::parse
-	(shared_ptr <utility::inputStream> inputStream, const size_t length)
+	(const shared_ptr <utility::inputStream>& inputStream, const size_t length)
 {
 	parse(inputStream, 0, length, NULL);
 }
 
 
 void component::parse
-	(shared_ptr <utility::inputStream> inputStream, const size_t position,
+	(const shared_ptr <utility::inputStream>& inputStream, const size_t position,
 	 const size_t end, size_t* newPosition)
 {
 	parse(parsingContext::getDefaultContext(), inputStream, position, end, newPosition);
@@ -63,7 +63,7 @@ void component::parse
 
 void component::parse
 	(const parsingContext& ctx,
-	 shared_ptr <utility::inputStream> inputStream, const size_t position,
+	 const shared_ptr <utility::inputStream>& inputStream, const size_t position,
 	 const size_t end, size_t* newPosition)
 {
 	m_parsedOffset = m_parsedLength = 0;
@@ -144,7 +144,7 @@ void component::offsetParsedBounds(const size_t offset)
 
 
 void component::parseImpl
-	(const parsingContext& ctx, shared_ptr <utility::parserInputStreamAdapter> parser,
+	(const parsingContext& ctx, const shared_ptr <utility::parserInputStreamAdapter>& parser,
 	 const size_t position, const size_t end, size_t* newPosition)
 {
 	// This is the default implementation for parsing from an input stream:

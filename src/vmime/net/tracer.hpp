@@ -96,7 +96,7 @@ public:
 	  * different connections used by a service
 	  * @return a new tracer
 	  */
-	virtual shared_ptr <tracer> create(shared_ptr <service> serv, const int connectionId) = 0;
+	virtual shared_ptr <tracer> create(const shared_ptr <service>& serv, const int connectionId) = 0;
 };
 
 

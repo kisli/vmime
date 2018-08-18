@@ -273,7 +273,7 @@ public:
 	  *
 	  * @param tag IMAP command tag
 	  */
-	void setTag(shared_ptr <IMAPTag> tag)
+	void setTag(const shared_ptr <IMAPTag>& tag)
 	{
 		m_tag = tag;
 	}
@@ -292,7 +292,7 @@ public:
 	  *
 	  * @param sok socket
 	  */
-	void setSocket(shared_ptr <socket> sok)
+	void setSocket(const shared_ptr <socket>& sok)
 	{
 		m_socket = sok;
 	}
@@ -301,7 +301,7 @@ public:
 	  *
 	  * @param toh timeout handler
 	  */
-	void setTimeoutHandler(shared_ptr <timeoutHandler> toh)
+	void setTimeoutHandler(const shared_ptr <timeoutHandler>& toh)
 	{
 		m_timeoutHandler = toh;
 	}
@@ -310,7 +310,7 @@ public:
 	  *
 	  * @param tr tracer
 	  */
-	void setTracer(shared_ptr <tracer> tr)
+	void setTracer(const shared_ptr <tracer>& tr)
 	{
 		m_tracer = tr;
 	}

@@ -155,19 +155,19 @@ const string text::getConvertedText(const charset& dest, const charsetConverterO
 }
 
 
-void text::appendWord(shared_ptr <word> w)
+void text::appendWord(const shared_ptr <word>& w)
 {
 	m_words.push_back(w);
 }
 
 
-void text::insertWordBefore(const size_t pos, shared_ptr <word> w)
+void text::insertWordBefore(const size_t pos, const shared_ptr <word>& w)
 {
 	m_words.insert(m_words.begin() + pos, w);
 }
 
 
-void text::insertWordAfter(const size_t pos, shared_ptr <word> w)
+void text::insertWordAfter(const size_t pos, const shared_ptr <word>& w)
 {
 	m_words.insert(m_words.begin() + pos + 1, w);
 }

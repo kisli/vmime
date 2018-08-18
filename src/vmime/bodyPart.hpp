@@ -63,7 +63,7 @@ public:
 	  *
 	  * @param header the new header of this part
 	  */
-	void setHeader(shared_ptr <header> header);
+	void setHeader(const shared_ptr <header>& header);
 
 	/** Return the body section of this part.
 	  *
@@ -81,7 +81,7 @@ public:
 	  *
 	  * @param body new body section
 	  */
-	void setBody(shared_ptr <body> body);
+	void setBody(const shared_ptr <body>& body);
 
 	/** Return the parent part of this part.
 	  *
@@ -131,12 +131,12 @@ protected:
 	  *
 	  * @param part child part to attach
 	  */
-	void importChildPart(shared_ptr <bodyPart> part);
+	void importChildPart(const shared_ptr <bodyPart>& part);
 
 	// Component parsing & assembling
 	void parseImpl
 		(const parsingContext& ctx,
-		 shared_ptr <utility::parserInputStreamAdapter> parser,
+		 const shared_ptr <utility::parserInputStreamAdapter>& parser,
 		 const size_t position,
 		 const size_t end,
 		 size_t* newPosition = NULL);

@@ -60,7 +60,7 @@ public:
 	  *
 	  * @param part part to append
 	  */
-	void appendPart(shared_ptr <bodyPart> part);
+	void appendPart(const shared_ptr <bodyPart>& part);
 
 	/** Insert a new part before the specified part.
 	  *
@@ -68,7 +68,7 @@ public:
 	  * @param part part to insert
 	  * @throw exceptions::no_such_part if the part is not in the list
 	  */
-	void insertPartBefore(shared_ptr <bodyPart> beforePart, shared_ptr <bodyPart> part);
+	void insertPartBefore(const shared_ptr <bodyPart>& beforePart, const shared_ptr <bodyPart>& part);
 
 	/** Insert a new part before the specified position.
 	  *
@@ -76,7 +76,7 @@ public:
 	  * the beginning of the list)
 	  * @param part part to insert
 	  */
-	void insertPartBefore(const size_t pos, shared_ptr <bodyPart> part);
+	void insertPartBefore(const size_t pos, const shared_ptr <bodyPart>& part);
 
 	/** Insert a new part after the specified part.
 	  *
@@ -84,21 +84,21 @@ public:
 	  * @param part part to insert
 	  * @throw exceptions::no_such_part if the part is not in the list
 	  */
-	void insertPartAfter(shared_ptr <bodyPart> afterPart, shared_ptr <bodyPart> part);
+	void insertPartAfter(const shared_ptr <bodyPart>& afterPart, const shared_ptr <bodyPart>& part);
 
 	/** Insert a new part after the specified position.
 	  *
 	  * @param pos position of the part before the new part
 	  * @param part part to insert
 	  */
-	void insertPartAfter(const size_t pos, shared_ptr <bodyPart> part);
+	void insertPartAfter(const size_t pos, const shared_ptr <bodyPart>& part);
 
 	/** Remove the specified part from the list.
 	  *
 	  * @param part part to remove
 	  * @throw exceptions::no_such_part if the part is not in the list
 	  */
-	void removePart(shared_ptr <bodyPart> part);
+	void removePart(const shared_ptr <bodyPart>& part);
 
 	/** Remove the part at the specified position.
 	  *
@@ -182,14 +182,14 @@ public:
 	  *
 	  * @param contents new body contents
 	  */
-	void setContents(shared_ptr <const contentHandler> contents);
+	void setContents(const shared_ptr <const contentHandler>& contents);
 
 	/** Set the body contents and type.
 	  *
 	  * @param contents new body contents
 	  * @param type type of contents
 	  */
-	void setContents(shared_ptr <const contentHandler> contents, const mediaType& type);
+	void setContents(const shared_ptr <const contentHandler>& contents, const mediaType& type);
 
 	/** Set the body contents, type and charset.
 	  *
@@ -197,7 +197,7 @@ public:
 	  * @param type type of contents
 	  * @param chset charset of contents
 	  */
-	void setContents(shared_ptr <const contentHandler> contents, const mediaType& type, const charset& chset);
+	void setContents(const shared_ptr <const contentHandler>& contents, const mediaType& type, const charset& chset);
 
 	/** Set the body contents, type, charset and encoding.
 	  *
@@ -206,7 +206,7 @@ public:
 	  * @param chset charset of contents
 	  * @param enc contents encoding
 	  */
-	void setContents(shared_ptr <const contentHandler> contents, const mediaType& type,
+	void setContents(const shared_ptr <const contentHandler>& contents, const mediaType& type,
 		const charset& chset, const encoding& enc);
 
 	/** Set the MIME type and charset of contents.
@@ -301,7 +301,7 @@ private:
 
 	bool isRootPart() const;
 
-	void initNewPart(shared_ptr <bodyPart> part);
+	void initNewPart(const shared_ptr <bodyPart>& part);
 
 protected:
 
@@ -318,14 +318,14 @@ protected:
 	  * @return the position of the boundary string, or npos if not found
 	  */
 	size_t findNextBoundaryPosition
-		(shared_ptr <utility::parserInputStreamAdapter> parser, const string& boundary,
+		(const shared_ptr <utility::parserInputStreamAdapter>& parser, const string& boundary,
 		 const size_t position, const size_t end,
 		 size_t* boundaryStart, size_t* boundaryEnd);
 
 	// Component parsing & assembling
 	void parseImpl
 		(const parsingContext& ctx,
-		 shared_ptr <utility::parserInputStreamAdapter> parser,
+		 const shared_ptr <utility::parserInputStreamAdapter>& parser,
 		 const size_t position,
 		 const size_t end,
 		 size_t* newPosition = NULL);

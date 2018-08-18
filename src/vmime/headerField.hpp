@@ -118,7 +118,7 @@ public:
 	  * valid for this header field
 	  * @param value new value
 	  */
-	virtual void setValue(shared_ptr <headerFieldValue> value);
+	virtual void setValue(const shared_ptr <headerFieldValue>& value);
 
 	/** Set the value of this field by cloning the specified value.
 	  *
@@ -126,7 +126,7 @@ public:
 	  * valid for this header field
 	  * @param value new value
 	  */
-	virtual void setValueConst(shared_ptr <const headerFieldValue> value);
+	virtual void setValueConst(const shared_ptr <const headerFieldValue>& value);
 
 	/** Set the value of this field (reference version).
 	  * The value will be cloned.

@@ -68,7 +68,7 @@ public:
 	  */
 	shared_ptr <SASLSession> createSession
 		(const string& serviceName,
-		 shared_ptr <authenticator> auth, shared_ptr <SASLMechanism> mech);
+		 const shared_ptr <authenticator>& auth, const shared_ptr <SASLMechanism>& mech);
 
 	/** Create an instance of an SASL mechanism.
 	  *

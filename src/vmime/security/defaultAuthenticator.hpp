@@ -55,7 +55,7 @@ public:
 	const string getServiceName() const;
 	const string getAccessToken() const;
 
-	void setService(shared_ptr <net::service> serv);
+	void setService(const shared_ptr <net::service>& serv);
 	weak_ptr <net::service> getService() const;
 
 private:

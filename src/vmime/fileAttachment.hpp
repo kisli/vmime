@@ -52,9 +52,9 @@ public:
 	fileAttachment(const string& filepath, const mediaType& type, const text& desc);
 	fileAttachment(const string& filepath, const mediaType& type, const text& desc, const encoding& enc);
 
-	fileAttachment(shared_ptr <contentHandler> cts, const word& filename, const mediaType& type);
-	fileAttachment(shared_ptr <contentHandler> cts, const word& filename, const mediaType& type, const text& desc);
-	fileAttachment(shared_ptr <contentHandler> cts, const word& filename, const mediaType& type, const text& desc, const encoding& enc);
+	fileAttachment(const shared_ptr <contentHandler>& cts, const word& filename, const mediaType& type);
+	fileAttachment(const shared_ptr <contentHandler>& cts, const word& filename, const mediaType& type, const text& desc);
+	fileAttachment(const shared_ptr <contentHandler>& cts, const word& filename, const mediaType& type, const text& desc, const encoding& enc);
 
 	/** Stores information about a file attachment.
 	  */
@@ -181,11 +181,11 @@ public:
 private:
 
 	void setData(const string& filepath);
-	void setData(shared_ptr <contentHandler> cts);
+	void setData(const shared_ptr <contentHandler>& cts);
 
 	fileInfo m_fileInfo;
 
-	void generatePart(shared_ptr <bodyPart> part) const;
+	void generatePart(const shared_ptr <bodyPart>& part) const;
 };
 
 

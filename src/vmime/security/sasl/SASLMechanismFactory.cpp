@@ -69,7 +69,7 @@ SASLMechanismFactory* SASLMechanismFactory::getInstance()
 
 
 shared_ptr <SASLMechanism> SASLMechanismFactory::create
-	(shared_ptr <SASLContext> ctx, const string& name_)
+	(const shared_ptr <SASLContext>& ctx, const string& name_)
 {
 	const string name(utility::stringUtils::toUpper(name_));
 

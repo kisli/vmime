@@ -192,7 +192,7 @@ namespace vmime
 	  * This is an alias for dynamic_pointer_cast <T>(obj->clone()).
 	  */
 	template <class T>
-	shared_ptr <T> clone(shared_ptr <T> obj)
+	shared_ptr <T> clone(const shared_ptr <T>& obj)
 	{
 		return dynamic_pointer_cast <T>(obj->clone());
 	}
@@ -201,7 +201,7 @@ namespace vmime
 	  * This is an alias for dynamic_pointer_cast <T>(obj->clone()).
 	  */
 	template <class T>
-	shared_ptr <T> clone(shared_ptr <const T> obj)
+	shared_ptr <T> clone(const shared_ptr <const T>& obj)
 	{
 		return dynamic_pointer_cast <T>(obj->clone());
 	}
@@ -220,7 +220,7 @@ namespace vmime
 	  * type Type, and DerivedType is derived from Type.
 	  */
 	template <class X, class Y>
-	shared_ptr <X> dynamicCast(shared_ptr <Y> obj)
+	shared_ptr <X> dynamicCast(const shared_ptr <Y>& obj)
 	{
 		return dynamic_pointer_cast <X, Y>(obj);
 	}

@@ -64,7 +64,7 @@ public:
 	  *
 	  * @param w word to append
 	  */
-	void appendWord(shared_ptr <word> w);
+	void appendWord(const shared_ptr <word>& w);
 
 	/** Insert a new word before the specified position.
 	  *
@@ -72,14 +72,14 @@ public:
 	  * the beginning of the list)
 	  * @param w word to insert
 	  */
-	void insertWordBefore(const size_t pos, shared_ptr <word> w);
+	void insertWordBefore(const size_t pos, const shared_ptr <word>& w);
 
 	/** Insert a new word after the specified position.
 	  *
 	  * @param pos position of the word before the new word
 	  * @param w word to insert
 	  */
-	void insertWordAfter(const size_t pos, shared_ptr <word> w);
+	void insertWordAfter(const size_t pos, const shared_ptr <word>& w);
 
 	/** Remove the word at the specified position.
 	  *

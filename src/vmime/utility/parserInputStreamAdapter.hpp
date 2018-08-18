@@ -43,7 +43,7 @@ public:
 
 	/** @param stream input stream to wrap
 	  */
-	parserInputStreamAdapter(shared_ptr <seekableInputStream> stream);
+	parserInputStreamAdapter(const shared_ptr <seekableInputStream>& stream);
 
 	shared_ptr <seekableInputStream> getUnderlyingStream();
 

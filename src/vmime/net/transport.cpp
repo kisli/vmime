@@ -43,13 +43,13 @@ namespace vmime {
 namespace net {
 
 
-transport::transport(shared_ptr <session> sess, const serviceInfos& infos, shared_ptr <security::authenticator> auth)
+transport::transport(const shared_ptr <session>& sess, const serviceInfos& infos, const shared_ptr <security::authenticator>& auth)
 	: service(sess, infos, auth)
 {
 }
 
 
-shared_ptr <headerField> transport::processHeaderField(shared_ptr <headerField> field)
+shared_ptr <headerField> transport::processHeaderField(const shared_ptr <headerField>& field)
 {
 	if (utility::stringUtils::isStringEqualNoCase(field->getName(), fields::BCC))
 	{
@@ -77,7 +77,7 @@ shared_ptr <headerField> transport::processHeaderField(shared_ptr <headerField> 
 }
 
 
-void transport::processHeader(shared_ptr <header> header)
+void transport::processHeader(const shared_ptr <header>& header)
 {
 	if (header->getFieldCount() == 0)
 		return;
@@ -122,7 +122,7 @@ static void extractMailboxes
 }
 
 
-void transport::send(shared_ptr <vmime::message> msg, utility::progressListener* progress)
+void transport::send(const shared_ptr <vmime::message>& msg, utility::progressListener* progress)
 {
 	// Extract expeditor
 	shared_ptr <mailbox> fromMbox =
@@ -179,8 +179,8 @@ void transport::send(shared_ptr <vmime::message> msg, utility::progressListener*
 	// Revert it back to original header after.
 	struct XChangeMsgHeader
 	{
-		XChangeMsgHeader(shared_ptr <vmime::message> _msg,
-		                 shared_ptr <vmime::header> _hdr)
+		XChangeMsgHeader(const shared_ptr <vmime::message>& _msg,
+		                 const shared_ptr <vmime::header>& _hdr)
 			: msg(_msg), hdr(msg->getHeader())
 		{
 			// Set new header
@@ -204,7 +204,7 @@ void transport::send(shared_ptr <vmime::message> msg, utility::progressListener*
 
 
 void transport::send
-	(shared_ptr <vmime::message> msg, const mailbox& expeditor, const mailboxList& recipients,
+	(const shared_ptr <vmime::message>& msg, const mailbox& expeditor, const mailboxList& recipients,
 	 utility::progressListener* progress, const mailbox& sender)
 {
 	// Generate the message, "stream" it and delegate the sending

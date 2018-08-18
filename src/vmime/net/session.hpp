@@ -85,7 +85,7 @@ public:
 	  * protocol or is not a transport protocol
 	  */
 	shared_ptr <transport> getTransport
-		(shared_ptr <security::authenticator> auth = null);
+		(const shared_ptr <security::authenticator>& auth = null);
 
 	/** Return a transport service instance for the specified protocol.
 	  *
@@ -98,7 +98,7 @@ public:
 	  */
 	shared_ptr <transport> getTransport
 		(const string& protocol,
-		 shared_ptr <security::authenticator> auth = null);
+		 const shared_ptr <security::authenticator>& auth = null);
 
 	/** Return a transport service instance for the specified URL.
 	  *
@@ -111,7 +111,7 @@ public:
 	  */
 	shared_ptr <transport> getTransport
 		(const utility::url& url,
-		 shared_ptr <security::authenticator> auth = null);
+		 const shared_ptr <security::authenticator>& auth = null);
 
 	/** Return a transport service instance for the protocol specified
 	  * in the session properties.
@@ -124,7 +124,7 @@ public:
 	  * @return a new store service, or NULL if no service is registered for this
 	  * protocol or is not a store protocol
 	  */
-	shared_ptr <store> getStore(shared_ptr <security::authenticator> auth = null);
+	shared_ptr <store> getStore(const shared_ptr <security::authenticator>& auth = null);
 
 	/** Return a store service instance for the specified protocol.
 	  *
@@ -137,7 +137,7 @@ public:
 	  */
 	shared_ptr <store> getStore
 		(const string& protocol,
-		 shared_ptr <security::authenticator> auth = null);
+		 const shared_ptr <security::authenticator>& auth = null);
 
 	/** Return a store service instance for the specified URL.
 	  *
@@ -150,7 +150,7 @@ public:
 	  */
 	shared_ptr <store> getStore
 		(const utility::url& url,
-		 shared_ptr <security::authenticator> auth = null);
+		 const shared_ptr <security::authenticator>& auth = null);
 
 	/** Properties for the session and for the services.
 	  */
@@ -166,7 +166,7 @@ public:
 	  *
 	  * @param tlsProps SSL/TLS properties
 	  */
-	void setTLSProperties(shared_ptr <tls::TLSProperties> tlsProps);
+	void setTLSProperties(const shared_ptr <tls::TLSProperties>& tlsProps);
 
 	/** Get properties for SSL/TLS secured connections in this session.
 	  *

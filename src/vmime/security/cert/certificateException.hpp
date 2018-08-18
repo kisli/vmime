@@ -65,7 +65,7 @@ public:
 	  *
 	  * @param cert certificate
 	  */
-	void setCertificate(shared_ptr <certificate> cert);
+	void setCertificate(const shared_ptr <certificate>& cert);
 
 	/** Returns the certificate on which the problem occured.
 	  *

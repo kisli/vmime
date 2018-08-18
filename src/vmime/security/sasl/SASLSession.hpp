@@ -66,8 +66,8 @@ public:
 	  * @param mech SASL mechanism
 	  */
 	static shared_ptr <SASLSession> create
-		(const string& serviceName, shared_ptr <SASLContext> ctx,
-	     shared_ptr <authenticator> auth, shared_ptr <SASLMechanism> mech);
+		(const string& serviceName, const shared_ptr <SASLContext>& ctx,
+	     const shared_ptr <authenticator>& auth, const shared_ptr <SASLMechanism>& mech);
 
 	/** Initialize this SASL session. This must be called before
 	  * calling any other method on this object (except accessors).
@@ -123,7 +123,7 @@ public:
 	  * @param sok socket to wrap
 	  * @return secured socket
 	  */
-	shared_ptr <net::socket> getSecuredSocket(shared_ptr <net::socket> sok);
+	shared_ptr <net::socket> getSecuredSocket(const shared_ptr <net::socket>& sok);
 
 	/** Return the name of the service which is using this
 	  * SASL session (eg. "imap"). This value should be returned
@@ -136,8 +136,8 @@ public:
 private:
 
 	SASLSession
-		(const string& serviceName, shared_ptr <SASLContext> ctx,
-	     shared_ptr <authenticator> auth, shared_ptr <SASLMechanism> mech);
+		(const string& serviceName, const shared_ptr <SASLContext>& ctx,
+	     const shared_ptr <authenticator>& auth, const shared_ptr <SASLMechanism>& mech);
 
 
 	const string m_serviceName;

@@ -134,13 +134,13 @@ static TLSGlobal g_gnutlsGlobal;
 
 
 // static
-shared_ptr <TLSSession> TLSSession::create(shared_ptr <security::cert::certificateVerifier> cv, shared_ptr <TLSProperties> props)
+shared_ptr <TLSSession> TLSSession::create(const shared_ptr <security::cert::certificateVerifier>& cv, const shared_ptr <TLSProperties>& props)
 {
 	return make_shared <TLSSession_GnuTLS>(cv, props);
 }
 
 
-TLSSession_GnuTLS::TLSSession_GnuTLS(shared_ptr <security::cert::certificateVerifier> cv, shared_ptr <TLSProperties> props)
+TLSSession_GnuTLS::TLSSession_GnuTLS(const shared_ptr <security::cert::certificateVerifier>& cv, const shared_ptr <TLSProperties>& props)
 	: m_certVerifier(cv), m_props(props)
 {
 	int res;
@@ -274,7 +274,7 @@ TLSSession_GnuTLS::~TLSSession_GnuTLS()
 }
 
 
-shared_ptr <TLSSocket> TLSSession_GnuTLS::getSocket(shared_ptr <socket> sok)
+shared_ptr <TLSSocket> TLSSession_GnuTLS::getSocket(const shared_ptr <socket>& sok)
 {
 	return TLSSocket::wrap(dynamicCast <TLSSession>(shared_from_this()), sok);
 }

@@ -135,13 +135,13 @@ void messageIdSequence::generateImpl
 }
 
 
-void messageIdSequence::appendMessageId(shared_ptr <messageId> mid)
+void messageIdSequence::appendMessageId(const shared_ptr <messageId>& mid)
 {
 	m_list.push_back(mid);
 }
 
 
-void messageIdSequence::insertMessageIdBefore(shared_ptr <messageId> beforeMid, shared_ptr <messageId> mid)
+void messageIdSequence::insertMessageIdBefore(const shared_ptr <messageId>& beforeMid, const shared_ptr <messageId>& mid)
 {
 	const std::vector <shared_ptr <messageId> >::iterator it = std::find
 		(m_list.begin(), m_list.end(), beforeMid);
@@ -153,13 +153,13 @@ void messageIdSequence::insertMessageIdBefore(shared_ptr <messageId> beforeMid, 
 }
 
 
-void messageIdSequence::insertMessageIdBefore(const size_t pos, shared_ptr <messageId> mid)
+void messageIdSequence::insertMessageIdBefore(const size_t pos, const shared_ptr <messageId>& mid)
 {
 	m_list.insert(m_list.begin() + pos, mid);
 }
 
 
-void messageIdSequence::insertMessageIdAfter(shared_ptr <messageId> afterMid, shared_ptr <messageId> mid)
+void messageIdSequence::insertMessageIdAfter(const shared_ptr <messageId>& afterMid, const shared_ptr <messageId>& mid)
 {
 	const std::vector <shared_ptr <messageId> >::iterator it = std::find
 		(m_list.begin(), m_list.end(), afterMid);
@@ -171,13 +171,13 @@ void messageIdSequence::insertMessageIdAfter(shared_ptr <messageId> afterMid, sh
 }
 
 
-void messageIdSequence::insertMessageIdAfter(const size_t pos, shared_ptr <messageId> mid)
+void messageIdSequence::insertMessageIdAfter(const size_t pos, const shared_ptr <messageId>& mid)
 {
 	m_list.insert(m_list.begin() + pos + 1, mid);
 }
 
 
-void messageIdSequence::removeMessageId(shared_ptr <messageId> mid)
+void messageIdSequence::removeMessageId(const shared_ptr <messageId>& mid)
 {
 	const std::vector <shared_ptr <messageId> >::iterator it = std::find
 		(m_list.begin(), m_list.end(), mid);

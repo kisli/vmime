@@ -321,7 +321,7 @@ public:
 	  * an exception if not supported.
 	  */
 	virtual void extractPart
-		(shared_ptr <const messagePart> p,
+		(const shared_ptr <const messagePart>& p,
 		 utility::outputStream& os,
 		 utility::progressListener* progress = NULL,
 		 const size_t start = 0,
@@ -332,7 +332,7 @@ public:
 	  *
 	  * @param p the part for which to fetch the header
 	  */
-	virtual void fetchPartHeader(shared_ptr <messagePart> p) = 0;
+	virtual void fetchPartHeader(const shared_ptr <messagePart>& p) = 0;
 
 	/** Get the RFC-822 message for this abstract message.
 	  * Warning: This may require getting some data (ie: structure and headers) from

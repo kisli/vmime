@@ -90,7 +90,7 @@ vmime::shared_ptr <vmime::net::timeoutHandler> testSocket::getTimeoutHandler()
 }
 
 
-void testSocket::setTracer(vmime::shared_ptr <vmime::net::tracer> /* tracer */)
+void testSocket::setTracer(const vmime::shared_ptr <vmime::net::tracer>& /* tracer */)
 {
 }
 

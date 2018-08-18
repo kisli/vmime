@@ -360,7 +360,7 @@ class mySASLAuthenticator : public vmime::security::sasl::defaultSASLAuthenticat
 
    const std::vector <vmime::shared_ptr <mechanism> > getAcceptableMechanisms
          (const std::vector <vmime::shared_ptr <mechanism> >& available,
-          vmime::shared_ptr <mechanism> suggested) const
+          const vmime::shared_ptr <mechanism>& suggested) const
    {
       // Here, you can sort the SASL mechanisms in the order they will be
       // tried. If no SASL mechanism is acceptable (ie. for example, not
@@ -372,7 +372,7 @@ class mySASLAuthenticator : public vmime::security::sasl::defaultSASLAuthenticat
          getAcceptableMechanisms(available, suggested);
    }
 
-   void setSASLMechanism(vmime::shared_ptr <mechanism> mech)
+   void setSASLMechanism(const vmime::shared_ptr <mechanism>& mech)
    {
       // This is called when the authentication process is going to
       // try the specified mechanism.
@@ -982,7 +982,7 @@ class myCertVerifier : public vmime::security::cert::certificateVerifier
 {
 public:
 
-   void verify(vmime::shared_ptr <certificateChain> certs)
+   void verify(const vmime::shared_ptr <certificateChain>& certs)
    {
       // Obtain the subject's certificate
       vmime::shared_ptr <vmime::security::cert::certificate> cert = chain->getAt(0);
@@ -1130,7 +1130,7 @@ class myTracerFactory : public vmime::net::tracerFactory
 public:
 
    vmime::shared_ptr <vmime::net::tracer> create
-      (vmime::shared_ptr <vmime::net::service> serv,
+      (const vmime::shared_ptr <vmime::net::service>& serv,
        const int connectionId)
    {
       return vmime::make_shared <myTracer>

@@ -42,8 +42,8 @@ public:
 	}
 
 	shared_ptr <service> create
-		(shared_ptr <session> sess,
-		 shared_ptr <security::authenticator> auth) const
+		(const shared_ptr <session>& sess,
+		 const shared_ptr <security::authenticator>& auth) const
 	{
 		return make_shared <S>(sess, auth);
 	}

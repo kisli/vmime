@@ -30,7 +30,7 @@ namespace vmime {
 namespace mdn {
 
 
-receivedMDNInfos::receivedMDNInfos(const shared_ptr <const message> msg)
+receivedMDNInfos::receivedMDNInfos(const shared_ptr <const message>& msg)
 	: m_msg(msg)
 {
 	extract();

@@ -45,7 +45,7 @@ public:
 	  * @param begin start position in source stream
 	  * @param length region length in source stream
 	  */
-	seekableInputStreamRegionAdapter(shared_ptr <seekableInputStream> stream,
+	seekableInputStreamRegionAdapter(const shared_ptr <seekableInputStream>& stream,
 		const size_t begin, const size_t length);
 
 	bool eof() const;

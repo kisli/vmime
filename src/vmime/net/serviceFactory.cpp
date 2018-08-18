@@ -57,8 +57,8 @@ shared_ptr <serviceFactory> serviceFactory::getInstance()
 
 
 shared_ptr <service> serviceFactory::create
-	(shared_ptr <session> sess, const string& protocol,
-	 shared_ptr <security::authenticator> auth)
+	(const shared_ptr <session>& sess, const string& protocol,
+	 const shared_ptr <security::authenticator>& auth)
 {
 	shared_ptr <const registeredService> rserv = getServiceByProtocol(protocol);
 
@@ -70,8 +70,8 @@ shared_ptr <service> serviceFactory::create
 
 
 shared_ptr <service> serviceFactory::create
-	(shared_ptr <session> sess, const utility::url& u,
-	 shared_ptr <security::authenticator> auth)
+	(const shared_ptr <session>& sess, const utility::url& u,
+	 const shared_ptr <security::authenticator>& auth)
 {
 	shared_ptr <service> serv = create(sess, u.getProtocol(), auth);
 
@@ -136,7 +136,7 @@ const std::vector <shared_ptr <const serviceFactory::registeredService> > servic
 }
 
 
-void serviceFactory::registerService(shared_ptr <registeredService> reg)
+void serviceFactory::registerService(const shared_ptr <registeredService>& reg)
 {
 	m_services.push_back(reg);
 }

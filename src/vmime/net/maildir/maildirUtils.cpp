@@ -175,7 +175,7 @@ const utility::file::path::component maildirUtils::generateId()
 }
 
 
-void maildirUtils::recursiveFSDelete(shared_ptr <utility::file> dir)
+void maildirUtils::recursiveFSDelete(const shared_ptr <utility::file>& dir)
 {
 	shared_ptr <utility::fileIterator> files = dir->getFiles();
 

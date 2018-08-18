@@ -245,7 +245,7 @@ const string POP3Command::getTraceText() const
 }
 
 
-void POP3Command::send(shared_ptr <POP3Connection> conn)
+void POP3Command::send(const shared_ptr <POP3Connection>& conn)
 {
 	conn->getSocket()->send(m_text + "\r\n");
 

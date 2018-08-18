@@ -52,7 +52,7 @@ namespace net {
 namespace maildir {
 
 
-maildirStore::maildirStore(shared_ptr <session> sess, shared_ptr <security::authenticator> auth)
+maildirStore::maildirStore(const shared_ptr <session>& sess, const shared_ptr <security::authenticator>& auth)
 	: store(sess, getInfosInstance(), auth), m_connected(false)
 {
 }

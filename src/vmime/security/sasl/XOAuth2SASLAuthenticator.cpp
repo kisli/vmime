@@ -53,7 +53,7 @@ XOAuth2SASLAuthenticator::~XOAuth2SASLAuthenticator()
 const std::vector <shared_ptr <SASLMechanism> >
 	XOAuth2SASLAuthenticator::getAcceptableMechanisms
 		(const std::vector <shared_ptr <SASLMechanism> >& available,
-		 shared_ptr <SASLMechanism> suggested) const
+		 const shared_ptr <SASLMechanism>& suggested) const
 {
 	if (m_mode == MODE_EXCLUSIVE)
 	{
@@ -74,6 +74,8 @@ const std::vector <shared_ptr <SASLMechanism> >
 	}
 	else
 	{
+		shared_ptr <SASLMechanism> newSuggested(suggested);
+
 		for (size_t i = available.size() ; i != 0 ; --i)
 		{
 			shared_ptr <SASLMechanism> mech = available[i - 1];
@@ -81,11 +83,11 @@ const std::vector <shared_ptr <SASLMechanism> >
 			if ("XOAUTH2" == mech->getName())
 			{
 				// Suggest using XOAuth2
-				suggested = mech;
+				newSuggested = mech;
 			}
 		}
 
-		return defaultSASLAuthenticator::getAcceptableMechanisms(available, suggested);
+		return defaultSASLAuthenticator::getAcceptableMechanisms(available, newSuggested);
 	}
 }
 

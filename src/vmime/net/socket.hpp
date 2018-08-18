@@ -175,7 +175,7 @@ public:
 	  *
 	  * @param tracer tracer to use
 	  */
-	virtual void setTracer(shared_ptr <tracer> tracer) = 0;
+	virtual void setTracer(const shared_ptr <tracer>& tracer) = 0;
 
 	/** Return the tracer used by this socket.
 	  *
@@ -213,7 +213,7 @@ public:
 	  * @param th timeout handler
 	  * @return a new socket
 	  */
-	virtual shared_ptr <socket> create(shared_ptr <timeoutHandler> th) = 0;
+	virtual shared_ptr <socket> create(const shared_ptr <timeoutHandler>& th) = 0;
 };
 
 

@@ -58,7 +58,7 @@ namespace net {
 namespace sendmail {
 
 
-sendmailTransport::sendmailTransport(shared_ptr <session> sess, shared_ptr <security::authenticator> auth)
+sendmailTransport::sendmailTransport(const shared_ptr <session>& sess, const shared_ptr <security::authenticator>& auth)
 	: transport(sess, getInfosInstance(), auth), m_connected(false)
 {
 }
@@ -175,7 +175,7 @@ void sendmailTransport::send
 
 
 void sendmailTransport::internalSend
-	(const std::vector <string> args, utility::inputStream& is,
+	(const std::vector <string>& args, utility::inputStream& is,
 	 const size_t size, utility::progressListener* progress)
 {
 	const utility::file::path path = vmime::platform::getHandler()->

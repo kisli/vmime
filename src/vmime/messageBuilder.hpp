@@ -136,13 +136,13 @@ public:
 	  *
 	  * @param attach new attachment
 	  */
-	void attach(shared_ptr <attachment> attach);
+	void attach(const shared_ptr <attachment>& attach);
 
 	/** Attach a new object to the message.
 	  *
 	  * @param attach new attachment
 	  */
-	void appendAttachment(shared_ptr <attachment> attach);
+	void appendAttachment(const shared_ptr <attachment>& attach);
 
 	/** Remove the attachment at the specified position.
 	  *

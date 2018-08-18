@@ -59,7 +59,7 @@ public:
 
 	void receive(vmime::string& buffer);
 	size_t receiveRaw(byte_t* buffer, const size_t count);
-	
+
 	void send(const vmime::string& buffer);
 	void send(const char* str);
 	void sendRaw(const byte_t* buffer, const size_t count);
@@ -75,7 +75,7 @@ public:
 	shared_ptr <net::timeoutHandler> getTimeoutHandler();
 	shared_ptr <net::tracer> m_tracer;
 
-	void setTracer(shared_ptr <net::tracer> tracer);
+	void setTracer(const shared_ptr <net::tracer>& tracer);
 	shared_ptr <net::tracer> getTracer();
 
 protected:
@@ -103,7 +103,7 @@ class windowsSocketFactory : public vmime::net::socketFactory
 public:
 
 	shared_ptr <vmime::net::socket> create();
-	shared_ptr <vmime::net::socket> create(shared_ptr <vmime::net::timeoutHandler> th);
+	shared_ptr <vmime::net::socket> create(const shared_ptr <vmime::net::timeoutHandler>& th);
 };
 
 

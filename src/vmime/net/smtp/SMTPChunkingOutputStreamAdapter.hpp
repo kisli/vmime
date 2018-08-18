@@ -49,7 +49,7 @@ class VMIME_EXPORT SMTPChunkingOutputStreamAdapter : public utility::outputStrea
 {
 public:
 
-	SMTPChunkingOutputStreamAdapter(shared_ptr <SMTPConnection> conn,
+	SMTPChunkingOutputStreamAdapter(const shared_ptr <SMTPConnection>& conn,
 		const size_t size, utility::progressListener* progress);
 
 	void flush();

@@ -502,7 +502,7 @@ shared_ptr <net::timeoutHandler> windowsSocket::getTimeoutHandler()
 }
 
 
-void windowsSocket::setTracer(shared_ptr <net::tracer> tracer)
+void windowsSocket::setTracer(const shared_ptr <net::tracer>& tracer)
 {
 	m_tracer = tracer;
 }
@@ -525,7 +525,7 @@ shared_ptr <vmime::net::socket> windowsSocketFactory::create()
 	return make_shared <windowsSocket>(th);
 }
 
-shared_ptr <vmime::net::socket> windowsSocketFactory::create(shared_ptr <vmime::net::timeoutHandler> th)
+shared_ptr <vmime::net::socket> windowsSocketFactory::create(const shared_ptr <vmime::net::timeoutHandler>& th)
 {
     return make_shared <windowsSocket>(th);
 }

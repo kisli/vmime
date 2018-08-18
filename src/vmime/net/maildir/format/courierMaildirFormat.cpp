@@ -41,7 +41,7 @@ namespace maildir {
 namespace format {
 
 
-courierMaildirFormat::courierMaildirFormat(shared_ptr <context> ctx)
+courierMaildirFormat::courierMaildirFormat(const shared_ptr <context>& ctx)
 	: maildirFormat(ctx)
 {
 }

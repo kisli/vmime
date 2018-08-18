@@ -923,7 +923,7 @@ shared_ptr <net::timeoutHandler> posixSocket::getTimeoutHandler()
 }
 
 
-void posixSocket::setTracer(shared_ptr <net::tracer> tracer)
+void posixSocket::setTracer(const shared_ptr <net::tracer>& tracer)
 {
 	m_tracer = tracer;
 }
@@ -947,7 +947,7 @@ shared_ptr <vmime::net::socket> posixSocketFactory::create()
 }
 
 
-shared_ptr <vmime::net::socket> posixSocketFactory::create(shared_ptr <vmime::net::timeoutHandler> th)
+shared_ptr <vmime::net::socket> posixSocketFactory::create(const shared_ptr <vmime::net::timeoutHandler>& th)
 {
 	return make_shared <posixSocket>(th);
 }

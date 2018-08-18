@@ -31,13 +31,13 @@ namespace vmime {
 namespace misc {
 
 
-void importanceHelper::resetImportance(shared_ptr <message> msg)
+void importanceHelper::resetImportance(const shared_ptr <message>& msg)
 {
 	resetImportanceHeader(msg->getHeader());
 }
 
 
-void importanceHelper::resetImportanceHeader(shared_ptr <header> hdr)
+void importanceHelper::resetImportanceHeader(const shared_ptr <header>& hdr)
 {
 	shared_ptr <headerField> fld;
 
@@ -49,13 +49,13 @@ void importanceHelper::resetImportanceHeader(shared_ptr <header> hdr)
 }
 
 
-importanceHelper::Importance importanceHelper::getImportance(shared_ptr <const message> msg)
+importanceHelper::Importance importanceHelper::getImportance(const shared_ptr <const message>& msg)
 {
 	return getImportanceHeader(msg->getHeader());
 }
 
 
-importanceHelper::Importance importanceHelper::getImportanceHeader(shared_ptr <const header> hdr)
+importanceHelper::Importance importanceHelper::getImportanceHeader(const shared_ptr <const header>& hdr)
 {
 	// Try "X-Priority" field
 	shared_ptr <const headerField> fld = hdr->findField("X-Priority");
@@ -113,13 +113,13 @@ importanceHelper::Importance importanceHelper::getImportanceHeader(shared_ptr <c
 }
 
 
-void importanceHelper::setImportance(shared_ptr <message> msg, const Importance i)
+void importanceHelper::setImportance(const shared_ptr <message>& msg, const Importance i)
 {
 	setImportanceHeader(msg->getHeader(), i);
 }
 
 
-void importanceHelper::setImportanceHeader(shared_ptr <header> hdr, const Importance i)
+void importanceHelper::setImportanceHeader(const shared_ptr <header>& hdr, const Importance i)
 {
 	// "X-Priority:" Field
 	shared_ptr <headerField> fld = hdr->getField("X-Priority");

@@ -47,7 +47,7 @@ class VMIME_EXPORT kmailMaildirFormat : public maildirFormat
 {
 public:
 
-	kmailMaildirFormat(shared_ptr <context> ctx);
+	kmailMaildirFormat(const shared_ptr <context>& ctx);
 
 
 	/* Folder types:

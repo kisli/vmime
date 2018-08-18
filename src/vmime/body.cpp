@@ -56,7 +56,7 @@ body::~body()
 
 // static
 size_t body::findNextBoundaryPosition
-	(shared_ptr <utility::parserInputStreamAdapter> parser, const string& boundary,
+	(const shared_ptr <utility::parserInputStreamAdapter>& parser, const string& boundary,
 	 const size_t position, const size_t end,
 	 size_t* boundaryStart, size_t* boundaryEnd)
 {
@@ -129,7 +129,7 @@ size_t body::findNextBoundaryPosition
 
 void body::parseImpl
 	(const parsingContext& ctx,
-	 shared_ptr <utility::parserInputStreamAdapter> parser,
+	 const shared_ptr <utility::parserInputStreamAdapter>& parser,
 	 const size_t position, const size_t end, size_t* newPosition)
 {
 	removeAllParts();
@@ -839,13 +839,13 @@ const shared_ptr <const contentHandler> body::getContents() const
 }
 
 
-void body::setContents(shared_ptr <const contentHandler> contents)
+void body::setContents(const shared_ptr <const contentHandler>& contents)
 {
 	m_contents = contents;
 }
 
 
-void body::setContents(shared_ptr <const contentHandler> contents, const mediaType& type)
+void body::setContents(const shared_ptr <const contentHandler>& contents, const mediaType& type)
 {
 	m_contents = contents;
 
@@ -853,7 +853,7 @@ void body::setContents(shared_ptr <const contentHandler> contents, const mediaTy
 }
 
 
-void body::setContents(shared_ptr <const contentHandler> contents, const mediaType& type, const charset& chset)
+void body::setContents(const shared_ptr <const contentHandler>& contents, const mediaType& type, const charset& chset)
 {
 	m_contents = contents;
 
@@ -861,7 +861,7 @@ void body::setContents(shared_ptr <const contentHandler> contents, const mediaTy
 }
 
 
-void body::setContents(shared_ptr <const contentHandler> contents, const mediaType& type,
+void body::setContents(const shared_ptr <const contentHandler>& contents, const mediaType& type,
 	const charset& chset, const encoding& enc)
 {
 	m_contents = contents;
@@ -871,7 +871,7 @@ void body::setContents(shared_ptr <const contentHandler> contents, const mediaTy
 }
 
 
-void body::initNewPart(shared_ptr <bodyPart> part)
+void body::initNewPart(const shared_ptr <bodyPart>& part)
 {
 	// A part can be in only one body at the same time: if part is
 	// already attached to a parent part, remove it from the current
@@ -923,7 +923,7 @@ void body::initNewPart(shared_ptr <bodyPart> part)
 }
 
 
-void body::appendPart(shared_ptr <bodyPart> part)
+void body::appendPart(const shared_ptr <bodyPart>& part)
 {
 	initNewPart(part);
 
@@ -931,7 +931,7 @@ void body::appendPart(shared_ptr <bodyPart> part)
 }
 
 
-void body::insertPartBefore(shared_ptr <bodyPart> beforePart, shared_ptr <bodyPart> part)
+void body::insertPartBefore(const shared_ptr <bodyPart>& beforePart, const shared_ptr <bodyPart>& part)
 {
 	initNewPart(part);
 
@@ -945,7 +945,7 @@ void body::insertPartBefore(shared_ptr <bodyPart> beforePart, shared_ptr <bodyPa
 }
 
 
-void body::insertPartBefore(const size_t pos, shared_ptr <bodyPart> part)
+void body::insertPartBefore(const size_t pos, const shared_ptr <bodyPart>& part)
 {
 	initNewPart(part);
 
@@ -953,7 +953,7 @@ void body::insertPartBefore(const size_t pos, shared_ptr <bodyPart> part)
 }
 
 
-void body::insertPartAfter(shared_ptr <bodyPart> afterPart, shared_ptr <bodyPart> part)
+void body::insertPartAfter(const shared_ptr <bodyPart>& afterPart, const shared_ptr <bodyPart>& part)
 {
 	initNewPart(part);
 
@@ -967,7 +967,7 @@ void body::insertPartAfter(shared_ptr <bodyPart> afterPart, shared_ptr <bodyPart
 }
 
 
-void body::insertPartAfter(const size_t pos, shared_ptr <bodyPart> part)
+void body::insertPartAfter(const size_t pos, const shared_ptr <bodyPart>& part)
 {
 	initNewPart(part);
 
@@ -975,7 +975,7 @@ void body::insertPartAfter(const size_t pos, shared_ptr <bodyPart> part)
 }
 
 
-void body::removePart(shared_ptr <bodyPart> part)
+void body::removePart(const shared_ptr <bodyPart>& part)
 {
 	const std::vector <shared_ptr <bodyPart> >::iterator it = std::find
 		(m_parts.begin(), m_parts.end(), part);

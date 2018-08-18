@@ -39,7 +39,7 @@ namespace vmime
 
 // static
 bool attachmentHelper::isBodyPartAnAttachment
-	(shared_ptr <const bodyPart> part, const unsigned int options)
+	(const shared_ptr <const bodyPart>& part, const unsigned int options)
 {
 	// First, try with "Content-Disposition" field.
 	// If not present, we will try with "Content-Type" field.
@@ -123,7 +123,7 @@ bool attachmentHelper::isBodyPartAnAttachment
 
 // static
 shared_ptr <const attachment> attachmentHelper::getBodyPartAttachment
-	(shared_ptr <const bodyPart> part, const unsigned int options)
+	(const shared_ptr <const bodyPart>& part, const unsigned int options)
 {
 	if (!isBodyPartAnAttachment(part, options))
 		return null;
@@ -159,7 +159,7 @@ shared_ptr <const attachment> attachmentHelper::getBodyPartAttachment
 // static
 const std::vector <shared_ptr <const attachment> >
 	attachmentHelper::findAttachmentsInMessage
-		(shared_ptr <const message> msg, const unsigned int options)
+		(const shared_ptr <const message>& msg, const unsigned int options)
 {
 	return findAttachmentsInBodyPart(msg, options);
 }
@@ -168,7 +168,7 @@ const std::vector <shared_ptr <const attachment> >
 // static
 const std::vector <shared_ptr <const attachment> >
 	attachmentHelper::findAttachmentsInBodyPart
-		(shared_ptr <const bodyPart> part, const unsigned int options)
+		(const shared_ptr <const bodyPart>& part, const unsigned int options)
 {
 	std::vector <shared_ptr <const attachment> > atts;
 
@@ -196,7 +196,7 @@ const std::vector <shared_ptr <const attachment> >
 
 
 // static
-void attachmentHelper::addAttachment(shared_ptr <message> msg, shared_ptr <attachment> att)
+void attachmentHelper::addAttachment(const shared_ptr <message>& msg, const shared_ptr <attachment>& att)
 {
 	// We simply search for a "multipart/mixed" part. If no one exists,
 	// create it in the root part. This (very simple) algorithm should
@@ -279,7 +279,7 @@ void attachmentHelper::addAttachment(shared_ptr <message> msg, shared_ptr <attac
 
 // static
 shared_ptr <bodyPart> attachmentHelper::findBodyPart
-	(shared_ptr <bodyPart> part, const mediaType& type)
+	(const shared_ptr <bodyPart>& part, const mediaType& type)
 {
 	if (part->getBody()->getContentType() == type)
 		return part;
@@ -301,7 +301,7 @@ shared_ptr <bodyPart> attachmentHelper::findBodyPart
 
 
 // static
-void attachmentHelper::addAttachment(shared_ptr <message> msg, shared_ptr <message> amsg)
+void attachmentHelper::addAttachment(const shared_ptr <message>& msg, const shared_ptr <message>& amsg)
 {
 	shared_ptr <attachment> att = make_shared <parsedMessageAttachment>(amsg);
 	addAttachment(msg, att);

@@ -70,7 +70,7 @@ public:
 	  * @param inputStream stream from which to read data
 	  * @param length data length, in bytes (0 = unknown/not specified)
 	  */
-	void parse(shared_ptr <utility::inputStream> inputStream, const size_t length);
+	void parse(const shared_ptr <utility::inputStream>& inputStream, const size_t length);
 
 	/** Parse RFC-822/MIME data for this component, using the default
 	  * parsing context.
@@ -112,7 +112,7 @@ public:
 	  * @param newPosition will receive the new position in the input stream
 	  */
 	void parse
-		(shared_ptr <utility::inputStream> inputStream,
+		(const shared_ptr <utility::inputStream>& inputStream,
 		 const size_t position,
 		 const size_t end,
 		 size_t* newPosition = NULL);
@@ -129,7 +129,7 @@ public:
 	  */
 	void parse
 		(const parsingContext& ctx,
-		 shared_ptr <utility::inputStream> inputStream,
+		 const shared_ptr <utility::inputStream>& inputStream,
 		 const size_t position,
 		 const size_t end,
 		 size_t* newPosition = NULL);
@@ -224,7 +224,7 @@ protected:
 	// AT LEAST ONE of these parseImpl() functions MUST be implemented in derived class
 	virtual void parseImpl
 		(const parsingContext& ctx,
-		 shared_ptr <utility::parserInputStreamAdapter> parser,
+		 const shared_ptr <utility::parserInputStreamAdapter>& parser,
 		 const size_t position,
 		 const size_t end,
 		 size_t* newPosition = NULL);

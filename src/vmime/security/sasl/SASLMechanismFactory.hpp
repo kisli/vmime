@@ -62,7 +62,7 @@ private:
 	public:
 
 		virtual shared_ptr <SASLMechanism> create
-			(shared_ptr <SASLContext> ctx, const string& name) = 0;
+			(const shared_ptr <SASLContext>& ctx, const string& name) = 0;
 	};
 
 	template <typename T>
@@ -70,7 +70,7 @@ private:
 	{
 	public:
 
-		shared_ptr <SASLMechanism> create(shared_ptr <SASLContext> ctx, const string& name)
+		shared_ptr <SASLMechanism> create(const shared_ptr <SASLContext>& ctx, const string& name)
 		{
 			return vmime::make_shared <T>(ctx, name);
 		}
@@ -103,7 +103,7 @@ public:
 	  * @throw exceptions::no_such_mechanism if no mechanism is
 	  * registered for the specified name
 	  */
-	shared_ptr <SASLMechanism> create(shared_ptr <SASLContext> ctx, const string& name);
+	shared_ptr <SASLMechanism> create(const shared_ptr <SASLContext>& ctx, const string& name);
 
 	/** Return a list of supported mechanisms. This includes mechanisms
 	  * registered using registerMechanism() as well as the ones that

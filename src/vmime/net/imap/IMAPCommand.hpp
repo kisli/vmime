@@ -85,7 +85,7 @@ public:
 	  *
 	  * @param conn connection onto which the command will be sent
 	  */
-	virtual void send(shared_ptr <IMAPConnection> conn);
+	virtual void send(const shared_ptr <IMAPConnection>& conn);
 
 	/** Returns the full text of the command, including command name
 	  * and parameters (if any). This is the text that will be sent

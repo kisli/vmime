@@ -60,7 +60,7 @@ class VMIME_EXPORT maildirStore : public store
 
 public:
 
-	maildirStore(shared_ptr <session> sess, shared_ptr <security::authenticator> auth);
+	maildirStore(const shared_ptr <session>& sess, const shared_ptr <security::authenticator>& auth);
 	~maildirStore();
 
 	const string getProtocolName() const;

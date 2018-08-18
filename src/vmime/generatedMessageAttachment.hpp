@@ -42,7 +42,7 @@ class VMIME_EXPORT generatedMessageAttachment : public messageAttachment
 {
 public:
 
-	generatedMessageAttachment(shared_ptr <const bodyPart> part);
+	generatedMessageAttachment(const shared_ptr <const bodyPart>& part);
 
 	const mediaType getType() const;
 	const text getDescription() const;
@@ -60,7 +60,7 @@ public:
 
 protected:
 
-	void generateIn(shared_ptr <bodyPart> parent) const;
+	void generateIn(const shared_ptr <bodyPart>& parent) const;
 
 private:
 

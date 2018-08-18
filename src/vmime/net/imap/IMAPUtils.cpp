@@ -381,7 +381,7 @@ const folder::path::component IMAPUtils::fromModifiedUTF7(const string& text)
 
 // static
 void IMAPUtils::mailboxFlagsToFolderAttributes
-	(shared_ptr <const IMAPConnection> cnt, const IMAPParser::mailbox_flag_list* list,
+	(const shared_ptr <const IMAPConnection>& cnt, const IMAPParser::mailbox_flag_list* list,
 	 folderAttributes& attribs)
 {
 	int specialUse = folderAttributes::SPECIALUSE_NONE;
@@ -594,7 +594,7 @@ const string IMAPUtils::dateTime(const vmime::datetime& date)
 
 // static
 shared_ptr <IMAPCommand> IMAPUtils::buildFetchCommand
-	(shared_ptr <IMAPConnection> cnt, const messageSet& msgs, const fetchAttributes& options)
+	(const shared_ptr <IMAPConnection>& cnt, const messageSet& msgs, const fetchAttributes& options)
 {
 	// Example:
 	//   C: A654 FETCH 2:4 (FLAGS BODY[HEADER.FIELDS (DATE FROM)])

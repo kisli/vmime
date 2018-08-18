@@ -39,7 +39,7 @@ namespace pop3 {
 
 
 // static
-void POP3Utils::parseMultiListOrUidlResponse(shared_ptr <POP3Response> response, std::map <size_t, string>& result)
+void POP3Utils::parseMultiListOrUidlResponse(const shared_ptr <POP3Response>& response, std::map <size_t, string>& result)
 {
 	std::map <size_t, string> ids;
 

@@ -59,7 +59,7 @@ public:
 	  * @param session TLS session
 	  * @param sok socket to wrap
 	  */
-	static shared_ptr <TLSSocket> wrap(shared_ptr <TLSSession> session, shared_ptr <socket> sok);
+	static shared_ptr <TLSSocket> wrap(const shared_ptr <TLSSession>& session, const shared_ptr <socket>& sok);
 
 	/** Starts a TLS handshake on this connection.
 	  *
