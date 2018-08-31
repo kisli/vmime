@@ -59,6 +59,7 @@ public:
 	const mediaType& getType() const;
 	size_t getSize() const;
 	size_t getNumber() const;
+	string getName() const;
 
 	shared_ptr <const header> getHeader() const;
 
@@ -77,6 +78,7 @@ private:
 
 	size_t m_number;
 	size_t m_size;
+	string m_name;
 	mediaType m_mediaType;
 };
 

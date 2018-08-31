@@ -68,6 +68,11 @@ IMAPMessagePart::IMAPMessagePart(const shared_ptr <IMAPMessagePart>& parent, con
 			 part->body_type_basic()->media_basic()->media_subtype()->value());
 
 		m_size = part->body_type_basic()->body_fields()->body_fld_octets()->value();
+
+		if (const auto pparam = part->body_type_basic()->body_fields()->body_fld_param())
+			for (const auto& param : pparam->items())
+				if (param->string1()->value() == "NAME")
+					m_name = param->string2()->value();
 	}
 
 	m_structure = null;
@@ -113,6 +118,11 @@ size_t IMAPMessagePart::getSize() const
 size_t IMAPMessagePart::getNumber() const
 {
 	return m_number;
+}
+
+string IMAPMessagePart::getName() const
+{
+	return m_name;
 }
 
 

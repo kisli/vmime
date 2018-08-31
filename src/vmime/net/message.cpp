@@ -36,6 +36,11 @@ namespace vmime {
 namespace net {
 
 
+string messagePart::getName() const
+{
+	return {};
+}
+
 shared_ptr <const messagePart> messagePart::getPartAt(const size_t pos) const
 {
 	return getStructure()->getPartAt(pos);
