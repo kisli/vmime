@@ -468,6 +468,11 @@ shared_ptr <security::cert::certificateChain> TLSSocket_GnuTLS::getPeerCertifica
 		int res = gnutls_x509_crt_import(x509Certs[i], rawData + i, GNUTLS_X509_FMT_DER);
 
 		if (res < 0) {
+
+			for (unsigned int j = 0 ; j <= i ; ++j) {
+				gnutls_x509_crt_deinit(x509Certs[j]);
+			}
+
 			// XXX more fine-grained error reporting?
 			delete [] x509Certs;
 			return null;
