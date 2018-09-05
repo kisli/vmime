@@ -102,10 +102,8 @@ const folderAttributes maildirFolder::getAttributes()
 {
 	folderAttributes attribs;
 
-	if (m_path.isEmpty())
-		attribs.setType(folderAttributes::TYPE_CONTAINS_FOLDERS);
-	else
-		attribs.setType(folderAttributes::TYPE_CONTAINS_FOLDERS | folderAttributes::TYPE_CONTAINS_MESSAGES);
+// For dovecot server (use courier implementation) the root directory can contain messages
+	attribs.setType(folderAttributes::TYPE_CONTAINS_FOLDERS | folderAttributes::TYPE_CONTAINS_MESSAGES);
 
 	if (m_store.lock()->getFormat()->folderHasSubfolders(m_path))
 		attribs.setFlags(folderAttributes::FLAG_HAS_CHILDREN);  // contains at least one sub-folder
@@ -137,10 +135,11 @@ void maildirFolder::open(const int mode, bool /* failIfModeIsNotAvailable */)
 	else if (!exists())
 		throw exceptions::illegal_state("Folder does not exist");
 
+	m_mode = mode; // Should be know by scanFolder modifications
+
 	scanFolder();
 
 	m_open = true;
-	m_mode = mode;
 }
 
 
@@ -321,17 +320,33 @@ void maildirFolder::scanFolder()
 			// "maildirUtils::messageIdComparator" to compare only the 'unique'
 			// portion of the filename...
 
-			if (msgInfos.type == messageInfos::TYPE_CUR)
+			if (msgInfos.type != messageInfos::TYPE_DELETED)
 			{
 				const std::vector <utility::file::path::component>::iterator pos =
 					std::find_if(curMessageFilenames.begin(), curMessageFilenames.end(),
 						maildirUtils::messageIdComparator(msgInfos.path));
 
 				// If we cannot find this message in the 'cur' directory,
-				// it means it has been deleted (and expunged).
+				// search in the 'new' directory.
+                                // Don't move from new to cur directory when open folder directory
 				if (pos == curMessageFilenames.end())
 				{
-					msgInfos.type = messageInfos::TYPE_DELETED;
+					const std::vector <utility::file::path::component>::iterator pos =
+						std::find_if(newMessageFilenames.begin(), newMessageFilenames.end(),
+							maildirUtils::messageIdComparator(msgInfos.path));
+
+					// If we cannot find this message also in the 'new' directory,
+					// it means it has been deleted (and expunged).
+					if (pos == newMessageFilenames.end())
+					{
+						msgInfos.type = messageInfos::TYPE_DELETED;
+					}
+					// Otherwise, update its information.
+					else
+					{
+						msgInfos.path = *pos;
+						newMessageFilenames.erase(pos);
+					}
 				}
 				// Otherwise, update its information.
 				else
@@ -345,33 +360,24 @@ void maildirFolder::scanFolder()
 		m_messageInfos.reserve(m_messageInfos.size()
 			+ newMessageFilenames.size() + curMessageFilenames.size());
 
-		// Add new messages from 'new': we are responsible to move the files
-		// from the 'new' directory to the 'cur' directory, and append them
-		// to our message list.
+		// Add new messages from 'new' directory
+		// Don't move to 'cur' directory
 		for (std::vector <utility::file::path::component>::const_iterator
 		     it = newMessageFilenames.begin() ; it != newMessageFilenames.end() ; ++it)
 		{
-			const utility::file::path::component newFilename =
-				maildirUtils::buildFilename(maildirUtils::extractId(*it), 0);
-
-			// Move messages from 'new' to 'cur'
-			shared_ptr <utility::file> file = fsf->create(newDirPath / *it);
-			file->rename(curDirPath / newFilename);
-
 			// Append to message list
 			messageInfos msgInfos;
-			msgInfos.path = newFilename;
+			msgInfos.path = *it;
 
 			if (maildirUtils::extractFlags(msgInfos.path) & message::FLAG_DELETED)
 				msgInfos.type = messageInfos::TYPE_DELETED;
 			else
-				msgInfos.type = messageInfos::TYPE_CUR;
+				msgInfos.type = messageInfos::TYPE_NEW;
 
 			m_messageInfos.push_back(msgInfos);
 		}
 
-		// Add new messages from 'cur': the files have already been moved
-		// from 'new' to 'cur'. Just append them to our message list.
+		// Add new messages from 'cur'
 		for (std::vector <utility::file::path::component>::const_iterator
 		     it = curMessageFilenames.begin() ; it != curMessageFilenames.end() ; ++it)
 		{
@@ -630,6 +636,8 @@ void maildirFolder::setMessageFlags
 
 				if (flags & message::FLAG_DELETED)
 					m_messageInfos[num].type = messageInfos::TYPE_DELETED;
+				else if (flags & message::FLAG_RECENT)
+					m_messageInfos[num].type = messageInfos::TYPE_NEW;
 				else
 					m_messageInfos[num].type = messageInfos::TYPE_CUR;
 
@@ -1205,12 +1213,11 @@ void maildirFolder::fetchMessages(std::vector <shared_ptr <message> >& msg,
 	if (progress)
 		progress->start(total);
 
-	shared_ptr <maildirFolder> thisFolder = dynamicCast <maildirFolder>(shared_from_this());
-
 	for (std::vector <shared_ptr <message> >::iterator it = msg.begin() ;
 	     it != msg.end() ; ++it)
 	{
-		dynamicCast <maildirMessage>(*it)->fetch(thisFolder, options);
+// For each recent message the fetchMessage function should be move from 'new' to 'cur' directory
+		fetchMessage ((*it), options);
 
 		if (progress)
 			progress->progress(++current, total);
@@ -1232,6 +1239,29 @@ void maildirFolder::fetchMessage(const shared_ptr <message>& msg, const fetchAtt
 
 	dynamicCast <maildirMessage>(msg)->fetch
 		(dynamicCast <maildirFolder>(shared_from_this()), options);
+
+	// For recent message move from 'new' to 'cur' directory
+	size_t msgNum = msg->getNumber ();
+	messageInfos& msgInfos = m_messageInfos [msgNum - 1];
+	if (msgInfos.type == messageInfos::TYPE_NEW)
+	{
+		if (options.has(fetchAttributes::FLAGS))
+			dynamicCast <maildirMessage> (msg)->m_flags |= message::FLAG_RECENT;
+		// Don't move if read only access
+		if (m_mode != MODE_READ_ONLY)
+		{
+			// Move messages from 'new' to 'cur'
+			const utility::file::path::component curFilename =
+				maildirUtils::buildFilename (maildirUtils::extractId (msgInfos.path), 0);
+
+			shared_ptr <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
+			shared_ptr <utility::file> file = fsf->create(store->getFormat ()->folderPathToFileSystemPath
+				(m_path, maildirFormat::NEW_DIRECTORY) / msgInfos.path);
+			file->rename (store->getFormat ()->folderPathToFileSystemPath
+				(m_path, maildirFormat::CUR_DIRECTORY) / curFilename);
+			msgInfos.path = curFilename;
+		}
+	}
 }
 
 
@@ -1259,10 +1289,11 @@ int maildirFolder::getFetchCapabilities() const
 
 const utility::file::path maildirFolder::getMessageFSPath(const size_t number) const
 {
+	const messageInfos& msgInfos = m_messageInfos [number - 1];
 	utility::file::path curDirPath = m_store.lock()->getFormat()->
-		folderPathToFileSystemPath(m_path, maildirFormat::CUR_DIRECTORY);
+		folderPathToFileSystemPath(m_path, messageInfos::TYPE_NEW ? maildirFormat::NEW_DIRECTORY : maildirFormat::CUR_DIRECTORY);
 
-	return (curDirPath / m_messageInfos[number - 1].path);
+	return (curDirPath / msgInfos.path);
 }
 
 

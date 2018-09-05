@@ -166,7 +166,8 @@ private:
 		enum Type
 		{
 			TYPE_CUR,
-			TYPE_DELETED
+			TYPE_DELETED,
+                        TYPE_NEW
 		};
 
 		utility::file::path::component path;    // filename

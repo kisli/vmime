@@ -491,6 +491,9 @@ int IMAPUtils::messageFlagsFromFlags(const IMAPParser::flag_list* list)
 		case IMAPParser::flag::SEEN:
 			flags |= message::FLAG_SEEN;
 			break;
+		case IMAPParser::flag::RECENT:
+			flags |= message::FLAG_RECENT;
+			break;
 		case IMAPParser::flag::DRAFT:
 			flags |= message::FLAG_DRAFT;
 			break;

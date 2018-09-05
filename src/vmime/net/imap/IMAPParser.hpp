@@ -1783,6 +1783,8 @@ public:
 						m_type = SEEN;
 					else if (name == "draft")
 						m_type = DRAFT;
+					else if (name == "recent")
+						m_type = RECENT;
 					else
 					{
 						m_type = UNKNOWN;
@@ -1811,7 +1813,8 @@ public:
 			SEEN,
 			DRAFT,
 			KEYWORD_OR_EXTENSION,
-			STAR       // * = custom flags allowed
+			STAR,       // * = custom flags allowed
+                        RECENT
 		};
 
 	private:
