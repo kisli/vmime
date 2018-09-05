@@ -62,7 +62,7 @@ bool stringUtils::isStringEqualNoCase(const string& s1, const string& s2) {
 	bool equal = true;
 	const string::const_iterator end = s1.end();
 
-	for (string::const_iterator i = s1.begin(), j = s2.begin(); i != end ; ++i, ++j) {
+	for (string::const_iterator i = s1.begin(), j = s2.begin() ; equal && i != end ; ++i, ++j) {
 		equal = (fac.tolower(static_cast <unsigned char>(*i)) == fac.tolower(static_cast <unsigned char>(*j)));
 	}
 

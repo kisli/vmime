@@ -98,6 +98,9 @@ VMIME_TEST_SUITE_BEGIN(stringUtilsTest)
 		VASSERT_EQ("1", true, stringUtils::isStringEqualNoCase(vmime::string("foo"), vmime::string("foo")));
 		VASSERT_EQ("2", true, stringUtils::isStringEqualNoCase(vmime::string("FOo"), vmime::string("foo")));
 		VASSERT_EQ("3", true, stringUtils::isStringEqualNoCase(vmime::string("foO"), vmime::string("FOo")));
+
+		VASSERT_EQ("4", false, stringUtils::isStringEqualNoCase(vmime::string("foO"), vmime::string("bar")));
+		VASSERT_EQ("5", false, stringUtils::isStringEqualNoCase(vmime::string("foOO"), vmime::string("barO")));
 	}
 
 	void testIsStringEqualNoCase3() {
