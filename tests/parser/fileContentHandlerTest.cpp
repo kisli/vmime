@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -42,8 +42,8 @@ VMIME_TEST_SUITE_BEGIN(fileContentHandlerTest)
 	vmime::string testDataEncoded, testDataDecoded;
 
 
-	void setUp()
-	{
+	void setUp() {
+
 		testDataDecoded = "ABCDEFGHIJKLMNOPQRSTUVWXYZ \x12\x34\x56\x78\x90 abcdefghijklmnopqrstuvwxyz0123456789";
 		testDataEncoded = "QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVogEjRWeJAgYWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXowMTIzNDU2Nzg5";
 
@@ -58,38 +58,38 @@ VMIME_TEST_SUITE_BEGIN(fileContentHandlerTest)
 		testFile->getFileWriter()->getOutputStream()->write(testDataEncoded.data(), testDataEncoded.length());
 	}
 
-	void tearDown()
-	{
+	void tearDown() {
+
 		testFile->remove();
 		testFile = vmime::null;
 	}
 
 
-	void testIsEmpty()
-	{
+	void testIsEmpty() {
+
 		vmime::fileContentHandler cth;
 
 		VASSERT_TRUE("empty", cth.isEmpty());
 	}
 
-	void testGetLength()
-	{
+	void testGetLength() {
+
 		vmime::fileContentHandler cth(testFile);
 
 		VASSERT_FALSE("empty", cth.isEmpty());
 		VASSERT_EQ("length", testDataEncoded.length(), cth.getLength());
 	}
 
-	void testIsEncoded()
-	{
+	void testIsEncoded() {
+
 		vmime::fileContentHandler cth(testFile, vmime::encoding("base64"));
 
 		VASSERT_TRUE("encoded", cth.isEncoded());
 		VASSERT_EQ("encoding", "base64", cth.getEncoding().generate());
 	}
 
-	void testExtract()
-	{
+	void testExtract() {
+
 		vmime::fileContentHandler cth(testFile, vmime::encoding("base64"));
 
 		std::ostringstream oss;
@@ -101,8 +101,8 @@ VMIME_TEST_SUITE_BEGIN(fileContentHandlerTest)
 		VASSERT_EQ("extract", testDataDecoded, oss.str());
 	}
 
-	void testExtractRaw()
-	{
+	void testExtractRaw() {
+
 		vmime::fileContentHandler cth(testFile, vmime::encoding("base64"));
 
 		std::ostringstream oss;
@@ -114,8 +114,8 @@ VMIME_TEST_SUITE_BEGIN(fileContentHandlerTest)
 		VASSERT_EQ("extractRaw", testDataEncoded, oss.str());
 	}
 
-	void testGenerate()
-	{
+	void testGenerate() {
+
 		vmime::fileContentHandler cth(testFile, vmime::encoding("base64"));
 
 		std::ostringstream oss;
@@ -124,8 +124,11 @@ VMIME_TEST_SUITE_BEGIN(fileContentHandlerTest)
 		cth.generate(osa, vmime::encoding("quoted-printable"));
 
 		// Data should be reencoded from B64 to QP
-		VASSERT_EQ("generate",
-			"ABCDEFGHIJKLMNOPQRSTUVWXYZ =124Vx=90 abcdefghijklmnopqrstuvwxyz0123456789", oss.str());
+		VASSERT_EQ(
+			"generate",
+			"ABCDEFGHIJKLMNOPQRSTUVWXYZ =124Vx=90 abcdefghijklmnopqrstuvwxyz0123456789",
+			oss.str()
+		);
 	}
 
 VMIME_TEST_SUITE_END

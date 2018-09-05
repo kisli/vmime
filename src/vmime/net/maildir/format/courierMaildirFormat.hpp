@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -42,9 +42,8 @@ namespace format {
 
 /** Reads Courier/QMail Maildir format.
   */
+class VMIME_EXPORT courierMaildirFormat : public maildirFormat {
 
-class VMIME_EXPORT courierMaildirFormat : public maildirFormat
-{
 public:
 
 	courierMaildirFormat(const shared_ptr <context>& ctx);
@@ -68,11 +67,15 @@ public:
 	bool folderExists(const folder::path& path) const;
 	bool folderHasSubfolders(const folder::path& path) const;
 
-	const utility::file::path folderPathToFileSystemPath
-		(const folder::path& path, const DirectoryType type) const;
+	const utility::file::path folderPathToFileSystemPath(
+		const folder::path& path,
+		const DirectoryType type
+	) const;
 
-	const std::vector <folder::path> listFolders
-		(const folder::path& root, const bool recursive) const;
+	const std::vector <folder::path> listFolders(
+		const folder::path& root,
+		const bool recursive
+	) const;
 
 protected:
 
@@ -104,8 +107,11 @@ protected:
 	  * @return true if at least one directory has been found,
 	  * false otherwise
 	  */
-	bool listDirectories(const folder::path& root,
-		std::vector <string>& dirs, const bool onlyTestForExistence) const;
+	bool listDirectories(
+		const folder::path& root,
+		std::vector <string>& dirs,
+		const bool onlyTestForExistence
+	) const;
 };
 
 

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -52,8 +52,8 @@ class IMAPStore;
 class IMAPCommand;
 
 
-class VMIME_EXPORT IMAPConnection : public object, public enable_shared_from_this <IMAPConnection>
-{
+class VMIME_EXPORT IMAPConnection : public object, public enable_shared_from_this <IMAPConnection> {
+
 public:
 
 	IMAPConnection(const shared_ptr <IMAPStore>& store, const shared_ptr <security::authenticator>& auth);
@@ -65,8 +65,7 @@ public:
 	void disconnect();
 
 
-	enum ProtocolStates
-	{
+	enum ProtocolStates {
 		STATE_NONE,
 		STATE_NON_AUTHENTICATED,
 		STATE_AUTHENTICATED,

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -26,17 +26,16 @@
 #include "vmime/parserHelpers.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
-parameterizedHeaderField::parameterizedHeaderField()
-{
+parameterizedHeaderField::parameterizedHeaderField() {
+
 }
 
 
-parameterizedHeaderField::~parameterizedHeaderField()
-{
+parameterizedHeaderField::~parameterizedHeaderField() {
+
 	removeAllParameters();
 }
 
@@ -67,8 +66,8 @@ parameterizedHeaderField::~parameterizedHeaderField()
 
 #ifndef VMIME_BUILDING_DOC
 
-struct paramInfo
-{
+struct paramInfo {
+
 	bool extended;
 	std::vector <parameter::valueChunk> value;
 	size_t start;
@@ -78,10 +77,14 @@ struct paramInfo
 #endif // VMIME_BUILDING_DOC
 
 
-void parameterizedHeaderField::parseImpl
-	(const parsingContext& ctx, const string& buffer, const size_t position,
-	 const size_t end, size_t* newPosition)
-{
+void parameterizedHeaderField::parseImpl(
+	const parsingContext& ctx,
+	const string& buffer,
+	const size_t position,
+	const size_t end,
+	size_t* newPosition
+) {
+
 	const char* const pend = buffer.data() + end;
 	const char* const pstart = buffer.data() + position;
 	const char* p = pstart;
@@ -89,8 +92,7 @@ void parameterizedHeaderField::parseImpl
 	// Skip non-significant whitespaces
 	size_t valueStart = position;
 
-	while (p < pend && parserHelpers::isSpace(*p))
-	{
+	while (p < pend && parserHelpers::isSpace(*p)) {
 		++p;
 		++valueStart;
 	}
@@ -98,15 +100,16 @@ void parameterizedHeaderField::parseImpl
 	// Advance up to ';', if any
 	size_t valueLength = 0;
 
-	while (p < pend && *p != ';' && (!parserHelpers::isSpace(*p)))  // FIXME: support ";" inside quoted or RFC-2047-encoded text
-	{
+	while (p < pend && *p != ';' && (!parserHelpers::isSpace(*p))) {  // FIXME: support ";" inside quoted or RFC-2047-encoded text
+
 		++p;
 		++valueLength;
 	}
 
 	// Trim whitespaces at the end of the value
-	while (valueLength > 0 && parserHelpers::isSpace(buffer[valueStart + valueLength - 1]))
+	while (valueLength > 0 && parserHelpers::isSpace(buffer[valueStart + valueLength - 1])) {
 		--valueLength;
+	}
 
 	// Parse value
 	getValue()->parse(ctx, buffer, valueStart, valueStart + valueLength);
@@ -115,18 +118,19 @@ void parameterizedHeaderField::parseImpl
 	removeAllParameters();
 
 	// If there is one or more parameters following...
-	if (p < pend)
-	{
+	if (p < pend) {
+
 		std::map <string, paramInfo> params;
 
-		if (*p != ';')
-		{
-			while (p < pend && *p != ';')  // FIXME: support ";" inside quoted or RFC-2047-encoded text
+		if (*p != ';') {
+
+			while (p < pend && *p != ';') {  // FIXME: support ";" inside quoted or RFC-2047-encoded text
 				++p;
+			}
 		}
 
-		while (*p == ';')
-		{
+		while (*p == ';') {
+
 			// Skip ';'
 			++p;
 
@@ -134,24 +138,26 @@ void parameterizedHeaderField::parseImpl
 
 			const size_t attrStart = position + (p - pstart);
 
-			while (p < pend && !(*p == ';' || *p == '='))
+			while (p < pend && !(*p == ';' || *p == '=')) {
 				++p;
+			}
 
-			if (p >= pend || *p == ';')
-			{
+			if (p >= pend || *p == ';') {
+
 				// Hmmmm... we didn't found an '=' sign.
 				// This parameter may not be valid so try to advance
 				// to the next one, if there is one.
 				while (p < pend && *p != ';')
 					++p;
-			}
-			else
-			{
+
+			} else {
+
 				// Extract the attribute name
 				size_t attrEnd = position + (p - pstart);
 
-				while (attrEnd != attrStart && parserHelpers::isSpace(buffer[attrEnd - 1]))
+				while (attrEnd != attrStart && parserHelpers::isSpace(buffer[attrEnd - 1])) {
 					--attrEnd;
+				}
 
 				// Skip '='
 				++p;
@@ -163,8 +169,8 @@ void parameterizedHeaderField::parseImpl
 				string value;
 
 				// -- this is a quoted-string
-				if (*p == '"')
-				{
+				if (*p == '"') {
+
 					// Skip '"'
 					++p;
 
@@ -175,74 +181,84 @@ void parameterizedHeaderField::parseImpl
 					std::ostringstream ss;
 					size_t start = position + (p - pstart);
 
-					for ( ; p < pend && !stop ; ++p)
-					{
-						if (escape)
-						{
+					for ( ; p < pend && !stop ; ++p) {
+
+						if (escape) {
+
 							escape = false;
 							start = position + (p - pstart);
-						}
-						else
-						{
-							switch (*p)
-							{
-							case '"':
-							{
-								ss << string(buffer.begin() + start,
-								             buffer.begin() + position + (p - pstart));
 
-								stop = true;
-								break;
-							}
-							case '\\':
-							{
-								ss << string(buffer.begin() + start,
-								             buffer.begin() + position + (p - pstart));
+						} else {
 
-								escape = true;
-								break;
-							}
+							switch (*p) {
+
+								case '"': {
+
+									ss << string(
+										buffer.begin() + start,
+										buffer.begin() + position + (p - pstart)
+									);
+
+									stop = true;
+									break;
+								}
+								case '\\': {
+
+									ss << string(
+										buffer.begin() + start,
+										buffer.begin() + position + (p - pstart)
+									);
+
+									escape = true;
+									break;
+								}
 
 							}
 						}
 					}
 
-					if (!stop)
-					{
-						ss << string(buffer.begin() + start,
-						             buffer.begin() + position + (p - pstart));
+					if (!stop) {
+
+						ss << string(
+							buffer.begin() + start,
+							buffer.begin() + position + (p - pstart)
+						);
 					}
 
 					value = ss.str();
-				}
+
 				// -- the value is a simple token
-				else
-				{
+				} else {
+
 					const size_t valStart = position + (p - pstart);
 
-					while (p < pend && *p != ';')
+					while (p < pend && *p != ';') {
 						++p;
+					}
 
 					size_t valEnd = position + (p - pstart);
 
-					while (valEnd != valStart && parserHelpers::isSpace(buffer[valEnd - 1]))
+					while (valEnd != valStart && parserHelpers::isSpace(buffer[valEnd - 1])) {
 						--valEnd;
+					}
 
-					value = string(buffer.begin() + valStart,
-					               buffer.begin() + valEnd);
+					value = string(
+						buffer.begin() + valStart,
+						buffer.begin() + valEnd
+					);
 				}
 
 				// Don't allow ill-formed parameters
-				if (attrStart != attrEnd && value.length())
-				{
+				if (attrStart != attrEnd && value.length()) {
+
 					string name(buffer.begin() + attrStart, buffer.begin() + attrEnd);
 
 					// Check for RFC-2231 extended parameters
 					bool extended = false;
 					bool encoded = false;
 
-					if (name[name.length() - 1] == '*')
-					{
+					if (name[name.length() - 1] == '*') {
+
 						name.erase(name.end() - 1, name.end());
 
 						extended = true;
@@ -252,15 +268,15 @@ void parameterizedHeaderField::parseImpl
 					// Check for RFC-2231 multi-section parameters
 					const size_t star = name.find_last_of('*');
 
-					if (star != string::npos)
-					{
+					if (star != string::npos) {
+
 						bool allDigits = true;
 
-						for (size_t i = star + 1 ; allDigits && (i < name.length()) ; ++i)
+						for (size_t i = star + 1 ; allDigits && (i < name.length()) ; ++i) {
 							allDigits = parserHelpers::isDigit(name[i]);
+						}
 
-						if (allDigits)
-						{
+						if (allDigits) {
 							name.erase(name.begin() + star, name.end());
 							extended = true;
 						}
@@ -273,13 +289,13 @@ void parameterizedHeaderField::parseImpl
 					// Add/replace/modify the parameter
 					const std::map <string, paramInfo>::iterator it = params.find(name);
 
-					if (it != params.end())
-					{
+					if (it != params.end()) {
+
 						paramInfo& info = (*it).second;
 
 						// An extended parameter replaces a normal one
-						if (!info.extended)
-						{
+						if (!info.extended) {
+
 							info.extended = extended;
 							info.value.clear();
 							info.start = attrStart;
@@ -292,9 +308,9 @@ void parameterizedHeaderField::parseImpl
 
 						info.value.push_back(chunk);
 						info.end = position + (p - pstart);
-					}
-					else
-					{
+
+					} else {
+
 						parameter::valueChunk chunk;
 						chunk.encoded = encoded;
 						chunk.data = value;
@@ -316,8 +332,8 @@ void parameterizedHeaderField::parseImpl
 		}
 
 		for (std::map <string, paramInfo>::const_iterator it = params.begin() ;
-		     it != params.end() ; ++it)
-		{
+		     it != params.end() ; ++it) {
+
 			const paramInfo& info = (*it).second;
 
 			// Append this parameter to the list
@@ -330,15 +346,19 @@ void parameterizedHeaderField::parseImpl
 		}
 	}
 
-	if (newPosition)
+	if (newPosition) {
 		*newPosition = end;
+	}
 }
 
 
-void parameterizedHeaderField::generateImpl
-	(const generationContext& ctx, utility::outputStream& os,
-	 const size_t curLinePos, size_t* newLinePos) const
-{
+void parameterizedHeaderField::generateImpl(
+	const generationContext& ctx,
+	utility::outputStream& os,
+	const size_t curLinePos,
+	size_t* newLinePos
+) const {
+
 	size_t pos = curLinePos;
 
 	// Parent header field
@@ -346,16 +366,17 @@ void parameterizedHeaderField::generateImpl
 
 	// Parameters
 	for (std::vector <shared_ptr <parameter> >::const_iterator
-	     it = m_params.begin() ; it != m_params.end() ; ++it)
-	{
+	     it = m_params.begin() ; it != m_params.end() ; ++it) {
+
 		os << "; ";
 		pos += 2;
 
 		(*it)->generate(ctx, os, pos, &pos);
 	}
 
-	if (newLinePos)
+	if (newLinePos) {
 		*newLinePos = pos;
+	}
 }
 
 
@@ -364,8 +385,8 @@ size_t parameterizedHeaderField::getGeneratedSize(const generationContext& ctx)
 	size_t size = headerField::getGeneratedSize(ctx);
 
 	for (std::vector <shared_ptr <parameter> >::const_iterator
-	     it = m_params.begin() ; it != m_params.end() ; ++it)
-	{
+	     it = m_params.begin() ; it != m_params.end() ; ++it) {
+
 		size += 2;  // "; "
 		size += (*it)->getGeneratedSize(ctx);
 	}
@@ -374,8 +395,8 @@ size_t parameterizedHeaderField::getGeneratedSize(const generationContext& ctx)
 }
 
 
-void parameterizedHeaderField::copyFrom(const component& other)
-{
+void parameterizedHeaderField::copyFrom(const component& other) {
+
 	headerField::copyFrom(other);
 
 	const parameterizedHeaderField& source = dynamic_cast<const parameterizedHeaderField&>(other);
@@ -383,22 +404,22 @@ void parameterizedHeaderField::copyFrom(const component& other)
 	removeAllParameters();
 
 	for (std::vector <shared_ptr <parameter> >::const_iterator i = source.m_params.begin() ;
-	     i != source.m_params.end() ; ++i)
-	{
+	     i != source.m_params.end() ; ++i) {
+
 		appendParameter(vmime::clone(*i));
 	}
 }
 
 
-parameterizedHeaderField& parameterizedHeaderField::operator=(const parameterizedHeaderField& other)
-{
+parameterizedHeaderField& parameterizedHeaderField::operator=(const parameterizedHeaderField& other) {
+
 	copyFrom(other);
-	return (*this);
+	return *this;
 }
 
 
-bool parameterizedHeaderField::hasParameter(const string& paramName) const
-{
+bool parameterizedHeaderField::hasParameter(const string& paramName) const {
+
 	const string name = utility::stringUtils::toLower(paramName);
 
 	std::vector <shared_ptr <parameter> >::const_iterator pos = m_params.begin();
@@ -406,12 +427,12 @@ bool parameterizedHeaderField::hasParameter(const string& paramName) const
 
 	for ( ; pos != end && utility::stringUtils::toLower((*pos)->getName()) != name ; ++pos) {}
 
-	return (pos != end);
+	return pos != end;
 }
 
 
-shared_ptr <parameter> parameterizedHeaderField::findParameter(const string& paramName) const
-{
+shared_ptr <parameter> parameterizedHeaderField::findParameter(const string& paramName) const {
+
 	const string name = utility::stringUtils::toLower(paramName);
 
 	// Find the first parameter that matches the specified name
@@ -421,16 +442,17 @@ shared_ptr <parameter> parameterizedHeaderField::findParameter(const string& par
 	for ( ; pos != end && utility::stringUtils::toLower((*pos)->getName()) != name ; ++pos) {}
 
 	// No parameter with this name can be found
-	if (pos == end)
+	if (pos == end) {
 		return null;
+	}
 
 	// Else, return a reference to the existing parameter
-	return (*pos);
+	return *pos;
 }
 
 
-shared_ptr <parameter> parameterizedHeaderField::getParameter(const string& paramName)
-{
+shared_ptr <parameter> parameterizedHeaderField::getParameter(const string& paramName) {
+
 	const string name = utility::stringUtils::toLower(paramName);
 
 	// Find the first parameter that matches the specified name
@@ -440,154 +462,171 @@ shared_ptr <parameter> parameterizedHeaderField::getParameter(const string& para
 	for ( ; pos != end && utility::stringUtils::toLower((*pos)->getName()) != name ; ++pos) {}
 
 	// If no parameter with this name can be found, create a new one
-	if (pos == end)
-	{
+	if (pos == end) {
+
 		shared_ptr <parameter> param = make_shared <parameter>(paramName);
 
 		appendParameter(param);
 
 		// Return a reference to the new parameter
-		return (param);
-	}
+		return param;
+
 	// Else, return a reference to the existing parameter
-	else
-	{
-		return (*pos);
+	} else {
+
+		return *pos;
 	}
 }
 
 
-void parameterizedHeaderField::appendParameter(const shared_ptr <parameter>& param)
-{
+void parameterizedHeaderField::appendParameter(const shared_ptr <parameter>& param) {
+
 	m_params.push_back(param);
 }
 
 
-void parameterizedHeaderField::insertParameterBefore(const shared_ptr <parameter>& beforeParam, const shared_ptr <parameter>& param)
-{
-	const std::vector <shared_ptr <parameter> >::iterator it = std::find
-		(m_params.begin(), m_params.end(), beforeParam);
+void parameterizedHeaderField::insertParameterBefore(
+	const shared_ptr <parameter>& beforeParam,
+	const shared_ptr <parameter>& param
+) {
 
-	if (it == m_params.end())
+	const std::vector <shared_ptr <parameter> >::iterator it =
+		std::find(m_params.begin(), m_params.end(), beforeParam);
+
+	if (it == m_params.end()) {
 		throw std::out_of_range("Invalid position");
+	}
 
 	m_params.insert(it, param);
 }
 
 
-void parameterizedHeaderField::insertParameterBefore(const size_t pos, const shared_ptr <parameter>& param)
-{
-	if (pos >= m_params.size())
+void parameterizedHeaderField::insertParameterBefore(
+	const size_t pos,
+	const shared_ptr <parameter>& param
+) {
+
+	if (pos >= m_params.size()) {
 		throw std::out_of_range("Invalid position");
+	}
 
 	m_params.insert(m_params.begin() + pos, param);
 }
 
 
-void parameterizedHeaderField::insertParameterAfter(const shared_ptr <parameter>& afterParam, const shared_ptr <parameter>& param)
-{
-	const std::vector <shared_ptr <parameter> >::iterator it = std::find
-		(m_params.begin(), m_params.end(), afterParam);
+void parameterizedHeaderField::insertParameterAfter(
+	const shared_ptr <parameter>& afterParam,
+	const shared_ptr <parameter>& param
+) {
 
-	if (it == m_params.end())
+	const std::vector <shared_ptr <parameter> >::iterator it =
+		std::find(m_params.begin(), m_params.end(), afterParam);
+
+	if (it == m_params.end()) {
 		throw std::out_of_range("Invalid position");
+	}
 
 	m_params.insert(it + 1, param);
 }
 
 
-void parameterizedHeaderField::insertParameterAfter(const size_t pos, const shared_ptr <parameter>& param)
-{
-	if (pos >= m_params.size())
+void parameterizedHeaderField::insertParameterAfter(
+	const size_t pos,
+	const shared_ptr <parameter>& param
+) {
+
+	if (pos >= m_params.size()) {
 		throw std::out_of_range("Invalid position");
+	}
 
 	m_params.insert(m_params.begin() + pos + 1, param);
 }
 
 
-void parameterizedHeaderField::removeParameter(const shared_ptr <parameter>& param)
-{
-	const std::vector <shared_ptr <parameter> >::iterator it = std::find
-		(m_params.begin(), m_params.end(), param);
+void parameterizedHeaderField::removeParameter(const shared_ptr <parameter>& param) {
 
-	if (it == m_params.end())
+	const std::vector <shared_ptr <parameter> >::iterator it =
+		std::find(m_params.begin(), m_params.end(), param);
+
+	if (it == m_params.end()) {
 		throw std::out_of_range("Invalid position");
+	}
 
 	m_params.erase(it);
 }
 
 
-void parameterizedHeaderField::removeParameter(const size_t pos)
-{
+void parameterizedHeaderField::removeParameter(const size_t pos) {
+
 	const std::vector <shared_ptr <parameter> >::iterator it = m_params.begin() + pos;
 
 	m_params.erase(it);
 }
 
 
-void parameterizedHeaderField::removeAllParameters()
-{
+void parameterizedHeaderField::removeAllParameters() {
+
 	m_params.clear();
 }
 
 
-size_t parameterizedHeaderField::getParameterCount() const
-{
-	return (m_params.size());
+size_t parameterizedHeaderField::getParameterCount() const {
+
+	return m_params.size();
 }
 
 
-bool parameterizedHeaderField::isEmpty() const
-{
-	return (m_params.empty());
+bool parameterizedHeaderField::isEmpty() const {
+
+	return m_params.empty();
 }
 
 
-const shared_ptr <parameter> parameterizedHeaderField::getParameterAt(const size_t pos)
-{
-	return (m_params[pos]);
+const shared_ptr <parameter> parameterizedHeaderField::getParameterAt(const size_t pos) {
+
+	return m_params[pos];
 }
 
 
-const shared_ptr <const parameter> parameterizedHeaderField::getParameterAt(const size_t pos) const
-{
-	return (m_params[pos]);
+const shared_ptr <const parameter> parameterizedHeaderField::getParameterAt(const size_t pos) const {
+
+	return m_params[pos];
 }
 
 
-const std::vector <shared_ptr <const parameter> > parameterizedHeaderField::getParameterList() const
-{
+const std::vector <shared_ptr <const parameter> > parameterizedHeaderField::getParameterList() const {
+
 	std::vector <shared_ptr <const parameter> > list;
 
 	list.reserve(m_params.size());
 
 	for (std::vector <shared_ptr <parameter> >::const_iterator it = m_params.begin() ;
-	     it != m_params.end() ; ++it)
-	{
+	     it != m_params.end() ; ++it) {
+
 		list.push_back(*it);
 	}
 
-	return (list);
+	return list;
 }
 
 
-const std::vector <shared_ptr <parameter> > parameterizedHeaderField::getParameterList()
-{
-	return (m_params);
+const std::vector <shared_ptr <parameter> > parameterizedHeaderField::getParameterList() {
+
+	return m_params;
 }
 
 
-const std::vector <shared_ptr <component> > parameterizedHeaderField::getChildComponents()
-{
+const std::vector <shared_ptr <component> > parameterizedHeaderField::getChildComponents() {
+
 	std::vector <shared_ptr <component> > list = headerField::getChildComponents();
 
 	for (std::vector <shared_ptr <parameter> >::iterator it = m_params.begin() ;
-	     it != m_params.end() ; ++it)
-	{
+	     it != m_params.end() ; ++it) {
+
 		list.push_back(*it);
 	}
 
-	return (list);
+	return list;
 }
 
 

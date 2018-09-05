@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -35,21 +35,20 @@ namespace net {
 namespace maildir {
 
 
-maildirServiceInfos::maildirServiceInfos()
-{
+maildirServiceInfos::maildirServiceInfos() {
+
 }
 
 
-const string maildirServiceInfos::getPropertyPrefix() const
-{
+const string maildirServiceInfos::getPropertyPrefix() const {
+
 	return "store.maildir.";
 }
 
 
-const maildirServiceInfos::props& maildirServiceInfos::getProperties() const
-{
-	static props maildirProps =
-	{
+const maildirServiceInfos::props& maildirServiceInfos::getProperties() const {
+
+	static props maildirProps = {
 		property(serviceInfos::property::SERVER_ROOTPATH, serviceInfos::property::FLAG_REQUIRED)
 	};
 
@@ -57,8 +56,8 @@ const maildirServiceInfos::props& maildirServiceInfos::getProperties() const
 }
 
 
-const std::vector <serviceInfos::property> maildirServiceInfos::getAvailableProperties() const
-{
+const std::vector <serviceInfos::property> maildirServiceInfos::getAvailableProperties() const {
+
 	std::vector <property> list;
 	const props& p = getProperties();
 

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -39,9 +39,8 @@ namespace utility {
 
 /** Simple output stream.
   */
+class VMIME_EXPORT outputStream : public stream {
 
-class VMIME_EXPORT outputStream : public stream
-{
 public:
 
 	/** Write data to the stream.
@@ -65,8 +64,8 @@ public:
 	  * null (value is induced by compiler)
 	  */
 	template <int N>
-	void write(const char (&data)[N])
-	{
+	void write(const char (&data)[N]) {
+
 		write(data, N - 1);
 	}
 
@@ -95,27 +94,27 @@ VMIME_EXPORT outputStream& operator<<(outputStream& os, const byte_t c);
 
 #if defined(_MSC_VER) && (_MSC_VER <= 1200)  // Internal compiler error with VC++6
 
-inline outputStream& operator<<(outputStream& os, const char* str)
-{
+inline outputStream& operator<<(outputStream& os, const char* str) {
+
 	os.write(reinterpret_cast <const byte_t*>(str), ::strlen(str));
-	return (os);
+	return os;
 }
 
 #else
 
 template <int N>
-outputStream& operator<<(outputStream& os, const char (&str)[N])
-{
+outputStream& operator<<(outputStream& os, const char (&str)[N]) {
+
 	os.write(reinterpret_cast <const byte_t*>(str), N - 1);
-	return (os);
+	return os;
 }
 
 #endif // defined(_MSC_VER) && (_MSC_VER <= 1200)
 
 
 template <typename T>
-outputStream& operator<<(outputStream& os, const T& t)
-{
+outputStream& operator<<(outputStream& os, const T& t) {
+
 	std::ostringstream oss;
 	oss.imbue(std::locale::classic());  // no formatting
 
@@ -123,9 +122,8 @@ outputStream& operator<<(outputStream& os, const T& t)
 
 	os << oss.str();
 
-	return (os);
+	return os;
 }
-
 
 
 } // utility
@@ -133,4 +131,3 @@ outputStream& operator<<(outputStream& os, const T& t)
 
 
 #endif // VMIME_UTILITY_OUTPUTSTREAM_HPP_INCLUDED
-

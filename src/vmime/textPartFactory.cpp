@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -29,37 +29,36 @@
 #include "vmime/htmlTextPart.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
-textPartFactory::textPartFactory()
-{
-	// Register some default names
+textPartFactory::textPartFactory() {
+
 	registerType <plainTextPart>(mediaType(mediaTypes::TEXT, mediaTypes::TEXT_PLAIN));
 	registerType <htmlTextPart>(mediaType(mediaTypes::TEXT, mediaTypes::TEXT_HTML));
 }
 
 
-textPartFactory::~textPartFactory()
-{
+textPartFactory::~textPartFactory() {
+
 }
 
 
-textPartFactory* textPartFactory::getInstance()
-{
+textPartFactory* textPartFactory::getInstance() {
+
 	static textPartFactory instance;
-	return (&instance);
+	return &instance;
 }
 
 
 shared_ptr <textPart> textPartFactory::create(const mediaType& type)
 {
 	for (MapType::const_iterator it = m_map.begin() ;
-	     it != m_map.end() ; ++it)
-	{
-		if ((*it).first == type)
+	     it != m_map.end() ; ++it) {
+
+		if ((*it).first == type) {
 			return ((*it).second)();
+		}
 	}
 
 	throw exceptions::no_factory_available("No 'textPart' class registered for media type '" + type.generate() + "'.");

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -39,23 +39,20 @@
 #include "vmime/platforms/posix/posixHandler.hpp"
 
 
-int main()
-{
+int main() {
+
 	std::cout << std::endl;
 
 	// Set the global C and C++ locale to the user-configured locale.
 	// The locale should use UTF-8 encoding for these tests to run successfully.
-	try
-	{
+	try {
 		std::locale::global(std::locale(""));
-	}
-	catch (std::exception &)
-	{
+	} catch (std::exception &) {
 		std::setlocale(LC_ALL, "");
 	}
 
-	try
-	{
+	try {
+
 		vmime::messageBuilder mb;
 
 		// Fill in the basic fields
@@ -74,12 +71,17 @@ int main()
 		mb.setSubject(vmime::text("My first message generated with vmime::messageBuilder"));
 
 		// Set the content-type to "text/html"
-		mb.constructTextPart(vmime::mediaType
-			(vmime::mediaTypes::TEXT, vmime::mediaTypes::TEXT_HTML));
+		mb.constructTextPart(
+			vmime::mediaType(
+				vmime::mediaTypes::TEXT,
+				vmime::mediaTypes::TEXT_HTML
+			)
+		);
 
 		// Fill in the text part: the message is available in two formats: HTML and plain text.
 		// HTML text part also includes an inline image (embedded into the message).
-		vmime::htmlTextPart& textPart = *vmime::dynamicCast <vmime::htmlTextPart>(mb.getTextPart());
+		vmime::htmlTextPart& textPart =
+			*vmime::dynamicCast <vmime::htmlTextPart>(mb.getTextPart());
 
 		// -- embed an image (the returned "CID" (content identifier) is used to reference
 		// -- the image into HTML content).
@@ -93,18 +95,33 @@ int main()
 			imageFile->getFileReader();
 
 		vmime::shared_ptr <vmime::contentHandler> imageCts =
-			vmime::make_shared <vmime::streamContentHandler>
-				(fileReader->getInputStream(), imageFile->getLength());
+			vmime::make_shared <vmime::streamContentHandler>(
+				fileReader->getInputStream(),
+				imageFile->getLength()
+			);
 
-		vmime::shared_ptr <const vmime::htmlTextPart::embeddedObject> obj = textPart.addObject
-			(imageCts, vmime::mediaType(vmime::mediaTypes::IMAGE, vmime::mediaTypes::IMAGE_JPEG));
+		vmime::shared_ptr <const vmime::htmlTextPart::embeddedObject> obj =
+			textPart.addObject(
+				imageCts,
+				vmime::mediaType(
+					vmime::mediaTypes::IMAGE,
+					vmime::mediaTypes::IMAGE_JPEG
+				)
+			);
 
 		// -- message text
-		textPart.setText(vmime::make_shared <vmime::stringContentHandler>
-			(vmime::string("This is the <b>HTML text</b>.<br/>"
-				"<img src=\"") + obj->getReferenceId() + vmime::string("\"/>")));
-		textPart.setPlainText(vmime::make_shared <vmime::stringContentHandler>
-			("This is the plain text (without HTML formatting)."));
+		textPart.setText(
+			vmime::make_shared <vmime::stringContentHandler>(
+				vmime::string("This is the <b>HTML text</b>.<br/>"
+				"<img src=\"") + obj->getReferenceId() + vmime::string("\"/>")
+			)
+		);
+
+		textPart.setPlainText(
+			vmime::make_shared <vmime::stringContentHandler>(
+				"This is the plain text (without HTML formatting)."
+			)
+		);
 
 		// Construction
 		vmime::shared_ptr <vmime::message> msg = mb.construct();
@@ -116,20 +133,21 @@ int main()
 		std::cout << "==================" << std::endl;
 		std::cout << std::endl;
 		std::cout << dataToSend << std::endl;
-	}
+
 	// VMime exception
-	catch (vmime::exception& e)
-	{
+	} catch (vmime::exception& e) {
+
 		std::cout << "vmime::exception: " << e.what() << std::endl;
 		throw;
-	}
+
 	// Standard exception
-	catch (std::exception& e)
-	{
+	} catch (std::exception& e) {
+
 		std::cout << "std::exception: " << e.what() << std::endl;
 		throw;
 	}
 
 	std::cout << std::endl;
-}
 
+	return 0;
+}

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -38,8 +38,8 @@
 
 #ifndef VMIME_BUILDING_DOC
 
-namespace vmime
-{
+namespace vmime {
+
 	using std::shared_ptr;
 	using std::weak_ptr;
 	using std::make_shared;
@@ -52,8 +52,7 @@ namespace vmime
 	  * only for the singleton classes allocated on the stack.
 	  */
 	template <typename T>
-	struct noop_shared_ptr_deleter
-	{
+	struct noop_shared_ptr_deleter {
 		void operator()(T*) const {}
 	};
 
@@ -63,8 +62,8 @@ namespace vmime
 #endif // VMIME_BUILDING_DOC
 
 
-namespace vmime
-{
+namespace vmime {
+
 	typedef std::string string;
 
 	typedef unsigned short port_t;

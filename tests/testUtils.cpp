@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -36,8 +36,8 @@
 
 // testSocket
 
-void testSocket::connect(const vmime::string& address, const vmime::port_t port)
-{
+void testSocket::connect(const vmime::string& address, const vmime::port_t port) {
+
 	m_address = address;
 	m_port = port;
 	m_connected = true;
@@ -46,96 +46,96 @@ void testSocket::connect(const vmime::string& address, const vmime::port_t port)
 }
 
 
-void testSocket::disconnect()
-{
+void testSocket::disconnect() {
+
 	m_address.clear();
 	m_port = 0;
 	m_connected = false;
 }
 
 
-bool testSocket::isConnected() const
-{
+bool testSocket::isConnected() const {
+
 	return m_connected;
 }
 
 
-vmime::size_t testSocket::getBlockSize() const
-{
+vmime::size_t testSocket::getBlockSize() const {
+
 	return 16384;
 }
 
 
-unsigned int testSocket::getStatus() const
-{
+unsigned int testSocket::getStatus() const {
+
 	return 0;
 }
 
 
-const vmime::string testSocket::getPeerName() const
-{
+const vmime::string testSocket::getPeerName() const {
+
 	return "test.vmime.org";
 }
 
 
-const vmime::string testSocket::getPeerAddress() const
-{
+const vmime::string testSocket::getPeerAddress() const {
+
 	return "127.0.0.1";
 }
 
 
-vmime::shared_ptr <vmime::net::timeoutHandler> testSocket::getTimeoutHandler()
-{
+vmime::shared_ptr <vmime::net::timeoutHandler> testSocket::getTimeoutHandler() {
+
 	return vmime::null;
 }
 
 
-void testSocket::setTracer(const vmime::shared_ptr <vmime::net::tracer>& /* tracer */)
-{
+void testSocket::setTracer(const vmime::shared_ptr <vmime::net::tracer>& /* tracer */) {
+
 }
 
 
-vmime::shared_ptr <vmime::net::tracer> testSocket::getTracer()
-{
+vmime::shared_ptr <vmime::net::tracer> testSocket::getTracer() {
+
 	return vmime::null;
 }
 
 
-bool testSocket::waitForRead(const int /* msecs */)
-{
+bool testSocket::waitForRead(const int /* msecs */) {
+
 	return true;
 }
 
 
-bool testSocket::waitForWrite(const int /* msecs */)
-{
+bool testSocket::waitForWrite(const int /* msecs */) {
+
 	return true;
 }
 
 
-void testSocket::receive(vmime::string& buffer)
-{
+void testSocket::receive(vmime::string& buffer) {
+
 	buffer = m_inBuffer;
 	m_inBuffer.clear();
 }
 
 
-void testSocket::send(const vmime::string& buffer)
-{
+void testSocket::send(const vmime::string& buffer) {
+
 	m_outBuffer += buffer;
 
 	onDataReceived();
 }
 
 
-void testSocket::send(const char* str)
-{
+void testSocket::send(const char* str) {
+
 	sendRaw(reinterpret_cast <const vmime::byte_t*>(str), strlen(str));
 }
 
 
-vmime::size_t testSocket::receiveRaw(vmime::byte_t* buffer, const size_t count)
-{
+vmime::size_t testSocket::receiveRaw(vmime::byte_t* buffer, const size_t count) {
+
 	const size_t n = std::min(count, static_cast <size_t>(m_inBuffer.size()));
 
 	std::copy(m_inBuffer.begin(), m_inBuffer.begin() + n, buffer);
@@ -145,21 +145,21 @@ vmime::size_t testSocket::receiveRaw(vmime::byte_t* buffer, const size_t count)
 }
 
 
-void testSocket::sendRaw(const vmime::byte_t* buffer, const size_t count)
-{
+void testSocket::sendRaw(const vmime::byte_t* buffer, const size_t count) {
+
 	send(vmime::utility::stringUtils::makeStringFromBytes(buffer, count));
 }
 
 
-vmime::size_t testSocket::sendRawNonBlocking(const vmime::byte_t* buffer, const size_t count)
-{
+vmime::size_t testSocket::sendRawNonBlocking(const vmime::byte_t* buffer, const size_t count) {
+
 	sendRaw(buffer, count);
 	return count;
 }
 
 
-void testSocket::localSend(const vmime::string& buffer)
-{
+void testSocket::localSend(const vmime::string& buffer) {
+
 	m_inBuffer += buffer;
 
 #if DEBUG_SOCKET_IN_OUT
@@ -169,23 +169,24 @@ void testSocket::localSend(const vmime::string& buffer)
 }
 
 
-void testSocket::localReceive(vmime::string& buffer)
-{
+void testSocket::localReceive(vmime::string& buffer) {
+
 	buffer = m_outBuffer;
 	m_outBuffer.clear();
 }
 
 
-bool testSocket::localReceiveLine(vmime::string& line)
-{
+bool testSocket::localReceiveLine(vmime::string& line) {
+
 	vmime::size_t eol;
 
-	if ((eol = m_outBuffer.find('\n')) != vmime::string::npos)
-	{
+	if ((eol = m_outBuffer.find('\n')) != vmime::string::npos) {
+
 		line = vmime::string(m_outBuffer.begin(), m_outBuffer.begin() + eol);
 
-		if (!line.empty() && line[line.length() - 1] == '\r')
+		if (!line.empty() && line[line.length() - 1] == '\r') {
 			line.erase(line.end() - 1, line.end());
+		}
 
 		m_outBuffer.erase(m_outBuffer.begin(), m_outBuffer.begin() + eol + 1);
 
@@ -196,14 +197,15 @@ bool testSocket::localReceiveLine(vmime::string& line)
 }
 
 
-vmime::size_t testSocket::localReceiveRaw(vmime::byte_t* buffer, const size_t count)
-{
+vmime::size_t testSocket::localReceiveRaw(vmime::byte_t* buffer, const size_t count) {
+
 	const size_t received = std::min(count, static_cast <size_t>(m_outBuffer.size()));
 
-	if (received != 0)
-	{
-		if (buffer != NULL)
+	if (received != 0) {
+
+		if (buffer) {
 			std::copy(m_outBuffer.begin(), m_outBuffer.begin() + received, buffer);
+		}
 
 		m_outBuffer.erase(m_outBuffer.begin(), m_outBuffer.begin() + received);
 	}
@@ -212,22 +214,22 @@ vmime::size_t testSocket::localReceiveRaw(vmime::byte_t* buffer, const size_t co
 }
 
 
-void testSocket::onDataReceived()
-{
+void testSocket::onDataReceived() {
+
 	// Override
 }
 
 
-void testSocket::onConnected()
-{
+void testSocket::onConnected() {
+
 	// Override
 }
 
 
 // lineBasedTestSocket
 
-void lineBasedTestSocket::onDataReceived()
-{
+void lineBasedTestSocket::onDataReceived() {
+
 	vmime::string chunk;
 	localReceive(chunk);
 
@@ -235,12 +237,13 @@ void lineBasedTestSocket::onDataReceived()
 
 	vmime::size_t eol;
 
-	while ((eol = m_buffer.find('\n')) != vmime::string::npos)
-	{
+	while ((eol = m_buffer.find('\n')) != vmime::string::npos) {
+
 		vmime::string line(std::string(m_buffer.begin(), m_buffer.begin() + eol));
 
-		if (!line.empty() && line[line.length() - 1] == '\r')
+		if (!line.empty() && line[line.length() - 1] == '\r') {
 			line.erase(line.end() - 1, line.end());
+		}
 
 #if DEBUG_SOCKET_IN_OUT
 		std::cout << "< " << vmime::utility::stringUtils::trim(line) << std::endl;
@@ -250,20 +253,22 @@ void lineBasedTestSocket::onDataReceived()
 		m_buffer.erase(m_buffer.begin(), m_buffer.begin() + eol + 1);
 	}
 
-	while (!m_lines.empty())
+	while (!m_lines.empty()) {
 		processCommand();
+	}
 }
 
 
-const vmime::string lineBasedTestSocket::getNextLine()
-{
+const vmime::string lineBasedTestSocket::getNextLine() {
+
 	const vmime::string line = m_lines.front();
 	m_lines.erase(m_lines.begin(), m_lines.begin() + 1);
 	return line;
 }
 
-bool lineBasedTestSocket::haveMoreLines() const
-{
+
+bool lineBasedTestSocket::haveMoreLines() const {
+
 	return !m_lines.empty();
 }
 
@@ -271,47 +276,48 @@ bool lineBasedTestSocket::haveMoreLines() const
 // testTimeoutHandler
 
 testTimeoutHandler::testTimeoutHandler(const unsigned long delay)
-	: m_delay(delay), m_start(0)
-{
+	: m_delay(delay),
+	  m_start(0) {
+
 }
 
 
-bool testTimeoutHandler::isTimeOut()
-{
+bool testTimeoutHandler::isTimeOut() {
+
 	return (vmime::platform::getHandler()->getUnixTime() - m_start) >= m_delay;
 }
 
 
-void testTimeoutHandler::resetTimeOut()
-{
+void testTimeoutHandler::resetTimeOut() {
+
 	m_start = vmime::platform::getHandler()->getUnixTime();
 }
 
 
-bool testTimeoutHandler::handleTimeOut()
-{
+bool testTimeoutHandler::handleTimeOut() {
+
 	return false;
 }
 
 
 // testTimeoutHandlerFactory : public vmime::net::timeoutHandlerFactory
 
-vmime::shared_ptr <vmime::net::timeoutHandler> testTimeoutHandlerFactory::create()
-{
+vmime::shared_ptr <vmime::net::timeoutHandler> testTimeoutHandlerFactory::create() {
+
 	return vmime::make_shared <testTimeoutHandler>();
 }
 
 
 
 // Exception helper
-std::ostream& operator<<(std::ostream& os, const vmime::exception& e)
-{
+std::ostream& operator<<(std::ostream& os, const vmime::exception& e) {
+
 	os << "* vmime::exceptions::" << e.name() << std::endl;
 	os << "    what = " << e.what() << std::endl;
 
 	// More information for special exceptions
-	if (dynamic_cast <const vmime::exceptions::command_error*>(&e))
-	{
+	if (dynamic_cast <const vmime::exceptions::command_error*>(&e)) {
+
 		const vmime::exceptions::command_error& cee =
 			dynamic_cast <const vmime::exceptions::command_error&>(e);
 
@@ -319,32 +325,32 @@ std::ostream& operator<<(std::ostream& os, const vmime::exception& e)
 		os << "    response = " << cee.response() << std::endl;
 	}
 
-	if (dynamic_cast <const vmime::exceptions::invalid_response*>(&e))
-	{
+	if (dynamic_cast <const vmime::exceptions::invalid_response*>(&e)) {
+
 		const vmime::exceptions::invalid_response& ir =
 			dynamic_cast <const vmime::exceptions::invalid_response&>(e);
 
 		os << "    response = " << ir.response() << std::endl;
 	}
 
-	if (dynamic_cast <const vmime::exceptions::connection_greeting_error*>(&e))
-	{
+	if (dynamic_cast <const vmime::exceptions::connection_greeting_error*>(&e)) {
+
 		const vmime::exceptions::connection_greeting_error& cgee =
 			dynamic_cast <const vmime::exceptions::connection_greeting_error&>(e);
 
 		os << "    response = " << cgee.response() << std::endl;
 	}
 
-	if (dynamic_cast <const vmime::exceptions::authentication_error*>(&e))
-	{
+	if (dynamic_cast <const vmime::exceptions::authentication_error*>(&e)) {
+
 		const vmime::exceptions::authentication_error& aee =
 			dynamic_cast <const vmime::exceptions::authentication_error&>(e);
 
 		os << "    response = " << aee.response() << std::endl;
 	}
 
-	if (dynamic_cast <const vmime::exceptions::filesystem_exception*>(&e))
-	{
+	if (dynamic_cast <const vmime::exceptions::filesystem_exception*>(&e)) {
+
 		const vmime::exceptions::filesystem_exception& fse =
 			dynamic_cast <const vmime::exceptions::filesystem_exception&>(e);
 
@@ -352,29 +358,29 @@ std::ostream& operator<<(std::ostream& os, const vmime::exception& e)
 			getFileSystemFactory()->pathToString(fse.path()) << std::endl;
 	}
 
-	if (e.other() != NULL)
+	if (e.other()) {
 		os << *e.other();
+	}
 
 	return os;
 }
 
 
-const vmime::string toHex(const vmime::string str)
-{
+const vmime::string toHex(const vmime::string str) {
+
 	static const char hexChars[] = "0123456789abcdef";
 
 	vmime::string res = "\n";
 
-	for (size_t i = 0 ; i < str.length() ; i += 16)
-	{
-		size_t r = std::min
-			(static_cast <size_t>(16), str.length() - i);
+	for (size_t i = 0 ; i < str.length() ; i += 16) {
+
+		size_t r = std::min(static_cast <size_t>(16), str.length() - i);
 
 		vmime::string hex;
 		vmime::string chr;
 
-		for (size_t j = 0 ; j < r ; ++j)
-		{
+		for (size_t j = 0 ; j < r ; ++j) {
+
 			const unsigned char c = str[i + j];
 
 			hex += hexChars[c / 16];
@@ -387,8 +393,9 @@ const vmime::string toHex(const vmime::string str)
 				chr += '.';
 		}
 
-		for (size_t j = r ; j < 16 ; ++j)
+		for (size_t j = r ; j < 16 ; ++j) {
 			hex += "   ";
+		}
 
 		res += hex + "  " + chr + "\n";
 	}

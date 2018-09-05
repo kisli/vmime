@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -35,19 +35,22 @@ namespace net {
 namespace imap {
 
 
-IMAPSStore::IMAPSStore(const shared_ptr <session>& sess, const shared_ptr <security::authenticator>& auth)
-	: IMAPStore(sess, auth, true)
-{
+IMAPSStore::IMAPSStore(
+	const shared_ptr <session>& sess,
+	const shared_ptr <security::authenticator>& auth
+)
+	: IMAPStore(sess, auth, true) {
+
 }
 
 
-IMAPSStore::~IMAPSStore()
-{
+IMAPSStore::~IMAPSStore() {
+
 }
 
 
-const string IMAPSStore::getProtocolName() const
-{
+const string IMAPSStore::getProtocolName() const {
+
 	return "imaps";
 }
 
@@ -58,14 +61,14 @@ const string IMAPSStore::getProtocolName() const
 IMAPServiceInfos IMAPSStore::sm_infos(true);
 
 
-const serviceInfos& IMAPSStore::getInfosInstance()
-{
+const serviceInfos& IMAPSStore::getInfosInstance() {
+
 	return sm_infos;
 }
 
 
-const serviceInfos& IMAPSStore::getInfos() const
-{
+const serviceInfos& IMAPSStore::getInfos() const {
+
 	return sm_infos;
 }
 

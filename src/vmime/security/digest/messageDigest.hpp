@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -37,9 +37,8 @@ namespace digest {
 /** Computes message digests using standard algorithms,
   * such as MD5 or SHA.
   */
+class VMIME_EXPORT messageDigest : public object {
 
-class VMIME_EXPORT messageDigest : public object
-{
 public:
 
 	/** Updates the digest using the specified string.
@@ -68,9 +67,11 @@ public:
 	  * @param offset offset to start from in the array of bytes
 	  * @param len number of bytes to use, starting at offset
 	  */
-	virtual void update(const byte_t* buffer,
-	                    const size_t offset,
-	                    const size_t len) = 0;
+	virtual void update(
+		const byte_t* buffer,
+		const size_t offset,
+		const size_t len
+	) = 0;
 
 	/** Completes the hash computation by performing final operations
 	  * such as padding.
@@ -87,16 +88,20 @@ public:
 	  * such as padding. This is equivalent to calling update() and
 	  * then finalize().
 	  */
-	virtual void finalize(const byte_t* buffer,
-	                      const size_t len) = 0;
+	virtual void finalize(
+		const byte_t* buffer,
+		const size_t len
+	) = 0;
 
 	/** Completes the hash computation by performing final operations
 	  * such as padding. This is equivalent to calling update() and
 	  * then finalize().
 	  */
-	virtual void finalize(const byte_t* buffer,
-	                      const size_t offset,
-	                      const size_t len) = 0;
+	virtual void finalize(
+		const byte_t* buffer,
+		const size_t offset,
+		const size_t len
+	) = 0;
 
 	/** Returns the length of the hash.
 	  * This is the length of the array returned by getDigest().
@@ -135,4 +140,3 @@ public:
 
 
 #endif // VMIME_SECURITY_DIGEST_MESSAGEDIGEST_HPP_INCLUDED
-

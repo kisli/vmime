@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -38,8 +38,8 @@ namespace digest {
 /** Creates instances of message digest algorithms.
   */
 
-class VMIME_EXPORT messageDigestFactory
-{
+class VMIME_EXPORT messageDigestFactory {
+
 private:
 
 	messageDigestFactory();
@@ -51,20 +51,15 @@ public:
 
 private:
 
-	class digestAlgorithmFactory : public object
-	{
-	public:
+	struct digestAlgorithmFactory : public object {
 
 		virtual shared_ptr <messageDigest> create() const = 0;
 	};
 
 	template <class E>
-	class digestAlgorithmFactoryImpl : public digestAlgorithmFactory
-	{
-	public:
+	struct digestAlgorithmFactoryImpl : public digestAlgorithmFactory {
 
-		shared_ptr <messageDigest> create() const
-		{
+		shared_ptr <messageDigest> create() const {
 			return vmime::make_shared <E>();
 		}
 	};
@@ -80,10 +75,14 @@ public:
 	  * @param name algorithm name
 	  */
 	template <class E>
-	void registerAlgorithm(const string& name)
-	{
-		m_algos.insert(MapType::value_type(utility::stringUtils::toLower(name),
-			vmime::make_shared <digestAlgorithmFactoryImpl <E> >()));
+	void registerAlgorithm(const string& name) {
+
+		m_algos.insert(
+			MapType::value_type(
+				utility::stringUtils::toLower(name),
+				vmime::make_shared <digestAlgorithmFactoryImpl <E> >()
+			)
+		);
 	}
 
 	/** Create a new algorithm instance from its name.
@@ -109,4 +108,3 @@ public:
 
 
 #endif // VMIME_SECURITY_DIGEST_MESSAGEDIGESTFACTORY_HPP_INCLUDED
-

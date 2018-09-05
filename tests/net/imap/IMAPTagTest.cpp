@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -36,16 +36,16 @@ VMIME_TEST_SUITE_BEGIN(imapTagTest)
 	VMIME_TEST_LIST_END
 
 
-	void testConstruct()
-	{
+	void testConstruct() {
+
 		vmime::shared_ptr <vmime::net::imap::IMAPTag> tag =
 			vmime::make_shared <vmime::net::imap::IMAPTag>();
 
 		VASSERT_EQ("init", "a001", static_cast <vmime::string>(*tag));
 	}
 
-	void testIncrement()
-	{
+	void testIncrement() {
+
 		vmime::shared_ptr <vmime::net::imap::IMAPTag> tag =
 			vmime::make_shared <vmime::net::imap::IMAPTag>();
 
@@ -59,13 +59,14 @@ VMIME_TEST_SUITE_BEGIN(imapTagTest)
 		VASSERT_EQ("init", "a004", static_cast <vmime::string>(*tag));
 	}
 
-	void testReset()
-	{
+	void testReset() {
+
 		vmime::shared_ptr <vmime::net::imap::IMAPTag> tag =
 			vmime::make_shared <vmime::net::imap::IMAPTag>();
 
-		for (int i = tag->number() ; i < tag->maximumNumber() ; ++i)
+		for (int i = tag->number() ; i < tag->maximumNumber() ; ++i) {
 			(*tag)++;
+		}
 
 		VASSERT_EQ("last", "Z999", static_cast <vmime::string>(*tag));
 
@@ -74,13 +75,14 @@ VMIME_TEST_SUITE_BEGIN(imapTagTest)
 		VASSERT_EQ("reset", "a001", static_cast <vmime::string>(*tag));
 	}
 
-	void testNumber()
-	{
+	void testNumber() {
+
 		vmime::shared_ptr <vmime::net::imap::IMAPTag> tag =
 			vmime::make_shared <vmime::net::imap::IMAPTag>();
 
-		for (int i = 0 ; i < 41 ; ++i)
+		for (int i = 0 ; i < 41 ; ++i) {
 			(*tag)++;
+		}
 
 		VASSERT_EQ("number", 42, tag->number());
 	}

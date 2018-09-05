@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -34,10 +34,10 @@ VMIME_TEST_SUITE_BEGIN(mailboxTest)
 	VMIME_TEST_LIST_END
 
 
-	void testParse()
-	{
-		static const vmime::string testSuitesParse[] =
-		{
+	void testParse() {
+
+		static const vmime::string testSuitesParse[] = {
+
 			// Test 1
 			"My (this is a comment)name <me(another \\)comment) @    	somewhere(else).com>",
 
@@ -94,8 +94,8 @@ VMIME_TEST_SUITE_BEGIN(mailboxTest)
 			"[address-list: [[mailbox: name=[text: [[word: charset=us-ascii, buffer=John]]], email=john.doe@acme.com]]]"
 		};
 
-		for (unsigned int i = 0 ; i < sizeof(testSuitesParse) / sizeof(testSuitesParse[0]) / 2 ; ++i)
-		{
+		for (unsigned int i = 0 ; i < sizeof(testSuitesParse) / sizeof(testSuitesParse[0]) / 2 ; ++i) {
+
 			vmime::string in = testSuitesParse[i * 2];
 			vmime::string out = testSuitesParse[i * 2 + 1];
 
@@ -112,8 +112,8 @@ VMIME_TEST_SUITE_BEGIN(mailboxTest)
 		}
 	}
 
-	void testEmptyEmailAddress()
-	{
+	void testEmptyEmailAddress() {
+
 		vmime::addressList addrList;
 		addrList.parse("\"Full Name\" <>");
 
@@ -127,8 +127,8 @@ VMIME_TEST_SUITE_BEGIN(mailboxTest)
 		VASSERT_EQ("email", "", mbox->getEmail());
 	}
 
-	void testSeparatorInComment()
-	{
+	void testSeparatorInComment() {
+
 		vmime::addressList addrList;
 		addrList.parse("aaa(comment,comment)@vmime.org, bbb@vmime.org");
 
@@ -146,8 +146,8 @@ VMIME_TEST_SUITE_BEGIN(mailboxTest)
 		VASSERT_EQ("email2", "bbb@vmime.org", mbox2->getEmail());
 	}
 
-	void testAddressInName()
-	{
+	void testAddressInName() {
+
 		vmime::mailbox mbox;
 		mbox.parse("a@b.c <e@f.g>");
 
@@ -156,4 +156,3 @@ VMIME_TEST_SUITE_BEGIN(mailboxTest)
 	}
 
 VMIME_TEST_SUITE_END
-

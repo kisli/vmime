@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -29,18 +29,17 @@
 #include <sstream>
 
 
-namespace vmime
-{
+namespace vmime {
 
 
-relay::relay()
-{
+relay::relay() {
+
 }
 
 
 relay::relay(const relay& r)
-	: headerFieldValue()
-{
+	: headerFieldValue() {
+
 	copyFrom(r);
 }
 
@@ -58,34 +57,39 @@ relay::relay(const relay& r)
                        ["for"  addr-spec]        ; initial form
 */
 
-void relay::parseImpl
-	(const parsingContext& ctx, const string& buffer, const size_t position,
-	 const size_t end, size_t* newPosition)
-{
+void relay::parseImpl(
+	const parsingContext& ctx,
+	const string& buffer,
+	const size_t position,
+	const size_t end,
+	size_t* newPosition
+) {
+
 	const char* const pend = buffer.data() + end;
 	const char* const pstart = buffer.data() + position;
 	const char* p = pend - 1;
 
 	// Find the beginning of the date part
-	while (p >= pstart && *p != ';')
+	while (p >= pstart && *p != ';') {
 		--p;
+	}
 
-	if (p >= pstart)
-	{
+	if (p >= pstart) {
+
 		// Parse the date/time part
 		m_date.parse(ctx, buffer, position + (p - pstart) + 1, end);
 
 		// Parse the components
-		std::istringstream iss(string
-			(buffer.begin() + position, buffer.begin() + position + (p - pstart)));
+		std::istringstream iss(
+			string(buffer.begin() + position, buffer.begin() + position + (p - pstart))
+		);
 
 		iss.imbue(std::locale::classic());
 
 		string word;
 		std::vector <string> previous;
 
-		enum Parts
-		{
+		enum Parts {
 			Part_None,
 			Part_From,              // The "from" part
 			Part_By,                // The "by" part
@@ -100,19 +104,19 @@ void relay::parseImpl
 		bool cont = true;
 		bool inComment = false;
 
-		while (cont)
-		{
+		while (cont) {
+
 			Parts newPart = Part_None;
 
-			if ((cont = !(iss >> word).fail()))
-			{
+			if ((cont = !(iss >> word).fail())) {
+
 				// A little hack for handling comments
-				if (inComment)
-				{
+				if (inComment) {
+
 					size_t par = word.find(')');
 
-					if (par != string::npos)
-					{
+					if (par != string::npos) {
+
 						previous.push_back(string(word.begin(), word.begin() + par + 1));
 						word.erase(word.begin(), word.begin() + par + 1);
 						inComment = false;
@@ -121,71 +125,71 @@ void relay::parseImpl
 
 				bool keyword = false;
 
-				if (!inComment)
-				{
-					if (utility::stringUtils::isStringEqualNoCase(word, "from", 4))
-					{
+				if (!inComment) {
+
+					if (utility::stringUtils::isStringEqualNoCase(word, "from", 4)) {
+
 						newPart = Part_From;
 						keyword = true;
-					}
-					else if (utility::stringUtils::isStringEqualNoCase(word, "by", 2))
-					{
+
+					} else if (utility::stringUtils::isStringEqualNoCase(word, "by", 2)) {
+
 						newPart = Part_By;
 						keyword = true;
-					}
-					else if (utility::stringUtils::isStringEqualNoCase(word, "via", 2))
-					{
+
+					} else if (utility::stringUtils::isStringEqualNoCase(word, "via", 2)) {
+
 						newPart = Part_Via;
 						keyword = true;
-					}
-					else if (utility::stringUtils::isStringEqualNoCase(word, "with", 2))
-					{
+
+					} else if (utility::stringUtils::isStringEqualNoCase(word, "with", 2)) {
+
 						newPart = Part_With;
 						keyword = true;
-					}
-					else if (utility::stringUtils::isStringEqualNoCase(word, "id", 2))
-					{
+
+					} else if (utility::stringUtils::isStringEqualNoCase(word, "id", 2)) {
+
 						newPart = Part_Id;
 						keyword = true;
-					}
-					else if (utility::stringUtils::isStringEqualNoCase(word, "for", 2))
-					{
+
+					} else if (utility::stringUtils::isStringEqualNoCase(word, "for", 2)) {
+
 						newPart = Part_For;
 						keyword = true;
 					}
 				}
 
-				if (!keyword)
-				{
-					if (word.find('(') != string::npos)
+				if (!keyword) {
+
+					if (word.find('(') != string::npos) {
 						inComment = true;
+					}
 
 					previous.push_back(word);
 				}
 			}
 
-			if (!cont || newPart != Part_None)
-			{
-				if (part != Part_None)
-				{
+			if (!cont || newPart != Part_None) {
+
+				if (part != Part_None) {
+
 					std::ostringstream value;
 
 					for (std::vector <string>::const_iterator
-						it = previous.begin() ; it != previous.end() ; ++it)
-					{
+						it = previous.begin() ; it != previous.end() ; ++it) {
+
 						if (it != previous.begin()) value << " ";
 						value << *it;
 					}
 
-					switch (part)
-					{
-					case Part_From: m_from = value.str(); break;
-					case Part_By: m_by = value.str(); break;
-					case Part_Via: m_via = value.str(); break;
-					case Part_With: m_with.push_back(value.str()); break;
-					case Part_Id: m_id = value.str(); break;
-					case Part_For: m_for = value.str(); break;
-					default: break; // Should never happen...
+					switch (part) {
+						case Part_From: m_from = value.str(); break;
+						case Part_By: m_by = value.str(); break;
+						case Part_Via: m_via = value.str(); break;
+						case Part_With: m_with.push_back(value.str()); break;
+						case Part_Id: m_id = value.str(); break;
+						case Part_For: m_for = value.str(); break;
+						default: break; // Should never happen...
 					}
 				}
 
@@ -197,15 +201,19 @@ void relay::parseImpl
 
 	setParsedBounds(position, end);
 
-	if (newPosition)
+	if (newPosition) {
 		*newPosition = end;
+	}
 }
 
 
-void relay::generateImpl
-	(const generationContext& ctx, utility::outputStream& os,
-	 const size_t curLinePos, size_t* newLinePos) const
-{
+void relay::generateImpl(
+	const generationContext& ctx,
+	utility::outputStream& os,
+	const size_t curLinePos,
+	size_t* newLinePos
+) const {
+
 	std::ostringstream oss;
 	int count = 0;
 
@@ -214,8 +222,8 @@ void relay::generateImpl
 	if (m_via.length()) oss << (count++ > 0 ? " " : "") << "via " << m_via;
 
 	for (std::vector <string>::const_iterator
-	     it = m_with.begin() ; it != m_with.end() ; ++it)
-	{
+	     it = m_with.begin() ; it != m_with.end() ; ++it) {
+
 		oss << (count++ > 0 ? " " : "") << "with " << *it;
 	}
 
@@ -227,13 +235,12 @@ void relay::generateImpl
 	vmime::utility::outputStreamAdapter dos(oss);
 	m_date.generate(ctx, dos, 0, NULL);
 
-	text(oss.str()).encodeAndFold(ctx, os,
-		curLinePos, newLinePos, text::FORCE_NO_ENCODING);
+	text(oss.str()).encodeAndFold(ctx, os, curLinePos, newLinePos, text::FORCE_NO_ENCODING);
 }
 
 
-void relay::copyFrom(const component& other)
-{
+void relay::copyFrom(const component& other) {
+
 	const relay& r = dynamic_cast <const relay&>(other);
 
 	m_from = r.m_from;
@@ -249,105 +256,105 @@ void relay::copyFrom(const component& other)
 }
 
 
-relay& relay::operator=(const relay& other)
-{
+relay& relay::operator=(const relay& other) {
+
 	copyFrom(other);
-	return (*this);
+	return *this;
 }
 
 
-shared_ptr <component> relay::clone() const
-{
+shared_ptr <component> relay::clone() const {
+
 	return make_shared <relay>(*this);
 }
 
 
-const string& relay::getFrom() const
-{
-	return (m_from);
+const string& relay::getFrom() const {
+
+	return m_from;
 }
 
 
-void relay::setFrom(const string& from)
-{
+void relay::setFrom(const string& from) {
+
 	m_from = from;
 }
 
 
-const string& relay::getVia() const
-{
-	return (m_via);
+const string& relay::getVia() const {
+
+	return m_via;
 }
 
 
-void relay::setVia(const string& via)
-{
+void relay::setVia(const string& via) {
+
 	m_via = via;
 }
 
 
-const string& relay::getBy() const
-{
-	return (m_by);
+const string& relay::getBy() const {
+
+	return m_by;
 }
 
 
-void relay::setBy(const string& by)
-{
+void relay::setBy(const string& by) {
+
 	m_by = by;
 }
 
 
-const string& relay::getId() const
-{
-	return (m_id);
+const string& relay::getId() const {
+
+	return m_id;
 }
 
 
-void relay::setId(const string& id)
-{
+void relay::setId(const string& id) {
+
 	m_id = id;
 }
 
 
-const string& relay::getFor() const
-{
-	return (m_for);
+const string& relay::getFor() const {
+
+	return m_for;
 }
 
 
-void relay::setFor(const string& for_)
-{
+void relay::setFor(const string& for_) {
+
 	m_for = for_;
 }
 
 
-const datetime& relay::getDate() const
-{
-	return (m_date);
+const datetime& relay::getDate() const {
+
+	return m_date;
 }
 
 
-void relay::setDate(const datetime& date)
-{
+void relay::setDate(const datetime& date) {
+
 	m_date = date;
 }
 
 
-const std::vector <string>& relay::getWithList() const
-{
-	return (m_with);
+const std::vector <string>& relay::getWithList() const {
+
+	return m_with;
 }
 
 
-std::vector <string>& relay::getWithList()
-{
-	return (m_with);
+std::vector <string>& relay::getWithList() {
+
+	return m_with;
 }
 
 
-const std::vector <shared_ptr <component> > relay::getChildComponents()
-{
+const std::vector <shared_ptr <component> > relay::getChildComponents() {
+
 	// TODO: should fields inherit from 'component'? (using typeAdapter)
 	return std::vector <shared_ptr <component> >();
 }

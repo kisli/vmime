@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -50,8 +50,8 @@ class SASLSession;
   * Usually, you should not inherit from this class, but instead from the
   * more convenient defaultSASLAuthenticator class.
   */
-class VMIME_EXPORT SASLAuthenticator : public authenticator
-{
+class VMIME_EXPORT SASLAuthenticator : public authenticator {
+
 public:
 
 	/** This method is called to allow the client to choose the
@@ -64,9 +64,10 @@ public:
 	  * @return ordered list of mechanism to use among the available
 	  * mechanisms (from the first to try to the last)
 	  */
-	virtual const std::vector <shared_ptr <SASLMechanism> > getAcceptableMechanisms
-		(const std::vector <shared_ptr <SASLMechanism> >& available,
-	         const shared_ptr <SASLMechanism>& suggested) const = 0;
+	virtual const std::vector <shared_ptr <SASLMechanism> > getAcceptableMechanisms(
+		const std::vector <shared_ptr <SASLMechanism> >& available,
+		const shared_ptr <SASLMechanism>& suggested
+	) const = 0;
 
 	/** Set the SASL session which is using this authenticator.
 	  *
@@ -93,4 +94,3 @@ public:
 #endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_SASL_SUPPORT
 
 #endif // VMIME_SECURITY_SASL_SASLAUTHENTICATOR_HPP_INCLUDED
-

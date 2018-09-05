@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -33,44 +33,42 @@ namespace security {
 namespace digest {
 
 
-messageDigestFactory::messageDigestFactory()
-{
+messageDigestFactory::messageDigestFactory() {
+
 	registerAlgorithm <md5::md5MessageDigest>("md5");
 	registerAlgorithm <sha1::sha1MessageDigest>("sha1");
 }
 
 
-messageDigestFactory::~messageDigestFactory()
-{
+messageDigestFactory::~messageDigestFactory() {
+
 }
 
 
-messageDigestFactory* messageDigestFactory::getInstance()
-{
+messageDigestFactory* messageDigestFactory::getInstance() {
+
 	static messageDigestFactory instance;
-	return (&instance);
+	return &instance;
 }
 
 
-shared_ptr <messageDigest> messageDigestFactory::create(const string& name)
-{
-	const MapType::const_iterator it = m_algos.find
-		(utility::stringUtils::toLower(name));
+shared_ptr <messageDigest> messageDigestFactory::create(const string& name) {
 
-	if (it != m_algos.end())
+	const MapType::const_iterator it = m_algos.find(utility::stringUtils::toLower(name));
+
+	if (it != m_algos.end()) {
 		return (*it).second->create();
+	}
 
 	throw exceptions::no_digest_algorithm_available(name);
 }
 
 
-const std::vector <string> messageDigestFactory::getSupportedAlgorithms() const
-{
+const std::vector <string> messageDigestFactory::getSupportedAlgorithms() const {
+
 	std::vector <string> res;
 
-	for (MapType::const_iterator it = m_algos.begin() ;
-	     it != m_algos.end() ; ++it)
-	{
+	for (MapType::const_iterator it = m_algos.begin() ; it != m_algos.end() ; ++it) {
 		res.push_back((*it).first);
 	}
 
@@ -81,4 +79,3 @@ const std::vector <string> messageDigestFactory::getSupportedAlgorithms() const
 } // digest
 } // security
 } // vmime
-

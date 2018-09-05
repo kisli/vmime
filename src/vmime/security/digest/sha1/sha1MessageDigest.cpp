@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -58,20 +58,20 @@ namespace sha1 {
 #define R4(v,w,x,y,z,i) z+=(w^x^y)+blk(i)+0xCA62C1D6+rol(v,5);w=rol(w,30);
 
 
-sha1MessageDigest::sha1MessageDigest()
-{
+sha1MessageDigest::sha1MessageDigest() {
+
 	init();
 }
 
 
-void sha1MessageDigest::reset()
-{
+void sha1MessageDigest::reset() {
+
 	init();
 }
 
 
-void sha1MessageDigest::init()
-{
+void sha1MessageDigest::init() {
+
 	m_state[0] = 0x67452301;
 	m_state[1] = 0xefcdab89;
 	m_state[2] = 0x98badcfe;
@@ -83,48 +83,50 @@ void sha1MessageDigest::init()
 }
 
 
-void sha1MessageDigest::update(const byte_t b)
-{
+void sha1MessageDigest::update(const byte_t b) {
+
 	update(&b, 1);
 }
 
 
-void sha1MessageDigest::update(const string& s)
-{
+void sha1MessageDigest::update(const string& s) {
+
 	update(reinterpret_cast <const byte_t*>(s.data()), s.length());
 }
 
 
-void sha1MessageDigest::update(const byte_t* buffer, const size_t offset, const size_t len)
-{
+void sha1MessageDigest::update(const byte_t* buffer, const size_t offset, const size_t len) {
+
 	update(buffer + offset, len);
 }
 
 
-void sha1MessageDigest::update(const byte_t* buffer, const size_t len)
-{
+void sha1MessageDigest::update(const byte_t* buffer, const size_t len) {
+
 	unsigned int i, j;
 
 	j = (m_count[0] >> 3) & 63;
 
-	if ((m_count[0] += static_cast <unsigned int>(len << 3)) < static_cast <unsigned int>(len << 3))
+	if ((m_count[0] += static_cast <unsigned int>(len << 3)) < static_cast <unsigned int>(len << 3)) {
 		m_count[1]++;
+	}
 
 	m_count[1] += static_cast <unsigned int>(len >> 29);
 
-	if ((j + len) > 63)
-	{
+	if ((j + len) > 63) {
+
 		memcpy(&m_buffer[j], buffer, (i = 64 - j));
 
 		transform(m_state, m_buffer);
 
-		for ( ; i + 63 < len ; i += 64)
+		for ( ; i + 63 < len ; i += 64) {
 			transform(m_state, &buffer[i]);
+		}
 
 		j = 0;
-	}
-	else
-	{
+
+	} else {
+
 		i = 0;
 	}
 
@@ -132,29 +134,31 @@ void sha1MessageDigest::update(const byte_t* buffer, const size_t len)
 }
 
 
-void sha1MessageDigest::finalize()
-{
+void sha1MessageDigest::finalize() {
+
 	unsigned int i, j;
 	unsigned char finalcount[8];
 
-	for (i = 0 ; i < 8 ; i++)
-	{
-		finalcount[i] = static_cast <unsigned char>
-			((m_count[(i >= 4 ? 0 : 1)]
-			 >> ((3-(i & 3)) * 8) ) & 255);  // Endian independent
+	for (i = 0 ; i < 8 ; i++) {
+
+		finalcount[i] = static_cast <unsigned char>(
+			(m_count[(i >= 4 ? 0 : 1)] >> ((3 - (i & 3)) * 8)) & 255  // Endian independent
+		);
 	}
 
 	update(reinterpret_cast <const byte_t*>("\200"), 1);
 
-	while ((m_count[0] & 504) != 448)
+	while ((m_count[0] & 504) != 448) {
 		update(reinterpret_cast <const byte_t*>("\0"), 1);
+	}
 
 	update(finalcount, 8);  // Should cause a transform()
 
-	for (i = 0 ; i < 20 ; i++)
-	{
-		m_digest[i] = static_cast <unsigned char>
-			((m_state[i >> 2] >> ((3 - (i & 3)) * 8)) & 255);
+	for (i = 0 ; i < 20 ; i++) {
+
+		m_digest[i] = static_cast <unsigned char>(
+			(m_state[i >> 2] >> ((3 - (i & 3)) * 8)) & 255
+		);
 	}
 
 	// Wipe variables
@@ -167,22 +171,25 @@ void sha1MessageDigest::finalize()
 }
 
 
-void sha1MessageDigest::finalize(const string& s)
-{
+void sha1MessageDigest::finalize(const string& s) {
+
 	finalize(reinterpret_cast <const byte_t*>(s.data()), s.length());
 }
 
 
-void sha1MessageDigest::finalize(const byte_t* buffer, const size_t len)
-{
+void sha1MessageDigest::finalize(const byte_t* buffer, const size_t len) {
+
 	update(buffer, len);
 	finalize();
 }
 
 
-void sha1MessageDigest::finalize(const byte_t* buffer,
-	const size_t offset, const size_t len)
-{
+void sha1MessageDigest::finalize(
+	const byte_t* buffer,
+	const size_t offset,
+	const size_t len
+) {
+
 	finalize(buffer + offset, len);
 }
 
@@ -190,13 +197,14 @@ void sha1MessageDigest::finalize(const byte_t* buffer,
 /** Hash a single 512-bit block.
   * This is the core of the algorithm.
   */
-void sha1MessageDigest::transform
-	(unsigned int state[5], const unsigned char buffer[64])
-{
+void sha1MessageDigest::transform(
+	unsigned int state[5],
+	const unsigned char buffer[64]
+) {
+
 	unsigned int a, b, c, d, e;
 
-	typedef union
-	{
+	typedef union {
 		unsigned char c[64];
 		unsigned int l[16];
 	} CHAR64LONG16;
@@ -250,14 +258,14 @@ void sha1MessageDigest::transform
 }
 
 
-size_t sha1MessageDigest::getDigestLength() const
-{
+size_t sha1MessageDigest::getDigestLength() const {
+
 	return 20;
 }
 
 
-const byte_t* sha1MessageDigest::getDigest() const
-{
+const byte_t* sha1MessageDigest::getDigest() const {
+
 	return m_digest;
 }
 
@@ -266,5 +274,3 @@ const byte_t* sha1MessageDigest::getDigest() const
 } // digest
 } // security
 } // vmime
-
-

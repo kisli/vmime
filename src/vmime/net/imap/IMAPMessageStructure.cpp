@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -36,50 +36,52 @@ namespace net {
 namespace imap {
 
 
-IMAPMessageStructure::IMAPMessageStructure()
-{
+IMAPMessageStructure::IMAPMessageStructure() {
 }
 
 
-IMAPMessageStructure::IMAPMessageStructure(const IMAPParser::body* body)
-{
+IMAPMessageStructure::IMAPMessageStructure(const IMAPParser::body* body) {
+
 	m_parts.push_back(IMAPMessagePart::create(null, 0, body));
 }
 
 
-IMAPMessageStructure::IMAPMessageStructure(const shared_ptr <IMAPMessagePart>& parent, const std::vector <IMAPParser::body*>& list)
-{
+IMAPMessageStructure::IMAPMessageStructure(
+	const shared_ptr <IMAPMessagePart>& parent,
+	const std::vector <IMAPParser::body*>& list
+) {
+
 	size_t number = 0;
 
 	for (std::vector <IMAPParser::body*>::const_iterator
-	     it = list.begin() ; it != list.end() ; ++it, ++number)
-	{
+	     it = list.begin() ; it != list.end() ; ++it, ++number) {
+
 		m_parts.push_back(IMAPMessagePart::create(parent, number, *it));
 	}
 }
 
 
-shared_ptr <const messagePart> IMAPMessageStructure::getPartAt(const size_t x) const
-{
+shared_ptr <const messagePart> IMAPMessageStructure::getPartAt(const size_t x) const {
+
 	return m_parts[x];
 }
 
 
-shared_ptr <messagePart> IMAPMessageStructure::getPartAt(const size_t x)
-{
+shared_ptr <messagePart> IMAPMessageStructure::getPartAt(const size_t x) {
+
 	return m_parts[x];
 }
 
 
-size_t IMAPMessageStructure::getPartCount() const
-{
+size_t IMAPMessageStructure::getPartCount() const {
+
 	return m_parts.size();
 }
 
 
 // static
-shared_ptr <IMAPMessageStructure> IMAPMessageStructure::emptyStructure()
-{
+shared_ptr <IMAPMessageStructure> IMAPMessageStructure::emptyStructure() {
+
 	static shared_ptr <IMAPMessageStructure> emptyStructure = make_shared <IMAPMessageStructure>();
 	return emptyStructure;
 }

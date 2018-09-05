@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -56,13 +56,12 @@ class POP3Connection;
 
 /** A POP3 response, as sent by the server.
   */
-class VMIME_EXPORT POP3Response : public object
-{
+class VMIME_EXPORT POP3Response : public object {
+
 public:
 
 	/** Possible response codes. */
-	enum ResponseCode
-	{
+	enum ResponseCode {
 		CODE_OK = 0,
 		CODE_READY,
 		CODE_ERR
@@ -100,9 +99,12 @@ public:
 	  * @throws exceptions::operation_timed_out if no data
 	  * has been received within the granted time
 	  */
-	static shared_ptr <POP3Response> readLargeResponse
-		(const shared_ptr <POP3Connection>& conn, utility::outputStream& os,
-		 utility::progressListener* progress, const size_t predictedSize);
+	static shared_ptr <POP3Response> readLargeResponse(
+		const shared_ptr <POP3Connection>& conn,
+		utility::outputStream& os,
+		utility::progressListener* progress,
+		const size_t predictedSize
+	);
 
 
 	/** Returns whether the response is successful ("OK").
@@ -144,12 +146,20 @@ public:
 
 private:
 
-	POP3Response(const shared_ptr <socket>& sok, const shared_ptr <timeoutHandler>& toh, const shared_ptr <tracer>& tracer);
+	POP3Response(
+		const shared_ptr <socket>& sok,
+		const shared_ptr <timeoutHandler>& toh,
+		const shared_ptr <tracer>& tracer
+	);
 
 	void readResponseImpl(string& buffer, const bool multiLine);
-	size_t readResponseImpl
-		(string& firstLine, utility::outputStream& os,
-		 utility::progressListener* progress, const size_t predictedSize);
+
+	size_t readResponseImpl(
+		string& firstLine,
+		utility::outputStream& os,
+		utility::progressListener* progress,
+		const size_t predictedSize
+	);
 
 
 	static bool stripFirstLine(const string& buffer, string& result, string* firstLine);

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -46,8 +46,8 @@ class TLSSession;
 class TLSSession_GnuTLS;
 
 
-class TLSSocket_GnuTLS : public TLSSocket
-{
+class TLSSocket_GnuTLS : public TLSSocket {
+
 public:
 
 	TLSSocket_GnuTLS(const shared_ptr <TLSSession_GnuTLS>& session, const shared_ptr <socket>& sok);

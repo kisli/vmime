@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -30,38 +30,44 @@ namespace utility {
 
 // progressListenerSizeAdapter
 
-progressListenerSizeAdapter::progressListenerSizeAdapter
-	(progressListener* list, const size_t total)
-	: m_wrapped(list), m_total(total)
-{
+progressListenerSizeAdapter::progressListenerSizeAdapter(
+	progressListener* list,
+	const size_t total
+)
+	: m_wrapped(list),
+	  m_total(total) {
+
 }
 
 
-void progressListenerSizeAdapter::start(const size_t predictedTotal)
-{
-	if (m_wrapped)
+void progressListenerSizeAdapter::start(const size_t predictedTotal) {
+
+	if (m_wrapped) {
 		m_wrapped->start(predictedTotal);
+	}
 }
 
 
-void progressListenerSizeAdapter::progress(const size_t current, const size_t currentTotal)
-{
-	if (m_wrapped)
-	{
-		if (currentTotal > m_total)
+void progressListenerSizeAdapter::progress(const size_t current, const size_t currentTotal) {
+
+	if (m_wrapped) {
+
+		if (currentTotal > m_total) {
 			m_total = currentTotal;
+		}
 
 		m_wrapped->progress(current, m_total);
 	}
 }
 
 
-void progressListenerSizeAdapter::stop(const size_t total)
-{
-	if (m_wrapped)
-	{
-		if (total > m_total)
+void progressListenerSizeAdapter::stop(const size_t total) {
+
+	if (m_wrapped) {
+
+		if (total > m_total) {
 			m_total = total;
+		}
 
 		m_wrapped->stop(m_total);
 	}
@@ -70,4 +76,3 @@ void progressListenerSizeAdapter::stop(const size_t total)
 
 } // utility
 } // vmime
-

@@ -46,17 +46,17 @@ use the function {\vcode vmime::make\_shared} instead of the {\vcode new}
 operator.
 
 \begin{lstlisting}[caption={Smarts pointers and creating objects}]
-class myObject : public vmime::object
-{
+class myObject : public vmime::object {
+
 public:
 
    myObject(const vmime::string& name)
-      : m_name(name)
-   {
+      : m_name(name) {
+
    }
 
-   void sayHello()
-   {
+   void sayHello() {
+
       std::cout << "Hello " << m_name << std::endl;
    }
 
@@ -65,8 +65,8 @@ private:
    vmime::string m_name;
 };
 
-int main()
-{
+int main() {
+
    vmime::shared_ptr <myObject> obj =
       vmime::make_shared <myObject>("world");
 
@@ -105,12 +105,12 @@ directly or indirectly to itself). The following example illustrates a
 typical problem of reference counting:
 
 \begin{lstlisting}
-class parent : public vmime::object
-{
+class parent : public vmime::object {
+
 public:
 
-   void createChild(vmime::shared_ptr <child> c)
-   {
+   void createChild(vmime::shared_ptr <child> c) {
+
       m_child = c;
    }
 
@@ -119,13 +119,13 @@ private:
    vmime::shared_ptr <child> m_child;
 };
 
-class child : public vmime::object
-{
+class child : public vmime::object {
+
 public:
 
    child(vmime::shared_ptr <parent> p)
-      : m_parent(p)
-   {
+      : m_parent(p) {
+
    }
 
 private:
@@ -133,8 +133,8 @@ private:
    vmime::shared_ptr <parent> m_parent;
 };
 
-int main()
-{
+int main() {
+
    vmime::shared_ptr <parent> p = vmime::make_shared <parent>();
    vmime::shared_ptr <child> c = vmime::make_shared <child>();
 
@@ -179,30 +179,31 @@ Following is an example code for catching VMime exceptions and writing error
 messages to the console:
 
 \begin{lstlisting}[caption={Catching VMime exceptions}]
-std::ostream& operator<<(std::ostream& os, const vmime::exception& e)
-{
+std::ostream& operator<<(std::ostream& os, const vmime::exception& e) {
+
    os << "* vmime::exceptions::" << e.name() << std::endl;
    os << "    what = " << e.what() << std::endl;
 
    // Recursively print all encapsuled exceptions
-   if (e.other() != NULL)
+   if (e.other() != NULL) {
       os << *e.other();
+   }
 
    return os;
 }
 
 ...
 
-try
-{
+try {
+
    // ...some call to VMime...
-}
-catch (vmime::exception& e)
-{
+
+} catch (vmime::exception& e) {
+
    std::cerr << e;         // VMime exception
-}
-catch (std::exception& e)
-{
+
+} catch (std::exception& e) {
+
    std::cerr << e.what();  // standard exception
 }
 \end{lstlisting}
@@ -250,7 +251,8 @@ vmime::datetime d1("Sat, 08 Oct 2005 14:07:52 +0200");
 vmime::datetime d2(
    /* date */ 2005, vmime::datetime::OCTOBER, 8,
    /* time */ 14, 7, 52,
-   /* zone */ vmime::datetime::GMT2);
+   /* zone */ vmime::datetime::GMT2
+);
 
 // Getting day of week
 const int dow = d2.getWeekDay();  // 'dow' should be datetime::SATURDAY
@@ -275,7 +277,8 @@ media type with:
 \begin{lstlisting}
 vmime::mediaType theType(
    /* top-level type */ vmime::mediaTypes::IMAGE,
-   /* sub-type */       vmime::mediaTypes::IMAGE_JPEG);
+   /* sub-type */       vmime::mediaTypes::IMAGE_JPEG
+);
 
 // theType.getType() is "image"
 // theType.getSubType() is "jpeg"
@@ -594,8 +597,9 @@ std::ifstream* fileStream = new std::ifstream();
 
 fileStream->open("/home/vincent/paris.jpg", std::ios::binary);
 
-if (!*fileStream)
+if (!*fileStream) {
    // handle error
+}
 
 vmime::shared_ptr <utility::stream> dataStream =
    vmime::make_shared <vmime::utility::inputStreamPointerAdapter>(fileStream);
@@ -608,13 +612,12 @@ vmime::shared_ptr <contentHandler> data =
    vmime::make_shared <vmime::streamContentHandler>(dataStream, 0);
 
 // Now create the attachment
-ref <vmime::attachment> att = vmime::make_shared <vmime::defaultAttachment>
-   (
-   	/* attachment data */ data,
-	/* content type */    vmime::mediaType("image/jpeg"),
-	/* description */     vmime::text("Holiday photo"),
-	/* filename */        vmime::word("paris.jpg")
-   );
+ref <vmime::attachment> att = vmime::make_shared <vmime::defaultAttachment>(
+   /* attachment data */ data,
+   /* content type */    vmime::mediaType("image/jpeg"),
+   /* description */     vmime::text("Holiday photo"),
+   /* filename */        vmime::word("paris.jpg")
+);
 \end{lstlisting}
 
 You will see later that the {\vcode vmime::fileAttachment} class already
@@ -647,10 +650,11 @@ vmime::shared_ptr <const vmime::contentHandler> cth = body->getContents();
 
 // Then, extract and convert the contents
 vmime::utility::outputStreamAdapter out(std::cout);
-vmime::utility::charsetFilteredOutputStream fout
-   (/* source charset */ body->getCharset(),
+vmime::utility::charsetFilteredOutputStream fout(
+    /* source charset */ body->getCharset(),
     /* dest charset */   vmime::charset("utf-8"),
-    /* dest stream */    out);
+    /* dest stream */    out
+);
 
 cth->extract(fout);
 
@@ -778,8 +782,8 @@ vmime::shared_ptr <vmime::utility::encoder::encoderFactory> ef =
 
 std::cout << "Available encoders:" << std::endl;
 
-for (int i = 0 ; i < ef->getEncoderCount() ; ++i)
-{
+for (int i = 0 ; i < ef->getEncoderCount() ; ++i) {
+
    // Output encoder name
    vmime::shared_ptr <const vmime::utility::encoder::encoderFactory::registeredEncoder>
       enc = ef->getEncoderAt(i);
@@ -792,8 +796,9 @@ for (int i = 0 ; i < ef->getEncoderCount() ; ++i)
    std::vector <vmime::string> props = e->getAvailableProperties();
    std::vector <vmime::string>::const_iterator it;
 
-   for (it = props.begin() ; it != props.end() ; ++it)
+   for (it = props.begin() ; it != props.end() ; ++it) {
       std::cout << "      - " << *it << std::endl;
+   }
 \end{lstlisting}
 
 

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -40,62 +40,68 @@ namespace net {
 
 // messageRange
 
-messageRange::messageRange()
-{
+messageRange::messageRange() {
+
 }
 
 
-messageRange::~messageRange()
-{
+messageRange::~messageRange() {
+
 }
 
 
 // numberMessageRange
 
 numberMessageRange::numberMessageRange(const size_t number)
-	: m_first(number), m_last(number)
-{
-	if (number < 1)
+	: m_first(number),
+	  m_last(number) {
+
+	if (number < 1) {
 		throw std::invalid_argument("number");
+	}
 }
 
 
 numberMessageRange::numberMessageRange(const size_t first, const size_t last)
-	: m_first(first), m_last(last)
-{
-	if (first < 1 || first == static_cast <size_t>(-1))
+	: m_first(first),
+	  m_last(last) {
+
+	if (first < 1 || first == static_cast <size_t>(-1)) {
 		throw std::invalid_argument("first");
-	else if (last != static_cast <size_t>(-1) && last < first)
+	} else if (last != static_cast <size_t>(-1) && last < first) {
 		throw std::invalid_argument("last");
+	}
 }
 
 
 numberMessageRange::numberMessageRange(const numberMessageRange& other)
-	: messageRange(), m_first(other.m_first), m_last(other.m_last)
-{
+	: messageRange(),
+	  m_first(other.m_first),
+	  m_last(other.m_last) {
+
 }
 
 
-size_t numberMessageRange::getFirst() const
-{
+size_t numberMessageRange::getFirst() const {
+
 	return m_first;
 }
 
 
-size_t numberMessageRange::getLast() const
-{
+size_t numberMessageRange::getLast() const {
+
 	return m_last;
 }
 
 
-void numberMessageRange::enumerate(messageSetEnumerator& en) const
-{
+void numberMessageRange::enumerate(messageSetEnumerator& en) const {
+
 	en.enumerateNumberMessageRange(*this);
 }
 
 
-messageRange* numberMessageRange::clone() const
-{
+messageRange* numberMessageRange::clone() const {
+
 	return new numberMessageRange(*this);
 }
 
@@ -103,43 +109,47 @@ messageRange* numberMessageRange::clone() const
 // UIDMessageRange
 
 UIDMessageRange::UIDMessageRange(const message::uid& uid)
-	: m_first(uid), m_last(uid)
-{
+	: m_first(uid),
+	  m_last(uid) {
+
 }
 
 
 UIDMessageRange::UIDMessageRange(const message::uid& first, const message::uid& last)
-	: m_first(first), m_last(last)
-{
+	: m_first(first),
+	  m_last(last) {
+
 }
 
 
 UIDMessageRange::UIDMessageRange(const UIDMessageRange& other)
-	: messageRange(), m_first(other.m_first), m_last(other.m_last)
-{
+	: messageRange(),
+	  m_first(other.m_first),
+	  m_last(other.m_last) {
+
 }
 
 
-const message::uid UIDMessageRange::getFirst() const
-{
+const message::uid UIDMessageRange::getFirst() const {
+
 	return m_first;
 }
 
 
-const message::uid UIDMessageRange::getLast() const
-{
+const message::uid UIDMessageRange::getLast() const {
+
 	return m_last;
 }
 
 
-void UIDMessageRange::enumerate(messageSetEnumerator& en) const
-{
+void UIDMessageRange::enumerate(messageSetEnumerator& en) const {
+
 	en.enumerateUIDMessageRange(*this);
 }
 
 
-messageRange* UIDMessageRange::clone() const
-{
+messageRange* UIDMessageRange::clone() const {
+
 	return new UIDMessageRange(*this);
 }
 
@@ -147,38 +157,40 @@ messageRange* UIDMessageRange::clone() const
 // messageSet
 
 
-messageSet::messageSet()
-{
+messageSet::messageSet() {
+
 }
 
 
 messageSet::messageSet(const messageSet& other)
-	: object()
-{
+	: object() {
+
 	m_ranges.resize(other.m_ranges.size());
 
-	for (size_t i = 0, n = other.m_ranges.size() ; i < n ; ++i)
+	for (size_t i = 0, n = other.m_ranges.size() ; i < n ; ++i) {
 		m_ranges[i] = other.m_ranges[i]->clone();
+	}
 }
 
 
-messageSet::~messageSet()
-{
-	for (size_t i = 0, n = m_ranges.size() ; i < n ; ++i)
+messageSet::~messageSet() {
+
+	for (size_t i = 0, n = m_ranges.size() ; i < n ; ++i) {
 		delete m_ranges[i];
+	}
 }
 
 
 // static
-messageSet messageSet::empty()
-{
+messageSet messageSet::empty() {
+
 	return messageSet();
 }
 
 
 // static
-messageSet messageSet::byNumber(const size_t number)
-{
+messageSet messageSet::byNumber(const size_t number) {
+
 	messageSet set;
 	set.m_ranges.push_back(new numberMessageRange(number));
 
@@ -187,8 +199,8 @@ messageSet messageSet::byNumber(const size_t number)
 
 
 // static
-messageSet messageSet::byNumber(const size_t first, const size_t last)
-{
+messageSet messageSet::byNumber(const size_t first, const size_t last) {
+
 	messageSet set;
 	set.m_ranges.push_back(new numberMessageRange(first, last));
 
@@ -197,8 +209,8 @@ messageSet messageSet::byNumber(const size_t first, const size_t last)
 
 
 // static
-messageSet messageSet::byNumber(const std::vector <size_t>& numbers)
-{
+messageSet messageSet::byNumber(const std::vector <size_t>& numbers) {
+
 	// Sort a copy of the list
 	std::vector <size_t> sortedNumbers;
 
@@ -212,29 +224,31 @@ messageSet messageSet::byNumber(const std::vector <size_t>& numbers)
 	messageSet set;
 
 	for (std::vector <size_t>::const_iterator it = sortedNumbers.begin() ;
-	     it != sortedNumbers.end() ; ++it)
-	{
+	     it != sortedNumbers.end() ; ++it) {
+
 		const size_t current = *it;
 
-		if (current == previous)
+		if (current == previous) {
 			continue;  // skip duplicates
+		}
 
-		if (current == static_cast <size_t>(-1))
+		if (current == static_cast <size_t>(-1)) {
 			throw std::invalid_argument("numbers");
+		}
 
-		if (previous == static_cast <size_t>(-1))
-		{
+		if (previous == static_cast <size_t>(-1)) {
+
 			previous = current;
 			rangeStart = current;
-		}
-		else
-		{
-			if (current == previous + 1)
-			{
+
+		} else {
+
+			if (current == previous + 1) {
+
 				previous = current;
-			}
-			else
-			{
+
+			} else {
+
 				set.m_ranges.push_back(new numberMessageRange(rangeStart, previous));
 
 				previous = current;
@@ -250,8 +264,8 @@ messageSet messageSet::byNumber(const std::vector <size_t>& numbers)
 
 
 // static
-messageSet messageSet::byUID(const message::uid& uid)
-{
+messageSet messageSet::byUID(const message::uid& uid) {
+
 	messageSet set;
 	set.m_ranges.push_back(new UIDMessageRange(uid));
 
@@ -259,8 +273,8 @@ messageSet messageSet::byUID(const message::uid& uid)
 }
 
 
-messageSet messageSet::byUID(const message::uid& first, const message::uid& last)
-{
+messageSet messageSet::byUID(const message::uid& first, const message::uid& last) {
+
 	messageSet set;
 	set.m_ranges.push_back(new UIDMessageRange(first, last));
 
@@ -268,27 +282,29 @@ messageSet messageSet::byUID(const message::uid& first, const message::uid& last
 }
 
 
-messageSet messageSet::byUID(const std::vector <message::uid>& uids)
-{
+messageSet messageSet::byUID(const std::vector <message::uid>& uids) {
+
 	std::vector <vmime_uint32> numericUIDs;
 
-	for (size_t i = 0, n = uids.size() ; i < n ; ++i)
-	{
+	for (size_t i = 0, n = uids.size() ; i < n ; ++i) {
+
 		const string uid = uids[i];
 		int numericUID = 0;
 
 		const char* p = uid.c_str();
 
-		for ( ; *p >= '0' && *p <= '9' ; ++p)
-			 numericUID = (numericUID * 10) + (*p - '0');
+		for ( ; *p >= '0' && *p <= '9' ; ++p) {
+			numericUID = (numericUID * 10) + (*p - '0');
+		}
 
-		if (*p != '\0')
-		{
+		if (*p != '\0') {
+
 			messageSet set;
 
 			// Non-numeric UID, fall back to plain UID list (single-UID ranges)
-			for (size_t i = 0, n = uids.size() ; i < n ; ++i)
+			for (size_t i = 0, n = uids.size() ; i < n ; ++i) {
 				set.m_ranges.push_back(new UIDMessageRange(uids[i]));
+			}
 
 			return set;
 		}
@@ -309,29 +325,33 @@ messageSet messageSet::byUID(const std::vector <message::uid>& uids)
 	messageSet set;
 
 	for (std::vector <vmime_uint32>::const_iterator it = sortedUIDs.begin() ;
-	     it != sortedUIDs.end() ; ++it)
-	{
+	     it != sortedUIDs.end() ; ++it) {
+
 		const vmime_uint32 current = *it;
 
-		if (current == previous)
+		if (current == previous) {
 			continue;  // skip duplicates
+		}
 
-		if (previous == static_cast <vmime_uint32>(-1))
-		{
+		if (previous == static_cast <vmime_uint32>(-1)) {
+
 			previous = current;
 			rangeStart = current;
-		}
-		else
-		{
-			if (current == previous + 1)
-			{
+
+		} else {
+
+			if (current == previous + 1) {
+
 				previous = current;
-			}
-			else
-			{
-				set.m_ranges.push_back(new UIDMessageRange
-					(utility::stringUtils::toString(rangeStart),
-					 utility::stringUtils::toString(previous)));
+
+			} else {
+
+				set.m_ranges.push_back(
+					new UIDMessageRange(
+						utility::stringUtils::toString(rangeStart),
+						utility::stringUtils::toString(previous)
+					)
+				);
 
 				previous = current;
 				rangeStart = current;
@@ -339,56 +359,61 @@ messageSet messageSet::byUID(const std::vector <message::uid>& uids)
 		}
 	}
 
-	set.m_ranges.push_back(new UIDMessageRange
-		(utility::stringUtils::toString(rangeStart),
-	     utility::stringUtils::toString(previous)));
+	set.m_ranges.push_back(
+		new UIDMessageRange(
+			utility::stringUtils::toString(rangeStart),
+			utility::stringUtils::toString(previous)
+		)
+	);
 
 	return set;
 }
 
 
-void messageSet::addRange(const messageRange& range)
-{
-	if (!m_ranges.empty() && typeid(*m_ranges[0]) != typeid(range))
+void messageSet::addRange(const messageRange& range) {
+
+	if (!m_ranges.empty() && typeid(*m_ranges[0]) != typeid(range)) {
 		throw std::invalid_argument("range");
+	}
 
 	m_ranges.push_back(range.clone());
 }
 
 
-void messageSet::enumerate(messageSetEnumerator& en) const
-{
-	for (size_t i = 0, n = m_ranges.size() ; i < n ; ++i)
+void messageSet::enumerate(messageSetEnumerator& en) const {
+
+	for (size_t i = 0, n = m_ranges.size() ; i < n ; ++i) {
 		m_ranges[i]->enumerate(en);
+	}
 }
 
 
-bool messageSet::isEmpty() const
-{
+bool messageSet::isEmpty() const {
+
 	return m_ranges.empty();
 }
 
 
-bool messageSet::isNumberSet() const
-{
+bool messageSet::isNumberSet() const {
+
 	return !isEmpty() && dynamic_cast <numberMessageRange*>(m_ranges[0]) != NULL;
 }
 
 
-bool messageSet::isUIDSet() const
-{
+bool messageSet::isUIDSet() const {
+
 	return !isEmpty() && dynamic_cast <UIDMessageRange*>(m_ranges[0]) != NULL;
 }
 
 
-size_t messageSet::getRangeCount() const
-{
+size_t messageSet::getRangeCount() const {
+
 	return m_ranges.size();
 }
 
 
-const messageRange& messageSet::getRangeAt(const size_t i) const
-{
+const messageRange& messageSet::getRangeAt(const size_t i) const {
+
 	return *m_ranges[i];
 }
 

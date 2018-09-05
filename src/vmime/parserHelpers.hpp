@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -32,60 +32,59 @@
 
 
 
-namespace vmime
-{
+namespace vmime {
 
 
-class parserHelpers
-{
+class parserHelpers {
+
 public:
 
-	static bool isSpace(const char_t c)
-	{
-		return (c == ' ' || c == '\t' || c == '\n' || c == '\r');
+	static bool isSpace(const char_t c) {
+
+		return c == ' ' || c == '\t' || c == '\n' || c == '\r';
 	}
 
-	static bool isSpaceOrTab(const char_t c)
-	{
-		return (c == ' ' || c == '\t');
+	static bool isSpaceOrTab(const char_t c) {
+
+		return c == ' ' || c == '\t';
 	}
 
-	static bool isDigit(const char_t c)
-	{
-		return (c >= '0' && c <= '9');
+	static bool isDigit(const char_t c) {
+
+		return c >= '0' && c <= '9';
+	}
+
+	static bool isAlpha(const char_t c) {
+
+		return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
 	}
 
 
-	static bool isAlpha(const char_t c)
-	{
-		return ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'));
-	}
+	static char_t toLower(const char_t c) {
 
-
-	static char_t toLower(const char_t c)
-	{
-		if (c >= 'A' && c <= 'Z')
+		if (c >= 'A' && c <= 'Z') {
 			return ('a' + (c - 'A'));
-		else
+		} else {
 			return c;
+		}
 	}
 
 
 	// Checks whether a character is in the 7-bit US-ASCII charset
 
-	static bool isAscii(const char_t c)
-	{
+	static bool isAscii(const char_t c) {
+
 		const unsigned int x = static_cast <unsigned int>(c);
-		return (x <= 127);
+		return x <= 127;
 	}
 
 
 	// Checks whether a character has a visual representation
 
-	static bool isPrint(const char_t c)
-	{
+	static bool isPrint(const char_t c) {
+
 		const unsigned int x = static_cast <unsigned int>(c);
-		return (x >= 0x20 && x <= 0x7E);
+		return x >= 0x20 && x <= 0x7E;
 	}
 
 
@@ -99,22 +98,28 @@ public:
 	  * @return true if an EOL sequence has been found, or false if
 	  * no EOL sequence was found before the end of the buffer
 	  */
-	static bool findEOL(const string& buffer, const size_t currentPos, const size_t end, size_t* eol)
-	{
+	static bool findEOL(
+		const string& buffer,
+		const size_t currentPos,
+		const size_t end,
+		size_t* eol
+	) {
+
 		size_t pos = currentPos;
 
-		if (pos == end)
+		if (pos == end) {
 			return false;
+		}
 
-		while (pos < end)
-		{
-			if (buffer[pos] == '\r' && pos + 1 < end && buffer[pos + 1] == '\n')
-			{
+		while (pos < end) {
+
+			if (buffer[pos] == '\r' && pos + 1 < end && buffer[pos + 1] == '\n') {
+
 				*eol = pos + 2;
 				return true;
-			}
-			else if (buffer[pos] == '\n')
-			{
+
+			} else if (buffer[pos] == '\n') {
+
 				*eol = pos + 1;
 				return true;
 			}

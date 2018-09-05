@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -24,13 +24,12 @@
 #include "vmime/constants.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 // Media Types
-namespace mediaTypes
-{
+namespace mediaTypes {
+
 	// Types
 	const char* const TEXT = "text";
 	const char* const MULTIPART = "multipart";
@@ -72,8 +71,8 @@ namespace mediaTypes
 
 
 // Encoding types
-namespace encodingTypes
-{
+namespace encodingTypes {
+
 	const char* const SEVEN_BIT = "7bit";
 	const char* const EIGHT_BIT = "8bit";
 	const char* const BASE64 = "base64";
@@ -84,16 +83,16 @@ namespace encodingTypes
 
 
 // Content disposition types
-namespace contentDispositionTypes
-{
+namespace contentDispositionTypes {
+
 	const char* const INLINE = "inline";
 	const char* const ATTACHMENT = "attachment";
 }
 
 
 // Charsets
-namespace charsets
-{
+namespace charsets {
+
 	const char* const ISO8859_1 = "iso-8859-1";
 	const char* const ISO8859_2 = "iso-8859-2";
 	const char* const ISO8859_3 = "iso-8859-3";
@@ -159,8 +158,8 @@ namespace charsets
 
 
 // Fields
-namespace fields
-{
+namespace fields {
+
 	const char* const RECEIVED = "Received";
 	const char* const FROM = "From";
 	const char* const SENDER = "Sender";
@@ -204,32 +203,32 @@ namespace fields
 
 
 // Constants for disposition action modes (RFC-3978).
-namespace dispositionActionModes
-{
+namespace dispositionActionModes {
+
 	const char* const MANUAL = "manual";
 	const char* const AUTOMATIC = "automatic";
 }
 
 
 // Constants for disposition sending modes (RFC-3798).
-namespace dispositionSendingModes
-{
+namespace dispositionSendingModes {
+
 	const char* const SENT_MANUALLY = "MDN-sent-manually";
 	const char* const SENT_AUTOMATICALLY ="MDN-sent-automatically";
 }
 
 
 // Constants for disposition types (RFC-3798).
-namespace dispositionTypes
-{
+namespace dispositionTypes {
+
 	const char* const DISPLAYED = "displayed";
 	const char* const DELETED = "deleted";
 }
 
 
 // Constants for disposition modifiers (RFC-3798).
-namespace dispositionModifiers
-{
+namespace dispositionModifiers {
+
 	const char* const ERROR = "error";
 }
 

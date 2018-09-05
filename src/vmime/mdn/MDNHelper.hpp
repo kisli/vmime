@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -38,9 +38,8 @@ namespace mdn {
 /** Helper for creating or extracting Message Disposition
   * Notifications (MDN), as defined in RFC-3798.
   */
+class VMIME_EXPORT MDNHelper {
 
-class VMIME_EXPORT MDNHelper
-{
 public:
 
 	/** Attach a MDN request to the specified message.
@@ -105,28 +104,32 @@ public:
 	  * @param fields additional MDN fields, like "Error", "Warning" or "Failure" (optional)
 	  * @return a new message object containing the MDN
 	  */
-	static shared_ptr <message> buildMDN(const sendableMDNInfos& mdnInfos,
-	                              const string& text,
-	                              const charset& ch,
-	                              const mailbox& expeditor,
-	                              const disposition& dispo,
-	                              const string& reportingUA = NULL_STRING,
-	                              const std::vector <string>& reportingUAProducts
-	                                   = std::vector <string>(),
-	                              const std::map <string, string>& fields
-	                                   = (std::map <string, string>()));
+	static shared_ptr <message> buildMDN(
+		const sendableMDNInfos& mdnInfos,
+		const string& text,
+		const charset& ch,
+		const mailbox& expeditor,
+		const disposition& dispo,
+		const string& reportingUA = NULL_STRING,
+		const std::vector <string>& reportingUAProducts = std::vector <string>(),
+		const std::map <string, string>& fields = std::map <string, string>()
+	);
 
 private:
 
-	static shared_ptr <bodyPart> createFirstMDNPart(const sendableMDNInfos& mdnInfos,
-	                                         const string& text, const charset& ch);
+	static shared_ptr <bodyPart> createFirstMDNPart(
+		const sendableMDNInfos& mdnInfos,
+		const string& text,
+		const charset& ch
+	);
 
-	static shared_ptr <bodyPart> createSecondMDNPart(const sendableMDNInfos& mdnInfos,
-	                                          const disposition& dispo,
-	                                          const string& reportingUA,
-	                                          const std::vector <string>& reportingUAProducts,
-	                                          const std::map <string, string>& fields);
-
+	static shared_ptr <bodyPart> createSecondMDNPart(
+		const sendableMDNInfos& mdnInfos,
+		const disposition& dispo,
+		const string& reportingUA,
+		const std::vector <string>& reportingUAProducts,
+		const std::map <string, string>& fields
+	);
 
 	static shared_ptr <bodyPart> createThirdMDNPart(const sendableMDNInfos& mdnInfos);
 };

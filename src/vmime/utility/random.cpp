@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -31,19 +31,20 @@ namespace vmime {
 namespace utility {
 
 
-static unsigned int getRandomSeed()
-{
+static unsigned int getRandomSeed() {
+
 	unsigned int seed;
 
-	platform::getHandler()->generateRandomBytes
-		(reinterpret_cast <unsigned char*>(&seed), sizeof(seed));
+	platform::getHandler()->generateRandomBytes(
+		reinterpret_cast <unsigned char*>(&seed), sizeof(seed)
+	);
 
 	return seed;
 }
 
 
-unsigned int random::getNext()
-{
+unsigned int random::getNext() {
+
 	static unsigned int next = getRandomSeed();
 
 	// Park and Miller's minimal standard generator:
@@ -54,35 +55,34 @@ unsigned int random::getNext()
 }
 
 
-unsigned int random::getTime()
-{
+unsigned int random::getTime() {
+
 	return static_cast <unsigned int>((platform::getHandler()->getUnixTime()));
 }
 
 
-unsigned int random::getProcess()
-{
-	return (platform::getHandler()->getProcessId());
+unsigned int random::getProcess() {
+
+	return platform::getHandler()->getProcessId();
 }
 
 
-const string random::getString(const size_t length, const string& randomChars)
-{
+const string random::getString(const size_t length, const string& randomChars) {
+
 	string res;
 	res.resize(length);
 
 	const unsigned int x = static_cast <unsigned int>(randomChars.length());
 	size_t c = 0;
 
-	while (c < length)
-	{
-		for (unsigned int n = random::getNext() ; n != 0 && c < length ; n /= x)
-		{
+	while (c < length) {
+
+		for (unsigned int n = random::getNext() ; n != 0 && c < length ; n /= x) {
 			res[c++] = randomChars[n % x];
 		}
 	}
 
-	return (res);
+	return res;
 }
 
 

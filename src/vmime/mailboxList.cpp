@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -26,181 +26,198 @@
 #include "vmime/exception.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
-mailboxList::mailboxList()
-{
+mailboxList::mailboxList() {
+
 }
 
 
 mailboxList::mailboxList(const mailboxList& mboxList)
-	: headerFieldValue(), m_list(mboxList.m_list)
-{
+	: headerFieldValue(),
+	  m_list(mboxList.m_list) {
+
 }
 
 
-void mailboxList::appendMailbox(const shared_ptr <mailbox>& mbox)
-{
+void mailboxList::appendMailbox(const shared_ptr <mailbox>& mbox) {
+
 	m_list.appendAddress(mbox);
 }
 
 
-void mailboxList::insertMailboxBefore(const shared_ptr <mailbox>& beforeMailbox, const shared_ptr <mailbox>& mbox)
-{
+void mailboxList::insertMailboxBefore(
+	const shared_ptr <mailbox>& beforeMailbox,
+	const shared_ptr <mailbox>& mbox
+) {
+
 	m_list.insertAddressBefore(beforeMailbox, mbox);
 }
 
 
-void mailboxList::insertMailboxBefore(const size_t pos, const shared_ptr <mailbox>& mbox)
-{
+void mailboxList::insertMailboxBefore(
+	const size_t pos,
+	const shared_ptr <mailbox>& mbox
+) {
+
 	m_list.insertAddressBefore(pos, mbox);
 }
 
 
-void mailboxList::insertMailboxAfter(const shared_ptr <mailbox>& afterMailbox, const shared_ptr <mailbox>& mbox)
-{
+void mailboxList::insertMailboxAfter(
+	const shared_ptr <mailbox>& afterMailbox,
+	const shared_ptr <mailbox>& mbox
+) {
+
 	m_list.insertAddressAfter(afterMailbox, mbox);
 }
 
 
-void mailboxList::insertMailboxAfter(const size_t pos, const shared_ptr <mailbox>& mbox)
-{
+void mailboxList::insertMailboxAfter(
+	const size_t pos,
+	const shared_ptr <mailbox>& mbox
+) {
+
 	m_list.insertAddressAfter(pos, mbox);
 }
 
 
-void mailboxList::removeMailbox(const shared_ptr <mailbox>& mbox)
-{
+void mailboxList::removeMailbox(const shared_ptr <mailbox>& mbox) {
+
 	m_list.removeAddress(mbox);
 }
 
 
-void mailboxList::removeMailbox(const size_t pos)
-{
+void mailboxList::removeMailbox(const size_t pos) {
+
 	m_list.removeAddress(pos);
 }
 
 
-void mailboxList::removeAllMailboxes()
-{
+void mailboxList::removeAllMailboxes() {
+
 	m_list.removeAllAddresses();
 }
 
 
-size_t mailboxList::getMailboxCount() const
-{
-	return (m_list.getAddressCount());
+size_t mailboxList::getMailboxCount() const {
+
+	return m_list.getAddressCount();
 }
 
 
-bool mailboxList::isEmpty() const
-{
-	return (m_list.isEmpty());
+bool mailboxList::isEmpty() const {
+
+	return m_list.isEmpty();
 }
 
 
-shared_ptr <mailbox> mailboxList::getMailboxAt(const size_t pos)
-{
+shared_ptr <mailbox> mailboxList::getMailboxAt(const size_t pos) {
+
 	return dynamicCast <mailbox>(m_list.getAddressAt(pos));
 }
 
 
-const shared_ptr <const mailbox> mailboxList::getMailboxAt(const size_t pos) const
-{
+const shared_ptr <const mailbox> mailboxList::getMailboxAt(const size_t pos) const {
+
 	return dynamicCast <const mailbox>(m_list.getAddressAt(pos));
 }
 
 
-const std::vector <shared_ptr <const mailbox> > mailboxList::getMailboxList() const
-{
+const std::vector <shared_ptr <const mailbox> > mailboxList::getMailboxList() const {
+
 	const std::vector <shared_ptr <const address> > addrList = m_list.getAddressList();
 	std::vector <shared_ptr <const mailbox> > res;
 
 	for (std::vector <shared_ptr <const address> >::const_iterator it = addrList.begin() ;
-	     it != addrList.end() ; ++it)
-	{
+	     it != addrList.end() ; ++it) {
+
 		const shared_ptr <const mailbox> mbox = dynamicCast <const mailbox>(*it);
 
-		if (mbox != NULL)
+		if (mbox) {
 			res.push_back(mbox);
+		}
 	}
 
-	return (res);
+	return res;
 }
 
 
-const std::vector <shared_ptr <mailbox> > mailboxList::getMailboxList()
-{
+const std::vector <shared_ptr <mailbox> > mailboxList::getMailboxList() {
+
 	const std::vector <shared_ptr <address> > addrList = m_list.getAddressList();
 	std::vector <shared_ptr <mailbox> > res;
 
 	for (std::vector <shared_ptr <address> >::const_iterator it = addrList.begin() ;
-	     it != addrList.end() ; ++it)
-	{
+	     it != addrList.end() ; ++it) {
+
 		const shared_ptr <mailbox> mbox = dynamicCast <mailbox>(*it);
 
-		if (mbox != NULL)
+		if (mbox) {
 			res.push_back(mbox);
+		}
 	}
 
-	return (res);
+	return res;
 }
 
 
-shared_ptr <component> mailboxList::clone() const
-{
+shared_ptr <component> mailboxList::clone() const {
+
 	return make_shared <mailboxList>(*this);
 }
 
 
-void mailboxList::copyFrom(const component& other)
-{
+void mailboxList::copyFrom(const component& other) {
+
 	const mailboxList& mboxList = dynamic_cast <const mailboxList&>(other);
 
 	m_list = mboxList.m_list;
 }
 
 
-mailboxList& mailboxList::operator=(const mailboxList& other)
-{
+mailboxList& mailboxList::operator=(const mailboxList& other) {
+
 	copyFrom(other);
-	return (*this);
+	return *this;
 }
 
 
-const std::vector <shared_ptr <component> > mailboxList::getChildComponents()
-{
-	return (m_list.getChildComponents());
+const std::vector <shared_ptr <component> > mailboxList::getChildComponents() {
+
+	return m_list.getChildComponents();
 }
 
 
-void mailboxList::parseImpl
-	(const parsingContext& ctx, const string& buffer, const size_t position,
-	 const size_t end, size_t* newPosition)
-{
+void mailboxList::parseImpl(
+	const parsingContext& ctx,
+	const string& buffer,
+	const size_t position,
+	const size_t end,
+	size_t* newPosition
+) {
+
 	m_list.removeAllAddresses();
 
 	size_t pos = position;
 
-	while (pos < end)
-	{
+	while (pos < end) {
+
 		shared_ptr <address> parsedAddress = address::parseNext(ctx, buffer, pos, end, &pos, NULL);
 
-		if (parsedAddress != NULL)
-		{
-			if (parsedAddress->isGroup())
-			{
+		if (parsedAddress) {
+
+			if (parsedAddress->isGroup()) {
+
 				shared_ptr <mailboxGroup> group = dynamicCast <mailboxGroup>(parsedAddress);
 
-				for (size_t i = 0 ; i < group->getMailboxCount() ; ++i)
-				{
+				for (size_t i = 0 ; i < group->getMailboxCount() ; ++i) {
 					m_list.appendAddress(group->getMailboxAt(i));
 				}
-			}
-			else
-			{
+
+			} else {
+
 				m_list.appendAddress(parsedAddress);
 			}
 		}
@@ -208,20 +225,25 @@ void mailboxList::parseImpl
 
 	setParsedBounds(position, end);
 
-	if (newPosition)
+	if (newPosition) {
 		*newPosition = end;
+	}
 }
 
 
-void mailboxList::generateImpl(const generationContext& ctx, utility::outputStream& os,
-	const size_t curLinePos, size_t* newLinePos) const
-{
+void mailboxList::generateImpl(
+	const generationContext& ctx,
+	utility::outputStream& os,
+	const size_t curLinePos,
+	size_t* newLinePos
+) const {
+
 	m_list.generate(ctx, os, curLinePos, newLinePos);
 }
 
 
-shared_ptr <addressList> mailboxList::toAddressList() const
-{
+shared_ptr <addressList> mailboxList::toAddressList() const {
+
 	return vmime::clone(m_list);
 }
 

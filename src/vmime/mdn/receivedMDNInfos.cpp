@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -31,52 +31,52 @@ namespace mdn {
 
 
 receivedMDNInfos::receivedMDNInfos(const shared_ptr <const message>& msg)
-	: m_msg(msg)
-{
+	: m_msg(msg) {
+
 	extract();
 }
 
 
 receivedMDNInfos::receivedMDNInfos(const receivedMDNInfos& other)
-	: MDNInfos()
-{
+	: MDNInfos() {
+
 	copyFrom(other);
 }
 
 
-receivedMDNInfos& receivedMDNInfos::operator=(const receivedMDNInfos& other)
-{
+receivedMDNInfos& receivedMDNInfos::operator=(const receivedMDNInfos& other) {
+
 	copyFrom(other);
-	return (*this);
+	return *this;
 }
 
 
-const shared_ptr <const message> receivedMDNInfos::getMessage() const
-{
-	return (m_msg);
+const shared_ptr <const message> receivedMDNInfos::getMessage() const {
+
+	return m_msg;
 }
 
 
-const messageId receivedMDNInfos::getOriginalMessageId() const
-{
-	return (m_omid);
+const messageId receivedMDNInfos::getOriginalMessageId() const {
+
+	return m_omid;
 }
 
 
-const disposition receivedMDNInfos::getDisposition() const
-{
-	return (m_disp);
+const disposition receivedMDNInfos::getDisposition() const {
+
+	return m_disp;
 }
 
 
-const string receivedMDNInfos::getContentMIC() const
-{
+const string receivedMDNInfos::getContentMIC() const {
+
 	return m_contentMIC;
 }
 
 
-void receivedMDNInfos::copyFrom(const receivedMDNInfos& other)
-{
+void receivedMDNInfos::copyFrom(const receivedMDNInfos& other) {
+
 	m_msg = other.m_msg;
 	m_omid = other.m_omid;
 	m_disp = other.m_disp;
@@ -84,23 +84,24 @@ void receivedMDNInfos::copyFrom(const receivedMDNInfos& other)
 }
 
 
-void receivedMDNInfos::extract()
-{
+void receivedMDNInfos::extract() {
+
 	const shared_ptr <const body> bdy = m_msg->getBody();
 
-	for (size_t i = 0 ; i < bdy->getPartCount() ; ++i)
-	{
+	for (size_t i = 0 ; i < bdy->getPartCount() ; ++i) {
+
 		const shared_ptr <const bodyPart> part = bdy->getPartAt(i);
 
-		if (!part->getHeader()->hasField(fields::CONTENT_TYPE))
+		if (!part->getHeader()->hasField(fields::CONTENT_TYPE)) {
 			continue;
+		}
 
 		const mediaType& type = *part->getHeader()->ContentType()->getValue <mediaType>();
 
 		// Extract from second part (message/disposition-notification)
 		if (type.getType() == vmime::mediaTypes::MESSAGE &&
-		    type.getSubType() == vmime::mediaTypes::MESSAGE_DISPOSITION_NOTIFICATION)
-		{
+		    type.getSubType() == vmime::mediaTypes::MESSAGE_DISPOSITION_NOTIFICATION) {
+
 			std::ostringstream oss;
 			utility::outputStreamAdapter vos(oss);
 
@@ -113,20 +114,23 @@ void receivedMDNInfos::extract()
 			shared_ptr <messageId> omid =
 				fields.findFieldValue <messageId>(fields::ORIGINAL_MESSAGE_ID);
 
-			if (omid)
+			if (omid) {
 				m_omid = *omid;
+			}
 
 			shared_ptr <disposition> disp =
 				fields.findFieldValue <disposition>(fields::DISPOSITION);
 
-			if (disp)
+			if (disp) {
 				m_disp = *disp;
+			}
 
 			shared_ptr <text> contentMIC =
 				fields.findFieldValue <text>("Received-content-MIC");
 
-			if (contentMIC)
+			if (contentMIC) {
 				m_contentMIC = contentMIC->generate();
+			}
 		}
 	}
 }

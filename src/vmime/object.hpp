@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -28,15 +28,13 @@
 #include "vmime/types.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 /** Base object for all objects in the library.
   */
+class VMIME_EXPORT object {
 
-class VMIME_EXPORT object
-{
 protected:
 
 	object();
@@ -52,4 +50,3 @@ protected:
 
 
 #endif // VMIME_OBJECT_HPP_INCLUDED
-

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -82,10 +82,10 @@ namespace tls {
 #ifndef VMIME_BUILDING_DOC
 
 // Initialize GNU TLS library
-struct TLSGlobal
-{
-	TLSGlobal()
-	{
+struct TLSGlobal {
+
+	TLSGlobal() {
+
 #if VMIME_HAVE_PTHREAD && defined(GCRY_THREAD_OPTION_PTHREAD_IMPL)
 	#if VMIME_GNUTLS_NEEDS_GCRYPT
 		gcry_control(GCRYCTL_SET_THREAD_CBS, &gcry_threads_pthread);
@@ -104,8 +104,8 @@ struct TLSGlobal
 		gnutls_certificate_allocate_credentials(&certCred);
 	}
 
-	~TLSGlobal()
-	{
+	~TLSGlobal() {
+
 		gnutls_anon_free_client_credentials(anonCred);
 		gnutls_certificate_free_credentials(certCred);
 
@@ -114,8 +114,8 @@ struct TLSGlobal
 
 #if VMIME_DEBUG && GNUTLS_DEBUG
 
-	static void TLSLogFunc(int level, const char *str)
-	{
+	static void TLSLogFunc(int level, const char *str) {
+
 		std::cerr << "GNUTLS: [" << level << "] " << str << std::endl;
 	}
 
@@ -134,21 +134,29 @@ static TLSGlobal g_gnutlsGlobal;
 
 
 // static
-shared_ptr <TLSSession> TLSSession::create(const shared_ptr <security::cert::certificateVerifier>& cv, const shared_ptr <TLSProperties>& props)
-{
+shared_ptr <TLSSession> TLSSession::create(
+	const shared_ptr <security::cert::certificateVerifier>& cv,
+	const shared_ptr <TLSProperties>& props
+) {
+
 	return make_shared <TLSSession_GnuTLS>(cv, props);
 }
 
 
-TLSSession_GnuTLS::TLSSession_GnuTLS(const shared_ptr <security::cert::certificateVerifier>& cv, const shared_ptr <TLSProperties>& props)
-	: m_certVerifier(cv), m_props(props)
-{
+TLSSession_GnuTLS::TLSSession_GnuTLS(
+	const shared_ptr <security::cert::certificateVerifier>& cv,
+	const shared_ptr <TLSProperties>& props
+)
+	: m_certVerifier(cv),
+	  m_props(props) {
+
 	int res;
 
 	m_gnutlsSession = new gnutls_session_t;
 
-	if (gnutls_init(m_gnutlsSession, GNUTLS_CLIENT) != 0)
+	if (gnutls_init(m_gnutlsSession, GNUTLS_CLIENT) != 0) {
 		throw std::bad_alloc();
+	}
 
 	// Sets some default priority on the ciphers, key exchange methods,
 	// macs and compression methods.
@@ -156,8 +164,8 @@ TLSSession_GnuTLS::TLSSession_GnuTLS(const shared_ptr <security::cert::certifica
 	gnutls_dh_set_prime_bits(*m_gnutlsSession, 128);
 
 	if ((res = gnutls_priority_set_direct
-		(*m_gnutlsSession, m_props->getCipherSuite().c_str(), NULL)) != 0)
-	{
+		(*m_gnutlsSession, m_props->getCipherSuite().c_str(), NULL)) != 0) {
+
 		throwTLSException("gnutls_priority_set_direct", res);
 	}
 
@@ -170,13 +178,10 @@ TLSSession_GnuTLS::TLSSession_GnuTLS(const shared_ptr <security::cert::certifica
 	// specifying the types you want, you must append a 0.
 	const int certTypePriority[] = { GNUTLS_CRT_X509, 0 };
 
-	res = gnutls_certificate_type_set_priority
-		(*m_gnutlsSession, certTypePriority);
+	res = gnutls_certificate_type_set_priority(*m_gnutlsSession, certTypePriority);
 
-	if (res < 0)
-	{
-		throwTLSException
-			("gnutls_certificate_type_set_priority", res);
+	if (res < 0) {
+		throwTLSException("gnutls_certificate_type_set_priority", res);
 	}
 
 	// Sets the priority on the protocol types
@@ -184,15 +189,12 @@ TLSSession_GnuTLS::TLSSession_GnuTLS(const shared_ptr <security::cert::certifica
 
 	res = gnutls_protocol_set_priority(*m_gnutlsSession, protoPriority);
 
-	if (res < 0)
-	{
-		throwTLSException
-			("gnutls_certificate_type_set_priority", res);
+	if (res < 0) {
+		throwTLSException("gnutls_certificate_type_set_priority", res);
 	}
 
 	// Priority on the ciphers
-	const int cipherPriority[] =
-	{
+	const int cipherPriority[] = {
 		GNUTLS_CIPHER_ARCFOUR_128,
 		GNUTLS_CIPHER_3DES_CBC,
 		GNUTLS_CIPHER_AES_128_CBC,
@@ -206,13 +208,16 @@ TLSSession_GnuTLS::TLSSession_GnuTLS(const shared_ptr <security::cert::certifica
 	gnutls_cipher_set_priority(*m_gnutlsSession, cipherPriority);
 
 	// Priority on MACs
-	const int macPriority[] = { GNUTLS_MAC_SHA, GNUTLS_MAC_MD5, 0};
+	const int macPriority[] = {
+		GNUTLS_MAC_SHA,
+		GNUTLS_MAC_MD5,
+		0
+	};
 
 	gnutls_mac_set_priority(*m_gnutlsSession, macPriority);
 
 	// Priority on key exchange methods
-	const int kxPriority[] =
-	{
+	const int kxPriority[] = {
 		GNUTLS_KX_RSA,
 		GNUTLS_KX_DHE_DSS,
 		GNUTLS_KX_DHE_RSA,
@@ -227,8 +232,7 @@ TLSSession_GnuTLS::TLSSession_GnuTLS(const shared_ptr <security::cert::certifica
 	gnutls_kx_set_priority(*m_gnutlsSession, kxPriority);
 
 	// Priority on compression methods
-	const int compressionPriority[] =
-	{
+	const int compressionPriority[] = {
 		GNUTLS_COMP_ZLIB,
 		//GNUTLS_COMP_LZO,
 		GNUTLS_COMP_NULL,
@@ -240,54 +244,56 @@ TLSSession_GnuTLS::TLSSession_GnuTLS(const shared_ptr <security::cert::certifica
 #endif // !VMIME_HAVE_GNUTLS_PRIORITY_FUNCS
 
 	// Initialize credentials
-	gnutls_credentials_set(*m_gnutlsSession,
-		GNUTLS_CRD_ANON, g_gnutlsGlobal.anonCred);
+	gnutls_credentials_set(
+		*m_gnutlsSession, GNUTLS_CRD_ANON, g_gnutlsGlobal.anonCred
+	);
 
-	gnutls_credentials_set(*m_gnutlsSession,
-		GNUTLS_CRD_CERTIFICATE, g_gnutlsGlobal.certCred);
+	gnutls_credentials_set(
+		*m_gnutlsSession, GNUTLS_CRD_CERTIFICATE, g_gnutlsGlobal.certCred
+	);
 }
 
 
 TLSSession_GnuTLS::TLSSession_GnuTLS(const TLSSession_GnuTLS&)
-	: TLSSession()
-{
+	: TLSSession() {
+
 	// Not used
 }
 
 
-TLSSession_GnuTLS::~TLSSession_GnuTLS()
-{
-	try
-	{
-		if (m_gnutlsSession)
-		{
+TLSSession_GnuTLS::~TLSSession_GnuTLS() {
+
+	try {
+
+		if (m_gnutlsSession) {
+
 			gnutls_deinit(*m_gnutlsSession);
 
 			delete m_gnutlsSession;
 			m_gnutlsSession = NULL;
 		}
-	}
-	catch (...)
-	{
+
+	} catch (...) {
+
 		// Don't throw in destructor
 	}
 }
 
 
-shared_ptr <TLSSocket> TLSSession_GnuTLS::getSocket(const shared_ptr <socket>& sok)
-{
+shared_ptr <TLSSocket> TLSSession_GnuTLS::getSocket(const shared_ptr <socket>& sok) {
+
 	return TLSSocket::wrap(dynamicCast <TLSSession>(shared_from_this()), sok);
 }
 
 
-shared_ptr <security::cert::certificateVerifier> TLSSession_GnuTLS::getCertificateVerifier()
-{
+shared_ptr <security::cert::certificateVerifier> TLSSession_GnuTLS::getCertificateVerifier() {
+
 	return m_certVerifier;
 }
 
 
-void TLSSession_GnuTLS::throwTLSException(const string& fname, const int code)
-{
+void TLSSession_GnuTLS::throwTLSException(const string& fname, const int code) {
+
 	std::ostringstream msg;
 
 	msg << fname + "() returned code ";

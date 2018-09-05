@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -36,24 +36,24 @@ namespace pop3 {
 
 
 POP3ServiceInfos::POP3ServiceInfos(const bool pop3s)
-	: m_pop3s(pop3s)
-{
+	: m_pop3s(pop3s) {
+
 }
 
 
-const string POP3ServiceInfos::getPropertyPrefix() const
-{
-	if (m_pop3s)
+const string POP3ServiceInfos::getPropertyPrefix() const {
+
+	if (m_pop3s) {
 		return "store.pop3s.";
-	else
+	} else {
 		return "store.pop3.";
+	}
 }
 
 
-const POP3ServiceInfos::props& POP3ServiceInfos::getProperties() const
-{
-	static props pop3Props =
-	{
+const POP3ServiceInfos::props& POP3ServiceInfos::getProperties() const {
+
+	static props pop3Props = {
 		// POP3-specific options
 		property("options.apop", serviceInfos::property::TYPE_BOOLEAN, "true"),
 		property("options.apop.fallback", serviceInfos::property::TYPE_BOOLEAN, "true"),
@@ -75,8 +75,8 @@ const POP3ServiceInfos::props& POP3ServiceInfos::getProperties() const
 		property(serviceInfos::property::SERVER_PORT, "110"),
 	};
 
-	static props pop3sProps =
-	{
+	static props pop3sProps = {
+
 		// POP3-specific options
 		property("options.apop", serviceInfos::property::TYPE_BOOLEAN, "true"),
 		property("options.apop.fallback", serviceInfos::property::TYPE_BOOLEAN, "true"),
@@ -102,8 +102,8 @@ const POP3ServiceInfos::props& POP3ServiceInfos::getProperties() const
 }
 
 
-const std::vector <serviceInfos::property> POP3ServiceInfos::getAvailableProperties() const
-{
+const std::vector <serviceInfos::property> POP3ServiceInfos::getAvailableProperties() const {
+
 	std::vector <property> list;
 	const props& p = getProperties();
 
@@ -120,8 +120,7 @@ const std::vector <serviceInfos::property> POP3ServiceInfos::getAvailablePropert
 	list.push_back(p.PROPERTY_AUTH_PASSWORD);
 
 #if VMIME_HAVE_TLS_SUPPORT
-	if (!m_pop3s)
-	{
+	if (!m_pop3s) {
 		list.push_back(p.PROPERTY_CONNECTION_TLS);
 		list.push_back(p.PROPERTY_CONNECTION_TLS_REQUIRED);
 	}

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -31,21 +31,31 @@
 #include <ctime>
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 /** Date and time (basic type).
   */
+class VMIME_EXPORT datetime : public headerFieldValue {
 
-class VMIME_EXPORT datetime : public headerFieldValue
-{
 public:
 
 	// Constructors
 	datetime();
-	datetime(const int year, const int month, const int day);
-	datetime(const int year, const int month, const int day, const int hour, const int minute, const int second, const int zone = GMT);
+	datetime(
+		const int year,
+		const int month,
+		const int day
+	);
+	datetime(
+		const int year,
+		const int month,
+		const int day,
+		const int hour,
+		const int minute,
+		const int second,
+		const int zone = GMT
+	);
 	datetime(const datetime& d);
 	datetime(const string& date);
 	datetime(const time_t t, const int zone = GMT);
@@ -54,8 +64,8 @@ public:
 	~datetime();
 
 	// Some time zones (in minutes)
-	enum TimeZones
-	{
+	enum TimeZones {
+
 		GMT_12 = -720,   // GMT-12h
 		GMT_11 = -660,   // GMT-11h
 		GMT_10 = -600,   // GMT-10h
@@ -124,8 +134,8 @@ public:
 	};
 
 	// Months list
-	enum Months
-	{
+	enum Months {
+
 		// Long
 		JANUARY = 1,
 		FEBRUARY = 2,
@@ -155,8 +165,8 @@ public:
 	};
 
 	// Days of week list
-	enum DaysOfWeek
-	{
+	enum DaysOfWeek {
+
 		// Long
 		SUNDAY = 0,
 		MONDAY = 1,
@@ -242,18 +252,20 @@ public:
 protected:
 
 	// Component parsing & assembling
-	void parseImpl
-		(const parsingContext& ctx,
-		 const string& buffer,
-		 const size_t position,
-		 const size_t end,
-		 size_t* newPosition = NULL);
+	void parseImpl(
+		const parsingContext& ctx,
+		const string& buffer,
+		const size_t position,
+		const size_t end,
+		size_t* newPosition = NULL
+	);
 
-	void generateImpl
-		(const generationContext& ctx,
-		 utility::outputStream& os,
-		 const size_t curLinePos = 0,
-		 size_t* newLinePos = NULL) const;
+	void generateImpl(
+		const generationContext& ctx,
+		utility::outputStream& os,
+		const size_t curLinePos = 0,
+		size_t* newLinePos = NULL
+	) const;
 };
 
 

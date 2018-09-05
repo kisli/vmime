@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -47,8 +47,8 @@ VMIME_TEST_SUITE_BEGIN(importanceHelperTest)
 
 	// resetImportance
 
-	void testResetImportance()
-	{
+	void testResetImportance() {
+
 		vmime::shared_ptr <vmime::header> hdr = vmime::make_shared <vmime::header>();
 
 		hdr->getField("Importance")->setValue("xxx");
@@ -66,9 +66,12 @@ VMIME_TEST_SUITE_BEGIN(importanceHelperTest)
 
 	// setImportance
 
-	void testSetImportanceImpl(const vmime::misc::importanceHelper::Importance i,
-		const std::string& ImportanceValue, const std::string& XPriorityValue)
-	{
+	void testSetImportanceImpl(
+		const vmime::misc::importanceHelper::Importance i,
+		const std::string& ImportanceValue,
+		const std::string& XPriorityValue
+	) {
+
 		vmime::shared_ptr <vmime::header> hdr = vmime::make_shared <vmime::header>();
 
 		vmime::misc::importanceHelper::setImportanceHeader(hdr, i);
@@ -80,43 +83,56 @@ VMIME_TEST_SUITE_BEGIN(importanceHelperTest)
 		VASSERT_EQ("4", XPriorityValue, hdr->findField("X-Priority")->getValue()->generate());
 	}
 
-	void testSetImportance1()
-	{
-		testSetImportanceImpl(vmime::misc::importanceHelper::IMPORTANCE_HIGHEST,
-			"high", "1 (Highest)");
+	void testSetImportance1() {
+
+		testSetImportanceImpl(
+			vmime::misc::importanceHelper::IMPORTANCE_HIGHEST,
+			"high", "1 (Highest)"
+		);
 	}
 
-	void testSetImportance2()
-	{
-		testSetImportanceImpl(vmime::misc::importanceHelper::IMPORTANCE_HIGH,
-			"high", "2 (High)");
+	void testSetImportance2() {
+
+		testSetImportanceImpl(
+			vmime::misc::importanceHelper::IMPORTANCE_HIGH,
+			"high", "2 (High)"
+		);
 	}
 
-	void testSetImportance3()
-	{
-		testSetImportanceImpl(vmime::misc::importanceHelper::IMPORTANCE_NORMAL,
-			"normal", "3 (Normal)");
+	void testSetImportance3() {
+
+		testSetImportanceImpl(
+			vmime::misc::importanceHelper::IMPORTANCE_NORMAL,
+			"normal", "3 (Normal)"
+		);
 	}
 
-	void testSetImportance4()
-	{
-		testSetImportanceImpl(vmime::misc::importanceHelper::IMPORTANCE_LOW,
-			"low", "4 (Low)");
+	void testSetImportance4() {
+
+		testSetImportanceImpl(
+			vmime::misc::importanceHelper::IMPORTANCE_LOW,
+			"low", "4 (Low)"
+		);
 	}
 
-	void testSetImportance5()
-	{
-		testSetImportanceImpl(vmime::misc::importanceHelper::IMPORTANCE_LOWEST,
-			"low", "5 (Lowest)");
+	void testSetImportance5() {
+
+		testSetImportanceImpl(
+			vmime::misc::importanceHelper::IMPORTANCE_LOWEST,
+			"low", "5 (Lowest)"
+		);
 	}
 
 
 	// getImportance
 
-	void testGetImportanceImpl(const vmime::misc::importanceHelper::Importance i1,
+	void testGetImportanceImpl(
+		const vmime::misc::importanceHelper::Importance i1,
 		const vmime::misc::importanceHelper::Importance i2,
-		const std::string& ImportanceValue, const std::string& XPriorityValue)
-	{
+		const std::string& ImportanceValue,
+		const std::string& XPriorityValue
+	) {
+
 		vmime::shared_ptr <vmime::header> hdr1 = vmime::make_shared <vmime::header>();
 
 		hdr1->getField("Importance")->setValue(ImportanceValue);
@@ -128,35 +144,48 @@ VMIME_TEST_SUITE_BEGIN(importanceHelperTest)
 		VASSERT_EQ("2", i2, vmime::misc::importanceHelper::getImportanceHeader(hdr2));
 	}
 
-	void testGetImportance1()
-	{
-		testGetImportanceImpl(vmime::misc::importanceHelper::IMPORTANCE_HIGHEST,
-			vmime::misc::importanceHelper::IMPORTANCE_HIGHEST, "high", "1 (Highest)");
+	void testGetImportance1() {
+
+		testGetImportanceImpl(
+			vmime::misc::importanceHelper::IMPORTANCE_HIGHEST,
+			vmime::misc::importanceHelper::IMPORTANCE_HIGHEST,
+			"high", "1 (Highest)");
 	}
 
-	void testGetImportance2()
-	{
-		testGetImportanceImpl(vmime::misc::importanceHelper::IMPORTANCE_HIGHEST,
-			vmime::misc::importanceHelper::IMPORTANCE_HIGH, "high", "2 (High)");
+	void testGetImportance2() {
+
+		testGetImportanceImpl(
+			vmime::misc::importanceHelper::IMPORTANCE_HIGHEST,
+			vmime::misc::importanceHelper::IMPORTANCE_HIGH,
+			"high", "2 (High)"
+		);
 	}
 
-	void testGetImportance3()
-	{
-		testGetImportanceImpl(vmime::misc::importanceHelper::IMPORTANCE_NORMAL,
-			vmime::misc::importanceHelper::IMPORTANCE_NORMAL, "normal", "3 (Normal)");
+	void testGetImportance3() {
+
+		testGetImportanceImpl(
+			vmime::misc::importanceHelper::IMPORTANCE_NORMAL,
+			vmime::misc::importanceHelper::IMPORTANCE_NORMAL,
+			"normal", "3 (Normal)"
+		);
 	}
 
-	void testGetImportance4()
-	{
-		testGetImportanceImpl(vmime::misc::importanceHelper::IMPORTANCE_LOWEST,
-			vmime::misc::importanceHelper::IMPORTANCE_LOW, "low", "4 (Low)");
+	void testGetImportance4() {
+
+		testGetImportanceImpl(
+			vmime::misc::importanceHelper::IMPORTANCE_LOWEST,
+			vmime::misc::importanceHelper::IMPORTANCE_LOW,
+			"low", "4 (Low)"
+		);
 	}
 
-	void testGetImportance5()
-	{
-		testGetImportanceImpl(vmime::misc::importanceHelper::IMPORTANCE_LOWEST,
-			vmime::misc::importanceHelper::IMPORTANCE_LOWEST, "low", "5 (Lowest)");
+	void testGetImportance5() {
+
+		testGetImportanceImpl(
+			vmime::misc::importanceHelper::IMPORTANCE_LOWEST,
+			vmime::misc::importanceHelper::IMPORTANCE_LOWEST,
+			"low", "5 (Lowest)"
+		);
 	}
 
 VMIME_TEST_SUITE_END
-

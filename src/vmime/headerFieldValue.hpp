@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -29,16 +29,14 @@
 #include "vmime/component.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 /** Base class for all classes that can be used as a value
   * for a header field.
   */
+class VMIME_EXPORT headerFieldValue : public component {
 
-class VMIME_EXPORT headerFieldValue : public component
-{
 public:
 
 	size_t getGeneratedSize(const generationContext& ctx);
@@ -49,4 +47,3 @@ public:
 
 
 #endif // VMIME_HEADERFIELDVALUE_HPP_INCLUDED
-

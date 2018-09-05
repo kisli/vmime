@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -32,35 +32,49 @@ VMIME_TEST_SUITE_BEGIN(bodyTest)
 	VMIME_TEST_LIST_END
 
 
-	void testGenerate_Text()
-	{
+	void testGenerate_Text() {
+
 		// RFC-2015: [Quoted-Printable encoding] A line break in a text body,
 		// represented as a CRLF sequence in the text canonical form, must be
 		// represented by a line break which is also a CRLF sequence, in the
 		// Quoted-Printable encoding
 
 		vmime::bodyPart p;
-		p.getBody()->setContents(vmime::make_shared <vmime::stringContentHandler>
-			("Foo éé\r\né bar\r\nbaz"), vmime::mediaType("text", "plain"),
-			 vmime::charset("utf-8"), vmime::encoding("quoted-printable"));
+		p.getBody()->setContents(
+			vmime::make_shared <vmime::stringContentHandler>(
+				"Foo éé\r\né bar\r\nbaz"
+			),
+			vmime::mediaType("text", "plain"),
+			vmime::charset("utf-8"),
+			vmime::encoding("quoted-printable")
+		);
 
-		VASSERT_EQ("generate",
+		VASSERT_EQ(
+			"generate",
 			"Foo =C3=A9=C3=A9\r\n"
 			"=C3=A9 bar\r\n"
 			"baz",
-			p.getBody()->generate());
+			p.getBody()->generate()
+		);
 	}
 
-	void testGenerate_NonText()
-	{
-		vmime::bodyPart p;
-		p.getBody()->setContents(vmime::make_shared <vmime::stringContentHandler>
-			("Binary\xfa\xfb\r\ndata\r\n\r\n\xfc"), vmime::mediaType("application", "octet-stream"),
-			 vmime::charset("utf-8"), vmime::encoding("quoted-printable"));
+	void testGenerate_NonText() {
 
-		VASSERT_EQ("generate",
+		vmime::bodyPart p;
+		p.getBody()->setContents(
+			vmime::make_shared <vmime::stringContentHandler>(
+				"Binary\xfa\xfb\r\ndata\r\n\r\n\xfc"
+			),
+			vmime::mediaType("application", "octet-stream"),
+			vmime::charset("utf-8"),
+			vmime::encoding("quoted-printable")
+		);
+
+		VASSERT_EQ(
+			"generate",
 			"Binary=FA=FB=0D=0Adata=0D=0A=0D=0A=FC",
-			p.getBody()->generate());
+			p.getBody()->generate()
+		);
 	}
 
 VMIME_TEST_SUITE_END

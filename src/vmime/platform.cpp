@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -28,21 +28,19 @@
 #include "vmime/platforms/windows/windowsHandler.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 shared_ptr <platform::handler> platform::sm_handler;
 
 
-platform::handler::~handler()
-{
+platform::handler::~handler() {
+
 }
 
 
 // static
-shared_ptr <platform::handler> platform::getDefaultHandler()
-{
+shared_ptr <platform::handler> platform::getDefaultHandler() {
 
 #if VMIME_PLATFORM_IS_WINDOWS
 	return make_shared <platforms::windows::windowsHandler>();
@@ -56,17 +54,17 @@ shared_ptr <platform::handler> platform::getDefaultHandler()
 
 
 // static
-shared_ptr <platform::handler> platform::getHandler()
-{
+shared_ptr <platform::handler> platform::getHandler() {
+
 	// If a custom platform handler is installed, return it
-	if (sm_handler)
+	if (sm_handler) {
 		return sm_handler;
+	}
 
 	// Else, use the default handler for this platform
 	shared_ptr <handler> defaultHandler = getDefaultHandler();
 
-	if (defaultHandler)
-	{
+	if (defaultHandler) {
 		sm_handler = defaultHandler;
 		return sm_handler;
 	}

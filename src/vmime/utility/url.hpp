@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -36,10 +36,12 @@ namespace utility {
 
 /** This class represents a Uniform Resource Locator (a pointer
   * to a "resource" on the World Wide Web).
+  *
+  * Format:
+  * "protocol://[username[:password]@]host[:port][/path]"
   */
+class VMIME_EXPORT url {
 
-class VMIME_EXPORT url
-{
 public:
 
 	/** Means "port not specified" (use default port). */
@@ -77,8 +79,14 @@ public:
 	  * @param username optional user name
 	  * @param password optional user password
 	  */
-	url(const string& protocol, const string& host, const port_t port = UNSPECIFIED_PORT,
-		const string& path = "", const string& username = "", const string& password = "");
+	url(
+		const string& protocol,
+		const string& host,
+		const port_t port = UNSPECIFIED_PORT,
+		const string& path = "",
+		const string& username = "",
+		const string& password = ""
+	);
 
 
 	/** Return the protocol of the URL (eg: "http").
@@ -182,8 +190,6 @@ private:
 	const string build() const;
 	void parse(const string& str);
 
-	// Format:
-	// "protocol://[username[:password]@]host[:port][/path]"
 
 	string m_protocol;
 

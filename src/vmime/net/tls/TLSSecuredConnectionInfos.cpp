@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -36,29 +36,34 @@ namespace net {
 namespace tls {
 
 
-TLSSecuredConnectionInfos::TLSSecuredConnectionInfos
-	(const string& host, const port_t port,
-	 const shared_ptr <TLSSession>& tlsSession, const shared_ptr <TLSSocket>& tlsSocket)
-	: m_host(host), m_port(port),
-	  m_tlsSession(tlsSession), m_tlsSocket(tlsSocket)
-{
+TLSSecuredConnectionInfos::TLSSecuredConnectionInfos(
+	const string& host,
+	const port_t port,
+	const shared_ptr <TLSSession>& tlsSession,
+	const shared_ptr <TLSSocket>& tlsSocket
+)
+	: m_host(host),
+	  m_port(port),
+	  m_tlsSession(tlsSession),
+	  m_tlsSocket(tlsSocket) {
+
 }
 
 
-const string TLSSecuredConnectionInfos::getHost() const
-{
+const string TLSSecuredConnectionInfos::getHost() const {
+
 	return m_host;
 }
 
 
-port_t TLSSecuredConnectionInfos::getPort() const
-{
+port_t TLSSecuredConnectionInfos::getPort() const {
+
 	return m_port;
 }
 
 
-shared_ptr <const security::cert::certificateChain> TLSSecuredConnectionInfos::getPeerCertificates() const
-{
+shared_ptr <const security::cert::certificateChain> TLSSecuredConnectionInfos::getPeerCertificates() const {
+
 	return m_tlsSocket->getPeerCertificates();
 }
 

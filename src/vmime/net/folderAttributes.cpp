@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2014 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -39,8 +39,8 @@ namespace net {
 folderAttributes::folderAttributes()
 	: m_type(TYPE_CONTAINS_FOLDERS | TYPE_CONTAINS_MESSAGES),
 	  m_flags(0),
-	  m_specialUse(SPECIALUSE_NONE)
-{
+	  m_specialUse(SPECIALUSE_NONE) {
+
 }
 
 
@@ -49,67 +49,67 @@ folderAttributes::folderAttributes(const folderAttributes& attribs)
 	  m_type(attribs.m_type),
 	  m_flags(attribs.m_flags),
 	  m_userFlags(attribs.m_userFlags),
-	  m_specialUse(attribs.m_specialUse)
-{
+	  m_specialUse(attribs.m_specialUse) {
+
 }
 
 
-int folderAttributes::getType() const
-{
+int folderAttributes::getType() const {
+
 	return m_type;
 }
 
 
-void folderAttributes::setType(const int type)
-{
+void folderAttributes::setType(const int type) {
+
 	m_type = type;
 }
 
 
-int folderAttributes::getSpecialUse() const
-{
+int folderAttributes::getSpecialUse() const {
+
 	return m_specialUse;
 }
 
 
-void folderAttributes::setSpecialUse(const int use)
-{
+void folderAttributes::setSpecialUse(const int use) {
+
 	m_specialUse = use;
 }
 
 
-int folderAttributes::getFlags() const
-{
+int folderAttributes::getFlags() const {
+
 	return m_flags;
 }
 
 
-void folderAttributes::setFlags(const int flags)
-{
+void folderAttributes::setFlags(const int flags) {
+
 	m_flags = flags;
 }
 
 
-bool folderAttributes::hasFlag(const int flag)
-{
+bool folderAttributes::hasFlag(const int flag) {
+
 	return (m_flags & flag) != 0;
 }
 
 
-const std::vector <string> folderAttributes::getUserFlags() const
-{
+const std::vector <string> folderAttributes::getUserFlags() const {
+
 	return m_userFlags;
 }
 
 
-void folderAttributes::setUserFlags(const std::vector <string>& flags)
-{
+void folderAttributes::setUserFlags(const std::vector <string>& flags) {
+
 	m_userFlags = flags;
 }
 
 
-bool folderAttributes::hasUserFlag(const string& flag)
-{
+bool folderAttributes::hasUserFlag(const string& flag) {
+
 	return std::find(m_userFlags.begin(), m_userFlags.end(), flag) != m_userFlags.end();
 }
 

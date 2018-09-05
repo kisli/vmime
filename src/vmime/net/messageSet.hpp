@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -46,9 +46,8 @@ class UIDMessageRange;
 /** Enumerator used to retrieve the message number/UID ranges contained
   * in a messageSet object.
   */
+class VMIME_EXPORT messageSetEnumerator {
 
-class VMIME_EXPORT messageSetEnumerator
-{
 public:
 
 	virtual void enumerateNumberMessageRange(const numberMessageRange& range) = 0;
@@ -59,9 +58,8 @@ public:
 /** A range of (continuous) messages, designated either by their
   * sequence number, or by their UID.
   */
+class VMIME_EXPORT messageRange : public object {
 
-class VMIME_EXPORT messageRange : public object
-{
 public:
 
 	virtual ~messageRange();
@@ -86,9 +84,8 @@ protected:
 
 /** A range of (continuous) messages designated by their sequence number.
   */
+class VMIME_EXPORT numberMessageRange : public messageRange {
 
-class VMIME_EXPORT numberMessageRange : public messageRange
-{
 public:
 
 	/** Constructs a message range containing a single message.
@@ -137,9 +134,8 @@ private:
 
 /** A range of (continuous) messages represented by their UID.
   */
+class VMIME_EXPORT UIDMessageRange : public messageRange {
 
-class VMIME_EXPORT UIDMessageRange : public messageRange
-{
 public:
 
 	/** Constructs a message range containing a single message.
@@ -211,9 +207,8 @@ private:
   *    vmime::net::messageSet::byUID(1000, "*")
   * \endcode
   */
+class VMIME_EXPORT messageSet : public object {
 
-class VMIME_EXPORT messageSet : public object
-{
 public:
 
 	~messageSet();

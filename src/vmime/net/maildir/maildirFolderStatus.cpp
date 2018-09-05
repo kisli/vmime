@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -37,45 +37,45 @@ namespace maildir {
 
 maildirFolderStatus::maildirFolderStatus()
 	: m_count(0),
-	  m_unseen(0)
-{
+	  m_unseen(0) {
+
 }
 
 
 maildirFolderStatus::maildirFolderStatus(const maildirFolderStatus& other)
 	: folderStatus(),
 	  m_count(other.m_count),
-	  m_unseen(other.m_unseen)
-{
+	  m_unseen(other.m_unseen) {
+
 }
 
 
-size_t maildirFolderStatus::getMessageCount() const
-{
+size_t maildirFolderStatus::getMessageCount() const {
+
 	return m_count;
 }
 
 
-size_t maildirFolderStatus::getUnseenCount() const
-{
+size_t maildirFolderStatus::getUnseenCount() const {
+
 	return m_unseen;
 }
 
 
-void maildirFolderStatus::setMessageCount(const size_t count)
-{
+void maildirFolderStatus::setMessageCount(const size_t count) {
+
 	m_count = count;
 }
 
 
-void maildirFolderStatus::setUnseenCount(const size_t unseen)
-{
+void maildirFolderStatus::setUnseenCount(const size_t unseen) {
+
 	m_unseen = unseen;
 }
 
 
-shared_ptr <folderStatus> maildirFolderStatus::clone() const
-{
+shared_ptr <folderStatus> maildirFolderStatus::clone() const {
+
 	return make_shared <maildirFolderStatus>(*this);
 }
 

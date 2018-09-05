@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -35,8 +35,8 @@ VMIME_TEST_SUITE_BEGIN(mediaTypeTest)
 	VMIME_TEST_LIST_END
 
 
-	void testConstructors()
-	{
+	void testConstructors() {
+
 		vmime::mediaType t1;
 
 		VASSERT_EQ("1.1", vmime::mediaTypes::APPLICATION, t1.getType());
@@ -53,8 +53,8 @@ VMIME_TEST_SUITE_BEGIN(mediaTypeTest)
 		VASSERT_EQ("3.2", "sub", t3.getSubType());
 	}
 
-	void testCopy()
-	{
+	void testCopy() {
+
 		vmime::mediaType t1("type/sub");
 
 		VASSERT_EQ("eq1", "type", t1.getType());
@@ -72,8 +72,8 @@ VMIME_TEST_SUITE_BEGIN(mediaTypeTest)
 		VASSERT("copyFrom", t1 == t2);
 	}
 
-	void testSetFromString()
-	{
+	void testSetFromString() {
+
 		vmime::mediaType t1;
 		t1.setFromString("type/sub");
 
@@ -81,8 +81,8 @@ VMIME_TEST_SUITE_BEGIN(mediaTypeTest)
 		VASSERT_EQ("1.2", "sub", t1.getSubType());
 	}
 
-	void testParse()
-	{
+	void testParse() {
+
 		vmime::mediaType t1;
 		t1.parse("type/sub");
 
@@ -90,12 +90,11 @@ VMIME_TEST_SUITE_BEGIN(mediaTypeTest)
 		VASSERT_EQ("1.2", "sub", t1.getSubType());
 	}
 
-	void testGenerate()
-	{
+	void testGenerate() {
+
 		vmime::mediaType t1("type", "sub");
 
 		VASSERT_EQ("1", "type/sub", t1.generate());
 	}
 
 VMIME_TEST_SUITE_END
-

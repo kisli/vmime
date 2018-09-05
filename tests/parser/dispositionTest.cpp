@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -33,8 +33,8 @@ VMIME_TEST_SUITE_BEGIN(dispositionTest)
 	VMIME_TEST_LIST_END
 
 
-	void testParse()
-	{
+	void testParse() {
+
 		// disposition-mode ";" disposition-type
 		//      [ "/" disposition-modifier *( "," disposition-modifier ) ]
 		//
@@ -84,8 +84,8 @@ VMIME_TEST_SUITE_BEGIN(dispositionTest)
 		VASSERT_EQ("5.6", "modif2", disp5.getModifierList()[1]);
 	}
 
-	void testGenerate()
-	{
+	void testGenerate() {
+
 		vmime::disposition disp;
 
 		VASSERT_EQ("1", "automatic-action/MDN-sent-automatically;displayed", disp.generate());
@@ -112,8 +112,8 @@ VMIME_TEST_SUITE_BEGIN(dispositionTest)
 		VASSERT_EQ("6", "amode/smode;type/modif1,modif2", disp.generate());
 	}
 
-	void testModifiers()
-	{
+	void testModifiers() {
+
 		vmime::disposition disp1;
 
 		VASSERT_EQ("1", false, disp1.hasModifier("foo"));
@@ -148,4 +148,3 @@ VMIME_TEST_SUITE_BEGIN(dispositionTest)
 	}
 
 VMIME_TEST_SUITE_END
-

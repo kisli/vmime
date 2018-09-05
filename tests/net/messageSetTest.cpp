@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -46,47 +46,51 @@ VMIME_TEST_SUITE_BEGIN(messageSetTest)
 	VMIME_TEST_LIST_END
 
 
-	class messageSetStringEnumerator : public vmime::net::messageSetEnumerator
-	{
+	class messageSetStringEnumerator : public vmime::net::messageSetEnumerator {
+
 	public:
 
 		messageSetStringEnumerator()
-			: m_first(true)
-		{
+			: m_first(true) {
+
 		}
 
-		void enumerateNumberMessageRange(const vmime::net::numberMessageRange& range)
-		{
-			if (!m_first)
-				m_oss << ",";
+		void enumerateNumberMessageRange(const vmime::net::numberMessageRange& range) {
 
-			if (range.getFirst() == range.getLast())
+			if (!m_first) {
+				m_oss << ",";
+			}
+
+			if (range.getFirst() == range.getLast()) {
 				m_oss << range.getFirst();
-			else if (range.getLast() == size_t(-1))
+			} else if (range.getLast() == size_t(-1)) {
 				m_oss << range.getFirst() << ":(LAST)";
-			else
+			} else {
 				m_oss << range.getFirst() << ":" << range.getLast();
+			}
 
 			m_first = false;
 		}
 
-		void enumerateUIDMessageRange(const vmime::net::UIDMessageRange& range)
-		{
-			if (!m_first)
-				m_oss << ",";
+		void enumerateUIDMessageRange(const vmime::net::UIDMessageRange& range) {
 
-			if (range.getFirst() == range.getLast())
+			if (!m_first) {
+				m_oss << ",";
+			}
+
+			if (range.getFirst() == range.getLast()) {
 				m_oss << range.getFirst();
-			else if (range.getLast() == size_t(-1))
+			} else if (range.getLast() == size_t(-1)) {
 				m_oss << range.getFirst() << ":(LAST)";
-			else
+			} else {
 				m_oss << range.getFirst() << ":" << range.getLast();
+			}
 
 			m_first = false;
 		}
 
-		const std::string str() const
-		{
+		const std::string str() const {
+
 			return m_oss.str();
 		}
 
@@ -97,8 +101,8 @@ VMIME_TEST_SUITE_BEGIN(messageSetTest)
 	};
 
 
-	const std::string enumerateAsString(const vmime::net::messageSet& set)
-	{
+	const std::string enumerateAsString(const vmime::net::messageSet& set) {
+
 		messageSetStringEnumerator en;
 		set.enumerate(en);
 
@@ -106,33 +110,33 @@ VMIME_TEST_SUITE_BEGIN(messageSetTest)
 	}
 
 
-	void testNumberSet_Single()
-	{
+	void testNumberSet_Single() {
+
 		VASSERT_EQ("str", "42", enumerateAsString(vmime::net::messageSet::byNumber(42)));
 	}
 
-	void testNumberSet_Range()
-	{
+	void testNumberSet_Range() {
+
 		VASSERT_EQ("str", "42:100", enumerateAsString(vmime::net::messageSet::byNumber(42, 100)));
 	}
 
-	void testNumberSet_InvalidRange()
-	{
+	void testNumberSet_InvalidRange() {
+
 		VASSERT_THROW("first > last", vmime::net::messageSet::byNumber(100, 42), std::invalid_argument);
 	}
 
-	void testNumberSet_InvalidFirst()
-	{
+	void testNumberSet_InvalidFirst() {
+
 		VASSERT_THROW("first == -1", vmime::net::messageSet::byNumber(-1, 42), std::invalid_argument);
 	}
 
-	void testNumberSet_InfiniteRange()
-	{
+	void testNumberSet_InfiniteRange() {
+
 		VASSERT_EQ("str", "42:(LAST)", enumerateAsString(vmime::net::messageSet::byNumber(42, -1)));
 	}
 
-	void testNumberSet_Multiple()
-	{
+	void testNumberSet_Multiple() {
+
 		std::vector <vmime::size_t> numbers;
 		numbers.push_back(1);    // test grouping 1:3
 		numbers.push_back(89);   // test sorting
@@ -151,23 +155,23 @@ VMIME_TEST_SUITE_BEGIN(messageSetTest)
 	}
 
 
-	void testUIDSet_Single()
-	{
+	void testUIDSet_Single() {
+
 		VASSERT_EQ("str", "abcdef", enumerateAsString(vmime::net::messageSet::byUID("abcdef")));
 	}
 
-	void testUIDSet_Range()
-	{
+	void testUIDSet_Range() {
+
 		VASSERT_EQ("str", "abc:def", enumerateAsString(vmime::net::messageSet::byUID("abc:def")));
 	}
 
-	void testUIDSet_InfiniteRange()
-	{
+	void testUIDSet_InfiniteRange() {
+
 		VASSERT_EQ("str", "abc:*", enumerateAsString(vmime::net::messageSet::byUID("abc", "*")));
 	}
 
-	void testUIDSet_MultipleNumeric()
-	{
+	void testUIDSet_MultipleNumeric() {
+
 		std::vector <vmime::net::message::uid> uids;
 		uids.push_back("1");    // test grouping 1:3
 		uids.push_back("89");   // test sorting
@@ -185,8 +189,8 @@ VMIME_TEST_SUITE_BEGIN(messageSetTest)
 		VASSERT_EQ("str", "1:3,42,53:57,89,99", enumerateAsString(vmime::net::messageSet::byUID(uids)));
 	}
 
-	void testUIDSet_MultipleNonNumeric()
-	{
+	void testUIDSet_MultipleNonNumeric() {
+
 		std::vector <vmime::net::message::uid> uids;
 		uids.push_back("12");
 		uids.push_back("34");
@@ -196,8 +200,8 @@ VMIME_TEST_SUITE_BEGIN(messageSetTest)
 		VASSERT_EQ("str", "12,34,ab56,78cd", enumerateAsString(vmime::net::messageSet::byUID(uids)));
 	}
 
-	void testIsNumberSet()
-	{
+	void testIsNumberSet() {
+
 		VASSERT_TRUE("number1", vmime::net::messageSet::byNumber(42).isNumberSet());
 		VASSERT_FALSE("uid1", vmime::net::messageSet::byUID("42").isNumberSet());
 
@@ -205,8 +209,8 @@ VMIME_TEST_SUITE_BEGIN(messageSetTest)
 		VASSERT_FALSE("uid2", vmime::net::messageSet::byUID("42", "*").isNumberSet());
 	}
 
-	void testIsUIDSet()
-	{
+	void testIsUIDSet() {
+
 		VASSERT_FALSE("number1", vmime::net::messageSet::byNumber(42).isUIDSet());
 		VASSERT_TRUE("uid1", vmime::net::messageSet::byUID("42").isUIDSet());
 
@@ -214,8 +218,8 @@ VMIME_TEST_SUITE_BEGIN(messageSetTest)
 		VASSERT_TRUE("uid2", vmime::net::messageSet::byUID("42", "*").isUIDSet());
 	}
 
-	void testMixedRanges()
-	{
+	void testMixedRanges() {
+
 		vmime::net::messageSet set = vmime::net::messageSet::byNumber(1, 5);
 		set.addRange(vmime::net::numberMessageRange(6, 8));
 

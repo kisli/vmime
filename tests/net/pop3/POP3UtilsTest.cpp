@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -40,13 +40,15 @@ VMIME_TEST_SUITE_BEGIN(POP3UtilsTest)
 	VMIME_TEST_LIST_END
 
 
-	void testParseMultiListOrUidlResponse()
-	{
+	void testParseMultiListOrUidlResponse() {
+
 		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
 		vmime::shared_ptr <vmime::net::timeoutHandler> toh = vmime::make_shared <testTimeoutHandler>();
 
-		vmime::shared_ptr <POP3ConnectionTest> conn = vmime::make_shared <POP3ConnectionTest>
-			(vmime::dynamicCast <vmime::net::socket>(socket), toh);
+		vmime::shared_ptr <POP3ConnectionTest> conn =
+			vmime::make_shared <POP3ConnectionTest>(
+				vmime::dynamicCast <vmime::net::socket>(socket), toh
+			);
 
 		socket->localSend("+OK Response Text\r\n");
 		socket->localSend("1 abcdef\r\n");
@@ -70,11 +72,11 @@ VMIME_TEST_SUITE_BEGIN(POP3UtilsTest)
 		VASSERT_EQ("5 (with extra space)", "yz", result[8]);
 	}
 
-	void testMessageSetToNumberList()
-	{
-		const std::vector <size_t> msgNums =
-			POP3Utils::messageSetToNumberList
-				(vmime::net::messageSet::byNumber(5, -1), /* msgCount */ 8);
+	void testMessageSetToNumberList() {
+
+		const std::vector <size_t> msgNums = POP3Utils::messageSetToNumberList(
+			vmime::net::messageSet::byNumber(5, -1), /* msgCount */ 8
+		);
 
 		VASSERT_EQ("Count", 4, msgNums.size());
 		VASSERT_EQ("1", 5, msgNums[0]);
@@ -84,4 +86,3 @@ VMIME_TEST_SUITE_BEGIN(POP3UtilsTest)
 	}
 
 VMIME_TEST_SUITE_END
-

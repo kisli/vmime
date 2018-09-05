@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -29,15 +29,13 @@
 #include "vmime/encoding.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 /** Default implementation for attachments.
   */
+class VMIME_EXPORT defaultAttachment : public attachment {
 
-class VMIME_EXPORT defaultAttachment : public attachment
-{
 protected:
 
 	// For use in derived classes.
@@ -45,8 +43,21 @@ protected:
 
 public:
 
-	defaultAttachment(const shared_ptr <const contentHandler>& data, const encoding& enc, const mediaType& type, const text& desc = NULL_TEXT, const word& name = NULL_WORD);
-	defaultAttachment(const shared_ptr <const contentHandler>& data, const mediaType& type, const text& desc = NULL_TEXT, const word& name = NULL_WORD);
+	defaultAttachment(
+		const shared_ptr <const contentHandler>& data,
+		const encoding& enc,
+		const mediaType& type,
+		const text& desc = NULL_TEXT,
+		const word& name = NULL_WORD
+	);
+
+	defaultAttachment(
+		const shared_ptr <const contentHandler>& data,
+		const mediaType& type,
+		const text& desc = NULL_TEXT,
+		const word& name = NULL_WORD
+	);
+
 	defaultAttachment(const defaultAttachment& attach);
 
 	~defaultAttachment();

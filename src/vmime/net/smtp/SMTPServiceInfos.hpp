@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -41,15 +41,13 @@ namespace smtp {
 
 /** Information about SMTP service.
   */
+class VMIME_EXPORT SMTPServiceInfos : public serviceInfos {
 
-class VMIME_EXPORT SMTPServiceInfos : public serviceInfos
-{
 public:
 
 	SMTPServiceInfos(const bool smtps);
 
-	struct props
-	{
+	struct props {
 		// SMTP-specific options
 		serviceInfos::property PROPERTY_OPTIONS_NEEDAUTH;
 #if VMIME_HAVE_SASL_SUPPORT

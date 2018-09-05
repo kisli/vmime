@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -29,15 +29,13 @@
 #include "vmime/charsetConverterOptions.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 /** Holds configuration parameters used either for parsing or generating messages.
   */
+class VMIME_EXPORT context : public object {
 
-class VMIME_EXPORT context : public object
-{
 public:
 
 	virtual ~context();
@@ -74,8 +72,8 @@ public:
 	/** Switches between contexts temporarily.
 	  */
 	template <typename CTX_CLASS>
-	class switcher
-	{
+	class switcher {
+
 	public:
 
 		/** Switches to the specified context.
@@ -85,15 +83,15 @@ public:
 		  * @param newCtx new context
 		  */
 		switcher(CTX_CLASS& newCtx)
-			: m_oldCtxData(CTX_CLASS::getDefaultContext()), m_newCtx(&newCtx)
-		{
+			: m_oldCtxData(CTX_CLASS::getDefaultContext()), m_newCtx(&newCtx) {
+
 			CTX_CLASS::getDefaultContext().copyFrom(newCtx);
 		}
 
 		/** Restores back saved context.
 		  */
-		~switcher()
-		{
+		~switcher() {
+
 			CTX_CLASS::getDefaultContext().copyFrom(m_oldCtxData);
 		}
 

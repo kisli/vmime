@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -41,15 +41,13 @@ namespace imap {
 
 /** Information about IMAP service.
   */
+class VMIME_EXPORT IMAPServiceInfos : public serviceInfos {
 
-class VMIME_EXPORT IMAPServiceInfos : public serviceInfos
-{
 public:
 
 	IMAPServiceInfos(const bool imaps);
 
-	struct props
-	{
+	struct props {
 		// IMAP-specific options
 #if VMIME_HAVE_SASL_SUPPORT
 		serviceInfos::property PROPERTY_OPTIONS_SASL;

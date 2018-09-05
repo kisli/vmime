@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -36,9 +36,8 @@ namespace utility {
 /** An interface to implement if you want to be notified
   * of a state of progress by some objects.
   */
+class VMIME_EXPORT progressListener {
 
-class VMIME_EXPORT progressListener
-{
 protected:
 
 	virtual ~progressListener() { }
@@ -71,9 +70,8 @@ public:
 /** A progress listener used when total size is known by the
   * receiver, but not by the notifier.
   */
+class VMIME_EXPORT progressListenerSizeAdapter : public progressListener {
 
-class VMIME_EXPORT progressListenerSizeAdapter : public progressListener
-{
 public:
 
 	/** Construct a new progressListenerSizeAdapter object.
@@ -99,4 +97,3 @@ private:
 
 
 #endif // VMIME_UTILITY_PROGRESSLISTENER_HPP_INCLUDED
-

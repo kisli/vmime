@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -43,8 +43,8 @@ namespace cert {
 
 /** Thrown to indicate a problem with a certificate or certificate verification.
   */
-class VMIME_EXPORT certificateException : public exception
-{
+class VMIME_EXPORT certificateException : public exception {
+
 public:
 
 	/** Constructs a certificateException with no detail message.

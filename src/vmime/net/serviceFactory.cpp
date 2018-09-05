@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -39,96 +39,103 @@ namespace vmime {
 namespace net {
 
 
-serviceFactory::serviceFactory()
-{
+serviceFactory::serviceFactory() {
+
 }
 
 
-serviceFactory::~serviceFactory()
-{
+serviceFactory::~serviceFactory() {
+
 }
 
 
-shared_ptr <serviceFactory> serviceFactory::getInstance()
-{
+shared_ptr <serviceFactory> serviceFactory::getInstance() {
+
 	static serviceFactory instance;
 	return shared_ptr <serviceFactory>(&instance, noop_shared_ptr_deleter <serviceFactory>());
 }
 
 
-shared_ptr <service> serviceFactory::create
-	(const shared_ptr <session>& sess, const string& protocol,
-	 const shared_ptr <security::authenticator>& auth)
-{
+shared_ptr <service> serviceFactory::create(
+	const shared_ptr <session>& sess,
+	const string& protocol,
+	const shared_ptr <security::authenticator>& auth
+) {
+
 	shared_ptr <const registeredService> rserv = getServiceByProtocol(protocol);
 
-	if (!rserv)
+	if (!rserv) {
 		throw exceptions::no_factory_available("No service is registered for protocol '" + protocol + "'.");
+	}
 
 	return rserv->create(sess, auth);
 }
 
 
-shared_ptr <service> serviceFactory::create
-	(const shared_ptr <session>& sess, const utility::url& u,
-	 const shared_ptr <security::authenticator>& auth)
-{
+shared_ptr <service> serviceFactory::create(
+	const shared_ptr <session>& sess,
+	const utility::url& u,
+	const shared_ptr <security::authenticator>& auth
+) {
+
 	shared_ptr <service> serv = create(sess, u.getProtocol(), auth);
 
 	sess->getProperties()[serv->getInfos().getPropertyPrefix() + "server.address"] = u.getHost();
 
-	if (u.getPort() != utility::url::UNSPECIFIED_PORT)
+	if (u.getPort() != utility::url::UNSPECIFIED_PORT) {
 		sess->getProperties()[serv->getInfos().getPropertyPrefix() + "server.port"] = u.getPort();
+	}
 
 	// Path portion of the URL is used to point a specific folder (empty = root).
 	// In maildir, this is used to point to the root of the message repository.
-	if (!u.getPath().empty())
+	if (!u.getPath().empty()) {
 		sess->getProperties()[serv->getInfos().getPropertyPrefix() + "server.rootpath"] = u.getPath();
+	}
 
-	if (!u.getUsername().empty())
-	{
+	if (!u.getUsername().empty()) {
 		sess->getProperties()[serv->getInfos().getPropertyPrefix() + "auth.username"] = u.getUsername();
 		sess->getProperties()[serv->getInfos().getPropertyPrefix() + "auth.password"] = u.getPassword();
 	}
 
-	return (serv);
+	return serv;
 }
 
 
-shared_ptr <const serviceFactory::registeredService> serviceFactory::getServiceByProtocol(const string& protocol) const
-{
+shared_ptr <const serviceFactory::registeredService> serviceFactory::getServiceByProtocol(const string& protocol) const {
+
 	const string name(utility::stringUtils::toLower(protocol));
 
 	for (std::vector <shared_ptr <registeredService> >::const_iterator it = m_services.begin() ;
-	     it != m_services.end() ; ++it)
-	{
-		if ((*it)->getName() == name)
+	     it != m_services.end() ; ++it) {
+
+		if ((*it)->getName() == name) {
 			return (*it);
+		}
 	}
 
 	return null;
 }
 
 
-size_t serviceFactory::getServiceCount() const
-{
-	return (m_services.size());
+size_t serviceFactory::getServiceCount() const {
+
+	return m_services.size();
 }
 
 
-shared_ptr <const serviceFactory::registeredService> serviceFactory::getServiceAt(const size_t pos) const
-{
-	return (m_services[pos]);
+shared_ptr <const serviceFactory::registeredService> serviceFactory::getServiceAt(const size_t pos) const {
+
+	return m_services[pos];
 }
 
 
-const std::vector <shared_ptr <const serviceFactory::registeredService> > serviceFactory::getServiceList() const
-{
+const std::vector <shared_ptr <const serviceFactory::registeredService> > serviceFactory::getServiceList() const {
+
 	std::vector <shared_ptr <const registeredService> > res;
 
 	for (std::vector <shared_ptr <registeredService> >::const_iterator it = m_services.begin() ;
-	     it != m_services.end() ; ++it)
-	{
+	     it != m_services.end() ; ++it) {
+
 		res.push_back(*it);
 	}
 
@@ -136,8 +143,8 @@ const std::vector <shared_ptr <const serviceFactory::registeredService> > servic
 }
 
 
-void serviceFactory::registerService(const shared_ptr <registeredService>& reg)
-{
+void serviceFactory::registerService(const shared_ptr <registeredService>& reg) {
+
 	m_services.push_back(reg);
 }
 

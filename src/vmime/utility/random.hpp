@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -34,9 +34,8 @@ namespace utility {
 
 /** Pseudo-random number generator.
   */
+class random {
 
-class random
-{
 public:
 
 	/** Return a new random number.
@@ -65,8 +64,10 @@ public:
 	  * @param randomChars list of characters to use
 	  * @return random string
 	  */
-	static const string getString(const size_t length, const string& randomChars
-		= "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
+	static const string getString(
+		const size_t length,
+		const string& randomChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	);
 };
 
 

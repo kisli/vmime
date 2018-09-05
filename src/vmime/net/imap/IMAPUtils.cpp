@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -44,8 +44,8 @@ namespace imap {
 
 
 // static
-const string IMAPUtils::quoteString(const string& text)
-{
+const string IMAPUtils::quoteString(const string& text) {
+
 	//
 	// ATOM_CHAR       ::= <any CHAR except atom_specials>
 	//
@@ -66,66 +66,70 @@ const string IMAPUtils::quoteString(const string& text)
 	bool needQuoting = text.empty();
 
 	for (string::const_iterator it = text.begin() ;
-	     !needQuoting && it != text.end() ; ++it)
-	{
+	     !needQuoting && it != text.end() ; ++it) {
+
 		const unsigned char c = *it;
 
-		switch (c)
-		{
-		case '(':
-		case ')':
-		case '{':
-		case 0x20:   // SPACE
-		case '%':
-		case '*':
-		case '"':
-		case '\\':
+		switch (c) {
 
-			needQuoting = true;
-			break;
+			case '(':
+			case ')':
+			case '{':
+			case 0x20:   // SPACE
+			case '%':
+			case '*':
+			case '"':
+			case '\\':
 
-		default:
-
-			if (c <= 0x1f || c >= 0x7f)
 				needQuoting = true;
-		}
+				break;
+
+			default:
+
+				if (c <= 0x1f || c >= 0x7f) {
+					needQuoting = true;
+				}
+			}
 	}
 
-	if (needQuoting)
-	{
+	if (needQuoting) {
+
 		string quoted;
 		quoted.reserve((text.length() * 3) / 2 + 2);
 
 		quoted += '"';
 
-		for (string::const_iterator it = text.begin() ; it != text.end() ; ++it)
-		{
+		for (string::const_iterator it = text.begin() ; it != text.end() ; ++it) {
+
 			const unsigned char c = *it;
 
-			if (c == '\\' || c == '"')
+			if (c == '\\' || c == '"') {
 				quoted += '\\';
+			}
 
 			quoted += c;
 		}
 
 		quoted += '"';
 
-		return (quoted);
-	}
-	else
-	{
-		return (text);
+		return quoted;
+
+	} else {
+
+		return text;
 	}
 }
 
 
-const string IMAPUtils::pathToString
-	(const char hierarchySeparator, const folder::path& path)
-{
+const string IMAPUtils::pathToString(
+	const char hierarchySeparator,
+	const folder::path& path
+) {
+
 	string result;
 
-	for (size_t i = 0 ; i < path.getSize() ; ++i)
-	{
+	for (size_t i = 0 ; i < path.getSize() ; ++i) {
+
 		if (i > 0) result += hierarchySeparator;
 		result += toModifiedUTF7(hierarchySeparator, path[i]);
 	}
@@ -134,33 +138,35 @@ const string IMAPUtils::pathToString
 }
 
 
-const folder::path IMAPUtils::stringToPath
-	(const char hierarchySeparator, const string& str)
-{
+const folder::path IMAPUtils::stringToPath(
+	const char hierarchySeparator,
+	const string& str
+) {
+
 	folder::path result;
 	string::const_iterator begin = str.begin();
 
-	for (string::const_iterator it = str.begin() ; it != str.end() ; ++it)
-	{
-		if (*it == hierarchySeparator)
-		{
+	for (string::const_iterator it = str.begin() ; it != str.end() ; ++it) {
+
+		if (*it == hierarchySeparator) {
 			result /= fromModifiedUTF7(string(begin, it));
 			begin = it + 1;
 		}
 	}
 
-	if (begin != str.end())
-	{
+	if (begin != str.end()) {
 		result /= fromModifiedUTF7(string(begin, str.end()));
 	}
 
-	return (result);
+	return result;
 }
 
 
-const string IMAPUtils::toModifiedUTF7
-	(const char hierarchySeparator, const folder::path::component& text)
-{
+const string IMAPUtils::toModifiedUTF7(
+	const char hierarchySeparator,
+	const folder::path::component& text
+) {
+
 	// We will replace the hierarchy separator with an equivalent
 	// UTF-7 sequence, so we compute it here...
 	const char base64alphabet[] =
@@ -192,13 +198,13 @@ const string IMAPUtils::toModifiedUTF7
 
 	size_t remaining = cvt.length();
 
-	for (size_t i = 0, len = cvt.length() ; i < len ; )
-	{
+	for (size_t i = 0, len = cvt.length() ; i < len ; ) {
+
 		const unsigned char c = cvt[i];
 
 		// Replace hierarchy separator with an equivalent UTF-7 Base64 sequence
-		if (!base64 && c == hierarchySeparator)
-		{
+		if (!base64 && c == hierarchySeparator) {
+
 			out += "&" + hsUTF7 + "-";
 
 			++i;
@@ -209,72 +215,78 @@ const string IMAPUtils::toModifiedUTF7
 		size_t n = 0;
 		int ch = 0;
 
-		if (c < 0x80)
+		if (c < 0x80) {
 			ch = c, n = 0;
-		else if (c < 0xc2)
+		} else if (c < 0xc2) {
 			return "";
-		else if (c < 0xe0)
+		} else if (c < 0xe0) {
 			ch = c & 0x1f, n = 1;
-		else if (c < 0xf0)
+		} else if (c < 0xf0) {
 			ch = c & 0x0f, n = 2;
-		else if (c < 0xf8)
+		} else if (c < 0xf8) {
 			ch = c & 0x07, n = 3;
-		else if (c < 0xfc)
+		} else if (c < 0xfc) {
 			ch = c & 0x03, n = 4;
-		else if (c < 0xfe)
+		} else if (c < 0xfe) {
 			ch = c & 0x01, n = 5;
-		else
+		} else {
 			return "";
+		}
 
-		if (n > remaining)
+		if (n > remaining) {
 			return "";  // error
+		}
 
 		++i;
 		--remaining;
 
-		for (size_t j = 0 ; j < n ; j++)
-		{
-			if ((cvt[i + j] & 0xc0) != 0x80)
+		for (size_t j = 0 ; j < n ; j++) {
+
+			if ((cvt[i + j] & 0xc0) != 0x80) {
 				return "";  // error
+			}
 
 			ch = (ch << 6) | (cvt[i + j] & 0x3f);
 		}
 
-		if (n > 1 && !(ch >> (n * 5 + 1)))
+		if (n > 1 && !(ch >> (n * 5 + 1))) {
 			return "";  // error
+		}
 
 		i += n;
 		remaining -= n;
 
-		if (ch < 0x20 || ch >= 0x7f)
-		{
-			if (!base64)
-			{
+		if (ch < 0x20 || ch >= 0x7f) {
+
+			if (!base64) {
 				out += '&';
 				base64 = true;
 				b = 0;
 				k = 10;
 			}
 
-			if (ch & ~0xffff)
+			if (ch & ~0xffff) {
 				ch = 0xfffe;
+			}
 
 			out += base64alphabet[b | ch >> k];
 
 			k -= 6;
 
-			for ( ; k >= 0 ; k -= 6)
+			for ( ; k >= 0 ; k -= 6) {
 				out += base64alphabet[(ch >> k) & 0x3f];
+			}
 
 			b = (ch << (-k)) & 0x3f;
 			k += 16;
-		}
-		else
-		{
-			if (base64)
-			{
-				if (k > 10)
+
+		} else {
+
+			if (base64) {
+
+				if (k > 10) {
 					out += base64alphabet[b];
+				}
 
 				out += '-';
 				base64 = false;
@@ -282,15 +294,17 @@ const string IMAPUtils::toModifiedUTF7
 
 			out += static_cast <char>(ch);
 
-			if (ch == '&')
+			if (ch == '&') {
 				out += '-';
+			}
 		}
 	}
 
-	if (base64)
-	{
-		if (k > 10)
+	if (base64) {
+
+		if (k > 10) {
 			out += base64alphabet[b];
+		}
 
 		out += '-';
 	}
@@ -299,8 +313,8 @@ const string IMAPUtils::toModifiedUTF7
 }
 
 
-const folder::path::component IMAPUtils::fromModifiedUTF7(const string& text)
-{
+const folder::path::component IMAPUtils::fromModifiedUTF7(const string& text) {
+
 	// Transcode from modified UTF-7 (RFC-2060).
 	string out;
 	out.reserve(text.length());
@@ -309,62 +323,57 @@ const folder::path::component IMAPUtils::fromModifiedUTF7(const string& text)
 	bool plusOutput = false;
 	unsigned char prev = 0;
 
-	for (string::const_iterator it = text.begin() ; it != text.end() ; ++it)
-	{
+	for (string::const_iterator it = text.begin() ; it != text.end() ; ++it) {
+
 		const unsigned char c = *it;
 
-		switch (c)
-		{
-		// Start of Base64 sequence
-		case '&':
-		{
-			if (!inB64sequence)
-			{
-				inB64sequence = true;
-				plusOutput = false;
+		switch (c) {
+
+			// Start of Base64 sequence
+			case '&': {
+
+				if (!inB64sequence) {
+					inB64sequence = true;
+					plusOutput = false;
+				} else {
+					out += '&';
+				}
+
+				break;
 			}
-			else
-			{
-				out += '&';
+			// End of Base64 sequence (or "&-" --> "&")
+			case '-': {
+
+				if (inB64sequence && prev == '&') {  // special case "&-" --> "&"
+					out += '&';
+				} else {
+					out += '-';
+				}
+
+				inB64sequence = false;
+				break;
 			}
+			// ',' is used instead of '/' in modified Base64
+			case ',': {
 
-			break;
-		}
-		// End of Base64 sequence (or "&-" --> "&")
-		case '-':
-		{
-			if (inB64sequence && prev == '&')  // special case "&-" --> "&"
-				out += '&';
-			else
-				out += '-';
+				if (inB64sequence && !plusOutput) {
+					out += '+';
+					plusOutput = true;
+				}
 
-			inB64sequence = false;
-			break;
-		}
-		// ',' is used instead of '/' in modified Base64
-		case ',':
-		{
-			if (inB64sequence && !plusOutput)
-			{
-				out += '+';
-				plusOutput = true;
+				out += (inB64sequence ? '/' : ',');
+				break;
 			}
+			default: {
 
-			out += (inB64sequence ? '/' : ',');
-			break;
-		}
-		default:
-		{
-			if (inB64sequence && !plusOutput)
-			{
-				out += '+';
-				plusOutput = true;
+				if (inB64sequence && !plusOutput) {
+					out += '+';
+					plusOutput = true;
+				}
+
+				out += c;
+				break;
 			}
-
-			out += c;
-			break;
-		}
-
 		}
 
 		prev = c;
@@ -372,94 +381,96 @@ const folder::path::component IMAPUtils::fromModifiedUTF7(const string& text)
 
 	// Store it as UTF-8 by default
 	string cvt;
-	charset::convert(out, cvt,
-		charset(charsets::UTF_7), charset(charsets::UTF_8));
+	charset::convert(out, cvt, charset(charsets::UTF_7), charset(charsets::UTF_8));
 
-	return (folder::path::component(cvt, charset(charsets::UTF_8)));
+	return folder::path::component(cvt, charset(charsets::UTF_8));
 }
 
 
 // static
-void IMAPUtils::mailboxFlagsToFolderAttributes
-	(const shared_ptr <const IMAPConnection>& cnt, const IMAPParser::mailbox_flag_list* list,
-	 folderAttributes& attribs)
-{
+void IMAPUtils::mailboxFlagsToFolderAttributes(
+	const shared_ptr <const IMAPConnection>& cnt,
+	const IMAPParser::mailbox_flag_list* list,
+	folderAttributes& attribs
+) {
+
 	int specialUse = folderAttributes::SPECIALUSE_NONE;
 	int type = folderAttributes::TYPE_CONTAINS_MESSAGES | folderAttributes::TYPE_CONTAINS_FOLDERS;
 	int flags = 0;
 
 	// If CHILDREN extension (RFC-3348) is not supported, assume folder has children
 	// as we have no hint about it
-	if (!cnt->hasCapability("CHILDREN"))
+	if (!cnt->hasCapability("CHILDREN")) {
 		flags |= folderAttributes::FLAG_HAS_CHILDREN;
+	}
 
 	const std::vector <IMAPParser::mailbox_flag*>& mailboxFlags = list->flags();
 
 	for (std::vector <IMAPParser::mailbox_flag*>::const_iterator it = mailboxFlags.begin() ;
-	     it != mailboxFlags.end() ; ++it)
-	{
-		switch ((*it)->type())
-		{
-		case IMAPParser::mailbox_flag::NOSELECT:
+	     it != mailboxFlags.end() ; ++it) {
 
-			type &= ~folderAttributes::TYPE_CONTAINS_MESSAGES;
-			flags |= folderAttributes::FLAG_NO_OPEN;
-			break;
+		switch ((*it)->type()) {
 
-		case IMAPParser::mailbox_flag::NOINFERIORS:
-		case IMAPParser::mailbox_flag::HASNOCHILDREN:
+			case IMAPParser::mailbox_flag::NOSELECT:
 
-			flags &= ~folderAttributes::FLAG_HAS_CHILDREN;
-			break;
+				type &= ~folderAttributes::TYPE_CONTAINS_MESSAGES;
+				flags |= folderAttributes::FLAG_NO_OPEN;
+				break;
 
-		case IMAPParser::mailbox_flag::HASCHILDREN:
+			case IMAPParser::mailbox_flag::NOINFERIORS:
+			case IMAPParser::mailbox_flag::HASNOCHILDREN:
 
-			flags |= folderAttributes::FLAG_HAS_CHILDREN;
-			break;
+				flags &= ~folderAttributes::FLAG_HAS_CHILDREN;
+				break;
 
-		case IMAPParser::mailbox_flag::SPECIALUSE_ALL:
+			case IMAPParser::mailbox_flag::HASCHILDREN:
 
-			specialUse = folderAttributes::SPECIALUSE_ALL;
-			break;
+				flags |= folderAttributes::FLAG_HAS_CHILDREN;
+				break;
 
-		case IMAPParser::mailbox_flag::SPECIALUSE_ARCHIVE:
+			case IMAPParser::mailbox_flag::SPECIALUSE_ALL:
 
-			specialUse = folderAttributes::SPECIALUSE_ARCHIVE;
-			break;
+				specialUse = folderAttributes::SPECIALUSE_ALL;
+				break;
 
-		case IMAPParser::mailbox_flag::SPECIALUSE_DRAFTS:
+			case IMAPParser::mailbox_flag::SPECIALUSE_ARCHIVE:
 
-			specialUse = folderAttributes::SPECIALUSE_DRAFTS;
-			break;
+				specialUse = folderAttributes::SPECIALUSE_ARCHIVE;
+				break;
 
-		case IMAPParser::mailbox_flag::SPECIALUSE_FLAGGED:
+			case IMAPParser::mailbox_flag::SPECIALUSE_DRAFTS:
 
-			specialUse = folderAttributes::SPECIALUSE_FLAGGED;
-			break;
+				specialUse = folderAttributes::SPECIALUSE_DRAFTS;
+				break;
 
-		case IMAPParser::mailbox_flag::SPECIALUSE_JUNK:
+			case IMAPParser::mailbox_flag::SPECIALUSE_FLAGGED:
 
-			specialUse = folderAttributes::SPECIALUSE_JUNK;
-			break;
+				specialUse = folderAttributes::SPECIALUSE_FLAGGED;
+				break;
 
-		case IMAPParser::mailbox_flag::SPECIALUSE_SENT:
+			case IMAPParser::mailbox_flag::SPECIALUSE_JUNK:
 
-			specialUse = folderAttributes::SPECIALUSE_SENT;
-			break;
+				specialUse = folderAttributes::SPECIALUSE_JUNK;
+				break;
 
-		case IMAPParser::mailbox_flag::SPECIALUSE_TRASH:
+			case IMAPParser::mailbox_flag::SPECIALUSE_SENT:
 
-			specialUse = folderAttributes::SPECIALUSE_TRASH;
-			break;
+				specialUse = folderAttributes::SPECIALUSE_SENT;
+				break;
 
-		case IMAPParser::mailbox_flag::SPECIALUSE_IMPORTANT:
+			case IMAPParser::mailbox_flag::SPECIALUSE_TRASH:
 
-			specialUse = folderAttributes::SPECIALUSE_IMPORTANT;
-			break;
+				specialUse = folderAttributes::SPECIALUSE_TRASH;
+				break;
 
-		default:
+			case IMAPParser::mailbox_flag::SPECIALUSE_IMPORTANT:
 
-			break;
+				specialUse = folderAttributes::SPECIALUSE_IMPORTANT;
+				break;
+
+			default:
+
+				break;
 		}
 	}
 
@@ -469,49 +480,60 @@ void IMAPUtils::mailboxFlagsToFolderAttributes
 }
 
 
-int IMAPUtils::messageFlagsFromFlags(const IMAPParser::flag_list* list)
-{
+int IMAPUtils::messageFlagsFromFlags(const IMAPParser::flag_list* list) {
+
 	const std::vector <IMAPParser::flag*>& flagList = list->flags();
 	int flags = 0;
 
 	for (std::vector <IMAPParser::flag*>::const_iterator
-	     it = flagList.begin() ; it != flagList.end() ; ++it)
-	{
-		switch ((*it)->type())
-		{
-		case IMAPParser::flag::ANSWERED:
-			flags |= message::FLAG_REPLIED;
-			break;
-		case IMAPParser::flag::FLAGGED:
-			flags |= message::FLAG_MARKED;
-			break;
-		case IMAPParser::flag::DELETED:
-			flags |= message::FLAG_DELETED;
-			break;
-		case IMAPParser::flag::SEEN:
-			flags |= message::FLAG_SEEN;
-			break;
-		case IMAPParser::flag::DRAFT:
-			flags |= message::FLAG_DRAFT;
-			break;
+	     it = flagList.begin() ; it != flagList.end() ; ++it) {
 
-		default:
-		//case IMAPParser::flag::UNKNOWN:
-			break;
+		switch ((*it)->type()) {
+
+			case IMAPParser::flag::ANSWERED:
+
+				flags |= message::FLAG_REPLIED;
+				break;
+
+			case IMAPParser::flag::FLAGGED:
+
+				flags |= message::FLAG_MARKED;
+				break;
+
+			case IMAPParser::flag::DELETED:
+
+				flags |= message::FLAG_DELETED;
+				break;
+
+			case IMAPParser::flag::SEEN:
+
+				flags |= message::FLAG_SEEN;
+				break;
+
+			case IMAPParser::flag::DRAFT:
+
+				flags |= message::FLAG_DRAFT;
+				break;
+
+			default:
+			//case IMAPParser::flag::UNKNOWN:
+
+				break;
 		}
 	}
 
-	return (flags);
+	return flags;
 }
 
 
 // static
-const std::vector <string> IMAPUtils::messageFlagList(const int flags)
-{
+const std::vector <string> IMAPUtils::messageFlagList(const int flags) {
+
 	std::vector <string> flagList;
 
-	if (flags == -1)
+	if (flags == -1) {
 		return flagList;  // default flags
+	}
 
 	if (flags & message::FLAG_REPLIED) flagList.push_back("\\Answered");
 	if (flags & message::FLAG_MARKED) flagList.push_back("\\Flagged");
@@ -524,8 +546,8 @@ const std::vector <string> IMAPUtils::messageFlagList(const int flags)
 
 
 // static
-const string IMAPUtils::dateTime(const vmime::datetime& date)
-{
+const string IMAPUtils::dateTime(const vmime::datetime& date) {
+
 	std::ostringstream res;
 	res.imbue(std::locale::classic());
 
@@ -545,9 +567,10 @@ const string IMAPUtils::dateTime(const vmime::datetime& date)
 
 	res << '-';
 
-	static const char* monthNames[12] =
-		{ "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-		  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+	static const char* monthNames[12] = {
+		"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+		"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+	};
 
 	res << monthNames[std::min(std::max(date.getMonth() - 1, 0), 11)];
 
@@ -587,15 +610,17 @@ const string IMAPUtils::dateTime(const vmime::datetime& date)
 
 	res << '"';
 
-
-	return (res.str());
+	return res.str();
 }
 
 
 // static
-shared_ptr <IMAPCommand> IMAPUtils::buildFetchCommand
-	(const shared_ptr <IMAPConnection>& cnt, const messageSet& msgs, const fetchAttributes& options)
-{
+shared_ptr <IMAPCommand> IMAPUtils::buildFetchCommand(
+	const shared_ptr <IMAPConnection>& cnt,
+	const messageSet& msgs,
+	const fetchAttributes& options
+) {
+
 	// Example:
 	//   C: A654 FETCH 2:4 (FLAGS BODY[HEADER.FIELDS (DATE FROM)])
 	//   S: * 2 FETCH ....
@@ -605,38 +630,45 @@ shared_ptr <IMAPCommand> IMAPUtils::buildFetchCommand
 
 	std::vector <string> items;
 
-	if (options.has(fetchAttributes::SIZE))
+	if (options.has(fetchAttributes::SIZE)) {
 		items.push_back("RFC822.SIZE");
+	}
 
-	if (options.has(fetchAttributes::FLAGS))
+	if (options.has(fetchAttributes::FLAGS)) {
 		items.push_back("FLAGS");
+	}
 
-	if (options.has(fetchAttributes::STRUCTURE))
+	if (options.has(fetchAttributes::STRUCTURE)) {
 		items.push_back("BODYSTRUCTURE");
+	}
 
-	if (options.has(fetchAttributes::UID))
-	{
+	if (options.has(fetchAttributes::UID)) {
+
 		items.push_back("UID");
 
 		// Also fetch MODSEQ if CONDSTORE is supported
-		if (cnt && cnt->hasCapability("CONDSTORE") && !cnt->isMODSEQDisabled())
+		if (cnt && cnt->hasCapability("CONDSTORE") && !cnt->isMODSEQDisabled()) {
 			items.push_back("MODSEQ");
+		}
 	}
 
-	if (options.has(fetchAttributes::FULL_HEADER))
+	if (options.has(fetchAttributes::FULL_HEADER)) {
+
 		items.push_back("RFC822.HEADER");
-	else
-	{
-		if (options.has(fetchAttributes::ENVELOPE))
+
+	} else {
+
+		if (options.has(fetchAttributes::ENVELOPE)) {
 			items.push_back("ENVELOPE");
+		}
 
 		std::vector <string> headerFields;
 
-		if (options.has(fetchAttributes::CONTENT_INFO))
+		if (options.has(fetchAttributes::CONTENT_INFO)) {
 			headerFields.push_back("CONTENT_TYPE");
+		}
 
-		if (options.has(fetchAttributes::IMPORTANCE))
-		{
+		if (options.has(fetchAttributes::IMPORTANCE)) {
 			headerFields.push_back("IMPORTANCE");
 			headerFields.push_back("X-PRIORITY");
 		}
@@ -645,15 +677,16 @@ shared_ptr <IMAPCommand> IMAPUtils::buildFetchCommand
 		const std::vector <string> customHeaderFields = options.getHeaderFields();
 		std::copy(customHeaderFields.begin(), customHeaderFields.end(), std::back_inserter(headerFields));
 
-		if (!headerFields.empty())
-		{
+		if (!headerFields.empty()) {
+
 			string list;
 
 			for (std::vector <string>::iterator it = headerFields.begin() ;
-			     it != headerFields.end() ; ++it)
-			{
-				if (it != headerFields.begin())
+			     it != headerFields.end() ; ++it) {
+
+				if (it != headerFields.begin()) {
 					list += " ";
+				}
 
 				list += *it;
 			}
@@ -667,12 +700,14 @@ shared_ptr <IMAPCommand> IMAPUtils::buildFetchCommand
 
 
 // static
-void IMAPUtils::convertAddressList
-	(const IMAPParser::address_list& src, mailboxList& dest)
-{
+void IMAPUtils::convertAddressList(
+	const IMAPParser::address_list& src,
+	mailboxList& dest
+) {
+
 	for (std::vector <IMAPParser::address*>::const_iterator
-	     it = src.addresses().begin() ; it != src.addresses().end() ; ++it)
-	{
+	     it = src.addresses().begin() ; it != src.addresses().end() ; ++it) {
+
 		const IMAPParser::address& addr = **it;
 
 		text name;
@@ -687,48 +722,52 @@ void IMAPUtils::convertAddressList
 
 
 
-class IMAPUIDMessageSetEnumerator : public messageSetEnumerator
-{
+class IMAPUIDMessageSetEnumerator : public messageSetEnumerator {
+
 public:
 
 	IMAPUIDMessageSetEnumerator()
-		: m_first(true)
-	{
+		: m_first(true) {
+
 		m_oss.imbue(std::locale::classic());
 	}
 
-	void enumerateNumberMessageRange(const vmime::net::numberMessageRange& range)
-	{
-		if (!m_first)
-			m_oss << ",";
+	void enumerateNumberMessageRange(const vmime::net::numberMessageRange& range) {
 
-		if (range.getFirst() == range.getLast())
+		if (!m_first) {
+			m_oss << ",";
+		}
+
+		if (range.getFirst() == range.getLast()) {
 			m_oss << range.getFirst();
-		else if (range.getLast() == size_t(-1))
+		} else if (range.getLast() == size_t(-1)) {
 			m_oss << range.getFirst() << ":*";
-		else
+		} else {
 			m_oss << range.getFirst() << ":" << range.getLast();
+		}
 
 		m_first = false;
 	}
 
-	void enumerateUIDMessageRange(const vmime::net::UIDMessageRange& range)
-	{
-		if (!m_first)
-			m_oss << ",";
+	void enumerateUIDMessageRange(const vmime::net::UIDMessageRange& range) {
 
-		if (range.getFirst() == range.getLast())
+		if (!m_first) {
+			m_oss << ",";
+		}
+
+		if (range.getFirst() == range.getLast()) {
 			m_oss << range.getFirst();
-		else if (range.getLast() == size_t(-1))
+		} else if (range.getLast() == size_t(-1)) {
 			m_oss << range.getFirst() << ":*";
-		else
+		} else {
 			m_oss << range.getFirst() << ":" << range.getLast();
+		}
 
 		m_first = false;
 	}
 
-	const std::string str() const
-	{
+	const std::string str() const {
+
 		return m_oss.str();
 	}
 
@@ -739,23 +778,24 @@ private:
 };
 
 
-class IMAPMessageSetEnumerator : public messageSetEnumerator
-{
+class IMAPMessageSetEnumerator : public messageSetEnumerator {
+
 public:
 
-	void enumerateNumberMessageRange(const vmime::net::numberMessageRange& range)
-	{
-		for (size_t i = range.getFirst(), last = range.getLast() ; i <= last ; ++i)
+	void enumerateNumberMessageRange(const vmime::net::numberMessageRange& range) {
+
+		for (size_t i = range.getFirst(), last = range.getLast() ; i <= last ; ++i) {
 			m_list.push_back(i);
+		}
 	}
 
-	void enumerateUIDMessageRange(const vmime::net::UIDMessageRange& /* range */)
-	{
+	void enumerateUIDMessageRange(const vmime::net::UIDMessageRange& /* range */) {
+
 		// Not used
 	}
 
-	const std::vector <size_t>& list() const
-	{
+	const std::vector <size_t>& list() const {
+
 		return m_list;
 	}
 
@@ -767,8 +807,8 @@ public:
 
 
 // static
-const string IMAPUtils::messageSetToSequenceSet(const messageSet& msgs)
-{
+const string IMAPUtils::messageSetToSequenceSet(const messageSet& msgs) {
+
 	IMAPUIDMessageSetEnumerator en;
 	msgs.enumerate(en);
 
@@ -777,22 +817,28 @@ const string IMAPUtils::messageSetToSequenceSet(const messageSet& msgs)
 
 
 // static
-messageSet IMAPUtils::buildMessageSet(const IMAPParser::uid_set* uidSet)
-{
+messageSet IMAPUtils::buildMessageSet(const IMAPParser::uid_set* uidSet) {
+
 	messageSet set = messageSet::empty();
 
-	for ( ; uidSet ; uidSet = uidSet->next_uid_set())
-	{
-		if (uidSet->uid_range())
-		{
-			set.addRange(UIDMessageRange
-				(message::uid(uidSet->uid_range()->uniqueid1()->value()),
-				 message::uid(uidSet->uid_range()->uniqueid2()->value())));
-		}
-		else
-		{
-			set.addRange(UIDMessageRange
-				(message::uid(uidSet->uniqueid()->value())));
+	for ( ; uidSet ; uidSet = uidSet->next_uid_set()) {
+
+		if (uidSet->uid_range()) {
+
+			set.addRange(
+				UIDMessageRange(
+					message::uid(uidSet->uid_range()->uniqueid1()->value()),
+					message::uid(uidSet->uid_range()->uniqueid2()->value())
+				)
+			);
+
+		} else {
+
+			set.addRange(
+				UIDMessageRange(
+					message::uid(uidSet->uniqueid()->value())
+				)
+			);
 		}
 	}
 

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -37,18 +37,18 @@ namespace cert {
 
 unsupportedCertificateTypeException::unsupportedCertificateTypeException(const string& type)
 	: certificateException(string("Unsupported certificate type: '") + type + "'."),
-	  m_type(type)
-{
+	  m_type(type) {
+
 }
 
 
-unsupportedCertificateTypeException::~unsupportedCertificateTypeException() throw()
-{
+unsupportedCertificateTypeException::~unsupportedCertificateTypeException() throw() {
+
 }
 
 
-exception* unsupportedCertificateTypeException::clone() const
-{
+exception* unsupportedCertificateTypeException::clone() const {
+
 	return new unsupportedCertificateTypeException(m_type);
 }
 

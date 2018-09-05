@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -51,16 +51,20 @@ class IMAPFolder;
 
 /** IMAP store service.
   */
+class VMIME_EXPORT IMAPStore : public store {
 
-class VMIME_EXPORT IMAPStore : public store
-{
 	friend class IMAPFolder;
 	friend class IMAPMessage;
 	friend class IMAPConnection;
 
 public:
 
-	IMAPStore(const shared_ptr <session>& sess, const shared_ptr <security::authenticator>& auth, const bool secured = false);
+	IMAPStore(
+		const shared_ptr <session>& sess,
+		const shared_ptr <security::authenticator>& auth,
+		const bool secured = false
+	);
+
 	~IMAPStore();
 
 	const string getProtocolName() const;

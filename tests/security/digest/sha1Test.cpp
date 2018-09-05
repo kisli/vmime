@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -46,8 +46,8 @@ VMIME_TEST_SUITE_BEGIN(sha1Test)
 	// Test suites from FIPS PUB 180-1
 	// http://www.itl.nist.gov/fipspubs/fip180-1.htm
 
-	void testFIPS180_1()
-	{
+	void testFIPS180_1() {
+
 		INIT_DIGEST(algo, "sha1");
 
 		algo->update("abc");
@@ -56,8 +56,8 @@ VMIME_TEST_SUITE_BEGIN(sha1Test)
 		VASSERT_EQ("*", "a9993e364706816aba3e25717850c26c9cd0d89d", algo->getHexDigest());
 	}
 
-	void testFIPS180_2()
-	{
+	void testFIPS180_2() {
+
 		INIT_DIGEST(algo, "sha1");
 
 		algo->update("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq");
@@ -66,14 +66,15 @@ VMIME_TEST_SUITE_BEGIN(sha1Test)
 		VASSERT_EQ("*", "84983e441c3bd26ebaae4aa1f95129e5e54670f1", algo->getHexDigest());
 	}
 
-	void testFIPS180_3()
-	{
+	void testFIPS180_3() {
+
 		INIT_DIGEST(algo, "sha1");
 
 		vmime::byte_t* buffer = new vmime::byte_t[1000000];
 
-		for (int i = 0 ; i < 1000000 ; ++i)
+		for (int i = 0 ; i < 1000000 ; ++i) {
 			buffer[i] = 'a';
+		}
 
 		algo->update(buffer, 1000000);
 		algo->finalize();
@@ -83,8 +84,8 @@ VMIME_TEST_SUITE_BEGIN(sha1Test)
 		VASSERT_EQ("*", "34aa973cd4c4daa4f61eeb2bdbad27316534016f", algo->getHexDigest());
 	}
 
-	void testReset()
-	{
+	void testReset() {
+
 		INIT_DIGEST(algo, "sha1");
 
 		algo->update("ab");
@@ -97,8 +98,8 @@ VMIME_TEST_SUITE_BEGIN(sha1Test)
 		VASSERT_EQ("*", "da39a3ee5e6b4b0d3255bfef95601890afd80709", algo->getHexDigest());  // empty string
 	}
 
-	void testUpdate()
-	{
+	void testUpdate() {
+
 		INIT_DIGEST(algo, "sha1");
 
 		algo->update("a");
@@ -116,4 +117,3 @@ VMIME_TEST_SUITE_BEGIN(sha1Test)
 	}
 
 VMIME_TEST_SUITE_END
-

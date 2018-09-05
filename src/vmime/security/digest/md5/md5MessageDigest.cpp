@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -59,20 +59,20 @@ namespace digest {
 namespace md5 {
 
 
-md5MessageDigest::md5MessageDigest()
-{
+md5MessageDigest::md5MessageDigest() {
+
 	init();
 }
 
 
-void md5MessageDigest::reset()
-{
+void md5MessageDigest::reset() {
+
 	init();
 }
 
 
-void md5MessageDigest::init()
-{
+void md5MessageDigest::init() {
+
 	m_hash[0] = 0x67452301;
 	m_hash[1] = 0xefcdab89;
 	m_hash[2] = 0x98badcfe;
@@ -83,69 +83,68 @@ void md5MessageDigest::init()
 }
 
 
-static void copyUint8Array(vmime_uint8* dest, const vmime_uint8* src, size_t count)
-{
-	for ( ; count >= 4 ; count -= 4, dest += 4, src += 4)
-	{
+static void copyUint8Array(vmime_uint8* dest, const vmime_uint8* src, size_t count) {
+
+	for ( ; count >= 4 ; count -= 4, dest += 4, src += 4) {
 		dest[0] = src[0];
 		dest[1] = src[1];
 		dest[2] = src[2];
 		dest[3] = src[3];
 	}
 
-	for ( ; count ; --count, ++dest, ++src)
+	for ( ; count ; --count, ++dest, ++src) {
 		dest[0] = src[0];
+	}
 }
 
 
-static inline vmime_uint32 swapUint32(const vmime_uint32 D)
-{
+static inline vmime_uint32 swapUint32(const vmime_uint32 D) {
+
 	return ((D << 24) | ((D << 8) & 0x00FF0000) | ((D >> 8) & 0x0000FF00) | (D >> 24));
 }
 
 
-static inline void swapUint32Array(vmime_uint32* buf, size_t words)
-{
-	for ( ; words >= 4 ; words -= 4, buf += 4)
-	{
+static inline void swapUint32Array(vmime_uint32* buf, size_t words) {
+
+	for ( ; words >= 4 ; words -= 4, buf += 4) {
 		buf[0] = swapUint32(buf[0]);
 		buf[1] = swapUint32(buf[1]);
 		buf[2] = swapUint32(buf[2]);
 		buf[3] = swapUint32(buf[3]);
 	}
 
-	for ( ; words ; --words, ++buf)
+	for ( ; words ; --words, ++buf) {
 		buf[0] = swapUint32(buf[0]);
+	}
 }
 
 
-void md5MessageDigest::update(const byte_t b)
-{
+void md5MessageDigest::update(const byte_t b) {
+
 	update(&b, 1);
 }
 
 
-void md5MessageDigest::update(const string& s)
-{
+void md5MessageDigest::update(const string& s) {
+
 	update(reinterpret_cast <const byte_t*>(s.data()), s.length());
 }
 
 
-void md5MessageDigest::update(const byte_t* data, const size_t offset, const size_t len)
-{
+void md5MessageDigest::update(const byte_t* data, const size_t offset, const size_t len) {
+
 	update(data + offset, len);
 }
 
 
-void md5MessageDigest::update(const byte_t* data, const size_t length)
-{
+void md5MessageDigest::update(const byte_t* data, const size_t length) {
+
 	const size_t avail = 64 - (m_byteCount & 0x3f);
 	size_t len = length;
 
 	m_byteCount += len;
 
-	if (avail > len)
-	{
+	if (avail > len) {
 		copyUint8Array(m_block.b8 + (64 - avail), data, len);
 		return;
 	}
@@ -156,8 +155,8 @@ void md5MessageDigest::update(const byte_t* data, const size_t length)
 	data += avail;
 	len -= avail;
 
-	while (len >= 64)
-	{
+	while (len >= 64) {
+
 		copyUint8Array(m_block.b8, data, 64);
 		transformHelper();
 
@@ -169,30 +168,33 @@ void md5MessageDigest::update(const byte_t* data, const size_t length)
 }
 
 
-void md5MessageDigest::finalize(const string& s)
-{
+void md5MessageDigest::finalize(const string& s) {
+
 	update(s);
 	finalize();
 }
 
 
-void md5MessageDigest::finalize(const byte_t* buffer, const size_t len)
-{
+void md5MessageDigest::finalize(const byte_t* buffer, const size_t len) {
+
 	update(buffer, len);
 	finalize();
 }
 
 
-void md5MessageDigest::finalize(const byte_t* buffer,
-	const size_t offset, const size_t len)
-{
+void md5MessageDigest::finalize(
+	const byte_t* buffer,
+	const size_t offset,
+	const size_t len
+) {
+
 	update(buffer, offset, len);
 	finalize();
 }
 
 
-void md5MessageDigest::finalize()
-{
+void md5MessageDigest::finalize() {
+
 	const long offset = m_byteCount & 0x3f;
 
 	vmime_uint8* p = m_block.b8 + offset;
@@ -200,8 +202,8 @@ void md5MessageDigest::finalize()
 
 	*p++ = 0x80;
 
-	if (padding < 0)
-	{
+	if (padding < 0) {
+
 		memset(p, 0x00, padding + 8);
 		transformHelper();
 		p = m_block.b8;
@@ -227,8 +229,8 @@ void md5MessageDigest::finalize()
 }
 
 
-void md5MessageDigest::transformHelper()
-{
+void md5MessageDigest::transformHelper() {
+
 #if VMIME_BYTE_ORDER_BIG_ENDIAN
 	swapUint32Array(m_block.b32, 64 / 4);
 #endif
@@ -236,8 +238,8 @@ void md5MessageDigest::transformHelper()
 }
 
 
-void md5MessageDigest::transform()
-{
+void md5MessageDigest::transform() {
+
 	const vmime_uint32* const in = m_block.b32;
 
 	vmime_uint32 a = m_hash[0];
@@ -328,14 +330,14 @@ void md5MessageDigest::transform()
 }
 
 
-size_t md5MessageDigest::getDigestLength() const
-{
+size_t md5MessageDigest::getDigestLength() const {
+
 	return 16;
 }
 
 
-const byte_t* md5MessageDigest::getDigest() const
-{
+const byte_t* md5MessageDigest::getDigest() const {
+
 	return reinterpret_cast <const byte_t*>(m_hash);
 }
 

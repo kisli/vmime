@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -47,9 +47,8 @@ class IMAPFolder;
 
 /** IMAP message implementation.
   */
+class VMIME_EXPORT IMAPMessage : public message {
 
-class VMIME_EXPORT IMAPMessage : public message
-{
 private:
 
 	friend class IMAPFolder;
@@ -92,18 +91,22 @@ public:
 	int getFlags() const;
 	void setFlags(const int flags, const int mode = FLAG_MODE_SET);
 
-	void extract
-		(utility::outputStream& os,
-		 utility::progressListener* progress = NULL,
-		 const size_t start = 0, const size_t length = -1,
-		 const bool peek = false) const;
+	void extract(
+		utility::outputStream& os,
+		utility::progressListener* progress = NULL,
+		const size_t start = 0,
+		const size_t length = -1,
+		const bool peek = false
+	) const;
 
-	void extractPart
-		(const shared_ptr <const messagePart>& p,
-		 utility::outputStream& os,
-		 utility::progressListener* progress = NULL,
-		 const size_t start = 0, const size_t length = -1,
-		 const bool peek = false) const;
+	void extractPart(
+		const shared_ptr <const messagePart>& p,
+		utility::outputStream& os,
+		utility::progressListener* progress = NULL,
+		const size_t start = 0,
+		const size_t length = -1,
+		const bool peek = false
+	) const;
 
 	void fetchPartHeader(const shared_ptr <messagePart>& p);
 
@@ -144,7 +147,11 @@ private:
 	  * @param str structure for which to construct part
 	  * @param level current nesting level (0 is root)
 	  */
-	void constructParsedMessage(const shared_ptr <bodyPart>& parentPart, const shared_ptr <messageStructure>& str, int level = 0);
+	void constructParsedMessage(
+		const shared_ptr <bodyPart>& parentPart,
+		const shared_ptr <messageStructure>& str,
+		int level = 0
+	);
 
 
 	enum ExtractFlags
@@ -154,12 +161,14 @@ private:
 		EXTRACT_PEEK = 0x10
 	};
 
-	size_t extractImpl
-		(const shared_ptr <const messagePart>& p,
-		 utility::outputStream& os,
-		 utility::progressListener* progress,
-		 const size_t start, const size_t length,
-		 const int extractFlags) const;
+	size_t extractImpl(
+		const shared_ptr <const messagePart>& p,
+		utility::outputStream& os,
+		utility::progressListener* progress,
+		const size_t start,
+		const size_t length,
+		const int extractFlags
+	) const;
 
 
 	shared_ptr <header> getOrCreateHeader();

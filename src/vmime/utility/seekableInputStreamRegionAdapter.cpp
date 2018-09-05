@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -28,39 +28,44 @@ namespace vmime {
 namespace utility {
 
 
-seekableInputStreamRegionAdapter::seekableInputStreamRegionAdapter
-	(const shared_ptr <seekableInputStream>& stream, const size_t begin, const size_t length)
-	: m_stream(stream), m_begin(begin), m_length(length), m_position(0)
-{
+seekableInputStreamRegionAdapter::seekableInputStreamRegionAdapter(
+	const shared_ptr <seekableInputStream>& stream,
+	const size_t begin,
+	const size_t length
+)
+	: m_stream(stream),
+	  m_begin(begin),
+	  m_length(length),
+	  m_position(0) {
+
 }
 
 
-bool seekableInputStreamRegionAdapter::eof() const
-{
+bool seekableInputStreamRegionAdapter::eof() const {
+
 	return m_position >= m_length;
 }
 
 
-void seekableInputStreamRegionAdapter::reset()
-{
+void seekableInputStreamRegionAdapter::reset() {
+
 	m_position = 0;
 }
 
 
-size_t seekableInputStreamRegionAdapter::read
-	(byte_t* const data, const size_t count)
-{
+size_t seekableInputStreamRegionAdapter::read(byte_t* const data, const size_t count) {
+
 	m_stream->seek(m_begin + m_position);
 
 	size_t readBytes = 0;
 
-	if (m_position + count >= m_length)
-	{
+	if (m_position + count >= m_length) {
+
 		const size_t remaining = m_length - m_position;
 		readBytes = m_stream->read(data, remaining);
-	}
-	else
-	{
+
+	} else {
+
 		readBytes = m_stream->read(data, count);
 	}
 
@@ -70,37 +75,37 @@ size_t seekableInputStreamRegionAdapter::read
 }
 
 
-size_t seekableInputStreamRegionAdapter::skip(const size_t count)
-{
-	if (m_position + count >= m_length)
-	{
+size_t seekableInputStreamRegionAdapter::skip(const size_t count) {
+
+	if (m_position + count >= m_length) {
+
 		const size_t remaining = m_length - m_position;
 		m_position += remaining;
 		return remaining;
-	}
-	else
-	{
+
+	} else {
+
 		m_position += count;
 		return count;
 	}
 }
 
 
-size_t seekableInputStreamRegionAdapter::getPosition() const
-{
+size_t seekableInputStreamRegionAdapter::getPosition() const {
+
 	return m_position;
 }
 
 
-void seekableInputStreamRegionAdapter::seek(const size_t pos)
-{
-	if (pos > m_length)
+void seekableInputStreamRegionAdapter::seek(const size_t pos) {
+
+	if (pos > m_length) {
 		m_position = m_length;
-	else
+	} else {
 		m_position = pos;
+	}
 }
 
 
 } // utility
 } // vmime
-

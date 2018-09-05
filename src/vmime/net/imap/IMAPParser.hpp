@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -193,25 +193,34 @@ namespace imap {
 	static int IMAPParserDebugResponse_level = 0;
 	static std::vector <string> IMAPParserDebugResponse_stack;
 
-	class IMAPParserDebugResponse
-	{
+	class IMAPParserDebugResponse {
+
 	public:
 
-		IMAPParserDebugResponse(const string& name, string& line, const size_t currentPos, const bool &result)
-			: m_name(name), m_line(line), m_pos(currentPos), m_result(result)
-		{
+		IMAPParserDebugResponse(
+			const string& name,
+			string& line,
+			const size_t currentPos,
+			const bool &result
+		)
+			: m_name(name),
+			  m_line(line),
+			  m_pos(currentPos),
+			  m_result(result) {
+
 			++IMAPParserDebugResponse_level;
 			IMAPParserDebugResponse_stack.push_back(name);
 
-			for (int i = 0 ; i < IMAPParserDebugResponse_level ; ++i)
+			for (int i = 0 ; i < IMAPParserDebugResponse_level ; ++i) {
 				std::cout << "  ";
+			}
 
 			std::cout << "ENTER(" << m_name << "), pos=" << m_pos;
 			std::cout << std::endl;
 
 			for (std::vector <string>::iterator it = IMAPParserDebugResponse_stack.begin() ;
-			     it != IMAPParserDebugResponse_stack.end() ; ++it)
-			{
+			     it != IMAPParserDebugResponse_stack.end() ; ++it) {
+
 				std::cout << "> " << *it << " ";
 			}
 
@@ -219,16 +228,18 @@ namespace imap {
 			std::cout << string(m_line.begin() + (m_pos < 30 ? 0U : m_pos - 30),
 				m_line.begin() + std::min(m_line.length(), m_pos + 30)) << std::endl;
 
-			for (size_t i = (m_pos < 30 ? m_pos : (m_pos - (m_pos - 30))) ; i != 0 ; --i)
+			for (size_t i = (m_pos < 30 ? m_pos : (m_pos - (m_pos - 30))) ; i != 0 ; --i) {
 				std::cout << " ";
+			}
 
 			std::cout << "^" << std::endl;
 		}
 
-		~IMAPParserDebugResponse()
-		{
-			for (int i = 0 ; i < IMAPParserDebugResponse_level ; ++i)
+		~IMAPParserDebugResponse() {
+
+			for (int i = 0 ; i < IMAPParserDebugResponse_level ; ++i) {
 				std::cout << "  ";
+			}
 
 			std::cout << "LEAVE(" << m_name << "), result=";
 			std::cout << (m_result ? "TRUE" : "FALSE") << ", pos=" << m_pos;
@@ -258,14 +269,18 @@ namespace imap {
 #endif
 
 
-class VMIME_EXPORT IMAPParser : public object
-{
+class VMIME_EXPORT IMAPParser : public object {
+
 public:
 
 	IMAPParser()
-		: m_tag(), m_socket(), m_progress(NULL), m_strict(false),
-		  m_literalHandler(NULL), m_timeoutHandler()
-	{
+		: m_tag(),
+		  m_socket(),
+		  m_progress(NULL),
+		  m_strict(false),
+		  m_literalHandler(NULL),
+		  m_timeoutHandler() {
+
 	}
 
 
@@ -273,8 +288,8 @@ public:
 	  *
 	  * @param tag IMAP command tag
 	  */
-	void setTag(const shared_ptr <IMAPTag>& tag)
-	{
+	void setTag(const shared_ptr <IMAPTag>& tag) {
+
 		m_tag = tag;
 	}
 
@@ -282,8 +297,8 @@ public:
 	  *
 	  * @return IMAP command tag
 	  */
-	shared_ptr <const IMAPTag> getTag() const
-	{
+	shared_ptr <const IMAPTag> getTag() const {
+
 		return m_tag.lock();
 	}
 
@@ -292,8 +307,8 @@ public:
 	  *
 	  * @param sok socket
 	  */
-	void setSocket(const shared_ptr <socket>& sok)
-	{
+	void setSocket(const shared_ptr <socket>& sok) {
+
 		m_socket = sok;
 	}
 
@@ -301,8 +316,8 @@ public:
 	  *
 	  * @param toh timeout handler
 	  */
-	void setTimeoutHandler(const shared_ptr <timeoutHandler>& toh)
-	{
+	void setTimeoutHandler(const shared_ptr <timeoutHandler>& toh) {
+
 		m_timeoutHandler = toh;
 	}
 
@@ -310,8 +325,8 @@ public:
 	  *
 	  * @param tr tracer
 	  */
-	void setTracer(const shared_ptr <tracer>& tr)
-	{
+	void setTracer(const shared_ptr <tracer>& tr) {
+
 		m_tracer = tr;
 	}
 
@@ -321,8 +336,8 @@ public:
 	  * @param strict true to operate in strict mode, or false
 	  * to operate in default, relaxed mode
 	  */
-	void setStrict(const bool strict)
-	{
+	void setStrict(const bool strict) {
+
 		m_strict = strict;
 	}
 
@@ -331,8 +346,8 @@ public:
 	  *
 	  * @return true if we are in strict mode, false otherwise
 	  */
-	bool isStrict() const
-	{
+	bool isStrict() const {
+
 		return m_strict;
 	}
 
@@ -344,16 +359,16 @@ public:
 
 	class component;
 
-	class literalHandler
-	{
+	class literalHandler {
+
 	public:
 
 		virtual ~literalHandler() { }
 
 
 		// Abstract target class
-		class target
-		{
+		class target {
+
 		protected:
 
 			target(utility::progressListener* progress) : m_progress(progress) {}
@@ -377,8 +392,8 @@ public:
 
 
 		// Target: put in a string
-		class targetString : public target
-		{
+		class targetString : public target {
+
 		public:
 
 			targetString(utility::progressListener* progress, vmime::string& str)
@@ -388,14 +403,14 @@ public:
 			vmime::string& string() { return (m_string); }
 
 
-			void putData(const vmime::string& chunk)
-			{
+			void putData(const vmime::string& chunk) {
+
 				m_string += chunk;
 				m_bytesWritten += chunk.length();
 			}
 
-			size_t getBytesWritten() const
-			{
+			size_t getBytesWritten() const {
+
 				return m_bytesWritten;
 			}
 
@@ -407,25 +422,32 @@ public:
 
 
 		// Target: redirect to an output stream
-		class targetStream : public target
-		{
+		class targetStream : public target {
+
 		public:
 
-			targetStream(utility::progressListener* progress, utility::outputStream& stream)
-				: target(progress), m_stream(stream), m_bytesWritten(0) { }
+			targetStream(
+				utility::progressListener* progress,
+				utility::outputStream& stream
+			)
+				: target(progress),
+				  m_stream(stream),
+				  m_bytesWritten(0) {
+
+			}
 
 			const utility::outputStream& stream() const { return (m_stream); }
 			utility::outputStream& stream() { return (m_stream); }
 
 
-			void putData(const string& chunk)
-			{
+			void putData(const string& chunk) {
+
 				m_stream.write(chunk.data(), chunk.length());
 				m_bytesWritten += chunk.length();
 			}
 
-			size_t getBytesWritten() const
-			{
+			size_t getBytesWritten() const {
+
 				return m_bytesWritten;
 			}
 
@@ -452,8 +474,8 @@ public:
 	// Base class for a terminal or a non-terminal
 	//
 
-	class component
-	{
+	class component {
+
 	public:
 
 		component() { }
@@ -461,8 +483,8 @@ public:
 
 		virtual const string getComponentName() const = 0;
 
-		bool parse(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parse(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			bool res = false;
 			DEBUG_ENTER_COMPONENT(getComponentName(), res);
 			res = parseImpl(parser, line, currentPos);
@@ -472,12 +494,16 @@ public:
 		virtual bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) = 0;
 
 
-		const string makeResponseLine(const string& comp, const string& line,
-		                              const size_t pos)
-		{
+		const string makeResponseLine(
+			const string& comp,
+			const string& line,
+			const size_t pos
+		) {
+
 #if DEBUG_RESPONSE
-			if (pos > line.length())
+			if (pos > line.length()) {
 				std::cout << "WARNING: component::makeResponseLine(): pos > line.length()" << std::endl;
+			}
 #endif
 
 			string result(line.substr(0, pos));
@@ -491,19 +517,16 @@ public:
 
 
 #define COMPONENT_ALIAS(parent, name) \
-	class name : public parent \
-	{ \
+	class name : public parent { \
 		virtual const string getComponentName() const { return #name; }  \
 	public: \
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) \
-		{ \
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) { \
 			return parent::parseImpl(parser, line, currentPos); \
 		} \
 	}
 
 #define DECLARE_COMPONENT(name) \
-	class name : public component  \
-	{  \
+	class name : public component {  \
 		virtual const string getComponentName() const { return #name; }  \
 	public:
 
@@ -513,26 +536,23 @@ public:
 	//
 
 	template <char C>
-	class one_char : public component
-	{
+	class one_char : public component {
+
 	public:
 
-		const string getComponentName() const
-		{
+		const string getComponentName() const {
+
 			return string("one_char <") + C + ">";
 		}
 
-		bool parseImpl(IMAPParser& /* parser */, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& /* parser */, string& line, size_t* currentPos) {
+
 			const size_t pos = *currentPos;
 
-			if (pos < line.length() && line[pos] == C)
-			{
+			if (pos < line.length() && line[pos] == C) {
 				*currentPos = pos + 1;
 				return true;
-			}
-			else
-			{
+			} else {
 				return false;
 			}
 		}
@@ -545,20 +565,18 @@ public:
 
 	DECLARE_COMPONENT(SPACE)
 
-		bool parseImpl(IMAPParser& /* parser */, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& /* parser */, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
-			while (pos < line.length() && (line[pos] == ' ' || line[pos] == '\t'))
+			while (pos < line.length() && (line[pos] == ' ' || line[pos] == '\t')) {
 				++pos;
+			}
 
-			if (pos > *currentPos)
-			{
+			if (pos > *currentPos) {
 				*currentPos = pos;
 				return true;
-			}
-			else
-			{
+			} else {
 				return false;
 			}
 		}
@@ -573,20 +591,20 @@ public:
 
 	DECLARE_COMPONENT(CRLF)
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			VIMAP_PARSER_TRY_CHECK(SPACE);
 
 			if (pos + 1 < line.length() &&
-			    line[pos] == 0x0d && line[pos + 1] == 0x0a)
-			{
+			    line[pos] == 0x0d && line[pos + 1] == 0x0a) {
+
 				*currentPos = pos + 2;
 				return true;
-			}
-			else
-			{
+
+			} else {
+
 				return false;
 			}
 		}
@@ -607,8 +625,8 @@ public:
 
 	DECLARE_COMPONENT(xtag)
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			bool end = false;
@@ -616,46 +634,42 @@ public:
 			string tagString;
 			tagString.reserve(10);
 
-			while (!end && pos < line.length())
-			{
+			while (!end && pos < line.length()) {
+
 				const unsigned char c = line[pos];
 
-				switch (c)
-				{
-				case '+':
-				case '(':
-				case ')':
-				case '{':
-				case 0x20:  // SPACE
-				case '%':   // list_wildcards
-				case '*':   // list_wildcards
-				case '"':   // quoted_specials
-				case '\\':  // quoted_specials
+				switch (c) {
 
-					end = true;
-					break;
+					case '+':
+					case '(':
+					case ')':
+					case '{':
+					case 0x20:  // SPACE
+					case '%':   // list_wildcards
+					case '*':   // list_wildcards
+					case '"':   // quoted_specials
+					case '\\':  // quoted_specials
 
-				default:
-
-					if (c <= 0x1f || c >= 0x7f)
 						end = true;
-					else
-					{
-						tagString += c;
-						++pos;
-					}
+						break;
 
-					break;
+					default:
+
+						if (c <= 0x1f || c >= 0x7f) {
+							end = true;
+						} else {
+							tagString += c;
+							++pos;
+						}
+
+						break;
 				}
 			}
 
-			if (tagString == string(*parser.getTag()))
-			{
+			if (tagString == string(*parser.getTag())) {
 				*currentPos = pos;
 				return true;
-			}
-			else
-			{
+			} else {
 				// Invalid tag
 				return false;
 			}
@@ -675,41 +689,36 @@ public:
 	DECLARE_COMPONENT(number)
 
 		number(const bool nonZero = false)
-			: m_nonZero(nonZero), m_value(0)
-		{
+			: m_nonZero(nonZero),
+			  m_value(0) {
+
 		}
 
-		bool parseImpl(IMAPParser& /* parser */, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& /* parser */, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			bool valid = true;
 			unsigned int val = 0;
 
-			while (valid && pos < line.length())
-			{
+			while (valid && pos < line.length()) {
+
 				const char c = line[pos];
 
-				if (c >= '0' && c <= '9')
-				{
+				if (c >= '0' && c <= '9') {
 					val = (val * 10) + (c - '0');
 					++pos;
-				}
-				else
-				{
+				} else {
 					valid = false;
 				}
 			}
 
 			// Check for non-null length (and for non-zero number)
-			if (!(m_nonZero && val == 0) && pos != *currentPos)
-			{
+			if (!(m_nonZero && val == 0) && pos != *currentPos) {
 				m_value = val;
 				*currentPos = pos;
 				return true;
-			}
-			else
-			{
+			} else {
 				return false;
 			}
 		}
@@ -730,12 +739,13 @@ public:
 	//                ;; (0 < n < 4,294,967,296)
 	//
 
-	class nz_number : public number
-	{
+	class nz_number : public number {
+
 	public:
 
-		nz_number() : number(true)
-		{
+		nz_number()
+			: number(true) {
+
 		}
 	};
 
@@ -745,12 +755,13 @@ public:
 	//                 ;; Strictly ascending
 	//
 
-	class uniqueid : public nz_number
-	{
+	class uniqueid : public nz_number {
+
 	public:
 
-		uniqueid() : nz_number()
-		{
+		uniqueid()
+			: nz_number() {
+
 		}
 	};
 
@@ -763,18 +774,19 @@ public:
 	DECLARE_COMPONENT(uid_range)
 
 		uid_range()
-			: m_uniqueid1(NULL), m_uniqueid2(NULL)
-		{
+			: m_uniqueid1(NULL),
+			  m_uniqueid2(NULL) {
+
 		}
 
-		~uid_range()
-		{
+		~uid_range() {
+
 			delete m_uniqueid1;
 			delete m_uniqueid2;
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			VIMAP_PARSER_GET(uniqueid, m_uniqueid1);
@@ -805,28 +817,32 @@ public:
 	DECLARE_COMPONENT(uid_set)
 
 		uid_set()
-			: m_uniqueid(NULL), m_uid_range(NULL), m_next_uid_set(NULL)
-		{
+			: m_uniqueid(NULL),
+			  m_uid_range(NULL),
+			  m_next_uid_set(NULL) {
+
 		}
 
-		~uid_set()
-		{
+		~uid_set() {
+
 			delete m_uniqueid;
 			delete m_uid_range;
 			delete m_next_uid_set;
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			// We have either a 'uid_range' or a 'uniqueid'
-			if (!VIMAP_PARSER_TRY_GET(IMAPParser::uid_range, m_uid_range))
+			if (!VIMAP_PARSER_TRY_GET(IMAPParser::uid_range, m_uid_range)) {
 				VIMAP_PARSER_GET(IMAPParser::uniqueid, m_uniqueid);
+			}
 
 			// And maybe another 'uid-set' following
-			if (VIMAP_PARSER_TRY_CHECK(one_char <','>))
+			if (VIMAP_PARSER_TRY_CHECK(one_char <','>)) {
 				VIMAP_PARSER_GET(IMAPParser::uid_set, m_next_uid_set);
+			}
 
 			*currentPos = pos;
 
@@ -859,56 +875,50 @@ public:
 	DECLARE_COMPONENT(text)
 
 		text(bool allow8bits = false, const char except = 0)
-			: m_allow8bits(allow8bits), m_except(except)
-		{
+			: m_allow8bits(allow8bits), m_except(except) {
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 			size_t len = 0;
 
-			if (m_allow8bits || !parser.isStrict())
-			{
+			if (m_allow8bits || !parser.isStrict()) {
+
 				const unsigned char except = m_except;
 
-				for (bool end = false ; !end && pos < line.length() ; )
-				{
+				for (bool end = false ; !end && pos < line.length() ; ) {
+
 					const unsigned char c = line[pos];
 
-					if (c == 0x00 || c == 0x0d || c == 0x0a || c == except)
-					{
+					if (c == 0x00 || c == 0x0d || c == 0x0a || c == except) {
 						end = true;
-					}
-					else
-					{
+					} else {
 						++pos;
 						++len;
 					}
 				}
-			}
-			else
-			{
+
+			} else {
+
 				const unsigned char except = m_except;
 
-				for (bool end = false ; !end && pos < line.length() ; )
-				{
+				for (bool end = false ; !end && pos < line.length() ; ) {
+
 					const unsigned char c = line[pos];
 
-					if (c < 0x01 || c > 0x7f || c == 0x0d || c == 0x0a || c == except)
-					{
+					if (c < 0x01 || c > 0x7f || c == 0x0d || c == 0x0a || c == except) {
 						end = true;
-					}
-					else
-					{
+					} else {
 						++pos;
 						++len;
 					}
 				}
 			}
 
-			if (len == 0)
+			if (len == 0) {
 				VIMAP_PARSER_FAIL();
+			}
 
 			m_value.resize(len);
 			std::copy(line.begin() + *currentPos, line.begin() + pos, m_value.begin());
@@ -930,34 +940,34 @@ public:
 	};
 
 
-	class text8 : public text
-	{
+	class text8 : public text {
+
 	public:
 
-		text8() : text(true)
-		{
+		text8() : text(true) {
+
 		}
 	};
 
 
 	template <char C>
-	class text_except : public text
-	{
+	class text_except : public text {
+
 	public:
 
-		text_except() : text(false, C)
-		{
+		text_except() : text(false, C) {
+
 		}
 	};
 
 
 	template <char C>
-	class text8_except : public text
-	{
+	class text8_except : public text {
+
 	public:
 
-		text8_except() : text(true, C)
-		{
+		text8_except() : text(true, C) {
+
 		}
 	};
 
@@ -971,27 +981,27 @@ public:
 
 	DECLARE_COMPONENT(QUOTED_CHAR)
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			const unsigned char c = static_cast <unsigned char>(pos < line.length() ? line[pos] : 0);
 
 			if (c >= 0x01 && c <= 0x7f &&   // 0x01 - 0x7f
 			    c != '"' && c != '\\' &&    // quoted_specials
-			    c != '\r' && c != '\n')     // CR and LF
-			{
+			    c != '\r' && c != '\n') {   // CR and LF
+
 				m_value = c;
 				*currentPos = pos + 1;
-			}
-			else if (c == '\\' && pos + 1 < line.length() &&
-			         (line[pos + 1] == '"' || line[pos + 1] == '\\'))
-			{
+
+			} else if (c == '\\' && pos + 1 < line.length() &&
+			           (line[pos + 1] == '"' || line[pos + 1] == '\\')) {
+
 				m_value = line[pos + 1];
 				*currentPos = pos + 2;
-			}
-			else
-			{
+
+			} else {
+
 				VIMAP_PARSER_FAIL();
 			}
 
@@ -1018,24 +1028,23 @@ public:
 
 	DECLARE_COMPONENT(quoted_text)
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 			size_t len = 0;
 			bool valid = false;
 
 			m_value.reserve(line.length() - pos);
 
-			for (bool end = false, quoted = false ; !end && pos < line.length() ; )
-			{
+			for (bool end = false, quoted = false ; !end && pos < line.length() ; ) {
+
 				const unsigned char c = line[pos];
 
-				if (quoted)
-				{
-					if (c == '"' || c == '\\')
+				if (quoted) {
+
+					if (c == '"' || c == '\\') {
 						m_value += c;
-					else
-					{
+					} else {
 						m_value += '\\';
 						m_value += c;
 					}
@@ -1044,39 +1053,40 @@ public:
 
 					++pos;
 					++len;
-				}
-				else
-				{
-					if (c == '\\')
-					{
+
+				} else {
+
+					if (c == '\\') {
+
 						quoted = true;
 
 						++pos;
 						++len;
-					}
-					else if (c == '"')
-					{
+
+					} else if (c == '"') {
+
 						valid = true;
 						end = true;
-					}
-					else if (c >= 0x01 && c <= 0x7f &&  // CHAR
-					         c != 0x0a && c != 0x0d)    // CR and LF
-					{
+
+					} else if (c >= 0x01 && c <= 0x7f &&  // CHAR
+					           c != 0x0a && c != 0x0d) {  // CR and LF
+
 						m_value += c;
 
 						++pos;
 						++len;
-					}
-					else
-					{
+
+					} else {
+
 						valid = false;
 						end = true;
 					}
 				}
 			}
 
-			if (!valid)
+			if (!valid) {
 				VIMAP_PARSER_FAIL();
+			}
 
 			*currentPos = pos;
 
@@ -1099,8 +1109,8 @@ public:
 
 	DECLARE_COMPONENT(NIL)
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			VIMAP_PARSER_CHECK_WITHARG(special_atom, "nil");
@@ -1128,74 +1138,79 @@ public:
 
 	DECLARE_COMPONENT(xstring)
 
-		xstring(const bool canBeNIL = false, component* comp = NULL, const int data = 0)
-			: m_canBeNIL(canBeNIL), m_isNIL(true), m_component(comp), m_data(data)
-		{
+		xstring(
+			const bool canBeNIL = false,
+			component* comp = NULL,
+			const int data = 0
+		)
+			: m_canBeNIL(canBeNIL),
+			  m_isNIL(true),
+			  m_component(comp),
+			  m_data(data) {
+
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			if (m_canBeNIL &&
-			    VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "nil"))
-			{
+			    VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "nil")) {
+
 				// NIL
 				m_isNIL = true;
-			}
-			else
-			{
+
+			} else {
+
 				pos = *currentPos;
 
 				m_isNIL = false;
 
 				// quoted ::= <"> *QUOTED_CHAR <">
-				if (VIMAP_PARSER_TRY_CHECK(one_char <'"'>))
-				{
+				if (VIMAP_PARSER_TRY_CHECK(one_char <'"'>)) {
+
 					shared_ptr <quoted_text> text;
 					VIMAP_PARSER_GET_PTR(quoted_text, text);
 					VIMAP_PARSER_CHECK(one_char <'"'>);
 
-					if (parser.m_literalHandler != NULL)
-					{
+					if (parser.m_literalHandler != NULL) {
+
 						shared_ptr <literalHandler::target> target =
 							parser.m_literalHandler->targetFor(*m_component, m_data);
 
-						if (target != NULL)
-						{
+						if (target != NULL) {
+
 							m_value = "[literal-handler]";
 
 							const size_t length = text->value().length();
 							utility::progressListener* progress = target->progressListener();
 
-							if (progress)
-							{
+							if (progress) {
 								progress->start(length);
 							}
 
 							target->putData(text->value());
 
-							if (progress)
-							{
+							if (progress) {
 								progress->progress(length, length);
 								progress->stop(length);
 							}
-						}
-						else
-						{
+
+						} else {
+
 							m_value = text->value();
 						}
-					}
-					else
-					{
+
+					} else {
+
 						m_value = text->value();
 					}
 
 					DEBUG_FOUND("string[quoted]", "<length=" << m_value.length() << ", value='" << m_value << "'>");
-				}
+
 				// literal ::= "{" number "}" CRLF *CHAR8
-				else
-				{
+				} else {
+
 					VIMAP_PARSER_CHECK(one_char <'{'>);
 
 					shared_ptr <number> num;
@@ -1208,27 +1223,27 @@ public:
 					VIMAP_PARSER_CHECK(CRLF);
 
 
-					if (parser.m_literalHandler != NULL)
-					{
+					if (parser.m_literalHandler != NULL) {
+
 						shared_ptr <literalHandler::target> target =
 							parser.m_literalHandler->targetFor(*m_component, m_data);
 
-						if (target != NULL)
-						{
+						if (target != NULL) {
+
 							m_value = "[literal-handler]";
 
 							parser.m_progress = target->progressListener();
 							parser.readLiteral(*target, length);
 							parser.m_progress = NULL;
-						}
-						else
-						{
+
+						} else {
+
 							literalHandler::targetString target(NULL, m_value);
 							parser.readLiteral(target, length);
 						}
-					}
-					else
-					{
+
+					} else {
+
 						literalHandler::targetString target(NULL, m_value);
 						parser.readLiteral(target, length);
 					}
@@ -1266,18 +1281,18 @@ public:
 	// nstring         ::= string / nil
 	//
 
-	class nstring : public xstring
-	{
+	class nstring : public xstring {
+
 	public:
 
-		const string getComponentName() const
-		{
+		const string getComponentName() const {
+
 			return "nstring";
 		}
 
 		nstring(component* comp = NULL, const int data = 0)
-			: xstring(true, comp, data)
-		{
+			: xstring(true, comp, data) {
+
 		}
 	};
 
@@ -1288,19 +1303,16 @@ public:
 
 	DECLARE_COMPONENT(astring)
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			shared_ptr <xstring> str;
 			VIMAP_PARSER_TRY_GET_PTR(xstring, str);
 
-			if (str)
-			{
+			if (str) {
 				m_value = str->value();
-			}
-			else
-			{
+			} else {
 				shared_ptr <atom> at;
 				VIMAP_PARSER_GET_PTR(atom, at);
 				m_value = at->value();
@@ -1335,53 +1347,52 @@ public:
 
 	DECLARE_COMPONENT(atom)
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 			size_t len = 0;
 
-			for (bool end = false ; !end && pos < line.length() ; )
-			{
+			for (bool end = false ; !end && pos < line.length() ; ) {
+
 				const unsigned char c = line[pos];
 
-				switch (c)
-				{
-				case '(':
-				case ')':
-				case '{':
-				case 0x20:  // SPACE
-				case '%':   // list_wildcards
-				case '*':   // list_wildcards
-				case '"':   // quoted_specials
-				case '\\':  // quoted_specials
+				switch (c) {
 
-				case '[':
-				case ']':   // for "special_atom"
+					case '(':
+					case ')':
+					case '{':
+					case 0x20:  // SPACE
+					case '%':   // list_wildcards
+					case '*':   // list_wildcards
+					case '"':   // quoted_specials
+					case '\\':  // quoted_specials
 
-					end = true;
-					break;
+					case '[':
+					case ']':   // for "special_atom"
 
-				default:
-
-					if (c <= 0x1f || c >= 0x7f)
 						end = true;
-					else
-					{
-						++pos;
-						++len;
+						break;
+
+					default:
+
+						if (c <= 0x1f || c >= 0x7f) {
+							end = true;
+						} else {
+							++pos;
+							++len;
+						}
 					}
-				}
 			}
 
-			if (len != 0)
-			{
+			if (len != 0) {
+
 				m_value.resize(len);
 				std::copy(line.begin() + *currentPos, line.begin() + pos, m_value.begin());
 
 				*currentPos = pos;
-			}
-			else
-			{
+
+			} else {
+
 				VIMAP_PARSER_FAIL();
 			}
 
@@ -1407,42 +1418,44 @@ public:
 	//    accept these strings in a case-insensitive fashion. "
 	//
 
-	class special_atom : public atom
-	{
+	class special_atom : public atom {
+
 	public:
 
-		const std::string getComponentName() const
-		{
+		const std::string getComponentName() const {
+
 			return string("special_atom <") + m_string + ">";
 		}
 
 		special_atom(const char* str)
-			: m_string(str)   // 'string' must be in lower-case
-		{
+			: m_string(str) {  // 'string' must be in lower-case
+
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
-			if (!atom::parseImpl(parser, line, &pos))
+			if (!atom::parseImpl(parser, line, &pos)) {
 				return false;
+			}
 
 			const char* cmp = value().c_str();
 			const char* with = m_string;
 
 			bool ok = true;
 
-			while (ok && *cmp && *with)
-			{
+			while (ok && *cmp && *with) {
+
 				ok = (std::tolower(*cmp, std::locale()) == *with);
 
 				++cmp;
 				++with;
 			}
 
-			if (!ok || *cmp || *with)
+			if (!ok || *cmp || *with) {
 				VIMAP_PARSER_FAIL();
+			}
 
 			*currentPos = pos;
 
@@ -1462,8 +1475,8 @@ public:
 
 	DECLARE_COMPONENT(text_mime2)
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			shared_ptr <atom> theCharset, theEncoding;
@@ -1490,28 +1503,28 @@ public:
 			// Decode text
 			scoped_ptr <utility::encoder::encoder> theEncoder;
 
-			if (theEncoding->value()[0] == 'q' || theEncoding->value()[0] == 'Q')
-			{
+			if (theEncoding->value()[0] == 'q' || theEncoding->value()[0] == 'Q') {
+
 				// Quoted-printable
 				theEncoder.reset(new utility::encoder::qpEncoder());
 				theEncoder->getProperties()["rfc2047"] = true;
-			}
-			else if (theEncoding->value()[0] == 'b' || theEncoding->value()[0] == 'B')
-			{
+
+			} else if (theEncoding->value()[0] == 'b' || theEncoding->value()[0] == 'B') {
+
 				// Base64
 				theEncoder.reset(new utility::encoder::b64Encoder());
 			}
 
-			if (theEncoder.get())
-			{
+			if (theEncoder.get()) {
+
 				utility::inputStreamStringAdapter in(theText->value());
 				utility::outputStreamStringAdapter out(m_value);
 
 				theEncoder->decode(in, out);
-			}
+
 			// No decoder available
-			else
-			{
+			} else {
+
 				m_value = theText->value();
 			}
 
@@ -1540,26 +1553,27 @@ public:
 	DECLARE_COMPONENT(seq_number)
 
 		seq_number()
-			: m_number(NULL), m_star(false)
-		{
+			: m_number(NULL),
+			  m_star(false) {
+
 		}
 
-		~seq_number()
-		{
+		~seq_number() {
+
 			delete m_number;
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
-			if (VIMAP_PARSER_TRY_CHECK(one_char <'*'> ))
-			{
+			if (VIMAP_PARSER_TRY_CHECK(one_char <'*'> )) {
+
 				m_star = true;
 				m_number = NULL;
-			}
-			else
-			{
+
+			} else {
+
 				m_star = false;
 				VIMAP_PARSER_GET(IMAPParser::number, m_number);
 			}
@@ -1590,18 +1604,19 @@ public:
 	DECLARE_COMPONENT(seq_range)
 
 		seq_range()
-			: m_first(NULL), m_last(NULL)
-		{
+			: m_first(NULL),
+			  m_last(NULL) {
+
 		}
 
-		~seq_range()
-		{
+		~seq_range() {
+
 			delete m_first;
 			delete m_last;
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			VIMAP_PARSER_GET(seq_number, m_first);
@@ -1638,26 +1653,30 @@ public:
 	DECLARE_COMPONENT(sequence_set)
 
 		sequence_set()
-			: m_number(NULL), m_range(NULL), m_nextSet(NULL)
-		{
+			: m_number(NULL),
+			  m_range(NULL),
+			  m_nextSet(NULL) {
+
 		}
 
-		~sequence_set()
-		{
+		~sequence_set() {
+
 			delete m_number;
 			delete m_range;
 			delete m_nextSet;
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
-			if (!VIMAP_PARSER_TRY_GET(IMAPParser::seq_range, m_range))
+			if (!VIMAP_PARSER_TRY_GET(IMAPParser::seq_range, m_range)) {
 				VIMAP_PARSER_GET(IMAPParser::seq_number, m_number);
+			}
 
-			if (VIMAP_PARSER_TRY_CHECK(one_char <','> ))
+			if (VIMAP_PARSER_TRY_CHECK(one_char <','> )) {
 				VIMAP_PARSER_GET(sequence_set, m_nextSet);
+			}
 
 			*currentPos = pos;
 
@@ -1686,28 +1705,25 @@ public:
 	DECLARE_COMPONENT(mod_sequence_value)
 
 		mod_sequence_value()
-			: m_value(0)
-		{
+			: m_value(0) {
+
 		}
 
-		bool parseImpl(IMAPParser& /* parser */, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& /* parser */, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			bool valid = true;
 			vmime_uint64 val = 0;
 
-			while (valid && pos < line.length())
-			{
+			while (valid && pos < line.length()) {
+
 				const char c = line[pos];
 
-				if (c >= '0' && c <= '9')
-				{
+				if (c >= '0' && c <= '9') {
 					val = (val * 10) + (c - '0');
 					++pos;
-				}
-				else
-				{
+				} else {
 					valid = false;
 				}
 			}
@@ -1747,51 +1763,51 @@ public:
 	DECLARE_COMPONENT(flag)
 
 		flag()
-			: m_type(UNKNOWN), m_flag_keyword(NULL)
-		{
+			: m_type(UNKNOWN),
+			  m_flag_keyword(NULL) {
+
 		}
 
-		~flag()
-		{
-			delete (m_flag_keyword);
+		~flag() {
+
+			delete m_flag_keyword;
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
-			if (VIMAP_PARSER_TRY_CHECK(one_char <'\\'> ))
-			{
-				if (VIMAP_PARSER_TRY_CHECK(one_char <'*'> ))
-				{
+			if (VIMAP_PARSER_TRY_CHECK(one_char <'\\'> )) {
+
+				if (VIMAP_PARSER_TRY_CHECK(one_char <'*'> )) {
+
 					m_type = STAR;
-				}
-				else
-				{
+
+				} else {
+
 					shared_ptr <atom> at;
 					VIMAP_PARSER_GET_PTR(atom, at);
 
 					const string name = utility::stringUtils::toLower(at->value());
 
-					if (name == "answered")
+					if (name == "answered") {
 						m_type = ANSWERED;
-					else if (name == "flagged")
+					} else if (name == "flagged") {
 						m_type = FLAGGED;
-					else if (name == "deleted")
+					} else if (name == "deleted") {
 						m_type = DELETED;
-					else if (name == "seen")
+					} else if (name == "seen") {
 						m_type = SEEN;
-					else if (name == "draft")
+					} else if (name == "draft") {
 						m_type = DRAFT;
-					else
-					{
+					} else {
 						m_type = UNKNOWN;
 						m_name = name;
 					}
 				}
-			}
-			else
-			{
+
+			} else {
+
 				m_type = KEYWORD_OR_EXTENSION;
 				VIMAP_PARSER_GET(atom, m_flag_keyword);
 			}
@@ -1802,8 +1818,7 @@ public:
 		}
 
 
-		enum Type
-		{
+		enum Type {
 			UNKNOWN,
 			ANSWERED,
 			FLAGGED,
@@ -1836,23 +1851,22 @@ public:
 
 	DECLARE_COMPONENT(flag_list)
 
-		~flag_list()
-		{
+		~flag_list() {
+
 			for (std::vector <flag*>::iterator it = m_flags.begin() ;
-			     it != m_flags.end() ; ++it)
-			{
-				delete (*it);
+			     it != m_flags.end() ; ++it) {
+
+				delete *it;
 			}
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			VIMAP_PARSER_CHECK(one_char <'('> );
 
-			while (!VIMAP_PARSER_TRY_CHECK(one_char <')'> ))
-			{
+			while (!VIMAP_PARSER_TRY_CHECK(one_char <')'> )) {
 				VIMAP_PARSER_GET_PUSHBACK(flag, m_flags);
 				VIMAP_PARSER_TRY_CHECK(SPACE);
 			}
@@ -1882,17 +1896,17 @@ public:
 
 	DECLARE_COMPONENT(mailbox)
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
-			if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "inbox"))
-			{
+			if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "inbox")) {
+
 				m_type = INBOX;
 				m_name = "INBOX";
-			}
-			else
-			{
+
+			} else {
+
 				m_type = OTHER;
 
 				shared_ptr <astring> astr;
@@ -1906,8 +1920,7 @@ public:
 		}
 
 
-		enum Type
-		{
+		enum Type {
 			INBOX,
 			OTHER
 		};
@@ -1931,109 +1944,121 @@ public:
 
 	DECLARE_COMPONENT(mailbox_flag)
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
-			if (VIMAP_PARSER_TRY_CHECK(one_char <'\\'> ))
-			{
+			if (VIMAP_PARSER_TRY_CHECK(one_char <'\\'> )) {
+
 				shared_ptr <atom> at;
 				VIMAP_PARSER_GET_PTR(atom, at);
 				const string name = utility::stringUtils::toLower(at->value());
 
 				m_type = UNKNOWN;  // default
 
-				switch (name[0])
-				{
-				case 'a':
+				switch (name[0]) {
 
-					if (name == "all")
-						m_type = SPECIALUSE_ALL;
-					else if (name == "archive")
-						m_type = SPECIALUSE_ARCHIVE;
+					case 'a':
 
-					break;
+						if (name == "all") {
+							m_type = SPECIALUSE_ALL;
+						} else if (name == "archive") {
+							m_type = SPECIALUSE_ARCHIVE;
+						}
 
-				case 'd':
+						break;
 
-					if (name == "drafts")
-						m_type = SPECIALUSE_DRAFTS;
+					case 'd':
 
-					break;
+						if (name == "drafts") {
+							m_type = SPECIALUSE_DRAFTS;
+						}
 
-				case 'f':
+						break;
 
-					if (name == "flagged")
-						m_type = SPECIALUSE_FLAGGED;
+					case 'f':
 
-					break;
+						if (name == "flagged") {
+							m_type = SPECIALUSE_FLAGGED;
+						}
 
-				case 'h':
+						break;
 
-					if (name == "haschildren")
-						m_type = HASCHILDREN;
-					else if (name == "hasnochildren")
-						m_type = HASNOCHILDREN;
+					case 'h':
 
-					break;
+						if (name == "haschildren") {
+							m_type = HASCHILDREN;
+						} else if (name == "hasnochildren") {
+							m_type = HASNOCHILDREN;
+						}
 
-				case 'i':
+						break;
 
-					if (name == "important")
-						m_type = SPECIALUSE_IMPORTANT;
+					case 'i':
 
-					break;
+						if (name == "important") {
+							m_type = SPECIALUSE_IMPORTANT;
+						}
 
-				case 'j':
+						break;
 
-					if (name == "junk")
-						m_type = SPECIALUSE_JUNK;
+					case 'j':
 
-					break;
+						if (name == "junk") {
+							m_type = SPECIALUSE_JUNK;
+						}
 
-				case 'm':
+						break;
 
-					if (name == "marked")
-						m_type = MARKED;
+					case 'm':
 
-					break;
+						if (name == "marked") {
+							m_type = MARKED;
+						}
 
-				case 'n':
+						break;
 
-					if (name == "noinferiors")
-						m_type = NOINFERIORS;
-					else if (name == "noselect")
-						m_type = NOSELECT;
+					case 'n':
 
-					break;
+						if (name == "noinferiors") {
+							m_type = NOINFERIORS;
+						} else if (name == "noselect") {
+							m_type = NOSELECT;
+						}
 
-				case 's':
+						break;
 
-					if (name == "sent")
-						m_type = SPECIALUSE_SENT;
+					case 's':
 
-					break;
+						if (name == "sent") {
+							m_type = SPECIALUSE_SENT;
+						}
 
-				case 't':
+						break;
 
-					if (name == "trash")
-						m_type = SPECIALUSE_TRASH;
+					case 't':
 
-					break;
+						if (name == "trash") {
+							m_type = SPECIALUSE_TRASH;
+						}
 
-				case 'u':
+						break;
 
-					if (name == "unmarked")
-						m_type = UNMARKED;
+					case 'u':
 
-					break;
+						if (name == "unmarked") {
+							m_type = UNMARKED;
+						}
+
+						break;
 				}
 
-				if (m_type == UNKNOWN)
+				if (m_type == UNKNOWN) {
 					m_name = "\\" + name;
-			}
-			else
-			{
+				}
+
+			} else {
+
 				shared_ptr <atom> at;
 				VIMAP_PARSER_GET_PTR(atom, at);
 				const string name = utility::stringUtils::toLower(at->value());
@@ -2048,8 +2073,7 @@ public:
 		}
 
 
-		enum Type
-		{
+		enum Type {
 			// RFC-3348 - Child Mailbox Extension
 			HASCHILDREN,
 			HASNOCHILDREN,
@@ -2090,23 +2114,22 @@ public:
 
 	DECLARE_COMPONENT(mailbox_flag_list)
 
-		~mailbox_flag_list()
-		{
+		~mailbox_flag_list() {
+
 			for (std::vector <mailbox_flag*>::iterator it = m_flags.begin() ;
-			     it != m_flags.end() ; ++it)
-			{
-				delete (*it);
+			     it != m_flags.end() ; ++it) {
+
+				delete *it;
 			}
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			VIMAP_PARSER_CHECK(one_char <'('> );
 
-			while (!VIMAP_PARSER_TRY_CHECK(one_char <')'> ))
-			{
+			while (!VIMAP_PARSER_TRY_CHECK(one_char <')'> )) {
 				VIMAP_PARSER_GET_PUSHBACK(mailbox_flag, m_flags);
 				VIMAP_PARSER_TRY_CHECK(SPACE);
 			}
@@ -2135,26 +2158,26 @@ public:
 
 		mailbox_list()
 			: m_mailbox_flag_list(NULL),
-			  m_mailbox(NULL), m_quoted_char('\0')
-		{
+			  m_mailbox(NULL), m_quoted_char('\0') {
+
 		}
 
-		~mailbox_list()
-		{
-			delete (m_mailbox_flag_list);
-			delete (m_mailbox);
+		~mailbox_list() {
+
+			delete m_mailbox_flag_list;
+			delete m_mailbox;
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			VIMAP_PARSER_GET(IMAPParser::mailbox_flag_list, m_mailbox_flag_list);
 
 			VIMAP_PARSER_CHECK(SPACE);
 
-			if (!VIMAP_PARSER_TRY_CHECK(NIL))
-			{
+			if (!VIMAP_PARSER_TRY_CHECK(NIL)) {
+
 				VIMAP_PARSER_CHECK(one_char <'"'> );
 
 				shared_ptr <QUOTED_CHAR> qc;
@@ -2194,29 +2217,29 @@ public:
 
 	DECLARE_COMPONENT(auth_type)
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			shared_ptr <atom> at;
 			VIMAP_PARSER_GET_PTR(atom, at);
 			m_name = utility::stringUtils::toLower(at->value());
 
-			if (m_name == "kerberos_v4")
+			if (m_name == "kerberos_v4") {
 				m_type = KERBEROS_V4;
-			else if (m_name == "gssapi")
+			} else if (m_name == "gssapi") {
 				m_type = GSSAPI;
-			else if (m_name == "skey")
+			} else if (m_name == "skey") {
 				m_type = SKEY;
-			else
+			} else {
 				m_type = UNKNOWN;
+			}
 
 			return true;
 		}
 
 
-		enum Type
-		{
+		enum Type {
 			UNKNOWN,
 
 			// RFC 1731 - IMAP4 Authentication Mechanisms
@@ -2255,47 +2278,38 @@ public:
 	DECLARE_COMPONENT(status_att_val)
 
 		status_att_val()
-			: m_value(NULL)
-		{
+			: m_value(NULL) {
+
 		}
 
-		~status_att_val()
-		{
+		~status_att_val() {
+
 			delete m_value;
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			// "HIGHESTMODSEQ" SP mod-sequence-valzer
-			if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "highestmodseq"))
-			{
+			if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "highestmodseq")) {
+
 				m_type = HIGHESTMODSEQ;
 
 				VIMAP_PARSER_CHECK(SPACE);
 				VIMAP_PARSER_GET(IMAPParser::mod_sequence_value, m_value);
-			}
-			else
-			{
-				if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "messages"))
-				{
+
+			} else {
+
+				if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "messages")) {
 					m_type = MESSAGES;
-				}
-				else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "recent"))
-				{
+				} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "recent")) {
 					m_type = RECENT;
-				}
-				else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "uidnext"))
-				{
+				} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "uidnext")) {
 					m_type = UIDNEXT;
-				}
-				else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "uidvalidity"))
-				{
+				} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "uidvalidity")) {
 					m_type = UIDVALIDITY;
-				}
-				else
-				{
+				} else {
 					VIMAP_PARSER_CHECK_WITHARG(special_atom, "unseen");
 					m_type = UNSEEN;
 				}
@@ -2310,8 +2324,7 @@ public:
 		}
 
 
-		enum Type
-		{
+		enum Type {
 			// Extensions
 			HIGHESTMODSEQ,
 
@@ -2332,13 +2345,11 @@ public:
 
 		Type type() const { return (m_type); }
 
-		const IMAPParser::number* value_as_number() const
-		{
+		const IMAPParser::number* value_as_number() const {
 			return dynamic_cast <IMAPParser::number *>(m_value);
 		}
 
-		const IMAPParser::mod_sequence_value* value_as_mod_sequence_value() const
-		{
+		const IMAPParser::mod_sequence_value* value_as_mod_sequence_value() const {
 			return dynamic_cast <IMAPParser::mod_sequence_value *>(m_value);
 		}
 	};
@@ -2348,23 +2359,24 @@ public:
 
 	DECLARE_COMPONENT(status_att_list)
 
-		~status_att_list()
-		{
+		~status_att_list() {
+
 			for (std::vector <status_att_val*>::iterator it = m_values.begin() ;
-			     it != m_values.end() ; ++it)
-			{
+			     it != m_values.end() ; ++it) {
+
 				delete *it;
 			}
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			VIMAP_PARSER_GET_PUSHBACK(IMAPParser::status_att_val, m_values);
 
-			while (VIMAP_PARSER_TRY_CHECK(SPACE))
+			while (VIMAP_PARSER_TRY_CHECK(SPACE)) {
 				VIMAP_PARSER_GET_PUSHBACK(IMAPParser::status_att_val, m_values);
+			}
 
 			*currentPos = pos;
 
@@ -2390,18 +2402,19 @@ public:
 	DECLARE_COMPONENT(capability)
 
 		capability()
-			: m_auth_type(NULL), m_atom(NULL)
-		{
+			: m_auth_type(NULL),
+			m_atom(NULL) {
+
 		}
 
-		~capability()
-		{
-			delete (m_auth_type);
-			delete (m_atom);
+		~capability() {
+
+			delete m_auth_type;
+			delete m_atom;
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			VIMAP_PARSER_GET(IMAPParser::atom, m_atom);
@@ -2413,8 +2426,8 @@ public:
 			    (str[1] == 'u' || str[1] == 'U') &&
 			    (str[2] == 't' || str[2] == 'T') &&
 			    (str[3] == 'h' || str[3] == 'H') &&
-			    (str[4] == '='))
-			{
+			    (str[4] == '=')) {
+
 				size_t pos = 5;
 				m_auth_type = parser.get <IMAPParser::auth_type>(value, &pos);
 
@@ -2449,36 +2462,34 @@ public:
 
 	DECLARE_COMPONENT(capability_data)
 
-		~capability_data()
-		{
+		~capability_data() {
+
 			for (std::vector <capability*>::iterator it = m_capabilities.begin() ;
-			     it != m_capabilities.end() ; ++it)
-			{
-				delete (*it);
+			     it != m_capabilities.end() ; ++it) {
+
+				delete *it;
 			}
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			VIMAP_PARSER_CHECK_WITHARG(special_atom, "capability");
 
-			while (VIMAP_PARSER_TRY_CHECK(SPACE))
-			{
+			while (VIMAP_PARSER_TRY_CHECK(SPACE)) {
+
 				capability* cap;
 
-				if (parser.isStrict() || m_capabilities.empty())
-				{
+				if (parser.isStrict() || m_capabilities.empty()) {
 					VIMAP_PARSER_GET(capability, cap);
-				}
-				else
-				{
+				} else {
 					VIMAP_PARSER_TRY_GET(capability, cap);  // allow SPACE at end of line (Apple iCloud IMAP server)
 				}
 
-				if (!cap)
+				if (!cap) {
 					break;
+				}
 
 				m_capabilities.push_back(cap);
 			}
@@ -2524,8 +2535,8 @@ public:
 
 	DECLARE_COMPONENT(date_time)
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			// <"> date_day_fixed "-" date_month "-" date_year
@@ -2566,8 +2577,9 @@ public:
 			// ("+" / "-") 4digit
 			int sign = 1;
 
-			if (!(VIMAP_PARSER_TRY_CHECK(one_char <'+'> )))
+			if (!(VIMAP_PARSER_TRY_CHECK(one_char <'+'> ))) {
 				VIMAP_PARSER_CHECK(one_char <'-'> );
+			}
 
 			shared_ptr <number> nz;
 			VIMAP_PARSER_GET_PTR(number, nz);
@@ -2591,55 +2603,53 @@ public:
 			const string month(utility::stringUtils::toLower(amo->value()));
 			int mon = vmime::datetime::JANUARY;
 
-			if (month.length() >= 3)
-			{
-				switch (month[0])
-				{
-				case 'j':
-				{
-					switch (month[1])
-					{
-					case 'a': mon = vmime::datetime::JANUARY; break;
-					case 'u':
-					{
-						switch (month[2])
-						{
-						case 'n': mon = vmime::datetime::JUNE; break;
-						default:  mon = vmime::datetime::JULY; break;
+			if (month.length() >= 3) {
+
+				switch (month[0]) {
+
+					case 'j': {
+
+						switch (month[1]) {
+
+							case 'a': mon = vmime::datetime::JANUARY; break;
+							case 'u': {
+
+								switch (month[2]) {
+
+									case 'n': mon = vmime::datetime::JUNE; break;
+									default:  mon = vmime::datetime::JULY; break;
+								}
+
+								break;
+							}
+
 						}
 
 						break;
 					}
+					case 'f': mon = vmime::datetime::FEBRUARY; break;
+					case 'm': {
 
+						switch (month[2]) {
+							case 'r': mon = vmime::datetime::MARCH; break;
+							default:  mon = vmime::datetime::MAY; break;
+						}
+
+						break;
 					}
-
-					break;
-				}
-				case 'f': mon = vmime::datetime::FEBRUARY; break;
-				case 'm':
-				{
-					switch (month[2])
+					case 'a':
 					{
-					case 'r': mon = vmime::datetime::MARCH; break;
-					default:  mon = vmime::datetime::MAY; break;
-					}
+						switch (month[1]) {
+							case 'p': mon = vmime::datetime::APRIL; break;
+							default:  mon = vmime::datetime::AUGUST; break;
+						}
 
-					break;
-				}
-				case 'a':
-				{
-					switch (month[1])
-					{
-					case 'p': mon = vmime::datetime::APRIL; break;
-					default:  mon = vmime::datetime::AUGUST; break;
+						break;
 					}
-
-					break;
-				}
-				case 's': mon = vmime::datetime::SEPTEMBER; break;
-				case 'o': mon = vmime::datetime::OCTOBER; break;
-				case 'n': mon = vmime::datetime::NOVEMBER; break;
-				case 'd': mon = vmime::datetime::DECEMBER; break;
+					case 's': mon = vmime::datetime::SEPTEMBER; break;
+					case 'o': mon = vmime::datetime::OCTOBER; break;
+					case 'n': mon = vmime::datetime::NOVEMBER; break;
+					case 'd': mon = vmime::datetime::DECEMBER; break;
 				}
 			}
 
@@ -2669,23 +2679,22 @@ public:
 
 	DECLARE_COMPONENT(header_list)
 
-		~header_list()
-		{
+		~header_list() {
+
 			for (std::vector <header_fld_name*>::iterator it = m_fld_names.begin() ;
-			     it != m_fld_names.end() ; ++it)
-			{
-				delete (*it);
+			     it != m_fld_names.end() ; ++it) {
+
+				delete *it;
 			}
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			VIMAP_PARSER_CHECK(one_char <'('> );
 
-			while (!VIMAP_PARSER_TRY_CHECK(one_char <')'> ))
-			{
+			while (!VIMAP_PARSER_TRY_CHECK(one_char <')'> )) {
 				VIMAP_PARSER_GET_PUSHBACK(header_fld_name, m_fld_names);
 				VIMAP_PARSER_TRY_CHECK(SPACE);
 			}
@@ -2718,40 +2727,41 @@ public:
 	DECLARE_COMPONENT(body_extension)
 
 		body_extension()
-			: m_nstring(NULL), m_number(NULL)
-		{
+			: m_nstring(NULL),
+			  m_number(NULL) {
+
 		}
 
-		~body_extension()
-		{
-			delete (m_nstring);
-			delete (m_number);
+		~body_extension() {
+
+			delete m_nstring;
+			delete m_number;
 
 			for (std::vector <body_extension*>::iterator it = m_body_extensions.begin() ;
-			     it != m_body_extensions.end() ; ++it)
-			{
-				delete (*it);
+			     it != m_body_extensions.end() ; ++it) {
+
+				delete *it;
 			}
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
-			if (VIMAP_PARSER_TRY_CHECK(one_char <'('> ))
-			{
+			if (VIMAP_PARSER_TRY_CHECK(one_char <'('> )) {
+
 				VIMAP_PARSER_GET_PUSHBACK(body_extension, m_body_extensions);
 
-				while (!VIMAP_PARSER_TRY_CHECK(one_char <')'> ))
-				{
+				while (!VIMAP_PARSER_TRY_CHECK(one_char <')'> )) {
 					VIMAP_PARSER_GET_PUSHBACK(body_extension, m_body_extensions);
 					VIMAP_PARSER_TRY_CHECK(SPACE);
 				}
-			}
-			else
-			{
-				if (!VIMAP_PARSER_TRY_GET(IMAPParser::nstring, m_nstring))
+
+			} else {
+
+				if (!VIMAP_PARSER_TRY_GET(IMAPParser::nstring, m_nstring)) {
 					VIMAP_PARSER_GET(IMAPParser::number, m_number);
+				}
 			}
 
 			*currentPos = pos;
@@ -2783,43 +2793,43 @@ public:
 	DECLARE_COMPONENT(section_text)
 
 		section_text()
-			: m_header_list(NULL)
-		{
+			: m_header_list(NULL) {
+
 		}
 
-		~section_text()
-		{
-			delete (m_header_list);
+		~section_text() {
+
+			delete m_header_list;
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			// "HEADER.FIELDS" [".NOT"] SPACE header_list
 			const bool b1 = VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "header.fields.not");
 			const bool b2 = (b1 ? false : VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "header.fields"));
 
-			if (b1 || b2)
-			{
+			if (b1 || b2) {
+
 				m_type = b1 ? HEADER_FIELDS_NOT : HEADER_FIELDS;
 
 				VIMAP_PARSER_CHECK(SPACE);
 				VIMAP_PARSER_GET(IMAPParser::header_list, m_header_list);
-			}
+
 			// "HEADER"
-			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "header"))
-			{
+			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "header")) {
+
 				m_type = HEADER;
-			}
+
 			// "MIME"
-			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "mime"))
-			{
+			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "mime")) {
+
 				m_type = MIME;
-			}
+
 			// "TEXT"
-			else
-			{
+			} else {
+
 				m_type = TEXT;
 
 				VIMAP_PARSER_CHECK_WITHARG(special_atom, "text");
@@ -2831,8 +2841,7 @@ public:
 		}
 
 
-		enum Type
-		{
+		enum Type {
 			HEADER,
 			HEADER_FIELDS,
 			HEADER_FIELDS_NOT,
@@ -2860,38 +2869,36 @@ public:
 	DECLARE_COMPONENT(section)
 
 		section()
-			: m_section_text1(NULL), m_section_text2(NULL)
-		{
+			: m_section_text1(NULL),
+			  m_section_text2(NULL) {
+
 		}
 
-		~section()
-		{
-			delete (m_section_text1);
-			delete (m_section_text2);
+		~section() {
+
+			delete m_section_text1;
+			delete m_section_text2;
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			VIMAP_PARSER_CHECK(one_char <'['> );
 
-			if (!VIMAP_PARSER_TRY_CHECK(one_char <']'> ))
-			{
-				if (!VIMAP_PARSER_TRY_GET(section_text, m_section_text1))
-				{
+			if (!VIMAP_PARSER_TRY_CHECK(one_char <']'> )) {
+
+				if (!VIMAP_PARSER_TRY_GET(section_text, m_section_text1)) {
+
 					shared_ptr <nz_number> num;
 					VIMAP_PARSER_GET_PTR(nz_number, num);
 					m_nz_numbers.push_back(static_cast <unsigned int>(num->value()));
 
-					while (VIMAP_PARSER_TRY_CHECK(one_char <'.'> ))
-					{
-						if (VIMAP_PARSER_TRY_GET_PTR(nz_number, num))
-						{
+					while (VIMAP_PARSER_TRY_CHECK(one_char <'.'> )) {
+
+						if (VIMAP_PARSER_TRY_GET_PTR(nz_number, num)) {
 							m_nz_numbers.push_back(static_cast <unsigned int>(num->value()));
-						}
-						else
-						{
+						} else {
 							VIMAP_PARSER_GET(section_text, m_section_text2);
 							break;
 						}
@@ -2946,21 +2953,23 @@ public:
 	DECLARE_COMPONENT(address)
 
 		address()
-			: m_addr_name(NULL), m_addr_adl(NULL),
-			  m_addr_mailbox(NULL), m_addr_host(NULL)
-		{
+			: m_addr_name(NULL),
+			  m_addr_adl(NULL),
+			  m_addr_mailbox(NULL),
+			  m_addr_host(NULL) {
+
 		}
 
-		~address()
-		{
-			delete (m_addr_name);
-			delete (m_addr_adl);
-			delete (m_addr_mailbox);
-			delete (m_addr_host);
+		~address() {
+
+			delete m_addr_name;
+			delete m_addr_adl;
+			delete m_addr_mailbox;
+			delete m_addr_host;
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			VIMAP_PARSER_CHECK(one_char <'('> );
@@ -3000,25 +3009,24 @@ public:
 
 	DECLARE_COMPONENT(address_list)
 
-		~address_list()
-		{
+		~address_list() {
+
 			for (std::vector <address*>::iterator it = m_addresses.begin() ;
-			     it != m_addresses.end() ; ++it)
-			{
+			     it != m_addresses.end() ; ++it) {
+
 				delete (*it);
 			}
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
-			if (!VIMAP_PARSER_TRY_CHECK(NIL))
-			{
+			if (!VIMAP_PARSER_TRY_CHECK(NIL)) {
+
 				VIMAP_PARSER_CHECK(one_char <'('> );
 
-				while (!VIMAP_PARSER_TRY_CHECK(one_char <')'> ))
-				{
+				while (!VIMAP_PARSER_TRY_CHECK(one_char <')'> )) {
 					VIMAP_PARSER_GET_PUSHBACK(address, m_addresses);
 					VIMAP_PARSER_TRY_CHECK(SPACE);
 				}
@@ -3119,29 +3127,35 @@ public:
 	DECLARE_COMPONENT(envelope)
 
 		envelope()
-			: m_env_date(NULL), m_env_subject(NULL),
-			  m_env_from(NULL), m_env_sender(NULL), m_env_reply_to(NULL),
-			  m_env_to(NULL), m_env_cc(NULL), m_env_bcc(NULL),
-			  m_env_in_reply_to(NULL), m_env_message_id(NULL)
-		{
+			: m_env_date(NULL),
+			  m_env_subject(NULL),
+			  m_env_from(NULL),
+			  m_env_sender(NULL),
+			  m_env_reply_to(NULL),
+			  m_env_to(NULL),
+			  m_env_cc(NULL),
+			  m_env_bcc(NULL),
+			  m_env_in_reply_to(NULL),
+			  m_env_message_id(NULL) {
+
 		}
 
-		~envelope()
-		{
-			delete (m_env_date);
-			delete (m_env_subject);
-			delete (m_env_from);
-			delete (m_env_sender);
-			delete (m_env_reply_to);
-			delete (m_env_to);
-			delete (m_env_cc);
-			delete (m_env_bcc);
-			delete (m_env_in_reply_to);
-			delete (m_env_message_id);
+		~envelope() {
+
+			delete m_env_date;
+			delete m_env_subject;
+			delete m_env_from;
+			delete m_env_sender;
+			delete m_env_reply_to;
+			delete m_env_to;
+			delete m_env_cc;
+			delete m_env_bcc;
+			delete m_env_in_reply_to;
+			delete m_env_message_id;
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			VIMAP_PARSER_CHECK(one_char <'('> );
@@ -3250,25 +3264,26 @@ public:
 	//                     "QUOTED-PRINTABLE") <">) / string
 	//
 
-	class body_fld_enc : public nstring
-	{
+	class body_fld_enc : public nstring {
+
 	public:
 
-		const string getComponentName() const
-		{
+		const string getComponentName() const {
+
 			return "body_fld_enc";
 		}
 
-		body_fld_enc()
-		{
+		body_fld_enc() {
+
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
-			if (!xstring::parseImpl(parser, line, &pos))
+			if (!xstring::parseImpl(parser, line, &pos)) {
 				return false;
+			}
 
 			// " When an IMAP4 client sends a FETCH (bodystructure) request
 			//   to a server that is running the Exchange Server 2007 IMAP4
@@ -3276,8 +3291,7 @@ public:
 			//   (see http://support.microsoft.com/kb/975918/en-us)
 			//
 			// Fail in strict mode
-			if (isNIL() && parser.isStrict())
-			{
+			if (isNIL() && parser.isStrict()) {
 				VIMAP_PARSER_FAIL();
 			}
 
@@ -3295,51 +3309,52 @@ public:
 	DECLARE_COMPONENT(body_fld_param_item)
 
 		body_fld_param_item()
-			: m_string1(NULL), m_string2(NULL)
-		{
+			: m_string1(NULL),
+			  m_string2(NULL) {
+
 		}
 
-		~body_fld_param_item()
-		{
-			delete (m_string1);
-			delete (m_string2);
+		~body_fld_param_item() {
+
+			delete m_string1;
+			delete m_string2;
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
-			if (!parser.isStrict())
-			{
+			if (!parser.isStrict()) {
+
 				// Some servers send an <atom> instead of a <string> here:
 				// eg. ... (CHARSET "X-UNKNOWN") ...
-				if (!VIMAP_PARSER_TRY_GET(xstring, m_string1))
-				{
+				if (!VIMAP_PARSER_TRY_GET(xstring, m_string1)) {
+
 					shared_ptr <atom> at;
 					VIMAP_PARSER_GET_PTR(atom, at);
 
 					m_string1 = new xstring();
 					m_string1->setValue(at->value());
 				}
-			}
-			else
-			{
+
+			} else {
+
 				VIMAP_PARSER_GET(xstring, m_string1);
 			}
 
 			VIMAP_PARSER_CHECK(SPACE);
 
-			if (!parser.isStrict())
-			{
+			if (!parser.isStrict()) {
+
 				// In non-strict mode, allow NIL in value
 				shared_ptr <nstring> nstr;
 				VIMAP_PARSER_GET_PTR(nstring, nstr);
 
 				m_string2 = new xstring();
 				m_string2->setValue(nstr->value());
-			}
-			else
-			{
+
+			} else {
+
 				VIMAP_PARSER_GET(xstring, m_string2);
 			}
 
@@ -3368,31 +3383,30 @@ public:
 
 	DECLARE_COMPONENT(body_fld_param)
 
-		~body_fld_param()
-		{
+		~body_fld_param() {
+
 			for (std::vector <body_fld_param_item*>::iterator it = m_items.begin() ;
-			     it != m_items.end() ; ++it)
-			{
-				delete (*it);
+			     it != m_items.end() ; ++it) {
+
+				delete *it;
 			}
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
-			if (VIMAP_PARSER_TRY_CHECK(one_char <'('> ))
-			{
+			if (VIMAP_PARSER_TRY_CHECK(one_char <'('> )) {
+
 				VIMAP_PARSER_GET_PUSHBACK(body_fld_param_item, m_items);
 
-				while (!VIMAP_PARSER_TRY_CHECK(one_char <')'> ))
-				{
+				while (!VIMAP_PARSER_TRY_CHECK(one_char <')'> )) {
 					VIMAP_PARSER_CHECK(SPACE);
 					VIMAP_PARSER_GET_PUSHBACK(body_fld_param_item, m_items);
 				}
-			}
-			else
-			{
+
+			} else {
+
 				VIMAP_PARSER_CHECK(NIL);
 			}
 
@@ -3418,29 +3432,30 @@ public:
 	DECLARE_COMPONENT(body_fld_dsp)
 
 		body_fld_dsp()
-			: m_string(NULL), m_body_fld_param(NULL)
-		{
+			: m_string(NULL),
+			  m_body_fld_param(NULL) {
+
 		}
 
-		~body_fld_dsp()
-		{
-			delete (m_string);
-			delete (m_body_fld_param);
+		~body_fld_dsp() {
+
+			delete m_string;
+			delete m_body_fld_param;
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
-			if (VIMAP_PARSER_TRY_CHECK(one_char <'('> ))
-			{
+			if (VIMAP_PARSER_TRY_CHECK(one_char <'('> )) {
+
 				VIMAP_PARSER_GET(xstring, m_string);
 				VIMAP_PARSER_CHECK(SPACE);
 				VIMAP_PARSER_GET(class body_fld_param, m_body_fld_param);
 				VIMAP_PARSER_CHECK(one_char <')'> );
-			}
-			else
-			{
+
+			} else {
+
 				VIMAP_PARSER_CHECK(NIL);
 			}
 
@@ -3467,31 +3482,30 @@ public:
 
 	DECLARE_COMPONENT(body_fld_lang)
 
-		~body_fld_lang()
-		{
+		~body_fld_lang() {
+
 			for (std::vector <xstring*>::iterator it = m_strings.begin() ;
-			     it != m_strings.end() ; ++it)
-			{
-				delete (*it);
+			     it != m_strings.end() ; ++it) {
+
+				delete *it;
 			}
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
-			if (VIMAP_PARSER_TRY_CHECK(one_char <'('> ))
-			{
+			if (VIMAP_PARSER_TRY_CHECK(one_char <'('> )) {
+
 				VIMAP_PARSER_GET_PUSHBACK(xstring, m_strings);
 
-				while (!VIMAP_PARSER_TRY_CHECK(one_char <')'> ))
-				{
+				while (!VIMAP_PARSER_TRY_CHECK(one_char <')'> )) {
 					VIMAP_PARSER_CHECK(SPACE);
 					VIMAP_PARSER_GET_PUSHBACK(xstring, m_strings);
 				}
-			}
-			else
-			{
+
+			} else {
+
 				VIMAP_PARSER_GET_PUSHBACK(nstring, m_strings);
 			}
 
@@ -3519,22 +3533,25 @@ public:
 	DECLARE_COMPONENT(body_fields)
 
 		body_fields()
-			: m_body_fld_param(NULL), m_body_fld_id(NULL),
-			  m_body_fld_desc(NULL), m_body_fld_enc(NULL), m_body_fld_octets(NULL)
-		{
+			: m_body_fld_param(NULL),
+			  m_body_fld_id(NULL),
+			  m_body_fld_desc(NULL),
+			  m_body_fld_enc(NULL),
+			  m_body_fld_octets(NULL) {
+
 		}
 
-		~body_fields()
-		{
-			delete (m_body_fld_param);
-			delete (m_body_fld_id);
-			delete (m_body_fld_desc);
-			delete (m_body_fld_enc);
-			delete (m_body_fld_octets);
+		~body_fields() {
+
+			delete m_body_fld_param;
+			delete m_body_fld_id;
+			delete m_body_fld_desc;
+			delete m_body_fld_enc;
+			delete m_body_fld_octets;
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			VIMAP_PARSER_GET(IMAPParser::body_fld_param, m_body_fld_param);
@@ -3586,17 +3603,17 @@ public:
 	DECLARE_COMPONENT(media_text)
 
 		media_text()
-			: m_media_subtype(NULL)
-		{
+			: m_media_subtype(NULL) {
+
 		}
 
-		~media_text()
-		{
-			delete (m_media_subtype);
+		~media_text() {
+
+			delete m_media_subtype;
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			VIMAP_PARSER_CHECK(one_char <'"'> );
@@ -3629,17 +3646,17 @@ public:
 	DECLARE_COMPONENT(media_message)
 
 		media_message()
-			: m_media_subtype(NULL)
-		{
+			: m_media_subtype(NULL) {
+
 		}
 
-		~media_message()
-		{
+		~media_message() {
+
 			delete m_media_subtype;
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			VIMAP_PARSER_CHECK(one_char <'"'> );
@@ -3677,18 +3694,19 @@ public:
 	DECLARE_COMPONENT(media_basic)
 
 		media_basic()
-			: m_media_type(NULL), m_media_subtype(NULL)
-		{
+			: m_media_type(NULL),
+			  m_media_subtype(NULL) {
+
 		}
 
-		~media_basic()
-		{
-			delete (m_media_type);
-			delete (m_media_subtype);
+		~media_basic() {
+
+			delete m_media_type;
+			delete m_media_subtype;
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			VIMAP_PARSER_GET(xstring, m_media_type);
@@ -3725,20 +3743,22 @@ public:
 	DECLARE_COMPONENT(body_ext_1part)
 
 		body_ext_1part()
-			: m_body_fld_md5(NULL), m_body_fld_dsp(NULL), m_body_fld_lang(NULL)
-		{
+			: m_body_fld_md5(NULL),
+			  m_body_fld_dsp(NULL),
+			  m_body_fld_lang(NULL) {
+
 		}
 
-		~body_ext_1part()
-		{
-			delete (m_body_fld_md5);
-			delete (m_body_fld_dsp);
-			delete (m_body_fld_lang);
+		~body_ext_1part() {
+
+			delete m_body_fld_md5;
+			delete m_body_fld_dsp;
+			delete m_body_fld_lang;
 
 			for (std::vector <body_extension*>::iterator it = m_body_extensions.begin() ;
-			     it != m_body_extensions.end() ; ++it)
-			{
-				delete (*it);
+			     it != m_body_extensions.end() ; ++it) {
+
+				delete *it;
 			}
 		}
 
@@ -3749,22 +3769,23 @@ public:
 			VIMAP_PARSER_GET(IMAPParser::body_fld_md5, m_body_fld_md5);
 
 			// [SPACE body_fld_dsp
-			if (VIMAP_PARSER_TRY_CHECK(SPACE))
-			{
+			if (VIMAP_PARSER_TRY_CHECK(SPACE)) {
+
 				VIMAP_PARSER_GET(IMAPParser::body_fld_dsp, m_body_fld_dsp);
 
 				// [SPACE body_fld_lang
-				if (VIMAP_PARSER_TRY_CHECK(SPACE))
-				{
+				if (VIMAP_PARSER_TRY_CHECK(SPACE)) {
+
 					VIMAP_PARSER_GET(IMAPParser::body_fld_lang, m_body_fld_lang);
 
 					// [SPACE 1#body_extension]
-					if (VIMAP_PARSER_TRY_CHECK(SPACE))
-					{
+					if (VIMAP_PARSER_TRY_CHECK(SPACE)) {
+
 						VIMAP_PARSER_GET_PUSHBACK(body_extension, m_body_extensions);
 
-						while (VIMAP_PARSER_TRY_CHECK(SPACE))
+						while (VIMAP_PARSER_TRY_CHECK(SPACE)) {
 							VIMAP_PARSER_GET_PUSHBACK(body_extension, m_body_extensions);
+						}
 					}
 				}
 			}
@@ -3802,45 +3823,48 @@ public:
 	DECLARE_COMPONENT(body_ext_mpart)
 
 		body_ext_mpart()
-			: m_body_fld_param(NULL), m_body_fld_dsp(NULL), m_body_fld_lang(NULL)
-		{
+			: m_body_fld_param(NULL),
+			  m_body_fld_dsp(NULL),
+			  m_body_fld_lang(NULL) {
+
 		}
 
-		~body_ext_mpart()
-		{
-			delete (m_body_fld_param);
-			delete (m_body_fld_dsp);
-			delete (m_body_fld_lang);
+		~body_ext_mpart() {
+
+			delete m_body_fld_param;
+			delete m_body_fld_dsp;
+			delete m_body_fld_lang;
 
 			for (std::vector <body_extension*>::iterator it = m_body_extensions.begin() ;
-			     it != m_body_extensions.end() ; ++it)
-			{
-				delete (*it);
+			     it != m_body_extensions.end() ; ++it) {
+
+				delete *it;
 			}
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			VIMAP_PARSER_GET(IMAPParser::body_fld_param, m_body_fld_param);
 
 			// [SPACE body_fld_dsp [SPACE body_fld_lang [SPACE 1#body_extension]]]
-			if (VIMAP_PARSER_TRY_CHECK(SPACE))
-			{
+			if (VIMAP_PARSER_TRY_CHECK(SPACE)) {
+
 				VIMAP_PARSER_GET(IMAPParser::body_fld_dsp, m_body_fld_dsp);
 
-				if (VIMAP_PARSER_TRY_CHECK(SPACE))
-				{
+				if (VIMAP_PARSER_TRY_CHECK(SPACE)) {
+
 					VIMAP_PARSER_GET(IMAPParser::body_fld_lang, m_body_fld_lang);
 
 					// [SPACE 1#body_extension]
-					if (VIMAP_PARSER_TRY_CHECK(SPACE))
-					{
+					if (VIMAP_PARSER_TRY_CHECK(SPACE)) {
+
 						VIMAP_PARSER_GET_PUSHBACK(body_extension, m_body_extensions);
 
-						while (VIMAP_PARSER_TRY_CHECK(SPACE))
+						while (VIMAP_PARSER_TRY_CHECK(SPACE)) {
 							VIMAP_PARSER_GET_PUSHBACK(body_extension, m_body_extensions);
+						}
 					}
 				}
 			}
@@ -3876,18 +3900,19 @@ public:
 	DECLARE_COMPONENT(body_type_basic)
 
 		body_type_basic()
-			: m_media_basic(NULL), m_body_fields(NULL)
-		{
+			: m_media_basic(NULL),
+			  m_body_fields(NULL) {
+
 		}
 
-		~body_type_basic()
-		{
-			delete (m_media_basic);
-			delete (m_body_fields);
+		~body_type_basic() {
+
+			delete m_media_basic;
+			delete m_body_fields;
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			VIMAP_PARSER_GET(IMAPParser::media_basic, m_media_basic);
@@ -3922,22 +3947,25 @@ public:
 	DECLARE_COMPONENT(body_type_msg)
 
 		body_type_msg()
-			: m_media_message(NULL), m_body_fields(NULL),
-			  m_envelope(NULL), m_body(NULL), m_body_fld_lines(NULL)
-		{
+			: m_media_message(NULL),
+			  m_body_fields(NULL),
+			  m_envelope(NULL),
+			  m_body(NULL),
+			  m_body_fld_lines(NULL) {
+
 		}
 
-		~body_type_msg()
-		{
-			delete (m_media_message);
-			delete (m_body_fields);
-			delete (m_envelope);
-			delete (m_body);
-			delete (m_body_fld_lines);
+		~body_type_msg() {
+
+			delete m_media_message;
+			delete m_body_fields;
+			delete m_envelope;
+			delete m_body;
+			delete m_body_fld_lines;
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			VIMAP_PARSER_GET(IMAPParser::media_message, m_media_message);
@@ -3984,19 +4012,20 @@ public:
 
 		body_type_text()
 			: m_media_text(NULL),
-			  m_body_fields(NULL), m_body_fld_lines(NULL)
-		{
+			  m_body_fields(NULL),
+			  m_body_fld_lines(NULL) {
+
 		}
 
-		~body_type_text()
-		{
-			delete (m_media_text);
-			delete (m_body_fields);
-			delete (m_body_fld_lines);
+		~body_type_text() {
+
+			delete m_media_text;
+			delete m_body_fields;
+			delete m_body_fld_lines;
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			VIMAP_PARSER_GET(IMAPParser::media_text, m_media_text);
@@ -4032,32 +4061,35 @@ public:
 	DECLARE_COMPONENT(body_type_1part)
 
 		body_type_1part()
-			: m_body_type_basic(NULL), m_body_type_msg(NULL),
-			  m_body_type_text(NULL), m_body_ext_1part(NULL)
-		{
+			: m_body_type_basic(NULL),
+			  m_body_type_msg(NULL),
+			  m_body_type_text(NULL),
+			  m_body_ext_1part(NULL) {
+
 		}
 
-		~body_type_1part()
-		{
-			delete (m_body_type_basic);
-			delete (m_body_type_msg);
-			delete (m_body_type_text);
+		~body_type_1part() {
 
-			delete (m_body_ext_1part);
+			delete m_body_type_basic;
+			delete m_body_type_msg;
+			delete m_body_type_text;
+			delete m_body_ext_1part;
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
-			if (!VIMAP_PARSER_TRY_GET(IMAPParser::body_type_text, m_body_type_text))
-				if (!VIMAP_PARSER_TRY_GET(IMAPParser::body_type_msg, m_body_type_msg))
+			if (!VIMAP_PARSER_TRY_GET(IMAPParser::body_type_text, m_body_type_text)) {
+				if (!VIMAP_PARSER_TRY_GET(IMAPParser::body_type_msg, m_body_type_msg)) {
 					VIMAP_PARSER_GET(IMAPParser::body_type_basic, m_body_type_basic);
+				}
+			}
 
-			if (VIMAP_PARSER_TRY_CHECK(SPACE))
-			{
-				if (!VIMAP_PARSER_TRY_GET(IMAPParser::body_ext_1part, m_body_ext_1part))
+			if (VIMAP_PARSER_TRY_CHECK(SPACE)) {
+				if (!VIMAP_PARSER_TRY_GET(IMAPParser::body_ext_1part, m_body_ext_1part)) {
 					--pos;
+				}
 			}
 
 			*currentPos = pos;
@@ -4091,30 +4123,30 @@ public:
 	DECLARE_COMPONENT(body_type_mpart)
 
 		body_type_mpart()
-			: m_media_subtype(NULL), m_body_ext_mpart(NULL)
-		{
+			: m_media_subtype(NULL),
+			  m_body_ext_mpart(NULL) {
+
 		}
 
-		~body_type_mpart()
-		{
-			delete (m_media_subtype);
-			delete (m_body_ext_mpart);
+		~body_type_mpart() {
+
+			delete m_media_subtype;
+			delete m_body_ext_mpart;
 
 			for (std::vector <xbody*>::iterator it = m_list.begin() ;
-			     it != m_list.end() ; ++it)
-			{
-				delete (*it);
+			     it != m_list.end() ; ++it) {
+
+				delete *it;
 			}
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			VIMAP_PARSER_GET_PUSHBACK(xbody, m_list);
 
-			while (true)
-			{
+			while (true) {
 				VIMAP_PARSER_TRY_GET_PUSHBACK_OR_ELSE(xbody, m_list, break);
 			}
 
@@ -4122,8 +4154,9 @@ public:
 
 			VIMAP_PARSER_GET(IMAPParser::media_subtype, m_media_subtype);
 
-			if (VIMAP_PARSER_TRY_CHECK(SPACE))
+			if (VIMAP_PARSER_TRY_CHECK(SPACE)) {
 				VIMAP_PARSER_GET(IMAPParser::body_ext_mpart, m_body_ext_mpart);
+			}
 
 			*currentPos = pos;
 
@@ -4153,24 +4186,26 @@ public:
 	DECLARE_COMPONENT(xbody)
 
 		xbody()
-			: m_body_type_1part(NULL), m_body_type_mpart(NULL)
-		{
+			: m_body_type_1part(NULL),
+			  m_body_type_mpart(NULL) {
+
 		}
 
-		~xbody()
-		{
-			delete (m_body_type_1part);
-			delete (m_body_type_mpart);
+		~xbody() {
+
+			delete m_body_type_1part;
+			delete m_body_type_mpart;
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			VIMAP_PARSER_CHECK(one_char <'('> );
 
-			if (!VIMAP_PARSER_TRY_GET(IMAPParser::body_type_mpart, m_body_type_mpart))
+			if (!VIMAP_PARSER_TRY_GET(IMAPParser::body_type_mpart, m_body_type_mpart)) {
 				VIMAP_PARSER_GET(IMAPParser::body_type_1part, m_body_type_1part);
+			}
 
 			VIMAP_PARSER_CHECK(one_char <')'> );
 
@@ -4207,139 +4242,141 @@ public:
 	DECLARE_COMPONENT(msg_att_item)
 
 		msg_att_item()
-			: m_date_time(NULL), m_number(NULL), m_envelope(NULL),
-			  m_uniqueid(NULL), m_nstring(NULL), m_body(NULL), m_flag_list(NULL),
-			  m_section(NULL), m_mod_sequence_value(NULL)
+			: m_date_time(NULL),
+			  m_number(NULL),
+			  m_envelope(NULL),
+			  m_uniqueid(NULL),
+			  m_nstring(NULL),
+			  m_body(NULL),
+			  m_flag_list(NULL),
+			  m_section(NULL),
+			  m_mod_sequence_value(NULL) {
 
-		{
 		}
 
-		~msg_att_item()
-		{
-			delete (m_date_time);
-			delete (m_number);
-			delete (m_envelope);
-			delete (m_uniqueid);
-			delete (m_nstring);
-			delete (m_body);
-			delete (m_flag_list);
- 			delete (m_section);
+		~msg_att_item() {
+
+			delete m_date_time;
+			delete m_number;
+			delete m_envelope;
+			delete m_uniqueid;
+			delete m_nstring;
+			delete m_body;
+			delete m_flag_list;
+ 			delete m_section;
  			delete m_mod_sequence_value;
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			// "ENVELOPE" SPACE envelope
-			if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "envelope"))
-			{
+			if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "envelope")) {
+
 				m_type = ENVELOPE;
 
 				VIMAP_PARSER_CHECK(SPACE);
 				VIMAP_PARSER_GET(IMAPParser::envelope, m_envelope);
-			}
+
 			// "FLAGS" SPACE "(" #(flag / "\Recent") ")"
-			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "flags"))
-			{
+			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "flags")) {
+
 				m_type = FLAGS;
 
 				VIMAP_PARSER_CHECK(SPACE);
 
 				VIMAP_PARSER_GET(IMAPParser::flag_list, m_flag_list);
-			}
+
 			// "INTERNALDATE" SPACE date_time
-			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "internaldate"))
-			{
+			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "internaldate")) {
+
 				m_type = INTERNALDATE;
 
 				VIMAP_PARSER_CHECK(SPACE);
 				VIMAP_PARSER_GET(IMAPParser::date_time, m_date_time);
-			}
+
 			// "RFC822" ".HEADER" SPACE nstring
-			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "rfc822.header"))
-			{
+			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "rfc822.header")) {
+
 				m_type = RFC822_HEADER;
 
 				VIMAP_PARSER_CHECK(SPACE);
 
 				VIMAP_PARSER_GET(IMAPParser::nstring, m_nstring);
-			}
+
 			// "RFC822" ".TEXT" SPACE nstring
-			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "rfc822.text"))
-			{
+			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "rfc822.text")) {
+
 				m_type = RFC822_TEXT;
 
 				VIMAP_PARSER_CHECK(SPACE);
 
-				m_nstring = parser.getWithArgs <IMAPParser::nstring>
-					(line, &pos, this, RFC822_TEXT);
+				m_nstring = parser.getWithArgs <IMAPParser::nstring>(line, &pos, this, RFC822_TEXT);
 
 				VIMAP_PARSER_FAIL_UNLESS(m_nstring);
-			}
+
 			// "RFC822.SIZE" SPACE number
-			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "rfc822.size"))
-			{
+			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "rfc822.size")) {
+
 				m_type = RFC822_SIZE;
 
 				VIMAP_PARSER_CHECK(SPACE);
 				VIMAP_PARSER_GET(IMAPParser::number, m_number);
-			}
+
 			// "RFC822" SPACE nstring
-			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "rfc822"))
-			{
+			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "rfc822")) {
+
 				m_type = RFC822;
 
 				VIMAP_PARSER_CHECK(SPACE);
 
 				VIMAP_PARSER_GET(IMAPParser::nstring, m_nstring);
-			}
+
 			// "BODY" "STRUCTURE" SPACE body
-			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "bodystructure"))
-			{
+			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "bodystructure")) {
+
 				m_type = BODY_STRUCTURE;
 
 				VIMAP_PARSER_CHECK(SPACE);
 
 				VIMAP_PARSER_GET(IMAPParser::body, m_body);
-			}
+
 			// "BODY" section ["<" number ">"] SPACE nstring
 			// "BODY" SPACE body
-			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "body"))
-			{
+			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "body")) {
+
 				VIMAP_PARSER_TRY_GET(IMAPParser::section, m_section);
 
 				// "BODY" section ["<" number ">"] SPACE nstring
-				if (m_section != NULL)
-				{
+				if (m_section != NULL) {
+
 					m_type = BODY_SECTION;
 
-					if (VIMAP_PARSER_TRY_CHECK(one_char <'<'> ))
-					{
+					if (VIMAP_PARSER_TRY_CHECK(one_char <'<'> )) {
 						VIMAP_PARSER_GET(IMAPParser::number, m_number);
 						VIMAP_PARSER_CHECK(one_char <'>'> );
 					}
 
 					VIMAP_PARSER_CHECK(SPACE);
 
-					m_nstring = parser.getWithArgs <IMAPParser::nstring>
-						(line, &pos, this, BODY_SECTION);
+					m_nstring = parser.getWithArgs <IMAPParser::nstring>(line, &pos, this, BODY_SECTION);
 
 					VIMAP_PARSER_FAIL_UNLESS(m_nstring);
-				}
+
 				// "BODY" SPACE body
-				else
-				{
+				} else {
+
 					m_type = BODY;
 
 					VIMAP_PARSER_CHECK(SPACE);
 
 					VIMAP_PARSER_GET(IMAPParser::body, m_body);
 				}
-			}
+
 			// "MODSEQ" SP "(" mod_sequence_value ")"
-			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "modseq"))
-			{
+			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "modseq")) {
+
 				m_type = MODSEQ;
 
 				VIMAP_PARSER_CHECK(SPACE);
@@ -4348,10 +4385,10 @@ public:
 				VIMAP_PARSER_GET(IMAPParser::mod_sequence_value, m_mod_sequence_value);
 
 				VIMAP_PARSER_CHECK(one_char <')'> );
-			}
+
 			// "UID" SPACE uniqueid
-			else
-			{
+			} else {
+
 				m_type = UID;
 
 				VIMAP_PARSER_CHECK_WITHARG(special_atom, "uid");
@@ -4366,8 +4403,7 @@ public:
 		}
 
 
-		enum Type
-		{
+		enum Type {
 			ENVELOPE,
 			FLAGS,
 			INTERNALDATE,
@@ -4418,25 +4454,24 @@ public:
 
 	DECLARE_COMPONENT(msg_att)
 
-		~msg_att()
-		{
+		~msg_att() {
+
 			for (std::vector <msg_att_item*>::iterator it = m_items.begin() ;
-			     it != m_items.end() ; ++it)
-			{
-				delete (*it);
+			     it != m_items.end() ; ++it) {
+
+				delete *it;
 			}
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			VIMAP_PARSER_CHECK(one_char <'('> );
 
 			m_items.push_back(parser.get <msg_att_item>(line, &pos));
 
-			while (!VIMAP_PARSER_TRY_CHECK(one_char <')'> ))
-			{
+			while (!VIMAP_PARSER_TRY_CHECK(one_char <')'> )) {
 				VIMAP_PARSER_CHECK(SPACE);
 				VIMAP_PARSER_GET_PUSHBACK(msg_att_item, m_items);
 			}
@@ -4464,17 +4499,18 @@ public:
 	DECLARE_COMPONENT(message_data)
 
 		message_data()
-			: m_number(0), m_msg_att(NULL)
-		{
+			: m_number(0),
+			  m_msg_att(NULL) {
+
 		}
 
-		~message_data()
-		{
-			delete (m_msg_att);
+		~message_data() {
+
+			delete m_msg_att;
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			scoped_ptr <nz_number> num;
@@ -4483,12 +4519,12 @@ public:
 
 			VIMAP_PARSER_CHECK(SPACE);
 
-			if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "expunge"))
-			{
+			if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "expunge")) {
+
 				m_type = EXPUNGE;
-			}
-			else
-			{
+
+			} else {
+
 				m_type = FETCH;
 
 				VIMAP_PARSER_CHECK_WITHARG(special_atom, "fetch");
@@ -4502,8 +4538,7 @@ public:
 		}
 
 
-		enum Type
-		{
+		enum Type {
 			EXPUNGE,
 			FETCH
 		};
@@ -4547,122 +4582,125 @@ public:
 	DECLARE_COMPONENT(resp_text_code)
 
 		resp_text_code()
-			: m_nz_number(NULL), m_atom(NULL), m_flag_list(NULL),
-			  m_text(NULL), m_capability_data(NULL)
-		{
+			: m_nz_number(NULL),
+			  m_atom(NULL),
+			  m_flag_list(NULL),
+			  m_text(NULL),
+			  m_capability_data(NULL) {
+
 		}
 
-		~resp_text_code()
-		{
-			delete (m_nz_number);
-			delete (m_atom);
-			delete (m_flag_list);
-			delete (m_text);
+		~resp_text_code() {
+
+			delete m_nz_number;
+			delete m_atom;
+			delete m_flag_list;
+			delete m_text;
 			delete m_capability_data;
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			// "ALERT"
-			if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "alert"))
-			{
+			if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "alert")) {
+
 				m_type = ALERT;
-			}
+
 			// "PARSE"
-			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "parse"))
-			{
+			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "parse")) {
+
 				m_type = PARSE;
-			}
+
 			// capability_data
-			else if (VIMAP_PARSER_TRY_GET(IMAPParser::capability_data, m_capability_data))
-			{
+			} else if (VIMAP_PARSER_TRY_GET(IMAPParser::capability_data, m_capability_data)) {
+
 				m_type = CAPABILITY;
-			}
+
 			// "PERMANENTFLAGS" SPACE flag_list
-			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "permanentflags"))
-			{
+			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "permanentflags")) {
+
 				m_type = PERMANENTFLAGS;
 
 				VIMAP_PARSER_CHECK(SPACE);
 
 				VIMAP_PARSER_GET(IMAPParser::flag_list, m_flag_list);
-			}
+
 			// "READ-ONLY"
-			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "read-only"))
-			{
+			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "read-only")) {
+
 				m_type = READ_ONLY;
-			}
+
 			// "READ-WRITE"
-			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "read-write"))
-			{
+			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "read-write")) {
+
 				m_type = READ_WRITE;
-			}
+
 			// "TRYCREATE"
-			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "trycreate"))
-			{
+			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "trycreate")) {
+
 				m_type = TRYCREATE;
-			}
+
 			// "UIDVALIDITY" SPACE nz_number
-			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "uidvalidity"))
-			{
+			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "uidvalidity")) {
+
 				m_type = UIDVALIDITY;
 
 				VIMAP_PARSER_CHECK(SPACE);
 				VIMAP_PARSER_GET(IMAPParser::nz_number, m_nz_number);
-			}
+
 			// "UIDNEXT" SPACE nz_number
-			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "uidnext"))
-			{
+			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "uidnext")) {
+
 				m_type = UIDNEXT;
 
 				VIMAP_PARSER_CHECK(SPACE);
 				VIMAP_PARSER_GET(IMAPParser::nz_number, m_nz_number);
-			}
+
 			// "UNSEEN" SPACE nz_number
-			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "unseen"))
-			{
+			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "unseen")) {
+
 				m_type = UNSEEN;
 
 				VIMAP_PARSER_CHECK(SPACE);
 				VIMAP_PARSER_GET(IMAPParser::nz_number, m_nz_number);
-			}
+
 			// "HIGHESTMODSEQ" SP mod-sequence-value
-			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "highestmodseq"))
-			{
+			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "highestmodseq")) {
+
 				m_type = HIGHESTMODSEQ;
 
 				VIMAP_PARSER_CHECK(SPACE);
 				VIMAP_PARSER_GET(IMAPParser::mod_sequence_value, m_mod_sequence_value);
-			}
+
 			// "NOMODSEQ"
-			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "nomodseq"))
-			{
+			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "nomodseq")) {
+
 				m_type = NOMODSEQ;
-			}
+
 			// "MODIFIED" SP sequence-set
-			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "modified"))
-			{
+			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "modified")) {
+
 				m_type = MODIFIED;
 
 				VIMAP_PARSER_CHECK(SPACE);
 
 				VIMAP_PARSER_GET(IMAPParser::sequence_set, m_sequence_set);
-			}
+
 			// "APPENDUID" SP nz-number SP append-uid
-			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "appenduid"))
-			{
+			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "appenduid")) {
+
 				m_type = APPENDUID;
 
 				VIMAP_PARSER_CHECK(SPACE);
 				VIMAP_PARSER_GET(IMAPParser::nz_number, m_nz_number);
 				VIMAP_PARSER_CHECK(SPACE);
 				VIMAP_PARSER_GET(IMAPParser::uid_set, m_uid_set);
-			}
+
 			// "COPYUID" SP nz-number SP uid-set SP uid-set
-			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "copyuid"))
-			{
+			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "copyuid")) {
+
 				m_type = COPYUID;
 
 				VIMAP_PARSER_CHECK(SPACE);
@@ -4671,21 +4709,22 @@ public:
 				VIMAP_PARSER_GET(IMAPParser::uid_set, m_uid_set);
 				VIMAP_PARSER_CHECK(SPACE);
 				VIMAP_PARSER_GET(IMAPParser::uid_set, m_uid_set2);
-			}
+
 			// "UIDNOTSTICKY"
-			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "uidnotsticky"))
-			{
+			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "uidnotsticky")) {
+
 				m_type = UIDNOTSTICKY;
-			}
+
 			// atom [SPACE 1*<any TEXT_CHAR except "]">]
-			else
-			{
+			} else {
+
 				m_type = OTHER;
 
 				VIMAP_PARSER_GET(IMAPParser::atom, m_atom);
 
-				if (VIMAP_PARSER_TRY_CHECK(SPACE))
+				if (VIMAP_PARSER_TRY_CHECK(SPACE)) {
 					VIMAP_PARSER_GET(text_except <']'> , m_text);
+				}
 			}
 
 			*currentPos = pos;
@@ -4694,8 +4733,7 @@ public:
 		}
 
 
-		enum Type
-		{
+		enum Type {
 			// Extensions
 			HIGHESTMODSEQ,
 			NOMODSEQ,
@@ -4755,21 +4793,21 @@ public:
 	DECLARE_COMPONENT(resp_text)
 
 		resp_text()
-			: m_resp_text_code(NULL)
-		{
+			: m_resp_text_code(NULL) {
+
 		}
 
-		~resp_text()
-		{
-			delete (m_resp_text_code);
+		~resp_text() {
+
+			delete m_resp_text_code;
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
-			if (VIMAP_PARSER_TRY_CHECK(one_char <'['> ))
-			{
+			if (VIMAP_PARSER_TRY_CHECK(one_char <'['> )) {
+
 				VIMAP_PARSER_GET(IMAPParser::resp_text_code, m_resp_text_code);
 
 				VIMAP_PARSER_CHECK(one_char <']'> );
@@ -4779,21 +4817,18 @@ public:
 			scoped_ptr <text_mime2> text1;
 			VIMAP_PARSER_TRY_GET_PTR(text_mime2, text1);
 
-			if (text1.get())
-			{
+			if (text1.get()) {
+
 				m_text = text1->value();
-			}
-			else
-			{
+
+			} else {
+
 				scoped_ptr <IMAPParser::text> text2;
 				VIMAP_PARSER_TRY_GET_PTR(IMAPParser::text, text2);
 
-				if (text2.get())
-				{
+				if (text2.get()) {
 					m_text = text2->value();
-				}
-				else
-				{
+				} else {
 					// Empty response text
 				}
 			}
@@ -4822,35 +4857,32 @@ public:
 	DECLARE_COMPONENT(continue_req)
 
 		continue_req()
-			: m_resp_text(NULL)
-		{
+			: m_resp_text(NULL) {
+
 		}
 
-		~continue_req()
-		{
-			delete (m_resp_text);
+		~continue_req() {
+
+			delete m_resp_text;
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			VIMAP_PARSER_CHECK(one_char <'+'> );
 
-			if (!parser.isStrict())
-			{
+			if (!parser.isStrict()) {
+
 				// Some servers do not send SPACE when response text is empty
-				if (VIMAP_PARSER_TRY_CHECK(SPACE))
-				{
+				if (VIMAP_PARSER_TRY_CHECK(SPACE)) {
 					VIMAP_PARSER_GET(IMAPParser::resp_text, m_resp_text);
-				}
-				else
-				{
+				} else {
 					m_resp_text = new IMAPParser::resp_text();  // empty
 				}
-			}
-			else
-			{
+
+			} else {
+
 				VIMAP_PARSER_CHECK(SPACE);
 
 				VIMAP_PARSER_GET(IMAPParser::resp_text, m_resp_text);
@@ -4881,29 +4913,25 @@ public:
 	DECLARE_COMPONENT(resp_cond_state)
 
 		resp_cond_state()
-			: m_resp_text(NULL), m_status(BAD)
-		{
+			: m_resp_text(NULL),
+			  m_status(BAD) {
+
 		}
 
-		~resp_cond_state()
-		{
-			delete (m_resp_text);
+		~resp_cond_state() {
+
+			delete m_resp_text;
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
-			if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "ok"))
-			{
+			if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "ok")) {
 				m_status = OK;
-			}
-			else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "no"))
-			{
+			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "no")) {
 				m_status = NO;
-			}
-			else
-			{
+			} else {
 				VIMAP_PARSER_CHECK_WITHARG(special_atom, "bad");
 				m_status = BAD;
 			}
@@ -4918,8 +4946,7 @@ public:
 		}
 
 
-		enum Status
-		{
+		enum Status {
 			OK,
 			NO,
 			BAD
@@ -4944,17 +4971,17 @@ public:
 	DECLARE_COMPONENT(resp_cond_bye)
 
 		resp_cond_bye()
-			: m_resp_text(NULL)
-		{
+			: m_resp_text(NULL) {
+
 		}
 
-		~resp_cond_bye()
-		{
-			delete (m_resp_text);
+		~resp_cond_bye() {
+
+			delete m_resp_text;
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			VIMAP_PARSER_CHECK_WITHARG(special_atom, "bye");
@@ -4986,27 +5013,23 @@ public:
 	DECLARE_COMPONENT(resp_cond_auth)
 
 		resp_cond_auth()
-			: m_resp_text(NULL)
-		{
+			: m_resp_text(NULL) {
+
 		}
 
-		~resp_cond_auth()
-		{
-			delete (m_resp_text);
+		~resp_cond_auth() {
+
+			delete m_resp_text;
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
-			if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "ok"))
-			{
+			if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "ok")) {
 				m_cond = OK;
-			}
-			else
-			{
+			} else {
 				VIMAP_PARSER_CHECK_WITHARG(special_atom, "preauth");
-
 				m_cond = PREAUTH;
 			}
 
@@ -5020,8 +5043,7 @@ public:
 		}
 
 
-		enum Condition
-		{
+		enum Condition {
 			OK,
 			PREAUTH
 		};
@@ -5053,102 +5075,103 @@ public:
 	DECLARE_COMPONENT(mailbox_data)
 
 		mailbox_data()
-			: m_number(NULL), m_mailbox_flag_list(NULL), m_mailbox_list(NULL),
-			  m_mailbox(NULL), m_text(NULL), m_status_att_list(NULL)
-		{
+			: m_number(NULL),
+			  m_mailbox_flag_list(NULL),
+			  m_mailbox_list(NULL),
+			  m_mailbox(NULL),
+			  m_text(NULL),
+			  m_status_att_list(NULL) {
+
 		}
 
-		~mailbox_data()
-		{
-			delete (m_number);
-			delete (m_mailbox_flag_list);
-			delete (m_mailbox_list);
-			delete (m_mailbox);
-			delete (m_text);
+		~mailbox_data() {
+
+			delete m_number;
+			delete m_mailbox_flag_list;
+			delete m_mailbox_list;
+			delete m_mailbox;
+			delete m_text;
 
 			for (std::vector <nz_number*>::iterator it = m_search_nz_number_list.begin() ;
-			     it != m_search_nz_number_list.end() ; ++it)
-			{
-				delete (*it);
+			     it != m_search_nz_number_list.end() ; ++it) {
+
+				delete *it;
 			}
 
 			delete m_status_att_list;
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
-			if (VIMAP_PARSER_TRY_GET(IMAPParser::number, m_number))
-			{
+			if (VIMAP_PARSER_TRY_GET(IMAPParser::number, m_number)) {
+
 				VIMAP_PARSER_CHECK(SPACE);
 
-				if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "exists"))
-				{
+				if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "exists")) {
 					m_type = EXISTS;
-				}
-				else
-				{
+				} else {
 					VIMAP_PARSER_CHECK_WITHARG(special_atom, "recent");
-
 					m_type = RECENT;
 				}
-			}
-			else
-			{
+
+			} else {
+
 				// "FLAGS" SPACE mailbox_flag_list
-				if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "flags"))
-				{
+				if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "flags")) {
+
 					VIMAP_PARSER_CHECK(SPACE);
 
 					VIMAP_PARSER_GET(IMAPParser::mailbox_flag_list, m_mailbox_flag_list);
 
 					m_type = FLAGS;
-				}
+
 				// "LIST" SPACE mailbox_list
-				else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "list"))
-				{
+				} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "list")) {
+
 					VIMAP_PARSER_CHECK(SPACE);
 
 					VIMAP_PARSER_GET(IMAPParser::mailbox_list, m_mailbox_list);
 
 					m_type = LIST;
-				}
+
 				// "LSUB" SPACE mailbox_list
-				else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "lsub"))
-				{
+				} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "lsub")) {
+
 					VIMAP_PARSER_CHECK(SPACE);
 
 					VIMAP_PARSER_GET(IMAPParser::mailbox_list, m_mailbox_list);
 
 					m_type = LSUB;
-				}
+
 				// "MAILBOX" SPACE text
-				else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "mailbox"))
-				{
+				} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "mailbox")) {
+
 					VIMAP_PARSER_CHECK(SPACE);
 
 					VIMAP_PARSER_GET(IMAPParser::text, m_text);
 
 					m_type = MAILBOX;
-				}
+
 				// "SEARCH" [SPACE 1#nz_number]
-				else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "search"))
-				{
-					if (VIMAP_PARSER_TRY_CHECK(SPACE))
-					{
+				} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "search")) {
+
+					if (VIMAP_PARSER_TRY_CHECK(SPACE)) {
+
 						VIMAP_PARSER_GET_PUSHBACK(nz_number, m_search_nz_number_list);
 
-						while (VIMAP_PARSER_TRY_CHECK(SPACE))
+						while (VIMAP_PARSER_TRY_CHECK(SPACE)) {
 							VIMAP_PARSER_GET_PUSHBACK(nz_number, m_search_nz_number_list);
+						}
 					}
 
 					m_type = SEARCH;
-				}
+
 				// "STATUS" SPACE mailbox SPACE
 				// "(" [status_att_list] ")"
-				else
-				{
+				} else {
+
 					VIMAP_PARSER_CHECK_WITHARG(special_atom, "status");
 					VIMAP_PARSER_CHECK(SPACE);
 
@@ -5170,8 +5193,8 @@ public:
 		}
 
 
-		enum Type
-		{
+		enum Type {
+
 			FLAGS,
 			LIST,
 			LSUB,
@@ -5216,38 +5239,46 @@ public:
 	DECLARE_COMPONENT(response_data)
 
 		response_data()
-			: m_resp_cond_state(NULL), m_resp_cond_bye(NULL),
-			  m_mailbox_data(NULL), m_message_data(NULL), m_capability_data(NULL)
-		{
+			: m_resp_cond_state(NULL),
+			  m_resp_cond_bye(NULL),
+			  m_mailbox_data(NULL),
+			  m_message_data(NULL),
+			  m_capability_data(NULL) {
+
 		}
 
-		~response_data()
-		{
-			delete (m_resp_cond_state);
-			delete (m_resp_cond_bye);
-			delete (m_mailbox_data);
-			delete (m_message_data);
-			delete (m_capability_data);
+		~response_data() {
+
+			delete m_resp_cond_state;
+			delete m_resp_cond_bye;
+			delete m_mailbox_data;
+			delete m_message_data;
+			delete m_capability_data;
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			VIMAP_PARSER_CHECK(one_char <'*'> );
 			VIMAP_PARSER_CHECK(SPACE);
 
-			if (!VIMAP_PARSER_TRY_GET(IMAPParser::resp_cond_state, m_resp_cond_state))
-				if (!VIMAP_PARSER_TRY_GET(IMAPParser::resp_cond_bye, m_resp_cond_bye))
-					if (!VIMAP_PARSER_TRY_GET(IMAPParser::mailbox_data, m_mailbox_data))
-						if (!VIMAP_PARSER_TRY_GET(IMAPParser::message_data, m_message_data))
+			if (!VIMAP_PARSER_TRY_GET(IMAPParser::resp_cond_state, m_resp_cond_state)) {
+				if (!VIMAP_PARSER_TRY_GET(IMAPParser::resp_cond_bye, m_resp_cond_bye)) {
+					if (!VIMAP_PARSER_TRY_GET(IMAPParser::mailbox_data, m_mailbox_data)) {
+						if (!VIMAP_PARSER_TRY_GET(IMAPParser::message_data, m_message_data)) {
 							VIMAP_PARSER_GET(IMAPParser::capability_data, m_capability_data);
+						}
+					}
+				}
+			}
 
-			if (!parser.isStrict())
-			{
+			if (!parser.isStrict()) {
+
 				// Allow SPACEs at end of line
-				while (VIMAP_PARSER_TRY_CHECK(SPACE))
+				while (VIMAP_PARSER_TRY_CHECK(SPACE)) {
 					;
+				}
 			}
 
 			VIMAP_PARSER_CHECK(CRLF);
@@ -5278,22 +5309,24 @@ public:
 	DECLARE_COMPONENT(continue_req_or_response_data)
 
 		continue_req_or_response_data()
-			: m_continue_req(NULL), m_response_data(NULL)
-		{
+			: m_continue_req(NULL),
+			  m_response_data(NULL) {
+
 		}
 
-		~continue_req_or_response_data()
-		{
-			delete (m_continue_req);
-			delete (m_response_data);
+		~continue_req_or_response_data() {
+
+			delete m_continue_req;
+			delete m_response_data;
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
-			if (!VIMAP_PARSER_TRY_GET(IMAPParser::continue_req, m_continue_req))
+			if (!VIMAP_PARSER_TRY_GET(IMAPParser::continue_req, m_continue_req)) {
 				VIMAP_PARSER_GET(IMAPParser::response_data, m_response_data);
+			}
 
 			*currentPos = pos;
 
@@ -5320,17 +5353,17 @@ public:
 	DECLARE_COMPONENT(response_fatal)
 
 		response_fatal()
-			: m_resp_cond_bye(NULL)
-		{
+			: m_resp_cond_bye(NULL) {
+
 		}
 
-		~response_fatal()
-		{
-			delete (m_resp_cond_bye);
+		~response_fatal() {
+
+			delete m_resp_cond_bye;
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			VIMAP_PARSER_CHECK(one_char <'*'> );
@@ -5338,11 +5371,12 @@ public:
 
 			VIMAP_PARSER_GET(IMAPParser::resp_cond_bye, m_resp_cond_bye);
 
-			if (!parser.isStrict())
-			{
+			if (!parser.isStrict()) {
+
 				// Allow SPACEs at end of line
-				while (VIMAP_PARSER_TRY_CHECK(SPACE))
+				while (VIMAP_PARSER_TRY_CHECK(SPACE)) {
 					;
+				}
 			}
 
 			VIMAP_PARSER_CHECK(CRLF);
@@ -5369,28 +5403,29 @@ public:
 	DECLARE_COMPONENT(response_tagged)
 
 		response_tagged()
-			: m_resp_cond_state(NULL)
-		{
+			: m_resp_cond_state(NULL) {
+
 		}
 
-		~response_tagged()
-		{
-			delete (m_resp_cond_state);
+		~response_tagged() {
+
+			delete m_resp_cond_state;
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			VIMAP_PARSER_CHECK(IMAPParser::xtag);
 			VIMAP_PARSER_CHECK(SPACE);
 			VIMAP_PARSER_GET(IMAPParser::resp_cond_state, m_resp_cond_state);
 
-			if (!parser.isStrict())
-			{
+			if (!parser.isStrict()) {
+
 				// Allow SPACEs at end of line
-				while (VIMAP_PARSER_TRY_CHECK(SPACE))
+				while (VIMAP_PARSER_TRY_CHECK(SPACE)) {
 					;
+				}
 			}
 
 			VIMAP_PARSER_CHECK(CRLF);
@@ -5417,22 +5452,24 @@ public:
 	DECLARE_COMPONENT(response_done)
 
 		response_done()
-			: m_response_tagged(NULL), m_response_fatal(NULL)
-		{
+			: m_response_tagged(NULL),
+			  m_response_fatal(NULL) {
+
 		}
 
-		~response_done()
-		{
-			delete (m_response_tagged);
-			delete (m_response_fatal);
+		~response_done() {
+
+			delete m_response_tagged;
+			delete m_response_fatal;
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
-			if (!VIMAP_PARSER_TRY_GET(IMAPParser::response_tagged, m_response_tagged))
+			if (!VIMAP_PARSER_TRY_GET(IMAPParser::response_tagged, m_response_tagged)) {
 				VIMAP_PARSER_GET(IMAPParser::response_fatal, m_response_fatal);
+			}
 
 			*currentPos = pos;
 
@@ -5458,37 +5495,36 @@ public:
 	DECLARE_COMPONENT(response)
 
 		response()
-			: m_response_done(NULL)
-		{
+			: m_response_done(NULL) {
+
 		}
 
-		~response()
-		{
+		~response() {
+
 			for (std::vector <IMAPParser::continue_req_or_response_data*>::iterator
 			     it = m_continue_req_or_response_data.begin() ;
-			     it != m_continue_req_or_response_data.end() ; ++it)
-			{
-				delete (*it);
+			     it != m_continue_req_or_response_data.end() ; ++it) {
+
+				delete *it;
 			}
 
-			delete (m_response_done);
+			delete m_response_done;
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 			string curLine = line;
 			bool partial = false;  // partial response
 
 			IMAPParser::continue_req_or_response_data* resp = NULL;
 
-			while ((resp = parser.get <IMAPParser::continue_req_or_response_data>(curLine, &pos)))
-			{
+			while ((resp = parser.get <IMAPParser::continue_req_or_response_data>(curLine, &pos))) {
+
 				m_continue_req_or_response_data.push_back(resp);
 
 				// Partial response (continue_req)
-				if (resp->continue_req())
-				{
+				if (resp->continue_req()) {
 					partial = true;
 					break;
 				}
@@ -5498,8 +5534,7 @@ public:
 				pos = 0;
 			}
 
-			if (!partial)
-			{
+			if (!partial) {
 				m_response_done = parser.get <IMAPParser::response_done>(curLine, &pos);
 				VIMAP_PARSER_FAIL_UNLESS(m_response_done);
 			}
@@ -5510,30 +5545,32 @@ public:
 		}
 
 
-		bool isBad() const
-		{
-			if (!response_done())  // incomplete (partial) response
-				return (true);
+		bool isBad() const {
 
-			if (response_done()->response_fatal())
-				return (true);
-
-			if (response_done()->response_tagged()->resp_cond_state()->
-				status() == IMAPParser::resp_cond_state::BAD)
-			{
-				return (true);
+			if (!response_done()) {  // incomplete (partial) response
+				return true;
 			}
 
-			return (false);
+			if (response_done()->response_fatal()) {
+				return true;
+			}
+
+			if (response_done()->response_tagged()->resp_cond_state()->
+					status() == IMAPParser::resp_cond_state::BAD) {
+
+				return true;
+			}
+
+			return false;
 		}
 
-		void setErrorLog(const string& errorLog)
-		{
+		void setErrorLog(const string& errorLog) {
+
 			m_errorLog = errorLog;
 		}
 
-		const string& getErrorLog() const
-		{
+		const string& getErrorLog() const {
+
 			return m_errorLog;
 		}
 
@@ -5558,25 +5595,27 @@ public:
 	DECLARE_COMPONENT(greeting)
 
 		greeting()
-			: m_resp_cond_auth(NULL), m_resp_cond_bye(NULL)
-		{
+			: m_resp_cond_auth(NULL),
+			  m_resp_cond_bye(NULL) {
+
 		}
 
-		~greeting()
-		{
-			delete (m_resp_cond_auth);
-			delete (m_resp_cond_bye);
+		~greeting() {
+
+			delete m_resp_cond_auth;
+			delete m_resp_cond_bye;
 		}
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
-		{
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
 			size_t pos = *currentPos;
 
 			VIMAP_PARSER_CHECK(one_char <'*'> );
 			VIMAP_PARSER_CHECK(SPACE);
 
-			if (!VIMAP_PARSER_TRY_GET(IMAPParser::resp_cond_auth, m_resp_cond_auth))
+			if (!VIMAP_PARSER_TRY_GET(IMAPParser::resp_cond_auth, m_resp_cond_auth)) {
 				VIMAP_PARSER_GET(IMAPParser::resp_cond_bye, m_resp_cond_bye);
+			}
 
 			VIMAP_PARSER_CHECK(CRLF);
 
@@ -5585,13 +5624,13 @@ public:
 			return true;
 		}
 
-		void setErrorLog(const string& errorLog)
-		{
+		void setErrorLog(const string& errorLog) {
+
 			m_errorLog = errorLog;
 		}
 
-		const string& getErrorLog() const
-		{
+		const string& getErrorLog() const {
+
 			return m_errorLog;
 		}
 
@@ -5614,8 +5653,8 @@ public:
 	// The main functions used to parse a response
 	//
 
-	response* readResponse(literalHandler* lh = NULL)
-	{
+	response* readResponse(literalHandler* lh = NULL) {
+
 		size_t pos = 0;
 		string line = readLine();
 
@@ -5623,8 +5662,9 @@ public:
 		response* resp = get <response>(line, &pos);
 		m_literalHandler = NULL;
 
-		if (!resp)
+		if (!resp) {
 			throw exceptions::invalid_response("", m_errorResponseLine);
+		}
 
 		resp->setErrorLog(lastLine());
 
@@ -5632,15 +5672,16 @@ public:
 	}
 
 
-	greeting* readGreeting()
-	{
+	greeting* readGreeting() {
+
 		size_t pos = 0;
 		string line = readLine();
 
 		greeting* greet = get <greeting>(line, &pos);
 
-		if (!greet)
+		if (!greet) {
 			throw exceptions::invalid_response("", m_errorResponseLine);
+		}
 
 		greet->setErrorLog(lastLine());
 
@@ -5659,8 +5700,8 @@ public:
 	  * @return a raw pointer to the parsed token, or NULL otherwise
 	  */
 	template <class TYPE>
-	TYPE* get(string& line, size_t* currentPos)
-	{
+	TYPE* get(string& line, size_t* currentPos) {
+
 		component* resp = new TYPE;
 		return internalGet <TYPE>(resp, line, currentPos);
 	}
@@ -5680,9 +5721,8 @@ public:
 	  * @return a raw pointer to the parsed token, or NULL otherwise
 	  */
 	template <class TYPE, class ARG1_TYPE, class ARG2_TYPE>
-	TYPE* getWithArgs(string& line, size_t* currentPos,
-	                  ARG1_TYPE arg1, ARG2_TYPE arg2)
-	{
+	TYPE* getWithArgs(string& line, size_t* currentPos, ARG1_TYPE arg1, ARG2_TYPE arg2) {
+
 		component* resp = new TYPE(arg1, arg2);
 		return internalGet <TYPE>(resp, line, currentPos);
 	}
@@ -5690,15 +5730,15 @@ public:
 private:
 
 	template <class TYPE>
-	TYPE* internalGet(component* resp, string& line, size_t* currentPos)
-	{
+	TYPE* internalGet(component* resp, string& line, size_t* currentPos) {
+
 		const size_t oldPos = *currentPos;
 
-		if (!resp->parse(*this, line, currentPos))
-		{
+		if (!resp->parse(*this, line, currentPos)) {
+
 			*currentPos = oldPos;
 
-			delete (resp);
+			delete resp;
 
 			return NULL;
 		}
@@ -5706,20 +5746,21 @@ private:
 		return static_cast <TYPE*>(resp);
 	}
 
-	const string lastLine() const
-	{
+	const string lastLine() const {
+
 		// Remove blanks and new lines at the end of the line.
 		string line(m_lastLine);
 
 		string::const_iterator it = line.end();
 		int count = 0;
 
-		while (it != line.begin())
-		{
+		while (it != line.begin()) {
+
 			const unsigned char c = *(it - 1);
 
-			if (!(c == ' ' || c == '\t' || c == '\n' || c == '\r'))
+			if (!(c == ' ' || c == '\t' || c == '\n' || c == '\r')) {
 				break;
+			}
 
 			++count;
 			--it;
@@ -5741,19 +5782,16 @@ public:
 	  * @return true if the token has been parsed, or false otherwise
 	  */
 	template <class TYPE>
-	bool check(string& line, size_t* currentPos)
-	{
+	bool check(string& line, size_t* currentPos) {
+
 		const size_t oldPos = *currentPos;
 
 		TYPE term;
 
-		if (!term.parse(*this, line, currentPos))
-		{
+		if (!term.parse(*this, line, currentPos)) {
 			*currentPos = oldPos;
 			return false;
-		}
-		else
-		{
+		} else {
 			return true;
 		}
 	}
@@ -5769,19 +5807,16 @@ public:
 	  * @return true if the token has been parsed, or false otherwise
 	  */
 	template <class TYPE, class ARG_TYPE>
-	bool checkWithArg(string& line, size_t* currentPos, const ARG_TYPE arg)
-	{
+	bool checkWithArg(string& line, size_t* currentPos, const ARG_TYPE arg) {
+
 		const size_t oldPos = *currentPos;
 
 		TYPE term(arg);
 
-		if (!term.parse(*this, line, currentPos))
-		{
+		if (!term.parse(*this, line, currentPos)) {
 			*currentPos = oldPos;
 			return false;
-		}
-		else
-		{
+		} else {
 			return true;
 		}
 	}
@@ -5815,12 +5850,11 @@ public:
 	  *
 	  * @return next line
 	  */
-	const string readLine()
-	{
+	const string readLine() {
+
 		size_t pos;
 
-		while ((pos = m_buffer.find('\n')) == string::npos)
-		{
+		while ((pos = m_buffer.find('\n')) == string::npos) {
 			read();
 		}
 
@@ -5836,8 +5870,7 @@ public:
 		std::cout << std::endl << "Read line:" << std::endl << line << std::endl;
 #endif
 
-		if (m_tracer)
-		{
+		if (m_tracer) {
 			string::size_type len = line.length();
 			while (len != 0 && (line[len - 1] == '\r' || line[len - 1] == '\n')) --len;
 			m_tracer->traceReceive(line.substr(0, len));
@@ -5849,84 +5882,90 @@ public:
 	/** Fill in the input buffer with data available from the socket stream.
 	  * The function blocks until some data is available.
 	  */
-	void read()
-	{
+	void read() {
+
 		string receiveBuffer;
 
 		shared_ptr <timeoutHandler> toh = m_timeoutHandler.lock();
 		shared_ptr <socket> sok = m_socket.lock();
 
-		if (toh)
+		if (toh) {
 			toh->resetTimeOut();
+		}
 
-		while (receiveBuffer.empty())
-		{
+		while (receiveBuffer.empty()) {
+
 			// Check whether the time-out delay is elapsed
-			if (toh && toh->isTimeOut())
-			{
-				if (!toh->handleTimeOut())
+			if (toh && toh->isTimeOut()) {
+				if (!toh->handleTimeOut()) {
 					throw exceptions::operation_timed_out();
+				}
 			}
 
 			// We have received data: reset the time-out counter
 			sok->receive(receiveBuffer);
 
-			if (receiveBuffer.empty())   // buffer is empty
-			{
-				if (sok->getStatus() & socket::STATUS_WANT_WRITE)
+			if (receiveBuffer.empty()) {   // buffer is empty
+
+				if (sok->getStatus() & socket::STATUS_WANT_WRITE) {
 					sok->waitForWrite();
-				else
+				} else {
 					sok->waitForRead();
+				}
 
 				continue;
 			}
 
 			// We have received data ...
-			if (toh)
+			if (toh) {
 				toh->resetTimeOut();
+			}
 		}
 
 		m_buffer += receiveBuffer;
 	}
 
 
-	void readLiteral(literalHandler::target& buffer, size_t count)
-	{
+	void readLiteral(literalHandler::target& buffer, size_t count) {
+
 		size_t len = 0;
 		string receiveBuffer;
 
 		shared_ptr <timeoutHandler> toh = m_timeoutHandler.lock();
 		shared_ptr <socket> sok = m_socket.lock();
 
-		if (m_progress)
+		if (m_progress) {
 			m_progress->start(count);
+		}
 
-		if (toh)
+		if (toh) {
 			toh->resetTimeOut();
+		}
 
-		if (!m_buffer.empty())
-		{
-			if (m_buffer.length() > count)
-			{
+		if (!m_buffer.empty()) {
+
+			if (m_buffer.length() > count) {
+
 				buffer.putData(string(m_buffer.begin(), m_buffer.begin() + count));
 				m_buffer.erase(m_buffer.begin(), m_buffer.begin() + count);
 				len = count;
-			}
-			else
-			{
+
+			} else {
+
 				len += m_buffer.length();
 				buffer.putData(m_buffer);
 				m_buffer.clear();
 			}
 		}
 
-		while (len < count)
-		{
+		while (len < count) {
+
 			// Check whether the time-out delay is elapsed
-			if (toh && toh->isTimeOut())
-			{
-				if (!toh->handleTimeOut())
+			if (toh && toh->isTimeOut()) {
+
+				if (!toh->handleTimeOut()) {
 					throw exceptions::operation_timed_out();
+				}
 
 				toh->resetTimeOut();
 			}
@@ -5934,22 +5973,24 @@ public:
 			// Receive data from the socket
 			sok->receive(receiveBuffer);
 
-			if (receiveBuffer.empty())   // buffer is empty
-			{
-				if (sok->getStatus() & socket::STATUS_WANT_WRITE)
+			if (receiveBuffer.empty()) {  // buffer is empty
+
+				if (sok->getStatus() & socket::STATUS_WANT_WRITE) {
 					sok->waitForWrite();
-				else
+				} else {
 					sok->waitForRead();
+				}
 
 				continue;
 			}
 
 			// We have received data: reset the time-out counter
-			if (toh)
+			if (toh) {
 				toh->resetTimeOut();
+			}
 
-			if (len + receiveBuffer.length() > count)
-			{
+			if (len + receiveBuffer.length() > count) {
+
 				const size_t remaining = count - len;
 
 				// Get the needed amount of data
@@ -5960,23 +6001,26 @@ public:
 				m_buffer += receiveBuffer;
 
 				len = count;
-			}
-			else
-			{
+
+			} else {
+
 				buffer.putData(receiveBuffer);
 				len += receiveBuffer.length();
 			}
 
 			// Notify progress
-			if (m_progress)
+			if (m_progress) {
 				m_progress->progress(len, count);
+			}
 		}
 
-		if (m_tracer)
+		if (m_tracer) {
 			m_tracer->traceReceiveBytes(count);
+		}
 
-		if (m_progress)
+		if (m_progress) {
 			m_progress->stop(count);
+		}
 	}
 };
 

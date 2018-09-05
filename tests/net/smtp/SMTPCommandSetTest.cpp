@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -44,24 +44,24 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandSetTest)
 	VMIME_TEST_LIST_END
 
 
-	void testCreate()
-	{
+	void testCreate() {
+
 		vmime::shared_ptr <SMTPCommandSet> cset = SMTPCommandSet::create(/* pipelining */ false);
 
 		VASSERT_NOT_NULL("Not null", cset);
 		VASSERT_FALSE("Finished", cset->isFinished());
 	}
 
-	void testCreatePipeline()
-	{
+	void testCreatePipeline() {
+
 		vmime::shared_ptr <SMTPCommandSet> cset = SMTPCommandSet::create(/* pipelining */ true);
 
 		VASSERT_NOT_NULL("Not null", cset);
 		VASSERT_FALSE("Finished", cset->isFinished());
 	}
 
-	void testAddCommand()
-	{
+	void testAddCommand() {
+
 		vmime::shared_ptr <SMTPCommandSet> cset = SMTPCommandSet::create(/* pipelining */ false);
 
 		VASSERT_NO_THROW("No throw 1", cset->addCommand(SMTPCommand::createCommand("MY_COMMAND1")));
@@ -82,8 +82,8 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandSetTest)
 		VASSERT_TRUE("Finished", cset->isFinished());
 	}
 
-	void testAddCommandPipeline()
-	{
+	void testAddCommandPipeline() {
+
 		vmime::shared_ptr <SMTPCommandSet> cset = SMTPCommandSet::create(/* pipelining */ true);
 
 		VASSERT_NO_THROW("No throw 1", cset->addCommand(SMTPCommand::createCommand("MY_COMMAND1")));
@@ -105,8 +105,8 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandSetTest)
 		VASSERT_THROW("Throw", cset->addCommand(SMTPCommand::createCommand("MY_COMMAND3")), std::runtime_error);
 	}
 
-	void testWriteToSocket()
-	{
+	void testWriteToSocket() {
+
 		vmime::shared_ptr <SMTPCommandSet> cset = SMTPCommandSet::create(/* pipelining */ false);
 
 		cset->addCommand(SMTPCommand::createCommand("MY_COMMAND1"));
@@ -127,8 +127,8 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandSetTest)
 		VASSERT_EQ("Receive cmd 2", "MY_COMMAND2\r\n", response);
 	}
 
-	void testWriteToSocketPipeline()
-	{
+	void testWriteToSocketPipeline() {
+
 		vmime::shared_ptr <SMTPCommandSet> cset = SMTPCommandSet::create(/* pipelining */ true);
 
 		cset->addCommand(SMTPCommand::createCommand("MY_COMMAND1"));
@@ -144,8 +144,8 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandSetTest)
 		VASSERT_EQ("Receive cmds", "MY_COMMAND1\r\nMY_COMMAND2\r\n", response);
 	}
 
-	void testGetLastCommandSent()
-	{
+	void testGetLastCommandSent() {
+
 		vmime::shared_ptr <SMTPCommandSet> cset = SMTPCommandSet::create(/* pipelining */ false);
 
 		cset->addCommand(SMTPCommand::createCommand("MY_COMMAND1"));
@@ -161,8 +161,8 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandSetTest)
 		VASSERT_EQ("Cmd 2", "MY_COMMAND2", cset->getLastCommandSent()->getText());
 	}
 
-	void testGetLastCommandSentPipeline()
-	{
+	void testGetLastCommandSentPipeline() {
+
 		vmime::shared_ptr <SMTPCommandSet> cset = SMTPCommandSet::create(/* pipelining */ true);
 
 		cset->addCommand(SMTPCommand::createCommand("MY_COMMAND1"));

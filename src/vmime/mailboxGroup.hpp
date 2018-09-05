@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -30,15 +30,13 @@
 #include "vmime/text.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 /** A group of mailboxes (basic type).
   */
+class VMIME_EXPORT mailboxGroup : public address {
 
-class VMIME_EXPORT mailboxGroup : public address
-{
 public:
 
 	mailboxGroup();
@@ -78,7 +76,10 @@ public:
 	  * @param mbox mailbox to insert
 	  * @throw std::out_of_range if the mailbox is not in the list
 	  */
-	void insertMailboxBefore(const shared_ptr <mailbox>& beforeMailbox, const shared_ptr <mailbox>& mbox);
+	void insertMailboxBefore(
+		const shared_ptr <mailbox>& beforeMailbox,
+		const shared_ptr <mailbox>& mbox
+	);
 
 	/** Insert a new mailbox before the specified position.
 	  *
@@ -87,7 +88,10 @@ public:
 	  * @param mbox mailbox to insert
 	  * @throw std::out_of_range if the position is out of range
 	  */
-	void insertMailboxBefore(const size_t pos, const shared_ptr <mailbox>& mbox);
+	void insertMailboxBefore(
+		const size_t pos,
+		const shared_ptr <mailbox>& mbox
+	);
 
 	/** Insert a new mailbox after the specified mailbox.
 	  *
@@ -95,7 +99,10 @@ public:
 	  * @param mbox mailbox to insert
 	  * @throw std::out_of_range if the mailbox is not in the list
 	  */
-	void insertMailboxAfter(const shared_ptr <mailbox>& afterMailbox, const shared_ptr <mailbox>& mbox);
+	void insertMailboxAfter(
+		const shared_ptr <mailbox>& afterMailbox,
+		const shared_ptr <mailbox>& mbox
+	);
 
 	/** Insert a new mailbox after the specified position.
 	  *
@@ -103,7 +110,10 @@ public:
 	  * @param mbox mailbox to insert
 	  * @throw std::out_of_range if the position is out of range
 	  */
-	void insertMailboxAfter(const size_t pos, const shared_ptr <mailbox>& mbox);
+	void insertMailboxAfter(
+		const size_t pos,
+		const shared_ptr <mailbox>& mbox
+	);
 
 	/** Remove the specified mailbox from the list.
 	  *
@@ -173,18 +183,20 @@ private:
 protected:
 
 	// Component parsing & assembling
-	void parseImpl
-		(const parsingContext& ctx,
-		 const string& buffer,
-		 const size_t position,
-		 const size_t end,
-		 size_t* newPosition = NULL);
+	void parseImpl(
+		const parsingContext& ctx,
+		const string& buffer,
+		const size_t position,
+		const size_t end,
+		size_t* newPosition = NULL
+	);
 
-	void generateImpl
-		(const generationContext& ctx,
-		 utility::outputStream& os,
-		 const size_t curLinePos = 0,
-		 size_t* newLinePos = NULL) const;
+	void generateImpl(
+		const generationContext& ctx,
+		utility::outputStream& os,
+		const size_t curLinePos = 0,
+		size_t* newLinePos = NULL
+	) const;
 };
 
 

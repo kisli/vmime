@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -42,15 +42,21 @@ VMIME_TEST_SUITE_BEGIN(bodyPartTest)
 	VMIME_TEST_LIST_END
 
 
-	static const vmime::string extractComponentString
-		(const vmime::string& buffer, const vmime::component& c)
-	{
-		return vmime::string(buffer.begin() + c.getParsedOffset(),
-		                     buffer.begin() + c.getParsedOffset() + c.getParsedLength());
+	static const vmime::string extractComponentString(
+		const vmime::string& buffer,
+		const vmime::component& c
+	) {
+
+		return vmime::string(
+			buffer.begin() + c.getParsedOffset(),
+			buffer.begin() + c.getParsedOffset() + c.getParsedLength()
+		);
 	}
 
-	static const vmime::string extractContents(const vmime::shared_ptr <const vmime::contentHandler>& cts)
-	{
+	static const vmime::string extractContents(
+		const vmime::shared_ptr <const vmime::contentHandler>& cts
+	) {
+
 		std::ostringstream oss;
 		vmime::utility::outputStreamAdapter os(oss);
 
@@ -60,8 +66,8 @@ VMIME_TEST_SUITE_BEGIN(bodyPartTest)
 	}
 
 
-	void testParse()
-	{
+	void testParse() {
+
 		vmime::string str1 = "HEADER\r\n\r\nBODY";
 		vmime::bodyPart p1;
 		p1.parse(str1);
@@ -84,8 +90,8 @@ VMIME_TEST_SUITE_BEGIN(bodyPartTest)
 		VASSERT_EQ("6", "BODY", extractComponentString(str3, *p3.getBody()));
 	}
 
-	void testParseMissingLastBoundary()
-	{
+	void testParseMissingLastBoundary() {
+
 		vmime::string str =
 			"Content-Type: multipart/mixed; boundary=\"MY-BOUNDARY\""
 			"\r\n\r\n"
@@ -101,8 +107,8 @@ VMIME_TEST_SUITE_BEGIN(bodyPartTest)
 		VASSERT_EQ("part2-body", "BODY2", extractContents(p.getBody()->getPartAt(1)->getBody()->getContents()));
 	}
 
-	void testGenerate()
-	{
+	void testGenerate() {
+
 		vmime::bodyPart p1;
 		p1.getHeader()->getField("Foo")->setValue(vmime::string("bar"));
 		p1.getBody()->setContents(vmime::make_shared <vmime::stringContentHandler>("Baz"));
@@ -110,8 +116,8 @@ VMIME_TEST_SUITE_BEGIN(bodyPartTest)
 		VASSERT_EQ("1", "Foo: bar\r\n\r\nBaz", p1.generate());
 	}
 
-	void testPrologEpilog()
-	{
+	void testPrologEpilog() {
+
 		const char testMail[] =
 			"To: test@vmime.org\r\n"
 			"From: test@vmime.org\r\n"
@@ -136,8 +142,8 @@ VMIME_TEST_SUITE_BEGIN(bodyPartTest)
 
 	// Test for bug fix: prolog should not be encoded
 	// http://sourceforge.net/tracker/?func=detail&atid=525568&aid=3174903&group_id=69724
-	void testPrologEncoding()
-	{
+	void testPrologEncoding() {
+
 		const char testmail[] =
 			"To: test@vmime.org\r\n"
 			"From: test@vmime.org\r\n"
@@ -169,8 +175,8 @@ VMIME_TEST_SUITE_BEGIN(bodyPartTest)
 		std::string ostr;
 		vmime::utility::outputStreamStringAdapter out(ostr);
 
-		for (int i = 0 ; i < 10 ; ++i)
-		{
+		for (int i = 0 ; i < 10 ; ++i) {
+
 			ostr.clear();
 
 			msg->parse(istr);
@@ -184,8 +190,8 @@ VMIME_TEST_SUITE_BEGIN(bodyPartTest)
 		VASSERT_EQ("epilog", "Epilog text", msg->getBody()->getEpilogText());
 	}
 
-	void testSuccessiveBoundaries()
-	{
+	void testSuccessiveBoundaries() {
+
 		vmime::string str =
 			"Content-Type: multipart/mixed; boundary=\"MY-BOUNDARY\""
 			"\r\n\r\n"
@@ -202,8 +208,8 @@ VMIME_TEST_SUITE_BEGIN(bodyPartTest)
 		VASSERT_EQ("part2-body", "", extractContents(p.getBody()->getPartAt(1)->getBody()->getContents()));
 	}
 
-	void testTransportPaddingInBoundary()
-	{
+	void testTransportPaddingInBoundary() {
+
 		vmime::string str =
 			"Content-Type: multipart/mixed; boundary=\"MY-BOUNDARY\""
 			"\r\n\r\n"
@@ -221,8 +227,8 @@ VMIME_TEST_SUITE_BEGIN(bodyPartTest)
 	}
 
 	/** Ensure '7bit' encoding is used when body is 7-bit only. */
-	void testGenerate7bit()
-	{
+	void testGenerate7bit() {
+
 		vmime::shared_ptr <vmime::plainTextPart> p1 = vmime::make_shared <vmime::plainTextPart>();
 		p1->setText(vmime::make_shared <vmime::stringContentHandler>("Part1 is US-ASCII only."));
 
@@ -233,8 +239,8 @@ VMIME_TEST_SUITE_BEGIN(bodyPartTest)
 		VASSERT_EQ("1", "7bit", header1->ContentTransferEncoding()->getValue()->generate());
 	}
 
-	void testTextUsageForQPEncoding()
-	{
+	void testTextUsageForQPEncoding() {
+
 		vmime::shared_ptr <vmime::plainTextPart> part = vmime::make_shared <vmime::plainTextPart>();
 		part->setText(vmime::make_shared <vmime::stringContentHandler>("Part1-line1\r\nPart1-line2\r\n\x89"));
 
@@ -255,8 +261,8 @@ VMIME_TEST_SUITE_BEGIN(bodyPartTest)
 		VASSERT_EQ("2", "Part1-line1\r\nPart1-line2\r\n=89", oss.str());
 	}
 
-	void testParseGuessBoundary()
-	{
+	void testParseGuessBoundary() {
+
 		// Boundary is not specified in "Content-Type" field
 		// Parser will try to guess it from message contents.
 
@@ -276,8 +282,8 @@ VMIME_TEST_SUITE_BEGIN(bodyPartTest)
 		VASSERT_EQ("part2-body", "BODY2", extractContents(p.getBody()->getPartAt(1)->getBody()->getContents()));
 	}
 
-	void testParseGuessBoundaryWithTransportPadding()
-	{
+	void testParseGuessBoundaryWithTransportPadding() {
+
 		// Boundary is not specified in "Content-Type" field
 		// Parser will try to guess it from message contents.
 		// Transport padding white spaces should be ignored.
@@ -298,8 +304,8 @@ VMIME_TEST_SUITE_BEGIN(bodyPartTest)
 		VASSERT_EQ("part2-body", "BODY2", extractContents(p.getBody()->getPartAt(1)->getBody()->getContents()));
 	}
 
-	void testParseVeryBigMessage()
-	{
+	void testParseVeryBigMessage() {
+
 		// When parsing from a seekable input stream, body contents should not
 		// be kept in memory in a "stringContentHandler" object. Instead, content
 		// should be accessible via a "streamContentHandler" object.
@@ -323,8 +329,9 @@ VMIME_TEST_SUITE_BEGIN(bodyPartTest)
 
 		oss << BODY1_BEGIN;
 
-		for (unsigned int i = 0 ; i < BODY1_REPEAT ; ++i)
+		for (unsigned int i = 0 ; i < BODY1_REPEAT ; ++i) {
 			oss << BODY1_LINE;
+		}
 
 		oss << BODY1_END;
 
@@ -333,8 +340,9 @@ VMIME_TEST_SUITE_BEGIN(bodyPartTest)
 		    << "HEADER2\r\n"
 		    << "\r\n";
 
-		for (unsigned int i = 0 ; i < BODY2_REPEAT ; ++i)
+		for (unsigned int i = 0 ; i < BODY2_REPEAT ; ++i) {
 			oss << BODY2_LINE;
+		}
 
 		oss << "\r\n"
 		    << "--MY-BOUNDARY--\r\n";
@@ -366,4 +374,3 @@ VMIME_TEST_SUITE_BEGIN(bodyPartTest)
 	}
 
 VMIME_TEST_SUITE_END
-

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -36,129 +36,159 @@ namespace net {
 namespace imap {
 
 
-IMAPMessagePart::IMAPMessagePart(const shared_ptr <IMAPMessagePart>& parent, const size_t number, const IMAPParser::body_type_mpart* mpart)
-	: m_parent(parent), m_header(null), m_number(number), m_size(0)
-{
-	m_mediaType = vmime::mediaType
-		("multipart", mpart->media_subtype()->value());
+IMAPMessagePart::IMAPMessagePart(
+	const shared_ptr <IMAPMessagePart>& parent,
+	const size_t number,
+	const IMAPParser::body_type_mpart* mpart
+)
+	: m_parent(parent),
+	  m_header(null),
+	  m_number(number),
+	  m_size(0) {
+
+	m_mediaType = vmime::mediaType(
+		"multipart",
+		mpart->media_subtype()->value()
+	);
 }
 
 
-IMAPMessagePart::IMAPMessagePart(const shared_ptr <IMAPMessagePart>& parent, const size_t number, const IMAPParser::body_type_1part* part)
-	: m_parent(parent), m_header(null), m_number(number), m_size(0)
-{
-	if (part->body_type_text())
-	{
-		m_mediaType = vmime::mediaType
-			("text", part->body_type_text()->
-				media_text()->media_subtype()->value());
+IMAPMessagePart::IMAPMessagePart(
+	const shared_ptr <IMAPMessagePart>& parent,
+	const size_t number,
+	const IMAPParser::body_type_1part* part
+)
+	: m_parent(parent),
+	  m_header(null),
+	  m_number(number),
+	  m_size(0) {
+
+	if (part->body_type_text()) {
+
+		m_mediaType = vmime::mediaType(
+			"text",
+			part->body_type_text()->media_text()->media_subtype()->value()
+		);
 
 		m_size = part->body_type_text()->body_fields()->body_fld_octets()->value();
-	}
-	else if (part->body_type_msg())
-	{
-		m_mediaType = vmime::mediaType
-			("message", part->body_type_msg()->
-				media_message()->media_subtype()->value());
-	}
-	else
-	{
-		m_mediaType = vmime::mediaType
-			(part->body_type_basic()->media_basic()->media_type()->value(),
-			 part->body_type_basic()->media_basic()->media_subtype()->value());
+
+	} else if (part->body_type_msg()) {
+
+		m_mediaType = vmime::mediaType(
+			"message",
+			part->body_type_msg()->media_message()->media_subtype()->value()
+		);
+
+	} else {
+
+		m_mediaType = vmime::mediaType(
+			part->body_type_basic()->media_basic()->media_type()->value(),
+			part->body_type_basic()->media_basic()->media_subtype()->value()
+		);
 
 		m_size = part->body_type_basic()->body_fields()->body_fld_octets()->value();
 
-		if (const auto pparam = part->body_type_basic()->body_fields()->body_fld_param())
-			for (const auto& param : pparam->items())
-				if (param->string1()->value() == "NAME")
+		if (const auto pparam = part->body_type_basic()->body_fields()->body_fld_param()) {
+			for (const auto& param : pparam->items()) {
+				if (param->string1()->value() == "NAME") {
 					m_name = param->string2()->value();
+				}
+			}
+		}
 	}
 
 	m_structure = null;
 }
 
 
-shared_ptr <const messageStructure> IMAPMessagePart::getStructure() const
-{
-	if (m_structure != NULL)
+shared_ptr <const messageStructure> IMAPMessagePart::getStructure() const {
+
+	if (m_structure) {
 		return m_structure;
-	else
+	} else {
 		return IMAPMessageStructure::emptyStructure();
+	}
 }
 
 
-shared_ptr <messageStructure> IMAPMessagePart::getStructure()
-{
-	if (m_structure != NULL)
+shared_ptr <messageStructure> IMAPMessagePart::getStructure() {
+
+	if (m_structure) {
 		return m_structure;
-	else
+	} else {
 		return IMAPMessageStructure::emptyStructure();
+	}
 }
 
 
-shared_ptr <const IMAPMessagePart> IMAPMessagePart::getParent() const
-{
+shared_ptr <const IMAPMessagePart> IMAPMessagePart::getParent() const {
+
 	return m_parent.lock();
 }
 
 
-const mediaType& IMAPMessagePart::getType() const
-{
+const mediaType& IMAPMessagePart::getType() const {
+
 	return m_mediaType;
 }
 
 
-size_t IMAPMessagePart::getSize() const
-{
+size_t IMAPMessagePart::getSize() const {
+
 	return m_size;
 }
 
 
-size_t IMAPMessagePart::getNumber() const
-{
+size_t IMAPMessagePart::getNumber() const {
+
 	return m_number;
 }
 
-string IMAPMessagePart::getName() const
-{
+
+string IMAPMessagePart::getName() const {
+
 	return m_name;
 }
 
 
-shared_ptr <const header> IMAPMessagePart::getHeader() const
-{
-	if (m_header == NULL)
+shared_ptr <const header> IMAPMessagePart::getHeader() const {
+
+	if (!m_header) {
 		throw exceptions::unfetched_object();
-	else
+	} else {
 		return m_header;
+	}
 }
 
 
 // static
-shared_ptr <IMAPMessagePart> IMAPMessagePart::create
-	(const shared_ptr <IMAPMessagePart>& parent, const size_t number, const IMAPParser::body* body)
-{
-	if (body->body_type_mpart())
-	{
+shared_ptr <IMAPMessagePart> IMAPMessagePart::create(
+	const shared_ptr <IMAPMessagePart>& parent,
+	const size_t number,
+	const IMAPParser::body* body
+) {
+
+	if (body->body_type_mpart()) {
+
 		shared_ptr <IMAPMessagePart> part = make_shared <IMAPMessagePart>(parent, number, body->body_type_mpart());
 		part->m_structure = make_shared <IMAPMessageStructure>(part, body->body_type_mpart()->list());
 
 		return part;
-	}
-	else
-	{
+
+	} else {
+
 		return make_shared <IMAPMessagePart>(parent, number, body->body_type_1part());
 	}
 }
 
 
-header& IMAPMessagePart::getOrCreateHeader()
-{
-	if (m_header != NULL)
+header& IMAPMessagePart::getOrCreateHeader() {
+
+	if (m_header) {
 		return *m_header;
-	else
+	} else {
 		return *(m_header = make_shared <header>());
+	}
 }
 
 

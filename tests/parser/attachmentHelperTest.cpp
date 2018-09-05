@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -39,23 +39,25 @@ VMIME_TEST_SUITE_BEGIN(attachmentHelperTest)
 	VMIME_TEST_LIST_END
 
 
-	static const vmime::string getStructure(const vmime::shared_ptr <vmime::bodyPart>& part)
-	{
+	static const vmime::string getStructure(const vmime::shared_ptr <vmime::bodyPart>& part) {
+
 		vmime::shared_ptr <vmime::body> bdy = part->getBody();
 
 		vmime::string res = part->getBody()->getContentType().generate();
 
-		if (bdy->getPartCount() == 0)
+		if (bdy->getPartCount() == 0) {
 			return res;
+		}
 
 		res += "[";
 
-		for (size_t i = 0 ; i < bdy->getPartCount() ; ++i)
-		{
+		for (size_t i = 0 ; i < bdy->getPartCount() ; ++i) {
+
 			vmime::shared_ptr <vmime::bodyPart> subPart = bdy->getPartAt(i);
 
-			if (i != 0)
+			if (i != 0) {
 				res += ",";
+			}
 
 			res += getStructure(subPart);
 		}
@@ -63,8 +65,10 @@ VMIME_TEST_SUITE_BEGIN(attachmentHelperTest)
 		return res + "]";
 	}
 
-	static const vmime::string extractBodyContents(const vmime::shared_ptr <const vmime::bodyPart>& part)
-	{
+	static const vmime::string extractBodyContents(
+		const vmime::shared_ptr <const vmime::bodyPart>& part
+	) {
+
 		vmime::shared_ptr <const vmime::contentHandler> cth = part->getBody()->getContents();
 
 		vmime::string data;
@@ -75,8 +79,8 @@ VMIME_TEST_SUITE_BEGIN(attachmentHelperTest)
 		return data;
 	}
 
-	void testAddAttachment1()
-	{
+	void testAddAttachment1() {
+
 		vmime::string data =
 "Content-Type: text/plain\r\n"
 "\r\n"
@@ -86,9 +90,11 @@ VMIME_TEST_SUITE_BEGIN(attachmentHelperTest)
 		vmime::shared_ptr <vmime::message> msg = vmime::make_shared <vmime::message>();
 		msg->parse(data);
 
-		vmime::shared_ptr <vmime::attachment> att = vmime::make_shared <vmime::defaultAttachment>
-			(vmime::make_shared <vmime::stringContentHandler>("test"),
-				vmime::mediaType("image/jpeg"));
+		vmime::shared_ptr <vmime::attachment> att =
+			vmime::make_shared <vmime::defaultAttachment>(
+				vmime::make_shared <vmime::stringContentHandler>("test"),
+				vmime::mediaType("image/jpeg")
+			);
 
 		vmime::attachmentHelper::addAttachment(msg, att);
 
@@ -96,8 +102,8 @@ VMIME_TEST_SUITE_BEGIN(attachmentHelperTest)
 		VASSERT_EQ("2", "The text\r\n", extractBodyContents(msg->getBody()->getPartAt(0)));
 	}
 
-	void testAddAttachment2()
-	{
+	void testAddAttachment2() {
+
 		vmime::string data =
 "Content-Type: multipart/mixed; boundary=\"foo\"\r\n"
 "\r\n"
@@ -115,9 +121,11 @@ VMIME_TEST_SUITE_BEGIN(attachmentHelperTest)
 		vmime::shared_ptr <vmime::message> msg = vmime::make_shared <vmime::message>();
 		msg->parse(data);
 
-		vmime::shared_ptr <vmime::attachment> att = vmime::make_shared <vmime::defaultAttachment>
-			(vmime::make_shared <vmime::stringContentHandler>("test"),
-				vmime::mediaType("image/jpeg"));
+		vmime::shared_ptr <vmime::attachment> att =
+			vmime::make_shared <vmime::defaultAttachment>(
+				vmime::make_shared <vmime::stringContentHandler>("test"),
+				vmime::mediaType("image/jpeg")
+			);
 
 		vmime::attachmentHelper::addAttachment(msg, att);
 
@@ -128,8 +136,8 @@ VMIME_TEST_SUITE_BEGIN(attachmentHelperTest)
 	}
 
 	// Initial part is encoded
-	void testAddAttachment3()
-	{
+	void testAddAttachment3() {
+
 		vmime::string data =
 "Content-Type: text/plain\r\n"
 "Content-Transfer-Encoding: base64\r\n"
@@ -139,9 +147,11 @@ VMIME_TEST_SUITE_BEGIN(attachmentHelperTest)
 		vmime::shared_ptr <vmime::message> msg = vmime::make_shared <vmime::message>();
 		msg->parse(data);
 
-		vmime::shared_ptr <vmime::attachment> att = vmime::make_shared <vmime::defaultAttachment>
-			(vmime::make_shared <vmime::stringContentHandler>("test"),
-				vmime::mediaType("image/jpeg"));
+		vmime::shared_ptr <vmime::attachment> att =
+			vmime::make_shared <vmime::defaultAttachment>(
+				vmime::make_shared <vmime::stringContentHandler>("test"),
+				vmime::mediaType("image/jpeg")
+			);
 
 		vmime::attachmentHelper::addAttachment(msg, att);
 
@@ -151,8 +161,8 @@ VMIME_TEST_SUITE_BEGIN(attachmentHelperTest)
 
 	// Content-Disposition: attachment
 	// No other field
-	void testIsBodyPartAnAttachment1()
-	{
+	void testIsBodyPartAnAttachment1() {
+
 		vmime::string data = "Content-Disposition: attachment\r\n\r\nFoo\r\n";
 
 		vmime::shared_ptr <vmime::bodyPart> p = vmime::make_shared <vmime::bodyPart>();
@@ -163,8 +173,8 @@ VMIME_TEST_SUITE_BEGIN(attachmentHelperTest)
 
 	// No Content-Disposition field
 	// Content-Type: multipart/* or text/*
-	void testIsBodyPartAnAttachment2()
-	{
+	void testIsBodyPartAnAttachment2() {
+
 		vmime::string data = "Content-Type: multipart/*\r\n\r\nFoo\r\n";
 
 		vmime::shared_ptr <vmime::bodyPart> p = vmime::make_shared <vmime::bodyPart>();
@@ -180,8 +190,8 @@ VMIME_TEST_SUITE_BEGIN(attachmentHelperTest)
 	}
 
 	// No Content-Disposition field
-	void testIsBodyPartAnAttachment3()
-	{
+	void testIsBodyPartAnAttachment3() {
+
 		vmime::string data = "Content-Type: application/octet-stream\r\n\r\nFoo\r\n";
 
 		vmime::shared_ptr <vmime::bodyPart> p = vmime::make_shared <vmime::bodyPart>();
@@ -192,8 +202,8 @@ VMIME_TEST_SUITE_BEGIN(attachmentHelperTest)
 
 	// Content-Disposition: attachment
 	// Content-Id field present
-	void testIsBodyPartAnAttachment4()
-	{
+	void testIsBodyPartAnAttachment4() {
+
 		vmime::string data = "Content-Disposition: attachment\r\n"
 			"Content-Type: application/octet-stream\r\n"
 			"Content-Id: bar\r\n"
@@ -205,8 +215,8 @@ VMIME_TEST_SUITE_BEGIN(attachmentHelperTest)
 		VASSERT_EQ("1", false, vmime::attachmentHelper::isBodyPartAnAttachment(p));
 	}
 
-	void testGetBodyPartAttachment()
-	{
+	void testGetBodyPartAttachment() {
+
 		vmime::string data =
 			"Content-Type: image/jpeg\r\n"
 			"Content-Description: foobar\r\n"
@@ -238,8 +248,8 @@ VMIME_TEST_SUITE_BEGIN(attachmentHelperTest)
 		VASSERT_EQ("7", part->getHeader()->generate(), att->getHeader()->generate());
 	}
 
-	void testAddAttachmentMessage1()
-	{
+	void testAddAttachmentMessage1() {
+
 		const vmime::string data =
 "Subject: Test message\r\n"
 "Content-Type: text/plain\r\n"
@@ -282,8 +292,8 @@ VMIME_TEST_SUITE_BEGIN(attachmentHelperTest)
 		VASSERT_EQ("4", "Attached message body", extractBodyContents(amsgOut));
 	}
 
-	void testGetBodyPartAttachmentMessage()
-	{
+	void testGetBodyPartAttachmentMessage() {
+
 		const vmime::string data =
 "Subject: Test message\r\n"
 "Content-Type: multipart/mixed; boundary=\"foo\"\r\n"
@@ -305,8 +315,8 @@ VMIME_TEST_SUITE_BEGIN(attachmentHelperTest)
 
 		VASSERT_EQ("0", 2, msg->getBody()->getPartCount());
 
-		vmime::shared_ptr <const vmime::attachment> att = vmime::attachmentHelper::
-			getBodyPartAttachment(msg->getBody()->getPartAt(0));
+		vmime::shared_ptr <const vmime::attachment> att =
+			vmime::attachmentHelper::getBodyPartAttachment(msg->getBody()->getPartAt(0));
 
 		VASSERT("1", att != NULL);
 
@@ -323,4 +333,3 @@ VMIME_TEST_SUITE_BEGIN(attachmentHelperTest)
 	}
 
 VMIME_TEST_SUITE_END
-

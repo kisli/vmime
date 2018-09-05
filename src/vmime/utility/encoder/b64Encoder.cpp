@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -30,18 +30,18 @@ namespace utility {
 namespace encoder {
 
 
-b64Encoder::b64Encoder()
-{
+b64Encoder::b64Encoder() {
+
 }
 
 
-const std::vector <string> b64Encoder::getAvailableProperties() const
-{
+const std::vector <string> b64Encoder::getAvailableProperties() const {
+
 	std::vector <string> list(encoder::getAvailableProperties());
 
 	list.push_back("maxlinelength");
 
-	return (list);
+	return list;
 }
 
 
@@ -49,8 +49,7 @@ const std::vector <string> b64Encoder::getAvailableProperties() const
 const unsigned char b64Encoder::sm_alphabet[] =
 	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
 
-const unsigned char b64Encoder::sm_decodeMap[256] =
-{
+const unsigned char b64Encoder::sm_decodeMap[256] = {
 	0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,  // 0x00 - 0x0f
 	0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,  // 0x10 - 0x1f
 	0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0x3e,0xff,0xff,0xff,0x3f,  // 0x20 - 0x2f
@@ -75,9 +74,12 @@ const unsigned char b64Encoder::sm_decodeMap[256] =
 
 
 
-size_t b64Encoder::encode(utility::inputStream& in,
-	utility::outputStream& out, utility::progressListener* progress)
-{
+size_t b64Encoder::encode(
+	utility::inputStream& in,
+	utility::outputStream& out,
+	utility::progressListener* progress
+) {
+
 	in.reset();  // may not work...
 
 	const size_t propMaxLineLength =
@@ -99,72 +101,77 @@ size_t b64Encoder::encode(utility::inputStream& in,
 
 	size_t curCol = 0;
 
-	if (progress)
+	if (progress) {
 		progress->start(0);
+	}
 
-	while (bufferPos < bufferLength || !in.eof())
-	{
-		if (bufferPos >= bufferLength)
-		{
+	while (bufferPos < bufferLength || !in.eof()) {
+
+		if (bufferPos >= bufferLength) {
+
 			bufferLength = in.read(buffer, sizeof(buffer));
 			bufferPos = 0;
 
-			if (bufferLength == 0)
+			if (bufferLength == 0) {
 				break;
+			}
 		}
 
 		// Get 3 bytes of data
 		int count = 0;
 
-		while (count < 3 && bufferPos < bufferLength)
+		while (count < 3 && bufferPos < bufferLength) {
 			bytes[count++] = buffer[bufferPos++];
+		}
 
-		while (count < 3)
-		{
+		while (count < 3) {
+
 			// There may be more data in the next chunk...
-			if (bufferPos >= bufferLength)
-			{
+			if (bufferPos >= bufferLength) {
+
 				bufferLength = in.read(buffer, sizeof(buffer));
 				bufferPos = 0;
 
-				if (bufferLength == 0)
+				if (bufferLength == 0) {
 					break;
+				}
 			}
 
-			while (count < 3 && bufferPos < bufferLength)
+			while (count < 3 && bufferPos < bufferLength) {
 				bytes[count++] = buffer[bufferPos++];
+			}
 		}
 
 		// Encode data
-		switch (count)
-		{
-		case 1:
+		switch (count) {
 
-			output[0] = sm_alphabet[(bytes[0] & 0xFC) >> 2];
-			output[1] = sm_alphabet[(bytes[0] & 0x03) << 4];
-			output[2] = sm_alphabet[64]; // padding
-			output[3] = sm_alphabet[64]; // padding
+			case 1:
 
-			break;
+				output[0] = sm_alphabet[(bytes[0] & 0xFC) >> 2];
+				output[1] = sm_alphabet[(bytes[0] & 0x03) << 4];
+				output[2] = sm_alphabet[64]; // padding
+				output[3] = sm_alphabet[64]; // padding
 
-		case 2:
+				break;
 
-			output[0] = sm_alphabet[(bytes[0] & 0xFC) >> 2];
-			output[1] = sm_alphabet[((bytes[0] & 0x03) << 4) | ((bytes[1] & 0xF0) >> 4)];
-			output[2] = sm_alphabet[(bytes[1] & 0x0F) << 2];
-			output[3] = sm_alphabet[64]; // padding
+			case 2:
 
-			break;
+				output[0] = sm_alphabet[(bytes[0] & 0xFC) >> 2];
+				output[1] = sm_alphabet[((bytes[0] & 0x03) << 4) | ((bytes[1] & 0xF0) >> 4)];
+				output[2] = sm_alphabet[(bytes[1] & 0x0F) << 2];
+				output[3] = sm_alphabet[64]; // padding
 
-		default:
-		case 3:
+				break;
 
-			output[0] = sm_alphabet[(bytes[0] & 0xFC) >> 2];
-			output[1] = sm_alphabet[((bytes[0] & 0x03) << 4) | ((bytes[1] & 0xF0) >> 4)];
-			output[2] = sm_alphabet[((bytes[1] & 0x0F) << 2) | ((bytes[2] & 0xC0) >> 6)];
-			output[3] = sm_alphabet[(bytes[2] & 0x3F)];
+			default:
+			case 3:
 
-			break;
+				output[0] = sm_alphabet[(bytes[0] & 0xFC) >> 2];
+				output[1] = sm_alphabet[((bytes[0] & 0x03) << 4) | ((bytes[1] & 0xF0) >> 4)];
+				output[2] = sm_alphabet[((bytes[1] & 0x0F) << 2) | ((bytes[2] & 0xC0) >> 6)];
+				output[3] = sm_alphabet[(bytes[2] & 0x3F)];
+
+				break;
 		}
 
 		// Write encoded data to output stream
@@ -174,26 +181,30 @@ size_t b64Encoder::encode(utility::inputStream& in,
 		total += 4;
 		curCol += 4;
 
-		if (cutLines && curCol + 2 /* \r\n */ + 4 /* next bytes */ >= maxLineLength)
-		{
+		if (cutLines && curCol + 2 /* \r\n */ + 4 /* next bytes */ >= maxLineLength) {
 			out.write("\r\n", 2);
 			curCol = 0;
 		}
 
-		if (progress)
+		if (progress) {
 			progress->progress(inTotal, inTotal);
+		}
 	}
 
-	if (progress)
+	if (progress) {
 		progress->stop(inTotal);
+	}
 
-	return (total);
+	return total;
 }
 
 
-size_t b64Encoder::decode(utility::inputStream& in,
-	utility::outputStream& out, utility::progressListener* progress)
-{
+size_t b64Encoder::decode(
+	utility::inputStream& in,
+	utility::outputStream& out,
+	utility::progressListener* progress
+) {
+
 	in.reset();  // may not work...
 
 	// Process the data
@@ -207,73 +218,78 @@ size_t b64Encoder::decode(utility::inputStream& in,
 	byte_t bytes[4];
 	byte_t output[3];
 
-	if (progress)
+	if (progress) {
 		progress->start(0);
+	}
 
-	while (bufferPos < bufferLength || !in.eof())
-	{
+	while (bufferPos < bufferLength || !in.eof()) {
+
 		bytes[0] = '=';
 		bytes[1] = '=';
 		bytes[2] = '=';
 		bytes[3] = '=';
 
 		// Need to get more data?
-		if (bufferPos >= bufferLength)
-		{
+		if (bufferPos >= bufferLength) {
+
 			bufferLength = in.read(buffer, sizeof(buffer));
 			bufferPos = 0;
 
 			// No more data
-			if (bufferLength == 0)
+			if (bufferLength == 0) {
 				break;
+			}
 		}
 
 		// 4 bytes of input provide 3 bytes of output, so
 		// get the next 4 bytes from the input stream.
 		int count = 0;
 
-		while (count < 4 && bufferPos < bufferLength)
-		{
+		while (count < 4 && bufferPos < bufferLength) {
+
 			const byte_t c = buffer[bufferPos++];
 
-			if (!parserHelpers::isSpace(c))
+			if (!parserHelpers::isSpace(c)) {
 				bytes[count++] = c;
+			}
 		}
 
-		if (count != 4)
-		{
-			while (count < 4 && !in.eof())
-			{
+		if (count != 4) {
+
+			while (count < 4 && !in.eof()) {
+
 				// Data continues on the next chunk
 				bufferLength = in.read(buffer, sizeof(buffer));
 				bufferPos = 0;
 
-				while (count < 4 && bufferPos < bufferLength)
-				{
+				while (count < 4 && bufferPos < bufferLength) {
+
 					const byte_t c = buffer[bufferPos++];
 
-					if (!parserHelpers::isSpace(c))
+					if (!parserHelpers::isSpace(c)) {
 						bytes[count++] = c;
+					}
 				}
 			}
 		}
 
-		if (count != 4)  // input length is not a multiple of 4 bytes
+		if (count != 4) {  // input length is not a multiple of 4 bytes
 			break;
+		}
 
 		// Decode the bytes
 		byte_t c1 = bytes[0];
 		byte_t c2 = bytes[1];
 
-		if (c1 == '=' || c2 == '=')  // end
+		if (c1 == '=' || c2 == '=') {  // end
 			break;
+		}
 
 		output[0] = static_cast <byte_t>((sm_decodeMap[c1] << 2) | ((sm_decodeMap[c2] & 0x30) >> 4));
 
 		c1 = bytes[2];
 
-		if (c1 == '=')  // end
-		{
+		if (c1 == '=') {  // end
 			B64_WRITE(out, output, 1);
 			total += 1;
 			break;
@@ -283,8 +299,7 @@ size_t b64Encoder::decode(utility::inputStream& in,
 
 		c2 = bytes[3];
 
-		if (c2 == '=')  // end
-		{
+		if (c2 == '=') {  // end
 			B64_WRITE(out, output, 2);
 			total += 2;
 			break;
@@ -296,19 +311,21 @@ size_t b64Encoder::decode(utility::inputStream& in,
 		total += 3;
 		inTotal += count;
 
-		if (progress)
+		if (progress) {
 			progress->progress(inTotal, inTotal);
+		}
 	}
 
-	if (progress)
+	if (progress) {
 		progress->stop(inTotal);
+	}
 
-	return (total);
+	return total;
 }
 
 
-size_t b64Encoder::getEncodedSize(const size_t n) const
-{
+size_t b64Encoder::getEncodedSize(const size_t n) const {
+
 	const size_t propMaxLineLength =
 		getProperties().getProperty <size_t>("maxlinelength", static_cast <size_t>(-1));
 
@@ -321,8 +338,8 @@ size_t b64Encoder::getEncodedSize(const size_t n) const
 }
 
 
-size_t b64Encoder::getDecodedSize(const size_t n) const
-{
+size_t b64Encoder::getDecodedSize(const size_t n) const {
+
 	// 4 bytes of input provide 3 bytes of output
 	return (n * 3) / 4;
 }

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -52,90 +52,112 @@ namespace net {
 namespace maildir {
 
 
-maildirStore::maildirStore(const shared_ptr <session>& sess, const shared_ptr <security::authenticator>& auth)
-	: store(sess, getInfosInstance(), auth), m_connected(false)
-{
+maildirStore::maildirStore(
+	const shared_ptr <session>& sess,
+	const shared_ptr <security::authenticator>& auth
+)
+	: store(sess, getInfosInstance(), auth),
+	  m_connected(false) {
+
 }
 
 
-maildirStore::~maildirStore()
-{
-	try
-	{
-		if (isConnected())
+maildirStore::~maildirStore() {
+
+	try {
+
+		if (isConnected()) {
 			disconnect();
-	}
-	catch (...)
-	{
+		}
+
+	} catch (...) {
+
 		// Don't throw in destructor
 	}
 }
 
 
-const string maildirStore::getProtocolName() const
-{
+const string maildirStore::getProtocolName() const {
+
 	return "maildir";
 }
 
 
-shared_ptr <folder> maildirStore::getRootFolder()
-{
-	if (!isConnected())
-		throw exceptions::illegal_state("Not connected");
+shared_ptr <folder> maildirStore::getRootFolder() {
 
-	return shared_ptr <maildirFolder>
-		(new maildirFolder(folder::path(),
-		                   dynamicCast <maildirStore>(shared_from_this())));
+	if (!isConnected()) {
+		throw exceptions::illegal_state("Not connected");
+	}
+
+	return shared_ptr <maildirFolder>(
+		new maildirFolder(
+			folder::path(),
+			dynamicCast <maildirStore>(shared_from_this())
+		)
+	);
 }
 
 
-shared_ptr <folder> maildirStore::getDefaultFolder()
-{
-	if (!isConnected())
-		throw exceptions::illegal_state("Not connected");
+shared_ptr <folder> maildirStore::getDefaultFolder() {
 
-	return shared_ptr <maildirFolder>
-		(new maildirFolder(folder::path::component("inbox"),
-		                   dynamicCast <maildirStore>(shared_from_this())));
+	if (!isConnected()) {
+		throw exceptions::illegal_state("Not connected");
+	}
+
+	return shared_ptr <maildirFolder>(
+		new maildirFolder(
+			folder::path::component("inbox"),
+			dynamicCast <maildirStore>(shared_from_this())
+		)
+	);
 }
 
 
-shared_ptr <folder> maildirStore::getFolder(const folder::path& path)
-{
-	if (!isConnected())
-		throw exceptions::illegal_state("Not connected");
+shared_ptr <folder> maildirStore::getFolder(const folder::path& path) {
 
-	return shared_ptr <maildirFolder>
-		(new maildirFolder(path, dynamicCast <maildirStore>(shared_from_this())));
+	if (!isConnected()) {
+		throw exceptions::illegal_state("Not connected");
+	}
+
+	return shared_ptr <maildirFolder>(
+		new maildirFolder(
+			path,
+			dynamicCast <maildirStore>(shared_from_this())
+		)
+	);
 }
 
 
-bool maildirStore::isValidFolderName(const folder::path::component& name) const
-{
-	if (!platform::getHandler()->getFileSystemFactory()->isValidPathComponent(name))
+bool maildirStore::isValidFolderName(const folder::path::component& name) const {
+
+	if (!platform::getHandler()->getFileSystemFactory()->isValidPathComponent(name)) {
 		return false;
+	}
 
 	const string& buf = name.getBuffer();
 
 	// Name cannot start/end with spaces
-	if (utility::stringUtils::trim(buf) != buf)
+	if (utility::stringUtils::trim(buf) != buf) {
 		return false;
+	}
 
 	// Name cannot start with '.'
 	const size_t length = buf.length();
 	size_t pos = 0;
 
-	while ((pos < length) && (buf[pos] == '.'))
+	while ((pos < length) && (buf[pos] == '.')) {
 		++pos;
+	}
 
 	return (pos == 0);
 }
 
 
-void maildirStore::connect()
-{
-	if (isConnected())
+void maildirStore::connect() {
+
+	if (isConnected()) {
 		throw exceptions::already_connected();
+	}
 
 	// Get root directory
 	shared_ptr <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
@@ -145,14 +167,11 @@ void maildirStore::connect()
 	shared_ptr <utility::file> rootDir = fsf->create(m_fsPath);
 
 	// Try to create the root directory if it does not exist
-	if (!(rootDir->exists() && rootDir->isDirectory()))
-	{
-		try
-		{
+	if (!(rootDir->exists() && rootDir->isDirectory())) {
+
+		try {
 			rootDir->createDirectory();
-		}
-		catch (exceptions::filesystem_exception& e)
-		{
+		} catch (exceptions::filesystem_exception& e) {
 			throw exceptions::connection_error("Cannot create root directory.", e);
 		}
 	}
@@ -163,29 +182,29 @@ void maildirStore::connect()
 }
 
 
-bool maildirStore::isConnected() const
-{
-	return (m_connected);
+bool maildirStore::isConnected() const {
+
+	return m_connected;
 }
 
 
-bool maildirStore::isSecuredConnection() const
-{
+bool maildirStore::isSecuredConnection() const {
+
 	return false;
 }
 
 
-shared_ptr <connectionInfos> maildirStore::getConnectionInfos() const
-{
+shared_ptr <connectionInfos> maildirStore::getConnectionInfos() const {
+
 	return make_shared <defaultConnectionInfos>("localhost", static_cast <port_t>(0));
 }
 
 
-void maildirStore::disconnect()
-{
+void maildirStore::disconnect() {
+
 	for (std::list <maildirFolder*>::iterator it = m_folders.begin() ;
-	     it != m_folders.end() ; ++it)
-	{
+	     it != m_folders.end() ; ++it) {
+
 		(*it)->onStoreDisconnected();
 	}
 
@@ -195,53 +214,56 @@ void maildirStore::disconnect()
 }
 
 
-void maildirStore::noop()
-{
+void maildirStore::noop() {
+
 	// Nothing to do.
 }
 
 
-shared_ptr <maildirFormat> maildirStore::getFormat()
-{
+shared_ptr <maildirFormat> maildirStore::getFormat() {
+
 	return m_format;
 }
 
 
-shared_ptr <const maildirFormat> maildirStore::getFormat() const
-{
+shared_ptr <const maildirFormat> maildirStore::getFormat() const {
+
 	return m_format;
 }
 
 
-void maildirStore::registerFolder(maildirFolder* folder)
-{
+void maildirStore::registerFolder(maildirFolder* folder) {
+
 	m_folders.push_back(folder);
 }
 
 
-void maildirStore::unregisterFolder(maildirFolder* folder)
-{
+void maildirStore::unregisterFolder(maildirFolder* folder) {
+
 	std::list <maildirFolder*>::iterator it = std::find(m_folders.begin(), m_folders.end(), folder);
-	if (it != m_folders.end()) m_folders.erase(it);
+
+	if (it != m_folders.end()) {
+		m_folders.erase(it);
+	}
 }
 
 
-const utility::path& maildirStore::getFileSystemPath() const
-{
-	return (m_fsPath);
+const utility::path& maildirStore::getFileSystemPath() const {
+
+	return m_fsPath;
 }
 
 
-int maildirStore::getCapabilities() const
-{
-	return (CAPABILITY_CREATE_FOLDER |
-	        CAPABILITY_RENAME_FOLDER |
-	        CAPABILITY_ADD_MESSAGE |
-	        CAPABILITY_COPY_MESSAGE |
-	        CAPABILITY_DELETE_MESSAGE |
-	        CAPABILITY_PARTIAL_FETCH |
-	        CAPABILITY_MESSAGE_FLAGS |
-	        CAPABILITY_EXTRACT_PART);
+int maildirStore::getCapabilities() const {
+
+	return CAPABILITY_CREATE_FOLDER |
+	       CAPABILITY_RENAME_FOLDER |
+	       CAPABILITY_ADD_MESSAGE |
+	       CAPABILITY_COPY_MESSAGE |
+	       CAPABILITY_DELETE_MESSAGE |
+	       CAPABILITY_PARTIAL_FETCH |
+	       CAPABILITY_MESSAGE_FLAGS |
+	       CAPABILITY_EXTRACT_PART;
 }
 
 
@@ -251,14 +273,14 @@ int maildirStore::getCapabilities() const
 maildirServiceInfos maildirStore::sm_infos;
 
 
-const serviceInfos& maildirStore::getInfosInstance()
-{
+const serviceInfos& maildirStore::getInfosInstance() {
+
 	return sm_infos;
 }
 
 
-const serviceInfos& maildirStore::getInfos() const
-{
+const serviceInfos& maildirStore::getInfos() const {
+
 	return sm_infos;
 }
 

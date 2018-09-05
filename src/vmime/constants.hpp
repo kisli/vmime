@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free SOFTWARE; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -37,11 +37,11 @@
 #endif
 
 
-namespace vmime
-{
+namespace vmime {
+
 	/** Constants for media types. */
-	namespace mediaTypes
-	{
+	namespace mediaTypes {
+
 		// Types
 		extern VMIME_EXPORT const char* const TEXT;
 		extern VMIME_EXPORT const char* const MULTIPART;
@@ -83,8 +83,8 @@ namespace vmime
 
 
 	/** Constants for encoding types. */
-	namespace encodingTypes
-	{
+	namespace encodingTypes {
+
 		extern VMIME_EXPORT const char* const SEVEN_BIT;
 		extern VMIME_EXPORT const char* const EIGHT_BIT;
 		extern VMIME_EXPORT const char* const BASE64;
@@ -95,16 +95,16 @@ namespace vmime
 
 
 	/** Constants for content disposition types (RFC-2183). */
-	namespace contentDispositionTypes
-	{
+	namespace contentDispositionTypes {
+
 		extern VMIME_EXPORT const char* const INLINE;
 		extern VMIME_EXPORT const char* const ATTACHMENT;
 	}
 
 
 	/** Constants for charsets. */
-	namespace charsets
-	{
+	namespace charsets {
+
 		extern VMIME_EXPORT const char* const ISO8859_1;
 		extern VMIME_EXPORT const char* const ISO8859_2;
 		extern VMIME_EXPORT const char* const ISO8859_3;
@@ -169,8 +169,8 @@ namespace vmime
 	}
 
 	/** Constants for standard field names. */
-	namespace fields
-	{
+	namespace fields {
+
 		extern VMIME_EXPORT const char* const RECEIVED;
 		extern VMIME_EXPORT const char* const FROM;
 		extern VMIME_EXPORT const char* const SENDER;
@@ -213,8 +213,8 @@ namespace vmime
 	}
 
 	/** Constants for disposition action modes (RFC-3978). */
-	namespace dispositionActionModes
-	{
+	namespace dispositionActionModes {
+
 		/** User implicitely displayed or deleted the message (filter or
 		  * any other automatic action). */
 		extern VMIME_EXPORT const char* const AUTOMATIC;
@@ -224,8 +224,8 @@ namespace vmime
 	}
 
 	/** Constants for disposition sending modes (RFC-3798). */
-	namespace dispositionSendingModes
-	{
+	namespace dispositionSendingModes {
+
 		/** The MDN was sent because the MUA had previously been configured
 		  * to do so automatically. */
 		extern VMIME_EXPORT const char* const SENT_AUTOMATICALLY;
@@ -235,8 +235,8 @@ namespace vmime
 	}
 
 	/** Constants for disposition types (RFC-3798). */
-	namespace dispositionTypes
-	{
+	namespace dispositionTypes {
+
 		/** Message has been displayed to the user. */
 		extern VMIME_EXPORT const char* const DISPLAYED;
 		/** Message has been deleted without being displayed. */
@@ -246,8 +246,8 @@ namespace vmime
 	}
 
 	/** Constants for disposition modifiers (RFC-3798). */
-	namespace dispositionModifiers
-	{
+	namespace dispositionModifiers {
+
 		extern VMIME_EXPORT const char* const ERROR;
 	}
 }

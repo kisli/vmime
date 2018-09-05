@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -47,22 +47,20 @@ namespace cert {
 
 /** Identity certificate based on X.509 standard.
   */
-class VMIME_EXPORT X509Certificate : public certificate
-{
+class VMIME_EXPORT X509Certificate : public certificate {
+
 public:
 
 	~X509Certificate();
 
 	/** Supported encodings for X.509 certificates. */
-	enum Format
-	{
+	enum Format {
 		FORMAT_DER,   /**< DER encoding */
 		FORMAT_PEM    /**< PEM encoding */
 	};
 
 	/** Supported digest algorithms (used for fingerprint). */
-	enum DigestAlgorithm
-	{
+	enum DigestAlgorithm {
 		DIGEST_MD5,   /**< MD5 digest */
 		DIGEST_SHA1   /**< SHA1 digest */
 	};
@@ -85,22 +83,27 @@ public:
 	  */
 	static shared_ptr <X509Certificate> import(const byte_t* data, const size_t length);
 
-	/** Imports a DER or PEM encoded X.509 certificate.
+	/** Import sveral DER or PEM encoded X.509 certificates.
 	  *
 	  * @param is input stream to read data from
 	  * @param certs the resulting list of certificates
 	  */
-	static void import(utility::inputStream& is,
-		std::vector <shared_ptr <X509Certificate> >& certs);
+	static void import(
+		utility::inputStream& is,
+		std::vector <shared_ptr <X509Certificate> >& certs
+	);
 
-	/** Imports a DER or PEM encoded X.509 certificate.
+	/** Import several DER or PEM encoded X.509 certificates.
 	 *
 	 * @param data points to raw data
 	 * @param length size of data
 	 * @param certs the resulting list of certificates
 	 */
-	static void import(const byte_t* data, const size_t length,
-		std::vector <shared_ptr <X509Certificate> >& certs);
+	static void import(
+		const byte_t* data,
+		const size_t length,
+		std::vector <shared_ptr <X509Certificate> >& certs
+	);
 
 	/** Exports this X.509 certificate to the specified format.
 	  *
@@ -147,9 +150,10 @@ public:
 	  * not match the identities in the certificate
 	  * @return true if the match is successful, false otherwise
 	  */
-	virtual bool verifyHostName
-		(const string& hostname,
-		 std::vector <std::string>* nonMatchingNames = NULL) const = 0;
+	virtual bool verifyHostName(
+		const string& hostname,
+		std::vector <std::string>* nonMatchingNames = NULL
+	) const = 0;
 
 	/** Gets the expiration date of this certificate. This is the date
 	  * at which this certificate will not be valid anymore.

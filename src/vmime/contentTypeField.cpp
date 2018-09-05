@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -25,89 +25,90 @@
 #include "vmime/exception.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
-contentTypeField::contentTypeField()
-{
+contentTypeField::contentTypeField() {
+
 }
 
 
 contentTypeField::contentTypeField(contentTypeField&)
-	: parameterizedHeaderField()
-{
+	: parameterizedHeaderField() {
+
 }
 
 
-bool contentTypeField::hasBoundary() const
-{
+bool contentTypeField::hasBoundary() const {
+
 	return hasParameter("boundary");
 }
 
 
-const string contentTypeField::getBoundary() const
-{
+const string contentTypeField::getBoundary() const {
+
 	shared_ptr <parameter> param = findParameter("boundary");
 
-	if (param)
+	if (param) {
 		return param->getValue().getBuffer();
-	else
+	} else {
 		return "";
+	}
 }
 
 
-void contentTypeField::setBoundary(const string& boundary)
-{
+void contentTypeField::setBoundary(const string& boundary) {
+
 	getParameter("boundary")->setValue(word(boundary, vmime::charsets::US_ASCII));
 }
 
 
-bool contentTypeField::hasCharset() const
-{
+bool contentTypeField::hasCharset() const {
+
 	return hasParameter("charset");
 }
 
 
-const charset contentTypeField::getCharset() const
-{
+const charset contentTypeField::getCharset() const {
+
 	shared_ptr <parameter> param = findParameter("charset");
 
-	if (param)
+	if (param) {
 		return param->getValueAs <charset>();
-	else
+	} else {
 		return charset();
+	}
 }
 
 
-void contentTypeField::setCharset(const charset& ch)
-{
+void contentTypeField::setCharset(const charset& ch) {
+
 	getParameter("charset")->setValue(ch);
 }
 
 
-bool contentTypeField::hasReportType() const
-{
+bool contentTypeField::hasReportType() const {
+
 	return hasParameter("report-type");
 }
 
 
-const string contentTypeField::getReportType() const
-{
+const string contentTypeField::getReportType() const {
+
 	shared_ptr <parameter> param = findParameter("report-type");
 
-	if (param)
+	if (param) {
 		return param->getValue().getBuffer();
-	else
+	} else {
 		return "";
+	}
 }
 
 
-void contentTypeField::setReportType(const string& reportType)
-{
+void contentTypeField::setReportType(const string& reportType) {
+
 	getParameter("report-type")->setValue(word(reportType, vmime::charsets::US_ASCII));
 }
 
 
 } // vmime
-

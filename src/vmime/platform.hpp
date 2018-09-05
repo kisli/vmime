@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -43,23 +43,20 @@
 #include "vmime/utility/sync/criticalSection.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 /** Allow setting or getting the current platform handler.
   */
+class VMIME_EXPORT platform {
 
-class VMIME_EXPORT platform
-{
 public:
 
 	/** Takes care of all platform-dependent operations. It offers an interface to
 	  * access platform-dependent objects: sockets, date/time, file system, etc.
 	  */
+	class VMIME_EXPORT handler : public object {
 
-	class VMIME_EXPORT handler : public object
-	{
 	public:
 
 		virtual ~handler();
@@ -142,8 +139,7 @@ public:
 
 
 	template <class TYPE>
-	static void setHandler()
-	{
+	static void setHandler() {
 		sm_handler = vmime::make_shared <TYPE>();
 	}
 
@@ -160,4 +156,3 @@ private:
 
 
 #endif // VMIME_PLATFORM_HPP_INCLUDED
-

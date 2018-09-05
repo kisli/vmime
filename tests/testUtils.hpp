@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -88,123 +88,134 @@
 #define VMIME_TEST(name)            CPPUNIT_TEST(name);
 
 
-namespace CppUnit
-{
+namespace CppUnit {
+
 	// Work-around for comparing 'std::string' against 'char*'
-	inline void assertEquals(const char* expected, const std::string actual,
-	                         SourceLine sourceLine, const std::string &message)
-	{
+	inline void assertEquals(
+		const char* expected,
+		const std::string actual,
+		SourceLine sourceLine,
+		const std::string &message
+	) {
+
 		assertEquals(std::string(expected), actual, sourceLine, message);
 	}
 
 	template <typename X, typename Y>
-	void assertEquals(const X expected, const Y actual,
-	                  SourceLine sourceLine, const std::string &message)
-	{
+	void assertEquals(
+		const X expected,
+		const Y actual,
+		SourceLine sourceLine,
+		const std::string &message
+	) {
+
 		assertEquals(static_cast <Y>(expected), actual, sourceLine, message);
 	}
 }
 
 
-namespace std
-{
+namespace std {
 
 
-inline std::ostream& operator<<(std::ostream& os, const vmime::charset& ch)
-{
+inline std::ostream& operator<<(std::ostream& os, const vmime::charset& ch) {
+
 	os << "[charset: " << ch.getName() << "]";
-	return (os);
+	return os;
 }
 
 
-inline std::ostream& operator<<(std::ostream& os, const vmime::word& w)
-{
+inline std::ostream& operator<<(std::ostream& os, const vmime::word& w) {
+
 	os << "[word: charset=" << w.getCharset().getName()
 	   << ", buffer=" << w.getBuffer();
 
-	if (!w.getLanguage().empty())
+	if (!w.getLanguage().empty()) {
 		os << ", lang=" << w.getLanguage();
+	}
 
 	os << "]";
 
-	return (os);
+	return os;
 }
 
 
-inline std::ostream& operator<<(std::ostream& os, const vmime::text& txt)
-{
+inline std::ostream& operator<<(std::ostream& os, const vmime::text& txt) {
+
 	os << "[text: [";
 
-	for (size_t i = 0 ; i < txt.getWordCount() ; ++i)
-	{
+	for (size_t i = 0 ; i < txt.getWordCount() ; ++i) {
+
 		const vmime::word& w = *txt.getWordAt(i);
 
-		if (i != 0)
+		if (i != 0) {
 			os << ",";
+		}
 
 		os << w;
 	}
 
 	os << "]]";
 
-	return (os);
+	return os;
 }
 
 
-inline std::ostream& operator<<(std::ostream& os, const vmime::emailAddress& email)
-{
+inline std::ostream& operator<<(std::ostream& os, const vmime::emailAddress& email) {
+
 	os << email.generate();
 
-	return (os);
+	return os;
 }
 
 
-inline std::ostream& operator<<(std::ostream& os, const vmime::mailbox& mbox)
-{
+inline std::ostream& operator<<(std::ostream& os, const vmime::mailbox& mbox) {
+
 	os << "[mailbox: name=" << mbox.getName() << ", email=" << mbox.getEmail() << "]";
 
-	return (os);
+	return os;
 }
 
 
-inline std::ostream& operator<<(std::ostream& os, const vmime::mailboxGroup& group)
-{
+inline std::ostream& operator<<(std::ostream& os, const vmime::mailboxGroup& group) {
+
 	os << "[mailbox-group: name=" << group.getName() << ", list=[";
 
-	for (size_t i = 0 ; i < group.getMailboxCount() ; ++i)
-	{
-		if (i != 0)
+	for (size_t i = 0 ; i < group.getMailboxCount() ; ++i) {
+
+		if (i != 0) {
 			os << ",";
+		}
 
 		os << *group.getMailboxAt(i);
 	}
 
 	os << "]]";
 
-	return (os);
+	return os;
 }
 
 
-inline std::ostream& operator<<(std::ostream& os, const vmime::addressList& list)
-{
+inline std::ostream& operator<<(std::ostream& os, const vmime::addressList& list) {
+
 	os << "[address-list: [";
 
-	for (size_t i = 0 ; i < list.getAddressCount() ; ++i)
-	{
+	for (size_t i = 0 ; i < list.getAddressCount() ; ++i) {
+
 		const vmime::address& addr = *list.getAddressAt(i);
 
-		if (i != 0)
+		if (i != 0) {
 			os << ",";
+		}
 
-		if (addr.isGroup())
-		{
+		if (addr.isGroup()) {
+
 			const vmime::mailboxGroup& group =
 				dynamic_cast <const vmime::mailboxGroup&>(addr);
 
 			os << group;
-		}
-		else
-		{
+
+		} else {
+
 			const vmime::mailbox& mbox =
 				dynamic_cast <const vmime::mailbox&>(addr);
 
@@ -214,25 +225,25 @@ inline std::ostream& operator<<(std::ostream& os, const vmime::addressList& list
 
 	os << "]]";
 
-	return (os);
+	return os;
 }
 
 
-inline std::ostream& operator<<(std::ostream& os, const vmime::datetime& d)
-{
+inline std::ostream& operator<<(std::ostream& os, const vmime::datetime& d) {
+
 	os << "[datetime: " << d.getYear() << "/" << d.getMonth() << "/" << d.getDay();
 	os << " " << d.getHour() << ":" << d.getMinute() << ":" << d.getSecond();
 	os << " #" << d.getZone() << "]";
 
-	return (os);
+	return os;
 }
 
 
-inline std::ostream& operator<<(std::ostream& os, const vmime::encoding& enc)
-{
+inline std::ostream& operator<<(std::ostream& os, const vmime::encoding& enc) {
+
 	os << enc.generate();
 
-	return (os);
+	return os;
 }
 
 
@@ -246,8 +257,8 @@ inline std::ostream& operator<<(std::ostream& os, const vmime::encoding& enc)
 // and send(). Server reads incoming data with localReceive() and sends data
 // to client with localSend().
 
-class testSocket : public vmime::net::socket
-{
+class testSocket : public vmime::net::socket {
+
 public:
 
 	void connect(const vmime::string& address, const vmime::port_t port);
@@ -327,24 +338,26 @@ private:
 
 
 template <typename T>
-class testSocketFactory : public vmime::net::socketFactory
-{
+class testSocketFactory : public vmime::net::socketFactory {
+
 public:
 
-	vmime::shared_ptr <vmime::net::socket> create()
-	{
+	vmime::shared_ptr <vmime::net::socket> create() {
+
 		return vmime::make_shared <T>();
 	}
 
-	vmime::shared_ptr <vmime::net::socket> create(const vmime::shared_ptr <vmime::net::timeoutHandler>& /* th */)
-	{
+	vmime::shared_ptr <vmime::net::socket> create(
+		const vmime::shared_ptr <vmime::net::timeoutHandler>& /* th */
+	) {
+
 		return vmime::make_shared <T>();
 	}
 };
 
 
-class lineBasedTestSocket : public testSocket
-{
+class lineBasedTestSocket : public testSocket {
+
 public:
 
 	void onDataReceived();
@@ -361,8 +374,8 @@ private:
 };
 
 
-class testTimeoutHandler : public vmime::net::timeoutHandler
-{
+class testTimeoutHandler : public vmime::net::timeoutHandler {
+
 public:
 
 	testTimeoutHandler(const unsigned long delay = 3);
@@ -378,8 +391,8 @@ private:
 };
 
 
-class testTimeoutHandlerFactory : public vmime::net::timeoutHandlerFactory
-{
+class testTimeoutHandlerFactory : public vmime::net::timeoutHandlerFactory {
+
 public:
 
 	vmime::shared_ptr <vmime::net::timeoutHandler> create();

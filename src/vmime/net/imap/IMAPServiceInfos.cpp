@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -36,24 +36,24 @@ namespace imap {
 
 
 IMAPServiceInfos::IMAPServiceInfos(const bool imaps)
-	: m_imaps(imaps)
-{
+	: m_imaps(imaps) {
+
 }
 
 
-const string IMAPServiceInfos::getPropertyPrefix() const
-{
-	if (m_imaps)
+const string IMAPServiceInfos::getPropertyPrefix() const {
+
+	if (m_imaps) {
 		return "store.imaps.";
-	else
+	} else {
 		return "store.imap.";
+	}
 }
 
 
-const IMAPServiceInfos::props& IMAPServiceInfos::getProperties() const
-{
-	static props imapProps =
-	{
+const IMAPServiceInfos::props& IMAPServiceInfos::getProperties() const {
+
+	static props imapProps = {
 		// IMAP-specific options
 #if VMIME_HAVE_SASL_SUPPORT
 		property("options.sasl", serviceInfos::property::TYPE_BOOLEAN, "true"),
@@ -73,8 +73,7 @@ const IMAPServiceInfos::props& IMAPServiceInfos::getProperties() const
 		property(serviceInfos::property::SERVER_PORT, "143"),
 	};
 
-	static props imapsProps =
-	{
+	static props imapsProps = {
 		// IMAP-specific options
 #if VMIME_HAVE_SASL_SUPPORT
 		property("options.sasl", serviceInfos::property::TYPE_BOOLEAN, "true"),
@@ -98,8 +97,8 @@ const IMAPServiceInfos::props& IMAPServiceInfos::getProperties() const
 }
 
 
-const std::vector <serviceInfos::property> IMAPServiceInfos::getAvailableProperties() const
-{
+const std::vector <serviceInfos::property> IMAPServiceInfos::getAvailableProperties() const {
+
 	std::vector <property> list;
 	const props& p = getProperties();
 
@@ -114,8 +113,7 @@ const std::vector <serviceInfos::property> IMAPServiceInfos::getAvailablePropert
 	list.push_back(p.PROPERTY_AUTH_PASSWORD);
 
 #if VMIME_HAVE_TLS_SUPPORT
-	if (!m_imaps)
-	{
+	if (!m_imaps) {
 		list.push_back(p.PROPERTY_CONNECTION_TLS);
 		list.push_back(p.PROPERTY_CONNECTION_TLS_REQUIRED);
 	}

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -56,150 +56,157 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 	VMIME_TEST_LIST_END
 
 
-	void testCreateCommand()
-	{
+	void testCreateCommand() {
+
 		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::createCommand("MY_COMMAND");
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "MY_COMMAND", cmd->getText());
 	}
 
-	void testCreateCommandParams()
-	{
+	void testCreateCommandParams() {
+
 		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::createCommand("MY_COMMAND param1 param2");
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "MY_COMMAND param1 param2", cmd->getText());
 	}
 
-	void testHELO()
-	{
+	void testHELO() {
+
 		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::HELO("hostname");
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "HELO hostname", cmd->getText());
 	}
 
-	void testEHLO()
-	{
+	void testEHLO() {
+
 		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::EHLO("hostname");
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "EHLO hostname", cmd->getText());
 	}
 
-	void testAUTH()
-	{
+	void testAUTH() {
+
 		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::AUTH("saslmechanism");
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "AUTH saslmechanism", cmd->getText());
 	}
 
-	void testAUTH_InitialResponse()
-	{
+	void testAUTH_InitialResponse() {
+
 		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::AUTH("saslmechanism", "initial-response");
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "AUTH saslmechanism initial-response", cmd->getText());
 	}
 
-	void testSTARTTLS()
-	{
+	void testSTARTTLS() {
+
 		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::STARTTLS();
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "STARTTLS", cmd->getText());
 	}
 
-	void testMAIL()
-	{
+	void testMAIL() {
+
 		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::MAIL(vmime::mailbox("me@vmime.org"), false);
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "MAIL FROM:<me@vmime.org>", cmd->getText());
 	}
 
-	void testMAIL_Encoded()
-	{
-		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::MAIL
-			(vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), false);
+	void testMAIL_Encoded() {
+
+		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::MAIL(
+			vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), false
+		);
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "MAIL FROM:<mailtest@xn--r8jz45g.xn--zckzah>", cmd->getText());
 	}
 
-	void testMAIL_UTF8()
-	{
-		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::MAIL
-			(vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), true);
+	void testMAIL_UTF8() {
+
+		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::MAIL(
+			vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), true
+		);
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "MAIL FROM:<mailtest@例え.テスト> SMTPUTF8", cmd->getText());
 	}
 
-	void testMAIL_SIZE()
-	{
-		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::MAIL
-			(vmime::mailbox("me@vmime.org"), false, 123456789);
+	void testMAIL_SIZE() {
+
+		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::MAIL(
+			vmime::mailbox("me@vmime.org"), false, 123456789
+		);
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "MAIL FROM:<me@vmime.org> SIZE=123456789", cmd->getText());
 	}
 
-	void testMAIL_SIZE_UTF8()
-	{
-		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::MAIL
-			(vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), true, 123456789);
+	void testMAIL_SIZE_UTF8() {
+
+		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::MAIL(
+			vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), true, 123456789
+		);
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "MAIL FROM:<mailtest@例え.テスト> SMTPUTF8 SIZE=123456789", cmd->getText());
 	}
 
-	void testRCPT()
-	{
-		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::RCPT(vmime::mailbox("someone@vmime.org"), false);
+	void testRCPT() {
+
+		vmime::shared_ptr <SMTPCommand> cmd =
+			SMTPCommand::RCPT(vmime::mailbox("someone@vmime.org"), false);
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "RCPT TO:<someone@vmime.org>", cmd->getText());
 	}
 
-	void testRCPT_Encoded()
-	{
-		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::RCPT
-			(vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), false);
+	void testRCPT_Encoded() {
+
+		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::RCPT(
+			vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), false
+		);
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "RCPT TO:<mailtest@xn--r8jz45g.xn--zckzah>", cmd->getText());
 	}
 
-	void testRCPT_UTF8()
-	{
-		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::RCPT
-			(vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), true);
+	void testRCPT_UTF8() {
+
+		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::RCPT(
+			vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), true
+		);
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "RCPT TO:<mailtest@例え.テスト>", cmd->getText());
 	}
 
-	void testRSET()
-	{
+	void testRSET() {
+
 		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::RSET();
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "RSET", cmd->getText());
 	}
 
-	void testDATA()
-	{
+	void testDATA() {
+
 		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::DATA();
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "DATA", cmd->getText());
 	}
 
-	void testBDAT()
-	{
+	void testBDAT() {
+
 		vmime::shared_ptr <SMTPCommand> cmd1 = SMTPCommand::BDAT(12345, false);
 
 		VASSERT_NOT_NULL("Not null", cmd1);
@@ -211,24 +218,24 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 		VASSERT_EQ("Text", "BDAT 67890 LAST", cmd2->getText());
 	}
 
-	void testNOOP()
-	{
+	void testNOOP() {
+
 		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::NOOP();
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "NOOP", cmd->getText());
 	}
 
-	void testQUIT()
-	{
+	void testQUIT() {
+
 		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::QUIT();
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "QUIT", cmd->getText());
 	}
 
-	void testWriteToSocket()
-	{
+	void testWriteToSocket() {
+
 		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::createCommand("MY_COMMAND param1 param2");
 
 		vmime::shared_ptr <vmime::net::tracer> tracer;

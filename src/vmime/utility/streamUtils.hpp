@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -41,7 +41,6 @@ namespace utility {
   * @param os output stream (destination for data)
   * @return number of bytes copied
   */
-
 VMIME_EXPORT size_t bufferedStreamCopy(inputStream& is, outputStream& os);
 
 /** Copy data from one stream into another stream using a buffered method
@@ -53,9 +52,12 @@ VMIME_EXPORT size_t bufferedStreamCopy(inputStream& is, outputStream& os);
   * @param length maximum number of bytes to copy
   * @return number of bytes copied
   */
-
-VMIME_EXPORT size_t bufferedStreamCopyRange(inputStream& is, outputStream& os,
-	const size_t start, const size_t length);
+VMIME_EXPORT size_t bufferedStreamCopyRange(
+	inputStream& is,
+	outputStream& os,
+	const size_t start,
+	const size_t length
+);
 
 /** Copy data from one stream into another stream using a buffered method
   * and notify progress state of the operation.
@@ -66,9 +68,12 @@ VMIME_EXPORT size_t bufferedStreamCopyRange(inputStream& is, outputStream& os,
   * @param progress listener to notify
   * @return number of bytes copied
   */
-
-VMIME_EXPORT size_t bufferedStreamCopy(inputStream& is, outputStream& os,
-	const size_t length, progressListener* progress);
+VMIME_EXPORT size_t bufferedStreamCopy(
+	inputStream& is,
+	outputStream& os,
+	const size_t length,
+	progressListener* progress
+);
 
 
 } // utility
@@ -76,4 +81,3 @@ VMIME_EXPORT size_t bufferedStreamCopy(inputStream& is, outputStream& os,
 
 
 #endif // VMIME_UTILITY_STREAMUTILS_HPP_INCLUDED
-

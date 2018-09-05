@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -30,15 +30,13 @@
 #include "vmime/headerFieldValue.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 /** Base class for header fields.
   */
+class VMIME_EXPORT headerField : public component {
 
-class VMIME_EXPORT headerField : public component
-{
 	friend class headerFieldFactory;
 	friend class header;
 
@@ -90,8 +88,8 @@ public:
 	  * @return value object
 	  */
 	template <typename T>
-	shared_ptr <const T> getValue() const
-	{
+	shared_ptr <const T> getValue() const {
+
 		return dynamicCast <const T>(m_value);
 	}
 
@@ -107,8 +105,8 @@ public:
 	  * @return value object
 	  */
 	template <typename T>
-	shared_ptr <T> getValue()
-	{
+	shared_ptr <T> getValue() {
+
 		return dynamicCast <T>(m_value);
 	}
 
@@ -154,29 +152,32 @@ public:
 	  * @return parsed header field, or NULL if no more header field can be parsed
 	  * in the input buffer
 	  */
-	static shared_ptr <headerField> parseNext
-		(const parsingContext& ctx,
-		 const string& buffer,
-		 const size_t position,
-		 const size_t end,
-		 size_t* newPosition = NULL);
+	static shared_ptr <headerField> parseNext(
+		const parsingContext& ctx,
+		const string& buffer,
+		const size_t position,
+		const size_t end,
+		size_t* newPosition = NULL
+	);
 
 	size_t getGeneratedSize(const generationContext& ctx);
 
 protected:
 
-	void parseImpl
-		(const parsingContext& ctx,
-		 const string& buffer,
-		 const size_t position,
-		 const size_t end,
-		 size_t* newPosition = NULL);
+	void parseImpl(
+		const parsingContext& ctx,
+		const string& buffer,
+		const size_t position,
+		const size_t end,
+		size_t* newPosition = NULL
+	);
 
-	void generateImpl
-		(const generationContext& ctx,
-		 utility::outputStream& os,
-		 const size_t curLinePos = 0,
-		 size_t* newLinePos = NULL) const;
+	void generateImpl(
+		const generationContext& ctx,
+		utility::outputStream& os,
+		const size_t curLinePos = 0,
+		size_t* newLinePos = NULL
+	) const;
 
 
 	string m_name;

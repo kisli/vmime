@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -37,8 +37,8 @@ VMIME_TEST_SUITE_BEGIN(POP3StoreTest)
 	VMIME_TEST_LIST_END
 
 
-	void testCreateFromURL()
-	{
+	void testCreateFromURL() {
+
 		vmime::shared_ptr <vmime::net::session> sess = vmime::net::session::create();
 
 		// POP3
@@ -54,8 +54,8 @@ VMIME_TEST_SUITE_BEGIN(POP3StoreTest)
 		VASSERT_TRUE("pop3s", typeid(*store2) == typeid(vmime::net::pop3::POP3SStore));
 	}
 
-	void testConnectToInvalidServer()
-	{
+	void testConnectToInvalidServer() {
+
 		vmime::shared_ptr <vmime::net::session> sess = vmime::net::session::create();
 
 		vmime::utility::url url("pop3://invalid-pop3-server");

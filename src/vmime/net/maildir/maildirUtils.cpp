@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -41,17 +41,17 @@ namespace net {
 namespace maildir {
 
 
-bool maildirUtils::isMessageFile(const utility::file& file)
-{
+bool maildirUtils::isMessageFile(const utility::file& file) {
+
 	// Ignore files which name begins with '.'
 	if (file.isFile() &&
 	    file.getFullPath().getLastComponent().getBuffer().length() >= 1 &&
-	    file.getFullPath().getLastComponent().getBuffer()[0] != '.')
-	{
-		return (true);
+	    file.getFullPath().getLastComponent().getBuffer()[0] != '.') {
+
+		return true;
 	}
 
-	return (false);
+	return false;
 }
 
 
@@ -68,28 +68,28 @@ bool maildirUtils::isMessageFile(const utility::file& file)
 // characters when reading file names.
 
 
-const utility::file::path::component maildirUtils::extractId
-	(const utility::file::path::component& filename)
-{
+const utility::file::path::component maildirUtils::extractId(
+	const utility::file::path::component& filename
+) {
+
 	size_t sep = filename.getBuffer().rfind(':');  // try colon
 
-	if (sep == string::npos)
-	{
+	if (sep == string::npos) {
 		sep = filename.getBuffer().rfind('-');  // try dash (Windows)
 		if (sep == string::npos) return (filename);
 	}
 
-	return (utility::path::component
-		(string(filename.getBuffer().begin(), filename.getBuffer().begin() + sep)));
+	return utility::path::component(
+		string(filename.getBuffer().begin(), filename.getBuffer().begin() + sep)
+	);
 }
 
 
-int maildirUtils::extractFlags(const utility::file::path::component& comp)
-{
+int maildirUtils::extractFlags(const utility::file::path::component& comp) {
+
 	size_t sep = comp.getBuffer().rfind(':');  // try colon
 
-	if (sep == string::npos)
-	{
+	if (sep == string::npos) {
 		sep = comp.getBuffer().rfind('-');  // try dash (Windows)
 		if (sep == string::npos) return 0;
 	}
@@ -99,25 +99,24 @@ int maildirUtils::extractFlags(const utility::file::path::component& comp)
 
 	int flags = 0;
 
-	for (size_t i = 0 ; i < count ; ++i)
-	{
-		switch (flagsString[i])
-		{
-		case 'R': case 'r': flags |= message::FLAG_REPLIED; break;
-		case 'S': case 's': flags |= message::FLAG_SEEN; break;
-		case 'T': case 't': flags |= message::FLAG_DELETED; break;
-		case 'F': case 'f': flags |= message::FLAG_MARKED; break;
-		case 'P': case 'p': flags |= message::FLAG_PASSED; break;
-		case 'D': case 'd': flags |= message::FLAG_DRAFT; break;
+	for (size_t i = 0 ; i < count ; ++i) {
+
+		switch (flagsString[i]) {
+			case 'R': case 'r': flags |= message::FLAG_REPLIED; break;
+			case 'S': case 's': flags |= message::FLAG_SEEN; break;
+			case 'T': case 't': flags |= message::FLAG_DELETED; break;
+			case 'F': case 'f': flags |= message::FLAG_MARKED; break;
+			case 'P': case 'p': flags |= message::FLAG_PASSED; break;
+			case 'D': case 'd': flags |= message::FLAG_DRAFT; break;
 		}
 	}
 
-	return (flags);
+	return flags;
 }
 
 
-const utility::file::path::component maildirUtils::buildFlags(const int flags)
-{
+const utility::file::path::component maildirUtils::buildFlags(const int flags) {
+
 	string str;
 	str.reserve(8);
 
@@ -130,24 +129,28 @@ const utility::file::path::component maildirUtils::buildFlags(const int flags)
 	if (flags & message::FLAG_DELETED) str += "T";
 	if (flags & message::FLAG_DRAFT)   str += "D";
 
-	return (utility::file::path::component(str));
+	return utility::file::path::component(str);
 }
 
 
-const utility::file::path::component maildirUtils::buildFilename
-	(const utility::file::path::component& id, const int flags)
-{
-	if (flags == message::FLAG_RECENT)
+const utility::file::path::component maildirUtils::buildFilename(
+	const utility::file::path::component& id,
+	const int flags
+) {
+
+	if (flags == message::FLAG_RECENT) {
 		return id;
-	else
-		return (buildFilename(id, buildFlags(flags)));
+	} else {
+		return buildFilename(id, buildFlags(flags));
+	}
 }
 
 
-const utility::file::path::component maildirUtils::buildFilename
-	(const utility::file::path::component& id,
-	 const utility::file::path::component& flags)
-{
+const utility::file::path::component maildirUtils::buildFilename(
+	const utility::file::path::component& id,
+	const utility::file::path::component& flags
+) {
+
 #if VMIME_PLATFORM_IS_WINDOWS
 	static const char DELIMITER[] = "-";
 #else
@@ -158,8 +161,8 @@ const utility::file::path::component maildirUtils::buildFilename
 }
 
 
-const utility::file::path::component maildirUtils::generateId()
-{
+const utility::file::path::component maildirUtils::generateId() {
+
 	std::ostringstream oss;
 	oss.imbue(std::locale::classic());
 
@@ -171,70 +174,64 @@ const utility::file::path::component maildirUtils::generateId()
 	oss << ".";
 	oss << platform::getHandler()->getHostName();
 
-	return (utility::file::path::component(oss.str()));
+	return utility::file::path::component(oss.str());
 }
 
 
-void maildirUtils::recursiveFSDelete(const shared_ptr <utility::file>& dir)
-{
+void maildirUtils::recursiveFSDelete(const shared_ptr <utility::file>& dir) {
+
 	shared_ptr <utility::fileIterator> files = dir->getFiles();
 
 	// First, delete files and subdirectories in this directory
-	while (files->hasMoreElements())
-	{
+	while (files->hasMoreElements()) {
+
 		shared_ptr <utility::file> file = files->nextElement();
 
-		if (file->isDirectory())
-		{
+		if (file->isDirectory()) {
+
 			maildirUtils::recursiveFSDelete(file);
-		}
-		else
-		{
-			try
-			{
+
+		} else {
+
+			try {
 				file->remove();
-			}
-			catch (exceptions::filesystem_exception&)
-			{
+			} catch (exceptions::filesystem_exception&) {
 				// Ignore
 			}
 		}
 	}
 
 	// Then, delete this (empty) directory
-	try
-	{
+	try {
 		dir->remove();
-	}
-	catch (exceptions::filesystem_exception&)
-	{
+	} catch (exceptions::filesystem_exception&) {
 		// Ignore
 	}
 }
 
 
 
-class maildirMessageSetEnumerator : public messageSetEnumerator
-{
+class maildirMessageSetEnumerator : public messageSetEnumerator {
+
 public:
 
 	maildirMessageSetEnumerator(const size_t msgCount)
-		: m_msgCount(msgCount)
-	{
+		: m_msgCount(msgCount) {
 
 	}
 
-	void enumerateNumberMessageRange(const vmime::net::numberMessageRange& range)
-	{
+	void enumerateNumberMessageRange(const vmime::net::numberMessageRange& range) {
+
 		size_t last = range.getLast();
 		if (last == size_t(-1)) last = m_msgCount;
 
-		for (size_t i = range.getFirst() ; i <= last ; ++i)
+		for (size_t i = range.getFirst() ; i <= last ; ++i) {
 			list.push_back(i);
+		}
 	}
 
-	void enumerateUIDMessageRange(const vmime::net::UIDMessageRange& /* range */)
-	{
+	void enumerateUIDMessageRange(const vmime::net::UIDMessageRange& /* range */) {
+
 		// Not supported
 	}
 
@@ -249,8 +246,11 @@ private:
 
 
 // static
-const std::vector <size_t> maildirUtils::messageSetToNumberList(const messageSet& msgs, const size_t msgCount)
-{
+const std::vector <size_t> maildirUtils::messageSetToNumberList(
+	const messageSet& msgs,
+	const size_t msgCount
+) {
+
 	maildirMessageSetEnumerator en(msgCount);
 	msgs.enumerate(en);
 
@@ -263,17 +263,19 @@ const std::vector <size_t> maildirUtils::messageSetToNumberList(const messageSet
 // messageIdComparator
 //
 
-maildirUtils::messageIdComparator::messageIdComparator
-	(const utility::file::path::component& comp)
-	: m_comp(maildirUtils::extractId(comp))
-{
+maildirUtils::messageIdComparator::messageIdComparator(
+	const utility::file::path::component& comp
+)
+	: m_comp(maildirUtils::extractId(comp)) {
+
 }
 
 
-bool maildirUtils::messageIdComparator::operator()
-	(const utility::file::path::component& other) const
-{
-	return (m_comp == maildirUtils::extractId(other));
+bool maildirUtils::messageIdComparator::operator()(
+	const utility::file::path::component& other
+) const {
+
+	return m_comp == maildirUtils::extractId(other);
 }
 
 

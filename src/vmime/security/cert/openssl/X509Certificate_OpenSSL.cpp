@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -65,12 +65,12 @@ static net::tls::OpenSSLInitializer::autoInitializer openSSLInitializer;
 
 #ifndef VMIME_BUILDING_DOC
 
-class monthMap
-{
+class monthMap {
+
 public:
 
-	monthMap()
-	{
+	monthMap() {
+
 		m_monthMap["jan"] = vmime::datetime::JAN;
 		m_monthMap["feb"] = vmime::datetime::FEB;
 		m_monthMap["mar"] = vmime::datetime::MAR;
@@ -85,15 +85,16 @@ public:
 		m_monthMap["dec"] = vmime::datetime::DEC;
 	}
 
-	int getMonth(vmime::string mstr)
-	{
+	int getMonth(vmime::string mstr) {
+
 		std::transform(mstr.begin(), mstr.end(), mstr.begin(), ::tolower);
 
 		std::map <vmime::string, vmime::datetime::Months>::const_iterator
 			c_it = m_monthMap.find(mstr);
 
-		if (c_it != m_monthMap.end())
+		if (c_it != m_monthMap.end()) {
 			return c_it->second;
+		}
 
 		return -1;
 	}
@@ -107,17 +108,18 @@ static monthMap sg_monthMap;
 
 
 
-struct OpenSSLX509CertificateInternalData
-{
-	OpenSSLX509CertificateInternalData()
-	{
+struct OpenSSLX509CertificateInternalData {
+
+	OpenSSLX509CertificateInternalData() {
+
 		cert = 0;
 	}
 
-	~OpenSSLX509CertificateInternalData()
-	{
-		if (cert)
+	~OpenSSLX509CertificateInternalData() {
+
+		if (cert) {
 			X509_free(cert);
+		}
 	}
 
 	X509* cert;
@@ -125,14 +127,14 @@ struct OpenSSLX509CertificateInternalData
 
 
 // Workaround for i2v() taking either a const or a non-const 'method' on some platforms
-STACK_OF(CONF_VALUE)* call_i2v(const X509V3_EXT_METHOD* m, void* p1, STACK_OF(CONF_VALUE)* p2)
-{
+STACK_OF(CONF_VALUE)* call_i2v(const X509V3_EXT_METHOD* m, void* p1, STACK_OF(CONF_VALUE)* p2) {
+
 	return m->i2v(m, p1, p2);
 }
 
 
-STACK_OF(CONF_VALUE)* call_i2v(X509V3_EXT_METHOD* m, void* p1, STACK_OF(CONF_VALUE)* p2)
-{
+STACK_OF(CONF_VALUE)* call_i2v(X509V3_EXT_METHOD* m, void* p1, STACK_OF(CONF_VALUE)* p2) {
+
 	return m->i2v(m, p1, p2);
 }
 
@@ -141,55 +143,55 @@ STACK_OF(CONF_VALUE)* call_i2v(X509V3_EXT_METHOD* m, void* p1, STACK_OF(CONF_VAL
 
 
 X509Certificate_OpenSSL::X509Certificate_OpenSSL()
-	: m_data(new OpenSSLX509CertificateInternalData)
-{
+	: m_data(new OpenSSLX509CertificateInternalData) {
+
 }
 
 
 X509Certificate_OpenSSL::X509Certificate_OpenSSL(X509* cert)
-	: m_data(new OpenSSLX509CertificateInternalData)
-{
+	: m_data(new OpenSSLX509CertificateInternalData) {
+
 	m_data->cert = X509_dup(cert);
 }
 
 
 X509Certificate_OpenSSL::X509Certificate_OpenSSL(const X509Certificate_OpenSSL&)
-	: X509Certificate(), m_data(NULL)
-{
+	: X509Certificate(), m_data(NULL) {
+
 	// Not used
 }
 
 
-X509Certificate_OpenSSL::~X509Certificate_OpenSSL()
-{
+X509Certificate_OpenSSL::~X509Certificate_OpenSSL() {
+
 	delete m_data;
 }
 
 
-void* X509Certificate_OpenSSL::getInternalData()
-{
+void* X509Certificate_OpenSSL::getInternalData() {
+
 	return &m_data->cert;
 }
 
 
 // static
-shared_ptr <X509Certificate> X509Certificate_OpenSSL::importInternal(X509* cert)
-{
-	if (cert)
+shared_ptr <X509Certificate> X509Certificate_OpenSSL::importInternal(X509* cert) {
+
+	if (cert) {
 		return make_shared <X509Certificate_OpenSSL>(reinterpret_cast <X509 *>(cert));
+	}
 
 	return null;
 }
 
 
 // static
-shared_ptr <X509Certificate> X509Certificate::import(utility::inputStream& is)
-{
+shared_ptr <X509Certificate> X509Certificate::import(utility::inputStream& is) {
+
 	byteArray bytes;
 	byte_t chunk[4096];
 
-	while (!is.eof())
-	{
+	while (!is.eof()) {
 		const size_t len = is.read(chunk, sizeof(chunk));
 		bytes.insert(bytes.end(), chunk, chunk + len);
 	}
@@ -199,15 +201,16 @@ shared_ptr <X509Certificate> X509Certificate::import(utility::inputStream& is)
 
 
 // static
-shared_ptr <X509Certificate> X509Certificate::import
-	(const byte_t* data, const size_t length)
-{
+shared_ptr <X509Certificate> X509Certificate::import(
+	const byte_t* data,
+	const size_t length
+) {
+
 	shared_ptr <X509Certificate_OpenSSL> cert = make_shared <X509Certificate_OpenSSL>();
 
 	BIO* membio = BIO_new_mem_buf(const_cast <byte_t*>(data), static_cast <int>(length));
 
-	if (!PEM_read_bio_X509(membio, &(cert->m_data->cert), 0, 0))
-	{
+	if (!PEM_read_bio_X509(membio, &(cert->m_data->cert), 0, 0)) {
 		BIO_vfree(membio);
 		return null;
 	}
@@ -219,14 +222,15 @@ shared_ptr <X509Certificate> X509Certificate::import
 
 
 // static
-void X509Certificate::import(utility::inputStream& is,
-	std::vector <shared_ptr <X509Certificate> >& certs)
-{
+void X509Certificate::import(
+	utility::inputStream& is,
+	std::vector <shared_ptr <X509Certificate> >& certs
+) {
+
 	byteArray bytes;
 	byte_t chunk[4096];
 
-	while (!is.eof())
-	{
+	while (!is.eof()) {
 		const size_t len = is.read(chunk, sizeof(chunk));
 		bytes.insert(bytes.end(), chunk, chunk + len);
 	}
@@ -236,16 +240,23 @@ void X509Certificate::import(utility::inputStream& is,
 
 
 // static
-void X509Certificate::import(const byte_t* data, const size_t length,
-	std::vector <shared_ptr <X509Certificate> >& certs)
-{
+void X509Certificate::import(
+	const byte_t* data,
+	const size_t length,
+	std::vector <shared_ptr <X509Certificate> >& certs
+) {
 
 	BIO* membio = BIO_new_mem_buf(const_cast <byte_t*>(data), static_cast <int>(length));
 	shared_ptr <X509Certificate_OpenSSL> cert = null;
 
 	while (true) {
+
 		cert = make_shared <X509Certificate_OpenSSL>();
-		if (!PEM_read_bio_X509(membio, &(cert->m_data->cert), 0, 0)) break;
+
+		if (!PEM_read_bio_X509(membio, &(cert->m_data->cert), 0, 0)) {
+			break;
+		}
+
 		certs.push_back(cert);
 	}
 
@@ -253,37 +264,41 @@ void X509Certificate::import(const byte_t* data, const size_t length,
 }
 
 
-void X509Certificate_OpenSSL::write
-	(utility::outputStream& os, const Format format) const
-{
+void X509Certificate_OpenSSL::write(
+	utility::outputStream& os,
+	const Format format
+) const {
+
 	BIO* membio = 0;
 	long dataSize = 0;
 	unsigned char* out = 0;
 
-	if (format == FORMAT_DER)
-	{
-		if ((dataSize = i2d_X509(m_data->cert, &out)) < 0)
+	if (format == FORMAT_DER) {
+
+		if ((dataSize = i2d_X509(m_data->cert, &out)) < 0) {
 			goto err;
+		}
 
 		os.write(reinterpret_cast <byte_t*>(out), dataSize);
 		os.flush();
 		OPENSSL_free(out);
-	}
-	else if (format == FORMAT_PEM)
-	{
+
+	} else if (format == FORMAT_PEM) {
+
 		membio = BIO_new(BIO_s_mem());
 		BIO_set_close(membio, BIO_CLOSE);
 
-		if (!PEM_write_bio_X509(membio, m_data->cert))
+		if (!PEM_write_bio_X509(membio, m_data->cert)) {
 			goto pem_err;
+		}
 
 		dataSize = BIO_get_mem_data(membio, &out);
 		os.write(reinterpret_cast <byte_t*>(out), dataSize);
 		os.flush();
 		BIO_vfree(membio);
-	}
-	else
-	{
+
+	} else {
+
 		throw unsupportedCertificateTypeException("Unknown format");
 	}
 
@@ -291,8 +306,9 @@ void X509Certificate_OpenSSL::write
 
 pem_err:
 	{
-		if (membio)
+		if (membio) {
 			BIO_vfree(membio);
+		}
 	}
 
 err:
@@ -300,14 +316,13 @@ err:
 		char errstr[256];
 		long ec = ERR_get_error();
 		ERR_error_string(ec, errstr);
-		throw certificateException(
-			"OpenSSLX509Certificate_OpenSSL::write exception - " + string(errstr));
+		throw certificateException("OpenSSLX509Certificate_OpenSSL::write exception - " + string(errstr));
 	}
 }
 
 
-const byteArray X509Certificate_OpenSSL::getSerialNumber() const
-{
+const byteArray X509Certificate_OpenSSL::getSerialNumber() const {
+
 	ASN1_INTEGER *serial = X509_get_serialNumber(m_data->cert);
 	BIGNUM *bnser = ASN1_INTEGER_to_BN(serial, NULL);
 	int n = BN_num_bytes(bnser);
@@ -320,8 +335,8 @@ const byteArray X509Certificate_OpenSSL::getSerialNumber() const
 }
 
 
-bool X509Certificate_OpenSSL::checkIssuer(const shared_ptr <const X509Certificate>& cert_) const
-{
+bool X509Certificate_OpenSSL::checkIssuer(const shared_ptr <const X509Certificate>& cert_) const {
+
 	shared_ptr <const X509Certificate_OpenSSL> cert =
 		dynamicCast <const X509Certificate_OpenSSL>(cert_);
 
@@ -347,8 +362,8 @@ bool X509Certificate_OpenSSL::checkIssuer(const shared_ptr <const X509Certificat
 }
 
 
-bool X509Certificate_OpenSSL::verify(const shared_ptr <const X509Certificate>& caCert_) const
-{
+bool X509Certificate_OpenSSL::verify(const shared_ptr <const X509Certificate>& caCert_) const {
+
 	shared_ptr <const X509Certificate_OpenSSL> caCert =
 		dynamicCast <const X509Certificate_OpenSSL>(caCert_);
 
@@ -358,25 +373,25 @@ bool X509Certificate_OpenSSL::verify(const shared_ptr <const X509Certificate>& c
 
 	X509_STORE *store = X509_STORE_new();
 
-	if (store)
-	{
+	if (store) {
+
 		X509_STORE_CTX *verifyCtx = X509_STORE_CTX_new();
 
-		if (verifyCtx)
-		{
-			if (X509_STORE_add_cert(store, caCert->m_data->cert))
-			{
+		if (verifyCtx) {
+
+			if (X509_STORE_add_cert(store, caCert->m_data->cert)) {
+
 				X509_STORE_CTX_init(verifyCtx, store, m_data->cert, NULL);
 
 				int ret = X509_verify_cert(verifyCtx);
 
-				if (ret == 1)
-				{
+				if (ret == 1) {
+
 					verified = true;
 					error = false;
-				}
-				else if (ret == 0)
-				{
+
+				} else if (ret == 0) {
+
 					verified = false;
 					error = false;
 				}
@@ -395,8 +410,8 @@ bool X509Certificate_OpenSSL::verify(const shared_ptr <const X509Certificate>& c
 
 
 // static
-bool X509Certificate_OpenSSL::cnMatch(const char* cnBuf, const char* host)
-{
+bool X509Certificate_OpenSSL::cnMatch(const char* cnBuf, const char* host) {
+
 	// Right-to-left match, looking for a '*' wildcard
 	const bool hasWildcard = (strlen(cnBuf) > 1 && cnBuf[0] == '*' && cnBuf[1] == '.');
 	const char* cnBufReverseEndPtr = (cnBuf + (hasWildcard ? 2 : 0));
@@ -405,29 +420,34 @@ bool X509Certificate_OpenSSL::cnMatch(const char* cnBuf, const char* host)
 
 	bool matches = true;
 
-	while (matches && --hostPtr >= host && --cnPtr >= cnBufReverseEndPtr)
+	while (matches && --hostPtr >= host && --cnPtr >= cnBufReverseEndPtr) {
 		matches = (toupper(*hostPtr) == toupper(*cnPtr));
+	}
 
 	return matches;
 }
 
 
-bool X509Certificate_OpenSSL::verifyHostName
-	(const string& hostname, std::vector <std::string>* nonMatchingNames) const
-{
+bool X509Certificate_OpenSSL::verifyHostName(
+	const string& hostname,
+	std::vector <std::string>* nonMatchingNames
+) const {
+
 	// First, check subject common name against hostname
 	char CNBuffer[1024];
 	CNBuffer[sizeof(CNBuffer) - 1] = '\0';
 
 	X509_NAME* xname = X509_get_subject_name(m_data->cert);
 
-	if (X509_NAME_get_text_by_NID(xname, NID_commonName, CNBuffer, sizeof(CNBuffer)) != -1)
-	{
-		if (cnMatch(CNBuffer, hostname.c_str()))
-			return true;
+	if (X509_NAME_get_text_by_NID(xname, NID_commonName, CNBuffer, sizeof(CNBuffer)) != -1) {
 
-		if (nonMatchingNames)
+		if (cnMatch(CNBuffer, hostname.c_str())) {
+			return true;
+		}
+
+		if (nonMatchingNames) {
 			nonMatchingNames->push_back(CNBuffer);
+		}
 	}
 
 	// Now, look in subject alternative names
@@ -436,34 +456,34 @@ bool X509Certificate_OpenSSL::verifyHostName
 	STACK_OF(GENERAL_NAME)* altNames = static_cast <GENERAL_NAMES*>
 		(X509_get_ext_d2i(m_data->cert, NID_subject_alt_name, NULL, NULL));
 
-	if (altNames == NULL)
+	if (altNames == NULL) {
 		return false;
+	}
 
 	// Check each name within the extension
-	for (int i = 0, n = sk_GENERAL_NAME_num(altNames) ; i < n ; ++i)
-	{
+	for (int i = 0, n = sk_GENERAL_NAME_num(altNames) ; i < n ; ++i) {
+
 		const GENERAL_NAME* currentName = sk_GENERAL_NAME_value(altNames, i);
 
-		if (currentName->type == GEN_DNS)
-		{
+		if (currentName->type == GEN_DNS) {
+
 			// Current name is a DNS name, let's check it
 			char *DNSName = (char *) ASN1_STRING_data(currentName->d.dNSName);
 
 			// Make sure there isn't an embedded NUL character in the DNS name
-			if (ASN1_STRING_length(currentName->d.dNSName) != strlen(DNSName))
-			{
+			if (ASN1_STRING_length(currentName->d.dNSName) != strlen(DNSName)) {
 				// Malformed certificate
 				break;
 			}
 
-			if (cnMatch(DNSName, hostname.c_str()))
-			{
+			if (cnMatch(DNSName, hostname.c_str())) {
 				verify = true;
 				break;
 			}
 
-			if (nonMatchingNames)
+			if (nonMatchingNames) {
 				nonMatchingNames->push_back(DNSName);
+			}
 		}
 	}
 
@@ -473,8 +493,8 @@ bool X509Certificate_OpenSSL::verifyHostName
 }
 
 
-const datetime X509Certificate_OpenSSL::convertX509Date(void* time) const
-{
+const datetime X509Certificate_OpenSSL::convertX509Date(void* time) const {
+
 	char* buffer;
 	BIO* out = BIO_new(BIO_s_mem());
 	BIO_set_close(out, BIO_CLOSE);
@@ -491,15 +511,16 @@ const datetime X509Certificate_OpenSSL::convertX509Date(void* time) const
 	BIO_free(out);
 	delete [] dest;
 
-	if (t.size() > 0)
-	{
+	if (t.size() > 0) {
+
 		char month[4] = {0};
 		char zone[4] = {0};
 		int day, hour, minute, second, year;
 		int nrconv = sscanf(t.c_str(), "%s %2d %02d:%02d:%02d %d%s", month, &day, &hour, &minute, &second,&year,zone);
 
-		if (nrconv >= 6)
+		if (nrconv >= 6) {
 			return datetime(year, sg_monthMap.getMonth(vmime::string(month)), day, hour, minute, second);
+		}
 	}
 
 	// let datetime try and parse it
@@ -507,20 +528,20 @@ const datetime X509Certificate_OpenSSL::convertX509Date(void* time) const
 }
 
 
-const datetime X509Certificate_OpenSSL::getActivationDate() const
-{
+const datetime X509Certificate_OpenSSL::getActivationDate() const {
+
 	return convertX509Date(X509_get_notBefore(m_data->cert));
 }
 
 
-const datetime X509Certificate_OpenSSL::getExpirationDate() const
-{
+const datetime X509Certificate_OpenSSL::getExpirationDate() const {
+
 	return convertX509Date(X509_get_notAfter(m_data->cert));
 }
 
 
-const byteArray X509Certificate_OpenSSL::getFingerprint(const DigestAlgorithm algo) const
-{
+const byteArray X509Certificate_OpenSSL::getFingerprint(const DigestAlgorithm algo) const {
+
 	BIO *out;
 	int j;
 	unsigned int n;
@@ -528,29 +549,28 @@ const byteArray X509Certificate_OpenSSL::getFingerprint(const DigestAlgorithm al
 	unsigned char * fingerprint;
 	unsigned char md[EVP_MAX_MD_SIZE];
 
-	switch (algo)
-	{
-	case DIGEST_MD5:
+	switch (algo) {
 
-		digest = EVP_md5();
-		break;
+		case DIGEST_MD5:
 
-	default:
-	case DIGEST_SHA1:
+			digest = EVP_md5();
+			break;
 
-		digest = EVP_sha1();
-		break;
+		default:
+		case DIGEST_SHA1:
+
+			digest = EVP_sha1();
+			break;
 	}
 
 	out = BIO_new(BIO_s_mem());
 	BIO_set_close(out, BIO_CLOSE);
 
-	if (X509_digest(m_data->cert, digest, md, &n))
-	{
-		for (j=0; j<(int)n; j++)
-		{
-			BIO_printf (out, "%02X",md[j]);
-			if (j+1 != (int)n) BIO_printf(out, ":");
+	if (X509_digest(m_data->cert, digest, md, &n)) {
+
+		for (j = 0 ; j < (int) n ; j++) {
+			BIO_printf(out, "%02X", md[j]);
+			if (j + 1 != (int) n) BIO_printf(out, ":");
 		}
 	}
 
@@ -568,8 +588,8 @@ const byteArray X509Certificate_OpenSSL::getFingerprint(const DigestAlgorithm al
 }
 
 
-const byteArray X509Certificate_OpenSSL::getEncoded() const
-{
+const byteArray X509Certificate_OpenSSL::getEncoded() const {
+
 	byteArray bytes;
 	utility::outputStreamByteArrayAdapter os(bytes);
 
@@ -579,8 +599,8 @@ const byteArray X509Certificate_OpenSSL::getEncoded() const
 }
 
 
-const string X509Certificate_OpenSSL::getIssuerString() const
-{
+const string X509Certificate_OpenSSL::getIssuerString() const {
+
 	// Get issuer for this cert
 	BIO* out = BIO_new(BIO_s_mem());
 	X509_NAME_print_ex(out, X509_get_issuer_name(m_data->cert), 0, XN_FLAG_RFC2253);
@@ -595,25 +615,26 @@ const string X509Certificate_OpenSSL::getIssuerString() const
 }
 
 
-const string X509Certificate_OpenSSL::getType() const
-{
+const string X509Certificate_OpenSSL::getType() const {
+
 	return "X.509";
 }
 
 
-int X509Certificate_OpenSSL::getVersion() const
-{
-	return (int)X509_get_version(m_data->cert);
+int X509Certificate_OpenSSL::getVersion() const {
+
+	return (int) X509_get_version(m_data->cert);
 }
 
 
-bool X509Certificate_OpenSSL::equals(const shared_ptr <const certificate>& other) const
-{
+bool X509Certificate_OpenSSL::equals(const shared_ptr <const certificate>& other) const {
+
 	shared_ptr <const X509Certificate_OpenSSL> otherX509 =
 		dynamicCast <const X509Certificate_OpenSSL>(other);
 
-	if (!otherX509)
+	if (!otherX509) {
 		return false;
+	}
 
 	const byteArray fp1 = getFingerprint(DIGEST_MD5);
 	const byteArray fp2 = otherX509->getFingerprint(DIGEST_MD5);

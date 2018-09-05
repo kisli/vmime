@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -31,16 +31,14 @@
 #include "vmime/exception.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 /** A header field that can also contain parameters (name=value pairs).
   * Parameters can be created using vmime::parameterFactory.
   */
+class VMIME_EXPORT parameterizedHeaderField : public headerField {
 
-class VMIME_EXPORT parameterizedHeaderField : public headerField
-{
 	friend class headerFieldFactory;
 
 protected:
@@ -97,7 +95,10 @@ public:
 	  * @param param parameter to insert
 	  * @throw std::out_of_range if the parameter is not in the list
 	  */
-	void insertParameterBefore(const shared_ptr <parameter>& beforeParam, const shared_ptr <parameter>& param);
+	void insertParameterBefore(
+		const shared_ptr <parameter>& beforeParam,
+		const shared_ptr <parameter>& param
+	);
 
 	/** Insert a new parameter before the specified position.
 	  *
@@ -106,7 +107,10 @@ public:
 	  * @param param parameter to insert
 	  * @throw std::out_of_range if the position is out of range
 	  */
-	void insertParameterBefore(const size_t pos, const shared_ptr <parameter>& param);
+	void insertParameterBefore(
+		const size_t pos,
+		const shared_ptr <parameter>& param
+	);
 
 	/** Insert a new parameter after the specified parameter.
 	  *
@@ -114,7 +118,10 @@ public:
 	  * @param param parameter to insert
 	  * @throw std::out_of_range if the parameter is not in the list
 	  */
-	void insertParameterAfter(const shared_ptr <parameter>& afterParam, const shared_ptr <parameter>& param);
+	void insertParameterAfter(
+		const shared_ptr <parameter>& afterParam,
+		const shared_ptr <parameter>& param
+	);
 
 	/** Insert a new parameter after the specified position.
 	  *
@@ -122,7 +129,10 @@ public:
 	  * @param param parameter to insert
 	  * @throw std::out_of_range if the position is out of range
 	  */
-	void insertParameterAfter(const size_t pos, const shared_ptr <parameter>& param);
+	void insertParameterAfter(
+		const size_t pos,
+		const shared_ptr <parameter>& param
+	);
 
 	/** Remove the specified parameter from the list.
 	  *
@@ -189,18 +199,20 @@ private:
 
 protected:
 
-	void parseImpl
-		(const parsingContext& ctx,
-		 const string& buffer,
-		 const size_t position,
-		 const size_t end,
-		 size_t* newPosition = NULL);
+	void parseImpl(
+		const parsingContext& ctx,
+		const string& buffer,
+		const size_t position,
+		const size_t end,
+		size_t* newPosition = NULL
+	);
 
-	void generateImpl
-		(const generationContext& ctx,
-		 utility::outputStream& os,
-		 const size_t curLinePos = 0,
-		 size_t* newLinePos = NULL) const;
+	void generateImpl(
+		const generationContext& ctx,
+		utility::outputStream& os,
+		const size_t curLinePos = 0,
+		size_t* newLinePos = NULL
+	) const;
 };
 
 

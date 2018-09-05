@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -37,29 +37,58 @@
 #include "vmime/utility/stream.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 /** Attachment of type 'file'.
   */
+class VMIME_EXPORT fileAttachment : public defaultAttachment {
 
-class VMIME_EXPORT fileAttachment : public defaultAttachment
-{
 public:
 
-	fileAttachment(const string& filepath, const mediaType& type);
-	fileAttachment(const string& filepath, const mediaType& type, const text& desc);
-	fileAttachment(const string& filepath, const mediaType& type, const text& desc, const encoding& enc);
+	fileAttachment(
+		const string& filepath,
+		const mediaType& type
+	);
 
-	fileAttachment(const shared_ptr <contentHandler>& cts, const word& filename, const mediaType& type);
-	fileAttachment(const shared_ptr <contentHandler>& cts, const word& filename, const mediaType& type, const text& desc);
-	fileAttachment(const shared_ptr <contentHandler>& cts, const word& filename, const mediaType& type, const text& desc, const encoding& enc);
+	fileAttachment(
+		const string& filepath,
+		const mediaType& type,
+		const text& desc
+	);
+
+	fileAttachment(
+		const string& filepath,
+		const mediaType& type,
+		const text& desc,
+		const encoding& enc
+	);
+
+	fileAttachment(
+		const shared_ptr <contentHandler>& cts,
+		const word& filename,
+		const mediaType& type
+	);
+
+	fileAttachment(
+		const shared_ptr <contentHandler>& cts,
+		const word& filename,
+		const mediaType& type,
+		const text& desc
+	);
+
+	fileAttachment(
+		const shared_ptr <contentHandler>& cts,
+		const word& filename,
+		const mediaType& type,
+		const text& desc,
+		const encoding& enc
+	);
 
 	/** Stores information about a file attachment.
 	  */
-	class VMIME_EXPORT fileInfo
-	{
+	class VMIME_EXPORT fileInfo {
+
 	public:
 
 		fileInfo();

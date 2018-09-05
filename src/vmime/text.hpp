@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -30,15 +30,13 @@
 #include "vmime/word.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 /** List of encoded-words, as defined in RFC-2047 (basic type).
   */
+class VMIME_EXPORT text : public headerFieldValue {
 
-class VMIME_EXPORT text : public headerFieldValue
-{
 public:
 
 	text();
@@ -138,8 +136,10 @@ public:
 	  * @param opts options for charset conversion
 	  * @return text decoded in the specified charset
 	  */
-	const string getConvertedText(const charset& dest,
-		const charsetConverterOptions& opts = charsetConverterOptions()) const;
+	const string getConvertedText(
+		const charset& dest,
+		const charsetConverterOptions& opts = charsetConverterOptions()
+	) const;
 
 	/** Return the unconverted (raw) data of all words. This is the
 	  * concatenation of the results returned by getBuffer() on
@@ -188,8 +188,8 @@ public:
 
 	/** Flags used by "encodeAndFold" function.
 	  */
-	enum EncodeAndFoldFlags
-	{
+	enum EncodeAndFoldFlags {
+
 		// NOTE: If both "FORCE_NO_ENCODING" and "FORCE_ENCODING" are
 		// specified, "FORCE_NO_ENCODING" is used by default.
 
@@ -208,8 +208,13 @@ public:
 	  * @param lastLineLength will receive the length of the last line written
 	  * @param flags encoding flags (see EncodeAndFoldFlags)
 	  */
-	void encodeAndFold(const generationContext& ctx, utility::outputStream& os,
-		const size_t firstLineOffset, size_t* lastLineLength, const int flags) const;
+	void encodeAndFold(
+		const generationContext& ctx,
+		utility::outputStream& os,
+		const size_t firstLineOffset,
+		size_t* lastLineLength,
+		const int flags
+	) const;
 
 	/** Decode and unfold text (RFC-2047), using the default parsing context.
 	  *
@@ -247,7 +252,11 @@ public:
 	  * resulting object into an existing object.
 	  * @return new text object or existing object if generateInExisting != NULL
 	  */
-	static text* decodeAndUnfold(const parsingContext& ctx, const string& in, text* generateInExisting);
+	static text* decodeAndUnfold(
+		const parsingContext& ctx,
+		const string& in,
+		text* generateInExisting
+	);
 
 protected:
 
@@ -255,18 +264,20 @@ protected:
 
 
 	// Component parsing & assembling
-	void parseImpl
-		(const parsingContext& ctx,
-		 const string& buffer,
-		 const size_t position,
-		 const size_t end,
-		 size_t* newPosition = NULL);
+	void parseImpl(
+		const parsingContext& ctx,
+		const string& buffer,
+		const size_t position,
+		const size_t end,
+		size_t* newPosition = NULL
+	);
 
-	void generateImpl
-		(const generationContext& ctx,
-		 utility::outputStream& os,
-		 const size_t curLinePos = 0,
-		 size_t* newLinePos = NULL) const;
+	void generateImpl(
+		const generationContext& ctx,
+		utility::outputStream& os,
+		const size_t curLinePos = 0,
+		size_t* newLinePos = NULL
+	) const;
 
 private:
 

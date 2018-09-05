@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -31,8 +31,7 @@
 #include "vmime/address.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 class mailboxList;
@@ -40,9 +39,8 @@ class mailboxList;
 
 /** A list of addresses.
   */
+class VMIME_EXPORT addressList : public headerFieldValue {
 
-class VMIME_EXPORT addressList : public headerFieldValue
-{
 public:
 
 	addressList();
@@ -71,7 +69,10 @@ public:
 	  * @param addr address to insert
 	  * @throw std::out_of_range if the address is not in the list
 	  */
-	void insertAddressBefore(const shared_ptr <address>& beforeAddress, const shared_ptr <address>& addr);
+	void insertAddressBefore(
+		const shared_ptr <address>& beforeAddress,
+		const shared_ptr <address>& addr
+		);
 
 	/** Insert a new address before the specified position.
 	  *
@@ -88,7 +89,10 @@ public:
 	  * @param addr address to insert
 	  * @throw std::out_of_range if the address is not in the list
 	  */
-	void insertAddressAfter(const shared_ptr <address>& afterAddress, const shared_ptr <address>& addr);
+	void insertAddressAfter(
+		const shared_ptr <address>& afterAddress,
+		const shared_ptr <address>& addr
+	);
 
 	/** Insert a new address after the specified position.
 	  *
@@ -171,18 +175,20 @@ private:
 protected:
 
 	// Component parsing & assembling
-	void parseImpl
-		(const parsingContext& ctx,
-		 const string& buffer,
-		 const size_t position,
-		 const size_t end,
-		 size_t* newPosition = NULL);
+	void parseImpl(
+		const parsingContext& ctx,
+		const string& buffer,
+		const size_t position,
+		const size_t end,
+		size_t* newPosition = NULL
+	);
 
-	void generateImpl
-		(const generationContext& ctx,
-		 utility::outputStream& os,
-		 const size_t curLinePos = 0,
-		 size_t* newLinePos = NULL) const;
+	void generateImpl(
+		const generationContext& ctx,
+		utility::outputStream& os,
+		const size_t curLinePos = 0,
+		size_t* newLinePos = NULL
+	) const;
 };
 
 

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -30,13 +30,13 @@ namespace utility {
 namespace encoder {
 
 
-qpEncoder::qpEncoder()
-{
+qpEncoder::qpEncoder() {
+
 }
 
 
-const std::vector <string> qpEncoder::getAvailableProperties() const
-{
+const std::vector <string> qpEncoder::getAvailableProperties() const {
+
 	std::vector <string> list(encoder::getAvailableProperties());
 
 	list.push_back("maxlinelength");
@@ -46,7 +46,7 @@ const std::vector <string> qpEncoder::getAvailableProperties() const
 
 	list.push_back("rfc2047");   // for header fields encoding (RFC #2047)
 
-	return (list);
+	return list;
 }
 
 
@@ -69,8 +69,7 @@ const unsigned char qpEncoder::sm_hexDigits[] = "0123456789ABCDEF";
 // This is a quick lookup table:
 //   '1' means "encode", '0' means "no encoding"
 //
-const vmime_uint8 qpEncoder::sm_RFC2047EncodeTable[] =
-{
+const vmime_uint8 qpEncoder::sm_RFC2047EncodeTable[] = {
 	/*   0  NUL */ 1, /*   1  SOH */ 1, /*   2  STX */ 1, /*   3  ETX */ 1, /*   4  EOT */ 1, /*   5  ENQ */ 1,
 	/*   6  ACK */ 1, /*   7  BEL */ 1, /*   8   BS */ 1, /*   9  TAB */ 1, /*  10   LF */ 1, /*  11   VT */ 1,
 	/*  12   FF */ 1, /*  13   CR */ 1, /*  14   SO */ 1, /*  15   SI */ 1, /*  16  DLE */ 1, /*  17  DC1 */ 1,
@@ -97,8 +96,7 @@ const vmime_uint8 qpEncoder::sm_RFC2047EncodeTable[] =
 
 
 // Hex-decoding table
-const vmime_uint8 qpEncoder::sm_hexDecodeTable[256] =
-{
+const vmime_uint8 qpEncoder::sm_hexDecodeTable[256] = {
 	 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
 	 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
 	 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -119,30 +117,30 @@ const vmime_uint8 qpEncoder::sm_hexDecodeTable[256] =
 
 
 // static
-bool qpEncoder::RFC2047_isEncodingNeededForChar(const byte_t c)
-{
-	return (c >= 128 || sm_RFC2047EncodeTable[c] != 0);
+bool qpEncoder::RFC2047_isEncodingNeededForChar(const byte_t c) {
+
+	return c >= 128 || sm_RFC2047EncodeTable[c] != 0;
 }
 
 
 // static
-int qpEncoder::RFC2047_getEncodedLength(const byte_t c)
-{
-	if (c >= 128 || sm_RFC2047EncodeTable[c] != 0)
-	{
-		if (c == 32)  // space
-		{
+int qpEncoder::RFC2047_getEncodedLength(const byte_t c) {
+
+	if (c >= 128 || sm_RFC2047EncodeTable[c] != 0) {
+
+		if (c == 32) {  // space
+
 			// Encoded as "_"
 			return 1;
-		}
-		else
-		{
+
+		} else {
+
 			// Hex encoding
 			return 3;
 		}
-	}
-	else
-	{
+
+	} else {
+
 		return 1;  // no encoding
 	}
 }
@@ -162,9 +160,12 @@ int qpEncoder::RFC2047_getEncodedLength(const byte_t c)
 #endif // VMIME_BUILDING_DOC
 
 
-size_t qpEncoder::encode(utility::inputStream& in,
-	utility::outputStream& out, utility::progressListener* progress)
-{
+size_t qpEncoder::encode(
+	utility::inputStream& in,
+	utility::outputStream& out,
+	utility::progressListener* progress
+) {
+
 	in.reset();  // may not work...
 
 	const size_t propMaxLineLength =
@@ -189,14 +190,15 @@ size_t qpEncoder::encode(utility::inputStream& in,
 	size_t total = 0;
 	size_t inTotal = 0;
 
-	if (progress)
+	if (progress) {
 		progress->start(0);
+	}
 
-	while (bufferPos < bufferLength || !in.eof())
-	{
+	while (bufferPos < bufferLength || !in.eof()) {
+
 		// Flush current output buffer
-		if (outBufferPos + 6 >= static_cast <int>(sizeof(outBuffer)))
-		{
+		if (outBufferPos + 6 >= static_cast <int>(sizeof(outBuffer))) {
+
 			QP_WRITE(out, outBuffer, outBufferPos);
 
 			total += outBufferPos;
@@ -204,146 +206,146 @@ size_t qpEncoder::encode(utility::inputStream& in,
 		}
 
 		// Need to get more data?
-		if (bufferPos >= bufferLength)
-		{
+		if (bufferPos >= bufferLength) {
+
 			bufferLength = in.read(buffer, sizeof(buffer));
 			bufferPos = 0;
 
 			// No more data
-			if (bufferLength == 0)
+			if (bufferLength == 0) {
 				break;
+			}
 		}
 
 		// Get the next char and encode it
 		const byte_t c = buffer[bufferPos++];
 
-		if (rfc2047)
-		{
-			if (c >= 128 || sm_RFC2047EncodeTable[c] != 0)
-			{
-				if (c == 32)  // space
-				{
+		if (rfc2047) {
+
+			if (c >= 128 || sm_RFC2047EncodeTable[c] != 0) {
+
+				if (c == 32) {  // space
+
 					// RFC-2047, Page 5, 4.2. The "Q" encoding:
 					// << The 8-bit hexadecimal value 20 (e.g., ISO-8859-1 SPACE) may be
 					// represented as "_" (underscore, ASCII 95.). >>
 					outBuffer[outBufferPos++] = '_';
 					++curCol;
-				}
-				else
-				{
+
+				} else {
+
 					// Other characters: '=' + hexadecimal encoding
 					QP_ENCODE_HEX(c);
 				}
-			}
-			else
-			{
+
+			} else {
+
 				// No encoding
 				outBuffer[outBufferPos++] = c;
 				++curCol;
 			}
-		}
-		else
-		{
-			switch (c)
-			{
-			case 46:  // .
-			{
-				if (curCol == 0)
-				{
-					// If a '.' appears at the beginning of a line, we encode it to
-					// to avoid problems with SMTP servers... ("\r\n.\r\n" means the
-					// end of data transmission).
-					QP_ENCODE_HEX('.');
-					continue;
-				}
 
-				outBuffer[outBufferPos++] = '.';
-				++curCol;
-				break;
-			}
-			case 32:  // space
-			{
-				// Need to get more data?
-				if (bufferPos >= bufferLength)
-				{
-					bufferLength = in.read(buffer, sizeof(buffer));
-					bufferPos = 0;
-				}
+		} else {
 
-				// Spaces cannot appear at the end of a line. So, encode the space.
-				if (bufferPos >= bufferLength ||
-				    (buffer[bufferPos] == '\r' || buffer[bufferPos] == '\n'))
-				{
-					QP_ENCODE_HEX(' ');
-				}
-				else
-				{
-					outBuffer[outBufferPos++] = ' ';
+			switch (c) {
+
+				case 46: {  // .
+
+					if (curCol == 0) {
+						// If a '.' appears at the beginning of a line, we encode it to
+						// to avoid problems with SMTP servers... ("\r\n.\r\n" means the
+						// end of data transmission).
+						QP_ENCODE_HEX('.');
+						continue;
+					}
+
+					outBuffer[outBufferPos++] = '.';
 					++curCol;
+					break;
 				}
+				case 32: {  // space
 
-				break;
-			}
-			case 9:   // TAB
-			{
-				QP_ENCODE_HEX(c);
-				break;
-			}
-			case 13:  // CR
-			case 10:  // LF
-			{
-				// RFC-2045/6.7(4)
+					// Need to get more data?
+					if (bufferPos >= bufferLength) {
+						bufferLength = in.read(buffer, sizeof(buffer));
+						bufferPos = 0;
+					}
 
-				// Text data
-				if (text && !rfc2047)
-				{
-					outBuffer[outBufferPos++] = c;
-					++curCol;
+					// Spaces cannot appear at the end of a line. So, encode the space.
+					if (bufferPos >= bufferLength ||
+					    (buffer[bufferPos] == '\r' || buffer[bufferPos] == '\n')) {
 
-					if (c == 10)
-						curCol = 0;  // reset current line length
+						QP_ENCODE_HEX(' ');
+
+					} else {
+
+						outBuffer[outBufferPos++] = ' ';
+						++curCol;
+					}
+
+					break;
 				}
-				// Binary data
-				else
-				{
+				case 9: {   // TAB
+
 					QP_ENCODE_HEX(c);
+					break;
 				}
+				case 13:    // CR
+				case 10: {  // LF
 
-				break;
-			}
-			case 61:  // =
-			{
-				QP_ENCODE_HEX('=');
-				break;
-			}
-			/*
-				Rule #2: (Literal representation) Octets with decimal values of 33
-				through 60 inclusive, and 62 through 126, inclusive, MAY be
-				represented as the ASCII characters which correspond to those
-				octets (EXCLAMATION POINT through LESS THAN, and GREATER THAN
-				through TILDE, respectively).
-			*/
-			default:
+					// RFC-2045/6.7(4)
 
-				//if ((c >= 33 && c <= 60) || (c >= 62 && c <= 126))
-				if (c >= 33 && c <= 126 && c != 61 && c != 63)
-				{
-					outBuffer[outBufferPos++] = c;
-					++curCol;
+					// Text data
+					if (text && !rfc2047) {
+
+						outBuffer[outBufferPos++] = c;
+						++curCol;
+
+						if (c == 10) {
+							curCol = 0;  // reset current line length
+						}
+
+					// Binary data
+					} else {
+
+						QP_ENCODE_HEX(c);
+					}
+
+					break;
 				}
-				// Other characters: '=' + hexadecimal encoding
-				else
-				{
-					QP_ENCODE_HEX(c);
-				}
+				case 61: {  // =
 
-				break;
+					QP_ENCODE_HEX('=');
+					break;
+				}
+				/*
+					Rule #2: (Literal representation) Octets with decimal values of 33
+					through 60 inclusive, and 62 through 126, inclusive, MAY be
+					represented as the ASCII characters which correspond to those
+					octets (EXCLAMATION POINT through LESS THAN, and GREATER THAN
+					through TILDE, respectively).
+				*/
+				default:
+
+					//if ((c >= 33 && c <= 60) || (c >= 62 && c <= 126))
+					if (c >= 33 && c <= 126 && c != 61 && c != 63) {
+
+						outBuffer[outBufferPos++] = c;
+						++curCol;
+
+					// Other characters: '=' + hexadecimal encoding
+					} else {
+
+						QP_ENCODE_HEX(c);
+					}
+
+					break;
 
 			} // switch (c)
 
 			// Soft line break : "=\r\n"
-			if (cutLines && curCol >= maxLineLength - 1)
-			{
+			if (cutLines && curCol >= maxLineLength - 1) {
+
 				outBuffer[outBufferPos] = '=';
 				outBuffer[outBufferPos + 1] = '\r';
 				outBuffer[outBufferPos + 2] = '\n';
@@ -356,27 +358,31 @@ size_t qpEncoder::encode(utility::inputStream& in,
 
 		++inTotal;
 
-		if (progress)
+		if (progress) {
 			progress->progress(inTotal, inTotal);
+		}
 	}
 
 	// Flush remaining output buffer
-	if (outBufferPos != 0)
-	{
+	if (outBufferPos != 0) {
 		QP_WRITE(out, outBuffer, outBufferPos);
 		total += outBufferPos;
 	}
 
-	if (progress)
+	if (progress) {
 		progress->stop(inTotal);
+	}
 
-	return (total);
+	return total;
 }
 
 
-size_t qpEncoder::decode(utility::inputStream& in,
-	utility::outputStream& out, utility::progressListener* progress)
-{
+size_t qpEncoder::decode(
+	utility::inputStream& in,
+	utility::outputStream& out,
+	utility::progressListener* progress
+) {
+
 	in.reset();  // may not work...
 
 	// Process the data
@@ -392,11 +398,11 @@ size_t qpEncoder::decode(utility::inputStream& in,
 	size_t total = 0;
 	size_t inTotal = 0;
 
-	while (bufferPos < bufferLength || !in.eof())
-	{
+	while (bufferPos < bufferLength || !in.eof()) {
+
 		// Flush current output buffer
-		if (outBufferPos >= sizeof(outBuffer))
-		{
+		if (outBufferPos >= sizeof(outBuffer)) {
+
 			QP_WRITE(out, outBuffer, outBufferPos);
 
 			total += outBufferPos;
@@ -404,14 +410,15 @@ size_t qpEncoder::decode(utility::inputStream& in,
 		}
 
 		// Need to get more data?
-		if (bufferPos >= bufferLength)
-		{
+		if (bufferPos >= bufferLength) {
+
 			bufferLength = in.read(buffer, sizeof(buffer));
 			bufferPos = 0;
 
 			// No more data
-			if (bufferLength == 0)
+			if (bufferLength == 0) {
 				break;
+			}
 		}
 
 		// Decode the next sequence (hex-encoded byte or printable character)
@@ -419,125 +426,124 @@ size_t qpEncoder::decode(utility::inputStream& in,
 
 		++inTotal;
 
-		switch (c)
-		{
-		case '=':
-		{
-			if (bufferPos >= bufferLength)
-			{
-				bufferLength = in.read(buffer, sizeof(buffer));
-				bufferPos = 0;
+		switch (c) {
+
+			case '=': {
+
+				if (bufferPos >= bufferLength) {
+					bufferLength = in.read(buffer, sizeof(buffer));
+					bufferPos = 0;
+				}
+
+				if (bufferPos < bufferLength) {
+
+					c = buffer[bufferPos++];
+
+					++inTotal;
+
+					switch (c) {
+
+						// Ignore soft line break ("=\r\n" or "=\n")
+						case '\r':
+
+							// Read one byte more
+							if (bufferPos >= bufferLength) {
+								bufferLength = in.read(buffer, sizeof(buffer));
+								bufferPos = 0;
+							}
+
+							if (bufferPos < bufferLength) {
+								++bufferPos;
+								++inTotal;
+							}
+
+							break;
+
+						case '\n':
+
+							break;
+
+						// Hex-encoded char
+						default:
+						{
+							// We need another byte...
+							if (bufferPos >= bufferLength) {
+								bufferLength = in.read(buffer, sizeof(buffer));
+								bufferPos = 0;
+							}
+
+							if (bufferPos < bufferLength) {
+
+								const byte_t next = buffer[bufferPos++];
+
+								++inTotal;
+
+								const byte_t value = static_cast <byte_t>(
+									sm_hexDecodeTable[c] * 16 + sm_hexDecodeTable[next]
+								);
+
+								outBuffer[outBufferPos++] = value;
+
+							} else {
+
+								// Premature end-of-data
+							}
+
+							break;
+						}
+
+					}
+
+				} else {
+
+					// Premature end-of-data
+				}
+
+				break;
 			}
+			case '_': {
 
-			if (bufferPos < bufferLength)
-			{
-				c = buffer[bufferPos++];
+				if (rfc2047) {
 
-				++inTotal;
-
-				switch (c)
-				{
-				// Ignore soft line break ("=\r\n" or "=\n")
-				case '\r':
-
-					// Read one byte more
-					if (bufferPos >= bufferLength)
-					{
-						bufferLength = in.read(buffer, sizeof(buffer));
-						bufferPos = 0;
-					}
-
-					if (bufferPos < bufferLength)
-					{
-						++bufferPos;
-						++inTotal;
-					}
-
-					break;
-
-				case '\n':
-
-					break;
-
-				// Hex-encoded char
-				default:
-				{
-					// We need another byte...
-					if (bufferPos >= bufferLength)
-					{
-						bufferLength = in.read(buffer, sizeof(buffer));
-						bufferPos = 0;
-					}
-
-					if (bufferPos < bufferLength)
-					{
-						const byte_t next = buffer[bufferPos++];
-
-						++inTotal;
-
-						const byte_t value = static_cast <byte_t>
-							(sm_hexDecodeTable[c] * 16 + sm_hexDecodeTable[next]);
-
-						outBuffer[outBufferPos++] = value;
-					}
-					else
-					{
-						// Premature end-of-data
-					}
-
+					// RFC-2047, Page 5, 4.2. The "Q" encoding:
+					// << Note that the "_" always represents hexadecimal 20, even if the SPACE
+					// character occupies a different code position in the character set in use. >>
+					outBuffer[outBufferPos++] = 0x20;
 					break;
 				}
 
-				}
+				outBuffer[outBufferPos++] = c;
+				break;
 			}
-			else
-			{
-				// Premature end-of-data
-			}
+			default: {
 
-			break;
-		}
-		case '_':
-		{
-			if (rfc2047)
-			{
-				// RFC-2047, Page 5, 4.2. The "Q" encoding:
-				// << Note that the "_" always represents hexadecimal 20, even if the SPACE
-				// character occupies a different code position in the character set in use. >>
-				outBuffer[outBufferPos++] = 0x20;
+				outBuffer[outBufferPos++] = c;
 				break;
 			}
 
-			outBuffer[outBufferPos++] = c;
-			break;
-		}
-		default:
-		{
-			outBuffer[outBufferPos++] = c;
 		}
 
-		}
-
-		if (progress)
+		if (progress) {
 			progress->progress(inTotal, inTotal);
+		}
 	}
 
 	// Flush remaining output buffer
-	if (outBufferPos != 0)
-	{
+	if (outBufferPos != 0) {
 		QP_WRITE(out, outBuffer, outBufferPos);
 		total += outBufferPos;
 	}
 
-	if (progress)
+	if (progress) {
 		progress->stop(inTotal);
+	}
 
-	return (total);
+	return total;
 }
 
 
-size_t qpEncoder::getEncodedSize(const size_t n) const
-{
+size_t qpEncoder::getEncodedSize(const size_t n) const {
+
 	const size_t propMaxLineLength =
 		getProperties().getProperty <size_t>("maxlinelength", static_cast <size_t>(-1));
 
@@ -550,8 +556,8 @@ size_t qpEncoder::getEncodedSize(const size_t n) const
 }
 
 
-size_t qpEncoder::getDecodedSize(const size_t n) const
-{
+size_t qpEncoder::getDecodedSize(const size_t n) const {
+
 	// Worst case: 1 byte of input equals 1 byte of output
 	return n;
 }

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -45,113 +45,130 @@ namespace security {
 namespace sasl {
 
 
-builtinSASLMechanism::builtinSASLMechanism(const shared_ptr <SASLContext>& ctx, const string& name)
-	: m_context(ctx), m_name(name), m_complete(false)
-{
+builtinSASLMechanism::builtinSASLMechanism(
+	const shared_ptr <SASLContext>& ctx,
+	const string& name
+)
+	: m_context(ctx),
+	  m_name(name),
+	  m_complete(false) {
+
 }
 
 
-builtinSASLMechanism::~builtinSASLMechanism()
-{
+builtinSASLMechanism::~builtinSASLMechanism() {
+
 }
 
 
-const string builtinSASLMechanism::getName() const
-{
+const string builtinSASLMechanism::getName() const {
+
 	return m_name;
 }
 
 
-bool builtinSASLMechanism::step
-	(const shared_ptr <SASLSession>& sess, const byte_t* challenge, const size_t challengeLen,
-	 byte_t** response, size_t* responseLen)
-{
+bool builtinSASLMechanism::step(
+	const shared_ptr <SASLSession>& sess,
+	const byte_t* challenge,
+	const size_t challengeLen,
+	byte_t** response,
+	size_t* responseLen
+) {
+
 	char* output = 0;
 	size_t outputLen = 0;
 
-	const int result = gsasl_step(sess->m_gsaslSession,
+	const int result = gsasl_step(
+		sess->m_gsaslSession,
 		reinterpret_cast <const char*>(challenge), challengeLen,
-		&output, &outputLen);
+		&output, &outputLen
+	);
 
-	if (result == GSASL_OK || result == GSASL_NEEDS_MORE)
-	{
+	if (result == GSASL_OK || result == GSASL_NEEDS_MORE) {
+
 		byte_t* res = new byte_t[outputLen];
 
-		for (size_t i = 0 ; i < outputLen ; ++i)
+		for (size_t i = 0 ; i < outputLen ; ++i) {
 			res[i] = output[i];
+		}
 
 		*response = res;
 		*responseLen = outputLen;
 
 		gsasl_free(output);
-	}
-	else
-	{
+
+	} else {
+
 		*response = 0;
 		*responseLen = 0;
 	}
 
-	if (result == GSASL_OK)
-	{
+	if (result == GSASL_OK) {
+
 		// Authentication process completed
 		m_complete = true;
 		return true;
-	}
-	else if (result == GSASL_NEEDS_MORE)
-	{
+
+	} else if (result == GSASL_NEEDS_MORE) {
+
 		// Continue authentication process
 		return false;
-	}
-	else if (result == GSASL_MALLOC_ERROR)
-	{
+
+	} else if (result == GSASL_MALLOC_ERROR) {
+
 		throw std::bad_alloc();
-	}
-	else
-	{
-		throw exceptions::sasl_exception("Error when processing challenge: "
-			+ SASLContext::getErrorMessage("gsasl_step", result));
+
+	} else {
+
+		throw exceptions::sasl_exception(
+			"Error when processing challenge: "
+			+ SASLContext::getErrorMessage("gsasl_step", result)
+		);
 	}
 }
 
 
-bool builtinSASLMechanism::isComplete() const
-{
+bool builtinSASLMechanism::isComplete() const {
+
 	return m_complete;
 }
 
 
-bool builtinSASLMechanism::hasInitialResponse() const
-{
+bool builtinSASLMechanism::hasInitialResponse() const {
+
 	// It seems GNU SASL does not support initial response
 	return false;
 }
 
 
-void builtinSASLMechanism::encode
-	(const shared_ptr <SASLSession>& sess, const byte_t* input, const size_t inputLen,
-	 byte_t** output, size_t* outputLen)
-{
+void builtinSASLMechanism::encode(
+	const shared_ptr <SASLSession>& sess,
+	const byte_t* input,
+	const size_t inputLen,
+	byte_t** output,
+	size_t* outputLen
+) {
+
 	char* coutput = 0;
 	size_t coutputLen = 0;
 
-	if (gsasl_encode(sess->m_gsaslSession,
-		reinterpret_cast <const char*>(input), inputLen,
-		&coutput, &coutputLen) != GSASL_OK)
-	{
+	if (gsasl_encode(sess->m_gsaslSession, reinterpret_cast <const char*>(input), inputLen,
+			&coutput, &coutputLen) != GSASL_OK) {
+
 		throw exceptions::sasl_exception("Encoding error.");
 	}
 
-	try
-	{
+	try {
+
 		byte_t* res = new byte_t[coutputLen];
 
 		std::copy(coutput, coutput + coutputLen, res);
 
 		*output = res;
 		*outputLen = static_cast <int>(coutputLen);
-	}
-	catch (...)
-	{
+
+	} catch (...) {
+
 		gsasl_free(coutput);
 		throw;
 	}
@@ -160,19 +177,22 @@ void builtinSASLMechanism::encode
 }
 
 
-void builtinSASLMechanism::decode
-	(const shared_ptr <SASLSession>& sess, const byte_t* input, const size_t inputLen,
-	 byte_t** output, size_t* outputLen)
-{
+void builtinSASLMechanism::decode(
+	const shared_ptr <SASLSession>& sess,
+	const byte_t* input,
+	const size_t inputLen,
+	byte_t** output,
+	size_t* outputLen
+) {
+
 	char* coutput = 0;
 	size_t coutputLen = 0;
 
-	try
-	{
-		if (gsasl_decode(sess->m_gsaslSession,
-			reinterpret_cast <const char*>(input), inputLen,
-			&coutput, &coutputLen) != GSASL_OK)
-		{
+	try {
+
+		if (gsasl_decode(sess->m_gsaslSession, reinterpret_cast <const char*>(input), inputLen,
+				&coutput, &coutputLen) != GSASL_OK) {
+
 			throw exceptions::sasl_exception("Decoding error.");
 		}
 
@@ -182,9 +202,9 @@ void builtinSASLMechanism::decode
 
 		*output = res;
 		*outputLen = static_cast <int>(coutputLen);
-	}
-	catch (...)
-	{
+
+	} catch (...) {
+
 		gsasl_free(coutput);
 		throw;
 	}
@@ -199,4 +219,3 @@ void builtinSASLMechanism::decode
 
 
 #endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_SASL_SUPPORT
-

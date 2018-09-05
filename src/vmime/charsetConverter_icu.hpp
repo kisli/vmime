@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -37,15 +37,13 @@
 struct UConverter;
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 /** A generic charset converter which uses ICU library.
   */
+class charsetConverter_icu : public charsetConverter {
 
-class charsetConverter_icu : public charsetConverter
-{
 public:
 
 	/** Construct and initialize an ICU charset converter.
@@ -54,17 +52,21 @@ public:
 	  * @param dest output charset
 	  * @param opts conversion options
 	  */
-	charsetConverter_icu(const charset& source, const charset& dest,
-		const charsetConverterOptions& opts = charsetConverterOptions());
+	charsetConverter_icu(
+		const charset& source,
+		const charset& dest,
+		const charsetConverterOptions& opts = charsetConverterOptions()
+	);
 
 	~charsetConverter_icu();
 
 	void convert(const string& in, string& out, status* st = NULL);
 	void convert(utility::inputStream& in, utility::outputStream& out, status* st = NULL);
 
-	shared_ptr <utility::charsetFilteredOutputStream> getFilteredOutputStream
-		(utility::outputStream& os,
-		 const charsetConverterOptions& opts = charsetConverterOptions());
+	shared_ptr <utility::charsetFilteredOutputStream> getFilteredOutputStream(
+		utility::outputStream& os,
+		const charsetConverterOptions& opts = charsetConverterOptions()
+	);
 
 private:
 
@@ -81,8 +83,8 @@ private:
 namespace utility {
 
 
-class charsetFilteredOutputStream_icu : public charsetFilteredOutputStream
-{
+class charsetFilteredOutputStream_icu : public charsetFilteredOutputStream {
+
 public:
 
 	/** Construct a new filter for the specified output stream.
@@ -92,9 +94,12 @@ public:
 	  * @param os stream into which write filtered data
 	  * @param opts conversion options
 	  */
-	charsetFilteredOutputStream_icu
-		(const charset& source, const charset& dest, outputStream* os,
-		 const charsetConverterOptions& opts = charsetConverterOptions());
+	charsetFilteredOutputStream_icu(
+		const charset& source,
+		const charset& dest,
+		outputStream* os,
+		const charsetConverterOptions& opts = charsetConverterOptions()
+	);
 
 	~charsetFilteredOutputStream_icu();
 

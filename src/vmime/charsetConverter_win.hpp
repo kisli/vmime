@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -34,8 +34,7 @@
 #include "vmime/charsetConverter.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 /** A generic charset converter which uses Windows MultiByteToWideChar
@@ -49,9 +48,8 @@ namespace vmime
   *
   * Also, "status" is not supported by this converter for the same reason.
   */
+class charsetConverter_win : public charsetConverter {
 
-class charsetConverter_win : public charsetConverter
-{
 public:
 
 	/** Construct and initialize a Windows charset converter.
@@ -60,14 +58,19 @@ public:
 	  * @param dest output charset
 	  * @param opts conversion options
 	  */
-	charsetConverter_win(const charset& source, const charset& dest,
-		const charsetConverterOptions& opts = charsetConverterOptions());
+	charsetConverter_win(
+		const charset& source,
+		const charset& dest,
+		const charsetConverterOptions& opts = charsetConverterOptions()
+	);
 
 	void convert(const string& in, string& out, status* st);
 	void convert(utility::inputStream& in, utility::outputStream& out, status* st);
 
-	shared_ptr <utility::charsetFilteredOutputStream>
-		getFilteredOutputStream(utility::outputStream& os, const charsetConverterOptions& opts);
+	shared_ptr <utility::charsetFilteredOutputStream> getFilteredOutputStream(
+		utility::outputStream& os,
+		const charsetConverterOptions& opts
+	);
 
 private:
 

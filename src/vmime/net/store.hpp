@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -42,13 +42,18 @@ namespace net {
 /** A store service.
   * Encapsulate protocols that provide access to user's mail drop.
   */
+class VMIME_EXPORT store : public service {
 
-class VMIME_EXPORT store : public service
-{
 protected:
 
-	store(const shared_ptr <session>& sess, const serviceInfos& infos, const shared_ptr <security::authenticator>& auth)
-		: service(sess, infos, auth) { }
+	store(
+		const shared_ptr <session>& sess,
+		const serviceInfos& infos,
+		const shared_ptr <security::authenticator>& auth
+	)
+		: service(sess, infos, auth) {
+
+	}
 
 public:
 
@@ -81,8 +86,7 @@ public:
 	virtual bool isValidFolderName(const folder::path::component& name) const = 0;
 
 	/** Store capabilities. */
-	enum Capabilities
-	{
+	enum Capabilities {
 		CAPABILITY_CREATE_FOLDER = (1 << 0),    /**< Can create folders. */
 		CAPABILITY_RENAME_FOLDER = (1 << 1),    /**< Can rename folders. */
 		CAPABILITY_ADD_MESSAGE = (1 << 2),      /**< Can append message to folders. */
@@ -101,7 +105,10 @@ public:
 	virtual int getCapabilities() const = 0;
 
 
-	Type getType() const { return (TYPE_STORE); }
+	Type getType() const {
+
+		return TYPE_STORE;
+	}
 };
 
 

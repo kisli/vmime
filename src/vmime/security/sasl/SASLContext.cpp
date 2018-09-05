@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -49,63 +49,70 @@ namespace security {
 namespace sasl {
 
 
-SASLContext::SASLContext()
-{
-	if (gsasl_init(&m_gsaslContext) != GSASL_OK)
+SASLContext::SASLContext() {
+
+	if (gsasl_init(&m_gsaslContext) != GSASL_OK) {
 		throw std::bad_alloc();
+	}
 }
 
 
-SASLContext::~SASLContext()
-{
+SASLContext::~SASLContext() {
+
 	gsasl_done(m_gsaslContext);
 }
 
 
 // static
-shared_ptr <SASLContext> SASLContext::create()
-{
+shared_ptr <SASLContext> SASLContext::create() {
+
 	return shared_ptr <SASLContext>(new SASLContext());
 }
 
 
-shared_ptr <SASLSession> SASLContext::createSession
-	(const string& serviceName,
-	 const shared_ptr <authenticator>& auth, const shared_ptr <SASLMechanism>& mech)
-{
+shared_ptr <SASLSession> SASLContext::createSession(
+	const string& serviceName,
+	const shared_ptr <authenticator>& auth,
+	const shared_ptr <SASLMechanism>& mech
+) {
+
 	return SASLSession::create
 		(serviceName, dynamicCast <SASLContext>(shared_from_this()), auth, mech);
 }
 
 
-shared_ptr <SASLMechanism> SASLContext::createMechanism(const string& name)
-{
-	return SASLMechanismFactory::getInstance()->create
-		(dynamicCast <SASLContext>(shared_from_this()), name);
+shared_ptr <SASLMechanism> SASLContext::createMechanism(const string& name) {
+
+	return SASLMechanismFactory::getInstance()->create(
+		dynamicCast <SASLContext>(shared_from_this()), name
+	);
 }
 
 
-shared_ptr <SASLMechanism> SASLContext::suggestMechanism
-	(const std::vector <shared_ptr <SASLMechanism> >& mechs)
-{
-	if (mechs.empty())
+shared_ptr <SASLMechanism> SASLContext::suggestMechanism(
+	const std::vector <shared_ptr <SASLMechanism> >& mechs
+) {
+
+	if (mechs.empty()) {
 		return null;
+	}
 
 	std::ostringstream oss;
 
-	for (unsigned int i = 0 ; i < mechs.size() ; ++i)
+	for (unsigned int i = 0 ; i < mechs.size() ; ++i) {
 		oss << mechs[i]->getName() << " ";
+	}
 
 	const string mechList = oss.str();
-	const char* suggested = gsasl_client_suggest_mechanism
-		(m_gsaslContext, mechList.c_str());
+	const char* suggested = gsasl_client_suggest_mechanism(m_gsaslContext, mechList.c_str());
 
-	if (suggested)
-	{
-		for (unsigned int i = 0 ; i < mechs.size() ; ++i)
-		{
-			if (mechs[i]->getName() == suggested)
+	if (suggested) {
+
+		for (unsigned int i = 0 ; i < mechs.size() ; ++i) {
+
+			if (mechs[i]->getName() == suggested) {
 				return mechs[i];
+			}
 		}
 	}
 
@@ -113,8 +120,8 @@ shared_ptr <SASLMechanism> SASLContext::suggestMechanism
 }
 
 
-void SASLContext::decodeB64(const string& input, byte_t** output, size_t* outputLen)
-{
+void SASLContext::decodeB64(const string& input, byte_t** output, size_t* outputLen) {
+
 	string res;
 
 	utility::inputStreamStringAdapter is(input);
@@ -134,8 +141,8 @@ void SASLContext::decodeB64(const string& input, byte_t** output, size_t* output
 }
 
 
-const string SASLContext::encodeB64(const byte_t* input, const size_t inputLen)
-{
+const string SASLContext::encodeB64(const byte_t* input, const size_t inputLen) {
+
 	string res;
 
 	utility::inputStreamByteBufferAdapter is(input, inputLen);
@@ -150,8 +157,8 @@ const string SASLContext::encodeB64(const byte_t* input, const size_t inputLen)
 }
 
 
-const string SASLContext::getErrorMessage(const string& fname, const int code)
-{
+const string SASLContext::getErrorMessage(const string& fname, const int code) {
+
 	string msg = fname + "() returned ";
 
 #define ERROR(x) \
@@ -159,45 +166,45 @@ const string SASLContext::getErrorMessage(const string& fname, const int code)
 
 	switch (code)
 	{
-	ERROR(GSASL_NEEDS_MORE)
-	ERROR(GSASL_UNKNOWN_MECHANISM)
-	ERROR(GSASL_MECHANISM_CALLED_TOO_MANY_TIMES)
-	ERROR(GSASL_MALLOC_ERROR)
-	ERROR(GSASL_BASE64_ERROR)
-	ERROR(GSASL_CRYPTO_ERROR)
-	ERROR(GSASL_SASLPREP_ERROR)
-	ERROR(GSASL_MECHANISM_PARSE_ERROR)
-	ERROR(GSASL_AUTHENTICATION_ERROR)
-	ERROR(GSASL_INTEGRITY_ERROR)
-	ERROR(GSASL_NO_CLIENT_CODE)
-	ERROR(GSASL_NO_SERVER_CODE)
-	ERROR(GSASL_NO_CALLBACK)
-	ERROR(GSASL_NO_ANONYMOUS_TOKEN)
-	ERROR(GSASL_NO_AUTHID)
-	ERROR(GSASL_NO_AUTHZID)
-	ERROR(GSASL_NO_PASSWORD)
-	ERROR(GSASL_NO_PASSCODE)
-	ERROR(GSASL_NO_PIN)
-	ERROR(GSASL_NO_SERVICE)
-	ERROR(GSASL_NO_HOSTNAME)
-	ERROR(GSASL_GSSAPI_RELEASE_BUFFER_ERROR)
-	ERROR(GSASL_GSSAPI_IMPORT_NAME_ERROR)
-	ERROR(GSASL_GSSAPI_INIT_SEC_CONTEXT_ERROR)
-	ERROR(GSASL_GSSAPI_ACCEPT_SEC_CONTEXT_ERROR)
-	ERROR(GSASL_GSSAPI_UNWRAP_ERROR)
-	ERROR(GSASL_GSSAPI_WRAP_ERROR)
-	ERROR(GSASL_GSSAPI_ACQUIRE_CRED_ERROR)
-	ERROR(GSASL_GSSAPI_DISPLAY_NAME_ERROR)
-	ERROR(GSASL_GSSAPI_UNSUPPORTED_PROTECTION_ERROR)
-	ERROR(GSASL_KERBEROS_V5_INIT_ERROR)
-	ERROR(GSASL_KERBEROS_V5_INTERNAL_ERROR)
-	ERROR(GSASL_SECURID_SERVER_NEED_ADDITIONAL_PASSCODE)
-	ERROR(GSASL_SECURID_SERVER_NEED_NEW_PIN)
+		ERROR(GSASL_NEEDS_MORE)
+		ERROR(GSASL_UNKNOWN_MECHANISM)
+		ERROR(GSASL_MECHANISM_CALLED_TOO_MANY_TIMES)
+		ERROR(GSASL_MALLOC_ERROR)
+		ERROR(GSASL_BASE64_ERROR)
+		ERROR(GSASL_CRYPTO_ERROR)
+		ERROR(GSASL_SASLPREP_ERROR)
+		ERROR(GSASL_MECHANISM_PARSE_ERROR)
+		ERROR(GSASL_AUTHENTICATION_ERROR)
+		ERROR(GSASL_INTEGRITY_ERROR)
+		ERROR(GSASL_NO_CLIENT_CODE)
+		ERROR(GSASL_NO_SERVER_CODE)
+		ERROR(GSASL_NO_CALLBACK)
+		ERROR(GSASL_NO_ANONYMOUS_TOKEN)
+		ERROR(GSASL_NO_AUTHID)
+		ERROR(GSASL_NO_AUTHZID)
+		ERROR(GSASL_NO_PASSWORD)
+		ERROR(GSASL_NO_PASSCODE)
+		ERROR(GSASL_NO_PIN)
+		ERROR(GSASL_NO_SERVICE)
+		ERROR(GSASL_NO_HOSTNAME)
+		ERROR(GSASL_GSSAPI_RELEASE_BUFFER_ERROR)
+		ERROR(GSASL_GSSAPI_IMPORT_NAME_ERROR)
+		ERROR(GSASL_GSSAPI_INIT_SEC_CONTEXT_ERROR)
+		ERROR(GSASL_GSSAPI_ACCEPT_SEC_CONTEXT_ERROR)
+		ERROR(GSASL_GSSAPI_UNWRAP_ERROR)
+		ERROR(GSASL_GSSAPI_WRAP_ERROR)
+		ERROR(GSASL_GSSAPI_ACQUIRE_CRED_ERROR)
+		ERROR(GSASL_GSSAPI_DISPLAY_NAME_ERROR)
+		ERROR(GSASL_GSSAPI_UNSUPPORTED_PROTECTION_ERROR)
+		ERROR(GSASL_KERBEROS_V5_INIT_ERROR)
+		ERROR(GSASL_KERBEROS_V5_INTERNAL_ERROR)
+		ERROR(GSASL_SECURID_SERVER_NEED_ADDITIONAL_PASSCODE)
+		ERROR(GSASL_SECURID_SERVER_NEED_NEW_PIN)
 
-	default:
+		default:
 
-		msg += "unknown error";
-		break;
+			msg += "unknown error";
+			break;
 	}
 
 #undef ERROR
@@ -212,4 +219,3 @@ const string SASLContext::getErrorMessage(const string& fname, const int code)
 
 
 #endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_SASL_SUPPORT
-

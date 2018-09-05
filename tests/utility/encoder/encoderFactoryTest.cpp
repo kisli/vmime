@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -35,8 +35,8 @@ VMIME_TEST_SUITE_BEGIN(encoderFactoryTest)
 	VMIME_TEST_LIST_END
 
 
-	void testNoDefaultEncoder()
-	{
+	void testNoDefaultEncoder() {
+
 		vmime::shared_ptr <vmime::utility::encoder::encoderFactory> ef =
 			vmime::utility::encoder::encoderFactory::getInstance();
 
@@ -47,8 +47,8 @@ VMIME_TEST_SUITE_BEGIN(encoderFactoryTest)
 		);
 	}
 
-	void testDefaultEncoder()
-	{
+	void testDefaultEncoder() {
+
 		vmime::shared_ptr <vmime::utility::encoder::encoderFactory> ef =
 			vmime::utility::encoder::encoderFactory::getInstance();
 

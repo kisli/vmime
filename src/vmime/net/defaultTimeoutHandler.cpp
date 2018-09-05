@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2014 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -34,39 +34,39 @@ namespace vmime {
 namespace net {
 
 
-defaultTimeoutHandler::defaultTimeoutHandler()
-{
+defaultTimeoutHandler::defaultTimeoutHandler() {
+
 	m_startTime = time(NULL);
 }
 
 
-defaultTimeoutHandler::~defaultTimeoutHandler()
-{
+defaultTimeoutHandler::~defaultTimeoutHandler() {
+
 }
 
 
-bool defaultTimeoutHandler::isTimeOut()
-{
+bool defaultTimeoutHandler::isTimeOut() {
+
 	return time(NULL) - m_startTime >= 30;
 }
 
 
-void defaultTimeoutHandler::resetTimeOut()
-{
+void defaultTimeoutHandler::resetTimeOut() {
+
 	m_startTime = time(NULL);
 }
 
 
-bool defaultTimeoutHandler::handleTimeOut()
-{
+bool defaultTimeoutHandler::handleTimeOut() {
+
 	return false;
 }
 
 
 
 
-shared_ptr <timeoutHandler> defaultTimeoutHandlerFactory::create()
-{
+shared_ptr <timeoutHandler> defaultTimeoutHandlerFactory::create() {
+
 	return make_shared <defaultTimeoutHandler>();
 }
 

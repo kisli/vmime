@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -35,19 +35,22 @@ namespace net {
 namespace smtp {
 
 
-SMTPSTransport::SMTPSTransport(const shared_ptr <session>& sess, const shared_ptr <security::authenticator>& auth)
-	: SMTPTransport(sess, auth, true)
-{
+SMTPSTransport::SMTPSTransport(
+	const shared_ptr <session>& sess,
+	const shared_ptr <security::authenticator>& auth
+)
+	: SMTPTransport(sess, auth, true) {
+
 }
 
 
-SMTPSTransport::~SMTPSTransport()
-{
+SMTPSTransport::~SMTPSTransport() {
+
 }
 
 
-const string SMTPSTransport::getProtocolName() const
-{
+const string SMTPSTransport::getProtocolName() const {
+
 	return "smtps";
 }
 
@@ -58,14 +61,14 @@ const string SMTPSTransport::getProtocolName() const
 SMTPServiceInfos SMTPSTransport::sm_infos(true);
 
 
-const serviceInfos& SMTPSTransport::getInfosInstance()
-{
+const serviceInfos& SMTPSTransport::getInfosInstance() {
+
 	return sm_infos;
 }
 
 
-const serviceInfos& SMTPSTransport::getInfos() const
-{
+const serviceInfos& SMTPSTransport::getInfos() const {
+
 	return sm_infos;
 }
 

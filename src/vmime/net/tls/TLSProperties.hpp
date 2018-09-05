@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -41,8 +41,8 @@ namespace tls {
 
 /** Holds options for a TLS session.
   */
-class VMIME_EXPORT TLSProperties : public object
-{
+class VMIME_EXPORT TLSProperties : public object {
+
 public:
 
 	TLSProperties();
@@ -50,8 +50,8 @@ public:
 
 
 	/** Predefined generic cipher suites (work with all TLS libraries). */
-	enum GenericCipherSuite
-	{
+	enum GenericCipherSuite {
+
 		CIPHERSUITE_HIGH,           /**< High encryption cipher suites (> 128 bits). */
 		CIPHERSUITE_MEDIUM,         /**< Medium encryption cipher suites (>= 128 bits). */
 		CIPHERSUITE_LOW,            /**< Low encryption cipher suites (>= 64 bits). */

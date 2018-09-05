@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -29,12 +29,11 @@
 #include "vmime/mediaType.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
-class VMIME_EXPORT textPartFactory
-{
+class VMIME_EXPORT textPartFactory {
+
 protected:
 
 	textPartFactory();
@@ -47,12 +46,11 @@ protected:
 
 #ifndef VMIME_BUILDING_DOC
 	template <class TYPE>
-	class registerer
-	{
+	class registerer {
 	public:
 
-		static shared_ptr <textPart> creator()
-		{
+		static shared_ptr <textPart> creator() {
+
 			// Allocate a new object
 			return vmime::make_shared <TYPE>();
 		}
@@ -64,8 +62,8 @@ public:
 	static textPartFactory* getInstance();
 
 	template <class T>
-	void registerType(const mediaType& type)
-	{
+	void registerType(const mediaType& type) {
+
 		m_map.push_back(MapType::value_type(type, &registerer<T>::creator));
 	}
 

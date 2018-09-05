@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -44,8 +44,8 @@ class X509Certificate;
 
 /** Default implementation for certificate verification.
   */
-class VMIME_EXPORT defaultCertificateVerifier : public certificateVerifier
-{
+class VMIME_EXPORT defaultCertificateVerifier : public certificateVerifier {
+
 private:
 
 	defaultCertificateVerifier(const defaultCertificateVerifier&);

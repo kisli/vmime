@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2014 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -44,12 +44,13 @@ class service;
 /** Base class for an object used to trace network communication
   * between the client and the server.
   */
+class VMIME_EXPORT tracer : public object {
 
-class VMIME_EXPORT tracer : public object
-{
 public:
 
-	virtual ~tracer() { }
+	virtual ~tracer() {
+
+	}
 
 	/** Trace raw bytes which have been received.
 	  *
@@ -79,15 +80,15 @@ public:
 };
 
 
-
 /** A class to create 'tracer' objects.
   */
+class VMIME_EXPORT tracerFactory : public object {
 
-class VMIME_EXPORT tracerFactory : public object
-{
 public:
 
-	virtual ~tracerFactory() { }
+	virtual ~tracerFactory() {
+
+	}
 
 	/** Creates a tracer for the specified service.
 	  *

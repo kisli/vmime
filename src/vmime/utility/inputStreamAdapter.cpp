@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -29,50 +29,51 @@ namespace utility {
 
 
 inputStreamAdapter::inputStreamAdapter(std::istream& is)
-	: m_stream(is)
-{
+	: m_stream(is) {
+
 }
 
 
-bool inputStreamAdapter::eof() const
-{
-	return (m_stream.eof());
+bool inputStreamAdapter::eof() const {
+
+	return m_stream.eof();
 }
 
 
-void inputStreamAdapter::reset()
-{
+void inputStreamAdapter::reset() {
+
 	m_stream.exceptions(std::ios_base::badbit);
 	m_stream.seekg(0, std::ios::beg);
 	m_stream.clear();
 }
 
 
-size_t inputStreamAdapter::read
-	(byte_t* const data, const size_t count)
-{
+size_t inputStreamAdapter::read(byte_t* const data, const size_t count) {
+
 	m_stream.exceptions(std::ios_base::badbit);
 	m_stream.read(reinterpret_cast <char*>(data), count);
-	return (m_stream.gcount());
+
+	return m_stream.gcount();
 }
 
 
-size_t inputStreamAdapter::skip(const size_t count)
-{
+size_t inputStreamAdapter::skip(const size_t count) {
+
 	m_stream.exceptions(std::ios_base::badbit);
 	m_stream.ignore(count);
-	return (m_stream.gcount());
+
+	return m_stream.gcount();
 }
 
 
-size_t inputStreamAdapter::getPosition() const
-{
+size_t inputStreamAdapter::getPosition() const {
+
 	return m_stream.tellg();
 }
 
 
-void inputStreamAdapter::seek(const size_t pos)
-{
+void inputStreamAdapter::seek(const size_t pos) {
+
 	m_stream.clear();
 	m_stream.seekg(pos, std::ios_base::beg);
 }

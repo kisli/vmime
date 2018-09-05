@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -40,8 +40,8 @@ VMIME_TEST_SUITE_BEGIN(charsetFilteredOutputStreamTest)
 	VMIME_TEST_LIST_END
 
 
-	void testInputBufferUnderflow()
-	{
+	void testInputBufferUnderflow() {
+
 		vmime::shared_ptr <vmime::charsetConverter> cc =
 			vmime::charsetConverter::create("utf-8", "iso-8859-1");
 
@@ -65,8 +65,8 @@ VMIME_TEST_SUITE_BEGIN(charsetFilteredOutputStreamTest)
 		VASSERT_EQ("chunk 2", toHex("f\xf8o"), toHex(output));
 	}
 
-	void testInvalidInput1()
-	{
+	void testInvalidInput1() {
+
 		vmime::string in("foo\xab\xcd\xef bar");
 		vmime::string expectedOut("foo??? bar");
 
@@ -74,9 +74,7 @@ VMIME_TEST_SUITE_BEGIN(charsetFilteredOutputStreamTest)
 		vmime::utility::outputStreamStringAdapter osa(actualOut);
 
 		vmime::shared_ptr <vmime::charsetConverter> conv =
-			vmime::charsetConverter::create
-				(vmime::charset("utf-8"),
-				 vmime::charset("iso-8859-1"));
+			vmime::charsetConverter::create(vmime::charset("utf-8"), vmime::charset("iso-8859-1"));
 
 		vmime::shared_ptr <vmime::utility::charsetFilteredOutputStream> os =
 			conv->getFilteredOutputStream(osa);
@@ -96,10 +94,10 @@ VMIME_TEST_SUITE_BEGIN(charsetFilteredOutputStreamTest)
 	}
 
 	// Using 'bufferedStreamCopy'
-	void testStreamCopy()
-	{
-		for (unsigned int i = 0 ; i < charsetTestSuitesCount ; ++i)
-		{
+	void testStreamCopy() {
+
+		for (unsigned int i = 0 ; i < charsetTestSuitesCount ; ++i) {
+
 			const charsetTestSuiteStruct& entry = charsetTestSuites[i];
 
 			std::ostringstream testName;
@@ -133,10 +131,10 @@ VMIME_TEST_SUITE_BEGIN(charsetFilteredOutputStreamTest)
 	}
 
 	// One byte at a time
-	void testOneByteAtTime()
-	{
-		for (unsigned int i = 0 ; i < charsetTestSuitesCount ; ++i)
-		{
+	void testOneByteAtTime() {
+
+		for (unsigned int i = 0 ; i < charsetTestSuitesCount ; ++i) {
+
 			const charsetTestSuiteStruct& entry = charsetTestSuites[i];
 
 			std::ostringstream testName;
@@ -173,10 +171,10 @@ VMIME_TEST_SUITE_BEGIN(charsetFilteredOutputStreamTest)
 	}
 
 	// Variable chunks
-	void testVariableInputChunk()
-	{
-		for (unsigned int i = 0 ; i < charsetTestSuitesCount ; ++i)
-		{
+	void testVariableInputChunk() {
+
+		for (unsigned int i = 0 ; i < charsetTestSuitesCount ; ++i) {
+
 			const charsetTestSuiteStruct& entry = charsetTestSuites[i];
 
 			std::ostringstream testName;

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -35,19 +35,22 @@ namespace net {
 namespace pop3 {
 
 
-POP3SStore::POP3SStore(const shared_ptr <session>& sess, const shared_ptr <security::authenticator>& auth)
-	: POP3Store(sess, auth, true)
-{
+POP3SStore::POP3SStore(
+	const shared_ptr <session>& sess,
+	const shared_ptr <security::authenticator>& auth
+)
+	: POP3Store(sess, auth, true) {
+
 }
 
 
-POP3SStore::~POP3SStore()
-{
+POP3SStore::~POP3SStore() {
+
 }
 
 
-const string POP3SStore::getProtocolName() const
-{
+const string POP3SStore::getProtocolName() const {
+
 	return "pop3s";
 }
 
@@ -58,14 +61,14 @@ const string POP3SStore::getProtocolName() const
 POP3ServiceInfos POP3SStore::sm_infos(true);
 
 
-const serviceInfos& POP3SStore::getInfosInstance()
-{
+const serviceInfos& POP3SStore::getInfosInstance() {
+
 	return sm_infos;
 }
 
 
-const serviceInfos& POP3SStore::getInfos() const
-{
+const serviceInfos& POP3SStore::getInfos() const {
+
 	return sm_infos;
 }
 

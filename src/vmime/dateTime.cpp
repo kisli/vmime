@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -31,8 +31,7 @@
 #include "vmime/utility/datetimeUtils.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 /*
 
@@ -68,20 +67,24 @@ zone = "UT" / "GMT"                               ; Universal Time
 */
 
 
-void datetime::parseImpl
-	(const parsingContext& /* ctx */, const string& buffer, const size_t position,
-	 const size_t end, size_t* newPosition)
-{
+void datetime::parseImpl(
+	const parsingContext& /* ctx */,
+	const string& buffer,
+	const size_t position,
+	const size_t end,
+	size_t* newPosition
+) {
+
 	const char* const pend = buffer.data() + end;
 	const char* p = buffer.data() + position;
 
 	// Parse the date and time value
 	while (p < pend && parserHelpers::isSpace(*p)) ++p;
 
-	if (p < pend)
-	{
-		if (parserHelpers::isAlpha(*p))
-		{
+	if (p < pend) {
+
+		if (parserHelpers::isAlpha(*p)) {
+
 			// Ignore week day
 			while (p < pend && parserHelpers::isAlpha(*p)) ++p;
 			while (p < pend && parserHelpers::isSpace(*p)) ++p;
@@ -91,34 +94,32 @@ void datetime::parseImpl
 
 		bool dayParsed = false;
 
-		if (parserHelpers::isAlpha(*p))
-		{
+		if (parserHelpers::isAlpha(*p)) {
+
 			// Ill-formed date/time, this may be the month,
 			// so we skip day parsing (will be done later)
-		}
-		else
-		{
+
+		} else {
+
 			while (p < pend && !parserHelpers::isDigit(*p)) ++p;
 
-			if (p < pend && parserHelpers::isDigit(*p))
-			{
+			if (p < pend && parserHelpers::isDigit(*p)) {
+
 				// Month day
 				int day = 0;
 
-				do
-				{
+				do {
 					day = day * 10 + (*p - '0');
 					++p;
-				}
-				while (p < pend && parserHelpers::isDigit(*p));
+				} while (p < pend && parserHelpers::isDigit(*p));
 
 				m_day = (day >= 1 && day <= 31) ? day : 1;
 
 				while (p < pend && !parserHelpers::isSpace(*p)) ++p;
 				while (p < pend && parserHelpers::isSpace(*p)) ++p;
-			}
-			else
-			{
+
+			} else {
+
 				m_day = 1;
 
 				// Skip everything to the next field
@@ -129,135 +130,131 @@ void datetime::parseImpl
 			dayParsed = true;
 		}
 
-		if (p < pend && parserHelpers::isAlpha(*p))
-		{
+		if (p < pend && parserHelpers::isAlpha(*p)) {
+
 			// Month
 			char_t month[4] = { 0 };
 			int monthLength = 0;
 
-			do
-			{
+			do {
 				month[monthLength++] = *p;
 				++p;
-			}
-			while (monthLength < 3 && p < pend && parserHelpers::isAlpha(*p));
+			} while (monthLength < 3 && p < pend && parserHelpers::isAlpha(*p));
 
 			while (p < pend && parserHelpers::isAlpha(*p)) ++p;
 
-			switch (month[0])
-			{
-			case 'a':
-			case 'A':
-			{
-				if (month[1] == 'u' || month[1] == 'U')
-					m_month = AUGUST;
-				else
-					m_month = APRIL; // by default
+			switch (month[0]) {
 
-				break;
-			}
-			case 'd':
-			case 'D':
-			{
-				m_month = DECEMBER;
-				break;
-			}
-			case 'f':
-			case 'F':
-			{
-				m_month = FEBRUARY;
-				break;
-			}
-			case 'j':
-			case 'J':
-			{
-				if (month[1] == 'u' || month[1] == 'U')
-				{
-					if (month[2] == 'l' || month[2] == 'L')
-						m_month = JULY;
-					else // if (month[2] == 'n' || month[2] == 'N')
-						m_month = JUNE;
+				case 'a':
+				case 'A': {
+
+					if (month[1] == 'u' || month[1] == 'U')
+						m_month = AUGUST;
+					else
+						m_month = APRIL; // by default
+
+					break;
 				}
-				else
-				{
+				case 'd':
+				case 'D': {
+
+					m_month = DECEMBER;
+					break;
+				}
+				case 'f':
+				case 'F': {
+
+					m_month = FEBRUARY;
+					break;
+				}
+				case 'j':
+				case 'J': {
+
+					if (month[1] == 'u' || month[1] == 'U') {
+
+						if (month[2] == 'l' || month[2] == 'L') {
+							m_month = JULY;
+						} else {  // if (month[2] == 'n' || month[2] == 'N')
+							m_month = JUNE;
+						}
+
+					} else {
+
+						m_month = JANUARY; // by default
+					}
+
+					break;
+				}
+				case 'm':
+				case 'M': {
+
+					if ((month[1] == 'a' || month[1] == 'A') &&
+					    (month[2] == 'y' || month[2] == 'Y')) {
+
+						m_month = MAY;
+
+					} else {
+
+						m_month = MARCH; // by default
+					}
+
+					break;
+				}
+				case 'n':
+				case 'N': {
+
+					m_month = NOVEMBER;
+					break;
+				}
+				case 'o':
+				case 'O': {
+
+					m_month = OCTOBER;
+					break;
+				}
+				case 's':
+				case 'S': {
+
+					m_month = SEPTEMBER;
+					break;
+				}
+				default: {
+
 					m_month = JANUARY; // by default
+					break;
 				}
-
-				break;
-			}
-			case 'm':
-			case 'M':
-			{
-				if ((month[1] == 'a' || month[1] == 'A') &&
-				    (month[2] == 'y' || month[2] == 'Y'))
-				{
-					m_month = MAY;
-				}
-				else
-				{
-					m_month = MARCH; // by default
-				}
-
-				break;
-			}
-			case 'n':
-			case 'N':
-			{
-				m_month = NOVEMBER;
-				break;
-			}
-			case 'o':
-			case 'O':
-			{
-				m_month = OCTOBER;
-				break;
-			}
-			case 's':
-			case 'S':
-			{
-				m_month = SEPTEMBER;
-				break;
-			}
-			default:
-			{
-				m_month = JANUARY; // by default
-				break;
-			}
-
 			}
 
 			while (p < pend && !parserHelpers::isSpace(*p)) ++p;
 			while (p < pend && parserHelpers::isSpace(*p)) ++p;
-		}
-		else
-		{
+
+		} else {
+
 			m_month = JANUARY;
 
-			if (parserHelpers::isDigit(*p))
-			{
+			if (parserHelpers::isDigit(*p)) {
+
 				// Here, we expected a month, but it maybe
 				// a ill-formed date, so try to parse a year
 				// (we don't skip anything).
-			}
-			else
-			{
+
+			} else {
+
 				// Skip everything to the next field
 				while (p < pend && !parserHelpers::isSpace(*p)) ++p;
 				while (p < pend && parserHelpers::isSpace(*p)) ++p;
 			}
 		}
 
-		if (!dayParsed && p < pend && parserHelpers::isDigit(*p))
-		{
+		if (!dayParsed && p < pend && parserHelpers::isDigit(*p)) {
+
 			// Month day
 			int day = 0;
 
-			do
-			{
+			do {
 				day = day * 10 + (*p - '0');
 				++p;
-			}
-			while (p < pend && parserHelpers::isDigit(*p));
+			} while (p < pend && parserHelpers::isDigit(*p));
 
 			m_day = (day >= 1 && day <= 31) ? day : 1;
 
@@ -265,26 +262,24 @@ void datetime::parseImpl
 			while (p < pend && parserHelpers::isSpace(*p)) ++p;
 		}
 
-		if (p < pend && parserHelpers::isDigit(*p))
-		{
+		if (p < pend && parserHelpers::isDigit(*p)) {
+
 			// Check for ill-formed date/time and try to recover
-			if (p + 2 < pend && *(p + 2) == ':')
-			{
+			if (p + 2 < pend && *(p + 2) == ':') {
+
 				// Skip year (default to current), and advance
 				// to time parsing
 				m_year = now().getYear();
-			}
-			else
-			{
+
+			} else {
+
 				// Year
 				int year = 0;
 
-				do
-				{
+				do {
 					year = year * 10 + (*p - '0');
 					++p;
-				}
-				while (p < pend && parserHelpers::isDigit(*p));
+				} while (p < pend && parserHelpers::isDigit(*p));
 
 				if (year < 70)         m_year = year + 2000;
 				else if (year < 1000)  m_year = year + 1900;
@@ -293,9 +288,9 @@ void datetime::parseImpl
 				while (p < pend && !parserHelpers::isSpace(*p)) ++p;
 				while (p < pend && parserHelpers::isSpace(*p)) ++p;
 			}
-		}
-		else
-		{
+
+		} else {
+
 			m_year = 1970;
 
 			// Skip everything to the next field
@@ -303,89 +298,83 @@ void datetime::parseImpl
 			while (p < pend && parserHelpers::isSpace(*p)) ++p;
 		}
 
-		if (p < pend && parserHelpers::isDigit(*p))
-		{
+		if (p < pend && parserHelpers::isDigit(*p)) {
+
 			// Hour
 			int hour = 0;
 
-			do
-			{
+			do {
 				hour = hour * 10 + (*p - '0');
 				++p;
-			}
-			while (p < pend && parserHelpers::isDigit(*p));
+			} while (p < pend && parserHelpers::isDigit(*p));
 
 			m_hour = (hour >= 0 && hour <= 23) ? hour : 0;
 
 			while (p < pend && parserHelpers::isSpace(*p)) ++p;
 
-			if (p < pend && *p == ':')
-			{
+			if (p < pend && *p == ':') {
+
 				++p;
 
 				while (p < pend && parserHelpers::isSpace(*p)) ++p;
 
-				if (p < pend && parserHelpers::isDigit(*p))
-				{
+				if (p < pend && parserHelpers::isDigit(*p)) {
+
 					// Minute
 					int minute = 0;
 
-					do
-					{
+					do {
 						minute = minute * 10 + (*p - '0');
 						++p;
-					}
-					while (p < pend && parserHelpers::isDigit(*p));
+					} while (p < pend && parserHelpers::isDigit(*p));
 
 					m_minute = (minute >= 0 && minute <= 59) ? minute : 0;
 
 					while (p < pend && parserHelpers::isSpace(*p)) ++p;
 
-					if (p < pend && *p == ':')
-					{
+					if (p < pend && *p == ':') {
+
 						++p;
 
 						while (p < pend && parserHelpers::isSpace(*p)) ++p;
 
-						if (p < pend && parserHelpers::isDigit(*p))
-						{
+						if (p < pend && parserHelpers::isDigit(*p)) {
+
 							// Second
 							int second = 0;
 
-							do
-							{
+							do {
 								second = second * 10 + (*p - '0');
 								++p;
-							}
-							while (p < pend && parserHelpers::isDigit(*p));
+							} while (p < pend && parserHelpers::isDigit(*p));
 
 							m_second = (second >= 0 && second <= 59) ? second : 0;
 
 							while (p < pend && !parserHelpers::isSpace(*p)) ++p;
 							while (p < pend && parserHelpers::isSpace(*p)) ++p;
-						}
-						else
-						{
+
+						} else {
+
 							m_second = 0;
 						}
-					}
-					else
-					{
+
+					} else {
+
 						m_second = 0;
 					}
-				}
-				else
-				{
+
+				} else {
+
 					m_minute = 0;
 				}
-			}
-			else
-			{
+
+			} else {
+
 				m_minute = 0;
 			}
-		}
-		else
-		{
+
+		} else {
+
 			m_hour = 0;
 
 			// Skip everything to the next field
@@ -393,43 +382,40 @@ void datetime::parseImpl
 			while (p < pend && parserHelpers::isSpace(*p)) ++p;
 		}
 
-		if (p + 1 < pend && (*p == '+' || *p == '-') && parserHelpers::isDigit(*(p + 1)))
-		{
+		if (p + 1 < pend && (*p == '+' || *p == '-') && parserHelpers::isDigit(*(p + 1))) {
+
 			const char_t sign = *p;
 			++p;
 
 			// Zone offset (in hour/minutes)
 			int offset = 0;
 
-			do
-			{
+			do {
 				offset = offset * 10 + (*p - '0');
 				++p;
-			}
-			while (p < pend && parserHelpers::isDigit(*p));
+			} while (p < pend && parserHelpers::isDigit(*p));
 
 			const int hourOff = offset / 100;
 			const int minOff = offset % 100;
 
-			if (sign == '+')
+			if (sign == '+') {
 				m_zone = hourOff * 60 + minOff;
-			else
+			} else {
 				m_zone = -(hourOff * 60 + minOff);
-		}
-		else if (p < pend && isalpha(*p))
-		{
+			}
+
+		} else if (p < pend && isalpha(*p)) {
+
 			bool done = false;
 
 			// Zone offset (Time zone name)
 			char_t zone[4] = { 0 };
 			int zoneLength = 0;
 
-			do
-			{
+			do {
 				zone[zoneLength++] = *p;
 				++p;
-			}
-			while (zoneLength < 3 && p < pend);
+			} while (zoneLength < 3 && p < pend);
 
 			switch (zone[0])
 			{
@@ -451,12 +437,13 @@ void datetime::parseImpl
 			case 'e':
 			case 'E':
 			{
-				if (zoneLength >= 2)
-				{
-					if (zone[1] == 's' || zone[1] == 'S')
+				if (zoneLength >= 2) {
+
+					if (zone[1] == 's' || zone[1] == 'S') {
 						m_zone = EST;
-					else
+					} else {
 						m_zone = EDT;
+					}
 
 					done = true;
 				}
@@ -464,14 +451,15 @@ void datetime::parseImpl
 				break;
 			}
 			case 'm':
-			case 'M':
-			{
-				if (zoneLength >= 2)
-				{
-					if (zone[1] == 's' || zone[1] == 'S')
+			case 'M': {
+
+				if (zoneLength >= 2) {
+
+					if (zone[1] == 's' || zone[1] == 'S') {
 						m_zone = MST;
-					else
+					} else {
 						m_zone = MDT;
+					}
 
 					done = true;
 				}
@@ -479,14 +467,15 @@ void datetime::parseImpl
 				break;
 			}
 			case 'p':
-			case 'P':
-			{
-				if (zoneLength >= 2)
-				{
-					if (zone[1] == 's' || zone[1] == 'S')
+			case 'P': {
+
+				if (zoneLength >= 2) {
+
+					if (zone[1] == 's' || zone[1] == 'S') {
 						m_zone = PST;
-					else
+					} else {
 						m_zone = PDT;
+					}
 
 					done = true;
 				}
@@ -496,10 +485,10 @@ void datetime::parseImpl
 			case 'g':
 			case 'G':
 			case 'u':
-			case 'U':
-			{
-				if (zoneLength >= 2)
-				{
+			case 'U': {
+
+				if (zoneLength >= 2) {
+
 					m_zone = GMT;  // = UTC
 					done = true;
 				}
@@ -509,16 +498,16 @@ void datetime::parseImpl
 
 			}
 
-			if (!done)
-			{
+			if (!done) {
+
 				const char_t z = zone[0];
 
 				// Military time zone
-				if (z != 'j' && z != 'J')
-				{
+				if (z != 'j' && z != 'J') {
+
 					typedef std::map <char_t, int> Map;
-					static const Map::value_type offsetMapInit[] =
-					{
+					static const Map::value_type offsetMapInit[] = {
+
 						Map::value_type('a', -60),
 						Map::value_type('b', -120),
 						Map::value_type('c', -180),
@@ -547,31 +536,34 @@ void datetime::parseImpl
 
 						Map::value_type('z', 0),
 					};
-					static const Map offsetMap
-						(::vmime::begin(offsetMapInit),
-						 ::vmime::end(offsetMapInit));
+
+					static const Map offsetMap(
+						::vmime::begin(offsetMapInit),
+						::vmime::end(offsetMapInit)
+					);
 
 					Map::const_iterator pos =
 						offsetMap.find(parserHelpers::toLower(z));
 
-					if (pos != offsetMap.end())
+					if (pos != offsetMap.end()) {
 						m_zone = (*pos).second;
-					else
+					} else {
 						m_zone = GMT;
-				}
-				else
-				{
+					}
+
+				} else {
+
 					m_zone = GMT;
 				}
 			}
-		}
-		else
-		{
+
+		} else {
+
 			m_zone = 0;
 		}
-	}
-	else
-	{
+
+	} else {
+
 		m_year = 1970;
 		m_month = JANUARY;
 		m_day = 1;
@@ -585,20 +577,26 @@ void datetime::parseImpl
 
 	setParsedBounds(position, end);
 
-	if (newPosition)
+	if (newPosition) {
 		*newPosition = end;
+	}
 }
 
 
-void datetime::generateImpl
-	(const generationContext& /* ctx */, utility::outputStream& os,
-	 const size_t curLinePos, size_t* newLinePos) const
-{
-	static const char* dayNames[] =
-		{ "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
-	static const char* monthNames[] =
-		{ "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-		  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+void datetime::generateImpl(
+	const generationContext& /* ctx */,
+	utility::outputStream& os,
+	const size_t curLinePos,
+	size_t* newLinePos
+) const {
+
+	static const char* dayNames[] = {
+		"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
+	};
+	static const char* monthNames[] = {
+		"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+		"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+	};
 
 	const int z = ((m_zone < 0) ? -m_zone : m_zone);
 	const int zh = z / 60;
@@ -618,64 +616,89 @@ void datetime::generateImpl
 	const string& str = oss.str();
 	os << str;
 
-	if (newLinePos)
+	if (newLinePos) {
 		*newLinePos = curLinePos + str.length();
+	}
 }
 
 
 datetime::datetime()
 	: m_year(1970), m_month(1), m_day(1),
-	  m_hour(0), m_minute(0), m_second(0), m_zone(0)
-{
+	  m_hour(0), m_minute(0), m_second(0), m_zone(0) {
+
 }
 
 
 datetime::datetime(const int year, const int month, const int day)
 	: m_year(year), m_month(month), m_day(day),
-	  m_hour(0), m_minute(0), m_second(0), m_zone(0)
-{
+	  m_hour(0), m_minute(0), m_second(0), m_zone(0) {
+
 }
 
 
-datetime::datetime(const int year, const int month, const int day,
-                   const int hour, const int minute, const int second,
-                   const int zone)
-	: m_year(year), m_month(month), m_day(day),
-	  m_hour(hour), m_minute(minute), m_second(second), m_zone(zone)
-{
+datetime::datetime(
+	const int year,
+	const int month,
+	const int day,
+	const int hour,
+	const int minute,
+	const int second,
+	const int zone
+)
+	: m_year(year),
+	  m_month(month),
+	  m_day(day),
+	  m_hour(hour),
+	  m_minute(minute),
+	  m_second(second),
+	  m_zone(zone) {
+
 }
 
 
 datetime::datetime(const datetime& d)
-	: headerFieldValue(), m_year(d.m_year), m_month(d.m_month), m_day(d.m_day),
-	  m_hour(d.m_hour), m_minute(d.m_minute), m_second(d.m_second), m_zone(d.m_zone)
-{
+	: headerFieldValue(),
+	  m_year(d.m_year),
+	  m_month(d.m_month),
+	  m_day(d.m_day),
+	  m_hour(d.m_hour),
+	  m_minute(d.m_minute),
+	  m_second(d.m_second),
+	  m_zone(d.m_zone) {
+
 }
 
 
-datetime::datetime(const time_t t, const int zone)
-{
+datetime::datetime(const time_t t, const int zone) {
 
 #if VMIME_HAVE_LOCALTIME_S
+
 	struct tm tms;
 
-	if (!gmtime_s(&tms, &t))
+	if (!gmtime_s(&tms, &t)) {
 		localtime_s(&tms, &t);
+	}
+
 #elif VMIME_HAVE_LOCALTIME_R
 	struct tm tms;
 
-	if (!gmtime_r(&t, &tms))
+	if (!gmtime_r(&t, &tms)) {
 		localtime_r(&t, &tms);
+	}
+
 #else
+
 	struct tm* gtm = gmtime(&t);
 	struct tm* ltm = localtime(&t);
 
 	struct tm tms;
 
-	if (gtm)
+	if (gtm) {
 		tms = *gtm;
-	else if (ltm)
+	} else if (ltm) {
 		tms = *ltm;
+	}
+
 #endif
 
 	m_year = tms.tm_year + 1900;
@@ -688,19 +711,19 @@ datetime::datetime(const time_t t, const int zone)
 }
 
 
-datetime::datetime(const string& date)
-{
+datetime::datetime(const string& date) {
+
 	parse(date);
 }
 
 
-datetime::~datetime()
-{
+datetime::~datetime() {
+
 }
 
 
-void datetime::copyFrom(const component& other)
-{
+void datetime::copyFrom(const component& other) {
+
 	const datetime& d = dynamic_cast <const datetime&>(other);
 
 	m_year = d.m_year;
@@ -713,22 +736,22 @@ void datetime::copyFrom(const component& other)
 }
 
 
-datetime& datetime::operator=(const datetime& other)
-{
+datetime& datetime::operator=(const datetime& other) {
+
 	copyFrom(other);
-	return (*this);
+	return *this;
 }
 
 
-datetime& datetime::operator=(const string& s)
-{
+datetime& datetime::operator=(const string& s) {
+
 	parse(s);
-	return (*this);
+	return *this;
 }
 
 
-void datetime::getTime(int& hour, int& minute, int& second, int& zone) const
-{
+void datetime::getTime(int& hour, int& minute, int& second, int& zone) const {
+
 	hour = m_hour;
 	minute = m_minute;
 	second = m_second;
@@ -736,25 +759,29 @@ void datetime::getTime(int& hour, int& minute, int& second, int& zone) const
 }
 
 
-void datetime::getTime(int& hour, int& minute, int& second) const
-{
+void datetime::getTime(int& hour, int& minute, int& second) const {
+
 	hour = m_hour;
 	minute = m_minute;
 	second = m_second;
 }
 
 
-void datetime::getDate(int& year, int& month, int& day) const
-{
+void datetime::getDate(int& year, int& month, int& day) const {
+
 	year = m_year;
 	month = m_month;
 	day = m_day;
 }
 
 
-void datetime::setTime(const int hour, const int minute,
-                       const int second, const int zone)
-{
+void datetime::setTime(
+	const int hour,
+	const int minute,
+	const int second,
+	const int zone
+) {
+
 	m_hour = hour;
 	m_minute = minute;
 	m_second = second;
@@ -762,40 +789,44 @@ void datetime::setTime(const int hour, const int minute,
 }
 
 
-void datetime::setDate(const int year, const int month, const int day)
-{
+void datetime::setDate(
+	const int year,
+	const int month,
+	const int day
+) {
+
 	m_year = year;
 	m_month = month;
 	m_day = day;
 }
 
 
-const datetime datetime::now()
-{
-	return (platform::getHandler()->getCurrentLocalTime());
+const datetime datetime::now() {
+
+	return platform::getHandler()->getCurrentLocalTime();
 }
 
 
-shared_ptr <component> datetime::clone() const
-{
+shared_ptr <component> datetime::clone() const {
+
 	return make_shared <datetime>(*this);
 }
 
 
-const std::vector <shared_ptr <component> > datetime::getChildComponents()
-{
+const std::vector <shared_ptr <component> > datetime::getChildComponents() {
+
 	return std::vector <shared_ptr <component> >();
 }
 
 
-int datetime::getYear() const { return (m_year); }
-int datetime::getMonth() const { return (m_month); }
-int datetime::getDay() const { return (m_day); }
-int datetime::getHour() const { return (m_hour); }
-int datetime::getMinute() const { return (m_minute); }
-int datetime::getSecond() const { return (m_second); }
-int datetime::getZone() const { return (m_zone); }
-int datetime::getWeekDay() const { return (utility::datetimeUtils::getDayOfWeek(m_year, m_month, m_day)); }
+int datetime::getYear() const { return m_year; }
+int datetime::getMonth() const { return m_month; }
+int datetime::getDay() const { return m_day; }
+int datetime::getHour() const { return m_hour; }
+int datetime::getMinute() const { return m_minute; }
+int datetime::getSecond() const { return m_second; }
+int datetime::getZone() const { return m_zone; }
+int datetime::getWeekDay() const { return utility::datetimeUtils::getDayOfWeek(m_year, m_month, m_day); }
 int datetime::getWeek() const { return utility::datetimeUtils::getWeekOfYear(m_year, m_month, m_day); }
 
 void datetime::setYear(const int year) { m_year = year; }
@@ -807,87 +838,87 @@ void datetime::setSecond(const int second) { m_second = second; }
 void datetime::setZone(const int zone) { m_zone = zone; }
 
 
-bool datetime::operator==(const datetime& other) const
-{
+bool datetime::operator==(const datetime& other) const {
+
 	const datetime ut1 = utility::datetimeUtils::toUniversalTime(*this);
 	const datetime ut2 = utility::datetimeUtils::toUniversalTime(other);
 
-	return (ut1.m_year   == ut2.m_year   &&
-	        ut1.m_month  == ut2.m_month  &&
-	        ut1.m_day    == ut2.m_day    &&
-	        ut1.m_hour   == ut2.m_hour   &&
-	        ut1.m_minute == ut2.m_minute &&
-	        ut1.m_second == ut2.m_second);
+	return ut1.m_year   == ut2.m_year   &&
+	       ut1.m_month  == ut2.m_month  &&
+	       ut1.m_day    == ut2.m_day    &&
+	       ut1.m_hour   == ut2.m_hour   &&
+	       ut1.m_minute == ut2.m_minute &&
+	       ut1.m_second == ut2.m_second;
 }
 
 
-bool datetime::operator!=(const datetime& other) const
-{
+bool datetime::operator!=(const datetime& other) const {
+
 	const datetime ut1 = utility::datetimeUtils::toUniversalTime(*this);
 	const datetime ut2 = utility::datetimeUtils::toUniversalTime(other);
 
-	return (ut1.m_year   != ut2.m_year   ||
-	        ut1.m_month  != ut2.m_month  ||
-	        ut1.m_day    != ut2.m_day    ||
-	        ut1.m_hour   != ut2.m_hour   ||
-	        ut1.m_minute != ut2.m_minute ||
-	        ut1.m_second != ut2.m_second);
+	return ut1.m_year   != ut2.m_year   ||
+	       ut1.m_month  != ut2.m_month  ||
+	       ut1.m_day    != ut2.m_day    ||
+	       ut1.m_hour   != ut2.m_hour   ||
+	       ut1.m_minute != ut2.m_minute ||
+	       ut1.m_second != ut2.m_second;
 }
 
 
-bool datetime::operator<(const datetime& other) const
-{
+bool datetime::operator<(const datetime& other) const {
+
 	const datetime ut1 = utility::datetimeUtils::toUniversalTime(*this);
 	const datetime ut2 = utility::datetimeUtils::toUniversalTime(other);
 
-	return ((ut1.m_year    <  ut2.m_year) ||
-	        ((ut1.m_year   == ut2.m_year)   && ((ut1.m_month  < ut2.m_month)  ||
-	        ((ut1.m_month  == ut2.m_month)  && ((ut1.m_day    < ut2.m_day)    ||
-	        ((ut1.m_day    == ut2.m_day)    && ((ut1.m_hour   < ut2.m_hour)   ||
-	        ((ut1.m_hour   == ut2.m_hour)   && ((ut1.m_minute < ut2.m_minute) ||
-	        ((ut1.m_minute == ut2.m_minute) && ((ut1.m_second < ut2.m_second))))))))))));
+	return (ut1.m_year    <  ut2.m_year) ||
+	       ((ut1.m_year   == ut2.m_year)   && ((ut1.m_month  < ut2.m_month)  ||
+	       ((ut1.m_month  == ut2.m_month)  && ((ut1.m_day    < ut2.m_day)    ||
+	       ((ut1.m_day    == ut2.m_day)    && ((ut1.m_hour   < ut2.m_hour)   ||
+	       ((ut1.m_hour   == ut2.m_hour)   && ((ut1.m_minute < ut2.m_minute) ||
+	       ((ut1.m_minute == ut2.m_minute) && ((ut1.m_second < ut2.m_second)))))))))));
 }
 
 
-bool datetime::operator<=(const datetime& other) const
-{
+bool datetime::operator<=(const datetime& other) const {
+
 	const datetime ut1 = utility::datetimeUtils::toUniversalTime(*this);
 	const datetime ut2 = utility::datetimeUtils::toUniversalTime(other);
 
-	return ((ut1.m_year    <  ut2.m_year) ||
-	        ((ut1.m_year   == ut2.m_year)   && ((ut1.m_month  <  ut2.m_month)  ||
-	        ((ut1.m_month  == ut2.m_month)  && ((ut1.m_day    <  ut2.m_day)    ||
-	        ((ut1.m_day    == ut2.m_day)    && ((ut1.m_hour   <  ut2.m_hour)   ||
-	        ((ut1.m_hour   == ut2.m_hour)   && ((ut1.m_minute <  ut2.m_minute) ||
-	        ((ut1.m_minute == ut2.m_minute) && ((ut1.m_second <= ut2.m_second))))))))))));
+	return (ut1.m_year    <  ut2.m_year) ||
+	       ((ut1.m_year   == ut2.m_year)   && ((ut1.m_month  <  ut2.m_month)  ||
+	       ((ut1.m_month  == ut2.m_month)  && ((ut1.m_day    <  ut2.m_day)    ||
+	       ((ut1.m_day    == ut2.m_day)    && ((ut1.m_hour   <  ut2.m_hour)   ||
+	       ((ut1.m_hour   == ut2.m_hour)   && ((ut1.m_minute <  ut2.m_minute) ||
+	       ((ut1.m_minute == ut2.m_minute) && ((ut1.m_second <= ut2.m_second)))))))))));
 }
 
 
-bool datetime::operator>(const datetime& other) const
-{
+bool datetime::operator>(const datetime& other) const {
+
 	const datetime ut1 = utility::datetimeUtils::toUniversalTime(*this);
 	const datetime ut2 = utility::datetimeUtils::toUniversalTime(other);
 
-	return ((ut1.m_year    >  ut2.m_year) ||
-	        ((ut1.m_year   == ut2.m_year)   && ((ut1.m_month  > ut2.m_month)  ||
-	        ((ut1.m_month  == ut2.m_month)  && ((ut1.m_day    > ut2.m_day)    ||
-	        ((ut1.m_day    == ut2.m_day)    && ((ut1.m_hour   > ut2.m_hour)   ||
-	        ((ut1.m_hour   == ut2.m_hour)   && ((ut1.m_minute > ut2.m_minute) ||
-	        ((ut1.m_minute == ut2.m_minute) && (ut1.m_second > ut2.m_second)))))))))));
+	return (ut1.m_year    >  ut2.m_year) ||
+	       ((ut1.m_year   == ut2.m_year)   && ((ut1.m_month  > ut2.m_month)  ||
+	       ((ut1.m_month  == ut2.m_month)  && ((ut1.m_day    > ut2.m_day)    ||
+	       ((ut1.m_day    == ut2.m_day)    && ((ut1.m_hour   > ut2.m_hour)   ||
+	       ((ut1.m_hour   == ut2.m_hour)   && ((ut1.m_minute > ut2.m_minute) ||
+	       ((ut1.m_minute == ut2.m_minute) && (ut1.m_second > ut2.m_second))))))))));
 }
 
 
-bool datetime::operator>=(const datetime& other) const
-{
+bool datetime::operator>=(const datetime& other) const {
+
 	const datetime ut1 = utility::datetimeUtils::toUniversalTime(*this);
 	const datetime ut2 = utility::datetimeUtils::toUniversalTime(other);
 
-	return ((ut1.m_year    >  ut2.m_year) ||
-	        ((ut1.m_year   == ut2.m_year)   && ((ut1.m_month  >  ut2.m_month)  ||
-	        ((ut1.m_month  == ut2.m_month)  && ((ut1.m_day    >  ut2.m_day)    ||
-	        ((ut1.m_day    == ut2.m_day)    && ((ut1.m_hour   >  ut2.m_hour)   ||
-	        ((ut1.m_hour   == ut2.m_hour)   && ((ut1.m_minute >  ut2.m_minute) ||
-	        ((ut1.m_minute == ut2.m_minute) && (ut1.m_second >= ut2.m_second)))))))))));
+	return (ut1.m_year    >  ut2.m_year) ||
+	       ((ut1.m_year   == ut2.m_year)   && ((ut1.m_month  >  ut2.m_month)  ||
+	       ((ut1.m_month  == ut2.m_month)  && ((ut1.m_day    >  ut2.m_day)    ||
+	       ((ut1.m_day    == ut2.m_day)    && ((ut1.m_hour   >  ut2.m_hour)   ||
+	       ((ut1.m_hour   == ut2.m_hour)   && ((ut1.m_minute >  ut2.m_minute) ||
+	       ((ut1.m_minute == ut2.m_minute) && (ut1.m_second >= ut2.m_second))))))))));
 }
 
 

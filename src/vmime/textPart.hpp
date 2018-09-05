@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -32,15 +32,13 @@
 #include "vmime/contentHandler.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 /** Generic text part.
   */
+class VMIME_EXPORT textPart : public object {
 
-class VMIME_EXPORT textPart : public object
-{
 	friend class textPartFactory;
 	friend class messageBuilder; // for generateIn, getPartCount
 	friend class messageParser;  // for parse
@@ -94,7 +92,10 @@ public:
 	  * @param message the message
 	  * @param parent body part into which generate this part
 	  */
-	virtual void generateIn(const shared_ptr <bodyPart>& message, const shared_ptr <bodyPart>& parent) const = 0;
+	virtual void generateIn(
+		const shared_ptr <bodyPart>& message,
+		const shared_ptr <bodyPart>& parent
+	) const = 0;
 
 	/** Parse the text part(s) from the specified message.
 	  *
@@ -102,7 +103,11 @@ public:
 	  * @param parent part containing the text part
 	  * @param textPart actual text part
 	  */
-	virtual void parse(const shared_ptr <const bodyPart>& message, const shared_ptr <const bodyPart>& parent, const shared_ptr <const bodyPart>& textPart) = 0;
+	virtual void parse(
+		const shared_ptr <const bodyPart>& message,
+		const shared_ptr <const bodyPart>& parent,
+		const shared_ptr <const bodyPart>& textPart
+	) = 0;
 };
 
 

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -42,33 +42,38 @@ namespace format {
 
 
 courierMaildirFormat::courierMaildirFormat(const shared_ptr <context>& ctx)
-	: maildirFormat(ctx)
-{
+	: maildirFormat(ctx) {
+
 }
 
 
-const string courierMaildirFormat::getName() const
-{
+const string courierMaildirFormat::getName() const {
+
 	return "courier";
 }
 
 
-void courierMaildirFormat::createFolder(const folder::path& path)
-{
+void courierMaildirFormat::createFolder(const folder::path& path) {
+
 	shared_ptr <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
-	if (!fsf->isValidPath(folderPathToFileSystemPath(path, ROOT_DIRECTORY)))
+	if (!fsf->isValidPath(folderPathToFileSystemPath(path, ROOT_DIRECTORY))) {
 		throw exceptions::invalid_folder_name();
+	}
 
-	shared_ptr <utility::file> rootDir = fsf->create
-		(folderPathToFileSystemPath(path, ROOT_DIRECTORY));
+	shared_ptr <utility::file> rootDir = fsf->create(
+		folderPathToFileSystemPath(path, ROOT_DIRECTORY)
+	);
 
-	shared_ptr <utility::file> newDir = fsf->create
-		(folderPathToFileSystemPath(path, NEW_DIRECTORY));
-	shared_ptr <utility::file> tmpDir = fsf->create
-		(folderPathToFileSystemPath(path, TMP_DIRECTORY));
-	shared_ptr <utility::file> curDir = fsf->create
-		(folderPathToFileSystemPath(path, CUR_DIRECTORY));
+	shared_ptr <utility::file> newDir = fsf->create(
+		folderPathToFileSystemPath(path, NEW_DIRECTORY)
+	);
+	shared_ptr <utility::file> tmpDir = fsf->create(
+		folderPathToFileSystemPath(path, TMP_DIRECTORY)
+	);
+	shared_ptr <utility::file> curDir = fsf->create(
+		folderPathToFileSystemPath(path, CUR_DIRECTORY)
+	);
 
 	rootDir->createDirectory(true);
 
@@ -76,40 +81,45 @@ void courierMaildirFormat::createFolder(const folder::path& path)
 	tmpDir->createDirectory(false);
 	curDir->createDirectory(false);
 
-	shared_ptr <utility::file> maildirFile = fsf->create
-		(folderPathToFileSystemPath(path, ROOT_DIRECTORY)
-		 	/ utility::file::path::component("maildirfolder"));
+	shared_ptr <utility::file> maildirFile = fsf->create(
+		folderPathToFileSystemPath(path, ROOT_DIRECTORY)
+		 	/ utility::file::path::component("maildirfolder")
+	);
 
 	maildirFile->createFile();
 }
 
 
-void courierMaildirFormat::destroyFolder(const folder::path& path)
-{
+void courierMaildirFormat::destroyFolder(const folder::path& path) {
+
 	shared_ptr <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
 	// Recursively delete directories of subfolders
 	const std::vector <folder::path> folders = listFolders(path, true);
 
-	for (std::vector <folder::path>::size_type i = 0, n = folders.size() ; i < n ; ++i)
-	{
-		maildirUtils::recursiveFSDelete(fsf->create
-			(folderPathToFileSystemPath(folders[i], ROOT_DIRECTORY)));
+	for (std::vector <folder::path>::size_type i = 0, n = folders.size() ; i < n ; ++i) {
+
+		maildirUtils::recursiveFSDelete(
+			fsf->create(folderPathToFileSystemPath(folders[i], ROOT_DIRECTORY))
+		);
 	}
 
 	// Recursively delete the directory of this folder
-	maildirUtils::recursiveFSDelete(fsf->create
-		(folderPathToFileSystemPath(path, ROOT_DIRECTORY)));
+	maildirUtils::recursiveFSDelete(
+		fsf->create(folderPathToFileSystemPath(path, ROOT_DIRECTORY))
+	);
 }
 
 
-void courierMaildirFormat::renameFolder
-	(const folder::path& oldPath, const folder::path& newPath)
-{
+void courierMaildirFormat::renameFolder(
+	const folder::path& oldPath,
+	const folder::path& newPath
+) {
+
 	const std::vector <folder::path> folders = listFolders(oldPath, true);
 
-	for (std::vector <folder::path>::size_type i = 0, n = folders.size() ; i < n ; ++i)
-	{
+	for (std::vector <folder::path>::size_type i = 0, n = folders.size() ; i < n ; ++i) {
+
 		const folder::path folderOldPath = folders[i];
 
 		folder::path folderNewPath = folderOldPath;
@@ -122,9 +132,11 @@ void courierMaildirFormat::renameFolder
 }
 
 
-void courierMaildirFormat::renameFolderImpl
-	(const folder::path& oldPath, const folder::path& newPath)
-{
+void courierMaildirFormat::renameFolderImpl(
+	const folder::path& oldPath,
+	const folder::path& newPath
+) {
+
 	shared_ptr <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
 	const utility::file::path oldFSPath =
@@ -138,98 +150,109 @@ void courierMaildirFormat::renameFolderImpl
 }
 
 
-bool courierMaildirFormat::folderExists(const folder::path& path) const
-{
+bool courierMaildirFormat::folderExists(const folder::path& path) const {
+
 	shared_ptr <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
-	shared_ptr <utility::file> rootDir = fsf->create
-		(folderPathToFileSystemPath(path, ROOT_DIRECTORY));
+	shared_ptr <utility::file> rootDir = fsf->create(
+		folderPathToFileSystemPath(path, ROOT_DIRECTORY)
+	);
 
-	shared_ptr <utility::file> newDir = fsf->create
-		(folderPathToFileSystemPath(path, NEW_DIRECTORY));
-	shared_ptr <utility::file> tmpDir = fsf->create
-		(folderPathToFileSystemPath(path, TMP_DIRECTORY));
-	shared_ptr <utility::file> curDir = fsf->create
-		(folderPathToFileSystemPath(path, CUR_DIRECTORY));
+	shared_ptr <utility::file> newDir = fsf->create(
+		folderPathToFileSystemPath(path, NEW_DIRECTORY)
+	);
+	shared_ptr <utility::file> tmpDir = fsf->create(
+		folderPathToFileSystemPath(path, TMP_DIRECTORY)
+	);
+	shared_ptr <utility::file> curDir = fsf->create(
+		folderPathToFileSystemPath(path, CUR_DIRECTORY)
+	);
 
-	shared_ptr <utility::file> maildirFile = fsf->create
-		(folderPathToFileSystemPath(path, ROOT_DIRECTORY)
-		 	/ utility::file::path::component("maildirfolder"));
+	shared_ptr <utility::file> maildirFile = fsf->create(
+		folderPathToFileSystemPath(path, ROOT_DIRECTORY)
+		 	/ utility::file::path::component("maildirfolder")
+	);
 
 	bool exists = rootDir->exists() && rootDir->isDirectory() &&
-	       newDir->exists() && newDir->isDirectory() &&
-	       tmpDir->exists() && tmpDir->isDirectory() &&
-	       curDir->exists() && curDir->isDirectory();
+	              newDir->exists() && newDir->isDirectory() &&
+	              tmpDir->exists() && tmpDir->isDirectory() &&
+	              curDir->exists() && curDir->isDirectory();
 
 	// If this is not the root folder, then a file named "maildirfolder"
 	// must also be present in the directory
-	if (!path.isRoot())
+	if (!path.isRoot()) {
 		exists = exists && maildirFile->exists() && maildirFile->isFile();
+	}
 
 	return exists;
 }
 
 
-bool courierMaildirFormat::folderHasSubfolders(const folder::path& path) const
-{
+bool courierMaildirFormat::folderHasSubfolders(const folder::path& path) const {
+
 	std::vector <string> dirs;
 	return listDirectories(path, dirs, true);
 }
 
 
-const utility::file::path courierMaildirFormat::folderPathToFileSystemPath
-	(const folder::path& path, const DirectoryType type) const
-{
+const utility::file::path courierMaildirFormat::folderPathToFileSystemPath(
+	const folder::path& path,
+	const DirectoryType type
+) const {
+
 	// Virtual folder "/MyFolder/SubFolder" corresponds to physical
 	// directory "[store root]/.MyFolder.SubFolder"
 	utility::file::path fsPath = getContext()->getStore()->getFileSystemPath();
 
-	if (!path.isRoot())
-	{
+	if (!path.isRoot()) {
+
 		string folderComp;
 
-		for (size_t i = 0, n = path.getSize() ; i < n ; ++i)
+		for (size_t i = 0, n = path.getSize() ; i < n ; ++i) {
 			folderComp += "." + toModifiedUTF7(path[i]);
+		}
 
 		fsPath /= utility::file::path::component(folderComp);
 	}
 
 	// Last component
-	switch (type)
-	{
-	case ROOT_DIRECTORY:
+	switch (type) {
 
-		// Nothing to add
-		break;
+		case ROOT_DIRECTORY:
 
-	case NEW_DIRECTORY:
+			// Nothing to add
+			break;
 
-		fsPath /= NEW_DIR;
-		break;
+		case NEW_DIRECTORY:
 
-	case CUR_DIRECTORY:
+			fsPath /= NEW_DIR;
+			break;
 
-		fsPath /= CUR_DIR;
-		break;
+		case CUR_DIRECTORY:
 
-	case TMP_DIRECTORY:
+			fsPath /= CUR_DIR;
+			break;
 
-		fsPath /= TMP_DIR;
-		break;
+		case TMP_DIRECTORY:
 
-	case CONTAINER_DIRECTORY:
+			fsPath /= TMP_DIR;
+			break;
 
-		// Not used
-		break;
+		case CONTAINER_DIRECTORY:
+
+			// Not used
+			break;
 	}
 
 	return fsPath;
 }
 
 
-const std::vector <folder::path> courierMaildirFormat::listFolders
-	(const folder::path& root, const bool recursive) const
-{
+const std::vector <folder::path> courierMaildirFormat::listFolders(
+	const folder::path& root,
+	const bool recursive
+) const {
+
 	// First, list directories
 	std::vector <string> dirs;
 	listDirectories(root, dirs, false);
@@ -237,69 +260,75 @@ const std::vector <folder::path> courierMaildirFormat::listFolders
 	// Then, map directories to folders
 	std::vector <folder::path> folders;
 
-	for (std::vector <string>::size_type i = 0, n = dirs.size() ; i < n ; ++i)
-	{
+	for (std::vector <string>::size_type i = 0, n = dirs.size() ; i < n ; ++i) {
+
 		const string dir = dirs[i].substr(1) + ".";
 		folder::path path;
 
 		for (size_t pos = dir.find("."), prev = 0 ;
-		     pos != string::npos ; prev = pos + 1, pos = dir.find(".", pos + 1))
-		{
+		     pos != string::npos ; prev = pos + 1, pos = dir.find(".", pos + 1)) {
+
 			const string comp = dir.substr(prev, pos - prev);
 			path /= fromModifiedUTF7(comp);
 		}
 
-		if (recursive || path.getSize() == root.getSize() + 1)
+		if (recursive || path.getSize() == root.getSize() + 1) {
 			folders.push_back(path);
+		}
 	}
 
 	return folders;
 }
 
 
-bool courierMaildirFormat::listDirectories(const folder::path& root,
-	std::vector <string>& dirs, const bool onlyTestForExistence) const
-{
+bool courierMaildirFormat::listDirectories(
+	const folder::path& root,
+	std::vector <string>& dirs,
+	const bool onlyTestForExistence
+) const {
+
 	shared_ptr <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
-	shared_ptr <utility::file> rootDir = fsf->create
-		(getContext()->getStore()->getFileSystemPath());
+	shared_ptr <utility::file> rootDir = fsf->create(
+		getContext()->getStore()->getFileSystemPath()
+	);
 
-	if (rootDir->exists())
-	{
+	if (rootDir->exists()) {
+
 		// To speed up things, and if we are not searching in root folder,
 		// search for directories with a common prefix
 		string base;
 
-		if (!root.isRoot())
-		{
-			for (size_t i = 0, n = root.getSize() ; i < n ; ++i)
+		if (!root.isRoot()) {
+			for (size_t i = 0, n = root.getSize() ; i < n ; ++i) {
 				base += "." + toModifiedUTF7(root[i]);
+			}
 		}
 
 		// Enumerate directories
 		shared_ptr <utility::fileIterator> it = rootDir->getFiles();
 
-		while (it->hasMoreElements())
-		{
+		while (it->hasMoreElements()) {
+
 			shared_ptr <utility::file> file = it->nextElement();
 
-			if (isSubfolderDirectory(*file))
-			{
+			if (isSubfolderDirectory(*file)) {
+
 				const string dir = file->getFullPath().getLastComponent().getBuffer();
 
-				if (base.empty() || (dir.length() > base.length() && dir.substr(0, base.length()) == base))
-				{
+				if (base.empty() || (dir.length() > base.length() && dir.substr(0, base.length()) == base)) {
+
 					dirs.push_back(dir);
 
-					if (onlyTestForExistence)
+					if (onlyTestForExistence) {
 						return true;
+					}
 				}
 			}
 		}
-	}
-	else
-	{
+
+	} else {
+
 		// No sub-folder
 	}
 
@@ -310,13 +339,13 @@ bool courierMaildirFormat::listDirectories(const folder::path& root,
 
 
 // static
-bool courierMaildirFormat::isSubfolderDirectory(const utility::file& file)
-{
+bool courierMaildirFormat::isSubfolderDirectory(const utility::file& file) {
+
 	// A directory which names starts with '.' may be a subfolder
 	if (file.isDirectory() &&
 	    file.getFullPath().getLastComponent().getBuffer().length() >= 1 &&
-	    file.getFullPath().getLastComponent().getBuffer()[0] == '.')
-	{
+	    file.getFullPath().getLastComponent().getBuffer()[0] == '.') {
+
 		return true;
 	}
 
@@ -325,8 +354,8 @@ bool courierMaildirFormat::isSubfolderDirectory(const utility::file& file)
 
 
 // static
-const string courierMaildirFormat::toModifiedUTF7(const folder::path::component& text)
-{
+const string courierMaildirFormat::toModifiedUTF7(const folder::path::component& text) {
+
 	// From http://www.courier-mta.org/?maildir.html:
 	//
 	// Folder names can contain any Unicode character, except for control
@@ -364,67 +393,65 @@ const string courierMaildirFormat::toModifiedUTF7(const folder::path::component&
 
 	bool inB64sequence = false;
 
-	for (string::const_iterator it = cvt.begin() ; it != cvt.end() ; ++it)
-	{
+	for (string::const_iterator it = cvt.begin() ; it != cvt.end() ; ++it) {
+
 		const unsigned char c = *it;
 
-		switch (c)
-		{
-		// Beginning of Base64 sequence: replace '+' with '&'
-		case '+':
-		{
-			if (!inB64sequence)
-			{
-				inB64sequence = true;
-				out += '&';
+		switch (c) {
+
+			// Beginning of Base64 sequence: replace '+' with '&'
+			case '+': {
+
+				if (!inB64sequence) {
+					inB64sequence = true;
+					out += '&';
+				} else {
+					out += '+';
+				}
+
+				break;
 			}
-			else
-			{
-				out += '+';
+			// End of Base64 sequence
+			case '-': {
+
+				inB64sequence = false;
+				out += '-';
+				break;
 			}
+			// ',' is used instead of '/' in modified Base64,
+			// and simply UTF7-encoded out of a Base64 sequence
+			case '/': {
 
-			break;
-		}
-		// End of Base64 sequence
-		case '-':
-		{
-			inB64sequence = false;
-			out += '-';
-			break;
-		}
-		// ',' is used instead of '/' in modified Base64,
-		// and simply UTF7-encoded out of a Base64 sequence
-		case '/':
-		{
-			if (inB64sequence)
-				out += ',';
-			else
-				out += "&Lw-";
+				if (inB64sequence) {
+					out += ',';
+				} else {
+					out += "&Lw-";
+				}
 
-			break;
-		}
-		// Encode period (should not happen in a Base64 sequence)
-		case '.':
-		{
-			out += "&Lg-";
-			break;
-		}
-		// '&' (0x26) is represented by the two-octet sequence "&-"
-		case '&':
-		{
-			if (!inB64sequence)
-				out += "&-";
-			else
-				out += '&';
+				break;
+			}
+			// Encode period (should not happen in a Base64 sequence)
+			case '.': {
 
-			break;
-		}
-		default:
-		{
-			out += c;
-			break;
-		}
+				out += "&Lg-";
+				break;
+			}
+			// '&' (0x26) is represented by the two-octet sequence "&-"
+			case '&': {
 
+				if (!inB64sequence) {
+					out += "&-";
+				} else {
+					out += '&';
+				}
+
+				break;
+			}
+			default: {
+
+				out += c;
+				break;
+			}
 		}
 	}
 
@@ -433,8 +460,8 @@ const string courierMaildirFormat::toModifiedUTF7(const folder::path::component&
 
 
 // static
-const folder::path::component courierMaildirFormat::fromModifiedUTF7(const string& text)
-{
+const folder::path::component courierMaildirFormat::fromModifiedUTF7(const string& text) {
+
 	// Transcode from modified UTF-7
 	string out;
 	out.reserve(text.length());
@@ -442,49 +469,47 @@ const folder::path::component courierMaildirFormat::fromModifiedUTF7(const strin
 	bool inB64sequence = false;
 	unsigned char prev = 0;
 
-	for (string::const_iterator it = text.begin() ; it != text.end() ; ++it)
-	{
+	for (string::const_iterator it = text.begin() ; it != text.end() ; ++it) {
+
 		const unsigned char c = *it;
 
-		switch (c)
-		{
-		// Start of Base64 sequence
-		case '&':
-		{
-			if (!inB64sequence)
-			{
-				inB64sequence = true;
-				out += '+';
-			}
-			else
-			{
-				out += '&';
-			}
+		switch (c) {
 
-			break;
-		}
-		// End of Base64 sequence (or "&-" --> "&")
-		case '-':
-		{
-			if (inB64sequence && prev == '&')
-				out += '&';
-			else
-				out += '-';
+			// Start of Base64 sequence
+			case '&': {
 
-			inB64sequence = false;
-			break;
-		}
-		// ',' is used instead of '/' in modified Base64
-		case ',':
-		{
-			out += (inB64sequence ? '/' : ',');
-			break;
-		}
-		default:
-		{
-			out += c;
-			break;
-		}
+				if (!inB64sequence) {
+					inB64sequence = true;
+					out += '+';
+				} else {
+					out += '&';
+				}
+
+				break;
+			}
+			// End of Base64 sequence (or "&-" --> "&")
+			case '-': {
+
+				if (inB64sequence && prev == '&') {
+					out += '&';
+				} else {
+					out += '-';
+				}
+
+				inB64sequence = false;
+				break;
+			}
+			// ',' is used instead of '/' in modified Base64
+			case ',': {
+
+				out += (inB64sequence ? '/' : ',');
+				break;
+			}
+			default: {
+
+				out += c;
+				break;
+			}
 
 		}
 
@@ -493,37 +518,39 @@ const folder::path::component courierMaildirFormat::fromModifiedUTF7(const strin
 
 	// Store it as UTF-8 by default
 	string cvt;
-	charset::convert(out, cvt,
-		charset(charsets::UTF_7), charset(charsets::UTF_8));
+	charset::convert(out, cvt, charset(charsets::UTF_7), charset(charsets::UTF_8));
 
-	return (folder::path::component(cvt, charset(charsets::UTF_8)));
+	return folder::path::component(cvt, charset(charsets::UTF_8));
 }
 
 
-bool courierMaildirFormat::supports() const
-{
+bool courierMaildirFormat::supports() const {
+
 	shared_ptr <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
-	shared_ptr <utility::file> rootDir = fsf->create
-		(getContext()->getStore()->getFileSystemPath());
+	shared_ptr <utility::file> rootDir = fsf->create(
+		getContext()->getStore()->getFileSystemPath()
+	);
 
-	if (rootDir->exists())
-	{
+	if (rootDir->exists()) {
+
 		// Try to find a file named "maildirfolder", which indicates
 		// the Maildir is in Courier format
 		shared_ptr <utility::fileIterator> it = rootDir->getFiles();
 
-		while (it->hasMoreElements())
-		{
+		while (it->hasMoreElements()) {
+
 			shared_ptr <utility::file> file = it->nextElement();
 
-			if (isSubfolderDirectory(*file))
-			{
-				shared_ptr <utility::file> folderFile = fsf->create
-					(file->getFullPath() / utility::file::path::component("maildirfolder"));
+			if (isSubfolderDirectory(*file)) {
 
-				if (folderFile->exists() && folderFile->isFile())
+				shared_ptr <utility::file> folderFile = fsf->create(
+					file->getFullPath() / utility::file::path::component("maildirfolder")
+				);
+
+				if (folderFile->exists() && folderFile->isFile()) {
 					return true;
+				}
 			}
 		}
 	}

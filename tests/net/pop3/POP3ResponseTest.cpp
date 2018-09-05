@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -45,13 +45,15 @@ VMIME_TEST_SUITE_BEGIN(POP3ResponseTest)
 	VMIME_TEST_LIST_END
 
 
-	void testSingleLineResponseOK()
-	{
+	void testSingleLineResponseOK() {
+
 		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
 		vmime::shared_ptr <vmime::net::timeoutHandler> toh = vmime::make_shared <testTimeoutHandler>();
 
-		vmime::shared_ptr <POP3ConnectionTest> conn = vmime::make_shared <POP3ConnectionTest>
-			(vmime::dynamicCast <vmime::net::socket>(socket), toh);
+		vmime::shared_ptr <POP3ConnectionTest> conn =
+			vmime::make_shared <POP3ConnectionTest>(
+				vmime::dynamicCast <vmime::net::socket>(socket), toh
+			);
 
 		socket->localSend("+OK Response Text\r\n");
 
@@ -65,13 +67,15 @@ VMIME_TEST_SUITE_BEGIN(POP3ResponseTest)
 		VASSERT_EQ("First Line", "+OK Response Text", resp->getFirstLine());
 	}
 
-	void testSingleLineResponseERR()
-	{
+	void testSingleLineResponseERR() {
+
 		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
 		vmime::shared_ptr <vmime::net::timeoutHandler> toh = vmime::make_shared <testTimeoutHandler>();
 
-		vmime::shared_ptr <POP3ConnectionTest> conn = vmime::make_shared <POP3ConnectionTest>
-			(vmime::dynamicCast <vmime::net::socket>(socket), toh);
+		vmime::shared_ptr <POP3ConnectionTest> conn =
+			vmime::make_shared <POP3ConnectionTest>(
+				vmime::dynamicCast <vmime::net::socket>(socket), toh
+			);
 
 		socket->localSend("-ERR Response Text\r\n");
 
@@ -85,13 +89,15 @@ VMIME_TEST_SUITE_BEGIN(POP3ResponseTest)
 		VASSERT_EQ("First Line", "-ERR Response Text", resp->getFirstLine());
 	}
 
-	void testSingleLineResponseReady()
-	{
+	void testSingleLineResponseReady() {
+
 		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
 		vmime::shared_ptr <vmime::net::timeoutHandler> toh = vmime::make_shared <testTimeoutHandler>();
 
-		vmime::shared_ptr <POP3ConnectionTest> conn = vmime::make_shared <POP3ConnectionTest>
-			(vmime::dynamicCast <vmime::net::socket>(socket), toh);
+		vmime::shared_ptr <POP3ConnectionTest> conn =
+			vmime::make_shared <POP3ConnectionTest>(
+				vmime::dynamicCast <vmime::net::socket>(socket), toh
+			);
 
 		socket->localSend("+ challenge_string\r\n");
 
@@ -105,8 +111,8 @@ VMIME_TEST_SUITE_BEGIN(POP3ResponseTest)
 		VASSERT_EQ("First Line", "+ challenge_string", resp->getFirstLine());
 	}
 
-	void testSingleLineResponseInvalid()
-	{
+	void testSingleLineResponseInvalid() {
+
 		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
 		vmime::shared_ptr <vmime::net::timeoutHandler> toh = vmime::make_shared <testTimeoutHandler>();
 
@@ -125,13 +131,15 @@ VMIME_TEST_SUITE_BEGIN(POP3ResponseTest)
 		VASSERT_EQ("First Line", "Invalid Response Text", resp->getFirstLine());
 	}
 
-	void testSingleLineResponseLF()
-	{
+	void testSingleLineResponseLF() {
+
 		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
 		vmime::shared_ptr <vmime::net::timeoutHandler> toh = vmime::make_shared <testTimeoutHandler>();
 
-		vmime::shared_ptr <POP3ConnectionTest> conn = vmime::make_shared <POP3ConnectionTest>
-			(vmime::dynamicCast <vmime::net::socket>(socket), toh);
+		vmime::shared_ptr <POP3ConnectionTest> conn =
+			vmime::make_shared <POP3ConnectionTest>(
+				vmime::dynamicCast <vmime::net::socket>(socket), toh
+			);
 
 		socket->localSend("+OK Response terminated by LF\n");
 
@@ -145,13 +153,15 @@ VMIME_TEST_SUITE_BEGIN(POP3ResponseTest)
 		VASSERT_EQ("First Line", "+OK Response terminated by LF", resp->getFirstLine());
 	}
 
-	void testMultiLineResponse()
-	{
+	void testMultiLineResponse() {
+
 		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
 		vmime::shared_ptr <vmime::net::timeoutHandler> toh = vmime::make_shared <testTimeoutHandler>();
 
-		vmime::shared_ptr <POP3ConnectionTest> conn = vmime::make_shared <POP3ConnectionTest>
-			(vmime::dynamicCast <vmime::net::socket>(socket), toh);
+		vmime::shared_ptr <POP3ConnectionTest> conn =
+			vmime::make_shared <POP3ConnectionTest>(
+				vmime::dynamicCast <vmime::net::socket>(socket), toh
+			);
 
 		socket->localSend("+OK Response Text\r\n");
 		socket->localSend("Line 1\r\n");
@@ -170,13 +180,15 @@ VMIME_TEST_SUITE_BEGIN(POP3ResponseTest)
 		VASSERT_EQ("Line 2", "Line 2", resp->getLineAt(1));
 	}
 
-	void testMultiLineResponseLF()
-	{
+	void testMultiLineResponseLF() {
+
 		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
 		vmime::shared_ptr <vmime::net::timeoutHandler> toh = vmime::make_shared <testTimeoutHandler>();
 
-		vmime::shared_ptr <POP3ConnectionTest> conn = vmime::make_shared <POP3ConnectionTest>
-			(vmime::dynamicCast <vmime::net::socket>(socket), toh);
+		vmime::shared_ptr <POP3ConnectionTest> conn =
+			vmime::make_shared <POP3ConnectionTest>(
+				vmime::dynamicCast <vmime::net::socket>(socket), toh
+			);
 
 		socket->localSend("+OK Response Text\n");
 		socket->localSend("Line 1\n");
@@ -195,18 +207,21 @@ VMIME_TEST_SUITE_BEGIN(POP3ResponseTest)
 		VASSERT_EQ("Line 2", "Line 2", resp->getLineAt(1));
 	}
 
-	void testLargeResponse()
-	{
+	void testLargeResponse() {
+
 		std::ostringstream data;
 
-		for (unsigned int i = 0 ; i < 5000 ; ++i)
+		for (unsigned int i = 0 ; i < 5000 ; ++i) {
 			data << "VMIME.VMIME\nVMIME\r\nVMIME_VMIME";
+		}
 
 		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
 		vmime::shared_ptr <vmime::net::timeoutHandler> toh = vmime::make_shared <testTimeoutHandler>();
 
-		vmime::shared_ptr <POP3ConnectionTest> conn = vmime::make_shared <POP3ConnectionTest>
-			(vmime::dynamicCast <vmime::net::socket>(socket), toh);
+		vmime::shared_ptr <POP3ConnectionTest> conn =
+			vmime::make_shared <POP3ConnectionTest>(
+				vmime::dynamicCast <vmime::net::socket>(socket), toh
+			);
 
 		socket->localSend("+OK Large Response Follows\n");
 		socket->localSend(data.str());
@@ -227,4 +242,3 @@ VMIME_TEST_SUITE_BEGIN(POP3ResponseTest)
 	}
 
 VMIME_TEST_SUITE_END
-

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -36,9 +36,8 @@ namespace utility {
 
 /** An adapter class for pointer to C++ standard input stream.
   */
+class VMIME_EXPORT inputStreamPointerAdapter : public inputStreamAdapter {
 
-class VMIME_EXPORT inputStreamPointerAdapter : public inputStreamAdapter
-{
 public:
 
 	/** @param is input stream to wrap
@@ -60,4 +59,3 @@ private:
 
 
 #endif // VMIME_UTILITY_INPUTSTREAMPOINTERADAPTER_HPP_INCLUDED
-

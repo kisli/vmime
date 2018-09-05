@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -49,37 +49,46 @@
 #define CP_UNICODE   1200
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 // static
-shared_ptr <charsetConverter> charsetConverter::createGenericConverter
-	(const charset& source, const charset& dest,
-	 const charsetConverterOptions& opts)
-{
+shared_ptr <charsetConverter> charsetConverter::createGenericConverter(
+	const charset& source,
+	const charset& dest,
+	const charsetConverterOptions& opts
+) {
+
 	return make_shared <charsetConverter_win>(source, dest, opts);
 }
 
 
-charsetConverter_win::charsetConverter_win
-	(const charset& source, const charset& dest, const charsetConverterOptions& opts)
-	: m_source(source), m_dest(dest), m_options(opts)
-{
+charsetConverter_win::charsetConverter_win(
+	const charset& source,
+	const charset& dest,
+	const charsetConverterOptions& opts
+)
+	: m_source(source),
+	  m_dest(dest),
+	  m_options(opts) {
+
 }
 
 
-void charsetConverter_win::convert
-	(utility::inputStream& in, utility::outputStream& out, status* st)
-{
-	if (st)
+void charsetConverter_win::convert(
+	utility::inputStream& in,
+	utility::outputStream& out,
+	status* st
+) {
+
+	if (st) {
 		new (st) status();
+	}
 
 	byte_t buffer[32768];
 	string inStr, outStr;
 
-	while (!in.eof())
-	{
+	while (!in.eof()) {
 		const size_t len = in.read(buffer, sizeof(buffer));
 		utility::stringUtils::appendBytesToString(inStr, buffer, len);
 	}
@@ -90,10 +99,11 @@ void charsetConverter_win::convert
 }
 
 
-void charsetConverter_win::convert(const string& in, string& out, status* st)
-{
-	if (st)
+void charsetConverter_win::convert(const string& in, string& out, status* st) {
+
+	if (st) {
 		new (st) status();
+	}
 
 	const int sourceCodePage = getCodePage(m_source.getName().c_str());
 	const int destCodePage = getCodePage(m_dest.getName().c_str());
@@ -103,69 +113,77 @@ void charsetConverter_win::convert(const string& in, string& out, status* st)
 	const WCHAR* unicodePtr = NULL;
 	size_t unicodeLen = 0;
 
-	if (sourceCodePage == CP_UNICODE)
-	{
+	if (sourceCodePage == CP_UNICODE) {
+
 		unicodePtr = reinterpret_cast <const WCHAR*>(in.c_str());
 		unicodeLen = in.length() / 2;
-	}
-	else
-	{
- 		const size_t bufferSize = MultiByteToWideChar
- 			(sourceCodePage, 0, in.c_str(), static_cast <int>(in.length()),
- 			 NULL, 0) * sizeof(WCHAR); // in wide characters
+
+	} else {
+
+ 		const size_t bufferSize = MultiByteToWideChar(
+ 			sourceCodePage, 0, in.c_str(), static_cast <int>(in.length()), NULL, 0
+ 		) * sizeof(WCHAR); // in wide characters
 
 		unicodeBuffer.resize(bufferSize);
 
 		DWORD flags = 0;
 
-		if (!m_options.silentlyReplaceInvalidSequences)
+		if (!m_options.silentlyReplaceInvalidSequences) {
 			flags |= MB_ERR_INVALID_CHARS;
+		}
 
 		unicodePtr = reinterpret_cast <const WCHAR*>(&unicodeBuffer[0]);
-		unicodeLen = MultiByteToWideChar
-			(sourceCodePage, 0, in.c_str(), static_cast <int>(in.length()),
-			 reinterpret_cast <WCHAR*>(&unicodeBuffer[0]), static_cast <int>(bufferSize));
+		unicodeLen = MultiByteToWideChar(
+			sourceCodePage, 0, in.c_str(), static_cast <int>(in.length()),
+			reinterpret_cast <WCHAR*>(&unicodeBuffer[0]), static_cast <int>(bufferSize)
+		);
 
-		if (unicodeLen == 0)
-		{
-			if (GetLastError() == ERROR_NO_UNICODE_TRANSLATION)
-			{
+		if (unicodeLen == 0) {
+
+			if (GetLastError() == ERROR_NO_UNICODE_TRANSLATION) {
+
 				throw exceptions::illegal_byte_sequence_for_charset();
-			}
-			else
-			{
-				throw exceptions::charset_conv_error("MultiByteToWideChar() failed when converting to Unicode from " + m_source.getName());
+
+			} else {
+
+				throw exceptions::charset_conv_error(
+					"MultiByteToWideChar() failed when converting to Unicode from " + m_source.getName()
+				);
 			}
 		}
 	}
 
 	// Convert from Unicode to destination charset
-	if (destCodePage == CP_UNICODE)
-	{
+	if (destCodePage == CP_UNICODE) {
+
 		out.assign(reinterpret_cast <const char*>(unicodePtr), unicodeLen * 2);
-	}
-	else
-	{
-		const size_t bufferSize = WideCharToMultiByte
-			(destCodePage, 0, unicodePtr, static_cast <int>(unicodeLen),
-			 NULL, 0, 0, NULL);  // in multibyte characters
+
+	} else {
+
+		const size_t bufferSize = WideCharToMultiByte(
+			destCodePage, 0, unicodePtr, static_cast <int>(unicodeLen),
+			NULL, 0, 0, NULL
+		);  // in multibyte characters
 
 		std::vector <char> buffer;
 		buffer.resize(bufferSize);
 
-		const size_t len = WideCharToMultiByte
-			(destCodePage, 0, unicodePtr, static_cast <int>(unicodeLen),
-			 &buffer[0], static_cast <int>(bufferSize), 0, NULL);
+		const size_t len = WideCharToMultiByte(
+			destCodePage, 0, unicodePtr, static_cast <int>(unicodeLen),
+			&buffer[0], static_cast <int>(bufferSize), 0, NULL
+		);
 
-		if (len == 0)
-		{
-			if (GetLastError() == ERROR_NO_UNICODE_TRANSLATION)
-			{
+		if (len == 0) {
+
+			if (GetLastError() == ERROR_NO_UNICODE_TRANSLATION) {
+
 				throw exceptions::illegal_byte_sequence_for_charset();
-			}
-			else
-			{
-				throw exceptions::charset_conv_error("WideCharToMultiByte() failed when converting from Unicode to " + m_source.getName());
+
+			} else {
+
+				throw exceptions::charset_conv_error(
+					"WideCharToMultiByte() failed when converting from Unicode to " + m_source.getName()
+				);
 			}
 		}
 
@@ -175,15 +193,16 @@ void charsetConverter_win::convert(const string& in, string& out, status* st)
 
 
 // static
-int charsetConverter_win::getCodePage(const char* name)
-{
-	if (_stricmp(name, charsets::UTF_16) == 0)  // wchar_t is UTF-16 on Windows
+int charsetConverter_win::getCodePage(const char* name) {
+
+	if (_stricmp(name, charsets::UTF_16) == 0) {  // wchar_t is UTF-16 on Windows
 		return CP_UNICODE;
+	}
 
 	// "cp1252" --> return 1252
 	if ((name[0] == 'c' || name[0] == 'C') &&
-	    (name[1] == 'p' || name[1] == 'P'))
-	{
+	    (name[1] == 'p' || name[1] == 'P')) {
+
 		return atoi(name + 2);
 	}
 
@@ -192,9 +211,11 @@ int charsetConverter_win::getCodePage(const char* name)
 
 
 shared_ptr <utility::charsetFilteredOutputStream>
-	charsetConverter_win::getFilteredOutputStream
-		(utility::outputStream& /* os */, const charsetConverterOptions& /* opts */)
-{
+	charsetConverter_win::getFilteredOutputStream(
+		utility::outputStream& /* os */,
+		const charsetConverterOptions& /* opts */
+	) {
+
 	// TODO: implement me!
 	return null;
 }

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -38,14 +38,12 @@ namespace misc {
   * Basically, it wraps the use of the 'X-Priority' (non standard)
   * and 'Importance' (RFC-1327, RFC-1911) fields.
   */
+class VMIME_EXPORT importanceHelper {
 
-class VMIME_EXPORT importanceHelper
-{
 public:
 
 	/** Different levels of importance. */
-	enum Importance
-	{
+	enum Importance {
 		IMPORTANCE_HIGHEST,
 		IMPORTANCE_HIGH,
 		IMPORTANCE_NORMAL,

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -30,57 +30,61 @@
 #include "vmime/fileContentHandler.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 fileContentHandler::fileContentHandler()
-	: streamContentHandler()
-{
+	: streamContentHandler() {
+
 }
 
 
-fileContentHandler::fileContentHandler
-	(const shared_ptr <utility::file>& file, const vmime::encoding& enc)
-{
+fileContentHandler::fileContentHandler(
+	const shared_ptr <utility::file>& file,
+	const vmime::encoding& enc
+) {
+
 	setData(file, enc);
 }
 
 
-fileContentHandler::~fileContentHandler()
-{
+fileContentHandler::~fileContentHandler() {
+
 }
 
 
 fileContentHandler::fileContentHandler(const fileContentHandler& cts)
-	: streamContentHandler()
-{
+	: streamContentHandler() {
+
 	setData(cts.m_file, cts.m_encoding);
 }
 
 
-fileContentHandler& fileContentHandler::operator=(const fileContentHandler& cts)
-{
+fileContentHandler& fileContentHandler::operator=(const fileContentHandler& cts) {
+
 	setData(cts.m_file, cts.m_encoding);
 
 	return *this;
 }
 
 
-shared_ptr <contentHandler> fileContentHandler::clone() const
-{
+shared_ptr <contentHandler> fileContentHandler::clone() const {
+
 	return make_shared <fileContentHandler>(*this);
 }
 
 
-void fileContentHandler::setData
-	(const shared_ptr <utility::file>& file, const vmime::encoding& enc)
-{
+void fileContentHandler::setData(
+	const shared_ptr <utility::file>& file,
+	const vmime::encoding& enc
+) {
+
 	m_file = file;
 	m_encoding = enc;
 
-	streamContentHandler::setData
-		(file->getFileReader()->getInputStream(), file->getLength(), enc);
+	streamContentHandler::setData(
+		file->getFileReader()->getInputStream(), file->getLength(), enc
+	);
 }
 
 

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -42,8 +42,8 @@ namespace platforms {
 namespace posix {
 
 
-class posixChildProcess : public utility::childProcess
-{
+class posixChildProcess : public utility::childProcess {
+
 public:
 
 	posixChildProcess(const utility::file::path& path);
@@ -73,8 +73,8 @@ private:
 };
 
 
-class posixChildProcessFactory : public utility::childProcessFactory
-{
+class posixChildProcessFactory : public utility::childProcessFactory {
+
 public:
 
 	shared_ptr <utility::childProcess> create(const utility::file::path& path) const;

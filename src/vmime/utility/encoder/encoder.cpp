@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -30,44 +30,44 @@ namespace utility {
 namespace encoder {
 
 
-encoder::encoder()
-{
+encoder::encoder() {
+
 }
 
 
-encoder::~encoder()
-{
+encoder::~encoder() {
+
 }
 
 
-const propertySet& encoder::getProperties() const
-{
-	return (m_props);
+const propertySet& encoder::getProperties() const {
+
+	return m_props;
 }
 
 
-propertySet& encoder::getProperties()
-{
-	return (m_props);
+propertySet& encoder::getProperties() {
+
+	return m_props;
 }
 
 
-const propertySet& encoder::getResults() const
-{
-	return (m_results);
+const propertySet& encoder::getResults() const {
+
+	return m_results;
 }
 
 
-propertySet& encoder::getResults()
-{
-	return (m_results);
+propertySet& encoder::getResults() {
+
+	return m_results;
 }
 
 
-const std::vector <string> encoder::getAvailableProperties() const
-{
+const std::vector <string> encoder::getAvailableProperties() const {
+
 	std::vector <string> list;
-	return (list);
+	return list;
 }
 
 

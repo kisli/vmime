@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -42,9 +42,8 @@ namespace format {
 
 /** Reads KMail Maildir format.
   */
+class VMIME_EXPORT kmailMaildirFormat : public maildirFormat {
 
-class VMIME_EXPORT kmailMaildirFormat : public maildirFormat
-{
 public:
 
 	kmailMaildirFormat(const shared_ptr <context>& ctx);
@@ -68,11 +67,15 @@ public:
 	bool folderExists(const folder::path& path) const;
 	bool folderHasSubfolders(const folder::path& path) const;
 
-	const utility::file::path folderPathToFileSystemPath
-		(const folder::path& path, const DirectoryType type) const;
+	const utility::file::path folderPathToFileSystemPath(
+		const folder::path& path,
+		const DirectoryType type
+	) const;
 
-	const std::vector <folder::path> listFolders
-		(const folder::path& root, const bool recursive) const;
+	const std::vector <folder::path> listFolders(
+		const folder::path& root,
+		const bool recursive
+	) const;
 
 protected:
 
@@ -81,8 +84,11 @@ protected:
 
 	/** Recursive implementation of listFolders().
 	  */
-	void listFoldersImpl(std::vector <folder::path>& list,
-		const folder::path& root, const bool recursive) const;
+	void listFoldersImpl(
+		std::vector <folder::path>& list,
+		const folder::path& root,
+		const bool recursive
+	) const;
 
 	/** Test whether the specified file system directory corresponds to
 	  * a maildir subfolder. The name of the directory should not start

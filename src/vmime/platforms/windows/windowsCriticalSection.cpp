@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -35,26 +35,26 @@ namespace platforms {
 namespace windows {
 
 
-windowsCriticalSection::windowsCriticalSection()
-{
+windowsCriticalSection::windowsCriticalSection() {
+
 	InitializeCriticalSectionAndSpinCount(&m_cs, 0x400);
 }
 
 
-windowsCriticalSection::~windowsCriticalSection()
-{
+windowsCriticalSection::~windowsCriticalSection() {
+
 	DeleteCriticalSection(&m_cs);
 }
 
 
-void windowsCriticalSection::lock()
-{
+void windowsCriticalSection::lock() {
+
 	EnterCriticalSection(&m_cs);
 }
 
 
-void windowsCriticalSection::unlock()
-{
+void windowsCriticalSection::unlock() {
+
 	LeaveCriticalSection(&m_cs);
 }
 

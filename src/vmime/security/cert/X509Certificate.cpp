@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -38,24 +38,24 @@ namespace security {
 namespace cert {
 
 
-X509Certificate::~X509Certificate()
-{
+X509Certificate::~X509Certificate() {
+
 }
 
 
-void X509Certificate::checkValidity()
-{
+void X509Certificate::checkValidity() {
+
 	const datetime now = datetime::now();
 
-	if (now < getActivationDate())
-	{
+	if (now < getActivationDate()) {
+
 		certificateNotYetValidException ex;
 		ex.setCertificate(dynamicCast <certificate>(shared_from_this()));
 
 		throw ex;
-	}
-	else if (now > getExpirationDate())
-	{
+
+	} else if (now > getExpirationDate()) {
+
 		certificateExpiredException ex;
 		ex.setCertificate(dynamicCast <certificate>(shared_from_this()));
 

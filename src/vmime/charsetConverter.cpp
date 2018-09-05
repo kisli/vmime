@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -26,25 +26,26 @@
 #include "vmime/charsetConverter_idna.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 // static
-shared_ptr <charsetConverter> charsetConverter::create
-	(const charset& source, const charset& dest,
-	 const charsetConverterOptions& opts)
-{
-	if (source == "idna" || dest == "idna")
+shared_ptr <charsetConverter> charsetConverter::create(
+	const charset& source,
+	const charset& dest,
+	const charsetConverterOptions& opts
+) {
+
+	if (source == "idna" || dest == "idna") {
 		return make_shared <charsetConverter_idna>(source, dest, opts);
-	else
+	} else {
 		return createGenericConverter(source, dest, opts);
+	}
 }
 
 
 charsetConverter::status::status()
-	: inputBytesRead(0), outputBytesWritten(0)
-{
+	: inputBytesRead(0), outputBytesWritten(0) {
 
 }
 

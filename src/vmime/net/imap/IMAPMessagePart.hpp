@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -44,12 +44,21 @@ namespace imap {
 class IMAPMessageStructure;
 
 
-class VMIME_EXPORT IMAPMessagePart : public messagePart
-{
+class VMIME_EXPORT IMAPMessagePart : public messagePart {
+
 public:
 
-	IMAPMessagePart(const shared_ptr <IMAPMessagePart>& parent, const size_t number, const IMAPParser::body_type_mpart* mpart);
-	IMAPMessagePart(const shared_ptr <IMAPMessagePart>& parent, const size_t number, const IMAPParser::body_type_1part* part);
+	IMAPMessagePart(
+		const shared_ptr <IMAPMessagePart>& parent,
+		const size_t number,
+		const IMAPParser::body_type_mpart* mpart
+	);
+
+	IMAPMessagePart(
+		const shared_ptr <IMAPMessagePart>& parent,
+		const size_t number,
+		const IMAPParser::body_type_1part* part
+	);
 
 	shared_ptr <const messageStructure> getStructure() const;
 	shared_ptr <messageStructure> getStructure();
@@ -64,8 +73,11 @@ public:
 	shared_ptr <const header> getHeader() const;
 
 
-	static shared_ptr <IMAPMessagePart> create
-		(const shared_ptr <IMAPMessagePart>& parent, const size_t number, const IMAPParser::body* body);
+	static shared_ptr <IMAPMessagePart> create(
+		const shared_ptr <IMAPMessagePart>& parent,
+		const size_t number,
+		const IMAPParser::body* body
+	);
 
 
 	header& getOrCreateHeader();

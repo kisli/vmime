@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -36,11 +36,13 @@ VMIME_TEST_SUITE_BEGIN(maildirUtilsTest)
 	VMIME_TEST_LIST_END
 
 
-	void testMessageSetToNumberList()
-	{
+	void testMessageSetToNumberList() {
+
 		const std::vector <size_t> msgNums =
-			maildirUtils::messageSetToNumberList
-				(vmime::net::messageSet::byNumber(5, -1), /* msgCount */ 8);
+			maildirUtils::messageSetToNumberList(
+				vmime::net::messageSet::byNumber(5, -1),
+				/* msgCount */ 8
+			);
 
 		VASSERT_EQ("Count", 4, msgNums.size());
 		VASSERT_EQ("1", 5, msgNums[0]);
@@ -50,4 +52,3 @@ VMIME_TEST_SUITE_BEGIN(maildirUtilsTest)
 	}
 
 VMIME_TEST_SUITE_END
-

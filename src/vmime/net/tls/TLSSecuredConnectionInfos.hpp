@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -47,12 +47,16 @@ class TLSSocket;
 
 /** Information about a TLS-secured connection used by a service.
   */
-class VMIME_EXPORT TLSSecuredConnectionInfos : public securedConnectionInfos
-{
+class VMIME_EXPORT TLSSecuredConnectionInfos : public securedConnectionInfos {
+
 public:
 
-	TLSSecuredConnectionInfos(const string& host, const port_t port,
-		const shared_ptr <TLSSession>& tlsSession, const shared_ptr <TLSSocket>& tlsSocket);
+	TLSSecuredConnectionInfos(
+		const string& host,
+		const port_t port,
+		const shared_ptr <TLSSession>& tlsSession,
+		const shared_ptr <TLSSocket>& tlsSocket
+	);
 
 	const string getHost() const;
 	port_t getPort() const;

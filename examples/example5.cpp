@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -39,28 +39,25 @@
 #include "vmime/platforms/posix/posixHandler.hpp"
 
 
-int main()
-{
+int main() {
+
 	std::cout << std::endl;
 
 	// Set the global C and C++ locale to the user-configured locale.
 	// The locale should use UTF-8 encoding for these tests to run successfully.
-	try
-	{
+	try {
 		std::locale::global(std::locale(""));
-	}
-	catch (std::exception &)
-	{
+	} catch (std::exception &) {
 		std::setlocale(LC_ALL, "");
 	}
 
-	try
-	{
+	try {
+
 		vmime::messageParser mp("<...MIME message content...>");
 
 		// Enumerate attachments
-		for (size_t i = 0 ; i < mp.getAttachmentCount() ; ++i)
-		{
+		for (size_t i = 0 ; i < mp.getAttachmentCount() ; ++i) {
+
 			const vmime::attachment& att = *mp.getAttachmentAt(i);
 
 			// Media type (content type) is in "att.getType()"
@@ -68,19 +65,21 @@ int main()
 			// Description is in "att.getDescription()"
 			// Data is in "att.getData()"
 		}
-	}
+
 	// VMime exception
-	catch (vmime::exception& e)
-	{
+	} catch (vmime::exception& e) {
+
 		std::cout << "vmime::exception: " << e.what() << std::endl;
 		throw;
-	}
+
 	// Standard exception
-	catch (std::exception& e)
-	{
+	} catch (std::exception& e) {
+
 		std::cout << "std::exception: " << e.what() << std::endl;
 		throw;
 	}
 
 	std::cout << std::endl;
+
+	return 0;
 }

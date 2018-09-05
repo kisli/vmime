@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -36,42 +36,42 @@ namespace cert {
 
 
 certificateException::certificateException()
-	: exception("A problem occurred with a certificate.")
-{
+	: exception("A problem occurred with a certificate.") {
+
 }
 
 
 certificateException::certificateException(const std::string& what)
-	: exception(what)
-{
+	: exception(what) {
+
 }
 
 
-certificateException::~certificateException() throw()
-{
+certificateException::~certificateException() throw() {
+
 }
 
 
-exception* certificateException::clone() const
-{
+exception* certificateException::clone() const {
+
 	return new certificateException(what());
 }
 
 
-void certificateException::setCertificate(const shared_ptr <certificate>& cert)
-{
+void certificateException::setCertificate(const shared_ptr <certificate>& cert) {
+
 	m_cert = cert;
 }
 
 
-shared_ptr <certificate> certificateException::getCertificate()
-{
+shared_ptr <certificate> certificateException::getCertificate() {
+
 	return m_cert;
 }
 
 
-shared_ptr <const certificate> certificateException::getCertificate() const
-{
+shared_ptr <const certificate> certificateException::getCertificate() const {
+
 	return m_cert;
 }
 

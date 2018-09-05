@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -31,16 +31,24 @@ VMIME_TEST_SUITE_BEGIN(messageTest)
 	VMIME_TEST_LIST_END
 
 
-	void testGetGeneratedSize()
-	{
+	void testGetGeneratedSize() {
+
 		vmime::generationContext ctx;
 
 		vmime::shared_ptr <vmime::message> msg = vmime::make_shared <vmime::message>();
 		msg->getHeader()->getField("Foo")->setValue(vmime::string("bar"));
 
 		vmime::htmlTextPart textPart;
-		textPart.setPlainText(vmime::make_shared <vmime::stringContentHandler>("Foo bar bazé foo foo foo"));
-		textPart.setText(vmime::make_shared <vmime::stringContentHandler>("Foo bar <strong>bazé</strong> foo foo foo"));
+		textPart.setPlainText(
+			vmime::make_shared <vmime::stringContentHandler>(
+				"Foo bar bazé foo foo foo"
+			)
+		);
+		textPart.setText(
+			vmime::make_shared <vmime::stringContentHandler>(
+				"Foo bar <strong>bazé</strong> foo foo foo"
+			)
+		);
 		textPart.generateIn(msg, msg);
 
 		// Estimated/computed generated size must be greater than the actual generated size
@@ -54,4 +62,3 @@ VMIME_TEST_SUITE_BEGIN(messageTest)
 	}
 
 VMIME_TEST_SUITE_END
-

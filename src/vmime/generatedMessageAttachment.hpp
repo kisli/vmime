@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -32,14 +32,13 @@
 #include "vmime/bodyPartAttachment.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 /** A message attachment that can be extracted from a message.
   */
-class VMIME_EXPORT generatedMessageAttachment : public messageAttachment
-{
+class VMIME_EXPORT generatedMessageAttachment : public messageAttachment {
+
 public:
 
 	generatedMessageAttachment(const shared_ptr <const bodyPart>& part);
@@ -76,4 +75,3 @@ private:
 
 
 #endif // VMIME_GENERATEDMESSAGEATTACHMENT_HPP_INCLUDED
-

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -41,12 +41,11 @@ VMIME_TEST_SUITE_BEGIN(SMTPResponseTest)
 	VMIME_TEST_LIST_END
 
 
-	void testSingleLineResponse()
-	{
+	void testSingleLineResponse() {
+
 		vmime::shared_ptr <vmime::net::tracer> tracer;
 		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
-		vmime::shared_ptr <vmime::net::timeoutHandler> toh =
-			vmime::make_shared <testTimeoutHandler>();
+		vmime::shared_ptr <vmime::net::timeoutHandler> toh = vmime::make_shared <testTimeoutHandler>();
 
 		socket->localSend("123 Response Text\r\n");
 
@@ -60,12 +59,11 @@ VMIME_TEST_SUITE_BEGIN(SMTPResponseTest)
 		VASSERT_EQ("Text", "Response Text", resp->getText());
 	}
 
-	void testSingleLineResponseLF()
-	{
+	void testSingleLineResponseLF() {
+
 		vmime::shared_ptr <vmime::net::tracer> tracer;
 		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
-		vmime::shared_ptr <vmime::net::timeoutHandler> toh =
-			vmime::make_shared <testTimeoutHandler>();
+		vmime::shared_ptr <vmime::net::timeoutHandler> toh = vmime::make_shared <testTimeoutHandler>();
 
 		socket->localSend("123 Response Text\n");
 
@@ -79,15 +77,13 @@ VMIME_TEST_SUITE_BEGIN(SMTPResponseTest)
 		VASSERT_EQ("Text", "Response Text", resp->getText());
 	}
 
-	void testMultiLineResponse()
-	{
+	void testMultiLineResponse() {
+
 		vmime::shared_ptr <vmime::net::tracer> tracer;
 		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
-		vmime::shared_ptr <vmime::net::timeoutHandler> toh =
-			vmime::make_shared <testTimeoutHandler>();
+		vmime::shared_ptr <vmime::net::timeoutHandler> toh = vmime::make_shared <testTimeoutHandler>();
 
-		socket->localSend
-		(
+		socket->localSend(
 			"123-Response\r\n"
 			"123 Text\r\n"
 		);
@@ -108,15 +104,13 @@ VMIME_TEST_SUITE_BEGIN(SMTPResponseTest)
 		VASSERT_EQ("Text", "Text", resp->getLineAt(1).getText());
 	}
 
-	void testMultiLineResponseDifferentCode()
-	{
+	void testMultiLineResponseDifferentCode() {
+
 		vmime::shared_ptr <vmime::net::tracer> tracer;
 		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
-		vmime::shared_ptr <vmime::net::timeoutHandler> toh =
-			vmime::make_shared <testTimeoutHandler>();
+		vmime::shared_ptr <vmime::net::timeoutHandler> toh = vmime::make_shared <testTimeoutHandler>();
 
-		socket->localSend
-		(
+		socket->localSend(
 			"123-Response\r\n"
 			"456 Text\r\n"
 		);
@@ -137,15 +131,13 @@ VMIME_TEST_SUITE_BEGIN(SMTPResponseTest)
 		VASSERT_EQ("Text", "Text", resp->getLineAt(1).getText());
 	}
 
-	void testIncompleteMultiLineResponse()
-	{
+	void testIncompleteMultiLineResponse() {
+
 		vmime::shared_ptr <vmime::net::tracer> tracer;
 		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
-		vmime::shared_ptr <vmime::net::timeoutHandler> toh =
-			vmime::make_shared <testTimeoutHandler>(1);
+		vmime::shared_ptr <vmime::net::timeoutHandler> toh = vmime::make_shared <testTimeoutHandler>(1);
 
-		socket->localSend
-		(
+		socket->localSend(
 			"123-Response\r\n"
 			"123-Text\r\n"
 			// Missing data
@@ -153,20 +145,20 @@ VMIME_TEST_SUITE_BEGIN(SMTPResponseTest)
 
 		vmime::net::smtp::SMTPResponse::state responseState;
 
-		VASSERT_THROW("Incomplete response",
+		VASSERT_THROW(
+			"Incomplete response",
 			vmime::net::smtp::SMTPResponse::readResponse(tracer, socket, toh, responseState),
-			vmime::exceptions::operation_timed_out);
+			vmime::exceptions::operation_timed_out
+		);
 	}
 
-	void testNoResponseText()
-	{
+	void testNoResponseText() {
+
 		vmime::shared_ptr <vmime::net::tracer> tracer;
 		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
-		vmime::shared_ptr <vmime::net::timeoutHandler> toh =
-			vmime::make_shared <testTimeoutHandler>(1);
+		vmime::shared_ptr <vmime::net::timeoutHandler> toh = vmime::make_shared <testTimeoutHandler>(1);
 
-		socket->localSend
-		(
+		socket->localSend(
 			"250\r\n"
 		);
 
@@ -180,12 +172,11 @@ VMIME_TEST_SUITE_BEGIN(SMTPResponseTest)
 		VASSERT_EQ("Text", "", resp->getText());
 	}
 
-	void testEnhancedStatusCode()
-	{
+	void testEnhancedStatusCode() {
+
 		vmime::shared_ptr <vmime::net::tracer> tracer;
 		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
-		vmime::shared_ptr <vmime::net::timeoutHandler> toh =
-			vmime::make_shared <testTimeoutHandler>();
+		vmime::shared_ptr <vmime::net::timeoutHandler> toh = vmime::make_shared <testTimeoutHandler>();
 
 		socket->localSend("250 2.1.5 OK fu13sm4720601wic.7 - gsmtp\r\n");
 
@@ -202,12 +193,11 @@ VMIME_TEST_SUITE_BEGIN(SMTPResponseTest)
 		VASSERT_EQ("Enh.detail", 5, resp->getEnhancedCode().detail);
 	}
 
-	void testNoEnhancedStatusCode()
-	{
+	void testNoEnhancedStatusCode() {
+
 		vmime::shared_ptr <vmime::net::tracer> tracer;
 		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
-		vmime::shared_ptr <vmime::net::timeoutHandler> toh =
-			vmime::make_shared <testTimeoutHandler>();
+		vmime::shared_ptr <vmime::net::timeoutHandler> toh = vmime::make_shared <testTimeoutHandler>();
 
 		socket->localSend("354  Go ahead fu13sm4720601wic.7 - gsmtp\r\n");
 
@@ -224,12 +214,11 @@ VMIME_TEST_SUITE_BEGIN(SMTPResponseTest)
 		VASSERT_EQ("Enh.detail", 0, resp->getEnhancedCode().detail);
 	}
 
-	void testInvalidEnhancedStatusCode()
-	{
+	void testInvalidEnhancedStatusCode() {
+
 		vmime::shared_ptr <vmime::net::tracer> tracer;
 		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
-		vmime::shared_ptr <vmime::net::timeoutHandler> toh =
-			vmime::make_shared <testTimeoutHandler>();
+		vmime::shared_ptr <vmime::net::timeoutHandler> toh = vmime::make_shared <testTimeoutHandler>();
 
 		socket->localSend("250 4.2 xxx\r\n");
 
@@ -247,4 +236,3 @@ VMIME_TEST_SUITE_BEGIN(SMTPResponseTest)
 	}
 
 VMIME_TEST_SUITE_END
-

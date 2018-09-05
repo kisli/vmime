@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -51,13 +51,13 @@ const utility::file::path::component maildirFormat::NEW_DIR("new", vmime::charse
 //
 
 maildirFormat::context::context(const shared_ptr <maildirStore>& store)
-	: m_store(store)
-{
+	: m_store(store) {
+
 }
 
 
-shared_ptr <maildirStore> maildirFormat::context::getStore()
-{
+shared_ptr <maildirStore> maildirFormat::context::getStore() {
+
 	return m_store.lock();
 }
 
@@ -67,27 +67,28 @@ shared_ptr <maildirStore> maildirFormat::context::getStore()
 //
 
 maildirFormat::maildirFormat(const shared_ptr <context>& ctx)
-	: m_context(ctx)
-{
+	: m_context(ctx) {
+
 }
 
 
-shared_ptr <maildirFormat::context> maildirFormat::getContext() const
-{
+shared_ptr <maildirFormat::context> maildirFormat::getContext() const {
+
 	return m_context;
 }
 
 
 // static
-shared_ptr <maildirFormat> maildirFormat::detect(const shared_ptr <maildirStore>& store)
-{
+shared_ptr <maildirFormat> maildirFormat::detect(const shared_ptr <maildirStore>& store) {
+
 	shared_ptr <context> ctx = make_shared <context>(store);
 
 	// Try Courier format
 	shared_ptr <maildirFormat> fmt = make_shared <format::courierMaildirFormat>(ctx);
 
-	if (fmt->supports())
+	if (fmt->supports()) {
 		return fmt;
+	}
 
 	// Default is KMail format
 	return make_shared <format::kmailMaildirFormat>(ctx);

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -33,12 +33,11 @@
 #include "vmime/contentDispositionField.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
-messageParser::messageParser(const string& buffer)
-{
+messageParser::messageParser(const string& buffer) {
+
 	shared_ptr <message> msg = make_shared <message>();
 	msg->parse(buffer);
 
@@ -46,27 +45,27 @@ messageParser::messageParser(const string& buffer)
 }
 
 
-messageParser::messageParser(const shared_ptr <const message>& msg)
-{
+messageParser::messageParser(const shared_ptr <const message>& msg) {
+
 	parse(msg);
 }
 
 
-messageParser::~messageParser()
-{
+messageParser::~messageParser() {
+
 }
 
 
-void messageParser::parse(const shared_ptr <const message>& msg)
-{
+void messageParser::parse(const shared_ptr <const message>& msg) {
+
 	// Header fields (if field is present, copy its value, else do nothing)
 #ifndef VMIME_BUILDING_DOC
 
-#define TRY_FIELD(var, type, name) \
-	{ \
+#define TRY_FIELD(var, type, name) { \
 		shared_ptr <type> fldValue = msg->getHeader()->findFieldValue <type>(name); \
-		if (fldValue) \
+		if (fldValue) { \
 			var = *fldValue; \
+		} \
 	}
 
 	TRY_FIELD(m_from, mailbox, fields::FROM);
@@ -84,18 +83,19 @@ void messageParser::parse(const shared_ptr <const message>& msg)
 	// Date
 	shared_ptr <const headerField> recv = msg->getHeader()->findField(fields::RECEIVED);
 
-	if (recv)
-	{
+	if (recv) {
+
 		m_date = recv->getValue <relay>()->getDate();
-	}
-	else
-	{
+
+	} else {
+
 		shared_ptr <const headerField> date = msg->getHeader()->findField(fields::DATE);
 
-		if (date)
+		if (date) {
 			m_date = *date->getValue <datetime>();
-		else
+		} else {
 			m_date = datetime::now();
+		}
 	}
 
 	// Attachments
@@ -106,58 +106,64 @@ void messageParser::parse(const shared_ptr <const message>& msg)
 }
 
 
-void messageParser::findAttachments(const shared_ptr <const message>& msg)
-{
+void messageParser::findAttachments(const shared_ptr <const message>& msg) {
+
 	m_attach = attachmentHelper::findAttachmentsInMessage(msg);
 }
 
 
-void messageParser::findTextParts(const shared_ptr <const bodyPart>& msg, const shared_ptr <const bodyPart>& part)
-{
+void messageParser::findTextParts(
+	const shared_ptr <const bodyPart>& msg,
+	const shared_ptr <const bodyPart>& part
+) {
+
 	// Handle the case in which the message is not multipart: if the body part is
 	// "text/*", take this part.
-	if (part->getBody()->getPartCount() == 0)
-	{
+	if (part->getBody()->getPartCount() == 0) {
+
 		mediaType type(mediaTypes::TEXT, mediaTypes::TEXT_PLAIN);
 		bool accept = false;
 
 		shared_ptr <const contentTypeField> ctf =
 			msg->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
 
-		if (ctf)
-		{
+		if (ctf) {
+
 			const mediaType ctfType = *ctf->getValue <mediaType>();
 
-			if (ctfType.getType() == mediaTypes::TEXT)
-			{
+			if (ctfType.getType() == mediaTypes::TEXT) {
+
 				type = ctfType;
 				accept = true;
 			}
-		}
-		else
-		{
+
+		} else {
+
 			// No "Content-type" field: assume "text/plain".
 			accept = true;
 		}
 
-		if (accept)
-		{
+		if (accept) {
+
 			shared_ptr <textPart> txtPart = textPartFactory::getInstance()->create(type);
 			txtPart->parse(msg, msg, msg);
 
 			m_textParts.push_back(txtPart);
 		}
-	}
+
 	// Multipart message
-	else
-	{
+	} else {
+
 		findSubTextParts(msg, part);
 	}
 }
 
 
-bool messageParser::findSubTextParts(const shared_ptr <const bodyPart>& msg, const shared_ptr <const bodyPart>& part)
-{
+bool messageParser::findSubTextParts(
+	const shared_ptr <const bodyPart>& msg,
+	const shared_ptr <const bodyPart>& part
+) {
+
 	// In general, all the text parts are contained in parallel in the same
 	// parent part (or message).
 	// So, wherever the text parts are, all we have to do is to find the first
@@ -165,62 +171,63 @@ bool messageParser::findSubTextParts(const shared_ptr <const bodyPart>& msg, con
 
 	std::vector <shared_ptr <const bodyPart> > textParts;
 
-	for (size_t i = 0 ; i < part->getBody()->getPartCount() ; ++i)
-	{
+	for (size_t i = 0 ; i < part->getBody()->getPartCount() ; ++i) {
+
 		const shared_ptr <const bodyPart> p = part->getBody()->getPartAt(i);
 
 		shared_ptr <const contentTypeField> ctf =
 			p->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
 
-		if (ctf)
-		{
+		if (ctf) {
+
 			const mediaType type = *ctf->getValue <mediaType>();
 			contentDisposition disp; // default should be inline
 
-			if (type.getType() == mediaTypes::TEXT)
-			{
+			if (type.getType() == mediaTypes::TEXT) {
+
 				shared_ptr <const contentDispositionField> cdf = p->getHeader()->
 					findField <contentDispositionField>(fields::CONTENT_DISPOSITION);
 
-				if (cdf)
-				{
+				if (cdf) {
+
 					disp = *cdf->getValue <contentDisposition>();
-				}
-				else
-				{
+
+				} else {
+
 					// No "Content-Disposition" field, assume default
 				}
 
-				if (disp.getName() == contentDispositionTypes::INLINE)
+				if (disp.getName() == contentDispositionTypes::INLINE) {
 					textParts.push_back(p);
+				}
 			}
-		}
-		else
-		{
+
+		} else {
+
 			// No "Content-type" field.
 		}
 	}
 
-	if (textParts.size())
-	{
+	if (textParts.size()) {
+
 		// Okay. So we have found at least one text part
 		for (std::vector <shared_ptr <const bodyPart> >::const_iterator p = textParts.begin() ;
-		     p != textParts.end() ; ++p)
-		{
+		     p != textParts.end() ; ++p) {
+
 			const contentTypeField& ctf =
 				*(*p)->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
 
 			const mediaType type = *ctf.getValue <mediaType>();
 
-			try
-			{
+			try {
+
 				shared_ptr <textPart> txtPart = textPartFactory::getInstance()->create(type);
 				txtPart->parse(msg, part, *p);
 
 				m_textParts.push_back(txtPart);
-			}
-			catch (exceptions::no_factory_available& e)
-			{
+
+			} catch (exceptions::no_factory_available& e) {
+
 				// Content-type not recognized.
 			}
 		}
@@ -228,8 +235,7 @@ bool messageParser::findSubTextParts(const shared_ptr <const bodyPart>& msg, con
 
 	bool found = false;
 
-	for (size_t i = 0 ; !found && (i < part->getBody()->getPartCount()) ; ++i)
-	{
+	for (size_t i = 0 ; !found && (i < part->getBody()->getPartCount()) ; ++i) {
 		found = findSubTextParts(msg, part->getBody()->getPartAt(i));
 	}
 
@@ -237,85 +243,85 @@ bool messageParser::findSubTextParts(const shared_ptr <const bodyPart>& msg, con
 }
 
 
-const mailbox& messageParser::getExpeditor() const
-{
-	return (m_from);
+const mailbox& messageParser::getExpeditor() const {
+
+	return m_from;
 }
 
 
-const addressList& messageParser::getRecipients() const
-{
-	return (m_to);
+const addressList& messageParser::getRecipients() const {
+
+	return m_to;
 }
 
 
-const addressList& messageParser::getCopyRecipients() const
-{
-	return (m_cc);
+const addressList& messageParser::getCopyRecipients() const {
+
+	return m_cc;
 }
 
 
-const addressList& messageParser::getBlindCopyRecipients() const
-{
-	return (m_bcc);
+const addressList& messageParser::getBlindCopyRecipients() const {
+
+	return m_bcc;
 }
 
 
-const text& messageParser::getSubject() const
-{
-	return (m_subject);
+const text& messageParser::getSubject() const {
+
+	return m_subject;
 }
 
 
-const datetime& messageParser::getDate() const
-{
-	return (m_date);
+const datetime& messageParser::getDate() const {
+
+	return m_date;
 }
 
 
-const std::vector <shared_ptr <const attachment> > messageParser::getAttachmentList() const
-{
+const std::vector <shared_ptr <const attachment> > messageParser::getAttachmentList() const {
+
 	return m_attach;
 }
 
 
-size_t messageParser::getAttachmentCount() const
-{
-	return (m_attach.size());
+size_t messageParser::getAttachmentCount() const {
+
+	return m_attach.size();
 }
 
 
-const shared_ptr <const attachment> messageParser::getAttachmentAt(const size_t pos) const
-{
-	return (m_attach[pos]);
+const shared_ptr <const attachment> messageParser::getAttachmentAt(const size_t pos) const {
+
+	return m_attach[pos];
 }
 
 
-const std::vector <shared_ptr <const textPart> > messageParser::getTextPartList() const
-{
+const std::vector <shared_ptr <const textPart> > messageParser::getTextPartList() const {
+
 	std::vector <shared_ptr <const textPart> > res;
 
 	res.reserve(m_textParts.size());
 
 	for (std::vector <shared_ptr <textPart> >::const_iterator it = m_textParts.begin() ;
-	     it != m_textParts.end() ; ++it)
-	{
+	     it != m_textParts.end() ; ++it) {
+
 		res.push_back(*it);
 	}
 
-	return (res);
+	return res;
 }
 
 
-size_t messageParser::getTextPartCount() const
-{
-	return (m_textParts.size());
+size_t messageParser::getTextPartCount() const {
+
+	return m_textParts.size();
 }
 
 
-const shared_ptr <const textPart> messageParser::getTextPartAt(const size_t pos) const
-{
-	return (m_textParts[pos]);
+const shared_ptr <const textPart> messageParser::getTextPartAt(const size_t pos) const {
+
+	return m_textParts[pos];
 }
 
 

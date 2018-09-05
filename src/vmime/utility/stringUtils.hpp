@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -37,9 +37,8 @@ namespace utility {
 
 /** Miscellaneous functions related to strings.
   */
+class VMIME_EXPORT stringUtils {
 
-class VMIME_EXPORT stringUtils
-{
 public:
 
 	/** Makes a string from bytes.
@@ -48,8 +47,8 @@ public:
 	  * @param count number of bytes to use from buffer
 	  * @return a string object containing a copy of the specified data
 	  */
-	static const string makeStringFromBytes(const byte_t* data, const size_t count)
-	{
+	static const string makeStringFromBytes(const byte_t* data, const size_t count) {
+
 		return string(reinterpret_cast <const char*>(data), count);
 	}
 
@@ -58,8 +57,8 @@ public:
 	  * @param str string
 	  * @return pointer to the first byte of the string
 	  */
-	static const byte_t* bytesFromString(const string& str)
-	{
+	static const byte_t* bytesFromString(const string& str) {
+
 		return reinterpret_cast <const byte_t*>(str.data());
 	}
 
@@ -68,8 +67,8 @@ public:
 	  * @param str string
 	  * @return pointer to the first byte of the string
 	  */
-	static const byte_t* bytesFromString(const char* str)
-	{
+	static const byte_t* bytesFromString(const char* str) {
+
 		return reinterpret_cast <const byte_t*>(str);
 	}
 
@@ -80,8 +79,8 @@ public:
 	  * @param count number of bytes to use from buffer
 	  * @return a reference to modified string
 	  */
-	static string& appendBytesToString(string& str, const byte_t* data, const size_t count)
-	{
+	static string& appendBytesToString(string& str, const byte_t* data, const size_t count) {
+
 		str.append(reinterpret_cast <const char*>(data), count);
 		return str;
 	}
@@ -114,7 +113,12 @@ public:
 	  * @param n length of the second string
 	  * @return true if the two strings compare equally, false otherwise
 	  */
-	static bool isStringEqualNoCase(const string::const_iterator begin, const string::const_iterator end, const char* s, const size_t n);
+	static bool isStringEqualNoCase(
+		const string::const_iterator begin,
+		const string::const_iterator end,
+		const char* s,
+		const size_t n
+	);
 
 	/** Transform all the characters in a string to lower-case.
 	  * \warning Use this with ASCII-only strings.
@@ -146,7 +150,10 @@ public:
 	  * @param end end position
 	  * @return number of ASCII characters
 	  */
-	static size_t countASCIIchars(const string::const_iterator begin, const string::const_iterator end);
+	static size_t countASCIIchars(
+		const string::const_iterator begin,
+		const string::const_iterator end
+	);
 
 	/** Returns whether the specified string is composed exclusively
 	  * of 7-bit ASCII characters.
@@ -162,7 +169,10 @@ public:
 	  * @param end end position
 	  * @return position since begin, or string::npos
 	  */
-	static size_t findFirstNonASCIIchar(const string::const_iterator begin, const string::const_iterator end);
+	static size_t findFirstNonASCIIchar(
+		const string::const_iterator begin,
+		const string::const_iterator end
+	);
 
 	/** Convert the specified value to a string value.
 	  *
@@ -170,14 +180,14 @@ public:
 	  * @return value converted from type 'TYPE'
 	  */
 	template <class TYPE>
-	static const string toString(const TYPE& value)
-	{
+	static const string toString(const TYPE& value) {
+
 		std::ostringstream oss;
 		oss.imbue(std::locale::classic());
 
 		oss << value;
 
-		return (oss.str());
+		return oss.str();
 	}
 
 	/** Convert the specified string value to a value of
@@ -187,8 +197,8 @@ public:
 	  * @return value converted into type 'TYPE'
 	  */
 	template <class TYPE>
-	static const TYPE fromString(const string& value)
-	{
+	static const TYPE fromString(const string& value) {
+
 		TYPE ret;
 
 		std::istringstream iss(value);
@@ -196,7 +206,7 @@ public:
 
 		iss >> ret;
 
-		return (ret);
+		return ret;
 	}
 
 	/** Unquote the specified string and transform escaped characters.
@@ -213,8 +223,10 @@ public:
 	  * string to be quoted
 	  * @return true if the string needs to be quoted, false otherwise
 	  */
-	static bool needQuoting(const string& str,
-		const string& specialChars = " \t\"(),:;<>@[\\]");
+	static bool needQuoting(
+		const string& str,
+		const string& specialChars = " \t\"(),:;<>@[\\]"
+	);
 
 	/** Quotes the specified string.
 	  *
@@ -223,7 +235,11 @@ public:
 	  * @param escapeChar character that will be used for escaping (eg. '\')
 	  * @return quoted string
 	  */
-	static string quote(const string& str, const string& escapeSpecialChars, const string& escapeChar);
+	static string quote(
+		const string& str,
+		const string& escapeSpecialChars,
+		const string& escapeChar
+	);
 
 	/** Return whether the specified string is a valid host name
 	  * or domain name.

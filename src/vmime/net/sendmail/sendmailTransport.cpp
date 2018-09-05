@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -58,36 +58,42 @@ namespace net {
 namespace sendmail {
 
 
-sendmailTransport::sendmailTransport(const shared_ptr <session>& sess, const shared_ptr <security::authenticator>& auth)
-	: transport(sess, getInfosInstance(), auth), m_connected(false)
-{
+sendmailTransport::sendmailTransport(
+	const shared_ptr <session>& sess,
+	const shared_ptr <security::authenticator>& auth
+)
+	: transport(sess, getInfosInstance(), auth),
+	  m_connected(false) {
+
 }
 
 
-sendmailTransport::~sendmailTransport()
-{
-	try
-	{
-		if (isConnected())
+sendmailTransport::~sendmailTransport() {
+
+	try {
+
+		if (isConnected()) {
 			disconnect();
-	}
-	catch (...)
-	{
+		}
+
+	} catch (...) {
+
 		// Don't throw in destructor
 	}
 }
 
 
-const string sendmailTransport::getProtocolName() const
-{
+const string sendmailTransport::getProtocolName() const {
+
 	return "sendmail";
 }
 
 
-void sendmailTransport::connect()
-{
-	if (isConnected())
+void sendmailTransport::connect() {
+
+	if (isConnected()) {
 		throw exceptions::already_connected();
+	}
 
 	// Use the specified path for 'sendmail' or a default one if no path is specified
 	m_sendmailPath = GET_PROPERTY(string, PROPERTY_BINPATH);
@@ -96,55 +102,61 @@ void sendmailTransport::connect()
 }
 
 
-bool sendmailTransport::isConnected() const
-{
-	return (m_connected);
+bool sendmailTransport::isConnected() const {
+
+	return m_connected;
 }
 
 
-bool sendmailTransport::isSecuredConnection() const
-{
+bool sendmailTransport::isSecuredConnection() const {
+
 	return false;
 }
 
 
-shared_ptr <connectionInfos> sendmailTransport::getConnectionInfos() const
-{
+shared_ptr <connectionInfos> sendmailTransport::getConnectionInfos() const {
+
 	return make_shared <defaultConnectionInfos>("localhost", static_cast <port_t>(0));
 }
 
 
-void sendmailTransport::disconnect()
-{
-	if (!isConnected())
+void sendmailTransport::disconnect() {
+
+	if (!isConnected()) {
 		throw exceptions::not_connected();
+	}
 
 	internalDisconnect();
 }
 
 
-void sendmailTransport::internalDisconnect()
-{
+void sendmailTransport::internalDisconnect() {
+
 	m_connected = false;
 }
 
 
-void sendmailTransport::noop()
-{
+void sendmailTransport::noop() {
+
 	// Do nothing
 }
 
 
-void sendmailTransport::send
-	(const mailbox& expeditor, const mailboxList& recipients,
-	 utility::inputStream& is, const size_t size,
-	 utility::progressListener* progress, const mailbox& sender)
-{
+void sendmailTransport::send(
+	const mailbox& expeditor,
+	const mailboxList& recipients,
+	utility::inputStream& is,
+	const size_t size,
+	utility::progressListener* progress,
+	const mailbox& sender
+) {
+
 	// If no recipient/expeditor was found, throw an exception
-	if (recipients.isEmpty())
+	if (recipients.isEmpty()) {
 		throw exceptions::no_recipient();
-	else if (expeditor.isEmpty())
+	} else if (expeditor.isEmpty()) {
 		throw exceptions::no_expeditor();
+	}
 
 	// Construct the argument list
 	std::vector <string> args;
@@ -152,38 +164,39 @@ void sendmailTransport::send
 	args.push_back("-i");
 	args.push_back("-f");
 
-	if (!sender.isEmpty())
+	if (!sender.isEmpty()) {
 		args.push_back(expeditor.getEmail().generate());
-	else
+	} else {
 		args.push_back(sender.getEmail().generate());
+	}
 
 	args.push_back("--");
 
-	for (size_t i = 0 ; i < recipients.getMailboxCount() ; ++i)
+	for (size_t i = 0 ; i < recipients.getMailboxCount() ; ++i) {
 		args.push_back(recipients.getMailboxAt(i)->getEmail().generate());
+	}
 
 	// Call sendmail
-	try
-	{
+	try {
 		internalSend(args, is, size, progress);
-	}
-	catch (vmime::exception& e)
-	{
+	} catch (vmime::exception& e) {
 		throw exceptions::command_error("SEND", "", "sendmail failed", e);
 	}
 }
 
 
-void sendmailTransport::internalSend
-	(const std::vector <string>& args, utility::inputStream& is,
-	 const size_t size, utility::progressListener* progress)
-{
+void sendmailTransport::internalSend(
+	const std::vector <string>& args,
+	utility::inputStream& is,
+	const size_t size,
+	utility::progressListener* progress
+) {
+
 	const utility::file::path path = vmime::platform::getHandler()->
 		getFileSystemFactory()->stringToPath(m_sendmailPath);
 
 	shared_ptr <utility::childProcess> proc =
-		vmime::platform::getHandler()->
-			getChildProcessFactory()->create(path);
+		vmime::platform::getHandler()->getChildProcessFactory()->create(path);
 
 	proc->start(args, utility::childProcess::FLAG_REDIRECT_STDIN);
 
@@ -209,14 +222,14 @@ void sendmailTransport::internalSend
 sendmailServiceInfos sendmailTransport::sm_infos;
 
 
-const serviceInfos& sendmailTransport::getInfosInstance()
-{
+const serviceInfos& sendmailTransport::getInfosInstance() {
+
 	return sm_infos;
 }
 
 
-const serviceInfos& sendmailTransport::getInfos() const
-{
+const serviceInfos& sendmailTransport::getInfos() const {
+
 	return sm_infos;
 }
 

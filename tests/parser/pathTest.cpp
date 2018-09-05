@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -33,8 +33,8 @@ VMIME_TEST_SUITE_BEGIN(pathTest)
 	VMIME_TEST_LIST_END
 
 
-	void testParse()
-	{
+	void testParse() {
+
 		vmime::path p1;
 		p1.parse("<>");
 
@@ -54,8 +54,8 @@ VMIME_TEST_SUITE_BEGIN(pathTest)
 		VASSERT_EQ("3.2", "domain", p3.getDomain());
 	}
 
-	void testParse2()
-	{
+	void testParse2() {
+
 		// Test some invalid paths (no '<>')
 		vmime::path p1;
 		p1.parse("");
@@ -76,8 +76,8 @@ VMIME_TEST_SUITE_BEGIN(pathTest)
 		VASSERT_EQ("3.2", "domain", p3.getDomain());
 	}
 
-	void testGenerate()
-	{
+	void testGenerate() {
+
 		vmime::path p1;
 
 		VASSERT_EQ("1", "<>", p1.generate());
@@ -100,4 +100,3 @@ VMIME_TEST_SUITE_BEGIN(pathTest)
 	}
 
 VMIME_TEST_SUITE_END
-

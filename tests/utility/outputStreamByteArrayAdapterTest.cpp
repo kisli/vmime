@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -35,8 +35,8 @@ VMIME_TEST_SUITE_BEGIN(outputStreamByteArrayAdapterTest)
 	VMIME_TEST_LIST_END
 
 
-	void testWrite()
-	{
+	void testWrite() {
+
 		vmime::byteArray bytes;
 
 		vmime::utility::outputStreamByteArrayAdapter stream(bytes);
@@ -50,8 +50,8 @@ VMIME_TEST_SUITE_BEGIN(outputStreamByteArrayAdapterTest)
 		VASSERT_EQ("Write 2", 0, memcmp("some datamore data", &bytes[0], 18));
 	}
 
-	void testWriteBinary()
-	{
+	void testWriteBinary() {
+
 		const char binaryData[] =
 			"\xc5\x9a\xc3\xb8\xc9\xb1\xc9\x9b\x20\xc9\x93\xc9\xa8\xc9\xb2\xc9"
 			"\x91\xc5\x95\xc9\xa3\x20\xc9\x96\xc9\x90\xca\x88\xc9\x92";
@@ -65,8 +65,8 @@ VMIME_TEST_SUITE_BEGIN(outputStreamByteArrayAdapterTest)
 		VASSERT_EQ("Write", 0, memcmp(binaryData, &bytes[0], sizeof(binaryData)));
 	}
 
-	void testWriteCRLF()
-	{
+	void testWriteCRLF() {
+
 		vmime::byteArray bytes;
 
 		vmime::utility::outputStreamByteArrayAdapter stream(bytes);
@@ -80,4 +80,3 @@ VMIME_TEST_SUITE_BEGIN(outputStreamByteArrayAdapterTest)
 	}
 
 VMIME_TEST_SUITE_END
-

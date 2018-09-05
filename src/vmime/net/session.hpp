@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -53,9 +53,8 @@ class transport;
 /** An object that contains all the information needed
   * for connection to a service.
   */
+class VMIME_EXPORT session : public object, public enable_shared_from_this <session> {
 
-class VMIME_EXPORT session : public object, public enable_shared_from_this <session>
-{
 public:
 
 	/** Construct a new session.
@@ -84,8 +83,9 @@ public:
 	  * @return a new transport service, or NULL if no service is registered for this
 	  * protocol or is not a transport protocol
 	  */
-	shared_ptr <transport> getTransport
-		(const shared_ptr <security::authenticator>& auth = null);
+	shared_ptr <transport> getTransport(
+		const shared_ptr <security::authenticator>& auth = null
+	);
 
 	/** Return a transport service instance for the specified protocol.
 	  *
@@ -96,9 +96,10 @@ public:
 	  * @return a new transport service, or NULL if no service is registered for this
 	  * protocol or is not a transport protocol
 	  */
-	shared_ptr <transport> getTransport
-		(const string& protocol,
-		 const shared_ptr <security::authenticator>& auth = null);
+	shared_ptr <transport> getTransport(
+		const string& protocol,
+		const shared_ptr <security::authenticator>& auth = null
+	);
 
 	/** Return a transport service instance for the specified URL.
 	  *
@@ -109,9 +110,10 @@ public:
 	  * @return a new transport service, or NULL if no service is registered for this
 	  * protocol or is not a transport protocol
 	  */
-	shared_ptr <transport> getTransport
-		(const utility::url& url,
-		 const shared_ptr <security::authenticator>& auth = null);
+	shared_ptr <transport> getTransport(
+		const utility::url& url,
+		const shared_ptr <security::authenticator>& auth = null
+	);
 
 	/** Return a transport service instance for the protocol specified
 	  * in the session properties.
@@ -124,7 +126,9 @@ public:
 	  * @return a new store service, or NULL if no service is registered for this
 	  * protocol or is not a store protocol
 	  */
-	shared_ptr <store> getStore(const shared_ptr <security::authenticator>& auth = null);
+	shared_ptr <store> getStore(
+		const shared_ptr <security::authenticator>& auth = null
+	);
 
 	/** Return a store service instance for the specified protocol.
 	  *
@@ -135,9 +139,10 @@ public:
 	  * @return a new store service, or NULL if no service is registered for this
 	  * protocol or is not a store protocol
 	  */
-	shared_ptr <store> getStore
-		(const string& protocol,
-		 const shared_ptr <security::authenticator>& auth = null);
+	shared_ptr <store> getStore(
+		const string& protocol,
+		const shared_ptr <security::authenticator>& auth = null
+	);
 
 	/** Return a store service instance for the specified URL.
 	  *
@@ -148,9 +153,10 @@ public:
 	  * @return a new store service, or NULL if no service is registered for this
 	  * protocol or is not a store protocol
 	  */
-	shared_ptr <store> getStore
-		(const utility::url& url,
-		 const shared_ptr <security::authenticator>& auth = null);
+	shared_ptr <store> getStore(
+		const utility::url& url,
+		const shared_ptr <security::authenticator>& auth = null
+	);
 
 	/** Properties for the session and for the services.
 	  */

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -38,16 +38,14 @@ namespace utility {
 /** Spawn a process and redirect its standard input
   * and/or standard output.
   */
+class VMIME_EXPORT childProcess : public object {
 
-class VMIME_EXPORT childProcess : public object
-{
 public:
 
 	virtual ~childProcess() { }
 
 	/** Flags used with start(). */
-	enum Flags
-	{
+	enum Flags {
 		FLAG_REDIRECT_STDIN = (1 << 0),
 		FLAG_REDIRECT_STDOUT = (1 << 1)
 	};
@@ -84,9 +82,8 @@ public:
 
 /** Create 'childProcess' objects.
   */
+class childProcessFactory : public object {
 
-class childProcessFactory : public object
-{
 public:
 
 	virtual ~childProcessFactory() { }
@@ -104,4 +101,3 @@ public:
 
 
 #endif // VMIME_UTILITY_CHILDPROCESS_HPP_INCLUDED
-

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -42,23 +42,23 @@ VMIME_TEST_SUITE_BEGIN(stringContentHandlerTest)
 	VMIME_TEST_LIST_END
 
 
-	void testIsEmpty()
-	{
+	void testIsEmpty() {
+
 		vmime::stringContentHandler cth;
 
 		VASSERT_TRUE("empty", cth.isEmpty());
 	}
 
-	void testGetLength()
-	{
+	void testGetLength() {
+
 		vmime::stringContentHandler cth("Test Data");
 
 		VASSERT_FALSE("empty", cth.isEmpty());
 		VASSERT_EQ("length", 9, cth.getLength());
 	}
 
-	void testIsEncoded()
-	{
+	void testIsEncoded() {
+
 		vmime::stringContentHandler cth("Test Data");
 
 		VASSERT_FALSE("encoded", cth.isEncoded());
@@ -71,17 +71,19 @@ VMIME_TEST_SUITE_BEGIN(stringContentHandlerTest)
 		VASSERT_EQ("encoding", "base64", cth2.getEncoding().generate());
 	}
 
-	void testGetLength_Encoded()
-	{
-		vmime::stringContentHandler cth
-			("foo=12=34=56bar", vmime::encoding("quoted-printable"));
+	void testGetLength_Encoded() {
+
+		vmime::stringContentHandler cth(
+			"foo=12=34=56bar",
+			vmime::encoding("quoted-printable")
+		);
 
 		// Reported length should be the length of encoded data
 		VASSERT_EQ("length", 15, cth.getLength());
 	}
 
-	void testExtract()
-	{
+	void testExtract() {
+
 		vmime::stringContentHandler cth("Test Data");
 
 		std::ostringstream oss;
@@ -92,11 +94,12 @@ VMIME_TEST_SUITE_BEGIN(stringContentHandlerTest)
 		VASSERT_EQ("extract", "Test Data", oss.str());
 	}
 
-	void testExtract_Encoded()
-	{
-		vmime::stringContentHandler cth
-			("QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVphYmNkZWZnaGlqa2xtbm9wcXJzdHV2d3h5ejAxMjM0NTY3ODk=",
-			 vmime::encoding("base64"));
+	void testExtract_Encoded() {
+
+		vmime::stringContentHandler cth(
+			"QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVphYmNkZWZnaGlqa2xtbm9wcXJzdHV2d3h5ejAxMjM0NTY3ODk=",
+			vmime::encoding("base64")
+		);
 
 		std::ostringstream oss;
 		vmime::utility::outputStreamAdapter osa(oss);
@@ -104,15 +107,19 @@ VMIME_TEST_SUITE_BEGIN(stringContentHandlerTest)
 		cth.extract(osa);
 
 		// Data should be decoded from B64
-		VASSERT_EQ("extract",
-			"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789", oss.str());
+		VASSERT_EQ(
+			"extract",
+			"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
+			oss.str()
+		);
 	}
 
-	void testExtractRaw_Encoded()
-	{
-		vmime::stringContentHandler cth
-			("QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVphYmNkZWZnaGlqa2xtbm9wcXJzdHV2d3h5ejAxMjM0NTY3ODk=",
-			 vmime::encoding("base64"));
+	void testExtractRaw_Encoded() {
+
+		vmime::stringContentHandler cth(
+			"QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVphYmNkZWZnaGlqa2xtbm9wcXJzdHV2d3h5ejAxMjM0NTY3ODk=",
+			vmime::encoding("base64")
+		);
 
 		std::ostringstream oss;
 		vmime::utility::outputStreamAdapter osa(oss);
@@ -120,12 +127,15 @@ VMIME_TEST_SUITE_BEGIN(stringContentHandlerTest)
 		cth.extractRaw(osa);
 
 		// Data should not be decoded
-		VASSERT_EQ("extractRaw",
-			"QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVphYmNkZWZnaGlqa2xtbm9wcXJzdHV2d3h5ejAxMjM0NTY3ODk=", oss.str());
+		VASSERT_EQ(
+			"extractRaw",
+			"QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVphYmNkZWZnaGlqa2xtbm9wcXJzdHV2d3h5ejAxMjM0NTY3ODk=",
+			oss.str()
+		);
 	}
 
-	void testGenerate()
-	{
+	void testGenerate() {
+
 		vmime::stringContentHandler cth("foo\x12\x34\x56 bar");
 
 		std::ostringstream oss;
@@ -137,10 +147,12 @@ VMIME_TEST_SUITE_BEGIN(stringContentHandlerTest)
 		VASSERT_EQ("generate", "Zm9vEjRWIGJhcg==", oss.str());
 	}
 
-	void testGenerate_Encoded()
-	{
-		vmime::stringContentHandler cth
-			("foo=12=34=56bar", vmime::encoding("quoted-printable"));
+	void testGenerate_Encoded() {
+
+		vmime::stringContentHandler cth(
+			"foo=12=34=56bar",
+			vmime::encoding("quoted-printable")
+		);
 
 		std::ostringstream oss;
 		vmime::utility::outputStreamAdapter osa(oss);
@@ -151,8 +163,8 @@ VMIME_TEST_SUITE_BEGIN(stringContentHandlerTest)
 		VASSERT_EQ("generate", "Zm9vEjRWYmFy", oss.str());
 	}
 
-	void testStringProxy()
-	{
+	void testStringProxy() {
+
 		// With 'stringProxy' object
 		vmime::utility::stringProxy str("This is the data buffer", 12, 12 + 4);
 		vmime::stringContentHandler cth(str);

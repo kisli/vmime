@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -39,70 +39,72 @@ const int IMAPTag::sm_maxNumber = 52 * 10 * 10 * 10;
 
 
 IMAPTag::IMAPTag(const int number)
-	: m_number(number)
-{
+	: m_number(number) {
+
 	m_tag.resize(4);
 	generate();
 }
 
 
 IMAPTag::IMAPTag(const IMAPTag& tag)
-	: object(), m_number(tag.m_number)
-{
+	: object(),
+	  m_number(tag.m_number) {
+
 	m_tag.resize(4);
 	generate();
 }
 
 
 IMAPTag::IMAPTag()
-	: m_number(1)
-{
+	: m_number(1) {
+
 	m_tag.resize(4);
 	generate();
 }
 
 
-IMAPTag& IMAPTag::operator++()
-{
+IMAPTag& IMAPTag::operator++() {
+
 	++m_number;
 
-	if (m_number >= sm_maxNumber)
+	if (m_number >= sm_maxNumber) {
 		m_number = 1;
+	}
 
 	generate();
 
-	return (*this);
+	return *this;
 }
 
 
-const IMAPTag IMAPTag::operator++(int)
-{
+const IMAPTag IMAPTag::operator++(int) {
+
 	IMAPTag old(*this);
 	operator++();
-	return (old);
+	return old;
 }
 
 
-int IMAPTag::maximumNumber() const
-{
+int IMAPTag::maximumNumber() const {
+
 	return sm_maxNumber - 1;
 }
 
 
-int IMAPTag::number() const
-{
-	return (m_number);
+int IMAPTag::number() const {
+
+	return m_number;
 }
 
 
 IMAPTag::operator string() const
 {
-	return (m_tag);
+	return m_tag;
 }
 
 
-void IMAPTag::generate()
-{
+void IMAPTag::generate() {
+
 	static const char prefixChars[53] =
 		"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 

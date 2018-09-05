@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -42,35 +42,44 @@ namespace net {
 namespace imap {
 
 
-IMAPMessagePartContentHandler::IMAPMessagePartContentHandler
-	(const shared_ptr <IMAPMessage>& msg, const shared_ptr <messagePart>& part, const vmime::encoding& encoding)
-	: m_message(msg), m_part(part), m_encoding(encoding)
-{
+IMAPMessagePartContentHandler::IMAPMessagePartContentHandler(
+	const shared_ptr <IMAPMessage>& msg,
+	const shared_ptr <messagePart>& part,
+	const vmime::encoding& encoding
+)
+	: m_message(msg),
+	  m_part(part),
+	  m_encoding(encoding) {
+
 }
 
 
-shared_ptr <contentHandler> IMAPMessagePartContentHandler::clone() const
-{
-	return make_shared <IMAPMessagePartContentHandler>
-		(m_message.lock(), m_part.lock(), m_encoding);
+shared_ptr <contentHandler> IMAPMessagePartContentHandler::clone() const {
+
+	return make_shared <IMAPMessagePartContentHandler>(
+		m_message.lock(), m_part.lock(), m_encoding
+	);
 }
 
 
-void IMAPMessagePartContentHandler::generate
-	(utility::outputStream& os, const vmime::encoding& enc, const size_t maxLineLength) const
-{
+void IMAPMessagePartContentHandler::generate(
+	utility::outputStream& os,
+	const vmime::encoding& enc,
+	const size_t maxLineLength
+) const {
+
 	shared_ptr <IMAPMessage> msg = m_message.lock();
 	shared_ptr <messagePart> part = m_part.lock();
 
 	// Data is already encoded
-	if (isEncoded())
-	{
+	if (isEncoded()) {
+
 		// The data is already encoded but the encoding specified for
 		// the generation is different from the current one. We need
 		// to re-encode data: decode from input buffer to temporary
 		// buffer, and then re-encode to output stream...
-		if (m_encoding != enc)
-		{
+		if (m_encoding != enc) {
+
 			// Extract part contents to temporary buffer
 			std::ostringstream oss;
 			utility::outputStreamAdapter tmp(oss);
@@ -95,16 +104,16 @@ void IMAPMessagePartContentHandler::generate
 			theEncoder->getProperties()["text"] = (m_contentType.getType() == mediaTypes::TEXT);
 
 			theEncoder->encode(tempIn, os);
-		}
+
 		// No encoding to perform
-		else
-		{
+		} else {
+
 			msg->extractPart(part, os);
 		}
-	}
+
 	// Need to encode data before
-	else
-	{
+	} else {
+
 		// Extract part contents to temporary buffer
 		std::ostringstream oss;
 		utility::outputStreamAdapter tmp(oss);
@@ -123,20 +132,22 @@ void IMAPMessagePartContentHandler::generate
 }
 
 
-void IMAPMessagePartContentHandler::extract
-	(utility::outputStream& os, utility::progressListener* progress) const
-{
+void IMAPMessagePartContentHandler::extract(
+	utility::outputStream& os,
+	utility::progressListener* progress
+) const {
+
 	shared_ptr <IMAPMessage> msg = m_message.lock();
 	shared_ptr <messagePart> part = m_part.lock();
 
 	// No decoding to perform
-	if (!isEncoded())
-	{
+	if (!isEncoded()) {
+
 		msg->extractImpl(part, os, progress, 0, -1, IMAPMessage::EXTRACT_BODY);
-	}
+
 	// Need to decode data
-	else
-	{
+	} else {
+
 		// Extract part contents to temporary buffer
 		std::ostringstream oss;
 		utility::outputStreamAdapter tmp(oss);
@@ -153,9 +164,11 @@ void IMAPMessagePartContentHandler::extract
 }
 
 
-void IMAPMessagePartContentHandler::extractRaw
-	(utility::outputStream& os, utility::progressListener* progress) const
-{
+void IMAPMessagePartContentHandler::extractRaw(
+	utility::outputStream& os,
+	utility::progressListener* progress
+) const {
+
 	shared_ptr <IMAPMessage> msg = m_message.lock();
 	shared_ptr <messagePart> part = m_part.lock();
 
@@ -163,44 +176,44 @@ void IMAPMessagePartContentHandler::extractRaw
 }
 
 
-size_t IMAPMessagePartContentHandler::getLength() const
-{
+size_t IMAPMessagePartContentHandler::getLength() const {
+
 	return m_part.lock()->getSize();
 }
 
 
-bool IMAPMessagePartContentHandler::isEncoded() const
-{
+bool IMAPMessagePartContentHandler::isEncoded() const {
+
 	return m_encoding != NO_ENCODING;
 }
 
 
-const vmime::encoding& IMAPMessagePartContentHandler::getEncoding() const
-{
+const vmime::encoding& IMAPMessagePartContentHandler::getEncoding() const {
+
 	return m_encoding;
 }
 
 
-bool IMAPMessagePartContentHandler::isEmpty() const
-{
+bool IMAPMessagePartContentHandler::isEmpty() const {
+
 	return getLength() == 0;
 }
 
 
-bool IMAPMessagePartContentHandler::isBuffered() const
-{
+bool IMAPMessagePartContentHandler::isBuffered() const {
+
 	return true;
 }
 
 
-void IMAPMessagePartContentHandler::setContentTypeHint(const mediaType& type)
-{
+void IMAPMessagePartContentHandler::setContentTypeHint(const mediaType& type) {
+
 	m_contentType = type;
 }
 
 
-const mediaType IMAPMessagePartContentHandler::getContentTypeHint() const
-{
+const mediaType IMAPMessagePartContentHandler::getContentTypeHint() const {
+
 	return m_contentType;
 }
 

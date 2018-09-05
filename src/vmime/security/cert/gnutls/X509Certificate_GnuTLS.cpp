@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -44,15 +44,15 @@ namespace cert {
 
 #ifndef VMIME_BUILDING_DOC
 
-struct GnuTLSX509CertificateInternalData
-{
-	GnuTLSX509CertificateInternalData()
-	{
+struct GnuTLSX509CertificateInternalData {
+
+	GnuTLSX509CertificateInternalData() {
+
 		gnutls_x509_crt_init(&cert);
 	}
 
-	~GnuTLSX509CertificateInternalData()
-	{
+	~GnuTLSX509CertificateInternalData() {
+
 		gnutls_x509_crt_deinit(cert);
 	}
 
@@ -69,38 +69,39 @@ struct GnuTLSX509CertificateInternalData
 
 
 X509Certificate_GnuTLS::X509Certificate_GnuTLS()
-	: m_data(new GnuTLSX509CertificateInternalData)
-{
+	: m_data(new GnuTLSX509CertificateInternalData) {
+
 }
 
 
 X509Certificate_GnuTLS::X509Certificate_GnuTLS(const X509Certificate&)
-	: X509Certificate(), m_data(NULL)
-{
+	: X509Certificate(), m_data(NULL) {
+
 	// Not used
 }
 
 
-X509Certificate_GnuTLS::~X509Certificate_GnuTLS()
-{
+X509Certificate_GnuTLS::~X509Certificate_GnuTLS() {
+
 	delete m_data;
 }
 
 
-void* X509Certificate_GnuTLS::getInternalData()
-{
+void* X509Certificate_GnuTLS::getInternalData() {
+
 	return &m_data->cert;
 }
 
 
 // static
-shared_ptr <X509Certificate> X509Certificate::import(utility::inputStream& is)
-{
+shared_ptr <X509Certificate> X509Certificate::import(
+	utility::inputStream& is
+) {
+
 	byteArray bytes;
 	byte_t chunk[4096];
 
-	while (!is.eof())
-	{
+	while (!is.eof()) {
 		const size_t len = is.read(chunk, sizeof(chunk));
 		bytes.insert(bytes.end(), chunk, chunk + len);
 	}
@@ -110,9 +111,11 @@ shared_ptr <X509Certificate> X509Certificate::import(utility::inputStream& is)
 
 
 // static
-shared_ptr <X509Certificate> X509Certificate::import
-	(const byte_t* data, const size_t length)
-{
+shared_ptr <X509Certificate> X509Certificate::import(
+	const byte_t* data,
+	const size_t length
+) {
+
 	gnutls_datum_t buffer;
 	buffer.data = const_cast <byte_t*>(data);
 	buffer.size = static_cast <unsigned int>(length);
@@ -120,28 +123,31 @@ shared_ptr <X509Certificate> X509Certificate::import
 	// Try DER format
 	shared_ptr <X509Certificate_GnuTLS> derCert = make_shared <X509Certificate_GnuTLS>();
 
-	if (gnutls_x509_crt_import(derCert->m_data->cert, &buffer, GNUTLS_X509_FMT_DER) >= 0)
+	if (gnutls_x509_crt_import(derCert->m_data->cert, &buffer, GNUTLS_X509_FMT_DER) >= 0) {
 		return derCert;
+	}
 
 	// Try PEM format
 	shared_ptr <X509Certificate_GnuTLS> pemCert = make_shared <X509Certificate_GnuTLS>();
 
-	if (gnutls_x509_crt_import(pemCert->m_data->cert, &buffer, GNUTLS_X509_FMT_PEM) >= 0)
+	if (gnutls_x509_crt_import(pemCert->m_data->cert, &buffer, GNUTLS_X509_FMT_PEM) >= 0) {
 		return pemCert;
+	}
 
 	return null;
 }
 
 
 // static
-void X509Certificate::import(utility::inputStream& is,
-	std::vector <shared_ptr <X509Certificate> >& certs)
-{
+void X509Certificate::import(
+	utility::inputStream& is,
+	std::vector <shared_ptr <X509Certificate> >& certs
+) {
+
 	byteArray bytes;
 	byte_t chunk[4096];
 
-	while (!is.eof())
-	{
+	while (!is.eof()) {
 		const size_t len = is.read(chunk, sizeof(chunk));
 		bytes.insert(bytes.end(), chunk, chunk + len);
 	}
@@ -151,9 +157,12 @@ void X509Certificate::import(utility::inputStream& is,
 
 
 // static
-void X509Certificate::import(const byte_t* data, const size_t length,
-	std::vector <shared_ptr <X509Certificate> >& certs)
-{
+void X509Certificate::import(
+	const byte_t* data,
+	const size_t length,
+	std::vector <shared_ptr <X509Certificate> >& certs
+) {
+
 	gnutls_datum_t buffer;
 	buffer.data = const_cast <byte_t*>(data);
 	buffer.size = static_cast <unsigned int>(length);
@@ -162,13 +171,16 @@ void X509Certificate::import(const byte_t* data, const size_t length,
 	gnutls_x509_crt_t x509[1024];
 
 	// Try DER format
-	if (gnutls_x509_crt_list_import(x509, &size, &buffer, GNUTLS_X509_FMT_DER, 0) < 0)
+	if (gnutls_x509_crt_list_import(x509, &size, &buffer, GNUTLS_X509_FMT_DER, 0) < 0) {
 
 		// Try PEM format
-		if (gnutls_x509_crt_list_import(x509, &size, &buffer, GNUTLS_X509_FMT_PEM, 0) < 0)
+		if (gnutls_x509_crt_list_import(x509, &size, &buffer, GNUTLS_X509_FMT_PEM, 0) < 0) {
 			return;
+		}
+	}
 
-	for (unsigned int i = 0; i < size; i += 1) {
+	for (unsigned int i = 0 ; i < size ; i += 1) {
+
 		auto c = make_shared <X509Certificate_GnuTLS>();
 		c->m_data->swap(x509[i]);
 		certs.push_back(c);
@@ -176,16 +188,17 @@ void X509Certificate::import(const byte_t* data, const size_t length,
 }
 
 
-void X509Certificate_GnuTLS::write
-	(utility::outputStream& os, const Format format) const
-{
+void X509Certificate_GnuTLS::write(
+	utility::outputStream& os,
+	const Format format
+) const {
+
 	size_t dataSize = 0;
 	gnutls_x509_crt_fmt_t fmt = GNUTLS_X509_FMT_DER;
 
-	switch (format)
-	{
-	case FORMAT_DER: fmt = GNUTLS_X509_FMT_DER; break;
-	case FORMAT_PEM: fmt = GNUTLS_X509_FMT_PEM; break;
+	switch (format) {
+		case FORMAT_DER: fmt = GNUTLS_X509_FMT_DER; break;
+		case FORMAT_PEM: fmt = GNUTLS_X509_FMT_PEM; break;
 	}
 
 	gnutls_x509_crt_export(m_data->cert, fmt, NULL, &dataSize);
@@ -198,8 +211,8 @@ void X509Certificate_GnuTLS::write
 }
 
 
-const byteArray X509Certificate_GnuTLS::getSerialNumber() const
-{
+const byteArray X509Certificate_GnuTLS::getSerialNumber() const {
+
 	char serial[64];
 	size_t serialSize = sizeof(serial);
 
@@ -209,40 +222,43 @@ const byteArray X509Certificate_GnuTLS::getSerialNumber() const
 }
 
 
-bool X509Certificate_GnuTLS::checkIssuer(const shared_ptr <const X509Certificate>& issuer_) const
-{
+bool X509Certificate_GnuTLS::checkIssuer(const shared_ptr <const X509Certificate>& issuer_) const {
+
 	shared_ptr <const X509Certificate_GnuTLS> issuer =
 		dynamicCast <const X509Certificate_GnuTLS>(issuer_);
 
-	return (gnutls_x509_crt_check_issuer
-			(m_data->cert, issuer->m_data->cert) >= 1);
+	return gnutls_x509_crt_check_issuer(m_data->cert, issuer->m_data->cert) >= 1;
 }
 
 
-bool X509Certificate_GnuTLS::verify(const shared_ptr <const X509Certificate>& caCert_) const
-{
+bool X509Certificate_GnuTLS::verify(const shared_ptr <const X509Certificate>& caCert_) const {
+
 	shared_ptr <const X509Certificate_GnuTLS> caCert =
 		dynamicCast <const X509Certificate_GnuTLS>(caCert_);
 
 	unsigned int verify = 0;
 
-	const int res = gnutls_x509_crt_verify
-		(m_data->cert, &(caCert->m_data->cert), 1,
-		 GNUTLS_VERIFY_ALLOW_X509_V1_CA_CRT,
-		 &verify);
+	const int res = gnutls_x509_crt_verify(
+		m_data->cert, &(caCert->m_data->cert), 1,
+		GNUTLS_VERIFY_ALLOW_X509_V1_CA_CRT,
+		&verify
+	);
 
-	return (res == 0 && verify == 0);
+	return res == 0 && verify == 0;
 }
 
 
-bool X509Certificate_GnuTLS::verifyHostName
-	(const string& hostname, std::vector <std::string>* nonMatchingNames) const
-{
-	if (gnutls_x509_crt_check_hostname(m_data->cert, hostname.c_str()) != 0)
-		return true;
+bool X509Certificate_GnuTLS::verifyHostName(
+	const string& hostname,
+	std::vector <std::string>* nonMatchingNames
+) const {
 
-	if (nonMatchingNames)
-	{
+	if (gnutls_x509_crt_check_hostname(m_data->cert, hostname.c_str()) != 0) {
+		return true;
+	}
+
+	if (nonMatchingNames) {
+
 		const int MAX_CN = 256;
 		const char* OID_X520_COMMON_NAME = "2.5.4.3";
 
@@ -251,16 +267,18 @@ bool X509Certificate_GnuTLS::verifyHostName
 
 		dnsNameLength = sizeof(dnsName);
 
-		if (gnutls_x509_crt_get_dn_by_oid(m_data->cert, OID_X520_COMMON_NAME, 0, 0, dnsName, &dnsNameLength) >= 0)
+		if (gnutls_x509_crt_get_dn_by_oid(m_data->cert, OID_X520_COMMON_NAME, 0, 0, dnsName, &dnsNameLength) >= 0) {
 			nonMatchingNames->push_back(dnsName);
+		}
 
-		for (int i = 0, ret = 0 ; ret >= 0 ; ++i)
-		{
+		for (int i = 0, ret = 0 ; ret >= 0 ; ++i) {
+
 			dnsNameLength = sizeof(dnsName);
 			ret = gnutls_x509_crt_get_subject_alt_name(m_data->cert, i, dnsName, &dnsNameLength, NULL);
 
-			if (ret == GNUTLS_SAN_DNSNAME)
+			if (ret == GNUTLS_SAN_DNSNAME) {
 				nonMatchingNames->push_back(dnsName);
+			}
 		}
 	}
 
@@ -268,47 +286,45 @@ bool X509Certificate_GnuTLS::verifyHostName
 }
 
 
-const datetime X509Certificate_GnuTLS::getActivationDate() const
-{
+const datetime X509Certificate_GnuTLS::getActivationDate() const {
+
 	const time_t t = gnutls_x509_crt_get_activation_time(m_data->cert);
 	return datetime(t);
 }
 
 
-const datetime X509Certificate_GnuTLS::getExpirationDate() const
-{
+const datetime X509Certificate_GnuTLS::getExpirationDate() const {
+
 	const time_t t = gnutls_x509_crt_get_expiration_time(m_data->cert);
 	return datetime(t);
 }
 
 
-const byteArray X509Certificate_GnuTLS::getFingerprint(const DigestAlgorithm algo) const
-{
+const byteArray X509Certificate_GnuTLS::getFingerprint(const DigestAlgorithm algo) const {
+
 	gnutls_digest_algorithm_t galgo;
 
-	switch (algo)
-	{
-	case DIGEST_MD5:
+	switch (algo) {
 
-		galgo = GNUTLS_DIG_MD5;
-		break;
+		case DIGEST_MD5:
 
-	default:
-	case DIGEST_SHA1:
+			galgo = GNUTLS_DIG_MD5;
+			break;
 
-		galgo = GNUTLS_DIG_SHA;
-		break;
+		default:
+		case DIGEST_SHA1:
+
+			galgo = GNUTLS_DIG_SHA;
+			break;
 	}
 
 	size_t bufferSize = 0;
-	gnutls_x509_crt_get_fingerprint
-		(m_data->cert, galgo, NULL, &bufferSize);
+	gnutls_x509_crt_get_fingerprint(m_data->cert, galgo, NULL, &bufferSize);
 
 	std::vector <byte_t> buffer(bufferSize);
 
-	if (gnutls_x509_crt_get_fingerprint
-		(m_data->cert, galgo, &buffer[0], &bufferSize) == 0)
-	{
+	if (gnutls_x509_crt_get_fingerprint(m_data->cert, galgo, &buffer[0], &bufferSize) == 0) {
+
 		byteArray res;
 		res.insert(res.end(), &buffer[0], &buffer[0] + bufferSize);
 
@@ -319,8 +335,8 @@ const byteArray X509Certificate_GnuTLS::getFingerprint(const DigestAlgorithm alg
 }
 
 
-const byteArray X509Certificate_GnuTLS::getEncoded() const
-{
+const byteArray X509Certificate_GnuTLS::getEncoded() const {
+
 	byteArray bytes;
 	utility::outputStreamByteArrayAdapter os(bytes);
 
@@ -330,37 +346,39 @@ const byteArray X509Certificate_GnuTLS::getEncoded() const
 }
 
 
-const string X509Certificate_GnuTLS::getIssuerString() const
-{
+const string X509Certificate_GnuTLS::getIssuerString() const {
+
 	char buffer[4096];
 	size_t bufferSize = sizeof(buffer);
 
-	if (gnutls_x509_crt_get_issuer_dn(m_data->cert, buffer, &bufferSize) != GNUTLS_E_SUCCESS)
+	if (gnutls_x509_crt_get_issuer_dn(m_data->cert, buffer, &bufferSize) != GNUTLS_E_SUCCESS) {
 		return "";
+	}
 
 	return buffer;
 }
 
 
-const string X509Certificate_GnuTLS::getType() const
-{
+const string X509Certificate_GnuTLS::getType() const {
+
 	return "X.509";
 }
 
 
-int X509Certificate_GnuTLS::getVersion() const
-{
+int X509Certificate_GnuTLS::getVersion() const {
+
 	return gnutls_x509_crt_get_version(m_data->cert);
 }
 
 
-bool X509Certificate_GnuTLS::equals(const shared_ptr <const certificate>& other) const
-{
+bool X509Certificate_GnuTLS::equals(const shared_ptr <const certificate>& other) const {
+
 	shared_ptr <const X509Certificate_GnuTLS> otherX509 =
 		dynamicCast <const X509Certificate_GnuTLS>(other);
 
-	if (!otherX509)
+	if (!otherX509) {
 		return false;
+	}
 
 	const byteArray fp1 = getFingerprint(DIGEST_MD5);
 	const byteArray fp2 = otherX509->getFingerprint(DIGEST_MD5);

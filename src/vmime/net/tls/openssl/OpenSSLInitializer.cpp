@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -52,34 +52,34 @@ namespace tls {
 shared_ptr <vmime::utility::sync::criticalSection >* OpenSSLInitializer::sm_mutexes;
 
 
-OpenSSLInitializer::autoInitializer::autoInitializer()
-{
+OpenSSLInitializer::autoInitializer::autoInitializer() {
+
 	// The construction of this unique 'oneTimeInitializer' object will be triggered
 	// by the 'autoInitializer' objects from the other translation units
 	static OpenSSLInitializer::oneTimeInitializer oneTimeInitializer;
 }
 
 
-OpenSSLInitializer::autoInitializer::~autoInitializer()
-{
+OpenSSLInitializer::autoInitializer::~autoInitializer() {
+
 }
 
 
-OpenSSLInitializer::oneTimeInitializer::oneTimeInitializer()
-{
+OpenSSLInitializer::oneTimeInitializer::oneTimeInitializer() {
+
 	initialize();
 }
 
 
-OpenSSLInitializer::oneTimeInitializer::~oneTimeInitializer()
-{
+OpenSSLInitializer::oneTimeInitializer::~oneTimeInitializer() {
+
 	uninitialize();
 }
 
 
 // static
-void OpenSSLInitializer::initialize()
-{
+void OpenSSLInitializer::initialize() {
+
 #if OPENSSL_VERSION_NUMBER >= 0x0907000L
 	OPENSSL_config(NULL);
 #endif
@@ -95,8 +95,9 @@ void OpenSSLInitializer::initialize()
 	int numMutexes = CRYPTO_num_locks();
 	sm_mutexes = new shared_ptr <vmime::utility::sync::criticalSection>[numMutexes];
 
-	for (int i = 0 ; i < numMutexes ; ++i)
+	for (int i = 0 ; i < numMutexes ; ++i) {
 		sm_mutexes[i] = vmime::platform::getHandler()->createCriticalSection();
+	}
 
 	CRYPTO_set_locking_callback(&OpenSSLInitializer::lock);
 	CRYPTO_set_id_callback(&OpenSSLInitializer::id);
@@ -104,8 +105,8 @@ void OpenSSLInitializer::initialize()
 
 
 // static
-void OpenSSLInitializer::uninitialize()
-{
+void OpenSSLInitializer::uninitialize() {
+
 	EVP_cleanup();
 	ERR_free_strings();
 
@@ -117,18 +118,19 @@ void OpenSSLInitializer::uninitialize()
 
 
 // static
-void OpenSSLInitializer::lock(int mode, int n, const char* /* file */, int /* line */)
-{
-	if (mode & CRYPTO_LOCK)
+void OpenSSLInitializer::lock(int mode, int n, const char* /* file */, int /* line */) {
+
+	if (mode & CRYPTO_LOCK) {
 		sm_mutexes[n]->lock();
-	else
+	} else {
 		sm_mutexes[n]->unlock();
+	}
 }
 
 
 // static
-unsigned long OpenSSLInitializer::id()
-{
+unsigned long OpenSSLInitializer::id() {
+
 	return vmime::platform::getHandler()->getThreadId();
 }
 

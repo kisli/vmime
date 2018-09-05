@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -54,18 +54,22 @@ class IMAPFolderStatus;
 
 /** IMAP folder implementation.
   */
+class VMIME_EXPORT IMAPFolder : public folder {
 
-class VMIME_EXPORT IMAPFolder : public folder
-{
 private:
 
 	friend class IMAPStore;
 	friend class IMAPMessage;
 
 	IMAPFolder(const IMAPFolder&);
-	IMAPFolder(const folder::path& path, const shared_ptr <IMAPStore>& store, const shared_ptr <folderAttributes>& attribs);
 
 public:
+
+	IMAPFolder(
+		const folder::path& path,
+		const shared_ptr <IMAPStore>& store,
+		const shared_ptr <folderAttributes>& attribs
+	);
 
 	~IMAPFolder();
 
@@ -100,20 +104,26 @@ public:
 
 	void deleteMessages(const messageSet& msgs);
 
-	void setMessageFlags(const messageSet& msgs, const int flags, const int mode = message::FLAG_MODE_SET);
+	void setMessageFlags(
+		const messageSet& msgs,
+		const int flags,
+		const int mode = message::FLAG_MODE_SET
+	);
 
-	messageSet addMessage
-		(const shared_ptr <vmime::message>& msg,
-		 const int flags = -1,
-		 vmime::datetime* date = NULL,
-		 utility::progressListener* progress = NULL);
+	messageSet addMessage(
+		const shared_ptr <vmime::message>& msg,
+		const int flags = -1,
+		vmime::datetime* date = NULL,
+		utility::progressListener* progress = NULL
+	);
 
-	messageSet addMessage
-		(utility::inputStream& is,
-		 const size_t size,
-		 const int flags = -1,
-		 vmime::datetime* date = NULL,
-		 utility::progressListener* progress = NULL);
+	messageSet addMessage(
+		utility::inputStream& is,
+		const size_t size,
+		const int flags = -1,
+		vmime::datetime* date = NULL,
+		utility::progressListener* progress = NULL
+	);
 
 	messageSet copyMessages(const folder::path& dest, const messageSet& msgs);
 
@@ -130,11 +140,18 @@ public:
 	shared_ptr <store> getStore();
 
 
-	void fetchMessages(std::vector <shared_ptr <message> >& msg, const fetchAttributes& options, utility::progressListener* progress = NULL);
+	void fetchMessages(
+		std::vector <shared_ptr <message> >& msg,
+		const fetchAttributes& options,
+		utility::progressListener* progress = NULL
+	);
+
 	void fetchMessage(const shared_ptr <message>& msg, const fetchAttributes& options);
 
-	std::vector <shared_ptr <message> > getAndFetchMessages
-		(const messageSet& msgs, const fetchAttributes& attribs);
+	std::vector <shared_ptr <message> > getAndFetchMessages(
+		const messageSet& msgs,
+		const fetchAttributes& attribs
+	);
 
 	int getFetchCapabilities() const;
 

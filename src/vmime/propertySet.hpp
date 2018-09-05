@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -36,21 +36,19 @@
 #include "vmime/utility/stringUtils.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 /** Manage a list of (name,value) pairs.
   */
+class VMIME_EXPORT propertySet : public object {
 
-class VMIME_EXPORT propertySet : public object
-{
 public:
 
 	/** A property holds a (name,value) pair.
 	  */
-	class property : public object
-	{
+	class property : public object {
+
 	public:
 
 		property(const string& name, const string& value);
@@ -86,8 +84,8 @@ public:
 		  *
 		  * @param value new value for property
 		  */
-		template <class TYPE> void setValue(const TYPE& value)
-		{
+		template <class TYPE> void setValue(const TYPE& value) {
+
 			std::ostringstream oss;
 			oss.imbue(std::locale::classic());  // no formatting
 
@@ -103,8 +101,8 @@ public:
 		  * converted using std::istringstream)
 		  * @return current value of the property
 		  */
-		template <class TYPE> TYPE getValue() const
-		{
+		template <class TYPE> TYPE getValue() const {
+
 			TYPE val = TYPE();
 
 			std::istringstream iss(m_value);
@@ -112,8 +110,9 @@ public:
 
 			iss >> val;
 
-			if (iss.fail())
+			if (iss.fail()) {
 				throw exceptions::invalid_property_type();
+			}
 
 			return (val);
 		}
@@ -122,30 +121,32 @@ public:
 #ifdef VMIME_INLINE_TEMPLATE_SPECIALIZATION
 
 		template <>
-		void propertySet::property::setValue(const string& value)
-		{
+		void propertySet::property::setValue(const string& value) {
+
 			m_value = value;
 		}
 
 		template <>
-		void propertySet::property::setValue(const bool& value)
-		{
+		void propertySet::property::setValue(const bool& value) {
+
 			m_value = value ? "true" : "false";
 		}
 
 		template <>
-		string propertySet::property::getValue() const
-		{
+		string propertySet::property::getValue() const {
+
 			return (m_value);
 		}
 
 		template <>
-		bool propertySet::property::getValue() const
-		{
-			if (utility::stringUtils::toLower(m_value) == "true")
+		bool propertySet::property::getValue() const {
+
+			if (utility::stringUtils::toLower(m_value) == "true") {
+
 				return true;
-			else
-			{
+
+			} else {
+
 				int val = 0;
 
 				std::istringstream iss(m_value);
@@ -153,7 +154,7 @@ public:
 
 				iss >> val;
 
-				return (!iss.fail() && val != 0);
+				return !iss.fail() && val != 0;
 			}
 		}
 
@@ -167,37 +168,38 @@ public:
 
 protected:
 
-	class propertyProxy
-	{
+	class propertyProxy {
+
 	public:
 
 		propertyProxy(const string& name, propertySet* set)
-			: m_name(name), m_set(set)
-		{
+			: m_name(name),
+			  m_set(set) {
+
 		}
 
 		template <class TYPE>
-		propertyProxy& operator=(const TYPE& value)
-		{
+		propertyProxy& operator=(const TYPE& value) {
+
 			m_set->setProperty(m_name, value);
-			return (*this);
+			return *this;
 		}
 
 		template <class TYPE>
-		void setValue(const TYPE& value)
-		{
+		void setValue(const TYPE& value) {
+
 			m_set->setProperty(m_name, value);
 		}
 
 		template <class TYPE>
-		const TYPE getValue() const
-		{
-			return (m_set->getProperty <TYPE>(m_name));
+		const TYPE getValue() const {
+
+			return m_set->getProperty <TYPE>(m_name);
 		}
 
-		operator string() const
-		{
-			return (m_set->getProperty <string>(m_name));
+		operator string() const {
+
+			return m_set->getProperty <string>(m_name);
 		}
 
 	private:
@@ -206,24 +208,25 @@ protected:
 		propertySet* m_set;
 	};
 
-	class constPropertyProxy
-	{
+	class constPropertyProxy {
+
 	public:
 
 		constPropertyProxy(const string& name, const propertySet* set)
-			: m_name(name), m_set(set)
-		{
+			: m_name(name),
+			  m_set(set) {
+
 		}
 
 		template <class TYPE>
-		const TYPE getValue() const
-		{
-			return (m_set->getProperty <TYPE>(m_name));
+		const TYPE getValue() const {
+
+			return m_set->getProperty <TYPE>(m_name);
 		}
 
-		operator string() const
-		{
-			return (m_set->getProperty <string>(m_name));
+		operator string() const {
+
+			return m_set->getProperty <string>(m_name);
 		}
 
 	private:
@@ -274,12 +277,11 @@ public:
 	  * @return value of the specified property
 	  */
 	template <class TYPE>
-	const TYPE getProperty(const string& name) const
-	{
+	const TYPE getProperty(const string& name) const {
+
 		const shared_ptr <property> prop = find(name);
 		if (!prop) throw exceptions::no_such_property(name);
 
-		//return (prop->getValue <TYPE>());  // BUG: with g++ < 3.4
 		return (prop->template getValue <TYPE>());
 	}
 
@@ -293,11 +295,10 @@ public:
 	  * if if does not exist
 	  */
 	template <class TYPE>
-	const TYPE getProperty(const string& name, const TYPE defaultValue) const
-	{
+	const TYPE getProperty(const string& name, const TYPE defaultValue) const {
+
 		const shared_ptr <property> prop = find(name);
-		//return (prop ? prop->getValue <TYPE>() : defaultValue); // BUG: with g++ < 3.4
-		return (prop ? prop->template getValue <TYPE>() : defaultValue);
+		return prop ? prop->template getValue <TYPE>() : defaultValue;
 	}
 
 	/** Change the value of the specified property or create
@@ -307,8 +308,8 @@ public:
 	  * @param value property value
 	  */
 	template <class TYPE>
-	void setProperty(const string& name, const TYPE& value)
-	{
+	void setProperty(const string& name, const TYPE& value) {
+
 		findOrCreate(name)->setValue(value);
 	}
 
@@ -335,14 +336,14 @@ private:
 	void parse(const string& props);
 
 
-	class propFinder : public std::unary_function <shared_ptr <property>, bool>
-	{
+	class propFinder : public std::unary_function <shared_ptr <property>, bool> {
+
 	public:
 
 		propFinder(const string& name) : m_name(utility::stringUtils::toLower(name)) { }
 
-		bool operator()(const shared_ptr <property>& p) const
-		{
+		bool operator()(const shared_ptr <property>& p) const {
+
 			return (utility::stringUtils::toLower(p->getName()) == m_name);
 		}
 
@@ -360,8 +361,8 @@ private:
 public:
 
 	template <typename TYPE>
-	static TYPE valueFromString(const string& value)
-	{
+	static TYPE valueFromString(const string& value) {
+
 		TYPE v = TYPE();
 
 		std::istringstream iss(value);
@@ -373,8 +374,8 @@ public:
 	}
 
 	template <typename TYPE>
-	static string valueToString(const TYPE& value)
-	{
+	static string valueToString(const TYPE& value) {
+
 		std::ostringstream oss(value);
 		oss.imbue(std::locale::classic());  // no formatting
 
@@ -386,24 +387,26 @@ public:
 #ifdef VMIME_INLINE_TEMPLATE_SPECIALIZATION
 
 	template <>
-	static string valueFromString(const string& value)
-	{
+	static string valueFromString(const string& value) {
+
 		return value;
 	}
 
 	template <>
-	static string valueToString(const string& value)
-	{
+	static string valueToString(const string& value) {
+
 		return value;
 	}
 
 	template <>
-	static bool valueFromString(const string& value)
-	{
-		if (utility::stringUtils::toLower(value) == "true")
+	static bool valueFromString(const string& value) {
+
+		if (utility::stringUtils::toLower(value) == "true") {
+
 			return true;
-		else
-		{
+
+		} else {
+
 			int val = 0;
 
 			std::istringstream iss(value);
@@ -411,14 +414,14 @@ public:
 
 			iss >> val;
 
-			return (!iss.fail() && val != 0);
+			return !iss.fail() && val != 0;
 		}
 	}
 
 	template <>
-	static string valueToString(const bool& value)
-	{
-		return (value ? "true" : "false");
+	static string valueToString(const bool& value) {
+
+		return value ? "true" : "false";
 	}
 
 #endif // VMIME_INLINE_TEMPLATE_SPECIALIZATION

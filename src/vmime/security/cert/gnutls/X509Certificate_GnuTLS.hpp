@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -39,8 +39,8 @@ namespace security {
 namespace cert {
 
 
-class X509Certificate_GnuTLS : public X509Certificate
-{
+class X509Certificate_GnuTLS : public X509Certificate {
+
 	friend class X509Certificate;
 
 	X509Certificate_GnuTLS(const X509Certificate&);
@@ -61,9 +61,10 @@ public:
 
 	bool verify(const shared_ptr <const X509Certificate>& caCert) const;
 
-	bool verifyHostName
-		(const string& hostname,
-		 std::vector <std::string>* nonMatchingNames = NULL) const;
+	bool verifyHostName(
+		const string& hostname,
+		std::vector <std::string>* nonMatchingNames = NULL
+	) const;
 
 	const datetime getExpirationDate() const;
 	const datetime getActivationDate() const;

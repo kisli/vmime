@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -31,8 +31,7 @@
 #include "vmime/utility/encoder/encoder.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 class contentHandler;
@@ -40,13 +39,12 @@ class contentHandler;
 
 /** Content encoding (basic type).
   */
+class VMIME_EXPORT encoding : public headerFieldValue {
 
-class VMIME_EXPORT encoding : public headerFieldValue
-{
 public:
 
-	enum EncodingUsage
-	{
+	enum EncodingUsage {
+
 		USAGE_UNKNOWN,
 		USAGE_TEXT,         /**< Use for body text. */
 		USAGE_BINARY_DATA   /**< Use for attachment, image... */
@@ -99,7 +97,10 @@ public:
 	  * @param usage context of use of data
 	  * @return suitable encoding for specified data
 	  */
-	static const encoding decide(const shared_ptr <const contentHandler>& data, const EncodingUsage usage = USAGE_BINARY_DATA);
+	static const encoding decide(
+		const shared_ptr <const contentHandler>& data,
+		const EncodingUsage usage = USAGE_BINARY_DATA
+	);
 
 	/** Decide which encoding to use based on the specified data and charset.
 	  *
@@ -108,7 +109,11 @@ public:
 	  * @param usage context of use of data
 	  * @return suitable encoding for specified data and charset
 	  */
-	static const encoding decide(const shared_ptr <const contentHandler>& data, const charset& chset, const EncodingUsage usage = USAGE_BINARY_DATA);
+	static const encoding decide(
+		const shared_ptr <const contentHandler>& data,
+		const charset& chset,
+		const EncodingUsage usage = USAGE_BINARY_DATA
+	);
 
 
 	shared_ptr <component> clone() const;
@@ -144,23 +149,28 @@ private:
 	  * @param end end iterator in buffer
 	  * @return suitable encoding for specified data
 	  */
-	static const encoding decideImpl(const string::const_iterator begin, const string::const_iterator end);
+	static const encoding decideImpl(
+		const string::const_iterator begin,
+		const string::const_iterator end
+	);
 
 protected:
 
 	// Component parsing & assembling
-	void parseImpl
-		(const parsingContext& ctx,
-		 const string& buffer,
-		 const size_t position,
-		 const size_t end,
-		 size_t* newPosition = NULL);
+	void parseImpl(
+		const parsingContext& ctx,
+		const string& buffer,
+		const size_t position,
+		const size_t end,
+		size_t* newPosition = NULL
+	);
 
-	void generateImpl
-		(const generationContext& ctx,
-		 utility::outputStream& os,
-		 const size_t curLinePos = 0,
-		 size_t* newLinePos = NULL) const;
+	void generateImpl(
+		const generationContext& ctx,
+		utility::outputStream& os,
+		const size_t curLinePos = 0,
+		size_t* newLinePos = NULL
+	) const;
 };
 
 

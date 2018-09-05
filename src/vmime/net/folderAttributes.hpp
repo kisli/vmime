@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2014 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -42,22 +42,20 @@ namespace net {
 
 /** Holds a set of attributes for a folder.
   */
-class VMIME_EXPORT folderAttributes : public object
-{
+class VMIME_EXPORT folderAttributes : public object {
+
 public:
 
 	/** Folder types.
 	  */
-	enum Types
-	{
+	enum Types {
 		TYPE_CONTAINS_FOLDERS  = (1 << 0),   /**< Folder can contain folders. */
 		TYPE_CONTAINS_MESSAGES = (1 << 1)    /**< Folder can contain messages. */
 	};
 
 	/** Folder flags.
 	  */
-	enum Flags
-	{
+	enum Flags {
 		FLAG_HAS_CHILDREN = (1 << 0),        /**< Folder contains subfolders. */
 		FLAG_NO_OPEN  = (1 << 1)             /**< Folder cannot be open. */
 	};
@@ -66,8 +64,7 @@ public:
 	  * Not all protocols support this. At the current time, only IMAP supports this,
 	  * if the server has the SPECIAL-USE capability.
 	  */
-	enum SpecialUses
-	{
+	enum SpecialUses {
 		SPECIALUSE_NONE,         /**< User folder, no special use (or unknown). */
 		SPECIALUSE_ALL,          /**< Virtual folder containing all messages. */
 		SPECIALUSE_ARCHIVE,      /**< Folder is used to archives messages (server-dependent). */
@@ -139,7 +136,7 @@ public:
 	  *
 	  * @param flag combination of one ore more folder flags (see folderAttributes::Flags enum)
 	  * @return true if the specified flags are all set, or false otherwise
-	  */ 
+	  */
 	bool hasFlag(const int flag);
 
 	/** Set the user-defined flags of the folder.

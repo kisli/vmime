@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -29,44 +29,43 @@ namespace utility {
 
 
 parserInputStreamAdapter::parserInputStreamAdapter(const shared_ptr <seekableInputStream>& stream)
-	: m_stream(stream)
-{
+	: m_stream(stream) {
+
 }
 
 
-bool parserInputStreamAdapter::eof() const
-{
+bool parserInputStreamAdapter::eof() const {
+
 	return m_stream->eof();
 }
 
 
-void parserInputStreamAdapter::reset()
-{
+void parserInputStreamAdapter::reset() {
+
 	m_stream->reset();
 }
 
 
-size_t parserInputStreamAdapter::read
-	(byte_t* const data, const size_t count)
-{
+size_t parserInputStreamAdapter::read(byte_t* const data, const size_t count) {
+
 	return m_stream->read(data, count);
 }
 
 
-shared_ptr <seekableInputStream> parserInputStreamAdapter::getUnderlyingStream()
-{
+shared_ptr <seekableInputStream> parserInputStreamAdapter::getUnderlyingStream() {
+
 	return m_stream;
 }
 
 
-const string parserInputStreamAdapter::extract(const size_t begin, const size_t end) const
-{
+const string parserInputStreamAdapter::extract(const size_t begin, const size_t end) const {
+
 	const size_t initialPos = m_stream->getPosition();
 
 	byte_t *buffer = NULL;
 
-	try
-	{
+	try {
+
 		buffer = new byte_t[end - begin + 1];
 
 		m_stream->seek(begin);
@@ -80,9 +79,9 @@ const string parserInputStreamAdapter::extract(const size_t begin, const size_t 
 		delete [] buffer;
 
 		return str;
-	}
-	catch (...)
-	{
+
+	} catch (...) {
+
 		delete [] buffer;
 
 		m_stream->seek(initialPos);
@@ -91,21 +90,24 @@ const string parserInputStreamAdapter::extract(const size_t begin, const size_t 
 }
 
 
-size_t parserInputStreamAdapter::findNext
-	(const string& token, const size_t startPosition)
-{
+size_t parserInputStreamAdapter::findNext(
+	const string& token,
+	const size_t startPosition
+) {
+
 	static const unsigned int BUFFER_SIZE = 4096;
 
 	// Token must not be longer than BUFFER_SIZE/2
-	if (token.empty() || token.length() > BUFFER_SIZE / 2)
+	if (token.empty() || token.length() > BUFFER_SIZE / 2) {
 		return npos;
+	}
 
 	const size_t initialPos = getPosition();
 
 	seek(startPosition);
 
-	try
-	{
+	try {
+
 		byte_t findBuffer[BUFFER_SIZE];
 		byte_t* findBuffer1 = findBuffer;
 		byte_t* findBuffer2 = findBuffer + (BUFFER_SIZE / 2);
@@ -118,19 +120,20 @@ size_t parserInputStreamAdapter::findNext
 		// Fill in initial buffer
 		findBufferLen = read(findBuffer, BUFFER_SIZE);
 
-		while (findBufferLen != 0)
-		{
+		while (findBufferLen != 0) {
+
 			// Find token
 			for (byte_t *begin = findBuffer, *end = findBuffer + findBufferLen - token.length() ;
-			     begin <= end ; ++begin)
-			{
+			     begin <= end ; ++begin) {
+
 				if (begin[0] == token[0] &&
 				    (token.length() == 1 ||
 				     memcmp(static_cast <const void *>(&begin[1]),
 				            static_cast <const void *>(token.data() + 1),
-				            token.length() - 1) == 0))
-				{
+				            token.length() - 1) == 0)) {
+
 					seek(initialPos);
+
 					return startPosition + findBufferOffset + (begin - findBuffer);
 				}
 			}
@@ -139,16 +142,17 @@ size_t parserInputStreamAdapter::findNext
 			memcpy(findBuffer1, findBuffer2, (BUFFER_SIZE / 2));
 
 			// Read more bytes
-			if (findBufferLen < BUFFER_SIZE && (eof() || isEOF))
-			{
+			if (findBufferLen < BUFFER_SIZE && (eof() || isEOF)) {
+
 				break;
-			}
-			else
-			{
+
+			} else {
+
 				const size_t bytesRead = read(findBuffer2, BUFFER_SIZE / 2);
 
-				if (bytesRead == 0)
+				if (bytesRead == 0) {
 					isEOF = true;
+				}
 
 				findBufferLen = (BUFFER_SIZE / 2) + bytesRead;
 				findBufferOffset += (BUFFER_SIZE / 2);
@@ -156,9 +160,9 @@ size_t parserInputStreamAdapter::findNext
 		}
 
 		seek(initialPos);
-	}
-	catch (...)
-	{
+
+	} catch (...) {
+
 		seek(initialPos);
 		throw;
 	}
@@ -169,4 +173,3 @@ size_t parserInputStreamAdapter::findNext
 
 } // utility
 } // vmime
-

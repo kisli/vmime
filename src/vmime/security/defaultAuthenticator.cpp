@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -38,85 +38,88 @@ namespace vmime {
 namespace security {
 
 
-defaultAuthenticator::defaultAuthenticator()
-{
+defaultAuthenticator::defaultAuthenticator() {
+
 }
 
 
-defaultAuthenticator::~defaultAuthenticator()
-{
+defaultAuthenticator::~defaultAuthenticator() {
+
 }
 
 
-const string defaultAuthenticator::getUsername() const
-{
+const string defaultAuthenticator::getUsername() const {
+
 	shared_ptr <const net::service> service = m_service.lock();
 
 	const string prefix = service->getInfos().getPropertyPrefix();
 	const propertySet& props = service->getSession()->getProperties();
 
-	if (props.hasProperty(prefix + net::serviceInfos::property::AUTH_USERNAME.getName()))
+	if (props.hasProperty(prefix + net::serviceInfos::property::AUTH_USERNAME.getName())) {
 		return props[prefix + net::serviceInfos::property::AUTH_USERNAME.getName()];
+	}
 
 	throw exceptions::no_auth_information();
 }
 
 
-const string defaultAuthenticator::getPassword() const
-{
+const string defaultAuthenticator::getPassword() const {
+
 	shared_ptr <const net::service> service = m_service.lock();
 
 	const string prefix = service->getInfos().getPropertyPrefix();
 	const propertySet& props = service->getSession()->getProperties();
 
-	if (props.hasProperty(prefix + net::serviceInfos::property::AUTH_PASSWORD.getName()))
+	if (props.hasProperty(prefix + net::serviceInfos::property::AUTH_PASSWORD.getName())) {
 		return props[prefix + net::serviceInfos::property::AUTH_PASSWORD.getName()];
+	}
 
 	throw exceptions::no_auth_information();
 }
 
 
-const string defaultAuthenticator::getAccessToken() const
-{
+const string defaultAuthenticator::getAccessToken() const {
+
 	shared_ptr <const net::service> service = m_service.lock();
 
 	const string prefix = service->getInfos().getPropertyPrefix();
 	const propertySet& props = service->getSession()->getProperties();
 
-	if (props.hasProperty(prefix + net::serviceInfos::property::AUTH_ACCESS_TOKEN.getName()))
+	if (props.hasProperty(prefix + net::serviceInfos::property::AUTH_ACCESS_TOKEN.getName())) {
 		return props[prefix + net::serviceInfos::property::AUTH_ACCESS_TOKEN.getName()];
+	}
 
 	throw exceptions::no_auth_information();
 }
 
 
-const string defaultAuthenticator::getHostname() const
-{
+const string defaultAuthenticator::getHostname() const {
+
 	return platform::getHandler()->getHostName();
 }
 
 
-const string defaultAuthenticator::getAnonymousToken() const
-{
+const string defaultAuthenticator::getAnonymousToken() const {
+
 	return "anonymous@" + platform::getHandler()->getHostName();
 }
 
 
-const string defaultAuthenticator::getServiceName() const
-{
+const string defaultAuthenticator::getServiceName() const {
+
 	// Information cannot be provided
 	throw exceptions::no_auth_information();
 }
 
 
-void defaultAuthenticator::setService(const shared_ptr <net::service>& serv)
-{
+void defaultAuthenticator::setService(const shared_ptr <net::service>& serv) {
+
 	m_service = serv;
 }
 
 
-weak_ptr <net::service> defaultAuthenticator::getService() const
-{
+weak_ptr <net::service> defaultAuthenticator::getService() const {
+
 	return m_service;
 }
 
@@ -126,4 +129,3 @@ weak_ptr <net::service> defaultAuthenticator::getService() const
 
 
 #endif // VMIME_HAVE_MESSAGING_FEATURES
-

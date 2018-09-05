@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -55,20 +55,22 @@ namespace net {
 
 /** Base class for messaging services.
   */
+class VMIME_EXPORT service : public object, public enable_shared_from_this <service> {
 
-class VMIME_EXPORT service : public object, public enable_shared_from_this <service>
-{
 protected:
 
-	service(const shared_ptr <session>& sess, const serviceInfos& infos, const shared_ptr <security::authenticator>& auth);
+	service(
+		const shared_ptr <session>& sess,
+		const serviceInfos& infos,
+		const shared_ptr <security::authenticator>& auth
+	);
 
 public:
 
 	virtual ~service();
 
 	/** Possible service types. */
-	enum Type
-	{
+	enum Type {
 		TYPE_STORE = 0,    /**< The service is a message store. */
 		TYPE_TRANSPORT     /**< The service sends messages. */
 	};
@@ -198,8 +200,7 @@ public:
 	  * @param value property value
 	  */
 	template <typename TYPE>
-	void setProperty(const string& name, const TYPE& value)
-	{
+	void setProperty(const string& name, const TYPE& value) {
 		m_session->getProperties()[getInfos().getPropertyPrefix() + name] = value;
 	}
 

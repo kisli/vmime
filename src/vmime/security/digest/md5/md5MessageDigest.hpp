@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -34,8 +34,8 @@ namespace digest {
 namespace md5 {
 
 
-class md5MessageDigest : public messageDigest
-{
+class md5MessageDigest : public messageDigest {
+
 public:
 
 	md5MessageDigest();
@@ -63,8 +63,7 @@ protected:
 
 	vmime_uint32 m_hash[4];
 
-	union BlockType
-	{
+	union BlockType {
 		vmime_uint32 b32[16];
 		vmime_uint8 b8[64];
 	};

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -45,14 +45,14 @@ namespace maildir {
 class maildirStore;
 
 
-/** Interface for an object capable of reading a specific Maildir format. */
+/** Interface for an object capable of reading a specific Maildir format.
+  */
+class VMIME_EXPORT maildirFormat : public object {
 
-class VMIME_EXPORT maildirFormat : public object
-{
 public:
 
-	class context : public object
-	{
+	class context : public object {
+
 	public:
 
 		context(const shared_ptr <maildirStore>& store);
@@ -66,8 +66,7 @@ public:
 
 
 	/** Physical directory types. */
-	enum DirectoryType
-	{
+	enum DirectoryType {
 		ROOT_DIRECTORY,       /**< Root directory. */
 		NEW_DIRECTORY,        /**< Directory containing unread messages. */
 		CUR_DIRECTORY,        /**< Directory containing messages that have been seen. */
@@ -125,8 +124,10 @@ public:
 	  * @param type type of directory to return
 	  * @return corresponding directory on the file system
 	  */
-	virtual const utility::file::path folderPathToFileSystemPath
-		(const folder::path& path, const DirectoryType type) const = 0;
+	virtual const utility::file::path folderPathToFileSystemPath(
+		const folder::path& path,
+		const DirectoryType type
+	) const = 0;
 
 	/** List subfolders in the specified folder.
 	  *
@@ -135,8 +136,10 @@ public:
 	  * returned; if set to false, only direct children are returned.
 	  * @return list of subfolders
 	  */
-	virtual const std::vector <folder::path> listFolders
-		(const folder::path& root, const bool recursive) const = 0;
+	virtual const std::vector <folder::path> listFolders(
+		const folder::path& root,
+		const bool recursive
+	) const = 0;
 
 
 	/** Try to detect the format of the specified Maildir store.

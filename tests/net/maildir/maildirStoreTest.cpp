@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -37,8 +37,8 @@ typedef vmime::net::folder::path fpath;
 typedef vmime::net::folder::path::component fpathc;
 
 
-const fpath operator/(const fpath& path, const std::string& c)
-{
+const fpath operator/(const fpath& path, const std::string& c) {
+
 	return path / fpathc(c);
 }
 
@@ -65,8 +65,7 @@ static const vmime::string TEST_MESSAGE_1 =
   */
 
 // KMail format
-static const vmime::string TEST_MAILDIR_KMAIL[] =  // directories to create
-{
+static const vmime::string TEST_MAILDIR_KMAIL[] = {  // directories to create
 	"/Folder",
 	"/Folder/new",
 	"/Folder/tmp",
@@ -92,15 +91,13 @@ static const vmime::string TEST_MAILDIR_KMAIL[] =  // directories to create
 	"*"  // end
 };
 
-static const vmime::string TEST_MAILDIRFILES_KMAIL[] =  // files to create and their contents
-{
+static const vmime::string TEST_MAILDIRFILES_KMAIL[] = {  // files to create and their contents
 	"/.Folder.directory/.SubFolder.directory/SubSubFolder2/cur/1043236113.351.EmqD:S", TEST_MESSAGE_1,
 	"*"  // end
 };
 
 // Courier format
-static const vmime::string TEST_MAILDIR_COURIER[] =  // directories to create
-{
+static const vmime::string TEST_MAILDIR_COURIER[] = {  // directories to create
 	"/.Folder",
 	"/.Folder/new",
 	"/.Folder/tmp",
@@ -125,8 +122,7 @@ static const vmime::string TEST_MAILDIR_COURIER[] =  // directories to create
 	"*"  // end
 };
 
-static const vmime::string TEST_MAILDIRFILES_COURIER[] =  // files to create and their contents
-{
+static const vmime::string TEST_MAILDIRFILES_COURIER[] = {  // files to create and their contents
 	"/.Folder/maildirfolder", "",
 	"/.Folder.SubFolder/maildirfolder", "",
 	"/.Folder.SubFolder.SubSubFolder1/maildirfolder", "",
@@ -169,22 +165,22 @@ VMIME_TEST_SUITE_BEGIN(maildirStoreTest)
 
 public:
 
-	maildirStoreTest()
-	{
+	maildirStoreTest() {
+
 		// Temporary directory
 		m_tempPath = fspath() / fspathc("tmp")   // Use /tmp
 			/ fspathc("vmime" + vmime::utility::stringUtils::toString(std::time(NULL))
 				+ vmime::utility::stringUtils::toString(std::rand()));
 	}
 
-	void tearDown()
-	{
+	void tearDown() {
+
 		// In case of an uncaught exception
 		destroyMaildir();
 	}
 
-	void testDetectFormat_KMail()
-	{
+	void testDetectFormat_KMail() {
+
 		createMaildir(TEST_MAILDIR_KMAIL, TEST_MAILDIRFILES_KMAIL);
 
 		vmime::shared_ptr <vmime::net::maildir::maildirStore> store =
@@ -195,8 +191,8 @@ public:
 		destroyMaildir();
 	}
 
-	void testDetectFormat_Courier()
-	{
+	void testDetectFormat_Courier() {
+
 		createMaildir(TEST_MAILDIR_COURIER, TEST_MAILDIRFILES_COURIER);
 
 		vmime::shared_ptr <vmime::net::maildir::maildirStore> store =
@@ -208,18 +204,18 @@ public:
 	}
 
 
-	void testListRootFolders_KMail()
-	{
+	void testListRootFolders_KMail() {
+
 		testListRootFoldersImpl(TEST_MAILDIR_KMAIL, TEST_MAILDIRFILES_KMAIL);
 	}
 
-	void testListRootFolders_Courier()
-	{
+	void testListRootFolders_Courier() {
+
 		testListRootFoldersImpl(TEST_MAILDIR_COURIER, TEST_MAILDIRFILES_COURIER);
 	}
 
-	void testListRootFoldersImpl(const vmime::string* const dirs, const vmime::string* const files)
-	{
+	void testListRootFoldersImpl(const vmime::string* const dirs, const vmime::string* const files) {
+
 		createMaildir(dirs, files);
 
 		// Connect to store
@@ -238,18 +234,18 @@ public:
 	}
 
 
-	void testListAllFolders_KMail()
-	{
+	void testListAllFolders_KMail() {
+
 		testListAllFoldersImpl(TEST_MAILDIR_KMAIL, TEST_MAILDIRFILES_KMAIL);
 	}
 
-	void testListAllFolders_Courier()
-	{
+	void testListAllFolders_Courier() {
+
 		testListAllFoldersImpl(TEST_MAILDIR_COURIER, TEST_MAILDIRFILES_COURIER);
 	}
 
-	void testListAllFoldersImpl(const vmime::string* const dirs, const vmime::string* const files)
-	{
+	void testListAllFoldersImpl(const vmime::string* const dirs, const vmime::string* const files) {
+
 		createMaildir(dirs, files);
 
 		// Connect to store
@@ -271,25 +267,26 @@ public:
 	}
 
 
-	void testListMessages_KMail()
-	{
+	void testListMessages_KMail() {
+
 		testListMessagesImpl(TEST_MAILDIR_KMAIL, TEST_MAILDIRFILES_KMAIL);
 	}
 
-	void testListMessages_Courier()
-	{
+	void testListMessages_Courier() {
+
 		testListMessagesImpl(TEST_MAILDIR_COURIER, TEST_MAILDIRFILES_COURIER);
 	}
 
-	void testListMessagesImpl(const vmime::string* const dirs, const vmime::string* const files)
-	{
+	void testListMessagesImpl(const vmime::string* const dirs, const vmime::string* const files) {
+
 		createMaildir(dirs, files);
 
 		vmime::shared_ptr <vmime::net::store> store = createAndConnectStore();
 		vmime::shared_ptr <vmime::net::folder> rootFolder = store->getRootFolder();
 
-		vmime::shared_ptr <vmime::net::folder> folder = store->getFolder
-			(fpath() / "Folder" / "SubFolder" / "SubSubFolder2");
+		vmime::shared_ptr <vmime::net::folder> folder = store->getFolder(
+			fpath() / "Folder" / "SubFolder" / "SubSubFolder2"
+		);
 
 		vmime::size_t count, unseen;
 		folder->status(count, unseen);
@@ -316,14 +313,14 @@ public:
 	}
 
 
-	void testRenameFolder_KMail()
-	{
-		try
-		{
+	void testRenameFolder_KMail() {
+
+		try {
+
 			testRenameFolderImpl(TEST_MAILDIR_KMAIL, TEST_MAILDIRFILES_KMAIL);
-		}
-		catch (vmime::exception& e)
-		{
+
+		} catch (vmime::exception& e) {
+
 			std::cerr << e;
 			throw e;
 		}
@@ -331,27 +328,27 @@ public:
 
 	void testRenameFolder_Courier()
 	{
-		try
-		{
+		try {
+
 			testRenameFolderImpl(TEST_MAILDIR_COURIER, TEST_MAILDIRFILES_COURIER);
-		}
-		catch (vmime::exception& e)
-		{
+
+		} catch (vmime::exception& e) {
+
 			std::cerr << e;
 			throw e;
 		}
 	}
 
-	void testRenameFolderImpl(const vmime::string* const dirs, const vmime::string* const files)
-	{
+	void testRenameFolderImpl(const vmime::string* const dirs, const vmime::string* const files) {
+
 		createMaildir(dirs, files);
 
 		vmime::shared_ptr <vmime::net::store> store = createAndConnectStore();
 		vmime::shared_ptr <vmime::net::folder> rootFolder = store->getRootFolder();
 
 		// Rename "Folder/SubFolder" to "Folder/foo"
-		vmime::shared_ptr <vmime::net::folder> folder = store->getFolder
-			(fpath() / "Folder" / "SubFolder");
+		vmime::shared_ptr <vmime::net::folder> folder =
+			store->getFolder(fpath() / "Folder" / "SubFolder");
 
 		folder->rename(fpath() / "Folder" / "foo");
 
@@ -373,26 +370,26 @@ public:
 	}
 
 
-	void testDestroyFolder_KMail()
-	{
+	void testDestroyFolder_KMail() {
+
 		testDestroyFolderImpl(TEST_MAILDIR_KMAIL, TEST_MAILDIRFILES_KMAIL);
 	}
 
-	void testDestroyFolder_Courier()
-	{
+	void testDestroyFolder_Courier() {
+
 		testDestroyFolderImpl(TEST_MAILDIR_COURIER, TEST_MAILDIRFILES_COURIER);
 	}
 
-	void testDestroyFolderImpl(const vmime::string* const dirs, const vmime::string* const files)
-	{
+	void testDestroyFolderImpl(const vmime::string* const dirs, const vmime::string* const files) {
+
 		createMaildir(dirs, files);
 
 		vmime::shared_ptr <vmime::net::store> store = createAndConnectStore();
 		vmime::shared_ptr <vmime::net::folder> rootFolder = store->getRootFolder();
 
 		// Destroy "Folder/SubFolder" (total: 3 folders)
-		vmime::shared_ptr <vmime::net::folder> folder = store->getFolder
-			(fpath() / "Folder" / "SubFolder");
+		vmime::shared_ptr <vmime::net::folder> folder =
+			store->getFolder(fpath() / "Folder" / "SubFolder");
 
 		folder->destroy();
 
@@ -411,18 +408,18 @@ public:
 	}
 
 
-	void testFolderExists_KMail()
-	{
+	void testFolderExists_KMail() {
+
 		testFolderExistsImpl(TEST_MAILDIR_KMAIL, TEST_MAILDIRFILES_KMAIL);
 	}
 
-	void testFolderExists_Courier()
-	{
+	void testFolderExists_Courier() {
+
 		testFolderExistsImpl(TEST_MAILDIR_COURIER, TEST_MAILDIRFILES_COURIER);
 	}
 
-	void testFolderExistsImpl(const vmime::string* const dirs, const vmime::string* const files)
-	{
+	void testFolderExistsImpl(const vmime::string* const dirs, const vmime::string* const files) {
+
 		createMaildir(dirs, files);
 
 		vmime::shared_ptr <vmime::net::store> store = createAndConnectStore();
@@ -437,18 +434,18 @@ public:
 	}
 
 
-	void testCreateFolder_KMail()
-	{
+	void testCreateFolder_KMail() {
+
 		testCreateFolderImpl(TEST_MAILDIR_KMAIL, TEST_MAILDIRFILES_KMAIL);
 	}
 
-	void testCreateFolder_Courier()
-	{
+	void testCreateFolder_Courier() {
+
 		testCreateFolderImpl(TEST_MAILDIR_COURIER, TEST_MAILDIRFILES_COURIER);
 	}
 
-	void testCreateFolderImpl(const vmime::string* const dirs, const vmime::string* const files)
-	{
+	void testCreateFolderImpl(const vmime::string* const dirs, const vmime::string* const files) {
+
 		createMaildir(dirs, files);
 
 		vmime::shared_ptr <vmime::net::store> store = createAndConnectStore();
@@ -471,8 +468,8 @@ private:
 	vmime::utility::file::path m_tempPath;
 
 
-	vmime::shared_ptr <vmime::net::store> createAndConnectStore()
-	{
+	vmime::shared_ptr <vmime::net::store> createAndConnectStore() {
+
 		vmime::shared_ptr <vmime::net::session> session = vmime::net::session::create();
 
 		vmime::shared_ptr <vmime::net::store> store =
@@ -483,21 +480,23 @@ private:
 		return store;
 	}
 
-	const vmime::shared_ptr <vmime::net::folder> findFolder
-		(const std::vector <vmime::shared_ptr <vmime::net::folder> >& folders,
-		 const vmime::net::folder::path& path)
-	{
-		for (size_t i = 0, n = folders.size() ; i < n ; ++i)
-		{
-			if (folders[i]->getFullPath() == path)
+	const vmime::shared_ptr <vmime::net::folder> findFolder(
+		const std::vector <vmime::shared_ptr <vmime::net::folder> >& folders,
+		const vmime::net::folder::path& path
+	) {
+
+		for (size_t i = 0, n = folders.size() ; i < n ; ++i) {
+
+			if (folders[i]->getFullPath() == path) {
 				return folders[i];
+			}
 		}
 
 		return vmime::null;
 	}
 
-	const vmime::utility::url getStoreURL()
-	{
+	const vmime::utility::url getStoreURL() {
+
 		vmime::shared_ptr <vmime::utility::fileSystemFactory> fsf =
 			vmime::platform::getHandler()->getFileSystemFactory();
 
@@ -507,22 +506,22 @@ private:
 		return url;
 	}
 
-	void createMaildir(const vmime::string* const dirs, const vmime::string* const files)
-	{
+	void createMaildir(const vmime::string* const dirs, const vmime::string* const files) {
+
 		vmime::shared_ptr <vmime::utility::fileSystemFactory> fsf =
 			vmime::platform::getHandler()->getFileSystemFactory();
 
 		vmime::shared_ptr <vmime::utility::file> rootDir = fsf->create(m_tempPath);
 		rootDir->createDirectory(false);
 
-		for (vmime::string const* dir = dirs ; *dir != "*" ; ++dir)
-		{
+		for (vmime::string const* dir = dirs ; *dir != "*" ; ++dir) {
+
 			vmime::shared_ptr <vmime::utility::file> fdir = fsf->create(m_tempPath / fsf->stringToPath(*dir));
 			fdir->createDirectory(false);
 		}
 
-		for (vmime::string const* file = files ; *file != "*" ; file += 2)
-		{
+		for (vmime::string const* file = files ; *file != "*" ; file += 2) {
+
 			const vmime::string& contents = *(file + 1);
 
 			vmime::shared_ptr <vmime::utility::file> ffile = fsf->create(m_tempPath / fsf->stringToPath(*file));
@@ -539,53 +538,47 @@ private:
 
 	}
 
-	void destroyMaildir()
-	{
+	void destroyMaildir() {
+
 		vmime::shared_ptr <vmime::utility::fileSystemFactory> fsf =
 			vmime::platform::getHandler()->getFileSystemFactory();
 
 		recursiveDelete(fsf->create(m_tempPath));
 	}
 
-	void recursiveDelete(vmime::shared_ptr <vmime::utility::file> dir)
-	{
-		if (!dir->exists() || !dir->isDirectory())
+	void recursiveDelete(vmime::shared_ptr <vmime::utility::file> dir) {
+
+		if (!dir->exists() || !dir->isDirectory()) {
 			return;
+		}
 
 		vmime::shared_ptr <vmime::utility::fileIterator> files = dir->getFiles();
 
 		// First, delete files and subdirectories in this directory
-		while (files->hasMoreElements())
-		{
+		while (files->hasMoreElements()) {
+
 			vmime::shared_ptr <vmime::utility::file> file = files->nextElement();
 
-			if (file->isDirectory())
-			{
+			if (file->isDirectory()) {
+
 				recursiveDelete(file);
-			}
-			else
-			{
-				try
-				{
+
+			} else {
+
+				try {
 					file->remove();
-				}
-				catch (vmime::exceptions::filesystem_exception&)
-				{
+				} catch (vmime::exceptions::filesystem_exception&) {
 					// Ignore
 				}
 			}
 		}
 
 		// Then, delete this (empty) directory
-		try
-		{
+		try {
 			dir->remove();
-		}
-		catch (vmime::exceptions::filesystem_exception&)
-		{
+		} catch (vmime::exceptions::filesystem_exception&) {
 			// Ignore
 		}
 	}
 
 VMIME_TEST_SUITE_END
-

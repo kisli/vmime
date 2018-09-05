@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -24,55 +24,57 @@
 #include "vmime/bodyPartAttachment.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 bodyPartAttachment::bodyPartAttachment(const shared_ptr <const bodyPart>& part)
-	: m_part(part)
-{
+	: m_part(part) {
+
 }
 
 
-const mediaType bodyPartAttachment::getType() const
-{
+const mediaType bodyPartAttachment::getType() const {
+
 	shared_ptr <const contentTypeField> ctf = getContentType();
 
-	if (ctf)
-	{
+	if (ctf) {
+
 		return *ctf->getValue <mediaType>();
-	}
-	else
-	{
+
+	} else {
+
 		// No "Content-type" field: assume "application/octet-stream".
-		return mediaType(mediaTypes::APPLICATION,
-		                 mediaTypes::APPLICATION_OCTET_STREAM);
+		return mediaType(
+			mediaTypes::APPLICATION,
+			mediaTypes::APPLICATION_OCTET_STREAM
+		);
 	}
 }
 
 
-const word bodyPartAttachment::getName() const
-{
+const word bodyPartAttachment::getName() const {
+
 	word name;
 
 	// Try the 'filename' parameter of 'Content-Disposition' field
 	shared_ptr <const contentDispositionField> cdf = getContentDisposition();
 
-	if (cdf && cdf->hasFilename())
-	{
+	if (cdf && cdf->hasFilename()) {
+
 		name = cdf->getFilename();
-	}
+
 	// Try the 'name' parameter of 'Content-Type' field
-	else
-	{
+	} else {
+
 		shared_ptr <const contentTypeField> ctf = getContentType();
 
-		if (ctf)
-		{
+		if (ctf) {
+
 			shared_ptr <const parameter> prm = ctf->findParameter("name");
 
-			if (prm != NULL)
+			if (prm) {
 				name = prm->getValue();
+			}
 		}
 	}
 
@@ -80,19 +82,19 @@ const word bodyPartAttachment::getName() const
 }
 
 
-const text bodyPartAttachment::getDescription() const
-{
+const text bodyPartAttachment::getDescription() const {
+
 	text description;
 
 	shared_ptr <const headerField> cd =
 		getHeader()->findField(fields::CONTENT_DESCRIPTION);
 
-	if (cd)
-	{
+	if (cd) {
+
 		description = *cd->getValue <text>();
-	}
-	else
-	{
+
+	} else {
+
 		// No description available.
 	}
 
@@ -100,47 +102,46 @@ const text bodyPartAttachment::getDescription() const
 }
 
 
-const encoding bodyPartAttachment::getEncoding() const
-{
+const encoding bodyPartAttachment::getEncoding() const {
+
 	return m_part->getBody()->getEncoding();
 }
 
 
-const shared_ptr <const contentHandler> bodyPartAttachment::getData() const
-{
+const shared_ptr <const contentHandler> bodyPartAttachment::getData() const {
+
 	return m_part->getBody()->getContents();
 }
 
 
-shared_ptr <const object> bodyPartAttachment::getPart() const
-{
+shared_ptr <const object> bodyPartAttachment::getPart() const {
+
 	return m_part;
 }
 
 
-shared_ptr <const header> bodyPartAttachment::getHeader() const
-{
+shared_ptr <const header> bodyPartAttachment::getHeader() const {
+
 	return m_part->getHeader();
 }
 
 
-shared_ptr <const contentDispositionField> bodyPartAttachment::getContentDisposition() const
-{
+shared_ptr <const contentDispositionField> bodyPartAttachment::getContentDisposition() const {
+
 	return getHeader()->findField <contentDispositionField>(fields::CONTENT_DISPOSITION);
 }
 
 
-shared_ptr <const contentTypeField> bodyPartAttachment::getContentType() const
-{
+shared_ptr <const contentTypeField> bodyPartAttachment::getContentType() const {
+
 	return getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
 }
 
 
-void bodyPartAttachment::generateIn(const shared_ptr <bodyPart>& /* parent */) const
-{
+void bodyPartAttachment::generateIn(const shared_ptr <bodyPart>& /* parent */) const {
+
 	// Not used
 }
 
 
 } // vmime
-

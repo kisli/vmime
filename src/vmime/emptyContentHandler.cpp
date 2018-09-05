@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -24,92 +24,101 @@
 #include "vmime/emptyContentHandler.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
-emptyContentHandler::emptyContentHandler()
-{
+emptyContentHandler::emptyContentHandler() {
+
 }
 
 
-shared_ptr <contentHandler> emptyContentHandler::clone() const
-{
+shared_ptr <contentHandler> emptyContentHandler::clone() const {
+
 	return make_shared <emptyContentHandler>();
 }
 
 
-void emptyContentHandler::generate(utility::outputStream& /* os */, const vmime::encoding& /* enc */,
-	const size_t /* maxLineLength */) const
-{
+void emptyContentHandler::generate(
+	utility::outputStream& /* os */,
+	const vmime::encoding& /* enc */,
+	const size_t /* maxLineLength */
+) const {
+
 	// Nothing to do.
 }
 
 
-void emptyContentHandler::extract(utility::outputStream& /* os */,
+void emptyContentHandler::extract(
+	utility::outputStream& /* os */,
 	utility::progressListener* progress) const
 {
-	if (progress)
+	if (progress) {
 		progress->start(0);
+	}
 
 	// Nothing to do.
 
-	if (progress)
+	if (progress) {
 		progress->stop(0);
+	}
 }
 
 
-void emptyContentHandler::extractRaw(utility::outputStream& /* os */,
-	utility::progressListener* progress) const
-{
-	if (progress)
+void emptyContentHandler::extractRaw(
+	utility::outputStream& /* os */,
+	utility::progressListener* progress
+) const {
+
+	if (progress) {
 		progress->start(0);
+	}
 
 	// Nothing to do.
 
-	if (progress)
+	if (progress) {
 		progress->stop(0);
+	}
 }
 
 
-size_t emptyContentHandler::getLength() const
-{
-	return (0);
+size_t emptyContentHandler::getLength() const {
+
+	return 0;
 }
 
 
-bool emptyContentHandler::isEmpty() const
-{
-	return (true);
-}
+bool emptyContentHandler::isEmpty() const {
 
-
-bool emptyContentHandler::isEncoded() const
-{
-	return (false);
-}
-
-
-const vmime::encoding& emptyContentHandler::getEncoding() const
-{
-	return (NO_ENCODING);
-}
-
-
-bool emptyContentHandler::isBuffered() const
-{
 	return true;
 }
 
 
-void emptyContentHandler::setContentTypeHint(const mediaType& type)
-{
+bool emptyContentHandler::isEncoded() const {
+
+	return false;
+}
+
+
+const vmime::encoding& emptyContentHandler::getEncoding() const {
+
+	return NO_ENCODING;
+}
+
+
+bool emptyContentHandler::isBuffered() const {
+
+	return true;
+}
+
+
+void emptyContentHandler::setContentTypeHint(const mediaType& type) {
+
 	m_contentType = type;
 }
 
 
-const mediaType emptyContentHandler::getContentTypeHint() const
-{
+const mediaType emptyContentHandler::getContentTypeHint() const {
+
 	return m_contentType;
 }
 

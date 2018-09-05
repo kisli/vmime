@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -68,27 +68,29 @@
 
 #if VMIME_HAVE_PTHREAD
 
-namespace
-{
+namespace {
+
 	// This construction ensures mutex will be initialized in compile-time
 	// and will be available any time in the runtime.
 	pthread_mutex_t g_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 	// Helper lock, to be exception safe all the time.
-	class PLockHelper
-	{
+	class PLockHelper {
+
 	public:
 
-		PLockHelper()
-		{
-			if (pthread_mutex_lock(&g_mutex) != 0)
+		PLockHelper() {
+
+			if (pthread_mutex_lock(&g_mutex) != 0) {
 				assert(!"unable to lock mutex - thread safety's void");
+			}
 		}
 
-		~PLockHelper()
-		{
-			if (pthread_mutex_unlock(&g_mutex) != 0)
+		~PLockHelper() {
+
+			if (pthread_mutex_unlock(&g_mutex) != 0) {
 				assert(!"unable to unlock mutex - application's dead...");
+			}
 		}
 
 	private:
@@ -108,8 +110,8 @@ namespace platforms {
 namespace posix {
 
 
-posixHandler::posixHandler()
-{
+posixHandler::posixHandler() {
+
 #if VMIME_HAVE_MESSAGING_FEATURES
 	m_socketFactory = make_shared <posixSocketFactory>();
 #endif
@@ -117,22 +119,23 @@ posixHandler::posixHandler()
 	m_fileSysFactory = make_shared <posixFileSystemFactory>();
 	m_childProcFactory = make_shared <posixChildProcessFactory>();
 #endif
+
 }
 
 
-posixHandler::~posixHandler()
-{
+posixHandler::~posixHandler() {
+
 }
 
 
-unsigned long posixHandler::getUnixTime() const
-{
+unsigned long posixHandler::getUnixTime() const {
+
 	return static_cast <unsigned long>(::time(NULL));
 }
 
 
-const vmime::datetime posixHandler::getCurrentLocalTime() const
-{
+const vmime::datetime posixHandler::getCurrentLocalTime() const {
+
 	const time_t t(::time(NULL));
 
 	// Get the local time
@@ -168,20 +171,20 @@ const vmime::datetime posixHandler::getCurrentLocalTime() const
 }
 
 
-const vmime::charset posixHandler::getLocalCharset() const
-{
+const vmime::charset posixHandler::getLocalCharset() const {
+
 	const PLockHelper lock;
 
 	return vmime::charset(::nl_langinfo(CODESET));
 }
 
 
-static inline bool isAcceptableHostname(const vmime::string& str)
-{
+static inline bool isAcceptableHostname(const vmime::string& str) {
+
 	// At least, try to find something better than "localhost"
 	if (utility::stringUtils::isStringEqualNoCase(str, "localhost", 9) ||
-	    utility::stringUtils::isStringEqualNoCase(str, "localhost.localdomain", 21))
-	{
+	    utility::stringUtils::isStringEqualNoCase(str, "localhost.localdomain", 21)) {
+
 		return false;
 	}
 
@@ -190,8 +193,8 @@ static inline bool isAcceptableHostname(const vmime::string& str)
 }
 
 
-const vmime::string posixHandler::getHostName() const
-{
+const vmime::string posixHandler::getHostName() const {
+
 	// Try to get official canonical name of this host
 	struct addrinfo hints;
 	memset(&hints, 0, sizeof hints);
@@ -201,17 +204,16 @@ const vmime::string posixHandler::getHostName() const
 
 	struct addrinfo* info;
 
-	if (getaddrinfo(NULL, "http", &hints, &info) == 0)
-	{
+	if (getaddrinfo(NULL, "http", &hints, &info) == 0) {
+
 		// First, try to get a Fully-Qualified Domain Name (FQDN)
-		for (struct addrinfo* p = info ; p != NULL ; p = p->ai_next)
-		{
-			if (p->ai_canonname)
-			{
+		for (struct addrinfo* p = info ; p != NULL ; p = p->ai_next) {
+
+			if (p->ai_canonname) {
+
 				const string hn(p->ai_canonname);
 
-				if (utility::stringUtils::isValidFQDN(hn))
-				{
+				if (utility::stringUtils::isValidFQDN(hn)) {
 					freeaddrinfo(info);
 					return hn;
 				}
@@ -219,14 +221,13 @@ const vmime::string posixHandler::getHostName() const
 		}
 
 		// Then, try to find an acceptable host name
-		for (struct addrinfo* p = info ; p != NULL ; p = p->ai_next)
-		{
-			if (p->ai_canonname)
-			{
+		for (struct addrinfo* p = info ; p != NULL ; p = p->ai_next) {
+
+			if (p->ai_canonname) {
+
 				const string hn(p->ai_canonname);
 
-				if (isAcceptableHostname(hn))
-				{
+				if (isAcceptableHostname(hn)) {
 					freeaddrinfo(info);
 					return hn;
 				}
@@ -241,21 +242,22 @@ const vmime::string posixHandler::getHostName() const
 	::gethostname(hostname, sizeof(hostname));
 	hostname[sizeof(hostname) - 1] = '\0';
 
-	if (::strlen(hostname) == 0 || !isAcceptableHostname(hostname))
+	if (::strlen(hostname) == 0 || !isAcceptableHostname(hostname)) {
 		::strcpy(hostname, "localhost.localdomain");
+	}
 
 	return hostname;
 }
 
 
-unsigned int posixHandler::getProcessId() const
-{
-	return (::getpid());
+unsigned int posixHandler::getProcessId() const {
+
+	return ::getpid();
 }
 
 
-unsigned int posixHandler::getThreadId() const
-{
+unsigned int posixHandler::getThreadId() const {
+
 #if VMIME_HAVE_GETTID
 	return static_cast <unsigned int>(::gettid());
 #elif VMIME_HAVE_SYSCALL && VMIME_HAVE_SYSCALL_GETTID
@@ -265,13 +267,14 @@ unsigned int posixHandler::getThreadId() const
 #else
 	#error We have no implementation of getThreadId() for this platform!
 #endif
+
 }
 
 
 #if VMIME_HAVE_MESSAGING_FEATURES
 
-shared_ptr <vmime::net::socketFactory> posixHandler::getSocketFactory()
-{
+shared_ptr <vmime::net::socketFactory> posixHandler::getSocketFactory() {
+
 	return m_socketFactory;
 }
 
@@ -280,39 +283,40 @@ shared_ptr <vmime::net::socketFactory> posixHandler::getSocketFactory()
 
 #if VMIME_HAVE_FILESYSTEM_FEATURES
 
-shared_ptr <vmime::utility::fileSystemFactory> posixHandler::getFileSystemFactory()
-{
+shared_ptr <vmime::utility::fileSystemFactory> posixHandler::getFileSystemFactory() {
+
 	return m_fileSysFactory;
 }
 
 
-shared_ptr <vmime::utility::childProcessFactory> posixHandler::getChildProcessFactory()
-{
+shared_ptr <vmime::utility::childProcessFactory> posixHandler::getChildProcessFactory() {
+
 	return m_childProcFactory;
 }
 
 #endif
 
 
-void posixHandler::generateRandomBytes(unsigned char* buffer, const unsigned int count)
-{
+void posixHandler::generateRandomBytes(unsigned char* buffer, const unsigned int count) {
+
 	int fd = open("/dev/urandom", O_RDONLY);
 
-	if (fd != -1)
-	{
+	if (fd != -1) {
+
 		read(fd, buffer, count);
 		close(fd);
-	}
-	else  // fallback
-	{
-		for (unsigned int i = 0 ; i < count ; ++i)
+
+	} else {  // fallback
+
+		for (unsigned int i = 0 ; i < count ; ++i) {
 			buffer[i] = static_cast <unsigned char>(rand() % 255);
+		}
 	}
 }
 
 
-shared_ptr <utility::sync::criticalSection> posixHandler::createCriticalSection()
-{
+shared_ptr <utility::sync::criticalSection> posixHandler::createCriticalSection() {
+
 	return make_shared <posixCriticalSection>();
 }
 

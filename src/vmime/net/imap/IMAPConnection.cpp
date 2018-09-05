@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -66,17 +66,30 @@ namespace net {
 namespace imap {
 
 
-IMAPConnection::IMAPConnection(const shared_ptr <IMAPStore>& store, const shared_ptr <security::authenticator>& auth)
-	: m_store(store), m_auth(auth), m_socket(null), m_parser(null), m_tag(null),
-	  m_hierarchySeparator('\0'), m_state(STATE_NONE), m_timeoutHandler(null),
-	  m_secured(false), m_firstTag(true), m_capabilitiesFetched(false), m_noModSeq(false)
-{
+IMAPConnection::IMAPConnection(
+	const shared_ptr <IMAPStore>& store,
+	const shared_ptr <security::authenticator>& auth
+)
+	: m_store(store),
+	  m_auth(auth),
+	  m_socket(null),
+	  m_parser(null),
+	  m_tag(null),
+	  m_hierarchySeparator('\0'),
+	  m_state(STATE_NONE),
+	  m_timeoutHandler(null),
+	  m_secured(false),
+	  m_firstTag(true),
+	  m_capabilitiesFetched(false),
+	  m_noModSeq(false) {
+
 	static int connectionId = 0;
 
 	m_tag = make_shared <IMAPTag>();
 
-	if (store->getTracerFactory())
+	if (store->getTracerFactory()) {
 		m_tracer = store->getTracerFactory()->create(store, ++connectionId);
+	}
 
 	m_parser = make_shared <IMAPParser>();
 	m_parser->setTag(m_tag);
@@ -84,26 +97,28 @@ IMAPConnection::IMAPConnection(const shared_ptr <IMAPStore>& store, const shared
 }
 
 
-IMAPConnection::~IMAPConnection()
-{
-	try
-	{
-		if (isConnected())
+IMAPConnection::~IMAPConnection() {
+
+	try {
+
+		if (isConnected()) {
 			disconnect();
-		else if (m_socket)
+		} else if (m_socket) {
 			internalDisconnect();
-	}
-	catch (...)
-	{
+		}
+
+	} catch (...) {
+
 		// Don't throw in destructor
 	}
 }
 
 
-void IMAPConnection::connect()
-{
-	if (isConnected())
+void IMAPConnection::connect() {
+
+	if (isConnected()) {
 		throw exceptions::already_connected();
+	}
 
 	m_state = STATE_NONE;
 	m_hierarchySeparator = '\0';
@@ -114,16 +129,17 @@ void IMAPConnection::connect()
 	shared_ptr <IMAPStore> store = m_store.lock();
 
 	// Create the time-out handler
-	if (store->getTimeoutHandlerFactory())
+	if (store->getTimeoutHandlerFactory()) {
 		m_timeoutHandler = store->getTimeoutHandlerFactory()->create();
+	}
 
 	// Create and connect the socket
 	m_socket = store->getSocketFactory()->create(m_timeoutHandler);
 	m_socket->setTracer(m_tracer);
 
 #if VMIME_HAVE_TLS_SUPPORT
-	if (store->isIMAPS())  // dedicated port/IMAPS
-	{
+	if (store->isIMAPS()) {  // dedicated port/IMAPS
+
 		shared_ptr <tls::TLSSession> tlsSession = tls::TLSSession::create
 			(store->getCertificateVerifier(),
 			 store->getSession()->getTLSProperties());
@@ -135,8 +151,8 @@ void IMAPConnection::connect()
 
 		m_secured = true;
 		m_cntInfos = make_shared <tls::TLSSecuredConnectionInfos>(address, port, tlsSession, tlsSocket);
-	}
-	else
+
+	} else
 #endif // VMIME_HAVE_TLS_SUPPORT
 	{
 		m_cntInfos = make_shared <defaultConnectionInfos>(address, port);
@@ -160,19 +176,19 @@ void IMAPConnection::connect()
 	scoped_ptr <IMAPParser::greeting> greet(m_parser->readGreeting());
 	bool needAuth = false;
 
-	if (greet->resp_cond_bye())
-	{
+	if (greet->resp_cond_bye()) {
+
 		internalDisconnect();
 		throw exceptions::connection_greeting_error(greet->getErrorLog());
-	}
-	else if (greet->resp_cond_auth()->condition() != IMAPParser::resp_cond_auth::PREAUTH)
-	{
+
+	} else if (greet->resp_cond_auth()->condition() != IMAPParser::resp_cond_auth::PREAUTH) {
+
 		needAuth = true;
 	}
 
 	if (greet->resp_cond_auth()->resp_text()->resp_text_code() &&
-	    greet->resp_cond_auth()->resp_text()->resp_text_code()->capability_data())
-	{
+	    greet->resp_cond_auth()->resp_text()->resp_text_code()->capability_data()) {
+
 		processCapabilityResponseData(greet->resp_cond_auth()->resp_text()->resp_text_code()->capability_data());
 	}
 
@@ -183,28 +199,25 @@ void IMAPConnection::connect()
 	const bool tlsRequired = HAS_PROPERTY(PROPERTY_CONNECTION_TLS_REQUIRED)
 		&& GET_PROPERTY(bool, PROPERTY_CONNECTION_TLS_REQUIRED);
 
-	if (!store->isIMAPS() && tls)  // only if not IMAPS
-	{
-		try
-		{
+	if (!store->isIMAPS() && tls) {  // only if not IMAPS
+
+		try {
+
 			startTLS();
-		}
+
 		// Non-fatal error
-		catch (exceptions::command_error&)
-		{
-			if (tlsRequired)
-			{
+		} catch (exceptions::command_error&) {
+
+			if (tlsRequired) {
 				m_state = STATE_NONE;
 				throw;
-			}
-			else
-			{
+			} else {
 				// TLS is not required, so don't bother
 			}
-		}
+
 		// Fatal error
-		catch (...)
-		{
+		} catch (...) {
+
 			m_state = STATE_NONE;
 			throw;
 		}
@@ -212,14 +225,14 @@ void IMAPConnection::connect()
 #endif // VMIME_HAVE_TLS_SUPPORT
 
 	// Authentication
-	if (needAuth)
-	{
-		try
-		{
+	if (needAuth) {
+
+		try {
+
 			authenticate();
-		}
-		catch (...)
-		{
+
+		} catch (...) {
+
 			m_state = STATE_NONE;
 			throw;
 		}
@@ -233,34 +246,34 @@ void IMAPConnection::connect()
 }
 
 
-void IMAPConnection::authenticate()
-{
+void IMAPConnection::authenticate() {
+
 	getAuthenticator()->setService(m_store.lock());
 
 #if VMIME_HAVE_SASL_SUPPORT
 	// First, try SASL authentication
-	if (GET_PROPERTY(bool, PROPERTY_OPTIONS_SASL))
-	{
-		try
-		{
+	if (GET_PROPERTY(bool, PROPERTY_OPTIONS_SASL)) {
+
+		try {
+
 			authenticateSASL();
 			return;
-		}
-		catch (exceptions::authentication_error&)
-		{
-			if (!GET_PROPERTY(bool, PROPERTY_OPTIONS_SASL_FALLBACK))
-			{
+
+		} catch (exceptions::authentication_error&) {
+
+			if (!GET_PROPERTY(bool, PROPERTY_OPTIONS_SASL_FALLBACK)) {
+
 				// Can't fallback on normal authentication
 				internalDisconnect();
 				throw;
-			}
-			else
-			{
+
+			} else {
+
 				// Ignore, will try normal authentication
 			}
-		}
-		catch (exception&)
-		{
+
+		} catch (exception&) {
+
 			internalDisconnect();
 			throw;
 		}
@@ -276,36 +289,38 @@ void IMAPConnection::authenticate()
 
 	scoped_ptr <IMAPParser::response> resp(m_parser->readResponse());
 
-	if (resp->isBad())
-	{
+	if (resp->isBad()) {
+
 		internalDisconnect();
 		throw exceptions::command_error("LOGIN", resp->getErrorLog());
-	}
-	else if (resp->response_done()->response_tagged()->
-			resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
-	{
+
+	} else if (resp->response_done()->response_tagged()->
+					resp_cond_state()->status() != IMAPParser::resp_cond_state::OK) {
+
 		internalDisconnect();
 		throw exceptions::authentication_error(resp->getErrorLog());
 	}
 
 	// Server capabilities may change when logged in
-	if (!processCapabilityResponseData(resp.get()))
+	if (!processCapabilityResponseData(resp.get())) {
 		invalidateCapabilities();
+	}
 }
 
 
 #if VMIME_HAVE_SASL_SUPPORT
 
-void IMAPConnection::authenticateSASL()
-{
-	if (!dynamicCast <security::sasl::SASLAuthenticator>(getAuthenticator()))
+void IMAPConnection::authenticateSASL() {
+
+	if (!dynamicCast <security::sasl::SASLAuthenticator>(getAuthenticator())) {
 		throw exceptions::authentication_error("No SASL authenticator available.");
+	}
 
 	const std::vector <string> capa = getCapabilities();
 	std::vector <string> saslMechs;
 
-	for (unsigned int i = 0 ; i < capa.size() ; ++i)
-	{
+	for (unsigned int i = 0 ; i < capa.size() ; ++i) {
+
 		const string& x = capa[i];
 
 		if (x.length() > 5 &&
@@ -313,53 +328,53 @@ void IMAPConnection::authenticateSASL()
 		    (x[1] == 'U' || x[1] == 'u') &&
 		    (x[2] == 'T' || x[2] == 't') &&
 		    (x[3] == 'H' || x[3] == 'h') &&
-		    x[4] == '=')
-		{
+		    x[4] == '=') {
+
 			saslMechs.push_back(string(x.begin() + 5, x.end()));
 		}
 	}
 
-	if (saslMechs.empty())
+	if (saslMechs.empty()) {
 		throw exceptions::authentication_error("No SASL mechanism available.");
+	}
 
 	std::vector <shared_ptr <security::sasl::SASLMechanism> > mechList;
 
 	shared_ptr <security::sasl::SASLContext> saslContext =
 		security::sasl::SASLContext::create();
 
-	for (unsigned int i = 0 ; i < saslMechs.size() ; ++i)
-	{
-		try
-		{
-			mechList.push_back
-				(saslContext->createMechanism(saslMechs[i]));
-		}
-		catch (exceptions::no_such_mechanism&)
-		{
+	for (unsigned int i = 0 ; i < saslMechs.size() ; ++i) {
+
+		try {
+			mechList.push_back(saslContext->createMechanism(saslMechs[i]));
+		} catch (exceptions::no_such_mechanism&) {
 			// Ignore mechanism
 		}
 	}
 
-	if (mechList.empty())
+	if (mechList.empty()) {
 		throw exceptions::authentication_error("No SASL mechanism available.");
+	}
 
 	// Try to suggest a mechanism among all those supported
 	shared_ptr <security::sasl::SASLMechanism> suggestedMech =
 		saslContext->suggestMechanism(mechList);
 
-	if (!suggestedMech)
+	if (!suggestedMech) {
 		throw exceptions::authentication_error("Unable to suggest SASL mechanism.");
+	}
 
 	// Allow application to choose which mechanisms to use
 	mechList = dynamicCast <security::sasl::SASLAuthenticator>(getAuthenticator())->
 		getAcceptableMechanisms(mechList, suggestedMech);
 
-	if (mechList.empty())
+	if (mechList.empty()) {
 		throw exceptions::authentication_error("No SASL mechanism available.");
+	}
 
 	// Try each mechanism in the list in turn
-	for (unsigned int i = 0 ; i < mechList.size() ; ++i)
-	{
+	for (unsigned int i = 0 ; i < mechList.size() ; ++i) {
+
 		shared_ptr <security::sasl::SASLMechanism> mech = mechList[i];
 
 		shared_ptr <security::sasl::SASLSession> saslSession =
@@ -369,8 +384,8 @@ void IMAPConnection::authenticateSASL()
 
 		shared_ptr <IMAPCommand> authCmd;
 
-		if (saslSession->getMechanism()->hasInitialResponse())
-		{
+		if (saslSession->getMechanism()->hasInitialResponse()) {
+
 			byte_t* initialResp = 0;
 			size_t initialRespLen = 0;
 
@@ -379,50 +394,50 @@ void IMAPConnection::authenticateSASL()
 			string encodedInitialResp(saslContext->encodeB64(initialResp, initialRespLen));
 			delete [] initialResp;
 
-			if (encodedInitialResp.empty())
+			if (encodedInitialResp.empty()) {
 				authCmd = IMAPCommand::AUTHENTICATE(mech->getName(), "=");
-			else
+			} else {
 				authCmd = IMAPCommand::AUTHENTICATE(mech->getName(), encodedInitialResp);
-		}
-		else
-		{
+			}
+
+		} else {
+
 			authCmd = IMAPCommand::AUTHENTICATE(mech->getName());
 		}
 
 		authCmd->send(dynamicCast <IMAPConnection>(shared_from_this()));
 
-		for (bool cont = true ; cont ; )
-		{
+		for (bool cont = true ; cont ; ) {
+
 			scoped_ptr <IMAPParser::response> resp(m_parser->readResponse());
 
 			if (resp->response_done() &&
 			    resp->response_done()->response_tagged() &&
 			    resp->response_done()->response_tagged()->resp_cond_state()->
-			    	status() == IMAPParser::resp_cond_state::OK)
-			{
+			    	status() == IMAPParser::resp_cond_state::OK) {
+
 				m_socket = saslSession->getSecuredSocket(m_socket);
 				return;
-			}
-			else
-			{
+
+			} else {
+
 				std::vector <IMAPParser::continue_req_or_response_data*>
 					respDataList = resp->continue_req_or_response_data();
 
 				string response;
 				bool hasResponse = false;
 
-				for (unsigned int i = 0 ; i < respDataList.size() ; ++i)
-				{
-					if (respDataList[i]->continue_req())
-					{
+				for (unsigned int i = 0 ; i < respDataList.size() ; ++i) {
+
+					if (respDataList[i]->continue_req()) {
+
 						response = respDataList[i]->continue_req()->resp_text()->text();
 						hasResponse = true;
 						break;
 					}
 				}
 
-				if (!hasResponse)
-				{
+				if (!hasResponse) {
 					cont = false;
 					continue;
 				}
@@ -433,8 +448,8 @@ void IMAPConnection::authenticateSASL()
 				byte_t* resp = 0;
 				size_t respLen = 0;
 
-				try
-				{
+				try {
+
 					// Extract challenge
 					saslContext->decodeB64(response, &challenge, &challengeLen);
 
@@ -446,22 +461,21 @@ void IMAPConnection::authenticateSASL()
 					const string respB64 = saslContext->encodeB64(resp, respLen) + "\r\n";
 					sendRaw(utility::stringUtils::bytesFromString(respB64), respB64.length());
 
-					if (m_tracer)
+					if (m_tracer) {
 						m_tracer->traceSendBytes(respB64.length() - 2, "SASL exchange");
+					}
 
 					// Server capabilities may change when logged in
 					invalidateCapabilities();
-				}
-				catch (exceptions::sasl_exception& e)
-				{
-					if (challenge)
-					{
+
+				} catch (exceptions::sasl_exception& e) {
+
+					if (challenge) {
 						delete [] challenge;
 						challenge = NULL;
 					}
 
-					if (resp)
-					{
+					if (resp) {
 						delete [] resp;
 						resp = NULL;
 					}
@@ -469,31 +483,35 @@ void IMAPConnection::authenticateSASL()
 					// Cancel SASL exchange
 					sendRaw(utility::stringUtils::bytesFromString("*\r\n"), 3);
 
-					if (m_tracer)
+					if (m_tracer) {
 						m_tracer->traceSend("*");
-				}
-				catch (...)
-				{
-					if (challenge)
-						delete [] challenge;
+					}
 
-					if (resp)
+				} catch (...) {
+
+					if (challenge) {
+						delete [] challenge;
+					}
+
+					if (resp) {
 						delete [] resp;
+					}
 
 					throw;
 				}
 
-				if (challenge)
+				if (challenge) {
 					delete [] challenge;
+				}
 
-				if (resp)
+				if (resp) {
 					delete [] resp;
+				}
 			}
 		}
 	}
 
-	throw exceptions::authentication_error
-		("Could not authenticate using SASL: all mechanisms failed.");
+	throw exceptions::authentication_error("Could not authenticate using SASL: all mechanisms failed.");
 }
 
 #endif // VMIME_HAVE_SASL_SUPPORT
@@ -501,27 +519,26 @@ void IMAPConnection::authenticateSASL()
 
 #if VMIME_HAVE_TLS_SUPPORT
 
-void IMAPConnection::startTLS()
-{
-	try
-	{
+void IMAPConnection::startTLS() {
+
+	try {
+
 		IMAPCommand::STARTTLS()->send(dynamicCast <IMAPConnection>(shared_from_this()));
 
 		scoped_ptr <IMAPParser::response> resp(m_parser->readResponse());
 
 		if (resp->isBad() || resp->response_done()->response_tagged()->
-			resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
-		{
-			throw exceptions::command_error
-				("STARTTLS", resp->getErrorLog(), "bad response");
+			resp_cond_state()->status() != IMAPParser::resp_cond_state::OK) {
+
+			throw exceptions::command_error("STARTTLS", resp->getErrorLog(), "bad response");
 		}
 
-		shared_ptr <tls::TLSSession> tlsSession = tls::TLSSession::create
-			(m_store.lock()->getCertificateVerifier(),
-			 m_store.lock()->getSession()->getTLSProperties());
+		shared_ptr <tls::TLSSession> tlsSession = tls::TLSSession::create(
+			m_store.lock()->getCertificateVerifier(),
+			m_store.lock()->getSession()->getTLSProperties()
+		);
 
-		shared_ptr <tls::TLSSocket> tlsSocket =
-			tlsSession->getSocket(m_socket);
+		shared_ptr <tls::TLSSocket> tlsSocket = tlsSession->getSocket(m_socket);
 
 		tlsSocket->handshake();
 
@@ -529,8 +546,9 @@ void IMAPConnection::startTLS()
 		m_parser->setSocket(m_socket);
 
 		m_secured = true;
-		m_cntInfos = make_shared <tls::TLSSecuredConnectionInfos>
-			(m_cntInfos->getHost(), m_cntInfos->getPort(), tlsSession, tlsSocket);
+		m_cntInfos = make_shared <tls::TLSSecuredConnectionInfos>(
+			m_cntInfos->getHost(), m_cntInfos->getPort(), tlsSession, tlsSocket
+		);
 
 		// " Once TLS has been started, the client MUST discard cached
 		//   information about server capabilities and SHOULD re-issue the
@@ -538,14 +556,14 @@ void IMAPConnection::startTLS()
 		//   man-in-the-middle attacks which alter the capabilities list prior
 		//   to STARTTLS. " (RFC-2595)
 		invalidateCapabilities();
-	}
-	catch (exceptions::command_error&)
-	{
+
+	} catch (exceptions::command_error&) {
+
 		// Non-fatal error
 		throw;
-	}
-	catch (exception&)
-	{
+
+	} catch (exception&) {
+
 		// Fatal error
 		internalDisconnect();
 		throw;
@@ -555,24 +573,41 @@ void IMAPConnection::startTLS()
 #endif // VMIME_HAVE_TLS_SUPPORT
 
 
-const std::vector <string> IMAPConnection::getCapabilities()
-{
-	if (!m_capabilitiesFetched)
+const std::vector <string> IMAPConnection::getCapabilities() {
+
+	if (!m_capabilitiesFetched) {
 		fetchCapabilities();
+	}
 
 	return m_capabilities;
 }
 
 
-bool IMAPConnection::hasCapability(const string& capa)
-{
-	if (!m_capabilitiesFetched)
+bool IMAPConnection::hasCapability(const string& capa) {
+
+	if (!m_capabilitiesFetched) {
 		fetchCapabilities();
+	}
 
 	const string normCapa = utility::stringUtils::toUpper(capa);
 
-	for (size_t i = 0, n = m_capabilities.size() ; i < n ; ++i)
-	{
+	for (size_t i = 0, n = m_capabilities.size() ; i < n ; ++i) {
+
+		if (m_capabilities[i] == normCapa) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+
+bool IMAPConnection::hasCapability(const string& capa) const {
+
+	const string normCapa = utility::stringUtils::toUpper(capa);
+
+	for (size_t i = 0, n = m_capabilities.size() ; i < n ; ++i) {
+
 		if (m_capabilities[i] == normCapa)
 			return true;
 	}
@@ -581,56 +616,44 @@ bool IMAPConnection::hasCapability(const string& capa)
 }
 
 
-bool IMAPConnection::hasCapability(const string& capa) const
-{
-	const string normCapa = utility::stringUtils::toUpper(capa);
+void IMAPConnection::invalidateCapabilities() {
 
-	for (size_t i = 0, n = m_capabilities.size() ; i < n ; ++i)
-	{
-		if (m_capabilities[i] == normCapa)
-			return true;
-	}
-
-	return false;
-}
-
-
-void IMAPConnection::invalidateCapabilities()
-{
 	m_capabilities.clear();
 	m_capabilitiesFetched = false;
 }
 
 
-void IMAPConnection::fetchCapabilities()
-{
+void IMAPConnection::fetchCapabilities() {
+
 	IMAPCommand::CAPABILITY()->send(dynamicCast <IMAPConnection>(shared_from_this()));
 
 	scoped_ptr <IMAPParser::response> resp(m_parser->readResponse());
 
 	if (resp->response_done()->response_tagged()->
-		resp_cond_state()->status() == IMAPParser::resp_cond_state::OK)
-	{
+		resp_cond_state()->status() == IMAPParser::resp_cond_state::OK) {
+
 		processCapabilityResponseData(resp.get());
 	}
 }
 
 
-bool IMAPConnection::processCapabilityResponseData(const IMAPParser::response* resp)
-{
+bool IMAPConnection::processCapabilityResponseData(const IMAPParser::response* resp) {
+
 	const std::vector <IMAPParser::continue_req_or_response_data*>& respDataList =
 		resp->continue_req_or_response_data();
 
-	for (size_t i = 0 ; i < respDataList.size() ; ++i)
-	{
-		if (respDataList[i]->response_data() == NULL)
+	for (size_t i = 0 ; i < respDataList.size() ; ++i) {
+
+		if (respDataList[i]->response_data() == NULL) {
 			continue;
+		}
 
 		const IMAPParser::capability_data* capaData =
 			respDataList[i]->response_data()->capability_data();
 
-		if (capaData == NULL)
+		if (capaData == NULL) {
 			continue;
+		}
 
 		processCapabilityResponseData(capaData);
 		return true;
@@ -640,18 +663,19 @@ bool IMAPConnection::processCapabilityResponseData(const IMAPParser::response* r
 }
 
 
-void IMAPConnection::processCapabilityResponseData(const IMAPParser::capability_data* capaData)
-{
+void IMAPConnection::processCapabilityResponseData(const IMAPParser::capability_data* capaData) {
+
 	std::vector <string> res;
 
 	std::vector <IMAPParser::capability*> caps = capaData->capabilities();
 
-	for (unsigned int j = 0 ; j < caps.size() ; ++j)
-	{
-		if (caps[j]->auth_type())
+	for (unsigned int j = 0 ; j < caps.size() ; ++j) {
+
+		if (caps[j]->auth_type()) {
 			res.push_back("AUTH=" + caps[j]->auth_type()->name());
-		else
+		} else {
 			res.push_back(utility::stringUtils::toUpper(caps[j]->atom()->value()));
+		}
 	}
 
 	m_capabilities = res;
@@ -659,44 +683,46 @@ void IMAPConnection::processCapabilityResponseData(const IMAPParser::capability_
 }
 
 
-shared_ptr <security::authenticator> IMAPConnection::getAuthenticator()
-{
+shared_ptr <security::authenticator> IMAPConnection::getAuthenticator() {
+
 	return m_auth;
 }
 
 
-bool IMAPConnection::isConnected() const
-{
-	return (m_socket && m_socket->isConnected() &&
-	        (m_state == STATE_AUTHENTICATED || m_state == STATE_SELECTED));
+bool IMAPConnection::isConnected() const {
+
+	return m_socket
+	    && m_socket->isConnected()
+	    && (m_state == STATE_AUTHENTICATED || m_state == STATE_SELECTED);
 }
 
 
-bool IMAPConnection::isSecuredConnection() const
-{
+bool IMAPConnection::isSecuredConnection() const {
+
 	return m_secured;
 }
 
 
-shared_ptr <connectionInfos> IMAPConnection::getConnectionInfos() const
-{
+shared_ptr <connectionInfos> IMAPConnection::getConnectionInfos() const {
+
 	return m_cntInfos;
 }
 
 
-void IMAPConnection::disconnect()
-{
-	if (!isConnected())
+void IMAPConnection::disconnect() {
+
+	if (!isConnected()) {
 		throw exceptions::not_connected();
+	}
 
 	internalDisconnect();
 }
 
 
-void IMAPConnection::internalDisconnect()
-{
-	if (isConnected())
-	{
+void IMAPConnection::internalDisconnect() {
+
+	if (isConnected()) {
+
 		IMAPCommand::LOGOUT()->send(dynamicCast <IMAPConnection>(shared_from_this()));
 
 		m_socket->disconnect();
@@ -712,15 +738,15 @@ void IMAPConnection::internalDisconnect()
 }
 
 
-void IMAPConnection::initHierarchySeparator()
-{
+void IMAPConnection::initHierarchySeparator() {
+
 	IMAPCommand::LIST("", "")->send(dynamicCast <IMAPConnection>(shared_from_this()));
 
 	scoped_ptr <IMAPParser::response> resp(m_parser->readResponse());
 
 	if (resp->isBad() || resp->response_done()->response_tagged()->
-		resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
-	{
+		resp_cond_state()->status() != IMAPParser::resp_cond_state::OK) {
+
 		internalDisconnect();
 		throw exceptions::command_error("LIST", resp->getErrorLog(), "bad response");
 	}
@@ -730,34 +756,37 @@ void IMAPConnection::initHierarchySeparator()
 
 	bool found = false;
 
-	for (unsigned int i = 0 ; !found && i < respDataList.size() ; ++i)
-	{
-		if (respDataList[i]->response_data() == NULL)
+	for (unsigned int i = 0 ; !found && i < respDataList.size() ; ++i) {
+
+		if (respDataList[i]->response_data() == NULL) {
 			continue;
+		}
 
 		const IMAPParser::mailbox_data* mailboxData =
 			static_cast <const IMAPParser::response_data*>
 				(respDataList[i]->response_data())->mailbox_data();
 
-		if (mailboxData == NULL || mailboxData->type() != IMAPParser::mailbox_data::LIST)
+		if (mailboxData == NULL || mailboxData->type() != IMAPParser::mailbox_data::LIST) {
 			continue;
+		}
 
-		if (mailboxData->mailbox_list()->quoted_char() != '\0')
-		{
+		if (mailboxData->mailbox_list()->quoted_char() != '\0') {
 			m_hierarchySeparator = mailboxData->mailbox_list()->quoted_char();
 			found = true;
 		}
 	}
 
-	if (!found) // default
+	if (!found) {  // default
 		m_hierarchySeparator = '/';
+	}
 }
 
 
-void IMAPConnection::sendCommand(const shared_ptr <IMAPCommand>& cmd)
-{
-	if (!m_firstTag)
+void IMAPConnection::sendCommand(const shared_ptr <IMAPCommand>& cmd) {
+
+	if (!m_firstTag) {
 		++(*m_tag);
+	}
 
 	m_socket->send(*m_tag);
 	m_socket->send(" ");
@@ -766,8 +795,8 @@ void IMAPConnection::sendCommand(const shared_ptr <IMAPCommand>& cmd)
 
 	m_firstTag = false;
 
-	if (m_tracer)
-	{
+	if (m_tracer) {
+
 		std::ostringstream oss;
 		oss << string(*m_tag) << " " << cmd->getText();
 
@@ -776,87 +805,87 @@ void IMAPConnection::sendCommand(const shared_ptr <IMAPCommand>& cmd)
 }
 
 
-void IMAPConnection::sendRaw(const byte_t* buffer, const size_t count)
-{
+void IMAPConnection::sendRaw(const byte_t* buffer, const size_t count) {
+
 	m_socket->sendRaw(buffer, count);
 }
 
 
-IMAPParser::response* IMAPConnection::readResponse(IMAPParser::literalHandler* lh)
-{
-	return (m_parser->readResponse(lh));
+IMAPParser::response* IMAPConnection::readResponse(IMAPParser::literalHandler* lh) {
+
+	return m_parser->readResponse(lh);
 }
 
 
-IMAPConnection::ProtocolStates IMAPConnection::state() const
-{
-	return (m_state);
+IMAPConnection::ProtocolStates IMAPConnection::state() const {
+
+	return m_state;
 }
 
 
-void IMAPConnection::setState(const ProtocolStates state)
-{
+void IMAPConnection::setState(const ProtocolStates state) {
+
 	m_state = state;
 }
 
 
-char IMAPConnection::hierarchySeparator() const
-{
-	return (m_hierarchySeparator);
+char IMAPConnection::hierarchySeparator() const {
+
+	return m_hierarchySeparator;
 }
 
 
-shared_ptr <const IMAPStore> IMAPConnection::getStore() const
-{
+shared_ptr <const IMAPStore> IMAPConnection::getStore() const {
+
 	return m_store.lock();
 }
 
 
-shared_ptr <IMAPStore> IMAPConnection::getStore()
-{
+shared_ptr <IMAPStore> IMAPConnection::getStore() {
+
 	return m_store.lock();
 }
 
 
-shared_ptr <session> IMAPConnection::getSession()
-{
+shared_ptr <session> IMAPConnection::getSession() {
+
 	return m_store.lock()->getSession();
 }
 
 
-shared_ptr <const socket> IMAPConnection::getSocket() const
-{
+shared_ptr <const socket> IMAPConnection::getSocket() const {
+
 	return m_socket;
 }
 
 
-void IMAPConnection::setSocket(const shared_ptr <socket>& sok)
-{
+void IMAPConnection::setSocket(const shared_ptr <socket>& sok) {
+
 	m_socket = sok;
 	m_parser->setSocket(sok);
 }
 
 
-shared_ptr <tracer> IMAPConnection::getTracer()
-{
+shared_ptr <tracer> IMAPConnection::getTracer() {
+
 	return m_tracer;
 }
 
 
-shared_ptr <IMAPTag> IMAPConnection::getTag()
-{
+shared_ptr <IMAPTag> IMAPConnection::getTag() {
+
 	return m_tag;
 }
 
 
-bool IMAPConnection::isMODSEQDisabled() const
-{
+bool IMAPConnection::isMODSEQDisabled() const {
+
 	return m_noModSeq;
 }
 
 
-void IMAPConnection::disableMODSEQ()
-{
+void IMAPConnection::disableMODSEQ() {
+
 	m_noModSeq = true;
 }
 

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -49,13 +49,17 @@ namespace net {
 namespace tls {
 
 
-class TLSSession_OpenSSL : public TLSSession
-{
+class TLSSession_OpenSSL : public TLSSession {
+
 	friend class TLSSocket_OpenSSL;
 
 public:
 
-	TLSSession_OpenSSL(const shared_ptr <security::cert::certificateVerifier>& cv, const shared_ptr <TLSProperties>& props);
+	TLSSession_OpenSSL(
+		const shared_ptr <security::cert::certificateVerifier>& cv,
+		const shared_ptr <TLSProperties>& props
+	);
+
 	~TLSSession_OpenSSL();
 
 
@@ -66,13 +70,11 @@ public:
 
 	/** Set the private key to use if server requires a client certificate.
 	 *
-	 * @param	keyfile         Path to the private key in PEM format
-	 * @param passwd_callback If the private key is stored encrypted the
+	 * @param keyfile path to the private key in PEM format
 	*/
 	void usePrivateKeyFile(const vmime::string& keyfile);
 
-	/** Supply the certificate chain to present if requested by
-	 *  server.
+	/** Supply the certificate chain to present if requested by server.
 	 *
 	 * @param chainFile	File in PEM format holding certificate chain
 	 */
@@ -105,4 +107,3 @@ private:
 #endif // VMIME_BUILDING_DOC
 
 #endif // VMIME_NET_TLS_TLSSESSION_OPENSSL_HPP_INCLUDED
-

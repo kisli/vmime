@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -47,8 +47,8 @@ namespace posix {
 
 // posixChildProcessFactory
 
-shared_ptr <utility::childProcess> posixChildProcessFactory::create(const utility::file::path& path) const
-{
+shared_ptr <utility::childProcess> posixChildProcessFactory::create(const utility::file::path& path) const {
+
 	return make_shared <posixChildProcess>(path);
 }
 
@@ -60,29 +60,28 @@ shared_ptr <utility::childProcess> posixChildProcessFactory::create(const utilit
 // getPosixSignalMessage
 // Returns the name of a POSIX signal.
 
-static const string getPosixSignalMessage(const int num)
-{
-	switch (num)
-	{
-	case SIGHUP:  return "SIGHUP";
-	case SIGINT:  return "SIGINT";
-	case SIGQUIT: return "SIGQUIT";
-	case SIGILL:  return "SIGILL";
-	case SIGABRT: return "SIGABRT";
-	case SIGFPE:  return "SIGFPE";
-	case SIGKILL: return "SIGKILL";
-	case SIGSEGV: return "SIGSEGV";
-	case SIGPIPE: return "SIGPIPE";
-	case SIGALRM: return "SIGALRM";
-	case SIGTERM: return "SIGTERM";
-	case SIGUSR1: return "SIGUSR1";
-	case SIGUSR2: return "SIGUSR2";
-	case SIGCHLD: return "SIGCHLD";
-	case SIGCONT: return "SIGCONT";
-	case SIGSTOP: return "SIGSTOP";
-	case SIGTSTP: return "SIGTSTP";
-	case SIGTTIN: return "SIGTTIN";
-	case SIGTTOU: return "SIGTTOU";
+static const string getPosixSignalMessage(const int num) {
+
+	switch (num) {
+		case SIGHUP:  return "SIGHUP";
+		case SIGINT:  return "SIGINT";
+		case SIGQUIT: return "SIGQUIT";
+		case SIGILL:  return "SIGILL";
+		case SIGABRT: return "SIGABRT";
+		case SIGFPE:  return "SIGFPE";
+		case SIGKILL: return "SIGKILL";
+		case SIGSEGV: return "SIGSEGV";
+		case SIGPIPE: return "SIGPIPE";
+		case SIGALRM: return "SIGALRM";
+		case SIGTERM: return "SIGTERM";
+		case SIGUSR1: return "SIGUSR1";
+		case SIGUSR2: return "SIGUSR2";
+		case SIGCHLD: return "SIGCHLD";
+		case SIGCONT: return "SIGCONT";
+		case SIGSTOP: return "SIGSTOP";
+		case SIGTSTP: return "SIGTSTP";
+		case SIGTTIN: return "SIGTTIN";
+		case SIGTTOU: return "SIGTTOU";
 	}
 
 	return "(unknown)";
@@ -92,8 +91,8 @@ static const string getPosixSignalMessage(const int num)
 // getPosixErrorMessage
 // Returns a message corresponding to an error code.
 
-static const string getPosixErrorMessage(const int num)
-{
+static const string getPosixErrorMessage(const int num) {
+
 #ifdef strerror_r
 	char res[256];
 	res[0] = '\0';
@@ -104,31 +103,31 @@ static const string getPosixErrorMessage(const int num)
 #else
 	return string(strerror(num));
 #endif
+
 }
 
 
 // Output stream adapter for POSIX pipe
 
-class outputStreamPosixPipeAdapter : public utility::outputStream
-{
+class outputStreamPosixPipeAdapter : public utility::outputStream {
+
 public:
 
 	outputStreamPosixPipeAdapter(const int desc)
-		: m_desc(desc)
-	{
+		: m_desc(desc) {
+
 	}
 
-	void flush()
-	{
+	void flush() {
+
 		::fsync(m_desc);
 	}
 
 protected:
 
-	void writeImpl(const byte_t* const data, const size_t count)
-	{
-		if (::write(m_desc, data, count) == -1)
-		{
+	void writeImpl(const byte_t* const data, const size_t count) {
+
+		if (::write(m_desc, data, count) == -1) {
 			const string errorMsg = getPosixErrorMessage(errno);
 			throw exceptions::system_error(errorMsg);
 		}
@@ -142,27 +141,26 @@ private:
 
 // Input stream adapter for POSIX pipe
 
-class inputStreamPosixPipeAdapter : public utility::inputStream
-{
+class inputStreamPosixPipeAdapter : public utility::inputStream {
+
 public:
 
 	inputStreamPosixPipeAdapter(const int desc)
-		: m_desc(desc)
-	{
+		: m_desc(desc) {
 	}
 
-	bool eof() const
-	{
-		return (m_eof);
+	bool eof() const {
+
+		return m_eof;
 	}
 
-	void reset()
-	{
+	void reset() {
+
 		// Do nothing: unsupported
 	}
 
-	size_t skip(const size_t count)
-	{
+	size_t skip(const size_t count) {
+
 		// TODO: not tested
 		byte_t buffer[4096];
 
@@ -170,10 +168,9 @@ public:
 		ssize_t bytesRead = 0;
 
 		while ((bytesRead = ::read(m_desc, buffer,
-			std::min(sizeof(buffer), count - bytesSkipped))) != 0)
-		{
-			if (bytesRead == -1)
-			{
+			std::min(sizeof(buffer), count - bytesSkipped))) != 0) {
+
+			if (bytesRead == -1) {
 				const string errorMsg = getPosixErrorMessage(errno);
 				throw exceptions::system_error(errorMsg);
 			}
@@ -184,12 +181,11 @@ public:
 		return static_cast <size_t>(bytesSkipped);
 	}
 
-	size_t read(byte_t* const data, const size_t count)
-	{
+	size_t read(byte_t* const data, const size_t count) {
+
 		ssize_t bytesRead = 0;
 
-		if ((bytesRead = ::read(m_desc, data, count)) == -1)
-		{
+		if ((bytesRead = ::read(m_desc, data, count)) == -1) {
 			const string errorMsg = getPosixErrorMessage(errno);
 			throw exceptions::system_error(errorMsg);
 		}
@@ -214,9 +210,13 @@ private:
 // posixChildProcess
 
 posixChildProcess::posixChildProcess(const utility::file::path& path)
-	: m_processPath(path), m_started(false),
-	  m_stdIn(null), m_stdOut(null), m_pid(0), m_argArray(NULL)
-{
+	: m_processPath(path),
+	  m_started(false),
+	  m_stdIn(null),
+	  m_stdOut(null),
+	  m_pid(0),
+	  m_argArray(NULL) {
+
 	m_pipe[0] = 0;
 	m_pipe[1] = 0;
 
@@ -224,18 +224,21 @@ posixChildProcess::posixChildProcess(const utility::file::path& path)
 }
 
 
-posixChildProcess::~posixChildProcess()
-{
-	if (m_started)
+posixChildProcess::~posixChildProcess() {
+
+	if (m_started) {
 		sigprocmask(SIG_SETMASK, &m_oldProcMask, NULL);
+	}
 
-	if (m_pipe[0] != 0)
+	if (m_pipe[0] != 0) {
 		close(m_pipe[0]);
+	}
 
-	if (m_pipe[1] != 0)
+	if (m_pipe[1] != 0) {
 		close(m_pipe[1]);
+	}
 
-	delete [] (m_argArray);
+	delete [] m_argArray;
 }
 
 
@@ -245,10 +248,11 @@ posixChildProcess::~posixChildProcess()
 // Original authors: Dan Winship <danw@ximian.com>
 // Copyright 2000 Ximian, Inc. (www.ximian.com)
 
-void posixChildProcess::start(const std::vector <string>& args, const int flags)
-{
-	if (m_started)
+void posixChildProcess::start(const std::vector <string>& args, const int flags) {
+
+	if (m_started) {
 		return;
+	}
 
 	// Construct C-style argument array
 	const char** argv = new const char*[args.size() + 2];
@@ -259,14 +263,14 @@ void posixChildProcess::start(const std::vector <string>& args, const int flags)
 	argv[0] = m_processPath.getLastComponent().getBuffer().c_str();
 	argv[args.size() + 1] = NULL;
 
-	for (unsigned int i = 0 ; i < m_argVector.size() ; ++i)
+	for (unsigned int i = 0 ; i < m_argVector.size() ; ++i) {
 		argv[i + 1] = m_argVector[i].c_str();
+	}
 
 	// Create a pipe to communicate with the child process
 	int fd[2];
 
-	if (pipe(fd) == -1)
-	{
+	if (pipe(fd) == -1) {
 		throw exceptions::system_error(getPosixErrorMessage(errno));
 	}
 
@@ -284,8 +288,8 @@ void posixChildProcess::start(const std::vector <string>& args, const int flags)
 	// Spawn process
 	const pid_t pid = fork();
 
-	if (pid == -1)  // error
-	{
+	if (pid == -1) {  // error
+
 		const string errorMsg = getPosixErrorMessage(errno);
 
 		sigprocmask(SIG_SETMASK, &m_oldProcMask, NULL);
@@ -294,45 +298,47 @@ void posixChildProcess::start(const std::vector <string>& args, const int flags)
 		close(fd[1]);
 
 		throw exceptions::system_error(errorMsg);
-	}
-	else if (pid == 0)  // child process
-	{
-		if (flags & FLAG_REDIRECT_STDIN)
-			dup2(fd[0], STDIN_FILENO);
-		else
-			close(fd[0]);
 
-		if (flags & FLAG_REDIRECT_STDOUT)
+	} else if (pid == 0) {  // child process
+
+		if (flags & FLAG_REDIRECT_STDIN) {
+			dup2(fd[0], STDIN_FILENO);
+		} else {
+			close(fd[0]);
+		}
+
+		if (flags & FLAG_REDIRECT_STDOUT) {
 			dup2(fd[1], STDOUT_FILENO);
-		else
+		} else {
 			close(fd[1]);
+		}
 
 		posixFileSystemFactory* pfsf = new posixFileSystemFactory();
 
 		const string path = pfsf->pathToString(m_processPath);
 
-		delete (pfsf);
+		delete pfsf;
 
 		execv(path.c_str(), const_cast <char**>(argv));
 		_exit(255);
 	}
 
-	if (flags & FLAG_REDIRECT_STDIN)
-	{
+	if (flags & FLAG_REDIRECT_STDIN) {
+
 		m_stdIn = make_shared <outputStreamPosixPipeAdapter>(m_pipe[1]);
-	}
-	else
-	{
+
+	} else {
+
 		close(m_pipe[1]);
 		m_pipe[1] = 0;
 	}
 
-	if (flags & FLAG_REDIRECT_STDOUT)
-	{
+	if (flags & FLAG_REDIRECT_STDOUT) {
+
 		m_stdOut = make_shared <inputStreamPosixPipeAdapter>(m_pipe[0]);
-	}
-	else
-	{
+
+	} else {
+
 		close(m_pipe[0]);
 		m_pipe[0] = 0;
 	}
@@ -342,48 +348,48 @@ void posixChildProcess::start(const std::vector <string>& args, const int flags)
 }
 
 
-shared_ptr <utility::outputStream> posixChildProcess::getStdIn()
-{
-	return (m_stdIn);
+shared_ptr <utility::outputStream> posixChildProcess::getStdIn() {
+
+	return m_stdIn;
 }
 
 
-shared_ptr <utility::inputStream> posixChildProcess::getStdOut()
-{
-	return (m_stdOut);
+shared_ptr <utility::inputStream> posixChildProcess::getStdOut() {
+
+	return m_stdOut;
 }
 
 
-void posixChildProcess::waitForFinish()
-{
+void posixChildProcess::waitForFinish() {
+
 	// Close stdin pipe
-	if (m_pipe[1] != 0)
-	{
+	if (m_pipe[1] != 0) {
 		close(m_pipe[1]);
 		m_pipe[1] = 0;
 	}
 
 	int wstat;
 
-	while (waitpid(m_pid, &wstat, 0) == -1 && errno == EINTR)
+	while (waitpid(m_pid, &wstat, 0) == -1 && errno == EINTR) {
 		;
+	}
 
-	if (!WIFEXITED(wstat))
-	{
+	if (!WIFEXITED(wstat)) {
+
 		throw exceptions::system_error("Process exited with signal "
 			+ getPosixSignalMessage(WTERMSIG(wstat)));
-	}
-	else if (WEXITSTATUS(wstat) != 0)
-	{
-		if (WEXITSTATUS(wstat) == 255)
-		{
+
+	} else if (WEXITSTATUS(wstat) != 0) {
+
+		if (WEXITSTATUS(wstat) == 255) {
+
 			scoped_ptr <posixFileSystemFactory> pfsf(new posixFileSystemFactory());
 
 			throw exceptions::system_error("Could not execute '"
 				+ pfsf->pathToString(m_processPath) + "'");
-		}
-		else
-		{
+
+		} else {
+
 			std::ostringstream oss;
 			oss.imbue(std::locale::classic());
 

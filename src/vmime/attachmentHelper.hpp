@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -31,14 +31,13 @@
 #include "vmime/message.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 /** Retrieve attachment information from message parts.
   */
-class VMIME_EXPORT attachmentHelper
-{
+class VMIME_EXPORT attachmentHelper {
+
 public:
 
 	/** Options for use with the following functions:
@@ -46,8 +45,7 @@ public:
 	  *     getBodyPartAttachment,
 	  * and isBodyPartAnAttachment.
 	  */
-	enum FindOptions
-	{
+	enum FindOptions {
 		INLINE_OBJECTS = (1 << 0)        /**< Recognize and return inline objects. The aim is to
 		                                      consider MHTML objects (parts with a "Content-Id" or
 		                                      a "Content-Location", such as inline images) as attachments. */
@@ -59,7 +57,10 @@ public:
 	  * @param options search options (see FindOptions)
 	  * @return true if the part is an attachment, false otherwise
 	  */
-	static bool isBodyPartAnAttachment(const shared_ptr <const bodyPart>& part, const unsigned int options = 0);
+	static bool isBodyPartAnAttachment(
+		const shared_ptr <const bodyPart>& part,
+		const unsigned int options = 0
+	);
 
 	/** Return attachment information in the specified body part.
 	  * If the specified body part does not contain attachment
@@ -69,8 +70,10 @@ public:
 	  * @param options search options (see FindOptions)
 	  * @return attachment found in the part, or NULL
 	  */
-	static shared_ptr <const attachment>
-		getBodyPartAttachment(const shared_ptr <const bodyPart>& part, const unsigned int options = 0);
+	static shared_ptr <const attachment> getBodyPartAttachment(
+		const shared_ptr <const bodyPart>& part,
+		const unsigned int options = 0
+	);
 
 	/** Find all attachments contained in the specified part
 	  * and all its children parts.
@@ -81,7 +84,10 @@ public:
 	  * @return a list of attachments found
 	  */
 	static const std::vector <shared_ptr <const attachment> >
-		findAttachmentsInBodyPart(const shared_ptr <const bodyPart>& part, const unsigned int options = 0);
+		findAttachmentsInBodyPart(
+			const shared_ptr <const bodyPart>& part,
+			const unsigned int options = 0
+		);
 
 	/** Find all attachments contained in the specified message.
 	  * This is simply a recursive call to getBodyPartAttachment().
@@ -91,26 +97,37 @@ public:
 	  * @return a list of attachments found
 	  */
 	static const std::vector <shared_ptr <const attachment> >
-		findAttachmentsInMessage(const shared_ptr <const message>& msg, const unsigned int options = 0);
+		findAttachmentsInMessage(
+			const shared_ptr <const message>& msg,
+			const unsigned int options = 0
+		);
 
 	/** Add an attachment to the specified message.
 	  *
 	  * @param msg message into which to add the attachment
 	  * @param att attachment to add
 	  */
-	static void addAttachment(const shared_ptr <message>& msg, const shared_ptr <attachment>& att);
+	static void addAttachment(
+		const shared_ptr <message>& msg,
+		const shared_ptr <attachment>& att
+	);
 
 	/** Add a message attachment to the specified message.
 	  *
 	  * @param msg message into which to add the attachment
 	  * @param amsg message to attach
 	  */
-	static void addAttachment(const shared_ptr <message>& msg, const shared_ptr <message>& amsg);
+	static void addAttachment(
+		const shared_ptr <message>& msg,
+		const shared_ptr <message>& amsg
+	);
 
 protected:
 
-	static shared_ptr <bodyPart> findBodyPart
-		(const shared_ptr <bodyPart>& part, const mediaType& type);
+	static shared_ptr <bodyPart> findBodyPart(
+		const shared_ptr <bodyPart>& part,
+		const mediaType& type
+	);
 };
 
 
@@ -118,4 +135,3 @@ protected:
 
 
 #endif // VMIME_ATTACHMENTHELPER_HPP_INCLUDED
-

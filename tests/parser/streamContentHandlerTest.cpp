@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -41,15 +41,15 @@ VMIME_TEST_SUITE_BEGIN(streamContentHandlerTest)
 	VMIME_TEST_LIST_END
 
 
-	void testIsEmpty()
-	{
+	void testIsEmpty() {
+
 		vmime::streamContentHandler cth;
 
 		VASSERT_TRUE("empty", cth.isEmpty());
 	}
 
-	void testGetLength()
-	{
+	void testGetLength() {
+
 		vmime::string data("Test Data");
 		vmime::shared_ptr <vmime::utility::inputStream> stream =
 			vmime::make_shared <vmime::utility::inputStreamStringAdapter>(data);
@@ -60,8 +60,8 @@ VMIME_TEST_SUITE_BEGIN(streamContentHandlerTest)
 		VASSERT_EQ("length", 9, cth.getLength());
 	}
 
-	void testIsEncoded()
-	{
+	void testIsEncoded() {
+
 		vmime::string data("Test Data");
 		vmime::shared_ptr <vmime::utility::inputStream> stream =
 			vmime::make_shared <vmime::utility::inputStreamStringAdapter>(data);
@@ -82,8 +82,8 @@ VMIME_TEST_SUITE_BEGIN(streamContentHandlerTest)
 		VASSERT_EQ("encoding", "base64", cth2.getEncoding().generate());
 	}
 
-	void testGetLength_Encoded()
-	{
+	void testGetLength_Encoded() {
+
 		vmime::string data("foo=12=34=56bar");
 		vmime::shared_ptr <vmime::utility::inputStream> stream =
 			vmime::make_shared <vmime::utility::inputStreamStringAdapter>(data);
@@ -94,8 +94,8 @@ VMIME_TEST_SUITE_BEGIN(streamContentHandlerTest)
 		VASSERT_EQ("length", 15, cth.getLength());
 	}
 
-	void testExtract()
-	{
+	void testExtract() {
+
 		vmime::string data("Test Data");
 		vmime::shared_ptr <vmime::utility::inputStream> stream =
 			vmime::make_shared <vmime::utility::inputStreamStringAdapter>(data);
@@ -110,10 +110,12 @@ VMIME_TEST_SUITE_BEGIN(streamContentHandlerTest)
 		VASSERT_EQ("extract", "Test Data", oss.str());
 	}
 
-	void testExtract_Encoded()
-	{
-		vmime::string data
-			("QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVphYmNkZWZnaGlqa2xtbm9wcXJzdHV2d3h5ejAxMjM0NTY3ODk=");
+	void testExtract_Encoded() {
+
+		vmime::string data(
+			"QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVphYmNkZWZnaGlqa2xtbm9wcXJzdHV2d3h5ejAxMjM0NTY3ODk="
+		);
+
 		vmime::shared_ptr <vmime::utility::inputStream> stream =
 			vmime::make_shared <vmime::utility::inputStreamStringAdapter>(data);
 
@@ -125,14 +127,18 @@ VMIME_TEST_SUITE_BEGIN(streamContentHandlerTest)
 		cth.extract(osa);
 
 		// Data should be decoded from B64
-		VASSERT_EQ("extract",
-			"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789", oss.str());
+		VASSERT_EQ(
+			"extract",
+			"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
+			oss.str()
+		);
 	}
 
 	void testExtractRaw_Encoded()
 	{
-		vmime::string data
-			("QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVphYmNkZWZnaGlqa2xtbm9wcXJzdHV2d3h5ejAxMjM0NTY3ODk=");
+		vmime::string data(
+			"QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVphYmNkZWZnaGlqa2xtbm9wcXJzdHV2d3h5ejAxMjM0NTY3ODk="
+		);
 		vmime::shared_ptr <vmime::utility::inputStream> stream =
 			vmime::make_shared <vmime::utility::inputStreamStringAdapter>(data);
 
@@ -144,12 +150,15 @@ VMIME_TEST_SUITE_BEGIN(streamContentHandlerTest)
 		cth.extractRaw(osa);
 
 		// Data should not be decoded
-		VASSERT_EQ("extractRaw",
-			"QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVphYmNkZWZnaGlqa2xtbm9wcXJzdHV2d3h5ejAxMjM0NTY3ODk=", oss.str());
+		VASSERT_EQ(
+			"extractRaw",
+			"QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVphYmNkZWZnaGlqa2xtbm9wcXJzdHV2d3h5ejAxMjM0NTY3ODk=",
+			oss.str()
+		);
 	}
 
-	void testGenerate()
-	{
+	void testGenerate() {
+
 		vmime::string data("foo\x12\x34\x56 bar");
 		vmime::shared_ptr <vmime::utility::inputStream> stream =
 			vmime::make_shared <vmime::utility::inputStreamStringAdapter>(data);
@@ -165,8 +174,8 @@ VMIME_TEST_SUITE_BEGIN(streamContentHandlerTest)
 		VASSERT_EQ("generate", "Zm9vEjRWIGJhcg==", oss.str());
 	}
 
-	void testGenerate_Encoded()
-	{
+	void testGenerate_Encoded() {
+
 		vmime::string data("foo=12=34=56bar");
 		vmime::shared_ptr <vmime::utility::inputStream> stream =
 			vmime::make_shared <vmime::utility::inputStreamStringAdapter>(data);

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -45,9 +45,8 @@ class POP3Folder;
 
 /** POP3 message implementation.
   */
+class VMIME_EXPORT POP3Message : public message {
 
-class VMIME_EXPORT POP3Message : public message
-{
 private:
 
 	friend class POP3Folder;
@@ -77,18 +76,22 @@ public:
 	int getFlags() const;
 	void setFlags(const int flags, const int mode = FLAG_MODE_SET);
 
-	void extract
-		(utility::outputStream& os,
-		 utility::progressListener* progress = NULL,
-		 const size_t start = 0, const size_t length = -1,
-		 const bool peek = false) const;
+	void extract(
+		utility::outputStream& os,
+		utility::progressListener* progress = NULL,
+		const size_t start = 0,
+		const size_t length = -1,
+		const bool peek = false
+	) const;
 
-	void extractPart
-		(const shared_ptr <const messagePart>& p,
-		 utility::outputStream& os,
-		 utility::progressListener* progress = NULL,
-		 const size_t start = 0, const size_t length = -1,
-		 const bool peek = false) const;
+	void extractPart(
+		const shared_ptr <const messagePart>& p,
+		utility::outputStream& os,
+		utility::progressListener* progress = NULL,
+		const size_t start = 0,
+		const size_t length = -1,
+		const bool peek = false
+	) const;
 
 	void fetchPartHeader(const shared_ptr <messagePart>& p);
 

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -39,16 +39,16 @@
 #include "vmime/platforms/posix/posixHandler.hpp"
 
 
-int main()
-{
+int main() {
+
 	// Enumerate encoders
 	vmime::shared_ptr <vmime::utility::encoder::encoderFactory> ef =
 		vmime::utility::encoder::encoderFactory::getInstance();
 
 	std::cout << "Available encoders:" << std::endl;
 
-	for (size_t i = 0 ; i < ef->getEncoderCount() ; ++i)
-	{
+	for (size_t i = 0 ; i < ef->getEncoderCount() ; ++i) {
+
 		vmime::shared_ptr <const vmime::utility::encoder::encoderFactory::registeredEncoder>
 			enc = ef->getEncoderAt(i);
 
@@ -59,8 +59,9 @@ int main()
 
 		std::vector <vmime::string> props = e->getAvailableProperties();
 
-		for (std::vector <vmime::string>::const_iterator it = props.begin() ; it != props.end() ; ++it)
+		for (std::vector <vmime::string>::const_iterator it = props.begin() ; it != props.end() ; ++it) {
 			std::cout << "      - " << *it << std::endl;
+		}
 	}
 
 	std::cout << std::endl;
@@ -71,8 +72,8 @@ int main()
 
 	std::cout << "Available messaging services:" << std::endl;
 
-	for (size_t i = 0 ; i < sf->getServiceCount() ; ++i)
-	{
+	for (size_t i = 0 ; i < sf->getServiceCount() ; ++i) {
+
 		const vmime::net::serviceFactory::registeredService& serv = *sf->getServiceAt(i);
 
 		std::cout << "  * " << serv.getName() << std::endl;
@@ -81,28 +82,29 @@ int main()
 			serv.getInfos().getAvailableProperties();
 
 		for (std::vector <vmime::net::serviceInfos::property>::const_iterator it = props.begin() ;
-		     it != props.end() ; ++it)
-		{
+		     it != props.end() ; ++it) {
+
 			const vmime::net::serviceInfos::property& p = *it;
 
 			const vmime::string name = serv.getInfos().getPropertyPrefix() + p.getName();
 
 			vmime::string type;
 
-			switch (p.getType())
-			{
-			case vmime::net::serviceInfos::property::TYPE_INTEGER: type = "TYPE_INTEGER"; break;
-			case vmime::net::serviceInfos::property::TYPE_STRING: type = "TYPE_STRING"; break;
-			case vmime::net::serviceInfos::property::TYPE_BOOLEAN: type = "TYPE_BOOLEAN"; break;
-			default: type = "(unknown)"; break;
+			switch (p.getType()) {
+				case vmime::net::serviceInfos::property::TYPE_INTEGER: type = "TYPE_INTEGER"; break;
+				case vmime::net::serviceInfos::property::TYPE_STRING: type = "TYPE_STRING"; break;
+				case vmime::net::serviceInfos::property::TYPE_BOOLEAN: type = "TYPE_BOOLEAN"; break;
+				default: type = "(unknown)"; break;
 			}
 
 			vmime::string flags;
 
-			if (p.getFlags() & vmime::net::serviceInfos::property::FLAG_REQUIRED)
+			if (p.getFlags() & vmime::net::serviceInfos::property::FLAG_REQUIRED) {
 				flags += " FLAG_REQUIRED";
-			if (p.getFlags() & vmime::net::serviceInfos::property::FLAG_HIDDEN)
+			}
+			if (p.getFlags() & vmime::net::serviceInfos::property::FLAG_HIDDEN) {
 				flags += " FLAG_HIDDEN";
+			}
 
 			std::cout << "      - " << serv.getInfos().getPropertyPrefix() + p.getName();
 			std::cout << " (type=" << type << ", flags=" << flags;
@@ -111,5 +113,6 @@ int main()
 	}
 
 	std::cout << std::endl;
-}
 
+	return 0;
+}

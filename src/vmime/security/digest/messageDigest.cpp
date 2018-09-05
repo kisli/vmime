@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -31,8 +31,8 @@ namespace security {
 namespace digest {
 
 
-const string messageDigest::getHexDigest() const
-{
+const string messageDigest::getHexDigest() const {
+
 	const byte_t* hash = getDigest();
 	const size_t len = getDigestLength();
 
@@ -41,8 +41,7 @@ const string messageDigest::getHexDigest() const
 	std::ostringstream oss;
 	oss.imbue(std::locale::classic());
 
-	for (size_t i = 0 ; i < len ; ++i)
-	{
+	for (size_t i = 0 ; i < len ; ++i) {
 		oss << hex[(hash[i] & 0xf0) >> 4];
 		oss << hex[(hash[i] & 0x0f)];
 	}

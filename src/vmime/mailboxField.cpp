@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -28,45 +28,51 @@
 #ifndef VMIME_BUILDING_DOC
 
 
-namespace vmime
-{
+namespace vmime {
 
 
-mailboxField::mailboxField()
-{
+mailboxField::mailboxField() {
+
 }
 
 
 mailboxField::mailboxField(const mailboxField&)
-	: headerField()
-{
+	: headerField() {
+
 }
 
 
-void mailboxField::parse
-	(const parsingContext& ctx, const string& buffer, const size_t position,
-	 const size_t end, size_t* newPosition)
-{
+void mailboxField::parse(
+	const parsingContext& ctx,
+	const string& buffer,
+	const size_t position,
+	const size_t end,
+	size_t* newPosition
+) {
+
 	shared_ptr <mailbox> mbox = make_shared <mailbox>();
 
 	// Here, we cannot simply call "m_mailbox.parse()" because it
 	// may have more than one address specified (even if this field
 	// should contain only one). We are never too much careful...
-	shared_ptr <address> parsedAddress = address::parseNext(ctx, buffer, position, end, newPosition, NULL);
+	shared_ptr <address> parsedAddress = address::parseNext(
+		ctx, buffer, position, end, newPosition, NULL
+	);
 
-	if (parsedAddress)
-	{
-		if (parsedAddress->isGroup())
-		{
+	if (parsedAddress) {
+
+		if (parsedAddress->isGroup()) {
+
 			// If it is a group of mailboxes, take the first
 			// mailbox of the group
 			shared_ptr <mailboxGroup> group = dynamicCast <mailboxGroup>(parsedAddress);
 
-			if (!group->isEmpty())
+			if (!group->isEmpty()) {
 				mbox = group->getMailboxAt(0);
-		}
-		else
-		{
+			}
+
+		} else {
+
 			// Parse only if it is a mailbox
 			mbox = dynamicCast <mailbox>(parsedAddress);
 		}
@@ -78,8 +84,9 @@ void mailboxField::parse
 
 	setParsedBounds(position, end);
 
-	if (newPosition)
+	if (newPosition) {
 		*newPosition = end;
+	}
 }
 
 
@@ -87,4 +94,3 @@ void mailboxField::parse
 
 
 #endif // VMIME_BUILDING_DOC
-

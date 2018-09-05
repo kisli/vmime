@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -43,9 +43,8 @@ class file;
 
 /** File list iterator (see file::getFiles).
   */
+class VMIME_EXPORT fileIterator : public object {
 
-class VMIME_EXPORT fileIterator : public object
-{
 public:
 
 	virtual ~fileIterator() { }
@@ -67,9 +66,8 @@ public:
 
 /** Write to a file.
   */
+class VMIME_EXPORT fileWriter : public object {
 
-class VMIME_EXPORT fileWriter : public object
-{
 public:
 
 	virtual ~fileWriter() { }
@@ -80,9 +78,8 @@ public:
 
 /** Read from a file.
   */
+class VMIME_EXPORT fileReader : public object {
 
-class VMIME_EXPORT fileReader : public object
-{
 public:
 
 	virtual ~fileReader() { }
@@ -93,9 +90,8 @@ public:
 
 /** Abstract representation of a file or directory.
   */
+class VMIME_EXPORT file : public object {
 
-class VMIME_EXPORT file : public object
-{
 public:
 
 	typedef utility::path path;
@@ -213,9 +209,8 @@ private:
 
 /** Constructs 'file' objects.
   */
+class VMIME_EXPORT fileSystemFactory : public object {
 
-class VMIME_EXPORT fileSystemFactory : public object
-{
 public:
 
 	virtual ~fileSystemFactory() { }

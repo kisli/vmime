@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -29,39 +29,40 @@ namespace mdn {
 
 
 sendableMDNInfos::sendableMDNInfos(const shared_ptr <const message>& msg, const mailbox& mbox)
-	: m_msg(msg), m_mailbox(mbox)
-{
+	: m_msg(msg),
+	  m_mailbox(mbox) {
+
 }
 
 
 sendableMDNInfos::sendableMDNInfos(const sendableMDNInfos& other)
-	: MDNInfos()
-{
+	: MDNInfos() {
+
 	copyFrom(other);
 }
 
 
-sendableMDNInfos& sendableMDNInfos::operator=(const sendableMDNInfos& other)
-{
+sendableMDNInfos& sendableMDNInfos::operator=(const sendableMDNInfos& other) {
+
 	copyFrom(other);
-	return (*this);
+	return *this;
 }
 
 
-const shared_ptr <const message> sendableMDNInfos::getMessage() const
-{
-	return (m_msg);
+const shared_ptr <const message> sendableMDNInfos::getMessage() const {
+
+	return m_msg;
 }
 
 
-const mailbox& sendableMDNInfos::getRecipient() const
-{
-	return (m_mailbox);
+const mailbox& sendableMDNInfos::getRecipient() const {
+
+	return m_mailbox;
 }
 
 
-void sendableMDNInfos::copyFrom(const sendableMDNInfos& other)
-{
+void sendableMDNInfos::copyFrom(const sendableMDNInfos& other) {
+
 	m_msg = other.m_msg;
 	m_mailbox = other.m_mailbox;
 }

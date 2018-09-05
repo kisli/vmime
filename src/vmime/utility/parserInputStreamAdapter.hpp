@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -36,9 +36,8 @@ namespace utility {
 
 /** An adapter class used for parsing from an input stream.
   */
+class VMIME_EXPORT parserInputStreamAdapter : public seekableInputStream {
 
-class VMIME_EXPORT parserInputStreamAdapter : public seekableInputStream
-{
 public:
 
 	/** @param stream input stream to wrap
@@ -51,18 +50,18 @@ public:
 	void reset();
 	size_t read(byte_t* const data, const size_t count);
 
-	void seek(const size_t pos)
-	{
+	void seek(const size_t pos) {
+
 		m_stream->seek(pos);
 	}
 
-	size_t skip(const size_t count)
-	{
+	size_t skip(const size_t count) {
+
 		return m_stream->skip(count);
 	}
 
-	size_t getPosition() const
-	{
+	size_t getPosition() const {
+
 		return m_stream->getPosition();
 	}
 
@@ -71,21 +70,21 @@ public:
 	  *
 	  * @return byte at the current position
 	  */
-	byte_t peekByte() const
-	{
+	byte_t peekByte() const {
+
 		const size_t initialPos = m_stream->getPosition();
 
-		try
-		{
+		try {
+
 			byte_t buffer[1];
 			const size_t readBytes = m_stream->read(buffer, 1);
 
 			m_stream->seek(initialPos);
 
 			return (readBytes == 1 ? buffer[0] : static_cast <byte_t>(0));
-		}
-		catch (...)
-		{
+
+		} catch (...) {
+
 			m_stream->seek(initialPos);
 			throw;
 		}
@@ -96,12 +95,12 @@ public:
 	  *
 	  * @return byte at the current position
 	  */
-	byte_t getByte()
-	{
+	byte_t getByte() {
+
 		byte_t buffer[1];
 		const size_t readBytes = m_stream->read(buffer, 1);
 
-		return (readBytes == 1 ? buffer[0] : static_cast <byte_t>(0));
+		return readBytes == 1 ? buffer[0] : static_cast <byte_t>(0);
 	}
 
 	/** Check whether the bytes following the current position match
@@ -112,22 +111,21 @@ public:
 	  * @return true if the next bytes match the pattern, false otherwise
 	  */
 	template <typename T>
-	bool matchBytes(const T* bytes, const size_t length) const
-	{
+	bool matchBytes(const T* bytes, const size_t length) const {
+
 		const size_t initialPos = m_stream->getPosition();
 
-		try
-		{
+		try {
+
 			byte_t buffer[32];
 			const size_t readBytes = m_stream->read(buffer, length);
 
 			m_stream->seek(initialPos);
 
-			return readBytes == length &&
-			       ::memcmp(bytes, buffer, length) == 0;
-		}
-		catch (...)
-		{
+			return readBytes == length && ::memcmp(bytes, buffer, length) == 0;
+
+		} catch (...) {
+
 			m_stream->seek(initialPos);
 			throw;
 		}
@@ -145,13 +143,14 @@ public:
 	  * @return number of bytes skipped
 	  */
 	template <typename PREDICATE>
-	size_t skipIf(PREDICATE pred, const size_t endPosition)
-	{
+	size_t skipIf(PREDICATE pred, const size_t endPosition) {
+
 		const size_t initialPos = getPosition();
 		size_t pos = initialPos;
 
-		while (!m_stream->eof() && pos < endPosition && pred(getByte()))
+		while (!m_stream->eof() && pos < endPosition && pred(getByte())) {
 			++pos;
+		}
 
 		m_stream->seek(pos);
 
@@ -171,4 +170,3 @@ private:
 
 
 #endif // VMIME_UTILITY_PARSERINPUTSTREAMADAPTER_HPP_INCLUDED
-

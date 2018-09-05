@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -24,61 +24,60 @@
 #include "vmime/context.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 context::context()
-	: m_internationalizedEmail(false)
-{
+	: m_internationalizedEmail(false) {
+
 }
 
 
 context::context(const context& ctx)
 	: object(),
-	  m_internationalizedEmail(ctx.m_internationalizedEmail)
-{
+	  m_internationalizedEmail(ctx.m_internationalizedEmail) {
+
 }
 
 
-context::~context()
-{
+context::~context() {
+
 }
 
 
-bool context::getInternationalizedEmailSupport() const
-{
+bool context::getInternationalizedEmailSupport() const {
+
 	return m_internationalizedEmail;
 }
 
 
-void context::setInternationalizedEmailSupport(const bool support)
-{
+void context::setInternationalizedEmailSupport(const bool support) {
+
 	m_internationalizedEmail = support;
 }
 
 
-const charsetConverterOptions& context::getCharsetConversionOptions() const
-{
+const charsetConverterOptions& context::getCharsetConversionOptions() const {
+
 	return m_charsetConvOptions;
 }
 
 
-void context::setCharsetConversionOptions(const charsetConverterOptions& opts)
-{
+void context::setCharsetConversionOptions(const charsetConverterOptions& opts) {
+
 	m_charsetConvOptions = opts;
 }
 
 
-context& context::operator=(const context& ctx)
-{
+context& context::operator=(const context& ctx) {
+
 	copyFrom(ctx);
 	return *this;
 }
 
 
-void context::copyFrom(const context& ctx)
-{
+void context::copyFrom(const context& ctx) {
+
 	m_internationalizedEmail = ctx.m_internationalizedEmail;
 	m_charsetConvOptions = ctx.m_charsetConvOptions;
 }

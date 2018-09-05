@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -46,8 +46,8 @@ namespace tls {
 
 /** Describe a TLS connection between a client and a server.
   */
-class VMIME_EXPORT TLSSession : public object, public enable_shared_from_this <TLSSession>
-{
+class VMIME_EXPORT TLSSession : public object, public enable_shared_from_this <TLSSession> {
+
 public:
 
 	/** Create and initialize a new TLS session.
@@ -57,7 +57,10 @@ public:
 	  * @param props TLS properties for this session
 	  * @return a new TLS session
 	  */
-	static shared_ptr <TLSSession> create(const shared_ptr <security::cert::certificateVerifier>& cv, const shared_ptr <TLSProperties>& props);
+	static shared_ptr <TLSSession> create(
+		const shared_ptr <security::cert::certificateVerifier>& cv,
+		const shared_ptr <TLSProperties>& props
+	);
 
 	/** Create a new socket that adds a TLS security layer around
 	  * an existing socket. You should create only one socket

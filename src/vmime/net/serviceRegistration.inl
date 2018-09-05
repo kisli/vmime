@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -32,35 +32,41 @@ namespace net {
 
 
 template <class S>
-class registeredServiceImpl : public serviceFactory::registeredService
-{
+class registeredServiceImpl : public serviceFactory::registeredService {
+
 public:
 
-	registeredServiceImpl(const string& name, const int type)
-		: m_type(type), m_name(name), m_servInfos(S::getInfosInstance())
-	{
+	registeredServiceImpl(
+		const string& name,
+		const int type
+	)
+		: m_type(type),
+		  m_name(name),
+		  m_servInfos(S::getInfosInstance()) {
+
 	}
 
-	shared_ptr <service> create
-		(const shared_ptr <session>& sess,
-		 const shared_ptr <security::authenticator>& auth) const
-	{
+	shared_ptr <service> create(
+		const shared_ptr <session>& sess,
+		const shared_ptr <security::authenticator>& auth
+	) const {
+
 		return make_shared <S>(sess, auth);
 	}
 
-	const serviceInfos& getInfos() const
-	{
-		return (m_servInfos);
+	const serviceInfos& getInfos() const {
+
+		return m_servInfos;
 	}
 
-	const string& getName() const
-	{
-		return (m_name);
+	const string& getName() const {
+
+		return m_name;
 	}
 
-	int getType() const
-	{
-		return (m_type);
+	int getType() const {
+
+		return m_type;
 	}
 
 private:
@@ -73,14 +79,15 @@ private:
 
 // Basic service registerer
 template <class S>
-class serviceRegisterer
-{
+class serviceRegisterer {
+
 public:
 
-	serviceRegisterer(const string& protocol, const service::Type type)
-	{
-		serviceFactory::getInstance()->registerService
-			(make_shared <registeredServiceImpl <S> >(protocol, type));
+	serviceRegisterer(const string& protocol, const service::Type type) {
+
+		serviceFactory::getInstance()->registerService(
+			make_shared <registeredServiceImpl <S> >(protocol, type)
+		);
 	}
 };
 

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -56,25 +56,25 @@ namespace imap {
 // IMAPMessage_literalHandler
 //
 
-class IMAPMessage_literalHandler : public IMAPParser::literalHandler
-{
+class IMAPMessage_literalHandler : public IMAPParser::literalHandler {
+
 public:
 
-	IMAPMessage_literalHandler(utility::outputStream& os, utility::progressListener* progress)
-	{
+	IMAPMessage_literalHandler(utility::outputStream& os, utility::progressListener* progress) {
+
 		m_target = shared_ptr <target>(new targetStream(progress, os));
 	}
 
-	shared_ptr <target> targetFor(const IMAPParser::component& comp, const int /* data */)
-	{
-		if (typeid(comp) == typeid(IMAPParser::msg_att_item))
-		{
+	shared_ptr <target> targetFor(const IMAPParser::component& comp, const int /* data */) {
+
+		if (typeid(comp) == typeid(IMAPParser::msg_att_item)) {
+
 			const int type = static_cast
 				<const IMAPParser::msg_att_item&>(comp).type();
 
 			if (type == IMAPParser::msg_att_item::BODY_SECTION ||
-			    type == IMAPParser::msg_att_item::RFC822_TEXT)
-			{
+			    type == IMAPParser::msg_att_item::RFC822_TEXT) {
+
 				return m_target;
 			}
 		}
@@ -82,8 +82,8 @@ public:
 		return shared_ptr <target>();
 	}
 
-	shared_ptr <target> getTarget()
-	{
+	shared_ptr <target> getTarget() {
+
 		return m_target;
 	}
 
@@ -101,152 +101,187 @@ private:
 //
 
 
-IMAPMessage::IMAPMessage(const shared_ptr <IMAPFolder>& folder, const size_t num)
-	: m_folder(folder), m_num(num), m_size(-1U), m_flags(FLAG_UNDEFINED),
-	  m_expunged(false), m_modseq(0), m_structure(null)
-{
+IMAPMessage::IMAPMessage(
+	const shared_ptr <IMAPFolder>& folder,
+	const size_t num
+)
+	: m_folder(folder),
+	  m_num(num),
+	  m_size(-1U),
+	  m_flags(FLAG_UNDEFINED),
+	  m_expunged(false),
+	  m_modseq(0),
+	  m_structure(null) {
+
 	folder->registerMessage(this);
 }
 
 
-IMAPMessage::IMAPMessage(const shared_ptr <IMAPFolder>& folder, const size_t num, const uid& uid)
-	: m_folder(folder), m_num(num), m_size(-1), m_flags(FLAG_UNDEFINED),
-	  m_expunged(false), m_uid(uid), m_modseq(0), m_structure(null)
-{
+IMAPMessage::IMAPMessage(
+	const shared_ptr <IMAPFolder>& folder,
+	const size_t num,
+	const uid& uid
+)
+	: m_folder(folder),
+	  m_num(num),
+	  m_size(-1),
+	  m_flags(FLAG_UNDEFINED),
+	  m_expunged(false),
+	  m_uid(uid),
+	  m_modseq(0),
+	  m_structure(null) {
+
 	folder->registerMessage(this);
 }
 
 
-IMAPMessage::~IMAPMessage()
-{
-	try
-	{
+IMAPMessage::~IMAPMessage() {
+
+	try {
+
 		shared_ptr <IMAPFolder> folder = m_folder.lock();
 
-		if (folder)
+		if (folder) {
 			folder->unregisterMessage(this);
-	}
-	catch (...)
-	{
+		}
+
+	} catch (...) {
+
 		// Don't throw in destructor
 	}
 }
 
 
-void IMAPMessage::onFolderClosed()
-{
+void IMAPMessage::onFolderClosed() {
+
 	m_folder.reset();
 }
 
 
-size_t IMAPMessage::getNumber() const
-{
-	return (m_num);
+size_t IMAPMessage::getNumber() const {
+
+	return m_num;
 }
 
 
-const message::uid IMAPMessage::getUID() const
-{
+const message::uid IMAPMessage::getUID() const {
+
 	return m_uid;
 }
 
 
-vmime_uint64 IMAPMessage::getModSequence() const
-{
+vmime_uint64 IMAPMessage::getModSequence() const {
+
 	return m_modseq;
 }
 
 
-size_t IMAPMessage::getSize() const
-{
-	if (m_size == -1U)
-		throw exceptions::unfetched_object();
+size_t IMAPMessage::getSize() const {
 
-	return (m_size);
+	if (m_size == -1U) {
+		throw exceptions::unfetched_object();
+	}
+
+	return m_size;
 }
 
 
-bool IMAPMessage::isExpunged() const
-{
-	return (m_expunged);
+bool IMAPMessage::isExpunged() const {
+
+	return m_expunged;
 }
 
 
-int IMAPMessage::getFlags() const
-{
-	if (m_flags == FLAG_UNDEFINED)
-		throw exceptions::unfetched_object();
+int IMAPMessage::getFlags() const {
 
-	return (m_flags);
+	if (m_flags == FLAG_UNDEFINED) {
+		throw exceptions::unfetched_object();
+	}
+
+	return m_flags;
 }
 
 
-shared_ptr <const messageStructure> IMAPMessage::getStructure() const
-{
-	if (m_structure == NULL)
+shared_ptr <const messageStructure> IMAPMessage::getStructure() const {
+
+	if (m_structure == NULL) {
 		throw exceptions::unfetched_object();
+	}
 
 	return m_structure;
 }
 
 
-shared_ptr <messageStructure> IMAPMessage::getStructure()
-{
-	if (m_structure == NULL)
+shared_ptr <messageStructure> IMAPMessage::getStructure() {
+
+	if (m_structure == NULL) {
 		throw exceptions::unfetched_object();
+	}
 
 	return m_structure;
 }
 
 
-shared_ptr <const header> IMAPMessage::getHeader() const
-{
-	if (m_header == NULL)
+shared_ptr <const header> IMAPMessage::getHeader() const {
+
+	if (m_header == NULL) {
 		throw exceptions::unfetched_object();
+	}
 
-	return (m_header);
+	return m_header;
 }
 
 
-void IMAPMessage::extract
-	(utility::outputStream& os,
-	 utility::progressListener* progress,
-     const size_t start, const size_t length,
-     const bool peek) const
-{
+void IMAPMessage::extract(
+	utility::outputStream& os,
+	utility::progressListener* progress,
+    const size_t start,
+    const size_t length,
+    const bool peek
+) const {
+
 	shared_ptr <const IMAPFolder> folder = m_folder.lock();
 
-	if (!folder)
+	if (!folder) {
 		throw exceptions::folder_not_found();
+	}
 
-	extractImpl(null, os, progress, start, length,
-		EXTRACT_HEADER | EXTRACT_BODY | (peek ? EXTRACT_PEEK : 0));
+	extractImpl(
+		null, os, progress, start, length,
+		EXTRACT_HEADER | EXTRACT_BODY | (peek ? EXTRACT_PEEK : 0)
+	);
 }
 
 
-void IMAPMessage::extractPart
-	(const shared_ptr <const messagePart>& p,
-	 utility::outputStream& os,
-	 utility::progressListener* progress,
-	 const size_t start, const size_t length,
-	 const bool peek) const
-{
+void IMAPMessage::extractPart(
+	const shared_ptr <const messagePart>& p,
+	utility::outputStream& os,
+	utility::progressListener* progress,
+	const size_t start,
+	const size_t length,
+	const bool peek
+) const {
+
 	shared_ptr <const IMAPFolder> folder = m_folder.lock();
 
-	if (!folder)
+	if (!folder) {
 		throw exceptions::folder_not_found();
+	}
 
-	extractImpl(p, os, progress, start, length,
-		EXTRACT_HEADER | EXTRACT_BODY | (peek ? EXTRACT_PEEK : 0));
+	extractImpl(
+		p, os, progress, start, length,
+		EXTRACT_HEADER | EXTRACT_BODY | (peek ? EXTRACT_PEEK : 0)
+	);
 }
 
 
-void IMAPMessage::fetchPartHeader(const shared_ptr <messagePart>& p)
-{
+void IMAPMessage::fetchPartHeader(const shared_ptr <messagePart>& p) {
+
 	shared_ptr <IMAPFolder> folder = m_folder.lock();
 
-	if (!folder)
+	if (!folder) {
 		throw exceptions::folder_not_found();
+	}
 
 	std::ostringstream oss;
 	utility::outputStreamAdapter ossAdapter(oss);
@@ -257,10 +292,10 @@ void IMAPMessage::fetchPartHeader(const shared_ptr <messagePart>& p)
 }
 
 
-void IMAPMessage::fetchPartHeaderForStructure(const shared_ptr <messageStructure>& str)
-{
-	for (size_t i = 0, n = str->getPartCount() ; i < n ; ++i)
-	{
+void IMAPMessage::fetchPartHeaderForStructure(const shared_ptr <messageStructure>& str) {
+
+	for (size_t i = 0, n = str->getPartCount() ; i < n ; ++i) {
+
 		shared_ptr <messagePart> part = str->getPartAt(i);
 
 		// Fetch header of current part
@@ -272,42 +307,43 @@ void IMAPMessage::fetchPartHeaderForStructure(const shared_ptr <messageStructure
 }
 
 
-size_t IMAPMessage::extractImpl
-	(const shared_ptr <const messagePart>& p,
-	 utility::outputStream& os,
-	 utility::progressListener* progress,
-	 const size_t start, const size_t length,
-	 const int extractFlags) const
-{
+size_t IMAPMessage::extractImpl(
+	const shared_ptr <const messagePart>& p,
+	utility::outputStream& os,
+	utility::progressListener* progress,
+	const size_t start,
+	const size_t length,
+	const int extractFlags
+) const {
+
 	shared_ptr <const IMAPFolder> folder = m_folder.lock();
 
 	IMAPMessage_literalHandler literalHandler(os, progress);
 
-	if (length == 0)
+	if (length == 0) {
 		return 0;
+	}
 
 	// Construct section identifier
 	std::ostringstream section;
 	section.imbue(std::locale::classic());
 
-	if (p != NULL)
-	{
+	if (p != NULL) {
+
 		shared_ptr <const IMAPMessagePart> currentPart = dynamicCast <const IMAPMessagePart>(p);
 		std::vector <size_t> numbers;
 
 		numbers.push_back(currentPart->getNumber());
 		currentPart = currentPart->getParent();
 
-		while (currentPart != NULL)
-		{
+		while (currentPart != NULL) {
 			numbers.push_back(currentPart->getNumber());
 			currentPart = currentPart->getParent();
 		}
 
 		numbers.erase(numbers.end() - 1);
 
-		for (std::vector <size_t>::reverse_iterator it = numbers.rbegin() ; it != numbers.rend() ; ++it)
-		{
+		for (std::vector <size_t>::reverse_iterator it = numbers.rbegin() ; it != numbers.rend() ; ++it) {
 			if (it != numbers.rbegin()) section << ".";
 			section << (*it + 1);
 		}
@@ -327,53 +363,57 @@ size_t IMAPMessage::extractImpl
 
 	bodyDesc << "BODY";
 
-	if (extractFlags & EXTRACT_PEEK)
+	if (extractFlags & EXTRACT_PEEK) {
 		bodyDesc << ".PEEK";
+	}
 
 	bodyDesc << "[";
 
-	if (section.str().empty())
-	{
+	if (section.str().empty()) {
+
 		// header + body
-		if ((extractFlags & EXTRACT_HEADER) && (extractFlags & EXTRACT_BODY))
+		if ((extractFlags & EXTRACT_HEADER) && (extractFlags & EXTRACT_BODY)) {
 			bodyDesc << "";
 		// body only
-		else if (extractFlags & EXTRACT_BODY)
+		} else if (extractFlags & EXTRACT_BODY) {
 			bodyDesc << "TEXT";
 		// header only
-		else if (extractFlags & EXTRACT_HEADER)
+		} else if (extractFlags & EXTRACT_HEADER) {
 			bodyDesc << "HEADER";
-	}
-	else
-	{
+		}
+
+	} else {
+
 		bodyDesc << section.str();
 
 		// header + body
-		if ((extractFlags & EXTRACT_HEADER) && (extractFlags & EXTRACT_BODY))
-		{
+		if ((extractFlags & EXTRACT_HEADER) && (extractFlags & EXTRACT_BODY)) {
+
 			// First, extract header
 			std::ostringstream header;
 			utility::outputStreamAdapter headerStream(header);
 
-			const size_t headerLength = extractImpl
-				(p, headerStream, /* progress */ NULL,
-				 /* start */ 0, /* length */ -1, extractFlags & ~EXTRACT_BODY);
+			const size_t headerLength = extractImpl(
+				p, headerStream, /* progress */ NULL,
+				/* start */ 0, /* length */ -1, extractFlags & ~EXTRACT_BODY
+			);
 
 			size_t s = start;
 			size_t l = length;
 
-			if (s < headerLength)
-			{
-				if (l == static_cast <size_t>(-1))
-				{
+			if (s < headerLength) {
+
+				if (l == static_cast <size_t>(-1)) {
+
 					os.write(header.str().data() + s, headerLength - s);
-				}
-				else
-				{
+
+				} else {
+
 					size_t headerCopyLength = l;
 
-					if (start + headerCopyLength > headerLength)
+					if (start + headerCopyLength > headerLength) {
 						headerCopyLength = headerLength - start;
+					}
 
 					os.write(header.str().data() + s, headerCopyLength);
 
@@ -381,30 +421,31 @@ size_t IMAPMessage::extractImpl
 				}
 
 				s = 0;
-			}
-			else
-			{
+
+			} else {
+
 				s -= headerLength;
 			}
 
 			// Then, extract body
 			return extractImpl(p, os, progress, s, l, extractFlags & ~EXTRACT_HEADER);
-		}
+
 		// header only
-		else if (extractFlags & EXTRACT_HEADER)
-		{
+		} else if (extractFlags & EXTRACT_HEADER) {
+
 			bodyDesc << ".MIME";   // "MIME" not "HEADER" for parts
 		}
 	}
 
 	bodyDesc << "]";
 
-	if (start != 0 || length != static_cast <size_t>(-1))
-	{
-		if (length == static_cast <size_t>(-1))
+	if (start != 0 || length != static_cast <size_t>(-1)) {
+
+		if (length == static_cast <size_t>(-1)) {
 			bodyDesc << "<" << start << "." << static_cast <unsigned int>(-1) << ">";
-		else
+		} else {
 			bodyDesc << "<" << start << "." << length << ">";
+		}
 	}
 
 	std::vector <std::string> fetchParams;
@@ -417,19 +458,16 @@ size_t IMAPMessage::extractImpl
 	)->send(folder->m_connection);
 
 	// Get the response
-	scoped_ptr <IMAPParser::response> resp
-		(folder->m_connection->readResponse(&literalHandler));
+	scoped_ptr <IMAPParser::response> resp(folder->m_connection->readResponse(&literalHandler));
 
 	if (resp->isBad() || resp->response_done()->response_tagged()->
-		resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
-	{
-		throw exceptions::command_error("FETCH",
-			resp->getErrorLog(), "bad response");
+		resp_cond_state()->status() != IMAPParser::resp_cond_state::OK) {
+
+		throw exceptions::command_error("FETCH", resp->getErrorLog(), "bad response");
 	}
 
 
-	if (extractFlags & EXTRACT_BODY)
-	{
+	if (extractFlags & EXTRACT_BODY) {
 		// TODO: update the flags (eg. flag "\Seen" may have been set)
 	}
 
@@ -437,9 +475,11 @@ size_t IMAPMessage::extractImpl
 }
 
 
-int IMAPMessage::processFetchResponse
-	(const fetchAttributes& options, const IMAPParser::message_data* msgData)
-{
+int IMAPMessage::processFetchResponse(
+	const fetchAttributes& options,
+	const IMAPParser::message_data* msgData
+) {
+
 	shared_ptr <IMAPFolder> folder = m_folder.lock();
 
 	// Get message attributes
@@ -447,138 +487,142 @@ int IMAPMessage::processFetchResponse
 	int changes = 0;
 
 	for (std::vector <IMAPParser::msg_att_item*>::const_iterator
-	     it = atts.begin() ; it != atts.end() ; ++it)
-	{
-		switch ((*it)->type())
-		{
-		case IMAPParser::msg_att_item::FLAGS:
-		{
-			int flags = IMAPUtils::messageFlagsFromFlags((*it)->flag_list());
+	     it = atts.begin() ; it != atts.end() ; ++it) {
 
-			if (m_flags != flags)
-			{
-				m_flags = flags;
-				changes |= events::messageChangedEvent::TYPE_FLAGS;
+		switch ((*it)->type()) {
+
+			case IMAPParser::msg_att_item::FLAGS: {
+
+				int flags = IMAPUtils::messageFlagsFromFlags((*it)->flag_list());
+
+				if (m_flags != flags) {
+					m_flags = flags;
+					changes |= events::messageChangedEvent::TYPE_FLAGS;
+				}
+
+				break;
 			}
+			case IMAPParser::msg_att_item::UID: {
 
-			break;
-		}
-		case IMAPParser::msg_att_item::UID:
-		{
-			m_uid = (*it)->unique_id()->value();
-			break;
-		}
-		case IMAPParser::msg_att_item::MODSEQ:
-		{
-			m_modseq = (*it)->mod_sequence_value()->value();
-			break;
-		}
-		case IMAPParser::msg_att_item::ENVELOPE:
-		{
-			if (!options.has(fetchAttributes::FULL_HEADER))
-			{
-				const IMAPParser::envelope* env = (*it)->envelope();
-				shared_ptr <vmime::header> hdr = getOrCreateHeader();
-
-				// Date
-				hdr->Date()->setValue(env->env_date()->value());
-
-				// Subject
-				text subject;
-				text::decodeAndUnfold(env->env_subject()->value(), &subject);
-
-				hdr->Subject()->setValue(subject);
-
-				// From
-				mailboxList from;
-				IMAPUtils::convertAddressList(*(env->env_from()), from);
-
-				if (!from.isEmpty())
-					hdr->From()->setValue(*(from.getMailboxAt(0)));
-
-				// To
-				mailboxList to;
-				IMAPUtils::convertAddressList(*(env->env_to()), to);
-
-				hdr->To()->setValue(to.toAddressList());
-
-				// Sender
-				mailboxList sender;
-				IMAPUtils::convertAddressList(*(env->env_sender()), sender);
-
-				if (!sender.isEmpty())
-					hdr->Sender()->setValue(*(sender.getMailboxAt(0)));
-
-				// Reply-to
-				mailboxList replyTo;
-				IMAPUtils::convertAddressList(*(env->env_reply_to()), replyTo);
-
-				if (!replyTo.isEmpty())
-					hdr->ReplyTo()->setValue(*(replyTo.getMailboxAt(0)));
-
-				// Cc
-				mailboxList cc;
-				IMAPUtils::convertAddressList(*(env->env_cc()), cc);
-
-				if (!cc.isEmpty())
-					hdr->Cc()->setValue(cc.toAddressList());
-
-				// Bcc
-				mailboxList bcc;
-				IMAPUtils::convertAddressList(*(env->env_bcc()), bcc);
-
-				if (!bcc.isEmpty())
-					hdr->Bcc()->setValue(bcc.toAddressList());
+				m_uid = (*it)->unique_id()->value();
+				break;
 			}
+			case IMAPParser::msg_att_item::MODSEQ: {
 
-			break;
-		}
-		case IMAPParser::msg_att_item::BODY_STRUCTURE:
-		{
-			m_structure = make_shared <IMAPMessageStructure>((*it)->body());
-			break;
-		}
-		case IMAPParser::msg_att_item::RFC822_HEADER:
-		{
-			getOrCreateHeader()->parse((*it)->nstring()->value());
-			break;
-		}
-		case IMAPParser::msg_att_item::RFC822_SIZE:
-		{
-			m_size = static_cast <size_t>((*it)->number()->value());
-			break;
-		}
-		case IMAPParser::msg_att_item::BODY_SECTION:
-		{
-			if (!options.has(fetchAttributes::FULL_HEADER))
-			{
-				if ((*it)->section()->section_text1() &&
-				    (*it)->section()->section_text1()->type()
-				        == IMAPParser::section_text::HEADER_FIELDS)
-				{
-					header tempHeader;
-					tempHeader.parse((*it)->nstring()->value());
+				m_modseq = (*it)->mod_sequence_value()->value();
+				break;
+			}
+			case IMAPParser::msg_att_item::ENVELOPE: {
 
-					vmime::header& hdr = *getOrCreateHeader();
-					std::vector <shared_ptr <headerField> > fields = tempHeader.getFieldList();
+				if (!options.has(fetchAttributes::FULL_HEADER)) {
 
-					for (std::vector <shared_ptr <headerField> >::const_iterator jt = fields.begin() ;
-					     jt != fields.end() ; ++jt)
-					{
-						hdr.appendField(vmime::clone(*jt));
+					const IMAPParser::envelope* env = (*it)->envelope();
+					shared_ptr <vmime::header> hdr = getOrCreateHeader();
+
+					// Date
+					hdr->Date()->setValue(env->env_date()->value());
+
+					// Subject
+					text subject;
+					text::decodeAndUnfold(env->env_subject()->value(), &subject);
+
+					hdr->Subject()->setValue(subject);
+
+					// From
+					mailboxList from;
+					IMAPUtils::convertAddressList(*(env->env_from()), from);
+
+					if (!from.isEmpty()) {
+						hdr->From()->setValue(*(from.getMailboxAt(0)));
+					}
+
+					// To
+					mailboxList to;
+					IMAPUtils::convertAddressList(*(env->env_to()), to);
+
+					hdr->To()->setValue(to.toAddressList());
+
+					// Sender
+					mailboxList sender;
+					IMAPUtils::convertAddressList(*(env->env_sender()), sender);
+
+					if (!sender.isEmpty()) {
+						hdr->Sender()->setValue(*(sender.getMailboxAt(0)));
+					}
+
+					// Reply-to
+					mailboxList replyTo;
+					IMAPUtils::convertAddressList(*(env->env_reply_to()), replyTo);
+
+					if (!replyTo.isEmpty()) {
+						hdr->ReplyTo()->setValue(*(replyTo.getMailboxAt(0)));
+					}
+
+					// Cc
+					mailboxList cc;
+					IMAPUtils::convertAddressList(*(env->env_cc()), cc);
+
+					if (!cc.isEmpty()) {
+						hdr->Cc()->setValue(cc.toAddressList());
+					}
+
+					// Bcc
+					mailboxList bcc;
+					IMAPUtils::convertAddressList(*(env->env_bcc()), bcc);
+
+					if (!bcc.isEmpty()) {
+						hdr->Bcc()->setValue(bcc.toAddressList());
 					}
 				}
-			}
 
-			break;
-		}
-		case IMAPParser::msg_att_item::INTERNALDATE:
-		case IMAPParser::msg_att_item::RFC822:
-		case IMAPParser::msg_att_item::RFC822_TEXT:
-		case IMAPParser::msg_att_item::BODY:
-		{
-			break;
-		}
+				break;
+			}
+			case IMAPParser::msg_att_item::BODY_STRUCTURE: {
+
+				m_structure = make_shared <IMAPMessageStructure>((*it)->body());
+				break;
+			}
+			case IMAPParser::msg_att_item::RFC822_HEADER: {
+
+				getOrCreateHeader()->parse((*it)->nstring()->value());
+				break;
+			}
+			case IMAPParser::msg_att_item::RFC822_SIZE: {
+
+				m_size = static_cast <size_t>((*it)->number()->value());
+				break;
+			}
+			case IMAPParser::msg_att_item::BODY_SECTION: {
+
+				if (!options.has(fetchAttributes::FULL_HEADER)) {
+
+					if ((*it)->section()->section_text1() &&
+					    (*it)->section()->section_text1()->type()
+					        == IMAPParser::section_text::HEADER_FIELDS) {
+
+						header tempHeader;
+						tempHeader.parse((*it)->nstring()->value());
+
+						vmime::header& hdr = *getOrCreateHeader();
+						std::vector <shared_ptr <headerField> > fields = tempHeader.getFieldList();
+
+						for (std::vector <shared_ptr <headerField> >::const_iterator jt = fields.begin() ;
+						     jt != fields.end() ; ++jt) {
+
+							hdr.appendField(vmime::clone(*jt));
+						}
+					}
+				}
+
+				break;
+			}
+			case IMAPParser::msg_att_item::INTERNALDATE:
+			case IMAPParser::msg_att_item::RFC822:
+			case IMAPParser::msg_att_item::RFC822_TEXT:
+			case IMAPParser::msg_att_item::BODY: {
+
+				break;
+			}
 
 		}
 	}
@@ -587,34 +631,40 @@ int IMAPMessage::processFetchResponse
 }
 
 
-shared_ptr <header> IMAPMessage::getOrCreateHeader()
-{
-	if (m_header != NULL)
-		return (m_header);
-	else
-		return (m_header = make_shared <header>());
+shared_ptr <header> IMAPMessage::getOrCreateHeader() {
+
+	if (m_header != NULL) {
+		return m_header;
+	} else {
+		return m_header = make_shared <header>();
+	}
 }
 
 
-void IMAPMessage::setFlags(const int flags, const int mode)
-{
+void IMAPMessage::setFlags(const int flags, const int mode) {
+
 	shared_ptr <IMAPFolder> folder = m_folder.lock();
 
-	if (!folder)
+	if (!folder) {
 		throw exceptions::folder_not_found();
+	}
 
-	if (!m_uid.empty())
+	if (!m_uid.empty()) {
 		folder->setMessageFlags(messageSet::byUID(m_uid), flags, mode);
-	else
+	} else {
 		folder->setMessageFlags(messageSet::byNumber(m_num), flags, mode);
+	}
 }
 
 
-void IMAPMessage::constructParsedMessage
-	(const shared_ptr <bodyPart>& parentPart, const shared_ptr <messageStructure>& str, int level)
-{
-	if (level == 0)
-	{
+void IMAPMessage::constructParsedMessage(
+	const shared_ptr <bodyPart>& parentPart,
+	const shared_ptr <messageStructure>& str,
+	int level
+) {
+
+	if (level == 0) {
+
 		shared_ptr <messagePart> part = str->getPartAt(0);
 
 		// Copy header
@@ -622,17 +672,19 @@ void IMAPMessage::constructParsedMessage
 		parentPart->getHeader()->copyFrom(*hdr);
 
 		// Initialize body
-		parentPart->getBody()->setContents
-			(make_shared <IMAPMessagePartContentHandler>
-				(dynamicCast <IMAPMessage>(shared_from_this()),
-				 part, parentPart->getBody()->getEncoding()));
+		parentPart->getBody()->setContents(
+			make_shared <IMAPMessagePartContentHandler>(
+				dynamicCast <IMAPMessage>(shared_from_this()),
+				part, parentPart->getBody()->getEncoding()
+			)
+		);
 
 		constructParsedMessage(parentPart, part->getStructure(), 1);
-	}
-	else
-	{
-		for (size_t i = 0, n = str->getPartCount() ; i < n ; ++i)
-		{
+
+	} else {
+
+		for (size_t i = 0, n = str->getPartCount() ; i < n ; ++i) {
+
 			shared_ptr <messagePart> part = str->getPartAt(i);
 
 			shared_ptr <bodyPart> childPart = make_shared <bodyPart>();
@@ -642,10 +694,12 @@ void IMAPMessage::constructParsedMessage
 			childPart->getHeader()->copyFrom(*hdr);
 
 			// Initialize body
-			childPart->getBody()->setContents
-				(make_shared <IMAPMessagePartContentHandler>
-					(dynamicCast <IMAPMessage>(shared_from_this()),
-					 part, childPart->getBody()->getEncoding()));
+			childPart->getBody()->setContents(
+				make_shared <IMAPMessagePartContentHandler>(
+					dynamicCast <IMAPMessage>(shared_from_this()),
+					part, childPart->getBody()->getEncoding()
+				)
+			);
 
 			// Add child part
 			parentPart->getBody()->appendPart(childPart);
@@ -657,22 +711,23 @@ void IMAPMessage::constructParsedMessage
 }
 
 
-shared_ptr <vmime::message> IMAPMessage::getParsedMessage()
-{
+shared_ptr <vmime::message> IMAPMessage::getParsedMessage() {
+
 	// Fetch structure
 	shared_ptr <messageStructure> structure;
 
-	try
-	{
+	try {
+
 		structure = getStructure();
-	}
-	catch (exceptions::unfetched_object&)
-	{
+
+	} catch (exceptions::unfetched_object&) {
+
 		std::vector <shared_ptr <message> > msgs;
 		msgs.push_back(dynamicCast <IMAPMessage>(shared_from_this()));
 
-		m_folder.lock()->fetchMessages
-			(msgs, fetchAttributes(fetchAttributes::STRUCTURE), /* progress */ NULL);
+		m_folder.lock()->fetchMessages(
+			msgs, fetchAttributes(fetchAttributes::STRUCTURE), /* progress */ NULL
+		);
 
 		structure = getStructure();
 	}
@@ -689,14 +744,14 @@ shared_ptr <vmime::message> IMAPMessage::getParsedMessage()
 }
 
 
-void IMAPMessage::renumber(const size_t number)
-{
+void IMAPMessage::renumber(const size_t number) {
+
 	m_num = number;
 }
 
 
-void IMAPMessage::setExpunged()
-{
+void IMAPMessage::setExpunged() {
+
 	m_expunged = true;
 }
 

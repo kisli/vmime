@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -29,15 +29,13 @@
 #include "vmime/generationContext.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 /** A MIME message.
   */
+class VMIME_EXPORT message : public bodyPart {
 
-class VMIME_EXPORT message : public bodyPart
-{
 public:
 
 	message();
@@ -49,11 +47,11 @@ public:
 
 	// Override default generate() functions so that we can change
 	// the default 'maxLineLength' value
-	const string generate
-		(const size_t maxLineLength = generationContext::getDefaultContext().getMaxLineLength(),
-		 const size_t curLinePos = 0) const;
+	const string generate(
+		const size_t maxLineLength = generationContext::getDefaultContext().getMaxLineLength(),
+		const size_t curLinePos = 0
+	) const;
 };
-
 
 
 } // vmime

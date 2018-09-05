@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -49,12 +49,16 @@ class SMTPCommand;
 
 /** SMTP transport service.
   */
+class VMIME_EXPORT SMTPTransport : public transport {
 
-class VMIME_EXPORT SMTPTransport : public transport
-{
 public:
 
-	SMTPTransport(const shared_ptr <session>& sess, const shared_ptr <security::authenticator>& auth, const bool secured = false);
+	SMTPTransport(
+		const shared_ptr <session>& sess,
+		const shared_ptr <security::authenticator>& auth,
+		const bool secured = false
+	);
+
 	~SMTPTransport();
 
 	const string getProtocolName() const;
@@ -68,20 +72,22 @@ public:
 
 	void noop();
 
-	void send
-		(const mailbox& expeditor,
-		 const mailboxList& recipients,
-		 utility::inputStream& is,
-		 const size_t size,
-		 utility::progressListener* progress = NULL,
-		 const mailbox& sender = mailbox());
+	void send(
+		const mailbox& expeditor,
+		const mailboxList& recipients,
+		utility::inputStream& is,
+		const size_t size,
+		utility::progressListener* progress = NULL,
+		const mailbox& sender = mailbox()
+	);
 
-	void send
-		(const shared_ptr <vmime::message>& msg,
-		 const mailbox& expeditor,
-		 const mailboxList& recipients,
-		 utility::progressListener* progress = NULL,
-		 const mailbox& sender = mailbox());
+	void send(
+		const shared_ptr <vmime::message>& msg,
+		const mailbox& expeditor,
+		const mailboxList& recipients,
+		utility::progressListener* progress = NULL,
+		const mailbox& sender = mailbox()
+	);
 
 	bool isSecuredConnection() const;
 	shared_ptr <connectionInfos> getConnectionInfos() const;
@@ -103,12 +109,13 @@ private:
 	  * @param sendDATACommand if true, the DATA command will be sent
 	  * @param size message size, in bytes (or 0, if not known)
 	  */
-	void sendEnvelope
-		(const mailbox& expeditor,
-		 const mailboxList& recipients,
-		 const mailbox& sender,
-		 bool sendDATACommand,
-		 const size_t size);
+	void sendEnvelope(
+		const mailbox& expeditor,
+		const mailboxList& recipients,
+		const mailbox& sender,
+		bool sendDATACommand,
+		const size_t size
+	);
 
 
 	shared_ptr <SMTPConnection> m_connection;

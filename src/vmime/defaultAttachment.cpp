@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -28,57 +28,75 @@
 #include "vmime/encoding.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
-defaultAttachment::defaultAttachment()
-{
+defaultAttachment::defaultAttachment() {
+
 }
 
 
-defaultAttachment::defaultAttachment(const shared_ptr <const contentHandler>& data,
-	const encoding& enc, const mediaType& type, const text& desc, const word& name)
-	: m_type(type), m_desc(desc), m_data(data), m_encoding(enc), m_name(name)
-{
+defaultAttachment::defaultAttachment(
+	const shared_ptr <const contentHandler>& data,
+	const encoding& enc,
+	const mediaType& type,
+	const text& desc,
+	const word& name
+)
+	: m_type(type),
+	  m_desc(desc),
+	  m_data(data),
+	  m_encoding(enc),
+	  m_name(name) {
+
 }
 
 
-defaultAttachment::defaultAttachment(const shared_ptr <const contentHandler>& data,
-	const mediaType& type, const text& desc, const word& name)
-	: m_type(type), m_desc(desc), m_data(data),
-	  m_encoding(encoding::decide(data)), m_name(name)
-{
+defaultAttachment::defaultAttachment(
+	const shared_ptr <const contentHandler>& data,
+	const mediaType& type,
+	const text& desc,
+	const word& name
+)
+	: m_type(type),
+	  m_desc(desc),
+	  m_data(data),
+	  m_encoding(encoding::decide(data)),
+	  m_name(name) {
+
 }
 
 
 defaultAttachment::defaultAttachment(const defaultAttachment& attach)
-	: attachment(), m_type(attach.m_type), m_desc(attach.m_desc),
+	: attachment(),
+	  m_type(attach.m_type),
+	  m_desc(attach.m_desc),
 	  m_data(vmime::clone(attach.m_data)),
-	  m_encoding(attach.m_encoding), m_name(attach.m_name)
-{
+	  m_encoding(attach.m_encoding),
+	  m_name(attach.m_name) {
+
 }
 
 
-defaultAttachment::~defaultAttachment()
-{
+defaultAttachment::~defaultAttachment() {
+
 }
 
 
-defaultAttachment& defaultAttachment::operator=(const defaultAttachment& attach)
-{
+defaultAttachment& defaultAttachment::operator=(const defaultAttachment& attach) {
+
 	m_type = attach.m_type;
 	m_desc = attach.m_desc;
 	m_name = attach.m_name;
 	m_data = vmime::clone(attach.m_data);
 	m_encoding = attach.m_encoding;
 
-	return (*this);
+	return *this;
 }
 
 
-void defaultAttachment::generateIn(const shared_ptr <bodyPart>& parent) const
-{
+void defaultAttachment::generateIn(const shared_ptr <bodyPart>& parent) const {
+
 	// Create and append a new part for this attachment
 	shared_ptr <bodyPart> part = make_shared <bodyPart>();
 	parent->getBody()->appendPart(part);
@@ -87,8 +105,8 @@ void defaultAttachment::generateIn(const shared_ptr <bodyPart>& parent) const
 }
 
 
-void defaultAttachment::generatePart(const shared_ptr <bodyPart>& part) const
-{
+void defaultAttachment::generatePart(const shared_ptr <bodyPart>& part) const {
+
 	// Set header fields
 	part->getHeader()->ContentType()->setValue(m_type);
 	if (!m_desc.isEmpty()) part->getHeader()->ContentDescription()->setValue(m_desc);
@@ -101,44 +119,44 @@ void defaultAttachment::generatePart(const shared_ptr <bodyPart>& part) const
 }
 
 
-const mediaType defaultAttachment::getType() const
-{
+const mediaType defaultAttachment::getType() const {
+
 	return m_type;
 }
 
 
-const text defaultAttachment::getDescription() const
-{
+const text defaultAttachment::getDescription() const {
+
 	return m_desc;
 }
 
 
-const word defaultAttachment::getName() const
-{
+const word defaultAttachment::getName() const {
+
 	return m_name;
 }
 
 
-const shared_ptr <const contentHandler> defaultAttachment::getData() const
-{
+const shared_ptr <const contentHandler> defaultAttachment::getData() const {
+
 	return m_data;
 }
 
 
-const encoding defaultAttachment::getEncoding() const
-{
+const encoding defaultAttachment::getEncoding() const {
+
 	return m_encoding;
 }
 
 
-shared_ptr <const object> defaultAttachment::getPart() const
-{
+shared_ptr <const object> defaultAttachment::getPart() const {
+
 	return null;
 }
 
 
-shared_ptr <const header> defaultAttachment::getHeader() const
-{
+shared_ptr <const header> defaultAttachment::getHeader() const {
+
 	return null;
 }
 

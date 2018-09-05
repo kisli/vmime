@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -29,8 +29,7 @@
 #include "vmime/mailbox.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 /** A list of mailboxes (basic type).
@@ -38,9 +37,8 @@ namespace vmime
   * This class works exactly like 'addressList' except it prevents user
   * from inserting mailbox groups where it is not allowed by the RFC.
   */
+class VMIME_EXPORT mailboxList : public headerFieldValue {
 
-class VMIME_EXPORT mailboxList : public headerFieldValue
-{
 public:
 
 	mailboxList();
@@ -163,18 +161,20 @@ private:
 protected:
 
 	// Component parsing & assembling
-	void parseImpl
-		(const parsingContext& ctx,
-		 const string& buffer,
-		 const size_t position,
-		 const size_t end,
-		 size_t* newPosition = NULL);
+	void parseImpl(
+		const parsingContext& ctx,
+		const string& buffer,
+		const size_t position,
+		const size_t end,
+		size_t* newPosition = NULL
+	);
 
-	void generateImpl
-		(const generationContext& ctx,
-		 utility::outputStream& os,
-		 const size_t curLinePos = 0,
-		 size_t* newLinePos = NULL) const;
+	void generateImpl(
+		const generationContext& ctx,
+		utility::outputStream& os,
+		const size_t curLinePos = 0,
+		size_t* newLinePos = NULL
+	) const;
 };
 
 

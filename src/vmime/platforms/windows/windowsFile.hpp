@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -42,8 +42,8 @@ namespace platforms {
 namespace windows {
 
 
-class windowsFileSystemFactory : public vmime::utility::fileSystemFactory
-{
+class windowsFileSystemFactory : public vmime::utility::fileSystemFactory {
+
 public:
 
 	shared_ptr <vmime::utility::file> create(const vmime::utility::file::path& path) const;
@@ -63,8 +63,8 @@ public:
 };
 
 
-class windowsFile : public vmime::utility::file
-{
+class windowsFile : public vmime::utility::file {
+
 public:
 
 	windowsFile(const vmime::utility::file::path& path);
@@ -97,7 +97,11 @@ public:
 
 private:
 
-	static void createDirectoryImpl(const vmime::utility::file::path& fullPath, const vmime::utility::file::path& path, const bool recursive = false);
+	static void createDirectoryImpl(
+		const vmime::utility::file::path& fullPath,
+		const vmime::utility::file::path& path,
+		const bool recursive = false
+	);
 
 private:
 
@@ -106,8 +110,8 @@ private:
 };
 
 
-class windowsFileIterator : public vmime::utility::fileIterator
-{
+class windowsFileIterator : public vmime::utility::fileIterator {
+
 public:
 
 	windowsFileIterator(const vmime::utility::file::path& path, const vmime::string& nativePath);
@@ -132,8 +136,8 @@ private:
 };
 
 
-class windowsFileReader : public vmime::utility::fileReader
-{
+class windowsFileReader : public vmime::utility::fileReader {
+
 public:
 
 	windowsFileReader(const vmime::utility::file::path& path, const vmime::string& nativePath);
@@ -149,8 +153,8 @@ private:
 };
 
 
-class windowsFileReaderInputStream : public vmime::utility::inputStream
-{
+class windowsFileReaderInputStream : public vmime::utility::inputStream {
+
 public:
 
 	windowsFileReaderInputStream(const vmime::utility::file::path& path, HANDLE hFile);
@@ -172,8 +176,8 @@ private:
 };
 
 
-class windowsFileWriter : public vmime::utility::fileWriter
-{
+class windowsFileWriter : public vmime::utility::fileWriter {
+
 public:
 
 	windowsFileWriter(const vmime::utility::file::path& path, const vmime::string& nativePath);
@@ -189,8 +193,8 @@ private:
 };
 
 
-class windowsFileWriterOutputStream : public vmime::utility::outputStream
-{
+class windowsFileWriterOutputStream : public vmime::utility::outputStream {
+
 public:
 
 	windowsFileWriterOutputStream(const vmime::utility::file::path& path, HANDLE hFile);

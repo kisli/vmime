@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -41,111 +41,112 @@ namespace security {
 namespace sasl {
 
 
-defaultSASLAuthenticator::defaultSASLAuthenticator()
-{
+defaultSASLAuthenticator::defaultSASLAuthenticator() {
+
 }
 
 
-defaultSASLAuthenticator::~defaultSASLAuthenticator()
-{
+defaultSASLAuthenticator::~defaultSASLAuthenticator() {
+
 }
 
 
-const std::vector <shared_ptr <SASLMechanism> >
-	defaultSASLAuthenticator::getAcceptableMechanisms
-		(const std::vector <shared_ptr <SASLMechanism> >& available,
-		 const shared_ptr <SASLMechanism>& suggested) const
-{
-	if (suggested)
-	{
+const std::vector <shared_ptr <SASLMechanism> > defaultSASLAuthenticator::getAcceptableMechanisms(
+	const std::vector <shared_ptr <SASLMechanism> >& available,
+	const shared_ptr <SASLMechanism>& suggested
+) const {
+
+	if (suggested) {
+
 		std::vector <shared_ptr <SASLMechanism> > res;
 
 		res.push_back(suggested);
 
-		for (unsigned int i = 0 ; i < available.size() ; ++i)
-		{
-			if (available[i]->getName() != suggested->getName())
+		for (unsigned int i = 0 ; i < available.size() ; ++i) {
+
+			if (available[i]->getName() != suggested->getName()) {
 				res.push_back(available[i]);
+			}
 		}
 
 		return res;
-	}
-	else
-	{
+
+	} else {
+
 		return available;
 	}
 }
 
 
-const string defaultSASLAuthenticator::getUsername() const
-{
+const string defaultSASLAuthenticator::getUsername() const {
+
 	return m_default.getUsername();
 }
 
 
-const string defaultSASLAuthenticator::getPassword() const
-{
+const string defaultSASLAuthenticator::getPassword() const {
+
 	return m_default.getPassword();
 }
 
 
-const string defaultSASLAuthenticator::getAccessToken() const
-{
+const string defaultSASLAuthenticator::getAccessToken() const {
+
 	return m_default.getAccessToken();
 }
 
 
-const string defaultSASLAuthenticator::getHostname() const
-{
+const string defaultSASLAuthenticator::getHostname() const {
+
 	return m_default.getHostname();
 }
 
 
-const string defaultSASLAuthenticator::getAnonymousToken() const
-{
+const string defaultSASLAuthenticator::getAnonymousToken() const {
+
 	return m_default.getAnonymousToken();
 }
 
 
-const string defaultSASLAuthenticator::getServiceName() const
-{
+const string defaultSASLAuthenticator::getServiceName() const {
+
 	return m_saslSession.lock()->getServiceName();
 }
 
 
-void defaultSASLAuthenticator::setService(const shared_ptr <net::service>& serv)
-{
+void defaultSASLAuthenticator::setService(const shared_ptr <net::service>& serv) {
+
 	m_service = serv;
 	m_default.setService(serv);
 }
 
 
-weak_ptr <net::service> defaultSASLAuthenticator::getService() const
-{
+weak_ptr <net::service> defaultSASLAuthenticator::getService() const {
+
 	return m_service;
 }
 
 
-void defaultSASLAuthenticator::setSASLSession(const shared_ptr <SASLSession>& sess)
-{
+void defaultSASLAuthenticator::setSASLSession(const shared_ptr <SASLSession>& sess) {
+
 	m_saslSession = sess;
 }
 
 
-shared_ptr <SASLSession> defaultSASLAuthenticator::getSASLSession() const
-{
+shared_ptr <SASLSession> defaultSASLAuthenticator::getSASLSession() const {
+
 	return m_saslSession.lock();
 }
 
 
-void defaultSASLAuthenticator::setSASLMechanism(const shared_ptr <SASLMechanism>& mech)
-{
+void defaultSASLAuthenticator::setSASLMechanism(const shared_ptr <SASLMechanism>& mech) {
+
 	m_saslMech = mech;
 }
 
 
-shared_ptr <SASLMechanism> defaultSASLAuthenticator::getSASLMechanism() const
-{
+shared_ptr <SASLMechanism> defaultSASLAuthenticator::getSASLMechanism() const {
+
 	return m_saslMech;
 }
 
@@ -156,4 +157,3 @@ shared_ptr <SASLMechanism> defaultSASLAuthenticator::getSASLMechanism() const
 
 
 #endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_SASL_SUPPORT
-

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -29,37 +29,38 @@ namespace utility {
 
 
 inputStreamByteBufferAdapter::inputStreamByteBufferAdapter(const byte_t* buffer, const size_t length)
-	: m_buffer(buffer), m_length(length), m_pos(0)
-{
+	: m_buffer(buffer),
+	  m_length(length),
+	  m_pos(0) {
+
 }
 
 
-bool inputStreamByteBufferAdapter::eof() const
-{
+bool inputStreamByteBufferAdapter::eof() const {
+
 	return m_pos >= m_length;
 }
 
 
-void inputStreamByteBufferAdapter::reset()
-{
+void inputStreamByteBufferAdapter::reset() {
+
 	m_pos = 0;
 }
 
 
-size_t inputStreamByteBufferAdapter::read
-	(byte_t* const data, const size_t count)
-{
+size_t inputStreamByteBufferAdapter::read(byte_t* const data, const size_t count) {
+
 	const size_t remaining = m_length - m_pos;
 
-	if (remaining < count)
-	{
+	if (remaining < count) {
+
 		std::copy(m_buffer + m_pos, m_buffer + m_pos + remaining, data);
 		m_pos += remaining;
 
 		return remaining;
-	}
-	else
-	{
+
+	} else {
+
 		std::copy(m_buffer + m_pos, m_buffer + m_pos + count, data);
 		m_pos += count;
 
@@ -68,36 +69,36 @@ size_t inputStreamByteBufferAdapter::read
 }
 
 
-size_t inputStreamByteBufferAdapter::skip(const size_t count)
-{
+size_t inputStreamByteBufferAdapter::skip(const size_t count) {
+
 	const size_t remaining = m_length - m_pos;
 
-	if (remaining < count)
-	{
+	if (remaining < count) {
+
 		m_pos += remaining;
 		return remaining;
-	}
-	else
-	{
+
+	} else {
+
 		m_pos += count;
 		return count;
 	}
 }
 
 
-size_t inputStreamByteBufferAdapter::getPosition() const
-{
+size_t inputStreamByteBufferAdapter::getPosition() const {
+
 	return m_pos;
 }
 
 
-void inputStreamByteBufferAdapter::seek(const size_t pos)
-{
-	if (pos <= m_length)
+void inputStreamByteBufferAdapter::seek(const size_t pos) {
+
+	if (pos <= m_length) {
 		m_pos = pos;
+	}
 }
 
 
 } // utility
 } // vmime
-

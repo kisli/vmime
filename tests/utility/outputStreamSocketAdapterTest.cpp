@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -35,8 +35,8 @@ VMIME_TEST_SUITE_BEGIN(outputStreamSocketAdapterTest)
 	VMIME_TEST_LIST_END
 
 
-	void testWrite()
-	{
+	void testWrite() {
+
 		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
 
 		vmime::utility::outputStreamSocketAdapter stream(*socket);
@@ -49,8 +49,8 @@ VMIME_TEST_SUITE_BEGIN(outputStreamSocketAdapterTest)
 		VASSERT_EQ("Write", "some data", buffer);
 	}
 
-	void testWriteBinary()
-	{
+	void testWriteBinary() {
+
 		const char binaryData[] =
 			"\xc5\x9a\xc3\xb8\xc9\xb1\xc9\x9b\x20\xc9\x93\xc9\xa8\xc9\xb2\xc9"
 			"\x91\xc5\x95\xc9\xa3\x20\xc9\x96\xc9\x90\xca\x88\xc9\x92";
@@ -67,8 +67,8 @@ VMIME_TEST_SUITE_BEGIN(outputStreamSocketAdapterTest)
 		VASSERT_EQ("Write", 0, memcmp(binaryData, buffer.data(), sizeof(binaryData)));
 	}
 
-	void testWriteCRLF()
-	{
+	void testWriteCRLF() {
+
 		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
 
 		vmime::utility::outputStreamSocketAdapter stream(*socket);
@@ -85,4 +85,3 @@ VMIME_TEST_SUITE_BEGIN(outputStreamSocketAdapterTest)
 	}
 
 VMIME_TEST_SUITE_END
-
