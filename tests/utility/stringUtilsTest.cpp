@@ -91,6 +91,12 @@ VMIME_TEST_SUITE_BEGIN(stringUtilsTest)
 
 		VASSERT_EQ("3", false, stringUtils::isStringEqualNoCase(vmime::string("foo"), "FOo", 3));
 		VASSERT_EQ("4", false, stringUtils::isStringEqualNoCase(vmime::string("foo"), "bar", 3));
+
+		VASSERT_EQ("5", false, stringUtils::isStringEqualNoCase(vmime::string("foO"), "bar", 3));
+		VASSERT_EQ("6", false, stringUtils::isStringEqualNoCase(vmime::string("foOO"), "barO", 4));
+		VASSERT_EQ("7", false, stringUtils::isStringEqualNoCase(vmime::string("foOO"), "ba", 2));
+
+		VASSERT_EQ("8", true, stringUtils::isStringEqualNoCase(vmime::string("FOoooo"), "foo", 3));
 	}
 
 	void testIsStringEqualNoCase2() {
@@ -111,6 +117,8 @@ VMIME_TEST_SUITE_BEGIN(stringUtilsTest)
 		VASSERT_EQ("2", false, stringUtils::isStringEqualNoCase(str1.begin(), str1.end(), "FooBar", 6));
 		VASSERT_EQ("3", true, stringUtils::isStringEqualNoCase(str1.begin(), str1.end(), "fooBar", 3));
 		VASSERT_EQ("4", false, stringUtils::isStringEqualNoCase(str1.begin(), str1.begin() + 3, "fooBar", 6));
+		VASSERT_EQ("5", false, stringUtils::isStringEqualNoCase(str1.begin(), str1.begin() + 3, "bar", 3));
+		VASSERT_EQ("6", false, stringUtils::isStringEqualNoCase(str1.begin(), str1.begin() + 6, "barbar", 6));
 	}
 
 	void testToLower() {
