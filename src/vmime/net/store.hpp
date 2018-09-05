@@ -50,10 +50,7 @@ protected:
 		const shared_ptr <session>& sess,
 		const serviceInfos& infos,
 		const shared_ptr <security::authenticator>& auth
-	)
-		: service(sess, infos, auth) {
-
-	}
+	);
 
 public:
 
@@ -105,10 +102,7 @@ public:
 	virtual int getCapabilities() const = 0;
 
 
-	Type getType() const {
-
-		return TYPE_STORE;
-	}
+	Type getType() const;
 };
 
 
