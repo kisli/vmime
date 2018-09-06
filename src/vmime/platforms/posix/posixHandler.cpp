@@ -55,54 +55,12 @@
 #include <cassert>
 #include <cstdlib>
 
-#if VMIME_HAVE_PTHREAD
-#	include <pthread.h>
-#endif // VMIME_HAVE_PTHREAD
 
 /*
 #ifdef _POSIX_PRIORITY_SCHEDULING
 	#include <sched.h>
 #endif // _POSIX_PRIORITY_SCHEDULING
 */
-
-
-#if VMIME_HAVE_PTHREAD
-
-namespace {
-
-	// This construction ensures mutex will be initialized in compile-time
-	// and will be available any time in the runtime.
-	pthread_mutex_t g_mutex = PTHREAD_MUTEX_INITIALIZER;
-
-	// Helper lock, to be exception safe all the time.
-	class PLockHelper {
-
-	public:
-
-		PLockHelper() {
-
-			if (pthread_mutex_lock(&g_mutex) != 0) {
-				assert(!"unable to lock mutex - thread safety's void");
-			}
-		}
-
-		~PLockHelper() {
-
-			if (pthread_mutex_unlock(&g_mutex) != 0) {
-				assert(!"unable to unlock mutex - application's dead...");
-			}
-		}
-
-	private:
-
-		// Object cannot be copied
-		PLockHelper(const PLockHelper&);
-		const PLockHelper& operator=(const PLockHelper&);
-	};
-
-} // unnamed namespace
-
-#endif // VMIME_HAVE_PTHREAD
 
 
 namespace vmime {
@@ -173,9 +131,16 @@ const vmime::datetime posixHandler::getCurrentLocalTime() const {
 
 const vmime::charset posixHandler::getLocalCharset() const {
 
-	const PLockHelper lock;
+	// Note: nl_langinfo() might be affected by calls to setlocale()
+	// in a multithread environment. There is not MT-safe alternative
+	// to nl_langinfo().
+	auto codeset = ::nl_langinfo(CODESET);
 
-	return vmime::charset(::nl_langinfo(CODESET));
+	if (codeset) {
+		return vmime::charset(codeset);
+	}
+
+	return vmime::charset();
 }
 
 
