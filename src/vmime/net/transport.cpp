@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -43,30 +43,34 @@ namespace vmime {
 namespace net {
 
 
-transport::transport(shared_ptr <session> sess, const serviceInfos& infos, shared_ptr <security::authenticator> auth)
-	: service(sess, infos, auth)
-{
+transport::transport(
+	const shared_ptr <session>& sess,
+	const serviceInfos& infos,
+	const shared_ptr <security::authenticator>& auth
+)
+	: service(sess, infos, auth) {
+
 }
 
 
-shared_ptr <headerField> transport::processHeaderField(shared_ptr <headerField> field)
-{
-	if (utility::stringUtils::isStringEqualNoCase(field->getName(), fields::BCC))
-	{
+shared_ptr <headerField> transport::processHeaderField(const shared_ptr <headerField>& field) {
+
+	if (utility::stringUtils::isStringEqualNoCase(field->getName(), fields::BCC)) {
+
 		// Remove Bcc headers from the message, as required by the RFC.
 		// Some SMTP server automatically strip this header (Postfix, qmail),
 		// and others have an option for this (Exim).
 		return null;
-	}
-	else if (utility::stringUtils::isStringEqualNoCase(field->getName(), fields::RETURN_PATH))
-	{
+
+	} else if (utility::stringUtils::isStringEqualNoCase(field->getName(), fields::RETURN_PATH)) {
+
 		// RFC-2821: Return-Path header is added by the final transport system
 		// that delivers the message to its recipient. Then, it should not be
 		// transmitted to MSA.
    		return null;
-	}
-	else if (utility::stringUtils::isStringEqualNoCase(field->getName(), fields::ORIGINAL_RECIPIENT))
-	{
+
+	} else if (utility::stringUtils::isStringEqualNoCase(field->getName(), fields::ORIGINAL_RECIPIENT)) {
+
 		// RFC-2298: Delivering MTA may add the Original-Recipient header and
 		// discard existing one; so, no need to send it.
 		return null;
@@ -77,59 +81,71 @@ shared_ptr <headerField> transport::processHeaderField(shared_ptr <headerField> 
 }
 
 
-void transport::processHeader(shared_ptr <header> header)
-{
-	if (header->getFieldCount() == 0)
+void transport::processHeader(const shared_ptr <header>& header) {
+
+	if (header->getFieldCount() == 0) {
 		return;
+	}
 
 	// Remove/replace fields
-	for (size_t idx = header->getFieldCount() ; idx != 0 ; --idx)
-	{
+	for (size_t idx = header->getFieldCount() ; idx != 0 ; --idx) {
+
 		shared_ptr <headerField> field = header->getFieldAt(idx - 1);
 		shared_ptr <headerField> newField = processHeaderField(field);
 
-		if (newField == NULL)
+		if (newField == NULL) {
 			header->removeField(field);
-		else if (newField != field)
+		} else if (newField != field) {
 			header->replaceField(field, newField);
+		}
 	}
 
 	// Add missing header fields
 	// -- Date
-	if (!header->hasField(fields::DATE))
+	if (!header->hasField(fields::DATE)) {
 		header->Date()->setValue(datetime::now());
+	}
 
 	// -- Mime-Version
-	if (!header->hasField(fields::MIME_VERSION))
+	if (!header->hasField(fields::MIME_VERSION)) {
 		header->MimeVersion()->setValue(string(SUPPORTED_MIME_VERSION));
+	}
 
 	// -- Message-Id
-	if (!header->hasField(fields::MESSAGE_ID))
+	if (!header->hasField(fields::MESSAGE_ID)) {
 		header->MessageId()->setValue(messageId::generateId());
-}
-
-
-static void extractMailboxes
-	(mailboxList& recipients, const addressList& list)
-{
-	for (size_t i = 0 ; i < list.getAddressCount() ; ++i)
-	{
-		shared_ptr <mailbox> mbox = dynamicCast <mailbox>(list.getAddressAt(i)->clone());
-
-		if (mbox != NULL)
-			recipients.appendMailbox(mbox);
 	}
 }
 
 
-void transport::send(shared_ptr <vmime::message> msg, utility::progressListener* progress)
-{
+static void extractMailboxes(
+	mailboxList& recipients,
+	const addressList& list
+) {
+
+	for (size_t i = 0 ; i < list.getAddressCount() ; ++i) {
+
+		shared_ptr <mailbox> mbox = dynamicCast <mailbox>(list.getAddressAt(i)->clone());
+
+		if (mbox) {
+			recipients.appendMailbox(mbox);
+		}
+	}
+}
+
+
+void transport::send(
+	const shared_ptr <vmime::message>& msg,
+	utility::progressListener* progress
+) {
+
 	// Extract expeditor
 	shared_ptr <mailbox> fromMbox =
 		msg->getHeader()->findFieldValue <mailbox>(fields::FROM);
 
-	if (!fromMbox)
+	if (!fromMbox) {
 		throw exceptions::no_expeditor();
+	}
 
 	mailbox expeditor = *fromMbox;
 
@@ -139,10 +155,11 @@ void transport::send(shared_ptr <vmime::message> msg, utility::progressListener*
 
 	mailbox sender;
 
-	if (!senderMbox)
+	if (!senderMbox) {
 		sender = expeditor;
-	else
+	} else {
 		sender = *senderMbox;
+	}
 
 	// Extract recipients
 	mailboxList recipients;
@@ -151,22 +168,23 @@ void transport::send(shared_ptr <vmime::message> msg, utility::progressListener*
 	shared_ptr <addressList> addresses =
 		msg->getHeader()->findFieldValue <addressList>(fields::TO);
 
-	if (addresses)
+	if (addresses) {
 		extractMailboxes(recipients, *addresses);
+	}
 
 	// -- "Cc" field
-	addresses =
-		msg->getHeader()->findFieldValue <addressList>(fields::CC);
+	addresses = msg->getHeader()->findFieldValue <addressList>(fields::CC);
 
-	if (addresses)
+	if (addresses) {
 		extractMailboxes(recipients, *addresses);
+	}
 
 	// -- "Bcc" field
-	addresses =
-		msg->getHeader()->findFieldValue <addressList>(fields::BCC);
+	addresses = msg->getHeader()->findFieldValue <addressList>(fields::BCC);
 
-	if (addresses)
+	if (addresses) {
 		extractMailboxes(recipients, *addresses);
+	}
 
 	// Process message header by removing fields that should be removed
 	// before transmitting the message to MSA, and adding missing fields
@@ -177,18 +195,21 @@ void transport::send(shared_ptr <vmime::message> msg, utility::progressListener*
 	// To avoid cloning message body (too much overhead), use processed
 	// header during the time we are generating the message to a stream.
 	// Revert it back to original header after.
-	struct XChangeMsgHeader
-	{
-		XChangeMsgHeader(shared_ptr <vmime::message> _msg,
-		                 shared_ptr <vmime::header> _hdr)
-			: msg(_msg), hdr(msg->getHeader())
-		{
+	struct XChangeMsgHeader {
+
+		XChangeMsgHeader(
+			const shared_ptr <vmime::message>& _msg,
+		    const shared_ptr <vmime::header>& _hdr
+		)
+			: msg(_msg),
+			  hdr(msg->getHeader()) {
+
 			// Set new header
 			msg->setHeader(_hdr);
 		}
 
-		~XChangeMsgHeader()
-		{
+		~XChangeMsgHeader() {
+
 			// Revert original header
 			msg->setHeader(hdr);
 		}
@@ -197,16 +218,21 @@ void transport::send(shared_ptr <vmime::message> msg, utility::progressListener*
 
 		shared_ptr <vmime::message> msg;
 		shared_ptr <vmime::header> hdr;
+
 	} headerExchanger(msg, hdr);
 
 	send(msg, expeditor, recipients, progress, sender);
 }
 
 
-void transport::send
-	(shared_ptr <vmime::message> msg, const mailbox& expeditor, const mailboxList& recipients,
-	 utility::progressListener* progress, const mailbox& sender)
-{
+void transport::send(
+	const shared_ptr <vmime::message>& msg,
+	const mailbox& expeditor,
+	const mailboxList& recipients,
+	utility::progressListener* progress,
+	const mailbox& sender
+) {
+
 	// Generate the message, "stream" it and delegate the sending
 	// to the generic send() function.
 	std::ostringstream oss;
@@ -222,9 +248,9 @@ void transport::send
 }
 
 
-transport::Type transport::getType() const
-{
-	return (TYPE_TRANSPORT);
+transport::Type transport::getType() const {
+
+	return TYPE_TRANSPORT;
 }
 
 

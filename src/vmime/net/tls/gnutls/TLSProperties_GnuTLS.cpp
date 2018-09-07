@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -42,63 +42,63 @@ namespace tls {
 
 
 TLSProperties::TLSProperties()
-	: m_data(make_shared <TLSProperties_GnuTLS>())
-{
+	: m_data(make_shared <TLSProperties_GnuTLS>()) {
+
 	setCipherSuite(CIPHERSUITE_DEFAULT);
 }
 
 
 TLSProperties::TLSProperties(const TLSProperties& props)
 	: object(),
-	  m_data(make_shared <TLSProperties_GnuTLS>())
-{
+	  m_data(make_shared <TLSProperties_GnuTLS>()) {
+
 	*dynamicCast <TLSProperties_GnuTLS>(m_data) = *dynamicCast <TLSProperties_GnuTLS>(props.m_data);
 }
 
 
-void TLSProperties::setCipherSuite(const GenericCipherSuite cipherSuite)
-{
-	switch (cipherSuite)
-	{
-	case CIPHERSUITE_HIGH:
+void TLSProperties::setCipherSuite(const GenericCipherSuite cipherSuite) {
 
-		setCipherSuite("SECURE256:%SSL3_RECORD_VERSION");
-		break;
+	switch (cipherSuite) {
 
-	case CIPHERSUITE_MEDIUM:
+		case CIPHERSUITE_HIGH:
 
-		setCipherSuite("SECURE128:%SSL3_RECORD_VERSION");
-		break;
+			setCipherSuite("SECURE256:%SSL3_RECORD_VERSION");
+			break;
 
-	case CIPHERSUITE_LOW:
+		case CIPHERSUITE_MEDIUM:
 
-		setCipherSuite("NORMAL:%SSL3_RECORD_VERSION");
-		break;
+			setCipherSuite("SECURE128:%SSL3_RECORD_VERSION");
+			break;
 
-	default:
-	case CIPHERSUITE_DEFAULT:
+		case CIPHERSUITE_LOW:
 
-		setCipherSuite("NORMAL:%SSL3_RECORD_VERSION");
-		break;
+			setCipherSuite("NORMAL:%SSL3_RECORD_VERSION");
+			break;
+
+		default:
+		case CIPHERSUITE_DEFAULT:
+
+			setCipherSuite("NORMAL:%SSL3_RECORD_VERSION");
+			break;
 	}
 }
 
 
-void TLSProperties::setCipherSuite(const string& cipherSuite)
-{
+void TLSProperties::setCipherSuite(const string& cipherSuite) {
+
 	dynamicCast <TLSProperties_GnuTLS>(m_data)->cipherSuite = cipherSuite;
 }
 
 
-const string TLSProperties::getCipherSuite() const
-{
+const string TLSProperties::getCipherSuite() const {
+
 	return dynamicCast <TLSProperties_GnuTLS>(m_data)->cipherSuite;
 }
 
 
 
-TLSProperties_GnuTLS& TLSProperties_GnuTLS::operator=(const TLSProperties_GnuTLS& other)
-{
+TLSProperties_GnuTLS& TLSProperties_GnuTLS::operator=(const TLSProperties_GnuTLS& other) {
+
 	cipherSuite = other.cipherSuite;
 
 	return *this;

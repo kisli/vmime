@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -41,8 +41,8 @@ namespace security {
 namespace cert {
 
 
-class X509Certificate_OpenSSL : public X509Certificate
-{
+class X509Certificate_OpenSSL : public X509Certificate {
+
 	friend class X509Certificate;
 
 	X509Certificate_OpenSSL(const X509Certificate_OpenSSL&);
@@ -60,13 +60,14 @@ public:
 	const byteArray getSerialNumber() const;
 
 	const string getIssuerString() const;
-	bool checkIssuer(shared_ptr <const X509Certificate> issuer) const;
+	bool checkIssuer(const shared_ptr <const X509Certificate>& issuer) const;
 
-	bool verify(shared_ptr <const X509Certificate> caCert) const;
+	bool verify(const shared_ptr <const X509Certificate>& caCert) const;
 
-	bool verifyHostName
-		(const string& hostname,
-		 std::vector <std::string>* nonMatchingNames = NULL) const;
+	bool verifyHostName(
+		const string& hostname,
+		std::vector <std::string>* nonMatchingNames = NULL
+	) const;
 
 	const datetime getExpirationDate() const;
 	const datetime getActivationDate() const;
@@ -81,7 +82,7 @@ public:
 	const byteArray getEncoded() const;
 	const string getType() const;
 	int getVersion() const;
-	bool equals(shared_ptr <const certificate> other) const;
+	bool equals(const shared_ptr <const certificate>& other) const;
 	void* getInternalData();
 
 private:

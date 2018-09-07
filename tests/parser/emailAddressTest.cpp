@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -45,29 +45,26 @@ VMIME_TEST_SUITE_BEGIN(emailAddressTest)
 	VMIME_TEST_LIST_END
 
 
-	void setUp()
-	{
+	void setUp() {
+
 		// Set the global C and C++ locale to the user-configured locale.
 		// The locale should use UTF-8 encoding for these tests to run successfully.
-		try
-		{
+		try {
 			std::locale::global(std::locale(""));
-		}
-		catch (std::exception &)
-		{
+		} catch (std::exception &) {
 			std::setlocale(LC_ALL, "");
 		}
 	}
 
-	void tearDown()
-	{
+	void tearDown() {
+
 		// Restore default locale
 		std::locale::global(std::locale("C"));
 	}
 
 
-	void testParseASCII()
-	{
+	void testParseASCII() {
+
 		vmime::emailAddress eml1("local@domain");
 		VASSERT_EQ("1/local", "local", eml1.getLocalName());
 		VASSERT_EQ("1/domain", "domain", eml1.getDomainName());
@@ -78,8 +75,8 @@ VMIME_TEST_SUITE_BEGIN(emailAddressTest)
 		VASSERT_EQ("2/domain", vmime::platform::getHandler()->getHostName(), eml2.getDomainName());
 	}
 
-	void testParseEAI()
-	{
+	void testParseEAI() {
+
 		// Examples taken from Wikipedia (http://en.wikipedia.org/wiki/Email_address)
 
 		// Latin Alphabet (with diacritics):
@@ -103,8 +100,8 @@ VMIME_TEST_SUITE_BEGIN(emailAddressTest)
 		VASSERT_EQ("4/domain", "ящик-с-апельсинами.рф", eml4.getDomainName());
 	}
 
-	void testParseInvalid()
-	{
+	void testParseInvalid() {
+
 		// Only one @ is allowed outside quotation marks
 		vmime::emailAddress eml1("local@part@domain");
 		VASSERT_EQ("1/local", "local", eml1.getLocalName());
@@ -132,8 +129,8 @@ VMIME_TEST_SUITE_BEGIN(emailAddressTest)
 		VASSERT_EQ("5/domain", vmime::platform::getHandler()->getHostName(), eml5.getDomainName());
 	}
 
-	void testParseSpecialChars()
-	{
+	void testParseSpecialChars() {
+
 		// Examples taken from Wikipedia (http://en.wikipedia.org/wiki/Email_address)
 
 		vmime::emailAddress eml1("\" \"@example.org");
@@ -161,8 +158,8 @@ VMIME_TEST_SUITE_BEGIN(emailAddressTest)
 		VASSERT_EQ("6/domain", "strange.example.com", eml6.getDomainName());
 	}
 
-	void testParseCommentInLocalPart()
-	{
+	void testParseCommentInLocalPart() {
+
 		vmime::emailAddress eml1("john.smith(comment)@example.com");
 		VASSERT_EQ("1/local", "john.smith", eml1.getLocalName());
 		VASSERT_EQ("1/domain", "example.com", eml1.getDomainName());
@@ -180,8 +177,8 @@ VMIME_TEST_SUITE_BEGIN(emailAddressTest)
 		VASSERT_EQ("4/domain", "example.com", eml4.getDomainName());
 	}
 
-	void testParseCommentInDomainPart()
-	{
+	void testParseCommentInDomainPart() {
+
 		vmime::emailAddress eml1("john.smith@(comment)example.com");
 		VASSERT_EQ("1/local", "john.smith", eml1.getLocalName());
 		VASSERT_EQ("1/domain", "example.com", eml1.getDomainName());
@@ -199,8 +196,8 @@ VMIME_TEST_SUITE_BEGIN(emailAddressTest)
 		VASSERT_EQ("4/domain", "example.com", eml4.getDomainName());
 	}
 
-	void testParseRFC2047EncodedLocalPart()
-	{
+	void testParseRFC2047EncodedLocalPart() {
+
 		vmime::emailAddress eml1("=?utf-8?Q?Pel=C3=A9?=@example.com");
 		VASSERT_EQ("1/local", "Pelé", eml1.getLocalName());
 		VASSERT_EQ("1/domain", "example.com", eml1.getDomainName());
@@ -214,47 +211,71 @@ VMIME_TEST_SUITE_BEGIN(emailAddressTest)
 		VASSERT_EQ("3/domain", "黒川.com", eml3.getDomainName());
 	}
 
-	void testGenerateASCII()
-	{
-		VASSERT_EQ("email 1", "local@domain", vmime::emailAddress("local", "domain").generate());
+	void testGenerateASCII() {
 
-		VASSERT_EQ("email 2", "=?utf-8?Q?Pel=C3=A9?=@example.com",
-			vmime::emailAddress("Pelé", "example.com").generate());
-		VASSERT_EQ("email 3", "=?utf-8?B?55Sy5paQ?=@xn--5rtw95l.xn--wgv71a",
-			vmime::emailAddress("甲斐", "黒川.日本").generate());
-		VASSERT_EQ("email 4", "mailtest@xn--r8jz45g.xn--zckzah",
-			vmime::emailAddress("mailtest", "例え.テスト").generate());
-		VASSERT_EQ("email 5", "mailtest@xn--mgbh0fb.xn--kgbechtv",
-			vmime::emailAddress("mailtest", "مثال.إختبار").generate());
+		VASSERT_EQ(
+			"email 1", "local@domain",
+			vmime::emailAddress("local", "domain").generate()
+		);
+		VASSERT_EQ(
+			"email 2", "=?utf-8?Q?Pel=C3=A9?=@example.com",
+			vmime::emailAddress("Pelé", "example.com").generate()
+		);
+		VASSERT_EQ(
+			"email 3", "=?utf-8?B?55Sy5paQ?=@xn--5rtw95l.xn--wgv71a",
+			vmime::emailAddress("甲斐", "黒川.日本").generate()
+		);
+		VASSERT_EQ(
+			"email 4", "mailtest@xn--r8jz45g.xn--zckzah",
+			vmime::emailAddress("mailtest", "例え.テスト").generate()
+		);
+		VASSERT_EQ(
+			"email 5", "mailtest@xn--mgbh0fb.xn--kgbechtv",
+			vmime::emailAddress("mailtest", "مثال.إختبار").generate()
+		);
 	}
 
-	void testGenerateEAI()
-	{
+	void testGenerateEAI() {
+
 		vmime::generationContext ctx(vmime::generationContext::getDefaultContext());
 		ctx.setInternationalizedEmailSupport(true);
 
 		vmime::generationContext::switcher <vmime::generationContext> contextSwitcher(ctx);
 
-		VASSERT_EQ("email 1", "Pelé@example.com",
-			vmime::emailAddress("Pelé", "example.com").generate());
-		VASSERT_EQ("email 2", "δοκιμή@παράδειγμα.δοκιμή",
-			vmime::emailAddress("δοκιμή", "παράδειγμα.δοκιμή").generate());
-		VASSERT_EQ("email 3", "甲斐@黒川.日本",
-			vmime::emailAddress("甲斐", "黒川.日本").generate());
-		VASSERT_EQ("email 4", "чебурашка@ящик-с-апельсинами.рф",
-			vmime::emailAddress("чебурашка", "ящик-с-апельсинами.рф").generate());
+		VASSERT_EQ(
+			"email 1", "Pelé@example.com",
+			vmime::emailAddress("Pelé", "example.com").generate()
+		);
+		VASSERT_EQ(
+			"email 2", "δοκιμή@παράδειγμα.δοκιμή",
+			vmime::emailAddress("δοκιμή", "παράδειγμα.δοκιμή").generate()
+		);
+		VASSERT_EQ(
+			"email 3", "甲斐@黒川.日本",
+			vmime::emailAddress("甲斐", "黒川.日本").generate()
+		);
+		VASSERT_EQ(
+			"email 4", "чебурашка@ящик-с-апельсинами.рф",
+			vmime::emailAddress("чебурашка", "ящик-с-апельсинами.рф").generate()
+		);
 	}
 
-	void testGenerateSpecialChars()
-	{
-		VASSERT_EQ("email 1", "\"very.unusual.@.unusual.com\"@example.com",
-			vmime::emailAddress("very.unusual.@.unusual.com", "example.com").generate());
+	void testGenerateSpecialChars() {
 
-		VASSERT_EQ("email 2", "\"very.(),:;<>[]\\\".VERY.\\\"very@\\\\ \\\"very\\\".unusual\"@strange.example.com",
-			vmime::emailAddress("very.(),:;<>[]\".VERY.\"very@\\ \"very\".unusual", "strange.example.com").generate());
+		VASSERT_EQ(
+			"email 1", "\"very.unusual.@.unusual.com\"@example.com",
+			vmime::emailAddress("very.unusual.@.unusual.com", "example.com").generate()
+		);
 
-		VASSERT_EQ("email 3", "\" \"@example.com",
-			vmime::emailAddress(" ", "example.com").generate());
+		VASSERT_EQ(
+			"email 2", "\"very.(),:;<>[]\\\".VERY.\\\"very@\\\\ \\\"very\\\".unusual\"@strange.example.com",
+			vmime::emailAddress("very.(),:;<>[]\".VERY.\"very@\\ \"very\".unusual", "strange.example.com").generate()
+		);
+
+		VASSERT_EQ(
+			"email 3", "\" \"@example.com",
+			vmime::emailAddress(" ", "example.com").generate()
+		);
 	}
 
 VMIME_TEST_SUITE_END

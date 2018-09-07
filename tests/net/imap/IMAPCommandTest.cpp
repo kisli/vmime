@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2014 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -60,24 +60,24 @@ VMIME_TEST_SUITE_BEGIN(IMAPCommandTest)
 	VMIME_TEST_LIST_END
 
 
-	void testCreateCommand()
-	{
+	void testCreateCommand() {
+
 		vmime::shared_ptr <IMAPCommand> cmd = IMAPCommand::createCommand("MY_COMMAND");
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "MY_COMMAND", cmd->getText());
 	}
 
-	void testCreateCommandParams()
-	{
+	void testCreateCommandParams() {
+
 		vmime::shared_ptr <IMAPCommand> cmd = IMAPCommand::createCommand("MY_COMMAND param1 param2");
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "MY_COMMAND param1 param2", cmd->getText());
 	}
 
-	void testLOGIN()
-	{
+	void testLOGIN() {
+
 		vmime::shared_ptr <IMAPCommand> cmd = IMAPCommand::LOGIN("username", "password");
 
 		VASSERT_NOT_NULL("Not null", cmd);
@@ -85,24 +85,24 @@ VMIME_TEST_SUITE_BEGIN(IMAPCommandTest)
 		VASSERT_EQ("Trace Text", "LOGIN {username} {password}", cmd->getTraceText());
 	}
 
-	void testAUTHENTICATE()
-	{
+	void testAUTHENTICATE() {
+
 		vmime::shared_ptr <IMAPCommand> cmd = IMAPCommand::AUTHENTICATE("saslmechanism");
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "AUTHENTICATE saslmechanism", cmd->getText());
 	}
 
-	void testAUTHENTICATE_InitialResponse()
-	{
+	void testAUTHENTICATE_InitialResponse() {
+
 		vmime::shared_ptr <IMAPCommand> cmd = IMAPCommand::AUTHENTICATE("saslmechanism", "initial-response");
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "AUTHENTICATE saslmechanism initial-response", cmd->getText());
 	}
 
-	void testLIST()
-	{
+	void testLIST() {
+
 		vmime::shared_ptr <IMAPCommand> cmd = IMAPCommand::LIST("ref-name", "mailbox-name");
 
 		VASSERT_NOT_NULL("Not null", cmd);
@@ -114,47 +114,52 @@ VMIME_TEST_SUITE_BEGIN(IMAPCommandTest)
 		VASSERT_EQ("Text", "LIST \"ref name\" mailbox-name", cmdQuote->getText());
 	}
 
-	void testSELECT()
-	{
+	void testSELECT() {
+
 		std::vector <vmime::string> params;
 		params.push_back("param-1");
 		params.push_back("param-2");
 
 
-		vmime::shared_ptr <IMAPCommand> cmdRO = IMAPCommand::SELECT
-			(/* readOnly */ true, "mailbox-name", std::vector <vmime::string>());
+		vmime::shared_ptr <IMAPCommand> cmdRO = IMAPCommand::SELECT(
+			/* readOnly */ true, "mailbox-name", std::vector <vmime::string>()
+		);
 
 		VASSERT_NOT_NULL("Not null", cmdRO);
 		VASSERT_EQ("Text", "EXAMINE mailbox-name", cmdRO->getText());
 
-		vmime::shared_ptr <IMAPCommand> cmdROQuote = IMAPCommand::SELECT
-			(/* readOnly */ true, "mailbox name", std::vector <vmime::string>());
+		vmime::shared_ptr <IMAPCommand> cmdROQuote = IMAPCommand::SELECT(
+			/* readOnly */ true, "mailbox name", std::vector <vmime::string>()
+		);
 
 		VASSERT_NOT_NULL("Not null", cmdROQuote);
 		VASSERT_EQ("Text", "EXAMINE \"mailbox name\"", cmdROQuote->getText());
 
 
-		vmime::shared_ptr <IMAPCommand> cmdRW = IMAPCommand::SELECT
-			(/* readOnly */ false, "mailbox-name", std::vector <vmime::string>());
+		vmime::shared_ptr <IMAPCommand> cmdRW = IMAPCommand::SELECT(
+			/* readOnly */ false, "mailbox-name", std::vector <vmime::string>()
+		);
 
 		VASSERT_NOT_NULL("Not null", cmdRW);
 		VASSERT_EQ("Text", "SELECT mailbox-name", cmdRW->getText());
 
-		vmime::shared_ptr <IMAPCommand> cmdRWParams = IMAPCommand::SELECT
-			(/* readOnly */ false, "mailbox-name", params);
+		vmime::shared_ptr <IMAPCommand> cmdRWParams = IMAPCommand::SELECT(
+			/* readOnly */ false, "mailbox-name", params
+		);
 
 		VASSERT_NOT_NULL("Not null", cmdRWParams);
 		VASSERT_EQ("Text", "SELECT mailbox-name (param-1 param-2)", cmdRWParams->getText());
 
-		vmime::shared_ptr <IMAPCommand> cmdRWQuote = IMAPCommand::SELECT
-			(/* readOnly */ false, "mailbox name", std::vector <vmime::string>());
+		vmime::shared_ptr <IMAPCommand> cmdRWQuote = IMAPCommand::SELECT(
+			/* readOnly */ false, "mailbox name", std::vector <vmime::string>()
+		);
 
 		VASSERT_NOT_NULL("Not null", cmdRWQuote);
 		VASSERT_EQ("Text", "SELECT \"mailbox name\"", cmdRWQuote->getText());
 	}
 
-	void testSTATUS()
-	{
+	void testSTATUS() {
+
 		std::vector <vmime::string> attribs;
 		attribs.push_back("attrib-1");
 		attribs.push_back("attrib-2");
@@ -174,8 +179,8 @@ VMIME_TEST_SUITE_BEGIN(IMAPCommandTest)
 		VASSERT_EQ("Text", "STATUS \"mailbox name\" (attrib-1 attrib-2)", cmdQuote->getText());
 	}
 
-	void testCREATE()
-	{
+	void testCREATE() {
+
 		std::vector <vmime::string> params;
 		params.push_back("param-1");
 		params.push_back("param-2");
@@ -202,8 +207,8 @@ VMIME_TEST_SUITE_BEGIN(IMAPCommandTest)
 		VASSERT_EQ("Text", "CREATE mailbox-name", cmdNoParam->getText());
 	}
 
-	void testDELETE()
-	{
+	void testDELETE() {
+
 		vmime::shared_ptr <IMAPCommand> cmd =
 			IMAPCommand::DELETE("mailbox-name");
 
@@ -218,8 +223,8 @@ VMIME_TEST_SUITE_BEGIN(IMAPCommandTest)
 		VASSERT_EQ("Text", "DELETE \"mailbox name\"", cmdQuote->getText());
 	}
 
-	void testRENAME()
-	{
+	void testRENAME() {
+
 		vmime::shared_ptr <IMAPCommand> cmd =
 			IMAPCommand::RENAME("mailbox-name", "new-mailbox-name");
 
@@ -234,8 +239,8 @@ VMIME_TEST_SUITE_BEGIN(IMAPCommandTest)
 		VASSERT_EQ("Text", "RENAME \"mailbox name\" \"new mailbox name\"", cmdQuote->getText());
 	}
 
-	void testFETCH()
-	{
+	void testFETCH() {
+
 		std::vector <vmime::string> params;
 		params.push_back("param-1");
 		params.push_back("param-2");
@@ -269,57 +274,63 @@ VMIME_TEST_SUITE_BEGIN(IMAPCommandTest)
 		VASSERT_EQ("Text", "UID FETCH 42:47 (param-1 param-2)", cmdUIDs->getText());
 	}
 
-	void testSTORE()
-	{
+	void testSTORE() {
+
 		std::vector <vmime::string> flags;
 		flags.push_back("flag-1");
 		flags.push_back("flag-2");
 
 
-		vmime::shared_ptr <IMAPCommand> cmdNum = IMAPCommand::STORE
-			(vmime::net::messageSet::byNumber(42), vmime::net::message::FLAG_MODE_SET, flags);
+		vmime::shared_ptr <IMAPCommand> cmdNum = IMAPCommand::STORE(
+			vmime::net::messageSet::byNumber(42), vmime::net::message::FLAG_MODE_SET, flags
+		);
 
 		VASSERT_NOT_NULL("Not null", cmdNum);
 		VASSERT_EQ("Text", "STORE 42 FLAGS (flag-1 flag-2)", cmdNum->getText());
 
 
-		vmime::shared_ptr <IMAPCommand> cmdNums = IMAPCommand::STORE
-			(vmime::net::messageSet::byNumber(42, 47), vmime::net::message::FLAG_MODE_SET, flags);
+		vmime::shared_ptr <IMAPCommand> cmdNums = IMAPCommand::STORE(
+			vmime::net::messageSet::byNumber(42, 47), vmime::net::message::FLAG_MODE_SET, flags
+		);
 
 		VASSERT_NOT_NULL("Not null", cmdNums);
 		VASSERT_EQ("Text", "STORE 42:47 FLAGS (flag-1 flag-2)", cmdNums->getText());
 
 
-		vmime::shared_ptr <IMAPCommand> cmdUID = IMAPCommand::STORE
-			(vmime::net::messageSet::byUID(42), vmime::net::message::FLAG_MODE_SET, flags);
+		vmime::shared_ptr <IMAPCommand> cmdUID = IMAPCommand::STORE(
+			vmime::net::messageSet::byUID(42), vmime::net::message::FLAG_MODE_SET, flags
+		);
 
 		VASSERT_NOT_NULL("Not null", cmdUID);
 		VASSERT_EQ("Text", "UID STORE 42 FLAGS (flag-1 flag-2)", cmdUID->getText());
 
 
-		vmime::shared_ptr <IMAPCommand> cmdUIDs = IMAPCommand::STORE
-			(vmime::net::messageSet::byUID(42, 47), vmime::net::message::FLAG_MODE_SET, flags);
+		vmime::shared_ptr <IMAPCommand> cmdUIDs = IMAPCommand::STORE(
+			vmime::net::messageSet::byUID(42, 47), vmime::net::message::FLAG_MODE_SET, flags
+		);
 
 		VASSERT_NOT_NULL("Not null", cmdUIDs);
 		VASSERT_EQ("Text", "UID STORE 42:47 FLAGS (flag-1 flag-2)", cmdUIDs->getText());
 
 
-		vmime::shared_ptr <IMAPCommand> cmdAdd = IMAPCommand::STORE
-			(vmime::net::messageSet::byUID(42, 47), vmime::net::message::FLAG_MODE_ADD, flags);
+		vmime::shared_ptr <IMAPCommand> cmdAdd = IMAPCommand::STORE(
+			vmime::net::messageSet::byUID(42, 47), vmime::net::message::FLAG_MODE_ADD, flags
+		);
 
 		VASSERT_NOT_NULL("Not null", cmdAdd);
 		VASSERT_EQ("Text", "UID STORE 42:47 +FLAGS (flag-1 flag-2)", cmdAdd->getText());
 
 
-		vmime::shared_ptr <IMAPCommand> cmdRem = IMAPCommand::STORE
-			(vmime::net::messageSet::byUID(42, 47), vmime::net::message::FLAG_MODE_REMOVE, flags);
+		vmime::shared_ptr <IMAPCommand> cmdRem = IMAPCommand::STORE(
+			vmime::net::messageSet::byUID(42, 47), vmime::net::message::FLAG_MODE_REMOVE, flags
+		);
 
 		VASSERT_NOT_NULL("Not null", cmdRem);
 		VASSERT_EQ("Text", "UID STORE 42:47 -FLAGS (flag-1 flag-2)", cmdRem->getText());
 	}
 
-	void testAPPEND()
-	{
+	void testAPPEND() {
+
 		std::vector <vmime::string> flags;
 		flags.push_back("flag-1");
 		flags.push_back("flag-2");
@@ -347,8 +358,8 @@ VMIME_TEST_SUITE_BEGIN(IMAPCommandTest)
 		VASSERT_EQ("Text", "APPEND \"mailbox name\" (flag-1 flag-2) \"15-Mar-2014 23:11:47 +0200\" {1234}", cmdDate->getText());
 	}
 
-	void testCOPY()
-	{
+	void testCOPY() {
+
 		vmime::shared_ptr <IMAPCommand> cmdNum =
 			IMAPCommand::COPY(vmime::net::messageSet::byNumber(42), "mailbox-name");
 
@@ -384,8 +395,8 @@ VMIME_TEST_SUITE_BEGIN(IMAPCommandTest)
 		VASSERT_EQ("Text", "COPY 42:47 \"mailbox name\"", cmdQuote->getText());
 	}
 
-	void testSEARCH()
-	{
+	void testSEARCH() {
+
 		std::vector <vmime::string> searchKeys;
 		searchKeys.push_back("search-key-1");
 		searchKeys.push_back("search-key-2");
@@ -406,57 +417,58 @@ VMIME_TEST_SUITE_BEGIN(IMAPCommandTest)
 		VASSERT_EQ("Text", "SEARCH CHARSET test-charset search-key-1 search-key-2", cmdCset->getText());
 	}
 
-	void testSTARTTLS()
-	{
+	void testSTARTTLS() {
+
 		vmime::shared_ptr <IMAPCommand> cmd = IMAPCommand::STARTTLS();
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "STARTTLS", cmd->getText());
 	}
 
-	void testCAPABILITY()
-	{
+	void testCAPABILITY() {
+
 		vmime::shared_ptr <IMAPCommand> cmd = IMAPCommand::CAPABILITY();
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "CAPABILITY", cmd->getText());
 	}
 
-	void testNOOP()
-	{
+	void testNOOP() {
+
 		vmime::shared_ptr <IMAPCommand> cmd = IMAPCommand::NOOP();
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "NOOP", cmd->getText());
 	}
 
-	void testEXPUNGE()
-	{
+	void testEXPUNGE() {
+
 		vmime::shared_ptr <IMAPCommand> cmd = IMAPCommand::EXPUNGE();
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "EXPUNGE", cmd->getText());
 	}
 
-	void testCLOSE()
-	{
+	void testCLOSE() {
+
 		vmime::shared_ptr <IMAPCommand> cmd = IMAPCommand::CLOSE();
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "CLOSE", cmd->getText());
 	}
 
-	void testLOGOUT()
-	{
+	void testLOGOUT() {
+
 		vmime::shared_ptr <IMAPCommand> cmd = IMAPCommand::LOGOUT();
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "LOGOUT", cmd->getText());
 	}
 
-	void testSend()
-	{
-		vmime::shared_ptr <IMAPCommand> cmd = IMAPCommand::createCommand("MY_COMMAND param1 param2");
+	void testSend() {
+
+		vmime::shared_ptr <IMAPCommand> cmd =
+			IMAPCommand::createCommand("MY_COMMAND param1 param2");
 
 		vmime::shared_ptr <vmime::net::session> sess = vmime::net::session::create();
 

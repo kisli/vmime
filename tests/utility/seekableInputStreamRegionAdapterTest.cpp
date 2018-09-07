@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -43,9 +43,10 @@ VMIME_TEST_SUITE_BEGIN(seekableInputStreamRegionAdapterTest)
 	VMIME_TEST_LIST_END
 
 
-	vmime::shared_ptr <seekableInputStreamRegionAdapter> createStream
-		(vmime::shared_ptr <seekableInputStream>* underlyingStream = NULL)
-	{
+	vmime::shared_ptr <seekableInputStreamRegionAdapter> createStream(
+		vmime::shared_ptr <seekableInputStream>* underlyingStream = NULL
+	) {
+
 		vmime::string buffer("THIS IS A TEST BUFFER");
 
 		vmime::shared_ptr <seekableInputStream> strStream =
@@ -54,22 +55,23 @@ VMIME_TEST_SUITE_BEGIN(seekableInputStreamRegionAdapterTest)
 		vmime::shared_ptr <seekableInputStreamRegionAdapter> rgnStream =
 			vmime::make_shared <seekableInputStreamRegionAdapter>(strStream, 10, 11);
 
-		if (underlyingStream)
+		if (underlyingStream) {
 			*underlyingStream = strStream;
+		}
 
 		return rgnStream;
 	}
 
-	void testInitialPosition()
-	{
+	void testInitialPosition() {
+
 		vmime::shared_ptr <seekableInputStreamRegionAdapter> stream = createStream();
 
 		VASSERT_EQ("Pos", 0, stream->getPosition());
 		VASSERT_FALSE("EOF", stream->eof());
 	}
 
-	void testSeekAndGetPosition()
-	{
+	void testSeekAndGetPosition() {
+
 		vmime::shared_ptr <seekableInputStreamRegionAdapter> stream = createStream();
 
 		stream->seek(5);
@@ -83,8 +85,8 @@ VMIME_TEST_SUITE_BEGIN(seekableInputStreamRegionAdapterTest)
 		VASSERT_TRUE("EOF 2", stream->eof());
 	}
 
-	void testRead()
-	{
+	void testRead() {
+
 		vmime::shared_ptr <seekableInputStreamRegionAdapter> stream = createStream();
 
 		stream->seek(5);
@@ -96,12 +98,11 @@ VMIME_TEST_SUITE_BEGIN(seekableInputStreamRegionAdapterTest)
 		VASSERT_EQ("Pos", 11, stream->getPosition());
 		VASSERT_EQ("Read", 6, read);
 		VASSERT_TRUE("EOF", stream->eof());
-		VASSERT_EQ("Buffer", "BUFFER",
-			vmime::utility::stringUtils::makeStringFromBytes(buffer, 6));
+		VASSERT_EQ("Buffer", "BUFFER", vmime::utility::stringUtils::makeStringFromBytes(buffer, 6));
 	}
 
-	void testSkip()
-	{
+	void testSkip() {
+
 		vmime::shared_ptr <seekableInputStreamRegionAdapter> stream = createStream();
 
 		stream->skip(5);
@@ -116,8 +117,7 @@ VMIME_TEST_SUITE_BEGIN(seekableInputStreamRegionAdapterTest)
 		VASSERT_EQ("Pos 2", 8, stream->getPosition());
 		VASSERT_EQ("Read", 3, read);
 		VASSERT_FALSE("EOF 2", stream->eof());
-		VASSERT_EQ("Buffer", "BUF",
-			vmime::utility::stringUtils::makeStringFromBytes(buffer, 3));
+		VASSERT_EQ("Buffer", "BUF", vmime::utility::stringUtils::makeStringFromBytes(buffer, 3));
 
 		stream->skip(50);
 
@@ -125,8 +125,8 @@ VMIME_TEST_SUITE_BEGIN(seekableInputStreamRegionAdapterTest)
 		VASSERT_TRUE("EOF 3", stream->eof());
 	}
 
-	void testReset()
-	{
+	void testReset() {
+
 		vmime::shared_ptr <seekableInputStreamRegionAdapter> stream = createStream();
 
 		stream->skip(100);
@@ -136,8 +136,8 @@ VMIME_TEST_SUITE_BEGIN(seekableInputStreamRegionAdapterTest)
 		VASSERT_FALSE("EOF", stream->eof());
 	}
 
-	void testOwnPosition()
-	{
+	void testOwnPosition() {
+
 		// seekableInputStreamRegionAdapter should keep track of its own position
 		// in the underlying stream, and not be affected by possible seek/read
 		// operations on it...
@@ -156,10 +156,17 @@ VMIME_TEST_SUITE_BEGIN(seekableInputStreamRegionAdapterTest)
 
 		VASSERT_EQ("Read 2", 6, stream->read(buffer2, 6));
 
-		VASSERT_EQ("Buffer 1", "THIS IS",
-			vmime::utility::stringUtils::makeStringFromBytes(buffer1, 7));
-		VASSERT_EQ("Buffer 2", "BUFFER",
-			vmime::utility::stringUtils::makeStringFromBytes(buffer2, 6));
+		VASSERT_EQ(
+			"Buffer 1",
+			"THIS IS",
+			vmime::utility::stringUtils::makeStringFromBytes(buffer1, 7)
+		);
+
+		VASSERT_EQ(
+			"Buffer 2",
+			"BUFFER",
+			vmime::utility::stringUtils::makeStringFromBytes(buffer2, 6)
+		);
 
 		// ...but the underlying stream position is affected by read operations
 		// from the region adapter (FIXME?)

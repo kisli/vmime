@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -37,8 +37,8 @@
 #include "vmime/constants.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
+
 	class text;
 	class word;
 	class charset;
@@ -53,9 +53,9 @@ namespace vmime
 #ifndef VMIME_BUILDING_DOC
 
 	// Null pointer
-	struct nullPtrType
-	{
-		template<typename T>
+	struct nullPtrType {
+
+		template <typename T>
 	    operator shared_ptr <T>() { return shared_ptr <T>(); }
 	};
 
@@ -78,47 +78,48 @@ namespace vmime
 	//
 
 	template <typename T, size_t N>
-	inline T const* cbegin(T const (&array)[N])
-	{
-		return (array);
+	inline T const* cbegin(T const (&array)[N]) {
+
+		return array;
 	}
 
 	template <typename T, size_t N>
-	inline T const* cend(T const (&array)[N])
-	{
-		return (array + N);
+	inline T const* cend(T const (&array)[N]) {
+
+		return array + N;
 	}
 
 	template <typename T, size_t N>
-	inline T* begin(T (&array)[N])
-	{
-		return (array);
+	inline T* begin(T (&array)[N]) {
+
+		return array;
 	}
 
 	template <typename T, size_t N>
-	inline T* end(T (&array)[N])
-	{
-		return (array + N);
+	inline T* end(T (&array)[N]) {
+
+		return array + N;
 	}
 
 	template <typename T, size_t N>
-	inline size_t count(T const (&/* array */)[N])
-	{
-		return (N);
+	inline size_t count(T const (&/* array */)[N]) {
+
+		return N;
 	}
 
 
 	// Copy one vector to another, with type conversion
 
 	template <class T1, class T2>
-	void copy_vector(const T1& v1, T2& v2)
-	{
+	void copy_vector(const T1& v1, T2& v2) {
+
 		const typename T1::size_type count = v1.size();
 
 		v2.resize(count);
 
-		for (typename T1::size_type i = 0 ; i < count ; ++i)
+		for (typename T1::size_type i = 0 ; i < count ; ++i) {
 			v2[i] = v1[i];
+		}
 	}
 
 
@@ -154,12 +155,11 @@ namespace vmime
 	character limit) for the sake of robustness.
 	*/
 
-	namespace lineLengthLimits
-	{
+	namespace lineLengthLimits {
+
 		extern VMIME_EXPORT const size_t infinite;
 
-		enum
-		{
+		enum {
 			max = 998,
 			convenient = 78
 		};
@@ -192,8 +192,8 @@ namespace vmime
 	  * This is an alias for dynamic_pointer_cast <T>(obj->clone()).
 	  */
 	template <class T>
-	shared_ptr <T> clone(shared_ptr <T> obj)
-	{
+	shared_ptr <T> clone(const shared_ptr <T>& obj) {
+
 		return dynamic_pointer_cast <T>(obj->clone());
 	}
 
@@ -201,8 +201,8 @@ namespace vmime
 	  * This is an alias for dynamic_pointer_cast <T>(obj->clone()).
 	  */
 	template <class T>
-	shared_ptr <T> clone(shared_ptr <const T> obj)
-	{
+	shared_ptr <T> clone(const shared_ptr <const T>& obj) {
+
 		return dynamic_pointer_cast <T>(obj->clone());
 	}
 
@@ -210,8 +210,8 @@ namespace vmime
 	  * This is an alias for dynamic_pointer_cast <T>(obj.clone()).
 	  */
 	template <class T>
-	shared_ptr <T> clone(const T& obj)
-	{
+	shared_ptr <T> clone(const T& obj) {
+
 		return dynamic_pointer_cast <T>(obj.clone());
 	}
 
@@ -220,24 +220,24 @@ namespace vmime
 	  * type Type, and DerivedType is derived from Type.
 	  */
 	template <class X, class Y>
-	shared_ptr <X> dynamicCast(shared_ptr <Y> obj)
-	{
+	shared_ptr <X> dynamicCast(const shared_ptr <Y>& obj) {
+
 		return dynamic_pointer_cast <X, Y>(obj);
 	}
 
 	/** Const cast helper.
 	  */
 	template <class X, class Y>
-	shared_ptr <X> constCast(const shared_ptr <Y>& obj)
-	{
+	shared_ptr <X> constCast(const shared_ptr <Y>& obj) {
+
 		return const_pointer_cast <X, Y>(obj);
 	}
 
 	/** Inherit from this class to indicate the subclass is not copyable,
 	  * ie. you want to prohibit copy construction and copy assignment.
 	  */
-	class VMIME_EXPORT noncopyable
-	{
+	class VMIME_EXPORT noncopyable {
+
 	protected:
 
 		noncopyable() { }

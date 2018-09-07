@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -38,12 +38,11 @@
 #include "vmime/mailboxField.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
-headerFieldFactory::headerFieldFactory()
-{
+headerFieldFactory::headerFieldFactory() {
+
 	// Register parameterized fields
 	registerField <contentTypeField>(vmime::fields::CONTENT_TYPE);
 	registerField <parameterizedHeaderField>(vmime::fields::CONTENT_TRANSFER_ENCODING);
@@ -85,67 +84,75 @@ headerFieldFactory::headerFieldFactory()
 }
 
 
-headerFieldFactory::~headerFieldFactory()
-{
+headerFieldFactory::~headerFieldFactory() {
+
 }
 
 
-shared_ptr <headerFieldFactory> headerFieldFactory::getInstance()
-{
+shared_ptr <headerFieldFactory> headerFieldFactory::getInstance() {
+
 	static headerFieldFactory instance;
 	return shared_ptr <headerFieldFactory>(&instance, noop_shared_ptr_deleter <headerFieldFactory>());
 }
 
 
-shared_ptr <headerField> headerFieldFactory::create
-	(const string& name, const string& body)
-{
+shared_ptr <headerField> headerFieldFactory::create(
+	const string& name,
+	const string& body
+) {
+
 	NameMap::const_iterator pos = m_nameMap.find(utility::stringUtils::toLower(name));
 	shared_ptr <headerField> field;
 
-	if (pos != m_nameMap.end())
+	if (pos != m_nameMap.end()) {
 		field = ((*pos).second)();
-	else
+	} else {
 		field = registerer <headerField, headerField>::creator();
+	}
 
 	field->setName(name);
 	field->setValue(createValue(name));
 
-	if (body != NULL_STRING)
+	if (body != NULL_STRING) {
 		field->parse(body);
+	}
 
 	return field;
 }
 
 
-shared_ptr <headerFieldValue> headerFieldFactory::createValue(const string& fieldName)
-{
-	ValueMap::const_iterator pos = m_valueMap.find
-		(utility::stringUtils::toLower(fieldName));
+shared_ptr <headerFieldValue> headerFieldFactory::createValue(const string& fieldName) {
+
+	ValueMap::const_iterator pos = m_valueMap.find(
+		utility::stringUtils::toLower(fieldName)
+	);
 
 	shared_ptr <headerFieldValue> value;
 
-	if (pos != m_valueMap.end())
+	if (pos != m_valueMap.end()) {
 		value = ((*pos).second.allocFunc)();
-	else
+	} else {
 		value = registerer <headerFieldValue, text>::creator();
+	}
 
 	return value;
 }
 
 
-bool headerFieldFactory::isValueTypeValid
-	(const headerField& field, const headerFieldValue& value) const
-{
+bool headerFieldFactory::isValueTypeValid(
+	const headerField& field,
+	const headerFieldValue& value
+) const {
+
 	ValueMap::const_iterator pos = m_valueMap.find
 		(utility::stringUtils::toLower(field.getName()));
 
-	if (pos != m_valueMap.end())
+	if (pos != m_valueMap.end()) {
 		return ((*pos).second.checkTypeFunc)(value);
+	}
 
 	return true;  // No info on this field
 }
 
 
 } // vmime
-

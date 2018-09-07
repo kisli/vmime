@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -36,24 +36,24 @@ namespace smtp {
 
 
 SMTPServiceInfos::SMTPServiceInfos(const bool smtps)
-	: m_smtps(smtps)
-{
+	: m_smtps(smtps) {
+
 }
 
 
-const string SMTPServiceInfos::getPropertyPrefix() const
-{
-	if (m_smtps)
+const string SMTPServiceInfos::getPropertyPrefix() const {
+
+	if (m_smtps) {
 		return "transport.smtps.";
-	else
+	} else {
 		return "transport.smtp.";
+	}
 }
 
 
-const SMTPServiceInfos::props& SMTPServiceInfos::getProperties() const
-{
-	static props smtpProps =
-	{
+const SMTPServiceInfos::props& SMTPServiceInfos::getProperties() const {
+
+	static props smtpProps = {
 		// SMTP-specific options
 		property("options.need-authentication", serviceInfos::property::TYPE_BOOLEAN, "false"),
 #if VMIME_HAVE_SASL_SUPPORT
@@ -77,8 +77,7 @@ const SMTPServiceInfos::props& SMTPServiceInfos::getProperties() const
 		property(serviceInfos::property::SERVER_PORT, "25"),
 	};
 
-	static props smtpsProps =
-	{
+	static props smtpsProps = {
 		// SMTP-specific options
 		property("options.need-authentication", serviceInfos::property::TYPE_BOOLEAN, "false"),
 #if VMIME_HAVE_SASL_SUPPORT
@@ -106,8 +105,8 @@ const SMTPServiceInfos::props& SMTPServiceInfos::getProperties() const
 }
 
 
-const std::vector <serviceInfos::property> SMTPServiceInfos::getAvailableProperties() const
-{
+const std::vector <serviceInfos::property> SMTPServiceInfos::getAvailableProperties() const {
+
 	std::vector <property> list;
 	const props& p = getProperties();
 
@@ -123,8 +122,7 @@ const std::vector <serviceInfos::property> SMTPServiceInfos::getAvailablePropert
 	list.push_back(p.PROPERTY_AUTH_PASSWORD);
 
 #if VMIME_HAVE_TLS_SUPPORT
-	if (!m_smtps)
-	{
+	if (!m_smtps) {
 		list.push_back(p.PROPERTY_CONNECTION_TLS);
 		list.push_back(p.PROPERTY_CONNECTION_TLS_REQUIRED);
 	}

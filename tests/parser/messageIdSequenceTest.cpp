@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -32,8 +32,8 @@ VMIME_TEST_SUITE_BEGIN(messageIdSequenceTest)
 	VMIME_TEST_LIST_END
 
 
-	void testParse()
-	{
+	void testParse() {
+
 		vmime::messageIdSequence s1;
 		s1.parse("");
 
@@ -61,8 +61,8 @@ VMIME_TEST_SUITE_BEGIN(messageIdSequenceTest)
 		VASSERT_EQ("4.5", "d", s4.getMessageIdAt(1)->getRight());
 	}
 
-	void testGenerate()
-	{
+	void testGenerate() {
+
 		vmime::messageIdSequence s1;
 		s1.appendMessageId(vmime::make_shared <vmime::messageId>("a", "b"));
 
@@ -76,4 +76,3 @@ VMIME_TEST_SUITE_BEGIN(messageIdSequenceTest)
 	}
 
 VMIME_TEST_SUITE_END
-

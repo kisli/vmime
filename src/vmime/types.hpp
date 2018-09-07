@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -31,64 +31,39 @@
 #include <stdexcept>
 #include <cstddef>
 #include <utility>
+#include <memory>
 
 #include "vmime/config.hpp"
 
 
 #ifndef VMIME_BUILDING_DOC
 
-#if VMIME_SHARED_PTR_USE_CXX
-	// If we are compiling with C++11, use shared_ptr<> from the standard lib
-	#include <memory>
+namespace vmime {
 
-	#define VMIME_SHARED_PTR_NAMESPACE std
-#elif VMIME_SHARED_PTR_USE_BOOST
-	// Else, use boost's shared_ptr<>
-	#include <boost/shared_ptr.hpp>
-	#include <boost/weak_ptr.hpp>
-	#include <boost/make_shared.hpp>
-	#include <boost/enable_shared_from_this.hpp>
-	#include <boost/shared_ptr.hpp>
-	#include <boost/scoped_ptr.hpp>
-
-	#define VMIME_SHARED_PTR_NAMESPACE boost
-#else
-	#error Either VMIME_SHAREDPTR_USE_CXX or VMIME_SHAREDPTR_USE_BOOST must be set to ON
-#endif
-
-namespace vmime
-{
-	using VMIME_SHARED_PTR_NAMESPACE::shared_ptr;
-	using VMIME_SHARED_PTR_NAMESPACE::weak_ptr;
-	using VMIME_SHARED_PTR_NAMESPACE::make_shared;
-	using VMIME_SHARED_PTR_NAMESPACE::enable_shared_from_this;
-	using VMIME_SHARED_PTR_NAMESPACE::dynamic_pointer_cast;
-	using VMIME_SHARED_PTR_NAMESPACE::const_pointer_cast;
+	using std::shared_ptr;
+	using std::weak_ptr;
+	using std::make_shared;
+	using std::enable_shared_from_this;
+	using std::dynamic_pointer_cast;
+	using std::const_pointer_cast;
 
 	/** Custom deleter to be used with shared_ptr.
-	  * This is does not actually delete the pointer, and is used
+	  * This does not actually delete the pointer, and is used
 	  * only for the singleton classes allocated on the stack.
 	  */
 	template <typename T>
-	struct noop_shared_ptr_deleter
-	{
+	struct noop_shared_ptr_deleter {
 		void operator()(T*) const {}
 	};
 
-#if VMIME_SHARED_PTR_USE_CXX
 	template <typename T> using scoped_ptr = std::unique_ptr <T>;
-#else
-	using VMIME_SHARED_PTR_NAMESPACE::scoped_ptr;
-#endif
 }
-
-#undef VMIME_SHARED_PTR_NAMESPACE
 
 #endif // VMIME_BUILDING_DOC
 
 
-namespace vmime
-{
+namespace vmime {
+
 	typedef std::string string;
 
 	typedef unsigned short port_t;
@@ -103,16 +78,6 @@ namespace vmime
 	// For compatibility with versions <= 0.7.1 (deprecated)
 	namespace net { }
 	namespace messaging = net;
-
-	// For (minimal) compatibility with legacy smart pointers (<= 0.9.1)
-	// Your compiler must have support for C++11
-#if VMIME_COMPAT_LEGACY_SMART_POINTERS
-	template <typename T> using ref = shared_ptr <T>;
-	class creator {}; // unused
-	template <typename T, typename... Args>
-	inline shared_ptr <T> create(Args&&... args) { return make_shared <T>(args...); }
-#endif
-
 }
 
 

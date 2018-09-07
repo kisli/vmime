@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -35,31 +35,49 @@ namespace net {
 
 
 // Common properties
-const serviceInfos::property serviceInfos::property::SERVER_ADDRESS
-	("server.address", serviceInfos::property::TYPE_STRING);
+const serviceInfos::property serviceInfos::property::SERVER_ADDRESS(
+	"server.address",
+	serviceInfos::property::TYPE_STRING
+);
 
-const serviceInfos::property serviceInfos::property::SERVER_PORT
-	("server.port", serviceInfos::property::TYPE_INTEGER);
+const serviceInfos::property serviceInfos::property::SERVER_PORT(
+	"server.port",
+	serviceInfos::property::TYPE_INTEGER
+);
 
-const serviceInfos::property serviceInfos::property::SERVER_ROOTPATH
-	("server.rootpath", serviceInfos::property::TYPE_STRING);
+const serviceInfos::property serviceInfos::property::SERVER_ROOTPATH(
+	"server.rootpath",
+	serviceInfos::property::TYPE_STRING
+);
 
-const serviceInfos::property serviceInfos::property::AUTH_USERNAME
-	("auth.username", serviceInfos::property::TYPE_STRING);
+const serviceInfos::property serviceInfos::property::AUTH_USERNAME(
+	"auth.username",
+	serviceInfos::property::TYPE_STRING
+);
 
-const serviceInfos::property serviceInfos::property::AUTH_PASSWORD
-	("auth.password", serviceInfos::property::TYPE_STRING);
+const serviceInfos::property serviceInfos::property::AUTH_PASSWORD(
+	"auth.password",
+	serviceInfos::property::TYPE_STRING
+);
 
-const serviceInfos::property serviceInfos::property::AUTH_ACCESS_TOKEN
-	("auth.accesstoken", serviceInfos::property::TYPE_STRING);
+const serviceInfos::property serviceInfos::property::AUTH_ACCESS_TOKEN(
+	"auth.accesstoken",
+	serviceInfos::property::TYPE_STRING
+);
 
 #if VMIME_HAVE_TLS_SUPPORT
 
-const serviceInfos::property serviceInfos::property::CONNECTION_TLS
-	("connection.tls", serviceInfos::property::TYPE_BOOLEAN, "false");
+const serviceInfos::property serviceInfos::property::CONNECTION_TLS(
+	"connection.tls",
+	serviceInfos::property::TYPE_BOOLEAN,
+	"false"
+);
 
-const serviceInfos::property serviceInfos::property::CONNECTION_TLS_REQUIRED
-	("connection.tls.required", serviceInfos::property::TYPE_BOOLEAN, "false");
+const serviceInfos::property serviceInfos::property::CONNECTION_TLS_REQUIRED(
+	"connection.tls.required",
+	serviceInfos::property::TYPE_BOOLEAN,
+	"false"
+);
 
 #endif // VMIME_HAVE_TLS_SUPPORT
 
@@ -67,29 +85,29 @@ const serviceInfos::property serviceInfos::property::CONNECTION_TLS_REQUIRED
 
 // serviceInfos
 
-serviceInfos::serviceInfos()
-{
+serviceInfos::serviceInfos() {
+
 }
 
 
-serviceInfos::serviceInfos(const serviceInfos&)
-{
+serviceInfos::serviceInfos(const serviceInfos&) {
+
 }
 
 
-serviceInfos& serviceInfos::operator=(const serviceInfos&)
-{
-	return (*this);
+serviceInfos& serviceInfos::operator=(const serviceInfos&) {
+
+	return *this;
 }
 
 
-serviceInfos::~serviceInfos()
-{
+serviceInfos::~serviceInfos() {
+
 }
 
 
-bool serviceInfos::hasProperty(shared_ptr <session> s, const property& p) const
-{
+bool serviceInfos::hasProperty(const shared_ptr <session>& s, const property& p) const {
+
 	return s->getProperties().hasProperty(getPropertyPrefix() + p.getName());
 }
 
@@ -97,18 +115,26 @@ bool serviceInfos::hasProperty(shared_ptr <session> s, const property& p) const
 
 // serviceInfos::property
 
-serviceInfos::property::property
-	(const string& name, const Types type,
-	 const string& defaultValue, const int flags)
-	: m_name(name), m_defaultValue(defaultValue),
-	  m_type(type), m_flags(flags)
-{
+serviceInfos::property::property(
+	const string& name,
+	const Types type,
+	const string& defaultValue,
+	const int flags
+)
+	: m_name(name),
+	  m_defaultValue(defaultValue),
+	  m_type(type),
+	  m_flags(flags) {
+
 }
 
 
-serviceInfos::property::property
-	(const property& p, const int addFlags, const int removeFlags)
-{
+serviceInfos::property::property(
+	const property& p,
+	const int addFlags,
+	const int removeFlags
+) {
+
 	m_name = p.m_name;
 	m_type = p.m_type;
 	m_defaultValue = p.m_defaultValue;
@@ -116,10 +142,13 @@ serviceInfos::property::property
 }
 
 
-serviceInfos::property::property
-	(const property& p, const string& newDefaultValue,
-	 const int addFlags, const int removeFlags)
-{
+serviceInfos::property::property(
+	const property& p,
+	const string& newDefaultValue,
+	const int addFlags,
+	const int removeFlags
+) {
+
 	m_name = p.m_name;
 	m_type = p.m_type;
 	m_defaultValue = newDefaultValue;
@@ -127,38 +156,38 @@ serviceInfos::property::property
 }
 
 
-serviceInfos::property& serviceInfos::property::operator=(const property& p)
-{
+serviceInfos::property& serviceInfos::property::operator=(const property& p) {
+
 	m_name = p.m_name;
 	m_type = p.m_type;
 	m_defaultValue = p.m_defaultValue;
 	m_flags = p.m_flags;
 
-	return (*this);
+	return *this;
 }
 
 
-const string& serviceInfos::property::getName() const
-{
-	return (m_name);
+const string& serviceInfos::property::getName() const {
+
+	return m_name;
 }
 
 
-const string& serviceInfos::property::getDefaultValue() const
-{
-	return (m_defaultValue);
+const string& serviceInfos::property::getDefaultValue() const {
+
+	return m_defaultValue;
 }
 
 
-serviceInfos::property::Types serviceInfos::property::getType() const
-{
-	return (m_type);
+serviceInfos::property::Types serviceInfos::property::getType() const {
+
+	return m_type;
 }
 
 
-int serviceInfos::property::getFlags() const
-{
-	return (m_flags);
+int serviceInfos::property::getFlags() const {
+
+	return m_flags;
 }
 
 

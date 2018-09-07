@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -43,12 +43,11 @@ namespace sasl {
   * for XOAuth2 authentication mechanisms (username and access token).
   * This authenticator force using the XOAUTH2 mechanism.
   */
-class VMIME_EXPORT XOAuth2SASLAuthenticator : public defaultSASLAuthenticator
-{
+class VMIME_EXPORT XOAuth2SASLAuthenticator : public defaultSASLAuthenticator {
+
 public:
 
-	enum Mode
-	{
+	enum Mode {
 		MODE_SUGGEST,    /**< Try XOAUTH2 before other mechanisms. */
 		MODE_EXCLUSIVE   /**< Use XOAUTH2 and nothing else. */
 	};
@@ -57,9 +56,10 @@ public:
 	XOAuth2SASLAuthenticator(const Mode mode);
 	~XOAuth2SASLAuthenticator();
 
-	const std::vector <shared_ptr <SASLMechanism> > getAcceptableMechanisms
-		(const std::vector <shared_ptr <SASLMechanism> >& available,
-		 shared_ptr <SASLMechanism> suggested) const;
+	const std::vector <shared_ptr <SASLMechanism> > getAcceptableMechanisms(
+		const std::vector <shared_ptr <SASLMechanism> >& available,
+		const shared_ptr <SASLMechanism>& suggested
+	) const;
 
 private:
 
@@ -75,4 +75,3 @@ private:
 #endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_SASL_SUPPORT
 
 #endif // VMIME_SECURITY_SASL_XOAUTH2SASLAUTHENTICATOR_HPP_INCLUDED
-

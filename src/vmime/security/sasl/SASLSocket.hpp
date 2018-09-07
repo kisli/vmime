@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -46,11 +46,15 @@ class SASLSession;
 
 /** A socket which provides data integrity and/or privacy protection.
   */
-class VMIME_EXPORT SASLSocket : public net::socket
-{
+class VMIME_EXPORT SASLSocket : public net::socket {
+
 public:
 
-	SASLSocket(shared_ptr <SASLSession> sess, shared_ptr <net::socket> wrapped);
+	SASLSocket(
+		const shared_ptr <SASLSession>& sess,
+		const shared_ptr <net::socket>& wrapped
+	);
+
 	~SASLSocket();
 
 	void connect(const string& address, const port_t port);
@@ -78,7 +82,7 @@ public:
 
 	shared_ptr <net::timeoutHandler> getTimeoutHandler();
 
-	void setTracer(shared_ptr <net::tracer> tracer);
+	void setTracer(const shared_ptr <net::tracer>& tracer);
 	shared_ptr <net::tracer> getTracer();
 
 private:
@@ -102,4 +106,3 @@ private:
 #endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_SASL_SUPPORT
 
 #endif // VMIME_SECURITY_SASL_SASLSOCKET_HPP_INCLUDED
-

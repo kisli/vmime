@@ -24,54 +24,34 @@
 #include "vmime/config.hpp"
 
 
-#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT
+#if VMIME_HAVE_MESSAGING_FEATURES
 
 
-#include "vmime/net/tls/TLSSecuredConnectionInfos.hpp"
-#include "vmime/net/tls/TLSSession.hpp"
+#include "vmime/net/store.hpp"
 
 
 namespace vmime {
 namespace net {
-namespace tls {
 
 
-TLSSecuredConnectionInfos::TLSSecuredConnectionInfos(
-	const string& host,
-	const port_t port,
-	const shared_ptr <TLSSession>& tlsSession,
-	const shared_ptr <TLSSocket>& tlsSocket
+store::store(
+	const shared_ptr <session>& sess,
+	const serviceInfos& infos,
+	const shared_ptr <security::authenticator>& auth
 )
-	: m_host(host),
-	  m_port(port),
-	  m_tlsSession(tlsSession),
-	  m_tlsSocket(tlsSocket) {
+	: service(sess, infos, auth) {
 
 }
 
 
-const string TLSSecuredConnectionInfos::getHost() const {
+store::Type store::getType() const {
 
-	return m_host;
+	return TYPE_STORE;
 }
 
 
-port_t TLSSecuredConnectionInfos::getPort() const {
-
-	return m_port;
-}
-
-
-shared_ptr <const security::cert::certificateChain> TLSSecuredConnectionInfos::getPeerCertificates() const {
-
-	return m_tlsSocket->getPeerCertificates();
-}
-
-
-} // tls
 } // net
 } // vmime
 
 
-#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT
-
+#endif // VMIME_HAVE_MESSAGING_FEATURES

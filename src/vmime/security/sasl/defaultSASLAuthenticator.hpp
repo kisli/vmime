@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -43,16 +43,17 @@ namespace sasl {
 /** An authenticator that is capable of providing information
   * for simple authentication mechanisms (username and password).
   */
-class VMIME_EXPORT defaultSASLAuthenticator : public SASLAuthenticator
-{
+class VMIME_EXPORT defaultSASLAuthenticator : public SASLAuthenticator {
+
 public:
 
 	defaultSASLAuthenticator();
 	~defaultSASLAuthenticator();
 
-	const std::vector <shared_ptr <SASLMechanism> > getAcceptableMechanisms
-		(const std::vector <shared_ptr <SASLMechanism> >& available,
-	         shared_ptr <SASLMechanism> suggested) const;
+	const std::vector <shared_ptr <SASLMechanism> > getAcceptableMechanisms(
+		const std::vector <shared_ptr <SASLMechanism> >& available,
+		const shared_ptr <SASLMechanism>& suggested
+	) const;
 
 	const string getUsername() const;
 	const string getPassword() const;
@@ -61,13 +62,13 @@ public:
 	const string getServiceName() const;
 	const string getAccessToken() const;
 
-	void setService(shared_ptr <net::service> serv);
+	void setService(const shared_ptr <net::service>& serv);
 	weak_ptr <net::service> getService() const;
 
-	void setSASLSession(shared_ptr <SASLSession> sess);
+	void setSASLSession(const shared_ptr <SASLSession>& sess);
 	shared_ptr <SASLSession> getSASLSession() const;
 
-	void setSASLMechanism(shared_ptr <SASLMechanism> mech);
+	void setSASLMechanism(const shared_ptr <SASLMechanism>& mech);
 	shared_ptr <SASLMechanism> getSASLMechanism() const;
 
 private:
@@ -88,4 +89,3 @@ private:
 #endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_SASL_SUPPORT
 
 #endif // VMIME_SECURITY_SASL_DEFAULTSASLAUTHENTICATOR_HPP_INCLUDED
-

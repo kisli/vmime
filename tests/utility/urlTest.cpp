@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -44,14 +44,14 @@ VMIME_TEST_SUITE_BEGIN(urlTest)
 	VMIME_TEST_LIST_END
 
 
-	static bool parseHelper(vmime::utility::url& u, const vmime::string& str)
-	{
-		try
-		{
+	static bool parseHelper(vmime::utility::url& u, const vmime::string& str) {
+
+		try {
+
 			u = vmime::utility::url(str);
-		}
-		catch (vmime::exceptions::malformed_url)
-		{
+
+		} catch (vmime::exceptions::malformed_url) {
+
 			return false;
 		}
 
@@ -59,8 +59,8 @@ VMIME_TEST_SUITE_BEGIN(urlTest)
 	}
 
 
-	void testParse1()
-	{
+	void testParse1() {
+
 		// Test some valid constructions
 		vmime::utility::url u1("", "");
 
@@ -123,8 +123,8 @@ VMIME_TEST_SUITE_BEGIN(urlTest)
 		VASSERT_EQ("6.7", "/path/file", u4.getPath());
 	}
 
-	void testParse2()
-	{
+	void testParse2() {
+
 		// Now, test some ill-formed URLs
 
 		// -- missing protocol
@@ -144,8 +144,8 @@ VMIME_TEST_SUITE_BEGIN(urlTest)
 		VASSERT_EQ("4", false, parseHelper(u4, "protohost/path"));
 	}
 
-	void testParse3()
-	{
+	void testParse3() {
+
 		// Test decoding
 		vmime::utility::url u1("", "");
 
@@ -158,8 +158,8 @@ VMIME_TEST_SUITE_BEGIN(urlTest)
 		VASSERT_EQ("1.7", "/pa\xabth/", u1.getPath());
 	}
 
-	void testParse4()
-	{
+	void testParse4() {
+
 		// Test parameters
 		vmime::utility::url u1("", "");
 
@@ -191,8 +191,8 @@ VMIME_TEST_SUITE_BEGIN(urlTest)
 	}
 
 	// '@' symbol in the username part
-	void testParse5()
-	{
+	void testParse5() {
+
 		vmime::utility::url u1("", "");
 
 		VASSERT_EQ("1", true, parseHelper(u1, "imap://account@myserver.com:password@myserver.com"));
@@ -201,42 +201,54 @@ VMIME_TEST_SUITE_BEGIN(urlTest)
 		VASSERT_EQ("4", "myserver.com", u1.getHost());
 	}
 
-	void testGenerate()
-	{
+	void testGenerate() {
+
 		vmime::utility::url u1("proto", "host", 12345, "path", "user", "password");
-		VASSERT_EQ("1", "proto://user:password@host:12345/path",
-			static_cast <vmime::string>(u1));
+		VASSERT_EQ(
+			"1",
+			"proto://user:password@host:12345/path",
+			static_cast <vmime::string>(u1)
+		);
 
 		vmime::utility::url u2("proto", "host");
 		VASSERT_EQ("2", "proto://host", static_cast <vmime::string>(u2));
 
 		vmime::utility::url u3("proto", "host");
 		u3.getParams()["p1"] = "v1";
-		VASSERT_EQ("3.1", "proto://host/?p1=v1",
-			static_cast <vmime::string>(u3));
+		VASSERT_EQ(
+			"3.1",
+			"proto://host/?p1=v1",
+			static_cast <vmime::string>(u3)
+		);
 		u3.getParams()["p2"] = "v2";
-		VASSERT_EQ("3.2", "proto://host/?p1=v1&p2=v2",
-			static_cast <vmime::string>(u3));
+		VASSERT_EQ(
+			"3.2",
+			"proto://host/?p1=v1&p2=v2",
+			static_cast <vmime::string>(u3)
+		);
 
 		// Test special characters
 		u3.getParams().clear();
 		u3.getParams()["&"] = "=";
-		VASSERT_EQ("3.3", "proto://host/?%26=%3D",
-			static_cast <vmime::string>(u3));
+		VASSERT_EQ(
+			"3.3",
+			"proto://host/?%26=%3D",
+			static_cast <vmime::string>(u3)
+		);
 	}
 
-	void testUtilsEncode()
-	{
+	void testUtilsEncode() {
+
 		VASSERT_EQ("1", "%01", vmime::utility::urlUtils::encode("\x01"));
 		VASSERT_EQ("2", "%20", vmime::utility::urlUtils::encode(" "));
 		VASSERT_EQ("3", "%FF", vmime::utility::urlUtils::encode("\xff"));
 		VASSERT_EQ("4", "a", vmime::utility::urlUtils::encode("a"));
 	}
 
-	void testUtilsDecode()
-	{
-		for (int i = 0 ; i < 255 ; ++i)
-		{
+	void testUtilsDecode() {
+
+		for (int i = 0 ; i < 255 ; ++i) {
+
 			std::ostringstream ossTest;
 			ossTest << "%" << "0123456789ABCDEF"[i / 16]
 			               << "0123456789ABCDEF"[i % 16];
@@ -247,22 +259,25 @@ VMIME_TEST_SUITE_BEGIN(urlTest)
 			vmime::string res;
 			res += static_cast <unsigned char>(i);
 
-			VASSERT_EQ(ossNum.str(), res,
-				vmime::utility::urlUtils::decode(ossTest.str()));
+			VASSERT_EQ(
+				ossNum.str(),
+				res,
+				vmime::utility::urlUtils::decode(ossTest.str())
+			);
 		}
 
 	}
 
-	void testUtilsDecodeSpecialCases()
-	{
+	void testUtilsDecodeSpecialCases() {
+
 		// Bug #1656547: segfault with '%' at the end of the string
 		VASSERT_EQ("1.1", "sadfsda%", vmime::utility::urlUtils::decode("sadfsda%"));
 		VASSERT_EQ("1.2", "sadfsda\x05", vmime::utility::urlUtils::decode("sadfsda%5"));
 		VASSERT_EQ("1.3", "sadfsda\x42", vmime::utility::urlUtils::decode("sadfsda%42"));
 	}
 
-	void testUtilsEncodeReservedChars()
-	{
+	void testUtilsEncodeReservedChars() {
+
 		VASSERT_EQ("1",  "%24", vmime::utility::urlUtils::encode("$"));
 		VASSERT_EQ("2",  "%26", vmime::utility::urlUtils::encode("&"));
 		VASSERT_EQ("3",  "%2B", vmime::utility::urlUtils::encode("+"));
@@ -275,8 +290,8 @@ VMIME_TEST_SUITE_BEGIN(urlTest)
 		VASSERT_EQ("10", "%40", vmime::utility::urlUtils::encode("@"));
 	}
 
-	void testUtilsEncodeUnsafeChars()
-	{
+	void testUtilsEncodeUnsafeChars() {
+
 		VASSERT_EQ("1",  "%20", vmime::utility::urlUtils::encode(" "));
 		VASSERT_EQ("2",  "%22", vmime::utility::urlUtils::encode("\""));
 		VASSERT_EQ("3",  "%3C", vmime::utility::urlUtils::encode("<"));
@@ -295,4 +310,3 @@ VMIME_TEST_SUITE_BEGIN(urlTest)
 	}
 
 VMIME_TEST_SUITE_END
-

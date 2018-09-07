@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -36,20 +36,25 @@ namespace vmime {
 namespace net {
 
 
-shared_ptr <const messagePart> messagePart::getPartAt(const size_t pos) const
+string messagePart::getName() const
 {
+	return {};
+}
+
+shared_ptr <const messagePart> messagePart::getPartAt(const size_t pos) const {
+
 	return getStructure()->getPartAt(pos);
 }
 
 
-shared_ptr <messagePart> messagePart::getPartAt(const size_t pos)
-{
+shared_ptr <messagePart> messagePart::getPartAt(const size_t pos) {
+
 	return getStructure()->getPartAt(pos);
 }
 
 
-size_t messagePart::getPartCount() const
-{
+size_t messagePart::getPartCount() const {
+
 	return getStructure()->getPartCount();
 }
 
@@ -58,19 +63,19 @@ size_t messagePart::getPartCount() const
 // message::uid
 
 
-message::uid::uid()
-{
+message::uid::uid() {
+
 }
 
 
 message::uid::uid(const string& uid)
-	: m_str(uid)
-{
+	: m_str(uid) {
+
 }
 
 
-message::uid::uid(const unsigned long uid)
-{
+message::uid::uid(const unsigned long uid) {
+
 	std::ostringstream oss;
 	oss.imbue(std::locale::classic());
 	oss << uid;
@@ -80,33 +85,33 @@ message::uid::uid(const unsigned long uid)
 
 
 message::uid::uid(const char* uid)
-	: m_str(uid)
-{
+	: m_str(uid) {
+
 }
 
 
-message::uid::uid(const uid& other)
-{
+message::uid::uid(const uid& other) {
+
 	m_str = other.m_str;
 }
 
 
-message::uid& message::uid::operator=(const uid& other)
-{
+message::uid& message::uid::operator=(const uid& other) {
+
 	m_str = other.m_str;
 	return *this;
 }
 
 
-message::uid& message::uid::operator=(const string& uid)
-{
+message::uid& message::uid::operator=(const string& uid) {
+
 	m_str = uid;
 	return *this;
 }
 
 
-message::uid& message::uid::operator=(const unsigned long uid)
-{
+message::uid& message::uid::operator=(const unsigned long uid) {
+
 	std::ostringstream oss;
 	oss.imbue(std::locale::classic());
 	oss << uid;
@@ -117,26 +122,26 @@ message::uid& message::uid::operator=(const unsigned long uid)
 }
 
 
-message::uid::operator string() const
-{
+message::uid::operator string() const {
+
 	return m_str;
 }
 
 
-bool message::uid::empty() const
-{
+bool message::uid::empty() const {
+
 	return m_str.empty();
 }
 
 
-bool message::uid::operator==(const uid& other) const
-{
+bool message::uid::operator==(const uid& other) const {
+
 	return m_str == other.m_str;
 }
 
 
-std::ostream& operator<<(std::ostream& os, const message::uid& uid)
-{
+std::ostream& operator<<(std::ostream& os, const message::uid& uid) {
+
 	os << static_cast <string>(uid);
 	return os;
 }

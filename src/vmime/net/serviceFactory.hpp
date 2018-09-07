@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -58,8 +58,8 @@ class session;
 /** A factory to create 'service' objects for a specified protocol.
   */
 
-class VMIME_EXPORT serviceFactory
-{
+class VMIME_EXPORT serviceFactory {
+
 private:
 
 	serviceFactory();
@@ -70,8 +70,8 @@ public:
 	static shared_ptr <serviceFactory> getInstance();
 
 	/** Information about a registered service. */
-	class registeredService : public object
-	{
+	class registeredService : public object {
+
 		friend class serviceFactory;
 
 	protected:
@@ -80,9 +80,10 @@ public:
 
 	public:
 
-		virtual shared_ptr <service> create
-			(shared_ptr <session> sess,
-			 shared_ptr <security::authenticator> auth) const = 0;
+		virtual shared_ptr <service> create(
+			const shared_ptr <session>& sess,
+			const shared_ptr <security::authenticator>& auth
+		) const = 0;
 
 		virtual int getType() const = 0;
 		virtual const string& getName() const = 0;
@@ -94,7 +95,7 @@ public:
 	  *
 	  * @param reg service registration infos
 	  */
-	void registerService(shared_ptr <registeredService> reg);
+	void registerService(const shared_ptr <registeredService>& reg);
 
 	/** Create a new service instance from a protocol name.
 	  *
@@ -104,10 +105,11 @@ public:
 	  * @return a new service instance for the specified protocol, or NULL if no service
 	  * is registered for this protocol
 	  */
-	shared_ptr <service> create
-		(shared_ptr <session> sess,
-		 const string& protocol,
-		 shared_ptr <security::authenticator> auth = null);
+	shared_ptr <service> create(
+		const shared_ptr <session>& sess,
+		const string& protocol,
+		const shared_ptr <security::authenticator>& auth = null
+	);
 
 	/** Create a new service instance from a URL.
 	  *
@@ -118,10 +120,11 @@ public:
 	  * @return a new service instance for the specified protocol or NULL if no service
 	  * is registered for this protocol
 	  */
-	shared_ptr <service> create
-		(shared_ptr <session> sess,
-		 const utility::url& u,
-		 shared_ptr <security::authenticator> auth = null);
+	shared_ptr <service> create(
+		const shared_ptr <session>& sess,
+		const utility::url& u,
+		const shared_ptr <security::authenticator>& auth = null
+	);
 
 	/** Return information about a registered protocol.
 	  *

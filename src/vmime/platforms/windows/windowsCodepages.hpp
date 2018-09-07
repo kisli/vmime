@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -39,12 +39,10 @@ namespace platforms {
 namespace windows {
 
 
-class windowsCodepages
-{
-public:
+struct windowsCodepages {
 
-	static int getByName(const char* s8_Name)
-	{
+	static int getByName(const char* s8_Name) {
+
 		if (stricmp(s8_Name, "ASMO-708")          == 0) return 708;
 		if (stricmp(s8_Name, "big5")              == 0) return 950;
 		if (stricmp(s8_Name, "cp1025")            == 0) return 21025;

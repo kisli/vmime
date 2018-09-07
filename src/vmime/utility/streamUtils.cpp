@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -32,29 +32,33 @@ namespace vmime {
 namespace utility {
 
 
-outputStream& operator<<(outputStream& os, const byte_t c)
-{
+outputStream& operator<<(outputStream& os, const byte_t c) {
+
 	os.write(&c, 1);
-	return (os);
+	return os;
 }
 
 
-outputStream& operator<<(outputStream& os, const string& str)
-{
+outputStream& operator<<(outputStream& os, const string& str) {
+
 	os.write(str.data(), str.length());
-	return (os);
+	return os;
 }
 
 
-size_t bufferedStreamCopy(inputStream& is, outputStream& os)
-{
+size_t bufferedStreamCopy(inputStream& is, outputStream& os) {
+
 	return bufferedStreamCopy(is, os, 0, NULL);
 }
 
 
-size_t bufferedStreamCopyRange(inputStream& is, outputStream& os,
-	const size_t start, const size_t length)
-{
+size_t bufferedStreamCopyRange(
+	inputStream& is,
+	outputStream& os,
+	const size_t start,
+	const size_t length
+) {
+
 	const size_t blockSize =
 		std::min(is.getBlockSize(), os.getBlockSize());
 
@@ -65,13 +69,12 @@ size_t bufferedStreamCopyRange(inputStream& is, outputStream& os,
 	byte_t* buffer = &vbuffer.front();
 	size_t total = 0;
 
-	while (!is.eof() && total < length)
-	{
+	while (!is.eof() && total < length) {
+
 		const size_t remaining = std::min(length - total, blockSize);
 		const size_t read = is.read(buffer, remaining);
 
-		if (read != 0)
-		{
+		if (read != 0) {
 			os.write(buffer, read);
 			total += read;
 		}
@@ -81,9 +84,13 @@ size_t bufferedStreamCopyRange(inputStream& is, outputStream& os,
 }
 
 
-size_t bufferedStreamCopy(inputStream& is, outputStream& os,
-	const size_t length, progressListener* progress)
-{
+size_t bufferedStreamCopy(
+	inputStream& is,
+	outputStream& os,
+	const size_t length,
+	progressListener* progress
+) {
+
 	const size_t blockSize =
 		std::min(is.getBlockSize(), os.getBlockSize());
 
@@ -92,30 +99,32 @@ size_t bufferedStreamCopy(inputStream& is, outputStream& os,
 	byte_t* buffer = &vbuffer.front();
 	size_t total = 0;
 
-	if (progress != NULL)
+	if (progress != NULL) {
 		progress->start(length);
+	}
 
-	while (!is.eof())
-	{
+	while (!is.eof()) {
+
 		const size_t read = is.read(buffer, blockSize);
 
-		if (read != 0)
-		{
+		if (read != 0) {
+
 			os.write(buffer, read);
 			total += read;
 
-			if (progress != NULL)
+			if (progress != NULL) {
 				progress->progress(total, std::max(total, length));
+			}
 		}
 	}
 
-	if (progress != NULL)
+	if (progress != NULL) {
 		progress->stop(total);
+	}
 
-	return (total);
+	return total;
 }
 
 
 } // utility
 } // vmime
-

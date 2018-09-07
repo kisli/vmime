@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -25,37 +25,40 @@
 #include "vmime/net/pop3/POP3Store.hpp"
 
 
-class POP3TestStore : public vmime::net::pop3::POP3Store
-{
+class POP3TestStore : public vmime::net::pop3::POP3Store {
+
 public:
 
 	POP3TestStore()
 		: POP3Store(vmime::net::session::create(),
-		            vmime::shared_ptr <vmime::security::authenticator>())
-	{
+		            vmime::shared_ptr <vmime::security::authenticator>()) {
+
 	}
 };
 
 
-class POP3ConnectionTest : public vmime::net::pop3::POP3Connection
-{
+class POP3ConnectionTest : public vmime::net::pop3::POP3Connection {
+
 public:
 
-	POP3ConnectionTest(vmime::shared_ptr <vmime::net::socket> socket,
-	                   vmime::shared_ptr <vmime::net::timeoutHandler> timeoutHandler)
+	POP3ConnectionTest(
+		vmime::shared_ptr <vmime::net::socket> socket,
+		vmime::shared_ptr <vmime::net::timeoutHandler> timeoutHandler
+	)
 		: POP3Connection(vmime::make_shared <POP3TestStore>(),
 		                 vmime::shared_ptr <vmime::security::authenticator>()),
-		  m_socket(socket), m_timeoutHandler(timeoutHandler)
-	{
+		  m_socket(socket),
+		  m_timeoutHandler(timeoutHandler) {
+
 	}
 
-	vmime::shared_ptr <vmime::net::socket> getSocket()
-	{
+	vmime::shared_ptr <vmime::net::socket> getSocket() {
+
 		return m_socket;
 	}
 
-	vmime::shared_ptr <vmime::net::timeoutHandler> getTimeoutHandler()
-	{
+	vmime::shared_ptr <vmime::net::timeoutHandler> getTimeoutHandler() {
+
 		return m_timeoutHandler;
 	}
 

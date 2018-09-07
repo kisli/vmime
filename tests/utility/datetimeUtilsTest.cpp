@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -43,8 +43,8 @@ VMIME_TEST_SUITE_BEGIN(datetimeUtilsTest)
 	typedef vmime::utility::datetimeUtils datetimeUtils;
 
 
-	void testIsLeapYear()
-	{
+	void testIsLeapYear() {
+
 		VASSERT_EQ("1", false, datetimeUtils::isLeapYear(1999));
 		VASSERT_EQ("2", false, datetimeUtils::isLeapYear(1800));
 		VASSERT_EQ("3", false, datetimeUtils::isLeapYear(1900));
@@ -55,8 +55,8 @@ VMIME_TEST_SUITE_BEGIN(datetimeUtilsTest)
 		VASSERT_EQ("7", true, datetimeUtils::isLeapYear(2000));
 	}
 
-	void testGetDaysInMonth()
-	{
+	void testGetDaysInMonth() {
+
 		VASSERT_EQ("1",  31, datetimeUtils::getDaysInMonth(2006, 1));
 		VASSERT_EQ("2",  28, datetimeUtils::getDaysInMonth(2006, 2));
 		VASSERT_EQ("3",  31, datetimeUtils::getDaysInMonth(2006, 3));
@@ -71,8 +71,8 @@ VMIME_TEST_SUITE_BEGIN(datetimeUtilsTest)
 		VASSERT_EQ("12", 31, datetimeUtils::getDaysInMonth(2006, 12));
 	}
 
-	void testGetDaysInMonthLeapYear()
-	{
+	void testGetDaysInMonthLeapYear() {
+
 		VASSERT_EQ("1",  31, datetimeUtils::getDaysInMonth(2004, 1));
 		VASSERT_EQ("2",  29, datetimeUtils::getDaysInMonth(2004, 2));
 		VASSERT_EQ("3",  31, datetimeUtils::getDaysInMonth(2004, 3));
@@ -87,13 +87,11 @@ VMIME_TEST_SUITE_BEGIN(datetimeUtilsTest)
 		VASSERT_EQ("12", 31, datetimeUtils::getDaysInMonth(2004, 12));
 	}
 
-	void testToUniversalTime()
-	{
-		const vmime::datetime local
-			(2005, 12, 2, 12, 34, 56, -789);
+	void testToUniversalTime() {
 
-		const vmime::datetime gmt =
-			datetimeUtils::toUniversalTime(local);
+		const vmime::datetime local(2005, 12, 2, 12, 34, 56, -789);
+
+		const vmime::datetime gmt = datetimeUtils::toUniversalTime(local);
 
 		// 789 is 13 hours, 9 minutes later
 		VASSERT_EQ("1", 2005, gmt.getYear());
@@ -105,13 +103,11 @@ VMIME_TEST_SUITE_BEGIN(datetimeUtilsTest)
 		VASSERT_EQ("7",    0, gmt.getZone());
 	}
 
-	void testToLocalTime()
-	{
-		const vmime::datetime date
-			(2005, 12, 2, 12, 34, 56, -120); // GMT-2
+	void testToLocalTime() {
 
-		const vmime::datetime local =
-			datetimeUtils::toLocalTime(date, 120); // GMT+2
+		const vmime::datetime date(2005, 12, 2, 12, 34, 56, -120); // GMT-2
+
+		const vmime::datetime local = datetimeUtils::toLocalTime(date, 120); // GMT+2
 
 		VASSERT_EQ("1", 2005, local.getYear());
 		VASSERT_EQ("2",   12, local.getMonth());
@@ -122,8 +118,8 @@ VMIME_TEST_SUITE_BEGIN(datetimeUtilsTest)
 		VASSERT_EQ("7",  120, local.getZone());
 	}
 
-	void testGetDayOfWeek()
-	{
+	void testGetDayOfWeek() {
+
 		VASSERT_EQ("1", vmime::datetime::WEDNESDAY, datetimeUtils::getDayOfWeek(1969, 12, 31));
 		VASSERT_EQ("2", vmime::datetime::FRIDAY,    datetimeUtils::getDayOfWeek(1976,  4,  9));
 		VASSERT_EQ("3", vmime::datetime::TUESDAY,   datetimeUtils::getDayOfWeek(1987,  6, 23));
@@ -135,8 +131,8 @@ VMIME_TEST_SUITE_BEGIN(datetimeUtilsTest)
 		VASSERT_EQ("9", vmime::datetime::FRIDAY,    datetimeUtils::getDayOfWeek(2027,  3, 12));
 	}
 
-	void testGetWeekOfYear()
-	{
+	void testGetWeekOfYear() {
+
 		VASSERT_EQ("1.1", 52, datetimeUtils::getWeekOfYear(2003, 12, 27));
 		VASSERT_EQ("1.2", 52, datetimeUtils::getWeekOfYear(2003, 12, 28));
 		VASSERT_EQ("1.3",  1, datetimeUtils::getWeekOfYear(2003, 12, 29, true));
@@ -159,4 +155,3 @@ VMIME_TEST_SUITE_BEGIN(datetimeUtilsTest)
 	}
 
 VMIME_TEST_SUITE_END
-

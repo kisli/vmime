@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -64,14 +64,14 @@ VMIME_TEST_SUITE_BEGIN(utilityPathTest)
 	typedef vmime::utility::path::component comp;
 
 
-	void testConstruct1()
-	{
+	void testConstruct1() {
+
 		VASSERT_EQ("1", true, path().isEmpty());
 		VASSERT_EQ("2", 0, path().getSize());
 	}
 
-	void testConstruct2()
-	{
+	void testConstruct2() {
+
 		path p(comp("foo"));
 
 		VASSERT_EQ("1", false, p.isEmpty());
@@ -79,8 +79,8 @@ VMIME_TEST_SUITE_BEGIN(utilityPathTest)
 		VASSERT_EQ("3", "foo", p.getComponentAt(0).getBuffer());
 	}
 
-	void testAppendComponent()
-	{
+	void testAppendComponent() {
+
 		path p;
 
 		VASSERT_EQ("1", 0, p.getSize());
@@ -92,8 +92,8 @@ VMIME_TEST_SUITE_BEGIN(utilityPathTest)
 		VASSERT_EQ("3", c.getBuffer(), p.getComponentAt(0).getBuffer());
 	}
 
-	void testConstruct3()
-	{
+	void testConstruct3() {
+
 		path p1;
 		p1.appendComponent(comp("foo"));
 		p1.appendComponent(comp("bar"));
@@ -105,8 +105,8 @@ VMIME_TEST_SUITE_BEGIN(utilityPathTest)
 		VASSERT_EQ("3", "bar", p2.getComponentAt(1).getBuffer());
 	}
 
-	void testConstruct4()
-	{
+	void testConstruct4() {
+
 		// Same as path::path(const component&)
 		path p("foo");
 
@@ -115,8 +115,8 @@ VMIME_TEST_SUITE_BEGIN(utilityPathTest)
 		VASSERT_EQ("3", "foo", p.getComponentAt(0).getBuffer());
 	}
 
-	void testOperatorDiv1()
-	{
+	void testOperatorDiv1() {
+
 		path p1;
 		p1.appendComponent(comp("foo"));
 		p1.appendComponent(comp("bar"));
@@ -132,8 +132,8 @@ VMIME_TEST_SUITE_BEGIN(utilityPathTest)
 		VASSERT_EQ("4", p2.getComponentAt(0).getBuffer(), p3.getComponentAt(2).getBuffer());
 	}
 
-	void testOperatorDiv2()
-	{
+	void testOperatorDiv2() {
+
 		path p1;
 		p1.appendComponent(comp("foo"));
 		p1.appendComponent(comp("bar"));
@@ -148,8 +148,8 @@ VMIME_TEST_SUITE_BEGIN(utilityPathTest)
 		VASSERT_EQ("4", c.getBuffer(), p2.getComponentAt(2).getBuffer());
 	}
 
-	void testOperatorDivEqual1()
-	{
+	void testOperatorDivEqual1() {
+
 		path p1;
 		p1.appendComponent(comp("foo"));
 		p1.appendComponent(comp("bar"));
@@ -166,8 +166,8 @@ VMIME_TEST_SUITE_BEGIN(utilityPathTest)
 		VASSERT_EQ("4", p2.getComponentAt(0).getBuffer(), p3.getComponentAt(2).getBuffer());
 	}
 
-	void testOperatorDivEqual2()
-	{
+	void testOperatorDivEqual2() {
+
 		path p1;
 		p1.appendComponent(comp("foo"));
 		p1.appendComponent(comp("bar"));
@@ -183,8 +183,8 @@ VMIME_TEST_SUITE_BEGIN(utilityPathTest)
 		VASSERT_EQ("4", c.getBuffer(), p2.getComponentAt(2).getBuffer());
 	}
 
-	void testGetParent()
-	{
+	void testGetParent() {
+
 		path p1;
 		path p1p = p1.getParent();
 
@@ -200,8 +200,8 @@ VMIME_TEST_SUITE_BEGIN(utilityPathTest)
 		VASSERT_EQ("3", p2.getComponentAt(0).getBuffer(), p2p.getComponentAt(0).getBuffer());
 	}
 
-	void testComparison()
-	{
+	void testComparison() {
+
 		path p1;
 		p1.appendComponent(comp("foo"));
 		p1.appendComponent(comp("bar"));
@@ -224,8 +224,8 @@ VMIME_TEST_SUITE_BEGIN(utilityPathTest)
 		VASSERT_EQ("5", true, p3.getParent() == p1);
 	}
 
-	void testGetLastComponent()
-	{
+	void testGetLastComponent() {
+
 		path p1;
 		p1.appendComponent(comp("foo"));
 		p1.appendComponent(comp("bar"));
@@ -236,8 +236,8 @@ VMIME_TEST_SUITE_BEGIN(utilityPathTest)
 		VASSERT_EQ("3", "foo", p1.getParent().getParent().getLastComponent().getBuffer());
 	}
 
-	void testIsDirectParentOf()
-	{
+	void testIsDirectParentOf() {
+
 		path p1;
 		p1.appendComponent(comp("foo"));
 
@@ -256,8 +256,8 @@ VMIME_TEST_SUITE_BEGIN(utilityPathTest)
 		VASSERT_EQ("4", false, p2.isDirectParentOf(p1));
 	}
 
-	void testIsParentOf()
-	{
+	void testIsParentOf() {
+
 		path p1;
 		p1.appendComponent(comp("foo"));
 
@@ -276,8 +276,8 @@ VMIME_TEST_SUITE_BEGIN(utilityPathTest)
 		VASSERT_EQ("4", false, p2.isParentOf(p1));
 	}
 
-	void testIsParentOf_EquivalentCharset()
-	{
+	void testIsParentOf_EquivalentCharset() {
+
 		path p1;
 		p1.appendComponent(comp("foo", "us-ascii"));
 
@@ -289,8 +289,8 @@ VMIME_TEST_SUITE_BEGIN(utilityPathTest)
 		VASSERT_EQ("1", true, p1.isParentOf(p2));
 	}
 
-	void testRenameParent()
-	{
+	void testRenameParent() {
+
 		path p1;
 		p1.appendComponent(comp("a"));
 		p1.appendComponent(comp("b"));
@@ -317,8 +317,8 @@ VMIME_TEST_SUITE_BEGIN(utilityPathTest)
 		VASSERT_EQ("6", "d", p.getComponentAt(4).getBuffer());
 	}
 
-	void testFromString()
-	{
+	void testFromString() {
+
 		path p = path::fromString("ab/cde/f", "/", vmime::charset("my-charset"));
 
 		VASSERT_EQ("count", 3, p.getSize());
@@ -330,8 +330,8 @@ VMIME_TEST_SUITE_BEGIN(utilityPathTest)
 		VASSERT_EQ("charset3", "my-charset", p.getComponentAt(2).getCharset().getName());
 	}
 
-	void testFromString_IgnoreLeadingOrTrailingSep()
-	{
+	void testFromString_IgnoreLeadingOrTrailingSep() {
+
 		path p = path::fromString("//ab/cde/f////", "/", vmime::charset("my-charset"));
 
 		VASSERT_EQ("count", 3, p.getSize());
@@ -343,8 +343,8 @@ VMIME_TEST_SUITE_BEGIN(utilityPathTest)
 		VASSERT_EQ("charset3", "my-charset", p.getComponentAt(2).getCharset().getName());
 	}
 
-	void testToString()
-	{
+	void testToString() {
+
 		path p;
 		p.appendComponent(comp("ab"));
 		p.appendComponent(comp("cde"));
@@ -354,4 +354,3 @@ VMIME_TEST_SUITE_BEGIN(utilityPathTest)
 	}
 
 VMIME_TEST_SUITE_END
-

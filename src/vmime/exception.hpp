@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -32,15 +32,13 @@
 #include "vmime/utility/path.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 /** Base class for VMime exceptions.
   */
+class VMIME_EXPORT exception : public std::runtime_error {
 
-class VMIME_EXPORT exception : public std::runtime_error
-{
 private:
 
 	exception* m_other;
@@ -87,13 +85,11 @@ protected:
 
 
 /** List of all VMime exceptions. */
-
-namespace exceptions
-{
+namespace exceptions {
 
 
-class VMIME_EXPORT bad_field_value_type : public vmime::exception
-{
+class VMIME_EXPORT bad_field_value_type : public vmime::exception {
+
 public:
 
 	bad_field_value_type(const string& fieldName, const exception& other = NO_EXCEPTION);
@@ -104,8 +100,8 @@ public:
 };
 
 
-class VMIME_EXPORT charset_conv_error : public vmime::exception
-{
+class VMIME_EXPORT charset_conv_error : public vmime::exception {
+
 public:
 
 	charset_conv_error(const string& what = "", const exception& other = NO_EXCEPTION);
@@ -116,8 +112,8 @@ public:
 };
 
 
-class VMIME_EXPORT illegal_byte_sequence_for_charset : public vmime::exception
-{
+class VMIME_EXPORT illegal_byte_sequence_for_charset : public vmime::exception {
+
 public:
 
 	illegal_byte_sequence_for_charset(const string& what = "", const exception& other = NO_EXCEPTION);
@@ -130,9 +126,8 @@ public:
 
 /** No encoder has been found for the specified encoding name.
   */
+class VMIME_EXPORT no_encoder_available : public vmime::exception {
 
-class VMIME_EXPORT no_encoder_available : public vmime::exception
-{
 public:
 
 	no_encoder_available(const string& name, const exception& other = NO_EXCEPTION);
@@ -145,9 +140,8 @@ public:
 
 /** No algorithm has been found for the specified name.
   */
+class VMIME_EXPORT no_digest_algorithm_available : public vmime::exception {
 
-class VMIME_EXPORT no_digest_algorithm_available : public vmime::exception
-{
 public:
 
 	no_digest_algorithm_available(const string& name, const exception& other = NO_EXCEPTION);
@@ -158,8 +152,8 @@ public:
 };
 
 
-class VMIME_EXPORT no_such_field : public vmime::exception
-{
+class VMIME_EXPORT no_such_field : public vmime::exception {
+
 public:
 
 	no_such_field(const exception& other = NO_EXCEPTION);
@@ -170,8 +164,8 @@ public:
 };
 
 
-class VMIME_EXPORT no_such_part : public vmime::exception
-{
+class VMIME_EXPORT no_such_part : public vmime::exception {
+
 public:
 
 	no_such_part(const exception& other = NO_EXCEPTION);
@@ -182,8 +176,8 @@ public:
 };
 
 
-class VMIME_EXPORT no_such_message_id : public vmime::exception
-{
+class VMIME_EXPORT no_such_message_id : public vmime::exception {
+
 public:
 
 	no_such_message_id(const exception& other = NO_EXCEPTION);
@@ -194,8 +188,8 @@ public:
 };
 
 
-class VMIME_EXPORT open_file_error : public vmime::exception
-{
+class VMIME_EXPORT open_file_error : public vmime::exception {
+
 public:
 
 	open_file_error(const exception& other = NO_EXCEPTION);
@@ -206,8 +200,8 @@ public:
 };
 
 
-class VMIME_EXPORT no_factory_available : public vmime::exception
-{
+class VMIME_EXPORT no_factory_available : public vmime::exception {
+
 public:
 
 	no_factory_available(const exception& other = NO_EXCEPTION);
@@ -218,8 +212,8 @@ public:
 };
 
 
-class VMIME_EXPORT no_platform_handler : public vmime::exception
-{
+class VMIME_EXPORT no_platform_handler : public vmime::exception {
+
 public:
 
 	no_platform_handler(const exception& other = NO_EXCEPTION);
@@ -232,9 +226,8 @@ public:
 
 /** No expeditor specified.
   */
+class VMIME_EXPORT no_expeditor : public vmime::exception {
 
-class VMIME_EXPORT no_expeditor : public vmime::exception
-{
 public:
 
 	no_expeditor(const exception& other = NO_EXCEPTION);
@@ -247,9 +240,8 @@ public:
 
 /** No recipient specified.
   */
+class VMIME_EXPORT no_recipient : public vmime::exception {
 
-class VMIME_EXPORT no_recipient : public vmime::exception
-{
 public:
 
 	no_recipient(const exception& other = NO_EXCEPTION);
@@ -262,9 +254,8 @@ public:
 
 /** There is no property with that name in the set.
   */
+class VMIME_EXPORT no_such_property : public vmime::exception {
 
-class VMIME_EXPORT no_such_property : public vmime::exception
-{
 public:
 
 	no_such_property(const string& name, const exception& other = NO_EXCEPTION);
@@ -277,9 +268,8 @@ public:
 
 /** Bad type specified when reading property.
   */
+class VMIME_EXPORT invalid_property_type : public vmime::exception {
 
-class VMIME_EXPORT invalid_property_type : public vmime::exception
-{
 public:
 
 	invalid_property_type(const exception& other = NO_EXCEPTION);
@@ -292,9 +282,8 @@ public:
 
 /** Bad argument was passed to the function.
   */
+class VMIME_EXPORT invalid_argument : public vmime::exception {
 
-class VMIME_EXPORT invalid_argument : public vmime::exception
-{
 public:
 
 	invalid_argument(const exception& other = NO_EXCEPTION);
@@ -307,9 +296,8 @@ public:
 
 /** Underlying operating system error.
   */
+class VMIME_EXPORT system_error : public vmime::exception {
 
-class VMIME_EXPORT system_error : public vmime::exception
-{
 public:
 
 	system_error(const string& what, const exception& other = NO_EXCEPTION);
@@ -322,9 +310,8 @@ public:
 
 /** The URL is malformed.
   */
+class VMIME_EXPORT malformed_url : public vmime::exception {
 
-class VMIME_EXPORT malformed_url : public vmime::exception
-{
 public:
 
 	malformed_url(const string& error, const exception& other = NO_EXCEPTION);
@@ -341,9 +328,8 @@ public:
 
 /** Base class for exceptions thrown by the networking module.
   */
+class VMIME_EXPORT net_exception : public vmime::exception {
 
-class VMIME_EXPORT net_exception : public vmime::exception
-{
 public:
 
 	net_exception(const string& what, const exception& other = NO_EXCEPTION);
@@ -362,9 +348,8 @@ typedef net_exception messaging_exception;
 
 /** Socket error.
   */
+class VMIME_EXPORT socket_exception : public net_exception {
 
-class VMIME_EXPORT socket_exception : public net_exception
-{
 public:
 
 	socket_exception(const string& what = "", const exception& other = NO_EXCEPTION);
@@ -379,9 +364,8 @@ public:
 /** Socket not connected: you are trying to write to/read from a socket which
   * is not connected to a peer.
   */
+class VMIME_EXPORT socket_not_connected_exception : public socket_exception {
 
-class VMIME_EXPORT socket_not_connected_exception : public socket_exception
-{
 public:
 
 	socket_not_connected_exception(const string& what = "", const exception& other = NO_EXCEPTION);
@@ -396,9 +380,8 @@ public:
 /** Error while connecting to the server: this may be a DNS resolution error
   * or a connection error (for example, time-out while connecting).
   */
+class VMIME_EXPORT connection_error : public socket_exception {
 
-class VMIME_EXPORT connection_error : public socket_exception
-{
 public:
 
 	connection_error(const string& what = "", const exception& other = NO_EXCEPTION);
@@ -411,9 +394,8 @@ public:
 
 /** Server did not initiated the connection correctly.
   */
+class VMIME_EXPORT connection_greeting_error : public net_exception {
 
-class VMIME_EXPORT connection_greeting_error : public net_exception
-{
 public:
 
 	connection_greeting_error(const string& response, const exception& other = NO_EXCEPTION);
@@ -433,9 +415,8 @@ private:
 /** Error while giving credentials to the server (wrong username
   * or password, or wrong authentication method).
   */
+class VMIME_EXPORT authentication_error : public net_exception {
 
-class VMIME_EXPORT authentication_error : public net_exception
-{
 public:
 
 	authentication_error(const string& response, const exception& other = NO_EXCEPTION);
@@ -454,9 +435,8 @@ private:
 
 /** Option not supported.
   */
+class VMIME_EXPORT unsupported_option : public net_exception {
 
-class VMIME_EXPORT unsupported_option : public net_exception
-{
 public:
 
 	unsupported_option(const exception& other = NO_EXCEPTION);
@@ -470,9 +450,8 @@ public:
 /** The current state of the object does not permit to execute the
   * operation (for example, you try to close a folder which is not open).
   */
+class VMIME_EXPORT illegal_state : public net_exception {
 
-class VMIME_EXPORT illegal_state : public net_exception
-{
 public:
 
 	illegal_state(const string& state, const exception& other = NO_EXCEPTION);
@@ -485,9 +464,8 @@ public:
 
 /** Folder not found (does not exist).
   */
+class VMIME_EXPORT folder_not_found : public net_exception {
 
-class VMIME_EXPORT folder_not_found : public net_exception
-{
 public:
 
 	folder_not_found(const exception& other = NO_EXCEPTION);
@@ -500,9 +478,8 @@ public:
 
 /** Folder is already open in the same session.
   */
+class VMIME_EXPORT folder_already_open : public net_exception {
 
-class VMIME_EXPORT folder_already_open : public net_exception
-{
 public:
 
 	folder_already_open(const exception& other = NO_EXCEPTION);
@@ -515,9 +492,8 @@ public:
 
 /** Message not found (does not exist).
   */
+class VMIME_EXPORT message_not_found : public net_exception {
 
-class VMIME_EXPORT message_not_found : public net_exception
-{
 public:
 
 	message_not_found(const exception& other = NO_EXCEPTION);
@@ -530,9 +506,8 @@ public:
 
 /** Operation not supported by the underlying protocol.
   */
+class VMIME_EXPORT operation_not_supported : public net_exception {
 
-class VMIME_EXPORT operation_not_supported : public net_exception
-{
 public:
 
 	operation_not_supported(const exception& other = NO_EXCEPTION);
@@ -545,9 +520,8 @@ public:
 
 /** The operation timed out (time-out delay is elapsed).
   */
+class VMIME_EXPORT operation_timed_out : public net_exception {
 
-class VMIME_EXPORT operation_timed_out : public net_exception
-{
 public:
 
 	operation_timed_out(const exception& other = NO_EXCEPTION);
@@ -560,9 +534,8 @@ public:
 
 /** The operation has been cancelled.
   */
+class VMIME_EXPORT operation_cancelled : public net_exception {
 
-class VMIME_EXPORT operation_cancelled : public net_exception
-{
 public:
 
 	operation_cancelled(const exception& other = NO_EXCEPTION);
@@ -576,9 +549,8 @@ public:
 /** Must call fetchMessage() or fetchHeader() before accessing
   * the requested object.
   */
+class VMIME_EXPORT unfetched_object : public net_exception {
 
-class VMIME_EXPORT unfetched_object : public net_exception
-{
 public:
 
 	unfetched_object(const exception& other = NO_EXCEPTION);
@@ -591,9 +563,8 @@ public:
 
 /** The service is not currently connected.
   */
+class VMIME_EXPORT not_connected : public net_exception {
 
-class VMIME_EXPORT not_connected : public net_exception
-{
 public:
 
 	not_connected(const exception& other = NO_EXCEPTION);
@@ -606,9 +577,8 @@ public:
 
 /** The service is already connected (must disconnect before).
   */
+class VMIME_EXPORT already_connected : public net_exception {
 
-class VMIME_EXPORT already_connected : public net_exception
-{
 public:
 
 	already_connected(const exception& other = NO_EXCEPTION);
@@ -621,9 +591,8 @@ public:
 
 /** Illegal operation: cannot run this operation on the object.
   */
+class VMIME_EXPORT illegal_operation : public net_exception {
 
-class VMIME_EXPORT illegal_operation : public net_exception
-{
 public:
 
 	illegal_operation(const string& msg = "", const exception& other = NO_EXCEPTION);
@@ -636,12 +605,17 @@ public:
 
 /** Command error: operation failed (this is specific to the underlying protocol).
   */
+class VMIME_EXPORT command_error : public net_exception {
 
-class VMIME_EXPORT command_error : public net_exception
-{
 public:
 
-	command_error(const string& command, const string& response, const string& desc = "", const exception& other = NO_EXCEPTION);
+	command_error(
+		const string& command,
+		const string& response,
+		const string& desc = "",
+		const exception& other = NO_EXCEPTION
+	);
+
 	~command_error() throw();
 
 	/** Return the name of the command which have thrown the exception.
@@ -670,12 +644,16 @@ private:
 
 /** The server returned an invalid response.
   */
+class VMIME_EXPORT invalid_response : public net_exception {
 
-class VMIME_EXPORT invalid_response : public net_exception
-{
 public:
 
-	invalid_response(const string& command, const string& response, const exception& other = NO_EXCEPTION);
+	invalid_response(
+		const string& command,
+		const string& response,
+		const exception& other = NO_EXCEPTION
+	);
+
 	~invalid_response() throw();
 
 	/** Return the name of the command which have thrown the exception.
@@ -704,9 +682,8 @@ private:
 
 /** Partial fetch is not supported by the underlying protocol.
   */
+class VMIME_EXPORT partial_fetch_not_supported : public net_exception {
 
-class VMIME_EXPORT partial_fetch_not_supported : public net_exception
-{
 public:
 
 	partial_fetch_not_supported(const exception& other = NO_EXCEPTION);
@@ -719,9 +696,8 @@ public:
 
 /** Folder name is invalid.
   */
+class VMIME_EXPORT invalid_folder_name : public net_exception {
 
-class VMIME_EXPORT invalid_folder_name : public net_exception
-{
 public:
 
 	invalid_folder_name(const string& error = "", const exception& other = NO_EXCEPTION);
@@ -740,12 +716,16 @@ public:
 
 /** Base class for exceptions thrown by the filesystem features.
   */
+class VMIME_EXPORT filesystem_exception : public vmime::exception {
 
-class VMIME_EXPORT filesystem_exception : public vmime::exception
-{
 public:
 
-	filesystem_exception(const string& what, const utility::path& path, const exception& other = NO_EXCEPTION);
+	filesystem_exception(
+		const string& what,
+		const utility::path& path,
+		const exception& other = NO_EXCEPTION
+	);
+
 	~filesystem_exception() throw();
 
 	/** Return the full path of the file have thrown the exception.
@@ -765,9 +745,8 @@ private:
 
 /** File is not a directory.
   */
+class VMIME_EXPORT not_a_directory : public filesystem_exception {
 
-class VMIME_EXPORT not_a_directory : public filesystem_exception
-{
 public:
 
 	not_a_directory(const utility::path& path, const exception& other = NO_EXCEPTION);
@@ -780,9 +759,8 @@ public:
 
 /** File not found.
   */
+class VMIME_EXPORT file_not_found : public filesystem_exception {
 
-class VMIME_EXPORT file_not_found : public filesystem_exception
-{
 public:
 
 	file_not_found(const utility::path& path, const exception& other = NO_EXCEPTION);
@@ -798,9 +776,8 @@ public:
 
 /** Authentication exception.
   */
+class VMIME_EXPORT authentication_exception : public vmime::exception {
 
-class VMIME_EXPORT authentication_exception : public vmime::exception
-{
 public:
 
 	authentication_exception(const string& what, const exception& other = NO_EXCEPTION);
@@ -813,9 +790,8 @@ public:
 
 /** The requested information cannot be provided.
   */
+class VMIME_EXPORT no_auth_information : public authentication_exception {
 
-class VMIME_EXPORT no_auth_information : public authentication_exception
-{
 public:
 
 	no_auth_information(const exception& other = NO_EXCEPTION);
@@ -831,9 +807,8 @@ public:
 
 /** Base class for exceptions thrown by SASL module.
   */
+class VMIME_EXPORT sasl_exception : public authentication_exception {
 
-class VMIME_EXPORT sasl_exception : public authentication_exception
-{
 public:
 
 	sasl_exception(const string& what, const exception& other = NO_EXCEPTION);
@@ -846,9 +821,8 @@ public:
 
 /** No mechanism is registered with the specified name.
   */
+class VMIME_EXPORT no_such_mechanism : public sasl_exception {
 
-class VMIME_EXPORT no_such_mechanism : public sasl_exception
-{
 public:
 
 	no_such_mechanism(const string& name, const exception& other = NO_EXCEPTION);
@@ -867,9 +841,8 @@ public:
 
 /** Base class for exceptions thrown by TLS module.
   */
+class VMIME_EXPORT tls_exception : public vmime::exception {
 
-class VMIME_EXPORT tls_exception : public vmime::exception
-{
 public:
 
 	tls_exception(const string& what, const exception& other = NO_EXCEPTION);
@@ -881,7 +854,6 @@ public:
 
 
 #endif // VMIME_HAVE_TLS_SUPPORT
-
 
 
 } // exceptions

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -45,16 +45,15 @@ class maildirFolder;
 
 /** maildir message implementation.
   */
+class VMIME_EXPORT maildirMessage : public message {
 
-class VMIME_EXPORT maildirMessage : public message
-{
 	friend class maildirFolder;
 
 	maildirMessage(const maildirMessage&) : message() { }
 
 public:
 
-	maildirMessage(shared_ptr <maildirFolder> folder, const size_t num);
+	maildirMessage(const shared_ptr <maildirFolder>& folder, const size_t num);
 
 	~maildirMessage();
 
@@ -75,22 +74,44 @@ public:
 	int getFlags() const;
 	void setFlags(const int flags, const int mode = FLAG_MODE_SET);
 
-	void extract(utility::outputStream& os, utility::progressListener* progress = NULL, const size_t start = 0, const size_t length = -1, const bool peek = false) const;
-	void extractPart(shared_ptr <const messagePart> p, utility::outputStream& os, utility::progressListener* progress = NULL, const size_t start = 0, const size_t length = -1, const bool peek = false) const;
+	void extract(
+		utility::outputStream& os,
+		utility::progressListener* progress = NULL,
+		const size_t start = 0,
+		const size_t length = -1,
+		const bool peek = false
+	) const;
 
-	void fetchPartHeader(shared_ptr <messagePart> p);
+	void extractPart(
+		const shared_ptr <const messagePart>& p,
+		utility::outputStream& os,
+		utility::progressListener* progress = NULL,
+		const size_t start = 0,
+		const size_t length = -1,
+		const bool peek = false
+	) const;
+
+	void fetchPartHeader(const shared_ptr <messagePart>& p);
 
 	shared_ptr <vmime::message> getParsedMessage();
 
 private:
 
-	void fetch(shared_ptr <maildirFolder> folder, const fetchAttributes& options);
+	void fetch(const shared_ptr <maildirFolder>& folder, const fetchAttributes& options);
 
 	void onFolderClosed();
 
 	shared_ptr <header> getOrCreateHeader();
 
-	void extractImpl(utility::outputStream& os, utility::progressListener* progress, const size_t start, const size_t length, const size_t partialStart, const size_t partialLength, const bool peek) const;
+	void extractImpl(
+		utility::outputStream& os,
+		utility::progressListener* progress,
+		const size_t start,
+		const size_t length,
+		const size_t partialStart,
+		const size_t partialLength,
+		const bool peek
+	) const;
 
 
 	weak_ptr <maildirFolder> m_folder;

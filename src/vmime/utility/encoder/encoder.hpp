@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -38,9 +38,8 @@ namespace encoder {
 
 /** Encode/decode data in different encodings.
   */
+class VMIME_EXPORT encoder : public object {
 
-class VMIME_EXPORT encoder : public object
-{
 public:
 
 	encoder();
@@ -54,7 +53,11 @@ public:
 	  * want to receive progress notifications
 	  * @return number of bytes written into output stream
 	  */
-	virtual size_t encode(utility::inputStream& in, utility::outputStream& out, utility::progressListener* progress = NULL) = 0;
+	virtual size_t encode(
+		utility::inputStream& in,
+		utility::outputStream& out,
+		utility::progressListener* progress = NULL
+	) = 0;
 
 	/** Decode data.
 	  *
@@ -64,7 +67,11 @@ public:
 	  * want to receive progress notifications
 	  * @return number of bytes written into output stream
 	  */
-	virtual size_t decode(utility::inputStream& in, utility::outputStream& out, utility::progressListener* progress = NULL) = 0;
+	virtual size_t decode(
+		utility::inputStream& in,
+		utility::outputStream& out,
+		utility::progressListener* progress = NULL
+	) = 0;
 
 	/** Return the properties of the encoder.
 	  *

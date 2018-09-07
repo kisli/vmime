@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -34,9 +34,10 @@ VMIME_TEST_SUITE_BEGIN(htmlTextPartTest)
 	VMIME_TEST_LIST_END
 
 
-	static const vmime::string extractContent
-		(vmime::shared_ptr <const vmime::contentHandler> cth)
-	{
+	static const vmime::string extractContent(
+		const vmime::shared_ptr <const vmime::contentHandler>& cth
+	) {
+
 		std::ostringstream oss;
 		vmime::utility::outputStreamAdapter osa(oss);
 
@@ -46,8 +47,8 @@ VMIME_TEST_SUITE_BEGIN(htmlTextPartTest)
 	}
 
 
-	void testParseText()
-	{
+	void testParseText() {
+
 		const vmime::string msgString = ""
 "MIME-Version: 1.0\r\n"
 "Content-Type: multipart/alternative; boundary=\"LEVEL1\"\r\n"
@@ -94,8 +95,8 @@ VMIME_TEST_SUITE_BEGIN(htmlTextPartTest)
 
 	/** Test parsing of embedded objects by CID (Content-Id).
 	  */
-	void testParseEmbeddedObjectsCID()
-	{
+	void testParseEmbeddedObjectsCID() {
+
 		const vmime::string msgString = ""
 "MIME-Version: 1.0\r\n"
 "Content-Type: multipart/alternative; boundary=\"LEVEL1\"\r\n"
@@ -137,8 +138,10 @@ VMIME_TEST_SUITE_BEGIN(htmlTextPartTest)
 		VASSERT_EQ("part-count2", 3, msg->getBody()->getPartAt(1)->getBody()->getPartCount());
 
 		vmime::htmlTextPart htmlPart;
-		htmlPart.parse(msg, msg->getBody()->getPartAt(1),
-			msg->getBody()->getPartAt(1)->getBody()->getPartAt(1));
+		htmlPart.parse(
+			msg, msg->getBody()->getPartAt(1),
+			msg->getBody()->getPartAt(1)->getBody()->getPartAt(1)
+		);
 
 		// Two embedded objects should be found.
 		// BUGFIX: "CID:" prefix is not case-sensitive.
@@ -172,8 +175,8 @@ VMIME_TEST_SUITE_BEGIN(htmlTextPartTest)
 
 	/** Test parsing of embedded objects by location.
 	  */
-	void testParseEmbeddedObjectsLocation()
-	{
+	void testParseEmbeddedObjectsLocation() {
+
 		const vmime::string msgString = ""
 "MIME-Version: 1.0\r\n"
 "Content-Type: multipart/alternative; boundary=\"LEVEL1\"\r\n"
@@ -209,8 +212,10 @@ VMIME_TEST_SUITE_BEGIN(htmlTextPartTest)
 		VASSERT_EQ("part-count2", 2, msg->getBody()->getPartAt(1)->getBody()->getPartCount());
 
 		vmime::htmlTextPart htmlPart;
-		htmlPart.parse(msg, msg->getBody()->getPartAt(1),
-			msg->getBody()->getPartAt(1)->getBody()->getPartAt(1));
+		htmlPart.parse(
+			msg, msg->getBody()->getPartAt(1),
+			msg->getBody()->getPartAt(1)->getBody()->getPartAt(1)
+		);
 
 		// Only one embedded object
 		VASSERT_EQ("count", 1, htmlPart.getObjectCount());
@@ -234,4 +239,3 @@ VMIME_TEST_SUITE_BEGIN(htmlTextPartTest)
 	// TODO: test generation of text parts
 
 VMIME_TEST_SUITE_END
-

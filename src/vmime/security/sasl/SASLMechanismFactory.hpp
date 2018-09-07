@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -49,29 +49,29 @@ class SASLContext;
 
 /** Constructs SASL mechanism objects.
   */
-class VMIME_EXPORT SASLMechanismFactory : public object
-{
+class VMIME_EXPORT SASLMechanismFactory : public object {
+
 private:
 
 	SASLMechanismFactory();
 	~SASLMechanismFactory();
 
 
-	class registeredMechanism : public object
-	{
-	public:
+	struct registeredMechanism : public object {
 
-		virtual shared_ptr <SASLMechanism> create
-			(shared_ptr <SASLContext> ctx, const string& name) = 0;
+		virtual shared_ptr <SASLMechanism> create(
+			const shared_ptr <SASLContext>& ctx, const string& name
+		) = 0;
 	};
 
 	template <typename T>
-	class registeredMechanismImpl : public registeredMechanism
-	{
-	public:
+	struct registeredMechanismImpl : public registeredMechanism {
 
-		shared_ptr <SASLMechanism> create(shared_ptr <SASLContext> ctx, const string& name)
-		{
+		shared_ptr <SASLMechanism> create(
+			const shared_ptr <SASLContext>& ctx,
+			const string& name
+		) {
+
 			return vmime::make_shared <T>(ctx, name);
 		}
 	};
@@ -89,10 +89,14 @@ public:
 	  * @param name mechanism name
 	  */
 	template <typename MECH_CLASS>
-	void registerMechanism(const string& name)
-	{
-		m_mechs.insert(MapType::value_type(name,
-			vmime::make_shared <registeredMechanismImpl <MECH_CLASS> >()));
+	void registerMechanism(const string& name) {
+
+		m_mechs.insert(
+			MapType::value_type(
+				name,
+				vmime::make_shared <registeredMechanismImpl <MECH_CLASS> >()
+			)
+		);
 	}
 
 	/** Create a mechanism object given its name.
@@ -103,7 +107,7 @@ public:
 	  * @throw exceptions::no_such_mechanism if no mechanism is
 	  * registered for the specified name
 	  */
-	shared_ptr <SASLMechanism> create(shared_ptr <SASLContext> ctx, const string& name);
+	shared_ptr <SASLMechanism> create(const shared_ptr <SASLContext>& ctx, const string& name);
 
 	/** Return a list of supported mechanisms. This includes mechanisms
 	  * registered using registerMechanism() as well as the ones that
@@ -149,4 +153,3 @@ private:
 #endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_SASL_SUPPORT
 
 #endif // VMIME_SECURITY_SASL_SASLMECHANISMFACTORY_HPP_INCLUDED
-

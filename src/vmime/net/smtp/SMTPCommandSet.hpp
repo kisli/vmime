@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -44,8 +44,8 @@ namespace smtp {
 /** A set of SMTP commands, which may be sent all at once
   * to the server if pipelining is supported.
   */
-class VMIME_EXPORT SMTPCommandSet : public SMTPCommand
-{
+class VMIME_EXPORT SMTPCommandSet : public SMTPCommand {
+
 public:
 
 	/** Creates a new set of SMTP commands.
@@ -61,7 +61,7 @@ public:
 	  *
 	  * @param cmd command to add
 	  */
-	void addCommand(shared_ptr <SMTPCommand> cmd);
+	void addCommand(const shared_ptr <SMTPCommand>& cmd);
 
 	/** Tests whether all commands have been sent.
 	  *
@@ -78,7 +78,7 @@ public:
 	shared_ptr <SMTPCommand> getLastCommandSent() const;
 
 
-	void writeToSocket(shared_ptr <socket> sok, shared_ptr <tracer> tr);
+	void writeToSocket(const shared_ptr <socket>& sok, const shared_ptr <tracer>& tr);
 
 	const string getText() const;
 	const string getTraceText() const;

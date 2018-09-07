@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -25,107 +25,118 @@
 #include "vmime/utility/stringUtils.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 contentDisposition::contentDisposition()
-	: m_name(contentDispositionTypes::INLINE)
-{
+	: m_name(contentDispositionTypes::INLINE) {
+
 }
 
 
 contentDisposition::contentDisposition(const string& name)
-	: m_name(utility::stringUtils::toLower(name))
-{
+	: m_name(utility::stringUtils::toLower(name)) {
+
 }
 
 
 contentDisposition::contentDisposition(const contentDisposition& type)
-	: headerFieldValue(), m_name(type.m_name)
-{
+	: headerFieldValue(), m_name(type.m_name) {
+
 }
 
 
-void contentDisposition::parseImpl
-	(const parsingContext& /* ctx */, const string& buffer, const size_t position,
-	 const size_t end, size_t* newPosition)
-{
-	m_name = utility::stringUtils::trim(utility::stringUtils::toLower
-		(string(buffer.begin() + position, buffer.begin() + end)));
+void contentDisposition::parseImpl(
+	const parsingContext& /* ctx */,
+	const string& buffer,
+	const size_t position,
+	const size_t end,
+	size_t* newPosition
+) {
+
+	m_name = utility::stringUtils::trim(
+		utility::stringUtils::toLower(
+			string(buffer.begin() + position, buffer.begin() + end)
+		)
+	);
 
 	setParsedBounds(position, end);
 
-	if (newPosition)
+	if (newPosition) {
 		*newPosition = end;
+	}
 }
 
 
-void contentDisposition::generateImpl
-	(const generationContext& /* ctx */, utility::outputStream& os,
-	 const size_t curLinePos, size_t* newLinePos) const
-{
+void contentDisposition::generateImpl(
+	const generationContext& /* ctx */,
+	utility::outputStream& os,
+	const size_t curLinePos,
+	size_t* newLinePos
+) const {
+
 	os << m_name;
 
-	if (newLinePos)
+	if (newLinePos) {
 		*newLinePos = curLinePos + m_name.length();
+	}
 }
 
 
-contentDisposition& contentDisposition::operator=(const string& name)
-{
+contentDisposition& contentDisposition::operator=(const string& name) {
+
 	m_name = utility::stringUtils::toLower(name);
-	return (*this);
+	return *this;
 }
 
 
-bool contentDisposition::operator==(const contentDisposition& value) const
-{
-	return (utility::stringUtils::toLower(m_name) == value.m_name);
+bool contentDisposition::operator==(const contentDisposition& value) const {
+
+	return utility::stringUtils::toLower(m_name) == value.m_name;
 }
 
 
-bool contentDisposition::operator!=(const contentDisposition& value) const
-{
+bool contentDisposition::operator!=(const contentDisposition& value) const {
+
 	return !(*this == value);
 }
 
 
-shared_ptr <component> contentDisposition::clone() const
-{
+shared_ptr <component> contentDisposition::clone() const {
+
 	return make_shared <contentDisposition>(*this);
 }
 
 
-void contentDisposition::copyFrom(const component& other)
-{
+void contentDisposition::copyFrom(const component& other) {
+
 	const contentDisposition& d = dynamic_cast <const contentDisposition&>(other);
 
 	m_name = d.m_name;
 }
 
 
-contentDisposition& contentDisposition::operator=(const contentDisposition& other)
-{
+contentDisposition& contentDisposition::operator=(const contentDisposition& other) {
+
 	copyFrom(other);
-	return (*this);
+	return *this;
 }
 
 
-const string& contentDisposition::getName() const
-{
-	return (m_name);
+const string& contentDisposition::getName() const {
+
+	return m_name;
 }
 
 
-void contentDisposition::setName(const string& name)
-{
+void contentDisposition::setName(const string& name) {
+
 	m_name = name;
 }
 
 
-const std::vector <shared_ptr <component> > contentDisposition::getChildComponents()
-{
+const std::vector <shared_ptr <component> > contentDisposition::getChildComponents() {
+
 	return std::vector <shared_ptr <component> >();
 }
 

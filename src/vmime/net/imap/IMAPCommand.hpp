@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2014 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -48,8 +48,8 @@ class IMAPConnection;
 
 /** An IMAP command that will be sent to the server.
   */
-class VMIME_EXPORT IMAPCommand : public object, public enable_shared_from_this <IMAPCommand>
-{
+class VMIME_EXPORT IMAPCommand : public object, public enable_shared_from_this <IMAPCommand> {
+
 public:
 
 	static shared_ptr <IMAPCommand> LOGIN(const string& username, const string& password);
@@ -85,7 +85,7 @@ public:
 	  *
 	  * @param conn connection onto which the command will be sent
 	  */
-	virtual void send(shared_ptr <IMAPConnection> conn);
+	virtual void send(const shared_ptr <IMAPConnection>& conn);
 
 	/** Returns the full text of the command, including command name
 	  * and parameters (if any). This is the text that will be sent

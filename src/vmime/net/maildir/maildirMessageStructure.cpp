@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -44,8 +44,11 @@ maildirMessageStructure::maildirMessageStructure()
 }
 
 
-maildirMessageStructure::maildirMessageStructure(shared_ptr <maildirMessagePart> parent, const bodyPart& part)
-{
+maildirMessageStructure::maildirMessageStructure(
+	const shared_ptr <maildirMessagePart>& parent,
+	const bodyPart& part
+) {
+
 	shared_ptr <maildirMessagePart> mpart = make_shared <maildirMessagePart>(parent, 0, part);
 	mpart->initStructure(part);
 
@@ -53,10 +56,13 @@ maildirMessageStructure::maildirMessageStructure(shared_ptr <maildirMessagePart>
 }
 
 
-maildirMessageStructure::maildirMessageStructure(shared_ptr <maildirMessagePart> parent, const std::vector <shared_ptr <const vmime::bodyPart> >& list)
-{
-	for (size_t i = 0 ; i < list.size() ; ++i)
-	{
+maildirMessageStructure::maildirMessageStructure(
+	const shared_ptr <maildirMessagePart>& parent,
+	const std::vector <shared_ptr <const vmime::bodyPart> >& list
+) {
+
+	for (size_t i = 0 ; i < list.size() ; ++i) {
+
 		shared_ptr <maildirMessagePart> mpart = make_shared <maildirMessagePart>(parent, i, *list[i]);
 		mpart->initStructure(*list[i]);
 
@@ -65,27 +71,27 @@ maildirMessageStructure::maildirMessageStructure(shared_ptr <maildirMessagePart>
 }
 
 
-shared_ptr <const messagePart> maildirMessageStructure::getPartAt(const size_t x) const
-{
+shared_ptr <const messagePart> maildirMessageStructure::getPartAt(const size_t x) const {
+
 	return m_parts[x];
 }
 
 
-shared_ptr <messagePart> maildirMessageStructure::getPartAt(const size_t x)
-{
+shared_ptr <messagePart> maildirMessageStructure::getPartAt(const size_t x) {
+
 	return m_parts[x];
 }
 
 
-size_t maildirMessageStructure::getPartCount() const
-{
+size_t maildirMessageStructure::getPartCount() const {
+
 	return m_parts.size();
 }
 
 
 // static
-shared_ptr <maildirMessageStructure> maildirMessageStructure::emptyStructure()
-{
+shared_ptr <maildirMessageStructure> maildirMessageStructure::emptyStructure() {
+
 	return m_emptyStructure;
 }
 

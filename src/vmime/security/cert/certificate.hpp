@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -35,8 +35,8 @@ namespace cert {
 
 /** Identity certificate for a peer.
   */
-class VMIME_EXPORT certificate : public object, public enable_shared_from_this <certificate>
-{
+class VMIME_EXPORT certificate : public object, public enable_shared_from_this <certificate> {
+
 public:
 
 	/** Returns the encoded form of this certificate (for example,
@@ -64,7 +64,7 @@ public:
 	  * @return true if the two certificates are the same,
 	  * false otherwise
 	  */
-	virtual bool equals(shared_ptr <const certificate> other) const = 0;
+	virtual bool equals(const shared_ptr <const certificate>& other) const = 0;
 
 	/** Returns a pointer to internal binary data for this certificate.
 	  * The actual type of data depends on the library used for TLS support.

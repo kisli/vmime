@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -31,24 +31,22 @@ namespace utility {
 
 
 outputStreamStringAdapter::outputStreamStringAdapter(string& buffer)
-	: m_buffer(buffer)
-{
+	: m_buffer(buffer) {
+
 }
 
 
-void outputStreamStringAdapter::writeImpl
-	(const byte_t* const data, const size_t count)
-{
+void outputStreamStringAdapter::writeImpl(const byte_t* const data, const size_t count) {
+
 	vmime::utility::stringUtils::appendBytesToString(m_buffer, data, count);
 }
 
 
-void outputStreamStringAdapter::flush()
-{
+void outputStreamStringAdapter::flush() {
+
 	// Do nothing
 }
 
 
 } // utility
 } // vmime
-

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2014 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -37,13 +37,14 @@ namespace vmime {
 namespace net {
 
 
-void tracer::traceReceiveBytes(const size_t count, const string& state)
-{
+void tracer::traceReceiveBytes(const size_t count, const string& state) {
+
 	std::ostringstream oss;
 	oss << "{...";
 
-	if (!state.empty())
+	if (!state.empty()) {
 		oss << state << ": ";
+	}
 
 	oss << count << " bytes of data...}";
 
@@ -51,13 +52,14 @@ void tracer::traceReceiveBytes(const size_t count, const string& state)
 }
 
 
-void tracer::traceSendBytes(const size_t count, const string& state)
-{
+void tracer::traceSendBytes(const size_t count, const string& state) {
+
 	std::ostringstream oss;
 	oss << "{...";
 
-	if (!state.empty())
+	if (!state.empty()) {
 		oss << state << ": ";
+	}
 
 	oss << count << " bytes of data...}";
 

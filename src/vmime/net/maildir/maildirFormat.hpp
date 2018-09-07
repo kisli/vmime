@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -45,19 +45,19 @@ namespace maildir {
 class maildirStore;
 
 
-/** Interface for an object capable of reading a specific Maildir format. */
+/** Interface for an object capable of reading a specific Maildir format.
+  */
+class VMIME_EXPORT maildirFormat : public object {
 
-class VMIME_EXPORT maildirFormat : public object
-{
 public:
 
-	class context : public object
-	{
+	class context : public object {
+
 	public:
 
-		context(shared_ptr <maildirStore> store);
+		context(const shared_ptr <maildirStore>& store);
 
-		shared_ptr <maildirStore> getStore() const;
+		shared_ptr <maildirStore> getStore();
 
 	private:
 
@@ -66,8 +66,7 @@ public:
 
 
 	/** Physical directory types. */
-	enum DirectoryType
-	{
+	enum DirectoryType {
 		ROOT_DIRECTORY,       /**< Root directory. */
 		NEW_DIRECTORY,        /**< Directory containing unread messages. */
 		CUR_DIRECTORY,        /**< Directory containing messages that have been seen. */
@@ -125,8 +124,10 @@ public:
 	  * @param type type of directory to return
 	  * @return corresponding directory on the file system
 	  */
-	virtual const utility::file::path folderPathToFileSystemPath
-		(const folder::path& path, const DirectoryType type) const = 0;
+	virtual const utility::file::path folderPathToFileSystemPath(
+		const folder::path& path,
+		const DirectoryType type
+	) const = 0;
 
 	/** List subfolders in the specified folder.
 	  *
@@ -135,8 +136,10 @@ public:
 	  * returned; if set to false, only direct children are returned.
 	  * @return list of subfolders
 	  */
-	virtual const std::vector <folder::path> listFolders
-		(const folder::path& root, const bool recursive) const = 0;
+	virtual const std::vector <folder::path> listFolders(
+		const folder::path& root,
+		const bool recursive
+	) const = 0;
 
 
 	/** Try to detect the format of the specified Maildir store.
@@ -146,7 +149,7 @@ public:
 	  * @param store of which to detect format
 	  * @return a Maildir format implementation for the specified store
 	  */
-	static shared_ptr <maildirFormat> detect(shared_ptr <maildirStore> store);
+	static shared_ptr <maildirFormat> detect(const shared_ptr <maildirStore>& store);
 
 protected:
 
@@ -155,20 +158,14 @@ protected:
 	static const utility::file::path::component NEW_DIR;  /**< Unread messages. */
 
 
-	maildirFormat(shared_ptr <context> ctx);
+	maildirFormat(const shared_ptr <context>& ctx);
 
 
 	/** Returns the current context.
 	  *
 	  * @return current context
 	  */
-	shared_ptr <context> getContext();
-
-	/** Returns the current context (const version).
-	  *
-	  * @return current context
-	  */
-	shared_ptr <const context> getContext() const;
+	shared_ptr <context> getContext() const;
 
 	/** Quick checks whether this implementation can read the Maildir
 	  * format in the specified directory.

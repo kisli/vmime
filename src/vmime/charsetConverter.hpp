@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -33,12 +33,10 @@
 #include "vmime/utility/filteredStream.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
-namespace utility
-{
+namespace utility {
 
 
 /** A filtered output stream which applies a charset conversion
@@ -52,9 +50,8 @@ namespace utility
   * 'silentlyReplaceInvalidSequences' flag is set to false in
   * the charsetConverterOptions.
   */
+class VMIME_EXPORT charsetFilteredOutputStream : public filteredOutputStream {
 
-class VMIME_EXPORT charsetFilteredOutputStream : public filteredOutputStream
-{
 };
 
 
@@ -63,15 +60,14 @@ class VMIME_EXPORT charsetFilteredOutputStream : public filteredOutputStream
 
 /** Convert between charsets.
   */
+class VMIME_EXPORT charsetConverter : public object {
 
-class VMIME_EXPORT charsetConverter : public object
-{
 public:
 
 	/** Holds information about a conversion.
 	  */
-	struct status
-	{
+	struct status {
+
 		status();
 
 
@@ -91,9 +87,11 @@ public:
 	  * @param dest output charset
 	  * @param opts conversion options
 	  */
-	static shared_ptr <charsetConverter> create
-		(const charset& source, const charset& dest,
-		 const charsetConverterOptions& opts = charsetConverterOptions());
+	static shared_ptr <charsetConverter> create(
+		const charset& source,
+		const charset& dest,
+		const charsetConverterOptions& opts = charsetConverterOptions()
+	);
 
 	/** Convert a string buffer from one charset to another
 	  * charset (in-memory conversion)
@@ -128,7 +126,11 @@ public:
 	  * @throws exceptions::charset_conv_error if an unexpected error occurred
 	  * during the conversion
 	  */
-	virtual void convert(utility::inputStream& in, utility::outputStream& out, status* st = NULL) = 0;
+	virtual void convert(
+		utility::inputStream& in,
+		utility::outputStream& out,
+		status* st = NULL
+	) = 0;
 
 	/** Returns a filtered output stream which applies a charset
 	  * conversion to input bytes. Please note that it may not be
@@ -138,15 +140,19 @@ public:
 	  * @param opts conversion options
 	  * @return a filtered output stream, or NULL if not supported
 	  */
-	virtual shared_ptr <utility::charsetFilteredOutputStream> getFilteredOutputStream
-		(utility::outputStream& os,
-		 const charsetConverterOptions& opts = charsetConverterOptions()) = 0;
+	virtual shared_ptr <utility::charsetFilteredOutputStream>
+		getFilteredOutputStream(
+			utility::outputStream& os,
+			const charsetConverterOptions& opts = charsetConverterOptions()
+		) = 0;
 
 private:
 
-	static shared_ptr <charsetConverter> createGenericConverter
-		(const charset& source, const charset& dest,
-		 const charsetConverterOptions& opts);
+	static shared_ptr <charsetConverter> createGenericConverter(
+		const charset& source,
+		const charset& dest,
+		const charsetConverterOptions& opts
+	);
 };
 
 

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -34,17 +34,16 @@
 #include "vmime/contentTypeField.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 /** An attachment related to a local body part.
   */
-class VMIME_EXPORT bodyPartAttachment : public attachment
-{
+class VMIME_EXPORT bodyPartAttachment : public attachment {
+
 public:
 
-	bodyPartAttachment(shared_ptr <const bodyPart> part);
+	bodyPartAttachment(const shared_ptr <const bodyPart>& part);
 
 	const mediaType getType() const;
 	const word getName() const;
@@ -58,7 +57,7 @@ public:
 
 private:
 
-	void generateIn(shared_ptr <bodyPart> parent) const;
+	void generateIn(const shared_ptr <bodyPart>& parent) const;
 
 	shared_ptr <const contentDispositionField> getContentDisposition() const;
 	shared_ptr <const contentTypeField> getContentType() const;
@@ -75,4 +74,3 @@ private:
 
 
 #endif // VMIME_BODYPARTATTACHMENT_HPP_INCLUDED
-

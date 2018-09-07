@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -42,12 +42,14 @@
 #include "vmime/utility/file.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
-fileAttachment::fileAttachment(const string& filepath, const mediaType& type)
-{
+fileAttachment::fileAttachment(
+	const string& filepath,
+	const mediaType& type
+) {
+
 	m_type = type;
 
 	setData(filepath);
@@ -56,8 +58,12 @@ fileAttachment::fileAttachment(const string& filepath, const mediaType& type)
 }
 
 
-fileAttachment::fileAttachment(const string& filepath, const mediaType& type, const text& desc)
-{
+fileAttachment::fileAttachment(
+	const string& filepath,
+	const mediaType& type,
+	const text& desc
+) {
+
 	m_type = type;
 	m_desc = desc;
 
@@ -67,9 +73,13 @@ fileAttachment::fileAttachment(const string& filepath, const mediaType& type, co
 }
 
 
-fileAttachment::fileAttachment(const string& filepath, const mediaType& type,
-	const text& desc, const encoding& enc)
-{
+fileAttachment::fileAttachment(
+	const string& filepath,
+	const mediaType& type,
+	const text& desc,
+	const encoding& enc
+) {
+
 	m_type = type;
 	m_desc = desc;
 
@@ -79,10 +89,14 @@ fileAttachment::fileAttachment(const string& filepath, const mediaType& type,
 }
 
 
-fileAttachment::fileAttachment(shared_ptr <contentHandler> cts, const word& filename, const mediaType& type)
-{
-	if (!filename.isEmpty())
+fileAttachment::fileAttachment(
+	const shared_ptr <contentHandler>& cts,
+	const word& filename,
+	const mediaType& type) {
+
+	if (!filename.isEmpty()) {
 		m_fileInfo.setFilename(filename);
+	}
 
 	m_type = type;
 
@@ -92,11 +106,16 @@ fileAttachment::fileAttachment(shared_ptr <contentHandler> cts, const word& file
 }
 
 
-fileAttachment::fileAttachment(shared_ptr <contentHandler> cts, const word& filename,
-	const mediaType& type, const text& desc)
-{
-	if (!filename.isEmpty())
+fileAttachment::fileAttachment(
+	const shared_ptr <contentHandler>& cts,
+	const word& filename,
+	const mediaType& type,
+	const text& desc
+) {
+
+	if (!filename.isEmpty()) {
 		m_fileInfo.setFilename(filename);
+	}
 
 	m_type = type;
 	m_desc = desc;
@@ -107,11 +126,17 @@ fileAttachment::fileAttachment(shared_ptr <contentHandler> cts, const word& file
 }
 
 
-fileAttachment::fileAttachment(shared_ptr <contentHandler> cts, const word& filename,
-	const mediaType& type, const text& desc, const encoding& enc)
-{
-	if (!filename.isEmpty())
+fileAttachment::fileAttachment(
+	const shared_ptr <contentHandler>& cts,
+	const word& filename,
+	const mediaType& type,
+	const text& desc,
+	const encoding& enc
+) {
+
+	if (!filename.isEmpty()) {
 		m_fileInfo.setFilename(filename);
+	}
 
 	m_type = type;
 	m_desc = desc;
@@ -121,34 +146,36 @@ fileAttachment::fileAttachment(shared_ptr <contentHandler> cts, const word& file
 }
 
 
-void fileAttachment::setData(const string& filepath)
-{
+void fileAttachment::setData(const string& filepath) {
+
 	shared_ptr <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 	utility::file::path path = fsf->stringToPath(filepath);
 
 	shared_ptr <utility::file> file = fsf->create(path);
 
-	if (!file->isFile())
+	if (!file->isFile()) {
 		throw exceptions::open_file_error();
+	}
 
-	m_data = make_shared <streamContentHandler>
-		(file->getFileReader()->getInputStream(), file->getLength());
+	m_data = make_shared <streamContentHandler>(
+		file->getFileReader()->getInputStream(), file->getLength()
+	);
 
 	m_fileInfo.setFilename(path.getLastComponent());
 	m_fileInfo.setSize(file->getLength());
 }
 
 
-void fileAttachment::setData(shared_ptr <contentHandler> cts)
-{
+void fileAttachment::setData(const shared_ptr <contentHandler>& cts) {
+
 	m_data = cts;
 
 	m_fileInfo.setSize(cts->getLength());
 }
 
 
-void fileAttachment::generatePart(shared_ptr <bodyPart> part) const
-{
+void fileAttachment::generatePart(const shared_ptr <bodyPart>& part) const {
+
 	defaultAttachment::generatePart(part);
 
 	shared_ptr <contentDispositionField> cdf =
@@ -162,14 +189,14 @@ void fileAttachment::generatePart(shared_ptr <bodyPart> part) const
 }
 
 
-const fileAttachment::fileInfo& fileAttachment::getFileInfo() const
-{
+const fileAttachment::fileInfo& fileAttachment::getFileInfo() const {
+
 	return m_fileInfo;
 }
 
 
-fileAttachment::fileInfo& fileAttachment::getFileInfo()
-{
+fileAttachment::fileInfo& fileAttachment::getFileInfo() {
+
 	return m_fileInfo;
 }
 
@@ -180,39 +207,43 @@ fileAttachment::fileInfo& fileAttachment::getFileInfo()
 //
 
 fileAttachment::fileInfo::fileInfo()
-	: m_filename(NULL), m_size(NULL), m_creationDate(NULL), m_modifDate(NULL), m_readDate(NULL)
-{
+	: m_filename(NULL),
+	  m_size(NULL),
+	  m_creationDate(NULL),
+	  m_modifDate(NULL),
+	  m_readDate(NULL) {
+
 }
 
 
 fileAttachment::fileInfo::~fileInfo()
 {
-	delete (m_filename);
-	delete (m_size);
-	delete (m_creationDate);
-	delete (m_modifDate);
-	delete (m_readDate);
+	delete m_filename;
+	delete m_size;
+	delete m_creationDate;
+	delete m_modifDate;
+	delete m_readDate;
 }
 
-bool fileAttachment::fileInfo::hasFilename() const { return (m_filename != NULL); }
-const word& fileAttachment::fileInfo::getFilename() const { return (*m_filename); }
+bool fileAttachment::fileInfo::hasFilename() const { return m_filename; }
+const word& fileAttachment::fileInfo::getFilename() const { return *m_filename; }
 void fileAttachment::fileInfo::setFilename(const string& name) { if (m_filename) { *m_filename = name; } else { m_filename = new word(name); } }
 void fileAttachment::fileInfo::setFilename(const word& name) { if (m_filename) { *m_filename = name; } else { m_filename = new word(name); } }
 
-bool fileAttachment::fileInfo::hasCreationDate() const { return (m_creationDate != NULL); }
-const datetime& fileAttachment::fileInfo::getCreationDate() const { return (*m_creationDate); }
+bool fileAttachment::fileInfo::hasCreationDate() const { return m_creationDate; }
+const datetime& fileAttachment::fileInfo::getCreationDate() const { return *m_creationDate; }
 void fileAttachment::fileInfo::setCreationDate(const datetime& date) { if (m_creationDate) { *m_creationDate = date; } else { m_creationDate = new datetime(date); } }
 
-bool fileAttachment::fileInfo::hasModificationDate() const { return (m_modifDate != NULL); }
-const datetime& fileAttachment::fileInfo::getModificationDate() const { return (*m_modifDate); }
+bool fileAttachment::fileInfo::hasModificationDate() const { return m_modifDate; }
+const datetime& fileAttachment::fileInfo::getModificationDate() const { return *m_modifDate; }
 void fileAttachment::fileInfo::setModificationDate(const datetime& date) { if (m_modifDate) { *m_modifDate = date; } else { m_modifDate = new datetime(date); } }
 
-bool fileAttachment::fileInfo::hasReadDate() const { return (m_readDate != NULL); }
-const datetime& fileAttachment::fileInfo::getReadDate() const { return (*m_readDate); }
+bool fileAttachment::fileInfo::hasReadDate() const { return m_readDate; }
+const datetime& fileAttachment::fileInfo::getReadDate() const { return *m_readDate; }
 void fileAttachment::fileInfo::setReadDate(const datetime& date) { if (m_readDate) { *m_readDate = date; } else { m_readDate = new datetime(date); } }
 
-bool fileAttachment::fileInfo::hasSize() const { return (m_size != NULL); }
-size_t fileAttachment::fileInfo::getSize() const { return (*m_size); }
+bool fileAttachment::fileInfo::hasSize() const { return m_size; }
+size_t fileAttachment::fileInfo::getSize() const { return *m_size; }
 void fileAttachment::fileInfo::setSize(const size_t size) { if (m_size) { *m_size = size; } else { m_size = new size_t(size); } }
 
 
@@ -220,4 +251,3 @@ void fileAttachment::fileInfo::setSize(const size_t size) { if (m_size) { *m_siz
 
 
 #endif // VMIME_HAVE_FILESYSTEM_FEATURES
-

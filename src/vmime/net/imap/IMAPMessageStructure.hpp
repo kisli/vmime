@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -44,13 +44,13 @@ namespace imap {
 class IMAPMessagePart;
 
 
-class VMIME_EXPORT IMAPMessageStructure : public messageStructure
-{
+class VMIME_EXPORT IMAPMessageStructure : public messageStructure {
+
 public:
 
 	IMAPMessageStructure();
 	IMAPMessageStructure(const IMAPParser::body* body);
-	IMAPMessageStructure(shared_ptr <IMAPMessagePart> parent, const std::vector <IMAPParser::body*>& list);
+	IMAPMessageStructure(const shared_ptr <IMAPMessagePart>& parent, const std::vector <IMAPParser::body*>& list);
 
 	shared_ptr <const messagePart> getPartAt(const size_t x) const;
 	shared_ptr <messagePart> getPartAt(const size_t x);

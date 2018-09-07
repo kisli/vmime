@@ -80,73 +80,91 @@ width to its preferred settings (eg. 4 or 8 spaces).
 2.2. Brace position
 -------------------
 
-Open braces should always be at the beginning of the line after the statement
-that begins the block. Contents of the brace should be indented by 1 tab.
+Open braces should always be at the end of the line of the statement that
+begins the block. Contents of the brace should be indented by 1 tab.
 
-   if (expr)
-   {
+   if (expr) {
+
          do_something();
          do_another_thing();
-   }
-   else
-   {
+
+   } else {
+
          do_something_else();
+   }
+
+In a function, the opening brace must always be followed by an empty line:
+
+   void header::appendField(const shared_ptr <headerField>& field) {
+
+         m_fields.push_back(field);
+   }
+
+A function with few arguments:
+
+   bool header::hasField(const string& fieldName) const {
+
+        ...
+   }
+
+A function with more arguments:
+
+   void header::parseImpl(
+         const parsingContext& ctx,
+         const string& buffer,
+         const size_t position,
+         const size_t end,
+         size_t* newPosition
+   ) {
+
+         ...
    }
 
 
 2.3. "switch" statement
 -----------------------
 
-   switch (expr)
-   {
-   case 0:
+   switch (expr) {
 
-        something;
-        break;
+        case 0:
 
-   case 1:
+             something;
+             break;
 
-        something_else;
-        break;
+        case 1:
 
-   case 2:
-   {
-        int var = 42;
-        another_thing;
-        break;
-   }
+             something_else;
+             break;
 
+        case 2: {
+
+             int var = 42;
+             another_thing;
+             break;
+        }
    }
 
 
 2.4. Single instruction
 -----------------------
 
-Omit braces around simple single-statement body:
+Don't omit braces around simple single-statement body:
 
-   if (...)
+   if (...) {
       something;
+   }
 
 and not:
 
    if (...)
-   {
       something;
-   }
-
-Except when body spans over multiple lines:
-
-   if (...)
-   {
-      something_too_long_for(
-         a_single_line);
-   }
 
 
 2.5. Line length
 ----------------
 
-Each line of text should not exceed 80 characters.
+If possible, each line of text should not exceed 100 characters, except if
+manual line wrapping breaks code clarity.
 
 Exception: if a comment line contains an example command or a literal URL
 longer than 100 characters, that line may be longer than 100 characters
@@ -290,8 +308,8 @@ Where ever possible, place comments above the code instead of beside it.
 Comments can be placed at the end of a line when one or more spaces follow.
 Tabs should NOT be used to indent at the end of a line:
 
-   class myClass
-   {
+   class myClass {
+
    private:
 
        int m_member1;         // first member
@@ -322,8 +340,8 @@ the purpose of the functions/classes and the meaning of the parameters.
 
 * No more than one class per file (except for inner classes).
 
-* Put the inclusion for the class's header file as the first inclusion in
-  the implementation file.
+* Put the #include for the class's header file first in the implementation
+  file.
 
 * Put the copyright header at the top of each file.
 

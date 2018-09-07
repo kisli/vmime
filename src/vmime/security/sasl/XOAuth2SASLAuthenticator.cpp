@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -40,52 +40,53 @@ namespace sasl {
 
 
 XOAuth2SASLAuthenticator::XOAuth2SASLAuthenticator(const Mode mode)
-	: m_mode(mode)
-{
+	: m_mode(mode) {
+
 }
 
 
-XOAuth2SASLAuthenticator::~XOAuth2SASLAuthenticator()
-{
+XOAuth2SASLAuthenticator::~XOAuth2SASLAuthenticator() {
+
 }
 
 
 const std::vector <shared_ptr <SASLMechanism> >
-	XOAuth2SASLAuthenticator::getAcceptableMechanisms
-		(const std::vector <shared_ptr <SASLMechanism> >& available,
-		 shared_ptr <SASLMechanism> suggested) const
-{
-	if (m_mode == MODE_EXCLUSIVE)
-	{
+	XOAuth2SASLAuthenticator::getAcceptableMechanisms(
+		const std::vector <shared_ptr <SASLMechanism> >& available,
+		const shared_ptr <SASLMechanism>& suggested
+	) const {
+
+	if (m_mode == MODE_EXCLUSIVE) {
+
 		std::vector <shared_ptr <SASLMechanism> > mechs;
 
-		for (size_t i = available.size() ; i != 0 ; --i)
-		{
+		for (size_t i = available.size() ; i != 0 ; --i) {
+
 			shared_ptr <SASLMechanism> mech = available[i - 1];
 
-			if ("XOAUTH2" == mech->getName())
-			{
+			if ("XOAUTH2" == mech->getName()) {
 				// Only allow XOAuth2
 				mechs.push_back(mech);
 			}
 		}
 
 		return mechs;
-	}
-	else
-	{
-		for (size_t i = available.size() ; i != 0 ; --i)
-		{
+
+	} else {
+
+		shared_ptr <SASLMechanism> newSuggested(suggested);
+
+		for (size_t i = available.size() ; i != 0 ; --i) {
+
 			shared_ptr <SASLMechanism> mech = available[i - 1];
 
-			if ("XOAUTH2" == mech->getName())
-			{
+			if ("XOAUTH2" == mech->getName()) {
 				// Suggest using XOAuth2
-				suggested = mech;
+				newSuggested = mech;
 			}
 		}
 
-		return defaultSASLAuthenticator::getAcceptableMechanisms(available, suggested);
+		return defaultSASLAuthenticator::getAcceptableMechanisms(available, newSuggested);
 	}
 }
 

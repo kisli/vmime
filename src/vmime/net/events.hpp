@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -46,9 +46,8 @@ namespace events {
 
 /** Event occurring on folders or messages.
   */
+class VMIME_EXPORT event : public object, public enable_shared_from_this <event> {
 
-class VMIME_EXPORT event : public object, public enable_shared_from_this <event>
-{
 public:
 
 	event();
@@ -60,22 +59,24 @@ public:
 
 /** Event about the message count in a folder.
   */
+class VMIME_EXPORT messageCountEvent : public event {
 
-class VMIME_EXPORT messageCountEvent : public event
-{
 public:
 
 	static const char* EVENT_CLASS;
 
 
-	enum Types
-	{
+	enum Types {
 		TYPE_ADDED,     /**< New messages have been added. */
 		TYPE_REMOVED    /**< Messages have been expunged (renumbering). */
 	};
 
 
-	messageCountEvent(shared_ptr <folder> folder, const Types type, const std::vector <size_t>& nums);
+	messageCountEvent(
+		const shared_ptr <folder>& folder,
+		const Types type,
+		const std::vector <size_t>& nums
+	);
 
 	/** Return the folder in which messages have been added/removed.
 	  *
@@ -114,37 +115,38 @@ private:
 
 /** Listener for events about the message count in a folder.
   */
+class VMIME_EXPORT messageCountListener {
 
-class VMIME_EXPORT messageCountListener
-{
 protected:
 
 	virtual ~messageCountListener() { }
 
 public:
 
-	virtual void messagesAdded(shared_ptr <messageCountEvent> event) = 0;
-	virtual void messagesRemoved(shared_ptr <messageCountEvent> event) = 0;
+	virtual void messagesAdded(const shared_ptr <messageCountEvent>& event) = 0;
+	virtual void messagesRemoved(const shared_ptr <messageCountEvent>& event) = 0;
 };
 
 
 /** Event occuring on a message.
   */
+class VMIME_EXPORT messageChangedEvent : public event {
 
-class VMIME_EXPORT messageChangedEvent : public event
-{
 public:
 
 	static const char* EVENT_CLASS;
 
 
-	enum Types
-	{
+	enum Types {
 		TYPE_FLAGS    // flags changed
 	};
 
 
-	messageChangedEvent(shared_ptr <folder> folder, const Types type, const std::vector <size_t>& nums);
+	messageChangedEvent(
+		const shared_ptr <folder>& folder,
+		const Types type,
+		const std::vector <size_t>& nums
+	);
 
 	/** Return the folder in which messages have changed.
 	  *
@@ -183,38 +185,40 @@ private:
 
 /** Listener for events occuring on a message.
   */
+class VMIME_EXPORT messageChangedListener {
 
-class VMIME_EXPORT messageChangedListener
-{
 protected:
 
 	virtual ~messageChangedListener() { }
 
 public:
 
-	virtual void messageChanged(shared_ptr <messageChangedEvent> event) = 0;
+	virtual void messageChanged(const shared_ptr <messageChangedEvent>& event) = 0;
 };
 
 
 /** Event occuring on a folder.
   */
+class VMIME_EXPORT folderEvent : public event {
 
-class VMIME_EXPORT folderEvent : public event
-{
 public:
 
 	static const char* EVENT_CLASS;
 
 
-	enum Types
-	{
+	enum Types {
 		TYPE_CREATED,   /**< A folder was created. */
 		TYPE_DELETED,   /**< A folder was deleted. */
 		TYPE_RENAMED    /**< A folder was renamed. */
 	};
 
 
-	folderEvent(shared_ptr <folder> folder, const Types type, const utility::path& oldPath, const utility::path& newPath);
+	folderEvent(
+		const shared_ptr <folder>& folder,
+		const Types type,
+		const utility::path& oldPath,
+		const utility::path& newPath
+	);
 
 	/** Return the folder on which the event occurred.
 	  *
@@ -248,18 +252,17 @@ private:
 
 /** Listener for events occuring on a folder.
   */
+class VMIME_EXPORT folderListener {
 
-class VMIME_EXPORT folderListener
-{
 protected:
 
 	virtual ~folderListener() { }
 
 public:
 
-	virtual void folderCreated(shared_ptr <folderEvent> event) = 0;
-	virtual void folderRenamed(shared_ptr <folderEvent> event) = 0;
-	virtual void folderDeleted(shared_ptr <folderEvent> event) = 0;
+	virtual void folderCreated(const shared_ptr <folderEvent>& event) = 0;
+	virtual void folderRenamed(const shared_ptr <folderEvent>& event) = 0;
+	virtual void folderDeleted(const shared_ptr <folderEvent>& event) = 0;
 };
 
 

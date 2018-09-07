@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -34,27 +34,35 @@ VMIME_TEST_SUITE_BEGIN(headerFieldTest)
 	VMIME_TEST_LIST_END
 
 
-	void testBadValueType()
-	{
+	void testBadValueType() {
+
 		vmime::shared_ptr <vmime::headerFieldFactory> hfactory =
 			vmime::headerFieldFactory::getInstance();
 
 		// "To" header field accepts values of type "addressList"
 		vmime::shared_ptr <vmime::headerField> to = hfactory->create(vmime::fields::TO);
-		VASSERT_THROW("to",
+
+		VASSERT_THROW(
+			"to",
 			to->setValue(vmime::mailbox("email@vmime.org")),
-			vmime::exceptions::bad_field_value_type);
+			vmime::exceptions::bad_field_value_type
+		);
 
 		// Unregistered header field accepts any value type
 		vmime::shared_ptr <vmime::headerField> custom = hfactory->create("X-MyCustomHeader");
-		VASSERT_NO_THROW("custom/1",
-			custom->setValue(vmime::mailbox("email@vmime.org")));
-		VASSERT_NO_THROW("custom/2",
-			custom->setValue(vmime::text("field value text")));
+
+		VASSERT_NO_THROW(
+			"custom/1",
+			custom->setValue(vmime::mailbox("email@vmime.org"))
+		);
+		VASSERT_NO_THROW(
+			"custom/2",
+			custom->setValue(vmime::text("field value text"))
+		);
 	}
 
-	void testValueOnNextLine()
-	{
+	void testValueOnNextLine() {
+
 		vmime::parsingContext ctx;
 
 		const vmime::string buffer = "Field: \r\n\tfield data";
@@ -69,8 +77,8 @@ VMIME_TEST_SUITE_BEGIN(headerFieldTest)
 		VASSERT_EQ("Field value", "field data", hvalue->getWholeBuffer());
 	}
 
-	void testStripSpacesAtEnd()
-	{
+	void testStripSpacesAtEnd() {
+
 		vmime::parsingContext ctx;
 
 		const vmime::string buffer = "Field: \r\n\tfield data   ";
@@ -85,8 +93,8 @@ VMIME_TEST_SUITE_BEGIN(headerFieldTest)
 		VASSERT_EQ("Field value", toHex("field data"), toHex(hvalue->getWholeBuffer()));
 	}
 
-	void testValueWithEmptyLine()
-	{
+	void testValueWithEmptyLine() {
+
 		vmime::parsingContext ctx;
 
 		const vmime::string buffer = "Field: \r\n\tdata1\r\n\tdata2\r\n\t\r\n\tdata3";

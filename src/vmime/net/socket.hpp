@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -43,13 +43,11 @@ namespace net {
 
 /** Interface for connecting to servers.
   */
+class VMIME_EXPORT socket : public object {
 
-class VMIME_EXPORT socket : public object
-{
 public:
 
-	enum Status
-	{
+	enum Status {
 		STATUS_WOULDBLOCK = 0xf,    /**< The operation would block. Retry later. */
 		STATUS_WANT_READ = 0x1,     /**< The socket wants to read data, retry when data is available. */
 		STATUS_WANT_WRITE = 0x2     /**< The socket wants to write data, retry when data can be written. */
@@ -175,7 +173,7 @@ public:
 	  *
 	  * @param tracer tracer to use
 	  */
-	virtual void setTracer(shared_ptr <tracer> tracer) = 0;
+	virtual void setTracer(const shared_ptr <tracer>& tracer) = 0;
 
 	/** Return the tracer used by this socket.
 	  *
@@ -195,9 +193,8 @@ private:
 
 /** A class to create 'socket' objects.
   */
+class socketFactory : public object {
 
-class socketFactory : public object
-{
 public:
 
 	virtual ~socketFactory() { }
@@ -213,7 +210,7 @@ public:
 	  * @param th timeout handler
 	  * @return a new socket
 	  */
-	virtual shared_ptr <socket> create(shared_ptr <timeoutHandler> th) = 0;
+	virtual shared_ptr <socket> create(const shared_ptr <timeoutHandler>& th) = 0;
 };
 
 

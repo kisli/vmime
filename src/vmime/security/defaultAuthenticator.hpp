@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -41,8 +41,8 @@ namespace security {
 /** An authenticator that can provide some basic information by
   * reading in the messaging session properties.
   */
-class VMIME_EXPORT defaultAuthenticator : public authenticator
-{
+class VMIME_EXPORT defaultAuthenticator : public authenticator {
+
 public:
 
 	defaultAuthenticator();
@@ -55,7 +55,7 @@ public:
 	const string getServiceName() const;
 	const string getAccessToken() const;
 
-	void setService(shared_ptr <net::service> serv);
+	void setService(const shared_ptr <net::service>& serv);
 	weak_ptr <net::service> getService() const;
 
 private:
@@ -71,4 +71,3 @@ private:
 #endif // VMIME_HAVE_MESSAGING_FEATURES
 
 #endif // VMIME_SECURITY_DEFAULTAUTHENTICATOR_HPP_INCLUDED
-

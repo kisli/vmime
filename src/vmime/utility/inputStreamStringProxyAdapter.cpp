@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -30,73 +30,75 @@ namespace utility {
 
 
 inputStreamStringProxyAdapter::inputStreamStringProxyAdapter(const stringProxy& buffer)
-	: m_buffer(buffer), m_pos(0)
-{
+	: m_buffer(buffer),
+	  m_pos(0) {
+
 }
 
 
-bool inputStreamStringProxyAdapter::eof() const
-{
-	return (m_pos >= m_buffer.length());
+bool inputStreamStringProxyAdapter::eof() const {
+
+	return m_pos >= m_buffer.length();
 }
 
 
-void inputStreamStringProxyAdapter::reset()
-{
+void inputStreamStringProxyAdapter::reset() {
+
 	m_pos = 0;
 }
 
 
-size_t inputStreamStringProxyAdapter::read
-	(byte_t* const data, const size_t count)
-{
+size_t inputStreamStringProxyAdapter::read(byte_t* const data, const size_t count) {
+
 	const size_t remaining = m_buffer.length() - m_pos;
 
-	if (count > remaining)
-	{
+	if (count > remaining) {
+
 		std::copy(m_buffer.it_begin() + m_pos, m_buffer.it_end(), data);
 		m_pos = m_buffer.length();
-		return (remaining);
-	}
-	else
-	{
+
+		return remaining;
+
+	} else {
+
 		std::copy(m_buffer.it_begin() + m_pos, m_buffer.it_begin() + m_pos + count, data);
 		m_pos += count;
-		return (count);
+
+		return count;
 	}
 }
 
 
-size_t inputStreamStringProxyAdapter::skip(const size_t count)
-{
+size_t inputStreamStringProxyAdapter::skip(const size_t count) {
+
 	const size_t remaining = m_buffer.length() - m_pos;
 
-	if (count > remaining)
-	{
+	if (count > remaining) {
+
 		m_pos = m_buffer.length();
-		return (remaining);
-	}
-	else
-	{
+		return remaining;
+
+	} else {
+
 		m_pos += count;
-		return (count);
+		return count;
 	}
 }
 
 
-size_t inputStreamStringProxyAdapter::getPosition() const
-{
+size_t inputStreamStringProxyAdapter::getPosition() const {
+
 	return m_pos;
 }
 
 
-void inputStreamStringProxyAdapter::seek(const size_t pos)
-{
-	if (pos <= m_buffer.length())
+void inputStreamStringProxyAdapter::seek(const size_t pos) {
+
+	if (pos <= m_buffer.length()) {
 		m_pos = pos;
+	}
 }
 
 
 } // utility
 } // vmime
-

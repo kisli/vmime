@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -28,8 +28,7 @@
 #include "vmime/charset.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 namespace utility {
@@ -41,23 +40,25 @@ class encoder;
 } // utility
 
 
-/** Encodes words following RFC-2047.
+/** Encodes words according to RFC-2047.
   */
+class VMIME_EXPORT wordEncoder {
 
-class VMIME_EXPORT wordEncoder
-{
 public:
 
 	/** Available encodings for RFC-2047. */
-	enum Encoding
-	{
+	enum Encoding {
 		ENCODING_AUTO,
 		ENCODING_QP,
 		ENCODING_B64
 	};
 
 
-	wordEncoder(const string& buffer, const charset& charset, const Encoding encoding = ENCODING_AUTO);
+	wordEncoder(
+		const string& buffer,
+		const charset& charset,
+		const Encoding encoding = ENCODING_AUTO
+	);
 
 
 	/** Return the next chunk in the word.
@@ -81,8 +82,12 @@ public:
 	  * @param lang language code, in the format specified by RFC-1766
 	  * @return true if encoding is needed, false otherwise.
 	  */
-	static bool isEncodingNeeded(const generationContext& ctx, const string& buffer,
-		const charset& charset, const string& lang);
+	static bool isEncodingNeeded(
+		const generationContext& ctx,
+		const string& buffer,
+		const charset& charset,
+		const string& lang
+	);
 
 	/** Guess the best RFC-2047 encoding to use for the specified buffer.
 	  *
@@ -111,4 +116,3 @@ private:
 
 
 #endif // VMIME_WORDENCODER_HPP_INCLUDED
-

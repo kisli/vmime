@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -42,125 +42,150 @@ namespace net {
 namespace pop3 {
 
 
-POP3Store::POP3Store(shared_ptr <session> sess, shared_ptr <security::authenticator> auth, const bool secured)
-	: store(sess, getInfosInstance(), auth), m_isPOP3S(secured)
-{
+POP3Store::POP3Store(
+	const shared_ptr <session>& sess,
+	const shared_ptr <security::authenticator>& auth,
+	const bool secured
+)
+	: store(sess, getInfosInstance(), auth),
+	m_isPOP3S(secured) {
+
 }
 
 
-POP3Store::~POP3Store()
-{
-	try
-	{
-		if (isConnected())
+POP3Store::~POP3Store() {
+
+	try {
+
+		if (isConnected()) {
 			disconnect();
-	}
-	catch (...)
-	{
+		}
+
+	} catch (...) {
+
 		// Don't throw in destructor
 	}
 }
 
 
-const string POP3Store::getProtocolName() const
-{
+const string POP3Store::getProtocolName() const {
+
 	return "pop3";
 }
 
 
-shared_ptr <folder> POP3Store::getDefaultFolder()
-{
-	if (!isConnected())
-		throw exceptions::illegal_state("Not connected");
+shared_ptr <folder> POP3Store::getDefaultFolder() {
 
-	return shared_ptr <POP3Folder>
-		(new POP3Folder(folder::path(folder::path::component("INBOX")),
-		                dynamicCast <POP3Store>(shared_from_this())));
+	if (!isConnected()) {
+		throw exceptions::illegal_state("Not connected");
+	}
+
+	return shared_ptr <POP3Folder>(
+		new POP3Folder(
+			folder::path(folder::path::component("INBOX")),
+			dynamicCast <POP3Store>(shared_from_this())
+		)
+	);
 }
 
 
-shared_ptr <folder> POP3Store::getRootFolder()
-{
-	if (!isConnected())
-		throw exceptions::illegal_state("Not connected");
+shared_ptr <folder> POP3Store::getRootFolder() {
 
-	return shared_ptr <POP3Folder>
-		(new POP3Folder(folder::path(), dynamicCast <POP3Store>(shared_from_this())));
+	if (!isConnected()) {
+		throw exceptions::illegal_state("Not connected");
+	}
+
+	return shared_ptr <POP3Folder>(
+		new POP3Folder(
+			folder::path(),
+			dynamicCast <POP3Store>(shared_from_this())
+		)
+	);
 }
 
 
-shared_ptr <folder> POP3Store::getFolder(const folder::path& path)
-{
-	if (!isConnected())
-		throw exceptions::illegal_state("Not connected");
+shared_ptr <folder> POP3Store::getFolder(const folder::path& path) {
 
-	return shared_ptr <POP3Folder>
-		(new POP3Folder(path, dynamicCast <POP3Store>(shared_from_this())));
+	if (!isConnected()) {
+		throw exceptions::illegal_state("Not connected");
+	}
+
+	return shared_ptr <POP3Folder>(
+		new POP3Folder(
+			path,
+			dynamicCast <POP3Store>(shared_from_this())
+		)
+	);
 }
 
 
-bool POP3Store::isValidFolderName(const folder::path::component& /* name */) const
-{
+bool POP3Store::isValidFolderName(const folder::path::component& /* name */) const {
+
 	return true;
 }
 
 
-void POP3Store::connect()
-{
-	if (isConnected())
-		throw exceptions::already_connected();
+void POP3Store::connect() {
 
-	m_connection = make_shared <POP3Connection>
-		(dynamicCast <POP3Store>(shared_from_this()), getAuthenticator());
+	if (isConnected()) {
+		throw exceptions::already_connected();
+	}
+
+	m_connection = make_shared <POP3Connection>(
+		dynamicCast <POP3Store>(shared_from_this()), getAuthenticator()
+	);
 
 	m_connection->connect();
 }
 
 
-bool POP3Store::isPOP3S() const
-{
+bool POP3Store::isPOP3S() const {
+
 	return m_isPOP3S;
 }
 
 
-bool POP3Store::isConnected() const
-{
+bool POP3Store::isConnected() const {
+
 	return m_connection && m_connection->isConnected();
 }
 
 
-bool POP3Store::isSecuredConnection() const
-{
-	if (m_connection == NULL)
+bool POP3Store::isSecuredConnection() const {
+
+	if (!m_connection) {
 		return false;
+	}
 
 	return m_connection->isSecuredConnection();
 }
 
 
-shared_ptr <connectionInfos> POP3Store::getConnectionInfos() const
-{
-	if (m_connection == NULL)
+shared_ptr <connectionInfos> POP3Store::getConnectionInfos() const {
+
+	if (!m_connection) {
 		return null;
+	}
 
 	return m_connection->getConnectionInfos();
 }
 
 
-shared_ptr <POP3Connection> POP3Store::getConnection()
-{
+shared_ptr <POP3Connection> POP3Store::getConnection() {
+
 	return m_connection;
 }
 
 
-void POP3Store::disconnect()
-{
-	if (!isConnected())
+void POP3Store::disconnect() {
+
+	if (!isConnected()) {
 		throw exceptions::not_connected();
+	}
 
 	for (std::list <POP3Folder*>::iterator it = m_folders.begin() ;
-	     it != m_folders.end() ; ++it)
-	{
+	     it != m_folders.end() ; ++it) {
+
 		(*it)->onStoreDisconnected();
 	}
 
@@ -172,36 +197,41 @@ void POP3Store::disconnect()
 }
 
 
-void POP3Store::noop()
-{
-	if (!m_connection)
+void POP3Store::noop() {
+
+	if (!m_connection) {
 		throw exceptions::not_connected();
+	}
 
 	POP3Command::NOOP()->send(m_connection);
 
 	shared_ptr <POP3Response> response = POP3Response::readResponse(m_connection);
 
-	if (!response->isSuccess())
+	if (!response->isSuccess()) {
 		throw exceptions::command_error("NOOP", response->getFirstLine());
+	}
 }
 
 
-void POP3Store::registerFolder(POP3Folder* folder)
-{
+void POP3Store::registerFolder(POP3Folder* folder) {
+
 	m_folders.push_back(folder);
 }
 
 
-void POP3Store::unregisterFolder(POP3Folder* folder)
-{
+void POP3Store::unregisterFolder(POP3Folder* folder) {
+
 	std::list <POP3Folder*>::iterator it = std::find(m_folders.begin(), m_folders.end(), folder);
-	if (it != m_folders.end()) m_folders.erase(it);
+
+	if (it != m_folders.end()) {
+		m_folders.erase(it);
+	}
 }
 
 
-int POP3Store::getCapabilities() const
-{
-	return (CAPABILITY_DELETE_MESSAGE);
+int POP3Store::getCapabilities() const {
+
+	return CAPABILITY_DELETE_MESSAGE;
 }
 
 
@@ -211,14 +241,14 @@ int POP3Store::getCapabilities() const
 POP3ServiceInfos POP3Store::sm_infos(false);
 
 
-const serviceInfos& POP3Store::getInfosInstance()
-{
+const serviceInfos& POP3Store::getInfosInstance() {
+
 	return sm_infos;
 }
 
 
-const serviceInfos& POP3Store::getInfos() const
-{
+const serviceInfos& POP3Store::getInfos() const {
+
 	return sm_infos;
 }
 

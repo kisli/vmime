@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -36,96 +36,91 @@ namespace vmime {
 namespace net {
 
 
-int folder::getType()
-{
+int folder::getType() {
+
 	return getAttributes().getType();
 }
 
 
-int folder::getFlags()
-{
+int folder::getFlags() {
+
 	return getAttributes().getFlags();
 }
 
 
-void folder::addMessageChangedListener(events::messageChangedListener* l)
-{
+void folder::addMessageChangedListener(events::messageChangedListener* l) {
+
 	m_messageChangedListeners.push_back(l);
 }
 
 
-void folder::removeMessageChangedListener(events::messageChangedListener* l)
-{
+void folder::removeMessageChangedListener(events::messageChangedListener* l) {
+
 	std::remove(m_messageChangedListeners.begin(), m_messageChangedListeners.end(), l);
 }
 
 
-void folder::notifyMessageChanged(shared_ptr <events::messageChangedEvent> event)
-{
+void folder::notifyMessageChanged(const shared_ptr <events::messageChangedEvent>& event) {
+
 	for (std::list <events::messageChangedListener*>::iterator
-	     it = m_messageChangedListeners.begin() ; it != m_messageChangedListeners.end() ; ++it)
-	{
+	     it = m_messageChangedListeners.begin() ; it != m_messageChangedListeners.end() ; ++it) {
+
 		event->dispatch(*it);
 	}
 }
 
 
-void folder::addMessageCountListener(events::messageCountListener* l)
-{
+void folder::addMessageCountListener(events::messageCountListener* l) {
+
 	m_messageCountListeners.push_back(l);
 }
 
 
-void folder::removeMessageCountListener(events::messageCountListener* l)
-{
+void folder::removeMessageCountListener(events::messageCountListener* l) {
+
 	std::remove(m_messageCountListeners.begin(), m_messageCountListeners.end(), l);
 }
 
 
-void folder::notifyMessageCount(shared_ptr <events::messageCountEvent> event)
-{
+void folder::notifyMessageCount(const shared_ptr <events::messageCountEvent>& event) {
+
 	for (std::list <events::messageCountListener*>::iterator
-	     it = m_messageCountListeners.begin() ; it != m_messageCountListeners.end() ; ++it)
-	{
+	     it = m_messageCountListeners.begin() ; it != m_messageCountListeners.end() ; ++it) {
+
 		event->dispatch(*it);
 	}
 }
 
 
-void folder::addFolderListener(events::folderListener* l)
-{
+void folder::addFolderListener(events::folderListener* l) {
+
 	m_folderListeners.push_back(l);
 }
 
 
-void folder::removeFolderListener(events::folderListener* l)
-{
+void folder::removeFolderListener(events::folderListener* l) {
+
 	std::remove(m_folderListeners.begin(), m_folderListeners.end(), l);
 }
 
 
-void folder::notifyFolder(shared_ptr <events::folderEvent> event)
-{
+void folder::notifyFolder(const shared_ptr <events::folderEvent>& event) {
+
 	for (std::list <events::folderListener*>::iterator
-	     it = m_folderListeners.begin() ; it != m_folderListeners.end() ; ++it)
-	{
+	     it = m_folderListeners.begin() ; it != m_folderListeners.end() ; ++it) {
+
 		event->dispatch(*it);
 	}
 }
 
 
-void folder::notifyEvent(shared_ptr <events::event> event)
-{
-	if (event->getClass() == events::messageCountEvent::EVENT_CLASS)
-	{
+void folder::notifyEvent(const shared_ptr <events::event>& event) {
+
+	if (event->getClass() == events::messageCountEvent::EVENT_CLASS) {
 		notifyMessageCount(dynamicCast <events::messageCountEvent>(event));
-	}
-	else if (event->getClass() == events::messageChangedEvent::EVENT_CLASS)
-	{
+	} else if (event->getClass() == events::messageChangedEvent::EVENT_CLASS) {
 		notifyMessageChanged(dynamicCast <events::messageChangedEvent>(event));
-	}
-	else if (event->getClass() == events::folderEvent::EVENT_CLASS)
-	{
+	} else if (event->getClass() == events::folderEvent::EVENT_CLASS) {
 		notifyFolder(dynamicCast <events::folderEvent>(event));
 	}
 }

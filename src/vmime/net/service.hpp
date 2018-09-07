@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -55,20 +55,22 @@ namespace net {
 
 /** Base class for messaging services.
   */
+class VMIME_EXPORT service : public object, public enable_shared_from_this <service> {
 
-class VMIME_EXPORT service : public object, public enable_shared_from_this <service>
-{
 protected:
 
-	service(shared_ptr <session> sess, const serviceInfos& infos, shared_ptr <security::authenticator> auth);
+	service(
+		const shared_ptr <session>& sess,
+		const serviceInfos& infos,
+		const shared_ptr <security::authenticator>& auth
+	);
 
 public:
 
 	virtual ~service();
 
 	/** Possible service types. */
-	enum Type
-	{
+	enum Type {
 		TYPE_STORE = 0,    /**< The service is a message store. */
 		TYPE_TRANSPORT     /**< The service sends messages. */
 	};
@@ -139,14 +141,14 @@ public:
 	  *
 	  * @param auth authenticator object
 	  */
-	void setAuthenticator(shared_ptr <security::authenticator> auth);
+	void setAuthenticator(const shared_ptr <security::authenticator>& auth);
 
 #if VMIME_HAVE_TLS_SUPPORT
 
 	/** Set the object responsible for verifying certificates when
 	  * using secured connections (TLS/SSL).
 	  */
-	void setCertificateVerifier(shared_ptr <security::cert::certificateVerifier> cv);
+	void setCertificateVerifier(const shared_ptr <security::cert::certificateVerifier>& cv);
 
 	/** Get the object responsible for verifying certificates when
 	  * using secured connections (TLS/SSL).
@@ -160,7 +162,7 @@ public:
 	  *
 	  * @param sf socket factory
 	  */
-	void setSocketFactory(shared_ptr <socketFactory> sf);
+	void setSocketFactory(const shared_ptr <socketFactory>& sf);
 
 	/** Return the factory used to create socket objects for this
 	  * service.
@@ -175,7 +177,7 @@ public:
 	  *
 	  * @param thf timeoutHandler factory
 	  */
-	void setTimeoutHandlerFactory(shared_ptr <timeoutHandlerFactory> thf);
+	void setTimeoutHandlerFactory(const shared_ptr <timeoutHandlerFactory>& thf);
 
 	/** Return the factory used to create timeoutHandler objects for
 	  * this service.
@@ -185,7 +187,7 @@ public:
 	shared_ptr <timeoutHandlerFactory> getTimeoutHandlerFactory();
 
 
-	void setTracerFactory(shared_ptr <tracerFactory> tf);
+	void setTracerFactory(const shared_ptr <tracerFactory>& tf);
 
 	shared_ptr <tracerFactory> getTracerFactory();
 
@@ -198,8 +200,7 @@ public:
 	  * @param value property value
 	  */
 	template <typename TYPE>
-	void setProperty(const string& name, const TYPE& value)
-	{
+	void setProperty(const string& name, const TYPE& value) {
 		m_session->getProperties()[getInfos().getPropertyPrefix() + name] = value;
 	}
 

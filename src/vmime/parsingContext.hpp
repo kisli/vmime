@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -28,24 +28,23 @@
 #include "vmime/context.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
-	/** Provides runtime configurable options to provide flexibility in header parsing
-	 */
-	struct headerParseRecoveryMethod {
-		enum headerLineError {
-			SKIP_LINE = 0,
-			/* APPEND_TO_PREVIOUS_LINE = 1, */
-			ASSUME_END_OF_HEADERS = 2
-		};
+/** Provides runtime configurable options to provide flexibility in header parsing
+  */
+struct headerParseRecoveryMethod {
+
+	enum headerLineError {
+		SKIP_LINE = 0,
+		/* APPEND_TO_PREVIOUS_LINE = 1, */
+		ASSUME_END_OF_HEADERS = 2
 	};
+};
 
 /** Holds configuration parameters used for parsing messages.
   */
+class VMIME_EXPORT parsingContext : public context {
 
-class VMIME_EXPORT parsingContext : public context
-{
 public:
 
 	parsingContext();
@@ -57,18 +56,19 @@ public:
 	  */
 	static parsingContext& getDefaultContext();
 
-	/** Sets the recovery method when parsing a header encounters an error such as a failed fold or missing new line.
+	/** Sets the recovery method when parsing a header encounters an error
+	  * such as a failed fold or missing new line.
 	  *
-	  * @param recoveryMethod is one of vmime::headerParseRecoveryMethod.  Defaults to vmime::headerParseRecoveryMethod::SKIP_LINE.
+	  * @param recoveryMethod is one of vmime::headerParseRecoveryMethod.
+	  * Defaults to vmime::headerParseRecoveryMethod::SKIP_LINE.
 	  */
-	void setHeaderParseErrorRecoveryMethod(headerParseRecoveryMethod::headerLineError recoveryMethod);
+	void setHeaderParseErrorRecoveryMethod(const headerParseRecoveryMethod::headerLineError recoveryMethod);
 
 	/** Return the recovery method when parsing a header encounters an error.
 	  *
 	  * @return is an enum from vmime::headerParseRecoveryMethod
 	  */
 	headerParseRecoveryMethod::headerLineError getHeaderParseErrorRecoveryMethod() const;
-
 
 protected:
 

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -49,13 +49,12 @@ class messageStructure;
 
 /** A MIME part in a message.
   */
+class VMIME_EXPORT messagePart : public object, public enable_shared_from_this <messagePart> {
 
-class VMIME_EXPORT messagePart : public object, public enable_shared_from_this <messagePart>
-{
 protected:
 
 	messagePart() { }
-	messagePart(const messagePart&) : object(), enable_shared_from_this <messagePart>() { }
+	messagePart(const messagePart&);
 
 	virtual ~messagePart() { }
 
@@ -99,6 +98,16 @@ public:
 	  */
 	virtual size_t getNumber() const = 0;
 
+	/** Return the name of this part. In particular, this corresponds to
+	  * the attachment file name for attachment parts.
+	  *
+	  * The part name may be empty if the part does not advertise it or
+	  * if the underlying protocol does not support it.
+	  *
+	  * @return part name
+	  */
+	virtual string getName() const;
+
 	/** Return the sub-part at the specified position (zero is the
 	  * first part).
 	  *
@@ -125,13 +134,12 @@ public:
 
 /** Structure of a MIME part/message.
   */
+class VMIME_EXPORT messageStructure : public object, public enable_shared_from_this <messageStructure> {
 
-class VMIME_EXPORT messageStructure : public object, public enable_shared_from_this <messageStructure>
-{
 protected:
 
 	messageStructure() { }
-	messageStructure(const messageStructure&) : object(), enable_shared_from_this <messageStructure>() { }
+	messageStructure(const messageStructure&);
 
 public:
 
@@ -163,28 +171,24 @@ public:
 
 /** Abstract representation of a message in a store/transport service.
   */
+class VMIME_EXPORT message : public object, public enable_shared_from_this <message> {
 
-class VMIME_EXPORT message : public object, public enable_shared_from_this <message>
-{
 protected:
 
 	message() { }
-	message(const message&) : object(), enable_shared_from_this <message>() { }
+	message(const message&);
 
-	enum PrivateConstants
-	{
+	enum PrivateConstants {
 		FLAG_UNDEFINED = 9999       /**< Used internally to indicate flags have not
 		                                 been initialized yet. */
 	};
 
 public:
 
-	virtual ~message() { }
-
 	/** The type for an unique message identifier.
 	  */
-	class VMIME_EXPORT uid
-	{
+	class VMIME_EXPORT uid {
+
 	public:
 
 		uid();
@@ -255,8 +259,7 @@ public:
 
 	/** Possible flags for a message.
 	  */
-	enum Flags
-	{
+	enum Flags {
 		FLAG_SEEN    = (1 << 0),   /**< Message has been seen. */
 		FLAG_RECENT  = (1 << 1),   /**< Message has been recently received. */
 		FLAG_DELETED = (1 << 2),   /**< Message is marked for deletion. */
@@ -268,8 +271,7 @@ public:
 
 	/** Methods for setting the flags.
 	  */
-	enum FlagsModes
-	{
+	enum FlagsModes {
 		FLAG_MODE_SET,     /**< Set (replace) the flags. */
 		FLAG_MODE_ADD,     /**< Add the flags. */
 		FLAG_MODE_REMOVE   /**< Remove the flags. */
@@ -300,12 +302,13 @@ public:
 	  * be supported by the protocol (IMAP supports this), but it will NOT throw
 	  * an exception if not supported.
 	  */
-	virtual void extract
-		(utility::outputStream& os,
-		 utility::progressListener* progress = NULL,
-		 const size_t start = 0,
-		 const size_t length = -1,
-		 const bool peek = false) const = 0;
+	virtual void extract(
+		utility::outputStream& os,
+		utility::progressListener* progress = NULL,
+		const size_t start = 0,
+		const size_t length = -1,
+		const bool peek = false
+	) const = 0;
 
 	/** Extract the specified MIME part of the message (header + contents).
 	  *
@@ -320,19 +323,20 @@ public:
 	  * be supported by the protocol (IMAP supports this), but it will NOT throw
 	  * an exception if not supported.
 	  */
-	virtual void extractPart
-		(shared_ptr <const messagePart> p,
-		 utility::outputStream& os,
-		 utility::progressListener* progress = NULL,
-		 const size_t start = 0,
-		 const size_t length = -1,
-		 const bool peek = false) const = 0;
+	virtual void extractPart(
+		const shared_ptr <const messagePart>& p,
+		utility::outputStream& os,
+		utility::progressListener* progress = NULL,
+		const size_t start = 0,
+		const size_t length = -1,
+		const bool peek = false
+	) const = 0;
 
 	/** Fetch the MIME header for the specified part.
 	  *
 	  * @param p the part for which to fetch the header
 	  */
-	virtual void fetchPartHeader(shared_ptr <messagePart> p) = 0;
+	virtual void fetchPartHeader(const shared_ptr <messagePart>& p) = 0;
 
 	/** Get the RFC-822 message for this abstract message.
 	  * Warning: This may require getting some data (ie: structure and headers) from

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -35,29 +35,27 @@ namespace utility {
 
 
 outputStreamSocketAdapter::outputStreamSocketAdapter(net::socket& sok)
-	: m_socket(sok)
-{
+	: m_socket(sok) {
+
 }
 
 
-void outputStreamSocketAdapter::writeImpl
-	(const byte_t* const data, const size_t count)
-{
+void outputStreamSocketAdapter::writeImpl(const byte_t* const data, const size_t count) {
+
 	m_socket.sendRaw(data, count);
 }
 
 
-void outputStreamSocketAdapter::flush()
-{
+void outputStreamSocketAdapter::flush() {
+
 	// Do nothing
 }
 
 
-size_t outputStreamSocketAdapter::getBlockSize()
-{
+size_t outputStreamSocketAdapter::getBlockSize() {
+
 	return m_socket.getBlockSize();
 }
-
 
 
 } // utility
@@ -65,4 +63,3 @@ size_t outputStreamSocketAdapter::getBlockSize()
 
 
 #endif // VMIME_HAVE_MESSAGING_FEATURES
-

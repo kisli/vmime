@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -44,9 +44,8 @@ namespace net {
 
 /** Stores information about a messaging service.
   */
+class VMIME_EXPORT serviceInfos {
 
-class VMIME_EXPORT serviceInfos
-{
 	friend class serviceFactory;
 
 protected:
@@ -65,8 +64,8 @@ public:
 
 	/** A service property.
 	  */
-	class VMIME_EXPORT property
-	{
+	class VMIME_EXPORT property {
+
 	public:
 
 		/** The common property 'server.address' which is
@@ -114,8 +113,7 @@ public:
 
 		/** Value types.
 		  */
-		enum Types
-		{
+		enum Types {
 			TYPE_INTEGER,   /*< Integer number. */
 			TYPE_STRING,    /*< Character string. */
 			TYPE_BOOLEAN,   /*< Boolean (true or false). */
@@ -125,8 +123,7 @@ public:
 
 		/** Property flags.
 		  */
-		enum Flags
-		{
+		enum Flags {
 			FLAG_NONE = 0,              /*< No flags. */
 			FLAG_REQUIRED = (1 << 0),   /*< The property must be valued. */
 			FLAG_HIDDEN = (1 << 1),     /*< The property should not be shown
@@ -143,7 +140,12 @@ public:
 		  * @param defaultValue default value
 		  * @param flags property attributes
 		  */
-		property(const string& name, const Types type, const string& defaultValue = "", const int flags = FLAG_DEFAULT);
+		property(
+			const string& name,
+			const Types type,
+			const string& defaultValue = "",
+			const int flags = FLAG_DEFAULT
+		);
 
 		/** Construct a new property from an existing property.
 		  *
@@ -151,7 +153,11 @@ public:
 		  * @param addFlags flags to add
 		  * @param removeFlags flags to remove
 		  */
-		property(const property& p, const int addFlags = FLAG_NONE, const int removeFlags = FLAG_NONE);
+		property(
+			const property& p,
+			const int addFlags = FLAG_NONE,
+			const int removeFlags = FLAG_NONE
+		);
 
 		/** Construct a new property from an existing property.
 		  *
@@ -160,7 +166,12 @@ public:
 		  * @param addFlags flags to add
 		  * @param removeFlags flags to remove
 		  */
-		property(const property& p, const string& newDefaultValue, const int addFlags = FLAG_NONE, const int removeFlags = FLAG_NONE);
+		property(
+			const property& p,
+			const string& newDefaultValue,
+			const int addFlags = FLAG_NONE,
+			const int removeFlags = FLAG_NONE
+		);
 
 		property& operator=(const property& p);
 
@@ -221,13 +232,16 @@ public:
 	  * @return value of the property
 	  */
 	template <typename TYPE>
-	const TYPE getPropertyValue(shared_ptr <session> s, const property& p) const
-	{
-		if (p.getFlags() & property::FLAG_REQUIRED)
-			return s->getProperties()[getPropertyPrefix() + p.getName()].template getValue <TYPE>();
+	const TYPE getPropertyValue(const shared_ptr <session>& s, const property& p) const {
 
-		return s->getProperties().template getProperty <TYPE>(getPropertyPrefix() + p.getName(),
-			propertySet::valueFromString <TYPE>(p.getDefaultValue()));
+		if (p.getFlags() & property::FLAG_REQUIRED) {
+			return s->getProperties()[getPropertyPrefix() + p.getName()].template getValue <TYPE>();
+		}
+
+		return s->getProperties().template getProperty <TYPE>(
+			getPropertyPrefix() + p.getName(),
+			propertySet::valueFromString <TYPE>(p.getDefaultValue())
+		);
 	}
 
 	/** Helper function to test if the specified property is set in
@@ -237,7 +251,7 @@ public:
 	  * @param p property to test
 	  * @return true if the property is set, false otherwise
 	  */
-	bool hasProperty(shared_ptr <session> s, const property& p) const;
+	bool hasProperty(const shared_ptr <session>& s, const property& p) const;
 };
 
 

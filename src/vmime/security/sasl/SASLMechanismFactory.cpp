@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -47,68 +47,73 @@ namespace security {
 namespace sasl {
 
 
-SASLMechanismFactory::SASLMechanismFactory()
-{
-	if (gsasl_init(&m_gsaslContext) != GSASL_OK)
+SASLMechanismFactory::SASLMechanismFactory() {
+
+	if (gsasl_init(&m_gsaslContext) != GSASL_OK) {
 		throw std::bad_alloc();
+	}
 }
 
 
-SASLMechanismFactory::~SASLMechanismFactory()
-{
+SASLMechanismFactory::~SASLMechanismFactory() {
+
 	gsasl_done(m_gsaslContext);
 }
 
 
 // static
-SASLMechanismFactory* SASLMechanismFactory::getInstance()
-{
+SASLMechanismFactory* SASLMechanismFactory::getInstance() {
+
 	static SASLMechanismFactory instance;
 	return &instance;
 }
 
 
-shared_ptr <SASLMechanism> SASLMechanismFactory::create
-	(shared_ptr <SASLContext> ctx, const string& name_)
-{
+shared_ptr <SASLMechanism> SASLMechanismFactory::create(
+	const shared_ptr <SASLContext>& ctx,
+	const string& name_
+) {
+
 	const string name(utility::stringUtils::toUpper(name_));
 
 	// Check for registered mechanisms
 	MapType::iterator it = m_mechs.find(name);
 
-	if (it != m_mechs.end())
+	if (it != m_mechs.end()) {
 		return (*it).second->create(ctx, name);
+	}
 
 	// Check for built-in mechanisms
-	if (isBuiltinMechanism(name))
+	if (isBuiltinMechanism(name)) {
 		return make_shared <builtinSASLMechanism>(ctx, name);
+	}
 
 	throw exceptions::no_such_mechanism(name);
 	return null;
 }
 
 
-const std::vector <string> SASLMechanismFactory::getSupportedMechanisms() const
-{
+const std::vector <string> SASLMechanismFactory::getSupportedMechanisms() const {
+
 	std::vector <string> list;
 
 	// Registered mechanisms
 	for (MapType::const_iterator it = m_mechs.begin() ;
-	     it != m_mechs.end() ; ++it)
-	{
+	     it != m_mechs.end() ; ++it) {
+
 		list.push_back((*it).first);
 	}
 
 	// Built-in mechanisms
 	char* out = 0;
 
-	if (gsasl_client_mechlist(m_gsaslContext, &out) == GSASL_OK)
-	{
+	if (gsasl_client_mechlist(m_gsaslContext, &out) == GSASL_OK) {
+
 		// 'out' contains SASL mechanism names, separated by spaces
-		for (char *start = out, *p = out ; ; ++p)
-		{
-			if (*p == ' ' || !*p)
-			{
+		for (char *start = out, *p = out ; ; ++p) {
+
+			if (*p == ' ' || !*p) {
+
 				list.push_back(string(start, p));
 				start = p + 1;
 
@@ -124,14 +129,14 @@ const std::vector <string> SASLMechanismFactory::getSupportedMechanisms() const
 }
 
 
-bool SASLMechanismFactory::isMechanismSupported(const string& name) const
-{
+bool SASLMechanismFactory::isMechanismSupported(const string& name) const {
+
 	return isBuiltinMechanism(name) || m_mechs.find(name) != m_mechs.end();
 }
 
 
-bool SASLMechanismFactory::isBuiltinMechanism(const string& name) const
-{
+bool SASLMechanismFactory::isBuiltinMechanism(const string& name) const {
+
 	return gsasl_client_support_p(m_gsaslContext, name.c_str()) != 0;
 }
 
@@ -142,4 +147,3 @@ bool SASLMechanismFactory::isBuiltinMechanism(const string& name) const
 
 
 #endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_SASL_SUPPORT
-

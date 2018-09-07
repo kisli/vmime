@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -33,8 +33,7 @@
 #include "vmime/headerFieldFactory.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 class bodyPart;
@@ -42,9 +41,8 @@ class bodyPart;
 
 /** Header section of a MIME part.
   */
+class VMIME_EXPORT header : public component {
 
-class VMIME_EXPORT header : public component
-{
 	friend class bodyPart;
 	friend class body;
 	friend class message;
@@ -120,8 +118,8 @@ public:
 	  * with this name was found
 	  */
 	template <typename T>
-	shared_ptr <T> findField(const string& fieldName) const
-	{
+	shared_ptr <T> findField(const string& fieldName) const {
+
 		return dynamicCast <T>(findField(fieldName));
 	}
 
@@ -137,14 +135,15 @@ public:
 	  * specified type
 	  */
 	template <typename T>
-	shared_ptr <T> findFieldValue(const string& fieldName) const
-	{
+	shared_ptr <T> findFieldValue(const string& fieldName) const {
+
 		shared_ptr <headerField> field = findField(fieldName);
 
-		if (field)
+		if (field) {
 			return dynamicCast <T>(field->getValue());
-		else
+		} else {
 			return null;
+		}
 	}
 
 	/** Find all fields that match the specified name.
@@ -176,8 +175,8 @@ public:
 	  * if no field is found
 	  */
 	template <typename T>
-	shared_ptr <T> getField(const string& fieldName)
-	{
+	shared_ptr <T> getField(const string& fieldName) {
+
 		return dynamicCast <T>(getField(fieldName));
 	}
 
@@ -185,7 +184,7 @@ public:
 	  *
 	  * @param field field to append
 	  */
-	void appendField(shared_ptr <headerField> field);
+	void appendField(const shared_ptr <headerField>& field);
 
 	/** Insert a new field before the specified field.
 	  *
@@ -193,7 +192,10 @@ public:
 	  * @param field field to insert
 	  * @throw exceptions::no_such_field if the field is not in the list
 	  */
-	void insertFieldBefore(shared_ptr <headerField> beforeField, shared_ptr <headerField> field);
+	void insertFieldBefore(
+		const shared_ptr <headerField>& beforeField,
+		const shared_ptr <headerField>& field
+	);
 
 	/** Insert a new field before the specified position.
 	  *
@@ -201,7 +203,10 @@ public:
 	  * the beginning of the list)
 	  * @param field field to insert
 	  */
-	void insertFieldBefore(const size_t pos, shared_ptr <headerField> field);
+	void insertFieldBefore(
+		const size_t pos,
+		const shared_ptr <headerField>& field
+	);
 
 	/** Insert a new field after the specified field.
 	  *
@@ -209,21 +214,27 @@ public:
 	  * @param field field to insert
 	  * @throw exceptions::no_such_field if the field is not in the list
 	  */
-	void insertFieldAfter(shared_ptr <headerField> afterField, shared_ptr <headerField> field);
+	void insertFieldAfter(
+		const shared_ptr <headerField>& afterField,
+		const shared_ptr <headerField>& field
+	);
 
 	/** Insert a new field after the specified position.
 	  *
 	  * @param pos position of the field before the new field
 	  * @param field field to insert
 	  */
-	void insertFieldAfter(const size_t pos, shared_ptr <headerField> field);
+	void insertFieldAfter(
+		const size_t pos,
+		const shared_ptr <headerField>& field
+	);
 
 	/** Remove the specified field from the list.
 	  *
 	  * @param field field to remove
 	  * @throw exceptions::no_such_field if the field is not in the list
 	  */
-	void removeField(shared_ptr <headerField> field);
+	void removeField(const shared_ptr <headerField>& field);
 
 	/** Remove the field at the specified position.
 	  *
@@ -237,7 +248,10 @@ public:
 	  * @param newField field to replace with
 	  * @throw exceptions::no_such_field if the field is not in the list
 	  */
-	void replaceField(shared_ptr <headerField> field, shared_ptr <headerField> newField);
+	void replaceField(
+		const shared_ptr <headerField>& field,
+		const shared_ptr <headerField>& newField
+	);
 
 	/** Remove all fields from the list.
 	  */
@@ -298,8 +312,8 @@ private:
 	std::vector <shared_ptr <headerField> > m_fields;
 
 
-	class fieldHasName
-	{
+	class fieldHasName {
+
 	public:
 
 		fieldHasName(const string& name);
@@ -310,8 +324,8 @@ private:
 		string m_name;
 	};
 
-	class fieldHasNotName
-	{
+	class fieldHasNotName {
+
 	public:
 
 		fieldHasNotName(const string& name);
@@ -325,18 +339,20 @@ private:
 protected:
 
 	// Component parsing & assembling
-	void parseImpl
-		(const parsingContext& ctx,
-		 const string& buffer,
-		 const size_t position,
-		 const size_t end,
-		 size_t* newPosition = NULL);
+	void parseImpl(
+		const parsingContext& ctx,
+		const string& buffer,
+		const size_t position,
+		const size_t end,
+		size_t* newPosition = NULL
+	);
 
-	void generateImpl
-		(const generationContext& ctx,
-		 utility::outputStream& os,
-		 const size_t curLinePos = 0,
-		 size_t* newLinePos = NULL) const;
+	void generateImpl(
+		const generationContext& ctx,
+		utility::outputStream& os,
+		const size_t curLinePos = 0,
+		size_t* newLinePos = NULL
+	) const;
 };
 
 

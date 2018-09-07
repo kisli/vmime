@@ -12,7 +12,7 @@
 # http://www.cmake.org
 #
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.6 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.1 FATAL_ERROR)
 
 INCLUDE(cmake/Utils.cmake)
 
@@ -68,6 +68,11 @@ SET(VMIME_API_VERSION ${VMIME_API_VERSION_CURRENT}.${VMIME_API_VERSION_REVISION}
 # Set base name
 SET(VMIME_LIBRARY_NAME vmime)
 
+# Enable C++11
+SET(CMAKE_CXX_STANDARD 11)
+SET(CMAKE_CXX_STANDARD_REQUIRED ON)
+SET(CMAKE_CXX_EXTENSIONS OFF)
+
 # Source files
 FILE(
 	GLOB_RECURSE
@@ -107,6 +112,10 @@ IF(VMIME_BUILD_SHARED_LIBRARY)
 		SHARED
 		${VMIME_LIBRARY_SRC_FILES}
 		${VMIME_LIBRARY_INCLUDE_FILES}
+	)
+
+	TARGET_INCLUDE_DIRECTORIES(${VMIME_LIBRARY_NAME} PUBLIC
+  		$<INSTALL_INTERFACE:include>
 	)
 
 	GENERATE_EXPORT_HEADER(
@@ -154,6 +163,10 @@ IF(VMIME_BUILD_STATIC_LIBRARY)
 		${VMIME_LIBRARY_INCLUDE_FILES}
 	)
 
+ 	TARGET_INCLUDE_DIRECTORIES(${VMIME_LIBRARY_NAME}-static PUBLIC
+  		$<INSTALL_INTERFACE:include>
+	)
+
 	GENERATE_EXPORT_HEADER(
 		${VMIME_LIBRARY_NAME}-static
 		BASE_NAME VMIME
@@ -199,6 +212,7 @@ SET(CMAKE_INSTALL_LIBDIR lib CACHE PATH "Output directory for libraries")
 IF(VMIME_BUILD_SHARED_LIBRARY)
 	INSTALL(
 		TARGETS ${VMIME_LIBRARY_NAME}
+		EXPORT ${VMIME_LIBRARY_NAME}-config
 		LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}" COMPONENT sharedlibs
 		ARCHIVE DESTINATION "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}" COMPONENT sharedlibs
 	)
@@ -207,6 +221,7 @@ ENDIF()
 IF(VMIME_BUILD_STATIC_LIBRARY)
 	INSTALL(
 		TARGETS ${VMIME_LIBRARY_NAME}-static
+		EXPORT ${VMIME_LIBRARY_NAME}-config
 		LIBRARY DESTINATION "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}" COMPONENT staticlibs
 		ARCHIVE DESTINATION "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}" COMPONENT staticlibs
 	)
@@ -221,6 +236,8 @@ INSTALL_HEADERS_WITH_DIRECTORY(VMIME_LIBRARY_GENERATED_INCLUDE_FILES headers "${
 #	DESTINATION include
 #	COMPONENT headers
 #)
+
+install(EXPORT ${VMIME_LIBRARY_NAME}-config DESTINATION cmake)
 
 
 ##############################################################################
@@ -784,89 +801,6 @@ ENDIF()
 
 
 ##############################################################################
-# Language features
-
-# C++11
-INCLUDE(cmake/cmake-cxx11/Modules/CheckCXX11Features.cmake)
-
-# Smart pointers
-#
-# If a C++11-compliant compiler is available and supports std::shared_ptr<>,
-# use the standard implementation. Else, use boost::shared_ptr<>.
-# In any case, let the user override the choice with VMIME_SHARED_PTR_USE_CXX
-# and VMIME_SHARED_PTR_USE_BOOST variables.
-
-CHECK_CXX_SOURCE_COMPILES(
-	"
-	#include <memory>
-	struct A { int foo; };
-	int main() {
-		std::shared_ptr <A> a = std::make_shared <A>();
-		return 0;
-	}
-	"
-	VMIME_HAS_CXX11_SHARED_PTR
-)
-
-IF(NOT VMIME_SHARED_PTR_USE_CXX AND NOT VMIME_SHARED_PTR_USE_BOOST)
-	IF(CXX11_COMPILER_FLAGS AND VMIME_HAS_CXX11_SHARED_PTR)
-		# If std::shared_ptr<> is available, use it by default
-		SET(VMIME_SHARED_PTR_USE_CXX_DEFAULT     ON)
-		SET(VMIME_SHARED_PTR_USE_BOOST_DEFAULT  OFF)
-	ELSE()
-		# Else, set default to boost::shared_ptr<>
-		SET(VMIME_SHARED_PTR_USE_CXX_DEFAULT    OFF)
-		SET(VMIME_SHARED_PTR_USE_BOOST_DEFAULT   ON)
-	ENDIF()
-ENDIF()
-
-OPTION(
-	VMIME_SHARED_PTR_USE_CXX
-	"Use standard std::shared_ptr<> (requires a C++11 compiler)"
-	${VMIME_SHARED_PTR_USE_CXX_DEFAULT}
-)
-
-OPTION(
-	VMIME_SHARED_PTR_USE_BOOST
-	"Use boost::shared_ptr<> (requires Boost)"
-	${VMIME_SHARED_PTR_USE_BOOST_DEFAULT}
-)
-
-IF(VMIME_SHARED_PTR_USE_CXX AND VMIME_SHARED_PTR_USE_BOOST)
-	MESSAGE(FATAL_ERROR "Options VMIME_SHARED_PTR_USE_CXX and VMIME_SHARED_PTR_USE_BOOST are mutually exclusive (select one or the other, but not both!)")
-ENDIF()
-
-IF(VMIME_SHARED_PTR_USE_CXX)
-
-	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX11_COMPILER_FLAGS}")
-
-	IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-		SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-	ENDIF()
-
-	MESSAGE(STATUS "Checking support for shared_ptr<>: built-in (C++11)")
-
-ELSEIF(VMIME_SHARED_PTR_USE_BOOST)
-
-	# Depends on Boost library if C++11 is not supported
-	FIND_PACKAGE(Boost)
-
-	IF(Boost_FOUND)
-		INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
-	ELSE()
-		MESSAGE(FATAL_ERROR "Boost library is required for shared_ptr<>, unless you compile using C++11")
-	ENDIF()
-
-	MESSAGE(STATUS "Checking support for shared_ptr<>: boost library")
-
-ELSE()
-
-	MESSAGE(FATAL_ERROR "No implementation for shared_ptr<> was selected/found")
-
-ENDIF()
-
-
-##############################################################################
 # Platform
 
 SET(VMIME_PLATFORM_IS_POSIX OFF)
@@ -997,12 +931,12 @@ IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 
 	SET(
 		CMAKE_CXX_FLAGS
-		"${CMAKE_CXX_FLAGS} -D_REENTRANT=1 -W -Wall -pedantic -Warray-bounds-pointer-arithmetic -Wold-style-cast -Wconversion -Wcast-align -Wno-sign-conversion"
+		"-D_REENTRANT=1 -W -Wall -pedantic -Warray-bounds-pointer-arithmetic -Wold-style-cast -Wconversion -Wcast-align -Wno-sign-conversion ${CMAKE_CXX_FLAGS}"
 	)
 
-	SET(CMAKE_CXX_FLAGS_RELEASE "-O2")
-	SET(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
-	SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g")
+	SET(CMAKE_CXX_FLAGS_RELEASE "-O2 ${CMAKE_CXX_FLAGS_RELEASE}")
+	SET(CMAKE_CXX_FLAGS_DEBUG "-O0 ${CMAKE_CXX_FLAGS_DEBUG}")
+	SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
 
 	#SET(CMAKE_EXE_LINKER_FLAGS "-s")
 
@@ -1012,12 +946,12 @@ ELSE()
 
 		SET(
 			CMAKE_CXX_FLAGS
-			"${CMAKE_CXX_FLAGS} -D_REENTRANT=1 -W -Wall -pedantic -Wpointer-arith -Wold-style-cast -Wconversion -Wcast-align -Wno-long-long"
+			"-D_REENTRANT=1 -W -Wall -pedantic -Wpointer-arith -Wold-style-cast -Wconversion -Wcast-align -Wno-long-long ${CMAKE_CXX_FLAGS}"
 		)
 
-		SET(CMAKE_CXX_FLAGS_RELEASE "-O2")
-		SET(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
-		SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g")
+		SET(CMAKE_CXX_FLAGS_RELEASE "-O2 ${CMAKE_CXX_FLAGS_RELEASE}")
+		SET(CMAKE_CXX_FLAGS_DEBUG "-O0 ${CMAKE_CXX_FLAGS_DEBUG}")
+		SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
 
 		#SET(CMAKE_EXE_LINKER_FLAGS "-s")
 

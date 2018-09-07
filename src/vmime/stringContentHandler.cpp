@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -28,103 +28,126 @@
 #include "vmime/utility/outputStreamAdapter.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
-stringContentHandler::stringContentHandler()
-{
+stringContentHandler::stringContentHandler() {
+
 }
 
 
-stringContentHandler::stringContentHandler(const string& buffer, const vmime::encoding& enc)
-	: m_encoding(enc), m_string(buffer)
-{
+stringContentHandler::stringContentHandler(
+	const string& buffer,
+	const vmime::encoding& enc
+)
+	: m_encoding(enc),
+	  m_string(buffer) {
+
 }
 
 
-stringContentHandler::stringContentHandler(const stringContentHandler& cts)
-	: contentHandler(), m_contentType(cts.m_contentType),
-	  m_encoding(cts.m_encoding), m_string(cts.m_string)
-{
+stringContentHandler::stringContentHandler(
+	const stringContentHandler& cts
+)
+	: contentHandler(),
+	  m_contentType(cts.m_contentType),
+	  m_encoding(cts.m_encoding),
+	  m_string(cts.m_string) {
+
 }
 
 
-stringContentHandler::stringContentHandler(const utility::stringProxy& str, const vmime::encoding& enc)
-	: m_encoding(enc), m_string(str)
-{
+stringContentHandler::stringContentHandler(
+	const utility::stringProxy& str,
+	const vmime::encoding& enc
+)
+	: m_encoding(enc),
+	  m_string(str) {
+
 }
 
 
-stringContentHandler::stringContentHandler(const string& buffer, const size_t start,
-	const size_t end, const vmime::encoding& enc)
-	: m_encoding(enc), m_string(buffer, start, end)
-{
+stringContentHandler::stringContentHandler(
+	const string& buffer,
+	const size_t start,
+	const size_t end,
+	const vmime::encoding& enc
+)
+	: m_encoding(enc),
+	  m_string(buffer, start, end) {
+
 }
 
 
-stringContentHandler::~stringContentHandler()
-{
+stringContentHandler::~stringContentHandler() {
+
 }
 
 
-shared_ptr <contentHandler> stringContentHandler::clone() const
-{
+shared_ptr <contentHandler> stringContentHandler::clone() const {
+
 	return make_shared <stringContentHandler>(*this);
 }
 
 
-stringContentHandler& stringContentHandler::operator=(const stringContentHandler& cts)
-{
+stringContentHandler& stringContentHandler::operator=(const stringContentHandler& cts) {
+
 	m_contentType = cts.m_contentType;
 	m_encoding = cts.m_encoding;
 	m_string = cts.m_string;
 
-	return (*this);
+	return *this;
 }
 
 
-void stringContentHandler::setData(const utility::stringProxy& str, const vmime::encoding& enc)
-{
+void stringContentHandler::setData(const utility::stringProxy& str, const vmime::encoding& enc) {
+
 	m_encoding = enc;
 	m_string = str;
 }
 
 
-void stringContentHandler::setData(const string& buffer, const vmime::encoding& enc)
-{
+void stringContentHandler::setData(const string& buffer, const vmime::encoding& enc) {
+
 	m_encoding = enc;
 	m_string.set(buffer);
 }
 
 
-void stringContentHandler::setData(const string& buffer, const size_t start,
-	const size_t end, const vmime::encoding& enc)
-{
+void stringContentHandler::setData(
+	const string& buffer,
+	const size_t start,
+	const size_t end,
+	const vmime::encoding& enc
+) {
+
 	m_encoding = enc;
 	m_string.set(buffer, start, end);
 }
 
 
-stringContentHandler& stringContentHandler::operator=(const string& buffer)
-{
+stringContentHandler& stringContentHandler::operator=(const string& buffer) {
+
 	setData(buffer, NO_ENCODING);
-	return (*this);
+	return *this;
 }
 
 
-void stringContentHandler::generate(utility::outputStream& os,
-	const vmime::encoding& enc, const size_t maxLineLength) const
-{
+void stringContentHandler::generate(
+	utility::outputStream& os,
+	const vmime::encoding& enc,
+	const size_t maxLineLength
+) const {
+
 	// Managed data is already encoded
-	if (isEncoded())
-	{
+	if (isEncoded()) {
+
 		// The data is already encoded but the encoding specified for
 		// the generation is different from the current one. We need
 		// to re-encode data: decode from input buffer to temporary
 		// buffer, and then re-encode to output stream...
-		if (m_encoding != enc)
-		{
+		if (m_encoding != enc) {
+
 			shared_ptr <utility::encoder::encoder> theDecoder = m_encoding.getEncoder();
 			shared_ptr <utility::encoder::encoder> theEncoder = enc.getEncoder();
 
@@ -142,16 +165,16 @@ void stringContentHandler::generate(utility::outputStream& os,
 			utility::inputStreamStringAdapter tempIn(str);
 
 			theEncoder->encode(tempIn, os);
-		}
+
 		// No encoding to perform
-		else
-		{
+		} else {
+
 			m_string.extract(os);
 		}
-	}
+
 	// Need to encode data before
-	else
-	{
+	} else {
+
 		shared_ptr <utility::encoder::encoder> theEncoder = enc.getEncoder();
 		theEncoder->getProperties()["maxlinelength"] = maxLineLength;
 		theEncoder->getProperties()["text"] = (m_contentType.getType() == mediaTypes::TEXT);
@@ -163,17 +186,19 @@ void stringContentHandler::generate(utility::outputStream& os,
 }
 
 
-void stringContentHandler::extract(utility::outputStream& os,
-	utility::progressListener* progress) const
-{
+void stringContentHandler::extract(
+	utility::outputStream& os,
+	utility::progressListener* progress
+) const {
+
 	// No decoding to perform
-	if (!isEncoded())
-	{
+	if (!isEncoded()) {
+
 		m_string.extract(os, 0, m_string.length(), progress);
-	}
+
 	// Need to decode data
-	else
-	{
+	} else {
+
 		shared_ptr <utility::encoder::encoder> theDecoder = m_encoding.getEncoder();
 
 		utility::inputStreamStringProxyAdapter in(m_string);
@@ -184,51 +209,53 @@ void stringContentHandler::extract(utility::outputStream& os,
 }
 
 
-void stringContentHandler::extractRaw(utility::outputStream& os,
-	utility::progressListener* progress) const
-{
+void stringContentHandler::extractRaw(
+	utility::outputStream& os,
+	utility::progressListener* progress
+) const {
+
 	m_string.extract(os, 0, m_string.length(), progress);
 }
 
 
-size_t stringContentHandler::getLength() const
-{
-	return (m_string.length());
+size_t stringContentHandler::getLength() const {
+
+	return m_string.length();
 }
 
 
-bool stringContentHandler::isEmpty() const
-{
-	return (m_string.length() == 0);
+bool stringContentHandler::isEmpty() const {
+
+	return m_string.length() == 0;
 }
 
 
-bool stringContentHandler::isEncoded() const
-{
-	return (m_encoding != NO_ENCODING);
+bool stringContentHandler::isEncoded() const {
+
+	return m_encoding != NO_ENCODING;
 }
 
 
-const vmime::encoding& stringContentHandler::getEncoding() const
-{
-	return (m_encoding);
+const vmime::encoding& stringContentHandler::getEncoding() const {
+
+	return m_encoding;
 }
 
 
-bool stringContentHandler::isBuffered() const
-{
+bool stringContentHandler::isBuffered() const {
+
 	return true;
 }
 
 
-void stringContentHandler::setContentTypeHint(const mediaType& type)
-{
+void stringContentHandler::setContentTypeHint(const mediaType& type) {
+
 	m_contentType = type;
 }
 
 
-const mediaType stringContentHandler::getContentTypeHint() const
-{
+const mediaType stringContentHandler::getContentTypeHint() const {
+
 	return m_contentType;
 }
 

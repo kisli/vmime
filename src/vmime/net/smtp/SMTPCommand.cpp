@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -42,14 +42,15 @@ namespace smtp {
 
 
 SMTPCommand::SMTPCommand(const string& text, const string& traceText)
-	: m_text(text), m_traceText(traceText)
+	: m_text(text),
+	  m_traceText(traceText)
 {
 }
 
 
 // static
-shared_ptr <SMTPCommand> SMTPCommand::EHLO(const string& hostname)
-{
+shared_ptr <SMTPCommand> SMTPCommand::EHLO(const string& hostname) {
+
 	std::ostringstream cmd;
 	cmd.imbue(std::locale::classic());
 	cmd << "EHLO " << hostname;
@@ -59,8 +60,8 @@ shared_ptr <SMTPCommand> SMTPCommand::EHLO(const string& hostname)
 
 
 // static
-shared_ptr <SMTPCommand> SMTPCommand::HELO(const string& hostname)
-{
+shared_ptr <SMTPCommand> SMTPCommand::HELO(const string& hostname) {
+
 	std::ostringstream cmd;
 	cmd.imbue(std::locale::classic());
 	cmd << "HELO " << hostname;
@@ -70,8 +71,8 @@ shared_ptr <SMTPCommand> SMTPCommand::HELO(const string& hostname)
 
 
 // static
-shared_ptr <SMTPCommand> SMTPCommand::AUTH(const string& mechName)
-{
+shared_ptr <SMTPCommand> SMTPCommand::AUTH(const string& mechName) {
+
 	std::ostringstream cmd;
 	cmd.imbue(std::locale::classic());
 	cmd << "AUTH " << mechName;
@@ -81,8 +82,8 @@ shared_ptr <SMTPCommand> SMTPCommand::AUTH(const string& mechName)
 
 
 // static
-shared_ptr <SMTPCommand> SMTPCommand::AUTH(const string& mechName, const std::string& initialResponse)
-{
+shared_ptr <SMTPCommand> SMTPCommand::AUTH(const string& mechName, const std::string& initialResponse) {
+
 	std::ostringstream cmd;
 	cmd.imbue(std::locale::classic());
 	cmd << "AUTH " << mechName << " " << initialResponse;
@@ -92,61 +93,63 @@ shared_ptr <SMTPCommand> SMTPCommand::AUTH(const string& mechName, const std::st
 
 
 // static
-shared_ptr <SMTPCommand> SMTPCommand::STARTTLS()
-{
+shared_ptr <SMTPCommand> SMTPCommand::STARTTLS() {
+
 	return createCommand("STARTTLS");
 }
 
 
 // static
-shared_ptr <SMTPCommand> SMTPCommand::MAIL(const mailbox& mbox, const bool utf8)
-{
+shared_ptr <SMTPCommand> SMTPCommand::MAIL(const mailbox& mbox, const bool utf8) {
+
 	return MAIL(mbox, utf8, 0);
 }
 
 
 // static
-shared_ptr <SMTPCommand> SMTPCommand::MAIL(const mailbox& mbox, const bool utf8, const size_t size)
-{
+shared_ptr <SMTPCommand> SMTPCommand::MAIL(const mailbox& mbox, const bool utf8, const size_t size) {
+
 	std::ostringstream cmd;
 	cmd.imbue(std::locale::classic());
 	cmd << "MAIL FROM:<";
 
-	if (utf8)
-	{
+	if (utf8) {
+
 		cmd << mbox.getEmail().toText().getConvertedText(vmime::charsets::UTF_8);
-	}
-	else
-	{
+
+	} else {
+
 		vmime::utility::outputStreamAdapter cmd2(cmd);
 		mbox.getEmail().generate(cmd2);
 	}
 
 	cmd << ">";
 
-	if (utf8)
+	if (utf8) {
 		cmd << " SMTPUTF8";
+	}
 
-	if (size != 0)
+	if (size != 0) {
 		cmd << " SIZE=" << size;
+	}
 
 	return createCommand(cmd.str());
 }
 
 
 // static
-shared_ptr <SMTPCommand> SMTPCommand::RCPT(const mailbox& mbox, const bool utf8)
-{
+shared_ptr <SMTPCommand> SMTPCommand::RCPT(const mailbox& mbox, const bool utf8) {
+
 	std::ostringstream cmd;
 	cmd.imbue(std::locale::classic());
 	cmd << "RCPT TO:<";
 
-	if (utf8)
-	{
+	if (utf8) {
+
 		cmd << mbox.getEmail().toText().getConvertedText(vmime::charsets::UTF_8);
-	}
-	else
-	{
+
+	} else {
+
 		vmime::utility::outputStreamAdapter cmd2(cmd);
 		mbox.getEmail().generate(cmd2);
 	}
@@ -158,75 +161,78 @@ shared_ptr <SMTPCommand> SMTPCommand::RCPT(const mailbox& mbox, const bool utf8)
 
 
 // static
-shared_ptr <SMTPCommand> SMTPCommand::RSET()
-{
+shared_ptr <SMTPCommand> SMTPCommand::RSET() {
+
 	return createCommand("RSET");
 }
 
 
 // static
-shared_ptr <SMTPCommand> SMTPCommand::DATA()
-{
+shared_ptr <SMTPCommand> SMTPCommand::DATA() {
+
 	return createCommand("DATA");
 }
 
 
 // static
-shared_ptr <SMTPCommand> SMTPCommand::BDAT(const size_t chunkSize, const bool last)
-{
+shared_ptr <SMTPCommand> SMTPCommand::BDAT(const size_t chunkSize, const bool last) {
+
 	std::ostringstream cmd;
 	cmd.imbue(std::locale::classic());
 	cmd << "BDAT " << chunkSize;
 
-	if (last)
+	if (last) {
 		cmd << " LAST";
+	}
 
 	return createCommand(cmd.str());
 }
 
 
 // static
-shared_ptr <SMTPCommand> SMTPCommand::NOOP()
-{
+shared_ptr <SMTPCommand> SMTPCommand::NOOP() {
+
 	return createCommand("NOOP");
 }
 
 
 // static
-shared_ptr <SMTPCommand> SMTPCommand::QUIT()
-{
+shared_ptr <SMTPCommand> SMTPCommand::QUIT() {
+
 	return createCommand("QUIT");
 }
 
 
 // static
-shared_ptr <SMTPCommand> SMTPCommand::createCommand(const string& text, const string& traceText)
-{
-	if (traceText.empty())
+shared_ptr <SMTPCommand> SMTPCommand::createCommand(const string& text, const string& traceText) {
+
+	if (traceText.empty()) {
 		return shared_ptr <SMTPCommand>(new SMTPCommand(text, text));
-	else
+	} else {
 		return shared_ptr <SMTPCommand>(new SMTPCommand(text, traceText));
+	}
 }
 
 
-const string SMTPCommand::getText() const
-{
+const string SMTPCommand::getText() const {
+
 	return m_text;
 }
 
 
-const string SMTPCommand::getTraceText() const
-{
+const string SMTPCommand::getTraceText() const {
+
 	return m_traceText;
 }
 
 
-void SMTPCommand::writeToSocket(shared_ptr <socket> sok, shared_ptr <tracer> tr)
-{
+void SMTPCommand::writeToSocket(const shared_ptr <socket>& sok, shared_ptr <tracer> tr) {
+
 	sok->send(m_text + "\r\n");
 
-	if (tr)
+	if (tr) {
 		tr->traceSend(m_traceText);
+	}
 }
 
 

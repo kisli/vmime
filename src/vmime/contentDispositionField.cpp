@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -25,132 +25,136 @@
 #include "vmime/exception.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
-contentDispositionField::contentDispositionField()
-{
+contentDispositionField::contentDispositionField() {
+
 }
 
 
 contentDispositionField::contentDispositionField(contentDispositionField&)
-	: parameterizedHeaderField()
-{
+	: parameterizedHeaderField() {
+
 }
 
 
-bool contentDispositionField::hasCreationDate() const
-{
+bool contentDispositionField::hasCreationDate() const {
+
 	return hasParameter("creation-date");
 }
 
 
-const datetime contentDispositionField::getCreationDate() const
-{
+const datetime contentDispositionField::getCreationDate() const {
+
 	shared_ptr <parameter> param = findParameter("creation-date");
 
-	if (param)
+	if (param) {
 		return param->getValueAs <datetime>();
-	else
+	} else {
 		return datetime::now();
+	}
 }
 
 
-void contentDispositionField::setCreationDate(const datetime& creationDate)
-{
+void contentDispositionField::setCreationDate(const datetime& creationDate) {
+
 	getParameter("creation-date")->setValue(creationDate);
 }
 
 
-bool contentDispositionField::hasModificationDate() const
-{
+bool contentDispositionField::hasModificationDate() const {
+
 	return hasParameter("modification-date");
 }
 
 
-const datetime contentDispositionField::getModificationDate() const
-{
+const datetime contentDispositionField::getModificationDate() const {
+
 	shared_ptr <parameter> param = findParameter("modification-date");
 
-	if (param)
+	if (param) {
 		return param->getValueAs <datetime>();
-	else
+	} else {
 		return datetime::now();
+	}
 }
 
 
-void contentDispositionField::setModificationDate(const datetime& modificationDate)
-{
+void contentDispositionField::setModificationDate(const datetime& modificationDate) {
+
 	getParameter("modification-date")->setValue(modificationDate);
 }
 
 
-bool contentDispositionField::hasReadDate() const
-{
+bool contentDispositionField::hasReadDate() const {
+
 	return hasParameter("read-date");
 }
 
 
-const datetime contentDispositionField::getReadDate() const
-{
+const datetime contentDispositionField::getReadDate() const {
+
 	shared_ptr <parameter> param = findParameter("read-date");
 
-	if (param)
+	if (param) {
 		return param->getValueAs <datetime>();
-	else
+	} else {
 		return datetime::now();
+	}
 }
 
 
-void contentDispositionField::setReadDate(const datetime& readDate)
-{
+void contentDispositionField::setReadDate(const datetime& readDate) {
+
 	getParameter("read-date")->setValue(readDate);
 }
 
 
-bool contentDispositionField::hasFilename() const
-{
+bool contentDispositionField::hasFilename() const {
+
 	return hasParameter("filename");
 }
 
 
-const word contentDispositionField::getFilename() const
-{
+const word contentDispositionField::getFilename() const {
+
 	shared_ptr <parameter> param = findParameter("filename");
 
-	if (param)
+	if (param) {
 		return param->getValue();
-	else
+	} else {
 		return word();
+	}
 }
 
 
-void contentDispositionField::setFilename(const word& filename)
-{
+void contentDispositionField::setFilename(const word& filename) {
+
 	getParameter("filename")->setValue(filename);
 }
 
 
-bool contentDispositionField::hasSize() const
-{
+bool contentDispositionField::hasSize() const {
+
 	return hasParameter("size");
 }
 
 
-const string contentDispositionField::getSize() const
-{
+const string contentDispositionField::getSize() const {
+
 	shared_ptr <parameter> param = findParameter("size");
 
-	if (param)
+	if (param) {
 		return param->getValue().getBuffer();
-	else
+	} else {
 		return "";
+	}
 }
 
 
-void contentDispositionField::setSize(const string& size)
-{
+void contentDispositionField::setSize(const string& size) {
+
 	getParameter("size")->setValue(word(size, vmime::charsets::US_ASCII));
 }
 

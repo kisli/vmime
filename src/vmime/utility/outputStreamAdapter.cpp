@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -29,21 +29,20 @@ namespace utility {
 
 
 outputStreamAdapter::outputStreamAdapter(std::ostream& os)
-	: m_stream(os)
-{
+	: m_stream(os) {
+
 }
 
 
-void outputStreamAdapter::writeImpl
-	(const byte_t* const data, const size_t count)
-{
+void outputStreamAdapter::writeImpl(const byte_t* const data, const size_t count) {
+
 	m_stream.exceptions(std::ios_base::badbit);
 	m_stream.write(reinterpret_cast <const char*>(data), count);
 }
 
 
-void outputStreamAdapter::flush()
-{
+void outputStreamAdapter::flush() {
+
 	m_stream.exceptions(std::ios_base::badbit);
 	m_stream.flush();
 }
@@ -51,4 +50,3 @@ void outputStreamAdapter::flush()
 
 } // utility
 } // vmime
-

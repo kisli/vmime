@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -34,8 +34,8 @@ VMIME_TEST_SUITE_BEGIN(mailboxGroupTest)
 	VMIME_TEST_LIST_END
 
 
-	void testParseExtraWhitespaces()
-	{
+	void testParseExtraWhitespaces() {
+
 		vmime::mailboxGroup mgrp;
 		mgrp.parse(" \t group  : aaa <aaa@vmime.org>, bbb <bbb@vmime.org>");
 
@@ -49,8 +49,8 @@ VMIME_TEST_SUITE_BEGIN(mailboxGroupTest)
 		VASSERT_EQ("mbox2.name", "bbb", mgrp.getMailboxAt(1)->getName());
 	}
 
-	void testParseNoEndDelimiter()
-	{
+	void testParseNoEndDelimiter() {
+
 		vmime::addressList addrs;
 		addrs.parse("group: aaa <aaa@vmime.org>, bbb <bbb@vmime.org>");
 
@@ -70,8 +70,8 @@ VMIME_TEST_SUITE_BEGIN(mailboxGroupTest)
 		VASSERT_EQ("mbox2.name", "bbb", mgrp->getMailboxAt(1)->getName());
 	}
 
-	void testParseExtraChars()
-	{
+	void testParseExtraChars() {
+
 		vmime::mailboxGroup mgrp;
 		mgrp.parse("group: aaa <aaa@vmime.org>, bbb <bbb@vmime.org>; extra chars here...");
 
@@ -85,8 +85,8 @@ VMIME_TEST_SUITE_BEGIN(mailboxGroupTest)
 		VASSERT_EQ("mbox2.name", "bbb", mgrp.getMailboxAt(1)->getName());
 	}
 
-	void testEmptyGroup()
-	{
+	void testEmptyGroup() {
+
 		vmime::mailboxGroup mgrp;
 		mgrp.parse("Undisclosed recipients:;");
 

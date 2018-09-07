@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -36,9 +36,15 @@ namespace net {
 namespace maildir {
 
 
-maildirMessagePart::maildirMessagePart(shared_ptr <maildirMessagePart> parent, const size_t number, const bodyPart& part)
-	: m_parent(parent), m_header(null), m_number(number)
-{
+maildirMessagePart::maildirMessagePart(
+	const shared_ptr <maildirMessagePart>& parent,
+	const size_t number,
+	const bodyPart& part
+)
+	: m_parent(parent),
+	  m_header(null),
+	  m_number(number) {
+
 	m_headerParsedOffset = part.getHeader()->getParsedOffset();
 	m_headerParsedLength = part.getHeader()->getParsedLength();
 
@@ -51,98 +57,104 @@ maildirMessagePart::maildirMessagePart(shared_ptr <maildirMessagePart> parent, c
 }
 
 
-maildirMessagePart::~maildirMessagePart()
-{
+maildirMessagePart::~maildirMessagePart() {
+
 }
 
 
-void maildirMessagePart::initStructure(const bodyPart& part)
-{
-	if (part.getBody()->getPartList().size() == 0)
+void maildirMessagePart::initStructure(const bodyPart& part) {
+
+	if (part.getBody()->getPartList().size() == 0) {
+
 		m_structure = null;
-	else
-	{
-		m_structure = make_shared <maildirMessageStructure>
-			(dynamicCast <maildirMessagePart>(shared_from_this()),
-			 part.getBody()->getPartList());
+
+	} else {
+
+		m_structure = make_shared <maildirMessageStructure>(
+			dynamicCast <maildirMessagePart>(shared_from_this()), part.getBody()->getPartList()
+		);
 	}
 }
 
 
-shared_ptr <const messageStructure> maildirMessagePart::getStructure() const
-{
-	if (m_structure != NULL)
+shared_ptr <const messageStructure> maildirMessagePart::getStructure() const {
+
+	if (m_structure) {
 		return m_structure;
-	else
+	} else {
 		return maildirMessageStructure::emptyStructure();
+	}
 }
 
 
-shared_ptr <messageStructure> maildirMessagePart::getStructure()
-{
-	if (m_structure != NULL)
+shared_ptr <messageStructure> maildirMessagePart::getStructure() {
+
+	if (m_structure) {
 		return m_structure;
-	else
+	} else {
 		return maildirMessageStructure::emptyStructure();
+	}
 }
 
 
-const mediaType& maildirMessagePart::getType() const
-{
+const mediaType& maildirMessagePart::getType() const {
+
 	return m_mediaType;
 }
 
 
-size_t maildirMessagePart::getSize() const
-{
+size_t maildirMessagePart::getSize() const {
+
 	return m_size;
 }
 
 
-size_t maildirMessagePart::getNumber() const
-{
+size_t maildirMessagePart::getNumber() const {
+
 	return m_number;
 }
 
 
-shared_ptr <const header> maildirMessagePart::getHeader() const
-{
-	if (m_header == NULL)
+shared_ptr <const header> maildirMessagePart::getHeader() const {
+
+	if (!m_header) {
 		throw exceptions::unfetched_object();
-	else
+	} else {
 		return m_header;
+	}
 }
 
 
-header& maildirMessagePart::getOrCreateHeader()
-{
-	if (m_header != NULL)
+header& maildirMessagePart::getOrCreateHeader() {
+
+	if (m_header) {
 		return *m_header;
-	else
+	} else {
 		return *(m_header = make_shared <header>());
+	}
 }
 
 
-size_t maildirMessagePart::getHeaderParsedOffset() const
-{
+size_t maildirMessagePart::getHeaderParsedOffset() const {
+
 	return m_headerParsedOffset;
 }
 
 
-size_t maildirMessagePart::getHeaderParsedLength() const
-{
+size_t maildirMessagePart::getHeaderParsedLength() const {
+
 	return m_headerParsedLength;
 }
 
 
-size_t maildirMessagePart::getBodyParsedOffset() const
-{
+size_t maildirMessagePart::getBodyParsedOffset() const {
+
 	return m_bodyParsedOffset;
 }
 
 
-size_t maildirMessagePart::getBodyParsedLength() const
-{
+size_t maildirMessagePart::getBodyParsedLength() const {
+
 	return m_bodyParsedLength;
 }
 

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -43,28 +43,29 @@ namespace pop3 {
 
 
 POP3Command::POP3Command(const string& text, const string& traceText)
-	: m_text(text), m_traceText(traceText)
-{
+	: m_text(text),
+	  m_traceText(traceText) {
+
 }
 
 
 // static
-shared_ptr <POP3Command> POP3Command::CAPA()
-{
+shared_ptr <POP3Command> POP3Command::CAPA() {
+
 	return createCommand("CAPA");
 }
 
 
 // static
-shared_ptr <POP3Command> POP3Command::NOOP()
-{
+shared_ptr <POP3Command> POP3Command::NOOP() {
+
 	return createCommand("NOOP");
 }
 
 
 // static
-shared_ptr <POP3Command> POP3Command::AUTH(const string& mechName)
-{
+shared_ptr <POP3Command> POP3Command::AUTH(const string& mechName) {
+
 	std::ostringstream cmd;
 	cmd.imbue(std::locale::classic());
 	cmd << "AUTH " << mechName;
@@ -74,8 +75,8 @@ shared_ptr <POP3Command> POP3Command::AUTH(const string& mechName)
 
 
 // static
-shared_ptr <POP3Command> POP3Command::AUTH(const string& mechName, const string& initialResponse)
-{
+shared_ptr <POP3Command> POP3Command::AUTH(const string& mechName, const string& initialResponse) {
+
 	std::ostringstream cmd;
 	cmd.imbue(std::locale::classic());
 	cmd << "AUTH " << mechName << " " << initialResponse;
@@ -85,15 +86,15 @@ shared_ptr <POP3Command> POP3Command::AUTH(const string& mechName, const string&
 
 
 // static
-shared_ptr <POP3Command> POP3Command::STLS()
-{
+shared_ptr <POP3Command> POP3Command::STLS() {
+
 	return createCommand("STLS");
 }
 
 
 // static
-shared_ptr <POP3Command> POP3Command::APOP(const string& username, const string& digest)
-{
+shared_ptr <POP3Command> POP3Command::APOP(const string& username, const string& digest) {
+
 	std::ostringstream cmd;
 	cmd.imbue(std::locale::classic());
 	cmd << "APOP " << username << " " << digest;
@@ -103,8 +104,8 @@ shared_ptr <POP3Command> POP3Command::APOP(const string& username, const string&
 
 
 // static
-shared_ptr <POP3Command> POP3Command::USER(const string& username)
-{
+shared_ptr <POP3Command> POP3Command::USER(const string& username) {
+
 	std::ostringstream cmd;
 	cmd.imbue(std::locale::classic());
 	cmd << "USER " << username;
@@ -118,8 +119,8 @@ shared_ptr <POP3Command> POP3Command::USER(const string& username)
 
 
 // static
-shared_ptr <POP3Command> POP3Command::PASS(const string& password)
-{
+shared_ptr <POP3Command> POP3Command::PASS(const string& password) {
+
 	std::ostringstream cmd;
 	cmd.imbue(std::locale::classic());
 	cmd << "PASS " << password;
@@ -133,22 +134,22 @@ shared_ptr <POP3Command> POP3Command::PASS(const string& password)
 
 
 // static
-shared_ptr <POP3Command> POP3Command::STAT()
-{
+shared_ptr <POP3Command> POP3Command::STAT() {
+
 	return createCommand("STAT");
 }
 
 
 // static
-shared_ptr <POP3Command> POP3Command::LIST()
-{
+shared_ptr <POP3Command> POP3Command::LIST() {
+
 	return createCommand("LIST");
 }
 
 
 // static
-shared_ptr <POP3Command> POP3Command::LIST(const unsigned long msg)
-{
+shared_ptr <POP3Command> POP3Command::LIST(const unsigned long msg) {
+
 	std::ostringstream cmd;
 	cmd.imbue(std::locale::classic());
 	cmd << "LIST " << msg;
@@ -158,15 +159,15 @@ shared_ptr <POP3Command> POP3Command::LIST(const unsigned long msg)
 
 
 // static
-shared_ptr <POP3Command> POP3Command::UIDL()
-{
+shared_ptr <POP3Command> POP3Command::UIDL() {
+
 	return createCommand("UIDL");
 }
 
 
 // static
-shared_ptr <POP3Command> POP3Command::UIDL(const unsigned long msg)
-{
+shared_ptr <POP3Command> POP3Command::UIDL(const unsigned long msg) {
+
 	std::ostringstream cmd;
 	cmd.imbue(std::locale::classic());
 	cmd << "UIDL " << msg;
@@ -176,8 +177,8 @@ shared_ptr <POP3Command> POP3Command::UIDL(const unsigned long msg)
 
 
 // static
-shared_ptr <POP3Command> POP3Command::DELE(const unsigned long msg)
-{
+shared_ptr <POP3Command> POP3Command::DELE(const unsigned long msg) {
+
 	std::ostringstream cmd;
 	cmd.imbue(std::locale::classic());
 	cmd << "DELE " << msg;
@@ -187,8 +188,8 @@ shared_ptr <POP3Command> POP3Command::DELE(const unsigned long msg)
 
 
 // static
-shared_ptr <POP3Command> POP3Command::RETR(const unsigned long msg)
-{
+shared_ptr <POP3Command> POP3Command::RETR(const unsigned long msg) {
+
 	std::ostringstream cmd;
 	cmd.imbue(std::locale::classic());
 	cmd << "RETR " << msg;
@@ -198,8 +199,8 @@ shared_ptr <POP3Command> POP3Command::RETR(const unsigned long msg)
 
 
 // static
-shared_ptr <POP3Command> POP3Command::TOP(const unsigned long msg, const unsigned long lines)
-{
+shared_ptr <POP3Command> POP3Command::TOP(const unsigned long msg, const unsigned long lines) {
+
 	std::ostringstream cmd;
 	cmd.imbue(std::locale::classic());
 	cmd << "TOP " << msg << " " << lines;
@@ -209,48 +210,52 @@ shared_ptr <POP3Command> POP3Command::TOP(const unsigned long msg, const unsigne
 
 
 // static
-shared_ptr <POP3Command> POP3Command::RSET()
-{
+shared_ptr <POP3Command> POP3Command::RSET() {
+
 	return createCommand("RSET");
 }
 
 
 // static
-shared_ptr <POP3Command> POP3Command::QUIT()
-{
+shared_ptr <POP3Command> POP3Command::QUIT() {
+
 	return createCommand("QUIT");
 }
 
 
 // static
-shared_ptr <POP3Command> POP3Command::createCommand
-	(const string& text, const string& traceText)
-{
-	if (traceText.empty())
+shared_ptr <POP3Command> POP3Command::createCommand(
+	const string& text,
+	const string& traceText
+) {
+
+	if (traceText.empty()) {
 		return shared_ptr <POP3Command>(new POP3Command(text, text));
-	else
+	} else {
 		return shared_ptr <POP3Command>(new POP3Command(text, traceText));
+	}
 }
 
 
-const string POP3Command::getText() const
-{
+const string POP3Command::getText() const {
+
 	return m_text;
 }
 
 
-const string POP3Command::getTraceText() const
-{
+const string POP3Command::getTraceText() const {
+
 	return m_traceText;
 }
 
 
-void POP3Command::send(shared_ptr <POP3Connection> conn)
-{
+void POP3Command::send(const shared_ptr <POP3Connection>& conn) {
+
 	conn->getSocket()->send(m_text + "\r\n");
 
-	if (conn->getTracer())
+	if (conn->getTracer()) {
 		conn->getTracer()->traceSend(m_traceText);
+	}
 }
 
 

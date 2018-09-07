@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -42,13 +42,13 @@ namespace events {
 // event
 //
 
-event::event()
-{
+event::event() {
+
 }
 
 
-event::~event()
-{
+event::~event() {
+
 }
 
 
@@ -59,10 +59,14 @@ event::~event()
 const char* messageCountEvent::EVENT_CLASS = "messageCountEvent";
 
 
-messageCountEvent::messageCountEvent
-	(shared_ptr <folder> folder, const Types type, const std::vector <size_t>& nums)
-		: m_folder(folder), m_type(type)
-{
+messageCountEvent::messageCountEvent(
+	const shared_ptr <folder>& folder,
+	const Types type,
+	const std::vector <size_t>& nums
+)
+	: m_folder(folder),
+	  m_type(type) {
+
 	m_nums.resize(nums.size());
 	std::copy(nums.begin(), nums.end(), m_nums.begin());
 }
@@ -73,17 +77,18 @@ messageCountEvent::Types messageCountEvent::getType() const { return (m_type); }
 const std::vector <size_t>& messageCountEvent::getNumbers() const { return (m_nums); }
 
 
-void messageCountEvent::dispatch(messageCountListener* listener)
-{
-	if (m_type == TYPE_ADDED)
+void messageCountEvent::dispatch(messageCountListener* listener) {
+
+	if (m_type == TYPE_ADDED) {
 		listener->messagesAdded(dynamicCast <messageCountEvent>(shared_from_this()));
-	else
+	} else {
 		listener->messagesRemoved(dynamicCast <messageCountEvent>(shared_from_this()));
+	}
 }
 
 
-const char* messageCountEvent::getClass() const
-{
+const char* messageCountEvent::getClass() const {
+
 	return EVENT_CLASS;
 }
 
@@ -95,10 +100,14 @@ const char* messageCountEvent::getClass() const
 const char* messageChangedEvent::EVENT_CLASS = "messageChangedEvent";
 
 
-messageChangedEvent::messageChangedEvent
-	(shared_ptr <folder> folder, const Types type, const std::vector <size_t>& nums)
-		: m_folder(folder), m_type(type)
-{
+messageChangedEvent::messageChangedEvent(
+	const shared_ptr <folder>& folder,
+	const Types type,
+	const std::vector <size_t>& nums
+)
+	: m_folder(folder),
+	  m_type(type) {
+
 	m_nums.resize(nums.size());
 	std::copy(nums.begin(), nums.end(), m_nums.begin());
 }
@@ -109,14 +118,14 @@ messageChangedEvent::Types messageChangedEvent::getType() const { return (m_type
 const std::vector <size_t>& messageChangedEvent::getNumbers() const { return (m_nums); }
 
 
-void messageChangedEvent::dispatch(messageChangedListener* listener)
-{
+void messageChangedEvent::dispatch(messageChangedListener* listener) {
+
 	listener->messageChanged(dynamicCast <messageChangedEvent>(shared_from_this()));
 }
 
 
-const char* messageChangedEvent::getClass() const
-{
+const char* messageChangedEvent::getClass() const {
+
 	return EVENT_CLASS;
 }
 
@@ -128,11 +137,17 @@ const char* messageChangedEvent::getClass() const
 const char* folderEvent::EVENT_CLASS = "folderEvent";
 
 
-folderEvent::folderEvent
-	(shared_ptr <folder> folder, const Types type,
-	 const utility::path& oldPath, const utility::path& newPath)
-	: m_folder(folder), m_type(type), m_oldPath(oldPath), m_newPath(newPath)
-{
+folderEvent::folderEvent(
+	const shared_ptr <folder>& folder,
+	const Types type,
+	const utility::path& oldPath,
+	const utility::path& newPath
+)
+	: m_folder(folder),
+	  m_type(type),
+	  m_oldPath(oldPath),
+	  m_newPath(newPath) {
+
 }
 
 
@@ -140,19 +155,18 @@ shared_ptr <folder> folderEvent::getFolder() const { return (m_folder); }
 folderEvent::Types folderEvent::getType() const { return (m_type); }
 
 
-void folderEvent::dispatch(folderListener* listener)
-{
-	switch (m_type)
-	{
-	case TYPE_CREATED: listener->folderCreated(dynamicCast <folderEvent>(shared_from_this())); break;
-	case TYPE_RENAMED: listener->folderRenamed(dynamicCast <folderEvent>(shared_from_this())); break;
-	case TYPE_DELETED: listener->folderDeleted(dynamicCast <folderEvent>(shared_from_this())); break;
+void folderEvent::dispatch(folderListener* listener) {
+
+	switch (m_type) {
+		case TYPE_CREATED: listener->folderCreated(dynamicCast <folderEvent>(shared_from_this())); break;
+		case TYPE_RENAMED: listener->folderRenamed(dynamicCast <folderEvent>(shared_from_this())); break;
+		case TYPE_DELETED: listener->folderDeleted(dynamicCast <folderEvent>(shared_from_this())); break;
 	}
 }
 
 
-const char* folderEvent::getClass() const
-{
+const char* folderEvent::getClass() const {
+
 	return EVENT_CLASS;
 }
 

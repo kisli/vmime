@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -49,19 +49,19 @@ namespace smtp {
 
 /** A SMTP response, as sent by the server.
   */
-class VMIME_EXPORT SMTPResponse : public object
-{
+class VMIME_EXPORT SMTPResponse : public object {
+
 public:
 
 	/** Current state of response parser. */
-	struct state
-	{
+	struct state {
+
 		string responseBuffer;
 	};
 
 	/** Enhanced status code (as per RFC-3463). */
-	struct enhancedStatusCode
-	{
+	struct enhancedStatusCode {
+
 		enhancedStatusCode();
 		enhancedStatusCode(const enhancedStatusCode& enhCode);
 
@@ -71,8 +71,8 @@ public:
 	};
 
 	/** An element of a SMTP response. */
-	class responseLine
-	{
+	class responseLine {
+
 	public:
 
 		responseLine(const int code, const string& text, const enhancedStatusCode& enhCode);
@@ -104,9 +104,12 @@ public:
 	  * @throws exceptions::operation_timed_out if no data
 	  * has been received within the granted time
 	  */
-	static shared_ptr <SMTPResponse> readResponse
-		(shared_ptr <tracer> tr, shared_ptr <socket> sok,
-		 shared_ptr <timeoutHandler> toh, const state& st);
+	static shared_ptr <SMTPResponse> readResponse(
+		const shared_ptr <tracer>& tr,
+		const shared_ptr <socket>& sok,
+		const shared_ptr <timeoutHandler>& toh,
+		const state& st
+	);
 
 	/** Return the SMTP response code.
 	  *
@@ -154,7 +157,13 @@ public:
 
 private:
 
-	SMTPResponse(shared_ptr <tracer> tr, shared_ptr <socket> sok, shared_ptr <timeoutHandler> toh, const state& st);
+	SMTPResponse(
+		const shared_ptr <tracer>& tr,
+		const shared_ptr <socket>& sok,
+		const shared_ptr <timeoutHandler>& toh,
+		const state& st
+	);
+
 	SMTPResponse(const SMTPResponse&);
 
 	void readResponse();

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -34,9 +34,8 @@ namespace utility {
 
 /** An adapter for reading a limited region of a seekable input stream.
   */
+class VMIME_EXPORT seekableInputStreamRegionAdapter : public seekableInputStream {
 
-class VMIME_EXPORT seekableInputStreamRegionAdapter : public seekableInputStream
-{
 public:
 
 	/** Creates a new adapter for a seekableInputStream.
@@ -45,8 +44,11 @@ public:
 	  * @param begin start position in source stream
 	  * @param length region length in source stream
 	  */
-	seekableInputStreamRegionAdapter(shared_ptr <seekableInputStream> stream,
-		const size_t begin, const size_t length);
+	seekableInputStreamRegionAdapter(
+		const shared_ptr <seekableInputStream>& stream,
+		const size_t begin,
+		const size_t length
+	);
 
 	bool eof() const;
 	void reset();
@@ -69,4 +71,3 @@ private:
 
 
 #endif // VMIME_UTILITY_SEEKABLEINPUTSTREAMREGIONADAPTER_HPP_INCLUDED
-

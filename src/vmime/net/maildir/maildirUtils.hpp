@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -47,16 +47,15 @@ class maildirStore;
 
 /** Miscellaneous helpers functions for maildir messaging system.
   */
+class VMIME_EXPORT maildirUtils {
 
-class VMIME_EXPORT maildirUtils
-{
 public:
 
 	/** Comparator for message filenames, based only on the
 	  * unique identifier part of the filename.
 	  */
-	class messageIdComparator
-	{
+	class messageIdComparator {
+
 	public:
 
 		messageIdComparator(const utility::file::path::component& comp);
@@ -110,7 +109,10 @@ public:
 	  * @param flags flags part of the filename
 	  * @return message filename
 	  */
-	static const utility::file::path::component buildFilename(const utility::file::path::component& id, const utility::file::path::component& flags);
+	static const utility::file::path::component buildFilename(
+		const utility::file::path::component& id,
+		const utility::file::path::component& flags
+	);
 
 	/** Build a filename with the specified id and flags.
 	  *
@@ -118,7 +120,10 @@ public:
 	  * @param flags set of flags
 	  * @return message filename
 	  */
-	static const utility::file::path::component buildFilename(const utility::file::path::component& id, const int flags);
+	static const utility::file::path::component buildFilename(
+		const utility::file::path::component& id,
+		const int flags
+	);
 
 	/** Generate a new unique message identifier.
 	  *
@@ -130,7 +135,7 @@ public:
 	  *
 	  * @param dir directory to delete
 	  */
-	static void recursiveFSDelete(shared_ptr <utility::file> dir);
+	static void recursiveFSDelete(const shared_ptr <utility::file>& dir);
 
 	/** Returns a list of message numbers given a message set.
 	  *
@@ -138,7 +143,10 @@ public:
 	  * @param msgCount number of messages in folder
 	  * @return list of message numbers
 	  */
-	static const std::vector <size_t> messageSetToNumberList(const messageSet& msgs, const size_t msgCount);
+	static const std::vector <size_t> messageSetToNumberList(
+		const messageSet& msgs,
+		const size_t msgCount
+	);
 };
 
 

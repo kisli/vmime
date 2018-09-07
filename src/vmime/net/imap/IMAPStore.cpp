@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -44,130 +44,148 @@ namespace net {
 namespace imap {
 
 
-IMAPStore::IMAPStore(shared_ptr <session> sess, shared_ptr <security::authenticator> auth, const bool secured)
-	: store(sess, getInfosInstance(), auth), m_connection(null), m_isIMAPS(secured)
-{
+IMAPStore::IMAPStore(
+	const shared_ptr <session>& sess,
+	const shared_ptr <security::authenticator>& auth,
+	const bool secured
+)
+	: store(sess, getInfosInstance(), auth),
+	  m_connection(null),
+	  m_isIMAPS(secured) {
+
 }
 
 
-IMAPStore::~IMAPStore()
-{
-	try
-	{
-		if (isConnected())
+IMAPStore::~IMAPStore() {
+
+	try {
+
+		if (isConnected()) {
 			disconnect();
-	}
-	catch (...)
-	{
+		}
+
+	} catch (...) {
+
 		// Don't throw in destructor
 	}
 }
 
 
-const string IMAPStore::getProtocolName() const
-{
+const string IMAPStore::getProtocolName() const {
+
 	return "imap";
 }
 
 
-shared_ptr <folder> IMAPStore::getRootFolder()
-{
-	if (!isConnected())
-		throw exceptions::illegal_state("Not connected");
+shared_ptr <folder> IMAPStore::getRootFolder() {
 
-	return shared_ptr <IMAPFolder>
-		(new IMAPFolder(folder::path(),
-		                dynamicCast <IMAPStore>(shared_from_this()),
-		                shared_ptr <folderAttributes>()));
+	if (!isConnected()) {
+		throw exceptions::illegal_state("Not connected");
+	}
+
+	return make_shared <IMAPFolder>(
+		folder::path(),
+		dynamicCast <IMAPStore>(shared_from_this()),
+		shared_ptr <folderAttributes>()
+	);
 }
 
 
-shared_ptr <folder> IMAPStore::getDefaultFolder()
-{
-	if (!isConnected())
-		throw exceptions::illegal_state("Not connected");
+shared_ptr <folder> IMAPStore::getDefaultFolder() {
 
-	return shared_ptr <IMAPFolder>
-		(new IMAPFolder(folder::path::component("INBOX"),
-		                dynamicCast <IMAPStore>(shared_from_this()),
-		                shared_ptr <folderAttributes>()));
+	if (!isConnected()) {
+		throw exceptions::illegal_state("Not connected");
+	}
+
+	return make_shared <IMAPFolder>(
+		folder::path::component("INBOX"),
+		dynamicCast <IMAPStore>(shared_from_this()),
+		shared_ptr <folderAttributes>()
+	);
 }
 
 
-shared_ptr <folder> IMAPStore::getFolder(const folder::path& path)
-{
-	if (!isConnected())
-		throw exceptions::illegal_state("Not connected");
+shared_ptr <folder> IMAPStore::getFolder(const folder::path& path) {
 
-	return shared_ptr <IMAPFolder>
-		(new IMAPFolder(path,
-		                dynamicCast <IMAPStore>(shared_from_this()),
-		                shared_ptr <folderAttributes>()));
+	if (!isConnected()) {
+		throw exceptions::illegal_state("Not connected");
+	}
+
+	return make_shared <IMAPFolder>(
+		path,
+		dynamicCast <IMAPStore>(shared_from_this()),
+		shared_ptr <folderAttributes>()
+	);
 }
 
 
-bool IMAPStore::isValidFolderName(const folder::path::component& /* name */) const
-{
+bool IMAPStore::isValidFolderName(const folder::path::component& /* name */) const {
+
 	return true;
 }
 
 
-void IMAPStore::connect()
-{
-	if (isConnected())
-		throw exceptions::already_connected();
+void IMAPStore::connect() {
 
-	m_connection = make_shared <IMAPConnection>
-		(dynamicCast <IMAPStore>(shared_from_this()), getAuthenticator());
+	if (isConnected()) {
+		throw exceptions::already_connected();
+	}
+
+	m_connection = make_shared <IMAPConnection>(
+		dynamicCast <IMAPStore>(shared_from_this()), getAuthenticator()
+	);
 
 	m_connection->connect();
 }
 
 
-bool IMAPStore::isConnected() const
-{
-	return (m_connection && m_connection->isConnected());
+bool IMAPStore::isConnected() const {
+
+	return m_connection && m_connection->isConnected();
 }
 
 
-bool IMAPStore::isIMAPS() const
-{
+bool IMAPStore::isIMAPS() const {
+
 	return m_isIMAPS;
 }
 
 
-bool IMAPStore::isSecuredConnection() const
-{
-	if (m_connection == NULL)
+bool IMAPStore::isSecuredConnection() const {
+
+	if (!m_connection) {
 		return false;
+	}
 
 	return m_connection->isSecuredConnection();
 }
 
 
-shared_ptr <connectionInfos> IMAPStore::getConnectionInfos() const
-{
-	if (m_connection == NULL)
+shared_ptr <connectionInfos> IMAPStore::getConnectionInfos() const {
+
+	if (!m_connection) {
 		return null;
+	}
 
 	return m_connection->getConnectionInfos();
 }
 
 
-shared_ptr <IMAPConnection> IMAPStore::getConnection()
-{
+shared_ptr <IMAPConnection> IMAPStore::getConnection() {
+
 	return m_connection;
 }
 
 
-void IMAPStore::disconnect()
-{
-	if (!isConnected())
+void IMAPStore::disconnect() {
+
+	if (!isConnected()) {
 		throw exceptions::not_connected();
+	}
 
 	for (std::list <IMAPFolder*>::iterator it = m_folders.begin() ;
-	     it != m_folders.end() ; ++it)
-	{
+	     it != m_folders.end() ; ++it) {
+
 		(*it)->onStoreDisconnected();
 	}
 
@@ -180,60 +198,65 @@ void IMAPStore::disconnect()
 }
 
 
-void IMAPStore::noop()
-{
-	if (!isConnected())
+void IMAPStore::noop() {
+
+	if (!isConnected()) {
 		throw exceptions::not_connected();
+	}
 
 	IMAPCommand::NOOP()->send(m_connection);
 
 	scoped_ptr <IMAPParser::response> resp(m_connection->readResponse());
 
 	if (resp->isBad() || resp->response_done()->response_tagged()->
-			resp_cond_state()->status() != IMAPParser::resp_cond_state::OK)
-	{
+			resp_cond_state()->status() != IMAPParser::resp_cond_state::OK) {
+
 		throw exceptions::command_error("NOOP", resp->getErrorLog());
 	}
 
 
 	for (std::list <IMAPFolder*>::iterator it = m_folders.begin() ;
-	     it != m_folders.end() ; ++it)
-	{
-		if ((*it)->isOpen())
+	     it != m_folders.end() ; ++it) {
+
+		if ((*it)->isOpen()) {
 			(*it)->noop();
+		}
 	}
 }
 
 
-shared_ptr <IMAPConnection> IMAPStore::connection()
-{
-	return (m_connection);
+shared_ptr <IMAPConnection> IMAPStore::connection() {
+
+	return m_connection;
 }
 
 
-void IMAPStore::registerFolder(IMAPFolder* folder)
-{
+void IMAPStore::registerFolder(IMAPFolder* folder) {
+
 	m_folders.push_back(folder);
 }
 
 
-void IMAPStore::unregisterFolder(IMAPFolder* folder)
-{
+void IMAPStore::unregisterFolder(IMAPFolder* folder) {
+
 	std::list <IMAPFolder*>::iterator it = std::find(m_folders.begin(), m_folders.end(), folder);
-	if (it != m_folders.end()) m_folders.erase(it);
+
+	if (it != m_folders.end()) {
+		m_folders.erase(it);
+	}
 }
 
 
-int IMAPStore::getCapabilities() const
-{
-	return (CAPABILITY_CREATE_FOLDER |
-	        CAPABILITY_RENAME_FOLDER |
-	        CAPABILITY_ADD_MESSAGE |
-	        CAPABILITY_COPY_MESSAGE |
-	        CAPABILITY_DELETE_MESSAGE |
-	        CAPABILITY_PARTIAL_FETCH |
-	        CAPABILITY_MESSAGE_FLAGS |
-	        CAPABILITY_EXTRACT_PART);
+int IMAPStore::getCapabilities() const {
+
+	return CAPABILITY_CREATE_FOLDER |
+	       CAPABILITY_RENAME_FOLDER |
+	       CAPABILITY_ADD_MESSAGE |
+	       CAPABILITY_COPY_MESSAGE |
+	       CAPABILITY_DELETE_MESSAGE |
+	       CAPABILITY_PARTIAL_FETCH |
+	       CAPABILITY_MESSAGE_FLAGS |
+	       CAPABILITY_EXTRACT_PART;
 }
 
 
@@ -243,14 +266,14 @@ int IMAPStore::getCapabilities() const
 IMAPServiceInfos IMAPStore::sm_infos(false);
 
 
-const serviceInfos& IMAPStore::getInfosInstance()
-{
+const serviceInfos& IMAPStore::getInfosInstance() {
+
 	return sm_infos;
 }
 
 
-const serviceInfos& IMAPStore::getInfos() const
-{
+const serviceInfos& IMAPStore::getInfos() const {
+
 	return sm_infos;
 }
 

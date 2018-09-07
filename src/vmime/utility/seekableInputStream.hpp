@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -34,9 +34,8 @@ namespace utility {
 
 /** An input stream that allows seeking within the input.
   */
+class VMIME_EXPORT seekableInputStream : public inputStream {
 
-class VMIME_EXPORT seekableInputStream : public inputStream
-{
 public:
 
 	/** Returns the current position in this stream.
@@ -61,4 +60,3 @@ public:
 
 
 #endif // VMIME_UTILITY_SEEKABLEINPUTSTREAM_HPP_INCLUDED
-

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -33,16 +33,14 @@
 #ifndef VMIME_BUILDING_DOC
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 /** Work-around for malformed header fields that are of type 'mailbox'
   * and contains multiple addresses.
   */
+class VMIME_EXPORT mailboxField : public headerField {
 
-class VMIME_EXPORT mailboxField : public headerField
-{
 	friend class headerFieldFactory;
 
 protected:
@@ -52,9 +50,13 @@ protected:
 
 public:
 
-	void parse(const parsingContext& ctx, const string& buffer,
-		const size_t position, const size_t end,
-		size_t * newPosition = NULL);
+	void parse(
+		const parsingContext& ctx,
+		const string& buffer,
+		const size_t position,
+		const size_t end,
+		size_t * newPosition = NULL
+	);
 };
 
 
@@ -65,4 +67,3 @@ public:
 
 
 #endif // VMIME_MAILBOXFIELD_HPP_INCLUDED
-

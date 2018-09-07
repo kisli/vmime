@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -52,11 +52,11 @@ class IMAPStore;
 class IMAPCommand;
 
 
-class VMIME_EXPORT IMAPConnection : public object, public enable_shared_from_this <IMAPConnection>
-{
+class VMIME_EXPORT IMAPConnection : public object, public enable_shared_from_this <IMAPConnection> {
+
 public:
 
-	IMAPConnection(shared_ptr <IMAPStore> store, shared_ptr <security::authenticator> auth);
+	IMAPConnection(const shared_ptr <IMAPStore>& store, const shared_ptr <security::authenticator>& auth);
 	~IMAPConnection();
 
 
@@ -65,8 +65,7 @@ public:
 	void disconnect();
 
 
-	enum ProtocolStates
-	{
+	enum ProtocolStates {
 		STATE_NONE,
 		STATE_NON_AUTHENTICATED,
 		STATE_AUTHENTICATED,
@@ -81,7 +80,7 @@ public:
 	char hierarchySeparator() const;
 
 
-	void sendCommand(shared_ptr <IMAPCommand> cmd);
+	void sendCommand(const shared_ptr <IMAPCommand>& cmd);
 	void sendRaw(const byte_t* buffer, const size_t count);
 
 	IMAPParser::response* readResponse(IMAPParser::literalHandler* lh = NULL);
@@ -104,7 +103,7 @@ public:
 	shared_ptr <connectionInfos> getConnectionInfos() const;
 
 	shared_ptr <const socket> getSocket() const;
-	void setSocket(shared_ptr <socket> sok);
+	void setSocket(const shared_ptr <socket>& sok);
 
 	shared_ptr <tracer> getTracer();
 

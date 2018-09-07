@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -42,8 +42,8 @@ namespace cert {
 
 /** Verify that a certificate path issued by a server can be trusted.
   */
-class VMIME_EXPORT certificateVerifier : public object
-{
+class VMIME_EXPORT certificateVerifier : public object {
+
 public:
 
 	/** Verify that the specified certificate chain is trusted.
@@ -63,7 +63,7 @@ public:
 	  * @throw serverIdentityException if the subject name of the certificate
 	  * does not match the hostname of the server
 	  */
-	virtual void verify(shared_ptr <certificateChain> chain, const string& hostname) = 0;
+	virtual void verify(const shared_ptr <certificateChain>& chain, const string& hostname) = 0;
 };
 
 

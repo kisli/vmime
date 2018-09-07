@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -23,25 +23,32 @@
 
 
 // Helper function to obtain an encoder given its name
-static vmime::shared_ptr <vmime::utility::encoder::encoder> getEncoder(const vmime::string& name,
-	 int maxLineLength = 0, const vmime::propertySet props = vmime::propertySet())
-{
+static vmime::shared_ptr <vmime::utility::encoder::encoder> getEncoder(
+	const vmime::string& name,
+	int maxLineLength = 0,
+	const vmime::propertySet props = vmime::propertySet()
+) {
+
 	vmime::shared_ptr <vmime::utility::encoder::encoder> enc =
 		vmime::utility::encoder::encoderFactory::getInstance()->create(name);
 
 	enc->getProperties() = props;
 
-	if (maxLineLength != 0)
+	if (maxLineLength != 0) {
 		enc->getProperties()["maxlinelength"] = maxLineLength;
+	}
 
 	return enc;
 }
 
 
 // Encoding helper function
-static const vmime::string encode(const vmime::string& name, const vmime::string& in,
-	int maxLineLength = 0, const vmime::propertySet props = vmime::propertySet())
-{
+static const vmime::string encode(
+	const vmime::string& name, const vmime::string& in,
+	int maxLineLength = 0,
+	const vmime::propertySet props = vmime::propertySet()
+) {
+
 	vmime::shared_ptr <vmime::utility::encoder::encoder> enc = getEncoder(name, maxLineLength, props);
 
 	vmime::utility::inputStreamStringAdapter vin(in);
@@ -56,8 +63,12 @@ static const vmime::string encode(const vmime::string& name, const vmime::string
 
 
 // Decoding helper function
-static const vmime::string decode(const vmime::string& name, const vmime::string& in, int maxLineLength = 0)
-{
+static const vmime::string decode(
+	const vmime::string& name,
+	const vmime::string& in,
+	int maxLineLength = 0
+) {
+
 	vmime::shared_ptr <vmime::utility::encoder::encoder> enc = getEncoder(name, maxLineLength);
 
 	vmime::utility::inputStreamStringAdapter vin(in);

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -33,10 +33,10 @@ VMIME_TEST_SUITE_BEGIN(b64EncoderTest)
 	VMIME_TEST_LIST_END
 
 
-	void testBase64()
-	{
-		static const vmime::string testSuites[] =
-		{
+	void testBase64() {
+
+		static const vmime::string testSuites[] = {
+
 			// Test 1
 			"",
 
@@ -96,8 +96,8 @@ VMIME_TEST_SUITE_BEGIN(b64EncoderTest)
 		};
 
 
-		for (unsigned int i = 0 ; i < sizeof(testSuites) / sizeof(testSuites[0]) / 2 ; ++i)
-		{
+		for (unsigned int i = 0 ; i < sizeof(testSuites) / sizeof(testSuites[0]) / 2 ; ++i) {
+
 			const vmime::string decoded = testSuites[i * 2];
 			const vmime::string encoded = testSuites[i * 2 + 1];
 
@@ -111,25 +111,36 @@ VMIME_TEST_SUITE_BEGIN(b64EncoderTest)
 			VASSERT_EQ(oss.str() + "decoding", decoded, decode("base64", encoded));
 
 			// Multiple and successive encoding/decoding
-			VASSERT_EQ(oss.str() + "multiple1", decoded,
+			VASSERT_EQ(
+				oss.str() + "multiple1",
+				decoded,
 				decode("base64",
-					encode("base64", decoded)));
+					encode("base64", decoded))
+			);
 
-			VASSERT_EQ(oss.str() + "multiple2", decoded,
+			VASSERT_EQ(
+				oss.str() + "multiple2",
+				decoded,
 				decode("base64",
 					decode("base64",
 						encode("base64",
-							encode("base64", decoded)))));
+							encode("base64", decoded))))
+			);
 
-			VASSERT_EQ(oss.str() + "multiple3", decoded,
+			VASSERT_EQ(
+				oss.str() + "multiple3",
+				decoded,
 				decode("base64",
 					decode("base64",
 						decode("base64",
 							encode("base64",
 								encode("base64",
-									encode("base64", decoded)))))));
+									encode("base64", decoded))))))
+			);
 
-			VASSERT_EQ(oss.str() + "multiple4", decoded,
+			VASSERT_EQ(
+				oss.str() + "multiple4",
+				decoded,
 				decode("base64",
 					decode("base64",
 						decode("base64",
@@ -137,17 +148,21 @@ VMIME_TEST_SUITE_BEGIN(b64EncoderTest)
 								encode("base64",
 									encode("base64",
 										encode("base64",
-											encode("base64", decoded)))))))));
+											encode("base64", decoded))))))))
+			);
 
-			VASSERT(oss.str() + "encoded size",
+			VASSERT(
+				oss.str() + "encoded size",
 				getEncoder("base64")->getEncodedSize(decoded.length())
-				>= encode("base64", decoded).length());
+					>= encode("base64", decoded).length()
+			);
 
-			VASSERT(oss.str() + "decoded size",
+			VASSERT(
+				oss.str() + "decoded size",
 				getEncoder("base64")->getDecodedSize(encoded.length())
-				>= decode("base64", encoded).length());
+					>= decode("base64", encoded).length()
+			);
 		}
 	}
 
 VMIME_TEST_SUITE_END
-

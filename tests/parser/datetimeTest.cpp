@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -33,10 +33,9 @@ VMIME_TEST_SUITE_BEGIN(datetimeTest)
 	VMIME_TEST_LIST_END
 
 
-	void testParse()
-	{
-		struct datetimePair
-		{
+	void testParse() {
+
+		struct datetimePair {
 			vmime::string parseBuffer;
 			vmime::datetime result;
 		};
@@ -45,8 +44,8 @@ VMIME_TEST_SUITE_BEGIN(datetimeTest)
 		// so we test some cases. Don't forget to add a new test case
 		// each time you encounter a bug in date/time parsing (after
 		// you have fixed it).
-		datetimePair pairs[] =
-		{
+		datetimePair pairs[] = {
+
 			{ /* 1 */ "Mon, 8 Nov 2004 13:42:56 +0000 (GMT)",
 			  vmime::datetime(2004, 11, 8, 13, 42, 56, vmime::datetime::GMT) },
 
@@ -66,8 +65,8 @@ VMIME_TEST_SUITE_BEGIN(datetimeTest)
 			  vmime::datetime(2004, 11, 18, 21, 44, 54, vmime::datetime::GMT3) }
 		};
 
-		for (unsigned int i = 0 ; i < sizeof(pairs) / sizeof(pairs[0]) ; ++i)
-		{
+		for (unsigned int i = 0 ; i < sizeof(pairs) / sizeof(pairs[0]) ; ++i) {
+
 			vmime::datetime d;
 			d.parse(pairs[i].parseBuffer);
 
@@ -78,15 +77,15 @@ VMIME_TEST_SUITE_BEGIN(datetimeTest)
 		}
 	}
 
-	void testGenerate()
-	{
+	void testGenerate() {
+
 		vmime::datetime d1(2005, 7, 8, 4, 5, 6, 1 * 60 + 23);
 
 		VASSERT_EQ("1", "Fri, 8 Jul 2005 04:05:06 +0123", d1.generate());
 	}
 
-	void testCompare()
-	{
+	void testCompare() {
+
 		// Date1 = Date2
 		vmime::datetime d1(2005, 4, 22, 14, 6, 0, vmime::datetime::GMT2);
 		vmime::datetime d2(2005, 4, 22, 10, 6, 0, vmime::datetime::GMT_2);
@@ -122,4 +121,3 @@ VMIME_TEST_SUITE_BEGIN(datetimeTest)
 	}
 
 VMIME_TEST_SUITE_END
-

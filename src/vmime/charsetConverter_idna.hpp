@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -28,15 +28,13 @@
 #include "vmime/charsetConverter.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 /** A charset converter which can convert to and from Punycode (for IDNA).
   */
+class charsetConverter_idna : public charsetConverter {
 
-class charsetConverter_idna : public charsetConverter
-{
 public:
 
 	/** Construct and initialize an IDNA charset converter.
@@ -45,17 +43,21 @@ public:
 	  * @param dest output charset
 	  * @param opts conversion options
 	  */
-	charsetConverter_idna(const charset& source, const charset& dest,
-		const charsetConverterOptions& opts = charsetConverterOptions());
+	charsetConverter_idna(
+		const charset& source,
+		const charset& dest,
+		const charsetConverterOptions& opts = charsetConverterOptions()
+	);
 
 	~charsetConverter_idna();
 
 	void convert(const string& in, string& out, status* st = NULL);
 	void convert(utility::inputStream& in, utility::outputStream& out, status* st = NULL);
 
-	shared_ptr <utility::charsetFilteredOutputStream> getFilteredOutputStream
-		(utility::outputStream& os,
-		 const charsetConverterOptions& opts = charsetConverterOptions());
+	shared_ptr <utility::charsetFilteredOutputStream> getFilteredOutputStream(
+		utility::outputStream& os,
+		const charsetConverterOptions& opts = charsetConverterOptions()
+	);
 
 private:
 

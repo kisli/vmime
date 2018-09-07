@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -42,14 +42,13 @@ namespace net {
 
 /** Holds a set of attributes to fetch for a message.
   */
-class VMIME_EXPORT fetchAttributes : public object
-{
+class VMIME_EXPORT fetchAttributes : public object {
+
 public:
 
 	/** Predefined attributes that can be fetched.
 	  */
-	enum PredefinedFetchAttributes
-	{
+	enum PredefinedFetchAttributes {
 		ENVELOPE = (1 << 0),       /**< Sender, recipients, date, subject. */
 		STRUCTURE = (1 << 1),      /**< MIME structure (body parts). */
 		CONTENT_INFO = (1 << 2),   /**< Top-level content type. */
@@ -114,8 +113,7 @@ public:
 	  * @param attribs one or more OR-ed values of the PredefinedFetchAttributes enum
 	  * @return true if the specified attributes are to be fetched
 	  */
-	VMIME_DEPRECATED inline bool operator&(const int attribs) const
-	{
+	VMIME_DEPRECATED inline bool operator&(const int attribs) const {
 		return has(attribs);
 	}
 

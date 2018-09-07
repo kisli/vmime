@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -46,8 +46,8 @@ namespace pop3 {
 class POP3Response;
 
 
-class VMIME_EXPORT POP3Utils
-{
+class VMIME_EXPORT POP3Utils {
+
 public:
 
 	/** Parse a response of type ([integer] [string] \n)*.
@@ -63,8 +63,10 @@ public:
 	  * @param result points to an associative array which maps a message
 	  * number to its corresponding data (either UID or size)
 	  */
-	static void parseMultiListOrUidlResponse
-		(shared_ptr <POP3Response> response, std::map <size_t, string>& result);
+	static void parseMultiListOrUidlResponse(
+		const shared_ptr <POP3Response>& response,
+		std::map <size_t, string>& result
+	);
 
 	/** Returns a list of message numbers given a message set.
 	  *
@@ -72,7 +74,10 @@ public:
 	  * @param msgCount number of messages in folder
 	  * @return list of message numbers
 	  */
-	static const std::vector <size_t> messageSetToNumberList(const messageSet& msgs, const size_t msgCount);
+	static const std::vector <size_t> messageSetToNumberList(
+		const messageSet& msgs,
+		const size_t msgCount
+	);
 };
 
 

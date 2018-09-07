@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2014 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -40,8 +40,8 @@ VMIME_TEST_SUITE_BEGIN(folderAttributesTest)
 	VMIME_TEST_LIST_END
 
 
-	void testConstruct()
-	{
+	void testConstruct() {
+
 		vmime::net::folderAttributes attr;
 
 		// Default values
@@ -52,8 +52,8 @@ VMIME_TEST_SUITE_BEGIN(folderAttributesTest)
 		VASSERT_EQ("special-use", vmime::net::folderAttributes::SPECIALUSE_NONE, attr.getSpecialUse());
 	}
 
-	void testConstructCopy()
-	{
+	void testConstructCopy() {
+
 		std::vector <vmime::string> userFlags;
 		userFlags.push_back("\\XMyFlag1");
 		userFlags.push_back("\\XMyFlag2");
@@ -70,24 +70,24 @@ VMIME_TEST_SUITE_BEGIN(folderAttributesTest)
 		VASSERT("user-flags", attr2.getUserFlags() == attr.getUserFlags());
 	}
 
-	void testSetType()
-	{
+	void testSetType() {
+
 		vmime::net::folderAttributes attr;
 		attr.setType(vmime::net::folderAttributes::TYPE_CONTAINS_FOLDERS);
 
 		VASSERT_EQ("eq", vmime::net::folderAttributes::TYPE_CONTAINS_FOLDERS, attr.getType());
 	}
 
-	void testSetFlags()
-	{
+	void testSetFlags() {
+
 		vmime::net::folderAttributes attr;
 		attr.setFlags(vmime::net::folderAttributes::FLAG_HAS_CHILDREN);
 
 		VASSERT_EQ("eq", vmime::net::folderAttributes::FLAG_HAS_CHILDREN, attr.getFlags());
 	}
 
-	void testHasFlag()
-	{
+	void testHasFlag() {
+
 		vmime::net::folderAttributes attr;
 		attr.setFlags(vmime::net::folderAttributes::FLAG_HAS_CHILDREN);
 
@@ -95,8 +95,8 @@ VMIME_TEST_SUITE_BEGIN(folderAttributesTest)
 		VASSERT("has-not", !attr.hasFlag(vmime::net::folderAttributes::FLAG_NO_OPEN));
 	}
 
-	void testSetUserFlags()
-	{
+	void testSetUserFlags() {
+
 		std::vector <vmime::string> userFlags;
 		userFlags.push_back("\\XMyFlag1");
 		userFlags.push_back("\\XMyFlag2");
@@ -108,8 +108,8 @@ VMIME_TEST_SUITE_BEGIN(folderAttributesTest)
 		VASSERT("eq", attr.getUserFlags() == userFlags);
 	}
 
-	void testHasUserFlag()
-	{
+	void testHasUserFlag() {
+
 		std::vector <vmime::string> userFlags;
 		userFlags.push_back("\\XMyFlag1");
 		userFlags.push_back("\\XMyFlag2");
@@ -123,8 +123,8 @@ VMIME_TEST_SUITE_BEGIN(folderAttributesTest)
 		VASSERT("has-not", !attr.hasUserFlag("\\XMyFlag4"));
 	}
 
-	void testSetSpecialUse()
-	{
+	void testSetSpecialUse() {
+
 		const int use = vmime::net::folderAttributes::SPECIALUSE_JUNK
 			| vmime::net::folderAttributes::SPECIALUSE_TRASH;
 

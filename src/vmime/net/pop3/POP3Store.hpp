@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -51,15 +51,19 @@ class POP3Response;
 
 /** POP3 store service.
   */
+class VMIME_EXPORT POP3Store : public store {
 
-class VMIME_EXPORT POP3Store : public store
-{
 	friend class POP3Folder;
 	friend class POP3Message;
 
 public:
 
-	POP3Store(shared_ptr <session> sess, shared_ptr <security::authenticator> auth, const bool secured = false);
+	POP3Store(
+		const shared_ptr <session>& sess,
+		const shared_ptr <security::authenticator>& auth,
+		const bool secured = false
+	);
+
 	~POP3Store();
 
 	const string getProtocolName() const;

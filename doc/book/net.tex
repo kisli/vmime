@@ -300,10 +300,10 @@ The following example shows how to use a custom authenticator to request
 the user to enter her/his credentials:
 
 \begin{lstlisting}[caption={A simple interactive authenticator}]
-class myAuthenticator : public vmime::security::defaultAuthenticator
-{
-   const string getUsername() const
-   {
+class myAuthenticator : public vmime::security::defaultAuthenticator {
+
+   const string getUsername() const {
+
       std::cout << "Enter your username: " << std::endl;
 
       vmime::string res;
@@ -312,8 +312,8 @@ class myAuthenticator : public vmime::security::defaultAuthenticator
       return res;
    }
 
-   const string getPassword() const
-   {
+   const string getPassword() const {
+
       std::cout << "Enter your password: " << std::endl;
 
       vmime::string res;
@@ -331,9 +331,10 @@ This is how to use it:
 vmime::shared_ptr <vmime::net::session> sess = vmime::net::session::create();
 
 // Next, initialize a service which will use our authenticator
-vmime::shared_ptr <vmime::net::store> st =
-   sess->getStore(vmime::utility::url("imap://imap.example.com"),
-      /* use our authenticator */ vmime::make_shared <myAuthenticator>());
+vmime::shared_ptr <vmime::net::store> st = sess->getStore(
+   vmime::utility::url("imap://imap.example.com"),
+   /* use our authenticator */ vmime::make_shared <myAuthenticator>()
+);
 \end{lstlisting}
 
 \vnote{An authenticator object should be used with one and only one service
@@ -354,14 +355,15 @@ use the SASL-specific methods {\vcode getAcceptableMechanisms()} and
 implementation of an SASL authenticator.
 
 \begin{lstlisting}[caption={A simple SASL authenticator}]
-class mySASLAuthenticator : public vmime::security::sasl::defaultSASLAuthenticator
-{
+class mySASLAuthenticator : public vmime::security::sasl::defaultSASLAuthenticator {
+
    typedef vmime::security::sasl::SASLMechanism mechanism;  // save us typing
 
-   const std::vector <vmime::shared_ptr <mechanism> > getAcceptableMechanisms
-         (const std::vector <vmime::shared_ptr <mechanism> >& available,
-          vmime::shared_ptr <mechanism> suggested) const
-   {
+   const std::vector <vmime::shared_ptr <mechanism> > getAcceptableMechanisms(
+      const std::vector <vmime::shared_ptr <mechanism> >& available,
+      const vmime::shared_ptr <mechanism>& suggested
+   ) const {
+
       // Here, you can sort the SASL mechanisms in the order they will be
       // tried. If no SASL mechanism is acceptable (ie. for example, not
       // enough secure), you can return an empty list.
@@ -372,8 +374,8 @@ class mySASLAuthenticator : public vmime::security::sasl::defaultSASLAuthenticat
          getAcceptableMechanisms(available, suggested);
    }
 
-   void setSASLMechanism(vmime::shared_ptr <mechanism> mech)
-   {
+   void setSASLMechanism(const vmime::shared_ptr <mechanism>& mech) {
+
       // This is called when the authentication process is going to
       // try the specified mechanism.
       //
@@ -435,7 +437,8 @@ tr->send(
    /* expeditor */    from,
    /* recipient(s) */ to,
    /* data */         is,
-   /* total length */ msgData.length());
+   /* total length */ msgData.length()
+);
 
 // We have finished using the service
 tr->disconnect();
@@ -556,22 +559,26 @@ std::vector <ref <vmime::net::message> > allMessages =
    folder->getMessages(vmime::net::messageSet::byNumber(1, -1));
       // -1 is a special value to mean "the number of the last message in the folder"
 
-folder->fetchMessages(allMessages,
+folder->fetchMessages(
+   allMessages,
    vmime::net::fetchAttributes::FLAGS |
-   vmime::net::fetchAttributes::ENVELOPE);
+   vmime::net::fetchAttributes::ENVELOPE
+);
 
-for (unsigned int i = 0 ; i < allMessages.size() ; ++i)
-{
+for (unsigned int i = 0 ; i < allMessages.size() ; ++i) {
+
    vmime::shared_ptr <vmime::net::message> msg = allMessages[i];
 
    const int flags = msg->getFlags();
 
    std::cout << "Message " << i << ":" << std::endl;
 
-   if (flags & vmime::net::message::FLAG_SEEN)
+   if (flags & vmime::net::message::FLAG_SEEN) {
       std::cout << " - is read" << std::endl;
-   if (flags & vmime::net::message::FLAG_DELETED)
+   }
+   if (flags & vmime::net::message::FLAG_DELETED) {
       std::cout << " - is deleted" << std::endl;
+   }
 
    vmime::shared_ptr <const vmime::header> hdr = msg->getHeader();
 
@@ -698,8 +705,8 @@ running.
 An interface called {\vcode timeoutHandler} is provided:
 
 \begin{lstlisting}
-class timeoutHandler : public object
-{
+class timeoutHandler : public object {
+
    /** Called to test if the time limit has been reached.
      *
      * @return true if the timeout delay is elapsed
@@ -738,27 +745,27 @@ is thrown.
 The following example shows how to implement a simple timeout handler:
 
 \begin{lstlisting}[caption={Implementing a simple timeout handler}]
-class myTimeoutHandler : public vmime::net::timeoutHandler
-{
+class myTimeoutHandler : public vmime::net::timeoutHandler {
+
 public:
 
-   myTimeoutHandler()
-   {
+   myTimeoutHandler() {
+
       m_startTime = time(NULL);
    }
 
-   const bool isTimeOut()
-   {
-      return (time(NULL) >= m_startTime + 30);  // 30 seconds timeout
+   const bool isTimeOut() {
+
+      return time(NULL) >= m_startTime + 30;  // 30 seconds timeout
    }
 
-   void resetTimeOut()
-   {
+   void resetTimeOut() {
+
       m_startTime = time(NULL);
    }
 
-   const bool handleTimeOut()
-   {
+   const bool handleTimeOut() {
+
       std::cout << "Operation timed out." << std::endl;
                 << "Press [Y] to continue, or [N] to "
                 << "cancel the operation." << std::endl;
@@ -766,7 +773,7 @@ public:
       std::string response;
       std::cin >> response;
 
-      return (response == "y" || response == "Y");
+      return response == "y" || response == "Y";
    }
 
 private:
@@ -781,12 +788,12 @@ is required because the service can use several connections to the server
 simultaneously, and each connection needs its own timeout handler.
 
 \begin{lstlisting}
-class myTimeoutHandlerFactory : public vmime::net::timeoutHandlerFactory
-{
+class myTimeoutHandlerFactory : public vmime::net::timeoutHandlerFactory {
+
 public:
 
-   ref <timeoutHandler> create()
-   {
+   ref <timeoutHandler> create() {
+
       return vmime::make_shared <myTimeoutHandler>();
    }
 };
@@ -918,30 +925,19 @@ First, we need some code to load existing X.509 certificates:
 
 \begin{lstlisting}[caption={Reading a X.509 certificate from a file}]
 vmime::shared_ptr <vmime::security::cert::X509Certificate>
-   loadX509CertificateFromFile(const std::string& path)
-{
+   loadX509CertificateFromFile(const std::string& path) {
+
    std::ifstream certFile;
    certFile.open(path.c_str(), std::ios::in | std::ios::binary);
 
-   if (!certFile)
-   {
+   if (!certFile) {
       // ...handle error...
    }
 
    vmime::utility::inputStreamAdapter is(certFile);
    vmime::shared_ptr <vmime::security::cert::X509Certificate> cert;
 
-   // Try DER format
-   cert = vmime::security::cert::X509Certificate::import
-      (is, vmime::security::cert::X509Certificate::FORMAT_DER);
-
-   if (cert != NULL)
-      return cert;
-
-   // Try PEM format
-   is.reset();
-   cert = vmime::security::cert::X509Certificate::import
-      (is, vmime::security::cert::X509Certificate::FORMAT_PEM);
+   cert = vmime::security::cert::X509Certificate::import(is);
 
    return cert;
 }
@@ -988,12 +984,12 @@ use this in a production application as this is obviously a serious security
 issue):
 
 \begin{lstlisting}[caption={A custom certificate verifier}]
-class myCertVerifier : public vmime::security::cert::certificateVerifier
-{
+class myCertVerifier : public vmime::security::cert::certificateVerifier {
+
 public:
 
-   void verify(vmime::shared_ptr <certificateChain> certs)
-   {
+   void verify(const vmime::shared_ptr <certificateChain>& certs) {
+
       // Obtain the subject's certificate
       vmime::shared_ptr <vmime::security::cert::certificate> cert = chain->getAt(0);
 
@@ -1006,8 +1002,9 @@ public:
       std::string answer;
       std::getline(std::cin, answer);
 
-      if (answer.length() != 0 && (answer[0] == 'Y' || answer[0] == 'y'))
+      if (answer.length() != 0 && (answer[0] == 'Y' || answer[0] == 'y')) {
          return;  // OK, we trust the certificate
+      }
 
       // Don't trust this certificate
       throw vmime::security::cert::certificateException();
@@ -1090,3 +1087,117 @@ The following constants are available:
 \hline
 \end{tabularx}
 
+
+% ============================================================================
+\section{Tracing connection}
+
+Connection tracing is used to log what is sent and received on the wire
+between the client and the server, and may help debugging.
+
+First, you have to create your own tracer, which must implement the
+{\vcode vmime::net::tracer} interface. Here is an example of a tracer which
+simply logs to the standard output:
+
+\begin{lstlisting}[caption={A simple tracer}]
+class myTracer : public vmime::net::tracer {
+
+public:
+
+   myTracer(const vmime::string& proto, const int connectionId)
+      : m_proto(proto),
+        m_connectionId(connectionId) {
+
+   }
+
+   // Called by VMime to trace what is sent on the socket
+   void traceSend(const vmime::string& line) {
+
+      std::cout << "[" << m_proto << ":" << m_connectionId
+                << "] C: " << line << std::endl;
+   }
+
+   // Called by VMime to trace what is received from the socket
+   void traceReceive(const vmime::string& line) {
+
+      std::cout << "[" < < m_proto << ":" << m_connectionId
+                << "] S: " << line << std::endl;
+   }
+
+private:
+
+   const vmime::string m_proto;
+   const int m_connectionId;
+};
+\end{lstlisting}
+
+Also create a factory class, used to instanciate your tracer objects:
+
+\begin{lstlisting}
+class myTracerFactory : public vmime::net::tracerFactory {
+
+public:
+
+   vmime::shared_ptr <vmime::net::tracer> create(
+      const vmime::shared_ptr <vmime::net::service>& serv,
+      const int connectionId
+   ) {
+
+      return vmime::make_shared <myTracer>(
+         serv->getProtocolName(), connectionId
+      );
+   }
+};
+\end{lstlisting}
+
+Next, we have to tell VMime to use it. When you create your service
+(either store or transport), simply call the {\vcode setTracerFactory}
+on the service and pass an instance of your factory class:
+
+\begin{lstlisting}[caption={Enabling tracer on a connection}]
+vmime::shared_ptr <vmime::net::transport> store =
+   session->getStore("imaps://user:password@imap.myserver.com");
+
+// Enable tracing communication between client and server
+store->setTracerFactory(vmime::make_shared <myTracerFactory>());
+\end{lstlisting}
+
+That's all! Now, everything which is sent on/received from the socket
+will be logged using your tracer object. Here is an example of a trace
+session for IMAP:
+
+\begin{verbatim}
+[imaps:1] S: * OK [CAPABILITY IMAP4rev1 LITERAL+ SASL-IR
+   LOGIN-REFERRALS ID ENABLE IDLE AUTH=PLAIN] Dovecot ready.
+[imaps:1] C: a001 AUTHENTICATE PLAIN
+[imaps:1] S: +
+[imaps:1] C: {...SASL exchange: 52 bytes of data...}
+[imaps:1] S: a001 OK [CAPABILITY IMAP4rev1 LITERAL+ SASL-IR
+   LOGIN-REFERRALS ID ENABLE IDLE SORT SPECIAL-USE QUOTA] Logged in
+[imaps:1] C: a002 LIST "" ""
+[imaps:1] S: * LIST (\Noselect) "." ""
+[imaps:1] S: a002 OK List completed.
+[imaps:1] C: a003 CAPABILITY
+[imaps:1] S: * CAPABILITY IMAP4rev1 LITERAL+ SASL-IR
+   LOGIN-REFERRALS ID ENABLE IDLE SORT SPECIAL-USE QUOTA
+[imaps:1] S: a003 OK Capability completed.
+[imaps:1] C: a003 SELECT INBOX (CONDSTORE)
+[imaps:1] S: * FLAGS (\Answered \Flagged \Deleted \Seen \Draft
+   $NotJunk NonJunk JunkRecorded $MDNSent NotJunk $Forwarded
+   Junk $Junk Forwarded $MailFlagBit1)
+[imaps:1] S: * OK [PERMANENTFLAGS (\Answered \Flagged \Deleted
+   \Seen \Draft $NotJunk NonJunk JunkRecorded $MDNSent NotJunk
+   $Forwarded Junk $Junk Forwarded $MailFlagBit1 \*)]
+   Flags permitted.
+[imaps:1] S: * 104 EXISTS
+[imaps:1] S: * 0 RECENT
+[imaps:1] S: * OK [UNSEEN 6] First unseen.
+[imaps:1] S: * OK [UIDVALIDITY 1268127585] UIDs valid
+[imaps:1] S: * OK [UIDNEXT 32716] Predicted next UID
+[imaps:1] S: * OK [HIGHESTMODSEQ 148020] Highest
+[imaps:1] S: a003 OK [READ-WRITE] Select completed.
+\end{verbatim}
+
+Please note that no sensitive data (ie. login or password) will be traced.
+Same, {\em blob} data such as message content or SASL exchanges will be logged
+as a marker which indicates how many bytes were sent/received (eg. "{...SASL
+exchange: 52 bytes of data...}"").

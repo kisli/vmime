@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -26,79 +26,83 @@
 #include "vmime/exception.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
-mailboxGroup::mailboxGroup()
-{
+mailboxGroup::mailboxGroup() {
+
 }
 
 
 mailboxGroup::mailboxGroup(const mailboxGroup& mboxGroup)
-	: address()
-{
+	: address() {
+
 	copyFrom(mboxGroup);
 }
 
 
 mailboxGroup::mailboxGroup(const text& name)
-	: m_name(name)
-{
+	: m_name(name) {
+
 }
 
 
-mailboxGroup::~mailboxGroup()
-{
+mailboxGroup::~mailboxGroup() {
+
 	removeAllMailboxes();
 }
 
 
-void mailboxGroup::parseImpl
-	(const parsingContext& ctx, const string& buffer, const size_t position,
-	 const size_t end, size_t* newPosition)
-{
+void mailboxGroup::parseImpl(
+	const parsingContext& ctx,
+	const string& buffer,
+	const size_t position,
+	const size_t end,
+	size_t* newPosition
+) {
+
 	const char* const pend = buffer.data() + end;
 	const char* const pstart = buffer.data() + position;
 	const char* p = pstart;
 
-	while (p < pend && parserHelpers::isSpace(*p))
+	while (p < pend && parserHelpers::isSpace(*p)) {
 		++p;
+	}
 
 	string name;
 
-	while (p < pend && *p != ':')
-	{
+	while (p < pend && *p != ':') {
 		name += *p;
 		++p;
 	}
 
-	if (p < pend && *p == ':')
+	if (p < pend && *p == ':') {
 		++p;
+	}
 
 
 	size_t pos = position + (p - pstart);
 	bool isLastAddressOfGroup = false;
 
-	while (pos < end && !isLastAddressOfGroup)
-	{
-		shared_ptr <address> parsedAddress = address::parseNext(ctx, buffer, pos, end, &pos, &isLastAddressOfGroup);
+	while (pos < end && !isLastAddressOfGroup) {
 
-		if (parsedAddress)
-		{
-			if (parsedAddress->isGroup())
-			{
+		shared_ptr <address> parsedAddress =
+			address::parseNext(ctx, buffer, pos, end, &pos, &isLastAddressOfGroup);
+
+		if (parsedAddress) {
+
+			if (parsedAddress->isGroup()) {
+
 				shared_ptr <mailboxGroup> group = dynamicCast <mailboxGroup>(parsedAddress);
 
 				// Sub-groups are not allowed in mailbox groups: so, we add all
 				// the contents of the sub-group into this group...
-				for (size_t i = 0 ; i < group->getMailboxCount() ; ++i)
-				{
+				for (size_t i = 0 ; i < group->getMailboxCount() ; ++i) {
 					m_list.push_back(vmime::clone(group->getMailboxAt(i)));
 				}
-			}
-			else
-			{
+
+			} else {
+
 				m_list.push_back(dynamicCast <mailbox>(parsedAddress));
 			}
 		}
@@ -108,15 +112,19 @@ void mailboxGroup::parseImpl
 
 	setParsedBounds(position, end);
 
-	if (newPosition)
+	if (newPosition) {
 		*newPosition = end;
+	}
 }
 
 
-void mailboxGroup::generateImpl
-	(const generationContext& ctx, utility::outputStream& os,
-	 const size_t curLinePos, size_t* newLinePos) const
-{
+void mailboxGroup::generateImpl(
+	const generationContext& ctx,
+	utility::outputStream& os,
+	const size_t curLinePos,
+	size_t* newLinePos
+) const {
+
 	// We have to encode the name:
 	//   - if it contains characters in a charset different from "US-ASCII",
 	//   - and/or if it contains one or more of these special chars:
@@ -126,32 +134,32 @@ void mailboxGroup::generateImpl
 	// and/or contain the special chars.
 	bool forceEncode = false;
 
-	for (size_t w = 0 ; !forceEncode && w < m_name.getWordCount() ; ++w)
-	{
-		if (m_name.getWordAt(w)->getCharset() == charset(charsets::US_ASCII))
-		{
+	for (size_t w = 0 ; !forceEncode && w < m_name.getWordCount() ; ++w) {
+
+		if (m_name.getWordAt(w)->getCharset() == charset(charsets::US_ASCII)) {
+
 			const string& buffer = m_name.getWordAt(w)->getBuffer();
 
 			for (string::const_iterator c = buffer.begin() ;
-			     !forceEncode && c != buffer.end() ; ++c)
-			{
-				switch (*c)
-				{
-				case ' ':
-				case '\t':
-				case ';':
-				case ',':
-				case '<': case '>':
-				case '(': case ')':
-				case '@':
-				case '/':
-				case '?':
-				case '.':
-				case '=':
-				case ':':
+			     !forceEncode && c != buffer.end() ; ++c) {
 
-					forceEncode = true;
-					break;
+				switch (*c) {
+
+					case ' ':
+					case '\t':
+					case ';':
+					case ',':
+					case '<': case '>':
+					case '(': case ')':
+					case '@':
+					case '/':
+					case '?':
+					case '.':
+					case '=':
+					case ':':
+
+						forceEncode = true;
+						break;
 				}
 			}
 		}
@@ -162,22 +170,24 @@ void mailboxGroup::generateImpl
 	generationContext tmpCtx(ctx);
 	tmpCtx.setMaxLineLength(ctx.getMaxLineLength() - 2);
 
-	m_name.encodeAndFold(ctx, os, pos, &pos,
-		forceEncode ? text::FORCE_ENCODING : 0);
+	m_name.encodeAndFold(
+		ctx, os, pos, &pos,
+		forceEncode ? text::FORCE_ENCODING : 0
+	);
 
 	os << ":";
 	++pos;
 
 	for (std::vector <shared_ptr <mailbox> >::const_iterator it = m_list.begin() ;
-	     it != m_list.end() ; ++it)
-	{
-		if (it != m_list.begin())
-		{
+	     it != m_list.end() ; ++it) {
+
+		if (it != m_list.begin()) {
+
 			os << ", ";
 			pos += 2;
-		}
-		else
-		{
+
+		} else {
+
 			os << " ";
 			++pos;
 		}
@@ -188,13 +198,14 @@ void mailboxGroup::generateImpl
 	os << ";";
 	pos++;
 
-	if (newLinePos)
+	if (newLinePos) {
 		*newLinePos = pos;
+	}
 }
 
 
-void mailboxGroup::copyFrom(const component& other)
-{
+void mailboxGroup::copyFrom(const component& other) {
+
 	const mailboxGroup& source = dynamic_cast <const mailboxGroup&>(other);
 
 	m_name = source.m_name;
@@ -202,114 +213,132 @@ void mailboxGroup::copyFrom(const component& other)
 	removeAllMailboxes();
 
 	for (std::vector <shared_ptr <mailbox> >::const_iterator it = source.m_list.begin() ;
-	     it != source.m_list.end() ; ++it)
-	{
+	     it != source.m_list.end() ; ++it) {
+
 		m_list.push_back(vmime::clone(*it));
 	}
 }
 
 
-shared_ptr <component> mailboxGroup::clone() const
-{
+shared_ptr <component> mailboxGroup::clone() const {
+
 	return make_shared <mailboxGroup>(*this);
 }
 
 
-mailboxGroup& mailboxGroup::operator=(const component& other)
-{
+mailboxGroup& mailboxGroup::operator=(const component& other) {
+
 	copyFrom(other);
-	return (*this);
+	return *this;
 }
 
 
-const text& mailboxGroup::getName() const
-{
-	return (m_name);
+const text& mailboxGroup::getName() const {
+
+	return m_name;
 }
 
 
-void mailboxGroup::setName(const text& name)
-{
+void mailboxGroup::setName(const text& name) {
+
 	m_name = name;
 }
 
 
-bool mailboxGroup::isGroup() const
-{
-	return (true);
+bool mailboxGroup::isGroup() const {
+
+	return true;
 }
 
 
-bool mailboxGroup::isEmpty() const
-{
-	return (m_list.empty());
+bool mailboxGroup::isEmpty() const {
+
+	return m_list.empty();
 }
 
 
-void mailboxGroup::appendMailbox(shared_ptr <mailbox> mbox)
-{
+void mailboxGroup::appendMailbox(const shared_ptr <mailbox>& mbox) {
+
 	m_list.push_back(mbox);
 }
 
 
-void mailboxGroup::insertMailboxBefore(shared_ptr <mailbox> beforeMailbox, shared_ptr <mailbox> mbox)
-{
-	const std::vector <shared_ptr <mailbox> >::iterator it = std::find
-		(m_list.begin(), m_list.end(), beforeMailbox);
+void mailboxGroup::insertMailboxBefore(
+	const shared_ptr <mailbox>& beforeMailbox,
+	const shared_ptr <mailbox>& mbox
+) {
 
-	if (it == m_list.end())
+	const std::vector <shared_ptr <mailbox> >::iterator it =
+		std::find(m_list.begin(), m_list.end(), beforeMailbox);
+
+	if (it == m_list.end()) {
 		throw std::out_of_range("Invalid position");
+	}
 
 	m_list.insert(it, mbox);
 }
 
 
-void mailboxGroup::insertMailboxBefore(const size_t pos, shared_ptr <mailbox> mbox)
-{
-	if (pos >= m_list.size())
+void mailboxGroup::insertMailboxBefore(
+	const size_t pos,
+	const shared_ptr <mailbox>& mbox
+) {
+
+	if (pos >= m_list.size()) {
 		throw std::out_of_range("Invalid position");
+	}
 
 	m_list.insert(m_list.begin() + pos, mbox);
 }
 
 
-void mailboxGroup::insertMailboxAfter(shared_ptr <mailbox> afterMailbox, shared_ptr <mailbox> mbox)
-{
-	const std::vector <shared_ptr <mailbox> >::iterator it = std::find
-		(m_list.begin(), m_list.end(), afterMailbox);
+void mailboxGroup::insertMailboxAfter(
+	const shared_ptr <mailbox>& afterMailbox,
+	const shared_ptr <mailbox>& mbox
+) {
 
-	if (it == m_list.end())
+	const std::vector <shared_ptr <mailbox> >::iterator it =
+		std::find(m_list.begin(), m_list.end(), afterMailbox);
+
+	if (it == m_list.end()) {
 		throw std::out_of_range("Invalid position");
+	}
 
 	m_list.insert(it + 1, mbox);
 }
 
 
-void mailboxGroup::insertMailboxAfter(const size_t pos, shared_ptr <mailbox> mbox)
-{
-	if (pos >= m_list.size())
+void mailboxGroup::insertMailboxAfter(
+	const size_t pos,
+	const shared_ptr <mailbox>& mbox
+) {
+
+	if (pos >= m_list.size()) {
 		throw std::out_of_range("Invalid position");
+	}
 
 	m_list.insert(m_list.begin() + pos + 1, mbox);
 }
 
 
-void mailboxGroup::removeMailbox(shared_ptr <mailbox> mbox)
-{
-	const std::vector <shared_ptr <mailbox> >::iterator it = std::find
-		(m_list.begin(), m_list.end(), mbox);
+void mailboxGroup::removeMailbox(const shared_ptr <mailbox>& mbox) {
 
-	if (it == m_list.end())
+	const std::vector <shared_ptr <mailbox> >::iterator it =
+		std::find(m_list.begin(), m_list.end(), mbox);
+
+	if (it == m_list.end()) {
 		throw std::out_of_range("Invalid position");
+	}
 
 	m_list.erase(it);
 }
 
 
-void mailboxGroup::removeMailbox(const size_t pos)
-{
-	if (pos >= m_list.size())
+void mailboxGroup::removeMailbox(const size_t pos) {
+
+	if (pos >= m_list.size()) {
 		throw std::out_of_range("Invalid position");
+	}
 
 	const std::vector <shared_ptr <mailbox> >::iterator it = m_list.begin() + pos;
 
@@ -317,59 +346,59 @@ void mailboxGroup::removeMailbox(const size_t pos)
 }
 
 
-void mailboxGroup::removeAllMailboxes()
-{
+void mailboxGroup::removeAllMailboxes() {
+
 	m_list.clear();
 }
 
 
-size_t mailboxGroup::getMailboxCount() const
-{
-	return (m_list.size());
+size_t mailboxGroup::getMailboxCount() const {
+
+	return m_list.size();
 }
 
 
-shared_ptr <mailbox> mailboxGroup::getMailboxAt(const size_t pos)
-{
-	return (m_list[pos]);
+shared_ptr <mailbox> mailboxGroup::getMailboxAt(const size_t pos) {
+
+	return m_list[pos];
 }
 
 
-const shared_ptr <const mailbox> mailboxGroup::getMailboxAt(const size_t pos) const
-{
-	return (m_list[pos]);
+const shared_ptr <const mailbox> mailboxGroup::getMailboxAt(const size_t pos) const {
+
+	return m_list[pos];
 }
 
 
-const std::vector <shared_ptr <const mailbox> > mailboxGroup::getMailboxList() const
-{
+const std::vector <shared_ptr <const mailbox> > mailboxGroup::getMailboxList() const {
+
 	std::vector <shared_ptr <const mailbox> > list;
 
 	list.reserve(m_list.size());
 
 	for (std::vector <shared_ptr <mailbox> >::const_iterator it = m_list.begin() ;
-	     it != m_list.end() ; ++it)
-	{
+	     it != m_list.end() ; ++it) {
+
 		list.push_back(*it);
 	}
 
-	return (list);
+	return list;
 }
 
 
-const std::vector <shared_ptr <mailbox> > mailboxGroup::getMailboxList()
-{
-	return (m_list);
+const std::vector <shared_ptr <mailbox> > mailboxGroup::getMailboxList() {
+
+	return m_list;
 }
 
 
-const std::vector <shared_ptr <component> > mailboxGroup::getChildComponents()
-{
+const std::vector <shared_ptr <component> > mailboxGroup::getChildComponents() {
+
 	std::vector <shared_ptr <component> > list;
 
 	copy_vector(m_list, list);
 
-	return (list);
+	return list;
 
 }
 

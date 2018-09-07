@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -40,63 +40,63 @@ namespace tls {
 
 
 TLSProperties::TLSProperties()
-	: m_data(make_shared <TLSProperties_OpenSSL>())
-{
+	: m_data(make_shared <TLSProperties_OpenSSL>()) {
+
 	setCipherSuite(CIPHERSUITE_DEFAULT);
 }
 
 
 TLSProperties::TLSProperties(const TLSProperties& props)
 	: object(),
-	  m_data(make_shared <TLSProperties_OpenSSL>())
-{
+	  m_data(make_shared <TLSProperties_OpenSSL>()) {
+
 	*dynamicCast <TLSProperties_OpenSSL>(m_data) = *dynamicCast <TLSProperties_OpenSSL>(props.m_data);
 }
 
 
-void TLSProperties::setCipherSuite(const GenericCipherSuite cipherSuite)
-{
-	switch (cipherSuite)
-	{
-	case CIPHERSUITE_HIGH:
+void TLSProperties::setCipherSuite(const GenericCipherSuite cipherSuite) {
 
-		setCipherSuite("HIGH:!ADH:@STRENGTH");
-		break;
+	switch (cipherSuite) {
 
-	case CIPHERSUITE_MEDIUM:
+		case CIPHERSUITE_HIGH:
 
-		setCipherSuite("MEDIUM:!ADH:@STRENGTH");
-		break;
+			setCipherSuite("HIGH:!ADH:@STRENGTH");
+			break;
 
-	case CIPHERSUITE_LOW:
+		case CIPHERSUITE_MEDIUM:
 
-		setCipherSuite("LOW:!ADH:@STRENGTH");
-		break;
+			setCipherSuite("MEDIUM:!ADH:@STRENGTH");
+			break;
 
-	default:
-	case CIPHERSUITE_DEFAULT:
+		case CIPHERSUITE_LOW:
 
-		setCipherSuite("DEFAULT:!ADH:@STRENGTH");
-		break;
+			setCipherSuite("LOW:!ADH:@STRENGTH");
+			break;
+
+		default:
+		case CIPHERSUITE_DEFAULT:
+
+			setCipherSuite("DEFAULT:!ADH:@STRENGTH");
+			break;
 	}
 }
 
 
-void TLSProperties::setCipherSuite(const string& cipherSuite)
-{
+void TLSProperties::setCipherSuite(const string& cipherSuite) {
+
 	dynamicCast <TLSProperties_OpenSSL>(m_data)->cipherSuite = cipherSuite;
 }
 
 
-const string TLSProperties::getCipherSuite() const
-{
+const string TLSProperties::getCipherSuite() const {
+
 	return dynamicCast <TLSProperties_OpenSSL>(m_data)->cipherSuite;
 }
 
 
 
-TLSProperties_OpenSSL& TLSProperties_OpenSSL::operator=(const TLSProperties_OpenSSL& other)
-{
+TLSProperties_OpenSSL& TLSProperties_OpenSSL::operator=(const TLSProperties_OpenSSL& other) {
+
 	cipherSuite = other.cipherSuite;
 
 	return *this;

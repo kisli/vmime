@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -47,27 +47,29 @@ namespace windows {
 //
 
 windowsSocket::windowsSocket(shared_ptr <vmime::net::timeoutHandler> th)
-	: m_timeoutHandler(th), m_desc(INVALID_SOCKET), m_status(0)
-{
+	: m_timeoutHandler(th),
+	  m_desc(INVALID_SOCKET),
+	  m_status(0) {
+
 	WSAData wsaData;
 	WSAStartup(MAKEWORD(1, 1), &wsaData);
 }
 
 
-windowsSocket::~windowsSocket()
-{
-	if (m_desc != INVALID_SOCKET)
+windowsSocket::~windowsSocket() {
+
+	if (m_desc != INVALID_SOCKET) {
 		::closesocket(m_desc);
+	}
 
 	WSACleanup();
 }
 
 
-void windowsSocket::connect(const vmime::string& address, const vmime::port_t port)
-{
+void windowsSocket::connect(const vmime::string& address, const vmime::port_t port) {
+
 	// Close current connection, if any
-	if (m_desc != INVALID_SOCKET)
-	{
+	if (m_desc != INVALID_SOCKET) {
 		::closesocket(m_desc);
 		m_desc = INVALID_SOCKET;
 	}
@@ -81,20 +83,19 @@ void windowsSocket::connect(const vmime::string& address, const vmime::port_t po
 	addr.sin_port = htons(static_cast <unsigned short>(port));
 	addr.sin_addr.s_addr = ::inet_addr(address.c_str());
 
-	if (m_tracer)
-	{
+	if (m_tracer) {
+
 		std::ostringstream trace;
 		trace << "Connecting to " << address << ", port " << port;
 
 		m_tracer->traceSend(trace.str());
 	}
 
-	if (addr.sin_addr.s_addr == static_cast <int>(-1))
-	{
+	if (addr.sin_addr.s_addr == static_cast <int>(-1)) {
+
 		::hostent* hostInfo = ::gethostbyname(address.c_str());
 
-		if (hostInfo == NULL)
-		{
+		if (!hostInfo) {
 			// Error: cannot resolve address
 			throw vmime::exceptions::connection_error("Cannot resolve address.");
 		}
@@ -107,36 +108,34 @@ void windowsSocket::connect(const vmime::string& address, const vmime::port_t po
 	// Get a new socket
 	m_desc = ::socket(AF_INET, SOCK_STREAM, 0);
 
-	if (m_desc == INVALID_SOCKET)
-	{
-		try
-		{
+	if (m_desc == INVALID_SOCKET) {
+
+		try {
+
 			int err = WSAGetLastError();
 			throwSocketError(err);
-		}
-		catch (exceptions::socket_exception& e)
-		{
-			throw vmime::exceptions::connection_error
-				("Error while creating socket.", e);
+
+		} catch (exceptions::socket_exception& e) {
+
+			throw vmime::exceptions::connection_error("Error while creating socket.", e);
 		}
 	}
 
 	// Start connection
-	if (::connect(m_desc, reinterpret_cast <sockaddr*>(&addr), sizeof(addr)) == -1)
-	{
-		try
-		{
+	if (::connect(m_desc, reinterpret_cast <sockaddr*>(&addr), sizeof(addr)) == -1) {
+
+		try {
+
 			int err = WSAGetLastError();
 			throwSocketError(err);
-		}
-		catch (exceptions::socket_exception& e)
-		{
+
+		} catch (exceptions::socket_exception& e) {
+
 			::closesocket(m_desc);
 			m_desc = INVALID_SOCKET;
 
 			// Error
-			throw vmime::exceptions::connection_error
-				("Error while connecting socket.", e);
+			throw vmime::exceptions::connection_error("Error while connecting socket.", e);
 		}
 	}
 
@@ -146,10 +145,11 @@ void windowsSocket::connect(const vmime::string& address, const vmime::port_t po
 }
 
 
-bool windowsSocket::isConnected() const
-{
-	if (m_desc == INVALID_SOCKET)
+bool windowsSocket::isConnected() const {
+
+	if (m_desc == INVALID_SOCKET) {
 		return false;
+	}
 
 	char buff;
 
@@ -157,12 +157,13 @@ bool windowsSocket::isConnected() const
 }
 
 
-void windowsSocket::disconnect()
-{
-	if (m_desc != INVALID_SOCKET)
-	{
-		if (m_tracer)
+void windowsSocket::disconnect() {
+
+	if (m_desc != INVALID_SOCKET) {
+
+		if (m_tracer) {
 			m_tracer->traceSend("Disconnecting");
+		}
 
 		::shutdown(m_desc, SD_BOTH);
 		::closesocket(m_desc);
@@ -172,28 +173,28 @@ void windowsSocket::disconnect()
 }
 
 
-static bool isNumericAddress(const char* address)
-{
+static bool isNumericAddress(const char* address) {
+
 	struct addrinfo hint, *info = NULL;
 	memset(&hint, 0, sizeof(hint));
 
 	hint.ai_family = AF_UNSPEC;
 	hint.ai_flags = AI_NUMERICHOST;
 
-	if (getaddrinfo(address, 0, &hint, &info) == 0)
-	{
+	if (getaddrinfo(address, 0, &hint, &info) == 0) {
+
 		freeaddrinfo(info);
 		return true;
-	}
-	else
-	{
+
+	} else {
+
 		return false;
 	}
 }
 
 
-const string windowsSocket::getPeerAddress() const
-{
+const string windowsSocket::getPeerAddress() const {
+
 	// Get address of connected peer
 	sockaddr peer;
 	socklen_t peerLen = sizeof(peer);
@@ -206,8 +207,8 @@ const string windowsSocket::getPeerAddress() const
 
 	if (getnameinfo(reinterpret_cast <sockaddr *>(&peer), peerLen,
 			host, sizeof(host), service, sizeof(service),
-			/* flags */ NI_NUMERICHOST) == 0)
-	{
+			/* flags */ NI_NUMERICHOST) == 0) {
+
 		return string(host);
 	}
 
@@ -215,8 +216,8 @@ const string windowsSocket::getPeerAddress() const
 }
 
 
-const string windowsSocket::getPeerName() const
-{
+const string windowsSocket::getPeerName() const {
+
 	// Get address of connected peer
 	sockaddr peer;
 	socklen_t peerLen = sizeof(peer);
@@ -225,15 +226,15 @@ const string windowsSocket::getPeerName() const
 
 	// If server address as specified when connecting is a numeric
 	// address, try to get a host name for it
-	if (isNumericAddress(m_serverAddress.c_str()))
-	{
+	if (isNumericAddress(m_serverAddress.c_str())) {
+
 		char host[NI_MAXHOST + 1];
 		char service[NI_MAXSERV + 1];
 
 		if (getnameinfo(reinterpret_cast <sockaddr *>(&peer), peerLen,
 				host, sizeof(host), service, sizeof(service),
-				/* flags */ NI_NAMEREQD) == 0)
-		{
+				/* flags */ NI_NAMEREQD) == 0) {
+
 			return string(host);
 		}
 	}
@@ -242,38 +243,38 @@ const string windowsSocket::getPeerName() const
 }
 
 
-size_t windowsSocket::getBlockSize() const
-{
+size_t windowsSocket::getBlockSize() const {
+
 	return 16384;  // 16 KB
 }
 
 
-void windowsSocket::receive(vmime::string& buffer)
-{
+void windowsSocket::receive(vmime::string& buffer) {
+
 	const size_t size = receiveRaw(m_buffer, sizeof(m_buffer));
 	buffer = utility::stringUtils::makeStringFromBytes(m_buffer, size);
 }
 
 
-size_t windowsSocket::receiveRaw(byte_t* buffer, const size_t count)
-{
+size_t windowsSocket::receiveRaw(byte_t* buffer, const size_t count) {
+
 	m_status &= ~STATUS_WOULDBLOCK;
 
 	// Check whether data is available
-	if (!waitForRead(50 /* msecs */))
-	{
+	if (!waitForRead(50 /* msecs */)) {
+
 		// No data available at this time
 		// Check if we are timed out
 		if (m_timeoutHandler &&
-		    m_timeoutHandler->isTimeOut())
-		{
-			if (!m_timeoutHandler->handleTimeOut())
-			{
+		    m_timeoutHandler->isTimeOut()) {
+
+			if (!m_timeoutHandler->handleTimeOut()) {
+
 				// Server did not react within timeout delay
 				throwSocketError(WSAETIMEDOUT);
-			}
-			else
-			{
+
+			} else {
+
 				// Reset timeout
 				m_timeoutHandler->resetTimeOut();
 			}
@@ -286,101 +287,105 @@ size_t windowsSocket::receiveRaw(byte_t* buffer, const size_t count)
 	// Read available data
 	int ret = ::recv(m_desc, reinterpret_cast <char*>(buffer), count, 0);
 
-	if (ret == SOCKET_ERROR)
-	{
+	if (ret == SOCKET_ERROR) {
+
 		int err = WSAGetLastError();
 
-		if (err != WSAEWOULDBLOCK)
+		if (err != WSAEWOULDBLOCK) {
 			throwSocketError(err);
+		}
 
 		m_status |= STATUS_WOULDBLOCK;
 
 		// Error or no data
-		return (0);
-	}
-	else if (ret == 0)
-	{
+		return 0;
+
+	} else if (ret == 0) {
+
 		// Host shutdown
 		throwSocketError(WSAENOTCONN);
-	}
-	else
-	{
+
+	} else {
+
 		// Data received, reset timeout
-		if (m_timeoutHandler)
+		if (m_timeoutHandler) {
 			m_timeoutHandler->resetTimeOut();
+		}
 
 		return ret;
 	}
 }
 
 
-void windowsSocket::send(const vmime::string& buffer)
-{
+void windowsSocket::send(const vmime::string& buffer) {
+
 	sendRaw(reinterpret_cast <const byte_t*>(buffer.data()), buffer.length());
 }
 
 
-void windowsSocket::send(const char* str)
-{
+void windowsSocket::send(const char* str) {
+
 	sendRaw(reinterpret_cast <const byte_t*>(str), strlen(str));
 }
 
 
-void windowsSocket::sendRaw(const byte_t* buffer, const size_t count)
-{
+void windowsSocket::sendRaw(const byte_t* buffer, const size_t count) {
+
 	m_status &= ~STATUS_WOULDBLOCK;
 
 	size_t size = count;
 
-	while (size > 0)
-	{
+	while (size > 0) {
+
 		const int ret = ::send(m_desc, reinterpret_cast <const char*>(buffer), size, 0);
 
-		if (ret == SOCKET_ERROR)
-		{
+		if (ret == SOCKET_ERROR) {
+
 			int err = WSAGetLastError();
 
-			if (err != WSAEWOULDBLOCK)
+			if (err != WSAEWOULDBLOCK) {
 				throwSocketError(err);
+			}
 
 			waitForWrite(50 /* msecs */);
-		}
-		else
-		{
+
+		} else {
+
 			buffer += ret;
 			size -= ret;
 		}
 	}
 
 	// Reset timeout
-	if (m_timeoutHandler)
+	if (m_timeoutHandler) {
 		m_timeoutHandler->resetTimeOut();
+	}
 }
 
 
-size_t windowsSocket::sendRawNonBlocking(const byte_t* buffer, const size_t count)
-{
+size_t windowsSocket::sendRawNonBlocking(const byte_t* buffer, const size_t count) {
+
 	m_status &= ~STATUS_WOULDBLOCK;
 
 	const int ret = ::send(m_desc, reinterpret_cast <const char*>(buffer), count, 0);
 
-	if (ret == SOCKET_ERROR)
-	{
+	if (ret == SOCKET_ERROR) {
+
 		int err = WSAGetLastError();
 
-		if (err == WSAEWOULDBLOCK)
-		{
+		if (err == WSAEWOULDBLOCK) {
+
 			// Check if we are timed out
 			if (m_timeoutHandler &&
-			    m_timeoutHandler->isTimeOut())
-			{
-				if (!m_timeoutHandler->handleTimeOut())
-				{
+			    m_timeoutHandler->isTimeOut()) {
+
+				if (!m_timeoutHandler->handleTimeOut()) {
+
 					// Could not send data within timeout delay
 					throwSocketError(err);
-				}
-				else
-				{
+
+				} else {
+
 					// Reset timeout
 					m_timeoutHandler->resetTimeOut();
 				}
@@ -390,29 +395,30 @@ size_t windowsSocket::sendRawNonBlocking(const byte_t* buffer, const size_t coun
 
 			// No data can be written at this time
 			return 0;
-		}
-		else
-		{
+
+		} else {
+
 			throwSocketError(err);
 		}
 	}
 
 	// Reset timeout
-	if (m_timeoutHandler)
+	if (m_timeoutHandler) {
 		m_timeoutHandler->resetTimeOut();
+	}
 
 	return ret;
 }
 
 
-unsigned int windowsSocket::getStatus() const
-{
+unsigned int windowsSocket::getStatus() const {
+
 	return m_status;
 }
 
 
-void windowsSocket::throwSocketError(const int err)
-{
+void windowsSocket::throwSocketError(const int err) {
+
 	std::ostringstream oss;
 	string msg;
 
@@ -420,13 +426,13 @@ void windowsSocket::throwSocketError(const int err)
 
 	if (::FormatMessage(
 			FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-			NULL, err, 0, (LPTSTR) &str, 0, NULL) == 0)
-	{
+			NULL, err, 0, (LPTSTR) &str, 0, NULL) == 0) {
+
 		// Failed getting message
 		oss << "Unknown socket error (code " << err << ")";
-	}
-	else
-	{
+
+	} else {
+
 		oss << str;
 		::LocalFree(str);
 	}
@@ -437,10 +443,10 @@ void windowsSocket::throwSocketError(const int err)
 }
 
 
-bool windowsSocket::waitForData(const bool read, const bool write, const int msecs)
-{
-	for (int i = 0 ; i <= msecs / 10 ; ++i)
-	{
+bool windowsSocket::waitForData(const bool read, const bool write, const int msecs) {
+
+	for (int i = 0 ; i <= msecs / 10 ; ++i) {
+
 		// Check whether data is available
 		fd_set fds;
 		FD_ZERO(&fds);
@@ -452,28 +458,28 @@ bool windowsSocket::waitForData(const bool read, const bool write, const int mse
 
 		int ret = ::select(m_desc + 1, read ? &fds : NULL, write ? &fds : NULL, NULL, &tv);
 
-		if (ret == SOCKET_ERROR)
-		{
+		if (ret == SOCKET_ERROR) {
+
 			int err = WSAGetLastError();
 			throwSocketError(err);
-		}
-		else if (ret > 0)
-		{
+
+		} else if (ret > 0) {
+
 			return true;
 		}
 
 		// No data available at this time
 		// Check if we are timed out
 		if (m_timeoutHandler &&
-		    m_timeoutHandler->isTimeOut())
-		{
-			if (!m_timeoutHandler->handleTimeOut())
-			{
+		    m_timeoutHandler->isTimeOut()) {
+
+			if (!m_timeoutHandler->handleTimeOut()) {
+
 				// Server did not react within timeout delay
 				throw exceptions::operation_timed_out();
-			}
-			else
-			{
+
+			} else {
+
 				// Reset timeout
 				m_timeoutHandler->resetTimeOut();
 			}
@@ -484,32 +490,32 @@ bool windowsSocket::waitForData(const bool read, const bool write, const int mse
 }
 
 
-bool windowsSocket::waitForRead(const int msecs)
-{
+bool windowsSocket::waitForRead(const int msecs) {
+
 	return waitForData(/* read */ true, /* write */ false, msecs);
 }
 
 
-bool windowsSocket::waitForWrite(const int msecs)
-{
+bool windowsSocket::waitForWrite(const int msecs) {
+
 	return waitForData(/* read */ false, /* write */ true, msecs);
 }
 
 
-shared_ptr <net::timeoutHandler> windowsSocket::getTimeoutHandler()
-{
+shared_ptr <net::timeoutHandler> windowsSocket::getTimeoutHandler() {
+
 	return m_timeoutHandler;
 }
 
 
-void windowsSocket::setTracer(shared_ptr <net::tracer> tracer)
-{
+void windowsSocket::setTracer(const shared_ptr <net::tracer>& tracer) {
+
 	m_tracer = tracer;
 }
 
 
-shared_ptr <net::tracer> windowsSocket::getTracer()
-{
+shared_ptr <net::tracer> windowsSocket::getTracer() {
+
 	return m_tracer;
 }
 
@@ -519,16 +525,18 @@ shared_ptr <net::tracer> windowsSocket::getTracer()
 // posixSocketFactory
 //
 
-shared_ptr <vmime::net::socket> windowsSocketFactory::create()
-{
+shared_ptr <vmime::net::socket> windowsSocketFactory::create() {
+
 	shared_ptr <vmime::net::timeoutHandler> th;
 	return make_shared <windowsSocket>(th);
 }
 
-shared_ptr <vmime::net::socket> windowsSocketFactory::create(shared_ptr <vmime::net::timeoutHandler> th)
-{
+
+shared_ptr <vmime::net::socket> windowsSocketFactory::create(const shared_ptr <vmime::net::timeoutHandler>& th) {
+
     return make_shared <windowsSocket>(th);
 }
+
 
 } // posix
 } // platforms

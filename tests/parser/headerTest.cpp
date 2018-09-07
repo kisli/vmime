@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -64,18 +64,18 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 	VMIME_TEST_LIST_END
 
 
-	static const std::string getFieldValue(const vmime::headerField& field)
-	{
+	static const std::string getFieldValue(const vmime::headerField& field) {
+
 		std::ostringstream oss;
 		vmime::utility::outputStreamAdapter voss(oss);
 		field.generate(voss);
 
-		return (oss.str());
+		return oss.str();
 	}
 
 	// has function tests
-	void testHas1()
-	{
+	void testHas1() {
+
 		vmime::header hdr;
 		hdr.parse("From: x\r\nTo: y\r\nTo: z\r\n");
 
@@ -84,8 +84,8 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 		VASSERT_EQ("Value", false, res);
 	}
 
-	void testHas2()
-	{
+	void testHas2() {
+
 		vmime::header hdr;
 		hdr.parse("X: x\r\nTo: y\r\nTo: z\r\n");
 
@@ -95,8 +95,8 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 	}
 
 	// appendField function tests
-	void testAppend1()
-	{
+	void testAppend1() {
+
 		vmime::header hdr;
 		hdr.parse("");
 
@@ -109,8 +109,8 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 		VASSERT_EQ("First value", "A: a", headerTest::getFieldValue(*res[0]));
 	}
 
-	void testAppend2()
-	{
+	void testAppend2() {
+
 		vmime::header hdr;
 		hdr.parse("A: a\r\n");
 
@@ -125,8 +125,8 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 	}
 
 	// insertFieldBefore
-	void testInsertFieldBefore1()
-	{
+	void testInsertFieldBefore1() {
+
 		vmime::header hdr;
 		hdr.parse("A: a\r\nC: c\r\n");
 
@@ -141,8 +141,8 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 		VASSERT_EQ("Third value", "C: c", headerTest::getFieldValue(*res[2]));
 	}
 
-	void testInsertFieldBefore2()
-	{
+	void testInsertFieldBefore2() {
+
 		vmime::header hdr;
 		hdr.parse("A: a\r\nC: c\r\n");
 
@@ -158,8 +158,8 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 	}
 
 	// insertFieldAfter
-	void testInsertFieldAfter1()
-	{
+	void testInsertFieldAfter1() {
+
 		vmime::header hdr;
 		hdr.parse("A: a\r\nC: c\r\n");
 
@@ -174,8 +174,8 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 		VASSERT_EQ("Third value", "C: c", headerTest::getFieldValue(*res[2]));
 	}
 
-	void testInsertFieldAfter2()
-	{
+	void testInsertFieldAfter2() {
+
 		vmime::header hdr;
 		hdr.parse("A: a\r\nC: c\r\n");
 
@@ -191,8 +191,8 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 	}
 
 	// replaceField
-	void testReplaceField()
-	{
+	void testReplaceField() {
+
 		vmime::header hdr;
 		hdr.parse("A: a\r\nB: b\r\nC: c\r\n");
 
@@ -208,8 +208,8 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 	}
 
 	// removeField
-	void testRemoveField1()
-	{
+	void testRemoveField1() {
+
 		vmime::header hdr1, hdr2;
 		hdr1.parse("A: a\r\nB: b\r\nC: c\r\n");
 		hdr2.parse("A: a\r\nB: b\r\nC: c\r\n");
@@ -230,8 +230,8 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 		VASSERT_EQ("Second value", "C: c", headerTest::getFieldValue(*res2[1]));
 	}
 
-	void testRemoveField2()
-	{
+	void testRemoveField2() {
+
 		vmime::header hdr1, hdr2;
 		hdr1.parse("A: a\r\n");
 		hdr2.parse("A: a\r\n");
@@ -247,8 +247,8 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 	}
 
 	// removeAllFields
-	void testRemoveAllFields()
-	{
+	void testRemoveAllFields() {
+
 		vmime::header hdr1, hdr2;
 		hdr1.parse("A: a\r\n");
 		hdr2.parse("A: a\r\nB: b\r\n");
@@ -264,8 +264,8 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 	}
 
 	// getFieldCount
-	void testgetFieldCount()
-	{
+	void testgetFieldCount() {
+
 		vmime::header hdr;
 		hdr.parse("A: a\r\nB: b\r\nC: c\r\nD: d\r\n");
 
@@ -273,16 +273,16 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 	}
 
 	// isEmpty
-	void testIsEmpty1()
-	{
+	void testIsEmpty1() {
+
 		vmime::header hdr;
 		hdr.parse("A: a\r\nB: b\r\nC: c\r\n");
 
 		VASSERT_EQ("Value", false, hdr.isEmpty());
 	}
 
-	void testIsEmpty2()
-	{
+	void testIsEmpty2() {
+
 		vmime::header hdr;
 		hdr.parse("\r\n");
 
@@ -290,8 +290,8 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 	}
 
 	// getFieldAt
-	void testGetFieldAt()
-	{
+	void testGetFieldAt() {
+
 		vmime::header hdr;
 		hdr.parse("B: b\r\nA: a\r\nC: c\r\n");
 
@@ -301,8 +301,8 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 	}
 
 	// getFieldList
-	void testGetFieldList1()
-	{
+	void testGetFieldList1() {
+
 		vmime::header hdr;
 		hdr.parse("A: a\r\nB: b1\r\nC: c\r\nB: b2\r\n");
 
@@ -315,8 +315,8 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 		VASSERT_EQ("Thourth value", "B: b2", headerTest::getFieldValue(*res[3]));
 	}
 
-	void testGetFieldList2()
-	{
+	void testGetFieldList2() {
+
 		vmime::header hdr;
 		hdr.parse("\r\n");
 
@@ -326,8 +326,8 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 	}
 
 	// find function tests
-	void testFind1()
-	{
+	void testFind1() {
+
 		vmime::header hdr;
 		hdr.parse("A: a\r\nB: b\r\nC: c\r\nB: d\r\n");
 
@@ -337,8 +337,8 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 	}
 
 	// getAllByName function tests
-	void testFindAllFields1()
-	{
+	void testFindAllFields1() {
+
 		vmime::header hdr;
 		hdr.parse("A: a1\nC: c1\n");
 
@@ -347,8 +347,8 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 		VASSERT_EQ("Count", static_cast <unsigned int>(0), res.size());
 	}
 
-	void testFindAllFields2()
-	{
+	void testFindAllFields2() {
+
 		vmime::header hdr;
 		hdr.parse("A: a1\nB: b1\nB: b2\nC: c1\n");
 
@@ -359,8 +359,8 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 		VASSERT_EQ("Second value", "B: b2", headerTest::getFieldValue(*res[1]));
 	}
 
-	void testFindAllFields3()
-	{
+	void testFindAllFields3() {
+
 		vmime::header hdr;
 		hdr.parse("A: a1\nB: b1\nB: b2\nC: c1\nC: c3\nC: c2\n");
 
@@ -373,4 +373,3 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 	}
 
 VMIME_TEST_SUITE_END
-

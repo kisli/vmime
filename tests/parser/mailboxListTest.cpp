@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -32,8 +32,8 @@ VMIME_TEST_SUITE_BEGIN(mailboxListTest)
 
 
 	// Disposition-Notification-To:: <email@domain.com>
-	void testParseGroup()
-	{
+	void testParseGroup() {
+
 		// Groups should be extracted to multiple mailboxes in mailbox lists
 		vmime::mailboxList mboxList;
 		mboxList.parse("email1@domain1.com, : <email2@domain2.com>, email3@domain3.com");
@@ -45,4 +45,3 @@ VMIME_TEST_SUITE_BEGIN(mailboxListTest)
 	}
 
 VMIME_TEST_SUITE_END
-

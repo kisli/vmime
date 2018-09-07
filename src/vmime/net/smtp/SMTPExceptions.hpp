@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -44,19 +44,25 @@ namespace smtp {
 
 /** SMTP Command error: a SMTP command failed.
   */
+class VMIME_EXPORT SMTPCommandError : public exceptions::command_error {
 
-class VMIME_EXPORT SMTPCommandError : public exceptions::command_error
-{
 public:
 
-	SMTPCommandError(const string& command, const string& response,
-		const string& desc, const int statusCode,
+	SMTPCommandError(
+		const string& command,
+		const string& response,
+		const string& desc,
+		const int statusCode,
 		const SMTPResponse::enhancedStatusCode& extendedStatusCode,
-		const exception& other = NO_EXCEPTION);
+		const exception& other = NO_EXCEPTION
+	);
 
-	SMTPCommandError(const string& command, const string& response,
+	SMTPCommandError(
+		const string& command,
+		const string& response,
 		const int statusCode, const SMTPResponse::enhancedStatusCode& extendedStatusCode,
-		const exception& other = NO_EXCEPTION);
+		const exception& other = NO_EXCEPTION
+	);
 
 	~SMTPCommandError() throw();
 
@@ -87,9 +93,8 @@ private:
 /** SMTP error: message size exceeds maximum server limits.
   * This is a permanent error.
   */
+class VMIME_EXPORT SMTPMessageSizeExceedsMaxLimitsException : public exceptions::net_exception {
 
-class VMIME_EXPORT SMTPMessageSizeExceedsMaxLimitsException : public exceptions::net_exception
-{
 public:
 
 	SMTPMessageSizeExceedsMaxLimitsException(const exception& other = NO_EXCEPTION);
@@ -103,9 +108,8 @@ public:
 /** SMTP error: message size exceeds current server limits.
   * This is a temporary error (you may retry later).
   */
+class VMIME_EXPORT SMTPMessageSizeExceedsCurLimitsException : public exceptions::net_exception {
 
-class VMIME_EXPORT SMTPMessageSizeExceedsCurLimitsException : public exceptions::net_exception
-{
 public:
 
 	SMTPMessageSizeExceedsCurLimitsException(const exception& other = NO_EXCEPTION);

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -31,36 +31,38 @@
 #include "vmime/utility/outputStreamStringAdapter.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 parameter::parameter(const string& name)
-	: m_name(name), m_value(make_shared <word>())
-{
+	: m_name(name),
+	  m_value(make_shared <word>()) {
+
 }
 
 
 parameter::parameter(const string& name, const word& value)
-	: m_name(name), m_value(make_shared <word>(value))
-{
+	: m_name(name),
+	  m_value(make_shared <word>(value)) {
+
 }
 
 
 parameter::parameter(const string& name, const string& value)
-	: m_name(name), m_value(make_shared <word>(value))
-{
+	: m_name(name),
+	  m_value(make_shared <word>(value)) {
+
 }
 
 
 parameter::parameter(const parameter&)
-	: component()
-{
+	: component() {
+
 }
 
 
-shared_ptr <component> parameter::clone() const
-{
+shared_ptr <component> parameter::clone() const {
+
 	shared_ptr <parameter> p = make_shared <parameter>(m_name);
 	p->copyFrom(*this);
 
@@ -68,8 +70,8 @@ shared_ptr <component> parameter::clone() const
 }
 
 
-void parameter::copyFrom(const component& other)
-{
+void parameter::copyFrom(const component& other) {
+
 	const parameter& param = dynamic_cast <const parameter&>(other);
 
 	m_name = param.m_name;
@@ -77,27 +79,27 @@ void parameter::copyFrom(const component& other)
 }
 
 
-parameter& parameter::operator=(const parameter& other)
-{
+parameter& parameter::operator=(const parameter& other) {
+
 	copyFrom(other);
 	return (*this);
 }
 
 
-const string& parameter::getName() const
-{
+const string& parameter::getName() const {
+
 	return m_name;
 }
 
 
-const word& parameter::getValue() const
-{
+const word& parameter::getValue() const {
+
 	return *m_value;
 }
 
 
-void parameter::setValue(const component& value)
-{
+void parameter::setValue(const component& value) {
+
 	std::ostringstream oss;
 	utility::outputStreamAdapter vos(oss);
 
@@ -107,30 +109,39 @@ void parameter::setValue(const component& value)
 }
 
 
-void parameter::setValue(const word& value)
-{
+void parameter::setValue(const word& value) {
+
 	*m_value = value;
 }
 
 
-void parameter::parseImpl
-	(const parsingContext& ctx, const string& buffer, const size_t position,
-	 const size_t end, size_t* newPosition)
-{
+void parameter::parseImpl(
+	const parsingContext& ctx,
+	const string& buffer,
+	const size_t position,
+	const size_t end,
+	size_t* newPosition
+) {
+
 	m_value->setBuffer(string(buffer.begin() + position, buffer.begin() + end));
 
-	if (ctx.getInternationalizedEmailSupport())
+	if (ctx.getInternationalizedEmailSupport()) {
 		m_value->setCharset(charset(charsets::UTF_8));
-	else
+	} else {
 		m_value->setCharset(charset(charsets::US_ASCII));
+	}
 
-	if (newPosition)
+	if (newPosition) {
 		*newPosition = end;
+	}
 }
 
 
-void parameter::parse(const parsingContext& ctx, const std::vector <valueChunk>& chunks)
-{
+void parameter::parse(
+	const parsingContext& ctx,
+	const std::vector <valueChunk>& chunks
+) {
+
 	bool foundCharsetChunk = false;
 
 	charset ch(charsets::US_ASCII);
@@ -139,29 +150,30 @@ void parameter::parse(const parsingContext& ctx, const std::vector <valueChunk>&
 	std::ostringstream value;
 	value.imbue(std::locale::classic());
 
-	for (std::vector <valueChunk>::size_type i = 0 ; i < chunks.size() ; ++i)
-	{
+	for (std::vector <valueChunk>::size_type i = 0 ; i < chunks.size() ; ++i) {
+
 		const valueChunk& chunk = chunks[i];
 
 		// Decode following data
-		if (chunk.encoded)
-		{
+		if (chunk.encoded) {
+
 			const size_t len = chunk.data.length();
 			size_t pos = 0;
 
 			// If this is the first encoded chunk, extract charset
 			// and language information
-			if (!foundCharsetChunk)
-			{
+			if (!foundCharsetChunk) {
+
 				// Eg. "us-ascii'en'This%20is%20even%20more%20"
 				size_t q = chunk.data.find_first_of('\'');
 
-				if (q != string::npos)
-				{
+				if (q != string::npos) {
+
 					const string chs = chunk.data.substr(0, q);
 
-					if (!chs.empty())
+					if (!chs.empty()) {
 						ch = charset(chs);
+					}
 
 					++q;
 					pos = q;
@@ -169,8 +181,8 @@ void parameter::parse(const parsingContext& ctx, const std::vector <valueChunk>&
 
 				q = chunk.data.find_first_of('\'', pos);
 
-				if (q != string::npos)
-				{
+				if (q != string::npos) {
+
 					// Extract language
 					lang = chunk.data.substr(pos, q - pos);
 
@@ -181,59 +193,59 @@ void parameter::parse(const parsingContext& ctx, const std::vector <valueChunk>&
 				foundCharsetChunk = true;
 			}
 
-			for (size_t i = pos ; i < len ; ++i)
-			{
+			for (size_t i = pos ; i < len ; ++i) {
+
 				const char c = chunk.data[i];
 
-				if (c == '%' && i + 2 < len)
-				{
+				if (c == '%' && i + 2 < len) {
+
 					unsigned int v = 0;
 
 					// First char
-					switch (chunk.data[i + 1])
-					{
-					case 'a': case 'A': v += 10; break;
-					case 'b': case 'B': v += 11; break;
-					case 'c': case 'C': v += 12; break;
-					case 'd': case 'D': v += 13; break;
-					case 'e': case 'E': v += 14; break;
-					case 'f': case 'F': v += 15; break;
-					default: // assume 0-9
+					switch (chunk.data[i + 1]) {
 
-						v += (chunk.data[i + 1] - '0');
-						break;
+						case 'a': case 'A': v += 10; break;
+						case 'b': case 'B': v += 11; break;
+						case 'c': case 'C': v += 12; break;
+						case 'd': case 'D': v += 13; break;
+						case 'e': case 'E': v += 14; break;
+						case 'f': case 'F': v += 15; break;
+						default: // assume 0-9
+
+							v += (chunk.data[i + 1] - '0');
+							break;
 					}
 
 					v *= 16;
 
 					// Second char
-					switch (chunk.data[i + 2])
-					{
-					case 'a': case 'A': v += 10; break;
-					case 'b': case 'B': v += 11; break;
-					case 'c': case 'C': v += 12; break;
-					case 'd': case 'D': v += 13; break;
-					case 'e': case 'E': v += 14; break;
-					case 'f': case 'F': v += 15; break;
-					default: // assume 0-9
+					switch (chunk.data[i + 2]) {
 
-						v += (chunk.data[i + 2] - '0');
-						break;
+						case 'a': case 'A': v += 10; break;
+						case 'b': case 'B': v += 11; break;
+						case 'c': case 'C': v += 12; break;
+						case 'd': case 'D': v += 13; break;
+						case 'e': case 'E': v += 14; break;
+						case 'f': case 'F': v += 15; break;
+						default: // assume 0-9
+
+							v += (chunk.data[i + 2] - '0');
+							break;
 					}
 
 					value << static_cast <char>(v);
 
 					i += 2; // skip next 2 chars
-				}
-				else
-				{
+
+				} else {
+
 					value << c;
 				}
 			}
-		}
+
 		// Simply copy data, as it is not encoded
-		else
-		{
+		} else {
+
 			// This syntax is non-standard (expressly prohibited
 			// by RFC-2047), but is used by Mozilla:
 			//
@@ -246,20 +258,20 @@ void parameter::parse(const parsingContext& ctx, const std::vector <valueChunk>&
 			vmime::text t;
 			t.parse(ctx, chunk.data);
 
-			if (t.getWordCount() != 0)
-			{
+			if (t.getWordCount() != 0) {
+
 				value << t.getWholeBuffer();
 
-				if (!foundCharsetChunk)
-				{
+				if (!foundCharsetChunk) {
+
 					// This is still wrong. Each word can have it's own charset, and can
 					// be mixed (eg. iso-8859-1 and iso-2022-jp), but very unlikely. Real
 					// fix is to have parameters store a vmime::text instead of a
 					// vmime::word in m_value. But that changes the interface.
-					for (size_t i = 0 ; i < t.getWordCount() ; ++i)
-					{
-						if (t.getWordAt(i)->getCharset() != ch && ch == charsets::US_ASCII)
-						{
+					for (size_t i = 0 ; i < t.getWordCount() ; ++i) {
+
+						if (t.getWordAt(i)->getCharset() != ch && ch == charsets::US_ASCII) {
+
 							ch = t.getWordAt(i)->getCharset();
 							break;
 						}
@@ -275,10 +287,13 @@ void parameter::parse(const parsingContext& ctx, const std::vector <valueChunk>&
 }
 
 
-void parameter::generateImpl
-	(const generationContext& ctx, utility::outputStream& os,
-	 const size_t curLinePos, size_t* newLinePos) const
-{
+void parameter::generateImpl(
+	const generationContext& ctx,
+	utility::outputStream& os,
+	const size_t curLinePos,
+	size_t* newLinePos
+) const {
+
 	const string& name = m_name;
 	const string& value = m_value->getBuffer();
 
@@ -305,8 +320,8 @@ void parameter::generateImpl
 
 	size_t pos = curLinePos;
 
-	if (pos + name.length() + 10 + value.length() > ctx.getMaxLineLength())
-	{
+	if (pos + name.length() + 10 + value.length() > ctx.getMaxLineLength()) {
+
 		sevenBitStream << NEW_LINE_SEQUENCE;
 		pos = NEW_LINE_SEQUENCE_LENGTH;
 	}
@@ -316,54 +331,53 @@ void parameter::generateImpl
 	size_t valueLength = 0;
 
 	// Use worst-case length name.length()+2 for 'name=' part of line
-	for (size_t i = 0 ; (i < value.length()) && (pos + name.length() + 2 + valueLength < ctx.getMaxLineLength() - 4) ; ++i, ++valueLength)
-	{
-		switch (value[i])
-		{
-		// Characters that need to be quoted _and_ escaped
-		case '"':
-		case '\\':
-		// Other characters that need quoting
-		case ' ':
-		case '\t':
-		case '(':
-		case ')':
-		case '<':
-		case '>':
-		case '@':
-		case ',':
-		case ';':
-		case ':':
-		case '/':
-		case '[':
-		case ']':
-		case '?':
-		case '=':
+	for (size_t i = 0 ; (i < value.length()) && (pos + name.length() + 2 + valueLength < ctx.getMaxLineLength() - 4) ; ++i, ++valueLength) {
 
-			needQuoting = true;
-			break;
+		switch (value[i]) {
 
-		default:
+			// Characters that need to be quoted _and_ escaped
+			case '"':
+			case '\\':
+			// Other characters that need quoting
+			case ' ':
+			case '\t':
+			case '(':
+			case ')':
+			case '<':
+			case '>':
+			case '@':
+			case ',':
+			case ';':
+			case ':':
+			case '/':
+			case '[':
+			case ']':
+			case '?':
+			case '=':
 
-			if (!parserHelpers::isAscii(value[i]))
-			{
-				needQuotedPrintable = true;
 				needQuoting = true;
-			}
+				break;
 
-			break;
+			default:
+
+				if (!parserHelpers::isAscii(value[i])) {
+					needQuotedPrintable = true;
+					needQuoting = true;
+				}
+
+				break;
 		}
 	}
 
 	const bool cutValue = (valueLength != value.length());  // has the value been cut?
 
-	if (needQuoting)
-	{
+	if (needQuoting) {
+
 		sevenBitStream << name << "=\"";
 		pos += name.length() + 2;
-	}
-	else
-	{
+
+	} else {
+
 		sevenBitStream << name << "=";
 		pos += name.length() + 1;
 	}
@@ -377,51 +391,51 @@ void parameter::generateImpl
 	bool extended = alwaysEncode;
 
 	if ((needQuotedPrintable || cutValue || !m_value->getLanguage().empty()) &&
-	    genMode != generationContext::PARAMETER_VALUE_NO_ENCODING)
-	{
+	    genMode != generationContext::PARAMETER_VALUE_NO_ENCODING) {
+
 		// Send the name in quoted-printable, so outlook express et.al.
 		// will understand the real filename
 		size_t oldLen = sevenBitBuffer.length();
 		m_value->generate(sevenBitStream);
 		pos += sevenBitBuffer.length() - oldLen;
 		extended = true;		// also send with RFC-2231 encoding
-	}
-	else
-	{
+
+	} else {
+
 		// Do not chop off this value, but just add the complete name as one header line.
 		for (size_t i = 0, n = value.length(), curValueLength = 0 ;
-		     i < n && curValueLength < valueLength ; ++i)
-		{
+		     i < n && curValueLength < valueLength ; ++i) {
+
 			const char_t c = value[i];
 
-			if (/* needQuoting && */ (c == '"' || c == '\\'))  // 'needQuoting' is implicit
-			{
+			if (/* needQuoting && */ (c == '"' || c == '\\')) {  // 'needQuoting' is implicit
+
 				sevenBitStream << '\\' << value[i];  // escape 'x' with '\x'
 				pos += 2;
-			}
-			else if (parserHelpers::isAscii(c))
-			{
+
+			} else if (parserHelpers::isAscii(c)) {
+
 				sevenBitStream << value[i];
 				++pos;
 				++curValueLength;
-			}
-			else
-			{
+
+			} else {
+
 				extended = true;
 			}
 		}
 
 	} // !needQuotedPrintable
 
-	if (needQuoting)
-	{
+	if (needQuoting) {
+
 		sevenBitStream << '"';
 		++pos;
 	}
 
 	if (genMode == generationContext::PARAMETER_VALUE_RFC2047_ONLY ||
-	    genMode == generationContext::PARAMETER_VALUE_RFC2231_AND_RFC2047)
-	{
+	    genMode == generationContext::PARAMETER_VALUE_RFC2231_AND_RFC2047) {
+
 		os << sevenBitBuffer;
 	}
 
@@ -429,16 +443,16 @@ void parameter::generateImpl
 	// or is too long for a single line
 	if ((extended || cutValue) &&
 		genMode != generationContext::PARAMETER_VALUE_NO_ENCODING &&
-	    genMode != generationContext::PARAMETER_VALUE_RFC2047_ONLY)
-	{
+	    genMode != generationContext::PARAMETER_VALUE_RFC2047_ONLY) {
 
-		if (genMode == generationContext::PARAMETER_VALUE_RFC2231_AND_RFC2047)
-		{
+
+		if (genMode == generationContext::PARAMETER_VALUE_RFC2231_AND_RFC2047) {
+
 			os << ';';
 			++pos;
-		}
-		else
-		{
+
+		} else {
+
 			// The data output to 'sevenBitBuffer' will be discarded in this case
 			pos = curLinePos;
 		}
@@ -466,8 +480,8 @@ void parameter::generateImpl
 			  name.length() + 4 /* *0*= */ + 2 /* '' */
 			+ m_value->getCharset().getName().length();
 
-		if (pos + firstSectionLength + 5 >= ctx.getMaxLineLength())
-		{
+		if (pos + firstSectionLength + 5 >= ctx.getMaxLineLength()) {
+
 			os << NEW_LINE_SEQUENCE;
 			pos = NEW_LINE_SEQUENCE_LENGTH;
 		}
@@ -479,61 +493,60 @@ void parameter::generateImpl
 		string currentSection;
 		size_t currentSectionLength = firstSectionLength;
 
-		for (size_t i = 0 ; i < value.length() ; ++i)
-		{
+		for (size_t i = 0 ; i < value.length() ; ++i) {
+
 			// Check whether we should start a new line (taking into
 			// account the next character will be encoded = worst case)
-			if (currentSectionLength + 3 >= ctx.getMaxLineLength())
-			{
+			if (currentSectionLength + 3 >= ctx.getMaxLineLength()) {
+
 				sectionText.push_back(currentSection);
 				sectionCount++;
 
 				currentSection.clear();
-				currentSectionLength = NEW_LINE_SEQUENCE_LENGTH
-					+ name.length() + 6;
+				currentSectionLength = NEW_LINE_SEQUENCE_LENGTH + name.length() + 6;
 			}
 
 			// Output next character
 			const char_t c = value[i];
 			bool encode = false;
 
-			switch (c)
-			{
-			// special characters
-			case ' ':
-			case '\t':
-			case '\r':
-			case '\n':
-			case '%':
-			case '"':
-			case ';':
-			case ',':
-			case '(':
-			case ')':
-			case '<':
-			case '>':
-			case '@':
-			case ':':
-			case '/':
-			case '[':
-			case ']':
-			case '?':
-			case '=':
+			switch (c) {
 
-				encode = true;
-				break;
+				// special characters
+				case ' ':
+				case '\t':
+				case '\r':
+				case '\n':
+				case '%':
+				case '"':
+				case ';':
+				case ',':
+				case '(':
+				case ')':
+				case '<':
+				case '>':
+				case '@':
+				case ':':
+				case '/':
+				case '[':
+				case ']':
+				case '?':
+				case '=':
 
-			default:
+					encode = true;
+					break;
 
-				encode = (!parserHelpers::isPrint(c) ||
-				          !parserHelpers::isAscii(c) ||
-				          alwaysEncode);
+				default:
 
-				break;
+					encode = (!parserHelpers::isPrint(c) ||
+					          !parserHelpers::isAscii(c) ||
+					          alwaysEncode);
+
+					break;
 			}
 
-			if (encode)  // need encoding
-			{
+			if (encode) {  // need encoding
+
 				const int h1 = static_cast <unsigned char>(c) / 16;
 				const int h2 = static_cast <unsigned char>(c) % 16;
 
@@ -543,9 +556,9 @@ void parameter::generateImpl
 
 				pos += 3;
 				currentSectionLength += 3;
-			}
-			else
-			{
+
+			} else {
+
 				currentSection += value[i];
 
 				++pos;
@@ -553,44 +566,44 @@ void parameter::generateImpl
 			}
 		}
 
-		if (!currentSection.empty())
-		{
+		if (!currentSection.empty()) {
+
 			sectionText.push_back(currentSection);
 			sectionCount++;
 		}
 
 		// Output sections
-		for (int sectionNumber = 0 ; sectionNumber < sectionCount ; ++sectionNumber)
-		{
+		for (int sectionNumber = 0 ; sectionNumber < sectionCount ; ++sectionNumber) {
+
 			os << name;
 
-			if (sectionCount != 1) // no section specifier when only a single one
-			{
+			if (sectionCount != 1) {  // no section specifier when only a single one
+
 				os << '*';
 				os << sectionNumber;
 			}
 
 			os << "*=";
 
-			if (sectionNumber == 0)
-			{
+			if (sectionNumber == 0) {
+
 				os << m_value->getCharset().getName();
 				os << '\'' << /* No language */ '\'';
 			}
 
 			os << sectionText[sectionNumber];
 
-			if (sectionNumber + 1 < sectionCount)
-			{
+			if (sectionNumber + 1 < sectionCount) {
+
 				os << ';';
 				os << NEW_LINE_SEQUENCE;
 				pos = NEW_LINE_SEQUENCE_LENGTH;
 			}
 		}
-	}
-	else if (!(genMode == generationContext::PARAMETER_VALUE_RFC2047_ONLY ||
-	           genMode == generationContext::PARAMETER_VALUE_RFC2231_AND_RFC2047))
-	{
+
+	} else if (!(genMode == generationContext::PARAMETER_VALUE_RFC2047_ONLY ||
+	             genMode == generationContext::PARAMETER_VALUE_RFC2231_AND_RFC2047)) {
+
 		// The value does not contain 8-bit characters and
 		// is short enough for a single line.
 		// "7bit/us-ascii" will suffice in this case.
@@ -599,13 +612,14 @@ void parameter::generateImpl
 		os << sevenBitBuffer;
 	}
 
-	if (newLinePos)
+	if (newLinePos) {
 		*newLinePos = pos;
+	}
 }
 
 
-size_t parameter::getGeneratedSize(const generationContext& ctx)
-{
+size_t parameter::getGeneratedSize(const generationContext& ctx) {
+
 	const string& name = m_name;
 	const string& value = m_value->getBuffer();
 
@@ -638,8 +652,8 @@ size_t parameter::getGeneratedSize(const generationContext& ctx)
 }
 
 
-const std::vector <shared_ptr <component> > parameter::getChildComponents()
-{
+const std::vector <shared_ptr <component> > parameter::getChildComponents() {
+
 	std::vector <shared_ptr <component> > list;
 
 	list.push_back(m_value);
@@ -649,4 +663,3 @@ const std::vector <shared_ptr <component> > parameter::getChildComponents()
 
 
 } // vmime
-

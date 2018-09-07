@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -44,8 +44,8 @@ class SASLSession;
 
 /** An SASL mechanism.
   */
-class VMIME_EXPORT SASLMechanism : public object
-{
+class VMIME_EXPORT SASLMechanism : public object {
+
 public:
 
 	/** Return the name of this mechanism.
@@ -73,10 +73,13 @@ public:
 	  * authentication (in this case, the values in 'response' and
 	  * 'responseLen' are undetermined)
 	  */
-	virtual bool step
-		(shared_ptr <SASLSession> sess,
-		 const byte_t* challenge, const size_t challengeLen,
-		 byte_t** response, size_t* responseLen) = 0;
+	virtual bool step(
+		const shared_ptr <SASLSession>& sess,
+		const byte_t* challenge,
+		const size_t challengeLen,
+		byte_t** response,
+		size_t* responseLen
+	) = 0;
 
 	/** Check whether authentication has completed. If false, more
 	  * calls to evaluateChallenge() are needed to complete the
@@ -109,9 +112,13 @@ public:
 	  * the encoding of data (in this case, the values in 'output' and
 	  * 'outputLen' are undetermined)
 	  */
-	virtual void encode(shared_ptr <SASLSession> sess,
-		const byte_t* input, const size_t inputLen,
-		byte_t** output, size_t* outputLen) = 0;
+	virtual void encode(
+		const shared_ptr <SASLSession>& sess,
+		const byte_t* input,
+		const size_t inputLen,
+		byte_t** output,
+		size_t* outputLen
+	) = 0;
 
 	/** Decode data according to negotiated SASL mechanism. This
 	  * might mean that data is integrity or privacy protected.
@@ -126,9 +133,13 @@ public:
 	  * the encoding of data (in this case, the values in 'output' and
 	  * 'outputLen' are undetermined)
 	  */
-	virtual void decode(shared_ptr <SASLSession> sess,
-		const byte_t* input, const size_t inputLen,
-		byte_t** output, size_t* outputLen) = 0;
+	virtual void decode(
+		const shared_ptr <SASLSession>& sess,
+		const byte_t* input,
+		const size_t inputLen,
+		byte_t** output,
+		size_t* outputLen
+	) = 0;
 };
 
 
@@ -140,4 +151,3 @@ public:
 #endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_SASL_SUPPORT
 
 #endif // VMIME_SECURITY_SASL_SASLMECHANISM_HPP_INCLUDED
-

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -62,18 +62,17 @@
 // Workaround for detection of strerror_r variants
 #if VMIME_HAVE_STRERROR_R
 
-namespace
-{
+namespace {
 
-char* vmime_strerror_r_result(int /* res */, char* buf)
-{
+char* vmime_strerror_r_result(int /* res */, char* buf) {
+
 	// XSI-compliant prototype:
 	// int strerror_r(int errnum, char *buf, size_t buflen);
 	return buf;
 }
 
-char* vmime_strerror_r_result(char* res, char* /* buf */)
-{
+char* vmime_strerror_r_result(char* res, char* /* buf */) {
+
 	// GNU-specific prototype:
 	// char *strerror_r(int errnum, char *buf, size_t buflen);
 	return res;
@@ -95,29 +94,31 @@ namespace posix {
 //
 
 posixSocket::posixSocket(shared_ptr <vmime::net::timeoutHandler> th)
-	: m_timeoutHandler(th), m_desc(-1), m_status(0)
-{
+	: m_timeoutHandler(th),
+	  m_desc(-1),
+	  m_status(0) {
+
 }
 
 
-posixSocket::~posixSocket()
-{
-	if (m_desc != -1)
+posixSocket::~posixSocket() {
+
+	if (m_desc != -1) {
 		::close(m_desc);
+	}
 }
 
 
-void posixSocket::connect(const vmime::string& address, const vmime::port_t port)
-{
+void posixSocket::connect(const vmime::string& address, const vmime::port_t port) {
+
 	// Close current connection, if any
-	if (m_desc != -1)
-	{
+	if (m_desc != -1) {
 		::close(m_desc);
 		m_desc = -1;
 	}
 
-	if (m_tracer)
-	{
+	if (m_tracer) {
+
 		std::ostringstream trace;
 		trace << "Connecting to " << address << ", port " << port;
 
@@ -136,20 +137,21 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 	int sock = -1;
 	int connectErrno = 0;
 
-	if (m_timeoutHandler != NULL)
+	if (m_timeoutHandler != NULL) {
 		m_timeoutHandler->resetTimeOut();
+	}
 
 	for (struct ::addrinfo* curAddrInfo = addrInfo ;
 	     sock == -1 && curAddrInfo != NULL ;
-	     curAddrInfo = curAddrInfo->ai_next, connectErrno = ETIMEDOUT)
-	{
-		if (curAddrInfo->ai_family != AF_INET && curAddrInfo->ai_family != AF_INET6)
+	     curAddrInfo = curAddrInfo->ai_next, connectErrno = ETIMEDOUT) {
+
+		if (curAddrInfo->ai_family != AF_INET && curAddrInfo->ai_family != AF_INET6) {
 			continue;
+		}
 
 		sock = ::socket(curAddrInfo->ai_family, curAddrInfo->ai_socktype, curAddrInfo->ai_protocol);
 
-		if (sock < 0)
-		{
+		if (sock < 0) {
 			connectErrno = errno;
 			continue;  // try next
 		}
@@ -175,33 +177,33 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 #endif // VMIME_HAVE_SO_NOSIGPIPE
 
 
-		if (m_timeoutHandler != NULL)
-		{
+		if (m_timeoutHandler) {
+
 			::fcntl(sock, F_SETFL, ::fcntl(sock, F_GETFL) | O_NONBLOCK);
 
-			if (::connect(sock, curAddrInfo->ai_addr, curAddrInfo->ai_addrlen) < 0)
-			{
-				switch (errno)
-				{
-				case 0:
-				case EINPROGRESS:
-				case EINTR:
+			if (::connect(sock, curAddrInfo->ai_addr, curAddrInfo->ai_addrlen) < 0) {
+
+				switch (errno) {
+
+					case 0:
+					case EINPROGRESS:
+					case EINTR:
 #if defined(EAGAIN)
-				case EAGAIN:
+					case EAGAIN:
 #endif // EAGAIN
 #if defined(EWOULDBLOCK) && (!defined(EAGAIN) || (EWOULDBLOCK != EAGAIN))
-				case EWOULDBLOCK:
+					case EWOULDBLOCK:
 #endif // EWOULDBLOCK
 
-					// Connection in progress
-					break;
+						// Connection in progress
+						break;
 
-				default:
+					default:
 
-					connectErrno = errno;
-					::close(sock);
-					sock = -1;
-					continue;  // try next
+						connectErrno = errno;
+						::close(sock);
+						sock = -1;
+						continue;  // try next
 				}
 
 				// Wait for socket to be connected.
@@ -213,8 +215,8 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 				timeval startTime = { 0, 0 };
 				gettimeofday(&startTime, /* timezone */ NULL);
 
-				do
-				{
+				do {
+
 					pollfd fds[1];
 					fds[0].fd = sock;
 					fds[0].events = POLLIN | POLLOUT;
@@ -222,33 +224,34 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 					const int ret = ::poll(fds, sizeof(fds) / sizeof(fds[0]), pollTimeout);
 
 					// Success
-					if (ret > 0)
-					{
-						if (fds[0].revents & (POLLIN | POLLOUT))
-						{
+					if (ret > 0) {
+
+						if (fds[0].revents & (POLLIN | POLLOUT)) {
+
 							int error = 0;
 							socklen_t len = sizeof(error);
 
-							if (getsockopt(sock, SOL_SOCKET, SO_ERROR, &error, &len) < 0)
-							{
+							if (getsockopt(sock, SOL_SOCKET, SO_ERROR, &error, &len) < 0) {
+
 								connectErrno = errno;
-							}
-							else
-							{
-								if (error != 0)
+
+							} else {
+
+								if (error != 0) {
 									connectErrno = error;
-								else
+								} else {
 									connected = true;
+								}
 							}
 						}
 
 						break;
-					}
+
 					// Error
-					else if (ret < -1)
-					{
-						if (errno != EAGAIN && errno != EINTR)
-						{
+					} else if (ret < -1) {
+
+						if (errno != EAGAIN && errno != EINTR) {
+
 							// Cancel connection
 							connectErrno = errno;
 							break;
@@ -256,22 +259,22 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 					}
 
 					// Check for timeout
-					if (m_timeoutHandler->isTimeOut())
-					{
-						if (!m_timeoutHandler->handleTimeOut())
-						{
+					if (m_timeoutHandler->isTimeOut()) {
+
+						if (!m_timeoutHandler->handleTimeOut()) {
+
 							// Cancel connection
 							connectErrno = ETIMEDOUT;
 							break;
-						}
-						else
-						{
+
+						} else {
+
 							// Reset timeout and keep waiting for connection
 							m_timeoutHandler->resetTimeOut();
 						}
-					}
-					else
-					{
+
+					} else {
+
 						// Keep waiting for connection
 					}
 
@@ -279,33 +282,33 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 					gettimeofday(&curTime, /* timezone */ NULL);
 
 					if (curAddrInfo->ai_next != NULL &&
-						curTime.tv_usec - startTime.tv_usec >= tryNextTimeout * 1000)
-					{
+						curTime.tv_usec - startTime.tv_usec >= tryNextTimeout * 1000) {
+
 						connectErrno = ETIMEDOUT;
 						break;
 					}
 
 				} while (true);
 
-				if (!connected)
-				{
+				if (!connected) {
+
 					::close(sock);
 					sock = -1;
 					continue;  // try next
 				}
 
 				break;
-			}
-			else
-			{
+
+			} else {
+
 				// Connection successful
 				break;
 			}
-		}
-		else
-		{
-			if (::connect(sock, curAddrInfo->ai_addr, curAddrInfo->ai_addrlen) < 0)
-			{
+
+		} else {
+
+			if (::connect(sock, curAddrInfo->ai_addr, curAddrInfo->ai_addrlen) < 0) {
+
 				connectErrno = errno;
 				::close(sock);
 				sock = -1;
@@ -316,16 +319,12 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 
 	::freeaddrinfo(addrInfo);
 
-	if (sock == -1)
-	{
-		try
-		{
+	if (sock == -1) {
+
+		try {
 			throwSocketError(connectErrno);
-		}
-		catch (exceptions::socket_exception& e)
-		{
-			throw vmime::exceptions::connection_error
-				("Error while connecting socket.", e);
+		} catch (exceptions::socket_exception& e) {  // wrap
+			throw vmime::exceptions::connection_error("Error while connecting socket.", e);
 		}
 	}
 
@@ -342,12 +341,11 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 	addr.sin_port = htons(static_cast <unsigned short>(port));
 	addr.sin_addr.s_addr = ::inet_addr(address.c_str());
 
-	if (addr.sin_addr.s_addr == static_cast <in_addr_t>(-1))
-	{
+	if (addr.sin_addr.s_addr == static_cast <in_addr_t>(-1)) {
+
 		::hostent* hostInfo = ::gethostbyname(address.c_str());
 
-		if (hostInfo == NULL)
-		{
+		if (hostInfo == NULL) {
 			// Error: cannot resolve address
 			throw vmime::exceptions::connection_error("Cannot resolve address.");
 		}
@@ -360,34 +358,29 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 	// Get a new socket
 	m_desc = ::socket(AF_INET, SOCK_STREAM, 0);
 
-	if (m_desc == -1)
-	{
-		try
-		{
+	if (m_desc == -1) {
+
+		try {
 			throwSocketError(errno);
-		}
-		catch (exceptions::socket_exception& e)
-		{
-			throw vmime::exceptions::connection_error
-				("Error while creating socket.", e);
+		} catch (exceptions::socket_exception& e) {  // wrap
+			throw vmime::exceptions::connection_error("Error while creating socket.", e);
 		}
 	}
 
 	// Start connection
-	if (::connect(m_desc, reinterpret_cast <sockaddr*>(&addr), sizeof(addr)) == -1)
-	{
-		try
-		{
+	if (::connect(m_desc, reinterpret_cast <sockaddr*>(&addr), sizeof(addr)) == -1) {
+
+		try {
+
 			throwSocketError(errno);
-		}
-		catch (exceptions::socket_exception& e)
-		{
+
+		} catch (exceptions::socket_exception& e) {  // wrap
+
 			::close(m_desc);
 			m_desc = -1;
 
 			// Error
-			throw vmime::exceptions::connection_error
-				("Error while connecting socket.", e);
+			throw vmime::exceptions::connection_error("Error while connecting socket.", e);
 		}
 	}
 
@@ -397,8 +390,12 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 }
 
 
-void posixSocket::resolve(struct ::addrinfo** addrInfo, const vmime::string& address, const vmime::port_t port)
-{
+void posixSocket::resolve(
+	struct ::addrinfo** addrInfo,
+	const vmime::string& address,
+	const vmime::port_t port
+) {
+
 	char portStr[16];
 	snprintf(portStr, sizeof(portStr), "%u", static_cast <unsigned int>(port));
 
@@ -425,73 +422,73 @@ void posixSocket::resolve(struct ::addrinfo** addrInfo, const vmime::string& add
 	struct ::gaicb* gaiRequests = &gaiRequest;
 	int gaiError;
 
-	if ((gaiError = getaddrinfo_a(GAI_NOWAIT, &gaiRequests, 1, NULL)) != 0)
-	{
-		throw vmime::exceptions::connection_error
-			("getaddrinfo_a() failed: " + std::string(gai_strerror(gaiError)));
+	if ((gaiError = getaddrinfo_a(GAI_NOWAIT, &gaiRequests, 1, NULL)) != 0) {
+
+		throw vmime::exceptions::connection_error(
+			"getaddrinfo_a() failed: " + std::string(gai_strerror(gaiError))
+		);
 	}
 
-	if (m_timeoutHandler != NULL)
+	if (m_timeoutHandler) {
 		m_timeoutHandler->resetTimeOut();
+	}
 
-	while (true)
-	{
+	while (true) {
+
 		struct timespec gaiTimeout;
 		gaiTimeout.tv_sec = 1;  // query timeout handler every second
 		gaiTimeout.tv_nsec = 0;
 
 		gaiError = gai_suspend(&gaiRequests, 1, &gaiTimeout);
 
-		if (gaiError == 0 || gaiError == EAI_ALLDONE)
-		{
+		if (gaiError == 0 || gaiError == EAI_ALLDONE) {
+
 			const int ret = gai_error(&gaiRequest);
 
-			if (ret != 0)
-			{
-				throw vmime::exceptions::connection_error
-					("getaddrinfo_a() request failed: " + std::string(gai_strerror(ret)));
-			}
-			else
-			{
+			if (ret != 0) {
+
+				throw vmime::exceptions::connection_error(
+					"getaddrinfo_a() request failed: " + std::string(gai_strerror(ret))
+				);
+
+			} else {
+
 				*addrInfo = gaiRequest.ar_result;
 				break;
 			}
-		}
-		else if (gaiError != EAI_AGAIN)
-		{
-			if (gaiError == EAI_SYSTEM)
-			{
+
+		} else if (gaiError != EAI_AGAIN) {
+
+			if (gaiError == EAI_SYSTEM) {
+
 				const int ret = gai_error(&gaiRequest);
 
-				if (ret != EAI_INPROGRESS && errno != 0)
-				{
-					try
-					{
+				if (ret != EAI_INPROGRESS && errno != 0) {
+
+					try {
 						throwSocketError(errno);
-					}
-					catch (exceptions::socket_exception& e)
-					{
-						throw vmime::exceptions::connection_error
-							("Error while connecting socket.", e);
+					} catch (exceptions::socket_exception& e) {  // wrap
+						throw vmime::exceptions::connection_error("Error while connecting socket.", e);
 					}
 				}
-			}
-			else
-			{
-				throw vmime::exceptions::connection_error
-					("gai_suspend() failed: " + std::string(gai_strerror(gaiError)));
+
+			} else {
+
+				throw vmime::exceptions::connection_error(
+					"gai_suspend() failed: " + std::string(gai_strerror(gaiError))
+				);
 			}
 		}
 
 		// Check for timeout
-		if (m_timeoutHandler && m_timeoutHandler->isTimeOut())
-		{
-			if (!m_timeoutHandler->handleTimeOut())
-			{
+		if (m_timeoutHandler && m_timeoutHandler->isTimeOut()) {
+
+			if (!m_timeoutHandler->handleTimeOut()) {
+
 				throw exceptions::operation_timed_out();
-			}
-			else
-			{
+
+			} else {
+
 				// Reset timeout and keep waiting for connection
 				m_timeoutHandler->resetTimeOut();
 			}
@@ -500,8 +497,8 @@ void posixSocket::resolve(struct ::addrinfo** addrInfo, const vmime::string& add
 
 #else  // !VMIME_HAVE_GETADDRINFO_A
 
-	if (::getaddrinfo(address.c_str(), portStr, &hints, addrInfo) != 0)
-	{
+	if (::getaddrinfo(address.c_str(), portStr, &hints, addrInfo) != 0) {
+
 		// Error: cannot resolve address
 		throw vmime::exceptions::connection_error("Cannot resolve address.");
 	}
@@ -511,10 +508,11 @@ void posixSocket::resolve(struct ::addrinfo** addrInfo, const vmime::string& add
 }
 
 
-bool posixSocket::isConnected() const
-{
-	if (m_desc == -1)
+bool posixSocket::isConnected() const {
+
+	if (m_desc == -1) {
 		return false;
+	}
 
 	char buff;
 
@@ -522,12 +520,13 @@ bool posixSocket::isConnected() const
 }
 
 
-void posixSocket::disconnect()
-{
-	if (m_desc != -1)
-	{
-		if (m_tracer)
+void posixSocket::disconnect() {
+
+	if (m_desc != -1) {
+
+		if (m_tracer) {
 			m_tracer->traceSend("Disconnecting");
+		}
 
 		::shutdown(m_desc, SHUT_RDWR);
 		::close(m_desc);
@@ -537,8 +536,7 @@ void posixSocket::disconnect()
 }
 
 
-static bool isNumericAddress(const char* address)
-{
+static bool isNumericAddress(const char* address) {
 
 #if VMIME_HAVE_GETADDRINFO
 
@@ -548,13 +546,13 @@ static bool isNumericAddress(const char* address)
 	hint.ai_family = AF_UNSPEC;
 	hint.ai_flags = AI_NUMERICHOST;
 
-	if (getaddrinfo(address, 0, &hint, &info) == 0)
-	{
+	if (getaddrinfo(address, 0, &hint, &info) == 0) {
+
 		freeaddrinfo(info);
 		return true;
-	}
-	else
-	{
+
+	} else {
+
 		return false;
 	}
 
@@ -567,22 +565,20 @@ static bool isNumericAddress(const char* address)
 }
 
 
-const string posixSocket::getPeerAddress() const
-{
+const string posixSocket::getPeerAddress() const {
+
 	// Get address of connected peer
 	sockaddr peer;
 	socklen_t peerLen = sizeof(peer);
 
-	if (getpeername(m_desc, &peer, &peerLen) != 0)
-	{
+	if (getpeername(m_desc, &peer, &peerLen) != 0) {
 		throwSocketError(errno);
 	}
 
 	// Convert to numerical presentation format
 	char buf[INET6_ADDRSTRLEN];
 
-	if (!inet_ntop(peer.sa_family, &(reinterpret_cast <struct sockaddr_in *>(&peer))->sin_addr, buf, sizeof(buf)))
-	{
+	if (!inet_ntop(peer.sa_family, &(reinterpret_cast <struct sockaddr_in *>(&peer))->sin_addr, buf, sizeof(buf))) {
 		throwSocketError(errno);
 	}
 
@@ -590,21 +586,19 @@ const string posixSocket::getPeerAddress() const
 }
 
 
-const string posixSocket::getPeerName() const
-{
+const string posixSocket::getPeerName() const {
+
 	// Get address of connected peer
 	sockaddr peer;
 	socklen_t peerLen = sizeof(peer);
 
-	if (getpeername(m_desc, &peer, &peerLen) != 0)
-	{
+	if (getpeername(m_desc, &peer, &peerLen) != 0) {
 		throwSocketError(errno);
 	}
 
 	// If server address as specified when connecting is a numeric
 	// address, try to get a host name for it
-	if (isNumericAddress(m_serverAddress.c_str()))
-	{
+	if (isNumericAddress(m_serverAddress.c_str())) {
 
 #if VMIME_HAVE_GETNAMEINFO
 
@@ -613,8 +607,8 @@ const string posixSocket::getPeerName() const
 
 		if (getnameinfo(reinterpret_cast <sockaddr *>(&peer), peerLen,
 				host, sizeof(host), service, sizeof(service),
-				/* flags */ NI_NAMEREQD) == 0)
-		{
+				/* flags */ NI_NAMEREQD) == 0) {
+
 			return string(host);
 		}
 
@@ -623,8 +617,8 @@ const string posixSocket::getPeerName() const
 		struct hostent *hp;
 
 		if ((hp = gethostbyaddr(reinterpret_cast <const void *>(&peer),
-				sizeof(peer), peer.sa_family)) != NULL)
-		{
+				sizeof(peer), peer.sa_family)) != NULL) {
+
 			return string(hp->h_name);
 		}
 
@@ -636,52 +630,56 @@ const string posixSocket::getPeerName() const
 }
 
 
-size_t posixSocket::getBlockSize() const
-{
+size_t posixSocket::getBlockSize() const {
+
 	return 16384;  // 16 KB
 }
 
 
-bool posixSocket::waitForData(const bool read, const bool write, const int msecs)
-{
-	for (int i = 0 ; i <= msecs / 10 ; ++i)
-	{
+bool posixSocket::waitForData(const bool read, const bool write, const int msecs) {
+
+	for (int i = 0 ; i <= msecs / 10 ; ++i) {
+
 		// Check whether data is available
 		pollfd fds[1];
 		fds[0].fd = m_desc;
 		fds[0].events = 0;
 
-		if (read)
+		if (read) {
 			fds[0].events |= POLLIN;
+		}
 
-		if (write)
+		if (write) {
 			fds[0].events |= POLLOUT;
+		}
 
 		const int ret = ::poll(fds, sizeof(fds) / sizeof(fds[0]), 10 /* ms */);
 
-		if (ret < 0)
-		{
-			if (errno != EAGAIN && errno != EINTR)
+		if (ret < 0) {
+
+			if (errno != EAGAIN && errno != EINTR) {
 				throwSocketError(errno);
-		}
-		else if (ret > 0)
-		{
-			if (fds[0].revents & (POLLIN | POLLOUT))
+			}
+
+		} else if (ret > 0) {
+
+			if (fds[0].revents & (POLLIN | POLLOUT)) {
 				return true;
+			}
 		}
 
 		// No data available at this time
 		// Check if we are timed out
 		if (m_timeoutHandler &&
-		    m_timeoutHandler->isTimeOut())
-		{
-			if (!m_timeoutHandler->handleTimeOut())
-			{
+		    m_timeoutHandler->isTimeOut()) {
+
+			if (!m_timeoutHandler->handleTimeOut()) {
+
 				// Server did not react within timeout delay
 				throw exceptions::operation_timed_out();
-			}
-			else
-			{
+
+			} else {
+
 				// Reset timeout
 				m_timeoutHandler->resetTimeOut();
 			}
@@ -692,32 +690,32 @@ bool posixSocket::waitForData(const bool read, const bool write, const int msecs
 }
 
 
-bool posixSocket::waitForRead(const int msecs)
-{
+bool posixSocket::waitForRead(const int msecs) {
+
 	return waitForData(/* read */ true, /* write */ false, msecs);
 }
 
 
-bool posixSocket::waitForWrite(const int msecs)
-{
+bool posixSocket::waitForWrite(const int msecs) {
+
 	return waitForData(/* read */ false, /* write */ true, msecs);
 }
 
 
-void posixSocket::receive(vmime::string& buffer)
-{
+void posixSocket::receive(vmime::string& buffer) {
+
 	const size_t size = receiveRaw(m_buffer, sizeof(m_buffer));
 	buffer = utility::stringUtils::makeStringFromBytes(m_buffer, size);
 }
 
 
-size_t posixSocket::receiveRaw(byte_t* buffer, const size_t count)
-{
+size_t posixSocket::receiveRaw(byte_t* buffer, const size_t count) {
+
 	m_status &= ~STATUS_WOULDBLOCK;
 
 	// Check whether data is available
-	if (!waitForRead(50 /* msecs */))
-	{
+	if (!waitForRead(50 /* msecs */)) {
+
 		m_status |= STATUS_WOULDBLOCK;
 
 		// Continue waiting for data
@@ -727,22 +725,23 @@ size_t posixSocket::receiveRaw(byte_t* buffer, const size_t count)
 	// Read available data
 	ssize_t ret = ::recv(m_desc, buffer, count, 0);
 
-	if (ret < 0)
-	{
-		if (!IS_EAGAIN(errno))
+	if (ret < 0) {
+
+		if (!IS_EAGAIN(errno)) {
 			throwSocketError(errno);
+		}
 
 		// Check if we are timed out
 		if (m_timeoutHandler &&
-		    m_timeoutHandler->isTimeOut())
-		{
-			if (!m_timeoutHandler->handleTimeOut())
-			{
+		    m_timeoutHandler->isTimeOut()) {
+
+			if (!m_timeoutHandler->handleTimeOut()) {
+
 				// Server did not react within timeout delay
 				throwSocketError(errno);
-			}
-			else
-			{
+
+			} else {
+
 				// Reset timeout
 				m_timeoutHandler->resetTimeOut();
 			}
@@ -752,43 +751,43 @@ size_t posixSocket::receiveRaw(byte_t* buffer, const size_t count)
 
 		// No data available at this time
 		return 0;
-	}
-	else if (ret == 0)
-	{
+
+	} else if (ret == 0) {
+
 		// Host shutdown
 		throwSocketError(ENOTCONN);
-	}
-	else
-	{
+
+	} else {
+
 		// Data received, reset timeout
-		if (m_timeoutHandler)
+		if (m_timeoutHandler) {
 			m_timeoutHandler->resetTimeOut();
+		}
 	}
 
 	return ret;
 }
 
 
-void posixSocket::send(const vmime::string& buffer)
-{
+void posixSocket::send(const vmime::string& buffer) {
+
 	sendRaw(reinterpret_cast <const byte_t*>(buffer.data()), buffer.length());
 }
 
 
-void posixSocket::send(const char* str)
-{
+void posixSocket::send(const char* str) {
+
 	sendRaw(reinterpret_cast <const byte_t*>(str), ::strlen(str));
 }
 
 
-void posixSocket::sendRaw(const byte_t* buffer, const size_t count)
-{
+void posixSocket::sendRaw(const byte_t* buffer, const size_t count) {
+
 	m_status &= ~STATUS_WOULDBLOCK;
 
 	size_t size = count;
 
-	while (size > 0)
-	{
+	while (size > 0) {
 
 #if VMIME_HAVE_MSG_NOSIGNAL
 		const ssize_t ret = ::send(m_desc, buffer, size, MSG_NOSIGNAL);
@@ -796,28 +795,30 @@ void posixSocket::sendRaw(const byte_t* buffer, const size_t count)
 		const ssize_t ret = ::send(m_desc, buffer, size, 0);
 #endif
 
-		if (ret <= 0)
-		{
-			if (ret < 0 && !IS_EAGAIN(errno))
+		if (ret <= 0) {
+
+			if (ret < 0 && !IS_EAGAIN(errno)) {
 				throwSocketError(errno);
+			}
 
 			waitForWrite(50 /* msecs */);
-		}
-		else
-		{
+
+		} else {
+
 			buffer += ret;
 			size -= ret;
 		}
 	}
 
 	// Reset timeout
-	if (m_timeoutHandler)
+	if (m_timeoutHandler) {
 		m_timeoutHandler->resetTimeOut();
+	}
 }
 
 
-size_t posixSocket::sendRawNonBlocking(const byte_t* buffer, const size_t count)
-{
+size_t posixSocket::sendRawNonBlocking(const byte_t* buffer, const size_t count) {
+
 	m_status &= ~STATUS_WOULDBLOCK;
 
 #if VMIME_HAVE_MSG_NOSIGNAL
@@ -826,22 +827,23 @@ size_t posixSocket::sendRawNonBlocking(const byte_t* buffer, const size_t count)
 	const ssize_t ret = ::send(m_desc, buffer, count, 0);
 #endif
 
-	if (ret <= 0)
-	{
-		if (ret < 0 && !IS_EAGAIN(errno))
+	if (ret <= 0) {
+
+		if (ret < 0 && !IS_EAGAIN(errno)) {
 			throwSocketError(errno);
+		}
 
 		// Check if we are timed out
 		if (m_timeoutHandler &&
-		    m_timeoutHandler->isTimeOut())
-		{
-			if (!m_timeoutHandler->handleTimeOut())
-			{
+		    m_timeoutHandler->isTimeOut()) {
+
+			if (!m_timeoutHandler->handleTimeOut()) {
+
 				// Could not send data within timeout delay
 				throw exceptions::operation_timed_out();
-			}
-			else
-			{
+
+			} else {
+
 				// Reset timeout
 				m_timeoutHandler->resetTimeOut();
 			}
@@ -854,51 +856,57 @@ size_t posixSocket::sendRawNonBlocking(const byte_t* buffer, const size_t count)
 	}
 
 	// Reset timeout
-	if (m_timeoutHandler)
+	if (m_timeoutHandler) {
 		m_timeoutHandler->resetTimeOut();
+	}
 
 	return ret;
 }
 
 
-void posixSocket::throwSocketError(const int err)
-{
+void posixSocket::throwSocketError(const int err) {
+
 	const char* msg = NULL;
 
-	switch (err)
-	{
-	case EACCES:          msg = "EACCES: permission denied"; break;
-	case EAFNOSUPPORT:    msg = "EAFNOSUPPORT: address family not supported"; break;
-	case EMFILE:          msg = "EMFILE: process file table overflow"; break;
-	case ENFILE:          msg = "ENFILE: system limit reached"; break;
-	case EPROTONOSUPPORT: msg = "EPROTONOSUPPORT: protocol not supported"; break;
-	case EAGAIN:          msg = "EGAIN: blocking operation"; break;
-	case EBADF:           msg = "EBADF: invalid descriptor"; break;
-	case ECONNRESET:      msg = "ECONNRESET: connection reset by peer"; break;
-	case EFAULT:          msg = "EFAULT: bad user space address"; break;
-	case EINTR:           msg = "EINTR: signal occurred before transmission"; break;
-	case EINVAL:          msg = "EINVAL: invalid argument"; break;
-	case EMSGSIZE:        msg = "EMSGSIZE: message cannot be sent atomically"; break;
-	case ENOBUFS:         msg = "ENOBUFS: output queue is full"; break;
-	case ENOMEM:          msg = "ENOMEM: out of memory"; break;
-	case EPIPE:           msg = "EPIPE: broken pipe"; break;
-	case ENOTCONN:        msg = "ENOTCONN: not connected"; break;
-	case ECONNREFUSED:    msg = "ECONNREFUSED: connection refused"; break;
+	switch (err) {
+
+		case EACCES:          msg = "EACCES: permission denied"; break;
+		case EAFNOSUPPORT:    msg = "EAFNOSUPPORT: address family not supported"; break;
+		case EMFILE:          msg = "EMFILE: process file table overflow"; break;
+		case ENFILE:          msg = "ENFILE: system limit reached"; break;
+		case EPROTONOSUPPORT: msg = "EPROTONOSUPPORT: protocol not supported"; break;
+		case EAGAIN:          msg = "EGAIN: blocking operation"; break;
+		case EBADF:           msg = "EBADF: invalid descriptor"; break;
+		case ECONNRESET:      msg = "ECONNRESET: connection reset by peer"; break;
+		case EFAULT:          msg = "EFAULT: bad user space address"; break;
+		case EINTR:           msg = "EINTR: signal occurred before transmission"; break;
+		case EINVAL:          msg = "EINVAL: invalid argument"; break;
+		case EMSGSIZE:        msg = "EMSGSIZE: message cannot be sent atomically"; break;
+		case ENOBUFS:         msg = "ENOBUFS: output queue is full"; break;
+		case ENOMEM:          msg = "ENOMEM: out of memory"; break;
+		case EPIPE:           msg = "EPIPE: broken pipe"; break;
+		case ENOTCONN:        msg = "ENOTCONN: not connected"; break;
+		case ECONNREFUSED:    msg = "ECONNREFUSED: connection refused"; break;
 	}
 
-	if (msg)
-	{
+	if (msg) {
+
 		throw exceptions::socket_exception(msg);
-	}
-	else
-	{
+
+	} else {
 
 		// Use strerror() to get string describing error number
 
 #if VMIME_HAVE_STRERROR_R
 
 		char errbuf[512];
-		throw exceptions::socket_exception(vmime_strerror_r_result(strerror_r(err, errbuf, sizeof(errbuf)), errbuf));
+
+		throw exceptions::socket_exception(
+			vmime_strerror_r_result(
+				strerror_r(err, errbuf, sizeof(errbuf)),
+				errbuf
+			)
+		);
 
 #else  // !VMIME_HAVE_STRERROR_R
 
@@ -911,26 +919,26 @@ void posixSocket::throwSocketError(const int err)
 }
 
 
-unsigned int posixSocket::getStatus() const
-{
+unsigned int posixSocket::getStatus() const {
+
 	return m_status;
 }
 
 
-shared_ptr <net::timeoutHandler> posixSocket::getTimeoutHandler()
-{
+shared_ptr <net::timeoutHandler> posixSocket::getTimeoutHandler() {
+
 	return m_timeoutHandler;
 }
 
 
-void posixSocket::setTracer(shared_ptr <net::tracer> tracer)
-{
+void posixSocket::setTracer(const shared_ptr <net::tracer>& tracer) {
+
 	m_tracer = tracer;
 }
 
 
-shared_ptr <net::tracer> posixSocket::getTracer()
-{
+shared_ptr <net::tracer> posixSocket::getTracer() {
+
 	return m_tracer;
 }
 
@@ -940,15 +948,15 @@ shared_ptr <net::tracer> posixSocket::getTracer()
 // posixSocketFactory
 //
 
-shared_ptr <vmime::net::socket> posixSocketFactory::create()
-{
+shared_ptr <vmime::net::socket> posixSocketFactory::create() {
+
 	shared_ptr <vmime::net::timeoutHandler> th;
 	return make_shared <posixSocket>(th);
 }
 
 
-shared_ptr <vmime::net::socket> posixSocketFactory::create(shared_ptr <vmime::net::timeoutHandler> th)
-{
+shared_ptr <vmime::net::socket> posixSocketFactory::create(const shared_ptr <vmime::net::timeoutHandler>& th) {
+
 	return make_shared <posixSocket>(th);
 }
 

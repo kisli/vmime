@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -48,18 +48,20 @@ namespace vmime {
 namespace net {
 
 
-service::service(shared_ptr <session> sess, const serviceInfos& /* infos */,
-                 shared_ptr <security::authenticator> auth)
-	: m_session(sess), m_auth(auth)
-{
-	if (!auth)
-	{
+service::service(
+	const shared_ptr <session>& sess,
+	const serviceInfos& /* infos */,
+    const shared_ptr <security::authenticator>& auth
+)
+	: m_session(sess),
+	  m_auth(auth) {
+
+	if (!auth) {
+
 #if VMIME_HAVE_SASL_SUPPORT
-		m_auth = make_shared
-			<security::sasl::defaultSASLAuthenticator>();
+		m_auth = make_shared <security::sasl::defaultSASLAuthenticator>();
 #else
-		m_auth = make_shared
-			<security::defaultAuthenticator>();
+		m_auth = make_shared <security::defaultAuthenticator>();
 #endif // VMIME_HAVE_SASL_SUPPORT
 	}
 
@@ -73,89 +75,89 @@ service::service(shared_ptr <session> sess, const serviceInfos& /* infos */,
 }
 
 
-service::~service()
-{
+service::~service() {
+
 }
 
 
-shared_ptr <const session> service::getSession() const
-{
-	return (m_session);
+shared_ptr <const session> service::getSession() const {
+
+	return m_session;
 }
 
 
-shared_ptr <session> service::getSession()
-{
-	return (m_session);
+shared_ptr <session> service::getSession() {
+
+	return m_session;
 }
 
 
-shared_ptr <const security::authenticator> service::getAuthenticator() const
-{
-	return (m_auth);
+shared_ptr <const security::authenticator> service::getAuthenticator() const {
+
+	return m_auth;
 }
 
 
-shared_ptr <security::authenticator> service::getAuthenticator()
-{
-	return (m_auth);
+shared_ptr <security::authenticator> service::getAuthenticator() {
+
+	return m_auth;
 }
 
 
-void service::setAuthenticator(shared_ptr <security::authenticator> auth)
-{
+void service::setAuthenticator(const shared_ptr <security::authenticator>& auth) {
+
 	m_auth = auth;
 }
 
 
 #if VMIME_HAVE_TLS_SUPPORT
 
-void service::setCertificateVerifier(shared_ptr <security::cert::certificateVerifier> cv)
-{
+void service::setCertificateVerifier(const shared_ptr <security::cert::certificateVerifier>& cv) {
+
 	m_certVerifier = cv;
 }
 
 
-shared_ptr <security::cert::certificateVerifier> service::getCertificateVerifier()
-{
+shared_ptr <security::cert::certificateVerifier> service::getCertificateVerifier() {
+
 	return m_certVerifier;
 }
 
 #endif // VMIME_HAVE_TLS_SUPPORT
 
 
-void service::setSocketFactory(shared_ptr <socketFactory> sf)
-{
+void service::setSocketFactory(const shared_ptr <socketFactory>& sf) {
+
 	m_socketFactory = sf;
 }
 
 
-shared_ptr <socketFactory> service::getSocketFactory()
-{
+shared_ptr <socketFactory> service::getSocketFactory() {
+
 	return m_socketFactory;
 }
 
 
-void service::setTracerFactory(shared_ptr <tracerFactory> tf)
-{
+void service::setTracerFactory(const shared_ptr <tracerFactory>& tf) {
+
 	m_tracerFactory = tf;
 }
 
 
-shared_ptr <tracerFactory> service::getTracerFactory()
-{
+shared_ptr <tracerFactory> service::getTracerFactory() {
+
 	return m_tracerFactory;
 }
 
 
-void service::setTimeoutHandlerFactory(shared_ptr <timeoutHandlerFactory> thf)
-{
+void service::setTimeoutHandlerFactory(const shared_ptr <timeoutHandlerFactory>& thf) {
+
 	m_toHandlerFactory = thf;
 }
 
 
-shared_ptr <timeoutHandlerFactory> service::getTimeoutHandlerFactory()
-{
+shared_ptr <timeoutHandlerFactory> service::getTimeoutHandlerFactory() {
+
 	return m_toHandlerFactory;
 }
 

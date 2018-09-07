@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -36,13 +36,13 @@ namespace cert {
 
 
 certificateNotTrustedException::certificateNotTrustedException()
-	: certificateException("Cannot verify certificate against trusted certificates.")
-{
+	: certificateException("Cannot verify certificate against trusted certificates.") {
+
 }
 
 
-exception* certificateNotTrustedException::clone() const
-{
+exception* certificateNotTrustedException::clone() const {
+
 	return new certificateNotTrustedException();
 }
 

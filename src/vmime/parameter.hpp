@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -30,12 +30,11 @@
 #include "vmime/word.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
-class VMIME_EXPORT parameter : public component
-{
+class VMIME_EXPORT parameter : public component {
+
 	friend class parameterizedHeaderField;
 
 private:
@@ -73,8 +72,7 @@ public:
 	  * as defined in RFC-2231/3. This is used when
 	  * calling parse() on the parameter.
 	  */
-	struct valueChunk
-	{
+	struct valueChunk {
 		bool encoded;
 		string data;
 	};
@@ -121,8 +119,8 @@ public:
 	  * @return value
 	  */
 	template <typename T>
-	const T getValueAs() const
-	{
+	const T getValueAs() const {
+
 		T ret;
 		ret.parse(m_value->getBuffer());
 
@@ -144,22 +142,27 @@ public:
 
 protected:
 
-	void parseImpl
-		(const parsingContext& ctx,
-		 const string& buffer,
-		 const size_t position,
-		 const size_t end,
-		 size_t* newPosition = NULL);
+	void parseImpl(
+		const parsingContext& ctx,
+		const string& buffer,
+		const size_t position,
+		const size_t end,
+		size_t* newPosition = NULL
+	);
 
-	void generateImpl
-		(const generationContext& ctx,
-		 utility::outputStream& os,
-		 const size_t curLinePos = 0,
-		 size_t* newLinePos = NULL) const;
+	void generateImpl(
+		const generationContext& ctx,
+		utility::outputStream& os,
+		const size_t curLinePos = 0,
+		size_t* newLinePos = NULL
+	) const;
 
 private:
 
-	void parse(const parsingContext& ctx, const std::vector <valueChunk>& chunks);
+	void parse(
+		const parsingContext& ctx,
+		const std::vector <valueChunk>& chunks
+	);
 
 
 	string m_name;

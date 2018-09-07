@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -42,13 +42,19 @@ namespace maildir {
 class maildirMessagePart;
 
 
-class maildirMessageStructure : public messageStructure
-{
+class maildirMessageStructure : public messageStructure {
+
 public:
 
 	maildirMessageStructure();
-	maildirMessageStructure(shared_ptr <maildirMessagePart> parent, const bodyPart& part);
-	maildirMessageStructure(shared_ptr <maildirMessagePart> parent, const std::vector <shared_ptr <const vmime::bodyPart> >& list);
+	maildirMessageStructure(
+		const shared_ptr <maildirMessagePart>& parent,
+		const bodyPart& part
+	);
+	maildirMessageStructure(
+		const shared_ptr <maildirMessagePart>& parent,
+		const std::vector <shared_ptr <const vmime::bodyPart> >& list
+	);
 
 
 	shared_ptr <const messagePart> getPartAt(const size_t x) const;

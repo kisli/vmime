@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -29,15 +29,13 @@
 #include "vmime/utility/stringUtils.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 /** Creates header field and header field value objects.
   */
+class VMIME_EXPORT headerFieldFactory {
 
-class VMIME_EXPORT headerFieldFactory
-{
 protected:
 
 	headerFieldFactory();
@@ -49,8 +47,8 @@ protected:
 	NameMap m_nameMap;
 
 
-	struct ValueInfo
-	{
+	struct ValueInfo {
+
 		typedef shared_ptr <headerFieldValue> (*ValueAllocFunc)(void);
 		typedef bool (*ValueTypeCheckFunc)(const object&);
 
@@ -67,24 +65,26 @@ public:
 	static shared_ptr <headerFieldFactory> getInstance();
 
 #ifndef VMIME_BUILDING_DOC
+
 	// TYPE must inherit from BASE_TYPE
 	template <class BASE_TYPE, class TYPE>
-	class registerer
-	{
+	class registerer {
+
 	public:
 
-		static bool checkType(const object& obj)
-		{
+		static bool checkType(const object& obj) {
+
 			const TYPE* typedObj = dynamic_cast <const TYPE*>(&obj);
 			return typedObj != NULL;
 		}
 
-		static shared_ptr <BASE_TYPE> creator()
-		{
+		static shared_ptr <BASE_TYPE> creator() {
+
 			// Allocate a new object
 			return shared_ptr <BASE_TYPE>(new TYPE());
 		}
 	};
+
 #endif // VMIME_BUILDING_DOC
 
 
@@ -94,11 +94,14 @@ public:
 	  * @param name field name (eg. "X-MyField")
 	  */
 	template <class T>
-	void registerField(const string& name)
-	{
-		m_nameMap.insert(NameMap::value_type
-			(utility::stringUtils::toLower(name),
-			 &registerer <headerField, T>::creator));
+	void registerField(const string& name) {
+
+		m_nameMap.insert(
+			NameMap::value_type(
+				utility::stringUtils::toLower(name),
+				&registerer <headerField, T>::creator
+			)
+		);
 	}
 
 	/** Register a field value type.
@@ -107,14 +110,18 @@ public:
 	  * @param name field name
 	  */
 	template <class T>
-	void registerFieldValue(const string& name)
-	{
+	void registerFieldValue(const string& name) {
+
 		ValueInfo vi;
 		vi.allocFunc = &registerer <headerFieldValue, T>::creator;
 		vi.checkTypeFunc = &registerer <headerField, T>::checkType;
 
-		m_valueMap.insert(ValueMap::value_type
-			(utility::stringUtils::toLower(name), vi));
+		m_valueMap.insert(
+			ValueMap::value_type(
+				utility::stringUtils::toLower(name),
+				vi
+			)
+		);
 	}
 
 	/** Create a new field object for the specified field name.

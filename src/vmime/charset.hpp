@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -32,8 +32,7 @@
 #include "vmime/component.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 class encoding;  // forward reference
@@ -41,9 +40,8 @@ class encoding;  // forward reference
 
 /** Charset description (basic type).
   */
+class VMIME_EXPORT charset : public component {
 
-class VMIME_EXPORT charset : public component
-{
 public:
 
 	charset();
@@ -102,9 +100,13 @@ public:
 	  * @throws exceptions::charset_conv_error if an unexpected error occurred
 	  * during the conversion
 	  */
-	static void convert(const string& in, string& out,
-		const charset& source, const charset& dest,
-		const charsetConverterOptions& opts = charsetConverterOptions());
+	static void convert(
+		const string& in,
+		string& out,
+		const charset& source,
+		const charset& dest,
+		const charsetConverterOptions& opts = charsetConverterOptions()
+	);
 
 	/** Convert the contents of an input stream in a specified charset
 	  * to another charset and write the result to an output stream.
@@ -121,9 +123,13 @@ public:
 	  * @throws exceptions::charset_conv_error if an unexpected error occurred
 	  * during the conversion
 	  */
-	static void convert(utility::inputStream& in, utility::outputStream& out,
-		const charset& source, const charset& dest,
-		const charsetConverterOptions& opts = charsetConverterOptions());
+	static void convert(
+		utility::inputStream& in,
+		utility::outputStream& out,
+		const charset& source,
+		const charset& dest,
+		const charsetConverterOptions& opts = charsetConverterOptions()
+	);
 
 	/** Checks whether the specified text is valid in this charset.
 	  *
@@ -147,18 +153,20 @@ private:
 protected:
 
 	// Component parsing & assembling
-	void parseImpl
-		(const parsingContext& ctx,
-		 const string& buffer,
-		 const size_t position,
-		 const size_t end,
-		 size_t* newPosition = NULL);
+	void parseImpl(
+		const parsingContext& ctx,
+		const string& buffer,
+		const size_t position,
+		const size_t end,
+		size_t* newPosition = NULL
+	);
 
-	void generateImpl
-		(const generationContext& ctx,
-		 utility::outputStream& os,
-		 const size_t curLinePos = 0,
-		 size_t* newLinePos = NULL) const;
+	void generateImpl(
+		const generationContext& ctx,
+		utility::outputStream& os,
+		const size_t curLinePos = 0,
+		size_t* newLinePos = NULL
+	) const;
 };
 
 

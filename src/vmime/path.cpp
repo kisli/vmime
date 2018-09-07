@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -25,67 +25,69 @@
 #include "vmime/parserHelpers.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
-path::path()
-{
+path::path() {
+
 }
 
 
 path::path(const string& localPart, const string& domain)
-	: m_localPart(localPart), m_domain(domain)
-{
+	: m_localPart(localPart),
+	  m_domain(domain) {
+
 }
 
 
 path::path(const path& p)
-	: headerFieldValue(), m_localPart(p.m_localPart), m_domain(p.m_domain)
-{
+	: headerFieldValue(),
+	  m_localPart(p.m_localPart),
+	  m_domain(p.m_domain) {
+
 }
 
 
-const string& path::getLocalPart() const
-{
-	return (m_localPart);
+const string& path::getLocalPart() const {
+
+	return m_localPart;
 }
 
 
-void path::setLocalPart(const string& localPart)
-{
+void path::setLocalPart(const string& localPart) {
+
 	m_localPart = localPart;
 }
 
 
-const string& path::getDomain() const
-{
-	return (m_domain);
+const string& path::getDomain() const {
+
+	return m_domain;
 }
 
 
-void path::setDomain(const string& domain)
-{
+void path::setDomain(const string& domain) {
+
 	m_domain = domain;
 }
 
 
-bool path::operator==(const path& p) const
-{
-	return (m_localPart == p.m_localPart &&
-	        m_domain == p.m_domain);
+bool path::operator==(const path& p) const {
+
+	return m_localPart == p.m_localPart &&
+	       m_domain == p.m_domain;
 }
 
 
-bool path::operator!=(const path& p) const
-{
-	return (m_localPart != p.m_localPart ||
-	        m_domain != p.m_domain);
+bool path::operator!=(const path& p) const {
+
+	return m_localPart != p.m_localPart ||
+	       m_domain != p.m_domain;
 }
 
 
-void path::copyFrom(const component& other)
-{
+void path::copyFrom(const component& other) {
+
 	const path& p = dynamic_cast <const path&>(other);
 
 	m_localPart = p.m_localPart;
@@ -93,96 +95,110 @@ void path::copyFrom(const component& other)
 }
 
 
-shared_ptr <component> path::clone() const
-{
+shared_ptr <component> path::clone() const {
+
 	return make_shared <path>(*this);
 }
 
 
-path& path::operator=(const path& other)
-{
+path& path::operator=(const path& other) {
+
 	copyFrom(other);
-	return (*this);
+	return *this;
 }
 
 
-const std::vector <shared_ptr <component> > path::getChildComponents()
-{
+const std::vector <shared_ptr <component> > path::getChildComponents() {
+
 	return std::vector <shared_ptr <component> >();
 }
 
 
-void path::parseImpl
-	(const parsingContext& /* ctx */, const string& buffer, const size_t position,
-	 const size_t end, size_t* newPosition)
-{
+void path::parseImpl(
+	const parsingContext& /* ctx */,
+	const string& buffer,
+	const size_t position,
+	const size_t end,
+	size_t* newPosition
+) {
+
 	size_t pos = position;
 
-	while (pos < end && parserHelpers::isSpace(buffer[pos]))
+	while (pos < end && parserHelpers::isSpace(buffer[pos])) {
 		++pos;
+	}
 
 	string addrSpec;
 
-	if (pos < end && buffer[pos] == '<')
-	{
+	if (pos < end && buffer[pos] == '<') {
+
 		// Skip '<'
 		++pos;
 
-		while (pos < end && parserHelpers::isSpace(buffer[pos]))
+		while (pos < end && parserHelpers::isSpace(buffer[pos])) {
 			++pos;
+		}
 
 		const size_t addrStart = pos;
 
-		while (pos < end && buffer[pos] != '>')
+		while (pos < end && buffer[pos] != '>') {
 			++pos;
+		}
 
 		size_t addrEnd = pos;
 
-		while (addrEnd > addrStart && parserHelpers::isSpace(buffer[addrEnd - 1]))
+		while (addrEnd > addrStart && parserHelpers::isSpace(buffer[addrEnd - 1])) {
 			addrEnd--;
+		}
 
 		addrSpec = string(buffer.begin() + addrStart, buffer.begin() + addrEnd);
-	}
-	else
-	{
+
+	} else {
+
 		addrSpec = string(buffer.begin() + position, buffer.begin() + end);
 	}
 
 	const size_t at = addrSpec.find_first_of('@');
 
-	if (at != string::npos)
-	{
+	if (at != string::npos) {
+
 		m_localPart = string(addrSpec.begin(), addrSpec.begin() + at);
 		m_domain = string(addrSpec.begin() + at + 1, addrSpec.end());
-	}
-	else
-	{
+
+	} else {
+
 		m_localPart.clear();
 		m_domain = addrSpec;
 	}
 
-	if (newPosition != NULL)
+	if (newPosition) {
 		*newPosition = end;
+	}
 }
 
 
-void path::generateImpl
-	(const generationContext& /* ctx */, utility::outputStream& os,
-	 const size_t curLinePos, size_t* newLinePos) const
-{
-	if (m_localPart.empty() && m_domain.empty())
-	{
+void path::generateImpl(
+	const generationContext& /* ctx */,
+	utility::outputStream& os,
+	const size_t curLinePos,
+	size_t* newLinePos
+) const {
+
+	if (m_localPart.empty() && m_domain.empty()) {
+
 		os << "<>";
 
-		if (newLinePos)
+		if (newLinePos) {
 			*newLinePos = curLinePos + 2;
-	}
-	else
-	{
+		}
+
+	} else {
+
 		os << "<" << m_localPart << "@" << m_domain << ">";
 
-		if (newLinePos)
+		if (newLinePos) {
 			*newLinePos = curLinePos + m_localPart.length() + m_domain.length() + 3;
+		}
 	}
 }
 

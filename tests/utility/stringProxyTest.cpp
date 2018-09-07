@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -41,8 +41,8 @@ VMIME_TEST_SUITE_BEGIN(stringProxyTest)
 	VMIME_TEST_LIST_END
 
 
-	void testConstruct()
-	{
+	void testConstruct() {
+
 		vmime::utility::stringProxy s;
 
 		VASSERT_EQ("1", static_cast <vmime::size_t>(0), s.length());
@@ -50,8 +50,8 @@ VMIME_TEST_SUITE_BEGIN(stringProxyTest)
 		VASSERT_EQ("3", static_cast <vmime::size_t>(0), s.end());
 	}
 
-	void testConstruct2()
-	{
+	void testConstruct2() {
+
 		vmime::string str("This is a test string.");
 
 		vmime::utility::stringProxy s1(str);
@@ -78,8 +78,8 @@ VMIME_TEST_SUITE_BEGIN(stringProxyTest)
 		VASSERT_EQ("13", 't', *(s3.it_begin() + 3));
 	}
 
-	void testDetach()
-	{
+	void testDetach() {
+
 		vmime::utility::stringProxy s;
 		s = "foo";
 
@@ -90,8 +90,8 @@ VMIME_TEST_SUITE_BEGIN(stringProxyTest)
 		VASSERT_EQ("3", static_cast <vmime::size_t>(0), s.end());
 	}
 
-	void testSet()
-	{
+	void testSet() {
+
 		vmime::string str("This is a test string.");
 
 		vmime::utility::stringProxy s1;
@@ -121,8 +121,8 @@ VMIME_TEST_SUITE_BEGIN(stringProxyTest)
 		VASSERT_EQ("13", 't', *(s3.it_begin() + 3));
 	}
 
-	void testExtract()
-	{
+	void testExtract() {
+
 		vmime::string str("This is a test string.");
 
 		vmime::utility::stringProxy s1(str, 10, 14);
@@ -144,8 +144,8 @@ VMIME_TEST_SUITE_BEGIN(stringProxyTest)
 		VASSERT_EQ("2", str, oss2.str());
 	}
 
-	void testOperatorLTLT1()
-	{
+	void testOperatorLTLT1() {
+
 		vmime::string str("This is a test string.");
 
 		vmime::utility::stringProxy s1(str, 10, 14);
@@ -163,8 +163,8 @@ VMIME_TEST_SUITE_BEGIN(stringProxyTest)
 		VASSERT_EQ("2", str, oss2.str());
 	}
 
-	void testOperatorLTLT2()
-	{
+	void testOperatorLTLT2() {
+
 		vmime::string str("This is a test string.");
 
 		vmime::utility::stringProxy s1(str, 10, 14);
@@ -187,4 +187,3 @@ VMIME_TEST_SUITE_BEGIN(stringProxyTest)
 	}
 
 VMIME_TEST_SUITE_END
-

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -52,16 +52,15 @@ class maildirMessage;
 
 /** maildir folder implementation.
   */
+class VMIME_EXPORT maildirFolder : public folder {
 
-class VMIME_EXPORT maildirFolder : public folder
-{
 private:
 
 	friend class maildirStore;
 	friend class maildirMessage;
 
 	maildirFolder(const maildirFolder&) : folder() { }
-	maildirFolder(const folder::path& path, shared_ptr <maildirStore> store);
+	maildirFolder(const folder::path& path, const shared_ptr <maildirStore>& store);
 
 public:
 
@@ -97,10 +96,26 @@ public:
 
 	void deleteMessages(const messageSet& msgs);
 
-	void setMessageFlags(const messageSet& msgs, const int flags, const int mode = message::FLAG_MODE_SET);
+	void setMessageFlags(
+		const messageSet& msgs,
+		const int flags,
+		const int mode = message::FLAG_MODE_SET
+	);
 
-	messageSet addMessage(shared_ptr <vmime::message> msg, const int flags = -1, vmime::datetime* date = NULL, utility::progressListener* progress = NULL);
-	messageSet addMessage(utility::inputStream& is, const size_t size, const int flags = -1, vmime::datetime* date = NULL, utility::progressListener* progress = NULL);
+	messageSet addMessage(
+		const shared_ptr <vmime::message>& msg,
+		const int flags = -1,
+		vmime::datetime* date = NULL,
+		utility::progressListener* progress = NULL
+	);
+
+	messageSet addMessage(
+		utility::inputStream& is,
+		const size_t size,
+		const int flags = -1,
+		vmime::datetime* date = NULL,
+		utility::progressListener* progress = NULL
+	);
 
 	messageSet copyMessages(const folder::path& dest, const messageSet& msgs);
 
@@ -115,11 +130,18 @@ public:
 	shared_ptr <store> getStore();
 
 
-	void fetchMessages(std::vector <shared_ptr <message> >& msg, const fetchAttributes& options, utility::progressListener* progress = NULL);
-	void fetchMessage(shared_ptr <message> msg, const fetchAttributes& options);
+	void fetchMessages(
+		std::vector <shared_ptr <message> >& msg,
+		const fetchAttributes& options,
+		utility::progressListener* progress = NULL
+	);
 
-	std::vector <shared_ptr <message> > getAndFetchMessages
-		(const messageSet& msgs, const fetchAttributes& attribs);
+	void fetchMessage(const shared_ptr <message>& msg, const fetchAttributes& options);
+
+	std::vector <shared_ptr <message> > getAndFetchMessages(
+		const messageSet& msgs,
+		const fetchAttributes& attribs
+	);
 
 	int getFetchCapabilities() const;
 
@@ -161,10 +183,9 @@ private:
 	size_t m_messageCount;
 
 	// Store information about scanned messages
-	struct messageInfos
-	{
-		enum Type
-		{
+	struct messageInfos {
+
+		enum Type {
 			TYPE_CUR,
 			TYPE_DELETED
 		};

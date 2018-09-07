@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -45,31 +45,42 @@ class SASLContext;
 /** A built-in authentication mechanism that relies on
   * the GNU SASL library.
   */
-class VMIME_EXPORT builtinSASLMechanism : public SASLMechanism
-{
+class VMIME_EXPORT builtinSASLMechanism : public SASLMechanism {
+
 public:
 
-	builtinSASLMechanism(shared_ptr <SASLContext> ctx, const string& name);
+	builtinSASLMechanism(const shared_ptr <SASLContext>& ctx, const string& name);
 	~builtinSASLMechanism();
 
 
 	const string getName() const;
 
-	bool step(shared_ptr <SASLSession> sess,
-		 const byte_t* challenge, const size_t challengeLen,
-		 byte_t** response, size_t* responseLen);
+	bool step(
+		const shared_ptr <SASLSession>& sess,
+		const byte_t* challenge,
+		const size_t challengeLen,
+		byte_t** response, size_t* responseLen
+	);
 
 	bool isComplete() const;
 
 	bool hasInitialResponse() const;
 
-	void encode(shared_ptr <SASLSession> sess,
-		const byte_t* input, const size_t inputLen,
-		byte_t** output, size_t* outputLen);
+	void encode(
+		const shared_ptr <SASLSession>& sess,
+		const byte_t* input,
+		const size_t inputLen,
+		byte_t** output,
+		size_t* outputLen
+	);
 
-	void decode(shared_ptr <SASLSession> sess,
-		const byte_t* input, const size_t inputLen,
-		byte_t** output, size_t* outputLen);
+	void decode(
+		const shared_ptr <SASLSession>& sess,
+		const byte_t* input,
+		const size_t inputLen,
+		byte_t** output,
+		size_t* outputLen
+	);
 
 private:
 
@@ -92,4 +103,3 @@ private:
 #endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_SASL_SUPPORT
 
 #endif // VMIME_SECURITY_SASL_BUILTINSASLMECHANISM_HPP_INCLUDED
-

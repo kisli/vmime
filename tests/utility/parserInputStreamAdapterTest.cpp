@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -33,8 +33,8 @@ VMIME_TEST_SUITE_BEGIN(parserInputStreamAdapterTest)
 	VMIME_TEST_LIST_END
 
 
-	void testEndlessLoopBufferSize()
-	{
+	void testEndlessLoopBufferSize() {
+
 		static const unsigned int BUFFER_SIZE = 4096;  // same as in parserInputStreamAdapter::findNext()
 
 		vmime::string str(BUFFER_SIZE, 'X');

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -27,24 +27,23 @@
 #include "vmime/textPartFactory.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
-messageBuilder::messageBuilder()
-{
+messageBuilder::messageBuilder() {
+
 	// By default there is one text part of type "text/plain"
 	constructTextPart(mediaType(mediaTypes::TEXT, mediaTypes::TEXT_PLAIN));
 }
 
 
-messageBuilder::~messageBuilder()
-{
+messageBuilder::~messageBuilder() {
+
 }
 
 
-shared_ptr <message> messageBuilder::construct() const
-{
+shared_ptr <message> messageBuilder::construct() const {
+
 	// Create a new message
 	shared_ptr <message> msg = make_shared <message>();
 
@@ -53,22 +52,26 @@ shared_ptr <message> messageBuilder::construct() const
 
 	if (((m_to.isEmpty()) || (m_to.getAddressAt(0)->isEmpty() && !m_to.getAddressAt(0)->isGroup())) &&
 	    (m_cc.isEmpty() || m_cc.getAddressAt(0)->isEmpty()) &&
-	    (m_bcc.isEmpty() || m_bcc.getAddressAt(0)->isEmpty()))
-	{
+	    (m_bcc.isEmpty() || m_bcc.getAddressAt(0)->isEmpty())) {
+
 		throw exceptions::no_recipient();
 	}
 
-	if (!m_from.isEmpty())
+	if (!m_from.isEmpty()) {
 		msg->getHeader()->From()->setValue(m_from);
+	}
 
-	if (!m_to.isEmpty())
+	if (!m_to.isEmpty()) {
 		msg->getHeader()->To()->setValue(m_to);
+	}
 
-	if (!m_cc.isEmpty())
+	if (!m_cc.isEmpty()) {
 		msg->getHeader()->Cc()->setValue(m_cc);
+	}
 
-	if (!m_bcc.isEmpty())
+	if (!m_bcc.isEmpty()) {
 		msg->getHeader()->Bcc()->setValue(m_bcc);
+	}
 
 	// Add a "Date" field
 	msg->getHeader()->Date()->setValue(datetime::now());
@@ -94,56 +97,60 @@ shared_ptr <message> messageBuilder::construct() const
 	//     |
 	//     +-- ... (other attachments/parts)
 	//
-	if (!m_attach.empty() && m_textPart->getPartCount() > 1)
-	{
+	if (!m_attach.empty() && m_textPart->getPartCount() > 1) {
+
 		// Set parent part (message) to "multipart/mixed"
-		msg->getHeader()->ContentType()->setValue
-			(mediaType(mediaTypes::MULTIPART, mediaTypes::MULTIPART_MIXED));
+		msg->getHeader()->ContentType()->setValue(
+			mediaType(mediaTypes::MULTIPART, mediaTypes::MULTIPART_MIXED)
+		);
 
 		// Create a sub-part "multipart/alternative" for text parts
 		shared_ptr <bodyPart> subPart = make_shared <bodyPart>();
 		msg->getBody()->appendPart(subPart);
 
-		subPart->getHeader()->ContentType()->setValue
-			(mediaType(mediaTypes::MULTIPART, mediaTypes::MULTIPART_ALTERNATIVE));
+		subPart->getHeader()->ContentType()->setValue(
+			mediaType(mediaTypes::MULTIPART, mediaTypes::MULTIPART_ALTERNATIVE)
+		);
 
 		// Generate the text parts into this sub-part (normally, this
 		// sub-part will have the "multipart/alternative" content-type...)
 		m_textPart->generateIn(msg, subPart);
-	}
-	else
-	{
+
+	} else {
+
 		// Generate the text part(s) directly into the message
 		m_textPart->generateIn(msg, msg);
 
 		// If any attachment, set message content-type to "multipart/mixed"
-		if (!m_attach.empty())
-		{
-			msg->getHeader()->ContentType()->setValue
-				(mediaType(mediaTypes::MULTIPART, mediaTypes::MULTIPART_MIXED));
-		}
+		if (!m_attach.empty()) {
+
+			msg->getHeader()->ContentType()->setValue(
+				mediaType(mediaTypes::MULTIPART, mediaTypes::MULTIPART_MIXED)
+			);
+
 		// Else, set it to "multipart/alternative" if there are more than one text part.
-		else if (m_textPart->getPartCount() > 1)
-		{
-			msg->getHeader()->ContentType()->setValue
-				(mediaType(mediaTypes::MULTIPART, mediaTypes::MULTIPART_ALTERNATIVE));
+		} else if (m_textPart->getPartCount() > 1) {
+
+			msg->getHeader()->ContentType()->setValue(
+				mediaType(mediaTypes::MULTIPART, mediaTypes::MULTIPART_ALTERNATIVE)
+			);
 		}
 	}
 
 	// Generate the attachments
-	if (!m_attach.empty())
-	{
+	if (!m_attach.empty()) {
+
 		for (std::vector <shared_ptr <attachment> >::const_iterator a = m_attach.begin() ;
-		     a != m_attach.end() ; ++a)
-		{
+		     a != m_attach.end() ; ++a) {
+
 			(*a)->generateIn(msg);
 		}
 	}
 
 	// If there is only one part in the message, move it into the message
 	// (hence, the message will not be multipart...)
-	if (msg->getBody()->getPartCount() == 1)
-	{
+	if (msg->getBody()->getPartCount() == 1) {
+
 		const bodyPart& part = *msg->getBody()->getPartAt(0);
 
 		// Make a full copy of the body, otherwise the copyFrom() will delete the body we're copying
@@ -153,8 +160,8 @@ shared_ptr <message> messageBuilder::construct() const
 		const std::vector <shared_ptr <const headerField> > fields = part.getHeader()->getFieldList();
 
 		for (std::vector <shared_ptr <const headerField> >::const_iterator it = fields.begin() ;
-		     it != fields.end() ; ++it)
-		{
+		     it != fields.end() ; ++it) {
+
 			*(msg->getHeader()->getField((*it)->getName())) = **it;
 		}
 
@@ -163,32 +170,29 @@ shared_ptr <message> messageBuilder::construct() const
 		msg->getBody()->copyFrom(*bodyCopy);
 	}
 
-	return (msg);
+	return msg;
 }
 
 
-void messageBuilder::attach(shared_ptr <attachment> attach)
-{
+void messageBuilder::attach(const shared_ptr <attachment>& attach) {
+
 	appendAttachment(attach);
 }
 
 
-void messageBuilder::appendAttachment(shared_ptr <attachment> attach)
-{
+void messageBuilder::appendAttachment(const shared_ptr <attachment>& attach) {
+
 	m_attach.push_back(attach);
 }
 
 
-void messageBuilder::constructTextPart(const mediaType& type)
-{
+void messageBuilder::constructTextPart(const mediaType& type) {
+
 	shared_ptr <textPart> part;
 
-	try
-	{
+	try {
 		part = textPartFactory::getInstance()->create(type);
-	}
-	catch (exceptions::no_factory_available& e)
-	{
+	} catch (exceptions::no_factory_available& e) {
 		throw;
 	}
 
@@ -196,133 +200,133 @@ void messageBuilder::constructTextPart(const mediaType& type)
 }
 
 
-shared_ptr <textPart> messageBuilder::getTextPart()
-{
-	return (m_textPart);
+shared_ptr <textPart> messageBuilder::getTextPart() {
+
+	return m_textPart;
 }
 
 
-const mailbox& messageBuilder::getExpeditor() const
-{
-	return (m_from);
+const mailbox& messageBuilder::getExpeditor() const {
+
+	return m_from;
 }
 
 
-void messageBuilder::setExpeditor(const mailbox& expeditor)
-{
+void messageBuilder::setExpeditor(const mailbox& expeditor) {
+
 	m_from = expeditor;
 }
 
 
-const addressList& messageBuilder::getRecipients() const
-{
-	return (m_to);
+const addressList& messageBuilder::getRecipients() const {
+
+	return m_to;
 }
 
 
-addressList& messageBuilder::getRecipients()
-{
-	return (m_to);
+addressList& messageBuilder::getRecipients() {
+
+	return m_to;
 }
 
 
-void messageBuilder::setRecipients(const addressList& recipients)
-{
+void messageBuilder::setRecipients(const addressList& recipients) {
+
 	m_to = recipients;
 }
 
 
-const addressList& messageBuilder::getCopyRecipients() const
-{
-	return (m_cc);
+const addressList& messageBuilder::getCopyRecipients() const {
+
+	return m_cc;
 }
 
 
-addressList& messageBuilder::getCopyRecipients()
-{
-	return (m_cc);
+addressList& messageBuilder::getCopyRecipients() {
+
+	return m_cc;
 }
 
 
-void messageBuilder::setCopyRecipients(const addressList& cc)
-{
+void messageBuilder::setCopyRecipients(const addressList& cc) {
+
 	m_cc = cc;
 }
 
 
-const addressList& messageBuilder::getBlindCopyRecipients() const
-{
-	return (m_bcc);
+const addressList& messageBuilder::getBlindCopyRecipients() const {
+
+	return m_bcc;
 }
 
 
-addressList& messageBuilder::getBlindCopyRecipients()
-{
-	return (m_bcc);
+addressList& messageBuilder::getBlindCopyRecipients() {
+
+	return m_bcc;
 }
 
 
-void messageBuilder::setBlindCopyRecipients(const addressList& bcc)
-{
+void messageBuilder::setBlindCopyRecipients(const addressList& bcc) {
+
 	m_bcc = bcc;
 }
 
 
-const text& messageBuilder::getSubject() const
-{
-	return (m_subject);
+const text& messageBuilder::getSubject() const {
+
+	return m_subject;
 }
 
 
-void messageBuilder::setSubject(const text& subject)
-{
+void messageBuilder::setSubject(const text& subject) {
+
 	m_subject = subject;
 }
 
 
-void messageBuilder::removeAttachment(const size_t pos)
-{
+void messageBuilder::removeAttachment(const size_t pos) {
+
 	m_attach.erase(m_attach.begin() + pos);
 }
 
 
-const shared_ptr <const attachment> messageBuilder::getAttachmentAt(const size_t pos) const
-{
-	return (m_attach[pos]);
+const shared_ptr <const attachment> messageBuilder::getAttachmentAt(const size_t pos) const {
+
+	return m_attach[pos];
 }
 
 
-shared_ptr <attachment> messageBuilder::getAttachmentAt(const size_t pos)
-{
-	return (m_attach[pos]);
+shared_ptr <attachment> messageBuilder::getAttachmentAt(const size_t pos) {
+
+	return m_attach[pos];
 }
 
 
-size_t messageBuilder::getAttachmentCount() const
-{
-	return (m_attach.size());
+size_t messageBuilder::getAttachmentCount() const {
+
+	return m_attach.size();
 }
 
 
-const std::vector <shared_ptr <const attachment> > messageBuilder::getAttachmentList() const
-{
+const std::vector <shared_ptr <const attachment> > messageBuilder::getAttachmentList() const {
+
 	std::vector <shared_ptr <const attachment> > res;
 
 	res.reserve(m_attach.size());
 
 	for (std::vector <shared_ptr <attachment> >::const_iterator it = m_attach.begin() ;
-	     it != m_attach.end() ; ++it)
-	{
+	     it != m_attach.end() ; ++it) {
+
 		res.push_back(*it);
 	}
 
-	return (res);
+	return res;
 }
 
 
-const std::vector <shared_ptr <attachment> > messageBuilder::getAttachmentList()
-{
-	return (m_attach);
+const std::vector <shared_ptr <attachment> > messageBuilder::getAttachmentList() {
+
+	return m_attach;
 }
 
 

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -53,14 +53,17 @@ class maildirFolder;
 
 /** maildir store service.
   */
+class VMIME_EXPORT maildirStore : public store {
 
-class VMIME_EXPORT maildirStore : public store
-{
 	friend class maildirFolder;
 
 public:
 
-	maildirStore(shared_ptr <session> sess, shared_ptr <security::authenticator> auth);
+	maildirStore(
+		const shared_ptr <session>& sess,
+		const shared_ptr <security::authenticator>& auth
+	);
+
 	~maildirStore();
 
 	const string getProtocolName() const;

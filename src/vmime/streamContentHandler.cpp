@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -29,77 +29,91 @@
 #include "vmime/utility/streamUtils.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 streamContentHandler::streamContentHandler()
-	: m_encoding(NO_ENCODING), m_stream(null), m_length(0)
-{
+	: m_encoding(NO_ENCODING),
+	  m_stream(null),
+	  m_length(0) {
+
 }
 
 
-streamContentHandler::streamContentHandler(shared_ptr <utility::inputStream> is,
-	const size_t length, const vmime::encoding& enc)
-{
+streamContentHandler::streamContentHandler(
+	const shared_ptr <utility::inputStream>& is,
+	const size_t length,
+	const vmime::encoding& enc
+) {
+
 	setData(is, length, enc);
 }
 
 
-streamContentHandler::~streamContentHandler()
-{
+streamContentHandler::~streamContentHandler() {
+
 }
 
 
 streamContentHandler::streamContentHandler(const streamContentHandler& cts)
-	: contentHandler(), m_contentType(cts.m_contentType), m_encoding(cts.m_encoding),
-	  m_stream(cts.m_stream), m_length(cts.m_length)
-{
+	: contentHandler(),
+	  m_contentType(cts.m_contentType),
+	  m_encoding(cts.m_encoding),
+	  m_stream(cts.m_stream),
+	  m_length(cts.m_length) {
+
 }
 
 
-shared_ptr <contentHandler> streamContentHandler::clone() const
-{
+shared_ptr <contentHandler> streamContentHandler::clone() const {
+
 	return make_shared <streamContentHandler>(*this);
 }
 
 
-streamContentHandler& streamContentHandler::operator=(const streamContentHandler& cts)
-{
+streamContentHandler& streamContentHandler::operator=(const streamContentHandler& cts) {
+
 	m_contentType = cts.m_contentType;
 	m_encoding = cts.m_encoding;
 
 	m_stream = cts.m_stream;
 	m_length = cts.m_length;
 
-	return (*this);
+	return *this;
 }
 
 
-void streamContentHandler::setData(shared_ptr <utility::inputStream> is,
-	const size_t length, const vmime::encoding& enc)
-{
+void streamContentHandler::setData(
+	const shared_ptr <utility::inputStream>& is,
+	const size_t length,
+	const vmime::encoding& enc
+) {
+
 	m_encoding = enc;
 	m_length = length;
 	m_stream = is;
 }
 
 
-void streamContentHandler::generate(utility::outputStream& os, const vmime::encoding& enc,
-	const size_t maxLineLength) const
-{
-	if (!m_stream)
+void streamContentHandler::generate(
+	utility::outputStream& os,
+	const vmime::encoding& enc,
+	const size_t maxLineLength
+) const {
+
+	if (!m_stream) {
 		return;
+	}
 
 	// Managed data is already encoded
-	if (isEncoded())
-	{
+	if (isEncoded()) {
+
 		// The data is already encoded but the encoding specified for
 		// the generation is different from the current one. We need
 		// to re-encode data: decode from input buffer to temporary
 		// buffer, and then re-encode to output stream...
-		if (m_encoding != enc)
-		{
+		if (m_encoding != enc) {
+
 			shared_ptr <utility::encoder::encoder> theDecoder = m_encoding.getEncoder();
 			shared_ptr <utility::encoder::encoder> theEncoder = enc.getEncoder();
 
@@ -117,18 +131,18 @@ void streamContentHandler::generate(utility::outputStream& os, const vmime::enco
 			utility::inputStreamStringAdapter tempIn(str);
 
 			theEncoder->encode(tempIn, os);
-		}
+
 		// No encoding to perform
-		else
-		{
+		} else {
+
 			m_stream->reset();  // may not work...
 
 			utility::bufferedStreamCopy(*m_stream, os);
 		}
-	}
+
 	// Need to encode data before
-	else
-	{
+	} else {
+
 		shared_ptr <utility::encoder::encoder> theEncoder = enc.getEncoder();
 		theEncoder->getProperties()["maxlinelength"] = maxLineLength;
 		theEncoder->getProperties()["text"] = (m_contentType.getType() == mediaTypes::TEXT);
@@ -140,25 +154,29 @@ void streamContentHandler::generate(utility::outputStream& os, const vmime::enco
 }
 
 
-void streamContentHandler::extract(utility::outputStream& os,
-	utility::progressListener* progress) const
-{
-	if (!m_stream)
+void streamContentHandler::extract(
+	utility::outputStream& os,
+	utility::progressListener* progress
+) const {
+
+	if (!m_stream) {
 		return;
+	}
 
 	// No decoding to perform
-	if (!isEncoded())
-	{
+	if (!isEncoded()) {
+
 		m_stream->reset();  // may not work...
 
-		if (progress)
+		if (progress) {
 			utility::bufferedStreamCopy(*m_stream, os, getLength(), progress);
-		else
+		} else {
 			utility::bufferedStreamCopy(*m_stream, os);
-	}
+		}
+
 	// Need to decode data
-	else
-	{
+	} else {
+
 		shared_ptr <utility::encoder::encoder> theDecoder = m_encoding.getEncoder();
 
 		m_stream->reset();  // may not work...
@@ -170,63 +188,68 @@ void streamContentHandler::extract(utility::outputStream& os,
 }
 
 
-void streamContentHandler::extractRaw(utility::outputStream& os,
-	utility::progressListener* progress) const
-{
-	if (!m_stream)
+void streamContentHandler::extractRaw(
+	utility::outputStream& os,
+	utility::progressListener* progress
+) const {
+
+	if (!m_stream) {
 		return;
+	}
 
 	m_stream->reset();  // may not work...
 
-	if (progress)
+	if (progress) {
 		utility::bufferedStreamCopy(*m_stream, os, getLength(), progress);
-	else
+	} else {
 		utility::bufferedStreamCopy(*m_stream, os);
+	}
 }
 
 
-size_t streamContentHandler::getLength() const
-{
-	return (m_length);
+size_t streamContentHandler::getLength() const {
+
+	return m_length;
 }
 
 
-bool streamContentHandler::isEmpty() const
-{
-	return (m_length == 0 || !m_stream);
+bool streamContentHandler::isEmpty() const {
+
+	return m_length == 0 || !m_stream;
 }
 
 
-bool streamContentHandler::isEncoded() const
-{
-	return (m_encoding != NO_ENCODING);
+bool streamContentHandler::isEncoded() const {
+
+	return m_encoding != NO_ENCODING;
 }
 
 
-const vmime::encoding& streamContentHandler::getEncoding() const
-{
-	return (m_encoding);
+const vmime::encoding& streamContentHandler::getEncoding() const {
+
+	return m_encoding;
 }
 
 
-bool streamContentHandler::isBuffered() const
-{
-	if (dynamicCast <utility::seekableInputStream>(m_stream) != NULL)
+bool streamContentHandler::isBuffered() const {
+
+	if (dynamicCast <utility::seekableInputStream>(m_stream)) {
 		return true;
+	}
 
 	// FIXME: some streams can be resetted
 	return false;
 }
 
 
-void streamContentHandler::setContentTypeHint(const mediaType& type)
-{
+void streamContentHandler::setContentTypeHint(const mediaType& type) {
+
 	m_contentType = type;
 }
 
 
-const mediaType streamContentHandler::getContentTypeHint() const
-{
+const mediaType streamContentHandler::getContentTypeHint() const {
+
 	return m_contentType;
 }
 

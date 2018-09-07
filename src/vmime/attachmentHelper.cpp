@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -33,36 +33,39 @@
 #include <iterator>
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 // static
-bool attachmentHelper::isBodyPartAnAttachment
-	(shared_ptr <const bodyPart> part, const unsigned int options)
-{
+bool attachmentHelper::isBodyPartAnAttachment(
+	const shared_ptr <const bodyPart>& part,
+	const unsigned int options
+) {
+
 	// First, try with "Content-Disposition" field.
 	// If not present, we will try with "Content-Type" field.
 	shared_ptr <const contentDispositionField> cdf =
 		part->getHeader()->findField <contentDispositionField>(fields::CONTENT_DISPOSITION);
 
-	if (cdf)
-	{
+	if (cdf) {
+
 		const contentDisposition disp = *cdf->getValue <contentDisposition>();
 
-		if (disp.getName() != contentDispositionTypes::INLINE)
+		if (disp.getName() != contentDispositionTypes::INLINE) {
 			return true;
+		}
 
-		if ((options & INLINE_OBJECTS) == 0)
-		{
+		if ((options & INLINE_OBJECTS) == 0) {
+
 			// If the Content-Disposition is 'inline' and there is no
 			// Content-Id or Content-Location field, it may be an attachment
 			if (!part->getHeader()->hasField(vmime::fields::CONTENT_ID) &&
-			    !part->getHeader()->hasField(vmime::fields::CONTENT_LOCATION))
-			{
+			    !part->getHeader()->hasField(vmime::fields::CONTENT_LOCATION)) {
+
 				// If this is the root part, it might not be an attachment
-				if (part->getParentPart() == NULL)
+				if (!part->getParentPart()) {
 					return false;
+				}
 
 				return true;
 			}
@@ -78,40 +81,46 @@ bool attachmentHelper::isBodyPartAnAttachment
 	shared_ptr <const contentTypeField> ctf =
 		part->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
 
-	if (ctf)
-	{
+	if (ctf) {
+
 		type = *ctf->getValue <mediaType>();
 
-		if (ctf->hasParameter("name"))
+		if (ctf->hasParameter("name")) {
 			hasContentTypeName = true;
-	}
-	else
-	{
+		}
+
+	} else {
+
 		// If this is the root part and no Content-Type field is present,
 		// then this may not be a MIME message, so do not assume it is
 		// an attachment
-		if (part->getParentPart() == NULL)
+		if (!part->getParentPart()) {
 			return false;
+		}
 
 		// No "Content-type" field: assume "application/octet-stream".
-		type = mediaType(mediaTypes::APPLICATION,
-				     mediaTypes::APPLICATION_OCTET_STREAM);
+		type = mediaType(
+			mediaTypes::APPLICATION,
+			mediaTypes::APPLICATION_OCTET_STREAM
+		);
 	}
 
 	if (type.getType() != mediaTypes::TEXT &&
-	    type.getType() != mediaTypes::MULTIPART)
-	{
+	    type.getType() != mediaTypes::MULTIPART) {
+
 		// Compatibility with (obsolete) RFC-1341: if there is a "name" parameter
 		// on the "Content-Type" field, then we assume it is an attachment
-		if (hasContentTypeName)
+		if (hasContentTypeName) {
 			return true;
+		}
 
-		if ((options & INLINE_OBJECTS) == 0)
-		{
+		if ((options & INLINE_OBJECTS) == 0) {
+
 			// If a "Content-Id" field is present, it might be an
 			// embedded object (MHTML messages)
-			if (part->getHeader()->hasField(vmime::fields::CONTENT_ID))
+			if (part->getHeader()->hasField(vmime::fields::CONTENT_ID)) {
 				return false;
+			}
 		}
 
 		return true;
@@ -122,35 +131,40 @@ bool attachmentHelper::isBodyPartAnAttachment
 
 
 // static
-shared_ptr <const attachment> attachmentHelper::getBodyPartAttachment
-	(shared_ptr <const bodyPart> part, const unsigned int options)
-{
-	if (!isBodyPartAnAttachment(part, options))
+shared_ptr <const attachment> attachmentHelper::getBodyPartAttachment(
+	const shared_ptr <const bodyPart>& part,
+	const unsigned int options
+) {
+
+	if (!isBodyPartAnAttachment(part, options)) {
 		return null;
+	}
 
 	mediaType type;
 
 	shared_ptr <const contentTypeField> ctf =
 		part->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
 
-	if (ctf)
-	{
+	if (ctf) {
+
 		type = *ctf->getValue <mediaType>();
-	}
-	else
-	{
+
+	} else {
+
 		// No "Content-type" field: assume "application/octet-stream".
-		type = mediaType(mediaTypes::APPLICATION,
-		                 mediaTypes::APPLICATION_OCTET_STREAM);
+		type = mediaType(
+			mediaTypes::APPLICATION,
+			mediaTypes::APPLICATION_OCTET_STREAM
+		);
 	}
 
 	if (type.getType() == mediaTypes::MESSAGE &&
-	    type.getSubType() == mediaTypes::MESSAGE_RFC822)
-	{
+	    type.getSubType() == mediaTypes::MESSAGE_RFC822) {
+
 		return make_shared <generatedMessageAttachment>(part);
-	}
-	else
-	{
+
+	} else {
+
 		return make_shared <bodyPartAttachment>(part);
 	}
 }
@@ -158,32 +172,36 @@ shared_ptr <const attachment> attachmentHelper::getBodyPartAttachment
 
 // static
 const std::vector <shared_ptr <const attachment> >
-	attachmentHelper::findAttachmentsInMessage
-		(shared_ptr <const message> msg, const unsigned int options)
-{
+	attachmentHelper::findAttachmentsInMessage(
+		const shared_ptr <const message>& msg,
+		const unsigned int options
+	) {
+
 	return findAttachmentsInBodyPart(msg, options);
 }
 
 
 // static
 const std::vector <shared_ptr <const attachment> >
-	attachmentHelper::findAttachmentsInBodyPart
-		(shared_ptr <const bodyPart> part, const unsigned int options)
-{
+	attachmentHelper::findAttachmentsInBodyPart(
+		const shared_ptr <const bodyPart>& part,
+		const unsigned int options
+	) {
+
 	std::vector <shared_ptr <const attachment> > atts;
 
 	// Test this part
-	if (isBodyPartAnAttachment(part, options))
-	{
+	if (isBodyPartAnAttachment(part, options)) {
+
 		atts.push_back(getBodyPartAttachment(part, options));
-	}
+
 	// Find in sub-parts
-	else
-	{
+	} else {
+
 		shared_ptr <const body> bdy = part->getBody();
 
-		for (size_t i = 0 ; i < bdy->getPartCount() ; ++i)
-		{
+		for (size_t i = 0 ; i < bdy->getPartCount() ; ++i) {
+
 			std::vector <shared_ptr <const attachment> > partAtts =
 				findAttachmentsInBodyPart(bdy->getPartAt(i), options);
 
@@ -196,35 +214,39 @@ const std::vector <shared_ptr <const attachment> >
 
 
 // static
-void attachmentHelper::addAttachment(shared_ptr <message> msg, shared_ptr <attachment> att)
-{
+void attachmentHelper::addAttachment(const shared_ptr <message>& msg, const shared_ptr <attachment>& att) {
+
 	// We simply search for a "multipart/mixed" part. If no one exists,
 	// create it in the root part. This (very simple) algorithm should
 	// work in the most cases.
 
-	vmime::mediaType mpMixed(vmime::mediaTypes::MULTIPART,
-	                         vmime::mediaTypes::MULTIPART_MIXED);
+	vmime::mediaType mpMixed(
+		vmime::mediaTypes::MULTIPART,
+		vmime::mediaTypes::MULTIPART_MIXED
+	);
 
 	shared_ptr <bodyPart> part = findBodyPart(msg, mpMixed);
 
-	if (part == NULL)  // create it
-	{
-		if (msg->getBody()->getPartCount() != 0)
-		{
+	if (!part) {  // create it
+
+		if (msg->getBody()->getPartCount() != 0) {
+
 			// Create a new container part for the parts that were in
 			// the root part of the message
 			shared_ptr <bodyPart> container = make_shared <bodyPart>();
 
-			if (msg->getHeader()->hasField(fields::CONTENT_TYPE))
-			{
-				container->getHeader()->ContentType()->setValue
-					(msg->getHeader()->ContentType()->getValue());
+			if (msg->getHeader()->hasField(fields::CONTENT_TYPE)) {
+
+				container->getHeader()->ContentType()->setValue(
+					msg->getHeader()->ContentType()->getValue()
+				);
 			}
 
-			if (msg->getHeader()->hasField(fields::CONTENT_TRANSFER_ENCODING))
-			{
-				container->getHeader()->ContentTransferEncoding()->setValue
-					(msg->getHeader()->ContentTransferEncoding()->getValue());
+			if (msg->getHeader()->hasField(fields::CONTENT_TRANSFER_ENCODING)) {
+
+				container->getHeader()->ContentTransferEncoding()->setValue(
+					msg->getHeader()->ContentTransferEncoding()->getValue()
+				);
 			}
 
 			// Move parts from the root part to this new part
@@ -233,28 +255,31 @@ void attachmentHelper::addAttachment(shared_ptr <message> msg, shared_ptr <attac
 
 			msg->getBody()->removeAllParts();
 
-			for (unsigned int i = 0 ; i < partList.size() ; ++i)
+			for (unsigned int i = 0 ; i < partList.size() ; ++i) {
 				container->getBody()->appendPart(partList[i]);
+			}
 
 			msg->getBody()->appendPart(container);
-		}
-		else
-		{
+
+		} else {
+
 			// The message is a simple (RFC-822) message, and do not
 			// contains any MIME part. Move the contents from the
 			// root to a new child part.
 			shared_ptr <bodyPart> child = make_shared <bodyPart>();
 
-			if (msg->getHeader()->hasField(fields::CONTENT_TYPE))
-			{
-				child->getHeader()->ContentType()->setValue
-					(msg->getHeader()->ContentType()->getValue());
+			if (msg->getHeader()->hasField(fields::CONTENT_TYPE)) {
+
+				child->getHeader()->ContentType()->setValue(
+					msg->getHeader()->ContentType()->getValue()
+				);
 			}
 
-			if (msg->getHeader()->hasField(fields::CONTENT_TRANSFER_ENCODING))
-			{
-				child->getHeader()->ContentTransferEncoding()->setValue
-					(msg->getHeader()->ContentTransferEncoding()->getValue());
+			if (msg->getHeader()->hasField(fields::CONTENT_TRANSFER_ENCODING)) {
+
+				child->getHeader()->ContentTransferEncoding()->setValue(
+					msg->getHeader()->ContentTransferEncoding()->getValue()
+				);
 			}
 
 			child->getBody()->setContents(msg->getBody()->getContents());
@@ -278,22 +303,25 @@ void attachmentHelper::addAttachment(shared_ptr <message> msg, shared_ptr <attac
 
 
 // static
-shared_ptr <bodyPart> attachmentHelper::findBodyPart
-	(shared_ptr <bodyPart> part, const mediaType& type)
-{
-	if (part->getBody()->getContentType() == type)
+shared_ptr <bodyPart> attachmentHelper::findBodyPart(
+	const shared_ptr <bodyPart>& part,
+	const mediaType& type
+) {
+
+	if (part->getBody()->getContentType() == type) {
 		return part;
+	}
 
 	// Try in sub-parts
 	shared_ptr <body> bdy = part->getBody();
 
-	for (size_t i = 0 ; i < bdy->getPartCount() ; ++i)
-	{
-		shared_ptr <bodyPart> found =
-			findBodyPart(bdy->getPartAt(i), type);
+	for (size_t i = 0 ; i < bdy->getPartCount() ; ++i) {
 
-		if (found != NULL)
+		shared_ptr <bodyPart> found = findBodyPart(bdy->getPartAt(i), type);
+
+		if (found) {
 			return found;
+		}
 	}
 
 	return null;
@@ -301,12 +329,11 @@ shared_ptr <bodyPart> attachmentHelper::findBodyPart
 
 
 // static
-void attachmentHelper::addAttachment(shared_ptr <message> msg, shared_ptr <message> amsg)
-{
+void attachmentHelper::addAttachment(const shared_ptr <message>& msg, const shared_ptr <message>& amsg) {
+
 	shared_ptr <attachment> att = make_shared <parsedMessageAttachment>(amsg);
 	addAttachment(msg, att);
 }
 
 
 } // vmime
-

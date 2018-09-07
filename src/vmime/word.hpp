@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -30,16 +30,14 @@
 #include "vmime/charsetConverterOptions.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 /** A class that encapsulates an encoded-word (RFC-2047):
   * some text encoded into one specified charset.
   */
+class VMIME_EXPORT word : public headerFieldValue {
 
-class VMIME_EXPORT word : public headerFieldValue
-{
 	friend class text;
 
 public:
@@ -145,8 +143,10 @@ public:
 	  * @param opts options for charset conversion
 	  * @return word converted to the specified charset
 	  */
-	const string getConvertedText(const charset& dest,
-		const charsetConverterOptions& opts = charsetConverterOptions()) const;
+	const string getConvertedText(
+		const charset& dest,
+		const charsetConverterOptions& opts = charsetConverterOptions()
+	) const;
 
 	/** Replace data in this word by data in other word.
 	  *
@@ -162,13 +162,15 @@ public:
 
 
 #ifndef VMIME_BUILDING_DOC
-	class generatorState
-	{
+	class generatorState {
+
 	public:
 
 		generatorState()
-			: isFirstWord(true), prevWordIsEncoded(false), lastCharIsSpace(false)
-		{
+			: isFirstWord(true),
+			  prevWordIsEncoded(false),
+			  lastCharIsSpace(false) {
+
 		}
 
 		bool isFirstWord;
@@ -176,13 +178,14 @@ public:
 		bool lastCharIsSpace;
 	};
 
-	class parserState
-	{
+	class parserState {
+
 	public:
 
 		parserState()
-			: prevIsEncoded(false), isFirst(true)
-		{
+			: prevIsEncoded(false),
+			  isFirst(true) {
+
 		}
 
 		bool prevIsEncoded;
@@ -194,59 +197,65 @@ public:
 
 protected:
 
-	void parseImpl
-		(const parsingContext& ctx,
-		 const string& buffer,
-		 const size_t position,
-		 const size_t end,
-		 size_t* newPosition = NULL);
+	void parseImpl(
+		const parsingContext& ctx,
+		const string& buffer,
+		const size_t position,
+		const size_t end,
+		size_t* newPosition = NULL
+	);
 
-	void generateImpl
-		(const generationContext& ctx,
-		 utility::outputStream& os,
-		 const size_t curLinePos = 0,
-		 size_t* newLinePos = NULL) const;
+	void generateImpl(
+		const generationContext& ctx,
+		utility::outputStream& os,
+		const size_t curLinePos = 0,
+		size_t* newLinePos = NULL
+	) const;
 
-	void parseWithState
-		(const parsingContext& ctx,
-		 const string& buffer,
-		 const size_t position,
-		 const size_t end,
-		 size_t* newPosition,
-		 parserState* state);
+	void parseWithState(
+		const parsingContext& ctx,
+		const string& buffer,
+		const size_t position,
+		const size_t end,
+		size_t* newPosition,
+		parserState* state
+	);
 
 public:
 
 	using component::generate;
 
 #ifndef VMIME_BUILDING_DOC
-	void generate
-		(const generationContext& ctx,
-		 utility::outputStream& os,
-		 const size_t curLinePos,
-		 size_t* newLinePos,
-		 const int flags,
-		 generatorState* state) const;
+	void generate(
+		const generationContext& ctx,
+		utility::outputStream& os,
+		const size_t curLinePos,
+		size_t* newLinePos,
+		const int flags,
+		generatorState* state
+	) const;
 #endif
 
 	const std::vector <shared_ptr <component> > getChildComponents();
 
 private:
 
-	static shared_ptr <word> parseNext
-		(const parsingContext& ctx,
-		 const string& buffer,
-		 const size_t position,
-		 const size_t end,
-		 size_t* newPosition,
-		 parserState* state);
+	static shared_ptr <word> parseNext(
+		const parsingContext& ctx,
+		const string& buffer,
+		const size_t position,
+		const size_t end,
+		size_t* newPosition,
+		parserState* state
+	);
 
-	static const std::vector <shared_ptr <word> > parseMultiple
-		(const parsingContext& ctx,
-		 const string& buffer,
-		 const size_t position,
-		 const size_t end,
-		 size_t* newPosition);
+	static const std::vector <shared_ptr <word> > parseMultiple(
+		const parsingContext& ctx,
+		const string& buffer,
+		const size_t position,
+		const size_t end,
+		size_t* newPosition
+	);
 
 
 	// The "m_buffer" of this word holds the data, and this data is encoded

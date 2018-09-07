@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -49,8 +49,8 @@ class SASLContext;
 
 /** An SASL client session.
   */
-class VMIME_EXPORT SASLSession : public object, public enable_shared_from_this <SASLSession>
-{
+class VMIME_EXPORT SASLSession : public object, public enable_shared_from_this <SASLSession> {
+
 	friend class builtinSASLMechanism;
 	friend class SASLSocket;
 
@@ -65,9 +65,12 @@ public:
 	  * @param auth authenticator to use for this session
 	  * @param mech SASL mechanism
 	  */
-	static shared_ptr <SASLSession> create
-		(const string& serviceName, shared_ptr <SASLContext> ctx,
-	     shared_ptr <authenticator> auth, shared_ptr <SASLMechanism> mech);
+	static shared_ptr <SASLSession> create(
+		const string& serviceName,
+		const shared_ptr <SASLContext>& ctx,
+		const shared_ptr <authenticator>& auth,
+		const shared_ptr <SASLMechanism>& mech
+	);
 
 	/** Initialize this SASL session. This must be called before
 	  * calling any other method on this object (except accessors).
@@ -112,9 +115,12 @@ public:
 	  * authentication (in this case, the values in 'response' and
 	  * 'responseLen' are undetermined)
 	  */
-	bool evaluateChallenge
-		(const byte_t* challenge, const size_t challengeLen,
-		 byte_t** response, size_t* responseLen);
+	bool evaluateChallenge(
+		const byte_t* challenge,
+		const size_t challengeLen,
+		byte_t** response,
+		size_t* responseLen
+	);
 
 	/** Return a socket in which transmitted data is integrity
 	  * and/or privacy protected, depending on the QOP (Quality of
@@ -123,7 +129,7 @@ public:
 	  * @param sok socket to wrap
 	  * @return secured socket
 	  */
-	shared_ptr <net::socket> getSecuredSocket(shared_ptr <net::socket> sok);
+	shared_ptr <net::socket> getSecuredSocket(const shared_ptr <net::socket>& sok);
 
 	/** Return the name of the service which is using this
 	  * SASL session (eg. "imap"). This value should be returned
@@ -135,9 +141,12 @@ public:
 
 private:
 
-	SASLSession
-		(const string& serviceName, shared_ptr <SASLContext> ctx,
-	     shared_ptr <authenticator> auth, shared_ptr <SASLMechanism> mech);
+	SASLSession(
+		const string& serviceName,
+		const shared_ptr <SASLContext>& ctx,
+		const shared_ptr <authenticator>& auth,
+		const shared_ptr <SASLMechanism>& mech
+	);
 
 
 	const string m_serviceName;
@@ -169,4 +178,3 @@ private:
 #endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_SASL_SUPPORT
 
 #endif // VMIME_SECURITY_SASL_SASLSESSION_HPP_INCLUDED
-

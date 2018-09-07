@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -30,19 +30,19 @@ namespace cert {
 
 
 certificateChain::certificateChain(const std::vector <shared_ptr <certificate> >& certs)
-	: m_certs(certs)
-{
+	: m_certs(certs) {
+
 }
 
 
-size_t certificateChain::getCount() const
-{
+size_t certificateChain::getCount() const {
+
 	return m_certs.size();
 }
 
 
-shared_ptr <certificate> certificateChain::getAt(const size_t index)
-{
+const shared_ptr <certificate>& certificateChain::getAt(const size_t index) {
+
 	return m_certs[index];
 }
 

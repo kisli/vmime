@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -29,8 +29,7 @@
 #include "vmime/headerFieldValue.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 /** Abstract class representing a mailbox or a group of mailboxes.
@@ -38,9 +37,8 @@ namespace vmime
   * This class define a common behaviour for the mailbox
   * and mailboxGroup classes.
   */
+class VMIME_EXPORT address : public headerFieldValue {
 
-class VMIME_EXPORT address : public headerFieldValue
-{
 protected:
 
 	address();
@@ -74,10 +72,14 @@ public:
 	  * of a group (end delimiter was found), or false otherwise (may be set to NULL)
 	  * @return a new address object, or null if no more address is available in the input buffer
 	  */
-	static shared_ptr <address> parseNext
-		(const parsingContext& ctx, const string& buffer,
-		 const size_t position, const size_t end,
-		 size_t* newPosition, bool *isLastAddressOfGroup);
+	static shared_ptr <address> parseNext(
+		const parsingContext& ctx,
+		const string& buffer,
+		const size_t position,
+		const size_t end,
+		size_t* newPosition,
+		bool *isLastAddressOfGroup
+	);
 };
 
 

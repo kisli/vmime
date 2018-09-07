@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -33,8 +33,8 @@ VMIME_TEST_SUITE_BEGIN(messageIdTest)
 	VMIME_TEST_LIST_END
 
 
-	void testParse()
-	{
+	void testParse() {
+
 		vmime::messageId m1;
 		m1.parse("<a@b>");
 
@@ -42,8 +42,8 @@ VMIME_TEST_SUITE_BEGIN(messageIdTest)
 		VASSERT_EQ("1.2", "b", m1.getRight());
 	}
 
-	void testParseInvalid()
-	{
+	void testParseInvalid() {
+
 		vmime::messageId m1;
 		m1.parse("foo@bar");
 
@@ -51,8 +51,8 @@ VMIME_TEST_SUITE_BEGIN(messageIdTest)
 		VASSERT_EQ("1.2", "bar", m1.getRight());
 	}
 
-	void testGenerate()
-	{
+	void testGenerate() {
+
 		vmime::messageId m1;
 
 		VASSERT_EQ("1", "<>", m1.generate());
@@ -75,4 +75,3 @@ VMIME_TEST_SUITE_BEGIN(messageIdTest)
 	}
 
 VMIME_TEST_SUITE_END
-

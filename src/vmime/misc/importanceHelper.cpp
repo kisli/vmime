@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -31,14 +31,14 @@ namespace vmime {
 namespace misc {
 
 
-void importanceHelper::resetImportance(shared_ptr <message> msg)
-{
+void importanceHelper::resetImportance(const shared_ptr <message>& msg) {
+
 	resetImportanceHeader(msg->getHeader());
 }
 
 
-void importanceHelper::resetImportanceHeader(shared_ptr <header> hdr)
-{
+void importanceHelper::resetImportanceHeader(const shared_ptr <header>& hdr) {
+
 	shared_ptr <headerField> fld;
 
 	if ((fld = hdr->findField("X-Priority")))
@@ -49,19 +49,19 @@ void importanceHelper::resetImportanceHeader(shared_ptr <header> hdr)
 }
 
 
-importanceHelper::Importance importanceHelper::getImportance(shared_ptr <const message> msg)
-{
+importanceHelper::Importance importanceHelper::getImportance(const shared_ptr <const message>& msg) {
+
 	return getImportanceHeader(msg->getHeader());
 }
 
 
-importanceHelper::Importance importanceHelper::getImportanceHeader(shared_ptr <const header> hdr)
-{
+importanceHelper::Importance importanceHelper::getImportanceHeader(const shared_ptr <const header>& hdr) {
+
 	// Try "X-Priority" field
 	shared_ptr <const headerField> fld = hdr->findField("X-Priority");
 
-	if (fld)
-	{
+	if (fld) {
+
 		const string value = fld->getValue <text>()->getWholeBuffer();
 
 		int n = IMPORTANCE_NORMAL;
@@ -73,89 +73,88 @@ importanceHelper::Importance importanceHelper::getImportanceHeader(shared_ptr <c
 
 		Importance i = IMPORTANCE_NORMAL;
 
-		switch (n)
-		{
-		case 1: i = IMPORTANCE_HIGHEST; break;
-		case 2: i = IMPORTANCE_HIGH; break;
-		case 3: i = IMPORTANCE_NORMAL; break;
-		case 4: i = IMPORTANCE_LOW; break;
-		case 5: i = IMPORTANCE_LOWEST; break;
+		switch (n) {
+			case 1: i = IMPORTANCE_HIGHEST; break;
+			case 2: i = IMPORTANCE_HIGH; break;
+			case 3: i = IMPORTANCE_NORMAL; break;
+			case 4: i = IMPORTANCE_LOW; break;
+			case 5: i = IMPORTANCE_LOWEST; break;
 		}
 
-		return (i);
-	}
-	else
-	{
+		return i;
+
+	} else {
+
 		// Try "Importance" field
 		fld = hdr->findField("Importance");
 
-		if (fld)
-		{
+		if (fld) {
+
 			const string value = utility::stringUtils::toLower(utility::stringUtils::trim
 				(fld->getValue <text>()->getWholeBuffer()));
 
-			if (value == "low")
-				return (IMPORTANCE_LOWEST);
-			else if (value == "high")
-				return (IMPORTANCE_HIGHEST);
-			else
-				return (IMPORTANCE_NORMAL);
-		}
-		else
-		{
+			if (value == "low") {
+				return IMPORTANCE_LOWEST;
+			} else if (value == "high") {
+				return IMPORTANCE_HIGHEST;
+			} else {
+				return IMPORTANCE_NORMAL;
+			}
+
+		} else {
+
 			// Default
-			return (IMPORTANCE_NORMAL);
+			return IMPORTANCE_NORMAL;
 		}
 	}
 
 	// Should not go here...
-	return (IMPORTANCE_NORMAL);
+	return IMPORTANCE_NORMAL;
 }
 
 
-void importanceHelper::setImportance(shared_ptr <message> msg, const Importance i)
-{
+void importanceHelper::setImportance(const shared_ptr <message>& msg, const Importance i) {
+
 	setImportanceHeader(msg->getHeader(), i);
 }
 
 
-void importanceHelper::setImportanceHeader(shared_ptr <header> hdr, const Importance i)
-{
+void importanceHelper::setImportanceHeader(const shared_ptr <header>& hdr, const Importance i) {
+
 	// "X-Priority:" Field
 	shared_ptr <headerField> fld = hdr->getField("X-Priority");
 
-	switch (i)
-	{
-	case IMPORTANCE_HIGHEST: fld->setValue("1 (Highest)"); break;
-	case IMPORTANCE_HIGH:    fld->setValue("2 (High)"); break;
-	default:
-	case IMPORTANCE_NORMAL:  fld->setValue("3 (Normal)"); break;
-	case IMPORTANCE_LOW:     fld->setValue("4 (Low)"); break;
-	case IMPORTANCE_LOWEST:  fld->setValue("5 (Lowest)"); break;
+	switch (i) {
+		case IMPORTANCE_HIGHEST: fld->setValue("1 (Highest)"); break;
+		case IMPORTANCE_HIGH:    fld->setValue("2 (High)"); break;
+		default:
+		case IMPORTANCE_NORMAL:  fld->setValue("3 (Normal)"); break;
+		case IMPORTANCE_LOW:     fld->setValue("4 (Low)"); break;
+		case IMPORTANCE_LOWEST:  fld->setValue("5 (Lowest)"); break;
 	}
 
 	// "Importance:" Field
 	fld = hdr->getField("Importance");
 
-	switch (i)
-	{
-	case IMPORTANCE_HIGHEST:
-	case IMPORTANCE_HIGH:
+	switch (i) {
 
-		fld->setValue("high");
-		break;
+		case IMPORTANCE_HIGHEST:
+		case IMPORTANCE_HIGH:
 
-	default:
-	case IMPORTANCE_NORMAL:
+			fld->setValue("high");
+			break;
 
-		fld->setValue("normal");
-		break;
+		default:
+		case IMPORTANCE_NORMAL:
 
-	case IMPORTANCE_LOWEST:
-	case IMPORTANCE_LOW:
+			fld->setValue("normal");
+			break;
 
-		fld->setValue("low");
-		break;
+		case IMPORTANCE_LOWEST:
+		case IMPORTANCE_LOW:
+
+			fld->setValue("low");
+			break;
 	}
 }
 

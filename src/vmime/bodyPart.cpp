@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -24,23 +24,26 @@
 #include "vmime/bodyPart.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 bodyPart::bodyPart()
 	: m_header(make_shared <header>()),
 	  m_body(make_shared <body>()),
-	  m_parent()
-{
+	  m_parent() {
+
 	m_body->setParentPart(this);
 }
 
 
-void bodyPart::parseImpl
-	(const parsingContext& ctx, shared_ptr <utility::parserInputStreamAdapter> parser,
-	 const size_t position, const size_t end, size_t* newPosition)
-{
+void bodyPart::parseImpl(
+	const parsingContext& ctx,
+	const shared_ptr <utility::parserInputStreamAdapter>& parser,
+	const size_t position,
+	const size_t end,
+	size_t* newPosition
+) {
+
 	// Parse the headers
 	size_t pos = position;
 	m_header->parse(ctx, parser, pos, end, &pos);
@@ -50,34 +53,39 @@ void bodyPart::parseImpl
 
 	setParsedBounds(position, end);
 
-	if (newPosition)
+	if (newPosition) {
 		*newPosition = end;
+	}
 }
 
 
-void bodyPart::generateImpl
-	(const generationContext& ctx, utility::outputStream& os,
-	 const size_t /* curLinePos */, size_t* newLinePos) const
-{
+void bodyPart::generateImpl(
+	const generationContext& ctx,
+	utility::outputStream& os,
+	const size_t /* curLinePos */,
+	size_t* newLinePos
+) const {
+
 	m_header->generate(ctx, os);
 
 	os << CRLF;
 
 	m_body->generate(ctx, os);
 
-	if (newLinePos)
+	if (newLinePos) {
 		*newLinePos = 0;
+	}
 }
 
 
-size_t bodyPart::getGeneratedSize(const generationContext& ctx)
-{
+size_t bodyPart::getGeneratedSize(const generationContext& ctx) {
+
 	return m_header->getGeneratedSize(ctx) + 2 /* CRLF */ + m_body->getGeneratedSize(ctx);
 }
 
 
-shared_ptr <component> bodyPart::clone() const
-{
+shared_ptr <component> bodyPart::clone() const {
+
 	shared_ptr <bodyPart> p = make_shared <bodyPart>();
 
 	p->m_parent = NULL;
@@ -85,12 +93,12 @@ shared_ptr <component> bodyPart::clone() const
 	p->m_header->copyFrom(*m_header);
 	p->m_body->copyFrom(*m_body);
 
-	return (p);
+	return p;
 }
 
 
-void bodyPart::copyFrom(const component& other)
-{
+void bodyPart::copyFrom(const component& other) {
+
 	const bodyPart& bp = dynamic_cast <const bodyPart&>(other);
 
 	m_header->copyFrom(*(bp.m_header));
@@ -98,70 +106,71 @@ void bodyPart::copyFrom(const component& other)
 }
 
 
-bodyPart& bodyPart::operator=(const bodyPart& other)
-{
+bodyPart& bodyPart::operator=(const bodyPart& other) {
+
 	copyFrom(other);
-	return (*this);
+	return *this;
 }
 
 
-const shared_ptr <const header> bodyPart::getHeader() const
-{
-	return (m_header);
+const shared_ptr <const header> bodyPart::getHeader() const {
+
+	return m_header;
 }
 
 
-shared_ptr <header> bodyPart::getHeader()
-{
-	return (m_header);
+shared_ptr <header> bodyPart::getHeader() {
+
+	return m_header;
 }
 
 
-void bodyPart::setHeader(shared_ptr <header> h)
-{
+void bodyPart::setHeader(const shared_ptr <header>& h) {
+
 	m_header = h;
 }
 
 
-const shared_ptr <const body> bodyPart::getBody() const
-{
-	return (m_body);
+const shared_ptr <const body> bodyPart::getBody() const {
+
+	return m_body;
 }
 
 
-shared_ptr <body> bodyPart::getBody()
-{
-	return (m_body);
+shared_ptr <body> bodyPart::getBody() {
+
+	return m_body;
 }
 
 
-void bodyPart::setBody(shared_ptr <body> b)
-{
+void bodyPart::setBody(const shared_ptr <body>& b) {
+
 	bodyPart* oldPart = b->m_part;
 
 	m_body = b;
 	m_body->setParentPart(this);
 
 	// A body is associated to one and only one part
-	if (oldPart != NULL)
+	if (oldPart) {
 		oldPart->setBody(make_shared <body>());
+	}
 }
 
 
-bodyPart* bodyPart::getParentPart()
-{
+bodyPart* bodyPart::getParentPart() {
+
 	return m_parent;
 }
 
 
-const bodyPart* bodyPart::getParentPart() const
-{
+const bodyPart* bodyPart::getParentPart() const {
+
 	return m_parent;
 }
 
 
-shared_ptr <bodyPart> bodyPart::createChildPart()
-{
+shared_ptr <bodyPart> bodyPart::createChildPart() {
+
 	shared_ptr <bodyPart> part = make_shared <bodyPart>();
 	part->m_parent = this;
 
@@ -169,22 +178,21 @@ shared_ptr <bodyPart> bodyPart::createChildPart()
 }
 
 
-void bodyPart::importChildPart(shared_ptr <bodyPart> part)
-{
+void bodyPart::importChildPart(const shared_ptr <bodyPart>& part) {
+
 	part->m_parent = this;
 }
 
 
-const std::vector <shared_ptr <component> > bodyPart::getChildComponents()
-{
+const std::vector <shared_ptr <component> > bodyPart::getChildComponents() {
+
 	std::vector <shared_ptr <component> > list;
 
 	list.push_back(m_header);
 	list.push_back(m_body);
 
-	return (list);
+	return list;
 }
 
 
 } // vmime
-

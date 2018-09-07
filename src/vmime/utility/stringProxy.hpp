@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -41,9 +41,8 @@ namespace utility {
   * advantage of the COW (copy-on-write) system that might
   * be used in "std::string" implementation.
   */
+class VMIME_EXPORT stringProxy {
 
-class VMIME_EXPORT stringProxy
-{
 public:
 
 	// Consruction
@@ -60,7 +59,12 @@ public:
 
 	// Extract some portion (or whole) of the string
 	// and output it into a stream.
-	void extract(outputStream& os, const size_t start = 0, const size_t end = std::numeric_limits <size_t>::max(), utility::progressListener* progress = NULL) const;
+	void extract(
+		outputStream& os,
+		const size_t start = 0,
+		const size_t end = std::numeric_limits <size_t>::max(),
+		utility::progressListener* progress = NULL
+	) const;
 
 	// Return the "virtual" length of the string
 	size_t length() const;

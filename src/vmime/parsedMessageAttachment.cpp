@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -29,38 +29,37 @@
 #include "vmime/utility/outputStreamAdapter.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
-parsedMessageAttachment::parsedMessageAttachment(shared_ptr <message> msg)
-	: m_msg(msg)
-{
+parsedMessageAttachment::parsedMessageAttachment(const shared_ptr <message>& msg)
+	: m_msg(msg) {
+
 }
 
 
-const mediaType parsedMessageAttachment::getType() const
-{
+const mediaType parsedMessageAttachment::getType() const {
+
 	return mediaType(mediaTypes::MESSAGE, mediaTypes::MESSAGE_RFC822);
 }
 
 
-const text parsedMessageAttachment::getDescription() const
-{
+const text parsedMessageAttachment::getDescription() const {
+
 	return text();
 }
 
 
-const word parsedMessageAttachment::getName() const
-{
+const word parsedMessageAttachment::getName() const {
+
 	return word();
 }
 
 
-const shared_ptr <const contentHandler> parsedMessageAttachment::getData() const
-{
-	if (m_data == NULL)
-	{
+const shared_ptr <const contentHandler> parsedMessageAttachment::getData() const {
+
+	if (!m_data) {
+
 		std::ostringstream oss;
 		utility::outputStreamAdapter os(oss);
 
@@ -73,32 +72,32 @@ const shared_ptr <const contentHandler> parsedMessageAttachment::getData() const
 }
 
 
-const encoding parsedMessageAttachment::getEncoding() const
-{
+const encoding parsedMessageAttachment::getEncoding() const {
+
 	return encoding(encodingTypes::EIGHT_BIT);  // not important
 }
 
 
-shared_ptr <const object> parsedMessageAttachment::getPart() const
-{
+shared_ptr <const object> parsedMessageAttachment::getPart() const {
+
 	return null;
 }
 
 
-shared_ptr <const header> parsedMessageAttachment::getHeader() const
-{
+shared_ptr <const header> parsedMessageAttachment::getHeader() const {
+
 	return null;
 }
 
 
-shared_ptr <message> parsedMessageAttachment::getMessage() const
-{
+shared_ptr <message> parsedMessageAttachment::getMessage() const {
+
 	return m_msg;
 }
 
 
-void parsedMessageAttachment::generateIn(shared_ptr <bodyPart> parent) const
-{
+void parsedMessageAttachment::generateIn(const shared_ptr <bodyPart>& parent) const {
+
 	// Create and append a new part for this attachment
 	shared_ptr <bodyPart> part = make_shared <bodyPart>();
 	parent->getBody()->appendPart(part);
@@ -113,4 +112,3 @@ void parsedMessageAttachment::generateIn(shared_ptr <bodyPart> parent) const
 
 
 } // vmime
-

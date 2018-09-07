@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -66,48 +66,46 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 	VMIME_TEST_LIST_END
 
 
-	static const vmime::string getDisplayText(const vmime::text& t)
-	{
+	static const vmime::string getDisplayText(const vmime::text& t) {
+
 		return t.getWholeBuffer();
 	}
 
-	static const vmime::string cleanGeneratedWords(const std::string& str)
-	{
+	static const vmime::string cleanGeneratedWords(const std::string& str) {
+
 		std::istringstream iss(str);
 
 		std::string res;
 		std::string x;
 
-		while (std::getline(iss, x))
+		while (std::getline(iss, x)) {
 			res += vmime::utility::stringUtils::trim(x);
+		}
 
 		return res;
 	}
 
 
-	void setUp()
-	{
+	void setUp() {
+
 		// Set the global C and C++ locale to the user-configured locale.
 		// The locale should use UTF-8 encoding for these tests to run successfully.
-		try
-		{
+		try {
 			std::locale::global(std::locale(""));
-		}
-		catch (std::exception &)
-		{
+		} catch (std::exception &) {
 			std::setlocale(LC_ALL, "");
 		}
 	}
 
-	void tearDown()
-	{
+	void tearDown() {
+
 		// Restore default locale
 		std::locale::global(std::locale("C"));
 	}
 
 
-	void testConstructors()
-	{
+	void testConstructors() {
+
 		vmime::text t1;
 
 		VASSERT_EQ("1.1", 0, t1.getWordCount());
@@ -143,8 +141,8 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		VASSERT_EQ("5.5", w2.getCharset(), t5.getWordAt(1)->getCharset());
 	}
 
-	void testCopy()
-	{
+	void testCopy() {
+
 		vmime::text t1("Test: \xa9\xc3");
 
 		VASSERT("operator==", t1 == t1);
@@ -156,8 +154,8 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		VASSERT("copyFrom", t1 == t2);
 	}
 
-	void testNewFromString()
-	{
+	void testNewFromString() {
+
 		vmime::string s1 = "only ASCII characters";
 		vmime::charset c1("test");
 		vmime::text t1;
@@ -186,52 +184,75 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		VASSERT_EQ("2.7", vmime::charset(vmime::charsets::US_ASCII), t2.getWordAt(2)->getCharset());
 	}
 
-	static const vmime::string parseText(const vmime::string& buffer)
-	{
+	static const vmime::string parseText(const vmime::string& buffer) {
+
 		vmime::text t;
 		t.parse(buffer);
 
 		std::ostringstream oss;
 		oss << t;
 
-		return (oss.str());
+		return oss.str();
 	}
 
-	void testParse()
-	{
+	void testParse() {
+
 		// From RFC-2047
-		VASSERT_EQ("1", "[text: [[word: charset=US-ASCII, buffer=Keith Moore]]]",
-			parseText("=?US-ASCII?Q?Keith_Moore?="));
+		VASSERT_EQ(
+			"1",
+			"[text: [[word: charset=US-ASCII, buffer=Keith Moore]]]",
+			parseText("=?US-ASCII?Q?Keith_Moore?=")
+		);
 
-		VASSERT_EQ("2", "[text: [[word: charset=ISO-8859-1, buffer=Keld J\xf8rn Simonsen]]]",
-			parseText("=?ISO-8859-1?Q?Keld_J=F8rn_Simonsen?="));
+		VASSERT_EQ(
+			"2",
+			"[text: [[word: charset=ISO-8859-1, buffer=Keld J\xf8rn Simonsen]]]",
+			parseText("=?ISO-8859-1?Q?Keld_J=F8rn_Simonsen?=")
+		);
 
-		VASSERT_EQ("3", "[text: [[word: charset=ISO-8859-1, buffer=Andr\xe9]," \
-			                 "[word: charset=us-ascii, buffer= Pirard]]]",
-			parseText("=?ISO-8859-1?Q?Andr=E9?= Pirard"));
+		VASSERT_EQ(
+			"3",
+			"[text: [[word: charset=ISO-8859-1, buffer=Andr\xe9]," \
+			        "[word: charset=us-ascii, buffer= Pirard]]]",
+			parseText("=?ISO-8859-1?Q?Andr=E9?= Pirard")
+		);
 
-		VASSERT_EQ("4", "[text: [[word: charset=ISO-8859-1, buffer=If you can read this yo]," \
-			                 "[word: charset=ISO-8859-2, buffer=u understand the example.]]]",
-			parseText("=?ISO-8859-1?B?SWYgeW91IGNhbiByZWFkIHRoaXMgeW8=?=\r\n " \
-				"=?ISO-8859-2?B?dSB1bmRlcnN0YW5kIHRoZSBleGFtcGxlLg==?="));
+		VASSERT_EQ(
+			"4",
+			"[text: [[word: charset=ISO-8859-1, buffer=If you can read this yo]," \
+			        "[word: charset=ISO-8859-2, buffer=u understand the example.]]]",
+			parseText(
+				"=?ISO-8859-1?B?SWYgeW91IGNhbiByZWFkIHRoaXMgeW8=?=\r\n " \
+				"=?ISO-8859-2?B?dSB1bmRlcnN0YW5kIHRoZSBleGFtcGxlLg==?="
+			)
+		);
 
 		// Bugfix: in "=?charset?q?=XX=YY?=", the "?=" finish
 		// sequence was not correctly found (should be the one
 		// after '=YY' and not the one after '?q').
-		VASSERT_EQ("5", "[text: [[word: charset=abc, buffer=\xe9\xe9]]]",
-			parseText("=?abc?q?=E9=E9?="));
+		VASSERT_EQ(
+			"5",
+			"[text: [[word: charset=abc, buffer=\xe9\xe9]]]",
+			parseText("=?abc?q?=E9=E9?=")
+		);
 
 		// Question marks (?) in the middle of the string
-		VASSERT_EQ("6", "[text: [[word: charset=iso-8859-1, buffer=Know wh\xe4t? It works!]]]",
-			parseText("=?iso-8859-1?Q?Know_wh=E4t?_It_works!?="));
+		VASSERT_EQ(
+			"6",
+			"[text: [[word: charset=iso-8859-1, buffer=Know wh\xe4t? It works!]]]",
+			parseText("=?iso-8859-1?Q?Know_wh=E4t?_It_works!?=")
+		);
 
 		// With language specifier
-		VASSERT_EQ("7", "[text: [[word: charset=US-ASCII, buffer=Keith Moore, lang=EN]]]",
-			parseText("=?US-ASCII*EN?Q?Keith_Moore?="));
+		VASSERT_EQ(
+			"7",
+			"[text: [[word: charset=US-ASCII, buffer=Keith Moore, lang=EN]]]",
+			parseText("=?US-ASCII*EN?Q?Keith_Moore?=")
+		);
 	}
 
-	void testGenerate()
-	{
+	void testGenerate() {
+
 		// TODO
 
 		// With language specifier
@@ -242,8 +263,8 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		VASSERT_EQ("lang2", "=?US-ASCII*EN?Q?Keith_Moore?=", wlang2.generate());
 	}
 
-	void testDisplayForm()
-	{
+	void testDisplayForm() {
+
 #define DISPLAY_FORM(x) getDisplayText(*vmime::text::decodeAndUnfold(x))
 
 		// From RFC-2047
@@ -276,8 +297,8 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 #undef DISPLAY_FORM
 	}
 
-	void testWordConstructors()
-	{
+	void testWordConstructors() {
+
 		VASSERT_EQ("1.1", vmime::charset::getLocalCharset(), vmime::word().getCharset());
 		VASSERT_EQ("1.2", "", vmime::word().getBuffer());
 
@@ -288,8 +309,8 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		VASSERT_EQ("3.2", "foo", vmime::word("foo", vmime::charset("bar")).getBuffer());
 	}
 
-	void testWordParse()
-	{
+	void testWordParse() {
+
 		// Simple encoded word
 		vmime::word w1;
 		w1.parse("=?foo?q?bar=E9 baz?=");
@@ -319,21 +340,32 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		VASSERT_EQ("4.2", "=?whatever?not_q_or_b?whatever?=", w4.getBuffer());
 	}
 
-	void testWordGenerate()
-	{
-		VASSERT_EQ("1", "=?foo?Q?bar=E9_baz?=",
-			vmime::word("bar\xe9 baz", vmime::charset("foo")).generate());
+	void testWordGenerate() {
 
-		VASSERT_EQ("2", "=?foo?B?8fLz9PU=?=",
-			vmime::word("\xf1\xf2\xf3\xf4\xf5", vmime::charset("foo")).generate());
+		VASSERT_EQ(
+			"1",
+			"=?foo?Q?bar=E9_baz?=",
+			vmime::word("bar\xe9 baz", vmime::charset("foo")).generate()
+		);
+
+		VASSERT_EQ(
+			"2",
+			"=?foo?B?8fLz9PU=?=",
+			vmime::word("\xf1\xf2\xf3\xf4\xf5", vmime::charset("foo")).generate()
+		);
 	}
 
-	void testWordGenerateSpace()
-	{
+	void testWordGenerateSpace() {
+
 		// No white-space between an unencoded word and a encoded one
-		VASSERT_EQ("1", "Bonjour =?utf-8?Q?Fran=C3=A7ois?=",
-			vmime::text::newFromString("Bonjour Fran\xc3\xa7ois",
-				vmime::charset("utf-8"))->generate());
+		VASSERT_EQ(
+			"1",
+			"Bonjour =?utf-8?Q?Fran=C3=A7ois?=",
+			vmime::text::newFromString(
+				"Bonjour Fran\xc3\xa7ois",
+				vmime::charset("utf-8")
+			)->generate()
+		);
 
 		// White-space between two encoded words
 		vmime::text txt;
@@ -356,8 +388,8 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		VASSERT_EQ("4", encoded, txt2.generate());
 	}
 
-	void testWordGenerateSpace2()
-	{
+	void testWordGenerateSpace2() {
+
 		// White-space between two encoded words (#2)
 		vmime::text txt;
 		txt.appendWord(vmime::make_shared <vmime::word>("Facture ", "utf-8"));
@@ -382,18 +414,28 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		VASSERT_EQ("3", encoded, txt2.generate());
 	}
 
-	void testWordGenerateMultiBytes()
-	{
-		// Ensure we don't encode a non-integral number of characters
-		VASSERT_EQ("1", "=?utf-8?Q?aaa?==?utf-8?Q?=C3=A9?==?utf-8?Q?zzz?=",
-			cleanGeneratedWords(vmime::word("aaa\xc3\xa9zzz", vmime::charset("utf-8")).generate(16)));
+	void testWordGenerateMultiBytes() {
 
-		VASSERT_EQ("2", "=?utf-8?Q?aaa=C3=A9?==?utf-8?Q?zzz?=",
-			cleanGeneratedWords(vmime::word("aaa\xc3\xa9zzz", vmime::charset("utf-8")).generate(17)));
+		// Ensure we don't encode a non-integral number of characters
+		VASSERT_EQ(
+			"1",
+			"=?utf-8?Q?aaa?==?utf-8?Q?=C3=A9?==?utf-8?Q?zzz?=",
+			cleanGeneratedWords(
+				vmime::word("aaa\xc3\xa9zzz", vmime::charset("utf-8")).generate(16)
+			)
+		);
+
+		VASSERT_EQ(
+			"2",
+			"=?utf-8?Q?aaa=C3=A9?==?utf-8?Q?zzz?=",
+			cleanGeneratedWords(
+				vmime::word("aaa\xc3\xa9zzz", vmime::charset("utf-8")).generate(17)
+			)
+		);
 	}
 
-	void testWordGenerateQuote()
-	{
+	void testWordGenerateQuote() {
+
 		std::string str;
 		vmime::utility::outputStreamStringAdapter os(str);
 
@@ -402,37 +444,56 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 
 		// ASCII-only text is quotable
 		str.clear();
-		vmime::word("Quoted text").generate(ctx, os, 0, NULL, vmime::text::QUOTE_IF_POSSIBLE, NULL);
+		vmime::word("Quoted text")
+			.generate(ctx, os, 0, NULL, vmime::text::QUOTE_IF_POSSIBLE, NULL);
+
 		VASSERT_EQ("1", "\"Quoted text\"", cleanGeneratedWords(str));
 
 		// Text with CR/LF is not quotable
 		str.clear();
-		vmime::word("Non-quotable\ntext", "us-ascii").generate(ctx, os, 0, NULL, vmime::text::QUOTE_IF_POSSIBLE, NULL);
+		vmime::word("Non-quotable\ntext", "us-ascii")
+			.generate(ctx, os, 0, NULL, vmime::text::QUOTE_IF_POSSIBLE, NULL);
+
 		VASSERT_EQ("2", "=?us-ascii?Q?Non-quotable=0Atext?=", cleanGeneratedWords(str));
 
 		// Text with non-ASCII chars is not quotable
 		str.clear();
-		vmime::word("Non-quotable text \xc3\xa9").generate(ctx, os, 0, NULL, vmime::text::QUOTE_IF_POSSIBLE, NULL);
+		vmime::word("Non-quotable text \xc3\xa9")
+			.generate(ctx, os, 0, NULL, vmime::text::QUOTE_IF_POSSIBLE, NULL);
+
 		VASSERT_EQ("3", "=?UTF-8?Q?Non-quotable_text_=C3=A9?=", cleanGeneratedWords(str));
 	}
 
-	void testWordGenerateSpecialCharsets()
-	{
+	void testWordGenerateSpecialCharsets() {
+
 		// ISO-2022-JP only uses 7-bit chars but should be encoded in Base64
-		VASSERT_EQ("1", "=?iso-2022-jp?B?XlskQiVRITwlPSVKJWshJiU9JVUlSCUmJSclIl5bKEI=?=",
-			cleanGeneratedWords(vmime::word("^[$B%Q!<%=%J%k!&%=%U%H%&%'%\"^[(B",
-				vmime::charset("iso-2022-jp")).generate(100)));
+		VASSERT_EQ(
+			"1",
+			"=?iso-2022-jp?B?XlskQiVRITwlPSVKJWshJiU9JVUlSCUmJSclIl5bKEI=?=",
+			cleanGeneratedWords(
+				vmime::word(
+					"^[$B%Q!<%=%J%k!&%=%U%H%&%'%\"^[(B",
+					vmime::charset("iso-2022-jp")
+				).generate(100)
+			)
+		);
 	}
 
-	void testWordGenerateSpecials()
-	{
+	void testWordGenerateSpecials() {
+
 		// In RFC-2047, quotation marks (ASCII 22h) should be encoded
-		VASSERT_EQ("1", "=?UTF-8?Q?=22=C3=9Cml=C3=A4ute=22?=",
-			vmime::word("\x22\xC3\x9Cml\xC3\xA4ute\x22", vmime::charset("UTF-8")).generate());
+		VASSERT_EQ(
+			"1",
+			"=?UTF-8?Q?=22=C3=9Cml=C3=A4ute=22?=",
+			vmime::word(
+				"\x22\xC3\x9Cml\xC3\xA4ute\x22",
+				vmime::charset("UTF-8")
+			).generate()
+		);
 	}
 
-	void testWhitespace()
-	{
+	void testWhitespace() {
+
 		// Create
 		vmime::text text;
 		text.createFromString("Achim Br\xc3\xa4ndt", vmime::charsets::UTF_8);
@@ -456,8 +517,8 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		VASSERT_EQ("11", "utf-8", text.getWordAt(1)->getCharset());
 	}
 
-	void testWhitespaceMBox()
-	{
+	void testWhitespaceMBox() {
+
 		// Space MUST be encoded inside a word
 		vmime::mailbox mbox(vmime::text("Achim Br\xc3\xa4ndt", vmime::charsets::UTF_8), "me@vmime.org");
 		VASSERT_EQ("generate1", "=?us-ascii?Q?Achim_?= =?utf-8?Q?Br=C3=A4ndt?= <me@vmime.org>", mbox.generate());
@@ -478,30 +539,38 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		VASSERT_EQ("parse.email", "me@vmime.org", mbox.getEmail());
 	}
 
-	void testFoldingAscii()
-	{
+	void testFoldingAscii() {
+
 		// In this test, no encoding is needed, but line should be folded anyway
 		vmime::word w("01234567890123456789012345678901234567890123456789"
 		              "01234567890123456789012345678901234567890123456789", vmime::charset("us-ascii"));
 
-		VASSERT_EQ("fold.ascii",
+		VASSERT_EQ(
+			"fold.ascii",
 			"=?us-ascii?Q?01234567890123456789012345678901234?=\r\n"
 			" =?us-ascii?Q?5678901234567890123456789012345678?=\r\n"
-			" =?us-ascii?Q?9012345678901234567890123456789?=", w.generate(50));
+			" =?us-ascii?Q?9012345678901234567890123456789?=", w.generate(50)
+		);
 	}
 
-	void testForcedNonEncoding()
-	{
+	void testForcedNonEncoding() {
+
 		// Testing long unbreakable and unencodable header
 		vmime::relay r;
-		r.parse(" from User (Ee9GMqZQ8t7IQwftfAFHd2KyScCYRrFSJ50tKEoXv2bVCG4HcPU80GGWiFabAvG77FekpGgF1h@[127.0.0.1]) by servername.hostname.com\n\t"
-				"with esmtp id 1NGTS9-2C0sqG0; Fri, 4 Dec 2009 09:23:49 +0100");
+		r.parse(
+			" from User (Ee9GMqZQ8t7IQwftfAFHd2KyScCYRrFSJ50tKEoXv2bVCG4HcPU80GGWiFabAvG77FekpGgF1h@[127.0.0.1]) by servername.hostname.com\n\t"
+			"with esmtp id 1NGTS9-2C0sqG0; Fri, 4 Dec 2009 09:23:49 +0100"
+		);
 
-		VASSERT_EQ("received.long", "from User\r\n (Ee9GMqZQ8t7IQwftfAFHd2KyScCYRrFSJ50tKEoXv2bVCG4HcPU80GGWiFabAvG77FekpGgF1h@[127.0.0.1])\r\n by servername.hostname.com with esmtp id 1NGTS9-2C0sqG0; Fri, 4 Dec 2009\r\n 09:23:49 +0100", r.generate(78));
+		VASSERT_EQ(
+			"received.long",
+			"from User\r\n (Ee9GMqZQ8t7IQwftfAFHd2KyScCYRrFSJ50tKEoXv2bVCG4HcPU80GGWiFabAvG77FekpGgF1h@[127.0.0.1])\r\n by servername.hostname.com with esmtp id 1NGTS9-2C0sqG0; Fri, 4 Dec 2009\r\n 09:23:49 +0100",
+			r.generate(78)
+		);
 	}
 
-	void testBugFix20110511()
-	{
+	void testBugFix20110511() {
+
 		/*
 
 		 Using the latest version of vmime (0.9.1), encoding the following string: Jean
@@ -520,8 +589,11 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		const std::string ENCODED_TEXT = "Jean =?utf-8?Q?Gwena=C3=ABl?= Dutourd";
 
 		// Encode
-		VASSERT_EQ("encode", ENCODED_TEXT,
-			vmime::text::newFromString(DECODED_TEXT, vmime::charset("utf-8"))->generate());
+		VASSERT_EQ(
+			"encode",
+			ENCODED_TEXT,
+			vmime::text::newFromString(DECODED_TEXT, vmime::charset("utf-8"))->generate()
+		);
 
 		// Decode
 		vmime::text t;
@@ -529,56 +601,69 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 
 		// -- words
 		std::ostringstream oss; oss << t;
-		VASSERT_EQ("decode1",
+		VASSERT_EQ(
+			"decode1",
 			"[text: [[word: charset=us-ascii, buffer=Jean ],"
 			        "[word: charset=utf-8, buffer=Gwenaël],"
-				  "[word: charset=us-ascii, buffer= Dutourd]]]", oss.str());
+			        "[word: charset=us-ascii, buffer= Dutourd]]]",
+			oss.str()
+		);
 
 		// -- getWholeBuffer
 		VASSERT_EQ("decode2", DECODED_TEXT, t.getWholeBuffer());
 	}
 
-	void testInternationalizedEmail_specialChars()
-	{
+	void testInternationalizedEmail_specialChars() {
+
 		vmime::generationContext ctx(vmime::generationContext::getDefaultContext());
 		ctx.setInternationalizedEmailSupport(true);
 
 		vmime::generationContext::switcher <vmime::generationContext> contextSwitcher(ctx);
 
 		// Special sequence/chars should still be encoded
-		VASSERT_EQ("1", "=?us-ascii?Q?Test=3D=3Frfc2047_sequence?=",
-			vmime::word("Test=?rfc2047 sequence", vmime::charset("us-ascii")).generate());
+		VASSERT_EQ(
+			"1",
+			"=?us-ascii?Q?Test=3D=3Frfc2047_sequence?=",
+			vmime::word("Test=?rfc2047 sequence", vmime::charset("us-ascii")).generate()
+		);
 
-		VASSERT_EQ("2", "=?us-ascii?Q?Line_One=0ALine_Two?=",
-			vmime::word("Line One\nLine Two", vmime::charset("us-ascii")).generate());
+		VASSERT_EQ(
+			"2",
+			"=?us-ascii?Q?Line_One=0ALine_Two?=",
+			vmime::word("Line One\nLine Two", vmime::charset("us-ascii")).generate()
+		);
 	}
 
-	void testInternationalizedEmail_UTF8()
-	{
+	void testInternationalizedEmail_UTF8() {
+
 		vmime::generationContext ctx(vmime::generationContext::getDefaultContext());
 		ctx.setInternationalizedEmailSupport(true);
 
 		vmime::generationContext::switcher <vmime::generationContext> contextSwitcher(ctx);
 
 		// Already UTF-8 encoded text should be left as is
-		VASSERT_EQ("1", "Achim Br\xc3\xa4ndt",
-			vmime::word("Achim Br\xc3\xa4ndt", vmime::charset("utf-8")).generate());
+		VASSERT_EQ(
+			"1", "Achim Br\xc3\xa4ndt",
+			vmime::word("Achim Br\xc3\xa4ndt", vmime::charset("utf-8")).generate()
+		);
 	}
 
-	void testInternationalizedEmail_nonUTF8()
-	{
+	void testInternationalizedEmail_nonUTF8() {
+
 		vmime::generationContext ctx(vmime::generationContext::getDefaultContext());
 		ctx.setInternationalizedEmailSupport(true);
 
 		vmime::generationContext::switcher <vmime::generationContext> contextSwitcher(ctx);
 
 		// Non UTF-8 encoded text should first be converted to UTF-8
-		VASSERT_EQ("1", "Achim Br\xc3\xa4ndt",
-			vmime::word("Achim Br\xe4ndt", vmime::charset("iso-8859-1")).generate());
+		VASSERT_EQ(
+			"1", "Achim Br\xc3\xa4ndt",
+			vmime::word("Achim Br\xe4ndt", vmime::charset("iso-8859-1")).generate()
+		);
 	}
 
-	void testInternationalizedEmail_folding()
-	{
+	void testInternationalizedEmail_folding() {
+
 		vmime::generationContext ctx(vmime::generationContext::getDefaultContext());
 		ctx.setInternationalizedEmailSupport(true);
 
@@ -588,63 +673,82 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		vmime::word w1("01234567890123456789\xc3\xa0x012345678901234567890123456789"
 		               "01234567890123456789\xc3\xa0x012345678901234567890123456789", vmime::charset("utf-8"));
 
-		VASSERT_EQ("1",
+		VASSERT_EQ(
+			"1",
 			"=?utf-8?Q?01234567890123456789=C3=A0x01234567890?=\r\n"
 			" =?utf-8?Q?1234567890123456789012345678901234567?=\r\n"
 			" =?utf-8?Q?89=C3=A0x0123456789012345678901234567?=\r\n"
-			" =?utf-8?Q?89?=", w1.generate(50));
+			" =?utf-8?Q?89?=",
+			w1.generate(50)
+		);
 
 		// RFC-2047 encoding will not be forced, as words can be wrapped in a new line
 		vmime::word w2("bla bla bla This is some '\xc3\xa0\xc3\xa7' UTF-8 encoded text", vmime::charset("utf-8"));
 
-		VASSERT_EQ("2",
+		VASSERT_EQ(
+			"2",
 			"bla bla bla This is\r\n"
 			" some '\xc3\xa0\xc3\xa7' UTF-8\r\n"
-			" encoded text", w2.generate(20));
+			" encoded text",
+			w2.generate(20)
+		);
 	}
 
-	void testWronglyPaddedB64Words()
-	{
+	void testWronglyPaddedB64Words() {
+
 		vmime::text outText;
 
 		vmime::text::decodeAndUnfold("=?utf-8?B?5Lit5?=\n =?utf-8?B?paH?=", &outText);
 
-		VASSERT_EQ("1", "\xe4\xb8\xad\xe6\x96\x87",
-			outText.getConvertedText(vmime::charset("utf-8")));
+		VASSERT_EQ(
+			"1",
+			"\xe4\xb8\xad\xe6\x96\x87",
+			outText.getConvertedText(vmime::charset("utf-8"))
+		);
 
 		vmime::text::decodeAndUnfold("=?utf-8?B?5Lit5p?=\n =?utf-8?B?aH?=", &outText);
 
-		VASSERT_EQ("2", "\xe4\xb8\xad\xe6\x96\x87",
-			outText.getConvertedText(vmime::charset("utf-8")));
+		VASSERT_EQ(
+			"2",
+			"\xe4\xb8\xad\xe6\x96\x87",
+			outText.getConvertedText(vmime::charset("utf-8"))
+		);
 
 		vmime::text::decodeAndUnfold("=?utf-8?B?5Lit5pa?=\n =?utf-8?B?H?=", &outText);
 
-		VASSERT_EQ("3", "\xe4\xb8\xad\xe6\x96\x87",
-			outText.getConvertedText(vmime::charset("utf-8")));
+		VASSERT_EQ(
+			"3",
+			"\xe4\xb8\xad\xe6\x96\x87",
+			outText.getConvertedText(vmime::charset("utf-8"))
+		);
 	}
 
 	// Ensure that words which encode a non-integral number of characters
 	// are correctly decoded.
-	void testFixBrokenWords()
-	{
+	void testFixBrokenWords() {
+
 		vmime::text outText;
 
 		vmime::charsetConverterOptions opts;
 		opts.silentlyReplaceInvalidSequences = false;  // just to be sure that broken words are actually fixed
 
 		// Test case 1
-		vmime::text::decodeAndUnfold
-			("=?utf-8?Q?Gwena=C3?="
-			 "=?utf-8?Q?=ABl?=", &outText);
+		vmime::text::decodeAndUnfold(
+			"=?utf-8?Q?Gwena=C3?="
+			"=?utf-8?Q?=ABl?=",
+			&outText
+		);
 
 		VASSERT_EQ("1.1", 1, outText.getWordCount());
 		VASSERT_EQ("1.2", "Gwena\xc3\xabl", outText.getWordAt(0)->getBuffer());
 		VASSERT_EQ("1.3", vmime::charset("utf-8"), outText.getWordAt(0)->getCharset());
 
 		// Test case 2
-		vmime::text::decodeAndUnfold
-			("=?utf-8?B?5Lit6Yu85qmf5qKw6JGj5LqL5pyDMTAz5bm056ysMDXlsYbn?="
-			 "=?utf-8?B?rKwwN+asoeitsOeoiw==?=", &outText);
+		vmime::text::decodeAndUnfold(
+			"=?utf-8?B?5Lit6Yu85qmf5qKw6JGj5LqL5pyDMTAz5bm056ysMDXlsYbn?="
+			"=?utf-8?B?rKwwN+asoeitsOeoiw==?=",
+			&outText
+		);
 
 		VASSERT_EQ("2.1", 1, outText.getWordCount());
 		VASSERT_EQ("2.2", "\xe4\xb8\xad\xe9\x8b\xbc\xe6\xa9\x9f\xe6\xa2\xb0"
@@ -654,21 +758,25 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		VASSERT_EQ("2.3", vmime::charset("utf-8"), outText.getWordAt(0)->getCharset());
 
 		// Test case 3 (a character spanning over 3 words: 'を' = E3 82 92)
-		vmime::text::decodeAndUnfold
-			("=?utf-8?Q?abc=E3?="
-			 "=?utf-8?Q?=82?="
-			 "=?utf-8?Q?=92xyz?=", &outText);
+		vmime::text::decodeAndUnfold(
+			"=?utf-8?Q?abc=E3?="
+			"=?utf-8?Q?=82?="
+			"=?utf-8?Q?=92xyz?=",
+			&outText
+		);
 
 		VASSERT_EQ("3.1", 1, outText.getWordCount());
 		VASSERT_EQ("3.2", "abc\xe3\x82\x92xyz", outText.getWordAt(0)->getBuffer());
 		VASSERT_EQ("3.3", vmime::charset("utf-8"), outText.getWordAt(0)->getCharset());
 
 		// Test case 4 (remains invalid)
-		vmime::text::decodeAndUnfold
-			("=?utf-8?Q?abc=E3?="
-			 "=?utf-8?Q?=82?="
-			 "=?utf-8?Q?xy?="
-			 "=?utf-8?Q?z?=", &outText);
+		vmime::text::decodeAndUnfold(
+			"=?utf-8?Q?abc=E3?="
+			"=?utf-8?Q?=82?="
+			"=?utf-8?Q?xy?="
+			"=?utf-8?Q?z?=",
+			&outText
+		);
 
 		VASSERT_EQ("4.1", 2, outText.getWordCount());
 		VASSERT_EQ("4.2", "abc", outText.getWordAt(0)->getBuffer());
@@ -677,11 +785,13 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		VASSERT_EQ("4.5", vmime::charset("utf-8"), outText.getWordAt(1)->getCharset());
 
 		// Test case 5 (remains partially invalid)
-		vmime::text::decodeAndUnfold
-			("=?utf-8?Q?abc=E3?="
-			 "=?utf-8?Q?=82?="
-			 "=?utf-8?Q?\x92xy?="
-			 "=?utf-8?Q?z\xc3?=", &outText);
+		vmime::text::decodeAndUnfold(
+			"=?utf-8?Q?abc=E3?="
+			"=?utf-8?Q?=82?="
+			"=?utf-8?Q?\x92xy?="
+			"=?utf-8?Q?z\xc3?=",
+			&outText
+		);
 
 		VASSERT_EQ("5.1", 2, outText.getWordCount());
 		VASSERT_EQ("5.2", "abc\xe3\x82\x92xyz", outText.getWordAt(0)->getBuffer());
@@ -690,8 +800,8 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		VASSERT_EQ("5.5", vmime::charset("utf-8"), outText.getWordAt(1)->getCharset());
 	}
 
-	void testUnknownCharset()
-	{
+	void testUnknownCharset() {
+
 		vmime::text t;
 		vmime::text::decodeAndUnfold("=?gb2312?B?wdaRY8PA?=", &t);
 
@@ -721,4 +831,3 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 	}
 
 VMIME_TEST_SUITE_END
-

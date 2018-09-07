@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -30,81 +30,90 @@
 #include "vmime/emptyContentHandler.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 plainTextPart::plainTextPart()
-	: m_text(make_shared <emptyContentHandler>())
-{
+	: m_text(make_shared <emptyContentHandler>()) {
+
 }
 
 
-plainTextPart::~plainTextPart()
-{
+plainTextPart::~plainTextPart() {
+
 }
 
 
-const mediaType plainTextPart::getType() const
-{
-	return (mediaType(mediaTypes::TEXT, mediaTypes::TEXT_PLAIN));
+const mediaType plainTextPart::getType() const {
+
+	return mediaType(mediaTypes::TEXT, mediaTypes::TEXT_PLAIN);
 }
 
 
-size_t plainTextPart::getPartCount() const
-{
-	return (1);
+size_t plainTextPart::getPartCount() const {
+
+	return 1;
 }
 
 
-void plainTextPart::generateIn(shared_ptr <bodyPart> /* message */, shared_ptr <bodyPart> parent) const
-{
+void plainTextPart::generateIn(
+	const shared_ptr <bodyPart>& /* message */,
+	const shared_ptr <bodyPart>& parent
+) const {
+
 	// Create a new part
 	shared_ptr <bodyPart> part = make_shared <bodyPart>();
 	parent->getBody()->appendPart(part);
 
 	// Set contents
-	part->getBody()->setContents(m_text,
-		mediaType(mediaTypes::TEXT, mediaTypes::TEXT_PLAIN), m_charset,
-		encoding::decide(m_text, m_charset, encoding::USAGE_TEXT));
+	part->getBody()->setContents(
+		m_text,
+		mediaType(mediaTypes::TEXT, mediaTypes::TEXT_PLAIN),
+		m_charset,
+		encoding::decide(m_text, m_charset, encoding::USAGE_TEXT)
+	);
 }
 
 
-void plainTextPart::parse(shared_ptr <const bodyPart> /* message */,
-	shared_ptr <const bodyPart> /* parent */, shared_ptr <const bodyPart> textPart)
-{
+void plainTextPart::parse(
+	const shared_ptr <const bodyPart>& /* message */,
+	const shared_ptr <const bodyPart>& /* parent */,
+	const shared_ptr <const bodyPart>& textPart
+) {
+
 	m_text = vmime::clone(textPart->getBody()->getContents());
 
 	shared_ptr <const contentTypeField> ctf =
 		textPart->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
 
-	if (ctf && ctf->hasCharset())
+	if (ctf && ctf->hasCharset()) {
 		m_charset = ctf->getCharset();
-	else
+	} else {
 		m_charset = charset();
+	}
 }
 
 
-const charset& plainTextPart::getCharset() const
-{
-	return (m_charset);
+const charset& plainTextPart::getCharset() const {
+
+	return m_charset;
 }
 
 
-void plainTextPart::setCharset(const charset& ch)
-{
+void plainTextPart::setCharset(const charset& ch) {
+
 	m_charset = ch;
 }
 
 
-const shared_ptr <const contentHandler> plainTextPart::getText() const
-{
-	return (m_text);
+const shared_ptr <const contentHandler> plainTextPart::getText() const{
+
+	return m_text;
 }
 
 
-void plainTextPart::setText(shared_ptr <contentHandler> text)
-{
+void plainTextPart::setText(const shared_ptr <contentHandler>& text) {
+
 	m_text = vmime::clone(text);
 }
 

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -29,24 +29,22 @@ namespace utility {
 
 
 outputStreamByteArrayAdapter::outputStreamByteArrayAdapter(byteArray& array)
-	: m_array(array)
-{
+	: m_array(array) {
+
 }
 
 
-void outputStreamByteArrayAdapter::writeImpl
-	(const byte_t* const data, const size_t count)
-{
+void outputStreamByteArrayAdapter::writeImpl(const byte_t* const data, const size_t count) {
+
 	m_array.insert(m_array.end(), data, data + count);
 }
 
 
-void outputStreamByteArrayAdapter::flush()
-{
+void outputStreamByteArrayAdapter::flush() {
+
 	// Do nothing
 }
 
 
 } // utility
 } // vmime
-

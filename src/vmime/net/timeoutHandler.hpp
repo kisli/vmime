@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -42,9 +42,8 @@ namespace net {
   * to stop operations that takes too much time to complete (ie. no data
   * received from the server for a long time if the network link is down).
   */
+class VMIME_EXPORT timeoutHandler : public object {
 
-class VMIME_EXPORT timeoutHandler : public object
-{
 public:
 
 	virtual ~timeoutHandler() { }
@@ -71,9 +70,8 @@ public:
 
 /** A class to create 'timeoutHandler' objects.
   */
+class timeoutHandlerFactory : public object {
 
-class timeoutHandlerFactory : public object
-{
 public:
 
 	virtual ~timeoutHandlerFactory() { }

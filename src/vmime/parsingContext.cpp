@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -24,35 +24,39 @@
 #include "vmime/parsingContext.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
-parsingContext::parsingContext() : m_headerParseErrorRecovery(vmime::headerParseRecoveryMethod::SKIP_LINE)
-{
+parsingContext::parsingContext()
+	: m_headerParseErrorRecovery(vmime::headerParseRecoveryMethod::SKIP_LINE) {
+
 }
 
 
 parsingContext::parsingContext(const parsingContext& ctx)
-	: context(ctx), m_headerParseErrorRecovery(vmime::headerParseRecoveryMethod::SKIP_LINE)
-{
+	: context(ctx),
+	  m_headerParseErrorRecovery(vmime::headerParseRecoveryMethod::SKIP_LINE) {
+
 }
 
 
-parsingContext& parsingContext::getDefaultContext()
-{
+parsingContext& parsingContext::getDefaultContext() {
+
 	static parsingContext ctx;
 	return ctx;
 }
 
-headerParseRecoveryMethod::headerLineError parsingContext::getHeaderParseErrorRecoveryMethod() const
-{
+
+headerParseRecoveryMethod::headerLineError parsingContext::getHeaderParseErrorRecoveryMethod() const {
+
 	return m_headerParseErrorRecovery;
 }
 
 
-void parsingContext::setHeaderParseErrorRecoveryMethod(headerParseRecoveryMethod::headerLineError recoveryMethod)
-{
+void parsingContext::setHeaderParseErrorRecoveryMethod(
+	const headerParseRecoveryMethod::headerLineError recoveryMethod
+) {
+
 	m_headerParseErrorRecovery = recoveryMethod;
 }
 

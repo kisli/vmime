@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -32,15 +32,13 @@
 #include "vmime/word.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 /** Describes presentation information, as per RFC-2183.
   */
+class VMIME_EXPORT contentDispositionField : public parameterizedHeaderField {
 
-class VMIME_EXPORT contentDispositionField : public parameterizedHeaderField
-{
 	friend class headerFieldFactory;
 
 protected:

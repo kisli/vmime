@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -46,17 +46,26 @@ namespace net {
 namespace pop3 {
 
 
-POP3Response::POP3Response(shared_ptr <socket> sok, shared_ptr <timeoutHandler> toh, shared_ptr <tracer> tracer)
-	: m_socket(sok), m_timeoutHandler(toh), m_tracer(tracer)
-{
+POP3Response::POP3Response(
+	const shared_ptr <socket>& sok,
+	const shared_ptr <timeoutHandler>& toh,
+	const shared_ptr <tracer>& tracer
+)
+	: m_socket(sok),
+	  m_timeoutHandler(toh),
+	  m_tracer(tracer) {
+
 }
 
 
 // static
-shared_ptr <POP3Response> POP3Response::readResponse(shared_ptr <POP3Connection> conn)
-{
-	shared_ptr <POP3Response> resp = shared_ptr <POP3Response>
-		(new POP3Response(conn->getSocket(), conn->getTimeoutHandler(), conn->getTracer()));
+shared_ptr <POP3Response> POP3Response::readResponse(
+	const shared_ptr <POP3Connection>& conn
+) {
+
+	shared_ptr <POP3Response> resp = shared_ptr <POP3Response>(
+		new POP3Response(conn->getSocket(), conn->getTimeoutHandler(), conn->getTracer())
+	);
 
 	string buffer;
 	resp->readResponseImpl(buffer, /* multiLine */ false);
@@ -65,18 +74,22 @@ shared_ptr <POP3Response> POP3Response::readResponse(shared_ptr <POP3Connection>
 	resp->m_code = getResponseCode(buffer);
 	stripResponseCode(buffer, resp->m_text);
 
-	if (resp->m_tracer)
+	if (resp->m_tracer) {
 		resp->m_tracer->traceReceive(buffer);
+	}
 
 	return resp;
 }
 
 
 // static
-shared_ptr <POP3Response> POP3Response::readMultilineResponse(shared_ptr <POP3Connection> conn)
-{
-	shared_ptr <POP3Response> resp = shared_ptr <POP3Response>
-		(new POP3Response(conn->getSocket(), conn->getTimeoutHandler(), conn->getTracer()));
+shared_ptr <POP3Response> POP3Response::readMultilineResponse(
+	const shared_ptr <POP3Connection>& conn
+) {
+
+	shared_ptr <POP3Response> resp = shared_ptr <POP3Response>(
+		new POP3Response(conn->getSocket(), conn->getTimeoutHandler(), conn->getTracer())
+	);
 
 	string buffer;
 	resp->readResponseImpl(buffer, /* multiLine */ true);
@@ -91,32 +104,39 @@ shared_ptr <POP3Response> POP3Response::readMultilineResponse(shared_ptr <POP3Co
 	std::istringstream iss(nextLines);
 	string line;
 
-	if (resp->m_tracer)
+	if (resp->m_tracer) {
 		resp->m_tracer->traceReceive(firstLine);
+	}
 
-	while (std::getline(iss, line, '\n'))
-	{
+	while (std::getline(iss, line, '\n')) {
+
 		line = utility::stringUtils::trim(line);
 		resp->m_lines.push_back(line);
 
-		if (resp->m_tracer)
+		if (resp->m_tracer) {
 			resp->m_tracer->traceReceive(line);
+		}
 	}
 
-	if (resp->m_tracer)
+	if (resp->m_tracer) {
 		resp->m_tracer->traceReceive(".");
+	}
 
 	return resp;
 }
 
 
 // static
-shared_ptr <POP3Response> POP3Response::readLargeResponse
-	(shared_ptr <POP3Connection> conn, utility::outputStream& os,
-	 utility::progressListener* progress, const size_t predictedSize)
-{
-	shared_ptr <POP3Response> resp = shared_ptr <POP3Response>
-		(new POP3Response(conn->getSocket(), conn->getTimeoutHandler(), conn->getTracer()));
+shared_ptr <POP3Response> POP3Response::readLargeResponse(
+	const shared_ptr <POP3Connection>& conn,
+	utility::outputStream& os,
+	utility::progressListener* progress,
+	const size_t predictedSize
+) {
+
+	shared_ptr <POP3Response> resp = shared_ptr <POP3Response>(
+		new POP3Response(conn->getSocket(), conn->getTimeoutHandler(), conn->getTracer())
+	);
 
 	string firstLine;
 	const size_t length = resp->readResponseImpl(firstLine, os, progress, predictedSize);
@@ -125,8 +145,7 @@ shared_ptr <POP3Response> POP3Response::readLargeResponse
 	resp->m_code = getResponseCode(firstLine);
 	stripResponseCode(firstLine, resp->m_text);
 
-	if (resp->m_tracer)
-	{
+	if (resp->m_tracer) {
 		resp->m_tracer->traceReceive(firstLine);
 		resp->m_tracer->traceReceiveBytes(length - firstLine.length());
 		resp->m_tracer->traceReceive(".");
@@ -136,60 +155,62 @@ shared_ptr <POP3Response> POP3Response::readLargeResponse
 }
 
 
-bool POP3Response::isSuccess() const
-{
+bool POP3Response::isSuccess() const {
+
 	return m_code == CODE_OK;
 }
 
 
-const string POP3Response::getFirstLine() const
-{
+const string POP3Response::getFirstLine() const {
+
 	return m_firstLine;
 }
 
 
-POP3Response::ResponseCode POP3Response::getCode() const
-{
+POP3Response::ResponseCode POP3Response::getCode() const {
+
 	return m_code;
 }
 
 
-const string POP3Response::getText() const
-{
+const string POP3Response::getText() const {
+
 	return m_text;
 }
 
 
-const string POP3Response::getLineAt(const size_t pos) const
-{
+const string POP3Response::getLineAt(const size_t pos) const {
+
 	return m_lines[pos];
 }
 
 
-size_t POP3Response::getLineCount() const
-{
+size_t POP3Response::getLineCount() const {
+
 	return m_lines.size();
 }
 
 
-void POP3Response::readResponseImpl(string& buffer, const bool multiLine)
-{
+void POP3Response::readResponseImpl(string& buffer, const bool multiLine) {
+
 	bool foundTerminator = false;
 
-	if (m_timeoutHandler)
+	if (m_timeoutHandler) {
 		m_timeoutHandler->resetTimeOut();
+	}
 
 	buffer.clear();
 
 	char last1 = '\0', last2 = '\0';
 
-	for ( ; !foundTerminator ; )
-	{
+	for ( ; !foundTerminator ; ) {
+
 		// Check whether the time-out delay is elapsed
-		if (m_timeoutHandler && m_timeoutHandler->isTimeOut())
-		{
-			if (!m_timeoutHandler->handleTimeOut())
+		if (m_timeoutHandler && m_timeoutHandler->isTimeOut()) {
+
+			if (!m_timeoutHandler->handleTimeOut()) {
 				throw exceptions::operation_timed_out();
+			}
 
 			m_timeoutHandler->resetTimeOut();
 		}
@@ -198,36 +219,38 @@ void POP3Response::readResponseImpl(string& buffer, const bool multiLine)
 		string receiveBuffer;
 		m_socket->receive(receiveBuffer);
 
-		if (receiveBuffer.empty())   // buffer is empty
-		{
-			if (m_socket->getStatus() & socket::STATUS_WANT_WRITE)
+		if (receiveBuffer.empty()) {  // buffer is empty
+
+			if (m_socket->getStatus() & socket::STATUS_WANT_WRITE) {
 				m_socket->waitForWrite();
-			else
+			} else {
 				m_socket->waitForRead();
+			}
 
 			continue;
 		}
 
 		// We have received data: reset the time-out counter
-		if (m_timeoutHandler)
+		if (m_timeoutHandler) {
 			m_timeoutHandler->resetTimeOut();
+		}
 
 		// Check for transparent characters: '\n..' becomes '\n.'
 		const char first = receiveBuffer[0];
 
-		if (first == '.' && last2 == '\n' && last1 == '.')
-		{
+		if (first == '.' && last2 == '\n' && last1 == '.') {
+
 			receiveBuffer.erase(receiveBuffer.begin());
-		}
-		else if (receiveBuffer.length() >= 2 && first == '.' &&
-		         receiveBuffer[1] == '.' && last1 == '\n')
-		{
+
+		} else if (receiveBuffer.length() >= 2 && first == '.' &&
+		           receiveBuffer[1] == '.' && last1 == '\n') {
+
 			receiveBuffer.erase(receiveBuffer.begin());
 		}
 
 		for (size_t trans ;
-		     string::npos != (trans = receiveBuffer.find("\n..")) ; )
-		{
+		     string::npos != (trans = receiveBuffer.find("\n..")) ; ) {
+
 			receiveBuffer.replace(trans, 3, "\n.");
 		}
 
@@ -244,28 +267,35 @@ void POP3Response::readResponseImpl(string& buffer, const bool multiLine)
 		// requires a multi-line response, the error response will
 		// include only one line, so we stop waiting for a multi-line
 		// terminator and check for a "normal" one.
-		if (multiLine && !foundTerminator && buffer.length() >= 4 && buffer[0] == '-')
-		{
+		if (multiLine &&
+		    !foundTerminator &&
+		    buffer.length() >= 4 && buffer[0] == '-') {
+
 			foundTerminator = checkTerminator(buffer, false);
 		}
 	}
 }
 
 
-size_t POP3Response::readResponseImpl
-	(string& firstLine, utility::outputStream& os,
-	 utility::progressListener* progress, const size_t predictedSize)
-{
+size_t POP3Response::readResponseImpl(
+	string& firstLine,
+	utility::outputStream& os,
+	utility::progressListener* progress,
+	const size_t predictedSize
+) {
+
 	size_t current = 0, total = predictedSize;
 
 	string temp;
 	bool codeDone = false;
 
-	if (progress)
+	if (progress) {
 		progress->start(total);
+	}
 
-	if (m_timeoutHandler)
+	if (m_timeoutHandler) {
 		m_timeoutHandler->resetTimeOut();
+	}
 
 	utility::inputStreamSocketAdapter sis(*m_socket);
 	utility::stopSequenceFilteredInputStream <5> sfis1(sis, "\r\n.\r\n");
@@ -274,31 +304,27 @@ size_t POP3Response::readResponseImpl
 
 	utility::inputStream& is = dfis;
 
-	while (!is.eof())
-	{
+	while (!is.eof()) {
+
 		// Check whether the time-out delay is elapsed
-		if (m_timeoutHandler && m_timeoutHandler->isTimeOut())
-		{
-			if (!m_timeoutHandler->handleTimeOut())
+		if (m_timeoutHandler && m_timeoutHandler->isTimeOut()) {
+
+			if (!m_timeoutHandler->handleTimeOut()) {
 				throw exceptions::operation_timed_out();
+			}
 		}
 
 		// Receive data from the socket
 		byte_t buffer[65536];
 		const size_t read = is.read(buffer, sizeof(buffer));
 
-		if (read == 0)   // buffer is empty
-		{
-			if (m_socket->getStatus() & socket::STATUS_WANT_WRITE)
-			{
+		if (read == 0) {  // buffer is empty
+
+			if (m_socket->getStatus() & socket::STATUS_WANT_WRITE) {
 				m_socket->waitForWrite();
-			}
-			else if (m_socket->getStatus() & socket::STATUS_WANT_READ)
-			{
+			} else if (m_socket->getStatus() & socket::STATUS_WANT_READ) {
 				m_socket->waitForRead();
-			}
-			else
-			{
+			} else {
 				// Input stream needs more bytes to continue, but there
 				// is enough data into socket buffer. Do not waitForRead(),
 				// just retry read()ing on the stream.
@@ -308,29 +334,30 @@ size_t POP3Response::readResponseImpl
 		}
 
 		// We have received data: reset the time-out counter
-		if (m_timeoutHandler)
+		if (m_timeoutHandler) {
 			m_timeoutHandler->resetTimeOut();
+		}
 
 		// Notify progress
 		current += read;
 
-		if (progress)
-		{
+		if (progress) {
 			total = std::max(total, current);
 			progress->progress(current, total);
 		}
 
 		// If we don't have extracted the response code yet
-		if (!codeDone)
-		{
+		if (!codeDone) {
+
 			vmime::utility::stringUtils::appendBytesToString(temp, buffer, read);
 
 			string responseData;
 
-			if (stripFirstLine(temp, responseData, &firstLine) == true)
-			{
-				if (getResponseCode(firstLine) != CODE_OK)
+			if (stripFirstLine(temp, responseData, &firstLine) == true) {
+
+				if (getResponseCode(firstLine) != CODE_OK) {
 					throw exceptions::command_error("?", firstLine);
+				}
 
 				codeDone = true;
 
@@ -339,61 +366,73 @@ size_t POP3Response::readResponseImpl
 
 				continue;
 			}
-		}
-		else
-		{
+
+		} else {
+
 			// Inject the data into the output stream
 			os.write(buffer, read);
 		}
 	}
 
-	if (progress)
+	if (progress) {
 		progress->stop(total);
+	}
 
 	return current;
 }
 
 
 // static
-bool POP3Response::stripFirstLine
-	(const string& buffer, string& result, string* firstLine)
-{
+bool POP3Response::stripFirstLine(
+	const string& buffer,
+	string& result,
+	string* firstLine
+) {
+
 	const size_t end = buffer.find('\n');
 
-	if (end != string::npos)
-	{
-		if (firstLine) *firstLine = utility::stringUtils::trim(buffer.substr(0, end));
+	if (end != string::npos) {
+
+		if (firstLine) {
+			*firstLine = utility::stringUtils::trim(buffer.substr(0, end));
+		}
+
 		result = buffer.substr(end + 1);
+
 		return true;
-	}
-	else
-	{
-		if (firstLine) *firstLine = utility::stringUtils::trim(buffer);
+
+	} else {
+
+		if (firstLine) {
+			*firstLine = utility::stringUtils::trim(buffer);
+		}
+
 		result = "";
+
 		return false;
 	}
 }
 
 
 // static
-POP3Response::ResponseCode POP3Response::getResponseCode(const string& buffer)
-{
-	if (buffer.length() >= 2)
-	{
+POP3Response::ResponseCode POP3Response::getResponseCode(const string& buffer) {
+
+	if (buffer.length() >= 2) {
+
 		// +[space]
 		if (buffer[0] == '+' &&
-		    (buffer[1] == ' ' || buffer[1] == '\t'))
-		{
+		    (buffer[1] == ' ' || buffer[1] == '\t')) {
+
 			return CODE_READY;
 		}
 
 		// +OK
-		if (buffer.length() >= 3)
-		{
+		if (buffer.length() >= 3) {
+
 			if (buffer[0] == '+' &&
 			    (buffer[1] == 'O' || buffer[1] == 'o') &&
-			    (buffer[2] == 'K' || buffer[1] == 'k'))
-			{
+			    (buffer[2] == 'K' || buffer[1] == 'k')) {
+
 				return CODE_OK;
 			}
 		}
@@ -405,37 +444,38 @@ POP3Response::ResponseCode POP3Response::getResponseCode(const string& buffer)
 
 
 // static
-void POP3Response::stripResponseCode(const string& buffer, string& result)
-{
+void POP3Response::stripResponseCode(const string& buffer, string& result) {
+
 	const size_t pos = buffer.find_first_of(" \t");
 
-	if (pos != string::npos)
+	if (pos != string::npos) {
 		result = buffer.substr(pos + 1);
-	else
+	} else {
 		result = buffer;
+	}
 }
 
 
 // static
-bool POP3Response::checkTerminator(string& buffer, const bool multiLine)
-{
+bool POP3Response::checkTerminator(string& buffer, const bool multiLine) {
+
 	// Multi-line response
-	if (multiLine)
-	{
+	if (multiLine) {
+
 		static const string term1("\r\n.\r\n");
 		static const string term2("\n.\n");
 
-		return (checkOneTerminator(buffer, term1) ||
-		        checkOneTerminator(buffer, term2));
-	}
+		return checkOneTerminator(buffer, term1) ||
+		       checkOneTerminator(buffer, term2);
+
 	// Normal response
-	else
-	{
+	} else {
+
 		static const string term1("\r\n");
 		static const string term2("\n");
 
-		return (checkOneTerminator(buffer, term1) ||
-		        checkOneTerminator(buffer, term2));
+		return checkOneTerminator(buffer, term1) ||
+		       checkOneTerminator(buffer, term2);
 	}
 
 	return false;
@@ -443,11 +483,11 @@ bool POP3Response::checkTerminator(string& buffer, const bool multiLine)
 
 
 // static
-bool POP3Response::checkOneTerminator(string& buffer, const string& term)
-{
+bool POP3Response::checkOneTerminator(string& buffer, const string& term) {
+
 	if (buffer.length() >= term.length() &&
-		std::equal(buffer.end() - term.length(), buffer.end(), term.begin()))
-	{
+		std::equal(buffer.end() - term.length(), buffer.end(), term.begin())) {
+
 		buffer.erase(buffer.end() - term.length(), buffer.end());
 		return true;
 	}

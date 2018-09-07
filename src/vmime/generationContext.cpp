@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -24,8 +24,7 @@
 #include "vmime/generationContext.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 generationContext::generationContext()
@@ -34,8 +33,8 @@ generationContext::generationContext()
 	               "does not understand MIME message format."),
 	  m_epilogText(""),
 	  m_wrapMessageId(true),
-	  m_paramValueMode(PARAMETER_VALUE_RFC2231_ONLY)
-{
+	  m_paramValueMode(PARAMETER_VALUE_RFC2231_ONLY) {
+
 }
 
 
@@ -45,86 +44,89 @@ generationContext::generationContext(const generationContext& ctx)
 	  m_prologText(ctx.m_prologText),
 	  m_epilogText(ctx.m_epilogText),
 	  m_wrapMessageId(ctx.m_wrapMessageId),
-	  m_paramValueMode(ctx.m_paramValueMode)
-{
+	  m_paramValueMode(ctx.m_paramValueMode) {
+
 }
 
 
-generationContext& generationContext::getDefaultContext()
-{
+generationContext& generationContext::getDefaultContext() {
+
 	static generationContext ctx;
 	return ctx;
 }
 
 
-size_t generationContext::getMaxLineLength() const
-{
+size_t generationContext::getMaxLineLength() const {
+
 	return m_maxLineLength;
 }
 
 
-void generationContext::setMaxLineLength(const size_t maxLineLength)
-{
+void generationContext::setMaxLineLength(const size_t maxLineLength) {
+
 	m_maxLineLength = maxLineLength;
 }
 
 
 
-const string generationContext::getPrologText() const
-{
+const string generationContext::getPrologText() const {
+
 	return m_prologText;
 }
 
 
-void generationContext::setPrologText(const string& prologText)
-{
+void generationContext::setPrologText(const string& prologText) {
+
 	m_prologText = prologText;
 }
 
 
-const string generationContext::getEpilogText() const
-{
+const string generationContext::getEpilogText() const {
+
 	return m_epilogText;
 }
 
 
-void generationContext::setEpilogText(const string& epilogText)
-{
+void generationContext::setEpilogText(const string& epilogText) {
+
 	m_epilogText = epilogText;
 }
 
-bool generationContext::getWrapMessageId() const
-{
+
+bool generationContext::getWrapMessageId() const {
+
 	return m_wrapMessageId;
 }
 
-void generationContext::setWrapMessageId(const bool& wrapMessageId) 
-{
+
+void generationContext::setWrapMessageId(const bool& wrapMessageId) {
+
 	m_wrapMessageId = wrapMessageId;
 }
 
-void generationContext::setEncodedParameterValueMode(const EncodedParameterValueModes mode)
-{
+
+void generationContext::setEncodedParameterValueMode(const EncodedParameterValueModes mode) {
+
 	m_paramValueMode = mode;
 }
 
 
 generationContext::EncodedParameterValueModes
-	generationContext::getEncodedParameterValueMode() const
-{
+	generationContext::getEncodedParameterValueMode() const {
+
 	return m_paramValueMode;
 }
 
 
-generationContext& generationContext::operator=(const generationContext& ctx)
-{
+generationContext& generationContext::operator=(const generationContext& ctx) {
+
 	copyFrom(ctx);
 	return *this;
 }
 
 
-void generationContext::copyFrom(const generationContext& ctx)
-{
+void generationContext::copyFrom(const generationContext& ctx) {
+
 	context::copyFrom(ctx);
 
 	m_maxLineLength = ctx.m_maxLineLength;

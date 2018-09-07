@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -37,8 +37,8 @@ namespace utility {
 namespace encoder {
 
 
-encoderFactory::encoderFactory()
-{
+encoderFactory::encoderFactory() {
+
 	// Register some default encoders
 	registerName <b64Encoder>("base64");
 	registerName <qpEncoder>("quoted-printable");
@@ -58,83 +58,88 @@ encoderFactory::encoderFactory()
 }
 
 
-encoderFactory::~encoderFactory()
-{
+encoderFactory::~encoderFactory() {
+
 }
 
 
-shared_ptr <encoderFactory> encoderFactory::getInstance()
-{
+shared_ptr <encoderFactory> encoderFactory::getInstance() {
+
 	static encoderFactory instance;
 	return shared_ptr <encoderFactory>(&instance, noop_shared_ptr_deleter <encoderFactory>());
 }
 
 
-shared_ptr <encoder> encoderFactory::create(const string& name)
-{
-	try
-	{
-		return (getEncoderByName(name)->create());
-	}
-	catch (exceptions::no_encoder_available &) {
+shared_ptr <encoder> encoderFactory::create(const string& name) {
 
-		if (m_defaultEncoder)
+	try {
+
+		return (getEncoderByName(name)->create());
+
+	} catch (exceptions::no_encoder_available &) {
+
+		if (m_defaultEncoder) {
 			return m_defaultEncoder;
+		}
 
 		throw;
 	}
 }
 
 
-const shared_ptr <const encoderFactory::registeredEncoder> encoderFactory::getEncoderByName(const string& name) const
-{
+const shared_ptr <const encoderFactory::registeredEncoder>
+	encoderFactory::getEncoderByName(const string& name) const {
+
 	const string lcName(utility::stringUtils::toLower(name));
 
 	for (std::vector <shared_ptr <registeredEncoder> >::const_iterator it = m_encoders.begin() ;
-	     it != m_encoders.end() ; ++it)
-	{
-		if ((*it)->getName() == lcName)
+	     it != m_encoders.end() ; ++it) {
+
+		if ((*it)->getName() == lcName) {
 			return (*it);
+		}
 	}
 
 	throw exceptions::no_encoder_available(name);
 }
 
 
-size_t encoderFactory::getEncoderCount() const
-{
-	return (m_encoders.size());
+size_t encoderFactory::getEncoderCount() const {
+
+	return m_encoders.size();
 }
 
 
-const shared_ptr <const encoderFactory::registeredEncoder> encoderFactory::getEncoderAt(const size_t pos) const
-{
-	return (m_encoders[pos]);
+const shared_ptr <const encoderFactory::registeredEncoder>
+	encoderFactory::getEncoderAt(const size_t pos) const {
+
+	return m_encoders[pos];
 }
 
 
-const std::vector <shared_ptr <const encoderFactory::registeredEncoder> > encoderFactory::getEncoderList() const
-{
+const std::vector <shared_ptr <const encoderFactory::registeredEncoder> >
+	encoderFactory::getEncoderList() const {
+
 	std::vector <shared_ptr <const registeredEncoder> > res;
 
 	for (std::vector <shared_ptr <registeredEncoder> >::const_iterator it = m_encoders.begin() ;
-	     it != m_encoders.end() ; ++it)
-	{
+	     it != m_encoders.end() ; ++it) {
+
 		res.push_back(*it);
 	}
 
-	return (res);
+	return res;
 }
 
 
-void encoderFactory::setDefaultEncoder(const shared_ptr <encoder>& enc)
-{
+void encoderFactory::setDefaultEncoder(const shared_ptr <encoder>& enc) {
+
 	m_defaultEncoder = enc;
 }
 
 
-shared_ptr <encoder> encoderFactory::getDefaultEncoder() const
-{
+shared_ptr <encoder> encoderFactory::getDefaultEncoder() const {
+
 	return m_defaultEncoder;
 }
 

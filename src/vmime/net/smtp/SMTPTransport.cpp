@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -51,117 +51,146 @@ namespace net {
 namespace smtp {
 
 
-SMTPTransport::SMTPTransport(shared_ptr <session> sess, shared_ptr <security::authenticator> auth, const bool secured)
-	: transport(sess, getInfosInstance(), auth), m_isSMTPS(secured), m_needReset(false)
-{
+SMTPTransport::SMTPTransport(
+	const shared_ptr <session>& sess,
+	const shared_ptr <security::authenticator>& auth,
+	const bool secured
+)
+	: transport(sess, getInfosInstance(), auth),
+	  m_isSMTPS(secured),
+	  m_needReset(false) {
+
 }
 
 
-SMTPTransport::~SMTPTransport()
-{
-	try
-	{
-		if (isConnected())
+SMTPTransport::~SMTPTransport() {
+
+	try {
+
+		if (isConnected()) {
 			disconnect();
-	}
-	catch (...)
-	{
+		}
+
+	} catch (...) {
+
 		// Don't throw in destructor
 	}
 }
 
 
-const string SMTPTransport::getProtocolName() const
-{
+const string SMTPTransport::getProtocolName() const {
+
 	return "smtp";
 }
 
 
-bool SMTPTransport::isSMTPS() const
-{
+bool SMTPTransport::isSMTPS() const {
+
 	return m_isSMTPS;
 }
 
 
-void SMTPTransport::connect()
-{
-	if (isConnected())
-		throw exceptions::already_connected();
+void SMTPTransport::connect() {
 
-	m_connection = make_shared <SMTPConnection>
-		(dynamicCast <SMTPTransport>(shared_from_this()), getAuthenticator());
+	if (isConnected()) {
+		throw exceptions::already_connected();
+	}
+
+	m_connection = make_shared <SMTPConnection>(
+		dynamicCast <SMTPTransport>(shared_from_this()), getAuthenticator()
+	);
 
 	m_connection->connect();
 }
 
 
-bool SMTPTransport::isConnected() const
-{
+bool SMTPTransport::isConnected() const {
+
 	return m_connection && m_connection->isConnected();
 }
 
 
-bool SMTPTransport::isSecuredConnection() const
-{
-	if (m_connection == NULL)
+bool SMTPTransport::isSecuredConnection() const {
+
+	if (!m_connection) {
 		return false;
+	}
 
 	return m_connection->isSecuredConnection();
 }
 
 
-shared_ptr <connectionInfos> SMTPTransport::getConnectionInfos() const
-{
-	if (m_connection == NULL)
+shared_ptr <connectionInfos> SMTPTransport::getConnectionInfos() const {
+
+	if (!m_connection) {
 		return null;
+	}
 
 	return m_connection->getConnectionInfos();
 }
 
 
-shared_ptr <SMTPConnection> SMTPTransport::getConnection()
-{
+shared_ptr <SMTPConnection> SMTPTransport::getConnection() {
+
 	return m_connection;
 }
 
 
-void SMTPTransport::disconnect()
-{
-	if (!isConnected())
+void SMTPTransport::disconnect() {
+
+	if (!isConnected()) {
 		throw exceptions::not_connected();
+	}
 
 	m_connection->disconnect();
 	m_connection = null;
 }
 
 
-void SMTPTransport::noop()
-{
-	if (!isConnected())
+void SMTPTransport::noop() {
+
+	if (!isConnected()) {
 		throw exceptions::not_connected();
+	}
 
 	m_connection->sendRequest(SMTPCommand::NOOP());
 
 	shared_ptr <SMTPResponse> resp = m_connection->readResponse();
 
-	if (resp->getCode() != 250)
-	{
-		throw SMTPCommandError
-			("NOOP", resp->getText(), resp->getCode(), resp->getEnhancedCode());
+	if (resp->getCode() != 250) {
+		throw SMTPCommandError("NOOP", resp->getText(), resp->getCode(), resp->getEnhancedCode());
 	}
 }
 
 
-void SMTPTransport::sendEnvelope
-	(const mailbox& expeditor, const mailboxList& recipients,
-	 const mailbox& sender, bool sendDATACommand,
-	 const size_t size)
-{
+// static
+bool SMTPTransport::mailboxNeedsUTF8(const mailbox& mb) {
+
+	bool all7bit =
+		   utility::stringUtils::is7bit(mb.getEmail().getLocalName().getBuffer())
+		&& utility::stringUtils::is7bit(mb.getEmail().getDomainName().getBuffer());
+
+	for (size_t i = 0, n = mb.getName().getWordCount() ; all7bit && i != n ; ++i) {
+		all7bit = utility::stringUtils::is7bit(mb.getName().getWordAt(i)->getBuffer());
+	}
+
+	return !all7bit;
+}
+
+
+void SMTPTransport::sendEnvelope(
+	const mailbox& expeditor,
+	const mailboxList& recipients,
+	const mailbox& sender,
+	bool sendDATACommand,
+	const size_t size
+) {
 	// If no recipient/expeditor was found, throw an exception
-	if (recipients.isEmpty())
+	if (recipients.isEmpty()) {
 		throw exceptions::no_recipient();
-	else if (expeditor.isEmpty())
+	} else if (expeditor.isEmpty()) {
 		throw exceptions::no_expeditor();
+	}
 
 
 	const bool needReset = m_needReset;
@@ -173,135 +202,185 @@ void SMTPTransport::sendEnvelope
 	shared_ptr <SMTPCommandSet> commands = SMTPCommandSet::create(hasPipelining);
 
 	// Emit a "RSET" command if we previously sent a message on this connection
-	if (needReset)
+	if (needReset) {
 		commands->addCommand(SMTPCommand::RSET());
+	}
+
+	// Check whether we need SMTPUTF8
+	const bool hasSMTPUTF8 = m_connection->hasExtension("SMTPUTF8");
+	bool needSMTPUTF8 = false;
+
+	if (!sender.isEmpty()) {
+		needSMTPUTF8 = needSMTPUTF8 || mailboxNeedsUTF8(sender);
+	} else {
+		needSMTPUTF8 = needSMTPUTF8 || mailboxNeedsUTF8(expeditor);
+	}
+
+	for (size_t i = 0 ; i < recipients.getMailboxCount() ; ++i) {
+
+		const mailbox& mbox = *recipients.getMailboxAt(i);
+		needSMTPUTF8 = needSMTPUTF8 || mailboxNeedsUTF8(mbox);
+	}
 
 	// Emit the "MAIL" command
-	const bool hasSMTPUTF8 = m_connection->hasExtension("SMTPUTF8");
 	const bool hasSize = m_connection->hasExtension("SIZE");
 
-	if (!sender.isEmpty())
-		commands->addCommand(SMTPCommand::MAIL(sender, hasSMTPUTF8, hasSize ? size : 0));
-	else
-		commands->addCommand(SMTPCommand::MAIL(expeditor, hasSMTPUTF8, hasSize ? size : 0));
+	if (!sender.isEmpty()) {
+
+		commands->addCommand(
+			SMTPCommand::MAIL(
+				sender, hasSMTPUTF8 && needSMTPUTF8, hasSize ? size : 0
+			)
+		);
+
+	} else {
+
+		commands->addCommand(
+			SMTPCommand::MAIL(
+				expeditor, hasSMTPUTF8 && needSMTPUTF8, hasSize ? size : 0
+			)
+		);
+	}
 
 	// Now, we will need to reset next time
 	m_needReset = true;
 
 	// Emit a "RCPT TO" command for each recipient
-	for (size_t i = 0 ; i < recipients.getMailboxCount() ; ++i)
-	{
+	for (size_t i = 0 ; i < recipients.getMailboxCount() ; ++i) {
+
 		const mailbox& mbox = *recipients.getMailboxAt(i);
-		commands->addCommand(SMTPCommand::RCPT(mbox, hasSMTPUTF8));
+		commands->addCommand(SMTPCommand::RCPT(mbox, hasSMTPUTF8 && needSMTPUTF8));
 	}
 
 	// Prepare sending of message data
-	if (sendDATACommand)
+	if (sendDATACommand) {
 		commands->addCommand(SMTPCommand::DATA());
+	}
 
 	// Read response for "RSET" command
-	if (needReset)
-	{
+	if (needReset) {
+
 		commands->writeToSocket(m_connection->getSocket(), m_connection->getTracer());
 
 		resp = m_connection->readResponse();
 
 		if (resp->getCode() != 250 &&
-		    resp->getCode() != 200)   // RFC-876: << In reply to a RSET and/or a NOOP command,
-		                              //             some servers reply "200" >>
-		{
+		    resp->getCode() != 200) {   // RFC-876: << In reply to a RSET and/or a NOOP command,
+		                                //             some servers reply "200" >>
+
 			disconnect();
 
-			throw SMTPCommandError
-				(commands->getLastCommandSent()->getText(), resp->getText(),
-				 resp->getCode(), resp->getEnhancedCode());
+			throw SMTPCommandError(
+				commands->getLastCommandSent()->getText(), resp->getText(),
+				resp->getCode(), resp->getEnhancedCode()
+			);
 		}
 	}
 
 	// Read response for "MAIL" command
 	commands->writeToSocket(m_connection->getSocket(), m_connection->getTracer());
 
-	if ((resp = m_connection->readResponse())->getCode() != 250)
-	{
+	if ((resp = m_connection->readResponse())->getCode() != 250) {
+
 		// SIZE extension: insufficient system storage
-		if (resp->getCode() == 452)
-		{
-			throw SMTPMessageSizeExceedsCurLimitsException
-				(SMTPCommandError(commands->getLastCommandSent()->getText(), resp->getText(),
-				 resp->getCode(), resp->getEnhancedCode()));
-		}
+		if (resp->getCode() == 452) {
+
+			throw SMTPMessageSizeExceedsCurLimitsException(
+				SMTPCommandError(
+					commands->getLastCommandSent()->getText(), resp->getText(),
+					resp->getCode(), resp->getEnhancedCode()
+				)
+			);
+
 		// SIZE extension: message size exceeds fixed maximum message size
-		else if (resp->getCode() == 552)
-		{
-			throw SMTPMessageSizeExceedsMaxLimitsException
-				(SMTPCommandError(commands->getLastCommandSent()->getText(), resp->getText(),
-				 resp->getCode(), resp->getEnhancedCode()));
-		}
+		} else if (resp->getCode() == 552) {
+
+			throw SMTPMessageSizeExceedsMaxLimitsException(
+				SMTPCommandError(
+					commands->getLastCommandSent()->getText(), resp->getText(),
+				 	resp->getCode(), resp->getEnhancedCode()
+				 )
+			);
+
 		// Other error
-		else
-		{
-			throw SMTPCommandError
-				(commands->getLastCommandSent()->getText(), resp->getText(),
-				 resp->getCode(), resp->getEnhancedCode());
+		} else {
+
+			throw SMTPCommandError(
+				commands->getLastCommandSent()->getText(), resp->getText(),
+				resp->getCode(), resp->getEnhancedCode()
+			);
 		}
 	}
 
 	// Read responses for "RCPT TO" commands
-	for (size_t i = 0 ; i < recipients.getMailboxCount() ; ++i)
-	{
+	for (size_t i = 0 ; i < recipients.getMailboxCount() ; ++i) {
+
 		commands->writeToSocket(m_connection->getSocket(), m_connection->getTracer());
 
 		resp = m_connection->readResponse();
 
 		if (resp->getCode() != 250 &&
-		    resp->getCode() != 251)
-		{
+		    resp->getCode() != 251) {
+
 			// SIZE extension: insufficient system storage
-			if (resp->getCode() == 452)
-			{
-				throw SMTPMessageSizeExceedsCurLimitsException
-					(SMTPCommandError(commands->getLastCommandSent()->getText(), resp->getText(),
-					 resp->getCode(), resp->getEnhancedCode()));
-			}
+			if (resp->getCode() == 452) {
+
+				throw SMTPMessageSizeExceedsCurLimitsException(
+					SMTPCommandError(
+						commands->getLastCommandSent()->getText(), resp->getText(),
+						resp->getCode(), resp->getEnhancedCode()
+					)
+				);
+
 			// SIZE extension: message size exceeds fixed maximum message size
-			else if (resp->getCode() == 552)
-			{
-				throw SMTPMessageSizeExceedsMaxLimitsException
-					(SMTPCommandError(commands->getLastCommandSent()->getText(), resp->getText(),
-					 resp->getCode(), resp->getEnhancedCode()));
-			}
+			} else if (resp->getCode() == 552) {
+
+				throw SMTPMessageSizeExceedsMaxLimitsException(
+					SMTPCommandError(
+						commands->getLastCommandSent()->getText(), resp->getText(),
+						resp->getCode(), resp->getEnhancedCode()
+					)
+				);
+
 			// Other error
-			else
-			{
-				throw SMTPCommandError
-					(commands->getLastCommandSent()->getText(), resp->getText(),
-					 resp->getCode(), resp->getEnhancedCode());
+			} else {
+
+				throw SMTPCommandError(
+					commands->getLastCommandSent()->getText(), resp->getText(),
+					resp->getCode(), resp->getEnhancedCode()
+				);
 			}
 		}
 	}
 
 	// Read response for "DATA" command
-	if (sendDATACommand)
-	{
+	if (sendDATACommand) {
+
 		commands->writeToSocket(m_connection->getSocket(), m_connection->getTracer());
 
-		if ((resp = m_connection->readResponse())->getCode() != 354)
-		{
-			throw SMTPCommandError
-				(commands->getLastCommandSent()->getText(), resp->getText(),
-				 resp->getCode(), resp->getEnhancedCode());
+		if ((resp = m_connection->readResponse())->getCode() != 354) {
+
+			throw SMTPCommandError(
+				commands->getLastCommandSent()->getText(), resp->getText(),
+				resp->getCode(), resp->getEnhancedCode()
+			);
 		}
 	}
 }
 
 
-void SMTPTransport::send
-	(const mailbox& expeditor, const mailboxList& recipients,
-	 utility::inputStream& is, const size_t size,
-	 utility::progressListener* progress, const mailbox& sender)
-{
-	if (!isConnected())
+void SMTPTransport::send(
+	const mailbox& expeditor,
+	const mailboxList& recipients,
+	utility::inputStream& is,
+	const size_t size,
+	utility::progressListener* progress,
+	const mailbox& sender
+) {
+
+	if (!isConnected()) {
 		throw exceptions::not_connected();
+	}
 
 	// Send message envelope
 	sendEnvelope(expeditor, recipients, sender, /* sendDATACommand */ true, size);
@@ -318,28 +397,30 @@ void SMTPTransport::send
 	// Send end-of-data delimiter
 	m_connection->getSocket()->send("\r\n.\r\n");
 
-	if (m_connection->getTracer())
-	{
+	if (m_connection->getTracer()) {
 		m_connection->getTracer()->traceSendBytes(size);
 		m_connection->getTracer()->traceSend(".");
 	}
 
 	shared_ptr <SMTPResponse> resp;
 
-	if ((resp = m_connection->readResponse())->getCode() != 250)
-	{
-		throw SMTPCommandError
-			("DATA", resp->getText(), resp->getCode(), resp->getEnhancedCode());
+	if ((resp = m_connection->readResponse())->getCode() != 250) {
+		throw SMTPCommandError("DATA", resp->getText(), resp->getCode(), resp->getEnhancedCode());
 	}
 }
 
 
-void SMTPTransport::send
-	(shared_ptr <vmime::message> msg, const mailbox& expeditor, const mailboxList& recipients,
-	 utility::progressListener* progress, const mailbox& sender)
-{
-	if (!isConnected())
+void SMTPTransport::send(
+	const shared_ptr <vmime::message>& msg,
+	const mailbox& expeditor,
+	const mailboxList& recipients,
+	utility::progressListener* progress,
+	const mailbox& sender
+) {
+
+	if (!isConnected()) {
 		throw exceptions::not_connected();
+	}
 
 	// Generate the message with Internationalized Email support,
 	// if this is supported by the SMTP server
@@ -350,9 +431,8 @@ void SMTPTransport::send
 	// buffer then use the send() method which takes an inputStream
 	if (!m_connection->hasExtension("CHUNKING") ||
 	    !getInfos().getPropertyValue <bool>(getSession(),
-			dynamic_cast <const SMTPServiceInfos&>(getInfos()).getProperties().PROPERTY_OPTIONS_CHUNKING))
+			dynamic_cast <const SMTPServiceInfos&>(getInfos()).getProperties().PROPERTY_OPTIONS_CHUNKING)) {
 
-	{
 		std::ostringstream oss;
 		utility::outputStreamAdapter ossAdapter(oss);
 
@@ -369,8 +449,7 @@ void SMTPTransport::send
 	// Send message envelope
 	const size_t msgSize = msg->getGeneratedSize(ctx);
 
-	sendEnvelope(expeditor, recipients, sender,
-		/* sendDATACommand */ false, msgSize);
+	sendEnvelope(expeditor, recipients, sender, /* sendDATACommand */ false, msgSize);
 
 	// Send the message by chunks
 	SMTPChunkingOutputStreamAdapter chunkStream(m_connection, msgSize, progress);
@@ -387,14 +466,14 @@ void SMTPTransport::send
 SMTPServiceInfos SMTPTransport::sm_infos(false);
 
 
-const serviceInfos& SMTPTransport::getInfosInstance()
-{
+const serviceInfos& SMTPTransport::getInfosInstance() {
+
 	return sm_infos;
 }
 
 
-const serviceInfos& SMTPTransport::getInfos() const
-{
+const serviceInfos& SMTPTransport::getInfos() const {
+
 	return sm_infos;
 }
 

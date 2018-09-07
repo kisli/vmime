@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -39,24 +39,27 @@ namespace pop3 {
 
 
 // static
-void POP3Utils::parseMultiListOrUidlResponse(shared_ptr <POP3Response> response, std::map <size_t, string>& result)
-{
+void POP3Utils::parseMultiListOrUidlResponse(
+	const shared_ptr <POP3Response>& response,
+	std::map <size_t, string>& result
+) {
+
 	std::map <size_t, string> ids;
 
-	for (size_t i = 0, n = response->getLineCount() ; i < n ; ++i)
-	{
+	for (size_t i = 0, n = response->getLineCount() ; i < n ; ++i) {
+
 		string line = response->getLineAt(i);
 		string::iterator it = line.begin();
 
-		while (it != line.end() && (*it == ' ' || *it == '\t'))
+		while (it != line.end() && (*it == ' ' || *it == '\t')) {
 			++it;
+		}
 
-		if (it != line.end())
-		{
+		if (it != line.end()) {
+
 			size_t number = 0;
 
-			while (it != line.end() && (*it >= '0' && *it <= '9'))
-			{
+			while (it != line.end() && (*it >= '0' && *it <= '9')) {
 				number = (number * 10) + (*it - '0');
 				++it;
 			}
@@ -64,8 +67,7 @@ void POP3Utils::parseMultiListOrUidlResponse(shared_ptr <POP3Response> response,
 			while (it != line.end() && !(*it == ' ' || *it == '\t')) ++it;
 			while (it != line.end() && (*it == ' ' || *it == '\t')) ++it;
 
-			if (it != line.end())
-			{
+			if (it != line.end()) {
 				result.insert(std::map <size_t, string>::value_type(number, string(it, line.end())));
 			}
 		}
@@ -74,27 +76,30 @@ void POP3Utils::parseMultiListOrUidlResponse(shared_ptr <POP3Response> response,
 
 
 
-class POP3MessageSetEnumerator : public messageSetEnumerator
-{
+class POP3MessageSetEnumerator : public messageSetEnumerator {
+
 public:
 
 	POP3MessageSetEnumerator(const size_t msgCount)
-		: m_msgCount(msgCount)
-	{
+		: m_msgCount(msgCount) {
 
 	}
 
-	void enumerateNumberMessageRange(const vmime::net::numberMessageRange& range)
-	{
+	void enumerateNumberMessageRange(const vmime::net::numberMessageRange& range) {
+
 		size_t last = range.getLast();
-		if (last == size_t(-1)) last = m_msgCount;
 
-		for (size_t i = range.getFirst() ; i <= last ; ++i)
+		if (last == size_t(-1)) {
+			last = m_msgCount;
+		}
+
+		for (size_t i = range.getFirst() ; i <= last ; ++i) {
 			list.push_back(i);
+		}
 	}
 
-	void enumerateUIDMessageRange(const vmime::net::UIDMessageRange& /* range */)
-	{
+	void enumerateUIDMessageRange(const vmime::net::UIDMessageRange& /* range */) {
+
 		// Not supported
 	}
 
@@ -109,8 +114,11 @@ private:
 
 
 // static
-const std::vector <size_t> POP3Utils::messageSetToNumberList(const messageSet& msgs, const size_t msgCount)
-{
+const std::vector <size_t> POP3Utils::messageSetToNumberList(
+	const messageSet& msgs,
+	const size_t msgCount
+) {
+
 	POP3MessageSetEnumerator en(msgCount);
 	msgs.enumerate(en);
 

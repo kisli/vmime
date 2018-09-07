@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -30,118 +30,140 @@
 #include <algorithm>
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 encoding::encoding()
 	: m_name(encodingTypes::SEVEN_BIT),
-	  m_usage(USAGE_UNKNOWN)
-{
+	  m_usage(USAGE_UNKNOWN) {
+
 }
 
 
 encoding::encoding(const string& name)
 	: m_name(utility::stringUtils::toLower(name)),
-	  m_usage(USAGE_UNKNOWN)
-{
+	  m_usage(USAGE_UNKNOWN) {
+
 }
 
 
 encoding::encoding(const string& name, const EncodingUsage usage)
 	: m_name(utility::stringUtils::toLower(name)),
-	  m_usage(usage)
-{
+	  m_usage(usage) {
+
 }
 
 
 encoding::encoding(const encoding& enc)
-	: headerFieldValue(), m_name(enc.m_name), m_usage(enc.m_usage)
-{
+	: headerFieldValue(),
+	  m_name(enc.m_name),
+	  m_usage(enc.m_usage) {
 }
 
 
-void encoding::parseImpl
-	(const parsingContext& /* ctx */, const string& buffer, const size_t position,
-	 const size_t end, size_t* newPosition)
-{
+void encoding::parseImpl(
+	const parsingContext& /* ctx */,
+	const string& buffer,
+	const size_t position,
+	const size_t end,
+	size_t* newPosition
+) {
+
 	m_usage = USAGE_UNKNOWN;
 
-	m_name = utility::stringUtils::toLower(utility::stringUtils::trim
-		(utility::stringUtils::unquote(utility::stringUtils::trim
-			(string(buffer.begin() + position, buffer.begin() + end)))));
+	m_name = utility::stringUtils::toLower(
+		utility::stringUtils::trim(
+			utility::stringUtils::unquote(
+				utility::stringUtils::trim(
+					string(buffer.begin() + position, buffer.begin() + end)
+				)
+			)
+		)
+	);
 
-	if (m_name.empty())
+	if (m_name.empty()) {
 		m_name = encodingTypes::SEVEN_BIT;   // assume default "7-bit"
+	}
 
 	setParsedBounds(position, end);
 
-	if (newPosition)
+	if (newPosition) {
 		*newPosition = end;
+	}
 }
 
 
-void encoding::generateImpl
-	(const generationContext& /* ctx */, utility::outputStream& os,
-	 const size_t curLinePos, size_t* newLinePos) const
-{
+void encoding::generateImpl(
+	const generationContext& /* ctx */,
+	utility::outputStream& os,
+	const size_t curLinePos,
+	size_t* newLinePos
+) const {
+
 	os << m_name;
 
-	if (newLinePos)
+	if (newLinePos) {
 		*newLinePos = curLinePos + m_name.length();
+	}
 }
 
 
-shared_ptr <utility::encoder::encoder> encoding::getEncoder() const
-{
+shared_ptr <utility::encoder::encoder> encoding::getEncoder() const {
+
 	shared_ptr <utility::encoder::encoder> encoder =
 		utility::encoder::encoderFactory::getInstance()->create(generate());
 
 	// FIXME: this should not be here (move me into QP encoder instead?)
-	if (m_usage == USAGE_TEXT && m_name == encodingTypes::QUOTED_PRINTABLE)
+	if (m_usage == USAGE_TEXT && m_name == encodingTypes::QUOTED_PRINTABLE) {
 		encoder->getProperties()["text"] = true;
+	}
 
 	return encoder;
 }
 
 
-encoding& encoding::operator=(const encoding& other)
-{
+encoding& encoding::operator=(const encoding& other) {
+
 	copyFrom(other);
 	return (*this);
 }
 
 
-encoding& encoding::operator=(const string& name)
-{
+encoding& encoding::operator=(const string& name) {
+
 	m_name = utility::stringUtils::toLower(name);
 	m_usage = USAGE_UNKNOWN;
-	return (*this);
+
+	return *this;
 }
 
 
-bool encoding::operator==(const encoding& value) const
-{
-	return (utility::stringUtils::toLower(m_name) == value.m_name);
+bool encoding::operator==(const encoding& value) const {
+
+	return utility::stringUtils::toLower(m_name) == value.m_name;
 }
 
 
-bool encoding::operator!=(const encoding& value) const
-{
+bool encoding::operator!=(const encoding& value) const {
+
 	return !(*this == value);
 }
 
 
-const encoding encoding::decideImpl
-	(const string::const_iterator begin, const string::const_iterator end)
-{
+const encoding encoding::decideImpl(
+	const string::const_iterator begin,
+	const string::const_iterator end
+) {
+
 	const string::difference_type length = end - begin;
-	const string::difference_type count = std::count_if
-		(begin, end, std::bind2nd(std::less<unsigned char>(), 127));
+	const string::difference_type count = std::count_if(
+		begin, end,
+		std::bind2nd(std::less<unsigned char>(), 127)
+	);
 
 	// All is in 7-bit US-ASCII --> 7-bit (or Quoted-Printable...)
-	if (length == count)
-	{
+	if (length == count) {
+
 		// Now, we check if there is any line with more than
 		// "lineLengthLimits::convenient" characters (7-bit requires that)
 		string::const_iterator p = begin;
@@ -149,49 +171,51 @@ const encoding encoding::decideImpl
 		const size_t maxLen = lineLengthLimits::convenient;
 		size_t len = 0;
 
-		for ( ; p != end && len <= maxLen ; )
-		{
-			if (*p == '\n')
-			{
+		for ( ; p != end && len <= maxLen ; ) {
+
+			if (*p == '\n') {
+
 				len = 0;
 				++p;
 
 				// May or may not need to be encoded, we don't take
 				// any risk (avoid problems with SMTP)
-				if (p != end && *p == '.')
+				if (p != end && *p == '.') {
 					len = maxLen + 1;
-			}
-			else
-			{
+				}
+
+			} else {
+
 				++len;
 				++p;
 			}
 		}
 
-		if (len > maxLen)
-			return (encoding(encodingTypes::QUOTED_PRINTABLE));
-		else
-			return (encoding(encodingTypes::SEVEN_BIT));
-	}
+		if (len > maxLen) {
+			return encoding(encodingTypes::QUOTED_PRINTABLE);
+		} else {
+			return encoding(encodingTypes::SEVEN_BIT);
+		}
+
 	// Less than 20% non US-ASCII --> Quoted-Printable
-	else if ((length - count) <= length / 5)
-	{
-		return (encoding(encodingTypes::QUOTED_PRINTABLE));
-	}
+	} else if ((length - count) <= length / 5) {
+
+		return encoding(encodingTypes::QUOTED_PRINTABLE);
+
 	// Otherwise --> Base64
-	else
-	{
-		return (encoding(encodingTypes::BASE64));
+	} else {
+
+		return encoding(encodingTypes::BASE64);
 	}
 }
 
 
-bool encoding::shouldReencode() const
-{
+bool encoding::shouldReencode() const {
+
 	if (m_name == encodingTypes::BASE64 ||
 	    m_name == encodingTypes::QUOTED_PRINTABLE ||
-	    m_name == encodingTypes::UUENCODE)
-	{
+	    m_name == encodingTypes::UUENCODE) {
+
 		return false;
 	}
 
@@ -199,18 +223,21 @@ bool encoding::shouldReencode() const
 }
 
 
-const encoding encoding::decide
-	(shared_ptr <const contentHandler> data, const EncodingUsage usage)
-{
+const encoding encoding::decide(
+	const shared_ptr <const contentHandler>& data,
+	const EncodingUsage usage
+) {
+
 	// Do not re-encode data if it is already encoded
-	if (data->isEncoded() && !data->getEncoding().shouldReencode())
+	if (data->isEncoded() && !data->getEncoding().shouldReencode()) {
 		return data->getEncoding();
+	}
 
 	encoding enc;
 
 	if (usage == USAGE_TEXT && data->isBuffered() &&
-	    data->getLength() > 0 && data->getLength() < 32768)
-	{
+	    data->getLength() > 0 && data->getLength() < 32768) {
+
 		// Extract data into temporary buffer
 		string buffer;
 		utility::outputStreamStringAdapter os(buffer);
@@ -219,9 +246,9 @@ const encoding encoding::decide
 		os.flush();
 
 		enc = decideImpl(buffer.begin(), buffer.end());
-	}
-	else
-	{
+
+	} else {
+
 		enc = encoding(encodingTypes::BASE64);
 	}
 
@@ -231,19 +258,23 @@ const encoding encoding::decide
 }
 
 
-const encoding encoding::decide(shared_ptr <const contentHandler> data,
-	const charset& chset, const EncodingUsage usage)
-{
-	// Do not re-encode data if it is already encoded
-	if (data->isEncoded() && !data->getEncoding().shouldReencode())
-		return data->getEncoding();
+const encoding encoding::decide(
+	const shared_ptr <const contentHandler>& data,
+	const charset& chset,
+	const EncodingUsage usage
+) {
 
-	if (usage == USAGE_TEXT)
-	{
+	// Do not re-encode data if it is already encoded
+	if (data->isEncoded() && !data->getEncoding().shouldReencode()) {
+		return data->getEncoding();
+	}
+
+	if (usage == USAGE_TEXT) {
+
 		encoding recEncoding;
 
-		if (chset.getRecommendedEncoding(recEncoding))
-		{
+		if (chset.getRecommendedEncoding(recEncoding)) {
+
 			recEncoding.setUsage(usage);
 			return recEncoding;
 		}
@@ -253,46 +284,46 @@ const encoding encoding::decide(shared_ptr <const contentHandler> data,
 }
 
 
-shared_ptr <component> encoding::clone() const
-{
+shared_ptr <component> encoding::clone() const {
+
 	return make_shared <encoding>(*this);
 }
 
 
-void encoding::copyFrom(const component& other)
-{
+void encoding::copyFrom(const component& other) {
+
 	const encoding& e = dynamic_cast <const encoding&>(other);
 
 	m_name = e.m_name;
 }
 
 
-const string& encoding::getName() const
-{
-	return (m_name);
+const string& encoding::getName() const {
+
+	return m_name;
 }
 
 
-void encoding::setName(const string& name)
-{
+void encoding::setName(const string& name) {
+
 	m_name = name;
 }
 
 
-encoding::EncodingUsage encoding::getUsage() const
-{
+encoding::EncodingUsage encoding::getUsage() const {
+
 	return m_usage;
 }
 
 
-void encoding::setUsage(const EncodingUsage usage)
-{
+void encoding::setUsage(const EncodingUsage usage) {
+
 	m_usage = usage;
 }
 
 
-const std::vector <shared_ptr <component> > encoding::getChildComponents()
-{
+const std::vector <shared_ptr <component> > encoding::getChildComponents() {
+
 	return std::vector <shared_ptr <component> >();
 }
 

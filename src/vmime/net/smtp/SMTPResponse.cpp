@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -44,50 +44,57 @@ namespace net {
 namespace smtp {
 
 
-SMTPResponse::SMTPResponse
-	(shared_ptr <tracer> tr, shared_ptr <socket> sok,
-	 shared_ptr <timeoutHandler> toh, const state& st)
-	: m_socket(sok), m_timeoutHandler(toh), m_tracer(tr),
-	  m_responseBuffer(st.responseBuffer), m_responseContinues(false)
-{
+SMTPResponse::SMTPResponse(
+	const shared_ptr <tracer>& tr,
+	const shared_ptr <socket>& sok,
+	const shared_ptr <timeoutHandler>& toh,
+	const state& st
+)
+	: m_socket(sok),
+	  m_timeoutHandler(toh),
+	  m_tracer(tr),
+	  m_responseBuffer(st.responseBuffer),
+	  m_responseContinues(false) {
+
 }
 
 
 SMTPResponse::SMTPResponse(const SMTPResponse&)
-	: vmime::object()
-{
+	: vmime::object() {
+
 	// Not used
 }
 
 
-int SMTPResponse::getCode() const
-{
+int SMTPResponse::getCode() const {
+
 	const int firstCode = m_lines[0].getCode();
 
-	for (unsigned int i = 1 ; i < m_lines.size() ; ++i)
-	{
+	for (unsigned int i = 1 ; i < m_lines.size() ; ++i) {
+
 		// All response codes returned must be equal
 		// or else this in an error...
-		if (m_lines[i].getCode() != firstCode)
+		if (m_lines[i].getCode() != firstCode) {
 			return 0;
+		}
 	}
 
 	return firstCode;
 }
 
 
-const SMTPResponse::enhancedStatusCode SMTPResponse::getEnhancedCode() const
-{
+const SMTPResponse::enhancedStatusCode SMTPResponse::getEnhancedCode() const {
+
 	return m_lines[m_lines.size() - 1].getEnhancedCode();
 }
 
 
-const string SMTPResponse::getText() const
-{
+const string SMTPResponse::getText() const {
+
 	string text = m_lines[0].getText();
 
-	for (unsigned int i = 1 ; i < m_lines.size() ; ++i)
-	{
+	for (unsigned int i = 1 ; i < m_lines.size() ; ++i) {
+
 		text += '\n';
 		text += m_lines[i].getText();
 	}
@@ -97,10 +104,13 @@ const string SMTPResponse::getText() const
 
 
 // static
-shared_ptr <SMTPResponse> SMTPResponse::readResponse
-	(shared_ptr <tracer> tr, shared_ptr <socket> sok,
-	 shared_ptr <timeoutHandler> toh, const state& st)
-{
+shared_ptr <SMTPResponse> SMTPResponse::readResponse(
+	const shared_ptr <tracer>& tr,
+	const shared_ptr <socket>& sok,
+	const shared_ptr <timeoutHandler>& toh,
+	const state& st
+) {
+
 	shared_ptr <SMTPResponse> resp =
 		shared_ptr <SMTPResponse>(new SMTPResponse(tr, sok, toh, st));
 
@@ -110,54 +120,57 @@ shared_ptr <SMTPResponse> SMTPResponse::readResponse
 }
 
 
-void SMTPResponse::readResponse()
-{
+void SMTPResponse::readResponse() {
+
 	responseLine line = getNextResponse();
 	m_lines.push_back(line);
 
-	while (m_responseContinues)
-	{
+	while (m_responseContinues) {
 		line = getNextResponse();
 		m_lines.push_back(line);
 	}
 }
 
 
-const string SMTPResponse::readResponseLine()
-{
+const string SMTPResponse::readResponseLine() {
+
 	string currentBuffer = m_responseBuffer;
 
-	if (m_timeoutHandler)
+	if (m_timeoutHandler) {
 		m_timeoutHandler->resetTimeOut();
+	}
 
-	while (true)
-	{
+	while (true) {
+
 		// Get a line from the response buffer
 		const size_t lineEnd = currentBuffer.find_first_of('\n');
 
-		if (lineEnd != string::npos)
-		{
+		if (lineEnd != string::npos) {
+
 			size_t actualLineEnd = lineEnd;
 
-			if (actualLineEnd != 0 && currentBuffer[actualLineEnd - 1] == '\r')  // CRLF case
+			if (actualLineEnd != 0 && currentBuffer[actualLineEnd - 1] == '\r') {  // CRLF case
 				actualLineEnd--;
+			}
 
 			const string line(currentBuffer.begin(), currentBuffer.begin() + actualLineEnd);
 
 			currentBuffer.erase(currentBuffer.begin(), currentBuffer.begin() + lineEnd + 1);
 			m_responseBuffer = currentBuffer;
 
-			if (m_tracer)
+			if (m_tracer) {
 				m_tracer->traceReceive(line);
+			}
 
 			return line;
 		}
 
 		// Check whether the time-out delay is elapsed
-		if (m_timeoutHandler && m_timeoutHandler->isTimeOut())
-		{
-			if (!m_timeoutHandler->handleTimeOut())
+		if (m_timeoutHandler && m_timeoutHandler->isTimeOut()) {
+
+			if (!m_timeoutHandler->handleTimeOut()) {
 				throw exceptions::operation_timed_out();
+			}
 
 			m_timeoutHandler->resetTimeOut();
 		}
@@ -166,8 +179,7 @@ const string SMTPResponse::readResponseLine()
 		string receiveBuffer;
 		m_socket->receive(receiveBuffer);
 
-		if (receiveBuffer.empty())   // buffer is empty
-		{
+		if (receiveBuffer.empty()) {   // buffer is empty
 			m_socket->waitForRead();
 			continue;
 		}
@@ -177,8 +189,8 @@ const string SMTPResponse::readResponseLine()
 }
 
 
-const SMTPResponse::responseLine SMTPResponse::getNextResponse()
-{
+const SMTPResponse::responseLine SMTPResponse::getNextResponse() {
+
 	string line = readResponseLine();
 
 	const int code = extractResponseCode(line);
@@ -186,22 +198,23 @@ const SMTPResponse::responseLine SMTPResponse::getNextResponse()
 
 	m_responseContinues = (line.length() >= 4 && line[3] == '-');
 
-	if (line.length() > 4)
+	if (line.length() > 4) {
 		text = utility::stringUtils::trim(line.substr(4));
-	else
+	} else {
 		text = "";
+	}
 
 	return responseLine(code, text, extractEnhancedCode(text));
 }
 
 
 // static
-int SMTPResponse::extractResponseCode(const string& response)
-{
+int SMTPResponse::extractResponseCode(const string& response) {
+
 	int code = 0;
 
-	if (response.length() >= 3)
-	{
+	if (response.length() >= 3) {
+
 		code = (response[0] - '0') * 100
 		     + (response[1] - '0') * 10
 		     + (response[2] - '0');
@@ -212,23 +225,23 @@ int SMTPResponse::extractResponseCode(const string& response)
 
 
 // static
-const SMTPResponse::enhancedStatusCode SMTPResponse::extractEnhancedCode(const string& responseText)
-{
+const SMTPResponse::enhancedStatusCode SMTPResponse::extractEnhancedCode(const string& responseText) {
+
 	enhancedStatusCode enhCode;
 
 	std::istringstream iss(responseText);
 	iss.imbue(std::locale::classic());
 
-	if (std::isdigit(iss.peek()))
-	{
+	if (std::isdigit(iss.peek())) {
+
 		iss >> enhCode.klass;
 
-		if (iss.get() == '.' && std::isdigit(iss.peek()))
-		{
+		if (iss.get() == '.' && std::isdigit(iss.peek())) {
+
 			iss >> enhCode.subject;
 
-			if (iss.get() == '.' && std::isdigit(iss.peek()))
-			{
+			if (iss.get() == '.' && std::isdigit(iss.peek())) {
+
 				iss >> enhCode.detail;
 				return enhCode;
 			}
@@ -239,26 +252,26 @@ const SMTPResponse::enhancedStatusCode SMTPResponse::extractEnhancedCode(const s
 }
 
 
-const SMTPResponse::responseLine SMTPResponse::getLineAt(const size_t pos) const
-{
+const SMTPResponse::responseLine SMTPResponse::getLineAt(const size_t pos) const {
+
 	return m_lines[pos];
 }
 
 
-size_t SMTPResponse::getLineCount() const
-{
+size_t SMTPResponse::getLineCount() const {
+
 	return m_lines.size();
 }
 
 
-const SMTPResponse::responseLine SMTPResponse::getLastLine() const
-{
+const SMTPResponse::responseLine SMTPResponse::getLastLine() const {
+
 	return m_lines[m_lines.size() - 1];
 }
 
 
-const SMTPResponse::state SMTPResponse::getCurrentState() const
-{
+const SMTPResponse::state SMTPResponse::getCurrentState() const {
+
 	state st;
 	st.responseBuffer = m_responseBuffer;
 
@@ -269,44 +282,50 @@ const SMTPResponse::state SMTPResponse::getCurrentState() const
 
 // SMTPResponse::responseLine
 
-SMTPResponse::responseLine::responseLine(const int code, const string& text, const enhancedStatusCode& enhCode)
-	: m_code(code), m_text(text), m_enhCode(enhCode)
-{
+SMTPResponse::responseLine::responseLine(
+	const int code,
+	const string& text,
+	const enhancedStatusCode& enhCode
+)
+	: m_code(code),
+	  m_text(text),
+	  m_enhCode(enhCode) {
+
 }
 
 
-void SMTPResponse::responseLine::setCode(const int code)
-{
+void SMTPResponse::responseLine::setCode(const int code) {
+
 	m_code = code;
 }
 
 
-int SMTPResponse::responseLine::getCode() const
-{
+int SMTPResponse::responseLine::getCode() const {
+
 	return m_code;
 }
 
 
-void SMTPResponse::responseLine::setEnhancedCode(const enhancedStatusCode& enhCode)
-{
+void SMTPResponse::responseLine::setEnhancedCode(const enhancedStatusCode& enhCode) {
+
 	m_enhCode = enhCode;
 }
 
 
-const SMTPResponse::enhancedStatusCode SMTPResponse::responseLine::getEnhancedCode() const
-{
+const SMTPResponse::enhancedStatusCode SMTPResponse::responseLine::getEnhancedCode() const {
+
 	return m_enhCode;
 }
 
 
-void SMTPResponse::responseLine::setText(const string& text)
-{
+void SMTPResponse::responseLine::setText(const string& text) {
+
 	m_text = text;
 }
 
 
-const string SMTPResponse::responseLine::getText() const
-{
+const string SMTPResponse::responseLine::getText() const {
+
 	return m_text;
 }
 
@@ -316,19 +335,23 @@ const string SMTPResponse::responseLine::getText() const
 
 
 SMTPResponse::enhancedStatusCode::enhancedStatusCode()
-	: klass(0), subject(0), detail(0)
-{
+	: klass(0),
+	  subject(0),
+	  detail(0) {
+
 }
 
 
 SMTPResponse::enhancedStatusCode::enhancedStatusCode(const enhancedStatusCode& enhCode)
-	: klass(enhCode.klass), subject(enhCode.subject), detail(enhCode.detail)
-{
+	: klass(enhCode.klass),
+	  subject(enhCode.subject),
+	  detail(enhCode.detail) {
+
 }
 
 
-std::ostream& operator<<(std::ostream& os, const SMTPResponse::enhancedStatusCode& code)
-{
+std::ostream& operator<<(std::ostream& os, const SMTPResponse::enhancedStatusCode& code) {
+
 	os << code.klass << '.' << code.subject << '.' << code.detail;
 	return os;
 }

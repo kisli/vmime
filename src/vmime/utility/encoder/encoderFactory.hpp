@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -36,7 +36,6 @@ namespace encoder {
 
 /** A factory to create 'encoder' objects for the specified encoding.
   */
-
 class VMIME_EXPORT encoderFactory
 {
 private:
@@ -49,8 +48,8 @@ public:
 	static shared_ptr <encoderFactory> getInstance();
 
 	/** Information about a registered encoder. */
-	class VMIME_EXPORT registeredEncoder : public object
-	{
+	class VMIME_EXPORT registeredEncoder : public object {
+
 	protected:
 
 		virtual ~registeredEncoder() { }
@@ -65,20 +64,20 @@ public:
 private:
 
 	template <class E>
-	class registeredEncoderImpl : public registeredEncoder
-	{
+	class registeredEncoderImpl : public registeredEncoder {
+
 	public:
 
 		registeredEncoderImpl(const string& name) : m_name(name) { }
 
-		shared_ptr <encoder> create() const
-		{
+		shared_ptr <encoder> create() const {
+
 			return vmime::make_shared <E>();
 		}
 
-		const string& getName() const
-		{
-			return (m_name);
+		const string& getName() const {
+
+			return m_name;
 		}
 
 	private:
@@ -97,9 +96,11 @@ public:
 	  * @param name encoding name
 	  */
 	template <class E>
-	void registerName(const string& name)
-	{
-		m_encoders.push_back(vmime::make_shared <registeredEncoderImpl <E> >(utility::stringUtils::toLower(name)));
+	void registerName(const string& name) {
+
+		m_encoders.push_back(
+			vmime::make_shared <registeredEncoderImpl <E> >(utility::stringUtils::toLower(name))
+		);
 	}
 
 	/** Create a new encoder instance from an encoding name.

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -28,15 +28,13 @@
 #include "vmime/context.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 /** Holds configuration parameters used for generating messages.
   */
+class VMIME_EXPORT generationContext : public context {
 
-class VMIME_EXPORT generationContext : public context
-{
 public:
 
 	generationContext();
@@ -103,8 +101,8 @@ public:
 
 	/** Modes available for generating values in parameterized header fields.
 	  */
-	enum EncodedParameterValueModes
-	{
+	enum EncodedParameterValueModes {
+
 		PARAMETER_VALUE_NO_ENCODING,          /**< Only generate 7-bit (ASCII-only) values,
 		                                           even if the value contains non-ASCII chars or
 		                                           if folding is needed. */

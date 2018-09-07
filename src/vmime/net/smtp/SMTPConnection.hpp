@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -61,12 +61,16 @@ class SMTPTransport;
 
 /** Manage connection to a SMTP server.
   */
-class VMIME_EXPORT SMTPConnection : public object
-{
+class VMIME_EXPORT SMTPConnection : public object {
+
 public:
 
-	SMTPConnection(shared_ptr <SMTPTransport> transport, shared_ptr <security::authenticator> auth);
-	virtual ~SMTPConnection();
+	SMTPConnection(
+		const shared_ptr <SMTPTransport>& transport,
+		const shared_ptr <security::authenticator>& auth
+	);
+
+	~SMTPConnection();
 
 
 	virtual void connect();
@@ -83,7 +87,7 @@ public:
 	virtual shared_ptr <session> getSession();
 	virtual shared_ptr <tracer> getTracer();
 
-	void sendRequest(shared_ptr <SMTPCommand> cmd);
+	void sendRequest(const shared_ptr <SMTPCommand>& cmd);
 	shared_ptr <SMTPResponse> readResponse();
 
 	bool hasExtension(const std::string& extName, std::vector <string>* params = NULL) const;

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -35,15 +35,23 @@ namespace encoder {
 
 /** Default, no-op encoder (simple copy, no encoding/decoding is performed).
   */
+class VMIME_EXPORT noopEncoder : public encoder {
 
-class VMIME_EXPORT noopEncoder : public encoder
-{
 public:
 
 	noopEncoder();
 
-	size_t encode(utility::inputStream& in, utility::outputStream& out, utility::progressListener* progress = NULL);
-	size_t decode(utility::inputStream& in, utility::outputStream& out, utility::progressListener* progress = NULL);
+	size_t encode(
+		utility::inputStream& in,
+		utility::outputStream& out,
+		utility::progressListener* progress = NULL
+	);
+
+	size_t decode(
+		utility::inputStream& in,
+		utility::outputStream& out,
+		utility::progressListener* progress = NULL
+	);
 
 	size_t getEncodedSize(const size_t n) const;
 	size_t getDecodedSize(const size_t n) const;

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -52,8 +52,8 @@ VMIME_TEST_SUITE_BEGIN(stringUtilsTest)
 	typedef vmime::utility::stringUtils stringUtils;
 
 
-	void testMakeStringFromBytes()
-	{
+	void testMakeStringFromBytes() {
+
 		vmime::byte_t bytes[] = { 0x12, 0x34, 0x56, 0x78 };
 		vmime::string str = vmime::utility::stringUtils::makeStringFromBytes(bytes, 3);
 
@@ -63,8 +63,8 @@ VMIME_TEST_SUITE_BEGIN(stringUtilsTest)
 		VASSERT_EQ("byte3", '\x56', str[2]);
 	}
 
-	void testAppendBytesToString()
-	{
+	void testAppendBytesToString() {
+
 		vmime::byte_t bytes[] = { 0x42, 0x56, 0x12, 0x00, 'f', 'o', 'o' };
 
 		vmime::string str = "test";
@@ -84,41 +84,52 @@ VMIME_TEST_SUITE_BEGIN(stringUtilsTest)
 		VASSERT_EQ("byte11", 'o', str[10]);
 	}
 
-	void testIsStringEqualNoCase1()
-	{
+	void testIsStringEqualNoCase1() {
+
 		VASSERT_EQ("1", true, stringUtils::isStringEqualNoCase(vmime::string("foo"), "foo", 3));
 		VASSERT_EQ("2", true, stringUtils::isStringEqualNoCase(vmime::string("FOo"), "foo", 3));
 
 		VASSERT_EQ("3", false, stringUtils::isStringEqualNoCase(vmime::string("foo"), "FOo", 3));
 		VASSERT_EQ("4", false, stringUtils::isStringEqualNoCase(vmime::string("foo"), "bar", 3));
+
+		VASSERT_EQ("5", false, stringUtils::isStringEqualNoCase(vmime::string("foO"), "bar", 3));
+		VASSERT_EQ("6", false, stringUtils::isStringEqualNoCase(vmime::string("foOO"), "barO", 4));
+		VASSERT_EQ("7", false, stringUtils::isStringEqualNoCase(vmime::string("foOO"), "ba", 2));
+
+		VASSERT_EQ("8", true, stringUtils::isStringEqualNoCase(vmime::string("FOoooo"), "foo", 3));
 	}
 
-	void testIsStringEqualNoCase2()
-	{
+	void testIsStringEqualNoCase2() {
+
 		VASSERT_EQ("1", true, stringUtils::isStringEqualNoCase(vmime::string("foo"), vmime::string("foo")));
 		VASSERT_EQ("2", true, stringUtils::isStringEqualNoCase(vmime::string("FOo"), vmime::string("foo")));
 		VASSERT_EQ("3", true, stringUtils::isStringEqualNoCase(vmime::string("foO"), vmime::string("FOo")));
+
+		VASSERT_EQ("4", false, stringUtils::isStringEqualNoCase(vmime::string("foO"), vmime::string("bar")));
+		VASSERT_EQ("5", false, stringUtils::isStringEqualNoCase(vmime::string("foOO"), vmime::string("barO")));
 	}
 
-	void testIsStringEqualNoCase3()
-	{
+	void testIsStringEqualNoCase3() {
+
 		vmime::string str1("FooBar");
 
 		VASSERT_EQ("1", true, stringUtils::isStringEqualNoCase(str1.begin(), str1.end(), "foobar", 6));
 		VASSERT_EQ("2", false, stringUtils::isStringEqualNoCase(str1.begin(), str1.end(), "FooBar", 6));
 		VASSERT_EQ("3", true, stringUtils::isStringEqualNoCase(str1.begin(), str1.end(), "fooBar", 3));
 		VASSERT_EQ("4", false, stringUtils::isStringEqualNoCase(str1.begin(), str1.begin() + 3, "fooBar", 6));
+		VASSERT_EQ("5", false, stringUtils::isStringEqualNoCase(str1.begin(), str1.begin() + 3, "bar", 3));
+		VASSERT_EQ("6", false, stringUtils::isStringEqualNoCase(str1.begin(), str1.begin() + 6, "barbar", 6));
 	}
 
-	void testToLower()
-	{
+	void testToLower() {
+
 		VASSERT_EQ("1", "foo", stringUtils::toLower("FOO"));
 		VASSERT_EQ("2", "foo", stringUtils::toLower("foO"));
 		VASSERT_EQ("3", "foo", stringUtils::toLower("foo"));
 	}
 
-	void testTrim()
-	{
+	void testTrim() {
+
 		VASSERT_EQ("1", "foo", stringUtils::trim("  foo"));
 		VASSERT_EQ("2", "foo", stringUtils::trim("\t\tfoo"));
 		VASSERT_EQ("3", "foo", stringUtils::trim(" \t \tfoo"));
@@ -136,35 +147,47 @@ VMIME_TEST_SUITE_BEGIN(stringUtilsTest)
 		VASSERT_EQ("13", "foo", stringUtils::trim("\r \tfoo \n\t"));
 	}
 
-	void testCountASCIIChars()
-	{
+	void testCountASCIIChars() {
+
 		vmime::string str1("foo");
-		VASSERT_EQ("1", static_cast <vmime::size_t>(3),
-			stringUtils::countASCIIchars(str1.begin(), str1.end()));
+		VASSERT_EQ(
+			"1",
+			static_cast <vmime::size_t>(3),
+			stringUtils::countASCIIchars(str1.begin(), str1.end())
+		);
 
 		vmime::string str2("f=?oo");
-		VASSERT_EQ("2", static_cast <vmime::size_t>(3 + 1),
-			stringUtils::countASCIIchars(str2.begin(), str2.end()));
+		VASSERT_EQ(
+			"2",
+			static_cast <vmime::size_t>(3 + 1),
+			stringUtils::countASCIIchars(str2.begin(), str2.end())
+		);
 
 		vmime::string str3("foo\x7f");
-		VASSERT_EQ("3", static_cast <vmime::size_t>(4),
-			stringUtils::countASCIIchars(str3.begin(), str3.end()));
+		VASSERT_EQ(
+			"3",
+			static_cast <vmime::size_t>(4),
+			stringUtils::countASCIIchars(str3.begin(), str3.end())
+		);
 
 		vmime::string str4("foo\x80");
-		VASSERT_EQ("4", static_cast <vmime::size_t>(3),
-			stringUtils::countASCIIchars(str4.begin(), str4.end()));
+		VASSERT_EQ(
+			"4",
+			static_cast <vmime::size_t>(3),
+			stringUtils::countASCIIchars(str4.begin(), str4.end())
+		);
 	}
 
-	void testUnquote()
-	{
+	void testUnquote() {
+
 		VASSERT_EQ("1", "quoted", stringUtils::unquote("\"quoted\""));  // "quoted"
 		VASSERT_EQ("2", "\"not quoted", stringUtils::unquote("\"not quoted"));  // "not quoted
 		VASSERT_EQ("3", "not quoted\"", stringUtils::unquote("not quoted\""));  // not quoted"
 		VASSERT_EQ("4", "quoted with \"escape\"", stringUtils::unquote("\"quoted with \\\"escape\\\"\""));  // "quoted with \"escape\""
 	}
 
-	void testIsValidHostname()
-	{
+	void testIsValidHostname() {
+
 		VASSERT_TRUE ("1", stringUtils::isValidHostname("localhost"));
 		VASSERT_TRUE ("2", stringUtils::isValidHostname("localhost.localdomain"));
 		VASSERT_TRUE ("3", stringUtils::isValidHostname("example.com"));
@@ -176,8 +199,8 @@ VMIME_TEST_SUITE_BEGIN(stringUtilsTest)
 		VASSERT_FALSE("9", stringUtils::isValidHostname("-example.com"));
 	}
 
-	void testIsValidFQDN()
-	{
+	void testIsValidFQDN() {
+
 		VASSERT_FALSE("1", stringUtils::isValidFQDN("localhost"));
 		VASSERT_FALSE("2", stringUtils::isValidFQDN("localhost.localdomain"));
 		VASSERT_FALSE("3", stringUtils::isValidFQDN("example.com"));
@@ -189,4 +212,3 @@ VMIME_TEST_SUITE_BEGIN(stringUtilsTest)
 	}
 
 VMIME_TEST_SUITE_END
-

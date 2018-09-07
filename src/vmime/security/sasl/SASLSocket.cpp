@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -46,110 +46,119 @@ namespace sasl {
 
 
 
-SASLSocket::SASLSocket(shared_ptr <SASLSession> sess, shared_ptr <net::socket> wrapped)
-	: m_session(sess), m_wrapped(wrapped),
-	  m_pendingBuffer(0), m_pendingPos(0), m_pendingLen(0)
-{
+SASLSocket::SASLSocket(
+	const shared_ptr <SASLSession>& sess,
+	const shared_ptr <net::socket>& wrapped
+)
+	: m_session(sess),
+	  m_wrapped(wrapped),
+	  m_pendingBuffer(0),
+	  m_pendingPos(0),
+	  m_pendingLen(0) {
+
 }
 
 
-SASLSocket::~SASLSocket()
-{
-	if (m_pendingBuffer)
+SASLSocket::~SASLSocket() {
+
+	if (m_pendingBuffer) {
 		delete [] m_pendingBuffer;
+	}
 }
 
 
-void SASLSocket::connect(const string& address, const port_t port)
-{
+void SASLSocket::connect(const string& address, const port_t port) {
+
 	m_wrapped->connect(address, port);
 }
 
 
-void SASLSocket::disconnect()
-{
+void SASLSocket::disconnect() {
+
 	m_wrapped->disconnect();
 }
 
 
-bool SASLSocket::isConnected() const
-{
+bool SASLSocket::isConnected() const {
+
 	return m_wrapped->isConnected();
 }
 
 
-size_t SASLSocket::getBlockSize() const
-{
+size_t SASLSocket::getBlockSize() const {
+
 	return m_wrapped->getBlockSize();
 }
 
 
-const string SASLSocket::getPeerName() const
-{
+const string SASLSocket::getPeerName() const {
+
 	return m_wrapped->getPeerName();
 }
 
 
-const string SASLSocket::getPeerAddress() const
-{
+const string SASLSocket::getPeerAddress() const {
+
 	return m_wrapped->getPeerAddress();
 }
 
 
-shared_ptr <net::timeoutHandler> SASLSocket::getTimeoutHandler()
-{
+shared_ptr <net::timeoutHandler> SASLSocket::getTimeoutHandler() {
+
 	return m_wrapped->getTimeoutHandler();
 }
 
 
-void SASLSocket::setTracer(shared_ptr <net::tracer> tracer)
-{
+void SASLSocket::setTracer(const shared_ptr <net::tracer>& tracer) {
+
 	m_wrapped->setTracer(tracer);
 }
 
 
-shared_ptr <net::tracer> SASLSocket::getTracer()
-{
+shared_ptr <net::tracer> SASLSocket::getTracer() {
+
 	return m_wrapped->getTracer();
 }
 
 
-bool SASLSocket::waitForRead(const int msecs)
-{
+bool SASLSocket::waitForRead(const int msecs) {
+
 	return m_wrapped->waitForRead(msecs);
 }
 
 
-bool SASLSocket::waitForWrite(const int msecs)
-{
+bool SASLSocket::waitForWrite(const int msecs) {
+
 	return m_wrapped->waitForWrite(msecs);
 }
 
 
-void SASLSocket::receive(string& buffer)
-{
+void SASLSocket::receive(string& buffer) {
+
 	const size_t n = receiveRaw(m_recvBuffer, sizeof(m_recvBuffer));
 
 	buffer = utility::stringUtils::makeStringFromBytes(m_recvBuffer, n);
 }
 
 
-size_t SASLSocket::receiveRaw(byte_t* buffer, const size_t count)
-{
-	if (m_pendingLen != 0)
-	{
+size_t SASLSocket::receiveRaw(byte_t* buffer, const size_t count) {
+
+	if (m_pendingLen != 0) {
+
 		const size_t copyLen =
 			(count >= m_pendingLen ? m_pendingLen : count);
 
-		std::copy(m_pendingBuffer + m_pendingPos,
-		          m_pendingBuffer + m_pendingPos + copyLen,
-		          buffer);
+		std::copy(
+			m_pendingBuffer + m_pendingPos,
+			m_pendingBuffer + m_pendingPos + copyLen,
+			buffer
+		);
 
 		m_pendingLen -= copyLen;
 		m_pendingPos += copyLen;
 
-		if (m_pendingLen == 0)
-		{
+		if (m_pendingLen == 0) {
+
 			delete [] m_pendingBuffer;
 
 			m_pendingBuffer = 0;
@@ -165,13 +174,12 @@ size_t SASLSocket::receiveRaw(byte_t* buffer, const size_t count)
 	byte_t* output = 0;
 	size_t outputLen = 0;
 
-	m_session->getMechanism()->decode
-		(m_session, buffer, n, &output, &outputLen);
+	m_session->getMechanism()->decode(m_session, buffer, n, &output, &outputLen);
 
 	// If we can not copy all decoded data into the output buffer, put
 	// remaining data into a pending buffer for next calls to receive()
-	if (outputLen > count)
-	{
+	if (outputLen > count) {
+
 		std::copy(output, output + count, buffer);
 
 		m_pendingBuffer = output;
@@ -179,9 +187,9 @@ size_t SASLSocket::receiveRaw(byte_t* buffer, const size_t count)
 		m_pendingPos = count;
 
 		return count;
-	}
-	else
-	{
+
+	} else {
+
 		std::copy(output, output + outputLen, buffer);
 
 		delete [] output;
@@ -191,32 +199,33 @@ size_t SASLSocket::receiveRaw(byte_t* buffer, const size_t count)
 }
 
 
-void SASLSocket::send(const string& buffer)
-{
+void SASLSocket::send(const string& buffer) {
+
 	sendRaw(reinterpret_cast <const byte_t*>(buffer.data()), buffer.length());
 }
 
 
-void SASLSocket::send(const char* str)
-{
+void SASLSocket::send(const char* str) {
+
 	sendRaw(reinterpret_cast <const byte_t*>(str), strlen(str));
 }
 
 
-void SASLSocket::sendRaw(const byte_t* buffer, const size_t count)
-{
+void SASLSocket::sendRaw(const byte_t* buffer, const size_t count) {
+
 	byte_t* output = 0;
 	size_t outputLen = 0;
 
-	m_session->getMechanism()->encode
-		(m_session, buffer, count, &output, &outputLen);
+	m_session->getMechanism()->encode(
+		m_session, buffer, count, &output, &outputLen
+	);
 
-	try
-	{
+	try {
+
 		m_wrapped->sendRaw(output, outputLen);
-	}
-	catch (...)
-	{
+
+	} catch (...) {
+
 		delete [] output;
 		throw;
 	}
@@ -225,22 +234,21 @@ void SASLSocket::sendRaw(const byte_t* buffer, const size_t count)
 }
 
 
-size_t SASLSocket::sendRawNonBlocking(const byte_t* buffer, const size_t count)
-{
+size_t SASLSocket::sendRawNonBlocking(const byte_t* buffer, const size_t count) {
+
 	byte_t* output = 0;
 	size_t outputLen = 0;
 
-	m_session->getMechanism()->encode
-		(m_session, buffer, count, &output, &outputLen);
+	m_session->getMechanism()->encode(m_session, buffer, count, &output, &outputLen);
 
 	size_t bytesSent = 0;
 
-	try
-	{
+	try {
+
 		bytesSent = m_wrapped->sendRawNonBlocking(output, outputLen);
-	}
-	catch (...)
-	{
+
+	} catch (...) {
+
 		delete [] output;
 		throw;
 	}
@@ -251,8 +259,8 @@ size_t SASLSocket::sendRawNonBlocking(const byte_t* buffer, const size_t count)
 }
 
 
-unsigned int SASLSocket::getStatus() const
-{
+unsigned int SASLSocket::getStatus() const {
+
 	return m_wrapped->getStatus();
 }
 
@@ -263,4 +271,3 @@ unsigned int SASLSocket::getStatus() const
 
 
 #endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_SASL_SUPPORT
-

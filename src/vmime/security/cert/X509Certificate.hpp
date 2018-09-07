@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -47,22 +47,20 @@ namespace cert {
 
 /** Identity certificate based on X.509 standard.
   */
-class VMIME_EXPORT X509Certificate : public certificate
-{
+class VMIME_EXPORT X509Certificate : public certificate {
+
 public:
 
 	~X509Certificate();
 
 	/** Supported encodings for X.509 certificates. */
-	enum Format
-	{
+	enum Format {
 		FORMAT_DER,   /**< DER encoding */
 		FORMAT_PEM    /**< PEM encoding */
 	};
 
 	/** Supported digest algorithms (used for fingerprint). */
-	enum DigestAlgorithm
-	{
+	enum DigestAlgorithm {
 		DIGEST_MD5,   /**< MD5 digest */
 		DIGEST_SHA1   /**< SHA1 digest */
 	};
@@ -85,6 +83,28 @@ public:
 	  */
 	static shared_ptr <X509Certificate> import(const byte_t* data, const size_t length);
 
+	/** Import sveral DER or PEM encoded X.509 certificates.
+	  *
+	  * @param is input stream to read data from
+	  * @param certs the resulting list of certificates
+	  */
+	static void import(
+		utility::inputStream& is,
+		std::vector <shared_ptr <X509Certificate> >& certs
+	);
+
+	/** Import several DER or PEM encoded X.509 certificates.
+	 *
+	 * @param data points to raw data
+	 * @param length size of data
+	 * @param certs the resulting list of certificates
+	 */
+	static void import(
+		const byte_t* data,
+		const size_t length,
+		std::vector <shared_ptr <X509Certificate> >& certs
+	);
+
 	/** Exports this X.509 certificate to the specified format.
 	  *
 	  * @param os output stream into which write data
@@ -106,7 +126,7 @@ public:
 	  *
 	  * @return distinguished name of the certificate issuer, as a string
 	  */
-	const string getIssuerString() const;
+	virtual const string getIssuerString() const = 0;
 
 	/** Checks if this certificate has the given issuer.
 	  *
@@ -114,14 +134,14 @@ public:
 	  * @return true if this certificate was issued by the given issuer,
 	  * false otherwise
 	  */
-	virtual bool checkIssuer(shared_ptr <const X509Certificate> issuer) const = 0;
+	virtual bool checkIssuer(const shared_ptr <const X509Certificate>& issuer) const = 0;
 
 	/** Verifies this certificate against a given trusted one.
 	  *
 	  * @param caCert a certificate that is considered to be trusted one
 	  * @return true if the verification succeeded, false otherwise
 	  */
-	virtual bool verify(shared_ptr <const X509Certificate> caCert) const = 0;
+	virtual bool verify(const shared_ptr <const X509Certificate>& caCert) const = 0;
 
 	/** Verify certificate's subject name against the given hostname.
 	  *
@@ -130,9 +150,10 @@ public:
 	  * not match the identities in the certificate
 	  * @return true if the match is successful, false otherwise
 	  */
-	virtual bool verifyHostName
-		(const string& hostname,
-		 std::vector <std::string>* nonMatchingNames = NULL) const = 0;
+	virtual bool verifyHostName(
+		const string& hostname,
+		std::vector <std::string>* nonMatchingNames = NULL
+	) const = 0;
 
 	/** Gets the expiration date of this certificate. This is the date
 	  * at which this certificate will not be valid anymore.

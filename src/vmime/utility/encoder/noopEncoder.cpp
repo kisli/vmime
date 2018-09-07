@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -31,14 +31,17 @@ namespace utility {
 namespace encoder {
 
 
-noopEncoder::noopEncoder()
-{
+noopEncoder::noopEncoder() {
+
 }
 
 
-size_t noopEncoder::encode(utility::inputStream& in,
-	utility::outputStream& out, utility::progressListener* progress)
-{
+size_t noopEncoder::encode(
+	utility::inputStream& in,
+	utility::outputStream& out,
+	utility::progressListener* progress
+) {
+
 	in.reset();  // may not work...
 
 	// No encoding performed
@@ -53,31 +56,35 @@ size_t noopEncoder::encode(utility::inputStream& in,
 }
 
 
-size_t noopEncoder::decode(utility::inputStream& in,
-	utility::outputStream& out, utility::progressListener* progress)
-{
+size_t noopEncoder::decode(
+	utility::inputStream& in,
+	utility::outputStream& out,
+	utility::progressListener* progress
+) {
+
 	in.reset();  // may not work...
 
 	// No decoding performed
 	size_t res = 0;
 
-	if (progress)
+	if (progress) {
 		res = utility::bufferedStreamCopy(in, out, 0, progress);
-	else
+	} else {
 		res = utility::bufferedStreamCopy(in, out);
+	}
 
 	return res;
 }
 
 
-size_t noopEncoder::getEncodedSize(const size_t n) const
-{
+size_t noopEncoder::getEncodedSize(const size_t n) const {
+
 	return n;
 }
 
 
-size_t noopEncoder::getDecodedSize(const size_t n) const
-{
+size_t noopEncoder::getDecodedSize(const size_t n) const {
+
 	return n;
 }
 

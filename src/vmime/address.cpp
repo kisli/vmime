@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -29,12 +29,11 @@
 #include "vmime/parserHelpers.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
-address::address()
-{
+address::address() {
+
 }
 
 
@@ -66,10 +65,15 @@ address-list    =       (address *("," address)) / obs-addr-list
 
 */
 
-shared_ptr <address> address::parseNext
-	(const parsingContext& ctx, const string& buffer, const size_t position,
-	 const size_t end, size_t* newPosition, bool *isLastAddressOfGroup)
-{
+shared_ptr <address> address::parseNext(
+	const parsingContext& ctx,
+	const string& buffer,
+	const size_t position,
+	const size_t end,
+	size_t* newPosition,
+	bool *isLastAddressOfGroup
+) {
+
 	bool escaped = false;
 	bool quoted = false;
 	bool quotedRFC2047 = false;
@@ -78,135 +82,151 @@ shared_ptr <address> address::parseNext
 	bool stop = false;
 	int commentLevel = 0;
 
-	if (isLastAddressOfGroup)
+	if (isLastAddressOfGroup) {
 		*isLastAddressOfGroup = false;
+	}
 
 	size_t pos = position;
 
-	while (pos < end && parserHelpers::isSpace(buffer[pos]))
+	while (pos < end && parserHelpers::isSpace(buffer[pos])) {
 		++pos;
+	}
 
 	const size_t start = pos;
 
-	while (!stop && pos < end)
-	{
-		if (escaped)
-		{
+	while (!stop && pos < end) {
+
+		if (escaped) {
+
 			escaped = false;
-		}
-		else
-		{
-			switch (buffer[pos])
-			{
-			case '\\':
-				escaped = true;
-				break;
-			case '"':
-				quoted = !quoted;
-				break;
-			case '<':
-				inRouteAddr = true;
-				break;
-			case '>':
-				inRouteAddr = false;
-				break;
 
-			case '(':
+		} else {
 
-				++commentLevel;
-				break;
+			switch (buffer[pos]) {
 
-			case ')':
+				case '\\':
 
-				if (commentLevel > 0)
-					--commentLevel;
+					escaped = true;
+					break;
 
-				break;
+				case '"':
 
-			case '=':
+					quoted = !quoted;
+					break;
 
-				if (commentLevel == 0 && !quoted && !quotedRFC2047 && pos + 1 < end && buffer[pos + 1] == '?')
-				{
-					++pos;
-					quotedRFC2047 = true;
-				}
+				case '<':
 
-				break;
+					inRouteAddr = true;
+					break;
 
-			case '?':
+				case '>':
 
-				if (commentLevel == 0 && quotedRFC2047 && pos + 1 < end && buffer[pos + 1] == '=')
-				{
-					++pos;
-					quotedRFC2047 = false;
-				}
+					inRouteAddr = false;
+					break;
 
-				break;
+				case '(':
 
-			default:
-			{
-				if (commentLevel == 0 && !quoted && !quotedRFC2047 && !inRouteAddr)
-				{
-					switch (buffer[pos])
-					{
-					case ';':
+					++commentLevel;
+					break;
 
-						if (isGroup)
-						{
-							if (pos + 1 < end && buffer[pos + 1] == ',')
-								++pos;
-						}
+				case ')':
 
-						if (isLastAddressOfGroup)
-							*isLastAddressOfGroup = true;
-
-						stop = true;
-						break;
-
-					case ':':
-
-						isGroup = true;
-						break;
-
-					case ',':
-
-						if (!isGroup) stop = true;
-						break;
+					if (commentLevel > 0) {
+						--commentLevel;
 					}
-				}
 
-				break;
-			}
+					break;
+
+				case '=':
+
+					if (commentLevel == 0 && !quoted && !quotedRFC2047 && pos + 1 < end && buffer[pos + 1] == '?') {
+						++pos;
+						quotedRFC2047 = true;
+					}
+
+					break;
+
+				case '?':
+
+					if (commentLevel == 0 && quotedRFC2047 && pos + 1 < end && buffer[pos + 1] == '=') {
+						++pos;
+						quotedRFC2047 = false;
+					}
+
+					break;
+
+				default:
+				{
+					if (commentLevel == 0 && !quoted && !quotedRFC2047 && !inRouteAddr) {
+
+						switch (buffer[pos]) {
+
+							case ';':
+
+								if (isGroup) {
+
+									if (pos + 1 < end && buffer[pos + 1] == ',') {
+										++pos;
+									}
+								}
+
+								if (isLastAddressOfGroup) {
+									*isLastAddressOfGroup = true;
+								}
+
+								stop = true;
+								break;
+
+							case ':':
+
+								isGroup = true;
+								break;
+
+							case ',':
+
+								if (!isGroup) {
+									stop = true;
+								}
+
+								break;
+						}
+					}
+
+					break;
+				}
 
 			}
 		}
 
-		if (!stop)
+		if (!stop) {
 			++pos;
+		}
 	}
 
-	if (newPosition)
-	{
-		if (pos == end)
+	if (newPosition) {
+
+		if (pos == end) {
 			*newPosition = end;
-		else
+		} else {
 			*newPosition = pos + 1;  // ',' or ';'
+		}
 	}
 
 	// Parse extracted address (mailbox or group)
-	if (pos != start)
-	{
+	if (pos != start) {
+
 		shared_ptr <address> parsedAddress;
 
-		if (isGroup)
+		if (isGroup) {
 			parsedAddress = make_shared <mailboxGroup>();
-		else
+		} else {
 			parsedAddress = make_shared <mailbox>();
+		}
 
 		parsedAddress->parse(ctx, buffer, start, pos, NULL);
 		parsedAddress->setParsedBounds(start, pos);
 
-		return (parsedAddress);
+		return parsedAddress;
 	}
 
 	return null;

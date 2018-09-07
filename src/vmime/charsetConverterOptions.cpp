@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -24,14 +24,13 @@
 #include "vmime/charsetConverterOptions.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 charsetConverterOptions::charsetConverterOptions()
 	: silentlyReplaceInvalidSequences(true),
-	  invalidSequence("?")
-{
+	  invalidSequence("?") {
+
 }
 
 

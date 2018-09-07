@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -35,21 +35,20 @@ namespace net {
 namespace sendmail {
 
 
-sendmailServiceInfos::sendmailServiceInfos()
-{
+sendmailServiceInfos::sendmailServiceInfos() {
+
 }
 
 
-const string sendmailServiceInfos::getPropertyPrefix() const
-{
+const string sendmailServiceInfos::getPropertyPrefix() const {
+
 	return "transport.sendmail.";
 }
 
 
-const sendmailServiceInfos::props& sendmailServiceInfos::getProperties() const
-{
-	static props sendmailProps =
-	{
+const sendmailServiceInfos::props& sendmailServiceInfos::getProperties() const {
+
+	static props sendmailProps = {
 		// Path to sendmail (override default)
 		property("binpath", serviceInfos::property::TYPE_STRING, string(VMIME_SENDMAIL_PATH))
 	};
@@ -58,8 +57,8 @@ const sendmailServiceInfos::props& sendmailServiceInfos::getProperties() const
 }
 
 
-const std::vector <serviceInfos::property> sendmailServiceInfos::getAvailableProperties() const
-{
+const std::vector <serviceInfos::property> sendmailServiceInfos::getAvailableProperties() const {
+
 	std::vector <property> list;
 	const props& p = getProperties();
 

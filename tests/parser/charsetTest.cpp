@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -52,10 +52,10 @@ VMIME_TEST_SUITE_BEGIN(charsetTest)
 	VMIME_TEST_LIST_END
 
 
-	void testConvertStringValid()
-	{
-		for (unsigned int i = 0 ; i < charsetTestSuitesCount ; ++i)
-		{
+	void testConvertStringValid() {
+
+		for (unsigned int i = 0 ; i < charsetTestSuitesCount ; ++i) {
+
 			const charsetTestSuiteStruct& entry = charsetTestSuites[i];
 
 			std::ostringstream testName;
@@ -76,10 +76,10 @@ VMIME_TEST_SUITE_BEGIN(charsetTest)
 		}
 	}
 
-	void testConvertStreamValid()
-	{
-		for (unsigned int i = 0 ; i < charsetTestSuitesCount ; ++i)
-		{
+	void testConvertStreamValid() {
+
+		for (unsigned int i = 0 ; i < charsetTestSuitesCount ; ++i) {
+
 			const charsetTestSuiteStruct& entry = charsetTestSuites[i];
 
 			std::ostringstream testName;
@@ -96,8 +96,7 @@ VMIME_TEST_SUITE_BEGIN(charsetTest)
 
 			vmime::utility::inputStreamStringAdapter is(in);
 
-			vmime::charset::convert
-				(is, os, entry.fromCharset, entry.toCharset);
+			vmime::charset::convert(is, os, entry.fromCharset, entry.toCharset);
 
 			os.flush();
 
@@ -105,8 +104,8 @@ VMIME_TEST_SUITE_BEGIN(charsetTest)
 		}
 	}
 
-	void testEncodingHebrew1255()
-	{
+	void testEncodingHebrew1255() {
+
 		// hewbrew string in windows-1255 charset
 		const char data[] = "\xe9\xf9\xf7\xf8\xe9\xf9\xf8\xf7\xe9\xe9\xf9";
 		vmime::word w = vmime::word(data, "windows-1255");
@@ -115,11 +114,14 @@ VMIME_TEST_SUITE_BEGIN(charsetTest)
 		VASSERT_EQ("1", "=?windows-1255?B?6fn3+On5+Pfp6fk=?=", encoded);
 	}
 
-	static const vmime::string convertHelper
-		(const vmime::string& in, const vmime::charset& csrc, const vmime::charset& cdest,
-		 const vmime::charsetConverterOptions& opts = vmime::charsetConverterOptions(),
-		 vmime::charsetConverter::status* st = NULL)
-	{
+	static const vmime::string convertHelper(
+		const vmime::string& in,
+		const vmime::charset& csrc,
+		const vmime::charset& cdest,
+		const vmime::charsetConverterOptions& opts = vmime::charsetConverterOptions(),
+		vmime::charsetConverter::status* st = NULL
+	) {
+
 		vmime::shared_ptr <vmime::charsetConverter> conv =
 			vmime::charsetConverter::create(csrc, cdest, opts);
 
@@ -129,8 +131,8 @@ VMIME_TEST_SUITE_BEGIN(charsetTest)
 		return out;
 	}
 
-	void testEncodeIDNA()
-	{
+	void testEncodeIDNA() {
+
 		VASSERT_EQ("1", "xn--espaol-zwa", convertHelper("español", "utf-8", "idna"));
 
 		// Tests from ICANN
@@ -141,8 +143,8 @@ VMIME_TEST_SUITE_BEGIN(charsetTest)
 		VASSERT_EQ("3.2", "xn--kgbechtv", convertHelper("إختبار", "utf-8", "idna"));
 	}
 
-	void testDecodeIDNA()
-	{
+	void testDecodeIDNA() {
+
 		VASSERT_EQ("1", "español", convertHelper("xn--espaol-zwa", "idna", "utf-8"));
 
 		// Tests from ICANN
@@ -153,21 +155,23 @@ VMIME_TEST_SUITE_BEGIN(charsetTest)
 		VASSERT_EQ("3.2", "إختبار", convertHelper("xn--kgbechtv", "idna", "utf-8"));
 	}
 
-	void testUTF7Support()
-	{
+	void testUTF7Support() {
+
 		// Ensure UTF-7 is supported, because it is used for IMAP
 		VASSERT_EQ("1", "VMime +- UTF-7 encoding", convertHelper("VMime + UTF-7 encoding", "utf-8", "utf-7"));
 		VASSERT_EQ("2", "f+APg-o", convertHelper("\x66\xc3\xb8\x6f", "utf-8", "utf-7"));
 	}
 
-	void testReplaceInvalidSequence()
-	{
+	void testReplaceInvalidSequence() {
+
 		vmime::charsetConverterOptions opts;
 		opts.silentlyReplaceInvalidSequences = true;
 		opts.invalidSequence = "?";
 
-		vmime::string res = convertHelper
-			("\x61\xf1\x80\x80\xe1\x80\xc2\x62\x80\x63\x80\xbf\x64", "utf-8", "iso-8859-1", opts);
+		vmime::string res = convertHelper(
+			"\x61\xf1\x80\x80\xe1\x80\xc2\x62\x80\x63\x80\xbf\x64",
+			"utf-8", "iso-8859-1", opts
+		);
 
 		// Result should be in the form "a???b?c??d" or "a??????b?c??d"...
 		// Remove consecutive question marks for easier matching.
@@ -180,8 +184,8 @@ VMIME_TEST_SUITE_BEGIN(charsetTest)
 		);
 	}
 
-	void testStopOnInvalidSequence()
-	{
+	void testStopOnInvalidSequence() {
+
 		vmime::charsetConverterOptions opts;
 		opts.silentlyReplaceInvalidSequences = false;
 
@@ -192,8 +196,8 @@ VMIME_TEST_SUITE_BEGIN(charsetTest)
 		);
 	}
 
-	void testStatus()
-	{
+	void testStatus() {
+
 		vmime::charsetConverterOptions opts;
 		opts.silentlyReplaceInvalidSequences = false;
 
@@ -206,23 +210,22 @@ VMIME_TEST_SUITE_BEGIN(charsetTest)
 		VASSERT_EQ("outputBytesWritten", 7, st.outputBytesWritten);
 	}
 
-	void testStatusWithInvalidSequence()
-	{
+	void testStatusWithInvalidSequence() {
+
 		vmime::charsetConverterOptions opts;
 		opts.silentlyReplaceInvalidSequences = false;
 
 		vmime::charsetConverter::status st;
 
-		try
-		{
+		try {
+
 			//             01234   5   6789   0   1
 			convertHelper("Fran\xc3\xa7ois\xf1\x80\x65", "utf-8", "iso-8859-1", opts, &st);
-		}
-		catch (vmime::exceptions::illegal_byte_sequence_for_charset& e)
-		{
-		}
-		catch (...)
-		{
+
+		} catch (vmime::exceptions::illegal_byte_sequence_for_charset& e) {
+
+		} catch (...) {
+
 			throw;
 		}
 
@@ -230,8 +233,8 @@ VMIME_TEST_SUITE_BEGIN(charsetTest)
 		VASSERT_EQ("outputBytesWritten", 8, st.outputBytesWritten);
 	}
 
-	void testIsValidText()
-	{
+	void testIsValidText() {
+
 		// Invalid text
 		const vmime::string invalidText("Fran\xc3\xa7ois\xf1\x80\x65");
 		vmime::string::size_type firstInvalidByte;
@@ -247,4 +250,3 @@ VMIME_TEST_SUITE_BEGIN(charsetTest)
 	}
 
 VMIME_TEST_SUITE_END
-

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -50,8 +50,8 @@ class POP3Connection;
 
 /** A POP3 command that will be sent to the server.
   */
-class VMIME_EXPORT POP3Command : public object
-{
+class VMIME_EXPORT POP3Command : public object {
+
 public:
 
 	static shared_ptr <POP3Command> CAPA();
@@ -85,7 +85,7 @@ public:
 	  *
 	  * @param conn connection onto which the command will be sent
 	  */
-	virtual void send(shared_ptr <POP3Connection> conn);
+	virtual void send(const shared_ptr <POP3Connection>& conn);
 
 	/** Returns the full text of the command, including command name
 	  * and parameters (if any).

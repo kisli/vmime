@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -34,15 +34,13 @@
 #include "vmime/encoding.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 /** Base class for all types of attachment.
   */
+class VMIME_EXPORT attachment : public object {
 
-class VMIME_EXPORT attachment : public object
-{
 	friend class messageBuilder;
 	friend class messageParser;
 	friend class attachmentHelper;
@@ -108,7 +106,7 @@ protected:
 	  *
 	  * @param parent body part in which to generate the attachment
 	  */
-	virtual void generateIn(shared_ptr <bodyPart> parent) const = 0;
+	virtual void generateIn(const shared_ptr <bodyPart>& parent) const = 0;
 };
 
 

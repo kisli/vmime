@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2014 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -46,8 +46,8 @@ VMIME_TEST_SUITE_BEGIN(IMAPUtilsTest)
 	VMIME_TEST_LIST_END
 
 
-	void testQuoteString()
-	{
+	void testQuoteString() {
+
 		VASSERT_EQ("unquoted", "ascii", IMAPUtils::quoteString("ascii"));
 		VASSERT_EQ("space", "\"ascii with space\"", IMAPUtils::quoteString("ascii with space"));
 
@@ -63,8 +63,8 @@ VMIME_TEST_SUITE_BEGIN(IMAPUtilsTest)
 
 	}
 
-	void testToModifiedUTF7()
-	{
+	void testToModifiedUTF7() {
+
 		#define FC(x) vmime::net::folder::path::component(x, vmime::charsets::UTF_8)
 
 		// Example strings from RFC-1642 (modified for IMAP UTF-7)
@@ -80,8 +80,8 @@ VMIME_TEST_SUITE_BEGIN(IMAPUtilsTest)
 		#undef FC
 	}
 
-	void testFromModifiedUTF7()
-	{
+	void testFromModifiedUTF7() {
+
 		#define FC(x) vmime::net::folder::path::component(x, vmime::charsets::UTF_8)
 
 		// Example strings from RFC-1642 (modified for IMAP UTF-7)
@@ -97,8 +97,8 @@ VMIME_TEST_SUITE_BEGIN(IMAPUtilsTest)
 		#undef FC
 	}
 
-	void testConvertAddressList()
-	{
+	void testConvertAddressList() {
+
 		IMAPParser parser;
 		IMAPParser::address_list addrList;
 
@@ -117,8 +117,8 @@ VMIME_TEST_SUITE_BEGIN(IMAPUtilsTest)
 		VASSERT_EQ("mbox-2", "name2", mboxList.getMailboxAt(1)->getName().getWholeBuffer());
 	}
 
-	void testMessageFlagList()
-	{
+	void testMessageFlagList() {
+
 		int flags = 0;
 		std::vector <vmime::string> flagList;
 
@@ -158,14 +158,14 @@ VMIME_TEST_SUITE_BEGIN(IMAPUtilsTest)
 		VASSERT("2.found2", std::find(flagList.begin(), flagList.end(), "\\Seen") != flagList.end());
 	}
 
-	void testDateTime()
-	{
+	void testDateTime() {
+
 		vmime::datetime dt(2014, 3, 17, 23, 26, 22, vmime::datetime::GMT2);
 		VASSERT_EQ("datetime", "\"17-Mar-2014 23:26:22 +0200\"", IMAPUtils::dateTime(dt));
 	}
 
-	void testPathToString()
-	{
+	void testPathToString() {
+
 		#define FC(x) vmime::net::folder::path::component(x, vmime::charsets::UTF_8)
 
 		vmime::net::folder::path path;
@@ -177,8 +177,8 @@ VMIME_TEST_SUITE_BEGIN(IMAPUtilsTest)
 		#undef FC
 	}
 
-	void testStringToPath()
-	{
+	void testStringToPath() {
+
 		#define FC(x) vmime::net::folder::path::component(x, vmime::charsets::UTF_8)
 
 		vmime::net::folder::path path = IMAPUtils::stringToPath('/', "Hi Mum &Jjo-!/&ZeVnLIqe-");
@@ -190,8 +190,8 @@ VMIME_TEST_SUITE_BEGIN(IMAPUtilsTest)
 		#undef FC
 	}
 
-	void testBuildFetchCommand()
-	{
+	void testBuildFetchCommand() {
+
 		vmime::shared_ptr <IMAPConnection> cnt;
 		vmime::net::messageSet msgs = vmime::net::messageSet::byNumber(42);
 

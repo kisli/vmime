@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -44,8 +44,8 @@ namespace sasl {
 
 /** An SASL client context.
   */
-class VMIME_EXPORT SASLContext : public object, public enable_shared_from_this <SASLContext>
-{
+class VMIME_EXPORT SASLContext : public object, public enable_shared_from_this <SASLContext> {
+
 	friend class SASLSession;
 	friend class builtinSASLMechanism;
 
@@ -66,9 +66,11 @@ public:
 	  * @param mech SASL mechanism
 	  * @return a new SASL session
 	  */
-	shared_ptr <SASLSession> createSession
-		(const string& serviceName,
-		 shared_ptr <authenticator> auth, shared_ptr <SASLMechanism> mech);
+	shared_ptr <SASLSession> createSession(
+		const string& serviceName,
+		const shared_ptr <authenticator>& auth,
+		const shared_ptr <SASLMechanism>& mech
+	);
 
 	/** Create an instance of an SASL mechanism.
 	  *
@@ -86,8 +88,9 @@ public:
 	  * @return suggested mechanism (usually the safest mechanism
 	  * supported by both the client and the server)
 	  */
-	shared_ptr <SASLMechanism> suggestMechanism
-		(const std::vector <shared_ptr <SASLMechanism> >& mechs);
+	shared_ptr <SASLMechanism> suggestMechanism(
+		const std::vector <shared_ptr <SASLMechanism> >& mechs
+	);
 
 	/** Helper function for decoding Base64-encoded challenge.
 	  *
@@ -131,4 +134,3 @@ private:
 #endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_SASL_SUPPORT
 
 #endif // VMIME_SECURITY_SASL_SASLCONTEXT_HPP_INCLUDED
-

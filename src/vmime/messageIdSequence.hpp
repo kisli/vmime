@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -28,15 +28,13 @@
 #include "vmime/messageId.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 /** A list of message identifiers (basic type).
   */
+class VMIME_EXPORT messageIdSequence : public headerFieldValue {
 
-class VMIME_EXPORT messageIdSequence : public headerFieldValue
-{
 public:
 
 	messageIdSequence();
@@ -56,7 +54,7 @@ public:
 	  *
 	  * @param mid message-id to append
 	  */
-	void appendMessageId(shared_ptr <messageId> mid);
+	void appendMessageId(const shared_ptr <messageId>& mid);
 
 	/** Insert a new message-id before the specified message-id.
 	  *
@@ -64,7 +62,7 @@ public:
 	  * @param mid message-id to insert
 	  * @throw exceptions::no_such_messageid if the message-id is not in the list
 	  */
-	void insertMessageIdBefore(shared_ptr <messageId> beforeMid, shared_ptr <messageId> mid);
+	void insertMessageIdBefore(const shared_ptr <messageId>& beforeMid, const shared_ptr <messageId>& mid);
 
 	/** Insert a new message-id before the specified position.
 	  *
@@ -72,7 +70,7 @@ public:
 	  * the beginning of the list)
 	  * @param mid message-id to insert
 	  */
-	void insertMessageIdBefore(const size_t pos, shared_ptr <messageId> mid);
+	void insertMessageIdBefore(const size_t pos, const shared_ptr <messageId>& mid);
 
 	/** Insert a new message-id after the specified message-id.
 	  *
@@ -80,21 +78,24 @@ public:
 	  * @param mid message-id to insert
 	  * @throw exceptions::no_such_message_id if the message-id is not in the list
 	  */
-	void insertMessageIdAfter(shared_ptr <messageId> afterMid, shared_ptr <messageId> mid);
+	void insertMessageIdAfter(
+		const shared_ptr <messageId>& afterMid,
+		const shared_ptr <messageId>& mid
+	);
 
 	/** Insert a new message-id after the specified position.
 	  *
 	  * @param pos position of the message-id before the new message-id
 	  * @param mid message-id to insert
 	  */
-	void insertMessageIdAfter(const size_t pos, shared_ptr <messageId> mid);
+	void insertMessageIdAfter(const size_t pos, const shared_ptr <messageId>& mid);
 
 	/** Remove the specified message-id from the list.
 	  *
 	  * @param mid message-id to remove
 	  * @throw exceptions::no_such_message_id if the message-id is not in the list
 	  */
-	void removeMessageId(shared_ptr <messageId> mid);
+	void removeMessageId(const shared_ptr <messageId>& mid);
 
 	/** Remove the message-id at the specified position.
 	  *
@@ -151,18 +152,20 @@ private:
 protected:
 
 	// Component parsing & assembling
-	void parseImpl
-		(const parsingContext& ctx,
-		 const string& buffer,
-		 const size_t position,
-		 const size_t end,
-		 size_t* newPosition = NULL);
+	void parseImpl(
+		const parsingContext& ctx,
+		const string& buffer,
+		const size_t position,
+		const size_t end,
+		size_t* newPosition = NULL
+	);
 
-	void generateImpl
-		(const generationContext& ctx,
-		 utility::outputStream& os,
-		 const size_t curLinePos = 0,
-		 size_t* newLinePos = NULL) const;
+	void generateImpl(
+		const generationContext& ctx,
+		utility::outputStream& os,
+		const size_t curLinePos = 0,
+		size_t* newLinePos = NULL
+	) const;
 };
 
 

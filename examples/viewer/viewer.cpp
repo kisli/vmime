@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -53,8 +53,12 @@ vmime::shared_ptr <vmime::message> currentMessage;
 
 
 
-void insertRowInModel(GtkTreeStore* model, vmime::shared_ptr <vmime::component> comp, GtkTreeIter* parent = NULL)
-{
+void insertRowInModel(
+	GtkTreeStore* model,
+	vmime::shared_ptr <vmime::component> comp,
+	GtkTreeIter* parent = NULL
+) {
+
 	GtkTreeIter iter;
 
 	gtk_tree_store_append(model, &iter, parent);
@@ -62,15 +66,14 @@ void insertRowInModel(GtkTreeStore* model, vmime::shared_ptr <vmime::component> 
 
 	const std::vector <vmime::shared_ptr <vmime::component> > children = comp->getChildComponents();
 
-	for (int i = 0 ; i < children.size() ; ++i)
-	{
+	for (int i = 0 ; i < children.size() ; ++i) {
 		insertRowInModel(model, children[i], &iter);
 	}
 }
 
 
-void updateTreeView()
-{
+void updateTreeView() {
+
 	GtkTreeStore* model = GTK_TREE_STORE(gtk_tree_view_get_model(GTK_TREE_VIEW(treeView)));
 
 	g_object_ref(model);
@@ -85,8 +88,8 @@ void updateTreeView()
 }
 
 
-static void treeViewSelChanged(GtkTreeView* treeView, gpointer userData)
-{
+static void treeViewSelChanged(GtkTreeView* treeView, gpointer userData) {
+
 	GtkTreePath* path = NULL;
 	GtkTreeViewColumn* col = NULL;
 
@@ -112,19 +115,18 @@ static void treeViewSelChanged(GtkTreeView* treeView, gpointer userData)
 }
 
 
-static void destroy(GtkWidget* widget, gpointer data)
-{
+static void destroy(GtkWidget* widget, gpointer data) {
+
 	gtk_main_quit();
 }
 
 
-void openFile(const std::string& filename)
-{
+void openFile(const std::string& filename) {
+
 	std::ifstream file;
 	file.open(filename.c_str(), std::ios::in | std::ios::binary);
 
-	if (!file)
-	{
+	if (!file) {
 		std::cerr << "Can't open file '" << filename << "'." << std::endl;
 		return;
 	}
@@ -132,12 +134,10 @@ void openFile(const std::string& filename)
 	vmime::string data;
 	char buffer[16384];
 
-	do
-	{
+	do {
 		file.read(buffer, sizeof(buffer));
 		data += vmime::string(buffer, file.gcount());
-	}
-	while (file.gcount());
+	} while (file.gcount());
 
 	vmime::shared_ptr <vmime::message> msg = vmime::make_shared <vmime::message>();
 	msg->parse(data);
@@ -147,13 +147,13 @@ void openFile(const std::string& filename)
 	char* convData = g_convert_with_fallback(data.c_str(), data.length(),
 		"UTF-8", "ISO-8859-1", "?", NULL, NULL, NULL);
 
-	if (convData == NULL)
-	{
+	if (!convData) {
+
 		gtk_text_buffer_set_text(gtk_text_view_get_buffer(GTK_TEXT_VIEW(textArea)),
 			"GLib UTF-8 conversion error.", -1);
-	}
-	else
-	{
+
+	} else {
+
 		gtk_text_buffer_set_text(gtk_text_view_get_buffer(GTK_TEXT_VIEW(textArea)),
 			convData, strlen(convData));
 
@@ -164,16 +164,19 @@ void openFile(const std::string& filename)
 }
 
 
-static void onFileOpen()
-{
-	GtkWidget* dlg = gtk_file_chooser_dialog_new
-		("Open Message File", GTK_WINDOW(window), GTK_FILE_CHOOSER_ACTION_OPEN,
-		 GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-		 GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-		 NULL);
+static void onFileOpen() {
 
-	if (gtk_dialog_run(GTK_DIALOG(dlg)) == GTK_RESPONSE_ACCEPT)
-	{
+	GtkWidget* dlg = gtk_file_chooser_dialog_new(
+		"Open Message File",
+		GTK_WINDOW(window),
+		GTK_FILE_CHOOSER_ACTION_OPEN,
+		GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+		GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+		NULL
+	);
+
+	if (gtk_dialog_run(GTK_DIALOG(dlg)) == GTK_RESPONSE_ACCEPT) {
+
 		char* filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dlg));
 
 		openFile(filename);
@@ -187,8 +190,7 @@ static void onFileOpen()
 
 
 // UI definitions
-static const GtkActionEntry uiActions[] =
-{
+static const GtkActionEntry uiActions[] = {
 	{ "FileMenu", NULL, "_File" },
 	{ "FileOpen", GTK_STOCK_OPEN, "_Open...", "<control>O", NULL, G_CALLBACK(onFileOpen) },
 	{ "FileExit", GTK_STOCK_QUIT, "_Exit", "<control>Q", NULL, G_CALLBACK(gtk_main_quit) }
@@ -205,8 +207,8 @@ static const char* uiDefinition =
 	"</ui>";
 
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]) {
+
 	// VMime initialization
 	vmime::platform::setHandler<vmime::platforms::posix::posixHandler>();
 
@@ -290,5 +292,3 @@ int main(int argc, char* argv[])
 
 	return 0;
 }
-
-

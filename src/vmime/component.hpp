@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -34,16 +34,14 @@
 #include "vmime/parsingContext.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 /** This abstract class is the base class for all the components of a message.
   * It defines methods for parsing and generating a component.
   */
+class VMIME_EXPORT component : public object {
 
-class VMIME_EXPORT component : public object
-{
 public:
 
 	component();
@@ -70,7 +68,7 @@ public:
 	  * @param inputStream stream from which to read data
 	  * @param length data length, in bytes (0 = unknown/not specified)
 	  */
-	void parse(shared_ptr <utility::inputStream> inputStream, const size_t length);
+	void parse(const shared_ptr <utility::inputStream>& inputStream, const size_t length);
 
 	/** Parse RFC-822/MIME data for this component, using the default
 	  * parsing context.
@@ -80,11 +78,12 @@ public:
 	  * @param end end position in the input buffer
 	  * @param newPosition will receive the new position in the input buffer
 	  */
-	void parse
-		(const string& buffer,
-		 const size_t position,
-		 const size_t end,
-		 size_t* newPosition = NULL);
+	void parse(
+		const string& buffer,
+		const size_t position,
+		const size_t end,
+		size_t* newPosition = NULL
+	);
 
 	/** Parse RFC-822/MIME data for this component.
 	  *
@@ -94,12 +93,13 @@ public:
 	  * @param end end position in the input buffer
 	  * @param newPosition will receive the new position in the input buffer
 	  */
-	void parse
-		(const parsingContext& ctx,
-		 const string& buffer,
-		 const size_t position,
-		 const size_t end,
-		 size_t* newPosition = NULL);
+	void parse(
+		const parsingContext& ctx,
+		const string& buffer,
+		const size_t position,
+		const size_t end,
+		size_t* newPosition = NULL
+	);
 
 	/** Parse RFC-822/MIME data for this component. If stream is not seekable,
 	  * or if end position is not specified, entire contents of the stream will
@@ -111,11 +111,12 @@ public:
 	  * @param end end position in the input stream
 	  * @param newPosition will receive the new position in the input stream
 	  */
-	void parse
-		(shared_ptr <utility::inputStream> inputStream,
-		 const size_t position,
-		 const size_t end,
-		 size_t* newPosition = NULL);
+	void parse(
+		const shared_ptr <utility::inputStream>& inputStream,
+		const size_t position,
+		const size_t end,
+		size_t* newPosition = NULL
+	);
 
 	/** Parse RFC-822/MIME data for this component. If stream is not seekable,
 	  * or if end position is not specified, entire contents of the stream will
@@ -127,12 +128,13 @@ public:
 	  * @param end end position in the input stream
 	  * @param newPosition will receive the new position in the input stream
 	  */
-	void parse
-		(const parsingContext& ctx,
-		 shared_ptr <utility::inputStream> inputStream,
-		 const size_t position,
-		 const size_t end,
-		 size_t* newPosition = NULL);
+	void parse(
+		const parsingContext& ctx,
+		const shared_ptr <utility::inputStream>& inputStream,
+		const size_t position,
+		const size_t end,
+		size_t* newPosition = NULL
+	);
 
 	/** Generate RFC-2822/MIME data for this component.
 	  *
@@ -142,9 +144,10 @@ public:
 	  * @param curLinePos length of the current line in the output buffer
 	  * @return generated data
 	  */
-	virtual const string generate
-		(const size_t maxLineLength = lineLengthLimits::infinite,
-		 const size_t curLinePos = 0) const;
+	virtual const string generate(
+		const size_t maxLineLength = lineLengthLimits::infinite,
+		const size_t curLinePos = 0
+	) const;
 
 	/** Generate RFC-2822/MIME data for this component, using the default generation context.
 	  *
@@ -152,10 +155,11 @@ public:
 	  * @param curLinePos length of the current line in the output buffer
 	  * @param newLinePos will receive the new line position (length of the last line written)
 	  */
-	virtual void generate
-		(utility::outputStream& outputStream,
-		 const size_t curLinePos = 0,
-		 size_t* newLinePos = NULL) const;
+	virtual void generate(
+		utility::outputStream& outputStream,
+		const size_t curLinePos = 0,
+		size_t* newLinePos = NULL
+	) const;
 
 	/** Generate RFC-2822/MIME data for this component, using the default generation context.
 	  *
@@ -164,11 +168,12 @@ public:
 	  * @param curLinePos length of the current line in the output buffer
 	  * @param newLinePos will receive the new line position (length of the last line written)
 	  */
-	virtual void generate
-		(const generationContext& ctx,
-		 utility::outputStream& outputStream,
-		 const size_t curLinePos = 0,
-		 size_t* newLinePos = NULL) const;
+	virtual void generate(
+		const generationContext& ctx,
+		utility::outputStream& outputStream,
+		const size_t curLinePos = 0,
+		size_t* newLinePos = NULL
+	) const;
 
 	/** Clone this component.
 	  *
@@ -222,25 +227,28 @@ protected:
 	void setParsedBounds(const size_t start, const size_t end);
 
 	// AT LEAST ONE of these parseImpl() functions MUST be implemented in derived class
-	virtual void parseImpl
-		(const parsingContext& ctx,
-		 shared_ptr <utility::parserInputStreamAdapter> parser,
-		 const size_t position,
-		 const size_t end,
-		 size_t* newPosition = NULL);
+	virtual void parseImpl(
+		const parsingContext& ctx,
+		const shared_ptr <utility::parserInputStreamAdapter>& parser,
+		const size_t position,
+		const size_t end,
+		size_t* newPosition = NULL
+	);
 
-	virtual void parseImpl
-		(const parsingContext& ctx,
-		 const string& buffer,
-		 const size_t position,
-		 const size_t end,
-		 size_t* newPosition = NULL);
+	virtual void parseImpl(
+		const parsingContext& ctx,
+		const string& buffer,
+		const size_t position,
+		const size_t end,
+		size_t* newPosition = NULL
+	);
 
-	virtual void generateImpl
-		(const generationContext& ctx,
-		 utility::outputStream& os,
-		 const size_t curLinePos = 0,
-		 size_t* newLinePos = NULL) const = 0;
+	virtual void generateImpl(
+		const generationContext& ctx,
+		utility::outputStream& os,
+		const size_t curLinePos = 0,
+		size_t* newLinePos = NULL
+	) const = 0;
 
 private:
 

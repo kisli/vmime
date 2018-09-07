@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -42,28 +42,35 @@ namespace security {
 namespace sasl {
 
 
-XOAuth2SASLMechanism::XOAuth2SASLMechanism(shared_ptr <SASLContext> ctx, const string& /* name */)
-	: m_context(ctx), m_complete(false)
-{
+XOAuth2SASLMechanism::XOAuth2SASLMechanism(
+	const shared_ptr <SASLContext>& ctx,
+	const string& /* name */
+)
+	: m_context(ctx),
+	  m_complete(false) {
+
 }
 
 
-XOAuth2SASLMechanism::~XOAuth2SASLMechanism()
-{
+XOAuth2SASLMechanism::~XOAuth2SASLMechanism() {
+
 }
 
 
-const string XOAuth2SASLMechanism::getName() const
-{
+const string XOAuth2SASLMechanism::getName() const {
+
 	return "XOAUTH2";
 }
 
 
-bool XOAuth2SASLMechanism::step
-	(shared_ptr <SASLSession> sess,
-	 const byte_t* /* challenge */, const size_t /* challengeLen */,
-	 byte_t** response, size_t* responseLen)
-{
+bool XOAuth2SASLMechanism::step(
+	const shared_ptr <SASLSession>& sess,
+	const byte_t* /* challenge */,
+	const size_t /* challengeLen */,
+	byte_t** response,
+	size_t* responseLen
+) {
+
 	// Build initial response
 	//
 	// The SASL XOAUTH2 initial client response has the following format:
@@ -94,23 +101,26 @@ bool XOAuth2SASLMechanism::step
 }
 
 
-bool XOAuth2SASLMechanism::isComplete() const
-{
+bool XOAuth2SASLMechanism::isComplete() const {
+
 	return m_complete;
 }
 
 
-bool XOAuth2SASLMechanism::hasInitialResponse() const
-{
+bool XOAuth2SASLMechanism::hasInitialResponse() const {
+
 	return true;
 }
 
 
-void XOAuth2SASLMechanism::encode
-	(shared_ptr <SASLSession> /* sess */,
-	 const byte_t* input, const size_t inputLen,
-	 byte_t** output, size_t* outputLen)
-{
+void XOAuth2SASLMechanism::encode(
+	const shared_ptr <SASLSession>& /* sess */,
+	const byte_t* input,
+	const size_t inputLen,
+	byte_t** output,
+	size_t* outputLen
+) {
+
 	// No encoding performed, just copy input bytes
 	byte_t* res = new byte_t[inputLen];
 	std::copy(input, input + inputLen, res);
@@ -120,11 +130,14 @@ void XOAuth2SASLMechanism::encode
 }
 
 
-void XOAuth2SASLMechanism::decode
-	(shared_ptr <SASLSession> /* sess */,
-	 const byte_t* input, const size_t inputLen,
-	 byte_t** output, size_t* outputLen)
-{
+void XOAuth2SASLMechanism::decode(
+	const shared_ptr <SASLSession>& /* sess */,
+	const byte_t* input,
+	const size_t inputLen,
+	byte_t** output,
+	size_t* outputLen
+) {
+
 	// No decoding performed, just copy input bytes
 	byte_t* res = new byte_t[inputLen];
 	std::copy(input, input + inputLen, res);

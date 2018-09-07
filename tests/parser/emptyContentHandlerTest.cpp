@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -38,30 +38,30 @@ VMIME_TEST_SUITE_BEGIN(emptyContentHandlerTest)
 	VMIME_TEST_LIST_END
 
 
-	void testIsEmpty()
-	{
+	void testIsEmpty() {
+
 		vmime::emptyContentHandler cth;
 
 		VASSERT_TRUE("empty", cth.isEmpty());
 	}
 
-	void testGetLength()
-	{
+	void testGetLength() {
+
 		vmime::emptyContentHandler cth;
 
 		VASSERT_EQ("length", 0, cth.getLength());
 	}
 
-	void testIsEncoded()
-	{
+	void testIsEncoded() {
+
 		vmime::emptyContentHandler cth;
 
 		VASSERT_FALSE("encoded", cth.isEncoded());
 		VASSERT_EQ("encoding", vmime::contentHandler::NO_ENCODING, cth.getEncoding());
 	}
 
-	void testExtract()
-	{
+	void testExtract() {
+
 		vmime::emptyContentHandler cth;
 
 		std::ostringstream oss;
@@ -72,8 +72,8 @@ VMIME_TEST_SUITE_BEGIN(emptyContentHandlerTest)
 		VASSERT_EQ("extract", "", oss.str());
 	}
 
-	void testExtractRaw()
-	{
+	void testExtractRaw() {
+
 		vmime::emptyContentHandler cth;
 
 		std::ostringstream oss;
@@ -84,8 +84,8 @@ VMIME_TEST_SUITE_BEGIN(emptyContentHandlerTest)
 		VASSERT_EQ("extractRaw", "", oss.str());
 	}
 
-	void testGenerate()
-	{
+	void testGenerate() {
+
 		vmime::emptyContentHandler cth;
 
 		std::ostringstream oss;

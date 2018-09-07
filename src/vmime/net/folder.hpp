@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -58,17 +58,15 @@ class store;
 
 /** Abstract representation of a folder in a message store.
   */
+class VMIME_EXPORT folder : public object, public enable_shared_from_this <folder> {
 
-class VMIME_EXPORT folder : public object, public enable_shared_from_this <folder>
-{
 protected:
 
 	folder(const folder&) : object(), enable_shared_from_this <folder>() { }
 	folder() { }
 
 
-	enum PrivateConstants
-	{
+	enum PrivateConstants {
 		TYPE_UNDEFINED = 9999,      /**< Used internally to indicate type has not
 		                                 been initialized yet. */
 		FLAG_UNDEFINED = 9999       /**< Used internally to indicate flags have not
@@ -86,8 +84,7 @@ public:
 
 	/** Open mode.
 	  */
-	enum Modes
-	{
+	enum Modes {
 		MODE_READ_ONLY,    /**< Read-only mode (no modification to folder or messages is possible). */
 		MODE_READ_WRITE    /**< Full access mode (read and write). */
 	};
@@ -273,11 +270,12 @@ public:
 	  * support returning the number or UID of an added message)
 	  * @throw exceptions::net_exception if an error occurs
 	  */
-	virtual messageSet addMessage
-		(shared_ptr <vmime::message> msg,
-		 const int flags = -1,
-		 vmime::datetime* date = NULL,
-		 utility::progressListener* progress = NULL) = 0;
+	virtual messageSet addMessage(
+		const shared_ptr <vmime::message>& msg,
+		const int flags = -1,
+		vmime::datetime* date = NULL,
+		utility::progressListener* progress = NULL
+	) = 0;
 
 	/** Add a message to this folder.
 	  *
@@ -291,12 +289,13 @@ public:
 	  * support returning the number or UID of an added message)
 	  * @throw exceptions::net_exception if an error occurs
 	  */
-	virtual messageSet addMessage
-		(utility::inputStream& is,
-		 const size_t size,
-		 const int flags = -1,
-		 vmime::datetime* date = NULL,
-		 utility::progressListener* progress = NULL) = 0;
+	virtual messageSet addMessage(
+		utility::inputStream& is,
+		const size_t size,
+		const int flags = -1,
+		vmime::datetime* date = NULL,
+		utility::progressListener* progress = NULL
+	) = 0;
 
 	/** Copy messages from this folder to another folder.
 	  *
@@ -307,8 +306,10 @@ public:
 	  * support returning the number or UID of a copied message)
 	  * @throw exceptions::net_exception if an error occurs
 	  */
-	virtual messageSet copyMessages
-		(const folder::path& dest, const messageSet& msgs) = 0;
+	virtual messageSet copyMessages(
+		const folder::path& dest,
+		const messageSet& msgs
+	) = 0;
 
 	/** Request folder status without opening it.
 	  *
@@ -358,7 +359,11 @@ public:
 	  * @param progress progress listener, or NULL if not used
 	  * @throw exceptions::net_exception if an error occurs
 	  */
-	virtual void fetchMessages(std::vector <shared_ptr <message> >& msg, const fetchAttributes& attribs, utility::progressListener* progress = NULL) = 0;
+	virtual void fetchMessages(
+		std::vector <shared_ptr <message> >& msg,
+		const fetchAttributes& attribs,
+		utility::progressListener* progress = NULL
+	) = 0;
 
 	/** Fetch objects for the specified message.
 	  *
@@ -366,7 +371,10 @@ public:
 	  * @param attribs set of attributes to fetch
 	  * @throw exceptions::net_exception if an error occurs
 	  */
-	virtual void fetchMessage(shared_ptr <message> msg, const fetchAttributes& attribs) = 0;
+	virtual void fetchMessage(
+		const shared_ptr <message>& msg,
+		const fetchAttributes& attribs
+	) = 0;
 
 	/** Get new references to messages in this folder, given either their
 	  * sequence numbers or UIDs, and fetch objects for them at the same time.
@@ -378,8 +386,10 @@ public:
 	  * @see folder::getMessages()
 	  * @see folder::fetchMessages()
 	  */
-	virtual std::vector <shared_ptr <message> > getAndFetchMessages
-		(const messageSet& msgs, const fetchAttributes& attribs) = 0;
+	virtual std::vector <shared_ptr <message> > getAndFetchMessages(
+		const messageSet& msgs,
+		const fetchAttributes& attribs
+	) = 0;
 
 	/** Return the list of fetchable objects supported by
 	  * the underlying protocol (see folder::fetchAttributes).
@@ -408,10 +418,10 @@ public:
 
 protected:
 
-	void notifyMessageChanged(shared_ptr <events::messageChangedEvent> event);
-	void notifyMessageCount(shared_ptr <events::messageCountEvent> event);
-	void notifyFolder(shared_ptr <events::folderEvent> event);
-	void notifyEvent(shared_ptr <events::event> event);
+	void notifyMessageChanged(const shared_ptr <events::messageChangedEvent>& event);
+	void notifyMessageCount(const shared_ptr <events::messageCountEvent>& event);
+	void notifyFolder(const shared_ptr <events::folderEvent>& event);
+	void notifyEvent(const shared_ptr <events::event>& event);
 
 private:
 

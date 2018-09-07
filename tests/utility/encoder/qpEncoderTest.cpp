@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -38,10 +38,10 @@ VMIME_TEST_SUITE_BEGIN(qpEncoderTest)
 	VMIME_TEST_LIST_END
 
 
-	void testQuotedPrintable()
-	{
-		static const vmime::string testSuites[] =
-		{
+	void testQuotedPrintable() {
+
+		static const vmime::string testSuites[] = {
+
 			// Test 1
 			"",
 
@@ -94,8 +94,8 @@ VMIME_TEST_SUITE_BEGIN(qpEncoderTest)
 		};
 
 
-		for (unsigned int i = 0 ; i < sizeof(testSuites) / sizeof(testSuites[0]) / 2 ; ++i)
-		{
+		for (unsigned int i = 0 ; i < sizeof(testSuites) / sizeof(testSuites[0]) / 2 ; ++i) {
+
 			const vmime::string decoded = testSuites[i * 2];
 			const vmime::string encoded = testSuites[i * 2 + 1];
 
@@ -109,25 +109,36 @@ VMIME_TEST_SUITE_BEGIN(qpEncoderTest)
 			VASSERT_EQ(oss.str() + "decoding", decoded, decode("quoted-printable", encoded, 74));
 
 			// Multiple and successive encoding/decoding
-			VASSERT_EQ(oss.str() + "multiple1", decoded,
+			VASSERT_EQ(
+				oss.str() + "multiple1",
+				decoded,
 				decode("quoted-printable",
-					encode("quoted-printable", decoded)));
+					encode("quoted-printable", decoded))
+			);
 
-			VASSERT_EQ(oss.str() + "multiple2", decoded,
+			VASSERT_EQ(
+				oss.str() + "multiple2",
+				decoded,
 				decode("quoted-printable",
 					decode("quoted-printable",
 						encode("quoted-printable",
-							encode("quoted-printable", decoded)))));
+							encode("quoted-printable", decoded))))
+			);
 
-			VASSERT_EQ(oss.str() + "multiple3", decoded,
+			VASSERT_EQ(
+				oss.str() + "multiple3",
+				decoded,
 				decode("quoted-printable",
 					decode("quoted-printable",
 						decode("quoted-printable",
 							encode("quoted-printable",
 								encode("quoted-printable",
-									encode("quoted-printable", decoded)))))));
+									encode("quoted-printable", decoded))))))
+			);
 
-			VASSERT_EQ(oss.str() + "multiple4", decoded,
+			VASSERT_EQ(
+				oss.str() + "multiple4",
+				decoded,
 				decode("quoted-printable",
 					decode("quoted-printable",
 						decode("quoted-printable",
@@ -135,38 +146,50 @@ VMIME_TEST_SUITE_BEGIN(qpEncoderTest)
 								encode("quoted-printable",
 									encode("quoted-printable",
 										encode("quoted-printable",
-											encode("quoted-printable", decoded)))))))));
+											encode("quoted-printable", decoded))))))))
+			);
 
-			VASSERT(oss.str() + "encoded size",
+			VASSERT(
+				oss.str() + "encoded size",
 				getEncoder("quoted-printable")->getEncodedSize(decoded.length())
-				>= encode("quoted-printable", decoded).length());
+					>= encode("quoted-printable", decoded).length()
+			);
 
-			VASSERT(oss.str() + "decoded size",
+			VASSERT(
+				oss.str() + "decoded size",
 				getEncoder("quoted-printable")->getDecodedSize(encoded.length())
-				>= decode("quoted-printable", encoded).length());
+					>= decode("quoted-printable", encoded).length()
+			);
 		}
 	}
 
 	/** Tests Soft Line Breaks (RFC-2047/6.7(5). */
-	void testQuotedPrintable_SoftLineBreaks()
-	{
-		VASSERT_EQ("1", "Now's the time=\r\n"
-		                " for all folk =\r\n"
-		                "to come to the=\r\n"
-		                " aid of their =\r\n"
-		                "country.",
-		                encode("quoted-printable", "Now's the time for all folk "
-		                                           "to come to the aid of their country.", 15));
+	void testQuotedPrintable_SoftLineBreaks() {
+
+		VASSERT_EQ(
+			"1",
+			"Now's the time=\r\n"
+			" for all folk =\r\n"
+			"to come to the=\r\n"
+			" aid of their =\r\n"
+			"country.",
+			encode(
+				"quoted-printable",
+				"Now's the time for all folk "
+				"to come to the aid of their country.",
+				15
+			)
+		);
 	}
 
-	void testQuotedPrintable_HardLineBreakEncode()
-	{
+	void testQuotedPrintable_HardLineBreakEncode() {
+
 		const std::string data =
 			"If you believe that truth=beauty,"
 			" then surely mathematics\r\nis the most"
 			" beautiful branch of philosophy.";
 
-		const std::string expected = 
+		const std::string expected =
 			"If you believe that truth=3Dbeauty=\r\n"
 			", then surely mathematics\r\n"
 			"is the most beautiful branch of ph=\r\n"
@@ -178,14 +201,14 @@ VMIME_TEST_SUITE_BEGIN(qpEncoderTest)
 		VASSERT_EQ("1", expected, encode("quoted-printable", data, 35, encProps));
 	}
 
-	void testQuotedPrintable_HardLineBreakDecode()
-	{
+	void testQuotedPrintable_HardLineBreakDecode() {
+
 		const std::string expected =
 			"If you believe that truth=beauty,"
 			" then surely mathematics\r\nis the most"
 			" beautiful branch of philosophy.";
 
-		const std::string data = 
+		const std::string data =
 			"If you believe that truth=3Dbeauty=\r\n"
 			", then surely mathematics\r\n"
 			"is the most beautiful branch of ph=\r\n"
@@ -197,23 +220,29 @@ VMIME_TEST_SUITE_BEGIN(qpEncoderTest)
 
 	/** In text mode, ensure line breaks in QP-encoded text are represented
 	  * by a CRLF sequence, as per RFC-2047/6.7(4). */
-	void testQuotedPrintable_CRLF()
-	{
+	void testQuotedPrintable_CRLF() {
+
 		vmime::propertySet encProps;
 
 		// in "text" mode
 		encProps["text"] = true;
-		VASSERT_EQ("text", "line1\r\nline2",
-		           encode("quoted-printable", "line1\r\nline2", 80, encProps));
+		VASSERT_EQ(
+			"text",
+			"line1\r\nline2",
+			encode("quoted-printable", "line1\r\nline2", 80, encProps)
+		);
 
 		// in "binary" mode
 		encProps["text"] = false;
-		VASSERT_EQ("binary", "line1=0D=0Aline2",
-		           encode("quoted-printable", "line1\r\nline2", 80, encProps));
+		VASSERT_EQ(
+			"binary",
+			"line1=0D=0Aline2",
+			encode("quoted-printable", "line1\r\nline2", 80, encProps)
+		);
 	}
 
-	void testQuotedPrintable_RFC2047()
-	{
+	void testQuotedPrintable_RFC2047() {
+
 		/*
 		 * The RFC (http://tools.ietf.org/html/rfc2047#section-5) says:
 		 *
@@ -242,7 +271,5 @@ VMIME_TEST_SUITE_BEGIN(qpEncoderTest)
 		VASSERT_EQ("especials.11", "=5D", encode("quoted-printable", "]", 10, encProps));
 		VASSERT_EQ("especials.12", "=22", encode("quoted-printable", "\"", 10, encProps));
 	}
-
-	// TODO: UUEncode
 
 VMIME_TEST_SUITE_END

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -34,12 +34,11 @@
 #include "vmime/mediaType.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
-class VMIME_EXPORT contentHandler : public object
-{
+class VMIME_EXPORT contentHandler : public object {
+
 public:
 
 	/** Used to specify that enclosed data is not encoded. */
@@ -63,7 +62,11 @@ public:
 	  * @param enc encoding for output
 	  * @param maxLineLength maximum line length for output
 	  */
-	virtual void generate(utility::outputStream& os, const vmime::encoding& enc, const size_t maxLineLength = lineLengthLimits::infinite) const = 0;
+	virtual void generate(
+		utility::outputStream& os,
+		const vmime::encoding& enc,
+		const size_t maxLineLength = lineLengthLimits::infinite
+	) const = 0;
 
 	/** Extract the contents into the specified stream. If needed, data
 	  * will be decoded before being written into the stream.
@@ -74,7 +77,10 @@ public:
 	  * @param progress progress listener, or NULL if you do not
 	  * want to receive progress notifications
 	  */
-	virtual void extract(utility::outputStream& os, utility::progressListener* progress = NULL) const = 0;
+	virtual void extract(
+		utility::outputStream& os,
+		utility::progressListener* progress = NULL
+	) const = 0;
 
 	/** Extract the contents into the specified stream, without
 	  * decoding it. It may be useful in case the encoding is not
@@ -84,7 +90,10 @@ public:
 	  * @param progress progress listener, or NULL if you do not
 	  * want to receive progress notifications
 	  */
-	virtual void extractRaw(utility::outputStream& os, utility::progressListener* progress = NULL) const = 0;
+	virtual void extractRaw(
+		utility::outputStream& os,
+		utility::progressListener* progress = NULL
+	) const = 0;
 
 	/** Returns the actual length of data. WARNING: this can return 0 if no
 	  * length was specified when setting data of this object, or if the

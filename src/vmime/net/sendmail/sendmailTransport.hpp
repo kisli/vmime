@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -45,12 +45,15 @@ namespace sendmail {
 
 /** Sendmail local transport service.
   */
+class VMIME_EXPORT sendmailTransport : public transport {
 
-class VMIME_EXPORT sendmailTransport : public transport
-{
 public:
 
-	sendmailTransport(shared_ptr <session> sess, shared_ptr <security::authenticator> auth);
+	sendmailTransport(
+		const shared_ptr <session>& sess,
+		const shared_ptr <security::authenticator>& auth
+	);
+
 	~sendmailTransport();
 
 	const string getProtocolName() const;
@@ -64,13 +67,14 @@ public:
 
 	void noop();
 
-	void send
-		(const mailbox& expeditor,
-		 const mailboxList& recipients,
-		 utility::inputStream& is,
-		 const size_t size,
-		 utility::progressListener* progress = NULL,
-		 const mailbox& sender = mailbox());
+	void send(
+		const mailbox& expeditor,
+		const mailboxList& recipients,
+		utility::inputStream& is,
+		const size_t size,
+		utility::progressListener* progress = NULL,
+		const mailbox& sender = mailbox()
+	);
 
 	bool isSecuredConnection() const;
 	shared_ptr <connectionInfos> getConnectionInfos() const;
@@ -79,8 +83,12 @@ private:
 
 	void internalDisconnect();
 
-	void internalSend(const std::vector <string> args, utility::inputStream& is,
-		const size_t size, utility::progressListener* progress);
+	void internalSend(
+		const std::vector <string>& args,
+		utility::inputStream& is,
+		const size_t size,
+		utility::progressListener* progress
+	);
 
 
 	string m_sendmailPath;

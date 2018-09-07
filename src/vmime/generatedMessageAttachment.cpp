@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -26,62 +26,63 @@
 #include "vmime/utility/outputStreamAdapter.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
-generatedMessageAttachment::generatedMessageAttachment(shared_ptr <const bodyPart> part)
-	: m_bpa(make_shared <bodyPartAttachment>(part))
-{
+generatedMessageAttachment::generatedMessageAttachment(
+	const shared_ptr <const bodyPart>& part
+)
+	: m_bpa(make_shared <bodyPartAttachment>(part)) {
+
 }
 
 
-const mediaType generatedMessageAttachment::getType() const
-{
+const mediaType generatedMessageAttachment::getType() const {
+
 	return mediaType(mediaTypes::MESSAGE, mediaTypes::MESSAGE_RFC822);
 }
 
 
-const text generatedMessageAttachment::getDescription() const
-{
+const text generatedMessageAttachment::getDescription() const {
+
 	return m_bpa->getDescription();
 }
 
 
-const word generatedMessageAttachment::getName() const
-{
+const word generatedMessageAttachment::getName() const {
+
 	return m_bpa->getName();
 }
 
 
-const shared_ptr <const contentHandler> generatedMessageAttachment::getData() const
-{
+const shared_ptr <const contentHandler> generatedMessageAttachment::getData() const {
+
 	return m_bpa->getData();
 }
 
 
-const encoding generatedMessageAttachment::getEncoding() const
-{
+const encoding generatedMessageAttachment::getEncoding() const {
+
 	return m_bpa->getEncoding();
 }
 
 
-shared_ptr <const object> generatedMessageAttachment::getPart() const
-{
+shared_ptr <const object> generatedMessageAttachment::getPart() const {
+
 	return m_bpa->getPart();
 }
 
 
-shared_ptr <const header> generatedMessageAttachment::getHeader() const
-{
+shared_ptr <const header> generatedMessageAttachment::getHeader() const {
+
 	return m_bpa->getHeader();
 }
 
 
-shared_ptr <message> generatedMessageAttachment::getMessage() const
-{
-	if (m_msg == NULL)
-	{
+shared_ptr <message> generatedMessageAttachment::getMessage() const {
+
+	if (!m_msg) {
+
 		// Extract data
 		std::ostringstream oss;
 		utility::outputStreamAdapter os(oss);
@@ -97,8 +98,8 @@ shared_ptr <message> generatedMessageAttachment::getMessage() const
 }
 
 
-void generatedMessageAttachment::generateIn(shared_ptr <bodyPart> /* parent */) const
-{
+void generatedMessageAttachment::generateIn(const shared_ptr <bodyPart>& /* parent */) const {
+
 	// Not used (see 'parsedMessageAttachment')
 }
 

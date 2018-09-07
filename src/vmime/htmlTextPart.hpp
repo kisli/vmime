@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -32,15 +32,13 @@
 #include "vmime/contentHandler.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 /** Text part of type 'text/html'.
   */
+class VMIME_EXPORT htmlTextPart : public textPart {
 
-class VMIME_EXPORT htmlTextPart : public textPart
-{
 public:
 
 	htmlTextPart();
@@ -52,20 +50,18 @@ public:
 	void setCharset(const charset& ch);
 
 	shared_ptr <const contentHandler> getPlainText() const;
-	void setPlainText(shared_ptr <contentHandler> plainText);
+	void setPlainText(const shared_ptr <contentHandler>& plainText);
 
 	const shared_ptr <const contentHandler> getText() const;
-	void setText(shared_ptr <contentHandler> text);
+	void setText(const shared_ptr <contentHandler>& text);
 
 	/** Embedded object (eg: image for &lt;IMG> tag).
 	  */
-	class VMIME_EXPORT embeddedObject : public object
-	{
+	class VMIME_EXPORT embeddedObject : public object {
 	public:
 
 		/** The ways embedded objects can be referenced. */
-		enum ReferenceType
-		{
+		enum ReferenceType {
 			REFERENCED_BY_ID,         /**< Referenced by Content-Id. */
 			REFERENCED_BY_LOCATION    /**< Referenced by Content-Location. */
 		};
@@ -79,9 +75,13 @@ public:
 		  * @param refType reference type
 		  * @return a reference to a new embedded object
 		  */
-		embeddedObject(shared_ptr <contentHandler> data, const encoding& enc,
-		               const string& id, const mediaType& type,
-		               const ReferenceType refType);
+		embeddedObject(
+			const shared_ptr <contentHandler>& data,
+			const encoding& enc,
+			const string& id,
+			const mediaType& type,
+			const ReferenceType refType
+		);
 
 		/** Return data stored in this embedded object.
 		  *
@@ -185,7 +185,10 @@ public:
 	  * @return an unique object identifier used to identify the new
 	  * object among all other embedded objects
 	  */
-	shared_ptr <const embeddedObject> addObject(const string& data, const mediaType& type);
+	shared_ptr <const embeddedObject> addObject(
+		const string& data,
+		const mediaType& type
+	);
 
 	/** Embed an object and returns a string which identifies it.
 	  * The returned identifier is suitable for use in the 'src' attribute
@@ -196,7 +199,10 @@ public:
 	  * @return an unique object identifier used to identify the new
 	  * object among all other embedded objects
 	  */
-	shared_ptr <const embeddedObject> addObject(shared_ptr <contentHandler> data, const mediaType& type);
+	shared_ptr <const embeddedObject> addObject(
+		const shared_ptr <contentHandler>& data,
+		const mediaType& type
+	);
 
 	/** Embed an object and returns a string which identifies it.
 	  * The returned identifier is suitable for use in the 'src' attribute
@@ -208,13 +214,25 @@ public:
 	  * @return an unique object identifier used to identify the new
 	  * object among all other embedded objects
 	  */
-	shared_ptr <const embeddedObject> addObject(shared_ptr <contentHandler> data, const encoding& enc, const mediaType& type);
+	shared_ptr <const embeddedObject> addObject(
+		const shared_ptr <contentHandler>& data,
+		const encoding& enc,
+		const mediaType& type
+	);
 
 
 	size_t getPartCount() const;
 
-	void generateIn(shared_ptr <bodyPart> message, shared_ptr <bodyPart> parent) const;
-	void parse(shared_ptr <const bodyPart> message, shared_ptr <const bodyPart> parent, shared_ptr <const bodyPart> textPart);
+	void generateIn(
+		const shared_ptr <bodyPart>& message,
+		const shared_ptr <bodyPart>& parent
+	) const;
+
+	void parse(
+		const shared_ptr <const bodyPart>& message,
+		const shared_ptr <const bodyPart>& parent,
+		const shared_ptr <const bodyPart>& textPart
+	);
 
 private:
 
@@ -224,10 +242,23 @@ private:
 
 	std::vector <shared_ptr <embeddedObject> > m_objects;
 
-	void findEmbeddedParts(const bodyPart& part, std::vector <shared_ptr <const bodyPart> >& cidParts, std::vector <shared_ptr <const bodyPart> >& locParts);
-	void addEmbeddedObject(const bodyPart& part, const string& id, const embeddedObject::ReferenceType refType);
+	void findEmbeddedParts(
+		const bodyPart& part,
+		std::vector <shared_ptr <const bodyPart> >& cidParts,
+		std::vector <shared_ptr <const bodyPart> >& locParts
+	);
 
-	bool findPlainTextPart(const bodyPart& part, const bodyPart& parent, const bodyPart& textPart);
+	void addEmbeddedObject(
+		const bodyPart& part,
+		const string& id,
+		const embeddedObject::ReferenceType refType
+	);
+
+	bool findPlainTextPart(
+		const bodyPart& part,
+		const bodyPart& parent,
+		const bodyPart& textPart
+	);
 };
 
 

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -50,8 +50,8 @@ class SASLSession;
   * Usually, you should not inherit from this class, but instead from the
   * more convenient defaultSASLAuthenticator class.
   */
-class VMIME_EXPORT SASLAuthenticator : public authenticator
-{
+class VMIME_EXPORT SASLAuthenticator : public authenticator {
+
 public:
 
 	/** This method is called to allow the client to choose the
@@ -64,15 +64,16 @@ public:
 	  * @return ordered list of mechanism to use among the available
 	  * mechanisms (from the first to try to the last)
 	  */
-	virtual const std::vector <shared_ptr <SASLMechanism> > getAcceptableMechanisms
-		(const std::vector <shared_ptr <SASLMechanism> >& available,
-	         shared_ptr <SASLMechanism> suggested) const = 0;
+	virtual const std::vector <shared_ptr <SASLMechanism> > getAcceptableMechanisms(
+		const std::vector <shared_ptr <SASLMechanism> >& available,
+		const shared_ptr <SASLMechanism>& suggested
+	) const = 0;
 
 	/** Set the SASL session which is using this authenticator.
 	  *
 	  * @param sess SASL session
 	  */
-	virtual void setSASLSession(shared_ptr <SASLSession> sess) = 0;
+	virtual void setSASLSession(const shared_ptr <SASLSession>& sess) = 0;
 
 	/** Set the SASL mechanism which has been selected for the
 	  * SASL authentication process. This may be called several times
@@ -81,7 +82,7 @@ public:
 	  *
 	  * @param mech SASL mechanism
 	  */
-	virtual void setSASLMechanism(shared_ptr <SASLMechanism> mech) = 0;
+	virtual void setSASLMechanism(const shared_ptr <SASLMechanism>& mech) = 0;
 };
 
 
@@ -93,4 +94,3 @@ public:
 #endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_SASL_SUPPORT
 
 #endif // VMIME_SECURITY_SASL_SASLAUTHENTICATOR_HPP_INCLUDED
-

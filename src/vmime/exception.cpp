@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -35,31 +35,31 @@ const exception exception::NO_EXCEPTION;
 
 
 exception::exception()
-	: std::runtime_error(""), m_other(NULL)
-{
+	: std::runtime_error(""), m_other(NULL) {
+
 }
 
 
 exception::exception(const string& what, const exception& other)
-	: std::runtime_error(what), m_other(&other != &NO_EXCEPTION ? other.clone() : NULL)
-{
+	: std::runtime_error(what), m_other(&other != &NO_EXCEPTION ? other.clone() : NULL) {
+
 }
 
 
 exception::exception(const exception& e)
-	: std::runtime_error(e.what()), m_other(e.m_other == NULL ? NULL : e.m_other->clone())
-{
+	: std::runtime_error(e.what()), m_other(e.m_other == NULL ? NULL : e.m_other->clone()) {
+
 }
 
 
-exception::~exception() throw()
-{
-	delete (m_other);
+exception::~exception() throw() {
+
+	delete m_other;
 }
 
 
-void exception::chainException(const exception& other)
-{
+void exception::chainException(const exception& other) {
+
 	exception* e = other.clone();
 
 	delete m_other;
@@ -67,27 +67,26 @@ void exception::chainException(const exception& other)
 }
 
 
-const exception* exception::other() const throw()
-{
-	return (m_other);
+const exception* exception::other() const throw() {
+
+	return m_other;
 }
 
 
-const char* exception::name() const throw()
-{
+const char* exception::name() const throw() {
+
 	return "exception";
 }
 
 
-exception* exception::clone() const
-{
+exception* exception::clone() const {
+
 	return new exception(*this);
 }
 
 
 
-namespace exceptions
-{
+namespace exceptions {
 
 
 //

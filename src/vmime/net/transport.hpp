@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -51,12 +51,15 @@ namespace net {
 /** A transport service.
   * Encapsulate protocols that can send messages.
   */
+class VMIME_EXPORT transport : public service {
 
-class VMIME_EXPORT transport : public service
-{
 protected:
 
-	transport(shared_ptr <session> sess, const serviceInfos& infos, shared_ptr <security::authenticator> auth);
+	transport(
+		const shared_ptr <session>& sess,
+		const serviceInfos& infos,
+		const shared_ptr <security::authenticator>& auth
+	);
 
 public:
 
@@ -67,7 +70,10 @@ public:
 	  * @param msg message to send
 	  * @param progress progress listener, or NULL if not used
 	  */
-	virtual void send(shared_ptr <vmime::message> msg, utility::progressListener* progress = NULL);
+	virtual void send(
+		const shared_ptr <vmime::message>& msg,
+		utility::progressListener* progress = NULL
+	);
 
 	/** Send a message over this transport service.
 	  *
@@ -78,13 +84,14 @@ public:
 	  * @param progress progress listener, or NULL if not used
 	  * @param sender envelope sender (if empty, expeditor will be used)
 	  */
-	virtual void send
-		(const mailbox& expeditor,
-		 const mailboxList& recipients,
-		 utility::inputStream& is,
-		 const size_t size,
-		 utility::progressListener* progress = NULL,
-		 const mailbox& sender = mailbox()) = 0;
+	virtual void send(
+		const mailbox& expeditor,
+		const mailboxList& recipients,
+		utility::inputStream& is,
+		const size_t size,
+		utility::progressListener* progress = NULL,
+		const mailbox& sender = mailbox()
+	) = 0;
 
 	/** Send a message over this transport service.
 	  * The default implementation simply generates the whole message into
@@ -96,12 +103,13 @@ public:
 	  * @param progress progress listener, or NULL if not used
 	  * @param sender envelope sender (if empty, expeditor will be used)
 	  */
-	virtual void send
-		(shared_ptr <vmime::message> msg,
-		 const mailbox& expeditor,
-		 const mailboxList& recipients,
-		 utility::progressListener* progress = NULL,
-		 const mailbox& sender = mailbox());
+	virtual void send(
+		const shared_ptr <vmime::message>& msg,
+		const mailbox& expeditor,
+		const mailboxList& recipients,
+		utility::progressListener* progress = NULL,
+		const mailbox& sender = mailbox()
+	);
 
 
 	Type getType() const;
@@ -115,7 +123,7 @@ protected:
 	  * if the field is to be replaced, or a reference to the same headerField
 	  * that was passed if the field should be left as is
 	  */
-	shared_ptr <headerField> processHeaderField(shared_ptr <headerField> field);
+	shared_ptr <headerField> processHeaderField(const shared_ptr <headerField>& field);
 
 	/** Prepares the header before transmitting the message.
 	  * Removes headers that should not be present (eg. "Bcc", "Return-Path"),
@@ -124,7 +132,7 @@ protected:
 	  *
 	  * @param header headers to process
 	  */
-	void processHeader(shared_ptr <header> header);
+	void processHeader(const shared_ptr <header>& header);
 };
 
 

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -29,8 +29,8 @@ namespace vmime {
 namespace utility {
 
 
-const string urlUtils::encode(const string& s)
-{
+const string urlUtils::encode(const string& s) {
+
 	static const string RESERVED_CHARS =
 		/* reserved */ "$&+,/:;=?@"
 		/* unsafe */   "<>#%{}[]|\\^\"~`";
@@ -38,18 +38,18 @@ const string urlUtils::encode(const string& s)
 	string result;
 	result.reserve(s.length());
 
-	for (string::const_iterator it = s.begin() ; it != s.end() ; ++it)
-	{
+	for (string::const_iterator it = s.begin() ; it != s.end() ; ++it) {
+
 		const char c = *it;
 
 		if (parserHelpers::isPrint(c) && !parserHelpers::isSpace(c) &&
 		    static_cast <unsigned char>(c) <= 127 &&
-		    RESERVED_CHARS.find(c) == string::npos)
-		{
+		    RESERVED_CHARS.find(c) == string::npos) {
+
 			result += c;
-		}
-		else
-		{
+
+		} else {
+
 			char hex[4];
 			const unsigned char k = static_cast <unsigned char>(c);
 
@@ -62,70 +62,70 @@ const string urlUtils::encode(const string& s)
 		}
 	}
 
-	return (result);
+	return result;
 }
 
 
-const string urlUtils::decode(const string& s)
-{
+const string urlUtils::decode(const string& s) {
+
 	string result;
 	result.reserve(s.length());
 
-	for (string::const_iterator it = s.begin() ; it != s.end() ; )
-	{
+	for (string::const_iterator it = s.begin() ; it != s.end() ; ) {
+
 		const char c = *it;
 
-		switch (c)
-		{
-		case '%':
-		{
-			++it;  // skip '%'
+		switch (c) {
 
-			const char_t p = (it != s.end() ? *(it++) : 0);
-			const char_t q = (it != s.end() ? *(it++) : 0);
+			case '%': {
 
-			unsigned int r = 0;
+				++it;  // skip '%'
 
-			switch (p)
-			{
-			case 0: r = '%'; break;
-			case 'a': case 'A': r = 10; break;
-			case 'b': case 'B': r = 11; break;
-			case 'c': case 'C': r = 12; break;
-			case 'd': case 'D': r = 13; break;
-			case 'e': case 'E': r = 14; break;
-			case 'f': case 'F': r = 15; break;
-			default: r = p - '0'; break;
-			}
+				const char_t p = (it != s.end() ? *(it++) : 0);
+				const char_t q = (it != s.end() ? *(it++) : 0);
 
-			if (q != 0)
-			{
-				r *= 16;
+				unsigned int r = 0;
 
-				switch (q)
-				{
-				case 'a': case 'A': r += 10; break;
-				case 'b': case 'B': r += 11; break;
-				case 'c': case 'C': r += 12; break;
-				case 'd': case 'D': r += 13; break;
-				case 'e': case 'E': r += 14; break;
-				case 'f': case 'F': r += 15; break;
-				default: r += q - '0'; break;
+				switch (p) {
+
+					case 0: r = '%'; break;
+					case 'a': case 'A': r = 10; break;
+					case 'b': case 'B': r = 11; break;
+					case 'c': case 'C': r = 12; break;
+					case 'd': case 'D': r = 13; break;
+					case 'e': case 'E': r = 14; break;
+					case 'f': case 'F': r = 15; break;
+					default: r = p - '0'; break;
 				}
+
+				if (q != 0) {
+
+					r *= 16;
+
+					switch (q) {
+
+						case 'a': case 'A': r += 10; break;
+						case 'b': case 'B': r += 11; break;
+						case 'c': case 'C': r += 12; break;
+						case 'd': case 'D': r += 13; break;
+						case 'e': case 'E': r += 14; break;
+						case 'f': case 'F': r += 15; break;
+						default: r += q - '0'; break;
+					}
+				}
+
+				result += static_cast <char>(r);
+				break;
 			}
+			default:
 
-			result += static_cast <char>(r);
-			break;
-		}
-		default:
-
-			result += c;
-			++it;
-			break;
+				result += c;
+				++it;
+				break;
 		}
 	}
 
-	return (result);
+	return result;
 }
 
 

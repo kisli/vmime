@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -54,8 +54,8 @@ namespace smtp {
 
 /** A SMTP command, as sent to server.
   */
-class VMIME_EXPORT SMTPCommand : public object
-{
+class VMIME_EXPORT SMTPCommand : public object {
+
 public:
 
 	static shared_ptr <SMTPCommand> HELO(const string& hostname);
@@ -84,7 +84,7 @@ public:
 	  * @param sok socket to which the command will be written
 	  * @param tr tracer
 	  */
-	virtual void writeToSocket(shared_ptr <socket> sok, shared_ptr <tracer> tr);
+	virtual void writeToSocket(const shared_ptr <socket>& sok, shared_ptr <tracer> tr);
 
 	/** Returns the full text of the command, including command name
 	  * and parameters (if any).

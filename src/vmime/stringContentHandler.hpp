@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -28,8 +28,7 @@
 #include "vmime/contentHandler.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 class VMIME_EXPORT stringContentHandler : public contentHandler
@@ -37,9 +36,23 @@ class VMIME_EXPORT stringContentHandler : public contentHandler
 public:
 
 	stringContentHandler();
-	stringContentHandler(const string& buffer, const vmime::encoding& enc = NO_ENCODING);
-	stringContentHandler(const utility::stringProxy& str, const vmime::encoding& enc = NO_ENCODING);
-	stringContentHandler(const string& buffer, const size_t start, const size_t end, const vmime::encoding& enc = NO_ENCODING);
+
+	stringContentHandler(
+		const string& buffer,
+		const vmime::encoding& enc = NO_ENCODING
+	);
+
+	stringContentHandler(
+		const utility::stringProxy& str,
+		const vmime::encoding& enc = NO_ENCODING
+	);
+
+	stringContentHandler(
+		const string& buffer,
+		const size_t start,
+		const size_t end,
+		const vmime::encoding& enc = NO_ENCODING
+	);
 
 	~stringContentHandler();
 
@@ -58,13 +71,30 @@ public:
 	// encoding/decoding will be performed on generate()/extract()). Note that the
 	// data may be re-encoded (that is, decoded and encoded) if the encoding passed
 	// to generate() is different from this one...
-	void setData(const utility::stringProxy& str, const vmime::encoding& enc = NO_ENCODING);
-	void setData(const string& buffer, const vmime::encoding& enc = NO_ENCODING);
-	void setData(const string& buffer, const size_t start, const size_t end, const vmime::encoding& enc = NO_ENCODING);
+	void setData(
+		const utility::stringProxy& str,
+		const vmime::encoding& enc = NO_ENCODING
+	);
+
+	void setData(
+		const string& buffer,
+		const vmime::encoding& enc = NO_ENCODING
+	);
+
+	void setData(
+		const string& buffer,
+		const size_t start,
+		const size_t end,
+		const vmime::encoding& enc = NO_ENCODING
+	);
 
 	stringContentHandler& operator=(const string& buffer);
 
-	void generate(utility::outputStream& os, const vmime::encoding& enc, const size_t maxLineLength = lineLengthLimits::infinite) const;
+	void generate(
+		utility::outputStream& os,
+		const vmime::encoding& enc,
+		const size_t maxLineLength = lineLengthLimits::infinite
+	) const;
 
 	void extract(utility::outputStream& os, utility::progressListener* progress = NULL) const;
 	void extractRaw(utility::outputStream& os, utility::progressListener* progress = NULL) const;

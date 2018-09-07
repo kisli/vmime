@@ -26,7 +26,7 @@ You can simply build your program with:
 to use the static version, or with:
 
 \begin{verbatim}
-   $ g++ `pkg-config --cflags --libs vmime` -o myprog myprog.cpp
+   $ g++ `pkg-config --cflags vmime` -o myprog myprog.cpp `pkg-config --libs vmime`
 \end{verbatim}
 
 to use the shared version.
@@ -82,8 +82,8 @@ So, if your platform is POSIX, your program should look like this:
 #include <vmime/vmime.hpp>
 #include <vmime/platforms/posix/posixHandler.hpp>
 
-int main()
-{
+int main() {
+
    vmime::platform::
       setHandler <vmime::platforms::posix::posixHandler>();
 

@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -44,162 +44,186 @@ namespace net {
 namespace pop3 {
 
 
-POP3Message::POP3Message(shared_ptr <POP3Folder> folder, const size_t num)
-	: m_folder(folder), m_num(num), m_size(-1), m_deleted(false)
-{
+POP3Message::POP3Message(
+	const shared_ptr <POP3Folder>& folder,
+	const size_t num
+)
+	: m_folder(folder),
+	  m_num(num),
+	  m_size(-1),
+	  m_deleted(false) {
+
 	folder->registerMessage(this);
 }
 
 
-POP3Message::~POP3Message()
-{
-	try
-	{
+POP3Message::~POP3Message() {
+
+	try {
+
 		shared_ptr <POP3Folder> folder = m_folder.lock();
 
-		if (folder)
+		if (folder) {
 			folder->unregisterMessage(this);
-	}
-	catch (...)
-	{
+		}
+
+	} catch (...) {
+
 		// Don't throw in destructor
 	}
 }
 
 
-void POP3Message::onFolderClosed()
-{
+void POP3Message::onFolderClosed() {
+
 	m_folder.reset();
 }
 
 
-size_t POP3Message::getNumber() const
-{
-	return (m_num);
+size_t POP3Message::getNumber() const {
+
+	return m_num;
 }
 
 
-const message::uid POP3Message::getUID() const
-{
-	return (m_uid);
+const message::uid POP3Message::getUID() const {
+
+	return m_uid;
 }
 
 
-size_t POP3Message::getSize() const
-{
-	if (m_size == static_cast <size_t>(-1))
+size_t POP3Message::getSize() const {
+
+	if (m_size == static_cast <size_t>(-1)) {
 		throw exceptions::unfetched_object();
+	}
 
-	return (m_size);
+	return m_size;
 }
 
 
-bool POP3Message::isExpunged() const
-{
-	return (false);
+bool POP3Message::isExpunged() const {
+
+	return false;
 }
 
 
-int POP3Message::getFlags() const
-{
+int POP3Message::getFlags() const {
+
 	int flags = 0;
 
-	if (m_deleted)
+	if (m_deleted) {
 		flags |= FLAG_DELETED;
+	}
 
-	return (flags);
+	return flags;
 }
 
 
-shared_ptr <const messageStructure> POP3Message::getStructure() const
-{
+shared_ptr <const messageStructure> POP3Message::getStructure() const {
+
 	throw exceptions::operation_not_supported();
 }
 
 
-shared_ptr <messageStructure> POP3Message::getStructure()
-{
+shared_ptr <messageStructure> POP3Message::getStructure() {
+
 	throw exceptions::operation_not_supported();
 }
 
 
-shared_ptr <const header> POP3Message::getHeader() const
-{
-	if (m_header == NULL)
+shared_ptr <const header> POP3Message::getHeader() const {
+
+	if (!m_header) {
 		throw exceptions::unfetched_object();
+	}
 
-	return (m_header);
+	return m_header;
 }
 
 
-void POP3Message::extract
-	(utility::outputStream& os,
-	 utility::progressListener* progress,
-	 const size_t start, const size_t length,
-	 const bool /* peek */) const
-{
+void POP3Message::extract(
+	utility::outputStream& os,
+	utility::progressListener* progress,
+	const size_t start,
+	const size_t length,
+	const bool /* peek */
+) const {
+
 	shared_ptr <const POP3Folder> folder = m_folder.lock();
 
-	if (!folder)
+	if (!folder) {
 		throw exceptions::illegal_state("Folder closed");
-	else if (!folder->getStore())
+	} else if (!folder->getStore()) {
 		throw exceptions::illegal_state("Store disconnected");
+	}
 
-	if (start != 0 && length != static_cast <size_t>(-1))
+	if (start != 0 && length != static_cast <size_t>(-1)) {
 		throw exceptions::partial_fetch_not_supported();
+	}
 
 	// Emit the "RETR" command
-	shared_ptr <POP3Store> store = constCast <POP3Folder>(folder)->m_store.lock();
+	shared_ptr <POP3Store> store = folder->m_store.lock();
 
 	POP3Command::RETR(m_num)->send(store->getConnection());
 
-	try
-	{
-		POP3Response::readLargeResponse
-			(store->getConnection(), os, progress, m_size == static_cast <size_t>(-1) ? 0 : m_size);
-	}
-	catch (exceptions::command_error& e)
-	{
+	try {
+
+		POP3Response::readLargeResponse(
+			store->getConnection(), os, progress,
+			m_size == static_cast <size_t>(-1) ? 0 : m_size
+		);
+
+	} catch (exceptions::command_error& e) {
+
 		throw exceptions::command_error("RETR", e.response());
 	}
 }
 
 
-void POP3Message::extractPart
-	(shared_ptr <const messagePart> /* p */,
-	 utility::outputStream& /* os */,
-	 utility::progressListener* /* progress */,
-	 const size_t /* start */, const size_t /* length */,
-	 const bool /* peek */) const
-{
+void POP3Message::extractPart(
+	const shared_ptr <const messagePart>& /* p */,
+	utility::outputStream& /* os */,
+	utility::progressListener* /* progress */,
+	const size_t /* start */,
+	const size_t /* length */,
+	const bool /* peek */
+) const {
+
 	throw exceptions::operation_not_supported();
 }
 
 
-void POP3Message::fetchPartHeader(shared_ptr <messagePart> /* p */)
-{
+void POP3Message::fetchPartHeader(const shared_ptr <messagePart>& /* p */) {
+
 	throw exceptions::operation_not_supported();
 }
 
 
-void POP3Message::fetch(shared_ptr <POP3Folder> msgFolder, const fetchAttributes& options)
-{
+void POP3Message::fetch(
+	const shared_ptr <POP3Folder>& msgFolder,
+	const fetchAttributes& options
+) {
+
 	shared_ptr <POP3Folder> folder = m_folder.lock();
 
-	if (folder != msgFolder)
+	if (folder != msgFolder) {
 		throw exceptions::folder_not_found();
+	}
 
 	// STRUCTURE and FLAGS attributes are not supported by POP3
-	if (options.has(fetchAttributes::STRUCTURE | fetchAttributes::FLAGS))
+	if (options.has(fetchAttributes::STRUCTURE | fetchAttributes::FLAGS)) {
 		throw exceptions::operation_not_supported();
+	}
 
 	// Check for the real need to fetch the full header
 	static const int optionsRequiringHeader =
 		fetchAttributes::ENVELOPE | fetchAttributes::CONTENT_INFO |
 		fetchAttributes::FULL_HEADER | fetchAttributes::IMPORTANCE;
 
-	if (!options.has(optionsRequiringHeader))
+	if (!options.has(optionsRequiringHeader)) {
 		return;
+	}
 
 	// No need to differenciate between ENVELOPE, CONTENT_INFO, ...
 	// since POP3 only permits to retrieve the whole header and not
@@ -210,32 +234,34 @@ void POP3Message::fetch(shared_ptr <POP3Folder> msgFolder, const fetchAttributes
 
 	POP3Command::TOP(m_num, 0)->send(store->getConnection());
 
-	try
-	{
+	try {
+
 		string buffer;
 		utility::outputStreamStringAdapter bufferStream(buffer);
 
-		POP3Response::readLargeResponse(store->getConnection(),
-			bufferStream, /* progress */ NULL, /* predictedSize */ 0);
+		POP3Response::readLargeResponse(
+			store->getConnection(),
+			bufferStream, /* progress */ NULL, /* predictedSize */ 0
+		);
 
 		m_header = make_shared <header>();
 		m_header->parse(buffer);
-	}
-	catch (exceptions::command_error& e)
-	{
+
+	} catch (exceptions::command_error& e) {
+
 		throw exceptions::command_error("TOP", e.response());
 	}
 }
 
 
-void POP3Message::setFlags(const int /* flags */, const int /* mode */)
-{
+void POP3Message::setFlags(const int /* flags */, const int /* mode */) {
+
 	throw exceptions::operation_not_supported();
 }
 
 
-shared_ptr <vmime::message> POP3Message::getParsedMessage()
-{
+shared_ptr <vmime::message> POP3Message::getParsedMessage() {
+
 	std::ostringstream oss;
 	utility::outputStreamAdapter os(oss);
 

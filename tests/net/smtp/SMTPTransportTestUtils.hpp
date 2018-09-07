@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -24,20 +24,21 @@
 
 /** Accepts connection and fails on greeting.
   */
-class greetingErrorSMTPTestSocket : public lineBasedTestSocket
-{
+class greetingErrorSMTPTestSocket : public lineBasedTestSocket {
+
 public:
 
-	void onConnected()
-	{
+	void onConnected() {
+
 		localSend("421 test.vmime.org Service not available, closing transmission channel\r\n");
 		disconnect();
 	}
 
-	void processCommand()
-	{
-		if (!haveMoreLines())
+	void processCommand() {
+
+		if (!haveMoreLines()) {
 			return;
+		}
 
 		getNextLine();
 
@@ -52,12 +53,12 @@ public:
   * Test send().
   * Ensure MAIL and RCPT commands are sent correctly.
   */
-class MAILandRCPTSMTPTestSocket : public lineBasedTestSocket
-{
+class MAILandRCPTSMTPTestSocket : public lineBasedTestSocket {
+
 public:
 
-	MAILandRCPTSMTPTestSocket()
-	{
+	MAILandRCPTSMTPTestSocket() {
+
 		m_recipients.insert("recipient1@test.vmime.org");
 		m_recipients.insert("recipient2@test.vmime.org");
 		m_recipients.insert("recipient3@test.vmime.org");
@@ -66,60 +67,61 @@ public:
 		m_ehloSent = m_heloSent = m_mailSent = m_rcptSent = m_dataSent = m_quitSent = false;
 	}
 
-	~MAILandRCPTSMTPTestSocket()
-	{
+	~MAILandRCPTSMTPTestSocket() {
+
 		VASSERT("Client must send the DATA command", m_dataSent);
 		VASSERT("Client must send the QUIT command", m_quitSent);
 	}
 
-	void onConnected()
-	{
+	void onConnected() {
+
 		localSend("220 test.vmime.org Service ready\r\n");
 		processCommand();
 
 		m_state = STATE_COMMAND;
 	}
 
-	void processCommand()
-	{
-		if (!haveMoreLines())
+	void processCommand() {
+
+		if (!haveMoreLines()) {
 			return;
+		}
 
 		vmime::string line = getNextLine();
 		std::istringstream iss(line);
 
-		switch (m_state)
-		{
+		switch (m_state) {
+
 		case STATE_NOT_CONNECTED:
 
 			localSend("451 Requested action aborted: invalid state\r\n");
 			break;
 
-		case STATE_COMMAND:
-		{
+		case STATE_COMMAND: {
+
 			std::string cmd;
 			iss >> cmd;
 
-			if (cmd.empty())
-			{
+			if (cmd.empty()) {
+
 				localSend("500 Syntax error, command unrecognized\r\n");
-			}
-			else if (cmd == "EHLO")
-			{
+
+			} else if (cmd == "EHLO") {
+
 				localSend("502 Command not implemented\r\n");
 
 				m_ehloSent = true;
-			}
-			else if (cmd == "HELO")
-			{
+
+			} else if (cmd == "HELO") {
+
 				VASSERT("Client must send the EHLO command before HELO", m_ehloSent);
 
 				localSend("250 OK\r\n");
 
 				m_heloSent = true;
-			}
-			else if (cmd == "MAIL")
-			{
+
+			} else if (cmd == "MAIL") {
+
 				VASSERT("Client must send the HELO command", m_heloSent);
 				VASSERT("The MAIL command must be sent only one time", !m_mailSent);
 
@@ -128,9 +130,9 @@ public:
 				localSend("250 OK\r\n");
 
 				m_mailSent = true;
-			}
-			else if (cmd == "RCPT")
-			{
+
+			} else if (cmd == "RCPT") {
+
 				const vmime::size_t lt = line.find('<');
 				const vmime::size_t gt = line.find('>');
 
@@ -138,23 +140,25 @@ public:
 				VASSERT("RCPT >", gt != vmime::string::npos);
 				VASSERT("RCPT ><", gt >= lt);
 
-				const vmime::string recip = vmime::string
-					(line.begin() + lt + 1, line.begin() + gt);
+				const vmime::string recip =
+					vmime::string(line.begin() + lt + 1, line.begin() + gt);
 
 				std::set <vmime::string>::iterator it =
 					m_recipients.find(recip);
 
-				VASSERT(std::string("Recipient not found: '") + recip + "'",
-					it != m_recipients.end());
+				VASSERT(
+					std::string("Recipient not found: '") + recip + "'",
+					it != m_recipients.end()
+				);
 
 				m_recipients.erase(it);
 
 				localSend("250 OK, recipient accepted\r\n");
 
 				m_rcptSent = true;
-			}
-			else if (cmd == "DATA")
-			{
+
+			} else if (cmd == "DATA") {
+
 				VASSERT("Client must send the MAIL command", m_mailSent);
 				VASSERT("Client must send the RCPT command", m_rcptSent);
 				VASSERT("All recipients", m_recipients.empty());
@@ -165,35 +169,35 @@ public:
 				m_msgData.clear();
 
 				m_dataSent = true;
-			}
-			else if (cmd == "NOOP")
-			{
+
+			} else if (cmd == "NOOP") {
+
 				localSend("250 Completed\r\n");
-			}
-			else if (cmd == "QUIT")
-			{
+
+			} else if (cmd == "QUIT") {
+
 				m_quitSent = true;
 
 				localSend("221 test.vmime.org Service closing transmission channel\r\n");
-			}
-			else
-			{
+
+			} else {
+
 				localSend("502 Command not implemented\r\n");
 			}
 
 			break;
 		}
-		case STATE_DATA:
-		{
-			if (line == ".")
-			{
+		case STATE_DATA: {
+
+			if (line == ".") {
+
 				VASSERT_EQ("Data", "Message data\r\n", m_msgData);
 
 				localSend("250 Message accepted for delivery\r\n");
 				m_state = STATE_COMMAND;
-			}
-			else
-			{
+
+			} else {
+
 				m_msgData += line + "\r\n";
 			}
 
@@ -207,8 +211,7 @@ public:
 
 private:
 
-	enum State
-	{
+	enum State {
 		STATE_NOT_CONNECTED,
 		STATE_COMMAND,
 		STATE_DATA
@@ -230,45 +233,45 @@ private:
   *
   * Test CHUNKING extension/BDAT command.
   */
-class chunkingSMTPTestSocket : public testSocket
-{
+class chunkingSMTPTestSocket : public testSocket {
+
 public:
 
-	chunkingSMTPTestSocket()
-	{
+	chunkingSMTPTestSocket() {
+
 		m_state = STATE_NOT_CONNECTED;
 		m_bdatChunkCount = 0;
 		m_ehloSent = m_mailSent = m_rcptSent = m_quitSent = false;
 	}
 
-	~chunkingSMTPTestSocket()
-	{
+	~chunkingSMTPTestSocket() {
+
 		VASSERT_EQ("BDAT chunk count", 3, m_bdatChunkCount);
 		VASSERT("Client must send the QUIT command", m_quitSent);
 	}
 
-	void onConnected()
-	{
+	void onConnected() {
+
 		localSend("220 test.vmime.org Service ready\r\n");
 		processCommand();
 
 		m_state = STATE_COMMAND;
 	}
 
-	void onDataReceived()
-	{
-		if (m_state == STATE_DATA)
-		{
-			if (m_bdatChunkReceived != m_bdatChunkSize)
-			{
+	void onDataReceived() {
+
+		if (m_state == STATE_DATA) {
+
+			if (m_bdatChunkReceived != m_bdatChunkSize) {
+
 				const size_t remaining = m_bdatChunkSize - m_bdatChunkReceived;
 				const size_t received = localReceiveRaw(NULL, remaining);
 
 				m_bdatChunkReceived += received;
 			}
 
-			if (m_bdatChunkReceived == m_bdatChunkSize)
-			{
+			if (m_bdatChunkReceived == m_bdatChunkSize) {
+
 				m_state = STATE_COMMAND;
 			}
 		}
@@ -276,58 +279,59 @@ public:
 		processCommand();
 	}
 
-	void processCommand()
-	{
+	void processCommand() {
+
 		vmime::string line;
 
-		if (!localReceiveLine(line))
+		if (!localReceiveLine(line)) {
 			return;
+		}
 
 		std::istringstream iss(line);
 
-		switch (m_state)
-		{
+		switch (m_state) {
+
 		case STATE_NOT_CONNECTED:
 
 			localSend("451 Requested action aborted: invalid state\r\n");
 			break;
 
-		case STATE_COMMAND:
-		{
+		case STATE_COMMAND: {
+
 			std::string cmd;
 			iss >> cmd;
 
-			if (cmd == "EHLO")
-			{
+			if (cmd == "EHLO") {
+
 				localSend("250-test.vmime.org says hello\r\n");
 				localSend("250 CHUNKING\r\n");
 
 				m_ehloSent = true;
-			}
-			else if (cmd == "HELO")
-			{
+
+			} else if (cmd == "HELO") {
+
 				VASSERT("Client must not send the HELO command, as EHLO succeeded", false);
-			}
-			else if (cmd == "MAIL")
-			{
+
+			} else if (cmd == "MAIL") {
+
 				VASSERT("The MAIL command must be sent only one time", !m_mailSent);
 
 				localSend("250 OK\r\n");
 
 				m_mailSent = true;
-			}
-			else if (cmd == "RCPT")
-			{
+
+			} else if (cmd == "RCPT") {
+
 				localSend("250 OK, recipient accepted\r\n");
 
 				m_rcptSent = true;
-			}
-			else if (cmd == "DATA")
-			{
+
+			} else if (cmd == "DATA") {
+
 				VASSERT("BDAT must be used here!", false);
-			}
-			else if (cmd == "BDAT")
-			{
+
+			} else if (cmd == "BDAT") {
+
 				VASSERT("Client must send the MAIL command", m_mailSent);
 				VASSERT("Client must send the RCPT command", m_rcptSent);
 
@@ -337,23 +341,23 @@ public:
 				std::string last;
 				iss >> last;
 
-				if (m_bdatChunkCount == 0)
-				{
+				if (m_bdatChunkCount == 0) {
+
 					VASSERT_EQ("BDAT chunk1 size", 262144, chunkSize);
 					VASSERT_EQ("BDAT chunk1 last", "", last);
-				}
-				else if (m_bdatChunkCount == 1)
-				{
+
+				} else if (m_bdatChunkCount == 1) {
+
 					VASSERT_EQ("BDAT chunk2 size", 262144, chunkSize);
 					VASSERT_EQ("BDAT chunk2 last", "", last);
-				}
-				else if (m_bdatChunkCount == 2)
-				{
+
+				} else if (m_bdatChunkCount == 2) {
+
 					VASSERT_EQ("BDAT chunk3 size", 4712, chunkSize);
 					VASSERT_EQ("BDAT chunk3 last", "LAST", last);
-				}
-				else
-				{
+
+				} else {
+
 					VASSERT("No more BDAT command should be issued!", false);
 				}
 
@@ -363,19 +367,19 @@ public:
 				m_state = STATE_DATA;
 
 				localSend("250 chunk received\r\n");
-			}
-			else if (cmd == "NOOP")
-			{
+
+			} else if (cmd == "NOOP") {
+
 				localSend("250 Completed\r\n");
-			}
-			else if (cmd == "QUIT")
-			{
+
+			} else if (cmd == "QUIT") {
+
 				localSend("221 test.vmime.org Service closing transmission channel\r\n");
 
 				m_quitSent = true;
-			}
-			else
-			{
+
+			} else {
+
 				localSend("502 Command not implemented\r\n");
 			}
 
@@ -389,8 +393,7 @@ public:
 
 private:
 
-	enum State
-	{
+	enum State {
 		STATE_NOT_CONNECTED,
 		STATE_COMMAND,
 		STATE_DATA
@@ -404,22 +407,21 @@ private:
 };
 
 
-class SMTPTestMessage : public vmime::message
-{
+class SMTPTestMessage : public vmime::message {
+
 public:
 
-	vmime::size_t getChunkBufferSize() const
-	{
+	vmime::size_t getChunkBufferSize() const {
+
 		static vmime::net::smtp::SMTPChunkingOutputStreamAdapter chunkStream(vmime::null, 0, NULL);
 		return chunkStream.getBlockSize();
 	}
 
-	const std::vector <vmime::string>& getChunks() const
-	{
+	const std::vector <vmime::string>& getChunks() const {
+
 		static std::vector <vmime::string> chunks;
 
-		if (chunks.size() == 0)
-		{
+		if (chunks.size() == 0) {
 			chunks.push_back(vmime::string(1000, 'A'));
 			chunks.push_back(vmime::string(3000, 'B'));
 			chunks.push_back(vmime::string(500000, 'C'));
@@ -429,12 +431,15 @@ public:
 		return chunks;
 	}
 
-	void generateImpl
-		(const vmime::generationContext& /* ctx */, vmime::utility::outputStream& outputStream,
-		 const size_t /* curLinePos */ = 0, size_t* /* newLinePos */ = NULL) const
-	{
-		for (size_t i = 0, n = getChunks().size() ; i < n ; ++i)
-		{
+	void generateImpl(
+		const vmime::generationContext& /* ctx */,
+		vmime::utility::outputStream& outputStream,
+		const size_t /* curLinePos */ = 0,
+		size_t* /* newLinePos */ = NULL
+	) const {
+
+		for (size_t i = 0, n = getChunks().size() ; i < n ; ++i) {
+
 			const vmime::string& chunk = getChunks()[i];
 			outputStream.write(chunk.data(), chunk.size());
 		}
@@ -448,72 +453,74 @@ public:
   * Test SIZE extension.
   */
 template <bool WITH_CHUNKING>
-class bigMessageSMTPTestSocket : public testSocket
-{
+class bigMessageSMTPTestSocket : public testSocket {
+
 public:
 
-	bigMessageSMTPTestSocket()
-	{
+	bigMessageSMTPTestSocket() {
+
 		m_state = STATE_NOT_CONNECTED;
 		m_ehloSent = m_mailSent = m_rcptSent = m_quitSent = false;
 	}
 
-	~bigMessageSMTPTestSocket()
-	{
+	~bigMessageSMTPTestSocket() {
+
 		VASSERT("Client must send the QUIT command", m_quitSent);
 	}
 
-	void onConnected()
-	{
+	void onConnected() {
+
 		localSend("220 test.vmime.org Service ready\r\n");
 		processCommand();
 
 		m_state = STATE_COMMAND;
 	}
 
-	void onDataReceived()
-	{
+	void onDataReceived() {
+
 		processCommand();
 	}
 
-	void processCommand()
-	{
+	void processCommand() {
+
 		vmime::string line;
 
-		if (!localReceiveLine(line))
+		if (!localReceiveLine(line)) {
 			return;
+		}
 
 		std::istringstream iss(line);
 
-		switch (m_state)
-		{
+		switch (m_state) {
+
 		case STATE_NOT_CONNECTED:
 
 			localSend("451 Requested action aborted: invalid state\r\n");
 			break;
 
-		case STATE_COMMAND:
-		{
+		case STATE_COMMAND: {
+
 			std::string cmd;
 			iss >> cmd;
 
-			if (cmd == "EHLO")
-			{
+			if (cmd == "EHLO") {
+
 				localSend("250-test.vmime.org says hello\r\n");
 
-				if (WITH_CHUNKING)
+				if (WITH_CHUNKING) {
 					localSend("250-CHUNKING\r\n");
+				}
 
 				localSend("250 SIZE 1000000\r\n");
 
 				m_ehloSent = true;
-			}
-			else if (cmd == "HELO")
-			{
+
+			} else if (cmd == "HELO") {
+
 				VASSERT("Client must not send the HELO command, as EHLO succeeded", false);
-			}
-			else if (cmd == "MAIL")
-			{
+
+			} else if (cmd == "MAIL") {
+
 				VASSERT("The MAIL command must be sent only one time", !m_mailSent);
 
 				std::string address;
@@ -529,19 +536,19 @@ public:
 				localSend("552 Channel size limit exceeded\r\n");
 
 				m_mailSent = true;
-			}
-			else if (cmd == "NOOP")
-			{
+
+			} else if (cmd == "NOOP") {
+
 				localSend("250 Completed\r\n");
-			}
-			else if (cmd == "QUIT")
-			{
+
+			} else if (cmd == "QUIT") {
+
 				localSend("221 test.vmime.org Service closing transmission channel\r\n");
 
 				m_quitSent = true;
-			}
-			else
-			{
+
+			} else {
+
 				VASSERT("No other command should be sent", false);
 
 				localSend("502 Command not implemented\r\n");
@@ -557,8 +564,7 @@ public:
 
 private:
 
-	enum State
-	{
+	enum State {
 		STATE_NOT_CONNECTED,
 		STATE_COMMAND,
 		STATE_DATA
@@ -571,23 +577,216 @@ private:
 
 
 template <unsigned long SIZE>
-class SMTPBigTestMessage : public vmime::message
-{
+class SMTPBigTestMessage : public vmime::message {
+
 public:
 
-	size_t getGeneratedSize(const vmime::generationContext& /* ctx */)
-	{
+	size_t getGeneratedSize(const vmime::generationContext& /* ctx */) {
+
 		return SIZE;
 	}
 
-	void generateImpl(const vmime::generationContext& /* ctx */,
-		 vmime::utility::outputStream& outputStream,
-		 const vmime::size_t /* curLinePos */ = 0,
-		 vmime::size_t* /* newLinePos */ = NULL) const
-	{
-		for (unsigned int i = 0, n = SIZE ; i < n ; ++i)
+	void generateImpl(
+		const vmime::generationContext& /* ctx */,
+		vmime::utility::outputStream& outputStream,
+		const vmime::size_t /* curLinePos */ = 0,
+		vmime::size_t* /* newLinePos */ = NULL
+	) const {
+
+		for (unsigned int i = 0, n = SIZE ; i < n ; ++i) {
 			outputStream.write("X", 1);
+		}
 	}
 };
 
 typedef SMTPBigTestMessage <4194304> SMTPBigTestMessage4MB;
+
+
+
+/** SMTP test server for SMTPUTF8 extension.
+  */
+template <bool SUPPORTS_UTF8>
+class UTF8SMTPTestSocket : public lineBasedTestSocket {
+
+public:
+
+	UTF8SMTPTestSocket() {
+
+		if (SUPPORTS_UTF8) {
+
+			m_rcptLines.insert("RCPT TO:<recipient1@test.vmime.org>");
+			m_rcptLines.insert("RCPT TO:<recipient2@test.vmime.org>");
+			m_rcptLines.insert("RCPT TO:<récepteur@test.vmime.org>");
+
+		} else {
+
+			m_rcptLines.insert("RCPT TO:<recipient1@test.vmime.org>");
+			m_rcptLines.insert("RCPT TO:<recipient2@test.vmime.org>");
+			m_rcptLines.insert("RCPT TO:<=?utf-8?Q?r=C3=A9cepteur?=@test.vmime.org>");
+		}
+
+		m_state = STATE_NOT_CONNECTED;
+		m_ehloSent = m_mailSent = m_rcptSent = m_dataSent = m_quitSent = false;
+	}
+
+	~UTF8SMTPTestSocket() {
+
+	}
+
+	void onConnected() {
+
+		localSend("220 test.vmime.org Service ready\r\n");
+		processCommand();
+
+		m_state = STATE_COMMAND;
+	}
+
+	void processCommand() {
+
+		if (!haveMoreLines()) {
+			return;
+		}
+
+		vmime::string line = getNextLine();
+		std::istringstream iss(line);
+
+		switch (m_state) {
+
+		case STATE_NOT_CONNECTED:
+
+			localSend("451 Requested action aborted: invalid state\r\n");
+			break;
+
+		case STATE_COMMAND: {
+
+			std::string cmd;
+			iss >> cmd;
+
+			if (cmd.empty()) {
+
+				localSend("500 Syntax error, command unrecognized\r\n");
+
+			} else if (cmd == "EHLO") {
+
+				if (SUPPORTS_UTF8) {
+
+					localSend("250-test.vmime.org\r\n");
+					localSend("250 SMTPUTF8\r\n");
+
+				} else {
+
+					localSend("250 test.vmime.org\r\n");
+				}
+
+				m_ehloSent = true;
+
+			} else if (cmd == "HELO") {
+
+				VASSERT("Client must not send the HELO command, as EHLO succeeded", false);
+
+			} else if (cmd == "MAIL") {
+
+				VASSERT("Client must send the EHLO command", m_ehloSent);
+				VASSERT("The MAIL command must be sent only one time", !m_mailSent);
+
+				if (SUPPORTS_UTF8) {
+
+					VASSERT(
+						"MAIL",
+						   std::string("MAIL FROM:<expediteur@test.vmime.org> SMTPUTF8") == line
+						|| std::string("MAIL FROM:<expéditeur@test.vmime.org> SMTPUTF8") == line
+					);
+
+				} else {
+
+					VASSERT(
+						"MAIL",
+						   std::string("MAIL FROM:<expediteur@test.vmime.org>") == line
+						|| std::string("MAIL FROM:<=?utf-8?Q?exp=C3=A9diteur?=@test.vmime.org>") == line
+					);
+				}
+
+				localSend("250 OK\r\n");
+
+				m_mailSent = true;
+
+			} else if (cmd == "RCPT") {
+
+				std::set <vmime::string>::iterator it = m_rcptLines.find(line);
+
+				VASSERT(std::string("RCPT not found: '") + line + "'", it != m_rcptLines.end());
+
+				m_rcptLines.erase(it);
+
+				localSend("250 OK, recipient accepted\r\n");
+
+				m_rcptSent = true;
+
+			} else if (cmd == "DATA") {
+
+				VASSERT("Client must send the MAIL command", m_mailSent);
+				VASSERT("Client must send the RCPT command", m_rcptSent);
+				VASSERT("All recipients", m_rcptLines.empty());
+
+				localSend("354 Ready to accept data; end with <CRLF>.<CRLF>\r\n");
+
+				m_state = STATE_DATA;
+				m_msgData.clear();
+
+				m_dataSent = true;
+
+			} else if (cmd == "NOOP") {
+
+				localSend("250 Completed\r\n");
+
+			} else if (cmd == "QUIT") {
+
+				m_quitSent = true;
+
+				localSend("221 test.vmime.org Service closing transmission channel\r\n");
+
+			} else {
+
+				localSend("502 Command not implemented\r\n");
+			}
+
+			break;
+		}
+		case STATE_DATA: {
+
+			if (line == ".") {
+
+				VASSERT_EQ("Data", "Message data\r\n", m_msgData);
+
+				localSend("250 Message accepted for delivery\r\n");
+				m_state = STATE_COMMAND;
+
+			} else {
+
+				m_msgData += line + "\r\n";
+			}
+
+			break;
+		}
+
+		}
+
+		processCommand();
+	}
+
+private:
+
+	enum State {
+		STATE_NOT_CONNECTED,
+		STATE_COMMAND,
+		STATE_DATA
+	};
+
+	int m_state;
+
+	std::set <vmime::string> m_rcptLines;
+
+	std::string m_msgData;
+
+	bool m_ehloSent, m_mailSent, m_rcptSent, m_dataSent, m_quitSent;
+};

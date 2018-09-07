@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -39,8 +39,8 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 
 
 	// For Apple iCloud IMAP server
-	void testExtraSpaceInCapaResponse()
-	{
+	void testExtraSpaceInCapaResponse() {
+
 		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
 		vmime::shared_ptr <vmime::net::timeoutHandler> toh = vmime::make_shared <testTimeoutHandler>();
 
@@ -49,7 +49,8 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 
 		socket->localSend(
 			"* CAPABILITY IMAP4rev1 AUTH=ATOKEN AUTH=PLAIN \r\n"  // extra space at end
-			"a001 OK Capability completed.\r\n");
+			"a001 OK Capability completed.\r\n"
+		);
 
 		vmime::shared_ptr <vmime::net::imap::IMAPParser> parser =
 			vmime::make_shared <vmime::net::imap::IMAPParser>();
@@ -65,15 +66,16 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 
 		socket->localSend(
 			"* CAPABILITY IMAP4rev1 AUTH=ATOKEN AUTH=PLAIN \r\n"  // extra space at end
-			"a002 OK Capability completed.\r\n");
+			"a002 OK Capability completed.\r\n"
+		);
 
 		parser->setStrict(true);
 		VASSERT_THROW("strict mode", parser->readResponse(/* literalHandler */ NULL), vmime::exceptions::invalid_response);
 	}
 
 	// For Apple iCloud/Exchange IMAP server
-	void testContinueReqWithoutSpace()
-	{
+	void testContinueReqWithoutSpace() {
+
 		// continue_req   ::= "+" SPACE (resp_text / base64)
 		//
 		// Some servers do not send SPACE when response text is empty.
@@ -114,8 +116,8 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 	// that is running the Exchange Server 2007 IMAP4 service, a corrupted
 	// response is sent as a reply
 	// --> http://support.microsoft.com/kb/975918/en-us
-	void testNILValueInBodyFldEnc()
-	{
+	void testNILValueInBodyFldEnc() {
+
 		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
 		vmime::shared_ptr <vmime::net::timeoutHandler> toh = vmime::make_shared <testTimeoutHandler>();
 
@@ -145,13 +147,13 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 	}
 
 	// "body_fld_lang" is optional after "body_fld_dsp" in "body_ext_mpart" (Yahoo)
-	void testFETCHResponse_optional_body_fld_lang()
-	{
+	void testFETCHResponse_optional_body_fld_lang() {
+
 		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
 		vmime::shared_ptr <vmime::net::timeoutHandler> toh = vmime::make_shared <testTimeoutHandler>();
 
 		vmime::shared_ptr <vmime::net::imap::IMAPTag> tag =
-				vmime::make_shared <vmime::net::imap::IMAPTag>();
+			vmime::make_shared <vmime::net::imap::IMAPTag>();
 
 		const char* resp = "* 1 FETCH (UID 7 RFC822.SIZE 694142 BODYSTRUCTURE (((\"text\" \"plain\" (\"charset\" \"utf-8\") NIL NIL \"7bit\" 0 0 NIL NIL NIL NIL)(\"text\" \"html\" (\"charset\" \"utf-8\") NIL NIL \"7bit\" 193 0 NIL NIL NIL NIL) \"alternative\" (\"boundary\" \"----=_Part_536_109505883.1410847112666\") NIL)(\"image\" \"jpeg\" NIL \"<4db20d0e-e9f8-729b-aaf7-688b5956d0bc@yahoo.com>\" NIL \"base64\" 351784 NIL (\"attachment\" (\"name\" \"att2\" \"filename\" \"9.jpg\")) NIL NIL)(\"image\" \"jpeg\" NIL \"<542417d7-c0ed-db72-f9fc-d9ab2c7e0a6f@yahoo.com>\" NIL \"base64\" 337676 NIL (\"attachment\" (\"name\" \"att3\" \"filename\" \"10.jpg\")) NIL NIL) \"mixed\" (\"boundary\" \"----=_Part_537_1371134700.1410847112668\") NIL) RFC822.HEADER {3}\r\nx\r\n)\r\na001 OK FETCH complete\r\n";
 
@@ -169,8 +171,8 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 
 	// Support for NIL boundary, for mail.ru IMAP server:
 	// https://www.ietf.org/mail-archive/web/imapext/current/msg05442.html
-	void testFETCHBodyStructure_NIL_body_fld_param_value()
-	{
+	void testFETCHBodyStructure_NIL_body_fld_param_value() {
+
 		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
 		vmime::shared_ptr <vmime::net::timeoutHandler> toh = vmime::make_shared <testTimeoutHandler>();
 

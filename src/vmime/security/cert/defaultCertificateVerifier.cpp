@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -39,55 +39,61 @@ namespace security {
 namespace cert {
 
 
-defaultCertificateVerifier::defaultCertificateVerifier()
-{
+defaultCertificateVerifier::defaultCertificateVerifier() {
+
 }
 
 
-defaultCertificateVerifier::~defaultCertificateVerifier()
-{
+defaultCertificateVerifier::~defaultCertificateVerifier() {
+
 }
 
 
 defaultCertificateVerifier::defaultCertificateVerifier(const defaultCertificateVerifier&)
-	: certificateVerifier()
-{
+	: certificateVerifier() {
+
 	// Not used
 }
 
 
-void defaultCertificateVerifier::verify
-	(shared_ptr <certificateChain> chain, const string& hostname)
-{
-	if (chain->getCount() == 0)
+void defaultCertificateVerifier::verify(
+	const shared_ptr <certificateChain>& chain,
+	const string& hostname
+) {
+
+	if (chain->getCount() == 0) {
 		return;
+	}
 
 	const string type = chain->getAt(0)->getType();
 
-	if (type == "X.509")
+	if (type == "X.509") {
 		verifyX509(chain, hostname);
-	else
+	} else {
 		throw unsupportedCertificateTypeException(type);
+	}
 }
 
 
-void defaultCertificateVerifier::verifyX509
-	(shared_ptr <certificateChain> chain, const string& hostname)
-{
+void defaultCertificateVerifier::verifyX509(
+	const shared_ptr <certificateChain>& chain,
+	const string& hostname
+) {
+
 	// For every certificate in the chain, verify that the certificate
 	// has been issued by the next certificate in the chain
-	if (chain->getCount() >= 2)
-	{
-		for (size_t i = 0 ; i < chain->getCount() - 1 ; ++i)
-		{
+	if (chain->getCount() >= 2) {
+
+		for (size_t i = 0 ; i < chain->getCount() - 1 ; ++i) {
+
 			shared_ptr <X509Certificate> cert =
 				dynamicCast <X509Certificate>(chain->getAt(i));
 
 			shared_ptr <X509Certificate> next =
 				dynamicCast <X509Certificate>(chain->getAt(i + 1));
 
-			if (!cert->checkIssuer(next))
-			{
+			if (!cert->checkIssuer(next)) {
+
 				certificateIssuerVerificationException ex;
 				ex.setCertificate(cert);
 
@@ -98,8 +104,8 @@ void defaultCertificateVerifier::verifyX509
 
 	// For every certificate in the chain, verify that the certificate
 	// is valid at the current time
-	for (size_t i = 0 ; i < chain->getCount() ; ++i)
-	{
+	for (size_t i = 0 ; i < chain->getCount() ; ++i) {
+
 		shared_ptr <X509Certificate> cert =
 			dynamicCast <X509Certificate>(chain->getAt(i));
 
@@ -115,12 +121,13 @@ void defaultCertificateVerifier::verifyX509
 
 	bool trusted = false;
 
-	for (size_t i = 0 ; !trusted && i < m_x509RootCAs.size() ; ++i)
-	{
+	for (size_t i = 0 ; !trusted && i < m_x509RootCAs.size() ; ++i) {
+
 		shared_ptr <X509Certificate> rootCa = m_x509RootCAs[i];
 
-		if (lastCert->verify(rootCa))
+		if (lastCert->verify(rootCa)) {
 			trusted = true;
+		}
 	}
 
 	// -- Next, if the issuer certificate cannot be verified against
@@ -129,16 +136,17 @@ void defaultCertificateVerifier::verifyX509
 	shared_ptr <X509Certificate> firstCert =
 		dynamicCast <X509Certificate>(chain->getAt(0));
 
-	for (size_t i = 0 ; !trusted && i < m_x509TrustedCerts.size() ; ++i)
-	{
+	for (size_t i = 0 ; !trusted && i < m_x509TrustedCerts.size() ; ++i) {
+
 		shared_ptr <X509Certificate> cert = m_x509TrustedCerts[i];
 
-		if (firstCert->equals(cert))
+		if (firstCert->equals(cert)) {
 			trusted = true;
+		}
 	}
 
-	if (!trusted)
-	{
+	if (!trusted) {
+
 		certificateNotTrustedException ex;
 		ex.setCertificate(firstCert);
 
@@ -146,8 +154,8 @@ void defaultCertificateVerifier::verifyX509
 	}
 
 	// Ensure the first certificate's subject name matches server hostname
-	if (!firstCert->verifyHostName(hostname))
-	{
+	if (!firstCert->verifyHostName(hostname)) {
+
 		serverIdentityException ex;
 		ex.setCertificate(firstCert);
 
@@ -156,16 +164,18 @@ void defaultCertificateVerifier::verifyX509
 }
 
 
-void defaultCertificateVerifier::setX509RootCAs
-	(const std::vector <shared_ptr <X509Certificate> >& caCerts)
-{
+void defaultCertificateVerifier::setX509RootCAs(
+	const std::vector <shared_ptr <X509Certificate> >& caCerts
+) {
+
 	m_x509RootCAs = caCerts;
 }
 
 
-void defaultCertificateVerifier::setX509TrustedCerts
-	(const std::vector <shared_ptr <X509Certificate> >& trustedCerts)
-{
+void defaultCertificateVerifier::setX509TrustedCerts(
+	const std::vector <shared_ptr <X509Certificate> >& trustedCerts
+) {
+
 	m_x509TrustedCerts = trustedCerts;
 }
 

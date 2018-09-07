@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -39,12 +39,11 @@ namespace mdn {
 /** Holds information about a Message Disposition Notification (MDN)
   * that has been received.
   */
+class VMIME_EXPORT receivedMDNInfos : public MDNInfos {
 
-class VMIME_EXPORT receivedMDNInfos : public MDNInfos
-{
 public:
 
-	receivedMDNInfos(const shared_ptr <const message> msg);
+	receivedMDNInfos(const shared_ptr <const message>& msg);
 	receivedMDNInfos(const receivedMDNInfos& other);
 
 	receivedMDNInfos& operator=(const receivedMDNInfos& other);

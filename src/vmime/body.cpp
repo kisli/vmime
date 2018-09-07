@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -39,75 +39,81 @@
 #include "vmime/streamContentHandler.hpp"
 
 
-namespace vmime
-{
+namespace vmime {
 
 
 body::body()
-	: m_contents(make_shared <emptyContentHandler>())
-{
+	: m_contents(make_shared <emptyContentHandler>()) {
+
 }
 
 
-body::~body()
-{
+body::~body() {
+
 }
 
 
 // static
-size_t body::findNextBoundaryPosition
-	(shared_ptr <utility::parserInputStreamAdapter> parser, const string& boundary,
-	 const size_t position, const size_t end,
-	 size_t* boundaryStart, size_t* boundaryEnd)
-{
+size_t body::findNextBoundaryPosition(
+	const shared_ptr <utility::parserInputStreamAdapter>& parser,
+	const string& boundary,
+	const size_t position,
+	const size_t end,
+	size_t* boundaryStart,
+	size_t* boundaryEnd
+) {
+
 	size_t pos = position;
 
-	while (pos != npos && pos < end)
-	{
+	while (pos != npos && pos < end) {
+
 		pos = parser->findNext(boundary, pos);
 
-		if (pos == npos)
+		if (pos == npos) {
 			break;  // not found
+		}
 
-		if (pos != 0)
-		{
+		if (pos != 0) {
+
 			// Skip transport padding bytes (SPACE or HTAB), if any
 			size_t advance = 0;
 
-			while (pos != 0)
-			{
+			while (pos != 0) {
+
 				parser->seek(pos - advance - 1);
 
 				const byte_t c = parser->peekByte();
 
-				if (c == ' ' || c == '\t')
+				if (c == ' ' || c == '\t') {
 					++advance;
-				else
+				} else {
 					break;
+				}
 			}
 
 			// Ensure the bytes before boundary are "[LF]--": boundary should be
 			// at the beginning of a line, and should start with "--"
-			if (pos - advance >= 3)
-			{
+			if (pos - advance >= 3) {
+
 				parser->seek(pos - advance - 3);
 
-				if (parser->matchBytes("\n--", 3))
-				{
+				if (parser->matchBytes("\n--", 3)) {
+
 					parser->seek(pos + boundary.length());
 
 					const byte_t next = parser->peekByte();
 
 					// Boundary should be followed by a new line or a dash
-					if (next == '\r' || next == '\n' || next == '-')
-					{
+					if (next == '\r' || next == '\n' || next == '-') {
+
 						// Get rid of the "[CR]" just before "[LF]--", if any
-						if (pos - advance >= 4)
-						{
+						if (pos - advance >= 4) {
+
 							parser->seek(pos - advance - 4);
 
-							if (parser->peekByte() == '\r')
+							if (parser->peekByte() == '\r') {
 								advance++;
+							}
 						}
 
 						*boundaryStart = pos - advance - 3;
@@ -127,23 +133,26 @@ size_t body::findNextBoundaryPosition
 }
 
 
-void body::parseImpl
-	(const parsingContext& ctx,
-	 shared_ptr <utility::parserInputStreamAdapter> parser,
-	 const size_t position, const size_t end, size_t* newPosition)
-{
+void body::parseImpl(
+	const parsingContext& ctx,
+	const shared_ptr <utility::parserInputStreamAdapter>& parser,
+	const size_t position,
+	const size_t end,
+	size_t* newPosition
+) {
+
 	removeAllParts();
 
 	m_prologText.clear();
 	m_epilogText.clear();
 
-	if (end == position)
-	{
+	if (end == position) {
 
 		setParsedBounds(position, end);
 
-		if (newPosition)
+		if (newPosition) {
 			*newPosition = end;
+		}
 
 		return;
 	}
@@ -156,40 +165,41 @@ void body::parseImpl
 	shared_ptr <const contentTypeField> ctf =
 		m_part->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
 
-	if (ctf)
-	{
+	if (ctf) {
+
 		const mediaType type = *ctf->getValue <mediaType>();
 
-		if (type.getType() == mediaTypes::MULTIPART)
-		{
+		if (type.getType() == mediaTypes::MULTIPART) {
+
 			isMultipart = true;
 
-			if (ctf->hasBoundary())
-			{
+			if (ctf->hasBoundary()) {
+
 				boundary = ctf->getBoundary();
-			}
-			else
-			{
+
+			} else {
+
 				// No "boundary" parameter specified: we can try to
 				// guess it by scanning the body contents...
 				size_t pos = position;
 
 				parser->seek(pos);
 
-				if (pos + 2 < end && parser->matchBytes("--", 2))
-				{
+				if (pos + 2 < end && parser->matchBytes("--", 2)) {
+
 					pos += 2;
-				}
-				else
-				{
+
+				} else {
+
 					pos = parser->findNext("\n--", position);
 
-					if ((pos != npos) && (pos + 3 < end))
+					if ((pos != npos) && (pos + 3 < end)) {
 						pos += 3;  // skip \n--
+					}
 				}
 
-				if ((pos != npos) && (pos < end))
-				{
+				if ((pos != npos) && (pos < end)) {
+
 					parser->seek(pos);
 
 					// Read some bytes after boundary separator
@@ -202,8 +212,9 @@ void body::parseImpl
 					// Skip transport padding bytes (SPACE or HTAB), if any
 					size_t boundarySkip = 0;
 
-					while (boundarySkip < bufferLen && parserHelpers::isSpace(buffer[boundarySkip]))
+					while (boundarySkip < bufferLen && parserHelpers::isSpace(buffer[boundarySkip])) {
 						++boundarySkip;
+					}
 
 					// Extract boundary from buffer (stop at first CR or LF).
 					// We have to stop after a reasonnably long boundary length (100)
@@ -213,26 +224,27 @@ void body::parseImpl
 
 					for (byte_t c = buffer[boundarySkip] ;
 					     boundaryLen < bufferLen && boundaryLen < 100 && !(c == '\r' || c == '\n') ;
-					     ++boundaryLen, c = buffer[boundarySkip + boundaryLen])
-					{
+					     ++boundaryLen, c = buffer[boundarySkip + boundaryLen]) {
+
 						boundaryBytes[boundaryLen] = c;
 					}
 
-					if (boundaryLen >= 1 && boundaryLen < 100)
-					{
+					if (boundaryLen >= 1 && boundaryLen < 100) {
+
 						// RFC #1521, Page 31:
 						// "...the boundary parameter, which consists of 1 to 70
 						//  characters from a set of characters known to be very
 						//  robust through email gateways, and NOT ending with
 						//  white space..."
 						while (boundaryLen != 0 &&
-						       parserHelpers::isSpace(boundaryBytes[boundaryLen - 1]))
-						{
+						       parserHelpers::isSpace(boundaryBytes[boundaryLen - 1])) {
+
 							boundaryLen--;
 						}
 
-						if (boundaryLen >= 1)
+						if (boundaryLen >= 1) {
 							boundary = string(boundaryBytes, boundaryBytes + boundaryLen);
+						}
 					}
 				}
 			}
@@ -240,8 +252,8 @@ void body::parseImpl
  	}
 
 	// This is a multi-part body
-	if (isMultipart && !boundary.empty())
-	{
+	if (isMultipart && !boundary.empty()) {
+
 		size_t partStart = position;
 		size_t pos = position;
 
@@ -251,15 +263,15 @@ void body::parseImpl
 		size_t boundaryStart, boundaryEnd;
 		pos = findNextBoundaryPosition(parser, boundary, pos, end, &boundaryStart, &boundaryEnd);
 
-		for (int index = 0 ; !lastPart && (pos != npos) && (pos < end) ; ++index)
-		{
+		for (int index = 0 ; !lastPart && (pos != npos) && (pos < end) ; ++index) {
+
 			size_t partEnd = boundaryStart;
 
 			// Check whether it is the last part (boundary terminated by "--")
 			parser->seek(boundaryEnd);
 
-			if (boundaryEnd + 1 < end && parser->matchBytes("--", 2))
-			{
+			if (boundaryEnd + 1 < end && parser->matchBytes("--", 2)) {
+
 				lastPart = true;
 				boundaryEnd += 2;
 			}
@@ -272,37 +284,35 @@ void body::parseImpl
 			boundaryEnd += parser->skipIf(parserHelpers::isSpaceOrTab, end);
 
 			// End of boundary line
-			if (boundaryEnd + 1 < end && parser->matchBytes("\r\n", 2))
-			{
+			if (boundaryEnd + 1 < end && parser->matchBytes("\r\n", 2)) {
 				boundaryEnd += 2;
-			}
-			else if (boundaryEnd < end && parser->peekByte() == '\n')
-			{
+			} else if (boundaryEnd < end && parser->peekByte() == '\n') {
 				++boundaryEnd;
 			}
 
-			if (index == 0)
-			{
-				if (partEnd > partStart)
-				{
+			if (index == 0) {
+
+				if (partEnd > partStart) {
+
 					vmime::text text;
 					text.parse(ctx, parser, partStart, partEnd);
 
 					m_prologText = text.getWholeBuffer();
-				}
-				else
-				{
+
+				} else {
+
 					m_prologText = "";
 				}
-			}
-			else // index > 0
-			{
+
+			} else {  // index > 0
+
 				shared_ptr <bodyPart> part = m_part->createChildPart();
 
 				// End before start may happen on empty bodyparts (directly
 				// successive boundaries without even a line-break)
-				if (partEnd < partStart)
+				if (partEnd < partStart) {
 					std::swap(partStart, partEnd);
+				}
 
 				part->parse(ctx, parser, partStart, partEnd, NULL);
 
@@ -312,51 +322,49 @@ void body::parseImpl
 			partStart = boundaryEnd;
 
 			// Find the next boundary
-			pos = findNextBoundaryPosition
-				(parser, boundary, boundaryEnd, end, &boundaryStart, &boundaryEnd);
+			pos = findNextBoundaryPosition(
+				parser, boundary, boundaryEnd, end, &boundaryStart, &boundaryEnd
+			);
 		}
 
 		m_contents = make_shared <emptyContentHandler>();
 
 		// Last part was not found: recover from missing boundary
-		if (!lastPart && pos == npos)
-		{
+		if (!lastPart && pos == npos) {
+
 			shared_ptr <bodyPart> part = m_part->createChildPart();
 
-			try
-			{
+			try {
 				part->parse(ctx, parser, partStart, end);
-			}
-			catch (std::exception&)
-			{
+			} catch (std::exception&) {
 				throw;
 			}
 
 			m_parts.push_back(part);
-		}
+
 		// Treat remaining text as epilog
-		else if (partStart < end)
-		{
+		} else if (partStart < end) {
+
 			vmime::text text;
 			text.parse(ctx, parser, partStart, end);
 
 			m_epilogText = text.getWholeBuffer();
 		}
-	}
+
 	// Treat the contents as 'simple' data
-	else
-	{
+	} else {
+
 		encoding enc;
 
 		shared_ptr <const headerField> cef =
 			m_part->getHeader()->findField(fields::CONTENT_TRANSFER_ENCODING);
 
-		if (cef)
-		{
+		if (cef) {
+
 			enc = *cef->getValue <encoding>();
-		}
-		else
-		{
+
+		} else {
+
 			// Defaults to "7bit" (RFC-1521)
 			enc = vmime::encoding(encodingTypes::SEVEN_BIT);
 		}
@@ -365,21 +373,23 @@ void body::parseImpl
 		const size_t length = end - position;
 
 		shared_ptr <utility::inputStream> contentStream =
-			make_shared <utility::seekableInputStreamRegionAdapter>
-				(parser->getUnderlyingStream(), position, length);
+			make_shared <utility::seekableInputStreamRegionAdapter>(
+				parser->getUnderlyingStream(), position, length
+			);
 
 		m_contents = make_shared <streamContentHandler>(contentStream, length, enc);
 	}
 
 	setParsedBounds(position, end);
 
-	if (newPosition)
+	if (newPosition) {
 		*newPosition = end;
+	}
 }
 
 
-text body::getActualPrologText(const generationContext& ctx) const
-{
+text body::getActualPrologText(const generationContext& ctx) const {
+
 	const string& prologText =
 		m_prologText.empty()
 			? (isRootPart()
@@ -388,15 +398,16 @@ text body::getActualPrologText(const generationContext& ctx) const
 			  )
 			: m_prologText;
 
-	if (prologText.empty())
+	if (prologText.empty()) {
 		return text();
-	else
+	} else {
 		return text(prologText, vmime::charset("us-ascii"));
+	}
 }
 
 
-text body::getActualEpilogText(const generationContext& ctx) const
-{
+text body::getActualEpilogText(const generationContext& ctx) const {
+
 	const string& epilogText =
 		m_epilogText.empty()
 			? (isRootPart()
@@ -405,47 +416,51 @@ text body::getActualEpilogText(const generationContext& ctx) const
 			  )
 			: m_epilogText;
 
-	if (epilogText.empty())
+	if (epilogText.empty()) {
 		return text();
-	else
+	} else {
 		return text(epilogText, vmime::charset("us-ascii"));
+	}
 }
 
 
-void body::generateImpl
-	(const generationContext& ctx, utility::outputStream& os,
-	 const size_t /* curLinePos */, size_t* newLinePos) const
-{
+void body::generateImpl(
+	const generationContext& ctx,
+	utility::outputStream& os,
+	const size_t /* curLinePos */,
+	size_t* newLinePos
+) const {
+
 	// MIME-Multipart
-	if (getPartCount() != 0)
-	{
+	if (getPartCount() != 0) {
+
 		string boundary;
 
-		if (!m_part)
-		{
+		if (!m_part) {
+
 			boundary = generateRandomBoundaryString();
-		}
-		else
-		{
+
+		} else {
+
 			// Use current boundary string, if specified. If no "Content-Type" field is
 			// present, or the boundary is not specified, generate a random one
 			shared_ptr <contentTypeField> ctf =
 				m_part->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
 
-			if (ctf)
-			{
-				if (ctf->hasBoundary())
-				{
+			if (ctf) {
+
+				if (ctf->hasBoundary()) {
+
 					boundary = ctf->getBoundary();
-				}
-				else
-				{
+
+				} else {
+
 					// No boundary string specified
 					boundary = generateRandomBoundaryString();
 				}
-			}
-			else
-			{
+
+			} else {
+
 				// No Content-Type (and no boundary string specified)
 				boundary = generateRandomBoundaryString();
 			}
@@ -454,18 +469,20 @@ void body::generateImpl
 		const text prologText = getActualPrologText(ctx);
 		const text epilogText = getActualEpilogText(ctx);
 
-		if (!prologText.isEmpty())
-		{
-			prologText.encodeAndFold(ctx, os, 0,
-				NULL, text::FORCE_NO_ENCODING | text::NO_NEW_LINE_SEQUENCE);
+		if (!prologText.isEmpty()) {
+
+			prologText.encodeAndFold(
+				ctx, os, 0, NULL,
+				text::FORCE_NO_ENCODING | text::NO_NEW_LINE_SEQUENCE
+			);
 
 			os << CRLF;
 		}
 
 		os << "--" << boundary;
 
-		for (size_t p = 0 ; p < getPartCount() ; ++p)
-		{
+		for (size_t p = 0 ; p < getPartCount() ; ++p) {
+
 			os << CRLF;
 
 			getPartAt(p)->generate(ctx, os, 0);
@@ -475,20 +492,23 @@ void body::generateImpl
 
 		os << "--" << CRLF;
 
-		if (!epilogText.isEmpty())
-		{
-			epilogText.encodeAndFold(ctx, os, 0,
-				NULL, text::FORCE_NO_ENCODING | text::NO_NEW_LINE_SEQUENCE);
+		if (!epilogText.isEmpty()) {
+
+			epilogText.encodeAndFold(
+				ctx, os, 0, NULL,
+				text::FORCE_NO_ENCODING | text::NO_NEW_LINE_SEQUENCE
+			);
 
 			os << CRLF;
 		}
 
-		if (newLinePos)
+		if (newLinePos) {
 			*newLinePos = 0;
-	}
+		}
+
 	// Simple body
-	else
-	{
+	} else {
+
 		// Generate the contents
 		shared_ptr <contentHandler> contents = m_contents->clone();
 		contents->setContentTypeHint(getContentType());
@@ -498,16 +518,15 @@ void body::generateImpl
 }
 
 
-size_t body::getGeneratedSize(const generationContext& ctx)
-{
+size_t body::getGeneratedSize(const generationContext& ctx) {
+
 	// MIME-Multipart
-	if (getPartCount() != 0)
-	{
+	if (getPartCount() != 0) {
+
 		size_t size = 0;
 
 		// Size of parts and boundaries
-		for (size_t p = 0 ; p < getPartCount() ; ++p)
-		{
+		for (size_t p = 0 ; p < getPartCount() ; ++p) {
 			size += 100;  // boundary, CRLF...
 			size += getPartAt(p)->getGeneratedSize(ctx);
 		}
@@ -515,42 +534,46 @@ size_t body::getGeneratedSize(const generationContext& ctx)
 		// Size of prolog/epilog text
 		const text prologText = getActualPrologText(ctx);
 
-		if (!prologText.isEmpty())
-		{
+		if (!prologText.isEmpty()) {
+
 			std::ostringstream oss;
 			utility::outputStreamAdapter osa(oss);
 
-			prologText.encodeAndFold(ctx, osa, 0,
-				NULL, text::FORCE_NO_ENCODING | text::NO_NEW_LINE_SEQUENCE);
+			prologText.encodeAndFold(
+				ctx, osa, 0, NULL,
+				text::FORCE_NO_ENCODING | text::NO_NEW_LINE_SEQUENCE
+			);
 
 			size += oss.str().size();
 		}
 
 		const text epilogText = getActualEpilogText(ctx);
 
-		if (!epilogText.isEmpty())
-		{
+		if (!epilogText.isEmpty()) {
+
 			std::ostringstream oss;
 			utility::outputStreamAdapter osa(oss);
 
-			epilogText.encodeAndFold(ctx, osa, 0,
-				NULL, text::FORCE_NO_ENCODING | text::NO_NEW_LINE_SEQUENCE);
+			epilogText.encodeAndFold(
+				ctx, osa, 0, NULL,
+				text::FORCE_NO_ENCODING | text::NO_NEW_LINE_SEQUENCE
+			);
 
 			size += oss.str().size();
 		}
 
 		return size;
-	}
+
 	// Simple body
-	else
-	{
-		if (getEncoding() == m_contents->getEncoding())
-		{
+	} else {
+
+		if (getEncoding() == m_contents->getEncoding()) {
+
 			// No re-encoding has to be performed
 			return m_contents->getLength();
-		}
-		else
-		{
+
+		} else {
+
 			shared_ptr <utility::encoder::encoder> srcEncoder = m_contents->getEncoding().getEncoder();
 			shared_ptr <utility::encoder::encoder> dstEncoder = getEncoding().getEncoder();
 
@@ -576,8 +599,8 @@ size_t body::getGeneratedSize(const generationContext& ctx)
                  / "," / "-" / "." / "/" / ":" / "=" / "?"
 */
 
-const string body::generateRandomBoundaryString()
-{
+const string body::generateRandomBoundaryString() {
+
 	// 64 characters that can be _safely_ used in a boundary string
 	static const char bchars[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-+";
 
@@ -603,43 +626,43 @@ const string body::generateRandomBoundaryString()
 	unsigned int r = utility::random::getTime();
 	unsigned int m = static_cast <unsigned int>(sizeof(unsigned int));
 
-	for (size_t i = 2 ; i < (sizeof(boundary) / sizeof(boundary[0]) - 1) ; ++i)
-	{
+	for (size_t i = 2 ; i < (sizeof(boundary) / sizeof(boundary[0]) - 1) ; ++i) {
+
 			boundary[i] = bchars[r & 63];
 			r >>= 6;
 
-			if (--m == 0)
-			{
+			if (--m == 0) {
 				r = utility::random::getNext();
 				m = static_cast <unsigned int>(sizeof(unsigned int));
 			}
 	}
 
-	return (string(boundary));
+	return string(boundary);
 }
 
 
-bool body::isValidBoundary(const string& boundary)
-{
+bool body::isValidBoundary(const string& boundary) {
+
 	static const string validChars("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'()+_,-./:=?");
 
 	const string::const_iterator end = boundary.end();
 	bool valid = false;
 
-	if (boundary.length() > 0 && boundary.length() < 70)
-	{
+	if (boundary.length() > 0 && boundary.length() < 70) {
+
 		const char last = *(end - 1);
 
-		if (!(last == ' ' || last == '\t' || last == '\n'))
-		{
+		if (!(last == ' ' || last == '\t' || last == '\n')) {
+
 			valid = true;
 
-			for (string::const_iterator i = boundary.begin() ; valid && i != end ; ++i)
+			for (string::const_iterator i = boundary.begin() ; valid && i != end ; ++i) {
 				valid = (validChars.find_first_of(*i) != string::npos);
+			}
 		}
 	}
 
-	return (valid);
+	return valid;
 }
 
 
@@ -648,8 +671,8 @@ bool body::isValidBoundary(const string& boundary)
 //
 
 
-void body::setContentType(const mediaType& type, const charset& chset)
-{
+void body::setContentType(const mediaType& type, const charset& chset) {
+
 	shared_ptr <contentTypeField> ctf =
 		dynamicCast <contentTypeField>(m_part->getHeader()->ContentType());
 
@@ -658,92 +681,93 @@ void body::setContentType(const mediaType& type, const charset& chset)
 }
 
 
-void body::setContentType(const mediaType& type)
-{
+void body::setContentType(const mediaType& type) {
+
 	m_part->getHeader()->ContentType()->setValue(type);
 }
 
 
-const mediaType body::getContentType() const
-{
+const mediaType body::getContentType() const {
+
 	shared_ptr <const contentTypeField> ctf =
 		m_part->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
 
-	if (ctf)
-	{
+	if (ctf) {
+
 		return *ctf->getValue <mediaType>();
-	}
-	else
-	{
+
+	} else {
+
 		// Defaults to "text/plain" (RFC-1521)
-		return (mediaType(mediaTypes::TEXT, mediaTypes::TEXT_PLAIN));
+		return mediaType(mediaTypes::TEXT, mediaTypes::TEXT_PLAIN);
 	}
 }
 
 
-void body::setCharset(const charset& chset)
-{
+void body::setCharset(const charset& chset) {
+
 	shared_ptr <contentTypeField> ctf =
 		m_part->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
 
 	// If a Content-Type field exists, set charset
-	if (ctf)
-	{
+	if (ctf) {
+
 		ctf->setCharset(chset);
-	}
+
 	// Else, create a new Content-Type field of default type "text/plain"
 	// and set charset on it
-	else
-	{
+	} else {
+
 		setContentType(mediaType(mediaTypes::TEXT, mediaTypes::TEXT_PLAIN), chset);
 	}
 }
 
 
-const charset body::getCharset() const
-{
+const charset body::getCharset() const {
+
 	const shared_ptr <const contentTypeField> ctf =
 		m_part->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
 
-	if (ctf)
-	{
-		if (ctf->hasCharset())
-		{
-			return (ctf->getCharset());
-		}
-		else
-		{
+	if (ctf) {
+
+		if (ctf->hasCharset()) {
+
+			return ctf->getCharset();
+
+		} else {
+
 			// Defaults to "us-ascii" (RFC-1521)
-			return (vmime::charset(charsets::US_ASCII));
+			return vmime::charset(charsets::US_ASCII);
 		}
-	}
-	else
-	{
+
+	} else {
+
 		// Defaults to "us-ascii" (RFC-1521)
-		return (vmime::charset(charsets::US_ASCII));
+		return vmime::charset(charsets::US_ASCII);
 	}
 }
 
 
-void body::setEncoding(const encoding& enc)
-{
+void body::setEncoding(const encoding& enc) {
+
 	m_part->getHeader()->ContentTransferEncoding()->setValue(enc);
 }
 
 
-const encoding body::getEncoding() const
-{
+const encoding body::getEncoding() const {
+
 	shared_ptr <const headerField> cef =
 		m_part->getHeader()->findField(fields::CONTENT_TRANSFER_ENCODING);
 
-	if (cef)
-	{
+	if (cef) {
+
 		return *cef->getValue <encoding>();
-	}
-	else
-	{
-		if (m_contents->isEncoded())
+
+	} else {
+
+		if (m_contents->isEncoded()) {
 			return m_contents->getEncoding();
+		}
 	}
 
 	// Defaults to "7bit" (RFC-1521)
@@ -751,37 +775,37 @@ const encoding body::getEncoding() const
 }
 
 
-void body::setParentPart(bodyPart* parent)
-{
+void body::setParentPart(bodyPart* parent) {
+
 	m_part = parent;
 
 	for (std::vector <shared_ptr <bodyPart> >::iterator it = m_parts.begin() ;
-	     it != m_parts.end() ; ++it)
-	{
+	     it != m_parts.end() ; ++it) {
+
 		shared_ptr <bodyPart> childPart = *it;
 		parent->importChildPart(childPart);
 	}
 }
 
 
-bool body::isRootPart() const
-{
-	return (m_part == NULL || m_part->getParentPart() == NULL);
+bool body::isRootPart() const {
+
+	return !m_part || !m_part->getParentPart();
 }
 
 
-shared_ptr <component> body::clone() const
-{
+shared_ptr <component> body::clone() const {
+
 	shared_ptr <body> bdy = make_shared <body>();
 
 	bdy->copyFrom(*this);
 
-	return (bdy);
+	return bdy;
 }
 
 
-void body::copyFrom(const component& other)
-{
+void body::copyFrom(const component& other) {
+
 	const body& bdy = dynamic_cast <const body&>(other);
 
 	m_prologText = bdy.m_prologText;
@@ -791,8 +815,8 @@ void body::copyFrom(const component& other)
 
 	removeAllParts();
 
-	for (size_t p = 0 ; p < bdy.getPartCount() ; ++p)
-	{
+	for (size_t p = 0 ; p < bdy.getPartCount() ; ++p) {
+
 		shared_ptr <bodyPart> part = m_part->createChildPart();
 
 		part->copyFrom(*bdy.getPartAt(p));
@@ -802,68 +826,79 @@ void body::copyFrom(const component& other)
 }
 
 
-body& body::operator=(const body& other)
-{
+body& body::operator=(const body& other) {
+
 	copyFrom(other);
-	return (*this);
+	return *this;
 }
 
 
-const string& body::getPrologText() const
-{
-	return (m_prologText);
+const string& body::getPrologText() const {
+
+	return m_prologText;
 }
 
 
-void body::setPrologText(const string& prologText)
-{
+void body::setPrologText(const string& prologText) {
+
 	m_prologText = prologText;
 }
 
 
-const string& body::getEpilogText() const
-{
-	return (m_epilogText);
+const string& body::getEpilogText() const {
+
+	return m_epilogText;
 }
 
 
-void body::setEpilogText(const string& epilogText)
-{
+void body::setEpilogText(const string& epilogText) {
+
 	m_epilogText = epilogText;
 }
 
 
-const shared_ptr <const contentHandler> body::getContents() const
-{
-	return (m_contents);
+const shared_ptr <const contentHandler> body::getContents() const {
+
+	return m_contents;
 }
 
 
-void body::setContents(shared_ptr <const contentHandler> contents)
-{
+void body::setContents(const shared_ptr <const contentHandler>& contents) {
+
 	m_contents = contents;
 }
 
 
-void body::setContents(shared_ptr <const contentHandler> contents, const mediaType& type)
-{
+void body::setContents(
+	const shared_ptr <const contentHandler>& contents,
+	const mediaType& type
+) {
+
 	m_contents = contents;
 
 	setContentType(type);
 }
 
 
-void body::setContents(shared_ptr <const contentHandler> contents, const mediaType& type, const charset& chset)
-{
+void body::setContents(
+	const shared_ptr <const contentHandler>& contents,
+	const mediaType& type,
+	const charset& chset
+) {
+
 	m_contents = contents;
 
 	setContentType(type, chset);
 }
 
 
-void body::setContents(shared_ptr <const contentHandler> contents, const mediaType& type,
-	const charset& chset, const encoding& enc)
-{
+void body::setContents(
+	const shared_ptr <const contentHandler>& contents,
+	const mediaType& type,
+	const charset& chset,
+	const encoding& enc
+) {
+
 	m_contents = contents;
 
 	setContentType(type, chset);
@@ -871,16 +906,17 @@ void body::setContents(shared_ptr <const contentHandler> contents, const mediaTy
 }
 
 
-void body::initNewPart(shared_ptr <bodyPart> part)
-{
+void body::initNewPart(const shared_ptr <bodyPart>& part) {
+
 	// A part can be in only one body at the same time: if part is
 	// already attached to a parent part, remove it from the current
 	// parent part
-	if (part->getParentPart())
+	if (part->getParentPart()) {
 		part->getParentPart()->getBody()->removePart(part);
+	}
 
-	if (m_part != NULL)
-	{
+	if (m_part) {
+
 		m_part->importChildPart(part);
 
 		shared_ptr <header> hdr = m_part->getHeader();
@@ -889,29 +925,30 @@ void body::initNewPart(shared_ptr <bodyPart> part)
 		shared_ptr <contentTypeField> ctf =
 			hdr->findField <contentTypeField>(fields::CONTENT_TYPE);
 
-		if (ctf)
-		{
-			if (ctf->hasBoundary())
-			{
+		if (ctf) {
+
+			if (ctf->hasBoundary()) {
+
 				const string boundary = ctf->getBoundary();
 
-				if (boundary.empty() || !isValidBoundary(boundary))
+				if (boundary.empty() || !isValidBoundary(boundary)) {
 					ctf->setBoundary(generateRandomBoundaryString());
-			}
-			else
-			{
+				}
+
+			} else {
+
 				// No "boundary" parameter: generate a random one.
 				ctf->setBoundary(generateRandomBoundaryString());
 			}
 
-			if (ctf->getValue <mediaType>()->getType() != mediaTypes::MULTIPART)
-			{
+			if (ctf->getValue <mediaType>()->getType() != mediaTypes::MULTIPART) {
+
 				// Warning: multi-part body but the Content-Type is
 				// not specified as "multipart/..."
 			}
-		}
-		else
-		{
+
+		} else {
+
 			// No "Content-Type" field: create a new one and generate
 			// a random boundary string.
 			ctf = hdr->getField <contentTypeField>(fields::CONTENT_TYPE);
@@ -923,135 +960,150 @@ void body::initNewPart(shared_ptr <bodyPart> part)
 }
 
 
-void body::appendPart(shared_ptr <bodyPart> part)
-{
+void body::appendPart(const shared_ptr <bodyPart>& part) {
+
 	initNewPart(part);
 
 	m_parts.push_back(part);
 }
 
 
-void body::insertPartBefore(shared_ptr <bodyPart> beforePart, shared_ptr <bodyPart> part)
-{
+void body::insertPartBefore(
+	const shared_ptr <bodyPart>& beforePart,
+	const shared_ptr <bodyPart>& part
+) {
+
 	initNewPart(part);
 
-	const std::vector <shared_ptr <bodyPart> >::iterator it = std::find
-		(m_parts.begin(), m_parts.end(), beforePart);
+	const std::vector <shared_ptr <bodyPart> >::iterator it = std::find(
+		m_parts.begin(), m_parts.end(), beforePart
+	);
 
-	if (it == m_parts.end())
+	if (it == m_parts.end()) {
 		throw exceptions::no_such_part();
+	}
 
 	m_parts.insert(it, part);
 }
 
 
-void body::insertPartBefore(const size_t pos, shared_ptr <bodyPart> part)
-{
+void body::insertPartBefore(
+	const size_t pos,
+	const shared_ptr <bodyPart>& part
+) {
+
 	initNewPart(part);
 
 	m_parts.insert(m_parts.begin() + pos, part);
 }
 
 
-void body::insertPartAfter(shared_ptr <bodyPart> afterPart, shared_ptr <bodyPart> part)
-{
+void body::insertPartAfter(
+	const shared_ptr <bodyPart>& afterPart,
+	const shared_ptr <bodyPart>& part
+) {
+
 	initNewPart(part);
 
-	const std::vector <shared_ptr <bodyPart> >::iterator it = std::find
-		(m_parts.begin(), m_parts.end(), afterPart);
+	const std::vector <shared_ptr <bodyPart> >::iterator it = std::find(
+		m_parts.begin(), m_parts.end(), afterPart
+	);
 
-	if (it == m_parts.end())
+	if (it == m_parts.end()) {
 		throw exceptions::no_such_part();
+	}
 
 	m_parts.insert(it + 1, part);
 }
 
 
-void body::insertPartAfter(const size_t pos, shared_ptr <bodyPart> part)
-{
+void body::insertPartAfter(const size_t pos, const shared_ptr <bodyPart>& part) {
+
 	initNewPart(part);
 
 	m_parts.insert(m_parts.begin() + pos + 1, part);
 }
 
 
-void body::removePart(shared_ptr <bodyPart> part)
-{
-	const std::vector <shared_ptr <bodyPart> >::iterator it = std::find
-		(m_parts.begin(), m_parts.end(), part);
+void body::removePart(const shared_ptr <bodyPart>& part) {
 
-	if (it == m_parts.end())
+	const std::vector <shared_ptr <bodyPart> >::iterator it = std::find(
+		m_parts.begin(), m_parts.end(), part
+	);
+
+	if (it == m_parts.end()) {
 		throw exceptions::no_such_part();
+	}
 
 	m_parts.erase(it);
 }
 
 
-void body::removePart(const size_t pos)
-{
+void body::removePart(const size_t pos) {
+
 	m_parts.erase(m_parts.begin() + pos);
 }
 
 
-void body::removeAllParts()
-{
+void body::removeAllParts() {
+
 	m_parts.clear();
 }
 
 
-size_t body::getPartCount() const
-{
-	return (m_parts.size());
+size_t body::getPartCount() const {
+
+	return m_parts.size();
 }
 
 
-bool body::isEmpty() const
-{
-	return (m_parts.size() == 0);
+bool body::isEmpty() const {
+
+	return m_parts.size() == 0;
 }
 
 
-shared_ptr <bodyPart> body::getPartAt(const size_t pos)
-{
-	return (m_parts[pos]);
+shared_ptr <bodyPart> body::getPartAt(const size_t pos) {
+
+	return m_parts[pos];
 }
 
 
-const shared_ptr <const bodyPart> body::getPartAt(const size_t pos) const
-{
-	return (m_parts[pos]);
+const shared_ptr <const bodyPart> body::getPartAt(const size_t pos) const {
+
+	return m_parts[pos];
 }
 
 
-const std::vector <shared_ptr <const bodyPart> > body::getPartList() const
-{
+const std::vector <shared_ptr <const bodyPart> > body::getPartList() const {
+
 	std::vector <shared_ptr <const bodyPart> > list;
 
 	list.reserve(m_parts.size());
 
 	for (std::vector <shared_ptr <bodyPart> >::const_iterator it = m_parts.begin() ;
-	     it != m_parts.end() ; ++it)
-	{
+	     it != m_parts.end() ; ++it) {
+
 		list.push_back(*it);
 	}
 
-	return (list);
+	return list;
 }
 
 
-const std::vector <shared_ptr <bodyPart> > body::getPartList()
-{
-	return (m_parts);
+const std::vector <shared_ptr <bodyPart> > body::getPartList() {
+
+	return m_parts;
 }
 
 
-const std::vector <shared_ptr <component> > body::getChildComponents()
-{
+const std::vector <shared_ptr <component> > body::getChildComponents() {
+
 	std::vector <shared_ptr <component> > list;
 
 	copy_vector(m_parts, list);
 
-	return (list);
+	return list;
 }
 
 

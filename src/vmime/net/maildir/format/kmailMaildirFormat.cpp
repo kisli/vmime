@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -41,34 +41,39 @@ namespace maildir {
 namespace format {
 
 
-kmailMaildirFormat::kmailMaildirFormat(shared_ptr <context> ctx)
-	: maildirFormat(ctx)
-{
+kmailMaildirFormat::kmailMaildirFormat(const shared_ptr <context>& ctx)
+	: maildirFormat(ctx) {
+
 }
 
 
-const string kmailMaildirFormat::getName() const
-{
+const string kmailMaildirFormat::getName() const {
+
 	return "kmail";
 }
 
 
-void kmailMaildirFormat::createFolder(const folder::path& path)
-{
+void kmailMaildirFormat::createFolder(const folder::path& path) {
+
 	shared_ptr <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
-	if (!fsf->isValidPath(folderPathToFileSystemPath(path, ROOT_DIRECTORY)))
+	if (!fsf->isValidPath(folderPathToFileSystemPath(path, ROOT_DIRECTORY))) {
 		throw exceptions::invalid_folder_name();
+	}
 
-	shared_ptr <utility::file> rootDir = fsf->create
-		(folderPathToFileSystemPath(path, ROOT_DIRECTORY));
+	shared_ptr <utility::file> rootDir = fsf->create(
+		folderPathToFileSystemPath(path, ROOT_DIRECTORY)
+	);
 
-	shared_ptr <utility::file> newDir = fsf->create
-		(folderPathToFileSystemPath(path, NEW_DIRECTORY));
-	shared_ptr <utility::file> tmpDir = fsf->create
-		(folderPathToFileSystemPath(path, TMP_DIRECTORY));
-	shared_ptr <utility::file> curDir = fsf->create
-		(folderPathToFileSystemPath(path, CUR_DIRECTORY));
+	shared_ptr <utility::file> newDir = fsf->create(
+		folderPathToFileSystemPath(path, NEW_DIRECTORY)
+	);
+	shared_ptr <utility::file> tmpDir = fsf->create(
+		folderPathToFileSystemPath(path, TMP_DIRECTORY)
+	);
+	shared_ptr <utility::file> curDir = fsf->create(
+		folderPathToFileSystemPath(path, CUR_DIRECTORY)
+	);
 
 	rootDir->createDirectory(true);
 
@@ -78,32 +83,38 @@ void kmailMaildirFormat::createFolder(const folder::path& path)
 }
 
 
-void kmailMaildirFormat::destroyFolder(const folder::path& path)
-{
+void kmailMaildirFormat::destroyFolder(const folder::path& path) {
+
 	// Delete 'folder' and '.folder.directory' directories
 	shared_ptr <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
-	maildirUtils::recursiveFSDelete(fsf->create
-		(folderPathToFileSystemPath(path, ROOT_DIRECTORY)));  // root
+	maildirUtils::recursiveFSDelete(
+		fsf->create(folderPathToFileSystemPath(path, ROOT_DIRECTORY))  // root
+	);
 
-	maildirUtils::recursiveFSDelete(fsf->create
-		(folderPathToFileSystemPath(path, CONTAINER_DIRECTORY)));  // container
+	maildirUtils::recursiveFSDelete(
+		fsf->create(folderPathToFileSystemPath(path, CONTAINER_DIRECTORY))  // container
+	);
 }
 
 
-bool kmailMaildirFormat::folderExists(const folder::path& path) const
-{
+bool kmailMaildirFormat::folderExists(const folder::path& path) const {
+
 	shared_ptr <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
-	shared_ptr <utility::file> rootDir = fsf->create
-		(folderPathToFileSystemPath(path, ROOT_DIRECTORY));
+	shared_ptr <utility::file> rootDir = fsf->create(
+		folderPathToFileSystemPath(path, ROOT_DIRECTORY)
+	);
 
-	shared_ptr <utility::file> newDir = fsf->create
-		(folderPathToFileSystemPath(path, NEW_DIRECTORY));
-	shared_ptr <utility::file> tmpDir = fsf->create
-		(folderPathToFileSystemPath(path, TMP_DIRECTORY));
-	shared_ptr <utility::file> curDir = fsf->create
-		(folderPathToFileSystemPath(path, CUR_DIRECTORY));
+	shared_ptr <utility::file> newDir = fsf->create(
+		folderPathToFileSystemPath(path, NEW_DIRECTORY)
+	);
+	shared_ptr <utility::file> tmpDir = fsf->create(
+		folderPathToFileSystemPath(path, TMP_DIRECTORY)
+	);
+	shared_ptr <utility::file> curDir = fsf->create(
+		folderPathToFileSystemPath(path, CUR_DIRECTORY)
+	);
 
 	return rootDir->exists() && rootDir->isDirectory() &&
 	       newDir->exists() && newDir->isDirectory() &&
@@ -112,9 +123,11 @@ bool kmailMaildirFormat::folderExists(const folder::path& path) const
 }
 
 
-const utility::file::path kmailMaildirFormat::folderPathToFileSystemPath
-	(const folder::path& path, const DirectoryType type) const
-{
+const utility::file::path kmailMaildirFormat::folderPathToFileSystemPath(
+	const folder::path& path,
+	const DirectoryType type
+) const {
+
 	// Root path
 	utility::file::path fsPath = getContext()->getStore()->getFileSystemPath();
 
@@ -123,8 +136,8 @@ const utility::file::path kmailMaildirFormat::folderPathToFileSystemPath
 		? pathSize : (pathSize >= 1 ? pathSize - 1 : 0));
 
 	// Parent folders
-	for (size_t i = 0 ; i < count ; ++i)
-	{
+	for (size_t i = 0 ; i < count ; ++i) {
+
 		utility::file::path::component comp(path[i]);
 
 		// TODO: may not work with all encodings...
@@ -134,36 +147,36 @@ const utility::file::path kmailMaildirFormat::folderPathToFileSystemPath
 	}
 
 	// Last component
-	if (path.getSize() != 0 && type != CONTAINER_DIRECTORY)
-	{
+	if (path.getSize() != 0 && type != CONTAINER_DIRECTORY) {
+
 		fsPath /= path.getLastComponent();
 
-		switch (type)
-		{
-		case ROOT_DIRECTORY:
+		switch (type) {
 
-			// Nothing to add
-			break;
+			case ROOT_DIRECTORY:
 
-		case NEW_DIRECTORY:
+				// Nothing to add
+				break;
 
-			fsPath /= NEW_DIR;
-			break;
+			case NEW_DIRECTORY:
 
-		case CUR_DIRECTORY:
+				fsPath /= NEW_DIR;
+				break;
 
-			fsPath /= CUR_DIR;
-			break;
+			case CUR_DIRECTORY:
 
-		case TMP_DIRECTORY:
+				fsPath /= CUR_DIR;
+				break;
 
-			fsPath /= TMP_DIR;
-			break;
+			case TMP_DIRECTORY:
 
-		case CONTAINER_DIRECTORY:
+				fsPath /= TMP_DIR;
+				break;
 
-			// Can't happen...
-			break;
+			case CONTAINER_DIRECTORY:
+
+				// Can't happen...
+				break;
 		}
 	}
 
@@ -171,9 +184,11 @@ const utility::file::path kmailMaildirFormat::folderPathToFileSystemPath
 }
 
 
-const std::vector <folder::path> kmailMaildirFormat::listFolders
-	(const folder::path& root, const bool recursive) const
-{
+const std::vector <folder::path> kmailMaildirFormat::listFolders(
+	const folder::path& root,
+	const bool recursive
+) const {
+
 	std::vector <folder::path> list;
 	listFoldersImpl(list, root, recursive);
 
@@ -181,49 +196,53 @@ const std::vector <folder::path> kmailMaildirFormat::listFolders
 }
 
 
-void kmailMaildirFormat::listFoldersImpl
-	(std::vector <folder::path>& list, const folder::path& root, const bool recursive) const
-{
+void kmailMaildirFormat::listFoldersImpl(
+	std::vector <folder::path>& list,
+	const folder::path& root,
+	const bool recursive
+) const {
+
 	shared_ptr <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
-	shared_ptr <utility::file> rootDir = fsf->create(folderPathToFileSystemPath(root,
-		root.isEmpty() ? ROOT_DIRECTORY : CONTAINER_DIRECTORY));
+	shared_ptr <utility::file> rootDir = fsf->create(
+		folderPathToFileSystemPath(root, root.isEmpty() ? ROOT_DIRECTORY : CONTAINER_DIRECTORY)
+	);
 
-	if (rootDir->exists())
-	{
+	if (rootDir->exists()) {
+
 		shared_ptr <utility::fileIterator> it = rootDir->getFiles();
 
-		while (it->hasMoreElements())
-		{
+		while (it->hasMoreElements()) {
+
 			shared_ptr <utility::file> file = it->nextElement();
 
-			if (isSubfolderDirectory(*file))
-			{
-				const utility::path subPath =
-					root / file->getFullPath().getLastComponent();
+			if (isSubfolderDirectory(*file)) {
+
+				const utility::path subPath = root / file->getFullPath().getLastComponent();
 
 				list.push_back(subPath);
 
-				if (recursive)
+				if (recursive) {
 					listFoldersImpl(list, subPath, true);
+				}
 			}
 		}
-	}
-	else
-	{
+
+	} else {
+
 		// No sub-folder
 	}
 }
 
 
 // static
-bool kmailMaildirFormat::isSubfolderDirectory(const utility::file& file)
-{
+bool kmailMaildirFormat::isSubfolderDirectory(const utility::file& file) {
+
 	// A directory which name does not start with '.' is listed as a sub-folder
 	if (file.isDirectory() &&
 	    file.getFullPath().getLastComponent().getBuffer().length() >= 1 &&
-	    file.getFullPath().getLastComponent().getBuffer()[0] != '.')
-	{
+	    file.getFullPath().getLastComponent().getBuffer()[0] != '.') {
+
 		return true;
 	}
 
@@ -231,17 +250,19 @@ bool kmailMaildirFormat::isSubfolderDirectory(const utility::file& file)
 }
 
 
-void kmailMaildirFormat::renameFolder(const folder::path& oldPath, const folder::path& newPath)
-{
+void kmailMaildirFormat::renameFolder(const folder::path& oldPath, const folder::path& newPath) {
+
 	shared_ptr <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
-	shared_ptr <utility::file> rootDir = fsf->create
-		(folderPathToFileSystemPath(oldPath, ROOT_DIRECTORY));
-	shared_ptr <utility::file> contDir = fsf->create
-		(folderPathToFileSystemPath(oldPath, CONTAINER_DIRECTORY));
+	shared_ptr <utility::file> rootDir = fsf->create(
+		folderPathToFileSystemPath(oldPath, ROOT_DIRECTORY)
+	);
+	shared_ptr <utility::file> contDir = fsf->create(
+		folderPathToFileSystemPath(oldPath, CONTAINER_DIRECTORY)
+	);
 
-	try
-	{
+	try {
+
 		const utility::file::path newRootPath =
 			folderPathToFileSystemPath(newPath, ROOT_DIRECTORY);
 		const utility::file::path newContPath =
@@ -250,30 +271,24 @@ void kmailMaildirFormat::renameFolder(const folder::path& oldPath, const folder:
 		rootDir->rename(newRootPath);
 
 		// Container directory may not exist, so ignore error when trying to rename it
-		try
-		{
+		try {
 			contDir->rename(newContPath);
-		}
-		catch (exceptions::filesystem_exception& e)
-		{
+		} catch (exceptions::filesystem_exception& e) {
 			// Ignore
 		}
-	}
-	catch (exceptions::filesystem_exception& e)
-	{
+
+	} catch (exceptions::filesystem_exception& e) {
+
 		// Revert to old location
 		const utility::file::path rootPath =
 			folderPathToFileSystemPath(oldPath, ROOT_DIRECTORY);
 		const utility::file::path contPath =
 			folderPathToFileSystemPath(oldPath, CONTAINER_DIRECTORY);
 
-		try
-		{
+		try {
 			rootDir->rename(rootPath);
 			contDir->rename(contPath);
-		}
-		catch (exceptions::filesystem_exception& e)
-		{
+		} catch (exceptions::filesystem_exception& e) {
 			// Ignore (not recoverable)
 		}
 
@@ -282,29 +297,31 @@ void kmailMaildirFormat::renameFolder(const folder::path& oldPath, const folder:
 }
 
 
-bool kmailMaildirFormat::folderHasSubfolders(const folder::path& path) const
-{
+bool kmailMaildirFormat::folderHasSubfolders(const folder::path& path) const {
+
 	shared_ptr <utility::fileSystemFactory> fsf = platform::getHandler()->getFileSystemFactory();
 
-	shared_ptr <utility::file> rootDir = fsf->create
-		(folderPathToFileSystemPath(path, CONTAINER_DIRECTORY));
+	shared_ptr <utility::file> rootDir = fsf->create(
+		folderPathToFileSystemPath(path, CONTAINER_DIRECTORY)
+	);
 
 	shared_ptr <utility::fileIterator> it = rootDir->getFiles();
 
-	while (it->hasMoreElements())
-	{
+	while (it->hasMoreElements()) {
+
 		shared_ptr <utility::file> file = it->nextElement();
 
-		if (isSubfolderDirectory(*file))
+		if (isSubfolderDirectory(*file)) {
 			return true;
+		}
 	}
 
 	return false;
 }
 
 
-bool kmailMaildirFormat::supports() const
-{
+bool kmailMaildirFormat::supports() const {
+
 	// This is the default
 	return true;
 }

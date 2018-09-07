@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -45,59 +45,67 @@ namespace net {
 namespace pop3 {
 
 
-POP3Folder::POP3Folder(const folder::path& path, shared_ptr <POP3Store> store)
-	: m_store(store), m_path(path),
+POP3Folder::POP3Folder(
+	const folder::path& path,
+	const shared_ptr <POP3Store>& store
+)
+	: m_store(store),
+	  m_path(path),
 	  m_name(path.isEmpty() ? folder::path::component("") : path.getLastComponent()),
-	  m_mode(-1), m_open(false)
-{
+	  m_mode(-1),
+	  m_open(false) {
+
 	store->registerFolder(this);
 }
 
 
-POP3Folder::~POP3Folder()
-{
-	try
-	{
+POP3Folder::~POP3Folder() {
+
+	try {
+
 		shared_ptr <POP3Store> store = m_store.lock();
 
-		if (store)
-		{
-			if (m_open)
+		if (store) {
+
+			if (m_open) {
 				close(false);
+			}
 
 			store->unregisterFolder(this);
-		}
-		else if (m_open)
-		{
+
+		} else if (m_open) {
+
 			onClose();
 		}
-	}
-	catch (...)
-	{
+
+	} catch (...) {
+
 		// Don't throw in destructor
 	}
 }
 
 
-int POP3Folder::getMode() const
-{
-	if (!isOpen())
-		throw exceptions::illegal_state("Folder not open");
+int POP3Folder::getMode() const {
 
-	return (m_mode);
+	if (!isOpen()) {
+		throw exceptions::illegal_state("Folder not open");
+	}
+
+	return m_mode;
 }
 
 
-const folderAttributes POP3Folder::getAttributes()
-{
+const folderAttributes POP3Folder::getAttributes() {
+
 	folderAttributes attribs;
 
-	if (m_path.isEmpty())
+	if (m_path.isEmpty()) {
 		attribs.setType(folderAttributes::TYPE_CONTAINS_FOLDERS);
-	else if (m_path.getSize() == 1 && m_path[0].getBuffer() == "INBOX")
+	} else if (m_path.getSize() == 1 && m_path[0].getBuffer() == "INBOX") {
 		attribs.setType(folderAttributes::TYPE_CONTAINS_MESSAGES);
-	else
+	} else {
 		throw exceptions::folder_not_found();
+	}
 
 	attribs.setFlags(0);
 
@@ -105,72 +113,78 @@ const folderAttributes POP3Folder::getAttributes()
 }
 
 
-const folder::path::component POP3Folder::getName() const
-{
-	return (m_name);
+const folder::path::component POP3Folder::getName() const {
+
+	return m_name;
 }
 
 
-const folder::path POP3Folder::getFullPath() const
-{
-	return (m_path);
+const folder::path POP3Folder::getFullPath() const {
+
+	return m_path;
 }
 
 
-void POP3Folder::open(const int mode, bool failIfModeIsNotAvailable)
-{
+void POP3Folder::open(const int mode, bool failIfModeIsNotAvailable) {
+
 	shared_ptr <POP3Store> store = m_store.lock();
 
-	if (!store)
+	if (!store) {
 		throw exceptions::illegal_state("Store disconnected");
+	}
 
-	if (m_path.isEmpty())
-	{
-		if (mode != MODE_READ_ONLY && failIfModeIsNotAvailable)
+	if (m_path.isEmpty()) {
+
+		if (mode != MODE_READ_ONLY && failIfModeIsNotAvailable) {
 			throw exceptions::operation_not_supported();
+		}
 
 		m_open = true;
 		m_mode = mode;
 
 		m_messageCount = 0;
-	}
-	else if (m_path.getSize() == 1 && m_path[0].getBuffer() == "INBOX")
-	{
+
+	} else if (m_path.getSize() == 1 && m_path[0].getBuffer() == "INBOX") {
+
 		POP3Command::STAT()->send(store->getConnection());
 
 		shared_ptr <POP3Response> response = POP3Response::readResponse(store->getConnection());
 
-		if (!response->isSuccess())
+		if (!response->isSuccess()) {
 			throw exceptions::command_error("STAT", response->getFirstLine());
+		}
 
 		std::istringstream iss(response->getText());
 		iss.imbue(std::locale::classic());
 		iss >> m_messageCount;
 
-		if (iss.fail())
+		if (iss.fail()) {
 			throw exceptions::invalid_response("STAT", response->getFirstLine());
+		}
 
 		m_open = true;
 		m_mode = mode;
-	}
-	else
-	{
+
+	} else {
+
 		throw exceptions::folder_not_found();
 	}
 }
 
-void POP3Folder::close(const bool expunge)
-{
+
+void POP3Folder::close(const bool expunge) {
+
 	shared_ptr <POP3Store> store = m_store.lock();
 
-	if (!store)
+	if (!store) {
 		throw exceptions::illegal_state("Store disconnected");
+	}
 
-	if (!isOpen())
+	if (!isOpen()) {
 		throw exceptions::illegal_state("Folder not open");
+	}
 
-	if (!expunge)
-	{
+	if (!expunge) {
 		POP3Command::RSET()->send(store->getConnection());
 		POP3Response::readResponse(store->getConnection());
 	}
@@ -182,168 +196,185 @@ void POP3Folder::close(const bool expunge)
 }
 
 
-void POP3Folder::onClose()
-{
-	for (MessageMap::iterator it = m_messages.begin() ; it != m_messages.end() ; ++it)
+void POP3Folder::onClose() {
+
+	for (MessageMap::iterator it = m_messages.begin() ; it != m_messages.end() ; ++it) {
 		(*it).first->onFolderClosed();
+	}
 
 	m_messages.clear();
 }
 
 
-void POP3Folder::create(const folderAttributes& /* attribs */)
-{
+void POP3Folder::create(const folderAttributes& /* attribs */) {
+
 	throw exceptions::operation_not_supported();
 }
 
 
-void POP3Folder::destroy()
-{
+void POP3Folder::destroy() {
+
 	throw exceptions::operation_not_supported();
 }
 
 
-bool POP3Folder::exists()
-{
+bool POP3Folder::exists() {
+
 	shared_ptr <POP3Store> store = m_store.lock();
 
-	if (!store)
+	if (!store) {
 		throw exceptions::illegal_state("Store disconnected");
+	}
 
-	return (m_path.isEmpty() || (m_path.getSize() == 1 && m_path[0].getBuffer() == "INBOX"));
+	return m_path.isEmpty() || (m_path.getSize() == 1 && m_path[0].getBuffer() == "INBOX");
 }
 
 
-bool POP3Folder::isOpen() const
-{
-	return (m_open);
+bool POP3Folder::isOpen() const {
+
+	return m_open;
 }
 
 
-shared_ptr <message> POP3Folder::getMessage(const size_t num)
-{
+shared_ptr <message> POP3Folder::getMessage(const size_t num) {
+
 	shared_ptr <POP3Store> store = m_store.lock();
 
-	if (!store)
+	if (!store) {
 		throw exceptions::illegal_state("Store disconnected");
-	else if (!isOpen())
+	} else if (!isOpen()) {
 		throw exceptions::illegal_state("Folder not open");
-	else if (num < 1 || num > m_messageCount)
+	} else if (num < 1 || num > m_messageCount) {
 		throw exceptions::message_not_found();
+	}
 
 	return make_shared <POP3Message>(dynamicCast <POP3Folder>(shared_from_this()), num);
 }
 
 
-std::vector <shared_ptr <message> > POP3Folder::getMessages(const messageSet& msgs)
-{
+std::vector <shared_ptr <message> > POP3Folder::getMessages(const messageSet& msgs) {
+
 	shared_ptr <POP3Store> store = m_store.lock();
 
-	if (!store)
+	if (!store) {
 		throw exceptions::illegal_state("Store disconnected");
-	else if (!isOpen())
+	} else if (!isOpen()) {
 		throw exceptions::illegal_state("Folder not open");
+	}
 
-	if (msgs.isNumberSet())
-	{
+	if (msgs.isNumberSet()) {
+
 		const std::vector <size_t> numbers = POP3Utils::messageSetToNumberList(msgs, m_messageCount);
 
 		std::vector <shared_ptr <message> > messages;
 		shared_ptr <POP3Folder> thisFolder(dynamicCast <POP3Folder>(shared_from_this()));
 
-		for (std::vector <size_t>::const_iterator it = numbers.begin() ; it != numbers.end() ; ++it)
-		{
-			if (*it < 1|| *it > m_messageCount)
+		for (std::vector <size_t>::const_iterator it = numbers.begin() ; it != numbers.end() ; ++it) {
+
+			if (*it < 1|| *it > m_messageCount) {
 				throw exceptions::message_not_found();
+			}
 
 			messages.push_back(make_shared <POP3Message>(thisFolder, *it));
 		}
 
 		return messages;
-	}
-	else
-	{
+
+	} else {
+
 		throw exceptions::operation_not_supported();
 	}
 }
 
 
-size_t POP3Folder::getMessageCount()
-{
+size_t POP3Folder::getMessageCount() {
+
 	shared_ptr <POP3Store> store = m_store.lock();
 
-	if (!store)
+	if (!store) {
 		throw exceptions::illegal_state("Store disconnected");
-	else if (!isOpen())
+	} else if (!isOpen()) {
 		throw exceptions::illegal_state("Folder not open");
+	}
 
-	return (m_messageCount);
+	return m_messageCount;
 }
 
 
-shared_ptr <folder> POP3Folder::getFolder(const folder::path::component& name)
-{
+shared_ptr <folder> POP3Folder::getFolder(const folder::path::component& name) {
+
 	shared_ptr <POP3Store> store = m_store.lock();
 
-	if (!store)
+	if (!store) {
 		throw exceptions::illegal_state("Store disconnected");
+	}
 
 	return shared_ptr <POP3Folder>(new POP3Folder(m_path / name, store));
 }
 
 
-std::vector <shared_ptr <folder> > POP3Folder::getFolders(const bool /* recursive */)
-{
+std::vector <shared_ptr <folder> > POP3Folder::getFolders(const bool /* recursive */) {
+
 	shared_ptr <POP3Store> store = m_store.lock();
 
-	if (!store)
+	if (!store) {
 		throw exceptions::illegal_state("Store disconnected");
+	}
 
-	if (m_path.isEmpty())
-	{
+	if (m_path.isEmpty()) {
+
 		std::vector <shared_ptr <folder> > v;
 		v.push_back(shared_ptr <POP3Folder>(new POP3Folder(folder::path::component("INBOX"), store)));
-		return (v);
-	}
-	else
-	{
+		return v;
+
+	} else {
+
 		std::vector <shared_ptr <folder> > v;
-		return (v);
+		return v;
 	}
 }
 
 
-void POP3Folder::fetchMessages(std::vector <shared_ptr <message> >& msg, const fetchAttributes& options,
-                               utility::progressListener* progress)
-{
+void POP3Folder::fetchMessages(
+	std::vector <shared_ptr <message> >& msg,
+	const fetchAttributes& options,
+    utility::progressListener* progress
+) {
+
 	shared_ptr <POP3Store> store = m_store.lock();
 
-	if (!store)
+	if (!store) {
 		throw exceptions::illegal_state("Store disconnected");
-	else if (!isOpen())
+	} else if (!isOpen()) {
 		throw exceptions::illegal_state("Folder not open");
+	}
 
-	if (msg.empty())
+	if (msg.empty()) {
 		return;
+	}
 
 	const size_t total = msg.size();
 	size_t current = 0;
 
-	if (progress)
+	if (progress) {
 		progress->start(total);
-
-	for (std::vector <shared_ptr <message> >::iterator it = msg.begin() ;
-	     it != msg.end() ; ++it)
-	{
-		dynamicCast <POP3Message>(*it)->fetch
-			(dynamicCast <POP3Folder>(shared_from_this()), options);
-
-		if (progress)
-			progress->progress(++current, total);
 	}
 
-	if (options.has(fetchAttributes::SIZE))
-	{
+	for (std::vector <shared_ptr <message> >::iterator it = msg.begin() ;
+	     it != msg.end() ; ++it) {
+
+		dynamicCast <POP3Message>(*it)->fetch(
+			dynamicCast <POP3Folder>(shared_from_this()),
+			options
+		);
+
+		if (progress) {
+			progress->progress(++current, total);
+		}
+	}
+
+	if (options.has(fetchAttributes::SIZE)) {
+
 		// Send the "LIST" command
 		POP3Command::LIST()->send(store->getConnection());
 
@@ -351,8 +382,8 @@ void POP3Folder::fetchMessages(std::vector <shared_ptr <message> >& msg, const f
 		shared_ptr <POP3Response> response =
 			POP3Response::readMultilineResponse(store->getConnection());
 
-		if (response->isSuccess())
-		{
+		if (response->isSuccess()) {
+
 			// C: LIST
 			// S: +OK
 			// S: 1 47548
@@ -362,14 +393,14 @@ void POP3Folder::fetchMessages(std::vector <shared_ptr <message> >& msg, const f
 			POP3Utils::parseMultiListOrUidlResponse(response, result);
 
 			for (std::vector <shared_ptr <message> >::iterator it = msg.begin() ;
-			     it != msg.end() ; ++it)
-			{
+			     it != msg.end() ; ++it) {
+
 				shared_ptr <POP3Message> m = dynamicCast <POP3Message>(*it);
 
 				std::map <size_t, string>::const_iterator x = result.find(m->m_num);
 
-				if (x != result.end())
-				{
+				if (x != result.end()) {
+
 					size_t size = 0;
 
 					std::istringstream iss((*x).second);
@@ -380,11 +411,10 @@ void POP3Folder::fetchMessages(std::vector <shared_ptr <message> >& msg, const f
 				}
 			}
 		}
-
 	}
 
-	if (options.has(fetchAttributes::UID))
-	{
+	if (options.has(fetchAttributes::UID)) {
+
 		// Send the "UIDL" command
 		POP3Command::UIDL()->send(store->getConnection());
 
@@ -392,8 +422,8 @@ void POP3Folder::fetchMessages(std::vector <shared_ptr <message> >& msg, const f
 		shared_ptr <POP3Response> response =
 			POP3Response::readMultilineResponse(store->getConnection());
 
-		if (response->isSuccess())
-		{
+		if (response->isSuccess()) {
+
 			// C: UIDL
 			// S: +OK
 			// S: 1 whqtswO00WBw418f9t5JxYwZ
@@ -403,37 +433,42 @@ void POP3Folder::fetchMessages(std::vector <shared_ptr <message> >& msg, const f
 			POP3Utils::parseMultiListOrUidlResponse(response, result);
 
 			for (std::vector <shared_ptr <message> >::iterator it = msg.begin() ;
-			     it != msg.end() ; ++it)
-			{
+			     it != msg.end() ; ++it) {
+
 				shared_ptr <POP3Message> m = dynamicCast <POP3Message>(*it);
 
 				std::map <size_t, string>::const_iterator x = result.find(m->m_num);
 
-				if (x != result.end())
+				if (x != result.end()) {
 					m->m_uid = (*x).second;
+				}
 			}
 		}
 	}
 
-	if (progress)
+	if (progress) {
 		progress->stop(total);
+	}
 }
 
 
-void POP3Folder::fetchMessage(shared_ptr <message> msg, const fetchAttributes& options)
-{
+void POP3Folder::fetchMessage(const shared_ptr <message>& msg, const fetchAttributes& options) {
+
 	shared_ptr <POP3Store> store = m_store.lock();
 
-	if (!store)
+	if (!store) {
 		throw exceptions::illegal_state("Store disconnected");
-	else if (!isOpen())
+	} else if (!isOpen()) {
 		throw exceptions::illegal_state("Folder not open");
+	}
 
-	dynamicCast <POP3Message>(msg)->fetch
-		(dynamicCast <POP3Folder>(shared_from_this()), options);
+	dynamicCast <POP3Message>(msg)->fetch(
+		dynamicCast <POP3Folder>(shared_from_this()),
+		options
+	);
 
-	if (options.has(fetchAttributes::SIZE))
-	{
+	if (options.has(fetchAttributes::SIZE)) {
+
 		// Send the "LIST" command
 		POP3Command::LIST(msg->getNumber())->send(store->getConnection());
 
@@ -441,8 +476,8 @@ void POP3Folder::fetchMessage(shared_ptr <message> msg, const fetchAttributes& o
 		shared_ptr <POP3Response> response =
 			POP3Response::readResponse(store->getConnection());
 
-		if (response->isSuccess())
-		{
+		if (response->isSuccess()) {
+
 			string responseText = response->getText();
 
 			// C: LIST 2
@@ -453,8 +488,8 @@ void POP3Folder::fetchMessage(shared_ptr <message> msg, const fetchAttributes& o
 			while (it != responseText.end() && !(*it == ' ' || *it == '\t')) ++it;
 			while (it != responseText.end() && (*it == ' ' || *it == '\t')) ++it;
 
-			if (it != responseText.end())
-			{
+			if (it != responseText.end()) {
+
 				size_t size = 0;
 
 				std::istringstream iss(string(it, responseText.end()));
@@ -466,8 +501,8 @@ void POP3Folder::fetchMessage(shared_ptr <message> msg, const fetchAttributes& o
 		}
 	}
 
-	if (options.has(fetchAttributes::UID))
-	{
+	if (options.has(fetchAttributes::UID)) {
+
 		// Send the "UIDL" command
 		POP3Command::UIDL(msg->getNumber())->send(store->getConnection());
 
@@ -475,8 +510,8 @@ void POP3Folder::fetchMessage(shared_ptr <message> msg, const fetchAttributes& o
 		shared_ptr <POP3Response> response =
 			POP3Response::readResponse(store->getConnection());
 
-		if (response->isSuccess())
-		{
+		if (response->isSuccess()) {
+
 			string responseText = response->getText();
 
 			// C: UIDL 2
@@ -487,21 +522,22 @@ void POP3Folder::fetchMessage(shared_ptr <message> msg, const fetchAttributes& o
 			while (it != responseText.end() && !(*it == ' ' || *it == '\t')) ++it;
 			while (it != responseText.end() && (*it == ' ' || *it == '\t')) ++it;
 
-			if (it != responseText.end())
-			{
-				dynamicCast <POP3Message>(msg)->m_uid =
-					string(it, responseText.end());
+			if (it != responseText.end()) {
+				dynamicCast <POP3Message>(msg)->m_uid = string(it, responseText.end());
 			}
 		}
 	}
 }
 
 
-std::vector <shared_ptr <message> > POP3Folder::getAndFetchMessages
-	(const messageSet& msgs, const fetchAttributes& attribs)
-{
-	if (msgs.isEmpty())
+std::vector <shared_ptr <message> > POP3Folder::getAndFetchMessages(
+	const messageSet& msgs,
+	const fetchAttributes& attribs
+) {
+
+	if (msgs.isEmpty()) {
 		return std::vector <shared_ptr <message> >();
+	}
 
 	std::vector <shared_ptr <message> > messages = getMessages(msgs);
 	fetchMessages(messages, attribs);
@@ -510,77 +546,84 @@ std::vector <shared_ptr <message> > POP3Folder::getAndFetchMessages
 }
 
 
-int POP3Folder::getFetchCapabilities() const
-{
-	return fetchAttributes::ENVELOPE | fetchAttributes::CONTENT_INFO |
-	       fetchAttributes::SIZE | fetchAttributes::FULL_HEADER |
-	       fetchAttributes::UID | fetchAttributes::IMPORTANCE;
+int POP3Folder::getFetchCapabilities() const {
+
+	return fetchAttributes::ENVELOPE |
+	       fetchAttributes::CONTENT_INFO |
+	       fetchAttributes::SIZE |
+	       fetchAttributes::FULL_HEADER |
+	       fetchAttributes::UID |
+	       fetchAttributes::IMPORTANCE;
 }
 
 
-shared_ptr <folder> POP3Folder::getParent()
-{
-	if (m_path.isEmpty())
+shared_ptr <folder> POP3Folder::getParent() {
+
+	if (m_path.isEmpty()) {
 		return null;
-	else
+	} else {
 		return shared_ptr <POP3Folder>(new POP3Folder(m_path.getParent(), m_store.lock()));
+	}
 }
 
 
-shared_ptr <const store> POP3Folder::getStore() const
-{
+shared_ptr <const store> POP3Folder::getStore() const {
+
 	return m_store.lock();
 }
 
 
-shared_ptr <store> POP3Folder::getStore()
-{
+shared_ptr <store> POP3Folder::getStore() {
+
 	return m_store.lock();
 }
 
 
-void POP3Folder::registerMessage(POP3Message* msg)
-{
+void POP3Folder::registerMessage(POP3Message* msg) {
+
 	m_messages.insert(MessageMap::value_type(msg, msg->getNumber()));
 }
 
 
-void POP3Folder::unregisterMessage(POP3Message* msg)
-{
+void POP3Folder::unregisterMessage(POP3Message* msg) {
+
 	m_messages.erase(msg);
 }
 
 
-void POP3Folder::onStoreDisconnected()
-{
+void POP3Folder::onStoreDisconnected() {
+
 	m_store.reset();
 }
 
 
-void POP3Folder::deleteMessages(const messageSet& msgs)
-{
+void POP3Folder::deleteMessages(const messageSet& msgs) {
+
 	shared_ptr <POP3Store> store = m_store.lock();
 
 	const std::vector <size_t> nums = POP3Utils::messageSetToNumberList(msgs, m_messageCount);
 
-	if (nums.empty())
+	if (nums.empty()) {
 		throw exceptions::invalid_argument();
+	}
 
-	if (!store)
+	if (!store) {
 		throw exceptions::illegal_state("Store disconnected");
-	else if (!isOpen())
+	} else if (!isOpen()) {
 		throw exceptions::illegal_state("Folder not open");
+	}
 
 	for (std::vector <size_t>::const_iterator
-	     it = nums.begin() ; it != nums.end() ; ++it)
-	{
+	     it = nums.begin() ; it != nums.end() ; ++it) {
+
 		POP3Command::DELE(*it)->send(store->getConnection());
 
 		shared_ptr <POP3Response> response =
 			POP3Response::readResponse(store->getConnection());
 
-		if (!response->isSuccess())
+		if (!response->isSuccess()) {
 			throw exceptions::command_error("DELE", response->getFirstLine());
+		}
 	}
 
 	// Sort message list
@@ -593,62 +636,77 @@ void POP3Folder::deleteMessages(const messageSet& msgs)
 
 	// Update local flags
 	for (std::map <POP3Message*, size_t>::iterator it =
-	     m_messages.begin() ; it != m_messages.end() ; ++it)
-	{
+	     m_messages.begin() ; it != m_messages.end() ; ++it) {
+
 		POP3Message* msg = (*it).first;
 
-		if (std::binary_search(list.begin(), list.end(), msg->getNumber()))
+		if (std::binary_search(list.begin(), list.end(), msg->getNumber())) {
 			msg->m_deleted = true;
+		}
 	}
 
 	// Notify message flags changed
 	shared_ptr <events::messageChangedEvent> event =
-		make_shared <events::messageChangedEvent>
-			(dynamicCast <folder>(shared_from_this()),
-			 events::messageChangedEvent::TYPE_FLAGS, list);
+		make_shared <events::messageChangedEvent>(
+			dynamicCast <folder>(shared_from_this()),
+			events::messageChangedEvent::TYPE_FLAGS,
+			list
+		);
 
 	notifyMessageChanged(event);
 }
 
 
-void POP3Folder::setMessageFlags(const messageSet& /* msgs */,
-	const int /* flags */, const int /* mode */)
-{
+void POP3Folder::setMessageFlags(
+	const messageSet& /* msgs */,
+	const int /* flags */,
+	const int /* mode */
+) {
+
 	throw exceptions::operation_not_supported();
 }
 
 
-void POP3Folder::rename(const folder::path& /* newPath */)
-{
+void POP3Folder::rename(const folder::path& /* newPath */) {
+
 	throw exceptions::operation_not_supported();
 }
 
 
-messageSet POP3Folder::addMessage
-	(shared_ptr <vmime::message> /* msg */, const int /* flags */,
-	 vmime::datetime* /* date */, utility::progressListener* /* progress */)
-{
+messageSet POP3Folder::addMessage(
+	const shared_ptr <vmime::message>& /* msg */,
+	const int /* flags */,
+	vmime::datetime* /* date */,
+	utility::progressListener* /* progress */
+) {
+
 	throw exceptions::operation_not_supported();
 }
 
 
-messageSet POP3Folder::addMessage
-	(utility::inputStream& /* is */, const size_t /* size */, const int /* flags */,
-	 vmime::datetime* /* date */, utility::progressListener* /* progress */)
-{
+messageSet POP3Folder::addMessage(
+	utility::inputStream& /* is */,
+	const size_t /* size */,
+	const int /* flags */,
+	vmime::datetime* /* date */,
+	utility::progressListener* /* progress */
+) {
+
 	throw exceptions::operation_not_supported();
 }
 
 
-messageSet POP3Folder::copyMessages
-	(const folder::path& /* dest */, const messageSet& /* msgs */)
-{
+messageSet POP3Folder::copyMessages(
+	const folder::path& /* dest */,
+	const messageSet& /* msgs */
+) {
+
 	throw exceptions::operation_not_supported();
 }
 
 
-void POP3Folder::status(size_t& count, size_t& unseen)
-{
+void POP3Folder::status(size_t& count, size_t& unseen) {
+
 	count = 0;
 	unseen = 0;
 
@@ -661,20 +719,22 @@ void POP3Folder::status(size_t& count, size_t& unseen)
 }
 
 
-shared_ptr <folderStatus> POP3Folder::getStatus()
-{
+shared_ptr <folderStatus> POP3Folder::getStatus() {
+
 	shared_ptr <POP3Store> store = m_store.lock();
 
-	if (!store)
+	if (!store) {
 		throw exceptions::illegal_state("Store disconnected");
+	}
 
 	POP3Command::STAT()->send(store->getConnection());
 
 	shared_ptr <POP3Response> response =
 		POP3Response::readResponse(store->getConnection());
 
-	if (!response->isSuccess())
+	if (!response->isSuccess()) {
 		throw exceptions::command_error("STAT", response->getFirstLine());
+	}
 
 
 	size_t count = 0;
@@ -689,40 +749,45 @@ shared_ptr <folderStatus> POP3Folder::getStatus()
 	status->setUnseenCount(count);
 
 	// Update local message count
-	if (m_messageCount != count)
-	{
+	if (m_messageCount != count) {
+
 		const size_t oldCount = m_messageCount;
 
 		m_messageCount = count;
 
-		if (count > oldCount)
-		{
+		if (count > oldCount) {
+
 			std::vector <size_t> nums;
 			nums.resize(count - oldCount);
 
-			for (size_t i = oldCount + 1, j = 0 ; i <= count ; ++i, ++j)
+			for (size_t i = oldCount + 1, j = 0 ; i <= count ; ++i, ++j) {
 				nums[j] = i;
+			}
 
 			// Notify message count changed
 			shared_ptr <events::messageCountEvent> event =
-				make_shared <events::messageCountEvent>
-					(dynamicCast <folder>(shared_from_this()),
-					 events::messageCountEvent::TYPE_ADDED, nums);
+				make_shared <events::messageCountEvent>(
+					dynamicCast <folder>(shared_from_this()),
+					events::messageCountEvent::TYPE_ADDED,
+					nums
+				);
 
 			notifyMessageCount(event);
 
 			// Notify folders with the same path
 			for (std::list <POP3Folder*>::iterator it = store->m_folders.begin() ;
-			     it != store->m_folders.end() ; ++it)
-			{
-				if ((*it) != this && (*it)->getFullPath() == m_path)
-				{
+			     it != store->m_folders.end() ; ++it) {
+
+				if ((*it) != this && (*it)->getFullPath() == m_path) {
+
 					(*it)->m_messageCount = count;
 
 					shared_ptr <events::messageCountEvent> event =
-						make_shared <events::messageCountEvent>
-							(dynamicCast <folder>((*it)->shared_from_this()),
-							 events::messageCountEvent::TYPE_ADDED, nums);
+						make_shared <events::messageCountEvent>(
+							dynamicCast <folder>((*it)->shared_from_this()),
+							events::messageCountEvent::TYPE_ADDED,
+							nums
+						);
 
 					(*it)->notifyMessageCount(event);
 				}
@@ -734,15 +799,15 @@ shared_ptr <folderStatus> POP3Folder::getStatus()
 }
 
 
-void POP3Folder::expunge()
-{
+void POP3Folder::expunge() {
+
 	// Not supported by POP3 protocol (deleted messages are automatically
 	// expunged at the end of the session...).
 }
 
 
-std::vector <size_t> POP3Folder::getMessageNumbersStartingOnUID(const message::uid& /* uid */)
-{
+std::vector <size_t> POP3Folder::getMessageNumbersStartingOnUID(const message::uid& /* uid */) {
+
 	throw exceptions::operation_not_supported();
 }
 

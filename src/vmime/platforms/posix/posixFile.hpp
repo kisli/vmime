@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2002-2013 Vincent Richard <vincent@vmime.org>
+// Copyright (C) 2002 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -43,8 +43,8 @@ namespace platforms {
 namespace posix {
 
 
-class posixFileWriterOutputStream : public vmime::utility::outputStream
-{
+class posixFileWriterOutputStream : public vmime::utility::outputStream {
+
 public:
 
 	posixFileWriterOutputStream(const vmime::utility::file::path& path, const int fd);
@@ -64,8 +64,8 @@ private:
 
 
 
-class posixFileReaderInputStream : public vmime::utility::seekableInputStream
-{
+class posixFileReaderInputStream : public vmime::utility::seekableInputStream {
+
 public:
 
 	posixFileReaderInputStream(const vmime::utility::file::path& path, const int fd);
@@ -92,8 +92,8 @@ private:
 
 
 
-class posixFileWriter : public vmime::utility::fileWriter
-{
+class posixFileWriter : public vmime::utility::fileWriter {
+
 public:
 
 	posixFileWriter(const vmime::utility::file::path& path, const vmime::string& nativePath);
@@ -108,8 +108,8 @@ private:
 
 
 
-class posixFileReader : public vmime::utility::fileReader
-{
+class posixFileReader : public vmime::utility::fileReader {
+
 public:
 
 	posixFileReader(const vmime::utility::file::path& path, const vmime::string& nativePath);
@@ -124,8 +124,8 @@ private:
 
 
 
-class posixFileIterator : public vmime::utility::fileIterator
-{
+class posixFileIterator : public vmime::utility::fileIterator {
+
 public:
 
 	posixFileIterator(const vmime::utility::file::path& path, const vmime::string& nativePath);
@@ -147,8 +147,8 @@ private:
 
 
 
-class posixFile : public vmime::utility::file
-{
+class posixFile : public vmime::utility::file {
+
 public:
 
 	posixFile(const vmime::utility::file::path& path);
@@ -181,7 +181,11 @@ public:
 
 private:
 
-	static void createDirectoryImpl(const vmime::utility::file::path& fullPath, const vmime::utility::file::path& path, const bool recursive = false);
+	static void createDirectoryImpl(
+		const vmime::utility::file::path& fullPath,
+		const vmime::utility::file::path& path,
+		const bool recursive = false
+	);
 
 private:
 
@@ -191,8 +195,8 @@ private:
 
 
 
-class posixFileSystemFactory : public vmime::utility::fileSystemFactory
-{
+class posixFileSystemFactory : public vmime::utility::fileSystemFactory {
+
 public:
 
 	shared_ptr <vmime::utility::file> create(const vmime::utility::file::path& path) const;
