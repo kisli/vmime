@@ -49,7 +49,7 @@ class UIDMessageRange;
 class VMIME_EXPORT messageSetEnumerator {
 
 public:
-
+	virtual ~messageSetEnumerator();
 	virtual void enumerateNumberMessageRange(const numberMessageRange& range) = 0;
 	virtual void enumerateUIDMessageRange(const UIDMessageRange& range) = 0;
 };
