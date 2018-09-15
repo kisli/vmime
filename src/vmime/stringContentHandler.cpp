@@ -24,8 +24,8 @@
 #include "vmime/stringContentHandler.hpp"
 
 #include "vmime/utility/inputStreamStringAdapter.hpp"
-#include "vmime/utility/inputStreamStringProxyAdapter.hpp"
 #include "vmime/utility/outputStreamAdapter.hpp"
+#include "vmime/utility/streamUtils.hpp"
 
 
 namespace vmime {
@@ -57,28 +57,6 @@ stringContentHandler::stringContentHandler(
 }
 
 
-stringContentHandler::stringContentHandler(
-	const utility::stringProxy& str,
-	const vmime::encoding& enc
-)
-	: m_encoding(enc),
-	  m_string(str) {
-
-}
-
-
-stringContentHandler::stringContentHandler(
-	const string& buffer,
-	const size_t start,
-	const size_t end,
-	const vmime::encoding& enc
-)
-	: m_encoding(enc),
-	  m_string(buffer, start, end) {
-
-}
-
-
 stringContentHandler::~stringContentHandler() {
 
 }
@@ -100,29 +78,10 @@ stringContentHandler& stringContentHandler::operator=(const stringContentHandler
 }
 
 
-void stringContentHandler::setData(const utility::stringProxy& str, const vmime::encoding& enc) {
-
-	m_encoding = enc;
-	m_string = str;
-}
-
-
 void stringContentHandler::setData(const string& buffer, const vmime::encoding& enc) {
 
 	m_encoding = enc;
-	m_string.set(buffer);
-}
-
-
-void stringContentHandler::setData(
-	const string& buffer,
-	const size_t start,
-	const size_t end,
-	const vmime::encoding& enc
-) {
-
-	m_encoding = enc;
-	m_string.set(buffer, start, end);
+	m_string = buffer;
 }
 
 
@@ -154,7 +113,7 @@ void stringContentHandler::generate(
 			theEncoder->getProperties()["maxlinelength"] = maxLineLength;
 			theEncoder->getProperties()["text"] = (m_contentType.getType() == mediaTypes::TEXT);
 
-			utility::inputStreamStringProxyAdapter in(m_string);
+			utility::inputStreamStringAdapter in(m_string);
 
 			std::ostringstream oss;
 			utility::outputStreamAdapter tempOut(oss);
@@ -169,7 +128,7 @@ void stringContentHandler::generate(
 		// No encoding to perform
 		} else {
 
-			m_string.extract(os);
+			os.write(m_string.data(), m_string.length());
 		}
 
 	// Need to encode data before
@@ -179,7 +138,7 @@ void stringContentHandler::generate(
 		theEncoder->getProperties()["maxlinelength"] = maxLineLength;
 		theEncoder->getProperties()["text"] = (m_contentType.getType() == mediaTypes::TEXT);
 
-		utility::inputStreamStringProxyAdapter in(m_string);
+		utility::inputStreamStringAdapter in(m_string);
 
 		theEncoder->encode(in, os);
 	}
@@ -194,14 +153,17 @@ void stringContentHandler::extract(
 	// No decoding to perform
 	if (!isEncoded()) {
 
-		m_string.extract(os, 0, m_string.length(), progress);
+		utility::inputStreamStringAdapter in(m_string);
+		utility::progressListenerSizeAdapter plsa(progress, getLength());
+
+		utility::bufferedStreamCopy(in, os, m_string.length(), progress);
 
 	// Need to decode data
 	} else {
 
 		shared_ptr <utility::encoder::encoder> theDecoder = m_encoding.getEncoder();
 
-		utility::inputStreamStringProxyAdapter in(m_string);
+		utility::inputStreamStringAdapter in(m_string);
 		utility::progressListenerSizeAdapter plsa(progress, getLength());
 
 		theDecoder->decode(in, os, &plsa);
@@ -214,7 +176,10 @@ void stringContentHandler::extractRaw(
 	utility::progressListener* progress
 ) const {
 
-	m_string.extract(os, 0, m_string.length(), progress);
+	utility::inputStreamStringAdapter in(m_string);
+	utility::progressListenerSizeAdapter plsa(progress, getLength());
+
+	utility::bufferedStreamCopy(in, os, m_string.length(), progress);
 }
 
 

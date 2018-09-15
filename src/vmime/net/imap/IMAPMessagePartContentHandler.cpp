@@ -34,7 +34,7 @@
 #include "vmime/net/imap/IMAPStore.hpp"
 
 #include "vmime/utility/outputStreamAdapter.hpp"
-#include "vmime/utility/inputStreamStringProxyAdapter.hpp"
+#include "vmime/utility/inputStreamStringAdapter.hpp"
 
 
 namespace vmime {
@@ -87,7 +87,7 @@ void IMAPMessagePartContentHandler::generate(
 			msg->extractPart(part, tmp, NULL);
 
 			// Decode to another temporary buffer
-			utility::inputStreamStringProxyAdapter in(oss.str());
+			utility::inputStreamStringAdapter in(oss.str());
 
 			std::ostringstream oss2;
 			utility::outputStreamAdapter tmp2(oss2);

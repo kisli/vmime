@@ -38,7 +38,6 @@ VMIME_TEST_SUITE_BEGIN(stringContentHandlerTest)
 		VMIME_TEST(testExtractRaw_Encoded)
 		VMIME_TEST(testGenerate)
 		VMIME_TEST(testGenerate_Encoded)
-		VMIME_TEST(testStringProxy)
 	VMIME_TEST_LIST_END
 
 
@@ -161,36 +160,6 @@ VMIME_TEST_SUITE_BEGIN(stringContentHandlerTest)
 
 		// Data should be reencoded from QP to B64
 		VASSERT_EQ("generate", "Zm9vEjRWYmFy", oss.str());
-	}
-
-	void testStringProxy() {
-
-		// With 'stringProxy' object
-		vmime::utility::stringProxy str("This is the data buffer", 12, 12 + 4);
-		vmime::stringContentHandler cth(str);
-
-		VASSERT_FALSE("empty", cth.isEmpty());
-		VASSERT_EQ("length", 4, cth.getLength());
-
-		std::ostringstream oss;
-		vmime::utility::outputStreamAdapter osa(oss);
-
-		cth.extract(osa);
-
-		VASSERT_EQ("extract", "data", oss.str());
-
-		// Directly with constructor
-		vmime::stringContentHandler cth2("This is the data buffer", 12, 12 + 4);
-
-		VASSERT_FALSE("empty", cth2.isEmpty());
-		VASSERT_EQ("length", 4, cth2.getLength());
-
-		std::ostringstream oss2;
-		vmime::utility::outputStreamAdapter osa2(oss2);
-
-		cth2.extract(osa2);
-
-		VASSERT_EQ("extract", "data", oss2.str());
 	}
 
 VMIME_TEST_SUITE_END

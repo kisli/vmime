@@ -42,18 +42,6 @@ public:
 		const vmime::encoding& enc = NO_ENCODING
 	);
 
-	stringContentHandler(
-		const utility::stringProxy& str,
-		const vmime::encoding& enc = NO_ENCODING
-	);
-
-	stringContentHandler(
-		const string& buffer,
-		const size_t start,
-		const size_t end,
-		const vmime::encoding& enc = NO_ENCODING
-	);
-
 	~stringContentHandler();
 
 	stringContentHandler(const stringContentHandler& cts);
@@ -61,32 +49,20 @@ public:
 
 	shared_ptr <contentHandler> clone() const;
 
-	// Set the data contained in the body.
-	//
-	// The two first functions take advantage of the COW (copy-on-write) system that
-	// might be implemented into std::string. This is done using "stringProxy" object.
-	//
-	// Set "enc" parameter to anything other than NO_ENCODING if the data managed by
-	// this content handler is already encoded with the specified encoding (so, no
-	// encoding/decoding will be performed on generate()/extract()). Note that the
-	// data may be re-encoded (that is, decoded and encoded) if the encoding passed
-	// to generate() is different from this one...
-	void setData(
-		const utility::stringProxy& str,
-		const vmime::encoding& enc = NO_ENCODING
-	);
-
+	/** Set data contained in this object.
+	  *
+	  * @param buffer buffer containing data
+	  * @param enc set to anything other than NO_ENCODING if the data managed by
+	  * this content handler is already encoded with the specified encoding (so, no
+	  * encoding/decoding will be performed on generate()/extract()). Note that the
+	  * data may be re-encoded (that is, decoded and encoded) if the encoding passed
+	  * to generate() is different from this one.
+	  */
 	void setData(
 		const string& buffer,
 		const vmime::encoding& enc = NO_ENCODING
 	);
 
-	void setData(
-		const string& buffer,
-		const size_t start,
-		const size_t end,
-		const vmime::encoding& enc = NO_ENCODING
-	);
 
 	stringContentHandler& operator=(const string& buffer);
 
@@ -121,7 +97,7 @@ private:
 	vmime::encoding m_encoding;
 
 	// The actual data
-	utility::stringProxy m_string;
+	string m_string;
 };
 
 

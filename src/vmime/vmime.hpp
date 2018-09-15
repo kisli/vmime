@@ -80,7 +80,6 @@
 #include "utility/inputStreamPointerAdapter.hpp"
 #include "utility/inputStreamSocketAdapter.hpp"
 #include "utility/inputStreamStringAdapter.hpp"
-#include "utility/inputStreamStringProxyAdapter.hpp"
 #include "utility/outputStream.hpp"
 #include "utility/outputStreamAdapter.hpp"
 #include "utility/outputStreamByteArrayAdapter.hpp"
