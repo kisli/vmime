@@ -4586,7 +4586,11 @@ public:
 			  m_atom(NULL),
 			  m_flag_list(NULL),
 			  m_text(NULL),
-			  m_capability_data(NULL) {
+			  m_mod_sequence_value(NULL),
+			  m_sequence_set(NULL),
+			  m_capability_data(NULL),
+			  m_uid_set(NULL),
+			  m_uid_set2(NULL) {
 
 		}
 
@@ -4596,7 +4600,11 @@ public:
 			delete m_atom;
 			delete m_flag_list;
 			delete m_text;
+			delete m_mod_sequence_value;
+			delete m_sequence_set;
 			delete m_capability_data;
+			delete m_uid_set;
+			delete m_uid_set2;
 		}
 
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
