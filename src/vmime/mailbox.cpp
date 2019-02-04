@@ -80,189 +80,73 @@ void mailbox::parseImpl(
 	const char* const pstart = buffer.data() + position;
 	const char* p = pstart;
 
-	// Ignore blank spaces at the beginning
-	while (p < pend && parserHelpers::isSpace(*p)) ++p;
-
 	// Current state for parsing machine
 	enum States {
 		State_None,
+		State_String,
 		State_Name,
-		State_Address
+		State_Bracket,
+		State_Address_Bracketed,
+		State_Address_Unbracketed,
+		State_NameAt,
 	};
 
-	States state = State_Name;   // let's start with name, we will see later (*)
+	States state = State_None;
 
 	// Temporary buffers for extracted name and address
-	string name;
-	string address;
+	string name, address;
+	unsigned int hold = 0;
 	bool hadBrackets = false;
 
 	while (p < pend) {
-
-		if (state == State_Name) {
-
+		if (state == State_None) {
+			while (p < pend && parserHelpers::isSpace(*p))
+				++p;
+			if (*p == ',' || *p == ';')
+				/* Completely new mailbox -- stop parsing this one. */
+				break;
 			if (*p == '<') {
-
-				state = State_Address;
+				state = State_Bracket;
 				continue;
 			}
-
 			if (*p == '"') {  // Quoted string
-
+				state = State_String;
 				++p;
-
-				bool escaped = false;
-
-				while (p < pend) {
-
-					if (escaped) {
-
-						name += *p;
-						escaped = false;
-
-					} else if (*p == '\\') {
-
-						escaped = true;
-
-					} else {
-
-						if (*p == '"') {
-
-							++p;
-							break;
-
-						} else {
-
-							name += *p;
-						}
-					}
-
-					++p;
-				}
-
-			} else {
-
-				bool escaped = false;
-				int comment = 0;
-
-				while (p < pend) {
-
-					if (escaped) {
-
-						if (!comment) name += *p;
-						escaped = false;
-
-					} else if (comment) {
-
-						if (*p == '\\') {
-							escaped = true;
-						} else if (*p == '(') {
-							++comment;
-						} else if (*p == ')') {
-							--comment;
-						}
-
-					} else if (*p == '\\') {
-
-						escaped = true;
-
-					} else if (*p == '(') {
-
-						++comment;
-
-					} else if (*p == '<') {
-
-						// Erase any space between display name and <address>
-						string::iterator q = name.end();
-
-						while (q != name.begin() && parserHelpers::isSpace(*(q - 1))) {
-							--q;
-						}
-
-						name.erase(q, name.end());
-
-						break;
-
-					} else if (/* parserHelpers::isSpace(*p) || */ *p == '@') {
-
-						break;
-
-					} else {
-
-						name += *p;
-					}
-
-					++p;
-				}
+				continue;
 			}
+			state = State_Name;
+		} else if (state == State_String) {
+			bool escaped = false;
 
-			if (p < pend && *p == '@') {
-
-				// (*) Actually, we were parsing the local-part of an address
-				// and not a display name...
-				address = name;
-				name.clear();
-
-				bool escaped = false;
-				int comment = 0;
-
-				while (p < pend) {
-
-					if (escaped) {
-
-						if (!comment) address += *p;
-						escaped = false;
-
-					} else if (comment) {
-
-						if (*p == '\\') {
-							escaped = true;
-						} else if (*p == '(') {
-							++comment;
-						} else if (*p == ')') {
-							--comment;
-						}
-
-					} else if (*p == '\\') {
-
-						escaped = true;
-
-					} else if (*p == '(') {
-
-						++comment;
-
-					} else if (parserHelpers::isSpace(*p)) {
-
-						break;
-
-					} else {
-
-						address += *p;
-					}
-
-					++p;
+			for (; p < pend; ++p) {
+				if (escaped) {
+					name += *p;
+					escaped = false;
+					continue;
+				} else if (*p == '\\') {
+					escaped = true;
+					continue;
 				}
-
-			} else {
-
-				while (p < pend && parserHelpers::isSpace(*p)) ++p;
-				state = State_None;
+				if (*p == '"') {
+					++p;
+					state = State_None;
+					break;
+				}
+				name += *p;
 			}
-
-		} else if (state == State_Address) {
-
+		} else if (state == State_Address_Bracketed) {
 			bool escaped = false;
 			int comment = 0;
 
-			while (p < pend) {
-
+			for (; p < pend; ++p) {
 				if (escaped) {
-
-					if (!comment) address += *p;
+					if (!comment) {
+						address += *p;
+						name += *p;
+						++hold;
+					}
 					escaped = false;
-
 				} else if (comment) {
-
 					if (*p == '\\') {
 						escaped = true;
 					} else if (*p == '(') {
@@ -270,47 +154,150 @@ void mailbox::parseImpl(
 					} else if (*p == ')') {
 						--comment;
 					}
-
 				} else if (*p == '(') {
-
 					++comment;
-
 				} else if (*p == '\\') {
-
 					escaped = true;
-
 				} else if (*p == '<') {
-
-					// If we found a '<' here, it means that the address
-					// starts _only_ here...and the stuff we have parsed
-					// before belongs actually to the display name!
-					name += address;
-					address.clear();
-
-				} else if (*p == '>') {
-
-					hadBrackets = true;
+					state = State_Bracket;
 					break;
-
-				} else if (!parserHelpers::isSpace(*p)) {
-
+				} else if (*p == '>') {
+					hadBrackets = true;
+					name += *p++;
+					++hold;
+					state = State_Name;
+					break;
+				} else if (parserHelpers::isSpace(*p)) {
+					name += *p;
+					++hold;
+				} else {
 					address += *p;
+					name += *p;
+					++hold;
 				}
-
-				++p;
 			}
+		} else if (state == State_Address_Unbracketed) {
+			bool escaped = false;
+			int comment = 0;
 
-			break;
-
-		} else {
-
-			while (p < pend && parserHelpers::isSpace(*p)) ++p;
-
-			if (p < pend) {
-				state = State_Address;
+			for (; p < pend; ++p) {
+				if (escaped) {
+					if (!comment) {
+						address += *p;
+						name += *p;
+						++hold;
+					}
+					escaped = false;
+				} else if (comment) {
+					if (*p == '\\')
+						escaped = true;
+					else if (*p == '(')
+						++comment;
+					else if (*p == ')')
+						--comment;
+				} else if (*p == '(') {
+					++comment;
+				} else if (*p == '\\') {
+					escaped = true;
+				} else if (*p == '<') {
+					state = State_Bracket;
+					break;
+				} else if (*p == '>') {
+					name += *p++;
+					++hold;
+					state = State_None;
+					break;
+				} else if (*p == ',' || *p == ';') {
+					state = State_None;
+					break;
+				} else if (parserHelpers::isSpace(*p)) {
+					state = State_Name;
+					break;
+				} else {
+					address += *p;
+					name += *p;
+					++hold;
+				}
 			}
+		} else if (state == State_Name) {
+			bool escaped = false;
+			unsigned int comment = 0, at_hold = 0;
+
+			for (; p < pend; ++p) {
+				if (escaped) {
+					if (!comment) {
+						name += *p;
+						++at_hold;
+					}
+					escaped = false;
+				} else if (comment) {
+					if (*p == '\\')
+						escaped = true;
+					else if (*p == '(')
+						++comment;
+					else if (*p == ')')
+						--comment;
+				} else if (*p == '\\') {
+					escaped = true;
+				} else if (*p == '(') {
+					++comment;
+				} else if (*p == '<') {
+					state = State_Bracket;
+					break;
+				} else if (*p == '@') {
+					hold = at_hold;
+					state = State_NameAt;
+					break;
+				} else if (parserHelpers::isSpace(*p)) {
+					name += *p;
+					++hold;
+					at_hold = 1;
+				} else {
+					name += *p;
+					hold = 0;
+					++at_hold;
+				}
+			}
+		} else if (state == State_Bracket) {
+			string::const_iterator q = name.cend();
+			unsigned int nh = 0;
+			while (nh < hold && q != name.cbegin() && parserHelpers::isSpace(*(q - 1))) {
+				--q;
+				++nh;
+			}
+			hold = nh;
+			name += *p++;
+			++hold;
+			if (!address.empty())
+				// If we found a '<' here, it means that the address
+				// starts _only_ here...and the stuff we have parsed
+				// before belongs actually to the display name!
+				address.clear();
+			state = State_Address_Bracketed;
+		} else if (state == State_NameAt) {
+			name += *p++;
+			++hold;
+			// (*) Actually, we were parsing the local-part of an address
+			// and not a display name...
+			// Back up to the last whitespace and treat as address
+			string::const_iterator q = name.cend();
+			unsigned int nh = 0;
+			while (nh < hold && q != name.cbegin() && !parserHelpers::isSpace(*(q - 1))) {
+				--q;
+				++nh;
+			}
+			address.assign(q, name.cend());
+			while (nh < hold && q != name.cbegin() && parserHelpers::isSpace(*(q - 1))) {
+				--q;
+				++nh;
+			}
+			hold = nh;
+			state = State_Address_Unbracketed;
 		}
 	}
+
+	if (hold <= name.size())
+		name.erase(name.size() - hold);
 
 	// Swap name and address when no address was found
 	// (email address is mandatory, whereas name is optional).
