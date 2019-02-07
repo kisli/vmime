@@ -159,6 +159,10 @@ static inline bool isAcceptableHostname(const vmime::string& str) {
 
 
 const vmime::string posixHandler::getHostName() const {
+	char hostname[256];
+
+	::gethostname(hostname, sizeof(hostname));
+	hostname[sizeof(hostname)-1] = '\0';
 
 	// Try to get official canonical name of this host
 	struct addrinfo hints;
@@ -169,8 +173,7 @@ const vmime::string posixHandler::getHostName() const {
 
 	struct addrinfo* info;
 
-	if (getaddrinfo(NULL, "http", &hints, &info) == 0) {
-
+	if (getaddrinfo(hostname, "http", &hints, &info) == 0) {
 		// First, try to get a Fully-Qualified Domain Name (FQDN)
 		for (struct addrinfo* p = info ; p != NULL ; p = p->ai_next) {
 
@@ -201,11 +204,6 @@ const vmime::string posixHandler::getHostName() const {
 
 		freeaddrinfo(info);
 	}
-
-	// Get host name
-	char hostname[256];
-	::gethostname(hostname, sizeof(hostname));
-	hostname[sizeof(hostname) - 1] = '\0';
 
 	if (::strlen(hostname) == 0 || !isAcceptableHostname(hostname)) {
 		::strcpy(hostname, "localhost.localdomain");
