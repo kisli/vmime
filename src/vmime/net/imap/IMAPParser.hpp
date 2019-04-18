@@ -3398,11 +3398,24 @@ public:
 
 			if (VIMAP_PARSER_TRY_CHECK(one_char <'('> )) {
 
-				VIMAP_PARSER_GET_PUSHBACK(body_fld_param_item, m_items);
+				bool isNIL = false;
 
-				while (!VIMAP_PARSER_TRY_CHECK(one_char <')'> )) {
-					VIMAP_PARSER_CHECK(SPACE);
+				if (!parser.isStrict()) {
+
+					// In non-strict mode, allow "()" instead of "NIL"
+					if (VIMAP_PARSER_TRY_CHECK(one_char <')'> )) {
+						isNIL = true;
+					}
+				}
+
+				if (!isNIL) {
+
 					VIMAP_PARSER_GET_PUSHBACK(body_fld_param_item, m_items);
+
+					while (!VIMAP_PARSER_TRY_CHECK(one_char <')'> )) {
+						VIMAP_PARSER_CHECK(SPACE);
+						VIMAP_PARSER_GET_PUSHBACK(body_fld_param_item, m_items);
+					}
 				}
 
 			} else {
