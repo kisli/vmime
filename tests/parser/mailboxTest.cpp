@@ -30,7 +30,7 @@ VMIME_TEST_SUITE_BEGIN(mailboxTest)
 		VMIME_TEST(testParse)
 		VMIME_TEST(testEmptyEmailAddress)
 		VMIME_TEST(testSeparatorInComment)
-		VMIME_TEST(testAddressInName)
+		VMIME_TEST(testMalformations)
 	VMIME_TEST_LIST_END
 
 
@@ -146,13 +146,28 @@ VMIME_TEST_SUITE_BEGIN(mailboxTest)
 		VASSERT_EQ("email2", "bbb@vmime.org", mbox2->getEmail());
 	}
 
-	void testAddressInName() {
-
+	void testMalformations() {
 		vmime::mailbox mbox;
-		mbox.parse("a@b.c <e@f.g>");
 
+		mbox.parse("a@b.c <e@f.g>");
 		VASSERT_EQ("name", vmime::text("a@b.c"), mbox.getName());
 		VASSERT_EQ("email", "e@f.g", mbox.getEmail());
+
+		mbox.parse("a@b.c e@f.g <h@i.j>");
+		VASSERT_EQ("name", vmime::text("a@b.c e@f.g"), mbox.getName());
+		VASSERT_EQ("email", "h@i.j", mbox.getEmail());
+
+		mbox.parse("Foo <bar<baz@quux.com>");
+		VASSERT_EQ("name", vmime::text("Foo <bar"), mbox.getName());
+		VASSERT_EQ("email", "baz@quux.com", mbox.getEmail());
+
+		mbox.parse("Foo <foo@x.com> <bar@x.com>");
+		VASSERT_EQ("name", vmime::text("Foo <foo@x.com>"), mbox.getName());
+		VASSERT_EQ("email", "bar@x.com", mbox.getEmail());
+
+		mbox.parse("Foo <foo@x.com> Bar <bar@y.com>");
+		VASSERT_EQ("name", vmime::text("Foo <foo@x.com> Bar"), mbox.getName());
+		VASSERT_EQ("email", "bar@y.com", mbox.getEmail());
 	}
 
 VMIME_TEST_SUITE_END
