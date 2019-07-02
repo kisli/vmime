@@ -341,11 +341,12 @@ void SMTPConnection::authenticate() {
 			const string password = getAuthenticator()->getPassword();
 			const string authToken = username + '\0' + username + '\0' + password;
 
-			auto encoder = new vmime::utility::encoder::b64Encoder();
 			utility::inputStreamStringAdapter in(authToken);
 			string authTokenBase64;
 			utility::outputStreamStringAdapter out(authTokenBase64);
-			encoder->encode(in, out);
+
+			vmime::utility::encoder::b64Encoder encoder;
+			encoder.encode(in, out);
 
 			sendRequest(SMTPCommand::AUTH(plain, authTokenBase64));
 
