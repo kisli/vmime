@@ -29,10 +29,13 @@
 
 #include "vmime/net/tls/openssl/OpenSSLInitializer.hpp"
 
-#include "vmime/utility/sync/autoLock.hpp"
-#include "vmime/utility/sync/criticalSection.hpp"
-
 #include "vmime/platform.hpp"
+
+#include <openssl/opensslv.h>
+
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+#	define OPENSSL_API_COMPAT 0x10100000L
+#endif
 
 #include <openssl/ssl.h>
 #include <openssl/rand.h>
@@ -43,13 +46,41 @@
 #	include <openssl/conf.h>
 #endif
 
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+#	include "vmime/utility/sync/autoLock.hpp"
+#	include "vmime/utility/sync/criticalSection.hpp"
+#endif
+
+
+// OpenSSL locking callbacks for multithreading support (< v1.1 only)
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
+
+namespace {
+
+vmime::shared_ptr <vmime::utility::sync::criticalSection >* g_openSSLMutexes = NULL;
+
+extern "C" void VMime_OpenSSLCallback_lock(int mode, int n, const char* /* file */, int /* line */) {
+
+	if (mode & CRYPTO_LOCK) {
+		g_openSSLMutexes[n]->lock();
+	} else {
+		g_openSSLMutexes[n]->unlock();
+	}
+}
+
+extern "C" unsigned long VMime_OpenSSLCallback_id() {
+
+	return vmime::platform::getHandler()->getThreadId();
+}
+
+}
+
+#endif
+
 
 namespace vmime {
 namespace net {
 namespace tls {
-
-
-shared_ptr <vmime::utility::sync::criticalSection >* OpenSSLInitializer::sm_mutexes;
 
 
 OpenSSLInitializer::autoInitializer::autoInitializer() {
@@ -80,58 +111,52 @@ OpenSSLInitializer::oneTimeInitializer::~oneTimeInitializer() {
 // static
 void OpenSSLInitializer::initialize() {
 
-#if OPENSSL_VERSION_NUMBER >= 0x0907000L
+#if OPENSSL_VERSION_NUMBER >= 0x0907000L && OPENSSL_VERSION_NUMBER < 0x10100000L
 	OPENSSL_config(NULL);
 #endif
 
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 	SSL_load_error_strings();
 	SSL_library_init();
 	OpenSSL_add_all_algorithms();
 
+	int numMutexes = CRYPTO_num_locks();
+	g_openSSLMutexes = new shared_ptr <vmime::utility::sync::criticalSection>[numMutexes];
+
+	for (int i = 0 ; i < numMutexes ; ++i) {
+		g_openSSLMutexes[i] = vmime::platform::getHandler()->createCriticalSection();
+	}
+
+	CRYPTO_set_locking_callback(OpenSSLCallback_lock);
+	CRYPTO_set_id_callback(OpenSSLCallback_id);
+#endif
+
+	// Seed the RNG, in case /dev/urandom is not available. Explicitely calling
+	// RAND_seed() even though /dev/urandom is available is harmless.
+	enum {
+		SEEDSIZE = 256
+	};
+
 	unsigned char seed[SEEDSIZE];
 	vmime::platform::getHandler()->generateRandomBytes(seed, SEEDSIZE);
 	RAND_seed(seed, SEEDSIZE);
-
-	int numMutexes = CRYPTO_num_locks();
-	sm_mutexes = new shared_ptr <vmime::utility::sync::criticalSection>[numMutexes];
-
-	for (int i = 0 ; i < numMutexes ; ++i) {
-		sm_mutexes[i] = vmime::platform::getHandler()->createCriticalSection();
-	}
-
-	CRYPTO_set_locking_callback(&OpenSSLInitializer::lock);
-	CRYPTO_set_id_callback(&OpenSSLInitializer::id);
 }
 
 
 // static
 void OpenSSLInitializer::uninitialize() {
 
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
 	EVP_cleanup();
 	ERR_free_strings();
 
 	CRYPTO_set_locking_callback(NULL);
 	CRYPTO_set_id_callback(NULL);
 
-	delete [] sm_mutexes;
-}
+	delete [] g_openSSLMutexes;
+	g_openSSLMutexes = NULL;
+#endif
 
-
-// static
-void OpenSSLInitializer::lock(int mode, int n, const char* /* file */, int /* line */) {
-
-	if (mode & CRYPTO_LOCK) {
-		sm_mutexes[n]->lock();
-	} else {
-		sm_mutexes[n]->unlock();
-	}
-}
-
-
-// static
-unsigned long OpenSSLInitializer::id() {
-
-	return vmime::platform::getHandler()->getThreadId();
 }
 
 

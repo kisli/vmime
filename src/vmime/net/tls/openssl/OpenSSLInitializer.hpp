@@ -74,22 +74,6 @@ protected:
 	/** Shutdown the OpenSSL lib
 	  */
 	static void uninitialize();
-
-
-	static shared_ptr <vmime::utility::sync::criticalSection> getMutex();
-
-	enum {
-		SEEDSIZE = 256
-	};
-
-
-	// OpenSSL multithreading support
-	static void lock(int mode, int n, const char* file, int line);
-	static unsigned long id();
-
-private:
-
-	static shared_ptr <vmime::utility::sync::criticalSection >* sm_mutexes;
 };
 
 
