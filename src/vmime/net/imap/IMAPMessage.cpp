@@ -70,7 +70,7 @@ public:
 		if (typeid(comp) == typeid(IMAPParser::msg_att_item)) {
 
 			const int type = static_cast
-				<const IMAPParser::msg_att_item&>(comp).type();
+				<const IMAPParser::msg_att_item&>(comp).type;
 
 			if (type == IMAPParser::msg_att_item::BODY_SECTION ||
 			    type == IMAPParser::msg_att_item::RFC822_TEXT) {
@@ -460,8 +460,8 @@ size_t IMAPMessage::extractImpl(
 	// Get the response
 	scoped_ptr <IMAPParser::response> resp(folder->m_connection->readResponse(&literalHandler));
 
-	if (resp->isBad() || resp->response_done()->response_tagged()->
-		resp_cond_state()->status() != IMAPParser::resp_cond_state::OK) {
+	if (resp->isBad() || resp->response_done->response_tagged->
+		resp_cond_state->status != IMAPParser::resp_cond_state::OK) {
 
 		throw exceptions::command_error("FETCH", resp->getErrorLog(), "bad response");
 	}
@@ -477,23 +477,21 @@ size_t IMAPMessage::extractImpl(
 
 int IMAPMessage::processFetchResponse(
 	const fetchAttributes& options,
-	const IMAPParser::message_data* msgData
+	const IMAPParser::message_data& msgData
 ) {
 
 	shared_ptr <IMAPFolder> folder = m_folder.lock();
 
 	// Get message attributes
-	const std::vector <IMAPParser::msg_att_item*> atts = msgData->msg_att()->items();
 	int changes = 0;
 
-	for (std::vector <IMAPParser::msg_att_item*>::const_iterator
-	     it = atts.begin() ; it != atts.end() ; ++it) {
+	for (auto &att : msgData.msg_att->items) {
 
-		switch ((*it)->type()) {
+		switch (att->type) {
 
 			case IMAPParser::msg_att_item::FLAGS: {
 
-				int flags = IMAPUtils::messageFlagsFromFlags((*it)->flag_list());
+				int flags = IMAPUtils::messageFlagsFromFlags(*att->flag_list);
 
 				if (m_flags != flags) {
 					m_flags = flags;
@@ -504,33 +502,33 @@ int IMAPMessage::processFetchResponse(
 			}
 			case IMAPParser::msg_att_item::UID: {
 
-				m_uid = (*it)->unique_id()->value();
+				m_uid = att->uniqueid->value;
 				break;
 			}
 			case IMAPParser::msg_att_item::MODSEQ: {
 
-				m_modseq = (*it)->mod_sequence_value()->value();
+				m_modseq = att->mod_sequence_value->value;
 				break;
 			}
 			case IMAPParser::msg_att_item::ENVELOPE: {
 
 				if (!options.has(fetchAttributes::FULL_HEADER)) {
 
-					const IMAPParser::envelope* env = (*it)->envelope();
+					auto* env = att->envelope.get();
 					shared_ptr <vmime::header> hdr = getOrCreateHeader();
 
 					// Date
-					hdr->Date()->setValue(env->env_date()->value());
+					hdr->Date()->setValue(env->env_date->value);
 
 					// Subject
 					text subject;
-					text::decodeAndUnfold(env->env_subject()->value(), &subject);
+					text::decodeAndUnfold(env->env_subject->value, &subject);
 
 					hdr->Subject()->setValue(subject);
 
 					// From
 					mailboxList from;
-					IMAPUtils::convertAddressList(*(env->env_from()), from);
+					IMAPUtils::convertAddressList(*(env->env_from), from);
 
 					if (!from.isEmpty()) {
 						hdr->From()->setValue(*(from.getMailboxAt(0)));
@@ -538,13 +536,13 @@ int IMAPMessage::processFetchResponse(
 
 					// To
 					mailboxList to;
-					IMAPUtils::convertAddressList(*(env->env_to()), to);
+					IMAPUtils::convertAddressList(*(env->env_to), to);
 
 					hdr->To()->setValue(to.toAddressList());
 
 					// Sender
 					mailboxList sender;
-					IMAPUtils::convertAddressList(*(env->env_sender()), sender);
+					IMAPUtils::convertAddressList(*(env->env_sender), sender);
 
 					if (!sender.isEmpty()) {
 						hdr->Sender()->setValue(*(sender.getMailboxAt(0)));
@@ -552,7 +550,7 @@ int IMAPMessage::processFetchResponse(
 
 					// Reply-to
 					mailboxList replyTo;
-					IMAPUtils::convertAddressList(*(env->env_reply_to()), replyTo);
+					IMAPUtils::convertAddressList(*(env->env_reply_to), replyTo);
 
 					if (!replyTo.isEmpty()) {
 						hdr->ReplyTo()->setValue(*(replyTo.getMailboxAt(0)));
@@ -560,7 +558,7 @@ int IMAPMessage::processFetchResponse(
 
 					// Cc
 					mailboxList cc;
-					IMAPUtils::convertAddressList(*(env->env_cc()), cc);
+					IMAPUtils::convertAddressList(*(env->env_cc), cc);
 
 					if (!cc.isEmpty()) {
 						hdr->Cc()->setValue(cc.toAddressList());
@@ -568,7 +566,7 @@ int IMAPMessage::processFetchResponse(
 
 					// Bcc
 					mailboxList bcc;
-					IMAPUtils::convertAddressList(*(env->env_bcc()), bcc);
+					IMAPUtils::convertAddressList(*(env->env_bcc), bcc);
 
 					if (!bcc.isEmpty()) {
 						hdr->Bcc()->setValue(bcc.toAddressList());
@@ -579,37 +577,34 @@ int IMAPMessage::processFetchResponse(
 			}
 			case IMAPParser::msg_att_item::BODY_STRUCTURE: {
 
-				m_structure = make_shared <IMAPMessageStructure>((*it)->body());
+				m_structure = make_shared <IMAPMessageStructure>(att->body.get());
 				break;
 			}
 			case IMAPParser::msg_att_item::RFC822_HEADER: {
 
-				getOrCreateHeader()->parse((*it)->nstring()->value());
+				getOrCreateHeader()->parse(att->nstring->value);
 				break;
 			}
 			case IMAPParser::msg_att_item::RFC822_SIZE: {
 
-				m_size = static_cast <size_t>((*it)->number()->value());
+				m_size = static_cast <size_t>(att->number->value);
 				break;
 			}
 			case IMAPParser::msg_att_item::BODY_SECTION: {
 
 				if (!options.has(fetchAttributes::FULL_HEADER)) {
 
-					if ((*it)->section()->section_text1() &&
-					    (*it)->section()->section_text1()->type()
+					if (att->section->section_text1 &&
+					    att->section->section_text1->type
 					        == IMAPParser::section_text::HEADER_FIELDS) {
 
 						header tempHeader;
-						tempHeader.parse((*it)->nstring()->value());
+						tempHeader.parse(att->nstring->value);
 
 						vmime::header& hdr = *getOrCreateHeader();
-						std::vector <shared_ptr <headerField> > fields = tempHeader.getFieldList();
 
-						for (std::vector <shared_ptr <headerField> >::const_iterator jt = fields.begin() ;
-						     jt != fields.end() ; ++jt) {
-
-							hdr.appendField(vmime::clone(*jt));
+						for (auto& fld : tempHeader.getFieldList()) {
+							hdr.appendField(vmime::clone(fld));
 						}
 					}
 				}

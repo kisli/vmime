@@ -176,20 +176,20 @@ void IMAPConnection::connect() {
 	scoped_ptr <IMAPParser::greeting> greet(m_parser->readGreeting());
 	bool needAuth = false;
 
-	if (greet->resp_cond_bye()) {
+	if (greet->resp_cond_bye) {
 
 		internalDisconnect();
 		throw exceptions::connection_greeting_error(greet->getErrorLog());
 
-	} else if (greet->resp_cond_auth()->condition() != IMAPParser::resp_cond_auth::PREAUTH) {
+	} else if (greet->resp_cond_auth->condition != IMAPParser::resp_cond_auth::PREAUTH) {
 
 		needAuth = true;
 	}
 
-	if (greet->resp_cond_auth()->resp_text()->resp_text_code() &&
-	    greet->resp_cond_auth()->resp_text()->resp_text_code()->capability_data()) {
+	if (greet->resp_cond_auth->resp_text->resp_text_code &&
+	    greet->resp_cond_auth->resp_text->resp_text_code->capability_data) {
 
-		processCapabilityResponseData(greet->resp_cond_auth()->resp_text()->resp_text_code()->capability_data());
+		processCapabilityResponseData(greet->resp_cond_auth->resp_text->resp_text_code->capability_data.get());
 	}
 
 #if VMIME_HAVE_TLS_SUPPORT
@@ -294,8 +294,8 @@ void IMAPConnection::authenticate() {
 		internalDisconnect();
 		throw exceptions::command_error("LOGIN", resp->getErrorLog());
 
-	} else if (resp->response_done()->response_tagged()->
-					resp_cond_state()->status() != IMAPParser::resp_cond_state::OK) {
+	} else if (resp->response_done->response_tagged->
+					resp_cond_state->status != IMAPParser::resp_cond_state::OK) {
 
 		internalDisconnect();
 		throw exceptions::authentication_error(resp->getErrorLog());
@@ -411,27 +411,24 @@ void IMAPConnection::authenticateSASL() {
 
 			scoped_ptr <IMAPParser::response> resp(m_parser->readResponse());
 
-			if (resp->response_done() &&
-			    resp->response_done()->response_tagged() &&
-			    resp->response_done()->response_tagged()->resp_cond_state()->
-			    	status() == IMAPParser::resp_cond_state::OK) {
+			if (resp->response_done &&
+			    resp->response_done->response_tagged &&
+			    resp->response_done->response_tagged->resp_cond_state->
+			    	status == IMAPParser::resp_cond_state::OK) {
 
 				m_socket = saslSession->getSecuredSocket(m_socket);
 				return;
 
 			} else {
 
-				std::vector <IMAPParser::continue_req_or_response_data*>
-					respDataList = resp->continue_req_or_response_data();
-
 				string response;
 				bool hasResponse = false;
 
-				for (unsigned int i = 0 ; i < respDataList.size() ; ++i) {
+				for (auto &respData : resp->continue_req_or_response_data) {
 
-					if (respDataList[i]->continue_req()) {
+					if (respData->continue_req) {
 
-						response = respDataList[i]->continue_req()->resp_text()->text();
+						response = respData->continue_req->resp_text->text;
 						hasResponse = true;
 						break;
 					}
@@ -527,8 +524,8 @@ void IMAPConnection::startTLS() {
 
 		scoped_ptr <IMAPParser::response> resp(m_parser->readResponse());
 
-		if (resp->isBad() || resp->response_done()->response_tagged()->
-			resp_cond_state()->status() != IMAPParser::resp_cond_state::OK) {
+		if (resp->isBad() || resp->response_done->response_tagged->
+			resp_cond_state->status != IMAPParser::resp_cond_state::OK) {
 
 			throw exceptions::command_error("STARTTLS", resp->getErrorLog(), "bad response");
 		}
@@ -629,8 +626,8 @@ void IMAPConnection::fetchCapabilities() {
 
 	scoped_ptr <IMAPParser::response> resp(m_parser->readResponse());
 
-	if (resp->response_done()->response_tagged()->
-		resp_cond_state()->status() == IMAPParser::resp_cond_state::OK) {
+	if (resp->response_done->response_tagged->
+			resp_cond_state->status == IMAPParser::resp_cond_state::OK) {
 
 		processCapabilityResponseData(resp.get());
 	}
@@ -639,23 +636,19 @@ void IMAPConnection::fetchCapabilities() {
 
 bool IMAPConnection::processCapabilityResponseData(const IMAPParser::response* resp) {
 
-	const std::vector <IMAPParser::continue_req_or_response_data*>& respDataList =
-		resp->continue_req_or_response_data();
+	for (auto &respData : resp->continue_req_or_response_data) {
 
-	for (size_t i = 0 ; i < respDataList.size() ; ++i) {
-
-		if (respDataList[i]->response_data() == NULL) {
+		if (respData->response_data == NULL) {
 			continue;
 		}
 
-		const IMAPParser::capability_data* capaData =
-			respDataList[i]->response_data()->capability_data();
+		auto &capaData = respData->response_data->capability_data;
 
-		if (capaData == NULL) {
+		if (!capaData) {
 			continue;
 		}
 
-		processCapabilityResponseData(capaData);
+		processCapabilityResponseData(capaData.get());
 		return true;
 	}
 
@@ -667,14 +660,12 @@ void IMAPConnection::processCapabilityResponseData(const IMAPParser::capability_
 
 	std::vector <string> res;
 
-	std::vector <IMAPParser::capability*> caps = capaData->capabilities();
+	for (auto &cap : capaData->capabilities) {
 
-	for (unsigned int j = 0 ; j < caps.size() ; ++j) {
-
-		if (caps[j]->auth_type()) {
-			res.push_back("AUTH=" + caps[j]->auth_type()->name());
+		if (cap->auth_type) {
+			res.push_back("AUTH=" + cap->auth_type->name);
 		} else {
-			res.push_back(utility::stringUtils::toUpper(caps[j]->atom()->value()));
+			res.push_back(utility::stringUtils::toUpper(cap->atom->value));
 		}
 	}
 
@@ -744,34 +735,31 @@ void IMAPConnection::initHierarchySeparator() {
 
 	scoped_ptr <IMAPParser::response> resp(m_parser->readResponse());
 
-	if (resp->isBad() || resp->response_done()->response_tagged()->
-		resp_cond_state()->status() != IMAPParser::resp_cond_state::OK) {
+	if (resp->isBad() || resp->response_done->response_tagged->
+			resp_cond_state->status != IMAPParser::resp_cond_state::OK) {
 
 		internalDisconnect();
 		throw exceptions::command_error("LIST", resp->getErrorLog(), "bad response");
 	}
 
-	const std::vector <IMAPParser::continue_req_or_response_data*>& respDataList =
-		resp->continue_req_or_response_data();
+	const auto& respDataList = resp->continue_req_or_response_data;
 
 	bool found = false;
 
 	for (unsigned int i = 0 ; !found && i < respDataList.size() ; ++i) {
 
-		if (respDataList[i]->response_data() == NULL) {
+		if (!respDataList[i]->response_data) {
 			continue;
 		}
 
-		const IMAPParser::mailbox_data* mailboxData =
-			static_cast <const IMAPParser::response_data*>
-				(respDataList[i]->response_data())->mailbox_data();
+		auto &mailboxData = respDataList[i]->response_data->mailbox_data;
 
-		if (mailboxData == NULL || mailboxData->type() != IMAPParser::mailbox_data::LIST) {
+		if (!mailboxData || mailboxData->type != IMAPParser::mailbox_data::LIST) {
 			continue;
 		}
 
-		if (mailboxData->mailbox_list()->quoted_char() != '\0') {
-			m_hierarchySeparator = mailboxData->mailbox_list()->quoted_char();
+		if (mailboxData->mailbox_list->quoted_char != '\0') {
+			m_hierarchySeparator = mailboxData->mailbox_list->quoted_char;
 			found = true;
 		}
 	}

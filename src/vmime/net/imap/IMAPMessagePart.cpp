@@ -48,7 +48,7 @@ IMAPMessagePart::IMAPMessagePart(
 
 	m_mediaType = vmime::mediaType(
 		"multipart",
-		mpart->media_subtype()->value()
+		mpart->media_subtype->value
 	);
 }
 
@@ -63,35 +63,35 @@ IMAPMessagePart::IMAPMessagePart(
 	  m_number(number),
 	  m_size(0) {
 
-	if (part->body_type_text()) {
+	if (part->body_type_text) {
 
 		m_mediaType = vmime::mediaType(
 			"text",
-			part->body_type_text()->media_text()->media_subtype()->value()
+			part->body_type_text->media_text->media_subtype->value
 		);
 
-		m_size = part->body_type_text()->body_fields()->body_fld_octets()->value();
+		m_size = part->body_type_text->body_fields->body_fld_octets->value;
 
-	} else if (part->body_type_msg()) {
+	} else if (part->body_type_msg) {
 
 		m_mediaType = vmime::mediaType(
 			"message",
-			part->body_type_msg()->media_message()->media_subtype()->value()
+			part->body_type_msg->media_message->media_subtype->value
 		);
 
 	} else {
 
 		m_mediaType = vmime::mediaType(
-			part->body_type_basic()->media_basic()->media_type()->value(),
-			part->body_type_basic()->media_basic()->media_subtype()->value()
+			part->body_type_basic->media_basic->media_type->value,
+			part->body_type_basic->media_basic->media_subtype->value
 		);
 
-		m_size = part->body_type_basic()->body_fields()->body_fld_octets()->value();
+		m_size = part->body_type_basic->body_fields->body_fld_octets->value;
 
-		if (const auto pparam = part->body_type_basic()->body_fields()->body_fld_param()) {
-			for (const auto& param : pparam->items()) {
-				if (param->string1()->value() == "NAME") {
-					m_name = param->string2()->value();
+		if (const auto* pparam = part->body_type_basic->body_fields->body_fld_param.get()) {
+			for (const auto& param : pparam->items) {
+				if (param->string1->value == "NAME") {
+					m_name = param->string2->value;
 				}
 			}
 		}
@@ -168,16 +168,16 @@ shared_ptr <IMAPMessagePart> IMAPMessagePart::create(
 	const IMAPParser::body* body
 ) {
 
-	if (body->body_type_mpart()) {
+	if (body->body_type_mpart) {
 
-		shared_ptr <IMAPMessagePart> part = make_shared <IMAPMessagePart>(parent, number, body->body_type_mpart());
-		part->m_structure = make_shared <IMAPMessageStructure>(part, body->body_type_mpart()->list());
+		auto part = make_shared <IMAPMessagePart>(parent, number, body->body_type_mpart.get());
+		part->m_structure = make_shared <IMAPMessageStructure>(part, body->body_type_mpart->list);
 
 		return part;
 
 	} else {
 
-		return make_shared <IMAPMessagePart>(parent, number, body->body_type_1part());
+		return make_shared <IMAPMessagePart>(parent, number, body->body_type_1part.get());
 	}
 }
 

@@ -100,23 +100,20 @@ shared_ptr <folderStatus> IMAPFolderStatus::clone() const {
 }
 
 
-bool IMAPFolderStatus::updateFromResponse(const IMAPParser::mailbox_data* resp) {
+bool IMAPFolderStatus::updateFromResponse(const IMAPParser::mailbox_data& resp) {
 
 	bool changed = false;
 
-	if (resp->type() == IMAPParser::mailbox_data::STATUS) {
+	if (resp.type == IMAPParser::mailbox_data::STATUS) {
 
-		const IMAPParser::status_att_list* statusAttList = resp->status_att_list();
+		for (auto &attval : resp.status_att_list->values) {
 
-		for (std::vector <IMAPParser::status_att_val*>::const_iterator
-			 jt = statusAttList->values().begin() ; jt != statusAttList->values().end() ; ++jt) {
-
-			switch ((*jt)->type()) {
+			switch (attval->type) {
 
 				case IMAPParser::status_att_val::MESSAGES: {
 
 					const size_t count =
-						static_cast <size_t>((*jt)->value_as_number()->value());
+						static_cast <size_t>(attval->value_as_number()->value);
 
 					if (m_count != count) {
 						m_count = count;
@@ -128,7 +125,7 @@ bool IMAPFolderStatus::updateFromResponse(const IMAPParser::mailbox_data* resp) 
 				case IMAPParser::status_att_val::UNSEEN: {
 
 					const size_t unseen =
-						static_cast <size_t>((*jt)->value_as_number()->value());
+						static_cast <size_t>(attval->value_as_number()->value);
 
 					if (m_unseen != unseen) {
 						m_unseen = unseen;
@@ -140,7 +137,7 @@ bool IMAPFolderStatus::updateFromResponse(const IMAPParser::mailbox_data* resp) 
 				case IMAPParser::status_att_val::RECENT: {
 
 					const size_t recent =
-						static_cast <size_t>((*jt)->value_as_number()->value());
+						static_cast <size_t>(attval->value_as_number()->value);
 
 					if (m_recent != recent) {
 						m_recent = recent;
@@ -152,7 +149,7 @@ bool IMAPFolderStatus::updateFromResponse(const IMAPParser::mailbox_data* resp) 
 				case IMAPParser::status_att_val::UIDNEXT: {
 
 					const vmime_uint32 uidNext =
-						static_cast <vmime_uint32>((*jt)->value_as_number()->value());
+						static_cast <vmime_uint32>(attval->value_as_number()->value);
 
 					if (m_uidNext != uidNext) {
 						m_uidNext = uidNext;
@@ -164,7 +161,7 @@ bool IMAPFolderStatus::updateFromResponse(const IMAPParser::mailbox_data* resp) 
 				case IMAPParser::status_att_val::UIDVALIDITY: {
 
 					const vmime_uint32 uidValidity =
-						static_cast <vmime_uint32>((*jt)->value_as_number()->value());
+						static_cast <vmime_uint32>(attval->value_as_number()->value);
 
 					if (m_uidValidity != uidValidity) {
 						m_uidValidity = uidValidity;
@@ -176,7 +173,7 @@ bool IMAPFolderStatus::updateFromResponse(const IMAPParser::mailbox_data* resp) 
 				case IMAPParser::status_att_val::HIGHESTMODSEQ: {
 
 					const vmime_uint64 highestModSeq =
-						static_cast <vmime_uint64>((*jt)->value_as_mod_sequence_value()->value());
+						static_cast <vmime_uint64>(attval->value_as_mod_sequence_value()->value);
 
 					if (m_highestModSeq != highestModSeq) {
 						m_highestModSeq = highestModSeq;
@@ -189,20 +186,20 @@ bool IMAPFolderStatus::updateFromResponse(const IMAPParser::mailbox_data* resp) 
 			}
 		}
 
-	} else if (resp->type() == IMAPParser::mailbox_data::EXISTS) {
+	} else if (resp.type == IMAPParser::mailbox_data::EXISTS) {
 
 		const size_t count =
-			static_cast <size_t>(resp->number()->value());
+			static_cast <size_t>(resp.number->value);
 
 		if (m_count != count) {
 			m_count = count;
 			changed = true;
 		}
 
-	} else if (resp->type() == IMAPParser::mailbox_data::RECENT) {
+	} else if (resp.type == IMAPParser::mailbox_data::RECENT) {
 
 		const size_t recent =
-			static_cast <size_t>(resp->number()->value());
+			static_cast <size_t>(resp.number->value);
 
 		if (m_recent != recent) {
 			m_recent = recent;
@@ -214,16 +211,16 @@ bool IMAPFolderStatus::updateFromResponse(const IMAPParser::mailbox_data* resp) 
 }
 
 
-bool IMAPFolderStatus::updateFromResponse(const IMAPParser::resp_text_code* resp) {
+bool IMAPFolderStatus::updateFromResponse(const IMAPParser::resp_text_code& resp) {
 
 	bool changed = false;
 
-	switch (resp->type()) {
+	switch (resp.type) {
 
 		case IMAPParser::resp_text_code::UIDVALIDITY: {
 
 			const vmime_uint32 uidValidity =
-				static_cast <vmime_uint32>(resp->nz_number()->value());
+				static_cast <vmime_uint32>(resp.nz_number->value);
 
 			if (m_uidValidity != uidValidity) {
 				m_uidValidity = uidValidity;
@@ -235,7 +232,7 @@ bool IMAPFolderStatus::updateFromResponse(const IMAPParser::resp_text_code* resp
 		case IMAPParser::resp_text_code::UIDNEXT: {
 
 			const vmime_uint32 uidNext =
-				static_cast <vmime_uint32>(resp->nz_number()->value());
+				static_cast <vmime_uint32>(resp.nz_number->value);
 
 			if (m_uidNext != uidNext) {
 				m_uidNext = uidNext;
@@ -247,7 +244,7 @@ bool IMAPFolderStatus::updateFromResponse(const IMAPParser::resp_text_code* resp
 		case IMAPParser::resp_text_code::UNSEEN: {
 
 			const size_t unseen =
-				static_cast <size_t>(resp->nz_number()->value());
+				static_cast <size_t>(resp.nz_number->value);
 
 			if (m_unseen != unseen)
 			{
@@ -260,7 +257,7 @@ bool IMAPFolderStatus::updateFromResponse(const IMAPParser::resp_text_code* resp
 		case IMAPParser::resp_text_code::HIGHESTMODSEQ: {
 
 			const vmime_uint64 highestModSeq =
-				static_cast <vmime_uint64>(resp->mod_sequence_value()->value());
+				static_cast <vmime_uint64>(resp.mod_sequence_value->value);
 
 			if (m_highestModSeq != highestModSeq) {
 				m_highestModSeq = highestModSeq;

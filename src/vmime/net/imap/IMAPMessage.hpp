@@ -132,7 +132,7 @@ private:
 	  * @return a combination of flags that specify what changed exactly on
 	  * this message (see events::messageChangedEvent::Types)
 	  */
-	int processFetchResponse(const fetchAttributes& options, const IMAPParser::message_data* msgData);
+	int processFetchResponse(const fetchAttributes& options, const IMAPParser::message_data& msgData);
 
 	/** Recursively fetch part header for all parts in the structure.
 	  *

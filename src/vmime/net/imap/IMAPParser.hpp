@@ -108,12 +108,7 @@
   * @param type token class
   * @param variable variable which will receive pointer to the retrieved token
   */
-#define VIMAP_PARSER_GET(type, variable)  /* raw pointer version */ \
-	{  \
-		VIMAP_PARSER_FAIL_UNLESS(variable = parser.get <type>(line, &pos));  \
-	}
-
-#define VIMAP_PARSER_GET_PTR(type, variable)  /* scoped_ptr/shared_ptr version */ \
+#define VIMAP_PARSER_GET(type, variable) \
 	{ \
 		variable.reset(parser.get <type>(line, &pos));  \
 		VIMAP_PARSER_FAIL_UNLESS(variable.get());  \
@@ -122,10 +117,7 @@
 /** Get an optional token and advance.
   * If the token is not matched, parsing will continue anyway.
   */
-#define VIMAP_PARSER_TRY_GET(type, variable)  /* raw pointer version */ \
-	(variable = parser.get <type>(line, &pos))
-
-#define VIMAP_PARSER_TRY_GET_PTR(type, variable) /* scoped_ptr/shared_ptr version */ \
+#define VIMAP_PARSER_TRY_GET(type, variable) \
 	(variable.reset(parser.get <type>(line, &pos)), variable.get())
 
 /** Get an optional token and advance. If found, token will be pushed back
@@ -138,19 +130,18 @@
   */
 #define VIMAP_PARSER_TRY_GET_PUSHBACK_OR_ELSE(type, variable, stopInstr) \
 	{  \
-		type* v = NULL;  \
+		std::unique_ptr <type> v;  \
 		try  \
 		{  \
-			v = parser.get <type>(line, &pos);  \
+			v.reset(parser.get <type>(line, &pos));  \
 			if (!v)  \
 			{  \
 				stopInstr;  \
 			}  \
-			variable.push_back(v);  \
+			variable.push_back(std::move(v));  \
 		}  \
 		catch (...)  \
 		{  \
-			delete v;  \
 			throw;  \
 		}  \
 	}
@@ -274,12 +265,9 @@ class VMIME_EXPORT IMAPParser : public object {
 public:
 
 	IMAPParser()
-		: m_tag(),
-		  m_socket(),
-		  m_progress(NULL),
+		: m_progress(NULL),
 		  m_strict(false),
-		  m_literalHandler(NULL),
-		  m_timeoutHandler() {
+		  m_literalHandler(NULL) {
 
 	}
 
@@ -689,8 +677,8 @@ public:
 	DECLARE_COMPONENT(number)
 
 		number(const bool nonZero = false)
-			: m_nonZero(nonZero),
-			  m_value(0) {
+			: value(0),
+			  m_nonZero(nonZero) {
 
 		}
 
@@ -715,7 +703,7 @@ public:
 
 			// Check for non-null length (and for non-zero number)
 			if (!(m_nonZero && val == 0) && pos != *currentPos) {
-				m_value = val;
+				value = val;
 				*currentPos = pos;
 				return true;
 			} else {
@@ -723,14 +711,12 @@ public:
 			}
 		}
 
+
+		unsigned long value;
+
 	private:
 
 		const bool m_nonZero;
-		unsigned long m_value;
-
-	public:
-
-		unsigned long value() const { return (m_value); }
 	};
 
 
@@ -773,40 +759,22 @@ public:
 
 	DECLARE_COMPONENT(uid_range)
 
-		uid_range()
-			: m_uniqueid1(NULL),
-			  m_uniqueid2(NULL) {
-
-		}
-
-		~uid_range() {
-
-			delete m_uniqueid1;
-			delete m_uniqueid2;
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
 
-			VIMAP_PARSER_GET(uniqueid, m_uniqueid1);
+			VIMAP_PARSER_GET(uniqueid, uniqueid1);
 			VIMAP_PARSER_CHECK(one_char <':'>);
-			VIMAP_PARSER_GET(uniqueid, m_uniqueid2);
+			VIMAP_PARSER_GET(uniqueid, uniqueid2);
 
 			*currentPos = pos;
 
 			return true;
 		}
 
-	private:
 
-		uniqueid* m_uniqueid1;
-		uniqueid* m_uniqueid2;
-
-	public:
-
-		uniqueid* uniqueid1() const { return m_uniqueid1; }
-		uniqueid* uniqueid2() const { return m_uniqueid2; }
+		std::unique_ptr <uniqueid> uniqueid1;
+		std::unique_ptr <uniqueid> uniqueid2;
 	};
 
 
@@ -816,32 +784,18 @@ public:
 
 	DECLARE_COMPONENT(uid_set)
 
-		uid_set()
-			: m_uniqueid(NULL),
-			  m_uid_range(NULL),
-			  m_next_uid_set(NULL) {
-
-		}
-
-		~uid_set() {
-
-			delete m_uniqueid;
-			delete m_uid_range;
-			delete m_next_uid_set;
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
 
 			// We have either a 'uid_range' or a 'uniqueid'
-			if (!VIMAP_PARSER_TRY_GET(IMAPParser::uid_range, m_uid_range)) {
-				VIMAP_PARSER_GET(IMAPParser::uniqueid, m_uniqueid);
+			if (!VIMAP_PARSER_TRY_GET(IMAPParser::uid_range, uid_range)) {
+				VIMAP_PARSER_GET(IMAPParser::uniqueid, uniqueid);
 			}
 
 			// And maybe another 'uid-set' following
 			if (VIMAP_PARSER_TRY_CHECK(one_char <','>)) {
-				VIMAP_PARSER_GET(IMAPParser::uid_set, m_next_uid_set);
+				VIMAP_PARSER_GET(IMAPParser::uid_set, next_uid_set);
 			}
 
 			*currentPos = pos;
@@ -849,19 +803,11 @@ public:
 			return true;
 		}
 
-	private:
 
-		IMAPParser::uniqueid* m_uniqueid;
-		IMAPParser::uid_range* m_uid_range;
+		std::unique_ptr <IMAPParser::uniqueid> uniqueid;
+		std::unique_ptr <IMAPParser::uid_range> uid_range;
 
-		IMAPParser::uid_set* m_next_uid_set;
-
-	public:
-
-		IMAPParser::uniqueid* uniqueid() const { return m_uniqueid; }
-		IMAPParser::uid_range* uid_range() const { return m_uid_range; }
-
-		IMAPParser::uid_set* next_uid_set() const { return m_next_uid_set; }
+		std::unique_ptr <IMAPParser::uid_set> next_uid_set;
 	};
 
 
@@ -875,7 +821,8 @@ public:
 	DECLARE_COMPONENT(text)
 
 		text(bool allow8bits = false, const char except = 0)
-			: m_allow8bits(allow8bits), m_except(except) {
+			: m_allow8bits(allow8bits),
+			  m_except(except) {
 		}
 
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
@@ -920,23 +867,21 @@ public:
 				VIMAP_PARSER_FAIL();
 			}
 
-			m_value.resize(len);
-			std::copy(line.begin() + *currentPos, line.begin() + pos, m_value.begin());
+			value.resize(len);
+			std::copy(line.begin() + *currentPos, line.begin() + pos, value.begin());
 
 			*currentPos = pos;
 
 			return true;
 		}
 
+
+		string value;
+
 	private:
 
-		string m_value;
 		const bool m_allow8bits;
 		const char m_except;
-
-	public:
-
-		const string& value() const { return (m_value); }
 	};
 
 
@@ -991,13 +936,13 @@ public:
 			    c != '"' && c != '\\' &&    // quoted_specials
 			    c != '\r' && c != '\n') {   // CR and LF
 
-				m_value = c;
+				value = c;
 				*currentPos = pos + 1;
 
 			} else if (c == '\\' && pos + 1 < line.length() &&
 			           (line[pos + 1] == '"' || line[pos + 1] == '\\')) {
 
-				m_value = line[pos + 1];
+				value = line[pos + 1];
 				*currentPos = pos + 2;
 
 			} else {
@@ -1008,13 +953,8 @@ public:
 			return true;
 		}
 
-	private:
 
-		char m_value;
-
-	public:
-
-		char value() const { return (m_value); }
+		char value;
 	};
 
 
@@ -1034,7 +974,7 @@ public:
 			size_t len = 0;
 			bool valid = false;
 
-			m_value.reserve(line.length() - pos);
+			value.reserve(line.length() - pos);
 
 			for (bool end = false, quoted = false ; !end && pos < line.length() ; ) {
 
@@ -1043,10 +983,10 @@ public:
 				if (quoted) {
 
 					if (c == '"' || c == '\\') {
-						m_value += c;
+						value += c;
 					} else {
-						m_value += '\\';
-						m_value += c;
+						value += '\\';
+						value += c;
 					}
 
 					quoted = false;
@@ -1071,7 +1011,7 @@ public:
 					} else if (c >= 0x01 && c <= 0x7f &&  // CHAR
 					           c != 0x0a && c != 0x0d) {  // CR and LF
 
-						m_value += c;
+						value += c;
 
 						++pos;
 						++len;
@@ -1093,13 +1033,8 @@ public:
 			return true;
 		}
 
-	private:
 
-		string m_value;
-
-	public:
-
-		const string& value() const { return (m_value); }
+		string value;
 	};
 
 
@@ -1143,8 +1078,8 @@ public:
 			component* comp = NULL,
 			const int data = 0
 		)
-			: m_canBeNIL(canBeNIL),
-			  m_isNIL(true),
+			: isNIL(true),
+			  m_canBeNIL(canBeNIL),
 			  m_component(comp),
 			  m_data(data) {
 
@@ -1158,19 +1093,19 @@ public:
 			    VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "nil")) {
 
 				// NIL
-				m_isNIL = true;
+				isNIL = true;
 
 			} else {
 
 				pos = *currentPos;
 
-				m_isNIL = false;
+				isNIL = false;
 
 				// quoted ::= <"> *QUOTED_CHAR <">
 				if (VIMAP_PARSER_TRY_CHECK(one_char <'"'>)) {
 
 					shared_ptr <quoted_text> text;
-					VIMAP_PARSER_GET_PTR(quoted_text, text);
+					VIMAP_PARSER_GET(quoted_text, text);
 					VIMAP_PARSER_CHECK(one_char <'"'>);
 
 					if (parser.m_literalHandler != NULL) {
@@ -1180,16 +1115,16 @@ public:
 
 						if (target != NULL) {
 
-							m_value = "[literal-handler]";
+							value = "[literal-handler]";
 
-							const size_t length = text->value().length();
+							const size_t length = text->value.length();
 							utility::progressListener* progress = target->progressListener();
 
 							if (progress) {
 								progress->start(length);
 							}
 
-							target->putData(text->value());
+							target->putData(text->value);
 
 							if (progress) {
 								progress->progress(length, length);
@@ -1198,12 +1133,12 @@ public:
 
 						} else {
 
-							m_value = text->value();
+							value = text->value;
 						}
 
 					} else {
 
-						m_value = text->value();
+						value = text->value;
 					}
 
 					DEBUG_FOUND("string[quoted]", "<length=" << m_value.length() << ", value='" << m_value << "'>");
@@ -1214,9 +1149,9 @@ public:
 					VIMAP_PARSER_CHECK(one_char <'{'>);
 
 					shared_ptr <number> num;
-					VIMAP_PARSER_GET_PTR(number, num);
+					VIMAP_PARSER_GET(number, num);
 
-					const size_t length = num->value();
+					const size_t length = num->value;
 
 					VIMAP_PARSER_CHECK(one_char <'}'> );
 
@@ -1230,7 +1165,7 @@ public:
 
 						if (target != NULL) {
 
-							m_value = "[literal-handler]";
+							value = "[literal-handler]";
 
 							parser.m_progress = target->progressListener();
 							parser.readLiteral(*target, length);
@@ -1238,19 +1173,19 @@ public:
 
 						} else {
 
-							literalHandler::targetString target(NULL, m_value);
+							literalHandler::targetString target(NULL, value);
 							parser.readLiteral(target, length);
 						}
 
 					} else {
 
-						literalHandler::targetString target(NULL, m_value);
+						literalHandler::targetString target(NULL, value);
 						parser.readLiteral(target, length);
 					}
 
 					line += parser.readLine();
 
-					DEBUG_FOUND("string[literal]", "<length=" << length << ", value='" << m_value << "'>");
+					DEBUG_FOUND("string[literal]", "<length=" << length << ", value='" << value << "'>");
 				}
 			}
 
@@ -1259,21 +1194,16 @@ public:
 			return true;
 		}
 
+
+		bool isNIL;
+		string value;
+
 	private:
 
 		bool m_canBeNIL;
-		bool m_isNIL;
-		string m_value;
 
 		component* m_component;
 		const int m_data;
-
-	public:
-
-		bool isNIL() const { return m_isNIL; }
-
-		const string& value() const { return (m_value); }
-		void setValue(const string& val) { m_value = val; }
 	};
 
 
@@ -1307,15 +1237,15 @@ public:
 
 			size_t pos = *currentPos;
 
-			shared_ptr <xstring> str;
-			VIMAP_PARSER_TRY_GET_PTR(xstring, str);
+			std::unique_ptr <xstring> str;
+			VIMAP_PARSER_TRY_GET(xstring, str);
 
 			if (str) {
-				m_value = str->value();
+				value = str->value;
 			} else {
-				shared_ptr <atom> at;
-				VIMAP_PARSER_GET_PTR(atom, at);
-				m_value = at->value();
+				std::unique_ptr <atom> at;
+				VIMAP_PARSER_GET(atom, at);
+				value = at->value;
 			}
 
 			*currentPos = pos;
@@ -1323,13 +1253,8 @@ public:
 			return true;
 		}
 
-	private:
 
-		string m_value;
-
-	public:
-
-		const string& value() const { return (m_value); }
+		string value;
 	};
 
 
@@ -1386,8 +1311,8 @@ public:
 
 			if (len != 0) {
 
-				m_value.resize(len);
-				std::copy(line.begin() + *currentPos, line.begin() + pos, m_value.begin());
+				value.resize(len);
+				std::copy(line.begin() + *currentPos, line.begin() + pos, value.begin());
 
 				*currentPos = pos;
 
@@ -1399,13 +1324,8 @@ public:
 			return true;
 		}
 
-	private:
 
-		string m_value;
-
-	public:
-
-		const string& value() const { return (m_value); }
+		string value;
 	};
 
 
@@ -1440,7 +1360,7 @@ public:
 				return false;
 			}
 
-			const char* cmp = value().c_str();
+			const char* cmp = value.c_str();
 			const char* with = m_string;
 
 			bool ok = true;
@@ -1479,37 +1399,37 @@ public:
 
 			size_t pos = *currentPos;
 
-			shared_ptr <atom> theCharset, theEncoding;
-			shared_ptr <text> theText;
+			std::unique_ptr <atom> theCharset, theEncoding;
+			std::unique_ptr <text> theText;
 
 			VIMAP_PARSER_CHECK(one_char <'='> );
 			VIMAP_PARSER_CHECK(one_char <'?'> );
 
-			VIMAP_PARSER_GET_PTR(atom, theCharset);
+			VIMAP_PARSER_GET(atom, theCharset);
 
 			VIMAP_PARSER_CHECK(one_char <'?'> );
 
-			VIMAP_PARSER_GET_PTR(atom, theEncoding);
+			VIMAP_PARSER_GET(atom, theEncoding);
 
 			VIMAP_PARSER_CHECK(one_char <'?'> );
 
-			VIMAP_PARSER_GET_PTR(text8_except <'?'> , theText);
+			VIMAP_PARSER_GET(text8_except <'?'> , theText);
 
 			VIMAP_PARSER_CHECK(one_char <'?'> );
 			VIMAP_PARSER_CHECK(one_char <'='> );
 
-			m_charset = theCharset->value();
+			charset = theCharset->value;
 
 			// Decode text
 			scoped_ptr <utility::encoder::encoder> theEncoder;
 
-			if (theEncoding->value()[0] == 'q' || theEncoding->value()[0] == 'Q') {
+			if (theEncoding->value[0] == 'q' || theEncoding->value[0] == 'Q') {
 
 				// Quoted-printable
 				theEncoder.reset(new utility::encoder::qpEncoder());
 				theEncoder->getProperties()["rfc2047"] = true;
 
-			} else if (theEncoding->value()[0] == 'b' || theEncoding->value()[0] == 'B') {
+			} else if (theEncoding->value[0] == 'b' || theEncoding->value[0] == 'B') {
 
 				// Base64
 				theEncoder.reset(new utility::encoder::b64Encoder());
@@ -1517,15 +1437,15 @@ public:
 
 			if (theEncoder.get()) {
 
-				utility::inputStreamStringAdapter in(theText->value());
-				utility::outputStreamStringAdapter out(m_value);
+				utility::inputStreamStringAdapter in(theText->value);
+				utility::outputStreamStringAdapter out(value);
 
 				theEncoder->decode(in, out);
 
 			// No decoder available
 			} else {
 
-				m_value = theText->value();
+				value = theText->value;
 			}
 
 			*currentPos = pos;
@@ -1533,15 +1453,9 @@ public:
 			return true;
 		}
 
-	private:
 
-		vmime::charset m_charset;
-		string m_value;
-
-	public:
-
-		const vmime::charset& charset() const { return (m_charset); }
-		const string& value() const { return (m_value); }
+		vmime::charset charset;
+		string value;
 	};
 
 
@@ -1553,14 +1467,8 @@ public:
 	DECLARE_COMPONENT(seq_number)
 
 		seq_number()
-			: m_number(NULL),
-			  m_star(false) {
+			: star(false) {
 
-		}
-
-		~seq_number() {
-
-			delete m_number;
 		}
 
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
@@ -1569,13 +1477,13 @@ public:
 
 			if (VIMAP_PARSER_TRY_CHECK(one_char <'*'> )) {
 
-				m_star = true;
-				m_number = NULL;
+				star = true;
+				number.reset();
 
 			} else {
 
-				m_star = false;
-				VIMAP_PARSER_GET(IMAPParser::number, m_number);
+				star = false;
+				VIMAP_PARSER_GET(IMAPParser::number, number);
 			}
 
 			*currentPos = pos;
@@ -1583,15 +1491,9 @@ public:
 			return true;
 		}
 
-	private:
 
-		IMAPParser::number* m_number;
-		bool m_star;
-
-	public:
-
-		const IMAPParser::number* number() const { return m_number; }
-		bool star() const { return m_star; }
+		std::unique_ptr <IMAPParser::number> number;
+		bool star;
 	};
 
 
@@ -1603,42 +1505,24 @@ public:
 
 	DECLARE_COMPONENT(seq_range)
 
-		seq_range()
-			: m_first(NULL),
-			  m_last(NULL) {
-
-		}
-
-		~seq_range() {
-
-			delete m_first;
-			delete m_last;
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
 
-			VIMAP_PARSER_GET(seq_number, m_first);
+			VIMAP_PARSER_GET(seq_number, first);
 
 			VIMAP_PARSER_CHECK(one_char <'*'> );
 
-			VIMAP_PARSER_GET(seq_number, m_last);
+			VIMAP_PARSER_GET(seq_number, last);
 
 			*currentPos = pos;
 
 			return true;
 		}
 
-	private:
 
-		IMAPParser::seq_number* m_first;
-		IMAPParser::seq_number* m_last;
-
-	public:
-
-		const IMAPParser::seq_number* first() const { return m_first; }
-		const IMAPParser::seq_number* last() const { return m_last; }
+		std::unique_ptr <IMAPParser::seq_number> first;
+		std::unique_ptr <IMAPParser::seq_number> last;
 	};
 
 
@@ -1652,30 +1536,16 @@ public:
 
 	DECLARE_COMPONENT(sequence_set)
 
-		sequence_set()
-			: m_number(NULL),
-			  m_range(NULL),
-			  m_nextSet(NULL) {
-
-		}
-
-		~sequence_set() {
-
-			delete m_number;
-			delete m_range;
-			delete m_nextSet;
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
 
-			if (!VIMAP_PARSER_TRY_GET(IMAPParser::seq_range, m_range)) {
-				VIMAP_PARSER_GET(IMAPParser::seq_number, m_number);
+			if (!VIMAP_PARSER_TRY_GET(IMAPParser::seq_range, range)) {
+				VIMAP_PARSER_GET(IMAPParser::seq_number, number);
 			}
 
 			if (VIMAP_PARSER_TRY_CHECK(one_char <','> )) {
-				VIMAP_PARSER_GET(sequence_set, m_nextSet);
+				VIMAP_PARSER_GET(sequence_set, nextSet);
 			}
 
 			*currentPos = pos;
@@ -1683,17 +1553,10 @@ public:
 			return true;
 		}
 
-	private:
 
-		IMAPParser::seq_number* m_number;
-		IMAPParser::seq_range* m_range;
-		IMAPParser::sequence_set* m_nextSet;
-
-	public:
-
-		const IMAPParser::seq_number* seq_number() const { return m_number; }
-		const IMAPParser::seq_range* seq_range() const { return m_range; }
-		const IMAPParser::sequence_set* next_sequence_set() const { return m_nextSet; }
+		std::unique_ptr <IMAPParser::seq_number> number;
+		std::unique_ptr <IMAPParser::seq_range> range;
+		std::unique_ptr <IMAPParser::sequence_set> nextSet;
 	};
 
 
@@ -1705,7 +1568,7 @@ public:
 	DECLARE_COMPONENT(mod_sequence_value)
 
 		mod_sequence_value()
-			: m_value(0) {
+			: value(0) {
 
 		}
 
@@ -1728,20 +1591,15 @@ public:
 				}
 			}
 
-			m_value = val;
+			value = val;
 
 			*currentPos = pos;
 
 			return true;
 		}
 
-	private:
 
-		vmime_uint64 m_value;
-
-	public:
-
-		vmime_uint64 value() const { return m_value; }
+		vmime_uint64 value;
 	};
 
 
@@ -1763,14 +1621,8 @@ public:
 	DECLARE_COMPONENT(flag)
 
 		flag()
-			: m_type(UNKNOWN),
-			  m_flag_keyword(NULL) {
+			: type(UNKNOWN) {
 
-		}
-
-		~flag() {
-
-			delete m_flag_keyword;
 		}
 
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
@@ -1781,35 +1633,35 @@ public:
 
 				if (VIMAP_PARSER_TRY_CHECK(one_char <'*'> )) {
 
-					m_type = STAR;
+					type = STAR;
 
 				} else {
 
 					shared_ptr <atom> at;
-					VIMAP_PARSER_GET_PTR(atom, at);
+					VIMAP_PARSER_GET(atom, at);
 
-					const string name = utility::stringUtils::toLower(at->value());
+					const string tname = utility::stringUtils::toLower(at->value);
 
-					if (name == "answered") {
-						m_type = ANSWERED;
-					} else if (name == "flagged") {
-						m_type = FLAGGED;
-					} else if (name == "deleted") {
-						m_type = DELETED;
-					} else if (name == "seen") {
-						m_type = SEEN;
-					} else if (name == "draft") {
-						m_type = DRAFT;
+					if (tname == "answered") {
+						type = ANSWERED;
+					} else if (tname == "flagged") {
+						type = FLAGGED;
+					} else if (tname == "deleted") {
+						type = DELETED;
+					} else if (tname == "seen") {
+						type = SEEN;
+					} else if (tname == "draft") {
+						type = DRAFT;
 					} else {
-						m_type = UNKNOWN;
-						m_name = name;
+						type = UNKNOWN;
+						name = tname;
 					}
 				}
 
 			} else {
 
-				m_type = KEYWORD_OR_EXTENSION;
-				VIMAP_PARSER_GET(atom, m_flag_keyword);
+				type = KEYWORD_OR_EXTENSION;
+				VIMAP_PARSER_GET(atom, flag_keyword);
 			}
 
 			*currentPos = pos;
@@ -1829,19 +1681,11 @@ public:
 			STAR       // * = custom flags allowed
 		};
 
-	private:
 
-		Type m_type;
-		string m_name;
+		Type type;
+		string name;
 
-		IMAPParser::atom* m_flag_keyword;
-
-	public:
-
-		Type type() const { return (m_type); }
-		const string& name() const { return (m_name); }
-
-		const IMAPParser::atom* flag_keyword() const { return (m_flag_keyword); }
+		std::unique_ptr <IMAPParser::atom> flag_keyword;
 	};
 
 
@@ -1851,15 +1695,6 @@ public:
 
 	DECLARE_COMPONENT(flag_list)
 
-		~flag_list() {
-
-			for (std::vector <flag*>::iterator it = m_flags.begin() ;
-			     it != m_flags.end() ; ++it) {
-
-				delete *it;
-			}
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
@@ -1867,7 +1702,7 @@ public:
 			VIMAP_PARSER_CHECK(one_char <'('> );
 
 			while (!VIMAP_PARSER_TRY_CHECK(one_char <')'> )) {
-				VIMAP_PARSER_GET_PUSHBACK(flag, m_flags);
+				VIMAP_PARSER_GET_PUSHBACK(flag, flags);
 				VIMAP_PARSER_TRY_CHECK(SPACE);
 			}
 
@@ -1876,13 +1711,8 @@ public:
 			return true;
 		}
 
-	private:
 
-		std::vector <flag*> m_flags;
-
-	public:
-
-		const std::vector <flag*>& flags() const { return (m_flags); }
+		std::vector <std::unique_ptr <flag>> flags;
 	};
 
 
@@ -1902,16 +1732,16 @@ public:
 
 			if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "inbox")) {
 
-				m_type = INBOX;
-				m_name = "INBOX";
+				type = INBOX;
+				name = "INBOX";
 
 			} else {
 
-				m_type = OTHER;
+				type = OTHER;
 
-				shared_ptr <astring> astr;
-				VIMAP_PARSER_GET_PTR(astring, astr);
-				m_name = astr->value();
+				std::unique_ptr <astring> astr;
+				VIMAP_PARSER_GET(astring, astr);
+				name = astr->value;
 			}
 
 			*currentPos = pos;
@@ -1925,15 +1755,9 @@ public:
 			OTHER
 		};
 
-	private:
 
-		Type m_type;
-		string m_name;
-
-	public:
-
-		Type type() const { return (m_type); }
-		const string& name() const { return (m_name); }
+		Type type;
+		string name;
 	};
 
 
@@ -1950,121 +1774,122 @@ public:
 
 			if (VIMAP_PARSER_TRY_CHECK(one_char <'\\'> )) {
 
-				shared_ptr <atom> at;
-				VIMAP_PARSER_GET_PTR(atom, at);
-				const string name = utility::stringUtils::toLower(at->value());
+				std::unique_ptr <atom> at;
+				VIMAP_PARSER_GET(atom, at);
 
-				m_type = UNKNOWN;  // default
+				const string tname = utility::stringUtils::toLower(at->value);
 
-				switch (name[0]) {
+				type = UNKNOWN;  // default
+
+				switch (tname[0]) {
 
 					case 'a':
 
-						if (name == "all") {
-							m_type = SPECIALUSE_ALL;
-						} else if (name == "archive") {
-							m_type = SPECIALUSE_ARCHIVE;
+						if (tname == "all") {
+							type = SPECIALUSE_ALL;
+						} else if (tname == "archive") {
+							type = SPECIALUSE_ARCHIVE;
 						}
 
 						break;
 
 					case 'd':
 
-						if (name == "drafts") {
-							m_type = SPECIALUSE_DRAFTS;
+						if (tname == "drafts") {
+							type = SPECIALUSE_DRAFTS;
 						}
 
 						break;
 
 					case 'f':
 
-						if (name == "flagged") {
-							m_type = SPECIALUSE_FLAGGED;
+						if (tname == "flagged") {
+							type = SPECIALUSE_FLAGGED;
 						}
 
 						break;
 
 					case 'h':
 
-						if (name == "haschildren") {
-							m_type = HASCHILDREN;
-						} else if (name == "hasnochildren") {
-							m_type = HASNOCHILDREN;
+						if (tname == "haschildren") {
+							type = HASCHILDREN;
+						} else if (tname == "hasnochildren") {
+							type = HASNOCHILDREN;
 						}
 
 						break;
 
 					case 'i':
 
-						if (name == "important") {
-							m_type = SPECIALUSE_IMPORTANT;
+						if (tname == "important") {
+							type = SPECIALUSE_IMPORTANT;
 						}
 
 						break;
 
 					case 'j':
 
-						if (name == "junk") {
-							m_type = SPECIALUSE_JUNK;
+						if (tname == "junk") {
+							type = SPECIALUSE_JUNK;
 						}
 
 						break;
 
 					case 'm':
 
-						if (name == "marked") {
-							m_type = MARKED;
+						if (tname == "marked") {
+							type = MARKED;
 						}
 
 						break;
 
 					case 'n':
 
-						if (name == "noinferiors") {
-							m_type = NOINFERIORS;
-						} else if (name == "noselect") {
-							m_type = NOSELECT;
+						if (tname == "noinferiors") {
+							type = NOINFERIORS;
+						} else if (tname == "noselect") {
+							type = NOSELECT;
 						}
 
 						break;
 
 					case 's':
 
-						if (name == "sent") {
-							m_type = SPECIALUSE_SENT;
+						if (tname == "sent") {
+							type = SPECIALUSE_SENT;
 						}
 
 						break;
 
 					case 't':
 
-						if (name == "trash") {
-							m_type = SPECIALUSE_TRASH;
+						if (tname == "trash") {
+							type = SPECIALUSE_TRASH;
 						}
 
 						break;
 
 					case 'u':
 
-						if (name == "unmarked") {
-							m_type = UNMARKED;
+						if (tname == "unmarked") {
+							type = UNMARKED;
 						}
 
 						break;
 				}
 
-				if (m_type == UNKNOWN) {
-					m_name = "\\" + name;
+				if (type == UNKNOWN) {
+					name = "\\" + tname;
 				}
 
 			} else {
 
-				shared_ptr <atom> at;
-				VIMAP_PARSER_GET_PTR(atom, at);
-				const string name = utility::stringUtils::toLower(at->value());
+				std::unique_ptr <atom> at;
+				VIMAP_PARSER_GET(atom, at);
+				const string tname = utility::stringUtils::toLower(at->value);
 
-				m_type = UNKNOWN;
-				m_name = name;
+				type = UNKNOWN;
+				name = tname;
 			}
 
 			*currentPos = pos;
@@ -2096,15 +1921,9 @@ public:
 			UNMARKED
 		};
 
-	private:
 
-		Type m_type;
-		string m_name;
-
-	public:
-
-		Type type() const { return (m_type); }
-		const string& name() const { return (m_name); }
+		Type type;
+		string name;
 	};
 
 
@@ -2114,15 +1933,6 @@ public:
 
 	DECLARE_COMPONENT(mailbox_flag_list)
 
-		~mailbox_flag_list() {
-
-			for (std::vector <mailbox_flag*>::iterator it = m_flags.begin() ;
-			     it != m_flags.end() ; ++it) {
-
-				delete *it;
-			}
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
@@ -2130,7 +1940,7 @@ public:
 			VIMAP_PARSER_CHECK(one_char <'('> );
 
 			while (!VIMAP_PARSER_TRY_CHECK(one_char <')'> )) {
-				VIMAP_PARSER_GET_PUSHBACK(mailbox_flag, m_flags);
+				VIMAP_PARSER_GET_PUSHBACK(mailbox_flag, flags);
 				VIMAP_PARSER_TRY_CHECK(SPACE);
 			}
 
@@ -2139,13 +1949,8 @@ public:
 			return true;
 		}
 
-	private:
 
-		std::vector <mailbox_flag*> m_flags;
-
-	public:
-
-		const std::vector <mailbox_flag*>& flags() const { return (m_flags); }
+		std::vector <std::unique_ptr <mailbox_flag>> flags;
 	};
 
 
@@ -2157,22 +1962,15 @@ public:
 	DECLARE_COMPONENT(mailbox_list)
 
 		mailbox_list()
-			: m_mailbox_flag_list(NULL),
-			  m_mailbox(NULL), m_quoted_char('\0') {
+			: quoted_char('\0') {
 
-		}
-
-		~mailbox_list() {
-
-			delete m_mailbox_flag_list;
-			delete m_mailbox;
 		}
 
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
 
-			VIMAP_PARSER_GET(IMAPParser::mailbox_flag_list, m_mailbox_flag_list);
+			VIMAP_PARSER_GET(IMAPParser::mailbox_flag_list, mailbox_flag_list);
 
 			VIMAP_PARSER_CHECK(SPACE);
 
@@ -2180,33 +1978,27 @@ public:
 
 				VIMAP_PARSER_CHECK(one_char <'"'> );
 
-				shared_ptr <QUOTED_CHAR> qc;
-				VIMAP_PARSER_GET_PTR(QUOTED_CHAR, qc);
-				m_quoted_char = qc->value();
+				std::unique_ptr <QUOTED_CHAR> qc;
+				VIMAP_PARSER_GET(QUOTED_CHAR, qc);
+				quoted_char = qc->value;
 
 				VIMAP_PARSER_CHECK(one_char <'"'> );
 			}
 
 			VIMAP_PARSER_CHECK(SPACE);
 
-			VIMAP_PARSER_GET(IMAPParser::mailbox, m_mailbox);
+			VIMAP_PARSER_GET(IMAPParser::mailbox, mailbox);
 
 			*currentPos = pos;
 
 			return true;
 		}
 
-	private:
 
-		IMAPParser::mailbox_flag_list* m_mailbox_flag_list;
-		IMAPParser::mailbox* m_mailbox;
-		char m_quoted_char;
+		std::unique_ptr <IMAPParser::mailbox_flag_list> mailbox_flag_list;
+		std::unique_ptr <IMAPParser::mailbox> mailbox;
 
-	public:
-
-		const IMAPParser::mailbox_flag_list* mailbox_flag_list() const { return (m_mailbox_flag_list); }
-		const IMAPParser::mailbox* mailbox() const { return (m_mailbox); }
-		char quoted_char() const { return (m_quoted_char); }
+		char quoted_char;
 	};
 
 
@@ -2221,18 +2013,19 @@ public:
 
 			size_t pos = *currentPos;
 
-			shared_ptr <atom> at;
-			VIMAP_PARSER_GET_PTR(atom, at);
-			m_name = utility::stringUtils::toLower(at->value());
+			std::unique_ptr <atom> at;
+			VIMAP_PARSER_GET(atom, at);
 
-			if (m_name == "kerberos_v4") {
-				m_type = KERBEROS_V4;
-			} else if (m_name == "gssapi") {
-				m_type = GSSAPI;
-			} else if (m_name == "skey") {
-				m_type = SKEY;
+			name = utility::stringUtils::toLower(at->value);
+
+			if (name == "kerberos_v4") {
+				type = KERBEROS_V4;
+			} else if (name == "gssapi") {
+				type = GSSAPI;
+			} else if (name == "skey") {
+				type = SKEY;
 			} else {
-				m_type = UNKNOWN;
+				type = UNKNOWN;
 			}
 
 			return true;
@@ -2248,15 +2041,9 @@ public:
 			SKEY
 		};
 
-	private:
 
-		Type m_type;
-		string m_name;
-
-	public:
-
-		Type type() const { return (m_type); }
-		const string name() const { return (m_name); }
+		Type type;
+		string name;
 	};
 
 
@@ -2277,16 +2064,6 @@ public:
 
 	DECLARE_COMPONENT(status_att_val)
 
-		status_att_val()
-			: m_value(NULL) {
-
-		}
-
-		~status_att_val() {
-
-			delete m_value;
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
@@ -2294,28 +2071,28 @@ public:
 			// "HIGHESTMODSEQ" SP mod-sequence-valzer
 			if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "highestmodseq")) {
 
-				m_type = HIGHESTMODSEQ;
+				type = HIGHESTMODSEQ;
 
 				VIMAP_PARSER_CHECK(SPACE);
-				VIMAP_PARSER_GET(IMAPParser::mod_sequence_value, m_value);
+				VIMAP_PARSER_GET(IMAPParser::mod_sequence_value, value);
 
 			} else {
 
 				if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "messages")) {
-					m_type = MESSAGES;
+					type = MESSAGES;
 				} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "recent")) {
-					m_type = RECENT;
+					type = RECENT;
 				} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "uidnext")) {
-					m_type = UIDNEXT;
+					type = UIDNEXT;
 				} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "uidvalidity")) {
-					m_type = UIDVALIDITY;
+					type = UIDVALIDITY;
 				} else {
 					VIMAP_PARSER_CHECK_WITHARG(special_atom, "unseen");
-					m_type = UNSEEN;
+					type = UNSEEN;
 				}
 
 				VIMAP_PARSER_CHECK(SPACE);
-				VIMAP_PARSER_GET(IMAPParser::number, m_value);
+				VIMAP_PARSER_GET(IMAPParser::number, value);
 			}
 
 			*currentPos = pos;
@@ -2336,21 +2113,17 @@ public:
 			UNSEEN
 		};
 
-	private:
 
-		Type m_type;
-		IMAPParser::component* m_value;
+		Type type;
+		std::unique_ptr <IMAPParser::component> value;
 
-	public:
-
-		Type type() const { return (m_type); }
 
 		const IMAPParser::number* value_as_number() const {
-			return dynamic_cast <IMAPParser::number *>(m_value);
+			return dynamic_cast <IMAPParser::number *>(value.get());
 		}
 
 		const IMAPParser::mod_sequence_value* value_as_mod_sequence_value() const {
-			return dynamic_cast <IMAPParser::mod_sequence_value *>(m_value);
+			return dynamic_cast <IMAPParser::mod_sequence_value *>(value.get());
 		}
 	};
 
@@ -2359,23 +2132,14 @@ public:
 
 	DECLARE_COMPONENT(status_att_list)
 
-		~status_att_list() {
-
-			for (std::vector <status_att_val*>::iterator it = m_values.begin() ;
-			     it != m_values.end() ; ++it) {
-
-				delete *it;
-			}
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
 
-			VIMAP_PARSER_GET_PUSHBACK(IMAPParser::status_att_val, m_values);
+			VIMAP_PARSER_GET_PUSHBACK(IMAPParser::status_att_val, values);
 
 			while (VIMAP_PARSER_TRY_CHECK(SPACE)) {
-				VIMAP_PARSER_GET_PUSHBACK(IMAPParser::status_att_val, m_values);
+				VIMAP_PARSER_GET_PUSHBACK(IMAPParser::status_att_val, values);
 			}
 
 			*currentPos = pos;
@@ -2383,13 +2147,8 @@ public:
 			return true;
 		}
 
-	private:
 
-		std::vector <status_att_val*> m_values;
-
-	public:
-
-		const std::vector <status_att_val*>& values() const { return m_values; }
+		std::vector <std::unique_ptr <status_att_val>> values;
 	};
 
 
@@ -2401,25 +2160,13 @@ public:
 
 	DECLARE_COMPONENT(capability)
 
-		capability()
-			: m_auth_type(NULL),
-			m_atom(NULL) {
-
-		}
-
-		~capability() {
-
-			delete m_auth_type;
-			delete m_atom;
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
 
-			VIMAP_PARSER_GET(IMAPParser::atom, m_atom);
+			VIMAP_PARSER_GET(IMAPParser::atom, atom);
 
-			string value = m_atom->value();
+			string value = atom->value;
 			const char* str = value.c_str();
 
 			if ((str[0] == 'a' || str[0] == 'A') &&
@@ -2429,10 +2176,9 @@ public:
 			    (str[4] == '=')) {
 
 				size_t pos = 5;
-				m_auth_type = parser.get <IMAPParser::auth_type>(value, &pos);
+				auth_type.reset(parser.get <IMAPParser::auth_type>(value, &pos));
 
-				delete m_atom;
-				m_atom = NULL;
+				atom.reset();
 			}
 
 			*currentPos = pos;
@@ -2440,15 +2186,9 @@ public:
 			return true;
 		}
 
-	private:
 
-		IMAPParser::auth_type* m_auth_type;
-		IMAPParser::atom* m_atom;
-
-	public:
-
-		const IMAPParser::auth_type* auth_type() const { return (m_auth_type); }
-		const IMAPParser::atom* atom() const { return (m_atom); }
+		std::unique_ptr <IMAPParser::auth_type> auth_type;
+		std::unique_ptr <IMAPParser::atom> atom;
 	};
 
 
@@ -2462,15 +2202,6 @@ public:
 
 	DECLARE_COMPONENT(capability_data)
 
-		~capability_data() {
-
-			for (std::vector <capability*>::iterator it = m_capabilities.begin() ;
-			     it != m_capabilities.end() ; ++it) {
-
-				delete *it;
-			}
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
@@ -2479,9 +2210,9 @@ public:
 
 			while (VIMAP_PARSER_TRY_CHECK(SPACE)) {
 
-				capability* cap;
+				std::unique_ptr <capability> cap;
 
-				if (parser.isStrict() || m_capabilities.empty()) {
+				if (parser.isStrict() || capabilities.empty()) {
 					VIMAP_PARSER_GET(capability, cap);
 				} else {
 					VIMAP_PARSER_TRY_GET(capability, cap);  // allow SPACE at end of line (Apple iCloud IMAP server)
@@ -2491,7 +2222,7 @@ public:
 					break;
 				}
 
-				m_capabilities.push_back(cap);
+				capabilities.push_back(std::move(cap));
 			}
 
 			*currentPos = pos;
@@ -2499,13 +2230,8 @@ public:
 			return true;
 		}
 
-	private:
 
-		std::vector <capability*> m_capabilities;
-
-	public:
-
-		const std::vector <capability*>& capabilities() const { return (m_capabilities); }
+		std::vector <std::unique_ptr <capability>> capabilities;
 	};
 
 
@@ -2544,33 +2270,33 @@ public:
 			VIMAP_PARSER_TRY_CHECK(SPACE);
 
 			shared_ptr <number> nd;
-			VIMAP_PARSER_GET_PTR(number, nd);
+			VIMAP_PARSER_GET(number, nd);
 
 			VIMAP_PARSER_CHECK(one_char <'-'> );
 
 			shared_ptr <atom> amo;
-			VIMAP_PARSER_GET_PTR(atom, amo);
+			VIMAP_PARSER_GET(atom, amo);
 
 			VIMAP_PARSER_CHECK(one_char <'-'> );
 
 			shared_ptr <number> ny;
-			VIMAP_PARSER_GET_PTR(number, ny);
+			VIMAP_PARSER_GET(number, ny);
 
 			VIMAP_PARSER_TRY_CHECK(SPACE);
 
 			// 2digit ":" 2digit ":" 2digit
 			shared_ptr <number> nh;
-			VIMAP_PARSER_GET_PTR(number, nh);
+			VIMAP_PARSER_GET(number, nh);
 
 			VIMAP_PARSER_CHECK(one_char <':'> );
 
 			shared_ptr <number> nmi;
-			VIMAP_PARSER_GET_PTR(number, nmi);
+			VIMAP_PARSER_GET(number, nmi);
 
 			VIMAP_PARSER_CHECK(one_char <':'> );
 
 			shared_ptr <number> ns;
-			VIMAP_PARSER_GET_PTR(number, ns);
+			VIMAP_PARSER_GET(number, ns);
 
 			VIMAP_PARSER_TRY_CHECK(SPACE);
 
@@ -2582,25 +2308,25 @@ public:
 			}
 
 			shared_ptr <number> nz;
-			VIMAP_PARSER_GET_PTR(number, nz);
+			VIMAP_PARSER_GET(number, nz);
 
 			VIMAP_PARSER_CHECK(one_char <'"'> );
 
 
-			m_datetime.setHour(static_cast <int>(std::min(std::max(nh->value(), 0ul), 23ul)));
-			m_datetime.setMinute(static_cast <int>(std::min(std::max(nmi->value(), 0ul), 59ul)));
-			m_datetime.setSecond(static_cast <int>(std::min(std::max(ns->value(), 0ul), 59ul)));
+			m_datetime.setHour(static_cast <int>(std::min(std::max(nh->value, 0ul), 23ul)));
+			m_datetime.setMinute(static_cast <int>(std::min(std::max(nmi->value, 0ul), 59ul)));
+			m_datetime.setSecond(static_cast <int>(std::min(std::max(ns->value, 0ul), 59ul)));
 
-			const int zone = static_cast <int>(nz->value());
+			const int zone = static_cast <int>(nz->value);
 			const int zh = zone / 100;   // hour offset
 			const int zm = zone % 100;   // minute offset
 
 			m_datetime.setZone(((zh * 60) + zm) * sign);
 
-			m_datetime.setDay(static_cast <int>(std::min(std::max(nd->value(), 1ul), 31ul)));
-			m_datetime.setYear(static_cast <int>(ny->value()));
+			m_datetime.setDay(static_cast <int>(std::min(std::max(nd->value, 1ul), 31ul)));
+			m_datetime.setYear(static_cast <int>(ny->value));
 
-			const string month(utility::stringUtils::toLower(amo->value()));
+			const string month(utility::stringUtils::toLower(amo->value));
 			int mon = vmime::datetime::JANUARY;
 
 			if (month.length() >= 3) {
@@ -2679,15 +2405,6 @@ public:
 
 	DECLARE_COMPONENT(header_list)
 
-		~header_list() {
-
-			for (std::vector <header_fld_name*>::iterator it = m_fld_names.begin() ;
-			     it != m_fld_names.end() ; ++it) {
-
-				delete *it;
-			}
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
@@ -2695,7 +2412,7 @@ public:
 			VIMAP_PARSER_CHECK(one_char <'('> );
 
 			while (!VIMAP_PARSER_TRY_CHECK(one_char <')'> )) {
-				VIMAP_PARSER_GET_PUSHBACK(header_fld_name, m_fld_names);
+				VIMAP_PARSER_GET_PUSHBACK(header_fld_name, fld_names);
 				VIMAP_PARSER_TRY_CHECK(SPACE);
 			}
 
@@ -2704,13 +2421,8 @@ public:
 			return true;
 		}
 
-	private:
 
-		std::vector <header_fld_name*> m_fld_names;
-
-	public:
-
-		const std::vector <header_fld_name*>& fld_names() const { return (m_fld_names); }
+		std::vector <std::unique_ptr <header_fld_name>> fld_names;
 	};
 
 
@@ -2726,41 +2438,23 @@ public:
 
 	DECLARE_COMPONENT(body_extension)
 
-		body_extension()
-			: m_nstring(NULL),
-			  m_number(NULL) {
-
-		}
-
-		~body_extension() {
-
-			delete m_nstring;
-			delete m_number;
-
-			for (std::vector <body_extension*>::iterator it = m_body_extensions.begin() ;
-			     it != m_body_extensions.end() ; ++it) {
-
-				delete *it;
-			}
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
 
 			if (VIMAP_PARSER_TRY_CHECK(one_char <'('> )) {
 
-				VIMAP_PARSER_GET_PUSHBACK(body_extension, m_body_extensions);
+				VIMAP_PARSER_GET_PUSHBACK(body_extension, body_extensions);
 
 				while (!VIMAP_PARSER_TRY_CHECK(one_char <')'> )) {
-					VIMAP_PARSER_GET_PUSHBACK(body_extension, m_body_extensions);
+					VIMAP_PARSER_GET_PUSHBACK(body_extension, body_extensions);
 					VIMAP_PARSER_TRY_CHECK(SPACE);
 				}
 
 			} else {
 
-				if (!VIMAP_PARSER_TRY_GET(IMAPParser::nstring, m_nstring)) {
-					VIMAP_PARSER_GET(IMAPParser::number, m_number);
+				if (!VIMAP_PARSER_TRY_GET(IMAPParser::nstring, nstring)) {
+					VIMAP_PARSER_GET(IMAPParser::number, number);
 				}
 			}
 
@@ -2769,19 +2463,11 @@ public:
 			return true;
 		}
 
-	private:
 
-		IMAPParser::nstring* m_nstring;
-		IMAPParser::number* m_number;
+		std::unique_ptr <IMAPParser::nstring> nstring;
+		std::unique_ptr <IMAPParser::number> number;
 
-		std::vector <body_extension*> m_body_extensions;
-
-	public:
-
-		IMAPParser::nstring* nstring() const { return (m_nstring); }
-		IMAPParser::number* number() const { return (m_number); }
-
-		const std::vector <body_extension*>& body_extensions() const { return (m_body_extensions); }
+		std::vector <std::unique_ptr <body_extension>> body_extensions;
 	};
 
 
@@ -2791,16 +2477,6 @@ public:
 	//
 
 	DECLARE_COMPONENT(section_text)
-
-		section_text()
-			: m_header_list(NULL) {
-
-		}
-
-		~section_text() {
-
-			delete m_header_list;
-		}
 
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
@@ -2812,25 +2488,25 @@ public:
 
 			if (b1 || b2) {
 
-				m_type = b1 ? HEADER_FIELDS_NOT : HEADER_FIELDS;
+				type = b1 ? HEADER_FIELDS_NOT : HEADER_FIELDS;
 
 				VIMAP_PARSER_CHECK(SPACE);
-				VIMAP_PARSER_GET(IMAPParser::header_list, m_header_list);
+				VIMAP_PARSER_GET(IMAPParser::header_list, header_list);
 
 			// "HEADER"
 			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "header")) {
 
-				m_type = HEADER;
+				type = HEADER;
 
 			// "MIME"
 			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "mime")) {
 
-				m_type = MIME;
+				type = MIME;
 
 			// "TEXT"
 			} else {
 
-				m_type = TEXT;
+				type = TEXT;
 
 				VIMAP_PARSER_CHECK_WITHARG(special_atom, "text");
 			}
@@ -2849,15 +2525,9 @@ public:
 			TEXT
 		};
 
-	private:
 
-		Type m_type;
-		IMAPParser::header_list* m_header_list;
-
-	public:
-
-		Type type() const { return (m_type); }
-		const IMAPParser::header_list* header_list() const { return (m_header_list); }
+		Type type;
+		std::unique_ptr <IMAPParser::header_list> header_list;
 	};
 
 
@@ -2868,18 +2538,6 @@ public:
 
 	DECLARE_COMPONENT(section)
 
-		section()
-			: m_section_text1(NULL),
-			  m_section_text2(NULL) {
-
-		}
-
-		~section() {
-
-			delete m_section_text1;
-			delete m_section_text2;
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
@@ -2888,18 +2546,18 @@ public:
 
 			if (!VIMAP_PARSER_TRY_CHECK(one_char <']'> )) {
 
-				if (!VIMAP_PARSER_TRY_GET(section_text, m_section_text1)) {
+				if (!VIMAP_PARSER_TRY_GET(section_text, section_text1)) {
 
-					shared_ptr <nz_number> num;
-					VIMAP_PARSER_GET_PTR(nz_number, num);
-					m_nz_numbers.push_back(static_cast <unsigned int>(num->value()));
+					std::unique_ptr <nz_number> num;
+					VIMAP_PARSER_GET(nz_number, num);
+					nz_numbers.push_back(static_cast <unsigned int>(num->value));
 
 					while (VIMAP_PARSER_TRY_CHECK(one_char <'.'> )) {
 
-						if (VIMAP_PARSER_TRY_GET_PTR(nz_number, num)) {
-							m_nz_numbers.push_back(static_cast <unsigned int>(num->value()));
+						if (VIMAP_PARSER_TRY_GET(nz_number, num)) {
+							nz_numbers.push_back(static_cast <unsigned int>(num->value));
 						} else {
-							VIMAP_PARSER_GET(section_text, m_section_text2);
+							VIMAP_PARSER_GET(section_text, section_text2);
 							break;
 						}
 					}
@@ -2913,17 +2571,10 @@ public:
 			return true;
 		}
 
-	private:
 
-		section_text* m_section_text1;
-		section_text* m_section_text2;
-		std::vector <unsigned int> m_nz_numbers;
-
-	public:
-
-		const section_text* section_text1() const { return (m_section_text1); }
-		const section_text* section_text2() const { return (m_section_text2); }
-		const std::vector <unsigned int>& nz_numbers() const { return (m_nz_numbers); }
+		std::unique_ptr <section_text> section_text1;
+		std::unique_ptr <section_text> section_text2;
+		std::vector <unsigned int> nz_numbers;
 	};
 
 
@@ -2952,34 +2603,18 @@ public:
 
 	DECLARE_COMPONENT(address)
 
-		address()
-			: m_addr_name(NULL),
-			  m_addr_adl(NULL),
-			  m_addr_mailbox(NULL),
-			  m_addr_host(NULL) {
-
-		}
-
-		~address() {
-
-			delete m_addr_name;
-			delete m_addr_adl;
-			delete m_addr_mailbox;
-			delete m_addr_host;
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
 
 			VIMAP_PARSER_CHECK(one_char <'('> );
-			VIMAP_PARSER_GET(nstring, m_addr_name);
+			VIMAP_PARSER_GET(nstring, addr_name);
 			VIMAP_PARSER_CHECK(SPACE);
-			VIMAP_PARSER_GET(nstring, m_addr_adl);
+			VIMAP_PARSER_GET(nstring, addr_adl);
 			VIMAP_PARSER_CHECK(SPACE);
-			VIMAP_PARSER_GET(nstring, m_addr_mailbox);
+			VIMAP_PARSER_GET(nstring, addr_mailbox);
 			VIMAP_PARSER_CHECK(SPACE);
-			VIMAP_PARSER_GET(nstring, m_addr_host);
+			VIMAP_PARSER_GET(nstring, addr_host);
 			VIMAP_PARSER_CHECK(one_char <')'> );
 
 			*currentPos = pos;
@@ -2987,19 +2622,11 @@ public:
 			return true;
 		}
 
-	private:
 
-		nstring* m_addr_name;
-		nstring* m_addr_adl;
-		nstring* m_addr_mailbox;
-		nstring* m_addr_host;
-
-	public:
-
-		nstring* addr_name() const { return (m_addr_name); }
-		nstring* addr_adl() const { return (m_addr_adl); }
-		nstring* addr_mailbox() const { return (m_addr_mailbox); }
-		nstring* addr_host() const { return (m_addr_host); }
+		std::unique_ptr <nstring> addr_name;
+		std::unique_ptr <nstring> addr_adl;
+		std::unique_ptr <nstring> addr_mailbox;
+		std::unique_ptr <nstring> addr_host;
 	};
 
 
@@ -3008,15 +2635,6 @@ public:
 	//
 
 	DECLARE_COMPONENT(address_list)
-
-		~address_list() {
-
-			for (std::vector <address*>::iterator it = m_addresses.begin() ;
-			     it != m_addresses.end() ; ++it) {
-
-				delete (*it);
-			}
-		}
 
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
@@ -3027,7 +2645,7 @@ public:
 				VIMAP_PARSER_CHECK(one_char <'('> );
 
 				while (!VIMAP_PARSER_TRY_CHECK(one_char <')'> )) {
-					VIMAP_PARSER_GET_PUSHBACK(address, m_addresses);
+					VIMAP_PARSER_GET_PUSHBACK(address, addresses);
 					VIMAP_PARSER_TRY_CHECK(SPACE);
 				}
 			}
@@ -3037,13 +2655,8 @@ public:
 			return true;
 		}
 
-	private:
 
-		std::vector <address*> m_addresses;
-
-	public:
-
-		const std::vector <address*>& addresses() const { return (m_addresses); }
+		std::vector <std::unique_ptr <address>> addresses;
 	};
 
 
@@ -3126,68 +2739,40 @@ public:
 
 	DECLARE_COMPONENT(envelope)
 
-		envelope()
-			: m_env_date(NULL),
-			  m_env_subject(NULL),
-			  m_env_from(NULL),
-			  m_env_sender(NULL),
-			  m_env_reply_to(NULL),
-			  m_env_to(NULL),
-			  m_env_cc(NULL),
-			  m_env_bcc(NULL),
-			  m_env_in_reply_to(NULL),
-			  m_env_message_id(NULL) {
-
-		}
-
-		~envelope() {
-
-			delete m_env_date;
-			delete m_env_subject;
-			delete m_env_from;
-			delete m_env_sender;
-			delete m_env_reply_to;
-			delete m_env_to;
-			delete m_env_cc;
-			delete m_env_bcc;
-			delete m_env_in_reply_to;
-			delete m_env_message_id;
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
 
 			VIMAP_PARSER_CHECK(one_char <'('> );
 
-			VIMAP_PARSER_GET(IMAPParser::env_date, m_env_date);
+			VIMAP_PARSER_GET(IMAPParser::env_date, env_date);
 			VIMAP_PARSER_CHECK(SPACE);
 
-			VIMAP_PARSER_GET(IMAPParser::env_subject, m_env_subject);
+			VIMAP_PARSER_GET(IMAPParser::env_subject, env_subject);
 			VIMAP_PARSER_CHECK(SPACE);
 
-			VIMAP_PARSER_GET(IMAPParser::env_from, m_env_from);
+			VIMAP_PARSER_GET(IMAPParser::env_from, env_from);
 			VIMAP_PARSER_CHECK(SPACE);
 
-			VIMAP_PARSER_GET(IMAPParser::env_sender, m_env_sender);
+			VIMAP_PARSER_GET(IMAPParser::env_sender, env_sender);
 			VIMAP_PARSER_CHECK(SPACE);
 
-			VIMAP_PARSER_GET(IMAPParser::env_reply_to, m_env_reply_to);
+			VIMAP_PARSER_GET(IMAPParser::env_reply_to, env_reply_to);
 			VIMAP_PARSER_CHECK(SPACE);
 
-			VIMAP_PARSER_GET(IMAPParser::env_to, m_env_to);
+			VIMAP_PARSER_GET(IMAPParser::env_to, env_to);
 			VIMAP_PARSER_CHECK(SPACE);
 
-			VIMAP_PARSER_GET(IMAPParser::env_cc, m_env_cc);
+			VIMAP_PARSER_GET(IMAPParser::env_cc, env_cc);
 			VIMAP_PARSER_CHECK(SPACE);
 
-			VIMAP_PARSER_GET(IMAPParser::env_bcc, m_env_bcc);
+			VIMAP_PARSER_GET(IMAPParser::env_bcc, env_bcc);
 			VIMAP_PARSER_CHECK(SPACE);
 
-			VIMAP_PARSER_GET(IMAPParser::env_in_reply_to, m_env_in_reply_to);
+			VIMAP_PARSER_GET(IMAPParser::env_in_reply_to, env_in_reply_to);
 			VIMAP_PARSER_CHECK(SPACE);
 
-			VIMAP_PARSER_GET(IMAPParser::env_message_id, m_env_message_id);
+			VIMAP_PARSER_GET(IMAPParser::env_message_id, env_message_id);
 
 			VIMAP_PARSER_CHECK(one_char <')'> );
 
@@ -3196,31 +2781,17 @@ public:
 			return true;
 		}
 
-	private:
 
-		IMAPParser::env_date* m_env_date;
-		IMAPParser::env_subject* m_env_subject;
-		IMAPParser::env_from* m_env_from;
-		IMAPParser::env_sender* m_env_sender;
-		IMAPParser::env_reply_to* m_env_reply_to;
-		IMAPParser::env_to* m_env_to;
-		IMAPParser::env_cc* m_env_cc;
-		IMAPParser::env_bcc* m_env_bcc;
-		IMAPParser::env_in_reply_to* m_env_in_reply_to;
-		IMAPParser::env_message_id* m_env_message_id;
-
-	public:
-
-		const IMAPParser::env_date* env_date() const { return (m_env_date); }
-		const IMAPParser::env_subject* env_subject() const { return (m_env_subject); }
-		const IMAPParser::env_from* env_from() const { return (m_env_from); }
-		const IMAPParser::env_sender* env_sender() const { return (m_env_sender); }
-		const IMAPParser::env_reply_to* env_reply_to() const { return (m_env_reply_to); }
-		const IMAPParser::env_to* env_to() const { return (m_env_to); }
-		const IMAPParser::env_cc* env_cc() const { return (m_env_cc); }
-		const IMAPParser::env_bcc* env_bcc() const { return (m_env_bcc); }
-		const IMAPParser::env_in_reply_to* env_in_reply_to() const { return (m_env_in_reply_to); }
-		const IMAPParser::env_message_id* env_message_id() const { return (m_env_message_id); }
+		std::unique_ptr <IMAPParser::env_date> env_date;
+		std::unique_ptr <IMAPParser::env_subject> env_subject;
+		std::unique_ptr <IMAPParser::env_from> env_from;
+		std::unique_ptr <IMAPParser::env_sender> env_sender;
+		std::unique_ptr <IMAPParser::env_reply_to> env_reply_to;
+		std::unique_ptr <IMAPParser::env_to> env_to;
+		std::unique_ptr <IMAPParser::env_cc> env_cc;
+		std::unique_ptr <IMAPParser::env_bcc> env_bcc;
+		std::unique_ptr <IMAPParser::env_in_reply_to> env_in_reply_to;
+		std::unique_ptr <IMAPParser::env_message_id> env_message_id;
 	};
 
 
@@ -3291,7 +2862,7 @@ public:
 			//   (see http://support.microsoft.com/kb/975918/en-us)
 			//
 			// Fail in strict mode
-			if (isNIL() && parser.isStrict()) {
+			if (isNIL && parser.isStrict()) {
 				VIMAP_PARSER_FAIL();
 			}
 
@@ -3308,18 +2879,6 @@ public:
 
 	DECLARE_COMPONENT(body_fld_param_item)
 
-		body_fld_param_item()
-			: m_string1(NULL),
-			  m_string2(NULL) {
-
-		}
-
-		~body_fld_param_item() {
-
-			delete m_string1;
-			delete m_string2;
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
@@ -3328,18 +2887,18 @@ public:
 
 				// Some servers send an <atom> instead of a <string> here:
 				// eg. ... (CHARSET "X-UNKNOWN") ...
-				if (!VIMAP_PARSER_TRY_GET(xstring, m_string1)) {
+				if (!VIMAP_PARSER_TRY_GET(xstring, string1)) {
 
-					shared_ptr <atom> at;
-					VIMAP_PARSER_GET_PTR(atom, at);
+					std::unique_ptr <atom> at;
+					VIMAP_PARSER_GET(atom, at);
 
-					m_string1 = new xstring();
-					m_string1->setValue(at->value());
+					string1.reset(new xstring());
+					string1->value = at->value;
 				}
 
 			} else {
 
-				VIMAP_PARSER_GET(xstring, m_string1);
+				VIMAP_PARSER_GET(xstring, string1);
 			}
 
 			VIMAP_PARSER_CHECK(SPACE);
@@ -3347,33 +2906,27 @@ public:
 			if (!parser.isStrict()) {
 
 				// In non-strict mode, allow NIL in value
-				shared_ptr <nstring> nstr;
-				VIMAP_PARSER_GET_PTR(nstring, nstr);
+				std::unique_ptr <nstring> nstr;
+				VIMAP_PARSER_GET(nstring, nstr);
 
-				m_string2 = new xstring();
-				m_string2->setValue(nstr->value());
+				string2.reset(new xstring());
+				string2->value = nstr->value;
 
 			} else {
 
-				VIMAP_PARSER_GET(xstring, m_string2);
+				VIMAP_PARSER_GET(xstring, string2);
 			}
 
-			DEBUG_FOUND("body_fld_param_item", "<" << m_string1->value() << ", " << m_string2->value() << ">");
+			DEBUG_FOUND("body_fld_param_item", "<" << string1->value << ", " << string2->value << ">");
 
 			*currentPos = pos;
 
 			return true;
 		}
 
-	private:
 
-		xstring* m_string1;
-		xstring* m_string2;
-
-	public:
-
-		const xstring* string1() const { return (m_string1); }
-		const xstring* string2() const { return (m_string2); }
+		std::unique_ptr <xstring> string1;
+		std::unique_ptr <xstring> string2;
 	};
 
 
@@ -3382,15 +2935,6 @@ public:
 	//
 
 	DECLARE_COMPONENT(body_fld_param)
-
-		~body_fld_param() {
-
-			for (std::vector <body_fld_param_item*>::iterator it = m_items.begin() ;
-			     it != m_items.end() ; ++it) {
-
-				delete *it;
-			}
-		}
 
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
@@ -3410,11 +2954,11 @@ public:
 
 				if (!isNIL) {
 
-					VIMAP_PARSER_GET_PUSHBACK(body_fld_param_item, m_items);
+					VIMAP_PARSER_GET_PUSHBACK(body_fld_param_item, items);
 
 					while (!VIMAP_PARSER_TRY_CHECK(one_char <')'> )) {
 						VIMAP_PARSER_CHECK(SPACE);
-						VIMAP_PARSER_GET_PUSHBACK(body_fld_param_item, m_items);
+						VIMAP_PARSER_GET_PUSHBACK(body_fld_param_item, items);
 					}
 				}
 
@@ -3428,13 +2972,8 @@ public:
 			return true;
 		}
 
-	private:
 
-		std::vector <body_fld_param_item*> m_items;
-
-	public:
-
-		const std::vector <body_fld_param_item*>& items() const { return (m_items); }
+		std::vector <std::unique_ptr <body_fld_param_item>> items;
 	};
 
 
@@ -3443,18 +2982,6 @@ public:
 	//
 
 	DECLARE_COMPONENT(body_fld_dsp)
-
-		body_fld_dsp()
-			: m_string(NULL),
-			  m_body_fld_param(NULL) {
-
-		}
-
-		~body_fld_dsp() {
-
-			delete m_string;
-			delete m_body_fld_param;
-		}
 
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
@@ -3479,13 +3006,13 @@ public:
 
 	private:
 
-		class xstring* m_string;
-		class body_fld_param* m_body_fld_param;
+		std::unique_ptr <class xstring> m_string;
+		std::unique_ptr <class body_fld_param> m_body_fld_param;
 
 	public:
 
-		const class xstring* str() const { return (m_string); }
-		const class body_fld_param* body_fld_param() const { return (m_body_fld_param); }
+		const class xstring* str() const { return m_string.get(); }
+		const class body_fld_param* body_fld_param() const { return m_body_fld_param.get(); }
 	};
 
 
@@ -3495,31 +3022,22 @@ public:
 
 	DECLARE_COMPONENT(body_fld_lang)
 
-		~body_fld_lang() {
-
-			for (std::vector <xstring*>::iterator it = m_strings.begin() ;
-			     it != m_strings.end() ; ++it) {
-
-				delete *it;
-			}
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
 
 			if (VIMAP_PARSER_TRY_CHECK(one_char <'('> )) {
 
-				VIMAP_PARSER_GET_PUSHBACK(xstring, m_strings);
+				VIMAP_PARSER_GET_PUSHBACK(xstring, strings);
 
 				while (!VIMAP_PARSER_TRY_CHECK(one_char <')'> )) {
 					VIMAP_PARSER_CHECK(SPACE);
-					VIMAP_PARSER_GET_PUSHBACK(xstring, m_strings);
+					VIMAP_PARSER_GET_PUSHBACK(xstring, strings);
 				}
 
 			} else {
 
-				VIMAP_PARSER_GET_PUSHBACK(nstring, m_strings);
+				VIMAP_PARSER_GET_PUSHBACK(nstring, strings);
 			}
 
 			*currentPos = pos;
@@ -3527,13 +3045,8 @@ public:
 			return true;
 		}
 
-	private:
 
-		std::vector <xstring*> m_strings;
-
-	public:
-
-		const std::vector <xstring*>& strings() const { return (m_strings); }
+		std::vector <std::unique_ptr <xstring>> strings;
 	};
 
 
@@ -3545,58 +3058,31 @@ public:
 
 	DECLARE_COMPONENT(body_fields)
 
-		body_fields()
-			: m_body_fld_param(NULL),
-			  m_body_fld_id(NULL),
-			  m_body_fld_desc(NULL),
-			  m_body_fld_enc(NULL),
-			  m_body_fld_octets(NULL) {
-
-		}
-
-		~body_fields() {
-
-			delete m_body_fld_param;
-			delete m_body_fld_id;
-			delete m_body_fld_desc;
-			delete m_body_fld_enc;
-			delete m_body_fld_octets;
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
 
-			VIMAP_PARSER_GET(IMAPParser::body_fld_param, m_body_fld_param);
+			VIMAP_PARSER_GET(IMAPParser::body_fld_param, body_fld_param);
 			VIMAP_PARSER_CHECK(SPACE);
-			VIMAP_PARSER_GET(IMAPParser::body_fld_id, m_body_fld_id);
+			VIMAP_PARSER_GET(IMAPParser::body_fld_id, body_fld_id);
 			VIMAP_PARSER_CHECK(SPACE);
-			VIMAP_PARSER_GET(IMAPParser::body_fld_desc, m_body_fld_desc);
+			VIMAP_PARSER_GET(IMAPParser::body_fld_desc, body_fld_desc);
 			VIMAP_PARSER_CHECK(SPACE);
-			VIMAP_PARSER_GET(IMAPParser::body_fld_enc, m_body_fld_enc);
+			VIMAP_PARSER_GET(IMAPParser::body_fld_enc, body_fld_enc);
 			VIMAP_PARSER_CHECK(SPACE);
-			VIMAP_PARSER_GET(IMAPParser::body_fld_octets, m_body_fld_octets);
+			VIMAP_PARSER_GET(IMAPParser::body_fld_octets, body_fld_octets);
 
 			*currentPos = pos;
 
 			return true;
 		}
 
-	private:
 
-		IMAPParser::body_fld_param* m_body_fld_param;
-		IMAPParser::body_fld_id* m_body_fld_id;
-		IMAPParser::body_fld_desc* m_body_fld_desc;
-		IMAPParser::body_fld_enc* m_body_fld_enc;
-		IMAPParser::body_fld_octets* m_body_fld_octets;
-
-	public:
-
-		const IMAPParser::body_fld_param* body_fld_param() const { return (m_body_fld_param); }
-		const IMAPParser::body_fld_id* body_fld_id() const { return (m_body_fld_id); }
-		const IMAPParser::body_fld_desc* body_fld_desc() const { return (m_body_fld_desc); }
-		const IMAPParser::body_fld_enc* body_fld_enc() const { return (m_body_fld_enc); }
-		const IMAPParser::body_fld_octets* body_fld_octets() const { return (m_body_fld_octets); }
+		std::unique_ptr <IMAPParser::body_fld_param> body_fld_param;
+		std::unique_ptr <IMAPParser::body_fld_id> body_fld_id;
+		std::unique_ptr <IMAPParser::body_fld_desc> body_fld_desc;
+		std::unique_ptr <IMAPParser::body_fld_enc> body_fld_enc;
+		std::unique_ptr <IMAPParser::body_fld_octets> body_fld_octets;
 	};
 
 
@@ -3615,16 +3101,6 @@ public:
 
 	DECLARE_COMPONENT(media_text)
 
-		media_text()
-			: m_media_subtype(NULL) {
-
-		}
-
-		~media_text() {
-
-			delete m_media_subtype;
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
@@ -3634,20 +3110,15 @@ public:
 			VIMAP_PARSER_CHECK(one_char <'"'> );
 			VIMAP_PARSER_CHECK(SPACE);
 
-			VIMAP_PARSER_GET(IMAPParser::media_subtype, m_media_subtype);
+			VIMAP_PARSER_GET(IMAPParser::media_subtype, media_subtype);
 
 			*currentPos = pos;
 
 			return true;
 		}
 
-	private:
 
-		IMAPParser::media_subtype* m_media_subtype;
-
-	public:
-
-		const IMAPParser::media_subtype* media_subtype() const { return (m_media_subtype); }
+		std::unique_ptr <IMAPParser::media_subtype> media_subtype;
 	};
 
 
@@ -3657,16 +3128,6 @@ public:
 	//
 
 	DECLARE_COMPONENT(media_message)
-
-		media_message()
-			: m_media_subtype(NULL) {
-
-		}
-
-		~media_message() {
-
-			delete m_media_subtype;
-		}
 
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
@@ -3681,20 +3142,15 @@ public:
 			//VIMAP_PARSER_CHECK_WITHARG(special_atom, "rfc822");
 			//VIMAP_PARSER_CHECK(one_char <'"'> );
 
-			VIMAP_PARSER_GET(IMAPParser::media_subtype, m_media_subtype);
+			VIMAP_PARSER_GET(IMAPParser::media_subtype, media_subtype);
 
 			*currentPos = pos;
 
 			return true;
 		}
 
-	private:
 
-		IMAPParser::media_subtype* m_media_subtype;
-
-	public:
-
-		const IMAPParser::media_subtype* media_subtype() const { return (m_media_subtype); }
+		std::unique_ptr <IMAPParser::media_subtype> media_subtype;
 	};
 
 
@@ -3706,42 +3162,24 @@ public:
 
 	DECLARE_COMPONENT(media_basic)
 
-		media_basic()
-			: m_media_type(NULL),
-			  m_media_subtype(NULL) {
-
-		}
-
-		~media_basic() {
-
-			delete m_media_type;
-			delete m_media_subtype;
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
 
-			VIMAP_PARSER_GET(xstring, m_media_type);
+			VIMAP_PARSER_GET(xstring, media_type);
 
 			VIMAP_PARSER_CHECK(SPACE);
 
-			VIMAP_PARSER_GET(IMAPParser::media_subtype, m_media_subtype);
+			VIMAP_PARSER_GET(IMAPParser::media_subtype, media_subtype);
 
 			*currentPos = pos;
 
 			return true;
 		}
 
-	private:
 
-		IMAPParser::xstring* m_media_type;
-		IMAPParser::media_subtype* m_media_subtype;
-
-	public:
-
-		const IMAPParser::xstring* media_type() const { return (m_media_type); }
-		const IMAPParser::media_subtype* media_subtype() const { return (m_media_subtype); }
+		std::unique_ptr <IMAPParser::xstring> media_type;
+		std::unique_ptr <IMAPParser::media_subtype> media_subtype;
 	};
 
 
@@ -3755,49 +3193,29 @@ public:
 
 	DECLARE_COMPONENT(body_ext_1part)
 
-		body_ext_1part()
-			: m_body_fld_md5(NULL),
-			  m_body_fld_dsp(NULL),
-			  m_body_fld_lang(NULL) {
-
-		}
-
-		~body_ext_1part() {
-
-			delete m_body_fld_md5;
-			delete m_body_fld_dsp;
-			delete m_body_fld_lang;
-
-			for (std::vector <body_extension*>::iterator it = m_body_extensions.begin() ;
-			     it != m_body_extensions.end() ; ++it) {
-
-				delete *it;
-			}
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos)
 		{
 			size_t pos = *currentPos;
 
-			VIMAP_PARSER_GET(IMAPParser::body_fld_md5, m_body_fld_md5);
+			VIMAP_PARSER_GET(IMAPParser::body_fld_md5, body_fld_md5);
 
 			// [SPACE body_fld_dsp
 			if (VIMAP_PARSER_TRY_CHECK(SPACE)) {
 
-				VIMAP_PARSER_GET(IMAPParser::body_fld_dsp, m_body_fld_dsp);
+				VIMAP_PARSER_GET(IMAPParser::body_fld_dsp, body_fld_dsp);
 
 				// [SPACE body_fld_lang
 				if (VIMAP_PARSER_TRY_CHECK(SPACE)) {
 
-					VIMAP_PARSER_GET(IMAPParser::body_fld_lang, m_body_fld_lang);
+					VIMAP_PARSER_GET(IMAPParser::body_fld_lang, body_fld_lang);
 
 					// [SPACE 1#body_extension]
 					if (VIMAP_PARSER_TRY_CHECK(SPACE)) {
 
-						VIMAP_PARSER_GET_PUSHBACK(body_extension, m_body_extensions);
+						VIMAP_PARSER_GET_PUSHBACK(body_extension, body_extensions);
 
 						while (VIMAP_PARSER_TRY_CHECK(SPACE)) {
-							VIMAP_PARSER_GET_PUSHBACK(body_extension, m_body_extensions);
+							VIMAP_PARSER_GET_PUSHBACK(body_extension, body_extensions);
 						}
 					}
 				}
@@ -3808,21 +3226,12 @@ public:
 			return true;
 		}
 
-	private:
 
-		IMAPParser::body_fld_md5* m_body_fld_md5;
-		IMAPParser::body_fld_dsp* m_body_fld_dsp;
-		IMAPParser::body_fld_lang* m_body_fld_lang;
+		std::unique_ptr <IMAPParser::body_fld_md5> body_fld_md5;
+		std::unique_ptr <IMAPParser::body_fld_dsp> body_fld_dsp;
+		std::unique_ptr <IMAPParser::body_fld_lang> body_fld_lang;
 
-		std::vector <body_extension*> m_body_extensions;
-
-	public:
-
-		const IMAPParser::body_fld_md5* body_fld_md5() const { return (m_body_fld_md5); }
-		const IMAPParser::body_fld_dsp* body_fld_dsp() const { return (m_body_fld_dsp); }
-		const IMAPParser::body_fld_lang* body_fld_lang() const { return (m_body_fld_lang); }
-
-		const std::vector <body_extension*> body_extensions() const { return (m_body_extensions); }
+		std::vector <std::unique_ptr <body_extension>> body_extensions;
 	};
 
 
@@ -3835,48 +3244,28 @@ public:
 
 	DECLARE_COMPONENT(body_ext_mpart)
 
-		body_ext_mpart()
-			: m_body_fld_param(NULL),
-			  m_body_fld_dsp(NULL),
-			  m_body_fld_lang(NULL) {
-
-		}
-
-		~body_ext_mpart() {
-
-			delete m_body_fld_param;
-			delete m_body_fld_dsp;
-			delete m_body_fld_lang;
-
-			for (std::vector <body_extension*>::iterator it = m_body_extensions.begin() ;
-			     it != m_body_extensions.end() ; ++it) {
-
-				delete *it;
-			}
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
 
-			VIMAP_PARSER_GET(IMAPParser::body_fld_param, m_body_fld_param);
+			VIMAP_PARSER_GET(IMAPParser::body_fld_param, body_fld_param);
 
 			// [SPACE body_fld_dsp [SPACE body_fld_lang [SPACE 1#body_extension]]]
 			if (VIMAP_PARSER_TRY_CHECK(SPACE)) {
 
-				VIMAP_PARSER_GET(IMAPParser::body_fld_dsp, m_body_fld_dsp);
+				VIMAP_PARSER_GET(IMAPParser::body_fld_dsp, body_fld_dsp);
 
 				if (VIMAP_PARSER_TRY_CHECK(SPACE)) {
 
-					VIMAP_PARSER_GET(IMAPParser::body_fld_lang, m_body_fld_lang);
+					VIMAP_PARSER_GET(IMAPParser::body_fld_lang, body_fld_lang);
 
 					// [SPACE 1#body_extension]
 					if (VIMAP_PARSER_TRY_CHECK(SPACE)) {
 
-						VIMAP_PARSER_GET_PUSHBACK(body_extension, m_body_extensions);
+						VIMAP_PARSER_GET_PUSHBACK(body_extension, body_extensions);
 
 						while (VIMAP_PARSER_TRY_CHECK(SPACE)) {
-							VIMAP_PARSER_GET_PUSHBACK(body_extension, m_body_extensions);
+							VIMAP_PARSER_GET_PUSHBACK(body_extension, body_extensions);
 						}
 					}
 				}
@@ -3887,21 +3276,12 @@ public:
 			return true;
 		}
 
-	private:
 
-		IMAPParser::body_fld_param* m_body_fld_param;
-		IMAPParser::body_fld_dsp* m_body_fld_dsp;
-		IMAPParser::body_fld_lang* m_body_fld_lang;
+		std::unique_ptr <IMAPParser::body_fld_param> body_fld_param;
+		std::unique_ptr <IMAPParser::body_fld_dsp> body_fld_dsp;
+		std::unique_ptr <IMAPParser::body_fld_lang> body_fld_lang;
 
-		std::vector <body_extension*> m_body_extensions;
-
-	public:
-
-		const IMAPParser::body_fld_param* body_fld_param() const { return (m_body_fld_param); }
-		const IMAPParser::body_fld_dsp* body_fld_dsp() const { return (m_body_fld_dsp); }
-		const IMAPParser::body_fld_lang* body_fld_lang() const { return (m_body_fld_lang); }
-
-		const std::vector <body_extension*> body_extensions() const { return (m_body_extensions); }
+		std::vector <std::unique_ptr <body_extension>> body_extensions;
 	};
 
 
@@ -3912,40 +3292,22 @@ public:
 
 	DECLARE_COMPONENT(body_type_basic)
 
-		body_type_basic()
-			: m_media_basic(NULL),
-			  m_body_fields(NULL) {
-
-		}
-
-		~body_type_basic() {
-
-			delete m_media_basic;
-			delete m_body_fields;
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
 
-			VIMAP_PARSER_GET(IMAPParser::media_basic, m_media_basic);
+			VIMAP_PARSER_GET(IMAPParser::media_basic, media_basic);
 			VIMAP_PARSER_CHECK(SPACE);
-			VIMAP_PARSER_GET(IMAPParser::body_fields, m_body_fields);
+			VIMAP_PARSER_GET(IMAPParser::body_fields, body_fields);
 
 			*currentPos = pos;
 
 			return true;
 		}
 
-	private:
 
-		IMAPParser::media_basic* m_media_basic;
-		IMAPParser::body_fields* m_body_fields;
-
-	public:
-
-		const IMAPParser::media_basic* media_basic() const { return (m_media_basic); }
-		const IMAPParser::body_fields* body_fields() const { return (m_body_fields); }
+		std::unique_ptr <IMAPParser::media_basic> media_basic;
+		std::unique_ptr <IMAPParser::body_fields> body_fields;
 	};
 
 
@@ -3959,61 +3321,34 @@ public:
 
 	DECLARE_COMPONENT(body_type_msg)
 
-		body_type_msg()
-			: m_media_message(NULL),
-			  m_body_fields(NULL),
-			  m_envelope(NULL),
-			  m_body(NULL),
-			  m_body_fld_lines(NULL) {
-
-		}
-
-		~body_type_msg() {
-
-			delete m_media_message;
-			delete m_body_fields;
-			delete m_envelope;
-			delete m_body;
-			delete m_body_fld_lines;
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
 
-			VIMAP_PARSER_GET(IMAPParser::media_message, m_media_message);
+			VIMAP_PARSER_GET(IMAPParser::media_message, media_message);
 			VIMAP_PARSER_CHECK(SPACE);
-			VIMAP_PARSER_GET(IMAPParser::body_fields, m_body_fields);
+			VIMAP_PARSER_GET(IMAPParser::body_fields, body_fields);
 			VIMAP_PARSER_CHECK(SPACE);
 
 			// BUGFIX: made SPACE optional. This is not standard, but some servers
 			// seem to return responses like that...
-			VIMAP_PARSER_GET(IMAPParser::envelope, m_envelope);
+			VIMAP_PARSER_GET(IMAPParser::envelope, envelope);
 			VIMAP_PARSER_TRY_CHECK(SPACE);
-			VIMAP_PARSER_GET(IMAPParser::xbody, m_body);
+			VIMAP_PARSER_GET(IMAPParser::xbody, body);
 			VIMAP_PARSER_TRY_CHECK(SPACE);
-			VIMAP_PARSER_GET(IMAPParser::body_fld_lines, m_body_fld_lines);
+			VIMAP_PARSER_GET(IMAPParser::body_fld_lines, body_fld_lines);
 
 			*currentPos = pos;
 
 			return true;
 		}
 
-	private:
 
-		IMAPParser::media_message* m_media_message;
-		IMAPParser::body_fields* m_body_fields;
-		IMAPParser::envelope* m_envelope;
-		IMAPParser::xbody* m_body;
-		IMAPParser::body_fld_lines* m_body_fld_lines;
-
-	public:
-
-		const IMAPParser::media_message* media_message() const { return (m_media_message); }
-		const IMAPParser::body_fields* body_fields() const { return (m_body_fields); }
-		const IMAPParser::envelope* envelope() const { return (m_envelope); }
-		const IMAPParser::xbody* body() const { return (m_body); }
-		const IMAPParser::body_fld_lines* body_fld_lines() const { return (m_body_fld_lines); }
+		std::unique_ptr <IMAPParser::media_message> media_message;
+		std::unique_ptr <IMAPParser::body_fields> body_fields;
+		std::unique_ptr <IMAPParser::envelope> envelope;
+		std::unique_ptr <IMAPParser::xbody> body;
+		std::unique_ptr <IMAPParser::body_fld_lines> body_fld_lines;
 	};
 
 
@@ -4023,46 +3358,25 @@ public:
 
 	DECLARE_COMPONENT(body_type_text)
 
-		body_type_text()
-			: m_media_text(NULL),
-			  m_body_fields(NULL),
-			  m_body_fld_lines(NULL) {
-
-		}
-
-		~body_type_text() {
-
-			delete m_media_text;
-			delete m_body_fields;
-			delete m_body_fld_lines;
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
 
-			VIMAP_PARSER_GET(IMAPParser::media_text, m_media_text);
+			VIMAP_PARSER_GET(IMAPParser::media_text, media_text);
 			VIMAP_PARSER_CHECK(SPACE);
-			VIMAP_PARSER_GET(IMAPParser::body_fields, m_body_fields);
+			VIMAP_PARSER_GET(IMAPParser::body_fields, body_fields);
 			VIMAP_PARSER_CHECK(SPACE);
-			VIMAP_PARSER_GET(IMAPParser::body_fld_lines, m_body_fld_lines);
+			VIMAP_PARSER_GET(IMAPParser::body_fld_lines, body_fld_lines);
 
 			*currentPos = pos;
 
 			return true;
 		}
 
-	private:
 
-		IMAPParser::media_text* m_media_text;
-		IMAPParser::body_fields* m_body_fields;
-		IMAPParser::body_fld_lines* m_body_fld_lines;
-
-	public:
-
-		const IMAPParser::media_text* media_text() const { return (m_media_text); }
-		const IMAPParser::body_fields* body_fields() const { return (m_body_fields); }
-		const IMAPParser::body_fld_lines* body_fld_lines() const { return (m_body_fld_lines); }
+		std::unique_ptr <IMAPParser::media_text> media_text;
+		std::unique_ptr <IMAPParser::body_fields> body_fields;
+		std::unique_ptr <IMAPParser::body_fld_lines> body_fld_lines;
 	};
 
 
@@ -4073,34 +3387,18 @@ public:
 
 	DECLARE_COMPONENT(body_type_1part)
 
-		body_type_1part()
-			: m_body_type_basic(NULL),
-			  m_body_type_msg(NULL),
-			  m_body_type_text(NULL),
-			  m_body_ext_1part(NULL) {
-
-		}
-
-		~body_type_1part() {
-
-			delete m_body_type_basic;
-			delete m_body_type_msg;
-			delete m_body_type_text;
-			delete m_body_ext_1part;
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
 
-			if (!VIMAP_PARSER_TRY_GET(IMAPParser::body_type_text, m_body_type_text)) {
-				if (!VIMAP_PARSER_TRY_GET(IMAPParser::body_type_msg, m_body_type_msg)) {
-					VIMAP_PARSER_GET(IMAPParser::body_type_basic, m_body_type_basic);
+			if (!VIMAP_PARSER_TRY_GET(IMAPParser::body_type_text, body_type_text)) {
+				if (!VIMAP_PARSER_TRY_GET(IMAPParser::body_type_msg, body_type_msg)) {
+					VIMAP_PARSER_GET(IMAPParser::body_type_basic, body_type_basic);
 				}
 			}
 
 			if (VIMAP_PARSER_TRY_CHECK(SPACE)) {
-				if (!VIMAP_PARSER_TRY_GET(IMAPParser::body_ext_1part, m_body_ext_1part)) {
+				if (!VIMAP_PARSER_TRY_GET(IMAPParser::body_ext_1part, body_ext_1part)) {
 					--pos;
 				}
 			}
@@ -4110,21 +3408,12 @@ public:
 			return true;
 		}
 
-	private:
 
-		IMAPParser::body_type_basic* m_body_type_basic;
-		IMAPParser::body_type_msg* m_body_type_msg;
-		IMAPParser::body_type_text* m_body_type_text;
+		std::unique_ptr <IMAPParser::body_type_basic> body_type_basic;
+		std::unique_ptr <IMAPParser::body_type_msg> body_type_msg;
+		std::unique_ptr <IMAPParser::body_type_text> body_type_text;
 
-		IMAPParser::body_ext_1part* m_body_ext_1part;
-
-	public:
-
-		const IMAPParser::body_type_basic* body_type_basic() const { return (m_body_type_basic); }
-		const IMAPParser::body_type_msg* body_type_msg() const { return (m_body_type_msg); }
-		const IMAPParser::body_type_text* body_type_text() const { return (m_body_type_text); }
-
-		const IMAPParser::body_ext_1part* body_ext_1part() const { return (m_body_ext_1part); }
+		std::unique_ptr <IMAPParser::body_ext_1part> body_ext_1part;
 	};
 
 
@@ -4135,40 +3424,22 @@ public:
 
 	DECLARE_COMPONENT(body_type_mpart)
 
-		body_type_mpart()
-			: m_media_subtype(NULL),
-			  m_body_ext_mpart(NULL) {
-
-		}
-
-		~body_type_mpart() {
-
-			delete m_media_subtype;
-			delete m_body_ext_mpart;
-
-			for (std::vector <xbody*>::iterator it = m_list.begin() ;
-			     it != m_list.end() ; ++it) {
-
-				delete *it;
-			}
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
 
-			VIMAP_PARSER_GET_PUSHBACK(xbody, m_list);
+			VIMAP_PARSER_GET_PUSHBACK(xbody, list);
 
 			while (true) {
-				VIMAP_PARSER_TRY_GET_PUSHBACK_OR_ELSE(xbody, m_list, break);
+				VIMAP_PARSER_TRY_GET_PUSHBACK_OR_ELSE(xbody, list, break);
 			}
 
 			VIMAP_PARSER_CHECK(SPACE);
 
-			VIMAP_PARSER_GET(IMAPParser::media_subtype, m_media_subtype);
+			VIMAP_PARSER_GET(IMAPParser::media_subtype, media_subtype);
 
 			if (VIMAP_PARSER_TRY_CHECK(SPACE)) {
-				VIMAP_PARSER_GET(IMAPParser::body_ext_mpart, m_body_ext_mpart);
+				VIMAP_PARSER_GET(IMAPParser::body_ext_mpart, body_ext_mpart);
 			}
 
 			*currentPos = pos;
@@ -4176,19 +3447,11 @@ public:
 			return true;
 		}
 
-	private:
 
-		IMAPParser::media_subtype* m_media_subtype;
-		IMAPParser::body_ext_mpart* m_body_ext_mpart;
+		std::unique_ptr <IMAPParser::media_subtype> media_subtype;
+		std::unique_ptr <IMAPParser::body_ext_mpart> body_ext_mpart;
 
-		std::vector <xbody*> m_list;
-
-	public:
-
-		const std::vector <IMAPParser::xbody*>& list() const { return (m_list); }
-
-		const IMAPParser::media_subtype* media_subtype() const { return (m_media_subtype); }
-		const IMAPParser::body_ext_mpart* body_ext_mpart() const { return (m_body_ext_mpart); }
+		std::vector <std::unique_ptr <xbody>> list;
 	};
 
 
@@ -4198,26 +3461,14 @@ public:
 
 	DECLARE_COMPONENT(xbody)
 
-		xbody()
-			: m_body_type_1part(NULL),
-			  m_body_type_mpart(NULL) {
-
-		}
-
-		~xbody() {
-
-			delete m_body_type_1part;
-			delete m_body_type_mpart;
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
 
 			VIMAP_PARSER_CHECK(one_char <'('> );
 
-			if (!VIMAP_PARSER_TRY_GET(IMAPParser::body_type_mpart, m_body_type_mpart)) {
-				VIMAP_PARSER_GET(IMAPParser::body_type_1part, m_body_type_1part);
+			if (!VIMAP_PARSER_TRY_GET(IMAPParser::body_type_mpart, body_type_mpart)) {
+				VIMAP_PARSER_GET(IMAPParser::body_type_1part, body_type_1part);
 			}
 
 			VIMAP_PARSER_CHECK(one_char <')'> );
@@ -4227,15 +3478,9 @@ public:
 			return true;
 		}
 
-	private:
 
-		IMAPParser::body_type_1part* m_body_type_1part;
-		IMAPParser::body_type_mpart* m_body_type_mpart;
-
-	public:
-
-		const IMAPParser::body_type_1part* body_type_1part() const { return (m_body_type_1part); }
-		const IMAPParser::body_type_mpart* body_type_mpart() const { return (m_body_type_mpart); }
+		std::unique_ptr <IMAPParser::body_type_1part> body_type_1part;
+		std::unique_ptr <IMAPParser::body_type_mpart> body_type_mpart;
 	};
 
 
@@ -4254,32 +3499,6 @@ public:
 
 	DECLARE_COMPONENT(msg_att_item)
 
-		msg_att_item()
-			: m_date_time(NULL),
-			  m_number(NULL),
-			  m_envelope(NULL),
-			  m_uniqueid(NULL),
-			  m_nstring(NULL),
-			  m_body(NULL),
-			  m_flag_list(NULL),
-			  m_section(NULL),
-			  m_mod_sequence_value(NULL) {
-
-		}
-
-		~msg_att_item() {
-
-			delete m_date_time;
-			delete m_number;
-			delete m_envelope;
-			delete m_uniqueid;
-			delete m_nstring;
-			delete m_body;
-			delete m_flag_list;
- 			delete m_section;
- 			delete m_mod_sequence_value;
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
@@ -4287,127 +3506,127 @@ public:
 			// "ENVELOPE" SPACE envelope
 			if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "envelope")) {
 
-				m_type = ENVELOPE;
+				type = ENVELOPE;
 
 				VIMAP_PARSER_CHECK(SPACE);
-				VIMAP_PARSER_GET(IMAPParser::envelope, m_envelope);
+				VIMAP_PARSER_GET(IMAPParser::envelope, envelope);
 
 			// "FLAGS" SPACE "(" #(flag / "\Recent") ")"
 			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "flags")) {
 
-				m_type = FLAGS;
+				type = FLAGS;
 
 				VIMAP_PARSER_CHECK(SPACE);
 
-				VIMAP_PARSER_GET(IMAPParser::flag_list, m_flag_list);
+				VIMAP_PARSER_GET(IMAPParser::flag_list, flag_list);
 
 			// "INTERNALDATE" SPACE date_time
 			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "internaldate")) {
 
-				m_type = INTERNALDATE;
+				type = INTERNALDATE;
 
 				VIMAP_PARSER_CHECK(SPACE);
-				VIMAP_PARSER_GET(IMAPParser::date_time, m_date_time);
+				VIMAP_PARSER_GET(IMAPParser::date_time, date_time);
 
 			// "RFC822" ".HEADER" SPACE nstring
 			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "rfc822.header")) {
 
-				m_type = RFC822_HEADER;
+				type = RFC822_HEADER;
 
 				VIMAP_PARSER_CHECK(SPACE);
 
-				VIMAP_PARSER_GET(IMAPParser::nstring, m_nstring);
+				VIMAP_PARSER_GET(IMAPParser::nstring, nstring);
 
 			// "RFC822" ".TEXT" SPACE nstring
 			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "rfc822.text")) {
 
-				m_type = RFC822_TEXT;
+				type = RFC822_TEXT;
 
 				VIMAP_PARSER_CHECK(SPACE);
 
-				m_nstring = parser.getWithArgs <IMAPParser::nstring>(line, &pos, this, RFC822_TEXT);
+				nstring.reset(parser.getWithArgs <IMAPParser::nstring>(line, &pos, this, RFC822_TEXT));
 
-				VIMAP_PARSER_FAIL_UNLESS(m_nstring);
+				VIMAP_PARSER_FAIL_UNLESS(nstring);
 
 			// "RFC822.SIZE" SPACE number
 			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "rfc822.size")) {
 
-				m_type = RFC822_SIZE;
+				type = RFC822_SIZE;
 
 				VIMAP_PARSER_CHECK(SPACE);
-				VIMAP_PARSER_GET(IMAPParser::number, m_number);
+				VIMAP_PARSER_GET(IMAPParser::number, number);
 
 			// "RFC822" SPACE nstring
 			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "rfc822")) {
 
-				m_type = RFC822;
+				type = RFC822;
 
 				VIMAP_PARSER_CHECK(SPACE);
 
-				VIMAP_PARSER_GET(IMAPParser::nstring, m_nstring);
+				VIMAP_PARSER_GET(IMAPParser::nstring, nstring);
 
 			// "BODY" "STRUCTURE" SPACE body
 			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "bodystructure")) {
 
-				m_type = BODY_STRUCTURE;
+				type = BODY_STRUCTURE;
 
 				VIMAP_PARSER_CHECK(SPACE);
 
-				VIMAP_PARSER_GET(IMAPParser::body, m_body);
+				VIMAP_PARSER_GET(IMAPParser::body, body);
 
 			// "BODY" section ["<" number ">"] SPACE nstring
 			// "BODY" SPACE body
 			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "body")) {
 
-				VIMAP_PARSER_TRY_GET(IMAPParser::section, m_section);
+				VIMAP_PARSER_TRY_GET(IMAPParser::section, section);
 
 				// "BODY" section ["<" number ">"] SPACE nstring
-				if (m_section != NULL) {
+				if (section != NULL) {
 
-					m_type = BODY_SECTION;
+					type = BODY_SECTION;
 
 					if (VIMAP_PARSER_TRY_CHECK(one_char <'<'> )) {
-						VIMAP_PARSER_GET(IMAPParser::number, m_number);
+						VIMAP_PARSER_GET(IMAPParser::number, number);
 						VIMAP_PARSER_CHECK(one_char <'>'> );
 					}
 
 					VIMAP_PARSER_CHECK(SPACE);
 
-					m_nstring = parser.getWithArgs <IMAPParser::nstring>(line, &pos, this, BODY_SECTION);
+					nstring.reset(parser.getWithArgs <IMAPParser::nstring>(line, &pos, this, BODY_SECTION));
 
-					VIMAP_PARSER_FAIL_UNLESS(m_nstring);
+					VIMAP_PARSER_FAIL_UNLESS(nstring);
 
 				// "BODY" SPACE body
 				} else {
 
-					m_type = BODY;
+					type = BODY;
 
 					VIMAP_PARSER_CHECK(SPACE);
 
-					VIMAP_PARSER_GET(IMAPParser::body, m_body);
+					VIMAP_PARSER_GET(IMAPParser::body, body);
 				}
 
 			// "MODSEQ" SP "(" mod_sequence_value ")"
 			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "modseq")) {
 
-				m_type = MODSEQ;
+				type = MODSEQ;
 
 				VIMAP_PARSER_CHECK(SPACE);
 				VIMAP_PARSER_CHECK(one_char <'('> );
 
-				VIMAP_PARSER_GET(IMAPParser::mod_sequence_value, m_mod_sequence_value);
+				VIMAP_PARSER_GET(IMAPParser::mod_sequence_value, mod_sequence_value);
 
 				VIMAP_PARSER_CHECK(one_char <')'> );
 
 			// "UID" SPACE uniqueid
 			} else {
 
-				m_type = UID;
+				type = UID;
 
 				VIMAP_PARSER_CHECK_WITHARG(special_atom, "uid");
 				VIMAP_PARSER_CHECK(SPACE);
 
-				VIMAP_PARSER_GET(uniqueid, m_uniqueid);
+				VIMAP_PARSER_GET(IMAPParser::uniqueid, uniqueid);
 			}
 
 			*currentPos = pos;
@@ -4431,33 +3650,18 @@ public:
 			MODSEQ
 		};
 
-	private:
 
-		Type m_type;
+		Type type;
 
-		IMAPParser::date_time* m_date_time;
-		IMAPParser::number* m_number;
-		IMAPParser::envelope* m_envelope;
-		IMAPParser::uniqueid* m_uniqueid;
-		IMAPParser::nstring* m_nstring;
-		IMAPParser::xbody* m_body;
-		IMAPParser::flag_list* m_flag_list;
-		IMAPParser::section* m_section;
-		IMAPParser::mod_sequence_value* m_mod_sequence_value;
-
-	public:
-
-		Type type() const { return (m_type); }
-
-		const IMAPParser::date_time* date_time() const { return (m_date_time); }
-		const IMAPParser::number* number() const { return (m_number); }
-		const IMAPParser::envelope* envelope() const { return (m_envelope); }
-		const IMAPParser::uniqueid* unique_id() const { return (m_uniqueid); }
-		const IMAPParser::nstring* nstring() const { return (m_nstring); }
-		const IMAPParser::xbody* body() const { return (m_body); }
-		const IMAPParser::flag_list* flag_list() const { return (m_flag_list); }
-		const IMAPParser::section* section() const { return (m_section); }
-		const IMAPParser::mod_sequence_value* mod_sequence_value() { return m_mod_sequence_value; }
+		std::unique_ptr <IMAPParser::date_time> date_time;
+		std::unique_ptr <IMAPParser::number> number;
+		std::unique_ptr <IMAPParser::envelope> envelope;
+		std::unique_ptr <IMAPParser::uniqueid> uniqueid;
+		std::unique_ptr <IMAPParser::nstring> nstring;
+		std::unique_ptr <IMAPParser::xbody> body;
+		std::unique_ptr <IMAPParser::flag_list> flag_list;
+		std::unique_ptr <IMAPParser::section> section;
+		std::unique_ptr <IMAPParser::mod_sequence_value> mod_sequence_value;
 	};
 
 
@@ -4467,26 +3671,17 @@ public:
 
 	DECLARE_COMPONENT(msg_att)
 
-		~msg_att() {
-
-			for (std::vector <msg_att_item*>::iterator it = m_items.begin() ;
-			     it != m_items.end() ; ++it) {
-
-				delete *it;
-			}
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
 
 			VIMAP_PARSER_CHECK(one_char <'('> );
 
-			m_items.push_back(parser.get <msg_att_item>(line, &pos));
+			items.push_back(std::move(std::unique_ptr <msg_att_item>(parser.get <msg_att_item>(line, &pos))));
 
 			while (!VIMAP_PARSER_TRY_CHECK(one_char <')'> )) {
 				VIMAP_PARSER_CHECK(SPACE);
-				VIMAP_PARSER_GET_PUSHBACK(msg_att_item, m_items);
+				VIMAP_PARSER_GET_PUSHBACK(msg_att_item, items);
 			}
 
 			*currentPos = pos;
@@ -4494,13 +3689,8 @@ public:
 			return true;
 		}
 
-	private:
 
-		std::vector <msg_att_item*> m_items;
-
-	public:
-
-		const std::vector <msg_att_item*>& items() const { return (m_items); }
+		std::vector <std::unique_ptr <msg_att_item>> items;
 	};
 
 
@@ -4512,14 +3702,8 @@ public:
 	DECLARE_COMPONENT(message_data)
 
 		message_data()
-			: m_number(0),
-			  m_msg_att(NULL) {
+			: number(0) {
 
-		}
-
-		~message_data() {
-
-			delete m_msg_att;
 		}
 
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
@@ -4527,22 +3711,22 @@ public:
 			size_t pos = *currentPos;
 
 			scoped_ptr <nz_number> num;
-			VIMAP_PARSER_GET_PTR(nz_number, num);
-			m_number = static_cast <unsigned int>(num->value());
+			VIMAP_PARSER_GET(nz_number, num);
+			number = static_cast <unsigned int>(num->value);
 
 			VIMAP_PARSER_CHECK(SPACE);
 
 			if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "expunge")) {
 
-				m_type = EXPUNGE;
+				type = EXPUNGE;
 
 			} else {
 
-				m_type = FETCH;
+				type = FETCH;
 
 				VIMAP_PARSER_CHECK_WITHARG(special_atom, "fetch");
 				VIMAP_PARSER_CHECK(SPACE);
-				VIMAP_PARSER_GET(IMAPParser::msg_att, m_msg_att);
+				VIMAP_PARSER_GET(IMAPParser::msg_att, msg_att);
 			}
 
 			*currentPos = pos;
@@ -4556,17 +3740,10 @@ public:
 			FETCH
 		};
 
-	private:
 
-		Type m_type;
-		unsigned int m_number;
-		IMAPParser::msg_att* m_msg_att;
-
-	public:
-
-		Type type() const { return (m_type); }
-		unsigned int number() const { return (m_number); }
-		const IMAPParser::msg_att* msg_att() const { return (m_msg_att); }
+		Type type;
+		unsigned int number;
+		std::unique_ptr <IMAPParser::msg_att> msg_att;
 	};
 
 
@@ -4594,32 +3771,6 @@ public:
 
 	DECLARE_COMPONENT(resp_text_code)
 
-		resp_text_code()
-			: m_nz_number(NULL),
-			  m_atom(NULL),
-			  m_flag_list(NULL),
-			  m_text(NULL),
-			  m_mod_sequence_value(NULL),
-			  m_sequence_set(NULL),
-			  m_capability_data(NULL),
-			  m_uid_set(NULL),
-			  m_uid_set2(NULL) {
-
-		}
-
-		~resp_text_code() {
-
-			delete m_nz_number;
-			delete m_atom;
-			delete m_flag_list;
-			delete m_text;
-			delete m_mod_sequence_value;
-			delete m_sequence_set;
-			delete m_capability_data;
-			delete m_uid_set;
-			delete m_uid_set2;
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
@@ -4627,124 +3778,124 @@ public:
 			// "ALERT"
 			if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "alert")) {
 
-				m_type = ALERT;
+				type = ALERT;
 
 			// "PARSE"
 			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "parse")) {
 
-				m_type = PARSE;
+				type = PARSE;
 
 			// capability_data
-			} else if (VIMAP_PARSER_TRY_GET(IMAPParser::capability_data, m_capability_data)) {
+			} else if (VIMAP_PARSER_TRY_GET(IMAPParser::capability_data, capability_data)) {
 
-				m_type = CAPABILITY;
+				type = CAPABILITY;
 
 			// "PERMANENTFLAGS" SPACE flag_list
 			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "permanentflags")) {
 
-				m_type = PERMANENTFLAGS;
+				type = PERMANENTFLAGS;
 
 				VIMAP_PARSER_CHECK(SPACE);
 
-				VIMAP_PARSER_GET(IMAPParser::flag_list, m_flag_list);
+				VIMAP_PARSER_GET(IMAPParser::flag_list, flag_list);
 
 			// "READ-ONLY"
 			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "read-only")) {
 
-				m_type = READ_ONLY;
+				type = READ_ONLY;
 
 			// "READ-WRITE"
 			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "read-write")) {
 
-				m_type = READ_WRITE;
+				type = READ_WRITE;
 
 			// "TRYCREATE"
 			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "trycreate")) {
 
-				m_type = TRYCREATE;
+				type = TRYCREATE;
 
 			// "UIDVALIDITY" SPACE nz_number
 			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "uidvalidity")) {
 
-				m_type = UIDVALIDITY;
+				type = UIDVALIDITY;
 
 				VIMAP_PARSER_CHECK(SPACE);
-				VIMAP_PARSER_GET(IMAPParser::nz_number, m_nz_number);
+				VIMAP_PARSER_GET(IMAPParser::nz_number, nz_number);
 
 			// "UIDNEXT" SPACE nz_number
 			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "uidnext")) {
 
-				m_type = UIDNEXT;
+				type = UIDNEXT;
 
 				VIMAP_PARSER_CHECK(SPACE);
-				VIMAP_PARSER_GET(IMAPParser::nz_number, m_nz_number);
+				VIMAP_PARSER_GET(IMAPParser::nz_number, nz_number);
 
 			// "UNSEEN" SPACE nz_number
 			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "unseen")) {
 
-				m_type = UNSEEN;
+				type = UNSEEN;
 
 				VIMAP_PARSER_CHECK(SPACE);
-				VIMAP_PARSER_GET(IMAPParser::nz_number, m_nz_number);
+				VIMAP_PARSER_GET(IMAPParser::nz_number, nz_number);
 
 			// "HIGHESTMODSEQ" SP mod-sequence-value
 			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "highestmodseq")) {
 
-				m_type = HIGHESTMODSEQ;
+				type = HIGHESTMODSEQ;
 
 				VIMAP_PARSER_CHECK(SPACE);
-				VIMAP_PARSER_GET(IMAPParser::mod_sequence_value, m_mod_sequence_value);
+				VIMAP_PARSER_GET(IMAPParser::mod_sequence_value, mod_sequence_value);
 
 			// "NOMODSEQ"
 			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "nomodseq")) {
 
-				m_type = NOMODSEQ;
+				type = NOMODSEQ;
 
 			// "MODIFIED" SP sequence-set
 			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "modified")) {
 
-				m_type = MODIFIED;
+				type = MODIFIED;
 
 				VIMAP_PARSER_CHECK(SPACE);
 
-				VIMAP_PARSER_GET(IMAPParser::sequence_set, m_sequence_set);
+				VIMAP_PARSER_GET(IMAPParser::sequence_set, sequence_set);
 
 			// "APPENDUID" SP nz-number SP append-uid
 			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "appenduid")) {
 
-				m_type = APPENDUID;
+				type = APPENDUID;
 
 				VIMAP_PARSER_CHECK(SPACE);
-				VIMAP_PARSER_GET(IMAPParser::nz_number, m_nz_number);
+				VIMAP_PARSER_GET(IMAPParser::nz_number, nz_number);
 				VIMAP_PARSER_CHECK(SPACE);
-				VIMAP_PARSER_GET(IMAPParser::uid_set, m_uid_set);
+				VIMAP_PARSER_GET(IMAPParser::uid_set, uid_set);
 
 			// "COPYUID" SP nz-number SP uid-set SP uid-set
 			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "copyuid")) {
 
-				m_type = COPYUID;
+				type = COPYUID;
 
 				VIMAP_PARSER_CHECK(SPACE);
-				VIMAP_PARSER_GET(IMAPParser::nz_number, m_nz_number);
+				VIMAP_PARSER_GET(IMAPParser::nz_number, nz_number);
 				VIMAP_PARSER_CHECK(SPACE);
-				VIMAP_PARSER_GET(IMAPParser::uid_set, m_uid_set);
+				VIMAP_PARSER_GET(IMAPParser::uid_set, uid_set);
 				VIMAP_PARSER_CHECK(SPACE);
-				VIMAP_PARSER_GET(IMAPParser::uid_set, m_uid_set2);
+				VIMAP_PARSER_GET(IMAPParser::uid_set, uid_set2);
 
 			// "UIDNOTSTICKY"
 			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "uidnotsticky")) {
 
-				m_type = UIDNOTSTICKY;
+				type = UIDNOTSTICKY;
 
 			// atom [SPACE 1*<any TEXT_CHAR except "]">]
 			} else {
 
-				m_type = OTHER;
+				type = OTHER;
 
-				VIMAP_PARSER_GET(IMAPParser::atom, m_atom);
+				VIMAP_PARSER_GET(IMAPParser::atom, atom);
 
 				if (VIMAP_PARSER_TRY_CHECK(SPACE)) {
-					VIMAP_PARSER_GET(text_except <']'> , m_text);
+					VIMAP_PARSER_GET(text_except <']'> , text);
 				}
 			}
 
@@ -4777,33 +3928,18 @@ public:
 			OTHER
 		};
 
-	private:
 
-		Type m_type;
+		Type type;
 
-		IMAPParser::nz_number* m_nz_number;
-		IMAPParser::atom* m_atom;
-		IMAPParser::flag_list* m_flag_list;
-		IMAPParser::text* m_text;
-		IMAPParser::mod_sequence_value* m_mod_sequence_value;
-		IMAPParser::sequence_set* m_sequence_set;
-		IMAPParser::capability_data* m_capability_data;
-		IMAPParser::uid_set* m_uid_set;
-		IMAPParser::uid_set* m_uid_set2;
-
-	public:
-
-		Type type() const { return (m_type); }
-
-		const IMAPParser::nz_number* nz_number() const { return (m_nz_number); }
-		const IMAPParser::atom* atom() const { return (m_atom); }
-		const IMAPParser::flag_list* flag_list() const { return (m_flag_list); }
-		const IMAPParser::text* text() const { return (m_text); }
-		const IMAPParser::mod_sequence_value* mod_sequence_value() const { return m_mod_sequence_value; }
-		const IMAPParser::sequence_set* sequence_set() const { return m_sequence_set; }
-		const IMAPParser::capability_data* capability_data() const { return m_capability_data; }
-		const IMAPParser::uid_set* uid_set() const { return (m_uid_set); }
-		const IMAPParser::uid_set* uid_set2() const { return (m_uid_set2); }
+		std::unique_ptr <IMAPParser::nz_number> nz_number;
+		std::unique_ptr <IMAPParser::atom> atom;
+		std::unique_ptr <IMAPParser::flag_list> flag_list;
+		std::unique_ptr <IMAPParser::text> text;
+		std::unique_ptr <IMAPParser::mod_sequence_value> mod_sequence_value;
+		std::unique_ptr <IMAPParser::sequence_set> sequence_set;
+		std::unique_ptr <IMAPParser::capability_data> capability_data;
+		std::unique_ptr <IMAPParser::uid_set> uid_set;
+		std::unique_ptr <IMAPParser::uid_set> uid_set2;
 	};
 
 
@@ -4813,42 +3949,32 @@ public:
 
 	DECLARE_COMPONENT(resp_text)
 
-		resp_text()
-			: m_resp_text_code(NULL) {
-
-		}
-
-		~resp_text() {
-
-			delete m_resp_text_code;
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
 
 			if (VIMAP_PARSER_TRY_CHECK(one_char <'['> )) {
 
-				VIMAP_PARSER_GET(IMAPParser::resp_text_code, m_resp_text_code);
+				VIMAP_PARSER_GET(IMAPParser::resp_text_code, resp_text_code);
 
 				VIMAP_PARSER_CHECK(one_char <']'> );
 				VIMAP_PARSER_TRY_CHECK(SPACE);
 			}
 
-			scoped_ptr <text_mime2> text1;
-			VIMAP_PARSER_TRY_GET_PTR(text_mime2, text1);
+			std::unique_ptr <text_mime2> text1;
+			VIMAP_PARSER_TRY_GET(text_mime2, text1);
 
 			if (text1.get()) {
 
-				m_text = text1->value();
+				text = text1->value;
 
 			} else {
 
-				scoped_ptr <IMAPParser::text> text2;
-				VIMAP_PARSER_TRY_GET_PTR(IMAPParser::text, text2);
+				std::unique_ptr <IMAPParser::text> text2;
+				VIMAP_PARSER_TRY_GET(IMAPParser::text, text2);
 
 				if (text2.get()) {
-					m_text = text2->value();
+					text = text2->value;
 				} else {
 					// Empty response text
 				}
@@ -4859,15 +3985,9 @@ public:
 			return true;
 		}
 
-	private:
 
-		IMAPParser::resp_text_code* m_resp_text_code;
-		string m_text;
-
-	public:
-
-		const IMAPParser::resp_text_code* resp_text_code() const { return (m_resp_text_code); }
-		const string& text() const { return (m_text); }
+		std::unique_ptr <IMAPParser::resp_text_code> resp_text_code;
+		string text;
 	};
 
 
@@ -4876,16 +3996,6 @@ public:
 	//
 
 	DECLARE_COMPONENT(continue_req)
-
-		continue_req()
-			: m_resp_text(NULL) {
-
-		}
-
-		~continue_req() {
-
-			delete m_resp_text;
-		}
 
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
@@ -4897,16 +4007,16 @@ public:
 
 				// Some servers do not send SPACE when response text is empty
 				if (VIMAP_PARSER_TRY_CHECK(SPACE)) {
-					VIMAP_PARSER_GET(IMAPParser::resp_text, m_resp_text);
+					VIMAP_PARSER_GET(IMAPParser::resp_text, resp_text);
 				} else {
-					m_resp_text = new IMAPParser::resp_text();  // empty
+					resp_text.reset(new IMAPParser::resp_text());  // empty
 				}
 
 			} else {
 
 				VIMAP_PARSER_CHECK(SPACE);
 
-				VIMAP_PARSER_GET(IMAPParser::resp_text, m_resp_text);
+				VIMAP_PARSER_GET(IMAPParser::resp_text, resp_text);
 			}
 
 			VIMAP_PARSER_CHECK(CRLF);
@@ -4916,13 +4026,8 @@ public:
 			return true;
 		}
 
-	private:
 
-		IMAPParser::resp_text* m_resp_text;
-
-	public:
-
-		const IMAPParser::resp_text* resp_text() const { return (m_resp_text); }
+		std::unique_ptr <IMAPParser::resp_text> resp_text;
 	};
 
 
@@ -4934,14 +4039,8 @@ public:
 	DECLARE_COMPONENT(resp_cond_state)
 
 		resp_cond_state()
-			: m_resp_text(NULL),
-			  m_status(BAD) {
+			: status(BAD) {
 
-		}
-
-		~resp_cond_state() {
-
-			delete m_resp_text;
 		}
 
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
@@ -4949,17 +4048,17 @@ public:
 			size_t pos = *currentPos;
 
 			if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "ok")) {
-				m_status = OK;
+				status = OK;
 			} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "no")) {
-				m_status = NO;
+				status = NO;
 			} else {
 				VIMAP_PARSER_CHECK_WITHARG(special_atom, "bad");
-				m_status = BAD;
+				status = BAD;
 			}
 
 			VIMAP_PARSER_CHECK(SPACE);
 
-			VIMAP_PARSER_GET(IMAPParser::resp_text, m_resp_text);
+			VIMAP_PARSER_GET(IMAPParser::resp_text, resp_text);
 
 			*currentPos = pos;
 
@@ -4973,15 +4072,9 @@ public:
 			BAD
 		};
 
-	private:
 
-		IMAPParser::resp_text* m_resp_text;
-		Status m_status;
-
-	public:
-
-		const IMAPParser::resp_text* resp_text() const { return (m_resp_text); }
-		Status status() const { return (m_status); }
+		std::unique_ptr <IMAPParser::resp_text> resp_text;
+		Status status;
 	};
 
 
@@ -4991,16 +4084,6 @@ public:
 
 	DECLARE_COMPONENT(resp_cond_bye)
 
-		resp_cond_bye()
-			: m_resp_text(NULL) {
-
-		}
-
-		~resp_cond_bye() {
-
-			delete m_resp_text;
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
@@ -5009,20 +4092,15 @@ public:
 
 			VIMAP_PARSER_CHECK(SPACE);
 
-			VIMAP_PARSER_GET(IMAPParser::resp_text, m_resp_text);
+			VIMAP_PARSER_GET(IMAPParser::resp_text, resp_text);
 
 			*currentPos = pos;
 
 			return true;
 		}
 
-	private:
 
-		IMAPParser::resp_text* m_resp_text;
-
-	public:
-
-		const IMAPParser::resp_text* resp_text() const { return (m_resp_text); }
+		std::unique_ptr <IMAPParser::resp_text> resp_text;
 	};
 
 
@@ -5033,30 +4111,20 @@ public:
 
 	DECLARE_COMPONENT(resp_cond_auth)
 
-		resp_cond_auth()
-			: m_resp_text(NULL) {
-
-		}
-
-		~resp_cond_auth() {
-
-			delete m_resp_text;
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
 
 			if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "ok")) {
-				m_cond = OK;
+				condition = OK;
 			} else {
 				VIMAP_PARSER_CHECK_WITHARG(special_atom, "preauth");
-				m_cond = PREAUTH;
+				condition = PREAUTH;
 			}
 
 			VIMAP_PARSER_CHECK(SPACE);
 
-			VIMAP_PARSER_GET(IMAPParser::resp_text, m_resp_text);
+			VIMAP_PARSER_GET(IMAPParser::resp_text, resp_text);
 
 			*currentPos = pos;
 
@@ -5069,15 +4137,9 @@ public:
 			PREAUTH
 		};
 
-	private:
 
-		Condition m_cond;
-		IMAPParser::resp_text* m_resp_text;
-
-	public:
-
-		Condition condition() const { return (m_cond); }
-		const IMAPParser::resp_text* resp_text() const { return (m_resp_text); }
+		Condition condition;
+		std::unique_ptr <IMAPParser::resp_text> resp_text;
 	};
 
 
@@ -5095,46 +4157,19 @@ public:
 
 	DECLARE_COMPONENT(mailbox_data)
 
-		mailbox_data()
-			: m_number(NULL),
-			  m_mailbox_flag_list(NULL),
-			  m_mailbox_list(NULL),
-			  m_mailbox(NULL),
-			  m_text(NULL),
-			  m_status_att_list(NULL) {
-
-		}
-
-		~mailbox_data() {
-
-			delete m_number;
-			delete m_mailbox_flag_list;
-			delete m_mailbox_list;
-			delete m_mailbox;
-			delete m_text;
-
-			for (std::vector <nz_number*>::iterator it = m_search_nz_number_list.begin() ;
-			     it != m_search_nz_number_list.end() ; ++it) {
-
-				delete *it;
-			}
-
-			delete m_status_att_list;
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
 
-			if (VIMAP_PARSER_TRY_GET(IMAPParser::number, m_number)) {
+			if (VIMAP_PARSER_TRY_GET(IMAPParser::number, number)) {
 
 				VIMAP_PARSER_CHECK(SPACE);
 
 				if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "exists")) {
-					m_type = EXISTS;
+					type = EXISTS;
 				} else {
 					VIMAP_PARSER_CHECK_WITHARG(special_atom, "recent");
-					m_type = RECENT;
+					type = RECENT;
 				}
 
 			} else {
@@ -5144,50 +4179,50 @@ public:
 
 					VIMAP_PARSER_CHECK(SPACE);
 
-					VIMAP_PARSER_GET(IMAPParser::mailbox_flag_list, m_mailbox_flag_list);
+					VIMAP_PARSER_GET(IMAPParser::mailbox_flag_list, mailbox_flag_list);
 
-					m_type = FLAGS;
+					type = FLAGS;
 
 				// "LIST" SPACE mailbox_list
 				} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "list")) {
 
 					VIMAP_PARSER_CHECK(SPACE);
 
-					VIMAP_PARSER_GET(IMAPParser::mailbox_list, m_mailbox_list);
+					VIMAP_PARSER_GET(IMAPParser::mailbox_list, mailbox_list);
 
-					m_type = LIST;
+					type = LIST;
 
 				// "LSUB" SPACE mailbox_list
 				} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "lsub")) {
 
 					VIMAP_PARSER_CHECK(SPACE);
 
-					VIMAP_PARSER_GET(IMAPParser::mailbox_list, m_mailbox_list);
+					VIMAP_PARSER_GET(IMAPParser::mailbox_list, mailbox_list);
 
-					m_type = LSUB;
+					type = LSUB;
 
 				// "MAILBOX" SPACE text
 				} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "mailbox")) {
 
 					VIMAP_PARSER_CHECK(SPACE);
 
-					VIMAP_PARSER_GET(IMAPParser::text, m_text);
+					VIMAP_PARSER_GET(IMAPParser::text, text);
 
-					m_type = MAILBOX;
+					type = MAILBOX;
 
 				// "SEARCH" [SPACE 1#nz_number]
 				} else if (VIMAP_PARSER_TRY_CHECK_WITHARG(special_atom, "search")) {
 
 					if (VIMAP_PARSER_TRY_CHECK(SPACE)) {
 
-						VIMAP_PARSER_GET_PUSHBACK(nz_number, m_search_nz_number_list);
+						VIMAP_PARSER_GET_PUSHBACK(nz_number, search_nz_number_list);
 
 						while (VIMAP_PARSER_TRY_CHECK(SPACE)) {
-							VIMAP_PARSER_GET_PUSHBACK(nz_number, m_search_nz_number_list);
+							VIMAP_PARSER_GET_PUSHBACK(nz_number, search_nz_number_list);
 						}
 					}
 
-					m_type = SEARCH;
+					type = SEARCH;
 
 				// "STATUS" SPACE mailbox SPACE
 				// "(" [status_att_list] ")"
@@ -5196,15 +4231,15 @@ public:
 					VIMAP_PARSER_CHECK_WITHARG(special_atom, "status");
 					VIMAP_PARSER_CHECK(SPACE);
 
-					VIMAP_PARSER_GET(IMAPParser::mailbox, m_mailbox);
+					VIMAP_PARSER_GET(IMAPParser::mailbox, mailbox);
 
 					VIMAP_PARSER_CHECK(SPACE);
 
 					VIMAP_PARSER_CHECK(one_char <'('> );
-					VIMAP_PARSER_TRY_GET(IMAPParser::status_att_list, m_status_att_list);
+					VIMAP_PARSER_TRY_GET(IMAPParser::status_att_list, status_att_list);
 					VIMAP_PARSER_CHECK(one_char <')'> );
 
-					m_type = STATUS;
+					type = STATUS;
 				}
 			}
 
@@ -5226,29 +4261,16 @@ public:
 			RECENT
 		};
 
-	private:
 
-		Type m_type;
+		Type type;
 
-		IMAPParser::number* m_number;
-		IMAPParser::mailbox_flag_list* m_mailbox_flag_list;
-		IMAPParser::mailbox_list* m_mailbox_list;
-		IMAPParser::mailbox* m_mailbox;
-		IMAPParser::text* m_text;
-		std::vector <nz_number*> m_search_nz_number_list;
-		IMAPParser::status_att_list* m_status_att_list;
-
-	public:
-
-		Type type() const { return (m_type); }
-
-		const IMAPParser::number* number() const { return (m_number); }
-		const IMAPParser::mailbox_flag_list* mailbox_flag_list() const { return (m_mailbox_flag_list); }
-		const IMAPParser::mailbox_list* mailbox_list() const { return (m_mailbox_list); }
-		const IMAPParser::mailbox* mailbox() const { return (m_mailbox); }
-		const IMAPParser::text* text() const { return (m_text); }
-		const std::vector <nz_number*>& search_nz_number_list() const { return (m_search_nz_number_list); }
-		const IMAPParser::status_att_list* status_att_list() const { return m_status_att_list; }
+		std::unique_ptr <IMAPParser::number> number;
+		std::unique_ptr <IMAPParser::mailbox_flag_list> mailbox_flag_list;
+		std::unique_ptr <IMAPParser::mailbox_list> mailbox_list;
+		std::unique_ptr <IMAPParser::mailbox> mailbox;
+		std::unique_ptr <IMAPParser::text> text;
+		std::vector <std::unique_ptr <nz_number>> search_nz_number_list;
+		std::unique_ptr <IMAPParser::status_att_list> status_att_list;
 	};
 
 
@@ -5259,24 +4281,6 @@ public:
 
 	DECLARE_COMPONENT(response_data)
 
-		response_data()
-			: m_resp_cond_state(NULL),
-			  m_resp_cond_bye(NULL),
-			  m_mailbox_data(NULL),
-			  m_message_data(NULL),
-			  m_capability_data(NULL) {
-
-		}
-
-		~response_data() {
-
-			delete m_resp_cond_state;
-			delete m_resp_cond_bye;
-			delete m_mailbox_data;
-			delete m_message_data;
-			delete m_capability_data;
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
@@ -5284,11 +4288,11 @@ public:
 			VIMAP_PARSER_CHECK(one_char <'*'> );
 			VIMAP_PARSER_CHECK(SPACE);
 
-			if (!VIMAP_PARSER_TRY_GET(IMAPParser::resp_cond_state, m_resp_cond_state)) {
-				if (!VIMAP_PARSER_TRY_GET(IMAPParser::resp_cond_bye, m_resp_cond_bye)) {
-					if (!VIMAP_PARSER_TRY_GET(IMAPParser::mailbox_data, m_mailbox_data)) {
-						if (!VIMAP_PARSER_TRY_GET(IMAPParser::message_data, m_message_data)) {
-							VIMAP_PARSER_GET(IMAPParser::capability_data, m_capability_data);
+			if (!VIMAP_PARSER_TRY_GET(IMAPParser::resp_cond_state, resp_cond_state)) {
+				if (!VIMAP_PARSER_TRY_GET(IMAPParser::resp_cond_bye, resp_cond_bye)) {
+					if (!VIMAP_PARSER_TRY_GET(IMAPParser::mailbox_data, mailbox_data)) {
+						if (!VIMAP_PARSER_TRY_GET(IMAPParser::message_data, message_data)) {
+							VIMAP_PARSER_GET(IMAPParser::capability_data, capability_data);
 						}
 					}
 				}
@@ -5309,44 +4313,23 @@ public:
 			return true;
 		}
 
-	private:
 
-		IMAPParser::resp_cond_state* m_resp_cond_state;
-		IMAPParser::resp_cond_bye* m_resp_cond_bye;
-		IMAPParser::mailbox_data* m_mailbox_data;
-		IMAPParser::message_data* m_message_data;
-		IMAPParser::capability_data* m_capability_data;
-
-	public:
-
-		const IMAPParser::resp_cond_state* resp_cond_state() const { return (m_resp_cond_state); }
-		const IMAPParser::resp_cond_bye* resp_cond_bye() const { return (m_resp_cond_bye); }
-		const IMAPParser::mailbox_data* mailbox_data() const { return (m_mailbox_data); }
-		const IMAPParser::message_data* message_data() const { return (m_message_data); }
-		const IMAPParser::capability_data* capability_data() const { return (m_capability_data); }
+		std::unique_ptr <IMAPParser::resp_cond_state> resp_cond_state;
+		std::unique_ptr <IMAPParser::resp_cond_bye> resp_cond_bye;
+		std::unique_ptr <IMAPParser::mailbox_data> mailbox_data;
+		std::unique_ptr <IMAPParser::message_data> message_data;
+		std::unique_ptr <IMAPParser::capability_data> capability_data;
 	};
 
 
 	DECLARE_COMPONENT(continue_req_or_response_data)
 
-		continue_req_or_response_data()
-			: m_continue_req(NULL),
-			  m_response_data(NULL) {
-
-		}
-
-		~continue_req_or_response_data() {
-
-			delete m_continue_req;
-			delete m_response_data;
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
 
-			if (!VIMAP_PARSER_TRY_GET(IMAPParser::continue_req, m_continue_req)) {
-				VIMAP_PARSER_GET(IMAPParser::response_data, m_response_data);
+			if (!VIMAP_PARSER_TRY_GET(IMAPParser::continue_req, continue_req)) {
+				VIMAP_PARSER_GET(IMAPParser::response_data, response_data);
 			}
 
 			*currentPos = pos;
@@ -5354,15 +4337,9 @@ public:
 			return true;
 		}
 
-	private:
 
-		IMAPParser::continue_req* m_continue_req;
-		IMAPParser::response_data* m_response_data;
-
-	public:
-
-		const IMAPParser::continue_req* continue_req() const { return (m_continue_req); }
-		const IMAPParser::response_data* response_data() const { return (m_response_data); }
+		std::unique_ptr <IMAPParser::continue_req> continue_req;
+		std::unique_ptr <IMAPParser::response_data> response_data;
 	};
 
 
@@ -5373,16 +4350,6 @@ public:
 
 	DECLARE_COMPONENT(response_fatal)
 
-		response_fatal()
-			: m_resp_cond_bye(NULL) {
-
-		}
-
-		~response_fatal() {
-
-			delete m_resp_cond_bye;
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
@@ -5390,7 +4357,7 @@ public:
 			VIMAP_PARSER_CHECK(one_char <'*'> );
 			VIMAP_PARSER_CHECK(SPACE);
 
-			VIMAP_PARSER_GET(IMAPParser::resp_cond_bye, m_resp_cond_bye);
+			VIMAP_PARSER_GET(IMAPParser::resp_cond_bye, resp_cond_bye);
 
 			if (!parser.isStrict()) {
 
@@ -5407,13 +4374,8 @@ public:
 			return true;
 		}
 
-	private:
 
-		IMAPParser::resp_cond_bye* m_resp_cond_bye;
-
-	public:
-
-		const IMAPParser::resp_cond_bye* resp_cond_bye() const { return (m_resp_cond_bye); }
+		std::unique_ptr <IMAPParser::resp_cond_bye> resp_cond_bye;
 	};
 
 
@@ -5423,23 +4385,13 @@ public:
 
 	DECLARE_COMPONENT(response_tagged)
 
-		response_tagged()
-			: m_resp_cond_state(NULL) {
-
-		}
-
-		~response_tagged() {
-
-			delete m_resp_cond_state;
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
 
 			VIMAP_PARSER_CHECK(IMAPParser::xtag);
 			VIMAP_PARSER_CHECK(SPACE);
-			VIMAP_PARSER_GET(IMAPParser::resp_cond_state, m_resp_cond_state);
+			VIMAP_PARSER_GET(IMAPParser::resp_cond_state, resp_cond_state);
 
 			if (!parser.isStrict()) {
 
@@ -5456,13 +4408,8 @@ public:
 			return true;
 		}
 
-	private:
 
-		IMAPParser::resp_cond_state* m_resp_cond_state;
-
-	public:
-
-		const IMAPParser::resp_cond_state* resp_cond_state() const { return (m_resp_cond_state); }
+		std::unique_ptr <IMAPParser::resp_cond_state> resp_cond_state;
 	};
 
 
@@ -5472,24 +4419,12 @@ public:
 
 	DECLARE_COMPONENT(response_done)
 
-		response_done()
-			: m_response_tagged(NULL),
-			  m_response_fatal(NULL) {
-
-		}
-
-		~response_done() {
-
-			delete m_response_tagged;
-			delete m_response_fatal;
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
 
-			if (!VIMAP_PARSER_TRY_GET(IMAPParser::response_tagged, m_response_tagged)) {
-				VIMAP_PARSER_GET(IMAPParser::response_fatal, m_response_fatal);
+			if (!VIMAP_PARSER_TRY_GET(IMAPParser::response_tagged, response_tagged)) {
+				VIMAP_PARSER_GET(IMAPParser::response_fatal, response_fatal);
 			}
 
 			*currentPos = pos;
@@ -5497,15 +4432,9 @@ public:
 			return true;
 		}
 
-	private:
 
-		IMAPParser::response_tagged* m_response_tagged;
-		IMAPParser::response_fatal* m_response_fatal;
-
-	public:
-
-		const IMAPParser::response_tagged* response_tagged() const { return (m_response_tagged); }
-		const IMAPParser::response_fatal* response_fatal() const { return (m_response_fatal); }
+		std::unique_ptr <IMAPParser::response_tagged> response_tagged;
+		std::unique_ptr <IMAPParser::response_fatal> response_fatal;
 	};
 
 
@@ -5514,23 +4443,6 @@ public:
 	//
 
 	DECLARE_COMPONENT(response)
-
-		response()
-			: m_response_done(NULL) {
-
-		}
-
-		~response() {
-
-			for (std::vector <IMAPParser::continue_req_or_response_data*>::iterator
-			     it = m_continue_req_or_response_data.begin() ;
-			     it != m_continue_req_or_response_data.end() ; ++it) {
-
-				delete *it;
-			}
-
-			delete m_response_done;
-		}
 
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
@@ -5542,10 +4454,14 @@ public:
 
 			while ((resp = parser.get <IMAPParser::continue_req_or_response_data>(curLine, &pos))) {
 
-				m_continue_req_or_response_data.push_back(resp);
+				continue_req_or_response_data.push_back(
+					std::move(
+						std::unique_ptr <IMAPParser::continue_req_or_response_data>(resp)
+					)
+				);
 
 				// Partial response (continue_req)
-				if (resp->continue_req()) {
+				if (resp->continue_req) {
 					partial = true;
 					break;
 				}
@@ -5556,8 +4472,8 @@ public:
 			}
 
 			if (!partial) {
-				m_response_done = parser.get <IMAPParser::response_done>(curLine, &pos);
-				VIMAP_PARSER_FAIL_UNLESS(m_response_done);
+				response_done.reset(parser.get <IMAPParser::response_done>(curLine, &pos));
+				VIMAP_PARSER_FAIL_UNLESS(response_done);
 			}
 
 			*currentPos = pos;
@@ -5568,16 +4484,15 @@ public:
 
 		bool isBad() const {
 
-			if (!response_done()) {  // incomplete (partial) response
+			if (!response_done) {  // incomplete (partial) response
 				return true;
 			}
 
-			if (response_done()->response_fatal()) {
+			if (response_done->response_fatal) {
 				return true;
 			}
 
-			if (response_done()->response_tagged()->resp_cond_state()->
-					status() == IMAPParser::resp_cond_state::BAD) {
+			if (response_done->response_tagged->resp_cond_state->status == IMAPParser::resp_cond_state::BAD) {
 
 				return true;
 			}
@@ -5595,17 +4510,13 @@ public:
 			return m_errorLog;
 		}
 
+
+		std::vector <std::unique_ptr <IMAPParser::continue_req_or_response_data>> continue_req_or_response_data;
+		std::unique_ptr <IMAPParser::response_done> response_done;
+
 	private:
 
-		std::vector <IMAPParser::continue_req_or_response_data*> m_continue_req_or_response_data;
-		IMAPParser::response_done* m_response_done;
-
 		string m_errorLog;
-
-	public:
-
-		const std::vector <IMAPParser::continue_req_or_response_data*>& continue_req_or_response_data() const { return (m_continue_req_or_response_data); }
-		const IMAPParser::response_done* response_done() const { return (m_response_done); }
 	};
 
 
@@ -5615,18 +4526,6 @@ public:
 
 	DECLARE_COMPONENT(greeting)
 
-		greeting()
-			: m_resp_cond_auth(NULL),
-			  m_resp_cond_bye(NULL) {
-
-		}
-
-		~greeting() {
-
-			delete m_resp_cond_auth;
-			delete m_resp_cond_bye;
-		}
-
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
@@ -5634,8 +4533,8 @@ public:
 			VIMAP_PARSER_CHECK(one_char <'*'> );
 			VIMAP_PARSER_CHECK(SPACE);
 
-			if (!VIMAP_PARSER_TRY_GET(IMAPParser::resp_cond_auth, m_resp_cond_auth)) {
-				VIMAP_PARSER_GET(IMAPParser::resp_cond_bye, m_resp_cond_bye);
+			if (!VIMAP_PARSER_TRY_GET(IMAPParser::resp_cond_auth, resp_cond_auth)) {
+				VIMAP_PARSER_GET(IMAPParser::resp_cond_bye, resp_cond_bye);
 			}
 
 			VIMAP_PARSER_CHECK(CRLF);
@@ -5655,17 +4554,13 @@ public:
 			return m_errorLog;
 		}
 
+
+		std::unique_ptr <IMAPParser::resp_cond_auth> resp_cond_auth;
+		std::unique_ptr <IMAPParser::resp_cond_bye> resp_cond_bye;
+
 	private:
 
-		IMAPParser::resp_cond_auth* m_resp_cond_auth;
-		IMAPParser::resp_cond_bye* m_resp_cond_bye;
-
 		string m_errorLog;
-
-	public:
-
-		const IMAPParser::resp_cond_auth* resp_cond_auth() const { return (m_resp_cond_auth); }
-		const IMAPParser::resp_cond_bye* resp_cond_bye() const { return (m_resp_cond_bye); }
 	};
 
 
@@ -6056,9 +4951,9 @@ public:
 #undef VIMAP_PARSER_CHECK
 #undef VIMAP_PARSER_TRY_CHECK
 #undef VIMAP_PARSER_GET
-#undef VIMAP_PARSER_GET_PTR
+#undef VIMAP_PARSER_GET
 #undef VIMAP_PARSER_TRY_GET
-#undef VIMAP_PARSER_TRY_GET_PTR
+#undef VIMAP_PARSER_TRY_GET
 #undef VIMAP_PARSER_GET_PUSHBACK
 #undef VIMAP_PARSER_CHECK_WITHARG
 #undef VIMAP_PARSER_TRY_CHECK_WITHARG

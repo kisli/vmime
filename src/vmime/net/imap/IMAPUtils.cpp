@@ -390,7 +390,7 @@ const folder::path::component IMAPUtils::fromModifiedUTF7(const string& text) {
 // static
 void IMAPUtils::mailboxFlagsToFolderAttributes(
 	const shared_ptr <const IMAPConnection>& cnt,
-	const IMAPParser::mailbox_flag_list* list,
+	const IMAPParser::mailbox_flag_list& list,
 	folderAttributes& attribs
 ) {
 
@@ -404,12 +404,9 @@ void IMAPUtils::mailboxFlagsToFolderAttributes(
 		flags |= folderAttributes::FLAG_HAS_CHILDREN;
 	}
 
-	const std::vector <IMAPParser::mailbox_flag*>& mailboxFlags = list->flags();
+	for (auto it = list.flags.begin() ; it != list.flags.end() ; ++it) {
 
-	for (std::vector <IMAPParser::mailbox_flag*>::const_iterator it = mailboxFlags.begin() ;
-	     it != mailboxFlags.end() ; ++it) {
-
-		switch ((*it)->type()) {
+		switch ((*it)->type) {
 
 			case IMAPParser::mailbox_flag::NOSELECT:
 
@@ -480,15 +477,13 @@ void IMAPUtils::mailboxFlagsToFolderAttributes(
 }
 
 
-int IMAPUtils::messageFlagsFromFlags(const IMAPParser::flag_list* list) {
+int IMAPUtils::messageFlagsFromFlags(const IMAPParser::flag_list& list) {
 
-	const std::vector <IMAPParser::flag*>& flagList = list->flags();
 	int flags = 0;
 
-	for (std::vector <IMAPParser::flag*>::const_iterator
-	     it = flagList.begin() ; it != flagList.end() ; ++it) {
+	for (auto &flag : list.flags) {
 
-		switch ((*it)->type()) {
+		switch (flag->type) {
 
 			case IMAPParser::flag::ANSWERED:
 
@@ -705,16 +700,13 @@ void IMAPUtils::convertAddressList(
 	mailboxList& dest
 ) {
 
-	for (std::vector <IMAPParser::address*>::const_iterator
-	     it = src.addresses().begin() ; it != src.addresses().end() ; ++it) {
-
-		const IMAPParser::address& addr = **it;
+	for (auto& addr : src.addresses) {
 
 		text name;
-		text::decodeAndUnfold(addr.addr_name()->value(), &name);
+		text::decodeAndUnfold(addr->addr_name->value, &name);
 
-		string email = addr.addr_mailbox()->value()
-			+ "@" + addr.addr_host()->value();
+		string email = addr->addr_mailbox->value
+			+ "@" + addr->addr_host->value;
 
 		dest.appendMailbox(make_shared <mailbox>(name, email));
 	}
@@ -817,18 +809,20 @@ const string IMAPUtils::messageSetToSequenceSet(const messageSet& msgs) {
 
 
 // static
-messageSet IMAPUtils::buildMessageSet(const IMAPParser::uid_set* uidSet) {
+messageSet IMAPUtils::buildMessageSet(const IMAPParser::uid_set& uidSetRef) {
 
 	messageSet set = messageSet::empty();
 
-	for ( ; uidSet ; uidSet = uidSet->next_uid_set()) {
+	const IMAPParser::uid_set* uidSet = &uidSetRef;
 
-		if (uidSet->uid_range()) {
+	for ( ; uidSet ; uidSet = uidSet->next_uid_set.get()) {
+
+		if (uidSet->uid_range) {
 
 			set.addRange(
 				UIDMessageRange(
-					message::uid(uidSet->uid_range()->uniqueid1()->value()),
-					message::uid(uidSet->uid_range()->uniqueid2()->value())
+					message::uid(uidSet->uid_range->uniqueid1->value),
+					message::uid(uidSet->uid_range->uniqueid2->value)
 				)
 			);
 
@@ -836,7 +830,7 @@ messageSet IMAPUtils::buildMessageSet(const IMAPParser::uid_set* uidSet) {
 
 			set.addRange(
 				UIDMessageRange(
-					message::uid(uidSet->uniqueid()->value())
+					message::uid(uidSet->uniqueid->value)
 				)
 			);
 		}

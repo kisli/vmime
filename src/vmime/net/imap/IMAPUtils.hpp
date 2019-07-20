@@ -73,12 +73,13 @@ public:
 	  * @param list list of mailbox flags
 	  * @param attribs reference to an object holding folder attributes
 	  */
-	static void mailboxFlagsToFolderAttributes
-		(const shared_ptr <const IMAPConnection>& cnt,
-		 const IMAPParser::mailbox_flag_list* list,
-		 folderAttributes& attribs);
+	static void mailboxFlagsToFolderAttributes(
+		const shared_ptr <const IMAPConnection>& cnt,
+		const IMAPParser::mailbox_flag_list& list,
+		folderAttributes& attribs
+	);
 
-	static int messageFlagsFromFlags(const IMAPParser::flag_list* list);
+	static int messageFlagsFromFlags(const IMAPParser::flag_list& list);
 
 	static const std::vector <string> messageFlagList(const int flags);
 
@@ -97,8 +98,11 @@ public:
 	  * @param options fetch options
 	  * @return fetch request
 	  */
-	static shared_ptr <IMAPCommand> buildFetchCommand
-		(const shared_ptr <IMAPConnection>& cnt, const messageSet& msgs, const fetchAttributes& options);
+	static shared_ptr <IMAPCommand> buildFetchCommand(
+		const shared_ptr <IMAPConnection>& cnt,
+		const messageSet& msgs,
+		const fetchAttributes& options
+	);
 
 	/** Convert a parser-style address list to a mailbox list.
 	  *
@@ -119,7 +123,7 @@ public:
 	  * @param uidSet UID set, as returned by the parser
 	  * @return message set
 	  */
-	static messageSet buildMessageSet(const IMAPParser::uid_set* uidSet);
+	static messageSet buildMessageSet(const IMAPParser::uid_set& uidSet);
 
 private:
 

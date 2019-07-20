@@ -48,15 +48,13 @@ IMAPMessageStructure::IMAPMessageStructure(const IMAPParser::body* body) {
 
 IMAPMessageStructure::IMAPMessageStructure(
 	const shared_ptr <IMAPMessagePart>& parent,
-	const std::vector <IMAPParser::body*>& list
+	const std::vector <std::unique_ptr <IMAPParser::body>>& list
 ) {
 
 	size_t number = 0;
 
-	for (std::vector <IMAPParser::body*>::const_iterator
-	     it = list.begin() ; it != list.end() ; ++it, ++number) {
-
-		m_parts.push_back(IMAPMessagePart::create(parent, number, *it));
+	for (auto it = list.begin() ; it != list.end() ; ++it, ++number) {
+		m_parts.push_back(IMAPMessagePart::create(parent, number, it->get()));
 	}
 }
 

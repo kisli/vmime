@@ -50,7 +50,7 @@ public:
 
 	IMAPMessageStructure();
 	IMAPMessageStructure(const IMAPParser::body* body);
-	IMAPMessageStructure(const shared_ptr <IMAPMessagePart>& parent, const std::vector <IMAPParser::body*>& list);
+	IMAPMessageStructure(const shared_ptr <IMAPMessagePart>& parent, const std::vector <std::unique_ptr <IMAPParser::body>>& list);
 
 	shared_ptr <const messagePart> getPartAt(const size_t x) const;
 	shared_ptr <messagePart> getPartAt(const size_t x);

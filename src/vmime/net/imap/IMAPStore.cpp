@@ -208,8 +208,8 @@ void IMAPStore::noop() {
 
 	scoped_ptr <IMAPParser::response> resp(m_connection->readResponse());
 
-	if (resp->isBad() || resp->response_done()->response_tagged()->
-			resp_cond_state()->status() != IMAPParser::resp_cond_state::OK) {
+	if (resp->isBad() || resp->response_done->response_tagged->
+			resp_cond_state->status != IMAPParser::resp_cond_state::OK) {
 
 		throw exceptions::command_error("NOOP", resp->getErrorLog());
 	}
