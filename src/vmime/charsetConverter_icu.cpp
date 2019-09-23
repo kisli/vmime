@@ -34,15 +34,12 @@
 #include "vmime/utility/outputStreamStringAdapter.hpp"
 
 
-extern "C" {
-
 #ifndef VMIME_BUILDING_DOC
 
 	#include <unicode/ucnv.h>
 	#include <unicode/ucnv_err.h>
 
 #endif // VMIME_BUILDING_DOC
-}
 
 
 #include <unicode/unistr.h>
