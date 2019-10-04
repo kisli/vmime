@@ -213,9 +213,9 @@ VMIME_TEST_SUITE_BEGIN(bodyPartTest)
 		vmime::string str =
 			"Content-Type: multipart/mixed; boundary=\"MY-BOUNDARY\""
 			"\r\n\r\n"
-			"--  \t MY-BOUNDARY\r\nHEADER1\r\n\r\nBODY1\r\n"
+			"--MY-BOUNDARY  \t \r\nHEADER1\r\n\r\nBODY1\r\n"
 			"--MY-BOUNDARY\r\n"
-			"-- MY-BOUNDARY--\r\n";
+			"--MY-BOUNDARY-- \r\n";
 
 		vmime::bodyPart p;
 		p.parse(str);
@@ -291,7 +291,7 @@ VMIME_TEST_SUITE_BEGIN(bodyPartTest)
 		vmime::string str =
 			"Content-Type: multipart/mixed"
 			"\r\n\r\n"
-			"--  \t UNKNOWN-BOUNDARY\r\nHEADER1\r\n\r\nBODY1\r\n"
+			"--UNKNOWN-BOUNDARY  \t \r\nHEADER1\r\n\r\nBODY1\r\n"
 			"--UNKNOWN-BOUNDARY\r\nHEADER2\r\n\r\nBODY2\r\n"
 			"--UNKNOWN-BOUNDARY--";
 

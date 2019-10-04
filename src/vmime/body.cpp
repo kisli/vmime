@@ -78,30 +78,12 @@ size_t body::findNextBoundaryPosition(
 			continue;
 		}
 
-		// Skip transport padding bytes (SPACE or HTAB), if any
-		size_t advance = 0;
-
-		while (pos != 0) {
-
-			parser->seek(pos - advance - 1);
-
-			const byte_t c = parser->peekByte();
-
-			if (c == ' ' || c == '\t') {
-				++advance;
-			} else {
-				break;
-			}
-		}
-
 		// Ensure the bytes before boundary are "[LF]--": boundary should be
 		// at the beginning of a line, and should start with "--"
-		if (pos - advance < 3) {
+		if (pos < 3) {
 			continue;
 		}
-
-		parser->seek(pos - advance - 3);
-
+		parser->seek(pos - 3);
 		if (!parser->matchBytes("\n--", 3)) {
 			continue;
 		}
@@ -111,21 +93,20 @@ size_t body::findNextBoundaryPosition(
 		const byte_t next = parser->peekByte();
 
 		// Boundary should be followed by a new line or a dash
-		if (next != '\r' && next != '\n' && next != '-') {
+		if (!isspace(next) && next != '-') {
 			continue;
 		}
 
 		// Get rid of the "[CR]" just before "[LF]--", if any
-		if (pos - advance >= 4) {
-
-			parser->seek(pos - advance - 4);
-
+		size_t backwards = 0;
+		if (pos >= 4) {
+			parser->seek(pos - 4);
 			if (parser->peekByte() == '\r') {
-				advance++;
+				++backwards;
 			}
 		}
 
-		*boundaryStart = pos - advance - 3;
+		*boundaryStart = pos - backwards - 3;
 		*boundaryEnd = pos + boundary.length();
 
 		return pos;
