@@ -276,10 +276,10 @@ void body::parseImpl(
 				boundaryEnd += 2;
 			}
 
-			// RFC #1521, Page 31:
-			// "...(If a boundary appears to end with white space, the
-			//  white space must be presumed to have been added by a
-			//  gateway, and must be deleted.)..."
+			// RFC 2046 §5.1.1 page 22: """If a boundary delimiter
+			// line appears to end with white space, the white
+			// space must be presumed to have been added by a
+			// gateway, and must be deleted."""
 			parser->seek(boundaryEnd);
 			boundaryEnd += parser->skipIf(parserHelpers::isSpaceOrTab, end);
 
