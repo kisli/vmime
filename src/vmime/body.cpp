@@ -53,6 +53,11 @@ body::~body() {
 }
 
 
+/*
+ * boundaryStart: will become the index for "\r\n--marker"
+ * boundaryEnd:   will become the index after "marker", i.e. index for potential trailing "--", "\r\n", etc.
+ * return value:  index for "marker"
+ */
 // static
 size_t body::findNextBoundaryPosition(
 	const shared_ptr <utility::parserInputStreamAdapter>& parser,
@@ -271,6 +276,19 @@ void body::parseImpl(
 				boundaryEnd += 2;
 			} else if (boundaryEnd < end && parser->peekByte() == '\n') {
 				++boundaryEnd;
+			} else if (boundaryEnd == end) {
+			} else {
+				/*
+				 * RFC 2046 §5.1.1 page 19: """[...] optional
+				 * linear whitespace, and a terminating
+				 * CRLF.""" — junk handling is left
+				 * unspecified, so we might as well skip it to
+				 * facilitate broken mails.
+				 */
+				boundaryEnd += parser->skipIf([](char_t c) { return c != '\n'; }, end);
+				pos = findNextBoundaryPosition(parser, boundary, boundaryEnd, end, &boundaryStart, &boundaryEnd);
+				--index;
+				continue;
 			}
 
 			if (index == 0) {
