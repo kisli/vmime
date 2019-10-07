@@ -53,6 +53,11 @@ body::~body() {
 }
 
 
+/*
+ * boundaryStart: will become the index for "\r\n--marker"
+ * boundaryEnd:   will become the index after "marker", i.e. index for potential trailing "--", "\r\n", etc.
+ * return value:  index for "marker"
+ */
 // static
 size_t body::findNextBoundaryPosition(
 	const shared_ptr <utility::parserInputStreamAdapter>& parser,
@@ -65,7 +70,7 @@ size_t body::findNextBoundaryPosition(
 
 	size_t pos = position;
 
-	while (pos != npos && pos < end) {
+	for (; pos != npos && pos < end; ++pos) {
 
 		pos = parser->findNext(boundary, pos);
 
@@ -73,60 +78,43 @@ size_t body::findNextBoundaryPosition(
 			break;  // not found
 		}
 
-		if (pos != 0) {
+		if (pos == 0) {
+			// Boundary is a prefix of another, continue the search (same for the other "continue"s)
+			continue;
+		}
 
-			// Skip transport padding bytes (SPACE or HTAB), if any
-			size_t advance = 0;
+		// Ensure the bytes before boundary are "[LF]--": boundary should be
+		// at the beginning of a line, and should start with "--"
+		if (pos < 3) {
+			continue;
+		}
+		parser->seek(pos - 3);
+		if (!parser->matchBytes("\n--", 3)) {
+			continue;
+		}
 
-			while (pos != 0) {
+		parser->seek(pos + boundary.length());
 
-				parser->seek(pos - advance - 1);
+		const byte_t next = parser->peekByte();
 
-				const byte_t c = parser->peekByte();
+		// Boundary should be followed by a new line or a dash
+		if (!isspace(next) && next != '-') {
+			continue;
+		}
 
-				if (c == ' ' || c == '\t') {
-					++advance;
-				} else {
-					break;
-				}
-			}
-
-			// Ensure the bytes before boundary are "[LF]--": boundary should be
-			// at the beginning of a line, and should start with "--"
-			if (pos - advance >= 3) {
-
-				parser->seek(pos - advance - 3);
-
-				if (parser->matchBytes("\n--", 3)) {
-
-					parser->seek(pos + boundary.length());
-
-					const byte_t next = parser->peekByte();
-
-					// Boundary should be followed by a new line or a dash
-					if (next == '\r' || next == '\n' || next == '-') {
-
-						// Get rid of the "[CR]" just before "[LF]--", if any
-						if (pos - advance >= 4) {
-
-							parser->seek(pos - advance - 4);
-
-							if (parser->peekByte() == '\r') {
-								advance++;
-							}
-						}
-
-						*boundaryStart = pos - advance - 3;
-						*boundaryEnd = pos + boundary.length();
-
-						return pos;
-					}
-				}
+		// Get rid of the "[CR]" just before "[LF]--", if any
+		size_t backwards = 0;
+		if (pos >= 4) {
+			parser->seek(pos - 4);
+			if (parser->peekByte() == '\r') {
+				++backwards;
 			}
 		}
 
-		// Boundary is a prefix of another, continue the search
-		pos++;
+		*boundaryStart = pos - backwards - 3;
+		*boundaryEnd = pos + boundary.length();
+
+		return pos;
 	}
 
 	return pos;
@@ -276,10 +264,10 @@ void body::parseImpl(
 				boundaryEnd += 2;
 			}
 
-			// RFC #1521, Page 31:
-			// "...(If a boundary appears to end with white space, the
-			//  white space must be presumed to have been added by a
-			//  gateway, and must be deleted.)..."
+			// RFC 2046 §5.1.1 page 22: """If a boundary delimiter
+			// line appears to end with white space, the white
+			// space must be presumed to have been added by a
+			// gateway, and must be deleted."""
 			parser->seek(boundaryEnd);
 			boundaryEnd += parser->skipIf(parserHelpers::isSpaceOrTab, end);
 
@@ -288,6 +276,19 @@ void body::parseImpl(
 				boundaryEnd += 2;
 			} else if (boundaryEnd < end && parser->peekByte() == '\n') {
 				++boundaryEnd;
+			} else if (boundaryEnd == end) {
+			} else {
+				/*
+				 * RFC 2046 §5.1.1 page 19: """[...] optional
+				 * linear whitespace, and a terminating
+				 * CRLF.""" — junk handling is left
+				 * unspecified, so we might as well skip it to
+				 * facilitate broken mails.
+				 */
+				boundaryEnd += parser->skipIf([](char_t c) { return c != '\n'; }, end);
+				pos = findNextBoundaryPosition(parser, boundary, boundaryEnd, end, &boundaryStart, &boundaryEnd);
+				--index;
+				continue;
 			}
 
 			if (index == 0) {

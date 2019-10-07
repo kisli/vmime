@@ -39,6 +39,7 @@ VMIME_TEST_SUITE_BEGIN(bodyPartTest)
 		VMIME_TEST(testGenerate7bit)
 		VMIME_TEST(testTextUsageForQPEncoding)
 		VMIME_TEST(testParseVeryBigMessage)
+		VMIME_TEST(testParseBoundaryPrefix)
 	VMIME_TEST_LIST_END
 
 
@@ -213,9 +214,9 @@ VMIME_TEST_SUITE_BEGIN(bodyPartTest)
 		vmime::string str =
 			"Content-Type: multipart/mixed; boundary=\"MY-BOUNDARY\""
 			"\r\n\r\n"
-			"--  \t MY-BOUNDARY\r\nHEADER1\r\n\r\nBODY1\r\n"
+			"--MY-BOUNDARY  \t \r\nHEADER1\r\n\r\nBODY1\r\n"
 			"--MY-BOUNDARY\r\n"
-			"-- MY-BOUNDARY--\r\n";
+			"--MY-BOUNDARY-- \r\n";
 
 		vmime::bodyPart p;
 		p.parse(str);
@@ -291,7 +292,7 @@ VMIME_TEST_SUITE_BEGIN(bodyPartTest)
 		vmime::string str =
 			"Content-Type: multipart/mixed"
 			"\r\n\r\n"
-			"--  \t UNKNOWN-BOUNDARY\r\nHEADER1\r\n\r\nBODY1\r\n"
+			"--UNKNOWN-BOUNDARY  \t \r\nHEADER1\r\n\r\nBODY1\r\n"
 			"--UNKNOWN-BOUNDARY\r\nHEADER2\r\n\r\nBODY2\r\n"
 			"--UNKNOWN-BOUNDARY--";
 
@@ -371,6 +372,43 @@ VMIME_TEST_SUITE_BEGIN(bodyPartTest)
 
 		VASSERT_EQ("2.1", BODY2_LINE.length() * BODY2_REPEAT, body2Cts->getLength());
 		VASSERT("2.2", vmime::dynamicCast <const vmime::streamContentHandler>(body2Cts) != NULL);
+	}
+
+	void testParseBoundaryPrefix() {
+		/*
+		 * Clients are not supposed to create boundary identifiers that
+		 * contain a prefix of another (RFC 2046 section 5.1), but alas
+		 * CANCOM FortiMail produces this garbage.
+		 */
+		vmime::string str =
+			"Content-Type: multipart/related; boundary=\"--b12\"\r\n"
+			"\r\n"
+			"----b12\r\n"
+			"Content-Type: multipart/alternative; boundary=\"--b12-1\"\r\n"
+			"\r\n"
+			"----b12-1\r\n"
+			"Content-Type: text/plain; charset=utf-8\r\n"
+			"\r\n"
+			"P11\r\n"
+			"----b12-1\r\n"
+			"Content-Type: text/html; charset=utf-8\r\n"
+			"\r\n"
+			"P12\r\n"
+			"----b12-1--\r\n"
+			"----b12\r\n"
+			"\r\n"
+			"P2\r\n"
+			"----b12--\r\n";
+
+		vmime::bodyPart relco;
+		relco.parse(str);
+		auto relbd = relco.getBody();
+		VASSERT_EQ("global-partcount", 2, relbd->getPartCount());
+		auto altbd = relbd->getPartAt(0)->getBody();
+		VASSERT_EQ("part1-partcount", 2, altbd->getPartCount());
+		VASSERT_EQ("part1.1-body", "P11", extractContents(altbd->getPartAt(0)->getBody()->getContents()));
+		VASSERT_EQ("part1.2-body", "P12", extractContents(altbd->getPartAt(1)->getBody()->getContents()));
+		VASSERT_EQ("part2-body", "P2", extractContents(relbd->getPartAt(1)->getBody()->getContents()));
 	}
 
 VMIME_TEST_SUITE_END
