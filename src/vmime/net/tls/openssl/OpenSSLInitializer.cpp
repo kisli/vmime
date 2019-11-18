@@ -127,8 +127,8 @@ void OpenSSLInitializer::initialize() {
 		g_openSSLMutexes[i] = vmime::platform::getHandler()->createCriticalSection();
 	}
 
-	CRYPTO_set_locking_callback(OpenSSLCallback_lock);
-	CRYPTO_set_id_callback(OpenSSLCallback_id);
+	CRYPTO_set_locking_callback(VMime_OpenSSLCallback_lock);
+	CRYPTO_set_id_callback(VMime_OpenSSLCallback_id);
 #endif
 
 	// Seed the RNG, in case /dev/urandom is not available. Explicitely calling
