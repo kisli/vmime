@@ -116,8 +116,6 @@ private:
 
 	shared_ptr <socket> m_wrapped;
 
-	std::string m_address;
-
 	bool m_connected;
 
 	byte_t m_buffer[65536];
