@@ -94,8 +94,6 @@ void TLSSocket_GnuTLS::connect(const string& address, const port_t port) {
 
 	try {
 
-		gnutls_server_name_set(*m_session->m_gnutlsSession, GNUTLS_NAME_DNS, address.c_str(), address.size());
-
 		m_wrapped->connect(address, port);
 
 		handshake();
@@ -319,6 +317,9 @@ void TLSSocket_GnuTLS::handshake() {
 
 	// Start handshaking process
 	try {
+		string peerName = getPeerName();
+		
+		gnutls_server_name_set(*m_session->m_gnutlsSession, GNUTLS_NAME_DNS, peerName.c_str(), peerName.size());
 
 		while (true) {
 

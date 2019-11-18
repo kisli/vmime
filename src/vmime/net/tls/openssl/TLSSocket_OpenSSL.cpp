@@ -122,8 +122,9 @@ TLSSocket_OpenSSL::~TLSSocket_OpenSSL() {
 void TLSSocket_OpenSSL::createSSLHandle() {
 
 	if (m_wrapped->isConnected()) {
-
-		if (m_address.empty()) {
+		string peerName = getPeerName();
+		
+		if (peerName.empty()) {
 			throw exceptions::tls_exception("Unknown host name, will not be able to set SNI");
 		}
 
@@ -167,7 +168,7 @@ void TLSSocket_OpenSSL::createSSLHandle() {
 		}
 
 		SSL_set_bio(m_ssl, sockBio, sockBio);
-		SSL_set_tlsext_host_name(m_ssl, m_address.c_str());
+		SSL_set_tlsext_host_name(m_ssl, peerName.c_str());
 		SSL_set_connect_state(m_ssl);
 		SSL_set_mode(m_ssl, SSL_MODE_AUTO_RETRY | SSL_MODE_ENABLE_PARTIAL_WRITE | SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER);
 
@@ -183,8 +184,7 @@ void TLSSocket_OpenSSL::connect(const string& address, const port_t port) {
 	try {
 
 		m_wrapped->connect(address, port);
-		m_address = address;
-
+		
 		createSSLHandle();
 
 		handshake();
