@@ -317,9 +317,9 @@ void TLSSocket_GnuTLS::handshake() {
 
 	// Start handshaking process
 	try {
-		string peerAddress = getPeerAddress();
+		string peerName = getPeerName();
 		
-		gnutls_server_name_set(*m_session->m_gnutlsSession, GNUTLS_NAME_DNS, peerAddress.c_str(), peerAddress.size());
+		gnutls_server_name_set(*m_session->m_gnutlsSession, GNUTLS_NAME_DNS, peerName.c_str(), peerName.size());
 
 		while (true) {
 
