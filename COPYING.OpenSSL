@@ -1,0 +1,26 @@
+OpenSSL License Exception
+-------------------------
+
+Copyright (C) 2002-2020, Vincent Richard <vincent@vmime.org>
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License 3 (GPL) as published by
+the Free Software Foundation.
+The full text of the GPL can be found in the COPYING file.
+
+In addition, as a special exception, the copyright holders give permission
+to link the code of portions of this program against the OpenSSL library
+according to the terms described here:
+
+You have permission to copy, modify, propagate, and distribute a work
+formed by combining OpenSSL with VMime, or a work derivative of such a
+combination, even if such copying, modification, propagation, or
+distribution would otherwise violate the terms of the GPL. You must
+comply with the GPL in all respects for all of the code used other than
+OpenSSL.
+
+You may include this OpenSSL exception and its grant of permissions when
+you distribute VMime. Inclusion of this notice with such a distribution
+constitutes a grant of such permission.  If you do not wish to grant these
+permissions, delete this file.
+
