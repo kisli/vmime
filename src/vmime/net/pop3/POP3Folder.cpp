@@ -103,6 +103,7 @@ const folderAttributes POP3Folder::getAttributes() {
 		attribs.setType(folderAttributes::TYPE_CONTAINS_FOLDERS);
 	} else if (m_path.getSize() == 1 && m_path[0].getBuffer() == "INBOX") {
 		attribs.setType(folderAttributes::TYPE_CONTAINS_MESSAGES);
+		attribs.setSpecialUse(folderAttributes::SPECIALUSE_INBOX);
 	} else {
 		throw exceptions::folder_not_found();
 	}

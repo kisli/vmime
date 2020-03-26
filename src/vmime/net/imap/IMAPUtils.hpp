@@ -70,11 +70,13 @@ public:
 	/** Parse mailbox flags and fill in folder attributes.
 	  *
 	  * @param cnt reference to current IMAP connection (for testing capabilities)
+	  * @param path folder full path
 	  * @param list list of mailbox flags
 	  * @param attribs reference to an object holding folder attributes
 	  */
 	static void mailboxFlagsToFolderAttributes(
 		const shared_ptr <const IMAPConnection>& cnt,
+		const folder::path &path,
 		const IMAPParser::mailbox_flag_list& list,
 		folderAttributes& attribs
 	);

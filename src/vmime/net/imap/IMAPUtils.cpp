@@ -390,6 +390,7 @@ const folder::path::component IMAPUtils::fromModifiedUTF7(const string& text) {
 // static
 void IMAPUtils::mailboxFlagsToFolderAttributes(
 	const shared_ptr <const IMAPConnection>& cnt,
+	const folder::path &path,
 	const IMAPParser::mailbox_flag_list& list,
 	folderAttributes& attribs
 ) {
@@ -469,6 +470,10 @@ void IMAPUtils::mailboxFlagsToFolderAttributes(
 
 				break;
 		}
+	}
+
+	if (path.getSize() == 1 && path.getLastComponent().getBuffer() == "INBOX") {
+		specialUse = folderAttributes::SPECIALUSE_INBOX;
 	}
 
 	attribs.setSpecialUse(specialUse);

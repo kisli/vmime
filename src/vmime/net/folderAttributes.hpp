@@ -67,6 +67,7 @@ public:
 	enum SpecialUses {
 		SPECIALUSE_NONE,         /**< User folder, no special use (or unknown). */
 		SPECIALUSE_ALL,          /**< Virtual folder containing all messages. */
+		SPECIALUSE_INBOX,        /**< Inbox. */
 		SPECIALUSE_ARCHIVE,      /**< Folder is used to archives messages (server-dependent). */
 		SPECIALUSE_DRAFTS,       /**< Folder is used to hold draft messages - typically, messages
 		                              that are being composed but have not yet been sent. */

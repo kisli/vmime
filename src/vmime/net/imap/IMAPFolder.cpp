@@ -244,6 +244,7 @@ void IMAPFolder::open(const int mode, bool failIfModeIsNotAvailable) {
 
 						IMAPUtils::mailboxFlagsToFolderAttributes(
 							connection,
+							m_path,
 							*responseData->mailbox_data->mailbox_flag_list,
 							*m_attribs
 						);
@@ -527,6 +528,7 @@ int IMAPFolder::testExistAndGetType() {
 			// Get the folder type/flags at the same time
 			IMAPUtils::mailboxFlagsToFolderAttributes(
 				m_connection,
+				m_path,
 				*mailboxData->mailbox_list->mailbox_flag_list,
 				attribs
 			);
@@ -755,6 +757,7 @@ std::vector <shared_ptr <folder> > IMAPFolder::getFolders(const bool recursive) 
 
 			IMAPUtils::mailboxFlagsToFolderAttributes(
 				m_connection,
+				path,
 				*mailboxData->mailbox_list->mailbox_flag_list,
 				*attribs
 			);
@@ -1523,6 +1526,7 @@ void IMAPFolder::processStatusUpdate(const IMAPParser::response* resp) {
 				folderAttributes attribs;
 				IMAPUtils::mailboxFlagsToFolderAttributes(
 					m_connection,
+					m_path,
 					*(*it)->response_data->mailbox_data->mailbox_list->mailbox_flag_list,
 					attribs
 				);
