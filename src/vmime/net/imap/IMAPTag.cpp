@@ -85,6 +85,30 @@ const IMAPTag IMAPTag::operator++(int) {
 }
 
 
+bool IMAPTag::operator<(const IMAPTag &other) const {
+
+	return m_number < other.m_number;
+}
+
+
+bool IMAPTag::operator==(const IMAPTag &other) const {
+
+	return m_number == other.m_number;
+}
+
+
+bool IMAPTag::operator!=(const IMAPTag &other) const {
+
+	return m_number != other.m_number;
+}
+
+
+bool IMAPTag::operator==(const std::string &tag) const {
+
+	return m_tag == tag;
+}
+
+
 int IMAPTag::maximumNumber() const {
 
 	return sm_maxNumber - 1;

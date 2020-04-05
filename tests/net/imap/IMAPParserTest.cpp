@@ -36,6 +36,7 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 		VMIME_TEST(testFETCHResponse_optional_body_fld_lang)
 		VMIME_TEST(testFETCHBodyStructure_NIL_body_fld_param_value)
 		VMIME_TEST(testFETCHBodyStructure_empty_body_fld_param_instead_of_NIL)
+		VMIME_TEST(testPipelining)
 	VMIME_TEST_LIST_END
 
 
@@ -56,12 +57,11 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 		vmime::shared_ptr <vmime::net::imap::IMAPParser> parser =
 			vmime::make_shared <vmime::net::imap::IMAPParser>();
 
-		parser->setTag(tag);
 		parser->setSocket(socket);
 		parser->setTimeoutHandler(toh);
 
 		parser->setStrict(false);
-		VASSERT_NO_THROW("non-strict mode", parser->readResponse(/* literalHandler */ NULL));
+		VASSERT_NO_THROW("non-strict mode", parser->readResponse(*tag, /* literalHandler */ NULL));
 
 		++(*tag);
 
@@ -71,7 +71,7 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 		);
 
 		parser->setStrict(true);
-		VASSERT_THROW("strict mode", parser->readResponse(/* literalHandler */ NULL), vmime::exceptions::invalid_response);
+		VASSERT_THROW("strict mode", parser->readResponse(*tag, /* literalHandler */ NULL), vmime::exceptions::invalid_response);
 	}
 
 	// For Apple iCloud/Exchange IMAP server
@@ -98,19 +98,18 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 		vmime::shared_ptr <vmime::net::imap::IMAPParser> parser =
 			vmime::make_shared <vmime::net::imap::IMAPParser>();
 
-		parser->setTag(tag);
 		parser->setSocket(socket);
 		parser->setTimeoutHandler(toh);
 
 		parser->setStrict(false);
-		VASSERT_NO_THROW("non-strict mode", parser->readResponse());
+		VASSERT_NO_THROW("non-strict mode", parser->readResponse(*tag));
 
 		++(*tag);
 
 		socket->localSend("+\r\n");
 
 		parser->setStrict(true);
-		VASSERT_THROW("strict mode", parser->readResponse(), vmime::exceptions::invalid_response);
+		VASSERT_THROW("strict mode", parser->readResponse(*tag), vmime::exceptions::invalid_response);
 	}
 
 	// When an IMAP4 client sends a FETCH (bodystructure) request to a server
@@ -132,19 +131,18 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 		vmime::shared_ptr <vmime::net::imap::IMAPParser> parser =
 			vmime::make_shared <vmime::net::imap::IMAPParser>();
 
-		parser->setTag(tag);
 		parser->setSocket(socket);
 		parser->setTimeoutHandler(toh);
 
 		parser->setStrict(false);
-		VASSERT_NO_THROW("non-strict mode", parser->readResponse());
+		VASSERT_NO_THROW("non-strict mode", parser->readResponse(*tag));
 
 		++(*tag);
 
 		socket->localSend(resp);
 
 		parser->setStrict(true);
-		VASSERT_THROW("strict mode", parser->readResponse(), vmime::exceptions::invalid_response);
+		VASSERT_THROW("strict mode", parser->readResponse(*tag), vmime::exceptions::invalid_response);
 	}
 
 	// "body_fld_lang" is optional after "body_fld_dsp" in "body_ext_mpart" (Yahoo)
@@ -163,11 +161,10 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 		vmime::shared_ptr <vmime::net::imap::IMAPParser> parser =
 			vmime::make_shared <vmime::net::imap::IMAPParser>();
 
-		parser->setTag(tag);
 		parser->setSocket(socket);
 		parser->setTimeoutHandler(toh);
 
-		VASSERT_NO_THROW("parse", parser->readResponse());
+		VASSERT_NO_THROW("parse", parser->readResponse(*tag));
 	}
 
 	// Support for NIL boundary, for mail.ru IMAP server:
@@ -188,19 +185,18 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 		vmime::shared_ptr <vmime::net::imap::IMAPParser> parser =
 			vmime::make_shared <vmime::net::imap::IMAPParser>();
 
-		parser->setTag(tag);
 		parser->setSocket(socket);
 		parser->setTimeoutHandler(toh);
 
 		parser->setStrict(false);
-		VASSERT_NO_THROW("non-strict mode", parser->readResponse());
+		VASSERT_NO_THROW("non-strict mode", parser->readResponse(*tag));
 
 		++(*tag);
 
 		socket->localSend(resp);
 
 		parser->setStrict(true);
-		VASSERT_THROW("strict mode", parser->readResponse(), vmime::exceptions::invalid_response);
+		VASSERT_THROW("strict mode", parser->readResponse(*tag), vmime::exceptions::invalid_response);
 	}
 
 	void testFETCHBodyStructure_empty_body_fld_param_instead_of_NIL() {
@@ -218,19 +214,94 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 		vmime::shared_ptr <vmime::net::imap::IMAPParser> parser =
 			vmime::make_shared <vmime::net::imap::IMAPParser>();
 
-		parser->setTag(tag);
 		parser->setSocket(socket);
 		parser->setTimeoutHandler(toh);
 
 		parser->setStrict(false);
-		VASSERT_NO_THROW("non-strict mode", parser->readResponse());
+		VASSERT_NO_THROW("non-strict mode", parser->readResponse(*tag));
 
 		++(*tag);
 
 		socket->localSend(resp);
 
 		parser->setStrict(true);
-		VASSERT_THROW("strict mode", parser->readResponse(), vmime::exceptions::invalid_response);
+		VASSERT_THROW("strict mode", parser->readResponse(*tag), vmime::exceptions::invalid_response);
+	}
+
+	// Test pipelined and out-of-order replies
+	void testPipelining() {
+
+		/*
+		[C] a001 SELECT "INBOX"
+		[C] a002 UID FETCH 42 (INTERNALDATE)
+		[C] a003 UID FETCH 43 (INTERNALDATE)
+		[S] * NO Error for a001
+		[S] a001 NO Access denied
+		[S] * NO Error for a003
+		[S] a003 BAD No mailbox selected
+		[S] * NO Error for a002
+		[S] a002 BAD No mailbox selected
+		*/
+
+		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
+		vmime::shared_ptr <vmime::net::timeoutHandler> toh = vmime::make_shared <testTimeoutHandler>();
+
+		vmime::net::imap::IMAPTag tag1;  // a001
+		vmime::net::imap::IMAPTag tag2(tag1);  // a002
+		++tag2;
+		vmime::net::imap::IMAPTag tag3(tag2);  // a003
+		++tag3;
+
+		socket->localSend(
+			"* NO Error for a001\r\n"
+			"a001 NO Access denied\r\n"
+			"* NO Error for a003\r\n"
+			"a003 BAD No mailbox selected a003\r\n"
+			"* NO Error for a002\r\n"
+			"a002 BAD No mailbox selected a002\r\n"
+		);
+
+		vmime::shared_ptr <vmime::net::imap::IMAPParser> parser =
+			vmime::make_shared <vmime::net::imap::IMAPParser>();
+
+		parser->setSocket(socket);
+		parser->setTimeoutHandler(toh);
+
+		// Test response a001
+		vmime::scoped_ptr <vmime::net::imap::IMAPParser::response> resp1(parser->readResponse(tag1, /* literalHandler */ NULL));
+		VASSERT("a001 response", resp1);
+		VASSERT("a001 response_done", resp1->response_done);
+		VASSERT_EQ("a001 response tag", "a001", resp1->response_done->response_tagged->tag->tagString);
+		VASSERT_EQ("a001 response text", "Access denied", resp1->response_done->response_tagged->resp_cond_state->resp_text->text);
+		VASSERT_EQ("a001 resp_data.size()", 1, resp1->continue_req_or_response_data.size());
+		VASSERT("a001 resp_data[0]", resp1->continue_req_or_response_data[0]->response_data);
+		VASSERT("a001 resp_cond_state", resp1->continue_req_or_response_data[0]->response_data->resp_cond_state);
+		VASSERT_EQ("a001 resp_cond_state.text", "Error for a001", resp1->continue_req_or_response_data[0]->response_data->resp_cond_state->resp_text->text);
+		VASSERT_EQ("a001 resp_cond_state.status", vmime::net::imap::IMAPParser::resp_cond_state::NO, resp1->continue_req_or_response_data[0]->response_data->resp_cond_state->status);
+
+		// Test response a002
+		vmime::scoped_ptr <vmime::net::imap::IMAPParser::response> resp2(parser->readResponse(tag2, /* literalHandler */ NULL));
+		VASSERT("a002 response", resp2);
+		VASSERT("a002 response_done", resp2->response_done);
+		VASSERT_EQ("a002 response tag", "a002", resp2->response_done->response_tagged->tag->tagString);
+		VASSERT_EQ("a002 response text", "No mailbox selected a002", resp2->response_done->response_tagged->resp_cond_state->resp_text->text);
+		VASSERT_EQ("a002 resp_data.size()", 1, resp2->continue_req_or_response_data.size());
+		VASSERT("a002 resp_data[0]", resp2->continue_req_or_response_data[0]->response_data);
+		VASSERT("a002 resp_cond_state", resp2->continue_req_or_response_data[0]->response_data->resp_cond_state);
+		VASSERT_EQ("a002 resp_cond_state.text", "Error for a002", resp2->continue_req_or_response_data[0]->response_data->resp_cond_state->resp_text->text);
+		VASSERT_EQ("a002 resp_cond_state.status", vmime::net::imap::IMAPParser::resp_cond_state::NO, resp2->continue_req_or_response_data[0]->response_data->resp_cond_state->status);
+
+		// Test response a003
+		vmime::scoped_ptr <vmime::net::imap::IMAPParser::response> resp3(parser->readResponse(tag3, /* literalHandler */ NULL));
+		VASSERT("a003 response", resp3);
+		VASSERT("a003 response_done", resp3->response_done);
+		VASSERT_EQ("a003 response tag", "a003", resp3->response_done->response_tagged->tag->tagString);
+		VASSERT_EQ("a003 response text", "No mailbox selected a003", resp3->response_done->response_tagged->resp_cond_state->resp_text->text);
+		VASSERT_EQ("a003 resp_data.size()", 1, resp3->continue_req_or_response_data.size());
+		VASSERT("a003 resp_data[0]", resp3->continue_req_or_response_data[0]->response_data);
+		VASSERT("a003 resp_cond_state", resp3->continue_req_or_response_data[0]->response_data->resp_cond_state);
+		VASSERT_EQ("a003 resp_cond_state.text", "Error for a003", resp3->continue_req_or_response_data[0]->response_data->resp_cond_state->resp_text->text);
+		VASSERT_EQ("a003 resp_cond_state.status", vmime::net::imap::IMAPParser::resp_cond_state::NO, resp3->continue_req_or_response_data[0]->response_data->resp_cond_state->status);
 	}
 
 VMIME_TEST_SUITE_END

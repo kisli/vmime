@@ -44,11 +44,11 @@ class VMIME_EXPORT IMAPTag : public object {
 private:
 
 	IMAPTag(const int number);
-	IMAPTag(const IMAPTag& tag);
 
 public:
 
 	IMAPTag();
+	IMAPTag(const IMAPTag& tag);
 
 	IMAPTag& operator++();           // ++IMAPTag
 	const IMAPTag operator++(int);   // IMAPTag++
@@ -57,6 +57,12 @@ public:
 	int number() const;
 
 	operator string() const;
+
+	bool operator<(const IMAPTag &other) const;
+	bool operator==(const IMAPTag &other) const;
+	bool operator!=(const IMAPTag &other) const;
+
+	bool operator==(const std::string &tag) const;
 
 private:
 

@@ -92,7 +92,6 @@ IMAPConnection::IMAPConnection(
 	}
 
 	m_parser = make_shared <IMAPParser>();
-	m_parser->setTag(m_tag);
 	m_parser->setTracer(m_tracer);
 }
 
@@ -287,7 +286,7 @@ void IMAPConnection::authenticate() {
 	shared_ptr <IMAPConnection> conn = dynamicCast <IMAPConnection>(shared_from_this());
 	IMAPCommand::LOGIN(username, password)->send(conn);
 
-	scoped_ptr <IMAPParser::response> resp(m_parser->readResponse());
+	scoped_ptr <IMAPParser::response> resp(m_parser->readResponse(*m_tag));
 
 	if (resp->isBad()) {
 
@@ -409,7 +408,7 @@ void IMAPConnection::authenticateSASL() {
 
 		for (bool cont = true ; cont ; ) {
 
-			scoped_ptr <IMAPParser::response> resp(m_parser->readResponse());
+			scoped_ptr <IMAPParser::response> resp(m_parser->readResponse(*m_tag));
 
 			if (resp->response_done &&
 			    resp->response_done->response_tagged &&
@@ -522,7 +521,7 @@ void IMAPConnection::startTLS() {
 
 		IMAPCommand::STARTTLS()->send(dynamicCast <IMAPConnection>(shared_from_this()));
 
-		scoped_ptr <IMAPParser::response> resp(m_parser->readResponse());
+		scoped_ptr <IMAPParser::response> resp(m_parser->readResponse(*m_tag));
 
 		if (resp->isBad() || resp->response_done->response_tagged->
 			resp_cond_state->status != IMAPParser::resp_cond_state::OK) {
@@ -624,7 +623,7 @@ void IMAPConnection::fetchCapabilities() {
 
 	IMAPCommand::CAPABILITY()->send(dynamicCast <IMAPConnection>(shared_from_this()));
 
-	scoped_ptr <IMAPParser::response> resp(m_parser->readResponse());
+	scoped_ptr <IMAPParser::response> resp(m_parser->readResponse(*m_tag));
 
 	if (resp->response_done->response_tagged->
 			resp_cond_state->status == IMAPParser::resp_cond_state::OK) {
@@ -733,7 +732,7 @@ void IMAPConnection::initHierarchySeparator() {
 
 	IMAPCommand::LIST("", "")->send(dynamicCast <IMAPConnection>(shared_from_this()));
 
-	scoped_ptr <IMAPParser::response> resp(m_parser->readResponse());
+	scoped_ptr <IMAPParser::response> resp(m_parser->readResponse(*m_tag));
 
 	if (resp->isBad() || resp->response_done->response_tagged->
 			resp_cond_state->status != IMAPParser::resp_cond_state::OK) {
@@ -801,7 +800,7 @@ void IMAPConnection::sendRaw(const byte_t* buffer, const size_t count) {
 
 IMAPParser::response* IMAPConnection::readResponse(IMAPParser::literalHandler* lh) {
 
-	return m_parser->readResponse(lh);
+	return m_parser->readResponse(*m_tag, lh);
 }
 
 

@@ -271,24 +271,13 @@ public:
 
 	}
 
+	~IMAPParser() {
 
-	/** Set the tag currently used by this parser.
-	  *
-	  * @param tag IMAP command tag
-	  */
-	void setTag(const shared_ptr <IMAPTag>& tag) {
-
-		m_tag = tag;
+		for (auto it = m_pendingResponses.begin() ; it != m_pendingResponses.end() ; ++it) {
+			delete it->second;
+		}
 	}
 
-	/** Return the tag currently used by this parser.
-	  *
-	  * @return IMAP command tag
-	  */
-	shared_ptr <const IMAPTag> getTag() const {
-
-		return m_tag.lock();
-	}
 
 	/** Set the socket currently used by this parser to receive data
 	  * from server.
@@ -613,13 +602,12 @@ public:
 
 	DECLARE_COMPONENT(xtag)
 
-		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+		bool parseImpl(IMAPParser& /* parser */, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
 
 			bool end = false;
 
-			string tagString;
 			tagString.reserve(10);
 
 			while (!end && pos < line.length()) {
@@ -654,14 +642,11 @@ public:
 				}
 			}
 
-			if (tagString == string(*parser.getTag())) {
-				*currentPos = pos;
-				return true;
-			} else {
-				// Invalid tag
-				return false;
-			}
+			*currentPos = pos;
+			return true;
 		}
+
+		string tagString;
 	};
 
 
@@ -1141,7 +1126,7 @@ public:
 						value = text->value;
 					}
 
-					DEBUG_FOUND("string[quoted]", "<length=" << m_value.length() << ", value='" << m_value << "'>");
+					DEBUG_FOUND("string[quoted]", "<length=" << value.length() << ", value='" << value << "'>");
 
 				// literal ::= "{" number "}" CRLF *CHAR8
 				} else {
@@ -4389,7 +4374,7 @@ public:
 
 			size_t pos = *currentPos;
 
-			VIMAP_PARSER_CHECK(IMAPParser::xtag);
+			VIMAP_PARSER_GET(IMAPParser::xtag, tag);
 			VIMAP_PARSER_CHECK(SPACE);
 			VIMAP_PARSER_GET(IMAPParser::resp_cond_state, resp_cond_state);
 
@@ -4409,6 +4394,7 @@ public:
 		}
 
 
+		std::unique_ptr <IMAPParser::xtag> tag;
 		std::unique_ptr <IMAPParser::resp_cond_state> resp_cond_state;
 	};
 
@@ -4569,22 +4555,53 @@ public:
 	// The main functions used to parse a response
 	//
 
-	response* readResponse(literalHandler* lh = NULL) {
+	response* readResponse(const IMAPTag& tag, literalHandler* lh = NULL) {
 
-		size_t pos = 0;
-		string line = readLine();
+		while (true) {
 
-		m_literalHandler = lh;
-		response* resp = get <response>(line, &pos);
-		m_literalHandler = NULL;
+			auto it = m_pendingResponses.find(std::string(tag));
 
-		if (!resp) {
-			throw exceptions::invalid_response("", m_errorResponseLine);
+			if (it != m_pendingResponses.end()) {
+				auto* resp = it->second;
+				m_pendingResponses.erase(it);
+				return resp;
+			}
+
+			size_t pos = 0;
+			string line = readLine();
+
+			m_literalHandler = lh;
+			response* resp = get <response>(line, &pos);
+			m_literalHandler = NULL;
+
+			if (!resp) {
+				throw exceptions::invalid_response("", m_errorResponseLine);
+			}
+
+			resp->setErrorLog(lastLine());
+
+			// If there is a continue_req, return the response immediately
+			for (auto &respData : resp->continue_req_or_response_data) {
+				if (respData->continue_req) {
+					return resp;
+				}
+			}
+
+			// Else, return response if the tag is the one we expect
+			if (resp->response_done && resp->response_done->response_tagged &&
+			    resp->response_done->response_tagged->tag) {
+
+				if (tag == resp->response_done->response_tagged->tag->tagString) {
+					return resp;
+				} else {
+					// Not our response tag, cache it for later
+					m_pendingResponses[resp->response_done->response_tagged->tag->tagString] = resp;
+				}
+			} else {
+				// Untagged response
+				return resp;
+			}
 		}
-
-		resp->setErrorLog(lastLine());
-
-		return (resp);
 	}
 
 
@@ -4740,7 +4757,6 @@ public:
 
 private:
 
-	weak_ptr <IMAPTag> m_tag;
 	weak_ptr <socket> m_socket;
 	shared_ptr <tracer> m_tracer;
 
@@ -4757,6 +4773,8 @@ private:
 
 	string m_lastLine;
 	string m_errorResponseLine;
+
+	std::map <std::string, response*> m_pendingResponses;
 
 public:
 
