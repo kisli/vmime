@@ -44,35 +44,39 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 	// For Apple iCloud IMAP server
 	void testExtraSpaceInCapaResponse() {
 
-		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
-		vmime::shared_ptr <vmime::net::timeoutHandler> toh = vmime::make_shared <testTimeoutHandler>();
-
-		vmime::shared_ptr <vmime::net::imap::IMAPTag> tag =
-			vmime::make_shared <vmime::net::imap::IMAPTag>();
-
-		socket->localSend(
+		const char* resp =
 			"* CAPABILITY IMAP4rev1 AUTH=ATOKEN AUTH=PLAIN \r\n"  // extra space at end
-			"a001 OK Capability completed.\r\n"
-		);
+			"a001 OK Capability completed.\r\n";
 
-		vmime::shared_ptr <vmime::net::imap::IMAPParser> parser =
-			vmime::make_shared <vmime::net::imap::IMAPParser>();
+		// Strict mode
+		{
+			auto socket = vmime::make_shared <testSocket>();
+			socket->localSend(resp);
 
-		parser->setSocket(socket);
-		parser->setTimeoutHandler(toh);
+			auto parser = vmime::make_shared <vmime::net::imap::IMAPParser>();
+			auto tag = vmime::make_shared <vmime::net::imap::IMAPTag>();
 
-		parser->setStrict(false);
-		VASSERT_NO_THROW("non-strict mode", parser->readResponse(*tag, /* literalHandler */ NULL));
+			parser->setSocket(socket);
+			parser->setTimeoutHandler(vmime::make_shared <testTimeoutHandler>());
+			parser->setStrict(true);
 
-		++(*tag);
+			VASSERT_THROW("strict mode", parser->readResponse(*tag), vmime::exceptions::invalid_response);
+		}
 
-		socket->localSend(
-			"* CAPABILITY IMAP4rev1 AUTH=ATOKEN AUTH=PLAIN \r\n"  // extra space at end
-			"a002 OK Capability completed.\r\n"
-		);
+		// Non-strict mode
+		{
+			auto socket = vmime::make_shared <testSocket>();
+			socket->localSend(resp);
 
-		parser->setStrict(true);
-		VASSERT_THROW("strict mode", parser->readResponse(*tag, /* literalHandler */ NULL), vmime::exceptions::invalid_response);
+			auto parser = vmime::make_shared <vmime::net::imap::IMAPParser>();
+			auto tag = vmime::make_shared <vmime::net::imap::IMAPTag>();
+
+			parser->setSocket(socket);
+			parser->setTimeoutHandler(vmime::make_shared <testTimeoutHandler>());
+			parser->setStrict(false);
+
+			VASSERT_NO_THROW("non-strict mode", parser->readResponse(*tag));
+		}
 	}
 
 	// For Apple iCloud/Exchange IMAP server
@@ -119,31 +123,37 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 	// --> http://support.microsoft.com/kb/975918/en-us
 	void testNILValueInBodyFldEnc() {
 
-		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
-		vmime::shared_ptr <vmime::net::timeoutHandler> toh = vmime::make_shared <testTimeoutHandler>();
-
-		vmime::shared_ptr <vmime::net::imap::IMAPTag> tag =
-				vmime::make_shared <vmime::net::imap::IMAPTag>();
-
 		const char* resp = "* 7970 FETCH (UID 8036 FLAGS () BODYSTRUCTURE (\"text\" \"html\" (\"charset\" \"utf-8\") NIL NIL NIL 175501 1651 NIL NIL NIL NIL) RFC822.HEADER {3}\r\nx\r\n)\r\na001 OK FETCH complete\r\n";
 
-		socket->localSend(resp);
+		// Strict mode
+		{
+			auto socket = vmime::make_shared <testSocket>();
+			socket->localSend(resp);
 
-		vmime::shared_ptr <vmime::net::imap::IMAPParser> parser =
-			vmime::make_shared <vmime::net::imap::IMAPParser>();
+			auto parser = vmime::make_shared <vmime::net::imap::IMAPParser>();
+			auto tag = vmime::make_shared <vmime::net::imap::IMAPTag>();
 
-		parser->setSocket(socket);
-		parser->setTimeoutHandler(toh);
+			parser->setSocket(socket);
+			parser->setTimeoutHandler(vmime::make_shared <testTimeoutHandler>());
+			parser->setStrict(true);
 
-		parser->setStrict(false);
-		VASSERT_NO_THROW("non-strict mode", parser->readResponse(*tag));
+			VASSERT_THROW("strict mode", parser->readResponse(*tag), vmime::exceptions::invalid_response);
+		}
 
-		++(*tag);
+		// Non-strict mode
+		{
+			auto socket = vmime::make_shared <testSocket>();
+			socket->localSend(resp);
 
-		socket->localSend(resp);
+			auto parser = vmime::make_shared <vmime::net::imap::IMAPParser>();
+			auto tag = vmime::make_shared <vmime::net::imap::IMAPTag>();
 
-		parser->setStrict(true);
-		VASSERT_THROW("strict mode", parser->readResponse(*tag), vmime::exceptions::invalid_response);
+			parser->setSocket(socket);
+			parser->setTimeoutHandler(vmime::make_shared <testTimeoutHandler>());
+			parser->setStrict(false);
+
+			VASSERT_NO_THROW("non-strict mode", parser->readResponse(*tag));
+		}
 	}
 
 	// "body_fld_lang" is optional after "body_fld_dsp" in "body_ext_mpart" (Yahoo)
@@ -172,61 +182,73 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 	// https://www.ietf.org/mail-archive/web/imapext/current/msg05442.html
 	void testFETCHBodyStructure_NIL_body_fld_param_value() {
 
-		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
-		vmime::shared_ptr <vmime::net::timeoutHandler> toh = vmime::make_shared <testTimeoutHandler>();
-
-		vmime::shared_ptr <vmime::net::imap::IMAPTag> tag =
-				vmime::make_shared <vmime::net::imap::IMAPTag>();
-
 		// ...("boundary" NIL)))... is an invalid syntax for a "body_fld_param_item"
 		const char* resp = "* 1 FETCH (BODYSTRUCTURE ((\"text\" \"plain\" (\"charset\" \"utf-8\") NIL NIL \"8bit\" 536 0 NIL NIL NIL NIL)(\"text\" \"html\" (\"charset\" \"utf-8\") NIL NIL \"8bit\" 7130 0 NIL NIL NIL NIL) \"alternative\" (\"boundary\" NIL)))\r\na001 OK FETCH complete\r\n";
 
-		socket->localSend(resp);
+		// Strict mode
+		{
+			auto socket = vmime::make_shared <testSocket>();
+			socket->localSend(resp);
 
-		vmime::shared_ptr <vmime::net::imap::IMAPParser> parser =
-			vmime::make_shared <vmime::net::imap::IMAPParser>();
+			auto parser = vmime::make_shared <vmime::net::imap::IMAPParser>();
+			auto tag = vmime::make_shared <vmime::net::imap::IMAPTag>();
 
-		parser->setSocket(socket);
-		parser->setTimeoutHandler(toh);
+			parser->setSocket(socket);
+			parser->setTimeoutHandler(vmime::make_shared <testTimeoutHandler>());
+			parser->setStrict(true);
 
-		parser->setStrict(false);
-		VASSERT_NO_THROW("non-strict mode", parser->readResponse(*tag));
+			VASSERT_THROW("strict mode", parser->readResponse(*tag), vmime::exceptions::invalid_response);
+		}
 
-		++(*tag);
+		// Non-strict mode
+		{
+			auto socket = vmime::make_shared <testSocket>();
+			socket->localSend(resp);
 
-		socket->localSend(resp);
+			auto parser = vmime::make_shared <vmime::net::imap::IMAPParser>();
+			auto tag = vmime::make_shared <vmime::net::imap::IMAPTag>();
 
-		parser->setStrict(true);
-		VASSERT_THROW("strict mode", parser->readResponse(*tag), vmime::exceptions::invalid_response);
+			parser->setSocket(socket);
+			parser->setTimeoutHandler(vmime::make_shared <testTimeoutHandler>());
+			parser->setStrict(false);
+
+			VASSERT_NO_THROW("non-strict mode", parser->readResponse(*tag));
+		}
 	}
 
 	void testFETCHBodyStructure_empty_body_fld_param_instead_of_NIL() {
 
-		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
-		vmime::shared_ptr <vmime::net::timeoutHandler> toh = vmime::make_shared <testTimeoutHandler>();
-
-		vmime::shared_ptr <vmime::net::imap::IMAPTag> tag =
-				vmime::make_shared <vmime::net::imap::IMAPTag>();
-
 		const char* resp = "* 1 FETCH (BODYSTRUCTURE ((\"text\" \"html\" (\"charset\" \"cp1251\") NIL NIL \"base64\" 84056 0 NIL (\"inline\" NIL) NIL NIL)(\"image\" \"gif\" () \"25b2b55b5d97f04e9ea939fe32a46a65.gif\" NIL \"base64\" 20776 NIL (\"inline\" NIL) NIL NIL) \"related\" (\"boundary\" NIL)))\r\na001 OK FETCH complete\r\n";
 
-		socket->localSend(resp);
+		// Strict mode
+		{
+			auto socket = vmime::make_shared <testSocket>();
+			socket->localSend(resp);
 
-		vmime::shared_ptr <vmime::net::imap::IMAPParser> parser =
-			vmime::make_shared <vmime::net::imap::IMAPParser>();
+			auto parser = vmime::make_shared <vmime::net::imap::IMAPParser>();
+			auto tag = vmime::make_shared <vmime::net::imap::IMAPTag>();
 
-		parser->setSocket(socket);
-		parser->setTimeoutHandler(toh);
+			parser->setSocket(socket);
+			parser->setTimeoutHandler(vmime::make_shared <testTimeoutHandler>());
+			parser->setStrict(true);
 
-		parser->setStrict(false);
-		VASSERT_NO_THROW("non-strict mode", parser->readResponse(*tag));
+			VASSERT_THROW("strict mode", parser->readResponse(*tag), vmime::exceptions::invalid_response);
+		}
 
-		++(*tag);
+		// Non-strict mode
+		{
+			auto socket = vmime::make_shared <testSocket>();
+			socket->localSend(resp);
 
-		socket->localSend(resp);
+			auto parser = vmime::make_shared <vmime::net::imap::IMAPParser>();
+			auto tag = vmime::make_shared <vmime::net::imap::IMAPTag>();
 
-		parser->setStrict(true);
-		VASSERT_THROW("strict mode", parser->readResponse(*tag), vmime::exceptions::invalid_response);
+			parser->setSocket(socket);
+			parser->setTimeoutHandler(vmime::make_shared <testTimeoutHandler>());
+			parser->setStrict(false);
+
+			VASSERT_NO_THROW("non-strict mode", parser->readResponse(*tag));
+		}
 	}
 
 	// Test pipelined and out-of-order replies
