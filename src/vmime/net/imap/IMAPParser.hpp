@@ -1645,8 +1645,12 @@ public:
 
 			} else {
 
-				type = KEYWORD_OR_EXTENSION;
-				VIMAP_PARSER_GET(atom, flag_keyword);
+				if (!parser.isStrict() && VIMAP_PARSER_TRY_CHECK(one_char <'*'> )) {
+					type = STAR;  // map "*" to "\*"
+				} else {
+					type = KEYWORD_OR_EXTENSION;
+					VIMAP_PARSER_GET(atom, flag_keyword);
+				}
 			}
 
 			*currentPos = pos;

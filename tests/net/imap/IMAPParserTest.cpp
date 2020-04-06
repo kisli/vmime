@@ -37,6 +37,7 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 		VMIME_TEST(testFETCHBodyStructure_NIL_body_fld_param_value)
 		VMIME_TEST(testFETCHBodyStructure_empty_body_fld_param_instead_of_NIL)
 		VMIME_TEST(testPipelining)
+		VMIME_TEST(testStarFlagWithoutBackslash)
 	VMIME_TEST_LIST_END
 
 
@@ -302,6 +303,50 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 		VASSERT("a003 resp_cond_state", resp3->continue_req_or_response_data[0]->response_data->resp_cond_state);
 		VASSERT_EQ("a003 resp_cond_state.text", "Error for a003", resp3->continue_req_or_response_data[0]->response_data->resp_cond_state->resp_text->text);
 		VASSERT_EQ("a003 resp_cond_state.status", vmime::net::imap::IMAPParser::resp_cond_state::NO, resp3->continue_req_or_response_data[0]->response_data->resp_cond_state->status);
+	}
+
+	// Some IMAP servers return "*" instead of "\*" in PERMANENTFLAGS
+	void testStarFlagWithoutBackslash() {
+
+		const char* resp =
+			"* OK [PERMANENTFLAGS (Answered Flagged Deleted Seen Draft *)] Flags permitted.\r\n"
+			"a001 OK Completed.\r\n";
+
+		// Strict mode
+		{
+			auto socket = vmime::make_shared <testSocket>();
+			auto toh = vmime::make_shared <testTimeoutHandler>();
+
+			auto tag = vmime::make_shared <vmime::net::imap::IMAPTag>();
+
+			socket->localSend(resp);
+
+			auto parser = vmime::make_shared <vmime::net::imap::IMAPParser>();
+
+			parser->setSocket(socket);
+			parser->setTimeoutHandler(toh);
+			parser->setStrict(true);
+
+			VASSERT_THROW("strict mode", parser->readResponse(*tag), vmime::exceptions::invalid_response);
+		}
+
+		// Non-strict mode
+		{
+			auto socket = vmime::make_shared <testSocket>();
+			auto toh = vmime::make_shared <testTimeoutHandler>();
+
+			auto tag = vmime::make_shared <vmime::net::imap::IMAPTag>();
+
+			socket->localSend(resp);
+
+			auto parser = vmime::make_shared <vmime::net::imap::IMAPParser>();
+
+			parser->setSocket(socket);
+			parser->setTimeoutHandler(toh);
+			parser->setStrict(false);
+
+			VASSERT_NO_THROW("non-strict mode", parser->readResponse(*tag));
+		}
 	}
 
 VMIME_TEST_SUITE_END
