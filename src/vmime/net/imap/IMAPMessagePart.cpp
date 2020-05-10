@@ -95,6 +95,13 @@ IMAPMessagePart::IMAPMessagePart(
 				}
 			}
 		}
+
+		if (part->body_ext_1part && part->body_ext_1part->body_fld_dsp) {
+			auto *cdisp = part->body_ext_1part->body_fld_dsp->str();
+			if (cdisp) {
+				m_dispType = contentDisposition(cdisp->value);
+			}
+		}
 	}
 
 	m_structure = null;
@@ -130,6 +137,12 @@ shared_ptr <const IMAPMessagePart> IMAPMessagePart::getParent() const {
 const mediaType& IMAPMessagePart::getType() const {
 
 	return m_mediaType;
+}
+
+
+const contentDisposition &IMAPMessagePart::getDisposition() const {
+
+	return m_dispType;
 }
 
 

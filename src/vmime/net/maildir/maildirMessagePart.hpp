@@ -61,6 +61,7 @@ public:
 	weak_ptr <const maildirMessagePart> getParent() const { return (m_parent); }
 
 	const mediaType& getType() const;
+	const contentDisposition &getDisposition() const;
 	size_t getSize() const;
 	size_t getNumber() const;
 
@@ -85,6 +86,7 @@ private:
 	size_t m_number;
 	size_t m_size;
 	mediaType m_mediaType;
+	contentDisposition m_dispType;
 
 	size_t m_headerParsedOffset;
 	size_t m_headerParsedLength;

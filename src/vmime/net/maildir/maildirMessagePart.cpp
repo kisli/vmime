@@ -54,6 +54,11 @@ maildirMessagePart::maildirMessagePart(
 	m_size = part.getBody()->getContents()->getLength();
 
 	m_mediaType = part.getBody()->getContentType();
+
+	auto cdispField = part.getHeader()->ContentDisposition();
+	if (cdispField) {
+		m_dispType = dynamic_cast <const contentDisposition&>(*cdispField->getValue());
+	}
 }
 
 
@@ -100,6 +105,12 @@ shared_ptr <messageStructure> maildirMessagePart::getStructure() {
 const mediaType& maildirMessagePart::getType() const {
 
 	return m_mediaType;
+}
+
+
+const contentDisposition &maildirMessagePart::getDisposition() const {
+
+	return m_dispType;
 }
 
 

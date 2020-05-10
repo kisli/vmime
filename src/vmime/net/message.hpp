@@ -33,6 +33,7 @@
 
 #include "vmime/header.hpp"
 #include "vmime/mediaType.hpp"
+#include "vmime/contentDisposition.hpp"
 
 #include "vmime/utility/progressListener.hpp"
 #include "vmime/utility/stream.hpp"
@@ -84,6 +85,12 @@ public:
 	  * @return content media type
 	  */
 	virtual const mediaType& getType() const = 0;
+
+	/** Return the disposition type of the content in this part.
+	  *
+	  * @return content disposition type
+	  */
+	virtual const contentDisposition &getDisposition() const = 0;
 
 	/** Return the size of this part.
 	  *

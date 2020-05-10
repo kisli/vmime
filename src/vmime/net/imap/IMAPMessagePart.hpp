@@ -66,6 +66,7 @@ public:
 	shared_ptr <const IMAPMessagePart> getParent() const;
 
 	const mediaType& getType() const;
+	const contentDisposition &getDisposition() const;
 	size_t getSize() const;
 	size_t getNumber() const;
 	string getName() const;
@@ -92,6 +93,7 @@ private:
 	size_t m_size;
 	string m_name;
 	mediaType m_mediaType;
+	contentDisposition m_dispType;
 };
 
 
