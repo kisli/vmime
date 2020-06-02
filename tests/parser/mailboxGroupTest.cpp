@@ -31,6 +31,7 @@ VMIME_TEST_SUITE_BEGIN(mailboxGroupTest)
 		VMIME_TEST(testParseNoEndDelimiter)
 		VMIME_TEST(testParseExtraChars)
 		VMIME_TEST(testEmptyGroup)
+		VMIME_TEST(testEncodedEmptyGroup)
 	VMIME_TEST_LIST_END
 
 
@@ -89,6 +90,15 @@ VMIME_TEST_SUITE_BEGIN(mailboxGroupTest)
 
 		vmime::mailboxGroup mgrp;
 		mgrp.parse("Undisclosed recipients:;");
+
+		VASSERT_EQ("name", "Undisclosed recipients", mgrp.getName().getWholeBuffer());
+		VASSERT_EQ("count", 0, mgrp.getMailboxCount());
+	}
+
+	void testEncodedEmptyGroup() {
+
+		vmime::mailboxGroup mgrp;
+		mgrp.parse("=?us-ascii?Q?Undisclosed_recipients?=:;");
 
 		VASSERT_EQ("name", "Undisclosed recipients", mgrp.getName().getWholeBuffer());
 		VASSERT_EQ("count", 0, mgrp.getMailboxCount());
