@@ -59,6 +59,7 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		VMIME_TEST(testInternationalizedEmail_UTF8)
 		VMIME_TEST(testInternationalizedEmail_nonUTF8)
 		VMIME_TEST(testInternationalizedEmail_folding)
+		VMIME_TEST(testInternationalizedEmail_whitespace)
 
 		VMIME_TEST(testWronglyPaddedB64Words)
 		VMIME_TEST(testFixBrokenWords)
@@ -692,6 +693,90 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 			" encoded text",
 			w2.generate(20)
 		);
+	}
+
+	void testInternationalizedEmail_whitespace() {
+
+		// Sanity checks for running this test
+		{
+			vmime::text t;
+			t.parse("=?utf-8?Q?Adquisi=C3=B3n?= de Laptop y celular");
+
+			VASSERT_EQ("parse", "Adquisión de Laptop y celular", t.getWholeBuffer());
+		}
+
+		{
+			vmime::text t("Adquisi\xc3\xb3n de Laptop y celular", vmime::charset("UTF-8"));
+
+			VASSERT_EQ("generate", "=?UTF-8?Q?Adquisi=C3=B3n?= de Laptop y celular", t.generate());
+		}
+
+		// Ensure a whitespace is added between encoded words in intl email support enabled
+		{
+			vmime::text t;
+			t.parse("=?utf-8?Q?Adquisi=C3=B3n?= de Laptop y celular");
+
+			std::ostringstream oss;
+			vmime::utility::outputStreamAdapter ossAdapter(oss);
+			vmime::generationContext gctx(vmime::generationContext::getDefaultContext());
+			gctx.setInternationalizedEmailSupport(true);
+			t.generate(gctx, ossAdapter);
+
+			VASSERT_EQ("generate", "Adquisi\xc3\xb3n de Laptop y celular", oss.str());
+		}
+
+		{
+			vmime::text t;
+			t.parse("=?utf-8?Q?Adquisi=C3=B3n?= de Laptop =?utf-8?Q?y?= celular");
+
+			std::ostringstream oss;
+			vmime::utility::outputStreamAdapter ossAdapter(oss);
+			vmime::generationContext gctx(vmime::generationContext::getDefaultContext());
+			gctx.setInternationalizedEmailSupport(true);
+			t.generate(gctx, ossAdapter);
+
+			VASSERT_EQ("generate", "Adquisi\xc3\xb3n de Laptop y celular", oss.str());
+		}
+
+		{
+			vmime::text t;
+			t.parse("=?utf-8?Q?Adquisi=C3=B3n?= de Laptop =?utf-8?Q?y_celular?=");
+
+			std::ostringstream oss;
+			vmime::utility::outputStreamAdapter ossAdapter(oss);
+			vmime::generationContext gctx(vmime::generationContext::getDefaultContext());
+			gctx.setInternationalizedEmailSupport(true);
+			t.generate(gctx, ossAdapter);
+
+			VASSERT_EQ("generate", "Adquisi\xc3\xb3n de Laptop y celular", oss.str());
+		}
+
+		// Ensure no whitespace is added with non-encoded words
+		{
+			vmime::text t;
+			t.parse("Laptop y celular");
+
+			std::ostringstream oss;
+			vmime::utility::outputStreamAdapter ossAdapter(oss);
+			vmime::generationContext gctx(vmime::generationContext::getDefaultContext());
+			gctx.setInternationalizedEmailSupport(true);
+			t.generate(gctx, ossAdapter);
+
+			VASSERT_EQ("generate", "Laptop y celular", oss.str());
+		}
+
+		{
+			vmime::text t;
+			t.parse("=?utf-8?Q?Laptop_y_celular?=");
+
+			std::ostringstream oss;
+			vmime::utility::outputStreamAdapter ossAdapter(oss);
+			vmime::generationContext gctx(vmime::generationContext::getDefaultContext());
+			gctx.setInternationalizedEmailSupport(true);
+			t.generate(gctx, ossAdapter);
+
+			VASSERT_EQ("generate", "Laptop y celular", oss.str());
+		}
 	}
 
 	void testWronglyPaddedB64Words() {

@@ -596,7 +596,7 @@ void word::generate(
 				} else {
 
 					if (!state->isFirstWord &&
-					    state->prevWordIsEncoded &&
+					    (state->prevWordIsEncoded || ctx.getInternationalizedEmailSupport()) &&
 					    !state->lastCharIsSpace &&
 					    !parserHelpers::isSpace(*curLineStart)) {
 
