@@ -1061,7 +1061,7 @@ void IMAPFolder::setMessageFlags(
 
 	const std::vector <string> flagList = IMAPUtils::messageFlagList(flags);
 
-	if (!flagList.empty()) {
+	if ((mode == message::FLAG_MODE_SET) || !flagList.empty()) {
 
 		// Send the request
 		IMAPCommand::STORE(msgs, mode, flagList)->send(m_connection);
