@@ -79,9 +79,7 @@ public:
 		const size_t size,
 		utility::progressListener* progress = NULL,
 		const mailbox& sender = mailbox(),
-		const std::string& dsnNotify = std::string(),
-		const std::string& dsnRet = std::string(),
-		const std::string& dsnEnvelopId = std::string()
+		const dsnAttributes& dsnAttrs = dsnAttributes()
 	);
 
 	void send(
@@ -90,9 +88,7 @@ public:
 		const mailboxList& recipients,
 		utility::progressListener* progress = NULL,
 		const mailbox& sender = mailbox(),
-		const std::string& dsnNotify = std::string(),
-		const std::string& dsnRet = std::string(),
-		const std::string& dsnEnvelopId = std::string()
+		const dsnAttributes& dsnAttrs = dsnAttributes()
 	);
 
 	bool isSecuredConnection() const;
@@ -114,9 +110,7 @@ private:
 	  * @param sender envelope sender (if empty, expeditor will be used)
 	  * @param sendDATACommand if true, the DATA command will be sent
 	  * @param size message size, in bytes (or 0, if not known)
-	  * @param dsnNotify comma separated list of notification conditions as specified in RFC 1891
-	  * @param dsnRet content of DSN - full message or headers only ("FULL" or "HDRS")
-	  * @param dsnEnvelopId envelop ID to be able to pair the DSN with the original message
+	  * @param dsnAttributes attributes for Delivery Status Notification (if needed)
 	  */
 	void sendEnvelope(
 		const mailbox& expeditor,
@@ -124,9 +118,7 @@ private:
 		const mailbox& sender,
 		bool sendDATACommand,
 		const size_t size,
-		const std::string& dsnNotify,
-		const std::string& dsnRet,
-		const std::string& dsnEnvelopId
+		const dsnAttributes& dsnAttrs = dsnAttributes()
 	);
 
 

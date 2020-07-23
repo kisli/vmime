@@ -31,6 +31,7 @@
 #if VMIME_HAVE_MESSAGING_FEATURES
 
 
+#include "vmime/net/dsnAttributes.hpp"
 #include "vmime/net/service.hpp"
 #include "vmime/utility/stream.hpp"
 
@@ -69,16 +70,12 @@ public:
 	  *
 	  * @param msg message to send
 	  * @param progress progress listener, or NULL if not used
-	  * @param dsnNotify comma separated list of notification conditions as specified in RFC 1891
-	  * @param dsnRet content of DSN - full message or headers only ("FULL" or "HDRS")
-	  * @param dsnEnvelopId envelop ID to be able to pair the DSN with original message
+	  * @param dsnAttributes attributes for Delivery Status Notification (if needed)
 	  */
 	virtual void send(
 		const shared_ptr <vmime::message>& msg,
 		utility::progressListener* progress = NULL,
-		const std::string& dsnNotify = std::string(),
-		const std::string& dsnRet = std::string(),
-		const std::string& dsnEnvelopId = std::string()
+		const dsnAttributes& dsnAttrs = dsnAttributes()
 	);
 
 	/** Send a message over this transport service.
@@ -89,10 +86,7 @@ public:
 	  * @param size size of the message data
 	  * @param progress progress listener, or NULL if not used
 	  * @param sender envelope sender (if empty, expeditor will be used)
-	  * @param dsnNotify comma separated list of notification conditions as specified in RFC 1891
-	  * @param dsnRet content of DSN - full message or headers only ("FULL" or "HDRS")
-	  * @param dsnEnvelopId envelope identifier to be transmitted along with the message
-	  * 					to be able to pair the DSN with original message (plain text not in "<" ">")
+	  * @param dsnAttributes attributes for Delivery Status Notification (if needed)
 	  */
 	virtual void send(
 		const mailbox& expeditor,
@@ -101,9 +95,7 @@ public:
 		const size_t size,
 		utility::progressListener* progress = NULL,
 		const mailbox& sender = mailbox(),
-		const std::string& dsnNotify = std::string(),
-		const std::string& dsnRet = std::string(),
-		const std::string& dsnEnvelopId = std::string()
+		const dsnAttributes& dsnAttrs = dsnAttributes()
 	) = 0;
 
 	/** Send a message over this transport service.
@@ -115,6 +107,7 @@ public:
 	  * @param recipients list of recipient mailboxes
 	  * @param progress progress listener, or NULL if not used
 	  * @param sender envelope sender (if empty, expeditor will be used)
+	  * @param dsnAttributes attributes for Delivery Status Notification (if needed)
 	  */
 	virtual void send(
 		const shared_ptr <vmime::message>& msg,
@@ -122,9 +115,7 @@ public:
 		const mailboxList& recipients,
 		utility::progressListener* progress = NULL,
 		const mailbox& sender = mailbox(),
-		const std::string& dsnNotify = std::string(),
-		const std::string& dsnRet = std::string(),
-		const std::string& dsnEnvelopId = std::string()
+		const dsnAttributes& dsnAttrs = dsnAttributes()
 	);
 
 

@@ -234,8 +234,8 @@ namespace dispositionModifiers {
 }
 
 // Constants for DSN (delivery status notification)
-namespace dsn
-{
+namespace dsn {
+
 	const char* const NOTIFY = "NOTIFY";
 	const char* const NEVER = "NEVER";
 	const char* const SUCCESS = "SUCCESS";

@@ -184,7 +184,7 @@ void SMTPTransport::sendEnvelope(
 	const mailbox& sender,
 	bool sendDATACommand,
 	const size_t size,
-	const std::string& dsnNotify, const std::string& dsnRet, const std::string& dsnEnvelopId
+	const dsnAttributes& dsnAttrs
 ) {
 	// If no recipient/expeditor was found, throw an exception
 	if (recipients.isEmpty()) {
@@ -230,7 +230,9 @@ void SMTPTransport::sendEnvelope(
 
 		commands->addCommand(
 			SMTPCommand::MAIL(
-				sender, hasSMTPUTF8 && needSMTPUTF8, hasSize ? size : 0, dsnRet, dsnEnvelopId
+				sender, hasSMTPUTF8 && needSMTPUTF8, hasSize ? size : 0,
+				dsnAttrs.notificationConditions(),
+				dsnAttrs.envelopId()
 			)
 		);
 
@@ -238,7 +240,9 @@ void SMTPTransport::sendEnvelope(
 
 		commands->addCommand(
 			SMTPCommand::MAIL(
-				expeditor, hasSMTPUTF8 && needSMTPUTF8, hasSize ? size : 0, dsnRet, dsnEnvelopId
+				expeditor, hasSMTPUTF8 && needSMTPUTF8, hasSize ? size : 0,
+				dsnAttrs.notificationConditions(),
+				dsnAttrs.envelopId()
 			)
 		);
 	}
@@ -250,7 +254,8 @@ void SMTPTransport::sendEnvelope(
 	for (size_t i = 0 ; i < recipients.getMailboxCount() ; ++i) {
 
 		const mailbox& mbox = *recipients.getMailboxAt(i);
-		commands->addCommand(SMTPCommand::RCPT(mbox, hasSMTPUTF8 && needSMTPUTF8, dsnNotify));
+		commands->addCommand(SMTPCommand::RCPT(mbox, hasSMTPUTF8 && needSMTPUTF8,
+											   dsnAttrs.notificationConditions()));
 	}
 
 	// Prepare sending of message data
@@ -377,7 +382,7 @@ void SMTPTransport::send(
 	const size_t size,
 	utility::progressListener* progress,
 	const mailbox& sender,
-	const std::string& dsnNotify, const std::string& dsnRet, const std::string& dsnEnvelopId
+	const dsnAttributes& dsnAttrs
 ) {
 
 	if (!isConnected()) {
@@ -386,7 +391,7 @@ void SMTPTransport::send(
 
 	// Send message envelope
 	sendEnvelope(expeditor, recipients, sender, /* sendDATACommand */ true, size,
-				 dsnNotify, dsnRet, dsnEnvelopId);
+				 dsnAttrs);
 
 	// Send the message data
 	// Stream copy with "\n." to "\n.." transformation
@@ -419,7 +424,7 @@ void SMTPTransport::send(
 	const mailboxList& recipients,
 	utility::progressListener* progress,
 	const mailbox& sender,
-	const std::string& dsnNotify, const std::string& dsnRet, const std::string& dsnEnvelopId
+	const dsnAttributes& dsnAttrs
 ) {
 
 	if (!isConnected()) {
@@ -446,14 +451,14 @@ void SMTPTransport::send(
 
 		utility::inputStreamStringAdapter isAdapter(str);
 
-		send(expeditor, recipients, isAdapter, str.length(), progress, sender, dsnNotify, dsnRet, dsnEnvelopId);
+		send(expeditor, recipients, isAdapter, str.length(), progress, sender, dsnAttrs);
 		return;
 	}
 
 	// Send message envelope
 	const size_t msgSize = msg->getGeneratedSize(ctx);
 
-	sendEnvelope(expeditor, recipients, sender, /* sendDATACommand */ false, msgSize, dsnNotify, dsnRet, dsnEnvelopId);
+	sendEnvelope(expeditor, recipients, sender, /* sendDATACommand */ false, msgSize, dsnAttrs);
 
 	// Send the message by chunks
 	SMTPChunkingOutputStreamAdapter chunkStream(m_connection, msgSize, progress);

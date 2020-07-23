@@ -253,8 +253,8 @@ namespace vmime {
 	}
 
 	/** Constants for DSN (delivery status notification) */
-	namespace dsn
-	{
+	namespace dsn {
+
 		extern VMIME_EXPORT const char* const NOTIFY;
 		extern VMIME_EXPORT const char* const NEVER;
 		extern VMIME_EXPORT const char* const SUCCESS;
