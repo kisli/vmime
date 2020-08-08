@@ -52,6 +52,21 @@ IMAPMessagePart::IMAPMessagePart(
 	);
 }
 
+namespace {
+	template<typename T>
+	vmime::string getPartName(const T& body_type) {
+		if (const auto* pparam = body_type->body_fields->body_fld_param.get()) {
+			for (const auto& param : pparam->items) {
+				if (param->string1->value == "NAME") {
+					return param->string2->value;
+				}
+			}
+		}
+
+		return {};
+	}
+}
+
 
 IMAPMessagePart::IMAPMessagePart(
 	const shared_ptr <IMAPMessagePart>& parent,
@@ -88,13 +103,7 @@ IMAPMessagePart::IMAPMessagePart(
 
 		m_size = part->body_type_basic->body_fields->body_fld_octets->value;
 
-		if (const auto* pparam = part->body_type_basic->body_fields->body_fld_param.get()) {
-			for (const auto& param : pparam->items) {
-				if (param->string1->value == "NAME") {
-					m_name = param->string2->value;
-				}
-			}
-		}
+		m_name = getPartName(part->body_type_basic);
 
 		if (part->body_ext_1part && part->body_ext_1part->body_fld_dsp) {
 			auto *cdisp = part->body_ext_1part->body_fld_dsp->str();
