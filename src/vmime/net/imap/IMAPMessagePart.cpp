@@ -106,12 +106,12 @@ IMAPMessagePart::IMAPMessagePart(
 		m_size = part->body_type_basic->body_fields->body_fld_octets->value;
 
 		m_name = getPartName(part->body_type_basic);
+	}
 
-		if (part->body_ext_1part && part->body_ext_1part->body_fld_dsp) {
-			auto *cdisp = part->body_ext_1part->body_fld_dsp->str();
-			if (cdisp) {
-				m_dispType = contentDisposition(cdisp->value);
-			}
+	if (part->body_ext_1part && part->body_ext_1part->body_fld_dsp) {
+		auto *cdisp = part->body_ext_1part->body_fld_dsp->str();
+		if (cdisp) {
+			m_dispType = contentDisposition(cdisp->value);
 		}
 	}
 
