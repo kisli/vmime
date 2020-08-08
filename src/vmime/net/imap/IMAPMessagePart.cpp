@@ -87,6 +87,8 @@ IMAPMessagePart::IMAPMessagePart(
 
 		m_size = part->body_type_text->body_fields->body_fld_octets->value;
 
+		m_name = getPartName(part->body_type_text);
+
 	} else if (part->body_type_msg) {
 
 		m_mediaType = vmime::mediaType(
