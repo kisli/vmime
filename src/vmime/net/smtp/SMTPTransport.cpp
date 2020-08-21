@@ -231,8 +231,8 @@ void SMTPTransport::sendEnvelope(
 		commands->addCommand(
 			SMTPCommand::MAIL(
 				sender, hasSMTPUTF8 && needSMTPUTF8, hasSize ? size : 0,
-				dsnAttrs.notificationConditions(),
-				dsnAttrs.envelopId()
+				dsnAttrs.getNotificationConditions(),
+				dsnAttrs.getEnvelopId()
 			)
 		);
 
@@ -241,8 +241,8 @@ void SMTPTransport::sendEnvelope(
 		commands->addCommand(
 			SMTPCommand::MAIL(
 				expeditor, hasSMTPUTF8 && needSMTPUTF8, hasSize ? size : 0,
-				dsnAttrs.notificationConditions(),
-				dsnAttrs.envelopId()
+				dsnAttrs.getNotificationConditions(),
+				dsnAttrs.getEnvelopId()
 			)
 		);
 	}
@@ -255,7 +255,7 @@ void SMTPTransport::sendEnvelope(
 
 		const mailbox& mbox = *recipients.getMailboxAt(i);
 		commands->addCommand(SMTPCommand::RCPT(mbox, hasSMTPUTF8 && needSMTPUTF8,
-											   dsnAttrs.notificationConditions()));
+											   dsnAttrs.getNotificationConditions()));
 	}
 
 	// Prepare sending of message data

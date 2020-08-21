@@ -70,25 +70,25 @@ public:
 	  * @param dsnRet content of DSN - full message or headers only ("FULL" or "HDRS")
 	  * @param dsnEnvelopId envelop ID to be able to pair the DSN with original message (plain text not in "<" ">")
 	  */
-	dsnAttributes(string dsnNotify, string dsnRet, string dsnEnvelopId);
+	dsnAttributes(const string& dsnNotify, const string& dsnRet, const string& dsnEnvelopId);
 
 	/** Returns comma separated list of notification conditions as specified in RFC 1891
 	  *
 	  * @return comma separated list of notification conditions as specified in RFC 1891
 	  */
-	string notificationConditions() const;
+	string getNotificationConditions() const;
 
 	/** Returns requested format of the notification (RET parameter of the ESMTP MAIL command).
 	  *
 	  * @return requested format of the notification.
 	  */
-	string returnFormat() const;
+	string getReturnFormat() const;
 
 	/** Returns envelop ID used pair the DSN with the original message.
 	  *
 	  * @return envelop ID used pair the DSN with the original message.
 	  */
-	string envelopId() const;
+	string getEnvelopId() const;
 
 private:
 

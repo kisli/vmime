@@ -34,25 +34,25 @@ namespace vmime {
 namespace net {
 
 
-dsnAttributes::dsnAttributes(string dsnNotify, string dsnRet, string dsnEnvelopId)
+dsnAttributes::dsnAttributes(const string& dsnNotify, const string& dsnRet, const string& dsnEnvelopId)
 	: m_notifications(dsnNotify), m_returnFormat(dsnRet), m_envelopId(dsnEnvelopId) {
 
 }
 
 
-string dsnAttributes::notificationConditions() const {
+string dsnAttributes::getNotificationConditions() const {
 
 	return m_notifications;
 }
 
 
-string dsnAttributes::returnFormat() const {
+string dsnAttributes::getReturnFormat() const {
 
 	return m_returnFormat;
 }
 
 
-string dsnAttributes::envelopId() const {
+string dsnAttributes::getEnvelopId() const {
 
 	return m_envelopId;
 }
