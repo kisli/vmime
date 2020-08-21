@@ -84,9 +84,9 @@ public:
 	  */
 	string getReturnFormat() const;
 
-	/** Returns envelop ID used pair the DSN with the original message.
+	/** Returns envelop ID used to pair the DSN with the original message.
 	  *
-	  * @return envelop ID used pair the DSN with the original message.
+	  * @return envelop ID used to pair the DSN with the original message.
 	  */
 	string getEnvelopId() const;
 
