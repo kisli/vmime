@@ -114,79 +114,79 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 	void testMAIL() {
 
-		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::MAIL(vmime::mailbox("me@vmime.org"), false);
+		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::MAIL(vmime::mailbox("me@vmime.org"), false, "FULL", "dsn-unique-id");
 
 		VASSERT_NOT_NULL("Not null", cmd);
-		VASSERT_EQ("Text", "MAIL FROM:<me@vmime.org>", cmd->getText());
+		VASSERT_EQ("Text", "MAIL FROM:<me@vmime.org> RET=FULL ENVID=<dsn-unique-id>", cmd->getText());
 	}
 
 	void testMAIL_Encoded() {
 
 		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::MAIL(
-			vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), false
+			vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), false, "FULL", "dsn-unique-id"
 		);
 
 		VASSERT_NOT_NULL("Not null", cmd);
-		VASSERT_EQ("Text", "MAIL FROM:<mailtest@xn--r8jz45g.xn--zckzah>", cmd->getText());
+		VASSERT_EQ("Text", "MAIL FROM:<mailtest@xn--r8jz45g.xn--zckzah> RET=FULL ENVID=<dsn-unique-id>", cmd->getText());
 	}
 
 	void testMAIL_UTF8() {
 
 		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::MAIL(
-			vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), true
+			vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), true, "FULL", "dsn-unique-id"
 		);
 
 		VASSERT_NOT_NULL("Not null", cmd);
-		VASSERT_EQ("Text", "MAIL FROM:<mailtest@例え.テスト> SMTPUTF8", cmd->getText());
+		VASSERT_EQ("Text", "MAIL FROM:<mailtest@例え.テスト> RET=FULL ENVID=<dsn-unique-id> SMTPUTF8", cmd->getText());
 	}
 
 	void testMAIL_SIZE() {
 
 		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::MAIL(
-			vmime::mailbox("me@vmime.org"), false, 123456789
+			vmime::mailbox("me@vmime.org"), false, 123456789, "FULL", "dsn-unique-id"
 		);
 
 		VASSERT_NOT_NULL("Not null", cmd);
-		VASSERT_EQ("Text", "MAIL FROM:<me@vmime.org> SIZE=123456789", cmd->getText());
+		VASSERT_EQ("Text", "MAIL FROM:<me@vmime.org> RET=FULL ENVID=<dsn-unique-id> SIZE=123456789", cmd->getText());
 	}
 
 	void testMAIL_SIZE_UTF8() {
 
 		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::MAIL(
-			vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), true, 123456789
+			vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), true, 123456789, "FULL", "dsn-unique-id"
 		);
 
 		VASSERT_NOT_NULL("Not null", cmd);
-		VASSERT_EQ("Text", "MAIL FROM:<mailtest@例え.テスト> SMTPUTF8 SIZE=123456789", cmd->getText());
+		VASSERT_EQ("Text", "MAIL FROM:<mailtest@例え.テスト> RET=FULL ENVID=<dsn-unique-id> SMTPUTF8 SIZE=123456789", cmd->getText());
 	}
 
 	void testRCPT() {
 
 		vmime::shared_ptr <SMTPCommand> cmd =
-			SMTPCommand::RCPT(vmime::mailbox("someone@vmime.org"), false);
+			SMTPCommand::RCPT(vmime::mailbox("someone@vmime.org"), false, "NEVER");
 
 		VASSERT_NOT_NULL("Not null", cmd);
-		VASSERT_EQ("Text", "RCPT TO:<someone@vmime.org>", cmd->getText());
+		VASSERT_EQ("Text", "RCPT TO:<someone@vmime.org> NOTIFY=NEVER", cmd->getText());
 	}
 
 	void testRCPT_Encoded() {
 
 		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::RCPT(
-			vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), false
+			vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), false, "NEVER"
 		);
 
 		VASSERT_NOT_NULL("Not null", cmd);
-		VASSERT_EQ("Text", "RCPT TO:<mailtest@xn--r8jz45g.xn--zckzah>", cmd->getText());
+		VASSERT_EQ("Text", "RCPT TO:<mailtest@xn--r8jz45g.xn--zckzah> NOTIFY=NEVER", cmd->getText());
 	}
 
 	void testRCPT_UTF8() {
 
 		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::RCPT(
-			vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), true
+			vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), true, "NEVER"
 		);
 
 		VASSERT_NOT_NULL("Not null", cmd);
-		VASSERT_EQ("Text", "RCPT TO:<mailtest@例え.テスト>", cmd->getText());
+		VASSERT_EQ("Text", "RCPT TO:<mailtest@例え.テスト> NOTIFY=NEVER", cmd->getText());
 	}
 
 	void testRSET() {
