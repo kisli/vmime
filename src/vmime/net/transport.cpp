@@ -136,7 +136,8 @@ static void extractMailboxes(
 
 void transport::send(
 	const shared_ptr <vmime::message>& msg,
-	utility::progressListener* progress
+	utility::progressListener* progress,
+	const dsnAttributes& dsnAttrs
 ) {
 
 	// Extract expeditor
@@ -221,7 +222,7 @@ void transport::send(
 
 	} headerExchanger(msg, hdr);
 
-	send(msg, expeditor, recipients, progress, sender);
+	send(msg, expeditor, recipients, progress, sender, dsnAttrs);
 }
 
 
@@ -230,7 +231,8 @@ void transport::send(
 	const mailbox& expeditor,
 	const mailboxList& recipients,
 	utility::progressListener* progress,
-	const mailbox& sender
+	const mailbox& sender,
+	const dsnAttributes& dsnAttrs
 ) {
 
 	// Generate the message, "stream" it and delegate the sending
@@ -244,7 +246,8 @@ void transport::send(
 
 	utility::inputStreamStringAdapter isAdapter(str);
 
-	send(expeditor, recipients, isAdapter, str.length(), progress, sender);
+	send(expeditor, recipients, isAdapter, str.length(), progress, sender,
+		 dsnAttrs);
 }
 
 

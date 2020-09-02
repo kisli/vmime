@@ -70,6 +70,7 @@ namespace vmime {
 		extern VMIME_EXPORT const char* const MESSAGE_PARTIAL;
 		extern VMIME_EXPORT const char* const MESSAGE_EXTERNAL_BODY;
 		extern VMIME_EXPORT const char* const MESSAGE_DISPOSITION_NOTIFICATION;
+		extern VMIME_EXPORT const char* const MESSAGE_DELIVERY_STATUS;
 
 		extern VMIME_EXPORT const char* const APPLICATION_OCTET_STREAM;
 
@@ -249,6 +250,21 @@ namespace vmime {
 	namespace dispositionModifiers {
 
 		extern VMIME_EXPORT const char* const ERROR;
+	}
+
+	/** Constants for DSN (delivery status notification) */
+	namespace dsn {
+
+		extern VMIME_EXPORT const char* const NOTIFY;
+		extern VMIME_EXPORT const char* const NEVER;
+		extern VMIME_EXPORT const char* const SUCCESS;
+		extern VMIME_EXPORT const char* const FAILURE;
+		extern VMIME_EXPORT const char* const DELAY;
+		extern VMIME_EXPORT const char* const ORCPT;
+		extern VMIME_EXPORT const char* const RET;
+		extern VMIME_EXPORT const char* const FULL;
+		extern VMIME_EXPORT const char* const HDRS;
+		extern VMIME_EXPORT const char* const ENVID;
 	}
 }
 

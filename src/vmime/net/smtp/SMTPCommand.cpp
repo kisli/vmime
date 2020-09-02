@@ -100,14 +100,16 @@ shared_ptr <SMTPCommand> SMTPCommand::STARTTLS() {
 
 
 // static
-shared_ptr <SMTPCommand> SMTPCommand::MAIL(const mailbox& mbox, const bool utf8) {
+shared_ptr <SMTPCommand> SMTPCommand::MAIL(const mailbox& mbox, const bool utf8,
+										   const std::string& dsnRet, const std::string& dsnEnvelopId) {
 
-	return MAIL(mbox, utf8, 0);
+	return MAIL(mbox, utf8, 0, dsnRet, dsnEnvelopId);
 }
 
 
 // static
-shared_ptr <SMTPCommand> SMTPCommand::MAIL(const mailbox& mbox, const bool utf8, const size_t size) {
+shared_ptr <SMTPCommand> SMTPCommand::MAIL(const mailbox& mbox, const bool utf8, const size_t size,
+										   const std::string& dsnRet, const std::string& dsnEnvelopId) {
 
 	std::ostringstream cmd;
 	cmd.imbue(std::locale::classic());
@@ -125,6 +127,13 @@ shared_ptr <SMTPCommand> SMTPCommand::MAIL(const mailbox& mbox, const bool utf8,
 
 	cmd << ">";
 
+	if (!dsnRet.empty()) {
+		cmd << " " << dsn::RET << "=" << dsnRet;
+	}
+	if (!dsnEnvelopId.empty()) {
+		cmd << " " << dsn::ENVID << "=<" << dsnEnvelopId << ">";
+	}
+
 	if (utf8) {
 		cmd << " SMTPUTF8";
 	}
@@ -138,7 +147,8 @@ shared_ptr <SMTPCommand> SMTPCommand::MAIL(const mailbox& mbox, const bool utf8,
 
 
 // static
-shared_ptr <SMTPCommand> SMTPCommand::RCPT(const mailbox& mbox, const bool utf8) {
+shared_ptr <SMTPCommand> SMTPCommand::RCPT(const mailbox& mbox, const bool utf8,
+										   const string& dsnNotify) {
 
 	std::ostringstream cmd;
 	cmd.imbue(std::locale::classic());
@@ -155,6 +165,10 @@ shared_ptr <SMTPCommand> SMTPCommand::RCPT(const mailbox& mbox, const bool utf8)
 	}
 
 	cmd << ">";
+
+	if (!dsnNotify.empty()) {
+		cmd << " " << dsn::NOTIFY << "=" << dsnNotify;
+	}
 
 	return createCommand(cmd.str());
 }

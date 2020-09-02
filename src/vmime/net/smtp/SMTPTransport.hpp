@@ -78,7 +78,8 @@ public:
 		utility::inputStream& is,
 		const size_t size,
 		utility::progressListener* progress = NULL,
-		const mailbox& sender = mailbox()
+		const mailbox& sender = mailbox(),
+		const dsnAttributes& dsnAttrs = dsnAttributes()
 	);
 
 	void send(
@@ -86,7 +87,8 @@ public:
 		const mailbox& expeditor,
 		const mailboxList& recipients,
 		utility::progressListener* progress = NULL,
-		const mailbox& sender = mailbox()
+		const mailbox& sender = mailbox(),
+		const dsnAttributes& dsnAttrs = dsnAttributes()
 	);
 
 	bool isSecuredConnection() const;
@@ -108,13 +110,15 @@ private:
 	  * @param sender envelope sender (if empty, expeditor will be used)
 	  * @param sendDATACommand if true, the DATA command will be sent
 	  * @param size message size, in bytes (or 0, if not known)
+	  * @param dsnAttributes attributes for Delivery Status Notification (if needed)
 	  */
 	void sendEnvelope(
 		const mailbox& expeditor,
 		const mailboxList& recipients,
 		const mailbox& sender,
 		bool sendDATACommand,
-		const size_t size
+		const size_t size,
+		const dsnAttributes& dsnAttrs = dsnAttributes()
 	);
 
 

@@ -148,7 +148,8 @@ void sendmailTransport::send(
 	utility::inputStream& is,
 	const size_t size,
 	utility::progressListener* progress,
-	const mailbox& sender
+	const mailbox& sender,
+	const dsnAttributes& /*dsnAttrs*/
 ) {
 
 	// If no recipient/expeditor was found, throw an exception
