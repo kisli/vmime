@@ -151,6 +151,59 @@ const char* SMTPMessageSizeExceedsCurLimitsException::name() const throw() {
 }
 
 
+//
+// SMTPExtensionNotSupportedException
+//
+
+SMTPExtensionNotSupportedException::SMTPExtensionNotSupportedException(const string &what, const exception& other)
+	: net_exception(what.empty() ? "A required extension is not supported by the SMTP server." : what, other) {
+
+}
+
+
+SMTPExtensionNotSupportedException::~SMTPExtensionNotSupportedException() throw() {
+
+}
+
+
+exception* SMTPExtensionNotSupportedException::clone() const {
+
+	return new SMTPExtensionNotSupportedException(*this);
+}
+
+
+const char* SMTPExtensionNotSupportedException::name() const throw() {
+
+	return "SMTPExtensionNotSupportedException";
+}
+
+
+//
+// SMTPDSNExtensionNotSupportedException
+//
+
+SMTPDSNExtensionNotSupportedException::SMTPDSNExtensionNotSupportedException(const exception& other)
+	: SMTPExtensionNotSupportedException("RFC-1891 DSN extension is not supported by the SMTP server.", other) {
+
+}
+
+
+SMTPDSNExtensionNotSupportedException::~SMTPDSNExtensionNotSupportedException() throw() {
+
+}
+
+
+exception* SMTPDSNExtensionNotSupportedException::clone() const {
+	return new SMTPDSNExtensionNotSupportedException(*this);
+}
+
+
+const char* SMTPDSNExtensionNotSupportedException::name() const throw() {
+
+	return "SMTPDSNExtensionNotSupportedException";
+}
+
+
 } // smtp
 } // net
 } // vmime

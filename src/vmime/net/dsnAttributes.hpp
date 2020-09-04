@@ -90,6 +90,12 @@ public:
 	  */
 	string getEnvelopId() const;
 
+	/** Returns whether the object is empty, and no attribute has been set.
+	  *
+	  * @return true if object is empty, or false otherwise
+	  */
+	bool isEmpty() const;
+
 private:
 
 	string m_notifications;

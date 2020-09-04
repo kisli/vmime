@@ -120,6 +120,34 @@ public:
 };
 
 
+/** SMTP error: a required extension is not supported by the server.
+  */
+class VMIME_EXPORT SMTPExtensionNotSupportedException : public exceptions::net_exception {
+
+public:
+
+	SMTPExtensionNotSupportedException(const string& what, const exception& other = NO_EXCEPTION);
+	~SMTPExtensionNotSupportedException() throw();
+
+	exception* clone() const;
+	const char* name() const throw();
+};
+
+
+/** SMTP error: RFC-1891 DSN extension is not supported by the server.
+  */
+class VMIME_EXPORT SMTPDSNExtensionNotSupportedException : public SMTPExtensionNotSupportedException {
+
+public:
+
+	SMTPDSNExtensionNotSupportedException(const exception& other = NO_EXCEPTION);
+	~SMTPDSNExtensionNotSupportedException() throw();
+
+	exception* clone() const;
+	const char* name() const throw();
+};
+
+
 } // smtp
 } // net
 } // vmime

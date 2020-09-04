@@ -58,6 +58,12 @@ string dsnAttributes::getEnvelopId() const {
 }
 
 
+bool dsnAttributes::isEmpty() const {
+
+	return m_notifications.empty() && m_returnFormat.empty() && m_envelopId.empty();
+}
+
+
 } // net
 } // vmime
 

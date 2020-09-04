@@ -186,11 +186,17 @@ void SMTPTransport::sendEnvelope(
 	const size_t size,
 	const dsnAttributes& dsnAttrs
 ) {
+
 	// If no recipient/expeditor was found, throw an exception
 	if (recipients.isEmpty()) {
 		throw exceptions::no_recipient();
 	} else if (expeditor.isEmpty()) {
 		throw exceptions::no_expeditor();
+	}
+
+	// If DSN extension is used, ensure it is supported by the server
+	if (!dsnAttrs.isEmpty() && !m_connection->hasExtension("DSN")) {
+		throw SMTPDSNExtensionNotSupportedException();
 	}
 
 
