@@ -31,6 +31,7 @@ VMIME_TEST_SUITE_BEGIN(mailboxTest)
 		VMIME_TEST(testEmptyEmailAddress)
 		VMIME_TEST(testSeparatorInComment)
 		VMIME_TEST(testMalformations)
+		VMIME_TEST(testExcessiveQuoting)
 	VMIME_TEST_LIST_END
 
 
@@ -168,6 +169,19 @@ VMIME_TEST_SUITE_BEGIN(mailboxTest)
 		mbox.parse("Foo <foo@x.com> Bar <bar@y.com>");
 		VASSERT_EQ("name", vmime::text("Foo <foo@x.com> Bar"), mbox.getName());
 		VASSERT_EQ("email", "bar@y.com", mbox.getEmail());
+	}
+
+	void testExcessiveQuoting() {
+		using namespace vmime;
+
+		// Check that ASCII display names are not encoded more than necessary
+		emailAddress e("a@b.com");
+		auto a = make_shared<mailbox>(text(word("Foo B@r", charsets::US_ASCII)), e);
+		VASSERT_EQ("generate", "\"Foo B@r\" <a@b.com>", a->generate());
+		VASSERT_NEQ("generate", "=?utf-8?Q?Foo_B=40r?= <a@b.com>", a->generate());
+
+		a = make_shared<mailbox>(text(word("Foo B@r", charsets::UTF_8)), e);
+		VASSERT_EQ("generate", "=?utf-8?Q?Foo_B=40r?= <a@b.com>", a->generate());
 	}
 
 VMIME_TEST_SUITE_END

@@ -31,7 +31,6 @@ VMIME_TEST_SUITE_BEGIN(bodyTest)
 		VMIME_TEST(testGenerate_NonText)
 	VMIME_TEST_LIST_END
 
-
 	void testGenerate_Text() {
 
 		// RFC-2015: [Quoted-Printable encoding] A line break in a text body,
