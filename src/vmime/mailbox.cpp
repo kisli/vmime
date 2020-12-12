@@ -355,44 +355,14 @@ void mailbox::generateImpl(
 		//   - if it contains characters in a charset different from "US-ASCII",
 		//   - and/or if it contains one or more of these special chars:
 		//        CR  LF  TAB  "  ;  ,  <  >  (  )  @  /  ?  .  =  :
-
+		//     these special chars only require quoting, not full encoding
 		// Check whether there are words that are not "US-ASCII"
 		// and/or contain the special chars.
 		bool forceEncode = false;
 
 		for (size_t w = 0 ; !forceEncode && w != m_name.getWordCount() ; ++w) {
 
-			if (m_name.getWordAt(w)->getCharset() == charset(charsets::US_ASCII)) {
-
-				const string& buffer = m_name.getWordAt(w)->getBuffer();
-
-				for (string::const_iterator c = buffer.begin() ;
-				     !forceEncode && c != buffer.end() ; ++c) {
-
-					switch (*c) {
-
-						case '\r':
-						case '\n':
-						case '\t':
-						case ';':
-						case ',':
-						case '<': case '>':
-						case '(': case ')':
-						case '@':
-						case '/':
-						case '?':
-						case '.':
-						case '=':
-						case ':':
-						case '"':
-
-							forceEncode = true;
-							break;
-					}
-				}
-
-			} else {
-
+			if (m_name.getWordAt(w)->getCharset() != charset(charsets::US_ASCII)) {
 				forceEncode = true;
 			}
 		}
