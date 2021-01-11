@@ -413,7 +413,7 @@ void charsetFilteredOutputStream_icu::writeImpl(
 
 		ucnv_toUnicode(
 			m_from, &uniTarget, uniTargetLimit,
-			&uniSource, uniSourceLimit, NULL, /* flush */ FALSE, &toErr
+			&uniSource, uniSourceLimit, NULL, /* flush */ UBool(0), &toErr
 		);
 
 		if (U_FAILURE(toErr) && toErr != U_BUFFER_OVERFLOW_ERROR) {
@@ -509,7 +509,7 @@ void charsetFilteredOutputStream_icu::flush() {
 
 		ucnv_toUnicode(
 			m_from, &uniTarget, uniTargetLimit,
-			&uniSource, uniSourceLimit, NULL, /* flush */ TRUE, &toErr
+			&uniSource, uniSourceLimit, NULL, /* flush */ UBool(1), &toErr
 		);
 
 		if (U_FAILURE(toErr) && toErr != U_BUFFER_OVERFLOW_ERROR) {
@@ -540,7 +540,7 @@ void charsetFilteredOutputStream_icu::flush() {
 
 			ucnv_fromUnicode(
 				m_to, &cpTarget, cpTargetLimit,
-				&cpSource, cpSourceLimit, NULL, /* flush */ TRUE, &fromErr
+				&cpSource, cpSourceLimit, NULL, /* flush */ UBool(1), &fromErr
 			);
 
 			if (fromErr != U_BUFFER_OVERFLOW_ERROR && U_FAILURE(fromErr)) {
