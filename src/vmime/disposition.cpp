@@ -49,6 +49,15 @@ disposition::disposition(
 }
 
 
+disposition::disposition(const disposition& other)
+	: m_actionMode(other.m_actionMode),
+	  m_sendingMode(other.m_sendingMode),
+	  m_type(other.m_type),
+	  m_modifiers(other.m_modifiers) {
+
+}
+
+
 shared_ptr <component> disposition::clone() const {
 
 	shared_ptr <disposition> disp = make_shared <disposition>();

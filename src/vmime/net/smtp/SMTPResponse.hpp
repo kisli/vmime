@@ -65,6 +65,8 @@ public:
 		enhancedStatusCode();
 		enhancedStatusCode(const enhancedStatusCode& enhCode);
 
+		enhancedStatusCode& operator=(const enhancedStatusCode& other);
+
 		unsigned short klass;     /**< Success/failure. */
 		unsigned short subject;   /**< Source of anomaly. */
 		unsigned short detail;    /**< Precise error condition. */
@@ -76,6 +78,7 @@ public:
 	public:
 
 		responseLine(const int code, const string& text, const enhancedStatusCode& enhCode);
+		responseLine(const responseLine& other);
 
 		void setCode(const int code);
 		int getCode() const;
@@ -85,6 +88,8 @@ public:
 
 		void setText(const string& text);
 		const string getText() const;
+
+		responseLine& operator=(const responseLine& other);
 
 	private:
 

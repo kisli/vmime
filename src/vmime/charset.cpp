@@ -57,6 +57,12 @@ charset::charset(const char* name)
 }
 
 
+charset::charset(const charset& other)
+	: m_name(other.m_name) {
+
+}
+
+
 void charset::parseImpl(
 	const parsingContext& /* ctx */,
 	const string& buffer,

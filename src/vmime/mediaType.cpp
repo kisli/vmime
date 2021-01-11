@@ -48,6 +48,13 @@ mediaType::mediaType(const string& type, const string& subType)
 }
 
 
+mediaType::mediaType(const mediaType& other)
+	: m_type(other.m_type),
+	  m_subType(other.m_subType) {
+
+}
+
+
 void mediaType::parseImpl(
 	const parsingContext& /* ctx */,
 	const string& buffer,

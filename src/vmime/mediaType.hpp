@@ -41,6 +41,7 @@ public:
 	mediaType();
 	mediaType(const string& type);
 	mediaType(const string& type, const string& subType);
+	mediaType(const mediaType& other);
 
 public:
 

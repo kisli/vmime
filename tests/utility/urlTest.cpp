@@ -50,7 +50,7 @@ VMIME_TEST_SUITE_BEGIN(urlTest)
 
 			u = vmime::utility::url(str);
 
-		} catch (vmime::exceptions::malformed_url) {
+		} catch (vmime::exceptions::malformed_url&) {
 
 			return false;
 		}

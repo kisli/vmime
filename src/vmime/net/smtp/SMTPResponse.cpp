@@ -294,6 +294,14 @@ SMTPResponse::responseLine::responseLine(
 }
 
 
+SMTPResponse::responseLine::responseLine(const responseLine& other)
+	: m_code(other.m_code),
+	  m_text(other.m_text),
+	  m_enhCode(other.m_enhCode) {
+
+}
+
+
 void SMTPResponse::responseLine::setCode(const int code) {
 
 	m_code = code;
@@ -330,6 +338,15 @@ const string SMTPResponse::responseLine::getText() const {
 }
 
 
+SMTPResponse::responseLine& SMTPResponse::responseLine::operator=(const responseLine& other) {
+
+	m_code = other.m_code;
+	m_text = other.m_text;
+	m_enhCode = other.m_enhCode;
+
+	return *this;
+}
+
 
 // SMTPResponse::enhancedStatusCode
 
@@ -347,6 +364,16 @@ SMTPResponse::enhancedStatusCode::enhancedStatusCode(const enhancedStatusCode& e
 	  subject(enhCode.subject),
 	  detail(enhCode.detail) {
 
+}
+
+
+SMTPResponse::enhancedStatusCode& SMTPResponse::enhancedStatusCode::operator=(const enhancedStatusCode& other) {
+
+	klass = other.klass;
+	subject = other.subject;
+	detail = other.detail;
+
+	return *this;
 }
 
 

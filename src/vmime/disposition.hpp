@@ -47,6 +47,7 @@ public:
 		const string& type,
 		const string& modifier
 	);
+	disposition(const disposition& other);
 
 
 	shared_ptr <component> clone() const;

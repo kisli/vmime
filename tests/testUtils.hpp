@@ -76,7 +76,7 @@
 	struct AutoRegisterModule { \
 		AutoRegisterModule() { \
 			static const char* moduleName = getTestModuleNameFromSourceFile(__FILE__); \
-			static CppUnit::AutoRegisterSuite <VMIME_TEST_SUITE>(autoRegisterRegistry1); \
+			static CppUnit::AutoRegisterSuite <VMIME_TEST_SUITE> autoRegisterRegistry1; \
 			static CppUnit::AutoRegisterSuite <VMIME_TEST_SUITE>(autoRegisterRegistry2)(moduleName); \
 			registerTestModule(moduleName); \
 		} \

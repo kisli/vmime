@@ -47,6 +47,7 @@ public:
 	charset();
 	charset(const string& name);
 	charset(const char* name); // to allow creation from vmime::charsets constants
+	charset(const charset& other);
 
 public:
 
