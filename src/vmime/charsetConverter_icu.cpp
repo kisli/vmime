@@ -453,7 +453,7 @@ void charsetFilteredOutputStream_icu::writeImpl(
 
 			ucnv_fromUnicode(
 				m_to, &cpTarget, cpTargetLimit,
-				&cpSource, cpSourceLimit, NULL, /* flush */ UBOOL(0), &fromErr
+				&cpSource, cpSourceLimit, NULL, /* flush */ UBool(0), &fromErr
 			);
 
 			if (fromErr != U_BUFFER_OVERFLOW_ERROR && U_FAILURE(fromErr)) {
