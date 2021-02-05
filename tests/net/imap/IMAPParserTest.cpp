@@ -38,6 +38,7 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 		VMIME_TEST(testFETCHBodyStructure_empty_body_fld_param_instead_of_NIL)
 		VMIME_TEST(testPipelining)
 		VMIME_TEST(testStarFlagWithoutBackslash)
+		VMIME_TEST(testUnquotedMailboxName)
 	VMIME_TEST_LIST_END
 
 
@@ -368,6 +369,61 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 			parser->setStrict(false);
 
 			VASSERT_NO_THROW("non-strict mode", parser->readResponse(*tag));
+		}
+	}
+
+	// Some broken IMAP servers return unquoted strings for mailbox names
+	void testUnquotedMailboxName() {
+
+		const char* respText =
+			R"END(* LIST (\HasNoChildren \UnMarked) "/" [Gmail]/Starred)END"
+			"\r\n"
+			R"END(a001 OK Completed.)END"
+			"\r\n";
+
+		// Strict mode
+		{
+			auto socket = vmime::make_shared <testSocket>();
+			auto toh = vmime::make_shared <testTimeoutHandler>();
+
+			auto tag = vmime::make_shared <vmime::net::imap::IMAPTag>();
+
+			socket->localSend(respText);
+
+			auto parser = vmime::make_shared <vmime::net::imap::IMAPParser>();
+
+			parser->setSocket(socket);
+			parser->setTimeoutHandler(toh);
+			parser->setStrict(true);
+
+			VASSERT_THROW("strict mode", parser->readResponse(*tag), vmime::exceptions::invalid_response);
+		}
+
+		// Non-strict mode
+		{
+			auto socket = vmime::make_shared <testSocket>();
+			auto toh = vmime::make_shared <testTimeoutHandler>();
+
+			auto tag = vmime::make_shared <vmime::net::imap::IMAPTag>();
+
+			socket->localSend(respText);
+
+			auto parser = vmime::make_shared <vmime::net::imap::IMAPParser>();
+
+			parser->setSocket(socket);
+			parser->setTimeoutHandler(toh);
+			parser->setStrict(false);
+
+			std::unique_ptr <vmime::net::imap::IMAPParser::response> resp;
+
+			VASSERT_NO_THROW("non-strict mode", resp.reset(parser->readResponse(*tag)));
+
+			VASSERT_EQ("resp size", 1, resp->continue_req_or_response_data.size());
+			VASSERT("resp data", resp->continue_req_or_response_data[0]->response_data);
+			VASSERT("mbox data", resp->continue_req_or_response_data[0]->response_data->mailbox_data);
+			VASSERT("mbox list", resp->continue_req_or_response_data[0]->response_data->mailbox_data->mailbox_list);
+			VASSERT("mbox", resp->continue_req_or_response_data[0]->response_data->mailbox_data->mailbox_list->mailbox);
+			VASSERT_EQ("mbox name", "[Gmail]/Starred", resp->continue_req_or_response_data[0]->response_data->mailbox_data->mailbox_list->mailbox->name);
 		}
 	}
 

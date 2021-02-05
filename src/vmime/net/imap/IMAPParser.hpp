@@ -1022,6 +1022,48 @@ public:
 		string value;
 	};
 
+	//
+	// unquoted_text_nonstrict: this is an alternate version of quoted_text,
+	// for use in non-strict mode. We stop at the first space character.
+	//
+
+	DECLARE_COMPONENT(unquoted_text_nonstrict)
+
+		bool parseImpl(IMAPParser& /* parser */, string& line, size_t* currentPos) {
+
+			size_t pos = *currentPos;
+			size_t len = 0;
+
+			value.reserve(line.length() - pos);
+
+			for (bool end = false ; !end && pos < line.length() ; ) {
+
+				const unsigned char c = line[pos];
+
+				if (c >= 0x01 && c <= 0x7f &&  // CHAR
+				    c != 0x0a && c != 0x0d &&  // CR and LF
+				    c != 0x20 &&               // SPACE
+				    c != 0x09) {               // TAB
+
+					value += c;
+
+					++pos;
+					++len;
+
+				} else {
+
+					end = true;
+				}
+			}
+
+			*currentPos = pos;
+
+			return true;
+		}
+
+
+		string value;
+	};
 
 	//
 	// nil  ::= "NIL"
@@ -1129,9 +1171,7 @@ public:
 					DEBUG_FOUND("string[quoted]", "<length=" << value.length() << ", value='" << value << "'>");
 
 				// literal ::= "{" number "}" CRLF *CHAR8
-				} else {
-
-					VIMAP_PARSER_CHECK(one_char <'{'>);
+				} else if (VIMAP_PARSER_TRY_CHECK(one_char <'{'>)) {
 
 					shared_ptr <number> num;
 					VIMAP_PARSER_GET(number, num);
@@ -1171,6 +1211,51 @@ public:
 					line += parser.readLine();
 
 					DEBUG_FOUND("string[literal]", "<length=" << length << ", value='" << value << "'>");
+
+				// In non-strict mode, accept unquoted strings, but stop at next SPACE
+				} else if (!parser.isStrict()) {
+
+					shared_ptr <unquoted_text_nonstrict> text;
+					VIMAP_PARSER_GET(unquoted_text_nonstrict, text);
+
+					if (parser.m_literalHandler != NULL) {
+
+						shared_ptr <literalHandler::target> target =
+							parser.m_literalHandler->targetFor(*m_component, m_data);
+
+						if (target != NULL) {
+
+							value = "[literal-handler]";
+
+							const size_t length = text->value.length();
+							utility::progressListener* progress = target->progressListener();
+
+							if (progress) {
+								progress->start(length);
+							}
+
+							target->putData(text->value);
+
+							if (progress) {
+								progress->progress(length, length);
+								progress->stop(length);
+							}
+
+						} else {
+
+							value = text->value;
+						}
+
+					} else {
+
+						value = text->value;
+					}
+
+					DEBUG_FOUND("string[non-strict]", "<length=" << value.length() << ", value='" << value << "'>");
+
+				} else {
+
+					VIMAP_PARSER_FAIL();
 				}
 			}
 
