@@ -34,6 +34,7 @@
 
 namespace vmime {
 
+typedef std::exception_ptr exception_ptr;
 
 /** Base class for VMime exceptions.
   */

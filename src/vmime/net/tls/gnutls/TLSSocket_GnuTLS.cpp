@@ -66,7 +66,7 @@ TLSSocket_GnuTLS::TLSSocket_GnuTLS(
 	: m_session(session),
 	  m_wrapped(sok),
 	  m_connected(false),
-	  m_ex(NULL),
+	  m_ex(nullptr),
 	  m_status(0),
 	  m_errno(0) {
 
@@ -407,7 +407,7 @@ ssize_t TLSSocket_GnuTLS::gnutlsPushFunc(
 
 		// Workaround for non-portable behaviour when throwing C++ exceptions
 		// from C functions (GNU TLS)
-		sok->m_ex = e.clone();
+		sok->m_ex = std::current_exception();
 		return -1;
 	}
 }
@@ -440,7 +440,7 @@ ssize_t TLSSocket_GnuTLS::gnutlsPullFunc(
 
 		// Workaround for non-portable behaviour when throwing C++ exceptions
 		// from C functions (GNU TLS)
-		sok->m_ex = e.clone();
+		sok->m_ex = std::current_exception();
 		return -1;
 	}
 }
@@ -525,18 +525,15 @@ shared_ptr <security::cert::certificateChain> TLSSocket_GnuTLS::getPeerCertifica
 
 void TLSSocket_GnuTLS::throwException() {
 
-	if (m_ex) {
-		throw *m_ex;
+	if (!!m_ex) {
+		std::rethrow_exception(m_ex);
 	}
 }
 
 
 void TLSSocket_GnuTLS::resetException() {
 
-	if (m_ex) {
-		delete m_ex;
-		m_ex = NULL;
-	}
+	m_ex = nullptr;
 }
 
 
