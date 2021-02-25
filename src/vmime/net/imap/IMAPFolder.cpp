@@ -80,7 +80,11 @@ IMAPFolder::~IMAPFolder() {
 		if (store) {
 
 			if (m_open) {
-				close(false);
+				try {
+					close(false);
+				} catch (...) {
+					// Ignore exception here to make sure unregisterFolder is called
+				}
 			}
 
 			store->unregisterFolder(this);

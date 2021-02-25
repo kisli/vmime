@@ -125,7 +125,7 @@ private:
 	unsigned int m_status;
 
 	// Last exception thrown from C BIO functions
-	scoped_ptr <exception> m_ex;
+	exception_ptr m_ex;
 };
 
 

@@ -104,7 +104,7 @@ TLSSocket_OpenSSL::TLSSocket_OpenSSL(
 	  m_connected(false),
 	  m_ssl(0),
 	  m_status(0),
-	  m_ex() {
+	  m_ex(nullptr) {
 
 }
 
@@ -309,7 +309,7 @@ size_t TLSSocket_OpenSSL::receiveRaw(byte_t* buffer, const size_t count) {
 	ERR_clear_error();
 	int rc = SSL_read(m_ssl, buffer, static_cast <int>(count));
 
-	if (m_ex.get()) {
+	if (!!m_ex) {
 		internalThrow();
 	}
 
@@ -379,7 +379,7 @@ size_t TLSSocket_OpenSSL::sendRawNonBlocking(const byte_t* buffer, const size_t 
 	ERR_clear_error();
 	int rc = SSL_write(m_ssl, buffer, static_cast <int>(count));
 
-	if (m_ex.get()) {
+	if (!!m_ex) {
 		internalThrow();
 	}
 
@@ -511,8 +511,8 @@ shared_ptr <security::cert::certificateChain> TLSSocket_OpenSSL::getPeerCertific
 
 void TLSSocket_OpenSSL::internalThrow() {
 
-	if (m_ex.get()) {
-		throw *m_ex;
+	if (!!m_ex) {
+		std::rethrow_exception(m_ex);
 	}
 }
 
@@ -630,7 +630,7 @@ int TLSSocket_OpenSSL::bio_write(BIO* bio, const char* buf, int len) {
 	} catch (exception& e) {
 
 		// Workaround for passing C++ exceptions from C BIO functions
-		sok->m_ex.reset(e.clone());
+		sok->m_ex = std::current_exception();
 		return -1;
 	}
 }
@@ -667,7 +667,7 @@ int TLSSocket_OpenSSL::bio_read(BIO* bio, char* buf, int len) {
 	} catch (exception& e) {
 
 		// Workaround for passing C++ exceptions from C BIO functions
-		sok->m_ex.reset(e.clone());
+		sok->m_ex = std::current_exception();
 		return -1;
 	}
 }

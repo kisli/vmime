@@ -109,7 +109,7 @@ private:
 
 	byte_t m_buffer[65536];
 
-	exception* m_ex;
+	exception_ptr m_ex;
 
 	unsigned int m_status;
 	int m_errno;
