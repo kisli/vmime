@@ -553,7 +553,7 @@ int IMAPMessage::processFetchResponse(
 					IMAPUtils::convertAddressList(*(env->env_reply_to), replyTo);
 
 					if (!replyTo.isEmpty()) {
-						hdr->ReplyTo()->setValue(*(replyTo.getMailboxAt(0)));
+						hdr->ReplyTo()->setValue(replyTo.toAddressList());
 					}
 
 					// Cc
