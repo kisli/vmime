@@ -204,7 +204,16 @@ bool messageParser::findSubTextParts(
 
 		} else {
 
-			// No "Content-type" field.
+			// No "Content-type" field. RFC2045 section 5.2 assumes this is TEXT/PLAIN
+			try {
+				shared_ptr <textPart> txtPart = textPartFactory::getInstance()->create(mediaType(mediaTypes::TEXT, mediaTypes::TEXT_PLAIN));
+				txtPart->parse(msg, part, p);
+
+				m_textParts.push_back(txtPart);
+			}
+			catch (exceptions::no_factory_available& e) {
+				// Content-type not recognized.
+			}
 		}
 	}
 
