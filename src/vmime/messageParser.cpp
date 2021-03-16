@@ -82,12 +82,18 @@ void messageParser::parse(const shared_ptr <const message>& msg) {
 
 	// Date
 	shared_ptr <const headerField> recv = msg->getHeader()->findField(fields::RECEIVED);
+	static const datetime unsetDate;
+
+	m_date = unsetDate;
 
 	if (recv) {
 
 		m_date = recv->getValue <relay>()->getDate();
 
-	} else {
+	}
+
+	// RECEIVED may in some cases contain no date at all
+	if (unsetDate == m_date) {
 
 		shared_ptr <const headerField> date = msg->getHeader()->findField(fields::DATE);
 
