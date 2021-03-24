@@ -38,6 +38,8 @@
 #include "vmime/net/imap/IMAPMessagePart.hpp"
 #include "vmime/net/imap/IMAPMessagePartContentHandler.hpp"
 
+#include "vmime/messageId.hpp"
+#include "vmime/messageIdSequence.hpp"
 #include "vmime/utility/outputStreamAdapter.hpp"
 
 #include <sstream>
