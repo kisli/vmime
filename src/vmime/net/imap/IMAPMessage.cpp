@@ -243,7 +243,7 @@ void IMAPMessage::extract(
 	shared_ptr <const IMAPFolder> folder = m_folder.lock();
 
 	if (!folder) {
-		throw exceptions::illegal_state("Folder not open");
+		throw exceptions::folder_not_found();
 	}
 
 	extractImpl(
