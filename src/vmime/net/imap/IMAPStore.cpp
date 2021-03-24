@@ -179,9 +179,7 @@ shared_ptr <IMAPConnection> IMAPStore::getConnection() {
 
 void IMAPStore::disconnect() {
 
-	if (!isConnected()) {
-		throw exceptions::not_connected();
-	}
+	bool wasConnected = isConnected();
 
 	for (std::list <IMAPFolder*>::iterator it = m_folders.begin() ;
 	     it != m_folders.end() ; ++it) {
@@ -191,10 +189,14 @@ void IMAPStore::disconnect() {
 
 	m_folders.clear();
 
+	if (m_connection) {
+		m_connection->disconnect();
+		m_connection = null;
+	}
 
-	m_connection->disconnect();
-
-	m_connection = null;
+	if (!wasConnected) {
+		throw exceptions::not_connected();
+	}
 }
 
 

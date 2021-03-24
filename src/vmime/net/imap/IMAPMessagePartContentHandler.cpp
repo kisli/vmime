@@ -36,7 +36,6 @@
 #include "vmime/utility/outputStreamAdapter.hpp"
 #include "vmime/utility/inputStreamStringAdapter.hpp"
 
-
 namespace vmime {
 namespace net {
 namespace imap {
@@ -70,6 +69,9 @@ void IMAPMessagePartContentHandler::generate(
 
 	shared_ptr <IMAPMessage> msg = m_message.lock();
 	shared_ptr <messagePart> part = m_part.lock();
+
+	if (!msg || !part)
+		throw exceptions::message_not_found();
 
 	// Data is already encoded
 	if (isEncoded()) {
@@ -140,6 +142,9 @@ void IMAPMessagePartContentHandler::extract(
 	shared_ptr <IMAPMessage> msg = m_message.lock();
 	shared_ptr <messagePart> part = m_part.lock();
 
+	if (!msg || !part)
+		throw exceptions::message_not_found();
+
 	// No decoding to perform
 	if (!isEncoded()) {
 
@@ -172,12 +177,17 @@ void IMAPMessagePartContentHandler::extractRaw(
 	shared_ptr <IMAPMessage> msg = m_message.lock();
 	shared_ptr <messagePart> part = m_part.lock();
 
+	if (!msg || !part)
+		throw exceptions::message_not_found();
+
 	msg->extractPart(part, os, progress);
 }
 
 
 size_t IMAPMessagePartContentHandler::getLength() const {
-
+	shared_ptr <messagePart> part = m_part.lock();
+	if (!part)
+		throw exceptions::message_not_found();
 	return m_part.lock()->getSize();
 }
 

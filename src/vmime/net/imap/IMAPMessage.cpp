@@ -243,7 +243,7 @@ void IMAPMessage::extract(
 	shared_ptr <const IMAPFolder> folder = m_folder.lock();
 
 	if (!folder) {
-		throw exceptions::folder_not_found();
+		throw exceptions::illegal_state("Folder not open");
 	}
 
 	extractImpl(
@@ -318,6 +318,14 @@ size_t IMAPMessage::extractImpl(
 
 	shared_ptr <const IMAPFolder> folder = m_folder.lock();
 
+	if (!folder) {
+		throw exceptions::folder_not_found();
+	}
+	
+	if (!folder->isOpen()) {
+		throw exceptions::illegal_state("Folder not open");
+	}
+	
 	IMAPMessage_literalHandler literalHandler(os, progress);
 
 	if (length == 0) {
@@ -473,7 +481,6 @@ size_t IMAPMessage::extractImpl(
 
 	return literalHandler.getTarget()->getBytesWritten();
 }
-
 
 int IMAPMessage::processFetchResponse(
 	const fetchAttributes& options,
@@ -717,10 +724,16 @@ shared_ptr <vmime::message> IMAPMessage::getParsedMessage() {
 
 	} catch (exceptions::unfetched_object&) {
 
+		auto folder = m_folder.lock();
+
+		if (!folder) {
+			throw exceptions::folder_not_found();
+		}
+
 		std::vector <shared_ptr <message> > msgs;
 		msgs.push_back(dynamicCast <IMAPMessage>(shared_from_this()));
 
-		m_folder.lock()->fetchMessages(
+		folder->fetchMessages(
 			msgs, fetchAttributes(fetchAttributes::STRUCTURE), /* progress */ NULL
 		);
 

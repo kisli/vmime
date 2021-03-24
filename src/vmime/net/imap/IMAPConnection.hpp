@@ -114,6 +114,8 @@ public:
 
 private:
 
+	shared_ptr <IMAPStore> getStoreOrThrow();
+
 	void authenticate();
 #if VMIME_HAVE_SASL_SUPPORT
 	void authenticateSASL();

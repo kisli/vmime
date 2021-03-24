@@ -290,7 +290,15 @@ void IMAPFolder::close(const bool expunge) {
 	shared_ptr <IMAPStore> store = m_store.lock();
 
 	if (!store) {
+		if (m_connection && m_connection->isConnected())
+			m_connection->disconnect();
+		m_connection = nullptr;
+		m_open = false;
 		throw exceptions::illegal_state("Store disconnected");
+	}
+
+	if (!m_connection || !m_connection->isConnected()) {
+		throw exceptions::illegal_state("Folder not connected");
 	}
 
 	if (!isOpen()) {
@@ -314,7 +322,7 @@ void IMAPFolder::close(const bool expunge) {
 	oldConnection->disconnect();
 
 	// Now use default store connection
-	m_connection = m_store.lock()->connection();
+	m_connection = store->connection();
 
 	m_open = false;
 	m_mode = -1;
@@ -545,7 +553,6 @@ bool IMAPFolder::isOpen() const {
 
 	return m_open;
 }
-
 
 shared_ptr <message> IMAPFolder::getMessage(const size_t num) {
 
@@ -1418,6 +1425,10 @@ void IMAPFolder::noop() {
 	shared_ptr <IMAPStore> store = m_store.lock();
 
 	if (!store) {
+		throw exceptions::illegal_state("Store disconnected");
+	}
+
+	if (!m_connection || !m_connection->isConnected()) {
 		throw exceptions::illegal_state("Store disconnected");
 	}
 
