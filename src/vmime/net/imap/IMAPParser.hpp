@@ -4912,6 +4912,9 @@ public:
 		shared_ptr <timeoutHandler> toh = m_timeoutHandler.lock();
 		shared_ptr <socket> sok = m_socket.lock();
 
+		if (!sok)
+			throw exceptions::illegal_state("Store disconnected");
+
 		if (toh) {
 			toh->resetTimeOut();
 		}
@@ -4956,6 +4959,9 @@ public:
 
 		shared_ptr <timeoutHandler> toh = m_timeoutHandler.lock();
 		shared_ptr <socket> sok = m_socket.lock();
+
+		if (!sok)
+			throw exceptions::illegal_state("Store disconnected");
 
 		if (m_progress) {
 			m_progress->start(count);

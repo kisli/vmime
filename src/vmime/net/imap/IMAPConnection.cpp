@@ -51,14 +51,13 @@
 
 #include <sstream>
 
-
 // Helpers for service properties
 #define GET_PROPERTY(type, prop) \
-	(m_store.lock()->getInfos().getPropertyValue <type>(getSession(), \
-		dynamic_cast <const IMAPServiceInfos&>(m_store.lock()->getInfos()).getProperties().prop))
+	(getStoreOrThrow()->getInfos().getPropertyValue <type>(getSession(), \
+		dynamic_cast <const IMAPServiceInfos&>(getStoreOrThrow()->getInfos()).getProperties().prop))
 #define HAS_PROPERTY(prop) \
-	(m_store.lock()->getInfos().hasProperty(getSession(), \
-		dynamic_cast <const IMAPServiceInfos&>(m_store.lock()->getInfos()).getProperties().prop))
+	(getStoreOrThrow()->getInfos().hasProperty(getSession(), \
+		dynamic_cast <const IMAPServiceInfos&>(getStoreOrThrow()->getInfos()).getProperties().prop))
 
 
 namespace vmime {
@@ -126,6 +125,10 @@ void IMAPConnection::connect() {
 	const port_t port = GET_PROPERTY(port_t, PROPERTY_SERVER_PORT);
 
 	shared_ptr <IMAPStore> store = m_store.lock();
+
+	if (!store) {
+		throw exceptions::illegal_state("Store not found");
+	}
 
 	// Create the time-out handler
 	if (store->getTimeoutHandlerFactory()) {
@@ -242,6 +245,17 @@ void IMAPConnection::connect() {
 
 	// Switch to state "Authenticated"
 	setState(STATE_AUTHENTICATED);
+}
+
+shared_ptr <IMAPStore> IMAPConnection::getStoreOrThrow() {
+
+	auto store = m_store.lock();
+
+	if (!store) {
+		throw exceptions::illegal_state("Store not found");
+	}
+
+	return store;
 }
 
 
@@ -529,9 +543,15 @@ void IMAPConnection::startTLS() {
 			throw exceptions::command_error("STARTTLS", resp->getErrorLog(), "bad response");
 		}
 
+		auto store = m_store.lock();
+
+		if (!store) {
+			throw exceptions::illegal_state("Store not found");
+		}
+
 		shared_ptr <tls::TLSSession> tlsSession = tls::TLSSession::create(
-			m_store.lock()->getCertificateVerifier(),
-			m_store.lock()->getSession()->getTLSProperties()
+			store->getCertificateVerifier(),
+			store->getSession()->getTLSProperties()
 		);
 
 		shared_ptr <tls::TLSSocket> tlsSocket = tlsSession->getSocket(m_socket);
@@ -701,11 +721,11 @@ shared_ptr <connectionInfos> IMAPConnection::getConnectionInfos() const {
 
 void IMAPConnection::disconnect() {
 
-	if (!isConnected()) {
+	bool wasConnected = isConnected();
+	internalDisconnect();
+	if (!wasConnected) {
 		throw exceptions::not_connected();
 	}
-
-	internalDisconnect();
 }
 
 
@@ -714,7 +734,9 @@ void IMAPConnection::internalDisconnect() {
 	if (isConnected()) {
 
 		IMAPCommand::LOGOUT()->send(dynamicCast <IMAPConnection>(shared_from_this()));
+	}
 
+	if (m_socket) {
 		m_socket->disconnect();
 		m_socket = null;
 	}
@@ -836,7 +858,13 @@ shared_ptr <IMAPStore> IMAPConnection::getStore() {
 
 shared_ptr <session> IMAPConnection::getSession() {
 
-	return m_store.lock()->getSession();
+	auto store = m_store.lock();
+
+	if (!store) {
+		throw exceptions::illegal_state("Store not found");
+	}
+
+	return store->getSession();
 }
 
 
