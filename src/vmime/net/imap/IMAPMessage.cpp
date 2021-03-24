@@ -571,6 +571,16 @@ int IMAPMessage::processFetchResponse(
 					if (!bcc.isEmpty()) {
 						hdr->Bcc()->setValue(bcc.toAddressList());
 					}
+
+					// Message-ID
+					if (!env->env_message_id->isNIL) {
+						hdr->MessageId()->setValue(messageId(env->env_message_id->value));
+					}
+
+					// In-Reply-To
+					if (!env->env_in_reply_to->isNIL) {
+						hdr->InReplyTo()->setValue(messageIdSequence(env->env_message_id->value));
+					}
 				}
 
 				break;
