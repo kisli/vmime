@@ -78,6 +78,10 @@ bool builtinSASLMechanism::step(
 	char* output = 0;
 	size_t outputLen = 0;
 
+	if (nullptr == sess->m_gsaslSession) {
+		throw exceptions::sasl_exception("Invalid SASL session");
+	}
+
 	const int result = gsasl_step(
 		sess->m_gsaslSession,
 		reinterpret_cast <const char*>(challenge), challengeLen,

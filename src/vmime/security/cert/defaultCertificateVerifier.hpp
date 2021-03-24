@@ -74,6 +74,13 @@ public:
 private:
 
 	/** Verify a chain of X.509 certificates.
+	 *
+	 * @param chain list of X.509 certificates
+	 * @param chainLen number of certificates to verify
+	 */
+	void verifyX509chain(shared_ptr <certificateChain> chain, size_t chainLen);
+
+	/** Verify a chain of X.509 certificates.
 	  *
 	  * @param chain list of X.509 certificates
 	  * @param hostname server hostname
