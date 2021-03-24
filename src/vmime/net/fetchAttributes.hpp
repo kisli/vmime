@@ -57,6 +57,7 @@ public:
 		FULL_HEADER = (1 << 5),    /**< Full RFC-[2]822 header. */
 		UID = (1 << 6),            /**< Unique identifier (protocol specific). */
 		IMPORTANCE = (1 << 7),     /**< Header fields suitable for use with misc::importanceHelper. */
+		PEEK = (1 << 8),           /**< Use IMAP PEEK method when accessing HEADER fields. */
 
 		CUSTOM = (1 << 16)         /**< Reserved for future use. */
 	};
