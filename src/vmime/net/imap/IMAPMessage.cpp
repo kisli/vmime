@@ -581,7 +581,10 @@ int IMAPMessage::processFetchResponse(
 
 					// In-Reply-To
 					if (!env->env_in_reply_to->isNIL) {
-						hdr->InReplyTo()->setValue(messageIdSequence(env->env_message_id->value));
+						shared_ptr <messageId> mid = make_shared <messageId>(env->env_in_reply_to->value);
+						messageIdSequence sequence;
+						sequence.appendMessageId(mid);
+						hdr->InReplyTo()->setValue(sequence);
 					}
 				}
 
