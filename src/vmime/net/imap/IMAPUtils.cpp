@@ -691,7 +691,11 @@ shared_ptr <IMAPCommand> IMAPUtils::buildFetchCommand(
 				list += *it;
 			}
 
-			items.push_back("BODY[HEADER.FIELDS (" + list + ")]");
+			if (options.has(fetchAttributes::PEEK)) {
+				items.push_back("BODY.PEEK[HEADER.FIELDS (" + list + ")]");
+			} else {
+				items.push_back("BODY[HEADER.FIELDS (" + list + ")]");
+			}
 		}
 	}
 

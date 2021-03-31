@@ -975,7 +975,8 @@ int IMAPFolder::getFetchCapabilities() const {
 	return fetchAttributes::ENVELOPE | fetchAttributes::CONTENT_INFO |
 	       fetchAttributes::STRUCTURE | fetchAttributes::FLAGS |
 	       fetchAttributes::SIZE | fetchAttributes::FULL_HEADER |
-	       fetchAttributes::UID | fetchAttributes::IMPORTANCE;
+	       fetchAttributes::UID | fetchAttributes::IMPORTANCE |
+	       fetchAttributes::PEEK;
 }
 
 
