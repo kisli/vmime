@@ -38,6 +38,8 @@
 #include "vmime/net/imap/IMAPMessagePart.hpp"
 #include "vmime/net/imap/IMAPMessagePartContentHandler.hpp"
 
+#include "vmime/messageId.hpp"
+#include "vmime/messageIdSequence.hpp"
 #include "vmime/utility/outputStreamAdapter.hpp"
 
 #include <sstream>
@@ -577,6 +579,19 @@ int IMAPMessage::processFetchResponse(
 
 					if (!bcc.isEmpty()) {
 						hdr->Bcc()->setValue(bcc.toAddressList());
+					}
+
+					// Message-ID
+					if (!env->env_message_id->isNIL) {
+						hdr->MessageId()->setValue(messageId(env->env_message_id->value));
+					}
+
+					// In-Reply-To
+					if (!env->env_in_reply_to->isNIL) {
+						shared_ptr <messageId> mid = make_shared <messageId>(env->env_in_reply_to->value);
+						messageIdSequence sequence;
+						sequence.appendMessageId(mid);
+						hdr->InReplyTo()->setValue(sequence);
 					}
 				}
 
