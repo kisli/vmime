@@ -24,6 +24,7 @@
 #include "tests/testUtils.hpp"
 
 #include "vmime/net/smtp/SMTPCommand.hpp"
+#include "vmime/net/smtp/DSNAttributes.hpp"
 
 
 using namespace vmime::net::smtp;
@@ -114,7 +115,9 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 	void testMAIL() {
 
-		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::MAIL(vmime::mailbox("me@vmime.org"), false, "FULL", "dsn-unique-id");
+		auto dsnAttrs = vmime::make_shared <DSNAttributes>("", "FULL", "dsn-unique-id");
+
+		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::MAIL(vmime::mailbox("me@vmime.org"), false, dsnAttrs);
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "MAIL FROM:<me@vmime.org> RET=FULL ENVID=<dsn-unique-id>", cmd->getText());
@@ -122,8 +125,10 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 	void testMAIL_Encoded() {
 
+		auto dsnAttrs = vmime::make_shared <DSNAttributes>("", "FULL", "dsn-unique-id");
+
 		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::MAIL(
-			vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), false, "FULL", "dsn-unique-id"
+			vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), false, dsnAttrs
 		);
 
 		VASSERT_NOT_NULL("Not null", cmd);
@@ -132,8 +137,10 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 	void testMAIL_UTF8() {
 
+		auto dsnAttrs = vmime::make_shared <DSNAttributes>("", "FULL", "dsn-unique-id");
+
 		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::MAIL(
-			vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), true, "FULL", "dsn-unique-id"
+			vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), true, dsnAttrs
 		);
 
 		VASSERT_NOT_NULL("Not null", cmd);
@@ -142,8 +149,10 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 	void testMAIL_SIZE() {
 
+		auto dsnAttrs = vmime::make_shared <DSNAttributes>("", "FULL", "dsn-unique-id");
+
 		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::MAIL(
-			vmime::mailbox("me@vmime.org"), false, 123456789, "FULL", "dsn-unique-id"
+			vmime::mailbox("me@vmime.org"), false, 123456789, dsnAttrs
 		);
 
 		VASSERT_NOT_NULL("Not null", cmd);
@@ -152,8 +161,10 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 	void testMAIL_SIZE_UTF8() {
 
+		auto dsnAttrs = vmime::make_shared <DSNAttributes>("", "FULL", "dsn-unique-id");
+
 		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::MAIL(
-			vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), true, 123456789, "FULL", "dsn-unique-id"
+			vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), true, 123456789, dsnAttrs
 		);
 
 		VASSERT_NOT_NULL("Not null", cmd);
@@ -162,8 +173,10 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 	void testRCPT() {
 
+		auto dsnAttrs = vmime::make_shared <DSNAttributes>("NEVER", "", "");
+
 		vmime::shared_ptr <SMTPCommand> cmd =
-			SMTPCommand::RCPT(vmime::mailbox("someone@vmime.org"), false, "NEVER");
+			SMTPCommand::RCPT(vmime::mailbox("someone@vmime.org"), false, dsnAttrs);
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "RCPT TO:<someone@vmime.org> NOTIFY=NEVER", cmd->getText());
@@ -171,8 +184,10 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 	void testRCPT_Encoded() {
 
+		auto dsnAttrs = vmime::make_shared <DSNAttributes>("NEVER", "", "");
+
 		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::RCPT(
-			vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), false, "NEVER"
+			vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), false, dsnAttrs
 		);
 
 		VASSERT_NOT_NULL("Not null", cmd);
@@ -181,8 +196,10 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 	void testRCPT_UTF8() {
 
+		auto dsnAttrs = vmime::make_shared <DSNAttributes>("NEVER", "", "");
+
 		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::RCPT(
-			vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), true, "NEVER"
+			vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), true, dsnAttrs
 		);
 
 		VASSERT_NOT_NULL("Not null", cmd);

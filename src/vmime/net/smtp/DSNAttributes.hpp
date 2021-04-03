@@ -21,8 +21,8 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#ifndef VMIME_NET_DSNATTRIBUTES_HPP_INCLUDED
-#define VMIME_NET_DSNATTRIBUTES_HPP_INCLUDED
+#ifndef VMIME_NET_SMTP_DSNATTRIBUTES_HPP_INCLUDED
+#define VMIME_NET_SMTP_DSNATTRIBUTES_HPP_INCLUDED
 
 
 #include "vmime/config.hpp"
@@ -38,39 +38,40 @@
 
 namespace vmime {
 namespace net {
+namespace smtp {
 
 
 /** Holds a set of attributes for Delivery Status Notifications (DSN).
   */
-class VMIME_EXPORT dsnAttributes : public object {
+class VMIME_EXPORT DSNAttributes : public object {
 
 public:
 
-	/** Constructs an empty dsnAttributes object.
+	/** Constructs an empty DSNAttributes object.
 	  */
-	dsnAttributes() = default;
+	DSNAttributes() = default;
 
-	/** Constructs a new dsnAttributes object by copying an existing object.
+	/** Constructs a new DSNAttributes object by copying an existing object.
 	  *
 	  * @param dsn object to copy
 	  */
-	dsnAttributes(const dsnAttributes& dsn) = default;
+	DSNAttributes(const DSNAttributes& dsn) = default;
 
-	/** Constructs a new dsnAttributes object by moving an existing object.
+	/** Constructs a new DSNAttributes object by moving an existing object.
 	  *
 	  * @param dsn object (Rvalue reference) to move from.
 	  */
-	dsnAttributes(dsnAttributes&& dsn) = default;
+	DSNAttributes(DSNAttributes&& dsn) = default;
 
-	~dsnAttributes() = default;
+	~DSNAttributes() = default;
 
-	/** Constructs a new dsnAttributes object by specifying the attributes.
+	/** Constructs a new DSNAttributes object by specifying the attributes.
 	  *
 	  * @param dsnNotify comma separated list of notification conditions as specified in RFC 1891
 	  * @param dsnRet content of DSN - full message or headers only ("FULL" or "HDRS")
 	  * @param dsnEnvelopId envelop ID to be able to pair the DSN with original message (plain text not in "<" ">")
 	  */
-	dsnAttributes(const string& dsnNotify, const string& dsnRet, const string& dsnEnvelopId);
+	DSNAttributes(const string& dsnNotify, const string& dsnRet, const string& dsnEnvelopId);
 
 	/** Returns comma separated list of notification conditions as specified in RFC 1891
 	  *
@@ -104,6 +105,7 @@ private:
 };
 
 
+} // smtp
 } // net
 } // vmime
 
@@ -111,4 +113,4 @@ private:
 #endif // VMIME_HAVE_MESSAGING_FEATURES
 
 
-#endif // VMIME_NET_DSNATTRIBUTES_HPP_INCLUDED
+#endif // VMIME_NET_SMTP_DSNATTRIBUTES_HPP_INCLUDED

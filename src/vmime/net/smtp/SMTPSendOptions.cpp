@@ -1,6 +1,6 @@
 //
 // VMime library (http://www.vmime.org)
-// Copyright (C) 2020 Jan Osusky <jan@osusky.name>
+// Copyright (C) 2020 Vincent Richard <vincent@vmime.org>
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License as
@@ -27,43 +27,33 @@
 #if VMIME_HAVE_MESSAGING_FEATURES
 
 
-#include "vmime/net/dsnAttributes.hpp"
+#include "vmime/net/smtp/SMTPSendOptions.hpp"
 
 
 namespace vmime {
 namespace net {
+namespace smtp {
 
 
-dsnAttributes::dsnAttributes(const string& dsnNotify, const string& dsnRet, const string& dsnEnvelopId)
-	: m_notifications(dsnNotify), m_returnFormat(dsnRet), m_envelopId(dsnEnvelopId) {
+void SMTPSendOptions::setDSNAttributes(const shared_ptr <DSNAttributes>& dsnAttribs) {
 
+	m_dsnAttribs = dsnAttribs;
 }
 
 
-string dsnAttributes::getNotificationConditions() const {
+const shared_ptr <DSNAttributes> SMTPSendOptions::getDSNAttributes() {
 
-	return m_notifications;
+	return m_dsnAttribs;
 }
 
 
-string dsnAttributes::getReturnFormat() const {
+const shared_ptr <const DSNAttributes> SMTPSendOptions::getDSNAttributes() const {
 
-	return m_returnFormat;
+	return m_dsnAttribs;
 }
 
 
-string dsnAttributes::getEnvelopId() const {
-
-	return m_envelopId;
-}
-
-
-bool dsnAttributes::isEmpty() const {
-
-	return m_notifications.empty() && m_returnFormat.empty() && m_envelopId.empty();
-}
-
-
+} // smtp
 } // net
 } // vmime
 

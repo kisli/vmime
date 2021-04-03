@@ -31,7 +31,6 @@
 #if VMIME_HAVE_MESSAGING_FEATURES
 
 
-#include "vmime/net/dsnAttributes.hpp"
 #include "vmime/net/service.hpp"
 #include "vmime/utility/stream.hpp"
 
@@ -64,18 +63,28 @@ protected:
 
 public:
 
+	/** Holds a set of options that can be passed to send() methods.
+	  */
+	class VMIME_EXPORT sendOptions {
+
+	public:
+
+		sendOptions();
+		virtual ~sendOptions();
+	};
+
 	/** Send a message over this transport service.
 	  * The default implementation simply generates the whole message into
 	  * a string buffer and "streams" it via a inputStreamStringAdapter.
 	  *
 	  * @param msg message to send
 	  * @param progress progress listener, or NULL if not used
-	  * @param dsnAttributes attributes for Delivery Status Notification (if needed)
+	  * @param options sending options
 	  */
 	virtual void send(
 		const shared_ptr <vmime::message>& msg,
 		utility::progressListener* progress = NULL,
-		const dsnAttributes& dsnAttrs = dsnAttributes()
+		const sendOptions& options = sendOptions()
 	);
 
 	/** Send a message over this transport service.
@@ -86,7 +95,7 @@ public:
 	  * @param size size of the message data
 	  * @param progress progress listener, or NULL if not used
 	  * @param sender envelope sender (if empty, expeditor will be used)
-	  * @param dsnAttributes attributes for Delivery Status Notification (if needed)
+	  * @param options sending options
 	  */
 	virtual void send(
 		const mailbox& expeditor,
@@ -95,7 +104,7 @@ public:
 		const size_t size,
 		utility::progressListener* progress = NULL,
 		const mailbox& sender = mailbox(),
-		const dsnAttributes& dsnAttrs = dsnAttributes()
+		const sendOptions& options = sendOptions()
 	) = 0;
 
 	/** Send a message over this transport service.
@@ -107,7 +116,7 @@ public:
 	  * @param recipients list of recipient mailboxes
 	  * @param progress progress listener, or NULL if not used
 	  * @param sender envelope sender (if empty, expeditor will be used)
-	  * @param dsnAttributes attributes for Delivery Status Notification (if needed)
+	  * @param options sending options
 	  */
 	virtual void send(
 		const shared_ptr <vmime::message>& msg,
@@ -115,7 +124,7 @@ public:
 		const mailboxList& recipients,
 		utility::progressListener* progress = NULL,
 		const mailbox& sender = mailbox(),
-		const dsnAttributes& dsnAttrs = dsnAttributes()
+		const sendOptions& options = sendOptions()
 	);
 
 

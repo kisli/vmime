@@ -34,6 +34,8 @@
 #include "vmime/object.hpp"
 #include "vmime/base.hpp"
 
+#include "DSNAttributes.hpp"
+
 
 namespace vmime {
 
@@ -64,11 +66,11 @@ public:
 	static shared_ptr <SMTPCommand> AUTH(const string& mechName, const std::string& initialResponse);
 	static shared_ptr <SMTPCommand> STARTTLS();
 	static shared_ptr <SMTPCommand> MAIL(const mailbox& mbox, const bool utf8,
-										 const std::string& dsnRet, const std::string& dsnEnvelopId);
+	                                     const shared_ptr <const DSNAttributes>& dsnAttrs);
 	static shared_ptr <SMTPCommand> MAIL(const mailbox& mbox, const bool utf8, const size_t size,
-										 const std::string& dsnRet, const std::string& dsnEnvelopId);
+	                                     const shared_ptr <const DSNAttributes>& dsnAttrs);
 	static shared_ptr <SMTPCommand> RCPT(const mailbox& mbox, const bool utf8,
-										 const std::string& dsnNotify);
+	                                     const shared_ptr <const DSNAttributes>& dsnAttrs);
 	static shared_ptr <SMTPCommand> RSET();
 	static shared_ptr <SMTPCommand> DATA();
 	static shared_ptr <SMTPCommand> BDAT(const size_t chunkSize, const bool last);

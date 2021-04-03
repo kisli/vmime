@@ -100,16 +100,20 @@ shared_ptr <SMTPCommand> SMTPCommand::STARTTLS() {
 
 
 // static
-shared_ptr <SMTPCommand> SMTPCommand::MAIL(const mailbox& mbox, const bool utf8,
-										   const std::string& dsnRet, const std::string& dsnEnvelopId) {
+shared_ptr <SMTPCommand> SMTPCommand::MAIL(
+	const mailbox& mbox, const bool utf8,
+	const shared_ptr <const DSNAttributes>& dsnAttrs
+) {
 
-	return MAIL(mbox, utf8, 0, dsnRet, dsnEnvelopId);
+	return MAIL(mbox, utf8, 0, dsnAttrs);
 }
 
 
 // static
-shared_ptr <SMTPCommand> SMTPCommand::MAIL(const mailbox& mbox, const bool utf8, const size_t size,
-										   const std::string& dsnRet, const std::string& dsnEnvelopId) {
+shared_ptr <SMTPCommand> SMTPCommand::MAIL(
+	const mailbox& mbox, const bool utf8, const size_t size,
+	const shared_ptr <const DSNAttributes>& dsnAttrs
+) {
 
 	std::ostringstream cmd;
 	cmd.imbue(std::locale::classic());
@@ -127,11 +131,11 @@ shared_ptr <SMTPCommand> SMTPCommand::MAIL(const mailbox& mbox, const bool utf8,
 
 	cmd << ">";
 
-	if (!dsnRet.empty()) {
-		cmd << " " << dsn::RET << "=" << dsnRet;
+	if (dsnAttrs && !dsnAttrs->getReturnFormat().empty()) {
+		cmd << " " << dsn::RET << "=" << dsnAttrs->getReturnFormat();
 	}
-	if (!dsnEnvelopId.empty()) {
-		cmd << " " << dsn::ENVID << "=<" << dsnEnvelopId << ">";
+	if (dsnAttrs && !dsnAttrs->getEnvelopId().empty()) {
+		cmd << " " << dsn::ENVID << "=<" << dsnAttrs->getEnvelopId() << ">";
 	}
 
 	if (utf8) {
@@ -147,8 +151,10 @@ shared_ptr <SMTPCommand> SMTPCommand::MAIL(const mailbox& mbox, const bool utf8,
 
 
 // static
-shared_ptr <SMTPCommand> SMTPCommand::RCPT(const mailbox& mbox, const bool utf8,
-										   const string& dsnNotify) {
+shared_ptr <SMTPCommand> SMTPCommand::RCPT(
+	const mailbox& mbox, const bool utf8,
+	const shared_ptr <const DSNAttributes>& dsnAttrs
+) {
 
 	std::ostringstream cmd;
 	cmd.imbue(std::locale::classic());
@@ -166,8 +172,8 @@ shared_ptr <SMTPCommand> SMTPCommand::RCPT(const mailbox& mbox, const bool utf8,
 
 	cmd << ">";
 
-	if (!dsnNotify.empty()) {
-		cmd << " " << dsn::NOTIFY << "=" << dsnNotify;
+	if (dsnAttrs && !dsnAttrs->getNotificationConditions().empty()) {
+		cmd << " " << dsn::NOTIFY << "=" << dsnAttrs->getNotificationConditions();
 	}
 
 	return createCommand(cmd.str());

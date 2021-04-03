@@ -33,6 +33,7 @@
 #include "vmime/net/smtp/SMTPCommandSet.hpp"
 #include "vmime/net/smtp/SMTPChunkingOutputStreamAdapter.hpp"
 #include "vmime/net/smtp/SMTPExceptions.hpp"
+#include "vmime/net/smtp/SMTPSendOptions.hpp"
 
 #include "vmime/exception.hpp"
 #include "vmime/mailboxList.hpp"
@@ -184,8 +185,10 @@ void SMTPTransport::sendEnvelope(
 	const mailbox& sender,
 	bool sendDATACommand,
 	const size_t size,
-	const dsnAttributes& dsnAttrs
+	const sendOptions& options
 ) {
+
+	auto opts = dynamic_cast <const SMTPSendOptions*>(&options);
 
 	// If no recipient/expeditor was found, throw an exception
 	if (recipients.isEmpty()) {
@@ -195,7 +198,7 @@ void SMTPTransport::sendEnvelope(
 	}
 
 	// If DSN extension is used, ensure it is supported by the server
-	if (!dsnAttrs.isEmpty() && !m_connection->hasExtension("DSN")) {
+	if (opts && opts->getDSNAttributes() && !m_connection->hasExtension("DSN")) {
 		throw SMTPDSNExtensionNotSupportedException();
 	}
 
@@ -237,8 +240,7 @@ void SMTPTransport::sendEnvelope(
 		commands->addCommand(
 			SMTPCommand::MAIL(
 				sender, hasSMTPUTF8 && needSMTPUTF8, hasSize ? size : 0,
-				dsnAttrs.getNotificationConditions(),
-				dsnAttrs.getEnvelopId()
+				opts ? opts->getDSNAttributes() : nullptr
 			)
 		);
 
@@ -247,8 +249,7 @@ void SMTPTransport::sendEnvelope(
 		commands->addCommand(
 			SMTPCommand::MAIL(
 				expeditor, hasSMTPUTF8 && needSMTPUTF8, hasSize ? size : 0,
-				dsnAttrs.getNotificationConditions(),
-				dsnAttrs.getEnvelopId()
+				opts ? opts->getDSNAttributes() : nullptr
 			)
 		);
 	}
@@ -260,8 +261,12 @@ void SMTPTransport::sendEnvelope(
 	for (size_t i = 0 ; i < recipients.getMailboxCount() ; ++i) {
 
 		const mailbox& mbox = *recipients.getMailboxAt(i);
-		commands->addCommand(SMTPCommand::RCPT(mbox, hasSMTPUTF8 && needSMTPUTF8,
-											   dsnAttrs.getNotificationConditions()));
+		commands->addCommand(
+			SMTPCommand::RCPT(
+				mbox, hasSMTPUTF8 && needSMTPUTF8,
+				opts ? opts->getDSNAttributes() : nullptr
+			)
+		);
 	}
 
 	// Prepare sending of message data
@@ -388,7 +393,7 @@ void SMTPTransport::send(
 	const size_t size,
 	utility::progressListener* progress,
 	const mailbox& sender,
-	const dsnAttributes& dsnAttrs
+	const sendOptions& options
 ) {
 
 	if (!isConnected()) {
@@ -396,8 +401,7 @@ void SMTPTransport::send(
 	}
 
 	// Send message envelope
-	sendEnvelope(expeditor, recipients, sender, /* sendDATACommand */ true, size,
-				 dsnAttrs);
+	sendEnvelope(expeditor, recipients, sender, /* sendDATACommand */ true, size, options);
 
 	// Send the message data
 	// Stream copy with "\n." to "\n.." transformation
@@ -430,7 +434,7 @@ void SMTPTransport::send(
 	const mailboxList& recipients,
 	utility::progressListener* progress,
 	const mailbox& sender,
-	const dsnAttributes& dsnAttrs
+	const sendOptions& options
 ) {
 
 	if (!isConnected()) {
@@ -457,14 +461,14 @@ void SMTPTransport::send(
 
 		utility::inputStreamStringAdapter isAdapter(str);
 
-		send(expeditor, recipients, isAdapter, str.length(), progress, sender, dsnAttrs);
+		send(expeditor, recipients, isAdapter, str.length(), progress, sender, options);
 		return;
 	}
 
 	// Send message envelope
 	const size_t msgSize = msg->getGeneratedSize(ctx);
 
-	sendEnvelope(expeditor, recipients, sender, /* sendDATACommand */ false, msgSize, dsnAttrs);
+	sendEnvelope(expeditor, recipients, sender, /* sendDATACommand */ false, msgSize, options);
 
 	// Send the message by chunks
 	SMTPChunkingOutputStreamAdapter chunkStream(m_connection, msgSize, progress);

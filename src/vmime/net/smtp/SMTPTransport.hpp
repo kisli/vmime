@@ -79,7 +79,7 @@ public:
 		const size_t size,
 		utility::progressListener* progress = NULL,
 		const mailbox& sender = mailbox(),
-		const dsnAttributes& dsnAttrs = dsnAttributes()
+		const sendOptions& options = sendOptions()
 	);
 
 	void send(
@@ -88,7 +88,7 @@ public:
 		const mailboxList& recipients,
 		utility::progressListener* progress = NULL,
 		const mailbox& sender = mailbox(),
-		const dsnAttributes& dsnAttrs = dsnAttributes()
+		const sendOptions& options = sendOptions()
 	);
 
 	bool isSecuredConnection() const;
@@ -118,7 +118,7 @@ private:
 		const mailbox& sender,
 		bool sendDATACommand,
 		const size_t size,
-		const dsnAttributes& dsnAttrs = dsnAttributes()
+		const sendOptions& options = sendOptions()
 	);
 
 
