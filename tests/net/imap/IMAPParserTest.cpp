@@ -40,6 +40,7 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 		VMIME_TEST(testStarFlagWithoutBackslash)
 		VMIME_TEST(testUnquotedMailboxName)
 		VMIME_TEST(testInvalidCharsInAstring)
+		VMIME_TEST(testExtraSpaceInSEARCHResponse)
 	VMIME_TEST_LIST_END
 
 
@@ -480,6 +481,65 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 			VASSERT("mbox data", resp->continue_req_or_response_data[0]->response_data->mailbox_data);
 			VASSERT("mbox", resp->continue_req_or_response_data[0]->response_data->mailbox_data->mailbox);
 			VASSERT_EQ("mbox name", "Segregator/Społeczności", resp->continue_req_or_response_data[0]->response_data->mailbox_data->mailbox->name);
+		}
+	}
+
+	// Some broken IMAP servers (eg. AOL) put a space before the final CRLF on the line.
+	// This causes a specific issue with IMAP SEARCH command response.
+	void testExtraSpaceInSEARCHResponse() {
+
+		const char* respText =
+			R"END(* SEARCH 1 2 3 4 )END"  // note the space just before the CRLF sequence
+			"\r\n"
+			R"END(a001 OK Completed.)END"
+			"\r\n";
+
+		// Strict mode
+		{
+			auto socket = vmime::make_shared <testSocket>();
+			auto toh = vmime::make_shared <testTimeoutHandler>();
+
+			auto tag = vmime::make_shared <vmime::net::imap::IMAPTag>();
+
+			socket->localSend(respText);
+
+			auto parser = vmime::make_shared <vmime::net::imap::IMAPParser>();
+
+			parser->setSocket(socket);
+			parser->setTimeoutHandler(toh);
+			parser->setStrict(true);
+
+			VASSERT_THROW("strict mode", parser->readResponse(*tag), vmime::exceptions::invalid_response);
+		}
+
+		// Non-strict mode
+		{
+			auto socket = vmime::make_shared <testSocket>();
+			auto toh = vmime::make_shared <testTimeoutHandler>();
+
+			auto tag = vmime::make_shared <vmime::net::imap::IMAPTag>();
+
+			socket->localSend(respText);
+
+			auto parser = vmime::make_shared <vmime::net::imap::IMAPParser>();
+
+			parser->setSocket(socket);
+			parser->setTimeoutHandler(toh);
+			parser->setStrict(false);
+
+			std::unique_ptr <vmime::net::imap::IMAPParser::response> resp;
+
+			VASSERT_NO_THROW("non-strict mode", resp.reset(parser->readResponse(*tag)));
+
+			VASSERT_EQ("resp size", 1, resp->continue_req_or_response_data.size());
+			VASSERT("resp data", resp->continue_req_or_response_data[0]->response_data);
+			VASSERT("mbox data", resp->continue_req_or_response_data[0]->response_data->mailbox_data);
+			VASSERT_EQ("mbox search type", vmime::net::imap::IMAPParser::mailbox_data::SEARCH, resp->continue_req_or_response_data[0]->response_data->mailbox_data->type);
+			VASSERT_EQ("mbox search size", 4, resp->continue_req_or_response_data[0]->response_data->mailbox_data->search_nz_number_list.size());
+			VASSERT_EQ("mbox search 1", 1, resp->continue_req_or_response_data[0]->response_data->mailbox_data->search_nz_number_list[0]->value);
+			VASSERT_EQ("mbox search 2", 2, resp->continue_req_or_response_data[0]->response_data->mailbox_data->search_nz_number_list[1]->value);
+			VASSERT_EQ("mbox search 3", 3, resp->continue_req_or_response_data[0]->response_data->mailbox_data->search_nz_number_list[2]->value);
+			VASSERT_EQ("mbox search 4", 4, resp->continue_req_or_response_data[0]->response_data->mailbox_data->search_nz_number_list[3]->value);
 		}
 	}
 

@@ -4252,8 +4252,18 @@ public:
 
 						VIMAP_PARSER_GET_PUSHBACK(nz_number, search_nz_number_list);
 
-						while (VIMAP_PARSER_TRY_CHECK(SPACE)) {
-							VIMAP_PARSER_GET_PUSHBACK(nz_number, search_nz_number_list);
+						if (!parser.isStrict()) {
+
+							// Allow extra SPACEs at end of line
+							while (VIMAP_PARSER_TRY_CHECK(SPACE)) {
+								VIMAP_PARSER_TRY_GET_PUSHBACK_OR_ELSE(nz_number, search_nz_number_list, { break; });
+							}
+
+						} else {
+
+							while (VIMAP_PARSER_TRY_CHECK(SPACE)) {
+								VIMAP_PARSER_GET_PUSHBACK(nz_number, search_nz_number_list);
+							}
 						}
 					}
 
