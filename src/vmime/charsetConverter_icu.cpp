@@ -433,8 +433,9 @@ void charsetFilteredOutputStream_icu::writeImpl(
 		}
 
 		const size_t uniLength = uniTarget - &uniBuffer[0];
-		if(uniLength == 0)
+		if(uniLength == 0) {
 			continue;
+		}
 
 		// Allocate buffer for destination charset
 		const size_t cpSize = ucnv_getMinCharSize(m_to) * uniLength;
@@ -522,8 +523,9 @@ void charsetFilteredOutputStream_icu::flush() {
 		}
 
 		const size_t uniLength = uniTarget - &uniBuffer[0];
-		if(uniLength == 0)
+		if(uniLength == 0) {
 			continue;
+		}
 
 		// Allocate buffer for destination charset
 		const size_t cpSize = ucnv_getMinCharSize(m_to) * uniLength;
