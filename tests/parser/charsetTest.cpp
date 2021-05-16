@@ -34,6 +34,7 @@ VMIME_TEST_SUITE_BEGIN(charsetTest)
 		// Test valid input
 		VMIME_TEST(testConvertStringValid)
 		VMIME_TEST(testConvertStreamValid)
+		VMIME_TEST(testConvertStreamExtract)
 		VMIME_TEST(testEncodingHebrew1255)
 
 		// IDNA
@@ -102,6 +103,32 @@ VMIME_TEST_SUITE_BEGIN(charsetTest)
 
 			VASSERT_EQ(testName.str(), toHex(expectedOut), toHex(actualOut));
 		}
+	}
+
+	void testConvertStreamExtract() {
+		vmime::bodyPart p;
+		p.getBody()->setContents(
+			vmime::make_shared <vmime::stringContentHandler>(
+				"Foo éé\r\né bar\r\nbaz"
+			),
+			vmime::mediaType("text", "plain"),
+			vmime::charset("utf-8"),
+			vmime::encoding("quoted-printable")
+		);
+
+		vmime::string str;
+		vmime::utility::outputStreamStringAdapter outStr(str);
+		vmime::shared_ptr <vmime::charsetConverter> conv = vmime::charsetConverter::create(p.getBody()->getCharset(), vmime::charset("US-ASCII"));
+		auto filteredStream = conv->getFilteredOutputStream(outStr);
+		p.getBody()->getContents()->extract(*filteredStream);
+		filteredStream->flush();
+		VASSERT_EQ(
+			"generate",
+			"Foo ??\r\n"
+			"? bar\r\n"
+			"baz",
+			str
+		);
 	}
 
 	void testEncodingHebrew1255() {
