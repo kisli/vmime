@@ -354,6 +354,25 @@ shared_ptr <IMAPCommand> IMAPCommand::SEARCH(
 	return createCommand(cmd.str());
 }
 
+shared_ptr <IMAPCommand> IMAPCommand::UIDSEARCH(
+    const std::vector <string>& keys,
+    const vmime::charset* charset
+) {
+
+    std::ostringstream cmd;
+    cmd.imbue(std::locale::classic());
+    cmd << "UID SEARCH";
+
+    if (charset) {
+        cmd << " CHARSET " << charset->getName();
+    }
+
+    for (size_t i = 0, n = keys.size() ; i < n ; ++i) {
+        cmd << " " << keys[i];
+    }
+
+    return createCommand(cmd.str());
+}
 
 // static
 shared_ptr <IMAPCommand> IMAPCommand::STARTTLS() {

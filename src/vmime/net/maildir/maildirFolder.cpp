@@ -1355,6 +1355,21 @@ std::vector <size_t> maildirFolder::getMessageNumbersStartingOnUID(const message
 	throw exceptions::operation_not_supported();
 }
 
+std::vector <size_t> maildirFolder::getMessageNumbersMatchingSearchAttributes(
+	const searchAttributes&,
+	const vmime::charset*
+) {
+
+	throw exceptions::operation_not_supported();
+}
+
+std::vector <message::uid> maildirFolder::getMessageUIDsMatchingSearchAttributes(
+	const searchAttributes&,
+	const vmime::charset*
+) {
+
+	throw exceptions::operation_not_supported();
+}
 
 } // maildir
 } // net

@@ -1501,6 +1501,99 @@ std::vector <size_t> IMAPFolder::getMessageNumbersStartingOnUID(const message::u
 	return seqNumbers;
 }
 
+std::vector <size_t> IMAPFolder::getMessageNumbersMatchingSearchAttributes(
+	const searchAttributes& sa,
+	const vmime::charset* charset
+) {
+
+	auto searchKeys = sa.generate();
+
+	IMAPCommand::SEARCH(searchKeys, charset)->send(m_connection);
+
+	// Get the response
+	scoped_ptr <IMAPParser::response> resp(m_connection->readResponse());
+
+	if (resp->isBad() ||
+		resp->response_done->response_tagged->resp_cond_state->status != IMAPParser::resp_cond_state::OK) {
+
+		throw exceptions::command_error("SEARCH", resp->getErrorLog(), "bad response");
+	}
+
+	auto& respDataList = resp->continue_req_or_response_data;
+
+	std::vector <size_t> seqNumbers;
+
+	for (auto it = respDataList.begin() ; it != respDataList.end() ; ++it) {
+
+		if (!(*it)->response_data) {
+			throw exceptions::command_error("SEARCH", resp->getErrorLog(), "invalid response");
+		}
+
+		auto *mailboxData = (*it)->response_data->mailbox_data.get();
+
+		// We are only interested in responses of type "SEARCH"
+		if (!mailboxData ||
+			mailboxData->type != IMAPParser::mailbox_data::SEARCH) {
+
+			continue;
+		}
+
+		for (auto &nzn : mailboxData->search_nz_number_list) {
+			seqNumbers.push_back(nzn->value);
+		}
+	}
+
+	processStatusUpdate(resp.get());
+
+	return seqNumbers;
+}
+
+std::vector <message::uid> IMAPFolder::getMessageUIDsMatchingSearchAttributes(
+	const searchAttributes& sa,
+	const vmime::charset* charset
+) {
+
+	auto searchKeys = sa.generate();
+
+	IMAPCommand::UIDSEARCH(searchKeys, charset)->send(m_connection);
+
+	// Get the response
+	scoped_ptr <IMAPParser::response> resp(m_connection->readResponse());
+
+	if (resp->isBad() ||
+		resp->response_done->response_tagged->resp_cond_state->status != IMAPParser::resp_cond_state::OK) {
+
+		throw exceptions::command_error("UIDSEARCH", resp->getErrorLog(), "bad response");
+	}
+
+	auto& respDataList = resp->continue_req_or_response_data;
+
+	std::vector <message::uid> uidNumbers;
+
+	for (auto it = respDataList.begin() ; it != respDataList.end() ; ++it) {
+
+		if (!(*it)->response_data) {
+			throw exceptions::command_error("UIDSEARCH", resp->getErrorLog(), "invalid response");
+		}
+
+		auto *mailboxData = (*it)->response_data->mailbox_data.get();
+
+		// We are only interested in responses of type "SEARCH"
+		if (!mailboxData ||
+			mailboxData->type != IMAPParser::mailbox_data::SEARCH) {
+
+			continue;
+		}
+
+		for (auto &nzn : mailboxData->search_nz_number_list) {
+			uidNumbers.push_back(nzn->value);
+		}
+	}
+
+	processStatusUpdate(resp.get());
+
+	return uidNumbers;
+	}
 
 void IMAPFolder::processStatusUpdate(const IMAPParser::response* resp) {
 
