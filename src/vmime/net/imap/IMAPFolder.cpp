@@ -1501,8 +1501,9 @@ std::vector <size_t> IMAPFolder::getMessageNumbersStartingOnUID(const message::u
 	return seqNumbers;
 }
 
+
 std::vector <size_t> IMAPFolder::getMessageNumbersMatchingSearchAttributes(
-	const searchAttributes& sa,
+	const IMAPSearchAttributes& sa,
 	const vmime::charset* charset
 ) {
 
@@ -1548,8 +1549,9 @@ std::vector <size_t> IMAPFolder::getMessageNumbersMatchingSearchAttributes(
 	return seqNumbers;
 }
 
+
 std::vector <message::uid> IMAPFolder::getMessageUIDsMatchingSearchAttributes(
-	const searchAttributes& sa,
+	const IMAPSearchAttributes& sa,
 	const vmime::charset* charset
 ) {
 
@@ -1593,7 +1595,8 @@ std::vector <message::uid> IMAPFolder::getMessageUIDsMatchingSearchAttributes(
 	processStatusUpdate(resp.get());
 
 	return uidNumbers;
-	}
+}
+
 
 void IMAPFolder::processStatusUpdate(const IMAPParser::response* resp) {
 

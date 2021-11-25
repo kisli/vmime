@@ -144,16 +144,6 @@ public:
 
 	std::vector <size_t> getMessageNumbersStartingOnUID(const message::uid& uid);
 
-	std::vector <size_t> getMessageNumbersMatchingSearchAttributes(
-		const searchAttributes& sa,
-		const vmime::charset* charset = nullptr
-	) override;
-
-	std::vector <message::uid> getMessageUIDsMatchingSearchAttributes(
-		const searchAttributes& sa,
-		const vmime::charset* charset = nullptr
-	) override;
-
 private:
 
 	void registerMessage(POP3Message* msg);

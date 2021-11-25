@@ -43,6 +43,12 @@ namespace net {
 namespace imap {
 
 
+static const char* IMAP_MONTH_NAMES[12] = {
+	"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+	"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+};
+
+
 // static
 const string IMAPUtils::quoteString(const string& text) {
 
@@ -546,6 +552,22 @@ const std::vector <string> IMAPUtils::messageFlagList(const int flags) {
 
 
 // static
+const string IMAPUtils::searchDate(const vmime::datetime& date) {
+
+	std::ostringstream res;
+	res.imbue(std::locale::classic());
+
+	res << date.getDay();
+	res << '-';
+	res << IMAP_MONTH_NAMES[std::min(std::max(date.getMonth() - 1, 0), 11)];
+	res << '-';
+	res << date.getYear();
+
+	return res.str();
+}
+
+
+// static
 const string IMAPUtils::dateTime(const vmime::datetime& date) {
 
 	std::ostringstream res;
@@ -567,12 +589,7 @@ const string IMAPUtils::dateTime(const vmime::datetime& date) {
 
 	res << '-';
 
-	static const char* monthNames[12] = {
-		"Jan", "Feb", "Mar", "Apr", "May", "Jun",
-		"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-	};
-
-	res << monthNames[std::min(std::max(date.getMonth() - 1, 0), 11)];
+	res << IMAP_MONTH_NAMES[std::min(std::max(date.getMonth() - 1, 0), 11)];
 
 	res << '-';
 

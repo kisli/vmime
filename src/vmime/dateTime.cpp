@@ -775,14 +775,6 @@ void datetime::getDate(int& year, int& month, int& day) const {
 }
 
 
-string datetime::getDate() const {
-
-	std::ostringstream date;
-	date << m_day << "-" << monthNames[m_month - 1] << "-" << m_year;
-	return date.str();
-}
-
-
 void datetime::setTime(
 	const int hour,
 	const int minute,

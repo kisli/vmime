@@ -43,7 +43,6 @@
 #include "vmime/net/folderStatus.hpp"
 #include "vmime/net/fetchAttributes.hpp"
 #include "vmime/net/folderAttributes.hpp"
-#include "vmime/net/searchAttributes.hpp"
 
 #include "vmime/utility/path.hpp"
 #include "vmime/utility/stream.hpp"
@@ -406,36 +405,6 @@ public:
  	  * @throw exceptions::net_exception if an error occurs
  	  */
 	virtual std::vector <size_t> getMessageNumbersStartingOnUID(const message::uid& uid) = 0;
-
-	/** Return the sequence numbers of messages matching the searchAttributes.
-	  *
-	  * @param sa the searchAttributes containing search tokens to match messages to
-	  * @param charset optional charset name, the string tokens are assumed to be encoded
-	  *   in the provided encoding OR need to be in US-ASCII if no charset is provided
-	  * @throw exceptions::net_exception if an error occurs
-	  *
-	  * Quirks: some servers will not accept any encoding other than US-ASCII,
-	  * other servers will accept UTF-8 but will fail utf-8
-	  */
-	virtual std::vector <size_t> getMessageNumbersMatchingSearchAttributes(
-		const searchAttributes& sa,
-		const vmime::charset* charset = nullptr
-	) = 0;
-
-	/** Return the UIDs of messages matching the searchAttributes.
-	  *
-	  * @param sa the searchAttributes containing search tokens to match messages to
-	  * @param charset optional charset name, the string tokens are assumed to be encoded
-	  *   in the provided encoding OR need to be in US-ASCII if no charset is provided
-	  * @throw exceptions::net_exception if an error occurs
-	  *
-	  * Quirks: some servers will not accept any encoding other than US-ASCII,
-	  * other servers will accept UTF-8 but will fail utf-8
-	  */
-	virtual std::vector <message::uid> getMessageUIDsMatchingSearchAttributes(
-		const searchAttributes& sa,
-		const vmime::charset* charset = nullptr
-	) = 0;
 
 	// Event listeners
 	void addMessageChangedListener(events::messageChangedListener* l);

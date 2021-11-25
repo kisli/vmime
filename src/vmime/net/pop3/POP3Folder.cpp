@@ -812,21 +812,6 @@ std::vector <size_t> POP3Folder::getMessageNumbersStartingOnUID(const message::u
 	throw exceptions::operation_not_supported();
 }
 
-std::vector <size_t> POP3Folder::getMessageNumbersMatchingSearchAttributes(
-	const searchAttributes&,
-	const vmime::charset*
-) {
-
-	throw exceptions::operation_not_supported();
-}
-
-std::vector <message::uid> POP3Folder::getMessageUIDsMatchingSearchAttributes(
-	const searchAttributes&,
-	const vmime::charset*
-) {
-
-	throw exceptions::operation_not_supported();
-}
 
 } // pop3
 } // net

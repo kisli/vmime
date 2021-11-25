@@ -39,6 +39,7 @@
 #include "vmime/net/folder.hpp"
 
 #include "vmime/net/imap/IMAPParser.hpp"
+#include "vmime/net/imap/IMAPSearchAttributes.hpp"
 
 
 namespace vmime {
@@ -94,16 +95,36 @@ public:
 	std::vector <shared_ptr <message> > getMessages(const messageSet& msgs);
 
 	std::vector <size_t> getMessageNumbersStartingOnUID(const message::uid& uid);
-    
-    std::vector <size_t> getMessageNumbersMatchingSearchAttributes(
-        const searchAttributes& sa,
-        const vmime::charset* charset = nullptr
-    ) override;
 
-    std::vector <message::uid> getMessageUIDsMatchingSearchAttributes(
-        const searchAttributes& sa,
+	/** Return the sequence numbers of messages matching the searchAttributes.
+	  *
+	  * @param sa the searchAttributes containing search tokens to match messages to
+	  * @param charset optional charset name, the string tokens are assumed to be encoded
+	  *   in the provided encoding OR need to be in US-ASCII if no charset is provided
+	  * @throw exceptions::net_exception if an error occurs
+	  *
+	  * Quirks: some servers will not accept any encoding other than US-ASCII,
+	  * other servers will accept UTF-8 but will fail utf-8
+	  */
+    std::vector <size_t> getMessageNumbersMatchingSearchAttributes(
+        const IMAPSearchAttributes& sa,
         const vmime::charset* charset = nullptr
-    ) override;
+    );
+
+	/** Return the UIDs of messages matching the searchAttributes.
+	  *
+	  * @param sa the searchAttributes containing search tokens to match messages to
+	  * @param charset optional charset name, the string tokens are assumed to be encoded
+	  *   in the provided encoding OR need to be in US-ASCII if no charset is provided
+	  * @throw exceptions::net_exception if an error occurs
+	  *
+	  * Quirks: some servers will not accept any encoding other than US-ASCII,
+	  * other servers will accept UTF-8 but will fail utf-8
+	  */
+    std::vector <message::uid> getMessageUIDsMatchingSearchAttributes(
+        const IMAPSearchAttributes& sa,
+        const vmime::charset* charset = nullptr
+    );
 
     size_t getMessageCount();
 

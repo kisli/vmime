@@ -216,8 +216,6 @@ public:
 	void getTime(int& hour, int& minute, int& second) const;
 	void getDate(int& year, int& month, int& day) const;
 
-	string getDate() const;
-
 	// Set
 	void setYear(const int year);
 	void setMonth(const int month);

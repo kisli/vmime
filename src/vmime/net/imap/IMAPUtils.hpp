@@ -85,6 +85,13 @@ public:
 
 	static const std::vector <string> messageFlagList(const int flags);
 
+	/** Format a date to IMAP SEARCH date format (eg. 25-Nov-2021).
+	  *
+	  * @param date date to format
+	  * @return IMAP SEARCH-formatted date
+	  */
+	static const string searchDate(const vmime::datetime& date);
+
 	/** Format a date/time to IMAP date/time format.
 	  *
 	  * @param date date/time to format
