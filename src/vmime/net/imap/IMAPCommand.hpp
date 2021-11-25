@@ -66,6 +66,7 @@ public:
 	static shared_ptr <IMAPCommand> APPEND(const string& mailboxName, const std::vector <string>& flags, vmime::datetime* date, const size_t size);
 	static shared_ptr <IMAPCommand> COPY(const messageSet& msgs, const string& mailboxName);
 	static shared_ptr <IMAPCommand> SEARCH(const std::vector <string>& keys, const vmime::charset* charset);
+    static shared_ptr <IMAPCommand> UIDSEARCH(const std::vector <string>& keys, const vmime::charset* charset);
 	static shared_ptr <IMAPCommand> STARTTLS();
 	static shared_ptr <IMAPCommand> CAPABILITY();
 	static shared_ptr <IMAPCommand> NOOP();

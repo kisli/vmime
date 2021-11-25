@@ -66,6 +66,14 @@ zone = "UT" / "GMT"                               ; Universal Time
                                                   ; hours+min. (HHMM)
 */
 
+static const char* dayNames[] = {
+	"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
+};
+
+static const char* monthNames[] = {
+	"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+	"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+};
 
 void datetime::parseImpl(
 	const parsingContext& /* ctx */,
@@ -590,14 +598,6 @@ void datetime::generateImpl(
 	size_t* newLinePos
 ) const {
 
-	static const char* dayNames[] = {
-		"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
-	};
-	static const char* monthNames[] = {
-		"Jan", "Feb", "Mar", "Apr", "May", "Jun",
-		"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-	};
-
 	const int z = ((m_zone < 0) ? -m_zone : m_zone);
 	const int zh = z / 60;
 	const int zm = z % 60;
@@ -772,6 +772,14 @@ void datetime::getDate(int& year, int& month, int& day) const {
 	year = m_year;
 	month = m_month;
 	day = m_day;
+}
+
+
+string datetime::getDate() const {
+
+	std::ostringstream date;
+	date << m_day << "-" << monthNames[m_month - 1] << "-" << m_year;
+	return date.str();
 }
 
 

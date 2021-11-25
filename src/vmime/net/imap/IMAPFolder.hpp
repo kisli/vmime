@@ -94,8 +94,18 @@ public:
 	std::vector <shared_ptr <message> > getMessages(const messageSet& msgs);
 
 	std::vector <size_t> getMessageNumbersStartingOnUID(const message::uid& uid);
+    
+    std::vector <size_t> getMessageNumbersMatchingSearchAttributes(
+        const searchAttributes& sa,
+        const vmime::charset* charset = nullptr
+    ) override;
 
-	size_t getMessageCount();
+    std::vector <message::uid> getMessageUIDsMatchingSearchAttributes(
+        const searchAttributes& sa,
+        const vmime::charset* charset = nullptr
+    ) override;
+
+    size_t getMessageCount();
 
 	shared_ptr <folder> getFolder(const folder::path::component& name);
 	std::vector <shared_ptr <folder> > getFolders(const bool recursive = false);
