@@ -241,6 +241,7 @@ public:
 
 		m_state = STATE_NOT_CONNECTED;
 		m_bdatChunkCount = 0;
+		m_bdatChunkSize = m_bdatChunkReceived = 0;
 		m_ehloSent = m_mailSent = m_rcptSent = m_quitSent = false;
 	}
 

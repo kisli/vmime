@@ -269,7 +269,6 @@ shared_ptr <text> text::newFromString(const string& in, const charset& ch) {
 
 void text::createFromString(const string& in, const charset& ch) {
 
-	size_t asciiCount = 0;
 	size_t asciiPercent = 0;
 
 	removeAllWords();
@@ -282,7 +281,7 @@ void text::createFromString(const string& in, const charset& ch) {
 	const bool alwaysEncode = ch.getRecommendedEncoding(recommendedEnc);
 
 	if (!alwaysEncode) {
-		asciiCount = utility::stringUtils::countASCIIchars(in.begin(), in.end());
+		const auto asciiCount = utility::stringUtils::countASCIIchars(in.begin(), in.end());
 		asciiPercent = (in.length() == 0 ? 100 : (100 * asciiCount) / in.length());
 	}
 

@@ -93,7 +93,7 @@ namespace CppUnit {
 	// Work-around for comparing 'std::string' against 'char*'
 	inline void assertEquals(
 		const char* expected,
-		const std::string actual,
+		const std::string &actual,
 		SourceLine sourceLine,
 		const std::string &message
 	) {

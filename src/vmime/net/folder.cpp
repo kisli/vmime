@@ -56,7 +56,10 @@ void folder::addMessageChangedListener(events::messageChangedListener* l) {
 
 void folder::removeMessageChangedListener(events::messageChangedListener* l) {
 
-	std::remove(m_messageChangedListeners.begin(), m_messageChangedListeners.end(), l);
+	m_messageChangedListeners.erase(
+		std::remove(m_messageChangedListeners.begin(), m_messageChangedListeners.end(), l),
+		m_messageChangedListeners.end()
+	);
 }
 
 
@@ -78,7 +81,10 @@ void folder::addMessageCountListener(events::messageCountListener* l) {
 
 void folder::removeMessageCountListener(events::messageCountListener* l) {
 
-	std::remove(m_messageCountListeners.begin(), m_messageCountListeners.end(), l);
+	m_messageCountListeners.erase(
+		std::remove(m_messageCountListeners.begin(), m_messageCountListeners.end(), l),
+		m_messageCountListeners.end()
+	);
 }
 
 
@@ -100,7 +106,10 @@ void folder::addFolderListener(events::folderListener* l) {
 
 void folder::removeFolderListener(events::folderListener* l) {
 
-	std::remove(m_folderListeners.begin(), m_folderListeners.end(), l);
+	m_folderListeners.erase(
+		std::remove(m_folderListeners.begin(), m_folderListeners.end(), l),
+		m_folderListeners.end()
+	);
 }
 
 
