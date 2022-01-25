@@ -78,6 +78,7 @@ public:
 		const size_t position,
 		const size_t end,
 		size_t* newPosition,
+		const bool allowGroup,
 		bool *isLastAddressOfGroup
 	);
 };

@@ -204,7 +204,7 @@ void mailboxList::parseImpl(
 
 	while (pos < end) {
 
-		shared_ptr <address> parsedAddress = address::parseNext(ctx, buffer, pos, end, &pos, NULL);
+		shared_ptr <address> parsedAddress = address::parseNext(ctx, buffer, pos, end, &pos, /* allowGroup */ true, NULL);
 
 		if (parsedAddress) {
 

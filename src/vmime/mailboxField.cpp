@@ -56,7 +56,7 @@ void mailboxField::parse(
 	// may have more than one address specified (even if this field
 	// should contain only one). We are never too much careful...
 	shared_ptr <address> parsedAddress = address::parseNext(
-		ctx, buffer, position, end, newPosition, NULL
+		ctx, buffer, position, end, newPosition, /* allowGroup */ true, NULL
 	);
 
 	if (parsedAddress) {

@@ -32,6 +32,8 @@ VMIME_TEST_SUITE_BEGIN(mailboxGroupTest)
 		VMIME_TEST(testParseExtraChars)
 		VMIME_TEST(testEmptyGroup)
 		VMIME_TEST(testEncodedEmptyGroup)
+		VMIME_TEST(testGroupInGroup)
+		VMIME_TEST(testBrokenGroup)
 	VMIME_TEST_LIST_END
 
 
@@ -101,6 +103,32 @@ VMIME_TEST_SUITE_BEGIN(mailboxGroupTest)
 		mgrp.parse("=?us-ascii?Q?Undisclosed_recipients?=:;");
 
 		VASSERT_EQ("name", "Undisclosed recipients", mgrp.getName().getWholeBuffer());
+		VASSERT_EQ("count", 0, mgrp.getMailboxCount());
+	}
+
+	void testGroupInGroup() {
+
+		vmime::mailboxGroup mgrp;
+		mgrp.parse("group1:mbox1@domain.com,group2:mbox2@domain.com;,mbox3@domain.com;");
+
+		VASSERT_EQ("name", "group1", mgrp.getName().getWholeBuffer());
+		VASSERT_EQ("count", 2, mgrp.getMailboxCount());
+		VASSERT_EQ("mbox1", "mbox1@domain.com", mgrp.getMailboxAt(0)->getEmail());
+		VASSERT_EQ("mbox2", "mbox3@domain.com", mgrp.getMailboxAt(1)->getEmail());
+	}
+
+	void testBrokenGroup() {
+
+		std::string bad(":,");
+
+		for (int i = 0 ; i < 10 ; ++i) {
+			bad = bad + bad;
+		}
+
+		vmime::mailboxGroup mgrp;
+		mgrp.parse(bad);
+
+		VASSERT_EQ("name", "", mgrp.getName().getWholeBuffer());
 		VASSERT_EQ("count", 0, mgrp.getMailboxCount());
 	}
 

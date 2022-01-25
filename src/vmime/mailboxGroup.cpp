@@ -87,19 +87,13 @@ void mailboxGroup::parseImpl(
 	while (pos < end && !isLastAddressOfGroup) {
 
 		shared_ptr <address> parsedAddress =
-			address::parseNext(ctx, buffer, pos, end, &pos, &isLastAddressOfGroup);
+			address::parseNext(ctx, buffer, pos, end, &pos, /* allowGroup */ false, &isLastAddressOfGroup);
 
 		if (parsedAddress) {
 
 			if (parsedAddress->isGroup()) {
 
-				shared_ptr <mailboxGroup> group = dynamicCast <mailboxGroup>(parsedAddress);
-
-				// Sub-groups are not allowed in mailbox groups: so, we add all
-				// the contents of the sub-group into this group...
-				for (size_t i = 0 ; i < group->getMailboxCount() ; ++i) {
-					m_list.push_back(vmime::clone(group->getMailboxAt(i)));
-				}
+				// Should not happen
 
 			} else {
 

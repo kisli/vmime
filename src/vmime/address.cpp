@@ -71,6 +71,7 @@ shared_ptr <address> address::parseNext(
 	const size_t position,
 	const size_t end,
 	size_t* newPosition,
+	const bool allowGroup,
 	bool *isLastAddressOfGroup
 ) {
 
@@ -203,13 +204,16 @@ shared_ptr <address> address::parseNext(
 		}
 	}
 
-	if (newPosition) {
+	size_t newPos;
 
-		if (pos == end) {
-			*newPosition = end;
-		} else {
-			*newPosition = pos + 1;  // ',' or ';'
-		}
+	if (pos == end) {
+		newPos = end;
+	} else {
+		newPos = pos + 1;  // ',' or ';'
+	}
+
+	if (newPosition) {
+		*newPosition = newPos;
 	}
 
 	// Parse extracted address (mailbox or group)
@@ -218,13 +222,33 @@ shared_ptr <address> address::parseNext(
 		shared_ptr <address> parsedAddress;
 
 		if (isGroup) {
-			parsedAddress = make_shared <mailboxGroup>();
+
+			if (allowGroup) {
+
+				parsedAddress = make_shared <mailboxGroup>();
+
+			} else {  // group not allowed in group, ignore group and continue parsing
+
+				return parseNext(
+					ctx,
+					buffer,
+					newPos,
+					end,
+					newPosition,
+					/* allowGroup */ false,
+					isLastAddressOfGroup
+				);
+			}
+
 		} else {
+
 			parsedAddress = make_shared <mailbox>();
 		}
 
-		parsedAddress->parse(ctx, buffer, start, pos, NULL);
-		parsedAddress->setParsedBounds(start, pos);
+		if (parsedAddress) {
+			parsedAddress->parse(ctx, buffer, start, pos, NULL);
+			parsedAddress->setParsedBounds(start, pos);
+		}
 
 		return parsedAddress;
 	}

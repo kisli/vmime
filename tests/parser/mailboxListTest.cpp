@@ -28,6 +28,7 @@ VMIME_TEST_SUITE_BEGIN(mailboxListTest)
 
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testParseGroup)
+		VMIME_TEST(testBrokenGroup)
 	VMIME_TEST_LIST_END
 
 
@@ -42,6 +43,20 @@ VMIME_TEST_SUITE_BEGIN(mailboxListTest)
 		VASSERT_EQ("email", "email1@domain1.com", mboxList.getMailboxAt(0)->getEmail().generate());
 		VASSERT_EQ("email", "email2@domain2.com", mboxList.getMailboxAt(1)->getEmail().generate());
 		VASSERT_EQ("email", "email3@domain3.com", mboxList.getMailboxAt(2)->getEmail().generate());
+	}
+
+	void testBrokenGroup() {
+
+		std::string bad(":,");
+
+		for (int i = 0 ; i < 10 ; ++i) {
+			bad = bad + bad;
+		}
+
+		vmime::mailboxList mboxList;
+		mboxList.parse(bad);
+
+		VASSERT_EQ("count", 0, mboxList.getMailboxCount());
 	}
 
 VMIME_TEST_SUITE_END
