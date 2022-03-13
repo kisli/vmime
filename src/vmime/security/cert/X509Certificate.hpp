@@ -61,8 +61,9 @@ public:
 
 	/** Supported digest algorithms (used for fingerprint). */
 	enum DigestAlgorithm {
-		DIGEST_MD5,   /**< MD5 digest */
-		DIGEST_SHA1   /**< SHA1 digest */
+		DIGEST_MD5,
+		DIGEST_SHA1,
+		DIGEST_SHA256
 	};
 
 
