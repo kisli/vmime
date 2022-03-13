@@ -311,10 +311,15 @@ const byteArray X509Certificate_GnuTLS::getFingerprint(const DigestAlgorithm alg
 			galgo = GNUTLS_DIG_MD5;
 			break;
 
+		case DIGEST_SHA256:
+
+			galgo = GNUTLS_DIG_SHA256;
+			break;
+
 		default:
 		case DIGEST_SHA1:
 
-			galgo = GNUTLS_DIG_SHA;
+			galgo = GNUTLS_DIG_SHA1;
 			break;
 	}
 
