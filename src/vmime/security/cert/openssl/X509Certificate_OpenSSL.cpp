@@ -556,6 +556,11 @@ const byteArray X509Certificate_OpenSSL::getFingerprint(const DigestAlgorithm al
 			digest = EVP_md5();
 			break;
 
+		case DIGEST_SHA256:
+
+			digest = EVP_sha256();
+			break;
+
 		default:
 		case DIGEST_SHA1:
 
