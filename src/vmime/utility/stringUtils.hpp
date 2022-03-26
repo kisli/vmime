@@ -29,6 +29,7 @@
 #include "vmime/base.hpp"
 
 #include <sstream>
+#include <iostream>
 
 
 namespace vmime {
@@ -50,6 +51,20 @@ public:
 	static const string makeStringFromBytes(const byte_t* data, const size_t count) {
 
 		return string(reinterpret_cast <const char*>(data), count);
+	}
+
+	/** Makes a HEX string from byteArray.
+	  *
+	  * @param data byteArray containing data
+	  * @return a string object containing a hex copy of the specified data
+	  */
+	static const string makeHexStringFromBytes(const byteArray& data) {
+		std::stringstream ss;
+		for (const byte_t& b : data)
+		{
+			ss << std::hex << int(b);
+		}
+		return ss.str();
 	}
 
 	/** Casts a string to bytes.
