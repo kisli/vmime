@@ -12,7 +12,7 @@
 # http://www.cmake.org
 #
 
-CMAKE_MINIMUM_REQUIRED(VERSION 3.1 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.12 FATAL_ERROR)
 
 INCLUDE(cmake/Utils.cmake)
 
@@ -112,13 +112,11 @@ FILE(
 	${CMAKE_CURRENT_SOURCE_DIR}/src/vmime/*.hpp
 )
 
-LIST(APPEND VMIME_LIBRARY_GENERATED_INCLUDE_FILES "${CMAKE_BINARY_DIR}/src/vmime/config.hpp")
+LIST(APPEND VMIME_LIBRARY_GENERATED_INCLUDE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/vmime/config.hpp")
 
 INCLUDE_DIRECTORIES(
 	${CMAKE_CURRENT_SOURCE_DIR}          # for "contrib/"
 	${CMAKE_CURRENT_SOURCE_DIR}/src      # for "vmime/
-	${CMAKE_BINARY_DIR}/src              # for "config.hpp"
-	${CMAKE_BINARY_DIR}/src/vmime        # for "config.hpp"
 )
 
 INCLUDE(GenerateExportHeader)
@@ -141,7 +139,8 @@ IF(VMIME_BUILD_SHARED_LIBRARY)
 	)
 
 	TARGET_INCLUDE_DIRECTORIES(${VMIME_LIBRARY_NAME} PUBLIC
-  		$<INSTALL_INTERFACE:include>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+		$<INSTALL_INTERFACE:include>
 	)
 
 	GENERATE_EXPORT_HEADER(
@@ -189,8 +188,9 @@ IF(VMIME_BUILD_STATIC_LIBRARY)
 		${VMIME_LIBRARY_INCLUDE_FILES}
 	)
 
- 	TARGET_INCLUDE_DIRECTORIES(${VMIME_LIBRARY_NAME}-static PUBLIC
-  		$<INSTALL_INTERFACE:include>
+	TARGET_INCLUDE_DIRECTORIES(${VMIME_LIBRARY_NAME}-static PUBLIC
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+		$<INSTALL_INTERFACE:include>
 	)
 
 	GENERATE_EXPORT_HEADER(
@@ -204,10 +204,10 @@ IF(VMIME_BUILD_STATIC_LIBRARY)
 		COPY
 		${CMAKE_CURRENT_BINARY_DIR}/export-static.hpp
 		DESTINATION
-		${CMAKE_BINARY_DIR}/src/vmime
+		${CMAKE_CURRENT_SOURCE_DIR}/src/vmime
 	)
 
-	LIST(APPEND VMIME_LIBRARY_GENERATED_INCLUDE_FILES "${CMAKE_BINARY_DIR}/src/vmime/export-static.hpp")
+	LIST(APPEND VMIME_LIBRARY_GENERATED_INCLUDE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/vmime/export-static.hpp")
 
 	SET_TARGET_PROPERTIES(
 		${VMIME_LIBRARY_NAME}-static
@@ -222,49 +222,6 @@ ENDIF()
 IF(NOT(VMIME_BUILD_SHARED_LIBRARY OR VMIME_BUILD_STATIC_LIBRARY))
 	MESSAGE(FATAL_ERROR "You should select at least one library to build (either VMIME_BUILD_SHARED_LIBRARY or VMIME_BUILD_STATIC_LIBRARY must be set to YES.")
 ENDIF()
-
-# These next two lines are required but it is unclear exactly what they do.
-# The CMake FAQ mentions they are necessary and it does not work otherwise.
-IF(VMIME_BUILD_SHARED_LIBRARY)
-	SET_TARGET_PROPERTIES(${VMIME_LIBRARY_NAME} PROPERTIES CLEAN_DIRECT_OUTPUT 1)
-ENDIF()
-IF(VMIME_BUILD_STATIC_LIBRARY)
-	SET_TARGET_PROPERTIES(${VMIME_LIBRARY_NAME}-static PROPERTIES CLEAN_DIRECT_OUTPUT 1)
-ENDIF()
-
-# Installation of libraries
-IF(VMIME_BUILD_SHARED_LIBRARY)
-	INSTALL(
-		TARGETS ${VMIME_LIBRARY_NAME}
-		EXPORT ${VMIME_LIBRARY_NAME}-config
-		LIBRARY DESTINATION "${VMIME_INSTALL_LIBDIR}"
-		PUBLIC_HEADER DESTINATION "${VMIME_INSTALL_INCLUDEDIR}"
-		COMPONENT sharedlibs
-	)
-	INSTALL(
-		EXPORT ${VMIME_LIBRARY_NAME}-config
-		DESTINATION "${VMIME_INSTALL_LIBDIR}/cmake/vmime"
-	)
-ENDIF()
-
-IF(VMIME_BUILD_STATIC_LIBRARY)
-	INSTALL(
-		TARGETS ${VMIME_LIBRARY_NAME}-static
-		EXPORT ${VMIME_LIBRARY_NAME}-static-config
-		ARCHIVE DESTINATION "${VMIME_INSTALL_LIBDIR}"
-		PUBLIC_HEADER DESTINATION "${VMIME_INSTALL_INCLUDEDIR}"
-		COMPONENT staticlibs
-	)
-	INSTALL(
-		EXPORT ${VMIME_LIBRARY_NAME}-static-config
-		DESTINATION "${VMIME_INSTALL_LIBDIR}/cmake/vmime"
-	)
-ENDIF()
-
-# Installation of header files
-INSTALL_HEADERS_WITH_DIRECTORY(VMIME_LIBRARY_INCLUDE_FILES headers "${CMAKE_CURRENT_SOURCE_DIR}/src/")
-INSTALL_HEADERS_WITH_DIRECTORY(VMIME_LIBRARY_GENERATED_INCLUDE_FILES headers "${CMAKE_BINARY_DIR}/src")
-
 
 ##############################################################################
 # Tests
@@ -355,6 +312,10 @@ OPTION(
 	"Build samples (in 'examples' directory)"
 	OFF
 )
+
+IF(VMIME_BUILD_SAMPLES)
+	ADD_SUBDIRECTORY(examples)
+ENDIF()
 
 
 ##############################################################################
@@ -553,25 +514,6 @@ CHECK_TYPE_SIZE(size_t VMIME_HAVE_SIZE_T)
 
 
 ##############################################################################
-# Sendmail path
-
-FOREACH (SENDMAIL_PATH /usr/sbin/sendmail /usr/lib/sendmail /usr/bin/sendmail /bin/sendmail /var/qmail/bin/qmail-inject /bin/cgimail)
-	IF(EXISTS ${SENDMAIL_PATH})
-		MESSAGE(STATUS "Sendmail binary found at ${SENDMAIL_PATH}")
-		SET(VMIME_DEFAULT_SENDMAIL_PATH ${SENDMAIL_PATH})
-	ENDIF()
-ENDFOREACH(SENDMAIL_PATH)
-
-SET(
-	VMIME_SENDMAIL_PATH
-	${VMIME_DEFAULT_SENDMAIL_PATH}
-	CACHE
-	STRING
-	"Specifies the path to sendmail binary"
-)
-
-
-##############################################################################
 # Messaging features
 
 # Module
@@ -626,8 +568,6 @@ OPTION(
 ##############################################################################
 # SASL support
 
-INCLUDE(cmake/FindGSasl.cmake)
-
 OPTION(
 	VMIME_HAVE_SASL_SUPPORT
 	"Enable SASL support (requires GNU SASL library)"
@@ -635,6 +575,8 @@ OPTION(
 )
 
 IF(VMIME_HAVE_SASL_SUPPORT)
+
+	INCLUDE(cmake/FindGSasl.cmake)
 
 	INCLUDE_DIRECTORIES(
 		${INCLUDE_DIRECTORIES}
@@ -657,36 +599,32 @@ ENDIF()
 ##############################################################################
 # SSL/TLS support
 
-INCLUDE(FindGnuTLS)
-INCLUDE(FindOpenSSL)
-
-SET(CMAKE_REQUIRED_LIBRARIES "${GNUTLS_LIBRARY}")
-CHECK_FUNCTION_EXISTS(gnutls_priority_set_direct VMIME_HAVE_GNUTLS_PRIORITY_FUNCS)
-
-
 OPTION(
 	VMIME_HAVE_TLS_SUPPORT
 	"SSL/TLS support (requires either GNU TLS or OpenSSL library)"
 	ON
 )
 
-SET(
-	VMIME_TLS_SUPPORT_LIB
-	"gnutls"
-	CACHE
-	STRING
-	"Library to use for SSL/TLS conversion"
-)
-SET_PROPERTY(
-	CACHE
-	VMIME_TLS_SUPPORT_LIB
-	PROPERTY STRINGS gnutls openssl
-)
-
-
 IF(VMIME_HAVE_TLS_SUPPORT)
 
+	SET(
+		VMIME_TLS_SUPPORT_LIB
+		"gnutls"
+		CACHE
+		STRING
+		"Library to use for SSL/TLS conversion"
+	)
+	SET_PROPERTY(
+		CACHE
+		VMIME_TLS_SUPPORT_LIB
+		PROPERTY STRINGS gnutls openssl
+	)
+
 	IF(VMIME_TLS_SUPPORT_LIB STREQUAL "gnutls")
+
+		INCLUDE(FindGnuTLS)
+		SET(CMAKE_REQUIRED_LIBRARIES "${GNUTLS_LIBRARY}")
+		CHECK_FUNCTION_EXISTS(gnutls_priority_set_direct VMIME_HAVE_GNUTLS_PRIORITY_FUNCS)
 
 		INCLUDE_DIRECTORIES(
 			${INCLUDE_DIRECTORIES}
@@ -712,6 +650,8 @@ IF(VMIME_HAVE_TLS_SUPPORT)
 		SET(VMIME_TLS_SUPPORT_LIB_IS_OPENSSL "OFF")
 
 	ELSEIF(VMIME_TLS_SUPPORT_LIB STREQUAL "openssl")
+
+		INCLUDE(FindOpenSSL)
 
 		INCLUDE_DIRECTORIES(
 			${INCLUDE_DIRECTORIES}
@@ -1031,32 +971,83 @@ ENDIF()
 
 # Path to 'sendmail' must be specified if Sendmail protocol is enabled
 IF(VMIME_HAVE_MESSAGING_PROTO_SENDMAIL)
+	# Sendmail path
+	# only configure this if we are enabling sendmail
+
+	FOREACH (SENDMAIL_PATH /usr/sbin/sendmail /usr/lib/sendmail /usr/bin/sendmail /bin/sendmail /var/qmail/bin/qmail-inject /bin/cgimail)
+		IF(EXISTS ${SENDMAIL_PATH})
+			MESSAGE(STATUS "Sendmail binary found at ${SENDMAIL_PATH}")
+			SET(VMIME_DEFAULT_SENDMAIL_PATH ${SENDMAIL_PATH})
+		ENDIF()
+	ENDFOREACH(SENDMAIL_PATH)
+
+	SET(
+		VMIME_SENDMAIL_PATH
+		${VMIME_DEFAULT_SENDMAIL_PATH}
+		CACHE
+		STRING
+		"Specifies the path to sendmail binary"
+	)
+
 	IF(NOT VMIME_SENDMAIL_PATH OR VMIME_SENDMAIL_PATH STREQUAL "")
 		MESSAGE(FATAL_ERROR "Enabling Sendmail protocol requires that you specify path to 'sendmail' binary.")
 	ENDIF()
 ENDIF()
 
 
-##############################################################################
-# Build examples
-
-IF(VMIME_BUILD_SAMPLES)
-	ADD_SUBDIRECTORY(examples)
-ENDIF()
-
 
 # Set our configure file
-CONFIGURE_FILE(cmake/config.hpp.cmake ${CMAKE_BINARY_DIR}/src/vmime/config.hpp)
+CONFIGURE_FILE(cmake/config.hpp.cmake ${CMAKE_CURRENT_SOURCE_DIR}/src/vmime/config.hpp)
 
 # PkgConfig post-configuration
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/vmime.pc.in ${CMAKE_BINARY_DIR}/vmime.pc @ONLY)
-INSTALL(FILES ${CMAKE_BINARY_DIR}/vmime.pc DESTINATION "${VMIME_INSTALL_LIBDIR}/pkgconfig" COMPONENT headers)
 
 INCLUDE(CPack)
 
+# Installation of libraries
+OPTION(
+	VMIME_INSTALL
+	"Should the vmime library be installed"
+	ON
+)
+IF(VMIME_INSTALL)
+	IF(VMIME_BUILD_SHARED_LIBRARY)
+		INSTALL(
+			TARGETS ${VMIME_LIBRARY_NAME}
+			EXPORT ${VMIME_LIBRARY_NAME}-config
+			LIBRARY DESTINATION "${VMIME_INSTALL_LIBDIR}"
+			PUBLIC_HEADER DESTINATION "${VMIME_INSTALL_INCLUDEDIR}"
+			COMPONENT sharedlibs
+		)
+		INSTALL(
+			EXPORT ${VMIME_LIBRARY_NAME}-config
+			DESTINATION "${VMIME_INSTALL_LIBDIR}/cmake/vmime"
+		)
+	ENDIF()
 
-MESSAGE("")
-MESSAGE("VMime will install to the following directories:")
-MESSAGE("  libraries: ${VMIME_INSTALL_LIBDIR}")
-MESSAGE("  headers:   ${VMIME_INSTALL_INCLUDEDIR}")
-MESSAGE("")
+	IF(VMIME_BUILD_STATIC_LIBRARY)
+		INSTALL(
+			TARGETS ${VMIME_LIBRARY_NAME}-static
+			EXPORT ${VMIME_LIBRARY_NAME}-static-config
+			ARCHIVE DESTINATION "${VMIME_INSTALL_LIBDIR}"
+			PUBLIC_HEADER DESTINATION "${VMIME_INSTALL_INCLUDEDIR}"
+			COMPONENT staticlibs
+		)
+		INSTALL(
+			EXPORT ${VMIME_LIBRARY_NAME}-static-config
+			DESTINATION "${VMIME_INSTALL_LIBDIR}/cmake/vmime"
+		)
+	ENDIF()
+
+	# Installation of header files
+	INSTALL_HEADERS_WITH_DIRECTORY(VMIME_LIBRARY_INCLUDE_FILES headers "${CMAKE_CURRENT_SOURCE_DIR}/src/")
+	INSTALL_HEADERS_WITH_DIRECTORY(VMIME_LIBRARY_GENERATED_INCLUDE_FILES headers "${CMAKE_BINARY_DIR}/src")
+
+	INSTALL(FILES ${CMAKE_BINARY_DIR}/vmime.pc DESTINATION "${VMIME_INSTALL_LIBDIR}/pkgconfig" COMPONENT headers)
+
+	MESSAGE("")
+	MESSAGE("VMime will install to the following directories:")
+	MESSAGE("  libraries: ${VMIME_INSTALL_LIBDIR}")
+	MESSAGE("  headers:   ${VMIME_INSTALL_INCLUDEDIR}")
+	MESSAGE("")
+ENDIF(VMIME_INSTALL)
