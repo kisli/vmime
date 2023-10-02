@@ -78,7 +78,7 @@ word::word(const string& buffer, const charset& charset, const string& lang)
 
 
 shared_ptr <word> word::parseNext(
-	const parsingContext& ctx,
+	parsingContext& ctx,
 	const string& buffer,
 	const size_t position,
 	const size_t end,
@@ -255,7 +255,7 @@ shared_ptr <word> word::parseNext(
 
 
 const std::vector <shared_ptr <word> > word::parseMultiple(
-	const parsingContext& ctx,
+	parsingContext& ctx,
 	const string& buffer,
 	const size_t position,
 	const size_t end,
@@ -282,7 +282,7 @@ const std::vector <shared_ptr <word> > word::parseMultiple(
 
 
 void word::parseImpl(
-	const parsingContext& ctx,
+	parsingContext& ctx,
 	const string& buffer,
 	const size_t position,
 	const size_t end,
@@ -294,7 +294,7 @@ void word::parseImpl(
 
 
 void word::parseWithState(
-	const parsingContext& ctx,
+	parsingContext& ctx,
 	const string& buffer,
 	const size_t position,
 	const size_t end,

@@ -45,6 +45,8 @@ struct headerParseRecoveryMethod {
   */
 class VMIME_EXPORT parsingContext : public context {
 
+	friend class headerField;
+
 public:
 
 	parsingContext();
@@ -70,9 +72,28 @@ public:
 	  */
 	headerParseRecoveryMethod::headerLineError getHeaderParseErrorRecoveryMethod() const;
 
+	/** Returns a boolean indicating if utilizing the header recovery mechanism
+	  *  was necessary.
+	  *
+	  * @retval true The header recovery mechanism was necessary when parsing
+	  * @retval false The header recovery mechanism was not necessary when parsing
+	  */
+	bool getHeaderRecoveryNeeded() const;
+
 protected:
 
 	headerParseRecoveryMethod::headerLineError m_headerParseErrorRecovery;
+
+	/** Flag to indicate if the header recovery mechanism was used while parsing
+	  *  as only one method is ever in use, a simple boolean is sufficent
+	  */
+	bool m_recovery_needed{false};
+
+	/** Sets a flag indicating that the header recovery mechanism was required
+	  *
+	  * This should only be called from headerField::parseNext
+	  */
+	void setHeaderRecoveryNeeded(bool needed);
 };
 
 

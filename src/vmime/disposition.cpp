@@ -187,7 +187,7 @@ const std::vector <string> disposition::getModifierList() const {
 
 
 void disposition::parseImpl(
-	const parsingContext& /* ctx */,
+	parsingContext& /* ctx */,
 	const string& buffer,
 	const size_t position,
 	const size_t end,

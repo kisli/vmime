@@ -229,7 +229,7 @@ public:
 	  * @param in input string
 	  * @return new text object
 	  */
-	static shared_ptr <text> decodeAndUnfold(const parsingContext& ctx, const string& in);
+	static shared_ptr <text> decodeAndUnfold(parsingContext& ctx, const string& in);
 
 	/** Decode and unfold text (RFC-2047), using the default parsing context.
 	  *
@@ -253,7 +253,7 @@ public:
 	  * @return new text object or existing object if generateInExisting != NULL
 	  */
 	static text* decodeAndUnfold(
-		const parsingContext& ctx,
+		parsingContext& ctx,
 		const string& in,
 		text* generateInExisting
 	);
@@ -265,7 +265,7 @@ protected:
 
 	// Component parsing & assembling
 	void parseImpl(
-		const parsingContext& ctx,
+		parsingContext& ctx,
 		const string& buffer,
 		const size_t position,
 		const size_t end,

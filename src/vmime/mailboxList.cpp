@@ -191,7 +191,7 @@ const std::vector <shared_ptr <component> > mailboxList::getChildComponents() {
 
 
 void mailboxList::parseImpl(
-	const parsingContext& ctx,
+	parsingContext& ctx,
 	const string& buffer,
 	const size_t position,
 	const size_t end,

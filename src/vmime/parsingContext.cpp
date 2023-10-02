@@ -60,5 +60,15 @@ void parsingContext::setHeaderParseErrorRecoveryMethod(
 	m_headerParseErrorRecovery = recoveryMethod;
 }
 
+bool parsingContext::getHeaderRecoveryNeeded() const {
+
+	return m_recovery_needed;
+}
+
+void parsingContext::setHeaderRecoveryNeeded(bool needed) {
+
+	m_recovery_needed = needed;
+}
+
 
 } // vmime

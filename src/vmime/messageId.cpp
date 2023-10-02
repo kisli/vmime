@@ -64,7 +64,7 @@ messageId::messageId(const string& left, const string& right)
 */
 
 void messageId::parseImpl(
-	const parsingContext& /* ctx */,
+	parsingContext& /* ctx */,
 	const string& buffer,
 	const size_t position,
 	const size_t end,
@@ -158,7 +158,7 @@ void messageId::parseImpl(
 
 
 shared_ptr <messageId> messageId::parseNext(
-	const parsingContext& ctx,
+	parsingContext& ctx,
 	const string& buffer,
 	const size_t position,
 	const size_t end,

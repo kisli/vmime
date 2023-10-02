@@ -66,7 +66,7 @@ address-list    =       (address *("," address)) / obs-addr-list
 */
 
 shared_ptr <address> address::parseNext(
-	const parsingContext& ctx,
+	parsingContext& ctx,
 	const string& buffer,
 	const size_t position,
 	const size_t end,

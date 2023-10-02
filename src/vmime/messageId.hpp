@@ -106,7 +106,7 @@ protected:
 
 	// Component parsing & assembling
 	void parseImpl(
-		const parsingContext& ctx,
+		parsingContext& ctx,
 		const string& buffer,
 		const size_t position,
 		const size_t end,
@@ -129,7 +129,7 @@ protected:
 	  * @return a new message-id object, or null if no more message-id can be parsed from the input buffer
 	  */
 	static shared_ptr <messageId> parseNext(
-		const parsingContext& ctx,
+		parsingContext& ctx,
 		const string& buffer,
 		const size_t position,
 		const size_t end,

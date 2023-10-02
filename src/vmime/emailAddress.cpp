@@ -176,7 +176,7 @@ emailAddress::emailAddress(const word& localName, const word& domainName)
 
 
 void emailAddress::parseImpl(
-	const parsingContext& /* ctx */,
+	parsingContext& /* ctx */,
 	const string& buffer,
 	const size_t position,
 	const size_t end,

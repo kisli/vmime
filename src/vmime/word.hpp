@@ -198,7 +198,7 @@ public:
 protected:
 
 	void parseImpl(
-		const parsingContext& ctx,
+		parsingContext& ctx,
 		const string& buffer,
 		const size_t position,
 		const size_t end,
@@ -213,7 +213,7 @@ protected:
 	) const;
 
 	void parseWithState(
-		const parsingContext& ctx,
+		parsingContext& ctx,
 		const string& buffer,
 		const size_t position,
 		const size_t end,
@@ -241,7 +241,7 @@ public:
 private:
 
 	static shared_ptr <word> parseNext(
-		const parsingContext& ctx,
+		parsingContext& ctx,
 		const string& buffer,
 		const size_t position,
 		const size_t end,
@@ -250,7 +250,7 @@ private:
 	);
 
 	static const std::vector <shared_ptr <word> > parseMultiple(
-		const parsingContext& ctx,
+		parsingContext& ctx,
 		const string& buffer,
 		const size_t position,
 		const size_t end,
