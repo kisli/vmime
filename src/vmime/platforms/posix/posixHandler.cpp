@@ -48,6 +48,9 @@
 #if VMIME_HAVE_SYSCALL
 #	include <sys/syscall.h>
 #endif
+#if VMIME_HAVE_LWP_SELF
+#	include <sys/lwp.h>
+#endif
 
 #include <netdb.h>
 
@@ -227,6 +230,8 @@ unsigned int posixHandler::getThreadId() const {
 	return static_cast <unsigned int>(::syscall(SYS_gettid));
 #elif VMIME_HAVE_GETTHRID  // OpenBSD
 	return static_cast <unsigned int>(::getthrid());
+#elif VMIME_HAVE_LWP_SELF  // Solaris
+	return static_cast <unsigned int>(::_lwp_self());
 #else
 	#error We have no implementation of getThreadId() for this platform!
 #endif
