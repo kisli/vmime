@@ -338,6 +338,11 @@ void text::createFromString(const string& in, const charset& ch) {
 
 					} else {
 
+						if (count) {
+							shared_ptr <word> w = getWordAt(getWordCount() - 1);
+							w->getBuffer() += ' ';
+						}
+
 						appendWord(make_shared <word>(chunk, charset(charsets::US_ASCII)));
 
 						prevIs8bit = false;
