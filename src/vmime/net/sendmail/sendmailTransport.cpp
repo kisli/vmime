@@ -165,7 +165,7 @@ void sendmailTransport::send(
 	args.push_back("-i");
 	args.push_back("-f");
 
-	if (!sender.isEmpty()) {
+	if (sender.isEmpty()) {
 		args.push_back(expeditor.getEmail().generate());
 	} else {
 		args.push_back(sender.getEmail().generate());
