@@ -42,6 +42,12 @@ struct headerParseRecoveryMethod {
 };
 
 /** Holds configuration parameters used for parsing messages.
+  *
+  * Within vmime there are some functions that only utilize the default parsing
+  *  context. If you need to manipulate the behavior of the parser for those
+  *  functions, it is suggested to get the default context and make the
+  *  appropriate set calls to adjust the behavior. You can also use this
+  *  instance when making function calls the require a context be passed in.
   */
 class VMIME_EXPORT parsingContext : public context {
 
@@ -50,9 +56,10 @@ public:
 	parsingContext();
 	parsingContext(const parsingContext& ctx);
 
-	/** Returns the default context used for parsing messages.
+	/** Returns the default context used for parsing messages. The context
+    *  is scoped as a thread local variable.
 	  *
-	  * @return a reference to the default parsing context
+	  * @return a reference to the default parsing context for that thread
 	  */
 	static parsingContext& getDefaultContext();
 
