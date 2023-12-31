@@ -77,9 +77,28 @@ public:
 	  */
 	headerParseRecoveryMethod::headerLineError getHeaderParseErrorRecoveryMethod() const;
 
+	/** Return the current hostname adding behavior when parsing/creating a header field that
+	  * utilizes a domain name.
+	  *
+	  * @retval true The local hostname will be appended if a domain is not present
+	  * @retval false The local hostname will not be appended even if a domain is not present
+	  */
+	bool getUseMyHostname() const;
+
+	/** Enables/disables appending the local hostname in header fields if a domain is not
+	  * not provided and it is required. The default is to append. Changing this can result
+	  * in fields that would violate various RFCs.
+	  */
+	void setUseMyHostname(bool useMyHostname);
+
 protected:
 
 	headerParseRecoveryMethod::headerLineError m_headerParseErrorRecovery;
+
+	/** Flag to indicate if the local hostname should be used/appended
+	  *  for header fields when one is not present.
+	  */
+	bool m_useMyHostname{true};
 };
 
 
