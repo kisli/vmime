@@ -57,7 +57,7 @@ public:
 	parsingContext(const parsingContext& ctx);
 
 	/** Returns the default context used for parsing messages. The context
-    *  is scoped as a thread local variable.
+	  * is scoped as a thread local variable.
 	  *
 	  * @return a reference to the default parsing context for that thread
 	  */
