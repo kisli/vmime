@@ -60,10 +60,12 @@ void parsingContext::setHeaderParseErrorRecoveryMethod(
 	m_headerParseErrorRecovery = recoveryMethod;
 }
 
+
 bool parsingContext::getUseMyHostname() const {
 
 	return m_useMyHostname;
 }
+
 
 void parsingContext::setUseMyHostname(bool useMyHostname) {
 
