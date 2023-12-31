@@ -47,7 +47,7 @@ contentDisposition::contentDisposition(const contentDisposition& type)
 
 
 void contentDisposition::parseImpl(
-	const parsingContext& /* ctx */,
+	parsingContext& /* ctx */,
 	const string& buffer,
 	const size_t position,
 	const size_t end,

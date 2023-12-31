@@ -73,7 +73,7 @@ public:
 	  * @return a new address object, or null if no more address is available in the input buffer
 	  */
 	static shared_ptr <address> parseNext(
-		const parsingContext& ctx,
+		parsingContext& ctx,
 		const string& buffer,
 		const size_t position,
 		const size_t end,

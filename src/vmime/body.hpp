@@ -343,7 +343,7 @@ protected:
 
 	// Component parsing & assembling
 	void parseImpl(
-		const parsingContext& ctx,
+		parsingContext& ctx,
 		const shared_ptr <utility::parserInputStreamAdapter>& parser,
 		const size_t position,
 		const size_t end,

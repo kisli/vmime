@@ -75,7 +75,7 @@ headerField& headerField::operator=(const headerField& other) {
 
 
 shared_ptr <headerField> headerField::parseNext(
-	const parsingContext& ctx,
+	parsingContext& ctx,
 	const string& buffer,
 	const size_t position,
 	const size_t end,
@@ -125,6 +125,8 @@ shared_ptr <headerField> headerField::parseNext(
 
 			if (buffer[pos] != ':') {
 
+				// header field recovery is necessary, update flag in parsing context
+				ctx.setHeaderRecoveryNeeded(true);
 				switch (ctx.getHeaderParseErrorRecoveryMethod()) {
 
 					case vmime::headerParseRecoveryMethod::SKIP_LINE:
@@ -261,7 +263,7 @@ shared_ptr <headerField> headerField::parseNext(
 
 
 void headerField::parseImpl(
-	const parsingContext& ctx,
+	parsingContext& ctx,
 	const string& buffer,
 	const size_t position,
 	const size_t end,

@@ -58,7 +58,7 @@ relay::relay(const relay& r)
 */
 
 void relay::parseImpl(
-	const parsingContext& ctx,
+	parsingContext& ctx,
 	const string& buffer,
 	const size_t position,
 	const size_t end,

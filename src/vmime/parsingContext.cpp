@@ -61,6 +61,18 @@ void parsingContext::setHeaderParseErrorRecoveryMethod(
 }
 
 
+bool parsingContext::getHeaderRecoveryNeeded() const {
+
+	return m_headerParseRecoveryNeeded;
+}
+
+
+void parsingContext::setHeaderRecoveryNeeded(bool needed) {
+
+	m_headerParseRecoveryNeeded = needed;
+}
+
+
 bool parsingContext::getUseMyHostname() const {
 
 	return m_useMyHostname;

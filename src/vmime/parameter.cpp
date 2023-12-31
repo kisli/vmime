@@ -116,7 +116,7 @@ void parameter::setValue(const word& value) {
 
 
 void parameter::parseImpl(
-	const parsingContext& ctx,
+	parsingContext& ctx,
 	const string& buffer,
 	const size_t position,
 	const size_t end,
@@ -138,7 +138,7 @@ void parameter::parseImpl(
 
 
 void parameter::parse(
-	const parsingContext& ctx,
+	parsingContext& ctx,
 	const std::vector <valueChunk>& chunks
 ) {
 

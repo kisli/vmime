@@ -115,7 +115,7 @@ const std::vector <shared_ptr <component> > path::getChildComponents() {
 
 
 void path::parseImpl(
-	const parsingContext& /* ctx */,
+	parsingContext& /* ctx */,
 	const string& buffer,
 	const size_t position,
 	const size_t end,

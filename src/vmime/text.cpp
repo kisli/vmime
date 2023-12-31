@@ -67,7 +67,7 @@ text::~text() {
 
 
 void text::parseImpl(
-	const parsingContext& ctx,
+	parsingContext& ctx,
 	const string& buffer,
 	const size_t position,
 	const size_t end,
@@ -401,7 +401,7 @@ shared_ptr <text> text::decodeAndUnfold(const string& in) {
 }
 
 
-shared_ptr <text> text::decodeAndUnfold(const parsingContext& ctx, const string& in) {
+shared_ptr <text> text::decodeAndUnfold(parsingContext& ctx, const string& in) {
 
 	shared_ptr <text> t = make_shared <text>();
 
@@ -417,7 +417,7 @@ text* text::decodeAndUnfold(const string& in, text* generateInExisting) {
 }
 
 
-text* text::decodeAndUnfold(const parsingContext& ctx, const string& in, text* generateInExisting) {
+text* text::decodeAndUnfold(parsingContext& ctx, const string& in, text* generateInExisting) {
 
 	text* out = generateInExisting ? generateInExisting : new text();
 

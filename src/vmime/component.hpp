@@ -59,7 +59,7 @@ public:
 	  * @param ctx parsing context
 	  * @param buffer input buffer
 	  */
-	void parse(const parsingContext& ctx, const string& buffer);
+	void parse(parsingContext& ctx, const string& buffer);
 
 	/** Parse RFC-822/MIME data for this component. If stream is not seekable,
 	  * or if length is not specified, entire contents of the stream will
@@ -94,7 +94,7 @@ public:
 	  * @param newPosition will receive the new position in the input buffer
 	  */
 	void parse(
-		const parsingContext& ctx,
+		parsingContext& ctx,
 		const string& buffer,
 		const size_t position,
 		const size_t end,
@@ -129,7 +129,7 @@ public:
 	  * @param newPosition will receive the new position in the input stream
 	  */
 	void parse(
-		const parsingContext& ctx,
+		parsingContext& ctx,
 		const shared_ptr <utility::inputStream>& inputStream,
 		const size_t position,
 		const size_t end,
@@ -228,7 +228,7 @@ protected:
 
 	// AT LEAST ONE of these parseImpl() functions MUST be implemented in derived class
 	virtual void parseImpl(
-		const parsingContext& ctx,
+		parsingContext& ctx,
 		const shared_ptr <utility::parserInputStreamAdapter>& parser,
 		const size_t position,
 		const size_t end,
@@ -236,7 +236,7 @@ protected:
 	);
 
 	virtual void parseImpl(
-		const parsingContext& ctx,
+		parsingContext& ctx,
 		const string& buffer,
 		const size_t position,
 		const size_t end,
