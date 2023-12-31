@@ -42,7 +42,7 @@ parsingContext::parsingContext(const parsingContext& ctx)
 
 parsingContext& parsingContext::getDefaultContext() {
 
-	static parsingContext ctx;
+	static thread_local parsingContext ctx;
 	return ctx;
 }
 
