@@ -60,14 +60,16 @@ void parsingContext::setHeaderParseErrorRecoveryMethod(
 	m_headerParseErrorRecovery = recoveryMethod;
 }
 
+
 bool parsingContext::getHeaderRecoveryNeeded() const {
 
-	return m_recovery_needed;
+	return m_headerParseRecoveryNeeded;
 }
+
 
 void parsingContext::setHeaderRecoveryNeeded(bool needed) {
 
-	m_recovery_needed = needed;
+	m_headerParseRecoveryNeeded = needed;
 }
 
 
