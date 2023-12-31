@@ -336,7 +336,7 @@ private:
 	void parse(const string& props);
 
 
-	class propFinder : public std::unary_function <shared_ptr <property>, bool> {
+	class propFinder {
 
 	public:
 
