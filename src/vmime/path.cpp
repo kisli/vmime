@@ -192,6 +192,16 @@ void path::generateImpl(
 			*newLinePos = curLinePos + 2;
 		}
 
+	} else if (!m_localPart.empty() && m_domain.empty()) {
+		// this should only be true if m_useMyHostname is false and an address without
+		// an `@` is encountered
+
+		os << "<" << m_localPart << ">";
+
+		if (newLinePos) {
+			*newLinePos = curLinePos + m_localPart.length() + 2;
+		}
+
 	} else {
 
 		os << "<" << m_localPart << "@" << m_domain << ">";

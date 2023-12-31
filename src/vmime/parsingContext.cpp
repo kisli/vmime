@@ -42,7 +42,7 @@ parsingContext::parsingContext(const parsingContext& ctx)
 
 parsingContext& parsingContext::getDefaultContext() {
 
-	static parsingContext ctx;
+	static thread_local parsingContext ctx;
 	return ctx;
 }
 
@@ -68,6 +68,18 @@ bool parsingContext::getHeaderRecoveryNeeded() const {
 void parsingContext::setHeaderRecoveryNeeded(bool needed) {
 
 	m_recovery_needed = needed;
+}
+
+
+bool parsingContext::getUseMyHostname() const {
+
+	return m_useMyHostname;
+}
+
+
+void parsingContext::setUseMyHostname(bool useMyHostname) {
+
+	m_useMyHostname = useMyHostname;
 }
 
 

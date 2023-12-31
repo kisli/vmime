@@ -176,7 +176,7 @@ emailAddress::emailAddress(const word& localName, const word& domainName)
 
 
 void emailAddress::parseImpl(
-	parsingContext& /* ctx */,
+	parsingContext& ctx,
 	const string& buffer,
 	const size_t position,
 	const size_t end,
@@ -541,7 +541,7 @@ void emailAddress::parseImpl(
 	} else {
 
 		// If the domain part is missing, use local host name
-		if (domainPart.str().empty() && !atFound) {
+		if (ctx.getUseMyHostname() && domainPart.str().empty() && !atFound) {
 			domainPart << platform::getHandler()->getHostName();
 		}
 
@@ -595,16 +595,28 @@ void emailAddress::generateImpl(
 		domainPart = domainNameToIDNA(m_domainName.getConvertedText(vmime::charsets::UTF_8));
 	}
 
-	os << localPart
-	   << "@"
-	   << domainPart;
 
-	if (newLinePos) {
+	if (!domainPart.empty()) {
+		os << localPart
+			<< "@"
+			<< domainPart;
 
-		*newLinePos = curLinePos
-			+ localPart.length()
-			+ 1 // @
-			+ domainPart.length();
+		if (newLinePos) {
+			*newLinePos = curLinePos
+				+ localPart.length()
+				+ 1 // @
+				+ domainPart.length();
+		}
+	} else {
+		// this should only be true if m_useMyHostname is false and an address without
+		// an `@` is encountered
+
+		os << localPart;
+
+		if (newLinePos) {
+			*newLinePos = curLinePos
+				+ localPart.length();
+		}
 	}
 }
 
@@ -698,8 +710,12 @@ const text emailAddress::toText() const {
 
 	text txt;
 	txt.appendWord(make_shared <vmime::word>(m_localName));
-	txt.appendWord(make_shared <vmime::word>("@", vmime::charsets::US_ASCII));
-	txt.appendWord(make_shared <vmime::word>(m_domainName));
+	if (!m_domainName.empty()) {
+		// this should only be skipped if m_useMyHostname is false and an address without
+		// an `@` is encountered
+		txt.appendWord(make_shared <vmime::word>("@", vmime::charsets::US_ASCII));
+		txt.appendWord(make_shared <vmime::word>(m_domainName));
+	}
 
 	return txt;
 }

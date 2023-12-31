@@ -42,6 +42,12 @@ struct headerParseRecoveryMethod {
 };
 
 /** Holds configuration parameters used for parsing messages.
+  *
+  * Within vmime there are some functions that only utilize the default parsing
+  *  context. If you need to manipulate the behavior of the parser for those
+  *  functions, it is suggested to get the default context and make the
+  *  appropriate set calls to adjust the behavior. You can also use this
+  *  instance when making function calls the require a context be passed in.
   */
 class VMIME_EXPORT parsingContext : public context {
 
@@ -52,9 +58,10 @@ public:
 	parsingContext();
 	parsingContext(const parsingContext& ctx);
 
-	/** Returns the default context used for parsing messages.
+	/** Returns the default context used for parsing messages. The context
+	  * is scoped as a thread local variable.
 	  *
-	  * @return a reference to the default parsing context
+	  * @return a reference to the default parsing context for that thread
 	  */
 	static parsingContext& getDefaultContext();
 
@@ -73,12 +80,26 @@ public:
 	headerParseRecoveryMethod::headerLineError getHeaderParseErrorRecoveryMethod() const;
 
 	/** Returns a boolean indicating if utilizing the header recovery mechanism
-	  *  was necessary.
+	  * was necessary.
 	  *
 	  * @retval true The header recovery mechanism was necessary when parsing
 	  * @retval false The header recovery mechanism was not necessary when parsing
 	  */
 	bool getHeaderRecoveryNeeded() const;
+
+  /** Return the current hostname adding behavior when parsing/creating a header field that
+	  * utilizes a domain name.
+	  *
+	  * @retval true The local hostname will be appended if a domain is not present
+	  * @retval false The local hostname will not be appended even if a domain is not present
+	  */
+	bool getUseMyHostname() const;
+
+	/** Enables/disables appending the local hostname in header fields if a domain is not
+	  * not provided and it is required. The default is to append. Changing this can result
+	  * in fields that would violate various RFCs.
+	  */
+	void setUseMyHostname(bool useMyHostname);
 
 protected:
 
@@ -87,13 +108,18 @@ protected:
 	/** Flag to indicate if the header recovery mechanism was used while parsing
 	  *  as only one method is ever in use, a simple boolean is sufficent
 	  */
-	bool m_recovery_needed{false};
+	bool m_headerParseRecoveryNeeded{false};
 
 	/** Sets a flag indicating that the header recovery mechanism was required
 	  *
 	  * This should only be called from headerField::parseNext
 	  */
 	void setHeaderRecoveryNeeded(bool needed);
+
+	/** Flag to indicate if the local hostname should be used/appended
+	  *  for header fields when one is not present.
+	  */
+	bool m_useMyHostname{true};
 };
 
 
