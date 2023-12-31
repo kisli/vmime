@@ -48,6 +48,9 @@
 #if VMIME_HAVE_SYSCALL
 #	include <sys/syscall.h>
 #endif
+#if VMIME_HAVE_THR_SELF
+#	include <sys/thr.h>
+#endif
 #if VMIME_HAVE_LWP_SELF
 #	include <sys/lwp.h>
 #endif
@@ -230,6 +233,10 @@ unsigned int posixHandler::getThreadId() const {
 	return static_cast <unsigned int>(::syscall(SYS_gettid));
 #elif VMIME_HAVE_GETTHRID  // OpenBSD
 	return static_cast <unsigned int>(::getthrid());
+#elif VMIME_HAVE_THR_SELF  // FreeBSD
+	long id = 0;
+	::thr_self(&id);
+	return static_cast <unsigned int>(id);
 #elif VMIME_HAVE_LWP_SELF  // Solaris
 	return static_cast <unsigned int>(::_lwp_self());
 #else
