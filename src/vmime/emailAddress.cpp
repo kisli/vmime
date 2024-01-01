@@ -710,7 +710,8 @@ const text emailAddress::toText() const {
 
 	text txt;
 	txt.appendWord(make_shared <vmime::word>(m_localName));
-	if (!m_domainName.empty()) {
+
+	if (!m_domainName.isEmpty()) {
 		// this should only be skipped if m_useMyHostname is false and an address without
 		// an `@` is encountered
 		txt.appendWord(make_shared <vmime::word>("@", vmime::charsets::US_ASCII));
