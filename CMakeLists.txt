@@ -112,11 +112,10 @@ FILE(
 	${CMAKE_CURRENT_SOURCE_DIR}/src/vmime/*.hpp
 )
 
-LIST(APPEND VMIME_LIBRARY_GENERATED_INCLUDE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/vmime/config.hpp")
-
 INCLUDE_DIRECTORIES(
-	${CMAKE_CURRENT_SOURCE_DIR}          # for "contrib/"
-	${CMAKE_CURRENT_SOURCE_DIR}/src      # for "vmime/
+	${CMAKE_SOURCE_DIR}          # for "contrib/"
+	${CMAKE_SOURCE_DIR}/src      # for "vmime/
+	${CMAKE_BINARY_DIR}/src      # for "config.hpp" and other generated sources
 )
 
 INCLUDE(GenerateExportHeader)
@@ -147,17 +146,10 @@ IF(VMIME_BUILD_SHARED_LIBRARY)
 		${VMIME_LIBRARY_NAME}
 		BASE_NAME VMIME
 		STATIC_DEFINE VMIME_STATIC
-		EXPORT_FILE_NAME export-shared.hpp
+		EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/src/vmime/export-shared.hpp
 	)
 
-	FILE(
-		COPY
-		${CMAKE_CURRENT_BINARY_DIR}/export-shared.hpp
-		DESTINATION
-		${CMAKE_CURRENT_SOURCE_DIR}/src/vmime
-	)
-
-	LIST(APPEND VMIME_LIBRARY_GENERATED_INCLUDE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/vmime/export-shared.hpp")
+	LIST(APPEND VMIME_LIBRARY_GENERATED_INCLUDE_FILES "${CMAKE_BINARY_DIR}/src/vmime/export-shared.hpp")
 
 	SET_TARGET_PROPERTIES(
 		${VMIME_LIBRARY_NAME}
@@ -197,17 +189,10 @@ IF(VMIME_BUILD_STATIC_LIBRARY)
 		${VMIME_LIBRARY_NAME}-static
 		BASE_NAME VMIME
 		STATIC_DEFINE VMIME_STATIC
-		EXPORT_FILE_NAME export-static.hpp
+		EXPORT_FILE_NAME ${CMAKE_BINARY_DIR}/src/vmime/export-static.hpp
 	)
 
-	FILE(
-		COPY
-		${CMAKE_CURRENT_BINARY_DIR}/export-static.hpp
-		DESTINATION
-		${CMAKE_CURRENT_SOURCE_DIR}/src/vmime
-	)
-
-	LIST(APPEND VMIME_LIBRARY_GENERATED_INCLUDE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/vmime/export-static.hpp")
+	LIST(APPEND VMIME_LIBRARY_GENERATED_INCLUDE_FILES "${CMAKE_BINARY_DIR}/src/vmime/export-static.hpp")
 
 	SET_TARGET_PROPERTIES(
 		${VMIME_LIBRARY_NAME}-static
@@ -1015,7 +1000,8 @@ ENDIF()
 
 
 # Set our configure file
-CONFIGURE_FILE(cmake/config.hpp.cmake ${CMAKE_CURRENT_SOURCE_DIR}/src/vmime/config.hpp)
+CONFIGURE_FILE(cmake/config.hpp.cmake ${CMAKE_BINARY_DIR}/src/vmime/config.hpp)
+LIST(APPEND VMIME_LIBRARY_GENERATED_INCLUDE_FILES ${CMAKE_BINARY_DIR}/src/vmime/config.hpp)
 
 # PkgConfig post-configuration
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/vmime.pc.in ${CMAKE_BINARY_DIR}/vmime.pc @ONLY)
