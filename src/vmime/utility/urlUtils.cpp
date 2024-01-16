@@ -65,6 +65,16 @@ const string urlUtils::encode(const string& s) {
 	return result;
 }
 
+const string urlUtils::encode_host(const string& s) {
+
+	if (s.size() == 0)
+		return encode(s);
+	for (auto it = s.begin() + 1; it != s.end() - 1; ++it)
+		if (!parserHelpers::isXDigit(*it) && *it != ':')
+			return encode(s);
+	return "[" + s + "]";
+
+}
 
 const string urlUtils::decode(const string& s) {
 

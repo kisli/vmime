@@ -54,6 +54,12 @@ public:
 		return c >= '0' && c <= '9';
 	}
 
+	static bool isXDigit(const char_t c) {
+
+		return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') ||
+		       (c >= 'A' && c <= 'F');
+	}
+
 	static bool isAlpha(const char_t c) {
 
 		return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
