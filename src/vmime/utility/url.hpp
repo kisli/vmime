@@ -35,7 +35,10 @@ namespace utility {
 
 
 /** This class represents a Uniform Resource Locator (a pointer
-  * to a "resource" on the World Wide Web).
+  * to a "resource" on the World Wide Web). It is meant to be only
+  * used in conjunction with vmime, as all URLs and URL components are
+  * interpreted as, or re-written into, Common Internet Scheme (RFC 1738 §3.1)
+  * form. (As such, it cannot be used with e.g. the mailto: scheme.)
   *
   * Format:
   * "protocol://[username[:password]@]host[:port][/path]"
