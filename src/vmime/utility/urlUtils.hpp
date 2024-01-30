@@ -46,7 +46,7 @@ public:
 
 	/** Encode the host portion of a URL string.
 	  */
-	static const string encode_host(const string& s);
+	static const string encodeHost(const string& s);
 
 	/** Decode an hex-encoded URL (see encode()).
 	  */
