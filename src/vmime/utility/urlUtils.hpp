@@ -44,6 +44,10 @@ public:
 	  */
 	static const string encode(const string& s);
 
+	/** Encode the host portion of a URL string.
+	  */
+	static const string encodeHost(const string& s);
+
 	/** Decode an hex-encoded URL (see encode()).
 	  */
 	static const string decode(const string& s);
