@@ -126,7 +126,7 @@ const string url::build() const {
 		oss << "@";
 	}
 
-	oss << urlUtils::encode_host(m_host);
+	oss << urlUtils::encodeHost(m_host);
 
 	if (m_port != UNSPECIFIED_PORT) {
 
@@ -165,26 +165,40 @@ const string url::build() const {
 	return oss.str();
 }
 
-static bool extract_host_ipv6(string& hostPart, string& host, string& port) {
 
-	if (hostPart[0] != '[')
+static bool extractHostIPv6(string& hostPart, string& host, string& port) {
+
+	if (hostPart[0] != '[') {
 		return false;
-	auto len = hostPart.find(']');
-	if (len == string::npos)
+	}
+
+	const auto len = hostPart.find(']');
+
+	if (len == string::npos) {
 		return false;
+	}
+
 	host.assign(&hostPart[1], len - 1);
-	if (hostPart[len] == '\0')
-		return true;
-	if (hostPart[len+1] != ':')
-		return false;
-	port = hostPart.substr(len + 2);
-	return true;
 
+	if (hostPart[len] == '\0') {
+		return true;
+	}
+	if (hostPart[len + 1] != ':') {
+		return false;
+	}
+
+	port = hostPart.substr(len + 2);
+
+	return true;
 }
 
-static void extract_host(string& hostPart, string& host, string& port) {
-	if (extract_host_ipv6(hostPart, host, port))
+
+static void extractHost(string& hostPart, string& host, string& port) {
+
+	if (extractHostIPv6(hostPart, host, port)) {
 		return;
+	}
+
 	const size_t colonPos = hostPart.find(':');
 
 	if (colonPos == string::npos) {
@@ -197,6 +211,7 @@ static void extract_host(string& hostPart, string& host, string& port) {
 		port = utility::stringUtils::trim(string(hostPart.begin() + colonPos + 1, hostPart.end()));
 	}
 }
+
 
 void url::parse(const string& str) {
 
@@ -256,7 +271,7 @@ void url::parse(const string& str) {
 	// Host/port
 	string host;
 	string port;
-	extract_host(hostPart, host, port);
+	extractHost(hostPart, host, port);
 
 	// Path
 	string path = utility::stringUtils::trim(string(str.begin() + slashPos, str.end()));
