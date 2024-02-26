@@ -35,7 +35,8 @@ VMIME_TEST_SUITE_BEGIN(urlTest)
 		VMIME_TEST(testParse3)
 		VMIME_TEST(testParse4)
 		VMIME_TEST(testParse5)
-		VMIME_TEST(testParseIPv6)
+		VMIME_TEST(testParseIPv6Full)
+		VMIME_TEST(testParseIPv6NoPort)
 		VMIME_TEST(testGenerate)
 		VMIME_TEST(testUtilsEncode)
 		VMIME_TEST(testUtilsDecode)
@@ -202,7 +203,7 @@ VMIME_TEST_SUITE_BEGIN(urlTest)
 		VASSERT_EQ("4", "myserver.com", u1.getHost());
 	}
 
-	void testParseIPv6() {
+	void testParseIPv6Full() {
 
 		vmime::utility::url u1("", "");
 
@@ -212,6 +213,14 @@ VMIME_TEST_SUITE_BEGIN(urlTest)
 		VASSERT_EQ("4", "::1", u1.getHost());
 		VASSERT_EQ("5", 80, u1.getPort());
 		VASSERT_EQ("6", "/p", u1.getPath());
+	}
+
+	void testParseIPv6NoPort() {
+
+		vmime::utility::url u1("", "");
+
+		VASSERT_EQ("1", true, parseHelper(u1, "http://[::1]/"));
+		VASSERT_EQ("2", "::1", u1.getHost());
 	}
 
 	void testGenerate() {
