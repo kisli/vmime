@@ -115,10 +115,18 @@ void OpenSSLInitializer::initialize() {
 	OPENSSL_config(NULL);
 #endif
 
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+	static const bool isFIPSenabled = EVP_default_properties_is_fips_enabled(nullptr) == 1;
+#else
+	static const bool isFIPSenabled = FIPS_mode() == 1;
+#endif
+
 #if OPENSSL_VERSION_NUMBER >=0x10100000L
-	OPENSSL_init_crypto(OPENSSL_INIT_ADD_ALL_CIPHERS | OPENSSL_INIT_ADD_ALL_DIGESTS |
-		OPENSSL_INIT_LOAD_CONFIG | OPENSSL_INIT_ENGINE_OPENSSL | OPENSSL_INIT_ENGINE_ALL_BUILTIN , NULL);
-	OPENSSL_init_ssl(OPENSSL_INIT_LOAD_SSL_STRINGS, NULL);
+	vmime_uint64 flags = OPENSSL_INIT_LOAD_SSL_STRINGS | OPENSSL_INIT_LOAD_CONFIG;
+	if (!isFIPSenabled) {
+		flags |= OPENSSL_INIT_ENGINE_OPENSSL | OPENSSL_INIT_ENGINE_ALL_BUILTIN;
+	}
+	OPENSSL_init_ssl(flags, NULL);
 #endif
 
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
