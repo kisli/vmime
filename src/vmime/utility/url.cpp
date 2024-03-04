@@ -180,7 +180,7 @@ static bool extractHostIPv6(string& hostPart, string& host, string& port) {
 
 	host.assign(&hostPart[1], len - 1);
 
-	if (hostPart[len] == '\0') {
+	if (hostPart[len + 1] == '\0') {
 		return true;
 	}
 	if (hostPart[len + 1] != ':') {
