@@ -232,23 +232,6 @@ namespace vmime {
 
 		return const_pointer_cast <X, Y>(obj);
 	}
-
-	/** Inherit from this class to indicate the subclass is not copyable,
-	  * ie. you want to prohibit copy construction and copy assignment.
-	  */
-	class VMIME_EXPORT noncopyable {
-
-	protected:
-
-		noncopyable() { }
-		virtual ~noncopyable() { }
-
-	private:
-
-		noncopyable(const noncopyable&);
-		void operator=(const noncopyable&);
-	};
-
 } // vmime
 
 

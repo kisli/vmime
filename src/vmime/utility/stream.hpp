@@ -38,9 +38,12 @@ namespace utility {
 
 /** Base class for input/output stream.
   */
-class VMIME_EXPORT stream : public object, private noncopyable {
-
+class VMIME_EXPORT stream : public object {
 public:
+	stream() = default;
+	/* Presence of move-ctor/move-asg inhibits default copy-ctor/copy-asg */
+	stream(stream &&) = default;
+	stream &operator=(stream &&) = default;
 
 	virtual ~stream() { }
 
