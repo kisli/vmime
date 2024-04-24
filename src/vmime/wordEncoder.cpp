@@ -306,10 +306,10 @@ wordEncoder::Encoding wordEncoder::guessBestEncoding(
 	const size_t asciiCount =
 		utility::stringUtils::countASCIIchars(buffer.begin(), buffer.end());
 
-	const size_t asciiPercent =
-		buffer.length() == 0 ? 100 : (100 * asciiCount) / buffer.length();
+	const double asciiPercent =
+		buffer.length() == 0 ? 100 : static_cast<double>(asciiCount) / buffer.length();
 
-	if (asciiPercent < 60) {
+	if (asciiPercent < 0.60) {
 		return ENCODING_B64;
 	} else {
 		return ENCODING_QP;
