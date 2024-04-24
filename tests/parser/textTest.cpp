@@ -32,6 +32,7 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testConstructors)
 		VMIME_TEST(testCopy)
+		VMIME_TEST(testRecommendedEncoding)
 		VMIME_TEST(testNewFromString)
 		VMIME_TEST(testDisplayForm)
 		VMIME_TEST(testParse)
@@ -153,6 +154,17 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		t2.copyFrom(t1);
 
 		VASSERT("copyFrom", t1 == t2);
+	}
+
+	void testRecommendedEncoding() {
+
+		vmime::encoding enc;
+		VASSERT_TRUE("1.1", vmime::charset("iso8859-1").getRecommendedEncoding(enc));
+		VASSERT_TRUE("1.2", enc.getName() == vmime::encodingTypes::QUOTED_PRINTABLE);
+		VASSERT_TRUE("1.2", vmime::charset("iso8859-2").getRecommendedEncoding(enc));
+		VASSERT_TRUE("1.3", enc.getName() == vmime::encodingTypes::QUOTED_PRINTABLE);
+		VASSERT_FALSE("1.3", vmime::charset(vmime::charsets::UTF_8).getRecommendedEncoding(enc));
+
 	}
 
 	void testNewFromString() {
