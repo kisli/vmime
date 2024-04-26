@@ -32,6 +32,7 @@ VMIME_TEST_SUITE_BEGIN(mailboxTest)
 		VMIME_TEST(testSeparatorInComment)
 		VMIME_TEST(testMalformations)
 		VMIME_TEST(testExcessiveQuoting)
+		VMIME_TEST(testSpacing)
 	VMIME_TEST_LIST_END
 
 
@@ -182,6 +183,15 @@ VMIME_TEST_SUITE_BEGIN(mailboxTest)
 
 		a = make_shared<mailbox>(text(word("Foo B@r", charsets::UTF_8)), e);
 		VASSERT_EQ("generate", "=?utf-8?Q?Foo_B=40r?= <a@b.com>", a->generate());
+	}
+
+	void testSpacing() {
+
+		vmime::text t("Foo B\xc3\xa4renstark Baz", vmime::charsets::UTF_8);
+		vmime::mailbox m(t, "a@b.de");
+		VASSERT_EQ("1", "Foo =?utf-8?Q?B=C3=A4renstark?= Baz", t.generate());
+		VASSERT_EQ("2", "=?us-ascii?Q?Foo?= =?utf-8?Q?_B=C3=A4renstark?= =?us-ascii?Q?_Baz?= <a@b.de>", m.generate());
+
 	}
 
 VMIME_TEST_SUITE_END
