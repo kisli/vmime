@@ -755,6 +755,9 @@ void word::generate(
 		if (!startNewLine && !state->isFirstWord && !state->lastCharIsSpace) {
 
 			os << " "; // Separate from previous word
+			if (!state->prevWordIsEncoded && m_buffer[0] == ' ')
+				wordEnc.getNextChunk(1);
+
 			++curLineLength;
 
 			state->lastCharIsSpace = true;

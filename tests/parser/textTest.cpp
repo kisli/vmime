@@ -189,11 +189,11 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		t2.createFromString(s2, c2);
 
 		VASSERT_EQ("2.1", 3, t2.getWordCount());
-		VASSERT_EQ("2.2", "some ASCII characters and special chars: ", t2.getWordAt(0)->getBuffer());
+		VASSERT_EQ("2.2", "some ASCII characters and special chars:", t2.getWordAt(0)->getBuffer());
 		VASSERT_EQ("2.3", vmime::charset(vmime::charsets::US_ASCII), t2.getWordAt(0)->getCharset());
 		VASSERT_EQ("2.4", "\xc3\xa4\xd0\xb0", t2.getWordAt(1)->getBuffer());
 		VASSERT_EQ("2.5", c2, t2.getWordAt(1)->getCharset());
-		VASSERT_EQ("2.6", "and then more ASCII chars.", t2.getWordAt(2)->getBuffer());
+		VASSERT_EQ("2.6", " and then more ASCII chars.", t2.getWordAt(2)->getBuffer());
 		VASSERT_EQ("2.7", vmime::charset(vmime::charsets::US_ASCII), t2.getWordAt(2)->getCharset());
 	}
 
@@ -512,9 +512,9 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		text.createFromString("Achim Br\xc3\xa4ndt", vmime::charsets::UTF_8);
 
 		VASSERT_EQ("1", 2, text.getWordCount());
-		VASSERT_EQ("2", "Achim ", text.getWordAt(0)->getBuffer());
+		VASSERT_EQ("2", "Achim", text.getWordAt(0)->getBuffer());
 		VASSERT_EQ("3", "us-ascii", text.getWordAt(0)->getCharset());
-		VASSERT_EQ("4", "Br\xc3\xa4ndt", text.getWordAt(1)->getBuffer());
+		VASSERT_EQ("4", " Br\xc3\xa4ndt", text.getWordAt(1)->getBuffer());
 		VASSERT_EQ("5", "utf-8", text.getWordAt(1)->getCharset());
 
 		// Generate
@@ -534,7 +534,7 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 
 		// Space MUST be encoded inside a word
 		vmime::mailbox mbox(vmime::text("Achim Br\xc3\xa4ndt", vmime::charsets::UTF_8), "me@vmime.org");
-		VASSERT_EQ("generate1", "=?us-ascii?Q?Achim_?= =?utf-8?Q?Br=C3=A4ndt?= <me@vmime.org>", mbox.generate());
+		VASSERT_EQ("generate1", "=?us-ascii?Q?Achim?= =?utf-8?Q?_Br=C3=A4ndt?= <me@vmime.org>", mbox.generate());
 
 		vmime::text txt;
 		txt.appendWord(vmime::make_shared <vmime::word>("Achim ", "us-ascii"));
