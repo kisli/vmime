@@ -302,14 +302,16 @@ wordEncoder::Encoding wordEncoder::guessBestEncoding(
 		}
 	}
 
-	// Use Base64 if more than 40% non-ASCII, or Quoted-Printable else (default)
+	// Base64 would be more space-efficient when the ASCII content is
+	// below 83.33%, but QP has a legibility arugment going for it, so we
+	// picked 60%.
 	const size_t asciiCount =
 		utility::stringUtils::countASCIIchars(buffer.begin(), buffer.end());
 
-	const size_t asciiPercent =
-		buffer.length() == 0 ? 100 : (100 * asciiCount) / buffer.length();
+	const double asciiPercent =
+		buffer.length() == 0 ? 100 : static_cast<double>(asciiCount) / buffer.length();
 
-	if (asciiPercent < 60) {
+	if (asciiPercent < 0.60) {
 		return ENCODING_B64;
 	} else {
 		return ENCODING_QP;

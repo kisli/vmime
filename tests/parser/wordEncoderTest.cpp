@@ -36,6 +36,7 @@ VMIME_TEST_SUITE_BEGIN(wordEncoderTest)
 		VMIME_TEST(testIsEncodingNeeded_specialChars)
 		VMIME_TEST(testGuessBestEncoding_QP)
 		VMIME_TEST(testGuessBestEncoding_B64)
+		VMIME_TEST(testGuessBestEncoding_size)
 		VMIME_TEST(testEncodeQP_RFC2047)
 	VMIME_TEST_LIST_END
 
@@ -157,6 +158,14 @@ VMIME_TEST_SUITE_BEGIN(wordEncoderTest)
 			vmime::wordEncoder::ENCODING_QP,
 			vmime::wordEncoder::guessBestEncoding("xxxxxx\xc3\xa0\xc3\xa0", vmime::charset("utf-8"))
 		);
+	}
+
+	void testGuessBestEncoding_size() {
+
+		std::string i(42949673, 'a');
+		auto enc = vmime::wordEncoder::guessBestEncoding(i, vmime::charset("utf-8"));
+		VASSERT_EQ("1", enc, vmime::wordEncoder::ENCODING_QP);
+
 	}
 
 	void testEncodeQP_RFC2047() {

@@ -32,6 +32,7 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testConstructors)
 		VMIME_TEST(testCopy)
+		VMIME_TEST(testRecommendedEncoding)
 		VMIME_TEST(testNewFromString)
 		VMIME_TEST(testDisplayForm)
 		VMIME_TEST(testParse)
@@ -155,6 +156,17 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		VASSERT("copyFrom", t1 == t2);
 	}
 
+	void testRecommendedEncoding() {
+
+		vmime::encoding enc;
+		VASSERT_TRUE("1.1", vmime::charset("iso8859-1").getRecommendedEncoding(enc));
+		VASSERT_TRUE("1.2", enc.getName() == vmime::encodingTypes::QUOTED_PRINTABLE);
+		VASSERT_TRUE("1.2", vmime::charset("iso8859-2").getRecommendedEncoding(enc));
+		VASSERT_TRUE("1.3", enc.getName() == vmime::encodingTypes::QUOTED_PRINTABLE);
+		VASSERT_FALSE("1.3", vmime::charset(vmime::charsets::UTF_8).getRecommendedEncoding(enc));
+
+	}
+
 	void testNewFromString() {
 
 		vmime::string s1 = "only ASCII characters";
@@ -168,7 +180,7 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		VASSERT_EQ("1.3", vmime::charset(vmime::charsets::US_ASCII), t1.getWordAt(0)->getCharset());
 
 		vmime::string s2_1 = "some ASCII characters and special chars: ";
-		vmime::string s2_2 = "\xf1\xf2\xf3\xf4 ";
+		vmime::string s2_2 = "\xc3\xa4\xd0\xb0 ";
 		vmime::string s2_3 = "and then more ASCII chars.";
 		vmime::string s2 = s2_1 + s2_2 + s2_3;
 		vmime::charset c2("test");
@@ -179,7 +191,7 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		VASSERT_EQ("2.1", 3, t2.getWordCount());
 		VASSERT_EQ("2.2", "some ASCII characters and special chars:", t2.getWordAt(0)->getBuffer());
 		VASSERT_EQ("2.3", vmime::charset(vmime::charsets::US_ASCII), t2.getWordAt(0)->getCharset());
-		VASSERT_EQ("2.4", " \xf1\xf2\xf3\xf4", t2.getWordAt(1)->getBuffer());
+		VASSERT_EQ("2.4", "\xc3\xa4\xd0\xb0", t2.getWordAt(1)->getBuffer());
 		VASSERT_EQ("2.5", c2, t2.getWordAt(1)->getCharset());
 		VASSERT_EQ("2.6", " and then more ASCII chars.", t2.getWordAt(2)->getBuffer());
 		VASSERT_EQ("2.7", vmime::charset(vmime::charsets::US_ASCII), t2.getWordAt(2)->getCharset());
