@@ -269,7 +269,7 @@ shared_ptr <text> text::newFromString(const string& in, const charset& ch) {
 
 void text::createFromString(const string& in, const charset& ch) {
 
-	size_t asciiPercent = 0;
+	double asciiPercent = 0;
 
 	removeAllWords();
 
@@ -282,14 +282,12 @@ void text::createFromString(const string& in, const charset& ch) {
 
 	if (!alwaysEncode) {
 		const auto asciiCount = utility::stringUtils::countASCIIchars(in.begin(), in.end());
-		asciiPercent = (in.length() == 0 ? 100 : (100 * asciiCount) / in.length());
+		asciiPercent = in.length() == 0 ? 1 : static_cast<double>(asciiCount) / static_cast<double>(in.length());
 	}
 
-	// If there are "too much" non-ASCII chars, produce just one
-	// vmime::word. Because encoding happens word-wise, all of the input
-	// gets encoded.
+	// Cf. wordEncoder::guessBestEncoding for details
 
-	if (alwaysEncode || asciiPercent < 60) {  // less than 60% ASCII chars
+	if (alwaysEncode || asciiPercent < 0.60) {  // less than 60% ASCII chars
 
 		appendWord(make_shared <word>(in, ch));
 		return;
