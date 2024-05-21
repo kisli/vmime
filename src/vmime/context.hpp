@@ -106,7 +106,7 @@ protected:
 	context();
 	context(const context& ctx);
 
-	virtual context& operator=(const context& ctx);
+	context& operator=(const context& ctx);
 	void copyFrom(const context& ctx);
 
 	bool m_internationalizedEmail;
