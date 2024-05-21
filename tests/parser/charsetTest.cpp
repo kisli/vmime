@@ -36,6 +36,7 @@ VMIME_TEST_SUITE_BEGIN(charsetTest)
 		VMIME_TEST(testConvertStreamValid)
 		VMIME_TEST(testConvertStreamExtract)
 		VMIME_TEST(testEncodingHebrew1255)
+		//VMIME_TEST(testEncodingSelectionOnASCII)
 
 		// IDNA
 		VMIME_TEST(testEncodeIDNA)
@@ -140,6 +141,16 @@ VMIME_TEST_SUITE_BEGIN(charsetTest)
 		// less than 60% ascii, base64 received
 		VASSERT_EQ("1", "=?windows-1255?B?6fn3+On5+Pfp6fk=?=", encoded);
 	}
+
+#if 0 /* decideImpl is not public */
+	void testEncodingSelectionOnASCII() {
+
+		const std::string a = "Hi\x01!", b = "Hi\x7f!";
+		VASSERT_EQ("1", vmime::encoding::decideImpl(std::begin(a), std::end(a)),
+		                vmime::encoding::decideImpl(std::begin(b), std::end(b)));
+
+	}
+#endif
 
 	static const vmime::string convertHelper(
 		const vmime::string& in,

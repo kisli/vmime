@@ -157,7 +157,7 @@ const encoding encoding::decideImpl(
 
 	const string::difference_type length = end - begin;
 	const string::difference_type count = std::count_if(
-		begin, end, [](unsigned char x) { return x < 127; });
+		begin, end, [](unsigned char x) { return x <= 127; });
 
 	// All is in 7-bit US-ASCII --> 7-bit (or Quoted-Printable...)
 	if (length == count) {
