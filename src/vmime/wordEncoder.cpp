@@ -309,7 +309,7 @@ wordEncoder::Encoding wordEncoder::guessBestEncoding(
 		utility::stringUtils::countASCIIchars(buffer.begin(), buffer.end());
 
 	const double asciiPercent =
-		buffer.length() == 0 ? 100 : static_cast<double>(asciiCount) / buffer.length();
+		buffer.length() == 0 ? 100 : static_cast<double>(asciiCount) / static_cast<double>(buffer.length());
 
 	if (asciiPercent < 0.60) {
 		return ENCODING_B64;
