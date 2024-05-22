@@ -64,14 +64,20 @@
 
 namespace {
 
-char* vmime_strerror_r_result(int /* res */, char* buf) {
+#ifdef __GNUC__
+#	define GNU_UNUSED [[gnu::unused]]
+#else
+#	define GNU_UNUSED
+#endif
+
+GNU_UNUSED char* vmime_strerror_r_result(int /* res */, char* buf) {
 
 	// XSI-compliant prototype:
 	// int strerror_r(int errnum, char *buf, size_t buflen);
 	return buf;
 }
 
-char* vmime_strerror_r_result(char* res, char* /* buf */) {
+GNU_UNUSED char* vmime_strerror_r_result(char* res, char* /* buf */) {
 
 	// GNU-specific prototype:
 	// char *strerror_r(int errnum, char *buf, size_t buflen);
