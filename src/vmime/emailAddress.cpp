@@ -596,27 +596,15 @@ void emailAddress::generateImpl(
 	}
 
 
-	if (!domainPart.empty()) {
-		os << localPart
-			<< "@"
-			<< domainPart;
+	os << localPart
+		<< "@"
+		<< domainPart;
 
-		if (newLinePos) {
-			*newLinePos = curLinePos
-				+ localPart.length()
-				+ 1 // @
-				+ domainPart.length();
-		}
-	} else {
-		// this should only be true if m_useMyHostname is false and an address without
-		// an `@` is encountered
-
-		os << localPart;
-
-		if (newLinePos) {
-			*newLinePos = curLinePos
-				+ localPart.length();
-		}
+	if (newLinePos) {
+		*newLinePos = curLinePos
+			+ localPart.length()
+			+ 1 // @
+			+ domainPart.length();
 	}
 }
 
@@ -710,13 +698,8 @@ const text emailAddress::toText() const {
 
 	text txt;
 	txt.appendWord(make_shared <vmime::word>(m_localName));
-
-	if (!m_domainName.isEmpty()) {
-		// this should only be skipped if m_useMyHostname is false and an address without
-		// an `@` is encountered
-		txt.appendWord(make_shared <vmime::word>("@", vmime::charsets::US_ASCII));
-		txt.appendWord(make_shared <vmime::word>(m_domainName));
-	}
+	txt.appendWord(make_shared <vmime::word>("@", vmime::charsets::US_ASCII));
+	txt.appendWord(make_shared <vmime::word>(m_domainName));
 
 	return txt;
 }
