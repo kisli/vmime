@@ -191,7 +191,7 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		VASSERT_EQ("2.1", 3, t2.getWordCount());
 		VASSERT_EQ("2.2", "some ASCII characters and special chars:", t2.getWordAt(0)->getBuffer());
 		VASSERT_EQ("2.3", vmime::charset(vmime::charsets::US_ASCII), t2.getWordAt(0)->getCharset());
-		VASSERT_EQ("2.4", "\xc3\xa4\xd0\xb0", t2.getWordAt(1)->getBuffer());
+		VASSERT_EQ("2.4", " \xc3\xa4\xd0\xb0", t2.getWordAt(1)->getBuffer());
 		VASSERT_EQ("2.5", c2, t2.getWordAt(1)->getCharset());
 		VASSERT_EQ("2.6", " and then more ASCII chars.", t2.getWordAt(2)->getBuffer());
 		VASSERT_EQ("2.7", vmime::charset(vmime::charsets::US_ASCII), t2.getWordAt(2)->getCharset());
