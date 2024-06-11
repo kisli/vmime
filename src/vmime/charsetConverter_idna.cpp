@@ -111,7 +111,7 @@ void charsetConverter_idna::convert(const string& in, string& out, status* st) {
 		unichars.reserve(inUTF8.length());
 
 		while (ch < end) {
-			const utf8::uint32_t uc = utf8::unchecked::next(ch);
+			const uint32_t uc = utf8::unchecked::next(ch);
 			unichars.push_back(uc);
 		}
 
