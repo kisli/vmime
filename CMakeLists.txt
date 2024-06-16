@@ -35,9 +35,9 @@ SET(CMAKE_VERBOSE_MAKEFILE ON)
 
 
 # Package version number
-SET(VMIME_VERSION_MAJOR  0)
-SET(VMIME_VERSION_MINOR  9)
-SET(VMIME_VERSION_MICRO  2)
+SET(VMIME_VERSION_MAJOR  1)
+SET(VMIME_VERSION_MINOR  0)
+SET(VMIME_VERSION_MICRO  0)
 
 # API version number (libtool)
 #
@@ -50,7 +50,7 @@ SET(VMIME_VERSION_MICRO  2)
 # . Interfaces added/removed/changed:               CURRENT++, REVISION=0
 # . Interfaces added (upward-compatible changes):   AGE++
 # . Interfaces removed:                             AGE=0
-SET(VMIME_API_VERSION_CURRENT   1)
+SET(VMIME_API_VERSION_CURRENT   2)
 SET(VMIME_API_VERSION_REVISION  0)
 SET(VMIME_API_VERSION_AGE       0)
 
