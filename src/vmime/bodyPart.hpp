@@ -109,7 +109,7 @@ private:
 
 	// We can't use a weak_ptr<> here as the parent part may
 	// have been allocated on the stack
-	bodyPart* m_parent;
+	bodyPart* m_parent = nullptr;
 
 protected:
 
