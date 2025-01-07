@@ -92,6 +92,9 @@ private:
 
 	/** Authentication process status. */
 	bool m_complete;
+	
+	/** Whether the mechanism is client-first, and thus supports an initial response. */
+	bool m_initialResponse;
 };
 
 

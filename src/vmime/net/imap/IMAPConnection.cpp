@@ -331,12 +331,24 @@ void IMAPConnection::authenticateSASL() {
 
 	const std::vector <string> capa = getCapabilities();
 	std::vector <string> saslMechs;
+	bool saslIR = false;
 
 	for (unsigned int i = 0 ; i < capa.size() ; ++i) {
 
 		const string& x = capa[i];
 
-		if (x.length() > 5 &&
+		if (x.length() == 7 &&
+		    (x[0] == 'S' || x[0] == 's') &&
+		    (x[1] == 'A' || x[1] == 'a') &&
+		    (x[2] == 'S' || x[2] == 's') &&
+		    (x[3] == 'L' || x[3] == 'l') &&
+		    x[4] == '-' &&
+		    (x[5] == 'I' || x[5] == 'i') &&
+		    (x[6] == 'R' || x[6] == 'r')) {
+
+			saslIR = true;
+		}
+		else if (x.length() > 5 &&
 		    (x[0] == 'A' || x[0] == 'a') &&
 		    (x[1] == 'U' || x[1] == 'u') &&
 		    (x[2] == 'T' || x[2] == 't') &&
@@ -397,7 +409,7 @@ void IMAPConnection::authenticateSASL() {
 
 		shared_ptr <IMAPCommand> authCmd;
 
-		if (saslSession->getMechanism()->hasInitialResponse()) {
+		if (saslIR && saslSession->getMechanism()->hasInitialResponse()) {
 
 			byte_t* initialResp = 0;
 			size_t initialRespLen = 0;
