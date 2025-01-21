@@ -8,18 +8,17 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - name: install-deps
       uses: awalsh128/cache-apt-pkgs-action@latest
       with:
-        packages: binutils cmake doxygen g++ libcppunit-dev libgnutls28-dev libgsasl7-dev libgtk-3-dev libssl-dev make pkg-config
+        packages: binutils cmake doxygen g++ libcppunit-dev libgnutls28-dev libgsasl-dev libgtk-3-dev libssl-dev make pkg-config
         version: 1.2
     - name: clone-vmime
       uses: actions/checkout@v3
     - name: buildall
       run: |
-        set -x
-        lscpu -b --online --parse | grep -v '^#' | wc -l >/tmp/ncpus
-        cmake . -DVMIME_SENDMAIL_PATH:STRING="/usr/sbin/sendmail" -DVMIME_HAVE_TLS_SUPPORT:BOOL=ON -DVMIME_BUILD_TESTS=ON -DVMIME_BUILD_SAMPLES=ON && make "-j$(cat /tmp/ncpus)" && sudo make install
+        set -ex
+        cmake . -DVMIME_SENDMAIL_PATH:STRING="/usr/sbin/sendmail" -DVMIME_HAVE_TLS_SUPPORT:BOOL=ON -DVMIME_BUILD_TESTS=ON -DVMIME_BUILD_SAMPLES=ON && make "-j$(nproc)" && sudo make install
         make test
