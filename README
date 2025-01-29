@@ -28,3 +28,11 @@ Features Overview
 * SSL/TLS security layer and X.509 certificates (using GNU TLS)
 * SASL authentication (using GNU SASL)
 
+Build && Installation
+---------------------
+
+MacOS Environment:
+```
+# brew install gtk+3 cppunit gsasl doxygen
+# bash test-outsourced-build.sh
+```
