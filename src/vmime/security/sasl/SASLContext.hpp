@@ -30,6 +30,7 @@
 
 #if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_SASL_SUPPORT
 
+#include <gsasl.h>
 
 #include "vmime/types.hpp"
 
@@ -116,13 +117,7 @@ private:
 
 	static const string getErrorMessage(const string& fname, const int code);
 
-
-#ifdef GSASL_VERSION
 	Gsasl* m_gsaslContext;
-#else
-	void* m_gsaslContext;
-#endif // GSASL_VERSION
-
 };
 
 

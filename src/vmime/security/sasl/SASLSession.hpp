@@ -30,6 +30,7 @@
 
 #if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_SASL_SUPPORT
 
+#include <gsasl.h>
 
 #include "vmime/types.hpp"
 
@@ -155,18 +156,10 @@ private:
 	shared_ptr <authenticator> m_auth;
 	shared_ptr <SASLMechanism> m_mech;
 
-#ifdef GSASL_VERSION
 	Gsasl* m_gsaslContext;
 	Gsasl_session* m_gsaslSession;
 
 	static int gsaslCallback(Gsasl* ctx, Gsasl_session* sctx, Gsasl_property prop);
-#else
-	void* m_gsaslContext;
-	void* m_gsaslSession;
-
-	static int gsaslCallback(void* ctx, void* sctx, int prop);
-#endif // GSASL_VERSION
-
 };
 
 
