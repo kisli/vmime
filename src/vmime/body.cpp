@@ -43,7 +43,8 @@ namespace vmime {
 
 
 body::body()
-	: m_contents(make_shared <emptyContentHandler>()) {
+	: m_contents(make_shared <emptyContentHandler>()),
+	  m_part(nullptr) {
 
 }
 
@@ -381,6 +382,10 @@ void body::parseImpl(
 		m_contents = make_shared <streamContentHandler>(contentStream, length, enc);
 	}
 
+	if (!boundary.empty()) {
+		m_boundary = boundary;
+	}
+
 	setParsedBounds(position, end);
 
 	if (newPosition) {
@@ -439,7 +444,7 @@ void body::generateImpl(
 
 		if (!m_part) {
 
-			boundary = generateRandomBoundaryString();
+			boundary = m_boundary.empty() ? generateRandomBoundaryString() : m_boundary;
 
 		} else {
 
@@ -457,13 +462,13 @@ void body::generateImpl(
 				} else {
 
 					// No boundary string specified
-					boundary = generateRandomBoundaryString();
+					boundary = m_boundary.empty() ? generateRandomBoundaryString() : m_boundary;
 				}
 
 			} else {
 
 				// No Content-Type (and no boundary string specified)
-				boundary = generateRandomBoundaryString();
+				boundary = m_boundary.empty() ? generateRandomBoundaryString() : m_boundary;
 			}
 		}
 
