@@ -307,6 +307,7 @@ private:
 
 	string m_prologText;
 	string m_epilogText;
+	string m_boundary;
 
 	shared_ptr <const contentHandler> m_contents;
 
