@@ -275,17 +275,20 @@ shared_ptr <vmime::utility::childProcessFactory> posixHandler::getChildProcessFa
 void posixHandler::generateRandomBytes(unsigned char* buffer, const unsigned int count) {
 
 	int fd = open("/dev/urandom", O_RDONLY);
+	ssize_t have = 0;
 
 	if (fd != -1) {
 
-		read(fd, buffer, count);
+		have = read(fd, buffer, count);
 		close(fd);
+		if (have < 0)
+			have = 0;
 
-	} else {  // fallback
+	}
 
-		for (unsigned int i = 0 ; i < count ; ++i) {
-			buffer[i] = static_cast <unsigned char>(rand() % 255);
-		}
+	// fallback
+	for (unsigned int i = have ; i < count ; ++i) {
+		buffer[i] = static_cast <unsigned char>(rand() % 255);
 	}
 }
 
