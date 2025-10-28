@@ -109,7 +109,7 @@ IMAPMessage::IMAPMessage(
 )
 	: m_folder(folder),
 	  m_num(num),
-	  m_size(-1U),
+	  m_size(-1),
 	  m_flags(FLAG_UNDEFINED),
 	  m_expunged(false),
 	  m_modseq(0),
@@ -180,7 +180,7 @@ vmime_uint64 IMAPMessage::getModSequence() const {
 
 size_t IMAPMessage::getSize() const {
 
-	if (m_size == -1U) {
+	if (m_size == static_cast<size_t>(-1)) {
 		throw exceptions::unfetched_object();
 	}
 
