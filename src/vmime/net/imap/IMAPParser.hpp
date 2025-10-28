@@ -956,7 +956,6 @@ public:
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
 
 			size_t pos = *currentPos;
-			size_t len = 0;
 			bool valid = false;
 
 			value.reserve(line.length() - pos);
@@ -977,7 +976,6 @@ public:
 					quoted = false;
 
 					++pos;
-					++len;
 
 				} else {
 
@@ -986,7 +984,6 @@ public:
 						quoted = true;
 
 						++pos;
-						++len;
 
 					} else if (c == '"') {
 
@@ -999,7 +996,6 @@ public:
 						value += c;
 
 						++pos;
-						++len;
 
 					} else {
 
