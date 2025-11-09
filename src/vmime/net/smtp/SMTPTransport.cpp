@@ -298,24 +298,25 @@ void SMTPTransport::sendEnvelope(
 	commands->writeToSocket(m_connection->getSocket(), m_connection->getTracer());
 
 	if ((resp = m_connection->readResponse())->getCode() != 250) {
+		auto code = resp->getCode();
 
 		// SIZE extension: insufficient system storage
-		if (resp->getCode() == 452) {
+		if (code == 452) {
 
 			throw SMTPMessageSizeExceedsCurLimitsException(
 				SMTPCommandError(
 					commands->getLastCommandSent()->getText(), resp->getText(),
-					resp->getCode(), resp->getEnhancedCode()
+					code, resp->getEnhancedCode()
 				)
 			);
 
 		// SIZE extension: message size exceeds fixed maximum message size
-		} else if (resp->getCode() == 552) {
+		} else if (code == 552) {
 
 			throw SMTPMessageSizeExceedsMaxLimitsException(
 				SMTPCommandError(
 					commands->getLastCommandSent()->getText(), resp->getText(),
-				 	resp->getCode(), resp->getEnhancedCode()
+					code, resp->getEnhancedCode()
 				 )
 			);
 
@@ -324,7 +325,7 @@ void SMTPTransport::sendEnvelope(
 
 			throw SMTPCommandError(
 				commands->getLastCommandSent()->getText(), resp->getText(),
-				resp->getCode(), resp->getEnhancedCode()
+				code, resp->getEnhancedCode()
 			);
 		}
 	}
@@ -335,27 +336,27 @@ void SMTPTransport::sendEnvelope(
 		commands->writeToSocket(m_connection->getSocket(), m_connection->getTracer());
 
 		resp = m_connection->readResponse();
+		auto code = resp->getCode();
 
-		if (resp->getCode() != 250 &&
-		    resp->getCode() != 251) {
+		if (code != 250 && code != 251) {
 
 			// SIZE extension: insufficient system storage
-			if (resp->getCode() == 452) {
+			if (code == 452) {
 
 				throw SMTPMessageSizeExceedsCurLimitsException(
 					SMTPCommandError(
 						commands->getLastCommandSent()->getText(), resp->getText(),
-						resp->getCode(), resp->getEnhancedCode()
+						code, resp->getEnhancedCode()
 					)
 				);
 
 			// SIZE extension: message size exceeds fixed maximum message size
-			} else if (resp->getCode() == 552) {
+			} else if (code == 552) {
 
 				throw SMTPMessageSizeExceedsMaxLimitsException(
 					SMTPCommandError(
 						commands->getLastCommandSent()->getText(), resp->getText(),
-						resp->getCode(), resp->getEnhancedCode()
+						code, resp->getEnhancedCode()
 					)
 				);
 
@@ -364,7 +365,7 @@ void SMTPTransport::sendEnvelope(
 
 				throw SMTPCommandError(
 					commands->getLastCommandSent()->getText(), resp->getText(),
-					resp->getCode(), resp->getEnhancedCode()
+					code, resp->getEnhancedCode()
 				);
 			}
 		}
@@ -374,12 +375,14 @@ void SMTPTransport::sendEnvelope(
 	if (sendDATACommand) {
 
 		commands->writeToSocket(m_connection->getSocket(), m_connection->getTracer());
+		auto resp = m_connection->readResponse();
+		auto code = resp->getCode();
 
-		if ((resp = m_connection->readResponse())->getCode() != 354) {
+		if (code != 354) {
 
 			throw SMTPCommandError(
 				commands->getLastCommandSent()->getText(), resp->getText(),
-				resp->getCode(), resp->getEnhancedCode()
+				code, resp->getEnhancedCode()
 			);
 		}
 	}
@@ -420,10 +423,11 @@ void SMTPTransport::send(
 		m_connection->getTracer()->traceSend(".");
 	}
 
-	shared_ptr <SMTPResponse> resp;
+	shared_ptr <SMTPResponse> resp = m_connection->readResponse();
+	auto code = resp->getCode();
 
-	if ((resp = m_connection->readResponse())->getCode() != 250) {
-		throw SMTPCommandError("DATA", resp->getText(), resp->getCode(), resp->getEnhancedCode());
+	if (code != 250) {
+		throw SMTPCommandError("DATA", resp->getText(), code, resp->getEnhancedCode());
 	}
 }
 
