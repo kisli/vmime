@@ -47,7 +47,7 @@ public:
 
 	// Override default generate() functions so that we can change
 	// the default 'maxLineLength' value
-	const string generate(
+	string generate(
 		const size_t maxLineLength = generationContext::getDefaultContext().getMaxLineLength(),
 		const size_t curLinePos = 0
 	) const;
