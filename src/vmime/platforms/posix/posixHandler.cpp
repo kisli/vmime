@@ -240,7 +240,7 @@ uintptr_t posixHandler::getThreadId() const {
 #elif VMIME_HAVE_LWP_SELF  // Solaris
 	return ::_lwp_self();
 #else
-	#error We have no implementation of getThreadId() for this platform!
+	return (uintptr_t) pthread_self();
 #endif
 
 }
