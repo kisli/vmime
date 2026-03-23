@@ -258,9 +258,9 @@ unsigned int windowsHandler::getProcessId() const {
 }
 
 
-unsigned int windowsHandler::getThreadId() const {
+uintptr_t windowsHandler::getThreadId() const {
 
-	return static_cast <unsigned int>(::GetCurrentThreadId());
+	return ::GetCurrentThreadId();
 }
 
 

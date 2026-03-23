@@ -225,20 +225,20 @@ unsigned int posixHandler::getProcessId() const {
 }
 
 
-unsigned int posixHandler::getThreadId() const {
+uintptr_t posixHandler::getThreadId() const {
 
 #if VMIME_HAVE_GETTID
-	return static_cast <unsigned int>(::gettid());
+	return ::gettid();
 #elif VMIME_HAVE_SYSCALL && VMIME_HAVE_SYSCALL_GETTID
-	return static_cast <unsigned int>(::syscall(SYS_gettid));
+	return ::syscall(SYS_gettid);
 #elif VMIME_HAVE_GETTHRID  // OpenBSD
-	return static_cast <unsigned int>(::getthrid());
+	return ::getthrid();
 #elif VMIME_HAVE_THR_SELF  // FreeBSD
 	long id = 0;
 	::thr_self(&id);
-	return static_cast <unsigned int>(id);
+	return id;
 #elif VMIME_HAVE_LWP_SELF  // Solaris
-	return static_cast <unsigned int>(::_lwp_self());
+	return ::_lwp_self();
 #else
 	#error We have no implementation of getThreadId() for this platform!
 #endif

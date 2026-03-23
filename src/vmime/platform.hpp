@@ -93,7 +93,7 @@ public:
 		  *
 		  * @return current thread id
 		  */
-		virtual unsigned int getThreadId() const = 0;
+		virtual uintptr_t getThreadId() const = 0;
 
 		/** Return the charset used on the system.
 		  *
