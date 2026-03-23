@@ -240,7 +240,14 @@ uintptr_t posixHandler::getThreadId() const {
 #elif VMIME_HAVE_LWP_SELF  // Solaris
 	return ::_lwp_self();
 #else
-	#error We have no implementation of getThreadId() for this platform!
+	/*
+	 * pthread_self's return value type can be anything:
+	 * - if it is arithmetic (glibc-nptl), static_cast<> would be needed,
+	 * - if it is a pointer (cygwin-libc, FreeBSD-libc), reinterpret_cast<> would be needed.
+	 * - if it is aggregate, there is no solution at this time
+	 * A C-style cast should cover the first two cases.
+	 */
+	return (uintptr_t) pthread_self();
 #endif
 
 }
