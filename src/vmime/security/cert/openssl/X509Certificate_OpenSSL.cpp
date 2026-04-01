@@ -468,7 +468,7 @@ bool X509Certificate_OpenSSL::verifyHostName(
 		if (currentName->type == GEN_DNS) {
 
 			// Current name is a DNS name, let's check it
-			char *DNSName = (char *) ASN1_STRING_data(currentName->d.dNSName);
+			const char *DNSName = (const char *) ASN1_STRING_get0_data(currentName->d.dNSName);
 
 			// Make sure there isn't an embedded NUL character in the DNS name
 			if (ASN1_STRING_length(currentName->d.dNSName) != strlen(DNSName)) {

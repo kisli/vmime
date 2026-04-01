@@ -63,7 +63,7 @@ public:
 	const vmime::string getHostName() const;
 
 	unsigned int getProcessId() const;
-	unsigned int getThreadId() const;
+	uintptr_t getThreadId() const;
 
 #if VMIME_HAVE_MESSAGING_FEATURES
 	shared_ptr <vmime::net::socketFactory> getSocketFactory();

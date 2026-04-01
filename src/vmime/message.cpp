@@ -36,7 +36,7 @@ message::message() {
 }
 
 
-const string message::generate(
+string message::generate(
 	const size_t maxLineLength,
 	const size_t curLinePos
 ) const {

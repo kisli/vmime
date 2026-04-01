@@ -194,4 +194,12 @@ VMIME_TEST_SUITE_BEGIN(mailboxTest)
 
 	}
 
+	void testAPI() {
+
+		auto take_string_directly = [](vmime::string &&) {};
+		vmime::mailbox m;
+		take_string_directly(m.generate());
+
+	}
+
 VMIME_TEST_SUITE_END

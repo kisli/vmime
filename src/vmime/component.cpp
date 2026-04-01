@@ -200,7 +200,7 @@ void component::parseImpl(
 }
 
 
-const string component::generate(
+string component::generate(
 	const size_t maxLineLength,
 	const size_t curLinePos
 ) const {

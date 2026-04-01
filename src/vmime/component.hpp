@@ -144,7 +144,7 @@ public:
 	  * @param curLinePos length of the current line in the output buffer
 	  * @return generated data
 	  */
-	virtual const string generate(
+	virtual string generate(
 		const size_t maxLineLength = lineLengthLimits::infinite,
 		const size_t curLinePos = 0
 	) const;

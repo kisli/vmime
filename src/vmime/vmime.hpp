@@ -26,7 +26,7 @@
 
 
 // Configuration
-#include "config.hpp"
+#include "vmime/config.hpp"
 
 // Base definitions
 #include "base.hpp"
