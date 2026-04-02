@@ -38,6 +38,25 @@
 
 #include <stdexcept>
 #include <new>
+#include <unordered_set>
+
+namespace {
+	const std::unordered_set<std::string> CLIENT_FIRST_MECHANISMS{
+		"ANONYMOUS",
+		"EXTERNAL",
+		"GS2-KRB5",
+		"GSSAPI",
+		"LOGIN",
+		"NTLM",
+		"OPENID20",
+		"PLAIN",
+		"SAML20",
+		"SCRAM-SHA-1",
+		"SCRAM-SHA-256",
+		"SECURID"
+	};
+	const auto CLIENT_FIRST_MECHANISMS_END = CLIENT_FIRST_MECHANISMS.cend();
+}
 
 
 namespace vmime {
@@ -51,7 +70,8 @@ builtinSASLMechanism::builtinSASLMechanism(
 )
 	: m_context(ctx),
 	  m_name(name),
-	  m_complete(false) {
+	  m_complete(false),
+	  m_initialResponse(CLIENT_FIRST_MECHANISMS.find(name) != CLIENT_FIRST_MECHANISMS_END) {
 
 }
 
@@ -140,8 +160,7 @@ bool builtinSASLMechanism::isComplete() const {
 
 bool builtinSASLMechanism::hasInitialResponse() const {
 
-	// It seems GNU SASL does not support initial response
-	return false;
+	return m_initialResponse;
 }
 
 
