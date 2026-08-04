@@ -28,6 +28,7 @@ VMIME_TEST_SUITE_BEGIN(datetimeTest)
 
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testParse)
+		VMIME_TEST(testParseZoneName)
 		VMIME_TEST(testGenerate)
 		VMIME_TEST(testCompare)
 	VMIME_TEST_LIST_END
@@ -75,6 +76,28 @@ VMIME_TEST_SUITE_BEGIN(datetimeTest)
 
 			VASSERT_EQ(oss.str(), pairs[i].result, d);
 		}
+	}
+
+	void testParseZoneName() {
+
+		vmime::datetime d;
+
+		d.parse("3 Jul 2026 05:00:00 EST");
+		VASSERT_EQ("1", vmime::datetime::EST, d.getZone());
+		d.parse("3 Jul 2026 05:00:00 pdt");
+		VASSERT_EQ("2", vmime::datetime::PDT, d.getZone());
+		d.parse("3 Jul 2026 10:00:00 UT");
+		VASSERT_EQ("3", vmime::datetime::UT, d.getZone());
+
+		// RFC 5322 section 4.3: to be treated as -0000
+		d.parse("3 Jul 2026 10:00:00 A");
+		VASSERT_EQ("4", 0, d.getZone());
+		d.parse("3 Jul 2026 10:00:00 IST");
+		VASSERT_EQ("5", 0, d.getZone());
+		d.parse("3 Jul 2026 10:00:00 CEST");
+		VASSERT_EQ("6", 0, d.getZone());
+		d.parse("3 Jul 2026 10:00:00 E");
+		VASSERT_EQ("7", 0, d.getZone());
 	}
 
 	void testGenerate() {

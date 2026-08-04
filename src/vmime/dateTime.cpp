@@ -75,6 +75,44 @@ static const char* monthNames[] = {
 	"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 };
 
+
+static bool isNameEqualNoCase(const char* s, const size_t n, const char* name) {
+
+	for (size_t i = 0 ; i < n ; ++i) {
+		if (name[i] == '\0' ||
+		    parserHelpers::toLower(s[i]) != parserHelpers::toLower(name[i])) {
+			return false;
+		}
+	}
+
+	return name[n] == '\0';
+}
+
+
+// RFC 5322 section 4.3: military zones were specified incorrectly in RFC 822,
+// and other names are ambiguous; both are to be treated as "-0000".
+static int zoneFromName(const char* s, const size_t n) {
+
+	static const struct {
+		const char* name;
+		int zone;
+	} zoneNames[] = {
+		{ "UT", datetime::UT }, { "GMT", datetime::GMT },
+		{ "EST", datetime::EST }, { "EDT", datetime::EDT },
+		{ "CST", datetime::CST }, { "CDT", datetime::CDT },
+		{ "MST", datetime::MST }, { "MDT", datetime::MDT },
+		{ "PST", datetime::PST }, { "PDT", datetime::PDT },
+	};
+
+	for (const auto& z : zoneNames) {
+		if (isNameEqualNoCase(s, n, z.name)) {
+			return z.zone;
+		}
+	}
+
+	return datetime::GMT;
+}
+
 void datetime::parseImpl(
 	parsingContext& /* ctx */,
 	const string& buffer,
@@ -412,158 +450,14 @@ void datetime::parseImpl(
 				m_zone = -(hourOff * 60 + minOff);
 			}
 
-		} else if (p < pend && isalpha(*p)) {
-
-			bool done = false;
+		} else if (p < pend && parserHelpers::isAlpha(*p)) {
 
 			// Zone offset (Time zone name)
-			char_t zone[4] = { 0 };
-			int zoneLength = 0;
+			const char* zoneStart = p;
 
-			do {
-				zone[zoneLength++] = *p;
-				++p;
-			} while (zoneLength < 3 && p < pend);
+			while (p < pend && parserHelpers::isAlpha(*p)) ++p;
 
-			switch (zone[0])
-			{
-			case 'c':
-			case 'C':
-			{
-				if (zoneLength >= 2)
-				{
-					if (zone[1] == 's' || zone[1] == 'S')
-						m_zone = CST;
-					else
-						m_zone = CDT;
-
-					done = true;
-				}
-
-				break;
-			}
-			case 'e':
-			case 'E':
-			{
-				if (zoneLength >= 2) {
-
-					if (zone[1] == 's' || zone[1] == 'S') {
-						m_zone = EST;
-					} else {
-						m_zone = EDT;
-					}
-
-					done = true;
-				}
-
-				break;
-			}
-			case 'm':
-			case 'M': {
-
-				if (zoneLength >= 2) {
-
-					if (zone[1] == 's' || zone[1] == 'S') {
-						m_zone = MST;
-					} else {
-						m_zone = MDT;
-					}
-
-					done = true;
-				}
-
-				break;
-			}
-			case 'p':
-			case 'P': {
-
-				if (zoneLength >= 2) {
-
-					if (zone[1] == 's' || zone[1] == 'S') {
-						m_zone = PST;
-					} else {
-						m_zone = PDT;
-					}
-
-					done = true;
-				}
-
-				break;
-			}
-			case 'g':
-			case 'G':
-			case 'u':
-			case 'U': {
-
-				if (zoneLength >= 2) {
-
-					m_zone = GMT;  // = UTC
-					done = true;
-				}
-
-				break;
-			}
-
-			}
-
-			if (!done) {
-
-				const char_t z = zone[0];
-
-				// Military time zone
-				if (z != 'j' && z != 'J') {
-
-					typedef std::map <char_t, int> Map;
-					static const Map::value_type offsetMapInit[] = {
-
-						Map::value_type('a', -60),
-						Map::value_type('b', -120),
-						Map::value_type('c', -180),
-						Map::value_type('d', -240),
-						Map::value_type('e', -300),
-						Map::value_type('f', -360),
-						Map::value_type('g', -420),
-						Map::value_type('h', -480),
-						Map::value_type('i', -540),
-						Map::value_type('k', -600),
-						Map::value_type('l', -660),
-						Map::value_type('m', -720),
-
-						Map::value_type('n', 60),
-						Map::value_type('o', 120),
-						Map::value_type('p', 180),
-						Map::value_type('q', 240),
-						Map::value_type('r', 300),
-						Map::value_type('s', 360),
-						Map::value_type('t', 420),
-						Map::value_type('u', 480),
-						Map::value_type('v', 540),
-						Map::value_type('w', 600),
-						Map::value_type('x', 660),
-						Map::value_type('y', 720),
-
-						Map::value_type('z', 0),
-					};
-
-					static const Map offsetMap(
-						::vmime::begin(offsetMapInit),
-						::vmime::end(offsetMapInit)
-					);
-
-					Map::const_iterator pos =
-						offsetMap.find(parserHelpers::toLower(z));
-
-					if (pos != offsetMap.end()) {
-						m_zone = (*pos).second;
-					} else {
-						m_zone = GMT;
-					}
-
-				} else {
-
-					m_zone = GMT;
-				}
-			}
+			m_zone = zoneFromName(zoneStart, p - zoneStart);
 
 		} else {
 
