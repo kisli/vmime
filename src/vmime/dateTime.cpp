@@ -424,6 +424,7 @@ void datetime::parseImpl(
 		}
 
 		bool dayParsed = false;
+		bool yearAfterTime = false;
 
 		if (parserHelpers::isAlpha(*p)) {
 
@@ -598,9 +599,10 @@ void datetime::parseImpl(
 			// Check for ill-formed date/time and try to recover
 			if (p + 2 < pend && *(p + 2) == ':') {
 
-				// Skip year (default to current), and advance
-				// to time parsing
+				// Skip year (default to current, unless it follows
+				// the time as in asctime), and advance to time parsing
 				m_year = now().getYear();
+				yearAfterTime = true;
 
 			} else {
 
@@ -711,6 +713,23 @@ void datetime::parseImpl(
 			// Skip everything to the next field
 			while (p < pend && !parserHelpers::isSpace(*p)) ++p;
 			while (p < pend && parserHelpers::isSpace(*p)) ++p;
+		}
+
+		if (yearAfterTime && p + 3 < pend && parserHelpers::isDigit(*p)) {
+
+			const char* q = p;
+			int year = 0;
+
+			while (q < pend && parserHelpers::isDigit(*q)) {
+				year = year * 10 + (*q - '0');
+				++q;
+			}
+
+			if (q - p == 4) {
+				m_year = year;
+				p = q;
+				while (p < pend && parserHelpers::isSpace(*p)) ++p;
+			}
 		}
 
 		if (p + 1 < pend && (*p == '+' || *p == '-') && parserHelpers::isDigit(*(p + 1))) {
