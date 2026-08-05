@@ -35,6 +35,10 @@ namespace vmime {
 
 
 /** Date and time (basic type).
+  *
+  * parse() sets newPosition past a well-formed RFC 5322 date-time. For
+  * anything else, it is left at the start position and the fields hold
+  * a best guess.
   */
 class VMIME_EXPORT datetime : public headerFieldValue {
 

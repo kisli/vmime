@@ -29,6 +29,8 @@ VMIME_TEST_SUITE_BEGIN(datetimeTest)
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testParse)
 		VMIME_TEST(testParseZoneName)
+		VMIME_TEST(testParseWellFormed)
+		VMIME_TEST(testParseMalformed)
 		VMIME_TEST(testGenerate)
 		VMIME_TEST(testCompare)
 	VMIME_TEST_LIST_END
@@ -98,6 +100,108 @@ VMIME_TEST_SUITE_BEGIN(datetimeTest)
 		VASSERT_EQ("6", 0, d.getZone());
 		d.parse("3 Jul 2026 10:00:00 E");
 		VASSERT_EQ("7", 0, d.getZone());
+	}
+
+	static size_t parseEnd(vmime::datetime& d, const vmime::string& s) {
+
+		vmime::parsingContext ctx;
+		size_t newPos = 0;
+
+		d.parse(ctx, s, 0, s.length(), &newPos);
+
+		return newPos;
+	}
+
+	void testParseWellFormed() {
+
+		vmime::datetime d;
+		vmime::string s;
+
+		s = "Fri, 3 Jul 2026 10:00:00 +0000";
+		VASSERT_EQ("1", s.length(), parseEnd(d, s));
+		VASSERT_EQ("1v", vmime::datetime(2026, 7, 3, 10, 0, 0, 0), d);
+
+		s = " (c) Fri (c) , 3 (c) jul 2026 10 : 00 (c) +0200 (a (nested) comment) ";
+		VASSERT_EQ("2", s.length(), parseEnd(d, s));
+		VASSERT_EQ("2v", vmime::datetime(2026, 7, 3, 8, 0, 0, 0), d);
+
+		s = "Friday, 3 July 2026 10:00 GMT";
+		VASSERT_EQ("3", s.length(), parseEnd(d, s));
+		VASSERT_EQ("3v", vmime::datetime(2026, 7, 3, 10, 0, 0, 0), d);
+
+		// RFC 5322 section 4.3 year rules
+		s = "3 Jul 49 10:00:00 -0000";
+		VASSERT_EQ("4", s.length(), parseEnd(d, s));
+		VASSERT_EQ("4v", 2049, d.getYear());
+		s = "3 Jul 50 10:00:00 -0000";
+		VASSERT_EQ("5", s.length(), parseEnd(d, s));
+		VASSERT_EQ("5v", 1950, d.getYear());
+		s = "3 Jul 126 10:00:00 -0000";
+		VASSERT_EQ("6", s.length(), parseEnd(d, s));
+		VASSERT_EQ("6v", 2026, d.getYear());
+
+		s = "31 Dec 2016 23:59:60 +0000";
+		VASSERT_EQ("7", s.length(), parseEnd(d, s));
+		VASSERT_EQ("7v", 60, d.getSecond());
+
+		s = "29 Feb 2024 10:00:00 +0000";
+		VASSERT_EQ("8", s.length(), parseEnd(d, s));
+
+		s = "3 Jul 2026 12:00:00 +0200 CEST";
+		VASSERT_EQ("11", s.length(), parseEnd(d, s));
+		VASSERT_EQ("11v", vmime::datetime(2026, 7, 3, 10, 0, 0, 0), d);
+		s = "3 Jul 2026 12:00:00 +0200 CEST (c)";
+		VASSERT_EQ("12", s.length(), parseEnd(d, s));
+
+		// Trailing garbage is not consumed
+		s = "3 Jul 2026 10:00:00 +0000 ;xyz";
+		VASSERT_EQ("9", s.length() - 4, parseEnd(d, s));
+		VASSERT_EQ("9v", vmime::datetime(2026, 7, 3, 10, 0, 0, 0), d);
+
+		s = "3 Jul 2026 10:00:00 GMT+0200";
+		VASSERT_EQ("13", s.length() - 5, parseEnd(d, s));
+		s = "3 Jul 2026 10:00:00 +0200 CEST x";
+		VASSERT_EQ("14", s.length() - 6, parseEnd(d, s));
+
+		// Bounds are honored
+		s = "x 3 Jul 2026 10:00:00 +0000 x";
+		size_t newPos = 0;
+		vmime::parsingContext ctx;
+		d.parse(ctx, s, 2, s.length() - 2, &newPos);
+		VASSERT_EQ("10", s.length() - 2, newPos);
+	}
+
+	void testParseMalformed() {
+
+		static const char* const inputs[] = {
+			"",
+			"   ",
+			"not a date",
+			"by mx1.example.com id 12345",
+			"May 4 2026 10:00:00 +0000",
+			"Fri 3 Jul 2026 10:00:00 +0000",
+			"3 Jul 2026",
+			"3 Jul 2026 10:00:00",
+			"3 Jul 2026 10:00:00 +000",
+			"3 Jul 2026 10:00:00 +00000",
+			"3 Jul 2026 10:00:00 +0060",
+			"3 Jul 2026 24:00:00 +0000",
+			"3 Jul 2026 10:60:00 +0000",
+			"3 Jul 2026 10:00:61 +0000",
+			"0 Jul 2026 10:00:00 +0000",
+			"31 Jun 2026 10:00:00 +0000",
+			"29 Feb 2026 10:00:00 +0000",
+			"3 Jux 2026 10:00:00 +0000",
+			"3 Jul 2 10:00:00 +0000",
+			"Sat, 18, 2004 22:36:32 -0400",
+		};
+
+		for (unsigned int i = 0 ; i < sizeof(inputs) / sizeof(inputs[0]) ; ++i) {
+
+			vmime::datetime d;
+
+			VASSERT_EQ(inputs[i], 0, parseEnd(d, inputs[i]));
+		}
 	}
 
 	void testGenerate() {
