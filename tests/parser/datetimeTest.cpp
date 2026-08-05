@@ -56,16 +56,19 @@ VMIME_TEST_SUITE_BEGIN(datetimeTest)
 			  vmime::datetime(2004, 11, 7, 0, 43, 22, vmime::datetime::GMT_5) },
 
 			{ /* 3 */ "Thu Nov 18 12:11:16 2004",
-			  vmime::datetime(vmime::datetime::now().getYear(), 11, 18, 12, 11, 16, vmime::datetime::GMT) },
+			  vmime::datetime(2004, 11, 18, 12, 11, 16, vmime::datetime::GMT) },
 
 			{ /* 4 */ "Sat, 18, 2004 22:36:32 -0400",
 			  vmime::datetime(2004, 1, 18, 22, 36, 32, vmime::datetime::GMT_4) },
 
 			{ /* 5 */ "Mon Dec 13 21:57:18 2004",
-			  vmime::datetime(vmime::datetime::now().getYear(), 12, 13, 21, 57, 18, vmime::datetime::GMT) },
+			  vmime::datetime(2004, 12, 13, 21, 57, 18, vmime::datetime::GMT) },
 
 			{ /* 6 */ "18 Nov 2004 21:44:54 +0300",
-			  vmime::datetime(2004, 11, 18, 21, 44, 54, vmime::datetime::GMT3) }
+			  vmime::datetime(2004, 11, 18, 21, 44, 54, vmime::datetime::GMT3) },
+
+			{ /* 7 */ "Thu Nov 18 12:11:16 2004 +0100",
+			  vmime::datetime(2004, 11, 18, 12, 11, 16, vmime::datetime::GMT1) }
 		};
 
 		for (unsigned int i = 0 ; i < sizeof(pairs) / sizeof(pairs[0]) ; ++i) {
