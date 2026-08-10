@@ -869,25 +869,27 @@ datetime::datetime(const datetime& d)
 
 datetime::datetime(const time_t t, const int zone) {
 
+	const time_t tz = t + static_cast <time_t>(zone) * 60;
+
 #if VMIME_HAVE_LOCALTIME_S
 
 	struct tm tms;
 
-	if (!gmtime_s(&tms, &t)) {
-		localtime_s(&tms, &t);
+	if (!gmtime_s(&tms, &tz)) {
+		localtime_s(&tms, &tz);
 	}
 
 #elif VMIME_HAVE_LOCALTIME_R
 	struct tm tms;
 
-	if (!gmtime_r(&t, &tms)) {
-		localtime_r(&t, &tms);
+	if (!gmtime_r(&tz, &tms)) {
+		localtime_r(&tz, &tms);
 	}
 
 #else
 
-	struct tm* gtm = gmtime(&t);
-	struct tm* ltm = localtime(&t);
+	struct tm* gtm = gmtime(&tz);
+	struct tm* ltm = localtime(&tz);
 
 	struct tm tms;
 
