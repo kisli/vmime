@@ -32,6 +32,7 @@ VMIME_TEST_SUITE_BEGIN(datetimeTest)
 		VMIME_TEST(testParseWellFormed)
 		VMIME_TEST(testParseMalformed)
 		VMIME_TEST(testGenerate)
+		VMIME_TEST(testFromTime)
 		VMIME_TEST(testCompare)
 	VMIME_TEST_LIST_END
 
@@ -212,6 +213,16 @@ VMIME_TEST_SUITE_BEGIN(datetimeTest)
 		vmime::datetime d1(2005, 7, 8, 4, 5, 6, 1 * 60 + 23);
 
 		VASSERT_EQ("1", "Fri, 8 Jul 2005 04:05:06 +0123", d1.generate());
+	}
+
+	void testFromTime() {
+
+		VASSERT_EQ("1", "Fri, 3 Jul 2026 10:00:00 +0000",
+			vmime::datetime(1783072800).generate());
+		VASSERT_EQ("2", "Fri, 3 Jul 2026 12:00:00 +0200",
+			vmime::datetime(1783072800, vmime::datetime::GMT2).generate());
+		VASSERT_EQ("3", "Thu, 2 Jul 2026 23:30:00 -1030",
+			vmime::datetime(1783072800, -630).generate());
 	}
 
 	void testCompare() {
