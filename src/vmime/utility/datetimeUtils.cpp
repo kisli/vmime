@@ -207,6 +207,29 @@ int datetimeUtils::getDaysInMonth(const int year, const int month) {
 }
 
 
+time_t datetimeUtils::toTimeT(const datetime& date) {
+
+	const int month = date.getMonth();
+
+	if (month < 1 || month > 12) {
+		throw std::out_of_range("Invalid month number");
+	}
+
+	// Days from civil, http://howardhinnant.github.io/date_algorithms.html
+	const long long y = date.getYear() - (month <= 2);
+	const long long era = (y >= 0 ? y : y - 399) / 400;
+	const long long yoe = y - era * 400;
+	const long long doy = (153 * (month > 2 ? month - 3 : month + 9) + 2) / 5 + date.getDay() - 1;
+	const long long doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
+	const long long days = era * 146097 + doe - 719468;
+
+	return static_cast <time_t>(
+		days * 86400 + date.getHour() * 3600 + date.getMinute() * 60 +
+		date.getSecond() - date.getZone() * 60
+	);
+}
+
+
 int datetimeUtils::getDayOfWeek(const int year, const int month, const int day) {
 
 	int y = year;

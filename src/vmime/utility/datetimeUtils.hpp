@@ -69,6 +69,13 @@ public:
 	  */
 	static const datetime toLocalTime(const datetime& date, const int zone);
 
+	/** Convert the specified date/time to seconds since the Unix epoch.
+	  *
+	  * @param date date/time to convert
+	  * @return number of seconds since 1970-01-01 00:00:00 UTC
+	  */
+	static time_t toTimeT(const datetime& date);
+
 	/** Return the day of the week from the specified date.
 	  *
 	  * @param year year in 4-digit format
