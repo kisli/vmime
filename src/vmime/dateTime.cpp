@@ -441,7 +441,7 @@ void datetime::parseImpl(
 				int day = 0;
 
 				do {
-					day = day * 10 + (*p - '0');
+					if (day < 100000000) day = day * 10 + (*p - '0');
 					++p;
 				} while (p < pend && parserHelpers::isDigit(*p));
 
@@ -584,7 +584,7 @@ void datetime::parseImpl(
 			int day = 0;
 
 			do {
-				day = day * 10 + (*p - '0');
+				if (day < 100000000) day = day * 10 + (*p - '0');
 				++p;
 			} while (p < pend && parserHelpers::isDigit(*p));
 
@@ -610,7 +610,7 @@ void datetime::parseImpl(
 				int year = 0;
 
 				do {
-					year = year * 10 + (*p - '0');
+					if (year < 100000000) year = year * 10 + (*p - '0');
 					++p;
 				} while (p < pend && parserHelpers::isDigit(*p));
 
@@ -637,7 +637,7 @@ void datetime::parseImpl(
 			int hour = 0;
 
 			do {
-				hour = hour * 10 + (*p - '0');
+				if (hour < 100000000) hour = hour * 10 + (*p - '0');
 				++p;
 			} while (p < pend && parserHelpers::isDigit(*p));
 
@@ -657,7 +657,7 @@ void datetime::parseImpl(
 					int minute = 0;
 
 					do {
-						minute = minute * 10 + (*p - '0');
+						if (minute < 100000000) minute = minute * 10 + (*p - '0');
 						++p;
 					} while (p < pend && parserHelpers::isDigit(*p));
 
@@ -677,7 +677,7 @@ void datetime::parseImpl(
 							int second = 0;
 
 							do {
-								second = second * 10 + (*p - '0');
+								if (second < 100000000) second = second * 10 + (*p - '0');
 								++p;
 							} while (p < pend && parserHelpers::isDigit(*p));
 
@@ -721,7 +721,7 @@ void datetime::parseImpl(
 			int year = 0;
 
 			while (q < pend && parserHelpers::isDigit(*q)) {
-				year = year * 10 + (*q - '0');
+				if (year < 100000000) year = year * 10 + (*q - '0');
 				++q;
 			}
 
@@ -741,7 +741,7 @@ void datetime::parseImpl(
 			int offset = 0;
 
 			do {
-				offset = offset * 10 + (*p - '0');
+				if (offset < 100000000) offset = offset * 10 + (*p - '0');
 				++p;
 			} while (p < pend && parserHelpers::isDigit(*p));
 
