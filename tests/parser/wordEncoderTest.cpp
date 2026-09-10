@@ -31,6 +31,8 @@ VMIME_TEST_SUITE_BEGIN(wordEncoderTest)
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testGetNextChunk)
 		VMIME_TEST(testGetNextChunk_integral)
+		VMIME_TEST(testGetNextChunk_maxLength)
+		VMIME_TEST(testGetNextChunk_simple)
 		VMIME_TEST(testIsEncodingNeeded_ascii)
 		VMIME_TEST(testIsEncodingNeeded_withLanguage)
 		VMIME_TEST(testIsEncodingNeeded_specialChars)
@@ -64,8 +66,42 @@ VMIME_TEST_SUITE_BEGIN(wordEncoderTest)
 			vmime::wordEncoder::ENCODING_AUTO
 		);
 
-		VASSERT_EQ("1", "buffer=C3=A0", we.getNextChunk(7));
-		VASSERT_EQ("2", "plop", we.getNextChunk(10));
+		VASSERT_EQ("1", "buffer", we.getNextChunk(7));
+		VASSERT_EQ("2", "=C3=A0", we.getNextChunk(1));
+		VASSERT_EQ("3", "plop", we.getNextChunk(10));
+	}
+
+	void testGetNextChunk_maxLength() {
+
+		vmime::wordEncoder we(
+			"\xc3\xa4\xc3\xa4\xc3\xa4\xc3\xa4\xc3\xa4",
+			vmime::charset("utf-8"),
+			vmime::wordEncoder::ENCODING_B64
+		);
+
+		VASSERT_EQ("1", "w6TDpMOk", we.getNextChunk(10));
+		VASSERT_EQ("2", "w6TDpA==", we.getNextChunk(10));
+	}
+
+	void testGetNextChunk_simple() {
+
+		// Unknown charset: bytes are encoded as they are
+		vmime::wordEncoder we1(
+			"abcdefghij",
+			vmime::charset("x-unknown-charset"),
+			vmime::wordEncoder::ENCODING_B64
+		);
+
+		VASSERT_EQ("1", "YWJj", we1.getNextChunk(7));
+
+		vmime::wordEncoder we2(
+			"abcdef\xffghi",
+			vmime::charset("x-unknown-charset"),
+			vmime::wordEncoder::ENCODING_QP
+		);
+
+		VASSERT_EQ("2", "abcdef", we2.getNextChunk(7));
+		VASSERT_EQ("3", "=FFghi", we2.getNextChunk(7));
 	}
 
 	void testIsEncodingNeeded_ascii() {
