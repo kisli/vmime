@@ -773,11 +773,18 @@ void word::generate(
 			state->lastCharIsSpace = true;
 		}
 
+		// RFC 2047 §2: an encoded-word may not be more than 75 characters long
+		const bool infiniteLength = (ctx.getMaxLineLength() == lineLengthLimits::infinite);
+		const size_t maxEncodedWordLength = 75;
+
 		for (unsigned int i = 0 ; ; ++i) {
 
 			// Compute the number of encoded chars that will fit on this line
-			const size_t fit = maxLineLength2 - minWordLength
-				- (i == 0 ? curLineLength : NEW_LINE_SEQUENCE_LENGTH);
+			const size_t used = (i == 0 ? curLineLength : NEW_LINE_SEQUENCE_LENGTH);
+			const size_t lineRoom = (maxLineLength2 > used) ? maxLineLength2 - used : 0;
+			const size_t wordRoom =
+				infiniteLength ? lineRoom : std::min(lineRoom, maxEncodedWordLength);
+			const size_t fit = (wordRoom > minWordLength) ? wordRoom - minWordLength : 1;
 
 			// Get the next encoded chunk
 			const string chunk = wordEnc.getNextChunk(fit);
