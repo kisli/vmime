@@ -147,7 +147,7 @@ const string wordEncoder::getNextChunk(const size_t maxLength) {
 			// bytes to encode knowing the maximum number of encoded chars. In
 			// Base64 encoding, 3 bytes of input provide 4 bytes of output.
 			const size_t inputCount =
-				std::min(remaining, (maxLength > 1) ? ((maxLength - 1) * 3) / 4 : 1);
+				std::min(remaining, std::max(static_cast <size_t>(1), (maxLength / 4) * 3));
 
 			// Encode chunk
 			utility::inputStreamStringAdapter in(m_buffer, m_pos, m_pos + inputCount);
@@ -163,12 +163,17 @@ const string wordEncoder::getNextChunk(const size_t maxLength) {
 			size_t inputCount = 0;
 			size_t outputCount = 0;
 
-			while ((inputCount == 0 || outputCount < maxLength) && (inputCount < remaining)) {
+			while (inputCount < remaining) {
 
 				const unsigned char c = m_buffer[m_pos + inputCount];
+				const size_t len = utility::encoder::qpEncoder::RFC2047_getEncodedLength(c);
+
+				if (inputCount != 0 && outputCount + len > maxLength) {
+					break;
+				}
 
 				inputCount++;
-				outputCount += utility::encoder::qpEncoder::RFC2047_getEncodedLength(c);
+				outputCount += len;
 			}
 
 			// Encode chunk
@@ -187,7 +192,7 @@ const string wordEncoder::getNextChunk(const size_t maxLength) {
 		size_t outputCount = 0;
 		string encodeBuffer;
 
-		while ((inputCount == 0 || outputCount < maxLength) && (inputCount < remaining)) {
+		while (inputCount < remaining) {
 
 			// Get the next UTF8 character
 			const size_t inputCharLength =
@@ -202,25 +207,29 @@ const string wordEncoder::getNextChunk(const size_t maxLength) {
 			string encodeBytes;
 			conv->convert(inputChar, encodeBytes);
 
-			encodeBuffer += encodeBytes;
-
 			// Compute number of output bytes
+			size_t newOutputCount = outputCount;
+
 			if (m_encoding == ENCODING_B64) {
 
-				outputCount = std::max(
-					static_cast <size_t>(4),
-					(encodeBuffer.length() * 4) / 3
-				);
+				newOutputCount = ((encodeBuffer.length() + encodeBytes.length() + 2) / 3) * 4;
 
 			} else {  // ENCODING_QP
 
 				for (size_t i = 0, n = encodeBytes.length() ; i < n ; ++i) {
 
 					const unsigned char c = encodeBytes[i];
-					outputCount += utility::encoder::qpEncoder::RFC2047_getEncodedLength(c);
+					newOutputCount += utility::encoder::qpEncoder::RFC2047_getEncodedLength(c);
 				}
 			}
 
+			// Always take at least one character, so that we make progress
+			if (inputCount != 0 && newOutputCount > maxLength) {
+				break;
+			}
+
+			encodeBuffer += encodeBytes;
+			outputCount = newOutputCount;
 			inputCount += inputCharLength;
 		}
 

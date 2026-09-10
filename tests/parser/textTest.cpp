@@ -417,11 +417,20 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 			)
 		);
 
+		// "aaa=C3" fits, but not the whole character
 		VASSERT_EQ(
 			"2",
+			"=?utf-8?Q?aaa?==?utf-8?Q?=C3=A9?==?utf-8?Q?zzz?=",
+			cleanGeneratedWords(
+				vmime::word("aaa\xc3\xa9zzz", vmime::charset("utf-8")).generate(19)
+			)
+		);
+
+		VASSERT_EQ(
+			"3",
 			"=?utf-8?Q?aaa=C3=A9?==?utf-8?Q?zzz?=",
 			cleanGeneratedWords(
-				vmime::word("aaa\xc3\xa9zzz", vmime::charset("utf-8")).generate(17)
+				vmime::word("aaa\xc3\xa9zzz", vmime::charset("utf-8")).generate(22)
 			)
 		);
 	}
