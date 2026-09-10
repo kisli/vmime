@@ -41,6 +41,7 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		VMIME_TEST(testWordGenerateSpace)
 		VMIME_TEST(testWordGenerateSpace2)
 		VMIME_TEST(testWordGenerateMultiBytes)
+		VMIME_TEST(testEncodedWordLength)
 		VMIME_TEST(testWordGenerateQuote)
 		VMIME_TEST(testWordGenerateSpecialCharsets)
 		VMIME_TEST(testWordGenerateSpecials)
@@ -82,6 +83,36 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		}
 
 		return res;
+	}
+
+	// RFC 2047: encoded-words of at most 75 chars, lines of at most 76
+	static void checkEncodedWordLength(
+		const std::string& id,
+		const std::string& str,
+		const size_t maxLineLength
+	) {
+
+		for (size_t start = 0 ; ; ) {
+
+			const size_t end = str.find("\r\n", start);
+			const std::string line = str.substr(start, end == std::string::npos ? end : end - start);
+
+			VASSERT(id + ": line: " + line, line.length() <= maxLineLength);
+
+			for (size_t p = 0 ; (p = line.find("=?", p)) != std::string::npos ; ) {
+
+				const size_t e = line.find("?=", line.find('?', line.find('?', p + 2) + 1) + 1);
+
+				VASSERT(id + ": word: " + line, e != std::string::npos && e + 2 - p <= 75);
+				p = e + 2;
+			}
+
+			if (end == std::string::npos) {
+				break;
+			}
+
+			start = end + 2;
+		}
 	}
 
 
@@ -433,6 +464,34 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 				vmime::word("aaa\xc3\xa9zzz", vmime::charset("utf-8")).generate(22)
 			)
 		);
+	}
+
+	void testEncodedWordLength() {
+
+		std::string in;
+
+		for (int i = 0 ; i < 60 ; ++i) {
+			in += "\xc3\xbc\xf0\x9f\x98\x80" "ab";
+		}
+
+		const vmime::word w(in, vmime::charset("utf-8"));
+		const size_t lengths[] = { 50, 76, 78, 100 };
+
+		for (const size_t maxLen : lengths) {
+
+			for (size_t col = 0 ; col < 10 ; ++col) {
+
+				const std::string id = std::to_string(maxLen) + "/" + std::to_string(col);
+				const std::string out = w.generate(maxLen, col);
+
+				checkEncodedWordLength(id, std::string(col, 'x') + out, std::min(maxLen, size_t(76)));
+
+				vmime::text back;
+				back.parse(out);
+
+				VASSERT_EQ(id, in, back.getWholeBuffer());
+			}
+		}
 	}
 
 	void testWordGenerateQuote() {
