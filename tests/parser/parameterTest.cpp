@@ -406,9 +406,9 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 			"3.7bit-only",
 			"F: X; \r\n "
 			"param1=\"=?utf-8?B?zrTPg8+Dz4PPg8+Dz4PPg8+Dz4PPg8+Dz4PPg8+Dz4PPg8+Dz4PPg8+DzrTPg860?=\r\n "
-			"=?utf-8?B?zrEgzrTPg86xzrTPg860z4POsc60z4POsc60zrHPg860zrHPgyDOtM+DzrHOtM6x?=\r\n "
-			"=?utf-8?B?z4POtM+DzrEgzrTPg86xzrTOsc+DzrTPg86xIM60zrHPg860zrHPg860zrHPgyDOtA==?=\r\n "
-			"=?utf-8?B?zrHPg86xz4fPhs60zrTPg86xIDIwMDguZG9j?=\"",
+			"=?utf-8?B?zrEgzrTPg86xzrTPg860z4POsc60z4POsc60zrHPg860zrHPgyDOtM+DzrE=?=\r\n "
+			"=?utf-8?B?zrTOsc+DzrTPg86xIM60z4POsc60zrHPg860z4POsSDOtM6xz4POtM6xz4M=?=\r\n "
+			"=?utf-8?B?zrTOsc+DIM60zrHPg86xz4fPhs60zrTPg86xIDIwMDguZG9j?=\"",
 			p3.generate(vmime::generationContext::PARAMETER_VALUE_RFC2047_ONLY, 80)  // max line length = 80
 		);
 
@@ -416,9 +416,9 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 			"3.both",
 			"F: X; \r\n "
 			"param1=\"=?utf-8?B?zrTPg8+Dz4PPg8+Dz4PPg8+Dz4PPg8+Dz4PPg8+Dz4PPg8+Dz4PPg8+DzrTPg860?=\r\n "
-			"=?utf-8?B?zrEgzrTPg86xzrTPg860z4POsc60z4POsc60zrHPg860zrHPgyDOtM+DzrHOtM6x?=\r\n "
-			"=?utf-8?B?z4POtM+DzrEgzrTPg86xzrTOsc+DzrTPg86xIM60zrHPg860zrHPg860zrHPgyDOtA==?=\r\n "
-			"=?utf-8?B?zrHPg86xz4fPhs60zrTPg86xIDIwMDguZG9j?=\";\r\n "
+			"=?utf-8?B?zrEgzrTPg86xzrTPg860z4POsc60z4POsc60zrHPg860zrHPgyDOtM+DzrE=?=\r\n "
+			"=?utf-8?B?zrTOsc+DzrTPg86xIM60z4POsc60zrHPg860z4POsSDOtM6xz4POtM6xz4M=?=\r\n "
+			"=?utf-8?B?zrTOsc+DIM60zrHPg86xz4fPhs60zrTPg86xIDIwMDguZG9j?=\";\r\n "
 			"param1*0*=utf-8''%CE%B4%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83;\r\n "
 			"param1*1*=%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83;\r\n "
 			"param1*2*=%CE%B4%CF%83%CE%B4%CE%B1%20%CE%B4%CF%83%CE%B1%CE%B4%CF%83%CE%B4%CF;\r\n "
