@@ -48,6 +48,7 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 
 		VMIME_TEST(testWhitespace)
 		VMIME_TEST(testWhitespaceMBox)
+		VMIME_TEST(testWhitespaceAfterPlainWord)
 
 		VMIME_TEST(testFoldingAscii)
 		VMIME_TEST(testForcedNonEncoding)
@@ -610,6 +611,26 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		VASSERT_EQ("parse.name.word2.charset", "utf-8", mbox.getName().getWordAt(1)->getCharset());
 
 		VASSERT_EQ("parse.email", "me@vmime.org", mbox.getEmail());
+	}
+
+	void testWhitespaceAfterPlainWord() {
+
+		// The space before an encoded word which follows an unencoded
+		// word is not encoded a second time
+		VASSERT_EQ(
+			"1",
+			"=?utf-8?B?R3LDvMOfZQ==?= aus =?utf-8?Q?K=C3=B6ln?=",
+			vmime::text("Gr\xc3\xbc\xc3\x9f" "e aus K\xc3\xb6ln", vmime::charsets::UTF_8).generate()
+		);
+
+		const std::string subject =
+			"Re: AW: Angebot, Lieferung und Montage im Werk S\xc3\xbc" "d, "
+			"Termin n\xc3\xa4" "chste Woche bitte best\xc3\xa4tigen";
+
+		vmime::text back;
+		back.parse(vmime::text(subject, vmime::charsets::UTF_8).generate());
+
+		VASSERT_EQ("2", subject, back.getWholeBuffer());
 	}
 
 	void testFoldingAscii() {
