@@ -475,7 +475,7 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		}
 
 		const vmime::word w(in, vmime::charset("utf-8"));
-		const size_t lengths[] = { 50, 76, 78, 100 };
+		const size_t lengths[] = { 50, 76, 78, 100, vmime::lineLengthLimits::infinite };
 
 		for (const size_t maxLen : lengths) {
 
@@ -484,7 +484,15 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 				const std::string id = std::to_string(maxLen) + "/" + std::to_string(col);
 				const std::string out = w.generate(maxLen, col);
 
-				checkEncodedWordLength(id, std::string(col, 'x') + out, std::min(maxLen, size_t(76)));
+				if (maxLen == vmime::lineLengthLimits::infinite) {
+
+					checkEncodedWordLength(id, out, maxLen);
+					VASSERT_EQ(id + ": no fold", std::string::npos, out.find('\r'));
+
+				} else {
+
+					checkEncodedWordLength(id, std::string(col, 'x') + out, std::min(maxLen, size_t(76)));
+				}
 
 				vmime::text back;
 				back.parse(out);

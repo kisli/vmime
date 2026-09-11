@@ -782,8 +782,7 @@ void word::generate(
 			// Compute the number of encoded chars that will fit on this line
 			const size_t used = (i == 0 ? curLineLength : NEW_LINE_SEQUENCE_LENGTH);
 			const size_t lineRoom = (maxLineLength2 > used) ? maxLineLength2 - used : 0;
-			const size_t wordRoom =
-				infiniteLength ? lineRoom : std::min(lineRoom, maxEncodedWordLength);
+			const size_t wordRoom = std::min(lineRoom, maxEncodedWordLength);
 			const size_t fit = (wordRoom > minWordLength) ? wordRoom - minWordLength : 1;
 
 			// Get the next encoded chunk
@@ -793,8 +792,13 @@ void word::generate(
 				break;
 			}
 
-			// Start a new encoded word
-			if (i != 0) {
+			// Start a new encoded word, on the same line if there is no limit
+			if (i != 0 && infiniteLength) {
+
+				os << " ";
+				++curLineLength;
+
+			} else if (i != 0) {
 
 				os << NEW_LINE_SEQUENCE;
 				curLineLength = NEW_LINE_SEQUENCE_LENGTH;
