@@ -658,6 +658,27 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		back.parse(vmime::text(subject, vmime::charsets::UTF_8).generate(78, 9));
 
 		VASSERT_EQ("2", subject, back.getWholeBuffer());
+
+		// No separator in addition to the leading space of an unencoded word
+		const vmime::text t2(
+			"\xc3\x9c" "berschrift one two three four five six seven eight nine ten"
+			" eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen",
+			vmime::charsets::UTF_8
+		);
+
+		VASSERT_EQ(
+			"3",
+			"=?utf-8?Q?=C3=9Cberschrift?= one two three four five six seven eight\r\n"
+			" nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen",
+			t2.generate(78, 9)
+		);
+
+		// The separator after an encoded word counts for the line length
+		vmime::text t3;
+		t3.appendWord(vmime::make_shared <vmime::word>("\xc3\xa4", vmime::charset("utf-8")));
+		t3.appendWord(vmime::make_shared <vmime::word>(std::string(60, 'b') + " c", vmime::charset("us-ascii")));
+
+		VASSERT_EQ("4", "=?utf-8?B?w6Q=?= " + std::string(60, 'b') + "\r\n c", t3.generate(78, 0));
 	}
 
 	void testFoldingAscii() {
