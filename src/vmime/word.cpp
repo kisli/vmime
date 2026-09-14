@@ -442,6 +442,28 @@ void word::generateImpl(
 }
 
 
+// Write "buffer" as a quoted-string (RFC 5322 §3.2.4) if it fits on
+// the current line, else write nothing and return false
+static bool generateQuotedPhrase(
+	const string& buffer,
+	const generationContext& ctx,
+	utility::outputStream& os,
+	size_t& curLineLength
+) {
+
+	const string quoted = utility::stringUtils::quote(buffer, "\\\"", "\\");
+
+	if (curLineLength + 2 /* 2 x " */ + quoted.length() >= ctx.getMaxLineLength()) {
+		return false;
+	}
+
+	os << '"' << quoted << '"';
+	curLineLength += 2 + quoted.length();
+
+	return true;
+}
+
+
 void word::generate(
 	const generationContext& ctx,
 	utility::outputStream& os,
@@ -495,15 +517,10 @@ void word::generate(
 	// If possible and requested (with flag), quote the buffer (no folding is performed).
 	// Quoting is possible if and only if:
 	//  - the buffer does not need to be encoded
-	//  - the buffer does not contain quoting character (")
 	//  - there is enough remaining space on the current line to hold the whole buffer
 	} else if (!encodingNeeded &&
 	           (flags & text::QUOTE_IF_POSSIBLE) &&
-	           m_buffer.find('"') == string::npos &&
-	           (curLineLength + 2 /* 2 x " */ + m_buffer.length()) < ctx.getMaxLineLength()) {
-
-		os << '"' << m_buffer << '"';
-		curLineLength += 2 + m_buffer.length();
+	           generateQuotedPhrase(m_buffer, ctx, os, curLineLength)) {
 
 		state->prevWordIsEncoded = false;
 
