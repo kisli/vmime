@@ -459,6 +459,16 @@ void word::generate(
 		state = &defaultGeneratorState;
 	}
 
+	// Nothing to write, keep the state of the previous word
+	if (m_buffer.empty() && (flags & (text::QUOTE_IF_POSSIBLE | text::QUOTE_IF_NEEDED)) == 0) {
+
+		if (newLinePos) {
+			*newLinePos = curLinePos;
+		}
+
+		return;
+	}
+
 	// Find out if encoding is forced or required by contents + charset
 	bool encodingNeeded = false;
 
@@ -759,24 +769,31 @@ void word::generate(
 			}
 		}
 
+		bool sepAdded = false;
+
 		if (startNewLine) {
 
 			os << NEW_LINE_SEQUENCE;
 			curLineLength = NEW_LINE_SEQUENCE_LENGTH;
 
 			state->lastCharIsSpace = true;
+			sepAdded = true;
 		}
 
 		// Encode and fold input buffer
 		if (!startNewLine && !state->isFirstWord && !state->lastCharIsSpace) {
 
 			os << " "; // Separate from previous word
-			if (!state->prevWordIsEncoded && m_buffer[0] == ' ')
-				wordEnc.getNextChunk(1);
-
 			++curLineLength;
 
 			state->lastCharIsSpace = true;
+			sepAdded = true;
+		}
+
+		// White-space after an unencoded word is displayed (RFC 2047 section
+		// 6.2), so the fold or space just added stands for a leading space
+		if (sepAdded && !state->isFirstWord && !state->prevWordIsEncoded && m_buffer[0] == ' ') {
+			wordEnc.getNextChunk(1);
 		}
 
 		// RFC 2047 §2: an encoded-word may not be more than 75 characters long
