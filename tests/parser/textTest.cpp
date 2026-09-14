@@ -49,6 +49,7 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		VMIME_TEST(testWhitespace)
 		VMIME_TEST(testWhitespaceMBox)
 		VMIME_TEST(testWhitespaceAfterPlainWord)
+		VMIME_TEST(testWhitespaceAroundFold)
 
 		VMIME_TEST(testFoldingAscii)
 		VMIME_TEST(testForcedNonEncoding)
@@ -629,6 +630,32 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 
 		vmime::text back;
 		back.parse(vmime::text(subject, vmime::charsets::UTF_8).generate());
+
+		VASSERT_EQ("2", subject, back.getWholeBuffer());
+	}
+
+	void testWhitespaceAroundFold() {
+
+		// The fold before an encoded word stands for its leading space
+		vmime::text t1;
+		t1.appendWord(vmime::make_shared <vmime::word>("Termin", vmime::charset("us-ascii")));
+		t1.appendWord(vmime::make_shared <vmime::word>(" n\xc3\xa4" "chste", vmime::charset("utf-8")));
+
+		VASSERT_EQ("1", "Termin\r\n =?utf-8?Q?n=C3=A4chste?=", t1.generate(78, 52));
+
+		// An empty word writes nothing, the space stays encoded
+		vmime::text e1, e2;
+		e1.parse("=?utf-8?Q?=C3=A4?= =?us-ascii?Q?" "?= =?utf-8?Q?_=C3=B6?=");
+		e2.parse(e1.generate());
+
+		VASSERT_EQ("empty", "\xc3\xa4 \xc3\xb6", e2.getConvertedText(vmime::charsets::UTF_8));
+
+		const std::string subject =
+			"Re: AW: Angebot, Lieferung und Montage der neuen Anlage im Werk Nord und S\xc3\xbc" "d, "
+			"Termin n\xc3\xa4" "chste Woche bitte best\xc3\xa4tigen";
+
+		vmime::text back;
+		back.parse(vmime::text(subject, vmime::charsets::UTF_8).generate(78, 9));
 
 		VASSERT_EQ("2", subject, back.getWholeBuffer());
 	}
