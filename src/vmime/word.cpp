@@ -442,25 +442,128 @@ void word::generateImpl(
 }
 
 
-// Write "buffer" as a quoted-string (RFC 5322 §3.2.4) if it fits on
-// the current line, else write nothing and return false
-static bool generateQuotedPhrase(
+enum QuoteResult {
+	QUOTE_NOT_DONE,       // nothing written, fold the text unquoted
+	QUOTE_DONE,
+	QUOTE_NEEDS_ENCODING  // nothing written, a run does not fit on a line
+};
+
+
+static bool isWSP(const char c) {
+
+	return c == ' ' || c == '\t';
+}
+
+
+// Whether "buffer" can only be written as a quoted-string: it contains
+// specials (RFC 5322 §3.2.3), or white-space which would be read
+// as a single space outside quotes (§3.2.2)
+static bool phraseNeedsQuoting(const string& buffer) {
+
+	if (utility::stringUtils::needQuoting(buffer, "()<>[]:;@\\,.\"\t")) {
+		return true;
+	}
+
+	return !buffer.empty() &&
+	       (buffer[0] == ' ' || buffer[buffer.length() - 1] == ' ' ||
+	        buffer.find("  ") != string::npos);
+}
+
+
+// Position after "pos" where a quoted-string may be folded, or the end
+static size_t nextFoldPoint(const string& quoted, size_t pos) {
+
+	for (++pos ; pos < quoted.length() ; ++pos) {
+
+		if (isWSP(quoted[pos]) && !isWSP(quoted[pos - 1])) {
+			break;
+		}
+	}
+
+	return std::min(pos, quoted.length());
+}
+
+
+// Write "buffer" as a quoted-string (RFC 5322 §3.2.4). If it does
+// not fit on the current line, fold before it, or inside it before
+// white-space, where unfolding restores the text exactly.
+static QuoteResult generateQuotedPhrase(
 	const string& buffer,
 	const generationContext& ctx,
 	utility::outputStream& os,
-	size_t& curLineLength
+	size_t& curLineLength,
+	const int flags,
+	word::generatorState* state
 ) {
 
+	const size_t maxLineLength = ctx.getMaxLineLength();
 	const string quoted = utility::stringUtils::quote(buffer, "\\\"", "\\");
 
-	if (curLineLength + 2 /* 2 x " */ + quoted.length() >= ctx.getMaxLineLength()) {
-		return false;
+	if (curLineLength + 2 /* 2 x " */ + quoted.length() > maxLineLength) {
+
+		if (!phraseNeedsQuoting(buffer)) {
+			return QUOTE_NOT_DONE;
+		}
+
+		// Lengths of the first and the longest run, with the quotes
+		size_t firstRun = 0, maxRun = 0;
+
+		for (size_t i = 0, next ; i < quoted.length() ; i = next) {
+
+			next = nextFoldPoint(quoted, i);
+
+			const size_t len = next - i + (i == 0 ? 1 : 0) + (next == quoted.length() ? 1 : 0);
+
+			if (i == 0) {
+				firstRun = len;
+			}
+
+			maxRun = std::max(maxRun, len);
+		}
+
+		// Same rule as for unquoted text
+		if ((flags & text::FORCE_NO_ENCODING) == 0 && maxRun >= maxLineLength - 3) {
+			return QUOTE_NEEDS_ENCODING;
+		}
+
+		// Start a new line if not even the first run fits on this one, or if
+		// the quoted string then fits entirely, but leave a fold before the
+		// first word to the enclosing component
+		if (curLineLength > NEW_LINE_SEQUENCE_LENGTH &&
+		    (curLineLength + firstRun > maxLineLength ||
+		     (!state->isFirstWord &&
+		      NEW_LINE_SEQUENCE_LENGTH + 2 + quoted.length() <= maxLineLength))) {
+
+			os << NEW_LINE_SEQUENCE;
+			curLineLength = NEW_LINE_SEQUENCE_LENGTH;
+		}
 	}
 
-	os << '"' << quoted << '"';
-	curLineLength += 2 + quoted.length();
+	os << '"';
+	++curLineLength;
 
-	return true;
+	for (size_t i = 0, next ; i < quoted.length() ; i = next) {
+
+		next = nextFoldPoint(quoted, i);
+
+		const size_t len = next - i + (next == quoted.length() ? 1 : 0);
+
+		if (i != 0 && curLineLength + len > maxLineLength) {
+			os << CRLF;
+			curLineLength = 0;
+		}
+
+		os << string(quoted, i, next - i);
+		curLineLength += next - i;
+	}
+
+	os << '"';
+	++curLineLength;
+
+	state->prevWordIsEncoded = false;
+	state->lastCharIsSpace = false;
+
+	return QUOTE_DONE;
 }
 
 
@@ -502,6 +605,8 @@ void word::generate(
 		encodingNeeded = wordEncoder::isEncodingNeeded(ctx, m_buffer, m_charset, m_lang);
 	}
 
+	QuoteResult quoteResult = QUOTE_NOT_DONE;
+
 	// If text does not need to be encoded, quote the buffer (no folding is performed).
 	if (!encodingNeeded &&
 	    (flags & text::QUOTE_IF_NEEDED) &&
@@ -514,15 +619,19 @@ void word::generate(
 
 		state->prevWordIsEncoded = false;
 
-	// If possible and requested (with flag), quote the buffer (no folding is performed).
+	// If possible and requested (with flag), quote the buffer.
 	// Quoting is possible if and only if:
 	//  - the buffer does not need to be encoded
-	//  - there is enough remaining space on the current line to hold the whole buffer
+	//  - it fits on the current line, or it cannot be written unquoted
 	} else if (!encodingNeeded &&
 	           (flags & text::QUOTE_IF_POSSIBLE) &&
-	           generateQuotedPhrase(m_buffer, ctx, os, curLineLength)) {
+	           (quoteResult = generateQuotedPhrase(m_buffer, ctx, os, curLineLength,
+	                                               flags, state)) != QUOTE_NOT_DONE) {
 
-		state->prevWordIsEncoded = false;
+		if (quoteResult == QUOTE_NEEDS_ENCODING) {
+			generate(ctx, os, curLinePos, newLinePos, flags | text::FORCE_ENCODING, state);
+			return;
+		}
 
 	// We will fold lines without encoding them.
 	} else if (!encodingNeeded) {
