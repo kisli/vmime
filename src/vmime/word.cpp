@@ -470,12 +470,45 @@ static bool phraseNeedsQuoting(const string& buffer) {
 }
 
 
+enum FoldPoint {
+	FOLD_NONE,
+	FOLD_SPACE,     // before a single space
+	FOLD_RUN_END,   // before the last space of a white-space run
+	FOLD_TAB,       // before a tab, which a lenient parser reads as a space
+	FOLD_BACKSLASH  // after '\', which a lenient parser takes as continuation
+};
+
+
+// Where a fold may be put before buffer[pos], "prev" being the character
+// before buffer[0]. Only at the end of a run, which lenient parsers
+// collapse, and the kind tells how much a fold there is preferred.
+static FoldPoint getFoldPoint(const string& buffer, const size_t pos, const char prev) {
+
+	const char before = (pos == 0 ? prev : buffer[pos - 1]);
+
+	if (!isWSP(buffer[pos]) ||
+	    (pos + 1 < buffer.length() && isWSP(buffer[pos + 1])) ||
+	    (pos == 0 && isWSP(before))) {
+
+		return FOLD_NONE;
+	}
+
+	if (before == '\\') {
+		return FOLD_BACKSLASH;
+	} else if (buffer[pos] == '\t') {
+		return FOLD_TAB;
+	}
+
+	return isWSP(before) ? FOLD_RUN_END : FOLD_SPACE;
+}
+
+
 // Position after "pos" where a quoted-string may be folded, or the end
 static size_t nextFoldPoint(const string& quoted, size_t pos) {
 
 	for (++pos ; pos < quoted.length() ; ++pos) {
 
-		if (isWSP(quoted[pos]) && !isWSP(quoted[pos - 1])) {
+		if (getFoldPoint(quoted, pos, 'x') == FOLD_SPACE) {
 			break;
 		}
 	}
@@ -528,10 +561,11 @@ static QuoteResult generateQuotedPhrase(
 
 		// Start a new line if not even the first run fits on this one, or if
 		// the quoted string then fits entirely, but leave a fold before the
-		// first word to the enclosing component
+		// first word to the enclosing component, and prefer not to fold
+		// after a '\'
 		if (curLineLength > NEW_LINE_SEQUENCE_LENGTH &&
 		    (curLineLength + firstRun > maxLineLength ||
-		     (!state->isFirstWord &&
+		     (!state->isFirstWord && !state->lastCharIsBackslash &&
 		      NEW_LINE_SEQUENCE_LENGTH + 2 + quoted.length() <= maxLineLength))) {
 
 			os << NEW_LINE_SEQUENCE;
@@ -562,6 +596,7 @@ static QuoteResult generateQuotedPhrase(
 
 	state->prevWordIsEncoded = false;
 	state->lastCharIsSpace = false;
+	state->lastCharIsBackslash = false;
 
 	return QUOTE_DONE;
 }
@@ -618,6 +653,7 @@ void word::generate(
 		curLineLength += 1 + quoted.length() + 1;
 
 		state->prevWordIsEncoded = false;
+		state->lastCharIsBackslash = false;
 
 	// If possible and requested (with flag), quote the buffer.
 	// Quoting is possible if and only if:
@@ -654,15 +690,18 @@ void word::generate(
 		//  * a maximum line length of N bytes
 		//  * a buffer containing N+1 bytes, with no whitespace
 		//
-		// Look in the buffer for any run (ie. whitespace-separated sequence) which
+		// Look in the buffer for any run (ie. sequence between two fold points) which
 		// is longer than the maximum line length. If there is one, then force encoding,
 		// so that no generated line is longer than the maximum line length.
+		const char prevChar = state->lastCharIsBackslash ? '\\'
+			: (state->lastCharIsSpace ? ' ' : 'x');
+
 		size_t maxRunLength = 0;
 		size_t curRunLength = 0;
 
-		for (string::const_iterator p = buffer.begin(), end = buffer.end() ; p != end ; ++p) {
+		for (size_t i = 0 ; i < buffer.length() ; ++i) {
 
-			if (parserHelpers::isSpace(*p)) {
+			if (getFoldPoint(buffer, i, prevChar) != FOLD_NONE) {
 
 				maxRunLength = std::max(maxRunLength, curRunLength);
 				curRunLength = 0;
@@ -695,6 +734,8 @@ void word::generate(
 
 		// Output runs, and fold line when a whitespace is encountered
 		string::const_iterator lastWSpos = buffer.end(); // last white-space position
+		string::const_iterator lastRunEnd = buffer.end(), lastTab = buffer.end();
+		string::const_iterator lastBackslash = buffer.end();
 		string::const_iterator curLineStart = buffer.begin(); // current line start
 
 		string::const_iterator p = buffer.begin();
@@ -708,14 +749,38 @@ void word::generate(
 			for ( ; p != end ; ++p, ++curLineLength) {
 
 				// Exceeded maximum line length, but we have found a white-space
-				// where we can cut the line...
-				if (curLineLength >= ctx.getMaxLineLength() && lastWSpos != end) {
-					break;
+				// where we can cut the line: a single space, else the end of a
+				// run, else a tab, else after a '\'
+				if (curLineLength >= ctx.getMaxLineLength()) {
+
+					if (lastWSpos == end) {
+						lastWSpos = lastRunEnd;
+					}
+
+					if (lastWSpos == end) {
+						lastWSpos = lastTab;
+					}
+
+					if (lastWSpos == end) {
+						lastWSpos = lastBackslash;
+					}
+
+					if (lastWSpos != end) {
+						break;
+					}
 				}
 
-				if (*p == ' ' || *p == '\t') {
-					// Remember the position of this white-space character
-					lastWSpos = p;
+				if (newLine && p == curLineStart) {
+					continue;  // a fold was just put here
+				}
+
+				switch (getFoldPoint(buffer, p - buffer.begin(), prevChar)) {
+
+					case FOLD_SPACE: lastWSpos = p; break;
+					case FOLD_RUN_END: lastRunEnd = p; break;
+					case FOLD_TAB: lastTab = p; break;
+					case FOLD_BACKSLASH: lastBackslash = p; break;
+					case FOLD_NONE: break;
 				}
 			}
 
@@ -751,7 +816,7 @@ void word::generate(
 					}
 
 					p = curLineStart;
-					lastWSpos = end;
+					lastWSpos = lastRunEnd = lastTab = lastBackslash = end;
 					newLine = true;
 					sepPending = false;
 
@@ -788,7 +853,7 @@ void word::generate(
 						}
 
 						curLineStart = p;
-						lastWSpos = end;
+						lastWSpos = lastRunEnd = lastTab = lastBackslash = end;
 						newLine = true;
 					}
 				}
@@ -812,10 +877,20 @@ void word::generate(
 					state->lastCharIsSpace = false;
 				}
 
+				curLineStart = lastWSpos + 1;
+
 				if (flags & text::NO_NEW_LINE_SEQUENCE) {
 
 					os << CRLF;
 					curLineLength = 0;
+
+					state->lastCharIsSpace = true;
+
+				} else if (*lastWSpos == '\t') {
+
+					os << CRLF;  // the tab starts the next line
+					curLineLength = 0;
+					curLineStart = lastWSpos;
 
 					state->lastCharIsSpace = true;
 
@@ -827,15 +902,14 @@ void word::generate(
 					state->lastCharIsSpace = true;
 				}
 
-				curLineStart = lastWSpos + 1;
-
-				p = lastWSpos + 1;
-				lastWSpos = end;
+				p = curLineStart;
+				lastWSpos = lastRunEnd = lastTab = lastBackslash = end;
 				newLine = true;
 			}
 		}
 
 		state->prevWordIsEncoded = false;
+		state->lastCharIsBackslash = (!buffer.empty() && buffer[buffer.length() - 1] == '\\');
 
 	/*
 		RFC #2047:
@@ -880,6 +954,9 @@ void word::generate(
 		const size_t minWordLength = wordStart.length() + wordEnd.length();
 		const size_t maxLineLength2 = (maxLineLength3 < minWordLength + 1)
 			? maxLineLength3 + minWordLength + 1 : maxLineLength3;
+
+		// RFC 2047 §2: an encoded-word may not be more than 75 characters long
+		const size_t maxEncodedWordLength = 75;
 
 		// Checks whether remaining space on this line is usable. If too few
 		// characters can be encoded, start a new line.
@@ -929,9 +1006,7 @@ void word::generate(
 			wordEnc.getNextChunk(1);
 		}
 
-		// RFC 2047 §2: an encoded-word may not be more than 75 characters long
 		const bool infiniteLength = (ctx.getMaxLineLength() == lineLengthLimits::infinite);
-		const size_t maxEncodedWordLength = 75;
 
 		for (unsigned int i = 0 ; ; ++i) {
 
@@ -971,6 +1046,7 @@ void word::generate(
 
 			state->prevWordIsEncoded = true;
 			state->lastCharIsSpace = false;
+			state->lastCharIsBackslash = false;
 		}
 	}
 
