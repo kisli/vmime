@@ -36,6 +36,7 @@ VMIME_TEST_SUITE_BEGIN(mailboxTest)
 		VMIME_TEST(testInternationalizedEmail)
 		VMIME_TEST(testQuotedNameSpecials)
 		VMIME_TEST(testQuotedNameFolding)
+		VMIME_TEST(testFoldPoints)
 	VMIME_TEST_LIST_END
 
 
@@ -278,6 +279,39 @@ VMIME_TEST_SUITE_BEGIN(mailboxTest)
 		// Atoms may still be folded without quotes
 		mailbox m4(text("Bob Builder", charsets::UTF_8), emailAddress("bob@example.com"));
 		VASSERT_EQ("7", "Bob\r\n Builder <bob@example.com>", m4.generate(78, 72));
+	}
+
+	void testFoldPoints() {
+
+		using namespace vmime;
+
+		// No fold after '\' or inside a white-space run, which a lenient
+		// parser would not unfold to the same text
+		const char* names[] = {
+			"IT \\ Support Department of the Central Administration Office",
+			"Doe,  John   Central Office Team North and South and East and West",
+		};
+
+		generationContext ctx;
+		ctx.setMaxLineLength(78);
+
+		for (const char* name : names) {
+
+			for (size_t col = 4 ; col < 78 ; ++col) {
+
+				std::string out;
+				utility::outputStreamStringAdapter os(out);
+				text(name, charsets::UTF_8).encodeAndFold(ctx, os, col, NULL, text::QUOTE_IF_POSSIBLE);
+
+				VASSERT(out, out.find("\\\r\n") == std::string::npos);
+				VASSERT(out, out.find(" \r\n") == std::string::npos);
+				VASSERT(out, out.find("\r\n  ") == std::string::npos);
+
+				mailbox back;
+				back.parse(out + " <x@example.com>");
+				VASSERT_EQ(out, name, back.getName().getWholeBuffer());
+			}
+		}
 	}
 
 	void testAPI() {
