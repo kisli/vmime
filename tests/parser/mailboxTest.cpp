@@ -35,6 +35,7 @@ VMIME_TEST_SUITE_BEGIN(mailboxTest)
 		VMIME_TEST(testSpacing)
 		VMIME_TEST(testInternationalizedEmail)
 		VMIME_TEST(testQuotedNameSpecials)
+		VMIME_TEST(testQuotedNameFolding)
 	VMIME_TEST_LIST_END
 
 
@@ -233,6 +234,50 @@ VMIME_TEST_SUITE_BEGIN(mailboxTest)
 		VASSERT_EQ("3", "Meier, Hans \"Hansi\"", back.getName().getWholeBuffer());
 		back.parse(m2.generate());
 		VASSERT_EQ("4", "IT \\ Support", back.getName().getWholeBuffer());
+	}
+
+	void testQuotedNameFolding() {
+
+		using namespace vmime;
+
+		generationContext ctx;
+		ctx.setMaxLineLength(78);
+
+		// Fits exactly
+		std::string out;
+		utility::outputStreamStringAdapter os(out);
+		word("Doe, John", charsets::US_ASCII).generate(ctx, os, 67, NULL, text::QUOTE_IF_POSSIBLE, NULL);
+		VASSERT_EQ("1", "\"Doe, John\"", out);
+
+		// Does not fit: the quotes are kept, the fold goes inside
+		mailbox m1(text("Doe, John", charsets::UTF_8), emailAddress("john@example.com"));
+		VASSERT_EQ("2", "\"Doe,\r\n John\" <john@example.com>", m1.generate(78, 68));
+
+		mailbox back;
+		back.parse(m1.generate(78, 68));
+		VASSERT_EQ("3", "Doe, John", back.getName().getWholeBuffer());
+
+		// Longer than a line
+		const std::string name =
+			"Very Long Department Name, With Commas, And More Commas, Until It Is Longer Than A Line";
+		mailbox m2(text(name, charsets::UTF_8), emailAddress("lc@example.com"));
+		VASSERT_EQ(
+			"4",
+			"\"Very Long Department Name, With Commas, And More Commas, Until It Is\r\n"
+			" Longer Than A Line\" <lc@example.com>",
+			m2.generate(78, 4)
+		);
+
+		back.parse(m2.generate(78, 4));
+		VASSERT_EQ("5", name, back.getName().getWholeBuffer());
+
+		// A double space is only kept inside quotes
+		mailbox m3(text("John  Doe Smith", charsets::UTF_8), emailAddress("js@example.com"));
+		VASSERT_EQ("6", "\"John  Doe\r\n Smith\" <js@example.com>", m3.generate(78, 66));
+
+		// Atoms may still be folded without quotes
+		mailbox m4(text("Bob Builder", charsets::UTF_8), emailAddress("bob@example.com"));
+		VASSERT_EQ("7", "Bob\r\n Builder <bob@example.com>", m4.generate(78, 72));
 	}
 
 	void testAPI() {
