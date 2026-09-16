@@ -335,11 +335,14 @@ void mailbox::generateImpl(
 
 		size_t pos = curLinePos;
 
-		// No display name is specified, only email address.
-		if (curLinePos + generatedEmail.length() > ctx.getMaxLineLength()) {
+		// No display name is specified, only email address. Fold before
+		// it only if it then fits, as it cannot be folded itself.
+		if (curLinePos + generatedEmail.length() > ctx.getMaxLineLength() &&
+		    curLinePos > NEW_LINE_SEQUENCE_LENGTH &&
+		    NEW_LINE_SEQUENCE_LENGTH + generatedEmail.length() <= ctx.getMaxLineLength()) {
 
 			os << NEW_LINE_SEQUENCE;
-			pos = NEW_LINE_SEQUENCE.length();
+			pos = NEW_LINE_SEQUENCE_LENGTH;
 		}
 
 		os << generatedEmail;
@@ -378,14 +381,20 @@ void mailbox::generateImpl(
 			text::QUOTE_IF_POSSIBLE | (forceEncode ? text::FORCE_ENCODING : 0)
 		);
 
+		// The fold, or a space, separates the name from the address
 		if (pos + generatedEmail.length() + 3 > ctx.getMaxLineLength()) {
 
 			os << NEW_LINE_SEQUENCE;
-			pos = NEW_LINE_SEQUENCE.length();
+			pos = NEW_LINE_SEQUENCE_LENGTH;
+
+		} else {
+
+			os << " ";
+			++pos;
 		}
 
-		os << " <" << generatedEmail << ">";
-		pos += 2 + generatedEmail.length() + 1;
+		os << "<" << generatedEmail << ">";
+		pos += 1 + generatedEmail.length() + 1;
 
 		if (newLinePos) {
 			*newLinePos = pos;
