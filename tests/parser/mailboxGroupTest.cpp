@@ -34,6 +34,7 @@ VMIME_TEST_SUITE_BEGIN(mailboxGroupTest)
 		VMIME_TEST(testEncodedEmptyGroup)
 		VMIME_TEST(testGroupInGroup)
 		VMIME_TEST(testBrokenGroup)
+		VMIME_TEST(testGenerateFolding)
 	VMIME_TEST_LIST_END
 
 
@@ -130,6 +131,39 @@ VMIME_TEST_SUITE_BEGIN(mailboxGroupTest)
 
 		VASSERT_EQ("name", "", mgrp.getName().getWholeBuffer());
 		VASSERT_EQ("count", 0, mgrp.getMailboxCount());
+	}
+
+	void testGenerateFolding() {
+
+		using namespace vmime;
+
+		mailboxGroup grp(text("Team", charsets::UTF_8));
+		grp.appendMailbox(make_shared <mailbox>(text("Alice Allison", charsets::UTF_8), emailAddress("alice@example.com")));
+		grp.appendMailbox(make_shared <mailbox>(text("Bob Builder", charsets::UTF_8), emailAddress("bob@example.com")));
+		grp.appendMailbox(make_shared <mailbox>(text("Doe, John", charsets::UTF_8), emailAddress("john@example.com")));
+		grp.appendMailbox(make_shared <mailbox>(emailAddress("first.person@example.com")));
+
+		// Whole mailboxes move to the next line, the fold replaces the
+		// space after the comma
+		VASSERT_EQ(
+			"1",
+			"Team: \"Alice Allison\" <alice@example.com>,\r\n"
+			" \"Bob Builder\" <bob@example.com>, \"Doe, John\" <john@example.com>,\r\n"
+			" first.person@example.com;",
+			grp.generate(78, 4)
+		);
+
+		mailboxGroup back;
+		back.parse(grp.generate(78, 4));
+		VASSERT_EQ("2", 4, back.getMailboxCount());
+		VASSERT_EQ("3", "Doe, John", back.getMailboxAt(2)->getName().getWholeBuffer());
+
+		VASSERT_EQ(
+			"4",
+			"Team: \"Alice Allison\" <alice@example.com>, \"Bob Builder\" <bob@example.com>, "
+			"\"Doe, John\" <john@example.com>, first.person@example.com;",
+			grp.generate()
+		);
 	}
 
 VMIME_TEST_SUITE_END
