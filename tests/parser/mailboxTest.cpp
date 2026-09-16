@@ -37,6 +37,7 @@ VMIME_TEST_SUITE_BEGIN(mailboxTest)
 		VMIME_TEST(testQuotedNameSpecials)
 		VMIME_TEST(testQuotedNameFolding)
 		VMIME_TEST(testFoldPoints)
+		VMIME_TEST(testFoldBeforeAddress)
 	VMIME_TEST_LIST_END
 
 
@@ -312,6 +313,32 @@ VMIME_TEST_SUITE_BEGIN(mailboxTest)
 				VASSERT_EQ(out, name, back.getName().getWholeBuffer());
 			}
 		}
+	}
+
+	void testFoldBeforeAddress() {
+
+		using namespace vmime;
+
+		// The fold replaces the space before "<"
+		mailbox m1(text("Carol Smith-Jones", charsets::UTF_8), emailAddress("carol.smith-jones@example.com"));
+		VASSERT_EQ("1", "\"Carol Smith-Jones\"\r\n <carol.smith-jones@example.com>", m1.generate(78, 30));
+
+		// A bare address is folded only if it then fits
+		generationContext ctx;
+		ctx.setMaxLineLength(78);
+
+		std::string out;
+		utility::outputStreamStringAdapter os(out);
+		size_t pos = 0;
+
+		mailbox m2(emailAddress("first.person@example.com"));
+		m2.generate(ctx, os, 60, &pos);
+		VASSERT_EQ("2", "\r\n first.person@example.com", out);
+		VASSERT_EQ("3", 25, pos);
+
+		const std::string addr = std::string(70, 'x') + "@example.com";
+		mailbox m3((emailAddress(addr)));
+		VASSERT_EQ("4", addr, m3.generate(78, 4));
 	}
 
 	void testAPI() {
