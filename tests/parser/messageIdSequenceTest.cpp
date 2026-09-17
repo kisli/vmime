@@ -29,6 +29,7 @@ VMIME_TEST_SUITE_BEGIN(messageIdSequenceTest)
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testParse)
 		VMIME_TEST(testGenerate)
+		VMIME_TEST(testGenerateFolding)
 	VMIME_TEST_LIST_END
 
 
@@ -73,6 +74,37 @@ VMIME_TEST_SUITE_BEGIN(messageIdSequenceTest)
 		s2.appendMessageId(vmime::make_shared <vmime::messageId>("c", "d"));
 
 		VASSERT_EQ("2", "<a@b> <c@d>", s2.generate());
+	}
+
+	void testGenerateFolding() {
+
+		vmime::messageIdSequence s;
+		s.appendMessageId(vmime::make_shared <vmime::messageId>("first.id.1234567890", "example.com"));
+		s.appendMessageId(vmime::make_shared <vmime::messageId>("second.id.1234567890", "example.com"));
+		s.appendMessageId(vmime::make_shared <vmime::messageId>("third.id.1234567890", "example.com"));
+
+		// No white-space before the fold
+		VASSERT_EQ(
+			"1",
+			"<first.id.1234567890@example.com> <second.id.1234567890@example.com>\r\n"
+			" <third.id.1234567890@example.com>",
+			s.generate(78, 5)
+		);
+
+		vmime::generationContext ctx;
+		ctx.setMaxLineLength(78);
+		ctx.setWrapMessageId(false);
+
+		std::string out;
+		vmime::utility::outputStreamStringAdapter os(out);
+		s.generate(ctx, os, 5);
+
+		VASSERT_EQ(
+			"2",
+			"<first.id.1234567890@example.com> <second.id.1234567890@example.com>"
+			" <third.id.1234567890@example.com>",
+			out
+		);
 	}
 
 VMIME_TEST_SUITE_END
