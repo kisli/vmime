@@ -112,27 +112,39 @@ shared_ptr <address> address::parseNext(
 
 				case '"':
 
-					quoted = !quoted;
+					if (commentLevel == 0) {
+						quoted = !quoted;
+					}
+
 					break;
 
 				case '<':
 
-					inRouteAddr = true;
+					if (!quoted && commentLevel == 0) {
+						inRouteAddr = true;
+					}
+
 					break;
 
 				case '>':
 
-					inRouteAddr = false;
+					if (!quoted && commentLevel == 0) {
+						inRouteAddr = false;
+					}
+
 					break;
 
 				case '(':
 
-					++commentLevel;
+					if (!quoted) {
+						++commentLevel;
+					}
+
 					break;
 
 				case ')':
 
-					if (commentLevel > 0) {
+					if (!quoted && commentLevel > 0) {
 						--commentLevel;
 					}
 
