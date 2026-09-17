@@ -39,6 +39,8 @@ VMIME_TEST_SUITE_BEGIN(emailAddressTest)
 		VMIME_TEST(testParseCommentInDomainPart)
 		VMIME_TEST(testParseRFC2047EncodedLocalPart)
 		VMIME_TEST(testGenerateSpecialChars)
+		VMIME_TEST(testGenerateLongLocalPart)
+		VMIME_TEST(testGenerateASCIILocalPart)
 	VMIME_TEST_LIST_END
 
 
@@ -255,6 +257,58 @@ VMIME_TEST_SUITE_BEGIN(emailAddressTest)
 			"email 3", "\" \"@example.com",
 			vmime::emailAddress(" ", "example.com").generate()
 		);
+	}
+
+	void testGenerateLongLocalPart() {
+
+		// Neither encoded nor folded
+		const std::string local(80, 'a');
+		vmime::emailAddress e1(local, "example.com");
+
+		VASSERT_EQ("1", local + "@example.com", e1.generate(78, 4));
+		VASSERT_EQ("2", local + "@example.com", e1.generate());
+
+		vmime::emailAddress back;
+		back.parse(e1.generate(78, 4));
+		VASSERT_EQ("3", local, back.getLocalName().getBuffer());
+
+		// Non-ASCII without SMTPUTF8: one encoded-word, not folded
+		std::string local2;
+
+		for (int i = 0 ; i < 40 ; ++i) {
+			local2 += "\xc3\xa4";
+		}
+
+		const std::string out = vmime::emailAddress(local2, "example.com").generate(78, 4);
+
+		VASSERT_EQ("4", std::string::npos, out.find_first_of(" \r\n"));
+
+		back.parse(out);
+		VASSERT_EQ("5", local2, back.getLocalName().getConvertedText(vmime::charsets::UTF_8));
+	}
+
+	void testGenerateASCIILocalPart() {
+
+		// Plain ASCII is not encoded, even with '=' (eg. VERP) or "=?"
+		const char* locals[] = { "bounce-dGVzdA==", "abc=", "a=?b" };
+
+		for (const char* local : locals) {
+
+			vmime::emailAddress e(local, "example.com");
+			VASSERT_EQ(local, std::string(local) + "@example.com", e.generate());
+		}
+
+		vmime::emailAddress back;
+		back.parse(vmime::emailAddress("bounce-dGVzdA==", "example.com").generate());
+		VASSERT_EQ("parse", "bounce-dGVzdA==", back.getLocalName().getBuffer());
+
+		// 7-bit, but with escape sequences: still encoded
+		const vmime::word jp("\x1b$B$3$s$K$A$O\x1b(B", vmime::charset("iso-2022-jp"));
+		const std::string out =
+			vmime::emailAddress(jp, vmime::word("example.com", vmime::charsets::US_ASCII)).generate();
+
+		VASSERT("iso-2022-jp: " + out, out.compare(0, 16, "=?iso-2022-jp?B?") == 0);
+		VASSERT_EQ("no ESC", std::string::npos, out.find('\x1b'));
 	}
 
 VMIME_TEST_SUITE_END
