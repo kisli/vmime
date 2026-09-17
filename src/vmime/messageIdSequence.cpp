@@ -23,6 +23,7 @@
 
 #include "vmime/messageIdSequence.hpp"
 #include "vmime/exception.hpp"
+#include "vmime/utility/outputStreamStringAdapter.hpp"
 
 #include <algorithm>
 
@@ -123,19 +124,33 @@ void messageIdSequence::generateImpl(
 
 	if (!m_list.empty()) {
 
-		generationContext tmpCtx(ctx);
-		tmpCtx.setMaxLineLength(ctx.getMaxLineLength() - 2);
+		m_list.front()->generate(ctx, os, pos, &pos);
 
-		for (std::vector <shared_ptr <messageId> >::const_iterator it = m_list.begin() ; ; ) {
+		// The following ids are folded here, in place of the separator
+		generationContext idCtx(ctx);
+		idCtx.setWrapMessageId(false);
 
-			(*it)->generate(ctx, os, pos, &pos);
+		for (std::vector <shared_ptr <messageId> >::const_iterator it = m_list.begin() + 1 ;
+		     it != m_list.end() ; ++it) {
 
-			if (++it == m_list.end()) {
-				break;
+			string id;
+			utility::outputStreamStringAdapter idStream(id);
+
+			(*it)->generate(idCtx, idStream, 0, NULL);
+
+			if (ctx.getWrapMessageId() && pos + 1 + id.length() > ctx.getMaxLineLength()) {
+
+				os << NEW_LINE_SEQUENCE;
+				pos = NEW_LINE_SEQUENCE_LENGTH;
+
+			} else {
+
+				os << " ";
+				++pos;
 			}
 
-			os << " ";
-			pos++;
+			os << id;
+			pos += id.length();
 		}
 	}
 
