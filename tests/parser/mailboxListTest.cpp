@@ -30,6 +30,7 @@ VMIME_TEST_SUITE_BEGIN(mailboxListTest)
 		VMIME_TEST(testParseGroup)
 		VMIME_TEST(testBrokenGroup)
 		VMIME_TEST(testGenerateFolding)
+		VMIME_TEST(testParseQuotedSpecials)
 	VMIME_TEST_LIST_END
 
 
@@ -99,6 +100,24 @@ VMIME_TEST_SUITE_BEGIN(mailboxListTest)
 			"first.person@example.com",
 			ml.generate()
 		);
+	}
+
+	void testParseQuotedSpecials() {
+
+		// '(' inside a quoted-string does not start a comment
+		vmime::mailboxList ml1;
+		ml1.parse("\"F\" <f@x.com>, \"a(b\" <r@x.com>, \"Z\" <s@x.com>");
+
+		VASSERT_EQ("1", 3, ml1.getMailboxCount());
+		VASSERT_EQ("2", "a(b", ml1.getMailboxAt(1)->getName().getWholeBuffer());
+		VASSERT_EQ("3", "r@x.com", ml1.getMailboxAt(1)->getEmail().generate());
+
+		// '"' inside a comment does not start a quoted-string
+		vmime::mailboxList ml2;
+		ml2.parse("(a\"b) <r@x.com>, <s@x.com>");
+
+		VASSERT_EQ("4", 2, ml2.getMailboxCount());
+		VASSERT_EQ("5", "s@x.com", ml2.getMailboxAt(1)->getEmail().generate());
 	}
 
 VMIME_TEST_SUITE_END
