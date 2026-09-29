@@ -29,6 +29,7 @@
 
 #include "vmime/utility/outputStreamAdapter.hpp"
 #include "vmime/utility/outputStreamStringAdapter.hpp"
+#include "vmime/utility/stringUtils.hpp"
 
 
 namespace vmime {
@@ -125,7 +126,10 @@ void parameter::parseImpl(
 
 	m_value->setBuffer(string(buffer.begin() + position, buffer.begin() + end));
 
-	if (ctx.getInternationalizedEmailSupport()) {
+	const string& value = m_value->getBuffer();
+
+	if (ctx.getInternationalizedEmailSupport() &&
+	    utility::stringUtils::findFirstNonASCIIchar(value.begin(), value.end()) != string::npos) {
 		m_value->setCharset(charset(charsets::UTF_8));
 	} else {
 		m_value->setCharset(charset(charsets::US_ASCII));
