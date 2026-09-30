@@ -8,15 +8,18 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
+    - name: aptupdate
+      run: |
+        sudo apt update
     - name: install-deps
-      uses: awalsh128/cache-apt-pkgs-action@latest
+      uses: awalsh128/cache-apt-pkgs-action@master
       with:
         packages: binutils cmake doxygen g++ libcppunit-dev libgnutls28-dev libgsasl-dev libgtk-3-dev libssl-dev make pkg-config
-        version: 1.2
+        version: 1.3
     - name: clone-vmime
-      uses: actions/checkout@v3
+      uses: actions/checkout@main
     - name: buildall
       run: |
         set -ex
