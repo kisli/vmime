@@ -1087,7 +1087,7 @@ shared_ptr <folderStatus> maildirFolder::getStatus() {
 	if (m_messageCount > oldCount) {
 
 		std::vector <size_t> nums;
-		nums.reserve(m_messageCount - oldCount);
+		nums.resize(m_messageCount - oldCount);
 
 		for (size_t i = oldCount + 1, j = 0 ; i <= m_messageCount ; ++i, ++j) {
 			nums[j] = i;
