@@ -509,6 +509,77 @@ shared_ptr <security::cert::certificateChain> TLSSocket_OpenSSL::getPeerCertific
 }
 
 
+bool TLSSocket_OpenSSL::getChannelBindingData(const ChannelBindingType type, byteArray& data) {
+
+	if (!m_connected || !m_ssl) {
+		return false;
+	}
+
+#ifdef TLS1_3_VERSION
+	const bool isTLS13 = (SSL_version(m_ssl) >= TLS1_3_VERSION);
+#else
+	const bool isTLS13 = false;
+#endif
+
+	switch (type) {
+
+		case CHANNEL_BINDING_TLS_UNIQUE: {
+
+			// "tls-unique" is not defined for TLS 1.3 (RFC 9266)
+			if (isTLS13) {
+				return false;
+			}
+
+			// First Finished message of the handshake (RFC 5929): the one we sent
+			// for a full handshake, or the server's one for a resumed session
+			unsigned char finished[EVP_MAX_MD_SIZE];
+
+			const size_t len = SSL_session_reused(m_ssl)
+				? SSL_get_peer_finished(m_ssl, finished, sizeof(finished))
+				: SSL_get_finished(m_ssl, finished, sizeof(finished));
+
+			if (len == 0 || len > sizeof(finished)) {
+				return false;
+			}
+
+			data.assign(finished, finished + len);
+			return true;
+		}
+
+		case CHANNEL_BINDING_TLS_EXPORTER: {
+
+			// "tls-exporter" is only defined for TLS 1.3, or TLS 1.2 with
+			// Extended Master Secret (RFC 9266)
+			if (!isTLS13) {
+#ifdef SSL_get_extms_support
+				if (SSL_get_extms_support(m_ssl) != 1) {
+					return false;
+				}
+#else
+				return false;
+#endif // SSL_get_extms_support
+			}
+
+			static const char label[] = "EXPORTER-Channel-Binding";
+			static const unsigned char context[] = "";
+			unsigned char exporter[32];
+
+			if (SSL_export_keying_material(
+					m_ssl, exporter, sizeof(exporter),
+					label, sizeof(label) - 1, context, 0, /* use_context */ 1) != 1) {
+
+				return false;
+			}
+
+			data.assign(exporter, exporter + sizeof(exporter));
+			return true;
+		}
+	}
+
+	return false;
+}
+
+
 void TLSSocket_OpenSSL::internalThrow() {
 
 	if (!!m_ex) {
