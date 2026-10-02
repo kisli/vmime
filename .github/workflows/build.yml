@@ -8,18 +8,24 @@ on:
 
 jobs:
   build:
+    name: build (${{ matrix.tls }}, ${{ matrix.charset }})
     runs-on: ubuntu-26.04
+    strategy:
+      fail-fast: false
+      matrix:
+        tls: [ gnutls, openssl ]
+        charset: [ icu, iconv ]
     steps:
     - name: install-deps
       run: |
         sudo apt-get update
-        sudo apt-get install -y --no-install-recommends binutils cmake doxygen g++ libcppunit-dev libgnutls28-dev libgsasl-dev libgtk-3-dev libssl-dev make pkg-config
+        sudo apt-get install -y --no-install-recommends binutils cmake doxygen g++ libcppunit-dev libgnutls28-dev libgsasl-dev libgtk-3-dev libssl-dev make pkg-config ${{ matrix.charset == 'icu' && 'libicu-dev' || '' }}
     - name: clone-vmime
       uses: actions/checkout@v4
     - name: buildall
       run: |
         set -ex
-        cmake . -DVMIME_SENDMAIL_PATH:STRING="/usr/sbin/sendmail" -DVMIME_HAVE_TLS_SUPPORT:BOOL=ON -DVMIME_BUILD_TESTS=ON -DVMIME_BUILD_SAMPLES=ON
+        cmake . -DVMIME_SENDMAIL_PATH:STRING="/usr/sbin/sendmail" -DVMIME_HAVE_TLS_SUPPORT:BOOL=ON -DVMIME_TLS_SUPPORT_LIB:STRING=${{ matrix.tls }} -DVMIME_CHARSETCONV_LIB:STRING=${{ matrix.charset }} -DVMIME_BUILD_TESTS=ON -DVMIME_BUILD_SAMPLES=ON
         make "-j$(nproc)"
         sudo make install
         make test
