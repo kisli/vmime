@@ -990,8 +990,9 @@ public:
 						valid = true;
 						end = true;
 
-					} else if (c >= 0x01 && c <= 0x7f &&  // CHAR
-					           c != 0x0a && c != 0x0d) {  // CR and LF
+					} else if ((c >= 0x01 && c <= 0x7f &&  // CHAR
+					            c != 0x0a && c != 0x0d) ||  // CR and LF
+					           (!parser.isStrict() && c >= 0x80)) {  // 8-bit (eg. raw UTF-8) in non-strict mode
 
 						value += c;
 
