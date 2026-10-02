@@ -123,9 +123,15 @@ VMIME_TEST_SUITE_BEGIN(charsetTest)
 		auto filteredStream = conv->getFilteredOutputStream(outStr);
 		p.getBody()->getContents()->extract(*filteredStream);
 		filteredStream->flush();
+
+		// Result should be in the form "Foo ??\r\n? bar\r\nbaz" (ICU) or
+		// "Foo ????\r\n?? bar\r\nbaz" (iconv, one '?' per byte)...
+		// Remove consecutive question marks for easier matching.
+		str.erase(std::unique(str.begin(), str.end(), [](char a, char b) { return a == '?' && b == '?'; }), str.end());
+
 		VASSERT_EQ(
 			"generate",
-			"Foo ??\r\n"
+			"Foo ?\r\n"
 			"? bar\r\n"
 			"baz",
 			str
@@ -213,7 +219,7 @@ VMIME_TEST_SUITE_BEGIN(charsetTest)
 
 		// Result should be in the form "a???b?c??d" or "a??????b?c??d"...
 		// Remove consecutive question marks for easier matching.
-		res.erase(std::unique(res.begin(), res.end()), res.end());
+		res.erase(std::unique(res.begin(), res.end(), [](char a, char b) { return a == '?' && b == '?'; }), res.end());
 
 		VASSERT_EQ(
 			"Illegal UTF-8 sequence",
