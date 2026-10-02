@@ -75,6 +75,306 @@ static const char* monthNames[] = {
 	"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 };
 
+
+static bool isNameEqualNoCase(const char* s, const size_t n, const char* name) {
+
+	for (size_t i = 0 ; i < n ; ++i) {
+		if (name[i] == '\0' ||
+		    parserHelpers::toLower(s[i]) != parserHelpers::toLower(name[i])) {
+			return false;
+		}
+	}
+
+	return name[n] == '\0';
+}
+
+
+// RFC 5322 section 4.3: military zones were specified incorrectly in RFC 822,
+// and other names are ambiguous; both are to be treated as "-0000".
+static int zoneFromName(const char* s, const size_t n) {
+
+	static const struct {
+		const char* name;
+		int zone;
+	} zoneNames[] = {
+		{ "UT", datetime::UT }, { "GMT", datetime::GMT },
+		{ "EST", datetime::EST }, { "EDT", datetime::EDT },
+		{ "CST", datetime::CST }, { "CDT", datetime::CDT },
+		{ "MST", datetime::MST }, { "MDT", datetime::MDT },
+		{ "PST", datetime::PST }, { "PDT", datetime::PDT },
+	};
+
+	for (const auto& z : zoneNames) {
+		if (isNameEqualNoCase(s, n, z.name)) {
+			return z.zone;
+		}
+	}
+
+	return datetime::GMT;
+}
+
+
+static constexpr const char* dayNamesLong[] = {
+	"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
+};
+
+static constexpr const char* monthNamesLong[] = {
+	"January", "February", "March", "April", "May", "June",
+	"July", "August", "September", "October", "November", "December"
+};
+
+
+// Skip folding white space and (nested) comments
+static const char* skipCFWS(const char* p, const char* const pend) {
+
+	while (p < pend) {
+
+		if (parserHelpers::isSpace(*p)) {
+			++p;
+			continue;
+		} else if (*p != '(') {
+			break;
+		}
+
+		int depth = 0;
+		const char* q = p;
+
+		for ( ; q < pend ; ++q) {
+
+			if (*q == '\\' && q + 1 < pend) {
+				++q;
+			} else if (*q == '(') {
+				++depth;
+			} else if (*q == ')' && --depth == 0) {
+				break;
+			}
+		}
+
+		if (q == pend) {
+			break;
+		}
+
+		p = q + 1;
+	}
+
+	return p;
+}
+
+
+static bool parseNumber(
+	const char*& p, const char* const pend,
+	const size_t minDigits, const size_t maxDigits, int& value
+) {
+
+	const char* q = p;
+	int n = 0;
+
+	while (q < pend && parserHelpers::isDigit(*q)) {
+
+		if (static_cast <size_t>(q - p) == maxDigits) {
+			return false;
+		}
+
+		n = n * 10 + (*q - '0');
+		++q;
+	}
+
+	if (static_cast <size_t>(q - p) < minDigits) {
+		return false;
+	}
+
+	p = q;
+	value = n;
+
+	return true;
+}
+
+
+// Returns the index of the matching short or long name, or -1
+static int parseName(
+	const char*& p, const char* const pend,
+	const char*const * shortNames, const char*const * longNames, const int count
+) {
+
+	const char* q = p;
+
+	while (q < pend && parserHelpers::isAlpha(*q)) ++q;
+
+	for (int i = 0 ; i < count ; ++i) {
+
+		if (isNameEqualNoCase(p, q - p, shortNames[i]) ||
+		    isNameEqualNoCase(p, q - p, longNames[i])) {
+
+			p = q;
+			return i;
+		}
+	}
+
+	return -1;
+}
+
+
+static bool parseTime(
+	const char*& p, const char* const pend,
+	int& hour, int& minute, int& second
+) {
+
+	if (!parseNumber(p, pend, 1, 2, hour) || hour > 23) {
+		return false;
+	}
+
+	p = skipCFWS(p, pend);
+
+	if (p == pend || *p != ':') {
+		return false;
+	}
+
+	p = skipCFWS(p + 1, pend);
+
+	if (!parseNumber(p, pend, 1, 2, minute) || minute > 59) {
+		return false;
+	}
+
+	second = 0;
+
+	const char* q = skipCFWS(p, pend);
+
+	if (q < pend && *q == ':') {
+
+		p = skipCFWS(q + 1, pend);
+
+		// 60 is a leap second
+		if (!parseNumber(p, pend, 1, 2, second) || second > 60) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+
+static bool parseZone(const char*& p, const char* const pend, int& zone) {
+
+	if (p < pend && (*p == '+' || *p == '-')) {
+
+		const char sign = *p;
+		const char* q = p + 1;
+		int offset = 0;
+
+		if (!parseNumber(q, pend, 4, 4, offset) || offset % 100 > 59) {
+			return false;
+		}
+
+		zone = (offset / 100) * 60 + offset % 100;
+
+		if (sign == '-') {
+			zone = -zone;
+		}
+
+		p = q;
+		return true;
+	}
+
+	const char* q = p;
+
+	while (q < pend && parserHelpers::isAlpha(*q)) ++q;
+
+	if (q == p) {
+		return false;
+	}
+
+	zone = zoneFromName(p, q - p);
+	p = q;
+
+	return true;
+}
+
+
+struct datetimeFields {
+	int year, month, day, hour, minute, second, zone;
+};
+
+
+// RFC 5322 section 3.3 date-time, including the obsolete syntax of 4.3.
+// On success, *pnext is set past the date-time and any trailing CFWS.
+static bool parseRFC5322(
+	const char* p, const char* const pend,
+	datetimeFields& f, const char** pnext
+) {
+
+	p = skipCFWS(p, pend);
+
+	if (parseName(p, pend, dayNames, dayNamesLong, 7) >= 0) {
+
+		p = skipCFWS(p, pend);
+
+		if (p == pend || *p != ',') {
+			return false;
+		}
+
+		p = skipCFWS(p + 1, pend);
+	}
+
+	if (!parseNumber(p, pend, 1, 2, f.day) || f.day < 1) {
+		return false;
+	}
+
+	p = skipCFWS(p, pend);
+
+	if ((f.month = parseName(p, pend, monthNames, monthNamesLong, 12) + 1) == 0) {
+		return false;
+	}
+
+	p = skipCFWS(p, pend);
+
+	const char* yearStart = p;
+
+	if (!parseNumber(p, pend, 2, 9, f.year)) {
+		return false;
+	}
+
+	if (p - yearStart == 2) {
+		f.year += (f.year < 50) ? 2000 : 1900;
+	} else if (p - yearStart == 3) {
+		f.year += 1900;
+	}
+
+	if (f.day > utility::datetimeUtils::getDaysInMonth(f.year, f.month)) {
+		return false;
+	}
+
+	p = skipCFWS(p, pend);
+
+	if (!parseTime(p, pend, f.hour, f.minute, f.second)) {
+		return false;
+	}
+
+	p = skipCFWS(p, pend);
+
+	const char* zoneStart = p;
+
+	if (!parseZone(p, pend, f.zone)) {
+		return false;
+	}
+
+	// Tolerate a redundant zone name, as in "+0200 CEST"
+	if (*zoneStart == '+' || *zoneStart == '-') {
+
+		const char* q = skipCFWS(p, pend);
+		const char* r = q;
+
+		while (r < pend && parserHelpers::isAlpha(*r)) ++r;
+
+		if (r != q && skipCFWS(r, pend) == pend) {
+			p = r;
+		}
+	}
+
+	*pnext = skipCFWS(p, pend);
+
+	return true;
+}
+
 void datetime::parseImpl(
 	parsingContext& /* ctx */,
 	const string& buffer,
@@ -86,7 +386,30 @@ void datetime::parseImpl(
 	const char* const pend = buffer.data() + end;
 	const char* p = buffer.data() + position;
 
-	// Parse the date and time value
+	datetimeFields f;
+	const char* pnext = NULL;
+
+	if (parseRFC5322(p, pend, f, &pnext)) {
+
+		m_year = f.year;
+		m_month = f.month;
+		m_day = f.day;
+		m_hour = f.hour;
+		m_minute = f.minute;
+		m_second = f.second;
+		m_zone = f.zone;
+
+		setParsedBounds(position, pnext - buffer.data());
+
+		if (newPosition) {
+			*newPosition = pnext - buffer.data();
+		}
+
+		return;
+	}
+
+	// Not well-formed. Make a best guess, but report that nothing
+	// was consumed.
 	while (p < pend && parserHelpers::isSpace(*p)) ++p;
 
 	if (p < pend) {
@@ -101,6 +424,7 @@ void datetime::parseImpl(
 		}
 
 		bool dayParsed = false;
+		bool yearAfterTime = false;
 
 		if (parserHelpers::isAlpha(*p)) {
 
@@ -117,7 +441,7 @@ void datetime::parseImpl(
 				int day = 0;
 
 				do {
-					day = day * 10 + (*p - '0');
+					if (day < 100000000) day = day * 10 + (*p - '0');
 					++p;
 				} while (p < pend && parserHelpers::isDigit(*p));
 
@@ -260,7 +584,7 @@ void datetime::parseImpl(
 			int day = 0;
 
 			do {
-				day = day * 10 + (*p - '0');
+				if (day < 100000000) day = day * 10 + (*p - '0');
 				++p;
 			} while (p < pend && parserHelpers::isDigit(*p));
 
@@ -275,9 +599,10 @@ void datetime::parseImpl(
 			// Check for ill-formed date/time and try to recover
 			if (p + 2 < pend && *(p + 2) == ':') {
 
-				// Skip year (default to current), and advance
-				// to time parsing
+				// Skip year (default to current, unless it follows
+				// the time as in asctime), and advance to time parsing
 				m_year = now().getYear();
+				yearAfterTime = true;
 
 			} else {
 
@@ -285,7 +610,7 @@ void datetime::parseImpl(
 				int year = 0;
 
 				do {
-					year = year * 10 + (*p - '0');
+					if (year < 100000000) year = year * 10 + (*p - '0');
 					++p;
 				} while (p < pend && parserHelpers::isDigit(*p));
 
@@ -312,7 +637,7 @@ void datetime::parseImpl(
 			int hour = 0;
 
 			do {
-				hour = hour * 10 + (*p - '0');
+				if (hour < 100000000) hour = hour * 10 + (*p - '0');
 				++p;
 			} while (p < pend && parserHelpers::isDigit(*p));
 
@@ -332,7 +657,7 @@ void datetime::parseImpl(
 					int minute = 0;
 
 					do {
-						minute = minute * 10 + (*p - '0');
+						if (minute < 100000000) minute = minute * 10 + (*p - '0');
 						++p;
 					} while (p < pend && parserHelpers::isDigit(*p));
 
@@ -352,7 +677,7 @@ void datetime::parseImpl(
 							int second = 0;
 
 							do {
-								second = second * 10 + (*p - '0');
+								if (second < 100000000) second = second * 10 + (*p - '0');
 								++p;
 							} while (p < pend && parserHelpers::isDigit(*p));
 
@@ -390,6 +715,23 @@ void datetime::parseImpl(
 			while (p < pend && parserHelpers::isSpace(*p)) ++p;
 		}
 
+		if (yearAfterTime && p + 3 < pend && parserHelpers::isDigit(*p)) {
+
+			const char* q = p;
+			int year = 0;
+
+			while (q < pend && parserHelpers::isDigit(*q)) {
+				if (year < 100000000) year = year * 10 + (*q - '0');
+				++q;
+			}
+
+			if (q - p == 4) {
+				m_year = year;
+				p = q;
+				while (p < pend && parserHelpers::isSpace(*p)) ++p;
+			}
+		}
+
 		if (p + 1 < pend && (*p == '+' || *p == '-') && parserHelpers::isDigit(*(p + 1))) {
 
 			const char_t sign = *p;
@@ -399,7 +741,7 @@ void datetime::parseImpl(
 			int offset = 0;
 
 			do {
-				offset = offset * 10 + (*p - '0');
+				if (offset < 100000000) offset = offset * 10 + (*p - '0');
 				++p;
 			} while (p < pend && parserHelpers::isDigit(*p));
 
@@ -412,158 +754,14 @@ void datetime::parseImpl(
 				m_zone = -(hourOff * 60 + minOff);
 			}
 
-		} else if (p < pend && isalpha(*p)) {
-
-			bool done = false;
+		} else if (p < pend && parserHelpers::isAlpha(*p)) {
 
 			// Zone offset (Time zone name)
-			char_t zone[4] = { 0 };
-			int zoneLength = 0;
+			const char* zoneStart = p;
 
-			do {
-				zone[zoneLength++] = *p;
-				++p;
-			} while (zoneLength < 3 && p < pend);
+			while (p < pend && parserHelpers::isAlpha(*p)) ++p;
 
-			switch (zone[0])
-			{
-			case 'c':
-			case 'C':
-			{
-				if (zoneLength >= 2)
-				{
-					if (zone[1] == 's' || zone[1] == 'S')
-						m_zone = CST;
-					else
-						m_zone = CDT;
-
-					done = true;
-				}
-
-				break;
-			}
-			case 'e':
-			case 'E':
-			{
-				if (zoneLength >= 2) {
-
-					if (zone[1] == 's' || zone[1] == 'S') {
-						m_zone = EST;
-					} else {
-						m_zone = EDT;
-					}
-
-					done = true;
-				}
-
-				break;
-			}
-			case 'm':
-			case 'M': {
-
-				if (zoneLength >= 2) {
-
-					if (zone[1] == 's' || zone[1] == 'S') {
-						m_zone = MST;
-					} else {
-						m_zone = MDT;
-					}
-
-					done = true;
-				}
-
-				break;
-			}
-			case 'p':
-			case 'P': {
-
-				if (zoneLength >= 2) {
-
-					if (zone[1] == 's' || zone[1] == 'S') {
-						m_zone = PST;
-					} else {
-						m_zone = PDT;
-					}
-
-					done = true;
-				}
-
-				break;
-			}
-			case 'g':
-			case 'G':
-			case 'u':
-			case 'U': {
-
-				if (zoneLength >= 2) {
-
-					m_zone = GMT;  // = UTC
-					done = true;
-				}
-
-				break;
-			}
-
-			}
-
-			if (!done) {
-
-				const char_t z = zone[0];
-
-				// Military time zone
-				if (z != 'j' && z != 'J') {
-
-					typedef std::map <char_t, int> Map;
-					static const Map::value_type offsetMapInit[] = {
-
-						Map::value_type('a', -60),
-						Map::value_type('b', -120),
-						Map::value_type('c', -180),
-						Map::value_type('d', -240),
-						Map::value_type('e', -300),
-						Map::value_type('f', -360),
-						Map::value_type('g', -420),
-						Map::value_type('h', -480),
-						Map::value_type('i', -540),
-						Map::value_type('k', -600),
-						Map::value_type('l', -660),
-						Map::value_type('m', -720),
-
-						Map::value_type('n', 60),
-						Map::value_type('o', 120),
-						Map::value_type('p', 180),
-						Map::value_type('q', 240),
-						Map::value_type('r', 300),
-						Map::value_type('s', 360),
-						Map::value_type('t', 420),
-						Map::value_type('u', 480),
-						Map::value_type('v', 540),
-						Map::value_type('w', 600),
-						Map::value_type('x', 660),
-						Map::value_type('y', 720),
-
-						Map::value_type('z', 0),
-					};
-
-					static const Map offsetMap(
-						::vmime::begin(offsetMapInit),
-						::vmime::end(offsetMapInit)
-					);
-
-					Map::const_iterator pos =
-						offsetMap.find(parserHelpers::toLower(z));
-
-					if (pos != offsetMap.end()) {
-						m_zone = (*pos).second;
-					} else {
-						m_zone = GMT;
-					}
-
-				} else {
-
-					m_zone = GMT;
-				}
-			}
+			m_zone = zoneFromName(zoneStart, p - zoneStart);
 
 		} else {
 
@@ -586,7 +784,7 @@ void datetime::parseImpl(
 	setParsedBounds(position, end);
 
 	if (newPosition) {
-		*newPosition = end;
+		*newPosition = position;
 	}
 }
 
@@ -671,25 +869,27 @@ datetime::datetime(const datetime& d)
 
 datetime::datetime(const time_t t, const int zone) {
 
+	const time_t tz = t + static_cast <time_t>(zone) * 60;
+
 #if VMIME_HAVE_LOCALTIME_S
 
 	struct tm tms;
 
-	if (!gmtime_s(&tms, &t)) {
-		localtime_s(&tms, &t);
+	if (!gmtime_s(&tms, &tz)) {
+		localtime_s(&tms, &tz);
 	}
 
 #elif VMIME_HAVE_LOCALTIME_R
 	struct tm tms;
 
-	if (!gmtime_r(&t, &tms)) {
-		localtime_r(&t, &tms);
+	if (!gmtime_r(&tz, &tms)) {
+		localtime_r(&tz, &tms);
 	}
 
 #else
 
-	struct tm* gtm = gmtime(&t);
-	struct tm* ltm = localtime(&t);
+	struct tm* gtm = gmtime(&tz);
+	struct tm* ltm = localtime(&tz);
 
 	struct tm tms;
 
