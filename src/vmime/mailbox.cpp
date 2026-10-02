@@ -362,7 +362,11 @@ void mailbox::generateImpl(
 
 		for (size_t w = 0 ; !forceEncode && w != m_name.getWordCount() ; ++w) {
 
-			if (m_name.getWordAt(w)->getCharset() != charset(charsets::US_ASCII)) {
+			const charset& ch = m_name.getWordAt(w)->getCharset();
+
+			// With RFC 6532 support, UTF-8 may be emitted as-is
+			if (ch != charset(charsets::US_ASCII) &&
+			    !(ctx.getInternationalizedEmailSupport() && ch == charset(charsets::UTF_8))) {
 				forceEncode = true;
 			}
 		}

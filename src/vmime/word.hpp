@@ -240,6 +240,8 @@ public:
 
 private:
 
+	static charset unencodedCharset(const parsingContext& ctx, const string& buffer);
+
 	static shared_ptr <word> parseNext(
 		parsingContext& ctx,
 		const string& buffer,
