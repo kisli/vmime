@@ -517,6 +517,53 @@ shared_ptr <security::cert::certificateChain> TLSSocket_GnuTLS::getPeerCertifica
 }
 
 
+bool TLSSocket_GnuTLS::getChannelBindingData(const ChannelBindingType type, byteArray& data) {
+
+	if (!m_connected) {
+		return false;
+	}
+
+	gnutls_channel_binding_t gnutlsType;
+
+	switch (type) {
+
+		case CHANNEL_BINDING_TLS_UNIQUE:
+
+#if defined(GNUTLS_VERSION_NUMBER) && GNUTLS_VERSION_NUMBER >= 0x030603
+			// "tls-unique" is not defined for TLS 1.3 (RFC 9266)
+			if (gnutls_protocol_get_version(*m_session->m_gnutlsSession) == GNUTLS_TLS1_3) {
+				return false;
+			}
+#endif // GNUTLS_VERSION_NUMBER >= 0x030603
+
+			gnutlsType = GNUTLS_CB_TLS_UNIQUE;
+			break;
+
+#if defined(GNUTLS_VERSION_NUMBER) && GNUTLS_VERSION_NUMBER >= 0x030702
+		case CHANNEL_BINDING_TLS_EXPORTER:
+
+			gnutlsType = GNUTLS_CB_TLS_EXPORTER;
+			break;
+#endif // GNUTLS_VERSION_NUMBER >= 0x030702
+
+		default:
+
+			return false;
+	}
+
+	gnutls_datum_t cb;
+
+	if (gnutls_session_channel_binding(*m_session->m_gnutlsSession, gnutlsType, &cb) != GNUTLS_E_SUCCESS) {
+		return false;
+	}
+
+	data.assign(cb.data, cb.data + cb.size);
+	gnutls_free(cb.data);
+
+	return !data.empty();
+}
+
+
 // Following is a workaround for C++ exceptions to pass correctly between
 // C and C++ calls.
 //

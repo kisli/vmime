@@ -75,6 +75,27 @@ public:
 	  * has not been performed yet
 	  */
 	virtual shared_ptr <security::cert::certificateChain> getPeerCertificates() = 0;
+
+	/** Channel binding types (see RFC 5056).
+	  */
+	enum ChannelBindingType {
+		CHANNEL_BINDING_TLS_UNIQUE,      /**< "tls-unique" (RFC 5929), not defined for TLS 1.3. */
+		CHANNEL_BINDING_TLS_EXPORTER     /**< "tls-exporter" (RFC 9266), defined for TLS 1.3,
+		                                      or TLS 1.2 with Extended Master Secret. */
+	};
+
+	/** Return the channel binding data for this connection, which can
+	  * be used to bind an authentication to the TLS channel (for example,
+	  * by the SASL "-PLUS" mechanisms).
+	  *
+	  * @param type channel binding type
+	  * @param data will receive the channel binding data
+	  * @return true if channel binding data of the specified type is
+	  * available, or false otherwise (eg. if the handshake has not been
+	  * performed yet, or if the type is not defined for the negotiated
+	  * TLS version)
+	  */
+	virtual bool getChannelBindingData(const ChannelBindingType type, byteArray& data) = 0;
 };
 
 

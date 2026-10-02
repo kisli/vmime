@@ -425,6 +425,13 @@ void POP3Connection::authenticateSASL() {
 	shared_ptr <security::sasl::SASLContext> saslContext =
 		security::sasl::SASLContext::create();
 
+#if VMIME_HAVE_TLS_SUPPORT
+	// Allow using mechanisms with channel binding ("-PLUS" variants)
+	if (m_secured) {
+		saslContext->setChannelBindingData(dynamicCast <tls::TLSSocket>(m_socket));
+	}
+#endif // VMIME_HAVE_TLS_SUPPORT
+
 	for (unsigned int i = 0 ; i < saslMechs.size() ; ++i) {
 
 		try {

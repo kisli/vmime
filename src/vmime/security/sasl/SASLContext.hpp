@@ -39,6 +39,19 @@
 
 
 namespace vmime {
+
+
+#if VMIME_HAVE_TLS_SUPPORT
+namespace net {
+namespace tls {
+
+class TLSSocket;
+
+} // tls
+} // net
+#endif // VMIME_HAVE_TLS_SUPPORT
+
+
 namespace security {
 namespace sasl {
 
@@ -93,6 +106,40 @@ public:
 		const std::vector <shared_ptr <SASLMechanism> >& mechs
 	);
 
+	/** Set the channel binding data of the connection on which
+	  * authentication takes place (see RFC 5056). This is required
+	  * to use the mechanisms which support channel binding (the
+	  * "-PLUS" variants): they are not available otherwise.
+	  *
+	  * @param type channel binding type, as registered by IANA
+	  * ("tls-unique" or "tls-exporter")
+	  * @param data channel binding data
+	  * @return true if the channel binding type is supported, or
+	  * false otherwise (in this case, the data is ignored)
+	  */
+	bool setChannelBindingData(const string& type, const byteArray& data);
+
+#if VMIME_HAVE_TLS_SUPPORT
+
+	/** Set the channel binding data from the TLS socket on which
+	  * authentication takes place. "tls-unique" is used if it is
+	  * available (TLS 1.2 and earlier), otherwise "tls-exporter"
+	  * is used (TLS 1.3).
+	  *
+	  * @param sok TLS socket
+	  */
+	void setChannelBindingData(const shared_ptr <net::tls::TLSSocket>& sok);
+
+#endif // VMIME_HAVE_TLS_SUPPORT
+
+	/** Return whether channel binding data has been set for
+	  * this context.
+	  *
+	  * @return true if channel binding data is available,
+	  * false otherwise
+	  */
+	bool hasChannelBindingData() const;
+
 	/** Helper function for decoding Base64-encoded challenge.
 	  *
 	  * @param input input buffer
@@ -117,7 +164,14 @@ private:
 
 	static const string getErrorMessage(const string& fname, const int code);
 
+	/** Return whether the specified mechanism uses channel binding,
+	  * ie. if it is a "-PLUS" variant. */
+	static bool isChannelBindingMechanism(const string& name);
+
 	Gsasl* m_gsaslContext;
+
+	string m_channelBindingType;
+	byteArray m_channelBindingData;
 };
 
 
