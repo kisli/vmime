@@ -19,7 +19,7 @@ jobs:
     - name: install-deps
       run: |
         sudo apt-get update
-        sudo apt-get install -y --no-install-recommends binutils cmake doxygen g++ libcppunit-dev libgnutls28-dev libgsasl-dev libgtk-3-dev libssl-dev make pkg-config ${{ matrix.charset == 'icu' && 'libicu-dev' || '' }}
+        sudo apt-get install -y --no-install-recommends binutils cmake doxygen g++ libcppunit-dev libgnutls28-dev libgsasl-dev libgtk-3-dev libicu-dev libssl-dev make pkg-config
     - name: clone-vmime
       uses: actions/checkout@v4
     - name: buildall
