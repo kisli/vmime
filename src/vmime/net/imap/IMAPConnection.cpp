@@ -120,6 +120,7 @@ void IMAPConnection::connect() {
 
 	m_state = STATE_NONE;
 	m_hierarchySeparator = '\0';
+	m_serverId.clear();
 
 	const string address = GET_PROPERTY(string, PROPERTY_SERVER_ADDRESS);
 	const port_t port = GET_PROPERTY(port_t, PROPERTY_SERVER_PORT);
@@ -238,6 +239,13 @@ void IMAPConnection::connect() {
 			m_state = STATE_NONE;
 			throw;
 		}
+	}
+
+	// Send client identification, if enabled and supported by the server.
+	// Some servers (eg. NetEase 163.com/126.com) refuse to SELECT a folder
+	// if the client has not identified itself.
+	if (GET_PROPERTY(bool, PROPERTY_OPTIONS_ID) && hasCapability("ID")) {
+		sendIdentification();
 	}
 
 	// Get the hierarchy separator character
@@ -690,6 +698,55 @@ void IMAPConnection::processCapabilityResponseData(const IMAPParser::capability_
 
 	m_capabilities = res;
 	m_capabilitiesFetched = true;
+}
+
+
+void IMAPConnection::sendIdentification() {
+
+	// Client identification fields are taken from session properties
+	// named "options.id.<field>" (eg. "store.imap.options.id.name")
+	const string prefix = getStoreOrThrow()->getInfos().getPropertyPrefix() + "options.id.";
+
+	std::map <string, string> clientId;
+
+	for (const auto& prop : getSession()->getProperties().getPropertyList()) {
+
+		const string& name = prop->getName();
+
+		if (name.length() > prefix.length() &&
+		    utility::stringUtils::isStringEqualNoCase(name, prefix.c_str(), prefix.length())) {
+
+			clientId[string(name.begin() + prefix.length(), name.end())] = prop->getValue <string>();
+		}
+	}
+
+	IMAPCommand::ID(clientId)->send(dynamicCast <IMAPConnection>(shared_from_this()));
+
+	scoped_ptr <IMAPParser::response> resp(m_parser->readResponse(*m_tag));
+
+	// Identification is informational only: do not fail if the server rejects it
+	if (resp->isBad() || resp->response_done->response_tagged->
+			resp_cond_state->status != IMAPParser::resp_cond_state::OK) {
+
+		return;
+	}
+
+	for (auto &respData : resp->continue_req_or_response_data) {
+
+		if (!respData->response_data || !respData->response_data->id_response) {
+			continue;
+		}
+
+		for (auto &param : respData->response_data->id_response->params) {
+			m_serverId[utility::stringUtils::toLower(param->field->value)] = param->value->value;
+		}
+	}
+}
+
+
+const std::map <string, string> IMAPConnection::getServerIdentification() const {
+
+	return m_serverId;
 }
 
 

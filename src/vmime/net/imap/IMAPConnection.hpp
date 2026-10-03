@@ -41,6 +41,8 @@
 
 #include "vmime/security/authenticator.hpp"
 
+#include <map>
+
 
 namespace vmime {
 namespace net {
@@ -112,6 +114,15 @@ public:
 	bool isMODSEQDisabled() const;
 	void disableMODSEQ();
 
+	/** Returns the identification information sent by the server in
+	  * response to the ID command (RFC 2971).
+	  *
+	  * @return server identification fields, with field names in
+	  * lower-case (eg. "name", "version"); empty if the ID command
+	  * was not sent or the server did not identify itself
+	  */
+	const std::map <string, string> getServerIdentification() const;
+
 private:
 
 	shared_ptr <IMAPStore> getStoreOrThrow();
@@ -127,6 +138,8 @@ private:
 
 	bool processCapabilityResponseData(const IMAPParser::response* resp);
 	void processCapabilityResponseData(const IMAPParser::capability_data* capaData);
+
+	void sendIdentification();
 
 
 	weak_ptr <IMAPStore> m_store;
@@ -154,6 +167,8 @@ private:
 	bool m_capabilitiesFetched;
 
 	bool m_noModSeq;
+
+	std::map <string, string> m_serverId;
 
 	shared_ptr <tracer> m_tracer;
 

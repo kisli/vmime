@@ -67,6 +67,16 @@ public:
 	  */
 	static const string quoteString(const string& text);
 
+	/** Always quote string, even if it does not contain IMAP-special characters.
+	  * Use this where the IMAP grammar requires a "string" and does not allow
+	  * an atom. CR, LF and NUL characters are not allowed in a quoted string,
+	  * and are removed.
+	  *
+	  * @param text string to quote
+	  * @return quoted string
+	  */
+	static const string forceQuoteString(const string& text);
+
 	/** Parse mailbox flags and fill in folder attributes.
 	  *
 	  * @param cnt reference to current IMAP connection (for testing capabilities)

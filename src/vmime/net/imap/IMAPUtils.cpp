@@ -99,31 +99,48 @@ const string IMAPUtils::quoteString(const string& text) {
 	}
 
 	if (needQuoting) {
-
-		string quoted;
-		quoted.reserve((text.length() * 3) / 2 + 2);
-
-		quoted += '"';
-
-		for (string::const_iterator it = text.begin() ; it != text.end() ; ++it) {
-
-			const unsigned char c = *it;
-
-			if (c == '\\' || c == '"') {
-				quoted += '\\';
-			}
-
-			quoted += c;
-		}
-
-		quoted += '"';
-
-		return quoted;
-
+		return forceQuoteString(text);
 	} else {
-
 		return text;
 	}
+}
+
+
+// static
+const string IMAPUtils::forceQuoteString(const string& text) {
+
+	//
+	// quoted          ::= <"> *QUOTED_CHAR <">
+	//
+	// QUOTED_CHAR     ::= <any TEXT_CHAR except quoted_specials> /
+	//                     "\" quoted_specials
+	//
+	// TEXT_CHAR       ::= <any CHAR except CR and LF>
+	//
+
+	string quoted;
+	quoted.reserve((text.length() * 3) / 2 + 2);
+
+	quoted += '"';
+
+	for (string::const_iterator it = text.begin() ; it != text.end() ; ++it) {
+
+		const unsigned char c = *it;
+
+		if (c == '\r' || c == '\n' || c == '\0') {
+			continue;
+		}
+
+		if (c == '\\' || c == '"') {
+			quoted += '\\';
+		}
+
+		quoted += c;
+	}
+
+	quoted += '"';
+
+	return quoted;
 }
 
 

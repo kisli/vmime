@@ -53,6 +53,7 @@ public:
 		serviceInfos::property PROPERTY_OPTIONS_SASL;
 		serviceInfos::property PROPERTY_OPTIONS_SASL_FALLBACK;
 #endif // VMIME_HAVE_SASL_SUPPORT
+		serviceInfos::property PROPERTY_OPTIONS_ID;
 
 		// Common properties
 		serviceInfos::property PROPERTY_AUTH_USERNAME;
