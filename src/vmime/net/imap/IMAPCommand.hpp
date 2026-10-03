@@ -37,6 +37,8 @@
 
 #include "vmime/net/messageSet.hpp"
 
+#include <map>
+
 
 namespace vmime {
 namespace net {
@@ -73,6 +75,7 @@ public:
 	static shared_ptr <IMAPCommand> EXPUNGE();
 	static shared_ptr <IMAPCommand> CLOSE();
 	static shared_ptr <IMAPCommand> LOGOUT();
+	static shared_ptr <IMAPCommand> ID(const std::map <string, string>& params);
 
 	/** Creates a new IMAP command with the specified text.
 	  *

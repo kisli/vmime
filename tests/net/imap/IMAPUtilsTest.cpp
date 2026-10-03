@@ -35,6 +35,7 @@ VMIME_TEST_SUITE_BEGIN(IMAPUtilsTest)
 
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testQuoteString)
+		VMIME_TEST(testForceQuoteString)
 		VMIME_TEST(testToModifiedUTF7)
 		VMIME_TEST(testFromModifiedUTF7)
 		VMIME_TEST(testConvertAddressList)
@@ -61,6 +62,20 @@ VMIME_TEST_SUITE_BEGIN(IMAPUtilsTest)
 		VASSERT_EQ("special8", "\"\\\\\"", IMAPUtils::quoteString("\\"));
 		VASSERT_EQ("special9", "\"\x7f\"", IMAPUtils::quoteString("\x7f"));
 
+		VASSERT_EQ("CRLF", "\"ab\"", IMAPUtils::quoteString("a\r\nb"));
+	}
+
+	void testForceQuoteString() {
+
+		VASSERT_EQ("empty", "\"\"", IMAPUtils::forceQuoteString(""));
+		VASSERT_EQ("atom", "\"ascii\"", IMAPUtils::forceQuoteString("ascii"));
+		VASSERT_EQ("space", "\"ascii with space\"", IMAPUtils::forceQuoteString("ascii with space"));
+
+		VASSERT_EQ("special1", "\"\\\"\"", IMAPUtils::forceQuoteString("\""));
+		VASSERT_EQ("special2", "\"\\\\\"", IMAPUtils::forceQuoteString("\\"));
+
+		VASSERT_EQ("CRLF", "\"ab\"", IMAPUtils::forceQuoteString("a\r\nb"));
+		VASSERT_EQ("NUL", "\"ab\"", IMAPUtils::forceQuoteString(vmime::string("a\0b", 3)));
 	}
 
 	void testToModifiedUTF7() {

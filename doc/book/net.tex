@@ -144,6 +144,10 @@ to connect to. & \vdot & \vdot & \vdot & \vdot & \vdot & \vdot & & \\
 auth.password\footref{fn_auth_username} & string & Set the password of the
 account. & \vdot & \vdot & \vdot & \vdot & \vdot & \vdot & & \\
 \hline
+auth.accesstoken & string & Set the OAuth 2.0 access token, for XOAUTH2
+authentication (see Section \ref{net-xoauth2}). & \vdot & \vdot & \vdot &
+\vdot & \vdot & \vdot & & \\
+\hline
 connection.tls & bool & Set to {\vcode true} to start a secured connection
 using STARTTLS extension, if available. & \vdot & & \vdot & & \vdot & & & \\
 \hline
@@ -183,6 +187,20 @@ tried). \\
 store.pop3.options.apop.fallback & bool & If set to {\vcode true} and
 APOP fails, the authentication process fails (ie. unsecure plain text
 authentication is not used). \\
+\hline
+% IMAP/IMAPS
+\multicolumn{3}{|c|}{IMAP, IMAPS} \\
+\hline
+store.imap.options.id & bool & Set to {\vcode true} to send client
+identification to the server after authentication (ID extension, RFC 2971),
+if the server supports it. Some servers (eg. NetEase 163.com and 126.com)
+require it and refuse to open folders otherwise (see Section
+\ref{net-store-connect}). Default is {\vcode false}. \\
+\hline
+store.imap.options.id.\emph{field} & string & Client identification fields
+sent with the ID command (eg. {\vcode name}, {\vcode version},
+{\vcode vendor}, {\vcode support-url}). If no field is set, {\vcode NIL} is
+sent. \\
 \hline
 % SMTP
 \multicolumn{3}{|c|}{SMTP, SMTPS} \\
@@ -388,6 +406,108 @@ class mySASLAuthenticator : public vmime::security::sasl::defaultSASLAuthenticat
 };
 \end{lstlisting}
 
+\subsection{OAuth 2.0 authentication (XOAUTH2)\label{net-xoauth2}} % ----------
+
+Some providers, like Google Gmail or Microsoft 365, require (or strongly
+recommend) authenticating with an OAuth 2.0 access token instead of a
+password. This is done using the XOAUTH2 SASL
+mechanism\footnote{See \url{https://developers.google.com/workspace/gmail/imap/xoauth2-protocol}
+and
+\url{https://learn.microsoft.com/en-us/exchange/client-developer/legacy-protocols/how-to-authenticate-an-imap-pop-smtp-application-by-using-oauth}},
+which VMime supports for IMAP, POP3 and SMTP services. SASL support must be
+enabled when building VMime.
+
+VMime does not handle the OAuth 2.0 authorization flow itself: your
+application has to obtain an access token from the provider, and then give
+it to VMime along with the user's email address.
+
+The XOAUTH2 mechanism is not registered by default, so you have to register
+it once (for example, when your application starts). Then, use an instance
+of {\vcode vmime::security::sasl::XOAuth2SASLAuthenticator} as the
+authenticator for the service, and set the \emph{auth.username} and
+\emph{auth.accesstoken} properties:
+
+\begin{lstlisting}[caption={Connecting to Gmail using XOAUTH2}]
+#include "vmime/vmime.hpp"
+#include "vmime/security/sasl/XOAuth2SASLAuthenticator.hpp"
+#include "vmime/security/sasl/XOAuth2SASLMechanism.hpp"
+
+// Register the XOAUTH2 SASL mechanism (only once)
+vmime::security::sasl::SASLMechanismFactory::getInstance()->
+   registerMechanism <vmime::security::sasl::XOAuth2SASLMechanism>("XOAUTH2");
+
+// Create a new session
+vmime::shared_ptr <vmime::net::session> sess = vmime::net::session::create();
+
+// Use an authenticator which forces using the XOAUTH2 mechanism
+vmime::shared_ptr <vmime::security::authenticator> xoauth2Auth =
+   vmime::make_shared <vmime::security::sasl::XOAuth2SASLAuthenticator>(
+      vmime::security::sasl::XOAuth2SASLAuthenticator::MODE_EXCLUSIVE
+   );
+
+// Create a new SMTPS service to Gmail
+vmime::shared_ptr <vmime::net::transport> tr = sess->getTransport(
+   vmime::utility::url("smtps://smtp.gmail.com:465"), xoauth2Auth
+);
+
+tr->setProperty("options.need-authentication", true);
+tr->setProperty("auth.username", "your-email@gmail.com");
+tr->setProperty("auth.accesstoken", "ya29.a0Af...your-access-token...");
+
+tr->connect();
+\end{lstlisting}
+
+This works the same way with a store service. As an authenticator must be
+used with only one service at a time, create a new one for each service:
+
+\begin{lstlisting}
+vmime::shared_ptr <vmime::net::store> st = sess->getStore(
+   vmime::utility::url("imaps://imap.gmail.com:993"),
+   vmime::make_shared <vmime::security::sasl::XOAuth2SASLAuthenticator>(
+      vmime::security::sasl::XOAuth2SASLAuthenticator::MODE_EXCLUSIVE
+   )
+);
+
+st->setProperty("auth.username", "your-email@gmail.com");
+st->setProperty("auth.accesstoken", "ya29.a0Af...your-access-token...");
+
+st->connect();
+\end{lstlisting}
+
+With {\vcode MODE\_EXCLUSIVE}, no other authentication mechanism is tried if
+XOAUTH2 fails. If you want to fall back on other mechanisms (eg. basic
+username/password authentication), use {\vcode MODE\_SUGGEST} instead: XOAUTH2
+will be tried first. In this case, do not forget to also set the
+\emph{auth.password} property.
+
+Access tokens usually expire after a short time (typically, one hour). The
+token is read each time the service authenticates, and this happens more
+often than you may think: for example, the IMAP service opens a new connection
+(and authenticates again) each time a folder is opened. Instead of setting the
+\emph{auth.accesstoken} property, you can override the
+{\vcode getAccessToken()} method of the authenticator to return a valid token,
+refreshing it if needed:
+
+\begin{lstlisting}[caption={Providing a fresh access token on-demand}]
+class myXOAuth2Authenticator :
+   public vmime::security::sasl::XOAuth2SASLAuthenticator {
+
+public:
+
+   myXOAuth2Authenticator()
+      : XOAuth2SASLAuthenticator(MODE_EXCLUSIVE) {
+
+   }
+
+   const vmime::string getAccessToken() const {
+
+      // Return a valid access token, eg. obtained from the refresh
+      // token if the current access token has expired
+      return myGetValidAccessToken();
+   }
+};
+\end{lstlisting}
+
 
 % ============================================================================
 \section{Using transport service}
@@ -462,7 +582,7 @@ tr->setProperty("auth.password", "password");
 % ============================================================================
 \section{Using store service}
 
-\subsection{Connecting to a store} % -----------------------------------------
+\subsection{Connecting to a store\label{net-store-connect}} % ----------------
 
 The first basic step for using a store service is to connect to it. The
 following example shows how to initialize a session and instanciate the
@@ -483,6 +603,41 @@ store->connect();
 
 \vnote{{\vexample Example6} contains a more complete example for connecting
 to a store service, with support for a custom authenticator.}
+
+Some IMAP servers require the client to identify itself before allowing
+access to folders (eg. NetEase 163.com and 126.com, which otherwise reject the
+{\vcode SELECT} command with an ``Unsafe Login'' error). VMime supports the
+IMAP ID extension\footnote{See RFC 2971: \url{https://www.rfc-editor.org/rfc/rfc2971}}:
+if the \emph{options.id} property is set to {\vcode true}, VMime sends the
+client identification to the server just after authentication, if the server
+supports it. As this discloses information about the client, it is disabled
+by default.
+
+\begin{lstlisting}[caption={Sending client identification to an IMAP server}]
+#include "vmime/net/imap/IMAPStore.hpp"
+
+vmime::shared_ptr <vmime::net::store> store =
+   sess->getStore(vmime::utility::url("imaps://imap.163.com"));
+
+// Identification fields are named "options.id.<field>"
+store->setProperty("options.id", true);
+store->setProperty("options.id.name", "MyMailClient");
+store->setProperty("options.id.version", "1.0");
+store->setProperty("options.id.vendor", "My Company");
+
+store->connect();
+
+// Display the identification sent back by the server
+vmime::shared_ptr <vmime::net::imap::IMAPStore> imapStore =
+   vmime::dynamicCast <vmime::net::imap::IMAPStore>(store);
+
+const std::map <vmime::string, vmime::string> serverId =
+   imapStore->getServerIdentification();
+
+for (const auto& field : serverId) {
+   std::cout << field.first << ": " << field.second << std::endl;
+}
+\end{lstlisting}
 
 \subsection{Opening a folder} % ----------------------------------------------
 

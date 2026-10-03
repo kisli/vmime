@@ -417,6 +417,36 @@ shared_ptr <IMAPCommand> IMAPCommand::LOGOUT() {
 
 
 // static
+shared_ptr <IMAPCommand> IMAPCommand::ID(const std::map <string, string>& params) {
+
+	// id             ::= "ID" SPACE id_params_list
+	// id_params_list ::= "(" #(string SPACE nstring) ")" / nil
+	std::ostringstream cmd;
+	cmd.imbue(std::locale::classic());
+	cmd << "ID ";
+
+	if (params.empty()) {
+
+		cmd << "NIL";
+
+	} else {
+
+		cmd << "(";
+
+		for (auto it = params.begin() ; it != params.end() ; ++it) {
+			if (it != params.begin()) cmd << " ";
+			cmd << IMAPUtils::forceQuoteString(it->first)
+			    << " " << IMAPUtils::forceQuoteString(it->second);
+		}
+
+		cmd << ")";
+	}
+
+	return createCommand(cmd.str());
+}
+
+
+// static
 shared_ptr <IMAPCommand> IMAPCommand::createCommand(
 	const string& text,
 	const string& traceText

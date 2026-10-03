@@ -68,7 +68,7 @@ protected:
 typedef vmime::shared_ptr <const IMAPSearchToken> IMAPSearchTokenPtr;
 
 
-class IMAPSearchTokenFactory : public object {
+class VMIME_EXPORT IMAPSearchTokenFactory : public object {
 
 public:
 

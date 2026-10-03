@@ -92,6 +92,18 @@ public:
 	shared_ptr <connectionInfos> getConnectionInfos() const;
 	shared_ptr <IMAPConnection> getConnection();
 
+	/** Returns the identification information sent by the server in
+	  * response to the ID command (RFC 2971). The ID command is sent
+	  * when connecting if the "options.id" property is set to true and
+	  * the server supports it.
+	  *
+	  * @return server identification fields, with field names in
+	  * lower-case (eg. "name", "version"); empty if not connected, if
+	  * the ID command was not sent or if the server did not identify
+	  * itself
+	  */
+	const std::map <string, string> getServerIdentification() const;
+
 protected:
 
 	// Connection
