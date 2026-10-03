@@ -29,3 +29,17 @@ jobs:
         make "-j$(nproc)"
         sudo make install
         make test
+
+  book:
+    name: book (pdf)
+    runs-on: ubuntu-26.04
+    steps:
+    - name: install-deps
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends librsvg2-bin make texlive-fonts-recommended texlive-latex-base texlive-latex-recommended
+    - name: clone-vmime
+      uses: actions/checkout@v4
+    - name: build-book
+      working-directory: doc/book
+      run: make check
