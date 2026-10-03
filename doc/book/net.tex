@@ -114,6 +114,10 @@ as the time of writing this documentation\footnote{You can get an up-to-date
 list of the properties by running \vexample{Example7}}. For better clarity,
 the prefixes do not appear in this table.
 
+% Footnotes cannot be used inside a table: use \footnotemark in the table,
+% and \footnotetext after it ('tabularx' typesets its body several times,
+% so the footnote counter is stepped here only once)
+\addtocounter{footnote}{1}
 \begin{table}[!ht]
 \noindent\begin{tabularx}{1.0\textwidth}{|l|c|X|c|c|c|c|c|c|c|c|}
 \hline
@@ -137,11 +141,11 @@ options.sasl.fallback & bool & Fail if SASL authentication failed (do not
 try other authentication mechanisms). & \vdot & \vdot & \vdot & \vdot &
 \vdot & \vdot & & \\
 \hline
-auth.username\footnote{You should use authenticators
-instead.\label{fn_auth_username}} & string & Set the username of the account
-to connect to. & \vdot & \vdot & \vdot & \vdot & \vdot & \vdot & & \\
+auth.username\footnotemark[\value{footnote}] & string & Set the username of
+the account to connect to. & \vdot & \vdot & \vdot & \vdot & \vdot & \vdot &
+& \\
 \hline
-auth.password\footref{fn_auth_username} & string & Set the password of the
+auth.password\footnotemark[\value{footnote}] & string & Set the password of the
 account. & \vdot & \vdot & \vdot & \vdot & \vdot & \vdot & & \\
 \hline
 auth.accesstoken & string & Set the OAuth 2.0 access token, for XOAUTH2
@@ -166,6 +170,7 @@ server.rootpath & string & Root directory for mail repository (eg.
 \end{tabularx}
 \caption{Properties common to all protocols}
 \end{table}
+\footnotetext[\value{footnote}]{You should use authenticators instead.}
 
 \newpage
 These are the protocol-specific options:

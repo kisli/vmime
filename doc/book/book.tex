@@ -8,8 +8,7 @@
 \usepackage{array}
 \usepackage{listings}
 \usepackage[usenames]{color}
-\usepackage{ucs}
-\usepackage[utf8x]{inputenc}
+\usepackage[utf8]{inputenc}
 \usepackage[vcentering,dvips]{geometry}
 %\usepackage{type1cm}  % scalable Computer Modern fonts
 \usepackage{courier}  % use Adobe Courier instead of Computer Modern Typewriter
@@ -37,7 +36,16 @@
 \definecolor{listingFrame}{rgb}{0.9,0.9,0.9}
 \lstset{language=C++,showstringspaces=false}
 \lstset{keywordstyle=\bf,commentstyle=\it}
-\lstset{captionpos=b,extendedchars=true,inputencoding=latin1}
+\lstset{captionpos=b,extendedchars=true}
+% 'listings' does not support multi-byte UTF-8 characters
+\lstset{literate=
+   {à}{{\`a}}1 {â}{{\^a}}1 {ä}{{\"a}}1 {ç}{{\c c}}1
+   {é}{{\'e}}1 {è}{{\`e}}1 {ê}{{\^e}}1 {ë}{{\"e}}1
+   {î}{{\^\i}}1 {ï}{{\"\i}}1 {ô}{{\^o}}1 {ö}{{\"o}}1
+   {ù}{{\`u}}1 {û}{{\^u}}1 {ü}{{\"u}}1 {ß}{{\ss}}1
+   {À}{{\`A}}1 {Ç}{{\c C}}1 {É}{{\'E}}1 {È}{{\`E}}1
+   {Ê}{{\^E}}1 {Ä}{{\"A}}1 {Ö}{{\"O}}1 {Ü}{{\"U}}1
+}
 \lstset{fontadjust=true,basewidth={0.5em,0.4em},columns=fixed,flexiblecolumns=false}
 \lstset{frame=leftline,framerule=0.1cm,framesep=0.3cm,rulecolor=\color{listingFrame}}
 \lstset{abovecaptionskip=0.5cm,xleftmargin=1.1cm,aboveskip=0.5cm,belowskip=0.2cm}
