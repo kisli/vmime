@@ -209,8 +209,12 @@ void POP3Connection::internalDisconnect() {
 
 			try {
 
-				POP3Command::QUIT()->send(dynamicCast <POP3Connection>(shared_from_this()));
-				POP3Response::readResponse(dynamicCast <POP3Connection>(shared_from_this()));
+				// Don't use shared_from_this() here, as we may be called from
+				// the destructor: use a non-owning pointer to this object instead
+				shared_ptr <POP3Connection> conn(shared_ptr <POP3Connection>(), this);
+
+				POP3Command::QUIT()->send(conn);
+				POP3Response::readResponse(conn);
 
 			} catch (exception&) {
 

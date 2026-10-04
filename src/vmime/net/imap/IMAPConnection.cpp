@@ -790,7 +790,17 @@ void IMAPConnection::internalDisconnect() {
 
 	if (isConnected()) {
 
-		IMAPCommand::LOGOUT()->send(dynamicCast <IMAPConnection>(shared_from_this()));
+		try {
+
+			// Don't use shared_from_this() here, as we may be
+			// called from the destructor
+			sendCommand(IMAPCommand::LOGOUT());
+
+		} catch (exception&) {
+
+			// Not important: the connection may be already broken
+			// (eg. time-out), but the socket must be closed anyway
+		}
 	}
 
 	if (m_socket) {
