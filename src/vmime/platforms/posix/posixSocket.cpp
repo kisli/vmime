@@ -46,6 +46,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <poll.h>
+#include <pthread.h>
 
 #include "vmime/utility/stringUtils.hpp"
 
@@ -87,6 +88,116 @@ GNU_UNUSED char* vmime_strerror_r_result(char* res, char* /* buf */) {
 }
 
 #endif // VMIME_HAVE_STRERROR_R
+
+
+#if VMIME_HAVE_GETADDRINFO_A
+
+namespace {
+
+// Asynchronous name resolution request. glibc keeps using it as long as the
+// request is being processed, possibly after posixSocket::resolve() has
+// returned (eg. on timeout), so it holds everything the request refers to.
+struct gaiRequestContext {
+
+	gaiRequestContext(
+		const vmime::string& address,
+		const char* service,
+		const struct ::addrinfo& hints
+	)
+		: address(address),
+		  service(service),
+		  hints(hints),
+		  next(NULL) {
+
+		memset(&request, 0, sizeof(request));
+
+		request.ar_name = this->address.c_str();
+		request.ar_service = this->service.c_str();
+		request.ar_request = &this->hints;
+	}
+
+	vmime::string address;
+	vmime::string service;
+	struct ::addrinfo hints;
+	struct ::gaicb request;
+
+	gaiRequestContext* next;  // in list of pending requests
+};
+
+
+// Requests which were still being processed when they were released;
+// they are deleted later, once completed
+pthread_mutex_t g_pendingRequestsMutex = PTHREAD_MUTEX_INITIALIZER;
+gaiRequestContext* g_pendingRequests = NULL;
+
+
+// Delete a request, unless it is still being processed by glibc.
+// Returns false in this case.
+bool tryDeleteRequest(gaiRequestContext* ctx) {
+
+	switch (gai_cancel(&ctx->request)) {
+
+		case EAI_CANCELED:  // was not processed yet; removed from the queue
+		case EAI_ALLDONE:  // completed
+
+			if (ctx->request.ar_result) {
+				freeaddrinfo(ctx->request.ar_result);
+			}
+
+			delete ctx;
+			return true;
+
+		default:  // EAI_NOTCANCELED
+
+			return false;
+	}
+}
+
+
+// Delete pending requests which have been completed in the meantime
+void deletePendingRequests() {
+
+	pthread_mutex_lock(&g_pendingRequestsMutex);
+
+	gaiRequestContext** link = &g_pendingRequests;
+
+	while (*link) {
+
+		gaiRequestContext* ctx = *link;
+		gaiRequestContext* next = ctx->next;
+
+		if (tryDeleteRequest(ctx)) {
+			*link = next;
+		} else {
+			link = &ctx->next;
+		}
+	}
+
+	pthread_mutex_unlock(&g_pendingRequestsMutex);
+}
+
+
+// Delete a request, or defer deletion if it is still being processed
+struct gaiRequestDeleter {
+
+	void operator()(gaiRequestContext* ctx) const {
+
+		if (tryDeleteRequest(ctx)) {
+			return;
+		}
+
+		pthread_mutex_lock(&g_pendingRequestsMutex);
+
+		ctx->next = g_pendingRequests;
+		g_pendingRequests = ctx;
+
+		pthread_mutex_unlock(&g_pendingRequestsMutex);
+	}
+};
+
+}
+
+#endif // VMIME_HAVE_GETADDRINFO_A
 
 
 
@@ -418,14 +529,14 @@ void posixSocket::resolve(
 	// If getaddrinfo_a() is available, use asynchronous resolving to allow
 	// the timeout handler to cancel the operation
 
-	struct ::gaicb gaiRequest;
-	memset(&gaiRequest, 0, sizeof(gaiRequest));
+	deletePendingRequests();
 
-	gaiRequest.ar_name = address.c_str();
-	gaiRequest.ar_service = portStr;
-	gaiRequest.ar_request = &hints;
+	// If we give up while the request is being processed (eg. timeout),
+	// it cannot be cancelled: its deletion is deferred until it completes
+	std::unique_ptr <gaiRequestContext, gaiRequestDeleter> ctx
+		(new gaiRequestContext(address, portStr, hints));
 
-	struct ::gaicb* gaiRequests = &gaiRequest;
+	struct ::gaicb* gaiRequests = &ctx->request;
 	int gaiError;
 
 	if ((gaiError = getaddrinfo_a(GAI_NOWAIT, &gaiRequests, 1, NULL)) != 0) {
@@ -449,7 +560,7 @@ void posixSocket::resolve(
 
 		if (gaiError == 0 || gaiError == EAI_ALLDONE) {
 
-			const int ret = gai_error(&gaiRequest);
+			const int ret = gai_error(&ctx->request);
 
 			if (ret != 0) {
 
@@ -459,15 +570,18 @@ void posixSocket::resolve(
 
 			} else {
 
-				*addrInfo = gaiRequest.ar_result;
+				// Take ownership of the result
+				*addrInfo = ctx->request.ar_result;
+				ctx->request.ar_result = NULL;
+
 				break;
 			}
 
-		} else if (gaiError != EAI_AGAIN) {
+		} else if (gaiError != EAI_AGAIN && gaiError != EAI_INTR) {
 
 			if (gaiError == EAI_SYSTEM) {
 
-				const int ret = gai_error(&gaiRequest);
+				const int ret = gai_error(&ctx->request);
 
 				if (ret != EAI_INPROGRESS && errno != 0) {
 
