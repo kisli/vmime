@@ -54,7 +54,7 @@ public:
 	/** Comparator for message filenames, based only on the
 	  * unique identifier part of the filename.
 	  */
-	class messageIdComparator {
+	class VMIME_EXPORT messageIdComparator {
 
 	public:
 
