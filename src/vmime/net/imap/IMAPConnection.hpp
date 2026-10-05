@@ -175,6 +175,9 @@ private:
 
 	void internalDisconnect();
 
+	void closeConnection();
+	void closeOnNetworkError();
+
 	void initHierarchySeparator();
 };
 

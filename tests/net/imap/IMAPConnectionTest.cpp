@@ -65,7 +65,7 @@ public:
 		sm_connectedCount = 0;
 	}
 
-	static void failOn(const vmime::string& verb, const FailureMode mode) {
+	static void failOn(const vmime::string& verb, const FailureMode mode = FAILURE_NO_RESPONSE) {
 
 		sm_failCommand = verb;
 		sm_failureMode = mode;
@@ -212,6 +212,9 @@ VMIME_TEST_SUITE_BEGIN(IMAPConnectionTest)
 		VMIME_TEST(testFolderDestroyedAfterConnectionLost)
 		VMIME_TEST(testStoreDisconnectAfterTimeout)
 		VMIME_TEST(testStoreDestroyedBeforeFolder)
+		VMIME_TEST(testStoreReconnectAfterTimeout)
+		VMIME_TEST(testStoreReconnectDetachesFolders)
+		VMIME_TEST(testFolderReopenAfterTimeout)
 	VMIME_TEST_LIST_END
 
 
@@ -319,8 +322,8 @@ VMIME_TEST_SUITE_BEGIN(IMAPConnectionTest)
 
 		VASSERT_THROW("NOOP", folder->noop(), vmime::exceptions::socket_exception);
 
-		// Folder cannot be closed, but it must unregister itself from
-		// the store anyway (store would access a deleted object otherwise)
+		// Folder must unregister itself from the store (store would
+		// access a deleted object otherwise)
 		folder = vmime::null;
 
 		VASSERT_NO_THROW("Disconnect", store->disconnect());
@@ -355,6 +358,96 @@ VMIME_TEST_SUITE_BEGIN(IMAPConnectionTest)
 
 		folder = vmime::null;
 
+		VASSERT_EQ("All connections closed", 0, failingIMAPTestSocket::getConnectedCount());
+	}
+
+	void testStoreReconnectAfterTimeout() {
+
+		vmime::shared_ptr <IMAPStore> store = createStore();
+		store->connect();
+
+		failingIMAPTestSocket::failOn("NOOP", failingIMAPTestSocket::FAILURE_NO_RESPONSE);
+
+		VASSERT_THROW("NOOP", store->noop(), vmime::exceptions::operation_timed_out);
+
+		// Connection is not usable anymore after a time-out
+		VASSERT_FALSE("Connected", store->isConnected());
+		VASSERT_EQ("Connection closed", 0, failingIMAPTestSocket::getConnectedCount());
+
+		failingIMAPTestSocket::failOn("");
+
+		VASSERT_NO_THROW("Reconnect", store->connect());
+		VASSERT_TRUE("Connected", store->isConnected());
+		VASSERT_NO_THROW("NOOP", store->noop());
+
+		VASSERT_NO_THROW("Disconnect", store->disconnect());
+		VASSERT_EQ("All connections closed", 0, failingIMAPTestSocket::getConnectedCount());
+	}
+
+	void testStoreReconnectDetachesFolders() {
+
+		vmime::shared_ptr <IMAPStore> store = createStore();
+		store->connect();
+
+		vmime::shared_ptr <vmime::net::folder> folder = store->getDefaultFolder();
+
+		failingIMAPTestSocket::failOn("NOOP", failingIMAPTestSocket::FAILURE_NO_RESPONSE);
+
+		VASSERT_THROW("NOOP", store->noop(), vmime::exceptions::operation_timed_out);
+
+		failingIMAPTestSocket::failOn("");
+
+		VASSERT_NO_THROW("Reconnect", store->connect());
+
+		// Folders obtained before reconnection belong to the previous session
+		VASSERT_THROW(
+			"Open old folder",
+			folder->open(vmime::net::folder::MODE_READ_WRITE),
+			vmime::exceptions::illegal_state
+		);
+
+		folder = store->getDefaultFolder();
+
+		VASSERT_NO_THROW("Open new folder", folder->open(vmime::net::folder::MODE_READ_WRITE));
+
+		folder = vmime::null;
+
+		VASSERT_NO_THROW("Disconnect", store->disconnect());
+		VASSERT_EQ("All connections closed", 0, failingIMAPTestSocket::getConnectedCount());
+	}
+
+	void testFolderReopenAfterTimeout() {
+
+		vmime::shared_ptr <IMAPStore> store = createStore();
+		store->connect();
+
+		vmime::shared_ptr <IMAPFolder> folder =
+			vmime::dynamicCast <IMAPFolder>(store->getDefaultFolder());
+
+		folder->open(vmime::net::folder::MODE_READ_WRITE);
+
+		failingIMAPTestSocket::failOn("NOOP", failingIMAPTestSocket::FAILURE_NO_RESPONSE);
+
+		VASSERT_THROW("NOOP", folder->noop(), vmime::exceptions::operation_timed_out);
+
+		// Folder connection is not usable anymore after a time-out,
+		// but the store connection is not affected
+		VASSERT_EQ("Folder connection closed", 1, failingIMAPTestSocket::getConnectedCount());
+		VASSERT_TRUE("Store connected", store->isConnected());
+
+		VASSERT_THROW("NOOP after time-out", folder->noop(), vmime::exception);
+
+		VASSERT_NO_THROW("Close", folder->close(false));
+		VASSERT_FALSE("Open", folder->isOpen());
+
+		failingIMAPTestSocket::failOn("");
+
+		VASSERT_NO_THROW("Reopen", folder->open(vmime::net::folder::MODE_READ_WRITE));
+		VASSERT_NO_THROW("NOOP after reopen", folder->noop());
+
+		folder = vmime::null;
+
+		VASSERT_NO_THROW("Disconnect", store->disconnect());
 		VASSERT_EQ("All connections closed", 0, failingIMAPTestSocket::getConnectedCount());
 	}
 

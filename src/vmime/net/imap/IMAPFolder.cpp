@@ -301,10 +301,6 @@ void IMAPFolder::close(const bool expunge) {
 		throw exceptions::illegal_state("Store disconnected");
 	}
 
-	if (!m_connection || !m_connection->isConnected()) {
-		throw exceptions::illegal_state("Folder not connected");
-	}
-
 	if (!isOpen()) {
 		throw exceptions::illegal_state("Folder not open");
 	}
@@ -322,8 +318,11 @@ void IMAPFolder::close(const bool expunge) {
 		IMAPCommand::CLOSE()->send(oldConnection);
 	}
 
-	// Close this folder connection
-	oldConnection->disconnect();
+	// Close this folder connection (it may have been lost
+	// after a network error, in which case it is already closed)
+	if (oldConnection->isConnected()) {
+		oldConnection->disconnect();
+	}
 
 	// Now use default store connection
 	m_connection = store->connection();
