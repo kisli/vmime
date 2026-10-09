@@ -21,6 +21,9 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#ifdef __OpenBSD__
+#	define _BSD_SOURCE /* for getthrid */
+#endif
 #include "vmime/config.hpp"
 
 
