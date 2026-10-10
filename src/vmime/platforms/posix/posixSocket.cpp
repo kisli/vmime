@@ -254,7 +254,7 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 						break;
 
 					// Error
-					} else if (ret < -1) {
+					} else if (ret < 0) {
 
 						if (errno != EAGAIN && errno != EINTR) {
 
