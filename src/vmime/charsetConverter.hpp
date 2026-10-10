@@ -66,7 +66,7 @@ public:
 
 	/** Holds information about a conversion.
 	  */
-	struct status {
+	struct VMIME_EXPORT status {
 
 		status();
 
