@@ -38,7 +38,6 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
-#include <sys/time.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <fcntl.h>
@@ -46,6 +45,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <poll.h>
+#include <time.h>
 
 #include "vmime/utility/stringUtils.hpp"
 
@@ -218,8 +218,8 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 				const int pollTimeout = 1000;   // poll() timeout (ms)
 				const int tryNextTimeout = 5000;  // maximum time before trying next (ms)
 
-				timeval startTime = { 0, 0 };
-				gettimeofday(&startTime, /* timezone */ NULL);
+				timespec startTime = { 0, 0 };
+				clock_gettime(CLOCK_REALTIME, &startTime);
 
 				do {
 
@@ -284,11 +284,11 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 						// Keep waiting for connection
 					}
 
-					timeval curTime = { 0, 0 };
-					gettimeofday(&curTime, /* timezone */ NULL);
+					timespec curTime = { 0, 0 };
+					clock_gettime(CLOCK_REALTIME, &curTime);
 
 					if (curAddrInfo->ai_next != NULL &&
-						curTime.tv_usec - startTime.tv_usec >= tryNextTimeout * 1000) {
+						curTime.tv_nsec - startTime.tv_nsec >= tryNextTimeout * 1000000LL) {
 
 						connectErrno = ETIMEDOUT;
 						break;
@@ -410,7 +410,7 @@ void posixSocket::resolve(
 	memset(&hints, 0, sizeof(hints));
 
 	hints.ai_flags = AI_CANONNAME | AI_NUMERICSERV;
-	hints.ai_family = PF_UNSPEC;
+	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
 
 #if VMIME_HAVE_GETADDRINFO_A

@@ -21,7 +21,6 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#include <sys/time.h>
 #include <time.h>
 
 #include <iostream>
@@ -51,25 +50,22 @@ public:
 
 	void reset() {
 
-		struct timezone tz;
-
-		gettimeofday(&m_start, &tz);
+		clock_gettime(CLOCK_MONOTONIC, &m_start);
 	}
 
 	double getDuration() const {
 
-		struct timeval tv;
-		struct timezone tz;
+		struct timespec tv;
 
-		gettimeofday(&tv, &tz);
+		clock_gettime(CLOCK_MONOTONIC, &tv);
 
 		return static_cast <double>(tv.tv_sec - m_start.tv_sec)
-			+ static_cast <double>(tv.tv_usec - m_start.tv_usec) / 1000000.0;
+			+ static_cast <double>(tv.tv_nsec - m_start.tv_nsec) / 1000000000.0;
 	}
 
 private:
 
-	struct timeval m_start;
+	struct timespec m_start;
 };
 
 
