@@ -222,6 +222,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 		VMIME_TEST(testReconnectAfterTimeout)
 		VMIME_TEST(testDisconnectAfterTimeout)
 		VMIME_TEST(testSendTimeout)
+		VMIME_TEST(testConnectionLostDuringEnvelope)
 		VMIME_TEST(testConnectionLostDuringData)
 		VMIME_TEST(testConnectionLostDuringChunking)
 	VMIME_TEST_LIST_END
@@ -590,6 +591,20 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 
 		VASSERT_NO_THROW("Disconnect", tr->disconnect());
 		VASSERT_EQ("All connections closed", 0, failingSMTPTestSocket::getConnectedCount());
+	}
+
+	void testConnectionLostDuringEnvelope() {
+
+		vmime::shared_ptr <vmime::net::transport> tr = createFailingTransport();
+		tr->connect();
+
+		// Connection is lost after MAIL: sending RCPT fails
+		failingSMTPTestSocket::failOn("MAIL", failingSMTPTestSocket::FAILURE_CONNECTION_LOST);
+
+		VASSERT_THROW("Send", sendTestMessage(tr), vmime::exceptions::socket_exception);
+
+		VASSERT_FALSE("Connected", tr->isConnected());
+		VASSERT_EQ("Connection closed", 0, failingSMTPTestSocket::getConnectedCount());
 	}
 
 	void testConnectionLostDuringData() {

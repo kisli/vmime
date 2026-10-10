@@ -287,7 +287,7 @@ void SMTPTransport::sendEnvelope(
 	// Read response for "RSET" command
 	if (needReset) {
 
-		commands->writeToSocket(m_connection->getSocket(), m_connection->getTracer());
+		m_connection->sendRequest(commands);
 
 		resp = m_connection->readResponse();
 
@@ -305,7 +305,7 @@ void SMTPTransport::sendEnvelope(
 	}
 
 	// Read response for "MAIL" command
-	commands->writeToSocket(m_connection->getSocket(), m_connection->getTracer());
+	m_connection->sendRequest(commands);
 
 	if ((resp = m_connection->readResponse())->getCode() != 250) {
 		auto code = resp->getCode();
@@ -343,7 +343,7 @@ void SMTPTransport::sendEnvelope(
 	// Read responses for "RCPT TO" commands
 	for (size_t i = 0 ; i < recipients.getMailboxCount() ; ++i) {
 
-		commands->writeToSocket(m_connection->getSocket(), m_connection->getTracer());
+		m_connection->sendRequest(commands);
 
 		resp = m_connection->readResponse();
 		auto code = resp->getCode();
@@ -384,7 +384,7 @@ void SMTPTransport::sendEnvelope(
 	// Read response for "DATA" command
 	if (sendDATACommand) {
 
-		commands->writeToSocket(m_connection->getSocket(), m_connection->getTracer());
+		m_connection->sendRequest(commands);
 		auto resp = m_connection->readResponse();
 		auto code = resp->getCode();
 
@@ -413,12 +413,12 @@ void SMTPTransport::send(
 		throw exceptions::not_connected();
 	}
 
-	// Envelope and message data are written directly to the socket:
+	// Send message envelope
+	sendEnvelope(expeditor, recipients, sender, /* sendDATACommand */ true, size, options);
+
+	// Message data is written directly to the socket:
 	// close the connection if a network error occurs
 	try {
-
-		// Send message envelope
-		sendEnvelope(expeditor, recipients, sender, /* sendDATACommand */ true, size, options);
 
 		// Send the message data
 		// Stream copy with "\n." to "\n.." transformation
@@ -434,10 +434,7 @@ void SMTPTransport::send(
 
 	} catch (...) {
 
-		if (m_connection) {
-			m_connection->closeOnNetworkError();
-		}
-
+		m_connection->closeOnNetworkError();
 		throw;
 	}
 
@@ -492,14 +489,14 @@ void SMTPTransport::send(
 		return;
 	}
 
-	// Envelope and message data are written directly to the socket:
+	// Send message envelope
+	const size_t msgSize = msg->getGeneratedSize(ctx);
+
+	sendEnvelope(expeditor, recipients, sender, /* sendDATACommand */ false, msgSize, options);
+
+	// Message chunks are written directly to the socket:
 	// close the connection if a network error occurs
 	try {
-
-		// Send message envelope
-		const size_t msgSize = msg->getGeneratedSize(ctx);
-
-		sendEnvelope(expeditor, recipients, sender, /* sendDATACommand */ false, msgSize, options);
 
 		// Send the message by chunks
 		SMTPChunkingOutputStreamAdapter chunkStream(m_connection, msgSize, progress);
@@ -510,6 +507,7 @@ void SMTPTransport::send(
 
 	} catch (...) {
 
+		// Connection may have been closed already, if the server rejected a chunk
 		if (m_connection) {
 			m_connection->closeOnNetworkError();
 		}
