@@ -399,6 +399,42 @@ public:
 };
 
 
+/** Input stream which fails after the specified data has been read
+  * (eg. read error on a file).
+  */
+class failingInputStream : public vmime::utility::inputStream {
+
+public:
+
+	failingInputStream(const vmime::string& data);
+
+	bool eof() const;
+	void reset();
+	size_t read(vmime::byte_t* const data, const size_t count);
+	size_t skip(const size_t count);
+
+private:
+
+	const vmime::string m_data;
+	size_t m_pos;
+};
+
+
+/** Output stream which fails when data is written to it
+  * (eg. disk full).
+  */
+class failingOutputStream : public vmime::utility::outputStream {
+
+public:
+
+	void flush();
+
+protected:
+
+	void writeImpl(const vmime::byte_t* const data, const size_t count);
+};
+
+
 // Exception helper
 std::ostream& operator<<(std::ostream& os, const vmime::exception& e);
 

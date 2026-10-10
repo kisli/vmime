@@ -99,7 +99,6 @@ private:
 	void internalDisconnect();
 
 	void closeConnection();
-	void closeOnNetworkError();
 
 	void helo();
 	void authenticate();

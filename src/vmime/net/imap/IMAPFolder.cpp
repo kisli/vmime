@@ -1169,19 +1169,31 @@ messageSet IMAPFolder::addMessage(
 	std::vector <byte_t> vbuffer(blockSize);
 	byte_t* buffer = &vbuffer.front();
 
-	while (!is.eof()) {
+	// If an error occurs while sending the message data (eg. error while reading
+	// the input stream), the server still expects the rest of the literal, so the
+	// connection is not usable anymore: close it (the incomplete message must not
+	// be stored)
+	try {
 
-		// Read some data from the input stream
-		const size_t read = is.read(buffer, blockSize);
-		current += read;
+		while (!is.eof()) {
 
-		// Put read data into socket output stream
-		m_connection->sendRaw(buffer, read);
+			// Read some data from the input stream
+			const size_t read = is.read(buffer, blockSize);
+			current += read;
 
-		// Notify progress
-		if (progress) {
-			progress->progress(current, total);
+			// Put read data into socket output stream
+			m_connection->sendRaw(buffer, read);
+
+			// Notify progress
+			if (progress) {
+				progress->progress(current, total);
+			}
 		}
+
+	} catch (...) {
+
+		m_connection->closeConnection();
+		throw;
 	}
 
 	m_connection->sendRaw(utility::stringUtils::bytesFromString("\r\n"), 2);

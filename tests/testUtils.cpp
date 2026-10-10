@@ -308,6 +308,64 @@ vmime::shared_ptr <vmime::net::timeoutHandler> testTimeoutHandlerFactory::create
 }
 
 
+// failingInputStream
+
+failingInputStream::failingInputStream(const vmime::string& data)
+	: m_data(data),
+	  m_pos(0) {
+
+}
+
+
+bool failingInputStream::eof() const {
+
+	return false;
+}
+
+
+void failingInputStream::reset() {
+
+	m_pos = 0;
+}
+
+
+size_t failingInputStream::read(vmime::byte_t* const data, const size_t count) {
+
+	if (m_pos >= m_data.length()) {
+		throw vmime::exception("Read error");
+	}
+
+	const size_t n = std::min(count, m_data.length() - m_pos);
+
+	std::copy(m_data.begin() + m_pos, m_data.begin() + m_pos + n, data);
+	m_pos += n;
+
+	return n;
+}
+
+
+size_t failingInputStream::skip(const size_t count) {
+
+	const size_t n = std::min(count, m_data.length() - m_pos);
+	m_pos += n;
+
+	return n;
+}
+
+
+// failingOutputStream
+
+void failingOutputStream::flush() {
+
+}
+
+
+void failingOutputStream::writeImpl(const vmime::byte_t* const /* data */, const size_t /* count */) {
+
+	throw vmime::exception("Write error");
+}
+
+
 
 // Exception helper
 std::ostream& operator<<(std::ostream& os, const vmime::exception& e) {

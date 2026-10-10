@@ -108,7 +108,6 @@ private:
 	void internalDisconnect();
 
 	void closeConnection();
-	void closeOnNetworkError();
 
 
 	weak_ptr <POP3Store> m_store;

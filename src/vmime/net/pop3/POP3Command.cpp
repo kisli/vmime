@@ -263,7 +263,7 @@ void POP3Command::send(const shared_ptr <POP3Connection>& conn) {
 
 	} catch (...) {
 
-		conn->closeOnNetworkError();
+		conn->closeConnection();
 		throw;
 	}
 

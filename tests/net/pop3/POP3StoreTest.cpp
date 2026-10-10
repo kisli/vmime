@@ -128,7 +128,13 @@ public:
 
 		} else if (verb == "STAT") {
 
-			localSend("+OK 0 0\r\n");
+			localSend("+OK 1 12\r\n");
+
+		} else if (verb == "RETR") {
+
+			localSend("+OK 12 octets\r\n");
+			localSend("Message data\r\n");
+			localSend(".\r\n");
 
 		} else if (verb == "QUIT") {
 
@@ -174,6 +180,7 @@ VMIME_TEST_SUITE_BEGIN(POP3StoreTest)
 		VMIME_TEST(testReconnectDetachesFolders)
 		VMIME_TEST(testFolderCloseAfterTimeout)
 		VMIME_TEST(testFolderDestroyedAfterTimeout)
+		VMIME_TEST(testRetrWriteError)
 	VMIME_TEST_LIST_END
 
 
@@ -401,6 +408,28 @@ VMIME_TEST_SUITE_BEGIN(POP3StoreTest)
 
 		VASSERT_NO_THROW("Disconnect", store->disconnect());
 		VASSERT_EQ("All connections closed", 0, failingPOP3TestSocket::getConnectedCount());
+	}
+
+	void testRetrWriteError() {
+
+		vmime::shared_ptr <vmime::net::store> store = createFailingStore();
+		store->connect();
+
+		vmime::shared_ptr <vmime::net::folder> folder = store->getDefaultFolder();
+		folder->open(vmime::net::folder::MODE_READ_WRITE);
+
+		vmime::shared_ptr <vmime::net::message> msg = folder->getMessage(1);
+
+		// Error while writing message data (eg. disk full)
+		failingOutputStream os;
+
+		VASSERT_THROW("Extract", msg->extract(os), vmime::exception);
+
+		// Response has not been read completely: connection is not usable anymore
+		VASSERT_FALSE("Connected", store->isConnected());
+		VASSERT_EQ("Connection closed", 0, failingPOP3TestSocket::getConnectedCount());
+
+		VASSERT_NO_THROW("Close", folder->close(false));
 	}
 
 VMIME_TEST_SUITE_END

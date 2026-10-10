@@ -625,6 +625,12 @@ void SMTPConnection::internalDisconnect() {
 }
 
 
+// Closes the connection, without sending QUIT. This is also used when an
+// error occurs while sending a command or reading a response (network error,
+// error while writing response data...): the connection is then in an unknown
+// state (eg. the server may still send the rest of the response), so it is not
+// usable anymore, and isConnected() must return false so that the client can
+// reconnect
 void SMTPConnection::closeConnection() {
 
 	if (m_socket) {
@@ -642,37 +648,6 @@ void SMTPConnection::closeConnection() {
 }
 
 
-// Must be called from an exception handler
-void SMTPConnection::closeOnNetworkError() {
-
-	// After a network error, the connection is not usable anymore (the server
-	// may still send the response later, and the next commands would read it):
-	// close it, so that isConnected() returns false and the client can reconnect
-	try {
-
-		throw;
-
-	} catch (exceptions::socket_exception&) {
-
-		closeConnection();
-
-	} catch (exceptions::operation_timed_out&) {
-
-		closeConnection();
-
-#if VMIME_HAVE_TLS_SUPPORT
-	} catch (exceptions::tls_exception&) {
-
-		closeConnection();
-#endif // VMIME_HAVE_TLS_SUPPORT
-
-	} catch (...) {
-
-		// Not a network error
-	}
-}
-
-
 void SMTPConnection::sendRequest(const shared_ptr <SMTPCommand>& cmd) {
 
 	if (!m_socket) {
@@ -685,7 +660,7 @@ void SMTPConnection::sendRequest(const shared_ptr <SMTPCommand>& cmd) {
 
 	} catch (...) {
 
-		closeOnNetworkError();
+		closeConnection();
 		throw;
 	}
 }
@@ -707,7 +682,7 @@ shared_ptr <SMTPResponse> SMTPConnection::readResponse() {
 
 	} catch (...) {
 
-		closeOnNetworkError();
+		closeConnection();
 		throw;
 	}
 

@@ -78,7 +78,7 @@ shared_ptr <POP3Response> POP3Response::readResponse(
 
 	} catch (...) {
 
-		conn->closeOnNetworkError();
+		conn->closeConnection();
 		throw;
 	}
 
@@ -111,7 +111,7 @@ shared_ptr <POP3Response> POP3Response::readMultilineResponse(
 
 	} catch (...) {
 
-		conn->closeOnNetworkError();
+		conn->closeConnection();
 		throw;
 	}
 
@@ -166,9 +166,15 @@ shared_ptr <POP3Response> POP3Response::readLargeResponse(
 
 		length = resp->readResponseImpl(firstLine, os, progress, predictedSize);
 
+	} catch (exceptions::command_error&) {
+
+		// Error response from the server: it has been read completely,
+		// so the connection is still usable
+		throw;
+
 	} catch (...) {
 
-		conn->closeOnNetworkError();
+		conn->closeConnection();
 		throw;
 	}
 

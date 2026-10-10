@@ -416,8 +416,11 @@ void SMTPTransport::send(
 	// Send message envelope
 	sendEnvelope(expeditor, recipients, sender, /* sendDATACommand */ true, size, options);
 
-	// Message data is written directly to the socket:
-	// close the connection if a network error occurs
+	// If an error occurs while sending the message data (network error, but
+	// also eg. error while reading the input stream), the server still expects
+	// the end of the data, so the connection is not usable anymore: close it,
+	// without sending the end-of-data delimiter (the incomplete message must
+	// not be delivered)
 	try {
 
 		// Send the message data
@@ -434,7 +437,7 @@ void SMTPTransport::send(
 
 	} catch (...) {
 
-		m_connection->closeOnNetworkError();
+		m_connection->closeConnection();
 		throw;
 	}
 
@@ -494,8 +497,11 @@ void SMTPTransport::send(
 
 	sendEnvelope(expeditor, recipients, sender, /* sendDATACommand */ false, msgSize, options);
 
-	// Message chunks are written directly to the socket:
-	// close the connection if a network error occurs
+	// If an error occurs while sending the message chunks (network error, but
+	// also eg. error while generating the message), the server still expects
+	// the next chunks, so the connection is not usable anymore: close it,
+	// without sending the last chunk (the incomplete message must not be
+	// delivered)
 	try {
 
 		// Send the message by chunks
@@ -509,7 +515,7 @@ void SMTPTransport::send(
 
 		// Connection may have been closed already, if the server rejected a chunk
 		if (m_connection) {
-			m_connection->closeOnNetworkError();
+			m_connection->closeConnection();
 		}
 
 		throw;
