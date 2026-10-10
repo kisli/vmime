@@ -156,9 +156,11 @@ VMIME_TEST_SUITE_BEGIN(filteredStreamTest)
 
 		FILTER fos(os);
 
-		for (auto &&s : std::initializer_list<std::string>{std::forward<Args>(args)...})
-			if (!s.empty())
+		for (auto &&s : std::initializer_list <std::string>{ std::forward <Args>(args)... }) {
+			if (!s.empty()) {
 				fos.write(s.data(), s.length());
+			}
+		}
 
 		VASSERT_EQ(number, expected, oss.str());
 	}
@@ -206,9 +208,12 @@ VMIME_TEST_SUITE_BEGIN(filteredStreamTest)
 	) {
 
 		chunkInputStream cis;
-		for (auto &&s : std::initializer_list<std::string>{std::forward<Args>(args)...})
-			if (!s.empty())
+
+		for (auto &&s : std::initializer_list <std::string>{ std::forward <Args>(args)... }) {
+			if (!s.empty()) {
 				cis.addChunk(s);
+			}
+		}
 
 		vmime::utility::stopSequenceFilteredInputStream <N> is(cis, sequence.data());
 
