@@ -47,7 +47,7 @@ public:
 
 	/** A property holds a (name,value) pair.
 	  */
-	class property : public object {
+	class VMIME_EXPORT property : public object {
 
 	public:
 
