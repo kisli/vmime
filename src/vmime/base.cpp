@@ -123,7 +123,7 @@ const size_t npos = std::numeric_limits <size_t>::max();
 //  V-Mime Initializer
 // ====================
 //
-// Force instanciation of singletons. This is to prevent problems that might
+// Force instantiation of singletons. This is to prevent problems that might
 // happen in multithreaded applications...
 //
 // WARNING: we put the initializer at the end of this compilation unit. This
