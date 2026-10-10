@@ -63,6 +63,9 @@ class POP3Store;
   */
 class VMIME_EXPORT POP3Connection : public object, public enable_shared_from_this <POP3Connection> {
 
+	friend class POP3Command;
+	friend class POP3Response;
+
 public:
 
 	POP3Connection(
@@ -103,6 +106,9 @@ private:
 	const std::vector <string> getCapabilities();
 
 	void internalDisconnect();
+
+	void closeConnection();
+	void closeOnNetworkError();
 
 
 	weak_ptr <POP3Store> m_store;

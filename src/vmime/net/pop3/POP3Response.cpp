@@ -55,6 +55,9 @@ POP3Response::POP3Response(
 	  m_timeoutHandler(toh),
 	  m_tracer(tracer) {
 
+	if (!m_socket) {
+		throw exceptions::socket_not_connected_exception();
+	}
 }
 
 
@@ -68,7 +71,16 @@ shared_ptr <POP3Response> POP3Response::readResponse(
 	);
 
 	string buffer;
-	resp->readResponseImpl(buffer, /* multiLine */ false);
+
+	try {
+
+		resp->readResponseImpl(buffer, /* multiLine */ false);
+
+	} catch (...) {
+
+		conn->closeOnNetworkError();
+		throw;
+	}
 
 	resp->m_firstLine = buffer;
 	resp->m_code = getResponseCode(buffer);
@@ -92,7 +104,16 @@ shared_ptr <POP3Response> POP3Response::readMultilineResponse(
 	);
 
 	string buffer;
-	resp->readResponseImpl(buffer, /* multiLine */ true);
+
+	try {
+
+		resp->readResponseImpl(buffer, /* multiLine */ true);
+
+	} catch (...) {
+
+		conn->closeOnNetworkError();
+		throw;
+	}
 
 	string firstLine, nextLines;
 	stripFirstLine(buffer, nextLines, &firstLine);
@@ -139,7 +160,17 @@ shared_ptr <POP3Response> POP3Response::readLargeResponse(
 	);
 
 	string firstLine;
-	const size_t length = resp->readResponseImpl(firstLine, os, progress, predictedSize);
+	size_t length = 0;
+
+	try {
+
+		length = resp->readResponseImpl(firstLine, os, progress, predictedSize);
+
+	} catch (...) {
+
+		conn->closeOnNetworkError();
+		throw;
+	}
 
 	resp->m_firstLine = firstLine;
 	resp->m_code = getResponseCode(firstLine);

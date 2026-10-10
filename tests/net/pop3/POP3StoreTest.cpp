@@ -122,9 +122,13 @@ public:
 
 			m_failed = true;
 
-		} else if (verb == "USER" || verb == "PASS") {
+		} else if (verb == "USER" || verb == "PASS" || verb == "NOOP" || verb == "RSET") {
 
 			localSend("+OK\r\n");
+
+		} else if (verb == "STAT") {
+
+			localSend("+OK 0 0\r\n");
 
 		} else if (verb == "QUIT") {
 
@@ -160,8 +164,16 @@ VMIME_TEST_SUITE_BEGIN(POP3StoreTest)
 		VMIME_TEST(testCreateFromURL)
 		VMIME_TEST(testConnectToInvalidServer)
 		VMIME_TEST(testDisconnect)
-		VMIME_TEST(testDestroyedAfterConnectTimeout)
+		VMIME_TEST(testConnectTimeout)
+#if VMIME_HAVE_TLS_SUPPORT
+		VMIME_TEST(testDestroyedAfterConnectFailure)
+#endif // VMIME_HAVE_TLS_SUPPORT
 		VMIME_TEST(testReconnectAfterConnectTimeout)
+		VMIME_TEST(testReconnectAfterTimeout)
+		VMIME_TEST(testDisconnectAfterTimeout)
+		VMIME_TEST(testReconnectDetachesFolders)
+		VMIME_TEST(testFolderCloseAfterTimeout)
+		VMIME_TEST(testFolderDestroyedAfterTimeout)
 	VMIME_TEST_LIST_END
 
 
@@ -224,13 +236,34 @@ VMIME_TEST_SUITE_BEGIN(POP3StoreTest)
 		VASSERT_EQ("Connection closed", 0, failingPOP3TestSocket::getConnectedCount());
 	}
 
-	void testDestroyedAfterConnectTimeout() {
+	void testConnectTimeout() {
 
 		vmime::shared_ptr <vmime::net::store> store = createFailingStore();
 
 		failingPOP3TestSocket::failOn("PASS");
 
 		VASSERT_THROW("Connect", store->connect(), vmime::exceptions::operation_timed_out);
+		VASSERT_FALSE("Connected", store->isConnected());
+
+		// Connection is not usable anymore after a time-out
+		VASSERT_EQ("Connection closed", 0, failingPOP3TestSocket::getConnectedCount());
+
+		store = vmime::null;
+
+		VASSERT_EQ("QUIT not sent", 0, failingPOP3TestSocket::getQuitCount());
+	}
+
+#if VMIME_HAVE_TLS_SUPPORT
+
+	void testDestroyedAfterConnectFailure() {
+
+		vmime::shared_ptr <vmime::net::store> store = createFailingStore();
+
+		store->getSession()->getProperties()["store.pop3.connection.tls"] = true;
+		store->getSession()->getProperties()["store.pop3.connection.tls.required"] = true;
+
+		// STLS is not supported by the server
+		VASSERT_THROW("Connect", store->connect(), vmime::exceptions::command_error);
 		VASSERT_FALSE("Connected", store->isConnected());
 
 		// Connection is not authenticated, so it is only closed
@@ -240,6 +273,8 @@ VMIME_TEST_SUITE_BEGIN(POP3StoreTest)
 		VASSERT_EQ("QUIT sent", 1, failingPOP3TestSocket::getQuitCount());
 		VASSERT_EQ("Connection closed", 0, failingPOP3TestSocket::getConnectedCount());
 	}
+
+#endif // VMIME_HAVE_TLS_SUPPORT
 
 	void testReconnectAfterConnectTimeout() {
 
@@ -254,6 +289,115 @@ VMIME_TEST_SUITE_BEGIN(POP3StoreTest)
 		VASSERT_NO_THROW("Reconnect", store->connect());
 		VASSERT_TRUE("Connected", store->isConnected());
 		VASSERT_EQ("First connection closed", 1, failingPOP3TestSocket::getConnectedCount());
+
+		VASSERT_NO_THROW("Disconnect", store->disconnect());
+		VASSERT_EQ("All connections closed", 0, failingPOP3TestSocket::getConnectedCount());
+	}
+
+	void testReconnectAfterTimeout() {
+
+		vmime::shared_ptr <vmime::net::store> store = createFailingStore();
+		store->connect();
+
+		failingPOP3TestSocket::failOn("NOOP");
+
+		VASSERT_THROW("NOOP", store->noop(), vmime::exceptions::operation_timed_out);
+
+		// Connection is not usable anymore after a time-out
+		VASSERT_FALSE("Connected", store->isConnected());
+		VASSERT_EQ("Connection closed", 0, failingPOP3TestSocket::getConnectedCount());
+
+		failingPOP3TestSocket::failOn("");
+
+		VASSERT_NO_THROW("Reconnect", store->connect());
+		VASSERT_TRUE("Connected", store->isConnected());
+		VASSERT_NO_THROW("NOOP", store->noop());
+
+		VASSERT_NO_THROW("Disconnect", store->disconnect());
+		VASSERT_EQ("All connections closed", 0, failingPOP3TestSocket::getConnectedCount());
+	}
+
+	void testDisconnectAfterTimeout() {
+
+		vmime::shared_ptr <vmime::net::store> store = createFailingStore();
+		store->connect();
+
+		failingPOP3TestSocket::failOn("NOOP");
+
+		VASSERT_THROW("NOOP", store->noop(), vmime::exceptions::operation_timed_out);
+
+		VASSERT_NO_THROW("Disconnect", store->disconnect());
+		VASSERT_FALSE("Connected", store->isConnected());
+		VASSERT_EQ("All connections closed", 0, failingPOP3TestSocket::getConnectedCount());
+	}
+
+	void testReconnectDetachesFolders() {
+
+		vmime::shared_ptr <vmime::net::store> store = createFailingStore();
+		store->connect();
+
+		vmime::shared_ptr <vmime::net::folder> folder = store->getDefaultFolder();
+
+		failingPOP3TestSocket::failOn("NOOP");
+
+		VASSERT_THROW("NOOP", store->noop(), vmime::exceptions::operation_timed_out);
+
+		failingPOP3TestSocket::failOn("");
+
+		VASSERT_NO_THROW("Reconnect", store->connect());
+
+		// Folders obtained before reconnection belong to the previous session
+		VASSERT_THROW(
+			"Open old folder",
+			folder->open(vmime::net::folder::MODE_READ_WRITE),
+			vmime::exceptions::illegal_state
+		);
+
+		folder = store->getDefaultFolder();
+
+		VASSERT_NO_THROW("Open new folder", folder->open(vmime::net::folder::MODE_READ_WRITE));
+
+		folder = vmime::null;
+
+		VASSERT_NO_THROW("Disconnect", store->disconnect());
+		VASSERT_EQ("All connections closed", 0, failingPOP3TestSocket::getConnectedCount());
+	}
+
+	void testFolderCloseAfterTimeout() {
+
+		vmime::shared_ptr <vmime::net::store> store = createFailingStore();
+		store->connect();
+
+		vmime::shared_ptr <vmime::net::folder> folder = store->getDefaultFolder();
+		folder->open(vmime::net::folder::MODE_READ_WRITE);
+
+		failingPOP3TestSocket::failOn("NOOP");
+
+		VASSERT_THROW("NOOP", store->noop(), vmime::exceptions::operation_timed_out);
+
+		VASSERT_NO_THROW("Close", folder->close(false));
+		VASSERT_FALSE("Open", folder->isOpen());
+
+		folder = vmime::null;
+
+		VASSERT_NO_THROW("Disconnect", store->disconnect());
+		VASSERT_EQ("All connections closed", 0, failingPOP3TestSocket::getConnectedCount());
+	}
+
+	void testFolderDestroyedAfterTimeout() {
+
+		vmime::shared_ptr <vmime::net::store> store = createFailingStore();
+		store->connect();
+
+		vmime::shared_ptr <vmime::net::folder> folder = store->getDefaultFolder();
+		folder->open(vmime::net::folder::MODE_READ_WRITE);
+
+		failingPOP3TestSocket::failOn("RSET");
+
+		// Folder must unregister itself from the store, even if it
+		// could not be closed properly (store would access a deleted
+		// object otherwise)
+		folder = vmime::null;
 
 		VASSERT_NO_THROW("Disconnect", store->disconnect());
 		VASSERT_EQ("All connections closed", 0, failingPOP3TestSocket::getConnectedCount());

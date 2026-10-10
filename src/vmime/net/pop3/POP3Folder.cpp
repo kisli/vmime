@@ -68,7 +68,11 @@ POP3Folder::~POP3Folder() {
 		if (store) {
 
 			if (m_open) {
-				close(false);
+				try {
+					close(false);
+				} catch (...) {
+					// Ignore exception here to make sure unregisterFolder is called
+				}
 			}
 
 			store->unregisterFolder(this);
@@ -185,7 +189,10 @@ void POP3Folder::close(const bool expunge) {
 		throw exceptions::illegal_state("Folder not open");
 	}
 
-	if (!expunge) {
+	// Unmark messages marked as deleted. If the connection has been lost
+	// (eg. after a network error), this is not needed: messages are only
+	// deleted when the session ends with QUIT
+	if (!expunge && store->isConnected()) {
 		POP3Command::RSET()->send(store->getConnection());
 		POP3Response::readResponse(store->getConnection());
 	}

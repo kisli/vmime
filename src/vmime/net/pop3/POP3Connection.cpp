@@ -203,27 +203,31 @@ void POP3Connection::disconnect() {
 
 void POP3Connection::internalDisconnect() {
 
-	if (m_socket) {
+	if (m_socket && m_socket->isConnected()) {
 
-		if (m_socket->isConnected()) {
+		try {
 
-			try {
+			// Don't use shared_from_this() here, as we may be called from
+			// the destructor: use a non-owning pointer to this object instead
+			shared_ptr <POP3Connection> conn(shared_ptr <POP3Connection>(), this);
 
-				// Don't use shared_from_this() here, as we may be called from
-				// the destructor: use a non-owning pointer to this object instead
-				shared_ptr <POP3Connection> conn(shared_ptr <POP3Connection>(), this);
+			POP3Command::QUIT()->send(conn);
+			POP3Response::readResponse(conn);
 
-				POP3Command::QUIT()->send(conn);
-				POP3Response::readResponse(conn);
+		} catch (exception&) {
 
-			} catch (exception&) {
-
-				// Not important
-			}
-
-			m_socket->disconnect();
+			// Not important
 		}
+	}
 
+	closeConnection();
+}
+
+
+void POP3Connection::closeConnection() {
+
+	if (m_socket) {
+		m_socket->disconnect();
 		m_socket = null;
 	}
 
@@ -233,6 +237,37 @@ void POP3Connection::internalDisconnect() {
 	m_secured = false;
 
 	m_cntInfos = null;
+}
+
+
+// Must be called from an exception handler
+void POP3Connection::closeOnNetworkError() {
+
+	// After a network error, the connection is not usable anymore (the server
+	// may still send the response later, and the next commands would read it):
+	// close it, so that isConnected() returns false and the client can reconnect
+	try {
+
+		throw;
+
+	} catch (exceptions::socket_exception&) {
+
+		closeConnection();
+
+	} catch (exceptions::operation_timed_out&) {
+
+		closeConnection();
+
+#if VMIME_HAVE_TLS_SUPPORT
+	} catch (exceptions::tls_exception&) {
+
+		closeConnection();
+#endif // VMIME_HAVE_TLS_SUPPORT
+
+	} catch (...) {
+
+		// Not a network error
+	}
 }
 
 
