@@ -89,7 +89,7 @@ public:
 	  * @param sok socket to which the command will be written
 	  * @param tr tracer
 	  */
-	virtual void writeToSocket(const shared_ptr <socket>& sok, shared_ptr <tracer> tr);
+	virtual void writeToSocket(const shared_ptr <socket>& sok, const shared_ptr <tracer>& tr);
 
 	/** Returns the full text of the command, including command name
 	  * and parameters (if any).
