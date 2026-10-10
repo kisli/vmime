@@ -38,6 +38,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandSetTest)
 		VMIME_TEST(testAddCommand)
 		VMIME_TEST(testAddCommandPipeline)
 		VMIME_TEST(testWriteToSocket)
+		VMIME_TEST(testWriteToSocketBaseClass)
 		VMIME_TEST(testWriteToSocketPipeline)
 		VMIME_TEST(testGetLastCommandSent)
 		VMIME_TEST(testGetLastCommandSentPipeline)
@@ -125,6 +126,33 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandSetTest)
 
 		sok->localReceive(response);
 		VASSERT_EQ("Receive cmd 2", "MY_COMMAND2\r\n", response);
+	}
+
+	void testWriteToSocketBaseClass() {
+
+		vmime::shared_ptr <SMTPCommandSet> cset = SMTPCommandSet::create(/* pipelining */ false);
+
+		cset->addCommand(SMTPCommand::createCommand("MY_COMMAND1"));
+		cset->addCommand(SMTPCommand::createCommand("MY_COMMAND2"));
+
+		// Command set must behave the same when used as a SMTPCommand
+		// (eg. when sent with SMTPConnection::sendRequest())
+		vmime::shared_ptr <SMTPCommand> cmd = cset;
+
+		vmime::shared_ptr <vmime::net::tracer> tracer;
+		vmime::shared_ptr <testSocket> sok = vmime::make_shared <testSocket>();
+		vmime::string response;
+
+		cmd->writeToSocket(sok, tracer);
+
+		sok->localReceive(response);
+		VASSERT_EQ("Receive cmd 1", "MY_COMMAND1\r\n", response);
+
+		cmd->writeToSocket(sok, tracer);
+
+		sok->localReceive(response);
+		VASSERT_EQ("Receive cmd 2", "MY_COMMAND2\r\n", response);
+		VASSERT_TRUE("Finished", cset->isFinished());
 	}
 
 	void testWriteToSocketPipeline() {

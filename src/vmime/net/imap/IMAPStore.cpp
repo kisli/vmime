@@ -131,6 +131,11 @@ void IMAPStore::connect() {
 		throw exceptions::already_connected();
 	}
 
+	// Clean up the previous session (eg. connection lost after a network error)
+	if (m_connection) {
+		disconnect();
+	}
+
 	m_connection = make_shared <IMAPConnection>(
 		dynamicCast <IMAPStore>(shared_from_this()), getAuthenticator()
 	);
@@ -189,7 +194,9 @@ const std::map <string, string> IMAPStore::getServerIdentification() const {
 
 void IMAPStore::disconnect() {
 
-	bool wasConnected = isConnected();
+	// Connection may have been lost (eg. after a network error):
+	// this is not an error, but it still needs to be cleaned up
+	const bool wasConnected = !!m_connection;
 
 	for (std::list <IMAPFolder*>::iterator it = m_folders.begin() ;
 	     it != m_folders.end() ; ++it) {
@@ -200,7 +207,11 @@ void IMAPStore::disconnect() {
 	m_folders.clear();
 
 	if (m_connection) {
-		m_connection->disconnect();
+
+		if (m_connection->isConnected()) {
+			m_connection->disconnect();
+		}
+
 		m_connection = null;
 	}
 

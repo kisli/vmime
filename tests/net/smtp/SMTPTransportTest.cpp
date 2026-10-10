@@ -30,6 +30,215 @@
 #include "SMTPTransportTestUtils.hpp"
 
 
+/** SMTP test server which simulates a network failure.
+  *
+  * When the client sends the command set with failOn(), the server
+  * stops responding and any further read on the socket throws an
+  * operation_timed_out exception, as a real socket would. Depending
+  * on the failure mode, the connection may also be lost after the
+  * command has been processed (eg. while the client is sending the
+  * message data), in which case writing to the socket fails.
+  *
+  * The number of sockets currently connected is tracked, to check
+  * that all connections are properly closed by the client, as well
+  * as the number of messages accepted for delivery.
+  */
+class failingSMTPTestSocket : public lineBasedTestSocket {
+
+public:
+
+	enum FailureMode {
+		FAILURE_NO_RESPONSE,        /**< Server stops responding (reads time out). */
+		FAILURE_CONNECTION_LOST     /**< Connection is lost after the command (writes fail). */
+	};
+
+	using lineBasedTestSocket::send;
+
+	failingSMTPTestSocket()
+		: m_failed(false),
+		  m_data(false) {
+
+	}
+
+	static void reset() {
+
+		sm_failCommand.clear();
+		sm_failureMode = FAILURE_NO_RESPONSE;
+		sm_connectedCount = 0;
+		sm_deliveredCount = 0;
+	}
+
+	static void failOn(const vmime::string& verb, const FailureMode mode = FAILURE_NO_RESPONSE) {
+
+		sm_failCommand = verb;
+		sm_failureMode = mode;
+	}
+
+	static int getConnectedCount() {
+
+		return sm_connectedCount;
+	}
+
+	static int getDeliveredCount() {
+
+		return sm_deliveredCount;
+	}
+
+	void connect(const vmime::string& address, const vmime::port_t port) {
+
+		++sm_connectedCount;
+
+		lineBasedTestSocket::connect(address, port);
+	}
+
+	void disconnect() {
+
+		if (isConnected()) {
+			--sm_connectedCount;
+		}
+
+		lineBasedTestSocket::disconnect();
+	}
+
+	void send(const vmime::string& buffer) {
+
+		if (m_failed && sm_failureMode == FAILURE_CONNECTION_LOST) {
+			throw vmime::exceptions::socket_exception("Connection lost");
+		}
+
+		lineBasedTestSocket::send(buffer);
+	}
+
+	void receive(vmime::string& buffer) {
+
+		lineBasedTestSocket::receive(buffer);
+
+		if (buffer.empty() && m_failed) {
+			throw vmime::exceptions::operation_timed_out();
+		}
+	}
+
+	void onConnected() {
+
+		localSend("220 test.vmime.org ESMTP ready\r\n");
+	}
+
+	void processCommand() {
+
+		if (!haveMoreLines()) {
+			return;
+		}
+
+		const vmime::string line = getNextLine();
+
+		if (m_failed) {
+
+			// Server does not respond anymore
+
+		} else if (m_data) {
+
+			if (line == ".") {
+
+				localSend("250 Message accepted for delivery\r\n");
+				m_data = false;
+
+				++sm_deliveredCount;
+			}
+
+		} else {
+
+			const vmime::string verb =
+				vmime::utility::stringUtils::toUpper(line.substr(0, line.find(' ')));
+
+			if (verb == sm_failCommand && sm_failureMode == FAILURE_NO_RESPONSE) {
+
+				m_failed = true;
+
+			} else {
+
+				processVerb(verb);
+
+				if (verb == sm_failCommand) {
+					m_failed = true;
+				}
+			}
+		}
+
+		processCommand();
+	}
+
+private:
+
+	void processVerb(const vmime::string& verb) {
+
+		if (verb == "EHLO") {
+
+			localSend("250-test.vmime.org\r\n");
+			localSend("250 CHUNKING\r\n");
+
+		} else if (verb == "MAIL" || verb == "RCPT" || verb == "NOOP" || verb == "RSET") {
+
+			localSend("250 OK\r\n");
+
+		} else if (verb == "DATA") {
+
+			localSend("354 Ready to accept data; end with <CRLF>.<CRLF>\r\n");
+			m_data = true;
+
+		} else if (verb == "BDAT") {
+
+			// Message data follows (only used to simulate a failure:
+			// data is not handled by this server)
+
+		} else if (verb == "QUIT") {
+
+			localSend("221 test.vmime.org Service closing transmission channel\r\n");
+
+		} else {
+
+			localSend("502 Command not implemented\r\n");
+		}
+	}
+
+
+	bool m_failed;
+	bool m_data;
+
+	static vmime::string sm_failCommand;
+	static FailureMode sm_failureMode;
+	static int sm_connectedCount;
+	static int sm_deliveredCount;
+};
+
+
+vmime::string failingSMTPTestSocket::sm_failCommand;
+failingSMTPTestSocket::FailureMode failingSMTPTestSocket::sm_failureMode =
+	failingSMTPTestSocket::FAILURE_NO_RESPONSE;
+int failingSMTPTestSocket::sm_connectedCount = 0;
+int failingSMTPTestSocket::sm_deliveredCount = 0;
+
+
+/** Message which fails to be generated (eg. read error on an attachment).
+  */
+class failingMessage : public vmime::message {
+
+public:
+
+	void generateImpl(
+		const vmime::generationContext& /* ctx */,
+		vmime::utility::outputStream& outputStream,
+		const size_t /* curLinePos */ = 0,
+		size_t* /* newLinePos */ = NULL
+	) const {
+
+		outputStream.write("Message data\r\n", 14);
+
+		throw vmime::exception("Generation error");
+	}
+};
+
+
+
 VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 
 	VMIME_TEST_LIST_BEGIN
@@ -41,7 +250,44 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 		VMIME_TEST(testSize_NoChunking)
 		VMIME_TEST(testSMTPUTF8_available)
 		VMIME_TEST(testSMTPUTF8_notAvailable)
+		VMIME_TEST(testReconnectAfterTimeout)
+		VMIME_TEST(testDisconnectAfterTimeout)
+		VMIME_TEST(testSendTimeout)
+		VMIME_TEST(testConnectionLostDuringEnvelope)
+		VMIME_TEST(testConnectionLostDuringData)
+		VMIME_TEST(testConnectionLostDuringChunking)
+		VMIME_TEST(testInputStreamErrorDuringData)
+		VMIME_TEST(testGenerationErrorDuringChunking)
 	VMIME_TEST_LIST_END
+
+
+	static vmime::shared_ptr <vmime::net::transport> createFailingTransport() {
+
+		failingSMTPTestSocket::reset();
+
+		vmime::shared_ptr <vmime::net::session> session = vmime::net::session::create();
+
+		vmime::shared_ptr <vmime::net::transport> tr =
+			session->getTransport(vmime::utility::url("smtp://localhost"));
+
+		tr->setSocketFactory(vmime::make_shared <testSocketFactory <failingSMTPTestSocket> >());
+		tr->setTimeoutHandlerFactory(vmime::make_shared <testTimeoutHandlerFactory>());
+
+		return tr;
+	}
+
+	static void sendTestMessage(const vmime::shared_ptr <vmime::net::transport>& tr) {
+
+		vmime::mailbox exp("expeditor@test.vmime.org");
+
+		vmime::mailboxList recips;
+		recips.appendMailbox(vmime::make_shared <vmime::mailbox>("recipient@test.vmime.org"));
+
+		vmime::string data("Message data");
+		vmime::utility::inputStreamStringAdapter is(data);
+
+		tr->send(exp, recips, is, data.length());
+	}
 
 
 	void testConnectToInvalidServer() {
@@ -319,6 +565,152 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 
 			tr->send(exp, recips, is, 0);
 		}
+	}
+
+	void testReconnectAfterTimeout() {
+
+		vmime::shared_ptr <vmime::net::transport> tr = createFailingTransport();
+		tr->connect();
+
+		failingSMTPTestSocket::failOn("NOOP");
+
+		VASSERT_THROW("NOOP", tr->noop(), vmime::exceptions::operation_timed_out);
+
+		// Connection is not usable anymore after a time-out
+		VASSERT_FALSE("Connected", tr->isConnected());
+		VASSERT_EQ("Connection closed", 0, failingSMTPTestSocket::getConnectedCount());
+
+		failingSMTPTestSocket::failOn("");
+
+		VASSERT_NO_THROW("Reconnect", tr->connect());
+		VASSERT_TRUE("Connected", tr->isConnected());
+		VASSERT_NO_THROW("NOOP", tr->noop());
+
+		VASSERT_NO_THROW("Disconnect", tr->disconnect());
+		VASSERT_EQ("All connections closed", 0, failingSMTPTestSocket::getConnectedCount());
+	}
+
+	void testDisconnectAfterTimeout() {
+
+		vmime::shared_ptr <vmime::net::transport> tr = createFailingTransport();
+		tr->connect();
+
+		failingSMTPTestSocket::failOn("NOOP");
+
+		VASSERT_THROW("NOOP", tr->noop(), vmime::exceptions::operation_timed_out);
+
+		VASSERT_NO_THROW("Disconnect", tr->disconnect());
+		VASSERT_FALSE("Connected", tr->isConnected());
+		VASSERT_EQ("All connections closed", 0, failingSMTPTestSocket::getConnectedCount());
+	}
+
+	void testSendTimeout() {
+
+		vmime::shared_ptr <vmime::net::transport> tr = createFailingTransport();
+		tr->connect();
+
+		failingSMTPTestSocket::failOn("RCPT");
+
+		VASSERT_THROW("Send", sendTestMessage(tr), vmime::exceptions::operation_timed_out);
+
+		// Connection is not usable anymore after a time-out
+		VASSERT_FALSE("Connected", tr->isConnected());
+		VASSERT_EQ("Connection closed", 0, failingSMTPTestSocket::getConnectedCount());
+
+		failingSMTPTestSocket::failOn("");
+
+		VASSERT_NO_THROW("Reconnect", tr->connect());
+		VASSERT_NO_THROW("Send after reconnection", sendTestMessage(tr));
+
+		VASSERT_NO_THROW("Disconnect", tr->disconnect());
+		VASSERT_EQ("All connections closed", 0, failingSMTPTestSocket::getConnectedCount());
+	}
+
+	void testConnectionLostDuringEnvelope() {
+
+		vmime::shared_ptr <vmime::net::transport> tr = createFailingTransport();
+		tr->connect();
+
+		// Connection is lost after MAIL: sending RCPT fails
+		failingSMTPTestSocket::failOn("MAIL", failingSMTPTestSocket::FAILURE_CONNECTION_LOST);
+
+		VASSERT_THROW("Send", sendTestMessage(tr), vmime::exceptions::socket_exception);
+
+		VASSERT_FALSE("Connected", tr->isConnected());
+		VASSERT_EQ("Connection closed", 0, failingSMTPTestSocket::getConnectedCount());
+	}
+
+	void testConnectionLostDuringData() {
+
+		vmime::shared_ptr <vmime::net::transport> tr = createFailingTransport();
+		tr->connect();
+
+		failingSMTPTestSocket::failOn("DATA", failingSMTPTestSocket::FAILURE_CONNECTION_LOST);
+
+		VASSERT_THROW("Send", sendTestMessage(tr), vmime::exceptions::socket_exception);
+
+		VASSERT_FALSE("Connected", tr->isConnected());
+		VASSERT_EQ("Connection closed", 0, failingSMTPTestSocket::getConnectedCount());
+	}
+
+	void testConnectionLostDuringChunking() {
+
+		vmime::shared_ptr <vmime::net::transport> tr = createFailingTransport();
+		tr->connect();
+
+		failingSMTPTestSocket::failOn("BDAT", failingSMTPTestSocket::FAILURE_CONNECTION_LOST);
+
+		vmime::mailbox exp("expeditor@test.vmime.org");
+
+		vmime::mailboxList recips;
+		recips.appendMailbox(vmime::make_shared <vmime::mailbox>("recipient@test.vmime.org"));
+
+		vmime::shared_ptr <vmime::message> msg = vmime::make_shared <SMTPTestMessage>();
+
+		VASSERT_THROW("Send", tr->send(msg, exp, recips), vmime::exceptions::socket_exception);
+
+		VASSERT_FALSE("Connected", tr->isConnected());
+		VASSERT_EQ("Connection closed", 0, failingSMTPTestSocket::getConnectedCount());
+	}
+
+	void testInputStreamErrorDuringData() {
+
+		vmime::shared_ptr <vmime::net::transport> tr = createFailingTransport();
+		tr->connect();
+
+		vmime::mailbox exp("expeditor@test.vmime.org");
+
+		vmime::mailboxList recips;
+		recips.appendMailbox(vmime::make_shared <vmime::mailbox>("recipient@test.vmime.org"));
+
+		failingInputStream is("Message data\r\n");
+
+		VASSERT_THROW("Send", tr->send(exp, recips, is, 0), vmime::exception);
+
+		// Server still expects the end of the message data: connection is not usable
+		// anymore, and the incomplete message must not be delivered
+		VASSERT_FALSE("Connected", tr->isConnected());
+		VASSERT_EQ("Connection closed", 0, failingSMTPTestSocket::getConnectedCount());
+		VASSERT_EQ("Message not delivered", 0, failingSMTPTestSocket::getDeliveredCount());
+	}
+
+	void testGenerationErrorDuringChunking() {
+
+		vmime::shared_ptr <vmime::net::transport> tr = createFailingTransport();
+		tr->connect();
+
+		vmime::mailbox exp("expeditor@test.vmime.org");
+
+		vmime::mailboxList recips;
+		recips.appendMailbox(vmime::make_shared <vmime::mailbox>("recipient@test.vmime.org"));
+
+		vmime::shared_ptr <vmime::message> msg = vmime::make_shared <failingMessage>();
+
+		VASSERT_THROW("Send", tr->send(msg, exp, recips), vmime::exception);
+
+		VASSERT_FALSE("Connected", tr->isConnected());
+		VASSERT_EQ("Connection closed", 0, failingSMTPTestSocket::getConnectedCount());
+		VASSERT_EQ("Message not delivered", 0, failingSMTPTestSocket::getDeliveredCount());
 	}
 
 VMIME_TEST_SUITE_END

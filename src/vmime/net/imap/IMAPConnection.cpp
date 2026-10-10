@@ -308,7 +308,7 @@ void IMAPConnection::authenticate() {
 	shared_ptr <IMAPConnection> conn = dynamicCast <IMAPConnection>(shared_from_this());
 	IMAPCommand::LOGIN(username, password)->send(conn);
 
-	scoped_ptr <IMAPParser::response> resp(m_parser->readResponse(*m_tag));
+	scoped_ptr <IMAPParser::response> resp(readResponse());
 
 	if (resp->isBad()) {
 
@@ -430,7 +430,7 @@ void IMAPConnection::authenticateSASL() {
 
 		for (bool cont = true ; cont ; ) {
 
-			scoped_ptr <IMAPParser::response> resp(m_parser->readResponse(*m_tag));
+			scoped_ptr <IMAPParser::response> resp(readResponse());
 
 			if (resp->response_done &&
 			    resp->response_done->response_tagged &&
@@ -543,7 +543,7 @@ void IMAPConnection::startTLS() {
 
 		IMAPCommand::STARTTLS()->send(dynamicCast <IMAPConnection>(shared_from_this()));
 
-		scoped_ptr <IMAPParser::response> resp(m_parser->readResponse(*m_tag));
+		scoped_ptr <IMAPParser::response> resp(readResponse());
 
 		if (resp->isBad() || resp->response_done->response_tagged->
 			resp_cond_state->status != IMAPParser::resp_cond_state::OK) {
@@ -651,7 +651,7 @@ void IMAPConnection::fetchCapabilities() {
 
 	IMAPCommand::CAPABILITY()->send(dynamicCast <IMAPConnection>(shared_from_this()));
 
-	scoped_ptr <IMAPParser::response> resp(m_parser->readResponse(*m_tag));
+	scoped_ptr <IMAPParser::response> resp(readResponse());
 
 	if (resp->response_done->response_tagged->
 			resp_cond_state->status == IMAPParser::resp_cond_state::OK) {
@@ -722,7 +722,7 @@ void IMAPConnection::sendIdentification() {
 
 	IMAPCommand::ID(clientId)->send(dynamicCast <IMAPConnection>(shared_from_this()));
 
-	scoped_ptr <IMAPParser::response> resp(m_parser->readResponse(*m_tag));
+	scoped_ptr <IMAPParser::response> resp(readResponse());
 
 	// Identification is informational only: do not fail if the server rejects it
 	if (resp->isBad() || resp->response_done->response_tagged->
@@ -803,6 +803,18 @@ void IMAPConnection::internalDisconnect() {
 		}
 	}
 
+	closeConnection();
+}
+
+
+// Closes the connection, without sending LOGOUT. This is also used when an
+// error occurs while sending a command or reading a response (network error,
+// parsing error, error while writing literal data...): the connection is then
+// in an unknown state (eg. the server may still send the rest of the response),
+// so it is not usable anymore, and isConnected() must return false so that the
+// client can reconnect
+void IMAPConnection::closeConnection() {
+
 	if (m_socket) {
 		m_socket->disconnect();
 		m_socket = null;
@@ -821,7 +833,7 @@ void IMAPConnection::initHierarchySeparator() {
 
 	IMAPCommand::LIST("", "")->send(dynamicCast <IMAPConnection>(shared_from_this()));
 
-	scoped_ptr <IMAPParser::response> resp(m_parser->readResponse(*m_tag));
+	scoped_ptr <IMAPParser::response> resp(readResponse());
 
 	if (resp->isBad() || resp->response_done->response_tagged->
 			resp_cond_state->status != IMAPParser::resp_cond_state::OK) {
@@ -860,14 +872,26 @@ void IMAPConnection::initHierarchySeparator() {
 
 void IMAPConnection::sendCommand(const shared_ptr <IMAPCommand>& cmd) {
 
+	if (!m_socket) {
+		throw exceptions::socket_not_connected_exception();
+	}
+
 	if (!m_firstTag) {
 		++(*m_tag);
 	}
 
-	m_socket->send(*m_tag);
-	m_socket->send(" ");
-	m_socket->send(cmd->getText());
-	m_socket->send("\r\n");
+	try {
+
+		m_socket->send(*m_tag);
+		m_socket->send(" ");
+		m_socket->send(cmd->getText());
+		m_socket->send("\r\n");
+
+	} catch (...) {
+
+		closeConnection();
+		throw;
+	}
 
 	m_firstTag = false;
 
@@ -883,13 +907,37 @@ void IMAPConnection::sendCommand(const shared_ptr <IMAPCommand>& cmd) {
 
 void IMAPConnection::sendRaw(const byte_t* buffer, const size_t count) {
 
-	m_socket->sendRaw(buffer, count);
+	if (!m_socket) {
+		throw exceptions::socket_not_connected_exception();
+	}
+
+	try {
+
+		m_socket->sendRaw(buffer, count);
+
+	} catch (...) {
+
+		closeConnection();
+		throw;
+	}
 }
 
 
 IMAPParser::response* IMAPConnection::readResponse(IMAPParser::literalHandler* lh) {
 
-	return m_parser->readResponse(*m_tag, lh);
+	if (!m_socket) {
+		throw exceptions::socket_not_connected_exception();
+	}
+
+	try {
+
+		return m_parser->readResponse(*m_tag, lh);
+
+	} catch (...) {
+
+		closeConnection();
+		throw;
+	}
 }
 
 

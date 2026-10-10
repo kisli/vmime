@@ -203,27 +203,37 @@ void POP3Connection::disconnect() {
 
 void POP3Connection::internalDisconnect() {
 
-	if (m_socket) {
+	if (m_socket && m_socket->isConnected()) {
 
-		if (m_socket->isConnected()) {
+		try {
 
-			try {
+			// Don't use shared_from_this() here, as we may be called from
+			// the destructor: use a non-owning pointer to this object instead
+			shared_ptr <POP3Connection> conn(shared_ptr <POP3Connection>(), this);
 
-				// Don't use shared_from_this() here, as we may be called from
-				// the destructor: use a non-owning pointer to this object instead
-				shared_ptr <POP3Connection> conn(shared_ptr <POP3Connection>(), this);
+			POP3Command::QUIT()->send(conn);
+			POP3Response::readResponse(conn);
 
-				POP3Command::QUIT()->send(conn);
-				POP3Response::readResponse(conn);
+		} catch (exception&) {
 
-			} catch (exception&) {
-
-				// Not important
-			}
-
-			m_socket->disconnect();
+			// Not important
 		}
+	}
 
+	closeConnection();
+}
+
+
+// Closes the connection, without sending QUIT. This is also used when an
+// error occurs while sending a command or reading a response (network error,
+// error while writing response data...): the connection is then in an unknown
+// state (eg. the server may still send the rest of the response), so it is not
+// usable anymore, and isConnected() must return false so that the client can
+// reconnect
+void POP3Connection::closeConnection() {
+
+	if (m_socket) {
+		m_socket->disconnect();
 		m_socket = null;
 	}
 

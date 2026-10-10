@@ -131,6 +131,11 @@ void POP3Store::connect() {
 		throw exceptions::already_connected();
 	}
 
+	// Clean up the previous session (eg. connection lost after a network error)
+	if (m_connection) {
+		disconnect();
+	}
+
 	m_connection = make_shared <POP3Connection>(
 		dynamicCast <POP3Store>(shared_from_this()), getAuthenticator()
 	);
@@ -179,9 +184,9 @@ shared_ptr <POP3Connection> POP3Store::getConnection() {
 
 void POP3Store::disconnect() {
 
-	if (!isConnected()) {
-		throw exceptions::not_connected();
-	}
+	// Connection may have been lost (eg. after a network error):
+	// this is not an error, but it still needs to be cleaned up
+	const bool wasConnected = !!m_connection;
 
 	for (std::list <POP3Folder*>::iterator it = m_folders.begin() ;
 	     it != m_folders.end() ; ++it) {
@@ -191,9 +196,18 @@ void POP3Store::disconnect() {
 
 	m_folders.clear();
 
+	if (m_connection) {
 
-	m_connection->disconnect();
-	m_connection = null;
+		if (m_connection->isConnected()) {
+			m_connection->disconnect();
+		}
+
+		m_connection = null;
+	}
+
+	if (!wasConnected) {
+		throw exceptions::not_connected();
+	}
 }
 
 

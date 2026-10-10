@@ -56,6 +56,8 @@ class IMAPCommand;
 
 class VMIME_EXPORT IMAPConnection : public object, public enable_shared_from_this <IMAPConnection> {
 
+	friend class IMAPFolder;
+
 public:
 
 	IMAPConnection(const shared_ptr <IMAPStore>& store, const shared_ptr <security::authenticator>& auth);
@@ -174,6 +176,8 @@ private:
 
 
 	void internalDisconnect();
+
+	void closeConnection();
 
 	void initHierarchySeparator();
 };
