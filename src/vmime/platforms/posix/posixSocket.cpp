@@ -573,17 +573,25 @@ static bool isNumericAddress(const char* address) {
 const string posixSocket::getPeerAddress() const {
 
 	// Get address of connected peer
-	sockaddr peer;
+	sockaddr_storage peer;
 	socklen_t peerLen = sizeof(peer);
 
-	if (getpeername(m_desc, &peer, &peerLen) != 0) {
+	if (getpeername(m_desc, reinterpret_cast <sockaddr*>(&peer), &peerLen) != 0) {
 		throwSocketError(errno);
 	}
 
 	// Convert to numerical presentation format
+	const void* addr;
+
+	if (peer.ss_family == AF_INET6) {
+		addr = &reinterpret_cast <sockaddr_in6*>(&peer)->sin6_addr;
+	} else {
+		addr = &reinterpret_cast <sockaddr_in*>(&peer)->sin_addr;
+	}
+
 	char buf[INET6_ADDRSTRLEN];
 
-	if (!inet_ntop(peer.sa_family, &(reinterpret_cast <struct sockaddr_in *>(&peer))->sin_addr, buf, sizeof(buf))) {
+	if (!inet_ntop(peer.ss_family, addr, buf, sizeof(buf))) {
 		throwSocketError(errno);
 	}
 
@@ -594,10 +602,10 @@ const string posixSocket::getPeerAddress() const {
 const string posixSocket::getPeerName() const {
 
 	// Get address of connected peer
-	sockaddr peer;
+	sockaddr_storage peer;
 	socklen_t peerLen = sizeof(peer);
 
-	if (getpeername(m_desc, &peer, &peerLen) != 0) {
+	if (getpeername(m_desc, reinterpret_cast <sockaddr*>(&peer), &peerLen) != 0) {
 		throwSocketError(errno);
 	}
 
@@ -620,9 +628,18 @@ const string posixSocket::getPeerName() const {
 #else
 
 		struct hostent *hp;
+		const void* addr;
+		socklen_t addrLen;
 
-		if ((hp = gethostbyaddr(reinterpret_cast <const void *>(&peer),
-				sizeof(peer), peer.sa_family)) != NULL) {
+		if (peer.ss_family == AF_INET6) {
+			addr = &reinterpret_cast <sockaddr_in6*>(&peer)->sin6_addr;
+			addrLen = sizeof(in6_addr);
+		} else {
+			addr = &reinterpret_cast <sockaddr_in*>(&peer)->sin_addr;
+			addrLen = sizeof(in_addr);
+		}
+
+		if ((hp = gethostbyaddr(addr, addrLen, peer.ss_family)) != NULL) {
 
 			return string(hp->h_name);
 		}
