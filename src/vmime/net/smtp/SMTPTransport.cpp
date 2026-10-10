@@ -139,12 +139,22 @@ shared_ptr <SMTPConnection> SMTPTransport::getConnection() {
 
 void SMTPTransport::disconnect() {
 
-	if (!isConnected()) {
-		throw exceptions::not_connected();
+	// Connection may have been lost (eg. after a network error):
+	// this is not an error, but it still needs to be cleaned up
+	const bool wasConnected = !!m_connection;
+
+	if (m_connection) {
+
+		if (m_connection->isConnected()) {
+			m_connection->disconnect();
+		}
+
+		m_connection = null;
 	}
 
-	m_connection->disconnect();
-	m_connection = null;
+	if (!wasConnected) {
+		throw exceptions::not_connected();
+	}
 }
 
 
@@ -403,20 +413,33 @@ void SMTPTransport::send(
 		throw exceptions::not_connected();
 	}
 
-	// Send message envelope
-	sendEnvelope(expeditor, recipients, sender, /* sendDATACommand */ true, size, options);
+	// Envelope and message data are written directly to the socket:
+	// close the connection if a network error occurs
+	try {
 
-	// Send the message data
-	// Stream copy with "\n." to "\n.." transformation
-	utility::outputStreamSocketAdapter sos(*m_connection->getSocket());
-	utility::dotFilteredOutputStream fos(sos);
+		// Send message envelope
+		sendEnvelope(expeditor, recipients, sender, /* sendDATACommand */ true, size, options);
 
-	utility::bufferedStreamCopy(is, fos, size, progress);
+		// Send the message data
+		// Stream copy with "\n." to "\n.." transformation
+		utility::outputStreamSocketAdapter sos(*m_connection->getSocket());
+		utility::dotFilteredOutputStream fos(sos);
 
-	fos.flush();
+		utility::bufferedStreamCopy(is, fos, size, progress);
 
-	// Send end-of-data delimiter
-	m_connection->getSocket()->send("\r\n.\r\n");
+		fos.flush();
+
+		// Send end-of-data delimiter
+		m_connection->getSocket()->send("\r\n.\r\n");
+
+	} catch (...) {
+
+		if (m_connection) {
+			m_connection->closeOnNetworkError();
+		}
+
+		throw;
+	}
 
 	if (m_connection->getTracer()) {
 		m_connection->getTracer()->traceSendBytes(size);
@@ -469,17 +492,30 @@ void SMTPTransport::send(
 		return;
 	}
 
-	// Send message envelope
-	const size_t msgSize = msg->getGeneratedSize(ctx);
+	// Envelope and message data are written directly to the socket:
+	// close the connection if a network error occurs
+	try {
 
-	sendEnvelope(expeditor, recipients, sender, /* sendDATACommand */ false, msgSize, options);
+		// Send message envelope
+		const size_t msgSize = msg->getGeneratedSize(ctx);
 
-	// Send the message by chunks
-	SMTPChunkingOutputStreamAdapter chunkStream(m_connection, msgSize, progress);
+		sendEnvelope(expeditor, recipients, sender, /* sendDATACommand */ false, msgSize, options);
 
-	msg->generate(ctx, chunkStream);
+		// Send the message by chunks
+		SMTPChunkingOutputStreamAdapter chunkStream(m_connection, msgSize, progress);
 
-	chunkStream.flush();
+		msg->generate(ctx, chunkStream);
+
+		chunkStream.flush();
+
+	} catch (...) {
+
+		if (m_connection) {
+			m_connection->closeOnNetworkError();
+		}
+
+		throw;
+	}
 }
 
 

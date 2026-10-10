@@ -621,8 +621,16 @@ void SMTPConnection::internalDisconnect() {
 		}
 	}
 
-	m_socket->disconnect();
-	m_socket = null;
+	closeConnection();
+}
+
+
+void SMTPConnection::closeConnection() {
+
+	if (m_socket) {
+		m_socket->disconnect();
+		m_socket = null;
+	}
 
 	m_timeoutHandler = null;
 
@@ -634,17 +642,74 @@ void SMTPConnection::internalDisconnect() {
 }
 
 
+// Must be called from an exception handler
+void SMTPConnection::closeOnNetworkError() {
+
+	// After a network error, the connection is not usable anymore (the server
+	// may still send the response later, and the next commands would read it):
+	// close it, so that isConnected() returns false and the client can reconnect
+	try {
+
+		throw;
+
+	} catch (exceptions::socket_exception&) {
+
+		closeConnection();
+
+	} catch (exceptions::operation_timed_out&) {
+
+		closeConnection();
+
+#if VMIME_HAVE_TLS_SUPPORT
+	} catch (exceptions::tls_exception&) {
+
+		closeConnection();
+#endif // VMIME_HAVE_TLS_SUPPORT
+
+	} catch (...) {
+
+		// Not a network error
+	}
+}
+
+
 void SMTPConnection::sendRequest(const shared_ptr <SMTPCommand>& cmd) {
 
-	cmd->writeToSocket(m_socket, m_tracer);
+	if (!m_socket) {
+		throw exceptions::socket_not_connected_exception();
+	}
+
+	try {
+
+		cmd->writeToSocket(m_socket, m_tracer);
+
+	} catch (...) {
+
+		closeOnNetworkError();
+		throw;
+	}
 }
 
 
 shared_ptr <SMTPResponse> SMTPConnection::readResponse() {
 
-	shared_ptr <SMTPResponse> resp = SMTPResponse::readResponse(
-		m_tracer, m_socket, m_timeoutHandler, m_responseState
-	);
+	if (!m_socket) {
+		throw exceptions::socket_not_connected_exception();
+	}
+
+	shared_ptr <SMTPResponse> resp;
+
+	try {
+
+		resp = SMTPResponse::readResponse(
+			m_tracer, m_socket, m_timeoutHandler, m_responseState
+		);
+
+	} catch (...) {
+
+		closeOnNetworkError();
+		throw;
+	}
 
 	m_responseState = resp->getCurrentState();
 

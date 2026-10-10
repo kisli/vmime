@@ -63,6 +63,8 @@ class SMTPTransport;
   */
 class VMIME_EXPORT SMTPConnection : public object {
 
+	friend class SMTPTransport;
+
 public:
 
 	SMTPConnection(
@@ -95,6 +97,9 @@ public:
 private:
 
 	void internalDisconnect();
+
+	void closeConnection();
+	void closeOnNetworkError();
 
 	void helo();
 	void authenticate();
