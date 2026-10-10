@@ -128,13 +128,17 @@ public:
 
 		} else if (verb == "STAT") {
 
-			localSend("+OK 1 12\r\n");
+			localSend("+OK 2 24\r\n");
 
-		} else if (verb == "RETR") {
+		} else if (verb == "RETR" && line == "RETR 1") {
 
 			localSend("+OK 12 octets\r\n");
 			localSend("Message data\r\n");
 			localSend(".\r\n");
+
+		} else if (verb == "RETR") {
+
+			localSend("-ERR No such message\r\n");
 
 		} else if (verb == "QUIT") {
 
@@ -181,6 +185,7 @@ VMIME_TEST_SUITE_BEGIN(POP3StoreTest)
 		VMIME_TEST(testFolderCloseAfterTimeout)
 		VMIME_TEST(testFolderDestroyedAfterTimeout)
 		VMIME_TEST(testRetrWriteError)
+		VMIME_TEST(testRetrErrorResponse)
 	VMIME_TEST_LIST_END
 
 
@@ -430,6 +435,31 @@ VMIME_TEST_SUITE_BEGIN(POP3StoreTest)
 		VASSERT_EQ("Connection closed", 0, failingPOP3TestSocket::getConnectedCount());
 
 		VASSERT_NO_THROW("Close", folder->close(false));
+	}
+
+	void testRetrErrorResponse() {
+
+		vmime::shared_ptr <vmime::net::store> store = createFailingStore();
+		store->connect();
+
+		vmime::shared_ptr <vmime::net::folder> folder = store->getDefaultFolder();
+		folder->open(vmime::net::folder::MODE_READ_WRITE);
+
+		vmime::shared_ptr <vmime::net::message> msg = folder->getMessage(2);
+
+		std::ostringstream oss;
+		vmime::utility::outputStreamAdapter os(oss);
+
+		VASSERT_THROW("Extract", msg->extract(os), vmime::exceptions::command_error);
+
+		// Error response has been read completely: connection is still usable
+		VASSERT_TRUE("Connected", store->isConnected());
+		VASSERT_NO_THROW("NOOP", store->noop());
+
+		folder = vmime::null;
+
+		VASSERT_NO_THROW("Disconnect", store->disconnect());
+		VASSERT_EQ("All connections closed", 0, failingPOP3TestSocket::getConnectedCount());
 	}
 
 VMIME_TEST_SUITE_END
