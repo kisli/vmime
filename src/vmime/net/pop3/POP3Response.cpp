@@ -36,6 +36,7 @@
 #include "vmime/utility/filteredStream.hpp"
 #include "vmime/utility/stringUtils.hpp"
 #include "vmime/utility/inputStreamSocketAdapter.hpp"
+#include "vmime/utility/prefixedInputStream.hpp"
 
 #include "vmime/net/socket.hpp"
 #include "vmime/net/timeoutHandler.hpp"
@@ -321,21 +322,73 @@ size_t POP3Response::readResponseImpl(
 	const size_t predictedSize
 ) {
 
-	size_t current = 0, total = predictedSize;
+	if (m_timeoutHandler) {
+		m_timeoutHandler->resetTimeOut();
+	}
 
-	string temp;
-	bool codeDone = false;
+	// Read the first line (response code) directly from the socket, one byte
+	// at a time so that no data following it is read. It must not be read
+	// through the filters below: they would hold back its line terminator,
+	// which may be the beginning of the end-of-data marker, so an error
+	// response (which has no end-of-data marker) would never be complete
+	string line;
+
+	while (line.empty() || line[line.length() - 1] != '\n') {
+
+		// Check whether the time-out delay is elapsed
+		if (m_timeoutHandler && m_timeoutHandler->isTimeOut()) {
+
+			if (!m_timeoutHandler->handleTimeOut()) {
+				throw exceptions::operation_timed_out();
+			}
+
+			m_timeoutHandler->resetTimeOut();
+		}
+
+		byte_t c;
+
+		if (m_socket->receiveRaw(&c, 1) == 0) {
+
+			if (m_socket->getStatus() & socket::STATUS_WANT_WRITE) {
+				m_socket->waitForWrite();
+			} else {
+				m_socket->waitForRead();
+			}
+
+			continue;
+		}
+
+		// We have received data: reset the time-out counter
+		if (m_timeoutHandler) {
+			m_timeoutHandler->resetTimeOut();
+		}
+
+		line += static_cast <char>(c);
+	}
+
+	firstLine = utility::stringUtils::trim(line);
+
+	if (getResponseCode(firstLine) != CODE_OK) {
+		throw exceptions::command_error("?", firstLine);
+	}
+
+	size_t current = line.length(), total = predictedSize;
 
 	if (progress) {
 		progress->start(total);
 	}
 
-	if (m_timeoutHandler) {
-		m_timeoutHandler->resetTimeOut();
-	}
+	// Put the line terminator of the first line back in front of the data,
+	// so that the end-of-data marker is found even if there is no data, and
+	// that the first line of data is unstuffed; it is then skipped
+	const size_t eolLength =
+		(line.length() >= 2 && line[line.length() - 2] == '\r') ? 2 : 1;
+
+	size_t skip = eolLength;
 
 	utility::inputStreamSocketAdapter sis(*m_socket);
-	utility::stopSequenceFilteredInputStream <5> sfis1(sis, "\r\n.\r\n");
+	utility::prefixedInputStream pis(string(line.end() - eolLength, line.end()), sis);
+	utility::stopSequenceFilteredInputStream <5> sfis1(pis, "\r\n.\r\n");
 	utility::stopSequenceFilteredInputStream <3> sfis2(sfis1, "\n.\n");
 	utility::dotFilteredInputStream dfis(sfis2);   // "\n.." --> "\n."
 
@@ -353,7 +406,7 @@ size_t POP3Response::readResponseImpl(
 
 		// Receive data from the socket
 		byte_t buffer[65536];
-		const size_t read = is.read(buffer, sizeof(buffer));
+		size_t read = is.read(buffer, sizeof(buffer));
 
 		if (read == 0) {  // buffer is empty
 
@@ -375,6 +428,12 @@ size_t POP3Response::readResponseImpl(
 			m_timeoutHandler->resetTimeOut();
 		}
 
+		// Skip the line terminator of the first line
+		const size_t skipped = std::min(skip, read);
+
+		skip -= skipped;
+		read -= skipped;
+
 		// Notify progress
 		current += read;
 
@@ -383,32 +442,8 @@ size_t POP3Response::readResponseImpl(
 			progress->progress(current, total);
 		}
 
-		// If we don't have extracted the response code yet
-		if (!codeDone) {
-
-			vmime::utility::stringUtils::appendBytesToString(temp, buffer, read);
-
-			string responseData;
-
-			if (stripFirstLine(temp, responseData, &firstLine) == true) {
-
-				if (getResponseCode(firstLine) != CODE_OK) {
-					throw exceptions::command_error("?", firstLine);
-				}
-
-				codeDone = true;
-
-				os.write(responseData.data(), responseData.length());
-				temp.clear();
-
-				continue;
-			}
-
-		} else {
-
-			// Inject the data into the output stream
-			os.write(buffer, read);
-		}
+		// Inject the data into the output stream
+		os.write(buffer + skipped, read);
 	}
 
 	if (progress) {
