@@ -21,9 +21,7 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#include <sys/time.h>
-#include <time.h>
-
+#include <chrono>
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -51,25 +49,17 @@ public:
 
 	void reset() {
 
-		struct timezone tz;
-
-		gettimeofday(&m_start, &tz);
+		m_start = std::chrono::steady_clock::now();
 	}
 
 	double getDuration() const {
 
-		struct timeval tv;
-		struct timezone tz;
-
-		gettimeofday(&tv, &tz);
-
-		return static_cast <double>(tv.tv_sec - m_start.tv_sec)
-			+ static_cast <double>(tv.tv_usec - m_start.tv_usec) / 1000000.0;
+		return std::chrono::duration <double>(std::chrono::steady_clock::now() - m_start).count();
 	}
 
 private:
 
-	struct timeval m_start;
+	std::chrono::steady_clock::time_point m_start;
 };
 
 

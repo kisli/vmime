@@ -38,7 +38,6 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
-#include <sys/time.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <fcntl.h>
@@ -46,6 +45,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <poll.h>
+
+#include <chrono>
 
 #include "vmime/utility/stringUtils.hpp"
 
@@ -218,8 +219,7 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 				const int pollTimeout = 1000;   // poll() timeout (ms)
 				const int tryNextTimeout = 5000;  // maximum time before trying next (ms)
 
-				timeval startTime = { 0, 0 };
-				gettimeofday(&startTime, /* timezone */ NULL);
+				const auto startTime = std::chrono::steady_clock::now();
 
 				do {
 
@@ -254,7 +254,7 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 						break;
 
 					// Error
-					} else if (ret < -1) {
+					} else if (ret < 0) {
 
 						if (errno != EAGAIN && errno != EINTR) {
 
@@ -284,11 +284,10 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 						// Keep waiting for connection
 					}
 
-					timeval curTime = { 0, 0 };
-					gettimeofday(&curTime, /* timezone */ NULL);
+					const auto elapsedTime = std::chrono::steady_clock::now() - startTime;
 
 					if (curAddrInfo->ai_next != NULL &&
-						curTime.tv_usec - startTime.tv_usec >= tryNextTimeout * 1000) {
+					    elapsedTime >= std::chrono::milliseconds(tryNextTimeout)) {
 
 						connectErrno = ETIMEDOUT;
 						break;
@@ -410,7 +409,7 @@ void posixSocket::resolve(
 	memset(&hints, 0, sizeof(hints));
 
 	hints.ai_flags = AI_CANONNAME | AI_NUMERICSERV;
-	hints.ai_family = PF_UNSPEC;
+	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
 
 #if VMIME_HAVE_GETADDRINFO_A
