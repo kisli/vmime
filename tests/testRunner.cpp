@@ -21,8 +21,7 @@
 // the GNU General Public License cover the whole combination.
 //
 
-#include <time.h>
-
+#include <chrono>
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -50,22 +49,17 @@ public:
 
 	void reset() {
 
-		clock_gettime(CLOCK_MONOTONIC, &m_start);
+		m_start = std::chrono::steady_clock::now();
 	}
 
 	double getDuration() const {
 
-		struct timespec tv;
-
-		clock_gettime(CLOCK_MONOTONIC, &tv);
-
-		return static_cast <double>(tv.tv_sec - m_start.tv_sec)
-			+ static_cast <double>(tv.tv_nsec - m_start.tv_nsec) / 1000000000.0;
+		return std::chrono::duration <double>(std::chrono::steady_clock::now() - m_start).count();
 	}
 
 private:
 
-	struct timespec m_start;
+	std::chrono::steady_clock::time_point m_start;
 };
 
 

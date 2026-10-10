@@ -45,7 +45,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <poll.h>
-#include <time.h>
+
+#include <chrono>
 
 #include "vmime/utility/stringUtils.hpp"
 
@@ -218,8 +219,7 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 				const int pollTimeout = 1000;   // poll() timeout (ms)
 				const int tryNextTimeout = 5000;  // maximum time before trying next (ms)
 
-				timespec startTime = { 0, 0 };
-				clock_gettime(CLOCK_REALTIME, &startTime);
+				const auto startTime = std::chrono::steady_clock::now();
 
 				do {
 
@@ -284,11 +284,10 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 						// Keep waiting for connection
 					}
 
-					timespec curTime = { 0, 0 };
-					clock_gettime(CLOCK_REALTIME, &curTime);
+					const auto elapsedTime = std::chrono::steady_clock::now() - startTime;
 
 					if (curAddrInfo->ai_next != NULL &&
-						curTime.tv_nsec - startTime.tv_nsec >= tryNextTimeout * 1000000LL) {
+					    elapsedTime >= std::chrono::milliseconds(tryNextTimeout)) {
 
 						connectErrno = ETIMEDOUT;
 						break;
