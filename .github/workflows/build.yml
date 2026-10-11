@@ -47,6 +47,7 @@ jobs:
       run: |
         set -x
         export PATH="/usr/bin:$(cygpath "${SYSTEMROOT}")/system32"
+        export LANG=C.UTF-8
         cmake . -DVMIME_SENDMAIL_PATH:STRING="/usr/sbin/sendmail" -DVMIME_HAVE_TLS_SUPPORT:BOOL=ON -DVMIME_TLS_SUPPORT_LIB:STRING=openssl -DVMIME_CHARSETCONV_LIB:STRING=iconv -DVMIME_BUILD_TESTS=ON -DVMIME_BUILD_SAMPLES=ON
         make "-j$(nproc)"
         make install
