@@ -193,7 +193,7 @@ private:
   * is found (eof() method will return 'true').
   */
 template <int COUNT>
-class VMIME_EXPORT stopSequenceFilteredInputStream : public filteredInputStream {
+class stopSequenceFilteredInputStream : public filteredInputStream {
 
 public:
 
@@ -394,7 +394,7 @@ private:
 
 
 template <>
-size_t stopSequenceFilteredInputStream <1>::read(byte_t* const data, const size_t count);
+VMIME_EXPORT size_t stopSequenceFilteredInputStream <1>::read(byte_t* const data, const size_t count);
 
 
 } // utility
