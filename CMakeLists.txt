@@ -260,6 +260,14 @@ IF(VMIME_BUILD_TESTS)
 		${CMAKE_CURRENT_SOURCE_DIR}/tests/testRunner.cpp ${CMAKE_CURRENT_SOURCE_DIR}/tests/testUtils.cpp
 	)
 
+	# Needed so that these libraries come after test-runner on the link
+	# command line, as required with import libraries (eg. on Cygwin)
+	TARGET_LINK_LIBRARIES(
+		test-runner
+		${VMIME_LIBRARY_NAME}
+		${CPPUNIT_LIBRARY}
+	)
+
 	# Build one file for each test
 	FOREACH(VMIME_TEST_SRC_FILE ${VMIME_TESTS_SRC_FILES})
 

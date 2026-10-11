@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-linux:
-    name: build (${{ matrix.tls }}, ${{ matrix.charset }})
+    name: build-linux (${{ matrix.tls }}, ${{ matrix.charset }})
     runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
