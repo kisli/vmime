@@ -30,6 +30,27 @@ jobs:
         sudo make install
         make test
 
+  build-cygwin:
+    name: build-cygwin (openssl, iconv)
+    runs-on: windows-latest
+    steps:
+    - name: git-config
+      run: git config --global core.autocrlf input
+    - name: install-deps
+      uses: cygwin/cygwin-install-action@v6
+      with:
+        packages: cmake cppunit gcc-g++ libgsasl-devel libiconv-devel libssl-devel make pkg-config
+    - name: clone-vmime
+      uses: actions/checkout@v4
+    - name: buildall
+      shell: C:\cygwin\bin\bash.exe --noprofile --norc -eo pipefail -o igncr '{0}'
+      run: |
+        set -x
+        cmake . -DVMIME_SENDMAIL_PATH:STRING="/usr/sbin/sendmail" -DVMIME_HAVE_TLS_SUPPORT:BOOL=ON -DVMIME_TLS_SUPPORT_LIB:STRING=openssl -DVMIME_CHARSETCONV_LIB:STRING=iconv -DVMIME_BUILD_TESTS=ON -DVMIME_BUILD_SAMPLES=ON
+        make "-j$(nproc)"
+        make install
+        make test
+
   book:
     name: book (pdf)
     runs-on: ubuntu-26.04
