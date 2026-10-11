@@ -44,8 +44,7 @@ public:
 	explicit loopbackServer(const char* address)
 		: m_address(address),
 		  m_desc(-1),
-		  m_port(0),
-		  m_addrLen(sizeof(m_addr)) {
+		  m_port(0) {
 
 		struct addrinfo hint, *info = NULL;
 		memset(&hint, 0, sizeof(hint));
@@ -58,12 +57,15 @@ public:
 			return;
 		}
 
+		sockaddr_storage addr;
+		socklen_t addrLen = sizeof(addr);
+
 		m_desc = ::socket(info->ai_family, info->ai_socktype, info->ai_protocol);
 
 		if (m_desc != -1 &&
 		    (::bind(m_desc, info->ai_addr, info->ai_addrlen) != 0 ||
 		     ::listen(m_desc, 1) != 0 ||
-		     ::getsockname(m_desc, reinterpret_cast <sockaddr*>(&m_addr), &m_addrLen) != 0)) {
+		     ::getsockname(m_desc, reinterpret_cast <sockaddr*>(&addr), &addrLen) != 0)) {
 
 			::close(m_desc);
 			m_desc = -1;
@@ -75,10 +77,10 @@ public:
 			return;
 		}
 
-		if (m_addr.ss_family == AF_INET6) {
-			m_port = ntohs(reinterpret_cast <sockaddr_in6*>(&m_addr)->sin6_port);
+		if (addr.ss_family == AF_INET6) {
+			m_port = ntohs(reinterpret_cast <sockaddr_in6*>(&addr)->sin6_port);
 		} else {
-			m_port = ntohs(reinterpret_cast <sockaddr_in*>(&m_addr)->sin_port);
+			m_port = ntohs(reinterpret_cast <sockaddr_in*>(&addr)->sin_port);
 		}
 	}
 
@@ -104,28 +106,11 @@ public:
 		return m_port;
 	}
 
-	// Host name the resolver gives for the listening address, or the
-	// address itself if it has none
-	const vmime::string getHostName() const {
-
-		char host[NI_MAXHOST];
-
-		if (getnameinfo(reinterpret_cast <const sockaddr*>(&m_addr), m_addrLen,
-				host, sizeof(host), NULL, 0, NI_NAMEREQD) == 0) {
-
-			return host;
-		}
-
-		return m_address;
-	}
-
 private:
 
 	const vmime::string m_address;
 	int m_desc;
 	vmime::port_t m_port;
-	sockaddr_storage m_addr;
-	socklen_t m_addrLen;
 };
 
 
@@ -174,7 +159,8 @@ VMIME_TEST_SUITE_BEGIN(posixSocketTest)
 		loopbackServer server("127.0.0.1");
 		VASSERT_TRUE("Listen", server.isListening());
 
-		VASSERT_EQ("Name", server.getHostName(), connectTo(server)->getPeerName());
+		// No reverse DNS lookup on numeric addresses
+		VASSERT_EQ("Name", "127.0.0.1", connectTo(server)->getPeerName());
 	}
 
 	void testGetPeerNameIPv6() {
@@ -185,7 +171,8 @@ VMIME_TEST_SUITE_BEGIN(posixSocketTest)
 			return;  // IPv6 not available on this host
 		}
 
-		VASSERT_EQ("Name", server.getHostName(), connectTo(server)->getPeerName());
+		// No reverse DNS lookup on numeric addresses
+		VASSERT_EQ("Name", "::1", connectTo(server)->getPeerName());
 	}
 
 VMIME_TEST_SUITE_END

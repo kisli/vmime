@@ -318,8 +318,11 @@ void TLSSocket_GnuTLS::handshake() {
 	// Start handshaking process
 	try {
 		string peerName = getPeerName();
-		
-		gnutls_server_name_set(*m_session->m_gnutlsSession, GNUTLS_NAME_DNS, peerName.c_str(), peerName.size());
+
+		// IP addresses are not permitted in SNI (RFC 6066)
+		if (!isIPAddress(peerName)) {
+			gnutls_server_name_set(*m_session->m_gnutlsSession, GNUTLS_NAME_DNS, peerName.c_str(), peerName.size());
+		}
 
 		while (true) {
 
