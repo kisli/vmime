@@ -7,7 +7,7 @@ on:
     branches: [ "master" ]
 
 jobs:
-  build:
+  build-linux:
     name: build (${{ matrix.tls }}, ${{ matrix.charset }})
     runs-on: ubuntu-26.04
     strategy:
