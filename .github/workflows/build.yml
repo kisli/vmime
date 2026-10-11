@@ -52,6 +52,28 @@ jobs:
         make install
         make test
 
+  build-windows:
+    name: build-windows (mingw, openssl, icu)
+    runs-on: windows-latest
+    steps:
+    - name: git-config
+      run: git config --global core.autocrlf input
+    - name: install-deps
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: UCRT64
+        update: true
+        pacboy: cmake:p cppunit:p gcc:p gsasl:p icu:p ninja:p openssl:p pkgconf:p
+    - name: clone-vmime
+      uses: actions/checkout@v4
+    - name: buildall
+      shell: msys2 {0}
+      run: |
+        set -ex
+        cmake . -G Ninja -DVMIME_HAVE_MESSAGING_PROTO_SENDMAIL:BOOL=OFF -DVMIME_HAVE_TLS_SUPPORT:BOOL=ON -DVMIME_TLS_SUPPORT_LIB:STRING=openssl -DVMIME_CHARSETCONV_LIB:STRING=icu -DVMIME_BUILD_TESTS=ON -DVMIME_BUILD_SAMPLES=ON
+        cmake --build .
+        ctest --output-on-failure
+
   book:
     name: book (pdf)
     runs-on: ubuntu-26.04
