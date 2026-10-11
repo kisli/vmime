@@ -61,10 +61,25 @@
 #define VASSERT_NO_THROW(msg, expression) \
 	CPPUNIT_ASSERT_NO_THROW(expression)
 
+// Initialization common to all tests (performed only once)
+void initTestEnvironment();
+
+// Base class for all test suites
+class vmimeTestFixture : public CppUnit::TestFixture {
+
+public:
+
+	// Fixtures are all constructed before running the first test
+	vmimeTestFixture() {
+
+		initTestEnvironment();
+	}
+};
+
 #define VMIME_TEST_SUITE_BEGIN(testSuiteName) \
 	class testSuiteName; \
 	typedef testSuiteName VMIME_TEST_SUITE; \
-	class testSuiteName : public CppUnit::TestFixture { public:
+	class testSuiteName : public vmimeTestFixture { public:
 #define VMIME_TEST_SUITE_END \
 	}; \
 	\

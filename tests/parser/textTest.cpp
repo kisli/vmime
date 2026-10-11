@@ -23,9 +23,6 @@
 
 #include "tests/testUtils.hpp"
 
-#include <locale>
-#include <clocale>
-
 
 VMIME_TEST_SUITE_BEGIN(textTest)
 
@@ -85,24 +82,6 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		}
 
 		return res;
-	}
-
-
-	void setUp() {
-
-		// Set the global C and C++ locale to the user-configured locale.
-		// The locale should use UTF-8 encoding for these tests to run successfully.
-		try {
-			std::locale::global(std::locale(""));
-		} catch (std::exception &) {
-			std::setlocale(LC_ALL, "");
-		}
-	}
-
-	void tearDown() {
-
-		// Restore default locale
-		std::locale::global(std::locale("C"));
 	}
 
 
