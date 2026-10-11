@@ -99,6 +99,12 @@ SET(CMAKE_CXX_STANDARD 11)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 SET(CMAKE_CXX_EXTENSIONS OFF)
 
+# Unlike on GNU/Linux, g++ does not predefine _GNU_SOURCE on Cygwin, so
+# POSIX declarations are hidden in strict mode (CMAKE_CXX_EXTENSIONS OFF)
+IF(CYGWIN)
+	ADD_DEFINITIONS(-D_GNU_SOURCE)
+ENDIF()
+
 ##############################################################################
 # Charset conversion library (1/2)
 
