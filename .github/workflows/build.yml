@@ -7,8 +7,8 @@ on:
     branches: [ "master" ]
 
 jobs:
-  build:
-    name: build (${{ matrix.tls }}, ${{ matrix.charset }})
+  build-linux:
+    name: build-linux (${{ matrix.tls }}, ${{ matrix.charset }})
     runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
@@ -29,6 +29,50 @@ jobs:
         make "-j$(nproc)"
         sudo make install
         make test
+
+  build-cygwin:
+    name: build-cygwin (openssl, iconv)
+    runs-on: windows-latest
+    steps:
+    - name: git-config
+      run: git config --global core.autocrlf input
+    - name: install-deps
+      uses: cygwin/cygwin-install-action@v6
+      with:
+        packages: cmake cppunit gcc-g++ libgsasl-devel libiconv-devel libssl-devel make pkg-config
+    - name: clone-vmime
+      uses: actions/checkout@v4
+    - name: buildall
+      shell: C:\cygwin\bin\bash.exe --noprofile --norc -eo pipefail -o igncr '{0}'
+      run: |
+        set -x
+        export PATH="/usr/bin:$(cygpath "${SYSTEMROOT}")/system32"
+        cmake . -DVMIME_SENDMAIL_PATH:STRING="/usr/sbin/sendmail" -DVMIME_HAVE_TLS_SUPPORT:BOOL=ON -DVMIME_TLS_SUPPORT_LIB:STRING=openssl -DVMIME_CHARSETCONV_LIB:STRING=iconv -DVMIME_BUILD_TESTS=ON -DVMIME_BUILD_SAMPLES=ON
+        make "-j$(nproc)"
+        make install
+        make test
+
+  build-windows:
+    name: build-windows (mingw, openssl, icu)
+    runs-on: windows-latest
+    steps:
+    - name: git-config
+      run: git config --global core.autocrlf input
+    - name: install-deps
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: UCRT64
+        update: true
+        pacboy: cmake:p cppunit:p gcc:p gsasl:p icu:p ninja:p openssl:p pkgconf:p
+    - name: clone-vmime
+      uses: actions/checkout@v4
+    - name: buildall
+      shell: msys2 {0}
+      run: |
+        set -ex
+        cmake . -G Ninja -DVMIME_HAVE_MESSAGING_PROTO_SENDMAIL:BOOL=OFF -DVMIME_HAVE_TLS_SUPPORT:BOOL=ON -DVMIME_TLS_SUPPORT_LIB:STRING=openssl -DVMIME_CHARSETCONV_LIB:STRING=icu -DVMIME_BUILD_TESTS=ON -DVMIME_BUILD_SAMPLES=ON
+        cmake --build .
+        ctest --output-on-failure
 
   book:
     name: book (pdf)

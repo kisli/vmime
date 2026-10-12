@@ -25,8 +25,10 @@
 
 #include "vmime/utility/stringUtils.hpp"
 
+#include <clocale>
 #include <cstring>
 #include <iostream>
+#include <locale>
 
 
 // Enable to output socket send/receive on standard output
@@ -459,4 +461,44 @@ const vmime::string toHex(const vmime::string str) {
 	}
 
 	return res;
+}
+
+
+// Set the global C and C++ locale to a locale which uses UTF-8 encoding,
+// as some tests expect the local charset to be UTF-8 (on Windows, the local
+// charset is the ANSI code page instead, which is set by tests/utf8.manifest)
+static void setUTF8Locale() {
+
+	// Try well-known UTF-8 locales, then fall back to the user-configured locale
+	static const char* const names[] = { "C.UTF-8", "en_US.UTF-8", "" };
+
+	for (const char* name : names) {
+
+		try {
+
+			std::locale::global(std::locale(name));
+			return;
+
+		} catch (std::exception&) {
+			
+			// Some C++ libraries only support the "C" locale (eg. libstdc++
+			// on Cygwin): set at least the C locale, used by nl_langinfo()
+			if (std::setlocale(LC_ALL, name)) {
+				return;
+			}
+		}
+	}
+}
+
+
+void initTestEnvironment() {
+
+	static bool initialized = false;
+
+	if (!initialized) {
+
+		setUTF8Locale();
+
+		initialized = true;
+	}
 }

@@ -23,9 +23,6 @@
 
 #include "tests/testUtils.hpp"
 
-#include <locale>
-#include <clocale>
-
 
 VMIME_TEST_SUITE_BEGIN(textTest)
 
@@ -85,24 +82,6 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		}
 
 		return res;
-	}
-
-
-	void setUp() {
-
-		// Set the global C and C++ locale to the user-configured locale.
-		// The locale should use UTF-8 encoding for these tests to run successfully.
-		try {
-			std::locale::global(std::locale(""));
-		} catch (std::exception &) {
-			std::setlocale(LC_ALL, "");
-		}
-	}
-
-	void tearDown() {
-
-		// Restore default locale
-		std::locale::global(std::locale("C"));
 	}
 
 
@@ -474,7 +453,12 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		vmime::word("Non-quotable text \xc3\xa9")
 			.generate(ctx, os, 0, NULL, vmime::text::QUOTE_IF_POSSIBLE, NULL);
 
-		VASSERT_EQ("3", "=?UTF-8?Q?Non-quotable_text_=C3=A9?=", cleanGeneratedWords(str));
+		// Local charset name may be "UTF-8" or "utf-8", depending on the platform
+		VASSERT_EQ(
+			"3",
+			"=?" + vmime::charset::getLocalCharset().getName() + "?Q?Non-quotable_text_=C3=A9?=",
+			cleanGeneratedWords(str)
+		);
 	}
 
 	void testWordGenerateSpecialCharsets() {

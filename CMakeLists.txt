@@ -99,6 +99,12 @@ SET(CMAKE_CXX_STANDARD 11)
 SET(CMAKE_CXX_STANDARD_REQUIRED ON)
 SET(CMAKE_CXX_EXTENSIONS OFF)
 
+# Unlike on GNU/Linux, g++ does not predefine _GNU_SOURCE on Cygwin, so
+# POSIX declarations are hidden in strict mode (CMAKE_CXX_EXTENSIONS OFF)
+IF(CYGWIN)
+	ADD_DEFINITIONS(-D_GNU_SOURCE)
+ENDIF()
+
 ##############################################################################
 # Charset conversion library (1/2)
 
@@ -254,6 +260,26 @@ IF(VMIME_BUILD_TESTS)
 		${CMAKE_CURRENT_SOURCE_DIR}/tests/testRunner.cpp ${CMAKE_CURRENT_SOURCE_DIR}/tests/testUtils.cpp
 	)
 
+	# Needed so that these libraries come after test-runner on the link
+	# command line, as required with import libraries (eg. on Cygwin)
+	TARGET_LINK_LIBRARIES(
+		test-runner
+		${VMIME_LIBRARY_NAME}
+		${CPPUNIT_LIBRARY}
+	)
+
+	# On Windows, embed a manifest in test executables to use UTF-8 as the
+	# ANSI code page, as some tests expect the local charset to be UTF-8
+	SET(VMIME_TESTS_RESOURCE_FILES "")
+
+	IF(MSVC)
+		# Merged by the linker with the manifest it generates
+		SET(VMIME_TESTS_RESOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/tests/utf8.manifest)
+	ELSEIF(MINGW)
+		# Replaces the default manifest added by the toolchain
+		SET(VMIME_TESTS_RESOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/tests/utf8.rc)
+	ENDIF()
+
 	# Build one file for each test
 	FOREACH(VMIME_TEST_SRC_FILE ${VMIME_TESTS_SRC_FILES})
 
@@ -268,6 +294,7 @@ IF(VMIME_BUILD_TESTS)
 		ADD_EXECUTABLE(
 			${VMIME_TEST_NAME}
 			${VMIME_TEST_SRC_FILE}
+			${VMIME_TESTS_RESOURCE_FILES}
 		)
 
 		TARGET_LINK_LIBRARIES(
@@ -292,6 +319,7 @@ IF(VMIME_BUILD_TESTS)
 	ADD_EXECUTABLE(
 		"run-tests"
 		${VMIME_TESTS_SRC_FILES}
+		${VMIME_TESTS_RESOURCE_FILES}
 	)
 
 	TARGET_LINK_LIBRARIES(
@@ -627,6 +655,11 @@ IF(VMIME_HAVE_TLS_SUPPORT)
 	IF(VMIME_TLS_SUPPORT_LIB STREQUAL "gnutls")
 
 		INCLUDE(FindGnuTLS)
+
+		IF(NOT GNUTLS_FOUND)
+			MESSAGE(FATAL_ERROR "GnuTLS was selected for TLS support, but it was not found")
+		ENDIF()
+
 		SET(CMAKE_REQUIRED_LIBRARIES "${GNUTLS_LIBRARY}")
 		CHECK_FUNCTION_EXISTS(gnutls_priority_set_direct VMIME_HAVE_GNUTLS_PRIORITY_FUNCS)
 
@@ -657,6 +690,10 @@ IF(VMIME_HAVE_TLS_SUPPORT)
 
 		INCLUDE(FindOpenSSL)
 
+		IF(NOT OPENSSL_FOUND)
+			MESSAGE(FATAL_ERROR "OpenSSL was selected for TLS support, but it was not found")
+		ENDIF()
+
 		INCLUDE_DIRECTORIES(
 			${INCLUDE_DIRECTORIES}
 			${OPENSSL_INCLUDE_DIR}
@@ -681,6 +718,8 @@ IF(VMIME_HAVE_TLS_SUPPORT)
 
 	ENDIF()
 
+	MESSAGE(STATUS "TLS support library: ${VMIME_TLS_SUPPORT_LIB}")
+
 ENDIF(VMIME_HAVE_TLS_SUPPORT)
 
 
@@ -702,6 +741,10 @@ SET_PROPERTY(
 
 
 IF(VMIME_CHARSETCONV_LIB STREQUAL "iconv")
+
+	IF(NOT ICONV_FOUND)
+		MESSAGE(FATAL_ERROR "iconv was selected for charset conversion, but it was not found")
+	ENDIF()
 
 	INCLUDE_DIRECTORIES(
 		${INCLUDE_DIRECTORIES}
@@ -732,6 +775,10 @@ IF(VMIME_CHARSETCONV_LIB STREQUAL "iconv")
 	SET(VMIME_CHARSETCONV_LIB_IS_WIN "OFF")
 
 ELSEIF(VMIME_CHARSETCONV_LIB STREQUAL "icu")
+
+	IF(NOT ICU_LIBRARIES)
+		MESSAGE(FATAL_ERROR "ICU was selected for charset conversion, but it was not found")
+	ENDIF()
 
 	INCLUDE_DIRECTORIES(
 		${INCLUDE_DIRECTORIES}
@@ -776,6 +823,8 @@ ELSE()
 	MESSAGE(FATAL_ERROR "No charset conversion library was selected/found")
 
 ENDIF()
+
+MESSAGE(STATUS "Charset conversion library: ${VMIME_CHARSETCONV_LIB}")
 
 
 ##############################################################################
