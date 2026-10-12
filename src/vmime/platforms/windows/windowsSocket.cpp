@@ -173,26 +173,6 @@ void windowsSocket::disconnect() {
 }
 
 
-static bool isNumericAddress(const char* address) {
-
-	struct addrinfo hint, *info = NULL;
-	memset(&hint, 0, sizeof(hint));
-
-	hint.ai_family = AF_UNSPEC;
-	hint.ai_flags = AI_NUMERICHOST;
-
-	if (getaddrinfo(address, 0, &hint, &info) == 0) {
-
-		freeaddrinfo(info);
-		return true;
-
-	} else {
-
-		return false;
-	}
-}
-
-
 const string windowsSocket::getPeerAddress() const {
 
 	// Get address of connected peer
@@ -218,27 +198,9 @@ const string windowsSocket::getPeerAddress() const {
 
 const string windowsSocket::getPeerName() const {
 
-	// Get address of connected peer
-	sockaddr_storage peer;
-	socklen_t peerLen = sizeof(peer);
-
-	getpeername(m_desc, reinterpret_cast <sockaddr*>(&peer), &peerLen);
-
-	// If server address as specified when connecting is a numeric
-	// address, try to get a host name for it
-	if (isNumericAddress(m_serverAddress.c_str())) {
-
-		char host[NI_MAXHOST + 1];
-		char service[NI_MAXSERV + 1];
-
-		if (getnameinfo(reinterpret_cast <sockaddr *>(&peer), peerLen,
-				host, sizeof(host), service, sizeof(service),
-				/* flags */ NI_NAMEREQD) == 0) {
-
-			return string(host);
-		}
-	}
-
+	// Do not try to get a host name for a numeric address: the peer name is
+	// used as the TLS reference identity, and it must not be derived from an
+	// insecure source such as a reverse DNS lookup
 	return m_serverAddress;
 }
 

@@ -541,35 +541,6 @@ void posixSocket::disconnect() {
 }
 
 
-static bool isNumericAddress(const char* address) {
-
-#if VMIME_HAVE_GETADDRINFO
-
-	struct addrinfo hint, *info = NULL;
-	memset(&hint, 0, sizeof(hint));
-
-	hint.ai_family = AF_UNSPEC;
-	hint.ai_flags = AI_NUMERICHOST;
-
-	if (getaddrinfo(address, 0, &hint, &info) == 0) {
-
-		freeaddrinfo(info);
-		return true;
-
-	} else {
-
-		return false;
-	}
-
-#else
-
-	return inet_addr(address) != INADDR_NONE;
-
-#endif
-
-}
-
-
 const string posixSocket::getPeerAddress() const {
 
 	// Get address of connected peer
@@ -601,53 +572,9 @@ const string posixSocket::getPeerAddress() const {
 
 const string posixSocket::getPeerName() const {
 
-	// Get address of connected peer
-	sockaddr_storage peer;
-	socklen_t peerLen = sizeof(peer);
-
-	if (getpeername(m_desc, reinterpret_cast <sockaddr*>(&peer), &peerLen) != 0) {
-		throwSocketError(errno);
-	}
-
-	// If server address as specified when connecting is a numeric
-	// address, try to get a host name for it
-	if (isNumericAddress(m_serverAddress.c_str())) {
-
-#if VMIME_HAVE_GETNAMEINFO
-
-		char host[NI_MAXHOST + 1];
-		char service[NI_MAXSERV + 1];
-
-		if (getnameinfo(reinterpret_cast <sockaddr *>(&peer), peerLen,
-				host, sizeof(host), service, sizeof(service),
-				/* flags */ NI_NAMEREQD) == 0) {
-
-			return string(host);
-		}
-
-#else
-
-		struct hostent *hp;
-		const void* addr;
-		socklen_t addrLen;
-
-		if (peer.ss_family == AF_INET6) {
-			addr = &reinterpret_cast <sockaddr_in6*>(&peer)->sin6_addr;
-			addrLen = sizeof(in6_addr);
-		} else {
-			addr = &reinterpret_cast <sockaddr_in*>(&peer)->sin_addr;
-			addrLen = sizeof(in_addr);
-		}
-
-		if ((hp = gethostbyaddr(addr, addrLen, peer.ss_family)) != NULL) {
-
-			return string(hp->h_name);
-		}
-
-#endif
-
-	}
-
+	// Do not try to get a host name for a numeric address: the peer name is
+	// used as the TLS reference identity, and it must not be derived from an
+	// insecure source such as a reverse DNS lookup
 	return m_serverAddress;
 }
 

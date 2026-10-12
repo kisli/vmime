@@ -35,6 +35,42 @@ namespace net {
 namespace tls {
 
 
+// static
+bool TLSSocket::isIPAddress(const string& host) {
+
+	// A host name cannot contain ':', so this is an IPv6 address
+	if (host.find(':') != string::npos) {
+		return true;
+	}
+
+	// Check for an IPv4 address in dotted-decimal notation
+	int parts = 0;
+	string::size_type pos = 0;
+
+	while (true) {
+
+		unsigned int value = 0;
+		int digits = 0;
+
+		for ( ; pos < host.length() && host[pos] >= '0' && host[pos] <= '9' ; ++pos, ++digits) {
+			value = value * 10 + static_cast <unsigned int>(host[pos] - '0');
+		}
+
+		if (digits == 0 || digits > 3 || value > 255) {
+			return false;
+		}
+
+		if (++parts == 4 || pos == host.length() || host[pos] != '.') {
+			break;
+		}
+
+		++pos;  // skip '.'
+	}
+
+	return parts == 4 && pos == host.length();
+}
+
+
 } // tls
 } // net
 } // vmime

@@ -168,7 +168,12 @@ void TLSSocket_OpenSSL::createSSLHandle() {
 		}
 
 		SSL_set_bio(m_ssl, sockBio, sockBio);
-		SSL_set_tlsext_host_name(m_ssl, peerName.c_str());
+
+		// IP addresses are not permitted in SNI (RFC 6066)
+		if (!isIPAddress(peerName)) {
+			SSL_set_tlsext_host_name(m_ssl, peerName.c_str());
+		}
+
 		SSL_set_connect_state(m_ssl);
 		SSL_set_mode(m_ssl, SSL_MODE_AUTO_RETRY | SSL_MODE_ENABLE_PARTIAL_WRITE | SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER);
 

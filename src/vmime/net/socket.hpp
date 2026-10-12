@@ -149,9 +149,13 @@ public:
 	  */
 	virtual unsigned int getStatus() const = 0;
 
-	/** Return the hostname of peer this socket is connected to.
+	/** Return the name of the peer this socket is connected to, as it
+	  * was specified when connecting (host name or numeric address).
 	  *
-	  * @return name of the peer, or numeric address if it cannot be found
+	  * No reverse DNS lookup is performed on numeric addresses, as this
+	  * name is used to verify the identity of the server with TLS.
+	  *
+	  * @return name of the peer
 	  */
 	virtual const string getPeerName() const = 0;
 

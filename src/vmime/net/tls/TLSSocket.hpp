@@ -96,6 +96,15 @@ public:
 	  * TLS version)
 	  */
 	virtual bool getChannelBindingData(const ChannelBindingType type, byteArray& data) = 0;
+
+	/** Test whether the specified host is an IPv4 or IPv6 address
+	  * rather than a host name. IP addresses must not be sent in
+	  * the Server Name Indication (SNI) extension (RFC 6066).
+	  *
+	  * @param host host name or address
+	  * @return true if the host is an IP address, false otherwise
+	  */
+	static bool isIPAddress(const string& host);
 };
 
 
