@@ -208,6 +208,20 @@ bool windowsFileSystemFactory::isValidPath(const vmime::utility::file::path& pat
 }
 
 
+const vmime::utility::file::path windowsFileSystemFactory::getTemporaryDirectoryPath() const {
+
+	char buffer[MAX_PATH + 1];
+	const DWORD length = GetTempPathA(static_cast <DWORD>(sizeof(buffer)), buffer);
+
+	if (length == 0 || length > sizeof(buffer)) {
+		reportError(vmime::utility::file::path(), GetLastError());
+	}
+
+	// Trailing backslash is ignored
+	return stringToPathImpl(vmime::string(buffer, length));
+}
+
+
 void windowsFileSystemFactory::reportError(const vmime::utility::path& path, const int err) {
 
 	vmime::string desc;

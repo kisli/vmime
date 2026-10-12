@@ -167,8 +167,11 @@ public:
 
 	maildirStoreTest() {
 
+		vmime::shared_ptr <vmime::utility::fileSystemFactory> fsf =
+			vmime::platform::getHandler()->getFileSystemFactory();
+
 		// Temporary directory
-		m_tempPath = fspath() / fspathc("tmp")   // Use /tmp
+		m_tempPath = fsf->getTemporaryDirectoryPath()
 			/ fspathc("vmime" + vmime::utility::stringUtils::toString(std::time(NULL))
 				+ vmime::utility::stringUtils::toString(std::rand()));
 	}
@@ -500,8 +503,9 @@ private:
 		vmime::shared_ptr <vmime::utility::fileSystemFactory> fsf =
 			vmime::platform::getHandler()->getFileSystemFactory();
 
-		vmime::utility::url url(std::string("maildir://localhost")
-			+ fsf->pathToString(m_tempPath));
+		// Path is set as is, as it may not start with a separator (eg. on Windows)
+		vmime::utility::url url("maildir", "localhost");  // maildir://localhost
+		url.setPath(fsf->pathToString(m_tempPath));
 
 		return url;
 	}
