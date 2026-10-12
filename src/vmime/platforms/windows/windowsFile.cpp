@@ -422,7 +422,12 @@ void windowsFile::rename(const path& newName) {
 
 void windowsFile::remove() {
 
-	if (!DeleteFile(m_nativePath.c_str())) {
+	// DeleteFile() does not remove directories
+	const BOOL removed = isDirectory()
+		? RemoveDirectory(m_nativePath.c_str())
+		: DeleteFile(m_nativePath.c_str());
+
+	if (!removed) {
 		windowsFileSystemFactory::reportError(m_path, GetLastError());
 	}
 }
@@ -442,7 +447,8 @@ shared_ptr <vmime::utility::fileReader> windowsFile::getFileReader() {
 
 shared_ptr <vmime::utility::fileIterator> windowsFile::getFiles() const {
 
-	return make_shared <windowsFileIterator>(m_path, m_nativePath);
+	// FindFirstFile() expects a pattern, else it finds the directory itself
+	return make_shared <windowsFileIterator>(m_path, m_nativePath + "\\*");
 }
 
 
