@@ -655,6 +655,11 @@ IF(VMIME_HAVE_TLS_SUPPORT)
 	IF(VMIME_TLS_SUPPORT_LIB STREQUAL "gnutls")
 
 		INCLUDE(FindGnuTLS)
+
+		IF(NOT GNUTLS_FOUND)
+			MESSAGE(FATAL_ERROR "GnuTLS was selected for TLS support, but it was not found")
+		ENDIF()
+
 		SET(CMAKE_REQUIRED_LIBRARIES "${GNUTLS_LIBRARY}")
 		CHECK_FUNCTION_EXISTS(gnutls_priority_set_direct VMIME_HAVE_GNUTLS_PRIORITY_FUNCS)
 
@@ -685,6 +690,10 @@ IF(VMIME_HAVE_TLS_SUPPORT)
 
 		INCLUDE(FindOpenSSL)
 
+		IF(NOT OPENSSL_FOUND)
+			MESSAGE(FATAL_ERROR "OpenSSL was selected for TLS support, but it was not found")
+		ENDIF()
+
 		INCLUDE_DIRECTORIES(
 			${INCLUDE_DIRECTORIES}
 			${OPENSSL_INCLUDE_DIR}
@@ -709,6 +718,8 @@ IF(VMIME_HAVE_TLS_SUPPORT)
 
 	ENDIF()
 
+	MESSAGE(STATUS "TLS support library: ${VMIME_TLS_SUPPORT_LIB}")
+
 ENDIF(VMIME_HAVE_TLS_SUPPORT)
 
 
@@ -730,6 +741,10 @@ SET_PROPERTY(
 
 
 IF(VMIME_CHARSETCONV_LIB STREQUAL "iconv")
+
+	IF(NOT ICONV_FOUND)
+		MESSAGE(FATAL_ERROR "iconv was selected for charset conversion, but it was not found")
+	ENDIF()
 
 	INCLUDE_DIRECTORIES(
 		${INCLUDE_DIRECTORIES}
@@ -760,6 +775,10 @@ IF(VMIME_CHARSETCONV_LIB STREQUAL "iconv")
 	SET(VMIME_CHARSETCONV_LIB_IS_WIN "OFF")
 
 ELSEIF(VMIME_CHARSETCONV_LIB STREQUAL "icu")
+
+	IF(NOT ICU_LIBRARIES)
+		MESSAGE(FATAL_ERROR "ICU was selected for charset conversion, but it was not found")
+	ENDIF()
 
 	INCLUDE_DIRECTORIES(
 		${INCLUDE_DIRECTORIES}
@@ -804,6 +823,8 @@ ELSE()
 	MESSAGE(FATAL_ERROR "No charset conversion library was selected/found")
 
 ENDIF()
+
+MESSAGE(STATUS "Charset conversion library: ${VMIME_CHARSETCONV_LIB}")
 
 
 ##############################################################################
