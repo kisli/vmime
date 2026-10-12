@@ -465,7 +465,8 @@ const vmime::string toHex(const vmime::string str) {
 
 
 // Set the global C and C++ locale to a locale which uses UTF-8 encoding,
-// as some tests expect the local charset to be UTF-8
+// as some tests expect the local charset to be UTF-8 (on Windows, the local
+// charset is the ANSI code page instead, which is set by tests/utf8.manifest)
 static void setUTF8Locale() {
 
 	// Try well-known UTF-8 locales, then fall back to the user-configured locale
