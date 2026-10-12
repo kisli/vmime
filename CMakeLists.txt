@@ -268,6 +268,18 @@ IF(VMIME_BUILD_TESTS)
 		${CPPUNIT_LIBRARY}
 	)
 
+	# On Windows, embed a manifest in test executables to use UTF-8 as the
+	# ANSI code page, as some tests expect the local charset to be UTF-8
+	SET(VMIME_TESTS_RESOURCE_FILES "")
+
+	IF(MSVC)
+		# Merged by the linker with the manifest it generates
+		SET(VMIME_TESTS_RESOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/tests/utf8.manifest)
+	ELSEIF(MINGW)
+		# Replaces the default manifest added by the toolchain
+		SET(VMIME_TESTS_RESOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/tests/utf8.rc)
+	ENDIF()
+
 	# Build one file for each test
 	FOREACH(VMIME_TEST_SRC_FILE ${VMIME_TESTS_SRC_FILES})
 
@@ -282,6 +294,7 @@ IF(VMIME_BUILD_TESTS)
 		ADD_EXECUTABLE(
 			${VMIME_TEST_NAME}
 			${VMIME_TEST_SRC_FILE}
+			${VMIME_TESTS_RESOURCE_FILES}
 		)
 
 		TARGET_LINK_LIBRARIES(
@@ -306,6 +319,7 @@ IF(VMIME_BUILD_TESTS)
 	ADD_EXECUTABLE(
 		"run-tests"
 		${VMIME_TESTS_SRC_FILES}
+		${VMIME_TESTS_RESOURCE_FILES}
 	)
 
 	TARGET_LINK_LIBRARIES(

@@ -453,7 +453,12 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		vmime::word("Non-quotable text \xc3\xa9")
 			.generate(ctx, os, 0, NULL, vmime::text::QUOTE_IF_POSSIBLE, NULL);
 
-		VASSERT_EQ("3", "=?UTF-8?Q?Non-quotable_text_=C3=A9?=", cleanGeneratedWords(str));
+		// Local charset name may be "UTF-8" or "utf-8", depending on the platform
+		VASSERT_EQ(
+			"3",
+			"=?" + vmime::charset::getLocalCharset().getName() + "?Q?Non-quotable_text_=C3=A9?=",
+			cleanGeneratedWords(str)
+		);
 	}
 
 	void testWordGenerateSpecialCharsets() {

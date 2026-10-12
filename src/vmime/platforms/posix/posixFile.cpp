@@ -39,6 +39,7 @@
 #include <dirent.h>
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "vmime/exception.hpp"
@@ -670,6 +671,19 @@ bool posixFileSystemFactory::isValidPath(const vmime::utility::file::path& path)
 	}
 
 	return true;
+}
+
+
+const vmime::utility::file::path posixFileSystemFactory::getTemporaryDirectoryPath() const {
+
+	// Directory specified by the user (POSIX), or default one
+	const char* dir = ::getenv("TMPDIR");
+
+	if (!dir || !*dir) {
+		dir = "/tmp";
+	}
+
+	return stringToPathImpl(dir);
 }
 
 
