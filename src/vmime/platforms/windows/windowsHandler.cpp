@@ -43,6 +43,12 @@
 
 #if VMIME_HAVE_MLANG
 #   include <mlang.h>
+
+// Defined here, as IID_IMultiLanguage is missing from MinGW libraries
+static const CLSID VMIME_CLSID_CMultiLanguage =
+	{ 0x275c23e2, 0x3747, 0x11d0, { 0x9f, 0xea, 0x00, 0xaa, 0x00, 0x3f, 0x86, 0x46 } };
+static const IID VMIME_IID_IMultiLanguage =
+	{ 0x275c23e1, 0x3747, 0x11d0, { 0x9f, 0xea, 0x00, 0xaa, 0x00, 0x3f, 0x86, 0x46 } };
 #endif
 
 
@@ -132,10 +138,10 @@ const vmime::charset windowsHandler::getLocalCharset() const {
 		IMultiLanguage* pMultiLanguage;
 
 		CoCreateInstance(
-			CLSID_CMultiLanguage,
+			VMIME_CLSID_CMultiLanguage,
 			NULL,
 			CLSCTX_INPROC_SERVER,
-			IID_IMultiLanguage,
+			VMIME_IID_IMultiLanguage,
 			(void**) &pMultiLanguage
 		);
 
