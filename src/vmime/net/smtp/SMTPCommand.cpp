@@ -246,7 +246,7 @@ const string SMTPCommand::getTraceText() const {
 }
 
 
-void SMTPCommand::writeToSocket(const shared_ptr <socket>& sok, shared_ptr <tracer> tr) {
+void SMTPCommand::writeToSocket(const shared_ptr <socket>& sok, const shared_ptr <tracer>& tr) {
 
 	sok->send(m_text + "\r\n");
 

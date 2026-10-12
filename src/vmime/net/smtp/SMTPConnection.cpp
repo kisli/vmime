@@ -621,8 +621,22 @@ void SMTPConnection::internalDisconnect() {
 		}
 	}
 
-	m_socket->disconnect();
-	m_socket = null;
+	closeConnection();
+}
+
+
+// Closes the connection, without sending QUIT. This is also used when an
+// error occurs while sending a command or reading a response (network error,
+// error while writing response data...): the connection is then in an unknown
+// state (eg. the server may still send the rest of the response), so it is not
+// usable anymore, and isConnected() must return false so that the client can
+// reconnect
+void SMTPConnection::closeConnection() {
+
+	if (m_socket) {
+		m_socket->disconnect();
+		m_socket = null;
+	}
 
 	m_timeoutHandler = null;
 
@@ -636,15 +650,41 @@ void SMTPConnection::internalDisconnect() {
 
 void SMTPConnection::sendRequest(const shared_ptr <SMTPCommand>& cmd) {
 
-	cmd->writeToSocket(m_socket, m_tracer);
+	if (!m_socket) {
+		throw exceptions::socket_not_connected_exception();
+	}
+
+	try {
+
+		cmd->writeToSocket(m_socket, m_tracer);
+
+	} catch (...) {
+
+		closeConnection();
+		throw;
+	}
 }
 
 
 shared_ptr <SMTPResponse> SMTPConnection::readResponse() {
 
-	shared_ptr <SMTPResponse> resp = SMTPResponse::readResponse(
-		m_tracer, m_socket, m_timeoutHandler, m_responseState
-	);
+	if (!m_socket) {
+		throw exceptions::socket_not_connected_exception();
+	}
+
+	shared_ptr <SMTPResponse> resp;
+
+	try {
+
+		resp = SMTPResponse::readResponse(
+			m_tracer, m_socket, m_timeoutHandler, m_responseState
+		);
+
+	} catch (...) {
+
+		closeConnection();
+		throw;
+	}
 
 	m_responseState = resp->getCurrentState();
 

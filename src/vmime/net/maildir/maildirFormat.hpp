@@ -51,7 +51,7 @@ class VMIME_EXPORT maildirFormat : public object {
 
 public:
 
-	class context : public object {
+	class VMIME_EXPORT context : public object {
 
 	public:
 

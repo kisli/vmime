@@ -196,7 +196,7 @@ static bool isNumericAddress(const char* address) {
 const string windowsSocket::getPeerAddress() const {
 
 	// Get address of connected peer
-	sockaddr peer;
+	sockaddr_storage peer;
 	socklen_t peerLen = sizeof(peer);
 
 	getpeername(m_desc, reinterpret_cast <sockaddr*>(&peer), &peerLen);
@@ -219,7 +219,7 @@ const string windowsSocket::getPeerAddress() const {
 const string windowsSocket::getPeerName() const {
 
 	// Get address of connected peer
-	sockaddr peer;
+	sockaddr_storage peer;
 	socklen_t peerLen = sizeof(peer);
 
 	getpeername(m_desc, reinterpret_cast <sockaddr*>(&peer), &peerLen);

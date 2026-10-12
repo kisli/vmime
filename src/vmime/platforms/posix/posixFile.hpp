@@ -210,6 +210,8 @@ public:
 	bool isValidPathComponent(const vmime::utility::file::path::component& comp) const;
 	bool isValidPath(const vmime::utility::file::path& path) const;
 
+	const vmime::utility::file::path getTemporaryDirectoryPath() const;
+
 	static void reportError(const vmime::utility::path& path, const int err);
 };
 

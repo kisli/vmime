@@ -144,14 +144,11 @@ VMIME_TEST_SUITE_BEGIN(filteredStreamTest)
 	// dotFilteredOutputStream
 	// CRLFToLFFilteredOutputStream
 
-	template <typename FILTER>
+	template <typename FILTER, typename... Args>
 	void testFilteredOutputStreamHelper(
 		const std::string& number,
 		const std::string& expected,
-		const std::string& c1,
-		const std::string& c2 = "",
-		const std::string& c3 = "",
-		const std::string& c4 = ""
+		Args &&...args
 	) {
 
 		std::ostringstream oss;
@@ -159,10 +156,11 @@ VMIME_TEST_SUITE_BEGIN(filteredStreamTest)
 
 		FILTER fos(os);
 
-		fos.write(c1.data(), c1.length());
-		if (!c2.empty()) fos.write(c2.data(), c2.length());
-		if (!c3.empty()) fos.write(c3.data(), c3.length());
-		if (!c4.empty()) fos.write(c4.data(), c4.length());
+		for (auto &&s : std::initializer_list <std::string>{ std::forward <Args>(args)... }) {
+			if (!s.empty()) {
+				fos.write(s.data(), s.length());
+			}
+		}
 
 		VASSERT_EQ(number, expected, oss.str());
 	}
@@ -201,24 +199,21 @@ VMIME_TEST_SUITE_BEGIN(filteredStreamTest)
 
 	// stopSequenceFilteredInputStream
 
-	template <int N>
+	template <int N, typename... Args>
 	void testStopSequenceFISHelper(
 		const std::string& number,
 		const std::string& sequence,
 		const std::string& expected,
-		const std::string& c1,
-		const std::string& c2 = "",
-		const std::string& c3 = "",
-		const std::string& c4 = "",
-		const std::string& c5 = ""
+		Args &&...args
 	) {
 
 		chunkInputStream cis;
-		cis.addChunk(c1);
-		if (!c2.empty()) cis.addChunk(c2);
-		if (!c3.empty()) cis.addChunk(c3);
-		if (!c4.empty()) cis.addChunk(c4);
-		if (!c5.empty()) cis.addChunk(c5);
+
+		for (auto &&s : std::initializer_list <std::string>{ std::forward <Args>(args)... }) {
+			if (!s.empty()) {
+				cis.addChunk(s);
+			}
+		}
 
 		vmime::utility::stopSequenceFilteredInputStream <N> is(cis, sequence.data());
 

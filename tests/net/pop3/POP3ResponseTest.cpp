@@ -42,6 +42,10 @@ VMIME_TEST_SUITE_BEGIN(POP3ResponseTest)
 		VMIME_TEST(testMultiLineResponse)
 		VMIME_TEST(testMultiLineResponseLF)
 		VMIME_TEST(testLargeResponse)
+		VMIME_TEST(testLargeResponseERR)
+		VMIME_TEST(testLargeResponseERR_LF)
+		VMIME_TEST(testLargeResponseEmpty)
+		VMIME_TEST(testLargeResponseDotStuffedFirstLine)
 	VMIME_TEST_LIST_END
 
 
@@ -239,6 +243,114 @@ VMIME_TEST_SUITE_BEGIN(POP3ResponseTest)
 		VASSERT_EQ("Text", "Large Response Follows", resp->getText());
 		VASSERT_EQ("Data Length", data.str().length(), receivedData.length());
 		VASSERT_EQ("Data Bytes", data.str(), receivedData);
+	}
+
+	void testLargeResponseERR() {
+
+		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
+		vmime::shared_ptr <vmime::net::timeoutHandler> toh = vmime::make_shared <testTimeoutHandler>(1);
+
+		vmime::shared_ptr <POP3ConnectionTest> conn =
+			vmime::make_shared <POP3ConnectionTest>(
+				vmime::dynamicCast <vmime::net::socket>(socket), toh
+			);
+
+		socket->localSend("-ERR No such message\r\n");
+
+		vmime::string receivedData;
+		vmime::utility::outputStreamStringAdapter receivedDataStream(receivedData);
+
+		VASSERT_THROW(
+			"Error response",
+			POP3Response::readLargeResponse(conn, receivedDataStream, NULL, 0),
+			vmime::exceptions::command_error
+		);
+
+		VASSERT_EQ("Data", "", receivedData);
+
+		// Error response must have been read completely
+		socket->localSend("+OK Next Response\r\n");
+
+		vmime::shared_ptr <POP3Response> resp = POP3Response::readResponse(conn);
+
+		VASSERT_EQ("Next response", "Next Response", resp->getText());
+	}
+
+	void testLargeResponseERR_LF() {
+
+		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
+		vmime::shared_ptr <vmime::net::timeoutHandler> toh = vmime::make_shared <testTimeoutHandler>(1);
+
+		vmime::shared_ptr <POP3ConnectionTest> conn =
+			vmime::make_shared <POP3ConnectionTest>(
+				vmime::dynamicCast <vmime::net::socket>(socket), toh
+			);
+
+		socket->localSend("-ERR No such message\n");
+
+		vmime::string receivedData;
+		vmime::utility::outputStreamStringAdapter receivedDataStream(receivedData);
+
+		VASSERT_THROW(
+			"Error response",
+			POP3Response::readLargeResponse(conn, receivedDataStream, NULL, 0),
+			vmime::exceptions::command_error
+		);
+
+		socket->localSend("+OK Next Response\n");
+
+		vmime::shared_ptr <POP3Response> resp = POP3Response::readResponse(conn);
+
+		VASSERT_EQ("Next response", "Next Response", resp->getText());
+	}
+
+	void testLargeResponseEmpty() {
+
+		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
+		vmime::shared_ptr <vmime::net::timeoutHandler> toh = vmime::make_shared <testTimeoutHandler>(1);
+
+		vmime::shared_ptr <POP3ConnectionTest> conn =
+			vmime::make_shared <POP3ConnectionTest>(
+				vmime::dynamicCast <vmime::net::socket>(socket), toh
+			);
+
+		socket->localSend("+OK Empty Response Follows\r\n");
+		socket->localSend(".\r\n");
+
+		vmime::string receivedData;
+		vmime::utility::outputStreamStringAdapter receivedDataStream(receivedData);
+
+		vmime::shared_ptr <POP3Response> resp =
+			POP3Response::readLargeResponse(conn, receivedDataStream, NULL, 0);
+
+		VASSERT_TRUE("Success", resp->isSuccess());
+		VASSERT_EQ("Text", "Empty Response Follows", resp->getText());
+		VASSERT_EQ("Data", "", receivedData);
+	}
+
+	void testLargeResponseDotStuffedFirstLine() {
+
+		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
+		vmime::shared_ptr <vmime::net::timeoutHandler> toh = vmime::make_shared <testTimeoutHandler>(1);
+
+		vmime::shared_ptr <POP3ConnectionTest> conn =
+			vmime::make_shared <POP3ConnectionTest>(
+				vmime::dynamicCast <vmime::net::socket>(socket), toh
+			);
+
+		socket->localSend("+OK Response Follows\r\n");
+		socket->localSend("..first line\r\n");
+		socket->localSend("second line\r\n");
+		socket->localSend(".\r\n");
+
+		vmime::string receivedData;
+		vmime::utility::outputStreamStringAdapter receivedDataStream(receivedData);
+
+		vmime::shared_ptr <POP3Response> resp =
+			POP3Response::readLargeResponse(conn, receivedDataStream, NULL, 0);
+
+		VASSERT_TRUE("Success", resp->isSuccess());
+		VASSERT_EQ("Data", ".first line\r\nsecond line", receivedData);
 	}
 
 VMIME_TEST_SUITE_END

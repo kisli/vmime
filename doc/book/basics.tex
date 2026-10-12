@@ -271,7 +271,7 @@ types are possible (they start with ``x-'', eg.
 
 In VMime, the object {\vcode vmime::mediaType} represents a media type. There
 are also some constants for top-level types and sub-types in the
-{\vcode vmime::mediaTypes} namespace. For example, you can instanciate a new
+{\vcode vmime::mediaTypes} namespace. For example, you can instantiate a new
 media type with:
 
 \begin{lstlisting}
@@ -343,7 +343,7 @@ Header fields carry information about a message (or a part) and its contents.
 Each header field has a name and a value. All types that can be used as a
 field value inherit from the {\vcode headerFieldValue} class.
 
-You cannot instanciate header fields directly using their constructor.
+You cannot instantiate header fields directly using their constructor.
 Instead, you should use the {\vcode headerFieldFactory} object. This ensures
 the right field type and value type is used for the specified field name.
 For more information about how to use header fields and the factory, see
@@ -573,7 +573,7 @@ charsets.}
 
 \subsection{Creating content handlers} % -------------------------------------
 
-When you are building a message, you may need to instanciate content handlers
+When you are building a message, you may need to instantiate content handlers
 if you want to set the contents of a body part. The following code snippet
 shows how to set the body text of a part from a string:
 
