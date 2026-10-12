@@ -1,0 +1,6 @@
+// Application manifest for test executables on Windows (MinGW): use UTF-8 as
+// the ANSI code page, which is used as the local charset by windowsHandler,
+// as some tests expect the local charset to be UTF-8.
+// This replaces the default manifest added by the MinGW toolchain.
+
+1 24 "utf8.manifest"  // CREATEPROCESS_MANIFEST_RESOURCE_ID, RT_MANIFEST

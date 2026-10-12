@@ -38,7 +38,6 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
-#include <sys/time.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <fcntl.h>
@@ -46,6 +45,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <poll.h>
+
+#include <chrono>
 
 #include "vmime/utility/stringUtils.hpp"
 
@@ -218,8 +219,7 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 				const int pollTimeout = 1000;   // poll() timeout (ms)
 				const int tryNextTimeout = 5000;  // maximum time before trying next (ms)
 
-				timeval startTime = { 0, 0 };
-				gettimeofday(&startTime, /* timezone */ NULL);
+				const auto startTime = std::chrono::steady_clock::now();
 
 				do {
 
@@ -254,7 +254,7 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 						break;
 
 					// Error
-					} else if (ret < -1) {
+					} else if (ret < 0) {
 
 						if (errno != EAGAIN && errno != EINTR) {
 
@@ -284,11 +284,10 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 						// Keep waiting for connection
 					}
 
-					timeval curTime = { 0, 0 };
-					gettimeofday(&curTime, /* timezone */ NULL);
+					const auto elapsedTime = std::chrono::steady_clock::now() - startTime;
 
 					if (curAddrInfo->ai_next != NULL &&
-						curTime.tv_usec - startTime.tv_usec >= tryNextTimeout * 1000) {
+					    elapsedTime >= std::chrono::milliseconds(tryNextTimeout)) {
 
 						connectErrno = ETIMEDOUT;
 						break;
@@ -410,7 +409,7 @@ void posixSocket::resolve(
 	memset(&hints, 0, sizeof(hints));
 
 	hints.ai_flags = AI_CANONNAME | AI_NUMERICSERV;
-	hints.ai_family = PF_UNSPEC;
+	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
 
 #if VMIME_HAVE_GETADDRINFO_A
@@ -574,17 +573,25 @@ static bool isNumericAddress(const char* address) {
 const string posixSocket::getPeerAddress() const {
 
 	// Get address of connected peer
-	sockaddr peer;
+	sockaddr_storage peer;
 	socklen_t peerLen = sizeof(peer);
 
-	if (getpeername(m_desc, &peer, &peerLen) != 0) {
+	if (getpeername(m_desc, reinterpret_cast <sockaddr*>(&peer), &peerLen) != 0) {
 		throwSocketError(errno);
 	}
 
 	// Convert to numerical presentation format
+	const void* addr;
+
+	if (peer.ss_family == AF_INET6) {
+		addr = &reinterpret_cast <sockaddr_in6*>(&peer)->sin6_addr;
+	} else {
+		addr = &reinterpret_cast <sockaddr_in*>(&peer)->sin_addr;
+	}
+
 	char buf[INET6_ADDRSTRLEN];
 
-	if (!inet_ntop(peer.sa_family, &(reinterpret_cast <struct sockaddr_in *>(&peer))->sin_addr, buf, sizeof(buf))) {
+	if (!inet_ntop(peer.ss_family, addr, buf, sizeof(buf))) {
 		throwSocketError(errno);
 	}
 
@@ -595,10 +602,10 @@ const string posixSocket::getPeerAddress() const {
 const string posixSocket::getPeerName() const {
 
 	// Get address of connected peer
-	sockaddr peer;
+	sockaddr_storage peer;
 	socklen_t peerLen = sizeof(peer);
 
-	if (getpeername(m_desc, &peer, &peerLen) != 0) {
+	if (getpeername(m_desc, reinterpret_cast <sockaddr*>(&peer), &peerLen) != 0) {
 		throwSocketError(errno);
 	}
 
@@ -621,9 +628,18 @@ const string posixSocket::getPeerName() const {
 #else
 
 		struct hostent *hp;
+		const void* addr;
+		socklen_t addrLen;
 
-		if ((hp = gethostbyaddr(reinterpret_cast <const void *>(&peer),
-				sizeof(peer), peer.sa_family)) != NULL) {
+		if (peer.ss_family == AF_INET6) {
+			addr = &reinterpret_cast <sockaddr_in6*>(&peer)->sin6_addr;
+			addrLen = sizeof(in6_addr);
+		} else {
+			addr = &reinterpret_cast <sockaddr_in*>(&peer)->sin_addr;
+			addrLen = sizeof(in_addr);
+		}
+
+		if ((hp = gethostbyaddr(addr, addrLen, peer.ss_family)) != NULL) {
 
 			return string(hp->h_name);
 		}

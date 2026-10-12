@@ -36,7 +36,7 @@ namespace sync {
 /** Critical section wrapper class
   */
 template <class M>
-class VMIME_EXPORT autoLock : public object {
+class autoLock : public object {
 
 public:
 

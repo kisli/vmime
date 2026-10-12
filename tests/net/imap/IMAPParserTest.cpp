@@ -42,6 +42,8 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 		VMIME_TEST(testInvalidCharsInAstring)
 		VMIME_TEST(testExtraSpaceInSEARCHResponse)
 		VMIME_TEST(test8BitCharsInQuotedString)
+		VMIME_TEST(testIDResponse)
+		VMIME_TEST(testIDResponse_NIL)
 	VMIME_TEST_LIST_END
 
 
@@ -609,6 +611,80 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 				"Kun For Deg! F\xc3\xa5 Et GRATIS Bil N\xc3\xb8" "dssett Fra NAF!",
 				items[2]->envelope->env_subject->value
 			);
+		}
+	}
+
+	// ID extension (RFC 2971)
+	void testIDResponse() {
+
+		const char* respText =
+			"* ID (\"name\" \"Cyrus\" \"version\" \"1.5\" \"os\" \"sunos\" "
+			"\"os-version\" \"5.5\" \"support-url\" \"mailto:cyrus-bugs+@andrew.cmu.edu\" "
+			"\"vendor\" NIL)\r\n"
+			"a001 OK ID completed\r\n";
+
+		auto socket = vmime::make_shared <testSocket>();
+		auto toh = vmime::make_shared <testTimeoutHandler>();
+
+		auto tag = vmime::make_shared <vmime::net::imap::IMAPTag>();
+
+		socket->localSend(respText);
+
+		auto parser = vmime::make_shared <vmime::net::imap::IMAPParser>();
+
+		parser->setSocket(socket);
+		parser->setTimeoutHandler(toh);
+		parser->setStrict(true);
+
+		std::unique_ptr <vmime::net::imap::IMAPParser::response> resp;
+
+		VASSERT_NO_THROW("parse", resp.reset(parser->readResponse(*tag)));
+
+		VASSERT_EQ("resp size", 1, resp->continue_req_or_response_data.size());
+		VASSERT("resp data", resp->continue_req_or_response_data[0]->response_data);
+		VASSERT("id response", resp->continue_req_or_response_data[0]->response_data->id_response);
+
+		const auto& params = resp->continue_req_or_response_data[0]->response_data->id_response->params;
+
+		VASSERT_EQ("params size", 6, params.size());
+		VASSERT_EQ("field 1", "name", params[0]->field->value);
+		VASSERT_EQ("value 1", "Cyrus", params[0]->value->value);
+		VASSERT_EQ("field 5", "support-url", params[4]->field->value);
+		VASSERT_EQ("value 5", "mailto:cyrus-bugs+@andrew.cmu.edu", params[4]->value->value);
+		VASSERT_EQ("field 6", "vendor", params[5]->field->value);
+		VASSERT_TRUE("value 6", params[5]->value->isNIL);
+	}
+
+	void testIDResponse_NIL() {
+
+		const char* respTexts[] = {
+			"* ID NIL\r\na001 OK ID completed\r\n",
+			"* ID ()\r\na001 OK ID completed\r\n"
+		};
+
+		for (const char* respText : respTexts) {
+
+			auto socket = vmime::make_shared <testSocket>();
+			auto toh = vmime::make_shared <testTimeoutHandler>();
+
+			auto tag = vmime::make_shared <vmime::net::imap::IMAPTag>();
+
+			socket->localSend(respText);
+
+			auto parser = vmime::make_shared <vmime::net::imap::IMAPParser>();
+
+			parser->setSocket(socket);
+			parser->setTimeoutHandler(toh);
+			parser->setStrict(true);
+
+			std::unique_ptr <vmime::net::imap::IMAPParser::response> resp;
+
+			VASSERT_NO_THROW("parse", resp.reset(parser->readResponse(*tag)));
+
+			VASSERT_EQ("resp size", 1, resp->continue_req_or_response_data.size());
+			VASSERT("resp data", resp->continue_req_or_response_data[0]->response_data);
+			VASSERT("id response", resp->continue_req_or_response_data[0]->response_data->id_response);
+			VASSERT_EQ("params size", 0, resp->continue_req_or_response_data[0]->response_data->id_response->params.size());
 		}
 	}
 

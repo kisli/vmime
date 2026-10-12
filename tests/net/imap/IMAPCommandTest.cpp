@@ -56,6 +56,7 @@ VMIME_TEST_SUITE_BEGIN(IMAPCommandTest)
 		VMIME_TEST(testEXPUNGE)
 		VMIME_TEST(testCLOSE)
 		VMIME_TEST(testLOGOUT)
+		VMIME_TEST(testID)
 		VMIME_TEST(testSend)
 	VMIME_TEST_LIST_END
 
@@ -463,6 +464,34 @@ VMIME_TEST_SUITE_BEGIN(IMAPCommandTest)
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "LOGOUT", cmd->getText());
+	}
+
+	void testID() {
+
+		vmime::shared_ptr <IMAPCommand> cmdNIL =
+			IMAPCommand::ID(std::map <vmime::string, vmime::string>());
+
+		VASSERT_NOT_NULL("Not null", cmdNIL);
+		VASSERT_EQ("Text", "ID NIL", cmdNIL->getText());
+
+
+		std::map <vmime::string, vmime::string> params;
+		params["name"] = "vmime";
+		params["version"] = "1.0";
+
+		vmime::shared_ptr <IMAPCommand> cmd = IMAPCommand::ID(params);
+
+		VASSERT_NOT_NULL("Not null", cmd);
+		VASSERT_EQ("Text", "ID (\"name\" \"vmime\" \"version\" \"1.0\")", cmd->getText());
+
+
+		std::map <vmime::string, vmime::string> paramsQuote;
+		paramsQuote["name"] = "my \"client\"\r\nA001 LOGOUT";
+
+		vmime::shared_ptr <IMAPCommand> cmdQuote = IMAPCommand::ID(paramsQuote);
+
+		VASSERT_NOT_NULL("Not null", cmdQuote);
+		VASSERT_EQ("Text", "ID (\"name\" \"my \\\"client\\\"A001 LOGOUT\")", cmdQuote->getText());
 	}
 
 	void testSend() {

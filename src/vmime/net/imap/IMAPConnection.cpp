@@ -120,6 +120,7 @@ void IMAPConnection::connect() {
 
 	m_state = STATE_NONE;
 	m_hierarchySeparator = '\0';
+	m_serverId.clear();
 
 	const string address = GET_PROPERTY(string, PROPERTY_SERVER_ADDRESS);
 	const port_t port = GET_PROPERTY(port_t, PROPERTY_SERVER_PORT);
@@ -240,6 +241,13 @@ void IMAPConnection::connect() {
 		}
 	}
 
+	// Send client identification, if enabled and supported by the server.
+	// Some servers (eg. NetEase 163.com/126.com) refuse to SELECT a folder
+	// if the client has not identified itself.
+	if (GET_PROPERTY(bool, PROPERTY_OPTIONS_ID) && hasCapability("ID")) {
+		sendIdentification();
+	}
+
 	// Get the hierarchy separator character
 	initHierarchySeparator();
 
@@ -300,7 +308,7 @@ void IMAPConnection::authenticate() {
 	shared_ptr <IMAPConnection> conn = dynamicCast <IMAPConnection>(shared_from_this());
 	IMAPCommand::LOGIN(username, password)->send(conn);
 
-	scoped_ptr <IMAPParser::response> resp(m_parser->readResponse(*m_tag));
+	scoped_ptr <IMAPParser::response> resp(readResponse());
 
 	if (resp->isBad()) {
 
@@ -429,7 +437,7 @@ void IMAPConnection::authenticateSASL() {
 
 		for (bool cont = true ; cont ; ) {
 
-			scoped_ptr <IMAPParser::response> resp(m_parser->readResponse(*m_tag));
+			scoped_ptr <IMAPParser::response> resp(readResponse());
 
 			if (resp->response_done &&
 			    resp->response_done->response_tagged &&
@@ -542,7 +550,7 @@ void IMAPConnection::startTLS() {
 
 		IMAPCommand::STARTTLS()->send(dynamicCast <IMAPConnection>(shared_from_this()));
 
-		scoped_ptr <IMAPParser::response> resp(m_parser->readResponse(*m_tag));
+		scoped_ptr <IMAPParser::response> resp(readResponse());
 
 		if (resp->isBad() || resp->response_done->response_tagged->
 			resp_cond_state->status != IMAPParser::resp_cond_state::OK) {
@@ -650,7 +658,7 @@ void IMAPConnection::fetchCapabilities() {
 
 	IMAPCommand::CAPABILITY()->send(dynamicCast <IMAPConnection>(shared_from_this()));
 
-	scoped_ptr <IMAPParser::response> resp(m_parser->readResponse(*m_tag));
+	scoped_ptr <IMAPParser::response> resp(readResponse());
 
 	if (resp->response_done->response_tagged->
 			resp_cond_state->status == IMAPParser::resp_cond_state::OK) {
@@ -700,6 +708,55 @@ void IMAPConnection::processCapabilityResponseData(const IMAPParser::capability_
 }
 
 
+void IMAPConnection::sendIdentification() {
+
+	// Client identification fields are taken from session properties
+	// named "options.id.<field>" (eg. "store.imap.options.id.name")
+	const string prefix = getStoreOrThrow()->getInfos().getPropertyPrefix() + "options.id.";
+
+	std::map <string, string> clientId;
+
+	for (const auto& prop : getSession()->getProperties().getPropertyList()) {
+
+		const string& name = prop->getName();
+
+		if (name.length() > prefix.length() &&
+		    utility::stringUtils::isStringEqualNoCase(name, prefix.c_str(), prefix.length())) {
+
+			clientId[string(name.begin() + prefix.length(), name.end())] = prop->getValue <string>();
+		}
+	}
+
+	IMAPCommand::ID(clientId)->send(dynamicCast <IMAPConnection>(shared_from_this()));
+
+	scoped_ptr <IMAPParser::response> resp(readResponse());
+
+	// Identification is informational only: do not fail if the server rejects it
+	if (resp->isBad() || resp->response_done->response_tagged->
+			resp_cond_state->status != IMAPParser::resp_cond_state::OK) {
+
+		return;
+	}
+
+	for (auto &respData : resp->continue_req_or_response_data) {
+
+		if (!respData->response_data || !respData->response_data->id_response) {
+			continue;
+		}
+
+		for (auto &param : respData->response_data->id_response->params) {
+			m_serverId[utility::stringUtils::toLower(param->field->value)] = param->value->value;
+		}
+	}
+}
+
+
+const std::map <string, string> IMAPConnection::getServerIdentification() const {
+
+	return m_serverId;
+}
+
+
 shared_ptr <security::authenticator> IMAPConnection::getAuthenticator() {
 
 	return m_auth;
@@ -740,8 +797,30 @@ void IMAPConnection::internalDisconnect() {
 
 	if (isConnected()) {
 
-		IMAPCommand::LOGOUT()->send(dynamicCast <IMAPConnection>(shared_from_this()));
+		try {
+
+			// Don't use shared_from_this() here, as we may be
+			// called from the destructor
+			sendCommand(IMAPCommand::LOGOUT());
+
+		} catch (exception&) {
+
+			// Not important: the connection may be already broken
+			// (eg. time-out), but the socket must be closed anyway
+		}
 	}
+
+	closeConnection();
+}
+
+
+// Closes the connection, without sending LOGOUT. This is also used when an
+// error occurs while sending a command or reading a response (network error,
+// parsing error, error while writing literal data...): the connection is then
+// in an unknown state (eg. the server may still send the rest of the response),
+// so it is not usable anymore, and isConnected() must return false so that the
+// client can reconnect
+void IMAPConnection::closeConnection() {
 
 	if (m_socket) {
 		m_socket->disconnect();
@@ -761,7 +840,7 @@ void IMAPConnection::initHierarchySeparator() {
 
 	IMAPCommand::LIST("", "")->send(dynamicCast <IMAPConnection>(shared_from_this()));
 
-	scoped_ptr <IMAPParser::response> resp(m_parser->readResponse(*m_tag));
+	scoped_ptr <IMAPParser::response> resp(readResponse());
 
 	if (resp->isBad() || resp->response_done->response_tagged->
 			resp_cond_state->status != IMAPParser::resp_cond_state::OK) {
@@ -800,14 +879,26 @@ void IMAPConnection::initHierarchySeparator() {
 
 void IMAPConnection::sendCommand(const shared_ptr <IMAPCommand>& cmd) {
 
+	if (!m_socket) {
+		throw exceptions::socket_not_connected_exception();
+	}
+
 	if (!m_firstTag) {
 		++(*m_tag);
 	}
 
-	m_socket->send(*m_tag);
-	m_socket->send(" ");
-	m_socket->send(cmd->getText());
-	m_socket->send("\r\n");
+	try {
+
+		m_socket->send(*m_tag);
+		m_socket->send(" ");
+		m_socket->send(cmd->getText());
+		m_socket->send("\r\n");
+
+	} catch (...) {
+
+		closeConnection();
+		throw;
+	}
 
 	m_firstTag = false;
 
@@ -823,13 +914,37 @@ void IMAPConnection::sendCommand(const shared_ptr <IMAPCommand>& cmd) {
 
 void IMAPConnection::sendRaw(const byte_t* buffer, const size_t count) {
 
-	m_socket->sendRaw(buffer, count);
+	if (!m_socket) {
+		throw exceptions::socket_not_connected_exception();
+	}
+
+	try {
+
+		m_socket->sendRaw(buffer, count);
+
+	} catch (...) {
+
+		closeConnection();
+		throw;
+	}
 }
 
 
 IMAPParser::response* IMAPConnection::readResponse(IMAPParser::literalHandler* lh) {
 
-	return m_parser->readResponse(*m_tag, lh);
+	if (!m_socket) {
+		throw exceptions::socket_not_connected_exception();
+	}
+
+	try {
+
+		return m_parser->readResponse(*m_tag, lh);
+
+	} catch (...) {
+
+		closeConnection();
+		throw;
+	}
 }
 
 

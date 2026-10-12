@@ -2268,6 +2268,79 @@ public:
 
 
 	//
+	// id_param        ::= string SPACE nstring
+	//                     ;; field/value pair (not named in RFC 2971)
+	//
+
+	DECLARE_COMPONENT(id_param)
+
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
+			size_t pos = *currentPos;
+
+			VIMAP_PARSER_GET(xstring, field);
+			VIMAP_PARSER_CHECK(SPACE);
+			VIMAP_PARSER_GET(nstring, value);
+
+			DEBUG_FOUND("id_param", "<" << field->value << ", " << value->value << ">");
+
+			*currentPos = pos;
+
+			return true;
+		}
+
+
+		std::unique_ptr <xstring> field;
+		std::unique_ptr <nstring> value;
+	};
+
+
+	//
+	// id_response     ::= "ID" SPACE id_params_list
+	//
+	// id_params_list  ::= "(" #(string SPACE nstring) ")" / nil
+	//                     ;; list of field value pairs
+	//
+	// (RFC 2971)
+	//
+
+	DECLARE_COMPONENT(id_response)
+
+		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) {
+
+			size_t pos = *currentPos;
+
+			VIMAP_PARSER_CHECK_WITHARG(special_atom, "id");
+			VIMAP_PARSER_CHECK(SPACE);
+
+			if (VIMAP_PARSER_TRY_CHECK(one_char <'('> )) {
+
+				if (!VIMAP_PARSER_TRY_CHECK(one_char <')'> )) {
+
+					VIMAP_PARSER_GET_PUSHBACK(id_param, params);
+
+					while (!VIMAP_PARSER_TRY_CHECK(one_char <')'> )) {
+						VIMAP_PARSER_CHECK(SPACE);
+						VIMAP_PARSER_GET_PUSHBACK(id_param, params);
+					}
+				}
+
+			} else {
+
+				VIMAP_PARSER_CHECK(NIL);
+			}
+
+			*currentPos = pos;
+
+			return true;
+		}
+
+
+		std::vector <std::unique_ptr <id_param>> params;
+	};
+
+
+	//
 	// date_day_fixed  ::= (SPACE digit) / 2digit
 	//                    ;; Fixed-format version of date_day
 	//
@@ -4318,7 +4391,8 @@ public:
 
 	//
 	// response_data  ::= "*" SPACE (resp_cond_state / resp_cond_bye /
-	//                    mailbox_data / message_data / capability_data) CRLF
+	//                    mailbox_data / message_data / capability_data /
+	//                    id_response) CRLF
 	//
 
 	DECLARE_COMPONENT(response_data)
@@ -4334,7 +4408,9 @@ public:
 				if (!VIMAP_PARSER_TRY_GET(IMAPParser::resp_cond_bye, resp_cond_bye)) {
 					if (!VIMAP_PARSER_TRY_GET(IMAPParser::mailbox_data, mailbox_data)) {
 						if (!VIMAP_PARSER_TRY_GET(IMAPParser::message_data, message_data)) {
-							VIMAP_PARSER_GET(IMAPParser::capability_data, capability_data);
+							if (!VIMAP_PARSER_TRY_GET(IMAPParser::capability_data, capability_data)) {
+								VIMAP_PARSER_GET(IMAPParser::id_response, id_response);
+							}
 						}
 					}
 				}
@@ -4361,6 +4437,7 @@ public:
 		std::unique_ptr <IMAPParser::mailbox_data> mailbox_data;
 		std::unique_ptr <IMAPParser::message_data> message_data;
 		std::unique_ptr <IMAPParser::capability_data> capability_data;
+		std::unique_ptr <IMAPParser::id_response> id_response;
 	};
 
 

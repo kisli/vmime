@@ -85,6 +85,7 @@
 #include "utility/outputStreamByteArrayAdapter.hpp"
 #include "utility/outputStreamSocketAdapter.hpp"
 #include "utility/outputStreamStringAdapter.hpp"
+#include "utility/prefixedInputStream.hpp"
 #include "utility/streamUtils.hpp"
 
 // Message builder/parser

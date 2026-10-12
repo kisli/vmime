@@ -26,6 +26,7 @@
 
 
 #include "vmime/config.hpp"
+#include "vmime/exception.hpp"
 
 #include "vmime/utility/path.hpp"
 #include "vmime/utility/stream.hpp"
@@ -251,6 +252,19 @@ public:
 	  * @return true if the path is valid, false otherwise
 	  */
 	virtual bool isValidPath(const file::path& path) const = 0;
+
+	/** Return the path of the directory to use for temporary files.
+	  *
+	  * @return path of the system temporary directory
+	  * @throw exceptions::filesystem_exception if the temporary directory
+	  * cannot be determined, or if not supported on this platform
+	  */
+	virtual const file::path getTemporaryDirectoryPath() const {
+
+		throw exceptions::filesystem_exception(
+			"Temporary directory is not supported on this platform", file::path()
+		);
+	}
 };
 
 

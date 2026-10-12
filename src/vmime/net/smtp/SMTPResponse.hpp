@@ -60,7 +60,7 @@ public:
 	};
 
 	/** Enhanced status code (as per RFC-3463). */
-	struct enhancedStatusCode {
+	struct VMIME_EXPORT enhancedStatusCode {
 
 		enhancedStatusCode();
 		enhancedStatusCode(const enhancedStatusCode& enhCode);
@@ -73,7 +73,7 @@ public:
 	};
 
 	/** An element of a SMTP response. */
-	class responseLine {
+	class VMIME_EXPORT responseLine {
 
 	public:
 

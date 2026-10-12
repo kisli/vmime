@@ -1,4 +1,6 @@
 
+PDFLATEX = pdflatex -interaction=nonstopmode -halt-on-error
+
 all: book
 
 convert-images:
@@ -8,9 +10,16 @@ book: book_pdf book_html
 
 # Full build: multiple runs for correct references...
 book_pdf: convert-images
-	pdflatex book.tex
-	pdflatex book.tex
-	pdflatex book.tex
+	$(PDFLATEX) book.tex
+	$(PDFLATEX) book.tex
+	$(PDFLATEX) book.tex
+
+# Full build, and fail if some references are undefined (used by CI)
+check: book_pdf
+	@if grep -E 'undefined|Rerun to get' book.log ; then \
+		echo "Error: undefined references (see book.log)" ; \
+		exit 1 ; \
+	fi
 
 book_html: convert-images
 	hevea book.tex
@@ -21,7 +30,7 @@ book_html: convert-images
 
 # Only one run for development (faster)
 book-dev: convert-images
-	pdflatex book.tex
+	$(PDFLATEX) book.tex
 
 clean:
 	rm -f *.log *.aux *.toc *.out *.pdf *.lo[flt]

@@ -59,6 +59,7 @@ const IMAPServiceInfos::props& IMAPServiceInfos::getProperties() const {
 		property("options.sasl", serviceInfos::property::TYPE_BOOLEAN, "true"),
 		property("options.sasl.fallback", serviceInfos::property::TYPE_BOOLEAN, "true"),
 #endif // VMIME_HAVE_SASL_SUPPORT
+		property("options.id", serviceInfos::property::TYPE_BOOLEAN, "false"),
 
 		// Common properties
 		property(serviceInfos::property::AUTH_USERNAME, serviceInfos::property::FLAG_REQUIRED),
@@ -79,6 +80,7 @@ const IMAPServiceInfos::props& IMAPServiceInfos::getProperties() const {
 		property("options.sasl", serviceInfos::property::TYPE_BOOLEAN, "true"),
 		property("options.sasl.fallback", serviceInfos::property::TYPE_BOOLEAN, "true"),
 #endif // VMIME_HAVE_SASL_SUPPORT
+		property("options.id", serviceInfos::property::TYPE_BOOLEAN, "false"),
 
 		// Common properties
 		property(serviceInfos::property::AUTH_USERNAME, serviceInfos::property::FLAG_REQUIRED),
@@ -107,6 +109,7 @@ const std::vector <serviceInfos::property> IMAPServiceInfos::getAvailablePropert
 	list.push_back(p.PROPERTY_OPTIONS_SASL);
 	list.push_back(p.PROPERTY_OPTIONS_SASL_FALLBACK);
 #endif // VMIME_HAVE_SASL_SUPPORT
+	list.push_back(p.PROPERTY_OPTIONS_ID);
 
 	// Common properties
 	list.push_back(p.PROPERTY_AUTH_USERNAME);

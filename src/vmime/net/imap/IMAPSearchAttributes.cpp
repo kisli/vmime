@@ -63,7 +63,7 @@ public:
 
 	void generate(std::ostringstream& out) const override {
 
-		out << m_token << " \"" << m_keyword << "\"";
+		out << m_token << " " << IMAPUtils::forceQuoteString(m_keyword);
 	};
 };
 
@@ -85,7 +85,7 @@ public:
 
 	void generate(std::ostringstream& out) const override {
 
-		out << m_token << " " << m_keyword << " \"" << m_headerKeyword << "\"";
+		out << m_token << " " << m_keyword << " " << IMAPUtils::forceQuoteString(m_headerKeyword);
 	};
 
 protected:

@@ -43,6 +43,15 @@ const fpath operator/(const fpath& path, const std::string& c) {
 }
 
 
+// Delimiter between message id and flags in file names,
+// same as in maildirUtils::buildFilename()
+#if VMIME_PLATFORM_IS_WINDOWS
+#	define TEST_FLAGS_DELIMITER "-"  // ':' is not allowed in file names
+#else
+#	define TEST_FLAGS_DELIMITER ":"
+#endif
+
+
 /** Test messages */
 static const vmime::string TEST_MESSAGE_1 =
 	"From: <test@vmime.org>\r\n"
@@ -92,7 +101,7 @@ static const vmime::string TEST_MAILDIR_KMAIL[] = {  // directories to create
 };
 
 static const vmime::string TEST_MAILDIRFILES_KMAIL[] = {  // files to create and their contents
-	"/.Folder.directory/.SubFolder.directory/SubSubFolder2/cur/1043236113.351.EmqD:S", TEST_MESSAGE_1,
+	"/.Folder.directory/.SubFolder.directory/SubSubFolder2/cur/1043236113.351.EmqD" TEST_FLAGS_DELIMITER "S", TEST_MESSAGE_1,
 	"*"  // end
 };
 
@@ -127,7 +136,7 @@ static const vmime::string TEST_MAILDIRFILES_COURIER[] = {  // files to create a
 	"/.Folder.SubFolder/maildirfolder", "",
 	"/.Folder.SubFolder.SubSubFolder1/maildirfolder", "",
 	"/.Folder.SubFolder.SubSubFolder2/maildirfolder", "",
-	"/.Folder.SubFolder.SubSubFolder2/cur/1043236113.351.EmqD:S", TEST_MESSAGE_1,
+	"/.Folder.SubFolder.SubSubFolder2/cur/1043236113.351.EmqD" TEST_FLAGS_DELIMITER "S", TEST_MESSAGE_1,
 	"/.Folder2/maildirfolder", "",
 	"*"  // end
 };
@@ -167,8 +176,11 @@ public:
 
 	maildirStoreTest() {
 
+		vmime::shared_ptr <vmime::utility::fileSystemFactory> fsf =
+			vmime::platform::getHandler()->getFileSystemFactory();
+
 		// Temporary directory
-		m_tempPath = fspath() / fspathc("tmp")   // Use /tmp
+		m_tempPath = fsf->getTemporaryDirectoryPath()
 			/ fspathc("vmime" + vmime::utility::stringUtils::toString(std::time(NULL))
 				+ vmime::utility::stringUtils::toString(std::rand()));
 	}
@@ -500,8 +512,9 @@ private:
 		vmime::shared_ptr <vmime::utility::fileSystemFactory> fsf =
 			vmime::platform::getHandler()->getFileSystemFactory();
 
-		vmime::utility::url url(std::string("maildir://localhost")
-			+ fsf->pathToString(m_tempPath));
+		// Path is set as is, as it may not start with a separator (eg. on Windows)
+		vmime::utility::url url("maildir", "localhost");  // maildir://localhost
+		url.setPath(fsf->pathToString(m_tempPath));
 
 		return url;
 	}
