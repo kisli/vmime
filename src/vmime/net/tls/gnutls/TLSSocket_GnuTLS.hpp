@@ -58,6 +58,8 @@ public:
 
 	shared_ptr <security::cert::certificateChain> getPeerCertificates();
 
+	bool getChannelBindingData(const ChannelBindingType type, byteArray& data);
+
 	// Implementation of 'socket'
 	void connect(const string& address, const port_t port);
 	void disconnect();

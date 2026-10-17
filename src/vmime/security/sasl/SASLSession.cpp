@@ -190,6 +190,30 @@ int SASLSession::gsaslCallback(
 				res = auth->getServiceName();
 				break;
 
+			case GSASL_CB_TLS_UNIQUE:
+#if defined(GSASL_VERSION_NUMBER) && GSASL_VERSION_NUMBER >= 0x020100
+			case GSASL_CB_TLS_EXPORTER:
+#endif
+			{
+				const string type = (prop == GSASL_CB_TLS_UNIQUE ? "tls-unique" : "tls-exporter");
+				const shared_ptr <SASLContext> ctx = sess->m_context;
+
+				// Only provide channel binding data to the "-PLUS" mechanisms. With
+				// the other SCRAM mechanisms, GNU SASL would tell the server that we
+				// support channel binding ("y" flag), and authentication would fail
+				// with servers which support it (eg. when falling back after a
+				// "-PLUS" mechanism failed)
+				if (!SASLContext::isChannelBindingMechanism(sess->m_mech->getName())
+				    || ctx->m_channelBindingType != type
+				    || ctx->m_channelBindingData.empty()) {
+
+					return GSASL_NO_CALLBACK;
+				}
+
+				res = ctx->encodeB64(&ctx->m_channelBindingData[0], ctx->m_channelBindingData.size());
+				break;
+			}
+
 			case GSASL_AUTHZID:
 			case GSASL_GSSAPI_DISPLAY_NAME:
 			case GSASL_PASSCODE:
