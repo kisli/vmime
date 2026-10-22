@@ -81,7 +81,7 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 			parser->setTimeoutHandler(vmime::make_shared <testTimeoutHandler>());
 			parser->setStrict(false);
 
-			VASSERT_NO_THROW("non-strict mode", parser->readResponse(*tag));
+			VASSERT_NO_THROW("non-strict mode", std::unique_ptr <vmime::net::imap::IMAPParser::response>(parser->readResponse(*tag)));
 		}
 	}
 
@@ -113,7 +113,7 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 		parser->setTimeoutHandler(toh);
 
 		parser->setStrict(false);
-		VASSERT_NO_THROW("non-strict mode", parser->readResponse(*tag));
+		VASSERT_NO_THROW("non-strict mode", std::unique_ptr <vmime::net::imap::IMAPParser::response>(parser->readResponse(*tag)));
 
 		++(*tag);
 
@@ -158,7 +158,7 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 			parser->setTimeoutHandler(vmime::make_shared <testTimeoutHandler>());
 			parser->setStrict(false);
 
-			VASSERT_NO_THROW("non-strict mode", parser->readResponse(*tag));
+			VASSERT_NO_THROW("non-strict mode", std::unique_ptr <vmime::net::imap::IMAPParser::response>(parser->readResponse(*tag)));
 		}
 	}
 
@@ -181,7 +181,7 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 		parser->setSocket(socket);
 		parser->setTimeoutHandler(toh);
 
-		VASSERT_NO_THROW("parse", parser->readResponse(*tag));
+		VASSERT_NO_THROW("parse", std::unique_ptr <vmime::net::imap::IMAPParser::response>(parser->readResponse(*tag)));
 	}
 
 	// Support for NIL boundary, for mail.ru IMAP server:
@@ -218,7 +218,7 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 			parser->setTimeoutHandler(vmime::make_shared <testTimeoutHandler>());
 			parser->setStrict(false);
 
-			VASSERT_NO_THROW("non-strict mode", parser->readResponse(*tag));
+			VASSERT_NO_THROW("non-strict mode", std::unique_ptr <vmime::net::imap::IMAPParser::response>(parser->readResponse(*tag)));
 		}
 	}
 
@@ -253,7 +253,7 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 			parser->setTimeoutHandler(vmime::make_shared <testTimeoutHandler>());
 			parser->setStrict(false);
 
-			VASSERT_NO_THROW("non-strict mode", parser->readResponse(*tag));
+			VASSERT_NO_THROW("non-strict mode", std::unique_ptr <vmime::net::imap::IMAPParser::response>(parser->readResponse(*tag)));
 		}
 	}
 
@@ -373,7 +373,7 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 			parser->setTimeoutHandler(toh);
 			parser->setStrict(false);
 
-			VASSERT_NO_THROW("non-strict mode", parser->readResponse(*tag));
+			VASSERT_NO_THROW("non-strict mode", std::unique_ptr <vmime::net::imap::IMAPParser::response>(parser->readResponse(*tag)));
 		}
 	}
 

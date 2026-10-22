@@ -4767,8 +4767,7 @@ public:
 	template <class TYPE>
 	TYPE* get(string& line, size_t* currentPos) {
 
-		component* resp = new TYPE;
-		return internalGet <TYPE>(resp, line, currentPos);
+		return internalGet <TYPE>(std::unique_ptr <TYPE>(new TYPE), line, currentPos);
 	}
 
 	/** Parse a token which takes 2 arguments and advance.
@@ -4788,14 +4787,13 @@ public:
 	template <class TYPE, class ARG1_TYPE, class ARG2_TYPE>
 	TYPE* getWithArgs(string& line, size_t* currentPos, ARG1_TYPE arg1, ARG2_TYPE arg2) {
 
-		component* resp = new TYPE(arg1, arg2);
-		return internalGet <TYPE>(resp, line, currentPos);
+		return internalGet <TYPE>(std::unique_ptr <TYPE>(new TYPE(arg1, arg2)), line, currentPos);
 	}
 
 private:
 
 	template <class TYPE>
-	TYPE* internalGet(component* resp, string& line, size_t* currentPos) {
+	TYPE* internalGet(std::unique_ptr <TYPE> resp, string& line, size_t* currentPos) {
 
 		const size_t oldPos = *currentPos;
 
@@ -4803,12 +4801,10 @@ private:
 
 			*currentPos = oldPos;
 
-			delete resp;
-
 			return NULL;
 		}
 
-		return static_cast <TYPE*>(resp);
+		return resp.release();
 	}
 
 	const string lastLine() const {
