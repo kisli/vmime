@@ -1,0 +1,4 @@
+# LeakSanitizer suppressions for leaks in third-party libraries
+
+# Buffer allocated by glibc in newlocale(), called by std::locale and libp11-kit
+leak:newlocale
