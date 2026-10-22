@@ -40,6 +40,8 @@ VMIME_TEST_SUITE_BEGIN(seekableInputStreamRegionAdapterTest)
 		VMIME_TEST(testSkip)
 		VMIME_TEST(testReset)
 		VMIME_TEST(testOwnPosition)
+		VMIME_TEST(testReadCountOverflow)
+		VMIME_TEST(testSkipCountOverflow)
 	VMIME_TEST_LIST_END
 
 
@@ -171,6 +173,56 @@ VMIME_TEST_SUITE_BEGIN(seekableInputStreamRegionAdapterTest)
 		// ...but the underlying stream position is affected by read operations
 		// from the region adapter (FIXME?)
 		VASSERT_EQ("Pos", 21, ustream->getPosition());
+	}
+
+	void testReadCountOverflow() {
+
+		// A count which overflows when added to the current position must be
+		// handled as a request for all the remaining bytes, both by the region
+		// adapter and by the underlying stream
+		const vmime::size_t count = static_cast <vmime::size_t>(-3);
+
+		vmime::shared_ptr <seekableInputStream> ustream;
+		vmime::shared_ptr <seekableInputStreamRegionAdapter> stream = createStream(&ustream);
+
+		stream->seek(5);
+
+		vmime::byte_t buffer[100];
+		std::fill(vmime::begin(buffer), vmime::end(buffer), 0);
+
+		VASSERT_EQ("Read 1", 6, stream->read(buffer, count));
+		VASSERT_EQ("Pos 1", 11, stream->getPosition());
+		VASSERT_TRUE("EOF 1", stream->eof());
+		VASSERT_EQ("Buffer 1", "BUFFER", vmime::utility::stringUtils::makeStringFromBytes(buffer, 6));
+
+		ustream->seek(10);
+
+		std::fill(vmime::begin(buffer), vmime::end(buffer), 0);
+
+		VASSERT_EQ("Read 2", 11, ustream->read(buffer, count));
+		VASSERT_EQ("Pos 2", 21, ustream->getPosition());
+		VASSERT_TRUE("EOF 2", ustream->eof());
+		VASSERT_EQ("Buffer 2", "TEST BUFFER", vmime::utility::stringUtils::makeStringFromBytes(buffer, 11));
+	}
+
+	void testSkipCountOverflow() {
+
+		const vmime::size_t count = static_cast <vmime::size_t>(-3);
+
+		vmime::shared_ptr <seekableInputStream> ustream;
+		vmime::shared_ptr <seekableInputStreamRegionAdapter> stream = createStream(&ustream);
+
+		stream->seek(5);
+
+		VASSERT_EQ("Skip 1", 6, stream->skip(count));
+		VASSERT_EQ("Pos 1", 11, stream->getPosition());
+		VASSERT_TRUE("EOF 1", stream->eof());
+
+		ustream->seek(10);
+
+		VASSERT_EQ("Skip 2", 11, ustream->skip(count));
+		VASSERT_EQ("Pos 2", 21, ustream->getPosition());
+		VASSERT_TRUE("EOF 2", ustream->eof());
 	}
 
 VMIME_TEST_SUITE_END

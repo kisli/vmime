@@ -59,9 +59,10 @@ size_t seekableInputStreamRegionAdapter::read(byte_t* const data, const size_t c
 
 	size_t readBytes = 0;
 
-	if (m_position + count >= m_length) {
+	const size_t remaining = m_length - m_position;
 
-		const size_t remaining = m_length - m_position;
+	if (remaining <= count) {
+
 		readBytes = m_stream->read(data, remaining);
 
 	} else {
@@ -77,9 +78,10 @@ size_t seekableInputStreamRegionAdapter::read(byte_t* const data, const size_t c
 
 size_t seekableInputStreamRegionAdapter::skip(const size_t count) {
 
-	if (m_position + count >= m_length) {
+	const size_t remaining = m_length - m_position;
 
-		const size_t remaining = m_length - m_position;
+	if (remaining <= count) {
+
 		m_position += remaining;
 		return remaining;
 
