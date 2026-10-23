@@ -42,6 +42,48 @@ header::~header() {
 }
 
 
+void header::parseImpl(
+	parsingContext& ctx,
+	const shared_ptr <utility::parserInputStreamAdapter>& parser,
+	const size_t position,
+	const size_t end,
+	size_t* newPosition
+) {
+
+	// Fields cannot extend beyond the first empty line, which ends the
+	// header: only extract up to it, not the body which follows
+	size_t headerEnd = end;
+
+	for (size_t pos = position ; pos < end ; ) {
+
+		parser->seek(pos);
+
+		const byte_t c = parser->peekByte();
+
+		if (c == '\n') {
+
+			headerEnd = pos + 1;
+			break;
+
+		} else if (c == '\r' && pos + 1 < end && parser->matchBytes("\r\n", 2)) {
+
+			headerEnd = pos + 2;
+			break;
+		}
+
+		const size_t eol = parser->findNext("\n", pos, end);
+
+		if (eol == npos) {
+			break;
+		}
+
+		pos = eol + 1;
+	}
+
+	component::parseImpl(ctx, parser, position, headerEnd, newPosition);
+}
+
+
 /*
 
  RFC #822:

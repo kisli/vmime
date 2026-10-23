@@ -33,10 +33,7 @@
 #include "vmime/net/pop3/POP3Folder.hpp"
 #include "vmime/net/pop3/POP3Store.hpp"
 
-#include "vmime/utility/outputStreamAdapter.hpp"
 #include "vmime/utility/outputStreamStringAdapter.hpp"
-
-#include <sstream>
 
 
 namespace vmime {
@@ -262,13 +259,13 @@ void POP3Message::setFlags(const int /* flags */, const int /* mode */) {
 
 shared_ptr <vmime::message> POP3Message::getParsedMessage() {
 
-	std::ostringstream oss;
-	utility::outputStreamAdapter os(oss);
+	string buffer;
+	utility::outputStreamStringAdapter os(buffer);
 
 	extract(os);
 
 	shared_ptr <vmime::message> msg = make_shared <vmime::message>();
-	msg->parse(oss.str());
+	msg->parse(buffer);
 
 	return msg;
 }

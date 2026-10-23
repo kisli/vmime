@@ -158,6 +158,8 @@ VMIME_TEST_SUITE_BEGIN(maildirStoreTest)
 		VMIME_TEST(testListMessages_KMail)
 		VMIME_TEST(testListMessages_Courier)
 
+		VMIME_TEST(testFetchHeader)
+
 		VMIME_TEST(testRenameFolder_KMail)
 		VMIME_TEST(testRenameFolder_Courier)
 
@@ -318,6 +320,55 @@ public:
 		msg->extract(os);
 
 		VASSERT_EQ("Message contents", TEST_MESSAGE_1, oss.str());
+
+		folder->close(false);
+
+		destroyMaildir();
+	}
+
+
+	void testFetchHeader() {
+
+		// The empty line which ends the header straddles the 1 KiB blocks
+		// in which the message file is read
+		const vmime::string message =
+			"From: <test@vmime.org>\r\n"
+			"X-Pad: " + vmime::string(968, 'x') + "\r\n"
+			"Subject: Large header\r\n"
+			"\r\n"
+			"Body-Field: not a header\r\n"
+			"\r\n"
+			"Hello, world!";
+
+		VASSERT_EQ("Separator position", 1022, message.find("\r\n\r\n"));
+
+		const vmime::string files[] = {
+			"/Folder/cur/1043236113.351.EmqD" TEST_FLAGS_DELIMITER "S", message,
+			"*"  // end
+		};
+
+		createMaildir(TEST_MAILDIR_KMAIL, files);
+
+		vmime::shared_ptr <vmime::net::store> store = createAndConnectStore();
+		vmime::shared_ptr <vmime::net::folder> folder = store->getFolder(fpath() / "Folder");
+
+		folder->open(vmime::net::folder::MODE_READ_ONLY);
+
+		vmime::shared_ptr <vmime::net::message> msg = folder->getMessage(1);
+
+		folder->fetchMessage(msg, vmime::net::fetchAttributes::FULL_HEADER);
+
+		VASSERT_EQ("Field count", 3, msg->getHeader()->getFieldCount());
+		VASSERT_EQ("Last field", "Subject", msg->getHeader()->getFieldAt(2)->getName());
+
+		vmime::shared_ptr <vmime::message> parsedMsg = msg->getParsedMessage();
+
+		std::ostringstream oss;
+		vmime::utility::outputStreamAdapter os(oss);
+		parsedMsg->getBody()->getContents()->extract(os);
+
+		VASSERT_EQ("Parsed field count", 3, parsedMsg->getHeader()->getFieldCount());
+		VASSERT_EQ("Parsed body", "Body-Field: not a header\r\n\r\nHello, world!", oss.str());
 
 		folder->close(false);
 
