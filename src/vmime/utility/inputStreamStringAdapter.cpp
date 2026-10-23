@@ -64,11 +64,11 @@ void inputStreamStringAdapter::reset() {
 
 size_t inputStreamStringAdapter::read(byte_t* const data, const size_t count) {
 
-	if (m_pos + count >= m_end) {
+	const size_t remaining = m_end - m_pos;
 
-		const size_t remaining = m_end - m_pos;
+	if (remaining <= count) {
 
-		std::copy(m_buffer.begin() + m_pos, m_buffer.end(), data);
+		std::copy(m_buffer.begin() + m_pos, m_buffer.begin() + m_end, data);
 		m_pos = m_end;
 
 		return remaining;
@@ -85,9 +85,10 @@ size_t inputStreamStringAdapter::read(byte_t* const data, const size_t count) {
 
 size_t inputStreamStringAdapter::skip(const size_t count) {
 
-	if (m_pos + count >= m_end) {
+	const size_t remaining = m_end - m_pos;
 
-		const size_t remaining = m_end - m_pos;
+	if (remaining <= count) {
+
 		m_pos = m_end;
 
 		return remaining;
