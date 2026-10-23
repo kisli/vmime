@@ -30,6 +30,27 @@ jobs:
         sudo make install
         make test
 
+  build-linux-sanitizers:
+    name: build-linux-sanitizers (asan, ubsan)
+    runs-on: ubuntu-26.04
+    steps:
+    - name: install-deps
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends cmake g++ libcppunit-dev libgnutls28-dev libgsasl-dev libicu-dev make pkg-config
+    - name: clone-vmime
+      uses: actions/checkout@v4
+    - name: buildall
+      env:
+        ASAN_OPTIONS: detect_leaks=1
+        LSAN_OPTIONS: suppressions=${{ github.workspace }}/tests/lsan.supp
+        UBSAN_OPTIONS: print_stacktrace=1
+      run: |
+        set -ex
+        cmake . -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer" -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined" -DCMAKE_SHARED_LINKER_FLAGS="-fsanitize=address,undefined" -DVMIME_SENDMAIL_PATH:STRING="/usr/sbin/sendmail" -DVMIME_HAVE_TLS_SUPPORT:BOOL=ON -DVMIME_TLS_SUPPORT_LIB:STRING=gnutls -DVMIME_CHARSETCONV_LIB:STRING=icu -DVMIME_BUILD_TESTS=ON -DVMIME_BUILD_SAMPLES=OFF
+        make "-j$(nproc)"
+        ctest --output-on-failure
+
   build-cygwin:
     name: build-cygwin (openssl, iconv)
     runs-on: windows-latest

@@ -35,7 +35,8 @@ parsingContext::parsingContext()
 
 parsingContext::parsingContext(const parsingContext& ctx)
 	: context(ctx),
-	  m_headerParseErrorRecovery(vmime::headerParseRecoveryMethod::SKIP_LINE) {
+	  m_headerParseErrorRecovery(vmime::headerParseRecoveryMethod::SKIP_LINE),
+	  m_maxNestingDepth(ctx.m_maxNestingDepth) {
 
 }
 
@@ -82,6 +83,18 @@ bool parsingContext::getUseMyHostname() const {
 void parsingContext::setUseMyHostname(bool useMyHostname) {
 
 	m_useMyHostname = useMyHostname;
+}
+
+
+size_t parsingContext::getMaxNestingDepth() const {
+
+	return m_maxNestingDepth;
+}
+
+
+void parsingContext::setMaxNestingDepth(const size_t maxDepth) {
+
+	m_maxNestingDepth = maxDepth;
 }
 
 
