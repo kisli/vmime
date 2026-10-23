@@ -62,27 +62,22 @@ const string parserInputStreamAdapter::extract(const size_t begin, const size_t 
 
 	const size_t initialPos = m_stream->getPosition();
 
-	byte_t *buffer = NULL;
-
 	try {
 
-		buffer = new byte_t[end - begin + 1];
+		// Read directly into the string: going through a byte_t buffer costs
+		// a second copy, which is done byte by byte (types differ)
+		string str(end - begin, '\0');
 
 		m_stream->seek(begin);
 
-		const size_t readBytes = m_stream->read(buffer, end - begin);
-		buffer[readBytes] = '\0';
+		const size_t readBytes = m_stream->read(reinterpret_cast <byte_t*>(&str[0]), str.length());
+		str.resize(readBytes);
 
 		m_stream->seek(initialPos);
-
-		string str(buffer, buffer + readBytes);
-		delete [] buffer;
 
 		return str;
 
 	} catch (...) {
-
-		delete [] buffer;
 
 		m_stream->seek(initialPos);
 		throw;
