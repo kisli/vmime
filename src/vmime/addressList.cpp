@@ -26,6 +26,7 @@
 #include "vmime/exception.hpp"
 #include "vmime/mailboxList.hpp"
 #include "vmime/mailboxGroup.hpp"
+#include "vmime/utility/outputStreamStringAdapter.hpp"
 
 
 namespace vmime {
@@ -87,21 +88,43 @@ void addressList::generateImpl(
 
 	size_t pos = curLinePos;
 
-	generationContext tmpCtx(ctx);
-	tmpCtx.setMaxLineLength(tmpCtx.getMaxLineLength() - 2);
+	// Leave room for the comma after all addresses but the last one
+	generationContext commaCtx(ctx);
 
-	if (!m_list.empty()) {
+	if (ctx.getMaxLineLength() != lineLengthLimits::infinite &&
+	    ctx.getMaxLineLength() > NEW_LINE_SEQUENCE_LENGTH + 1) {
 
-		for (std::vector <shared_ptr <address> >::const_iterator i = m_list.begin() ; ; ) {
+		commaCtx.setMaxLineLength(ctx.getMaxLineLength() - 1);
+	}
 
-			(*i)->generate(ctx, os, pos, &pos);
+	for (std::vector <shared_ptr <address> >::const_iterator i = m_list.begin() ;
+	     i != m_list.end() ; ++i) {
 
-			if (++i == m_list.end()) {
-				break;
-			}
+		const generationContext& addrCtx = (i + 1 == m_list.end()) ? ctx : commaCtx;
 
-			os << ", ";
-			pos += 2;
+		if (i == m_list.begin()) {
+			(*i)->generate(addrCtx, os, pos, &pos);
+			continue;
+		}
+
+		string tmp;
+		utility::outputStreamStringAdapter tmpStream(tmp);
+		size_t tmpPos = 0;
+
+		(*i)->generate(addrCtx, tmpStream, pos + 2, &tmpPos);
+
+		// Unless the address fits entirely after ", ", it starts a new line,
+		// with the fold after the comma
+		if (pos > NEW_LINE_SEQUENCE_LENGTH &&
+		    (tmp.find(CRLF) != string::npos || tmpPos > addrCtx.getMaxLineLength())) {
+
+			os << "," << NEW_LINE_SEQUENCE;
+			(*i)->generate(addrCtx, os, NEW_LINE_SEQUENCE_LENGTH, &pos);
+
+		} else {
+
+			os << ", " << tmp;
+			pos = tmpPos;
 		}
 	}
 

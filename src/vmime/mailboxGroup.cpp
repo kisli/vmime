@@ -24,6 +24,7 @@
 #include "vmime/mailboxGroup.hpp"
 #include "vmime/parserHelpers.hpp"
 #include "vmime/exception.hpp"
+#include "vmime/utility/outputStreamStringAdapter.hpp"
 
 
 namespace vmime {
@@ -161,9 +162,6 @@ void mailboxGroup::generateImpl(
 
 	size_t pos = curLinePos;
 
-	generationContext tmpCtx(ctx);
-	tmpCtx.setMaxLineLength(ctx.getMaxLineLength() - 2);
-
 	m_name.encodeAndFold(
 		ctx, os, pos, &pos,
 		forceEncode ? text::FORCE_ENCODING : 0
@@ -172,21 +170,42 @@ void mailboxGroup::generateImpl(
 	os << ":";
 	++pos;
 
+	// Leave room for the ',' or ';' after each mailbox
+	generationContext mboxCtx(ctx);
+
+	if (ctx.getMaxLineLength() != lineLengthLimits::infinite &&
+	    ctx.getMaxLineLength() > NEW_LINE_SEQUENCE_LENGTH + 1) {
+
+		mboxCtx.setMaxLineLength(ctx.getMaxLineLength() - 1);
+	}
+
 	for (std::vector <shared_ptr <mailbox> >::const_iterator it = m_list.begin() ;
 	     it != m_list.end() ; ++it) {
 
 		if (it != m_list.begin()) {
-
-			os << ", ";
-			pos += 2;
-
-		} else {
-
-			os << " ";
+			os << ",";
 			++pos;
 		}
 
-		(*it)->generate(tmpCtx, os, pos, &pos);
+		string tmp;
+		utility::outputStreamStringAdapter tmpStream(tmp);
+		size_t tmpPos = 0;
+
+		(*it)->generate(mboxCtx, tmpStream, pos + 1, &tmpPos);
+
+		// Unless the mailbox fits entirely after a space, it starts a new
+		// line, with the fold in place of the space
+		if (pos > NEW_LINE_SEQUENCE_LENGTH &&
+		    (tmp.find(CRLF) != string::npos || tmpPos > mboxCtx.getMaxLineLength())) {
+
+			os << NEW_LINE_SEQUENCE;
+			(*it)->generate(mboxCtx, os, NEW_LINE_SEQUENCE_LENGTH, &pos);
+
+		} else {
+
+			os << " " << tmp;
+			pos = tmpPos;
+		}
 	}
 
 	os << ";";

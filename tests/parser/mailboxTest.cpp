@@ -34,6 +34,10 @@ VMIME_TEST_SUITE_BEGIN(mailboxTest)
 		VMIME_TEST(testExcessiveQuoting)
 		VMIME_TEST(testSpacing)
 		VMIME_TEST(testInternationalizedEmail)
+		VMIME_TEST(testQuotedNameSpecials)
+		VMIME_TEST(testQuotedNameFolding)
+		VMIME_TEST(testFoldPoints)
+		VMIME_TEST(testFoldBeforeAddress)
 	VMIME_TEST_LIST_END
 
 
@@ -214,6 +218,127 @@ VMIME_TEST_SUITE_BEGIN(mailboxTest)
 		vmime::utility::outputStreamAdapter os(oss);
 		m.generate(gctx, os);
 		VASSERT_EQ("3", "\"J\xc3\xa4ger\" <vincent@vmime.org>", oss.str());
+	}
+
+	void testQuotedNameSpecials() {
+
+		using namespace vmime;
+
+		// '"' and '\' are escaped inside the quoted-string
+		mailbox m1(text("Meier, Hans \"Hansi\"", charsets::UTF_8), emailAddress("x@example.com"));
+		VASSERT_EQ("1", "\"Meier, Hans \\\"Hansi\\\"\" <x@example.com>", m1.generate());
+
+		mailbox m2(text("IT \\ Support", charsets::UTF_8), emailAddress("x@example.com"));
+		VASSERT_EQ("2", "\"IT \\\\ Support\" <x@example.com>", m2.generate());
+
+		mailbox back;
+		back.parse(m1.generate());
+		VASSERT_EQ("3", "Meier, Hans \"Hansi\"", back.getName().getWholeBuffer());
+		back.parse(m2.generate());
+		VASSERT_EQ("4", "IT \\ Support", back.getName().getWholeBuffer());
+	}
+
+	void testQuotedNameFolding() {
+
+		using namespace vmime;
+
+		generationContext ctx;
+		ctx.setMaxLineLength(78);
+
+		// Fits exactly
+		std::string out;
+		utility::outputStreamStringAdapter os(out);
+		word("Doe, John", charsets::US_ASCII).generate(ctx, os, 67, NULL, text::QUOTE_IF_POSSIBLE, NULL);
+		VASSERT_EQ("1", "\"Doe, John\"", out);
+
+		// Does not fit: the quotes are kept, the fold goes inside
+		mailbox m1(text("Doe, John", charsets::UTF_8), emailAddress("john@example.com"));
+		VASSERT_EQ("2", "\"Doe,\r\n John\" <john@example.com>", m1.generate(78, 68));
+
+		mailbox back;
+		back.parse(m1.generate(78, 68));
+		VASSERT_EQ("3", "Doe, John", back.getName().getWholeBuffer());
+
+		// Longer than a line
+		const std::string name =
+			"Very Long Department Name, With Commas, And More Commas, Until It Is Longer Than A Line";
+		mailbox m2(text(name, charsets::UTF_8), emailAddress("lc@example.com"));
+		VASSERT_EQ(
+			"4",
+			"\"Very Long Department Name, With Commas, And More Commas, Until It Is\r\n"
+			" Longer Than A Line\" <lc@example.com>",
+			m2.generate(78, 4)
+		);
+
+		back.parse(m2.generate(78, 4));
+		VASSERT_EQ("5", name, back.getName().getWholeBuffer());
+
+		// A double space is only kept inside quotes
+		mailbox m3(text("John  Doe Smith", charsets::UTF_8), emailAddress("js@example.com"));
+		VASSERT_EQ("6", "\"John  Doe\r\n Smith\" <js@example.com>", m3.generate(78, 66));
+
+		// Atoms may still be folded without quotes
+		mailbox m4(text("Bob Builder", charsets::UTF_8), emailAddress("bob@example.com"));
+		VASSERT_EQ("7", "Bob\r\n Builder <bob@example.com>", m4.generate(78, 72));
+	}
+
+	void testFoldPoints() {
+
+		using namespace vmime;
+
+		// No fold after '\' or inside a white-space run, which a lenient
+		// parser would not unfold to the same text
+		const char* names[] = {
+			"IT \\ Support Department of the Central Administration Office",
+			"Doe,  John   Central Office Team North and South and East and West",
+		};
+
+		generationContext ctx;
+		ctx.setMaxLineLength(78);
+
+		for (const char* name : names) {
+
+			for (size_t col = 4 ; col < 78 ; ++col) {
+
+				std::string out;
+				utility::outputStreamStringAdapter os(out);
+				text(name, charsets::UTF_8).encodeAndFold(ctx, os, col, NULL, text::QUOTE_IF_POSSIBLE);
+
+				VASSERT(out, out.find("\\\r\n") == std::string::npos);
+				VASSERT(out, out.find(" \r\n") == std::string::npos);
+				VASSERT(out, out.find("\r\n  ") == std::string::npos);
+
+				mailbox back;
+				back.parse(out + " <x@example.com>");
+				VASSERT_EQ(out, name, back.getName().getWholeBuffer());
+			}
+		}
+	}
+
+	void testFoldBeforeAddress() {
+
+		using namespace vmime;
+
+		// The fold replaces the space before "<"
+		mailbox m1(text("Carol Smith-Jones", charsets::UTF_8), emailAddress("carol.smith-jones@example.com"));
+		VASSERT_EQ("1", "\"Carol Smith-Jones\"\r\n <carol.smith-jones@example.com>", m1.generate(78, 30));
+
+		// A bare address is folded only if it then fits
+		generationContext ctx;
+		ctx.setMaxLineLength(78);
+
+		std::string out;
+		utility::outputStreamStringAdapter os(out);
+		size_t pos = 0;
+
+		mailbox m2(emailAddress("first.person@example.com"));
+		m2.generate(ctx, os, 60, &pos);
+		VASSERT_EQ("2", "\r\n first.person@example.com", out);
+		VASSERT_EQ("3", 25, pos);
+
+		const std::string addr = std::string(70, 'x') + "@example.com";
+		mailbox m3((emailAddress(addr)));
+		VASSERT_EQ("4", addr, m3.generate(78, 4));
 	}
 
 	void testAPI() {

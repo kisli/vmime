@@ -29,6 +29,8 @@ VMIME_TEST_SUITE_BEGIN(mailboxListTest)
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testParseGroup)
 		VMIME_TEST(testBrokenGroup)
+		VMIME_TEST(testGenerateFolding)
+		VMIME_TEST(testParseQuotedSpecials)
 	VMIME_TEST_LIST_END
 
 
@@ -57,6 +59,65 @@ VMIME_TEST_SUITE_BEGIN(mailboxListTest)
 		mboxList.parse(bad);
 
 		VASSERT_EQ("count", 0, mboxList.getMailboxCount());
+	}
+
+	void testGenerateFolding() {
+
+		using namespace vmime;
+
+		mailboxList ml;
+		ml.appendMailbox(make_shared <mailbox>(text("Alice Allison", charsets::UTF_8), emailAddress("alice@example.com")));
+		ml.appendMailbox(make_shared <mailbox>(text("Bob Builder", charsets::UTF_8), emailAddress("bob@example.com")));
+		ml.appendMailbox(make_shared <mailbox>(text("Doe, John", charsets::UTF_8), emailAddress("john@example.com")));
+		ml.appendMailbox(make_shared <mailbox>(text("O'Brien; Pat", charsets::UTF_8), emailAddress("pat@example.com")));
+		ml.appendMailbox(make_shared <mailbox>(text("Carol <c> Smith", charsets::UTF_8), emailAddress("carol@example.com")));
+		ml.appendMailbox(make_shared <mailbox>(text("J\xc3\xbcrgen M\xc3\xbcller", charsets::UTF_8), emailAddress("juergen@example.com")));
+		ml.appendMailbox(make_shared <mailbox>(emailAddress("first.person@example.com")));
+
+		// Whole mailboxes move to the next line, the fold replaces the
+		// space after the comma
+		VASSERT_EQ(
+			"1",
+			"\"Alice Allison\" <alice@example.com>, \"Bob Builder\" <bob@example.com>,\r\n"
+			" \"Doe, John\" <john@example.com>, \"O'Brien; Pat\" <pat@example.com>,\r\n"
+			" \"Carol <c> Smith\" <carol@example.com>,\r\n"
+			" =?utf-8?Q?J=C3=BCrgen_M=C3=BCller?= <juergen@example.com>,\r\n"
+			" first.person@example.com",
+			ml.generate(78, 4)
+		);
+
+		mailboxList back;
+		back.parse(ml.generate(78, 4));
+		VASSERT_EQ("2", 7, back.getMailboxCount());
+		VASSERT_EQ("3", "Doe, John", back.getMailboxAt(2)->getName().getWholeBuffer());
+
+		VASSERT_EQ(
+			"4",
+			"\"Alice Allison\" <alice@example.com>, \"Bob Builder\" <bob@example.com>, "
+			"\"Doe, John\" <john@example.com>, \"O'Brien; Pat\" <pat@example.com>, "
+			"\"Carol <c> Smith\" <carol@example.com>, "
+			"=?utf-8?Q?J=C3=BCrgen_M=C3=BCller?= <juergen@example.com>, "
+			"first.person@example.com",
+			ml.generate()
+		);
+	}
+
+	void testParseQuotedSpecials() {
+
+		// '(' inside a quoted-string does not start a comment
+		vmime::mailboxList ml1;
+		ml1.parse("\"F\" <f@x.com>, \"a(b\" <r@x.com>, \"Z\" <s@x.com>");
+
+		VASSERT_EQ("1", 3, ml1.getMailboxCount());
+		VASSERT_EQ("2", "a(b", ml1.getMailboxAt(1)->getName().getWholeBuffer());
+		VASSERT_EQ("3", "r@x.com", ml1.getMailboxAt(1)->getEmail().generate());
+
+		// '"' inside a comment does not start a quoted-string
+		vmime::mailboxList ml2;
+		ml2.parse("(a\"b) <r@x.com>, <s@x.com>");
+
+		VASSERT_EQ("4", 2, ml2.getMailboxCount());
+		VASSERT_EQ("5", "s@x.com", ml2.getMailboxAt(1)->getEmail().generate());
 	}
 
 VMIME_TEST_SUITE_END

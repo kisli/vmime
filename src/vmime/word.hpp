@@ -169,13 +169,15 @@ public:
 		generatorState()
 			: isFirstWord(true),
 			  prevWordIsEncoded(false),
-			  lastCharIsSpace(false) {
+			  lastCharIsSpace(false),
+			  lastCharIsBackslash(false) {
 
 		}
 
 		bool isFirstWord;
 		bool prevWordIsEncoded;
 		bool lastCharIsSpace;
+		bool lastCharIsBackslash;
 	};
 
 	class parserState {
