@@ -39,7 +39,7 @@
 #include "vmime/exception.hpp"
 #include "vmime/platform.hpp"
 
-#include "vmime/utility/outputStreamAdapter.hpp"
+#include "vmime/utility/outputStreamStringAdapter.hpp"
 #include "vmime/utility/stringUtils.hpp"
 
 
@@ -341,17 +341,28 @@ void maildirMessage::fetch(const shared_ptr <maildirFolder>& msgFolder, const fe
 
 			while (!is->eof()) {
 
+				// Only search the empty line which ends the header in the new data
+				// (and the last bytes before, which may be the start of it), not
+				// again in all the data read so far
+				const size_t searchStart = (contents.length() >= 2 ? contents.length() - 2 : 0);
+
 				const size_t read = is->read(buffer, sizeof(buffer));
 				vmime::utility::stringUtils::appendBytesToString(contents, buffer, read);
 
-				const size_t sep1 = contents.rfind("\r\n\r\n");
-				const size_t sep2 = contents.rfind("\n\n");
+				size_t headerEnd = contents.find("\n\n", searchStart);
 
-				if (sep1 != string::npos) {
-					contents.erase(contents.begin() + sep1 + 4, contents.end());
-					break;
-				} else if (sep2 != string::npos) {
-					contents.erase(contents.begin() + sep2 + 2, contents.end());
+				if (headerEnd != string::npos) {
+					headerEnd += 2;
+				}
+
+				const size_t sep = contents.find("\n\r\n", searchStart);
+
+				if (sep != string::npos && sep + 3 < headerEnd) {
+					headerEnd = sep + 3;
+				}
+
+				if (headerEnd != string::npos) {
+					contents.erase(headerEnd);
 					break;
 				}
 			}
@@ -389,13 +400,13 @@ shared_ptr <header> maildirMessage::getOrCreateHeader() {
 
 shared_ptr <vmime::message> maildirMessage::getParsedMessage() {
 
-	std::ostringstream oss;
-	utility::outputStreamAdapter os(oss);
+	string buffer;
+	utility::outputStreamStringAdapter os(buffer);
 
 	extract(os);
 
 	shared_ptr <vmime::message> msg = make_shared <vmime::message>();
-	msg->parse(oss.str());
+	msg->parse(buffer);
 
 	return msg;
 }
