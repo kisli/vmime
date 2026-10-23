@@ -90,8 +90,14 @@ void component::parse(
 
 	} else {
 
+		// Do not wrap the stream again if it already is a parser adapter (eg. when
+		// parsing sub-parts), as each level would add an indirection to all accesses
 		shared_ptr <utility::parserInputStreamAdapter> parser =
-			make_shared <utility::parserInputStreamAdapter>(seekableStream);
+			dynamicCast <utility::parserInputStreamAdapter>(seekableStream);
+
+		if (!parser) {
+			parser = make_shared <utility::parserInputStreamAdapter>(seekableStream);
+		}
 
 		parseImpl(ctx, parser, position, end, newPosition);
 	}

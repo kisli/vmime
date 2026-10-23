@@ -101,6 +101,23 @@ public:
 	  */
 	void setUseMyHostname(bool useMyHostname);
 
+	/** Returns the maximum nesting depth of body parts.
+	  *
+	  * @return maximum nesting depth of body parts
+	  */
+	size_t getMaxNestingDepth() const;
+
+	/** Sets the maximum nesting depth of body parts. The root part (ie. the
+	  * message) has a depth of 0, its sub-parts have a depth of 1, and so on.
+	  * A multipart body part which is at the maximum depth is not split into
+	  * sub-parts: its body contents are kept as is, as for a non-multipart
+	  * body part. This protects against messages crafted to exhaust the stack
+	  * or the CPU. The default is 100.
+	  *
+	  * @param maxDepth maximum nesting depth of body parts
+	  */
+	void setMaxNestingDepth(const size_t maxDepth);
+
 protected:
 
 	headerParseRecoveryMethod::headerLineError m_headerParseErrorRecovery;
@@ -120,6 +137,10 @@ protected:
 	  *  for header fields when one is not present.
 	  */
 	bool m_useMyHostname{true};
+
+	/** Maximum nesting depth of body parts.
+	  */
+	size_t m_maxNestingDepth{100};
 };
 
 

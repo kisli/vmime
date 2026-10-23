@@ -54,10 +54,23 @@ body::~body() {
 }
 
 
+// Returns the number of parts above the specified part
+static size_t getPartDepth(const bodyPart* part) {
+
+	size_t depth = 0;
+
+	for (const bodyPart* p = part->getParentPart() ; p ; p = p->getParentPart()) {
+		++depth;
+	}
+
+	return depth;
+}
+
+
 /*
  * boundaryStart: will become the index for "\r\n--marker"
  * boundaryEnd:   will become the index after "marker", i.e. index for potential trailing "--", "\r\n", etc.
- * return value:  index for "marker"
+ * return value:  index for "marker", or npos if not found before 'end'
  */
 // static
 size_t body::findNextBoundaryPosition(
@@ -69,56 +82,45 @@ size_t body::findNextBoundaryPosition(
 	size_t* boundaryEnd
 ) {
 
-	size_t pos = position;
+	// Boundary should be at the beginning of a line, and should start
+	// with "--". The search starts one byte before 'position', as the
+	// line break may be just before it (eg. at the end of the headers).
+	const string delimiter = "\n--" + boundary;
 
-	for (; pos != npos && pos < end; ++pos) {
+	for (size_t pos = (position == 0 ? 0 : position - 1) ; pos < end ; ++pos) {
 
-		pos = parser->findNext(boundary, pos);
+		pos = parser->findNext(delimiter, pos, end);
 
 		if (pos == npos) {
 			break;  // not found
 		}
 
-		if (pos == 0) {
-			// Boundary is a prefix of another, continue the search (same for the other "continue"s)
-			continue;
-		}
-
-		// Ensure the bytes before boundary are "[LF]--": boundary should be
-		// at the beginning of a line, and should start with "--"
-		if (pos < 3) {
-			continue;
-		}
-		parser->seek(pos - 3);
-		if (!parser->matchBytes("\n--", 3)) {
-			continue;
-		}
-
-		parser->seek(pos + boundary.length());
+		parser->seek(pos + delimiter.length());
 
 		const byte_t next = parser->peekByte();
 
-		// Boundary should be followed by a new line or a dash
+		// Boundary should be followed by a new line or a dash; if not, it is
+		// a prefix of another boundary: continue the search
 		if (!isspace(next) && next != '-') {
 			continue;
 		}
 
 		// Get rid of the "[CR]" just before "[LF]--", if any
 		size_t backwards = 0;
-		if (pos >= 4) {
-			parser->seek(pos - 4);
+		if (pos >= 1) {
+			parser->seek(pos - 1);
 			if (parser->peekByte() == '\r') {
 				++backwards;
 			}
 		}
 
-		*boundaryStart = pos - backwards - 3;
-		*boundaryEnd = pos + boundary.length();
+		*boundaryStart = pos - backwards;
+		*boundaryEnd = pos + delimiter.length();
 
-		return pos;
+		return pos + 3;
 	}
 
-	return pos;
+	return npos;
 }
 
 
@@ -158,7 +160,10 @@ void body::parseImpl(
 
 		const mediaType type = *ctf->getValue <mediaType>();
 
-		if (type.getType() == mediaTypes::MULTIPART) {
+		// Do not split parts nested too deeply, as each level adds to the stack
+		// and scans the contents of its sub-parts: keep their contents as is
+		if (type.getType() == mediaTypes::MULTIPART &&
+		    getPartDepth(m_part) < ctx.getMaxNestingDepth()) {
 
 			isMultipart = true;
 
@@ -180,7 +185,7 @@ void body::parseImpl(
 
 				} else {
 
-					pos = parser->findNext("\n--", position);
+					pos = parser->findNext("\n--", position, end);
 
 					if ((pos != npos) && (pos + 3 < end)) {
 						pos += 3;  // skip \n--
@@ -323,16 +328,19 @@ void body::parseImpl(
 
 			partStart = boundaryEnd;
 
-			// Find the next boundary
-			pos = findNextBoundaryPosition(
-				parser, boundary, boundaryEnd, end, &boundaryStart, &boundaryEnd
-			);
+			// Find the next boundary (none after the last one, which would scan the epilog)
+			if (!lastPart) {
+				pos = findNextBoundaryPosition(
+					parser, boundary, boundaryEnd, end, &boundaryStart, &boundaryEnd
+				);
+			}
 		}
 
 		m_contents = make_shared <emptyContentHandler>();
 
-		// Last part was not found: recover from missing boundary
-		if (!lastPart && pos == npos) {
+		// Last part was not found: recover from missing boundary (but do not
+		// create an empty part when the last boundary is at the very end)
+		if (!lastPart && pos == npos && partStart < end) {
 
 			shared_ptr <bodyPart> part = m_part->createChildPart();
 
