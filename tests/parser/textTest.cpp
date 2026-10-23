@@ -634,6 +634,16 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		back.parse(vmime::text(subject, vmime::charsets::UTF_8).generate());
 
 		VASSERT_EQ("2", subject, back.getWholeBuffer());
+
+		// Neither is a leading tab, nor is a space added
+		vmime::text t;
+		t.appendWord(vmime::make_shared <vmime::word>("foo@", vmime::charset("us-ascii")));
+		t.appendWord(vmime::make_shared <vmime::word>("\t\xc3\xa4", vmime::charset("utf-8")));
+
+		VASSERT_EQ("3", "foo@\t=?utf-8?B?w6Q=?=", t.generate());
+
+		back.parse(t.generate());
+		VASSERT_EQ("4", "foo@\t\xc3\xa4", back.getConvertedText(vmime::charsets::UTF_8));
 	}
 
 	void testWhitespaceAroundFold() {

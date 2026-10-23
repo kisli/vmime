@@ -979,11 +979,18 @@ void word::generate(
 			}
 		}
 
+		// White-space after an unencoded word is displayed (RFC 2047 section
+		// 6.2), so the fold or space added here stands for a leading space
+		// or tab, which is then written as is
+		const bool leadingWSP =
+			!state->isFirstWord && !state->prevWordIsEncoded && isWSP(m_buffer[0]);
+		const char sep = leadingWSP ? m_buffer[0] : ' ';
+
 		bool sepAdded = false;
 
 		if (startNewLine) {
 
-			os << NEW_LINE_SEQUENCE;
+			os << CRLF << sep;
 			curLineLength = NEW_LINE_SEQUENCE_LENGTH;
 
 			state->lastCharIsSpace = true;
@@ -993,16 +1000,14 @@ void word::generate(
 		// Encode and fold input buffer
 		if (!startNewLine && !state->isFirstWord && !state->lastCharIsSpace) {
 
-			os << " "; // Separate from previous word
+			os << sep; // Separate from previous word
 			++curLineLength;
 
 			state->lastCharIsSpace = true;
 			sepAdded = true;
 		}
 
-		// White-space after an unencoded word is displayed (RFC 2047 section
-		// 6.2), so the fold or space just added stands for a leading space
-		if (sepAdded && !state->isFirstWord && !state->prevWordIsEncoded && m_buffer[0] == ' ') {
+		if (sepAdded && leadingWSP) {
 			wordEnc.getNextChunk(1);
 		}
 
