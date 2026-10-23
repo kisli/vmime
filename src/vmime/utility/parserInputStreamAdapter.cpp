@@ -92,13 +92,14 @@ const string parserInputStreamAdapter::extract(const size_t begin, const size_t 
 
 size_t parserInputStreamAdapter::findNext(
 	const string& token,
-	const size_t startPosition
+	const size_t startPosition,
+	const size_t endPosition
 ) {
 
-	static const unsigned int BUFFER_SIZE = 4096;
+	static const size_t BUFFER_SIZE = 4096;
 
 	// Token must not be longer than BUFFER_SIZE/2
-	if (token.empty() || token.length() > BUFFER_SIZE / 2) {
+	if (token.empty() || token.length() > BUFFER_SIZE / 2 || startPosition >= endPosition) {
 		return npos;
 	}
 
@@ -109,54 +110,66 @@ size_t parserInputStreamAdapter::findNext(
 	try {
 
 		byte_t findBuffer[BUFFER_SIZE];
-		byte_t* findBuffer1 = findBuffer;
-		byte_t* findBuffer2 = findBuffer + (BUFFER_SIZE / 2);
-
 		size_t findBufferLen = 0;
-		size_t findBufferOffset = 0;
 
-		bool isEOF = false;
+		// Position of the first byte of the buffer in the stream
+		size_t findBufferOffset = startPosition;
 
-		// Fill in initial buffer
-		findBufferLen = read(findBuffer, BUFFER_SIZE);
+		// Number of bytes which can still be read before reaching 'endPosition'
+		size_t remaining = endPosition - startPosition;
 
-		while (findBufferLen != 0) {
+		// Start with small reads, and double their size after each one: the
+		// cost of a search is then proportional to the distance to the token,
+		// which matters when the caller rejects a match and searches again
+		size_t readSize = 64;
+
+		while (true) {
+
+			const size_t bytesRead = read(
+				findBuffer + findBufferLen,
+				std::min(std::min(readSize, BUFFER_SIZE - findBufferLen), remaining)
+			);
+
+			findBufferLen += bytesRead;
+			remaining -= bytesRead;
 
 			// Find token
-			for (byte_t *begin = findBuffer, *end = findBuffer + findBufferLen - token.length() ;
-			     begin <= end ; ++begin) {
+			if (findBufferLen >= token.length()) {
 
-				if (begin[0] == token[0] &&
-				    (token.length() == 1 ||
-				     memcmp(static_cast <const void *>(&begin[1]),
-				            static_cast <const void *>(token.data() + 1),
-				            token.length() - 1) == 0)) {
+				const byte_t* const last = findBuffer + findBufferLen - token.length();
 
-					seek(initialPos);
+				for (const byte_t* begin = findBuffer ; begin <= last ; ++begin) {
 
-					return startPosition + findBufferOffset + (begin - findBuffer);
+					begin = static_cast <const byte_t*>(memchr(begin, token[0], last - begin + 1));
+
+					if (!begin) {
+						break;
+					}
+
+					if (memcmp(begin + 1, token.data() + 1, token.length() - 1) == 0) {
+
+						seek(initialPos);
+
+						return findBufferOffset + (begin - findBuffer);
+					}
 				}
 			}
 
-			// Rotate buffer
-			memcpy(findBuffer1, findBuffer2, (BUFFER_SIZE / 2));
-
-			// Read more bytes
-			if (findBufferLen < BUFFER_SIZE && (eof() || isEOF)) {
-
+			// End of stream, or 'endPosition' reached
+			if (bytesRead == 0 || remaining == 0) {
 				break;
-
-			} else {
-
-				const size_t bytesRead = read(findBuffer2, BUFFER_SIZE / 2);
-
-				if (bytesRead == 0) {
-					isEOF = true;
-				}
-
-				findBufferLen = (BUFFER_SIZE / 2) + bytesRead;
-				findBufferOffset += (BUFFER_SIZE / 2);
 			}
+
+			// Keep the bytes which have not been tested yet as the start of
+			// the token: they may be the beginning of an occurrence
+			const size_t keep = std::min(findBufferLen, token.length() - 1);
+
+			memmove(findBuffer, findBuffer + findBufferLen - keep, keep);
+
+			findBufferOffset += findBufferLen - keep;
+			findBufferLen = keep;
+
+			readSize = std::min(readSize * 2, BUFFER_SIZE);
 		}
 
 		seek(initialPos);
