@@ -407,8 +407,11 @@ void word::parseWithState(
 							const size_t theoricalEncodedLen =
 								((decodedLen + ((decodedLen % 3) ? (3 - (decodedLen % 3)) : 0) ) / 3) * 4;
 
-							if (state && actualEncodedLen != theoricalEncodedLen) {
-								state->undecodedBytes.assign(dataPos + theoricalEncodedLen, dataEnd);
+							// Both lengths are of encodedBuffer, which may start with the
+							// previous word's leftover, so the rest must come from it too:
+							// offset from dataPos it can run past dataEnd.
+							if (state && actualEncodedLen > theoricalEncodedLen) {
+								state->undecodedBytes = encodedBuffer.substr(theoricalEncodedLen);
 							}
 						}
 
