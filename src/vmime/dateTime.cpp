@@ -781,6 +781,10 @@ void datetime::parseImpl(
 		m_zone = 0;
 	}
 
+	// The day was only bounded to 1-31 above: "31 Feb" parses, and then
+	// generating the weekday throws std::out_of_range.
+	m_day = std::min(m_day, utility::datetimeUtils::getDaysInMonth(m_year, m_month));
+
 	setParsedBounds(position, end);
 
 	if (newPosition) {
