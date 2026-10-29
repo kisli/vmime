@@ -69,7 +69,14 @@ VMIME_TEST_SUITE_BEGIN(datetimeTest)
 			  vmime::datetime(2004, 11, 18, 21, 44, 54, vmime::datetime::GMT3) },
 
 			{ /* 7 */ "Thu Nov 18 12:11:16 2004 +0100",
-			  vmime::datetime(2004, 11, 18, 12, 11, 16, vmime::datetime::GMT1) }
+			  vmime::datetime(2004, 11, 18, 12, 11, 16, vmime::datetime::GMT1) },
+
+			// Day past the end of its month: clamped to the last day
+			{ /* 8 */ "Tue, 31 Feb 2026 10:00:00 +0000",
+			  vmime::datetime(2026, 2, 28, 10, 0, 0, vmime::datetime::GMT) },
+
+			{ /* 9 */ "Thu, 30 Feb 2024 10:00:00 +0000",
+			  vmime::datetime(2024, 2, 29, 10, 0, 0, vmime::datetime::GMT) }
 		};
 
 		for (unsigned int i = 0 ; i < sizeof(pairs) / sizeof(pairs[0]) ; ++i) {
@@ -215,6 +222,13 @@ VMIME_TEST_SUITE_BEGIN(datetimeTest)
 		vmime::datetime d1(2005, 7, 8, 4, 5, 6, 1 * 60 + 23);
 
 		VASSERT_EQ("1", "Fri, 8 Jul 2005 04:05:06 +0123", d1.generate());
+
+		// A parsed day that does not exist in its month used to make the
+		// weekday lookup throw std::out_of_range here
+		vmime::datetime d2;
+		d2.parse("Tue, 31 Feb 2026 10:00:00 +0000");
+
+		VASSERT_EQ("2", "Sat, 28 Feb 2026 10:00:00 +0000", d2.generate());
 	}
 
 	void testFromTime() {
