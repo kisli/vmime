@@ -181,7 +181,10 @@ bool SMTPTransport::mailboxNeedsUTF8(const mailbox& mb) {
 		   utility::stringUtils::is7bit(mb.getEmail().getLocalName().getBuffer())
 		&& utility::stringUtils::is7bit(mb.getEmail().getDomainName().getBuffer());
 
-	for (size_t i = 0, n = mb.getName().getWordCount() ; all7bit && i != n ; ++i) {
+	if (!all7bit)
+		return true;
+
+	for (size_t i = 0, n = mb.getName().getWordCount() ; i != n ; ++i) {
 		all7bit = utility::stringUtils::is7bit(mb.getName().getWordAt(i)->getBuffer());
 	}
 
