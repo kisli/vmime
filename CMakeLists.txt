@@ -115,11 +115,29 @@ FIND_PACKAGE(ICU QUIET)
 
 IF(ICU_LIBRARIES)
 	SET(VMIME_CHARSETCONV_LIB_DETECTED "icu")
-	SET(CMAKE_CXX_STANDARD 17)
 ELSEIF(ICONV_FOUND)
 	SET(VMIME_CHARSETCONV_LIB_DETECTED "iconv")
 ELSEIF(WIN32)
 	SET(VMIME_CHARSETCONV_LIB_DETECTED "win")
+ENDIF()
+
+SET(
+	VMIME_CHARSETCONV_LIB
+	"${VMIME_CHARSETCONV_LIB_DETECTED}"
+	CACHE
+	STRING
+	"Library to use for charset conversion (win, iconv or icu)"
+)
+SET_PROPERTY(
+	CACHE
+	VMIME_CHARSETCONV_LIB
+	PROPERTY STRINGS win iconv icu
+)
+
+# ICU 75+ requires C++17; only upgrade when ICU is actually selected,
+# not merely installed
+IF(VMIME_CHARSETCONV_LIB STREQUAL "icu")
+	SET(CMAKE_CXX_STANDARD 17)
 ENDIF()
 
 # Source files
@@ -644,7 +662,7 @@ IF(VMIME_HAVE_TLS_SUPPORT)
 		"gnutls"
 		CACHE
 		STRING
-		"Library to use for SSL/TLS conversion"
+		"Library to use for SSL/TLS support (gnutls or openssl)"
 	)
 	SET_PROPERTY(
 		CACHE
@@ -725,20 +743,6 @@ ENDIF(VMIME_HAVE_TLS_SUPPORT)
 
 ##############################################################################
 # Charset conversion library (2/2)
-
-SET(
-	VMIME_CHARSETCONV_LIB
-	"${VMIME_CHARSETCONV_LIB_DETECTED}"
-	CACHE
-	STRING
-	"Library to use for charset conversion"
-)
-SET_PROPERTY(
-	CACHE
-	VMIME_CHARSETCONV_LIB
-	PROPERTY STRINGS win iconv icu
-)
-
 
 IF(VMIME_CHARSETCONV_LIB STREQUAL "iconv")
 
