@@ -314,13 +314,12 @@ wordEncoder::Encoding wordEncoder::guessBestEncoding(
 	// Base64 would be more space-efficient when the ASCII content is
 	// below 83.33%, but QP has a legibility arugment going for it, so we
 	// picked 60%.
-	const size_t asciiCount =
+	// Integer arithmetic, so that x87 excess precision cannot put exactly
+	// 60% on the wrong side; 64-bit, so that it cannot overflow.
+	const vmime_uint64 asciiCount =
 		utility::stringUtils::countASCIIchars(buffer.begin(), buffer.end());
 
-	const double asciiPercent =
-		buffer.length() == 0 ? 1 : static_cast<double>(asciiCount) / static_cast<double>(buffer.length());
-
-	if (asciiPercent < 0.60) {
+	if (asciiCount * 100 < static_cast <vmime_uint64>(buffer.length()) * 60) {
 		return ENCODING_B64;
 	} else {
 		return ENCODING_QP;
