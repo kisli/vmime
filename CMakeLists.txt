@@ -255,8 +255,11 @@ IF(VMIME_BUILD_TESTS)
 		${CMAKE_CURRENT_SOURCE_DIR}/tests/*Test.cpp
 	)
 
+	# Always static: as a shared library (eg. with BUILD_SHARED_LIBS=ON), its
+	# symbols would be hidden by the visibility flags set above
 	ADD_LIBRARY(
 		test-runner
+		STATIC
 		${CMAKE_CURRENT_SOURCE_DIR}/tests/testRunner.cpp ${CMAKE_CURRENT_SOURCE_DIR}/tests/testUtils.cpp
 	)
 
