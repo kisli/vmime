@@ -177,18 +177,24 @@ VMIME_TEST_SUITE_BEGIN(wordEncoderTest)
 			vmime::wordEncoder::ENCODING_QP,
 			vmime::wordEncoder::guessBestEncoding("ASCII only buffer", vmime::charset("us-ascii"))
 		);
+
+		VASSERT_EQ(
+			"2",
+			vmime::wordEncoder::ENCODING_QP,
+			vmime::wordEncoder::guessBestEncoding("", vmime::charset("utf-8"))
+		);
 	}
 
 	void testGuessBestEncoding_B64() {
 
-		// >= 40% non-ASCII => Base64...
+		// More than 40% non-ASCII (4 of 9 bytes) => Base64...
 		VASSERT_EQ(
 			"1",
 			vmime::wordEncoder::ENCODING_B64,
 			vmime::wordEncoder::guessBestEncoding("xxxxx\xc3\xa0\xc3\xa0", vmime::charset("utf-8"))
 		);
 
-		// ...else Quoted-Printable
+		// ...else Quoted-Printable, also at exactly 40% (4 of 10 bytes)
 		VASSERT_EQ(
 			"2",
 			vmime::wordEncoder::ENCODING_QP,

@@ -31,6 +31,7 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		VMIME_TEST(testCopy)
 		VMIME_TEST(testRecommendedEncoding)
 		VMIME_TEST(testNewFromString)
+		VMIME_TEST(testNewFromString_asciiThreshold)
 		VMIME_TEST(testDisplayForm)
 		VMIME_TEST(testParse)
 		VMIME_TEST(testGenerate)
@@ -209,6 +210,30 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		VASSERT_EQ("2.5", c2, t2.getWordAt(1)->getCharset());
 		VASSERT_EQ("2.6", " and then more ASCII chars.", t2.getWordAt(2)->getBuffer());
 		VASSERT_EQ("2.7", vmime::charset(vmime::charsets::US_ASCII), t2.getWordAt(2)->getCharset());
+	}
+
+	void testNewFromString_asciiThreshold() {
+
+		// Less than 60% ASCII chars (5 of 9 bytes): a single word, fully encoded
+		vmime::string s1 = "abcd \xc3\xa4\xc3\xa4";
+		vmime::text t1;
+
+		t1.createFromString(s1, vmime::charset("utf-8"));
+
+		VASSERT_EQ("1.1", 1, t1.getWordCount());
+		VASSERT_EQ("1.2", s1, t1.getWordAt(0)->getBuffer());
+		VASSERT_EQ("1.3", vmime::charset("utf-8"), t1.getWordAt(0)->getCharset());
+
+		// Exactly 60% ASCII chars (6 of 10 bytes): only the non-ASCII word is encoded
+		vmime::text t2;
+
+		t2.createFromString("abcde \xc3\xa4\xc3\xa4", vmime::charset("utf-8"));
+
+		VASSERT_EQ("2.1", 2, t2.getWordCount());
+		VASSERT_EQ("2.2", "abcde", t2.getWordAt(0)->getBuffer());
+		VASSERT_EQ("2.3", vmime::charset(vmime::charsets::US_ASCII), t2.getWordAt(0)->getCharset());
+		VASSERT_EQ("2.4", " \xc3\xa4\xc3\xa4", t2.getWordAt(1)->getBuffer());
+		VASSERT_EQ("2.5", vmime::charset("utf-8"), t2.getWordAt(1)->getCharset());
 	}
 
 	static const vmime::string parseText(const vmime::string& buffer) {
