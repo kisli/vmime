@@ -40,6 +40,8 @@ VMIME_TEST_SUITE_BEGIN(charsetTest)
 
 		// IDNA
 		VMIME_TEST(testEncodeIDNA)
+		VMIME_TEST(testEncodeIDNAReplaceInvalidSequence)
+		VMIME_TEST(testEncodeIDNAStopOnInvalidSequence)
 		VMIME_TEST(testDecodeIDNA)
 
 		VMIME_TEST(testUTF7Support)
@@ -185,6 +187,51 @@ VMIME_TEST_SUITE_BEGIN(charsetTest)
 
 		VASSERT_EQ("3.1", "xn--mgbh0fb", convertHelper("مثال", "utf-8", "idna"));
 		VASSERT_EQ("3.2", "xn--kgbechtv", convertHelper("إختبار", "utf-8", "idna"));
+	}
+
+	void testEncodeIDNAReplaceInvalidSequence() {
+
+		vmime::charsetConverterOptions opts;
+		opts.silentlyReplaceInvalidSequences = true;
+		opts.invalidSequence = "?";
+
+		// Too long for std::string's inline buffer, so that a read past
+		// the end of the input is caught by AddressSanitizer
+		const vmime::string label = "b\xc3\xbc" "cher" + vmime::string(32, 'c');
+
+		// Truncated 3-byte and 4-byte sequences at the end of the input
+		VASSERT_EQ(
+			"1", "xn--bchercccccccccccccccccccccccccccccccc?-h7d",
+			convertHelper(label + "\xe2", "utf-8", "idna", opts)
+		);
+
+		VASSERT_EQ(
+			"2", "xn--bchercccccccccccccccccccccccccccccccc?-h7d",
+			convertHelper(label + "\xf1", "utf-8", "idna", opts)
+		);
+
+		// Invalid sequence in the middle of the input
+		VASSERT_EQ("3", "xn--b?cher-3ya", convertHelper("b\xc3\xbc" "\xff" "cher", "utf-8", "idna", opts));
+	}
+
+	void testEncodeIDNAStopOnInvalidSequence() {
+
+		vmime::charsetConverterOptions opts;
+		opts.silentlyReplaceInvalidSequences = false;
+
+		const vmime::string label = "b\xc3\xbc" "cher" + vmime::string(32, 'c');
+
+		VASSERT_THROW(
+			"1",
+			convertHelper(label + "\xe2", "utf-8", "idna", opts),
+			vmime::exceptions::illegal_byte_sequence_for_charset
+		);
+
+		VASSERT_THROW(
+			"2",
+			convertHelper(label + "\xf1", "utf-8", "idna", opts),
+			vmime::exceptions::illegal_byte_sequence_for_charset
+		);
 	}
 
 	void testDecodeIDNA() {
