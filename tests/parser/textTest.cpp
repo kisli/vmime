@@ -1126,6 +1126,26 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 			"\xe4\xb8\xad\xe6\x96\x87",
 			outText.getConvertedText(vmime::charset("utf-8"))
 		);
+
+		// The bytes carried over from the previous word can outnumber the
+		// next word's own data; this used to throw std::length_error.
+		vmime::text::decodeAndUnfold("=?utf-8?B?5Lit5Li?=\n =?utf-8?B?tA?=", &outText);
+
+		VASSERT_EQ(
+			"4",
+			"\xe4\xb8\xad\xe4\xb8\xad",
+			outText.getConvertedText(vmime::charset("utf-8"))
+		);
+
+		// Only an incomplete quantum is carried over: what follows padding
+		// would never decode, and would swallow the next words
+		vmime::text::decodeAndUnfold("=?utf-8?B?=AAA?=\n =?utf-8?B?5Lit5paH?=", &outText);
+
+		VASSERT_EQ(
+			"5",
+			"\xe4\xb8\xad\xe6\x96\x87",
+			outText.getConvertedText(vmime::charset("utf-8"))
+		);
 	}
 
 	// Ensure that words which encode a non-integral number of characters
