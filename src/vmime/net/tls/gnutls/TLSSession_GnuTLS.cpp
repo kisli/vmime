@@ -155,102 +155,120 @@ TLSSession_GnuTLS::TLSSession_GnuTLS(
 	m_gnutlsSession = new gnutls_session_t;
 
 	if (gnutls_init(m_gnutlsSession, GNUTLS_CLIENT) != 0) {
+
+		delete m_gnutlsSession;
+		m_gnutlsSession = NULL;
+
 		throw std::bad_alloc();
 	}
 
-	// Sets some default priority on the ciphers, key exchange methods,
-	// macs and compression methods.
+	// The destructor will not be called if the constructor throws,
+	// so release the session here if anything goes wrong below
+	try {
+
+		// Sets some default priority on the ciphers, key exchange methods,
+		// macs and compression methods.
 #ifdef VMIME_HAVE_GNUTLS_PRIORITY_FUNCS
-	gnutls_dh_set_prime_bits(*m_gnutlsSession, 128);
+		gnutls_dh_set_prime_bits(*m_gnutlsSession, 128);
 
-	if ((res = gnutls_priority_set_direct
-		(*m_gnutlsSession, m_props->getCipherSuite().c_str(), NULL)) != 0) {
+		if ((res = gnutls_priority_set_direct
+			(*m_gnutlsSession, m_props->getCipherSuite().c_str(), NULL)) != 0) {
 
-		throwTLSException("gnutls_priority_set_direct", res);
-	}
+			throwTLSException("gnutls_priority_set_direct", res);
+		}
 
 #else  // !VMIME_HAVE_GNUTLS_PRIORITY_FUNCS
 
-	gnutls_set_default_priority(*m_gnutlsSession);
+		gnutls_set_default_priority(*m_gnutlsSession);
 
-	// Sets the priority on the certificate types supported by gnutls.
-	// Priority is higher for types specified before others. After
-	// specifying the types you want, you must append a 0.
-	const int certTypePriority[] = { GNUTLS_CRT_X509, 0 };
+		// Sets the priority on the certificate types supported by gnutls.
+		// Priority is higher for types specified before others. After
+		// specifying the types you want, you must append a 0.
+		const int certTypePriority[] = { GNUTLS_CRT_X509, 0 };
 
-	res = gnutls_certificate_type_set_priority(*m_gnutlsSession, certTypePriority);
+		res = gnutls_certificate_type_set_priority(*m_gnutlsSession, certTypePriority);
 
-	if (res < 0) {
-		throwTLSException("gnutls_certificate_type_set_priority", res);
-	}
+		if (res < 0) {
+			throwTLSException("gnutls_certificate_type_set_priority", res);
+		}
 
-	// Sets the priority on the protocol types
-	const int protoPriority[] = { GNUTLS_TLS1, GNUTLS_SSL3, 0 };
+		// Sets the priority on the protocol types
+		const int protoPriority[] = { GNUTLS_TLS1, GNUTLS_SSL3, 0 };
 
-	res = gnutls_protocol_set_priority(*m_gnutlsSession, protoPriority);
+		res = gnutls_protocol_set_priority(*m_gnutlsSession, protoPriority);
 
-	if (res < 0) {
-		throwTLSException("gnutls_certificate_type_set_priority", res);
-	}
+		if (res < 0) {
+			throwTLSException("gnutls_protocol_set_priority", res);
+		}
 
-	// Priority on the ciphers
-	const int cipherPriority[] = {
-		GNUTLS_CIPHER_ARCFOUR_128,
-		GNUTLS_CIPHER_3DES_CBC,
-		GNUTLS_CIPHER_AES_128_CBC,
-		GNUTLS_CIPHER_AES_256_CBC,
-		GNUTLS_CIPHER_ARCFOUR_40,
-		GNUTLS_CIPHER_RC2_40_CBC,
-		GNUTLS_CIPHER_DES_CBC,
-		0
-	};
+		// Priority on the ciphers
+		const int cipherPriority[] = {
+			GNUTLS_CIPHER_ARCFOUR_128,
+			GNUTLS_CIPHER_3DES_CBC,
+			GNUTLS_CIPHER_AES_128_CBC,
+			GNUTLS_CIPHER_AES_256_CBC,
+			GNUTLS_CIPHER_ARCFOUR_40,
+			GNUTLS_CIPHER_RC2_40_CBC,
+			GNUTLS_CIPHER_DES_CBC,
+			0
+		};
 
-	gnutls_cipher_set_priority(*m_gnutlsSession, cipherPriority);
+		gnutls_cipher_set_priority(*m_gnutlsSession, cipherPriority);
 
-	// Priority on MACs
-	const int macPriority[] = {
-		GNUTLS_MAC_SHA,
-		GNUTLS_MAC_MD5,
-		0
-	};
+		// Priority on MACs
+		const int macPriority[] = {
+			GNUTLS_MAC_SHA,
+			GNUTLS_MAC_MD5,
+			0
+		};
 
-	gnutls_mac_set_priority(*m_gnutlsSession, macPriority);
+		gnutls_mac_set_priority(*m_gnutlsSession, macPriority);
 
-	// Priority on key exchange methods
-	const int kxPriority[] = {
-		GNUTLS_KX_RSA,
-		GNUTLS_KX_DHE_DSS,
-		GNUTLS_KX_DHE_RSA,
-		GNUTLS_KX_ANON_DH,
-		GNUTLS_KX_SRP,
-		GNUTLS_KX_RSA_EXPORT,
-		GNUTLS_KX_SRP_RSA,
-		GNUTLS_KX_SRP_DSS,
-		0
-	};
+		// Priority on key exchange methods
+		const int kxPriority[] = {
+			GNUTLS_KX_RSA,
+			GNUTLS_KX_DHE_DSS,
+			GNUTLS_KX_DHE_RSA,
+			GNUTLS_KX_ANON_DH,
+			GNUTLS_KX_SRP,
+			GNUTLS_KX_RSA_EXPORT,
+			GNUTLS_KX_SRP_RSA,
+			GNUTLS_KX_SRP_DSS,
+			0
+		};
 
-	gnutls_kx_set_priority(*m_gnutlsSession, kxPriority);
+		gnutls_kx_set_priority(*m_gnutlsSession, kxPriority);
 
-	// Priority on compression methods
-	const int compressionPriority[] = {
-		GNUTLS_COMP_ZLIB,
-		//GNUTLS_COMP_LZO,
-		GNUTLS_COMP_NULL,
-		0
-	};
+		// Priority on compression methods
+		const int compressionPriority[] = {
+			GNUTLS_COMP_ZLIB,
+			//GNUTLS_COMP_LZO,
+			GNUTLS_COMP_NULL,
+			0
+		};
 
-	gnutls_compression_set_priority(*m_gnutlsSession, compressionPriority);
+		gnutls_compression_set_priority(*m_gnutlsSession, compressionPriority);
 
 #endif // !VMIME_HAVE_GNUTLS_PRIORITY_FUNCS
 
-	// Initialize credentials
-	gnutls_credentials_set(
-		*m_gnutlsSession, GNUTLS_CRD_ANON, g_gnutlsGlobal.anonCred
-	);
+		// Initialize credentials
+		gnutls_credentials_set(
+			*m_gnutlsSession, GNUTLS_CRD_ANON, g_gnutlsGlobal.anonCred
+		);
 
-	gnutls_credentials_set(
-		*m_gnutlsSession, GNUTLS_CRD_CERTIFICATE, g_gnutlsGlobal.certCred
-	);
+		gnutls_credentials_set(
+			*m_gnutlsSession, GNUTLS_CRD_CERTIFICATE, g_gnutlsGlobal.certCred
+		);
+
+	} catch (...) {
+
+		gnutls_deinit(*m_gnutlsSession);
+
+		delete m_gnutlsSession;
+		m_gnutlsSession = NULL;
+
+		throw;
+	}
 }
 
 
