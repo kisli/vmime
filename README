@@ -28,3 +28,26 @@ Features Overview
 * SSL/TLS security layer and X.509 certificates (using GNU TLS)
 * SASL authentication (using GNU SASL)
 
+Building
+--------
+
+VMime uses CMake. A typical out-of-source build looks like this:
+
+    $ mkdir build && cd build
+    $ cmake /path/to/vmime-source
+    $ cmake --build .
+    # cmake --build . --target install
+
+Build options are passed to CMake as -DNAME=VALUE. The most useful ones:
+
+* VMIME_CHARSETCONV_LIB: library for charset conversion, "icu", "iconv"
+  or "win" (Windows only); ICU is used by default when it is available
+* VMIME_TLS_SUPPORT_LIB: library for SSL/TLS, "gnutls" (default) or "openssl"
+* VMIME_HAVE_TLS_SUPPORT, VMIME_HAVE_SASL_SUPPORT: set to OFF to disable
+  SSL/TLS or SASL support
+* VMIME_BUILD_TESTS, VMIME_BUILD_SAMPLES: set to ON to build the unit tests
+  or the examples
+
+Run "cmake -LH" in the build directory to list all the options, or see the
+"Building and Installing VMime" chapter of the VMime book (doc/book).
+
