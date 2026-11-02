@@ -177,15 +177,20 @@ void SMTPTransport::noop() {
 // static
 bool SMTPTransport::mailboxNeedsUTF8(const mailbox& mb) {
 
-	bool all7bit =
-		   utility::stringUtils::is7bit(mb.getEmail().getLocalName().getBuffer())
-		&& utility::stringUtils::is7bit(mb.getEmail().getDomainName().getBuffer());
+	if (!utility::stringUtils::is7bit(mb.getEmail().getLocalName().getBuffer()) ||
+	    !utility::stringUtils::is7bit(mb.getEmail().getDomainName().getBuffer())) {
 
-	for (size_t i = 0, n = mb.getName().getWordCount() ; all7bit && i != n ; ++i) {
-		all7bit = utility::stringUtils::is7bit(mb.getName().getWordAt(i)->getBuffer());
+		return true;
 	}
 
-	return !all7bit;
+	for (size_t i = 0, n = mb.getName().getWordCount() ; i != n ; ++i) {
+
+		if (!utility::stringUtils::is7bit(mb.getName().getWordAt(i)->getBuffer())) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 
