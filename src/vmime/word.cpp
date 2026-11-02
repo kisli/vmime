@@ -409,8 +409,10 @@ void word::parseWithState(
 
 							// Both lengths are of encodedBuffer, which may start with the
 							// previous word's leftover, so the rest must come from it too:
-							// offset from dataPos it can run past dataEnd.
-							if (state && actualEncodedLen > theoricalEncodedLen) {
+							// offset from dataPos it can run past dataEnd. Only carry over
+							// an incomplete quantum, not what follows padding.
+							if (state && actualEncodedLen > theoricalEncodedLen &&
+							    actualEncodedLen - theoricalEncodedLen < 4) {
 								state->undecodedBytes = encodedBuffer.substr(theoricalEncodedLen);
 							}
 						}
