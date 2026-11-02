@@ -111,8 +111,34 @@ void charsetConverter_idna::convert(const string& in, string& out, status* st) {
 		unichars.reserve(inUTF8.length());
 
 		while (ch < end) {
-			const uint32_t uc = utf8::unchecked::next(ch);
-			unichars.push_back(uc);
+
+			// Not utf8::unchecked::next(), which reads past the end of
+			// the buffer if the input ends with a truncated sequence
+			utf8::utfchar32_t uc = 0;
+
+			if (utf8::internal::validate_next(ch, end, uc) == utf8::internal::UTF8_OK) {
+
+				unichars.push_back(uc);
+				continue;
+			}
+
+			if (!m_options.silentlyReplaceInvalidSequences) {
+				throw exceptions::illegal_byte_sequence_for_charset();
+			}
+
+			// Skip a byte and output the replacement string (in UTF-8, like
+			// the input). Do not only skip the byte: this may turn an invalid
+			// domain name into another, valid one.
+			const char* rch = m_options.invalidSequence.c_str();
+			const char* rend = rch + m_options.invalidSequence.length();
+
+			while (rch < rend &&
+			       utf8::internal::validate_next(rch, rend, uc) == utf8::internal::UTF8_OK) {
+
+				unichars.push_back(uc);
+			}
+
+			++ch;
 		}
 
 		if (st) {
@@ -124,8 +150,9 @@ void charsetConverter_idna::convert(const string& in, string& out, status* st) {
 		std::vector <char> output(inUTF8.length() * 2);
 		punycode_uint outputLen = static_cast <punycode_uint>(output.size());
 
+		// May be empty if the input only contains invalid sequences
 		const punycode_status status = punycode_encode(
-			inputLen, &unichars[0], /* case_flags */ NULL, &outputLen, &output[0]
+			inputLen, unichars.data(), /* case_flags */ NULL, &outputLen, &output[0]
 		);
 
 		if (status == punycode_success) {
