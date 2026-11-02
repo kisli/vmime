@@ -605,25 +605,25 @@ typedef SMTPBigTestMessage <4194304> SMTPBigTestMessage4MB;
 
 
 /** SMTP test server for SMTPUTF8 extension.
+  * If WITH_UTF8_RECIPIENT is false, only ASCII recipients are expected.
   */
-template <bool SUPPORTS_UTF8>
+template <bool SUPPORTS_UTF8, bool WITH_UTF8_RECIPIENT = true>
 class UTF8SMTPTestSocket : public lineBasedTestSocket {
 
 public:
 
 	UTF8SMTPTestSocket() {
 
-		if (SUPPORTS_UTF8) {
+		m_rcptLines.insert("RCPT TO:<recipient1@test.vmime.org>");
+		m_rcptLines.insert("RCPT TO:<recipient2@test.vmime.org>");
 
-			m_rcptLines.insert("RCPT TO:<recipient1@test.vmime.org>");
-			m_rcptLines.insert("RCPT TO:<recipient2@test.vmime.org>");
-			m_rcptLines.insert("RCPT TO:<récepteur@test.vmime.org>");
+		if (WITH_UTF8_RECIPIENT) {
 
-		} else {
-
-			m_rcptLines.insert("RCPT TO:<recipient1@test.vmime.org>");
-			m_rcptLines.insert("RCPT TO:<recipient2@test.vmime.org>");
-			m_rcptLines.insert("RCPT TO:<=?utf-8?Q?r=C3=A9cepteur?=@test.vmime.org>");
+			if (SUPPORTS_UTF8) {
+				m_rcptLines.insert("RCPT TO:<récepteur@test.vmime.org>");
+			} else {
+				m_rcptLines.insert("RCPT TO:<=?utf-8?Q?r=C3=A9cepteur?=@test.vmime.org>");
+			}
 		}
 
 		m_state = STATE_NOT_CONNECTED;
