@@ -339,6 +339,56 @@ std::vector <vmime::string> SASLIMAPTestSocket::sm_authLines;
 
 
 
+/** Tracer which records the lines sent by the client.
+  */
+class sentLinesTracer : public vmime::net::tracer {
+
+public:
+
+	sentLinesTracer(const vmime::shared_ptr <std::vector <vmime::string> >& lines)
+		: m_lines(lines) {
+
+	}
+
+	void traceSend(const vmime::string& line) {
+
+		m_lines->push_back(line);
+	}
+
+	void traceReceive(const vmime::string& /* line */) {
+
+	}
+
+private:
+
+	vmime::shared_ptr <std::vector <vmime::string> > m_lines;
+};
+
+
+class sentLinesTracerFactory : public vmime::net::tracerFactory {
+
+public:
+
+	sentLinesTracerFactory(const vmime::shared_ptr <std::vector <vmime::string> >& lines)
+		: m_lines(lines) {
+
+	}
+
+	vmime::shared_ptr <vmime::net::tracer> create(
+		const vmime::shared_ptr <vmime::net::service>& /* serv */,
+		const int /* connectionId */
+	) {
+
+		return vmime::make_shared <sentLinesTracer>(m_lines);
+	}
+
+private:
+
+	vmime::shared_ptr <std::vector <vmime::string> > m_lines;
+};
+
+
+
 VMIME_TEST_SUITE_BEGIN(IMAPConnectionTest)
 
 	VMIME_TEST_LIST_BEGIN
@@ -353,9 +403,11 @@ VMIME_TEST_SUITE_BEGIN(IMAPConnectionTest)
 		VMIME_TEST(testFolderReopenAfterTimeout)
 		VMIME_TEST(testFetchWriteError)
 		VMIME_TEST(testAppendReadError)
+		VMIME_TEST(testTrace_LOGIN)
 #if VMIME_HAVE_SASL_SUPPORT
 		VMIME_TEST(testSASLInitialResponse)
 		VMIME_TEST(testSASLInitialResponse_NoSASLIR)
+		VMIME_TEST(testTrace_AUTHENTICATE)
 #endif // VMIME_HAVE_SASL_SUPPORT
 	VMIME_TEST_LIST_END
 
@@ -644,9 +696,44 @@ VMIME_TEST_SUITE_BEGIN(IMAPConnectionTest)
 		VASSERT_EQ("All connections closed", 0, failingIMAPTestSocket::getConnectedCount());
 	}
 
+	// Return whether the specified command has been traced (ignoring the tag)
+	static bool isCommandTraced(const std::vector <vmime::string>& lines, const vmime::string& cmd) {
+
+		for (const auto& line : lines) {
+
+			const vmime::size_t sp = line.find(' ');
+
+			if (sp != vmime::string::npos && line.substr(sp + 1) == cmd) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	// Credentials must not appear in the trace
+	void testTrace_LOGIN() {
+
+		vmime::shared_ptr <IMAPStore> store = createStore();
+
+		vmime::shared_ptr <std::vector <vmime::string> > lines =
+			vmime::make_shared <std::vector <vmime::string> >();
+
+		store->setTracerFactory(vmime::make_shared <sentLinesTracerFactory>(lines));
+
+		store->connect();
+		store->disconnect();
+
+		VASSERT_TRUE("LOGIN", isCommandTraced(*lines, "LOGIN {username} {password}"));
+		VASSERT_FALSE("Credentials", isCommandTraced(*lines, "LOGIN user pass"));
+	}
+
 #if VMIME_HAVE_SASL_SUPPORT
 
-	static void connectSASL(const bool saslIR) {
+	static void connectSASL(
+		const bool saslIR,
+		const vmime::shared_ptr <vmime::net::tracerFactory>& tracerFactory = vmime::null
+	) {
 
 		SASLIMAPTestSocket::reset(saslIR);
 
@@ -658,6 +745,10 @@ VMIME_TEST_SUITE_BEGIN(IMAPConnectionTest)
 
 		store->setSocketFactory(vmime::make_shared <testSocketFactory <SASLIMAPTestSocket> >());
 		store->setTimeoutHandlerFactory(vmime::make_shared <testTimeoutHandlerFactory>());
+
+		if (tracerFactory) {
+			store->setTracerFactory(tracerFactory);
+		}
 
 		store->connect();
 		store->disconnect();
@@ -684,6 +775,18 @@ VMIME_TEST_SUITE_BEGIN(IMAPConnectionTest)
 		VASSERT_EQ("Count", 2, lines.size());
 		VASSERT_EQ("AUTHENTICATE", "AUTHENTICATE PLAIN", lines[0]);
 		VASSERT_EQ("Response", "AHVzZXIAcGFzcw==", lines[1]);
+	}
+
+	// Initial response (which contains the credentials) must not appear in the trace
+	void testTrace_AUTHENTICATE() {
+
+		vmime::shared_ptr <std::vector <vmime::string> > lines =
+			vmime::make_shared <std::vector <vmime::string> >();
+
+		connectSASL(/* saslIR */ true, vmime::make_shared <sentLinesTracerFactory>(lines));
+
+		VASSERT_TRUE("AUTHENTICATE", isCommandTraced(*lines, "AUTHENTICATE PLAIN {initial-response}"));
+		VASSERT_FALSE("Credentials", isCommandTraced(*lines, "AUTHENTICATE PLAIN AHVzZXIAcGFzcw=="));
 	}
 
 #endif // VMIME_HAVE_SASL_SUPPORT

@@ -100,6 +100,7 @@ VMIME_TEST_SUITE_BEGIN(IMAPCommandTest)
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "AUTHENTICATE saslmechanism initial-response", cmd->getText());
+		VASSERT_EQ("Trace Text", "AUTHENTICATE saslmechanism {initial-response}", cmd->getTraceText());
 	}
 
 	void testLIST() {

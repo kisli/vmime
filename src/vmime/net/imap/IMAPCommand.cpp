@@ -81,7 +81,11 @@ shared_ptr <IMAPCommand> IMAPCommand::AUTHENTICATE(const string& mechName, const
 	cmd.imbue(std::locale::classic());
 	cmd << "AUTHENTICATE " << mechName << " " << initialResponse;
 
-	return createCommand(cmd.str());
+	std::ostringstream trace;
+	trace.imbue(std::locale::classic());
+	trace << "AUTHENTICATE " << mechName << " {initial-response}";
+
+	return createCommand(cmd.str(), trace.str());
 }
 
 

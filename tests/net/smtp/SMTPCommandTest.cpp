@@ -103,6 +103,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "AUTH saslmechanism initial-response", cmd->getText());
+		VASSERT_EQ("Trace Text", "AUTH saslmechanism {initial-response}", cmd->getTraceText());
 	}
 
 	void testSTARTTLS() {

@@ -906,7 +906,7 @@ void IMAPConnection::sendCommand(const shared_ptr <IMAPCommand>& cmd) {
 	if (m_tracer) {
 
 		std::ostringstream oss;
-		oss << string(*m_tag) << " " << cmd->getText();
+		oss << string(*m_tag) << " " << cmd->getTraceText();
 
 		m_tracer->traceSend(oss.str());
 	}
