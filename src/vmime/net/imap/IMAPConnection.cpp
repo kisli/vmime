@@ -412,7 +412,8 @@ void IMAPConnection::authenticateSASL() {
 
 		shared_ptr <IMAPCommand> authCmd;
 
-		if (saslSession->getMechanism()->hasInitialResponse()) {
+		// An initial response can only be sent if the server supports it (RFC 4959)
+		if (hasCapability("SASL-IR") && saslSession->getMechanism()->hasInitialResponse()) {
 
 			byte_t* initialResp = 0;
 			size_t initialRespLen = 0;

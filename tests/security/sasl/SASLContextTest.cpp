@@ -52,6 +52,7 @@ VMIME_TEST_SUITE_BEGIN(SASLContextTest)
 		VMIME_TEST(testChannelBinding_TLSUnique)
 		VMIME_TEST(testChannelBinding_TLSExporter)
 		VMIME_TEST(testChannelBinding_NotUsedWithoutPlus)
+		VMIME_TEST(testHasInitialResponse)
 	VMIME_TEST_LIST_END
 
 
@@ -200,6 +201,37 @@ VMIME_TEST_SUITE_BEGIN(SASLContextTest)
 		const vmime::string msg = getClientFirstMessage(ctx, "SCRAM-SHA-256");
 
 		VASSERT_EQ("1", "n,,n=user,r=", msg.substr(0, 12));
+	}
+
+	// Issue #319
+	void testHasInitialResponse() {
+
+		vmime::shared_ptr <vmime::security::sasl::SASLContext> ctx =
+			vmime::security::sasl::SASLContext::create();
+
+		ctx->setChannelBindingData("tls-unique", someChannelBindingData());
+
+		// Client-first mechanisms
+		VASSERT_TRUE("PLAIN", ctx->createMechanism("PLAIN")->hasInitialResponse());
+		VASSERT_TRUE("plain", ctx->createMechanism("plain")->hasInitialResponse());
+
+		if (isMechanismAvailable("SCRAM-SHA-256")) {
+			VASSERT_TRUE("SCRAM-SHA-256", ctx->createMechanism("SCRAM-SHA-256")->hasInitialResponse());
+		}
+
+		if (isMechanismAvailable("SCRAM-SHA-256-PLUS")) {
+			VASSERT_TRUE("SCRAM-SHA-256-PLUS", ctx->createMechanism("SCRAM-SHA-256-PLUS")->hasInitialResponse());
+		}
+
+		// Server-first mechanisms
+		if (isMechanismAvailable("CRAM-MD5")) {
+			VASSERT_FALSE("CRAM-MD5", ctx->createMechanism("CRAM-MD5")->hasInitialResponse());
+		}
+
+		// Not all servers accept "AUTH LOGIN <username>"
+		if (isMechanismAvailable("LOGIN")) {
+			VASSERT_FALSE("LOGIN", ctx->createMechanism("LOGIN")->hasInitialResponse());
+		}
 	}
 
 VMIME_TEST_SUITE_END

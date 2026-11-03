@@ -486,6 +486,7 @@ void POP3Connection::authenticateSASL() {
 		saslSession->init();
 
 		shared_ptr <POP3Command> authCmd;
+		string delayedInitialResp;
 
 		if (saslSession->getMechanism()->hasInitialResponse()) {
 
@@ -501,6 +502,15 @@ void POP3Connection::authenticateSASL() {
 				authCmd = POP3Command::AUTH(mech->getName(), "=");
 			} else {
 				authCmd = POP3Command::AUTH(mech->getName(), encodedInitialResp);
+			}
+
+			// The AUTH command must not exceed 255 octets, including CRLF (RFC 5034,
+			// section 4). If the initial response does not fit, send it after the
+			// first (empty) challenge from the server instead.
+			if (authCmd->getText().length() + 2 > 255) {
+
+				authCmd = POP3Command::AUTH(mech->getName());
+				delayedInitialResp = encodedInitialResp;
 			}
 
 		} else {
@@ -533,14 +543,26 @@ void POP3Connection::authenticateSASL() {
 
 					try {
 
-						// Extract challenge
-						saslContext->decodeB64(response->getText(), &challenge, &challengeLen);
+						string respB64;
 
-						// Prepare response
-						saslSession->evaluateChallenge(challenge, challengeLen, &resp, &respLen);
+						if (!delayedInitialResp.empty()) {
+
+							// Initial response was too long to be sent with AUTH
+							respB64 = delayedInitialResp + "\r\n";
+							delayedInitialResp.clear();
+
+						} else {
+
+							// Extract challenge
+							saslContext->decodeB64(response->getText(), &challenge, &challengeLen);
+
+							// Prepare response
+							saslSession->evaluateChallenge(challenge, challengeLen, &resp, &respLen);
+
+							respB64 = saslContext->encodeB64(resp, respLen) + "\r\n";
+						}
 
 						// Send response
-						const string respB64 = saslContext->encodeB64(resp, respLen) + "\r\n";
 						m_socket->sendRaw(utility::stringUtils::bytesFromString(respB64), respB64.length());
 
 						if (m_tracer) {

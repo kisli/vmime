@@ -220,6 +220,125 @@ int failingIMAPTestSocket::sm_connectedCount = 0;
 
 
 
+#if VMIME_HAVE_SASL_SUPPORT
+
+/** IMAP test server which supports SASL authentication with the PLAIN
+  * mechanism, and advertises the SASL-IR capability (RFC 4959) if it has
+  * been enabled with reset().
+  *
+  * The lines sent by the client during authentication are recorded.
+  */
+class SASLIMAPTestSocket : public lineBasedTestSocket {
+
+public:
+
+	SASLIMAPTestSocket()
+		: m_authenticating(false) {
+
+	}
+
+	static void reset(const bool saslIR) {
+
+		sm_saslIR = saslIR;
+		sm_authLines.clear();
+	}
+
+	static const std::vector <vmime::string>& getAuthLines() {
+
+		return sm_authLines;
+	}
+
+	void onConnected() {
+
+		localSend("* OK test.vmime.org IMAP4rev1 server ready\r\n");
+	}
+
+	void processCommand() {
+
+		if (!haveMoreLines()) {
+			return;
+		}
+
+		const vmime::string line = getNextLine();
+
+		if (m_authenticating) {
+
+			// Client response to the (empty) server challenge
+			sm_authLines.push_back(line);
+			localSend(m_authTag + " OK AUTHENTICATE completed\r\n");
+
+			m_authenticating = false;
+
+			processCommand();
+			return;
+		}
+
+		const vmime::size_t sp = line.find(' ');
+
+		const vmime::string tag = line.substr(0, sp);
+		const vmime::string cmd = line.substr(sp + 1);
+
+		const vmime::string verb =
+			vmime::utility::stringUtils::toUpper(cmd.substr(0, cmd.find(' ')));
+
+		if (verb == "CAPABILITY") {
+
+			localSend(vmime::string("* CAPABILITY IMAP4rev1 AUTH=PLAIN")
+				+ (sm_saslIR ? " SASL-IR" : "") + "\r\n");
+			localSend(tag + " OK CAPABILITY completed\r\n");
+
+		} else if (verb == "AUTHENTICATE") {
+
+			sm_authLines.push_back(cmd);
+
+			if (cmd == "AUTHENTICATE PLAIN") {
+
+				// No initial response
+				localSend("+ \r\n");
+
+				m_authTag = tag;
+				m_authenticating = true;
+
+			} else {
+
+				localSend(tag + " OK AUTHENTICATE completed\r\n");
+			}
+
+		} else if (verb == "LIST") {
+
+			localSend("* LIST (\\Noselect) \"/\" \"\"\r\n");
+			localSend(tag + " OK LIST completed\r\n");
+
+		} else if (verb == "LOGOUT") {
+
+			localSend("* BYE test.vmime.org IMAP4rev1 server logging out\r\n");
+			localSend(tag + " OK LOGOUT completed\r\n");
+
+		} else {
+
+			localSend(tag + " BAD Command not recognized\r\n");
+		}
+
+		processCommand();
+	}
+
+private:
+
+	bool m_authenticating;
+	vmime::string m_authTag;
+
+	static bool sm_saslIR;
+	static std::vector <vmime::string> sm_authLines;
+};
+
+
+bool SASLIMAPTestSocket::sm_saslIR = false;
+std::vector <vmime::string> SASLIMAPTestSocket::sm_authLines;
+
+#endif // VMIME_HAVE_SASL_SUPPORT
+
+
+
 VMIME_TEST_SUITE_BEGIN(IMAPConnectionTest)
 
 	VMIME_TEST_LIST_BEGIN
@@ -234,6 +353,10 @@ VMIME_TEST_SUITE_BEGIN(IMAPConnectionTest)
 		VMIME_TEST(testFolderReopenAfterTimeout)
 		VMIME_TEST(testFetchWriteError)
 		VMIME_TEST(testAppendReadError)
+#if VMIME_HAVE_SASL_SUPPORT
+		VMIME_TEST(testSASLInitialResponse)
+		VMIME_TEST(testSASLInitialResponse_NoSASLIR)
+#endif // VMIME_HAVE_SASL_SUPPORT
 	VMIME_TEST_LIST_END
 
 
@@ -520,5 +643,49 @@ VMIME_TEST_SUITE_BEGIN(IMAPConnectionTest)
 		VASSERT_NO_THROW("Disconnect", store->disconnect());
 		VASSERT_EQ("All connections closed", 0, failingIMAPTestSocket::getConnectedCount());
 	}
+
+#if VMIME_HAVE_SASL_SUPPORT
+
+	static void connectSASL(const bool saslIR) {
+
+		SASLIMAPTestSocket::reset(saslIR);
+
+		vmime::shared_ptr <vmime::net::session> sess = vmime::net::session::create();
+		sess->getProperties()["store.imap.options.sasl.fallback"] = false;
+
+		vmime::shared_ptr <vmime::net::store> store =
+			sess->getStore(vmime::utility::url("imap://user:pass@localhost"));
+
+		store->setSocketFactory(vmime::make_shared <testSocketFactory <SASLIMAPTestSocket> >());
+		store->setTimeoutHandlerFactory(vmime::make_shared <testTimeoutHandlerFactory>());
+
+		store->connect();
+		store->disconnect();
+	}
+
+	// Issue #319: initial response is sent if the server supports SASL-IR
+	void testSASLInitialResponse() {
+
+		connectSASL(/* saslIR */ true);
+
+		const std::vector <vmime::string>& lines = SASLIMAPTestSocket::getAuthLines();
+
+		VASSERT_EQ("Count", 1, lines.size());
+		VASSERT_EQ("AUTHENTICATE", "AUTHENTICATE PLAIN AHVzZXIAcGFzcw==", lines[0]);
+	}
+
+	// RFC 4959: initial response must not be sent if the server does not support SASL-IR
+	void testSASLInitialResponse_NoSASLIR() {
+
+		connectSASL(/* saslIR */ false);
+
+		const std::vector <vmime::string>& lines = SASLIMAPTestSocket::getAuthLines();
+
+		VASSERT_EQ("Count", 2, lines.size());
+		VASSERT_EQ("AUTHENTICATE", "AUTHENTICATE PLAIN", lines[0]);
+		VASSERT_EQ("Response", "AHVzZXIAcGFzcw==", lines[1]);
+	}
+
+#endif // VMIME_HAVE_SASL_SUPPORT
 
 VMIME_TEST_SUITE_END

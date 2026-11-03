@@ -38,11 +38,32 @@
 
 #include <stdexcept>
 #include <new>
+#include <unordered_set>
 
 
 namespace vmime {
 namespace security {
 namespace sasl {
+
+
+namespace {
+
+// Mechanisms in which the client sends data first, and which can therefore
+// send an initial response (RFC 4422, section 5). Only the mechanisms supported
+// by SASLSession::gsaslCallback() are listed. LOGIN is not, because not all
+// servers accept "AUTH LOGIN <username>".
+const std::unordered_set <string> CLIENT_FIRST_MECHANISMS {
+	"ANONYMOUS",
+	"EXTERNAL",
+	"GSSAPI",
+	"PLAIN",
+	"SCRAM-SHA-1",
+	"SCRAM-SHA-1-PLUS",
+	"SCRAM-SHA-256",
+	"SCRAM-SHA-256-PLUS"
+};
+
+}
 
 
 builtinSASLMechanism::builtinSASLMechanism(
@@ -51,7 +72,8 @@ builtinSASLMechanism::builtinSASLMechanism(
 )
 	: m_context(ctx),
 	  m_name(name),
-	  m_complete(false) {
+	  m_complete(false),
+	  m_initialResponse(CLIENT_FIRST_MECHANISMS.count(name) != 0) {
 
 }
 
@@ -140,8 +162,7 @@ bool builtinSASLMechanism::isComplete() const {
 
 bool builtinSASLMechanism::hasInitialResponse() const {
 
-	// It seems GNU SASL does not support initial response
-	return false;
+	return m_initialResponse;
 }
 
 

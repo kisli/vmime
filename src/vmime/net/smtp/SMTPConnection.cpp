@@ -440,6 +440,9 @@ void SMTPConnection::authenticateSASL() {
 
 		saslSession->init();
 
+		shared_ptr <SMTPCommand> authCmd;
+		string delayedInitialResp;
+
 		if (saslSession->getMechanism()->hasInitialResponse()) {
 
 			byte_t* initialResp = 0;
@@ -451,15 +454,27 @@ void SMTPConnection::authenticateSASL() {
 			delete [] initialResp;
 
 			if (encodedInitialResp.empty()) {
-				sendRequest(SMTPCommand::AUTH(mech->getName(), "="));
+				authCmd = SMTPCommand::AUTH(mech->getName(), "=");
 			} else {
-				sendRequest(SMTPCommand::AUTH(mech->getName(), encodedInitialResp));
+				authCmd = SMTPCommand::AUTH(mech->getName(), encodedInitialResp);
+			}
+
+			// The AUTH command is subject to the 512-octet limit of a command line,
+			// including CRLF (RFC 4954, section 4 and RFC 5321, section 4.5.3.1.4).
+			// If the initial response does not fit, send it after the first (empty)
+			// challenge from the server instead.
+			if (authCmd->getText().length() + 2 > 512) {
+
+				authCmd = SMTPCommand::AUTH(mech->getName());
+				delayedInitialResp = encodedInitialResp;
 			}
 
 		} else {
 
-			sendRequest(SMTPCommand::AUTH(mech->getName()));
+			authCmd = SMTPCommand::AUTH(mech->getName());
 		}
+
+		sendRequest(authCmd);
 
 		for (bool cont = true ; cont ; ) {
 
@@ -482,14 +497,26 @@ void SMTPConnection::authenticateSASL() {
 
 					try {
 
-						// Extract challenge
-						saslContext->decodeB64(response->getText(), &challenge, &challengeLen);
+						string respB64;
 
-						// Prepare response
-						saslSession->evaluateChallenge(challenge, challengeLen, &resp, &respLen);
+						if (!delayedInitialResp.empty()) {
+
+							// Initial response was too long to be sent with AUTH
+							respB64 = delayedInitialResp + "\r\n";
+							delayedInitialResp.clear();
+
+						} else {
+
+							// Extract challenge
+							saslContext->decodeB64(response->getText(), &challenge, &challengeLen);
+
+							// Prepare response
+							saslSession->evaluateChallenge(challenge, challengeLen, &resp, &respLen);
+
+							respB64 = saslContext->encodeB64(resp, respLen) + "\r\n";
+						}
 
 						// Send response
-						const string respB64 = saslContext->encodeB64(resp, respLen) + "\r\n";
 						m_socket->sendRaw(utility::stringUtils::bytesFromString(respB64), respB64.length());
 
 						if (m_tracer) {
