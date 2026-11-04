@@ -91,6 +91,7 @@ protected:
 
 VMIME_EXPORT outputStream& operator<<(outputStream& os, const string& str);
 VMIME_EXPORT outputStream& operator<<(outputStream& os, const byte_t c);
+VMIME_EXPORT outputStream& operator<<(outputStream& os, const char c);
 
 
 #if defined(_MSC_VER) && (_MSC_VER <= 1200)  // Internal compiler error with VC++6

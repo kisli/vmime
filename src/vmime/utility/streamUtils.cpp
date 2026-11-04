@@ -39,6 +39,13 @@ outputStream& operator<<(outputStream& os, const byte_t c) {
 }
 
 
+outputStream& operator<<(outputStream& os, const char c) {
+
+	os.write(&c, 1);
+	return os;
+}
+
+
 outputStream& operator<<(outputStream& os, const string& str) {
 
 	os.write(str.data(), str.length());
