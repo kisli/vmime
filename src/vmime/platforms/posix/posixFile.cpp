@@ -43,6 +43,7 @@
 #include <string.h>
 
 #include "vmime/exception.hpp"
+#include "vmime/utility/details/classicOStringStream.hpp"
 
 
 namespace vmime {
@@ -710,7 +711,7 @@ void posixFileSystemFactory::reportError(const vmime::utility::path& path, const
 
 		default:
 
-			std::ostringstream oss;
+			utility::details::classicOStringStream oss;
 			oss << ::strerror(err) << ".";
 
 			desc = oss.str();

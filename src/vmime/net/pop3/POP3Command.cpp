@@ -35,6 +35,7 @@
 
 #include "vmime/mailbox.hpp"
 #include "vmime/utility/outputStreamAdapter.hpp"
+#include "vmime/utility/details/classicOStringStream.hpp"
 
 
 namespace vmime {
@@ -66,8 +67,7 @@ shared_ptr <POP3Command> POP3Command::NOOP() {
 // static
 shared_ptr <POP3Command> POP3Command::AUTH(const string& mechName) {
 
-	std::ostringstream cmd;
-	cmd.imbue(std::locale::classic());
+	utility::details::classicOStringStream cmd;
 	cmd << "AUTH " << mechName;
 
 	return createCommand(cmd.str());
@@ -77,12 +77,10 @@ shared_ptr <POP3Command> POP3Command::AUTH(const string& mechName) {
 // static
 shared_ptr <POP3Command> POP3Command::AUTH(const string& mechName, const string& initialResponse) {
 
-	std::ostringstream cmd;
-	cmd.imbue(std::locale::classic());
+	utility::details::classicOStringStream cmd;
 	cmd << "AUTH " << mechName << " " << initialResponse;
 
-	std::ostringstream trace;
-	trace.imbue(std::locale::classic());
+	utility::details::classicOStringStream trace;
 	trace << "AUTH " << mechName << " {initial-response}";
 
 	return createCommand(cmd.str(), trace.str());
@@ -99,8 +97,7 @@ shared_ptr <POP3Command> POP3Command::STLS() {
 // static
 shared_ptr <POP3Command> POP3Command::APOP(const string& username, const string& digest) {
 
-	std::ostringstream cmd;
-	cmd.imbue(std::locale::classic());
+	utility::details::classicOStringStream cmd;
 	cmd << "APOP " << username << " " << digest;
 
 	return createCommand(cmd.str());
@@ -110,12 +107,10 @@ shared_ptr <POP3Command> POP3Command::APOP(const string& username, const string&
 // static
 shared_ptr <POP3Command> POP3Command::USER(const string& username) {
 
-	std::ostringstream cmd;
-	cmd.imbue(std::locale::classic());
+	utility::details::classicOStringStream cmd;
 	cmd << "USER " << username;
 
-	std::ostringstream trace;
-	trace.imbue(std::locale::classic());
+	utility::details::classicOStringStream trace;
 	trace << "USER {username}";
 
 	return createCommand(cmd.str(), trace.str());
@@ -125,12 +120,10 @@ shared_ptr <POP3Command> POP3Command::USER(const string& username) {
 // static
 shared_ptr <POP3Command> POP3Command::PASS(const string& password) {
 
-	std::ostringstream cmd;
-	cmd.imbue(std::locale::classic());
+	utility::details::classicOStringStream cmd;
 	cmd << "PASS " << password;
 
-	std::ostringstream trace;
-	trace.imbue(std::locale::classic());
+	utility::details::classicOStringStream trace;
 	trace << "PASS {password}";
 
 	return createCommand(cmd.str(), trace.str());
@@ -154,8 +147,7 @@ shared_ptr <POP3Command> POP3Command::LIST() {
 // static
 shared_ptr <POP3Command> POP3Command::LIST(const unsigned long msg) {
 
-	std::ostringstream cmd;
-	cmd.imbue(std::locale::classic());
+	utility::details::classicOStringStream cmd;
 	cmd << "LIST " << msg;
 
 	return createCommand(cmd.str());
@@ -172,8 +164,7 @@ shared_ptr <POP3Command> POP3Command::UIDL() {
 // static
 shared_ptr <POP3Command> POP3Command::UIDL(const unsigned long msg) {
 
-	std::ostringstream cmd;
-	cmd.imbue(std::locale::classic());
+	utility::details::classicOStringStream cmd;
 	cmd << "UIDL " << msg;
 
 	return createCommand(cmd.str());
@@ -183,8 +174,7 @@ shared_ptr <POP3Command> POP3Command::UIDL(const unsigned long msg) {
 // static
 shared_ptr <POP3Command> POP3Command::DELE(const unsigned long msg) {
 
-	std::ostringstream cmd;
-	cmd.imbue(std::locale::classic());
+	utility::details::classicOStringStream cmd;
 	cmd << "DELE " << msg;
 
 	return createCommand(cmd.str());
@@ -194,8 +184,7 @@ shared_ptr <POP3Command> POP3Command::DELE(const unsigned long msg) {
 // static
 shared_ptr <POP3Command> POP3Command::RETR(const unsigned long msg) {
 
-	std::ostringstream cmd;
-	cmd.imbue(std::locale::classic());
+	utility::details::classicOStringStream cmd;
 	cmd << "RETR " << msg;
 
 	return createCommand(cmd.str());
@@ -205,8 +194,7 @@ shared_ptr <POP3Command> POP3Command::RETR(const unsigned long msg) {
 // static
 shared_ptr <POP3Command> POP3Command::TOP(const unsigned long msg, const unsigned long lines) {
 
-	std::ostringstream cmd;
-	cmd.imbue(std::locale::classic());
+	utility::details::classicOStringStream cmd;
 	cmd << "TOP " << msg << " " << lines;
 
 	return createCommand(cmd.str());

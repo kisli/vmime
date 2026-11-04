@@ -36,6 +36,7 @@
 #include "vmime/security/digest/messageDigestFactory.hpp"
 
 #include "vmime/net/defaultConnectionInfos.hpp"
+#include "vmime/utility/details/classicIStringStream.hpp"
 
 #if VMIME_HAVE_SASL_SUPPORT
 	#include "vmime/security/sasl/SASLContext.hpp"
@@ -419,8 +420,7 @@ void POP3Connection::authenticateSASL() {
 
 			const string list(x.begin() + 5, x.end());
 
-			std::istringstream iss(list);
-			iss.imbue(std::locale::classic());
+			utility::details::classicIStringStream iss(list);
 
 			string mech;
 

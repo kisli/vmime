@@ -30,6 +30,7 @@
 #include "vmime/utility/outputStreamAdapter.hpp"
 #include "vmime/utility/outputStreamStringAdapter.hpp"
 #include "vmime/utility/stringUtils.hpp"
+#include "vmime/utility/details/classicOStringStream.hpp"
 
 
 namespace vmime {
@@ -43,7 +44,7 @@ namespace vmime {
   */
 static const string domainNameFromIDNA(const string& idnaDomain) {
 
-	std::ostringstream domainName;
+	utility::details::classicOStringStream domainName;
 	size_t p = 0;
 
 	for (size_t n = idnaDomain.find('.', p) ;
@@ -103,7 +104,7 @@ static const string domainNameFromIDNA(const string& idnaDomain) {
   */
 static const string domainNameToIDNA(const string& domainName) {
 
-	std::ostringstream idnaDomain;
+	utility::details::classicOStringStream idnaDomain;
 	size_t p = 0;
 
 	for (size_t n = domainName.find('.', p) ;
@@ -205,8 +206,8 @@ void emailAddress::parseImpl(
 		State_Error
 	} state = State_Before;
 
-	std::ostringstream localPart;
-	std::ostringstream domainPart;
+	utility::details::classicOStringStream localPart;
+	utility::details::classicOStringStream domainPart;
 
 	bool escapeNext = false;  // for quoting
 	bool prevIsDot = false;
@@ -712,7 +713,7 @@ bool emailAddress::isEmpty() const {
 
 const string emailAddress::toString() const {
 
-	std::ostringstream oss;
+	utility::details::classicOStringStream oss;
 	utility::outputStreamAdapter adapter(oss);
 
 	generationContext ctx(generationContext::getDefaultContext());

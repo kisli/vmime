@@ -31,6 +31,7 @@
 #include "vmime/platforms/posix/posixFile.hpp"
 
 #include "vmime/exception.hpp"
+#include "vmime/utility/details/classicOStringStream.hpp"
 
 #include <unistd.h>
 #include <string.h>
@@ -390,8 +391,7 @@ void posixChildProcess::waitForFinish() {
 
 		} else {
 
-			std::ostringstream oss;
-			oss.imbue(std::locale::classic());
+			utility::details::classicOStringStream oss;
 
 			oss << "Process exited with status " << WEXITSTATUS(wstat);
 

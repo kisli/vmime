@@ -32,6 +32,7 @@
 #include "vmime/net/tls/openssl/OpenSSLInitializer.hpp"
 
 #include "vmime/security/cert/certificateException.hpp"
+#include "vmime/utility/details/classicOStringStream.hpp"
 
 #include <openssl/ssl.h>
 #include <openssl/err.h>
@@ -106,7 +107,7 @@ void TLSSession_OpenSSL::usePrivateKeyFile(const vmime::string& keyfile) {
 		char buffer[256];
 		ERR_error_string_n(errCode, buffer, sizeof(buffer));
 		vmime::string sslErr(buffer);
-		std::ostringstream oss;
+		utility::details::classicOStringStream oss;
 		oss << "Error loading private key from file " << keyfile;
 		oss << " - msg: " << sslErr;
 		throw security::cert::certificateException(oss.str());
@@ -124,7 +125,7 @@ void TLSSession_OpenSSL::useCertificateChainFile(const vmime::string& chainFile)
 		char buffer[256];
 		ERR_error_string_n(errCode, buffer, sizeof(buffer));
 		vmime::string sslErr(buffer);
-		std::ostringstream oss;
+		utility::details::classicOStringStream oss;
 		oss << "Error loading certificate from file " << chainFile;
 		oss << " - msg: " << sslErr;
 		throw security::cert::certificateException(oss.str());

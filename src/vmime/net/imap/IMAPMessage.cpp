@@ -41,6 +41,7 @@
 #include "vmime/messageId.hpp"
 #include "vmime/messageIdSequence.hpp"
 #include "vmime/utility/outputStreamAdapter.hpp"
+#include "vmime/utility/details/classicOStringStream.hpp"
 
 #include <sstream>
 #include <iterator>
@@ -285,7 +286,7 @@ void IMAPMessage::fetchPartHeader(const shared_ptr <messagePart>& p) {
 		throw exceptions::folder_not_found();
 	}
 
-	std::ostringstream oss;
+	utility::details::classicOStringStream oss;
 	utility::outputStreamAdapter ossAdapter(oss);
 
 	extractImpl(p, ossAdapter, NULL, 0, -1, EXTRACT_HEADER | EXTRACT_PEEK);
@@ -335,8 +336,7 @@ size_t IMAPMessage::extractImpl(
 	}
 
 	// Construct section identifier
-	std::ostringstream section;
-	section.imbue(std::locale::classic());
+	utility::details::classicOStringStream section;
 
 	if (p != NULL) {
 
@@ -368,8 +368,7 @@ size_t IMAPMessage::extractImpl(
 	   BODY[TEXT]           body
 	   BODY.PEEK[TEXT]      body (peek)
 	*/
-	std::ostringstream bodyDesc;
-	bodyDesc.imbue(std::locale::classic());
+	utility::details::classicOStringStream bodyDesc;
 
 	bodyDesc << "BODY";
 
@@ -400,7 +399,7 @@ size_t IMAPMessage::extractImpl(
 		if ((extractFlags & EXTRACT_HEADER) && (extractFlags & EXTRACT_BODY)) {
 
 			// First, extract header
-			std::ostringstream header;
+			utility::details::classicOStringStream header;
 			utility::outputStreamAdapter headerStream(header);
 
 			const size_t headerLength = extractImpl(

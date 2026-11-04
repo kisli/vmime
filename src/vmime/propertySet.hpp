@@ -34,6 +34,8 @@
 #include "vmime/exception.hpp"
 
 #include "vmime/utility/stringUtils.hpp"
+#include "vmime/utility/details/classicIStringStream.hpp"
+#include "vmime/utility/details/classicOStringStream.hpp"
 
 
 namespace vmime {
@@ -86,8 +88,7 @@ public:
 		  */
 		template <class TYPE> void setValue(const TYPE& value) {
 
-			std::ostringstream oss;
-			oss.imbue(std::locale::classic());  // no formatting
+			utility::details::classicOStringStream oss;
 
 			oss << value;
 
@@ -105,8 +106,7 @@ public:
 
 			TYPE val = TYPE();
 
-			std::istringstream iss(m_value);
-			iss.imbue(std::locale::classic());  // no formatting
+			utility::details::classicIStringStream iss(m_value);
 
 			iss >> val;
 
@@ -149,8 +149,7 @@ public:
 
 				int val = 0;
 
-				std::istringstream iss(m_value);
-				iss.imbue(std::locale::classic());  // no formatting
+				utility::details::classicIStringStream iss(m_value);
 
 				iss >> val;
 
@@ -365,8 +364,7 @@ public:
 
 		TYPE v = TYPE();
 
-		std::istringstream iss(value);
-		iss.imbue(std::locale::classic());  // no formatting
+		utility::details::classicIStringStream iss(value);
 
 		iss >> v;
 
@@ -376,8 +374,7 @@ public:
 	template <typename TYPE>
 	static string valueToString(const TYPE& value) {
 
-		std::ostringstream oss(value);
-		oss.imbue(std::locale::classic());  // no formatting
+		utility::details::classicOStringStream oss;
 
 		oss << value;
 
@@ -409,8 +406,7 @@ public:
 
 			int val = 0;
 
-			std::istringstream iss(value);
-			iss.imbue(std::locale::classic());  // no formatting
+			utility::details::classicIStringStream iss(value);
 
 			iss >> val;
 

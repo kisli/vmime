@@ -32,6 +32,7 @@
 
 #include "vmime/net/message.hpp"
 #include "vmime/net/folder.hpp"
+#include "vmime/utility/details/classicOStringStream.hpp"
 
 #include <sstream>
 #include <iterator>
@@ -571,8 +572,7 @@ const std::vector <string> IMAPUtils::messageFlagList(const int flags) {
 // static
 const string IMAPUtils::searchDate(const vmime::datetime& date) {
 
-	std::ostringstream res;
-	res.imbue(std::locale::classic());
+	utility::details::classicOStringStream res;
 
 	res << date.getDay();
 	res << '-';
@@ -587,8 +587,7 @@ const string IMAPUtils::searchDate(const vmime::datetime& date) {
 // static
 const string IMAPUtils::dateTime(const vmime::datetime& date) {
 
-	std::ostringstream res;
-	res.imbue(std::locale::classic());
+	utility::details::classicOStringStream res;
 
 	// date_time ::= <"> date_day_fixed "-" date_month "-" date_year
 	//               SPACE time SPACE zone <">
@@ -764,7 +763,6 @@ public:
 	IMAPUIDMessageSetEnumerator()
 		: m_first(true) {
 
-		m_oss.imbue(std::locale::classic());
 	}
 
 	void enumerateNumberMessageRange(const vmime::net::numberMessageRange& range) {
@@ -808,7 +806,7 @@ public:
 
 private:
 
-	std::ostringstream m_oss;
+	utility::details::classicOStringStream m_oss;
 	bool m_first;
 };
 

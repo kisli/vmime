@@ -25,6 +25,7 @@
 #include "vmime/exception.hpp"
 
 #include "vmime/text.hpp"
+#include "vmime/utility/details/classicIStringStream.hpp"
 
 
 namespace vmime {
@@ -66,8 +67,7 @@ importanceHelper::Importance importanceHelper::getImportanceHeader(const shared_
 
 		int n = IMPORTANCE_NORMAL;
 
-		std::istringstream iss(value);
-		iss.imbue(std::locale::classic());
+		utility::details::classicIStringStream iss(value);
 
 		iss >> n;
 

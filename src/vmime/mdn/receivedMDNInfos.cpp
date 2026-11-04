@@ -24,6 +24,7 @@
 #include "vmime/mdn/receivedMDNInfos.hpp"
 
 #include "vmime/utility/outputStreamAdapter.hpp"
+#include "vmime/utility/details/classicOStringStream.hpp"
 
 
 namespace vmime {
@@ -102,7 +103,7 @@ void receivedMDNInfos::extract() {
 		if (type.getType() == vmime::mediaTypes::MESSAGE &&
 		    type.getSubType() == vmime::mediaTypes::MESSAGE_DISPOSITION_NOTIFICATION) {
 
-			std::ostringstream oss;
+			utility::details::classicOStringStream oss;
 			utility::outputStreamAdapter vos(oss);
 
 			part->getBody()->getContents()->extract(vos);

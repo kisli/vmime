@@ -32,6 +32,7 @@
 #include "vmime/net/socket.hpp"
 
 #include "vmime/mailbox.hpp"
+#include "vmime/utility/details/classicOStringStream.hpp"
 
 #include <stdexcept>
 
@@ -112,8 +113,7 @@ void SMTPCommandSet::writeToSocket(const shared_ptr <socket>& sok, const shared_
 
 const string SMTPCommandSet::getText() const {
 
-	std::ostringstream cmd;
-	cmd.imbue(std::locale::classic());
+	utility::details::classicOStringStream cmd;
 
 	for (std::list <shared_ptr <SMTPCommand> >::const_iterator it = m_commands.begin() ;
 	     it != m_commands.end() ; ++it) {
@@ -127,8 +127,7 @@ const string SMTPCommandSet::getText() const {
 
 const string SMTPCommandSet::getTraceText() const {
 
-	std::ostringstream cmd;
-	cmd.imbue(std::locale::classic());
+	utility::details::classicOStringStream cmd;
 
 	for (std::list <shared_ptr <SMTPCommand> >::const_iterator it = m_commands.begin() ;
 	     it != m_commands.end() ; ++it) {

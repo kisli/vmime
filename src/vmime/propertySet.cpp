@@ -23,6 +23,7 @@
 
 #include "vmime/propertySet.hpp"
 #include "vmime/parserHelpers.hpp"
+#include "vmime/utility/details/classicIStringStream.hpp"
 
 
 namespace vmime {
@@ -340,8 +341,7 @@ bool propertySet::property::getValue() const {
 
 		int val = 0;
 
-		std::istringstream iss(m_value);
-		iss.imbue(std::locale::classic());  // no formatting
+		utility::details::classicIStringStream iss(m_value);
 
 		iss >> val;
 
@@ -377,8 +377,7 @@ bool propertySet::valueFromString(const string& value) {
 
 		int val = 0;
 
-		std::istringstream iss(value);
-		iss.imbue(std::locale::classic());  // no formatting
+		utility::details::classicIStringStream iss(value);
 
 		iss >> val;
 

@@ -35,6 +35,7 @@
 #include "vmime/net/socket.hpp"
 #include "vmime/net/timeoutHandler.hpp"
 #include "vmime/net/tracer.hpp"
+#include "vmime/utility/details/classicIStringStream.hpp"
 
 #include <cctype>
 
@@ -229,8 +230,7 @@ const SMTPResponse::enhancedStatusCode SMTPResponse::extractEnhancedCode(const s
 
 	enhancedStatusCode enhCode;
 
-	std::istringstream iss(responseText);
-	iss.imbue(std::locale::classic());
+	utility::details::classicIStringStream iss(responseText);
 
 	if (std::isdigit(iss.peek())) {
 

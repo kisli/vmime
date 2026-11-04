@@ -45,6 +45,7 @@
 #include "vmime/utility/streamUtils.hpp"
 #include "vmime/utility/outputStreamAdapter.hpp"
 #include "vmime/utility/inputStreamStringAdapter.hpp"
+#include "vmime/utility/details/classicOStringStream.hpp"
 
 
 namespace vmime {
@@ -484,7 +485,7 @@ void SMTPTransport::send(
 	    !getInfos().getPropertyValue <bool>(getSession(),
 			dynamic_cast <const SMTPServiceInfos&>(getInfos()).getProperties().PROPERTY_OPTIONS_CHUNKING)) {
 
-		std::ostringstream oss;
+		utility::details::classicOStringStream oss;
 		utility::outputStreamAdapter ossAdapter(oss);
 
 		msg->generate(ctx, ossAdapter);

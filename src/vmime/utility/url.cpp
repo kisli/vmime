@@ -26,6 +26,8 @@
 #include "vmime/parserHelpers.hpp"
 #include "vmime/utility/urlUtils.hpp"
 #include "vmime/exception.hpp"
+#include "vmime/utility/details/classicIStringStream.hpp"
+#include "vmime/utility/details/classicOStringStream.hpp"
 
 #include <sstream>
 
@@ -108,8 +110,7 @@ url::operator string() const {
 
 const string url::build() const {
 
-	std::ostringstream oss;
-	oss.imbue(std::locale::classic());
+	utility::details::classicOStringStream oss;
 
 	oss << m_protocol << "://";
 
@@ -321,8 +322,7 @@ void url::parse(const string& str) {
 		throw exceptions::malformed_url("Port can only contain digits");
 	}
 
-	std::istringstream iss(port);
-	iss.imbue(std::locale::classic());
+	utility::details::classicIStringStream iss(port);
 
 	port_t portNum = 0;
 	iss >> portNum;

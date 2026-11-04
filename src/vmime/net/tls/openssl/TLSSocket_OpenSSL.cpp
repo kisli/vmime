@@ -39,6 +39,7 @@
 #include "vmime/security/cert/openssl/X509Certificate_OpenSSL.hpp"
 
 #include "vmime/utility/stringUtils.hpp"
+#include "vmime/utility/details/classicOStringStream.hpp"
 
 #include <vector>
 #include <cstring>
@@ -621,8 +622,7 @@ void TLSSocket_OpenSSL::handleError(int rc) {
 
 				} else {
 
-					std::ostringstream oss;
-					oss.imbue(std::locale::classic());
+					utility::details::classicOStringStream oss;
 					oss << "The BIO reported an error: " << rc;
 					oss.flush();
 					throw exceptions::tls_exception(oss.str());

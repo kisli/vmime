@@ -27,6 +27,8 @@
 
 #include "vmime/types.hpp"
 #include "vmime/base.hpp"
+#include "vmime/utility/details/classicIStringStream.hpp"
+#include "vmime/utility/details/classicOStringStream.hpp"
 
 #include <sstream>
 #include <iostream>
@@ -59,7 +61,7 @@ public:
 	  * @return a string object containing a hex copy of the specified data
 	  */
 	static const string makeHexStringFromBytes(const byteArray& data) {
-		std::stringstream ss;
+		utility::details::classicOStringStream ss;
 		for (const byte_t& b : data)
 		{
 			ss << std::hex << int(b);
@@ -197,8 +199,7 @@ public:
 	template <class TYPE>
 	static const string toString(const TYPE& value) {
 
-		std::ostringstream oss;
-		oss.imbue(std::locale::classic());
+		utility::details::classicOStringStream oss;
 
 		oss << value;
 
@@ -216,8 +217,7 @@ public:
 
 		TYPE ret;
 
-		std::istringstream iss(value);
-		iss.imbue(std::locale::classic());
+		utility::details::classicIStringStream iss(value);
 
 		iss >> ret;
 

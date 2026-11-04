@@ -43,6 +43,7 @@
 #include "vmime/utility/inputStreamStringAdapter.hpp"
 #include "vmime/utility/inputStreamByteBufferAdapter.hpp"
 #include "vmime/utility/stringUtils.hpp"
+#include "vmime/utility/details/classicOStringStream.hpp"
 
 #if VMIME_HAVE_TLS_SUPPORT
 #	include "vmime/net/tls/TLSSocket.hpp"
@@ -171,7 +172,7 @@ shared_ptr <SASLMechanism> SASLContext::suggestMechanism(
 		return null;
 	}
 
-	std::ostringstream oss;
+	utility::details::classicOStringStream oss;
 
 	for (unsigned int i = 0 ; i < mechs.size() ; ++i) {
 		oss << mechs[i]->getName() << " ";

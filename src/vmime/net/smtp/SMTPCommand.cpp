@@ -34,6 +34,7 @@
 
 #include "vmime/mailbox.hpp"
 #include "vmime/utility/outputStreamAdapter.hpp"
+#include "vmime/utility/details/classicOStringStream.hpp"
 
 
 namespace vmime {
@@ -51,8 +52,7 @@ SMTPCommand::SMTPCommand(const string& text, const string& traceText)
 // static
 shared_ptr <SMTPCommand> SMTPCommand::EHLO(const string& hostname) {
 
-	std::ostringstream cmd;
-	cmd.imbue(std::locale::classic());
+	utility::details::classicOStringStream cmd;
 	cmd << "EHLO " << hostname;
 
 	return createCommand(cmd.str());
@@ -62,8 +62,7 @@ shared_ptr <SMTPCommand> SMTPCommand::EHLO(const string& hostname) {
 // static
 shared_ptr <SMTPCommand> SMTPCommand::HELO(const string& hostname) {
 
-	std::ostringstream cmd;
-	cmd.imbue(std::locale::classic());
+	utility::details::classicOStringStream cmd;
 	cmd << "HELO " << hostname;
 
 	return createCommand(cmd.str());
@@ -73,8 +72,7 @@ shared_ptr <SMTPCommand> SMTPCommand::HELO(const string& hostname) {
 // static
 shared_ptr <SMTPCommand> SMTPCommand::AUTH(const string& mechName) {
 
-	std::ostringstream cmd;
-	cmd.imbue(std::locale::classic());
+	utility::details::classicOStringStream cmd;
 	cmd << "AUTH " << mechName;
 
 	return createCommand(cmd.str());
@@ -84,12 +82,10 @@ shared_ptr <SMTPCommand> SMTPCommand::AUTH(const string& mechName) {
 // static
 shared_ptr <SMTPCommand> SMTPCommand::AUTH(const string& mechName, const std::string& initialResponse) {
 
-	std::ostringstream cmd;
-	cmd.imbue(std::locale::classic());
+	utility::details::classicOStringStream cmd;
 	cmd << "AUTH " << mechName << " " << initialResponse;
 
-	std::ostringstream trace;
-	trace.imbue(std::locale::classic());
+	utility::details::classicOStringStream trace;
 	trace << "AUTH " << mechName << " {initial-response}";
 
 	return createCommand(cmd.str(), trace.str());
@@ -119,8 +115,7 @@ shared_ptr <SMTPCommand> SMTPCommand::MAIL(
 	const shared_ptr <const DSNAttributes>& dsnAttrs
 ) {
 
-	std::ostringstream cmd;
-	cmd.imbue(std::locale::classic());
+	utility::details::classicOStringStream cmd;
 	cmd << "MAIL FROM:<";
 
 	if (utf8) {
@@ -160,8 +155,7 @@ shared_ptr <SMTPCommand> SMTPCommand::RCPT(
 	const shared_ptr <const DSNAttributes>& dsnAttrs
 ) {
 
-	std::ostringstream cmd;
-	cmd.imbue(std::locale::classic());
+	utility::details::classicOStringStream cmd;
 	cmd << "RCPT TO:<";
 
 	if (utf8) {
@@ -201,8 +195,7 @@ shared_ptr <SMTPCommand> SMTPCommand::DATA() {
 // static
 shared_ptr <SMTPCommand> SMTPCommand::BDAT(const size_t chunkSize, const bool last) {
 
-	std::ostringstream cmd;
-	cmd.imbue(std::locale::classic());
+	utility::details::classicOStringStream cmd;
 	cmd << "BDAT " << chunkSize;
 
 	if (last) {

@@ -37,6 +37,7 @@
 
 #include "vmime/utility/outputStreamAdapter.hpp"
 #include "vmime/utility/inputStreamStringAdapter.hpp"
+#include "vmime/utility/details/classicOStringStream.hpp"
 
 
 namespace vmime {
@@ -237,7 +238,7 @@ void transport::send(
 
 	// Generate the message, "stream" it and delegate the sending
 	// to the generic send() function.
-	std::ostringstream oss;
+	utility::details::classicOStringStream oss;
 	utility::outputStreamAdapter ossAdapter(oss);
 
 	msg->generate(ossAdapter);

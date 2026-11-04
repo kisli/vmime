@@ -30,6 +30,7 @@
 #include "vmime/utility/outputStreamAdapter.hpp"
 #include "vmime/utility/outputStreamStringAdapter.hpp"
 #include "vmime/utility/stringUtils.hpp"
+#include "vmime/utility/details/classicOStringStream.hpp"
 
 
 namespace vmime {
@@ -101,7 +102,7 @@ const word& parameter::getValue() const {
 
 void parameter::setValue(const component& value) {
 
-	std::ostringstream oss;
+	utility::details::classicOStringStream oss;
 	utility::outputStreamAdapter vos(oss);
 
 	value.generate(vos);
@@ -151,8 +152,7 @@ void parameter::parse(
 	charset ch(charsets::US_ASCII);
 	string lang;
 
-	std::ostringstream value;
-	value.imbue(std::locale::classic());
+	utility::details::classicOStringStream value;
 
 	for (std::vector <valueChunk>::size_type i = 0 ; i < chunks.size() ; ++i) {
 

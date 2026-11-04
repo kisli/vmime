@@ -332,6 +332,13 @@ the purpose of the functions/classes and the meaning of the parameters.
 * Do NOT use 'using namespace' (and especially not in header files). All
   namespaces should be explicitely named.
 
+* Do NOT use std::ostringstream, std::istringstream or std::stringstream
+  directly: use utility::details::classicOStringStream and
+  utility::details::classicIStringStream instead. They always use the
+  classic "C" locale, so that numbers are formatted and parsed in the same
+  way whatever the global locale set by the application. This is checked
+  by the CI.
+
 * Use the 'get' and 'set' prefix for accessors:
 
      Variable:    m_foo

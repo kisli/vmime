@@ -32,6 +32,7 @@
 #include "vmime/dateTime.hpp"
 
 #include "vmime/utility/outputStreamAdapter.hpp"
+#include "vmime/utility/details/classicOStringStream.hpp"
 
 
 namespace vmime {
@@ -324,7 +325,7 @@ shared_ptr <bodyPart> MDNHelper::createSecondMDNPart(
 		}
 	}
 
-	std::ostringstream oss;
+	utility::details::classicOStringStream oss;
 	utility::outputStreamAdapter vos(oss);
 
 	fields.generate(vos);
@@ -347,7 +348,7 @@ shared_ptr <bodyPart> MDNHelper::createThirdMDNPart(const sendableMDNInfos& mdnI
 	                                       vmime::mediaTypes::TEXT_RFC822_HEADERS));
 
 	// Body: original message headers
-	std::ostringstream oss;
+	utility::details::classicOStringStream oss;
 	utility::outputStreamAdapter vos(oss);
 
 	mdnInfos.getMessage()->getHeader()->generate(vos);

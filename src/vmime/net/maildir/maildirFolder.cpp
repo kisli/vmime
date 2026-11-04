@@ -42,6 +42,7 @@
 
 #include "vmime/utility/outputStreamAdapter.hpp"
 #include "vmime/utility/inputStreamStringAdapter.hpp"
+#include "vmime/utility/details/classicOStringStream.hpp"
 
 
 namespace vmime {
@@ -754,7 +755,7 @@ messageSet maildirFolder::addMessage(
 	utility::progressListener* progress
 ) {
 
-	std::ostringstream oss;
+	utility::details::classicOStringStream oss;
 	utility::outputStreamAdapter ossAdapter(oss);
 
 	msg->generate(ossAdapter);
