@@ -43,6 +43,7 @@ VMIME_TEST_SUITE_BEGIN(stringUtilsTest)
 		VMIME_TEST(testCountASCIIChars)
 
 		VMIME_TEST(testUnquote)
+		VMIME_TEST(testQuote)
 
 		VMIME_TEST(testIsValidHostname)
 		VMIME_TEST(testIsValidFQDN)
@@ -184,6 +185,16 @@ VMIME_TEST_SUITE_BEGIN(stringUtilsTest)
 		VASSERT_EQ("2", "\"not quoted", stringUtils::unquote("\"not quoted"));  // "not quoted
 		VASSERT_EQ("3", "not quoted\"", stringUtils::unquote("not quoted\""));  // not quoted"
 		VASSERT_EQ("4", "quoted with \"escape\"", stringUtils::unquote("\"quoted with \\\"escape\\\"\""));  // "quoted with \"escape\""
+	}
+
+	void testQuote() {
+
+		VASSERT_EQ("1", "", stringUtils::quote("", "\\\"", "\\"));
+		VASSERT_EQ("2", "no special chars", stringUtils::quote("no special chars", "\\\"", "\\"));
+		VASSERT_EQ("3", "with \\\"quotes\\\"", stringUtils::quote("with \"quotes\"", "\\\"", "\\"));  // with \"quotes\"
+		VASSERT_EQ("4", "\\\\start and end\\\\", stringUtils::quote("\\start and end\\", "\\\"", "\\"));  // \\start and end\\ (backslash)
+		VASSERT_EQ("5", "1%+1%=2", stringUtils::quote("1+1=2", "+=", "%"));
+		VASSERT_EQ("6", "a<>.b", stringUtils::quote("a.b", ".", "<>"));
 	}
 
 	void testIsValidHostname() {

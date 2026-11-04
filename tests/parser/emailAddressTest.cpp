@@ -32,6 +32,7 @@ VMIME_TEST_SUITE_BEGIN(emailAddressTest)
 		VMIME_TEST(testParseASCII)
 		VMIME_TEST(testParseEAI)
 		VMIME_TEST(testParseInvalid)
+		VMIME_TEST(testParseTooLong)
 		VMIME_TEST(testGenerateASCII)
 		VMIME_TEST(testGenerateEAI)
 		VMIME_TEST(testParseSpecialChars)
@@ -108,6 +109,22 @@ VMIME_TEST_SUITE_BEGIN(emailAddressTest)
 		vmime::emailAddress eml5("this\\ still\\\"not\\\\allowed@example.com");
 		VASSERT_EQ("5/local", "this\\", eml5.getLocalName());
 		VASSERT_EQ("5/domain", vmime::platform::getHandler()->getHostName(), eml5.getDomainName());
+	}
+
+	void testParseTooLong() {
+
+		vmime::emailAddress eml1(vmime::string(240, 'a') + "@vmime.org");
+		VASSERT_EQ("1/local", vmime::string(240, 'a'), eml1.getLocalName());
+		VASSERT_EQ("1/domain", "vmime.org", eml1.getDomainName());
+
+		// Local part and domain part must not exceed 256 characters
+		vmime::emailAddress eml2(vmime::string(300, 'a') + "@vmime.org");
+		VASSERT_EQ("2/local", "invalid", eml2.getLocalName());
+		VASSERT_EQ("2/domain", "invalid", eml2.getDomainName());
+
+		vmime::emailAddress eml3("local@" + vmime::string(300, 'a') + ".vmime.org");
+		VASSERT_EQ("3/local", "invalid", eml3.getLocalName());
+		VASSERT_EQ("3/domain", "invalid", eml3.getDomainName());
 	}
 
 	void testParseSpecialChars() {

@@ -23,7 +23,6 @@
 
 #include "vmime/utility/stringUtils.hpp"
 #include "vmime/parserHelpers.hpp"
-#include "vmime/utility/details/classicOStringStream.hpp"
 
 
 namespace vmime {
@@ -240,21 +239,23 @@ string stringUtils::quote(
 	const string& escapeChar
 ) {
 
-	utility::details::classicOStringStream oss;
+	string res;
+	res.reserve(str.length());
+
 	size_t lastPos = 0, pos = 0;
 
 	while ((pos = str.find_first_of(escapeSpecialChars, lastPos)) != string::npos) {
 
-		oss << str.substr(lastPos, pos - lastPos)
-		    << escapeChar
-		    << str[pos];
+		res.append(str, lastPos, pos - lastPos);
+		res += escapeChar;
+		res += str[pos];
 
 		lastPos = pos + 1;
 	}
 
-	oss << str.substr(lastPos);
+	res.append(str, lastPos, string::npos);
 
-	return oss.str();
+	return res;
 }
 
 
