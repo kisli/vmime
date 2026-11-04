@@ -38,7 +38,7 @@ uuEncoder::uuEncoder() {
 }
 
 
-const std::vector <string> uuEncoder::getAvailableProperties() const {
+std::vector <string> uuEncoder::getAvailableProperties() const {
 
 	std::vector <string> list(encoder::getAvailableProperties());
 

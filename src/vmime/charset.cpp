@@ -214,7 +214,7 @@ void charset::copyFrom(const component& other) {
 }
 
 
-const std::vector <shared_ptr <component> > charset::getChildComponents() {
+std::vector <shared_ptr <component> > charset::getChildComponents() {
 
 	return std::vector <shared_ptr <component> >();
 }

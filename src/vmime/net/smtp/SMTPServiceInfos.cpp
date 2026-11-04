@@ -103,7 +103,7 @@ const SMTPServiceInfos::props& SMTPServiceInfos::getProperties() const {
 }
 
 
-const std::vector <serviceInfos::property> SMTPServiceInfos::getAvailableProperties() const {
+std::vector <serviceInfos::property> SMTPServiceInfos::getAvailableProperties() const {
 
 	std::vector <property> list;
 	const props& p = getProperties();

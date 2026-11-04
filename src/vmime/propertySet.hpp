@@ -426,13 +426,13 @@ public:
 	  *
 	  * @return list of properties
 	  */
-	const std::vector <shared_ptr <const property> > getPropertyList() const;
+	std::vector <shared_ptr <const property> > getPropertyList() const;
 
 	/** Return the property list.
 	  *
 	  * @return list of properties
 	  */
-	const std::vector <shared_ptr <property> > getPropertyList();
+	std::vector <shared_ptr <property> > getPropertyList();
 };
 
 

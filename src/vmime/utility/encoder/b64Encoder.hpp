@@ -53,7 +53,7 @@ public:
 		utility::progressListener* progress = NULL
 	);
 
-	const std::vector <string> getAvailableProperties() const;
+	std::vector <string> getAvailableProperties() const;
 
 	size_t getEncodedSize(const size_t n) const;
 	size_t getDecodedSize(const size_t n) const;

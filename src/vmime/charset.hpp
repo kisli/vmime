@@ -62,7 +62,7 @@ public:
 	bool operator==(const charset& value) const;
 	bool operator!=(const charset& value) const;
 
-	const std::vector <shared_ptr <component> > getChildComponents();
+	std::vector <shared_ptr <component> > getChildComponents();
 
 	/** Gets the recommended encoding for this charset.
 	  * Note: there may be no recommended encoding.

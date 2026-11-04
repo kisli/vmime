@@ -75,7 +75,7 @@ OAuth2SASLAuthenticator::~OAuth2SASLAuthenticator() {
 }
 
 
-const std::vector <shared_ptr <SASLMechanism> >
+std::vector <shared_ptr <SASLMechanism> >
 	OAuth2SASLAuthenticator::getAcceptableMechanisms(
 		const std::vector <shared_ptr <SASLMechanism> >& available,
 		const shared_ptr <SASLMechanism>& suggested

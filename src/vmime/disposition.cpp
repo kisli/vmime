@@ -93,7 +93,7 @@ disposition& disposition::operator=(const disposition& other) {
 }
 
 
-const std::vector <shared_ptr <component> > disposition::getChildComponents() {
+std::vector <shared_ptr <component> > disposition::getChildComponents() {
 
 	return std::vector <shared_ptr <component> >();
 }
@@ -180,7 +180,7 @@ bool disposition::hasModifier(const string& modifier) const {
 }
 
 
-const std::vector <string> disposition::getModifierList() const {
+std::vector <string> disposition::getModifierList() const {
 
 	return m_modifiers;
 }

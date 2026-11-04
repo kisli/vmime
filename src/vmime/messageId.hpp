@@ -95,7 +95,7 @@ public:
 	void copyFrom(const component& other);
 	messageId& operator=(const messageId& other);
 
-	const std::vector <shared_ptr <component> > getChildComponents();
+	std::vector <shared_ptr <component> > getChildComponents();
 
 private:
 

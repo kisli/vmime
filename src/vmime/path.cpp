@@ -108,7 +108,7 @@ path& path::operator=(const path& other) {
 }
 
 
-const std::vector <shared_ptr <component> > path::getChildComponents() {
+std::vector <shared_ptr <component> > path::getChildComponents() {
 
 	return std::vector <shared_ptr <component> >();
 }

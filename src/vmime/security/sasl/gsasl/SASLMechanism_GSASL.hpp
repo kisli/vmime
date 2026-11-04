@@ -68,7 +68,7 @@ public:
 	  *
 	  * @return list of mechanism names
 	  */
-	static const std::vector <string> getSupportedMechanisms();
+	static std::vector <string> getSupportedMechanisms();
 
 	/** Test whether the mechanisms provided by the GNU SASL library
 	  * can use a channel binding type.

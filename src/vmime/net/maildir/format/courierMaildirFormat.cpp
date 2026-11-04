@@ -248,7 +248,7 @@ const utility::file::path courierMaildirFormat::folderPathToFileSystemPath(
 }
 
 
-const std::vector <folder::path> courierMaildirFormat::listFolders(
+std::vector <folder::path> courierMaildirFormat::listFolders(
 	const folder::path& root,
 	const bool recursive
 ) const {

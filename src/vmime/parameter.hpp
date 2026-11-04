@@ -85,7 +85,7 @@ public:
 
 	size_t getGeneratedSize(const generationContext& ctx);
 
-	const std::vector <shared_ptr <component> > getChildComponents();
+	std::vector <shared_ptr <component> > getChildComponents();
 
 	/** Return the name of this parameter.
 	  *

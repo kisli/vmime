@@ -97,7 +97,7 @@ const IMAPServiceInfos::props& IMAPServiceInfos::getProperties() const {
 }
 
 
-const std::vector <serviceInfos::property> IMAPServiceInfos::getAvailableProperties() const {
+std::vector <serviceInfos::property> IMAPServiceInfos::getAvailableProperties() const {
 
 	std::vector <property> list;
 	const props& p = getProperties();

@@ -184,7 +184,7 @@ const utility::file::path kmailMaildirFormat::folderPathToFileSystemPath(
 }
 
 
-const std::vector <folder::path> kmailMaildirFormat::listFolders(
+std::vector <folder::path> kmailMaildirFormat::listFolders(
 	const folder::path& root,
 	const bool recursive
 ) const {

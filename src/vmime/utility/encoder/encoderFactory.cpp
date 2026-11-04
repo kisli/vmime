@@ -117,7 +117,7 @@ const shared_ptr <const encoderFactory::registeredEncoder>
 }
 
 
-const std::vector <shared_ptr <const encoderFactory::registeredEncoder> >
+std::vector <shared_ptr <const encoderFactory::registeredEncoder> >
 	encoderFactory::getEncoderList() const {
 
 	std::vector <shared_ptr <const registeredEncoder> > res;

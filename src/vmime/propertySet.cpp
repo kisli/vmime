@@ -234,7 +234,7 @@ bool propertySet::hasProperty(const string& name) const {
 }
 
 
-const std::vector <shared_ptr <const propertySet::property> > propertySet::getPropertyList() const {
+std::vector <shared_ptr <const propertySet::property> > propertySet::getPropertyList() const {
 
 	std::vector <shared_ptr <const property> > res;
 
@@ -246,7 +246,7 @@ const std::vector <shared_ptr <const propertySet::property> > propertySet::getPr
 }
 
 
-const std::vector <shared_ptr <propertySet::property> > propertySet::getPropertyList() {
+std::vector <shared_ptr <propertySet::property> > propertySet::getPropertyList() {
 
 	std::vector <shared_ptr <property> > res;
 

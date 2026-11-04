@@ -93,7 +93,7 @@ public:
 
 	static int messageFlagsFromFlags(const IMAPParser::flag_list& list);
 
-	static const std::vector <string> messageFlagList(const int flags);
+	static std::vector <string> messageFlagList(const int flags);
 
 	/** Format a date to IMAP SEARCH date format (eg. 25-Nov-2021).
 	  *

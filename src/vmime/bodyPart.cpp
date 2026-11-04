@@ -184,7 +184,7 @@ void bodyPart::importChildPart(const shared_ptr <bodyPart>& part) {
 }
 
 
-const std::vector <shared_ptr <component> > bodyPart::getChildComponents() {
+std::vector <shared_ptr <component> > bodyPart::getChildComponents() {
 
 	std::vector <shared_ptr <component> > list;
 

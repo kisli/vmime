@@ -138,7 +138,7 @@ public:
 	  *
 	  * @return list of registered encoders
 	  */
-	const std::vector <shared_ptr <const registeredEncoder> > getEncoderList() const;
+	std::vector <shared_ptr <const registeredEncoder> > getEncoderList() const;
 
 	/** Set the default encoder to use when no other encoder
 	  * is registered for an encoding (fallback).

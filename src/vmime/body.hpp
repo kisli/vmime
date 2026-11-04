@@ -144,13 +144,13 @@ public:
 	  *
 	  * @return list of parts
 	  */
-	const std::vector <shared_ptr <const bodyPart> > getPartList() const;
+	std::vector <shared_ptr <const bodyPart> > getPartList() const;
 
 	/** Return the part list.
 	  *
 	  * @return list of parts
 	  */
-	const std::vector <shared_ptr <bodyPart> > getPartList();
+	std::vector <shared_ptr <bodyPart> > getPartList();
 
 	/** Return the prolog text.
 	  *
@@ -293,7 +293,7 @@ public:
 	void copyFrom(const component& other);
 	body& operator=(const body& other);
 
-	const std::vector <shared_ptr <component> > getChildComponents();
+	std::vector <shared_ptr <component> > getChildComponents();
 
 	size_t getGeneratedSize(const generationContext& ctx);
 

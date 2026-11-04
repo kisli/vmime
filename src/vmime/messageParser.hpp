@@ -105,13 +105,13 @@ public:
 	  *
 	  * @return list of attachments in the message
 	  */
-	const std::vector <shared_ptr <const attachment> > getAttachmentList() const;
+	std::vector <shared_ptr <const attachment> > getAttachmentList() const;
 
 	/** Return the text parts of the message.
 	  *
 	  * @return list of text parts in the message
 	  */
-	const std::vector <shared_ptr <const textPart> > getTextPartList() const;
+	std::vector <shared_ptr <const textPart> > getTextPartList() const;
 
 	/** Return the number of text parts in the message.
 	  *

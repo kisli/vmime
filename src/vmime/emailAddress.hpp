@@ -99,7 +99,7 @@ public:
 	shared_ptr <component> clone() const;
 	emailAddress& operator=(const emailAddress& other);
 
-	const std::vector <shared_ptr <component> > getChildComponents();
+	std::vector <shared_ptr <component> > getChildComponents();
 
 protected:
 

@@ -181,13 +181,13 @@ public:
 	  *
 	  * @return list of parameters
 	  */
-	const std::vector <shared_ptr <const parameter> > getParameterList() const;
+	std::vector <shared_ptr <const parameter> > getParameterList() const;
 
 	/** Return the parameter list.
 	  *
 	  * @return list of parameters
 	  */
-	const std::vector <shared_ptr <parameter> > getParameterList();
+	std::vector <shared_ptr <parameter> > getParameterList();
 
 	/** Parse the parameters from a list of (name, value) pairs, which
 	  * are already split and unquoted. This is used when the parameters
@@ -208,7 +208,7 @@ public:
 
 	size_t getGeneratedSize(const generationContext& ctx);
 
-	const std::vector <shared_ptr <component> > getChildComponents();
+	std::vector <shared_ptr <component> > getChildComponents();
 
 private:
 

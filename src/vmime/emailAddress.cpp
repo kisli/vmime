@@ -699,7 +699,7 @@ void emailAddress::setDomainName(const word& domainName) {
 }
 
 
-const std::vector <shared_ptr <component> > emailAddress::getChildComponents() {
+std::vector <shared_ptr <component> > emailAddress::getChildComponents() {
 
 	return std::vector <shared_ptr <component> >();
 }

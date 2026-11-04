@@ -50,7 +50,7 @@ public:
 	shared_ptr <component> clone() const;
 	mailboxGroup& operator=(const component& other);
 
-	const std::vector <shared_ptr <component> > getChildComponents();
+	std::vector <shared_ptr <component> > getChildComponents();
 
 	/** Return the name of the group.
 	  *
@@ -165,13 +165,13 @@ public:
 	  *
 	  * @return list of mailboxes
 	  */
-	const std::vector <shared_ptr <const mailbox> > getMailboxList() const;
+	std::vector <shared_ptr <const mailbox> > getMailboxList() const;
 
 	/** Return the mailbox list.
 	  *
 	  * @return list of mailboxes
 	  */
-	const std::vector <shared_ptr <mailbox> > getMailboxList();
+	std::vector <shared_ptr <mailbox> > getMailboxList();
 
 	bool isGroup() const;
 

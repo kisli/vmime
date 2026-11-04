@@ -480,7 +480,7 @@ void mailbox::setEmail(const emailAddress& email) {
 }
 
 
-const std::vector <shared_ptr <component> > mailbox::getChildComponents() {
+std::vector <shared_ptr <component> > mailbox::getChildComponents() {
 
 	return std::vector <shared_ptr <component> >();
 }

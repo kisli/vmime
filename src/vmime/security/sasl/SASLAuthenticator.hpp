@@ -64,7 +64,7 @@ public:
 	  * @return ordered list of mechanism to use among the available
 	  * mechanisms (from the first to try to the last)
 	  */
-	virtual const std::vector <shared_ptr <SASLMechanism> > getAcceptableMechanisms(
+	virtual std::vector <shared_ptr <SASLMechanism> > getAcceptableMechanisms(
 		const std::vector <shared_ptr <SASLMechanism> >& available,
 		const shared_ptr <SASLMechanism>& suggested
 	) const = 0;

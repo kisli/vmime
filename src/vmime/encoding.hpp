@@ -89,7 +89,7 @@ public:
 	bool operator==(const encoding& value) const;
 	bool operator!=(const encoding& value) const;
 
-	const std::vector <shared_ptr <component> > getChildComponents();
+	std::vector <shared_ptr <component> > getChildComponents();
 
 	/** Decide which encoding to use based on the specified data.
 	  *

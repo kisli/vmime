@@ -555,7 +555,7 @@ int IMAPUtils::messageFlagsFromFlags(const IMAPParser::flag_list& list) {
 
 
 // static
-const std::vector <string> IMAPUtils::messageFlagList(const int flags) {
+std::vector <string> IMAPUtils::messageFlagList(const int flags) {
 
 	std::vector <string> flagList;
 

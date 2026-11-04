@@ -641,7 +641,7 @@ const shared_ptr <const parameter> parameterizedHeaderField::getParameterAt(cons
 }
 
 
-const std::vector <shared_ptr <const parameter> > parameterizedHeaderField::getParameterList() const {
+std::vector <shared_ptr <const parameter> > parameterizedHeaderField::getParameterList() const {
 
 	std::vector <shared_ptr <const parameter> > list;
 
@@ -657,13 +657,13 @@ const std::vector <shared_ptr <const parameter> > parameterizedHeaderField::getP
 }
 
 
-const std::vector <shared_ptr <parameter> > parameterizedHeaderField::getParameterList() {
+std::vector <shared_ptr <parameter> > parameterizedHeaderField::getParameterList() {
 
 	return m_params;
 }
 
 
-const std::vector <shared_ptr <component> > parameterizedHeaderField::getChildComponents() {
+std::vector <shared_ptr <component> > parameterizedHeaderField::getChildComponents() {
 
 	std::vector <shared_ptr <component> > list = headerField::getChildComponents();
 

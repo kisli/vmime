@@ -136,7 +136,7 @@ public:
 	  * returned; if set to false, only direct children are returned.
 	  * @return list of subfolders
 	  */
-	virtual const std::vector <folder::path> listFolders(
+	virtual std::vector <folder::path> listFolders(
 		const folder::path& root,
 		const bool recursive
 	) const = 0;

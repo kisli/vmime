@@ -1167,7 +1167,7 @@ const shared_ptr <const bodyPart> body::getPartAt(const size_t pos) const {
 }
 
 
-const std::vector <shared_ptr <const bodyPart> > body::getPartList() const {
+std::vector <shared_ptr <const bodyPart> > body::getPartList() const {
 
 	std::vector <shared_ptr <const bodyPart> > list;
 
@@ -1183,13 +1183,13 @@ const std::vector <shared_ptr <const bodyPart> > body::getPartList() const {
 }
 
 
-const std::vector <shared_ptr <bodyPart> > body::getPartList() {
+std::vector <shared_ptr <bodyPart> > body::getPartList() {
 
 	return m_parts;
 }
 
 
-const std::vector <shared_ptr <component> > body::getChildComponents() {
+std::vector <shared_ptr <component> > body::getChildComponents() {
 
 	std::vector <shared_ptr <component> > list;
 

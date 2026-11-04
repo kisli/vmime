@@ -228,7 +228,7 @@ public:
 	  *
 	  * @return list of properties
 	  */
-	virtual const std::vector <property> getAvailableProperties() const = 0;
+	virtual std::vector <property> getAvailableProperties() const = 0;
 
 	/** Helper function to retrieve the value of a property.
 	  *

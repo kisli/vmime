@@ -90,7 +90,7 @@ public:
 	  *
 	  * @return list of property names
 	  */
-	virtual const std::vector <string> getAvailableProperties() const;
+	virtual std::vector <string> getAvailableProperties() const;
 
 	/** Return the results returned by this encoder.
 	  *

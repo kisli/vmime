@@ -280,7 +280,7 @@ shared_ptr <word> word::parseNext(
 }
 
 
-const std::vector <shared_ptr <word> > word::parseMultiple(
+std::vector <shared_ptr <word> > word::parseMultiple(
 	parsingContext& ctx,
 	const string& buffer,
 	const size_t position,
@@ -1211,7 +1211,7 @@ void word::setBuffer(const string& buffer) {
 }
 
 
-const std::vector <shared_ptr <component> > word::getChildComponents() {
+std::vector <shared_ptr <component> > word::getChildComponents() {
 
 	return std::vector <shared_ptr <component> >();
 }

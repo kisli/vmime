@@ -246,7 +246,7 @@ private:
 
 
 // static
-const std::vector <size_t> maildirUtils::messageSetToNumberList(
+std::vector <size_t> maildirUtils::messageSetToNumberList(
 	const messageSet& msgs,
 	const size_t msgCount
 ) {

@@ -632,7 +632,7 @@ void IMAPConnection::startTLS() {
 #endif // VMIME_HAVE_TLS_SUPPORT
 
 
-const std::vector <string> IMAPConnection::getCapabilities() {
+std::vector <string> IMAPConnection::getCapabilities() {
 
 	if (!m_capabilitiesFetched) {
 		fetchCapabilities();

@@ -398,7 +398,7 @@ const shared_ptr <const headerField> header::getFieldAt(const size_t pos) const 
 }
 
 
-const std::vector <shared_ptr <const headerField> > header::getFieldList() const {
+std::vector <shared_ptr <const headerField> > header::getFieldList() const {
 
 	std::vector <shared_ptr <const headerField> > list;
 
@@ -414,13 +414,13 @@ const std::vector <shared_ptr <const headerField> > header::getFieldList() const
 }
 
 
-const std::vector <shared_ptr <headerField> > header::getFieldList() {
+std::vector <shared_ptr <headerField> > header::getFieldList() {
 
 	return m_fields;
 }
 
 
-const std::vector <shared_ptr <component> > header::getChildComponents() {
+std::vector <shared_ptr <component> > header::getChildComponents() {
 
 	std::vector <shared_ptr <component> > list;
 

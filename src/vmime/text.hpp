@@ -56,7 +56,7 @@ public:
 	text& operator=(const component& other);
 	text& operator=(const text& other);
 
-	const std::vector <shared_ptr <component> > getChildComponents();
+	std::vector <shared_ptr <component> > getChildComponents();
 
 	/** Add a word at the end of the list.
 	  *
@@ -119,13 +119,13 @@ public:
 	  *
 	  * @return list of words
 	  */
-	const std::vector <shared_ptr <const word> > getWordList() const;
+	std::vector <shared_ptr <const word> > getWordList() const;
 
 	/** Return the word list.
 	  *
 	  * @return list of words
 	  */
-	const std::vector <shared_ptr <word> > getWordList();
+	std::vector <shared_ptr <word> > getWordList();
 
 
 	/** Return the text converted into the specified charset.

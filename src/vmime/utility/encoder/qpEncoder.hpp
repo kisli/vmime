@@ -53,7 +53,7 @@ public:
 		utility::progressListener* progress = NULL
 	);
 
-	const std::vector <string> getAvailableProperties() const;
+	std::vector <string> getAvailableProperties() const;
 
 	static bool RFC2047_isEncodingNeededForChar(const unsigned char c);
 	static int RFC2047_getEncodedLength(const unsigned char c);

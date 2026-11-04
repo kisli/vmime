@@ -239,7 +239,7 @@ public:
 	) const;
 #endif
 
-	const std::vector <shared_ptr <component> > getChildComponents();
+	std::vector <shared_ptr <component> > getChildComponents();
 
 private:
 
@@ -254,7 +254,7 @@ private:
 		parserState* state
 	);
 
-	static const std::vector <shared_ptr <word> > parseMultiple(
+	static std::vector <shared_ptr <word> > parseMultiple(
 		parsingContext& ctx,
 		const string& buffer,
 		const size_t position,

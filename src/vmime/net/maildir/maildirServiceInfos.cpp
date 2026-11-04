@@ -56,7 +56,7 @@ const maildirServiceInfos::props& maildirServiceInfos::getProperties() const {
 }
 
 
-const std::vector <serviceInfos::property> maildirServiceInfos::getAvailableProperties() const {
+std::vector <serviceInfos::property> maildirServiceInfos::getAvailableProperties() const {
 
 	std::vector <property> list;
 	const props& p = getProperties();

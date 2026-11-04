@@ -97,7 +97,7 @@ public:
 
 	void fetchCapabilities();
 	void invalidateCapabilities();
-	const std::vector <string> getCapabilities();
+	std::vector <string> getCapabilities();
 	bool hasCapability(const string& capa);
 	bool hasCapability(const string& capa) const;
 

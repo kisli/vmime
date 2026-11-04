@@ -72,7 +72,7 @@ public:
 		const DirectoryType type
 	) const;
 
-	const std::vector <folder::path> listFolders(
+	std::vector <folder::path> listFolders(
 		const folder::path& root,
 		const bool recursive
 	) const;

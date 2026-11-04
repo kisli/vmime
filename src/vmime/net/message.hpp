@@ -202,7 +202,7 @@ public:
 	  * @param options search options (see attachmentHelper::FindOptions)
 	  * @return the parts which are attachments
 	  */
-	const std::vector <shared_ptr <const messagePart> > findAttachments(
+	std::vector <shared_ptr <const messagePart> > findAttachments(
 		const unsigned int options = 0
 	) const;
 
@@ -216,7 +216,7 @@ public:
 	  * @param options search options (see attachmentHelper::FindOptions)
 	  * @return the parts which are attachments
 	  */
-	const std::vector <shared_ptr <messagePart> > findAttachments(
+	std::vector <shared_ptr <messagePart> > findAttachments(
 		const unsigned int options = 0
 	);
 };

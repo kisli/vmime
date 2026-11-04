@@ -98,7 +98,7 @@ public:
 	void copyFrom(const component& other);
 	bodyPart& operator=(const bodyPart& other);
 
-	const std::vector <shared_ptr <component> > getChildComponents();
+	std::vector <shared_ptr <component> > getChildComponents();
 
 	size_t getGeneratedSize(const generationContext& ctx);
 

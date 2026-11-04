@@ -98,7 +98,7 @@ public:
 	  *
 	  * @return list of supported digest algorithms
 	  */
-	const std::vector <string> getSupportedAlgorithms() const;
+	std::vector <string> getSupportedAlgorithms() const;
 };
 
 

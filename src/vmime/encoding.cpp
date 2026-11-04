@@ -320,7 +320,7 @@ void encoding::setUsage(const EncodingUsage usage) {
 }
 
 
-const std::vector <shared_ptr <component> > encoding::getChildComponents() {
+std::vector <shared_ptr <component> > encoding::getChildComponents() {
 
 	return std::vector <shared_ptr <component> >();
 }

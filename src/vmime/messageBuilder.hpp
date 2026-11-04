@@ -172,13 +172,13 @@ public:
 	  *
 	  * @return list of attachments
 	  */
-	const std::vector <shared_ptr <const attachment> > getAttachmentList() const;
+	std::vector <shared_ptr <const attachment> > getAttachmentList() const;
 
 	/** Return the list of attachments.
 	  *
 	  * @return list of attachments
 	  */
-	const std::vector <shared_ptr <attachment> > getAttachmentList();
+	std::vector <shared_ptr <attachment> > getAttachmentList();
 
 	/** Change the type of the text part and construct a new part.
 	  *

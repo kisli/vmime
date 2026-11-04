@@ -128,7 +128,7 @@ public:
 	  *
 	  * @return list of supported mechanisms
 	  */
-	const std::vector <string> getSupportedMechanisms() const;
+	std::vector <string> getSupportedMechanisms() const;
 
 	/** Test whether an authentication mechanism is supported.
 	  *

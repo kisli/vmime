@@ -294,7 +294,7 @@ const datetime& messageParser::getDate() const {
 }
 
 
-const std::vector <shared_ptr <const attachment> > messageParser::getAttachmentList() const {
+std::vector <shared_ptr <const attachment> > messageParser::getAttachmentList() const {
 
 	return m_attach;
 }
@@ -312,7 +312,7 @@ const shared_ptr <const attachment> messageParser::getAttachmentAt(const size_t 
 }
 
 
-const std::vector <shared_ptr <const textPart> > messageParser::getTextPartList() const {
+std::vector <shared_ptr <const textPart> > messageParser::getTextPartList() const {
 
 	std::vector <shared_ptr <const textPart> > res;
 

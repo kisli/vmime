@@ -395,7 +395,7 @@ class mySASLAuthenticator : public vmime::security::sasl::defaultSASLAuthenticat
 
    typedef vmime::security::sasl::SASLMechanism mechanism;  // save us typing
 
-   const std::vector <vmime::shared_ptr <mechanism> > getAcceptableMechanisms(
+   std::vector <vmime::shared_ptr <mechanism> > getAcceptableMechanisms(
       const std::vector <vmime::shared_ptr <mechanism> >& available,
       const vmime::shared_ptr <mechanism>& suggested
    ) const {

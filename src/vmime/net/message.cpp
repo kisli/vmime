@@ -95,7 +95,7 @@ namespace {
 }
 
 
-const std::vector <shared_ptr <const messagePart> > messageStructure::findAttachments(
+std::vector <shared_ptr <const messagePart> > messageStructure::findAttachments(
 	const unsigned int options
 ) const {
 
@@ -106,7 +106,7 @@ const std::vector <shared_ptr <const messagePart> > messageStructure::findAttach
 }
 
 
-const std::vector <shared_ptr <messagePart> > messageStructure::findAttachments(
+std::vector <shared_ptr <messagePart> > messageStructure::findAttachments(
 	const unsigned int options
 ) {
 

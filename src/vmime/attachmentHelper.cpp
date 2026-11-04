@@ -215,7 +215,7 @@ shared_ptr <const attachment> attachmentHelper::getBodyPartAttachment(
 
 
 // static
-const std::vector <shared_ptr <const attachment> >
+std::vector <shared_ptr <const attachment> >
 	attachmentHelper::findAttachmentsInMessage(
 		const shared_ptr <const message>& msg,
 		const unsigned int options
@@ -226,7 +226,7 @@ const std::vector <shared_ptr <const attachment> >
 
 
 // static
-const std::vector <shared_ptr <const attachment> >
+std::vector <shared_ptr <const attachment> >
 	attachmentHelper::findAttachmentsInBodyPart(
 		const shared_ptr <const bodyPart>& part,
 		const unsigned int options

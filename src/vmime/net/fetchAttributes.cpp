@@ -85,7 +85,7 @@ bool fetchAttributes::has(const string& header) const {
 }
 
 
-const std::vector <string> fetchAttributes::getHeaderFields() const {
+std::vector <string> fetchAttributes::getHeaderFields() const {
 
 	return m_headers;
 }

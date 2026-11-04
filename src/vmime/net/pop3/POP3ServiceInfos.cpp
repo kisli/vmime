@@ -100,7 +100,7 @@ const POP3ServiceInfos::props& POP3ServiceInfos::getProperties() const {
 }
 
 
-const std::vector <serviceInfos::property> POP3ServiceInfos::getAvailableProperties() const {
+std::vector <serviceInfos::property> POP3ServiceInfos::getAvailableProperties() const {
 
 	std::vector <property> list;
 	const props& p = getProperties();

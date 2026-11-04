@@ -3,7 +3,7 @@
 // SASL authentication handler
 class interactiveAuthenticator : public vmime::security::sasl::defaultSASLAuthenticator {
 
-	const std::vector <vmime::shared_ptr <vmime::security::sasl::SASLMechanism> >
+	std::vector <vmime::shared_ptr <vmime::security::sasl::SASLMechanism> >
 		getAcceptableMechanisms(
 			const std::vector <vmime::shared_ptr <vmime::security::sasl::SASLMechanism> >& available,
 			const vmime::shared_ptr <vmime::security::sasl::SASLMechanism>& suggested

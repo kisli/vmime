@@ -210,7 +210,7 @@ public:
 	  *
 	  * @return list of child components
 	  */
-	virtual const std::vector <shared_ptr <component> > getChildComponents() = 0;
+	virtual std::vector <shared_ptr <component> > getChildComponents() = 0;
 
 	/** Get the number of bytes that will be used by this component when
 	  * it is generated. This may be a heuristically-derived estimate,

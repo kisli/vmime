@@ -35,7 +35,7 @@ b64Encoder::b64Encoder() {
 }
 
 
-const std::vector <string> b64Encoder::getAvailableProperties() const {
+std::vector <string> b64Encoder::getAvailableProperties() const {
 
 	std::vector <string> list(encoder::getAvailableProperties());
 

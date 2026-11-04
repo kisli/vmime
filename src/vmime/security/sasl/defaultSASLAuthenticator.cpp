@@ -51,7 +51,7 @@ defaultSASLAuthenticator::~defaultSASLAuthenticator() {
 }
 
 
-const std::vector <shared_ptr <SASLMechanism> > defaultSASLAuthenticator::getAcceptableMechanisms(
+std::vector <shared_ptr <SASLMechanism> > defaultSASLAuthenticator::getAcceptableMechanisms(
 	const std::vector <shared_ptr <SASLMechanism> >& available,
 	const shared_ptr <SASLMechanism>& suggested
 ) const {

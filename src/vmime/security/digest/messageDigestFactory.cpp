@@ -64,7 +64,7 @@ shared_ptr <messageDigest> messageDigestFactory::create(const string& name) {
 }
 
 
-const std::vector <string> messageDigestFactory::getSupportedAlgorithms() const {
+std::vector <string> messageDigestFactory::getSupportedAlgorithms() const {
 
 	std::vector <string> res;
 

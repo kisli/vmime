@@ -251,7 +251,7 @@ public:
 	// Current date and time
 	static const datetime now();
 
-	const std::vector <shared_ptr <component> > getChildComponents();
+	std::vector <shared_ptr <component> > getChildComponents();
 
 protected:
 

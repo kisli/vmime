@@ -286,7 +286,7 @@ const shared_ptr <const address> addressList::getAddressAt(const size_t pos) con
 }
 
 
-const std::vector <shared_ptr <const address> > addressList::getAddressList() const {
+std::vector <shared_ptr <const address> > addressList::getAddressList() const {
 
 	std::vector <shared_ptr <const address> > list;
 
@@ -302,13 +302,13 @@ const std::vector <shared_ptr <const address> > addressList::getAddressList() co
 }
 
 
-const std::vector <shared_ptr <address> > addressList::getAddressList() {
+std::vector <shared_ptr <address> > addressList::getAddressList() {
 
 	return m_list;
 }
 
 
-const std::vector <shared_ptr <component> > addressList::getChildComponents() {
+std::vector <shared_ptr <component> > addressList::getChildComponents() {
 
 	std::vector <shared_ptr <component> > list;
 

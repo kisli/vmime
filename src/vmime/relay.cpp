@@ -353,7 +353,7 @@ std::vector <string>& relay::getWithList() {
 }
 
 
-const std::vector <shared_ptr <component> > relay::getChildComponents() {
+std::vector <shared_ptr <component> > relay::getChildComponents() {
 
 	// TODO: should fields inherit from 'component'? (using typeAdapter)
 	return std::vector <shared_ptr <component> >();

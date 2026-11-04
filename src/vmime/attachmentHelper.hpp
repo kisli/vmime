@@ -111,7 +111,7 @@ public:
 	  * @param options search options (see FindOptions)
 	  * @return a list of attachments found
 	  */
-	static const std::vector <shared_ptr <const attachment> >
+	static std::vector <shared_ptr <const attachment> >
 		findAttachmentsInBodyPart(
 			const shared_ptr <const bodyPart>& part,
 			const unsigned int options = 0
@@ -124,7 +124,7 @@ public:
 	  * @param options search options (see FindOptions)
 	  * @return a list of attachments found
 	  */
-	static const std::vector <shared_ptr <const attachment> >
+	static std::vector <shared_ptr <const attachment> >
 		findAttachmentsInMessage(
 			const shared_ptr <const message>& msg,
 			const unsigned int options = 0

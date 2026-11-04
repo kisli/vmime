@@ -143,7 +143,7 @@ bool SASLMechanism_GSASL::isMechanismSupported(const string& name) {
 
 
 // static
-const std::vector <string> SASLMechanism_GSASL::getSupportedMechanisms() {
+std::vector <string> SASLMechanism_GSASL::getSupportedMechanisms() {
 
 	std::vector <string> list;
 	char* out = 0;

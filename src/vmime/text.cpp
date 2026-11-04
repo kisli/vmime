@@ -229,7 +229,7 @@ const shared_ptr <const word> text::getWordAt(const size_t pos) const {
 }
 
 
-const std::vector <shared_ptr <const word> > text::getWordList() const {
+std::vector <shared_ptr <const word> > text::getWordList() const {
 
 	std::vector <shared_ptr <const word> > list;
 
@@ -245,7 +245,7 @@ const std::vector <shared_ptr <const word> > text::getWordList() const {
 }
 
 
-const std::vector <shared_ptr <word> > text::getWordList() {
+std::vector <shared_ptr <word> > text::getWordList() {
 
 	return m_words;
 }
@@ -474,7 +474,7 @@ void text::fixBrokenWords(std::vector <shared_ptr <word> >& words) {
 }
 
 
-const std::vector <shared_ptr <component> > text::getChildComponents() {
+std::vector <shared_ptr <component> > text::getChildComponents() {
 
 	std::vector <shared_ptr <component> > list;
 

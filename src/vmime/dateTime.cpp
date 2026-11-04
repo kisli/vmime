@@ -1017,7 +1017,7 @@ shared_ptr <component> datetime::clone() const {
 }
 
 
-const std::vector <shared_ptr <component> > datetime::getChildComponents() {
+std::vector <shared_ptr <component> > datetime::getChildComponents() {
 
 	return std::vector <shared_ptr <component> >();
 }

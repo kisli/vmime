@@ -311,7 +311,7 @@ bool headerField::isCustom() const {
 }
 
 
-const std::vector <shared_ptr <component> > headerField::getChildComponents() {
+std::vector <shared_ptr <component> > headerField::getChildComponents() {
 
 	std::vector <shared_ptr <component> > list;
 

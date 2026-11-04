@@ -320,7 +320,7 @@ void messageId::setRight(const string& right) {
 }
 
 
-const std::vector <shared_ptr <component> > messageId::getChildComponents() {
+std::vector <shared_ptr <component> > messageId::getChildComponents() {
 
 	return std::vector <shared_ptr <component> >();
 }
