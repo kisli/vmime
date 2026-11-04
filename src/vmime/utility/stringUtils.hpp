@@ -58,15 +58,23 @@ public:
 	/** Makes a HEX string from byteArray.
 	  *
 	  * @param data byteArray containing data
-	  * @return a string object containing a hex copy of the specified data
+	  * @return a string object containing a hex copy of the specified data,
+	  * with two lower-case hex digits for each byte (eg. "0aff" for the bytes
+	  * 0x0a and 0xff)
 	  */
 	static const string makeHexStringFromBytes(const byteArray& data) {
-		utility::details::classicOStringStream ss;
-		for (const byte_t& b : data)
-		{
-			ss << std::hex << int(b);
+
+		static const char hexDigits[] = "0123456789abcdef";
+
+		string res;
+		res.reserve(data.size() * 2);
+
+		for (const byte_t b : data) {
+			res += hexDigits[b >> 4];
+			res += hexDigits[b & 0x0f];
 		}
-		return ss.str();
+
+		return res;
 	}
 
 	/** Casts a string to bytes.

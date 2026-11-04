@@ -47,6 +47,7 @@ VMIME_TEST_SUITE_BEGIN(stringUtilsTest)
 
 		VMIME_TEST(testIsValidHostname)
 		VMIME_TEST(testIsValidFQDN)
+		VMIME_TEST(testMakeHexStringFromBytes)
 	VMIME_TEST_LIST_END
 
 
@@ -220,6 +221,22 @@ VMIME_TEST_SUITE_BEGIN(stringUtilsTest)
 		VASSERT_FALSE("6", stringUtils::isValidFQDN(".-example.com"));
 		VASSERT_FALSE("7", stringUtils::isValidFQDN(".example-.com"));
 		VASSERT_FALSE("8", stringUtils::isValidFQDN(".exa--mple.com"));
+	}
+
+	void testMakeHexStringFromBytes() {
+
+		VASSERT_EQ("1", "", stringUtils::makeHexStringFromBytes(vmime::byteArray()));
+
+		const vmime::byte_t bytes2[] = { 0x00, 0x0a, 0x10, 0x7f, 0xff };
+		VASSERT_EQ("2", "000a107fff", stringUtils::makeHexStringFromBytes(vmime::byteArray(bytes2, bytes2 + 5)));
+
+		// Each byte must give two hex digits, otherwise the result is ambiguous:
+		// { 0x01, 0x23 } and { 0x12, 0x03 } would both give "123"
+		const vmime::byte_t bytes3[] = { 0x01, 0x23 };
+		VASSERT_EQ("3", "0123", stringUtils::makeHexStringFromBytes(vmime::byteArray(bytes3, bytes3 + 2)));
+
+		const vmime::byte_t bytes4[] = { 0x12, 0x03 };
+		VASSERT_EQ("4", "1203", stringUtils::makeHexStringFromBytes(vmime::byteArray(bytes4, bytes4 + 2)));
 	}
 
 VMIME_TEST_SUITE_END
