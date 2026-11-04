@@ -313,6 +313,7 @@ shared_ptr <security::cert::certificateVerifier> TLSSession_GnuTLS::getCertifica
 void TLSSession_GnuTLS::throwTLSException(const string& fname, const int code) {
 
 	std::ostringstream msg;
+	msg.imbue(std::locale::classic());
 
 	msg << fname + "() returned code ";
 	msg << std::hex << code;

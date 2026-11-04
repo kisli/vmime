@@ -86,6 +86,7 @@ void windowsSocket::connect(const vmime::string& address, const vmime::port_t po
 	if (m_tracer) {
 
 		std::ostringstream trace;
+		trace.imbue(std::locale::classic());
 		trace << "Connecting to " << address << ", port " << port;
 
 		m_tracer->traceSend(trace.str());
@@ -382,6 +383,8 @@ unsigned int windowsSocket::getStatus() const {
 void windowsSocket::throwSocketError(const int err) {
 
 	std::ostringstream oss;
+	oss.imbue(std::locale::classic());
+
 	string msg;
 
 	LPTSTR str;

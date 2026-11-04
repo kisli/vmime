@@ -238,6 +238,7 @@ void posixSocket::connect(const vmime::string& address, const vmime::port_t port
 	if (m_tracer) {
 
 		std::ostringstream trace;
+		trace.imbue(std::locale::classic());
 		trace << "Connecting to " << address << ", port " << port;
 
 		m_tracer->traceSend(trace.str());

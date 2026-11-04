@@ -622,6 +622,7 @@ void TLSSocket_OpenSSL::handleError(int rc) {
 				} else {
 
 					std::ostringstream oss;
+					oss.imbue(std::locale::classic());
 					oss << "The BIO reported an error: " << rc;
 					oss.flush();
 					throw exceptions::tls_exception(oss.str());

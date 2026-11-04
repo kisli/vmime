@@ -40,6 +40,7 @@ namespace net {
 void tracer::traceReceiveBytes(const size_t count, const string& state) {
 
 	std::ostringstream oss;
+	oss.imbue(std::locale::classic());
 	oss << "{...";
 
 	if (!state.empty()) {
@@ -55,6 +56,7 @@ void tracer::traceReceiveBytes(const size_t count, const string& state) {
 void tracer::traceSendBytes(const size_t count, const string& state) {
 
 	std::ostringstream oss;
+	oss.imbue(std::locale::classic());
 	oss << "{...";
 
 	if (!state.empty()) {

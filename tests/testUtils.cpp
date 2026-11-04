@@ -368,6 +368,89 @@ void failingOutputStream::writeImpl(const vmime::byte_t* const /* data */, const
 }
 
 
+// recordingTracer
+
+void recordingTracer::traceSend(const vmime::string& line) {
+
+	m_sentLines.push_back(line);
+}
+
+
+void recordingTracer::traceReceive(const vmime::string& line) {
+
+	m_receivedLines.push_back(line);
+}
+
+
+const std::vector <vmime::string>& recordingTracer::getSentLines() const {
+
+	return m_sentLines;
+}
+
+
+const std::vector <vmime::string>& recordingTracer::getReceivedLines() const {
+
+	return m_receivedLines;
+}
+
+
+// recordingTracerFactory
+
+recordingTracerFactory::recordingTracerFactory()
+	: m_tracer(vmime::make_shared <recordingTracer>()) {
+
+}
+
+
+vmime::shared_ptr <vmime::net::tracer> recordingTracerFactory::create(
+	const vmime::shared_ptr <vmime::net::service>& /* serv */,
+	const int /* connectionId */
+) {
+
+	return m_tracer;
+}
+
+
+vmime::shared_ptr <recordingTracer> recordingTracerFactory::getTracer() const {
+
+	return m_tracer;
+}
+
+
+// digitGroupingLocale
+
+namespace {
+
+class digitGroupingNumpunct : public std::numpunct <char> {
+
+protected:
+
+	char do_thousands_sep() const {
+
+		return ' ';
+	}
+
+	std::string do_grouping() const {
+
+		return "\3";
+	}
+};
+
+}
+
+
+digitGroupingLocale::digitGroupingLocale()
+	: m_previousLocale(std::locale::global(std::locale(std::locale(), new digitGroupingNumpunct))) {
+
+}
+
+
+digitGroupingLocale::~digitGroupingLocale() {
+
+	std::locale::global(m_previousLocale);
+}
+
+
 
 // Exception helper
 std::ostream& operator<<(std::ostream& os, const vmime::exception& e) {
