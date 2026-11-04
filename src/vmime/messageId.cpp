@@ -25,6 +25,7 @@
 #include "vmime/utility/random.hpp"
 #include "vmime/platform.hpp"
 #include "vmime/parserHelpers.hpp"
+#include "vmime/utility/details/classicOStringStream.hpp"
 
 
 namespace vmime {
@@ -246,8 +247,7 @@ messageId& messageId::operator=(const string& id) {
 
 messageId messageId::generateId() {
 
-	std::ostringstream left;
-	left.imbue(std::locale::classic());
+	utility::details::classicOStringStream left;
 
 	left << "vmime";
 	left << '.';

@@ -24,6 +24,7 @@
 #include "vmime/parameterizedHeaderField.hpp"
 #include "vmime/text.hpp"
 #include "vmime/parserHelpers.hpp"
+#include "vmime/utility/details/classicOStringStream.hpp"
 
 
 namespace vmime {
@@ -178,7 +179,7 @@ void parameterizedHeaderField::parseImpl(
 					bool escape = false;
 					bool stop = false;
 
-					std::ostringstream ss;
+					utility::details::classicOStringStream ss;
 					size_t start = position + (p - pstart);
 
 					for ( ; p < pend && !stop ; ++p) {

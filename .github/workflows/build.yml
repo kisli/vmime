@@ -108,3 +108,17 @@ jobs:
     - name: build-book
       working-directory: doc/book
       run: make check
+
+  check-sources:
+    name: check-sources
+    runs-on: ubuntu-26.04
+    steps:
+    - name: clone-vmime
+      uses: actions/checkout@v4
+    - name: classic-locale-string-streams
+      run: |
+        # String streams must always use the classic locale (see HACKING)
+        if grep -rnE 'std::(o|i)?stringstream[[:space:]]*[[:alnum:]_(]' src/vmime | grep -v '^src/vmime/utility/details/'; then
+          echo "::error::Use utility::details::classicOStringStream or classicIStringStream instead of std string streams (see HACKING)"
+          exit 1
+        fi

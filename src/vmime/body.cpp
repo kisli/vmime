@@ -37,6 +37,7 @@
 #include "vmime/emptyContentHandler.hpp"
 #include "vmime/stringContentHandler.hpp"
 #include "vmime/streamContentHandler.hpp"
+#include "vmime/utility/details/classicOStringStream.hpp"
 
 
 namespace vmime {
@@ -550,7 +551,7 @@ size_t body::getGeneratedSize(const generationContext& ctx) {
 
 		if (!prologText.isEmpty()) {
 
-			std::ostringstream oss;
+			utility::details::classicOStringStream oss;
 			utility::outputStreamAdapter osa(oss);
 
 			prologText.encodeAndFold(
@@ -565,7 +566,7 @@ size_t body::getGeneratedSize(const generationContext& ctx) {
 
 		if (!epilogText.isEmpty()) {
 
-			std::ostringstream oss;
+			utility::details::classicOStringStream oss;
 			utility::outputStreamAdapter osa(oss);
 
 			epilogText.encodeAndFold(

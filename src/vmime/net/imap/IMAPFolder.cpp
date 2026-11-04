@@ -42,6 +42,7 @@
 #include "vmime/exception.hpp"
 
 #include "vmime/utility/outputStreamAdapter.hpp"
+#include "vmime/utility/details/classicOStringStream.hpp"
 
 #include <algorithm>
 #include <sstream>
@@ -385,7 +386,7 @@ void IMAPFolder::create(const folderAttributes& attribs) {
 		}
 
 		// C: t2 CREATE MySpecial (USE (\Drafts \Sent))
-		std::ostringstream oss;
+		utility::details::classicOStringStream oss;
 		oss << "USE (";
 
 		switch (attribs.getSpecialUse()) {
@@ -1098,7 +1099,7 @@ messageSet IMAPFolder::addMessage(
 	utility::progressListener* progress
 ) {
 
-	std::ostringstream oss;
+	utility::details::classicOStringStream oss;
 	utility::outputStreamAdapter ossAdapter(oss);
 
 	msg->generate(ossAdapter);
@@ -1465,8 +1466,7 @@ void IMAPFolder::noop() {
 std::vector <size_t> IMAPFolder::getMessageNumbersStartingOnUID(const message::uid& uid) {
 
 	// Send the request
-	std::ostringstream uidSearchKey;
-	uidSearchKey.imbue(std::locale::classic());
+	utility::details::classicOStringStream uidSearchKey;
 	uidSearchKey << "UID " << uid << ":*";
 
 	std::vector <string> searchKeys;

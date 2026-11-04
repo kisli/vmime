@@ -40,6 +40,7 @@
 
 #include "vmime/net/socket.hpp"
 #include "vmime/net/timeoutHandler.hpp"
+#include "vmime/utility/details/classicIStringStream.hpp"
 
 
 namespace vmime {
@@ -123,7 +124,7 @@ shared_ptr <POP3Response> POP3Response::readMultilineResponse(
 	resp->m_code = getResponseCode(firstLine);
 	stripResponseCode(firstLine, resp->m_text);
 
-	std::istringstream iss(nextLines);
+	utility::details::classicIStringStream iss(nextLines);
 	string line;
 
 	if (resp->m_tracer) {

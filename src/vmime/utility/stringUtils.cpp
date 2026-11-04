@@ -23,6 +23,7 @@
 
 #include "vmime/utility/stringUtils.hpp"
 #include "vmime/parserHelpers.hpp"
+#include "vmime/utility/details/classicOStringStream.hpp"
 
 
 namespace vmime {
@@ -239,7 +240,7 @@ string stringUtils::quote(
 	const string& escapeChar
 ) {
 
-	std::ostringstream oss;
+	utility::details::classicOStringStream oss;
 	size_t lastPos = 0, pos = 0;
 
 	while ((pos = str.find_first_of(escapeSpecialChars, lastPos)) != string::npos) {

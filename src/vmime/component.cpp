@@ -27,6 +27,7 @@
 #include "vmime/utility/streamUtils.hpp"
 #include "vmime/utility/inputStreamStringAdapter.hpp"
 #include "vmime/utility/outputStreamAdapter.hpp"
+#include "vmime/utility/details/classicOStringStream.hpp"
 
 #include <sstream>
 
@@ -80,7 +81,7 @@ void component::parse(
 	if (!seekableStream || end == 0) {
 
 		// Read the whole stream into a buffer
-		std::ostringstream oss;
+		utility::details::classicOStringStream oss;
 		utility::outputStreamAdapter ossAdapter(oss);
 
 		utility::bufferedStreamCopyRange(*inputStream, ossAdapter, position, end - position);
@@ -211,7 +212,7 @@ string component::generate(
 	const size_t curLinePos
 ) const {
 
-	std::ostringstream oss;
+	utility::details::classicOStringStream oss;
 	utility::outputStreamAdapter adapter(oss);
 
 	generationContext ctx(generationContext::getDefaultContext());

@@ -39,6 +39,7 @@
 #include "vmime/utility/stringUtils.hpp"
 
 #include "vmime/net/defaultConnectionInfos.hpp"
+#include "vmime/utility/details/classicOStringStream.hpp"
 
 #if VMIME_HAVE_SASL_SUPPORT
 	#include "vmime/security/sasl/SASLContext.hpp"
@@ -905,7 +906,7 @@ void IMAPConnection::sendCommand(const shared_ptr <IMAPCommand>& cmd) {
 
 	if (m_tracer) {
 
-		std::ostringstream oss;
+		utility::details::classicOStringStream oss;
 		oss << string(*m_tag) << " " << cmd->getTraceText();
 
 		m_tracer->traceSend(oss.str());

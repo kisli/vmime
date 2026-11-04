@@ -28,6 +28,7 @@
 
 
 #include "tracer.hpp"
+#include "vmime/utility/details/classicOStringStream.hpp"
 
 
 #include <sstream>
@@ -39,7 +40,7 @@ namespace net {
 
 void tracer::traceReceiveBytes(const size_t count, const string& state) {
 
-	std::ostringstream oss;
+	utility::details::classicOStringStream oss;
 	oss << "{...";
 
 	if (!state.empty()) {
@@ -54,7 +55,7 @@ void tracer::traceReceiveBytes(const size_t count, const string& state) {
 
 void tracer::traceSendBytes(const size_t count, const string& state) {
 
-	std::ostringstream oss;
+	utility::details::classicOStringStream oss;
 	oss << "{...";
 
 	if (!state.empty()) {

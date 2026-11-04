@@ -37,6 +37,7 @@
 #include "vmime/security/digest/messageDigestFactory.hpp"
 
 #include "vmime/net/defaultConnectionInfos.hpp"
+#include "vmime/utility/details/classicIStringStream.hpp"
 
 #if VMIME_HAVE_SASL_SUPPORT
 	#include "vmime/security/sasl/SASLContext.hpp"
@@ -246,8 +247,7 @@ void SMTPConnection::helo() {
 
 			const string line = resp->getLineAt(i).getText();
 
-			std::istringstream iss(line);
-			iss.imbue(std::locale::classic());
+			utility::details::classicIStringStream iss(line);
 
 			string ext;
 			iss >> ext;

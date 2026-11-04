@@ -38,6 +38,7 @@
 #include "vmime/net/pop3/POP3Utils.hpp"
 
 #include "vmime/exception.hpp"
+#include "vmime/utility/details/classicIStringStream.hpp"
 
 
 namespace vmime {
@@ -159,8 +160,7 @@ void POP3Folder::open(const int mode, bool failIfModeIsNotAvailable) {
 			throw exceptions::command_error("STAT", response->getFirstLine());
 		}
 
-		std::istringstream iss(response->getText());
-		iss.imbue(std::locale::classic());
+		utility::details::classicIStringStream iss(response->getText());
 		iss >> m_messageCount;
 
 		if (iss.fail()) {
@@ -411,8 +411,7 @@ void POP3Folder::fetchMessages(
 
 					size_t size = 0;
 
-					std::istringstream iss((*x).second);
-					iss.imbue(std::locale::classic());
+					utility::details::classicIStringStream iss((*x).second);
 					iss >> size;
 
 					m->m_size = size;
@@ -500,8 +499,7 @@ void POP3Folder::fetchMessage(const shared_ptr <message>& msg, const fetchAttrib
 
 				size_t size = 0;
 
-				std::istringstream iss(string(it, responseText.end()));
-				iss.imbue(std::locale::classic());
+				utility::details::classicIStringStream iss(string(it, responseText.end()));
 				iss >> size;
 
 				dynamicCast <POP3Message>(msg)->m_size = size;
@@ -747,8 +745,7 @@ shared_ptr <folderStatus> POP3Folder::getStatus() {
 
 	size_t count = 0;
 
-	std::istringstream iss(response->getText());
-	iss.imbue(std::locale::classic());
+	utility::details::classicIStringStream iss(response->getText());
 	iss >> count;
 
 	shared_ptr <POP3FolderStatus> status = make_shared <POP3FolderStatus>();

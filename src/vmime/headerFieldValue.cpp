@@ -24,6 +24,7 @@
 #include "vmime/headerFieldValue.hpp"
 
 #include "vmime/utility/outputStreamAdapter.hpp"
+#include "vmime/utility/details/classicOStringStream.hpp"
 
 
 namespace vmime {
@@ -31,7 +32,7 @@ namespace vmime {
 
 size_t headerFieldValue::getGeneratedSize(const generationContext& ctx) {
 
-	std::ostringstream oss;
+	utility::details::classicOStringStream oss;
 	utility::outputStreamAdapter osa(oss);
 
 	generate(ctx, osa);

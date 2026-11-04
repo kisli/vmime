@@ -122,6 +122,7 @@ VMIME_TEST_SUITE_BEGIN(posixSocketTest)
 		VMIME_TEST(testGetPeerAddressIPv6)
 		VMIME_TEST(testGetPeerNameIPv4)
 		VMIME_TEST(testGetPeerNameIPv6)
+		VMIME_TEST(testConnectTrace)
 	VMIME_TEST_LIST_END
 
 
@@ -173,6 +174,30 @@ VMIME_TEST_SUITE_BEGIN(posixSocketTest)
 
 		// No reverse DNS lookup on numeric addresses
 		VASSERT_EQ("Name", "::1", connectTo(server)->getPeerName());
+	}
+
+	void testConnectTrace() {
+
+		loopbackServer server("127.0.0.1");
+		VASSERT_TRUE("Listen", server.isListening());
+
+		// Port must be formatted without digit grouping, whatever the global locale
+		digitGroupingLocale loc;
+
+		vmime::shared_ptr <recordingTracer> tr = vmime::make_shared <recordingTracer>();
+
+		vmime::shared_ptr <vmime::net::socket> sock =
+			vmime::platform::getHandler()->getSocketFactory()->create();
+
+		sock->setTracer(tr);
+		sock->connect(server.getAddress(), server.getPort());
+
+		VASSERT_EQ("Count", 1, tr->getSentLines().size());
+		VASSERT_EQ(
+			"Trace",
+			"Connecting to 127.0.0.1, port " + std::to_string(server.getPort()),
+			tr->getSentLines()[0]
+		);
 	}
 
 VMIME_TEST_SUITE_END

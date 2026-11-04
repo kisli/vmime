@@ -26,6 +26,7 @@
 #include <sstream>
 #include <vector>
 #include <string>
+#include <locale>
 
 
 // VMime
@@ -447,6 +448,65 @@ public:
 protected:
 
 	void writeImpl(const vmime::byte_t* const data, const size_t count);
+};
+
+
+/** Tracer which records the lines sent and received.
+  */
+class recordingTracer : public vmime::net::tracer {
+
+public:
+
+	void traceSend(const vmime::string& line);
+	void traceReceive(const vmime::string& line);
+
+	const std::vector <vmime::string>& getSentLines() const;
+	const std::vector <vmime::string>& getReceivedLines() const;
+
+private:
+
+	std::vector <vmime::string> m_sentLines;
+	std::vector <vmime::string> m_receivedLines;
+};
+
+
+/** Tracer factory which returns the same recordingTracer for
+  * all connections.
+  */
+class recordingTracerFactory : public vmime::net::tracerFactory {
+
+public:
+
+	recordingTracerFactory();
+
+	vmime::shared_ptr <vmime::net::tracer> create(
+		const vmime::shared_ptr <vmime::net::service>& serv,
+		const int connectionId
+	);
+
+	vmime::shared_ptr <recordingTracer> getTracer() const;
+
+private:
+
+	vmime::shared_ptr <recordingTracer> m_tracer;
+};
+
+
+/** Sets a global C++ locale which groups digits when formatting
+  * numbers (eg. "12 288"), and restores the previous global locale
+  * on destruction. Used to check that numbers are formatted with
+  * the classic locale.
+  */
+class digitGroupingLocale {
+
+public:
+
+	digitGroupingLocale();
+	~digitGroupingLocale();
+
+private:
+
+	std::locale m_previousLocale;
 };
 
 

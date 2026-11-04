@@ -33,6 +33,7 @@
 #include "vmime/security/sasl/SASLSession.hpp"
 
 #include "vmime/exception.hpp"
+#include "vmime/utility/details/classicOStringStream.hpp"
 
 #include <sstream>
 
@@ -79,7 +80,7 @@ bool XOAuth2SASLMechanism::step(
 	const std::string user(sess->getAuthenticator()->getUsername());
 	const std::string accessToken(sess->getAuthenticator()->getAccessToken());
 
-	std::ostringstream initRespBytes;
+	utility::details::classicOStringStream initRespBytes;
 	initRespBytes.write("user=", 5);
 	initRespBytes.write(user.c_str(), user.length());
 	initRespBytes.write("\x01", 1);

@@ -32,6 +32,7 @@
 #include "vmime/stringContentHandler.hpp"
 
 #include "vmime/utility/outputStreamAdapter.hpp"
+#include "vmime/utility/details/classicOStringStream.hpp"
 
 
 namespace vmime {
@@ -218,7 +219,7 @@ void htmlTextPart::parse(
 	findEmbeddedParts(*message, cidParts, locParts);
 
 	// Extract HTML text
-	std::ostringstream oss;
+	utility::details::classicOStringStream oss;
 	utility::outputStreamAdapter adapter(oss);
 
 	textPart->getBody()->getContents()->extract(adapter);

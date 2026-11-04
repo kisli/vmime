@@ -35,6 +35,7 @@
 
 #include "vmime/utility/outputStreamAdapter.hpp"
 #include "vmime/utility/inputStreamStringAdapter.hpp"
+#include "vmime/utility/details/classicOStringStream.hpp"
 
 namespace vmime {
 namespace net {
@@ -83,7 +84,7 @@ void IMAPMessagePartContentHandler::generate(
 		if (m_encoding != enc) {
 
 			// Extract part contents to temporary buffer
-			std::ostringstream oss;
+			utility::details::classicOStringStream oss;
 			utility::outputStreamAdapter tmp(oss);
 
 			msg->extractPart(part, tmp, NULL);
@@ -91,7 +92,7 @@ void IMAPMessagePartContentHandler::generate(
 			// Decode to another temporary buffer
 			utility::inputStreamStringAdapter in(oss.str());
 
-			std::ostringstream oss2;
+			utility::details::classicOStringStream oss2;
 			utility::outputStreamAdapter tmp2(oss2);
 
 			shared_ptr <utility::encoder::encoder> theDecoder = m_encoding.getEncoder();
@@ -117,7 +118,7 @@ void IMAPMessagePartContentHandler::generate(
 	} else {
 
 		// Extract part contents to temporary buffer
-		std::ostringstream oss;
+		utility::details::classicOStringStream oss;
 		utility::outputStreamAdapter tmp(oss);
 
 		msg->extractPart(part, tmp, NULL);
@@ -154,7 +155,7 @@ void IMAPMessagePartContentHandler::extract(
 	} else {
 
 		// Extract part contents to temporary buffer
-		std::ostringstream oss;
+		utility::details::classicOStringStream oss;
 		utility::outputStreamAdapter tmp(oss);
 
 		msg->extractImpl(part, tmp, NULL, 0, -1, IMAPMessage::EXTRACT_BODY);

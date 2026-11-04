@@ -27,6 +27,7 @@
 #include "vmime/contentDisposition.hpp"
 
 #include "vmime/utility/outputStreamAdapter.hpp"
+#include "vmime/utility/details/classicOStringStream.hpp"
 
 
 namespace vmime {
@@ -60,7 +61,7 @@ const shared_ptr <const contentHandler> parsedMessageAttachment::getData() const
 
 	if (!m_data) {
 
-		std::ostringstream oss;
+		utility::details::classicOStringStream oss;
 		utility::outputStreamAdapter os(oss);
 
 		m_msg->generate(os);

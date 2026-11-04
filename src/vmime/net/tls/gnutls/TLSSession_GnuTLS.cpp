@@ -52,6 +52,7 @@
 #include "vmime/net/tls/gnutls/TLSProperties_GnuTLS.hpp"
 
 #include "vmime/exception.hpp"
+#include "vmime/utility/details/classicOStringStream.hpp"
 
 
 // Enable GnuTLS debugging by defining GNUTLS_DEBUG
@@ -312,7 +313,7 @@ shared_ptr <security::cert::certificateVerifier> TLSSession_GnuTLS::getCertifica
 
 void TLSSession_GnuTLS::throwTLSException(const string& fname, const int code) {
 
-	std::ostringstream msg;
+	utility::details::classicOStringStream msg;
 
 	msg << fname + "() returned code ";
 	msg << std::hex << code;

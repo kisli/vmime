@@ -28,6 +28,7 @@
 
 
 #include "vmime/net/message.hpp"
+#include "vmime/utility/details/classicOStringStream.hpp"
 
 #include <sstream>
 
@@ -76,8 +77,7 @@ message::uid::uid(const string& uid)
 
 message::uid::uid(const unsigned long uid) {
 
-	std::ostringstream oss;
-	oss.imbue(std::locale::classic());
+	utility::details::classicOStringStream oss;
 	oss << uid;
 
 	m_str = oss.str();
@@ -112,8 +112,7 @@ message::uid& message::uid::operator=(const string& uid) {
 
 message::uid& message::uid::operator=(const unsigned long uid) {
 
-	std::ostringstream oss;
-	oss.imbue(std::locale::classic());
+	utility::details::classicOStringStream oss;
 	oss << uid;
 
 	m_str = oss.str();

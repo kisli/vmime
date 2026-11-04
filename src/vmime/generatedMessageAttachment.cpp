@@ -24,6 +24,7 @@
 #include "vmime/generatedMessageAttachment.hpp"
 
 #include "vmime/utility/outputStreamAdapter.hpp"
+#include "vmime/utility/details/classicOStringStream.hpp"
 
 
 namespace vmime {
@@ -84,7 +85,7 @@ shared_ptr <message> generatedMessageAttachment::getMessage() const {
 	if (!m_msg) {
 
 		// Extract data
-		std::ostringstream oss;
+		utility::details::classicOStringStream oss;
 		utility::outputStreamAdapter os(oss);
 
 		getData()->extract(os);

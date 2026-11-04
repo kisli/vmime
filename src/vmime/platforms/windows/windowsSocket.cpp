@@ -33,6 +33,7 @@
 
 #include "vmime/utility/stringUtils.hpp"
 #include "vmime/exception.hpp"
+#include "vmime/utility/details/classicOStringStream.hpp"
 
 #include <ws2tcpip.h>
 
@@ -85,7 +86,7 @@ void windowsSocket::connect(const vmime::string& address, const vmime::port_t po
 
 	if (m_tracer) {
 
-		std::ostringstream trace;
+		utility::details::classicOStringStream trace;
 		trace << "Connecting to " << address << ", port " << port;
 
 		m_tracer->traceSend(trace.str());
@@ -381,7 +382,8 @@ unsigned int windowsSocket::getStatus() const {
 
 void windowsSocket::throwSocketError(const int err) {
 
-	std::ostringstream oss;
+	utility::details::classicOStringStream oss;
+
 	string msg;
 
 	LPTSTR str;

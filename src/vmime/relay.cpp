@@ -25,6 +25,8 @@
 #include "vmime/text.hpp"
 #include "vmime/parserHelpers.hpp"
 #include "vmime/utility/outputStreamAdapter.hpp"
+#include "vmime/utility/details/classicIStringStream.hpp"
+#include "vmime/utility/details/classicOStringStream.hpp"
 
 #include <sstream>
 
@@ -80,11 +82,9 @@ void relay::parseImpl(
 		m_date.parse(ctx, buffer, position + (p - pstart) + 1, end);
 
 		// Parse the components
-		std::istringstream iss(
+		utility::details::classicIStringStream iss(
 			string(buffer.begin() + position, buffer.begin() + position + (p - pstart))
 		);
-
-		iss.imbue(std::locale::classic());
 
 		string word;
 		std::vector <string> previous;
@@ -173,7 +173,7 @@ void relay::parseImpl(
 
 				if (part != Part_None) {
 
-					std::ostringstream value;
+					utility::details::classicOStringStream value;
 
 					for (std::vector <string>::const_iterator
 						it = previous.begin() ; it != previous.end() ; ++it) {
@@ -214,7 +214,7 @@ void relay::generateImpl(
 	size_t* newLinePos
 ) const {
 
-	std::ostringstream oss;
+	utility::details::classicOStringStream oss;
 	int count = 0;
 
 	if (m_from.length()) oss << (count++ > 0 ? " " : "") << "from " << m_from;

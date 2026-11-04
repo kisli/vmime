@@ -27,6 +27,7 @@
 #include "vmime/utility/inputStreamStringAdapter.hpp"
 #include "vmime/utility/seekableInputStream.hpp"
 #include "vmime/utility/streamUtils.hpp"
+#include "vmime/utility/details/classicOStringStream.hpp"
 
 
 namespace vmime {
@@ -122,7 +123,7 @@ void streamContentHandler::generate(
 
 			m_stream->reset();  // may not work...
 
-			std::ostringstream oss;
+			utility::details::classicOStringStream oss;
 			utility::outputStreamAdapter tempOut(oss);
 
 			theDecoder->decode(*m_stream, tempOut);

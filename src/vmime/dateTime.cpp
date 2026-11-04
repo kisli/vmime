@@ -29,6 +29,7 @@
 #include "vmime/parserHelpers.hpp"
 
 #include "vmime/utility/datetimeUtils.hpp"
+#include "vmime/utility/details/classicOStringStream.hpp"
 
 
 namespace vmime {
@@ -804,8 +805,7 @@ void datetime::generateImpl(
 	const int zh = z / 60;
 	const int zm = z % 60;
 
-	std::ostringstream oss;
-	oss.imbue(std::locale::classic());
+	utility::details::classicOStringStream oss;
 
 	oss << dayNames[getWeekDay()] << ", "
 	    << m_day << " " << monthNames[m_month - 1] << " " << m_year
