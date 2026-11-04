@@ -28,6 +28,10 @@
 #include "vmime/net/pop3/POP3Store.hpp"
 #include "vmime/net/pop3/POP3SStore.hpp"
 
+#if VMIME_HAVE_SASL_SUPPORT
+	#include "vmime/security/sasl/SASLContext.hpp"
+#endif // VMIME_HAVE_SASL_SUPPORT
+
 
 /** POP3 test server which simulates a network time-out.
   *
@@ -168,6 +172,108 @@ int failingPOP3TestSocket::sm_quitCount = 0;
 
 
 
+#if VMIME_HAVE_SASL_SUPPORT
+
+/** POP3 test server which supports SASL authentication with the PLAIN
+  * mechanism.
+  *
+  * The lines sent by the client during authentication are recorded.
+  */
+class SASLPOP3TestSocket : public lineBasedTestSocket {
+
+public:
+
+	SASLPOP3TestSocket()
+		: m_authenticating(false) {
+
+	}
+
+	static void reset() {
+
+		sm_authLines.clear();
+	}
+
+	static const std::vector <vmime::string>& getAuthLines() {
+
+		return sm_authLines;
+	}
+
+	void onConnected() {
+
+		localSend("+OK test.vmime.org POP3 server ready\r\n");
+	}
+
+	void processCommand() {
+
+		if (!haveMoreLines()) {
+			return;
+		}
+
+		const vmime::string line = getNextLine();
+
+		if (m_authenticating) {
+
+			// Client response to the (empty) server challenge
+			sm_authLines.push_back(line);
+			localSend("+OK\r\n");
+
+			m_authenticating = false;
+
+			processCommand();
+			return;
+		}
+
+		const vmime::string verb =
+			vmime::utility::stringUtils::toUpper(line.substr(0, line.find(' ')));
+
+		if (verb == "CAPA") {
+
+			localSend("+OK Capability list follows\r\n");
+			localSend("SASL PLAIN\r\n");
+			localSend(".\r\n");
+
+		} else if (verb == "AUTH") {
+
+			sm_authLines.push_back(line);
+
+			if (line == "AUTH PLAIN") {
+
+				// No initial response
+				localSend("+ \r\n");
+
+				m_authenticating = true;
+
+			} else {
+
+				localSend("+OK\r\n");
+			}
+
+		} else if (verb == "QUIT") {
+
+			localSend("+OK test.vmime.org POP3 server signing off\r\n");
+
+		} else {
+
+			localSend("-ERR Command not recognized\r\n");
+		}
+
+		processCommand();
+	}
+
+private:
+
+	bool m_authenticating;
+
+	static std::vector <vmime::string> sm_authLines;
+};
+
+
+std::vector <vmime::string> SASLPOP3TestSocket::sm_authLines;
+
+#endif // VMIME_HAVE_SASL_SUPPORT
+
+
+
 VMIME_TEST_SUITE_BEGIN(POP3StoreTest)
 
 	VMIME_TEST_LIST_BEGIN
@@ -186,6 +292,11 @@ VMIME_TEST_SUITE_BEGIN(POP3StoreTest)
 		VMIME_TEST(testFolderDestroyedAfterTimeout)
 		VMIME_TEST(testRetrWriteError)
 		VMIME_TEST(testRetrErrorResponse)
+#if VMIME_HAVE_SASL_SUPPORT
+		VMIME_TEST(testSASLInitialResponse)
+		VMIME_TEST(testSASLInitialResponse_MaxLength)
+		VMIME_TEST(testSASLInitialResponse_TooLong)
+#endif // VMIME_HAVE_SASL_SUPPORT
 	VMIME_TEST_LIST_END
 
 
@@ -461,5 +572,77 @@ VMIME_TEST_SUITE_BEGIN(POP3StoreTest)
 		VASSERT_NO_THROW("Disconnect", store->disconnect());
 		VASSERT_EQ("All connections closed", 0, failingPOP3TestSocket::getConnectedCount());
 	}
+
+#if VMIME_HAVE_SASL_SUPPORT
+
+	static void connectSASL(const vmime::string& password) {
+
+		SASLPOP3TestSocket::reset();
+
+		vmime::shared_ptr <vmime::net::session> sess = vmime::net::session::create();
+		sess->getProperties()["store.pop3.options.sasl.fallback"] = false;
+
+		vmime::shared_ptr <vmime::net::store> store =
+			sess->getStore(vmime::utility::url("pop3://user:" + password + "@localhost"));
+
+		store->setSocketFactory(vmime::make_shared <testSocketFactory <SASLPOP3TestSocket> >());
+		store->setTimeoutHandlerFactory(vmime::make_shared <testTimeoutHandlerFactory>());
+
+		store->connect();
+		store->disconnect();
+	}
+
+	// Return the Base64-encoded response of the PLAIN mechanism
+	static const vmime::string encodePLAINResponse(const vmime::string& password) {
+
+		const vmime::string resp = vmime::string(1, '\0') + "user" + vmime::string(1, '\0') + password;
+
+		return vmime::security::sasl::SASLContext::create()->encodeB64(
+			reinterpret_cast <const vmime::byte_t*>(resp.data()), resp.length()
+		);
+	}
+
+	// Issue #319: initial response is sent with the AUTH command
+	void testSASLInitialResponse() {
+
+		connectSASL("pass");
+
+		const std::vector <vmime::string>& lines = SASLPOP3TestSocket::getAuthLines();
+
+		VASSERT_EQ("Count", 1, lines.size());
+		VASSERT_EQ("AUTH", "AUTH PLAIN AHVzZXIAcGFzcw==", lines[0]);
+	}
+
+	// RFC 5034: the AUTH command with the initial response fits in 255 octets
+	void testSASLInitialResponse_MaxLength() {
+
+		const vmime::string password(174, 'p');
+
+		connectSASL(password);
+
+		const std::vector <vmime::string>& lines = SASLPOP3TestSocket::getAuthLines();
+
+		VASSERT_EQ("Count", 1, lines.size());
+		VASSERT_EQ("AUTH", "AUTH PLAIN " + encodePLAINResponse(password), lines[0]);
+		VASSERT_EQ("Length", 253, lines[0].length() + 2);  // including CRLF
+	}
+
+	// RFC 5034: the initial response must not be sent with the AUTH command
+	// if the command would exceed 255 octets
+	void testSASLInitialResponse_TooLong() {
+
+		const vmime::string password(175, 'p');
+
+		connectSASL(password);
+
+		const std::vector <vmime::string>& lines = SASLPOP3TestSocket::getAuthLines();
+
+		VASSERT_EQ("Count", 2, lines.size());
+		VASSERT_EQ("AUTH", "AUTH PLAIN", lines[0]);
+		VASSERT_EQ("Response", encodePLAINResponse(password), lines[1]);
+		VASSERT_EQ("Length", 257, lines[0].length() + 1 + lines[1].length() + 2);  // with initial response
+	}
+
+#endif // VMIME_HAVE_SASL_SUPPORT
 
 VMIME_TEST_SUITE_END

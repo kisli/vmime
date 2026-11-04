@@ -88,7 +88,11 @@ shared_ptr <SMTPCommand> SMTPCommand::AUTH(const string& mechName, const std::st
 	cmd.imbue(std::locale::classic());
 	cmd << "AUTH " << mechName << " " << initialResponse;
 
-	return createCommand(cmd.str());
+	std::ostringstream trace;
+	trace.imbue(std::locale::classic());
+	trace << "AUTH " << mechName << " {initial-response}";
+
+	return createCommand(cmd.str(), trace.str());
 }
 
 

@@ -104,6 +104,7 @@ VMIME_TEST_SUITE_BEGIN(POP3CommandTest)
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "AUTH saslmechanism initial-response", cmd->getText());
+		VASSERT_EQ("Trace Text", "AUTH saslmechanism {initial-response}", cmd->getTraceText());
 	}
 
 	void testSTLS() {

@@ -412,7 +412,8 @@ void IMAPConnection::authenticateSASL() {
 
 		shared_ptr <IMAPCommand> authCmd;
 
-		if (saslSession->getMechanism()->hasInitialResponse()) {
+		// An initial response can only be sent if the server supports it (RFC 4959)
+		if (hasCapability("SASL-IR") && saslSession->getMechanism()->hasInitialResponse()) {
 
 			byte_t* initialResp = 0;
 			size_t initialRespLen = 0;
@@ -905,7 +906,7 @@ void IMAPConnection::sendCommand(const shared_ptr <IMAPCommand>& cmd) {
 	if (m_tracer) {
 
 		std::ostringstream oss;
-		oss << string(*m_tag) << " " << cmd->getText();
+		oss << string(*m_tag) << " " << cmd->getTraceText();
 
 		m_tracer->traceSend(oss.str());
 	}
