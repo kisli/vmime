@@ -803,7 +803,7 @@ public:
 };
 
 
-#if VMIME_HAVE_SASL_SUPPORT
+#if VMIME_HAVE_MESSAGING_FEATURES
 
 
 /** Base class for exceptions thrown by SASL module.
@@ -834,7 +834,7 @@ public:
 };
 
 
-#endif // VMIME_HAVE_SASL_SUPPORT
+#endif // VMIME_HAVE_MESSAGING_FEATURES
 
 
 #if VMIME_HAVE_TLS_SUPPORT

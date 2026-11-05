@@ -56,10 +56,8 @@ const SMTPServiceInfos::props& SMTPServiceInfos::getProperties() const {
 	static props smtpProps = {
 		// SMTP-specific options
 		property("options.need-authentication", serviceInfos::property::TYPE_BOOLEAN, "false"),
-#if VMIME_HAVE_SASL_SUPPORT
 		property("options.sasl", serviceInfos::property::TYPE_BOOLEAN, "true"),
 		property("options.sasl.fallback", serviceInfos::property::TYPE_BOOLEAN, "false"),
-#endif // VMIME_HAVE_SASL_SUPPORT
 
 		property("options.pipelining", serviceInfos::property::TYPE_BOOLEAN, "true"),
 		property("options.chunking", serviceInfos::property::TYPE_BOOLEAN, "true"),
@@ -80,10 +78,8 @@ const SMTPServiceInfos::props& SMTPServiceInfos::getProperties() const {
 	static props smtpsProps = {
 		// SMTP-specific options
 		property("options.need-authentication", serviceInfos::property::TYPE_BOOLEAN, "false"),
-#if VMIME_HAVE_SASL_SUPPORT
 		property("options.sasl", serviceInfos::property::TYPE_BOOLEAN, "true"),
 		property("options.sasl.fallback", serviceInfos::property::TYPE_BOOLEAN, "false"),
-#endif // VMIME_HAVE_SASL_SUPPORT
 
 		property("options.pipelining", serviceInfos::property::TYPE_BOOLEAN, "true"),
 		property("options.chunking", serviceInfos::property::TYPE_BOOLEAN, "true"),
@@ -112,10 +108,8 @@ const std::vector <serviceInfos::property> SMTPServiceInfos::getAvailablePropert
 
 	// SMTP-specific options
 	list.push_back(p.PROPERTY_OPTIONS_NEEDAUTH);
-#if VMIME_HAVE_SASL_SUPPORT
 	list.push_back(p.PROPERTY_OPTIONS_SASL);
 	list.push_back(p.PROPERTY_OPTIONS_SASL_FALLBACK);
-#endif // VMIME_HAVE_SASL_SUPPORT
 
 	// Common properties
 	list.push_back(p.PROPERTY_AUTH_USERNAME);

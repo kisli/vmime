@@ -30,6 +30,23 @@ jobs:
         sudo make install
         make test
 
+  build-linux-no-gsasl:
+    name: build-linux-no-gsasl (gnutls, icu)
+    runs-on: ubuntu-26.04
+    steps:
+    - name: install-deps
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends cmake g++ libcppunit-dev libgnutls28-dev libicu-dev make pkg-config
+    - name: clone-vmime
+      uses: actions/checkout@v4
+    - name: buildall
+      run: |
+        set -ex
+        cmake . -DVMIME_SENDMAIL_PATH:STRING="/usr/sbin/sendmail" -DVMIME_HAVE_GSASL:BOOL=OFF -DVMIME_HAVE_TLS_SUPPORT:BOOL=ON -DVMIME_TLS_SUPPORT_LIB:STRING=gnutls -DVMIME_CHARSETCONV_LIB:STRING=icu -DVMIME_BUILD_TESTS=ON -DVMIME_BUILD_SAMPLES=ON
+        make "-j$(nproc)"
+        ctest --output-on-failure
+
   build-linux-sanitizers:
     name: build-linux-sanitizers (asan, ubsan)
     runs-on: ubuntu-26.04

@@ -29,9 +29,7 @@
 
 #include "SMTPTransportTestUtils.hpp"
 
-#if VMIME_HAVE_SASL_SUPPORT
-	#include "vmime/security/sasl/SASLContext.hpp"
-#endif // VMIME_HAVE_SASL_SUPPORT
+#include "vmime/security/sasl/SASLContext.hpp"
 
 
 /** SMTP test server which simulates a network failure.
@@ -242,7 +240,6 @@ public:
 };
 
 
-#if VMIME_HAVE_SASL_SUPPORT
 
 /** SMTP test server which supports SASL authentication with the PLAIN
   * mechanism.
@@ -339,7 +336,111 @@ private:
 
 std::vector <vmime::string> SASLSMTPTestSocket::sm_authLines;
 
-#endif // VMIME_HAVE_SASL_SUPPORT
+
+
+/** SMTP test server which supports SASL authentication with the LOGIN
+  * mechanism, and advertises the specified SASL mechanisms.
+  *
+  * The lines sent by the client during authentication are recorded.
+  */
+class LOGINSMTPTestSocket : public lineBasedTestSocket {
+
+public:
+
+	LOGINSMTPTestSocket()
+		: m_loginStep(0) {
+
+	}
+
+	static void reset(const vmime::string& mechs) {
+
+		sm_mechs = mechs;
+		sm_authLines.clear();
+	}
+
+	static const std::vector <vmime::string>& getAuthLines() {
+
+		return sm_authLines;
+	}
+
+	void onConnected() {
+
+		localSend("220 test.vmime.org Service ready\r\n");
+	}
+
+	void processCommand() {
+
+		if (!haveMoreLines()) {
+			return;
+		}
+
+		const vmime::string line = getNextLine();
+
+		if (m_loginStep == 1) {
+
+			// Client response to the "Username:" challenge
+			sm_authLines.push_back(line);
+			localSend("334 UGFzc3dvcmQ6\r\n");
+
+			m_loginStep = 2;
+
+		} else if (m_loginStep == 2) {
+
+			// Client response to the "Password:" challenge
+			sm_authLines.push_back(line);
+			localSend("235 2.7.0 Authentication successful\r\n");
+
+			m_loginStep = 0;
+
+		} else {
+
+			const vmime::string verb =
+				vmime::utility::stringUtils::toUpper(line.substr(0, line.find(' ')));
+
+			if (verb == "EHLO") {
+
+				localSend("250-test.vmime.org\r\n");
+				localSend("250 AUTH " + sm_mechs + "\r\n");
+
+			} else if (verb == "AUTH") {
+
+				sm_authLines.push_back(line);
+
+				if (line == "AUTH LOGIN") {
+
+					localSend("334 VXNlcm5hbWU6\r\n");
+
+					m_loginStep = 1;
+
+				} else {
+
+					localSend("235 2.7.0 Authentication successful\r\n");
+				}
+
+			} else if (verb == "QUIT") {
+
+				localSend("221 test.vmime.org Service closing transmission channel\r\n");
+
+			} else {
+
+				localSend("502 Command not implemented\r\n");
+			}
+		}
+
+		processCommand();
+	}
+
+private:
+
+	int m_loginStep;
+
+	static vmime::string sm_mechs;
+	static std::vector <vmime::string> sm_authLines;
+};
+
+
+vmime::string LOGINSMTPTestSocket::sm_mechs;
+std::vector <vmime::string> LOGINSMTPTestSocket::sm_authLines;
 
 
 
@@ -362,11 +463,11 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 		VMIME_TEST(testConnectionLostDuringChunking)
 		VMIME_TEST(testInputStreamErrorDuringData)
 		VMIME_TEST(testGenerationErrorDuringChunking)
-#if VMIME_HAVE_SASL_SUPPORT
 		VMIME_TEST(testSASLInitialResponse)
 		VMIME_TEST(testSASLInitialResponse_MaxLength)
 		VMIME_TEST(testSASLInitialResponse_TooLong)
-#endif // VMIME_HAVE_SASL_SUPPORT
+		VMIME_TEST(testSASL_LOGIN)
+		VMIME_TEST(testSASL_PLAINPreferredToLOGIN)
 	VMIME_TEST_LIST_END
 
 
@@ -850,8 +951,6 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 		VASSERT_EQ("Message not delivered", 0, failingSMTPTestSocket::getDeliveredCount());
 	}
 
-#if VMIME_HAVE_SASL_SUPPORT
-
 	static void connectSASL(const vmime::string& password) {
 
 		SASLSMTPTestSocket::reset();
@@ -921,6 +1020,45 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 		VASSERT_EQ("Length", 513, lines[0].length() + 1 + lines[1].length() + 2);  // with initial response
 	}
 
-#endif // VMIME_HAVE_SASL_SUPPORT
+	static void connectLOGIN(const vmime::string& mechs) {
+
+		LOGINSMTPTestSocket::reset(mechs);
+
+		vmime::shared_ptr <vmime::net::session> session = vmime::net::session::create();
+		session->getProperties()["transport.smtp.options.need-authentication"] = true;
+
+		vmime::shared_ptr <vmime::net::transport> tr =
+			session->getTransport(vmime::utility::url("smtp://user:pass@localhost"));
+
+		tr->setSocketFactory(vmime::make_shared <testSocketFactory <LOGINSMTPTestSocket> >());
+		tr->setTimeoutHandlerFactory(vmime::make_shared <testTimeoutHandlerFactory>());
+
+		tr->connect();
+		tr->disconnect();
+	}
+
+	// Some servers only support LOGIN (and XOAUTH2, which is not registered here)
+	void testSASL_LOGIN() {
+
+		connectLOGIN("LOGIN XOAUTH2");
+
+		const std::vector <vmime::string>& lines = LOGINSMTPTestSocket::getAuthLines();
+
+		VASSERT_EQ("Count", 3, lines.size());
+		VASSERT_EQ("AUTH", "AUTH LOGIN", lines[0]);
+		VASSERT_EQ("Username", "dXNlcg==", lines[1]);
+		VASSERT_EQ("Password", "cGFzcw==", lines[2]);
+	}
+
+	// Clients SHOULD use PLAIN whenever offered by a server (draft-murchison-sasl-login)
+	void testSASL_PLAINPreferredToLOGIN() {
+
+		connectLOGIN("LOGIN PLAIN");
+
+		const std::vector <vmime::string>& lines = LOGINSMTPTestSocket::getAuthLines();
+
+		VASSERT_EQ("Count", 1, lines.size());
+		VASSERT_EQ("AUTH", "AUTH PLAIN AHVzZXIAcGFzcw==", lines[0]);
+	}
 
 VMIME_TEST_SUITE_END

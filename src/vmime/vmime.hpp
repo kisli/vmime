@@ -123,12 +123,12 @@
 #include "security/digest/messageDigestFactory.hpp"
 
 // Security/SASL
-#if VMIME_HAVE_SASL_SUPPORT
+#if VMIME_HAVE_MESSAGING_FEATURES
 	#include "security/sasl/SASLAuthenticator.hpp"
 	#include "security/sasl/defaultSASLAuthenticator.hpp"
 	#include "security/sasl/SASLContext.hpp"
 	#include "security/sasl/SASLSession.hpp"
-#endif // VMIME_HAVE_SASL_SUPPORT
+#endif // VMIME_HAVE_MESSAGING_FEATURES
 
 // Messaging features
 #if VMIME_HAVE_MESSAGING_FEATURES

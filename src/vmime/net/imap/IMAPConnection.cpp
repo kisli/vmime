@@ -41,9 +41,7 @@
 #include "vmime/net/defaultConnectionInfos.hpp"
 #include "vmime/utility/details/classicOStringStream.hpp"
 
-#if VMIME_HAVE_SASL_SUPPORT
-	#include "vmime/security/sasl/SASLContext.hpp"
-#endif // VMIME_HAVE_SASL_SUPPORT
+#include "vmime/security/sasl/SASLContext.hpp"
 
 #if VMIME_HAVE_TLS_SUPPORT
 	#include "vmime/net/tls/TLSSession.hpp"
@@ -272,7 +270,6 @@ void IMAPConnection::authenticate() {
 
 	getAuthenticator()->setService(m_store.lock());
 
-#if VMIME_HAVE_SASL_SUPPORT
 	// First, try SASL authentication
 	if (GET_PROPERTY(bool, PROPERTY_OPTIONS_SASL)) {
 
@@ -300,7 +297,6 @@ void IMAPConnection::authenticate() {
 			throw;
 		}
 	}
-#endif // VMIME_HAVE_SASL_SUPPORT
 
 	// Normal authentication
 	const string username = getAuthenticator()->getUsername();
@@ -329,8 +325,6 @@ void IMAPConnection::authenticate() {
 	}
 }
 
-
-#if VMIME_HAVE_SASL_SUPPORT
 
 void IMAPConnection::authenticateSASL() {
 
@@ -540,8 +534,6 @@ void IMAPConnection::authenticateSASL() {
 
 	throw exceptions::authentication_error("Could not authenticate using SASL: all mechanisms failed.");
 }
-
-#endif // VMIME_HAVE_SASL_SUPPORT
 
 
 #if VMIME_HAVE_TLS_SUPPORT

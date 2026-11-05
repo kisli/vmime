@@ -93,9 +93,7 @@ public:
 private:
 
 	void authenticate(const messageId& randomMID);
-#if VMIME_HAVE_SASL_SUPPORT
 	void authenticateSASL();
-#endif // VMIME_HAVE_SASL_SUPPORT
 
 #if VMIME_HAVE_TLS_SUPPORT
 	void startTLS();

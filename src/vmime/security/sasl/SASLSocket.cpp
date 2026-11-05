@@ -24,7 +24,7 @@
 #include "vmime/config.hpp"
 
 
-#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_SASL_SUPPORT
+#if VMIME_HAVE_MESSAGING_FEATURES
 
 
 #include "vmime/security/sasl/SASLSocket.hpp"
@@ -36,8 +36,6 @@
 
 #include <algorithm>
 #include <cstring>
-
-#include <gsasl.h>
 
 
 namespace vmime {
@@ -270,4 +268,4 @@ unsigned int SASLSocket::getStatus() const {
 } // vmime
 
 
-#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_SASL_SUPPORT
+#endif // VMIME_HAVE_MESSAGING_FEATURES

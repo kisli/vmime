@@ -24,7 +24,7 @@
 #include "tests/testUtils.hpp"
 
 
-#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_SASL_SUPPORT
+#if VMIME_HAVE_MESSAGING_FEATURES
 
 
 #include "vmime/security/sasl/SASLContext.hpp"
@@ -41,6 +41,59 @@ public:
 };
 
 
+// Mechanism which only has a name, for testing mechanism suggestion
+class testSASLMechanism : public vmime::security::sasl::SASLMechanism {
+
+public:
+
+	testSASLMechanism(const vmime::string& name)
+		: m_name(name) {
+
+	}
+
+	const vmime::string getName() const { return m_name; }
+
+	bool step(
+		const vmime::shared_ptr <vmime::security::sasl::SASLSession>& /* sess */,
+		const vmime::byte_t* /* challenge */,
+		const size_t /* challengeLen */,
+		vmime::byte_t** /* response */,
+		size_t* /* responseLen */
+	) {
+
+		return true;
+	}
+
+	bool isComplete() const { return true; }
+
+	bool hasInitialResponse() const { return false; }
+
+	void encode(
+		const vmime::shared_ptr <vmime::security::sasl::SASLSession>& /* sess */,
+		const vmime::byte_t* /* input */,
+		const size_t /* inputLen */,
+		vmime::byte_t** /* output */,
+		size_t* /* outputLen */
+	) {
+
+	}
+
+	void decode(
+		const vmime::shared_ptr <vmime::security::sasl::SASLSession>& /* sess */,
+		const vmime::byte_t* /* input */,
+		const size_t /* inputLen */,
+		vmime::byte_t** /* output */,
+		size_t* /* outputLen */
+	) {
+
+	}
+
+private:
+
+	const vmime::string m_name;
+};
+
+
 VMIME_TEST_SUITE_BEGIN(SASLContextTest)
 
 	VMIME_TEST_LIST_BEGIN
@@ -49,10 +102,14 @@ VMIME_TEST_SUITE_BEGIN(SASLContextTest)
 		VMIME_TEST(testChannelBindingMechanism_WithData)
 		VMIME_TEST(testSetChannelBindingData_InvalidType)
 		VMIME_TEST(testSetChannelBindingData_EmptyData)
+		VMIME_TEST(testGetChannelBindingData)
 		VMIME_TEST(testChannelBinding_TLSUnique)
 		VMIME_TEST(testChannelBinding_TLSExporter)
 		VMIME_TEST(testChannelBinding_NotUsedWithoutPlus)
 		VMIME_TEST(testHasInitialResponse)
+		VMIME_TEST(testSuggestMechanism)
+		VMIME_TEST(testSuggestMechanism_Unknown)
+		VMIME_TEST(testSuggestMechanism_Empty)
 	VMIME_TEST_LIST_END
 
 
@@ -152,6 +209,20 @@ VMIME_TEST_SUITE_BEGIN(SASLContextTest)
 		VASSERT_FALSE("2", ctx->hasChannelBindingData());
 	}
 
+	void testGetChannelBindingData() {
+
+		vmime::shared_ptr <vmime::security::sasl::SASLContext> ctx =
+			vmime::security::sasl::SASLContext::create();
+
+		VASSERT_EQ("1", "", ctx->getChannelBindingType());
+		VASSERT_TRUE("2", ctx->getChannelBindingData().empty());
+
+		ctx->setChannelBindingData("tls-unique", someChannelBindingData());
+
+		VASSERT_EQ("3", "tls-unique", ctx->getChannelBindingType());
+		VASSERT_TRUE("4", ctx->getChannelBindingData() == someChannelBindingData());
+	}
+
 	void testChannelBinding_TLSUnique() {
 
 		if (!isMechanismAvailable("SCRAM-SHA-256-PLUS")) {
@@ -228,13 +299,46 @@ VMIME_TEST_SUITE_BEGIN(SASLContextTest)
 			VASSERT_FALSE("CRAM-MD5", ctx->createMechanism("CRAM-MD5")->hasInitialResponse());
 		}
 
-		// Not all servers accept "AUTH LOGIN <username>"
-		if (isMechanismAvailable("LOGIN")) {
-			VASSERT_FALSE("LOGIN", ctx->createMechanism("LOGIN")->hasInitialResponse());
+		// No initial response (draft-murchison-sasl-login)
+		VASSERT_FALSE("LOGIN", ctx->createMechanism("LOGIN")->hasInitialResponse());
+	}
+
+	static const vmime::string suggestMechanism(const std::vector <vmime::string>& names) {
+
+		std::vector <vmime::shared_ptr <vmime::security::sasl::SASLMechanism> > mechs;
+
+		for (size_t i = 0 ; i < names.size() ; ++i) {
+			mechs.push_back(vmime::make_shared <testSASLMechanism>(names[i]));
 		}
+
+		vmime::shared_ptr <vmime::security::sasl::SASLMechanism> suggested =
+			vmime::security::sasl::SASLContext::create()->suggestMechanism(mechs);
+
+		return suggested ? suggested->getName() : "(none)";
+	}
+
+	void testSuggestMechanism() {
+
+		VASSERT_EQ("1", "SCRAM-SHA-256", suggestMechanism({ "LOGIN", "PLAIN", "SCRAM-SHA-256", "CRAM-MD5" }));
+		VASSERT_EQ("2", "SCRAM-SHA-256-PLUS", suggestMechanism({ "SCRAM-SHA-256-PLUS", "SCRAM-SHA-256" }));
+		VASSERT_EQ("3", "GSSAPI", suggestMechanism({ "PLAIN", "GSSAPI", "SCRAM-SHA-1" }));
+		VASSERT_EQ("4", "PLAIN", suggestMechanism({ "LOGIN", "PLAIN" }));
+		VASSERT_EQ("5", "PLAIN", suggestMechanism({ "PLAIN" }));
+	}
+
+	// Unknown mechanisms are less preferred than all the known ones
+	void testSuggestMechanism_Unknown() {
+
+		VASSERT_EQ("1", "ANONYMOUS", suggestMechanism({ "X-UNKNOWN", "ANONYMOUS", "XOAUTH2" }));
+		VASSERT_EQ("2", "X-UNKNOWN", suggestMechanism({ "X-UNKNOWN", "XOAUTH2" }));
+	}
+
+	void testSuggestMechanism_Empty() {
+
+		VASSERT_EQ("1", "(none)", suggestMechanism({}));
 	}
 
 VMIME_TEST_SUITE_END
 
 
-#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_SASL_SUPPORT
+#endif // VMIME_HAVE_MESSAGING_FEATURES

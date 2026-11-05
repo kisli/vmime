@@ -50,10 +50,8 @@ public:
 	struct props {
 		// SMTP-specific options
 		serviceInfos::property PROPERTY_OPTIONS_NEEDAUTH;
-#if VMIME_HAVE_SASL_SUPPORT
 		serviceInfos::property PROPERTY_OPTIONS_SASL;
 		serviceInfos::property PROPERTY_OPTIONS_SASL_FALLBACK;
-#endif // VMIME_HAVE_SASL_SUPPORT
 
 		serviceInfos::property PROPERTY_OPTIONS_PIPELINING;
 		serviceInfos::property PROPERTY_OPTIONS_CHUNKING;

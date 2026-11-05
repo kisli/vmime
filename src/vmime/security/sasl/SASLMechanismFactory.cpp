@@ -24,17 +24,19 @@
 #include "vmime/config.hpp"
 
 
-#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_SASL_SUPPORT
+#if VMIME_HAVE_MESSAGING_FEATURES
 
 
-#include <stdexcept>
-#include <new>
-
-#include <gsasl.h>
+#include <algorithm>
 
 #include "vmime/security/sasl/SASLMechanismFactory.hpp"
-#include "vmime/security/sasl/builtinSASLMechanism.hpp"
 #include "vmime/security/sasl/SASLContext.hpp"
+#include "vmime/security/sasl/plainSASLMechanism.hpp"
+#include "vmime/security/sasl/loginSASLMechanism.hpp"
+
+#if VMIME_HAVE_GSASL
+#	include "vmime/security/sasl/gsasl/SASLMechanism_GSASL.hpp"
+#endif // VMIME_HAVE_GSASL
 
 #include "vmime/utility/stringUtils.hpp"
 
@@ -49,15 +51,25 @@ namespace sasl {
 
 SASLMechanismFactory::SASLMechanismFactory() {
 
-	if (gsasl_init(&m_gsaslContext) != GSASL_OK) {
-		throw std::bad_alloc();
-	}
+	// Mechanisms built into VMime
+	m_builtinMechs.insert(
+		MapType::value_type(
+			"PLAIN",
+			vmime::make_shared <registeredMechanismImpl <plainSASLMechanism> >()
+		)
+	);
+
+	m_builtinMechs.insert(
+		MapType::value_type(
+			"LOGIN",
+			vmime::make_shared <registeredMechanismImpl <loginSASLMechanism> >()
+		)
+	);
 }
 
 
 SASLMechanismFactory::~SASLMechanismFactory() {
 
-	gsasl_done(m_gsaslContext);
 }
 
 
@@ -84,9 +96,18 @@ shared_ptr <SASLMechanism> SASLMechanismFactory::create(
 	}
 
 	// Check for built-in mechanisms
-	if (isBuiltinMechanism(name)) {
-		return make_shared <builtinSASLMechanism>(ctx, name);
+	it = m_builtinMechs.find(name);
+
+	if (it != m_builtinMechs.end()) {
+		return (*it).second->create(ctx, name);
 	}
+
+#if VMIME_HAVE_GSASL
+	// Check for mechanisms provided by the GNU SASL library
+	if (SASLMechanism_GSASL::isMechanismSupported(name)) {
+		return make_shared <SASLMechanism_GSASL>(ctx, name);
+	}
+#endif // VMIME_HAVE_GSASL
 
 	throw exceptions::no_such_mechanism(name);
 	return null;
@@ -105,25 +126,25 @@ const std::vector <string> SASLMechanismFactory::getSupportedMechanisms() const 
 	}
 
 	// Built-in mechanisms
-	char* out = 0;
+	for (MapType::const_iterator it = m_builtinMechs.begin() ;
+	     it != m_builtinMechs.end() ; ++it) {
 
-	if (gsasl_client_mechlist(m_gsaslContext, &out) == GSASL_OK) {
-
-		// 'out' contains SASL mechanism names, separated by spaces
-		for (char *start = out, *p = out ; ; ++p) {
-
-			if (*p == ' ' || !*p) {
-
-				list.push_back(string(start, p));
-				start = p + 1;
-
-				// End of string
-				if (!*p) break;
-			}
+		if (std::find(list.begin(), list.end(), (*it).first) == list.end()) {
+			list.push_back((*it).first);
 		}
-
-		gsasl_free(out);
 	}
+
+#if VMIME_HAVE_GSASL
+	// Mechanisms provided by the GNU SASL library
+	const std::vector <string> gsaslMechs = SASLMechanism_GSASL::getSupportedMechanisms();
+
+	for (size_t i = 0 ; i < gsaslMechs.size() ; ++i) {
+
+		if (std::find(list.begin(), list.end(), gsaslMechs[i]) == list.end()) {
+			list.push_back(gsaslMechs[i]);
+		}
+	}
+#endif // VMIME_HAVE_GSASL
 
 	return list;
 }
@@ -131,13 +152,21 @@ const std::vector <string> SASLMechanismFactory::getSupportedMechanisms() const 
 
 bool SASLMechanismFactory::isMechanismSupported(const string& name) const {
 
-	return isBuiltinMechanism(name) || m_mechs.find(name) != m_mechs.end();
+	if (m_mechs.find(name) != m_mechs.end() || isBuiltinMechanism(name)) {
+		return true;
+	}
+
+#if VMIME_HAVE_GSASL
+	return SASLMechanism_GSASL::isMechanismSupported(name);
+#else
+	return false;
+#endif // VMIME_HAVE_GSASL
 }
 
 
 bool SASLMechanismFactory::isBuiltinMechanism(const string& name) const {
 
-	return gsasl_client_support_p(m_gsaslContext, name.c_str()) != 0;
+	return m_builtinMechs.find(name) != m_builtinMechs.end();
 }
 
 
@@ -146,4 +175,4 @@ bool SASLMechanismFactory::isBuiltinMechanism(const string& name) const {
 } // vmime
 
 
-#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_SASL_SUPPORT
+#endif // VMIME_HAVE_MESSAGING_FEATURES
