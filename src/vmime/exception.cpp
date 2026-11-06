@@ -392,6 +392,22 @@ const char* authentication_error::name() const throw() { return "authentication_
 
 
 //
+// plaintext_authentication_not_allowed
+//
+
+plaintext_authentication_not_allowed::~plaintext_authentication_not_allowed() throw() {}
+plaintext_authentication_not_allowed::plaintext_authentication_not_allowed(const exception& other)
+	: authentication_error(
+		"The credentials would be sent in clear text on a connection which is not secured: "
+		"use TLS, or set the 'auth.allow-plaintext' property to allow it.",
+		other
+	) {}
+
+exception* plaintext_authentication_not_allowed::clone() const { return new plaintext_authentication_not_allowed(*this); }
+const char* plaintext_authentication_not_allowed::name() const throw() { return "plaintext_authentication_not_allowed"; }
+
+
+//
 // unsupported_option
 //
 
@@ -705,6 +721,21 @@ no_such_mechanism::no_such_mechanism(const string& name, const exception& other)
 
 exception* no_such_mechanism::clone() const { return new no_such_mechanism(*this); }
 const char* no_such_mechanism::name() const throw() { return "no_such_mechanism"; }
+
+
+//
+// plaintext_mechanism_not_allowed
+//
+
+plaintext_mechanism_not_allowed::~plaintext_mechanism_not_allowed() throw() {}
+plaintext_mechanism_not_allowed::plaintext_mechanism_not_allowed(const string& name, const exception& other)
+	: sasl_exception(
+		"SASL mechanism '" + name + "' sends the credentials in clear text, and is not allowed.",
+		other
+	) {}
+
+exception* plaintext_mechanism_not_allowed::clone() const { return new plaintext_mechanism_not_allowed(*this); }
+const char* plaintext_mechanism_not_allowed::name() const throw() { return "plaintext_mechanism_not_allowed"; }
 
 
 #endif // VMIME_HAVE_MESSAGING_FEATURES

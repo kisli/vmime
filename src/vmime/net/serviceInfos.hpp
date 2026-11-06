@@ -93,6 +93,13 @@ public:
 		  * access token used to authenticate with the server. */
 		static const property AUTH_ACCESS_TOKEN;
 
+		/** The common property 'auth.allow-plaintext' should be set
+		  * to 'true' to allow sending the credentials in clear text
+		  * (eg. with the SASL PLAIN mechanism) on a connection which
+		  * is not secured. This is not allowed by default.
+		  */
+		static const property AUTH_ALLOW_PLAINTEXT;
+
 #if VMIME_HAVE_TLS_SUPPORT
 
 		/** The common property 'connection.tls': this is used to

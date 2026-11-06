@@ -29,6 +29,7 @@
 
 #include "vmime/security/sasl/SASLContext.hpp"
 #include "vmime/security/sasl/SASLMechanismFactory.hpp"
+#include "vmime/security/sasl/XOAuth2SASLMechanism.hpp"
 #include "vmime/security/sasl/defaultSASLAuthenticator.hpp"
 
 
@@ -67,6 +68,8 @@ public:
 	bool isComplete() const { return true; }
 
 	bool hasInitialResponse() const { return false; }
+
+	bool isPlaintext() const { return false; }
 
 	void encode(
 		const vmime::shared_ptr <vmime::security::sasl::SASLSession>& /* sess */,
@@ -110,6 +113,9 @@ VMIME_TEST_SUITE_BEGIN(SASLContextTest)
 		VMIME_TEST(testSuggestMechanism)
 		VMIME_TEST(testSuggestMechanism_Unknown)
 		VMIME_TEST(testSuggestMechanism_Empty)
+		VMIME_TEST(testPlaintextMechanism_NotAllowedByDefault)
+		VMIME_TEST(testPlaintextMechanism_Allowed)
+		VMIME_TEST(testIsPlaintext)
 	VMIME_TEST_LIST_END
 
 
@@ -151,6 +157,8 @@ VMIME_TEST_SUITE_BEGIN(SASLContextTest)
 
 		vmime::shared_ptr <vmime::security::sasl::SASLContext> ctx =
 			vmime::security::sasl::SASLContext::create();
+
+		ctx->setPlaintextAllowed(true);
 
 		VASSERT_EQ("1", "PLAIN", ctx->createMechanism("PLAIN")->getName());
 		VASSERT_EQ("2", "PLAIN", ctx->createMechanism("plain")->getName());
@@ -281,6 +289,7 @@ VMIME_TEST_SUITE_BEGIN(SASLContextTest)
 			vmime::security::sasl::SASLContext::create();
 
 		ctx->setChannelBindingData("tls-unique", someChannelBindingData());
+		ctx->setPlaintextAllowed(true);
 
 		// Client-first mechanisms
 		VASSERT_TRUE("PLAIN", ctx->createMechanism("PLAIN")->hasInitialResponse());
@@ -336,6 +345,65 @@ VMIME_TEST_SUITE_BEGIN(SASLContextTest)
 	void testSuggestMechanism_Empty() {
 
 		VASSERT_EQ("1", "(none)", suggestMechanism({}));
+	}
+
+	void testPlaintextMechanism_NotAllowedByDefault() {
+
+		vmime::shared_ptr <vmime::security::sasl::SASLContext> ctx =
+			vmime::security::sasl::SASLContext::create();
+
+		VASSERT_FALSE("1", ctx->isPlaintextAllowed());
+
+		VASSERT_THROW(
+			"2",
+			ctx->createMechanism("PLAIN"),
+			vmime::exceptions::plaintext_mechanism_not_allowed
+		);
+
+		VASSERT_THROW(
+			"3",
+			ctx->createMechanism("LOGIN"),
+			vmime::exceptions::plaintext_mechanism_not_allowed
+		);
+
+		if (isMechanismAvailable("SCRAM-SHA-256")) {
+			VASSERT_EQ("4", "SCRAM-SHA-256", ctx->createMechanism("SCRAM-SHA-256")->getName());
+		}
+	}
+
+	void testPlaintextMechanism_Allowed() {
+
+		vmime::shared_ptr <vmime::security::sasl::SASLContext> ctx =
+			vmime::security::sasl::SASLContext::create();
+
+		ctx->setPlaintextAllowed(true);
+
+		VASSERT_TRUE("1", ctx->isPlaintextAllowed());
+		VASSERT_EQ("2", "PLAIN", ctx->createMechanism("PLAIN")->getName());
+		VASSERT_EQ("3", "LOGIN", ctx->createMechanism("LOGIN")->getName());
+	}
+
+	void testIsPlaintext() {
+
+		vmime::shared_ptr <vmime::security::sasl::SASLContext> ctx =
+			vmime::security::sasl::SASLContext::create();
+
+		ctx->setPlaintextAllowed(true);
+
+		VASSERT_TRUE("PLAIN", ctx->createMechanism("PLAIN")->isPlaintext());
+		VASSERT_TRUE("LOGIN", ctx->createMechanism("LOGIN")->isPlaintext());
+		VASSERT_TRUE(
+			"XOAUTH2",
+			vmime::security::sasl::XOAuth2SASLMechanism(ctx, "XOAUTH2").isPlaintext()
+		);
+
+		if (isMechanismAvailable("SCRAM-SHA-256")) {
+			VASSERT_FALSE("SCRAM-SHA-256", ctx->createMechanism("SCRAM-SHA-256")->isPlaintext());
+		}
+
+		if (isMechanismAvailable("CRAM-MD5")) {
+			VASSERT_FALSE("CRAM-MD5", ctx->createMechanism("CRAM-MD5")->isPlaintext());
+		}
 	}
 
 VMIME_TEST_SUITE_END

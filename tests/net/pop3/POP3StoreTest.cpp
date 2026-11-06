@@ -171,7 +171,7 @@ int failingPOP3TestSocket::sm_quitCount = 0;
 
 
 /** POP3 test server which supports SASL authentication with the PLAIN
-  * mechanism.
+  * mechanism, and basic authentication with the USER and PASS commands.
   *
   * The lines sent by the client during authentication are recorded.
   */
@@ -244,6 +244,11 @@ public:
 				localSend("+OK\r\n");
 			}
 
+		} else if (verb == "USER" || verb == "PASS") {
+
+			sm_authLines.push_back(line);
+			localSend("+OK\r\n");
+
 		} else if (verb == "QUIT") {
 
 			localSend("+OK test.vmime.org POP3 server signing off\r\n");
@@ -289,6 +294,8 @@ VMIME_TEST_SUITE_BEGIN(POP3StoreTest)
 		VMIME_TEST(testSASLInitialResponse)
 		VMIME_TEST(testSASLInitialResponse_MaxLength)
 		VMIME_TEST(testSASLInitialResponse_TooLong)
+		VMIME_TEST(testPlaintextAuthNotAllowed)
+		VMIME_TEST(testPlaintextAuthAllowed_USERPASS)
 	VMIME_TEST_LIST_END
 
 
@@ -299,6 +306,7 @@ VMIME_TEST_SUITE_BEGIN(POP3StoreTest)
 		vmime::shared_ptr <vmime::net::session> sess = vmime::net::session::create();
 		sess->getProperties()["store.pop3.options.apop"] = false;
 		sess->getProperties()["store.pop3.options.sasl"] = false;
+		sess->getProperties()["store.pop3.auth.allow-plaintext"] = true;
 
 		vmime::shared_ptr <vmime::net::store> store =
 			sess->getStore(vmime::utility::url("pop3://user:pass@localhost"));
@@ -571,6 +579,7 @@ VMIME_TEST_SUITE_BEGIN(POP3StoreTest)
 
 		vmime::shared_ptr <vmime::net::session> sess = vmime::net::session::create();
 		sess->getProperties()["store.pop3.options.sasl.fallback"] = false;
+		sess->getProperties()["store.pop3.auth.allow-plaintext"] = true;
 
 		vmime::shared_ptr <vmime::net::store> store =
 			sess->getStore(vmime::utility::url("pop3://user:" + password + "@localhost"));
@@ -631,6 +640,50 @@ VMIME_TEST_SUITE_BEGIN(POP3StoreTest)
 		VASSERT_EQ("AUTH", "AUTH PLAIN", lines[0]);
 		VASSERT_EQ("Response", encodePLAINResponse(password), lines[1]);
 		VASSERT_EQ("Length", 257, lines[0].length() + 1 + lines[1].length() + 2);  // with initial response
+	}
+
+	// Connect with the default authentication options: if SASL authentication is
+	// not possible, the server does not support APOP and USER/PASS may be used
+	static void connectWithFallback(const vmime::shared_ptr <vmime::net::session>& sess) {
+
+		SASLPOP3TestSocket::reset();
+
+		vmime::shared_ptr <vmime::net::store> store =
+			sess->getStore(vmime::utility::url("pop3://user:pass@localhost"));
+
+		store->setSocketFactory(vmime::make_shared <testSocketFactory <SASLPOP3TestSocket> >());
+		store->setTimeoutHandlerFactory(vmime::make_shared <testTimeoutHandlerFactory>());
+
+		store->connect();
+		store->disconnect();
+	}
+
+	// The credentials must not be sent in clear text on a connection which is not
+	// secured: neither with PLAIN (RFC 4616, section 1), nor with USER/PASS
+	void testPlaintextAuthNotAllowed() {
+
+		VASSERT_THROW(
+			"Connect",
+			connectWithFallback(vmime::net::session::create()),
+			vmime::exceptions::plaintext_authentication_not_allowed
+		);
+
+		VASSERT_EQ("Count", 0, SASLPOP3TestSocket::getAuthLines().size());
+	}
+
+	void testPlaintextAuthAllowed_USERPASS() {
+
+		vmime::shared_ptr <vmime::net::session> sess = vmime::net::session::create();
+		sess->getProperties()["store.pop3.options.sasl"] = false;
+		sess->getProperties()["store.pop3.auth.allow-plaintext"] = true;
+
+		connectWithFallback(sess);
+
+		const std::vector <vmime::string>& lines = SASLPOP3TestSocket::getAuthLines();
+
+		VASSERT_EQ("Count", 2, lines.size());
+		VASSERT_EQ("USER", "USER user", lines[0]);
+		VASSERT_EQ("PASS", "PASS pass", lines[1]);
 	}
 
 VMIME_TEST_SUITE_END

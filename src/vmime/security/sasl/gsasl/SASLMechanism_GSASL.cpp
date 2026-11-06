@@ -62,6 +62,14 @@ const std::unordered_set <string> CLIENT_FIRST_MECHANISMS {
 };
 
 
+// Mechanisms which send the credentials (password or passcode) in clear text
+const std::unordered_set <string> PLAINTEXT_MECHANISMS {
+	"LOGIN",
+	"PLAIN",
+	"SECURID"
+};
+
+
 // GNU SASL context used to query the mechanisms provided by the library
 class gsaslQueryContext {
 
@@ -258,6 +266,12 @@ bool SASLMechanism_GSASL::isComplete() const {
 bool SASLMechanism_GSASL::hasInitialResponse() const {
 
 	return m_initialResponse;
+}
+
+
+bool SASLMechanism_GSASL::isPlaintext() const {
+
+	return PLAINTEXT_MECHANISMS.count(m_name) != 0;
 }
 
 

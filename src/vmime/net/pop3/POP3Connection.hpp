@@ -94,6 +94,7 @@ private:
 
 	void authenticate(const messageId& randomMID);
 	void authenticateSASL();
+	bool isPlaintextAuthenticationAllowed();
 
 #if VMIME_HAVE_TLS_SUPPORT
 	void startTLS();

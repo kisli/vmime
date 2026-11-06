@@ -97,7 +97,8 @@ size_t getMechanismPreference(const string& name) {
 }
 
 
-SASLContext::SASLContext() {
+SASLContext::SASLContext()
+	: m_plaintextAllowed(false) {
 
 }
 
@@ -132,9 +133,27 @@ shared_ptr <SASLMechanism> SASLContext::createMechanism(const string& name) {
 		throw exceptions::no_such_mechanism(name);
 	}
 
-	return SASLMechanismFactory::getInstance()->create(
+	shared_ptr <SASLMechanism> mech = SASLMechanismFactory::getInstance()->create(
 		dynamicCast <SASLContext>(shared_from_this()), name
 	);
+
+	if (mech->isPlaintext() && !m_plaintextAllowed) {
+		throw exceptions::plaintext_mechanism_not_allowed(mech->getName());
+	}
+
+	return mech;
+}
+
+
+void SASLContext::setPlaintextAllowed(const bool allowed) {
+
+	m_plaintextAllowed = allowed;
+}
+
+
+bool SASLContext::isPlaintextAllowed() const {
+
+	return m_plaintextAllowed;
 }
 
 

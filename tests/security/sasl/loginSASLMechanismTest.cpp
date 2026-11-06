@@ -55,6 +55,7 @@ VMIME_TEST_SUITE_BEGIN(loginSASLMechanismTest)
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testName)
 		VMIME_TEST(testHasInitialResponse)
+		VMIME_TEST(testIsPlaintext)
 		VMIME_TEST(testResponses)
 		VMIME_TEST(testChallengesIgnored)
 		VMIME_TEST(testUnexpectedChallenge)
@@ -114,6 +115,13 @@ VMIME_TEST_SUITE_BEGIN(loginSASLMechanismTest)
 	void testHasInitialResponse() {
 
 		VASSERT_FALSE("1", createSession()->getMechanism()->hasInitialResponse());
+	}
+
+	// LOGIN MUST NOT be used without adequate security protection
+	// (draft-murchison-sasl-login)
+	void testIsPlaintext() {
+
+		VASSERT_TRUE("1", createSession()->getMechanism()->isPlaintext());
 	}
 
 	void testResponses() {

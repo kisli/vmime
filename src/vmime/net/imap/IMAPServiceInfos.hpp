@@ -56,6 +56,7 @@ public:
 		// Common properties
 		serviceInfos::property PROPERTY_AUTH_USERNAME;
 		serviceInfos::property PROPERTY_AUTH_PASSWORD;
+		serviceInfos::property PROPERTY_AUTH_ALLOW_PLAINTEXT;
 
 #if VMIME_HAVE_TLS_SUPPORT
 		serviceInfos::property PROPERTY_CONNECTION_TLS;

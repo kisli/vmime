@@ -360,6 +360,14 @@ void POP3Connection::authenticate(const messageId& randomMID) {
 	//
 	//      C: PASS couic
 	//      S: +OK vincent's maildrop has 2 messages (320 octets)
+	//
+	// The password is sent in clear text
+	if (!isPlaintextAuthenticationAllowed()) {
+
+		internalDisconnect();
+		throw exceptions::plaintext_authentication_not_allowed();
+	}
+
 	POP3Command::USER(username)->send(conn);
 	response = POP3Response::readResponse(conn);
 
@@ -379,6 +387,14 @@ void POP3Connection::authenticate(const messageId& randomMID) {
 	}
 
 	m_authenticated = true;
+}
+
+
+bool POP3Connection::isPlaintextAuthenticationAllowed() {
+
+	// The credentials must not be sent in clear text on a connection which
+	// is not secured, unless the application allows it (RFC 8314, section 5.2)
+	return m_secured || GET_PROPERTY(bool, PROPERTY_AUTH_ALLOW_PLAINTEXT);
 }
 
 
@@ -433,6 +449,8 @@ void POP3Connection::authenticateSASL() {
 	shared_ptr <security::sasl::SASLContext> saslContext =
 		security::sasl::SASLContext::create();
 
+	saslContext->setPlaintextAllowed(isPlaintextAuthenticationAllowed());
+
 #if VMIME_HAVE_TLS_SUPPORT
 	// Allow using mechanisms with channel binding ("-PLUS" variants)
 	if (m_secured) {
@@ -440,16 +458,26 @@ void POP3Connection::authenticateSASL() {
 	}
 #endif // VMIME_HAVE_TLS_SUPPORT
 
+	bool plaintextMechanismRejected = false;
+
 	for (unsigned int i = 0 ; i < saslMechs.size() ; ++i) {
 
 		try {
 			mechList.push_back(saslContext->createMechanism(saslMechs[i]));
+		} catch (exceptions::plaintext_mechanism_not_allowed&) {
+			// Ignore mechanism
+			plaintextMechanismRejected = true;
 		} catch (exceptions::no_such_mechanism&) {
 			// Ignore mechanism
 		}
 	}
 
 	if (mechList.empty()) {
+
+		if (plaintextMechanismRejected) {
+			throw exceptions::plaintext_authentication_not_allowed();
+		}
+
 		throw exceptions::authentication_error("No SASL mechanism available.");
 	}
 

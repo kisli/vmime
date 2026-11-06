@@ -298,7 +298,21 @@ void IMAPConnection::authenticate() {
 		}
 	}
 
-	// Normal authentication
+	// Normal authentication, with the LOGIN command, which sends the password
+	// in clear text: clients MUST NOT use it on unsecure networks, nor if the
+	// server advertises the LOGINDISABLED capability (RFC 9051, section 6.2.3)
+	if (!isPlaintextAuthenticationAllowed()) {
+
+		internalDisconnect();
+		throw exceptions::plaintext_authentication_not_allowed();
+	}
+
+	if (hasCapability("LOGINDISABLED")) {
+
+		internalDisconnect();
+		throw exceptions::authentication_error("LOGIN is disabled by the server (LOGINDISABLED).");
+	}
+
 	const string username = getAuthenticator()->getUsername();
 	const string password = getAuthenticator()->getPassword();
 
@@ -323,6 +337,14 @@ void IMAPConnection::authenticate() {
 	if (!processCapabilityResponseData(resp.get())) {
 		invalidateCapabilities();
 	}
+}
+
+
+bool IMAPConnection::isPlaintextAuthenticationAllowed() {
+
+	// The credentials must not be sent in clear text on a connection which
+	// is not secured, unless the application allows it (RFC 8314, section 5.2)
+	return m_secured || GET_PROPERTY(bool, PROPERTY_AUTH_ALLOW_PLAINTEXT);
 }
 
 
@@ -359,6 +381,8 @@ void IMAPConnection::authenticateSASL() {
 	shared_ptr <security::sasl::SASLContext> saslContext =
 		security::sasl::SASLContext::create();
 
+	saslContext->setPlaintextAllowed(isPlaintextAuthenticationAllowed());
+
 #if VMIME_HAVE_TLS_SUPPORT
 	// Allow using mechanisms with channel binding ("-PLUS" variants)
 	if (m_secured) {
@@ -366,16 +390,26 @@ void IMAPConnection::authenticateSASL() {
 	}
 #endif // VMIME_HAVE_TLS_SUPPORT
 
+	bool plaintextMechanismRejected = false;
+
 	for (unsigned int i = 0 ; i < saslMechs.size() ; ++i) {
 
 		try {
 			mechList.push_back(saslContext->createMechanism(saslMechs[i]));
+		} catch (exceptions::plaintext_mechanism_not_allowed&) {
+			// Ignore mechanism
+			plaintextMechanismRejected = true;
 		} catch (exceptions::no_such_mechanism&) {
 			// Ignore mechanism
 		}
 	}
 
 	if (mechList.empty()) {
+
+		if (plaintextMechanismRejected) {
+			throw exceptions::plaintext_authentication_not_allowed();
+		}
+
 		throw exceptions::authentication_error("No SASL mechanism available.");
 	}
 

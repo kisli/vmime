@@ -131,6 +131,7 @@ private:
 
 	void authenticate();
 	void authenticateSASL();
+	bool isPlaintextAuthenticationAllowed();
 
 #if VMIME_HAVE_TLS_SUPPORT
 	void startTLS();

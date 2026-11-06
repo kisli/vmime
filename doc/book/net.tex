@@ -152,6 +152,10 @@ auth.accesstoken & string & Set the OAuth 2.0 access token, for XOAUTH2
 authentication (see Section \ref{net-xoauth2}). & \vdot & \vdot & \vdot &
 \vdot & \vdot & \vdot & & \\
 \hline
+auth.allow-plaintext & bool & Set to {\vcode true} to allow sending the
+credentials in clear text on a connection which is not secured (see Section
+\ref{net-plaintext-auth}). & \vdot & & \vdot & & \vdot & & & \\
+\hline
 connection.tls & bool & Set to {\vcode true} to start a secured connection
 using STARTTLS extension, if available. & \vdot & & \vdot & & \vdot & & & \\
 \hline
@@ -1041,6 +1045,28 @@ theService->setProperty("connection.tls", true);
 default behaviour is to fallback on a normal connection. To make
 {\vcode connect()} fail if STARTTLS fails, set the
 \emph{connection.tls.required} to \emph{true}.}
+
+\subsubsection{Authentication on a connection which is not secured\label{net-plaintext-auth}} % ..
+
+By default, VMime never sends the credentials in clear text on a connection
+which is not secured: the SASL mechanisms which do this (PLAIN, LOGIN and
+XOAUTH2), the IMAP {\vcode LOGIN} command and the POP3 {\vcode USER} and
+{\vcode PASS} commands are only used when connecting to a ``secured'' port,
+or after STARTTLS succeeded. This also protects the credentials if STARTTLS
+cannot be started, for example if an attacker removed it from the server
+capabilities. If no other authentication method is available,
+{\vcode connect()} throws a
+{\vcode vmime::exceptions::plaintext\_authentication\_not\_allowed}
+exception.
+
+If you really need it (for example, to connect to a local test server), you
+can allow it by setting the \emph{auth.allow-plaintext} property to
+\emph{true}. In this case, you should warn the user that the credentials are
+not protected (RFC 8314, section 5.2):
+
+\begin{lstlisting}
+theService->setProperty("auth.allow-plaintext", true);
+\end{lstlisting}
 
 \subsection{Certificate verification} % --------------------------------------
 

@@ -62,6 +62,7 @@ const IMAPServiceInfos::props& IMAPServiceInfos::getProperties() const {
 		// Common properties
 		property(serviceInfos::property::AUTH_USERNAME, serviceInfos::property::FLAG_REQUIRED),
 		property(serviceInfos::property::AUTH_PASSWORD, serviceInfos::property::FLAG_REQUIRED),
+		property(serviceInfos::property::AUTH_ALLOW_PLAINTEXT),
 
 #if VMIME_HAVE_TLS_SUPPORT
 		property(serviceInfos::property::CONNECTION_TLS),
@@ -81,6 +82,7 @@ const IMAPServiceInfos::props& IMAPServiceInfos::getProperties() const {
 		// Common properties
 		property(serviceInfos::property::AUTH_USERNAME, serviceInfos::property::FLAG_REQUIRED),
 		property(serviceInfos::property::AUTH_PASSWORD, serviceInfos::property::FLAG_REQUIRED),
+		property(serviceInfos::property::AUTH_ALLOW_PLAINTEXT),
 
 #if VMIME_HAVE_TLS_SUPPORT
 		property(serviceInfos::property::CONNECTION_TLS),
@@ -108,6 +110,10 @@ const std::vector <serviceInfos::property> IMAPServiceInfos::getAvailablePropert
 	// Common properties
 	list.push_back(p.PROPERTY_AUTH_USERNAME);
 	list.push_back(p.PROPERTY_AUTH_PASSWORD);
+
+	if (!m_imaps) {
+		list.push_back(p.PROPERTY_AUTH_ALLOW_PLAINTEXT);
+	}
 
 #if VMIME_HAVE_TLS_SUPPORT
 	if (!m_imaps) {

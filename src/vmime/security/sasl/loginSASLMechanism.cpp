@@ -122,6 +122,14 @@ bool loginSASLMechanism::hasInitialResponse() const {
 }
 
 
+bool loginSASLMechanism::isPlaintext() const {
+
+	// LOGIN MUST NOT be used without adequate security protection
+	// (draft-murchison-sasl-login)
+	return true;
+}
+
+
 void loginSASLMechanism::encode(
 	const shared_ptr <SASLSession>& /* sess */,
 	const byte_t* input,
