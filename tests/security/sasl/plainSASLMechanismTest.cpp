@@ -66,6 +66,7 @@ VMIME_TEST_SUITE_BEGIN(plainSASLMechanismTest)
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testName)
 		VMIME_TEST(testHasInitialResponse)
+		VMIME_TEST(testIsPlaintext)
 		VMIME_TEST(testResponse)
 		VMIME_TEST(testResponse_UTF8)
 		VMIME_TEST(testUnexpectedChallenge)
@@ -130,6 +131,15 @@ VMIME_TEST_SUITE_BEGIN(plainSASLMechanismTest)
 		vmime::shared_ptr <vmime::security::sasl::SASLSession> sess = createSession("user", "pass");
 
 		VASSERT_TRUE("1", sess->getMechanism()->hasInitialResponse());
+	}
+
+	// PLAIN SHOULD only be used when adequate data security services are in place
+	// (RFC 4616, section 1)
+	void testIsPlaintext() {
+
+		vmime::shared_ptr <vmime::security::sasl::SASLSession> sess = createSession("user", "pass");
+
+		VASSERT_TRUE("1", sess->getMechanism()->isPlaintext());
 	}
 
 	// RFC 4616, section 2: message = [authzid] UTF8NUL authcid UTF8NUL passwd

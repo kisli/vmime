@@ -320,6 +320,14 @@ void SMTPConnection::authenticate() {
 }
 
 
+bool SMTPConnection::isPlaintextAuthenticationAllowed() {
+
+	// The credentials must not be sent in clear text on a connection which
+	// is not secured, unless the application allows it (RFC 8314, section 5.2)
+	return m_secured || GET_PROPERTY(bool, PROPERTY_AUTH_ALLOW_PLAINTEXT);
+}
+
+
 
 void SMTPConnection::authenticateSASL() {
 
@@ -340,12 +348,16 @@ void SMTPConnection::authenticateSASL() {
 	shared_ptr <security::sasl::SASLContext> saslContext =
 		security::sasl::SASLContext::create();
 
+	saslContext->setPlaintextAllowed(isPlaintextAuthenticationAllowed());
+
 #if VMIME_HAVE_TLS_SUPPORT
 	// Allow using mechanisms with channel binding ("-PLUS" variants)
 	if (m_secured) {
 		saslContext->setChannelBindingData(dynamicCast <tls::TLSSocket>(m_socket));
 	}
 #endif // VMIME_HAVE_TLS_SUPPORT
+
+	bool plaintextMechanismRejected = false;
 
 	for (unsigned int i = 0 ; i < saslMechs.size() ; ++i) {
 
@@ -354,6 +366,11 @@ void SMTPConnection::authenticateSASL() {
 			mechList.push_back
 				(saslContext->createMechanism(saslMechs[i]));
 
+		} catch (exceptions::plaintext_mechanism_not_allowed&) {
+
+			// Ignore mechanism
+			plaintextMechanismRejected = true;
+
 		} catch (exceptions::no_such_mechanism&) {
 
 			// Ignore mechanism
@@ -361,6 +378,11 @@ void SMTPConnection::authenticateSASL() {
 	}
 
 	if (mechList.empty()) {
+
+		if (plaintextMechanismRejected) {
+			throw exceptions::plaintext_authentication_not_allowed();
+		}
+
 		throw exceptions::authentication_error("No SASL mechanism available.");
 	}
 

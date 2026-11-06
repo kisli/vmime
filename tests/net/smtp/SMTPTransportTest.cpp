@@ -466,6 +466,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 		VMIME_TEST(testSASLInitialResponse)
 		VMIME_TEST(testSASLInitialResponse_MaxLength)
 		VMIME_TEST(testSASLInitialResponse_TooLong)
+		VMIME_TEST(testSASL_PlaintextNotAllowed)
 		VMIME_TEST(testSASL_LOGIN)
 		VMIME_TEST(testSASL_PLAINPreferredToLOGIN)
 	VMIME_TEST_LIST_END
@@ -951,12 +952,13 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 		VASSERT_EQ("Message not delivered", 0, failingSMTPTestSocket::getDeliveredCount());
 	}
 
-	static void connectSASL(const vmime::string& password) {
+	static void connectSASL(const vmime::string& password, const bool allowPlaintext = true) {
 
 		SASLSMTPTestSocket::reset();
 
 		vmime::shared_ptr <vmime::net::session> session = vmime::net::session::create();
 		session->getProperties()["transport.smtp.options.need-authentication"] = true;
+		session->getProperties()["transport.smtp.auth.allow-plaintext"] = allowPlaintext;
 
 		vmime::shared_ptr <vmime::net::transport> tr =
 			session->getTransport(vmime::utility::url("smtp://user:" + password + "@localhost"));
@@ -1020,12 +1022,25 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 		VASSERT_EQ("Length", 513, lines[0].length() + 1 + lines[1].length() + 2);  // with initial response
 	}
 
+	// PLAIN must not be used on a connection which is not secured (RFC 4616, section 1)
+	void testSASL_PlaintextNotAllowed() {
+
+		VASSERT_THROW(
+			"Connect",
+			connectSASL("pass", /* allowPlaintext */ false),
+			vmime::exceptions::plaintext_authentication_not_allowed
+		);
+
+		VASSERT_EQ("Count", 0, SASLSMTPTestSocket::getAuthLines().size());
+	}
+
 	static void connectLOGIN(const vmime::string& mechs) {
 
 		LOGINSMTPTestSocket::reset(mechs);
 
 		vmime::shared_ptr <vmime::net::session> session = vmime::net::session::create();
 		session->getProperties()["transport.smtp.options.need-authentication"] = true;
+		session->getProperties()["transport.smtp.auth.allow-plaintext"] = true;
 
 		vmime::shared_ptr <vmime::net::transport> tr =
 			session->getTransport(vmime::utility::url("smtp://user:pass@localhost"));

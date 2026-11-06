@@ -87,9 +87,31 @@ public:
 	  * @param name mechanism name
 	  * @return a new instance of the specified SASL mechanism
 	  * @throw exceptions::no_such_mechanism if no mechanism is
-	  * registered for the specified name
+	  * registered for the specified name, or if it cannot be used in
+	  * this context
+	  * @throw exceptions::plaintext_mechanism_not_allowed if the
+	  * mechanism sends the credentials in clear text, and this is not
+	  * allowed (see setPlaintextAllowed())
 	  */
 	shared_ptr <SASLMechanism> createMechanism(const string& name);
+
+	/** Set whether the mechanisms which send the credentials in clear
+	  * text (see SASLMechanism::isPlaintext()) can be used. This should
+	  * only be allowed if the connection on which authentication takes
+	  * place is secured, typically with TLS. By default, it is not
+	  * allowed.
+	  *
+	  * @param allowed true to allow plaintext mechanisms, or false
+	  * otherwise
+	  */
+	void setPlaintextAllowed(const bool allowed);
+
+	/** Return whether the mechanisms which send the credentials in clear
+	  * text can be used.
+	  *
+	  * @return true if plaintext mechanisms are allowed, false otherwise
+	  */
+	bool isPlaintextAllowed() const;
 
 	/** Suggests an SASL mechanism among a set of mechanisms
 	  * supported by the server.
@@ -182,6 +204,8 @@ private:
 	SASLContext();
 	SASLContext(SASLContext&);
 
+
+	bool m_plaintextAllowed;
 
 	string m_channelBindingType;
 	byteArray m_channelBindingData;

@@ -65,6 +65,12 @@ const serviceInfos::property serviceInfos::property::AUTH_ACCESS_TOKEN(
 	serviceInfos::property::TYPE_STRING
 );
 
+const serviceInfos::property serviceInfos::property::AUTH_ALLOW_PLAINTEXT(
+	"auth.allow-plaintext",
+	serviceInfos::property::TYPE_BOOLEAN,
+	"false"
+);
+
 #if VMIME_HAVE_TLS_SUPPORT
 
 const serviceInfos::property serviceInfos::property::CONNECTION_TLS(

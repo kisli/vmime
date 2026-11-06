@@ -434,6 +434,22 @@ private:
 };
 
 
+/** Authentication would send the credentials in clear text on a connection
+  * which is not secured. A secured connection (TLS) must be used, unless
+  * the "auth.allow-plaintext" property is set to true.
+  */
+class VMIME_EXPORT plaintext_authentication_not_allowed : public authentication_error {
+
+public:
+
+	plaintext_authentication_not_allowed(const exception& other = NO_EXCEPTION);
+	~plaintext_authentication_not_allowed() throw();
+
+	exception* clone() const;
+	const char* name() const throw();
+};
+
+
 /** Option not supported.
   */
 class VMIME_EXPORT unsupported_option : public net_exception {
@@ -828,6 +844,21 @@ public:
 
 	no_such_mechanism(const string& name, const exception& other = NO_EXCEPTION);
 	~no_such_mechanism() throw();
+
+	exception* clone() const;
+	const char* name() const throw();
+};
+
+
+/** The mechanism sends the credentials in clear text, and is not allowed
+  * in this SASL context (see SASLContext::setPlaintextAllowed()).
+  */
+class VMIME_EXPORT plaintext_mechanism_not_allowed : public sasl_exception {
+
+public:
+
+	plaintext_mechanism_not_allowed(const string& name, const exception& other = NO_EXCEPTION);
+	~plaintext_mechanism_not_allowed() throw();
 
 	exception* clone() const;
 	const char* name() const throw();

@@ -99,6 +99,17 @@ public:
 	  */
 	virtual bool hasInitialResponse() const = 0;
 
+	/** Determine if this mechanism sends the credentials in a form that
+	  * anyone able to see the exchange can use (eg. PLAIN, LOGIN or
+	  * XOAUTH2). Such a mechanism must not be used on a connection which
+	  * is not secured, unless explicitly allowed (see
+	  * SASLContext::setPlaintextAllowed()).
+	  *
+	  * @return true if this mechanism sends the credentials in clear
+	  * text, or false otherwise
+	  */
+	virtual bool isPlaintext() const = 0;
+
 	/** Encode data according to negotiated SASL mechanism. This
 	  * might mean that data is integrity or privacy protected.
 	  *

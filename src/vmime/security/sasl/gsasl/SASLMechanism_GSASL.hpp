@@ -93,6 +93,8 @@ public:
 
 	bool hasInitialResponse() const;
 
+	bool isPlaintext() const;
+
 	void encode(
 		const shared_ptr <SASLSession>& sess,
 		const byte_t* input,

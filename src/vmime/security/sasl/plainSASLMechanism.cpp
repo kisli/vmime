@@ -139,6 +139,14 @@ bool plainSASLMechanism::hasInitialResponse() const {
 }
 
 
+bool plainSASLMechanism::isPlaintext() const {
+
+	// PLAIN SHOULD only be used when adequate data security services are in
+	// place (RFC 4616, section 1)
+	return true;
+}
+
+
 void plainSASLMechanism::encode(
 	const shared_ptr <SASLSession>& /* sess */,
 	const byte_t* input,

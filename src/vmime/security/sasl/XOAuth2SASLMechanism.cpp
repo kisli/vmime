@@ -114,6 +114,14 @@ bool XOAuth2SASLMechanism::hasInitialResponse() const {
 }
 
 
+bool XOAuth2SASLMechanism::isPlaintext() const {
+
+	// Clients MUST always use TLS when making requests with bearer
+	// tokens (RFC 6750, section 5.3)
+	return true;
+}
+
+
 void XOAuth2SASLMechanism::encode(
 	const shared_ptr <SASLSession>& /* sess */,
 	const byte_t* input,

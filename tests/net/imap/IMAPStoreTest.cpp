@@ -176,6 +176,8 @@ VMIME_TEST_SUITE_BEGIN(IMAPStoreTest)
 		const vmime::shared_ptr <vmime::net::session>& sess
 	) {
 
+		sess->getProperties()["store.imap.auth.allow-plaintext"] = true;
+
 		vmime::shared_ptr <IMAPStore> store = vmime::dynamicCast <IMAPStore>(
 			sess->getStore(vmime::utility::url("imap://user:pass@localhost"))
 		);
