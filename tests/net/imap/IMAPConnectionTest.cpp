@@ -220,8 +220,6 @@ int failingIMAPTestSocket::sm_connectedCount = 0;
 
 
 
-#if VMIME_HAVE_SASL_SUPPORT
-
 /** IMAP test server which supports SASL authentication with the PLAIN
   * mechanism, and advertises the SASL-IR capability (RFC 4959) if it has
   * been enabled with reset().
@@ -335,8 +333,6 @@ private:
 bool SASLIMAPTestSocket::sm_saslIR = false;
 std::vector <vmime::string> SASLIMAPTestSocket::sm_authLines;
 
-#endif // VMIME_HAVE_SASL_SUPPORT
-
 
 
 VMIME_TEST_SUITE_BEGIN(IMAPConnectionTest)
@@ -354,11 +350,9 @@ VMIME_TEST_SUITE_BEGIN(IMAPConnectionTest)
 		VMIME_TEST(testFetchWriteError)
 		VMIME_TEST(testAppendReadError)
 		VMIME_TEST(testTrace_LOGIN)
-#if VMIME_HAVE_SASL_SUPPORT
 		VMIME_TEST(testSASLInitialResponse)
 		VMIME_TEST(testSASLInitialResponse_NoSASLIR)
 		VMIME_TEST(testTrace_AUTHENTICATE)
-#endif // VMIME_HAVE_SASL_SUPPORT
 	VMIME_TEST_LIST_END
 
 
@@ -680,8 +674,6 @@ VMIME_TEST_SUITE_BEGIN(IMAPConnectionTest)
 		VASSERT_FALSE("Credentials", isCommandTraced(lines, "LOGIN user pass"));
 	}
 
-#if VMIME_HAVE_SASL_SUPPORT
-
 	static void connectSASL(
 		const bool saslIR,
 		const vmime::shared_ptr <vmime::net::tracerFactory>& tracerFactory = vmime::null
@@ -742,7 +734,5 @@ VMIME_TEST_SUITE_BEGIN(IMAPConnectionTest)
 		VASSERT_TRUE("AUTHENTICATE", isCommandTraced(lines, "AUTHENTICATE PLAIN {initial-response}"));
 		VASSERT_FALSE("Credentials", isCommandTraced(lines, "AUTHENTICATE PLAIN AHVzZXIAcGFzcw=="));
 	}
-
-#endif // VMIME_HAVE_SASL_SUPPORT
 
 VMIME_TEST_SUITE_END

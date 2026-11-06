@@ -24,12 +24,8 @@
 #include "vmime/config.hpp"
 
 
-#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_SASL_SUPPORT
+#if VMIME_HAVE_MESSAGING_FEATURES
 
-
-#include <sstream>
-
-#include <gsasl.h>
 
 #include "vmime/security/sasl/SASLSession.hpp"
 
@@ -52,28 +48,13 @@ SASLSession::SASLSession(
 	: m_serviceName(serviceName),
 	  m_context(ctx),
 	  m_auth(auth),
-	  m_mech(mech),
-	  m_gsaslContext(0),
-	  m_gsaslSession(0) {
+	  m_mech(mech) {
 
-	if (gsasl_init(&m_gsaslContext) != GSASL_OK) {
-		throw std::bad_alloc();
-	}
-
-	gsasl_client_start(m_gsaslContext, mech->getName().c_str(), &m_gsaslSession);
-
-	gsasl_callback_set(m_gsaslContext, gsaslCallback);
-	gsasl_callback_hook_set(m_gsaslContext, this);
 }
 
 
 SASLSession::~SASLSession() {
 
-	gsasl_finish(m_gsaslSession);
-	m_gsaslSession = NULL;
-
-	gsasl_done(m_gsaslContext);
-	m_gsaslContext = NULL;
 }
 
 
@@ -144,102 +125,9 @@ const string SASLSession::getServiceName() const {
 }
 
 
-// static
-int SASLSession::gsaslCallback(
-	Gsasl* ctx,
-	Gsasl_session* sctx,
-	Gsasl_property prop
-) {
-
-	SASLSession* sess = reinterpret_cast <SASLSession*>(gsasl_callback_hook_get(ctx));
-
-	if (!sess) {
-		return GSASL_AUTHENTICATION_ERROR;
-	}
-
-	shared_ptr <authenticator> auth = sess->getAuthenticator();
-
-	try {
-
-		string res;
-
-		switch (prop) {
-
-			case GSASL_AUTHID:
-
-				res = auth->getUsername();
-				break;
-
-			case GSASL_PASSWORD:
-
-				res = auth->getPassword();
-				break;
-
-			case GSASL_ANONYMOUS_TOKEN:
-
-				res = auth->getAnonymousToken();
-				break;
-
-			case GSASL_HOSTNAME:
-
-				res = auth->getHostname();
-				break;
-
-			case GSASL_SERVICE:
-
-				res = auth->getServiceName();
-				break;
-
-			case GSASL_CB_TLS_UNIQUE:
-#if defined(GSASL_VERSION_NUMBER) && GSASL_VERSION_NUMBER >= 0x020100
-			case GSASL_CB_TLS_EXPORTER:
-#endif
-			{
-				const string type = (prop == GSASL_CB_TLS_UNIQUE ? "tls-unique" : "tls-exporter");
-				const shared_ptr <SASLContext> ctx = sess->m_context;
-
-				// Only provide channel binding data to the "-PLUS" mechanisms. With
-				// the other SCRAM mechanisms, GNU SASL would tell the server that we
-				// support channel binding ("y" flag), and authentication would fail
-				// with servers which support it (eg. when falling back after a
-				// "-PLUS" mechanism failed)
-				if (!SASLContext::isChannelBindingMechanism(sess->m_mech->getName())
-				    || ctx->m_channelBindingType != type
-				    || ctx->m_channelBindingData.empty()) {
-
-					return GSASL_NO_CALLBACK;
-				}
-
-				res = ctx->encodeB64(&ctx->m_channelBindingData[0], ctx->m_channelBindingData.size());
-				break;
-			}
-
-			case GSASL_AUTHZID:
-			case GSASL_GSSAPI_DISPLAY_NAME:
-			case GSASL_PASSCODE:
-			case GSASL_SUGGESTED_PIN:
-			case GSASL_PIN:
-			case GSASL_REALM:
-
-			default:
-
-				return GSASL_NO_CALLBACK;
-		}
-
-		gsasl_property_set(sctx, prop, res.c_str());
-
-		return GSASL_OK;
-
-	} catch (...) {
-
-		return GSASL_NO_CALLBACK;
-	}
-}
-
-
 } // sasl
 } // security
 } // vmime
 
 
-#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_SASL_SUPPORT
+#endif // VMIME_HAVE_MESSAGING_FEATURES

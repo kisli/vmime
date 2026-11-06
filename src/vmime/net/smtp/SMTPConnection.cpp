@@ -39,13 +39,7 @@
 #include "vmime/net/defaultConnectionInfos.hpp"
 #include "vmime/utility/details/classicIStringStream.hpp"
 
-#if VMIME_HAVE_SASL_SUPPORT
-	#include "vmime/security/sasl/SASLContext.hpp"
-#else
-	#include "vmime/utility/encoder/b64Encoder.hpp"
-	#include "vmime/utility/inputStreamStringAdapter.hpp"
-	#include "vmime/utility/outputStreamStringAdapter.hpp"
-#endif // VMIME_HAVE_SASL_SUPPORT
+#include "vmime/security/sasl/SASLContext.hpp"
 
 #if VMIME_HAVE_TLS_SUPPORT
 	#include "vmime/net/tls/TLSSession.hpp"
@@ -304,7 +298,6 @@ void SMTPConnection::authenticate() {
 
 	getAuthenticator()->setService(m_transport.lock());
 
-#if VMIME_HAVE_SASL_SUPPORT
 	// Try SASL authentication
 	if (GET_PROPERTY(bool, PROPERTY_OPTIONS_SASL)) {
 
@@ -321,55 +314,12 @@ void SMTPConnection::authenticate() {
 			throw;
 		}
 	}
-#else  // no SASL
-
-	// allow AUTH PLAIN over TLS - it is a popular and simple mechanism
-	if (m_secured) {
-
-		std::vector <string> authMechs;
-		hasExtension("AUTH", &authMechs);
-
-		if (authMechs.empty()) {
-			throw exceptions::authentication_error("No AUTH mechanism available.");
-		}
-
-		const string plain("PLAIN");
-
-		if (std::find(authMechs.begin(), authMechs.end(), plain) != authMechs.end()) {
-
-			const string username = getAuthenticator()->getUsername();
-			const string password = getAuthenticator()->getPassword();
-			const string authToken = username + '\0' + username + '\0' + password;
-
-			utility::inputStreamStringAdapter in(authToken);
-			string authTokenBase64;
-			utility::outputStreamStringAdapter out(authTokenBase64);
-
-			vmime::utility::encoder::b64Encoder encoder;
-			encoder.encode(in, out);
-
-			sendRequest(SMTPCommand::AUTH(plain, authTokenBase64));
-
-			shared_ptr <SMTPResponse> response = readResponse();
-
-			const int code = response ? response->getCode() : -1;
-
-			if (code == 235) {
-				m_authenticated = true;
-				return;
-			}
-		}
-	}
-
-#endif // VMIME_HAVE_SASL_SUPPORT
 
 	// No other authentication method is possible
 	throw exceptions::authentication_error("All authentication methods failed");
 }
 
 
-
-#if VMIME_HAVE_SASL_SUPPORT
 
 void SMTPConnection::authenticateSASL() {
 
@@ -575,8 +525,6 @@ void SMTPConnection::authenticateSASL() {
 
 	throw exceptions::authentication_error("Could not authenticate using SASL: all mechanisms failed.");
 }
-
-#endif // VMIME_HAVE_SASL_SUPPORT
 
 
 #if VMIME_HAVE_TLS_SUPPORT

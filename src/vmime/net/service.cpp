@@ -33,11 +33,7 @@
 
 #include "vmime/net/defaultTimeoutHandler.hpp"
 
-#if VMIME_HAVE_SASL_SUPPORT
-	#include "vmime/security/sasl/defaultSASLAuthenticator.hpp"
-#else
-	#include "vmime/security/defaultAuthenticator.hpp"
-#endif // VMIME_HAVE_SASL_SUPPORT
+#include "vmime/security/sasl/defaultSASLAuthenticator.hpp"
 
 #if VMIME_HAVE_TLS_SUPPORT
 	#include "vmime/security/cert/defaultCertificateVerifier.hpp"
@@ -57,12 +53,7 @@ service::service(
 	  m_auth(auth) {
 
 	if (!auth) {
-
-#if VMIME_HAVE_SASL_SUPPORT
 		m_auth = make_shared <security::sasl::defaultSASLAuthenticator>();
-#else
-		m_auth = make_shared <security::defaultAuthenticator>();
-#endif // VMIME_HAVE_SASL_SUPPORT
 	}
 
 #if VMIME_HAVE_TLS_SUPPORT

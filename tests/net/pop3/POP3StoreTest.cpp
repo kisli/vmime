@@ -28,9 +28,7 @@
 #include "vmime/net/pop3/POP3Store.hpp"
 #include "vmime/net/pop3/POP3SStore.hpp"
 
-#if VMIME_HAVE_SASL_SUPPORT
-	#include "vmime/security/sasl/SASLContext.hpp"
-#endif // VMIME_HAVE_SASL_SUPPORT
+#include "vmime/security/sasl/SASLContext.hpp"
 
 
 /** POP3 test server which simulates a network time-out.
@@ -172,8 +170,6 @@ int failingPOP3TestSocket::sm_quitCount = 0;
 
 
 
-#if VMIME_HAVE_SASL_SUPPORT
-
 /** POP3 test server which supports SASL authentication with the PLAIN
   * mechanism.
   *
@@ -270,8 +266,6 @@ private:
 
 std::vector <vmime::string> SASLPOP3TestSocket::sm_authLines;
 
-#endif // VMIME_HAVE_SASL_SUPPORT
-
 
 
 VMIME_TEST_SUITE_BEGIN(POP3StoreTest)
@@ -292,11 +286,9 @@ VMIME_TEST_SUITE_BEGIN(POP3StoreTest)
 		VMIME_TEST(testFolderDestroyedAfterTimeout)
 		VMIME_TEST(testRetrWriteError)
 		VMIME_TEST(testRetrErrorResponse)
-#if VMIME_HAVE_SASL_SUPPORT
 		VMIME_TEST(testSASLInitialResponse)
 		VMIME_TEST(testSASLInitialResponse_MaxLength)
 		VMIME_TEST(testSASLInitialResponse_TooLong)
-#endif // VMIME_HAVE_SASL_SUPPORT
 	VMIME_TEST_LIST_END
 
 
@@ -573,8 +565,6 @@ VMIME_TEST_SUITE_BEGIN(POP3StoreTest)
 		VASSERT_EQ("All connections closed", 0, failingPOP3TestSocket::getConnectedCount());
 	}
 
-#if VMIME_HAVE_SASL_SUPPORT
-
 	static void connectSASL(const vmime::string& password) {
 
 		SASLPOP3TestSocket::reset();
@@ -642,7 +632,5 @@ VMIME_TEST_SUITE_BEGIN(POP3StoreTest)
 		VASSERT_EQ("Response", encodePLAINResponse(password), lines[1]);
 		VASSERT_EQ("Length", 257, lines[0].length() + 1 + lines[1].length() + 2);  // with initial response
 	}
-
-#endif // VMIME_HAVE_SASL_SUPPORT
 
 VMIME_TEST_SUITE_END

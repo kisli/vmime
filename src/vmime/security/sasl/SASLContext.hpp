@@ -28,9 +28,8 @@
 #include "vmime/config.hpp"
 
 
-#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_SASL_SUPPORT
+#if VMIME_HAVE_MESSAGING_FEATURES
 
-#include <gsasl.h>
 
 #include "vmime/types.hpp"
 
@@ -59,9 +58,6 @@ namespace sasl {
 /** An SASL client context.
   */
 class VMIME_EXPORT SASLContext : public object, public enable_shared_from_this <SASLContext> {
-
-	friend class SASLSession;
-	friend class builtinSASLMechanism;
 
 public:
 
@@ -100,7 +96,8 @@ public:
 	  *
 	  * @param mechs list of mechanisms
 	  * @return suggested mechanism (usually the safest mechanism
-	  * supported by both the client and the server)
+	  * supported by both the client and the server), or NULL if
+	  * the list is empty
 	  */
 	shared_ptr <SASLMechanism> suggestMechanism(
 		const std::vector <shared_ptr <SASLMechanism> >& mechs
@@ -140,6 +137,30 @@ public:
 	  */
 	bool hasChannelBindingData() const;
 
+	/** Return the type of the channel binding data set for this
+	  * context.
+	  *
+	  * @return channel binding type ("tls-unique" or "tls-exporter"),
+	  * or an empty string if no channel binding data has been set
+	  */
+	const string& getChannelBindingType() const;
+
+	/** Return the channel binding data set for this context.
+	  *
+	  * @return channel binding data, or an empty array if no
+	  * channel binding data has been set
+	  */
+	const byteArray& getChannelBindingData() const;
+
+	/** Return whether the specified mechanism uses channel binding,
+	  * ie. if it is a "-PLUS" variant.
+	  *
+	  * @param name mechanism name
+	  * @return true if the mechanism uses channel binding,
+	  * false otherwise
+	  */
+	static bool isChannelBindingMechanism(const string& name);
+
 	/** Helper function for decoding Base64-encoded challenge.
 	  *
 	  * @param input input buffer
@@ -162,14 +183,6 @@ private:
 	SASLContext(SASLContext&);
 
 
-	static const string getErrorMessage(const string& fname, const int code);
-
-	/** Return whether the specified mechanism uses channel binding,
-	  * ie. if it is a "-PLUS" variant. */
-	static bool isChannelBindingMechanism(const string& name);
-
-	Gsasl* m_gsaslContext;
-
 	string m_channelBindingType;
 	byteArray m_channelBindingData;
 };
@@ -180,6 +193,6 @@ private:
 } // vmime
 
 
-#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_SASL_SUPPORT
+#endif // VMIME_HAVE_MESSAGING_FEATURES
 
 #endif // VMIME_SECURITY_SASL_SASLCONTEXT_HPP_INCLUDED

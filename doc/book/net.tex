@@ -313,9 +313,9 @@ why VMime offers an alternate way of getting user credentials: the
 can return user credentials on-demand (like a callback).
 
 Currently, there are two types of authenticator in VMime: a basic
-authenticator (class {\vcode vmime::security::authenticator}) and, if SASL
-support is enabled, a SASL authenticator
-(class {\vcode vmime::security::sasl::SASLAuthenticator}). Usually, you
+authenticator (class {\vcode vmime::security::authenticator}) and a SASL
+authenticator (class {\vcode vmime::security::sasl::SASLAuthenticator}).
+Usually, you
 should use the default implementations, or at least make your own
 implementation inherit from them.
 
@@ -377,6 +377,15 @@ use the SASL-specific methods {\vcode getAcceptableMechanisms()} and
 {\vcode setSASLMechanism()}. Have a look at {\vexample Example6} to see an
 implementation of an SASL authenticator.
 
+The PLAIN and LOGIN mechanisms are built into VMime (LOGIN is obsolete, and
+is suggested only when the server does not support a better mechanism, like
+PLAIN). If VMime is built with the GNU SASL
+library, the mechanisms it provides (SCRAM, GSSAPI, etc.) are available too;
+when a mechanism is provided by both, the one built into VMime is used. You
+can also register your own mechanisms with
+{\vcode vmime::security::sasl::SASLMechanismFactory::registerMechanism()}
+(see the XOAUTH2 example below): they take precedence over the other ones.
+
 \begin{lstlisting}[caption={A simple SASL authenticator}]
 class mySASLAuthenticator : public vmime::security::sasl::defaultSASLAuthenticator {
 
@@ -419,8 +428,8 @@ password. This is done using the XOAUTH2 SASL
 mechanism\footnote{See \url{https://developers.google.com/workspace/gmail/imap/xoauth2-protocol}
 and
 \url{https://learn.microsoft.com/en-us/exchange/client-developer/legacy-protocols/how-to-authenticate-an-imap-pop-smtp-application-by-using-oauth}},
-which VMime supports for IMAP, POP3 and SMTP services. SASL support must be
-enabled when building VMime.
+which VMime supports for IMAP, POP3 and SMTP services. It is implemented by
+VMime, and does not require the GNU SASL library.
 
 VMime does not handle the OAuth 2.0 authorization flow itself: your
 application has to obtain an access token from the provider, and then give

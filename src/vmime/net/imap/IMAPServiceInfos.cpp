@@ -55,10 +55,8 @@ const IMAPServiceInfos::props& IMAPServiceInfos::getProperties() const {
 
 	static props imapProps = {
 		// IMAP-specific options
-#if VMIME_HAVE_SASL_SUPPORT
 		property("options.sasl", serviceInfos::property::TYPE_BOOLEAN, "true"),
 		property("options.sasl.fallback", serviceInfos::property::TYPE_BOOLEAN, "true"),
-#endif // VMIME_HAVE_SASL_SUPPORT
 		property("options.id", serviceInfos::property::TYPE_BOOLEAN, "false"),
 
 		// Common properties
@@ -76,10 +74,8 @@ const IMAPServiceInfos::props& IMAPServiceInfos::getProperties() const {
 
 	static props imapsProps = {
 		// IMAP-specific options
-#if VMIME_HAVE_SASL_SUPPORT
 		property("options.sasl", serviceInfos::property::TYPE_BOOLEAN, "true"),
 		property("options.sasl.fallback", serviceInfos::property::TYPE_BOOLEAN, "true"),
-#endif // VMIME_HAVE_SASL_SUPPORT
 		property("options.id", serviceInfos::property::TYPE_BOOLEAN, "false"),
 
 		// Common properties
@@ -105,10 +101,8 @@ const std::vector <serviceInfos::property> IMAPServiceInfos::getAvailablePropert
 	const props& p = getProperties();
 
 	// IMAP-specific options
-#if VMIME_HAVE_SASL_SUPPORT
 	list.push_back(p.PROPERTY_OPTIONS_SASL);
 	list.push_back(p.PROPERTY_OPTIONS_SASL_FALLBACK);
-#endif // VMIME_HAVE_SASL_SUPPORT
 	list.push_back(p.PROPERTY_OPTIONS_ID);
 
 	// Common properties

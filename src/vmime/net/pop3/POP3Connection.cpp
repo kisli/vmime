@@ -38,9 +38,7 @@
 #include "vmime/net/defaultConnectionInfos.hpp"
 #include "vmime/utility/details/classicIStringStream.hpp"
 
-#if VMIME_HAVE_SASL_SUPPORT
-	#include "vmime/security/sasl/SASLContext.hpp"
-#endif // VMIME_HAVE_SASL_SUPPORT
+#include "vmime/security/sasl/SASLContext.hpp"
 
 #if VMIME_HAVE_TLS_SUPPORT
 	#include "vmime/net/tls/TLSSession.hpp"
@@ -251,7 +249,6 @@ void POP3Connection::authenticate(const messageId& randomMID) {
 
 	getAuthenticator()->setService(m_store.lock());
 
-#if VMIME_HAVE_SASL_SUPPORT
 	// First, try SASL authentication
 	if (GET_PROPERTY(bool, PROPERTY_OPTIONS_SASL)) {
 
@@ -281,7 +278,6 @@ void POP3Connection::authenticate(const messageId& randomMID) {
 			throw;
 		}
 	}
-#endif // VMIME_HAVE_SASL_SUPPORT
 
 	// Secured authentication with APOP (if requested and if available)
 	//
@@ -385,8 +381,6 @@ void POP3Connection::authenticate(const messageId& randomMID) {
 	m_authenticated = true;
 }
 
-
-#if VMIME_HAVE_SASL_SUPPORT
 
 void POP3Connection::authenticateSASL() {
 
@@ -622,8 +616,6 @@ void POP3Connection::authenticateSASL() {
 
 	throw exceptions::authentication_error("Could not authenticate using SASL: all mechanisms failed.");
 }
-
-#endif // VMIME_HAVE_SASL_SUPPORT
 
 
 #if VMIME_HAVE_TLS_SUPPORT

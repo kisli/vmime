@@ -57,10 +57,8 @@ const POP3ServiceInfos::props& POP3ServiceInfos::getProperties() const {
 		// POP3-specific options
 		property("options.apop", serviceInfos::property::TYPE_BOOLEAN, "true"),
 		property("options.apop.fallback", serviceInfos::property::TYPE_BOOLEAN, "true"),
-#if VMIME_HAVE_SASL_SUPPORT
 		property("options.sasl", serviceInfos::property::TYPE_BOOLEAN, "true"),
 		property("options.sasl.fallback", serviceInfos::property::TYPE_BOOLEAN, "true"),
-#endif // VMIME_HAVE_SASL_SUPPORT
 
 		// Common properties
 		property(serviceInfos::property::AUTH_USERNAME, serviceInfos::property::FLAG_REQUIRED),
@@ -80,10 +78,8 @@ const POP3ServiceInfos::props& POP3ServiceInfos::getProperties() const {
 		// POP3-specific options
 		property("options.apop", serviceInfos::property::TYPE_BOOLEAN, "true"),
 		property("options.apop.fallback", serviceInfos::property::TYPE_BOOLEAN, "true"),
-#if VMIME_HAVE_SASL_SUPPORT
 		property("options.sasl", serviceInfos::property::TYPE_BOOLEAN, "true"),
 		property("options.sasl.fallback", serviceInfos::property::TYPE_BOOLEAN, "true"),
-#endif // VMIME_HAVE_SASL_SUPPORT
 
 		// Common properties
 		property(serviceInfos::property::AUTH_USERNAME, serviceInfos::property::FLAG_REQUIRED),
@@ -110,10 +106,8 @@ const std::vector <serviceInfos::property> POP3ServiceInfos::getAvailablePropert
 	// POP3-specific options
 	list.push_back(p.PROPERTY_OPTIONS_APOP);
 	list.push_back(p.PROPERTY_OPTIONS_APOP_FALLBACK);
-#if VMIME_HAVE_SASL_SUPPORT
 	list.push_back(p.PROPERTY_OPTIONS_SASL);
 	list.push_back(p.PROPERTY_OPTIONS_SASL_FALLBACK);
-#endif // VMIME_HAVE_SASL_SUPPORT
 
 	// Common properties
 	list.push_back(p.PROPERTY_AUTH_USERNAME);

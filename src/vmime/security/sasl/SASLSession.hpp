@@ -28,9 +28,8 @@
 #include "vmime/config.hpp"
 
 
-#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_SASL_SUPPORT
+#if VMIME_HAVE_MESSAGING_FEATURES
 
-#include <gsasl.h>
 
 #include "vmime/types.hpp"
 
@@ -52,7 +51,6 @@ class SASLContext;
   */
 class VMIME_EXPORT SASLSession : public object, public enable_shared_from_this <SASLSession> {
 
-	friend class builtinSASLMechanism;
 	friend class SASLSocket;
 
 public:
@@ -155,11 +153,6 @@ private:
 	shared_ptr <SASLContext> m_context;
 	shared_ptr <authenticator> m_auth;
 	shared_ptr <SASLMechanism> m_mech;
-
-	Gsasl* m_gsaslContext;
-	Gsasl_session* m_gsaslSession;
-
-	static int gsaslCallback(Gsasl* ctx, Gsasl_session* sctx, Gsasl_property prop);
 };
 
 
@@ -168,6 +161,6 @@ private:
 } // vmime
 
 
-#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_SASL_SUPPORT
+#endif // VMIME_HAVE_MESSAGING_FEATURES
 
 #endif // VMIME_SECURITY_SASL_SASLSESSION_HPP_INCLUDED

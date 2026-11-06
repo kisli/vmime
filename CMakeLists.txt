@@ -621,15 +621,52 @@ OPTION(
 ##############################################################################
 # SASL support
 
+# SASL support is always enabled with messaging features: some mechanisms are
+# built into VMime, and the GNU SASL library can provide additional ones.
+#
+# VMIME_HAVE_SASL_SUPPORT used to enable the GNU SASL library: if it is set,
+# use it as the default value of VMIME_HAVE_GSASL.
+IF(DEFINED VMIME_HAVE_SASL_SUPPORT)
+
+	MESSAGE(
+		DEPRECATION
+		"VMIME_HAVE_SASL_SUPPORT is deprecated: SASL support is always enabled, "
+		"use VMIME_HAVE_GSASL to enable or disable the GNU SASL library"
+	)
+
+	IF(NOT DEFINED VMIME_HAVE_GSASL)
+		SET(
+			VMIME_HAVE_GSASL
+			${VMIME_HAVE_SASL_SUPPORT}
+			CACHE
+			BOOL
+			"Use the GNU SASL library for additional SASL mechanisms (SCRAM, GSSAPI...)"
+		)
+	ENDIF()
+
+	UNSET(VMIME_HAVE_SASL_SUPPORT CACHE)
+
+ENDIF()
+
 OPTION(
-	VMIME_HAVE_SASL_SUPPORT
-	"Enable SASL support (requires GNU SASL library)"
+	VMIME_HAVE_GSASL
+	"Use the GNU SASL library for additional SASL mechanisms (SCRAM, GSSAPI...)"
 	ON
 )
 
-IF(VMIME_HAVE_SASL_SUPPORT)
+SET(VMIME_HAVE_SASL_SUPPORT ${VMIME_HAVE_MESSAGING_FEATURES})
+
+IF(VMIME_HAVE_GSASL)
 
 	INCLUDE(cmake/FindGSasl.cmake)
+
+	IF(NOT GSASL_FOUND)
+		MESSAGE(
+			FATAL_ERROR
+			"GNU SASL library was not found: install it, or set VMIME_HAVE_GSASL to OFF "
+			"to use only the SASL mechanisms built into VMime"
+		)
+	ENDIF()
 
 	INCLUDE_DIRECTORIES(
 		${INCLUDE_DIRECTORIES}

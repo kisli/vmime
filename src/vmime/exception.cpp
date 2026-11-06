@@ -680,7 +680,7 @@ exception* no_auth_information::clone() const { return new no_auth_information(*
 const char* no_auth_information::name() const throw() { return "no_auth_information"; }
 
 
-#if VMIME_HAVE_SASL_SUPPORT
+#if VMIME_HAVE_MESSAGING_FEATURES
 
 
 //
@@ -707,7 +707,7 @@ exception* no_such_mechanism::clone() const { return new no_such_mechanism(*this
 const char* no_such_mechanism::name() const throw() { return "no_such_mechanism"; }
 
 
-#endif // VMIME_HAVE_SASL_SUPPORT
+#endif // VMIME_HAVE_MESSAGING_FEATURES
 
 
 #if VMIME_HAVE_TLS_SUPPORT
