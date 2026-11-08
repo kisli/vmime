@@ -87,7 +87,7 @@ void IMAPMessagePartContentHandler::generate(
 			utility::details::classicOStringStream oss;
 			utility::outputStreamAdapter tmp(oss);
 
-			msg->extractPart(part, tmp, NULL);
+			msg->extractImpl(part, tmp, NULL, 0, -1, IMAPMessage::EXTRACT_BODY);
 
 			// Decode to another temporary buffer
 			utility::inputStreamStringAdapter in(oss.str());
@@ -111,7 +111,7 @@ void IMAPMessagePartContentHandler::generate(
 		// No encoding to perform
 		} else {
 
-			msg->extractPart(part, os);
+			msg->extractImpl(part, os, NULL, 0, -1, IMAPMessage::EXTRACT_BODY);
 		}
 
 	// Need to encode data before
@@ -121,7 +121,7 @@ void IMAPMessagePartContentHandler::generate(
 		utility::details::classicOStringStream oss;
 		utility::outputStreamAdapter tmp(oss);
 
-		msg->extractPart(part, tmp, NULL);
+		msg->extractImpl(part, tmp, NULL, 0, -1, IMAPMessage::EXTRACT_BODY);
 
 		// Encode temporary buffer to output stream
 		shared_ptr <utility::encoder::encoder> theEncoder = enc.getEncoder();
@@ -181,7 +181,7 @@ void IMAPMessagePartContentHandler::extractRaw(
 	if (!msg || !part)
 		throw exceptions::message_not_found();
 
-	msg->extractPart(part, os, progress);
+	msg->extractImpl(part, os, progress, 0, -1, IMAPMessage::EXTRACT_BODY);
 }
 
 
