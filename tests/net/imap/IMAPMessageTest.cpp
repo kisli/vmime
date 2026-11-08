@@ -26,6 +26,7 @@
 #include "vmime/net/imap/IMAPStore.hpp"
 #include "vmime/net/imap/IMAPFolder.hpp"
 
+#include <algorithm>
 #include <map>
 #include <sstream>
 
@@ -117,6 +118,16 @@ public:
 		m_sections[2]["HEADER"] = header2;
 		m_sections[2]["TEXT"] = text2;
 		m_sections[2]["1"] = text2;
+	}
+
+	/** Return the data of a body section, as sent by the server.
+	  *
+	  * @param num message number
+	  * @param section section specifier (eg. "", "HEADER", "1.MIME")
+	  */
+	const vmime::string& getSection(const int num, const vmime::string& section) const {
+
+		return m_sections.at(num).at(section);
 	}
 
 	void onConnected() {
@@ -231,12 +242,26 @@ private:
 
 			} else {
 
-				// BODY[section] or BODY.PEEK[section]
+				// BODY[section] or BODY.PEEK[section], optionally followed
+				// by <origin.length> for a partial fetch
 				const vmime::size_t start = it.find('[');
 				const vmime::size_t end = it.find(']');
 				const vmime::string section = it.substr(start + 1, end - start - 1);
 
-				resp += "BODY[" + section + "] " + literal(m_sections[num][section]);
+				vmime::string data = m_sections[num][section];
+				resp += "BODY[" + section + "]";
+
+				if (end + 1 < it.length() && it[end + 1] == '<') {
+
+					const vmime::size_t dot = it.find('.', end);
+					const vmime::size_t origin = std::stoul(it.substr(end + 2, dot - end - 2));
+					const vmime::size_t length = std::stoul(it.substr(dot + 1));
+
+					data = data.substr(std::min(origin, data.length()), length);
+					resp += "<" + std::to_string(origin) + ">";
+				}
+
+				resp += " " + literal(data);
 			}
 		}
 
@@ -262,6 +287,15 @@ VMIME_TEST_SUITE_BEGIN(IMAPMessageTest)
 		VMIME_TEST(testGetParsedMessage_Multipart)
 		VMIME_TEST(testGetParsedMessage_Base64Part)
 		VMIME_TEST(testGetParsedMessage_SinglePart)
+		VMIME_TEST(testExtract)
+		VMIME_TEST(testExtract_Partial)
+		VMIME_TEST(testExtract_Peek)
+		VMIME_TEST(testExtractPart)
+		VMIME_TEST(testExtractPart_Partial)
+		VMIME_TEST(testExtractPart_Peek)
+		VMIME_TEST(testExtractPart_Root)
+		VMIME_TEST(testPartContents_Extract)
+		VMIME_TEST(testPartContents_ExtractRaw)
 	VMIME_TEST_LIST_END
 
 
@@ -320,6 +354,46 @@ VMIME_TEST_SUITE_BEGIN(IMAPMessageTest)
 		return data;
 	}
 
+	// Connect to the test server and open the default folder. The store is
+	// kept in m_store, as the folder only holds a weak reference to it, and
+	// the commands sent are recorded by m_tracerFactory.
+	vmime::shared_ptr <vmime::net::folder> openFolder() {
+
+		m_tracerFactory = vmime::make_shared <recordingTracerFactory>();
+
+		m_store = createStore();
+		m_store->setTracerFactory(m_tracerFactory);
+		m_store->connect();
+
+		vmime::shared_ptr <vmime::net::folder> folder = m_store->getDefaultFolder();
+		folder->open(vmime::net::folder::MODE_READ_WRITE);
+
+		return folder;
+	}
+
+	// Return whether the specified command has been sent (ignoring the tag)
+	bool isCommandSent(const vmime::string& cmd) const {
+
+		for (const auto& line : m_tracerFactory->getTracer()->getSentLines()) {
+
+			const vmime::size_t sp = line.find(' ');
+
+			if (sp != vmime::string::npos && line.substr(sp + 1) == cmd) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	// Return the first part (text/plain) of message 1
+	static vmime::shared_ptr <const vmime::net::messagePart> getFirstPart(
+		const vmime::shared_ptr <vmime::net::message>& msg
+	) {
+
+		return msg->getStructure()->getPartAt(0)->getStructure()->getPartAt(0);
+	}
+
 
 	void testGetParsedMessage_Multipart() {
 
@@ -358,5 +432,176 @@ VMIME_TEST_SUITE_BEGIN(IMAPMessageTest)
 
 		VASSERT_EQ("Contents", "Hello\r\n", extractContents(msg.getBody()));
 	}
+
+	void testExtract() {
+
+		const messageIMAPTestSocket server;
+
+		vmime::shared_ptr <vmime::net::folder> folder = openFolder();
+		vmime::shared_ptr <vmime::net::message> msg = folder->getMessage(1);
+
+		vmime::string data;
+		vmime::utility::outputStreamStringAdapter os(data);
+
+		msg->extract(os);
+
+		VASSERT_EQ("Data", server.getSection(1, ""), data);
+		VASSERT_TRUE("Command", isCommandSent("FETCH 1 BODY[]"));
+	}
+
+	void testExtract_Partial() {
+
+		const messageIMAPTestSocket server;
+
+		vmime::shared_ptr <vmime::net::folder> folder = openFolder();
+		vmime::shared_ptr <vmime::net::message> msg = folder->getMessage(1);
+
+		vmime::string data1;
+		vmime::utility::outputStreamStringAdapter os1(data1);
+
+		msg->extract(os1, NULL, 10, 20);
+
+		VASSERT_EQ("Data 1", server.getSection(1, "").substr(10, 20), data1);
+		VASSERT_TRUE("Command 1", isCommandSent("FETCH 1 BODY[]<10.20>"));
+
+		// Up to the end
+		vmime::string data2;
+		vmime::utility::outputStreamStringAdapter os2(data2);
+
+		msg->extract(os2, NULL, 10);
+
+		VASSERT_EQ("Data 2", server.getSection(1, "").substr(10), data2);
+		VASSERT_TRUE("Command 2", isCommandSent("FETCH 1 BODY[]<10.4294967295>"));
+	}
+
+	void testExtract_Peek() {
+
+		const messageIMAPTestSocket server;
+
+		vmime::shared_ptr <vmime::net::folder> folder = openFolder();
+		vmime::shared_ptr <vmime::net::message> msg = folder->getMessage(1);
+
+		vmime::string data;
+		vmime::utility::outputStreamStringAdapter os(data);
+
+		msg->extract(os, NULL, 0, -1, /* peek */ true);
+
+		VASSERT_EQ("Data", server.getSection(1, ""), data);
+		VASSERT_TRUE("Command", isCommandSent("FETCH 1 BODY.PEEK[]"));
+	}
+
+	void testExtractPart() {
+
+		const messageIMAPTestSocket server;
+
+		vmime::shared_ptr <vmime::net::folder> folder = openFolder();
+		vmime::shared_ptr <vmime::net::message> msg = folder->getMessage(1);
+
+		folder->fetchMessage(msg, vmime::net::fetchAttributes::STRUCTURE);
+
+		vmime::string data;
+		vmime::utility::outputStreamStringAdapter os(data);
+
+		msg->extractPart(getFirstPart(msg), os);
+
+		// Header + contents of the part
+		VASSERT_EQ("Data", server.getSection(1, "1.MIME") + server.getSection(1, "1"), data);
+		VASSERT_TRUE("Header", isCommandSent("FETCH 1 BODY[1.MIME]"));
+		VASSERT_TRUE("Contents", isCommandSent("FETCH 1 BODY[1]"));
+	}
+
+	// Partial fetch across the header and the contents of the part
+	void testExtractPart_Partial() {
+
+		const messageIMAPTestSocket server;
+
+		vmime::shared_ptr <vmime::net::folder> folder = openFolder();
+		vmime::shared_ptr <vmime::net::message> msg = folder->getMessage(1);
+
+		folder->fetchMessage(msg, vmime::net::fetchAttributes::STRUCTURE);
+
+		const vmime::string part = server.getSection(1, "1.MIME") + server.getSection(1, "1");
+		const vmime::size_t start = server.getSection(1, "1.MIME").length() - 4;
+
+		vmime::string data;
+		vmime::utility::outputStreamStringAdapter os(data);
+
+		msg->extractPart(getFirstPart(msg), os, NULL, start, 6);
+
+		VASSERT_EQ("Data", part.substr(start, 6), data);
+		VASSERT_TRUE("Contents", isCommandSent("FETCH 1 BODY[1]<0.2>"));
+	}
+
+	void testExtractPart_Peek() {
+
+		vmime::shared_ptr <vmime::net::folder> folder = openFolder();
+		vmime::shared_ptr <vmime::net::message> msg = folder->getMessage(1);
+
+		folder->fetchMessage(msg, vmime::net::fetchAttributes::STRUCTURE);
+
+		vmime::string data;
+		vmime::utility::outputStreamStringAdapter os(data);
+
+		msg->extractPart(getFirstPart(msg), os, NULL, 0, -1, /* peek */ true);
+
+		VASSERT_TRUE("Header", isCommandSent("FETCH 1 BODY.PEEK[1.MIME]"));
+		VASSERT_TRUE("Contents", isCommandSent("FETCH 1 BODY.PEEK[1]"));
+	}
+
+	// The root part is the whole message
+	void testExtractPart_Root() {
+
+		const messageIMAPTestSocket server;
+
+		vmime::shared_ptr <vmime::net::folder> folder = openFolder();
+		vmime::shared_ptr <vmime::net::message> msg = folder->getMessage(1);
+
+		folder->fetchMessage(msg, vmime::net::fetchAttributes::STRUCTURE);
+
+		vmime::string data;
+		vmime::utility::outputStreamStringAdapter os(data);
+
+		msg->extractPart(msg->getStructure()->getPartAt(0), os);
+
+		VASSERT_EQ("Data", server.getSection(1, ""), data);
+		VASSERT_TRUE("Command", isCommandSent("FETCH 1 BODY[]"));
+	}
+
+	// Contents of a part of the parsed message: decoded data
+	void testPartContents_Extract() {
+
+		vmime::shared_ptr <vmime::net::folder> folder = openFolder();
+		vmime::shared_ptr <vmime::net::message> netMsg = folder->getMessage(1);
+		vmime::shared_ptr <vmime::message> msg = netMsg->getParsedMessage();
+
+		vmime::string data;
+		vmime::utility::outputStreamStringAdapter os(data);
+
+		msg->getBody()->getPartAt(2)->getBody()->getContents()->extract(os);
+
+		VASSERT_EQ("Data", "Hello World!", data);
+	}
+
+	// Contents of a part of the parsed message: encoded data, without header
+	void testPartContents_ExtractRaw() {
+
+		const messageIMAPTestSocket server;
+
+		vmime::shared_ptr <vmime::net::folder> folder = openFolder();
+		vmime::shared_ptr <vmime::net::message> netMsg = folder->getMessage(1);
+		vmime::shared_ptr <vmime::message> msg = netMsg->getParsedMessage();
+
+		vmime::string data;
+		vmime::utility::outputStreamStringAdapter os(data);
+
+		msg->getBody()->getPartAt(2)->getBody()->getContents()->extractRaw(os);
+
+		VASSERT_EQ("Data", server.getSection(1, "3"), data);
+	}
+
+private:
+
+	vmime::shared_ptr <IMAPStore> m_store;
+	vmime::shared_ptr <recordingTracerFactory> m_tracerFactory;
 
 VMIME_TEST_SUITE_END
