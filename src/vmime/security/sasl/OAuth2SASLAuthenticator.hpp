@@ -42,8 +42,10 @@ namespace sasl {
 /** An authenticator that is capable of providing information for
   * OAuth 2.0 authentication mechanisms (username and access token).
   *
-  * The OAUTHBEARER mechanism (RFC 7628) is tried first, and then the
-  * XOAUTH2 mechanism, which is supported by more servers. Only the
+  * Only one OAuth 2.0 mechanism is tried: OAUTHBEARER (RFC 7628) if the
+  * server supports it, or else XOAUTH2, which is supported by more servers.
+  * Both send the same access token: if the server rejects it with one
+  * mechanism, it would also reject it with the other one. Only the
   * mechanisms which are registered with
   * SASLMechanismFactory::registerMechanism() are used.
   */
@@ -52,8 +54,8 @@ class VMIME_EXPORT OAuth2SASLAuthenticator : public defaultSASLAuthenticator {
 public:
 
 	enum Mode {
-		MODE_SUGGEST,    /**< Try OAUTHBEARER and XOAUTH2 before other mechanisms. */
-		MODE_EXCLUSIVE   /**< Use OAUTHBEARER and XOAUTH2, and nothing else. */
+		MODE_SUGGEST,    /**< Try OAUTHBEARER or XOAUTH2 before other mechanisms. */
+		MODE_EXCLUSIVE   /**< Use OAUTHBEARER or XOAUTH2, and nothing else. */
 	};
 
 

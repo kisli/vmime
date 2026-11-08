@@ -451,8 +451,8 @@ The OAUTHBEARER and XOAUTH2 mechanisms are not registered by default, so you
 have to register them once (for example, when your application starts).
 Then, use an instance of {\vcode vmime::security::sasl::OAuth2SASLAuthenticator}
 as the authenticator for the service, and set the \emph{auth.username} and
-\emph{auth.accesstoken} properties. This authenticator tries OAUTHBEARER
-first, and then XOAUTH2, among the mechanisms supported by the server:
+\emph{auth.accesstoken} properties. This authenticator uses OAUTHBEARER if
+the server supports it, or else XOAUTH2:
 
 \begin{lstlisting}[caption={Connecting to Gmail using OAuth 2.0}]
 #include "vmime/vmime.hpp"
@@ -507,11 +507,13 @@ st->setProperty("auth.accesstoken", "ya29.a0Af...your-access-token...");
 st->connect();
 \end{lstlisting}
 
-With {\vcode MODE\_EXCLUSIVE}, no other authentication mechanism is tried if
-OAUTHBEARER and XOAUTH2 fail. If you want to fall back on other mechanisms
-(eg. basic username/password authentication), use {\vcode MODE\_SUGGEST}
-instead: OAUTHBEARER and XOAUTH2 will be tried first. In this case, do not
-forget to also set the \emph{auth.password} property.
+Only one of the two mechanisms is tried: they send the same access token, so
+if the server rejects it with OAUTHBEARER, it would also reject it with
+XOAUTH2. With {\vcode MODE\_EXCLUSIVE}, no other authentication mechanism is
+tried if it fails. If you want to fall back on other mechanisms (eg. basic
+username/password authentication), use {\vcode MODE\_SUGGEST} instead:
+OAUTHBEARER or XOAUTH2 will be tried first. In this case, do not forget to
+also set the \emph{auth.password} property.
 
 With OAUTHBEARER, the username is optional: if the \emph{auth.username}
 property is not set, the server finds the user from the access token. It is

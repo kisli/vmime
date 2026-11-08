@@ -31,8 +31,6 @@
 
 #include "vmime/security/sasl/SASLMechanism.hpp"
 
-#include <algorithm>
-
 
 namespace vmime {
 namespace security {
@@ -41,12 +39,27 @@ namespace sasl {
 
 namespace {
 
-// OAuth 2.0 mechanisms, in the order they are tried: OAUTHBEARER is the
-// standard one (RFC 7628), and XOAUTH2 is supported by more servers
+// OAuth 2.0 mechanisms, in order of preference: OAUTHBEARER is the standard
+// one (RFC 7628), and XOAUTH2 is supported by more servers
 const char* const OAUTH2_MECHANISMS[] = {
 	"OAUTHBEARER",
 	"XOAUTH2"
 };
+
+const size_t OAUTH2_MECHANISM_COUNT = sizeof(OAUTH2_MECHANISMS) / sizeof(OAUTH2_MECHANISMS[0]);
+
+
+bool isOAuth2Mechanism(const string& name) {
+
+	for (size_t i = 0 ; i < OAUTH2_MECHANISM_COUNT ; ++i) {
+
+		if (name == OAUTH2_MECHANISMS[i]) {
+			return true;
+		}
+	}
+
+	return false;
+}
 
 }
 
@@ -70,9 +83,10 @@ const std::vector <shared_ptr <SASLMechanism> >
 
 	std::vector <shared_ptr <SASLMechanism> > mechs;
 
-	const size_t count = sizeof(OAUTH2_MECHANISMS) / sizeof(OAUTH2_MECHANISMS[0]);
-
-	for (size_t i = 0 ; i < count ; ++i) {
+	// Only try the preferred OAuth 2.0 mechanism among those supported by the
+	// server: they all send the same access token, so if the server rejects it
+	// with one mechanism, it would also reject it with the others
+	for (size_t i = 0 ; mechs.empty() && i < OAUTH2_MECHANISM_COUNT ; ++i) {
 
 		for (size_t j = 0 ; j < available.size() ; ++j) {
 
@@ -86,13 +100,13 @@ const std::vector <shared_ptr <SASLMechanism> >
 
 	if (m_mode == MODE_SUGGEST) {
 
-		// Then, try the other mechanisms in the default order
+		// Then, try the other mechanisms (except OAuth 2.0 ones) in the default order
 		const std::vector <shared_ptr <SASLMechanism> > others =
 			defaultSASLAuthenticator::getAcceptableMechanisms(available, suggested);
 
 		for (size_t i = 0 ; i < others.size() ; ++i) {
 
-			if (std::find(mechs.begin(), mechs.end(), others[i]) == mechs.end()) {
+			if (!isOAuth2Mechanism(others[i]->getName())) {
 				mechs.push_back(others[i]);
 			}
 		}

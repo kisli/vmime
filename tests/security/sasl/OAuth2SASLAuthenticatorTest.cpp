@@ -93,6 +93,7 @@ VMIME_TEST_SUITE_BEGIN(OAuth2SASLAuthenticatorTest)
 		VMIME_TEST(testExclusive_OnlyOAuthBearer)
 		VMIME_TEST(testExclusive_NoOAuth2)
 		VMIME_TEST(testSuggest)
+		VMIME_TEST(testSuggest_XOAuth2Suggested)
 		VMIME_TEST(testSuggest_NoOAuth2)
 	VMIME_TEST_LIST_END
 
@@ -130,14 +131,16 @@ VMIME_TEST_SUITE_BEGIN(OAuth2SASLAuthenticatorTest)
 	}
 
 
-	// OAUTHBEARER is tried first, then XOAUTH2
+	// OAUTHBEARER is preferred, and XOAUTH2 is not tried after it: it would send
+	// the same access token
 	void testExclusive() {
 
 		const vmime::security::sasl::OAuth2SASLAuthenticator::Mode mode =
 			vmime::security::sasl::OAuth2SASLAuthenticator::MODE_EXCLUSIVE;
 
-		VASSERT_EQ("1", "OAUTHBEARER XOAUTH2", getAcceptableMechanisms(mode, { "PLAIN", "XOAUTH2", "OAUTHBEARER", "LOGIN" }));
-		VASSERT_EQ("2", "OAUTHBEARER XOAUTH2", getAcceptableMechanisms(mode, { "OAUTHBEARER", "XOAUTH2" }));
+		VASSERT_EQ("1", "OAUTHBEARER", getAcceptableMechanisms(mode, { "PLAIN", "XOAUTH2", "OAUTHBEARER", "LOGIN" }));
+		VASSERT_EQ("2", "OAUTHBEARER", getAcceptableMechanisms(mode, { "OAUTHBEARER", "XOAUTH2" }));
+		VASSERT_EQ("3", "OAUTHBEARER", getAcceptableMechanisms(mode, { "XOAUTH2", "OAUTHBEARER" }));
 	}
 
 	// Some servers only support XOAUTH2
@@ -166,7 +169,7 @@ VMIME_TEST_SUITE_BEGIN(OAuth2SASLAuthenticatorTest)
 		VASSERT_EQ("2", "", getAcceptableMechanisms(mode, {}));
 	}
 
-	// The other mechanisms are tried after OAUTHBEARER and XOAUTH2, in the default order
+	// The other mechanisms are tried after OAUTHBEARER or XOAUTH2, in the default order
 	void testSuggest() {
 
 		const vmime::security::sasl::OAuth2SASLAuthenticator::Mode mode =
@@ -174,7 +177,7 @@ VMIME_TEST_SUITE_BEGIN(OAuth2SASLAuthenticatorTest)
 
 		VASSERT_EQ(
 			"1",
-			"OAUTHBEARER XOAUTH2 PLAIN LOGIN",
+			"OAUTHBEARER PLAIN LOGIN",
 			getAcceptableMechanisms(mode, { "PLAIN", "XOAUTH2", "LOGIN", "OAUTHBEARER" })
 		);
 
@@ -182,6 +185,20 @@ VMIME_TEST_SUITE_BEGIN(OAuth2SASLAuthenticatorTest)
 			"2",
 			"XOAUTH2 PLAIN LOGIN",
 			getAcceptableMechanisms(mode, { "PLAIN", "LOGIN", "XOAUTH2" })
+		);
+	}
+
+	// XOAUTH2 is not tried with the other mechanisms either, even if it is the
+	// suggested one
+	void testSuggest_XOAuth2Suggested() {
+
+		const vmime::security::sasl::OAuth2SASLAuthenticator::Mode mode =
+			vmime::security::sasl::OAuth2SASLAuthenticator::MODE_SUGGEST;
+
+		VASSERT_EQ(
+			"1",
+			"OAUTHBEARER PLAIN LOGIN",
+			getAcceptableMechanisms(mode, { "XOAUTH2", "PLAIN", "OAUTHBEARER", "LOGIN" })
 		);
 	}
 
