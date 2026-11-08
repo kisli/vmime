@@ -62,6 +62,7 @@ VMIME_TEST_SUITE_BEGIN(SASLMechanismFactoryTest)
 
 		// Implemented by VMime, but must be registered
 		VASSERT_FALSE("XOAUTH2", getFactory()->isBuiltinMechanism("XOAUTH2"));
+		VASSERT_FALSE("OAUTHBEARER", getFactory()->isBuiltinMechanism("OAUTHBEARER"));
 
 		VASSERT_FALSE("X-UNKNOWN", getFactory()->isBuiltinMechanism("X-UNKNOWN"));
 	}

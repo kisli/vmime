@@ -30,6 +30,9 @@
 #include "SMTPTransportTestUtils.hpp"
 
 #include "vmime/security/sasl/SASLContext.hpp"
+#include "vmime/security/sasl/SASLMechanismFactory.hpp"
+#include "vmime/security/sasl/OAuth2SASLAuthenticator.hpp"
+#include "vmime/security/sasl/OAuthBearerSASLMechanism.hpp"
 
 
 /** SMTP test server which simulates a network failure.
@@ -444,6 +447,132 @@ std::vector <vmime::string> LOGINSMTPTestSocket::sm_authLines;
 
 
 
+/** SMTP test server which supports SASL authentication with the OAUTHBEARER
+  * mechanism, and accepts only the specified initial client response.
+  *
+  * The lines sent by the client during authentication are recorded.
+  */
+class OAUTHBEARERSMTPTestSocket : public lineBasedTestSocket {
+
+public:
+
+	OAUTHBEARERSMTPTestSocket()
+		: m_promptSent(false),
+		  m_errorSent(false) {
+
+	}
+
+	static void reset(const vmime::string& acceptedResponse) {
+
+		sm_acceptedResponse = acceptedResponse;
+		sm_authLines.clear();
+	}
+
+	static const std::vector <vmime::string>& getAuthLines() {
+
+		return sm_authLines;
+	}
+
+	void onConnected() {
+
+		localSend("220 test.vmime.org Service ready\r\n");
+	}
+
+	void processCommand() {
+
+		if (!haveMoreLines()) {
+			return;
+		}
+
+		const vmime::string line = getNextLine();
+
+		if (m_promptSent) {
+
+			// Initial client response, sent after the prompt
+			sm_authLines.push_back(line);
+			sendAuthResult(line == sm_acceptedResponse);
+
+			m_promptSent = false;
+
+		} else if (m_errorSent) {
+
+			// Client response to the error challenge
+			sm_authLines.push_back(line);
+			localSend("535 5.7.8 Authentication credentials invalid\r\n");
+
+			m_errorSent = false;
+
+		} else {
+
+			const vmime::string verb =
+				vmime::utility::stringUtils::toUpper(line.substr(0, line.find(' ')));
+
+			if (verb == "EHLO") {
+
+				localSend("250-test.vmime.org\r\n");
+				localSend("250 AUTH PLAIN OAUTHBEARER\r\n");
+
+			} else if (verb == "AUTH") {
+
+				sm_authLines.push_back(line);
+
+				if (line == "AUTH OAUTHBEARER") {
+
+					// No initial response: like Yahoo, send a prompt ("OAuthBearer:")
+					// instead of an empty challenge
+					localSend("334 T0F1dGhCZWFyZXI6\r\n");
+
+					m_promptSent = true;
+
+				} else {
+
+					sendAuthResult(line == "AUTH OAUTHBEARER " + sm_acceptedResponse);
+				}
+
+			} else if (verb == "QUIT") {
+
+				localSend("221 test.vmime.org Service closing transmission channel\r\n");
+
+			} else {
+
+				localSend("502 Command not implemented\r\n");
+			}
+		}
+
+		processCommand();
+	}
+
+private:
+
+	void sendAuthResult(const bool accepted) {
+
+		if (accepted) {
+
+			localSend("235 2.7.0 Authentication successful\r\n");
+
+		} else {
+
+			// Error message (RFC 7628, section 3.2.2):
+			//    {"status":"invalid_token","scope":"https://mail.vmime.org/"}
+			localSend("334 eyJzdGF0dXMiOiJpbnZhbGlkX3Rva2VuIiwic2NvcGUiOiJodHRwczovL21haWwudm1pbWUub3JnLyJ9\r\n");
+
+			m_errorSent = true;
+		}
+	}
+
+	bool m_promptSent;
+	bool m_errorSent;
+
+	static vmime::string sm_acceptedResponse;
+	static std::vector <vmime::string> sm_authLines;
+};
+
+
+vmime::string OAUTHBEARERSMTPTestSocket::sm_acceptedResponse;
+std::vector <vmime::string> OAUTHBEARERSMTPTestSocket::sm_authLines;
+
+
+
 VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 
 	VMIME_TEST_LIST_BEGIN
@@ -469,6 +598,9 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 		VMIME_TEST(testSASL_PlaintextNotAllowed)
 		VMIME_TEST(testSASL_LOGIN)
 		VMIME_TEST(testSASL_PLAINPreferredToLOGIN)
+		VMIME_TEST(testSASL_OAUTHBEARER)
+		VMIME_TEST(testSASL_OAUTHBEARER_Error)
+		VMIME_TEST(testSASL_OAUTHBEARER_Prompt)
 	VMIME_TEST_LIST_END
 
 
@@ -1074,6 +1206,95 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 
 		VASSERT_EQ("Count", 1, lines.size());
 		VASSERT_EQ("AUTH", "AUTH PLAIN AHVzZXIAcGFzcw==", lines[0]);
+	}
+
+	// Return the Base64-encoded initial client response of the OAUTHBEARER mechanism
+	static const vmime::string encodeOAUTHBEARERResponse(const vmime::string& accessToken) {
+
+		const vmime::string resp = "n,a=user@vmime.org,\x01" "auth=Bearer " + accessToken + "\x01\x01";
+
+		return vmime::security::sasl::SASLContext::create()->encodeB64(
+			reinterpret_cast <const vmime::byte_t*>(resp.data()), resp.length()
+		);
+	}
+
+	static void connectOAUTHBEARER(
+		const vmime::string& accessToken,
+		const vmime::string& validAccessToken = "vF9dft4qmTc2Nvb3RlckBhbHRhdmlzdGEuY29tCg=="
+	) {
+
+		// The OAUTHBEARER mechanism is not registered by default
+		vmime::security::sasl::SASLMechanismFactory::getInstance()->
+			registerMechanism <vmime::security::sasl::OAuthBearerSASLMechanism>("OAUTHBEARER");
+
+		OAUTHBEARERSMTPTestSocket::reset(encodeOAUTHBEARERResponse(validAccessToken));
+
+		vmime::shared_ptr <vmime::net::session> session = vmime::net::session::create();
+		session->getProperties()["transport.smtp.options.need-authentication"] = true;
+		session->getProperties()["transport.smtp.auth.allow-plaintext"] = true;
+		session->getProperties()["transport.smtp.auth.username"] = "user@vmime.org";
+		session->getProperties()["transport.smtp.auth.accesstoken"] = accessToken;
+
+		vmime::shared_ptr <vmime::net::transport> tr = session->getTransport(
+			vmime::utility::url("smtp://localhost"),
+			vmime::make_shared <vmime::security::sasl::OAuth2SASLAuthenticator>(
+				vmime::security::sasl::OAuth2SASLAuthenticator::MODE_EXCLUSIVE
+			)
+		);
+
+		tr->setSocketFactory(vmime::make_shared <testSocketFactory <OAUTHBEARERSMTPTestSocket> >());
+		tr->setTimeoutHandlerFactory(vmime::make_shared <testTimeoutHandlerFactory>());
+
+		tr->connect();
+		tr->disconnect();
+	}
+
+	// RFC 7628, section 3.1: initial client response
+	void testSASL_OAUTHBEARER() {
+
+		connectOAUTHBEARER("vF9dft4qmTc2Nvb3RlckBhbHRhdmlzdGEuY29tCg==");
+
+		const std::vector <vmime::string>& lines = OAUTHBEARERSMTPTestSocket::getAuthLines();
+
+		VASSERT_EQ("Count", 1, lines.size());
+		VASSERT_EQ(
+			"AUTH",
+			"AUTH OAUTHBEARER bixhPXVzZXJAdm1pbWUub3JnLAFhdXRoPUJlYXJlciB2RjlkZnQ0cW1UYzJOdmIzUmxja0JoYkhSaGRtbHpkR0V1WTI5dENnPT0BAQ==",
+			lines[0]
+		);
+	}
+
+	// RFC 7628, section 3.2.3: on error, the client sends a response consisting
+	// of a single %x01 character, and the server finishes the exchange
+	void testSASL_OAUTHBEARER_Error() {
+
+		VASSERT_THROW(
+			"Connect",
+			connectOAUTHBEARER("expired"),
+			vmime::exceptions::authentication_error
+		);
+
+		const std::vector <vmime::string>& lines = OAUTHBEARERSMTPTestSocket::getAuthLines();
+
+		VASSERT_EQ("Count", 2, lines.size());
+		VASSERT_EQ("AUTH", "AUTH OAUTHBEARER " + encodeOAUTHBEARERResponse("expired"), lines[0]);
+		VASSERT_EQ("Response", "AQ==", lines[1]);
+	}
+
+	// Yahoo access tokens are about 1200 characters long, so the initial response
+	// is always sent after the first challenge (RFC 4954, section 4). Yahoo sends
+	// a prompt ("OAuthBearer:") as this first challenge, instead of an empty one.
+	void testSASL_OAUTHBEARER_Prompt() {
+
+		const vmime::string accessToken(1200, 'Y');
+
+		connectOAUTHBEARER(accessToken, accessToken);
+
+		const std::vector <vmime::string>& lines = OAUTHBEARERSMTPTestSocket::getAuthLines();
+
+		VASSERT_EQ("Count", 2, lines.size());
+		VASSERT_EQ("AUTH", "AUTH OAUTHBEARER", lines[0]);
+		VASSERT_EQ("Response", encodeOAUTHBEARERResponse(accessToken), lines[1]);
 	}
 
 VMIME_TEST_SUITE_END

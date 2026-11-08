@@ -30,6 +30,7 @@
 #include "vmime/security/sasl/SASLContext.hpp"
 #include "vmime/security/sasl/SASLMechanismFactory.hpp"
 #include "vmime/security/sasl/XOAuth2SASLMechanism.hpp"
+#include "vmime/security/sasl/OAuthBearerSASLMechanism.hpp"
 #include "vmime/security/sasl/defaultSASLAuthenticator.hpp"
 
 
@@ -395,6 +396,10 @@ VMIME_TEST_SUITE_BEGIN(SASLContextTest)
 		VASSERT_TRUE(
 			"XOAUTH2",
 			vmime::security::sasl::XOAuth2SASLMechanism(ctx, "XOAUTH2").isPlaintext()
+		);
+		VASSERT_TRUE(
+			"OAUTHBEARER",
+			vmime::security::sasl::OAuthBearerSASLMechanism(ctx, "OAUTHBEARER").isPlaintext()
 		);
 
 		if (isMechanismAvailable("SCRAM-SHA-256")) {

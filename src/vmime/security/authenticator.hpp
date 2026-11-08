@@ -82,7 +82,7 @@ public:
 	virtual const string getPassword() const = 0;
 
 	/** Return the optional access token for authentication. This is
-	  * used for example with XOAuth2 SASL authentication.
+	  * used for example with OAUTHBEARER or XOAUTH2 SASL authentication.
 	  *
 	  * @return access token
 	  * @throw exceptions::no_auth_information if the information
