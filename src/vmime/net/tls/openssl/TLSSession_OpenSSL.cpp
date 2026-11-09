@@ -65,7 +65,23 @@ TLSSession_OpenSSL::TLSSession_OpenSSL(
 	  m_certVerifier(cv),
 	  m_props(props) {
 
+	ERR_clear_error();
+
 	m_sslctx = SSL_CTX_new(SSLv23_client_method());
+
+	if (!m_sslctx) {
+
+		unsigned long errCode = ERR_get_error();
+
+		char buffer[256];
+		ERR_error_string_n(errCode, buffer, sizeof(buffer));
+
+		utility::details::classicOStringStream oss;
+		oss << "Cannot create SSL context - msg: " << buffer;
+
+		throw exceptions::tls_exception(oss.str());
+	}
+
 	SSL_CTX_set_options(m_sslctx, SSL_OP_ALL | SSL_OP_NO_SSLv2);
 	SSL_CTX_set_mode(m_sslctx, SSL_MODE_AUTO_RETRY);
 
