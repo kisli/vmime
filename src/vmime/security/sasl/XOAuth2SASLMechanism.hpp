@@ -86,11 +86,17 @@ public:
 
 private:
 
+	enum State {
+		STATE_INITIAL,        /**< Initial client response not sent yet. */
+		STATE_RESPONSE_SENT,  /**< Initial client response sent. */
+		STATE_ERROR_RECEIVED  /**< Error received from the server, and acknowledged. */
+	};
+
 	/** SASL context */
 	shared_ptr <SASLContext> m_context;
 
 	/** Authentication process status. */
-	bool m_complete;
+	State m_state;
 };
 
 

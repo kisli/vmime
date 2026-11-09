@@ -148,8 +148,8 @@ the account to connect to. & \vdot & \vdot & \vdot & \vdot & \vdot & \vdot &
 auth.password\footnotemark[\value{footnote}] & string & Set the password of the
 account. & \vdot & \vdot & \vdot & \vdot & \vdot & \vdot & & \\
 \hline
-auth.accesstoken & string & Set the OAuth 2.0 access token, for XOAUTH2
-authentication (see Section \ref{net-xoauth2}). & \vdot & \vdot & \vdot &
+auth.accesstoken & string & Set the OAuth 2.0 access token, for OAUTHBEARER
+and XOAUTH2 authentication (see Section \ref{net-oauth2}). & \vdot & \vdot & \vdot &
 \vdot & \vdot & \vdot & & \\
 \hline
 auth.allow-plaintext & bool & Set to {\vcode true} to allow sending the
@@ -388,7 +388,7 @@ library, the mechanisms it provides (SCRAM, GSSAPI, etc.) are available too;
 when a mechanism is provided by both, the one built into VMime is used. You
 can also register your own mechanisms with
 {\vcode vmime::security::sasl::SASLMechanismFactory::registerMechanism()}
-(see the XOAUTH2 example below): they take precedence over the other ones.
+(see the OAuth 2.0 example below): they take precedence over the other ones.
 
 \begin{lstlisting}[caption={A simple SASL authenticator}]
 class mySASLAuthenticator : public vmime::security::sasl::defaultSASLAuthenticator {
@@ -424,48 +424,63 @@ class mySASLAuthenticator : public vmime::security::sasl::defaultSASLAuthenticat
 };
 \end{lstlisting}
 
-\subsection{OAuth 2.0 authentication (XOAUTH2)\label{net-xoauth2}} % ----------
+\subsection{OAuth 2.0 authentication (OAUTHBEARER and XOAUTH2)\label{net-oauth2}} % ----------
 
 Some providers, like Google Gmail or Microsoft 365, require (or strongly
 recommend) authenticating with an OAuth 2.0 access token instead of a
-password. This is done using the XOAUTH2 SASL
-mechanism\footnote{See \url{https://developers.google.com/workspace/gmail/imap/xoauth2-protocol}
+password. VMime supports the two SASL mechanisms which are used for this,
+for IMAP, POP3 and SMTP services:
+
+\begin{itemize}
+\item OAUTHBEARER, the standard mechanism (RFC 7628) ;
+\item XOAUTH2, the mechanism created by Google before OAUTHBEARER was
+standardized\footnote{See \url{https://developers.google.com/workspace/gmail/imap/xoauth2-protocol}
 and
-\url{https://learn.microsoft.com/en-us/exchange/client-developer/legacy-protocols/how-to-authenticate-an-imap-pop-smtp-application-by-using-oauth}},
-which VMime supports for IMAP, POP3 and SMTP services. It is implemented by
-VMime, and does not require the GNU SASL library.
+\url{https://learn.microsoft.com/en-us/exchange/client-developer/legacy-protocols/how-to-authenticate-an-imap-pop-smtp-application-by-using-oauth}}.
+It is still widely used, and some servers only support this one (for
+example, Microsoft 365).
+\end{itemize}
+
+Both are implemented by VMime, and do not require the GNU SASL library.
 
 VMime does not handle the OAuth 2.0 authorization flow itself: your
 application has to obtain an access token from the provider, and then give
 it to VMime along with the user's email address.
 
-The XOAUTH2 mechanism is not registered by default, so you have to register
-it once (for example, when your application starts). Then, use an instance
-of {\vcode vmime::security::sasl::XOAuth2SASLAuthenticator} as the
-authenticator for the service, and set the \emph{auth.username} and
-\emph{auth.accesstoken} properties:
+The OAUTHBEARER and XOAUTH2 mechanisms are not registered by default, so you
+have to register them once (for example, when your application starts).
+Then, use an instance of {\vcode vmime::security::sasl::OAuth2SASLAuthenticator}
+as the authenticator for the service, and set the \emph{auth.username} and
+\emph{auth.accesstoken} properties. This authenticator uses OAUTHBEARER if
+the server supports it, or else XOAUTH2:
 
-\begin{lstlisting}[caption={Connecting to Gmail using XOAUTH2}]
+\begin{lstlisting}[caption={Connecting to Gmail using OAuth 2.0}]
 #include "vmime/vmime.hpp"
-#include "vmime/security/sasl/XOAuth2SASLAuthenticator.hpp"
+#include "vmime/security/sasl/OAuth2SASLAuthenticator.hpp"
+#include "vmime/security/sasl/OAuthBearerSASLMechanism.hpp"
 #include "vmime/security/sasl/XOAuth2SASLMechanism.hpp"
 
-// Register the XOAUTH2 SASL mechanism (only once)
-vmime::security::sasl::SASLMechanismFactory::getInstance()->
-   registerMechanism <vmime::security::sasl::XOAuth2SASLMechanism>("XOAUTH2");
+// Register the OAUTHBEARER and XOAUTH2 SASL mechanisms (only once)
+vmime::security::sasl::SASLMechanismFactory* mechFactory =
+   vmime::security::sasl::SASLMechanismFactory::getInstance();
+
+mechFactory->registerMechanism
+   <vmime::security::sasl::OAuthBearerSASLMechanism>("OAUTHBEARER");
+mechFactory->registerMechanism
+   <vmime::security::sasl::XOAuth2SASLMechanism>("XOAUTH2");
 
 // Create a new session
 vmime::shared_ptr <vmime::net::session> sess = vmime::net::session::create();
 
-// Use an authenticator which forces using the XOAUTH2 mechanism
-vmime::shared_ptr <vmime::security::authenticator> xoauth2Auth =
-   vmime::make_shared <vmime::security::sasl::XOAuth2SASLAuthenticator>(
-      vmime::security::sasl::XOAuth2SASLAuthenticator::MODE_EXCLUSIVE
+// Use an authenticator which forces using an OAuth 2.0 mechanism
+vmime::shared_ptr <vmime::security::authenticator> oauth2Auth =
+   vmime::make_shared <vmime::security::sasl::OAuth2SASLAuthenticator>(
+      vmime::security::sasl::OAuth2SASLAuthenticator::MODE_EXCLUSIVE
    );
 
 // Create a new SMTPS service to Gmail
 vmime::shared_ptr <vmime::net::transport> tr = sess->getTransport(
-   vmime::utility::url("smtps://smtp.gmail.com:465"), xoauth2Auth
+   vmime::utility::url("smtps://smtp.gmail.com:465"), oauth2Auth
 );
 
 tr->setProperty("options.need-authentication", true);
@@ -481,8 +496,8 @@ used with only one service at a time, create a new one for each service:
 \begin{lstlisting}
 vmime::shared_ptr <vmime::net::store> st = sess->getStore(
    vmime::utility::url("imaps://imap.gmail.com:993"),
-   vmime::make_shared <vmime::security::sasl::XOAuth2SASLAuthenticator>(
-      vmime::security::sasl::XOAuth2SASLAuthenticator::MODE_EXCLUSIVE
+   vmime::make_shared <vmime::security::sasl::OAuth2SASLAuthenticator>(
+      vmime::security::sasl::OAuth2SASLAuthenticator::MODE_EXCLUSIVE
    )
 );
 
@@ -492,11 +507,23 @@ st->setProperty("auth.accesstoken", "ya29.a0Af...your-access-token...");
 st->connect();
 \end{lstlisting}
 
-With {\vcode MODE\_EXCLUSIVE}, no other authentication mechanism is tried if
-XOAUTH2 fails. If you want to fall back on other mechanisms (eg. basic
-username/password authentication), use {\vcode MODE\_SUGGEST} instead: XOAUTH2
-will be tried first. In this case, do not forget to also set the
-\emph{auth.password} property.
+Only one of the two mechanisms is tried: they send the same access token, so
+if the server rejects it with OAUTHBEARER, it would also reject it with
+XOAUTH2. With {\vcode MODE\_EXCLUSIVE}, no other authentication mechanism is
+tried if it fails. If you want to fall back on other mechanisms (eg. basic
+username/password authentication), use {\vcode MODE\_SUGGEST} instead:
+OAUTHBEARER or XOAUTH2 will be tried first. In this case, do not forget to
+also set the \emph{auth.password} property.
+
+With OAUTHBEARER, the username is optional: if the \emph{auth.username}
+property is not set, the server finds the user from the access token. It is
+required with XOAUTH2, though, so you should always set it.
+
+\vnote{Previous versions of VMime only supported XOAUTH2, with the
+{\vcode vmime::security::sasl::XOAuth2SASLAuthenticator} class. It is still
+available and works the same way, but it only uses the XOAUTH2 mechanism:
+switch to {\vcode OAuth2SASLAuthenticator} to use OAUTHBEARER when the server
+supports it.}
 
 Access tokens usually expire after a short time (typically, one hour). The
 token is read each time the service authenticates, and this happens more
@@ -507,13 +534,13 @@ often than you may think: for example, the IMAP service opens a new connection
 refreshing it if needed:
 
 \begin{lstlisting}[caption={Providing a fresh access token on-demand}]
-class myXOAuth2Authenticator :
-   public vmime::security::sasl::XOAuth2SASLAuthenticator {
+class myOAuth2Authenticator :
+   public vmime::security::sasl::OAuth2SASLAuthenticator {
 
 public:
 
-   myXOAuth2Authenticator()
-      : XOAuth2SASLAuthenticator(MODE_EXCLUSIVE) {
+   myOAuth2Authenticator()
+      : OAuth2SASLAuthenticator(MODE_EXCLUSIVE) {
 
    }
 
@@ -1049,8 +1076,9 @@ default behaviour is to fallback on a normal connection. To make
 \subsubsection{Authentication on a connection which is not secured\label{net-plaintext-auth}} % ..
 
 By default, VMime never sends the credentials in clear text on a connection
-which is not secured: the SASL mechanisms which do this (PLAIN, LOGIN and
-XOAUTH2), the IMAP {\vcode LOGIN} command and the POP3 {\vcode USER} and
+which is not secured: the SASL mechanisms which do this (PLAIN, LOGIN,
+OAUTHBEARER and XOAUTH2), the IMAP {\vcode LOGIN} command and the POP3
+{\vcode USER} and
 {\vcode PASS} commands are only used when connecting to a ``secured'' port,
 or after STARTTLS succeeded. This also protects the credentials if STARTTLS
 cannot be started, for example if an attacker removed it from the server
