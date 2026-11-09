@@ -1262,10 +1262,10 @@ vmime::shared_ptr <vmime::net::tls::TLSProperties> tlsProps =
 	vmime::make_shared <vmime::net::tls::TLSProperties>();
 
 // for OpenSSL
-tlsProps->setCipherString("HIGH:!ADH:@STRENGTH");
+tlsProps->setCipherSuite("HIGH:!ADH:@STRENGTH");
 
 // for GNU TLS
-tlsProps->setCipherString("NORMAL:%SSL3_RECORD_VERSION");
+tlsProps->setCipherSuite("NORMAL:%SSL3_RECORD_VERSION");
 
 sess->setTLSProperties(tlsProps);
 \end{lstlisting}
@@ -1292,7 +1292,7 @@ You may also set cipher suite preferences using predefined constants that
 map to generic security modes:
 
 \begin{lstlisting}[caption={Setting TLS cipher suite preferences using predefined modes}]
-sess->setCipherSuite(vmime::net::tls::TLSProperties::CIPHERSUITE_HIGH);
+tlsProps->setCipherSuite(vmime::net::tls::TLSProperties::CIPHERSUITE_HIGH);
 \end{lstlisting}
 
 The following constants are available:
