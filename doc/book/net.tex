@@ -1281,6 +1281,13 @@ underlying TLS library (either OpenSSL or GNU TLS):
 \url{http://www.openssl.org/docs/apps/ciphers.html#CIPHER\_STRINGS}
 \end{itemize}
 
+If the cipher suite string is rejected by the TLS library, a
+{\vcode vmime::exceptions::tls\_exception} is thrown when the secured
+connection is set up (ie. when calling {\vcode connect()} on the service).
+
+\vnote{OpenSSL only rejects a cipher suite string when no cipher matches it:
+unknown keywords in the string are silently ignored.}
+
 You may also set cipher suite preferences using predefined constants that
 map to generic security modes:
 

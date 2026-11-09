@@ -24,7 +24,7 @@
 #include "tests/testUtils.hpp"
 
 
-#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT && VMIME_TLS_SUPPORT_LIB_IS_GNUTLS
+#if VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT
 
 
 #include "vmime/net/tls/TLSSession.hpp"
@@ -43,8 +43,9 @@ VMIME_TEST_SUITE_BEGIN(TLSSessionTest)
 	VMIME_TEST_LIST_END
 
 
-	// The GnuTLS session allocated by the constructor must be released
-	// when the cipher suite is rejected (leak is reported by LeakSanitizer)
+	// An invalid cipher suite must be rejected, and the GnuTLS session or
+	// OpenSSL context allocated by the constructor must be released (leak
+	// is reported by LeakSanitizer)
 	void testInvalidCipherSuite() {
 
 		vmime::shared_ptr <TLSProperties> props = vmime::make_shared <TLSProperties>();
@@ -63,4 +64,4 @@ VMIME_TEST_SUITE_BEGIN(TLSSessionTest)
 VMIME_TEST_SUITE_END
 
 
-#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT && VMIME_TLS_SUPPORT_LIB_IS_GNUTLS
+#endif // VMIME_HAVE_MESSAGING_FEATURES && VMIME_HAVE_TLS_SUPPORT
