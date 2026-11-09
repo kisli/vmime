@@ -90,7 +90,7 @@ the development files on your system:
 \end{verbatim}
 
 \vnote{you must do that with superuser rights (root) if you chose to install
-the library into the default location (ie: /usr/lib and /usr/include).}
+the library into the default location (ie: /usr/local on Unix-like systems).}
 
 Now, you are done! You can jump to the next chapter to know how to use VMime
 in your program...
@@ -129,12 +129,17 @@ Ninja\footnote{\url{https://ninja-build.org/}}, if you have it on your system:
 \end{verbatim}
 
 To install VMime in a directory different from the default directory
-({\vcode /usr} on GNU/Linux systems), set the
+({\vcode /usr/local} on Unix-like systems), set the
 {\vcode CMAKE\_INSTALL\_PREFIX} option:
 
 \begin{verbatim}
    $ cmake -DCMAKE_INSTALL_PREFIX=/opt/ ...
 \end{verbatim}
+
+Libraries are installed into the subdirectory used by your system for
+libraries (for example {\vcode lib}, or {\vcode lib64} on some 64-bit
+GNU/Linux distributions). To use another one, set the
+{\vcode CMAKE\_INSTALL\_LIBDIR} option.
 
 
 % ============================================================================
