@@ -124,24 +124,31 @@ shared_ptr <word> word::parseNext(
 	while (pos < end) {
 
 		// End of line: does not occur in the middle of an encoded word. This is
-		// used to remove folding white-spaces from unencoded text.
+		// used to unfold unencoded text: only the CRLF is removed, the white-space
+		// which follows it is part of the text (RFC 5322 §2.2.3).
 		if (buffer[pos] == '\n') {
 
 			size_t endPos = pos;
 
-			if (pos > position && buffer[pos - 1] == '\r') {
-				++pos;
+			if (pos > startPos && buffer[pos - 1] == '\r') {
 				--endPos;
-			}
-
-			while (pos != end && parserHelpers::isSpace(buffer[pos])) {
-				++pos;
 			}
 
 			unencoded += buffer.substr(startPos, endPos - startPos);
 
-			if (pos != end) {  // ignore white-spaces at end
-				unencoded += ' ';
+			++pos;  // skip LF
+
+			// Not a fold: replace the line break and the white-spaces
+			// after it with a single space, or ignore them at end
+			if (pos == end || !parserHelpers::isSpaceOrTab(buffer[pos])) {
+
+				while (pos != end && parserHelpers::isSpace(buffer[pos])) {
+					++pos;
+				}
+
+				if (pos != end) {
+					unencoded += ' ';
+				}
 			}
 
 			startPos = pos;

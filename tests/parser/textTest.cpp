@@ -51,6 +51,7 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		VMIME_TEST(testWhitespaceMBox)
 		VMIME_TEST(testWhitespaceAfterPlainWord)
 		VMIME_TEST(testWhitespaceAroundFold)
+		VMIME_TEST(testUnfolding)
 
 		VMIME_TEST(testFoldingAscii)
 		VMIME_TEST(testFoldPoints)
@@ -331,7 +332,7 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		// Some more tests...
 		VASSERT_EQ("8", "a b", DISPLAY_FORM(" a =?ISO-8859-1?Q?b?=  "));
 		VASSERT_EQ("9", "a b  ", DISPLAY_FORM(" \t  =?ISO-8859-1?Q?a?= b  "));
-		VASSERT_EQ("10", "a b", DISPLAY_FORM("  a\r\n\t  b"));
+		VASSERT_EQ("10", "a\t  b", DISPLAY_FORM("  a\r\n\t  b"));
 
 		VASSERT_EQ("11", "a b c", DISPLAY_FORM("a =?ISO-8859-1?Q?b?= c"));
 		VASSERT_EQ("12", "a b c ", DISPLAY_FORM("a =?ISO-8859-1?Q?b?= c "));
@@ -340,7 +341,7 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		VASSERT_EQ("15", "a b c d e", DISPLAY_FORM("a =?ISO-8859-1?Q?b?= c =?ISO-8859-1?Q?d?= e"));
 
 		// Whitespaces and multiline
-		VASSERT_EQ("16", "a b c d e", DISPLAY_FORM("=?ISO-8859-1?Q?a_b_?=c\n\t=?ISO-8859-1?Q?d_?=e"));
+		VASSERT_EQ("16", "a b c\td e", DISPLAY_FORM("=?ISO-8859-1?Q?a_b_?=c\n\t=?ISO-8859-1?Q?d_?=e"));
 
 		// Ignored newlines
 		VASSERT_EQ("17", "ab", DISPLAY_FORM("=?ISO-8859-1?Q?a?=\r\nb"));
@@ -718,6 +719,38 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		VASSERT_EQ("4", "=?utf-8?B?w6Q=?= " + std::string(60, 'b') + "\r\n c", t3.generate(78, 0));
 	}
 
+	void testUnfolding() {
+
+#define UNFOLD(x) vmime::text::decodeAndUnfold(x)->getWholeBuffer()
+
+		// Only the CRLF is removed, not the white-space after it (RFC-5322 §2.2.3)
+		VASSERT_EQ("1", "a b", UNFOLD("a\r\n b"));
+		VASSERT_EQ("2", "a\tb", UNFOLD("a\r\n\tb"));
+		VASSERT_EQ("3", "a   b", UNFOLD("a\r\n   b"));
+		VASSERT_EQ("4", "a \t b", UNFOLD("a \r\n\t b"));
+		VASSERT_EQ("5", "a\tb\tc", UNFOLD("a\n\tb\r\n\tc"));
+		VASSERT_EQ("6", "a ", UNFOLD("a\r\n "));
+
+		// Same around an encoded word, white-space between two encoded
+		// words is still ignored (RFC-2047 §6.2)
+		VASSERT_EQ("7", "a\tb", UNFOLD("=?us-ascii?Q?a?=\r\n\tb"));
+		VASSERT_EQ("8", "a\tb", UNFOLD("a\r\n\t=?us-ascii?Q?b?="));
+		VASSERT_EQ("9", "ab", UNFOLD("=?us-ascii?Q?a?=\r\n\t=?us-ascii?Q?b?="));
+
+		// A line break which is not a fold
+		VASSERT_EQ("10", "a b", UNFOLD("a\r\nb"));
+		VASSERT_EQ("11", "a", UNFOLD("a\r\n"));
+
+		// Unfolded header field
+		vmime::header hdr;
+		hdr.parse("Subject: Re: a rather\r\n\tlong\r\n   subject\r\n\r\n");
+
+		VASSERT_EQ("12", "Re: a rather\tlong   subject", hdr.Subject()->getValue <vmime::text>()->getWholeBuffer());
+
+#undef UNFOLD
+
+	}
+
 	void testFoldingAscii() {
 
 		// In this test, no encoding is needed, but line should be folded anyway
@@ -871,6 +904,7 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 
 			VASSERT(out, lineLength <= 78);
 			VASSERT_EQ("unfolded", ins[i], unfolded);
+			VASSERT_EQ("parsed", ins[i], vmime::text::decodeAndUnfold(out)->getWholeBuffer());
 		}
 	}
 
