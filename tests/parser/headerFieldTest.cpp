@@ -106,7 +106,7 @@ VMIME_TEST_SUITE_BEGIN(headerFieldTest)
 			hfield->getValue <vmime::text>();
 
 		VASSERT_EQ("Field name", "Field", hfield->getName());
-		VASSERT_EQ("Field value", "data1 data2 data3", hvalue->getWholeBuffer());
+		VASSERT_EQ("Field value", "data1\tdata2\t\tdata3", hvalue->getWholeBuffer());
 	}
 
 VMIME_TEST_SUITE_END
