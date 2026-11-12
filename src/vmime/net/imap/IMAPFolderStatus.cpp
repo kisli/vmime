@@ -284,6 +284,20 @@ bool IMAPFolderStatus::updateFromResponse(const IMAPParser::resp_text_code& resp
 }
 
 
+bool IMAPFolderStatus::updateFromResponse(const IMAPParser::message_data& resp) {
+
+	// EXPUNGE decrements the number of messages: the server does not
+	// need to send an EXISTS response (RFC 9051, section 7.5.1)
+	if (resp.type == IMAPParser::message_data::EXPUNGE && m_count > 0) {
+
+		--m_count;
+		return true;
+	}
+
+	return false;
+}
+
+
 } // imap
 } // net
 } // vmime
