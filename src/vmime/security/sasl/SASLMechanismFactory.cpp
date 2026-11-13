@@ -150,7 +150,9 @@ const std::vector <string> SASLMechanismFactory::getSupportedMechanisms() const 
 }
 
 
-bool SASLMechanismFactory::isMechanismSupported(const string& name) const {
+bool SASLMechanismFactory::isMechanismSupported(const string& name_) const {
+
+	const string name(utility::stringUtils::toUpper(name_));
 
 	if (m_mechs.find(name) != m_mechs.end() || isBuiltinMechanism(name)) {
 		return true;
@@ -166,7 +168,7 @@ bool SASLMechanismFactory::isMechanismSupported(const string& name) const {
 
 bool SASLMechanismFactory::isBuiltinMechanism(const string& name) const {
 
-	return m_builtinMechs.find(name) != m_builtinMechs.end();
+	return m_builtinMechs.find(utility::stringUtils::toUpper(name)) != m_builtinMechs.end();
 }
 
 

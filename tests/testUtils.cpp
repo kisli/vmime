@@ -451,6 +451,58 @@ digitGroupingLocale::~digitGroupingLocale() {
 }
 
 
+// turkishCaseLocale
+
+namespace {
+
+class turkishCtype : public std::ctype <char> {
+
+protected:
+
+	char do_tolower(char c) const {
+
+		return c == 'I' ? '\xfd' : std::ctype <char>::do_tolower(c);
+	}
+
+	const char* do_tolower(char* low, const char* high) const {
+
+		for ( ; low < high ; ++low) {
+			*low = do_tolower(*low);
+		}
+
+		return high;
+	}
+
+	char do_toupper(char c) const {
+
+		return c == 'i' ? '\xdd' : std::ctype <char>::do_toupper(c);
+	}
+
+	const char* do_toupper(char* low, const char* high) const {
+
+		for ( ; low < high ; ++low) {
+			*low = do_toupper(*low);
+		}
+
+		return high;
+	}
+};
+
+}
+
+
+turkishCaseLocale::turkishCaseLocale()
+	: m_previousLocale(std::locale::global(std::locale(std::locale(), new turkishCtype))) {
+
+}
+
+
+turkishCaseLocale::~turkishCaseLocale() {
+
+	std::locale::global(m_previousLocale);
+}
+
+
 
 // Exception helper
 std::ostream& operator<<(std::ostream& os, const vmime::exception& e) {

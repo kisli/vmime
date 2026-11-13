@@ -510,6 +510,25 @@ private:
 };
 
 
+/** Sets a global C++ locale which converts case as a Turkish locale
+  * (ISO-8859-9): the lower case of "I" is the dotless "i", and the upper
+  * case of "i" is the dotted "I". Restores the previous global locale on
+  * destruction. Used to check that keywords are compared with the classic
+  * locale.
+  */
+class turkishCaseLocale {
+
+public:
+
+	turkishCaseLocale();
+	~turkishCaseLocale();
+
+private:
+
+	std::locale m_previousLocale;
+};
+
+
 // Exception helper
 std::ostream& operator<<(std::ostream& os, const vmime::exception& e);
 

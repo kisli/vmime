@@ -33,6 +33,7 @@
 #include "vmime/net/message.hpp"
 #include "vmime/net/folder.hpp"
 #include "vmime/utility/details/classicOStringStream.hpp"
+#include "vmime/utility/stringUtils.hpp"
 
 #include <sstream>
 #include <iterator>
@@ -496,7 +497,10 @@ void IMAPUtils::mailboxFlagsToFolderAttributes(
 		}
 	}
 
-	if (path.getSize() == 1 && path.getLastComponent().getBuffer() == "INBOX") {
+	// INBOX is case-insensitive (RFC 9051, section 5.1)
+	if (path.getSize() == 1 &&
+	    utility::stringUtils::isStringEqualNoCase(path.getLastComponent().getBuffer(), "inbox")) {
+
 		specialUse = folderAttributes::SPECIALUSE_INBOX;
 	}
 
