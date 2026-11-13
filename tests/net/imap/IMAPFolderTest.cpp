@@ -33,8 +33,10 @@ using namespace vmime::net::imap;
 /** IMAP test server with 3 messages in the INBOX. Message 2 is expunged
   * by EXPUNGE, and also by NOOP, which then reports a new message. As
   * allowed by RFC 9051, no EXISTS response follows EXPUNGE.
+  *
+  * The root folder contains "Inbox" (not in upper case) and "Archive".
   */
-class expungeIMAPTestSocket : public lineBasedTestSocket {
+class folderIMAPTestSocket : public lineBasedTestSocket {
 
 public:
 
@@ -66,6 +68,13 @@ public:
 
 			localSend("* CAPABILITY IMAP4rev1\r\n");
 			localSend(tag + " OK CAPABILITY completed\r\n");
+
+		} else if (verb == "LIST" && cmd.find('%') != vmime::string::npos) {
+
+			// Sub-folders of the root folder
+			localSend("* LIST (\\HasNoChildren) \"/\" \"Inbox\"\r\n");
+			localSend("* LIST (\\HasNoChildren) \"/\" \"Archive\"\r\n");
+			localSend(tag + " OK LIST completed\r\n");
 
 		} else if (verb == "LIST") {
 
@@ -133,12 +142,14 @@ VMIME_TEST_SUITE_BEGIN(IMAPFolderTest)
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testExpunge_MessageCount)
 		VMIME_TEST(testExpunge_NewMessage)
+		VMIME_TEST(testInbox_SpecialUse)
+		VMIME_TEST(testInbox_Rename)
 	VMIME_TEST_LIST_END
 
 
-	// Connect to the test server and open the INBOX. The store is kept in
-	// m_store, as the folder only holds a weak reference to it.
-	vmime::shared_ptr <IMAPFolder> openFolder() {
+	// Connect to the test server. The store is kept in m_store, as folders
+	// only hold a weak reference to it.
+	void connect() {
 
 		vmime::shared_ptr <vmime::net::session> sess = vmime::net::session::create();
 		sess->getProperties()["store.imap.auth.allow-plaintext"] = true;
@@ -147,9 +158,15 @@ VMIME_TEST_SUITE_BEGIN(IMAPFolderTest)
 			sess->getStore(vmime::utility::url("imap://user:pass@localhost"))
 		);
 
-		m_store->setSocketFactory(vmime::make_shared <testSocketFactory <expungeIMAPTestSocket> >());
+		m_store->setSocketFactory(vmime::make_shared <testSocketFactory <folderIMAPTestSocket> >());
 		m_store->setTimeoutHandlerFactory(vmime::make_shared <testTimeoutHandlerFactory>());
 		m_store->connect();
+	}
+
+	// Connect to the test server and open the INBOX
+	vmime::shared_ptr <IMAPFolder> openFolder() {
+
+		connect();
 
 		vmime::shared_ptr <IMAPFolder> folder =
 			vmime::dynamicCast <IMAPFolder>(m_store->getDefaultFolder());
@@ -205,6 +222,50 @@ VMIME_TEST_SUITE_BEGIN(IMAPFolderTest)
 
 		folder->removeMessageCountListener(&listener);
 		folder->close(false);
+		m_store->disconnect();
+	}
+
+	// INBOX is case-insensitive (RFC 9051, section 5.1)
+	void testInbox_SpecialUse() {
+
+		connect();
+
+		const std::vector <vmime::shared_ptr <vmime::net::folder> > folders =
+			m_store->getRootFolder()->getFolders(false);
+
+		VASSERT_EQ("Count", 2, folders.size());
+
+		VASSERT_EQ("Name 1", "Inbox", folders[0]->getName().getBuffer());
+		VASSERT_EQ(
+			"Special use 1",
+			vmime::net::folderAttributes::SPECIALUSE_INBOX,
+			folders[0]->getAttributes().getSpecialUse()
+		);
+
+		VASSERT_EQ("Name 2", "Archive", folders[1]->getName().getBuffer());
+		VASSERT_EQ(
+			"Special use 2",
+			vmime::net::folderAttributes::SPECIALUSE_NONE,
+			folders[1]->getAttributes().getSpecialUse()
+		);
+
+		m_store->disconnect();
+	}
+
+	void testInbox_Rename() {
+
+		connect();
+
+		vmime::shared_ptr <vmime::net::folder> inbox = m_store->getFolder(
+			vmime::net::folder::path::component("inbox", vmime::charsets::UTF_8)
+		);
+
+		VASSERT_THROW(
+			"Rename",
+			inbox->rename(vmime::net::folder::path::component("Other", vmime::charsets::UTF_8)),
+			vmime::exceptions::illegal_operation
+		);
+
 		m_store->disconnect();
 	}
 

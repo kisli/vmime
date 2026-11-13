@@ -1265,7 +1265,10 @@ void IMAPFolder::rename(const folder::path& newPath) {
 		throw exceptions::illegal_state("Store disconnected");
 	} else if (m_path.isEmpty() || newPath.isEmpty()) {
 		throw exceptions::illegal_operation("Cannot rename root folder");
-	} else if (m_path.getSize() == 1 && m_name.getBuffer() == "INBOX") {
+	} else if (m_path.getSize() == 1 &&
+	           utility::stringUtils::isStringEqualNoCase(m_name.getBuffer(), "inbox")) {
+
+		// INBOX is case-insensitive (RFC 9051, section 5.1)
 		throw exceptions::illegal_operation("Cannot rename 'INBOX' folder");
 	} else if (!store->isValidFolderName(newPath.getLastComponent())) {
 		throw exceptions::invalid_folder_name();
