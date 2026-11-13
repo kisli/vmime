@@ -42,9 +42,11 @@ VMIME_TEST_SUITE_BEGIN(POP3ResponseTest)
 		VMIME_TEST(testMultiLineResponse)
 		VMIME_TEST(testMultiLineResponseLF)
 		VMIME_TEST(testLargeResponse)
+		VMIME_TEST(testLargeResponseLF)
 		VMIME_TEST(testLargeResponseERR)
 		VMIME_TEST(testLargeResponseERR_LF)
 		VMIME_TEST(testLargeResponseEmpty)
+		VMIME_TEST(testLargeResponseEmptyLF)
 		VMIME_TEST(testLargeResponseDotStuffedFirstLine)
 	VMIME_TEST_LIST_END
 
@@ -241,8 +243,36 @@ VMIME_TEST_SUITE_BEGIN(POP3ResponseTest)
 		VASSERT_TRUE("Success", resp->isSuccess());
 		VASSERT_EQ("Lines", 0, resp->getLineCount());
 		VASSERT_EQ("Text", "Large Response Follows", resp->getText());
-		VASSERT_EQ("Data Length", data.str().length(), receivedData.length());
-		VASSERT_EQ("Data Bytes", data.str(), receivedData);
+
+		// The line terminator before the end-of-data marker belongs
+		// to the last line (RFC 1939, section 3)
+		VASSERT_EQ("Data Length", data.str().length() + 2, receivedData.length());
+		VASSERT_EQ("Data Bytes", data.str() + "\r\n", receivedData);
+	}
+
+	void testLargeResponseLF() {
+
+		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
+		vmime::shared_ptr <vmime::net::timeoutHandler> toh = vmime::make_shared <testTimeoutHandler>(1);
+
+		vmime::shared_ptr <POP3ConnectionTest> conn =
+			vmime::make_shared <POP3ConnectionTest>(
+				vmime::dynamicCast <vmime::net::socket>(socket), toh
+			);
+
+		socket->localSend("+OK Response Follows\n");
+		socket->localSend("Line 1\n");
+		socket->localSend("Line 2\n");
+		socket->localSend(".\n");
+
+		vmime::string receivedData;
+		vmime::utility::outputStreamStringAdapter receivedDataStream(receivedData);
+
+		vmime::shared_ptr <POP3Response> resp =
+			POP3Response::readLargeResponse(conn, receivedDataStream, NULL, 0);
+
+		VASSERT_TRUE("Success", resp->isSuccess());
+		VASSERT_EQ("Data", "Line 1\nLine 2\n", receivedData);
 	}
 
 	void testLargeResponseERR() {
@@ -328,6 +358,29 @@ VMIME_TEST_SUITE_BEGIN(POP3ResponseTest)
 		VASSERT_EQ("Data", "", receivedData);
 	}
 
+	void testLargeResponseEmptyLF() {
+
+		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
+		vmime::shared_ptr <vmime::net::timeoutHandler> toh = vmime::make_shared <testTimeoutHandler>(1);
+
+		vmime::shared_ptr <POP3ConnectionTest> conn =
+			vmime::make_shared <POP3ConnectionTest>(
+				vmime::dynamicCast <vmime::net::socket>(socket), toh
+			);
+
+		socket->localSend("+OK Empty Response Follows\n");
+		socket->localSend(".\n");
+
+		vmime::string receivedData;
+		vmime::utility::outputStreamStringAdapter receivedDataStream(receivedData);
+
+		vmime::shared_ptr <POP3Response> resp =
+			POP3Response::readLargeResponse(conn, receivedDataStream, NULL, 0);
+
+		VASSERT_TRUE("Success", resp->isSuccess());
+		VASSERT_EQ("Data", "", receivedData);
+	}
+
 	void testLargeResponseDotStuffedFirstLine() {
 
 		vmime::shared_ptr <testSocket> socket = vmime::make_shared <testSocket>();
@@ -350,7 +403,7 @@ VMIME_TEST_SUITE_BEGIN(POP3ResponseTest)
 			POP3Response::readLargeResponse(conn, receivedDataStream, NULL, 0);
 
 		VASSERT_TRUE("Success", resp->isSuccess());
-		VASSERT_EQ("Data", ".first line\r\nsecond line", receivedData);
+		VASSERT_EQ("Data", ".first line\r\nsecond line\r\n", receivedData);
 	}
 
 VMIME_TEST_SUITE_END

@@ -447,6 +447,23 @@ size_t POP3Response::readResponseImpl(
 		os.write(buffer + skipped, read);
 	}
 
+	// The line terminator before the end-of-data marker belongs to the last
+	// line of data (RFC 1939, section 3), but it was removed with the marker:
+	// write it back, unless there is no data
+	if (current > line.length()) {
+
+		// The marker is "\r\n.\r\n" if sfis1 found it, or "\n.\n"
+		const string eol = sfis1.eof() ? "\r\n" : "\n";
+
+		os.write(eol.data(), eol.length());
+		current += eol.length();
+
+		if (progress) {
+			total = std::max(total, current);
+			progress->progress(current, total);
+		}
+	}
+
 	if (progress) {
 		progress->stop(total);
 	}
