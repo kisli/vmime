@@ -40,6 +40,7 @@ VMIME_TEST_SUITE_BEGIN(SASLMechanismFactoryTest)
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testIsBuiltinMechanism)
 		VMIME_TEST(testIsMechanismSupported)
+		VMIME_TEST(testRegisterMechanism)
 		VMIME_TEST(testGetSupportedMechanisms)
 		VMIME_TEST(testCreate_Builtin)
 		VMIME_TEST(testCreate_Unknown)
@@ -56,6 +57,7 @@ VMIME_TEST_SUITE_BEGIN(SASLMechanismFactoryTest)
 
 		VASSERT_TRUE("PLAIN", getFactory()->isBuiltinMechanism("PLAIN"));
 		VASSERT_TRUE("LOGIN", getFactory()->isBuiltinMechanism("LOGIN"));
+		VASSERT_TRUE("plain", getFactory()->isBuiltinMechanism("plain"));
 
 		// Provided by GNU SASL, if available
 		VASSERT_FALSE("SCRAM-SHA-256", getFactory()->isBuiltinMechanism("SCRAM-SHA-256"));
@@ -71,7 +73,30 @@ VMIME_TEST_SUITE_BEGIN(SASLMechanismFactoryTest)
 
 		VASSERT_TRUE("PLAIN", getFactory()->isMechanismSupported("PLAIN"));
 		VASSERT_TRUE("LOGIN", getFactory()->isMechanismSupported("LOGIN"));
+		VASSERT_TRUE("Login", getFactory()->isMechanismSupported("Login"));
 		VASSERT_FALSE("X-UNKNOWN", getFactory()->isMechanismSupported("X-UNKNOWN"));
+	}
+
+	void testRegisterMechanism() {
+
+		// Registered with a name in lower case
+		getFactory()->registerMechanism <vmime::security::sasl::plainSASLMechanism>("x-vmime-test");
+
+		VASSERT_TRUE("Supported", getFactory()->isMechanismSupported("X-VMIME-TEST"));
+
+		const std::vector <vmime::string> mechs = getFactory()->getSupportedMechanisms();
+
+		VASSERT_TRUE("Listed", std::find(mechs.begin(), mechs.end(), "X-VMIME-TEST") != mechs.end());
+
+		vmime::shared_ptr <vmime::security::sasl::SASLContext> ctx =
+			vmime::security::sasl::SASLContext::create();
+
+		VASSERT_TRUE(
+			"Create",
+			vmime::dynamicCast <vmime::security::sasl::plainSASLMechanism>(
+				getFactory()->create(ctx, "X-VMIME-TEST")
+			) != nullptr
+		);
 	}
 
 	void testGetSupportedMechanisms() {

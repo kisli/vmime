@@ -36,6 +36,8 @@
 
 #include "vmime/security/sasl/SASLMechanism.hpp"
 
+#include "vmime/utility/stringUtils.hpp"
+
 #include <map>
 
 
@@ -48,6 +50,8 @@ class SASLContext;
 
 
 /** Constructs SASL mechanism objects.
+  *
+  * Mechanism names are case-insensitive.
   */
 class VMIME_EXPORT SASLMechanismFactory : public object {
 
@@ -98,7 +102,7 @@ public:
 
 		m_mechs.insert(
 			MapType::value_type(
-				name,
+				utility::stringUtils::toUpper(name),
 				vmime::make_shared <registeredMechanismImpl <MECH_CLASS> >()
 			)
 		);
