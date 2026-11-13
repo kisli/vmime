@@ -447,6 +447,74 @@ std::vector <vmime::string> LOGINSMTPTestSocket::sm_authLines;
 
 
 
+/** SMTP test server which advertises its extensions with keywords which
+  * are not in upper case, and accepts any authentication.
+  *
+  * The AUTH command sent by the client is recorded.
+  */
+class mixedCaseEHLOSMTPTestSocket : public lineBasedTestSocket {
+
+public:
+
+	static void reset() {
+
+		sm_authLine.clear();
+	}
+
+	static const vmime::string& getAuthLine() {
+
+		return sm_authLine;
+	}
+
+	void onConnected() {
+
+		localSend("220 test.vmime.org Service ready\r\n");
+	}
+
+	void processCommand() {
+
+		if (!haveMoreLines()) {
+			return;
+		}
+
+		const vmime::string line = getNextLine();
+		const vmime::string verb =
+			vmime::utility::stringUtils::toUpper(line.substr(0, line.find(' ')));
+
+		if (verb == "EHLO") {
+
+			localSend("250-test.vmime.org\r\n");
+			localSend("250-auth PLAIN\r\n");
+			localSend("250-Pipelining\r\n");
+			localSend("250 size 1000000\r\n");
+
+		} else if (verb == "AUTH") {
+
+			sm_authLine = line;
+			localSend("235 2.7.0 Authentication successful\r\n");
+
+		} else if (verb == "QUIT") {
+
+			localSend("221 test.vmime.org Service closing transmission channel\r\n");
+
+		} else {
+
+			localSend("502 Command not implemented\r\n");
+		}
+
+		processCommand();
+	}
+
+private:
+
+	static vmime::string sm_authLine;
+};
+
+
+vmime::string mixedCaseEHLOSMTPTestSocket::sm_authLine;
+
+
+
 /** SMTP test server which supports SASL authentication with the OAUTHBEARER
   * mechanism, and accepts only the specified initial client response.
   *
@@ -584,6 +652,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 		VMIME_TEST(testSize_NoChunking)
 		VMIME_TEST(testSMTPUTF8_available)
 		VMIME_TEST(testSMTPUTF8_notAvailable)
+		VMIME_TEST(testExtensionKeywordsCase)
 		VMIME_TEST(testReconnectAfterTimeout)
 		VMIME_TEST(testDisconnectAfterTimeout)
 		VMIME_TEST(testSendTimeout)
@@ -936,6 +1005,39 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 
 			tr->send(exp, recips, is, 0);
 		}
+	}
+
+	// Extension keywords are case-insensitive (RFC 5321, section 2.4)
+	void testExtensionKeywordsCase() {
+
+		mixedCaseEHLOSMTPTestSocket::reset();
+
+		vmime::shared_ptr <vmime::net::session> session = vmime::net::session::create();
+		session->getProperties()["transport.smtp.options.need-authentication"] = true;
+		session->getProperties()["transport.smtp.auth.allow-plaintext"] = true;
+
+		vmime::shared_ptr <vmime::net::transport> tr =
+			session->getTransport(vmime::utility::url("smtp://user:pass@localhost"));
+
+		tr->setSocketFactory(vmime::make_shared <testSocketFactory <mixedCaseEHLOSMTPTestSocket> >());
+		tr->setTimeoutHandlerFactory(vmime::make_shared <testTimeoutHandlerFactory>());
+
+		// Authentication fails if "auth" is not recognized
+		VASSERT_NO_THROW("Connect", tr->connect());
+		VASSERT_EQ("AUTH", "AUTH PLAIN AHVzZXIAcGFzcw==", mixedCaseEHLOSMTPTestSocket::getAuthLine());
+
+		vmime::shared_ptr <vmime::net::smtp::SMTPConnection> conn =
+			vmime::dynamicCast <vmime::net::smtp::SMTPTransport>(tr)->getConnection();
+
+		VASSERT_TRUE("PIPELINING", conn->hasExtension("PIPELINING"));
+
+		std::vector <vmime::string> params;
+
+		VASSERT_TRUE("SIZE", conn->hasExtension("size", &params));
+		VASSERT_EQ("SIZE params", 1, params.size());
+		VASSERT_EQ("SIZE param", "1000000", params[0]);
+
+		tr->disconnect();
 	}
 
 	void testReconnectAfterTimeout() {

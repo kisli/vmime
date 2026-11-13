@@ -260,7 +260,8 @@ void SMTPConnection::helo() {
 				params.push_back(utility::stringUtils::toUpper(param));
 			}
 
-			m_extensions[ext] = params;
+			// Extension keywords are case-insensitive (RFC 5321, section 2.4)
+			m_extensions[utility::stringUtils::toUpper(ext)] = params;
 		}
 	}
 }
@@ -272,7 +273,7 @@ bool SMTPConnection::hasExtension(
 ) const {
 
 	std::map <string, std::vector <string> >::const_iterator
-		it = m_extensions.find(extName);
+		it = m_extensions.find(utility::stringUtils::toUpper(extName));
 
 	if (it != m_extensions.end()) {
 
