@@ -30,6 +30,8 @@
 #include "vmime/net/imap/IMAPMessagePart.hpp"
 #include "vmime/net/imap/IMAPMessageStructure.hpp"
 
+#include "vmime/utility/stringUtils.hpp"
+
 
 namespace vmime {
 namespace net {
@@ -57,7 +59,8 @@ namespace {
 	vmime::string getPartName(const T& body_type) {
 		if (const auto* pparam = body_type->body_fields->body_fld_param.get()) {
 			for (const auto& param : pparam->items) {
-				if (param->string1->value == "NAME") {
+				// Parameter names are case-insensitive (RFC 2045, section 5.1)
+				if (utility::stringUtils::isStringEqualNoCase(param->string1->value, "name")) {
 					return param->string2->value;
 				}
 			}

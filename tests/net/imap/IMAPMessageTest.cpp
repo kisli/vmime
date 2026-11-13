@@ -64,7 +64,7 @@ public:
 		const vmime::string part1Body = "Hello";
 
 		const vmime::string part2Header =
-			"Content-Type: text/html; charset=us-ascii\r\n"
+			"Content-Type: text/html; charset=us-ascii; name=\"hello.html\"\r\n"
 			"Content-Transfer-Encoding: 7bit\r\n"
 			"\r\n";
 
@@ -83,10 +83,12 @@ public:
 			"--BOUNDARY\r\n" + part3Header + part3Body + "\r\n"
 			"--BOUNDARY--\r\n";
 
+		// Some servers return parameter names in upper case, others as
+		// in the message (eg. "name" for part 3)
 		m_structure[1] =
 			"((\"TEXT\" \"PLAIN\" (\"CHARSET\" \"us-ascii\") NIL NIL \"7BIT\" 5 0 NIL NIL NIL NIL)"
-			"(\"TEXT\" \"HTML\" (\"CHARSET\" \"us-ascii\") NIL NIL \"7BIT\" 12 0 NIL NIL NIL NIL)"
-			"(\"APPLICATION\" \"OCTET-STREAM\" (\"NAME\" \"hello.bin\") NIL NIL \"BASE64\" 16 NIL NIL NIL NIL)"
+			"(\"TEXT\" \"HTML\" (\"CHARSET\" \"us-ascii\" \"NAME\" \"hello.html\") NIL NIL \"7BIT\" 12 0 NIL NIL NIL NIL)"
+			"(\"APPLICATION\" \"OCTET-STREAM\" (\"name\" \"hello.bin\") NIL NIL \"BASE64\" 16 NIL NIL NIL NIL)"
 			" \"MIXED\" (\"BOUNDARY\" \"BOUNDARY\") NIL NIL NIL)";
 
 		m_sections[1][""] = header1 + text1;
@@ -296,6 +298,7 @@ VMIME_TEST_SUITE_BEGIN(IMAPMessageTest)
 		VMIME_TEST(testExtractPart_Root)
 		VMIME_TEST(testPartContents_Extract)
 		VMIME_TEST(testPartContents_ExtractRaw)
+		VMIME_TEST(testPartName)
 	VMIME_TEST_LIST_END
 
 
@@ -597,6 +600,24 @@ VMIME_TEST_SUITE_BEGIN(IMAPMessageTest)
 		msg->getBody()->getPartAt(2)->getBody()->getContents()->extractRaw(os);
 
 		VASSERT_EQ("Data", server.getSection(1, "3"), data);
+	}
+
+	// Name of the parts, from the "name" parameter in the body structure
+	void testPartName() {
+
+		vmime::shared_ptr <vmime::net::folder> folder = openFolder();
+		vmime::shared_ptr <vmime::net::message> msg = folder->getMessage(1);
+
+		folder->fetchMessage(msg, vmime::net::fetchAttributes::STRUCTURE);
+
+		vmime::shared_ptr <const vmime::net::messageStructure> parts =
+			msg->getStructure()->getPartAt(0)->getStructure();
+
+		VASSERT_EQ("Part 1", "", parts->getPartAt(0)->getName());
+		VASSERT_EQ("Part 2", "hello.html", parts->getPartAt(1)->getName());
+
+		// Parameter names are case-insensitive (RFC 2045, section 5.1)
+		VASSERT_EQ("Part 3", "hello.bin", parts->getPartAt(2)->getName());
 	}
 
 private:
