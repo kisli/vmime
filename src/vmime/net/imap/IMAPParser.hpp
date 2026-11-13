@@ -53,6 +53,7 @@
 
 #include "vmime/net/imap/IMAPTag.hpp"
 
+#include <cstring>
 #include <vector>
 #include <stdexcept>
 #include <memory>
@@ -1388,20 +1389,13 @@ public:
 				return false;
 			}
 
-			const char* cmp = value.c_str();
-			const char* with = m_string;
+			// Compare with the classic locale, not the global one: in a Turkish
+			// locale, for example, the lower case of "I" is not "i"
+			const size_t length = std::strlen(m_string);
 
-			bool ok = true;
+			if (value.length() != length ||
+			    !utility::stringUtils::isStringEqualNoCase(value, m_string, length)) {
 
-			while (ok && *cmp && *with) {
-
-				ok = (std::tolower(*cmp, std::locale()) == *with);
-
-				++cmp;
-				++with;
-			}
-
-			if (!ok || *cmp || *with) {
 				VIMAP_PARSER_FAIL();
 			}
 
