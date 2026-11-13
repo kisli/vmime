@@ -1614,7 +1614,7 @@ void IMAPFolder::processStatusUpdate(const IMAPParser::response* resp) {
 	std::vector <shared_ptr <events::event> > events;
 
 	shared_ptr <IMAPFolderStatus> oldStatus = vmime::clone(m_status);
-	int expungedMessageCount = 0;
+	size_t expungedMessageCount = 0;
 
 	// Process tagged response
 	if (resp->response_done &&
@@ -1683,6 +1683,8 @@ void IMAPFolder::processStatusUpdate(const IMAPParser::response* resp) {
 
 			} else if (msgData->type == IMAPParser::message_data::EXPUNGE) {
 
+				m_status->updateFromResponse(*msgData);
+
 				// A message has been expunged, renumber messages
 				for (std::vector <IMAPMessage*>::iterator jt =
 				     m_messages.begin() ; jt != m_messages.end() ; ++jt) {
@@ -1707,12 +1709,17 @@ void IMAPFolder::processStatusUpdate(const IMAPParser::response* resp) {
 		}
 	}
 
-	// New messages arrived
-	if (m_status->getMessageCount() > oldStatus->getMessageCount() - expungedMessageCount) {
+	// New messages arrived: they come after the messages which were
+	// already in the folder and have not been expunged
+	const size_t oldMessageCount = oldStatus->getMessageCount();
+	const size_t remainingMessageCount =
+		oldMessageCount > expungedMessageCount ? oldMessageCount - expungedMessageCount : 0;
+
+	if (m_status->getMessageCount() > remainingMessageCount) {
 
 		std::vector <size_t> newMessageNumbers;
 
-		for (size_t msgNumber = oldStatus->getMessageCount() - expungedMessageCount ;
+		for (size_t msgNumber = remainingMessageCount + 1 ;
 		     msgNumber <= m_status->getMessageCount() ; ++msgNumber) {
 
 			newMessageNumbers.push_back(msgNumber);
