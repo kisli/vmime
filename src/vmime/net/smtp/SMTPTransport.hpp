@@ -100,6 +100,25 @@ public:
 private:
 
 	static bool mailboxNeedsUTF8(const mailbox& mb);
+	static bool componentNeedsUTF8(component& comp);
+
+	/** Check whether the SMTPUTF8 extension (RFC 6531) is needed to send
+	  * a message, and ensure that it is supported by the server.
+	  *
+	  * @param expeditor expeditor mailbox
+	  * @param recipients list of recipient mailboxes
+	  * @param sender envelope sender (if empty, expeditor will be used)
+	  * @param msg message to send, or NULL if only the envelope is known
+	  * @return true if the SMTPUTF8 extension must be used, false otherwise
+	  * @throw SMTPUTF8ExtensionNotSupportedException if the SMTPUTF8
+	  * extension is needed but not supported by the server
+	  */
+	bool needSMTPUTF8(
+		const mailbox& expeditor,
+		const mailboxList& recipients,
+		const mailbox& sender,
+		const shared_ptr <vmime::message>& msg
+	) const;
 
 	/** Send the MAIL and RCPT commands to the server, checking the
 	  * response, and using pipelining if supported by the server.
@@ -108,6 +127,7 @@ private:
 	  * @param expeditor expeditor mailbox
 	  * @param recipients list of recipient mailboxes
 	  * @param sender envelope sender (if empty, expeditor will be used)
+	  * @param utf8 if true, the SMTPUTF8 extension will be used
 	  * @param sendDATACommand if true, the DATA command will be sent
 	  * @param size message size, in bytes (or 0, if not known)
 	  * @param dsnAttributes attributes for Delivery Status Notification (if needed)
@@ -116,9 +136,23 @@ private:
 		const mailbox& expeditor,
 		const mailboxList& recipients,
 		const mailbox& sender,
+		const bool utf8,
 		bool sendDATACommand,
 		const size_t size,
 		const sendOptions& options = sendOptions()
+	);
+
+	/** Send the message data, after the DATA command has been accepted,
+	  * and check the response.
+	  *
+	  * @param is input stream provider (message data)
+	  * @param size size of the message data
+	  * @param progress progress listener, or NULL if not used
+	  */
+	void sendData(
+		utility::inputStream& is,
+		const size_t size,
+		utility::progressListener* progress
 	);
 
 

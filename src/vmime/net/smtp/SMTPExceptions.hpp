@@ -148,6 +148,21 @@ public:
 };
 
 
+/** SMTP error: RFC-6531 SMTPUTF8 extension is not supported by the server,
+  * whereas it is needed to send a message with non-ASCII addresses.
+  */
+class VMIME_EXPORT SMTPUTF8ExtensionNotSupportedException : public SMTPExtensionNotSupportedException {
+
+public:
+
+	SMTPUTF8ExtensionNotSupportedException(const exception& other = NO_EXCEPTION);
+	~SMTPUTF8ExtensionNotSupportedException() throw();
+
+	exception* clone() const;
+	const char* name() const throw();
+};
+
+
 } // smtp
 } // net
 } // vmime
