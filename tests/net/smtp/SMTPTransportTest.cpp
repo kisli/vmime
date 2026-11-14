@@ -26,6 +26,7 @@
 #include "vmime/net/smtp/SMTPTransport.hpp"
 #include "vmime/net/smtp/SMTPChunkingOutputStreamAdapter.hpp"
 #include "vmime/net/smtp/SMTPExceptions.hpp"
+#include "vmime/net/smtp/SMTPSendOptions.hpp"
 
 #include "SMTPTransportTestUtils.hpp"
 
@@ -654,6 +655,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 		VMIME_TEST(testSMTPUTF8_notAvailable)
 		VMIME_TEST(testSMTPUTF8_message)
 		VMIME_TEST(testSMTPUTF8_headerAddress)
+		VMIME_TEST(testSMTPUTF8_internationalizedMessageOption)
 		VMIME_TEST(testExtensionKeywordsCase)
 		VMIME_TEST(testReconnectAfterTimeout)
 		VMIME_TEST(testDisconnectAfterTimeout)
@@ -879,13 +881,14 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 	static void sendUTF8TestData(
 		const vmime::shared_ptr <vmime::net::transport>& tr,
 		const vmime::mailbox& exp,
-		const vmime::mailboxList& recips
+		const vmime::mailboxList& recips,
+		const vmime::net::transport::sendOptions& options = vmime::net::transport::sendOptions()
 	) {
 
 		vmime::string data("Message data");
 		vmime::utility::inputStreamStringAdapter is(data);
 
-		tr->send(exp, recips, is, data.length());
+		tr->send(exp, recips, is, data.length(), NULL, vmime::mailbox(), options);
 	}
 
 	static vmime::shared_ptr <vmime::message> createUTF8TestMessage(const vmime::mailbox& recipient) {
@@ -1112,6 +1115,59 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 			VASSERT_THROW("Send", tr->send(msg), vmime::net::smtp::SMTPUTF8ExtensionNotSupportedException);
 
 			VASSERT_TRUE("No command sent", UTF8SMTPTestSocket <false>::getEnvelopeLines().empty());
+		}
+	}
+
+	// The caller can tell that the message has UTF-8 header fields, which
+	// VMime cannot know when sending raw message data
+	void testSMTPUTF8_internationalizedMessageOption() {
+
+		vmime::net::smtp::SMTPSendOptions options;
+		options.setInternationalizedMessage(true);
+
+		vmime::mailboxList recips;
+		recips.appendMailbox(vmime::make_shared <vmime::mailbox>("recipient@test.vmime.org"));
+
+		// Raw message data, ASCII addresses
+		{
+			vmime::shared_ptr <vmime::net::transport> tr = createUTF8Transport <true>();
+
+			sendUTF8TestData(tr, vmime::mailbox("expediteur@test.vmime.org"), recips, options);
+
+			const std::vector <vmime::string>& lines = UTF8SMTPTestSocket <true>::getEnvelopeLines();
+
+			VASSERT_EQ("Count", 2, lines.size());
+			VASSERT_EQ("MAIL", "MAIL FROM:<expediteur@test.vmime.org> SMTPUTF8", lines[0]);
+			VASSERT_EQ("RCPT", "RCPT TO:<recipient@test.vmime.org>", lines[1]);
+		}
+
+		// Server without SMTPUTF8
+		{
+			vmime::shared_ptr <vmime::net::transport> tr = createUTF8Transport <false>();
+
+			VASSERT_THROW(
+				"Send",
+				sendUTF8TestData(tr, vmime::mailbox("expediteur@test.vmime.org"), recips, options),
+				vmime::net::smtp::SMTPUTF8ExtensionNotSupportedException
+			);
+
+			VASSERT_TRUE("No command sent", UTF8SMTPTestSocket <false>::getEnvelopeLines().empty());
+		}
+
+		// Message object: it is generated with UTF-8 header fields
+		{
+			vmime::shared_ptr <vmime::net::transport> tr = createUTF8Transport <true>();
+
+			tr->send(createUTF8TestMessage(vmime::mailbox("recipient@test.vmime.org")), NULL, options);
+
+			const std::vector <vmime::string>& lines = UTF8SMTPTestSocket <true>::getEnvelopeLines();
+
+			VASSERT_EQ("Count", 2, lines.size());
+			VASSERT_EQ("MAIL", "MAIL FROM:<expediteur@test.vmime.org> SMTPUTF8", lines[0]);
+
+			const vmime::string& data = UTF8SMTPTestSocket <true>::getMessageData();
+
+			VASSERT(data, data.find("Subject: Grüße\r\n") != vmime::string::npos);
 		}
 	}
 

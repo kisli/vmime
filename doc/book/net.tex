@@ -648,10 +648,21 @@ try {
 }
 \end{lstlisting}
 
-\vnote{When you send raw message data, VMime does not know its content: only
-the addresses of the envelope tell whether SMTPUTF8 is needed. The header
-fields of the data must then be ASCII-only, unless an address of the envelope
-has a non-ASCII local part.}
+When you send raw message data, VMime does not parse it: only the addresses of
+the envelope tell whether SMTPUTF8 is needed. If the header fields of the data
+contain UTF-8 (RFC 6532), you have to tell it with the SMTP send options, so
+that the message is sent with SMTPUTF8 (the exception above is thrown if the
+server does not support it):
+
+\begin{lstlisting}
+vmime::net::smtp::SMTPSendOptions options;
+options.setInternationalizedMessage(true);
+
+tr->send(
+   from, to, is, msgData.length(),
+   /* progress */ NULL, /* sender */ vmime::mailbox(), options
+);
+\end{lstlisting}
 
 
 % ============================================================================

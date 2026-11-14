@@ -207,10 +207,16 @@ bool SMTPTransport::needSMTPUTF8(
 	const mailbox& expeditor,
 	const mailboxList& recipients,
 	const mailbox& sender,
-	const shared_ptr <vmime::message>& msg
+	const shared_ptr <vmime::message>& msg,
+	const sendOptions& options
 ) const {
 
-	bool need = mailboxNeedsUTF8(sender.isEmpty() ? expeditor : sender);
+	auto opts = dynamic_cast <const SMTPSendOptions*>(&options);
+
+	// The caller may tell that the message has UTF-8 header fields, which
+	// VMime cannot know when it sends raw message data
+	bool need = (opts && opts->isInternationalizedMessage()) ||
+		mailboxNeedsUTF8(sender.isEmpty() ? expeditor : sender);
 
 	for (size_t i = 0 ; !need && i < recipients.getMailboxCount() ; ++i) {
 		need = mailboxNeedsUTF8(*recipients.getMailboxAt(i));
@@ -441,9 +447,9 @@ void SMTPTransport::send(
 		throw exceptions::not_connected();
 	}
 
-	// The message data is not known: only the envelope tells whether
-	// SMTPUTF8 is needed
-	const bool utf8 = needSMTPUTF8(expeditor, recipients, sender, nullptr);
+	// The message data is not parsed: only the envelope and the options
+	// tell whether SMTPUTF8 is needed
+	const bool utf8 = needSMTPUTF8(expeditor, recipients, sender, nullptr, options);
 
 	// Send message envelope
 	sendEnvelope(expeditor, recipients, sender, utf8, /* sendDATACommand */ true, size, options);
@@ -513,7 +519,7 @@ void SMTPTransport::send(
 	// Generate the message with Internationalized Email support (RFC 6532)
 	// only if it is sent with SMTPUTF8, which is required for UTF-8 header
 	// fields (RFC 6531, section 3.4); otherwise, non-ASCII text is encoded
-	const bool utf8 = needSMTPUTF8(expeditor, recipients, sender, msg);
+	const bool utf8 = needSMTPUTF8(expeditor, recipients, sender, msg, options);
 
 	generationContext ctx(generationContext::getDefaultContext());
 	ctx.setInternationalizedEmailSupport(utf8);

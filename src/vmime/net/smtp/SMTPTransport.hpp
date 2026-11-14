@@ -109,6 +109,7 @@ private:
 	  * @param recipients list of recipient mailboxes
 	  * @param sender envelope sender (if empty, expeditor will be used)
 	  * @param msg message to send, or NULL if only the envelope is known
+	  * @param options send options
 	  * @return true if the SMTPUTF8 extension must be used, false otherwise
 	  * @throw SMTPUTF8ExtensionNotSupportedException if the SMTPUTF8
 	  * extension is needed but not supported by the server
@@ -117,7 +118,8 @@ private:
 		const mailbox& expeditor,
 		const mailboxList& recipients,
 		const mailbox& sender,
-		const shared_ptr <vmime::message>& msg
+		const shared_ptr <vmime::message>& msg,
+		const sendOptions& options
 	) const;
 
 	/** Send the MAIL and RCPT commands to the server, checking the

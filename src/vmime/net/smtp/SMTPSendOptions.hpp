@@ -83,9 +83,32 @@ public:
 	  */
 	const shared_ptr <DSNAttributes> getDSNAttributes();
 
+	/** Set whether the message is an internationalized message, ie. whether
+	  * its header fields contain UTF-8 (RFC 6532). If so, the message is sent
+	  * with the SMTPUTF8 extension (RFC 6531), which must be supported by the
+	  * server.
+	  *
+	  * This is needed when sending raw message data with UTF-8 header fields:
+	  * VMime does not parse the data, and only checks the envelope addresses.
+	  * When sending a message object, VMime detects it by itself.
+	  *
+	  * @param internationalized true if the message is an internationalized
+	  * message, false otherwise (default)
+	  */
+	void setInternationalizedMessage(const bool internationalized);
+
+	/** Return whether the message is an internationalized message
+	  * (RFC 6532).
+	  *
+	  * @return true if the message is an internationalized message,
+	  * false otherwise
+	  */
+	bool isInternationalizedMessage() const;
+
 private:
 
 	shared_ptr <DSNAttributes> m_dsnAttribs;
+	bool m_internationalizedMessage = false;
 };
 
 
