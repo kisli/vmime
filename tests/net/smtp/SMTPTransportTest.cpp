@@ -26,6 +26,7 @@
 #include "vmime/net/smtp/SMTPTransport.hpp"
 #include "vmime/net/smtp/SMTPChunkingOutputStreamAdapter.hpp"
 #include "vmime/net/smtp/SMTPExceptions.hpp"
+#include "vmime/net/smtp/SMTPSendOptions.hpp"
 
 #include "SMTPTransportTestUtils.hpp"
 
@@ -652,6 +653,9 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 		VMIME_TEST(testSize_NoChunking)
 		VMIME_TEST(testSMTPUTF8_available)
 		VMIME_TEST(testSMTPUTF8_notAvailable)
+		VMIME_TEST(testSMTPUTF8_message)
+		VMIME_TEST(testSMTPUTF8_headerAddress)
+		VMIME_TEST(testSMTPUTF8_internationalizedMessageOption)
 		VMIME_TEST(testExtensionKeywordsCase)
 		VMIME_TEST(testReconnectAfterTimeout)
 		VMIME_TEST(testDisconnectAfterTimeout)
@@ -843,167 +847,327 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 		);
 	}
 
+	template <bool SUPPORTS_UTF8>
+	static vmime::shared_ptr <vmime::net::transport> createUTF8Transport() {
+
+		UTF8SMTPTestSocket <SUPPORTS_UTF8>::reset();
+
+		vmime::shared_ptr <vmime::net::session> session = vmime::net::session::create();
+
+		vmime::shared_ptr <vmime::net::transport> tr =
+			session->getTransport(vmime::utility::url("smtp://localhost"));
+
+		tr->setSocketFactory(vmime::make_shared <testSocketFactory <UTF8SMTPTestSocket <SUPPORTS_UTF8> > >());
+		tr->setTimeoutHandlerFactory(vmime::make_shared <testTimeoutHandlerFactory>());
+
+		tr->connect();
+
+		return tr;
+	}
+
+	static vmime::shared_ptr <vmime::mailbox> createUTF8Mailbox(
+		const vmime::string& localName,
+		const vmime::string& domainName
+	) {
+
+		return vmime::make_shared <vmime::mailbox>(
+			vmime::emailAddress(
+				vmime::word(localName, vmime::charsets::UTF_8),
+				vmime::word(domainName, vmime::charsets::UTF_8)
+			)
+		);
+	}
+
+	static void sendUTF8TestData(
+		const vmime::shared_ptr <vmime::net::transport>& tr,
+		const vmime::mailbox& exp,
+		const vmime::mailboxList& recips,
+		const vmime::net::transport::sendOptions& options = vmime::net::transport::sendOptions()
+	) {
+
+		vmime::string data("Message data");
+		vmime::utility::inputStreamStringAdapter is(data);
+
+		tr->send(exp, recips, is, data.length(), NULL, vmime::mailbox(), options);
+	}
+
+	static vmime::shared_ptr <vmime::message> createUTF8TestMessage(const vmime::mailbox& recipient) {
+
+		vmime::messageBuilder mb;
+		mb.setExpeditor(vmime::mailbox("expediteur@test.vmime.org"));
+		mb.getRecipients().appendAddress(vmime::make_shared <vmime::mailbox>(recipient));
+		mb.setSubject(vmime::text("Grüße", vmime::charsets::UTF_8));
+		mb.getTextPart()->setText(vmime::make_shared <vmime::stringContentHandler>("Message data"));
+
+		return mb.construct();
+	}
+
 	void testSMTPUTF8_available() {
 
-		// Test with UTF8 sender
+		// Non-ASCII sender and recipient
 		{
-			vmime::shared_ptr <vmime::net::session> session = vmime::net::session::create();
-
-			vmime::shared_ptr <vmime::net::transport> tr =
-				session->getTransport(vmime::utility::url("smtp://localhost"));
-
-			tr->setSocketFactory(vmime::make_shared <testSocketFactory <UTF8SMTPTestSocket <true> > >());
-			tr->setTimeoutHandlerFactory(vmime::make_shared <testTimeoutHandlerFactory>());
-
-			VASSERT_NO_THROW("Connection", tr->connect());
-
-			vmime::mailbox exp(
-				vmime::emailAddress(
-					vmime::word("expéditeur", vmime::charsets::UTF_8),
-					vmime::word("test.vmime.org")
-				)
-			);
+			vmime::shared_ptr <vmime::net::transport> tr = createUTF8Transport <true>();
 
 			vmime::mailboxList recips;
-			recips.appendMailbox(vmime::make_shared <vmime::mailbox>("recipient1@test.vmime.org"));
-			recips.appendMailbox(vmime::make_shared <vmime::mailbox>("recipient2@test.vmime.org"));
-			recips.appendMailbox(vmime::make_shared <vmime::mailbox>(
-				vmime::emailAddress(
-					vmime::word("récepteur", vmime::charsets::UTF_8),
-					vmime::word("test.vmime.org")
-				)
-			));
+			recips.appendMailbox(vmime::make_shared <vmime::mailbox>("recipient@test.vmime.org"));
+			recips.appendMailbox(createUTF8Mailbox("récepteur", "test.vmime.org"));
 
-			vmime::string data("Message data");
-			vmime::utility::inputStreamStringAdapter is(data);
+			sendUTF8TestData(tr, *createUTF8Mailbox("expéditeur", "test.vmime.org"), recips);
 
-			tr->send(exp, recips, is, 0);
+			const std::vector <vmime::string>& lines = UTF8SMTPTestSocket <true>::getEnvelopeLines();
+
+			VASSERT_EQ("Count", 3, lines.size());
+			VASSERT_EQ("MAIL", "MAIL FROM:<expéditeur@test.vmime.org> SMTPUTF8", lines[0]);
+			VASSERT_EQ("RCPT 1", "RCPT TO:<recipient@test.vmime.org>", lines[1]);
+			VASSERT_EQ("RCPT 2", "RCPT TO:<récepteur@test.vmime.org>", lines[2]);
 		}
 
-		// Test with UTF8 recipient only
+		// Non-ASCII recipient only
 		{
-			vmime::shared_ptr <vmime::net::session> session = vmime::net::session::create();
-
-			vmime::shared_ptr <vmime::net::transport> tr =
-				session->getTransport(vmime::utility::url("smtp://localhost"));
-
-			tr->setSocketFactory(vmime::make_shared <testSocketFactory <UTF8SMTPTestSocket <true> > >());
-			tr->setTimeoutHandlerFactory(vmime::make_shared <testTimeoutHandlerFactory>());
-
-			VASSERT_NO_THROW("Connection", tr->connect());
-
-			vmime::mailbox exp("expediteur@test.vmime.org");
+			vmime::shared_ptr <vmime::net::transport> tr = createUTF8Transport <true>();
 
 			vmime::mailboxList recips;
-			recips.appendMailbox(vmime::make_shared <vmime::mailbox>("recipient1@test.vmime.org"));
-			recips.appendMailbox(vmime::make_shared <vmime::mailbox>("recipient2@test.vmime.org"));
-			recips.appendMailbox(vmime::make_shared <vmime::mailbox>(
-				vmime::emailAddress(
-					vmime::word("récepteur", vmime::charsets::UTF_8),
-					vmime::word("test.vmime.org")
-				)
-			));
+			recips.appendMailbox(vmime::make_shared <vmime::mailbox>("recipient@test.vmime.org"));
+			recips.appendMailbox(createUTF8Mailbox("récepteur", "test.vmime.org"));
 
-			vmime::string data("Message data");
-			vmime::utility::inputStreamStringAdapter is(data);
+			sendUTF8TestData(tr, vmime::mailbox("expediteur@test.vmime.org"), recips);
 
-			tr->send(exp, recips, is, 0);
+			const std::vector <vmime::string>& lines = UTF8SMTPTestSocket <true>::getEnvelopeLines();
+
+			VASSERT_EQ("Count", 3, lines.size());
+			VASSERT_EQ("MAIL", "MAIL FROM:<expediteur@test.vmime.org> SMTPUTF8", lines[0]);
+			VASSERT_EQ("RCPT 1", "RCPT TO:<recipient@test.vmime.org>", lines[1]);
+			VASSERT_EQ("RCPT 2", "RCPT TO:<récepteur@test.vmime.org>", lines[2]);
 		}
 
-		// Test with UTF8 display name only (non-ASCII word followed by an ASCII word)
+		// Non-ASCII display name only: it is not part of the envelope,
+		// so SMTPUTF8 is not needed (RFC 6531, section 3.4)
 		{
-			vmime::shared_ptr <vmime::net::session> session = vmime::net::session::create();
-
-			vmime::shared_ptr <vmime::net::transport> tr =
-				session->getTransport(vmime::utility::url("smtp://localhost"));
-
-			tr->setSocketFactory(vmime::make_shared <testSocketFactory <UTF8SMTPTestSocket <true, false> > >());
-			tr->setTimeoutHandlerFactory(vmime::make_shared <testTimeoutHandlerFactory>());
-
-			VASSERT_NO_THROW("Connection", tr->connect());
+			vmime::shared_ptr <vmime::net::transport> tr = createUTF8Transport <true>();
 
 			vmime::text name;
 			name.appendWord(vmime::make_shared <vmime::word>("Expéditeur", vmime::charsets::UTF_8));
 			name.appendWord(vmime::make_shared <vmime::word>(" Test", vmime::charsets::US_ASCII));
 
-			vmime::mailbox exp(name, vmime::emailAddress("expediteur@test.vmime.org"));
+			vmime::mailboxList recips;
+			recips.appendMailbox(vmime::make_shared <vmime::mailbox>("recipient@test.vmime.org"));
+
+			sendUTF8TestData(tr, vmime::mailbox(name, vmime::emailAddress("expediteur@test.vmime.org")), recips);
+
+			const std::vector <vmime::string>& lines = UTF8SMTPTestSocket <true>::getEnvelopeLines();
+
+			VASSERT_EQ("Count", 2, lines.size());
+			VASSERT_EQ("MAIL", "MAIL FROM:<expediteur@test.vmime.org>", lines[0]);
+			VASSERT_EQ("RCPT", "RCPT TO:<recipient@test.vmime.org>", lines[1]);
+		}
+
+		// Non-ASCII domain only: it is written as IDNA A-labels, so SMTPUTF8
+		// is not needed (RFC 6531, section 3.2)
+		{
+			vmime::shared_ptr <vmime::net::transport> tr = createUTF8Transport <true>();
 
 			vmime::mailboxList recips;
-			recips.appendMailbox(vmime::make_shared <vmime::mailbox>("recipient1@test.vmime.org"));
-			recips.appendMailbox(vmime::make_shared <vmime::mailbox>("recipient2@test.vmime.org"));
+			recips.appendMailbox(createUTF8Mailbox("recipient", "tést.vmime.org"));
 
-			vmime::string data("Message data");
-			vmime::utility::inputStreamStringAdapter is(data);
+			sendUTF8TestData(tr, vmime::mailbox("expediteur@test.vmime.org"), recips);
 
-			tr->send(exp, recips, is, 0);
+			const std::vector <vmime::string>& lines = UTF8SMTPTestSocket <true>::getEnvelopeLines();
+
+			VASSERT_EQ("Count", 2, lines.size());
+			VASSERT_EQ("MAIL", "MAIL FROM:<expediteur@test.vmime.org>", lines[0]);
+			VASSERT_EQ("RCPT", "RCPT TO:<recipient@xn--tst-bma.vmime.org>", lines[1]);
 		}
 	}
 
+	// An SMTPUTF8-aware client must not send non-ASCII addresses to a server
+	// which does not support SMTPUTF8 (RFC 6531, sections 3.2 and 3.5)
 	void testSMTPUTF8_notAvailable() {
 
-		// Test with UTF8 sender
+		// Non-ASCII sender
 		{
-			vmime::shared_ptr <vmime::net::session> session = vmime::net::session::create();
+			vmime::shared_ptr <vmime::net::transport> tr = createUTF8Transport <false>();
 
-			vmime::shared_ptr <vmime::net::transport> tr =
-				session->getTransport(vmime::utility::url("smtp://localhost"));
+			vmime::mailboxList recips;
+			recips.appendMailbox(vmime::make_shared <vmime::mailbox>("recipient@test.vmime.org"));
 
-			tr->setSocketFactory(vmime::make_shared <testSocketFactory <UTF8SMTPTestSocket <false> > >());
-			tr->setTimeoutHandlerFactory(vmime::make_shared <testTimeoutHandlerFactory>());
-
-			VASSERT_NO_THROW("Connection", tr->connect());
-
-			vmime::mailbox exp(
-				vmime::emailAddress(
-					vmime::word("expéditeur", vmime::charsets::UTF_8),
-					vmime::word("test.vmime.org")
-				)
+			VASSERT_THROW(
+				"Send",
+				sendUTF8TestData(tr, *createUTF8Mailbox("expéditeur", "test.vmime.org"), recips),
+				vmime::net::smtp::SMTPUTF8ExtensionNotSupportedException
 			);
 
-			vmime::mailboxList recips;
-			recips.appendMailbox(vmime::make_shared <vmime::mailbox>("recipient1@test.vmime.org"));
-			recips.appendMailbox(vmime::make_shared <vmime::mailbox>("recipient2@test.vmime.org"));
-			recips.appendMailbox(vmime::make_shared <vmime::mailbox>(
-				vmime::emailAddress(
-					vmime::word("récepteur", vmime::charsets::UTF_8),
-					vmime::word("test.vmime.org")
-				)
-			));
-
-			vmime::string data("Message data");
-			vmime::utility::inputStreamStringAdapter is(data);
-
-			tr->send(exp, recips, is, 0);
+			VASSERT_TRUE("No command sent", UTF8SMTPTestSocket <false>::getEnvelopeLines().empty());
+			VASSERT_TRUE("Still connected", tr->isConnected());
 		}
 
-		// Test with UTF8 recipient only
+		// Non-ASCII recipient only
 		{
-			vmime::shared_ptr <vmime::net::session> session = vmime::net::session::create();
-
-			vmime::shared_ptr <vmime::net::transport> tr =
-				session->getTransport(vmime::utility::url("smtp://localhost"));
-
-			tr->setSocketFactory(vmime::make_shared <testSocketFactory <UTF8SMTPTestSocket <false> > >());
-			tr->setTimeoutHandlerFactory(vmime::make_shared <testTimeoutHandlerFactory>());
-
-			VASSERT_NO_THROW("Connection", tr->connect());
-
-			vmime::mailbox exp("expediteur@test.vmime.org");
+			vmime::shared_ptr <vmime::net::transport> tr = createUTF8Transport <false>();
 
 			vmime::mailboxList recips;
-			recips.appendMailbox(vmime::make_shared <vmime::mailbox>("recipient1@test.vmime.org"));
-			recips.appendMailbox(vmime::make_shared <vmime::mailbox>("recipient2@test.vmime.org"));
-			recips.appendMailbox(vmime::make_shared <vmime::mailbox>(
-				vmime::emailAddress(
-					vmime::word("récepteur", vmime::charsets::UTF_8),
-					vmime::word("test.vmime.org")
-				)
-			));
+			recips.appendMailbox(vmime::make_shared <vmime::mailbox>("recipient@test.vmime.org"));
+			recips.appendMailbox(createUTF8Mailbox("récepteur", "test.vmime.org"));
 
-			vmime::string data("Message data");
-			vmime::utility::inputStreamStringAdapter is(data);
+			VASSERT_THROW(
+				"Send",
+				sendUTF8TestData(tr, vmime::mailbox("expediteur@test.vmime.org"), recips),
+				vmime::net::smtp::SMTPUTF8ExtensionNotSupportedException
+			);
 
-			tr->send(exp, recips, is, 0);
+			VASSERT_TRUE("No command sent", UTF8SMTPTestSocket <false>::getEnvelopeLines().empty());
+			VASSERT_TRUE("Still connected", tr->isConnected());
+		}
+
+		// Non-ASCII domain only: it is written as IDNA A-labels
+		{
+			vmime::shared_ptr <vmime::net::transport> tr = createUTF8Transport <false>();
+
+			vmime::mailboxList recips;
+			recips.appendMailbox(createUTF8Mailbox("recipient", "tést.vmime.org"));
+
+			sendUTF8TestData(tr, vmime::mailbox("expediteur@test.vmime.org"), recips);
+
+			const std::vector <vmime::string>& lines = UTF8SMTPTestSocket <false>::getEnvelopeLines();
+
+			VASSERT_EQ("Count", 2, lines.size());
+			VASSERT_EQ("MAIL", "MAIL FROM:<expediteur@test.vmime.org>", lines[0]);
+			VASSERT_EQ("RCPT", "RCPT TO:<recipient@xn--tst-bma.vmime.org>", lines[1]);
+		}
+	}
+
+	// The message is generated with UTF-8 header fields (RFC 6532) only if
+	// it is sent with SMTPUTF8 (RFC 6531, section 3.4)
+	void testSMTPUTF8_message() {
+
+		// ASCII addresses: the non-ASCII subject is encoded, and SMTPUTF8
+		// is not used, even if the server supports it
+		{
+			vmime::shared_ptr <vmime::net::transport> tr = createUTF8Transport <true>();
+
+			tr->send(createUTF8TestMessage(vmime::mailbox("recipient@test.vmime.org")));
+
+			const std::vector <vmime::string>& lines = UTF8SMTPTestSocket <true>::getEnvelopeLines();
+
+			VASSERT_EQ("Count", 2, lines.size());
+			VASSERT_EQ("MAIL", "MAIL FROM:<expediteur@test.vmime.org>", lines[0]);
+			VASSERT_EQ("RCPT", "RCPT TO:<recipient@test.vmime.org>", lines[1]);
+
+			const vmime::string& data = UTF8SMTPTestSocket <true>::getMessageData();
+
+			VASSERT(data, data.find("Subject: =?utf-8?B?R3LDvMOfZQ==?=\r\n") != vmime::string::npos);
+		}
+
+		// Non-ASCII recipient: SMTPUTF8 is used, and the subject is sent as UTF-8
+		{
+			vmime::shared_ptr <vmime::net::transport> tr = createUTF8Transport <true>();
+
+			tr->send(createUTF8TestMessage(*createUTF8Mailbox("récepteur", "test.vmime.org")));
+
+			const std::vector <vmime::string>& lines = UTF8SMTPTestSocket <true>::getEnvelopeLines();
+
+			VASSERT_EQ("Count", 2, lines.size());
+			VASSERT_EQ("MAIL", "MAIL FROM:<expediteur@test.vmime.org> SMTPUTF8", lines[0]);
+			VASSERT_EQ("RCPT", "RCPT TO:<récepteur@test.vmime.org>", lines[1]);
+
+			const vmime::string& data = UTF8SMTPTestSocket <true>::getMessageData();
+
+			VASSERT(data, data.find("Subject: Grüße\r\n") != vmime::string::npos);
+			VASSERT(data, data.find("To: récepteur@test.vmime.org\r\n") != vmime::string::npos);
+		}
+	}
+
+	// A non-ASCII address in a header field which is not part of the envelope
+	// also needs SMTPUTF8 (RFC 6531, section 3.6)
+	void testSMTPUTF8_headerAddress() {
+
+		vmime::addressList replyTo;
+		replyTo.appendAddress(createUTF8Mailbox("réponse", "test.vmime.org"));
+
+		{
+			vmime::shared_ptr <vmime::net::transport> tr = createUTF8Transport <true>();
+
+			vmime::shared_ptr <vmime::message> msg =
+				createUTF8TestMessage(vmime::mailbox("recipient@test.vmime.org"));
+
+			msg->getHeader()->ReplyTo()->setValue(replyTo);
+
+			tr->send(msg);
+
+			const std::vector <vmime::string>& lines = UTF8SMTPTestSocket <true>::getEnvelopeLines();
+
+			VASSERT_EQ("Count", 2, lines.size());
+			VASSERT_EQ("MAIL", "MAIL FROM:<expediteur@test.vmime.org> SMTPUTF8", lines[0]);
+			VASSERT_EQ("RCPT", "RCPT TO:<recipient@test.vmime.org>", lines[1]);
+
+			const vmime::string& data = UTF8SMTPTestSocket <true>::getMessageData();
+
+			VASSERT(data, data.find("Reply-To: réponse@test.vmime.org\r\n") != vmime::string::npos);
+		}
+
+		{
+			vmime::shared_ptr <vmime::net::transport> tr = createUTF8Transport <false>();
+
+			vmime::shared_ptr <vmime::message> msg =
+				createUTF8TestMessage(vmime::mailbox("recipient@test.vmime.org"));
+
+			msg->getHeader()->ReplyTo()->setValue(replyTo);
+
+			VASSERT_THROW("Send", tr->send(msg), vmime::net::smtp::SMTPUTF8ExtensionNotSupportedException);
+
+			VASSERT_TRUE("No command sent", UTF8SMTPTestSocket <false>::getEnvelopeLines().empty());
+		}
+	}
+
+	// The caller can tell that the message has UTF-8 header fields, which
+	// VMime cannot know when sending raw message data
+	void testSMTPUTF8_internationalizedMessageOption() {
+
+		vmime::net::smtp::SMTPSendOptions options;
+		options.setInternationalizedMessage(true);
+
+		vmime::mailboxList recips;
+		recips.appendMailbox(vmime::make_shared <vmime::mailbox>("recipient@test.vmime.org"));
+
+		// Raw message data, ASCII addresses
+		{
+			vmime::shared_ptr <vmime::net::transport> tr = createUTF8Transport <true>();
+
+			sendUTF8TestData(tr, vmime::mailbox("expediteur@test.vmime.org"), recips, options);
+
+			const std::vector <vmime::string>& lines = UTF8SMTPTestSocket <true>::getEnvelopeLines();
+
+			VASSERT_EQ("Count", 2, lines.size());
+			VASSERT_EQ("MAIL", "MAIL FROM:<expediteur@test.vmime.org> SMTPUTF8", lines[0]);
+			VASSERT_EQ("RCPT", "RCPT TO:<recipient@test.vmime.org>", lines[1]);
+		}
+
+		// Server without SMTPUTF8
+		{
+			vmime::shared_ptr <vmime::net::transport> tr = createUTF8Transport <false>();
+
+			VASSERT_THROW(
+				"Send",
+				sendUTF8TestData(tr, vmime::mailbox("expediteur@test.vmime.org"), recips, options),
+				vmime::net::smtp::SMTPUTF8ExtensionNotSupportedException
+			);
+
+			VASSERT_TRUE("No command sent", UTF8SMTPTestSocket <false>::getEnvelopeLines().empty());
+		}
+
+		// Message object: it is generated with UTF-8 header fields
+		{
+			vmime::shared_ptr <vmime::net::transport> tr = createUTF8Transport <true>();
+
+			tr->send(createUTF8TestMessage(vmime::mailbox("recipient@test.vmime.org")), NULL, options);
+
+			const std::vector <vmime::string>& lines = UTF8SMTPTestSocket <true>::getEnvelopeLines();
+
+			VASSERT_EQ("Count", 2, lines.size());
+			VASSERT_EQ("MAIL", "MAIL FROM:<expediteur@test.vmime.org> SMTPUTF8", lines[0]);
+
+			const vmime::string& data = UTF8SMTPTestSocket <true>::getMessageData();
+
+			VASSERT(data, data.find("Subject: Grüße\r\n") != vmime::string::npos);
 		}
 	}
 

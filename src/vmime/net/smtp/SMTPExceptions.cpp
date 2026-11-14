@@ -204,6 +204,34 @@ const char* SMTPDSNExtensionNotSupportedException::name() const throw() {
 }
 
 
+//
+// SMTPUTF8ExtensionNotSupportedException
+//
+
+SMTPUTF8ExtensionNotSupportedException::SMTPUTF8ExtensionNotSupportedException(const exception& other)
+	: SMTPExtensionNotSupportedException(
+		"RFC-6531 SMTPUTF8 extension is not supported by the SMTP server, "
+		"but is needed for non-ASCII addresses.", other) {
+
+}
+
+
+SMTPUTF8ExtensionNotSupportedException::~SMTPUTF8ExtensionNotSupportedException() throw() {
+
+}
+
+
+exception* SMTPUTF8ExtensionNotSupportedException::clone() const {
+	return new SMTPUTF8ExtensionNotSupportedException(*this);
+}
+
+
+const char* SMTPUTF8ExtensionNotSupportedException::name() const throw() {
+
+	return "SMTPUTF8ExtensionNotSupportedException";
+}
+
+
 } // smtp
 } // net
 } // vmime

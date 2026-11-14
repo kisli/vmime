@@ -42,6 +42,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 		VMIME_TEST(testSTARTTLS)
 		VMIME_TEST(testMAIL)
 		VMIME_TEST(testMAIL_Encoded)
+		VMIME_TEST(testMAIL_Encoded_InternationalizedDefaultContext)
 		VMIME_TEST(testMAIL_UTF8)
 		VMIME_TEST(testMAIL_SIZE)
 		VMIME_TEST(testMAIL_SIZE_UTF8)
@@ -134,6 +135,32 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "MAIL FROM:<mailtest@xn--r8jz45g.xn--zckzah> RET=FULL ENVID=<dsn-unique-id>", cmd->getText());
+	}
+
+	// Without SMTPUTF8, the address is ASCII whatever the default context says
+	void testMAIL_Encoded_InternationalizedDefaultContext() {
+
+		vmime::generationContext& defaultCtx = vmime::generationContext::getDefaultContext();
+		const bool internationalized = defaultCtx.getInternationalizedEmailSupport();
+
+		defaultCtx.setInternationalizedEmailSupport(true);
+
+		vmime::shared_ptr <SMTPCommand> cmd;
+
+		try {
+
+			cmd = SMTPCommand::MAIL(vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), false, nullptr);
+
+		} catch (...) {
+
+			defaultCtx.setInternationalizedEmailSupport(internationalized);
+			throw;
+		}
+
+		defaultCtx.setInternationalizedEmailSupport(internationalized);
+
+		VASSERT_NOT_NULL("Not null", cmd);
+		VASSERT_EQ("Text", "MAIL FROM:<mailtest@xn--r8jz45g.xn--zckzah>", cmd->getText());
 	}
 
 	void testMAIL_UTF8() {

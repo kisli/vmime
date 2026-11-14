@@ -53,6 +53,18 @@ const shared_ptr <const DSNAttributes> SMTPSendOptions::getDSNAttributes() const
 }
 
 
+void SMTPSendOptions::setInternationalizedMessage(const bool internationalized) {
+
+	m_internationalizedMessage = internationalized;
+}
+
+
+bool SMTPSendOptions::isInternationalizedMessage() const {
+
+	return m_internationalizedMessage;
+}
+
+
 } // smtp
 } // net
 } // vmime

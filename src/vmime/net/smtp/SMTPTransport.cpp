@@ -178,15 +178,23 @@ void SMTPTransport::noop() {
 // static
 bool SMTPTransport::mailboxNeedsUTF8(const mailbox& mb) {
 
-	if (!utility::stringUtils::is7bit(mb.getEmail().getLocalName().getBuffer()) ||
-	    !utility::stringUtils::is7bit(mb.getEmail().getDomainName().getBuffer())) {
+	// Only a non-ASCII local part needs SMTPUTF8: the domain part can be
+	// written as IDNA A-labels, which are not "internationalized" (RFC 6531,
+	// section 3.2), and the display name as RFC 2047 encoded-words
+	return !utility::stringUtils::is7bit(mb.getEmail().getLocalName().getBuffer());
+}
 
-		return true;
+
+// static
+bool SMTPTransport::componentNeedsUTF8(component& comp) {
+
+	if (const mailbox* mb = dynamic_cast <const mailbox*>(&comp)) {
+		return mailboxNeedsUTF8(*mb);
 	}
 
-	for (size_t i = 0, n = mb.getName().getWordCount() ; i != n ; ++i) {
+	for (const auto& child : comp.getChildComponents()) {
 
-		if (!utility::stringUtils::is7bit(mb.getName().getWordAt(i)->getBuffer())) {
+		if (componentNeedsUTF8(*child)) {
 			return true;
 		}
 	}
@@ -195,10 +203,46 @@ bool SMTPTransport::mailboxNeedsUTF8(const mailbox& mb) {
 }
 
 
+bool SMTPTransport::needSMTPUTF8(
+	const mailbox& expeditor,
+	const mailboxList& recipients,
+	const mailbox& sender,
+	const shared_ptr <vmime::message>& msg,
+	const sendOptions& options
+) const {
+
+	auto opts = dynamic_cast <const SMTPSendOptions*>(&options);
+
+	// The caller may tell that the message has UTF-8 header fields, which
+	// VMime cannot know when it sends raw message data
+	bool need = (opts && opts->isInternationalizedMessage()) ||
+		mailboxNeedsUTF8(sender.isEmpty() ? expeditor : sender);
+
+	for (size_t i = 0 ; !need && i < recipients.getMailboxCount() ; ++i) {
+		need = mailboxNeedsUTF8(*recipients.getMailboxAt(i));
+	}
+
+	// Addresses in the header fields of the message, at any level within
+	// its MIME structure (RFC 6531, sections 3.2 and 3.6)
+	if (!need && msg) {
+		need = componentNeedsUTF8(*msg);
+	}
+
+	// An internationalized message must not be sent to a server which
+	// does not support SMTPUTF8 (RFC 6531, section 3.5)
+	if (need && !m_connection->hasExtension("SMTPUTF8")) {
+		throw SMTPUTF8ExtensionNotSupportedException();
+	}
+
+	return need;
+}
+
+
 void SMTPTransport::sendEnvelope(
 	const mailbox& expeditor,
 	const mailboxList& recipients,
 	const mailbox& sender,
+	const bool utf8,
 	bool sendDATACommand,
 	const size_t size,
 	const sendOptions& options
@@ -232,22 +276,6 @@ void SMTPTransport::sendEnvelope(
 		commands->addCommand(SMTPCommand::RSET());
 	}
 
-	// Check whether we need SMTPUTF8
-	const bool hasSMTPUTF8 = m_connection->hasExtension("SMTPUTF8");
-	bool needSMTPUTF8 = false;
-
-	if (!sender.isEmpty()) {
-		needSMTPUTF8 = needSMTPUTF8 || mailboxNeedsUTF8(sender);
-	} else {
-		needSMTPUTF8 = needSMTPUTF8 || mailboxNeedsUTF8(expeditor);
-	}
-
-	for (size_t i = 0 ; i < recipients.getMailboxCount() ; ++i) {
-
-		const mailbox& mbox = *recipients.getMailboxAt(i);
-		needSMTPUTF8 = needSMTPUTF8 || mailboxNeedsUTF8(mbox);
-	}
-
 	// Emit the "MAIL" command
 	const bool hasSize = m_connection->hasExtension("SIZE");
 
@@ -255,7 +283,7 @@ void SMTPTransport::sendEnvelope(
 
 		commands->addCommand(
 			SMTPCommand::MAIL(
-				sender, hasSMTPUTF8 && needSMTPUTF8, hasSize ? size : 0,
+				sender, utf8, hasSize ? size : 0,
 				opts ? opts->getDSNAttributes() : nullptr
 			)
 		);
@@ -264,7 +292,7 @@ void SMTPTransport::sendEnvelope(
 
 		commands->addCommand(
 			SMTPCommand::MAIL(
-				expeditor, hasSMTPUTF8 && needSMTPUTF8, hasSize ? size : 0,
+				expeditor, utf8, hasSize ? size : 0,
 				opts ? opts->getDSNAttributes() : nullptr
 			)
 		);
@@ -279,7 +307,7 @@ void SMTPTransport::sendEnvelope(
 		const mailbox& mbox = *recipients.getMailboxAt(i);
 		commands->addCommand(
 			SMTPCommand::RCPT(
-				mbox, hasSMTPUTF8 && needSMTPUTF8,
+				mbox, utf8,
 				opts ? opts->getDSNAttributes() : nullptr
 			)
 		);
@@ -419,8 +447,22 @@ void SMTPTransport::send(
 		throw exceptions::not_connected();
 	}
 
+	// The message data is not parsed: only the envelope and the options
+	// tell whether SMTPUTF8 is needed
+	const bool utf8 = needSMTPUTF8(expeditor, recipients, sender, nullptr, options);
+
 	// Send message envelope
-	sendEnvelope(expeditor, recipients, sender, /* sendDATACommand */ true, size, options);
+	sendEnvelope(expeditor, recipients, sender, utf8, /* sendDATACommand */ true, size, options);
+
+	sendData(is, size, progress);
+}
+
+
+void SMTPTransport::sendData(
+	utility::inputStream& is,
+	const size_t size,
+	utility::progressListener* progress
+) {
 
 	// If an error occurs while sending the message data (network error, but
 	// also eg. error while reading the input stream), the server still expects
@@ -474,13 +516,16 @@ void SMTPTransport::send(
 		throw exceptions::not_connected();
 	}
 
-	// Generate the message with Internationalized Email support,
-	// if this is supported by the SMTP server
+	// Generate the message with Internationalized Email support (RFC 6532)
+	// only if it is sent with SMTPUTF8, which is required for UTF-8 header
+	// fields (RFC 6531, section 3.4); otherwise, non-ASCII text is encoded
+	const bool utf8 = needSMTPUTF8(expeditor, recipients, sender, msg, options);
+
 	generationContext ctx(generationContext::getDefaultContext());
-	ctx.setInternationalizedEmailSupport(m_connection->hasExtension("SMTPUTF8"));
+	ctx.setInternationalizedEmailSupport(utf8);
 
 	// If CHUNKING is not supported, generate the message to a temporary
-	// buffer then use the send() method which takes an inputStream
+	// buffer then send it after the DATA command
 	if (!m_connection->hasExtension("CHUNKING") ||
 	    !getInfos().getPropertyValue <bool>(getSession(),
 			dynamic_cast <const SMTPServiceInfos&>(getInfos()).getProperties().PROPERTY_OPTIONS_CHUNKING)) {
@@ -494,14 +539,15 @@ void SMTPTransport::send(
 
 		utility::inputStreamStringAdapter isAdapter(str);
 
-		send(expeditor, recipients, isAdapter, str.length(), progress, sender, options);
+		sendEnvelope(expeditor, recipients, sender, utf8, /* sendDATACommand */ true, str.length(), options);
+		sendData(isAdapter, str.length(), progress);
 		return;
 	}
 
 	// Send message envelope
 	const size_t msgSize = msg->getGeneratedSize(ctx);
 
-	sendEnvelope(expeditor, recipients, sender, /* sendDATACommand */ false, msgSize, options);
+	sendEnvelope(expeditor, recipients, sender, utf8, /* sendDATACommand */ false, msgSize, options);
 
 	// If an error occurs while sending the message chunks (network error, but
 	// also eg. error while generating the message), the server still expects
