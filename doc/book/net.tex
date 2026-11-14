@@ -623,6 +623,36 @@ tr->setProperty("auth.username", "user");
 tr->setProperty("auth.password", "password");
 \end{lstlisting}
 
+If an address has a non-ASCII local part (for example, \emph{josé@example.org}),
+the SMTP service sends the message with the SMTPUTF8
+extension\footnote{See RFC 6531: \url{https://www.rfc-editor.org/rfc/rfc6531}},
+and the header fields of the message are written in UTF-8 (RFC 6532). All the
+addresses are taken into account: those of the envelope, but also those of the
+header fields which are not part of the envelope, like \emph{Reply-To}.
+Otherwise, the extension is not used, even if the server supports it:
+non-ASCII text in header fields is encoded as usual, and non-ASCII domain
+names are written as IDNA A-labels ({\vcode xn-{}-...}).
+
+If an address needs SMTPUTF8 but the server does not support it, the message
+cannot be sent (RFC 6531, section 3.2), and an exception is thrown before any
+command is sent to the server:
+
+\begin{lstlisting}
+try {
+
+   tr->send(msg);
+
+} catch (vmime::net::smtp::SMTPUTF8ExtensionNotSupportedException& e) {
+
+   // The server does not support internationalized addresses
+}
+\end{lstlisting}
+
+\vnote{When you send raw message data, VMime does not know its content: only
+the addresses of the envelope tell whether SMTPUTF8 is needed. The header
+fields of the data must then be ASCII-only, unless an address of the envelope
+has a non-ASCII local part.}
+
 
 % ============================================================================
 \section{Using store service}

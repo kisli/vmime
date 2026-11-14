@@ -99,6 +99,26 @@ shared_ptr <SMTPCommand> SMTPCommand::STARTTLS() {
 }
 
 
+// Write the address of a mailbox in a MAIL or RCPT command
+static void writeAddress(std::ostream& cmd, const mailbox& mbox, const bool utf8) {
+
+	if (utf8) {
+
+		cmd << mbox.getEmail().toText().getConvertedText(vmime::charsets::UTF_8);
+
+	} else {
+
+		// Without SMTPUTF8, the domain part must be written as IDNA A-labels,
+		// even if Internationalized Email is enabled in the default context
+		generationContext ctx(generationContext::getDefaultContext());
+		ctx.setInternationalizedEmailSupport(false);
+
+		vmime::utility::outputStreamAdapter cmd2(cmd);
+		mbox.getEmail().generate(ctx, cmd2);
+	}
+}
+
+
 // static
 shared_ptr <SMTPCommand> SMTPCommand::MAIL(
 	const mailbox& mbox, const bool utf8,
@@ -117,17 +137,7 @@ shared_ptr <SMTPCommand> SMTPCommand::MAIL(
 
 	utility::details::classicOStringStream cmd;
 	cmd << "MAIL FROM:<";
-
-	if (utf8) {
-
-		cmd << mbox.getEmail().toText().getConvertedText(vmime::charsets::UTF_8);
-
-	} else {
-
-		vmime::utility::outputStreamAdapter cmd2(cmd);
-		mbox.getEmail().generate(cmd2);
-	}
-
+	writeAddress(cmd, mbox, utf8);
 	cmd << ">";
 
 	if (dsnAttrs && !dsnAttrs->getReturnFormat().empty()) {
@@ -157,17 +167,7 @@ shared_ptr <SMTPCommand> SMTPCommand::RCPT(
 
 	utility::details::classicOStringStream cmd;
 	cmd << "RCPT TO:<";
-
-	if (utf8) {
-
-		cmd << mbox.getEmail().toText().getConvertedText(vmime::charsets::UTF_8);
-
-	} else {
-
-		vmime::utility::outputStreamAdapter cmd2(cmd);
-		mbox.getEmail().generate(cmd2);
-	}
-
+	writeAddress(cmd, mbox, utf8);
 	cmd << ">";
 
 	if (dsnAttrs && !dsnAttrs->getNotificationConditions().empty()) {
