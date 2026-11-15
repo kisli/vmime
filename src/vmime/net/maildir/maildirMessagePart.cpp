@@ -30,6 +30,8 @@
 #include "vmime/net/maildir/maildirMessagePart.hpp"
 #include "vmime/net/maildir/maildirMessageStructure.hpp"
 
+#include "vmime/attachmentHelper.hpp"
+
 
 namespace vmime {
 namespace net {
@@ -58,6 +60,19 @@ maildirMessagePart::maildirMessagePart(
 	auto cdispField = part.getHeader()->ContentDisposition();
 	if (cdispField) {
 		m_dispType = dynamic_cast <const contentDisposition&>(*cdispField->getValue());
+	}
+
+	// Keep the MIME fields used by getName() and isAttachment()
+	m_structureHeader = make_shared <header>();
+
+	for (const char* name : { fields::CONTENT_TYPE, fields::CONTENT_DISPOSITION,
+	                          fields::CONTENT_ID, fields::CONTENT_LOCATION }) {
+
+		shared_ptr <const headerField> field = part.getHeader()->findField(name);
+
+		if (field) {
+			m_structureHeader->appendField(vmime::clone(field));
+		}
 	}
 }
 
@@ -123,6 +138,18 @@ size_t maildirMessagePart::getSize() const {
 size_t maildirMessagePart::getNumber() const {
 
 	return m_number;
+}
+
+
+word maildirMessagePart::getName() const {
+
+	return attachmentHelper::getAttachmentName(*m_structureHeader);
+}
+
+
+bool maildirMessagePart::isAttachment(const unsigned int options) const {
+
+	return attachmentHelper::isAttachment(*m_structureHeader, !m_parent.lock(), options);
 }
 
 

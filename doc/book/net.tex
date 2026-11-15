@@ -882,6 +882,44 @@ Suppose we have a message with the following structure:
 The previous example will extract the header and body of the \emph{image/jpeg}
 part.
 
+\subsection{Finding attachments} % --------------------------------------------
+
+The structure of a message is enough to know which parts are attachments,
+and what their names are: nothing else needs to be downloaded, not even the
+header of the parts. The {\vcode findAttachments()} method on a
+{\vcode vmime::net::messageStructure} object returns the parts which are
+attachments, using the same rules as the attachment helper (see Section
+\ref{msg-attachment-helper}). For a single part, call
+{\vcode isAttachment()} on a {\vcode vmime::net::messagePart} object.
+
+\begin{lstlisting}[caption={Finding attachments in the structure of a message}]
+// Only the structure is needed
+folder->fetchMessage(msg, vmime::net::fetchAttributes::STRUCTURE);
+
+const std::vector <vmime::shared_ptr <const vmime::net::messagePart> > atts =
+   msg->getStructure()->findAttachments();
+
+vmime::charset ch(vmime::charsets::UTF_8);
+
+for (const auto& part : atts) {
+
+   // Print the file name and the size of the attachment
+   std::cout << part->getName().getConvertedText(ch)
+             << " (" << part->getSize() << " bytes)" << std::endl;
+}
+\end{lstlisting}
+
+As with the attachment helper, the {\vcode INLINE\_OBJECTS} option of
+{\vcode findAttachments()} and {\vcode isAttachment()} also returns the
+objects which are embedded in the message, such as the images of a HTML
+text.
+
+The name of a part is the \emph{filename} parameter of its
+\emph{Content-Disposition} field or, if there is none, the \emph{name}
+parameter of its \emph{Content-Type} field. It is decoded if needed (RFC-2231
+or RFC-2047 encoding), so you should use {\vcode getConvertedText()} to get
+it in the charset you need.
+
 \subsection{Deleting messages} % ---------------------------------------------
 
 The following example will delete the second and the third message from the

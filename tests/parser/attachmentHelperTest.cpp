@@ -33,6 +33,8 @@ VMIME_TEST_SUITE_BEGIN(attachmentHelperTest)
 		VMIME_TEST(testIsBodyPartAnAttachment1)
 		VMIME_TEST(testIsBodyPartAnAttachment2)
 		VMIME_TEST(testIsBodyPartAnAttachment3)
+		VMIME_TEST(testIsAttachment)
+		VMIME_TEST(testGetAttachmentName)
 		VMIME_TEST(testGetBodyPartAttachment)
 		VMIME_TEST(testAddAttachmentMessage1)
 		VMIME_TEST(testGetBodyPartAttachmentMessage)
@@ -213,6 +215,57 @@ VMIME_TEST_SUITE_BEGIN(attachmentHelperTest)
 		p->parse(data);
 
 		VASSERT_EQ("1", false, vmime::attachmentHelper::isBodyPartAnAttachment(p));
+	}
+
+	// Header only, for the root part or not
+	void testIsAttachment() {
+
+		vmime::header hdr;
+		hdr.parse(
+			"Content-Type: image/png\r\n"
+			"Content-Disposition: inline\r\n"
+		);
+
+		// An inline part may be an attachment, but not the root part
+		VASSERT_EQ("1", true, vmime::attachmentHelper::isAttachment(hdr, false));
+		VASSERT_EQ("2", false, vmime::attachmentHelper::isAttachment(hdr, true));
+
+		// Inline object (with a Content-Id field)
+		hdr.parse(
+			"Content-Type: image/png\r\n"
+			"Content-Disposition: inline\r\n"
+			"Content-Id: <logo@vmime.org>\r\n"
+		);
+
+		VASSERT_EQ("3", false, vmime::attachmentHelper::isAttachment(hdr, false));
+		VASSERT_EQ("4", true, vmime::attachmentHelper::isAttachment(
+			hdr, false, vmime::attachmentHelper::INLINE_OBJECTS));
+	}
+
+	void testGetAttachmentName() {
+
+		vmime::header hdr;
+
+		// The "filename" parameter of Content-Disposition comes first
+		hdr.parse(
+			"Content-Type: application/pdf; name=\"type.pdf\"\r\n"
+			"Content-Disposition: attachment; filename=\"disposition.pdf\"\r\n"
+		);
+
+		VASSERT_EQ("1", "disposition.pdf", vmime::attachmentHelper::getAttachmentName(hdr).getBuffer());
+
+		// Then the "name" parameter of Content-Type (RFC-1341)
+		hdr.parse(
+			"Content-Type: application/pdf; name=\"type.pdf\"\r\n"
+			"Content-Disposition: attachment\r\n"
+		);
+
+		VASSERT_EQ("2", "type.pdf", vmime::attachmentHelper::getAttachmentName(hdr).getBuffer());
+
+		// No name
+		hdr.parse("Content-Type: application/pdf\r\n");
+
+		VASSERT_EQ("3", "", vmime::attachmentHelper::getAttachmentName(hdr).getBuffer());
 	}
 
 	void testGetBodyPartAttachment() {

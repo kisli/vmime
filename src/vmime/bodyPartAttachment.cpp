@@ -22,6 +22,7 @@
 //
 
 #include "vmime/bodyPartAttachment.hpp"
+#include "vmime/attachmentHelper.hpp"
 
 
 namespace vmime {
@@ -54,31 +55,7 @@ const mediaType bodyPartAttachment::getType() const {
 
 const word bodyPartAttachment::getName() const {
 
-	word name;
-
-	// Try the 'filename' parameter of 'Content-Disposition' field
-	shared_ptr <const contentDispositionField> cdf = getContentDisposition();
-
-	if (cdf && cdf->hasFilename()) {
-
-		name = cdf->getFilename();
-
-	// Try the 'name' parameter of 'Content-Type' field
-	} else {
-
-		shared_ptr <const contentTypeField> ctf = getContentType();
-
-		if (ctf) {
-
-			shared_ptr <const parameter> prm = ctf->findParameter("name");
-
-			if (prm) {
-				name = prm->getValue();
-			}
-		}
-	}
-
-	return name;
+	return attachmentHelper::getAttachmentName(*getHeader());
 }
 
 
@@ -123,12 +100,6 @@ shared_ptr <const object> bodyPartAttachment::getPart() const {
 shared_ptr <const header> bodyPartAttachment::getHeader() const {
 
 	return m_part->getHeader();
-}
-
-
-shared_ptr <const contentDispositionField> bodyPartAttachment::getContentDisposition() const {
-
-	return getHeader()->findField <contentDispositionField>(fields::CONTENT_DISPOSITION);
 }
 
 

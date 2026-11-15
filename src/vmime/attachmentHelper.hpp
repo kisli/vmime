@@ -62,6 +62,34 @@ public:
 		const unsigned int options = 0
 	);
 
+	/** Test whether a part is an attachment, given its header. This
+	  * uses the same rules as isBodyPartAnAttachment(), when the body
+	  * of the part is not available (eg. for the structure of a message
+	  * on a server, see net::messagePart::isAttachment()).
+	  *
+	  * @param hdr header of the part to test
+	  * @param isRootPart true if the part is the root part of the
+	  * message (ie. the header is the message header), false otherwise
+	  * @param options search options (see FindOptions)
+	  * @return true if the part is an attachment, false otherwise
+	  */
+	static bool isAttachment(
+		const header& hdr,
+		const bool isRootPart,
+		const unsigned int options = 0
+	);
+
+	/** Return the name of an attachment, given the header of the part:
+	  * the "filename" parameter of the "Content-Disposition" field or,
+	  * if there is none, the "name" parameter of the "Content-Type"
+	  * field (as in RFC-1341, which is obsolete).
+	  *
+	  * @param hdr header of the part
+	  * @return name of the attachment, or an empty word if the part
+	  * has no name
+	  */
+	static const word getAttachmentName(const header& hdr);
+
 	/** Return attachment information in the specified body part.
 	  * If the specified body part does not contain attachment
 	  * information (ie. is not an attachment), NULL is returned.

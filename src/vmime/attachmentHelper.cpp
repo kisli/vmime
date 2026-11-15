@@ -42,10 +42,21 @@ bool attachmentHelper::isBodyPartAnAttachment(
 	const unsigned int options
 ) {
 
+	return isAttachment(*part->getHeader(), !part->getParentPart(), options);
+}
+
+
+// static
+bool attachmentHelper::isAttachment(
+	const header& hdr,
+	const bool isRootPart,
+	const unsigned int options
+) {
+
 	// First, try with "Content-Disposition" field.
 	// If not present, we will try with "Content-Type" field.
 	shared_ptr <const contentDispositionField> cdf =
-		part->getHeader()->findField <contentDispositionField>(fields::CONTENT_DISPOSITION);
+		hdr.findField <contentDispositionField>(fields::CONTENT_DISPOSITION);
 
 	if (cdf) {
 
@@ -59,11 +70,11 @@ bool attachmentHelper::isBodyPartAnAttachment(
 
 			// If the Content-Disposition is 'inline' and there is no
 			// Content-Id or Content-Location field, it may be an attachment
-			if (!part->getHeader()->hasField(vmime::fields::CONTENT_ID) &&
-			    !part->getHeader()->hasField(vmime::fields::CONTENT_LOCATION)) {
+			if (!hdr.hasField(vmime::fields::CONTENT_ID) &&
+			    !hdr.hasField(vmime::fields::CONTENT_LOCATION)) {
 
 				// If this is the root part, it might not be an attachment
-				if (!part->getParentPart()) {
+				if (isRootPart) {
 					return false;
 				}
 
@@ -79,7 +90,7 @@ bool attachmentHelper::isBodyPartAnAttachment(
 	bool hasContentTypeName = false;
 
 	shared_ptr <const contentTypeField> ctf =
-		part->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
+		hdr.findField <contentTypeField>(fields::CONTENT_TYPE);
 
 	if (ctf) {
 
@@ -94,7 +105,7 @@ bool attachmentHelper::isBodyPartAnAttachment(
 		// If this is the root part and no Content-Type field is present,
 		// then this may not be a MIME message, so do not assume it is
 		// an attachment
-		if (!part->getParentPart()) {
+		if (isRootPart) {
 			return false;
 		}
 
@@ -118,7 +129,7 @@ bool attachmentHelper::isBodyPartAnAttachment(
 
 			// If a "Content-Id" field is present, it might be an
 			// embedded object (MHTML messages)
-			if (part->getHeader()->hasField(vmime::fields::CONTENT_ID)) {
+			if (hdr.hasField(vmime::fields::CONTENT_ID)) {
 				return false;
 			}
 		}
@@ -127,6 +138,39 @@ bool attachmentHelper::isBodyPartAnAttachment(
 	}
 
 	return false;
+}
+
+
+// static
+const word attachmentHelper::getAttachmentName(const header& hdr) {
+
+	word name;
+
+	// Try the 'filename' parameter of 'Content-Disposition' field
+	shared_ptr <const contentDispositionField> cdf =
+		hdr.findField <contentDispositionField>(fields::CONTENT_DISPOSITION);
+
+	if (cdf && cdf->hasFilename()) {
+
+		name = cdf->getFilename();
+
+	// Try the 'name' parameter of 'Content-Type' field
+	} else {
+
+		shared_ptr <const contentTypeField> ctf =
+			hdr.findField <contentTypeField>(fields::CONTENT_TYPE);
+
+		if (ctf) {
+
+			shared_ptr <const parameter> prm = ctf->findParameter("name");
+
+			if (prm) {
+				name = prm->getValue();
+			}
+		}
+	}
+
+	return name;
 }
 
 
