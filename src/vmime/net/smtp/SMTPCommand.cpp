@@ -147,8 +147,10 @@ shared_ptr <SMTPCommand> SMTPCommand::MAIL(
 		cmd << " " << dsn::ENVID << "=<" << dsnAttrs->getEnvelopId() << ">";
 	}
 
+	// An internationalized message contains 8-bit data, so it is sent with
+	// BODY=8BITMIME (RFC 6531, section 1, and RFC 6152, section 3)
 	if (utf8) {
-		cmd << " SMTPUTF8";
+		cmd << " SMTPUTF8 BODY=8BITMIME";
 	}
 
 	if (size != 0) {

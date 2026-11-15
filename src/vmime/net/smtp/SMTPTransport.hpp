@@ -112,7 +112,8 @@ private:
 	  * @param options send options
 	  * @return true if the SMTPUTF8 extension must be used, false otherwise
 	  * @throw SMTPUTF8ExtensionNotSupportedException if the SMTPUTF8
-	  * extension is needed but not supported by the server
+	  * extension is needed but not supported by the server (or if the
+	  * server does not announce 8BITMIME along with it)
 	  */
 	bool needSMTPUTF8(
 		const mailbox& expeditor,

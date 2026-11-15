@@ -150,6 +150,8 @@ public:
 
 /** SMTP error: RFC-6531 SMTPUTF8 extension is not supported by the server,
   * whereas it is needed to send a message with non-ASCII addresses.
+  * A server which does not announce 8BITMIME along with SMTPUTF8 does not
+  * support it either (RFC 6531, section 3.1).
   */
 class VMIME_EXPORT SMTPUTF8ExtensionNotSupportedException : public SMTPExtensionNotSupportedException {
 

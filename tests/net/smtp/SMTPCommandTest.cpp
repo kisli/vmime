@@ -172,7 +172,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 		);
 
 		VASSERT_NOT_NULL("Not null", cmd);
-		VASSERT_EQ("Text", "MAIL FROM:<mailtest@例え.テスト> RET=FULL ENVID=<dsn-unique-id> SMTPUTF8", cmd->getText());
+		VASSERT_EQ("Text", "MAIL FROM:<mailtest@例え.テスト> RET=FULL ENVID=<dsn-unique-id> SMTPUTF8 BODY=8BITMIME", cmd->getText());
 	}
 
 	void testMAIL_SIZE() {
@@ -196,7 +196,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 		);
 
 		VASSERT_NOT_NULL("Not null", cmd);
-		VASSERT_EQ("Text", "MAIL FROM:<mailtest@例え.テスト> RET=FULL ENVID=<dsn-unique-id> SMTPUTF8 SIZE=123456789", cmd->getText());
+		VASSERT_EQ("Text", "MAIL FROM:<mailtest@例え.テスト> RET=FULL ENVID=<dsn-unique-id> SMTPUTF8 BODY=8BITMIME SIZE=123456789", cmd->getText());
 	}
 
 	void testRCPT() {

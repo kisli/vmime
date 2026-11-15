@@ -608,8 +608,12 @@ typedef SMTPBigTestMessage <4194304> SMTPBigTestMessage4MB;
   *
   * The MAIL and RCPT commands sent by the client are recorded, as well
   * as the message data.
+  *
+  * A server which supports SMTPUTF8 must also announce 8BITMIME (RFC 6531,
+  * section 3.1): set SUPPORTS_8BITMIME to false to simulate a server which
+  * does not.
   */
-template <bool SUPPORTS_UTF8>
+template <bool SUPPORTS_UTF8, bool SUPPORTS_8BITMIME = SUPPORTS_UTF8>
 class UTF8SMTPTestSocket : public lineBasedTestSocket {
 
 public:
@@ -672,6 +676,11 @@ public:
 			if (SUPPORTS_UTF8) {
 
 				localSend("250-test.vmime.org\r\n");
+
+				if (SUPPORTS_8BITMIME) {
+					localSend("250-8BITMIME\r\n");
+				}
+
 				localSend("250 SMTPUTF8\r\n");
 
 			} else {
@@ -710,8 +719,8 @@ private:
 };
 
 
-template <bool SUPPORTS_UTF8>
-std::vector <vmime::string> UTF8SMTPTestSocket <SUPPORTS_UTF8>::sm_envelopeLines;
+template <bool SUPPORTS_UTF8, bool SUPPORTS_8BITMIME>
+std::vector <vmime::string> UTF8SMTPTestSocket <SUPPORTS_UTF8, SUPPORTS_8BITMIME>::sm_envelopeLines;
 
-template <bool SUPPORTS_UTF8>
-vmime::string UTF8SMTPTestSocket <SUPPORTS_UTF8>::sm_messageData;
+template <bool SUPPORTS_UTF8, bool SUPPORTS_8BITMIME>
+vmime::string UTF8SMTPTestSocket <SUPPORTS_UTF8, SUPPORTS_8BITMIME>::sm_messageData;
