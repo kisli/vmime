@@ -1126,4 +1126,19 @@ bool datetime::operator>=(const datetime& other) const {
 }
 
 
+time_t datetime::to_time_t() const {
+
+	struct tm when{};
+	int zone = 0;
+
+	getDate(when.tm_year, when.tm_mon, when.tm_mday);
+	getTime(when.tm_hour, when.tm_min, when.tm_sec, zone);
+	when.tm_year -= 1900;
+	when.tm_mon  -= 1;
+	when.tm_min  -= zone;
+	when.tm_isdst = -1;
+	return timegm(&when);
+}
+
+
 } // vmime
