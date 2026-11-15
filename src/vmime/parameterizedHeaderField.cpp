@@ -75,6 +75,90 @@ struct paramInfo {
 	size_t end;
 };
 
+
+// Add a parameter to the list of parameters being parsed, or a section
+// of a multi-section parameter (RFC-2231)
+static void addParameterSection(
+	std::map <string, paramInfo>& params,
+	string name,
+	const string& value,
+	const size_t start,
+	const size_t end
+) {
+
+	// Check for RFC-2231 extended parameters
+	bool extended = false;
+	bool encoded = false;
+
+	if (name[name.length() - 1] == '*') {
+
+		name.erase(name.end() - 1, name.end());
+
+		extended = true;
+		encoded = true;
+	}
+
+	// Check for RFC-2231 multi-section parameters
+	const size_t star = name.find_last_of('*');
+
+	if (star != string::npos) {
+
+		bool allDigits = true;
+
+		for (size_t i = star + 1 ; allDigits && (i < name.length()) ; ++i) {
+			allDigits = parserHelpers::isDigit(name[i]);
+		}
+
+		if (allDigits) {
+			name.erase(name.begin() + star, name.end());
+			extended = true;
+		}
+
+		// NOTE: we ignore section number, and we suppose that
+		// the sequence is correct (ie. the sections appear
+		// in order: param*0, param*1...)
+	}
+
+	// Add/replace/modify the parameter
+	const std::map <string, paramInfo>::iterator it = params.find(name);
+
+	if (it != params.end()) {
+
+		paramInfo& info = (*it).second;
+
+		// An extended parameter replaces a normal one
+		if (!info.extended) {
+
+			info.extended = extended;
+			info.value.clear();
+			info.start = start;
+		}
+
+		// Append a new section for a multi-section parameter
+		parameter::valueChunk chunk;
+		chunk.encoded = encoded;
+		chunk.data = value;
+
+		info.value.push_back(chunk);
+		info.end = end;
+
+	} else {
+
+		parameter::valueChunk chunk;
+		chunk.encoded = encoded;
+		chunk.data = value;
+
+		paramInfo info;
+		info.extended = extended;
+		info.value.push_back(chunk);
+		info.start = start;
+		info.end = end;
+
+		// Insert a new parameter
+		params.insert(std::map <string, paramInfo>::value_type(name, info));
+	}
+}
+
 #endif // VMIME_BUILDING_DOC
 
 
@@ -252,79 +336,13 @@ void parameterizedHeaderField::parseImpl(
 				// Don't allow ill-formed parameters
 				if (attrStart != attrEnd && value.length()) {
 
-					string name(buffer.begin() + attrStart, buffer.begin() + attrEnd);
-
-					// Check for RFC-2231 extended parameters
-					bool extended = false;
-					bool encoded = false;
-
-					if (name[name.length() - 1] == '*') {
-
-						name.erase(name.end() - 1, name.end());
-
-						extended = true;
-						encoded = true;
-					}
-
-					// Check for RFC-2231 multi-section parameters
-					const size_t star = name.find_last_of('*');
-
-					if (star != string::npos) {
-
-						bool allDigits = true;
-
-						for (size_t i = star + 1 ; allDigits && (i < name.length()) ; ++i) {
-							allDigits = parserHelpers::isDigit(name[i]);
-						}
-
-						if (allDigits) {
-							name.erase(name.begin() + star, name.end());
-							extended = true;
-						}
-
-						// NOTE: we ignore section number, and we suppose that
-						// the sequence is correct (ie. the sections appear
-						// in order: param*0, param*1...)
-					}
-
-					// Add/replace/modify the parameter
-					const std::map <string, paramInfo>::iterator it = params.find(name);
-
-					if (it != params.end()) {
-
-						paramInfo& info = (*it).second;
-
-						// An extended parameter replaces a normal one
-						if (!info.extended) {
-
-							info.extended = extended;
-							info.value.clear();
-							info.start = attrStart;
-						}
-
-						// Append a new section for a multi-section parameter
-						parameter::valueChunk chunk;
-						chunk.encoded = encoded;
-						chunk.data = value;
-
-						info.value.push_back(chunk);
-						info.end = position + (p - pstart);
-
-					} else {
-
-						parameter::valueChunk chunk;
-						chunk.encoded = encoded;
-						chunk.data = value;
-
-						paramInfo info;
-						info.extended = extended;
-						info.value.push_back(chunk);
-						info.start = attrStart;
-						info.end = position + (p - pstart);
-
-						// Insert a new parameter
-						params.insert(std::map <string, paramInfo>::value_type(name, info));
-					}
+					addParameterSection(
+						params,
+						string(buffer.begin() + attrStart, buffer.begin() + attrEnd),
+						value,
+						attrStart,
+						position + (p - pstart)
+					);
 				}
 
 				// Skip white-spaces after this parameter
@@ -349,6 +367,34 @@ void parameterizedHeaderField::parseImpl(
 
 	if (newPosition) {
 		*newPosition = end;
+	}
+}
+
+
+void parameterizedHeaderField::parseParameters(
+	parsingContext& ctx,
+	const std::vector <std::pair <string, string> >& params
+) {
+
+	removeAllParameters();
+
+	std::map <string, paramInfo> infos;
+
+	for (const auto& param : params) {
+
+		// Don't allow ill-formed parameters
+		if (!param.first.empty() && !param.second.empty()) {
+			addParameterSection(infos, param.first, param.second, 0, 0);
+		}
+	}
+
+	for (const auto& info : infos) {
+
+		shared_ptr <parameter> param = make_shared <parameter>(info.first);
+
+		param->parse(ctx, info.second.value);
+
+		appendParameter(param);
 	}
 }
 

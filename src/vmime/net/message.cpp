@@ -37,10 +37,17 @@ namespace vmime {
 namespace net {
 
 
-string messagePart::getName() const
+word messagePart::getName() const
 {
 	return {};
 }
+
+
+bool messagePart::isAttachment(const unsigned int /* options */) const {
+
+	return false;
+}
+
 
 shared_ptr <const messagePart> messagePart::getPartAt(const size_t pos) const {
 
@@ -57,6 +64,56 @@ shared_ptr <messagePart> messagePart::getPartAt(const size_t pos) {
 size_t messagePart::getPartCount() const {
 
 	return getStructure()->getPartCount();
+}
+
+
+
+// messageStructure
+
+
+namespace {
+
+	// STRUCTURE and PART are either both const or both non-const
+	template <typename STRUCTURE, typename PART>
+	void findAttachmentsInStructure(
+		STRUCTURE& str,
+		std::vector <shared_ptr <PART> >& atts,
+		const unsigned int options
+	) {
+
+		for (size_t i = 0, n = str.getPartCount() ; i < n ; ++i) {
+
+			shared_ptr <PART> part = str.getPartAt(i);
+
+			if (part->isAttachment(options)) {
+				atts.push_back(part);
+			} else {
+				findAttachmentsInStructure(*part->getStructure(), atts, options);
+			}
+		}
+	}
+}
+
+
+const std::vector <shared_ptr <const messagePart> > messageStructure::findAttachments(
+	const unsigned int options
+) const {
+
+	std::vector <shared_ptr <const messagePart> > atts;
+	findAttachmentsInStructure(*this, atts, options);
+
+	return atts;
+}
+
+
+const std::vector <shared_ptr <messagePart> > messageStructure::findAttachments(
+	const unsigned int options
+) {
+
+	std::vector <shared_ptr <messagePart> > atts;
+	findAttachmentsInStructure(*this, atts, options);
+
+	return atts;
 }
 
 

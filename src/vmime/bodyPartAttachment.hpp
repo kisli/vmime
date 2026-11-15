@@ -59,7 +59,6 @@ private:
 
 	void generateIn(const shared_ptr <bodyPart>& parent) const;
 
-	shared_ptr <const contentDispositionField> getContentDisposition() const;
 	shared_ptr <const contentTypeField> getContentType() const;
 
 

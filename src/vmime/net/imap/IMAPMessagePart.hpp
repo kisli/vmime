@@ -69,7 +69,8 @@ public:
 	const contentDisposition &getDisposition() const;
 	size_t getSize() const;
 	size_t getNumber() const;
-	string getName() const;
+	word getName() const;
+	bool isAttachment(const unsigned int options = 0) const;
 
 	shared_ptr <const header> getHeader() const;
 
@@ -89,9 +90,11 @@ private:
 	weak_ptr <IMAPMessagePart> m_parent;
 	shared_ptr <header> m_header;
 
+	// MIME fields known from the body structure
+	shared_ptr <header> m_structureHeader;
+
 	size_t m_number;
 	size_t m_size;
-	string m_name;
 	mediaType m_mediaType;
 	contentDisposition m_dispType;
 };

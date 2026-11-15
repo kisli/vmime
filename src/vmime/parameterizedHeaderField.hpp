@@ -189,6 +189,23 @@ public:
 	  */
 	const std::vector <shared_ptr <parameter> > getParameterList();
 
+	/** Parse the parameters from a list of (name, value) pairs, which
+	  * are already split and unquoted. This is used when the parameters
+	  * do not come from a header field, eg. when they are found in the
+	  * body structure returned by an IMAP server.
+	  *
+	  * As when parsing the field, RFC-2231 extended parameters (charset,
+	  * language and continuations, eg. "filename*0*") and RFC-2047
+	  * encoded words are decoded. The current parameters are replaced.
+	  *
+	  * @param ctx parsing context
+	  * @param params list of (name, value) pairs
+	  */
+	void parseParameters(
+		parsingContext& ctx,
+		const std::vector <std::pair <string, string> >& params
+	);
+
 	size_t getGeneratedSize(const generationContext& ctx);
 
 	const std::vector <shared_ptr <component> > getChildComponents();

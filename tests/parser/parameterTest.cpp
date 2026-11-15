@@ -38,6 +38,7 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 		VMIME_TEST(testEncodeTSpecials)
 		VMIME_TEST(testEncodeTSpecialsInRFC2231)
 		VMIME_TEST(testWhitespaceBreaksTheValue)
+		VMIME_TEST(testParseParameters)
 	VMIME_TEST_LIST_END
 
 
@@ -696,6 +697,91 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 		VASSERT_EQ("value", "xxx", FIELD_VALUE(p));
 		VASSERT_EQ("param1.name", "param1", PARAM_NAME(p, 0));
 		VASSERT_EQ("param1.value", "value1", PARAM_VALUE(p, 0));
+	}
+
+	// Parameters which are already split and unquoted, as in the body
+	// structure returned by an IMAP server
+	void testParseParameters() {
+
+		vmime::parsingContext ctx;
+
+		// Simple parameters, and values which would need quoting in a field
+		parameterizedHeaderField p1;
+		p1.parseParameters(ctx, {
+			{ "param1", "value1" },
+			{ "param2", "a \"quoted\" value; with \\ specials" },
+		});
+
+		VASSERT_EQ("1.1", 2, p1.getParameterCount());
+		VASSERT_EQ("1.2", "param1", PARAM_NAME(p1, 0));
+		VASSERT_EQ("1.3", "value1", PARAM_BUFFER(p1, 0));
+		VASSERT_EQ("1.4", "param2", PARAM_NAME(p1, 1));
+		VASSERT_EQ("1.5", "a \"quoted\" value; with \\ specials", PARAM_BUFFER(p1, 1));
+
+		// Multi-section parameter (RFC-2231)
+		parameterizedHeaderField p2;
+		p2.parseParameters(ctx, {
+			{ "param1*0", "val" },
+			{ "param1*1", "ue1" },
+		});
+
+		VASSERT_EQ("2.1", 1, p2.getParameterCount());
+		VASSERT_EQ("2.2", "param1", PARAM_NAME(p2, 0));
+		VASSERT_EQ("2.3", "value1", PARAM_BUFFER(p2, 0));
+
+		// Extended parameters, with one or more sections (RFC-2231)
+		parameterizedHeaderField p3;
+		p3.parseParameters(ctx, {
+			{ "param1*", "UTF-8''%C3%A9t%C3%A9.pdf" },
+			{ "param2*0*", "UTF-8'fr'%C3%A9t%C3%A9-" },
+			{ "param2*1*", "long.bin" },
+		});
+
+		VASSERT_EQ("3.1", 2, p3.getParameterCount());
+		VASSERT_EQ("3.2", "param1", PARAM_NAME(p3, 0));
+		VASSERT_EQ("3.3", "\xc3\xa9t\xc3\xa9.pdf", PARAM_BUFFER(p3, 0));
+		VASSERT_EQ("3.4", vmime::charset(vmime::charsets::UTF_8), p3.getParameterAt(0)->getValue().getCharset());
+		VASSERT_EQ("3.5", "param2", PARAM_NAME(p3, 1));
+		VASSERT_EQ("3.6", "\xc3\xa9t\xc3\xa9-long.bin", PARAM_BUFFER(p3, 1));
+		VASSERT_EQ("3.7", vmime::charset(vmime::charsets::UTF_8), p3.getParameterAt(1)->getValue().getCharset());
+		VASSERT_EQ("3.8", "fr", PARAM_LANG(p3, 1));
+
+		// Encoded words (non-standard, but used by some mailers)
+		parameterizedHeaderField p4;
+		p4.parseParameters(ctx, {
+			{ "name", "=?UTF-8?Q?=C3=A9t=C3=A9.pdf?=" },
+		});
+
+		VASSERT_EQ("4.1", 1, p4.getParameterCount());
+		VASSERT_EQ("4.2", "\xc3\xa9t\xc3\xa9.pdf", PARAM_BUFFER(p4, 0));
+		VASSERT_EQ("4.3", vmime::charset(vmime::charsets::UTF_8), p4.getParameterAt(0)->getValue().getCharset());
+
+		// 8-bit value, in UTF-8 with internationalized email support
+		vmime::parsingContext ctx5;
+		ctx5.setInternationalizedEmailSupport(true);
+
+		parameterizedHeaderField p5;
+		p5.parseParameters(ctx5, {
+			{ "name", "\xc3\xa9t\xc3\xa9.pdf" },
+		});
+
+		VASSERT_EQ("5.1", 1, p5.getParameterCount());
+		VASSERT_EQ("5.2", "\xc3\xa9t\xc3\xa9.pdf", PARAM_BUFFER(p5, 0));
+		VASSERT_EQ("5.3", vmime::charset(vmime::charsets::UTF_8), p5.getParameterAt(0)->getValue().getCharset());
+
+		// Ill-formed parameters are ignored, and the current parameters
+		// are replaced
+		parameterizedHeaderField p6;
+		p6.parse("X; param1=value1");
+		p6.parseParameters(ctx, {
+			{ "", "value2" },
+			{ "param3", "" },
+			{ "param4", "value4" },
+		});
+
+		VASSERT_EQ("6.1", 1, p6.getParameterCount());
+		VASSERT_EQ("6.2", "param4", PARAM_NAME(p6, 0));
+		VASSERT_EQ("6.3", "value4", PARAM_BUFFER(p6, 0));
 	}
 
 VMIME_TEST_SUITE_END

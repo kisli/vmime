@@ -106,14 +106,32 @@ public:
 	virtual size_t getNumber() const = 0;
 
 	/** Return the name of this part. In particular, this corresponds to
-	  * the attachment file name for attachment parts.
+	  * the attachment file name for attachment parts: the "filename"
+	  * parameter of the "Content-Disposition" field or, if there is
+	  * none, the "name" parameter of the "Content-Type" field (see
+	  * attachmentHelper::getAttachmentName()).
+	  *
+	  * The name is known from the message structure: you do not need to
+	  * fetch the header of the part.
 	  *
 	  * The part name may be empty if the part does not advertise it or
 	  * if the underlying protocol does not support it.
 	  *
 	  * @return part name
 	  */
-	virtual string getName() const;
+	virtual word getName() const;
+
+	/** Test whether this part is an attachment, using the same rules as
+	  * attachmentHelper::isBodyPartAnAttachment().
+	  *
+	  * Only the information from the message structure is used: you do
+	  * not need to fetch the header of the part. If the underlying
+	  * protocol does not support it, this returns false.
+	  *
+	  * @param options search options (see attachmentHelper::FindOptions)
+	  * @return true if the part is an attachment, false otherwise
+	  */
+	virtual bool isAttachment(const unsigned int options = 0) const;
 
 	/** Return the sub-part at the specified position (zero is the
 	  * first part).
@@ -173,6 +191,34 @@ public:
 	  * @return number of parts
 	  */
 	virtual size_t getPartCount() const = 0;
+
+	/** Find all the attachments in this structure, using
+	  * messagePart::isAttachment(). The sub-parts of a part are
+	  * searched only if the part itself is not an attachment.
+	  *
+	  * Nothing is fetched: this only needs the message structure (see
+	  * fetchAttributes::STRUCTURE).
+	  *
+	  * @param options search options (see attachmentHelper::FindOptions)
+	  * @return the parts which are attachments
+	  */
+	const std::vector <shared_ptr <const messagePart> > findAttachments(
+		const unsigned int options = 0
+	) const;
+
+	/** Find all the attachments in this structure, using
+	  * messagePart::isAttachment(). The sub-parts of a part are
+	  * searched only if the part itself is not an attachment.
+	  *
+	  * Nothing is fetched: this only needs the message structure (see
+	  * fetchAttributes::STRUCTURE).
+	  *
+	  * @param options search options (see attachmentHelper::FindOptions)
+	  * @return the parts which are attachments
+	  */
+	const std::vector <shared_ptr <messagePart> > findAttachments(
+		const unsigned int options = 0
+	);
 };
 
 

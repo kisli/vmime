@@ -34,9 +34,10 @@
 using namespace vmime::net::imap;
 
 
-/** IMAP test server which holds two messages: a multipart message
-  * with a base64-encoded attachment (message 1) and a single part
-  * message (message 2).
+/** IMAP test server which holds three messages: a multipart message
+  * with a base64-encoded attachment (message 1), a single part
+  * message (message 2), and a message with various attachments for
+  * which only the structure is available (message 3).
   *
   * FETCH supports the items used by IMAPMessage, and body sections
   * are served from the raw message data.
@@ -120,6 +121,31 @@ public:
 		m_sections[2]["HEADER"] = header2;
 		m_sections[2]["TEXT"] = text2;
 		m_sections[2]["1"] = text2;
+
+		// Message 3: attachments, as described by different servers (only the
+		// structure is available). Parts:
+		//   1. text/plain body
+		//   2. RFC 2231 file name, with continuations decoded (Dovecot 2.3)
+		//   3. RFC 2231 file name, fully decoded to UTF-8 (Dovecot 2.4, RFC 9051)
+		//   4. RFC 2047 encoded name in Content-Type only, no disposition
+		//   5. inline image with a Content-ID
+		//   6. inline image with a Content-Location (body location)
+		//   7. attached message
+		m_structure[3] =
+			"((\"TEXT\" \"PLAIN\" (\"CHARSET\" \"us-ascii\") NIL NIL \"7BIT\" 5 1 NIL NIL NIL NIL)"
+			"(\"APPLICATION\" \"PDF\" (\"NAME\" \"type.pdf\") NIL NIL \"BASE64\" 8 NIL"
+				" (\"ATTACHMENT\" (\"FILENAME*\" \"UTF-8''%C3%A9t%C3%A9.pdf\")) NIL NIL)"
+			"(\"APPLICATION\" \"OCTET-STREAM\" NIL NIL NIL \"BASE64\" 8 NIL"
+				" (\"ATTACHMENT\" (\"FILENAME\" " + literal("\xc3\xa9t\xc3\xa9-tr\xc3\xa8s-long.bin") + ")) NIL NIL)"
+			"(\"APPLICATION\" \"OCTET-STREAM\" (\"NAME\" \"=?UTF-8?Q?=C3=A9t=C3=A9.bin?=\") NIL NIL \"BASE64\" 8 NIL NIL NIL NIL)"
+			"(\"IMAGE\" \"PNG\" (\"NAME\" \"logo.png\") \"<logo@vmime.org>\" NIL \"BASE64\" 8 NIL"
+				" (\"INLINE\" (\"FILENAME\" \"logo.png\")) NIL NIL)"
+			"(\"IMAGE\" \"GIF\" NIL NIL NIL \"BASE64\" 8 NIL (\"INLINE\" NIL) NIL \"http://www.vmime.org/logo.gif\")"
+			"(\"MESSAGE\" \"RFC822\" NIL NIL NIL \"7BIT\" 42"
+				" (NIL \"Forwarded\" NIL NIL NIL NIL NIL NIL NIL NIL)"
+				" (\"TEXT\" \"PLAIN\" (\"CHARSET\" \"us-ascii\") NIL NIL \"7BIT\" 5 1 NIL NIL NIL NIL) 3"
+				" NIL (\"ATTACHMENT\" (\"FILENAME\" \"forwarded.eml\")) NIL NIL)"
+			" \"MIXED\" (\"BOUNDARY\" \"B\") NIL NIL NIL)";
 	}
 
 	/** Return the data of a body section, as sent by the server.
@@ -173,7 +199,7 @@ public:
 
 		} else if (verb == "SELECT" || verb == "EXAMINE") {
 
-			localSend("* 2 EXISTS\r\n");
+			localSend("* 3 EXISTS\r\n");
 			localSend("* 0 RECENT\r\n");
 			localSend("* FLAGS (\\Answered \\Flagged \\Deleted \\Seen \\Draft)\r\n");
 			localSend("* OK [UIDVALIDITY 1] UIDs valid\r\n");
@@ -299,6 +325,10 @@ VMIME_TEST_SUITE_BEGIN(IMAPMessageTest)
 		VMIME_TEST(testPartContents_Extract)
 		VMIME_TEST(testPartContents_ExtractRaw)
 		VMIME_TEST(testPartName)
+		VMIME_TEST(testPartName_Attachments)
+		VMIME_TEST(testPartSize_Message)
+		VMIME_TEST(testIsAttachment)
+		VMIME_TEST(testFindAttachments)
 	VMIME_TEST_LIST_END
 
 
@@ -395,6 +425,19 @@ VMIME_TEST_SUITE_BEGIN(IMAPMessageTest)
 	) {
 
 		return msg->getStructure()->getPartAt(0)->getStructure()->getPartAt(0);
+	}
+
+	// Fetch the structure of message 3, and return the parts in its
+	// root part (multipart/mixed)
+	static vmime::shared_ptr <const vmime::net::messageStructure> getAttachmentsMessageParts(
+		const vmime::shared_ptr <vmime::net::folder>& folder
+	) {
+
+		vmime::shared_ptr <vmime::net::message> msg = folder->getMessage(3);
+
+		folder->fetchMessage(msg, vmime::net::fetchAttributes::STRUCTURE);
+
+		return msg->getStructure()->getPartAt(0)->getStructure();
 	}
 
 
@@ -613,11 +656,97 @@ VMIME_TEST_SUITE_BEGIN(IMAPMessageTest)
 		vmime::shared_ptr <const vmime::net::messageStructure> parts =
 			msg->getStructure()->getPartAt(0)->getStructure();
 
-		VASSERT_EQ("Part 1", "", parts->getPartAt(0)->getName());
-		VASSERT_EQ("Part 2", "hello.html", parts->getPartAt(1)->getName());
+		VASSERT_EQ("Part 1", "", parts->getPartAt(0)->getName().getBuffer());
+		VASSERT_EQ("Part 2", "hello.html", parts->getPartAt(1)->getName().getBuffer());
 
 		// Parameter names are case-insensitive (RFC 2045, section 5.1)
-		VASSERT_EQ("Part 3", "hello.bin", parts->getPartAt(2)->getName());
+		VASSERT_EQ("Part 3", "hello.bin", parts->getPartAt(2)->getName().getBuffer());
+	}
+
+	// Name of the parts, from the "filename" parameter of the disposition
+	// first, with RFC 2231 and RFC 2047 encodings
+	void testPartName_Attachments() {
+
+		vmime::shared_ptr <vmime::net::folder> folder = openFolder();
+		vmime::shared_ptr <const vmime::net::messageStructure> parts = getAttachmentsMessageParts(folder);
+
+		const vmime::charset utf8(vmime::charsets::UTF_8);
+
+		VASSERT_EQ("Part 1", "", parts->getPartAt(0)->getName().getBuffer());
+		VASSERT_EQ("Part 2", vmime::word("\xc3\xa9t\xc3\xa9.pdf", utf8), parts->getPartAt(1)->getName());
+		VASSERT_EQ("Part 3", vmime::word("\xc3\xa9t\xc3\xa9-tr\xc3\xa8s-long.bin", utf8), parts->getPartAt(2)->getName());
+		VASSERT_EQ("Part 4", vmime::word("\xc3\xa9t\xc3\xa9.bin", utf8), parts->getPartAt(3)->getName());
+		VASSERT_EQ("Part 5", "logo.png", parts->getPartAt(4)->getName().getBuffer());
+		VASSERT_EQ("Part 6", "", parts->getPartAt(5)->getName().getBuffer());
+		VASSERT_EQ("Part 7", "forwarded.eml", parts->getPartAt(6)->getName().getBuffer());
+	}
+
+	void testPartSize_Message() {
+
+		vmime::shared_ptr <vmime::net::folder> folder = openFolder();
+		vmime::shared_ptr <const vmime::net::messageStructure> parts = getAttachmentsMessageParts(folder);
+
+		VASSERT_EQ("Type", "message/rfc822", parts->getPartAt(6)->getType().generate());
+		VASSERT_EQ("Size", 42, parts->getPartAt(6)->getSize());
+	}
+
+	void testIsAttachment() {
+
+		vmime::shared_ptr <vmime::net::folder> folder = openFolder();
+		vmime::shared_ptr <vmime::net::message> msg = folder->getMessage(3);
+
+		folder->fetchMessage(msg, vmime::net::fetchAttributes::STRUCTURE);
+
+		vmime::shared_ptr <const vmime::net::messagePart> root = msg->getStructure()->getPartAt(0);
+		vmime::shared_ptr <const vmime::net::messageStructure> parts = root->getStructure();
+
+		const unsigned int inl = vmime::attachmentHelper::INLINE_OBJECTS;
+
+		VASSERT_FALSE("Root", root->isAttachment());
+		VASSERT_FALSE("Part 1", parts->getPartAt(0)->isAttachment());
+		VASSERT_TRUE("Part 2", parts->getPartAt(1)->isAttachment());
+		VASSERT_TRUE("Part 3", parts->getPartAt(2)->isAttachment());
+		VASSERT_TRUE("Part 4", parts->getPartAt(3)->isAttachment());
+		VASSERT_FALSE("Part 5", parts->getPartAt(4)->isAttachment());
+		VASSERT_TRUE("Part 5 (inline objects)", parts->getPartAt(4)->isAttachment(inl));
+		VASSERT_FALSE("Part 6", parts->getPartAt(5)->isAttachment());
+		VASSERT_TRUE("Part 6 (inline objects)", parts->getPartAt(5)->isAttachment(inl));
+		VASSERT_TRUE("Part 7", parts->getPartAt(6)->isAttachment());
+	}
+
+	// Attachments are found from the structure, without fetching anything else
+	void testFindAttachments() {
+
+		vmime::shared_ptr <vmime::net::folder> folder = openFolder();
+		vmime::shared_ptr <vmime::net::message> msg = folder->getMessage(3);
+
+		folder->fetchMessage(msg, vmime::net::fetchAttributes::STRUCTURE);
+
+		const size_t sentCount = m_tracerFactory->getTracer()->getSentLines().size();
+
+		const std::vector <vmime::shared_ptr <vmime::net::messagePart> > atts =
+			msg->getStructure()->findAttachments();
+
+		VASSERT_EQ("Count", 4, atts.size());
+		VASSERT_EQ("Attachment 1", 1, atts[0]->getNumber());
+		VASSERT_EQ("Attachment 2", 2, atts[1]->getNumber());
+		VASSERT_EQ("Attachment 3", 3, atts[2]->getNumber());
+		VASSERT_EQ("Attachment 4", 6, atts[3]->getNumber());
+
+		vmime::shared_ptr <const vmime::net::messageStructure> constStructure = msg->getStructure();
+
+		const std::vector <vmime::shared_ptr <const vmime::net::messagePart> > attsInline =
+			constStructure->findAttachments(vmime::attachmentHelper::INLINE_OBJECTS);
+
+		VASSERT_EQ("Count (inline objects)", 6, attsInline.size());
+
+		VASSERT_EQ("Nothing fetched", sentCount, m_tracerFactory->getTracer()->getSentLines().size());
+
+		// The message itself is not an attachment, and has no attachments
+		msg = folder->getMessage(2);
+		folder->fetchMessage(msg, vmime::net::fetchAttributes::STRUCTURE);
+
+		VASSERT_EQ("Count (single part)", 0, msg->getStructure()->findAttachments().size());
 	}
 
 private:

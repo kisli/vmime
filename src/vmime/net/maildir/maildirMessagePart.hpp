@@ -64,6 +64,8 @@ public:
 	const contentDisposition &getDisposition() const;
 	size_t getSize() const;
 	size_t getNumber() const;
+	word getName() const;
+	bool isAttachment(const unsigned int options = 0) const;
 
 	shared_ptr <const header> getHeader() const;
 
@@ -82,6 +84,9 @@ private:
 	shared_ptr <maildirMessageStructure> m_structure;
 	weak_ptr <maildirMessagePart> m_parent;
 	shared_ptr <header> m_header;
+
+	// MIME fields of the part which are known without fetching the header
+	shared_ptr <header> m_structureHeader;
 
 	size_t m_number;
 	size_t m_size;
