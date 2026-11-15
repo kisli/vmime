@@ -653,6 +653,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 		VMIME_TEST(testSize_NoChunking)
 		VMIME_TEST(testSMTPUTF8_available)
 		VMIME_TEST(testSMTPUTF8_notAvailable)
+		VMIME_TEST(testSMTPUTF8_without8BITMIME)
 		VMIME_TEST(testSMTPUTF8_message)
 		VMIME_TEST(testSMTPUTF8_headerAddress)
 		VMIME_TEST(testSMTPUTF8_internationalizedMessageOption)
@@ -847,17 +848,17 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 		);
 	}
 
-	template <bool SUPPORTS_UTF8>
+	template <bool SUPPORTS_UTF8, bool SUPPORTS_8BITMIME = SUPPORTS_UTF8>
 	static vmime::shared_ptr <vmime::net::transport> createUTF8Transport() {
 
-		UTF8SMTPTestSocket <SUPPORTS_UTF8>::reset();
+		UTF8SMTPTestSocket <SUPPORTS_UTF8, SUPPORTS_8BITMIME>::reset();
 
 		vmime::shared_ptr <vmime::net::session> session = vmime::net::session::create();
 
 		vmime::shared_ptr <vmime::net::transport> tr =
 			session->getTransport(vmime::utility::url("smtp://localhost"));
 
-		tr->setSocketFactory(vmime::make_shared <testSocketFactory <UTF8SMTPTestSocket <SUPPORTS_UTF8> > >());
+		tr->setSocketFactory(vmime::make_shared <testSocketFactory <UTF8SMTPTestSocket <SUPPORTS_UTF8, SUPPORTS_8BITMIME> > >());
 		tr->setTimeoutHandlerFactory(vmime::make_shared <testTimeoutHandlerFactory>());
 
 		tr->connect();
@@ -917,7 +918,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 			const std::vector <vmime::string>& lines = UTF8SMTPTestSocket <true>::getEnvelopeLines();
 
 			VASSERT_EQ("Count", 3, lines.size());
-			VASSERT_EQ("MAIL", "MAIL FROM:<expéditeur@test.vmime.org> SMTPUTF8", lines[0]);
+			VASSERT_EQ("MAIL", "MAIL FROM:<expéditeur@test.vmime.org> SMTPUTF8 BODY=8BITMIME", lines[0]);
 			VASSERT_EQ("RCPT 1", "RCPT TO:<recipient@test.vmime.org>", lines[1]);
 			VASSERT_EQ("RCPT 2", "RCPT TO:<récepteur@test.vmime.org>", lines[2]);
 		}
@@ -935,7 +936,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 			const std::vector <vmime::string>& lines = UTF8SMTPTestSocket <true>::getEnvelopeLines();
 
 			VASSERT_EQ("Count", 3, lines.size());
-			VASSERT_EQ("MAIL", "MAIL FROM:<expediteur@test.vmime.org> SMTPUTF8", lines[0]);
+			VASSERT_EQ("MAIL", "MAIL FROM:<expediteur@test.vmime.org> SMTPUTF8 BODY=8BITMIME", lines[0]);
 			VASSERT_EQ("RCPT 1", "RCPT TO:<recipient@test.vmime.org>", lines[1]);
 			VASSERT_EQ("RCPT 2", "RCPT TO:<récepteur@test.vmime.org>", lines[2]);
 		}
@@ -1035,6 +1036,48 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 		}
 	}
 
+	// A server which supports SMTPUTF8 must also announce 8BITMIME (RFC 6531,
+	// section 3.1), without which 8-bit data must not be sent (RFC 6152,
+	// section 3): SMTPUTF8 is not usable with a server which does not
+	void testSMTPUTF8_without8BITMIME() {
+
+		// Non-ASCII recipient
+		{
+			vmime::shared_ptr <vmime::net::transport> tr = createUTF8Transport <true, false>();
+
+			vmime::mailboxList recips;
+			recips.appendMailbox(createUTF8Mailbox("récepteur", "test.vmime.org"));
+
+			VASSERT_THROW(
+				"Send",
+				sendUTF8TestData(tr, vmime::mailbox("expediteur@test.vmime.org"), recips),
+				vmime::net::smtp::SMTPUTF8ExtensionNotSupportedException
+			);
+
+			const std::vector <vmime::string>& lines = UTF8SMTPTestSocket <true, false>::getEnvelopeLines();
+
+			VASSERT_TRUE("No command sent", lines.empty());
+			VASSERT_TRUE("Still connected", tr->isConnected());
+		}
+
+		// ASCII addresses: SMTPUTF8 is not needed, and the non-ASCII subject is encoded
+		{
+			vmime::shared_ptr <vmime::net::transport> tr = createUTF8Transport <true, false>();
+
+			tr->send(createUTF8TestMessage(vmime::mailbox("recipient@test.vmime.org")));
+
+			const std::vector <vmime::string>& lines = UTF8SMTPTestSocket <true, false>::getEnvelopeLines();
+
+			VASSERT_EQ("Count", 2, lines.size());
+			VASSERT_EQ("MAIL", "MAIL FROM:<expediteur@test.vmime.org>", lines[0]);
+			VASSERT_EQ("RCPT", "RCPT TO:<recipient@test.vmime.org>", lines[1]);
+
+			const vmime::string& data = UTF8SMTPTestSocket <true, false>::getMessageData();
+
+			VASSERT(data, data.find("Subject: =?utf-8?B?R3LDvMOfZQ==?=\r\n") != vmime::string::npos);
+		}
+	}
+
 	// The message is generated with UTF-8 header fields (RFC 6532) only if
 	// it is sent with SMTPUTF8 (RFC 6531, section 3.4)
 	void testSMTPUTF8_message() {
@@ -1066,7 +1109,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 			const std::vector <vmime::string>& lines = UTF8SMTPTestSocket <true>::getEnvelopeLines();
 
 			VASSERT_EQ("Count", 2, lines.size());
-			VASSERT_EQ("MAIL", "MAIL FROM:<expediteur@test.vmime.org> SMTPUTF8", lines[0]);
+			VASSERT_EQ("MAIL", "MAIL FROM:<expediteur@test.vmime.org> SMTPUTF8 BODY=8BITMIME", lines[0]);
 			VASSERT_EQ("RCPT", "RCPT TO:<récepteur@test.vmime.org>", lines[1]);
 
 			const vmime::string& data = UTF8SMTPTestSocket <true>::getMessageData();
@@ -1096,7 +1139,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 			const std::vector <vmime::string>& lines = UTF8SMTPTestSocket <true>::getEnvelopeLines();
 
 			VASSERT_EQ("Count", 2, lines.size());
-			VASSERT_EQ("MAIL", "MAIL FROM:<expediteur@test.vmime.org> SMTPUTF8", lines[0]);
+			VASSERT_EQ("MAIL", "MAIL FROM:<expediteur@test.vmime.org> SMTPUTF8 BODY=8BITMIME", lines[0]);
 			VASSERT_EQ("RCPT", "RCPT TO:<recipient@test.vmime.org>", lines[1]);
 
 			const vmime::string& data = UTF8SMTPTestSocket <true>::getMessageData();
@@ -1137,7 +1180,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 			const std::vector <vmime::string>& lines = UTF8SMTPTestSocket <true>::getEnvelopeLines();
 
 			VASSERT_EQ("Count", 2, lines.size());
-			VASSERT_EQ("MAIL", "MAIL FROM:<expediteur@test.vmime.org> SMTPUTF8", lines[0]);
+			VASSERT_EQ("MAIL", "MAIL FROM:<expediteur@test.vmime.org> SMTPUTF8 BODY=8BITMIME", lines[0]);
 			VASSERT_EQ("RCPT", "RCPT TO:<recipient@test.vmime.org>", lines[1]);
 		}
 
@@ -1163,7 +1206,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 			const std::vector <vmime::string>& lines = UTF8SMTPTestSocket <true>::getEnvelopeLines();
 
 			VASSERT_EQ("Count", 2, lines.size());
-			VASSERT_EQ("MAIL", "MAIL FROM:<expediteur@test.vmime.org> SMTPUTF8", lines[0]);
+			VASSERT_EQ("MAIL", "MAIL FROM:<expediteur@test.vmime.org> SMTPUTF8 BODY=8BITMIME", lines[0]);
 
 			const vmime::string& data = UTF8SMTPTestSocket <true>::getMessageData();
 

@@ -229,8 +229,12 @@ bool SMTPTransport::needSMTPUTF8(
 	}
 
 	// An internationalized message must not be sent to a server which
-	// does not support SMTPUTF8 (RFC 6531, section 3.5)
-	if (need && !m_connection->hasExtension("SMTPUTF8")) {
+	// does not support SMTPUTF8 (RFC 6531, section 3.5). A server which
+	// supports it must also announce 8BITMIME (RFC 6531, section 3.1),
+	// without which 8-bit data must not be sent (RFC 6152, section 3)
+	if (need && (!m_connection->hasExtension("SMTPUTF8") ||
+	             !m_connection->hasExtension("8BITMIME"))) {
+
 		throw SMTPUTF8ExtensionNotSupportedException();
 	}
 
