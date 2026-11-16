@@ -65,6 +65,18 @@ bool SMTPSendOptions::isInternationalizedMessage() const {
 }
 
 
+void SMTPSendOptions::set8bitMessage(const bool eightBit) {
+
+	m_8bitMessage = eightBit;
+}
+
+
+bool SMTPSendOptions::is8bitMessage() const {
+
+	return m_8bitMessage;
+}
+
+
 } // smtp
 } // net
 } // vmime

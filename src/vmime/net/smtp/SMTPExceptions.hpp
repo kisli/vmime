@@ -165,6 +165,38 @@ public:
 };
 
 
+/** SMTP error: RFC-6152 8BITMIME extension is not supported by the server,
+  * whereas it is needed to send a message which contains 8-bit data.
+  */
+class VMIME_EXPORT SMTP8BITMIMEExtensionNotSupportedException : public SMTPExtensionNotSupportedException {
+
+public:
+
+	SMTP8BITMIMEExtensionNotSupportedException(const exception& other = NO_EXCEPTION);
+	~SMTP8BITMIMEExtensionNotSupportedException() throw();
+
+	exception* clone() const;
+	const char* name() const throw();
+};
+
+
+/** SMTP error: the message contains 8-bit data, but it was not sent with
+  * the BODY=8BITMIME parameter (RFC 6152), as VMime could not know it in
+  * advance. The message has not been sent: send it again, telling that it
+  * contains 8-bit data with SMTPSendOptions::set8bitMessage().
+  */
+class VMIME_EXPORT SMTPUndeclared8bitDataException : public exceptions::net_exception {
+
+public:
+
+	SMTPUndeclared8bitDataException(const exception& other = NO_EXCEPTION);
+	~SMTPUndeclared8bitDataException() throw();
+
+	exception* clone() const;
+	const char* name() const throw();
+};
+
+
 } // smtp
 } // net
 } // vmime

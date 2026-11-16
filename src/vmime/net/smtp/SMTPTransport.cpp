@@ -53,6 +53,55 @@ namespace net {
 namespace smtp {
 
 
+namespace {
+
+	// Output stream which only lets 7-bit data through: 8-bit data which
+	// has not been declared with BODY=8BITMIME must not be sent (RFC 6152,
+	// section 3), so an exception is thrown before writing any of it
+	class sevenBitOutputStream : public utility::outputStream {
+
+	public:
+
+		sevenBitOutputStream(utility::outputStream& os, const bool has8bitMIME)
+			: m_os(os), m_has8bitMIME(has8bitMIME) {
+
+		}
+
+		void flush() {
+
+			m_os.flush();
+		}
+
+	protected:
+
+		void writeImpl(const byte_t* const data, const size_t count) {
+
+			for (size_t i = 0 ; i < count ; ++i) {
+
+				if (data[i] >= 0x80) {
+
+					// The message can be sent again as 8-bit, if the
+					// server supports it
+					if (m_has8bitMIME) {
+						throw SMTPUndeclared8bitDataException();
+					} else {
+						throw SMTP8BITMIMEExtensionNotSupportedException();
+					}
+				}
+			}
+
+			m_os.write(data, count);
+		}
+
+	private:
+
+		utility::outputStream& m_os;
+		const bool m_has8bitMIME;
+	};
+
+}
+
+
 SMTPTransport::SMTPTransport(
 	const shared_ptr <session>& sess,
 	const shared_ptr <security::authenticator>& auth,
@@ -242,11 +291,59 @@ bool SMTPTransport::needSMTPUTF8(
 }
 
 
+// static
+bool SMTPTransport::componentHas8bitBody(component& comp) {
+
+	if (const body* bdy = dynamic_cast <const body*>(&comp)) {
+
+		if (bdy->getPartCount() == 0 && bdy->getEncoding() == encoding(encodingTypes::EIGHT_BIT)) {
+			return true;
+		}
+	}
+
+	for (const auto& child : comp.getChildComponents()) {
+
+		if (componentHas8bitBody(*child)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+
+bool SMTPTransport::need8bitMIME(
+	const bool utf8,
+	const bool has8bitData,
+	const sendOptions& options
+) const {
+
+	// UTF-8 header fields are 8-bit data, and a server which supports
+	// SMTPUTF8 also supports 8BITMIME (see needSMTPUTF8())
+	if (utf8) {
+		return true;
+	}
+
+	auto opts = dynamic_cast <const SMTPSendOptions*>(&options);
+
+	const bool need = has8bitData || (opts && opts->is8bitMessage());
+
+	// 8-bit data must not be sent to a server which does not support
+	// 8BITMIME (RFC 6152, section 3)
+	if (need && !m_connection->hasExtension("8BITMIME")) {
+		throw SMTP8BITMIMEExtensionNotSupportedException();
+	}
+
+	return need;
+}
+
+
 void SMTPTransport::sendEnvelope(
 	const mailbox& expeditor,
 	const mailboxList& recipients,
 	const mailbox& sender,
 	const bool utf8,
+	const bool eightBit,
 	bool sendDATACommand,
 	const size_t size,
 	const sendOptions& options
@@ -287,7 +384,7 @@ void SMTPTransport::sendEnvelope(
 
 		commands->addCommand(
 			SMTPCommand::MAIL(
-				sender, utf8, hasSize ? size : 0,
+				sender, utf8, eightBit, hasSize ? size : 0,
 				opts ? opts->getDSNAttributes() : nullptr
 			)
 		);
@@ -296,7 +393,7 @@ void SMTPTransport::sendEnvelope(
 
 		commands->addCommand(
 			SMTPCommand::MAIL(
-				expeditor, utf8, hasSize ? size : 0,
+				expeditor, utf8, eightBit, hasSize ? size : 0,
 				opts ? opts->getDSNAttributes() : nullptr
 			)
 		);
@@ -455,24 +552,29 @@ void SMTPTransport::send(
 	// tell whether SMTPUTF8 is needed
 	const bool utf8 = needSMTPUTF8(expeditor, recipients, sender, nullptr, options);
 
-	// Send message envelope
-	sendEnvelope(expeditor, recipients, sender, utf8, /* sendDATACommand */ true, size, options);
+	// Likewise, only the options tell whether the message is 8-bit;
+	// otherwise, the data is checked while it is sent
+	const bool eightBit = need8bitMIME(utf8, /* has8bitData */ false, options);
 
-	sendData(is, size, progress);
+	// Send message envelope
+	sendEnvelope(expeditor, recipients, sender, utf8, eightBit, /* sendDATACommand */ true, size, options);
+
+	sendData(is, size, progress, eightBit);
 }
 
 
 void SMTPTransport::sendData(
 	utility::inputStream& is,
 	const size_t size,
-	utility::progressListener* progress
+	utility::progressListener* progress,
+	const bool eightBit
 ) {
 
 	// If an error occurs while sending the message data (network error, but
-	// also eg. error while reading the input stream), the server still expects
-	// the end of the data, so the connection is not usable anymore: close it,
-	// without sending the end-of-data delimiter (the incomplete message must
-	// not be delivered)
+	// also eg. error while reading the input stream, or undeclared 8-bit
+	// data), the server still expects the end of the data, so the connection
+	// is not usable anymore: close it, without sending the end-of-data
+	// delimiter (the incomplete message must not be delivered)
 	try {
 
 		// Send the message data
@@ -480,7 +582,15 @@ void SMTPTransport::sendData(
 		utility::outputStreamSocketAdapter sos(*m_connection->getSocket());
 		utility::dotFilteredOutputStream fos(sos);
 
-		utility::bufferedStreamCopy(is, fos, size, progress);
+		if (eightBit) {
+
+			utility::bufferedStreamCopy(is, fos, size, progress);
+
+		} else {
+
+			sevenBitOutputStream sevenBitStream(fos, m_connection->hasExtension("8BITMIME"));
+			utility::bufferedStreamCopy(is, sevenBitStream, size, progress);
+		}
 
 		fos.flush();
 
@@ -541,17 +651,32 @@ void SMTPTransport::send(
 
 		const string& str(oss.str());
 
+		// The whole message is known: it is declared as 8-bit only if it
+		// actually contains 8-bit data
+		const bool eightBit = need8bitMIME(
+			utf8,
+			utility::stringUtils::findFirstNonASCIIchar(str.begin(), str.end()) != string::npos,
+			options
+		);
+
 		utility::inputStreamStringAdapter isAdapter(str);
 
-		sendEnvelope(expeditor, recipients, sender, utf8, /* sendDATACommand */ true, str.length(), options);
-		sendData(isAdapter, str.length(), progress);
+		sendEnvelope(expeditor, recipients, sender, utf8, eightBit, /* sendDATACommand */ true, str.length(), options);
+		sendData(isAdapter, str.length(), progress, eightBit);
 		return;
 	}
+
+	// The message is generated while it is sent: it is declared as 8-bit
+	// if one of its parts is declared as such; otherwise, the data is
+	// checked while it is sent
+	const bool eightBit = need8bitMIME(utf8, componentHas8bitBody(*msg), options);
 
 	// Send message envelope
 	const size_t msgSize = msg->getGeneratedSize(ctx);
 
-	sendEnvelope(expeditor, recipients, sender, utf8, /* sendDATACommand */ false, msgSize, options);
+	sendEnvelope(expeditor, recipients, sender, utf8, eightBit, /* sendDATACommand */ false, msgSize, options);
+
+	SMTPChunkingOutputStreamAdapter chunkStream(m_connection, msgSize, progress);
 
 	// If an error occurs while sending the message chunks (network error, but
 	// also eg. error while generating the message), the server still expects
@@ -561,11 +686,32 @@ void SMTPTransport::send(
 	try {
 
 		// Send the message by chunks
-		SMTPChunkingOutputStreamAdapter chunkStream(m_connection, msgSize, progress);
+		if (eightBit) {
 
-		msg->generate(ctx, chunkStream);
+			msg->generate(ctx, chunkStream);
+
+		} else {
+
+			sevenBitOutputStream sevenBitStream(chunkStream, m_connection->hasExtension("8BITMIME"));
+			msg->generate(ctx, sevenBitStream);
+		}
 
 		chunkStream.flush();
+
+	} catch (SMTPUndeclared8bitDataException&) {
+
+		// The chunk containing the 8-bit data has not been sent: cancel the
+		// transfer, so that the connection remains usable
+		chunkStream.cancel();
+		m_needReset = false;  // already reset
+		throw;
+
+	} catch (SMTP8BITMIMEExtensionNotSupportedException&) {
+
+		// Likewise, for 8-bit data the server does not support
+		chunkStream.cancel();
+		m_needReset = false;  // already reset
+		throw;
 
 	} catch (...) {
 

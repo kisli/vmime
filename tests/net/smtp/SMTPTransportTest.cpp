@@ -657,6 +657,13 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 		VMIME_TEST(testSMTPUTF8_message)
 		VMIME_TEST(testSMTPUTF8_headerAddress)
 		VMIME_TEST(testSMTPUTF8_internationalizedMessageOption)
+		VMIME_TEST(test8BITMIME_7bitMessage)
+		VMIME_TEST(test8BITMIME_8bitPart)
+		VMIME_TEST(test8BITMIME_notSupported)
+		VMIME_TEST(test8BITMIME_undeclared)
+		VMIME_TEST(test8BITMIME_undeclaredAfterChunks)
+		VMIME_TEST(test8BITMIME_rawData)
+		VMIME_TEST(test8BITMIME_messageAttachment)
 		VMIME_TEST(testExtensionKeywordsCase)
 		VMIME_TEST(testReconnectAfterTimeout)
 		VMIME_TEST(testDisconnectAfterTimeout)
@@ -1212,6 +1219,380 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 
 			VASSERT(data, data.find("Subject: Grüße\r\n") != vmime::string::npos);
 		}
+	}
+
+	static vmime::shared_ptr <vmime::net::transport> create8bitTransport(
+		const std::vector <vmime::string>& extensions
+	) {
+
+		eightBitSMTPTestSocket::reset(extensions);
+
+		vmime::shared_ptr <vmime::net::session> session = vmime::net::session::create();
+
+		vmime::shared_ptr <vmime::net::transport> tr =
+			session->getTransport(vmime::utility::url("smtp://localhost"));
+
+		tr->setSocketFactory(vmime::make_shared <testSocketFactory <eightBitSMTPTestSocket> >());
+		tr->setTimeoutHandlerFactory(vmime::make_shared <testTimeoutHandlerFactory>());
+
+		tr->connect();
+
+		return tr;
+	}
+
+	// A message as received, with a text part in the specified encoding
+	static vmime::shared_ptr <vmime::message> create8bitTestMessage(
+		const vmime::string& encoding,
+		const vmime::string& body
+	) {
+
+		vmime::shared_ptr <vmime::message> msg = vmime::make_shared <vmime::message>();
+
+		msg->parse(
+			"From: expediteur@test.vmime.org\r\n"
+			"To: recipient@test.vmime.org\r\n"
+			"Subject: Test\r\n"
+			"MIME-Version: 1.0\r\n"
+			"Content-Type: text/plain; charset=utf-8\r\n"
+			"Content-Transfer-Encoding: " + encoding + "\r\n"
+			"\r\n" + body
+		);
+
+		return msg;
+	}
+
+	static void send8bitTestData(
+		const vmime::shared_ptr <vmime::net::transport>& tr,
+		const vmime::string& data,
+		const vmime::net::transport::sendOptions& options = vmime::net::transport::sendOptions()
+	) {
+
+		vmime::mailboxList recips;
+		recips.appendMailbox(vmime::make_shared <vmime::mailbox>("recipient@test.vmime.org"));
+
+		vmime::utility::inputStreamStringAdapter is(data);
+
+		tr->send(
+			vmime::mailbox("expediteur@test.vmime.org"), recips, is, data.length(),
+			NULL, vmime::mailbox(), options
+		);
+	}
+
+	// A 7-bit message is not declared as 8-bit, even if the server supports it
+	void test8BITMIME_7bitMessage() {
+
+		// DATA
+		{
+			vmime::shared_ptr <vmime::net::transport> tr = create8bitTransport({ "8BITMIME" });
+
+			tr->send(create8bitTestMessage("7bit", "Hello\r\n"));
+
+			const std::vector <vmime::string>& commands = eightBitSMTPTestSocket::getCommands();
+
+			VASSERT_EQ("1.1", 3, commands.size());
+			VASSERT_EQ("1.2", "MAIL FROM:<expediteur@test.vmime.org>", commands[0]);
+			VASSERT_EQ("1.3", 1, eightBitSMTPTestSocket::getMessages().size());
+		}
+
+		// CHUNKING
+		{
+			vmime::shared_ptr <vmime::net::transport> tr = create8bitTransport({ "8BITMIME", "CHUNKING" });
+
+			tr->send(create8bitTestMessage("7bit", "Hello\r\n"));
+
+			const std::vector <vmime::string>& commands = eightBitSMTPTestSocket::getCommands();
+
+			VASSERT_EQ("2.1", 3, commands.size());
+			VASSERT_EQ("2.2", "MAIL FROM:<expediteur@test.vmime.org>", commands[0]);
+			VASSERT_EQ("2.3", 1, eightBitSMTPTestSocket::getMessages().size());
+		}
+	}
+
+	// A message which has a part declared as 8-bit is declared as 8-bit
+	// (RFC 6152, section 3)
+	void test8BITMIME_8bitPart() {
+
+		const vmime::string text8bit = "Gr\xc3\xbc\xc3\x9f" "e\r\n";
+
+		// DATA
+		{
+			vmime::shared_ptr <vmime::net::transport> tr = create8bitTransport({ "8BITMIME" });
+
+			tr->send(create8bitTestMessage("8bit", text8bit));
+
+			const std::vector <vmime::string>& commands = eightBitSMTPTestSocket::getCommands();
+			const std::vector <vmime::string>& messages = eightBitSMTPTestSocket::getMessages();
+
+			VASSERT_EQ("1.1", 3, commands.size());
+			VASSERT_EQ("1.2", "MAIL FROM:<expediteur@test.vmime.org> BODY=8BITMIME", commands[0]);
+			VASSERT_EQ("1.3", 1, messages.size());
+			VASSERT("1.4", messages[0].find(text8bit) != vmime::string::npos);
+		}
+
+		// CHUNKING
+		{
+			vmime::shared_ptr <vmime::net::transport> tr =
+				create8bitTransport({ "8BITMIME", "CHUNKING", "PIPELINING" });
+
+			tr->send(create8bitTestMessage("8bit", text8bit));
+
+			const std::vector <vmime::string>& commands = eightBitSMTPTestSocket::getCommands();
+			const std::vector <vmime::string>& messages = eightBitSMTPTestSocket::getMessages();
+
+			VASSERT_EQ("2.1", 3, commands.size());
+			VASSERT_EQ("2.2", "MAIL FROM:<expediteur@test.vmime.org> BODY=8BITMIME", commands[0]);
+			VASSERT_EQ("2.3", 1, messages.size());
+			VASSERT("2.4", messages[0].find(text8bit) != vmime::string::npos);
+		}
+	}
+
+	// 8-bit data must not be sent to a server which does not support
+	// 8BITMIME (RFC 6152, section 3)
+	void test8BITMIME_notSupported() {
+
+		const vmime::string text8bit = "Gr\xc3\xbc\xc3\x9f" "e\r\n";
+
+		// DATA
+		{
+			vmime::shared_ptr <vmime::net::transport> tr = create8bitTransport({});
+
+			VASSERT_THROW(
+				"1.1",
+				tr->send(create8bitTestMessage("8bit", text8bit)),
+				vmime::net::smtp::SMTP8BITMIMEExtensionNotSupportedException
+			);
+
+			VASSERT_TRUE("1.2 No command sent", eightBitSMTPTestSocket::getCommands().empty());
+			VASSERT_TRUE("1.3 Still connected", tr->isConnected());
+		}
+
+		// CHUNKING
+		{
+			vmime::shared_ptr <vmime::net::transport> tr = create8bitTransport({ "CHUNKING" });
+
+			VASSERT_THROW(
+				"2.1",
+				tr->send(create8bitTestMessage("8bit", text8bit)),
+				vmime::net::smtp::SMTP8BITMIMEExtensionNotSupportedException
+			);
+
+			VASSERT_TRUE("2.2 No command sent", eightBitSMTPTestSocket::getCommands().empty());
+			VASSERT_TRUE("2.3 Still connected", tr->isConnected());
+		}
+	}
+
+	// 8-bit data in a part declared as 7-bit, as sent by some old mailers
+	void test8BITMIME_undeclared() {
+
+		const vmime::string text8bit = "Gr\xc3\xbc\xc3\x9f" "e\r\n";
+
+		// DATA: the whole message is generated before it is sent, so it is
+		// declared as 8-bit
+		{
+			vmime::shared_ptr <vmime::net::transport> tr = create8bitTransport({ "8BITMIME" });
+
+			tr->send(create8bitTestMessage("7bit", text8bit));
+
+			const std::vector <vmime::string>& commands = eightBitSMTPTestSocket::getCommands();
+
+			VASSERT_EQ("1.1", 3, commands.size());
+			VASSERT_EQ("1.2", "MAIL FROM:<expediteur@test.vmime.org> BODY=8BITMIME", commands[0]);
+			VASSERT_EQ("1.3", 1, eightBitSMTPTestSocket::getMessages().size());
+		}
+
+		// CHUNKING: the message is generated while it is sent, so the transfer
+		// is cancelled, and the message can be sent again as 8-bit
+		{
+			vmime::shared_ptr <vmime::net::transport> tr =
+				create8bitTransport({ "8BITMIME", "CHUNKING", "PIPELINING" });
+
+			vmime::shared_ptr <vmime::message> msg = create8bitTestMessage("7bit", text8bit);
+
+			VASSERT_THROW("2.1", tr->send(msg), vmime::net::smtp::SMTPUndeclared8bitDataException);
+
+			const std::vector <vmime::string>& commands = eightBitSMTPTestSocket::getCommands();
+
+			VASSERT_EQ("2.2", 3, commands.size());
+			VASSERT_EQ("2.3", "MAIL FROM:<expediteur@test.vmime.org>", commands[0]);
+			VASSERT_EQ("2.4", "RSET", commands[2]);
+			VASSERT_TRUE("2.5 Not delivered", eightBitSMTPTestSocket::getMessages().empty());
+			VASSERT_TRUE("2.6 Still connected", tr->isConnected());
+
+			vmime::net::smtp::SMTPSendOptions options;
+			options.set8bitMessage(true);
+
+			tr->send(msg, NULL, options);
+
+			VASSERT_EQ("2.7", 6, commands.size());
+			VASSERT_EQ("2.8", "MAIL FROM:<expediteur@test.vmime.org> BODY=8BITMIME", commands[3]);
+			VASSERT_EQ("2.9", 1, eightBitSMTPTestSocket::getMessages().size());
+		}
+
+		// CHUNKING, server without 8BITMIME: the message cannot be sent
+		{
+			vmime::shared_ptr <vmime::net::transport> tr = create8bitTransport({ "CHUNKING" });
+
+			VASSERT_THROW(
+				"3.1",
+				tr->send(create8bitTestMessage("7bit", text8bit)),
+				vmime::net::smtp::SMTP8BITMIMEExtensionNotSupportedException
+			);
+
+			const std::vector <vmime::string>& commands = eightBitSMTPTestSocket::getCommands();
+
+			VASSERT_EQ("3.2", 3, commands.size());
+			VASSERT_EQ("3.3", "RSET", commands[2]);
+			VASSERT_TRUE("3.4 Not delivered", eightBitSMTPTestSocket::getMessages().empty());
+			VASSERT_TRUE("3.5 Still connected", tr->isConnected());
+		}
+	}
+
+	// When undeclared 8-bit data is found after some chunks have been sent,
+	// they are discarded by resetting the transaction (RFC 3030, section 2)
+	void test8BITMIME_undeclaredAfterChunks() {
+
+		// 7-bit text, longer than one chunk, then 8-bit text
+		vmime::string body;
+
+		for (int i = 0 ; i < 4000 ; ++i) {
+			body += vmime::string(78, 'A') + "\r\n";
+		}
+
+		body += "Gr\xc3\xbc\xc3\x9f" "e\r\n";
+
+		// The responses for the chunks sent must be read first, if they
+		// were pipelined
+		for (int pipelining = 0 ; pipelining < 2 ; ++pipelining) {
+
+			std::vector <vmime::string> extensions = { "8BITMIME", "CHUNKING" };
+
+			if (pipelining) {
+				extensions.push_back("PIPELINING");
+			}
+
+			vmime::shared_ptr <vmime::net::transport> tr = create8bitTransport(extensions);
+
+			VASSERT_THROW(
+				"Send",
+				tr->send(create8bitTestMessage("7bit", body)),
+				vmime::net::smtp::SMTPUndeclared8bitDataException
+			);
+
+			const std::vector <vmime::string>& commands = eightBitSMTPTestSocket::getCommands();
+
+			VASSERT_EQ("Count", 4, commands.size());
+			VASSERT_EQ("BDAT", "BDAT 262144", commands[2]);
+			VASSERT_EQ("RSET", "RSET", commands[3]);
+			VASSERT_TRUE("Not delivered", eightBitSMTPTestSocket::getMessages().empty());
+
+			// The connection is still usable
+			tr->send(create8bitTestMessage("7bit", "Hello\r\n"));
+
+			VASSERT_EQ("Delivered", 1, eightBitSMTPTestSocket::getMessages().size());
+		}
+	}
+
+	// Raw message data is not parsed: it is declared as 8-bit only with the
+	// send option, and otherwise checked while it is sent
+	void test8BITMIME_rawData() {
+
+		const vmime::string data7bit = "Subject: Test\r\n\r\nHello\r\n";
+		const vmime::string data8bit = "Subject: Test\r\n\r\nGr\xc3\xbc\xc3\x9f" "e\r\n";
+
+		vmime::net::smtp::SMTPSendOptions options;
+		options.set8bitMessage(true);
+
+		// 7-bit data
+		{
+			vmime::shared_ptr <vmime::net::transport> tr = create8bitTransport({ "8BITMIME" });
+
+			send8bitTestData(tr, data7bit);
+
+			const std::vector <vmime::string>& commands = eightBitSMTPTestSocket::getCommands();
+
+			VASSERT_EQ("1.1", "MAIL FROM:<expediteur@test.vmime.org>", commands[0]);
+			VASSERT_EQ("1.2", 1, eightBitSMTPTestSocket::getMessages().size());
+		}
+
+		// 8-bit data, declared with the option
+		{
+			vmime::shared_ptr <vmime::net::transport> tr = create8bitTransport({ "8BITMIME" });
+
+			send8bitTestData(tr, data8bit, options);
+
+			const std::vector <vmime::string>& commands = eightBitSMTPTestSocket::getCommands();
+			const std::vector <vmime::string>& messages = eightBitSMTPTestSocket::getMessages();
+
+			VASSERT_EQ("2.1", "MAIL FROM:<expediteur@test.vmime.org> BODY=8BITMIME", commands[0]);
+			VASSERT_EQ("2.2", 1, messages.size());
+			VASSERT("2.3", messages[0].find(data8bit) == 0);
+		}
+
+		// 8-bit data, not declared: the message is not delivered, and as the
+		// DATA transfer cannot be cancelled, the connection is closed
+		{
+			vmime::shared_ptr <vmime::net::transport> tr = create8bitTransport({ "8BITMIME" });
+
+			VASSERT_THROW(
+				"3.1",
+				send8bitTestData(tr, data8bit),
+				vmime::net::smtp::SMTPUndeclared8bitDataException
+			);
+
+			VASSERT_TRUE("3.2 Not delivered", eightBitSMTPTestSocket::getMessages().empty());
+			VASSERT_FALSE("3.3 Disconnected", tr->isConnected());
+		}
+
+		// 8-bit data, server without 8BITMIME
+		{
+			vmime::shared_ptr <vmime::net::transport> tr = create8bitTransport({});
+
+			VASSERT_THROW(
+				"4.1",
+				send8bitTestData(tr, data8bit),
+				vmime::net::smtp::SMTP8BITMIMEExtensionNotSupportedException
+			);
+
+			VASSERT_TRUE("4.2 Not delivered", eightBitSMTPTestSocket::getMessages().empty());
+			VASSERT_FALSE("4.3 Disconnected", tr->isConnected());
+		}
+
+		// 8-bit data, declared with the option, server without 8BITMIME:
+		// nothing is sent
+		{
+			vmime::shared_ptr <vmime::net::transport> tr = create8bitTransport({});
+
+			VASSERT_THROW(
+				"5.1",
+				send8bitTestData(tr, data8bit, options),
+				vmime::net::smtp::SMTP8BITMIMEExtensionNotSupportedException
+			);
+
+			VASSERT_TRUE("5.2 No command sent", eightBitSMTPTestSocket::getCommands().empty());
+			VASSERT_TRUE("5.3 Still connected", tr->isConnected());
+		}
+	}
+
+	// A forwarded message which contains 8-bit data is declared as 8-bit
+	// (RFC 2046, section 5.2.1), so the message is known to be 8-bit
+	// before it is sent
+	void test8BITMIME_messageAttachment() {
+
+		vmime::shared_ptr <vmime::message> msg =
+			create8bitTestMessage("7bit", "See the attached message.\r\n");
+
+		vmime::attachmentHelper::addAttachment(
+			msg, create8bitTestMessage("8bit", "Gr\xc3\xbc\xc3\x9f" "e\r\n")
+		);
+
+		vmime::shared_ptr <vmime::net::transport> tr = create8bitTransport({ "8BITMIME", "CHUNKING" });
+
+		tr->send(msg);
+
+		const std::vector <vmime::string>& commands = eightBitSMTPTestSocket::getCommands();
+
+		VASSERT_EQ("1", "MAIL FROM:<expediteur@test.vmime.org> BODY=8BITMIME", commands[0]);
+		VASSERT_EQ("2", 1, eightBitSMTPTestSocket::getMessages().size());
 	}
 
 	// Extension keywords are case-insensitive (RFC 5321, section 2.4)

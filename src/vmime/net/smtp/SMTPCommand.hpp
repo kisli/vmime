@@ -67,8 +67,8 @@ public:
 	static shared_ptr <SMTPCommand> STARTTLS();
 	static shared_ptr <SMTPCommand> MAIL(const mailbox& mbox, const bool utf8,
 	                                     const shared_ptr <const DSNAttributes>& dsnAttrs);
-	static shared_ptr <SMTPCommand> MAIL(const mailbox& mbox, const bool utf8, const size_t size,
-	                                     const shared_ptr <const DSNAttributes>& dsnAttrs);
+	static shared_ptr <SMTPCommand> MAIL(const mailbox& mbox, const bool utf8, const bool eightBit,
+	                                     const size_t size, const shared_ptr <const DSNAttributes>& dsnAttrs);
 	static shared_ptr <SMTPCommand> RCPT(const mailbox& mbox, const bool utf8,
 	                                     const shared_ptr <const DSNAttributes>& dsnAttrs);
 	static shared_ptr <SMTPCommand> RSET();

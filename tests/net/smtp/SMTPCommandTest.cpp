@@ -46,6 +46,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 		VMIME_TEST(testMAIL_UTF8)
 		VMIME_TEST(testMAIL_SIZE)
 		VMIME_TEST(testMAIL_SIZE_UTF8)
+		VMIME_TEST(testMAIL_8BIT)
 		VMIME_TEST(testRCPT)
 		VMIME_TEST(testRCPT_Encoded)
 		VMIME_TEST(testRCPT_UTF8)
@@ -180,7 +181,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 		auto dsnAttrs = vmime::make_shared <DSNAttributes>("", "FULL", "dsn-unique-id");
 
 		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::MAIL(
-			vmime::mailbox("me@vmime.org"), false, 123456789, dsnAttrs
+			vmime::mailbox("me@vmime.org"), false, false, 123456789, dsnAttrs
 		);
 
 		VASSERT_NOT_NULL("Not null", cmd);
@@ -192,11 +193,24 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 		auto dsnAttrs = vmime::make_shared <DSNAttributes>("", "FULL", "dsn-unique-id");
 
 		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::MAIL(
-			vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), true, 123456789, dsnAttrs
+			vmime::mailbox(vmime::emailAddress("mailtest", "例え.テスト")), true, false, 123456789, dsnAttrs
 		);
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "MAIL FROM:<mailtest@例え.テスト> RET=FULL ENVID=<dsn-unique-id> SMTPUTF8 BODY=8BITMIME SIZE=123456789", cmd->getText());
+	}
+
+	// 8-bit data must be declared (RFC 6152, section 3)
+	void testMAIL_8BIT() {
+
+		auto dsnAttrs = vmime::make_shared <DSNAttributes>("", "FULL", "dsn-unique-id");
+
+		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::MAIL(
+			vmime::mailbox("me@vmime.org"), false, true, 123456789, dsnAttrs
+		);
+
+		VASSERT_NOT_NULL("Not null", cmd);
+		VASSERT_EQ("Text", "MAIL FROM:<me@vmime.org> RET=FULL ENVID=<dsn-unique-id> BODY=8BITMIME SIZE=123456789", cmd->getText());
 	}
 
 	void testRCPT() {

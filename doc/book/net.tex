@@ -667,6 +667,48 @@ tr->send(
 );
 \end{lstlisting}
 
+A message which contains 8-bit data must be declared with
+{\vcode BODY=8BITMIME}\footnote{See RFC 6152: \url{https://www.rfc-editor.org/rfc/rfc6152}},
+which needs the 8BITMIME extension. VMime does not generate such messages by
+itself, as it encodes text and attachments (quoted-printable, base64), but
+a message which was received and is sent again may have parts with the
+{\vcode 8bit} encoding. VMime finds them in a message object, and declares the
+message as 8-bit. If the server does not support 8BITMIME, the message cannot
+be sent, and {\vcode vmime::net::smtp::SMTP8BITMIMEExtensionNotSupportedException}
+is thrown before any command is sent to the server.
+
+However, some messages contain 8-bit data in parts which are not declared as
+such, and raw message data is not parsed. So, if a message has not been
+declared as 8-bit, its data is checked while it is sent, and an exception is
+thrown if it contains 8-bit data: the message is not delivered, and you have
+to send it again, declared as 8-bit with the SMTP send options:
+
+\begin{lstlisting}
+try {
+
+   tr->send(msg);
+
+} catch (vmime::net::smtp::SMTPUndeclared8bitDataException& e) {
+
+   vmime::net::smtp::SMTPSendOptions options;
+   options.set8bitMessage(true);
+
+   tr->send(msg, /* progress */ NULL, options);
+}
+\end{lstlisting}
+
+For a message object, the transfer is cancelled before any 8-bit data is
+sent, and the connection remains usable. Raw message data is sent with the
+DATA command, whose transfer cannot be cancelled: the connection is closed,
+and you have to connect again. To send a message object again, it must also
+be generated again, which is not possible if the data of a part can only be
+read once (eg. from a socket).
+
+Previous versions of VMime sent raw data which contains 8-bit data without
+declaring it, which RFC 6152 forbids. If you send raw messages which may
+contain 8-bit data (for example, messages received from another server),
+declare them as 8-bit from the start, with {\vcode options.set8bitMessage(true)}.
+
 
 % ============================================================================
 \section{Using store service}

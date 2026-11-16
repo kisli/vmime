@@ -105,10 +105,33 @@ public:
 	  */
 	bool isInternationalizedMessage() const;
 
+	/** Set whether the message contains 8-bit data. If so, the message is
+	  * sent with the BODY=8BITMIME parameter (RFC 6152), and the 8BITMIME
+	  * extension must be supported by the server.
+	  *
+	  * VMime detects by itself the parts declared as 8-bit in a message
+	  * object. Otherwise, the data is checked while it is sent, and an
+	  * SMTPUndeclared8bitDataException is thrown if it contains 8-bit
+	  * data: the message is not sent, and you have to send it again with
+	  * this option. This is the case for raw message data which contains
+	  * 8-bit data.
+	  *
+	  * @param eightBit true if the message contains 8-bit data, false
+	  * otherwise (default)
+	  */
+	void set8bitMessage(const bool eightBit);
+
+	/** Return whether the message contains 8-bit data.
+	  *
+	  * @return true if the message contains 8-bit data, false otherwise
+	  */
+	bool is8bitMessage() const;
+
 private:
 
 	shared_ptr <DSNAttributes> m_dsnAttribs;
 	bool m_internationalizedMessage = false;
+	bool m_8bitMessage = false;
 };
 
 

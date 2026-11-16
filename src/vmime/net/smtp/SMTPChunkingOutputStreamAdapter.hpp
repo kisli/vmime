@@ -57,6 +57,13 @@ public:
 
 	void flush();
 
+	/** Cancel the transfer, before the last chunk has been sent: the data
+	  * which has not been sent yet is discarded, and so are the chunks
+	  * already sent, by resetting the transaction. The connection can then
+	  * be used to send another message.
+	  */
+	void cancel();
+
 	size_t getBlockSize();
 
 protected:
