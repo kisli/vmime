@@ -101,6 +101,7 @@ private:
 
 	static bool mailboxNeedsUTF8(const mailbox& mb);
 	static bool componentNeedsUTF8(component& comp);
+	static bool componentHas8bitBody(component& comp);
 
 	/** Check whether the SMTPUTF8 extension (RFC 6531) is needed to send
 	  * a message, and ensure that it is supported by the server.
@@ -123,6 +124,23 @@ private:
 		const sendOptions& options
 	) const;
 
+	/** Check whether a message must be declared as 8-bit with the
+	  * BODY=8BITMIME parameter (RFC 6152), and ensure that the server
+	  * supports it.
+	  *
+	  * @param utf8 true if the SMTPUTF8 extension is used
+	  * @param has8bitData true if the message is known to contain 8-bit data
+	  * @param options send options
+	  * @return true if the message must be declared as 8-bit, false otherwise
+	  * @throw SMTP8BITMIMEExtensionNotSupportedException if the message must
+	  * be declared as 8-bit but the server does not support 8BITMIME
+	  */
+	bool need8bitMIME(
+		const bool utf8,
+		const bool has8bitData,
+		const sendOptions& options
+	) const;
+
 	/** Send the MAIL and RCPT commands to the server, checking the
 	  * response, and using pipelining if supported by the server.
 	  * Optionally, the DATA command can also be sent.
@@ -131,6 +149,7 @@ private:
 	  * @param recipients list of recipient mailboxes
 	  * @param sender envelope sender (if empty, expeditor will be used)
 	  * @param utf8 if true, the SMTPUTF8 extension will be used
+	  * @param eightBit if true, the message is declared as 8-bit
 	  * @param sendDATACommand if true, the DATA command will be sent
 	  * @param size message size, in bytes (or 0, if not known)
 	  * @param dsnAttributes attributes for Delivery Status Notification (if needed)
@@ -140,6 +159,7 @@ private:
 		const mailboxList& recipients,
 		const mailbox& sender,
 		const bool utf8,
+		const bool eightBit,
 		bool sendDATACommand,
 		const size_t size,
 		const sendOptions& options = sendOptions()
@@ -151,11 +171,14 @@ private:
 	  * @param is input stream provider (message data)
 	  * @param size size of the message data
 	  * @param progress progress listener, or NULL if not used
+	  * @param eightBit true if the message has been declared as 8-bit;
+	  * otherwise, the data must not contain 8-bit data
 	  */
 	void sendData(
 		utility::inputStream& is,
 		const size_t size,
-		utility::progressListener* progress
+		utility::progressListener* progress,
+		const bool eightBit
 	);
 
 

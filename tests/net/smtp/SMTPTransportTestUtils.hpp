@@ -724,3 +724,187 @@ std::vector <vmime::string> UTF8SMTPTestSocket <SUPPORTS_UTF8, SUPPORTS_8BITMIME
 
 template <bool SUPPORTS_UTF8, bool SUPPORTS_8BITMIME>
 vmime::string UTF8SMTPTestSocket <SUPPORTS_UTF8, SUPPORTS_8BITMIME>::sm_messageData;
+
+
+
+/** SMTP test server for 8-bit data (RFC 6152).
+  *
+  * The extensions announced by the server are set with reset(). The
+  * commands sent by the client (except EHLO and QUIT) are recorded, as
+  * well as the messages delivered (ie. received with DATA, or with BDAT
+  * up to the last chunk).
+  */
+class eightBitSMTPTestSocket : public testSocket {
+
+public:
+
+	eightBitSMTPTestSocket()
+		: m_state(STATE_COMMAND),
+		  m_chunkRemaining(0),
+		  m_lastChunk(false) {
+
+	}
+
+	static void reset(const std::vector <vmime::string>& extensions) {
+
+		getExtensions() = extensions;
+		getCommands().clear();
+		getMessages().clear();
+	}
+
+	static std::vector <vmime::string>& getCommands() {
+
+		static std::vector <vmime::string> commands;
+		return commands;
+	}
+
+	static std::vector <vmime::string>& getMessages() {
+
+		static std::vector <vmime::string> messages;
+		return messages;
+	}
+
+	void onConnected() {
+
+		localSend("220 test.vmime.org Service ready\r\n");
+	}
+
+	void onDataReceived() {
+
+		while (true) {
+
+			if (m_state == STATE_BDAT) {
+
+				if (m_chunkRemaining != 0) {
+
+					std::vector <vmime::byte_t> buffer(m_chunkRemaining);
+					const size_t count = localReceiveRaw(&buffer[0], m_chunkRemaining);
+
+					m_data.append(buffer.begin(), buffer.begin() + count);
+					m_chunkRemaining -= count;
+
+					if (m_chunkRemaining != 0) {
+						return;  // wait for the rest of the chunk
+					}
+				}
+
+				if (m_lastChunk) {
+					getMessages().push_back(m_data);
+				}
+
+				localSend("250 Chunk received\r\n");
+				m_state = STATE_COMMAND;
+
+				continue;
+			}
+
+			vmime::string line;
+
+			if (!localReceiveLine(line)) {
+				return;
+			}
+
+			if (m_state == STATE_DATA) {
+
+				if (line == ".") {
+
+					getMessages().push_back(m_data);
+					localSend("250 Message accepted for delivery\r\n");
+					m_state = STATE_COMMAND;
+
+				} else {
+
+					m_data += line + "\r\n";
+				}
+
+				continue;
+			}
+
+			processCommand(line);
+		}
+	}
+
+private:
+
+	static std::vector <vmime::string>& getExtensions() {
+
+		static std::vector <vmime::string> extensions;
+		return extensions;
+	}
+
+	void processCommand(const vmime::string& line) {
+
+		std::istringstream iss(line);
+
+		vmime::string verb;
+		iss >> verb;
+
+		verb = vmime::utility::stringUtils::toUpper(verb);
+
+		if (verb == "EHLO") {
+
+			const std::vector <vmime::string>& extensions = getExtensions();
+
+			localSend(extensions.empty() ? "250 test.vmime.org\r\n" : "250-test.vmime.org\r\n");
+
+			for (size_t i = 0 ; i < extensions.size() ; ++i) {
+				localSend((i + 1 < extensions.size() ? "250-" : "250 ") + extensions[i] + "\r\n");
+			}
+
+			return;
+
+		} else if (verb == "QUIT") {
+
+			localSend("221 test.vmime.org Service closing transmission channel\r\n");
+			return;
+		}
+
+		getCommands().push_back(line);
+
+		if (verb == "MAIL") {
+
+			m_data.clear();
+			localSend("250 OK\r\n");
+
+		} else if (verb == "RSET") {
+
+			// 200 is also accepted by VMime (RFC 876), and makes any response
+			// read out of order detectable, as it is not accepted for MAIL
+			m_data.clear();
+			localSend("200 OK\r\n");
+
+		} else if (verb == "RCPT") {
+
+			localSend("250 OK\r\n");
+
+		} else if (verb == "DATA") {
+
+			localSend("354 Ready to accept data; end with <CRLF>.<CRLF>\r\n");
+			m_state = STATE_DATA;
+
+		} else if (verb == "BDAT") {
+
+			vmime::string last;
+			iss >> m_chunkRemaining >> last;
+
+			m_lastChunk = (vmime::utility::stringUtils::toUpper(last) == "LAST");
+			m_state = STATE_BDAT;
+
+		} else {
+
+			localSend("502 Command not implemented\r\n");
+		}
+	}
+
+
+	enum State {
+		STATE_COMMAND,
+		STATE_DATA,
+		STATE_BDAT
+	};
+
+	State m_state;
+	vmime::string m_data;
+	size_t m_chunkRemaining;
+	bool m_lastChunk;
+};

@@ -37,6 +37,7 @@ VMIME_TEST_SUITE_BEGIN(attachmentHelperTest)
 		VMIME_TEST(testGetAttachmentName)
 		VMIME_TEST(testGetBodyPartAttachment)
 		VMIME_TEST(testAddAttachmentMessage1)
+		VMIME_TEST(testAddAttachmentMessage8bit)
 		VMIME_TEST(testGetBodyPartAttachmentMessage)
 	VMIME_TEST_LIST_END
 
@@ -343,6 +344,46 @@ VMIME_TEST_SUITE_BEGIN(attachmentHelperTest)
 
 		VASSERT_EQ("3", "Attached message", hdr->Subject()->getValue <vmime::text>()->generate());
 		VASSERT_EQ("4", "Attached message body", extractBodyContents(amsgOut));
+
+		// A message/rfc822 part cannot be encoded: it is declared as 7-bit
+		// as it only contains 7-bit data (RFC 2046, section 5.2.1)
+		VASSERT_EQ("5", "7bit", attPart->getBody()->getEncoding().generate());
+	}
+
+	// A message/rfc822 part which contains 8-bit data is declared as 8-bit
+	// (RFC 2046, section 5.2.1)
+	void testAddAttachmentMessage8bit() {
+
+		const vmime::string data =
+"Subject: Test message\r\n"
+"Content-Type: text/plain\r\n"
+"\r\n"
+"Message body";
+
+		vmime::shared_ptr <vmime::message> msg = vmime::make_shared <vmime::message>();
+		msg->parse(data);
+
+		const vmime::string attData =
+"Subject: Attached message\r\n"
+"Content-Type: text/plain; charset=utf-8\r\n"
+"Content-Transfer-Encoding: 8bit\r\n"
+"\r\n"
+"Gr\xc3\xbc\xc3\x9f" "e";
+
+		vmime::shared_ptr <vmime::message> amsg = vmime::make_shared <vmime::message>();
+		amsg->parse(attData);
+
+		vmime::attachmentHelper::addAttachment(msg, amsg);
+
+		VASSERT_EQ("1", "multipart/mixed[text/plain,message/rfc822]", getStructure(msg));
+
+		vmime::shared_ptr <const vmime::bodyPart> attPart = msg->getBody()->getPartAt(1);
+
+		VASSERT_EQ("2", "8bit", attPart->getBody()->getEncoding().generate());
+		VASSERT_EQ(
+			"3", "8bit",
+			attPart->getHeader()->findField(vmime::fields::CONTENT_TRANSFER_ENCODING)->getValue()->generate()
+		);
 	}
 
 	void testGetBodyPartAttachmentMessage() {

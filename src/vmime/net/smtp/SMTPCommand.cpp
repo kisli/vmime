@@ -125,13 +125,13 @@ shared_ptr <SMTPCommand> SMTPCommand::MAIL(
 	const shared_ptr <const DSNAttributes>& dsnAttrs
 ) {
 
-	return MAIL(mbox, utf8, 0, dsnAttrs);
+	return MAIL(mbox, utf8, /* eightBit */ false, 0, dsnAttrs);
 }
 
 
 // static
 shared_ptr <SMTPCommand> SMTPCommand::MAIL(
-	const mailbox& mbox, const bool utf8, const size_t size,
+	const mailbox& mbox, const bool utf8, const bool eightBit, const size_t size,
 	const shared_ptr <const DSNAttributes>& dsnAttrs
 ) {
 
@@ -147,10 +147,14 @@ shared_ptr <SMTPCommand> SMTPCommand::MAIL(
 		cmd << " " << dsn::ENVID << "=<" << dsnAttrs->getEnvelopId() << ">";
 	}
 
-	// An internationalized message contains 8-bit data, so it is sent with
-	// BODY=8BITMIME (RFC 6531, section 1, and RFC 6152, section 3)
 	if (utf8) {
-		cmd << " SMTPUTF8 BODY=8BITMIME";
+		cmd << " SMTPUTF8";
+	}
+
+	// 8-bit data must be declared (RFC 6152, section 3), and an
+	// internationalized message contains 8-bit data (RFC 6531, section 1)
+	if (utf8 || eightBit) {
+		cmd << " BODY=8BITMIME";
 	}
 
 	if (size != 0) {

@@ -232,6 +232,62 @@ const char* SMTPUTF8ExtensionNotSupportedException::name() const throw() {
 }
 
 
+//
+// SMTP8BITMIMEExtensionNotSupportedException
+//
+
+SMTP8BITMIMEExtensionNotSupportedException::SMTP8BITMIMEExtensionNotSupportedException(const exception& other)
+	: SMTPExtensionNotSupportedException(
+		"RFC-6152 8BITMIME extension is not supported by the SMTP server, "
+		"but is needed for 8-bit data.", other) {
+
+}
+
+
+SMTP8BITMIMEExtensionNotSupportedException::~SMTP8BITMIMEExtensionNotSupportedException() throw() {
+
+}
+
+
+exception* SMTP8BITMIMEExtensionNotSupportedException::clone() const {
+	return new SMTP8BITMIMEExtensionNotSupportedException(*this);
+}
+
+
+const char* SMTP8BITMIMEExtensionNotSupportedException::name() const throw() {
+
+	return "SMTP8BITMIMEExtensionNotSupportedException";
+}
+
+
+//
+// SMTPUndeclared8bitDataException
+//
+
+SMTPUndeclared8bitDataException::SMTPUndeclared8bitDataException(const exception& other)
+	: net_exception(
+		"The message contains 8-bit data, which must be declared "
+		"with SMTPSendOptions::set8bitMessage().", other) {
+
+}
+
+
+SMTPUndeclared8bitDataException::~SMTPUndeclared8bitDataException() throw() {
+
+}
+
+
+exception* SMTPUndeclared8bitDataException::clone() const {
+	return new SMTPUndeclared8bitDataException(*this);
+}
+
+
+const char* SMTPUndeclared8bitDataException::name() const throw() {
+
+	return "SMTPUndeclared8bitDataException";
+}
+
+
 } // smtp
 } // net
 } // vmime

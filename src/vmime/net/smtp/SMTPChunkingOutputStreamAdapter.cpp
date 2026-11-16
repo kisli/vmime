@@ -166,6 +166,33 @@ void SMTPChunkingOutputStreamAdapter::flush() {
 }
 
 
+void SMTPChunkingOutputStreamAdapter::cancel() {
+
+	m_bufferSize = 0;
+
+	// Read the responses for the chunks already sent, if they were pipelined
+	if (m_connection->hasExtension("PIPELINING")) {
+
+		for (unsigned int i = 0 ; i < m_chunkCount ; ++i) {
+			m_connection->readResponse();
+		}
+	}
+
+	m_chunkCount = 0;
+
+	// A RSET command issued after the first BDAT and before the BDAT LAST
+	// clears all the chunks sent during the transaction (RFC 3030, section 2)
+	m_connection->sendRequest(SMTPCommand::RSET());
+
+	shared_ptr <SMTPResponse> resp = m_connection->readResponse();
+
+	if (resp->getCode() != 250 && resp->getCode() != 200) {
+		m_connection->getTransport()->disconnect();
+		throw exceptions::command_error("RSET", resp->getText());
+	}
+}
+
+
 size_t SMTPChunkingOutputStreamAdapter::getBlockSize() {
 
 	return sizeof(m_buffer);
