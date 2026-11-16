@@ -27,6 +27,7 @@
 #include "vmime/contentDisposition.hpp"
 
 #include "vmime/utility/outputStreamAdapter.hpp"
+#include "vmime/utility/stringUtils.hpp"
 #include "vmime/utility/details/classicOStringStream.hpp"
 
 
@@ -66,7 +67,10 @@ const shared_ptr <const contentHandler> parsedMessageAttachment::getData() const
 
 		m_msg->generate(os);
 
-		m_data = make_shared <stringContentHandler>(oss.str());
+		const string data = oss.str();
+
+		m_data = make_shared <stringContentHandler>(data);
+		m_8bit = utility::stringUtils::findFirstNonASCIIchar(data.begin(), data.end()) != string::npos;
 	}
 
 	return m_data;
@@ -75,7 +79,11 @@ const shared_ptr <const contentHandler> parsedMessageAttachment::getData() const
 
 const encoding parsedMessageAttachment::getEncoding() const {
 
-	return encoding(encodingTypes::EIGHT_BIT);  // not important
+	// The message cannot be encoded: the encoding of a message/rfc822
+	// part only tells whether it contains 8-bit data (RFC 2046, section 5.2.1)
+	getData();
+
+	return encoding(m_8bit ? encodingTypes::EIGHT_BIT : encodingTypes::SEVEN_BIT);
 }
 
 
@@ -109,6 +117,7 @@ void parsedMessageAttachment::generateIn(const shared_ptr <bodyPart>& parent) co
 
 	// Set contents
 	part->getBody()->setContents(getData());
+	part->getBody()->setEncoding(getEncoding());
 }
 
 

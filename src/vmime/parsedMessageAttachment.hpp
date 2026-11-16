@@ -64,6 +64,7 @@ private:
 
 	shared_ptr <message> m_msg;
 	mutable shared_ptr <contentHandler> m_data;
+	mutable bool m_8bit = false;
 };
 
 
