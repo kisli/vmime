@@ -118,6 +118,32 @@ public:
 	  */
 	void setMaxNestingDepth(const size_t maxDepth);
 
+	/** Returns the charset of non-ASCII text in header fields which is
+	  * neither encoded nor valid UTF-8.
+	  *
+	  * @return fallback charset for header fields
+	  */
+	charset getHeaderFallbackCharset() const;
+
+	/** Sets the charset of non-ASCII text in header fields which is neither
+	  * encoded (RFC 2047, RFC 2231) nor valid UTF-8 (RFC 6532), as found in
+	  * messages which do not follow the standards. It does not apply to
+	  * message bodies. Valid UTF-8 text is always interpreted as UTF-8.
+	  * The default is UTF-8, ie. no fallback.
+	  *
+	  * @param ch fallback charset for header fields
+	  */
+	void setHeaderFallbackCharset(const charset& ch);
+
+	parsingContext& operator=(const parsingContext& ctx);
+
+	/** Copies the options of another context (but not the feedback from
+	  * a previous parsing, like getHeaderRecoveryNeeded()).
+	  *
+	  * @param ctx context to copy the options from
+	  */
+	void copyFrom(const parsingContext& ctx);
+
 protected:
 
 	headerParseRecoveryMethod::headerLineError m_headerParseErrorRecovery;
@@ -141,6 +167,11 @@ protected:
 	/** Maximum nesting depth of body parts.
 	  */
 	size_t m_maxNestingDepth{100};
+
+	/** Name of the fallback charset for header fields (a charset object
+	  * cannot be held here, as charset.hpp includes this file).
+	  */
+	string m_headerFallbackCharset{charsets::UTF_8};
 };
 
 

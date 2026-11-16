@@ -132,6 +132,7 @@ void generationContext::copyFrom(const generationContext& ctx) {
 	m_maxLineLength = ctx.m_maxLineLength;
 	m_prologText = ctx.m_prologText;
 	m_epilogText = ctx.m_epilogText;
+	m_wrapMessageId = ctx.m_wrapMessageId;
 	m_paramValueMode = ctx.m_paramValueMode;
 }
 

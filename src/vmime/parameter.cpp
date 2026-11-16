@@ -127,14 +127,7 @@ void parameter::parseImpl(
 
 	m_value->setBuffer(string(buffer.begin() + position, buffer.begin() + end));
 
-	const string& value = m_value->getBuffer();
-
-	if (ctx.getInternationalizedEmailSupport() &&
-	    utility::stringUtils::findFirstNonASCIIchar(value.begin(), value.end()) != string::npos) {
-		m_value->setCharset(charset(charsets::UTF_8));
-	} else {
-		m_value->setCharset(charset(charsets::US_ASCII));
-	}
+	m_value->setCharset(word::unencodedCharset(ctx, m_value->getBuffer()));
 
 	if (newPosition) {
 		*newPosition = end;

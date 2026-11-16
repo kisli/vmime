@@ -51,6 +51,10 @@ public:
 	  * This is disabled by default, and should be used only with servers
 	  * which support it (eg. SMTP servers with SMTPUTF8 extension).
 	  *
+	  * This only applies to generation: when parsing, unencoded UTF-8 text
+	  * in header fields is always accepted (see
+	  * parsingContext::setHeaderFallbackCharset()).
+	  *
 	  * @param support true if RFC-6532 support is enabled, false otherwise
 	  */
 	void setInternationalizedEmailSupport(const bool support);

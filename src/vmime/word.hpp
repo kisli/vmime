@@ -39,6 +39,7 @@ namespace vmime {
 class VMIME_EXPORT word : public headerFieldValue {
 
 	friend class text;
+	friend class parameter;
 
 public:
 

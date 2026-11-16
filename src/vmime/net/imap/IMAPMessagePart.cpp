@@ -60,11 +60,9 @@ namespace {
 		}
 
 		// Servers should decode RFC-2231 parameter values and return them
-		// in UTF-8 (RFC 9051, section 7.5.2), so 8-bit values are UTF-8
-		parsingContext ctx(parsingContext::getDefaultContext());
-		ctx.setInternationalizedEmailSupport(true);
-
-		field.parseParameters(ctx, rawParams);
+		// in UTF-8 (RFC 9051, section 7.5.2), which is how 8-bit values
+		// are parsed anyway
+		field.parseParameters(parsingContext::getDefaultContext(), rawParams);
 	}
 
 	// Return the body location (RFC 3501), which is the first extension
