@@ -115,17 +115,23 @@ void OpenSSLInitializer::initialize() {
 	OPENSSL_config(NULL);
 #endif
 
+#if OPENSSL_VERSION_NUMBER >=0x10100000L
+	vmime_uint64 flags = OPENSSL_INIT_LOAD_SSL_STRINGS | OPENSSL_INIT_LOAD_CONFIG;
+
+	// Load the built-in engines, except in FIPS mode. Engines do not exist
+	// anymore since OpenSSL 4.0.
+#if OPENSSL_VERSION_NUMBER < 0x40000000L
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
 	static const bool isFIPSenabled = EVP_default_properties_is_fips_enabled(nullptr) == 1;
 #else
 	static const bool isFIPSenabled = FIPS_mode() == 1;
 #endif
 
-#if OPENSSL_VERSION_NUMBER >=0x10100000L
-	vmime_uint64 flags = OPENSSL_INIT_LOAD_SSL_STRINGS | OPENSSL_INIT_LOAD_CONFIG;
 	if (!isFIPSenabled) {
 		flags |= OPENSSL_INIT_ENGINE_OPENSSL | OPENSSL_INIT_ENGINE_ALL_BUILTIN;
 	}
+#endif
+
 	OPENSSL_init_ssl(flags, NULL);
 #endif
 
