@@ -118,6 +118,15 @@ public:
 	  */
 	void setMaxNestingDepth(const size_t maxDepth);
 
+	parsingContext& operator=(const parsingContext& ctx);
+
+	/** Copies the options of another context (but not the feedback from
+	  * a previous parsing, like getHeaderRecoveryNeeded()).
+	  *
+	  * @param ctx context to copy the options from
+	  */
+	void copyFrom(const parsingContext& ctx);
+
 protected:
 
 	headerParseRecoveryMethod::headerLineError m_headerParseErrorRecovery;

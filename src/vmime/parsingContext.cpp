@@ -35,7 +35,8 @@ parsingContext::parsingContext()
 
 parsingContext::parsingContext(const parsingContext& ctx)
 	: context(ctx),
-	  m_headerParseErrorRecovery(vmime::headerParseRecoveryMethod::SKIP_LINE),
+	  m_headerParseErrorRecovery(ctx.m_headerParseErrorRecovery),
+	  m_useMyHostname(ctx.m_useMyHostname),
 	  m_maxNestingDepth(ctx.m_maxNestingDepth) {
 
 }
@@ -95,6 +96,24 @@ size_t parsingContext::getMaxNestingDepth() const {
 void parsingContext::setMaxNestingDepth(const size_t maxDepth) {
 
 	m_maxNestingDepth = maxDepth;
+}
+
+
+parsingContext& parsingContext::operator=(const parsingContext& ctx) {
+
+	copyFrom(ctx);
+	return *this;
+}
+
+
+void parsingContext::copyFrom(const parsingContext& ctx) {
+
+	context::copyFrom(ctx);
+
+	// Only the options are copied, not the feedback from a previous parsing
+	m_headerParseErrorRecovery = ctx.m_headerParseErrorRecovery;
+	m_useMyHostname = ctx.m_useMyHostname;
+	m_maxNestingDepth = ctx.m_maxNestingDepth;
 }
 
 
