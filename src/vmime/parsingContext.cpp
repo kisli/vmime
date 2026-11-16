@@ -22,6 +22,7 @@
 //
 
 #include "vmime/parsingContext.hpp"
+#include "vmime/charset.hpp"
 
 
 namespace vmime {
@@ -37,7 +38,8 @@ parsingContext::parsingContext(const parsingContext& ctx)
 	: context(ctx),
 	  m_headerParseErrorRecovery(ctx.m_headerParseErrorRecovery),
 	  m_useMyHostname(ctx.m_useMyHostname),
-	  m_maxNestingDepth(ctx.m_maxNestingDepth) {
+	  m_maxNestingDepth(ctx.m_maxNestingDepth),
+	  m_headerFallbackCharset(ctx.m_headerFallbackCharset) {
 
 }
 
@@ -99,6 +101,18 @@ void parsingContext::setMaxNestingDepth(const size_t maxDepth) {
 }
 
 
+charset parsingContext::getHeaderFallbackCharset() const {
+
+	return charset(m_headerFallbackCharset);
+}
+
+
+void parsingContext::setHeaderFallbackCharset(const charset& ch) {
+
+	m_headerFallbackCharset = ch.getName();
+}
+
+
 parsingContext& parsingContext::operator=(const parsingContext& ctx) {
 
 	copyFrom(ctx);
@@ -114,6 +128,7 @@ void parsingContext::copyFrom(const parsingContext& ctx) {
 	m_headerParseErrorRecovery = ctx.m_headerParseErrorRecovery;
 	m_useMyHostname = ctx.m_useMyHostname;
 	m_maxNestingDepth = ctx.m_maxNestingDepth;
+	m_headerFallbackCharset = ctx.m_headerFallbackCharset;
 }
 
 

@@ -69,6 +69,8 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		VMIME_TEST(testWronglyPaddedB64Words)
 		VMIME_TEST(testFixBrokenWords)
 		VMIME_TEST(testUnknownCharset)
+		VMIME_TEST(testUnencoded8bit)
+		VMIME_TEST(testUnencoded8bit_fallback)
 	VMIME_TEST_LIST_END
 
 
@@ -1287,6 +1289,67 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		VASSERT_EQ("2.5", vmime::charset("gb2312"), hvalue->getName().getWordAt(1)->getCharset());
 		VASSERT_EQ("2.6", "'", hvalue->getName().getWordAt(2)->getBuffer());
 		VASSERT_EQ("2.7", vmime::charset("us-ascii"), hvalue->getName().getWordAt(2)->getCharset());
+	}
+
+	// Unencoded 8-bit text is UTF-8 (RFC 6532, section 3.2), even without
+	// internationalized email support, so that it is not lost on output
+	void testUnencoded8bit() {
+
+		vmime::parsingContext ctx;
+
+		// ASCII stays US-ASCII
+		vmime::text t1;
+		t1.parse(ctx, "Hello");
+
+		VASSERT_EQ("1.1", 1, t1.getWordCount());
+		VASSERT_EQ("1.2", vmime::charset("us-ascii"), t1.getWordAt(0)->getCharset());
+
+		// UTF-8
+		vmime::text t2;
+		t2.parse(ctx, "Gr\xc3\xbc\xc3\x9f" "e");
+
+		VASSERT_EQ("2.1", 1, t2.getWordCount());
+		VASSERT_EQ("2.2", "Gr\xc3\xbc\xc3\x9f" "e", t2.getWordAt(0)->getBuffer());
+		VASSERT_EQ("2.3", vmime::charset("utf-8"), t2.getWordAt(0)->getCharset());
+		VASSERT_EQ("2.4", "=?utf-8?B?R3LDvMOfZQ==?=", t2.generate());
+
+		// Not UTF-8, and no fallback charset: the text is kept as is
+		vmime::text t3;
+		t3.parse(ctx, "Gr\xfc\xdf" "e");
+
+		VASSERT_EQ("3.1", 1, t3.getWordCount());
+		VASSERT_EQ("3.2", "Gr\xfc\xdf" "e", t3.getWordAt(0)->getBuffer());
+		VASSERT_EQ("3.3", vmime::charset("utf-8"), t3.getWordAt(0)->getCharset());
+	}
+
+	void testUnencoded8bit_fallback() {
+
+		vmime::parsingContext ctx;
+		ctx.setHeaderFallbackCharset(vmime::charset("iso-8859-1"));
+
+		// ASCII stays US-ASCII
+		vmime::text t1;
+		t1.parse(ctx, "Hello");
+
+		VASSERT_EQ("1.1", 1, t1.getWordCount());
+		VASSERT_EQ("1.2", vmime::charset("us-ascii"), t1.getWordAt(0)->getCharset());
+
+		// Valid UTF-8 is always UTF-8
+		vmime::text t2;
+		t2.parse(ctx, "Gr\xc3\xbc\xc3\x9f" "e");
+
+		VASSERT_EQ("2.1", 1, t2.getWordCount());
+		VASSERT_EQ("2.2", vmime::charset("utf-8"), t2.getWordAt(0)->getCharset());
+
+		// Not UTF-8: in the fallback charset
+		vmime::text t3;
+		t3.parse(ctx, "Gr\xfc\xdf" "e");
+
+		VASSERT_EQ("3.1", 1, t3.getWordCount());
+		VASSERT_EQ("3.2", "Gr\xfc\xdf" "e", t3.getWordAt(0)->getBuffer());
+		VASSERT_EQ("3.3", vmime::charset("iso-8859-1"), t3.getWordAt(0)->getCharset());
+		VASSERT_EQ("3.4", "Gr\xc3\xbc\xc3\x9f" "e", t3.getConvertedText(vmime::charset("utf-8")));
+		VASSERT_EQ("3.5", "=?iso-8859-1?Q?Gr=FC=DFe?=", t3.generate());
 	}
 
 VMIME_TEST_SUITE_END

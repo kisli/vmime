@@ -81,13 +81,21 @@ word::word(const string& buffer, const charset& charset, const string& lang)
 charset word::unencodedCharset(const parsingContext& ctx, const string& buffer) {
 
 	// Plain ASCII stays US-ASCII, so that it does not get encoded on output
-	if (ctx.getInternationalizedEmailSupport() &&
-	    utility::stringUtils::findFirstNonASCIIchar(buffer.begin(), buffer.end()) != string::npos) {
-
-		return charset(charsets::UTF_8);
+	if (utility::stringUtils::findFirstNonASCIIchar(buffer.begin(), buffer.end()) == string::npos) {
+		return charset(charsets::US_ASCII);
 	}
 
-	return charset(charsets::US_ASCII);
+	// Non-ASCII text in header fields is UTF-8 (RFC 6532, section 3.2).
+	// Text which is not, as found in messages which do not follow the
+	// standards, is in the fallback charset set by the application.
+	const charset utf8(charsets::UTF_8);
+	const charset fallback = ctx.getHeaderFallbackCharset();
+
+	if (fallback == utf8 || utf8.isValidText(buffer, NULL)) {
+		return utf8;
+	}
+
+	return fallback;
 }
 
 

@@ -218,6 +218,15 @@ VMIME_TEST_SUITE_BEGIN(mailboxTest)
 		vmime::utility::outputStreamAdapter os(oss);
 		m.generate(gctx, os);
 		VASSERT_EQ("3", "\"J\xc3\xa4ger\" <vincent@vmime.org>", oss.str());
+
+		// When parsing, an 8-bit display name is UTF-8 even without
+		// internationalized email support (RFC 6532, section 3.2)
+		vmime::parsingContext pctx2;
+
+		vmime::mailbox m2;
+		m2.parse(pctx2, "J\xc3\xa9r\xc3\xb4me <jerome@vmime.org>");
+		VASSERT_EQ("4", vmime::charset("utf-8"), m2.getName().getWordAt(0)->getCharset());
+		VASSERT_EQ("5", "=?utf-8?B?SsOpcsO0bWU=?= <jerome@vmime.org>", m2.generate());
 	}
 
 	void testQuotedNameSpecials() {

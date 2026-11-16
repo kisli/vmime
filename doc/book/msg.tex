@@ -136,6 +136,35 @@ for (int i = 0 ; i < mp.getTextPartCount() ; ++i) {
 \end{lstlisting}
 
 
+\subsection{Non-ASCII text in header fields} % --------------------------------
+
+Non-ASCII text in header fields is usually encoded (RFC 2047 encoded-words,
+RFC 2231 parameter values), and the encoding tells its charset. Some messages
+contain unencoded non-ASCII text, though: internationalized messages, in which
+it is UTF-8\footnote{See RFC 6532: \url{https://www.rfc-editor.org/rfc/rfc6532}},
+but also messages from mailers which do not follow the standards, and write it
+in another charset.
+
+VMime interprets such text as UTF-8. If you have to parse messages in which it
+is not valid UTF-8, you can set the charset to use instead in the parsing
+context:
+
+\begin{lstlisting}
+vmime::parsingContext ctx;
+ctx.setHeaderFallbackCharset(vmime::charset("iso-8859-1"));
+
+vmime::shared_ptr <vmime::message> msg = vmime::make_shared <vmime::message>();
+msg->parse(ctx, data);
+\end{lstlisting}
+
+Valid UTF-8 text is still interpreted as UTF-8, so internationalized messages
+are parsed correctly whatever the fallback charset. This option only applies
+to header fields: the charset of a text body is given by its
+{\vcode Content-Type} field. You can also set it in the default parsing context
+({\vcode vmime::parsingContext::getDefaultContext()}), which is used when no
+context is given.
+
+
 % ============================================================================
 \section{Building messages}
 

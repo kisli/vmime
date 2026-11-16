@@ -39,6 +39,7 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 		VMIME_TEST(testEncodeTSpecialsInRFC2231)
 		VMIME_TEST(testWhitespaceBreaksTheValue)
 		VMIME_TEST(testParseParameters)
+		VMIME_TEST(testParse8bit)
 	VMIME_TEST_LIST_END
 
 
@@ -756,12 +757,9 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 		VASSERT_EQ("4.2", "\xc3\xa9t\xc3\xa9.pdf", PARAM_BUFFER(p4, 0));
 		VASSERT_EQ("4.3", vmime::charset(vmime::charsets::UTF_8), p4.getParameterAt(0)->getValue().getCharset());
 
-		// 8-bit value, in UTF-8 with internationalized email support
-		vmime::parsingContext ctx5;
-		ctx5.setInternationalizedEmailSupport(true);
-
+		// 8-bit value, in UTF-8 (RFC 6532)
 		parameterizedHeaderField p5;
-		p5.parseParameters(ctx5, {
+		p5.parseParameters(ctx, {
 			{ "name", "\xc3\xa9t\xc3\xa9.pdf" },
 		});
 
@@ -782,6 +780,66 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 		VASSERT_EQ("6.1", 1, p6.getParameterCount());
 		VASSERT_EQ("6.2", "param4", PARAM_NAME(p6, 0));
 		VASSERT_EQ("6.3", "value4", PARAM_BUFFER(p6, 0));
+
+		// 8-bit value which is not UTF-8: in the fallback charset
+		vmime::parsingContext ctx7;
+		ctx7.setHeaderFallbackCharset(vmime::charset("iso-8859-1"));
+
+		parameterizedHeaderField p7;
+		p7.parseParameters(ctx7, {
+			{ "name", "\xe9t\xe9.pdf" },
+		});
+
+		VASSERT_EQ("7.1", 1, p7.getParameterCount());
+		VASSERT_EQ("7.2", "\xe9t\xe9.pdf", PARAM_BUFFER(p7, 0));
+		VASSERT_EQ("7.3", vmime::charset("iso-8859-1"), p7.getParameterAt(0)->getValue().getCharset());
+	}
+
+	// Unencoded 8-bit values are UTF-8 (RFC 6532, section 3.2), or in the
+	// fallback charset if they are not
+	void testParse8bit() {
+
+		// UTF-8
+		{
+			vmime::parsingContext ctx;
+
+			parameterizedHeaderField p;
+			p.parse(ctx, "attachment; filename=\"\xc3\xa9t\xc3\xa9.pdf\"");
+
+			VASSERT_EQ("1.1", 1, p.getParameterCount());
+			VASSERT_EQ("1.2", "\xc3\xa9t\xc3\xa9.pdf", PARAM_BUFFER(p, 0));
+			VASSERT_EQ("1.3", vmime::charset("utf-8"), p.getParameterAt(0)->getValue().getCharset());
+			VASSERT_EQ("1.4", "F: attachment; filename*=utf-8''%C3%A9t%C3%A9.pdf", p.generate());
+		}
+
+		// UTF-8, with a fallback charset: valid UTF-8 is always UTF-8
+		{
+			vmime::parsingContext ctx;
+			ctx.setHeaderFallbackCharset(vmime::charset("iso-8859-1"));
+
+			parameterizedHeaderField p;
+			p.parse(ctx, "attachment; filename=\"\xc3\xa9t\xc3\xa9.pdf\"");
+
+			VASSERT_EQ("2.1", 1, p.getParameterCount());
+			VASSERT_EQ("2.2", vmime::charset("utf-8"), p.getParameterAt(0)->getValue().getCharset());
+		}
+
+		// Not UTF-8, with a fallback charset
+		{
+			vmime::parsingContext ctx;
+			ctx.setHeaderFallbackCharset(vmime::charset("iso-8859-1"));
+
+			parameterizedHeaderField p;
+			p.parse(ctx, "attachment; filename=\"\xe9t\xe9.pdf\"");
+
+			VASSERT_EQ("3.1", 1, p.getParameterCount());
+			VASSERT_EQ("3.2", "\xe9t\xe9.pdf", PARAM_BUFFER(p, 0));
+			VASSERT_EQ("3.3", vmime::charset("iso-8859-1"), p.getParameterAt(0)->getValue().getCharset());
+			VASSERT_EQ(
+				"3.4", "\xc3\xa9t\xc3\xa9.pdf",
+				p.getParameterAt(0)->getValue().getConvertedText(vmime::charset("utf-8"))
+			);
+		}
 	}
 
 VMIME_TEST_SUITE_END

@@ -43,6 +43,7 @@ VMIME_TEST_SUITE_BEGIN(contextTest)
 		ctx.setHeaderParseErrorRecoveryMethod(vmime::headerParseRecoveryMethod::ASSUME_END_OF_HEADERS);
 		ctx.setUseMyHostname(false);
 		ctx.setMaxNestingDepth(5);
+		ctx.setHeaderFallbackCharset(vmime::charset("iso-8859-1"));
 	}
 
 	static void assertParsingOptions(const vmime::parsingContext& ctx) {
@@ -55,6 +56,7 @@ VMIME_TEST_SUITE_BEGIN(contextTest)
 		);
 		VASSERT_FALSE("hostname", ctx.getUseMyHostname());
 		VASSERT_EQ("depth", 5, ctx.getMaxNestingDepth());
+		VASSERT_EQ("fallback", vmime::charset("iso-8859-1"), ctx.getHeaderFallbackCharset());
 	}
 
 	void testParsingContextCopy() {
@@ -99,6 +101,7 @@ VMIME_TEST_SUITE_BEGIN(contextTest)
 		);
 		VASSERT_TRUE("restored hostname", defaultCtx.getUseMyHostname());
 		VASSERT_EQ("restored depth", 100, defaultCtx.getMaxNestingDepth());
+		VASSERT_EQ("restored fallback", vmime::charset("utf-8"), defaultCtx.getHeaderFallbackCharset());
 	}
 
 	// The feedback from a previous parsing is not an option
