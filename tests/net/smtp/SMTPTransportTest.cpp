@@ -1648,6 +1648,32 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 			"Declared " + std::to_string(sizes.first) + ", actual " + std::to_string(sizes.second),
 			sizes.first >= sizes.second
 		);
+
+		// Attachment encoded in Base64 by VMime, with lines cut
+		vmime::string data;
+
+		for (size_t i = 0 ; i < 100000 ; ++i) {
+			data += static_cast <char>((i * 7919) % 256);
+		}
+
+		vmime::messageBuilder mb;
+		mb.setExpeditor(vmime::mailbox("expediteur@test.vmime.org"));
+		mb.getRecipients().appendAddress(vmime::make_shared <vmime::mailbox>("recipient@test.vmime.org"));
+		mb.setSubject(vmime::text("Test"));
+		mb.getTextPart()->setText(vmime::make_shared <vmime::stringContentHandler>("Hello\r\n"));
+		mb.appendAttachment(
+			vmime::make_shared <vmime::defaultAttachment>(
+				vmime::make_shared <vmime::stringContentHandler>(data),
+				vmime::mediaType("application/octet-stream")
+			)
+		);
+
+		const std::pair <size_t, size_t> sizes2 = sendAndGetSizes(mb.construct());
+
+		VASSERT(
+			"Declared " + std::to_string(sizes2.first) + ", actual " + std::to_string(sizes2.second),
+			sizes2.first >= sizes2.second
+		);
 	}
 
 	// Lines are sent with CRLF (RFC 5321, section 4.1.1.4), whatever the

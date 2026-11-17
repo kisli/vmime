@@ -353,10 +353,41 @@ size_t uuEncoder::decode(
 
 size_t uuEncoder::getEncodedSize(const size_t n) const {
 
-	// 3 bytes of input provide 4 bytes of output.
-	// Count CRLF (2 bytes) for each line of 45 characters.
-	// Also reserve some space for header and footer.
-	return 200 + n * 3 + (n / 45) * 2;
+	// Same output as encode()
+	const string propFilename = getProperties().getProperty <string>("filename", "");
+	const string propMode = getProperties().getProperty <string>("mode", "644");
+
+	const size_t maxLineLength =
+		std::min(getProperties().getProperty <size_t>("maxlinelength", 46), static_cast <size_t>(46));
+
+	const size_t lineInputLength = std::max(maxLineLength, static_cast <size_t>(2)) - 1;
+
+	// Prelude text ("begin [mode] [filename]") and CRLF
+	size_t size = 5 + 2;
+
+	if (!propFilename.empty()) {
+		size += 2 + propMode.length() + propFilename.length();
+	}
+
+	// Each line has its length (1 character), the data (3 bytes of input
+	// provide 4 bytes of output) and CRLF
+	const size_t fullLineCount = n / lineInputLength;
+	const size_t lastLineInputLength = n % lineInputLength;
+
+	size += fullLineCount * (1 + ((lineInputLength + 2) / 3) * 4 + 2);
+
+	if (lastLineInputLength != 0) {
+		size += 1 + ((lastLineInputLength + 2) / 3) * 4 + 2;
+	}
+
+	// An empty line may also be output, depending on when the end of the
+	// input stream is detected
+	size += 1 + 2;
+
+	// "end" and CRLF
+	size += 3 + 2;
+
+	return size;
 }
 
 

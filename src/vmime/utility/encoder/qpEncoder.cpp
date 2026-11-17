@@ -550,9 +550,19 @@ size_t qpEncoder::getEncodedSize(const size_t n) const {
 	const bool cutLines = (propMaxLineLength != static_cast <size_t>(-1));
 	const size_t maxLineLength = std::min(propMaxLineLength, static_cast <size_t>(74));
 
-	// Worst cast: 1 byte of input provide 3 bytes of output
-	// Count CRLF (2 bytes) for each line.
-	return n * 3 + (cutLines ? (n / maxLineLength) * 2 : 0);
+	// Worst case: 1 byte of input provides 3 bytes of output
+	size_t size = n * 3;
+
+	// A soft line break ("=\r\n") is inserted when a line has at least
+	// (maxLineLength - 1) characters (see encode())
+	if (cutLines) {
+
+		const size_t minLineLength = std::max(maxLineLength, static_cast <size_t>(2)) - 1;
+
+		size += (size / minLineLength) * 3;
+	}
+
+	return size;
 }
 
 

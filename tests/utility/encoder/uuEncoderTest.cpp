@@ -36,6 +36,7 @@ VMIME_TEST_SUITE_BEGIN(uuEncoderTest)
 		VMIME_TEST(testDecodeInvalidEndMarker)
 		VMIME_TEST(testDecodeOversizedLineLength)
 		VMIME_TEST(testDecodeTruncatedMarkers)
+		VMIME_TEST(testEncodedSize)
 	VMIME_TEST_LIST_END
 
 
@@ -157,6 +158,42 @@ VMIME_TEST_SUITE_BEGIN(uuEncoderTest)
 		VASSERT_EQ("b", "", decode("uuencode", "b"));
 		VASSERT_EQ("e", "", decode("uuencode", "e"));
 		VASSERT_EQ("begin", "", decode("uuencode", "begin 644 test.txt\r\n"));
+	}
+
+	// The encoded size is not lower than the actual size, and at most an
+	// empty line larger, with or without a filename (even a long one)
+	void testEncodedSize() {
+
+		vmime::propertySet noFilename;
+
+		vmime::propertySet longFilename;
+		longFilename["mode"] = "644";
+		longFilename["filename"] = vmime::string(300, 'f');
+
+		for (const vmime::propertySet& props : { noFilename, longFilename }) {
+
+			for (int maxLineLength : { 46, 20, 4 }) {
+
+				for (size_t n = 0 ; n < 300 ; ++n) {
+
+					vmime::string data;
+
+					for (size_t i = 0 ; i < n ; ++i) {
+						data += static_cast <char>((i * 7919) % 256);
+					}
+
+					std::ostringstream oss;
+					oss << "maxLineLength=" << maxLineLength << ", n=" << n
+					    << ", filename=" << props.getProperty <vmime::string>("filename", "").length();
+
+					const size_t actual = encode("uuencode", data, maxLineLength, props).length();
+					const size_t size = getEncoder("uuencode", maxLineLength, props)->getEncodedSize(n);
+
+					VASSERT(oss.str() + ", not lower", size >= actual);
+					VASSERT(oss.str() + ", at most an empty line larger", size <= actual + 3);
+				}
+			}
+		}
 	}
 
 VMIME_TEST_SUITE_END

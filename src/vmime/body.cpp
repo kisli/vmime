@@ -666,6 +666,9 @@ size_t body::getGeneratedSize(const generationContext& ctx) {
 			shared_ptr <utility::encoder::encoder> srcEncoder = m_contents->getEncoding().getEncoder();
 			shared_ptr <utility::encoder::encoder> dstEncoder = getEncoding().getEncoder();
 
+			// Lines are cut as when generating the contents
+			dstEncoder->getProperties()["maxlinelength"] = ctx.getMaxLineLength();
+
 			return dstEncoder->getEncodedSize(srcEncoder->getDecodedSize(m_contents->getLength()));
 		}
 	}

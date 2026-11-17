@@ -332,9 +332,22 @@ size_t b64Encoder::getEncodedSize(const size_t n) const {
 	const bool cutLines = (propMaxLineLength != static_cast <size_t>(-1));
 	const size_t maxLineLength = std::min(propMaxLineLength, static_cast <size_t>(76));
 
-	return (n * 4) / 3                               // 3 bytes of input provide 4 bytes of output
-		 + (cutLines ? (n / maxLineLength) * 2 : 0)  // CRLF (2 bytes) for each line.
-		 + 4;                                        // padding
+	// 3 bytes of input provide 4 bytes of output (the last ones are padded)
+	const size_t groups = (n + 2) / 3;
+
+	size_t size = groups * 4;
+
+	// A line is cut after a group if there is no room left for a CRLF and
+	// another group (see encode()), so all lines have the same number of
+	// groups: the smallest one such that 4 * groups + 6 >= maxLineLength
+	if (cutLines) {
+
+		const size_t groupsPerLine = (maxLineLength > 10) ? (maxLineLength - 6 + 3) / 4 : 1;
+
+		size += (groups / groupsPerLine) * 2;  // CRLF
+	}
+
+	return size;
 }
 
 
