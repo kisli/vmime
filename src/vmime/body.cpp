@@ -31,6 +31,7 @@
 
 #include "vmime/utility/seekableInputStreamRegionAdapter.hpp"
 #include "vmime/utility/outputStreamAdapter.hpp"
+#include "vmime/utility/filteredStream.hpp"
 
 #include "vmime/parserHelpers.hpp"
 
@@ -528,7 +529,24 @@ void body::generateImpl(
 		shared_ptr <contentHandler> contents = m_contents->clone();
 		contents->setContentTypeHint(getContentType());
 
-		contents->generate(os, getEncoding(), ctx.getMaxLineLength());
+		const encoding enc = getEncoding();
+
+		// Lines end with CRLF (RFC 2045, sections 2.7 and 2.8, and RFC 5321,
+		// section 4.1.1.4), even if the contents use another convention (eg.
+		// LF only, as stored on Unix), except in binary data, in which any
+		// sequence of octets is allowed (RFC 2045, section 2.9)
+		if (enc == encoding(encodingTypes::BINARY)) {
+
+			contents->generate(os, enc, ctx.getMaxLineLength());
+
+		} else {
+
+			// Not flushed: the filter does not buffer data, and flushing the
+			// output stream may end it (eg. SMTP CHUNKING)
+			utility::LFToCRLFFilteredOutputStream crlfStream(os);
+
+			contents->generate(crlfStream, enc, ctx.getMaxLineLength());
+		}
 	}
 }
 

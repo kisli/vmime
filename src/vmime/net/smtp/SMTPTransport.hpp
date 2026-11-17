@@ -173,12 +173,15 @@ private:
 	  * @param progress progress listener, or NULL if not used
 	  * @param eightBit true if the message has been declared as 8-bit;
 	  * otherwise, the data must not contain 8-bit data
+	  * @param canonicalize if true, line endings are converted to CRLF
+	  * (for raw message data, which may use another convention)
 	  */
 	void sendData(
 		utility::inputStream& is,
 		const size_t size,
 		utility::progressListener* progress,
-		const bool eightBit
+		const bool eightBit,
+		const bool canonicalize
 	);
 
 

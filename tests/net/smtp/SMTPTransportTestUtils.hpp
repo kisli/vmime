@@ -732,7 +732,7 @@ vmime::string UTF8SMTPTestSocket <SUPPORTS_UTF8, SUPPORTS_8BITMIME>::sm_messageD
   * The extensions announced by the server are set with reset(). The
   * commands sent by the client (except EHLO and QUIT) are recorded, as
   * well as the messages delivered (ie. received with DATA, or with BDAT
-  * up to the last chunk).
+  * up to the last chunk), as they were received.
   */
 class eightBitSMTPTestSocket : public testSocket {
 
@@ -771,21 +771,26 @@ public:
 
 	void onDataReceived() {
 
+		// The data is kept as received, to check its line endings
+		vmime::byte_t buffer[4096];
+		size_t count;
+
+		while ((count = localReceiveRaw(buffer, sizeof(buffer))) != 0) {
+			m_input.append(buffer, buffer + count);
+		}
+
 		while (true) {
 
 			if (m_state == STATE_BDAT) {
 
+				const size_t count = std::min(m_chunkRemaining, m_input.length());
+
+				m_data.append(m_input, 0, count);
+				m_input.erase(0, count);
+				m_chunkRemaining -= count;
+
 				if (m_chunkRemaining != 0) {
-
-					std::vector <vmime::byte_t> buffer(m_chunkRemaining);
-					const size_t count = localReceiveRaw(&buffer[0], m_chunkRemaining);
-
-					m_data.append(buffer.begin(), buffer.begin() + count);
-					m_chunkRemaining -= count;
-
-					if (m_chunkRemaining != 0) {
-						return;  // wait for the rest of the chunk
-					}
+					return;  // wait for the rest of the chunk
 				}
 
 				if (m_lastChunk) {
@@ -795,32 +800,38 @@ public:
 				localSend("250 Chunk received\r\n");
 				m_state = STATE_COMMAND;
 
-				continue;
-			}
+			} else if (m_state == STATE_DATA) {
 
-			vmime::string line;
+				// The data is followed by CRLF "." CRLF (dot-stuffing is ignored)
+				const size_t end = m_input.find("\r\n.\r\n");
 
-			if (!localReceiveLine(line)) {
-				return;
-			}
-
-			if (m_state == STATE_DATA) {
-
-				if (line == ".") {
-
-					getMessages().push_back(m_data);
-					localSend("250 Message accepted for delivery\r\n");
-					m_state = STATE_COMMAND;
-
-				} else {
-
-					m_data += line + "\r\n";
+				if (end == vmime::string::npos) {
+					return;  // wait for the rest of the data
 				}
 
-				continue;
-			}
+				getMessages().push_back(m_input.substr(0, end));
+				m_input.erase(0, end + 5);
 
-			processCommand(line);
+				localSend("250 Message accepted for delivery\r\n");
+				m_state = STATE_COMMAND;
+
+			} else {
+
+				const size_t eol = m_input.find('\n');
+
+				if (eol == vmime::string::npos) {
+					return;  // wait for the rest of the command
+				}
+
+				vmime::string line = m_input.substr(0, eol);
+				m_input.erase(0, eol + 1);
+
+				if (!line.empty() && line[line.length() - 1] == '\r') {
+					line.erase(line.length() - 1);
+				}
+
+				processCommand(line);
+			}
 		}
 	}
 
@@ -904,6 +915,7 @@ private:
 	};
 
 	State m_state;
+	vmime::string m_input;
 	vmime::string m_data;
 	size_t m_chunkRemaining;
 	bool m_lastChunk;

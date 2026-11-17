@@ -559,7 +559,7 @@ void SMTPTransport::send(
 	// Send message envelope
 	sendEnvelope(expeditor, recipients, sender, utf8, eightBit, /* sendDATACommand */ true, size, options);
 
-	sendData(is, size, progress, eightBit);
+	sendData(is, size, progress, eightBit, /* canonicalize */ true);
 }
 
 
@@ -567,7 +567,8 @@ void SMTPTransport::sendData(
 	utility::inputStream& is,
 	const size_t size,
 	utility::progressListener* progress,
-	const bool eightBit
+	const bool eightBit,
+	const bool canonicalize
 ) {
 
 	// If an error occurs while sending the message data (network error, but
@@ -582,13 +583,19 @@ void SMTPTransport::sendData(
 		utility::outputStreamSocketAdapter sos(*m_connection->getSocket());
 		utility::dotFilteredOutputStream fos(sos);
 
+		// Lines must end with CRLF (RFC 5321, section 4.1.1.4)
+		utility::LFToCRLFFilteredOutputStream crlfStream(fos);
+
+		utility::outputStream& dataStream =
+			canonicalize ? static_cast <utility::outputStream&>(crlfStream) : fos;
+
 		if (eightBit) {
 
-			utility::bufferedStreamCopy(is, fos, size, progress);
+			utility::bufferedStreamCopy(is, dataStream, size, progress);
 
 		} else {
 
-			sevenBitOutputStream sevenBitStream(fos, m_connection->hasExtension("8BITMIME"));
+			sevenBitOutputStream sevenBitStream(dataStream, m_connection->hasExtension("8BITMIME"));
 			utility::bufferedStreamCopy(is, sevenBitStream, size, progress);
 		}
 
@@ -662,7 +669,10 @@ void SMTPTransport::send(
 		utility::inputStreamStringAdapter isAdapter(str);
 
 		sendEnvelope(expeditor, recipients, sender, utf8, eightBit, /* sendDATACommand */ true, str.length(), options);
-		sendData(isAdapter, str.length(), progress, eightBit);
+
+		// The generated message already has canonical line endings, and
+		// binary data must not be altered
+		sendData(isAdapter, str.length(), progress, eightBit, /* canonicalize */ false);
 		return;
 	}
 

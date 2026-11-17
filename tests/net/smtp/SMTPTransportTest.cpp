@@ -664,6 +664,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 		VMIME_TEST(test8BITMIME_undeclaredAfterChunks)
 		VMIME_TEST(test8BITMIME_rawData)
 		VMIME_TEST(test8BITMIME_messageAttachment)
+		VMIME_TEST(testCanonicalLineEndings)
 		VMIME_TEST(testExtensionKeywordsCase)
 		VMIME_TEST(testReconnectAfterTimeout)
 		VMIME_TEST(testDisconnectAfterTimeout)
@@ -1593,6 +1594,58 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 
 		VASSERT_EQ("1", "MAIL FROM:<expediteur@test.vmime.org> BODY=8BITMIME", commands[0]);
 		VASSERT_EQ("2", 1, eightBitSMTPTestSocket::getMessages().size());
+	}
+
+	// Return whether CR and LF only appear as CRLF
+	static bool hasCanonicalLineEndings(const vmime::string& data) {
+
+		for (size_t i = 0 ; i < data.length() ; ++i) {
+
+			if (data[i] == '\n' && (i == 0 || data[i - 1] != '\r')) {
+				return false;
+			} else if (data[i] == '\r' && (i + 1 == data.length() || data[i + 1] != '\n')) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	// Lines are sent with CRLF (RFC 5321, section 4.1.1.4), whatever the
+	// convention used by the message (eg. LF only, as stored on Unix)
+	void testCanonicalLineEndings() {
+
+		// Raw data
+		{
+			vmime::shared_ptr <vmime::net::transport> tr = create8bitTransport({});
+
+			send8bitTestData(tr, "Subject: Test\n\nLine 1\nLine 2\n");
+
+			const std::vector <vmime::string>& messages = eightBitSMTPTestSocket::getMessages();
+
+			VASSERT_EQ("1.1", 1, messages.size());
+			VASSERT_EQ("1.2", "Subject: Test\r\n\r\nLine 1\r\nLine 2\r\n", messages[0]);
+		}
+
+		// Message object, with DATA then with CHUNKING
+		for (int chunking = 0 ; chunking < 2 ; ++chunking) {
+
+			std::vector <vmime::string> extensions;
+
+			if (chunking) {
+				extensions.push_back("CHUNKING");
+			}
+
+			vmime::shared_ptr <vmime::net::transport> tr = create8bitTransport(extensions);
+
+			tr->send(create8bitTestMessage("7bit", "Line 1\nLine 2\n"));
+
+			const std::vector <vmime::string>& messages = eightBitSMTPTestSocket::getMessages();
+
+			VASSERT_EQ("2.1", 1, messages.size());
+			VASSERT("2.2", hasCanonicalLineEndings(messages[0]));
+			VASSERT("2.3", messages[0].find("\r\n\r\nLine 1\r\nLine 2\r\n") != vmime::string::npos);
+		}
 	}
 
 	// Extension keywords are case-insensitive (RFC 5321, section 2.4)
