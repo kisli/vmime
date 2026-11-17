@@ -665,6 +665,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 		VMIME_TEST(test8BITMIME_rawData)
 		VMIME_TEST(test8BITMIME_messageAttachment)
 		VMIME_TEST(testCanonicalLineEndings)
+		VMIME_TEST(testSize_NotLowerThanActual)
 		VMIME_TEST(testExtensionKeywordsCase)
 		VMIME_TEST(testReconnectAfterTimeout)
 		VMIME_TEST(testDisconnectAfterTimeout)
@@ -1609,6 +1610,44 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 		}
 
 		return true;
+	}
+
+	// Send a message with CHUNKING, and return the size declared in the
+	// MAIL command and the size actually sent
+	static std::pair <size_t, size_t> sendAndGetSizes(const vmime::shared_ptr <vmime::message>& msg) {
+
+		vmime::shared_ptr <vmime::net::transport> tr = create8bitTransport({ "8BITMIME", "CHUNKING", "SIZE" });
+
+		tr->send(msg);
+
+		const vmime::string& mail = eightBitSMTPTestSocket::getCommands()[0];
+		const size_t pos = mail.find(" SIZE=");
+
+		VASSERT("SIZE", pos != vmime::string::npos);
+
+		return std::make_pair(
+			static_cast <size_t>(std::stoul(mail.substr(pos + 6))),
+			eightBitSMTPTestSocket::getMessages().at(0).length()
+		);
+	}
+
+	// The declared size of a message should not be lower than its actual size
+	// (RFC 1870, section 6), even when the contents of a part are copied with
+	// their line endings converted to CRLF
+	void testSize_NotLowerThanActual() {
+
+		vmime::string body;
+
+		for (int i = 0 ; i < 1000 ; ++i) {
+			body += "Line\n";
+		}
+
+		const std::pair <size_t, size_t> sizes = sendAndGetSizes(create8bitTestMessage("7bit", body));
+
+		VASSERT(
+			"Declared " + std::to_string(sizes.first) + ", actual " + std::to_string(sizes.second),
+			sizes.first >= sizes.second
+		);
 	}
 
 	// Lines are sent with CRLF (RFC 5321, section 4.1.1.4), whatever the

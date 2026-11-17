@@ -30,6 +30,7 @@ VMIME_TEST_SUITE_BEGIN(bodyTest)
 		VMIME_TEST(testGenerate_Text)
 		VMIME_TEST(testGenerate_NonText)
 		VMIME_TEST(testGenerate_CanonicalLineEndings)
+		VMIME_TEST(testGetGeneratedSize_CanonicalLineEndings)
 		VMIME_TEST(testGenerate_Binary)
 		VMIME_TEST(testGenerate_ParsedWithLF)
 	VMIME_TEST_LIST_END
@@ -79,6 +80,22 @@ VMIME_TEST_SUITE_BEGIN(bodyTest)
 		);
 	}
 
+	static vmime::shared_ptr <vmime::bodyPart> createBodyPart(
+		const vmime::string& contents,
+		const vmime::mediaType& type,
+		const vmime::encoding& enc,
+		const vmime::encoding& contentsEnc = vmime::contentHandler::NO_ENCODING
+	) {
+
+		vmime::shared_ptr <vmime::bodyPart> p = vmime::make_shared <vmime::bodyPart>();
+		p->getBody()->setContents(
+			vmime::make_shared <vmime::stringContentHandler>(contents, contentsEnc),
+			type, vmime::charset("utf-8"), enc
+		);
+
+		return p;
+	}
+
 	static vmime::string generateBody(
 		const vmime::string& contents,
 		const vmime::mediaType& type,
@@ -86,13 +103,7 @@ VMIME_TEST_SUITE_BEGIN(bodyTest)
 		const vmime::encoding& contentsEnc = vmime::contentHandler::NO_ENCODING
 	) {
 
-		vmime::bodyPart p;
-		p.getBody()->setContents(
-			vmime::make_shared <vmime::stringContentHandler>(contents, contentsEnc),
-			type, vmime::charset("utf-8"), enc
-		);
-
-		return p.getBody()->generate();
+		return createBodyPart(contents, type, enc, contentsEnc)->getBody()->generate();
 	}
 
 	// Lines end with CRLF, whatever the convention used by the contents
@@ -128,6 +139,37 @@ VMIME_TEST_SUITE_BEGIN(bodyTest)
 				vmime::encoding("base64"), vmime::encoding("base64")
 			)
 		);
+	}
+
+	// The size of contents copied as is takes the conversion of their line
+	// endings into account, so that the declared size of a message is not
+	// lower than its actual size (RFC 1870, section 6)
+	void testGetGeneratedSize_CanonicalLineEndings() {
+
+		const vmime::generationContext& ctx = vmime::generationContext::getDefaultContext();
+		const vmime::mediaType textPlain("text", "plain");
+		const vmime::mediaType octetStream("application", "octet-stream");
+
+		vmime::shared_ptr <vmime::bodyPart> p1 =
+			createBodyPart("Line 1\nLine 2\rLine 3\r\n", textPlain, vmime::encoding("7bit"));
+
+		VASSERT_EQ("7bit", p1->getBody()->generate().length(), p1->getBody()->getGeneratedSize(ctx));
+
+		vmime::shared_ptr <vmime::bodyPart> p2 =
+			createBodyPart("Gr\xc3\xbc\xc3\x9f" "e\n", textPlain, vmime::encoding("8bit"));
+
+		VASSERT_EQ("8bit", p2->getBody()->generate().length(), p2->getBody()->getGeneratedSize(ctx));
+
+		vmime::shared_ptr <vmime::bodyPart> p3 = createBodyPart(
+			"QUJD\nREVG\n", octetStream, vmime::encoding("base64"), vmime::encoding("base64")
+		);
+
+		VASSERT_EQ("base64", p3->getBody()->generate().length(), p3->getBody()->getGeneratedSize(ctx));
+
+		vmime::shared_ptr <vmime::bodyPart> p4 =
+			createBodyPart("Binary\ndata\r", octetStream, vmime::encoding("binary"));
+
+		VASSERT_EQ("binary", p4->getBody()->generate().length(), p4->getBody()->getGeneratedSize(ctx));
 	}
 
 	// Any sequence of octets is allowed in binary data (RFC 2045, section 2.9)
