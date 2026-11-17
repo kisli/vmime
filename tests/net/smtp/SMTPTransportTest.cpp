@@ -664,6 +664,8 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 		VMIME_TEST(test8BITMIME_undeclaredAfterChunks)
 		VMIME_TEST(test8BITMIME_rawData)
 		VMIME_TEST(test8BITMIME_messageAttachment)
+		VMIME_TEST(testCanonicalLineEndings)
+		VMIME_TEST(testSize_NotLowerThanActual)
 		VMIME_TEST(testExtensionKeywordsCase)
 		VMIME_TEST(testReconnectAfterTimeout)
 		VMIME_TEST(testDisconnectAfterTimeout)
@@ -1593,6 +1595,122 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 
 		VASSERT_EQ("1", "MAIL FROM:<expediteur@test.vmime.org> BODY=8BITMIME", commands[0]);
 		VASSERT_EQ("2", 1, eightBitSMTPTestSocket::getMessages().size());
+	}
+
+	// Return whether CR and LF only appear as CRLF
+	static bool hasCanonicalLineEndings(const vmime::string& data) {
+
+		for (size_t i = 0 ; i < data.length() ; ++i) {
+
+			if (data[i] == '\n' && (i == 0 || data[i - 1] != '\r')) {
+				return false;
+			} else if (data[i] == '\r' && (i + 1 == data.length() || data[i + 1] != '\n')) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	// Send a message with CHUNKING, and return the size declared in the
+	// MAIL command and the size actually sent
+	static std::pair <size_t, size_t> sendAndGetSizes(const vmime::shared_ptr <vmime::message>& msg) {
+
+		vmime::shared_ptr <vmime::net::transport> tr = create8bitTransport({ "8BITMIME", "CHUNKING", "SIZE" });
+
+		tr->send(msg);
+
+		const vmime::string& mail = eightBitSMTPTestSocket::getCommands()[0];
+		const size_t pos = mail.find(" SIZE=");
+
+		VASSERT("SIZE", pos != vmime::string::npos);
+
+		return std::make_pair(
+			static_cast <size_t>(std::stoul(mail.substr(pos + 6))),
+			eightBitSMTPTestSocket::getMessages().at(0).length()
+		);
+	}
+
+	// The declared size of a message should not be lower than its actual size
+	// (RFC 1870, section 6), even when the contents of a part are copied with
+	// their line endings converted to CRLF
+	void testSize_NotLowerThanActual() {
+
+		vmime::string body;
+
+		for (int i = 0 ; i < 1000 ; ++i) {
+			body += "Line\n";
+		}
+
+		const std::pair <size_t, size_t> sizes = sendAndGetSizes(create8bitTestMessage("7bit", body));
+
+		VASSERT(
+			"Declared " + std::to_string(sizes.first) + ", actual " + std::to_string(sizes.second),
+			sizes.first >= sizes.second
+		);
+
+		// Attachment encoded in Base64 by VMime, with lines cut
+		vmime::string data;
+
+		for (size_t i = 0 ; i < 100000 ; ++i) {
+			data += static_cast <char>((i * 7919) % 256);
+		}
+
+		vmime::messageBuilder mb;
+		mb.setExpeditor(vmime::mailbox("expediteur@test.vmime.org"));
+		mb.getRecipients().appendAddress(vmime::make_shared <vmime::mailbox>("recipient@test.vmime.org"));
+		mb.setSubject(vmime::text("Test"));
+		mb.getTextPart()->setText(vmime::make_shared <vmime::stringContentHandler>("Hello\r\n"));
+		mb.appendAttachment(
+			vmime::make_shared <vmime::defaultAttachment>(
+				vmime::make_shared <vmime::stringContentHandler>(data),
+				vmime::mediaType("application/octet-stream")
+			)
+		);
+
+		const std::pair <size_t, size_t> sizes2 = sendAndGetSizes(mb.construct());
+
+		VASSERT(
+			"Declared " + std::to_string(sizes2.first) + ", actual " + std::to_string(sizes2.second),
+			sizes2.first >= sizes2.second
+		);
+	}
+
+	// Lines are sent with CRLF (RFC 5321, section 2.3.8), whatever the
+	// convention used by the message (eg. LF only, as stored on Unix)
+	void testCanonicalLineEndings() {
+
+		// Raw data
+		{
+			vmime::shared_ptr <vmime::net::transport> tr = create8bitTransport({});
+
+			send8bitTestData(tr, "Subject: Test\n\nLine 1\nLine 2\n");
+
+			const std::vector <vmime::string>& messages = eightBitSMTPTestSocket::getMessages();
+
+			VASSERT_EQ("1.1", 1, messages.size());
+			VASSERT_EQ("1.2", "Subject: Test\r\n\r\nLine 1\r\nLine 2\r\n", messages[0]);
+		}
+
+		// Message object, with DATA then with CHUNKING
+		for (int chunking = 0 ; chunking < 2 ; ++chunking) {
+
+			std::vector <vmime::string> extensions;
+
+			if (chunking) {
+				extensions.push_back("CHUNKING");
+			}
+
+			vmime::shared_ptr <vmime::net::transport> tr = create8bitTransport(extensions);
+
+			tr->send(create8bitTestMessage("7bit", "Line 1\nLine 2\n"));
+
+			const std::vector <vmime::string>& messages = eightBitSMTPTestSocket::getMessages();
+
+			VASSERT_EQ("2.1", 1, messages.size());
+			VASSERT("2.2", hasCanonicalLineEndings(messages[0]));
+			VASSERT("2.3", messages[0].find("\r\n\r\nLine 1\r\nLine 2\r\n") != vmime::string::npos);
+		}
 	}
 
 	// Extension keywords are case-insensitive (RFC 5321, section 2.4)

@@ -35,6 +35,7 @@ VMIME_TEST_SUITE_BEGIN(qpEncoderTest)
 		VMIME_TEST(testQuotedPrintable_HardLineBreakDecode)
 		VMIME_TEST(testQuotedPrintable_CRLF)
 		VMIME_TEST(testQuotedPrintable_RFC2047)
+		VMIME_TEST(testEncodedSize)
 	VMIME_TEST_LIST_END
 
 
@@ -270,6 +271,38 @@ VMIME_TEST_SUITE_BEGIN(qpEncoderTest)
 		VASSERT_EQ("especials.10", "=5B", encode("quoted-printable", "[", 10, encProps));
 		VASSERT_EQ("especials.11", "=5D", encode("quoted-printable", "]", 10, encProps));
 		VASSERT_EQ("especials.12", "=22", encode("quoted-printable", "\"", 10, encProps));
+	}
+
+	// The encoded size is not lower than the actual size, even in the worst
+	// case (only encoded bytes), with lines cut or not
+	void testEncodedSize() {
+
+		vmime::propertySet textProps;
+		textProps["text"] = true;
+
+		for (int maxLineLength : { 0, 74, 20, 3, 2, 1 }) {
+
+			for (size_t n = 0 ; n < 300 ; ++n) {
+
+				vmime::string binary, text;
+
+				for (size_t i = 0 ; i < n ; ++i) {
+					binary += static_cast <char>((i * 7919) % 256);
+					text += (i % 30 == 29) ? '\n' : static_cast <char>('a' + i % 26);
+				}
+
+				const vmime::string worstCase(n, '\xff');
+
+				std::ostringstream oss;
+				oss << "maxLineLength=" << maxLineLength << ", n=" << n;
+
+				const size_t size = getEncoder("quoted-printable", maxLineLength)->getEncodedSize(n);
+
+				VASSERT(oss.str() + ", binary", size >= encode("quoted-printable", binary, maxLineLength).length());
+				VASSERT(oss.str() + ", worst case", size >= encode("quoted-printable", worstCase, maxLineLength).length());
+				VASSERT(oss.str() + ", text", size >= encode("quoted-printable", text, maxLineLength, textProps).length());
+			}
+		}
 	}
 
 VMIME_TEST_SUITE_END

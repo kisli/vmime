@@ -31,6 +31,7 @@
 
 #include "vmime/utility/seekableInputStreamRegionAdapter.hpp"
 #include "vmime/utility/outputStreamAdapter.hpp"
+#include "vmime/utility/filteredStream.hpp"
 
 #include "vmime/parserHelpers.hpp"
 
@@ -41,6 +42,42 @@
 
 
 namespace vmime {
+
+
+namespace {
+
+	// Output stream which only counts the bytes written to it
+	class countingOutputStream : public utility::outputStream {
+
+	public:
+
+		countingOutputStream()
+			: m_count(0) {
+
+		}
+
+		size_t getCount() const {
+
+			return m_count;
+		}
+
+		void flush() {
+
+		}
+
+	protected:
+
+		void writeImpl(const byte_t* const /* data */, const size_t count) {
+
+			m_count += count;
+		}
+
+	private:
+
+		size_t m_count;
+	};
+
+}
 
 
 body::body()
@@ -528,7 +565,24 @@ void body::generateImpl(
 		shared_ptr <contentHandler> contents = m_contents->clone();
 		contents->setContentTypeHint(getContentType());
 
-		contents->generate(os, getEncoding(), ctx.getMaxLineLength());
+		const encoding enc = getEncoding();
+
+		// Lines end with CRLF (RFC 5322, section 2.3, and RFC 2045, sections
+		// 2.7 and 2.8), even if the contents use another convention (eg. LF
+		// only, as stored on Unix), except in binary data, in which any
+		// sequence of octets is allowed (RFC 2045, section 2.9)
+		if (enc == encoding(encodingTypes::BINARY)) {
+
+			contents->generate(os, enc, ctx.getMaxLineLength());
+
+		} else {
+
+			// Not flushed: the filter does not buffer data, and flushing the
+			// output stream may end it (eg. SMTP CHUNKING)
+			utility::LFToCRLFFilteredOutputStream crlfStream(os);
+
+			contents->generate(crlfStream, enc, ctx.getMaxLineLength());
+		}
 	}
 }
 
@@ -582,7 +636,27 @@ size_t body::getGeneratedSize(const generationContext& ctx) {
 	// Simple body
 	} else {
 
-		if (getEncoding() == m_contents->getEncoding()) {
+		const encoding enc = getEncoding();
+
+		// The contents are copied as is, except for their line endings, which
+		// are converted to CRLF (see generateImpl()): if possible, compute the
+		// actual size, as the declared size of a message should not be lower
+		// than its actual size (RFC 1870, section 6)
+		const bool copiedAsIs =
+			enc == m_contents->getEncoding() ||
+			(!m_contents->isEncoded() &&
+			 (enc == encoding(encodingTypes::SEVEN_BIT) || enc == encoding(encodingTypes::EIGHT_BIT)));
+
+		if (copiedAsIs && enc != encoding(encodingTypes::BINARY) && m_contents->isBuffered()) {
+
+			countingOutputStream counter;
+			utility::LFToCRLFFilteredOutputStream crlfStream(counter);
+
+			m_contents->extractRaw(crlfStream);
+
+			return counter.getCount();
+
+		} else if (enc == m_contents->getEncoding()) {
 
 			// No re-encoding has to be performed
 			return m_contents->getLength();
@@ -591,6 +665,9 @@ size_t body::getGeneratedSize(const generationContext& ctx) {
 
 			shared_ptr <utility::encoder::encoder> srcEncoder = m_contents->getEncoding().getEncoder();
 			shared_ptr <utility::encoder::encoder> dstEncoder = getEncoding().getEncoder();
+
+			// Lines are cut as when generating the contents
+			dstEncoder->getProperties()["maxlinelength"] = ctx.getMaxLineLength();
 
 			return dstEncoder->getEncodedSize(srcEncoder->getDecodedSize(m_contents->getLength()));
 		}

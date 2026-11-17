@@ -30,6 +30,7 @@ VMIME_TEST_SUITE_BEGIN(b64EncoderTest)
 
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testBase64)
+		VMIME_TEST(testEncodedSize)
 	VMIME_TEST_LIST_END
 
 
@@ -162,6 +163,31 @@ VMIME_TEST_SUITE_BEGIN(b64EncoderTest)
 				getEncoder("base64")->getDecodedSize(encoded.length())
 					>= decode("base64", encoded).length()
 			);
+		}
+	}
+
+	// The encoded size is exact, with lines cut or not
+	void testEncodedSize() {
+
+		for (int maxLineLength : { 0, 76, 72, 20, 11, 10, 4 }) {
+
+			for (size_t n = 0 ; n < 300 ; ++n) {
+
+				vmime::string data;
+
+				for (size_t i = 0 ; i < n ; ++i) {
+					data += static_cast <char>((i * 7919) % 256);
+				}
+
+				std::ostringstream oss;
+				oss << "maxLineLength=" << maxLineLength << ", n=" << n;
+
+				VASSERT_EQ(
+					oss.str(),
+					encode("base64", data, maxLineLength).length(),
+					getEncoder("base64", maxLineLength)->getEncodedSize(n)
+				);
+			}
 		}
 	}
 
