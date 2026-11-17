@@ -38,6 +38,7 @@ VMIME_TEST_SUITE_BEGIN(attachmentHelperTest)
 		VMIME_TEST(testGetBodyPartAttachment)
 		VMIME_TEST(testAddAttachmentMessage1)
 		VMIME_TEST(testAddAttachmentMessage8bit)
+		VMIME_TEST(testAddAttachmentMessageBinary)
 		VMIME_TEST(testGetBodyPartAttachmentMessage)
 	VMIME_TEST_LIST_END
 
@@ -384,6 +385,53 @@ VMIME_TEST_SUITE_BEGIN(attachmentHelperTest)
 			"3", "8bit",
 			attPart->getHeader()->findField(vmime::fields::CONTENT_TRANSFER_ENCODING)->getValue()->generate()
 		);
+	}
+
+	// A message/rfc822 part which contains binary data is declared as binary
+	// (RFC 2046, section 5.2.1), and its data is not altered
+	void testAddAttachmentMessageBinary() {
+
+		const vmime::string data =
+"Subject: Test message\r\n"
+"Content-Type: text/plain\r\n"
+"\r\n"
+"Message body";
+
+		// Binary part (NUL, LF alone)
+		const vmime::string binaryData("A\0B\nC", 5);
+
+		const vmime::string attData =
+"Subject: Attached message\r\n"
+"Content-Type: application/octet-stream\r\n"
+"Content-Transfer-Encoding: binary\r\n"
+"\r\n" + binaryData;
+
+		vmime::shared_ptr <vmime::message> msg = vmime::make_shared <vmime::message>();
+		msg->parse(data);
+
+		vmime::shared_ptr <vmime::message> amsg = vmime::make_shared <vmime::message>();
+		amsg->parse(attData);
+
+		vmime::attachmentHelper::addAttachment(msg, amsg);
+
+		VASSERT_EQ("1.1", "binary", msg->getBody()->getPartAt(1)->getBody()->getEncoding().generate());
+		VASSERT("1.2", msg->generate().find("\r\n\r\n" + binaryData + "\r\n--") != vmime::string::npos);
+
+		// Line longer than 998 octets
+		const vmime::string longLineData =
+"Subject: Attached message\r\n"
+"Content-Type: text/plain\r\n"
+"\r\n" + vmime::string(999, 'x') + "\r\n";
+
+		vmime::shared_ptr <vmime::message> msg2 = vmime::make_shared <vmime::message>();
+		msg2->parse(data);
+
+		vmime::shared_ptr <vmime::message> amsg2 = vmime::make_shared <vmime::message>();
+		amsg2->parse(longLineData);
+
+		vmime::attachmentHelper::addAttachment(msg2, amsg2);
+
+		VASSERT_EQ("2.1", "binary", msg2->getBody()->getPartAt(1)->getBody()->getEncoding().generate());
 	}
 
 	void testGetBodyPartAttachmentMessage() {

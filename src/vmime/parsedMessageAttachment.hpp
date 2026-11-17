@@ -62,9 +62,17 @@ protected:
 
 private:
 
+	/** Return the type of the specified data: the name of the 7bit, 8bit
+	  * or binary encoding.
+	  *
+	  * @param data data
+	  * @return encoding name
+	  */
+	static const char* getDataType(const string& data);
+
 	shared_ptr <message> m_msg;
 	mutable shared_ptr <contentHandler> m_data;
-	mutable bool m_8bit = false;
+	mutable const char* m_dataType = encodingTypes::SEVEN_BIT;
 };
 
 
