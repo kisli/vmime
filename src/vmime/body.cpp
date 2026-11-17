@@ -567,9 +567,9 @@ void body::generateImpl(
 
 		const encoding enc = getEncoding();
 
-		// Lines end with CRLF (RFC 2045, sections 2.7 and 2.8, and RFC 5321,
-		// section 4.1.1.4), even if the contents use another convention (eg.
-		// LF only, as stored on Unix), except in binary data, in which any
+		// Lines end with CRLF (RFC 5322, section 2.3, and RFC 2045, sections
+		// 2.7 and 2.8), even if the contents use another convention (eg. LF
+		// only, as stored on Unix), except in binary data, in which any
 		// sequence of octets is allowed (RFC 2045, section 2.9)
 		if (enc == encoding(encodingTypes::BINARY)) {
 

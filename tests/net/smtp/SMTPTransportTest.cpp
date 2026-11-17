@@ -1676,7 +1676,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 		);
 	}
 
-	// Lines are sent with CRLF (RFC 5321, section 4.1.1.4), whatever the
+	// Lines are sent with CRLF (RFC 5321, section 2.3.8), whatever the
 	// convention used by the message (eg. LF only, as stored on Unix)
 	void testCanonicalLineEndings() {
 

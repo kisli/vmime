@@ -107,7 +107,7 @@ VMIME_TEST_SUITE_BEGIN(bodyTest)
 	}
 
 	// Lines end with CRLF, whatever the convention used by the contents
-	// (RFC 2045, sections 2.7 and 2.8, and RFC 5321, section 4.1.1.4)
+	// (RFC 5322, section 2.3, and RFC 2045, sections 2.7 and 2.8)
 	void testGenerate_CanonicalLineEndings() {
 
 		const vmime::mediaType textPlain("text", "plain");

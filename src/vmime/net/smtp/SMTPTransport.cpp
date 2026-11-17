@@ -583,7 +583,7 @@ void SMTPTransport::sendData(
 		utility::outputStreamSocketAdapter sos(*m_connection->getSocket());
 		utility::dotFilteredOutputStream fos(sos);
 
-		// Lines must end with CRLF (RFC 5321, section 4.1.1.4)
+		// Lines must end with CRLF (RFC 5321, section 2.3.8)
 		utility::LFToCRLFFilteredOutputStream crlfStream(fos);
 
 		utility::outputStream& dataStream =
