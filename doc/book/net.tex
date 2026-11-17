@@ -697,17 +697,25 @@ try {
 }
 \end{lstlisting}
 
-For a message object, the transfer is cancelled before any 8-bit data is
-sent, and the connection remains usable. Raw message data is sent with the
-DATA command, whose transfer cannot be cancelled: the connection is closed,
-and you have to connect again. To send a message object again, it must also
-be generated again, which is not possible if the data of a part can only be
-read once (eg. from a socket).
+If the server supports the CHUNKING extension, the transfer is cancelled
+before any 8-bit data is sent, and the connection remains usable. Otherwise,
+raw message data is sent with the DATA command, whose transfer cannot be
+cancelled: the connection is closed, and you have to connect again (a message
+object is generated before it is sent in this case, so it is declared as
+8-bit if needed, and this exception is not thrown). To send a message object
+again, it must also be generated again, which is not possible if the data of
+a part can only be read once (eg. from a socket).
 
 Previous versions of VMime sent raw data which contains 8-bit data without
 declaring it, which RFC 6152 forbids. If you send raw messages which may
 contain 8-bit data (for example, messages received from another server),
 declare them as 8-bit from the start, with {\vcode options.set8bitMessage(true)}.
+
+The size of raw message data is declared to the server, if it supports the
+SIZE extension, and this size should not be lower than the actual size (RFC
+1870, section 6). As VMime converts bare LF and CR to CRLF when sending raw
+message data, the size you give should be the one of the data with CRLF line
+endings.
 
 
 % ============================================================================

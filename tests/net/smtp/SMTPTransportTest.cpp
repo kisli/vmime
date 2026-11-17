@@ -663,6 +663,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 		VMIME_TEST(test8BITMIME_undeclared)
 		VMIME_TEST(test8BITMIME_undeclaredAfterChunks)
 		VMIME_TEST(test8BITMIME_rawData)
+		VMIME_TEST(testRawData_Chunking)
 		VMIME_TEST(test8BITMIME_messageAttachment)
 		VMIME_TEST(testCanonicalLineEndings)
 		VMIME_TEST(testSize_NotLowerThanActual)
@@ -674,6 +675,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 		VMIME_TEST(testConnectionLostDuringData)
 		VMIME_TEST(testConnectionLostDuringChunking)
 		VMIME_TEST(testInputStreamErrorDuringData)
+		VMIME_TEST(testInputStreamErrorDuringChunking)
 		VMIME_TEST(testGenerationErrorDuringChunking)
 		VMIME_TEST(testSASLInitialResponse)
 		VMIME_TEST(testSASLInitialResponse_MaxLength)
@@ -687,7 +689,9 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 	VMIME_TEST_LIST_END
 
 
-	static vmime::shared_ptr <vmime::net::transport> createFailingTransport() {
+	// The server supports CHUNKING, but the message data is sent with DATA
+	// unless chunking is enabled (the server does not handle BDAT data)
+	static vmime::shared_ptr <vmime::net::transport> createFailingTransport(const bool chunking = false) {
 
 		failingSMTPTestSocket::reset();
 
@@ -698,6 +702,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 
 		tr->setSocketFactory(vmime::make_shared <testSocketFactory <failingSMTPTestSocket> >());
 		tr->setTimeoutHandlerFactory(vmime::make_shared <testTimeoutHandlerFactory>());
+		tr->setProperty("options.chunking", chunking);
 
 		return tr;
 	}
@@ -1575,6 +1580,61 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 		}
 	}
 
+	// Raw message data is sent by chunks if the server supports CHUNKING
+	// (RFC 3030), so that the transfer can be cancelled without closing the
+	// connection, if it contains undeclared 8-bit data
+	void testRawData_Chunking() {
+
+		// 7-bit data, with LF only
+		{
+			vmime::shared_ptr <vmime::net::transport> tr = create8bitTransport({ "CHUNKING" });
+
+			send8bitTestData(tr, "Subject: Test\n\nLine 1\nLine 2\n");
+
+			const vmime::string expected = "Subject: Test\r\n\r\nLine 1\r\nLine 2\r\n";
+
+			const std::vector <vmime::string>& commands = eightBitSMTPTestSocket::getCommands();
+			const std::vector <vmime::string>& messages = eightBitSMTPTestSocket::getMessages();
+
+			VASSERT_EQ("1.1", 3, commands.size());
+			VASSERT_EQ("1.2", "BDAT " + std::to_string(expected.length()) + " LAST", commands[2]);
+			VASSERT_EQ("1.3", 1, messages.size());
+			VASSERT_EQ("1.4", expected, messages[0]);
+		}
+
+		// Undeclared 8-bit data: the transfer is cancelled, and the message
+		// can be sent again as 8-bit on the same connection
+		{
+			vmime::shared_ptr <vmime::net::transport> tr =
+				create8bitTransport({ "8BITMIME", "CHUNKING", "PIPELINING" });
+
+			const vmime::string data8bit = "Subject: Test\r\n\r\nGr\xc3\xbc\xc3\x9f" "e\r\n";
+
+			VASSERT_THROW(
+				"2.1",
+				send8bitTestData(tr, data8bit),
+				vmime::net::smtp::SMTPUndeclared8bitDataException
+			);
+
+			const std::vector <vmime::string>& commands = eightBitSMTPTestSocket::getCommands();
+			const std::vector <vmime::string>& messages = eightBitSMTPTestSocket::getMessages();
+
+			VASSERT_EQ("2.2", 3, commands.size());
+			VASSERT_EQ("2.3", "RSET", commands[2]);
+			VASSERT_TRUE("2.4 Not delivered", messages.empty());
+			VASSERT_TRUE("2.5 Still connected", tr->isConnected());
+
+			vmime::net::smtp::SMTPSendOptions options;
+			options.set8bitMessage(true);
+
+			send8bitTestData(tr, data8bit, options);
+
+			VASSERT_EQ("2.6", "MAIL FROM:<expediteur@test.vmime.org> BODY=8BITMIME", commands[3]);
+			VASSERT_EQ("2.7", 1, messages.size());
+			VASSERT_EQ("2.8", data8bit, messages[0]);
+		}
+	}
+
 	// A forwarded message which contains 8-bit data is declared as 8-bit
 	// (RFC 2046, section 5.2.1), so the message is known to be 8-bit
 	// before it is sent
@@ -1834,7 +1894,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 
 	void testConnectionLostDuringChunking() {
 
-		vmime::shared_ptr <vmime::net::transport> tr = createFailingTransport();
+		vmime::shared_ptr <vmime::net::transport> tr = createFailingTransport(/* chunking */ true);
 		tr->connect();
 
 		failingSMTPTestSocket::failOn("BDAT", failingSMTPTestSocket::FAILURE_CONNECTION_LOST);
@@ -1873,9 +1933,29 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 		VASSERT_EQ("Message not delivered", 0, failingSMTPTestSocket::getDeliveredCount());
 	}
 
+	// Raw message data is also sent by chunks
+	void testInputStreamErrorDuringChunking() {
+
+		vmime::shared_ptr <vmime::net::transport> tr = createFailingTransport(/* chunking */ true);
+		tr->connect();
+
+		vmime::mailbox exp("expeditor@test.vmime.org");
+
+		vmime::mailboxList recips;
+		recips.appendMailbox(vmime::make_shared <vmime::mailbox>("recipient@test.vmime.org"));
+
+		failingInputStream is("Message data\r\n");
+
+		VASSERT_THROW("Send", tr->send(exp, recips, is, 0), vmime::exception);
+
+		VASSERT_FALSE("Connected", tr->isConnected());
+		VASSERT_EQ("Connection closed", 0, failingSMTPTestSocket::getConnectedCount());
+		VASSERT_EQ("Message not delivered", 0, failingSMTPTestSocket::getDeliveredCount());
+	}
+
 	void testGenerationErrorDuringChunking() {
 
-		vmime::shared_ptr <vmime::net::transport> tr = createFailingTransport();
+		vmime::shared_ptr <vmime::net::transport> tr = createFailingTransport(/* chunking */ true);
 		tr->connect();
 
 		vmime::mailbox exp("expeditor@test.vmime.org");

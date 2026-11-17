@@ -556,10 +556,25 @@ void SMTPTransport::send(
 	// otherwise, the data is checked while it is sent
 	const bool eightBit = need8bitMIME(utf8, /* has8bitData */ false, options);
 
-	// Send message envelope
-	sendEnvelope(expeditor, recipients, sender, utf8, eightBit, /* sendDATACommand */ true, size, options);
+	// Send the data by chunks if possible: unlike with DATA, the transfer
+	// can then be cancelled without closing the connection
+	if (canUseChunking()) {
 
-	sendData(is, size, progress, eightBit, /* canonicalize */ true);
+		sendEnvelope(expeditor, recipients, sender, utf8, eightBit, /* sendDATACommand */ false, size, options);
+
+		sendChunks(
+			[&is, size](utility::outputStream& os) {
+				utility::bufferedStreamCopy(is, os, size, NULL);
+			},
+			size, progress, eightBit, /* canonicalize */ true
+		);
+
+	} else {
+
+		sendEnvelope(expeditor, recipients, sender, utf8, eightBit, /* sendDATACommand */ true, size, options);
+
+		sendData(is, size, progress, eightBit, /* canonicalize */ true);
+	}
 }
 
 
@@ -647,9 +662,7 @@ void SMTPTransport::send(
 
 	// If CHUNKING is not supported, generate the message to a temporary
 	// buffer then send it after the DATA command
-	if (!m_connection->hasExtension("CHUNKING") ||
-	    !getInfos().getPropertyValue <bool>(getSession(),
-			dynamic_cast <const SMTPServiceInfos&>(getInfos()).getProperties().PROPERTY_OPTIONS_CHUNKING)) {
+	if (!canUseChunking()) {
 
 		utility::details::classicOStringStream oss;
 		utility::outputStreamAdapter ossAdapter(oss);
@@ -686,7 +699,34 @@ void SMTPTransport::send(
 
 	sendEnvelope(expeditor, recipients, sender, utf8, eightBit, /* sendDATACommand */ false, msgSize, options);
 
-	SMTPChunkingOutputStreamAdapter chunkStream(m_connection, msgSize, progress);
+	// The generated message already has canonical line endings, and
+	// binary data must not be altered
+	sendChunks(
+		[&msg, &ctx](utility::outputStream& os) {
+			msg->generate(ctx, os);
+		},
+		msgSize, progress, eightBit, /* canonicalize */ false
+	);
+}
+
+
+bool SMTPTransport::canUseChunking() {
+
+	return m_connection->hasExtension("CHUNKING") &&
+		getInfos().getPropertyValue <bool>(getSession(),
+			dynamic_cast <const SMTPServiceInfos&>(getInfos()).getProperties().PROPERTY_OPTIONS_CHUNKING);
+}
+
+
+void SMTPTransport::sendChunks(
+	const std::function <void (utility::outputStream&)>& writeData,
+	const size_t size,
+	utility::progressListener* progress,
+	const bool eightBit,
+	const bool canonicalize
+) {
+
+	SMTPChunkingOutputStreamAdapter chunkStream(m_connection, size, progress);
 
 	// If an error occurs while sending the message chunks (network error, but
 	// also eg. error while generating the message), the server still expects
@@ -695,15 +735,21 @@ void SMTPTransport::send(
 	// delivered)
 	try {
 
+		// Lines must end with CRLF (RFC 5321, section 2.3.8)
+		utility::LFToCRLFFilteredOutputStream crlfStream(chunkStream);
+
+		utility::outputStream& dataStream =
+			canonicalize ? static_cast <utility::outputStream&>(crlfStream) : chunkStream;
+
 		// Send the message by chunks
 		if (eightBit) {
 
-			msg->generate(ctx, chunkStream);
+			writeData(dataStream);
 
 		} else {
 
-			sevenBitOutputStream sevenBitStream(chunkStream, m_connection->hasExtension("8BITMIME"));
-			msg->generate(ctx, sevenBitStream);
+			sevenBitOutputStream sevenBitStream(dataStream, m_connection->hasExtension("8BITMIME"));
+			writeData(sevenBitStream);
 		}
 
 		chunkStream.flush();

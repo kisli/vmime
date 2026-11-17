@@ -38,6 +38,8 @@
 #include "vmime/net/smtp/SMTPServiceInfos.hpp"
 #include "vmime/net/smtp/SMTPConnection.hpp"
 
+#include <functional>
+
 
 namespace vmime {
 namespace net {
@@ -178,6 +180,34 @@ private:
 	  */
 	void sendData(
 		utility::inputStream& is,
+		const size_t size,
+		utility::progressListener* progress,
+		const bool eightBit,
+		const bool canonicalize
+	);
+
+	/** Return whether the CHUNKING extension (RFC 3030) can be used: it must
+	  * be supported by the server, and enabled in the service properties.
+	  *
+	  * @return true if the message data can be sent with BDAT commands
+	  */
+	bool canUseChunking();
+
+	/** Send the message data with BDAT commands (CHUNKING extension), after
+	  * the envelope has been sent, and check the responses. If undeclared
+	  * 8-bit data is found, the transfer is cancelled before it is sent,
+	  * so that the connection remains usable.
+	  *
+	  * @param writeData function which writes the message data to a stream
+	  * @param size size of the message data (estimated, if not known)
+	  * @param progress progress listener, or NULL if not used
+	  * @param eightBit true if the message has been declared as 8-bit;
+	  * otherwise, the data must not contain 8-bit data
+	  * @param canonicalize if true, line endings are converted to CRLF
+	  * (for raw message data, which may use another convention)
+	  */
+	void sendChunks(
+		const std::function <void (utility::outputStream&)>& writeData,
 		const size_t size,
 		utility::progressListener* progress,
 		const bool eightBit,
