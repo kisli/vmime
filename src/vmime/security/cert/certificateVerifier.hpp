@@ -30,8 +30,10 @@
 #include "vmime/security/cert/certificateChain.hpp"
 
 #include "vmime/security/cert/unsupportedCertificateTypeException.hpp"
+#include "vmime/security/cert/certificateExpiredException.hpp"
 #include "vmime/security/cert/certificateIssuerVerificationException.hpp"
 #include "vmime/security/cert/certificateNotTrustedException.hpp"
+#include "vmime/security/cert/certificateNotYetValidException.hpp"
 #include "vmime/security/cert/serverIdentityException.hpp"
 
 
@@ -56,8 +58,9 @@ public:
 	  * has expired
 	  * @throw certificateNotYetValidException if a certificate in the chain
 	  * is not yet valid
-	  * @throw certificateNotTrustedException if a certificate in the chain
-	  * cannot be verified against root and/or trusted certificates
+	  * @throw certificateNotTrustedException if the chain is empty, or if
+	  * a certificate in the chain cannot be verified against root and/or
+	  * trusted certificates
 	  * @throw certificateIssuerVerificationException if a certificate in the
 	  * chain cannot be verified against the next certificate (issuer)
 	  * @throw serverIdentityException if the subject name of the certificate

@@ -1291,26 +1291,47 @@ The default certificate verifier maintains a list of root (CAs) and user
 certificates that are trusted. By default, the list is empty. So, you have
 to initialize it before using the verifier.
 
-The algorithm\footnote{See
+The verification\footnote{See
 \url{http://wikipedia.org/wiki/Certification\_path\_validation\_algorithm}}
-used is quite simple:
+is done as follows:
 
 \begin{enumerate}
-\item for every certificate in the chain, verify that the certificate has been
-issued by the next certificate in the chain;
-\item for every certificate in the chain, verify that the certificate is valid
-at the current time;
-\item ensure that the first certificate's subject name matches the hostname
-of the server;
-\item decide whether the subject's certificate can be trusted:
-	\begin{itemize}
-	\item first, verify that the the last certificate in the chain was
-	issued by a third-party that we trust (root CAs);
-	\item if the issuer certificate cannot be verified against root CAs,
-	compare the subject's certificate against the trusted certificates
-	(the certificates the user has decided to trust).
-	\end{itemize}
+\item if the server certificate (the first certificate of the chain) is one of
+the trusted certificates (the certificates the user has decided to trust), it
+only has to be valid at the current time;
+\item otherwise, the TLS library (GNU TLS or OpenSSL) builds a certification
+path from the server certificate to one of the root CAs, with the other
+certificates of the chain, and validates it as specified in RFC
+5280\footnote{See \url{https://www.rfc-editor.org/rfc/rfc5280}}: each
+certificate must have been signed by its issuer, which must be a CA allowed to
+sign certificates, the path length and name constraints must be respected, and
+every certificate must be valid at the current time. If the server certificate
+has an extended key usage extension, it must allow TLS server authentication;
+\item finally, the subject name of the server certificate must match the host
+name of the server.
 \end{enumerate}
+
+The certificates of the chain may be in any order, and extraneous certificates
+are ignored: for example, servers may send a root certificate cross-signed by
+an older root which is not trusted any more. The revocation status of the
+certificates is not checked.
+
+If the verification fails, a subclass of {\vcode certificateException} is
+thrown:
+
+\begin{itemize}
+\item {\vcode certificateExpiredException} or
+{\vcode certificateNotYetValidException};
+\item {\vcode certificateIssuerVerificationException}, for example for an
+invalid signature;
+\item {\vcode certificateNotTrustedException}, for example if no path to a root
+CA can be built;
+\item {\vcode serverIdentityException}, if the host name does not match.
+\end{itemize}
+
+The certificate on which the problem occurred is returned by
+{\vcode getCertificate()}, and the message of the exception gives the precise
+reason, as reported by the TLS library.
 
 First, we need some code to load existing X.509 certificates:
 
@@ -1368,6 +1389,10 @@ write your own verifier. Your verifier should inherit from the
 method {\vcode verify()}. Then, if the specified certificate chain is trusted,
 simply return from the function, or else throw a
 {\vcode certificateException}.
+
+To let the TLS library validate the certification path, your verifier can
+call the static function {\vcode X509Certificate::verifyChain()}, or use a
+default certificate verifier.
 
 The following example shows how to implement an interactive certificate
 verifier which relies on the user's decision, and nothing else (you SHOULD NOT

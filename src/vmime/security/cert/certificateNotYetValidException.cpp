@@ -43,7 +43,7 @@ certificateNotYetValidException::certificateNotYetValidException()
 
 exception* certificateNotYetValidException::clone() const {
 
-	return new certificateNotYetValidException();
+	return new certificateNotYetValidException(*this);
 }
 
 

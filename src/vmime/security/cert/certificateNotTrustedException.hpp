@@ -51,6 +51,14 @@ public:
 	  */
 	certificateNotTrustedException();
 
+	/** Constructs a certificateNotTrustedException with the precise reason
+	  * of the failure.
+	  *
+	  * @param reason reason of the failure (eg. "unable to get local issuer
+	  * certificate"), given by the TLS library
+	  */
+	explicit certificateNotTrustedException(const string& reason);
+
 	exception* clone() const;
 };
 

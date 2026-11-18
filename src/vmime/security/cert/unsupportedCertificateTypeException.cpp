@@ -49,7 +49,7 @@ unsupportedCertificateTypeException::~unsupportedCertificateTypeException() thro
 
 exception* unsupportedCertificateTypeException::clone() const {
 
-	return new unsupportedCertificateTypeException(m_type);
+	return new unsupportedCertificateTypeException(*this);
 }
 
 
