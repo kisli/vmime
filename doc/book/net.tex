@@ -673,9 +673,13 @@ which needs the 8BITMIME extension. VMime does not generate such messages by
 itself, as it encodes text and attachments (quoted-printable, base64), but
 a message which was received and is sent again may have parts with the
 {\vcode 8bit} encoding. VMime finds them in a message object, and declares the
-message as 8-bit. If the server does not support 8BITMIME, the message cannot
-be sent, and {\vcode vmime::net::smtp::SMTP8BITMIMEExtensionNotSupportedException}
-is thrown before any command is sent to the server.
+message as 8-bit. If the server does not support 8BITMIME (eg. some submission
+servers), these parts are converted to 7-bit data, which RFC 6152 allows: they
+are encoded in Quoted-Printable (text) or Base64, as described below for binary
+data. A {\vcode message/rfc822} part cannot be encoded: if it contains 8-bit
+data, the message cannot be sent, and
+{\vcode vmime::net::smtp::SMTP8BITMIMEExtensionNotSupportedException} is thrown
+before any command is sent to the server (as when the conversion is disabled).
 
 However, some messages contain 8-bit data in parts which are not declared as
 such, and raw message data is not parsed. So, if a message has not been

@@ -245,27 +245,32 @@ namespace {
 	}
 
 
-	// Return whether the body of a part contains binary data, while it is
-	// declared as 7bit or 8bit (only if its contents can be read again)
-	bool hasUndeclaredBinaryData(const body& bdy) {
+	// Tell whether the body of a part declared as 7bit or 8bit contains 8-bit
+	// or binary data (only if its contents can be read again: otherwise, its
+	// data is checked while it is sent)
+	void scanData(const body& bdy, bool& has8bitData, bool& hasBinaryData) {
 
 		const encoding enc = bdy.getEncoding();
 
+		has8bitData = (enc == encoding(encodingTypes::EIGHT_BIT));
+		hasBinaryData = false;
+
 		if (enc != encoding(encodingTypes::SEVEN_BIT) && enc != encoding(encodingTypes::EIGHT_BIT)) {
-			return false;
+			return;
 		}
 
 		const shared_ptr <const contentHandler> contents = bdy.getContents();
 
 		if (!contents->isBuffered()) {
-			return false;
+			return;
 		}
 
 		// As generated: the decoded contents, copied as is
 		dataScanner scanner;
 		contents->extract(scanner);
 
-		return scanner.hasBinaryData();
+		has8bitData = has8bitData || scanner.has8bitData();
+		hasBinaryData = scanner.hasBinaryData();
 	}
 
 }
@@ -539,6 +544,7 @@ shared_ptr <vmime::message> SMTPTransport::prepareMessage(
 
 	const bool convert = !opts || opts->getConvertParts();
 	const bool binaryMIME = canUseBinaryMIME();
+	const bool eightBitMIME = m_connection->hasExtension("8BITMIME");
 
 	std::vector <shared_ptr <body> > bodies;
 	getLeafBodies(msg, bodies);
@@ -555,6 +561,9 @@ shared_ptr <vmime::message> SMTPTransport::prepareMessage(
 		// A message or a multipart cannot be encoded (RFC 2046, section 5.2.1,
 		// and RFC 2045, section 6.4)
 		const bool encodable = (type != mediaTypes::MESSAGE && type != mediaTypes::MULTIPART);
+
+		bool has8bitData = false, hasUndeclaredBinaryData = false;
+		scanData(bdy, has8bitData, hasUndeclaredBinaryData);
 
 		if (bdy.getEncoding() == encoding(encodingTypes::BINARY)) {
 
@@ -574,7 +583,7 @@ shared_ptr <vmime::message> SMTPTransport::prepareMessage(
 				throw SMTPBINARYMIMEExtensionNotSupportedException();
 			}
 
-		} else if (hasUndeclaredBinaryData(bdy)) {
+		} else if (hasUndeclaredBinaryData) {
 
 			// Data declared as 7bit or 8bit, which is not (eg. NUL, or long
 			// lines): its CR and LF are line endings, so text is encoded in
@@ -600,6 +609,20 @@ shared_ptr <vmime::message> SMTPTransport::prepareMessage(
 
 				throw SMTPBINARYMIMEExtensionNotSupportedException();
 			}
+
+		} else if (has8bitData && !eightBitMIME) {
+
+			// 8-bit data must not be sent to a server which does not support
+			// 8BITMIME, but it can be converted to 7-bit data (RFC 6152,
+			// section 3)
+			if (!convert || !encodable) {
+				throw SMTP8BITMIMEExtensionNotSupportedException();
+			}
+
+			encodings[i] = (type == mediaTypes::TEXT)
+				? encodingTypes::QUOTED_PRINTABLE : encodingTypes::BASE64;
+
+			converted = true;
 		}
 	}
 

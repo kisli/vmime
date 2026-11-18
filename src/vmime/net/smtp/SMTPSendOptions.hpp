@@ -161,7 +161,10 @@ public:
 	  * - the parts declared as 7bit or 8bit which contain binary data (NUL,
 	  *   or lines longer than 998 octets), which is not valid (RFC 2045,
 	  *   sections 2.7 and 2.8), are encoded in Quoted-Printable (text) or
-	  *   Base64.
+	  *   Base64;
+	  * - the parts which contain 8-bit data, if the server does not support
+	  *   the 8BITMIME extension (RFC 6152, section 3), are encoded in
+	  *   Quoted-Printable (text) or Base64.
 	  *
 	  * If the conversion is disabled, an exception is thrown instead. Raw
 	  * message data is never converted.

@@ -147,8 +147,9 @@ private:
 		const sendOptions& options
 	);
 
-	/** Prepare a message object to be sent: the parts which contain binary
-	  * data are converted if needed (see SMTPSendOptions::setConvertParts()).
+	/** Prepare a message object to be sent: the parts which cannot be sent
+	  * as is (binary data, or 8-bit data if the server does not support
+	  * 8BITMIME) are converted if needed (see SMTPSendOptions::setConvertParts()).
 	  *
 	  * @param msg message to send
 	  * @param options send options
@@ -159,6 +160,8 @@ private:
 	  * as binary cannot be sent nor converted
 	  * @throw SMTPUndeclaredBinaryDataException if a part contains binary
 	  * data, but is declared as 7bit or 8bit, and cannot be converted
+	  * @throw SMTP8BITMIMEExtensionNotSupportedException if a part contains
+	  * 8-bit data, which the server does not support, and cannot be converted
 	  */
 	shared_ptr <vmime::message> prepareMessage(
 		const shared_ptr <vmime::message>& msg,
