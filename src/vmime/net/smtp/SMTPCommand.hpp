@@ -60,6 +60,15 @@ class VMIME_EXPORT SMTPCommand : public object {
 
 public:
 
+	/** Type of the message data, declared with the BODY parameter of the
+	  * MAIL command (RFC 6152, RFC 3030).
+	  */
+	enum BodyType {
+		BODY_7BIT,        /**< 7-bit data (no BODY parameter). */
+		BODY_8BITMIME,    /**< 8-bit data (BODY=8BITMIME). */
+		BODY_BINARYMIME   /**< Binary data (BODY=BINARYMIME). */
+	};
+
 	static shared_ptr <SMTPCommand> HELO(const string& hostname);
 	static shared_ptr <SMTPCommand> EHLO(const string& hostname);
 	static shared_ptr <SMTPCommand> AUTH(const string& mechName);
@@ -67,7 +76,7 @@ public:
 	static shared_ptr <SMTPCommand> STARTTLS();
 	static shared_ptr <SMTPCommand> MAIL(const mailbox& mbox, const bool utf8,
 	                                     const shared_ptr <const DSNAttributes>& dsnAttrs);
-	static shared_ptr <SMTPCommand> MAIL(const mailbox& mbox, const bool utf8, const bool eightBit,
+	static shared_ptr <SMTPCommand> MAIL(const mailbox& mbox, const bool utf8, const BodyType bodyType,
 	                                     const size_t size, const shared_ptr <const DSNAttributes>& dsnAttrs);
 	static shared_ptr <SMTPCommand> RCPT(const mailbox& mbox, const bool utf8,
 	                                     const shared_ptr <const DSNAttributes>& dsnAttrs);

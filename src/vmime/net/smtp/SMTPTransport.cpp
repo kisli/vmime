@@ -55,15 +55,119 @@ namespace smtp {
 
 namespace {
 
-	// Output stream which only lets 7-bit data through: 8-bit data which
-	// has not been declared with BODY=8BITMIME must not be sent (RFC 6152,
-	// section 3), so an exception is thrown before writing any of it
-	class sevenBitOutputStream : public utility::outputStream {
+	/** An output stream which tells the type of the data written to it,
+	  * without writing it anywhere.
+	  *
+	  * The data is 8-bit if it contains octets greater than 127, and binary
+	  * if it contains NUL, or lines longer than 998 octets, which are not
+	  * allowed in 7-bit and 8-bit data (RFC 2045, sections 2.7 and 2.8).
+	  * CR and LF alone are counted as line endings, as they are converted
+	  * to CRLF in 7-bit and 8-bit data.
+	  */
+	class dataScanner : public utility::outputStream {
 
 	public:
 
-		sevenBitOutputStream(utility::outputStream& os, const bool has8bitMIME)
-			: m_os(os), m_has8bitMIME(has8bitMIME) {
+		dataScanner()
+			: m_lineLength(0),
+			  m_8bit(false),
+			  m_binary(false) {
+
+		}
+
+		/** Return whether the data written so far contains 8-bit data.
+		  *
+		  * @return true if an octet greater than 127 has been written
+		  */
+		bool has8bitData() const {
+
+			return m_8bit;
+		}
+
+		/** Return whether the data written so far contains binary data.
+		  *
+		  * @return true if a NUL, or a line longer than 998 octets, has
+		  * been written
+		  */
+		bool hasBinaryData() const {
+
+			return m_binary;
+		}
+
+		void flush() {
+
+		}
+
+	protected:
+
+		void writeImpl(const byte_t* const data, const size_t count) {
+
+			for (size_t i = 0 ; i < count ; ++i) {
+
+				const byte_t c = data[i];
+
+				if (c == '\r' || c == '\n') {
+
+					m_lineLength = 0;
+					continue;
+				}
+
+				++m_lineLength;
+
+				if (c == 0 || m_lineLength > 998) {
+					m_binary = true;
+				} else if (c >= 0x80) {
+					m_8bit = true;
+				}
+			}
+		}
+
+	private:
+
+		size_t m_lineLength;
+		bool m_8bit;
+		bool m_binary;
+	};
+
+
+	/** A filtered output stream which only lets through the message data
+	  * allowed by the type declared in the MAIL command: 8-bit data must be
+	  * declared with BODY=8BITMIME (RFC 6152, section 3), and binary data
+	  * with BODY=BINARYMIME (RFC 3030, section 3). See dataScanner for what
+	  * 8-bit and binary data are.
+	  *
+	  * The data is checked before it is written: if a block of data contains
+	  * data which has not been declared, an exception is thrown, and nothing
+	  * of this block is written to the next stream, so that the transfer can
+	  * be cancelled before any undeclared data is sent (with BDAT).
+	  *
+	  * The exception tells whether the message can be sent again, declared
+	  * with the right type: if the server does not support the extension
+	  * needed, the message cannot be sent at all.
+	  */
+	class dataCheckingOutputStream : public utility::outputStream {
+
+	public:
+
+		/** Construct a new filter for the specified output stream.
+		  *
+		  * @param os stream into which write the checked data
+		  * @param bodyType type with which the message data has been
+		  * declared in the MAIL command
+		  * @param has8bitMIME true if the server supports 8BITMIME
+		  * @param hasBinaryMIME true if BINARYMIME can be used (the server
+		  * supports it, and CHUNKING can be used)
+		  */
+		dataCheckingOutputStream(
+			utility::outputStream& os,
+			const SMTPCommand::BodyType bodyType,
+			const bool has8bitMIME,
+			const bool hasBinaryMIME
+		)
+			: m_os(os),
+			  m_bodyType(bodyType),
+			  m_has8bitMIME(has8bitMIME),
+			  m_hasBinaryMIME(hasBinaryMIME) {
 
 		}
 
@@ -74,19 +178,37 @@ namespace {
 
 	protected:
 
+		/** Check a block of data, then write it to the next stream.
+		  *
+		  * @throw SMTPUndeclaredBinaryDataException if the data contains
+		  * binary data, which has not been declared, but can be sent
+		  * @throw SMTPBINARYMIMEExtensionNotSupportedException if the data
+		  * contains binary data, which cannot be sent
+		  * @throw SMTPUndeclared8bitDataException if the data contains 8-bit
+		  * data, which has not been declared, but can be sent
+		  * @throw SMTP8BITMIMEExtensionNotSupportedException if the data
+		  * contains 8-bit data, which cannot be sent
+		  */
 		void writeImpl(const byte_t* const data, const size_t count) {
 
-			for (size_t i = 0 ; i < count ; ++i) {
+			m_scanner.write(data, count);
 
-				if (data[i] >= 0x80) {
+			// The message can be sent again with the right type, if the
+			// server supports it (binary data includes 8-bit data)
+			if (m_scanner.hasBinaryData() && m_bodyType != SMTPCommand::BODY_BINARYMIME) {
 
-					// The message can be sent again as 8-bit, if the
-					// server supports it
-					if (m_has8bitMIME) {
-						throw SMTPUndeclared8bitDataException();
-					} else {
-						throw SMTP8BITMIMEExtensionNotSupportedException();
-					}
+				if (m_hasBinaryMIME) {
+					throw SMTPUndeclaredBinaryDataException();
+				} else {
+					throw SMTPBINARYMIMEExtensionNotSupportedException();
+				}
+
+			} else if (m_scanner.has8bitData() && m_bodyType == SMTPCommand::BODY_7BIT) {
+
+				if (m_has8bitMIME) {
+					throw SMTPUndeclared8bitDataException();
+				} else {
+					throw SMTP8BITMIMEExtensionNotSupportedException();
 				}
 			}
 
@@ -96,8 +218,55 @@ namespace {
 	private:
 
 		utility::outputStream& m_os;
+		const SMTPCommand::BodyType m_bodyType;
 		const bool m_has8bitMIME;
+		const bool m_hasBinaryMIME;
+
+		dataScanner m_scanner;
 	};
+
+
+	// Get the bodies of the parts which have no sub-parts, in the order in
+	// which they are generated
+	void getLeafBodies(const shared_ptr <bodyPart>& part, std::vector <shared_ptr <body> >& bodies) {
+
+		const shared_ptr <body> bdy = part->getBody();
+
+		if (bdy->getPartCount() == 0) {
+
+			bodies.push_back(bdy);
+
+		} else {
+
+			for (size_t i = 0 ; i < bdy->getPartCount() ; ++i) {
+				getLeafBodies(bdy->getPartAt(i), bodies);
+			}
+		}
+	}
+
+
+	// Return whether the body of a part contains binary data, while it is
+	// declared as 7bit or 8bit (only if its contents can be read again)
+	bool hasUndeclaredBinaryData(const body& bdy) {
+
+		const encoding enc = bdy.getEncoding();
+
+		if (enc != encoding(encodingTypes::SEVEN_BIT) && enc != encoding(encodingTypes::EIGHT_BIT)) {
+			return false;
+		}
+
+		const shared_ptr <const contentHandler> contents = bdy.getContents();
+
+		if (!contents->isBuffered()) {
+			return false;
+		}
+
+		// As generated: the decoded contents, copied as is
+		dataScanner scanner;
+		contents->extract(scanner);
+
+		return scanner.hasBinaryData();
+	}
 
 }
 
@@ -312,29 +481,147 @@ bool SMTPTransport::componentHas8bitBody(component& comp) {
 }
 
 
-bool SMTPTransport::need8bitMIME(
+SMTPCommand::BodyType SMTPTransport::getBodyType(
 	const bool utf8,
 	const bool has8bitData,
+	const bool hasBinaryData,
 	const sendOptions& options
-) const {
+) {
+
+	auto opts = dynamic_cast <const SMTPSendOptions*>(&options);
+
+	// Binary data must not be sent to a server which does not support
+	// BINARYMIME, which can only be used with CHUNKING (RFC 3030, section 3)
+	if (hasBinaryData || (opts && opts->isBinaryMessage())) {
+
+		if (!canUseBinaryMIME()) {
+			throw SMTPBINARYMIMEExtensionNotSupportedException();
+		}
+
+		return SMTPCommand::BODY_BINARYMIME;
+	}
 
 	// UTF-8 header fields are 8-bit data, and a server which supports
 	// SMTPUTF8 also supports 8BITMIME (see needSMTPUTF8())
 	if (utf8) {
-		return true;
+		return SMTPCommand::BODY_8BITMIME;
 	}
-
-	auto opts = dynamic_cast <const SMTPSendOptions*>(&options);
-
-	const bool need = has8bitData || (opts && opts->is8bitMessage());
 
 	// 8-bit data must not be sent to a server which does not support
 	// 8BITMIME (RFC 6152, section 3)
-	if (need && !m_connection->hasExtension("8BITMIME")) {
-		throw SMTP8BITMIMEExtensionNotSupportedException();
+	if (has8bitData || (opts && opts->is8bitMessage())) {
+
+		if (!m_connection->hasExtension("8BITMIME")) {
+			throw SMTP8BITMIMEExtensionNotSupportedException();
+		}
+
+		return SMTPCommand::BODY_8BITMIME;
 	}
 
-	return need;
+	return SMTPCommand::BODY_7BIT;
+}
+
+
+shared_ptr <vmime::message> SMTPTransport::prepareMessage(
+	const shared_ptr <vmime::message>& msg,
+	const sendOptions& options,
+	bool& hasBinaryData
+) {
+
+	auto opts = dynamic_cast <const SMTPSendOptions*>(&options);
+
+	hasBinaryData = false;
+
+	// The message is declared as binary: it is sent as is
+	if (opts && opts->isBinaryMessage()) {
+		return msg;
+	}
+
+	const bool convert = !opts || opts->getConvertParts();
+	const bool binaryMIME = canUseBinaryMIME();
+
+	std::vector <shared_ptr <body> > bodies;
+	getLeafBodies(msg, bodies);
+
+	// New encoding of the parts which must be converted
+	std::vector <string> encodings(bodies.size());
+	bool converted = false;
+
+	for (size_t i = 0 ; i < bodies.size() ; ++i) {
+
+		const body& bdy = *bodies[i];
+		const string type = bdy.getContentType().getType();
+
+		// A message or a multipart cannot be encoded (RFC 2046, section 5.2.1,
+		// and RFC 2045, section 6.4)
+		const bool encodable = (type != mediaTypes::MESSAGE && type != mediaTypes::MULTIPART);
+
+		if (bdy.getEncoding() == encoding(encodingTypes::BINARY)) {
+
+			// Binary data is sent as is with BINARYMIME, or otherwise
+			// encoded in Base64, which keeps it as is (RFC 3030, section 3)
+			if (binaryMIME) {
+
+				hasBinaryData = true;
+
+			} else if (convert && encodable) {
+
+				encodings[i] = encodingTypes::BASE64;
+				converted = true;
+
+			} else {
+
+				throw SMTPBINARYMIMEExtensionNotSupportedException();
+			}
+
+		} else if (hasUndeclaredBinaryData(bdy)) {
+
+			// Data declared as 7bit or 8bit, which is not (eg. NUL, or long
+			// lines): its CR and LF are line endings, so text is encoded in
+			// Quoted-Printable; a message is declared as binary
+			if (!convert) {
+
+				throw SMTPUndeclaredBinaryDataException();
+
+			} else if (encodable) {
+
+				encodings[i] = (type == mediaTypes::TEXT)
+					? encodingTypes::QUOTED_PRINTABLE : encodingTypes::BASE64;
+
+				converted = true;
+
+			} else if (binaryMIME) {
+
+				encodings[i] = encodingTypes::BINARY;
+				converted = true;
+				hasBinaryData = true;
+
+			} else {
+
+				throw SMTPBINARYMIMEExtensionNotSupportedException();
+			}
+		}
+	}
+
+	if (!converted) {
+		return msg;
+	}
+
+	// Convert a copy of the message, which shares the data of its parts
+	shared_ptr <vmime::message> copy = make_shared <vmime::message>();
+	copy->copyFrom(*msg);
+
+	std::vector <shared_ptr <body> > copyBodies;
+	getLeafBodies(copy, copyBodies);
+
+	for (size_t i = 0 ; i < copyBodies.size() ; ++i) {
+
+		if (!encodings[i].empty()) {
+			copyBodies[i]->setEncoding(encoding(encodings[i]));
+		}
+	}
+
+	return copy;
 }
 
 
@@ -343,7 +630,7 @@ void SMTPTransport::sendEnvelope(
 	const mailboxList& recipients,
 	const mailbox& sender,
 	const bool utf8,
-	const bool eightBit,
+	const SMTPCommand::BodyType bodyType,
 	bool sendDATACommand,
 	const size_t size,
 	const sendOptions& options
@@ -384,7 +671,7 @@ void SMTPTransport::sendEnvelope(
 
 		commands->addCommand(
 			SMTPCommand::MAIL(
-				sender, utf8, eightBit, hasSize ? size : 0,
+				sender, utf8, bodyType, hasSize ? size : 0,
 				opts ? opts->getDSNAttributes() : nullptr
 			)
 		);
@@ -393,7 +680,7 @@ void SMTPTransport::sendEnvelope(
 
 		commands->addCommand(
 			SMTPCommand::MAIL(
-				expeditor, utf8, eightBit, hasSize ? size : 0,
+				expeditor, utf8, bodyType, hasSize ? size : 0,
 				opts ? opts->getDSNAttributes() : nullptr
 			)
 		);
@@ -552,28 +839,31 @@ void SMTPTransport::send(
 	// tell whether SMTPUTF8 is needed
 	const bool utf8 = needSMTPUTF8(expeditor, recipients, sender, nullptr, options);
 
-	// Likewise, only the options tell whether the message is 8-bit;
-	// otherwise, the data is checked while it is sent
-	const bool eightBit = need8bitMIME(utf8, /* has8bitData */ false, options);
+	// Likewise, only the options tell whether the message is 8-bit or
+	// binary; otherwise, the data is checked while it is sent
+	const SMTPCommand::BodyType bodyType =
+		getBodyType(utf8, /* has8bitData */ false, /* hasBinaryData */ false, options);
 
 	// Send the data by chunks if possible: unlike with DATA, the transfer
 	// can then be cancelled without closing the connection
 	if (canUseChunking()) {
 
-		sendEnvelope(expeditor, recipients, sender, utf8, eightBit, /* sendDATACommand */ false, size, options);
+		sendEnvelope(expeditor, recipients, sender, utf8, bodyType, /* sendDATACommand */ false, size, options);
 
+		// Binary data is sent as is (RFC 3030, section 3)
 		sendChunks(
 			[&is, size](utility::outputStream& os) {
 				utility::bufferedStreamCopy(is, os, size, NULL);
 			},
-			size, progress, eightBit, /* canonicalize */ true
+			size, progress, bodyType,
+			/* canonicalize */ bodyType != SMTPCommand::BODY_BINARYMIME
 		);
 
 	} else {
 
-		sendEnvelope(expeditor, recipients, sender, utf8, eightBit, /* sendDATACommand */ true, size, options);
+		sendEnvelope(expeditor, recipients, sender, utf8, bodyType, /* sendDATACommand */ true, size, options);
 
-		sendData(is, size, progress, eightBit, /* canonicalize */ true);
+		sendData(is, size, progress, bodyType, /* canonicalize */ true);
 	}
 }
 
@@ -582,15 +872,15 @@ void SMTPTransport::sendData(
 	utility::inputStream& is,
 	const size_t size,
 	utility::progressListener* progress,
-	const bool eightBit,
+	const SMTPCommand::BodyType bodyType,
 	const bool canonicalize
 ) {
 
 	// If an error occurs while sending the message data (network error, but
-	// also eg. error while reading the input stream, or undeclared 8-bit
-	// data), the server still expects the end of the data, so the connection
-	// is not usable anymore: close it, without sending the end-of-data
-	// delimiter (the incomplete message must not be delivered)
+	// also eg. error while reading the input stream, or undeclared 8-bit or
+	// binary data), the server still expects the end of the data, so the
+	// connection is not usable anymore: close it, without sending the
+	// end-of-data delimiter (the incomplete message must not be delivered)
 	try {
 
 		// Send the message data
@@ -604,15 +894,11 @@ void SMTPTransport::sendData(
 		utility::outputStream& dataStream =
 			canonicalize ? static_cast <utility::outputStream&>(crlfStream) : fos;
 
-		if (eightBit) {
+		dataCheckingOutputStream checkingStream(
+			dataStream, bodyType, m_connection->hasExtension("8BITMIME"), canUseBinaryMIME()
+		);
 
-			utility::bufferedStreamCopy(is, dataStream, size, progress);
-
-		} else {
-
-			sevenBitOutputStream sevenBitStream(dataStream, m_connection->hasExtension("8BITMIME"));
-			utility::bufferedStreamCopy(is, sevenBitStream, size, progress);
-		}
+		utility::bufferedStreamCopy(is, checkingStream, size, progress);
 
 		fos.flush();
 
@@ -652,10 +938,15 @@ void SMTPTransport::send(
 		throw exceptions::not_connected();
 	}
 
+	// Convert the parts which contain binary data, if they cannot be sent
+	// as is (in a copy of the message)
+	bool hasBinaryData = false;
+	const shared_ptr <vmime::message> msgToSend = prepareMessage(msg, options, hasBinaryData);
+
 	// Generate the message with Internationalized Email support (RFC 6532)
 	// only if it is sent with SMTPUTF8, which is required for UTF-8 header
 	// fields (RFC 6531, section 3.4); otherwise, non-ASCII text is encoded
-	const bool utf8 = needSMTPUTF8(expeditor, recipients, sender, msg, options);
+	const bool utf8 = needSMTPUTF8(expeditor, recipients, sender, msgToSend, options);
 
 	generationContext ctx(generationContext::getDefaultContext());
 	ctx.setInternationalizedEmailSupport(utf8);
@@ -667,45 +958,46 @@ void SMTPTransport::send(
 		utility::details::classicOStringStream oss;
 		utility::outputStreamAdapter ossAdapter(oss);
 
-		msg->generate(ctx, ossAdapter);
+		msgToSend->generate(ctx, ossAdapter);
 
 		const string& str(oss.str());
 
 		// The whole message is known: it is declared as 8-bit only if it
-		// actually contains 8-bit data
-		const bool eightBit = need8bitMIME(
-			utf8,
-			utility::stringUtils::findFirstNonASCIIchar(str.begin(), str.end()) != string::npos,
-			options
-		);
+		// actually contains 8-bit data (binary data, which cannot be sent
+		// without CHUNKING, has been converted if possible)
+		dataScanner scanner;
+		scanner.write(str.data(), str.length());
+
+		const SMTPCommand::BodyType bodyType =
+			getBodyType(utf8, scanner.has8bitData(), scanner.hasBinaryData(), options);
 
 		utility::inputStreamStringAdapter isAdapter(str);
 
-		sendEnvelope(expeditor, recipients, sender, utf8, eightBit, /* sendDATACommand */ true, str.length(), options);
+		sendEnvelope(expeditor, recipients, sender, utf8, bodyType, /* sendDATACommand */ true, str.length(), options);
 
-		// The generated message already has canonical line endings, and
-		// binary data must not be altered
-		sendData(isAdapter, str.length(), progress, eightBit, /* canonicalize */ false);
+		// The generated message already has canonical line endings
+		sendData(isAdapter, str.length(), progress, bodyType, /* canonicalize */ false);
 		return;
 	}
 
 	// The message is generated while it is sent: it is declared as 8-bit
-	// if one of its parts is declared as such; otherwise, the data is
-	// checked while it is sent
-	const bool eightBit = need8bitMIME(utf8, componentHas8bitBody(*msg), options);
+	// or binary if one of its parts is declared as such; otherwise, the
+	// data is checked while it is sent
+	const SMTPCommand::BodyType bodyType =
+		getBodyType(utf8, componentHas8bitBody(*msgToSend), hasBinaryData, options);
 
 	// Send message envelope
-	const size_t msgSize = msg->getGeneratedSize(ctx);
+	const size_t msgSize = msgToSend->getGeneratedSize(ctx);
 
-	sendEnvelope(expeditor, recipients, sender, utf8, eightBit, /* sendDATACommand */ false, msgSize, options);
+	sendEnvelope(expeditor, recipients, sender, utf8, bodyType, /* sendDATACommand */ false, msgSize, options);
 
 	// The generated message already has canonical line endings, and
 	// binary data must not be altered
 	sendChunks(
-		[&msg, &ctx](utility::outputStream& os) {
-			msg->generate(ctx, os);
+		[&msgToSend, &ctx](utility::outputStream& os) {
+			msgToSend->generate(ctx, os);
 		},
-		msgSize, progress, eightBit, /* canonicalize */ false
+		msgSize, progress, bodyType, /* canonicalize */ false
 	);
 }
 
@@ -718,11 +1010,18 @@ bool SMTPTransport::canUseChunking() {
 }
 
 
+bool SMTPTransport::canUseBinaryMIME() {
+
+	// BINARYMIME can only be used with CHUNKING (RFC 3030, section 3)
+	return m_connection->hasExtension("BINARYMIME") && canUseChunking();
+}
+
+
 void SMTPTransport::sendChunks(
 	const std::function <void (utility::outputStream&)>& writeData,
 	const size_t size,
 	utility::progressListener* progress,
-	const bool eightBit,
+	const SMTPCommand::BodyType bodyType,
 	const bool canonicalize
 ) {
 
@@ -741,30 +1040,34 @@ void SMTPTransport::sendChunks(
 		utility::outputStream& dataStream =
 			canonicalize ? static_cast <utility::outputStream&>(crlfStream) : chunkStream;
 
+		dataCheckingOutputStream checkingStream(
+			dataStream, bodyType, m_connection->hasExtension("8BITMIME"), canUseBinaryMIME()
+		);
+
 		// Send the message by chunks
-		if (eightBit) {
-
-			writeData(dataStream);
-
-		} else {
-
-			sevenBitOutputStream sevenBitStream(dataStream, m_connection->hasExtension("8BITMIME"));
-			writeData(sevenBitStream);
-		}
+		writeData(checkingStream);
 
 		chunkStream.flush();
 
 	} catch (SMTPUndeclared8bitDataException&) {
 
-		// The chunk containing the 8-bit data has not been sent: cancel the
-		// transfer, so that the connection remains usable
+		// The chunk containing the undeclared data has not been sent: cancel
+		// the transfer, so that the connection remains usable
 		chunkStream.cancel();
 		m_needReset = false;  // already reset
 		throw;
 
-	} catch (SMTP8BITMIMEExtensionNotSupportedException&) {
+	} catch (SMTPUndeclaredBinaryDataException&) {
 
-		// Likewise, for 8-bit data the server does not support
+		// Likewise
+		chunkStream.cancel();
+		m_needReset = false;  // already reset
+		throw;
+
+	} catch (SMTPExtensionNotSupportedException&) {
+
+		// Likewise, for data the server does not support (8BITMIME or
+		// BINARYMIME)
 		chunkStream.cancel();
 		m_needReset = false;  // already reset
 		throw;

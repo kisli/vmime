@@ -224,6 +224,53 @@ int failingSMTPTestSocket::sm_connectedCount = 0;
 int failingSMTPTestSocket::sm_deliveredCount = 0;
 
 
+/** Input stream which can only be read once (eg. from a socket).
+  */
+class readOnceInputStream : public vmime::utility::inputStream {
+
+public:
+
+	readOnceInputStream(const vmime::string& data)
+		: m_data(data), m_pos(0) {
+
+	}
+
+	bool eof() const {
+
+		return m_pos >= m_data.length();
+	}
+
+	void reset() {
+
+		// Cannot be read again
+	}
+
+	size_t read(vmime::byte_t* const data, const size_t count) {
+
+		const size_t n = std::min(count, m_data.length() - m_pos);
+
+		std::copy(m_data.begin() + m_pos, m_data.begin() + m_pos + n, data);
+		m_pos += n;
+
+		return n;
+	}
+
+	size_t skip(const size_t count) {
+
+		const size_t n = std::min(count, m_data.length() - m_pos);
+
+		m_pos += n;
+
+		return n;
+	}
+
+private:
+
+	const vmime::string m_data;
+	size_t m_pos;
+};
+
+
 /** Message which fails to be generated (eg. read error on an attachment).
   */
 class failingMessage : public vmime::message {
@@ -664,6 +711,14 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 		VMIME_TEST(test8BITMIME_undeclaredAfterChunks)
 		VMIME_TEST(test8BITMIME_rawData)
 		VMIME_TEST(testRawData_Chunking)
+		VMIME_TEST(testBINARYMIME_binaryPart)
+		VMIME_TEST(testBINARYMIME_binaryPartConverted)
+		VMIME_TEST(testBINARYMIME_conversionDisabled)
+		VMIME_TEST(testBINARYMIME_messagePart)
+		VMIME_TEST(testBINARYMIME_undeclaredBinaryPart)
+		VMIME_TEST(testBINARYMIME_undeclaredBinaryStream)
+		VMIME_TEST(testBINARYMIME_rawData)
+		VMIME_TEST(testBINARYMIME_undeclaredRawData)
 		VMIME_TEST(test8BITMIME_messageAttachment)
 		VMIME_TEST(testCanonicalLineEndings)
 		VMIME_TEST(testSize_NotLowerThanActual)
@@ -1268,6 +1323,44 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 		return msg;
 	}
 
+	// A message as received, with a part of the specified type, in the
+	// specified encoding
+	static vmime::shared_ptr <vmime::message> createTypedTestMessage(
+		const vmime::string& type,
+		const vmime::string& encoding,
+		const vmime::string& body
+	) {
+
+		vmime::shared_ptr <vmime::message> msg = vmime::make_shared <vmime::message>();
+
+		msg->parse(
+			"From: expediteur@test.vmime.org\r\n"
+			"To: recipient@test.vmime.org\r\n"
+			"Subject: Test\r\n"
+			"MIME-Version: 1.0\r\n"
+			"Content-Type: " + type + "\r\n"
+			"Content-Transfer-Encoding: " + encoding + "\r\n"
+			"\r\n" + body
+		);
+
+		return msg;
+	}
+
+	// Return the header and the decoded body of a message received by
+	// the server
+	static std::pair <vmime::string, vmime::string> parseReceivedMessage(const vmime::string& data) {
+
+		vmime::message msg;
+		msg.parse(data);
+
+		vmime::string body;
+		vmime::utility::outputStreamStringAdapter os(body);
+
+		msg.getBody()->getContents()->extract(os);
+
+		return std::make_pair(msg.getHeader()->generate(), body);
+	}
+
 	static void send8bitTestData(
 		const vmime::shared_ptr <vmime::net::transport>& tr,
 		const vmime::string& data,
@@ -1632,6 +1725,328 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 			VASSERT_EQ("2.6", "MAIL FROM:<expediteur@test.vmime.org> BODY=8BITMIME", commands[3]);
 			VASSERT_EQ("2.7", 1, messages.size());
 			VASSERT_EQ("2.8", data8bit, messages[0]);
+		}
+	}
+
+	// Binary data, with NUL, CR and LF alone (RFC 2045, section 2.9)
+	static vmime::string getBinaryTestData() {
+
+		static const char data[] = "Binary\0data,\rwith CR\nand LF alone\r\n";
+		return vmime::string(data, sizeof(data) - 1);
+	}
+
+	// Parts declared as binary are sent as is with BINARYMIME, which can
+	// only be used with CHUNKING (RFC 3030, section 3)
+	void testBINARYMIME_binaryPart() {
+
+		const vmime::string binaryData = getBinaryTestData();
+
+		vmime::shared_ptr <vmime::net::transport> tr =
+			create8bitTransport({ "8BITMIME", "BINARYMIME", "CHUNKING", "PIPELINING" });
+
+		tr->send(createTypedTestMessage("application/octet-stream", "binary", binaryData));
+
+		const std::vector <vmime::string>& commands = eightBitSMTPTestSocket::getCommands();
+		const std::vector <vmime::string>& messages = eightBitSMTPTestSocket::getMessages();
+
+		VASSERT_EQ("1", 3, commands.size());
+		VASSERT_EQ("2", "MAIL FROM:<expediteur@test.vmime.org> BODY=BINARYMIME", commands[0]);
+		VASSERT_EQ("3", 1, messages.size());
+
+		// The data is not altered (eg. its line endings)
+		VASSERT("4", messages[0].find("\r\n\r\n" + binaryData) != vmime::string::npos);
+	}
+
+	// Otherwise, parts declared as binary are encoded in Base64, which keeps
+	// their data as is (RFC 3030, section 3)
+	void testBINARYMIME_binaryPartConverted() {
+
+		const vmime::string binaryData = getBinaryTestData();
+
+		// No BINARYMIME, BINARYMIME without CHUNKING, and BINARYMIME with
+		// CHUNKING disabled
+		for (int i = 0 ; i < 3 ; ++i) {
+
+			const std::string label = "Server " + std::to_string(i) + ": ";
+
+			vmime::shared_ptr <vmime::net::transport> tr =
+				create8bitTransport(
+					i == 0 ? std::vector <vmime::string>({ "8BITMIME", "CHUNKING" })
+					: i == 1 ? std::vector <vmime::string>({ "8BITMIME", "BINARYMIME" })
+					: std::vector <vmime::string>({ "8BITMIME", "BINARYMIME", "CHUNKING" })
+				);
+
+			if (i == 2) {
+				tr->setProperty("options.chunking", false);
+			}
+
+			vmime::shared_ptr <vmime::message> msg =
+				createTypedTestMessage("application/octet-stream", "binary", binaryData);
+
+			tr->send(msg);
+
+			const std::vector <vmime::string>& commands = eightBitSMTPTestSocket::getCommands();
+			const std::vector <vmime::string>& messages = eightBitSMTPTestSocket::getMessages();
+
+			VASSERT_EQ(label + "MAIL", "MAIL FROM:<expediteur@test.vmime.org>", commands[0]);
+			VASSERT_EQ(label + "Delivered", 1, messages.size());
+
+			const std::pair <vmime::string, vmime::string> received = parseReceivedMessage(messages[0]);
+
+			VASSERT(label + "Base64", received.first.find("Content-Transfer-Encoding: base64\r\n") != vmime::string::npos);
+			VASSERT_EQ(label + "Data", binaryData, received.second);
+
+			// The message object itself is not modified
+			VASSERT_EQ(label + "Not modified", "binary", msg->getBody()->getEncoding().generate());
+		}
+	}
+
+	// If the conversion is disabled, a part declared as binary cannot be sent
+	// to a server which does not support BINARYMIME
+	void testBINARYMIME_conversionDisabled() {
+
+		vmime::net::smtp::SMTPSendOptions options;
+		options.setConvertParts(false);
+
+		vmime::shared_ptr <vmime::net::transport> tr = create8bitTransport({ "8BITMIME", "CHUNKING" });
+
+		VASSERT_THROW(
+			"1",
+			tr->send(createTypedTestMessage("application/octet-stream", "binary", getBinaryTestData()), NULL, options),
+			vmime::net::smtp::SMTPBINARYMIMEExtensionNotSupportedException
+		);
+
+		VASSERT_TRUE("2 No command sent", eightBitSMTPTestSocket::getCommands().empty());
+		VASSERT_TRUE("3 Still connected", tr->isConnected());
+	}
+
+	// A message cannot be encoded (RFC 2046, section 5.2.1), so a message/rfc822
+	// part which contains binary data needs BINARYMIME
+	void testBINARYMIME_messagePart() {
+
+		vmime::shared_ptr <vmime::message> attached =
+			createTypedTestMessage("application/octet-stream", "binary", getBinaryTestData());
+
+		// With BINARYMIME
+		{
+			vmime::shared_ptr <vmime::message> msg = create8bitTestMessage("7bit", "See the attached message.\r\n");
+			vmime::attachmentHelper::addAttachment(msg, attached);
+
+			vmime::shared_ptr <vmime::net::transport> tr =
+				create8bitTransport({ "8BITMIME", "BINARYMIME", "CHUNKING" });
+
+			tr->send(msg);
+
+			const std::vector <vmime::string>& commands = eightBitSMTPTestSocket::getCommands();
+
+			VASSERT_EQ("1.1", "MAIL FROM:<expediteur@test.vmime.org> BODY=BINARYMIME", commands[0]);
+			VASSERT_EQ("1.2", 1, eightBitSMTPTestSocket::getMessages().size());
+		}
+
+		// Without BINARYMIME
+		{
+			vmime::shared_ptr <vmime::message> msg = create8bitTestMessage("7bit", "See the attached message.\r\n");
+			vmime::attachmentHelper::addAttachment(msg, attached);
+
+			vmime::shared_ptr <vmime::net::transport> tr = create8bitTransport({ "8BITMIME", "CHUNKING" });
+
+			VASSERT_THROW("2.1", tr->send(msg), vmime::net::smtp::SMTPBINARYMIMEExtensionNotSupportedException);
+			VASSERT_TRUE("2.2 No command sent", eightBitSMTPTestSocket::getCommands().empty());
+		}
+	}
+
+	// Parts declared as 7bit or 8bit which contain binary data are not valid
+	// (RFC 2045, sections 2.7 and 2.8): they are encoded, even if the server
+	// supports BINARYMIME
+	void testBINARYMIME_undeclaredBinaryPart() {
+
+		const vmime::string longLine = vmime::string(1500, 'x') + "\r\n";
+
+		// Text with a long line: Quoted-Printable
+		{
+			vmime::shared_ptr <vmime::net::transport> tr =
+				create8bitTransport({ "8BITMIME", "BINARYMIME", "CHUNKING" });
+
+			tr->send(createTypedTestMessage("text/plain", "7bit", longLine));
+
+			const std::vector <vmime::string>& commands = eightBitSMTPTestSocket::getCommands();
+			const std::vector <vmime::string>& messages = eightBitSMTPTestSocket::getMessages();
+
+			VASSERT_EQ("1.1", "MAIL FROM:<expediteur@test.vmime.org>", commands[0]);
+			VASSERT_EQ("1.2", 1, messages.size());
+
+			const std::pair <vmime::string, vmime::string> received = parseReceivedMessage(messages[0]);
+
+			VASSERT("1.3", received.first.find("Content-Transfer-Encoding: quoted-printable\r\n") != vmime::string::npos);
+			VASSERT_EQ("1.4", longLine, received.second);
+		}
+
+		// Other data with NUL: Base64
+		{
+			static const char raw[] = "Binary\0data\r\n";
+			const vmime::string data(raw, sizeof(raw) - 1);
+
+			vmime::shared_ptr <vmime::net::transport> tr =
+				create8bitTransport({ "8BITMIME", "BINARYMIME", "CHUNKING" });
+
+			tr->send(createTypedTestMessage("application/octet-stream", "7bit", data));
+
+			const std::pair <vmime::string, vmime::string> received =
+				parseReceivedMessage(eightBitSMTPTestSocket::getMessages().at(0));
+
+			VASSERT("2.1", received.first.find("Content-Transfer-Encoding: base64\r\n") != vmime::string::npos);
+			VASSERT_EQ("2.2", data, received.second);
+		}
+
+		// Conversion disabled
+		{
+			vmime::net::smtp::SMTPSendOptions options;
+			options.setConvertParts(false);
+
+			vmime::shared_ptr <vmime::net::transport> tr =
+				create8bitTransport({ "8BITMIME", "BINARYMIME", "CHUNKING" });
+
+			VASSERT_THROW(
+				"3.1",
+				tr->send(createTypedTestMessage("text/plain", "7bit", longLine), NULL, options),
+				vmime::net::smtp::SMTPUndeclaredBinaryDataException
+			);
+
+			VASSERT_TRUE("3.2 No command sent", eightBitSMTPTestSocket::getCommands().empty());
+		}
+	}
+
+	// Contents which can only be read once cannot be checked before the
+	// message is sent: their undeclared binary data is found while it is sent
+	void testBINARYMIME_undeclaredBinaryStream() {
+
+		static const char raw[] = "Binary\0data\r\n";
+
+		vmime::shared_ptr <vmime::message> msg = create8bitTestMessage("7bit", "Hello\r\n");
+
+		msg->getBody()->setContents(
+			vmime::make_shared <vmime::streamContentHandler>(
+				vmime::make_shared <readOnceInputStream>(vmime::string(raw, sizeof(raw) - 1)),
+				sizeof(raw) - 1
+			)
+		);
+
+		vmime::shared_ptr <vmime::net::transport> tr =
+			create8bitTransport({ "8BITMIME", "BINARYMIME", "CHUNKING" });
+
+		VASSERT_THROW("1", tr->send(msg), vmime::net::smtp::SMTPUndeclaredBinaryDataException);
+
+		const std::vector <vmime::string>& commands = eightBitSMTPTestSocket::getCommands();
+
+		VASSERT_EQ("2", 3, commands.size());
+		VASSERT_EQ("3", "RSET", commands[2]);
+		VASSERT_TRUE("4 Not delivered", eightBitSMTPTestSocket::getMessages().empty());
+		VASSERT_TRUE("5 Still connected", tr->isConnected());
+	}
+
+	// Raw message data declared as binary is sent as is with BINARYMIME
+	void testBINARYMIME_rawData() {
+
+		const vmime::string data = "Subject: Test\r\n\r\n" + getBinaryTestData();
+
+		vmime::net::smtp::SMTPSendOptions options;
+		options.setBinaryMessage(true);
+
+		// With BINARYMIME
+		{
+			vmime::shared_ptr <vmime::net::transport> tr =
+				create8bitTransport({ "8BITMIME", "BINARYMIME", "CHUNKING" });
+
+			send8bitTestData(tr, data, options);
+
+			const std::vector <vmime::string>& commands = eightBitSMTPTestSocket::getCommands();
+			const std::vector <vmime::string>& messages = eightBitSMTPTestSocket::getMessages();
+
+			VASSERT_EQ("1.1", "MAIL FROM:<expediteur@test.vmime.org> BODY=BINARYMIME", commands[0]);
+			VASSERT_EQ("1.2", "BDAT " + std::to_string(data.length()) + " LAST", commands[2]);
+			VASSERT_EQ("1.3", 1, messages.size());
+			VASSERT_EQ("1.4", data, messages[0]);  // line endings not converted
+		}
+
+		// Without BINARYMIME: nothing is sent
+		{
+			vmime::shared_ptr <vmime::net::transport> tr = create8bitTransport({ "8BITMIME", "CHUNKING" });
+
+			VASSERT_THROW(
+				"2.1",
+				send8bitTestData(tr, data, options),
+				vmime::net::smtp::SMTPBINARYMIMEExtensionNotSupportedException
+			);
+
+			VASSERT_TRUE("2.2 No command sent", eightBitSMTPTestSocket::getCommands().empty());
+			VASSERT_TRUE("2.3 Still connected", tr->isConnected());
+		}
+	}
+
+	// Undeclared binary data in raw message data is found while it is sent
+	void testBINARYMIME_undeclaredRawData() {
+
+		const vmime::string binaryData = "Subject: Test\r\n\r\n" + getBinaryTestData();
+		const vmime::string longLineData = "Subject: Test\r\n\r\n" + vmime::string(1500, 'x') + "\r\n";
+
+		// With BINARYMIME: the transfer is cancelled, and the message can be
+		// sent again as binary on the same connection
+		for (const vmime::string& data : { binaryData, longLineData }) {
+
+			vmime::shared_ptr <vmime::net::transport> tr =
+				create8bitTransport({ "8BITMIME", "BINARYMIME", "CHUNKING", "PIPELINING" });
+
+			VASSERT_THROW(
+				"1.1",
+				send8bitTestData(tr, data),
+				vmime::net::smtp::SMTPUndeclaredBinaryDataException
+			);
+
+			const std::vector <vmime::string>& commands = eightBitSMTPTestSocket::getCommands();
+			const std::vector <vmime::string>& messages = eightBitSMTPTestSocket::getMessages();
+
+			VASSERT_EQ("1.2", 3, commands.size());
+			VASSERT_EQ("1.3", "RSET", commands[2]);
+			VASSERT_TRUE("1.4 Not delivered", messages.empty());
+			VASSERT_TRUE("1.5 Still connected", tr->isConnected());
+
+			vmime::net::smtp::SMTPSendOptions options;
+			options.setBinaryMessage(true);
+
+			send8bitTestData(tr, data, options);
+
+			VASSERT_EQ("1.6", 1, messages.size());
+			VASSERT_EQ("1.7", data, messages[0]);
+		}
+
+		// Without BINARYMIME: the transfer is cancelled, but the message
+		// cannot be sent
+		{
+			vmime::shared_ptr <vmime::net::transport> tr = create8bitTransport({ "8BITMIME", "CHUNKING" });
+
+			VASSERT_THROW(
+				"2.1",
+				send8bitTestData(tr, binaryData),
+				vmime::net::smtp::SMTPBINARYMIMEExtensionNotSupportedException
+			);
+
+			VASSERT_EQ("2.2", "RSET", eightBitSMTPTestSocket::getCommands().at(2));
+			VASSERT_TRUE("2.3 Not delivered", eightBitSMTPTestSocket::getMessages().empty());
+			VASSERT_TRUE("2.4 Still connected", tr->isConnected());
+		}
+
+		// With DATA, which cannot be cancelled: the connection is closed
+		{
+			vmime::shared_ptr <vmime::net::transport> tr = create8bitTransport({ "8BITMIME" });
+
+			VASSERT_THROW(
+				"3.1",
+				send8bitTestData(tr, binaryData),
+				vmime::net::smtp::SMTPBINARYMIMEExtensionNotSupportedException
+			);
+
+			VASSERT_TRUE("3.2 Not delivered", eightBitSMTPTestSocket::getMessages().empty());
+			VASSERT_FALSE("3.3 Disconnected", tr->isConnected());
 		}
 	}
 

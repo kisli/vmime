@@ -77,6 +77,30 @@ bool SMTPSendOptions::is8bitMessage() const {
 }
 
 
+void SMTPSendOptions::setBinaryMessage(const bool binary) {
+
+	m_binaryMessage = binary;
+}
+
+
+bool SMTPSendOptions::isBinaryMessage() const {
+
+	return m_binaryMessage;
+}
+
+
+void SMTPSendOptions::setConvertParts(const bool convert) {
+
+	m_convertParts = convert;
+}
+
+
+bool SMTPSendOptions::getConvertParts() const {
+
+	return m_convertParts;
+}
+
+
 } // smtp
 } // net
 } // vmime

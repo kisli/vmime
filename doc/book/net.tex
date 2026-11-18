@@ -711,11 +711,43 @@ declaring it, which RFC 6152 forbids. If you send raw messages which may
 contain 8-bit data (for example, messages received from another server),
 declare them as 8-bit from the start, with {\vcode options.set8bitMessage(true)}.
 
+Binary data (NUL, or lines longer than 998 octets) is not allowed in 7-bit
+and 8-bit data (RFC 2045). A message which contains binary data, like a part
+with the {\vcode binary} encoding, must be declared with {\vcode BODY=BINARYMIME},
+which needs the BINARYMIME extension, and can only be used with the CHUNKING
+extension\footnote{See RFC 3030: \url{https://www.rfc-editor.org/rfc/rfc3030}}.
+At the time of writing, few servers support it (eg. Microsoft Exchange).
+
+If BINARYMIME cannot be used, the parts of a message object which cannot be
+sent as is are converted: the parts declared as binary are encoded in Base64,
+which keeps their data as is, and the parts declared as 7bit or 8bit which
+contain binary data are encoded in Quoted-Printable (text) or Base64. The
+latter are converted even if BINARYMIME can be used, as they are not valid.
+The conversion is done in a copy of the message, which shares the data of the
+parts: the message object itself is not modified. A {\vcode message/rfc822}
+part cannot be encoded: if it contains binary data, and BINARYMIME cannot be
+used, {\vcode vmime::net::smtp::SMTPBINARYMIMEExtensionNotSupportedException}
+is thrown. You can disable the conversion, so that an exception is thrown
+instead:
+
+\begin{lstlisting}
+vmime::net::smtp::SMTPSendOptions options;
+options.setConvertParts(false);
+\end{lstlisting}
+
+Raw message data is never converted. If it contains binary data, declare it
+with {\vcode options.setBinaryMessage(true)}: it is then sent as is, without
+converting its line endings, and the exception above is thrown before any
+command is sent if BINARYMIME cannot be used. Otherwise, as for 8-bit data,
+the data is checked while it is sent, and
+{\vcode vmime::net::smtp::SMTPUndeclaredBinaryDataException} is thrown if it
+contains binary data (or the exception above, if BINARYMIME cannot be used).
+
 The size of raw message data is declared to the server, if it supports the
 SIZE extension, and this size should not be lower than the actual size (RFC
 1870, section 6). As VMime converts bare LF and CR to CRLF when sending raw
-message data, the size you give should be the one of the data with CRLF line
-endings.
+message data (except binary data), the size you give should be the one of the
+data with CRLF line endings.
 
 
 % ============================================================================

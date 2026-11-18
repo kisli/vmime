@@ -261,6 +261,62 @@ const char* SMTP8BITMIMEExtensionNotSupportedException::name() const throw() {
 
 
 //
+// SMTPBINARYMIMEExtensionNotSupportedException
+//
+
+SMTPBINARYMIMEExtensionNotSupportedException::SMTPBINARYMIMEExtensionNotSupportedException(const exception& other)
+	: SMTPExtensionNotSupportedException(
+		"RFC-3030 BINARYMIME extension (with CHUNKING) is not supported by the "
+		"SMTP server, but is needed for binary data.", other) {
+
+}
+
+
+SMTPBINARYMIMEExtensionNotSupportedException::~SMTPBINARYMIMEExtensionNotSupportedException() throw() {
+
+}
+
+
+exception* SMTPBINARYMIMEExtensionNotSupportedException::clone() const {
+	return new SMTPBINARYMIMEExtensionNotSupportedException(*this);
+}
+
+
+const char* SMTPBINARYMIMEExtensionNotSupportedException::name() const throw() {
+
+	return "SMTPBINARYMIMEExtensionNotSupportedException";
+}
+
+
+//
+// SMTPUndeclaredBinaryDataException
+//
+
+SMTPUndeclaredBinaryDataException::SMTPUndeclaredBinaryDataException(const exception& other)
+	: net_exception(
+		"The message contains binary data, which must be declared "
+		"with SMTPSendOptions::setBinaryMessage().", other) {
+
+}
+
+
+SMTPUndeclaredBinaryDataException::~SMTPUndeclaredBinaryDataException() throw() {
+
+}
+
+
+exception* SMTPUndeclaredBinaryDataException::clone() const {
+	return new SMTPUndeclaredBinaryDataException(*this);
+}
+
+
+const char* SMTPUndeclaredBinaryDataException::name() const throw() {
+
+	return "SMTPUndeclaredBinaryDataException";
+}
+
+
+//
 // SMTPUndeclared8bitDataException
 //
 

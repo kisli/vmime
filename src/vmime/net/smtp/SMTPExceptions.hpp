@@ -180,6 +180,40 @@ public:
 };
 
 
+/** SMTP error: RFC-3030 BINARYMIME extension is not supported by the server,
+  * or cannot be used (it can only be used with the CHUNKING extension),
+  * whereas it is needed to send a message which contains binary data.
+  */
+class VMIME_EXPORT SMTPBINARYMIMEExtensionNotSupportedException : public SMTPExtensionNotSupportedException {
+
+public:
+
+	SMTPBINARYMIMEExtensionNotSupportedException(const exception& other = NO_EXCEPTION);
+	~SMTPBINARYMIMEExtensionNotSupportedException() throw();
+
+	exception* clone() const;
+	const char* name() const throw();
+};
+
+
+/** SMTP error: the message contains binary data (NUL, or lines longer than
+  * 998 octets), but it was not sent with the BODY=BINARYMIME parameter
+  * (RFC 3030), as VMime could not know it in advance. The message has not
+  * been sent: send it again, telling that it contains binary data with
+  * SMTPSendOptions::setBinaryMessage().
+  */
+class VMIME_EXPORT SMTPUndeclaredBinaryDataException : public exceptions::net_exception {
+
+public:
+
+	SMTPUndeclaredBinaryDataException(const exception& other = NO_EXCEPTION);
+	~SMTPUndeclaredBinaryDataException() throw();
+
+	exception* clone() const;
+	const char* name() const throw();
+};
+
+
 /** SMTP error: the message contains 8-bit data, but it was not sent with
   * the BODY=8BITMIME parameter (RFC 6152), as VMime could not know it in
   * advance. The message has not been sent: send it again, telling that it

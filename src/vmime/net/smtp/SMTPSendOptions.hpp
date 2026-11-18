@@ -127,11 +127,64 @@ public:
 	  */
 	bool is8bitMessage() const;
 
+	/** Set whether the message contains binary data, ie. NUL, or lines
+	  * longer than 998 octets (RFC 2045, section 2.9). If so, the message is
+	  * sent with the BODY=BINARYMIME parameter (RFC 3030), and the BINARYMIME
+	  * and CHUNKING extensions must be supported by the server. The message
+	  * data is then sent as is, without converting its line endings.
+	  *
+	  * VMime detects by itself the parts declared as binary in a message
+	  * object. Otherwise, the data is checked while it is sent, and an
+	  * SMTPUndeclaredBinaryDataException is thrown if it contains binary
+	  * data: the message is not sent, and you have to send it again with
+	  * this option. This is the case for raw message data which contains
+	  * binary data.
+	  *
+	  * @param binary true if the message contains binary data, false
+	  * otherwise (default)
+	  */
+	void setBinaryMessage(const bool binary);
+
+	/** Return whether the message contains binary data.
+	  *
+	  * @return true if the message contains binary data, false otherwise
+	  */
+	bool isBinaryMessage() const;
+
+	/** Set whether the parts of a message object which cannot be sent as
+	  * is may be converted, so that the message can be sent anyway (the
+	  * message object itself is not modified):
+	  *
+	  * - the parts declared as binary, if the server does not support the
+	  *   BINARYMIME extension (RFC 3030, section 3), are encoded in Base64,
+	  *   which keeps their data as is;
+	  * - the parts declared as 7bit or 8bit which contain binary data (NUL,
+	  *   or lines longer than 998 octets), which is not valid (RFC 2045,
+	  *   sections 2.7 and 2.8), are encoded in Quoted-Printable (text) or
+	  *   Base64.
+	  *
+	  * If the conversion is disabled, an exception is thrown instead. Raw
+	  * message data is never converted.
+	  *
+	  * @param convert true if parts may be converted (default), false
+	  * otherwise
+	  */
+	void setConvertParts(const bool convert);
+
+	/** Return whether the parts of a message object which cannot be sent
+	  * as is may be converted.
+	  *
+	  * @return true if parts may be converted, false otherwise
+	  */
+	bool getConvertParts() const;
+
 private:
 
 	shared_ptr <DSNAttributes> m_dsnAttribs;
 	bool m_internationalizedMessage = false;
 	bool m_8bitMessage = false;
+	bool m_binaryMessage = false;
+	bool m_convertParts = true;
 };
 
 

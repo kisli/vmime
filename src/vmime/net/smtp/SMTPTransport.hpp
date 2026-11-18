@@ -37,6 +37,7 @@
 
 #include "vmime/net/smtp/SMTPServiceInfos.hpp"
 #include "vmime/net/smtp/SMTPConnection.hpp"
+#include "vmime/net/smtp/SMTPCommand.hpp"
 
 #include <functional>
 
@@ -126,22 +127,44 @@ private:
 		const sendOptions& options
 	) const;
 
-	/** Check whether a message must be declared as 8-bit with the
-	  * BODY=8BITMIME parameter (RFC 6152), and ensure that the server
-	  * supports it.
+	/** Return the type with which a message must be declared (RFC 6152,
+	  * RFC 3030), and ensure that the server supports it.
 	  *
 	  * @param utf8 true if the SMTPUTF8 extension is used
 	  * @param has8bitData true if the message is known to contain 8-bit data
+	  * @param hasBinaryData true if the message is known to contain binary data
 	  * @param options send options
-	  * @return true if the message must be declared as 8-bit, false otherwise
+	  * @return type of the message data
 	  * @throw SMTP8BITMIMEExtensionNotSupportedException if the message must
 	  * be declared as 8-bit but the server does not support 8BITMIME
+	  * @throw SMTPBINARYMIMEExtensionNotSupportedException if the message
+	  * must be declared as binary but BINARYMIME cannot be used
 	  */
-	bool need8bitMIME(
+	SMTPCommand::BodyType getBodyType(
 		const bool utf8,
 		const bool has8bitData,
+		const bool hasBinaryData,
 		const sendOptions& options
-	) const;
+	);
+
+	/** Prepare a message object to be sent: the parts which contain binary
+	  * data are converted if needed (see SMTPSendOptions::setConvertParts()).
+	  *
+	  * @param msg message to send
+	  * @param options send options
+	  * @param hasBinaryData set to true if the message to send contains parts
+	  * declared as binary, which must then be sent with BINARYMIME
+	  * @return message to send: the specified one, or a converted copy
+	  * @throw SMTPBINARYMIMEExtensionNotSupportedException if a part declared
+	  * as binary cannot be sent nor converted
+	  * @throw SMTPUndeclaredBinaryDataException if a part contains binary
+	  * data, but is declared as 7bit or 8bit, and cannot be converted
+	  */
+	shared_ptr <vmime::message> prepareMessage(
+		const shared_ptr <vmime::message>& msg,
+		const sendOptions& options,
+		bool& hasBinaryData
+	);
 
 	/** Send the MAIL and RCPT commands to the server, checking the
 	  * response, and using pipelining if supported by the server.
@@ -151,7 +174,7 @@ private:
 	  * @param recipients list of recipient mailboxes
 	  * @param sender envelope sender (if empty, expeditor will be used)
 	  * @param utf8 if true, the SMTPUTF8 extension will be used
-	  * @param eightBit if true, the message is declared as 8-bit
+	  * @param bodyType type with which the message data is declared
 	  * @param sendDATACommand if true, the DATA command will be sent
 	  * @param size message size, in bytes (or 0, if not known)
 	  * @param dsnAttributes attributes for Delivery Status Notification (if needed)
@@ -161,7 +184,7 @@ private:
 		const mailboxList& recipients,
 		const mailbox& sender,
 		const bool utf8,
-		const bool eightBit,
+		const SMTPCommand::BodyType bodyType,
 		bool sendDATACommand,
 		const size_t size,
 		const sendOptions& options = sendOptions()
@@ -173,8 +196,8 @@ private:
 	  * @param is input stream provider (message data)
 	  * @param size size of the message data
 	  * @param progress progress listener, or NULL if not used
-	  * @param eightBit true if the message has been declared as 8-bit;
-	  * otherwise, the data must not contain 8-bit data
+	  * @param bodyType type with which the message data has been declared:
+	  * the data must not contain other data (8-bit or binary)
 	  * @param canonicalize if true, line endings are converted to CRLF
 	  * (for raw message data, which may use another convention)
 	  */
@@ -182,7 +205,7 @@ private:
 		utility::inputStream& is,
 		const size_t size,
 		utility::progressListener* progress,
-		const bool eightBit,
+		const SMTPCommand::BodyType bodyType,
 		const bool canonicalize
 	);
 
@@ -193,16 +216,24 @@ private:
 	  */
 	bool canUseChunking();
 
+	/** Return whether the BINARYMIME extension (RFC 3030) can be used: it
+	  * must be supported by the server, and the CHUNKING extension must
+	  * also be usable.
+	  *
+	  * @return true if binary data can be sent
+	  */
+	bool canUseBinaryMIME();
+
 	/** Send the message data with BDAT commands (CHUNKING extension), after
 	  * the envelope has been sent, and check the responses. If undeclared
-	  * 8-bit data is found, the transfer is cancelled before it is sent,
-	  * so that the connection remains usable.
+	  * 8-bit or binary data is found, the transfer is cancelled before it
+	  * is sent, so that the connection remains usable.
 	  *
 	  * @param writeData function which writes the message data to a stream
 	  * @param size size of the message data (estimated, if not known)
 	  * @param progress progress listener, or NULL if not used
-	  * @param eightBit true if the message has been declared as 8-bit;
-	  * otherwise, the data must not contain 8-bit data
+	  * @param bodyType type with which the message data has been declared:
+	  * the data must not contain other data (8-bit or binary)
 	  * @param canonicalize if true, line endings are converted to CRLF
 	  * (for raw message data, which may use another convention)
 	  */
@@ -210,7 +241,7 @@ private:
 		const std::function <void (utility::outputStream&)>& writeData,
 		const size_t size,
 		utility::progressListener* progress,
-		const bool eightBit,
+		const SMTPCommand::BodyType bodyType,
 		const bool canonicalize
 	);
 
