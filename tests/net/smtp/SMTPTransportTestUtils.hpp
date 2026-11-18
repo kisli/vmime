@@ -418,15 +418,27 @@ public:
 		return chunkStream.getBlockSize();
 	}
 
+	// Lines of 80 octets (with CRLF), as longer lines would be binary data
+	static vmime::string getLines(const size_t size, const char c) {
+
+		vmime::string lines;
+
+		for (size_t i = 0 ; i < size ; ++i) {
+			lines += (i % 80 == 78) ? '\r' : (i % 80 == 79) ? '\n' : c;
+		}
+
+		return lines;
+	}
+
 	const std::vector <vmime::string>& getChunks() const {
 
 		static std::vector <vmime::string> chunks;
 
 		if (chunks.size() == 0) {
-			chunks.push_back(vmime::string(1000, 'A'));
-			chunks.push_back(vmime::string(3000, 'B'));
-			chunks.push_back(vmime::string(500000, 'C'));
-			chunks.push_back(vmime::string(25000, 'D'));
+			chunks.push_back(getLines(1000, 'A'));
+			chunks.push_back(getLines(3000, 'B'));
+			chunks.push_back(getLines(500000, 'C'));
+			chunks.push_back(getLines(25000, 'D'));
 		}
 
 		return chunks;
@@ -594,8 +606,9 @@ public:
 		vmime::size_t* /* newLinePos */ = NULL
 	) const {
 
+		// Lines of 80 octets (with CRLF), as longer lines would be binary data
 		for (unsigned int i = 0, n = SIZE ; i < n ; ++i) {
-			outputStream.write("X", 1);
+			outputStream.write((i % 80 == 78) ? "\r" : (i % 80 == 79) ? "\n" : "X", 1);
 		}
 	}
 };
