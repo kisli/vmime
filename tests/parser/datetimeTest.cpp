@@ -250,8 +250,9 @@ VMIME_TEST_SUITE_BEGIN(datetimeTest)
 		VASSERT_EQ("4", -86400, vmime::datetime(1969, 12, 31, 0, 0, 0).toTimeT());
 		VASSERT_EQ("5", 4102444800LL, vmime::datetime(2100, 1, 1, 0, 0, 0).toTimeT());
 
-		// Starts at 0: on Windows, datetime(time_t) cannot convert negative values
-		for (time_t t = 0 ; t < 5000000000LL ; t += 12345677) {
+		// Starts one day after the Epoch: on Windows, datetime(t, zone) cannot
+		// convert dates before 1970 (once shifted by the zone)
+		for (time_t t = 86400 ; t < 5000000000LL ; t += 12345677) {
 			VASSERT_EQ("6", t, vmime::datetime(t, -330).toTimeT());
 		}
 	}
