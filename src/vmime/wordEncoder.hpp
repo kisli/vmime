@@ -66,7 +66,7 @@ public:
 	  * @param maxLength maximal length of the chunk
 	  * @return next chunk, of maximal length 'maxLength' if possible
 	  */
-	const string getNextChunk(const size_t maxLength);
+	string getNextChunk(const size_t maxLength);
 
 	/** Return the encoding used.
 	  *

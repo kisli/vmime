@@ -2499,7 +2499,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 	}
 
 	// Return the Base64-encoded response of the PLAIN mechanism
-	static const vmime::string encodePLAINResponse(const vmime::string& password) {
+	static vmime::string encodePLAINResponse(const vmime::string& password) {
 
 		const vmime::string resp = vmime::string(1, '\0') + "user" + vmime::string(1, '\0') + password;
 
@@ -2605,7 +2605,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 	}
 
 	// Return the Base64-encoded initial client response of the OAUTHBEARER mechanism
-	static const vmime::string encodeOAUTHBEARERResponse(const vmime::string& accessToken) {
+	static vmime::string encodeOAUTHBEARERResponse(const vmime::string& accessToken) {
 
 		const vmime::string resp = "n,a=user@vmime.org,\x01" "auth=Bearer " + accessToken + "\x01\x01";
 

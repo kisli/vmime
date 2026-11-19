@@ -48,7 +48,7 @@ defaultAuthenticator::~defaultAuthenticator() {
 }
 
 
-const string defaultAuthenticator::getUsername() const {
+string defaultAuthenticator::getUsername() const {
 
 	shared_ptr <const net::service> service = m_service.lock();
 
@@ -63,7 +63,7 @@ const string defaultAuthenticator::getUsername() const {
 }
 
 
-const string defaultAuthenticator::getPassword() const {
+string defaultAuthenticator::getPassword() const {
 
 	shared_ptr <const net::service> service = m_service.lock();
 
@@ -78,7 +78,7 @@ const string defaultAuthenticator::getPassword() const {
 }
 
 
-const string defaultAuthenticator::getAccessToken() const {
+string defaultAuthenticator::getAccessToken() const {
 
 	shared_ptr <const net::service> service = m_service.lock();
 
@@ -93,19 +93,19 @@ const string defaultAuthenticator::getAccessToken() const {
 }
 
 
-const string defaultAuthenticator::getHostname() const {
+string defaultAuthenticator::getHostname() const {
 
 	return platform::getHandler()->getHostName();
 }
 
 
-const string defaultAuthenticator::getAnonymousToken() const {
+string defaultAuthenticator::getAnonymousToken() const {
 
 	return "anonymous@" + platform::getHandler()->getHostName();
 }
 
 
-const string defaultAuthenticator::getServiceName() const {
+string defaultAuthenticator::getServiceName() const {
 
 	// Information cannot be provided
 	throw exceptions::no_auth_information();

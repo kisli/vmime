@@ -66,7 +66,7 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 	VMIME_TEST_LIST_END
 
 
-	static const std::string getFieldValue(const vmime::headerField& field) {
+	static std::string getFieldValue(const vmime::headerField& field) {
 
 		std::ostringstream oss;
 		vmime::utility::outputStreamAdapter voss(oss);

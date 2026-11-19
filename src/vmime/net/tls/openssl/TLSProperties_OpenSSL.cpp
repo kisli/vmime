@@ -88,7 +88,7 @@ void TLSProperties::setCipherSuite(const string& cipherSuite) {
 }
 
 
-const string TLSProperties::getCipherSuite() const {
+string TLSProperties::getCipherSuite() const {
 
 	return dynamicCast <TLSProperties_OpenSSL>(m_data)->cipherSuite;
 }

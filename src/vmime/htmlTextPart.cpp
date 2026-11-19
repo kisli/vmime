@@ -510,13 +510,13 @@ const vmime::encoding htmlTextPart::embeddedObject::getEncoding() const {
 }
 
 
-const string htmlTextPart::embeddedObject::getId() const {
+string htmlTextPart::embeddedObject::getId() const {
 
 	return m_id;
 }
 
 
-const string htmlTextPart::embeddedObject::getReferenceId() const {
+string htmlTextPart::embeddedObject::getReferenceId() const {
 
 	if (m_refType == REFERENCED_BY_ID) {
 		return string("cid:") + m_id;
@@ -549,7 +549,7 @@ bool htmlTextPart::embeddedObject::matchesId(const string& id) const {
 
 
 // static
-const string htmlTextPart::embeddedObject::cleanId(const string& id) {
+string htmlTextPart::embeddedObject::cleanId(const string& id) {
 
 	if (id.length() >= 4 &&
 	    (id[0] == 'c' || id[0] == 'C') &&

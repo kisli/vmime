@@ -252,7 +252,7 @@ static int verifyOutputCallback(
 
 
 // Returns the reasons for the given verification status
-static const string getStatusReasons(const unsigned int status) {
+static string getStatusReasons(const unsigned int status) {
 
 	static const struct {
 		unsigned int flag;
@@ -542,7 +542,7 @@ const byteArray X509Certificate_GnuTLS::getEncoded() const {
 }
 
 
-const string X509Certificate_GnuTLS::getIssuerString() const {
+string X509Certificate_GnuTLS::getIssuerString() const {
 
 	char buffer[4096];
 	size_t bufferSize = sizeof(buffer);
@@ -555,7 +555,7 @@ const string X509Certificate_GnuTLS::getIssuerString() const {
 }
 
 
-const string X509Certificate_GnuTLS::getType() const {
+string X509Certificate_GnuTLS::getType() const {
 
 	return "X.509";
 }

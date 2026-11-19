@@ -691,7 +691,7 @@ size_t body::getGeneratedSize(const generationContext& ctx) {
                  / "," / "-" / "." / "/" / ":" / "=" / "?"
 */
 
-const string body::generateRandomBoundaryString() {
+string body::generateRandomBoundaryString() {
 
 	// 64 characters that can be _safely_ used in a boundary string
 	static const char bchars[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-+";

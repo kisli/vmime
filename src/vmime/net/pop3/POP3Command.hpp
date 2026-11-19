@@ -92,14 +92,14 @@ public:
 	  *
 	  * @return command text (eg. "LIST 42")
 	  */
-	virtual const string getText() const;
+	virtual string getText() const;
 
 	/** Returns the full text of the command, suitable for outputing
 	  * to the tracer.
 	  *
 	  * @return trace text (eg. "USER myusername")
 	  */
-	virtual const string getTraceText() const;
+	virtual string getTraceText() const;
 
 protected:
 

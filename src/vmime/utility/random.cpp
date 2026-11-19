@@ -67,7 +67,7 @@ unsigned int random::getProcess() {
 }
 
 
-const string random::getString(const size_t length, const string& randomChars) {
+string random::getString(const size_t length, const string& randomChars) {
 
 	string res;
 	res.resize(length);

@@ -69,7 +69,7 @@ public:
 	  *
 	  * @return MIC hash value, or an empty string if not specified
 	  */
-	const string getContentMIC() const;
+	string getContentMIC() const;
 
 private:
 

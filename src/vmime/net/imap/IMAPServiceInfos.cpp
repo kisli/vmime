@@ -41,7 +41,7 @@ IMAPServiceInfos::IMAPServiceInfos(const bool imaps)
 }
 
 
-const string IMAPServiceInfos::getPropertyPrefix() const {
+string IMAPServiceInfos::getPropertyPrefix() const {
 
 	if (m_imaps) {
 		return "store.imaps.";

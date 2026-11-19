@@ -111,7 +111,7 @@ void SMTPCommandSet::writeToSocket(const shared_ptr <socket>& sok, const shared_
 }
 
 
-const string SMTPCommandSet::getText() const {
+string SMTPCommandSet::getText() const {
 
 	utility::details::classicOStringStream cmd;
 
@@ -125,7 +125,7 @@ const string SMTPCommandSet::getText() const {
 }
 
 
-const string SMTPCommandSet::getTraceText() const {
+string SMTPCommandSet::getTraceText() const {
 
 	utility::details::classicOStringStream cmd;
 

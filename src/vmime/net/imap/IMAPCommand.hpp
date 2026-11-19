@@ -97,14 +97,14 @@ public:
 	  *
 	  * @return command text (eg. "LOGIN myusername mypassword")
 	  */
-	virtual const string getText() const;
+	virtual string getText() const;
 
 	/** Returns the full text of the command, suitable for outputing
 	  * to the tracer.
 	  *
 	  * @return trace text (eg. "LOGIN {username} {password}")
 	  */
-	virtual const string getTraceText() const;
+	virtual string getTraceText() const;
 
 protected:
 

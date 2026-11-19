@@ -81,7 +81,7 @@ VMIME_TEST_SUITE_BEGIN(bodyPartTest)
 	VMIME_TEST_LIST_END
 
 
-	static const vmime::string extractComponentString(
+	static vmime::string extractComponentString(
 		const vmime::string& buffer,
 		const vmime::component& c
 	) {
@@ -92,7 +92,7 @@ VMIME_TEST_SUITE_BEGIN(bodyPartTest)
 		);
 	}
 
-	static const vmime::string extractContents(
+	static vmime::string extractContents(
 		const vmime::shared_ptr <const vmime::contentHandler>& cts
 	) {
 
@@ -106,7 +106,7 @@ VMIME_TEST_SUITE_BEGIN(bodyPartTest)
 
 	// Returns a message whose innermost part, which contains "LEAF",
 	// is at the specified depth
-	static const vmime::string buildNestedMessage(const size_t depth) {
+	static vmime::string buildNestedMessage(const size_t depth) {
 
 		std::ostringstream oss;
 

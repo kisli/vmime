@@ -297,8 +297,8 @@ public:
 
 	unsigned int getStatus() const;
 
-	const vmime::string getPeerName() const;
-	const vmime::string getPeerAddress() const;
+	vmime::string getPeerName() const;
+	vmime::string getPeerAddress() const;
 
 	vmime::shared_ptr <vmime::net::timeoutHandler> getTimeoutHandler();
 
@@ -378,7 +378,7 @@ public:
 
 	void onDataReceived();
 
-	const vmime::string getNextLine();
+	vmime::string getNextLine();
 	bool haveMoreLines() const;
 
 	virtual void processCommand() = 0;
@@ -534,4 +534,4 @@ std::ostream& operator<<(std::ostream& os, const vmime::exception& e);
 
 
 // Conversion to hexadecimal for easier debugging
-const vmime::string toHex(const vmime::string str);
+vmime::string toHex(const vmime::string& str);

@@ -459,7 +459,7 @@ public:
 		component() { }
 		virtual ~component() { }
 
-		virtual const string getComponentName() const = 0;
+		virtual string getComponentName() const = 0;
 
 		bool parse(IMAPParser& parser, string& line, size_t* currentPos) {
 
@@ -472,7 +472,7 @@ public:
 		virtual bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) = 0;
 
 
-		const string makeResponseLine(
+		string makeResponseLine(
 			const string& comp,
 			const string& line,
 			const size_t pos
@@ -496,7 +496,7 @@ public:
 
 #define COMPONENT_ALIAS(parent, name) \
 	class name : public parent { \
-		virtual const string getComponentName() const { return #name; }  \
+		virtual string getComponentName() const { return #name; }  \
 	public: \
 		bool parseImpl(IMAPParser& parser, string& line, size_t* currentPos) { \
 			return parent::parseImpl(parser, line, currentPos); \
@@ -505,7 +505,7 @@ public:
 
 #define DECLARE_COMPONENT(name) \
 	class name : public component {  \
-		virtual const string getComponentName() const { return #name; }  \
+		virtual string getComponentName() const { return #name; }  \
 	public:
 
 
@@ -518,7 +518,7 @@ public:
 
 	public:
 
-		const string getComponentName() const {
+		string getComponentName() const {
 
 			return string("one_char <") + C + ">";
 		}
@@ -1200,7 +1200,7 @@ public:
 
 	public:
 
-		const string getComponentName() const {
+		string getComponentName() const {
 
 			return "nstring";
 		}
@@ -1371,7 +1371,7 @@ public:
 
 	public:
 
-		const std::string getComponentName() const {
+		std::string getComponentName() const {
 
 			return string("special_atom <") + m_string + ">";
 		}
@@ -2938,7 +2938,7 @@ public:
 
 	public:
 
-		const string getComponentName() const {
+		string getComponentName() const {
 
 			return "body_fld_enc";
 		}
@@ -4801,7 +4801,7 @@ private:
 		return resp.release();
 	}
 
-	const string lastLine() const {
+	string lastLine() const {
 
 		// Remove blanks and new lines at the end of the line.
 		string line(m_lastLine);
@@ -4906,7 +4906,7 @@ public:
 	  *
 	  * @return next line
 	  */
-	const string readLine() {
+	string readLine() {
 
 		size_t pos;
 

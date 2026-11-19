@@ -69,7 +69,7 @@ void generationContext::setMaxLineLength(const size_t maxLineLength) {
 
 
 
-const string generationContext::getPrologText() const {
+string generationContext::getPrologText() const {
 
 	return m_prologText;
 }
@@ -81,7 +81,7 @@ void generationContext::setPrologText(const string& prologText) {
 }
 
 
-const string generationContext::getEpilogText() const {
+string generationContext::getEpilogText() const {
 
 	return m_epilogText;
 }

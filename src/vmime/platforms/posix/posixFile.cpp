@@ -592,7 +592,7 @@ const vmime::utility::file::path posixFileSystemFactory::stringToPath(
 }
 
 
-const vmime::string posixFileSystemFactory::pathToString(
+vmime::string posixFileSystemFactory::pathToString(
 	const vmime::utility::file::path& path
 ) const {
 
@@ -637,7 +637,7 @@ const vmime::utility::file::path posixFileSystemFactory::stringToPathImpl(
 }
 
 
-const vmime::string posixFileSystemFactory::pathToStringImpl(const vmime::utility::file::path& path) {
+vmime::string posixFileSystemFactory::pathToStringImpl(const vmime::utility::file::path& path) {
 
 	vmime::string native = "/";
 

@@ -229,13 +229,13 @@ shared_ptr <POP3Command> POP3Command::createCommand(
 }
 
 
-const string POP3Command::getText() const {
+string POP3Command::getText() const {
 
 	return m_text;
 }
 
 
-const string POP3Command::getTraceText() const {
+string POP3Command::getTraceText() const {
 
 	return m_traceText;
 }

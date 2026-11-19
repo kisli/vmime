@@ -219,7 +219,7 @@ const vmime::charset windowsHandler::getLocalCharset() const {
 }
 
 
-const vmime::string windowsHandler::getHostName() const {
+vmime::string windowsHandler::getHostName() const {
 
 	char hostname[1024];
 	DWORD hostnameLen;

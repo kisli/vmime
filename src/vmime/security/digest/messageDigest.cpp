@@ -32,7 +32,7 @@ namespace security {
 namespace digest {
 
 
-const string messageDigest::getHexDigest() const {
+string messageDigest::getHexDigest() const {
 
 	const byte_t* hash = getDigest();
 	const size_t len = getDigestLength();

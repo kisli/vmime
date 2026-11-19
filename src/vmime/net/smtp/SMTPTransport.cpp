@@ -303,7 +303,7 @@ SMTPTransport::~SMTPTransport() {
 }
 
 
-const string SMTPTransport::getProtocolName() const {
+string SMTPTransport::getProtocolName() const {
 
 	return "smtp";
 }

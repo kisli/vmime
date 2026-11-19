@@ -68,7 +68,7 @@ POP3Store::~POP3Store() {
 }
 
 
-const string POP3Store::getProtocolName() const {
+string POP3Store::getProtocolName() const {
 
 	return "pop3";
 }

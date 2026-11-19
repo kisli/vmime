@@ -69,8 +69,8 @@ public:
 
 	unsigned int getStatus() const;
 
-	const string getPeerName() const;
-	const string getPeerAddress() const;
+	string getPeerName() const;
+	string getPeerAddress() const;
 
 	shared_ptr <net::timeoutHandler> getTimeoutHandler();
 	shared_ptr <net::tracer> m_tracer;

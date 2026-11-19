@@ -41,7 +41,7 @@ SMTPServiceInfos::SMTPServiceInfos(const bool smtps)
 }
 
 
-const string SMTPServiceInfos::getPropertyPrefix() const {
+string SMTPServiceInfos::getPropertyPrefix() const {
 
 	if (m_smtps) {
 		return "transport.smtps.";

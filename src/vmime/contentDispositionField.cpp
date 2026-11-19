@@ -141,7 +141,7 @@ bool contentDispositionField::hasSize() const {
 }
 
 
-const string contentDispositionField::getSize() const {
+string contentDispositionField::getSize() const {
 
 	shared_ptr <parameter> param = findParameter("size");
 

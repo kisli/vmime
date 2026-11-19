@@ -42,15 +42,15 @@ public:
 	/** Encode extended characters in a URL string (ASCII characters
 	  * are unmodified, other are encoded as '%' followed by hex code).
 	  */
-	static const string encode(const string& s);
+	static string encode(const string& s);
 
 	/** Encode the host portion of a URL string.
 	  */
-	static const string encodeHost(const string& s);
+	static string encodeHost(const string& s);
 
 	/** Decode an hex-encoded URL (see encode()).
 	  */
-	static const string decode(const string& s);
+	static string decode(const string& s);
 };
 
 

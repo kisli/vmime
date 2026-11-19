@@ -68,9 +68,9 @@ namespace vmime {
 	// Library name and version
 	//
 
-	const string VMIME_EXPORT libname();
-	const string VMIME_EXPORT libversion();
-	const string VMIME_EXPORT libapi();
+	string VMIME_EXPORT libname();
+	string VMIME_EXPORT libversion();
+	string VMIME_EXPORT libapi();
 
 
 	//

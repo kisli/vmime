@@ -46,7 +46,7 @@ static vmime::shared_ptr <vmime::net::session> g_session = vmime::net::session::
   * @param type service type (vmime::net::service::TYPE_STORE or
   * vmime::net::service::TYPE_TRANSPORT)
   */
-static const std::string findAvailableProtocols(const vmime::net::service::Type type) {
+static std::string findAvailableProtocols(const vmime::net::service::Type type) {
 
 	vmime::shared_ptr <vmime::net::serviceFactory> sf =
 		vmime::net::serviceFactory::getInstance();
@@ -159,7 +159,7 @@ static void printStructure(
 }
 
 
-static const vmime::string getFolderPathString(vmime::shared_ptr <vmime::net::folder> f) {
+static vmime::string getFolderPathString(vmime::shared_ptr <vmime::net::folder> f) {
 
 	const vmime::string n = f->getName().getBuffer();
 

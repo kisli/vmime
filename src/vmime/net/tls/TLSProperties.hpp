@@ -87,7 +87,7 @@ public:
 	  *
 	  * @return cipher suite string
 	  */
-	const string getCipherSuite() const;
+	string getCipherSuite() const;
 
 private:
 

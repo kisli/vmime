@@ -58,7 +58,7 @@ public:
 	 * - CONTAINER_DIRECTORY:  ~/Mail/.MyFolder.directory
 	 */
 
-	const string getName() const;
+	string getName() const;
 
 	void createFolder(const folder::path& path);
 	void destroyFolder(const folder::path& path);

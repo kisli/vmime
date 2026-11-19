@@ -61,7 +61,7 @@ public:
 
 	const vmime::charset getLocalCharset() const;
 
-	const vmime::string getHostName() const;
+	vmime::string getHostName() const;
 
 	unsigned int getProcessId() const;
 	uintptr_t getThreadId() const;

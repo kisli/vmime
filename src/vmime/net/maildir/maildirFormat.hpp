@@ -78,7 +78,7 @@ public:
 	  *
 	  * @return format name
 	  */
-	virtual const string getName() const = 0;
+	virtual string getName() const = 0;
 
 	/** Create the specified folder.
 	  *

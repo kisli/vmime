@@ -77,7 +77,7 @@ maildirStore::~maildirStore() {
 }
 
 
-const string maildirStore::getProtocolName() const {
+string maildirStore::getProtocolName() const {
 
 	return "maildir";
 }

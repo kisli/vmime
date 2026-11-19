@@ -57,7 +57,7 @@ const vmime::utility::file::path windowsFileSystemFactory::stringToPath(
 }
 
 
-const vmime::string windowsFileSystemFactory::pathToString(
+vmime::string windowsFileSystemFactory::pathToString(
 	const vmime::utility::file::path& path
 ) const {
 
@@ -102,7 +102,7 @@ const vmime::utility::file::path windowsFileSystemFactory::stringToPathImpl(
 }
 
 
-const vmime::string windowsFileSystemFactory::pathToStringImpl(
+vmime::string windowsFileSystemFactory::pathToStringImpl(
 	const vmime::utility::file::path& path
 ) {
 

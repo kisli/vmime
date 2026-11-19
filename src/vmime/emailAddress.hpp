@@ -81,7 +81,7 @@ public:
 	  *
 	  * @return email address as a string
 	  */
-	const string toString() const;
+	string toString() const;
 
 	/** Returns the email address as multibyte text, by joining components.
 	  * (ie. the local name, followed by a @ then the domain name.)

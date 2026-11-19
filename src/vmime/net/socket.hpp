@@ -157,13 +157,13 @@ public:
 	  *
 	  * @return name of the peer
 	  */
-	virtual const string getPeerName() const = 0;
+	virtual string getPeerName() const = 0;
 
 	/** Return the address of peer this socket is connected to.
 	  *
 	  * @return numeric address of the peer
 	  */
-	virtual const string getPeerAddress() const = 0;
+	virtual string getPeerAddress() const = 0;
 
 	/** Return the timeout handler associated with this socket.
 	  *

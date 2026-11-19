@@ -276,7 +276,7 @@ void SASLContext::decodeB64(const string& input, byte_t** output, size_t* output
 }
 
 
-const string SASLContext::encodeB64(const byte_t* input, const size_t inputLen) {
+string SASLContext::encodeB64(const byte_t* input, const size_t inputLen) {
 
 	string res;
 

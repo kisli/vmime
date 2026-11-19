@@ -87,7 +87,7 @@ public:
 		const enhancedStatusCode getEnhancedCode() const;
 
 		void setText(const string& text);
-		const string getText() const;
+		string getText() const;
 
 		responseLine& operator=(const responseLine& other);
 
@@ -133,7 +133,7 @@ public:
 	  *
 	  * @return response text
 	  */
-	const string getText() const;
+	string getText() const;
 
 	/** Return the response line at the specified position.
 	  *
@@ -173,7 +173,7 @@ private:
 
 	void readResponse();
 
-	const string readResponseLine();
+	string readResponseLine();
 	const responseLine getNextResponse();
 
 	static int extractResponseCode(const string& response);

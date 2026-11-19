@@ -47,7 +47,7 @@ courierMaildirFormat::courierMaildirFormat(const shared_ptr <context>& ctx)
 }
 
 
-const string courierMaildirFormat::getName() const {
+string courierMaildirFormat::getName() const {
 
 	return "courier";
 }
@@ -354,7 +354,7 @@ bool courierMaildirFormat::isSubfolderDirectory(const utility::file& file) {
 
 
 // static
-const string courierMaildirFormat::toModifiedUTF7(const folder::path::component& text) {
+string courierMaildirFormat::toModifiedUTF7(const folder::path::component& text) {
 
 	// From http://www.courier-mta.org/?maildir.html:
 	//

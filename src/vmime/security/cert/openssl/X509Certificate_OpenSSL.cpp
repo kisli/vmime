@@ -729,7 +729,7 @@ const byteArray X509Certificate_OpenSSL::getEncoded() const {
 }
 
 
-const string X509Certificate_OpenSSL::getIssuerString() const {
+string X509Certificate_OpenSSL::getIssuerString() const {
 
 	// Get issuer for this cert
 	BIO* out = BIO_new(BIO_s_mem());
@@ -745,7 +745,7 @@ const string X509Certificate_OpenSSL::getIssuerString() const {
 }
 
 
-const string X509Certificate_OpenSSL::getType() const {
+string X509Certificate_OpenSSL::getType() const {
 
 	return "X.509";
 }

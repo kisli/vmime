@@ -240,13 +240,13 @@ shared_ptr <SMTPCommand> SMTPCommand::createCommand(const string& text, const st
 }
 
 
-const string SMTPCommand::getText() const {
+string SMTPCommand::getText() const {
 
 	return m_text;
 }
 
 
-const string SMTPCommand::getTraceText() const {
+string SMTPCommand::getTraceText() const {
 
 	return m_traceText;
 }

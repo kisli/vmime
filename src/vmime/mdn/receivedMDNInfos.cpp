@@ -70,7 +70,7 @@ const disposition receivedMDNInfos::getDisposition() const {
 }
 
 
-const string receivedMDNInfos::getContentMIC() const {
+string receivedMDNInfos::getContentMIC() const {
 
 	return m_contentMIC;
 }

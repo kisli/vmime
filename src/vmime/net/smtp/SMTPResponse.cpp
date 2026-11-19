@@ -90,7 +90,7 @@ const SMTPResponse::enhancedStatusCode SMTPResponse::getEnhancedCode() const {
 }
 
 
-const string SMTPResponse::getText() const {
+string SMTPResponse::getText() const {
 
 	string text = m_lines[0].getText();
 
@@ -133,7 +133,7 @@ void SMTPResponse::readResponse() {
 }
 
 
-const string SMTPResponse::readResponseLine() {
+string SMTPResponse::readResponseLine() {
 
 	string currentBuffer = m_responseBuffer;
 
@@ -332,7 +332,7 @@ void SMTPResponse::responseLine::setText(const string& text) {
 }
 
 
-const string SMTPResponse::responseLine::getText() const {
+string SMTPResponse::responseLine::getText() const {
 
 	return m_text;
 }

@@ -127,7 +127,7 @@ public:
 	  *
 	  * @return distinguished name of the certificate issuer, as a string
 	  */
-	virtual const string getIssuerString() const = 0;
+	virtual string getIssuerString() const = 0;
 
 	/** Verifies a certificate chain sent by a TLS server, using the TLS
 	  * library. A certification path is built from the first certificate

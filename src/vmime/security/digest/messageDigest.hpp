@@ -125,7 +125,7 @@ public:
 	  *
 	  * @return computed hash, in hexadecimal format
 	  */
-	virtual const string getHexDigest() const;
+	virtual string getHexDigest() const;
 
 	/** Resets the algorithm to its initial state, so that you can
 	  * compute a new hash using the same object.

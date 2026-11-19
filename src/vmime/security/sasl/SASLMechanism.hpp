@@ -52,7 +52,7 @@ public:
 	  *
 	  * @return mechanism name
 	  */
-	virtual const string getName() const = 0;
+	virtual string getName() const = 0;
 
 	/** Perform one step of SASL authentication. Accept data from the
 	  * server (challenge), process it and return data to be returned

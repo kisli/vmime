@@ -89,13 +89,13 @@ size_t SASLSocket::getBlockSize() const {
 }
 
 
-const string SASLSocket::getPeerName() const {
+string SASLSocket::getPeerName() const {
 
 	return m_wrapped->getPeerName();
 }
 
 
-const string SASLSocket::getPeerAddress() const {
+string SASLSocket::getPeerAddress() const {
 
 	return m_wrapped->getPeerAddress();
 }

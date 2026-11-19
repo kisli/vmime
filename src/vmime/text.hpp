@@ -136,7 +136,7 @@ public:
 	  * @param opts options for charset conversion
 	  * @return text decoded in the specified charset
 	  */
-	const string getConvertedText(
+	string getConvertedText(
 		const charset& dest,
 		const charsetConverterOptions& opts = charsetConverterOptions()
 	) const;
@@ -147,7 +147,7 @@ public:
 	  *
 	  * @return raw data
 	  */
-	const string getWholeBuffer() const;
+	string getWholeBuffer() const;
 
 	/** This function can be used to make several encoded words from a text.
 	  * All the characters in the text must be in the same specified charset.

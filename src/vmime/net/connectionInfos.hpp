@@ -48,7 +48,7 @@ public:
 	  *
 	  * @return server host name or address
 	  */
-	virtual const string getHost() const = 0;
+	virtual string getHost() const = 0;
 
 	/** Return the port to which the service is connected.
 	  *

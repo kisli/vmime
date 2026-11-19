@@ -50,7 +50,7 @@ public:
 	  *
 	  * @return the type of this certificate
 	  */
-	virtual const string getType() const = 0;
+	virtual string getType() const = 0;
 
 	/** Return the version of this certificate.
 	  *

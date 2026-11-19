@@ -42,7 +42,7 @@ namespace vmime {
   * @param idnaDomain domain name encoded with IDNA
   * @return decoded domain name in UTF-8
   */
-static const string domainNameFromIDNA(const string& idnaDomain) {
+static string domainNameFromIDNA(const string& idnaDomain) {
 
 	utility::details::classicOStringStream domainName;
 	size_t p = 0;
@@ -102,7 +102,7 @@ static const string domainNameFromIDNA(const string& idnaDomain) {
   * @param domainName domain name in UTF-8
   * @return domain name encoded with IDNA
   */
-static const string domainNameToIDNA(const string& domainName) {
+static string domainNameToIDNA(const string& domainName) {
 
 	utility::details::classicOStringStream idnaDomain;
 	size_t p = 0;
@@ -711,7 +711,7 @@ bool emailAddress::isEmpty() const {
 }
 
 
-const string emailAddress::toString() const {
+string emailAddress::toString() const {
 
 	utility::details::classicOStringStream oss;
 	utility::outputStreamAdapter adapter(oss);

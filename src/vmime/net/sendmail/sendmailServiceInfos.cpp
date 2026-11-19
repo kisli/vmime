@@ -40,7 +40,7 @@ sendmailServiceInfos::sendmailServiceInfos() {
 }
 
 
-const string sendmailServiceInfos::getPropertyPrefix() const {
+string sendmailServiceInfos::getPropertyPrefix() const {
 
 	return "transport.sendmail.";
 }

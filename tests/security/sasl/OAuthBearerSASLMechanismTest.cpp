@@ -46,8 +46,8 @@ public:
 
 	}
 
-	const vmime::string getUsername() const { return m_username; }
-	const vmime::string getAccessToken() const { return m_accessToken; }
+	vmime::string getUsername() const { return m_username; }
+	vmime::string getAccessToken() const { return m_accessToken; }
 
 private:
 
@@ -60,8 +60,8 @@ class oauthBearerNoUsernameTestAuthenticator : public vmime::security::sasl::def
 
 public:
 
-	const vmime::string getUsername() const { throw vmime::exceptions::no_auth_information(); }
-	const vmime::string getAccessToken() const { return TEST_ACCESS_TOKEN; }
+	vmime::string getUsername() const { throw vmime::exceptions::no_auth_information(); }
+	vmime::string getAccessToken() const { return TEST_ACCESS_TOKEN; }
 };
 
 
@@ -69,8 +69,8 @@ class oauthBearerNoAccessTokenTestAuthenticator : public vmime::security::sasl::
 
 public:
 
-	const vmime::string getUsername() const { return "user@vmime.org"; }
-	const vmime::string getAccessToken() const { throw vmime::exceptions::no_auth_information(); }
+	vmime::string getUsername() const { return "user@vmime.org"; }
+	vmime::string getAccessToken() const { throw vmime::exceptions::no_auth_information(); }
 };
 
 
@@ -119,7 +119,7 @@ VMIME_TEST_SUITE_BEGIN(OAuthBearerSASLMechanismTest)
 		return createSession(vmime::make_shared <oauthBearerTestAuthenticator>(username, accessToken));
 	}
 
-	static const vmime::string evaluateChallenge(
+	static vmime::string evaluateChallenge(
 		const vmime::shared_ptr <vmime::security::sasl::SASLSession>& sess,
 		const vmime::string& challenge = "",
 		bool* complete = NULL

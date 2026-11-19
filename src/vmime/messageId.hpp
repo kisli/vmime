@@ -89,7 +89,7 @@ public:
 	  *
 	  * @return full message identifier
 	  */
-	const string getId() const;
+	string getId() const;
 
 	shared_ptr <component> clone() const;
 	void copyFrom(const component& other);

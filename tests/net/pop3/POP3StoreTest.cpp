@@ -592,7 +592,7 @@ VMIME_TEST_SUITE_BEGIN(POP3StoreTest)
 	}
 
 	// Return the Base64-encoded response of the PLAIN mechanism
-	static const vmime::string encodePLAINResponse(const vmime::string& password) {
+	static vmime::string encodePLAINResponse(const vmime::string& password) {
 
 		const vmime::string resp = vmime::string(1, '\0') + "user" + vmime::string(1, '\0') + password;
 

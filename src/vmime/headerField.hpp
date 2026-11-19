@@ -67,7 +67,7 @@ public:
 	  *
 	  * @return field name
 	  */
-	const string getName() const;
+	string getName() const;
 
 	/** Check whether this field is a custom (non-standard) field.
 	  * Custom fields have a name beginning with "X-".

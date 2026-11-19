@@ -447,13 +447,13 @@ shared_ptr <IMAPCommand> IMAPCommand::createCommand(
 }
 
 
-const string IMAPCommand::getText() const {
+string IMAPCommand::getText() const {
 
 	return m_text;
 }
 
 
-const string IMAPCommand::getTraceText() const {
+string IMAPCommand::getTraceText() const {
 
 	return m_traceText;
 }

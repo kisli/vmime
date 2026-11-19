@@ -222,7 +222,7 @@ public:
 	  *
 	  * @return property prefix
 	  */
-	virtual const string getPropertyPrefix() const = 0;
+	virtual string getPropertyPrefix() const = 0;
 
 	/** Return a list of available properties for this service.
 	  *

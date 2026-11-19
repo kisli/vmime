@@ -41,7 +41,7 @@ POP3ServiceInfos::POP3ServiceInfos(const bool pop3s)
 }
 
 
-const string POP3ServiceInfos::getPropertyPrefix() const {
+string POP3ServiceInfos::getPropertyPrefix() const {
 
 	if (m_pop3s) {
 		return "store.pop3s.";

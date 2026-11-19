@@ -280,7 +280,7 @@ public:
 	  *
 	  * @return randomly generated boundary string
 	  */
-	static const string generateRandomBoundaryString();
+	static string generateRandomBoundaryString();
 
 	/** Test a boundary string for validity (as defined in RFC #1521, page 19).
 	  *

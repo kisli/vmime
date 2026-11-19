@@ -174,7 +174,7 @@ public:
 	  * vmime::charset::getLocalCharset() to use the default charset of your system)
 	  * @return a string representing this path
 	  */
-	const string toString(const string& sep, const charset& cset) const;
+	string toString(const string& sep, const charset& cset) const;
 
 private:
 

@@ -80,7 +80,7 @@ public:
 	static bool isChannelBindingTypeSupported(const string& type);
 
 
-	const string getName() const;
+	string getName() const;
 
 	bool step(
 		const shared_ptr <SASLSession>& sess,
@@ -117,7 +117,7 @@ private:
 	SASLMechanism_GSASL& operator=(const SASLMechanism_GSASL&);
 
 
-	static const string getErrorMessage(const string& fname, const int code);
+	static string getErrorMessage(const string& fname, const int code);
 
 	static int gsaslCallback(Gsasl* ctx, Gsasl_session* sctx, Gsasl_property prop);
 

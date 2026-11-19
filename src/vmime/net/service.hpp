@@ -85,7 +85,7 @@ public:
 	  *
 	  * @return protocol name
 	  */
-	virtual const string getProtocolName() const = 0;
+	virtual string getProtocolName() const = 0;
 
 	/** Return the session object associated with this service instance.
 	  *

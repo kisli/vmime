@@ -202,10 +202,10 @@ public:
 	shared_ptr <vmime::utility::file> create(const vmime::utility::file::path& path) const;
 
 	const vmime::utility::file::path stringToPath(const vmime::string& str) const;
-	const vmime::string pathToString(const vmime::utility::file::path& path) const;
+	vmime::string pathToString(const vmime::utility::file::path& path) const;
 
 	static const vmime::utility::file::path stringToPathImpl(const vmime::string& str);
-	static const vmime::string pathToStringImpl(const vmime::utility::file::path& path);
+	static vmime::string pathToStringImpl(const vmime::utility::file::path& path);
 
 	bool isValidPathComponent(const vmime::utility::file::path::component& comp) const;
 	bool isValidPath(const vmime::utility::file::path& path) const;

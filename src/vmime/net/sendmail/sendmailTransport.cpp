@@ -83,7 +83,7 @@ sendmailTransport::~sendmailTransport() {
 }
 
 
-const string sendmailTransport::getProtocolName() const {
+string sendmailTransport::getProtocolName() const {
 
 	return "sendmail";
 }

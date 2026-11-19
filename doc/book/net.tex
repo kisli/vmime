@@ -329,7 +329,7 @@ the user to enter her/his credentials:
 \begin{lstlisting}[caption={A simple interactive authenticator}]
 class myAuthenticator : public vmime::security::defaultAuthenticator {
 
-   const string getUsername() const {
+   string getUsername() const {
 
       std::cout << "Enter your username: " << std::endl;
 
@@ -339,7 +339,7 @@ class myAuthenticator : public vmime::security::defaultAuthenticator {
       return res;
    }
 
-   const string getPassword() const {
+   string getPassword() const {
 
       std::cout << "Enter your password: " << std::endl;
 
@@ -544,7 +544,7 @@ public:
 
    }
 
-   const vmime::string getAccessToken() const {
+   vmime::string getAccessToken() const {
 
       // Return a valid access token, eg. obtained from the refresh
       // token if the current access token has expired

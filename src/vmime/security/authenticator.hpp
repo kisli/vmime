@@ -71,7 +71,7 @@ public:
 	  * @throw exceptions::no_auth_information if the information
 	  * could not be provided
 	  */
-	virtual const string getUsername() const = 0;
+	virtual string getUsername() const = 0;
 
 	/** Return the password of the authentication identity.
 	  *
@@ -79,7 +79,7 @@ public:
 	  * @throw exceptions::no_auth_information if the information
 	  * could not be provided
 	  */
-	virtual const string getPassword() const = 0;
+	virtual string getPassword() const = 0;
 
 	/** Return the optional access token for authentication. This is
 	  * used for example with OAUTHBEARER or XOAUTH2 SASL authentication.
@@ -88,7 +88,7 @@ public:
 	  * @throw exceptions::no_auth_information if the information
 	  * could not be provided
 	  */
-	virtual const string getAccessToken() const = 0;
+	virtual string getAccessToken() const = 0;
 
 	/** Return the local host name of the machine.
 	  *
@@ -96,7 +96,7 @@ public:
 	  * @throw exceptions::no_auth_information if the information
 	  * could not be provided
 	  */
-	virtual const string getHostname() const = 0;
+	virtual string getHostname() const = 0;
 
 	/** Return the anonymous token (usually, this is the user's
 	  * email address).
@@ -105,7 +105,7 @@ public:
 	  * @throw exceptions::no_auth_information if the information
 	  * could not be provided
 	  */
-	virtual const string getAnonymousToken() const = 0;
+	virtual string getAnonymousToken() const = 0;
 
 	/** Return the registered service name of the application
 	  * service (eg: "imap"). This can be used by GSSAPI or DIGEST-MD5
@@ -115,7 +115,7 @@ public:
 	  * @throw exceptions::no_auth_information if the information
 	  * could not be provided
 	  */
-	virtual const string getServiceName() const = 0;
+	virtual string getServiceName() const = 0;
 
 	/** Called by the messaging service to allow this authenticator to
 	  * know which service is currently using it. This is called just

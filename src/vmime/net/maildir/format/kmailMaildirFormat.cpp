@@ -47,7 +47,7 @@ kmailMaildirFormat::kmailMaildirFormat(const shared_ptr <context>& ctx)
 }
 
 
-const string kmailMaildirFormat::getName() const {
+string kmailMaildirFormat::getName() const {
 
 	return "kmail";
 }

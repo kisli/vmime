@@ -293,7 +293,7 @@ size_t headerField::getGeneratedSize(const generationContext& ctx) {
 }
 
 
-const string headerField::getName() const {
+string headerField::getName() const {
 
 	return m_name;
 }

@@ -164,7 +164,7 @@ static inline bool isAcceptableHostname(const vmime::string& str) {
 }
 
 
-const vmime::string posixHandler::getHostName() const {
+vmime::string posixHandler::getHostName() const {
 	char hostname[256];
 
 	::gethostname(hostname, sizeof(hostname));

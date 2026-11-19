@@ -56,7 +56,7 @@ public:
 	  *
 	  * @return value of the "boundary" parameter
 	  */
-	const string getBoundary() const;
+	string getBoundary() const;
 
 	/** Set the value of the "boundary" parameter. Boundary is a
 	  * random string used to separate body parts. Normally, the
@@ -97,7 +97,7 @@ public:
 	  *
 	  * @return value of the "report-type" parameter
 	  */
-	const string getReportType() const;
+	string getReportType() const;
 
 	/** Set the value of the "report-type" parameter (RFC-1892).
 	  *

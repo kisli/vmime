@@ -90,7 +90,7 @@ void TLSProperties::setCipherSuite(const string& cipherSuite) {
 }
 
 
-const string TLSProperties::getCipherSuite() const {
+string TLSProperties::getCipherSuite() const {
 
 	return dynamicCast <TLSProperties_GnuTLS>(m_data)->cipherSuite;
 }

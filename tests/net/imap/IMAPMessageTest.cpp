@@ -297,7 +297,7 @@ private:
 		localSend(tag + " OK FETCH completed\r\n");
 	}
 
-	static const vmime::string literal(const vmime::string& data) {
+	static vmime::string literal(const vmime::string& data) {
 
 		return "{" + std::to_string(data.length()) + "}\r\n" + data;
 	}
@@ -350,7 +350,7 @@ VMIME_TEST_SUITE_BEGIN(IMAPMessageTest)
 	// Get the parsed message from the server, as in the bug report:
 	// fetch the header, flags and size first, then call getParsedMessage()
 	// and generate the message
-	static const vmime::string generateParsedMessage(const vmime::size_t num) {
+	static vmime::string generateParsedMessage(const vmime::size_t num) {
 
 		vmime::shared_ptr <IMAPStore> store = createStore();
 		store->connect();
@@ -377,7 +377,7 @@ VMIME_TEST_SUITE_BEGIN(IMAPMessageTest)
 		return generated;
 	}
 
-	static const vmime::string extractContents(const vmime::shared_ptr <const vmime::body>& body) {
+	static vmime::string extractContents(const vmime::shared_ptr <const vmime::body>& body) {
 
 		vmime::string data;
 		vmime::utility::outputStreamStringAdapter os(data);

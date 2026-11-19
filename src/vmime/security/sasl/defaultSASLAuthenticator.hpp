@@ -55,12 +55,12 @@ public:
 		const shared_ptr <SASLMechanism>& suggested
 	) const;
 
-	const string getUsername() const;
-	const string getPassword() const;
-	const string getHostname() const;
-	const string getAnonymousToken() const;
-	const string getServiceName() const;
-	const string getAccessToken() const;
+	string getUsername() const;
+	string getPassword() const;
+	string getHostname() const;
+	string getAnonymousToken() const;
+	string getServiceName() const;
+	string getAccessToken() const;
 
 	void setService(const shared_ptr <net::service>& serv);
 	weak_ptr <net::service> getService() const;

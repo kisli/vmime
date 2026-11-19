@@ -235,7 +235,7 @@ public:
 	  * @param path abstract representation of the path
 	  * @return string representation of the path
 	  */
-	virtual const string pathToString(const file::path& path) const = 0;
+	virtual string pathToString(const file::path& path) const = 0;
 
 	/** Test whether the specified path component is syntactically
 	  * valid (ie: does not contain any 'special' character).

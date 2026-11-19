@@ -79,7 +79,7 @@ public:
 		  *
 		  * @return host name
 		  */
-		virtual const string getHostName() const = 0;
+		virtual string getHostName() const = 0;
 
 		/** Return the current process identifier.
 		  * Used when generating random strings (part boundaries or message ids).

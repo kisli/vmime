@@ -101,7 +101,7 @@ public:
 		  *
 		  * @return object identifier
 		  */
-		const string getId() const;
+		string getId() const;
 
 		/** Return the identifier used to reference this embedded object
 		  * in a text document (for example, you can use the result as
@@ -109,7 +109,7 @@ public:
 		  *
 		  * @return object reference identifier
 		  */
-		const string getReferenceId() const;
+		string getReferenceId() const;
 
 		/** Return the content type of data stored in
 		  * this embedded object.
@@ -134,7 +134,7 @@ public:
 
 	private:
 
-		static const string cleanId(const string& id);
+		static string cleanId(const string& id);
 
 		shared_ptr <contentHandler> m_data;
 		encoding m_encoding;

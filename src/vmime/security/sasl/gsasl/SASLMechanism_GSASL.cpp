@@ -181,7 +181,7 @@ bool SASLMechanism_GSASL::isChannelBindingTypeSupported(const string& type) {
 }
 
 
-const string SASLMechanism_GSASL::getName() const {
+string SASLMechanism_GSASL::getName() const {
 
 	return m_name;
 }
@@ -348,7 +348,7 @@ void SASLMechanism_GSASL::decode(
 
 
 // static
-const string SASLMechanism_GSASL::getErrorMessage(const string& fname, const int code) {
+string SASLMechanism_GSASL::getErrorMessage(const string& fname, const int code) {
 
 	string msg = fname + "() returned ";
 

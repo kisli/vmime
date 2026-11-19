@@ -105,14 +105,14 @@ public:
 	  *
 	  * @return command text (eg. "RCPT TO:<vincent@kisli.com>")
 	  */
-	virtual const string getText() const;
+	virtual string getText() const;
 
 	/** Returns the full text of the command, suitable for outputing
 	  * to the tracer.
 	  *
 	  * @return trace text (eg. "LOGIN myusername ***")
 	  */
-	virtual const string getTraceText() const;
+	virtual string getTraceText() const;
 
 protected:
 

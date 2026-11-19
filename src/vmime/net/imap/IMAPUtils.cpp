@@ -52,7 +52,7 @@ static const char* IMAP_MONTH_NAMES[12] = {
 
 
 // static
-const string IMAPUtils::quoteString(const string& text) {
+string IMAPUtils::quoteString(const string& text) {
 
 	//
 	// ATOM_CHAR       ::= <any CHAR except atom_specials>
@@ -109,7 +109,7 @@ const string IMAPUtils::quoteString(const string& text) {
 
 
 // static
-const string IMAPUtils::forceQuoteString(const string& text) {
+string IMAPUtils::forceQuoteString(const string& text) {
 
 	//
 	// quoted          ::= <"> *QUOTED_CHAR <">
@@ -146,7 +146,7 @@ const string IMAPUtils::forceQuoteString(const string& text) {
 }
 
 
-const string IMAPUtils::pathToString(
+string IMAPUtils::pathToString(
 	const char hierarchySeparator,
 	const folder::path& path
 ) {
@@ -187,7 +187,7 @@ const folder::path IMAPUtils::stringToPath(
 }
 
 
-const string IMAPUtils::toModifiedUTF7(
+string IMAPUtils::toModifiedUTF7(
 	const char hierarchySeparator,
 	const folder::path::component& text
 ) {
@@ -574,7 +574,7 @@ std::vector <string> IMAPUtils::messageFlagList(const int flags) {
 
 
 // static
-const string IMAPUtils::searchDate(const vmime::datetime& date) {
+string IMAPUtils::searchDate(const vmime::datetime& date) {
 
 	utility::details::classicOStringStream res;
 
@@ -589,7 +589,7 @@ const string IMAPUtils::searchDate(const vmime::datetime& date) {
 
 
 // static
-const string IMAPUtils::dateTime(const vmime::datetime& date) {
+string IMAPUtils::dateTime(const vmime::datetime& date) {
 
 	utility::details::classicOStringStream res;
 
@@ -803,7 +803,7 @@ public:
 		m_first = false;
 	}
 
-	const std::string str() const {
+	std::string str() const {
 
 		return m_oss.str();
 	}
@@ -844,7 +844,7 @@ public:
 
 
 // static
-const string IMAPUtils::messageSetToSequenceSet(const messageSet& msgs) {
+string IMAPUtils::messageSetToSequenceSet(const messageSet& msgs) {
 
 	IMAPUIDMessageSetEnumerator en;
 	msgs.enumerate(en);

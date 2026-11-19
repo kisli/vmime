@@ -130,7 +130,7 @@ public:
 	  *
 	  * @return value of the "size" parameter
 	  */
-	const string getSize() const;
+	string getSize() const;
 
 	/** Set the value of the "size" parameter.
 	  *

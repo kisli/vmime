@@ -156,7 +156,7 @@ bool text::operator!=(const text& t) const {
 }
 
 
-const string text::getConvertedText(
+string text::getConvertedText(
 	const charset& dest,
 	const charsetConverterOptions& opts
 ) const {
@@ -484,7 +484,7 @@ std::vector <shared_ptr <component> > text::getChildComponents() {
 }
 
 
-const string text::getWholeBuffer() const {
+string text::getWholeBuffer() const {
 
 	string res;
 

@@ -74,13 +74,13 @@ unsigned int testSocket::getStatus() const {
 }
 
 
-const vmime::string testSocket::getPeerName() const {
+vmime::string testSocket::getPeerName() const {
 
 	return "test.vmime.org";
 }
 
 
-const vmime::string testSocket::getPeerAddress() const {
+vmime::string testSocket::getPeerAddress() const {
 
 	return "127.0.0.1";
 }
@@ -261,7 +261,7 @@ void lineBasedTestSocket::onDataReceived() {
 }
 
 
-const vmime::string lineBasedTestSocket::getNextLine() {
+vmime::string lineBasedTestSocket::getNextLine() {
 
 	const vmime::string line = m_lines.front();
 	m_lines.erase(m_lines.begin(), m_lines.begin() + 1);
@@ -561,7 +561,7 @@ std::ostream& operator<<(std::ostream& os, const vmime::exception& e) {
 }
 
 
-const vmime::string toHex(const vmime::string str) {
+vmime::string toHex(const vmime::string& str) {
 
 	static const char hexChars[] = "0123456789abcdef";
 

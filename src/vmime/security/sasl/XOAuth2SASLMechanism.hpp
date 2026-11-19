@@ -52,7 +52,7 @@ public:
 	~XOAuth2SASLMechanism();
 
 
-	const string getName() const;
+	string getName() const;
 
 	bool step(
 		const shared_ptr <SASLSession>& sess,

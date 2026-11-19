@@ -74,12 +74,12 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 	VMIME_TEST_LIST_END
 
 
-	static const vmime::string getDisplayText(const vmime::text& t) {
+	static vmime::string getDisplayText(const vmime::text& t) {
 
 		return t.getWholeBuffer();
 	}
 
-	static const vmime::string cleanGeneratedWords(const std::string& str) {
+	static vmime::string cleanGeneratedWords(const std::string& str) {
 
 		std::istringstream iss(str);
 
@@ -239,7 +239,7 @@ VMIME_TEST_SUITE_BEGIN(textTest)
 		VASSERT_EQ("2.5", vmime::charset("utf-8"), t2.getWordAt(1)->getCharset());
 	}
 
-	static const vmime::string parseText(const vmime::string& buffer) {
+	static vmime::string parseText(const vmime::string& buffer) {
 
 		vmime::text t;
 		t.parse(buffer);

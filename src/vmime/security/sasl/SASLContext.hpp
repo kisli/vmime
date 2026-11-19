@@ -197,7 +197,7 @@ public:
 	  * @param inputLen length of input buffer
 	  * @return Base64-encoded challenge
 	  */
-	const string encodeB64(const byte_t* input, const size_t inputLen);
+	string encodeB64(const byte_t* input, const size_t inputLen);
 
 private:
 

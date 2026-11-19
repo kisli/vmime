@@ -56,7 +56,7 @@ public:
 
 	const byteArray getSerialNumber() const;
 
-	const string getIssuerString() const;
+	string getIssuerString() const;
 
 	bool verifyHostName(
 		const string& hostname,
@@ -71,7 +71,7 @@ public:
 
 	// Implementation of 'certificate'
 	const byteArray getEncoded() const;
-	const string getType() const;
+	string getType() const;
 	int getVersion() const;
 	bool equals(const shared_ptr <const certificate>& other) const;
 	void* getInternalData();

@@ -67,7 +67,7 @@ plainSASLMechanism::~plainSASLMechanism() {
 }
 
 
-const string plainSASLMechanism::getName() const {
+string plainSASLMechanism::getName() const {
 
 	return "PLAIN";
 }

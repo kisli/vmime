@@ -58,7 +58,7 @@ XOAuth2SASLMechanism::~XOAuth2SASLMechanism() {
 }
 
 
-const string XOAuth2SASLMechanism::getName() const {
+string XOAuth2SASLMechanism::getName() const {
 
 	return "XOAUTH2";
 }

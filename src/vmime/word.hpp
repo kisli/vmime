@@ -115,7 +115,7 @@ public:
 	  * @return language tag for this word, in the format specified
 	  * by RFC-1766
 	  */
-	const string getLanguage() const;
+	string getLanguage() const;
 
 	/** Set the language used in this word (optional).
 	  *
@@ -144,7 +144,7 @@ public:
 	  * @param opts options for charset conversion
 	  * @return word converted to the specified charset
 	  */
-	const string getConvertedText(
+	string getConvertedText(
 		const charset& dest,
 		const charsetConverterOptions& opts = charsetConverterOptions()
 	) const;

@@ -71,7 +71,7 @@ IMAPStore::~IMAPStore() {
 }
 
 
-const string IMAPStore::getProtocolName() const {
+string IMAPStore::getProtocolName() const {
 
 	return "imap";
 }

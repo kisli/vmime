@@ -89,7 +89,7 @@ VMIME_TEST_SUITE_BEGIN(messageSetTest)
 			m_first = false;
 		}
 
-		const std::string str() const {
+		std::string str() const {
 
 			return m_oss.str();
 		}
@@ -101,7 +101,7 @@ VMIME_TEST_SUITE_BEGIN(messageSetTest)
 	};
 
 
-	const std::string enumerateAsString(const vmime::net::messageSet& set) {
+	std::string enumerateAsString(const vmime::net::messageSet& set) {
 
 		messageSetStringEnumerator en;
 		set.enumerate(en);

@@ -67,7 +67,7 @@ public:
 
 	~IMAPStore();
 
-	const string getProtocolName() const;
+	string getProtocolName() const;
 
 	shared_ptr <folder> getDefaultFolder();
 	shared_ptr <folder> getRootFolder();

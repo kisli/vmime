@@ -80,8 +80,8 @@ public:
 
 	unsigned int getStatus() const;
 
-	const string getPeerName() const;
-	const string getPeerAddress() const;
+	string getPeerName() const;
+	string getPeerAddress() const;
 
 	shared_ptr <timeoutHandler> getTimeoutHandler();
 

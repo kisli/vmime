@@ -40,7 +40,7 @@ maildirServiceInfos::maildirServiceInfos() {
 }
 
 
-const string maildirServiceInfos::getPropertyPrefix() const {
+string maildirServiceInfos::getPropertyPrefix() const {
 
 	return "store.maildir.";
 }

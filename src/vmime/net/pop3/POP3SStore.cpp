@@ -49,7 +49,7 @@ POP3SStore::~POP3SStore() {
 }
 
 
-const string POP3SStore::getProtocolName() const {
+string POP3SStore::getProtocolName() const {
 
 	return "pop3s";
 }

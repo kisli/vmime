@@ -45,7 +45,7 @@ bool contentTypeField::hasBoundary() const {
 }
 
 
-const string contentTypeField::getBoundary() const {
+string contentTypeField::getBoundary() const {
 
 	shared_ptr <parameter> param = findParameter("boundary");
 
@@ -93,7 +93,7 @@ bool contentTypeField::hasReportType() const {
 }
 
 
-const string contentTypeField::getReportType() const {
+string contentTypeField::getReportType() const {
 
 	shared_ptr <parameter> param = findParameter("report-type");
 

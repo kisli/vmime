@@ -70,7 +70,7 @@ public:
 
 	const props& getProperties() const;
 
-	const string getPropertyPrefix() const;
+	string getPropertyPrefix() const;
 	std::vector <serviceInfos::property> getAvailableProperties() const;
 
 private:

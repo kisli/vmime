@@ -61,7 +61,7 @@ shared_ptr <utility::childProcess> posixChildProcessFactory::create(const utilit
 // getPosixSignalMessage
 // Returns the name of a POSIX signal.
 
-static const string getPosixSignalMessage(const int num) {
+static string getPosixSignalMessage(const int num) {
 
 	switch (num) {
 		case SIGHUP:  return "SIGHUP";
@@ -92,7 +92,7 @@ static const string getPosixSignalMessage(const int num) {
 // getPosixErrorMessage
 // Returns a message corresponding to an error code.
 
-static const string getPosixErrorMessage(const int num) {
+static string getPosixErrorMessage(const int num) {
 
 #ifdef strerror_r
 	char res[256];
