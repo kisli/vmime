@@ -46,7 +46,7 @@ public:
 	const text getDescription() const;
 	const word getName() const;
 
-	const shared_ptr <const contentHandler> getData() const;
+	shared_ptr <const contentHandler> getData() const;
 
 	const encoding getEncoding() const;
 

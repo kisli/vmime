@@ -290,7 +290,7 @@ void messageBuilder::removeAttachment(const size_t pos) {
 }
 
 
-const shared_ptr <const attachment> messageBuilder::getAttachmentAt(const size_t pos) const {
+shared_ptr <const attachment> messageBuilder::getAttachmentAt(const size_t pos) const {
 
 	return m_attach[pos];
 }

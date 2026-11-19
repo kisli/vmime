@@ -124,14 +124,14 @@ public:
 	  * @param pos position
 	  * @return message-id at position 'pos'
 	  */
-	const shared_ptr <messageId> getMessageIdAt(const size_t pos);
+	shared_ptr <messageId> getMessageIdAt(const size_t pos);
 
 	/** Return the message-id at the specified position.
 	  *
 	  * @param pos position
 	  * @return message-id at position 'pos'
 	  */
-	const shared_ptr <const messageId> getMessageIdAt(const size_t pos) const;
+	shared_ptr <const messageId> getMessageIdAt(const size_t pos) const;
 
 	/** Return the message-id list.
 	  *

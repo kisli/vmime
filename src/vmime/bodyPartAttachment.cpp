@@ -85,7 +85,7 @@ const encoding bodyPartAttachment::getEncoding() const {
 }
 
 
-const shared_ptr <const contentHandler> bodyPartAttachment::getData() const {
+shared_ptr <const contentHandler> bodyPartAttachment::getData() const {
 
 	return m_part->getBody()->getContents();
 }

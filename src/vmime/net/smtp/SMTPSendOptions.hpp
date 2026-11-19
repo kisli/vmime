@@ -75,13 +75,13 @@ public:
 	  *
 	  * @return DSN attributes, if set
 	  */
-	const shared_ptr <const DSNAttributes> getDSNAttributes() const;
+	shared_ptr <const DSNAttributes> getDSNAttributes() const;
 
 	/** Return DSN attributes used when sending a message.
 	  *
 	  * @return DSN attributes, if set
 	  */
-	const shared_ptr <DSNAttributes> getDSNAttributes();
+	shared_ptr <DSNAttributes> getDSNAttributes();
 
 	/** Set whether the message is an internationalized message, ie. whether
 	  * its header fields contain UTF-8 (RFC 6532). If so, the message is sent

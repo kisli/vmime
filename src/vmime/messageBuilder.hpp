@@ -153,7 +153,7 @@ public:
 	  * @param pos position of the attachment
 	  * @return attachment at the specified position
 	  */
-	const shared_ptr <const attachment> getAttachmentAt(const size_t pos) const;
+	shared_ptr <const attachment> getAttachmentAt(const size_t pos) const;
 
 	/** Return the attachment at the specified position.
 	  *

@@ -217,13 +217,13 @@ bool text::isEmpty() const {
 }
 
 
-const shared_ptr <word> text::getWordAt(const size_t pos) {
+shared_ptr <word> text::getWordAt(const size_t pos) {
 
 	return m_words[pos];
 }
 
 
-const shared_ptr <const word> text::getWordAt(const size_t pos) const {
+shared_ptr <const word> text::getWordAt(const size_t pos) const {
 
 	return m_words[pos];
 }

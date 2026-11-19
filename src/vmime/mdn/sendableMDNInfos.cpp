@@ -49,7 +49,7 @@ sendableMDNInfos& sendableMDNInfos::operator=(const sendableMDNInfos& other) {
 }
 
 
-const shared_ptr <const message> sendableMDNInfos::getMessage() const {
+shared_ptr <const message> sendableMDNInfos::getMessage() const {
 
 	return m_msg;
 }

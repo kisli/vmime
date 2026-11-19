@@ -138,7 +138,7 @@ public:
 	  * @param pos position
 	  * @return part at position 'pos'
 	  */
-	const shared_ptr <const bodyPart> getPartAt(const size_t pos) const;
+	shared_ptr <const bodyPart> getPartAt(const size_t pos) const;
 
 	/** Return the part list.
 	  *
@@ -180,7 +180,7 @@ public:
 	  *
 	  * @return read-only body contents
 	  */
-	const shared_ptr <const contentHandler> getContents() const;
+	shared_ptr <const contentHandler> getContents() const;
 
 	/** Set the body contents.
 	  *

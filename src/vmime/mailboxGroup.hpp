@@ -159,7 +159,7 @@ public:
 	  * @return mailbox at position 'pos'
 	  * @throw std::out_of_range if the position is out of range
 	  */
-	const shared_ptr <const mailbox> getMailboxAt(const size_t pos) const;
+	shared_ptr <const mailbox> getMailboxAt(const size_t pos) const;
 
 	/** Return the mailbox list.
 	  *

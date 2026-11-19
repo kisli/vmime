@@ -949,7 +949,7 @@ void body::setEpilogText(const string& epilogText) {
 }
 
 
-const shared_ptr <const contentHandler> body::getContents() const {
+shared_ptr <const contentHandler> body::getContents() const {
 
 	return m_contents;
 }
@@ -1161,7 +1161,7 @@ shared_ptr <bodyPart> body::getPartAt(const size_t pos) {
 }
 
 
-const shared_ptr <const bodyPart> body::getPartAt(const size_t pos) const {
+shared_ptr <const bodyPart> body::getPartAt(const size_t pos) const {
 
 	return m_parts[pos];
 }

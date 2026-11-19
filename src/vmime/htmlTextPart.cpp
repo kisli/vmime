@@ -388,7 +388,7 @@ void htmlTextPart::setPlainText(const shared_ptr <contentHandler>& plainText) {
 }
 
 
-const shared_ptr <const contentHandler> htmlTextPart::getText() const {
+shared_ptr <const contentHandler> htmlTextPart::getText() const {
 
 	return m_text;
 }

@@ -49,7 +49,7 @@ public:
 	receivedMDNInfos& operator=(const receivedMDNInfos& other);
 
 
-	const shared_ptr <const message> getMessage() const;
+	shared_ptr <const message> getMessage() const;
 
 	/** Return the identifier of the message for which this MDN
 	  * has been generated.

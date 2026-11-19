@@ -119,7 +119,7 @@ public:
 	  * @throw exceptions::no_encoder_available if no encoder is registered
 	  * for this encoding
 	  */
-	const shared_ptr <const registeredEncoder> getEncoderByName(const string& name) const;
+	shared_ptr <const registeredEncoder> getEncoderByName(const string& name) const;
 
 	/** Return the number of registered encoders.
 	  *
@@ -132,7 +132,7 @@ public:
 	  * @param pos position of the registered encoder to return
 	  * @return registered encoder at the specified position
 	  */
-	const shared_ptr <const registeredEncoder> getEncoderAt(const size_t pos) const;
+	shared_ptr <const registeredEncoder> getEncoderAt(const size_t pos) const;
 
 	/** Return a list of all registered encoders.
 	  *

@@ -45,7 +45,7 @@ public:
 	const charset& getCharset() const;
 	void setCharset(const charset& ch);
 
-	const shared_ptr <const contentHandler> getText() const;
+	shared_ptr <const contentHandler> getText() const;
 	void setText(const shared_ptr <contentHandler>& text);
 
 	size_t getPartCount() const;

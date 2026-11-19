@@ -71,7 +71,7 @@ public:
 	  *
 	  * @return text of the part
 	  */
-	virtual const shared_ptr <const contentHandler> getText() const = 0;
+	virtual shared_ptr <const contentHandler> getText() const = 0;
 
 	/** Set the text contained in the part.
 	  *

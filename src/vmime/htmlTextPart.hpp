@@ -52,7 +52,7 @@ public:
 	shared_ptr <const contentHandler> getPlainText() const;
 	void setPlainText(const shared_ptr <contentHandler>& plainText);
 
-	const shared_ptr <const contentHandler> getText() const;
+	shared_ptr <const contentHandler> getText() const;
 	void setText(const shared_ptr <contentHandler>& text);
 
 	/** Embedded object (eg: image for &lt;IMG> tag).

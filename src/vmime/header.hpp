@@ -278,14 +278,14 @@ public:
 	  * @param pos position
 	  * @return field at position 'pos'
 	  */
-	const shared_ptr <headerField> getFieldAt(const size_t pos);
+	shared_ptr <headerField> getFieldAt(const size_t pos);
 
 	/** Return the field at the specified position.
 	  *
 	  * @param pos position
 	  * @return field at position 'pos'
 	  */
-	const shared_ptr <const headerField> getFieldAt(const size_t pos) const;
+	shared_ptr <const headerField> getFieldAt(const size_t pos) const;
 
 	/** Return the field list.
 	  *

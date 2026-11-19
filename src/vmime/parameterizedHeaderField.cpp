@@ -629,13 +629,13 @@ bool parameterizedHeaderField::isEmpty() const {
 }
 
 
-const shared_ptr <parameter> parameterizedHeaderField::getParameterAt(const size_t pos) {
+shared_ptr <parameter> parameterizedHeaderField::getParameterAt(const size_t pos) {
 
 	return m_params[pos];
 }
 
 
-const shared_ptr <const parameter> parameterizedHeaderField::getParameterAt(const size_t pos) const {
+shared_ptr <const parameter> parameterizedHeaderField::getParameterAt(const size_t pos) const {
 
 	return m_params[pos];
 }

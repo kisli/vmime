@@ -168,14 +168,14 @@ public:
 	  * @param pos position
 	  * @return parameter at position 'pos'
 	  */
-	const shared_ptr <parameter> getParameterAt(const size_t pos);
+	shared_ptr <parameter> getParameterAt(const size_t pos);
 
 	/** Return the parameter at the specified position.
 	  *
 	  * @param pos position
 	  * @return parameter at position 'pos'
 	  */
-	const shared_ptr <const parameter> getParameterAt(const size_t pos) const;
+	shared_ptr <const parameter> getParameterAt(const size_t pos) const;
 
 	/** Return the parameter list.
 	  *

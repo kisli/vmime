@@ -106,14 +106,14 @@ public:
 	  * @param pos position
 	  * @return word at position 'pos'
 	  */
-	const shared_ptr <word> getWordAt(const size_t pos);
+	shared_ptr <word> getWordAt(const size_t pos);
 
 	/** Return the word at the specified position.
 	  *
 	  * @param pos position
 	  * @return word at position 'pos'
 	  */
-	const shared_ptr <const word> getWordAt(const size_t pos) const;
+	shared_ptr <const word> getWordAt(const size_t pos) const;
 
 	/** Return the word list.
 	  *

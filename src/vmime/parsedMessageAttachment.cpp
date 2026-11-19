@@ -57,7 +57,7 @@ const word parsedMessageAttachment::getName() const {
 }
 
 
-const shared_ptr <const contentHandler> parsedMessageAttachment::getData() const {
+shared_ptr <const contentHandler> parsedMessageAttachment::getData() const {
 
 	if (!m_data) {
 

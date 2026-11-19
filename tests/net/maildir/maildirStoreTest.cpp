@@ -613,7 +613,7 @@ private:
 		return store;
 	}
 
-	const vmime::shared_ptr <vmime::net::folder> findFolder(
+	vmime::shared_ptr <vmime::net::folder> findFolder(
 		const std::vector <vmime::shared_ptr <vmime::net::folder> >& folders,
 		const vmime::net::folder::path& path
 	) {

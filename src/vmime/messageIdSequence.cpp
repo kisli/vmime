@@ -255,13 +255,13 @@ bool messageIdSequence::isEmpty() const {
 }
 
 
-const shared_ptr <messageId> messageIdSequence::getMessageIdAt(const size_t pos) {
+shared_ptr <messageId> messageIdSequence::getMessageIdAt(const size_t pos) {
 
 	return m_list[pos];
 }
 
 
-const shared_ptr <const messageId> messageIdSequence::getMessageIdAt(const size_t pos) const {
+shared_ptr <const messageId> messageIdSequence::getMessageIdAt(const size_t pos) const {
 
 	return m_list[pos];
 }

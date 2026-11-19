@@ -52,7 +52,7 @@ receivedMDNInfos& receivedMDNInfos::operator=(const receivedMDNInfos& other) {
 }
 
 
-const shared_ptr <const message> receivedMDNInfos::getMessage() const {
+shared_ptr <const message> receivedMDNInfos::getMessage() const {
 
 	return m_msg;
 }

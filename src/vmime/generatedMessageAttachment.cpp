@@ -56,7 +56,7 @@ const word generatedMessageAttachment::getName() const {
 }
 
 
-const shared_ptr <const contentHandler> generatedMessageAttachment::getData() const {
+shared_ptr <const contentHandler> generatedMessageAttachment::getData() const {
 
 	return m_bpa->getData();
 }

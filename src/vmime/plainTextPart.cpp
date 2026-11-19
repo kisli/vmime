@@ -106,7 +106,7 @@ void plainTextPart::setCharset(const charset& ch) {
 }
 
 
-const shared_ptr <const contentHandler> plainTextPart::getText() const{
+shared_ptr <const contentHandler> plainTextPart::getText() const{
 
 	return m_text;
 }

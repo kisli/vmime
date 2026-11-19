@@ -306,7 +306,7 @@ size_t messageParser::getAttachmentCount() const {
 }
 
 
-const shared_ptr <const attachment> messageParser::getAttachmentAt(const size_t pos) const {
+shared_ptr <const attachment> messageParser::getAttachmentAt(const size_t pos) const {
 
 	return m_attach[pos];
 }
@@ -334,7 +334,7 @@ size_t messageParser::getTextPartCount() const {
 }
 
 
-const shared_ptr <const textPart> messageParser::getTextPartAt(const size_t pos) const {
+shared_ptr <const textPart> messageParser::getTextPartAt(const size_t pos) const {
 
 	return m_textParts[pos];
 }

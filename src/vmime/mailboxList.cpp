@@ -119,7 +119,7 @@ shared_ptr <mailbox> mailboxList::getMailboxAt(const size_t pos) {
 }
 
 
-const shared_ptr <const mailbox> mailboxList::getMailboxAt(const size_t pos) const {
+shared_ptr <const mailbox> mailboxList::getMailboxAt(const size_t pos) const {
 
 	return dynamicCast <const mailbox>(m_list.getAddressAt(pos));
 }

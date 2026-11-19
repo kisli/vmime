@@ -77,7 +77,7 @@ public:
 	  *
 	  * @return attachment data
 	  */
-	virtual const shared_ptr <const contentHandler> getData() const = 0;
+	virtual shared_ptr <const contentHandler> getData() const = 0;
 
 	/** Return the encoding used for this attachment.
 	  *

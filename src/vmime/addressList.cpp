@@ -280,7 +280,7 @@ shared_ptr <address> addressList::getAddressAt(const size_t pos) {
 }
 
 
-const shared_ptr <const address> addressList::getAddressAt(const size_t pos) const {
+shared_ptr <const address> addressList::getAddressAt(const size_t pos) const {
 
 	return m_list[pos];
 }

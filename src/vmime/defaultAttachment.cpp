@@ -137,7 +137,7 @@ const word defaultAttachment::getName() const {
 }
 
 
-const shared_ptr <const contentHandler> defaultAttachment::getData() const {
+shared_ptr <const contentHandler> defaultAttachment::getData() const {
 
 	return m_data;
 }

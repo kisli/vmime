@@ -99,7 +99,7 @@ public:
 	  * @param pos position of the attachment
 	  * @return attachment at position 'pos'
 	  */
-	const shared_ptr <const attachment> getAttachmentAt(const size_t pos) const;
+	shared_ptr <const attachment> getAttachmentAt(const size_t pos) const;
 
 	/** Return the attachments of the message.
 	  *
@@ -124,7 +124,7 @@ public:
 	  * @param pos position of the text part
 	  * @return text part at position 'pos'
 	  */
-	const shared_ptr <const textPart> getTextPartAt(const size_t pos) const;
+	shared_ptr <const textPart> getTextPartAt(const size_t pos) const;
 
 private:
 

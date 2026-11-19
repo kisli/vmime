@@ -377,7 +377,7 @@ shared_ptr <mailbox> mailboxGroup::getMailboxAt(const size_t pos) {
 }
 
 
-const shared_ptr <const mailbox> mailboxGroup::getMailboxAt(const size_t pos) const {
+shared_ptr <const mailbox> mailboxGroup::getMailboxAt(const size_t pos) const {
 
 	return m_list[pos];
 }

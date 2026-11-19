@@ -50,7 +50,7 @@ public:
 	const text getDescription() const;
 	const encoding getEncoding() const;
 
-	const shared_ptr <const contentHandler> getData() const;
+	shared_ptr <const contentHandler> getData() const;
 
 	shared_ptr <const object> getPart() const;
 	shared_ptr <const header> getHeader() const;

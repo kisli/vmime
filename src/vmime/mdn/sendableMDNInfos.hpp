@@ -46,7 +46,7 @@ public:
 
 	sendableMDNInfos& operator=(const sendableMDNInfos& other);
 
-	const shared_ptr <const message> getMessage() const;
+	shared_ptr <const message> getMessage() const;
 
 	/** Return the recipient of the MDN (the mailbox that will receive
 	  * the notification message).
