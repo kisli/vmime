@@ -119,7 +119,7 @@ void defaultAttachment::generatePart(const shared_ptr <bodyPart>& part) const {
 }
 
 
-const mediaType defaultAttachment::getType() const {
+mediaType defaultAttachment::getType() const {
 
 	return m_type;
 }

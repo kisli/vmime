@@ -779,7 +779,7 @@ void body::setContentType(const mediaType& type) {
 }
 
 
-const mediaType body::getContentType() const {
+mediaType body::getContentType() const {
 
 	shared_ptr <const contentTypeField> ctf =
 		m_part->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);

@@ -34,7 +34,7 @@ bodyPartAttachment::bodyPartAttachment(const shared_ptr <const bodyPart>& part)
 }
 
 
-const mediaType bodyPartAttachment::getType() const {
+mediaType bodyPartAttachment::getType() const {
 
 	shared_ptr <const contentTypeField> ctf = getContentType();
 

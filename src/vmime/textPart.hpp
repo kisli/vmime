@@ -51,7 +51,7 @@ public:
 	  *
 	  * @return type of text part
 	  */
-	virtual const mediaType getType() const = 0;
+	virtual mediaType getType() const = 0;
 
 	/** Return the charset used to encode text in the
 	  * text part.

@@ -50,7 +50,7 @@ htmlTextPart::~htmlTextPart() {
 }
 
 
-const mediaType htmlTextPart::getType() const {
+mediaType htmlTextPart::getType() const {
 
 	return mediaType(mediaTypes::TEXT, mediaTypes::TEXT_HTML);
 }
@@ -526,7 +526,7 @@ string htmlTextPart::embeddedObject::getReferenceId() const {
 }
 
 
-const mediaType htmlTextPart::embeddedObject::getType() const {
+mediaType htmlTextPart::embeddedObject::getType() const {
 
 	return m_type;
 }

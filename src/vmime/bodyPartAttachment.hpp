@@ -45,7 +45,7 @@ public:
 
 	bodyPartAttachment(const shared_ptr <const bodyPart>& part);
 
-	const mediaType getType() const;
+	mediaType getType() const;
 	word getName() const;
 	text getDescription() const;
 	encoding getEncoding() const;

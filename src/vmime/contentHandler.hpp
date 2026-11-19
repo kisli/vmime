@@ -137,7 +137,7 @@ public:
 	  *
 	  * @return type content media type
 	  */
-	virtual const mediaType getContentTypeHint() const = 0;
+	virtual mediaType getContentTypeHint() const = 0;
 };
 
 

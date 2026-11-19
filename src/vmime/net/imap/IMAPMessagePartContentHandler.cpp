@@ -223,7 +223,7 @@ void IMAPMessagePartContentHandler::setContentTypeHint(const mediaType& type) {
 }
 
 
-const mediaType IMAPMessagePartContentHandler::getContentTypeHint() const {
+mediaType IMAPMessagePartContentHandler::getContentTypeHint() const {
 
 	return m_contentType;
 }

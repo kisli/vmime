@@ -38,7 +38,7 @@ generatedMessageAttachment::generatedMessageAttachment(
 }
 
 
-const mediaType generatedMessageAttachment::getType() const {
+mediaType generatedMessageAttachment::getType() const {
 
 	return mediaType(mediaTypes::MESSAGE, mediaTypes::MESSAGE_RFC822);
 }

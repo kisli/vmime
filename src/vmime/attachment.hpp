@@ -57,7 +57,7 @@ public:
 	  *
 	  * @return content type of the attachment
 	  */
-	virtual const mediaType getType() const = 0;
+	virtual mediaType getType() const = 0;
 
 	/** Return the description of this attachment.
 	  *

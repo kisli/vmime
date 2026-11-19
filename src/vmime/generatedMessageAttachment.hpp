@@ -43,7 +43,7 @@ public:
 
 	generatedMessageAttachment(const shared_ptr <const bodyPart>& part);
 
-	const mediaType getType() const;
+	mediaType getType() const;
 	text getDescription() const;
 	word getName() const;
 

@@ -244,7 +244,7 @@ public:
 	  *
 	  * @return media type of body contents
 	  */
-	const mediaType getContentType() const;
+	mediaType getContentType() const;
 
 	/** Set the charset of contents.
 	  * If the type is not set, it will be set to default "text/plain" type.

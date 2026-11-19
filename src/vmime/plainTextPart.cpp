@@ -44,7 +44,7 @@ plainTextPart::~plainTextPart() {
 }
 
 
-const mediaType plainTextPart::getType() const {
+mediaType plainTextPart::getType() const {
 
 	return mediaType(mediaTypes::TEXT, mediaTypes::TEXT_PLAIN);
 }

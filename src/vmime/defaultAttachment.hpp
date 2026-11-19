@@ -64,7 +64,7 @@ public:
 
 	defaultAttachment& operator=(const defaultAttachment& attach);
 
-	const mediaType getType() const;
+	mediaType getType() const;
 	text getDescription() const;
 	word getName() const;
 	shared_ptr <const contentHandler> getData() const;

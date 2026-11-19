@@ -40,7 +40,7 @@ public:
 	plainTextPart();
 	~plainTextPart();
 
-	const mediaType getType() const;
+	mediaType getType() const;
 
 	const charset& getCharset() const;
 	void setCharset(const charset& ch);

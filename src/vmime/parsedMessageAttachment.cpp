@@ -39,7 +39,7 @@ parsedMessageAttachment::parsedMessageAttachment(const shared_ptr <message>& msg
 }
 
 
-const mediaType parsedMessageAttachment::getType() const {
+mediaType parsedMessageAttachment::getType() const {
 
 	return mediaType(mediaTypes::MESSAGE, mediaTypes::MESSAGE_RFC822);
 }

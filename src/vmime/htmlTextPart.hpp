@@ -44,7 +44,7 @@ public:
 	htmlTextPart();
 	~htmlTextPart();
 
-	const mediaType getType() const;
+	mediaType getType() const;
 
 	const charset& getCharset() const;
 	void setCharset(const charset& ch);
@@ -116,7 +116,7 @@ public:
 		  *
 		  * @return data type
 		  */
-		const mediaType getType() const;
+		mediaType getType() const;
 
 		/** Returns the way this object is referenced.
 		  *

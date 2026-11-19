@@ -220,7 +220,7 @@ void stringContentHandler::setContentTypeHint(const mediaType& type) {
 }
 
 
-const mediaType stringContentHandler::getContentTypeHint() const {
+mediaType stringContentHandler::getContentTypeHint() const {
 
 	return m_contentType;
 }
