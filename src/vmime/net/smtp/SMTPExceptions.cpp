@@ -79,7 +79,7 @@ int SMTPCommandError::statusCode() const {
 }
 
 
-const SMTPResponse::enhancedStatusCode SMTPCommandError::extendedStatusCode() const {
+SMTPResponse::enhancedStatusCode SMTPCommandError::extendedStatusCode() const {
 
 	return m_exStatus;
 }

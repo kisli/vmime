@@ -159,7 +159,7 @@ bool path::isRoot() const {
 }
 
 
-const path::component path::getLastComponent() const {
+path::component path::getLastComponent() const {
 
 	return m_list[m_list.size() - 1];
 }

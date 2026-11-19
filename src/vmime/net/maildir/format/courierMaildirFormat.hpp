@@ -67,7 +67,7 @@ public:
 	bool folderExists(const folder::path& path) const;
 	bool folderHasSubfolders(const folder::path& path) const;
 
-	const utility::file::path folderPathToFileSystemPath(
+	utility::file::path folderPathToFileSystemPath(
 		const folder::path& path,
 		const DirectoryType type
 	) const;
@@ -83,7 +83,7 @@ protected:
 
 
 	static string toModifiedUTF7(const folder::path::component& text);
-	static const folder::path::component fromModifiedUTF7(const string& text);
+	static folder::path::component fromModifiedUTF7(const string& text);
 
 	void renameFolderImpl(const folder::path& oldPath, const folder::path& newPath);
 

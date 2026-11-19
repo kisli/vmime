@@ -295,7 +295,7 @@ public:
 	  *
 	  * @return UID of the message
 	  */
-	virtual const uid getUID() const = 0;
+	virtual uid getUID() const = 0;
 
 	/** Return the size of the message (must fetch before).
 	  *

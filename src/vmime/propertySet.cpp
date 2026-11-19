@@ -222,7 +222,7 @@ propertySet::propertyProxy propertySet::operator[](const string& name) {
 }
 
 
-const propertySet::constPropertyProxy propertySet::operator[](const string& name) const {
+propertySet::constPropertyProxy propertySet::operator[](const string& name) const {
 
 	return constPropertyProxy(name, this);
 }

@@ -182,7 +182,7 @@ shared_ptr <IMAPConnection> IMAPStore::getConnection() {
 }
 
 
-const std::map <string, string> IMAPStore::getServerIdentification() const {
+std::map <string, string> IMAPStore::getServerIdentification() const {
 
 	if (!m_connection) {
 		return std::map <string, string>();

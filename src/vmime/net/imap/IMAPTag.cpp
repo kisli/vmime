@@ -77,7 +77,7 @@ IMAPTag& IMAPTag::operator++() {
 }
 
 
-const IMAPTag IMAPTag::operator++(int) {
+IMAPTag IMAPTag::operator++(int) {
 
 	IMAPTag old(*this);
 	operator++();

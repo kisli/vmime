@@ -65,7 +65,7 @@ public:
 
 	size_t getNumber() const;
 
-	const uid getUID() const;
+	uid getUID() const;
 
 	/** Returns the modification sequence for this message.
 	  *

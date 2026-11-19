@@ -779,7 +779,7 @@ void IMAPConnection::sendIdentification() {
 }
 
 
-const std::map <string, string> IMAPConnection::getServerIdentification() const {
+std::map <string, string> IMAPConnection::getServerIdentification() const {
 
 	return m_serverId;
 }

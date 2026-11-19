@@ -328,7 +328,7 @@ public:
 	  * @throw exceptions::no_such_property if the property does not exist
 	  * @return read-only proxy object for the specified property
 	  */
-	const constPropertyProxy operator[](const string& name) const;
+	constPropertyProxy operator[](const string& name) const;
 
 private:
 

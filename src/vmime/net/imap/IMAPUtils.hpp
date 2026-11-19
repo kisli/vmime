@@ -55,10 +55,10 @@ class VMIME_EXPORT IMAPUtils
 public:
 
 	static string pathToString(const char hierarchySeparator, const folder::path& path);
-	static const folder::path stringToPath(const char hierarchySeparator, const string& str);
+	static folder::path stringToPath(const char hierarchySeparator, const string& str);
 
 	static string toModifiedUTF7(const char hierarchySeparator, const folder::path::component& text);
-	static const folder::path::component fromModifiedUTF7(const string& text);
+	static folder::path::component fromModifiedUTF7(const string& text);
 
 	/** Quote string if it contains IMAP-special characters.
 	  *

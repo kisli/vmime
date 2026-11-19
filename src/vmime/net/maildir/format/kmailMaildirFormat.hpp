@@ -67,7 +67,7 @@ public:
 	bool folderExists(const folder::path& path) const;
 	bool folderHasSubfolders(const folder::path& path) const;
 
-	const utility::file::path folderPathToFileSystemPath(
+	utility::file::path folderPathToFileSystemPath(
 		const folder::path& path,
 		const DirectoryType type
 	) const;

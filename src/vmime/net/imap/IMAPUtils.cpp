@@ -163,7 +163,7 @@ string IMAPUtils::pathToString(
 }
 
 
-const folder::path IMAPUtils::stringToPath(
+folder::path IMAPUtils::stringToPath(
 	const char hierarchySeparator,
 	const string& str
 ) {
@@ -338,7 +338,7 @@ string IMAPUtils::toModifiedUTF7(
 }
 
 
-const folder::path::component IMAPUtils::fromModifiedUTF7(const string& text) {
+folder::path::component IMAPUtils::fromModifiedUTF7(const string& text) {
 
 	// Transcode from modified UTF-7 (RFC-2060).
 	string out;

@@ -104,7 +104,7 @@ public:
 	  *
 	  * @return last component
 	  */
-	const component getLastComponent() const;
+	component getLastComponent() const;
 
 	/** Return the last component of this path (non-const version).
 	  *

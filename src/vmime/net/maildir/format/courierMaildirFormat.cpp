@@ -460,7 +460,7 @@ string courierMaildirFormat::toModifiedUTF7(const folder::path::component& text)
 
 
 // static
-const folder::path::component courierMaildirFormat::fromModifiedUTF7(const string& text) {
+folder::path::component courierMaildirFormat::fromModifiedUTF7(const string& text) {
 
 	// Transcode from modified UTF-7
 	string out;

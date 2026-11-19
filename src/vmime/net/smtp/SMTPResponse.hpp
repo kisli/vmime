@@ -84,7 +84,7 @@ public:
 		int getCode() const;
 
 		void setEnhancedCode(const enhancedStatusCode& enhCode);
-		const enhancedStatusCode getEnhancedCode() const;
+		enhancedStatusCode getEnhancedCode() const;
 
 		void setText(const string& text);
 		string getText() const;
@@ -126,7 +126,7 @@ public:
 	  *
 	  * @return enhanced status code
 	  */
-	const enhancedStatusCode getEnhancedCode() const;
+	enhancedStatusCode getEnhancedCode() const;
 
 	/** Return the SMTP response text.
 	  * The text of each line is concatenated.
@@ -140,7 +140,7 @@ public:
 	  * @param pos line index
 	  * @return line at the specified index
 	  */
-	const responseLine getLineAt(const size_t pos) const;
+	responseLine getLineAt(const size_t pos) const;
 
 	/** Return the number of lines in the response.
 	  *
@@ -152,13 +152,13 @@ public:
 	  *
 	  * @return last response line
 	  */
-	const responseLine getLastLine() const;
+	responseLine getLastLine() const;
 
 	/** Returns the current state of the response parser.
 	  *
 	  * @return current parser state
 	  */
-	const state getCurrentState() const;
+	state getCurrentState() const;
 
 private:
 
@@ -174,10 +174,10 @@ private:
 	void readResponse();
 
 	string readResponseLine();
-	const responseLine getNextResponse();
+	responseLine getNextResponse();
 
 	static int extractResponseCode(const string& response);
-	static const enhancedStatusCode extractEnhancedCode(const string& responseText);
+	static enhancedStatusCode extractEnhancedCode(const string& responseText);
 
 
 	std::vector <responseLine> m_lines;

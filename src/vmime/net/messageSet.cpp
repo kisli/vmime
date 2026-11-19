@@ -135,13 +135,13 @@ UIDMessageRange::UIDMessageRange(const UIDMessageRange& other)
 }
 
 
-const message::uid UIDMessageRange::getFirst() const {
+message::uid UIDMessageRange::getFirst() const {
 
 	return m_first;
 }
 
 
-const message::uid UIDMessageRange::getLast() const {
+message::uid UIDMessageRange::getLast() const {
 
 	return m_last;
 }

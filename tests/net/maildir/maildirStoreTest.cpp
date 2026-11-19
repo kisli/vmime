@@ -37,7 +37,7 @@ typedef vmime::net::folder::path fpath;
 typedef vmime::net::folder::path::component fpathc;
 
 
-const fpath operator/(const fpath& path, const std::string& c) {
+fpath operator/(const fpath& path, const std::string& c) {
 
 	return path / fpathc(c);
 }
@@ -628,7 +628,7 @@ private:
 		return vmime::null;
 	}
 
-	const vmime::utility::url getStoreURL() {
+	vmime::utility::url getStoreURL() {
 
 		vmime::shared_ptr <vmime::utility::fileSystemFactory> fsf =
 			vmime::platform::getHandler()->getFileSystemFactory();

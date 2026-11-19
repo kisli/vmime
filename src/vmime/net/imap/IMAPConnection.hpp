@@ -123,7 +123,7 @@ public:
 	  * lower-case (eg. "name", "version"); empty if the ID command
 	  * was not sent or the server did not identify itself
 	  */
-	const std::map <string, string> getServerIdentification() const;
+	std::map <string, string> getServerIdentification() const;
 
 private:
 

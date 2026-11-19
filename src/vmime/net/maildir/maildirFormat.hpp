@@ -124,7 +124,7 @@ public:
 	  * @param type type of directory to return
 	  * @return corresponding directory on the file system
 	  */
-	virtual const utility::file::path folderPathToFileSystemPath(
+	virtual utility::file::path folderPathToFileSystemPath(
 		const folder::path& path,
 		const DirectoryType type
 	) const = 0;
