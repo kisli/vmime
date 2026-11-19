@@ -98,7 +98,7 @@ unsigned long posixHandler::getUnixTime() const {
 }
 
 
-const vmime::datetime posixHandler::getCurrentLocalTime() const {
+vmime::datetime posixHandler::getCurrentLocalTime() const {
 
 	const time_t t(::time(NULL));
 

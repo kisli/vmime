@@ -72,7 +72,7 @@ public:
 		  *
 		  * @return current date and time
 		  */
-		virtual const datetime getCurrentLocalTime() const = 0;
+		virtual datetime getCurrentLocalTime() const = 0;
 
 		/** Return the host name of the system.
 		  * Used when generating message ids.

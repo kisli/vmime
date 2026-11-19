@@ -45,7 +45,7 @@ bool contentDispositionField::hasCreationDate() const {
 }
 
 
-const datetime contentDispositionField::getCreationDate() const {
+datetime contentDispositionField::getCreationDate() const {
 
 	shared_ptr <parameter> param = findParameter("creation-date");
 
@@ -69,7 +69,7 @@ bool contentDispositionField::hasModificationDate() const {
 }
 
 
-const datetime contentDispositionField::getModificationDate() const {
+datetime contentDispositionField::getModificationDate() const {
 
 	shared_ptr <parameter> param = findParameter("modification-date");
 
@@ -93,7 +93,7 @@ bool contentDispositionField::hasReadDate() const {
 }
 
 
-const datetime contentDispositionField::getReadDate() const {
+datetime contentDispositionField::getReadDate() const {
 
 	shared_ptr <parameter> param = findParameter("read-date");
 

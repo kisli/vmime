@@ -176,14 +176,14 @@ public:
 	  *
 	  * @return expiration date of this certificate
 	  */
-	virtual const datetime getExpirationDate() const = 0;
+	virtual datetime getExpirationDate() const = 0;
 
 	/** Gets the activation date of this certificate. This is the date
 	  * at which this certificate will be valid.
 	  *
 	  * @return activation date of this certificate
 	  */
-	virtual const datetime getActivationDate() const = 0;
+	virtual datetime getActivationDate() const = 0;
 
 	/** Returns the fingerprint of this certificate.
 	  *

@@ -477,14 +477,14 @@ bool X509Certificate_GnuTLS::verifyHostName(
 }
 
 
-const datetime X509Certificate_GnuTLS::getActivationDate() const {
+datetime X509Certificate_GnuTLS::getActivationDate() const {
 
 	const time_t t = gnutls_x509_crt_get_activation_time(m_data->cert);
 	return datetime(t);
 }
 
 
-const datetime X509Certificate_GnuTLS::getExpirationDate() const {
+datetime X509Certificate_GnuTLS::getExpirationDate() const {
 
 	const time_t t = gnutls_x509_crt_get_expiration_time(m_data->cert);
 	return datetime(t);

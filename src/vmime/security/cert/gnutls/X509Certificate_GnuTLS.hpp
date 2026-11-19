@@ -63,8 +63,8 @@ public:
 		std::vector <std::string>* nonMatchingNames = NULL
 	) const;
 
-	const datetime getExpirationDate() const;
-	const datetime getActivationDate() const;
+	datetime getExpirationDate() const;
+	datetime getActivationDate() const;
 
 	const byteArray getFingerprint(const DigestAlgorithm algo) const;
 

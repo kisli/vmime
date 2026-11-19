@@ -66,8 +66,8 @@ public:
 		std::vector <std::string>* nonMatchingNames = NULL
 	) const;
 
-	const datetime getExpirationDate() const;
-	const datetime getActivationDate() const;
+	datetime getExpirationDate() const;
+	datetime getActivationDate() const;
 
 	const byteArray getFingerprint(const DigestAlgorithm algo) const;
 
@@ -99,7 +99,7 @@ private:
 	 *
 	 *  @param pointer to ASN1_TIME struct to convert
 	 */
-	const datetime convertX509Date(void* time) const;
+	datetime convertX509Date(void* time) const;
 
 	struct OpenSSLX509CertificateInternalData* m_data;
 };

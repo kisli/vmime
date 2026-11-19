@@ -1005,7 +1005,7 @@ void datetime::setDate(
 }
 
 
-const datetime datetime::now() {
+datetime datetime::now() {
 
 	return platform::getHandler()->getCurrentLocalTime();
 }

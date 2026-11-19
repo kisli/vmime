@@ -56,7 +56,7 @@ public:
 
 	unsigned long getUnixTime() const;
 
-	const vmime::datetime getCurrentLocalTime() const;
+	vmime::datetime getCurrentLocalTime() const;
 
 	const vmime::charset getLocalCharset() const;
 

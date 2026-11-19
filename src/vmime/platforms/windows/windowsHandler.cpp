@@ -84,7 +84,7 @@ unsigned long windowsHandler::getUnixTime() const {
 }
 
 
-const vmime::datetime windowsHandler::getCurrentLocalTime() const {
+vmime::datetime windowsHandler::getCurrentLocalTime() const {
 
 	const time_t t(::time(NULL));
 

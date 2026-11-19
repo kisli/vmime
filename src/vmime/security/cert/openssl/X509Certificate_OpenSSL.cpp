@@ -618,7 +618,7 @@ bool X509Certificate_OpenSSL::verifyHostName(
 }
 
 
-const datetime X509Certificate_OpenSSL::convertX509Date(void* time) const {
+datetime X509Certificate_OpenSSL::convertX509Date(void* time) const {
 
 	char* buffer;
 	BIO* out = BIO_new(BIO_s_mem());
@@ -653,13 +653,13 @@ const datetime X509Certificate_OpenSSL::convertX509Date(void* time) const {
 }
 
 
-const datetime X509Certificate_OpenSSL::getActivationDate() const {
+datetime X509Certificate_OpenSSL::getActivationDate() const {
 
 	return convertX509Date(X509_get_notBefore(m_data->cert));
 }
 
 
-const datetime X509Certificate_OpenSSL::getExpirationDate() const {
+datetime X509Certificate_OpenSSL::getExpirationDate() const {
 
 	return convertX509Date(X509_get_notAfter(m_data->cert));
 }
