@@ -219,7 +219,14 @@ public:
 	void getTime(int& hour, int& minute, int& second, int& zone) const;
 	void getTime(int& hour, int& minute, int& second) const;
 	void getDate(int& year, int& month, int& day) const;
-	time_t to_time_t() const;
+
+	/** Return the number of seconds elapsed since the Epoch
+	  * (1970-01-01 00:00:00 UTC). The time zone is taken into account,
+	  * so that datetime(t, zone).toTimeT() == t whatever the zone.
+	  *
+	  * @return POSIX timestamp
+	  */
+	time_t toTimeT() const;
 
 	// Set
 	void setYear(const int year);

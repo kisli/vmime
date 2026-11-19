@@ -1126,18 +1126,22 @@ bool datetime::operator>=(const datetime& other) const {
 }
 
 
-time_t datetime::to_time_t() const {
+time_t datetime::toTimeT() const {
 
-	struct tm when{};
-	int zone = 0;
+	// Number of days since 1970-01-01, computed here because timegm() is
+	// not portable (missing on Windows), and _mkgmtime() rejects dates
+	// before 1970. Algorithm "days_from_civil" from
+	// https://howardhinnant.github.io/date_algorithms.html
+	const int y = m_year - (m_month <= 2 ? 1 : 0);
+	const int era = (y >= 0 ? y : y - 399) / 400;
+	const int yoe = y - era * 400;
+	const int doy = (153 * (m_month + (m_month > 2 ? -3 : 9)) + 2) / 5 + m_day - 1;
+	const int doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
+	const long long days = era * 146097LL + doe - 719468;
 
-	getDate(when.tm_year, when.tm_mon, when.tm_mday);
-	getTime(when.tm_hour, when.tm_min, when.tm_sec, zone);
-	when.tm_year -= 1900;
-	when.tm_mon  -= 1;
-	when.tm_min  -= zone;
-	when.tm_isdst = -1;
-	return timegm(&when);
+	return static_cast <time_t>(
+		days * 86400 + m_hour * 3600 + m_minute * 60 + m_second - m_zone * 60LL
+	);
 }
 
 
