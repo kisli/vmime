@@ -725,7 +725,7 @@ string emailAddress::toString() const {
 }
 
 
-const text emailAddress::toText() const {
+text emailAddress::toText() const {
 
 	text txt;
 	txt.appendWord(make_shared <vmime::word>(m_localName));

@@ -45,7 +45,7 @@ const mediaType parsedMessageAttachment::getType() const {
 }
 
 
-const text parsedMessageAttachment::getDescription() const {
+text parsedMessageAttachment::getDescription() const {
 
 	return text();
 }

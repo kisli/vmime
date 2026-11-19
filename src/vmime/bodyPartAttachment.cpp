@@ -59,7 +59,7 @@ word bodyPartAttachment::getName() const {
 }
 
 
-const text bodyPartAttachment::getDescription() const {
+text bodyPartAttachment::getDescription() const {
 
 	text description;
 

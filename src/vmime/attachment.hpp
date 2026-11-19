@@ -64,7 +64,7 @@ public:
 	  * @return attachment description, or an empty text
 	  * if no description is available
 	  */
-	virtual const text getDescription() const = 0;
+	virtual text getDescription() const = 0;
 
 	/** Return the (file) name of this attachment.
 	  *

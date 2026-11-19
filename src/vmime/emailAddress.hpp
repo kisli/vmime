@@ -88,7 +88,7 @@ public:
 	  *
 	  * @return email address as multibyte text
 	  */
-	const text toText() const;
+	text toText() const;
 
 	// Comparison
 	bool operator==(const class emailAddress& eml) const;

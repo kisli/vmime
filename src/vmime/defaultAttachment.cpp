@@ -125,7 +125,7 @@ const mediaType defaultAttachment::getType() const {
 }
 
 
-const text defaultAttachment::getDescription() const {
+text defaultAttachment::getDescription() const {
 
 	return m_desc;
 }

@@ -44,7 +44,7 @@ const mediaType generatedMessageAttachment::getType() const {
 }
 
 
-const text generatedMessageAttachment::getDescription() const {
+text generatedMessageAttachment::getDescription() const {
 
 	return m_bpa->getDescription();
 }
