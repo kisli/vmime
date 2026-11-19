@@ -29,6 +29,8 @@
 
 #include "vmime/security/cert/X509Certificate.hpp"
 
+#include <cstring>
+
 
 // Self-signed certificate for CN=mail.vmime.org, with subject alternative
 // names DNS:mail.vmime.org, IP:192.0.2.1 and IP:2001:db8::1
@@ -46,23 +48,82 @@ static const char testCertificatePEM[] =
 	"Gaor91P2kUwL1MRIKAbkK/w=\n"
 	"-----END CERTIFICATE-----\n";
 
+// Self-signed certificate for *.vmime.org (common name and subject
+// alternative name)
+static const char wildcardCertificatePEM[] =
+	"-----BEGIN CERTIFICATE-----\n"
+	"MIIBSTCB8KADAgECAhQHjRzftcHILtJRA3QlxMpsXJWtvDAKBggqhkjOPQQDAjAW\n"
+	"MRQwEgYDVQQDDAsqLnZtaW1lLm9yZzAgFw0yNjExMTkwMDAwMDBaGA8yMTI2MTAy\n"
+	"NjAwMDAwMFowFjEUMBIGA1UEAwwLKi52bWltZS5vcmcwWTATBgcqhkjOPQIBBggq\n"
+	"hkjOPQMBBwNCAAQ6v1lmkhuZQQI3PJgWg99Es/j2nweN+eBMCA1zpcbBgNW1V5rV\n"
+	"cs0Sr6BzFf/S40t/s/XKx2llbNCJyt0tKAMUoxowGDAWBgNVHREEDzANggsqLnZt\n"
+	"aW1lLm9yZzAKBggqhkjOPQQDAgNIADBFAiEA5hNED3t0/Syq27W77lFP/8XBRl2I\n"
+	"714dkl9l3iEqyEcCIHUix5jdhzB5Xr3W3dyRbgky2K/k+JFLFsqVfSy9rFHx\n"
+	"-----END CERTIFICATE-----\n";
+
+// Self-signed certificate for CN=mail.vmime.org, with the subject
+// alternative name DNS:smtp.vmime.org
+static const char subjectAltNameCertificatePEM[] =
+	"-----BEGIN CERTIFICATE-----\n"
+	"MIIBUTCB+aADAgECAhR5YRJW6C6r8wTO4w7i5ubZUFqbsjAKBggqhkjOPQQDAjAZ\n"
+	"MRcwFQYDVQQDDA5tYWlsLnZtaW1lLm9yZzAgFw0yNjExMTkwMDAwMDBaGA8yMTI2\n"
+	"MTAyNjAwMDAwMFowGTEXMBUGA1UEAwwObWFpbC52bWltZS5vcmcwWTATBgcqhkjO\n"
+	"PQIBBggqhkjOPQMBBwNCAAQGsDb9T9cte1aHsCUfhtmSCk6xfa11Lp8H2NqfHwMx\n"
+	"njnKEOzFW23nvVbxWn5PZycb/qstW9GeS4iOlM2+yEXsox0wGzAZBgNVHREEEjAQ\n"
+	"gg5zbXRwLnZtaW1lLm9yZzAKBggqhkjOPQQDAgNHADBEAiB8uua2aVKv3fGS1USs\n"
+	"6P44my6tkpQ45DX22X4CR44MxQIgUv9etOn6gTdMpz0qu4xLw4BwOWkOQTS329et\n"
+	"iqfSuGg=\n"
+	"-----END CERTIFICATE-----\n";
+
+// Self-signed certificate for CN=mail.vmime.org, without subject
+// alternative names
+static const char commonNameCertificatePEM[] =
+	"-----BEGIN CERTIFICATE-----\n"
+	"MIIBMzCB2qADAgECAhQd8YQSnEnwsCKji9Lo7XI5r62zAjAKBggqhkjOPQQDAjAZ\n"
+	"MRcwFQYDVQQDDA5tYWlsLnZtaW1lLm9yZzAgFw0yNjExMTkwMDAwMDBaGA8yMTI2\n"
+	"MTAyNjAwMDAwMFowGTEXMBUGA1UEAwwObWFpbC52bWltZS5vcmcwWTATBgcqhkjO\n"
+	"PQIBBggqhkjOPQMBBwNCAAT6mvctqsJVhZQ1ncjTCiQR9cyF5CAUe+k7ih+DQmbe\n"
+	"8Cziu+7DuiSxapHZtEPjUm6AQuaTF2bgKP1a4yQu5m+qMAoGCCqGSM49BAMCA0gA\n"
+	"MEUCIBopM92d1KZEBbi66j1+9GxwDHcQTt5DanwBfkM0uWoJAiEAvokgbimTIyqR\n"
+	"Grm9jkJvPRubvMtr9P1mhdRMZ2r4Cxw=\n"
+	"-----END CERTIFICATE-----\n";
+
+// Self-signed certificate for CN=mail.vmime.org\0.other.vmime.org (with
+// a NUL character), without subject alternative names
+static const char nulCommonNameCertificatePEM[] =
+	"-----BEGIN CERTIFICATE-----\n"
+	"MIIBVjCB/KADAgECAhQiAsLPnjFdOukIj4g4lBhAETCZdjAKBggqhkjOPQQDAjAq\n"
+	"MSgwJgYDVQQDDB9tYWlsLnZtaW1lLm9yZwAub3RoZXIudm1pbWUub3JnMCAXDTI2\n"
+	"MTExOTAwMDAwMFoYDzIxMjYxMDI2MDAwMDAwWjAqMSgwJgYDVQQDDB9tYWlsLnZt\n"
+	"aW1lLm9yZwAub3RoZXIudm1pbWUub3JnMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcD\n"
+	"QgAEmZARuq/g4QUuVt+K32g3+RrQrQhP2T9WkJV2mOTtgezQyS5FzGaIp84m03mg\n"
+	"00n3YumaWMDz/SjSJDAb/MgCITAKBggqhkjOPQQDAgNJADBGAiEA+cdusS+a30WG\n"
+	"3v6bwuJROrRz0IJ6tWtfHAMCsggQ7h8CIQDRBFne1JxH9+v1+wSPZVHWYmh62KUM\n"
+	"enkFiC8ghP/NLg==\n"
+	"-----END CERTIFICATE-----\n";
+
 
 
 VMIME_TEST_SUITE_BEGIN(X509CertificateTest)
 
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testVerifyHostName)
+		VMIME_TEST(testVerifyHostNamePartialLabels)
+		VMIME_TEST(testVerifyHostNameWildcard)
+		VMIME_TEST(testVerifyHostNameSubjectAltName)
+		VMIME_TEST(testVerifyHostNameCommonName)
+		VMIME_TEST(testVerifyHostNameNulInCommonName)
 		VMIME_TEST(testVerifyHostNameIPv4)
 		VMIME_TEST(testVerifyHostNameIPv6)
 	VMIME_TEST_LIST_END
 
 
-	static vmime::shared_ptr <vmime::security::cert::X509Certificate> importTestCertificate() {
+	static vmime::shared_ptr <vmime::security::cert::X509Certificate>
+		importTestCertificate(const char* pem = testCertificatePEM) {
 
 		vmime::shared_ptr <vmime::security::cert::X509Certificate> cert =
 			vmime::security::cert::X509Certificate::import(
-				reinterpret_cast <const vmime::byte_t*>(testCertificatePEM),
-				sizeof(testCertificatePEM) - 1
+				reinterpret_cast <const vmime::byte_t*>(pem), strlen(pem)
 			);
 
 		VASSERT_NOT_NULL("Import", cert);
@@ -75,7 +136,66 @@ VMIME_TEST_SUITE_BEGIN(X509CertificateTest)
 		vmime::shared_ptr <vmime::security::cert::X509Certificate> cert = importTestCertificate();
 
 		VASSERT_TRUE("Match", cert->verifyHostName("mail.vmime.org"));
+		VASSERT_TRUE("Case", cert->verifyHostName("MAIL.Vmime.Org"));
 		VASSERT_FALSE("No match", cert->verifyHostName("www.vmime.org"));
+	}
+
+	void testVerifyHostNamePartialLabels() {
+
+		vmime::shared_ptr <vmime::security::cert::X509Certificate> cert = importTestCertificate();
+
+		// Names must match entirely, not only their end
+		VASSERT_FALSE("Suffix of the name", cert->verifyHostName("ail.vmime.org"));
+		VASSERT_FALSE("Name as suffix", cert->verifyHostName("xmail.vmime.org"));
+		VASSERT_FALSE("Name as suffix 2", cert->verifyHostName("smtp.mail.vmime.org"));
+		VASSERT_FALSE("Parent domain", cert->verifyHostName("vmime.org"));
+		VASSERT_FALSE("Leading dot", cert->verifyHostName(".vmime.org"));
+		VASSERT_FALSE("Empty", cert->verifyHostName(""));
+	}
+
+	void testVerifyHostNameWildcard() {
+
+		vmime::shared_ptr <vmime::security::cert::X509Certificate> cert =
+			importTestCertificate(wildcardCertificatePEM);
+
+		VASSERT_TRUE("Match", cert->verifyHostName("smtp.vmime.org"));
+
+		// The wildcard only matches the whole left-most label (RFC 9525,
+		// section 6.3)
+		VASSERT_FALSE("Domain", cert->verifyHostName("vmime.org"));
+		VASSERT_FALSE("Two labels", cert->verifyHostName("a.b.vmime.org"));
+		VASSERT_FALSE("Partial label", cert->verifyHostName("evilvmime.org"));
+	}
+
+	void testVerifyHostNameSubjectAltName() {
+
+		vmime::shared_ptr <vmime::security::cert::X509Certificate> cert =
+			importTestCertificate(subjectAltNameCertificatePEM);
+
+		// The common name is not used if there are DNS names in subject
+		// alternative names (RFC 6125, section 6.4.4)
+		VASSERT_TRUE("Subject alternative name", cert->verifyHostName("smtp.vmime.org"));
+		VASSERT_FALSE("Common name", cert->verifyHostName("mail.vmime.org"));
+	}
+
+	void testVerifyHostNameCommonName() {
+
+		vmime::shared_ptr <vmime::security::cert::X509Certificate> cert =
+			importTestCertificate(commonNameCertificatePEM);
+
+		// Without DNS names in subject alternative names, the common name is
+		// used (RFC 6125, section 6.4.4): RFC 9525 does not allow it any more,
+		// but it is kept for compatibility
+		VASSERT_TRUE("Match", cert->verifyHostName("mail.vmime.org"));
+		VASSERT_FALSE("Suffix of the name", cert->verifyHostName("ail.vmime.org"));
+	}
+
+	void testVerifyHostNameNulInCommonName() {
+
+		vmime::shared_ptr <vmime::security::cert::X509Certificate> cert =
+			importTestCertificate(nulCommonNameCertificatePEM);
+
+		VASSERT_FALSE("Before NUL", cert->verifyHostName("mail.vmime.org"));
 	}
 
 	void testVerifyHostNameIPv4() {
