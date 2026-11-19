@@ -57,7 +57,7 @@ public:
 
 	void write(utility::outputStream& os, const Format format) const;
 
-	const byteArray getSerialNumber() const;
+	byteArray getSerialNumber() const;
 
 	string getIssuerString() const;
 
@@ -69,14 +69,14 @@ public:
 	datetime getExpirationDate() const;
 	datetime getActivationDate() const;
 
-	const byteArray getFingerprint(const DigestAlgorithm algo) const;
+	byteArray getFingerprint(const DigestAlgorithm algo) const;
 
 
 	static shared_ptr <X509Certificate> importInternal(X509* cert);
 
 
 	// Implementation of 'certificate'
-	const byteArray getEncoded() const;
+	byteArray getEncoded() const;
 	string getType() const;
 	int getVersion() const;
 	bool equals(const shared_ptr <const certificate>& other) const;

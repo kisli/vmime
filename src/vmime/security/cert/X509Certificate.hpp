@@ -120,7 +120,7 @@ public:
 	  *
 	  * @return serial number of this certificate
 	  */
-	virtual const byteArray getSerialNumber() const = 0;
+	virtual byteArray getSerialNumber() const = 0;
 
 	/** Returns the distinguished name of the issuer of this certificate.
 	  * Eg. "C=US,O=VeriSign\, Inc.,OU=Class 1 Public Primary Certification Authority"
@@ -189,7 +189,7 @@ public:
 	  *
 	  * @return the fingerprint of this certificate
 	  */
-	virtual const byteArray getFingerprint(const DigestAlgorithm algo) const = 0;
+	virtual byteArray getFingerprint(const DigestAlgorithm algo) const = 0;
 
 	/** Checks that the certificate is currently valid. For the certificate
 	  * to be valid, the current date and time must be in the validity period

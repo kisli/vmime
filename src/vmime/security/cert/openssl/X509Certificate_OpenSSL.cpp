@@ -325,7 +325,7 @@ err:
 }
 
 
-const byteArray X509Certificate_OpenSSL::getSerialNumber() const {
+byteArray X509Certificate_OpenSSL::getSerialNumber() const {
 
 	ASN1_INTEGER *serial = X509_get_serialNumber(m_data->cert);
 	BIGNUM *bnser = ASN1_INTEGER_to_BN(serial, NULL);
@@ -665,7 +665,7 @@ datetime X509Certificate_OpenSSL::getExpirationDate() const {
 }
 
 
-const byteArray X509Certificate_OpenSSL::getFingerprint(const DigestAlgorithm algo) const {
+byteArray X509Certificate_OpenSSL::getFingerprint(const DigestAlgorithm algo) const {
 
 	BIO *out;
 	int j;
@@ -718,7 +718,7 @@ const byteArray X509Certificate_OpenSSL::getFingerprint(const DigestAlgorithm al
 }
 
 
-const byteArray X509Certificate_OpenSSL::getEncoded() const {
+byteArray X509Certificate_OpenSSL::getEncoded() const {
 
 	byteArray bytes;
 	utility::outputStreamByteArrayAdapter os(bytes);

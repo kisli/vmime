@@ -218,7 +218,7 @@ void X509Certificate_GnuTLS::write(
 }
 
 
-const byteArray X509Certificate_GnuTLS::getSerialNumber() const {
+byteArray X509Certificate_GnuTLS::getSerialNumber() const {
 
 	char serial[64];
 	size_t serialSize = sizeof(serial);
@@ -491,7 +491,7 @@ datetime X509Certificate_GnuTLS::getExpirationDate() const {
 }
 
 
-const byteArray X509Certificate_GnuTLS::getFingerprint(const DigestAlgorithm algo) const {
+byteArray X509Certificate_GnuTLS::getFingerprint(const DigestAlgorithm algo) const {
 
 	gnutls_digest_algorithm_t galgo;
 
@@ -531,7 +531,7 @@ const byteArray X509Certificate_GnuTLS::getFingerprint(const DigestAlgorithm alg
 }
 
 
-const byteArray X509Certificate_GnuTLS::getEncoded() const {
+byteArray X509Certificate_GnuTLS::getEncoded() const {
 
 	byteArray bytes;
 	utility::outputStreamByteArrayAdapter os(bytes);

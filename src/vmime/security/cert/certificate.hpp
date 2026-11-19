@@ -44,7 +44,7 @@ public:
 	  *
 	  * @return the encoded form of this certificate
 	  */
-	virtual const byteArray getEncoded() const = 0;
+	virtual byteArray getEncoded() const = 0;
 
 	/** Return the type of this certificate.
 	  *
