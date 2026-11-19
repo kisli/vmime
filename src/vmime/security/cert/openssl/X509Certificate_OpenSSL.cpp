@@ -526,25 +526,6 @@ void X509Certificate::verifyChain(
 }
 
 
-// static
-bool X509Certificate_OpenSSL::cnMatch(const char* cnBuf, const char* host) {
-
-	// Right-to-left match, looking for a '*' wildcard
-	const bool hasWildcard = (strlen(cnBuf) > 1 && cnBuf[0] == '*' && cnBuf[1] == '.');
-	const char* cnBufReverseEndPtr = (cnBuf + (hasWildcard ? 2 : 0));
-	const char* hostPtr = host + strlen(host);
-	const char* cnPtr = cnBuf + strlen(cnBuf);
-
-	bool matches = true;
-
-	while (matches && --hostPtr >= host && --cnPtr >= cnBufReverseEndPtr) {
-		matches = (toupper(*hostPtr) == toupper(*cnPtr));
-	}
-
-	return matches;
-}
-
-
 bool X509Certificate_OpenSSL::verifyHostName(
 	const string& hostname,
 	std::vector <std::string>* nonMatchingNames
@@ -558,63 +539,68 @@ bool X509Certificate_OpenSSL::verifyHostName(
 		return ipMatch == 1;
 	}
 
-	// First, check subject common name against hostname
-	char CNBuffer[1024];
-	CNBuffer[sizeof(CNBuffer) - 1] = '\0';
-
-	auto xname = X509_get_subject_name(m_data->cert);
-
-	if (X509_NAME_get_text_by_NID(xname, NID_commonName, CNBuffer, sizeof(CNBuffer)) != -1) {
-
-		if (cnMatch(CNBuffer, hostname.c_str())) {
-			return true;
-		}
-
-		if (nonMatchingNames) {
-			nonMatchingNames->push_back(CNBuffer);
-		}
-	}
-
-	// Now, look in subject alternative names
-	bool verify = false;
+	// DNS names of the subject alternative names
+	std::vector <string> dnsNames;
 
 	STACK_OF(GENERAL_NAME)* altNames = static_cast <GENERAL_NAMES*>
 		(X509_get_ext_d2i(m_data->cert, NID_subject_alt_name, NULL, NULL));
 
-	if (altNames == NULL) {
-		return false;
-	}
+	if (altNames) {
 
-	// Check each name within the extension
-	for (int i = 0, n = sk_GENERAL_NAME_num(altNames) ; i < n ; ++i) {
+		for (int i = 0, n = sk_GENERAL_NAME_num(altNames) ; i < n ; ++i) {
 
-		const GENERAL_NAME* currentName = sk_GENERAL_NAME_value(altNames, i);
+			const GENERAL_NAME* currentName = sk_GENERAL_NAME_value(altNames, i);
 
-		if (currentName->type == GEN_DNS) {
+			if (currentName->type == GEN_DNS) {
 
-			// Current name is a DNS name, let's check it
-			const char *DNSName = (const char *) ASN1_STRING_get0_data(currentName->d.dNSName);
-
-			// Make sure there isn't an embedded NUL character in the DNS name
-			if (ASN1_STRING_length(currentName->d.dNSName) != strlen(DNSName)) {
-				// Malformed certificate
-				break;
-			}
-
-			if (cnMatch(DNSName, hostname.c_str())) {
-				verify = true;
-				break;
-			}
-
-			if (nonMatchingNames) {
-				nonMatchingNames->push_back(DNSName);
+				dnsNames.push_back(string(
+					reinterpret_cast <const char*>(ASN1_STRING_get0_data(currentName->d.dNSName)),
+					ASN1_STRING_length(currentName->d.dNSName)
+				));
 			}
 		}
+
+		sk_GENERAL_NAME_pop_free(altNames, GENERAL_NAME_free);
 	}
 
-	sk_GENERAL_NAME_pop_free(altNames, GENERAL_NAME_free);
+	// Match the host name against the DNS names of the subject alternative
+	// names. Names must match entirely (labels are not compared partially),
+	// and a wildcard only matches the whole left-most label (RFC 9525,
+	// section 6.3). If there are no DNS names, the common name is used, as
+	// RFC 6125, section 6.4.4 allowed: RFC 9525 does not allow it any more,
+	// but it is kept for compatibility (eg. self-signed certificates with a
+	// common name only), like GnuTLS does.
+	//
+	// The use of the common name is always requested explicitly: by default,
+	// OpenSSL uses it if there are no DNS names before OpenSSL 4.1, and never
+	// since OpenSSL 4.1.
+	const unsigned int flags =
+		X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS |
+		(dnsNames.empty() ? X509_CHECK_FLAG_ALWAYS_CHECK_SUBJECT : X509_CHECK_FLAG_NEVER_CHECK_SUBJECT);
 
-	return verify;
+	// X509_check_host() takes a name starting with a dot as "any subdomain":
+	// do not accept such a name.
+	if (!hostname.empty() && hostname[0] != '.' &&
+	    X509_check_host(m_data->cert, hostname.data(), hostname.length(), flags, NULL) == 1) {
+
+		return true;
+	}
+
+	if (nonMatchingNames) {
+
+		char CNBuffer[1024];
+		CNBuffer[sizeof(CNBuffer) - 1] = '\0';
+
+		auto xname = X509_get_subject_name(m_data->cert);
+
+		if (X509_NAME_get_text_by_NID(xname, NID_commonName, CNBuffer, sizeof(CNBuffer)) != -1) {
+			nonMatchingNames->push_back(CNBuffer);
+		}
+
+		nonMatchingNames->insert(nonMatchingNames->end(), dnsNames.begin(), dnsNames.end());
+	}
+
+	return false;
 }
 
 
