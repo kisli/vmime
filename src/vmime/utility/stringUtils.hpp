@@ -221,7 +221,7 @@ public:
 	  * @return value converted into type 'TYPE'
 	  */
 	template <class TYPE>
-	static const TYPE fromString(const string& value) {
+	static TYPE fromString(const string& value) {
 
 		TYPE ret;
 

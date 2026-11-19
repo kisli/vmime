@@ -119,7 +119,7 @@ public:
 	  * @return value
 	  */
 	template <typename T>
-	const T getValueAs() const {
+	T getValueAs() const {
 
 		T ret;
 		ret.parse(m_value->getBuffer());

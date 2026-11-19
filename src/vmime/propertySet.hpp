@@ -191,7 +191,7 @@ protected:
 		}
 
 		template <class TYPE>
-		const TYPE getValue() const {
+		TYPE getValue() const {
 
 			return m_set->getProperty <TYPE>(m_name);
 		}
@@ -218,7 +218,7 @@ protected:
 		}
 
 		template <class TYPE>
-		const TYPE getValue() const {
+		TYPE getValue() const {
 
 			return m_set->getProperty <TYPE>(m_name);
 		}
@@ -276,7 +276,7 @@ public:
 	  * @return value of the specified property
 	  */
 	template <class TYPE>
-	const TYPE getProperty(const string& name) const {
+	TYPE getProperty(const string& name) const {
 
 		const shared_ptr <property> prop = find(name);
 		if (!prop) throw exceptions::no_such_property(name);
@@ -294,7 +294,7 @@ public:
 	  * if if does not exist
 	  */
 	template <class TYPE>
-	const TYPE getProperty(const string& name, const TYPE defaultValue) const {
+	TYPE getProperty(const string& name, const TYPE defaultValue) const {
 
 		const shared_ptr <property> prop = find(name);
 		return prop ? prop->template getValue <TYPE>() : defaultValue;

@@ -239,7 +239,7 @@ public:
 	  * @return value of the property
 	  */
 	template <typename TYPE>
-	const TYPE getPropertyValue(const shared_ptr <session>& s, const property& p) const {
+	TYPE getPropertyValue(const shared_ptr <session>& s, const property& p) const {
 
 		if (p.getFlags() & property::FLAG_REQUIRED) {
 			return s->getProperties()[getPropertyPrefix() + p.getName()].template getValue <TYPE>();
