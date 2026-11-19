@@ -576,7 +576,7 @@ void parameter::generateImpl(
 
 			if (sectionCount != 1) {  // no section specifier when only a single one
 
-				const string number = std::to_string(sectionNumber);
+				const string number = utility::stringUtils::toString(sectionNumber);
 				os << '*' << number;
 				pos += 1 + number.length();
 			}
