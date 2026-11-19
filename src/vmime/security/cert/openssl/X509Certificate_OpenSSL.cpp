@@ -539,6 +539,30 @@ bool X509Certificate_OpenSSL::verifyHostName(
 		return ipMatch == 1;
 	}
 
+	// DNS names of the subject alternative names
+	std::vector <string> dnsNames;
+
+	STACK_OF(GENERAL_NAME)* altNames = static_cast <GENERAL_NAMES*>
+		(X509_get_ext_d2i(m_data->cert, NID_subject_alt_name, NULL, NULL));
+
+	if (altNames) {
+
+		for (int i = 0, n = sk_GENERAL_NAME_num(altNames) ; i < n ; ++i) {
+
+			const GENERAL_NAME* currentName = sk_GENERAL_NAME_value(altNames, i);
+
+			if (currentName->type == GEN_DNS) {
+
+				dnsNames.push_back(string(
+					reinterpret_cast <const char*>(ASN1_STRING_get0_data(currentName->d.dNSName)),
+					ASN1_STRING_length(currentName->d.dNSName)
+				));
+			}
+		}
+
+		sk_GENERAL_NAME_pop_free(altNames, GENERAL_NAME_free);
+	}
+
 	// Match the host name against the DNS names of the subject alternative
 	// names. Names must match entirely (labels are not compared partially),
 	// and a wildcard only matches the whole left-most label (RFC 9525,
@@ -547,13 +571,17 @@ bool X509Certificate_OpenSSL::verifyHostName(
 	// but it is kept for compatibility (eg. self-signed certificates with a
 	// common name only), like GnuTLS does.
 	//
+	// The use of the common name is always requested explicitly: by default,
+	// OpenSSL uses it if there are no DNS names before OpenSSL 4.1, and never
+	// since OpenSSL 4.1.
+	const unsigned int flags =
+		X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS |
+		(dnsNames.empty() ? X509_CHECK_FLAG_ALWAYS_CHECK_SUBJECT : X509_CHECK_FLAG_NEVER_CHECK_SUBJECT);
+
 	// X509_check_host() takes a name starting with a dot as "any subdomain":
 	// do not accept such a name.
 	if (!hostname.empty() && hostname[0] != '.' &&
-	    X509_check_host(
-	        m_data->cert, hostname.data(), hostname.length(),
-	        X509_CHECK_FLAG_NO_PARTIAL_WILDCARDS, NULL
-	    ) == 1) {
+	    X509_check_host(m_data->cert, hostname.data(), hostname.length(), flags, NULL) == 1) {
 
 		return true;
 	}
@@ -569,26 +597,7 @@ bool X509Certificate_OpenSSL::verifyHostName(
 			nonMatchingNames->push_back(CNBuffer);
 		}
 
-		STACK_OF(GENERAL_NAME)* altNames = static_cast <GENERAL_NAMES*>
-			(X509_get_ext_d2i(m_data->cert, NID_subject_alt_name, NULL, NULL));
-
-		if (altNames) {
-
-			for (int i = 0, n = sk_GENERAL_NAME_num(altNames) ; i < n ; ++i) {
-
-				const GENERAL_NAME* currentName = sk_GENERAL_NAME_value(altNames, i);
-
-				if (currentName->type == GEN_DNS) {
-
-					nonMatchingNames->push_back(string(
-						reinterpret_cast <const char*>(ASN1_STRING_get0_data(currentName->d.dNSName)),
-						ASN1_STRING_length(currentName->d.dNSName)
-					));
-				}
-			}
-
-			sk_GENERAL_NAME_pop_free(altNames, GENERAL_NAME_free);
-		}
+		nonMatchingNames->insert(nonMatchingNames->end(), dnsNames.begin(), dnsNames.end());
 	}
 
 	return false;
