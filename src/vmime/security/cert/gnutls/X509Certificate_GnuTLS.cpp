@@ -31,8 +31,15 @@
 #include <gnutls/x509.h>
 
 #include <ctime>
+#include <utility>
+#include <vector>
 
 #include "vmime/security/cert/gnutls/X509Certificate_GnuTLS.hpp"
+
+#include "vmime/security/cert/certificateExpiredException.hpp"
+#include "vmime/security/cert/certificateIssuerVerificationException.hpp"
+#include "vmime/security/cert/certificateNotTrustedException.hpp"
+#include "vmime/security/cert/certificateNotYetValidException.hpp"
 
 #include "vmime/utility/outputStreamByteArrayAdapter.hpp"
 
@@ -222,29 +229,213 @@ const byteArray X509Certificate_GnuTLS::getSerialNumber() const {
 }
 
 
-bool X509Certificate_GnuTLS::checkIssuer(const shared_ptr <const X509Certificate>& issuer_) const {
+#ifndef VMIME_BUILDING_DOC
 
-	shared_ptr <const X509Certificate_GnuTLS> issuer =
-		dynamicCast <const X509Certificate_GnuTLS>(issuer_);
+// Output of the verification of each certificate, collected for
+// X509Certificate::verifyChain() by verifyOutputCallback()
+static thread_local std::vector <std::pair <gnutls_x509_crt_t, unsigned int> >* t_verifyOutput = NULL;
 
-	return gnutls_x509_crt_check_issuer(m_data->cert, issuer->m_data->cert) >= 1;
+
+static int verifyOutputCallback(
+	gnutls_x509_crt_t cert,
+	gnutls_x509_crt_t /* issuer */,
+	gnutls_x509_crl_t /* crl */,
+	unsigned int verificationOutput
+) {
+
+	if (t_verifyOutput) {
+		t_verifyOutput->push_back(std::make_pair(cert, verificationOutput));
+	}
+
+	return 0;
 }
 
 
-bool X509Certificate_GnuTLS::verify(const shared_ptr <const X509Certificate>& caCert_) const {
+// Returns the reasons for the given verification status
+static const string getStatusReasons(const unsigned int status) {
 
-	shared_ptr <const X509Certificate_GnuTLS> caCert =
-		dynamicCast <const X509Certificate_GnuTLS>(caCert_);
+	static const struct {
+		unsigned int flag;
+		const char* reason;
+	} REASONS[] = {
+		{ GNUTLS_CERT_SIGNATURE_FAILURE, "certificate signature failure" },
+		{ GNUTLS_CERT_SIGNER_NOT_CA, "invalid CA certificate" },
+		{ GNUTLS_CERT_SIGNER_CONSTRAINTS_FAILURE, "issuer constraints violated" },
+		{ GNUTLS_CERT_INSECURE_ALGORITHM, "insecure algorithm" },
+		{ GNUTLS_CERT_SIGNER_NOT_FOUND, "unknown issuer" },
+		{ GNUTLS_CERT_PURPOSE_MISMATCH, "unsuitable certificate purpose" },
+		{ GNUTLS_CERT_REVOKED, "certificate revoked" },
+	};
 
-	unsigned int verify = 0;
+	string reasons;
 
-	const int res = gnutls_x509_crt_verify(
-		m_data->cert, &(caCert->m_data->cert), 1,
-		GNUTLS_VERIFY_ALLOW_X509_V1_CA_CRT,
-		&verify
+	for (size_t i = 0 ; i < sizeof(REASONS) / sizeof(REASONS[0]) ; ++i) {
+
+		if (status & REASONS[i].flag) {
+
+			if (!reasons.empty()) {
+				reasons += ", ";
+			}
+
+			reasons += REASONS[i].reason;
+		}
+	}
+
+	// Other reasons: use the description from GnuTLS
+	if (reasons.empty()) {
+
+		gnutls_datum_t desc;
+
+		if (gnutls_certificate_verification_status_print(status, GNUTLS_CRT_X509, &desc, 0) == 0) {
+
+			reasons = reinterpret_cast <const char*>(desc.data);
+			gnutls_free(desc.data);
+
+			while (!reasons.empty() && reasons[reasons.length() - 1] == ' ') {
+				reasons.erase(reasons.length() - 1);
+			}
+		}
+	}
+
+	return reasons;
+}
+
+
+template <typename E>
+static void throwCertificateException(E ex, const shared_ptr <certificate>& cert) {
+
+	ex.setCertificate(cert);
+	throw ex;
+}
+
+#endif // VMIME_BUILDING_DOC
+
+
+// static
+void X509Certificate::verifyChain(
+	const std::vector <shared_ptr <X509Certificate> >& chain,
+	const std::vector <shared_ptr <X509Certificate> >& rootCAs
+) {
+
+	if (chain.empty()) {
+		throw certificateNotTrustedException();
+	}
+
+	std::vector <gnutls_x509_crt_t> chainCerts;
+	std::vector <gnutls_x509_crt_t> caCerts;
+
+	// Native certificates, to find the certificate on which a problem occurred
+	std::vector <std::pair <gnutls_x509_crt_t, shared_ptr <X509Certificate> > > certs;
+
+	for (const shared_ptr <X509Certificate>& cert : chain) {
+
+		gnutls_x509_crt_t crt = dynamicCast <X509Certificate_GnuTLS>(cert)->m_data->cert;
+
+		chainCerts.push_back(crt);
+		certs.push_back(std::make_pair(crt, cert));
+	}
+
+	for (const shared_ptr <X509Certificate>& cert : rootCAs) {
+
+		gnutls_x509_crt_t crt = dynamicCast <X509Certificate_GnuTLS>(cert)->m_data->cert;
+
+		caCerts.push_back(crt);
+		certs.push_back(std::make_pair(crt, cert));
+	}
+
+	gnutls_x509_trust_list_t trustList;
+
+	if (gnutls_x509_trust_list_init(&trustList, 0) < 0) {
+		throw certificateNotTrustedException();
+	}
+
+	// GnuTLS accepts a path which ends with any trusted CA, even if it is
+	// not self-signed (RFC 5280, section 6.1.1 (d))
+	if (!caCerts.empty() &&
+	    gnutls_x509_trust_list_add_cas(
+	        trustList, &caCerts[0], static_cast <unsigned int>(caCerts.size()), 0
+	    ) < 0) {
+
+		gnutls_x509_trust_list_deinit(trustList, 0);
+		throw certificateNotTrustedException();
+	}
+
+	// The extended key usage of the server certificate, if any, must allow
+	// TLS server authentication (RFC 5280, section 4.2.1.12)
+	gnutls_typed_vdata_st purpose;
+	purpose.type = GNUTLS_DT_KEY_PURPOSE_OID;
+	purpose.data = reinterpret_cast <unsigned char*>(const_cast <char*>(GNUTLS_KP_TLS_WWW_SERVER));
+	purpose.size = 0;
+
+	std::vector <std::pair <gnutls_x509_crt_t, unsigned int> > output;
+	unsigned int status = 0;
+
+	t_verifyOutput = &output;
+
+	const int res = gnutls_x509_trust_list_verify_crt2(
+		trustList, &chainCerts[0], static_cast <unsigned int>(chainCerts.size()),
+		&purpose, 1, 0, &status, verifyOutputCallback
 	);
 
-	return res == 0 && verify == 0;
+	t_verifyOutput = NULL;
+
+	// Do not deinitialize the certificates, which are still ours
+	gnutls_x509_trust_list_deinit(trustList, 0);
+
+	if (res < 0) {
+		throw certificateNotTrustedException(gnutls_strerror(res));
+	}
+
+	if (status == 0) {
+		return;
+	}
+
+	const unsigned int ISSUER_ERRORS =
+		GNUTLS_CERT_SIGNATURE_FAILURE |
+		GNUTLS_CERT_SIGNER_NOT_CA |
+		GNUTLS_CERT_SIGNER_CONSTRAINTS_FAILURE |
+		GNUTLS_CERT_INSECURE_ALGORITHM;
+
+	unsigned int errors = status & ~GNUTLS_CERT_INVALID;
+
+	if (status & ISSUER_ERRORS) {
+		errors = status & ISSUER_ERRORS;
+	} else if (status & GNUTLS_CERT_EXPIRED) {
+		errors = GNUTLS_CERT_EXPIRED;
+	} else if (status & GNUTLS_CERT_NOT_ACTIVATED) {
+		errors = GNUTLS_CERT_NOT_ACTIVATED;
+	}
+
+	// Find the certificate on which the problem occurred (or else, report
+	// the server certificate)
+	shared_ptr <X509Certificate> cert = chain[0];
+	gnutls_x509_crt_t errorCert = NULL;
+
+	for (size_t i = 0 ; !errorCert && i < output.size() ; ++i) {
+
+		if (output[i].second & errors) {
+			errorCert = output[i].first;
+		}
+	}
+
+	for (size_t i = 0 ; errorCert && i < certs.size() ; ++i) {
+
+		if (certs[i].first == errorCert) {
+			cert = certs[i].second;
+			break;
+		}
+	}
+
+	if (errors & ISSUER_ERRORS) {
+		throwCertificateException(certificateIssuerVerificationException(getStatusReasons(errors)), cert);
+	} else if (errors == GNUTLS_CERT_EXPIRED) {
+		throwCertificateException(certificateExpiredException(), cert);
+	} else if (errors == GNUTLS_CERT_NOT_ACTIVATED) {
+		throwCertificateException(certificateNotYetValidException(), cert);
+	} else {
+		// No path to a trusted CA, unsuitable purpose, etc.
+		throwCertificateException(certificateNotTrustedException(getStatusReasons(status)), cert);
+	}
 }
 
 

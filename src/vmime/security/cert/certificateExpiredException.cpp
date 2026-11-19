@@ -43,7 +43,7 @@ certificateExpiredException::certificateExpiredException()
 
 exception* certificateExpiredException::clone() const
 {
-	return new certificateExpiredException();
+	return new certificateExpiredException(*this);
 }
 
 

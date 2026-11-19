@@ -73,14 +73,10 @@ public:
 
 private:
 
-	/** Verify a chain of X.509 certificates.
-	 *
-	 * @param chain list of X.509 certificates
-	 * @param chainLen number of certificates to verify
-	 */
-	void verifyX509chain(shared_ptr <certificateChain> chain, size_t chainLen);
-
-	/** Verify a chain of X.509 certificates.
+	/** Verify a chain of X.509 certificates: the first certificate must be
+	  * one of the trusted certificates, or a certification path to one of
+	  * the root CAs must be validated (see X509Certificate::verifyChain()).
+	  * Then, the first certificate must match the host name.
 	  *
 	  * @param chain list of X.509 certificates
 	  * @param hostname server hostname

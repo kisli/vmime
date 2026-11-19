@@ -54,7 +54,7 @@ certificateException::~certificateException() throw() {
 
 exception* certificateException::clone() const {
 
-	return new certificateException(what());
+	return new certificateException(*this);
 }
 
 

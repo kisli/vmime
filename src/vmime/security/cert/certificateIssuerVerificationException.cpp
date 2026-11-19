@@ -41,9 +41,15 @@ certificateIssuerVerificationException::certificateIssuerVerificationException()
 }
 
 
+certificateIssuerVerificationException::certificateIssuerVerificationException(const string& reason)
+	: certificateException("Certificate subject/issuer verification failed: " + reason + ".") {
+
+}
+
+
 exception* certificateIssuerVerificationException::clone() const {
 
-	return new certificateIssuerVerificationException();
+	return new certificateIssuerVerificationException(*this);
 }
 
 

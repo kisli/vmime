@@ -43,7 +43,7 @@ serverIdentityException::serverIdentityException()
 
 exception* serverIdentityException::clone() const {
 
-	return new serverIdentityException();
+	return new serverIdentityException(*this);
 }
 
 

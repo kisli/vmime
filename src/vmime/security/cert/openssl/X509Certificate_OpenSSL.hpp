@@ -60,9 +60,6 @@ public:
 	const byteArray getSerialNumber() const;
 
 	const string getIssuerString() const;
-	bool checkIssuer(const shared_ptr <const X509Certificate>& issuer) const;
-
-	bool verify(const shared_ptr <const X509Certificate>& caCert) const;
 
 	bool verifyHostName(
 		const string& hostname,

@@ -39,6 +39,10 @@
 #include "vmime/utility/outputStreamByteArrayAdapter.hpp"
 
 #include "vmime/security/cert/certificateException.hpp"
+#include "vmime/security/cert/certificateExpiredException.hpp"
+#include "vmime/security/cert/certificateIssuerVerificationException.hpp"
+#include "vmime/security/cert/certificateNotTrustedException.hpp"
+#include "vmime/security/cert/certificateNotYetValidException.hpp"
 #include "vmime/security/cert/unsupportedCertificateTypeException.hpp"
 
 #include <openssl/x509.h>
@@ -335,77 +339,190 @@ const byteArray X509Certificate_OpenSSL::getSerialNumber() const {
 }
 
 
-bool X509Certificate_OpenSSL::checkIssuer(const shared_ptr <const X509Certificate>& cert_) const {
+#ifndef VMIME_BUILDING_DOC
 
-	shared_ptr <const X509Certificate_OpenSSL> cert =
-		dynamicCast <const X509Certificate_OpenSSL>(cert_);
+// Resources used for verifying a certificate chain
+struct OpenSSLChainVerification {
 
-	// Get issuer for this cert
-	BIO *out;
-	unsigned char *issuer;
+	OpenSSLChainVerification()
+		: store(X509_STORE_new()),
+		  untrusted(sk_X509_new_null()),
+		  ctx(X509_STORE_CTX_new()),
+		  path(NULL) {
 
-	out = BIO_new(BIO_s_mem());
-	X509_NAME_print_ex(out, X509_get_issuer_name(m_data->cert), 0, XN_FLAG_RFC2253);
-	long n = BIO_get_mem_data(out, &issuer);
-	vmime::string thisIssuerName((char*)issuer, n);
-	BIO_free(out);
+	}
 
-	// Get subject of issuer
-	unsigned char *subject;
-	out = BIO_new(BIO_s_mem());
-	X509_NAME_print_ex(out, X509_get_subject_name(cert->m_data->cert), 0, XN_FLAG_RFC2253);
-	n = BIO_get_mem_data(out, &subject);
-	vmime::string subjOfIssuer((char*)subject, n);
-	BIO_free(out);
+	~OpenSSLChainVerification() {
 
-	return subjOfIssuer == thisIssuerName;
+		if (path) {
+			sk_X509_pop_free(path, X509_free);
+		}
+
+		if (ctx) {
+			X509_STORE_CTX_free(ctx);
+		}
+
+		if (untrusted) {
+			sk_X509_free(untrusted);
+		}
+
+		if (store) {
+			X509_STORE_free(store);
+		}
+
+		// A failed verification leaves errors in the queue
+		ERR_clear_error();
+	}
+
+	X509_STORE* store;
+	STACK_OF(X509)* untrusted;
+	X509_STORE_CTX* ctx;
+	STACK_OF(X509)* path;
+};
+
+
+template <typename E>
+static void throwCertificateException(E ex, const shared_ptr <certificate>& cert) {
+
+	ex.setCertificate(cert);
+	throw ex;
 }
 
-
-bool X509Certificate_OpenSSL::verify(const shared_ptr <const X509Certificate>& caCert_) const {
-
-	shared_ptr <const X509Certificate_OpenSSL> caCert =
-		dynamicCast <const X509Certificate_OpenSSL>(caCert_);
+#endif // VMIME_BUILDING_DOC
 
 
-	bool verified = false;
-	bool error = true;
+// static
+void X509Certificate::verifyChain(
+	const std::vector <shared_ptr <X509Certificate> >& chain,
+	const std::vector <shared_ptr <X509Certificate> >& rootCAs
+) {
 
-	X509_STORE *store = X509_STORE_new();
+	if (chain.empty()) {
+		throw certificateNotTrustedException();
+	}
 
-	if (store) {
+	OpenSSLChainVerification verif;
 
-		X509_STORE_CTX *verifyCtx = X509_STORE_CTX_new();
+	if (!verif.store || !verif.untrusted || !verif.ctx) {
+		throw certificateNotTrustedException();
+	}
 
-		if (verifyCtx) {
+	// Native certificates, to find the certificate on which a problem occurred
+	std::vector <std::pair <X509*, shared_ptr <X509Certificate> > > certs;
 
-			if (X509_STORE_add_cert(store, caCert->m_data->cert)) {
+	for (const shared_ptr <X509Certificate>& rootCA : rootCAs) {
 
-				X509_STORE_CTX_init(verifyCtx, store, m_data->cert, NULL);
+		X509* cert = dynamicCast <X509Certificate_OpenSSL>(rootCA)->m_data->cert;
 
-				int ret = X509_verify_cert(verifyCtx);
+		// Fails if the certificate is already in the store, which is not a problem
+		X509_STORE_add_cert(verif.store, cert);
 
-				if (ret == 1) {
+		certs.push_back(std::make_pair(cert, rootCA));
+	}
 
-					verified = true;
-					error = false;
+#ifdef X509_V_FLAG_PARTIAL_CHAIN
+	// The path can end with any trusted CA, even if it is not self-signed
+	// (RFC 5280, section 6.1.1 (d))
+	X509_STORE_set_flags(verif.store, X509_V_FLAG_PARTIAL_CHAIN);
+#endif
 
-				} else if (ret == 0) {
+	for (size_t i = 0 ; i < chain.size() ; ++i) {
 
-					verified = false;
-					error = false;
-				}
+		X509* cert = dynamicCast <X509Certificate_OpenSSL>(chain[i])->m_data->cert;
 
-				//X509_verify_cert_error_string(vrfy_ctx->error)
+		if (i != 0) {
+			sk_X509_push(verif.untrusted, cert);
+		}
 
-				X509_STORE_CTX_free(verifyCtx);
+		certs.push_back(std::make_pair(cert, chain[i]));
+	}
+
+	X509* serverCert = dynamicCast <X509Certificate_OpenSSL>(chain[0])->m_data->cert;
+
+	if (X509_STORE_CTX_init(verif.ctx, verif.store, serverCert, verif.untrusted) != 1) {
+		throw certificateNotTrustedException();
+	}
+
+	// The extended key usage of the server certificate, if any, must allow
+	// TLS server authentication (RFC 5280, section 4.2.1.12)
+	X509_STORE_CTX_set_purpose(verif.ctx, X509_PURPOSE_SSL_SERVER);
+
+	if (X509_verify_cert(verif.ctx) == 1) {
+		return;
+	}
+
+	const int error = X509_STORE_CTX_get_error(verif.ctx);
+	const int depth = X509_STORE_CTX_get_error_depth(verif.ctx);
+
+	X509* errorCert = X509_STORE_CTX_get_current_cert(verif.ctx);
+
+	// For these errors, OpenSSL reports the issuer: report the certificate
+	// which cannot be verified against it instead (as GnuTLS does)
+	if ((error == X509_V_ERR_INVALID_CA ||
+	     error == X509_V_ERR_KEYUSAGE_NO_CERTSIGN ||
+	     error == X509_V_ERR_PATH_LENGTH_EXCEEDED) && depth >= 1) {
+
+		verif.path = X509_STORE_CTX_get1_chain(verif.ctx);
+
+		if (verif.path && depth - 1 < sk_X509_num(verif.path)) {
+			errorCert = sk_X509_value(verif.path, depth - 1);
+		}
+	}
+
+	shared_ptr <X509Certificate> cert = chain[0];
+
+	if (errorCert) {
+
+		cert = null;
+
+		for (size_t i = 0 ; !cert && i < certs.size() ; ++i) {
+
+			if (certs[i].first == errorCert) {
+				cert = certs[i].second;
 			}
 		}
 
-		X509_STORE_free(store);
+		if (!cert) {
+			cert = X509Certificate_OpenSSL::importInternal(errorCert);
+		}
 	}
 
-	return verified && !error;
+	const string reason = X509_verify_cert_error_string(error);
+
+	switch (error) {
+
+		case X509_V_ERR_CERT_HAS_EXPIRED:
+
+			throwCertificateException(certificateExpiredException(), cert);
+			break;
+
+		case X509_V_ERR_CERT_NOT_YET_VALID:
+
+			throwCertificateException(certificateNotYetValidException(), cert);
+			break;
+
+		case X509_V_ERR_CERT_SIGNATURE_FAILURE:
+		case X509_V_ERR_UNABLE_TO_DECRYPT_CERT_SIGNATURE:
+		case X509_V_ERR_UNABLE_TO_DECODE_ISSUER_PUBLIC_KEY:
+		case X509_V_ERR_INVALID_CA:
+		case X509_V_ERR_KEYUSAGE_NO_CERTSIGN:
+		case X509_V_ERR_PATH_LENGTH_EXCEEDED:
+		case X509_V_ERR_PERMITTED_VIOLATION:
+		case X509_V_ERR_EXCLUDED_VIOLATION:
+		case X509_V_ERR_SUBTREE_MINMAX:
+		case X509_V_ERR_UNSUPPORTED_CONSTRAINT_TYPE:
+		case X509_V_ERR_UNSUPPORTED_CONSTRAINT_SYNTAX:
+		case X509_V_ERR_UNSUPPORTED_NAME_SYNTAX:
+
+			throwCertificateException(certificateIssuerVerificationException(reason), cert);
+			break;
+
+		default:
+
+			// No path to a trusted CA, unsuitable purpose, etc.
+			throwCertificateException(certificateNotTrustedException(reason), cert);
+			break;
+	}
 }
 
 

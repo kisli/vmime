@@ -41,7 +41,9 @@ namespace cert {
 
 
 /** Thrown when a certificate in a certificate chain cannot be verified
-  * against the next certificate in the chain (the issuer).
+  * against its issuer: invalid signature, issuer which is not a CA or
+  * is not allowed to sign certificates, path length or name constraints
+  * of the issuer violated.
   */
 class VMIME_EXPORT certificateIssuerVerificationException : public certificateException {
 
@@ -50,6 +52,14 @@ public:
 	/** Constructs a certificateIssuerVerificationException with no detail message.
 	  */
 	certificateIssuerVerificationException();
+
+	/** Constructs a certificateIssuerVerificationException with the precise
+	  * reason of the failure.
+	  *
+	  * @param reason reason of the failure (eg. "certificate signature
+	  * failure"), given by the TLS library
+	  */
+	explicit certificateIssuerVerificationException(const string& reason);
 
 	exception* clone() const;
 };

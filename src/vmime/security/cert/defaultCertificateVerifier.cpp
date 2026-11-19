@@ -61,8 +61,9 @@ void defaultCertificateVerifier::verify(
 	const string& hostname
 ) {
 
+	// Nothing to trust
 	if (chain->getCount() == 0) {
-		return;
+		throw certificateNotTrustedException();
 	}
 
 	const string type = chain->getAt(0)->getType();
@@ -75,145 +76,47 @@ void defaultCertificateVerifier::verify(
 }
 
 
-void defaultCertificateVerifier::verifyX509chain
-	(shared_ptr <certificateChain> chain, size_t chainLen)
-{
-	// For every certificate in the chain, verify that the certificate
-	// has been issued by the next certificate in the chain
-	if (chainLen >= 2) {
-		for (size_t i = 0 ; i < chainLen - 1 ; ++i) {
-			shared_ptr <X509Certificate> cert = dynamicCast <X509Certificate>(chain->getAt(i));
-			shared_ptr <X509Certificate> next = dynamicCast <X509Certificate>(chain->getAt(i + 1));
-
-			if (!cert->checkIssuer(next)) {
-				certificateIssuerVerificationException ex;
-				ex.setCertificate(cert);
-
-				throw ex;
-			}
-		}
-	}
-
-	// For every certificate in the chain, verify that the certificate
-	// is valid at the current time
-	for (size_t i = 0 ; i < chainLen ; ++i) {
-		shared_ptr <X509Certificate> cert = dynamicCast <X509Certificate>(chain->getAt(i));
-		cert->checkValidity();
-	}
-
-	// Check whether the certificate can be trusted
-
-	// -- First, verify that the the last certificate in the chain was
-	// -- issued by a third-party that we trust
-	shared_ptr <X509Certificate> lastCert = dynamicCast <X509Certificate>(chain->getAt(chainLen - 1));
-
-	bool trusted = false;
-
-	for (size_t i = 0 ; !trusted && i < m_x509RootCAs.size() ; ++i) {
-		shared_ptr <X509Certificate> rootCa = m_x509RootCAs[i];
-
-		if (lastCert->verify(rootCa)) {
-			trusted = true;
-		}
-	}
-
-	// -- Next, if the issuer certificate cannot be verified against
-	// -- root CAs, compare the subject's certificate against the
-	// -- trusted certificates
-	shared_ptr <X509Certificate> firstCert = dynamicCast <X509Certificate>(chain->getAt(0));
-
-	for (size_t i = 0 ; !trusted && i < m_x509TrustedCerts.size() ; ++i) {
-		shared_ptr <X509Certificate> cert = m_x509TrustedCerts[i];
-
-		if (firstCert->equals(cert)) {
-			trusted = true;
-		}
-	}
-
-	if (!trusted) {
-		certificateNotTrustedException ex;
-		ex.setCertificate(firstCert);
-
-		throw ex;
-	}
-}
-
 void defaultCertificateVerifier::verifyX509(
 	const shared_ptr <certificateChain>& chain,
 	const string& hostname
 ) {
 
-	// For every certificate in the chain, verify that the certificate
-	// has been issued by the next certificate in the chain
-	if (chain->getCount() >= 2) {
+	std::vector <shared_ptr <X509Certificate> > certs;
 
-		for (size_t i = 0 ; i < chain->getCount() - 1 ; ++i) {
-
-			shared_ptr <X509Certificate> cert =
-				dynamicCast <X509Certificate>(chain->getAt(i));
-
-			shared_ptr <X509Certificate> next =
-				dynamicCast <X509Certificate>(chain->getAt(i + 1));
-
-			if (!cert->checkIssuer(next)) {
-
-				certificateIssuerVerificationException ex;
-				ex.setCertificate(cert);
-
-				throw ex;
-			}
-		}
-	}
-
-	// For every certificate in the chain, verify that the certificate
-	// is valid at the current time
 	for (size_t i = 0 ; i < chain->getCount() ; ++i) {
 
 		shared_ptr <X509Certificate> cert =
 			dynamicCast <X509Certificate>(chain->getAt(i));
 
-		cert->checkValidity();
-	}
-
-	// Check whether the certificate can be trusted
-
-	// -- First, verify that the the last certificate in the chain was
-	// -- issued by a third-party that we trust
-	shared_ptr <X509Certificate> lastCert =
-		dynamicCast <X509Certificate>(chain->getAt(chain->getCount() - 1));
-
-	bool trusted = false;
-
-	for (size_t i = 0 ; !trusted && i < m_x509RootCAs.size() ; ++i) {
-
-		shared_ptr <X509Certificate> rootCa = m_x509RootCAs[i];
-
-		if (lastCert->verify(rootCa)) {
-			trusted = true;
+		if (!cert) {
+			throw unsupportedCertificateTypeException(chain->getAt(i)->getType());
 		}
+
+		certs.push_back(cert);
 	}
 
-	// -- Next, if the issuer certificate cannot be verified against
-	// -- root CAs, compare the subject's certificate against the
-	// -- trusted certificates
-	shared_ptr <X509Certificate> firstCert =
-		dynamicCast <X509Certificate>(chain->getAt(0));
+	shared_ptr <X509Certificate> firstCert = certs[0];
+
+	// The user may have decided to trust the server certificate: then, it
+	// only has to be valid at the current time
+	bool trusted = false;
 
 	for (size_t i = 0 ; !trusted && i < m_x509TrustedCerts.size() ; ++i) {
 
-		shared_ptr <X509Certificate> cert = m_x509TrustedCerts[i];
+		if (firstCert->equals(m_x509TrustedCerts[i])) {
 
-		if (firstCert->equals(cert)) {
+			firstCert->checkValidity();
 			trusted = true;
 		}
 	}
 
+	// Otherwise, let the TLS library build and validate a certification
+	// path to one of the root CAs. It accepts the certificates in any order,
+	// and ignores extraneous ones (for example, a root certificate cross-
+	// signed by an older root which is not trusted any more), as RFC 8446,
+	// section 4.4.2 recommends.
 	if (!trusted) {
-
-		certificateNotTrustedException ex;
-		ex.setCertificate(firstCert);
-
-		throw ex;
+		X509Certificate::verifyChain(certs, m_x509RootCAs);
 	}
 
 	// Ensure the first certificate's subject name matches server hostname
@@ -224,44 +127,6 @@ void defaultCertificateVerifier::verifyX509(
 
 		throw ex;
 	}
-
-	// Perform verification on all possible subchains in order to work
-	// around a server that sends extranous certificates in the chain
-	// after the valid one.
-	//
-	// Note: The TLS 1.3 draft says the following:
-	//
-	//   Note: Prior to TLS 1.3, "certificate_list" ordering required each
-	//   certificate to certify the one immediately preceding it; however,
-	//   some implementations allowed some flexibility.  Servers sometimes
-	//   send both a current and deprecated intermediate for transitional
-	//   purposes, and others are simply configured incorrectly, but these
-	//   cases can nonetheless be validated properly.  For maximum
-	//   compatibility, all implementations SHOULD be prepared to handle
-	//   potentially extraneous certificates and arbitrary orderings from any
-	//   TLS version, with the exception of the end-entity certificate which
-	//   MUST be first.
-	//
-	// This code does NOT yet handle arbitrary ordering.
-	//
-	for (size_t chainLen = chain->getCount(); chainLen > 0; chainLen--) {
-
-		try {
-			verifyX509chain(chain, chainLen);
-			return;
-		}
-		catch(...) {
-			if (chainLen == 1) {
-				throw;
-			}
-		}
-	}
-
-	// We really should never get here from the above loop
-	certificateNotTrustedException ex;
-	ex.setCertificate(firstCert);
-
-	throw ex;
 }
 
 

@@ -41,9 +41,15 @@ certificateNotTrustedException::certificateNotTrustedException()
 }
 
 
+certificateNotTrustedException::certificateNotTrustedException(const string& reason)
+	: certificateException("Cannot verify certificate against trusted certificates: " + reason + ".") {
+
+}
+
+
 exception* certificateNotTrustedException::clone() const {
 
-	return new certificateNotTrustedException();
+	return new certificateNotTrustedException(*this);
 }
 
 

@@ -84,7 +84,7 @@ public:
 	  */
 	static shared_ptr <X509Certificate> import(const byte_t* data, const size_t length);
 
-	/** Import sveral DER or PEM encoded X.509 certificates.
+	/** Import several DER or PEM encoded X.509 certificates.
 	  *
 	  * @param is input stream to read data from
 	  * @param certs the resulting list of certificates
@@ -129,20 +129,35 @@ public:
 	  */
 	virtual const string getIssuerString() const = 0;
 
-	/** Checks if this certificate has the given issuer.
+	/** Verifies a certificate chain sent by a TLS server, using the TLS
+	  * library. A certification path is built from the first certificate
+	  * of the chain (the server certificate) to one of the root CAs, with
+	  * the other certificates of the chain, in any order (extraneous
+	  * certificates are ignored). The path is then validated as specified
+	  * in RFC 5280, at the current time: signatures, CA certificates
+	  * allowed to sign certificates, path length and name constraints,
+	  * and validity dates. If the server certificate has an extended key
+	  * usage extension, it must allow TLS server authentication.
 	  *
-	  * @param issuer certificate of a possible issuer
-	  * @return true if this certificate was issued by the given issuer,
-	  * false otherwise
-	  */
-	virtual bool checkIssuer(const shared_ptr <const X509Certificate>& issuer) const = 0;
-
-	/** Verifies this certificate against a given trusted one.
+	  * The host name is not verified (see verifyHostName()), and the
+	  * revocation status of the certificates is not checked.
 	  *
-	  * @param caCert a certificate that is considered to be trusted one
-	  * @return true if the verification succeeded, false otherwise
+	  * @param chain certificate chain, starting with the server certificate
+	  * @param rootCAs trusted CA certificates: the path can end with any of
+	  * them, even if it is not self-signed
+	  * @throw certificateExpiredException if a certificate of the path
+	  * has expired
+	  * @throw certificateNotYetValidException if a certificate of the path
+	  * is not yet valid
+	  * @throw certificateIssuerVerificationException if a certificate of
+	  * the path cannot be verified against its issuer
+	  * @throw certificateNotTrustedException if no path to a root CA can be
+	  * built, or if the server certificate cannot be used by a TLS server
 	  */
-	virtual bool verify(const shared_ptr <const X509Certificate>& caCert) const = 0;
+	static void verifyChain(
+		const std::vector <shared_ptr <X509Certificate> >& chain,
+		const std::vector <shared_ptr <X509Certificate> >& rootCAs
+	);
 
 	/** Verify certificate's subject name against the given hostname.
 	  *
