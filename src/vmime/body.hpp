@@ -259,7 +259,7 @@ public:
 	  *
 	  * @return charset of body contents
 	  */
-	const charset getCharset() const;
+	charset getCharset() const;
 
 	/** Set the output encoding of contents.
 	  * Contents will be encoded (or re-encoded) when this node is being generated.

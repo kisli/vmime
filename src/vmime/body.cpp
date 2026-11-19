@@ -815,7 +815,7 @@ void body::setCharset(const charset& chset) {
 }
 
 
-const charset body::getCharset() const {
+charset body::getCharset() const {
 
 	const shared_ptr <const contentTypeField> ctf =
 		m_part->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);

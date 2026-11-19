@@ -78,7 +78,7 @@ public:
 	  *
 	  * @return value of the "charset" parameter
 	  */
-	const charset getCharset() const;
+	charset getCharset() const;
 
 	/** Set the value of the "charset" parameter. It specifies the
 	  * charset used in the body part contents.

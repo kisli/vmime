@@ -58,7 +58,7 @@ public:
 
 	vmime::datetime getCurrentLocalTime() const;
 
-	const vmime::charset getLocalCharset() const;
+	vmime::charset getLocalCharset() const;
 
 	vmime::string getHostName() const;
 

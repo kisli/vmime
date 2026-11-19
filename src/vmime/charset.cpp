@@ -171,7 +171,7 @@ bool charset::isValidText(const string& text, string::size_type* firstInvalidByt
 }
 
 
-const charset charset::getLocalCharset() {
+charset charset::getLocalCharset() {
 
 	return platform::getHandler()->getLocalCharset();
 }

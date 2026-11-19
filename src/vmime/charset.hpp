@@ -81,7 +81,7 @@ public:
 	  *
 	  * @return system default charset
 	  */
-	static const charset getLocalCharset();
+	static charset getLocalCharset();
 
 	/** Convert a string buffer from one charset to another
 	  * charset (in-memory conversion)

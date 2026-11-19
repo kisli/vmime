@@ -135,7 +135,7 @@ vmime::datetime posixHandler::getCurrentLocalTime() const {
 }
 
 
-const vmime::charset posixHandler::getLocalCharset() const {
+vmime::charset posixHandler::getLocalCharset() const {
 
 	// Note: nl_langinfo() might be affected by calls to setlocale()
 	// in a multithread environment. There is not MT-safe alternative

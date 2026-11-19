@@ -69,7 +69,7 @@ bool contentTypeField::hasCharset() const {
 }
 
 
-const charset contentTypeField::getCharset() const {
+charset contentTypeField::getCharset() const {
 
 	shared_ptr <parameter> param = findParameter("charset");
 
