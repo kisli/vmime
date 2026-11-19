@@ -1079,7 +1079,7 @@ class timeoutHandler : public object {
      *
      * @return true if the timeout delay is elapsed
      */
-   virtual const bool isTimeOut() = 0;
+   virtual bool isTimeOut() = 0;
 
    /** Called to reset the timeout counter.
      */
@@ -1091,7 +1091,7 @@ class timeoutHandler : public object {
      * @return true to continue (and reset the timeout)
      * or false to cancel the current operation
      */
-   virtual const bool handleTimeOut() = 0;
+   virtual bool handleTimeOut() = 0;
 };
 \end{lstlisting}
 
@@ -1122,7 +1122,7 @@ public:
       m_startTime = time(NULL);
    }
 
-   const bool isTimeOut() {
+   bool isTimeOut() {
 
       return time(NULL) >= m_startTime + 30;  // 30 seconds timeout
    }
@@ -1132,7 +1132,7 @@ public:
       m_startTime = time(NULL);
    }
 
-   const bool handleTimeOut() {
+   bool handleTimeOut() {
 
       std::cout << "Operation timed out." << std::endl;
                 << "Press [Y] to continue, or [N] to "
