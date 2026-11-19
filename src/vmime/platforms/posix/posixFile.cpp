@@ -584,7 +584,7 @@ shared_ptr <vmime::utility::file> posixFileSystemFactory::create(
 }
 
 
-const vmime::utility::file::path posixFileSystemFactory::stringToPath(
+vmime::utility::file::path posixFileSystemFactory::stringToPath(
 	const vmime::string& str
 ) const {
 
@@ -600,7 +600,7 @@ vmime::string posixFileSystemFactory::pathToString(
 }
 
 
-const vmime::utility::file::path posixFileSystemFactory::stringToPathImpl(
+vmime::utility::file::path posixFileSystemFactory::stringToPathImpl(
 	const vmime::string& str
 ) {
 
@@ -675,7 +675,7 @@ bool posixFileSystemFactory::isValidPath(const vmime::utility::file::path& path)
 }
 
 
-const vmime::utility::file::path posixFileSystemFactory::getTemporaryDirectoryPath() const {
+vmime::utility::file::path posixFileSystemFactory::getTemporaryDirectoryPath() const {
 
 	// Directory specified by the user (POSIX), or default one
 	const char* dir = ::getenv("TMPDIR");

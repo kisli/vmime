@@ -228,7 +228,7 @@ public:
 	  * @param str string containing a path in a system-dependent representation
 	  * @return path object (abstract representation)
 	  */
-	virtual const file::path stringToPath(const string& str) const = 0;
+	virtual file::path stringToPath(const string& str) const = 0;
 
 	/** Return the system-dependent string representation for the specified path.
 	  *
@@ -259,7 +259,7 @@ public:
 	  * @throw exceptions::filesystem_exception if the temporary directory
 	  * cannot be determined, or if not supported on this platform
 	  */
-	virtual const file::path getTemporaryDirectoryPath() const {
+	virtual file::path getTemporaryDirectoryPath() const {
 
 		throw exceptions::filesystem_exception(
 			"Temporary directory is not supported on this platform", file::path()

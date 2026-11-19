@@ -132,7 +132,7 @@ const folder::path::component maildirFolder::getName() const {
 }
 
 
-const folder::path maildirFolder::getFullPath() const {
+folder::path maildirFolder::getFullPath() const {
 
 	return m_path;
 }
@@ -1342,7 +1342,7 @@ int maildirFolder::getFetchCapabilities() const {
 }
 
 
-const utility::file::path maildirFolder::getMessageFSPath(const size_t number) const {
+utility::file::path maildirFolder::getMessageFSPath(const size_t number) const {
 
 	utility::file::path curDirPath = m_store.lock()->getFormat()->
 		folderPathToFileSystemPath(m_path, maildirFormat::CUR_DIRECTORY);

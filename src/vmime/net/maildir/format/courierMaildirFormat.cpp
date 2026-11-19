@@ -195,7 +195,7 @@ bool courierMaildirFormat::folderHasSubfolders(const folder::path& path) const {
 }
 
 
-const utility::file::path courierMaildirFormat::folderPathToFileSystemPath(
+utility::file::path courierMaildirFormat::folderPathToFileSystemPath(
 	const folder::path& path,
 	const DirectoryType type
 ) const {

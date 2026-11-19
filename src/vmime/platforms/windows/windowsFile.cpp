@@ -49,7 +49,7 @@ shared_ptr <vmime::utility::file> windowsFileSystemFactory::create(
 }
 
 
-const vmime::utility::file::path windowsFileSystemFactory::stringToPath(
+vmime::utility::file::path windowsFileSystemFactory::stringToPath(
 	const vmime::string& str
 ) const {
 

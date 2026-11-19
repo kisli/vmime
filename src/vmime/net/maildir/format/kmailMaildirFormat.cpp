@@ -123,7 +123,7 @@ bool kmailMaildirFormat::folderExists(const folder::path& path) const {
 }
 
 
-const utility::file::path kmailMaildirFormat::folderPathToFileSystemPath(
+utility::file::path kmailMaildirFormat::folderPathToFileSystemPath(
 	const folder::path& path,
 	const DirectoryType type
 ) const {
