@@ -33,6 +33,7 @@ VMIME_TEST_SUITE_BEGIN(datetimeTest)
 		VMIME_TEST(testParseMalformed)
 		VMIME_TEST(testGenerate)
 		VMIME_TEST(testFromTime)
+		VMIME_TEST(testToTimeT)
 		VMIME_TEST(testCompare)
 	VMIME_TEST_LIST_END
 
@@ -239,6 +240,21 @@ VMIME_TEST_SUITE_BEGIN(datetimeTest)
 			vmime::datetime(1783072800, vmime::datetime::GMT2).generate());
 		VASSERT_EQ("3", "Thu, 2 Jul 2026 23:30:00 -1030",
 			vmime::datetime(1783072800, -630).generate());
+	}
+
+	void testToTimeT() {
+
+		VASSERT_EQ("1", 0, vmime::datetime(1970, 1, 1, 0, 0, 0).toTimeT());
+		VASSERT_EQ("2", 1783072800, vmime::datetime(2026, 7, 3, 12, 0, 0, vmime::datetime::GMT2).toTimeT());
+		VASSERT_EQ("3", 951782400, vmime::datetime(2000, 2, 29, 0, 0, 0).toTimeT());
+		VASSERT_EQ("4", -86400, vmime::datetime(1969, 12, 31, 0, 0, 0).toTimeT());
+		VASSERT_EQ("5", 4102444800LL, vmime::datetime(2100, 1, 1, 0, 0, 0).toTimeT());
+
+		// Starts one day after the Epoch: on Windows, datetime(t, zone) cannot
+		// convert dates before 1970 (once shifted by the zone)
+		for (time_t t = 86400 ; t < 5000000000LL ; t += 12345677) {
+			VASSERT_EQ("6", t, vmime::datetime(t, -330).toTimeT());
+		}
 	}
 
 	void testCompare() {

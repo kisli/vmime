@@ -256,6 +256,10 @@ vmime::datetime d2(
 
 // Getting day of week
 const int dow = d2.getWeekDay();  // 'dow' should be datetime::SATURDAY
+
+// Converting from/to a POSIX timestamp (seconds since 1970-01-01 UTC)
+vmime::datetime d3(1128773272, vmime::datetime::GMT2);  // same as 'd2'
+const time_t t = d2.toTimeT();  // 't' should be 1128773272
 \end{lstlisting}
 
 \subsection{Media type} % ----------------------------------------------------
