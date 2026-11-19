@@ -112,7 +112,7 @@ public:
 	  *
 	  * @return value of the "filename" parameter
 	  */
-	const word getFilename() const;
+	word getFilename() const;
 
 	/** Set the value of the "filename" parameter.
 	  *

@@ -51,7 +51,7 @@ const text parsedMessageAttachment::getDescription() const {
 }
 
 
-const word parsedMessageAttachment::getName() const {
+word parsedMessageAttachment::getName() const {
 
 	return word();
 }

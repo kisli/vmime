@@ -71,7 +71,7 @@ public:
 	  * @return attachment name, or an empty word if no
 	  * name is available
 	  */
-	virtual const word getName() const = 0;
+	virtual word getName() const = 0;
 
 	/** Return the data contained in this attachment.
 	  *

@@ -142,7 +142,7 @@ bool attachmentHelper::isAttachment(
 
 
 // static
-const word attachmentHelper::getAttachmentName(const header& hdr) {
+word attachmentHelper::getAttachmentName(const header& hdr) {
 
 	word name;
 

@@ -53,7 +53,7 @@ const mediaType bodyPartAttachment::getType() const {
 }
 
 
-const word bodyPartAttachment::getName() const {
+word bodyPartAttachment::getName() const {
 
 	return attachmentHelper::getAttachmentName(*getHeader());
 }

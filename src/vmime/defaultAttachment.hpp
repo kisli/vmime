@@ -66,7 +66,7 @@ public:
 
 	const mediaType getType() const;
 	const text getDescription() const;
-	const word getName() const;
+	word getName() const;
 	shared_ptr <const contentHandler> getData() const;
 	encoding getEncoding() const;
 

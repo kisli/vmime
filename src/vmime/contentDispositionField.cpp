@@ -117,7 +117,7 @@ bool contentDispositionField::hasFilename() const {
 }
 
 
-const word contentDispositionField::getFilename() const {
+word contentDispositionField::getFilename() const {
 
 	shared_ptr <parameter> param = findParameter("filename");
 

@@ -88,7 +88,7 @@ public:
 	  * @return name of the attachment, or an empty word if the part
 	  * has no name
 	  */
-	static const word getAttachmentName(const header& hdr);
+	static word getAttachmentName(const header& hdr);
 
 	/** Return attachment information in the specified body part.
 	  * If the specified body part does not contain attachment

@@ -131,7 +131,7 @@ const text defaultAttachment::getDescription() const {
 }
 
 
-const word defaultAttachment::getName() const {
+word defaultAttachment::getName() const {
 
 	return m_name;
 }

@@ -50,7 +50,7 @@ const text generatedMessageAttachment::getDescription() const {
 }
 
 
-const word generatedMessageAttachment::getName() const {
+word generatedMessageAttachment::getName() const {
 
 	return m_bpa->getName();
 }
