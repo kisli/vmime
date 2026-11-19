@@ -56,13 +56,13 @@ public:
 	  *
 	  * @return original message-id
 	  */
-	const messageId getOriginalMessageId() const;
+	messageId getOriginalMessageId() const;
 
 	/** Return information about the disposition.
 	  *
 	  * @return disposition information
 	  */
-	const disposition getDisposition() const;
+	disposition getDisposition() const;
 
 	/** Return the Message Integrity Check (MIC), that is the value
 	  * of the "Received-content-MIC" field.

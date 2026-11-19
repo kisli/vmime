@@ -58,13 +58,13 @@ shared_ptr <const message> receivedMDNInfos::getMessage() const {
 }
 
 
-const messageId receivedMDNInfos::getOriginalMessageId() const {
+messageId receivedMDNInfos::getOriginalMessageId() const {
 
 	return m_omid;
 }
 
 
-const disposition receivedMDNInfos::getDisposition() const {
+disposition receivedMDNInfos::getDisposition() const {
 
 	return m_disp;
 }
