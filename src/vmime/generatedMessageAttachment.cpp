@@ -62,7 +62,7 @@ shared_ptr <const contentHandler> generatedMessageAttachment::getData() const {
 }
 
 
-const encoding generatedMessageAttachment::getEncoding() const {
+encoding generatedMessageAttachment::getEncoding() const {
 
 	return m_bpa->getEncoding();
 }

@@ -111,7 +111,7 @@ const char* parsedMessageAttachment::getDataType(const string& data) {
 }
 
 
-const encoding parsedMessageAttachment::getEncoding() const {
+encoding parsedMessageAttachment::getEncoding() const {
 
 	// The message cannot be encoded: the encoding of a message/rfc822
 	// part only tells whether it contains 8-bit or binary data (RFC 2046,

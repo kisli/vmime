@@ -97,7 +97,7 @@ public:
 	  * @param usage context of use of data
 	  * @return suitable encoding for specified data
 	  */
-	static const encoding decide(
+	static encoding decide(
 		const shared_ptr <const contentHandler>& data,
 		const EncodingUsage usage = USAGE_BINARY_DATA
 	);
@@ -109,7 +109,7 @@ public:
 	  * @param usage context of use of data
 	  * @return suitable encoding for specified data and charset
 	  */
-	static const encoding decide(
+	static encoding decide(
 		const shared_ptr <const contentHandler>& data,
 		const charset& chset,
 		const EncodingUsage usage = USAGE_BINARY_DATA
@@ -149,7 +149,7 @@ private:
 	  * @param end end iterator in buffer
 	  * @return suitable encoding for specified data
 	  */
-	static const encoding decideImpl(
+	static encoding decideImpl(
 		const string::const_iterator begin,
 		const string::const_iterator end
 	);

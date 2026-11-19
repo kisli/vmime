@@ -79,7 +79,7 @@ const text bodyPartAttachment::getDescription() const {
 }
 
 
-const encoding bodyPartAttachment::getEncoding() const {
+encoding bodyPartAttachment::getEncoding() const {
 
 	return m_part->getBody()->getEncoding();
 }

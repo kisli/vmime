@@ -83,7 +83,7 @@ public:
 	  *
 	  * @return attachment data encoding
 	  */
-	virtual const encoding getEncoding() const = 0;
+	virtual encoding getEncoding() const = 0;
 
 	/** Return the part in which the attachment has been found.
 	  * This can be a vmime::bodyPart or a vmime::net::part object.

@@ -504,7 +504,7 @@ shared_ptr <const contentHandler> htmlTextPart::embeddedObject::getData() const 
 }
 
 
-const vmime::encoding htmlTextPart::embeddedObject::getEncoding() const {
+vmime::encoding htmlTextPart::embeddedObject::getEncoding() const {
 
 	return m_encoding;
 }

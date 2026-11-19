@@ -274,7 +274,7 @@ public:
 	  *
 	  * @return encoding of body contents
 	  */
-	const encoding getEncoding() const;
+	encoding getEncoding() const;
 
 	/** Generate a new random boundary string.
 	  *

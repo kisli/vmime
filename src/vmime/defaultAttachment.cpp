@@ -143,7 +143,7 @@ shared_ptr <const contentHandler> defaultAttachment::getData() const {
 }
 
 
-const encoding defaultAttachment::getEncoding() const {
+encoding defaultAttachment::getEncoding() const {
 
 	return m_encoding;
 }

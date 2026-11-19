@@ -846,7 +846,7 @@ void body::setEncoding(const encoding& enc) {
 }
 
 
-const encoding body::getEncoding() const {
+encoding body::getEncoding() const {
 
 	shared_ptr <const headerField> cef =
 		m_part->getHeader()->findField(fields::CONTENT_TRANSFER_ENCODING);

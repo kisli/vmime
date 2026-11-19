@@ -94,7 +94,7 @@ public:
 		  *
 		  * @return data encoding
 		  */
-		const vmime::encoding getEncoding() const;
+		vmime::encoding getEncoding() const;
 
 		/** Returns the identifier of this embedded object (either a
 		  * unique ID or a location).
