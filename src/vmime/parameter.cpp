@@ -26,6 +26,7 @@
 
 #include "vmime/text.hpp"
 #include "vmime/encoding.hpp"
+#include "vmime/wordEncoder.hpp"
 
 #include "vmime/utility/outputStreamAdapter.hpp"
 #include "vmime/utility/outputStreamStringAdapter.hpp"
@@ -284,6 +285,56 @@ void parameter::parse(
 }
 
 
+// Flags to generate a parameter value as a word: RFC 2047 encoded
+// words only if they are needed, else folded at white-space
+static int getWordFlags(const generationContext& ctx, const word& value) {
+
+	const string& buffer = value.getBuffer();
+
+	// Quotes and backslashes are not escaped in an unencoded word
+	if (wordEncoder::isEncodingNeeded(ctx, buffer, value.getCharset(), value.getLanguage()) ||
+	    buffer.find_first_of("\"\\") != string::npos) {
+
+		return text::FORCE_ENCODING;
+	}
+
+	return text::FORCE_NO_ENCODING;
+}
+
+
+// Generate "value" as a word which starts at "pos"
+static string generateWordValue(
+	const generationContext& ctx,
+	const word& value,
+	const int flags,
+	const size_t pos
+) {
+
+	// Leave room for a closing quote and a ';' after it
+	generationContext valueCtx(ctx);
+
+	if (ctx.getMaxLineLength() != lineLengthLimits::infinite && ctx.getMaxLineLength() > 2) {
+		valueCtx.setMaxLineLength(ctx.getMaxLineLength() - 2);
+	}
+
+	string buffer;
+	utility::outputStreamStringAdapter os(buffer);
+
+	value.generate(valueCtx, os, pos, NULL, flags, NULL);
+
+	return buffer;
+}
+
+
+// Position on the current line after writing "str" at "pos"
+static size_t positionAfter(const string& str, const size_t pos) {
+
+	const size_t lastLF = str.rfind('\n');
+
+	return (lastLF == string::npos) ? pos + str.length() : str.length() - lastLF - 1;
+}
+
+
 void parameter::generateImpl(
 	const generationContext& ctx,
 	utility::outputStream& os,
@@ -327,8 +378,12 @@ void parameter::generateImpl(
 	bool needQuotedPrintable = false;
 	size_t valueLength = 0;
 
-	// Use worst-case length name.length()+2 for 'name=' part of line
-	for (size_t i = 0 ; (i < value.length()) && (pos + name.length() + 2 + valueLength < ctx.getMaxLineLength() - 4) ; ++i, ++valueLength) {
+	for (size_t i = 0 ; i < value.length() ; ++i) {
+
+		// Use worst-case length name.length()+2 for 'name=' part of line
+		if (pos + name.length() + 2 + valueLength < ctx.getMaxLineLength() - 4) {
+			++valueLength;
+		}
 
 		switch (value[i]) {
 
@@ -368,6 +423,23 @@ void parameter::generateImpl(
 
 	const bool cutValue = (valueLength != value.length());  // has the value been cut?
 
+	// Send the value as RFC 2047 encoded words if needed, so that outlook
+	// express et.al. will understand the real filename (this is non-standard,
+	// RFC 2047 section 5), else fold it at white-space
+	const bool wordValue =
+		(needQuotedPrintable || cutValue || !m_value->getLanguage().empty()) &&
+		genMode != generationContext::PARAMETER_VALUE_NO_ENCODING;
+
+	const int wordFlags = wordValue ? getWordFlags(ctx, *m_value) : 0;
+
+	// Encoded words contain tspecials ('=', '?'), which are not
+	// allowed in a token (RFC 2045 section 5.1)
+	if (wordFlags & text::FORCE_ENCODING) {
+		needQuoting = true;
+	}
+
+	const size_t namePos = pos;
+
 	if (needQuoting) {
 
 		sevenBitStream << name << "=\"";
@@ -387,14 +459,37 @@ void parameter::generateImpl(
 	const bool alwaysEncode = m_value->getCharset().getRecommendedEncoding(recommendedEnc);
 	bool extended = alwaysEncode;
 
-	if ((needQuotedPrintable || cutValue || !m_value->getLanguage().empty()) &&
-	    genMode != generationContext::PARAMETER_VALUE_NO_ENCODING) {
+	if (wordValue) {
 
-		// Send the name in quoted-printable, so outlook express et.al.
-		// will understand the real filename
-		size_t oldLen = sevenBitBuffer.length();
-		m_value->generate(sevenBitStream);
-		pos += sevenBitBuffer.length() - oldLen;
+		// Not output if there is only an extended parameter
+		if (genMode != generationContext::PARAMETER_VALUE_RFC2231_ONLY) {
+
+			string wordBuffer = generateWordValue(ctx, *m_value, wordFlags, pos);
+
+			// A fold before the first encoded word would add a space
+			// to the value: rather fold before the parameter
+			if ((wordFlags & text::FORCE_ENCODING) &&
+			    wordBuffer.compare(0, CRLF.length(), CRLF) == 0) {
+
+				if (namePos > NEW_LINE_SEQUENCE_LENGTH) {
+
+					sevenBitBuffer.clear();
+					sevenBitStream << NEW_LINE_SEQUENCE << name << "=\"";
+					pos = NEW_LINE_SEQUENCE_LENGTH + name.length() + 2;
+
+					wordBuffer = generateWordValue(ctx, *m_value, wordFlags, pos);
+				}
+
+				// Not even enough room on a new line: let it be longer
+				if (wordBuffer.compare(0, CRLF.length(), CRLF) == 0) {
+					wordBuffer.erase(0, NEW_LINE_SEQUENCE.length());
+				}
+			}
+
+			sevenBitStream << wordBuffer;
+			pos = positionAfter(wordBuffer, pos);
+		}
+
 		extended = true;		// also send with RFC-2231 encoding
 
 	} else {
@@ -631,9 +726,33 @@ size_t parameter::getGeneratedSize(const generationContext& ctx) {
 
 	// Compute generated length in the very worst case
 
-	// Non-encoded parameter + value (worst case: quoting + QP)
-	size_t len = name.length() + 1 /* = */ + 2 /* "" */ + 7 /* =?...?Q?...?= */
-		+ m_value->getCharset().getName().length() + valueLength + bytesNeedingEncoding * 2 + 1 /* ; */;
+	// Non-encoded parameter + value (worst case: fold + quoting + escaping)
+	size_t len = NEW_LINE_SEQUENCE.length() + name.length() + 1 /* = */ + 2 /* "" */
+		+ valueLength * 2 + 1 /* ; */;
+
+	generationContext::EncodedParameterValueModes
+		genMode = ctx.getEncodedParameterValueMode();
+
+#if VMIME_ALWAYS_GENERATE_7BIT_PARAMETER
+	genMode = generationContext::PARAMETER_VALUE_RFC2231_AND_RFC2047;
+#endif
+
+	// Or the value as a word (RFC 2047 encoded words or folded): as generated
+	// on a new line, + one more word if it starts further on the line
+	if (genMode == generationContext::PARAMETER_VALUE_RFC2047_ONLY ||
+	    genMode == generationContext::PARAMETER_VALUE_RFC2231_AND_RFC2047) {
+
+		const string wordBuffer = generateWordValue(
+			ctx, *m_value, getWordFlags(ctx, *m_value), NEW_LINE_SEQUENCE_LENGTH + name.length() + 2
+		);
+
+		const size_t wordLength = NEW_LINE_SEQUENCE.length() + 8 /* =?*?Q??= */
+			+ m_value->getCharset().getName().length() + m_value->getLanguage().length()
+			+ 4 /* Base64 padding */;
+
+		len = std::max(len, NEW_LINE_SEQUENCE.length() + name.length() + 3 /* ="" */
+			+ wordBuffer.length() + wordLength + 1 /* ; */);
+	}
 
 	// Encoded parameter + value
 	const size_t maxEncodedValueLengthOnLine =
