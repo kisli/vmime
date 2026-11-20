@@ -33,6 +33,7 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 		VMIME_TEST(testGetGeneratedSize)
 		VMIME_TEST(testGenerateRFC2231)
 		VMIME_TEST(testGetGeneratedSizeRFC2231)
+		VMIME_TEST(testGenerateRFC2047)
 		VMIME_TEST(testNonStandardEncodedParam)
 		VMIME_TEST(testParseNonSignificantWS)
 		VMIME_TEST(testEncodeTSpecials)
@@ -407,20 +408,20 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 		VASSERT_EQ(
 			"3.7bit-only",
 			"F: X; \r\n "
-			"param1=\"=?utf-8?B?zrTPg8+Dz4PPg8+Dz4PPg8+Dz4PPg8+Dz4PPg8+Dz4PPg8+Dz4PPg8+DzrQ=?=\r\n "
-			"=?utf-8?B?z4POtM6xIM60z4POsc60z4POtM+DzrHOtM+DzrHOtM6xz4POtM6xz4MgzrQ=?=\r\n "
-			"=?utf-8?B?z4POsc60zrHPg860z4POsSDOtM+DzrHOtM6xz4POtM+DzrEgzrTOsc+DzrQ=?=\r\n "
-			"=?utf-8?B?zrHPg860zrHPgyDOtM6xz4POsc+Hz4bOtM60z4POsSAyMDA4LmRvYw==?=\"",
+			"param1=\"=?utf-8?B?zrTPg8+Dz4PPg8+Dz4PPg8+Dz4PPg8+Dz4PPg8+Dz4PPg8+Dz4M=?=\r\n "
+			"=?utf-8?B?z4PPg860z4POtM6xIM60z4POsc60z4POtM+DzrHOtM+DzrHOtM6xz4POtM6x?=\r\n "
+			"=?utf-8?B?z4MgzrTPg86xzrTOsc+DzrTPg86xIM60z4POsc60zrHPg860z4POsSDOtM6x?=\r\n "
+			"=?utf-8?B?z4POtM6xz4POtM6xz4MgzrTOsc+DzrHPh8+GzrTOtM+DzrEgMjAwOC5kb2M=?=\"",
 			p3.generate(vmime::generationContext::PARAMETER_VALUE_RFC2047_ONLY, 80)  // max line length = 80
 		);
 
 		VASSERT_EQ(
 			"3.both",
 			"F: X; \r\n "
-			"param1=\"=?utf-8?B?zrTPg8+Dz4PPg8+Dz4PPg8+Dz4PPg8+Dz4PPg8+Dz4PPg8+Dz4PPg8+DzrQ=?=\r\n "
-			"=?utf-8?B?z4POtM6xIM60z4POsc60z4POtM+DzrHOtM+DzrHOtM6xz4POtM6xz4MgzrQ=?=\r\n "
-			"=?utf-8?B?z4POsc60zrHPg860z4POsSDOtM+DzrHOtM6xz4POtM+DzrEgzrTOsc+DzrQ=?=\r\n "
-			"=?utf-8?B?zrHPg860zrHPgyDOtM6xz4POsc+Hz4bOtM60z4POsSAyMDA4LmRvYw==?=\";\r\n "
+			"param1=\"=?utf-8?B?zrTPg8+Dz4PPg8+Dz4PPg8+Dz4PPg8+Dz4PPg8+Dz4PPg8+Dz4M=?=\r\n "
+			"=?utf-8?B?z4PPg860z4POtM6xIM60z4POsc60z4POtM+DzrHOtM+DzrHOtM6xz4POtM6x?=\r\n "
+			"=?utf-8?B?z4MgzrTPg86xzrTOsc+DzrTPg86xIM60z4POsc60zrHPg860z4POsSDOtM6x?=\r\n "
+			"=?utf-8?B?z4POtM6xz4POtM6xz4MgzrTOsc+DzrHPh8+GzrTOtM+DzrEgMjAwOC5kb2M=?=\";\r\n "
 			"param1*0*=utf-8''%CE%B4%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83;\r\n "
 			"param1*1*=%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83;\r\n "
 			"param1*2*=%CE%B4%CF%83%CE%B4%CE%B1%20%CE%B4%CF%83%CE%B1%CE%B4%CF%83%CE%B4%CF;\r\n "
@@ -639,6 +640,179 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 
 		ctx.setEncodedParameterValueMode(vmime::generationContext::PARAMETER_VALUE_RFC2231_AND_RFC2047);
 		VASSERT("5.both", p5.getGeneratedSize(ctx) >= generateParameter(p5, ctx).length());
+	}
+
+	void testGenerateRFC2047() {
+
+		// Encoded word from RFC 2047, section 8: folded from the current
+		// position, and followed by the next parameter
+		parameterizedHeaderField p1;
+		p1.appendParameter(
+			vmime::make_shared <vmime::parameter>(
+				"param1",
+				vmime::word("Keld J\xf8rn Simonsen", vmime::charset("iso-8859-1"))
+			)
+		);
+		p1.appendParameter(
+			vmime::make_shared <vmime::parameter>("param2", vmime::word("value2"))
+		);
+
+		VASSERT_EQ(
+			"1.rfc2047",
+			"F: X; param1=\"=?iso-8859-1?Q?Keld_J=F8rn_Simonsen?=\"; param2=value2",
+			p1.generate(vmime::generationContext::PARAMETER_VALUE_RFC2047_ONLY)
+		);
+
+		VASSERT_EQ(
+			"1.rfc2047.folded",
+			"F: X; \r\n "
+			"param1=\"=?iso-8859-1?Q?Keld_J=F8rn_?=\r\n "
+			"=?iso-8859-1?Q?Simonsen?=\"; \r\n "
+			"param2=value2",
+			p1.generate(vmime::generationContext::PARAMETER_VALUE_RFC2047_ONLY, 40)  // max line length = 40
+		);
+
+		VASSERT_EQ(
+			"1.both.folded",
+			"F: X; \r\n "
+			"param1=\"=?iso-8859-1?Q?Keld_J=F8rn_?=\r\n "
+			"=?iso-8859-1?Q?Simonsen?=\";\r\n "
+			"param1*0*=iso-8859-1''%4B%65%6C%64%20;\r\n "
+			"param1*1*=%4A%F8%72%6E%20%53%69%6D;\r\n "
+			"param1*2*=%6F%6E%73%65%6E; \r\n "
+			"param2=value2",
+			p1.generate(vmime::generationContext::PARAMETER_VALUE_RFC2231_AND_RFC2047, 40)  // max line length = 40
+		);
+
+		// Encoded word from RFC 2047, section 8, at the end of a line: no
+		// fold after the opening quote, which would add a space to the value
+		parameterizedHeaderField p2a;
+		p2a.appendParameter(
+			vmime::make_shared <vmime::parameter>("param0", vmime::word("abcd"))
+		);
+		p2a.appendParameter(
+			vmime::make_shared <vmime::parameter>(
+				"param1",
+				vmime::word("Andr\xe9", vmime::charset("iso-8859-1"))
+			)
+		);
+
+		VASSERT_EQ(
+			"2.rfc2047.end-of-line",
+			"F: X; param0=abcd; \r\n "
+			"param1=\"=?iso-8859-1?Q?Andr=E9?=\"",
+			p2a.generate(vmime::generationContext::PARAMETER_VALUE_RFC2047_ONLY, 40)  // max line length = 40
+		);
+
+		// Even on a new line, there is not enough room for an encoded word
+		parameterizedHeaderField p2b;
+		p2b.appendParameter(
+			vmime::make_shared <vmime::parameter>(
+				"param1",
+				vmime::word("Andr\xe9", vmime::charset("iso-8859-1"))
+			)
+		);
+
+		VASSERT_EQ(
+			"2.rfc2047.short-lines",
+			"F: X; \r\n "
+			"param1=\"=?iso-8859-1?Q?Andr?=\r\n "
+			"=?iso-8859-1?Q?=E9?=\"",
+			p2b.generate(vmime::generationContext::PARAMETER_VALUE_RFC2047_ONLY, 25)  // max line length = 25
+		);
+
+		// Example from RFC 2183, section 2: an ASCII value is not encoded,
+		// but folded at white-space in the quoted-string (RFC 5322, section
+		// 3.2.4), and followed by another parameter
+		parameterizedHeaderField p3;
+		p3.setValue(vmime::word("attachment"));
+		p3.appendParameter(
+			vmime::make_shared <vmime::parameter>("filename", vmime::word("genome.jpeg"))
+		);
+		p3.appendParameter(
+			vmime::make_shared <vmime::parameter>(
+				"modification-date",
+				vmime::word("Wed, 12 Feb 1997 16:29:51 -0500", vmime::charset("us-ascii"))
+			)
+		);
+		p3.appendParameter(
+			vmime::make_shared <vmime::parameter>("param3", vmime::word("value3"))
+		);
+
+		VASSERT_EQ(
+			"3.rfc2047",
+			"F: attachment; \r\n "
+			"filename=genome.jpeg; \r\n "
+			"modification-date=\"Wed, 12 Feb 1997\r\n "
+			"16:29:51 -0500\"; param3=value3",
+			p3.generate(vmime::generationContext::PARAMETER_VALUE_RFC2047_ONLY, 40)  // max line length = 40
+		);
+
+		// Value and language from RFC 2231, section 4, in encoded words
+		// with a language (RFC 2231, section 5)
+		parameterizedHeaderField p4;
+		p4.appendParameter(
+			vmime::make_shared <vmime::parameter>(
+				"title",
+				vmime::word("This is even more ***fun*** isn't it!", vmime::charset("us-ascii"), "en")
+			)
+		);
+
+		VASSERT_EQ(
+			"4.rfc2047",
+			"F: X; \r\n "
+			"title=\"=?us-ascii*en?Q?This_is_even?=\r\n "
+			"=?us-ascii*en?Q?_more_***fun***_isn?=\r\n "
+			"=?us-ascii*en?Q?=27t_it!?=\"",
+			p4.generate(vmime::generationContext::PARAMETER_VALUE_RFC2047_ONLY, 40)  // max line length = 40
+		);
+
+		vmime::generationContext ctx(vmime::generationContext::getDefaultContext());
+		ctx.setEncodedParameterValueMode(vmime::generationContext::PARAMETER_VALUE_RFC2231_AND_RFC2047);
+		ctx.setMaxLineLength(40);
+
+		VASSERT(
+			"4.size",
+			p4.getGeneratedSize(ctx) >=
+				p4.generate(vmime::generationContext::PARAMETER_VALUE_RFC2231_AND_RFC2047, 40).length()
+		);
+
+		// A special character after the first line also needs quoting
+		parameterizedHeaderField p5;
+		p5.appendParameter(
+			vmime::make_shared <vmime::parameter>(
+				"param1",
+				vmime::word(
+					"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ;0123456789",
+					vmime::charset("us-ascii")
+				)
+			)
+		);
+
+		VASSERT_EQ(
+			"5.rfc2047",
+			"F: X; \r\n "
+			"param1=\"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ;0123456789\"",
+			p5.generate(vmime::generationContext::PARAMETER_VALUE_RFC2047_ONLY, 40)  // max line length = 40
+		);
+
+		// Quotes cannot be escaped in a folded value: it is encoded
+		parameterizedHeaderField p6;
+		p6.appendParameter(
+			vmime::make_shared <vmime::parameter>(
+				"param1",
+				vmime::word("a \"quoted\" value, too long for one line", vmime::charset("us-ascii"))
+			)
+		);
+
+		VASSERT_EQ(
+			"6.rfc2047",
+			"F: X; \r\n "
+			"param1=\"=?us-ascii?Q?a_=22quoted=22?=\r\n "
+			"=?us-ascii?Q?_value=2C_too_long_for?=\r\n "
+			"=?us-ascii?Q?_one_line?=\"",
+			p6.generate(vmime::generationContext::PARAMETER_VALUE_RFC2047_ONLY, 40)  // max line length = 40
+		);
 	}
 
 	void testNonStandardEncodedParam() {
