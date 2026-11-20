@@ -335,6 +335,41 @@ static size_t positionAfter(const string& str, const size_t pos) {
 }
 
 
+// Whether "c" is percent-encoded in an extended parameter value
+static bool needsRFC2231Encoding(const char_t c) {
+
+	switch (c) {
+
+		// special characters
+		case ' ':
+		case '\t':
+		case '\r':
+		case '\n':
+		case '%':
+		case '"':
+		case ';':
+		case ',':
+		case '(':
+		case ')':
+		case '<':
+		case '>':
+		case '@':
+		case ':':
+		case '/':
+		case '[':
+		case ']':
+		case '?':
+		case '=':
+
+			return true;
+
+		default:
+
+			return !parserHelpers::isPrint(c) || !parserHelpers::isAscii(c);
+	}
+}
+
+
 void parameter::generateImpl(
 	const generationContext& ctx,
 	utility::outputStream& os,
@@ -601,44 +636,8 @@ void parameter::generateImpl(
 
 			// Output next character
 			const char_t c = value[i];
-			bool encode = false;
 
-			switch (c) {
-
-				// special characters
-				case ' ':
-				case '\t':
-				case '\r':
-				case '\n':
-				case '%':
-				case '"':
-				case ';':
-				case ',':
-				case '(':
-				case ')':
-				case '<':
-				case '>':
-				case '@':
-				case ':':
-				case '/':
-				case '[':
-				case ']':
-				case '?':
-				case '=':
-
-					encode = true;
-					break;
-
-				default:
-
-					encode = (!parserHelpers::isPrint(c) ||
-					          !parserHelpers::isAscii(c) ||
-					          alwaysEncode);
-
-					break;
-			}
-
-			if (encode) {  // need encoding
+			if (alwaysEncode || needsRFC2231Encoding(c)) {
 
 				const int h1 = static_cast <unsigned char>(c) / 16;
 				const int h2 = static_cast <unsigned char>(c) % 16;
@@ -719,9 +718,6 @@ size_t parameter::getGeneratedSize(const generationContext& ctx) {
 	const string& name = m_name;
 	const string& value = m_value->getBuffer();
 
-	const size_t bytesNeedingEncoding =
-		value.length() - utility::stringUtils::countASCIIchars(value.begin(), value.end());
-
 	const size_t valueLength = value.length();
 
 	// Compute generated length in the very worst case
@@ -754,18 +750,41 @@ size_t parameter::getGeneratedSize(const generationContext& ctx) {
 			+ wordBuffer.length() + wordLength + 1 /* ; */);
 	}
 
-	// Encoded parameter + value
-	const size_t maxEncodedValueLengthOnLine =
-		  ctx.getMaxLineLength() - 2 /* CRLF */ - NEW_LINE_SEQUENCE_LENGTH
-		- name.length() - 5 /* *00*= */ - 1 /* ; */;
+	// + an extended parameter
+	if (genMode == generationContext::PARAMETER_VALUE_RFC2231_ONLY ||
+	    genMode == generationContext::PARAMETER_VALUE_RFC2231_AND_RFC2047) {
 
-	const size_t encodedValueLength = (valueLength + bytesNeedingEncoding * 2)
-		+ m_value->getCharset().getName().length() + m_value->getLanguage().length() + 2 /* 2 x ' */;
+		encoding recommendedEnc;
+		const bool alwaysEncode = m_value->getCharset().getRecommendedEncoding(recommendedEnc);
 
-	const size_t numberOfSections = 1 /* worst case: generation starts at the end of a line */
-		+ std::max(size_t(1), encodedValueLength / maxEncodedValueLengthOnLine);
+		size_t encodedValueLength = 0;
 
-	len += numberOfSections * (name.length() + 5 /* *00*= */ + 1 /* ; */ + 2 /* CRLF */ + NEW_LINE_SEQUENCE_LENGTH) + encodedValueLength;
+		for (size_t i = 0 ; i < valueLength ; ++i) {
+			encodedValueLength += (alwaysEncode || needsRFC2231Encoding(value[i])) ? 3 : 1;
+		}
+
+		// As split in generateImpl(), a section ends when the next character, if
+		// encoded, would reach the maximum line length: all but the first one,
+		// which may be empty, and the last one hold at least this
+		const size_t maxLineLength = ctx.getMaxLineLength();
+		const size_t sectionStart = NEW_LINE_SEQUENCE_LENGTH + name.length() + 6;
+
+		const size_t minSectionLength =
+			(maxLineLength > sectionStart + 3) ? maxLineLength - sectionStart - 3 : 1;
+
+		const size_t numberOfSections = 2 + encodedValueLength / minSectionLength;
+
+		size_t sectionNumberLength = 1;
+
+		for (size_t n = numberOfSections - 1 ; n >= 10 ; n /= 10) {
+			++sectionNumberLength;
+		}
+
+		len += numberOfSections * (name.length() + 1 /* * */ + sectionNumberLength + 2 /* *= */
+			+ 1 /* ; */ + NEW_LINE_SEQUENCE.length() /* fold */)
+			+ m_value->getCharset().getName().length() + m_value->getLanguage().length() + 2 /* 2 x ' */
+			+ encodedValueLength;
+	}
 
 	return len;
 
