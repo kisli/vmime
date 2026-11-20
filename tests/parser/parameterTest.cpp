@@ -361,13 +361,13 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 		VASSERT_EQ(
 			"2.rfc2231",
 			"F: X; \r\n "
-			"param1*0*=charset''abc;\r\n "
-			"param1*1*=defghijkl;\r\n "
-			"param1*2*=mnopqrstu;\r\n "
-			"param1*3*=vwxyzABCD;\r\n "
-			"param1*4*=EFGHIJKLM;\r\n "
-			"param1*5*=NOPQRSTUV;\r\n "
-			"param1*6*=WXYZ",
+			"param1*0*=charset''ab;\r\n "
+			"param1*1*=cdefghijk;\r\n "
+			"param1*2*=lmnopqrst;\r\n "
+			"param1*3*=uvwxyzABC;\r\n "
+			"param1*4*=DEFGHIJKL;\r\n "
+			"param1*5*=MNOPQRSTU;\r\n "
+			"param1*6*=VWXYZ",
 			p2.generate(vmime::generationContext::PARAMETER_VALUE_RFC2231_ONLY, 25)  // max line length = 25
 		);
 
@@ -375,13 +375,13 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 			"2.both",
 			"F: X; \r\n "
 			"param1=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ;\r\n "
-			"param1*0*=charset''abc;\r\n "
-			"param1*1*=defghijkl;\r\n "
-			"param1*2*=mnopqrstu;\r\n "
-			"param1*3*=vwxyzABCD;\r\n "
-			"param1*4*=EFGHIJKLM;\r\n "
-			"param1*5*=NOPQRSTUV;\r\n "
-			"param1*6*=WXYZ",
+			"param1*0*=charset''ab;\r\n "
+			"param1*1*=cdefghijk;\r\n "
+			"param1*2*=lmnopqrst;\r\n "
+			"param1*3*=uvwxyzABC;\r\n "
+			"param1*4*=DEFGHIJKL;\r\n "
+			"param1*5*=MNOPQRSTU;\r\n "
+			"param1*6*=VWXYZ",
 			p2.generate(vmime::generationContext::PARAMETER_VALUE_RFC2231_AND_RFC2047, 25)  // max line length = 25
 		);
 
@@ -434,15 +434,40 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 
 		VASSERT_EQ(
 			"3.either",
-			"F: X; param1*0*=utf-8''%CE%B4%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83;\r\n "
+			"F: X; param1*0*=utf-8''%CE%B4%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83;\r\n "
 			"param1*1*=%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83%CF%83;\r\n "
-			"param1*2*=%CE%B4%CF%83%CE%B4%CE%B1%20%CE%B4%CF%83%CE%B1%CE%B4%CF%83%CE%B4%CF;\r\n "
-			"param1*3*=%83%CE%B1%CE%B4%CF%83%CE%B1%CE%B4%CE%B1%CF%83%CE%B4%CE%B1%CF%83%20;\r\n "
-			"param1*4*=%CE%B4%CF%83%CE%B1%CE%B4%CE%B1%CF%83%CE%B4%CF%83%CE%B1%20%CE%B4%CF;\r\n "
-			"param1*5*=%83%CE%B1%CE%B4%CE%B1%CF%83%CE%B4%CF%83%CE%B1%20%CE%B4%CE%B1%CF%83;\r\n "
-			"param1*6*=%CE%B4%CE%B1%CF%83%CE%B4%CE%B1%CF%83%20%CE%B4%CE%B1%CF%83%CE%B1%CF;\r\n "
-			"param1*7*=%87%CF%86%CE%B4%CE%B4%CF%83%CE%B1%202008.doc",
+			"param1*2*=%CF%83%CE%B4%CF%83%CE%B4%CE%B1%20%CE%B4%CF%83%CE%B1%CE%B4%CF%83%CE;\r\n "
+			"param1*3*=%B4%CF%83%CE%B1%CE%B4%CF%83%CE%B1%CE%B4%CE%B1%CF%83%CE%B4%CE%B1%CF;\r\n "
+			"param1*4*=%83%20%CE%B4%CF%83%CE%B1%CE%B4%CE%B1%CF%83%CE%B4%CF%83%CE%B1%20%CE;\r\n "
+			"param1*5*=%B4%CF%83%CE%B1%CE%B4%CE%B1%CF%83%CE%B4%CF%83%CE%B1%20%CE%B4%CE%B1;\r\n "
+			"param1*6*=%CF%83%CE%B4%CE%B1%CF%83%CE%B4%CE%B1%CF%83%20%CE%B4%CE%B1%CF%83%CE;\r\n "
+			"param1*7*=%B1%CF%87%CF%86%CE%B4%CE%B4%CF%83%CE%B1%202008.doc",
 			p3.generate(vmime::generationContext::PARAMETER_VALUE_RFC2231_ONLY, 80)  // max line length = 80
+		);
+
+		// The first section starts after the field value, and a
+		// parameter following the last section goes on a new line
+		parameterizedHeaderField p6;
+		p6.appendParameter(
+			vmime::make_shared <vmime::parameter>(
+				"param1",
+				vmime::word(
+					"\xc3\xa4\xc3\xb6\xc3\xbc\xc3\xa4\xc3\xb6\xc3\xbc\xc3\xa4\xc3\xb6\xc3\xbc",
+					vmime::charset("utf-8")
+				)
+			)
+		);
+		p6.appendParameter(
+			vmime::make_shared <vmime::parameter>("param2", vmime::word("value2"))
+		);
+
+		VASSERT_EQ(
+			"6.rfc2231",
+			"F: X; param1*0*=utf-8''%C3%A4%C3%B6%C3;\r\n "
+			"param1*1*=%BC%C3%A4%C3%B6%C3%BC%C3;\r\n "
+			"param1*2*=%A4%C3%B6%C3%BC; \r\n "
+			"param2=value2",
+			p6.generate(vmime::generationContext::PARAMETER_VALUE_RFC2231_ONLY, 40)  // max line length = 40
 		);
 
 		// No encoding needed
