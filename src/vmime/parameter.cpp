@@ -266,12 +266,17 @@ void parameter::parse(
 					// be mixed (eg. iso-8859-1 and iso-2022-jp), but very unlikely. Real
 					// fix is to have parameters store a vmime::text instead of a
 					// vmime::word in m_value. But that changes the interface.
+					// Likewise for the language of encoded words (RFC 2231, section 5).
 					for (size_t i = 0 ; i < t.getWordCount() ; ++i) {
 
-						if (t.getWordAt(i)->getCharset() != ch && ch == charsets::US_ASCII) {
+						const shared_ptr <const word> w = t.getWordAt(i);
 
-							ch = t.getWordAt(i)->getCharset();
-							break;
+						if (w->getCharset() != ch && ch == charsets::US_ASCII) {
+							ch = w->getCharset();
+						}
+
+						if (lang.empty()) {
+							lang = w->getLanguage();
 						}
 					}
 				}

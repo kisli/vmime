@@ -872,6 +872,28 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 		VASSERT_EQ("2.1", 1, p2.getParameterCount());
 		VASSERT_EQ("2.2", "name", PARAM_NAME(p2, 0));
 		VASSERT_EQ("2.3", "Logo VMime.png", PARAM_VALUE(p2, 0));
+
+		// Encoded word with a language, from RFC 2231, section 5
+		parameterizedHeaderField p3;
+		p3.parse("X; name=\"=?US-ASCII*EN?Q?Keith_Moore?=\"");
+
+		VASSERT_EQ("3.1", 1, p3.getParameterCount());
+		VASSERT_EQ("3.2", "Keith Moore", PARAM_BUFFER(p3, 0));
+		VASSERT_EQ("3.3", "us-ascii", PARAM_CHARSET(p3, 0));
+		VASSERT_EQ("3.4", "EN", PARAM_LANG(p3, 0));
+
+		// Several encoded words with a language, as generated
+		parameterizedHeaderField p4;
+		p4.parse(
+			"X; \r\n "
+			"title=\"=?us-ascii*en?Q?This_is_even?=\r\n "
+			"=?us-ascii*en?Q?_more_***fun***_isn?=\r\n "
+			"=?us-ascii*en?Q?=27t_it!?=\""
+		);
+
+		VASSERT_EQ("4.1", 1, p4.getParameterCount());
+		VASSERT_EQ("4.2", "This is even more ***fun*** isn't it!", PARAM_BUFFER(p4, 0));
+		VASSERT_EQ("4.3", "en", PARAM_LANG(p4, 0));
 	}
 
 	// Parse parameters with non-significant whitespaces
