@@ -335,26 +335,31 @@ static size_t positionAfter(const string& str, const size_t pos) {
 }
 
 
-// Whether "c" is percent-encoded in an extended parameter value
+// Whether "c" is percent-encoded in an extended parameter value: only an
+// attribute-char may be written as is, that is a US-ASCII character other
+// than space, controls, '*', ''', '%' and tspecials (RFC 2231, section 7)
 static bool needsRFC2231Encoding(const char_t c) {
+
+	if (!parserHelpers::isPrint(c) || c == ' ') {
+		return true;
+	}
 
 	switch (c) {
 
-		// special characters
-		case ' ':
-		case '\t':
-		case '\r':
-		case '\n':
+		case '*':
+		case '\'':
 		case '%':
-		case '"':
-		case ';':
-		case ',':
+		// tspecials (RFC 2045, section 5.1)
 		case '(':
 		case ')':
 		case '<':
 		case '>':
 		case '@':
+		case ',':
+		case ';':
 		case ':':
+		case '\\':
+		case '"':
 		case '/':
 		case '[':
 		case ']':
@@ -365,8 +370,20 @@ static bool needsRFC2231Encoding(const char_t c) {
 
 		default:
 
-			return !parserHelpers::isPrint(c) || !parserHelpers::isAscii(c);
+			return false;
 	}
+}
+
+
+// Whether all bytes of a value in "ch" are percent-encoded in an extended
+// parameter: in charsets for which Base64 is recommended (ISO-2022), bytes
+// in the ASCII range do not stand for ASCII characters
+static bool needsRFC2231EncodingOfAllBytes(const charset& ch) {
+
+	encoding recommendedEnc;
+
+	return ch.getRecommendedEncoding(recommendedEnc) &&
+	       recommendedEnc == encoding(encodingTypes::BASE64);
 }
 
 
@@ -486,13 +503,9 @@ void parameter::generateImpl(
 		pos += name.length() + 1;
 	}
 
-	// Check whether there is a recommended encoding for this charset.
-	// If so, the whole buffer will be encoded. Else, the number of
-	// 7-bit (ASCII) bytes in the input will be used to determine if
-	// we need to encode the whole buffer.
-	encoding recommendedEnc;
-	const bool alwaysEncode = m_value->getCharset().getRecommendedEncoding(recommendedEnc);
-	bool extended = alwaysEncode;
+	// Values which are encoded as a whole are only sent in an extended parameter
+	const bool encodeAllBytes = needsRFC2231EncodingOfAllBytes(m_value->getCharset());
+	bool extended = encodeAllBytes;
 
 	if (wordValue) {
 
@@ -601,11 +614,12 @@ void parameter::generateImpl(
 		 */
 
 		// Check whether there is enough space for the first section:
-		// parameter name, section identifier, charset and separators
-		// + at least 5 characters for the value
+		// parameter name, section identifier, charset, language and
+		// separators + at least 5 characters for the value
 		const size_t firstSectionLength =
 			  name.length() + 4 /* *0*= */ + 2 /* '' */
-			+ m_value->getCharset().getName().length();
+			+ m_value->getCharset().getName().length()
+			+ m_value->getLanguage().length();
 
 		if (pos + firstSectionLength + 5 >= ctx.getMaxLineLength()) {
 
@@ -637,7 +651,7 @@ void parameter::generateImpl(
 			// Output next character
 			const char_t c = value[i];
 
-			if (alwaysEncode || needsRFC2231Encoding(c)) {
+			if (encodeAllBytes || needsRFC2231Encoding(c)) {
 
 				const int h1 = static_cast <unsigned char>(c) / 16;
 				const int h2 = static_cast <unsigned char>(c) % 16;
@@ -681,8 +695,9 @@ void parameter::generateImpl(
 			if (sectionNumber == 0) {
 
 				os << m_value->getCharset().getName();
-				os << '\'' << /* No language */ '\'';
-				pos += m_value->getCharset().getName().length() + 2;
+				os << '\'' << m_value->getLanguage() << '\'';
+				pos += m_value->getCharset().getName().length()
+					+ m_value->getLanguage().length() + 2;
 			}
 
 			os << sectionText[sectionNumber];
@@ -754,13 +769,12 @@ size_t parameter::getGeneratedSize(const generationContext& ctx) {
 	if (genMode == generationContext::PARAMETER_VALUE_RFC2231_ONLY ||
 	    genMode == generationContext::PARAMETER_VALUE_RFC2231_AND_RFC2047) {
 
-		encoding recommendedEnc;
-		const bool alwaysEncode = m_value->getCharset().getRecommendedEncoding(recommendedEnc);
+		const bool encodeAllBytes = needsRFC2231EncodingOfAllBytes(m_value->getCharset());
 
 		size_t encodedValueLength = 0;
 
 		for (size_t i = 0 ; i < valueLength ; ++i) {
-			encodedValueLength += (alwaysEncode || needsRFC2231Encoding(value[i])) ? 3 : 1;
+			encodedValueLength += (encodeAllBytes || needsRFC2231Encoding(value[i])) ? 3 : 1;
 		}
 
 		// As split in generateImpl(), a section ends when the next character, if
