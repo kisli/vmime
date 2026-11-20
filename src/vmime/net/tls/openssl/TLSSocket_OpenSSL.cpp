@@ -238,13 +238,13 @@ size_t TLSSocket_OpenSSL::getBlockSize() const {
 }
 
 
-const string TLSSocket_OpenSSL::getPeerName() const {
+string TLSSocket_OpenSSL::getPeerName() const {
 
 	return m_wrapped->getPeerName();
 }
 
 
-const string TLSSocket_OpenSSL::getPeerAddress() const {
+string TLSSocket_OpenSSL::getPeerAddress() const {
 
 	return m_wrapped->getPeerAddress();
 }

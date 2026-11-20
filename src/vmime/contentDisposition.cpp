@@ -135,7 +135,7 @@ void contentDisposition::setName(const string& name) {
 }
 
 
-const std::vector <shared_ptr <component> > contentDisposition::getChildComponents() {
+std::vector <shared_ptr <component> > contentDisposition::getChildComponents() {
 
 	return std::vector <shared_ptr <component> >();
 }

@@ -151,7 +151,7 @@ public:
 	  *
 	  * @return list of registered services
 	  */
-	const std::vector <shared_ptr <const registeredService> > getServiceList() const;
+	std::vector <shared_ptr <const registeredService> > getServiceList() const;
 
 private:
 

@@ -57,27 +57,27 @@ public:
 
 	void write(utility::outputStream& os, const Format format) const;
 
-	const byteArray getSerialNumber() const;
+	byteArray getSerialNumber() const;
 
-	const string getIssuerString() const;
+	string getIssuerString() const;
 
 	bool verifyHostName(
 		const string& hostname,
 		std::vector <std::string>* nonMatchingNames = NULL
 	) const;
 
-	const datetime getExpirationDate() const;
-	const datetime getActivationDate() const;
+	datetime getExpirationDate() const;
+	datetime getActivationDate() const;
 
-	const byteArray getFingerprint(const DigestAlgorithm algo) const;
+	byteArray getFingerprint(const DigestAlgorithm algo) const;
 
 
 	static shared_ptr <X509Certificate> importInternal(X509* cert);
 
 
 	// Implementation of 'certificate'
-	const byteArray getEncoded() const;
-	const string getType() const;
+	byteArray getEncoded() const;
+	string getType() const;
 	int getVersion() const;
 	bool equals(const shared_ptr <const certificate>& other) const;
 	void* getInternalData();
@@ -89,7 +89,7 @@ private:
 	 *
 	 *  @param pointer to ASN1_TIME struct to convert
 	 */
-	const datetime convertX509Date(void* time) const;
+	datetime convertX509Date(void* time) const;
 
 	struct OpenSSLX509CertificateInternalData* m_data;
 };

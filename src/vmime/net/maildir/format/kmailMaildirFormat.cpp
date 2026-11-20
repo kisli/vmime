@@ -47,7 +47,7 @@ kmailMaildirFormat::kmailMaildirFormat(const shared_ptr <context>& ctx)
 }
 
 
-const string kmailMaildirFormat::getName() const {
+string kmailMaildirFormat::getName() const {
 
 	return "kmail";
 }
@@ -123,7 +123,7 @@ bool kmailMaildirFormat::folderExists(const folder::path& path) const {
 }
 
 
-const utility::file::path kmailMaildirFormat::folderPathToFileSystemPath(
+utility::file::path kmailMaildirFormat::folderPathToFileSystemPath(
 	const folder::path& path,
 	const DirectoryType type
 ) const {
@@ -184,7 +184,7 @@ const utility::file::path kmailMaildirFormat::folderPathToFileSystemPath(
 }
 
 
-const std::vector <folder::path> kmailMaildirFormat::listFolders(
+std::vector <folder::path> kmailMaildirFormat::listFolders(
 	const folder::path& root,
 	const bool recursive
 ) const {

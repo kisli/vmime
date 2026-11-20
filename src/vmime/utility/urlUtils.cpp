@@ -29,7 +29,7 @@ namespace vmime {
 namespace utility {
 
 
-const string urlUtils::encode(const string& s) {
+string urlUtils::encode(const string& s) {
 
 	static const string RESERVED_CHARS =
 		/* reserved */ "$&+,/:;=?@"
@@ -66,7 +66,7 @@ const string urlUtils::encode(const string& s) {
 }
 
 
-const string urlUtils::encodeHost(const string& s) {
+string urlUtils::encodeHost(const string& s) {
 
 	if (s.size() == 0) {
 		return encode(s);
@@ -82,7 +82,7 @@ const string urlUtils::encodeHost(const string& s) {
 }
 
 
-const string urlUtils::decode(const string& s) {
+string urlUtils::decode(const string& s) {
 
 	string result;
 	result.reserve(s.length());

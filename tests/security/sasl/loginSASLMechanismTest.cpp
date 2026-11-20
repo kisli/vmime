@@ -36,8 +36,8 @@ class loginTestAuthenticator : public vmime::security::sasl::defaultSASLAuthenti
 
 public:
 
-	const vmime::string getUsername() const { return "user"; }
-	const vmime::string getPassword() const { return "pass"; }
+	vmime::string getUsername() const { return "user"; }
+	vmime::string getPassword() const { return "pass"; }
 };
 
 
@@ -45,8 +45,8 @@ class loginNoPasswordTestAuthenticator : public vmime::security::sasl::defaultSA
 
 public:
 
-	const vmime::string getUsername() const { return "user"; }
-	const vmime::string getPassword() const { throw vmime::exceptions::no_auth_information(); }
+	vmime::string getUsername() const { return "user"; }
+	vmime::string getPassword() const { throw vmime::exceptions::no_auth_information(); }
 };
 
 
@@ -81,7 +81,7 @@ VMIME_TEST_SUITE_BEGIN(loginSASLMechanismTest)
 		return sess;
 	}
 
-	static const vmime::string evaluateChallenge(
+	static vmime::string evaluateChallenge(
 		const vmime::shared_ptr <vmime::security::sasl::SASLSession>& sess,
 		const vmime::string& challenge,
 		bool* complete = NULL

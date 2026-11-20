@@ -629,19 +629,19 @@ bool parameterizedHeaderField::isEmpty() const {
 }
 
 
-const shared_ptr <parameter> parameterizedHeaderField::getParameterAt(const size_t pos) {
+shared_ptr <parameter> parameterizedHeaderField::getParameterAt(const size_t pos) {
 
 	return m_params[pos];
 }
 
 
-const shared_ptr <const parameter> parameterizedHeaderField::getParameterAt(const size_t pos) const {
+shared_ptr <const parameter> parameterizedHeaderField::getParameterAt(const size_t pos) const {
 
 	return m_params[pos];
 }
 
 
-const std::vector <shared_ptr <const parameter> > parameterizedHeaderField::getParameterList() const {
+std::vector <shared_ptr <const parameter> > parameterizedHeaderField::getParameterList() const {
 
 	std::vector <shared_ptr <const parameter> > list;
 
@@ -657,13 +657,13 @@ const std::vector <shared_ptr <const parameter> > parameterizedHeaderField::getP
 }
 
 
-const std::vector <shared_ptr <parameter> > parameterizedHeaderField::getParameterList() {
+std::vector <shared_ptr <parameter> > parameterizedHeaderField::getParameterList() {
 
 	return m_params;
 }
 
 
-const std::vector <shared_ptr <component> > parameterizedHeaderField::getChildComponents() {
+std::vector <shared_ptr <component> > parameterizedHeaderField::getChildComponents() {
 
 	std::vector <shared_ptr <component> > list = headerField::getChildComponents();
 

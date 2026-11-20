@@ -97,7 +97,7 @@ public:
 
 	void fetchCapabilities();
 	void invalidateCapabilities();
-	const std::vector <string> getCapabilities();
+	std::vector <string> getCapabilities();
 	bool hasCapability(const string& capa);
 	bool hasCapability(const string& capa) const;
 
@@ -123,7 +123,7 @@ public:
 	  * lower-case (eg. "name", "version"); empty if the ID command
 	  * was not sent or the server did not identify itself
 	  */
-	const std::map <string, string> getServerIdentification() const;
+	std::map <string, string> getServerIdentification() const;
 
 private:
 

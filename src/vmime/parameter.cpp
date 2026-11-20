@@ -653,7 +653,7 @@ size_t parameter::getGeneratedSize(const generationContext& ctx) {
 }
 
 
-const std::vector <shared_ptr <component> > parameter::getChildComponents() {
+std::vector <shared_ptr <component> > parameter::getChildComponents() {
 
 	std::vector <shared_ptr <component> > list;
 

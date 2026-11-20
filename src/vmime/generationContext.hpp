@@ -58,7 +58,7 @@ public:
 	  *
 	  * @return current MIME prolog text
 	  */
-	const string getPrologText() const;
+	string getPrologText() const;
 
 	/** Sets the prolog text used when generating MIME body parts. This text
 	  * appears before the part, and should be displayed by MUAs which do not
@@ -72,7 +72,7 @@ public:
 	  *
 	  * @return current MIME epilog text
 	  */
-	const string getEpilogText() const;
+	string getEpilogText() const;
 
 	/** Sets the epilog text used when generating MIME body parts. This test
 	  * appears after the part, and should be displayed by MUAs which do not

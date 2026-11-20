@@ -136,7 +136,7 @@ public:
 	  *
 	  * @return service name
 	  */
-	const string getServiceName() const;
+	string getServiceName() const;
 
 private:
 

@@ -43,7 +43,7 @@ static vmime::shared_ptr <vmime::utility::encoder::encoder> getEncoder(
 
 
 // Encoding helper function
-static const vmime::string encode(
+static vmime::string encode(
 	const vmime::string& name, const vmime::string& in,
 	int maxLineLength = 0,
 	const vmime::propertySet props = vmime::propertySet()
@@ -63,7 +63,7 @@ static const vmime::string encode(
 
 
 // Decoding helper function
-static const vmime::string decode(
+static vmime::string decode(
 	const vmime::string& name,
 	const vmime::string& in,
 	int maxLineLength = 0

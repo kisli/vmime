@@ -249,7 +249,7 @@ void streamContentHandler::setContentTypeHint(const mediaType& type) {
 }
 
 
-const mediaType streamContentHandler::getContentTypeHint() const {
+mediaType streamContentHandler::getContentTypeHint() const {
 
 	return m_contentType;
 }

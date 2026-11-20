@@ -138,19 +138,19 @@ public:
 	  * @param pos position
 	  * @return part at position 'pos'
 	  */
-	const shared_ptr <const bodyPart> getPartAt(const size_t pos) const;
+	shared_ptr <const bodyPart> getPartAt(const size_t pos) const;
 
 	/** Return the part list.
 	  *
 	  * @return list of parts
 	  */
-	const std::vector <shared_ptr <const bodyPart> > getPartList() const;
+	std::vector <shared_ptr <const bodyPart> > getPartList() const;
 
 	/** Return the part list.
 	  *
 	  * @return list of parts
 	  */
-	const std::vector <shared_ptr <bodyPart> > getPartList();
+	std::vector <shared_ptr <bodyPart> > getPartList();
 
 	/** Return the prolog text.
 	  *
@@ -180,7 +180,7 @@ public:
 	  *
 	  * @return read-only body contents
 	  */
-	const shared_ptr <const contentHandler> getContents() const;
+	shared_ptr <const contentHandler> getContents() const;
 
 	/** Set the body contents.
 	  *
@@ -244,7 +244,7 @@ public:
 	  *
 	  * @return media type of body contents
 	  */
-	const mediaType getContentType() const;
+	mediaType getContentType() const;
 
 	/** Set the charset of contents.
 	  * If the type is not set, it will be set to default "text/plain" type.
@@ -259,7 +259,7 @@ public:
 	  *
 	  * @return charset of body contents
 	  */
-	const charset getCharset() const;
+	charset getCharset() const;
 
 	/** Set the output encoding of contents.
 	  * Contents will be encoded (or re-encoded) when this node is being generated.
@@ -274,13 +274,13 @@ public:
 	  *
 	  * @return encoding of body contents
 	  */
-	const encoding getEncoding() const;
+	encoding getEncoding() const;
 
 	/** Generate a new random boundary string.
 	  *
 	  * @return randomly generated boundary string
 	  */
-	static const string generateRandomBoundaryString();
+	static string generateRandomBoundaryString();
 
 	/** Test a boundary string for validity (as defined in RFC #1521, page 19).
 	  *
@@ -293,7 +293,7 @@ public:
 	void copyFrom(const component& other);
 	body& operator=(const body& other);
 
-	const std::vector <shared_ptr <component> > getChildComponents();
+	std::vector <shared_ptr <component> > getChildComponents();
 
 	size_t getGeneratedSize(const generationContext& ctx);
 

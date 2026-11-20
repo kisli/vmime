@@ -377,13 +377,13 @@ shared_ptr <mailbox> mailboxGroup::getMailboxAt(const size_t pos) {
 }
 
 
-const shared_ptr <const mailbox> mailboxGroup::getMailboxAt(const size_t pos) const {
+shared_ptr <const mailbox> mailboxGroup::getMailboxAt(const size_t pos) const {
 
 	return m_list[pos];
 }
 
 
-const std::vector <shared_ptr <const mailbox> > mailboxGroup::getMailboxList() const {
+std::vector <shared_ptr <const mailbox> > mailboxGroup::getMailboxList() const {
 
 	std::vector <shared_ptr <const mailbox> > list;
 
@@ -399,13 +399,13 @@ const std::vector <shared_ptr <const mailbox> > mailboxGroup::getMailboxList() c
 }
 
 
-const std::vector <shared_ptr <mailbox> > mailboxGroup::getMailboxList() {
+std::vector <shared_ptr <mailbox> > mailboxGroup::getMailboxList() {
 
 	return m_list;
 }
 
 
-const std::vector <shared_ptr <component> > mailboxGroup::getChildComponents() {
+std::vector <shared_ptr <component> > mailboxGroup::getChildComponents() {
 
 	std::vector <shared_ptr <component> > list;
 

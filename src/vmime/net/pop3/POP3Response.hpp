@@ -123,20 +123,20 @@ public:
 	  *
 	  * @return response text
 	  */
-	const string getText() const;
+	string getText() const;
 
 	/** Return the first POP3 response line.
 	  *
 	  * @return first response line
 	  */
-	const string getFirstLine() const;
+	string getFirstLine() const;
 
 	/** Return the response line at the specified position.
 	  *
 	  * @param pos line index
 	  * @return line at the specified index
 	  */
-	const string getLineAt(const size_t pos) const;
+	string getLineAt(const size_t pos) const;
 
 	/** Return the number of lines in the response.
 	  *

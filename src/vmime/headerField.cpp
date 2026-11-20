@@ -293,7 +293,7 @@ size_t headerField::getGeneratedSize(const generationContext& ctx) {
 }
 
 
-const string headerField::getName() const {
+string headerField::getName() const {
 
 	return m_name;
 }
@@ -311,7 +311,7 @@ bool headerField::isCustom() const {
 }
 
 
-const std::vector <shared_ptr <component> > headerField::getChildComponents() {
+std::vector <shared_ptr <component> > headerField::getChildComponents() {
 
 	std::vector <shared_ptr <component> > list;
 

@@ -44,7 +44,7 @@ public:
 	htmlTextPart();
 	~htmlTextPart();
 
-	const mediaType getType() const;
+	mediaType getType() const;
 
 	const charset& getCharset() const;
 	void setCharset(const charset& ch);
@@ -52,7 +52,7 @@ public:
 	shared_ptr <const contentHandler> getPlainText() const;
 	void setPlainText(const shared_ptr <contentHandler>& plainText);
 
-	const shared_ptr <const contentHandler> getText() const;
+	shared_ptr <const contentHandler> getText() const;
 	void setText(const shared_ptr <contentHandler>& text);
 
 	/** Embedded object (eg: image for &lt;IMG> tag).
@@ -94,14 +94,14 @@ public:
 		  *
 		  * @return data encoding
 		  */
-		const vmime::encoding getEncoding() const;
+		vmime::encoding getEncoding() const;
 
 		/** Returns the identifier of this embedded object (either a
 		  * unique ID or a location).
 		  *
 		  * @return object identifier
 		  */
-		const string getId() const;
+		string getId() const;
 
 		/** Return the identifier used to reference this embedded object
 		  * in a text document (for example, you can use the result as
@@ -109,14 +109,14 @@ public:
 		  *
 		  * @return object reference identifier
 		  */
-		const string getReferenceId() const;
+		string getReferenceId() const;
 
 		/** Return the content type of data stored in
 		  * this embedded object.
 		  *
 		  * @return data type
 		  */
-		const mediaType getType() const;
+		mediaType getType() const;
 
 		/** Returns the way this object is referenced.
 		  *
@@ -134,7 +134,7 @@ public:
 
 	private:
 
-		static const string cleanId(const string& id);
+		static string cleanId(const string& id);
 
 		shared_ptr <contentHandler> m_data;
 		encoding m_encoding;

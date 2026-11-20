@@ -38,8 +38,8 @@ class testSASLAuthenticator : public vmime::security::sasl::defaultSASLAuthentic
 
 public:
 
-	const vmime::string getUsername() const { return "user"; }
-	const vmime::string getPassword() const { return "pass"; }
+	vmime::string getUsername() const { return "user"; }
+	vmime::string getPassword() const { return "pass"; }
 };
 
 
@@ -53,7 +53,7 @@ public:
 
 	}
 
-	const vmime::string getName() const { return m_name; }
+	vmime::string getName() const { return m_name; }
 
 	bool step(
 		const vmime::shared_ptr <vmime::security::sasl::SASLSession>& /* sess */,
@@ -120,7 +120,7 @@ VMIME_TEST_SUITE_BEGIN(SASLContextTest)
 	VMIME_TEST_LIST_END
 
 
-	static const vmime::byteArray someChannelBindingData() {
+	static vmime::byteArray someChannelBindingData() {
 
 		static const vmime::byte_t data[] = { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c };
 		return vmime::byteArray(data, data + sizeof(data));
@@ -132,7 +132,7 @@ VMIME_TEST_SUITE_BEGIN(SASLContextTest)
 	}
 
 	// Return the first message sent by the client (initial response)
-	static const vmime::string getClientFirstMessage(
+	static vmime::string getClientFirstMessage(
 		const vmime::shared_ptr <vmime::security::sasl::SASLContext>& ctx,
 		const vmime::string& mechName
 	) {
@@ -313,7 +313,7 @@ VMIME_TEST_SUITE_BEGIN(SASLContextTest)
 		VASSERT_FALSE("LOGIN", ctx->createMechanism("LOGIN")->hasInitialResponse());
 	}
 
-	static const vmime::string suggestMechanism(const std::vector <vmime::string>& names) {
+	static vmime::string suggestMechanism(const std::vector <vmime::string>& names) {
 
 		std::vector <vmime::shared_ptr <vmime::security::sasl::SASLMechanism> > mechs;
 

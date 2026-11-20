@@ -58,7 +58,7 @@ public:
 	 * - CONTAINER_DIRECTORY:  ~/Mail/.MyFolder.directory
 	 */
 
-	const string getName() const;
+	string getName() const;
 
 	void createFolder(const folder::path& path);
 	void destroyFolder(const folder::path& path);
@@ -67,12 +67,12 @@ public:
 	bool folderExists(const folder::path& path) const;
 	bool folderHasSubfolders(const folder::path& path) const;
 
-	const utility::file::path folderPathToFileSystemPath(
+	utility::file::path folderPathToFileSystemPath(
 		const folder::path& path,
 		const DirectoryType type
 	) const;
 
-	const std::vector <folder::path> listFolders(
+	std::vector <folder::path> listFolders(
 		const folder::path& root,
 		const bool recursive
 	) const;

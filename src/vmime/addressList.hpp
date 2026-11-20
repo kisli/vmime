@@ -54,7 +54,7 @@ public:
 	addressList& operator=(const addressList& other);
 	addressList& operator=(const mailboxList& other);
 
-	const std::vector <shared_ptr <component> > getChildComponents();
+	std::vector <shared_ptr <component> > getChildComponents();
 
 
 	/** Add a address at the end of the list.
@@ -146,19 +146,19 @@ public:
 	  * @return address at position 'pos'
 	  * @throw std::out_of_range if the position is out of range
 	  */
-	const shared_ptr <const address> getAddressAt(const size_t pos) const;
+	shared_ptr <const address> getAddressAt(const size_t pos) const;
 
 	/** Return the address list.
 	  *
 	  * @return list of addresses
 	  */
-	const std::vector <shared_ptr <const address> > getAddressList() const;
+	std::vector <shared_ptr <const address> > getAddressList() const;
 
 	/** Return the address list.
 	  *
 	  * @return list of addresses
 	  */
-	const std::vector <shared_ptr <address> > getAddressList();
+	std::vector <shared_ptr <address> > getAddressList();
 
 	/** Return a list of mailboxes.
 	  * If some addresses are actually groups, mailboxes are recursively

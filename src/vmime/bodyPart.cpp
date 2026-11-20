@@ -113,7 +113,7 @@ bodyPart& bodyPart::operator=(const bodyPart& other) {
 }
 
 
-const shared_ptr <const header> bodyPart::getHeader() const {
+shared_ptr <const header> bodyPart::getHeader() const {
 
 	return m_header;
 }
@@ -131,7 +131,7 @@ void bodyPart::setHeader(const shared_ptr <header>& h) {
 }
 
 
-const shared_ptr <const body> bodyPart::getBody() const {
+shared_ptr <const body> bodyPart::getBody() const {
 
 	return m_body;
 }
@@ -184,7 +184,7 @@ void bodyPart::importChildPart(const shared_ptr <bodyPart>& part) {
 }
 
 
-const std::vector <shared_ptr <component> > bodyPart::getChildComponents() {
+std::vector <shared_ptr <component> > bodyPart::getChildComponents() {
 
 	std::vector <shared_ptr <component> > list;
 

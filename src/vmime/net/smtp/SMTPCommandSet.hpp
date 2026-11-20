@@ -80,8 +80,8 @@ public:
 
 	void writeToSocket(const shared_ptr <socket>& sok, const shared_ptr <tracer>& tr);
 
-	const string getText() const;
-	const string getTraceText() const;
+	string getText() const;
+	string getTraceText() const;
 
 private:
 

@@ -36,8 +36,8 @@ class xoauth2TestAuthenticator : public vmime::security::sasl::defaultSASLAuthen
 
 public:
 
-	const vmime::string getUsername() const { return "user@vmime.org"; }
-	const vmime::string getAccessToken() const { return "ya29.vF9dft4qmTc2Nvb3RlckBhdHRhdmlzdGEuY29tCg"; }
+	vmime::string getUsername() const { return "user@vmime.org"; }
+	vmime::string getAccessToken() const { return "ya29.vF9dft4qmTc2Nvb3RlckBhdHRhdmlzdGEuY29tCg"; }
 };
 
 
@@ -70,7 +70,7 @@ VMIME_TEST_SUITE_BEGIN(XOAuth2SASLMechanismTest)
 		return sess;
 	}
 
-	static const vmime::string evaluateChallenge(
+	static vmime::string evaluateChallenge(
 		const vmime::shared_ptr <vmime::security::sasl::SASLSession>& sess,
 		const vmime::string& challenge = "",
 		bool* complete = NULL

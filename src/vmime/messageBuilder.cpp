@@ -290,7 +290,7 @@ void messageBuilder::removeAttachment(const size_t pos) {
 }
 
 
-const shared_ptr <const attachment> messageBuilder::getAttachmentAt(const size_t pos) const {
+shared_ptr <const attachment> messageBuilder::getAttachmentAt(const size_t pos) const {
 
 	return m_attach[pos];
 }
@@ -308,7 +308,7 @@ size_t messageBuilder::getAttachmentCount() const {
 }
 
 
-const std::vector <shared_ptr <const attachment> > messageBuilder::getAttachmentList() const {
+std::vector <shared_ptr <const attachment> > messageBuilder::getAttachmentList() const {
 
 	std::vector <shared_ptr <const attachment> > res;
 
@@ -324,7 +324,7 @@ const std::vector <shared_ptr <const attachment> > messageBuilder::getAttachment
 }
 
 
-const std::vector <shared_ptr <attachment> > messageBuilder::getAttachmentList() {
+std::vector <shared_ptr <attachment> > messageBuilder::getAttachmentList() {
 
 	return m_attach;
 }

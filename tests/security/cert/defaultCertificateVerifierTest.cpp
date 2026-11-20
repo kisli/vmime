@@ -402,7 +402,7 @@ VMIME_TEST_SUITE_BEGIN(defaultCertificateVerifierTest)
 	// Verifies a chain, which must be refused with the given exception, on
 	// the given certificate (if not NULL); returns the exception message
 	template <typename E>
-	static const vmime::string verifyError(
+	static vmime::string verifyError(
 		const PEMList& chain,
 		const PEMList& rootCAs,
 		const vmime::string& hostname,

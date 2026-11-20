@@ -41,7 +41,7 @@ IMAPServiceInfos::IMAPServiceInfos(const bool imaps)
 }
 
 
-const string IMAPServiceInfos::getPropertyPrefix() const {
+string IMAPServiceInfos::getPropertyPrefix() const {
 
 	if (m_imaps) {
 		return "store.imaps.";
@@ -97,7 +97,7 @@ const IMAPServiceInfos::props& IMAPServiceInfos::getProperties() const {
 }
 
 
-const std::vector <serviceInfos::property> IMAPServiceInfos::getAvailableProperties() const {
+std::vector <serviceInfos::property> IMAPServiceInfos::getAvailableProperties() const {
 
 	std::vector <property> list;
 	const props& p = getProperties();

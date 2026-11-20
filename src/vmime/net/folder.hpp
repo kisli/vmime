@@ -110,7 +110,7 @@ public:
 	  *
 	  * @return folder attributes (see folder::Flags)
 	  */
-	virtual const folderAttributes getAttributes() = 0;
+	virtual folderAttributes getAttributes() = 0;
 
 	/** Return the mode in which the folder has been open.
 	  *
@@ -122,13 +122,13 @@ public:
 	  *
 	  * @return folder name
 	  */
-	virtual const folder::path::component getName() const = 0;
+	virtual folder::path::component getName() const = 0;
 
 	/** Return the fully qualified path name of this folder.
 	  *
 	  * @return absolute path of the folder
 	  */
-	virtual const folder::path getFullPath() const = 0;
+	virtual folder::path getFullPath() const = 0;
 
 	/** Open this folder.
 	  *

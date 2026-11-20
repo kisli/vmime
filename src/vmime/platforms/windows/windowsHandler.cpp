@@ -84,7 +84,7 @@ unsigned long windowsHandler::getUnixTime() const {
 }
 
 
-const vmime::datetime windowsHandler::getCurrentLocalTime() const {
+vmime::datetime windowsHandler::getCurrentLocalTime() const {
 
 	const time_t t(::time(NULL));
 
@@ -127,7 +127,7 @@ const vmime::datetime windowsHandler::getCurrentLocalTime() const {
 }
 
 
-const vmime::charset windowsHandler::getLocalCharset() const {
+vmime::charset windowsHandler::getLocalCharset() const {
 
 #if VMIME_HAVE_MLANG
 
@@ -219,7 +219,7 @@ const vmime::charset windowsHandler::getLocalCharset() const {
 }
 
 
-const vmime::string windowsHandler::getHostName() const {
+vmime::string windowsHandler::getHostName() const {
 
 	char hostname[1024];
 	DWORD hostnameLen;

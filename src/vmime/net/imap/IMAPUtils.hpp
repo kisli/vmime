@@ -54,18 +54,18 @@ class VMIME_EXPORT IMAPUtils
 {
 public:
 
-	static const string pathToString(const char hierarchySeparator, const folder::path& path);
-	static const folder::path stringToPath(const char hierarchySeparator, const string& str);
+	static string pathToString(const char hierarchySeparator, const folder::path& path);
+	static folder::path stringToPath(const char hierarchySeparator, const string& str);
 
-	static const string toModifiedUTF7(const char hierarchySeparator, const folder::path::component& text);
-	static const folder::path::component fromModifiedUTF7(const string& text);
+	static string toModifiedUTF7(const char hierarchySeparator, const folder::path::component& text);
+	static folder::path::component fromModifiedUTF7(const string& text);
 
 	/** Quote string if it contains IMAP-special characters.
 	  *
 	  * @param text string to quote
 	  * @return quoted string
 	  */
-	static const string quoteString(const string& text);
+	static string quoteString(const string& text);
 
 	/** Always quote string, even if it does not contain IMAP-special characters.
 	  * Use this where the IMAP grammar requires a "string" and does not allow
@@ -75,7 +75,7 @@ public:
 	  * @param text string to quote
 	  * @return quoted string
 	  */
-	static const string forceQuoteString(const string& text);
+	static string forceQuoteString(const string& text);
 
 	/** Parse mailbox flags and fill in folder attributes.
 	  *
@@ -93,21 +93,21 @@ public:
 
 	static int messageFlagsFromFlags(const IMAPParser::flag_list& list);
 
-	static const std::vector <string> messageFlagList(const int flags);
+	static std::vector <string> messageFlagList(const int flags);
 
 	/** Format a date to IMAP SEARCH date format (eg. 25-Nov-2021).
 	  *
 	  * @param date date to format
 	  * @return IMAP SEARCH-formatted date
 	  */
-	static const string searchDate(const vmime::datetime& date);
+	static string searchDate(const vmime::datetime& date);
 
 	/** Format a date/time to IMAP date/time format.
 	  *
 	  * @param date date/time to format
 	  * @return IMAP-formatted date/time
 	  */
-	static const string dateTime(const vmime::datetime& date);
+	static string dateTime(const vmime::datetime& date);
 
 	/** Construct a fetch request for the specified messages, designated
 	  * either by their sequence numbers or their UIDs.
@@ -135,7 +135,7 @@ public:
 	  * @param msgs message set
 	  * @return IMAP sequence set (eg. "1:5,7,15:*")
 	  */
-	static const string messageSetToSequenceSet(const messageSet& msgs);
+	static string messageSetToSequenceSet(const messageSet& msgs);
 
 	/** Constructs a message set from a parser 'uid_set' structure.
 	  *
@@ -146,7 +146,7 @@ public:
 
 private:
 
-	static const string buildFetchRequestImpl
+	static string buildFetchRequestImpl
 		(const shared_ptr <IMAPConnection>& cnt, const string& mode, const string& set, const int options);
 };
 

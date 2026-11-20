@@ -84,7 +84,7 @@ public:
 
 	void clear();
 
-	const std::vector <shared_ptr <component> > getChildComponents();
+	std::vector <shared_ptr <component> > getChildComponents();
 
 
 	bool isGroup() const;

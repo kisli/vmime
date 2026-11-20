@@ -143,7 +143,7 @@ bool SASLMechanism_GSASL::isMechanismSupported(const string& name) {
 
 
 // static
-const std::vector <string> SASLMechanism_GSASL::getSupportedMechanisms() {
+std::vector <string> SASLMechanism_GSASL::getSupportedMechanisms() {
 
 	std::vector <string> list;
 	char* out = 0;
@@ -181,7 +181,7 @@ bool SASLMechanism_GSASL::isChannelBindingTypeSupported(const string& type) {
 }
 
 
-const string SASLMechanism_GSASL::getName() const {
+string SASLMechanism_GSASL::getName() const {
 
 	return m_name;
 }
@@ -348,7 +348,7 @@ void SASLMechanism_GSASL::decode(
 
 
 // static
-const string SASLMechanism_GSASL::getErrorMessage(const string& fname, const int code) {
+string SASLMechanism_GSASL::getErrorMessage(const string& fname, const int code) {
 
 	string msg = fname + "() returned ";
 

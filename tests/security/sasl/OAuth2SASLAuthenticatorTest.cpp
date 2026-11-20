@@ -40,7 +40,7 @@ public:
 
 	}
 
-	const vmime::string getName() const { return m_name; }
+	vmime::string getName() const { return m_name; }
 
 	bool step(
 		const vmime::shared_ptr <vmime::security::sasl::SASLSession>& /* sess */,
@@ -100,7 +100,7 @@ VMIME_TEST_SUITE_BEGIN(OAuth2SASLAuthenticatorTest)
 
 	// Return the names of the acceptable mechanisms, separated by spaces. The
 	// first available mechanism is the suggested one.
-	static const vmime::string getAcceptableMechanisms(
+	static vmime::string getAcceptableMechanisms(
 		const vmime::security::sasl::OAuth2SASLAuthenticator::Mode mode,
 		const std::vector <vmime::string>& names
 	) {

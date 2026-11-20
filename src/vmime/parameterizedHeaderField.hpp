@@ -168,26 +168,26 @@ public:
 	  * @param pos position
 	  * @return parameter at position 'pos'
 	  */
-	const shared_ptr <parameter> getParameterAt(const size_t pos);
+	shared_ptr <parameter> getParameterAt(const size_t pos);
 
 	/** Return the parameter at the specified position.
 	  *
 	  * @param pos position
 	  * @return parameter at position 'pos'
 	  */
-	const shared_ptr <const parameter> getParameterAt(const size_t pos) const;
+	shared_ptr <const parameter> getParameterAt(const size_t pos) const;
 
 	/** Return the parameter list.
 	  *
 	  * @return list of parameters
 	  */
-	const std::vector <shared_ptr <const parameter> > getParameterList() const;
+	std::vector <shared_ptr <const parameter> > getParameterList() const;
 
 	/** Return the parameter list.
 	  *
 	  * @return list of parameters
 	  */
-	const std::vector <shared_ptr <parameter> > getParameterList();
+	std::vector <shared_ptr <parameter> > getParameterList();
 
 	/** Parse the parameters from a list of (name, value) pairs, which
 	  * are already split and unquoted. This is used when the parameters
@@ -208,7 +208,7 @@ public:
 
 	size_t getGeneratedSize(const generationContext& ctx);
 
-	const std::vector <shared_ptr <component> > getChildComponents();
+	std::vector <shared_ptr <component> > getChildComponents();
 
 private:
 

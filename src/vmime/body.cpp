@@ -691,7 +691,7 @@ size_t body::getGeneratedSize(const generationContext& ctx) {
                  / "," / "-" / "." / "/" / ":" / "=" / "?"
 */
 
-const string body::generateRandomBoundaryString() {
+string body::generateRandomBoundaryString() {
 
 	// 64 characters that can be _safely_ used in a boundary string
 	static const char bchars[] = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-+";
@@ -779,7 +779,7 @@ void body::setContentType(const mediaType& type) {
 }
 
 
-const mediaType body::getContentType() const {
+mediaType body::getContentType() const {
 
 	shared_ptr <const contentTypeField> ctf =
 		m_part->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
@@ -815,7 +815,7 @@ void body::setCharset(const charset& chset) {
 }
 
 
-const charset body::getCharset() const {
+charset body::getCharset() const {
 
 	const shared_ptr <const contentTypeField> ctf =
 		m_part->getHeader()->findField <contentTypeField>(fields::CONTENT_TYPE);
@@ -846,7 +846,7 @@ void body::setEncoding(const encoding& enc) {
 }
 
 
-const encoding body::getEncoding() const {
+encoding body::getEncoding() const {
 
 	shared_ptr <const headerField> cef =
 		m_part->getHeader()->findField(fields::CONTENT_TRANSFER_ENCODING);
@@ -949,7 +949,7 @@ void body::setEpilogText(const string& epilogText) {
 }
 
 
-const shared_ptr <const contentHandler> body::getContents() const {
+shared_ptr <const contentHandler> body::getContents() const {
 
 	return m_contents;
 }
@@ -1161,13 +1161,13 @@ shared_ptr <bodyPart> body::getPartAt(const size_t pos) {
 }
 
 
-const shared_ptr <const bodyPart> body::getPartAt(const size_t pos) const {
+shared_ptr <const bodyPart> body::getPartAt(const size_t pos) const {
 
 	return m_parts[pos];
 }
 
 
-const std::vector <shared_ptr <const bodyPart> > body::getPartList() const {
+std::vector <shared_ptr <const bodyPart> > body::getPartList() const {
 
 	std::vector <shared_ptr <const bodyPart> > list;
 
@@ -1183,13 +1183,13 @@ const std::vector <shared_ptr <const bodyPart> > body::getPartList() const {
 }
 
 
-const std::vector <shared_ptr <bodyPart> > body::getPartList() {
+std::vector <shared_ptr <bodyPart> > body::getPartList() {
 
 	return m_parts;
 }
 
 
-const std::vector <shared_ptr <component> > body::getChildComponents() {
+std::vector <shared_ptr <component> > body::getChildComponents() {
 
 	std::vector <shared_ptr <component> > list;
 

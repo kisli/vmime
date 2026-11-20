@@ -700,7 +700,7 @@ void POP3Connection::startTLS() {
 #endif // VMIME_HAVE_TLS_SUPPORT
 
 
-const std::vector <string> POP3Connection::getCapabilities() {
+std::vector <string> POP3Connection::getCapabilities() {
 
 	if (!m_capabilitiesFetched) {
 		fetchCapabilities();

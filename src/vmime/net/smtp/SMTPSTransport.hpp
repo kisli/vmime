@@ -52,7 +52,7 @@ public:
 
 	~SMTPSTransport();
 
-	const string getProtocolName() const;
+	string getProtocolName() const;
 
 	static const serviceInfos& getInfosInstance();
 	const serviceInfos& getInfos() const;

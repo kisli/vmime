@@ -58,7 +58,7 @@ public:
 	  *
 	  * @return value of the "creation-date" parameter
 	  */
-	const datetime getCreationDate() const;
+	datetime getCreationDate() const;
 
 	/** Set the value of the "creation-date" parameter.
 	  *
@@ -76,7 +76,7 @@ public:
 	  *
 	  * @return value of the "modification-date" parameter
 	  */
-	const datetime getModificationDate() const;
+	datetime getModificationDate() const;
 
 	/** Set the value of the "modification-date" parameter.
 	  *
@@ -94,7 +94,7 @@ public:
 	  *
 	  * @return value of the "read-date" parameter
 	  */
-	const datetime getReadDate() const;
+	datetime getReadDate() const;
 
 	/** Set the value of the "read-date" parameter.
 	  *
@@ -112,7 +112,7 @@ public:
 	  *
 	  * @return value of the "filename" parameter
 	  */
-	const word getFilename() const;
+	word getFilename() const;
 
 	/** Set the value of the "filename" parameter.
 	  *
@@ -130,7 +130,7 @@ public:
 	  *
 	  * @return value of the "size" parameter
 	  */
-	const string getSize() const;
+	string getSize() const;
 
 	/** Set the value of the "size" parameter.
 	  *

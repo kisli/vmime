@@ -50,7 +50,7 @@ TLSSecuredConnectionInfos::TLSSecuredConnectionInfos(
 }
 
 
-const string TLSSecuredConnectionInfos::getHost() const {
+string TLSSecuredConnectionInfos::getHost() const {
 
 	return m_host;
 }

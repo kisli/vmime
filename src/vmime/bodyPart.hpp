@@ -49,7 +49,7 @@ public:
 	  *
 	  * @return header section
 	  */
-	const shared_ptr <const header> getHeader() const;
+	shared_ptr <const header> getHeader() const;
 
 	/** Return the header section of this part.
 	  *
@@ -67,7 +67,7 @@ public:
 	  *
 	  * @return body section
 	  */
-	const shared_ptr <const body> getBody() const;
+	shared_ptr <const body> getBody() const;
 
 	/** Return the body section of this part.
 	  *
@@ -98,7 +98,7 @@ public:
 	void copyFrom(const component& other);
 	bodyPart& operator=(const bodyPart& other);
 
-	const std::vector <shared_ptr <component> > getChildComponents();
+	std::vector <shared_ptr <component> > getChildComponents();
 
 	size_t getGeneratedSize(const generationContext& ctx);
 

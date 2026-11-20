@@ -257,9 +257,9 @@ public:
 	bool operator>=(const datetime& other) const;
 
 	// Current date and time
-	static const datetime now();
+	static datetime now();
 
-	const std::vector <shared_ptr <component> > getChildComponents();
+	std::vector <shared_ptr <component> > getChildComponents();
 
 protected:
 

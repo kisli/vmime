@@ -39,25 +39,25 @@ parsedMessageAttachment::parsedMessageAttachment(const shared_ptr <message>& msg
 }
 
 
-const mediaType parsedMessageAttachment::getType() const {
+mediaType parsedMessageAttachment::getType() const {
 
 	return mediaType(mediaTypes::MESSAGE, mediaTypes::MESSAGE_RFC822);
 }
 
 
-const text parsedMessageAttachment::getDescription() const {
+text parsedMessageAttachment::getDescription() const {
 
 	return text();
 }
 
 
-const word parsedMessageAttachment::getName() const {
+word parsedMessageAttachment::getName() const {
 
 	return word();
 }
 
 
-const shared_ptr <const contentHandler> parsedMessageAttachment::getData() const {
+shared_ptr <const contentHandler> parsedMessageAttachment::getData() const {
 
 	if (!m_data) {
 
@@ -111,7 +111,7 @@ const char* parsedMessageAttachment::getDataType(const string& data) {
 }
 
 
-const encoding parsedMessageAttachment::getEncoding() const {
+encoding parsedMessageAttachment::getEncoding() const {
 
 	// The message cannot be encoded: the encoding of a message/rfc822
 	// part only tells whether it contains 8-bit or binary data (RFC 2046,

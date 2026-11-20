@@ -62,7 +62,7 @@ public:
 	  * @param msg message for which to send a MDN
 	  * @return list of possible MDNs
 	  */
-	static const std::vector <sendableMDNInfos> getPossibleMDNs(const shared_ptr <const message>& msg);
+	static std::vector <sendableMDNInfos> getPossibleMDNs(const shared_ptr <const message>& msg);
 
 	/** Test whether the specified message is a MDN.
 	  *

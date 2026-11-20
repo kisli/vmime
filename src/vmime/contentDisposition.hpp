@@ -61,7 +61,7 @@ public:
 	void copyFrom(const component& other);
 	contentDisposition& operator=(const contentDisposition& other);
 
-	const std::vector <shared_ptr <component> > getChildComponents();
+	std::vector <shared_ptr <component> > getChildComponents();
 
 
 	contentDisposition& operator=(const string& name);

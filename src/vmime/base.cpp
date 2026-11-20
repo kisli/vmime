@@ -68,19 +68,19 @@ const word NULL_WORD("", vmime::charset(vmime::charsets::US_ASCII));
   *
   * @return library name
   */
-const string libname() { return (VMIME_PACKAGE); }
+string libname() { return (VMIME_PACKAGE); }
 
 /** Return the library version (eg: "0.5.2").
   *
   * @return library version
   */
-const string libversion() { return (VMIME_VERSION " (" __DATE__ " " __TIME__ ")"); }
+string libversion() { return (VMIME_VERSION " (" __DATE__ " " __TIME__ ")"); }
 
 /** Return the library API version (eg: "6:1:6").
   *
   * @return library API version
   */
-const string libapi() { return (VMIME_API); }
+string libapi() { return (VMIME_API); }
 
 
 // New line sequence to be used when folding header fields.

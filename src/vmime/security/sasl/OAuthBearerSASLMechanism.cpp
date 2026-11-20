@@ -75,7 +75,7 @@ bool isValidBearerToken(const string& token) {
 
 
 // RFC 5801, section 4: in a saslname, "," and "=" are encoded as "=2C" and "=3D"
-const string encodeSASLName(const string& name) {
+string encodeSASLName(const string& name) {
 
 	string res;
 	res.reserve(name.length());
@@ -111,7 +111,7 @@ OAuthBearerSASLMechanism::~OAuthBearerSASLMechanism() {
 }
 
 
-const string OAuthBearerSASLMechanism::getName() const {
+string OAuthBearerSASLMechanism::getName() const {
 
 	return "OAUTHBEARER";
 }

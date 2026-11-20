@@ -108,7 +108,7 @@ url::operator string() const {
 }
 
 
-const string url::build() const {
+string url::build() const {
 
 	utility::details::classicOStringStream oss;
 

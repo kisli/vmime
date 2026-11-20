@@ -42,13 +42,13 @@ public:
 
 	parsedMessageAttachment(const shared_ptr <message>& msg);
 
-	const mediaType getType() const;
-	const text getDescription() const;
-	const word getName() const;
+	mediaType getType() const;
+	text getDescription() const;
+	word getName() const;
 
-	const shared_ptr <const contentHandler> getData() const;
+	shared_ptr <const contentHandler> getData() const;
 
-	const encoding getEncoding() const;
+	encoding getEncoding() const;
 
 	shared_ptr <const object> getPart() const;
 

@@ -78,7 +78,7 @@ public:
 	  *
 	  * @return format name
 	  */
-	virtual const string getName() const = 0;
+	virtual string getName() const = 0;
 
 	/** Create the specified folder.
 	  *
@@ -124,7 +124,7 @@ public:
 	  * @param type type of directory to return
 	  * @return corresponding directory on the file system
 	  */
-	virtual const utility::file::path folderPathToFileSystemPath(
+	virtual utility::file::path folderPathToFileSystemPath(
 		const folder::path& path,
 		const DirectoryType type
 	) const = 0;
@@ -136,7 +136,7 @@ public:
 	  * returned; if set to false, only direct children are returned.
 	  * @return list of subfolders
 	  */
-	virtual const std::vector <folder::path> listFolders(
+	virtual std::vector <folder::path> listFolders(
 		const folder::path& root,
 		const bool recursive
 	) const = 0;

@@ -89,13 +89,13 @@ public:
 	  *
 	  * @return full message identifier
 	  */
-	const string getId() const;
+	string getId() const;
 
 	shared_ptr <component> clone() const;
 	void copyFrom(const component& other);
 	messageId& operator=(const messageId& other);
 
-	const std::vector <shared_ptr <component> > getChildComponents();
+	std::vector <shared_ptr <component> > getChildComponents();
 
 private:
 

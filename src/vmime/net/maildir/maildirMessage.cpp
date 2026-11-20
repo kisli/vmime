@@ -89,7 +89,7 @@ size_t maildirMessage::getNumber() const {
 }
 
 
-const message::uid maildirMessage::getUID() const {
+message::uid maildirMessage::getUID() const {
 
 	return m_uid;
 }

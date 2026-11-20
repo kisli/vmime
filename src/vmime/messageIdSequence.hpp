@@ -47,7 +47,7 @@ public:
 	void copyFrom(const component& other);
 	messageIdSequence& operator=(const messageIdSequence& other);
 
-	const std::vector <shared_ptr <component> > getChildComponents();
+	std::vector <shared_ptr <component> > getChildComponents();
 
 
 	/** Add a message-id at the end of the list.
@@ -124,26 +124,26 @@ public:
 	  * @param pos position
 	  * @return message-id at position 'pos'
 	  */
-	const shared_ptr <messageId> getMessageIdAt(const size_t pos);
+	shared_ptr <messageId> getMessageIdAt(const size_t pos);
 
 	/** Return the message-id at the specified position.
 	  *
 	  * @param pos position
 	  * @return message-id at position 'pos'
 	  */
-	const shared_ptr <const messageId> getMessageIdAt(const size_t pos) const;
+	shared_ptr <const messageId> getMessageIdAt(const size_t pos) const;
 
 	/** Return the message-id list.
 	  *
 	  * @return list of message-ids
 	  */
-	const std::vector <shared_ptr <const messageId> > getMessageIdList() const;
+	std::vector <shared_ptr <const messageId> > getMessageIdList() const;
 
 	/** Return the message-id list.
 	  *
 	  * @return list of message-ids
 	  */
-	const std::vector <shared_ptr <messageId> > getMessageIdList();
+	std::vector <shared_ptr <messageId> > getMessageIdList();
 
 private:
 

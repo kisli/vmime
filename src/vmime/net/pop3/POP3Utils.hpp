@@ -74,7 +74,7 @@ public:
 	  * @param msgCount number of messages in folder
 	  * @return list of message numbers
 	  */
-	static const std::vector <size_t> messageSetToNumberList(
+	static std::vector <size_t> messageSetToNumberList(
 		const messageSet& msgs,
 		const size_t msgCount
 	);

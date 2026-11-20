@@ -218,7 +218,7 @@ void X509Certificate_GnuTLS::write(
 }
 
 
-const byteArray X509Certificate_GnuTLS::getSerialNumber() const {
+byteArray X509Certificate_GnuTLS::getSerialNumber() const {
 
 	char serial[64];
 	size_t serialSize = sizeof(serial);
@@ -252,7 +252,7 @@ static int verifyOutputCallback(
 
 
 // Returns the reasons for the given verification status
-static const string getStatusReasons(const unsigned int status) {
+static string getStatusReasons(const unsigned int status) {
 
 	static const struct {
 		unsigned int flag;
@@ -477,21 +477,21 @@ bool X509Certificate_GnuTLS::verifyHostName(
 }
 
 
-const datetime X509Certificate_GnuTLS::getActivationDate() const {
+datetime X509Certificate_GnuTLS::getActivationDate() const {
 
 	const time_t t = gnutls_x509_crt_get_activation_time(m_data->cert);
 	return datetime(t);
 }
 
 
-const datetime X509Certificate_GnuTLS::getExpirationDate() const {
+datetime X509Certificate_GnuTLS::getExpirationDate() const {
 
 	const time_t t = gnutls_x509_crt_get_expiration_time(m_data->cert);
 	return datetime(t);
 }
 
 
-const byteArray X509Certificate_GnuTLS::getFingerprint(const DigestAlgorithm algo) const {
+byteArray X509Certificate_GnuTLS::getFingerprint(const DigestAlgorithm algo) const {
 
 	gnutls_digest_algorithm_t galgo;
 
@@ -531,7 +531,7 @@ const byteArray X509Certificate_GnuTLS::getFingerprint(const DigestAlgorithm alg
 }
 
 
-const byteArray X509Certificate_GnuTLS::getEncoded() const {
+byteArray X509Certificate_GnuTLS::getEncoded() const {
 
 	byteArray bytes;
 	utility::outputStreamByteArrayAdapter os(bytes);
@@ -542,7 +542,7 @@ const byteArray X509Certificate_GnuTLS::getEncoded() const {
 }
 
 
-const string X509Certificate_GnuTLS::getIssuerString() const {
+string X509Certificate_GnuTLS::getIssuerString() const {
 
 	char buffer[4096];
 	size_t bufferSize = sizeof(buffer);
@@ -555,7 +555,7 @@ const string X509Certificate_GnuTLS::getIssuerString() const {
 }
 
 
-const string X509Certificate_GnuTLS::getType() const {
+string X509Certificate_GnuTLS::getType() const {
 
 	return "X.509";
 }

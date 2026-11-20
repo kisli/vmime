@@ -49,7 +49,7 @@ SMTPSTransport::~SMTPSTransport() {
 }
 
 
-const string SMTPSTransport::getProtocolName() const {
+string SMTPSTransport::getProtocolName() const {
 
 	return "smtps";
 }

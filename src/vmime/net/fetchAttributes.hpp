@@ -122,7 +122,7 @@ public:
 	  *
 	  * @return list of header names (eg. "X-Mailer")
 	  */
-	const std::vector <string> getHeaderFields() const;
+	std::vector <string> getHeaderFields() const;
 
 private:
 

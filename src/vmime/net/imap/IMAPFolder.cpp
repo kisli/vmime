@@ -113,7 +113,7 @@ int IMAPFolder::getMode() const {
 }
 
 
-const folderAttributes IMAPFolder::getAttributes() {
+folderAttributes IMAPFolder::getAttributes() {
 
 	// Root folder
 	if (m_path.isEmpty()) {
@@ -135,13 +135,13 @@ const folderAttributes IMAPFolder::getAttributes() {
 }
 
 
-const folder::path::component IMAPFolder::getName() const {
+folder::path::component IMAPFolder::getName() const {
 
 	return m_name;
 }
 
 
-const folder::path IMAPFolder::getFullPath() const {
+folder::path IMAPFolder::getFullPath() const {
 
 	return m_path;
 }

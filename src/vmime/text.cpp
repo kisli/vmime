@@ -156,7 +156,7 @@ bool text::operator!=(const text& t) const {
 }
 
 
-const string text::getConvertedText(
+string text::getConvertedText(
 	const charset& dest,
 	const charsetConverterOptions& opts
 ) const {
@@ -217,19 +217,19 @@ bool text::isEmpty() const {
 }
 
 
-const shared_ptr <word> text::getWordAt(const size_t pos) {
+shared_ptr <word> text::getWordAt(const size_t pos) {
 
 	return m_words[pos];
 }
 
 
-const shared_ptr <const word> text::getWordAt(const size_t pos) const {
+shared_ptr <const word> text::getWordAt(const size_t pos) const {
 
 	return m_words[pos];
 }
 
 
-const std::vector <shared_ptr <const word> > text::getWordList() const {
+std::vector <shared_ptr <const word> > text::getWordList() const {
 
 	std::vector <shared_ptr <const word> > list;
 
@@ -245,7 +245,7 @@ const std::vector <shared_ptr <const word> > text::getWordList() const {
 }
 
 
-const std::vector <shared_ptr <word> > text::getWordList() {
+std::vector <shared_ptr <word> > text::getWordList() {
 
 	return m_words;
 }
@@ -474,7 +474,7 @@ void text::fixBrokenWords(std::vector <shared_ptr <word> >& words) {
 }
 
 
-const std::vector <shared_ptr <component> > text::getChildComponents() {
+std::vector <shared_ptr <component> > text::getChildComponents() {
 
 	std::vector <shared_ptr <component> > list;
 
@@ -484,7 +484,7 @@ const std::vector <shared_ptr <component> > text::getChildComponents() {
 }
 
 
-const string text::getWholeBuffer() const {
+string text::getWholeBuffer() const {
 
 	string res;
 

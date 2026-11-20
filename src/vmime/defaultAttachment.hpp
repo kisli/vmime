@@ -64,11 +64,11 @@ public:
 
 	defaultAttachment& operator=(const defaultAttachment& attach);
 
-	const mediaType getType() const;
-	const text getDescription() const;
-	const word getName() const;
-	const shared_ptr <const contentHandler> getData() const;
-	const encoding getEncoding() const;
+	mediaType getType() const;
+	text getDescription() const;
+	word getName() const;
+	shared_ptr <const contentHandler> getData() const;
+	encoding getEncoding() const;
 
 	shared_ptr <const object> getPart() const;
 

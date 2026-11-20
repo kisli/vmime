@@ -85,7 +85,7 @@ public:
 
 	size_t getGeneratedSize(const generationContext& ctx);
 
-	const std::vector <shared_ptr <component> > getChildComponents();
+	std::vector <shared_ptr <component> > getChildComponents();
 
 	/** Return the name of this parameter.
 	  *
@@ -119,7 +119,7 @@ public:
 	  * @return value
 	  */
 	template <typename T>
-	const T getValueAs() const {
+	T getValueAs() const {
 
 		T ret;
 		ret.parse(m_value->getBuffer());

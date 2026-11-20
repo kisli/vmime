@@ -41,7 +41,7 @@ POP3ServiceInfos::POP3ServiceInfos(const bool pop3s)
 }
 
 
-const string POP3ServiceInfos::getPropertyPrefix() const {
+string POP3ServiceInfos::getPropertyPrefix() const {
 
 	if (m_pop3s) {
 		return "store.pop3s.";
@@ -100,7 +100,7 @@ const POP3ServiceInfos::props& POP3ServiceInfos::getProperties() const {
 }
 
 
-const std::vector <serviceInfos::property> POP3ServiceInfos::getAvailableProperties() const {
+std::vector <serviceInfos::property> POP3ServiceInfos::getAvailableProperties() const {
 
 	std::vector <property> list;
 	const props& p = getProperties();

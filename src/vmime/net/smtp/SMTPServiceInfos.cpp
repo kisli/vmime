@@ -41,7 +41,7 @@ SMTPServiceInfos::SMTPServiceInfos(const bool smtps)
 }
 
 
-const string SMTPServiceInfos::getPropertyPrefix() const {
+string SMTPServiceInfos::getPropertyPrefix() const {
 
 	if (m_smtps) {
 		return "transport.smtps.";
@@ -103,7 +103,7 @@ const SMTPServiceInfos::props& SMTPServiceInfos::getProperties() const {
 }
 
 
-const std::vector <serviceInfos::property> SMTPServiceInfos::getAvailableProperties() const {
+std::vector <serviceInfos::property> SMTPServiceInfos::getAvailableProperties() const {
 
 	std::vector <property> list;
 	const props& p = getProperties();

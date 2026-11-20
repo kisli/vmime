@@ -153,7 +153,7 @@ public:
 	  * @param pos position of the attachment
 	  * @return attachment at the specified position
 	  */
-	const shared_ptr <const attachment> getAttachmentAt(const size_t pos) const;
+	shared_ptr <const attachment> getAttachmentAt(const size_t pos) const;
 
 	/** Return the attachment at the specified position.
 	  *
@@ -172,13 +172,13 @@ public:
 	  *
 	  * @return list of attachments
 	  */
-	const std::vector <shared_ptr <const attachment> > getAttachmentList() const;
+	std::vector <shared_ptr <const attachment> > getAttachmentList() const;
 
 	/** Return the list of attachments.
 	  *
 	  * @return list of attachments
 	  */
-	const std::vector <shared_ptr <attachment> > getAttachmentList();
+	std::vector <shared_ptr <attachment> > getAttachmentList();
 
 	/** Change the type of the text part and construct a new part.
 	  *

@@ -196,7 +196,7 @@ public:
 		m_first = false;
 	}
 
-	const std::string str() const {
+	std::string str() const {
 
 		return m_oss.str();
 	}

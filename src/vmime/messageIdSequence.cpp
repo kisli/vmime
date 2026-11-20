@@ -74,7 +74,7 @@ messageIdSequence& messageIdSequence::operator=(const messageIdSequence& other) 
 }
 
 
-const std::vector <shared_ptr <component> > messageIdSequence::getChildComponents() {
+std::vector <shared_ptr <component> > messageIdSequence::getChildComponents() {
 
 	std::vector <shared_ptr <component> > res;
 
@@ -255,19 +255,19 @@ bool messageIdSequence::isEmpty() const {
 }
 
 
-const shared_ptr <messageId> messageIdSequence::getMessageIdAt(const size_t pos) {
+shared_ptr <messageId> messageIdSequence::getMessageIdAt(const size_t pos) {
 
 	return m_list[pos];
 }
 
 
-const shared_ptr <const messageId> messageIdSequence::getMessageIdAt(const size_t pos) const {
+shared_ptr <const messageId> messageIdSequence::getMessageIdAt(const size_t pos) const {
 
 	return m_list[pos];
 }
 
 
-const std::vector <shared_ptr <const messageId> > messageIdSequence::getMessageIdList() const {
+std::vector <shared_ptr <const messageId> > messageIdSequence::getMessageIdList() const {
 
 	std::vector <shared_ptr <const messageId> > list;
 
@@ -283,7 +283,7 @@ const std::vector <shared_ptr <const messageId> > messageIdSequence::getMessageI
 }
 
 
-const std::vector <shared_ptr <messageId> > messageIdSequence::getMessageIdList() {
+std::vector <shared_ptr <messageId> > messageIdSequence::getMessageIdList() {
 
 	return m_list;
 }

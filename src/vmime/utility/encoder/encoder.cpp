@@ -64,7 +64,7 @@ propertySet& encoder::getResults() {
 }
 
 
-const std::vector <string> encoder::getAvailableProperties() const {
+std::vector <string> encoder::getAvailableProperties() const {
 
 	std::vector <string> list;
 	return list;

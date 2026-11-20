@@ -162,14 +162,14 @@ public:
 	  *
 	  * @return UID of the first message
 	  */
-	const message::uid getFirst() const;
+	message::uid getFirst() const;
 
 	/** Returns the UID of the last message in the range, or '*'
 	  * to designate the last message in the folder
 	  *
 	  * @return UID of the last message
 	  */
-	const message::uid getLast() const;
+	message::uid getLast() const;
 
 	void enumerate(messageSetEnumerator& en) const;
 

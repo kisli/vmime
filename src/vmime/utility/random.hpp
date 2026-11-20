@@ -64,7 +64,7 @@ public:
 	  * @param randomChars list of characters to use
 	  * @return random string
 	  */
-	static const string getString(
+	static string getString(
 		const size_t length,
 		const string& randomChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	);

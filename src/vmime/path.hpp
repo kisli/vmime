@@ -74,7 +74,7 @@ public:
 	shared_ptr <component> clone() const;
 	path& operator=(const path& other);
 
-	const std::vector <shared_ptr <component> > getChildComponents();
+	std::vector <shared_ptr <component> > getChildComponents();
 
 protected:
 

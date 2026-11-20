@@ -56,7 +56,7 @@ public:
 	text& operator=(const component& other);
 	text& operator=(const text& other);
 
-	const std::vector <shared_ptr <component> > getChildComponents();
+	std::vector <shared_ptr <component> > getChildComponents();
 
 	/** Add a word at the end of the list.
 	  *
@@ -106,26 +106,26 @@ public:
 	  * @param pos position
 	  * @return word at position 'pos'
 	  */
-	const shared_ptr <word> getWordAt(const size_t pos);
+	shared_ptr <word> getWordAt(const size_t pos);
 
 	/** Return the word at the specified position.
 	  *
 	  * @param pos position
 	  * @return word at position 'pos'
 	  */
-	const shared_ptr <const word> getWordAt(const size_t pos) const;
+	shared_ptr <const word> getWordAt(const size_t pos) const;
 
 	/** Return the word list.
 	  *
 	  * @return list of words
 	  */
-	const std::vector <shared_ptr <const word> > getWordList() const;
+	std::vector <shared_ptr <const word> > getWordList() const;
 
 	/** Return the word list.
 	  *
 	  * @return list of words
 	  */
-	const std::vector <shared_ptr <word> > getWordList();
+	std::vector <shared_ptr <word> > getWordList();
 
 
 	/** Return the text converted into the specified charset.
@@ -136,7 +136,7 @@ public:
 	  * @param opts options for charset conversion
 	  * @return text decoded in the specified charset
 	  */
-	const string getConvertedText(
+	string getConvertedText(
 		const charset& dest,
 		const charsetConverterOptions& opts = charsetConverterOptions()
 	) const;
@@ -147,7 +147,7 @@ public:
 	  *
 	  * @return raw data
 	  */
-	const string getWholeBuffer() const;
+	string getWholeBuffer() const;
 
 	/** This function can be used to make several encoded words from a text.
 	  * All the characters in the text must be in the same specified charset.

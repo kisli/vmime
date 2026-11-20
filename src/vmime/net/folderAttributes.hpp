@@ -144,7 +144,7 @@ public:
 	  *
 	  * @return a list of user-defined flags
 	  */
-	const std::vector <string> getUserFlags() const;
+	std::vector <string> getUserFlags() const;
 
 	/** Set the user-defined flags of the folder.
 	  *

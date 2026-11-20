@@ -49,7 +49,7 @@ shared_ptr <vmime::utility::file> windowsFileSystemFactory::create(
 }
 
 
-const vmime::utility::file::path windowsFileSystemFactory::stringToPath(
+vmime::utility::file::path windowsFileSystemFactory::stringToPath(
 	const vmime::string& str
 ) const {
 
@@ -57,7 +57,7 @@ const vmime::utility::file::path windowsFileSystemFactory::stringToPath(
 }
 
 
-const vmime::string windowsFileSystemFactory::pathToString(
+vmime::string windowsFileSystemFactory::pathToString(
 	const vmime::utility::file::path& path
 ) const {
 
@@ -65,7 +65,7 @@ const vmime::string windowsFileSystemFactory::pathToString(
 }
 
 
-const vmime::utility::file::path windowsFileSystemFactory::stringToPathImpl(
+vmime::utility::file::path windowsFileSystemFactory::stringToPathImpl(
 	const vmime::string& str
 ) {
 
@@ -102,7 +102,7 @@ const vmime::utility::file::path windowsFileSystemFactory::stringToPathImpl(
 }
 
 
-const vmime::string windowsFileSystemFactory::pathToStringImpl(
+vmime::string windowsFileSystemFactory::pathToStringImpl(
 	const vmime::utility::file::path& path
 ) {
 
@@ -208,7 +208,7 @@ bool windowsFileSystemFactory::isValidPath(const vmime::utility::file::path& pat
 }
 
 
-const vmime::utility::file::path windowsFileSystemFactory::getTemporaryDirectoryPath() const {
+vmime::utility::file::path windowsFileSystemFactory::getTemporaryDirectoryPath() const {
 
 	char buffer[MAX_PATH + 1];
 	const DWORD length = GetTempPathA(static_cast <DWORD>(sizeof(buffer)), buffer);

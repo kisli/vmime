@@ -45,12 +45,12 @@ public:
 
 	bodyPartAttachment(const shared_ptr <const bodyPart>& part);
 
-	const mediaType getType() const;
-	const word getName() const;
-	const text getDescription() const;
-	const encoding getEncoding() const;
+	mediaType getType() const;
+	word getName() const;
+	text getDescription() const;
+	encoding getEncoding() const;
 
-	const shared_ptr <const contentHandler> getData() const;
+	shared_ptr <const contentHandler> getData() const;
 
 	shared_ptr <const object> getPart() const;
 	shared_ptr <const header> getHeader() const;

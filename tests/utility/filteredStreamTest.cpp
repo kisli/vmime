@@ -82,7 +82,7 @@ VMIME_TEST_SUITE_BEGIN(filteredStreamTest)
 	};
 
 
-	const std::string readWhole(vmime::utility::inputStream& is) {
+	std::string readWhole(vmime::utility::inputStream& is) {
 
 		vmime::byte_t buffer[256];
 		std::string whole;

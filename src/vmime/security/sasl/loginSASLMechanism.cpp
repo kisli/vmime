@@ -56,7 +56,7 @@ loginSASLMechanism::~loginSASLMechanism() {
 }
 
 
-const string loginSASLMechanism::getName() const {
+string loginSASLMechanism::getName() const {
 
 	return "LOGIN";
 }

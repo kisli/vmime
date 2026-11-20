@@ -150,7 +150,7 @@ bool encoding::operator!=(const encoding& value) const {
 }
 
 
-const encoding encoding::decideImpl(
+encoding encoding::decideImpl(
 	const string::const_iterator begin,
 	const string::const_iterator end
 ) {
@@ -221,7 +221,7 @@ bool encoding::shouldReencode() const {
 }
 
 
-const encoding encoding::decide(
+encoding encoding::decide(
 	const shared_ptr <const contentHandler>& data,
 	const EncodingUsage usage
 ) {
@@ -256,7 +256,7 @@ const encoding encoding::decide(
 }
 
 
-const encoding encoding::decide(
+encoding encoding::decide(
 	const shared_ptr <const contentHandler>& data,
 	const charset& chset,
 	const EncodingUsage usage
@@ -320,7 +320,7 @@ void encoding::setUsage(const EncodingUsage usage) {
 }
 
 
-const std::vector <shared_ptr <component> > encoding::getChildComponents() {
+std::vector <shared_ptr <component> > encoding::getChildComponents() {
 
 	return std::vector <shared_ptr <component> >();
 }

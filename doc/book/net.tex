@@ -329,7 +329,7 @@ the user to enter her/his credentials:
 \begin{lstlisting}[caption={A simple interactive authenticator}]
 class myAuthenticator : public vmime::security::defaultAuthenticator {
 
-   const string getUsername() const {
+   string getUsername() const {
 
       std::cout << "Enter your username: " << std::endl;
 
@@ -339,7 +339,7 @@ class myAuthenticator : public vmime::security::defaultAuthenticator {
       return res;
    }
 
-   const string getPassword() const {
+   string getPassword() const {
 
       std::cout << "Enter your password: " << std::endl;
 
@@ -395,7 +395,7 @@ class mySASLAuthenticator : public vmime::security::sasl::defaultSASLAuthenticat
 
    typedef vmime::security::sasl::SASLMechanism mechanism;  // save us typing
 
-   const std::vector <vmime::shared_ptr <mechanism> > getAcceptableMechanisms(
+   std::vector <vmime::shared_ptr <mechanism> > getAcceptableMechanisms(
       const std::vector <vmime::shared_ptr <mechanism> >& available,
       const vmime::shared_ptr <mechanism>& suggested
    ) const {
@@ -544,7 +544,7 @@ public:
 
    }
 
-   const vmime::string getAccessToken() const {
+   vmime::string getAccessToken() const {
 
       // Return a valid access token, eg. obtained from the refresh
       // token if the current access token has expired
@@ -1079,7 +1079,7 @@ class timeoutHandler : public object {
      *
      * @return true if the timeout delay is elapsed
      */
-   virtual const bool isTimeOut() = 0;
+   virtual bool isTimeOut() = 0;
 
    /** Called to reset the timeout counter.
      */
@@ -1091,7 +1091,7 @@ class timeoutHandler : public object {
      * @return true to continue (and reset the timeout)
      * or false to cancel the current operation
      */
-   virtual const bool handleTimeOut() = 0;
+   virtual bool handleTimeOut() = 0;
 };
 \end{lstlisting}
 
@@ -1122,7 +1122,7 @@ public:
       m_startTime = time(NULL);
    }
 
-   const bool isTimeOut() {
+   bool isTimeOut() {
 
       return time(NULL) >= m_startTime + 30;  // 30 seconds timeout
    }
@@ -1132,7 +1132,7 @@ public:
       m_startTime = time(NULL);
    }
 
-   const bool handleTimeOut() {
+   bool handleTimeOut() {
 
       std::cout << "Operation timed out." << std::endl;
                 << "Press [Y] to continue, or [N] to "

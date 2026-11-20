@@ -56,7 +56,7 @@ void MDNHelper::attachMDNRequest(const shared_ptr <message>& msg, const mailbox&
 }
 
 
-const std::vector <sendableMDNInfos> MDNHelper::getPossibleMDNs(const shared_ptr <const message>& msg) {
+std::vector <sendableMDNInfos> MDNHelper::getPossibleMDNs(const shared_ptr <const message>& msg) {
 
 	std::vector <sendableMDNInfos> result;
 

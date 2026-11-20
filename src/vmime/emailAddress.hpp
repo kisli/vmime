@@ -81,14 +81,14 @@ public:
 	  *
 	  * @return email address as a string
 	  */
-	const string toString() const;
+	string toString() const;
 
 	/** Returns the email address as multibyte text, by joining components.
 	  * (ie. the local name, followed by a @ then the domain name.)
 	  *
 	  * @return email address as multibyte text
 	  */
-	const text toText() const;
+	text toText() const;
 
 	// Comparison
 	bool operator==(const class emailAddress& eml) const;
@@ -99,7 +99,7 @@ public:
 	shared_ptr <component> clone() const;
 	emailAddress& operator=(const emailAddress& other);
 
-	const std::vector <shared_ptr <component> > getChildComponents();
+	std::vector <shared_ptr <component> > getChildComponents();
 
 protected:
 

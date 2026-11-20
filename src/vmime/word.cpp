@@ -280,7 +280,7 @@ shared_ptr <word> word::parseNext(
 }
 
 
-const std::vector <shared_ptr <word> > word::parseMultiple(
+std::vector <shared_ptr <word> > word::parseMultiple(
 	parsingContext& ctx,
 	const string& buffer,
 	const size_t position,
@@ -1131,7 +1131,7 @@ bool word::isEquivalent(const word& other) const {
 }
 
 
-const string word::getConvertedText(
+string word::getConvertedText(
 	const charset& dest,
 	const charsetConverterOptions& opts
 ) const {
@@ -1175,7 +1175,7 @@ void word::setCharset(const charset& ch) {
 }
 
 
-const string word::getLanguage() const {
+string word::getLanguage() const {
 
 	return m_lang;
 }
@@ -1211,7 +1211,7 @@ void word::setBuffer(const string& buffer) {
 }
 
 
-const std::vector <shared_ptr <component> > word::getChildComponents() {
+std::vector <shared_ptr <component> > word::getChildComponents() {
 
 	return std::vector <shared_ptr <component> >();
 }

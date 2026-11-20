@@ -58,7 +58,7 @@ shared_ptr <seekableInputStream> parserInputStreamAdapter::getUnderlyingStream()
 }
 
 
-const string parserInputStreamAdapter::extract(const size_t begin, const size_t end) const {
+string parserInputStreamAdapter::extract(const size_t begin, const size_t end) const {
 
 	const size_t initialPos = m_stream->getPosition();
 

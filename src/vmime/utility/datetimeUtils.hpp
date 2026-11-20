@@ -59,7 +59,7 @@ public:
 	  * @param date date/time to convert
 	  * @return GMT date/time
 	  */
-	static const datetime toUniversalTime(const datetime& date);
+	static datetime toUniversalTime(const datetime& date);
 
 	/** Convert the specified date/time to the specified time zone.
 	  *
@@ -67,7 +67,7 @@ public:
 	  * @param zone local zone to convert to (see datetime::TimeZones enum)
 	  * @return local time and date
 	  */
-	static const datetime toLocalTime(const datetime& date, const int zone);
+	static datetime toLocalTime(const datetime& date, const int zone);
 
 	/** Return the day of the week from the specified date.
 	  *

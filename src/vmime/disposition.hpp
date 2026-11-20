@@ -54,7 +54,7 @@ public:
 	void copyFrom(const component& other);
 	disposition& operator=(const disposition& other);
 
-	const std::vector <shared_ptr <component> > getChildComponents();
+	std::vector <shared_ptr <component> > getChildComponents();
 
 
 	/** Set the disposition action mode.
@@ -128,7 +128,7 @@ public:
 	  *
 	  * @return list of modifiers
 	  */
-	const std::vector <string> getModifierList() const;
+	std::vector <string> getModifierList() const;
 
 private:
 

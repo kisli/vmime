@@ -57,33 +57,33 @@ public:
 	  *
 	  * @return content type of the attachment
 	  */
-	virtual const mediaType getType() const = 0;
+	virtual mediaType getType() const = 0;
 
 	/** Return the description of this attachment.
 	  *
 	  * @return attachment description, or an empty text
 	  * if no description is available
 	  */
-	virtual const text getDescription() const = 0;
+	virtual text getDescription() const = 0;
 
 	/** Return the (file) name of this attachment.
 	  *
 	  * @return attachment name, or an empty word if no
 	  * name is available
 	  */
-	virtual const word getName() const = 0;
+	virtual word getName() const = 0;
 
 	/** Return the data contained in this attachment.
 	  *
 	  * @return attachment data
 	  */
-	virtual const shared_ptr <const contentHandler> getData() const = 0;
+	virtual shared_ptr <const contentHandler> getData() const = 0;
 
 	/** Return the encoding used for this attachment.
 	  *
 	  * @return attachment data encoding
 	  */
-	virtual const encoding getEncoding() const = 0;
+	virtual encoding getEncoding() const = 0;
 
 	/** Return the part in which the attachment has been found.
 	  * This can be a vmime::bodyPart or a vmime::net::part object.

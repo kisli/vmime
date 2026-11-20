@@ -131,7 +131,7 @@ public:
 		}
 	}
 
-	const string extract(const size_t begin, const size_t end) const;
+	string extract(const size_t begin, const size_t end) const;
 
 	/** Skips bytes matching a predicate from the current position.
 	  * The current position is updated to the next following byte

@@ -102,7 +102,7 @@ private:
 
 	void fetchCapabilities();
 	void invalidateCapabilities();
-	const std::vector <string> getCapabilities();
+	std::vector <string> getCapabilities();
 
 	void internalDisconnect();
 

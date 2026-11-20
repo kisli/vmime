@@ -167,7 +167,7 @@ size_t IMAPMessage::getNumber() const {
 }
 
 
-const message::uid IMAPMessage::getUID() const {
+message::uid IMAPMessage::getUID() const {
 
 	return m_uid;
 }

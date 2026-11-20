@@ -35,7 +35,7 @@ qpEncoder::qpEncoder() {
 }
 
 
-const std::vector <string> qpEncoder::getAvailableProperties() const {
+std::vector <string> qpEncoder::getAvailableProperties() const {
 
 	std::vector <string> list(encoder::getAvailableProperties());
 

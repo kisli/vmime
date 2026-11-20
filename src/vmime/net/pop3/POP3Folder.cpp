@@ -100,7 +100,7 @@ int POP3Folder::getMode() const {
 }
 
 
-const folderAttributes POP3Folder::getAttributes() {
+folderAttributes POP3Folder::getAttributes() {
 
 	folderAttributes attribs;
 
@@ -119,13 +119,13 @@ const folderAttributes POP3Folder::getAttributes() {
 }
 
 
-const folder::path::component POP3Folder::getName() const {
+folder::path::component POP3Folder::getName() const {
 
 	return m_name;
 }
 
 
-const folder::path POP3Folder::getFullPath() const {
+folder::path POP3Folder::getFullPath() const {
 
 	return m_path;
 }

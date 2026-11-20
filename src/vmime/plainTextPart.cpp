@@ -44,7 +44,7 @@ plainTextPart::~plainTextPart() {
 }
 
 
-const mediaType plainTextPart::getType() const {
+mediaType plainTextPart::getType() const {
 
 	return mediaType(mediaTypes::TEXT, mediaTypes::TEXT_PLAIN);
 }
@@ -106,7 +106,7 @@ void plainTextPart::setCharset(const charset& ch) {
 }
 
 
-const shared_ptr <const contentHandler> plainTextPart::getText() const{
+shared_ptr <const contentHandler> plainTextPart::getText() const{
 
 	return m_text;
 }

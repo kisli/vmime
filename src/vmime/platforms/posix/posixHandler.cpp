@@ -98,7 +98,7 @@ unsigned long posixHandler::getUnixTime() const {
 }
 
 
-const vmime::datetime posixHandler::getCurrentLocalTime() const {
+vmime::datetime posixHandler::getCurrentLocalTime() const {
 
 	const time_t t(::time(NULL));
 
@@ -135,7 +135,7 @@ const vmime::datetime posixHandler::getCurrentLocalTime() const {
 }
 
 
-const vmime::charset posixHandler::getLocalCharset() const {
+vmime::charset posixHandler::getLocalCharset() const {
 
 	// Note: nl_langinfo() might be affected by calls to setlocale()
 	// in a multithread environment. There is not MT-safe alternative
@@ -164,7 +164,7 @@ static inline bool isAcceptableHostname(const vmime::string& str) {
 }
 
 
-const vmime::string posixHandler::getHostName() const {
+vmime::string posixHandler::getHostName() const {
 	char hostname[256];
 
 	::gethostname(hostname, sizeof(hostname));

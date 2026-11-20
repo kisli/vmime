@@ -188,7 +188,7 @@ void registerTestModule(const char* name_) {
 }
 
 
-const std::string getNormalizedPath(const std::string& path) {
+std::string getNormalizedPath(const std::string& path) {
 
 	std::string res = path;
 
@@ -203,7 +203,7 @@ const std::string getNormalizedPath(const std::string& path) {
 }
 
 
-const std::string getFileNameFromPath(const std::string& path) {
+std::string getFileNameFromPath(const std::string& path) {
 
 	const std::size_t pos = path.find_last_of('/');
 

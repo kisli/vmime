@@ -57,11 +57,11 @@ public:
 
 	unsigned long getUnixTime() const;
 
-	const vmime::datetime getCurrentLocalTime() const;
+	vmime::datetime getCurrentLocalTime() const;
 
-	const vmime::charset getLocalCharset() const;
+	vmime::charset getLocalCharset() const;
 
-	const vmime::string getHostName() const;
+	vmime::string getHostName() const;
 
 	unsigned int getProcessId() const;
 	uintptr_t getThreadId() const;

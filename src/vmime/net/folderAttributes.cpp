@@ -96,7 +96,7 @@ bool folderAttributes::hasFlag(const int flag) {
 }
 
 
-const std::vector <string> folderAttributes::getUserFlags() const {
+std::vector <string> folderAttributes::getUserFlags() const {
 
 	return m_userFlags;
 }

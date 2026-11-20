@@ -656,7 +656,7 @@ void posixSocket::disconnect() {
 }
 
 
-const string posixSocket::getPeerAddress() const {
+string posixSocket::getPeerAddress() const {
 
 	// Get address of connected peer
 	sockaddr_storage peer;
@@ -685,7 +685,7 @@ const string posixSocket::getPeerAddress() const {
 }
 
 
-const string posixSocket::getPeerName() const {
+string posixSocket::getPeerName() const {
 
 	// Do not try to get a host name for a numeric address: the peer name is
 	// used as the TLS reference identity, and it must not be derived from an

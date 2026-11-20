@@ -96,7 +96,7 @@ bool stringUtils::isStringEqualNoCase(
 }
 
 
-const string stringUtils::toLower(const string& str) {
+string stringUtils::toLower(const string& str) {
 
 	const std::ctype <char>& fac =
 		std::use_facet <std::ctype <char> >(std::locale::classic());
@@ -112,7 +112,7 @@ const string stringUtils::toLower(const string& str) {
 }
 
 
-const string stringUtils::toUpper(const string& str) {
+string stringUtils::toUpper(const string& str) {
 
 	const std::ctype <char>& fac =
 		std::use_facet <std::ctype <char> >(std::locale::classic());
@@ -128,7 +128,7 @@ const string stringUtils::toUpper(const string& str) {
 }
 
 
-const string stringUtils::trim(const string& str) {
+string stringUtils::trim(const string& str) {
 
 	string::const_iterator b = str.begin();
 	string::const_iterator e = str.end();
@@ -189,7 +189,7 @@ size_t stringUtils::findFirstNonASCIIchar(
 }
 
 
-const string stringUtils::unquote(const string& str) {
+string stringUtils::unquote(const string& str) {
 
 	if (str.length() < 2) {
 		return str;

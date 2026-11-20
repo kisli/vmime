@@ -120,14 +120,14 @@ public:
 	  *
 	  * @return serial number of this certificate
 	  */
-	virtual const byteArray getSerialNumber() const = 0;
+	virtual byteArray getSerialNumber() const = 0;
 
 	/** Returns the distinguished name of the issuer of this certificate.
 	  * Eg. "C=US,O=VeriSign\, Inc.,OU=Class 1 Public Primary Certification Authority"
 	  *
 	  * @return distinguished name of the certificate issuer, as a string
 	  */
-	virtual const string getIssuerString() const = 0;
+	virtual string getIssuerString() const = 0;
 
 	/** Verifies a certificate chain sent by a TLS server, using the TLS
 	  * library. A certification path is built from the first certificate
@@ -176,20 +176,20 @@ public:
 	  *
 	  * @return expiration date of this certificate
 	  */
-	virtual const datetime getExpirationDate() const = 0;
+	virtual datetime getExpirationDate() const = 0;
 
 	/** Gets the activation date of this certificate. This is the date
 	  * at which this certificate will be valid.
 	  *
 	  * @return activation date of this certificate
 	  */
-	virtual const datetime getActivationDate() const = 0;
+	virtual datetime getActivationDate() const = 0;
 
 	/** Returns the fingerprint of this certificate.
 	  *
 	  * @return the fingerprint of this certificate
 	  */
-	virtual const byteArray getFingerprint(const DigestAlgorithm algo) const = 0;
+	virtual byteArray getFingerprint(const DigestAlgorithm algo) const = 0;
 
 	/** Checks that the certificate is currently valid. For the certificate
 	  * to be valid, the current date and time must be in the validity period

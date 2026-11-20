@@ -136,7 +136,7 @@ static inline void substractHoursAndMinutes(datetime& d, const int h, const int 
 #endif // VMIME_BUILDING_DOC
 
 
-const datetime datetimeUtils::toUniversalTime(const datetime& date) {
+datetime datetimeUtils::toUniversalTime(const datetime& date) {
 
 	if (date.getZone() == datetime::GMT) {
 		return date; // no conversion needed
@@ -159,7 +159,7 @@ const datetime datetimeUtils::toUniversalTime(const datetime& date) {
 }
 
 
-const datetime datetimeUtils::toLocalTime(const datetime& date, const int zone) {
+datetime datetimeUtils::toLocalTime(const datetime& date, const int zone) {
 
 	datetime utcDate(date);
 

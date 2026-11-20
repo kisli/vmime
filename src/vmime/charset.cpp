@@ -171,7 +171,7 @@ bool charset::isValidText(const string& text, string::size_type* firstInvalidByt
 }
 
 
-const charset charset::getLocalCharset() {
+charset charset::getLocalCharset() {
 
 	return platform::getHandler()->getLocalCharset();
 }
@@ -214,7 +214,7 @@ void charset::copyFrom(const component& other) {
 }
 
 
-const std::vector <shared_ptr <component> > charset::getChildComponents() {
+std::vector <shared_ptr <component> > charset::getChildComponents() {
 
 	return std::vector <shared_ptr <component> >();
 }

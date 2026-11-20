@@ -83,7 +83,7 @@ size_t POP3Message::getNumber() const {
 }
 
 
-const message::uid POP3Message::getUID() const {
+message::uid POP3Message::getUID() const {
 
 	return m_uid;
 }

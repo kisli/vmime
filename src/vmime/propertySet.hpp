@@ -191,7 +191,7 @@ protected:
 		}
 
 		template <class TYPE>
-		const TYPE getValue() const {
+		TYPE getValue() const {
 
 			return m_set->getProperty <TYPE>(m_name);
 		}
@@ -218,7 +218,7 @@ protected:
 		}
 
 		template <class TYPE>
-		const TYPE getValue() const {
+		TYPE getValue() const {
 
 			return m_set->getProperty <TYPE>(m_name);
 		}
@@ -276,7 +276,7 @@ public:
 	  * @return value of the specified property
 	  */
 	template <class TYPE>
-	const TYPE getProperty(const string& name) const {
+	TYPE getProperty(const string& name) const {
 
 		const shared_ptr <property> prop = find(name);
 		if (!prop) throw exceptions::no_such_property(name);
@@ -294,7 +294,7 @@ public:
 	  * if if does not exist
 	  */
 	template <class TYPE>
-	const TYPE getProperty(const string& name, const TYPE defaultValue) const {
+	TYPE getProperty(const string& name, const TYPE defaultValue) const {
 
 		const shared_ptr <property> prop = find(name);
 		return prop ? prop->template getValue <TYPE>() : defaultValue;
@@ -328,7 +328,7 @@ public:
 	  * @throw exceptions::no_such_property if the property does not exist
 	  * @return read-only proxy object for the specified property
 	  */
-	const constPropertyProxy operator[](const string& name) const;
+	constPropertyProxy operator[](const string& name) const;
 
 private:
 
@@ -426,13 +426,13 @@ public:
 	  *
 	  * @return list of properties
 	  */
-	const std::vector <shared_ptr <const property> > getPropertyList() const;
+	std::vector <shared_ptr <const property> > getPropertyList() const;
 
 	/** Return the property list.
 	  *
 	  * @return list of properties
 	  */
-	const std::vector <shared_ptr <property> > getPropertyList();
+	std::vector <shared_ptr <property> > getPropertyList();
 };
 
 

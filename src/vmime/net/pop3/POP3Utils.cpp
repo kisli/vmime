@@ -114,7 +114,7 @@ private:
 
 
 // static
-const std::vector <size_t> POP3Utils::messageSetToNumberList(
+std::vector <size_t> POP3Utils::messageSetToNumberList(
 	const messageSet& msgs,
 	const size_t msgCount
 ) {

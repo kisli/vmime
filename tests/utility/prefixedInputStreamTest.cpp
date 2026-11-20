@@ -45,7 +45,7 @@ VMIME_TEST_SUITE_BEGIN(prefixedInputStreamTest)
 	VMIME_TEST_LIST_END
 
 
-	static const vmime::string readAll(inputStream& is) {
+	static vmime::string readAll(inputStream& is) {
 
 		vmime::string res;
 		vmime::byte_t buffer[100];

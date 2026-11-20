@@ -52,25 +52,25 @@ receivedMDNInfos& receivedMDNInfos::operator=(const receivedMDNInfos& other) {
 }
 
 
-const shared_ptr <const message> receivedMDNInfos::getMessage() const {
+shared_ptr <const message> receivedMDNInfos::getMessage() const {
 
 	return m_msg;
 }
 
 
-const messageId receivedMDNInfos::getOriginalMessageId() const {
+messageId receivedMDNInfos::getOriginalMessageId() const {
 
 	return m_omid;
 }
 
 
-const disposition receivedMDNInfos::getDisposition() const {
+disposition receivedMDNInfos::getDisposition() const {
 
 	return m_disp;
 }
 
 
-const string receivedMDNInfos::getContentMIC() const {
+string receivedMDNInfos::getContentMIC() const {
 
 	return m_contentMIC;
 }

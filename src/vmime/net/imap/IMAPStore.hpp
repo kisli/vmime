@@ -67,7 +67,7 @@ public:
 
 	~IMAPStore();
 
-	const string getProtocolName() const;
+	string getProtocolName() const;
 
 	shared_ptr <folder> getDefaultFolder();
 	shared_ptr <folder> getRootFolder();
@@ -102,7 +102,7 @@ public:
 	  * the ID command was not sent or if the server did not identify
 	  * itself
 	  */
-	const std::map <string, string> getServerIdentification() const;
+	std::map <string, string> getServerIdentification() const;
 
 protected:
 

@@ -87,7 +87,7 @@ shared_ptr <encoder> encoderFactory::create(const string& name) {
 }
 
 
-const shared_ptr <const encoderFactory::registeredEncoder>
+shared_ptr <const encoderFactory::registeredEncoder>
 	encoderFactory::getEncoderByName(const string& name) const {
 
 	const string lcName(utility::stringUtils::toLower(name));
@@ -110,14 +110,14 @@ size_t encoderFactory::getEncoderCount() const {
 }
 
 
-const shared_ptr <const encoderFactory::registeredEncoder>
+shared_ptr <const encoderFactory::registeredEncoder>
 	encoderFactory::getEncoderAt(const size_t pos) const {
 
 	return m_encoders[pos];
 }
 
 
-const std::vector <shared_ptr <const encoderFactory::registeredEncoder> >
+std::vector <shared_ptr <const encoderFactory::registeredEncoder> >
 	encoderFactory::getEncoderList() const {
 
 	std::vector <shared_ptr <const registeredEncoder> > res;

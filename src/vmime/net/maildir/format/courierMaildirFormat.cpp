@@ -47,7 +47,7 @@ courierMaildirFormat::courierMaildirFormat(const shared_ptr <context>& ctx)
 }
 
 
-const string courierMaildirFormat::getName() const {
+string courierMaildirFormat::getName() const {
 
 	return "courier";
 }
@@ -195,7 +195,7 @@ bool courierMaildirFormat::folderHasSubfolders(const folder::path& path) const {
 }
 
 
-const utility::file::path courierMaildirFormat::folderPathToFileSystemPath(
+utility::file::path courierMaildirFormat::folderPathToFileSystemPath(
 	const folder::path& path,
 	const DirectoryType type
 ) const {
@@ -248,7 +248,7 @@ const utility::file::path courierMaildirFormat::folderPathToFileSystemPath(
 }
 
 
-const std::vector <folder::path> courierMaildirFormat::listFolders(
+std::vector <folder::path> courierMaildirFormat::listFolders(
 	const folder::path& root,
 	const bool recursive
 ) const {
@@ -354,7 +354,7 @@ bool courierMaildirFormat::isSubfolderDirectory(const utility::file& file) {
 
 
 // static
-const string courierMaildirFormat::toModifiedUTF7(const folder::path::component& text) {
+string courierMaildirFormat::toModifiedUTF7(const folder::path::component& text) {
 
 	// From http://www.courier-mta.org/?maildir.html:
 	//
@@ -460,7 +460,7 @@ const string courierMaildirFormat::toModifiedUTF7(const folder::path::component&
 
 
 // static
-const folder::path::component courierMaildirFormat::fromModifiedUTF7(const string& text) {
+folder::path::component courierMaildirFormat::fromModifiedUTF7(const string& text) {
 
 	// Transcode from modified UTF-7
 	string out;

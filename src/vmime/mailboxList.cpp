@@ -119,13 +119,13 @@ shared_ptr <mailbox> mailboxList::getMailboxAt(const size_t pos) {
 }
 
 
-const shared_ptr <const mailbox> mailboxList::getMailboxAt(const size_t pos) const {
+shared_ptr <const mailbox> mailboxList::getMailboxAt(const size_t pos) const {
 
 	return dynamicCast <const mailbox>(m_list.getAddressAt(pos));
 }
 
 
-const std::vector <shared_ptr <const mailbox> > mailboxList::getMailboxList() const {
+std::vector <shared_ptr <const mailbox> > mailboxList::getMailboxList() const {
 
 	const std::vector <shared_ptr <const address> > addrList = m_list.getAddressList();
 	std::vector <shared_ptr <const mailbox> > res;
@@ -144,7 +144,7 @@ const std::vector <shared_ptr <const mailbox> > mailboxList::getMailboxList() co
 }
 
 
-const std::vector <shared_ptr <mailbox> > mailboxList::getMailboxList() {
+std::vector <shared_ptr <mailbox> > mailboxList::getMailboxList() {
 
 	const std::vector <shared_ptr <address> > addrList = m_list.getAddressList();
 	std::vector <shared_ptr <mailbox> > res;
@@ -184,7 +184,7 @@ mailboxList& mailboxList::operator=(const mailboxList& other) {
 }
 
 
-const std::vector <shared_ptr <component> > mailboxList::getChildComponents() {
+std::vector <shared_ptr <component> > mailboxList::getChildComponents() {
 
 	return m_list.getChildComponents();
 }

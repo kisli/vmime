@@ -198,7 +198,7 @@ shared_ptr <messageId> messageId::parseNext(
 }
 
 
-const string messageId::getId() const {
+string messageId::getId() const {
 
 	if (m_right.empty()) {
 		return m_left;
@@ -320,7 +320,7 @@ void messageId::setRight(const string& right) {
 }
 
 
-const std::vector <shared_ptr <component> > messageId::getChildComponents() {
+std::vector <shared_ptr <component> > messageId::getChildComponents() {
 
 	return std::vector <shared_ptr <component> >();
 }

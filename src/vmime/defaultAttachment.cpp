@@ -119,31 +119,31 @@ void defaultAttachment::generatePart(const shared_ptr <bodyPart>& part) const {
 }
 
 
-const mediaType defaultAttachment::getType() const {
+mediaType defaultAttachment::getType() const {
 
 	return m_type;
 }
 
 
-const text defaultAttachment::getDescription() const {
+text defaultAttachment::getDescription() const {
 
 	return m_desc;
 }
 
 
-const word defaultAttachment::getName() const {
+word defaultAttachment::getName() const {
 
 	return m_name;
 }
 
 
-const shared_ptr <const contentHandler> defaultAttachment::getData() const {
+shared_ptr <const contentHandler> defaultAttachment::getData() const {
 
 	return m_data;
 }
 
 
-const encoding defaultAttachment::getEncoding() const {
+encoding defaultAttachment::getEncoding() const {
 
 	return m_encoding;
 }

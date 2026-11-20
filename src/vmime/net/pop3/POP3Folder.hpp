@@ -66,10 +66,10 @@ public:
 
 	int getMode() const;
 
-	const folderAttributes getAttributes();
+	folderAttributes getAttributes();
 
-	const folder::path::component getName() const;
-	const folder::path getFullPath() const;
+	folder::path::component getName() const;
+	folder::path getFullPath() const;
 
 	void open(const int mode, bool failIfModeIsNotAvailable = false);
 	void close(const bool expunge);

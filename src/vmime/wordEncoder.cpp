@@ -124,7 +124,7 @@ static size_t getUTF8CharLength(
 }
 
 
-const string wordEncoder::getNextChunk(const size_t maxLength) {
+string wordEncoder::getNextChunk(const size_t maxLength) {
 
 	const size_t remaining = m_length - m_pos;
 

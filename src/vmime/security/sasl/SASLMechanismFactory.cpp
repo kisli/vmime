@@ -114,7 +114,7 @@ shared_ptr <SASLMechanism> SASLMechanismFactory::create(
 }
 
 
-const std::vector <string> SASLMechanismFactory::getSupportedMechanisms() const {
+std::vector <string> SASLMechanismFactory::getSupportedMechanisms() const {
 
 	std::vector <string> list;
 

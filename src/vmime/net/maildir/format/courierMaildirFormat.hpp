@@ -58,7 +58,7 @@ public:
 	 * - CONTAINER_DIRECTORY:  not used
 	 */
 
-	const string getName() const;
+	string getName() const;
 
 	void createFolder(const folder::path& path);
 	void destroyFolder(const folder::path& path);
@@ -67,12 +67,12 @@ public:
 	bool folderExists(const folder::path& path) const;
 	bool folderHasSubfolders(const folder::path& path) const;
 
-	const utility::file::path folderPathToFileSystemPath(
+	utility::file::path folderPathToFileSystemPath(
 		const folder::path& path,
 		const DirectoryType type
 	) const;
 
-	const std::vector <folder::path> listFolders(
+	std::vector <folder::path> listFolders(
 		const folder::path& root,
 		const bool recursive
 	) const;
@@ -82,8 +82,8 @@ protected:
 	bool supports() const;
 
 
-	static const string toModifiedUTF7(const folder::path::component& text);
-	static const folder::path::component fromModifiedUTF7(const string& text);
+	static string toModifiedUTF7(const folder::path::component& text);
+	static folder::path::component fromModifiedUTF7(const string& text);
 
 	void renameFolderImpl(const folder::path& oldPath, const folder::path& newPath);
 

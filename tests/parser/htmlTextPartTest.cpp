@@ -34,7 +34,7 @@ VMIME_TEST_SUITE_BEGIN(htmlTextPartTest)
 	VMIME_TEST_LIST_END
 
 
-	static const vmime::string extractContent(
+	static vmime::string extractContent(
 		const vmime::shared_ptr <const vmime::contentHandler>& cth
 	) {
 

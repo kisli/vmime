@@ -40,7 +40,7 @@ maildirServiceInfos::maildirServiceInfos() {
 }
 
 
-const string maildirServiceInfos::getPropertyPrefix() const {
+string maildirServiceInfos::getPropertyPrefix() const {
 
 	return "store.maildir.";
 }
@@ -56,7 +56,7 @@ const maildirServiceInfos::props& maildirServiceInfos::getProperties() const {
 }
 
 
-const std::vector <serviceInfos::property> maildirServiceInfos::getAvailableProperties() const {
+std::vector <serviceInfos::property> maildirServiceInfos::getAvailableProperties() const {
 
 	std::vector <property> list;
 	const props& p = getProperties();

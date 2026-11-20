@@ -115,7 +115,7 @@ public:
 	  * @return language tag for this word, in the format specified
 	  * by RFC-1766
 	  */
-	const string getLanguage() const;
+	string getLanguage() const;
 
 	/** Set the language used in this word (optional).
 	  *
@@ -144,7 +144,7 @@ public:
 	  * @param opts options for charset conversion
 	  * @return word converted to the specified charset
 	  */
-	const string getConvertedText(
+	string getConvertedText(
 		const charset& dest,
 		const charsetConverterOptions& opts = charsetConverterOptions()
 	) const;
@@ -239,7 +239,7 @@ public:
 	) const;
 #endif
 
-	const std::vector <shared_ptr <component> > getChildComponents();
+	std::vector <shared_ptr <component> > getChildComponents();
 
 private:
 
@@ -254,7 +254,7 @@ private:
 		parserState* state
 	);
 
-	static const std::vector <shared_ptr <word> > parseMultiple(
+	static std::vector <shared_ptr <word> > parseMultiple(
 		parsingContext& ctx,
 		const string& buffer,
 		const size_t position,

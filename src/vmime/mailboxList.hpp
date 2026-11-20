@@ -49,7 +49,7 @@ public:
 	void copyFrom(const component& other);
 	mailboxList& operator=(const mailboxList& other);
 
-	const std::vector <shared_ptr <component> > getChildComponents();
+	std::vector <shared_ptr <component> > getChildComponents();
 
 	/** Add a mailbox at the end of the list.
 	  *
@@ -134,19 +134,19 @@ public:
 	  * @return mailbox at position 'pos'
 	  * @throw std::out_of_range if the position is out of range
 	  */
-	const shared_ptr <const mailbox> getMailboxAt(const size_t pos) const;
+	shared_ptr <const mailbox> getMailboxAt(const size_t pos) const;
 
 	/** Return the mailbox list.
 	  *
 	  * @return list of mailboxes
 	  */
-	const std::vector <shared_ptr <const mailbox> > getMailboxList() const;
+	std::vector <shared_ptr <const mailbox> > getMailboxList() const;
 
 	/** Return the mailbox list.
 	  *
 	  * @return list of mailboxes
 	  */
-	const std::vector <shared_ptr <mailbox> > getMailboxList();
+	std::vector <shared_ptr <mailbox> > getMailboxList();
 
 	/** Return a list of addresses.
 	  *

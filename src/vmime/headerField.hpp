@@ -55,7 +55,7 @@ public:
 	void copyFrom(const component& other);
 	headerField& operator=(const headerField& other);
 
-	const std::vector <shared_ptr <component> > getChildComponents();
+	std::vector <shared_ptr <component> > getChildComponents();
 
 	/** Sets the name of this field.
 	  *
@@ -67,7 +67,7 @@ public:
 	  *
 	  * @return field name
 	  */
-	const string getName() const;
+	string getName() const;
 
 	/** Check whether this field is a custom (non-standard) field.
 	  * Custom fields have a name beginning with "X-".

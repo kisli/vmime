@@ -129,7 +129,7 @@ shared_ptr <const serviceFactory::registeredService> serviceFactory::getServiceA
 }
 
 
-const std::vector <shared_ptr <const serviceFactory::registeredService> > serviceFactory::getServiceList() const {
+std::vector <shared_ptr <const serviceFactory::registeredService> > serviceFactory::getServiceList() const {
 
 	std::vector <shared_ptr <const registeredService> > res;
 

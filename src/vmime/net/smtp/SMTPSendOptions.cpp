@@ -41,13 +41,13 @@ void SMTPSendOptions::setDSNAttributes(const shared_ptr <DSNAttributes>& dsnAttr
 }
 
 
-const shared_ptr <DSNAttributes> SMTPSendOptions::getDSNAttributes() {
+shared_ptr <DSNAttributes> SMTPSendOptions::getDSNAttributes() {
 
 	return m_dsnAttribs;
 }
 
 
-const shared_ptr <const DSNAttributes> SMTPSendOptions::getDSNAttributes() const {
+shared_ptr <const DSNAttributes> SMTPSendOptions::getDSNAttributes() const {
 
 	return m_dsnAttribs;
 }

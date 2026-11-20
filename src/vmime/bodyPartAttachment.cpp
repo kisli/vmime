@@ -34,7 +34,7 @@ bodyPartAttachment::bodyPartAttachment(const shared_ptr <const bodyPart>& part)
 }
 
 
-const mediaType bodyPartAttachment::getType() const {
+mediaType bodyPartAttachment::getType() const {
 
 	shared_ptr <const contentTypeField> ctf = getContentType();
 
@@ -53,13 +53,13 @@ const mediaType bodyPartAttachment::getType() const {
 }
 
 
-const word bodyPartAttachment::getName() const {
+word bodyPartAttachment::getName() const {
 
 	return attachmentHelper::getAttachmentName(*getHeader());
 }
 
 
-const text bodyPartAttachment::getDescription() const {
+text bodyPartAttachment::getDescription() const {
 
 	text description;
 
@@ -79,13 +79,13 @@ const text bodyPartAttachment::getDescription() const {
 }
 
 
-const encoding bodyPartAttachment::getEncoding() const {
+encoding bodyPartAttachment::getEncoding() const {
 
 	return m_part->getBody()->getEncoding();
 }
 
 
-const shared_ptr <const contentHandler> bodyPartAttachment::getData() const {
+shared_ptr <const contentHandler> bodyPartAttachment::getData() const {
 
 	return m_part->getBody()->getContents();
 }

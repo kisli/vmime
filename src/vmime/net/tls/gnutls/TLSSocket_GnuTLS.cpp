@@ -131,13 +131,13 @@ size_t TLSSocket_GnuTLS::getBlockSize() const {
 }
 
 
-const string TLSSocket_GnuTLS::getPeerName() const {
+string TLSSocket_GnuTLS::getPeerName() const {
 
 	return m_wrapped->getPeerName();
 }
 
 
-const string TLSSocket_GnuTLS::getPeerAddress() const {
+string TLSSocket_GnuTLS::getPeerAddress() const {
 
 	return m_wrapped->getPeerAddress();
 }

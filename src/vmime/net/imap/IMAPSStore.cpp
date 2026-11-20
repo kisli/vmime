@@ -49,7 +49,7 @@ IMAPSStore::~IMAPSStore() {
 }
 
 
-const string IMAPSStore::getProtocolName() const {
+string IMAPSStore::getProtocolName() const {
 
 	return "imaps";
 }

@@ -117,7 +117,7 @@ void emptyContentHandler::setContentTypeHint(const mediaType& type) {
 }
 
 
-const mediaType emptyContentHandler::getContentTypeHint() const {
+mediaType emptyContentHandler::getContentTypeHint() const {
 
 	return m_contentType;
 }

@@ -104,7 +104,7 @@ public:
 	  *
 	  * @return last component
 	  */
-	const component getLastComponent() const;
+	component getLastComponent() const;
 
 	/** Return the last component of this path (non-const version).
 	  *
@@ -174,7 +174,7 @@ public:
 	  * vmime::charset::getLocalCharset() to use the default charset of your system)
 	  * @return a string representing this path
 	  */
-	const string toString(const string& sep, const charset& cset) const;
+	string toString(const string& sep, const charset& cset) const;
 
 private:
 

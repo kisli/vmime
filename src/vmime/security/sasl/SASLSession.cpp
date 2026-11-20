@@ -119,7 +119,7 @@ shared_ptr <net::socket> SASLSession::getSecuredSocket(const shared_ptr <net::so
 }
 
 
-const string SASLSession::getServiceName() const {
+string SASLSession::getServiceName() const {
 
 	return m_serviceName;
 }

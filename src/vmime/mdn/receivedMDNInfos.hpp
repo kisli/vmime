@@ -49,27 +49,27 @@ public:
 	receivedMDNInfos& operator=(const receivedMDNInfos& other);
 
 
-	const shared_ptr <const message> getMessage() const;
+	shared_ptr <const message> getMessage() const;
 
 	/** Return the identifier of the message for which this MDN
 	  * has been generated.
 	  *
 	  * @return original message-id
 	  */
-	const messageId getOriginalMessageId() const;
+	messageId getOriginalMessageId() const;
 
 	/** Return information about the disposition.
 	  *
 	  * @return disposition information
 	  */
-	const disposition getDisposition() const;
+	disposition getDisposition() const;
 
 	/** Return the Message Integrity Check (MIC), that is the value
 	  * of the "Received-content-MIC" field.
 	  *
 	  * @return MIC hash value, or an empty string if not specified
 	  */
-	const string getContentMIC() const;
+	string getContentMIC() const;
 
 private:
 

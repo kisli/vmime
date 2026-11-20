@@ -58,7 +58,7 @@ public:
 		const shared_ptr <TLSSocket>& tlsSocket
 	);
 
-	const string getHost() const;
+	string getHost() const;
 	port_t getPort() const;
 
 	/** Return the peer's certificate (chain) as sent by the peer.

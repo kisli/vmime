@@ -190,7 +190,7 @@ public:
 
 private:
 
-	const string build() const;
+	string build() const;
 	void parse(const string& str);
 
 

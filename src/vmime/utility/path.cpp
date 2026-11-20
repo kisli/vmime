@@ -159,7 +159,7 @@ bool path::isRoot() const {
 }
 
 
-const path::component path::getLastComponent() const {
+path::component path::getLastComponent() const {
 
 	return m_list[m_list.size() - 1];
 }
@@ -303,7 +303,7 @@ path path::fromString(const string& str, const string& sep, const charset& cset)
 }
 
 
-const string path::toString(const string& sep, const charset& cset) const {
+string path::toString(const string& sep, const charset& cset) const {
 
 	string str;
 

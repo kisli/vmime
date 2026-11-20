@@ -222,13 +222,13 @@ public:
 	  *
 	  * @return property prefix
 	  */
-	virtual const string getPropertyPrefix() const = 0;
+	virtual string getPropertyPrefix() const = 0;
 
 	/** Return a list of available properties for this service.
 	  *
 	  * @return list of properties
 	  */
-	virtual const std::vector <property> getAvailableProperties() const = 0;
+	virtual std::vector <property> getAvailableProperties() const = 0;
 
 	/** Helper function to retrieve the value of a property.
 	  *
@@ -239,7 +239,7 @@ public:
 	  * @return value of the property
 	  */
 	template <typename TYPE>
-	const TYPE getPropertyValue(const shared_ptr <session>& s, const property& p) const {
+	TYPE getPropertyValue(const shared_ptr <session>& s, const property& p) const {
 
 		if (p.getFlags() & property::FLAG_REQUIRED) {
 			return s->getProperties()[getPropertyPrefix() + p.getName()].template getValue <TYPE>();

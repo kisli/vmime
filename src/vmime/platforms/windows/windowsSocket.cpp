@@ -174,7 +174,7 @@ void windowsSocket::disconnect() {
 }
 
 
-const string windowsSocket::getPeerAddress() const {
+string windowsSocket::getPeerAddress() const {
 
 	// Get address of connected peer
 	sockaddr_storage peer;
@@ -197,7 +197,7 @@ const string windowsSocket::getPeerAddress() const {
 }
 
 
-const string windowsSocket::getPeerName() const {
+string windowsSocket::getPeerName() const {
 
 	// Do not try to get a host name for a numeric address: the peer name is
 	// used as the TLS reference identity, and it must not be derived from an

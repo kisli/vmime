@@ -160,7 +160,7 @@ VMIME_TEST_SUITE_BEGIN(charsetTest)
 	}
 #endif
 
-	static const vmime::string convertHelper(
+	static vmime::string convertHelper(
 		const vmime::string& in,
 		const vmime::charset& csrc,
 		const vmime::charset& cdest,

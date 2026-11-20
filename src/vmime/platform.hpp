@@ -72,14 +72,14 @@ public:
 		  *
 		  * @return current date and time
 		  */
-		virtual const datetime getCurrentLocalTime() const = 0;
+		virtual datetime getCurrentLocalTime() const = 0;
 
 		/** Return the host name of the system.
 		  * Used when generating message ids.
 		  *
 		  * @return host name
 		  */
-		virtual const string getHostName() const = 0;
+		virtual string getHostName() const = 0;
 
 		/** Return the current process identifier.
 		  * Used when generating random strings (part boundaries or message ids).
@@ -99,7 +99,7 @@ public:
 		  *
 		  * @return local charset
 		  */
-		virtual const charset getLocalCharset() const = 0;
+		virtual charset getLocalCharset() const = 0;
 
 #if VMIME_HAVE_MESSAGING_FEATURES
 		/** Return a pointer to the default socket factory for

@@ -83,7 +83,7 @@ public:
 	  * @return part of the filename that corresponds to the unique
 	  * identifier of the message
 	  */
-	static const utility::file::path::component extractId(const utility::file::path::component& filename);
+	static utility::file::path::component extractId(const utility::file::path::component& filename);
 
 	/** Extract message flags from the specified message filename.
 	  * Eg: for the filename "1071577232.28549.m03s:2,RS", it will
@@ -101,7 +101,7 @@ public:
 	  * @param flags set of flags
 	  * @return message flags in a string representation
 	  */
-	static const utility::file::path::component buildFlags(const int flags);
+	static utility::file::path::component buildFlags(const int flags);
 
 	/** Build a filename with the specified id and flags.
 	  *
@@ -109,7 +109,7 @@ public:
 	  * @param flags flags part of the filename
 	  * @return message filename
 	  */
-	static const utility::file::path::component buildFilename(
+	static utility::file::path::component buildFilename(
 		const utility::file::path::component& id,
 		const utility::file::path::component& flags
 	);
@@ -120,7 +120,7 @@ public:
 	  * @param flags set of flags
 	  * @return message filename
 	  */
-	static const utility::file::path::component buildFilename(
+	static utility::file::path::component buildFilename(
 		const utility::file::path::component& id,
 		const int flags
 	);
@@ -129,7 +129,7 @@ public:
 	  *
 	  * @return unique message id
 	  */
-	static const utility::file::path::component generateId();
+	static utility::file::path::component generateId();
 
 	/** Recursively delete a directory on the file system.
 	  *
@@ -143,7 +143,7 @@ public:
 	  * @param msgCount number of messages in folder
 	  * @return list of message numbers
 	  */
-	static const std::vector <size_t> messageSetToNumberList(
+	static std::vector <size_t> messageSetToNumberList(
 		const messageSet& msgs,
 		const size_t msgCount
 	);

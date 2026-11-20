@@ -325,7 +325,7 @@ err:
 }
 
 
-const byteArray X509Certificate_OpenSSL::getSerialNumber() const {
+byteArray X509Certificate_OpenSSL::getSerialNumber() const {
 
 	ASN1_INTEGER *serial = X509_get_serialNumber(m_data->cert);
 	BIGNUM *bnser = ASN1_INTEGER_to_BN(serial, NULL);
@@ -604,7 +604,7 @@ bool X509Certificate_OpenSSL::verifyHostName(
 }
 
 
-const datetime X509Certificate_OpenSSL::convertX509Date(void* time) const {
+datetime X509Certificate_OpenSSL::convertX509Date(void* time) const {
 
 	char* buffer;
 	BIO* out = BIO_new(BIO_s_mem());
@@ -639,19 +639,19 @@ const datetime X509Certificate_OpenSSL::convertX509Date(void* time) const {
 }
 
 
-const datetime X509Certificate_OpenSSL::getActivationDate() const {
+datetime X509Certificate_OpenSSL::getActivationDate() const {
 
 	return convertX509Date(X509_get_notBefore(m_data->cert));
 }
 
 
-const datetime X509Certificate_OpenSSL::getExpirationDate() const {
+datetime X509Certificate_OpenSSL::getExpirationDate() const {
 
 	return convertX509Date(X509_get_notAfter(m_data->cert));
 }
 
 
-const byteArray X509Certificate_OpenSSL::getFingerprint(const DigestAlgorithm algo) const {
+byteArray X509Certificate_OpenSSL::getFingerprint(const DigestAlgorithm algo) const {
 
 	BIO *out;
 	int j;
@@ -704,7 +704,7 @@ const byteArray X509Certificate_OpenSSL::getFingerprint(const DigestAlgorithm al
 }
 
 
-const byteArray X509Certificate_OpenSSL::getEncoded() const {
+byteArray X509Certificate_OpenSSL::getEncoded() const {
 
 	byteArray bytes;
 	utility::outputStreamByteArrayAdapter os(bytes);
@@ -715,7 +715,7 @@ const byteArray X509Certificate_OpenSSL::getEncoded() const {
 }
 
 
-const string X509Certificate_OpenSSL::getIssuerString() const {
+string X509Certificate_OpenSSL::getIssuerString() const {
 
 	// Get issuer for this cert
 	BIO* out = BIO_new(BIO_s_mem());
@@ -731,7 +731,7 @@ const string X509Certificate_OpenSSL::getIssuerString() const {
 }
 
 
-const string X509Certificate_OpenSSL::getType() const {
+string X509Certificate_OpenSSL::getType() const {
 
 	return "X.509";
 }

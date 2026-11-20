@@ -60,7 +60,7 @@ public:
 
 	size_t getNumber() const;
 
-	const uid getUID() const;
+	uid getUID() const;
 
 	size_t getSize() const;
 

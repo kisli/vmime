@@ -51,7 +51,7 @@ public:
 	IMAPTag(const IMAPTag& tag);
 
 	IMAPTag& operator++();           // ++IMAPTag
-	const IMAPTag operator++(int);   // IMAPTag++
+	IMAPTag operator++(int);   // IMAPTag++
 
 	int maximumNumber() const;
 	int number() const;

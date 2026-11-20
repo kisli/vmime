@@ -57,7 +57,7 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 
 		using vmime::parameterizedHeaderField::generate;
 
-		const vmime::string generate(
+		vmime::string generate(
 			const vmime::generationContext::EncodedParameterValueModes genMode,
 			const vmime::size_t maxLineLength = 0
 		) const {
@@ -79,7 +79,7 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 	};
 
 
-	const vmime::string generateParameter(
+	vmime::string generateParameter(
 		const vmime::parameter& param,
 		const vmime::generationContext& ctx,
 		const vmime::size_t maxLineLength = 0

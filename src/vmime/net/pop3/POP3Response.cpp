@@ -200,7 +200,7 @@ bool POP3Response::isSuccess() const {
 }
 
 
-const string POP3Response::getFirstLine() const {
+string POP3Response::getFirstLine() const {
 
 	return m_firstLine;
 }
@@ -212,13 +212,13 @@ POP3Response::ResponseCode POP3Response::getCode() const {
 }
 
 
-const string POP3Response::getText() const {
+string POP3Response::getText() const {
 
 	return m_text;
 }
 
 
-const string POP3Response::getLineAt(const size_t pos) const {
+string POP3Response::getLineAt(const size_t pos) const {
 
 	return m_lines[pos];
 }

@@ -50,7 +50,7 @@ htmlTextPart::~htmlTextPart() {
 }
 
 
-const mediaType htmlTextPart::getType() const {
+mediaType htmlTextPart::getType() const {
 
 	return mediaType(mediaTypes::TEXT, mediaTypes::TEXT_HTML);
 }
@@ -388,7 +388,7 @@ void htmlTextPart::setPlainText(const shared_ptr <contentHandler>& plainText) {
 }
 
 
-const shared_ptr <const contentHandler> htmlTextPart::getText() const {
+shared_ptr <const contentHandler> htmlTextPart::getText() const {
 
 	return m_text;
 }
@@ -504,19 +504,19 @@ shared_ptr <const contentHandler> htmlTextPart::embeddedObject::getData() const 
 }
 
 
-const vmime::encoding htmlTextPart::embeddedObject::getEncoding() const {
+vmime::encoding htmlTextPart::embeddedObject::getEncoding() const {
 
 	return m_encoding;
 }
 
 
-const string htmlTextPart::embeddedObject::getId() const {
+string htmlTextPart::embeddedObject::getId() const {
 
 	return m_id;
 }
 
 
-const string htmlTextPart::embeddedObject::getReferenceId() const {
+string htmlTextPart::embeddedObject::getReferenceId() const {
 
 	if (m_refType == REFERENCED_BY_ID) {
 		return string("cid:") + m_id;
@@ -526,7 +526,7 @@ const string htmlTextPart::embeddedObject::getReferenceId() const {
 }
 
 
-const mediaType htmlTextPart::embeddedObject::getType() const {
+mediaType htmlTextPart::embeddedObject::getType() const {
 
 	return m_type;
 }
@@ -549,7 +549,7 @@ bool htmlTextPart::embeddedObject::matchesId(const string& id) const {
 
 
 // static
-const string htmlTextPart::embeddedObject::cleanId(const string& id) {
+string htmlTextPart::embeddedObject::cleanId(const string& id) {
 
 	if (id.length() >= 4 &&
 	    (id[0] == 'c' || id[0] == 'C') &&

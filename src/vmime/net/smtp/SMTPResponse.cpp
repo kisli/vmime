@@ -84,13 +84,13 @@ int SMTPResponse::getCode() const {
 }
 
 
-const SMTPResponse::enhancedStatusCode SMTPResponse::getEnhancedCode() const {
+SMTPResponse::enhancedStatusCode SMTPResponse::getEnhancedCode() const {
 
 	return m_lines[m_lines.size() - 1].getEnhancedCode();
 }
 
 
-const string SMTPResponse::getText() const {
+string SMTPResponse::getText() const {
 
 	string text = m_lines[0].getText();
 
@@ -133,7 +133,7 @@ void SMTPResponse::readResponse() {
 }
 
 
-const string SMTPResponse::readResponseLine() {
+string SMTPResponse::readResponseLine() {
 
 	string currentBuffer = m_responseBuffer;
 
@@ -190,7 +190,7 @@ const string SMTPResponse::readResponseLine() {
 }
 
 
-const SMTPResponse::responseLine SMTPResponse::getNextResponse() {
+SMTPResponse::responseLine SMTPResponse::getNextResponse() {
 
 	string line = readResponseLine();
 
@@ -226,7 +226,7 @@ int SMTPResponse::extractResponseCode(const string& response) {
 
 
 // static
-const SMTPResponse::enhancedStatusCode SMTPResponse::extractEnhancedCode(const string& responseText) {
+SMTPResponse::enhancedStatusCode SMTPResponse::extractEnhancedCode(const string& responseText) {
 
 	enhancedStatusCode enhCode;
 
@@ -252,7 +252,7 @@ const SMTPResponse::enhancedStatusCode SMTPResponse::extractEnhancedCode(const s
 }
 
 
-const SMTPResponse::responseLine SMTPResponse::getLineAt(const size_t pos) const {
+SMTPResponse::responseLine SMTPResponse::getLineAt(const size_t pos) const {
 
 	return m_lines[pos];
 }
@@ -264,13 +264,13 @@ size_t SMTPResponse::getLineCount() const {
 }
 
 
-const SMTPResponse::responseLine SMTPResponse::getLastLine() const {
+SMTPResponse::responseLine SMTPResponse::getLastLine() const {
 
 	return m_lines[m_lines.size() - 1];
 }
 
 
-const SMTPResponse::state SMTPResponse::getCurrentState() const {
+SMTPResponse::state SMTPResponse::getCurrentState() const {
 
 	state st;
 	st.responseBuffer = m_responseBuffer;
@@ -320,7 +320,7 @@ void SMTPResponse::responseLine::setEnhancedCode(const enhancedStatusCode& enhCo
 }
 
 
-const SMTPResponse::enhancedStatusCode SMTPResponse::responseLine::getEnhancedCode() const {
+SMTPResponse::enhancedStatusCode SMTPResponse::responseLine::getEnhancedCode() const {
 
 	return m_enhCode;
 }
@@ -332,7 +332,7 @@ void SMTPResponse::responseLine::setText(const string& text) {
 }
 
 
-const string SMTPResponse::responseLine::getText() const {
+string SMTPResponse::responseLine::getText() const {
 
 	return m_text;
 }

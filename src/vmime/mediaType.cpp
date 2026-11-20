@@ -205,7 +205,7 @@ void mediaType::setFromString(const string& type) {
 }
 
 
-const std::vector <shared_ptr <component> > mediaType::getChildComponents() {
+std::vector <shared_ptr <component> > mediaType::getChildComponents() {
 
 	return std::vector <shared_ptr <component> >();
 }

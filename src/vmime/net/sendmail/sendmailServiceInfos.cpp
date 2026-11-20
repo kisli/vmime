@@ -40,7 +40,7 @@ sendmailServiceInfos::sendmailServiceInfos() {
 }
 
 
-const string sendmailServiceInfos::getPropertyPrefix() const {
+string sendmailServiceInfos::getPropertyPrefix() const {
 
 	return "transport.sendmail.";
 }
@@ -57,7 +57,7 @@ const sendmailServiceInfos::props& sendmailServiceInfos::getProperties() const {
 }
 
 
-const std::vector <serviceInfos::property> sendmailServiceInfos::getAvailableProperties() const {
+std::vector <serviceInfos::property> sendmailServiceInfos::getAvailableProperties() const {
 
 	std::vector <property> list;
 	const props& p = getProperties();

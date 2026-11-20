@@ -77,7 +77,7 @@ public:
 	  *
 	  * @return status code
 	  */
-	const SMTPResponse::enhancedStatusCode extendedStatusCode() const;
+	SMTPResponse::enhancedStatusCode extendedStatusCode() const;
 
 
 	exception* clone() const;

@@ -278,32 +278,32 @@ public:
 	  * @param pos position
 	  * @return field at position 'pos'
 	  */
-	const shared_ptr <headerField> getFieldAt(const size_t pos);
+	shared_ptr <headerField> getFieldAt(const size_t pos);
 
 	/** Return the field at the specified position.
 	  *
 	  * @param pos position
 	  * @return field at position 'pos'
 	  */
-	const shared_ptr <const headerField> getFieldAt(const size_t pos) const;
+	shared_ptr <const headerField> getFieldAt(const size_t pos) const;
 
 	/** Return the field list.
 	  *
 	  * @return list of fields
 	  */
-	const std::vector <shared_ptr <const headerField> > getFieldList() const;
+	std::vector <shared_ptr <const headerField> > getFieldList() const;
 
 	/** Return the field list.
 	  *
 	  * @return list of fields
 	  */
-	const std::vector <shared_ptr <headerField> > getFieldList();
+	std::vector <shared_ptr <headerField> > getFieldList();
 
 	shared_ptr <component> clone() const;
 	void copyFrom(const component& other);
 	header& operator=(const header& other);
 
-	const std::vector <shared_ptr <component> > getChildComponents();
+	std::vector <shared_ptr <component> > getChildComponents();
 
 	size_t getGeneratedSize(const generationContext& ctx);
 

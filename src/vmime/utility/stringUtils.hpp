@@ -50,7 +50,7 @@ public:
 	  * @param count number of bytes to use from buffer
 	  * @return a string object containing a copy of the specified data
 	  */
-	static const string makeStringFromBytes(const byte_t* data, const size_t count) {
+	static string makeStringFromBytes(const byte_t* data, const size_t count) {
 
 		return string(reinterpret_cast <const char*>(data), count);
 	}
@@ -62,7 +62,7 @@ public:
 	  * with two lower-case hex digits for each byte (eg. "0aff" for the bytes
 	  * 0x0a and 0xff)
 	  */
-	static const string makeHexStringFromBytes(const byteArray& data) {
+	static string makeHexStringFromBytes(const byteArray& data) {
 
 		static const char hexDigits[] = "0123456789abcdef";
 
@@ -151,7 +151,7 @@ public:
 	  * @param str the string to transform
 	  * @return a new string in lower-case
 	  */
-	static const string toLower(const string& str);
+	static string toLower(const string& str);
 
 	/** Transform all the characters in a string to upper-case.
 	  * \warning Use this with ASCII-only strings.
@@ -159,7 +159,7 @@ public:
 	  * @param str the string to transform
 	  * @return a new string in upper-case
 	  */
-	static const string toUpper(const string& str);
+	static string toUpper(const string& str);
 
 	/** Strip the space characters (SPC, TAB, CR, LF) at the beginning
 	  * and at the end of the specified string.
@@ -167,7 +167,7 @@ public:
 	  * @param str string in which to strip spaces
 	  * @return a new string with space characters removed
 	  */
-	static const string trim(const string& str);
+	static string trim(const string& str);
 
 	/** Return the number of 7-bit US-ASCII characters in a string.
 	  *
@@ -205,7 +205,7 @@ public:
 	  * @return value converted from type 'TYPE'
 	  */
 	template <class TYPE>
-	static const string toString(const TYPE& value) {
+	static string toString(const TYPE& value) {
 
 		utility::details::classicOStringStream oss;
 
@@ -221,7 +221,7 @@ public:
 	  * @return value converted into type 'TYPE'
 	  */
 	template <class TYPE>
-	static const TYPE fromString(const string& value) {
+	static TYPE fromString(const string& value) {
 
 		TYPE ret;
 
@@ -237,7 +237,7 @@ public:
 	  * @param str string from which to remove quotes
 	  * @return unquoted string
 	  */
-	static const string unquote(const string& str);
+	static string unquote(const string& str);
 
 	/** Determines whether the specified string needs to be quoted.
 	  *
