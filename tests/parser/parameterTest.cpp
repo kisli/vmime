@@ -640,6 +640,42 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 
 		ctx.setEncodedParameterValueMode(vmime::generationContext::PARAMETER_VALUE_RFC2231_AND_RFC2047);
 		VASSERT("5.both", p5.getGeneratedSize(ctx) >= generateParameter(p5, ctx).length());
+
+		// All bytes encoded (ISO-8859-1), value from RFC 2047, section 8
+		vmime::parameter p6(
+			"param1",
+			vmime::word("Keld J\xf8rn Simonsen", vmime::charset("iso-8859-1"))
+		);
+
+		ctx.setMaxLineLength(25);
+		ctx.setEncodedParameterValueMode(vmime::generationContext::PARAMETER_VALUE_RFC2231_ONLY);
+		VASSERT("6.rfc2231", p6.getGeneratedSize(ctx) >= generateParameter(p6, ctx).length());
+
+		ctx.setEncodedParameterValueMode(vmime::generationContext::PARAMETER_VALUE_RFC2231_AND_RFC2047);
+		VASSERT("6.both", p6.getGeneratedSize(ctx) >= generateParameter(p6, ctx).length());
+
+		// No room for the value on a section line
+		vmime::parameter p7(
+			"filename",
+			vmime::word("\xc3\xa9t\xc3\xa9.pdf", vmime::charset("utf-8"))
+		);
+
+		ctx.setMaxLineLength(17);
+		ctx.setEncodedParameterValueMode(vmime::generationContext::PARAMETER_VALUE_RFC2231_ONLY);
+		VASSERT("7.rfc2231", p7.getGeneratedSize(ctx) >= generateParameter(p7, ctx).length());
+
+		// More than 100 sections
+		vmime::string value8;
+
+		for (int i = 0 ; i < 40 ; ++i) {
+			value8 += "\xc3\xa9t\xc3\xa9 ";
+		}
+
+		vmime::parameter p8("param1", vmime::word(value8, vmime::charset("utf-8")));
+
+		ctx.setMaxLineLength(25);
+		ctx.setEncodedParameterValueMode(vmime::generationContext::PARAMETER_VALUE_RFC2231_ONLY);
+		VASSERT("8.rfc2231", p8.getGeneratedSize(ctx) >= generateParameter(p8, ctx).length());
 	}
 
 	void testGenerateRFC2047() {
