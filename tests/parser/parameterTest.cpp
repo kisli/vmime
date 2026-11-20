@@ -38,6 +38,7 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 		VMIME_TEST(testParseNonSignificantWS)
 		VMIME_TEST(testEncodeTSpecials)
 		VMIME_TEST(testEncodeTSpecialsInRFC2231)
+		VMIME_TEST(testEncodeRFC2231Values)
 		VMIME_TEST(testWhitespaceBreaksTheValue)
 		VMIME_TEST(testParseParameters)
 		VMIME_TEST(testParse8bit)
@@ -525,7 +526,7 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 
 		VASSERT_EQ(
 			"5.rfc2231",
-			"F: X; param1*=us-ascii''This%20is%20***fun***",
+			"F: X; param1*=us-ascii'en-us'This%20is%20%2A%2A%2Afun%2A%2A%2A",
 			p5.generate(vmime::generationContext::PARAMETER_VALUE_RFC2231_ONLY)
 		);
 
@@ -533,7 +534,7 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 			"5.both",
 			"F: X; "
 			"param1=\"=?us-ascii*en-us?Q?This_is_***fun***?=\";\r\n "
-			"param1*=us-ascii''This%20is%20***fun***",
+			"param1*=us-ascii'en-us'This%20is%20%2A%2A%2Afun%2A%2A%2A",
 			p5.generate(vmime::generationContext::PARAMETER_VALUE_RFC2231_AND_RFC2047));
 	}
 
@@ -713,9 +714,8 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 			"F: X; \r\n "
 			"param1=\"=?iso-8859-1?Q?Keld_J=F8rn_?=\r\n "
 			"=?iso-8859-1?Q?Simonsen?=\";\r\n "
-			"param1*0*=iso-8859-1''%4B%65%6C%64%20;\r\n "
-			"param1*1*=%4A%F8%72%6E%20%53%69%6D;\r\n "
-			"param1*2*=%6F%6E%73%65%6E; \r\n "
+			"param1*0*=iso-8859-1''Keld%20J%F8rn%20;\r\n "
+			"param1*1*=Simonsen; \r\n "
 			"param2=value2",
 			p1.generate(vmime::generationContext::PARAMETER_VALUE_RFC2231_AND_RFC2047, 40)  // max line length = 40
 		);
@@ -920,6 +920,71 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 			vmime::make_shared <vmime::parameter>(
 				"filename",
 				vmime::word("my_file_name_\xc3\xb6\xc3\xa4\xc3\xbc_(1).txt", "UTF-8")
+			)->generate()
+		);
+	}
+
+	// Only attribute-chars are not encoded (RFC 2231, section 7)
+	void testEncodeRFC2231Values() {
+
+		// Example from RFC 2231, section 4, with a language
+		VASSERT_EQ(
+			"1",
+			"title*=us-ascii'en-us'This%20is%20%2A%2A%2Afun%2A%2A%2A",
+			vmime::make_shared <vmime::parameter>(
+				"title",
+				vmime::word("This is ***fun***", vmime::charset("us-ascii"), "en-us")
+			)->generate()
+		);
+
+		// Value from RFC 2231, section 4, with a quote
+		VASSERT_EQ(
+			"2",
+			"title*=us-ascii'en'This%20is%20even%20more%20%2A%2A%2Afun%2A%2A%2A%20isn%27t%20it!",
+			vmime::make_shared <vmime::parameter>(
+				"title",
+				vmime::word("This is even more ***fun*** isn't it!", vmime::charset("us-ascii"), "en")
+			)->generate()
+		);
+
+		// Value from RFC 2047, section 8: in ISO-8859-1, ASCII characters
+		// are as in US-ASCII
+		VASSERT_EQ(
+			"3",
+			"param1*=iso-8859-1''Keld%20J%F8rn%20Simonsen",
+			vmime::make_shared <vmime::parameter>(
+				"param1",
+				vmime::word("Keld J\xf8rn Simonsen", vmime::charset("iso-8859-1"))
+			)->generate()
+		);
+
+		// Example from RFC 2183, section 2: no extended parameter is needed
+		VASSERT_EQ(
+			"4",
+			"filename=genome.jpeg",
+			vmime::make_shared <vmime::parameter>(
+				"filename",
+				vmime::word("genome.jpeg", vmime::charset("iso-8859-1"))
+			)->generate()
+		);
+
+		// In ISO-2022-JP, bytes in the ASCII range stand for other characters
+		VASSERT_EQ(
+			"5",
+			"param1*=iso-2022-jp''%1B%24%42%24%33%24%73%24%4B%24%41%24%4F%1B%28%42",
+			vmime::make_shared <vmime::parameter>(
+				"param1",
+				vmime::word("\x1b$B$3$s$K$A$O\x1b(B", vmime::charset("iso-2022-jp"))
+			)->generate()
+		);
+
+		// Backslashes and quotes are tspecials
+		VASSERT_EQ(
+			"6",
+			"param1*=utf-8''C%3A%5Ctemp%5C%22%C3%A9t%C3%A9%22.txt",
+			vmime::make_shared <vmime::parameter>(
+				"param1",
+				vmime::word("C:\\temp\\\"\xc3\xa9t\xc3\xa9\".txt", vmime::charset("utf-8"))
 			)->generate()
 		);
 	}
