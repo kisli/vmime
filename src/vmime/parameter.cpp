@@ -33,6 +33,8 @@
 #include "vmime/utility/stringUtils.hpp"
 #include "vmime/utility/details/classicOStringStream.hpp"
 
+#include <algorithm>
+
 
 namespace vmime {
 
@@ -290,15 +292,26 @@ void parameter::parse(
 }
 
 
+// Whether "c" cannot be written as is in a parameter value: control characters
+// other than tab are not allowed in a quoted-string (RFC 5322, section 3.2.4),
+// and CR or LF would end the header field
+static bool isControlOtherThanTab(const char_t c) {
+
+	return parserHelpers::isControl(c) && c != '\t';
+}
+
+
 // Flags to generate a parameter value as a word: RFC 2047 encoded
 // words only if they are needed, else folded at white-space
 static int getWordFlags(const generationContext& ctx, const word& value) {
 
 	const string& buffer = value.getBuffer();
 
-	// Quotes and backslashes are not escaped in an unencoded word
+	// Quotes and backslashes are not escaped in an unencoded word, nor
+	// control characters
 	if (wordEncoder::isEncodingNeeded(ctx, buffer, value.getCharset(), value.getLanguage()) ||
-	    buffer.find_first_of("\"\\") != string::npos) {
+	    buffer.find_first_of("\"\\") != string::npos ||
+	    std::find_if(buffer.begin(), buffer.end(), isControlOtherThanTab) != buffer.end()) {
 
 		return text::FORCE_ENCODING;
 	}
@@ -469,7 +482,8 @@ void parameter::generateImpl(
 
 			default:
 
-				if (!parserHelpers::isAscii(value[i])) {
+				// 8-bit and control characters cannot be written as is
+				if (!parserHelpers::isAscii(value[i]) || isControlOtherThanTab(value[i])) {
 					needQuotedPrintable = true;
 					needQuoting = true;
 				}
@@ -558,7 +572,7 @@ void parameter::generateImpl(
 				sevenBitStream << '\\' << value[i];  // escape 'x' with '\x'
 				pos += 2;
 
-			} else if (parserHelpers::isAscii(c)) {
+			} else if (parserHelpers::isAscii(c) && !isControlOtherThanTab(c)) {
 
 				sevenBitStream << value[i];
 				++pos;
