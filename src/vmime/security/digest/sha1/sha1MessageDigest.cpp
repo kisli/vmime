@@ -212,7 +212,7 @@ void sha1MessageDigest::transform(
 	assert(sizeof(unsigned int) == 4);
 
 	CHAR64LONG16* block;
-	static unsigned char workspace[64];
+	unsigned char workspace[64];
 
 	block = reinterpret_cast <CHAR64LONG16*>(workspace);
 	memcpy(block, buffer, 64);
