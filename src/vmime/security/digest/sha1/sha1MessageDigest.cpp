@@ -27,7 +27,6 @@
 #include "vmime/security/digest/sha1/sha1MessageDigest.hpp"
 
 #include <cstring>
-#include <cassert>
 
 
 namespace vmime {
@@ -209,7 +208,7 @@ void sha1MessageDigest::transform(
 		unsigned int l[16];
 	} CHAR64LONG16;
 
-	assert(sizeof(unsigned int) == 4);
+	static_assert(sizeof(unsigned int) == 4, "Unsupported platform");
 
 	CHAR64LONG16* block;
 	unsigned char workspace[64];
