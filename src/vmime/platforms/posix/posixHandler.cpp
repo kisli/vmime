@@ -294,7 +294,7 @@ void posixHandler::generateRandomBytes(unsigned char* buffer, const unsigned int
 	}
 
 	// fallback
-	for (unsigned int i = have ; i < count ; ++i) {
+	for (size_t i = have ; i < count ; ++i) {
 		buffer[i] = static_cast <unsigned char>(rand());
 	}
 }
