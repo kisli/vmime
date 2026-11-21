@@ -42,6 +42,11 @@ public:
 		const vmime::encoding& enc = NO_ENCODING
 	);
 
+	stringContentHandler(
+		string&& buffer,
+		const vmime::encoding& enc = NO_ENCODING
+	);
+
 	~stringContentHandler();
 
 	stringContentHandler(const stringContentHandler& cts);
@@ -62,9 +67,14 @@ public:
 		const string& buffer,
 		const vmime::encoding& enc = NO_ENCODING
 	);
+	void setData(
+		string&& buffer,
+		const vmime::encoding& enc = NO_ENCODING
+	);
 
 
 	stringContentHandler& operator=(const string& buffer);
+	stringContentHandler& operator=(string&& buffer);
 
 	void generate(
 		utility::outputStream& os,
