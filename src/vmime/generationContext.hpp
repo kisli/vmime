@@ -104,8 +104,11 @@ public:
 	enum EncodedParameterValueModes {
 
 		PARAMETER_VALUE_NO_ENCODING,          /**< Only generate 7-bit (ASCII-only) values,
-		                                           even if the value contains non-ASCII chars or
-		                                           if folding is needed. */
+		                                           even if the value contains non-ASCII chars,
+		                                           which are removed with control chars, or if
+		                                           folding is needed: a long value is folded
+		                                           at white-space, else written on a longer
+		                                           line. */
 		PARAMETER_VALUE_RFC2047_ONLY,         /**< Only generate RFC-2047 values (do not use
 		                                           RFC-2231). This is non-standard but most
 		                                           mail clients support it. */

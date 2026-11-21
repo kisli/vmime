@@ -561,28 +561,39 @@ void parameter::generateImpl(
 
 	} else {
 
-		// Do not chop off this value, but just add the complete name as one header line.
-		for (size_t i = 0, n = value.length(), curValueLength = 0 ;
-		     i < n && curValueLength < valueLength ; ++i) {
+		string plainValue;
+
+		for (size_t i = 0 ; i < value.length() ; ++i) {
 
 			const char_t c = value[i];
 
 			if (/* needQuoting && */ (c == '"' || c == '\\')) {  // 'needQuoting' is implicit
 
-				sevenBitStream << '\\' << value[i];  // escape 'x' with '\x'
-				pos += 2;
+				plainValue += '\\';  // escape 'x' with '\x'
+				plainValue += c;
 
 			} else if (parserHelpers::isAscii(c) && !isControlOtherThanTab(c)) {
 
-				sevenBitStream << value[i];
-				++pos;
-				++curValueLength;
+				plainValue += c;
 
 			} else {
 
 				extended = true;
 			}
 		}
+
+		// Do not chop off a value which does not fit on the line (in the
+		// NO_ENCODING mode), but fold it at white-space in the quoted-string
+		// (RFC 5322, section 3.2.4), or write it on a longer line
+		if (cutValue) {
+
+			plainValue = generateWordValue(
+				ctx, word(plainValue, charsets::US_ASCII), text::FORCE_NO_ENCODING, pos
+			);
+		}
+
+		sevenBitStream << plainValue;
+		pos = positionAfter(plainValue, pos);
 
 	} // !needQuotedPrintable
 
@@ -756,9 +767,10 @@ size_t parameter::getGeneratedSize(const generationContext& ctx) {
 
 	// Compute generated length in the very worst case
 
-	// Non-encoded parameter + value (worst case: fold + quoting + escaping)
+	// Non-encoded parameter + value (worst case: fold + quoting + escaping,
+	// or white-space replaced with a fold)
 	size_t len = NEW_LINE_SEQUENCE.length() + name.length() + 1 /* = */ + 2 /* "" */
-		+ valueLength * 2 + 1 /* ; */;
+		+ valueLength * 3 + 1 /* ; */;
 
 	generationContext::EncodedParameterValueModes
 		genMode = ctx.getEncodedParameterValueMode();

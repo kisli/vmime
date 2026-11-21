@@ -35,6 +35,7 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 		VMIME_TEST(testGetGeneratedSizeRFC2231)
 		VMIME_TEST(testGenerateRFC2047)
 		VMIME_TEST(testGenerateControlChars)
+		VMIME_TEST(testGenerateNoEncoding)
 		VMIME_TEST(testNonStandardEncodedParam)
 		VMIME_TEST(testParseNonSignificantWS)
 		VMIME_TEST(testEncodeTSpecials)
@@ -350,7 +351,7 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 		VASSERT_EQ(
 			"2.no-encoding",
 			"F: X; \r\n "
-			"param1=abcdefghijkl",
+			"param1=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
 			p2.generate(vmime::generationContext::PARAMETER_VALUE_NO_ENCODING, 25)  // max line length = 25
 		);
 
@@ -936,6 +937,89 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 		p4.parse("X; filename*=us-ascii''x.txt%0D%0ABcc%3A%20victim%40vmime.org");
 
 		VASSERT_EQ("4", "x.txt\r\nBcc: victim@vmime.org", PARAM_BUFFER(p4, 0));
+	}
+
+	// Values which do not fit on the line are not cut
+	void testGenerateNoEncoding() {
+
+		// Example from RFC 2183, section 2: folded at white-space in the
+		// quoted-string (RFC 5322, section 3.2.4)
+		parameterizedHeaderField p1;
+		p1.setValue(vmime::word("attachment"));
+		p1.appendParameter(
+			vmime::make_shared <vmime::parameter>("filename", vmime::word("genome.jpeg"))
+		);
+		p1.appendParameter(
+			vmime::make_shared <vmime::parameter>(
+				"modification-date",
+				vmime::word("Wed, 12 Feb 1997 16:29:51 -0500", vmime::charset("us-ascii"))
+			)
+		);
+		p1.appendParameter(
+			vmime::make_shared <vmime::parameter>("param3", vmime::word("value3"))
+		);
+
+		VASSERT_EQ(
+			"1",
+			"F: attachment; \r\n "
+			"filename=genome.jpeg; \r\n "
+			"modification-date=\"Wed, 12 Feb 1997\r\n "
+			"16:29:51 -0500\"; param3=value3",
+			p1.generate(vmime::generationContext::PARAMETER_VALUE_NO_ENCODING, 40)  // max line length = 40
+		);
+
+		// Quotes and backslashes are escaped
+		parameterizedHeaderField p2;
+		p2.appendParameter(
+			vmime::make_shared <vmime::parameter>(
+				"param1",
+				vmime::word("a \"quoted\" value, with a \\ too long for one line", vmime::charset("us-ascii"))
+			)
+		);
+
+		VASSERT_EQ(
+			"2",
+			"F: X; \r\n "
+			"param1=\"a \\\"quoted\\\" value, with a\r\n "
+			"\\\\ too long for one line\"",
+			p2.generate(vmime::generationContext::PARAMETER_VALUE_NO_ENCODING, 40)  // max line length = 40
+		);
+
+		// No white-space: on a longer line
+		parameterizedHeaderField p3;
+		p3.appendParameter(
+			vmime::make_shared <vmime::parameter>(
+				"filename",
+				vmime::word(
+					"Annual_report_of_the_board_of_directors_for_the_financial_year_2025_final_version.pdf",
+					vmime::charset("us-ascii")
+				)
+			)
+		);
+
+		VASSERT_EQ(
+			"3",
+			"F: X; \r\n "
+			"filename=Annual_report_of_the_board_of_directors_for_the_financial_year_2025_final_version.pdf",
+			p3.generate(vmime::generationContext::PARAMETER_VALUE_NO_ENCODING)
+		);
+
+		// 8-bit characters are removed, value from RFC 2047, section 8
+		parameterizedHeaderField p4;
+		p4.appendParameter(
+			vmime::make_shared <vmime::parameter>(
+				"param1",
+				vmime::word("Keld J\xf8rn Simonsen", vmime::charset("iso-8859-1"))
+			)
+		);
+
+		VASSERT_EQ(
+			"4",
+			"F: X; \r\n "
+			"param1=\"Keld Jrn\r\n "
+			"Simonsen\"",
+			p4.generate(vmime::generationContext::PARAMETER_VALUE_NO_ENCODING, 25)  // max line length = 25
+		);
 	}
 
 	void testNonStandardEncodedParam() {
