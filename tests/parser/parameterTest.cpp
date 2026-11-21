@@ -34,6 +34,7 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 		VMIME_TEST(testGenerateRFC2231)
 		VMIME_TEST(testGetGeneratedSizeRFC2231)
 		VMIME_TEST(testGenerateRFC2047)
+		VMIME_TEST(testGenerateControlChars)
 		VMIME_TEST(testNonStandardEncodedParam)
 		VMIME_TEST(testParseNonSignificantWS)
 		VMIME_TEST(testEncodeTSpecials)
@@ -849,6 +850,92 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 			"=?us-ascii?Q?_one_line?=\"",
 			p6.generate(vmime::generationContext::PARAMETER_VALUE_RFC2047_ONLY, 40)  // max line length = 40
 		);
+	}
+
+	// Control characters other than tab are not allowed in a quoted-string
+	// (RFC 5322, section 3.2.4) nor unencoded in an extended value (RFC 2231,
+	// section 7), and CR or LF would end the header field
+	void testGenerateControlChars() {
+
+		parameterizedHeaderField p1;
+		p1.appendParameter(
+			vmime::make_shared <vmime::parameter>(
+				"filename",
+				vmime::word("x.txt\r\nBcc: victim@vmime.org", vmime::charset("us-ascii"))
+			)
+		);
+
+		VASSERT_EQ(
+			"1.no-encoding",
+			"F: X; filename=\"x.txtBcc: victim@vmime.org\"",
+			p1.generate(vmime::generationContext::PARAMETER_VALUE_NO_ENCODING)
+		);
+
+		VASSERT_EQ(
+			"1.rfc2047",
+			"F: X; filename=\"=?us-ascii?Q?x=2Etxt=0D=0ABcc=3A_victim=40vmime=2Eorg?=\"",
+			p1.generate(vmime::generationContext::PARAMETER_VALUE_RFC2047_ONLY)
+		);
+
+		VASSERT_EQ(
+			"1.rfc2231",
+			"F: X; filename*=us-ascii''x.txt%0D%0ABcc%3A%20victim%40vmime.org",
+			p1.generate(vmime::generationContext::PARAMETER_VALUE_RFC2231_ONLY)
+		);
+
+		VASSERT_EQ(
+			"1.both",
+			"F: X; filename=\"=?us-ascii?Q?x=2Etxt=0D=0ABcc=3A_victim=40vmime=2Eorg?=\";\r\n "
+			"filename*=us-ascii''x.txt%0D%0ABcc%3A%20victim%40vmime.org",
+			p1.generate(vmime::generationContext::PARAMETER_VALUE_RFC2231_AND_RFC2047)
+		);
+
+		// Other control characters; tab is white-space
+		parameterizedHeaderField p2;
+		p2.appendParameter(
+			vmime::make_shared <vmime::parameter>(
+				"param1",
+				vmime::word("a\tb\x01" "c\x7f", vmime::charset("us-ascii"))
+			)
+		);
+
+		VASSERT_EQ(
+			"2.no-encoding",
+			"F: X; param1=\"a\tbc\"",
+			p2.generate(vmime::generationContext::PARAMETER_VALUE_NO_ENCODING)
+		);
+
+		VASSERT_EQ(
+			"2.rfc2047",
+			"F: X; param1=\"=?us-ascii?Q?a=09b=01c=7F?=\"",
+			p2.generate(vmime::generationContext::PARAMETER_VALUE_RFC2047_ONLY)
+		);
+
+		VASSERT_EQ(
+			"2.rfc2231",
+			"F: X; param1*=us-ascii''a%09b%01c%7F",
+			p2.generate(vmime::generationContext::PARAMETER_VALUE_RFC2231_ONLY)
+		);
+
+		parameterizedHeaderField p3;
+		p3.appendParameter(
+			vmime::make_shared <vmime::parameter>(
+				"param1",
+				vmime::word("a\tb", vmime::charset("us-ascii"))
+			)
+		);
+
+		VASSERT_EQ(
+			"3.rfc2231",
+			"F: X; param1=\"a\tb\"",
+			p3.generate(vmime::generationContext::PARAMETER_VALUE_RFC2231_ONLY)
+		);
+
+		// The value is kept when parsed
+		parameterizedHeaderField p4;
+		p4.parse("X; filename*=us-ascii''x.txt%0D%0ABcc%3A%20victim%40vmime.org");
+
+		VASSERT_EQ("4", "x.txt\r\nBcc: victim@vmime.org", PARAM_BUFFER(p4, 0));
 	}
 
 	void testNonStandardEncodedParam() {

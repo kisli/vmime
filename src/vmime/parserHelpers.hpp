@@ -94,6 +94,16 @@ public:
 	}
 
 
+	// Checks whether a character is a control character (CTL, RFC 5234,
+	// appendix B.1), including horizontal tab, CR and LF
+
+	static bool isControl(const char_t c) {
+
+		const unsigned int x = static_cast <unsigned int>(c);
+		return x <= 0x1F || x == 0x7F;
+	}
+
+
 	/** Finds the next EOL sequence in the specified buffer.
 	  * An EOL sequence may be a CR+LF sequence, or a LF sequence.
 	  *
