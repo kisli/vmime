@@ -27,7 +27,6 @@
 #include "vmime/security/digest/sha1/sha1MessageDigest.hpp"
 
 #include <cstring>
-#include <cassert>
 
 
 namespace vmime {
@@ -204,18 +203,13 @@ void sha1MessageDigest::transform(
 
 	unsigned int a, b, c, d, e;
 
-	typedef union {
-		unsigned char c[64];
+	struct {
 		unsigned int l[16];
-	} CHAR64LONG16;
+	} workspace, *block = &workspace;
 
-	assert(sizeof(unsigned int) == 4);
+	static_assert(sizeof(unsigned int) == 4, "Unsupported platform");
 
-	CHAR64LONG16* block;
-	static unsigned char workspace[64];
-
-	block = reinterpret_cast <CHAR64LONG16*>(workspace);
-	memcpy(block, buffer, 64);
+	memcpy(&workspace.l, buffer, 64);
 
 	// Copy context->state[] to working vars
 	a = state[0];
