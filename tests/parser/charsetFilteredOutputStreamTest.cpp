@@ -85,7 +85,7 @@ VMIME_TEST_SUITE_BEGIN(charsetFilteredOutputStreamTest)
 
 		vmime::byte_t buffer[16];
 
-		for (int i = 0 ; !is.eof() ; ++i)
+		while (!is.eof())
 			os->write(buffer, is.read(buffer, 1));
 
 		os->flush();
@@ -161,7 +161,7 @@ VMIME_TEST_SUITE_BEGIN(charsetFilteredOutputStreamTest)
 
 			vmime::byte_t buffer[16];
 
-			for (int i = 0 ; !is.eof() ; ++i)
+			while (!is.eof())
 				os->write(buffer, is.read(buffer, 1));
 
 			os->flush();
