@@ -21,6 +21,7 @@
 // the GNU General Public License cover the whole combination.
 //
 
+#include <utility>
 #include "vmime/stringContentHandler.hpp"
 
 #include "vmime/utility/inputStreamStringAdapter.hpp"
@@ -43,6 +44,16 @@ stringContentHandler::stringContentHandler(
 )
 	: m_encoding(enc),
 	  m_string(buffer) {
+
+}
+
+
+stringContentHandler::stringContentHandler(
+	string&& buffer,
+	const vmime::encoding& enc
+)
+	: m_encoding(enc),
+	  m_string(std::move(buffer)) {
 
 }
 
@@ -86,9 +97,23 @@ void stringContentHandler::setData(const string& buffer, const vmime::encoding& 
 }
 
 
+void stringContentHandler::setData(string&& buffer, const vmime::encoding& enc) {
+
+	m_encoding = enc;
+	m_string = std::move(buffer);
+}
+
+
 stringContentHandler& stringContentHandler::operator=(const string& buffer) {
 
 	setData(buffer, NO_ENCODING);
+	return *this;
+}
+
+
+stringContentHandler& stringContentHandler::operator=(string&& buffer) {
+
+	setData(std::move(buffer), NO_ENCODING);
 	return *this;
 }
 
