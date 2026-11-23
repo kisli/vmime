@@ -49,6 +49,9 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 		VMIME_TEST(testMAIL_SIZE_UTF8)
 		VMIME_TEST(testMAIL_8BIT)
 		VMIME_TEST(testMAIL_BINARYMIME)
+		VMIME_TEST(testMAIL_ENVID_XText)
+		VMIME_TEST(testDSNAttributes_ENVID_NonPrintable)
+		VMIME_TEST(testDSNAttributes_ENVID_Length)
 		VMIME_TEST(testRCPT)
 		VMIME_TEST(testRCPT_Encoded)
 		VMIME_TEST(testRCPT_UTF8)
@@ -165,7 +168,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::MAIL(vmime::mailbox("me@vmime.org"), false, dsnAttrs);
 
 		VASSERT_NOT_NULL("Not null", cmd);
-		VASSERT_EQ("Text", "MAIL FROM:<me@vmime.org> RET=FULL ENVID=<dsn-unique-id>", cmd->getText());
+		VASSERT_EQ("Text", "MAIL FROM:<me@vmime.org> RET=FULL ENVID=dsn-unique-id", cmd->getText());
 	}
 
 	void testMAIL_Encoded() {
@@ -177,7 +180,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 		);
 
 		VASSERT_NOT_NULL("Not null", cmd);
-		VASSERT_EQ("Text", "MAIL FROM:<mailtest@xn--r8jz45g.xn--zckzah> RET=FULL ENVID=<dsn-unique-id>", cmd->getText());
+		VASSERT_EQ("Text", "MAIL FROM:<mailtest@xn--r8jz45g.xn--zckzah> RET=FULL ENVID=dsn-unique-id", cmd->getText());
 	}
 
 	// Without SMTPUTF8, the address is ASCII whatever the default context says
@@ -215,7 +218,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 		);
 
 		VASSERT_NOT_NULL("Not null", cmd);
-		VASSERT_EQ("Text", "MAIL FROM:<mailtest@例え.テスト> RET=FULL ENVID=<dsn-unique-id> SMTPUTF8 BODY=8BITMIME", cmd->getText());
+		VASSERT_EQ("Text", "MAIL FROM:<mailtest@例え.テスト> RET=FULL ENVID=dsn-unique-id SMTPUTF8 BODY=8BITMIME", cmd->getText());
 	}
 
 	void testMAIL_SIZE() {
@@ -227,7 +230,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 		);
 
 		VASSERT_NOT_NULL("Not null", cmd);
-		VASSERT_EQ("Text", "MAIL FROM:<me@vmime.org> RET=FULL ENVID=<dsn-unique-id> SIZE=123456789", cmd->getText());
+		VASSERT_EQ("Text", "MAIL FROM:<me@vmime.org> RET=FULL ENVID=dsn-unique-id SIZE=123456789", cmd->getText());
 	}
 
 	void testMAIL_SIZE_UTF8() {
@@ -239,7 +242,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 		);
 
 		VASSERT_NOT_NULL("Not null", cmd);
-		VASSERT_EQ("Text", "MAIL FROM:<mailtest@例え.テスト> RET=FULL ENVID=<dsn-unique-id> SMTPUTF8 BODY=8BITMIME SIZE=123456789", cmd->getText());
+		VASSERT_EQ("Text", "MAIL FROM:<mailtest@例え.テスト> RET=FULL ENVID=dsn-unique-id SMTPUTF8 BODY=8BITMIME SIZE=123456789", cmd->getText());
 	}
 
 	// 8-bit data must be declared (RFC 6152, section 3)
@@ -252,7 +255,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 		);
 
 		VASSERT_NOT_NULL("Not null", cmd);
-		VASSERT_EQ("Text", "MAIL FROM:<me@vmime.org> RET=FULL ENVID=<dsn-unique-id> BODY=8BITMIME SIZE=123456789", cmd->getText());
+		VASSERT_EQ("Text", "MAIL FROM:<me@vmime.org> RET=FULL ENVID=dsn-unique-id BODY=8BITMIME SIZE=123456789", cmd->getText());
 	}
 
 	// Binary data must be declared (RFC 3030, section 3), also with SMTPUTF8
@@ -269,6 +272,41 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 		);
 
 		VASSERT_EQ("2", "MAIL FROM:<mailtest@例え.テスト> SMTPUTF8 BODY=BINARYMIME", cmd2->getText());
+	}
+
+	// The envelope identifier is encoded as xtext (RFC 3461, section 4)
+	void testMAIL_ENVID_XText() {
+
+		auto dsnAttrs = vmime::make_shared <DSNAttributes>("", "", "<id+1=a b>");
+
+		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::MAIL(vmime::mailbox("me@vmime.org"), false, dsnAttrs);
+
+		VASSERT_EQ("Text", "MAIL FROM:<me@vmime.org> ENVID=<id+2B1+3Da+20b>", cmd->getText());
+	}
+
+	// The envelope identifier must be printable US-ASCII (RFC 3461, section 4.4)
+	void testDSNAttributes_ENVID_NonPrintable() {
+
+		VASSERT_THROW("Tab", DSNAttributes("", "", "envid\tid"), vmime::exceptions::invalid_argument);
+		VASSERT_THROW("DEL", DSNAttributes("", "", "envid\x7F" "id"), vmime::exceptions::invalid_argument);
+		VASSERT_THROW("8-bit", DSNAttributes("", "", "envid-é"), vmime::exceptions::invalid_argument);
+	}
+
+	// The ENVID parameter, with the encoded identifier, may be up to 100 characters
+	// long (RFC 3461, section 5.4)
+	void testDSNAttributes_ENVID_Length() {
+
+		auto dsnAttrs = vmime::make_shared <DSNAttributes>("", "", vmime::string(94, 'a'));
+
+		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::MAIL(vmime::mailbox("me@vmime.org"), false, dsnAttrs);
+
+		VASSERT_EQ("94", "MAIL FROM:<me@vmime.org> ENVID=" + vmime::string(94, 'a'), cmd->getText());
+
+		VASSERT_THROW("95", DSNAttributes("", "", vmime::string(95, 'a')), vmime::exceptions::invalid_argument);
+
+		// "+" is encoded as "+2B"
+		VASSERT_NO_THROW("Encoded 94", DSNAttributes("", "", vmime::string(31, '+') + "a"));
+		VASSERT_THROW("Encoded 96", DSNAttributes("", "", vmime::string(32, '+')), vmime::exceptions::invalid_argument);
 	}
 
 	void testRCPT() {

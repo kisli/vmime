@@ -29,6 +29,12 @@
 
 #include "vmime/net/smtp/DSNAttributes.hpp"
 
+#include "vmime/constants.hpp"
+#include "vmime/exception.hpp"
+#include "vmime/parserHelpers.hpp"
+
+#include <cstring>
+
 
 namespace vmime {
 namespace net {
@@ -38,6 +44,24 @@ namespace smtp {
 DSNAttributes::DSNAttributes(const string& dsnNotify, const string& dsnRet, const string& dsnEnvelopId)
 	: m_notifications(dsnNotify), m_returnFormat(dsnRet), m_envelopId(dsnEnvelopId) {
 
+	// The envelope identifier must only contain printable US-ASCII characters,
+	// and the ENVID parameter, where it is encoded as xtext, may be up to 100
+	// characters long (RFC 3461, sections 4.4 and 5.4)
+	size_t paramLength = std::strlen(dsn::ENVID) + 1;
+
+	for (const char c : m_envelopId) {
+
+		if (!parserHelpers::isPrint(c)) {
+			throw exceptions::invalid_argument();
+		}
+
+		// Space, "+" and "=" are encoded as "+XX"
+		paramLength += (c == ' ' || c == '+' || c == '=') ? 3 : 1;
+	}
+
+	if (paramLength > 100) {
+		throw exceptions::invalid_argument();
+	}
 }
 
 
