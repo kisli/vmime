@@ -69,7 +69,11 @@ public:
 	  *
 	  * @param dsnNotify comma separated list of notification conditions as specified in RFC 1891
 	  * @param dsnRet content of DSN - full message or headers only ("FULL" or "HDRS")
-	  * @param dsnEnvelopId envelop ID to be able to pair the DSN with original message (plain text not in "<" ">")
+	  * @param dsnEnvelopId envelop ID to be able to pair the DSN with original message: printable
+	  * US-ASCII text, which is sent as is (encoded as xtext, see RFC 3461, section 4.4)
+	  * @throw exceptions::invalid_argument if the envelop ID contains other characters, or if it
+	  * is too long: the ENVID parameter, "ENVID=" followed by the encoded ID, may be up to 100
+	  * characters long (RFC 3461, section 5.4)
 	  */
 	DSNAttributes(const string& dsnNotify, const string& dsnRet, const string& dsnEnvelopId);
 

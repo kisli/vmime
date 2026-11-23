@@ -120,6 +120,22 @@ static void writeAddress(std::ostream& cmd, const mailbox& mbox, const bool utf8
 }
 
 
+// Write a value encoded as xtext (RFC 3461, section 4)
+static void writeXText(std::ostream& cmd, const string& value) {
+
+	for (const char c : value) {
+
+		const unsigned char k = static_cast <unsigned char>(c);
+
+		if (k >= '!' && k <= '~' && c != '+' && c != '=') {
+			cmd << c;
+		} else {
+			cmd << '+' << "0123456789ABCDEF"[k / 16] << "0123456789ABCDEF"[k % 16];
+		}
+	}
+}
+
+
 // static
 shared_ptr <SMTPCommand> SMTPCommand::MAIL(
 	const mailbox& mbox, const bool utf8,
@@ -145,7 +161,9 @@ shared_ptr <SMTPCommand> SMTPCommand::MAIL(
 		cmd << " " << dsn::RET << "=" << dsnAttrs->getReturnFormat();
 	}
 	if (dsnAttrs && !dsnAttrs->getEnvelopId().empty()) {
-		cmd << " " << dsn::ENVID << "=<" << dsnAttrs->getEnvelopId() << ">";
+		// The envelope identifier is sent as is, encoded as xtext (RFC 3461, section 4.4)
+		cmd << " " << dsn::ENVID << "=";
+		writeXText(cmd, dsnAttrs->getEnvelopId());
 	}
 
 	if (utf8) {
