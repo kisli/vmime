@@ -33,6 +33,7 @@
 
 #include "vmime/net/socket.hpp"
 
+#include "vmime/exception.hpp"
 #include "vmime/mailbox.hpp"
 #include "vmime/utility/outputStreamAdapter.hpp"
 #include "vmime/utility/details/classicOStringStream.hpp"
@@ -220,6 +221,12 @@ shared_ptr <POP3Command> POP3Command::createCommand(
 	const string& text,
 	const string& traceText
 ) {
+
+	// Commands are terminated by CRLF (RFC 1939, section 3): CR or LF, eg. in
+	// a user name, would start another command, as NUL might
+	if (text.find_first_of(string("\r\n\0", 3)) != string::npos) {
+		throw exceptions::invalid_argument();
+	}
 
 	if (traceText.empty()) {
 		return shared_ptr <POP3Command>(new POP3Command(text, text));

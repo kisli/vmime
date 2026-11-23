@@ -753,6 +753,12 @@ SIZE extension, and this size should not be lower than the actual size (RFC
 message data (except binary data), the size you give should be the one of the
 data with CRLF line endings.
 
+Values written in commands, like addresses, DSN attributes or user names,
+cannot contain line breaks, which would end the command and start another
+one: {\vcode vmime::exceptions::invalid\_argument} is thrown before the
+command is sent if it contains CR, LF or NUL. This also applies to IMAP and
+POP3 commands.
+
 
 % ============================================================================
 \section{Using store service}

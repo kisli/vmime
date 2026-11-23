@@ -63,6 +63,7 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 		VMIME_TEST(testFindAllFields3)
 
 		VMIME_TEST(testParseFromStream)
+		VMIME_TEST(testGenerateLineBreaks)
 	VMIME_TEST_LIST_END
 
 
@@ -432,6 +433,60 @@ VMIME_TEST_SUITE_BEGIN(headerTest)
 			VASSERT_EQ(msg + ": stream length", hdr1.getParsedLength(), hdr2.getParsedLength());
 			VASSERT_EQ(msg + ": stream generate", hdr1.generate(), hdr2.generate());
 		}
+	}
+
+	// A line break which is not a fold would end the field (RFC 5322,
+	// section 2.2.3), and start another one, or the body
+	void testGenerateLineBreaks() {
+
+		vmime::header hdr;
+		hdr.getField("Subject")->setValue(vmime::text("subject"));
+		hdr.getField("Message-Id")->setValue(vmime::messageId("id", "vmime.org\r\nBcc: victim@vmime.org"));
+
+		std::ostringstream oss;
+		vmime::utility::outputStreamAdapter os(oss);
+
+		VASSERT_THROW("1", hdr.generate(vmime::generationContext::getDefaultContext(), os), vmime::exceptions::invalid_argument);
+		VASSERT_EQ("1.output", "Subject: subject\r\nMessage-Id: <id@vmime.org", oss.str());
+
+		vmime::header hdr2;
+		hdr2.getField("Content-Type")->setValue(vmime::mediaType("text", "plain\nBcc: victim@vmime.org"));
+
+		VASSERT_THROW("2", hdr2.generate(), vmime::exceptions::invalid_argument);
+
+		// Ending the field
+		vmime::header hdr3;
+		hdr3.getField("Content-Type")->setValue(vmime::mediaType("text", "plain\r\n"));
+
+		VASSERT_THROW("3", hdr3.generate(), vmime::exceptions::invalid_argument);
+
+		// Local part decoded from a received message, not encoded again
+		// with Internationalized Email (RFC 6532)
+		vmime::mailbox mbox;
+		mbox.parse("=?utf-8?Q?mailt=C3=A9st=0D=0ABcc=3A_victim=40vmime=2Eorg?=@vmime.org");
+
+		vmime::header hdr4;
+		hdr4.getField("From")->setValue(mbox);
+
+		vmime::generationContext ctx;
+		ctx.setInternationalizedEmailSupport(true);
+
+		std::ostringstream oss4;
+		vmime::utility::outputStreamAdapter os4(oss4);
+
+		VASSERT_THROW("4", hdr4.generate(ctx, os4), vmime::exceptions::invalid_argument);
+
+		// Folds are not line breaks
+		vmime::header hdr5;
+		hdr5.getField("Subject")->setValue(
+			vmime::text("a long subject, which is folded at the maximum line length of the generation context")
+		);
+
+		std::ostringstream oss5;
+		vmime::utility::outputStreamAdapter os5(oss5);
+
+		VASSERT_NO_THROW("5", hdr5.generate(vmime::generationContext::getDefaultContext(), os5));
+		VASSERT("5.folded", oss5.str().find("\r\n ") != std::string::npos);
 	}
 
 VMIME_TEST_SUITE_END

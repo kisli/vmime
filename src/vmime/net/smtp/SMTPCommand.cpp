@@ -32,6 +32,7 @@
 #include "vmime/net/socket.hpp"
 #include "vmime/net/tracer.hpp"
 
+#include "vmime/exception.hpp"
 #include "vmime/mailbox.hpp"
 #include "vmime/utility/outputStreamAdapter.hpp"
 #include "vmime/utility/details/classicOStringStream.hpp"
@@ -231,6 +232,12 @@ shared_ptr <SMTPCommand> SMTPCommand::QUIT() {
 
 // static
 shared_ptr <SMTPCommand> SMTPCommand::createCommand(const string& text, const string& traceText) {
+
+	// CR and LF may only end a command (RFC 5321, section 2.3.8): elsewhere,
+	// eg. in an address, they would start another one, as NUL might
+	if (text.find_first_of(string("\r\n\0", 3)) != string::npos) {
+		throw exceptions::invalid_argument();
+	}
 
 	if (traceText.empty()) {
 		return shared_ptr <SMTPCommand>(new SMTPCommand(text, text));
