@@ -30,6 +30,7 @@
 #include "vmime/net/imap/IMAPCommand.hpp"
 #include "vmime/net/imap/IMAPConnection.hpp"
 #include "vmime/net/imap/IMAPUtils.hpp"
+#include "vmime/exception.hpp"
 #include "vmime/utility/details/classicOStringStream.hpp"
 
 #include <sstream>
@@ -438,6 +439,12 @@ shared_ptr <IMAPCommand> IMAPCommand::createCommand(
 	const string& text,
 	const string& traceText
 ) {
+
+	// Outside literals, which are sent separately, a command contains no CR,
+	// LF nor NUL (RFC 9051, section 4): they would start another command
+	if (text.find_first_of(string("\r\n\0", 3)) != string::npos) {
+		throw exceptions::invalid_argument();
+	}
 
 	if (traceText.empty()) {
 		return shared_ptr <IMAPCommand>(new IMAPCommand(text, text));

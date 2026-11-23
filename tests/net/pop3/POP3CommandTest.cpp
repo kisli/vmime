@@ -36,6 +36,7 @@ VMIME_TEST_SUITE_BEGIN(POP3CommandTest)
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testCreateCommand)
 		VMIME_TEST(testCreateCommandParams)
+		VMIME_TEST(testCreateCommandLineBreaks)
 		VMIME_TEST(testCAPA)
 		VMIME_TEST(testNOOP)
 		VMIME_TEST(testAUTH)
@@ -72,6 +73,19 @@ VMIME_TEST_SUITE_BEGIN(POP3CommandTest)
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "MY_COMMAND param1 param2", cmd->getText());
+	}
+
+	// CR, LF or NUL in a command would start another one
+	void testCreateCommandLineBreaks() {
+
+		VASSERT_THROW("1", POP3Command::createCommand("NOOP\r\nQUIT"), vmime::exceptions::invalid_argument);
+		VASSERT_THROW("2", POP3Command::createCommand("NOOP\nQUIT"), vmime::exceptions::invalid_argument);
+		VASSERT_THROW("3", POP3Command::createCommand("NOOP\rQUIT"), vmime::exceptions::invalid_argument);
+		VASSERT_THROW("4", POP3Command::createCommand(vmime::string("NOOP\0QUIT", 9)), vmime::exceptions::invalid_argument);
+
+		VASSERT_THROW("5", POP3Command::USER("user\r\nQUIT"), vmime::exceptions::invalid_argument);
+		VASSERT_THROW("6", POP3Command::PASS("pass\r\nQUIT"), vmime::exceptions::invalid_argument);
+		VASSERT_THROW("7", POP3Command::APOP("user\r\nQUIT", "digest"), vmime::exceptions::invalid_argument);
 	}
 
 	void testCAPA() {

@@ -35,6 +35,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testCreateCommand)
 		VMIME_TEST(testCreateCommandParams)
+		VMIME_TEST(testCreateCommandLineBreaks)
 		VMIME_TEST(testHELO)
 		VMIME_TEST(testEHLO)
 		VMIME_TEST(testAUTH)
@@ -74,6 +75,46 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "MY_COMMAND param1 param2", cmd->getText());
+	}
+
+	// CR, LF or NUL in a command would start another one
+	void testCreateCommandLineBreaks() {
+
+		VASSERT_THROW("1", SMTPCommand::createCommand("NOOP\r\nRSET"), vmime::exceptions::invalid_argument);
+		VASSERT_THROW("2", SMTPCommand::createCommand("NOOP\nRSET"), vmime::exceptions::invalid_argument);
+		VASSERT_THROW("3", SMTPCommand::createCommand("NOOP\rRSET"), vmime::exceptions::invalid_argument);
+		VASSERT_THROW("4", SMTPCommand::createCommand(vmime::string("NOOP\0RSET", 9)), vmime::exceptions::invalid_argument);
+
+		VASSERT_THROW(
+			"5",
+			SMTPCommand::HELO("hostname\r\nRSET"),
+			vmime::exceptions::invalid_argument
+		);
+
+		VASSERT_THROW(
+			"6",
+			SMTPCommand::RCPT(vmime::mailbox(vmime::emailAddress("mailtest", "vmime.org\r\nRSET")), false, nullptr),
+			vmime::exceptions::invalid_argument
+		);
+
+		// Local part decoded from a received message
+		vmime::mailbox mbox;
+		mbox.parse("=?utf-8?Q?mailt=C3=A9st=0D=0ARSET?=@vmime.org");
+
+		VASSERT_THROW(
+			"7",
+			SMTPCommand::RCPT(mbox, true, nullptr),
+			vmime::exceptions::invalid_argument
+		);
+
+		VASSERT_THROW(
+			"8",
+			SMTPCommand::MAIL(
+				vmime::mailbox("mailtest@vmime.org"), false,
+				vmime::make_shared <DSNAttributes>("", "", "envid\r\nRSET")
+			),
+			vmime::exceptions::invalid_argument
+		);
 	}
 
 	void testHELO() {

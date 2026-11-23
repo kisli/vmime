@@ -36,6 +36,7 @@ VMIME_TEST_SUITE_BEGIN(IMAPCommandTest)
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testCreateCommand)
 		VMIME_TEST(testCreateCommandParams)
+		VMIME_TEST(testCreateCommandLineBreaks)
 		VMIME_TEST(testLOGIN)
 		VMIME_TEST(testAUTHENTICATE)
 		VMIME_TEST(testAUTHENTICATE_InitialResponse)
@@ -75,6 +76,17 @@ VMIME_TEST_SUITE_BEGIN(IMAPCommandTest)
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "MY_COMMAND param1 param2", cmd->getText());
+	}
+
+	// CR, LF or NUL in a command would start another one
+	void testCreateCommandLineBreaks() {
+
+		VASSERT_THROW("1", IMAPCommand::createCommand("NOOP\r\nA001 LOGOUT"), vmime::exceptions::invalid_argument);
+		VASSERT_THROW("2", IMAPCommand::createCommand("NOOP\nA001 LOGOUT"), vmime::exceptions::invalid_argument);
+		VASSERT_THROW("3", IMAPCommand::createCommand("NOOP\rA001 LOGOUT"), vmime::exceptions::invalid_argument);
+		VASSERT_THROW("4", IMAPCommand::createCommand(vmime::string("NOOP\0A001 LOGOUT", 16)), vmime::exceptions::invalid_argument);
+
+		VASSERT_THROW("5", IMAPCommand::AUTHENTICATE("PLAIN\r\nA001 LOGOUT"), vmime::exceptions::invalid_argument);
 	}
 
 	void testLOGIN() {
