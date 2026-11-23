@@ -103,6 +103,7 @@ private:
 	void fetchCapabilities();
 	void invalidateCapabilities();
 	std::vector <string> getCapabilities();
+	bool hasCapability(const string& capa);
 
 	void internalDisconnect();
 

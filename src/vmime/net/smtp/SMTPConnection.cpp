@@ -170,6 +170,9 @@ void SMTPConnection::connect() {
 
 			startTLS();
 
+			// Must reissue a EHLO command [RFC-2487, 5.2]
+			helo();
+
 		// Non-fatal error
 		} catch (exceptions::command_error&) {
 
@@ -184,9 +187,6 @@ void SMTPConnection::connect() {
 
 			throw;
 		}
-
-		// Must reissue a EHLO command [RFC-2487, 5.2]
-		helo();
 	}
 #endif // VMIME_HAVE_TLS_SUPPORT
 
@@ -555,6 +555,12 @@ void SMTPConnection::authenticateSASL() {
 void SMTPConnection::startTLS() {
 
 	try {
+
+		// The STARTTLS command can only be issued if the server advertises
+		// the STARTTLS extension in its EHLO response (RFC 3207, section 3)
+		if (!hasExtension("STARTTLS")) {
+			throw exceptions::command_error("STARTTLS", "", "not supported by the server");
+		}
 
 		sendRequest(SMTPCommand::STARTTLS());
 

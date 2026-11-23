@@ -689,6 +689,76 @@ std::vector <vmime::string> OAUTHBEARERSMTPTestSocket::sm_authLines;
 
 
 
+/** SMTP test server which advertises the STARTTLS extension if it has been
+  * enabled with reset(), but always refuses to start TLS.
+  *
+  * The commands sent by the client are recorded.
+  */
+class STARTTLSSMTPTestSocket : public lineBasedTestSocket {
+
+public:
+
+	static void reset(const bool startTLS) {
+
+		sm_startTLS = startTLS;
+		sm_commands.clear();
+	}
+
+	static const std::vector <vmime::string>& getCommands() {
+
+		return sm_commands;
+	}
+
+	void onConnected() {
+
+		localSend("220 test.vmime.org Service ready\r\n");
+	}
+
+	void processCommand() {
+
+		if (!haveMoreLines()) {
+			return;
+		}
+
+		const vmime::string line = getNextLine();
+		const vmime::string verb =
+			vmime::utility::stringUtils::toUpper(line.substr(0, line.find(' ')));
+
+		sm_commands.push_back(verb);
+
+		if (verb == "EHLO") {
+
+			localSend("250-test.vmime.org\r\n");
+			localSend(sm_startTLS ? "250 STARTTLS\r\n" : "250 PIPELINING\r\n");
+
+		} else if (verb == "STARTTLS") {
+
+			localSend("454 4.7.0 TLS not available due to temporary reason\r\n");
+
+		} else if (verb == "QUIT") {
+
+			localSend("221 test.vmime.org Service closing transmission channel\r\n");
+
+		} else {
+
+			localSend("502 Command not implemented\r\n");
+		}
+
+		processCommand();
+	}
+
+private:
+
+	static bool sm_startTLS;
+	static std::vector <vmime::string> sm_commands;
+};
+
+
+bool STARTTLSSMTPTestSocket::sm_startTLS = false;
+std::vector <vmime::string> STARTTLSSMTPTestSocket::sm_commands;
+
+
+
 VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 
 	VMIME_TEST_LIST_BEGIN
@@ -742,6 +812,11 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 		VMIME_TEST(testSASL_OAUTHBEARER)
 		VMIME_TEST(testSASL_OAUTHBEARER_Error)
 		VMIME_TEST(testSASL_OAUTHBEARER_Prompt)
+#if VMIME_HAVE_TLS_SUPPORT
+		VMIME_TEST(testSTARTTLS_NotAdvertised)
+		VMIME_TEST(testSTARTTLS_NotAdvertised_Required)
+		VMIME_TEST(testSTARTTLS_Refused)
+#endif // VMIME_HAVE_TLS_SUPPORT
 	VMIME_TEST_LIST_END
 
 
@@ -2692,5 +2767,80 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 		VASSERT_EQ("AUTH", "AUTH OAUTHBEARER", lines[0]);
 		VASSERT_EQ("Response", encodeOAUTHBEARERResponse(accessToken), lines[1]);
 	}
+
+#if VMIME_HAVE_TLS_SUPPORT
+
+	static vmime::shared_ptr <vmime::net::transport> createSTARTTLSTransport(
+		const bool startTLS,
+		const bool tlsRequired
+	) {
+
+		STARTTLSSMTPTestSocket::reset(startTLS);
+
+		vmime::shared_ptr <vmime::net::session> session = vmime::net::session::create();
+		session->getProperties()["transport.smtp.connection.tls"] = true;
+		session->getProperties()["transport.smtp.connection.tls.required"] = tlsRequired;
+
+		vmime::shared_ptr <vmime::net::transport> tr =
+			session->getTransport(vmime::utility::url("smtp://localhost"));
+
+		tr->setSocketFactory(vmime::make_shared <testSocketFactory <STARTTLSSMTPTestSocket> >());
+		tr->setTimeoutHandlerFactory(vmime::make_shared <testTimeoutHandlerFactory>());
+
+		return tr;
+	}
+
+	// The STARTTLS command must not be sent if the server does not advertise
+	// the STARTTLS extension (RFC 3207, section 3)
+	void testSTARTTLS_NotAdvertised() {
+
+		vmime::shared_ptr <vmime::net::transport> tr =
+			createSTARTTLSTransport(/* startTLS */ false, /* tlsRequired */ false);
+
+		VASSERT_NO_THROW("Connect", tr->connect());
+		VASSERT_FALSE("Secured", tr->isSecuredConnection());
+
+		tr->disconnect();
+
+		const std::vector <vmime::string>& commands = STARTTLSSMTPTestSocket::getCommands();
+
+		VASSERT_EQ("Count", 2, commands.size());
+		VASSERT_EQ("EHLO", "EHLO", commands[0]);
+		VASSERT_EQ("QUIT", "QUIT", commands[1]);
+	}
+
+	void testSTARTTLS_NotAdvertised_Required() {
+
+		vmime::shared_ptr <vmime::net::transport> tr =
+			createSTARTTLSTransport(/* startTLS */ false, /* tlsRequired */ true);
+
+		VASSERT_THROW("Connect", tr->connect(), vmime::exceptions::command_error);
+
+		const std::vector <vmime::string>& commands = STARTTLSSMTPTestSocket::getCommands();
+
+		VASSERT_EQ("Count", 1, commands.size());
+		VASSERT_EQ("EHLO", "EHLO", commands[0]);
+	}
+
+	// EHLO is only sent again if TLS has been started (RFC 3207, section 4.2)
+	void testSTARTTLS_Refused() {
+
+		vmime::shared_ptr <vmime::net::transport> tr =
+			createSTARTTLSTransport(/* startTLS */ true, /* tlsRequired */ false);
+
+		VASSERT_NO_THROW("Connect", tr->connect());
+		VASSERT_FALSE("Secured", tr->isSecuredConnection());
+
+		tr->disconnect();
+
+		const std::vector <vmime::string>& commands = STARTTLSSMTPTestSocket::getCommands();
+
+		VASSERT_EQ("Count", 3, commands.size());
+		VASSERT_EQ("EHLO", "EHLO", commands[0]);
+		VASSERT_EQ("STARTTLS", "STARTTLS", commands[1]);
+		VASSERT_EQ("QUIT", "QUIT", commands[2]);
+	}
+
+#endif // VMIME_HAVE_TLS_SUPPORT
 
 VMIME_TEST_SUITE_END

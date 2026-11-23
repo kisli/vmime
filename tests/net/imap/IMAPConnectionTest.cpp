@@ -359,6 +359,11 @@ VMIME_TEST_SUITE_BEGIN(IMAPConnectionTest)
 		VMIME_TEST(testTrace_AUTHENTICATE)
 		VMIME_TEST(testPlaintextAuthNotAllowed)
 		VMIME_TEST(testLOGINDISABLED)
+#if VMIME_HAVE_TLS_SUPPORT
+		VMIME_TEST(testSTARTTLS_NotAdvertised)
+		VMIME_TEST(testSTARTTLS_NotAdvertised_Required)
+		VMIME_TEST(testSTARTTLS_Refused)
+#endif // VMIME_HAVE_TLS_SUPPORT
 	VMIME_TEST_LIST_END
 
 
@@ -804,5 +809,84 @@ VMIME_TEST_SUITE_BEGIN(IMAPConnectionTest)
 
 		VASSERT_FALSE("LOGIN", isCommandTraced(lines, "LOGIN {username} {password}"));
 	}
+
+#if VMIME_HAVE_TLS_SUPPORT
+
+	// Connect to a server which advertises the specified capabilities, with
+	// STARTTLS enabled (the server does not support the STARTTLS command)
+	static void connectSTARTTLS(
+		const vmime::string& capabilities,
+		const bool tlsRequired,
+		const vmime::shared_ptr <vmime::net::tracerFactory>& tracerFactory
+	) {
+
+		SASLIMAPTestSocket::reset(/* saslIR */ false, capabilities);
+
+		vmime::shared_ptr <vmime::net::session> sess = vmime::net::session::create();
+		sess->getProperties()["store.imap.auth.allow-plaintext"] = true;
+		sess->getProperties()["store.imap.connection.tls"] = true;
+		sess->getProperties()["store.imap.connection.tls.required"] = tlsRequired;
+
+		vmime::shared_ptr <vmime::net::store> store =
+			sess->getStore(vmime::utility::url("imap://user:pass@localhost"));
+
+		store->setSocketFactory(vmime::make_shared <testSocketFactory <SASLIMAPTestSocket> >());
+		store->setTimeoutHandlerFactory(vmime::make_shared <testTimeoutHandlerFactory>());
+		store->setTracerFactory(tracerFactory);
+
+		store->connect();
+		store->disconnect();
+	}
+
+	// The STARTTLS command must not be sent if the server does not advertise
+	// the STARTTLS capability (RFC 2595, section 3)
+	void testSTARTTLS_NotAdvertised() {
+
+		vmime::shared_ptr <recordingTracerFactory> tracerFactory =
+			vmime::make_shared <recordingTracerFactory>();
+
+		VASSERT_NO_THROW(
+			"Connect",
+			connectSTARTTLS("AUTH=PLAIN", /* tlsRequired */ false, tracerFactory)
+		);
+
+		const std::vector <vmime::string>& lines = tracerFactory->getTracer()->getSentLines();
+
+		VASSERT_FALSE("STARTTLS", isCommandTraced(lines, "STARTTLS"));
+	}
+
+	void testSTARTTLS_NotAdvertised_Required() {
+
+		vmime::shared_ptr <recordingTracerFactory> tracerFactory =
+			vmime::make_shared <recordingTracerFactory>();
+
+		VASSERT_THROW(
+			"Connect",
+			connectSTARTTLS("AUTH=PLAIN", /* tlsRequired */ true, tracerFactory),
+			vmime::exceptions::command_error
+		);
+
+		const std::vector <vmime::string>& lines = tracerFactory->getTracer()->getSentLines();
+
+		VASSERT_FALSE("STARTTLS", isCommandTraced(lines, "STARTTLS"));
+		VASSERT_EQ("AUTHENTICATE", 0, SASLIMAPTestSocket::getAuthLines().size());
+	}
+
+	void testSTARTTLS_Refused() {
+
+		vmime::shared_ptr <recordingTracerFactory> tracerFactory =
+			vmime::make_shared <recordingTracerFactory>();
+
+		VASSERT_NO_THROW(
+			"Connect",
+			connectSTARTTLS("AUTH=PLAIN STARTTLS", /* tlsRequired */ false, tracerFactory)
+		);
+
+		const std::vector <vmime::string>& lines = tracerFactory->getTracer()->getSentLines();
+
+		VASSERT_TRUE("STARTTLS", isCommandTraced(lines, "STARTTLS"));
+	}
+
+#endif // VMIME_HAVE_TLS_SUPPORT
 
 VMIME_TEST_SUITE_END
