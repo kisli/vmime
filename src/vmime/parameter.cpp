@@ -565,7 +565,7 @@ void parameter::generateImpl(
 
 		for (size_t i = 0 ; i < value.length() ; ++i) {
 
-			const char_t c = value[i];
+			const char c = value[i];
 
 			if (/* needQuoting && */ (c == '"' || c == '\\')) {  // 'needQuoting' is implicit
 
