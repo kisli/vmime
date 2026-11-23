@@ -275,6 +275,13 @@ try {
 }
 \end{lstlisting}
 
+Values which are written as is in header fields, like domain names, media
+types or message identifiers, cannot contain line breaks, which would end the
+field and start another one, or the body: when generating a header field,
+{\vcode vmime::exceptions::invalid\_argument} is thrown if it contains a CR or
+LF which is not part of a fold (RFC 5322, section 2.2.3). Text, like the
+subject or display names, is encoded instead.
+
 
 \subsection{Adding an attachment} % ------------------------------------------
 

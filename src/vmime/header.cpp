@@ -24,6 +24,8 @@
 #include "vmime/header.hpp"
 #include "vmime/parserHelpers.hpp"
 
+#include "vmime/utility/details/lineBreakCheckingOutputStream.hpp"
+
 #include <algorithm>
 #include <iterator>
 
@@ -142,7 +144,14 @@ void header::generateImpl(
 	for (std::vector <shared_ptr <headerField> >::const_iterator it = m_fields.begin() ;
 	     it != m_fields.end() ; ++it) {
 
-		(*it)->generate(ctx, os);
+		// A line break from a value which cannot be encoded, eg. a domain,
+		// a media type or a message-id, would end the field, and start
+		// another one, or the body: it is refused
+		utility::details::lineBreakCheckingOutputStream fieldStream(os);
+
+		(*it)->generate(ctx, fieldStream);
+		fieldStream.checkEnd();
+
 		os << CRLF;
 	}
 
