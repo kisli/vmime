@@ -128,31 +128,6 @@ public:
 };
 
 
-class flagToken : public typedSearchToken <vmime::net::message::Flags> {
-
-public:
-
-	flagToken(const char* token, vmime::net::message::Flags keyword)
-		: typedSearchToken(token, keyword) {
-
-	}
-
-	void generate(std::ostringstream& out) const override {
-
-		out << m_token << " ";
-
-		switch (m_keyword) {
-			case vmime::net::message::Flags::FLAG_SEEN: out << "Seen"; break;
-			case vmime::net::message::Flags::FLAG_REPLIED: out << "Answered"; break;
-			case vmime::net::message::Flags::FLAG_MARKED: out << "Flagged"; break;
-			case vmime::net::message::Flags::FLAG_DRAFT: out << "Draft"; break;
-			case vmime::net::message::Flags::FLAG_DELETED: out << "Deleted"; break;
-			default: throw exceptions::operation_not_supported();
-		}
-	};
-};
-
-
 class tokenMessageSetEnumerator : public messageSetEnumerator {
 
 public:
@@ -377,7 +352,16 @@ IMAPSearchTokenPtr IMAPSearchTokenFactory::HEADER(const char* fieldName, const s
 
 IMAPSearchTokenPtr IMAPSearchTokenFactory::KEYWORD(vmime::net::message::Flags flag) {
 
-	return vmime::make_shared <helpers::flagToken>("KEYWORD", flag);
+	// The KEYWORD search key only matches keywords: system flags have
+	// their own search keys (RFC 3501, section 6.4.4)
+	switch (flag) {
+		case vmime::net::message::Flags::FLAG_SEEN: return SEEN();
+		case vmime::net::message::Flags::FLAG_REPLIED: return ANSWERED();
+		case vmime::net::message::Flags::FLAG_MARKED: return FLAGGED();
+		case vmime::net::message::Flags::FLAG_DRAFT: return DRAFT();
+		case vmime::net::message::Flags::FLAG_DELETED: return DELETED();
+		default: throw exceptions::operation_not_supported();
+	}
 }
 
 
@@ -527,7 +511,15 @@ IMAPSearchTokenPtr IMAPSearchTokenFactory::UNFLAGGED() {
 
 IMAPSearchTokenPtr IMAPSearchTokenFactory::UNKEYWORD(vmime::net::message::Flags flag) {
 
-	return vmime::make_shared <helpers::flagToken>("UNKEYWORD", flag);
+	// Same as KEYWORD(), for messages which do not have the flag set
+	switch (flag) {
+		case vmime::net::message::Flags::FLAG_SEEN: return UNSEEN();
+		case vmime::net::message::Flags::FLAG_REPLIED: return UNANSWERED();
+		case vmime::net::message::Flags::FLAG_MARKED: return UNFLAGGED();
+		case vmime::net::message::Flags::FLAG_DRAFT: return UNDRAFT();
+		case vmime::net::message::Flags::FLAG_DELETED: return UNDELETED();
+		default: throw exceptions::operation_not_supported();
+	}
 }
 
 

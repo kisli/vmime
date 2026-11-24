@@ -34,6 +34,7 @@ VMIME_TEST_SUITE_BEGIN(IMAPSearchAttributesTest)
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testStringToken)
 		VMIME_TEST(testHeaderToken)
+		VMIME_TEST(testFlagToken)
 	VMIME_TEST_LIST_END
 
 
@@ -63,6 +64,50 @@ VMIME_TEST_SUITE_BEGIN(IMAPSearchAttributesTest)
 		VASSERT_EQ("size", 2, keys.size());
 		VASSERT_EQ("1", "HEADER X-Test \"\"", keys[0]);
 		VASSERT_EQ("2", "HEADER X-Test \"a \\\"quoted\\\" value\"", keys[1]);
+	}
+
+	// System flags have their own search keys: KEYWORD only matches keywords
+	// (RFC 3501, section 6.4.4)
+	void testFlagToken() {
+
+		IMAPSearchAttributes attrs;
+		attrs.add(IMAPSearchTokenFactory::KEYWORD(vmime::net::message::FLAG_SEEN));
+		attrs.add(IMAPSearchTokenFactory::KEYWORD(vmime::net::message::FLAG_REPLIED));
+		attrs.add(IMAPSearchTokenFactory::KEYWORD(vmime::net::message::FLAG_MARKED));
+		attrs.add(IMAPSearchTokenFactory::KEYWORD(vmime::net::message::FLAG_DRAFT));
+		attrs.add(IMAPSearchTokenFactory::KEYWORD(vmime::net::message::FLAG_DELETED));
+		attrs.add(IMAPSearchTokenFactory::UNKEYWORD(vmime::net::message::FLAG_SEEN));
+		attrs.add(IMAPSearchTokenFactory::UNKEYWORD(vmime::net::message::FLAG_REPLIED));
+		attrs.add(IMAPSearchTokenFactory::UNKEYWORD(vmime::net::message::FLAG_MARKED));
+		attrs.add(IMAPSearchTokenFactory::UNKEYWORD(vmime::net::message::FLAG_DRAFT));
+		attrs.add(IMAPSearchTokenFactory::UNKEYWORD(vmime::net::message::FLAG_DELETED));
+
+		const std::vector <vmime::string> keys = attrs.generate();
+
+		VASSERT_EQ("size", 10, keys.size());
+		VASSERT_EQ("1", "SEEN", keys[0]);
+		VASSERT_EQ("2", "ANSWERED", keys[1]);
+		VASSERT_EQ("3", "FLAGGED", keys[2]);
+		VASSERT_EQ("4", "DRAFT", keys[3]);
+		VASSERT_EQ("5", "DELETED", keys[4]);
+		VASSERT_EQ("6", "UNSEEN", keys[5]);
+		VASSERT_EQ("7", "UNANSWERED", keys[6]);
+		VASSERT_EQ("8", "UNFLAGGED", keys[7]);
+		VASSERT_EQ("9", "UNDRAFT", keys[8]);
+		VASSERT_EQ("10", "UNDELETED", keys[9]);
+
+		// No search key for these flags
+		VASSERT_THROW(
+			"KEYWORD RECENT",
+			IMAPSearchTokenFactory::KEYWORD(vmime::net::message::FLAG_RECENT),
+			vmime::exceptions::operation_not_supported
+		);
+
+		VASSERT_THROW(
+			"UNKEYWORD PASSED",
+			IMAPSearchTokenFactory::UNKEYWORD(vmime::net::message::FLAG_PASSED),
+			vmime::exceptions::operation_not_supported
+		);
 	}
 
 VMIME_TEST_SUITE_END

@@ -255,7 +255,7 @@ VMIME_TEST_SUITE_BEGIN(IMAPUtilsTest)
 			vmime::net::fetchAttributes attribs = vmime::net::fetchAttributes::CONTENT_INFO;
 
 			vmime::shared_ptr <IMAPCommand> cmd = IMAPUtils::buildFetchCommand(cnt, msgs, attribs);
-			VASSERT_EQ("content", "FETCH 42 BODY[HEADER.FIELDS (CONTENT_TYPE)]", cmd->getText());
+			VASSERT_EQ("content", "FETCH 42 BODY[HEADER.FIELDS (CONTENT-TYPE)]", cmd->getText());
 		}
 
 		// IMPORTANCE
