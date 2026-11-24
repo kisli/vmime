@@ -339,6 +339,90 @@ std::vector <vmime::string> SASLIMAPTestSocket::sm_authLines;
 
 
 
+/** IMAP test server which sends a PREAUTH greeting, and advertises the
+  * STARTTLS capability.
+  *
+  * The number of sockets currently connected is tracked, to check
+  * that the connection is closed by the client.
+  */
+class PREAUTHIMAPTestSocket : public lineBasedTestSocket {
+
+public:
+
+	static void reset() {
+
+		sm_connectedCount = 0;
+	}
+
+	static int getConnectedCount() {
+
+		return sm_connectedCount;
+	}
+
+	void connect(const vmime::string& address, const vmime::port_t port) {
+
+		++sm_connectedCount;
+
+		lineBasedTestSocket::connect(address, port);
+	}
+
+	void disconnect() {
+
+		if (isConnected()) {
+			--sm_connectedCount;
+		}
+
+		lineBasedTestSocket::disconnect();
+	}
+
+	void onConnected() {
+
+		localSend("* PREAUTH [CAPABILITY IMAP4rev1 STARTTLS] test.vmime.org IMAP4rev1 server logged in\r\n");
+	}
+
+	void processCommand() {
+
+		if (!haveMoreLines()) {
+			return;
+		}
+
+		const vmime::string line = getNextLine();
+		const vmime::size_t sp = line.find(' ');
+
+		const vmime::string tag = line.substr(0, sp);
+		const vmime::string cmd = line.substr(sp + 1);
+
+		const vmime::string verb =
+			vmime::utility::stringUtils::toUpper(cmd.substr(0, cmd.find(' ')));
+
+		if (verb == "LIST") {
+
+			localSend("* LIST (\\Noselect) \"/\" \"\"\r\n");
+			localSend(tag + " OK LIST completed\r\n");
+
+		} else if (verb == "LOGOUT") {
+
+			localSend("* BYE test.vmime.org IMAP4rev1 server logging out\r\n");
+			localSend(tag + " OK LOGOUT completed\r\n");
+
+		} else {
+
+			localSend(tag + " BAD Command not recognized\r\n");
+		}
+
+		processCommand();
+	}
+
+private:
+
+	static int sm_connectedCount;
+};
+
+
+int PREAUTHIMAPTestSocket::sm_connectedCount = 0;
+
+
+
 VMIME_TEST_SUITE_BEGIN(IMAPConnectionTest)
 
 	VMIME_TEST_LIST_BEGIN
@@ -363,6 +447,8 @@ VMIME_TEST_SUITE_BEGIN(IMAPConnectionTest)
 		VMIME_TEST(testSTARTTLS_NotAdvertised)
 		VMIME_TEST(testSTARTTLS_NotAdvertised_Required)
 		VMIME_TEST(testSTARTTLS_Refused)
+		VMIME_TEST(testSTARTTLS_PREAUTH)
+		VMIME_TEST(testSTARTTLS_PREAUTH_Required)
 #endif // VMIME_HAVE_TLS_SUPPORT
 	VMIME_TEST_LIST_END
 
@@ -885,6 +971,65 @@ VMIME_TEST_SUITE_BEGIN(IMAPConnectionTest)
 		const std::vector <vmime::string>& lines = tracerFactory->getTracer()->getSentLines();
 
 		VASSERT_TRUE("STARTTLS", isCommandTraced(lines, "STARTTLS"));
+	}
+
+	static vmime::shared_ptr <vmime::net::store> createPREAUTHStore(
+		const bool tlsRequired,
+		const vmime::shared_ptr <vmime::net::tracerFactory>& tracerFactory
+	) {
+
+		PREAUTHIMAPTestSocket::reset();
+
+		vmime::shared_ptr <vmime::net::session> sess = vmime::net::session::create();
+		sess->getProperties()["store.imap.connection.tls"] = true;
+		sess->getProperties()["store.imap.connection.tls.required"] = tlsRequired;
+
+		vmime::shared_ptr <vmime::net::store> store =
+			sess->getStore(vmime::utility::url("imap://localhost"));
+
+		store->setSocketFactory(vmime::make_shared <testSocketFactory <PREAUTHIMAPTestSocket> >());
+		store->setTimeoutHandlerFactory(vmime::make_shared <testTimeoutHandlerFactory>());
+		store->setTracerFactory(tracerFactory);
+
+		return store;
+	}
+
+	// STARTTLS is not permitted after a PREAUTH greeting, as the connection is
+	// already in the authenticated state (RFC 9051, sections 6.2 and 7.1.4)
+	void testSTARTTLS_PREAUTH() {
+
+		vmime::shared_ptr <recordingTracerFactory> tracerFactory =
+			vmime::make_shared <recordingTracerFactory>();
+
+		vmime::shared_ptr <vmime::net::store> store =
+			createPREAUTHStore(/* tlsRequired */ false, tracerFactory);
+
+		VASSERT_NO_THROW("Connect", store->connect());
+		VASSERT_FALSE("Secured", store->isSecuredConnection());
+
+		store->disconnect();
+
+		const std::vector <vmime::string>& lines = tracerFactory->getTracer()->getSentLines();
+
+		VASSERT_FALSE("STARTTLS", isCommandTraced(lines, "STARTTLS"));
+	}
+
+	// If TLS is required, the client must close the connection after a PREAUTH
+	// greeting on a connection which is not secured (RFC 9051, section 7.1.4)
+	void testSTARTTLS_PREAUTH_Required() {
+
+		vmime::shared_ptr <recordingTracerFactory> tracerFactory =
+			vmime::make_shared <recordingTracerFactory>();
+
+		vmime::shared_ptr <vmime::net::store> store =
+			createPREAUTHStore(/* tlsRequired */ true, tracerFactory);
+
+		VASSERT_THROW("Connect", store->connect(), vmime::exceptions::command_error);
+		VASSERT_FALSE("Connected", store->isConnected());
+		VASSERT_EQ("Connection closed", 0, PREAUTHIMAPTestSocket::getConnectedCount());
+
+		// No command is sent, not even STARTTLS or LOGOUT
+		VASSERT_EQ("Commands", 0, tracerFactory->getTracer()->getSentLines().size());
 	}
 
 #endif // VMIME_HAVE_TLS_SUPPORT
