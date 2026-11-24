@@ -159,10 +159,6 @@ void SMTPChunkingOutputStreamAdapter::flush() {
 	if (m_progress) {
 		m_progress->stop(m_totalSize);
 	}
-
-	if (m_connection->getTracer()) {
-		m_connection->getTracer()->traceSendBytes(m_bufferSize);
-	}
 }
 
 
