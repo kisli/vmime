@@ -891,7 +891,7 @@ The following code shows how to list all the messages in a folder, and
 retrieve basic information to show them to the user:
 
 \begin{lstlisting}[caption={Fetching information about multiple messages}]
-std::vector <ref <vmime::net::message> > allMessages =
+std::vector <vmime::shared_ptr <vmime::net::message> > allMessages =
    folder->getMessages(vmime::net::messageSet::byNumber(1, -1));
       // -1 is a special value to mean "the number of the last message in the folder"
 
@@ -1047,10 +1047,10 @@ store.
 Currently, there are three types of event:
 
 \begin{itemize}
-\item {\bf message change}: sent when the number of messages in a folder
-has changed (ie. some messages have been added or removed);
-\item {\bf message count change}: sent when one or more message(s) have
+\item {\bf message change}: sent when one or more message(s) have
 changed (eg. flags or deleted status);
+\item {\bf message count change}: sent when the number of messages in a folder
+has changed (ie. some messages have been added or removed);
 \item {\bf folder change}: sent when a folder has been created, renamed or
 deleted.
 \end{itemize}
@@ -1140,7 +1140,7 @@ public:
 
    bool handleTimeOut() {
 
-      std::cout << "Operation timed out." << std::endl;
+      std::cout << "Operation timed out." << std::endl
                 << "Press [Y] to continue, or [N] to "
                 << "cancel the operation." << std::endl;
 
@@ -1166,7 +1166,7 @@ class myTimeoutHandlerFactory : public vmime::net::timeoutHandlerFactory {
 
 public:
 
-   ref <timeoutHandler> create() {
+   vmime::shared_ptr <vmime::net::timeoutHandler> create() {
 
       return vmime::make_shared <myTimeoutHandler>();
    }
@@ -1548,7 +1548,7 @@ public:
    // Called by VMime to trace what is received from the socket
    void traceReceive(const vmime::string& line) {
 
-      std::cout << "[" < < m_proto << ":" << m_connectionId
+      std::cout << "[" << m_proto << ":" << m_connectionId
                 << "] S: " << line << std::endl;
    }
 
