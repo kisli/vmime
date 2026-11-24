@@ -203,25 +203,38 @@ void IMAPConnection::connect() {
 
 	if (!store->isIMAPS() && tls) {  // only if not IMAPS
 
-		try {
-
-			startTLS();
-
-		// Non-fatal error
-		} catch (exceptions::command_error&) {
+		// PREAUTH moves the connection directly to the authenticated state, in
+		// which STARTTLS is not permitted: if TLS is required, the connection
+		// must be closed (RFC 9051, section 7.1.4)
+		if (!needAuth) {
 
 			if (tlsRequired) {
-				m_state = STATE_NONE;
-				throw;
-			} else {
-				// TLS is not required, so don't bother
+				internalDisconnect();
+				throw exceptions::command_error("STARTTLS", "", "not permitted after PREAUTH");
 			}
 
-		// Fatal error
-		} catch (...) {
+		} else {
 
-			m_state = STATE_NONE;
-			throw;
+			try {
+
+				startTLS();
+
+			// Non-fatal error
+			} catch (exceptions::command_error&) {
+
+				if (tlsRequired) {
+					m_state = STATE_NONE;
+					throw;
+				} else {
+					// TLS is not required, so don't bother
+				}
+
+			// Fatal error
+			} catch (...) {
+
+				m_state = STATE_NONE;
+				throw;
+			}
 		}
 	}
 #endif // VMIME_HAVE_TLS_SUPPORT
