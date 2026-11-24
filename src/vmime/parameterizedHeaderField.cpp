@@ -26,6 +26,8 @@
 #include "vmime/parserHelpers.hpp"
 #include "vmime/utility/details/classicOStringStream.hpp"
 
+#include <limits>
+
 
 namespace vmime {
 
@@ -70,7 +72,7 @@ parameterizedHeaderField::~parameterizedHeaderField() {
 struct paramInfo {
 
 	bool extended;
-	std::vector <parameter::valueChunk> value;
+	std::map <unsigned int, parameter::valueChunk> sections;
 	size_t start;
 	size_t end;
 };
@@ -99,6 +101,7 @@ static void addParameterSection(
 	}
 
 	// Check for RFC-2231 multi-section parameters
+	unsigned int section = 0;
 	const size_t star = name.find_last_of('*');
 
 	if (star != string::npos) {
@@ -110,14 +113,29 @@ static void addParameterSection(
 		}
 
 		if (allDigits) {
+
+			const size_t digits = name.length() - (star + 1);
+
+			// Leading zeroes are not allowed (RFC-2231, section 3):
+			// ignore this section, as well as an invalid number
+			if (digits == 0 || (digits > 1 && name[star + 1] == '0') ||
+			    digits > static_cast <size_t>(std::numeric_limits <unsigned int>::digits10)) {
+
+				return;
+			}
+
+			for (size_t i = star + 1 ; i < name.length() ; ++i) {
+				section = section * 10 + (name[i] - '0');
+			}
+
 			name.erase(name.begin() + star, name.end());
 			extended = true;
 		}
-
-		// NOTE: we ignore section number, and we suppose that
-		// the sequence is correct (ie. the sections appear
-		// in order: param*0, param*1...)
 	}
+
+	parameter::valueChunk chunk;
+	chunk.encoded = encoded;
+	chunk.data = value;
 
 	// Add/replace/modify the parameter
 	const std::map <string, paramInfo>::iterator it = params.find(name);
@@ -126,37 +144,53 @@ static void addParameterSection(
 
 		paramInfo& info = (*it).second;
 
-		// An extended parameter replaces a normal one
+		// An extended parameter replaces a normal one, whatever their order
+		if (info.extended && !extended) {
+			return;
+		}
+
 		if (!info.extended) {
 
 			info.extended = extended;
-			info.value.clear();
+			info.sections.clear();
 			info.start = start;
 		}
 
-		// Append a new section for a multi-section parameter
-		parameter::valueChunk chunk;
-		chunk.encoded = encoded;
-		chunk.data = value;
-
-		info.value.push_back(chunk);
+		// Add a new section for a multi-section parameter (sections may
+		// appear in any order, and a duplicate section replaces the first one)
+		info.sections[section] = chunk;
 		info.end = end;
 
 	} else {
 
-		parameter::valueChunk chunk;
-		chunk.encoded = encoded;
-		chunk.data = value;
-
 		paramInfo info;
 		info.extended = extended;
-		info.value.push_back(chunk);
+		info.sections[section] = chunk;
 		info.start = start;
 		info.end = end;
 
 		// Insert a new parameter
 		params.insert(std::map <string, paramInfo>::value_type(name, info));
 	}
+}
+
+
+// Get the value of a parameter, from its sections taken in order and up to
+// the first gap in the sequence, which is not allowed (RFC-2231, section 3)
+static std::vector <parameter::valueChunk> getParameterValue(const paramInfo& info) {
+
+	std::vector <parameter::valueChunk> value;
+
+	for (const auto& section : info.sections) {
+
+		if (section.first != value.size()) {
+			break;
+		}
+
+		value.push_back(section.second);
+	}
+
+	return value;
 }
 
 #endif // VMIME_BUILDING_DOC
@@ -354,11 +388,17 @@ void parameterizedHeaderField::parseImpl(
 		     it != params.end() ; ++it) {
 
 			const paramInfo& info = (*it).second;
+			const std::vector <parameter::valueChunk> value = getParameterValue(info);
+
+			// Don't allow a multi-section parameter without its first section
+			if (value.empty()) {
+				continue;
+			}
 
 			// Append this parameter to the list
 			shared_ptr <parameter> param = make_shared <parameter>((*it).first);
 
-			param->parse(ctx, info.value);
+			param->parse(ctx, value);
 			param->setParsedBounds(info.start, info.end);
 
 			appendParameter(param);
@@ -390,9 +430,16 @@ void parameterizedHeaderField::parseParameters(
 
 	for (const auto& info : infos) {
 
+		const std::vector <parameter::valueChunk> value = getParameterValue(info.second);
+
+		// Don't allow a multi-section parameter without its first section
+		if (value.empty()) {
+			continue;
+		}
+
 		shared_ptr <parameter> param = make_shared <parameter>(info.first);
 
-		param->parse(ctx, info.second.value);
+		param->parse(ctx, value);
 
 		appendParameter(param);
 	}

@@ -29,6 +29,7 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testParse)
 		VMIME_TEST(testParseRFC2231)
+		VMIME_TEST(testParseRFC2231Sections)
 		VMIME_TEST(testGenerate)
 		VMIME_TEST(testGetGeneratedSize)
 		VMIME_TEST(testGenerateRFC2231)
@@ -264,6 +265,84 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 		VASSERT_EQ("6.3", "us-ascii", PARAM_CHARSET(p6, 0));
 		VASSERT_EQ("6.4", "en-us", PARAM_LANG(p6, 0));
 		VASSERT_EQ("6.5", "This is ***fun***", PARAM_BUFFER(p6, 0));
+	}
+
+	// Sections of a multi-section parameter are ordered by their number,
+	// not by their position in the field (RFC-2231, section 3)
+	void testParseRFC2231Sections() {
+
+		// Sections in reverse order
+		parameterizedHeaderField p1;
+		p1.parse("X; param1*1=\"ue1\"; param1*0=\"val\"");
+
+		VASSERT_EQ("1.1", 1, p1.getParameterCount());
+		VASSERT_EQ("1.2", "param1", PARAM_NAME(p1, 0));
+		VASSERT_EQ("1.3", "value1", PARAM_BUFFER(p1, 0));
+
+		// Charset and language are taken from the first section, wherever it is
+		parameterizedHeaderField p2;
+		p2.parse(
+			"X; param1*2=value1c;"
+			"   param1*0*=charset'language'value1a%20;"
+			"   param1*1*=value1b%20"
+		);
+
+		VASSERT_EQ("2.1", 1, p2.getParameterCount());
+		VASSERT_EQ("2.2", "charset", PARAM_CHARSET(p2, 0));
+		VASSERT_EQ("2.3", "language", PARAM_LANG(p2, 0));
+		VASSERT_EQ("2.4", "value1a value1b value1c", PARAM_BUFFER(p2, 0));
+
+		// Numeric order, not lexicographic order
+		parameterizedHeaderField p3;
+		p3.parse(
+			"X; p*10=k; p*9=j; p*8=i; p*7=h; p*6=g; p*5=f;"
+			"   p*4=e; p*3=d; p*2=c; p*1=b; p*0=a"
+		);
+
+		VASSERT_EQ("3.1", 1, p3.getParameterCount());
+		VASSERT_EQ("3.2", "abcdefghijk", PARAM_BUFFER(p3, 0));
+
+		// Gap in the sequence: the value stops before it
+		parameterizedHeaderField p4;
+		p4.parse("X; param1*0=a; param1*2=c; param1*3=d");
+
+		VASSERT_EQ("4.1", 1, p4.getParameterCount());
+		VASSERT_EQ("4.2", "a", PARAM_BUFFER(p4, 0));
+
+		// No first section: the parameter is ignored
+		parameterizedHeaderField p5;
+		p5.parse("X; param1*1=b; param1*2=c; param2=value2");
+
+		VASSERT_EQ("5.1", 1, p5.getParameterCount());
+		VASSERT_EQ("5.2", "param2", PARAM_NAME(p5, 0));
+
+		// Leading zeroes and overflowing numbers are not valid section numbers
+		parameterizedHeaderField p6;
+		p6.parse("X; param1*0=a; param1*01=b; param1*1=c; param1*00=d; param1*99999999999=e");
+
+		VASSERT_EQ("6.1", 1, p6.getParameterCount());
+		VASSERT_EQ("6.2", "ac", PARAM_BUFFER(p6, 0));
+
+		// A duplicate section replaces the first one
+		parameterizedHeaderField p7;
+		p7.parse("X; param1*0=a; param1*1=b; param1*1=c");
+
+		VASSERT_EQ("7.1", 1, p7.getParameterCount());
+		VASSERT_EQ("7.2", "ac", PARAM_BUFFER(p7, 0));
+
+		// A normal parameter after a multi-section one is ignored
+		parameterizedHeaderField p8;
+		p8.parse("X; param1*0=\"val\"; param1*1=\"ue1\"; param1=\"should be ignored\"");
+
+		VASSERT_EQ("8.1", 1, p8.getParameterCount());
+		VASSERT_EQ("8.2", "value1", PARAM_BUFFER(p8, 0));
+
+		// Likewise after an extended one
+		parameterizedHeaderField p9;
+		p9.parse("X; param1*=us-ascii''value1; param1=\"should be ignored\"");
+
+		VASSERT_EQ("9.1", 1, p9.getParameterCount());
+		VASSERT_EQ("9.2", "value1", PARAM_BUFFER(p9, 0));
 	}
 
 	void testGenerate() {
@@ -1239,6 +1318,17 @@ VMIME_TEST_SUITE_BEGIN(parameterTest)
 		VASSERT_EQ("3.6", "\xc3\xa9t\xc3\xa9-long.bin", PARAM_BUFFER(p3, 1));
 		VASSERT_EQ("3.7", vmime::charset(vmime::charsets::UTF_8), p3.getParameterAt(1)->getValue().getCharset());
 		VASSERT_EQ("3.8", "fr", PARAM_LANG(p3, 1));
+
+		// Sections out of order (RFC-2231)
+		parameterizedHeaderField p3b;
+		p3b.parseParameters(ctx, {
+			{ "param1*1*", "long.bin" },
+			{ "param1*0*", "UTF-8'fr'%C3%A9t%C3%A9-" },
+		});
+
+		VASSERT_EQ("3b.1", 1, p3b.getParameterCount());
+		VASSERT_EQ("3b.2", "\xc3\xa9t\xc3\xa9-long.bin", PARAM_BUFFER(p3b, 0));
+		VASSERT_EQ("3b.3", vmime::charset(vmime::charsets::UTF_8), p3b.getParameterAt(0)->getValue().getCharset());
 
 		// Encoded words (non-standard, but used by some mailers)
 		parameterizedHeaderField p4;
