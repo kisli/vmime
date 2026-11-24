@@ -82,7 +82,7 @@ protected:
 
 	bool waitForData(const bool read, const bool write, const int msecs);
 
-	static void throwSocketError(const int err);
+	[[noreturn]] static void throwSocketError(const int err);
 
 private:
 
