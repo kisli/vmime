@@ -109,18 +109,20 @@ public:
 	  */
 	numberMessageRange(const numberMessageRange& other);
 
+	using range_type = size_t;
+
 	/** Returns the number of the first message in the range.
 	  *
 	  * @return number of the first message
 	  */
-	size_t getFirst() const;
+	range_type getFirst() const;
 
 	/** Returns the number of the last message in the range, or -1
 	  * to designate the last message in the folder
 	  *
 	  * @return number of the last message
 	  */
-	size_t getLast() const;
+	range_type getLast() const;
 
 	void enumerate(messageSetEnumerator& en) const;
 
@@ -158,18 +160,20 @@ public:
 	  */
 	UIDMessageRange(const UIDMessageRange& other);
 
+	using range_type = message::uid;
+
 	/** Returns the UID of the first message in the range.
 	  *
 	  * @return UID of the first message
 	  */
-	message::uid getFirst() const;
+	range_type getFirst() const;
 
 	/** Returns the UID of the last message in the range, or '*'
 	  * to designate the last message in the folder
 	  *
 	  * @return UID of the last message
 	  */
-	message::uid getLast() const;
+	range_type getLast() const;
 
 	void enumerate(messageSetEnumerator& en) const;
 

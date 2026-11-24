@@ -108,7 +108,7 @@ vmime::string windowsFileSystemFactory::pathToStringImpl(
 
 	vmime::string native = "";
 
-	for (int i = 0 ; i < path.getSize() ; ++i) {
+	for (size_t i = 0 ; i < path.getSize() ; ++i) {
 
 		if (i > 0) {
 			native += "\\";
@@ -139,7 +139,7 @@ bool windowsFileSystemFactory::isValidPathComponent(
 	// If first component, check if component is a drive
 	if (firstComponent && (buffer.length() == 2) && (buffer[1] == ':')) {
 
-		char drive = tolower(buffer[0]);
+		char drive = tolower(static_cast <unsigned char>(buffer[0]));
 
 		if ((drive >= 'a') && (drive <= 'z')) {
 			return true;
@@ -197,7 +197,7 @@ bool windowsFileSystemFactory::isValidPathComponent(
 
 bool windowsFileSystemFactory::isValidPath(const vmime::utility::file::path& path) const {
 
-	for (int i = 0 ; i < path.getSize() ; ++i) {
+	for (size_t i = 0 ; i < path.getSize() ; ++i) {
 
 		if (!isValidPathComponent(path[i], (i == 0))) {
 			return false;

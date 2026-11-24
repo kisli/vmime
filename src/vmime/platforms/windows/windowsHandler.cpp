@@ -117,7 +117,7 @@ vmime::datetime windowsHandler::getCurrentLocalTime() const {
 	gmt.tm_isdst = -1;
 
 	// Calculate the difference (in seconds)
-	const int diff = (const int)(::mktime(&local) - ::mktime(&gmt));
+	const int diff = static_cast <int>(::mktime(&local) - ::mktime(&gmt));
 
 	// Return the date
 	return vmime::datetime(

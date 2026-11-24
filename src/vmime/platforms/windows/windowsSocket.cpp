@@ -92,7 +92,7 @@ void windowsSocket::connect(const vmime::string& address, const vmime::port_t po
 		m_tracer->traceSend(trace.str());
 	}
 
-	if (addr.sin_addr.s_addr == static_cast <int>(-1)) {
+	if (addr.sin_addr.s_addr == static_cast <uint32_t>(-1)) {
 
 		::hostent* hostInfo = ::gethostbyname(address.c_str());
 

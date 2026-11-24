@@ -777,7 +777,7 @@ public:
 
 		if (range.getFirst() == range.getLast()) {
 			m_oss << range.getFirst();
-		} else if (range.getLast() == size_t(-1)) {
+		} else if (range.getLast() == vmime::net::numberMessageRange::range_type(-1)) {
 			m_oss << range.getFirst() << ":*";
 		} else {
 			m_oss << range.getFirst() << ":" << range.getLast();
@@ -794,7 +794,7 @@ public:
 
 		if (range.getFirst() == range.getLast()) {
 			m_oss << range.getFirst();
-		} else if (range.getLast() == size_t(-1)) {
+		} else if (range.getLast() == vmime::net::UIDMessageRange::range_type(-1)) {
 			m_oss << range.getFirst() << ":*";
 		} else {
 			m_oss << range.getFirst() << ":" << range.getLast();
