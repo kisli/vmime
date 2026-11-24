@@ -55,6 +55,10 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 		VMIME_TEST(testRCPT)
 		VMIME_TEST(testRCPT_Encoded)
 		VMIME_TEST(testRCPT_UTF8)
+		VMIME_TEST(testRCPT_NoDSN)
+		VMIME_TEST(testRCPT_ORCPT_XText)
+		VMIME_TEST(testRCPT_ORCPT_UTF8)
+		VMIME_TEST(testRCPT_ORCPT_Length)
 		VMIME_TEST(testRSET)
 		VMIME_TEST(testDATA)
 		VMIME_TEST(testBDAT)
@@ -317,7 +321,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 			SMTPCommand::RCPT(vmime::mailbox("someone@vmime.org"), false, dsnAttrs);
 
 		VASSERT_NOT_NULL("Not null", cmd);
-		VASSERT_EQ("Text", "RCPT TO:<someone@vmime.org> NOTIFY=NEVER", cmd->getText());
+		VASSERT_EQ("Text", "RCPT TO:<someone@vmime.org> NOTIFY=NEVER ORCPT=rfc822;someone@vmime.org", cmd->getText());
 	}
 
 	void testRCPT_Encoded() {
@@ -329,7 +333,11 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 		);
 
 		VASSERT_NOT_NULL("Not null", cmd);
-		VASSERT_EQ("Text", "RCPT TO:<mailtest@xn--r8jz45g.xn--zckzah> NOTIFY=NEVER", cmd->getText());
+		VASSERT_EQ(
+			"Text",
+			"RCPT TO:<mailtest@xn--r8jz45g.xn--zckzah> NOTIFY=NEVER ORCPT=rfc822;mailtest@xn--r8jz45g.xn--zckzah",
+			cmd->getText()
+		);
 	}
 
 	void testRCPT_UTF8() {
@@ -341,7 +349,74 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 		);
 
 		VASSERT_NOT_NULL("Not null", cmd);
-		VASSERT_EQ("Text", "RCPT TO:<mailtest@例え.テスト> NOTIFY=NEVER", cmd->getText());
+		VASSERT_EQ("Text", "RCPT TO:<mailtest@例え.テスト> NOTIFY=NEVER ORCPT=utf-8;mailtest@例え.テスト", cmd->getText());
+	}
+
+	void testRCPT_NoDSN() {
+
+		vmime::shared_ptr <SMTPCommand> cmd =
+			SMTPCommand::RCPT(vmime::mailbox("someone@vmime.org"), false, vmime::null);
+
+		VASSERT_EQ("Text", "RCPT TO:<someone@vmime.org>", cmd->getText());
+	}
+
+	// The original recipient is encoded as xtext (RFC 3461, section 4.2)
+	void testRCPT_ORCPT_XText() {
+
+		auto dsnAttrs = vmime::make_shared <DSNAttributes>("", "", "");
+
+		vmime::shared_ptr <SMTPCommand> cmd =
+			SMTPCommand::RCPT(vmime::mailbox("some+one=x@vmime.org"), false, dsnAttrs);
+
+		VASSERT_EQ("Text", "RCPT TO:<some+one=x@vmime.org> ORCPT=rfc822;some+2Bone+3Dx@vmime.org", cmd->getText());
+	}
+
+	// An address with non-ASCII characters has the "utf-8" type, and ASCII
+	// SP, "\", "+" and "=" are encoded as "\x{HEX}" (RFC 6533, section 3)
+	void testRCPT_ORCPT_UTF8() {
+
+		auto dsnAttrs = vmime::make_shared <DSNAttributes>("", "", "");
+
+		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::RCPT(
+			vmime::mailbox(vmime::emailAddress("josé+test=x", "vmime.org")), true, dsnAttrs
+		);
+
+		VASSERT_EQ(
+			"Text",
+			"RCPT TO:<josé+test=x@vmime.org> ORCPT=utf-8;josé\\x{2B}test\\x{3D}x@vmime.org",
+			cmd->getText()
+		);
+	}
+
+	// Servers must accept an ORCPT parameter of up to 500 characters (RFC 3461,
+	// section 5.4): it is not sent if it is longer, as it is optional
+	void testRCPT_ORCPT_Length() {
+
+		auto dsnAttrs = vmime::make_shared <DSNAttributes>("", "", "");
+
+		// "ORCPT=rfc822;" + 159 * "+2B" + "@vmime.org": 500 characters
+		vmime::string encoded;
+
+		for (int i = 0 ; i < 159 ; ++i) {
+			encoded += "+2B";
+		}
+
+		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::RCPT(
+			vmime::mailbox(vmime::emailAddress(vmime::string(159, '+'), "vmime.org")), false, dsnAttrs
+		);
+
+		VASSERT_EQ(
+			"500",
+			"RCPT TO:<" + vmime::string(159, '+') + "@vmime.org> ORCPT=rfc822;" + encoded + "@vmime.org",
+			cmd->getText()
+		);
+
+		// 503 characters
+		cmd = SMTPCommand::RCPT(
+			vmime::mailbox(vmime::emailAddress(vmime::string(160, '+'), "vmime.org")), false, dsnAttrs
+		);
+
+		VASSERT_EQ("503", "RCPT TO:<" + vmime::string(160, '+') + "@vmime.org>", cmd->getText());
 	}
 
 	void testRSET() {

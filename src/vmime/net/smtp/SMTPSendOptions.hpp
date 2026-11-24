@@ -67,6 +67,10 @@ public:
 
 	/** Set DSN attributes to use when sending a message.
 	  *
+	  * The address of each recipient is then also sent as the original
+	  * recipient (ORCPT parameter, RFC 3461, section 4.2), so that it
+	  * appears in the "Original-Recipient" field of the notifications.
+	  *
 	  * @param dsnAttribs DSN attributes
 	  */
 	void setDSNAttributes(const shared_ptr <DSNAttributes>& dsnAttribs);

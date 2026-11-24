@@ -136,6 +136,55 @@ static void writeXText(std::ostream& cmd, const string& value) {
 }
 
 
+// Write the ORCPT parameter of a RCPT command: when a message is initially
+// submitted, this is the same address as in the command (RFC 3461, section 4.2)
+static void writeOriginalRecipient(std::ostream& cmd, const string& address) {
+
+	bool ascii = true;
+
+	for (const char c : address) {
+
+		if (static_cast <unsigned char>(c) >= 128) {
+			ascii = false;
+		}
+	}
+
+	utility::details::classicOStringStream param;
+	param << dsn::ORCPT << "=";
+
+	if (ascii) {
+
+		param << "rfc822;";
+		writeXText(param, address);
+
+	} else {
+
+		// The "rfc822" type only allows US-ASCII addresses: use the "utf-8" type,
+		// in the utf-8-addr-unitext form (RFC 6533, section 3)
+		param << "utf-8;";
+
+		for (const char c : address) {
+
+			const unsigned char k = static_cast <unsigned char>(c);
+
+			if (k <= ' ' || k == 127 || c == '\\' || c == '+' || c == '=') {
+				param << "\\x{" << "0123456789ABCDEF"[k / 16] << "0123456789ABCDEF"[k % 16] << "}";
+			} else {
+				param << c;
+			}
+		}
+	}
+
+	// Servers must accept an ORCPT parameter of up to 500 characters (RFC 3461,
+	// sections 4.2 and 5.4): as it is optional, it is not sent if it is longer
+	const string str = param.str();
+
+	if (str.length() <= 500) {
+		cmd << " " << str;
+	}
+}
+
+
 // static
 shared_ptr <SMTPCommand> SMTPCommand::MAIL(
 	const mailbox& mbox, const bool utf8,
@@ -193,13 +242,18 @@ shared_ptr <SMTPCommand> SMTPCommand::RCPT(
 	const shared_ptr <const DSNAttributes>& dsnAttrs
 ) {
 
+	utility::details::classicOStringStream address;
+	writeAddress(address, mbox, utf8);
+
 	utility::details::classicOStringStream cmd;
-	cmd << "RCPT TO:<";
-	writeAddress(cmd, mbox, utf8);
-	cmd << ">";
+	cmd << "RCPT TO:<" << address.str() << ">";
 
 	if (dsnAttrs && !dsnAttrs->getNotificationConditions().empty()) {
 		cmd << " " << dsn::NOTIFY << "=" << dsnAttrs->getNotificationConditions();
+	}
+
+	if (dsnAttrs) {
+		writeOriginalRecipient(cmd, address.str());
 	}
 
 	return createCommand(cmd.str());
