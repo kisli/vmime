@@ -702,7 +702,7 @@ shared_ptr <IMAPCommand> IMAPUtils::buildFetchCommand(
 		std::vector <string> headerFields;
 
 		if (options.has(fetchAttributes::CONTENT_INFO)) {
-			headerFields.push_back("CONTENT_TYPE");
+			headerFields.push_back("CONTENT-TYPE");
 		}
 
 		if (options.has(fetchAttributes::IMPORTANCE)) {

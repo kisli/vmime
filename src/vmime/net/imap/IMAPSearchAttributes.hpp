@@ -85,7 +85,16 @@ public:
 	static IMAPSearchTokenPtr FROM(const string&);
 	static IMAPSearchTokenPtr HEADER(const char* fieldName);
 	static IMAPSearchTokenPtr HEADER(const char* filedName, const string& fieldContents);
-	static IMAPSearchTokenPtr KEYWORD(vmime::net::message::Flags);
+
+	/** Search for messages which have the specified flag set, using the
+	  * matching search key (SEEN for FLAG_SEEN, ANSWERED for FLAG_REPLIED...).
+	  *
+	  * @param flag one of FLAG_SEEN, FLAG_REPLIED, FLAG_MARKED, FLAG_DRAFT
+	  * or FLAG_DELETED
+	  * @throw exceptions::operation_not_supported for any other flag
+	  */
+	static IMAPSearchTokenPtr KEYWORD(vmime::net::message::Flags flag);
+
 	static IMAPSearchTokenPtr LARGER(uint32_t);
 	static IMAPSearchTokenPtr MESSAGESET(const vmime::net::messageSet&);
 	static IMAPSearchTokenPtr MESSAGESET(const vmime::net::messageSet&&);
@@ -110,7 +119,17 @@ public:
 	static IMAPSearchTokenPtr UNDELETED();
 	static IMAPSearchTokenPtr UNDRAFT();
 	static IMAPSearchTokenPtr UNFLAGGED();
-	static IMAPSearchTokenPtr UNKEYWORD(vmime::net::message::Flags);
+
+	/** Search for messages which do not have the specified flag set, using
+	  * the matching search key (UNSEEN for FLAG_SEEN, UNANSWERED for
+	  * FLAG_REPLIED...).
+	  *
+	  * @param flag one of FLAG_SEEN, FLAG_REPLIED, FLAG_MARKED, FLAG_DRAFT
+	  * or FLAG_DELETED
+	  * @throw exceptions::operation_not_supported for any other flag
+	  */
+	static IMAPSearchTokenPtr UNKEYWORD(vmime::net::message::Flags flag);
+
 	static IMAPSearchTokenPtr UNSEEN();
 };
 
