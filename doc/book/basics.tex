@@ -88,15 +88,15 @@ the {\vcode static\_cast()}, {\vcode dynamic\_cast()} and {\vcode const\_cast()}
 equivalents on {\vcode vmime::shared\_ptr} and {\vcode vmime::weak\_ptr} objects:
 
 \begin{lstlisting}[caption={Casting smart pointers}]
-class myBase : public vmime::object { }
-class myObject : public myBase { }
+class myBase : public vmime::object { };
+class myObject : public myBase { };
 
 vmime::shared_ptr <myObject> obj = vmime::make_shared <myObject>();
 
-// Implicit downcast
+// Implicit upcast
 vmime::shared_ptr <myBase> base = obj;
 
-// Explicit upcast
+// Explicit downcast
 vmime::shared_ptr <myObject> obj2 = vmime::dynamicCast <myObject>(base);
 \end{lstlisting}
 
@@ -605,18 +605,18 @@ if (!*fileStream) {
    // handle error
 }
 
-vmime::shared_ptr <utility::stream> dataStream =
+vmime::shared_ptr <vmime::utility::inputStream> dataStream =
    vmime::make_shared <vmime::utility::inputStreamPointerAdapter>(fileStream);
 
    // NOTE: 'fileStream' will be automatically deleted
    // when 'dataStream' is deleted
 
 // Create a new content handler
-vmime::shared_ptr <contentHandler> data =
+vmime::shared_ptr <vmime::contentHandler> data =
    vmime::make_shared <vmime::streamContentHandler>(dataStream, 0);
 
 // Now create the attachment
-ref <vmime::attachment> att = vmime::make_shared <vmime::defaultAttachment>(
+vmime::shared_ptr <vmime::attachment> att = vmime::make_shared <vmime::defaultAttachment>(
    /* attachment data */ data,
    /* content type */    vmime::mediaType("image/jpeg"),
    /* description */     vmime::text("Holiday photo"),

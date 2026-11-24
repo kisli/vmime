@@ -294,7 +294,7 @@ previous example to attach a file to the message:
 vmime::shared_ptr <vmime::fileAttachment> att =
    vmime::make_shared <vmime::fileAttachment>(
       /* full path to file */  "/home/vincent/paris.jpg",
-      /* content type */       vmime::mediaType("image/jpeg),
+      /* content type */       vmime::mediaType("image/jpeg"),
       /* description */        vmime::text("My holidays in Paris")
    );
 
@@ -425,7 +425,7 @@ if (vmime::attachmentHelper::isBodyPartAnAttachment(part)) {
 
    // The body part contains an attachment, get it
    vmime::shared_ptr <const vmime::attachment> attach =
-      attachmentHelper::getBodyPartAttachment(part);
+      vmime::attachmentHelper::getBodyPartAttachment(part);
 
    // Extract attachment data to standard output
    vmime::utility::outputStreamAdapter out(std::cout);
@@ -438,8 +438,8 @@ You can also easily extract all attachments from a message:
 \begin{lstlisting}[caption={Extracting all attachments from a message}]
 vmime::shared_ptr <vmime::message> msg;  // suppose we have a message
 
-const std::vector <ref <const attachment> > atts =
-   attachmentHelper::findAttachmentsInMessage(msg);
+const std::vector <vmime::shared_ptr <const vmime::attachment> > atts =
+   vmime::attachmentHelper::findAttachmentsInMessage(msg);
 \end{lstlisting}
 
 Finally, the {\vcode attachmentHelper} object can be used to add an
@@ -456,7 +456,7 @@ vmime::shared_ptr <vmime::message> msg;  // suppose we have a message
 vmime::shared_ptr <vmime::fileAttachment> att =
    vmime::make_shared <vmime::fileAttachment>(
       /* full path to file */  "/home/vincent/paris.jpg",
-      /* content type */       vmime::mediaType("image/jpeg),
+      /* content type */       vmime::mediaType("image/jpeg"),
       /* description */        vmime::text("My holidays in Paris")
    );
 
