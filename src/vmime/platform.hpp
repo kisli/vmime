@@ -138,15 +138,20 @@ public:
 	};
 
 
+	/** Install a custom platform handler. Threads that already obtained the
+	  * previous handler keep using it until their next call to getHandler().
+	  */
 	template <class TYPE>
 	static void setHandler() {
-		sm_handler = vmime::make_shared <TYPE>();
+		installHandler(vmime::make_shared <TYPE>());
 	}
 
 	static shared_ptr <handler> getDefaultHandler();
 	static shared_ptr <handler> getHandler();
 
 private:
+
+	static void installHandler(shared_ptr <handler> h);
 
 	static shared_ptr <handler> sm_handler;
 };

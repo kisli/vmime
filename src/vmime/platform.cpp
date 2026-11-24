@@ -27,11 +27,22 @@
 #include "vmime/platforms/posix/posixHandler.hpp"
 #include "vmime/platforms/windows/windowsHandler.hpp"
 
+#include <mutex>
+
 
 namespace vmime {
 
 
 shared_ptr <platform::handler> platform::sm_handler;
+
+
+// Protects 'sm_handler'. Created on first use, as getHandler() may be
+// called during static initialization (eg. by OpenSSLInitializer).
+static std::mutex& getHandlerMutex() {
+
+	static std::mutex mutex;
+	return mutex;
+}
 
 
 platform::handler::~handler() {
@@ -54,18 +65,27 @@ shared_ptr <platform::handler> platform::getDefaultHandler() {
 
 
 // static
+void platform::installHandler(shared_ptr <handler> h) {
+
+	std::lock_guard <std::mutex> lock(getHandlerMutex());
+
+	// The previous handler ends up in 'h', so if it is not used anymore,
+	// it is destroyed after the mutex has been released
+	sm_handler.swap(h);
+}
+
+
+// static
 shared_ptr <platform::handler> platform::getHandler() {
 
-	// If a custom platform handler is installed, return it
-	if (sm_handler) {
-		return sm_handler;
+	std::lock_guard <std::mutex> lock(getHandlerMutex());
+
+	// If no handler is installed yet, use the default handler for this platform
+	if (!sm_handler) {
+		sm_handler = getDefaultHandler();
 	}
 
-	// Else, use the default handler for this platform
-	shared_ptr <handler> defaultHandler = getDefaultHandler();
-
-	if (defaultHandler) {
-		sm_handler = defaultHandler;
+	if (sm_handler) {
 		return sm_handler;
 	}
 
