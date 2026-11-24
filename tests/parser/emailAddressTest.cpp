@@ -35,10 +35,14 @@ VMIME_TEST_SUITE_BEGIN(emailAddressTest)
 		VMIME_TEST(testParseTooLong)
 		VMIME_TEST(testGenerateASCII)
 		VMIME_TEST(testGenerateEAI)
+		VMIME_TEST(testGenerateEAIULabels)
 		VMIME_TEST(testParseSpecialChars)
 		VMIME_TEST(testParseCommentInLocalPart)
 		VMIME_TEST(testParseCommentInDomainPart)
 		VMIME_TEST(testParseRFC2047EncodedLocalPart)
+		VMIME_TEST(testParseInvalidALabel)
+		VMIME_TEST(testGenerateIDNAMapping)
+		VMIME_TEST(testGenerateInvalidIDN)
 		VMIME_TEST(testGenerateSpecialChars)
 		VMIME_TEST(testGenerateLongLocalPart)
 		VMIME_TEST(testGenerateASCIILocalPart)
@@ -200,16 +204,35 @@ VMIME_TEST_SUITE_BEGIN(emailAddressTest)
 		VASSERT_EQ("1/local", "Pelé", eml1.getLocalName());
 		VASSERT_EQ("1/domain", "example.com", eml1.getDomainName());
 
+		const bool idna = vmime::utility::idna::isSupported();
+
 		vmime::emailAddress eml2("=?utf-8?B?55Sy5paQ?=@xn--5rtw95l.xn--wgv71a");
 		VASSERT_EQ("2/local", "甲斐", eml2.getLocalName());
-		VASSERT_EQ("2/domain", "黒川.日本", eml2.getDomainName());
+		VASSERT_EQ("2/domain", idna ? "黒川.日本" : "xn--5rtw95l.xn--wgv71a", eml2.getDomainName());
 
 		vmime::emailAddress eml3("=?utf-8?B?55Sy5paQ?=@xn--5rtw95l.com");
 		VASSERT_EQ("3/local", "甲斐", eml3.getLocalName());
-		VASSERT_EQ("3/domain", "黒川.com", eml3.getDomainName());
+		VASSERT_EQ("3/domain", idna ? "黒川.com" : "xn--5rtw95l.com", eml3.getDomainName());
+	}
+
+	// Labels which look like A-labels, but are not, are not decoded
+	// (RFC 5891, section 5.3): the address is not modified
+	void testParseInvalidALabel() {
+
+		// "paypal": an A-label never decodes to an ASCII string
+		vmime::emailAddress eml1("local@xn--paypal-.example");
+		VASSERT_EQ("1/domain", "xn--paypal-.example", eml1.getDomainName());
+		VASSERT_EQ("1/generate", "local@xn--paypal-.example", eml1.generate());
+
+		// Invalid Punycode
+		vmime::emailAddress eml2("local@xn--zzzzzzzzz.example");
+		VASSERT_EQ("2/domain", "xn--zzzzzzzzz.example", eml2.getDomainName());
+		VASSERT_EQ("2/generate", "local@xn--zzzzzzzzz.example", eml2.generate());
 	}
 
 	void testGenerateASCII() {
+
+		const bool idna = vmime::utility::idna::isSupported();
 
 		VASSERT_EQ(
 			"email 1", "local@domain",
@@ -220,16 +243,44 @@ VMIME_TEST_SUITE_BEGIN(emailAddressTest)
 			vmime::emailAddress("Pelé", "example.com").generate()
 		);
 		VASSERT_EQ(
-			"email 3", "=?utf-8?B?55Sy5paQ?=@xn--5rtw95l.xn--wgv71a",
+			"email 3", idna ? "=?utf-8?B?55Sy5paQ?=@xn--5rtw95l.xn--wgv71a" : "=?utf-8?B?55Sy5paQ?=@黒川.日本",
 			vmime::emailAddress("甲斐", "黒川.日本").generate()
 		);
 		VASSERT_EQ(
-			"email 4", "mailtest@xn--r8jz45g.xn--zckzah",
+			"email 4", idna ? "mailtest@xn--r8jz45g.xn--zckzah" : "mailtest@例え.テスト",
 			vmime::emailAddress("mailtest", "例え.テスト").generate()
 		);
 		VASSERT_EQ(
-			"email 5", "mailtest@xn--mgbh0fb.xn--kgbechtv",
+			"email 5", idna ? "mailtest@xn--mgbh0fb.xn--kgbechtv" : "mailtest@مثال.إختبار",
 			vmime::emailAddress("mailtest", "مثال.إختبار").generate()
+		);
+	}
+
+	// The domain name is mapped before it is converted to A-labels (UTS #46)
+	void testGenerateIDNAMapping() {
+
+		if (!vmime::utility::idna::isSupported()) {
+			return;
+		}
+
+		VASSERT_EQ(
+			"Uppercase", "local@xn--bcher-kva.example",
+			vmime::emailAddress("local", "BÜCHER.example").generate()
+		);
+		VASSERT_EQ(
+			"NFD", "local@xn--bcher-kva.example",
+			vmime::emailAddress("local", "bu\xcc\x88" "cher.example").generate()
+		);
+	}
+
+	// A domain name which is not a valid internationalized domain name
+	// cannot be written as A-labels: it is written as is
+	void testGenerateInvalidIDN() {
+
+		// U+2024 ONE DOT LEADER is not allowed in domain names
+		VASSERT_EQ(
+			"1", "local@paypal\xe2\x80\xa4" "com.example",
+			vmime::emailAddress("local", "paypal\xe2\x80\xa4" "com.example").generate()
 		);
 	}
 
@@ -255,6 +306,47 @@ VMIME_TEST_SUITE_BEGIN(emailAddressTest)
 		VASSERT_EQ(
 			"email 4", "чебурашка@ящик-с-апельсинами.рф",
 			vmime::emailAddress("чебурашка", "ящик-с-апельсинами.рф").generate()
+		);
+	}
+
+	// Non-ASCII domain names are written as U-labels (RFC 6532, section 3.2),
+	// with the same mapping as for A-labels
+	void testGenerateEAIULabels() {
+
+		vmime::generationContext ctx(vmime::generationContext::getDefaultContext());
+		ctx.setInternationalizedEmailSupport(true);
+
+		vmime::generationContext::switcher <vmime::generationContext> contextSwitcher(ctx);
+
+		const bool idna = vmime::utility::idna::isSupported();
+
+		VASSERT_EQ(
+			"Uppercase", idna ? "josé@bücher.example" : "josé@BÜCHER.example",
+			vmime::emailAddress("josé", "BÜCHER.example").generate()
+		);
+		VASSERT_EQ(
+			"NFD", idna ? "josé@bücher.example" : "josé@bu\xcc\x88" "cher.example",
+			vmime::emailAddress("josé", "bu\xcc\x88" "cher.example").generate()
+		);
+		VASSERT_EQ(
+			"Ideographic full stop", idna ? "josé@例え.テスト" : "josé@例え。テスト",
+			vmime::emailAddress("josé", "例え。テスト").generate()
+		);
+
+		// ASCII domain names, including A-labels, are not modified
+		VASSERT_EQ(
+			"ASCII", "josé@Example.COM",
+			vmime::emailAddress("josé", "Example.COM").generate()
+		);
+		VASSERT_EQ(
+			"A-labels", "josé@xn--bcher-kva.example",
+			vmime::emailAddress("josé", "xn--bcher-kva.example").generate()
+		);
+
+		// Not a valid internationalized domain name: written as is
+		VASSERT_EQ(
+			"Invalid", "josé@paypal\xe2\x80\xa4" "com.example",
+			vmime::emailAddress("josé", "paypal\xe2\x80\xa4" "com.example").generate()
 		);
 	}
 

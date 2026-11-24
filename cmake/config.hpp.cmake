@@ -60,6 +60,9 @@ typedef unsigned @VMIME_64BIT_TYPE@ vmime_uint64;
 #cmakedefine01 VMIME_TLS_SUPPORT_LIB_IS_GNUTLS
 #cmakedefine01 VMIME_TLS_SUPPORT_LIB_IS_OPENSSL
 #define VMIME_HAVE_GNUTLS_PRIORITY_FUNCS @VMIME_HAVE_GNUTLS_PRIORITY_FUNCS@
+// -- Internationalized domain names (IDNA) support
+#cmakedefine01 VMIME_IDNA_LIB_IS_LIBIDN2
+#cmakedefine01 VMIME_IDNA_LIB_IS_ICU
 // -- Messaging support
 #cmakedefine01 VMIME_HAVE_MESSAGING_FEATURES
 // -- Messaging protocols

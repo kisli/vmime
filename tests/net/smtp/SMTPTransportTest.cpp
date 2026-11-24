@@ -1108,7 +1108,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 		}
 
 		// Non-ASCII domain only: it is written as IDNA A-labels, so SMTPUTF8
-		// is not needed (RFC 6531, section 3.2)
+		// is not needed (RFC 6531, section 3.2), unless IDNA is not supported
 		{
 			vmime::shared_ptr <vmime::net::transport> tr = createUTF8Transport <true>();
 
@@ -1120,8 +1120,32 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 			const std::vector <vmime::string>& lines = UTF8SMTPTestSocket <true>::getEnvelopeLines();
 
 			VASSERT_EQ("Count", 2, lines.size());
-			VASSERT_EQ("MAIL", "MAIL FROM:<expediteur@test.vmime.org>", lines[0]);
-			VASSERT_EQ("RCPT", "RCPT TO:<recipient@xn--tst-bma.vmime.org>", lines[1]);
+
+			if (vmime::utility::idna::isSupported()) {
+				VASSERT_EQ("MAIL", "MAIL FROM:<expediteur@test.vmime.org>", lines[0]);
+				VASSERT_EQ("RCPT", "RCPT TO:<recipient@xn--tst-bma.vmime.org>", lines[1]);
+			} else {
+				VASSERT_EQ("MAIL", "MAIL FROM:<expediteur@test.vmime.org> SMTPUTF8 BODY=8BITMIME", lines[0]);
+				VASSERT_EQ("RCPT", "RCPT TO:<recipient@tést.vmime.org>", lines[1]);
+			}
+		}
+
+		// Not a valid internationalized domain name, which cannot be written
+		// as A-labels: SMTPUTF8 is needed. A label must not start with a
+		// combining mark (RFC 5891, section 5.4).
+		{
+			vmime::shared_ptr <vmime::net::transport> tr = createUTF8Transport <true>();
+
+			vmime::mailboxList recips;
+			recips.appendMailbox(createUTF8Mailbox("recipient", "\xcc\x81" "test.vmime.org"));
+
+			sendUTF8TestData(tr, vmime::mailbox("expediteur@test.vmime.org"), recips);
+
+			const std::vector <vmime::string>& lines = UTF8SMTPTestSocket <true>::getEnvelopeLines();
+
+			VASSERT_EQ("Count", 2, lines.size());
+			VASSERT_EQ("MAIL", "MAIL FROM:<expediteur@test.vmime.org> SMTPUTF8 BODY=8BITMIME", lines[0]);
+			VASSERT_EQ("RCPT", "RCPT TO:<recipient@\xcc\x81" "test.vmime.org>", lines[1]);
 		}
 	}
 
@@ -1164,20 +1188,51 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 			VASSERT_TRUE("Still connected", tr->isConnected());
 		}
 
-		// Non-ASCII domain only: it is written as IDNA A-labels
+		// Non-ASCII domain only: it is written as IDNA A-labels, unless IDNA
+		// is not supported
 		{
 			vmime::shared_ptr <vmime::net::transport> tr = createUTF8Transport <false>();
 
 			vmime::mailboxList recips;
 			recips.appendMailbox(createUTF8Mailbox("recipient", "tést.vmime.org"));
 
-			sendUTF8TestData(tr, vmime::mailbox("expediteur@test.vmime.org"), recips);
+			if (vmime::utility::idna::isSupported()) {
 
-			const std::vector <vmime::string>& lines = UTF8SMTPTestSocket <false>::getEnvelopeLines();
+				sendUTF8TestData(tr, vmime::mailbox("expediteur@test.vmime.org"), recips);
 
-			VASSERT_EQ("Count", 2, lines.size());
-			VASSERT_EQ("MAIL", "MAIL FROM:<expediteur@test.vmime.org>", lines[0]);
-			VASSERT_EQ("RCPT", "RCPT TO:<recipient@xn--tst-bma.vmime.org>", lines[1]);
+				const std::vector <vmime::string>& lines = UTF8SMTPTestSocket <false>::getEnvelopeLines();
+
+				VASSERT_EQ("Count", 2, lines.size());
+				VASSERT_EQ("MAIL", "MAIL FROM:<expediteur@test.vmime.org>", lines[0]);
+				VASSERT_EQ("RCPT", "RCPT TO:<recipient@xn--tst-bma.vmime.org>", lines[1]);
+
+			} else {
+
+				VASSERT_THROW(
+					"Send",
+					sendUTF8TestData(tr, vmime::mailbox("expediteur@test.vmime.org"), recips),
+					vmime::net::smtp::SMTPUTF8ExtensionNotSupportedException
+				);
+
+				VASSERT_TRUE("No command sent", UTF8SMTPTestSocket <false>::getEnvelopeLines().empty());
+			}
+		}
+
+		// Not a valid internationalized domain name, which cannot be written
+		// as A-labels
+		{
+			vmime::shared_ptr <vmime::net::transport> tr = createUTF8Transport <false>();
+
+			vmime::mailboxList recips;
+			recips.appendMailbox(createUTF8Mailbox("recipient", "\xcc\x81" "test.vmime.org"));
+
+			VASSERT_THROW(
+				"Send",
+				sendUTF8TestData(tr, vmime::mailbox("expediteur@test.vmime.org"), recips),
+				vmime::net::smtp::SMTPUTF8ExtensionNotSupportedException
+			);
+
+			VASSERT_TRUE("No command sent", UTF8SMTPTestSocket <false>::getEnvelopeLines().empty());
 		}
 	}
 

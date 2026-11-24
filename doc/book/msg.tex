@@ -283,6 +283,46 @@ LF which is not part of a fold (RFC 5322, section 2.2.3). Text, like the
 subject or display names, is encoded instead.
 
 
+\subsection{Internationalized domain names} % --------------------------------
+
+Domain names can contain non-ASCII characters, as specified by
+IDNA2008\footnote{See RFC 5890: \url{https://www.rfc-editor.org/rfc/rfc5890}}.
+In header fields, they are usually written in ASCII, as A-labels
+({\vcode xn-{}-...}). VMime gives the domain names of email addresses in
+UTF-8: when parsing, {\vcode xn-{}-bcher-kva.example} gives
+{\vcode bücher.example}. Only valid A-labels are decoded: a label which only
+looks like one is kept as is, so that it cannot be displayed as another
+domain name.
+
+When generating, non-ASCII domain names are written as A-labels, unless
+internationalized email is enabled in the generation context. They are first
+mapped as specified by UTS \#46\footnote{See \url{https://www.unicode.org/reports/tr46/}}
+(non-transitional processing), so that {\vcode BÜCHER.example} also gives
+{\vcode xn-{}-bcher-kva.example}. When internationalized email is enabled,
+they are written in UTF-8, as U-labels, with the same mapping:
+{\vcode BÜCHER.example} gives {\vcode bücher.example}. A domain name which is
+not valid cannot be converted: it is written as is, in UTF-8.
+
+This needs the GNU Libidn2 library or ICU (see the {\vcode VMIME\_IDNA\_LIB}
+build option): without them, domain names are not converted. You can check it
+with {\vcode vmime::utility::idna::isSupported()}, and convert domain names
+yourself:
+
+\begin{lstlisting}
+vmime::string ascii;
+
+if (vmime::utility::idna::toASCII("bücher.example", ascii)) {
+   // ascii is "xn--bcher-kva.example"
+} else {
+   // Not a valid domain name, or no IDNA support
+}
+
+// "bücher.example"
+vmime::string domain =
+   vmime::utility::idna::toUnicode("xn--bcher-kva.example");
+\end{lstlisting}
+
+
 \subsection{Adding an attachment} % ------------------------------------------
 
 Dealing with attachments is quite simple. Add the following code to the

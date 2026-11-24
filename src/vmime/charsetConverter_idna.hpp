@@ -31,7 +31,15 @@
 namespace vmime {
 
 
-/** A charset converter which can convert to and from Punycode (for IDNA).
+/** A pseudo charset converter for internationalized domain names (IDNA2008).
+  *
+  * To "idna", it converts a domain name to its ASCII form, in which non-ASCII
+  * labels are written as A-labels. It throws exceptions::charset_conv_error
+  * if the domain name is not valid, or if internationalized domain names are
+  * not supported (see utility::idna::toASCII()).
+  *
+  * From "idna", it converts the valid A-labels of a domain name to U-labels,
+  * and leaves other labels unchanged (see utility::idna::toUnicode()).
   */
 class charsetConverter_idna : public charsetConverter {
 

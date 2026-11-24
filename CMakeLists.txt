@@ -136,9 +136,38 @@ SET_PROPERTY(
 	PROPERTY STRINGS win iconv icu
 )
 
+
+##############################################################################
+# IDNA library (1/2)
+
+INCLUDE(cmake/FindLibIDN2.cmake)
+
+# Internationalized domain names are only supported with one of these
+# libraries: libidn2 is preferred, then ICU if it is used for charsets
+IF(LIBIDN2_FOUND)
+	SET(VMIME_IDNA_LIB_DETECTED "libidn2")
+ELSEIF(VMIME_CHARSETCONV_LIB STREQUAL "icu")
+	SET(VMIME_IDNA_LIB_DETECTED "icu")
+ELSE()
+	SET(VMIME_IDNA_LIB_DETECTED "none")
+ENDIF()
+
+SET(
+	VMIME_IDNA_LIB
+	"${VMIME_IDNA_LIB_DETECTED}"
+	CACHE
+	STRING
+	"Library to use for internationalized domain names (libidn2, icu or none)"
+)
+SET_PROPERTY(
+	CACHE
+	VMIME_IDNA_LIB
+	PROPERTY STRINGS libidn2 icu none
+)
+
 # ICU 75+ requires C++17; only upgrade when ICU is actually selected,
 # not merely installed
-IF(VMIME_CHARSETCONV_LIB STREQUAL "icu")
+IF(VMIME_CHARSETCONV_LIB STREQUAL "icu" OR VMIME_IDNA_LIB STREQUAL "icu")
 	SET(CMAKE_CXX_STANDARD 17)
 ENDIF()
 
@@ -901,6 +930,97 @@ ELSE()
 ENDIF()
 
 MESSAGE(STATUS "Charset conversion library: ${VMIME_CHARSETCONV_LIB}")
+
+
+##############################################################################
+# IDNA library (2/2)
+
+IF(VMIME_IDNA_LIB STREQUAL "libidn2")
+
+	IF(NOT LIBIDN2_FOUND)
+		MESSAGE(
+			FATAL_ERROR
+			"libidn2 was selected for internationalized domain names, but it was not found: "
+			"install it, or set VMIME_IDNA_LIB to \"icu\" or \"none\""
+		)
+	ENDIF()
+
+	INCLUDE_DIRECTORIES(
+		${INCLUDE_DIRECTORIES}
+		${LIBIDN2_INCLUDE_DIR}
+	)
+
+	IF(VMIME_BUILD_SHARED_LIBRARY)
+		TARGET_LINK_LIBRARIES(
+			${VMIME_LIBRARY_NAME}
+			${TARGET_LINK_LIBRARIES}
+			${LIBIDN2_LIBRARIES}
+		)
+	ENDIF()
+
+	IF(VMIME_BUILD_STATIC_LIBRARY)
+		TARGET_LINK_LIBRARIES(
+			${VMIME_LIBRARY_NAME}-static
+			${TARGET_LINK_LIBRARIES}
+			${LIBIDN2_LIBRARIES}
+		)
+	ENDIF()
+
+	SET(VMIME_PKGCONFIG_REQUIRES "${VMIME_PKGCONFIG_REQUIRES} libidn2")
+
+	SET(VMIME_IDNA_LIB_IS_LIBIDN2 "ON")
+	SET(VMIME_IDNA_LIB_IS_ICU "OFF")
+
+ELSEIF(VMIME_IDNA_LIB STREQUAL "icu")
+
+	IF(NOT ICU_LIBRARIES)
+		MESSAGE(FATAL_ERROR "ICU was selected for internationalized domain names, but it was not found")
+	ENDIF()
+
+	# Already done if ICU is also used for charset conversion
+	IF(NOT VMIME_CHARSETCONV_LIB STREQUAL "icu")
+
+		INCLUDE_DIRECTORIES(
+			${INCLUDE_DIRECTORIES}
+			${ICU_INCLUDE_DIRS}
+		)
+
+		IF(VMIME_BUILD_SHARED_LIBRARY)
+			TARGET_LINK_LIBRARIES(
+				${VMIME_LIBRARY_NAME}
+				${TARGET_LINK_LIBRARIES}
+				${ICU_LIBRARIES}
+			)
+		ENDIF()
+
+		IF(VMIME_BUILD_STATIC_LIBRARY)
+			TARGET_LINK_LIBRARIES(
+				${VMIME_LIBRARY_NAME}-static
+				${TARGET_LINK_LIBRARIES}
+				${ICU_LIBRARIES}
+			)
+		ENDIF()
+
+		SET(VMIME_PKGCONFIG_LIBS "${VMIME_PKGCONFIG_LIBS} ${ICU_LIBRARIES}")
+		SET(VMIME_PKGCONFIG_CFLAGS "${VMIME_PKGCONFIG_CFLAGS} -I${ICU_INCLUDE_DIRS}")
+
+	ENDIF()
+
+	SET(VMIME_IDNA_LIB_IS_LIBIDN2 "OFF")
+	SET(VMIME_IDNA_LIB_IS_ICU "ON")
+
+ELSEIF(VMIME_IDNA_LIB STREQUAL "none")
+
+	SET(VMIME_IDNA_LIB_IS_LIBIDN2 "OFF")
+	SET(VMIME_IDNA_LIB_IS_ICU "OFF")
+
+ELSE()
+
+	MESSAGE(FATAL_ERROR "VMIME_IDNA_LIB must be \"libidn2\", \"icu\" or \"none\"")
+
+ENDIF()
+
+MESSAGE(STATUS "IDNA library: ${VMIME_IDNA_LIB}")
 
 
 ##############################################################################

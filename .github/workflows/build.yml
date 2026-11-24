@@ -15,17 +15,22 @@ jobs:
       matrix:
         tls: [ gnutls, openssl ]
         charset: [ icu, iconv ]
+        include:
+          - charset: icu
+            idna: icu
+          - charset: iconv
+            idna: libidn2
     steps:
     - name: install-deps
       run: |
         sudo apt-get update
-        sudo apt-get install -y --no-install-recommends binutils cmake doxygen g++ libcppunit-dev libgnutls28-dev libgsasl-dev libgtk-3-dev libicu-dev libssl-dev make pkg-config
+        sudo apt-get install -y --no-install-recommends binutils cmake doxygen g++ libcppunit-dev libgnutls28-dev libgsasl-dev libgtk-3-dev libicu-dev libidn2-dev libssl-dev make pkg-config
     - name: clone-vmime
       uses: actions/checkout@v4
     - name: buildall
       run: |
         set -ex
-        cmake . -DVMIME_SENDMAIL_PATH:STRING="/usr/sbin/sendmail" -DVMIME_HAVE_TLS_SUPPORT:BOOL=ON -DVMIME_TLS_SUPPORT_LIB:STRING=${{ matrix.tls }} -DVMIME_CHARSETCONV_LIB:STRING=${{ matrix.charset }} -DVMIME_BUILD_TESTS=ON -DVMIME_BUILD_SAMPLES=ON
+        cmake . -DVMIME_SENDMAIL_PATH:STRING="/usr/sbin/sendmail" -DVMIME_HAVE_TLS_SUPPORT:BOOL=ON -DVMIME_TLS_SUPPORT_LIB:STRING=${{ matrix.tls }} -DVMIME_CHARSETCONV_LIB:STRING=${{ matrix.charset }} -DVMIME_IDNA_LIB:STRING=${{ matrix.idna }} -DVMIME_BUILD_TESTS=ON -DVMIME_BUILD_SAMPLES=ON
         make "-j$(nproc)"
         sudo make install
         make test
@@ -54,7 +59,7 @@ jobs:
     - name: install-deps
       run: |
         sudo apt-get update
-        sudo apt-get install -y --no-install-recommends cmake g++ libcppunit-dev libgnutls28-dev libgsasl-dev libicu-dev make pkg-config
+        sudo apt-get install -y --no-install-recommends cmake g++ libcppunit-dev libgnutls28-dev libgsasl-dev libicu-dev libidn2-dev make pkg-config
     - name: clone-vmime
       uses: actions/checkout@v4
     - name: buildall
@@ -64,7 +69,7 @@ jobs:
         UBSAN_OPTIONS: print_stacktrace=1
       run: |
         set -ex
-        cmake . -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer" -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined" -DCMAKE_SHARED_LINKER_FLAGS="-fsanitize=address,undefined" -DVMIME_SENDMAIL_PATH:STRING="/usr/sbin/sendmail" -DVMIME_HAVE_TLS_SUPPORT:BOOL=ON -DVMIME_TLS_SUPPORT_LIB:STRING=gnutls -DVMIME_CHARSETCONV_LIB:STRING=icu -DVMIME_BUILD_TESTS=ON -DVMIME_BUILD_SAMPLES=OFF
+        cmake . -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer" -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined" -DCMAKE_SHARED_LINKER_FLAGS="-fsanitize=address,undefined" -DVMIME_SENDMAIL_PATH:STRING="/usr/sbin/sendmail" -DVMIME_HAVE_TLS_SUPPORT:BOOL=ON -DVMIME_TLS_SUPPORT_LIB:STRING=gnutls -DVMIME_CHARSETCONV_LIB:STRING=icu -DVMIME_IDNA_LIB:STRING=libidn2 -DVMIME_BUILD_TESTS=ON -DVMIME_BUILD_SAMPLES=OFF
         make "-j$(nproc)"
         ctest --output-on-failure
 
@@ -85,7 +90,7 @@ jobs:
       run: |
         set -x
         export PATH="/usr/bin:$(cygpath "${SYSTEMROOT}")/system32"
-        cmake . -DVMIME_SENDMAIL_PATH:STRING="/usr/sbin/sendmail" -DVMIME_HAVE_TLS_SUPPORT:BOOL=ON -DVMIME_TLS_SUPPORT_LIB:STRING=openssl -DVMIME_CHARSETCONV_LIB:STRING=iconv -DVMIME_BUILD_TESTS=ON -DVMIME_BUILD_SAMPLES=ON
+        cmake . -DVMIME_SENDMAIL_PATH:STRING="/usr/sbin/sendmail" -DVMIME_HAVE_TLS_SUPPORT:BOOL=ON -DVMIME_TLS_SUPPORT_LIB:STRING=openssl -DVMIME_CHARSETCONV_LIB:STRING=iconv -DVMIME_IDNA_LIB:STRING=none -DVMIME_BUILD_TESTS=ON -DVMIME_BUILD_SAMPLES=ON
         make "-j$(nproc)"
         make install
         make test
@@ -108,7 +113,7 @@ jobs:
       shell: msys2 {0}
       run: |
         set -ex
-        cmake . -G Ninja -DVMIME_HAVE_MESSAGING_PROTO_SENDMAIL:BOOL=OFF -DVMIME_HAVE_TLS_SUPPORT:BOOL=ON -DVMIME_TLS_SUPPORT_LIB:STRING=openssl -DVMIME_CHARSETCONV_LIB:STRING=icu -DVMIME_BUILD_TESTS=ON -DVMIME_BUILD_SAMPLES=ON
+        cmake . -G Ninja -DVMIME_HAVE_MESSAGING_PROTO_SENDMAIL:BOOL=OFF -DVMIME_HAVE_TLS_SUPPORT:BOOL=ON -DVMIME_TLS_SUPPORT_LIB:STRING=openssl -DVMIME_CHARSETCONV_LIB:STRING=icu -DVMIME_IDNA_LIB:STRING=icu -DVMIME_BUILD_TESTS=ON -DVMIME_BUILD_SAMPLES=ON
         cmake --build .
         ctest --output-on-failure
 

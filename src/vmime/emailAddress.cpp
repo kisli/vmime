@@ -27,6 +27,7 @@
 #include "vmime/platform.hpp"
 
 #include "vmime/parserHelpers.hpp"
+#include "vmime/utility/idna.hpp"
 #include "vmime/utility/outputStreamAdapter.hpp"
 #include "vmime/utility/outputStreamStringAdapter.hpp"
 #include "vmime/utility/stringUtils.hpp"
@@ -34,106 +35,6 @@
 
 
 namespace vmime {
-
-
-/** Decode an IDNA-encoded domain name ("xn--5rtw95l.xn--wgv71a")
-  * to a fully decoded domain name in UTF-8 ("黒川.日本").
-  *
-  * @param idnaDomain domain name encoded with IDNA
-  * @return decoded domain name in UTF-8
-  */
-static string domainNameFromIDNA(const string& idnaDomain) {
-
-	utility::details::classicOStringStream domainName;
-	size_t p = 0;
-
-	for (size_t n = idnaDomain.find('.', p) ;
-	     (n = idnaDomain.find('.', p)) != string::npos ; p = n + 1) {
-
-		const string encodedPart(idnaDomain.begin() + p, idnaDomain.begin() + n);
-
-		if (encodedPart.length() > 4 &&
-		    encodedPart[0] == 'x' && encodedPart[1] == 'n' &&
-		    encodedPart[2] == '-' && encodedPart[3] == '-') {
-
-			string decodedPart;
-			charset::convert(
-				encodedPart, decodedPart,
-				vmime::charsets::IDNA, vmime::charsets::UTF_8
-			);
-
-			domainName << decodedPart << '.';
-
-		} else {
-
-			domainName << encodedPart << '.';  // not encoded
-		}
-	}
-
-	if (p < idnaDomain.length()) {
-
-		const string encodedPart(idnaDomain.begin() + p, idnaDomain.end());
-
-		if (encodedPart.length() > 4 &&
-		    encodedPart[0] == 'x' && encodedPart[1] == 'n' &&
-		    encodedPart[2] == '-' && encodedPart[3] == '-') {
-
-			string decodedPart;
-			charset::convert(
-				encodedPart, decodedPart,
-				vmime::charsets::IDNA, vmime::charsets::UTF_8
-			);
-
-			domainName << decodedPart;
-
-		} else {
-
-			domainName << encodedPart;  // not encoded
-		}
-	}
-
-	return domainName.str();
-}
-
-
-/** Encode an UTF-8 domain name ("黒川.日本") to an IDNA-encoded
-  * domain name ("xn--5rtw95l.xn--wgv71a").
-  *
-  * @param domainName domain name in UTF-8
-  * @return domain name encoded with IDNA
-  */
-static string domainNameToIDNA(const string& domainName) {
-
-	utility::details::classicOStringStream idnaDomain;
-	size_t p = 0;
-
-	for (size_t n = domainName.find('.', p) ;
-	     (n = domainName.find('.', p)) != string::npos ; p = n + 1) {
-
-		string idnaPart;
-		charset::convert(
-			string(domainName.begin() + p, domainName.begin() + n), idnaPart,
-			vmime::charsets::UTF_8, vmime::charsets::IDNA
-		);
-
-		idnaDomain << idnaPart << '.';
-	}
-
-	if (p < domainName.length()) {
-
-		string idnaPart;
-		charset::convert(
-			string(domainName.begin() + p, domainName.end()), idnaPart,
-			vmime::charsets::UTF_8, vmime::charsets::IDNA
-		);
-
-		idnaDomain << idnaPart;
-	}
-
-	return idnaDomain.str();
-}
-
-
 
 
 emailAddress::emailAddress() {
@@ -553,7 +454,8 @@ void emailAddress::parseImpl(
 			m_localName = word(localPart, vmime::charsets::UTF_8);
 		}
 
-		m_domainName = word(domainNameFromIDNA(domainPart), vmime::charsets::UTF_8);
+		// Only valid A-labels are decoded: other labels are kept as is
+		m_domainName = word(utility::idna::toUnicode(domainPart), vmime::charsets::UTF_8);
 	}
 
 	setParsedBounds(position, p - pend);
@@ -584,8 +486,18 @@ void emailAddress::generateImpl(
 		vmime::utility::outputStreamStringAdapter os(localPart);
 		localPartWord.generate(ctx, os, 0, NULL, text::FORCE_NO_ENCODING | text::QUOTE_IF_NEEDED, NULL);
 
-		// Domain part
+		// Domain part as U-labels (RFC 6532, section 3.2): mapped and checked
+		// as for A-labels, then decoded. It is written as is if it is ASCII
+		// (which includes A-labels), or if it cannot be converted.
 		domainPart = m_domainName.getConvertedText(vmime::charsets::UTF_8);
+
+		string asciiDomain;
+
+		if (!utility::stringUtils::is7bit(domainPart) &&
+		    utility::idna::toASCII(domainPart, asciiDomain)) {
+
+			domainPart = utility::idna::toUnicode(asciiDomain);
+		}
 
 	} else {
 
@@ -622,8 +534,14 @@ void emailAddress::generateImpl(
 			   << "?=";
 		}
 
-		// Domain part as IDNA
-		domainPart = domainNameToIDNA(m_domainName.getConvertedText(vmime::charsets::UTF_8));
+		// Domain part as IDNA A-labels. If it cannot be converted (not a valid
+		// internationalized domain name, or no IDNA support), it is written
+		// as is: in UTF-8, it is still the domain name which was asked for.
+		const string domainUTF8 = m_domainName.getConvertedText(vmime::charsets::UTF_8);
+
+		if (!utility::idna::toASCII(domainUTF8, domainPart)) {
+			domainPart = domainUTF8;
+		}
 	}
 
 

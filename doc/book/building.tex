@@ -20,6 +20,9 @@ support for templates (for example, \href{http://gcc.gnu.org/}{GNU GCC}) ;
 \item either \href{http://www.icu-project.org}{ICU library} or an usable
 {\vcode iconv()} implementation (see
 \href{http://www.gnu.org/software/libiconv/}{libiconv of GNU Project}) ;
+\item either the \href{https://www.gnu.org/software/libidn/\#libidn2}{GNU Libidn2
+library} or ICU if you want support for internationalized domain names
+(IDNA2008) ;
 \item the \href{http://www.gnu.org/software/gsasl/}{GNU SASL Library} if you
 want more SASL\footnote{Simple Authentication and Security Layer} mechanisms
 (SCRAM, GSSAPI...) than the ones implemented by VMime (PLAIN, LOGIN,
@@ -172,6 +175,12 @@ VMIME\_CHARSETCONV\_LIB &
 Set to either "iconv", "icu" or "win" (Windows only) to force using iconv, ICU
 or Windows built-in API for converting between charsets (default value depends
 on which libraries are available on your system). \\
+\hline
+VMIME\_IDNA\_LIB &
+Set to either "libidn2", "icu" or "none" to force using GNU Libidn2 or ICU
+for internationalized domain names, or to build without support for them
+(default is "libidn2" if it is available, then "icu" if ICU is used for
+converting between charsets, or "none"). \\
 \hline
 CMAKE\_BUILD\_TYPE &
 Set the build type: either "Release" or "Debug". In Debug build, optimizations

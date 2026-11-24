@@ -45,6 +45,8 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 		VMIME_TEST(testMAIL_Encoded)
 		VMIME_TEST(testMAIL_Encoded_InternationalizedDefaultContext)
 		VMIME_TEST(testMAIL_UTF8)
+		VMIME_TEST(testMAIL_UTF8_ULabels)
+		VMIME_TEST(testMAIL_UTF8_QuotedLocalPart)
 		VMIME_TEST(testMAIL_SIZE)
 		VMIME_TEST(testMAIL_SIZE_UTF8)
 		VMIME_TEST(testMAIL_8BIT)
@@ -55,6 +57,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 		VMIME_TEST(testRCPT)
 		VMIME_TEST(testRCPT_Encoded)
 		VMIME_TEST(testRCPT_UTF8)
+		VMIME_TEST(testRCPT_UTF8_ULabels)
 		VMIME_TEST(testRCPT_NoDSN)
 		VMIME_TEST(testRCPT_ORCPT_XText)
 		VMIME_TEST(testRCPT_ORCPT_UTF8)
@@ -177,6 +180,12 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 	void testMAIL_Encoded() {
 
+		// Without IDNA support, SMTPTransport only sends such an address
+		// with SMTPUTF8
+		if (!vmime::utility::idna::isSupported()) {
+			return;
+		}
+
 		auto dsnAttrs = vmime::make_shared <DSNAttributes>("", "FULL", "dsn-unique-id");
 
 		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::MAIL(
@@ -189,6 +198,10 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 	// Without SMTPUTF8, the address is ASCII whatever the default context says
 	void testMAIL_Encoded_InternationalizedDefaultContext() {
+
+		if (!vmime::utility::idna::isSupported()) {
+			return;
+		}
 
 		vmime::generationContext& defaultCtx = vmime::generationContext::getDefaultContext();
 		const bool internationalized = defaultCtx.getInternationalizedEmailSupport();
@@ -223,6 +236,32 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "MAIL FROM:<mailtest@例え.テスト> RET=FULL ENVID=dsn-unique-id SMTPUTF8 BODY=8BITMIME", cmd->getText());
+	}
+
+	// With SMTPUTF8, the domain part is written as U-labels (RFC 6531, section 3.3)
+	void testMAIL_UTF8_ULabels() {
+
+		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::MAIL(
+			vmime::mailbox(vmime::emailAddress("mailtest", "BÜCHER.example")), true, nullptr
+		);
+
+		VASSERT_EQ(
+			"Text",
+			vmime::utility::idna::isSupported()
+				? "MAIL FROM:<mailtest@bücher.example> SMTPUTF8 BODY=8BITMIME"
+				: "MAIL FROM:<mailtest@BÜCHER.example> SMTPUTF8 BODY=8BITMIME",
+			cmd->getText()
+		);
+	}
+
+	// The local part is quoted if needed (RFC 5321, section 4.1.2), also with SMTPUTF8
+	void testMAIL_UTF8_QuotedLocalPart() {
+
+		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::MAIL(
+			vmime::mailbox(vmime::emailAddress("jo sé", "vmime.org")), true, nullptr
+		);
+
+		VASSERT_EQ("Text", "MAIL FROM:<\"jo sé\"@vmime.org> SMTPUTF8 BODY=8BITMIME", cmd->getText());
 	}
 
 	void testMAIL_SIZE() {
@@ -326,6 +365,12 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 	void testRCPT_Encoded() {
 
+		// Without IDNA support, SMTPTransport only sends such an address
+		// with SMTPUTF8
+		if (!vmime::utility::idna::isSupported()) {
+			return;
+		}
+
 		auto dsnAttrs = vmime::make_shared <DSNAttributes>("NEVER", "", "");
 
 		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::RCPT(
@@ -350,6 +395,24 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandTest)
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "RCPT TO:<mailtest@例え.テスト> NOTIFY=NEVER ORCPT=utf-8;mailtest@例え.テスト", cmd->getText());
+	}
+
+	// The original recipient is the same address as in the command, with U-labels
+	void testRCPT_UTF8_ULabels() {
+
+		auto dsnAttrs = vmime::make_shared <DSNAttributes>("NEVER", "", "");
+
+		vmime::shared_ptr <SMTPCommand> cmd = SMTPCommand::RCPT(
+			vmime::mailbox(vmime::emailAddress("mailtest", "BÜCHER.example")), true, dsnAttrs
+		);
+
+		VASSERT_EQ(
+			"Text",
+			vmime::utility::idna::isSupported()
+				? "RCPT TO:<mailtest@bücher.example> NOTIFY=NEVER ORCPT=utf-8;mailtest@bücher.example"
+				: "RCPT TO:<mailtest@BÜCHER.example> NOTIFY=NEVER ORCPT=utf-8;mailtest@BÜCHER.example",
+			cmd->getText()
+		);
 	}
 
 	void testRCPT_NoDSN() {
