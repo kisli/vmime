@@ -576,6 +576,12 @@ void IMAPConnection::startTLS() {
 
 	try {
 
+		// The STARTTLS command can only be issued if the server advertises
+		// the STARTTLS capability (RFC 2595, section 3)
+		if (!hasCapability("STARTTLS")) {
+			throw exceptions::command_error("STARTTLS", "", "not supported by the server");
+		}
+
 		IMAPCommand::STARTTLS()->send(dynamicCast <IMAPConnection>(shared_from_this()));
 
 		scoped_ptr <IMAPParser::response> resp(readResponse());

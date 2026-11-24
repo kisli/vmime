@@ -172,6 +172,8 @@ int failingPOP3TestSocket::sm_quitCount = 0;
 
 /** POP3 test server which supports SASL authentication with the PLAIN
   * mechanism, and basic authentication with the USER and PASS commands.
+  * It advertises the STLS capability if it has been enabled with reset(),
+  * but does not support the STLS command.
   *
   * The lines sent by the client during authentication are recorded.
   */
@@ -184,8 +186,9 @@ public:
 
 	}
 
-	static void reset() {
+	static void reset(const bool stls = false) {
 
+		sm_stls = stls;
 		sm_authLines.clear();
 	}
 
@@ -226,6 +229,11 @@ public:
 
 			localSend("+OK Capability list follows\r\n");
 			localSend("SASL PLAIN\r\n");
+
+			if (sm_stls) {
+				localSend("STLS\r\n");
+			}
+
 			localSend(".\r\n");
 
 		} else if (verb == "AUTH") {
@@ -265,10 +273,12 @@ private:
 
 	bool m_authenticating;
 
+	static bool sm_stls;
 	static std::vector <vmime::string> sm_authLines;
 };
 
 
+bool SASLPOP3TestSocket::sm_stls = false;
 std::vector <vmime::string> SASLPOP3TestSocket::sm_authLines;
 
 
@@ -296,6 +306,11 @@ VMIME_TEST_SUITE_BEGIN(POP3StoreTest)
 		VMIME_TEST(testSASLInitialResponse_TooLong)
 		VMIME_TEST(testPlaintextAuthNotAllowed)
 		VMIME_TEST(testPlaintextAuthAllowed_USERPASS)
+#if VMIME_HAVE_TLS_SUPPORT
+		VMIME_TEST(testSTLS_NotAdvertised)
+		VMIME_TEST(testSTLS_NotAdvertised_Required)
+		VMIME_TEST(testSTLS_Refused)
+#endif // VMIME_HAVE_TLS_SUPPORT
 	VMIME_TEST_LIST_END
 
 
@@ -685,5 +700,90 @@ VMIME_TEST_SUITE_BEGIN(POP3StoreTest)
 		VASSERT_EQ("USER", "USER user", lines[0]);
 		VASSERT_EQ("PASS", "PASS pass", lines[1]);
 	}
+
+#if VMIME_HAVE_TLS_SUPPORT
+
+	// Connect with STARTTLS enabled, to a server which advertises the STLS
+	// capability or not (the server does not support the STLS command)
+	static void connectSTLS(
+		const bool stls,
+		const bool tlsRequired,
+		const vmime::shared_ptr <vmime::net::tracerFactory>& tracerFactory
+	) {
+
+		SASLPOP3TestSocket::reset(stls);
+
+		vmime::shared_ptr <vmime::net::session> sess = vmime::net::session::create();
+		sess->getProperties()["store.pop3.options.sasl.fallback"] = false;
+		sess->getProperties()["store.pop3.auth.allow-plaintext"] = true;
+		sess->getProperties()["store.pop3.connection.tls"] = true;
+		sess->getProperties()["store.pop3.connection.tls.required"] = tlsRequired;
+
+		vmime::shared_ptr <vmime::net::store> store =
+			sess->getStore(vmime::utility::url("pop3://user:pass@localhost"));
+
+		store->setSocketFactory(vmime::make_shared <testSocketFactory <SASLPOP3TestSocket> >());
+		store->setTimeoutHandlerFactory(vmime::make_shared <testTimeoutHandlerFactory>());
+		store->setTracerFactory(tracerFactory);
+
+		store->connect();
+		store->disconnect();
+	}
+
+	static bool isCommandTraced(const std::vector <vmime::string>& lines, const vmime::string& cmd) {
+
+		return std::find(lines.begin(), lines.end(), cmd) != lines.end();
+	}
+
+	// The STLS command must not be sent if the server does not advertise
+	// the STLS capability (RFC 2595, section 4)
+	void testSTLS_NotAdvertised() {
+
+		vmime::shared_ptr <recordingTracerFactory> tracerFactory =
+			vmime::make_shared <recordingTracerFactory>();
+
+		VASSERT_NO_THROW(
+			"Connect",
+			connectSTLS(/* stls */ false, /* tlsRequired */ false, tracerFactory)
+		);
+
+		const std::vector <vmime::string>& lines = tracerFactory->getTracer()->getSentLines();
+
+		VASSERT_FALSE("STLS", isCommandTraced(lines, "STLS"));
+	}
+
+	void testSTLS_NotAdvertised_Required() {
+
+		vmime::shared_ptr <recordingTracerFactory> tracerFactory =
+			vmime::make_shared <recordingTracerFactory>();
+
+		VASSERT_THROW(
+			"Connect",
+			connectSTLS(/* stls */ false, /* tlsRequired */ true, tracerFactory),
+			vmime::exceptions::command_error
+		);
+
+		const std::vector <vmime::string>& lines = tracerFactory->getTracer()->getSentLines();
+
+		VASSERT_FALSE("STLS", isCommandTraced(lines, "STLS"));
+		VASSERT_EQ("AUTH", 0, SASLPOP3TestSocket::getAuthLines().size());
+	}
+
+	void testSTLS_Refused() {
+
+		vmime::shared_ptr <recordingTracerFactory> tracerFactory =
+			vmime::make_shared <recordingTracerFactory>();
+
+		VASSERT_NO_THROW(
+			"Connect",
+			connectSTLS(/* stls */ true, /* tlsRequired */ false, tracerFactory)
+		);
+
+		const std::vector <vmime::string>& lines = tracerFactory->getTracer()->getSentLines();
+
+		VASSERT_TRUE("STLS", isCommandTraced(lines, "STLS"));
+	}
+
+#endif // VMIME_HAVE_TLS_SUPPORT
 
 VMIME_TEST_SUITE_END

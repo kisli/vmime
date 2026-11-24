@@ -652,6 +652,12 @@ void POP3Connection::startTLS() {
 
 	try {
 
+		// The STLS command can only be issued if the server advertises
+		// the STLS capability (RFC 2595, section 4)
+		if (!hasCapability("STLS")) {
+			throw exceptions::command_error("STLS", "", "not supported by the server");
+		}
+
 		POP3Command::STLS()->send(dynamicCast <POP3Connection>(shared_from_this()));
 
 		shared_ptr <POP3Response> response =
@@ -707,6 +713,29 @@ std::vector <string> POP3Connection::getCapabilities() {
 	}
 
 	return m_capabilities;
+}
+
+
+bool POP3Connection::hasCapability(const string& capa) {
+
+	const std::vector <string> capabilities = getCapabilities();
+	const string normCapa = utility::stringUtils::toUpper(capa);
+
+	for (size_t i = 0, n = capabilities.size() ; i < n ; ++i) {
+
+		// Each line contains a capability name, which may be
+		// followed by parameters (eg. "SASL PLAIN")
+		utility::details::classicIStringStream iss(capabilities[i]);
+
+		string name;
+		iss >> name;
+
+		if (utility::stringUtils::toUpper(name) == normCapa) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 
