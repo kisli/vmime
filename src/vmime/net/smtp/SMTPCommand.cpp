@@ -100,23 +100,19 @@ shared_ptr <SMTPCommand> SMTPCommand::STARTTLS() {
 }
 
 
-// Write the address of a mailbox in a MAIL or RCPT command
+// Write the address of a mailbox in a MAIL or RCPT command, as in header
+// fields. With SMTPUTF8, it is written in UTF-8, with the domain part as
+// U-labels (RFC 6531, section 3.3). Without it, the domain part must be
+// written as IDNA A-labels, even if Internationalized Email is enabled in
+// the default context.
 static void writeAddress(std::ostream& cmd, const mailbox& mbox, const bool utf8) {
 
-	if (utf8) {
+	generationContext ctx(generationContext::getDefaultContext());
+	ctx.setInternationalizedEmailSupport(utf8);
+	ctx.setMaxLineLength(lineLengthLimits::infinite);
 
-		cmd << mbox.getEmail().toText().getConvertedText(vmime::charsets::UTF_8);
-
-	} else {
-
-		// Without SMTPUTF8, the domain part must be written as IDNA A-labels,
-		// even if Internationalized Email is enabled in the default context
-		generationContext ctx(generationContext::getDefaultContext());
-		ctx.setInternationalizedEmailSupport(false);
-
-		vmime::utility::outputStreamAdapter cmd2(cmd);
-		mbox.getEmail().generate(ctx, cmd2);
-	}
+	vmime::utility::outputStreamAdapter cmd2(cmd);
+	mbox.getEmail().generate(ctx, cmd2);
 }
 
 

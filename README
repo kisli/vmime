@@ -42,6 +42,9 @@ Build options are passed to CMake as -DNAME=VALUE. The most useful ones:
 
 * VMIME_CHARSETCONV_LIB: library for charset conversion, "icu", "iconv"
   or "win" (Windows only); ICU is used by default when it is available
+* VMIME_IDNA_LIB: library for internationalized domain names (IDNA2008),
+  "libidn2", "icu" or "none"; libidn2 is used by default when it is available,
+  then ICU if it is used for charset conversion
 * VMIME_TLS_SUPPORT_LIB: library for SSL/TLS, "gnutls" (default) or "openssl"
 * VMIME_HAVE_TLS_SUPPORT: set to OFF to disable SSL/TLS support
 * VMIME_HAVE_GSASL: set to OFF to build without GNU SASL; only the SASL

@@ -626,14 +626,17 @@ tr->setProperty("auth.password", "password");
 If an address has a non-ASCII local part (for example, \emph{josé@example.org}),
 the SMTP service sends the message with the SMTPUTF8
 extension\footnote{See RFC 6531: \url{https://www.rfc-editor.org/rfc/rfc6531}},
-and the header fields of the message are written in UTF-8 (RFC 6532). As the
+and the header fields of the message are written in UTF-8 (RFC 6532), with
+non-ASCII domain names as U-labels, also in the envelope. As the
 message then contains 8-bit data, it is also declared with {\vcode BODY=8BITMIME}
 (RFC 6152). All the addresses are taken into account: those of the envelope,
 but also those of the header fields which are not part of the envelope, like
 \emph{Reply-To}.
 Otherwise, the extension is not used, even if the server supports it:
 non-ASCII text in header fields is encoded as usual, and non-ASCII domain
-names are written as IDNA A-labels ({\vcode xn-{}-...}).
+names are written as IDNA A-labels ({\vcode xn-{}-...}). A domain name which
+cannot be written as A-labels also needs SMTPUTF8: it is not a valid
+internationalized domain name, or VMime was built without IDNA support.
 
 If an address needs SMTPUTF8 but the server does not support it, the message
 cannot be sent (RFC 6531, section 3.2), and an exception is thrown before any

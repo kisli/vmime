@@ -25,17 +25,9 @@
 
 #include "vmime/exception.hpp"
 
-#include "vmime/utility/stringUtils.hpp"
+#include "vmime/utility/idna.hpp"
 #include "vmime/utility/streamUtils.hpp"
 #include "vmime/utility/outputStreamStringAdapter.hpp"
-
-
-extern "C" {
-
-#include "contrib/punycode/punycode.h"
-#include "contrib/punycode/punycode.c"
-
-}
 
 #include "contrib/utf8/utf8.h"
 
@@ -89,134 +81,32 @@ void charsetConverter_idna::convert(const string& in, string& out, status* st) {
 
 	if (m_dest == "idna") {
 
-		if (utility::stringUtils::is7bit(in)) {
-
-			if (st) {
-				st->inputBytesRead = in.length();
-				st->outputBytesWritten = in.length();
-			}
-
-			// No need to encode as Punycode
-			out = in;
-			return;
-		}
-
 		string inUTF8;
-		charset::convert(in, inUTF8, m_source, vmime::charsets::UTF_8);
+		charset::convert(in, inUTF8, m_source, vmime::charsets::UTF_8, m_options);
 
-		const char* ch = inUTF8.c_str();
-		const char* end = inUTF8.c_str() + inUTF8.length();
-
-		std::vector <punycode_uint> unichars;
-		unichars.reserve(inUTF8.length());
-
-		while (ch < end) {
-
-			// Not utf8::unchecked::next(), which reads past the end of
-			// the buffer if the input ends with a truncated sequence
-			utf8::utfchar32_t uc = 0;
-
-			if (utf8::internal::validate_next(ch, end, uc) == utf8::internal::UTF8_OK) {
-
-				unichars.push_back(uc);
-				continue;
-			}
-
-			if (!m_options.silentlyReplaceInvalidSequences) {
-				throw exceptions::illegal_byte_sequence_for_charset();
-			}
-
-			// Skip a byte and output the replacement string (in UTF-8, like
-			// the input). Do not only skip the byte: this may turn an invalid
-			// domain name into another, valid one.
-			const char* rch = m_options.invalidSequence.c_str();
-			const char* rend = rch + m_options.invalidSequence.length();
-
-			while (rch < rend &&
-			       utf8::internal::validate_next(rch, rend, uc) == utf8::internal::UTF8_OK) {
-
-				unichars.push_back(uc);
-			}
-
-			++ch;
+		// Invalid sequences are not replaced here: the result would not be
+		// a valid domain name either
+		if (!utf8::is_valid(inUTF8.begin(), inUTF8.end())) {
+			throw exceptions::illegal_byte_sequence_for_charset();
 		}
 
-		if (st) {
-			st->inputBytesRead = in.length();
-		}
+		if (!utility::idna::toASCII(inUTF8, out)) {
 
-		punycode_uint inputLen = static_cast <punycode_uint>(unichars.size());
-
-		std::vector <char> output(inUTF8.length() * 2);
-		punycode_uint outputLen = static_cast <punycode_uint>(output.size());
-
-		// May be empty if the input only contains invalid sequences
-		const punycode_status status = punycode_encode(
-			inputLen, unichars.data(), /* case_flags */ NULL, &outputLen, &output[0]
-		);
-
-		if (status == punycode_success) {
-
-			out = string("xn--") + string(output.begin(), output.begin() + outputLen);
-
-			if (st) {
-				st->outputBytesWritten = out.length();
-			}
-
-		} else {
-
-			// TODO
+			throw exceptions::charset_conv_error(
+				utility::idna::isSupported()
+					? "Not a valid internationalized domain name."
+					: "Internationalized domain names are not supported."
+			);
 		}
 
 	} else if (m_source == "idna") {
 
-		if (in.length() < 5 || in.substr(0, 4) != "xn--") {
+		charset::convert(utility::idna::toUnicode(in), out, vmime::charsets::UTF_8, m_dest, m_options);
+	}
 
-			if (st) {
-				st->inputBytesRead = in.length();
-				st->outputBytesWritten = in.length();
-			}
-
-			// Not an IDNA string
-			out = in;
-			return;
-		}
-
-		punycode_uint inputLen = static_cast <punycode_uint>(in.length() - 4);
-
-		std::vector <punycode_uint> output(in.length() - 4);
-		punycode_uint outputLen = static_cast <punycode_uint>(output.size());
-
-		const punycode_status status = punycode_decode(
-		inputLen, &in[4], &outputLen, &output[0], /* case_flags */ NULL
-		);
-
-		if (st) {
-			st->inputBytesRead = in.length();
-		}
-
-		if (status == punycode_success) {
-
-			std::vector <char> outUTF8Bytes(outputLen * 4);
-			char* p = &outUTF8Bytes[0];
-
-			for (std::vector <punycode_uint>::const_iterator it = output.begin() ;
-			     it != output.begin() + outputLen ; ++it) {
-
-				p = utf8::unchecked::append(*it, p);
-			}
-
-			string outUTF8(&outUTF8Bytes[0], p);
-			charset::convert(outUTF8, out, vmime::charsets::UTF_8, m_dest);
-
-			if (st) {
-				st->outputBytesWritten = out.length();
-			}
-
-		} else {
-
-			// TODO
-		}
+	if (st) {
+		st->inputBytesRead = in.length();
+		st->outputBytesWritten = out.length();
 	}
 }
 

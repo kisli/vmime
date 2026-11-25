@@ -40,9 +40,10 @@ VMIME_TEST_SUITE_BEGIN(charsetTest)
 
 		// IDNA
 		VMIME_TEST(testEncodeIDNA)
-		VMIME_TEST(testEncodeIDNAReplaceInvalidSequence)
-		VMIME_TEST(testEncodeIDNAStopOnInvalidSequence)
+		VMIME_TEST(testEncodeIDNAInvalidSequence)
+		VMIME_TEST(testEncodeIDNAInvalidDomain)
 		VMIME_TEST(testDecodeIDNA)
+		VMIME_TEST(testDecodeIDNAInvalidALabel)
 
 		VMIME_TEST(testUTF7Support)
 
@@ -179,6 +180,20 @@ VMIME_TEST_SUITE_BEGIN(charsetTest)
 
 	void testEncodeIDNA() {
 
+		// ASCII domain names are not modified
+		VASSERT_EQ("ASCII", "vmime.org", convertHelper("vmime.org", "utf-8", "idna"));
+
+		if (!vmime::utility::idna::isSupported()) {
+
+			VASSERT_THROW(
+				"No IDNA support",
+				convertHelper("español", "utf-8", "idna"),
+				vmime::exceptions::charset_conv_error
+			);
+
+			return;
+		}
+
 		VASSERT_EQ("1", "xn--espaol-zwa", convertHelper("español", "utf-8", "idna"));
 
 		// Tests from ICANN
@@ -187,54 +202,64 @@ VMIME_TEST_SUITE_BEGIN(charsetTest)
 
 		VASSERT_EQ("3.1", "xn--mgbh0fb", convertHelper("مثال", "utf-8", "idna"));
 		VASSERT_EQ("3.2", "xn--kgbechtv", convertHelper("إختبار", "utf-8", "idna"));
+
+		// Whole domain names
+		VASSERT_EQ("4", "xn--bcher-kva.example", convertHelper("BÜCHER.example", "utf-8", "idna"));
 	}
 
-	void testEncodeIDNAReplaceInvalidSequence() {
+	// Invalid sequences cannot be replaced: this would not give a valid
+	// domain name either
+	void testEncodeIDNAInvalidSequence() {
 
 		vmime::charsetConverterOptions opts;
-		opts.silentlyReplaceInvalidSequences = true;
-		opts.invalidSequence = "?";
 
 		// Too long for std::string's inline buffer, so that a read past
 		// the end of the input is caught by AddressSanitizer
 		const vmime::string label = "b\xc3\xbc" "cher" + vmime::string(32, 'c');
 
-		// Truncated 3-byte and 4-byte sequences at the end of the input
-		VASSERT_EQ(
-			"1", "xn--bchercccccccccccccccccccccccccccccccc?-h7d",
-			convertHelper(label + "\xe2", "utf-8", "idna", opts)
-		);
+		for (int replace = 0 ; replace < 2 ; ++replace) {
 
-		VASSERT_EQ(
-			"2", "xn--bchercccccccccccccccccccccccccccccccc?-h7d",
-			convertHelper(label + "\xf1", "utf-8", "idna", opts)
-		);
+			opts.silentlyReplaceInvalidSequences = (replace != 0);
 
-		// Invalid sequence in the middle of the input
-		VASSERT_EQ("3", "xn--b?cher-3ya", convertHelper("b\xc3\xbc" "\xff" "cher", "utf-8", "idna", opts));
+			// Truncated 3-byte and 4-byte sequences at the end of the input
+			VASSERT_THROW(
+				"1",
+				convertHelper(label + "\xe2", "utf-8", "idna", opts),
+				vmime::exceptions::illegal_byte_sequence_for_charset
+			);
+
+			VASSERT_THROW(
+				"2",
+				convertHelper(label + "\xf1", "utf-8", "idna", opts),
+				vmime::exceptions::illegal_byte_sequence_for_charset
+			);
+
+			// Invalid sequence in the middle of the input
+			VASSERT_THROW(
+				"3",
+				convertHelper("b\xc3\xbc" "\xff" "cher", "utf-8", "idna", opts),
+				vmime::exceptions::illegal_byte_sequence_for_charset
+			);
+		}
 	}
 
-	void testEncodeIDNAStopOnInvalidSequence() {
+	void testEncodeIDNAInvalidDomain() {
 
-		vmime::charsetConverterOptions opts;
-		opts.silentlyReplaceInvalidSequences = false;
-
-		const vmime::string label = "b\xc3\xbc" "cher" + vmime::string(32, 'c');
-
+		// U+2024 ONE DOT LEADER is not allowed in domain names
 		VASSERT_THROW(
 			"1",
-			convertHelper(label + "\xe2", "utf-8", "idna", opts),
-			vmime::exceptions::illegal_byte_sequence_for_charset
-		);
-
-		VASSERT_THROW(
-			"2",
-			convertHelper(label + "\xf1", "utf-8", "idna", opts),
-			vmime::exceptions::illegal_byte_sequence_for_charset
+			convertHelper("paypal\xe2\x80\xa4" "com", "utf-8", "idna"),
+			vmime::exceptions::charset_conv_error
 		);
 	}
 
 	void testDecodeIDNA() {
+
+		if (!vmime::utility::idna::isSupported()) {
+
+			VASSERT_EQ("No IDNA support", "xn--espaol-zwa", convertHelper("xn--espaol-zwa", "idna", "utf-8"));
+			return;
+		}
 
 		VASSERT_EQ("1", "español", convertHelper("xn--espaol-zwa", "idna", "utf-8"));
 
@@ -244,6 +269,19 @@ VMIME_TEST_SUITE_BEGIN(charsetTest)
 
 		VASSERT_EQ("3.1", "مثال", convertHelper("xn--mgbh0fb", "idna", "utf-8"));
 		VASSERT_EQ("3.2", "إختبار", convertHelper("xn--kgbechtv", "idna", "utf-8"));
+
+		// Whole domain names
+		VASSERT_EQ("4", "bücher.example", convertHelper("xn--bcher-kva.example", "idna", "utf-8"));
+	}
+
+	// Labels which look like A-labels, but are not, are not converted
+	void testDecodeIDNAInvalidALabel() {
+
+		// Invalid Punycode
+		VASSERT_EQ("1", "xn--zzzzzzzzz", convertHelper("xn--zzzzzzzzz", "idna", "utf-8"));
+
+		// "paypal": an A-label never decodes to an ASCII string
+		VASSERT_EQ("2", "xn--paypal-", convertHelper("xn--paypal-", "idna", "utf-8"));
 	}
 
 	void testUTF7Support() {

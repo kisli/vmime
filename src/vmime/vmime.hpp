@@ -113,6 +113,7 @@
 // Utilities
 #include "utility/datetimeUtils.hpp"
 #include "utility/filteredStream.hpp"
+#include "utility/idna.hpp"
 #include "charsetConverter.hpp"
 
 // Security

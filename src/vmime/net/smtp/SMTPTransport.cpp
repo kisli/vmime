@@ -40,6 +40,7 @@
 #include "vmime/message.hpp"
 
 #include "vmime/utility/filteredStream.hpp"
+#include "vmime/utility/idna.hpp"
 #include "vmime/utility/stringUtils.hpp"
 #include "vmime/utility/outputStreamSocketAdapter.hpp"
 #include "vmime/utility/streamUtils.hpp"
@@ -401,10 +402,16 @@ void SMTPTransport::noop() {
 // static
 bool SMTPTransport::mailboxNeedsUTF8(const mailbox& mb) {
 
-	// Only a non-ASCII local part needs SMTPUTF8: the domain part can be
+	// A non-ASCII local part needs SMTPUTF8, but the domain part can be
 	// written as IDNA A-labels, which are not "internationalized" (RFC 6531,
-	// section 3.2), and the display name as RFC 2047 encoded-words
-	return !utility::stringUtils::is7bit(mb.getEmail().getLocalName().getBuffer());
+	// section 3.2), unless it is not a valid internationalized domain name
+	// or IDNA is not supported. The display name is written as RFC 2047
+	// encoded-words.
+	const emailAddress& email = mb.getEmail();
+	string asciiDomain;
+
+	return !utility::stringUtils::is7bit(email.getLocalName().getBuffer()) ||
+	       !utility::idna::toASCII(email.getDomainName().getConvertedText(vmime::charsets::UTF_8), asciiDomain);
 }
 
 
