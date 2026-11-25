@@ -42,6 +42,8 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandSetTest)
 		VMIME_TEST(testWriteToSocketPipeline)
 		VMIME_TEST(testGetLastCommandSent)
 		VMIME_TEST(testGetLastCommandSentPipeline)
+		VMIME_TEST(testHasPendingResponses)
+		VMIME_TEST(testHasPendingResponsesPipeline)
 	VMIME_TEST_LIST_END
 
 
@@ -204,6 +206,45 @@ VMIME_TEST_SUITE_BEGIN(SMTPCommandSetTest)
 
 		cset->writeToSocket(sok, tracer);
 		VASSERT_EQ("Cmd 2", "MY_COMMAND2", cset->getLastCommandSent()->getText());
+	}
+
+	void testHasPendingResponses() {
+
+		vmime::shared_ptr <SMTPCommandSet> cset = SMTPCommandSet::create(/* pipelining */ false);
+
+		cset->addCommand(SMTPCommand::createCommand("MY_COMMAND1"));
+		cset->addCommand(SMTPCommand::createCommand("MY_COMMAND2"));
+
+		vmime::shared_ptr <vmime::net::tracer> tracer;
+		vmime::shared_ptr <testSocket> sok = vmime::make_shared <testSocket>();
+
+		// The next command has not been sent yet
+		cset->writeToSocket(sok, tracer);
+		VASSERT_FALSE("Cmd 1", cset->hasPendingResponses());
+	}
+
+	void testHasPendingResponsesPipeline() {
+
+		vmime::shared_ptr <SMTPCommandSet> cset = SMTPCommandSet::create(/* pipelining */ true);
+
+		cset->addCommand(SMTPCommand::createCommand("MY_COMMAND1"));
+		cset->addCommand(SMTPCommand::createCommand("MY_COMMAND2"));
+
+		vmime::shared_ptr <vmime::net::tracer> tracer;
+		vmime::shared_ptr <testSocket> sok = vmime::make_shared <testSocket>();
+		vmime::string response;
+
+		VASSERT_FALSE("Not started", cset->hasPendingResponses());
+
+		cset->writeToSocket(sok, tracer);
+		VASSERT_TRUE("Cmd 1", cset->hasPendingResponses());
+
+		cset->writeToSocket(sok, tracer);
+		VASSERT_FALSE("Cmd 2", cset->hasPendingResponses());
+
+		// The commands are only sent once
+		sok->localReceive(response);
+		VASSERT_EQ("Receive cmds", "MY_COMMAND1\r\nMY_COMMAND2\r\n", response);
 	}
 
 VMIME_TEST_SUITE_END

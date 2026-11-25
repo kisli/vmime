@@ -762,6 +762,32 @@ one: {\vcode vmime::exceptions::invalid\_argument} is thrown before the
 command is sent if it contains CR, LF or NUL. This also applies to IMAP and
 POP3 commands.
 
+If the server rejects the sender or a recipient, the message is not sent to
+any recipient, and an exception is thrown for the first rejected command, with
+the response of the server (see the example below). The connection usually
+remains usable. However, with
+pipelining\footnote{See RFC 2920: \url{https://www.rfc-editor.org/rfc/rfc2920}},
+the envelope is sent along with the DATA command (unless the message is sent
+with CHUNKING), which the server may accept even if a recipient has been
+rejected: the connection is then closed, so that the message is not delivered
+to the other recipients, and you have to connect again:
+
+\begin{lstlisting}
+try {
+
+   tr->send(msg);
+
+} catch (vmime::net::smtp::SMTPCommandError& e) {
+
+   // e.command() is the rejected command, and e.statusCode()
+   // the reply code of the server (eg. 550)
+
+   if (!tr->isConnected()) {
+      tr->connect();
+   }
+}
+\end{lstlisting}
+
 
 % ============================================================================
 \section{Using store service}

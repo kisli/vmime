@@ -760,36 +760,7 @@ void SMTPTransport::sendEnvelope(
 	m_connection->sendRequest(commands);
 
 	if ((resp = m_connection->readResponse())->getCode() != 250) {
-		auto code = resp->getCode();
-
-		// SIZE extension: insufficient system storage
-		if (code == 452) {
-
-			throw SMTPMessageSizeExceedsCurLimitsException(
-				SMTPCommandError(
-					commands->getLastCommandSent()->getText(), resp->getText(),
-					code, resp->getEnhancedCode()
-				)
-			);
-
-		// SIZE extension: message size exceeds fixed maximum message size
-		} else if (code == 552) {
-
-			throw SMTPMessageSizeExceedsMaxLimitsException(
-				SMTPCommandError(
-					commands->getLastCommandSent()->getText(), resp->getText(),
-					code, resp->getEnhancedCode()
-				 )
-			);
-
-		// Other error
-		} else {
-
-			throw SMTPCommandError(
-				commands->getLastCommandSent()->getText(), resp->getText(),
-				code, resp->getEnhancedCode()
-			);
-		}
+		throwEnvelopeError(commands, resp, sendDATACommand, /* recipientAccepted */ false);
 	}
 
 	// Read responses for "RCPT TO" commands
@@ -801,35 +772,7 @@ void SMTPTransport::sendEnvelope(
 		auto code = resp->getCode();
 
 		if (code != 250 && code != 251) {
-
-			// SIZE extension: insufficient system storage
-			if (code == 452) {
-
-				throw SMTPMessageSizeExceedsCurLimitsException(
-					SMTPCommandError(
-						commands->getLastCommandSent()->getText(), resp->getText(),
-						code, resp->getEnhancedCode()
-					)
-				);
-
-			// SIZE extension: message size exceeds fixed maximum message size
-			} else if (code == 552) {
-
-				throw SMTPMessageSizeExceedsMaxLimitsException(
-					SMTPCommandError(
-						commands->getLastCommandSent()->getText(), resp->getText(),
-						code, resp->getEnhancedCode()
-					)
-				);
-
-			// Other error
-			} else {
-
-				throw SMTPCommandError(
-					commands->getLastCommandSent()->getText(), resp->getText(),
-					code, resp->getEnhancedCode()
-				);
-			}
+			throwEnvelopeError(commands, resp, sendDATACommand, /* recipientAccepted */ i != 0);
 		}
 	}
 
@@ -847,6 +790,83 @@ void SMTPTransport::sendEnvelope(
 				code, resp->getEnhancedCode()
 			);
 		}
+	}
+}
+
+
+void SMTPTransport::throwEnvelopeError(
+	const shared_ptr <SMTPCommandSet>& commands,
+	const shared_ptr <SMTPResponse>& resp,
+	const bool sendDATACommand,
+	bool recipientAccepted
+) {
+
+	const SMTPCommandError error(
+		commands->getLastCommandSent()->getText(), resp->getText(),
+		resp->getCode(), resp->getEnhancedCode()
+	);
+
+	// With pipelining, the next commands have already been sent: all their
+	// responses must be checked (RFC 2920, section 3.1), otherwise they would
+	// be taken for the responses to the commands of the next message
+	try {
+
+		while (commands->hasPendingResponses()) {
+
+			// Nothing is sent: this only advances to the next command
+			m_connection->sendRequest(commands);
+
+			const int code = m_connection->readResponse()->getCode();
+
+			// Response to a "RCPT TO" command
+			if (!sendDATACommand || commands->hasPendingResponses()) {
+
+				if (code == 250 || code == 251) {
+					recipientAccepted = true;
+				}
+
+			// Response to the "DATA" command, which may be accepted even if the
+			// envelope has been rejected: the server then waits for the data
+			} else if (code == 354) {
+
+				if (recipientAccepted) {
+
+					// The message must not be delivered to the recipients which
+					// have been accepted: abort the transaction by closing the
+					// connection, without sending the end-of-data delimiter
+					m_connection->closeConnection();
+
+				} else {
+
+					// No message can be delivered: end the transaction with a
+					// single dot (RFC 2920, section 3.1), so that the connection
+					// remains usable
+					m_connection->sendRequest(SMTPCommand::createCommand("."));
+					m_connection->readResponse();
+				}
+			}
+		}
+
+	} catch (exception&) {
+
+		// The connection has been closed (eg. the server closed it after
+		// rejecting the command): the error is reported anyway
+	}
+
+	// SIZE extension: insufficient system storage
+	if (error.statusCode() == 452) {
+
+		throw SMTPMessageSizeExceedsCurLimitsException(error);
+
+	// SIZE extension: message size exceeds fixed maximum message size
+	} else if (error.statusCode() == 552) {
+
+		throw SMTPMessageSizeExceedsMaxLimitsException(error);
+
+	// Other error
+	} else {
+
+		throw error;
 	}
 }
 

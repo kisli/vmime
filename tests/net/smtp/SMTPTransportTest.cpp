@@ -794,6 +794,10 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 		VMIME_TEST(testCanonicalLineEndings)
 		VMIME_TEST(testSize_NotLowerThanActual)
 		VMIME_TEST(testExtensionKeywordsCase)
+		VMIME_TEST(testRejectedRecipient)
+		VMIME_TEST(testRejectedRecipient_DATAAccepted)
+		VMIME_TEST(testNoRecipientAccepted_DATAAccepted)
+		VMIME_TEST(testRejectedSender)
 		VMIME_TEST(testReconnectAfterTimeout)
 		VMIME_TEST(testDisconnectAfterTimeout)
 		VMIME_TEST(testSendTimeout)
@@ -2442,6 +2446,158 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 		VASSERT_EQ("SIZE param", "1000000", params[0]);
 
 		tr->disconnect();
+	}
+
+	// Send a message to the test server for 8-bit data, and return the
+	// command which has been rejected (or an empty string if it was sent)
+	static vmime::string sendWithEnvelope(
+		const vmime::shared_ptr <vmime::net::transport>& tr,
+		const vmime::string& expeditor,
+		const std::vector <vmime::string>& recipients
+	) {
+
+		vmime::mailboxList recips;
+
+		for (const vmime::string& recipient : recipients) {
+			recips.appendMailbox(vmime::make_shared <vmime::mailbox>(recipient));
+		}
+
+		const vmime::string data = "Subject: Test\r\n\r\nHello\r\n";
+		vmime::utility::inputStreamStringAdapter is(data);
+
+		try {
+
+			tr->send(vmime::mailbox(expeditor), recips, is, data.length());
+
+		} catch (vmime::net::smtp::SMTPCommandError& e) {
+
+			return e.command();
+		}
+
+		return "";
+	}
+
+	// After a recipient has been rejected, the connection is still usable:
+	// with pipelining, the responses to the next commands, which have been
+	// sent already, must be read first (RFC 2920, section 3.1)
+	void testRejectedRecipient() {
+
+		for (int pipelining = 0 ; pipelining < 2 ; ++pipelining) {
+
+			std::vector <vmime::string> extensions = { "CHUNKING" };
+
+			if (pipelining) {
+				extensions.push_back("PIPELINING");
+			}
+
+			vmime::shared_ptr <vmime::net::transport> tr = create8bitTransport(extensions);
+
+			// The first error is reported
+			VASSERT_EQ(
+				"Error",
+				"RCPT TO:<rejected1@test.vmime.org>",
+				sendWithEnvelope(
+					tr, "expediteur@test.vmime.org",
+					{ "recipient1@test.vmime.org", "rejected1@test.vmime.org",
+					  "rejected2@test.vmime.org", "recipient2@test.vmime.org" }
+				)
+			);
+
+			const std::vector <vmime::string>& commands = eightBitSMTPTestSocket::getCommands();
+
+			// Without pipelining, the next commands are not sent
+			VASSERT_EQ("Count", pipelining ? 5 : 3, commands.size());
+			VASSERT_TRUE("Not delivered", eightBitSMTPTestSocket::getMessages().empty());
+			VASSERT_TRUE("Still connected", tr->isConnected());
+
+			VASSERT_EQ(
+				"Send",
+				"",
+				sendWithEnvelope(tr, "expediteur@test.vmime.org", { "recipient1@test.vmime.org" })
+			);
+
+			VASSERT_EQ("Delivered", 1, eightBitSMTPTestSocket::getMessages().size());
+		}
+	}
+
+	// If the DATA command has been accepted although a recipient has been
+	// rejected, the message must not be delivered to the other recipients:
+	// the connection is closed, without sending the end-of-data delimiter
+	void testRejectedRecipient_DATAAccepted() {
+
+		vmime::shared_ptr <vmime::net::transport> tr = create8bitTransport({ "PIPELINING" });
+
+		VASSERT_EQ(
+			"Error",
+			"RCPT TO:<rejected@test.vmime.org>",
+			sendWithEnvelope(
+				tr, "expediteur@test.vmime.org",
+				{ "recipient@test.vmime.org", "rejected@test.vmime.org" }
+			)
+		);
+
+		const std::vector <vmime::string>& commands = eightBitSMTPTestSocket::getCommands();
+
+		VASSERT_EQ("Count", 4, commands.size());
+		VASSERT_EQ("DATA", "DATA", commands[3]);
+		VASSERT_TRUE("Not delivered", eightBitSMTPTestSocket::getMessages().empty());
+		VASSERT_FALSE("Connection closed", tr->isConnected());
+	}
+
+	// If the DATA command has been accepted although no recipient has been
+	// accepted, the transaction is ended with a single dot (RFC 2920,
+	// section 3.1), and the connection is still usable
+	void testNoRecipientAccepted_DATAAccepted() {
+
+		vmime::shared_ptr <vmime::net::transport> tr = create8bitTransport({ "PIPELINING" });
+
+		VASSERT_EQ(
+			"Error",
+			"RCPT TO:<rejected1@test.vmime.org>",
+			sendWithEnvelope(
+				tr, "expediteur@test.vmime.org",
+				{ "rejected1@test.vmime.org", "rejected2@test.vmime.org" }
+			)
+		);
+
+		const std::vector <vmime::string>& commands = eightBitSMTPTestSocket::getCommands();
+
+		VASSERT_EQ("Count", 4, commands.size());
+		VASSERT_TRUE("Not delivered", eightBitSMTPTestSocket::getMessages().empty());
+		VASSERT_TRUE("Still connected", tr->isConnected());
+
+		VASSERT_EQ(
+			"Send",
+			"",
+			sendWithEnvelope(tr, "expediteur@test.vmime.org", { "recipient@test.vmime.org" })
+		);
+
+		VASSERT_EQ("RSET", "RSET", commands[4]);
+		VASSERT_EQ("Delivered", 1, eightBitSMTPTestSocket::getMessages().size());
+	}
+
+	// Likewise, after the sender has been rejected
+	void testRejectedSender() {
+
+		vmime::shared_ptr <vmime::net::transport> tr = create8bitTransport({ "PIPELINING" });
+
+		VASSERT_EQ(
+			"Error",
+			"MAIL FROM:<rejected@test.vmime.org>",
+			sendWithEnvelope(tr, "rejected@test.vmime.org", { "recipient@test.vmime.org" })
+		);
+
+		VASSERT_EQ("Count", 3, eightBitSMTPTestSocket::getCommands().size());
+		VASSERT_TRUE("Not delivered", eightBitSMTPTestSocket::getMessages().empty());
+		VASSERT_TRUE("Still connected", tr->isConnected());
+
+		VASSERT_EQ(
+			"Send",
+			"",
+			sendWithEnvelope(tr, "expediteur@test.vmime.org", { "recipient@test.vmime.org" })
+		);
+
+		VASSERT_EQ("Delivered", 1, eightBitSMTPTestSocket::getMessages().size());
 	}
 
 	void testReconnectAfterTimeout() {
