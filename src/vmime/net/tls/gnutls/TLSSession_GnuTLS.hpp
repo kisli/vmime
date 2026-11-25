@@ -68,7 +68,7 @@ private:
 
 	TLSSession_GnuTLS(const TLSSession_GnuTLS&);
 
-	static void throwTLSException(const string& fname, const int code);
+	[[noreturn]] static void throwTLSException(const string& fname, const int code);
 
 
 #ifdef LIBGNUTLS_VERSION

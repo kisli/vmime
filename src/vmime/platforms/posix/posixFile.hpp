@@ -212,7 +212,7 @@ public:
 
 	vmime::utility::file::path getTemporaryDirectoryPath() const;
 
-	static void reportError(const vmime::utility::path& path, const int err);
+	[[noreturn]] static void reportError(const vmime::utility::path& path, const int err);
 };
 
 

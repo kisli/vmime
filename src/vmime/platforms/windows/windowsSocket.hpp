@@ -80,7 +80,7 @@ public:
 
 protected:
 
-	void throwSocketError(const int err);
+	[[noreturn]] void throwSocketError(const int err);
 
 	bool waitForData(const bool read, const bool write, const int msecs);
 
