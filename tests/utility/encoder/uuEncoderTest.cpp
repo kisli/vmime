@@ -30,6 +30,7 @@ VMIME_TEST_SUITE_BEGIN(uuEncoderTest)
 
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testEncodeDecode)
+		VMIME_TEST(testEncodeDecodeTinyMaxLineLength)
 		VMIME_TEST(testDecodeBeginMarker)
 		VMIME_TEST(testDecodeBeginMarkerWithoutModeAndFilename)
 		VMIME_TEST(testDecodeInvalidBeginMarker)
@@ -58,6 +59,38 @@ VMIME_TEST_SUITE_BEGIN(uuEncoderTest)
 			oss << "length " << lengths[i];
 
 			VASSERT_EQ(oss.str(), data, decode("uuencode", encode("uuencode", data)));
+		}
+	}
+
+	/** A "maxlinelength" property lower than 2 must still encode one byte of
+	  * input per line.
+	  *
+	  * The encoder used to read (maxlinelength - 1) bytes for each line into a
+	  * 64-byte stack buffer: with 0, the read count wrapped around to SIZE_MAX
+	  * and the read overflowed the buffer (CWE-787), and with 1, no byte was
+	  * ever read, so encoding never ended (CWE-835).
+	  */
+	void testEncodeDecodeTinyMaxLineLength() {
+
+		vmime::string data;
+
+		for (unsigned int i = 0 ; i < 200 ; ++i) {
+			data += static_cast <char>(i & 0xff);
+		}
+
+		for (int maxLineLength : { 1, 0 }) {
+
+			// Set the property explicitly, as the helpers ignore a length of 0
+			vmime::propertySet props;
+			props["maxlinelength"] = maxLineLength;
+
+			std::ostringstream oss;
+			oss << "maxLineLength=" << maxLineLength;
+
+			const vmime::string encoded = encode("uuencode", data, 0, props);
+
+			VASSERT_EQ(oss.str() + ", same as 2", encode("uuencode", data, 2), encoded);
+			VASSERT_EQ(oss.str() + ", decoded", data, decode("uuencode", encoded));
 		}
 	}
 
@@ -172,7 +205,11 @@ VMIME_TEST_SUITE_BEGIN(uuEncoderTest)
 
 		for (const vmime::propertySet& props : { noFilename, longFilename }) {
 
-			for (int maxLineLength : { 46, 20, 4 }) {
+			for (int maxLineLength : { 46, 20, 4, 1, 0 }) {
+
+				// Set the property explicitly, as the helpers ignore a length of 0
+				vmime::propertySet lineProps(props);
+				lineProps["maxlinelength"] = maxLineLength;
 
 				for (size_t n = 0 ; n < 300 ; ++n) {
 
@@ -186,8 +223,8 @@ VMIME_TEST_SUITE_BEGIN(uuEncoderTest)
 					oss << "maxLineLength=" << maxLineLength << ", n=" << n
 					    << ", filename=" << props.getProperty <vmime::string>("filename", "").length();
 
-					const size_t actual = encode("uuencode", data, maxLineLength, props).length();
-					const size_t size = getEncoder("uuencode", maxLineLength, props)->getEncodedSize(n);
+					const size_t actual = encode("uuencode", data, 0, lineProps).length();
+					const size_t size = getEncoder("uuencode", 0, lineProps)->getEncodedSize(n);
 
 					VASSERT(oss.str() + ", not lower", size >= actual);
 					VASSERT(oss.str() + ", at most an empty line larger", size <= actual + 3);

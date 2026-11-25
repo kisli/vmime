@@ -64,6 +64,16 @@ static inline unsigned int UUDECODE(const unsigned int c) {
 }
 
 
+// Number of bytes of input encoded on each line: (maxlinelength - 1), at
+// least one so that encoding makes progress, and at most 45
+static size_t getLineInputLength(const propertySet& props) {
+
+	const size_t maxLineLength = props.getProperty <size_t>("maxlinelength", 46);
+
+	return std::min(std::max(maxLineLength, static_cast <size_t>(2)), static_cast <size_t>(46)) - 1;
+}
+
+
 size_t uuEncoder::encode(
 	utility::inputStream& in,
 	utility::outputStream& out,
@@ -75,8 +85,7 @@ size_t uuEncoder::encode(
 	const string propFilename = getProperties().getProperty <string>("filename", "");
 	const string propMode = getProperties().getProperty <string>("mode", "644");
 
-	const size_t maxLineLength =
-		std::min(getProperties().getProperty <size_t>("maxlinelength", 46), static_cast <size_t>(46));
+	const size_t lineInputLength = getLineInputLength(getProperties());
 
 	size_t total = 0;
 	size_t inTotal = 0;
@@ -105,7 +114,7 @@ size_t uuEncoder::encode(
 		// Process up to 45 characters per line
 		std::fill(inBuffer, inBuffer + sizeof(inBuffer), 0);
 
-		const size_t inLength = in.read(inBuffer, maxLineLength - 1);
+		const size_t inLength = in.read(inBuffer, lineInputLength);
 
 		outBuffer[0] = UUENCODE(static_cast <unsigned int>(inLength)); // Line length
 
@@ -357,10 +366,7 @@ size_t uuEncoder::getEncodedSize(const size_t n) const {
 	const string propFilename = getProperties().getProperty <string>("filename", "");
 	const string propMode = getProperties().getProperty <string>("mode", "644");
 
-	const size_t maxLineLength =
-		std::min(getProperties().getProperty <size_t>("maxlinelength", 46), static_cast <size_t>(46));
-
-	const size_t lineInputLength = std::max(maxLineLength, static_cast <size_t>(2)) - 1;
+	const size_t lineInputLength = getLineInputLength(getProperties());
 
 	// Prelude text ("begin [mode] [filename]") and CRLF
 	size_t size = 5 + 2;
