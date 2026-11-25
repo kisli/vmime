@@ -117,6 +117,17 @@ public:
 
 	size_t getBlockSize();
 
+	/** Return whether the data written so far is empty, or ends with CRLF.
+	  *
+	  * The CRLF which ends the last line of the data (or the command which
+	  * precedes the data, if there is no data) is also the first CRLF of
+	  * the CRLF "." CRLF end-of-data sequence: if this method returns true,
+	  * only "." CRLF must be sent to end the data (RFC 5321, section 4.1.1.4).
+	  *
+	  * @return true if no data has been written, or if it ends with CRLF
+	  */
+	bool isAtLineStart() const;
+
 protected:
 
 	void writeImpl(const byte_t* const data, const size_t count);
@@ -124,7 +135,8 @@ protected:
 private:
 
 	outputStream& m_stream;
-	byte_t m_previousChar;
+	byte_t m_previousChar2; // octet before the last one
+	byte_t m_previousChar;  // last octet
 	bool m_start;
 };
 

@@ -132,6 +132,7 @@ size_t dotFilteredInputStream::skip(const size_t /* count */) {
 
 dotFilteredOutputStream::dotFilteredOutputStream(outputStream& os)
 	: m_stream(os),
+	  m_previousChar2('\0'),
 	  m_previousChar('\0'),
 	  m_start(true) {
 
@@ -194,6 +195,7 @@ void dotFilteredOutputStream::writeImpl(const byte_t* const data, const size_t c
 	}
 
 	m_stream.write(start, end - start);
+	m_previousChar2 = (count >= 2 ? data[count - 2] : m_previousChar);
 	m_previousChar = data[count - 1];
 	m_start = false;
 }
@@ -209,6 +211,13 @@ void dotFilteredOutputStream::flush() {
 size_t dotFilteredOutputStream::getBlockSize() {
 
 	return m_stream.getBlockSize();
+}
+
+
+bool dotFilteredOutputStream::isAtLineStart() const {
+
+	// A LF alone does not end a line (RFC 5321, section 2.3.8)
+	return m_start || (m_previousChar2 == '\r' && m_previousChar == '\n');
 }
 
 

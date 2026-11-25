@@ -745,7 +745,8 @@ vmime::string UTF8SMTPTestSocket <SUPPORTS_UTF8, SUPPORTS_8BITMIME>::sm_messageD
   * The extensions announced by the server are set with reset(). The
   * commands sent by the client (except EHLO and QUIT) are recorded, as
   * well as the messages delivered (ie. received with DATA, or with BDAT
-  * up to the last chunk), as they were received.
+  * up to the last chunk), as they were received. With DATA, the CRLF which
+  * ends the last line is part of the message.
   *
   * The addresses whose local part starts with "rejected" are rejected
   * in MAIL and RCPT commands. Like some servers, it accepts the DATA
@@ -822,15 +823,21 @@ public:
 
 			} else if (m_state == STATE_DATA) {
 
-				// Without data, the first CRLF is the one which ends the DATA command
+				// The data ends with a line containing only "." (dot-stuffing is
+				// ignored): the CRLF before it ends the last line of the data,
+				// or the DATA command if there is no data (RFC 5321, section 4.1.1.4)
+				size_t end;
+
 				if (m_input.compare(0, 3, ".\r\n") == 0) {
-					m_input.insert(0, "\r\n");
-				}
 
-				// The data is followed by CRLF "." CRLF (dot-stuffing is ignored)
-				const size_t end = m_input.find("\r\n.\r\n");
+					end = 0;
 
-				if (end == vmime::string::npos) {
+				} else if ((end = m_input.find("\r\n.\r\n")) != vmime::string::npos) {
+
+					end += 2;
+
+				} else {
+
 					return;  // wait for the rest of the data
 				}
 
@@ -845,7 +852,7 @@ public:
 					localSend("250 Message accepted for delivery\r\n");
 				}
 
-				m_input.erase(0, end + 5);
+				m_input.erase(0, end + 3);
 
 				m_transaction = false;
 				m_state = STATE_COMMAND;

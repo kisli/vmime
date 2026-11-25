@@ -32,6 +32,7 @@ VMIME_TEST_SUITE_BEGIN(filteredStreamTest)
 	VMIME_TEST_LIST_BEGIN
 		VMIME_TEST(testDotFilteredInputStream)
 		VMIME_TEST(testDotFilteredOutputStream)
+		VMIME_TEST(testDotFilteredOutputStream_isAtLineStart)
 		VMIME_TEST(testCRLFToLFFilteredOutputStream)
 		VMIME_TEST(testStopSequenceFilteredInputStream1)
 		VMIME_TEST(testStopSequenceFilteredInputStreamN_2)
@@ -182,6 +183,36 @@ VMIME_TEST_SUITE_BEGIN(filteredStreamTest)
 		testFilteredOutputStreamHelper<FILTER>("10", ".foobar", ".", "foobar");
 
 		testFilteredOutputStreamHelper<FILTER>("11", "this is the first line\x0d\x0a...\x0d\x0aone dot\x0d\x0a....\x0d\x0atwo dots\x0d\x0a.....\x0d\x0athree... \x0d\x0a...\x0d\x0a..\x0d\x0a", "this is the first line\x0d\x0a..\x0d\x0aone dot\x0d\x0a...\x0d\x0atwo dots\x0d\x0a....\x0d\x0athree... \x0d\x0a..\x0d\x0a.\x0d\x0a");
+	}
+
+	static bool isAtLineStartAfter(const std::initializer_list <std::string>& writes) {
+
+		std::ostringstream oss;
+		vmime::utility::outputStreamAdapter os(oss);
+
+		vmime::utility::dotFilteredOutputStream fos(os);
+
+		for (const std::string& s : writes) {
+			fos.write(s.data(), s.length());
+		}
+
+		return fos.isAtLineStart();
+	}
+
+	void testDotFilteredOutputStream_isAtLineStart() {
+
+		VASSERT_TRUE("1", isAtLineStartAfter({}));
+		VASSERT_TRUE("2", isAtLineStartAfter({ "foo\r\n" }));
+		VASSERT_TRUE("3", isAtLineStartAfter({ "foo\r", "\n" }));
+		VASSERT_TRUE("4", isAtLineStartAfter({ "foo", "\r", "\n" }));
+		VASSERT_TRUE("5", isAtLineStartAfter({ "foo\r\n", "" }));
+
+		VASSERT_FALSE("6", isAtLineStartAfter({ "foo" }));
+		VASSERT_FALSE("7", isAtLineStartAfter({ "foo\r\nbar" }));
+		VASSERT_FALSE("8", isAtLineStartAfter({ "foo\r" }));
+		VASSERT_FALSE("9", isAtLineStartAfter({ "foo\n" }));  // LF alone
+		VASSERT_FALSE("10", isAtLineStartAfter({ "\n" }));
+		VASSERT_FALSE("11", isAtLineStartAfter({ "foo\r\n." }));
 	}
 
 	void testCRLFToLFFilteredOutputStream() {

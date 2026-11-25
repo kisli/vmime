@@ -952,8 +952,11 @@ void SMTPTransport::sendData(
 
 		fos.flush();
 
-		// Send end-of-data delimiter
-		m_connection->getSocket()->send("\r\n.\r\n");
+		// Send end-of-data delimiter: its first CRLF is the one which ends
+		// the last line of the data, or the DATA command if there is no data,
+		// so an extra CRLF must not be added, unless the data does not end
+		// with CRLF (RFC 5321, section 4.1.1.4)
+		m_connection->getSocket()->send(fos.isAtLineStart() ? ".\r\n" : "\r\n.\r\n");
 
 	} catch (...) {
 

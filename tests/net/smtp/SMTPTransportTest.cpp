@@ -792,6 +792,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 		VMIME_TEST(testBINARYMIME_undeclaredRawData)
 		VMIME_TEST(test8BITMIME_messageAttachment)
 		VMIME_TEST(testCanonicalLineEndings)
+		VMIME_TEST(testEndOfData)
 		VMIME_TEST(testSize_NotLowerThanActual)
 		VMIME_TEST(testExtensionKeywordsCase)
 		VMIME_TEST(testRejectedRecipient)
@@ -1852,7 +1853,7 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 
 			VASSERT_EQ("2.1", "MAIL FROM:<expediteur@test.vmime.org> BODY=8BITMIME", commands[0]);
 			VASSERT_EQ("2.2", 1, messages.size());
-			VASSERT("2.3", messages[0].find(data8bit) == 0);
+			VASSERT_EQ("2.3", data8bit, messages[0]);
 		}
 
 		// 8-bit data, not declared: the message is not delivered, and as the
@@ -2412,6 +2413,66 @@ VMIME_TEST_SUITE_BEGIN(SMTPTransportTest)
 			VASSERT_EQ("2.1", 1, messages.size());
 			VASSERT("2.2", hasCanonicalLineEndings(messages[0]));
 			VASSERT("2.3", messages[0].find("\r\n\r\nLine 1\r\nLine 2\r\n") != vmime::string::npos);
+		}
+	}
+
+	// The CRLF which ends the last line of the data is also the first CRLF
+	// of the end-of-data sequence: an extra CRLF must not be added, unless
+	// the data does not end with CRLF (RFC 5321, section 4.1.1.4)
+	void testEndOfData() {
+
+		// Raw data, ending with CRLF, not ending with CRLF, and empty (the
+		// CRLF which ends the DATA command is then the first one)
+		const std::vector <std::pair <vmime::string, vmime::string> > rawData = {
+			{ "Subject: Test\r\n\r\nHello\r\n", "Subject: Test\r\n\r\nHello\r\n" },
+			{ "Subject: Test\r\n\r\nHello", "Subject: Test\r\n\r\nHello\r\n" },
+			{ "", "" }
+		};
+
+		for (size_t i = 0 ; i < rawData.size() ; ++i) {
+
+			const std::string label = "Raw data " + std::to_string(i + 1);
+
+			vmime::shared_ptr <vmime::net::transport> tr = create8bitTransport({});
+
+			send8bitTestData(tr, rawData[i].first);
+
+			const std::vector <vmime::string>& messages = eightBitSMTPTestSocket::getMessages();
+
+			VASSERT_EQ(label + ", Delivered", 1, messages.size());
+			VASSERT_EQ(label + ", Data", rawData[i].second, messages[0]);
+		}
+
+		// Message object: the message received with DATA is the one received
+		// with BDAT, which sends the data as is, with CRLF added if needed
+		const std::vector <std::pair <vmime::string, vmime::string> > bodies = {
+			{ "Hello\r\n", "" },
+			{ "Hello", "\r\n" }
+		};
+
+		for (size_t i = 0 ; i < bodies.size() ; ++i) {
+
+			vmime::shared_ptr <vmime::message> msg = create8bitTestMessage("7bit", bodies[i].first);
+
+			// Otherwise, a new date and message id would be added at each sending
+			msg->getHeader()->Date()->setValue(vmime::datetime("Wed, 25 Nov 2026 12:00:00 +0100"));
+			msg->getHeader()->MessageId()->setValue(vmime::messageId("<test@test.vmime.org>"));
+
+			vmime::string received[2];
+
+			for (int chunking = 0 ; chunking < 2 ; ++chunking) {
+
+				vmime::shared_ptr <vmime::net::transport> tr =
+					create8bitTransport(
+						chunking ? std::vector <vmime::string>({ "CHUNKING" }) : std::vector <vmime::string>()
+					);
+
+				tr->send(msg);
+
+				received[chunking] = eightBitSMTPTestSocket::getMessages().at(0);
+			}
+
+			VASSERT_EQ("Message " + std::to_string(i + 1), received[1] + bodies[i].second, received[0]);
 		}
 	}
 
