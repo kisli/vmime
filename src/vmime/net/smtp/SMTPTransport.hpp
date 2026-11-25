@@ -48,6 +48,7 @@ namespace smtp {
 
 
 class SMTPCommand;
+class SMTPCommandSet;
 
 
 /** SMTP transport service.
@@ -191,6 +192,27 @@ private:
 		bool sendDATACommand,
 		const size_t size,
 		const sendOptions& options = sendOptions()
+	);
+
+	/** Throw the exception for a MAIL or RCPT command rejected by the
+	  * server. With pipelining, the responses to the next commands are
+	  * read first, as they have already been sent: if the DATA command
+	  * has been accepted, the transaction is ended without delivering
+	  * any message.
+	  *
+	  * @param commands envelope commands, the last command sent being
+	  * the one which has been rejected
+	  * @param resp response to the rejected command
+	  * @param sendDATACommand if true, the DATA command is the last
+	  * command of the envelope
+	  * @param recipientAccepted true if a recipient has already been
+	  * accepted in the envelope
+	  */
+	void throwEnvelopeError(
+		const shared_ptr <SMTPCommandSet>& commands,
+		const shared_ptr <SMTPResponse>& resp,
+		const bool sendDATACommand,
+		bool recipientAccepted
 	);
 
 	/** Send the message data, after the DATA command has been accepted,

@@ -746,6 +746,11 @@ vmime::string UTF8SMTPTestSocket <SUPPORTS_UTF8, SUPPORTS_8BITMIME>::sm_messageD
   * commands sent by the client (except EHLO and QUIT) are recorded, as
   * well as the messages delivered (ie. received with DATA, or with BDAT
   * up to the last chunk), as they were received.
+  *
+  * The addresses whose local part starts with "rejected" are rejected
+  * in MAIL and RCPT commands. Like some servers, it accepts the DATA
+  * command even if no recipient has been accepted, but then rejects
+  * the message data.
   */
 class eightBitSMTPTestSocket : public testSocket {
 
@@ -754,7 +759,9 @@ public:
 	eightBitSMTPTestSocket()
 		: m_state(STATE_COMMAND),
 		  m_chunkRemaining(0),
-		  m_lastChunk(false) {
+		  m_lastChunk(false),
+		  m_transaction(false),
+		  m_recipientCount(0) {
 
 	}
 
@@ -815,6 +822,11 @@ public:
 
 			} else if (m_state == STATE_DATA) {
 
+				// Without data, the first CRLF is the one which ends the DATA command
+				if (m_input.compare(0, 3, ".\r\n") == 0) {
+					m_input.insert(0, "\r\n");
+				}
+
 				// The data is followed by CRLF "." CRLF (dot-stuffing is ignored)
 				const size_t end = m_input.find("\r\n.\r\n");
 
@@ -822,10 +834,20 @@ public:
 					return;  // wait for the rest of the data
 				}
 
-				getMessages().push_back(m_input.substr(0, end));
+				if (m_recipientCount == 0) {
+
+					localSend("554 5.5.1 No valid recipients\r\n");
+
+				} else {
+
+					getMessages().push_back(m_input.substr(0, end));
+
+					localSend("250 Message accepted for delivery\r\n");
+				}
+
 				m_input.erase(0, end + 5);
 
-				localSend("250 Message accepted for delivery\r\n");
+				m_transaction = false;
 				m_state = STATE_COMMAND;
 
 			} else {
@@ -885,21 +907,48 @@ private:
 
 		getCommands().push_back(line);
 
+		const bool rejected = (line.find(":<rejected") != vmime::string::npos);
+
 		if (verb == "MAIL") {
 
 			m_data.clear();
-			localSend("250 OK\r\n");
+			m_recipientCount = 0;
+
+			if (rejected) {
+
+				m_transaction = false;
+				localSend("550 5.7.1 Sender rejected\r\n");
+
+			} else {
+
+				m_transaction = true;
+				localSend("250 OK\r\n");
+			}
 
 		} else if (verb == "RSET") {
 
 			// 200 is also accepted by VMime (RFC 876), and makes any response
 			// read out of order detectable, as it is not accepted for MAIL
 			m_data.clear();
+			m_transaction = false;
+			m_recipientCount = 0;
 			localSend("200 OK\r\n");
 
 		} else if (verb == "RCPT") {
 
-			localSend("250 OK\r\n");
+			if (!m_transaction) {
+
+				localSend("503 5.5.1 Bad sequence of commands\r\n");
+
+			} else if (rejected) {
+
+				localSend("550 5.1.1 Mailbox unavailable\r\n");
+
+			} else {
+
+				++m_recipientCount;
+				localSend("250 OK\r\n");
+			}
 
 		} else if (verb == "DATA") {
 
@@ -932,4 +981,6 @@ private:
 	vmime::string m_data;
 	size_t m_chunkRemaining;
 	bool m_lastChunk;
+	bool m_transaction;
+	size_t m_recipientCount;
 };

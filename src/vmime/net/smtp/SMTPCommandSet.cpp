@@ -145,6 +145,12 @@ bool SMTPCommandSet::isFinished() const {
 }
 
 
+bool SMTPCommandSet::hasPendingResponses() const {
+
+	return m_pipeline && m_started && !m_commands.empty();
+}
+
+
 shared_ptr <SMTPCommand> SMTPCommandSet::getLastCommandSent() const {
 
 	return m_lastCommandSent;

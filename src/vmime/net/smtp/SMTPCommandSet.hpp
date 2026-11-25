@@ -70,6 +70,16 @@ public:
 	  */
 	bool isFinished() const;
 
+	/** Tests whether the commands which follow the last command sent
+	  * have already been sent to the server (with pipelining): their
+	  * responses must still be read. Writing the set to the socket
+	  * then only advances to the next command, without sending it again.
+	  *
+	  * @return true if responses to the next commands are pending,
+	  * or false otherwise
+	  */
+	bool hasPendingResponses() const;
+
 	/** Returns the last command which has been sent.
 	  *
 	  * @return a pointer to a SMTPCommand, of NULL if no command
