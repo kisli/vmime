@@ -1011,6 +1011,13 @@ ELSEIF(VMIME_IDNA_LIB STREQUAL "icu")
 
 ELSEIF(VMIME_IDNA_LIB STREQUAL "none")
 
+	MESSAGE(
+		WARNING
+		"*** VMime is built without support for internationalized domain names"
+		" (IDNA): non-ASCII domain names will not be converted to or from A-labels."
+		" Install libidn2, or use ICU (VMIME_IDNA_LIB), to enable it."
+	)
+
 	SET(VMIME_IDNA_LIB_IS_LIBIDN2 "OFF")
 	SET(VMIME_IDNA_LIB_IS_ICU "OFF")
 

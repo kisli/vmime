@@ -15,11 +15,6 @@ jobs:
       matrix:
         tls: [ gnutls, openssl ]
         charset: [ icu, iconv ]
-        include:
-          - charset: icu
-            idna: icu
-          - charset: iconv
-            idna: libidn2
     steps:
     - name: install-deps
       run: |
@@ -30,7 +25,7 @@ jobs:
     - name: buildall
       run: |
         set -ex
-        cmake . -DVMIME_SENDMAIL_PATH:STRING="/usr/sbin/sendmail" -DVMIME_HAVE_TLS_SUPPORT:BOOL=ON -DVMIME_TLS_SUPPORT_LIB:STRING=${{ matrix.tls }} -DVMIME_CHARSETCONV_LIB:STRING=${{ matrix.charset }} -DVMIME_IDNA_LIB:STRING=${{ matrix.idna }} -DVMIME_BUILD_TESTS=ON -DVMIME_BUILD_SAMPLES=ON
+        cmake . -DVMIME_SENDMAIL_PATH:STRING="/usr/sbin/sendmail" -DVMIME_HAVE_TLS_SUPPORT:BOOL=ON -DVMIME_TLS_SUPPORT_LIB:STRING=${{ matrix.tls }} -DVMIME_CHARSETCONV_LIB:STRING=${{ matrix.charset }} -DVMIME_BUILD_TESTS=ON -DVMIME_BUILD_SAMPLES=ON
         make "-j$(nproc)"
         sudo make install
         make test
@@ -69,7 +64,7 @@ jobs:
         UBSAN_OPTIONS: print_stacktrace=1
       run: |
         set -ex
-        cmake . -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer" -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined" -DCMAKE_SHARED_LINKER_FLAGS="-fsanitize=address,undefined" -DVMIME_SENDMAIL_PATH:STRING="/usr/sbin/sendmail" -DVMIME_HAVE_TLS_SUPPORT:BOOL=ON -DVMIME_TLS_SUPPORT_LIB:STRING=gnutls -DVMIME_CHARSETCONV_LIB:STRING=icu -DVMIME_IDNA_LIB:STRING=libidn2 -DVMIME_BUILD_TESTS=ON -DVMIME_BUILD_SAMPLES=OFF
+        cmake . -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer" -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined" -DCMAKE_SHARED_LINKER_FLAGS="-fsanitize=address,undefined" -DVMIME_SENDMAIL_PATH:STRING="/usr/sbin/sendmail" -DVMIME_HAVE_TLS_SUPPORT:BOOL=ON -DVMIME_TLS_SUPPORT_LIB:STRING=gnutls -DVMIME_CHARSETCONV_LIB:STRING=icu -DVMIME_BUILD_TESTS=ON -DVMIME_BUILD_SAMPLES=OFF
         make "-j$(nproc)"
         ctest --output-on-failure
 
