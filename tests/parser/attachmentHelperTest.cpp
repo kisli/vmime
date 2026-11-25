@@ -30,6 +30,7 @@ VMIME_TEST_SUITE_BEGIN(attachmentHelperTest)
 		VMIME_TEST(testAddAttachment1)
 		VMIME_TEST(testAddAttachment2)
 		VMIME_TEST(testAddAttachment3)
+		VMIME_TEST(testAddAttachmentUUEncoded)
 		VMIME_TEST(testIsBodyPartAnAttachment1)
 		VMIME_TEST(testIsBodyPartAnAttachment2)
 		VMIME_TEST(testIsBodyPartAnAttachment3)
@@ -161,6 +162,55 @@ VMIME_TEST_SUITE_BEGIN(attachmentHelperTest)
 
 		VASSERT_EQ("1", "multipart/mixed[text/plain,image/jpeg]", getStructure(msg));
 		VASSERT_EQ("2", "Message body", extractBodyContents(msg->getBody()->getPartAt(0)));
+	}
+
+	// An attachment encoded with UUEncode, which is not a MIME encoding
+	// (RFC 2045, section 6.1), is re-encoded when added to a message
+	void testAddAttachmentUUEncoded() {
+
+		const char* const encodingNames[] = { "uuencode", "x-uuencode" };
+
+		for (const char* const encodingName : encodingNames) {
+
+			const vmime::string data =
+"Content-Type: multipart/mixed; boundary=\"foo\"\r\n"
+"\r\n"
+"--foo\r\n"
+"Content-Type: text/plain\r\n"
+"\r\n"
+"The text\r\n"
+"--foo\r\n"
+"Content-Type: application/octet-stream\r\n"
+"Content-Transfer-Encoding: " + vmime::string(encodingName) + "\r\n"
+"\r\n"
+"begin 644 data.bin\r\n"
+"/071T86-H;65N=\"!D871A\r\n"
+"`\r\n"
+"end\r\n"
+"--foo--\r\n";
+
+			vmime::shared_ptr <vmime::message> msg = vmime::make_shared <vmime::message>();
+			msg->parse(data);
+
+			vmime::shared_ptr <const vmime::attachment> att =
+				vmime::attachmentHelper::getBodyPartAttachment(msg->getBody()->getPartAt(1));
+
+			vmime::shared_ptr <vmime::message> newMsg = vmime::make_shared <vmime::message>();
+			newMsg->parse("Content-Type: text/plain\r\n\r\nThe text\r\n");
+
+			vmime::attachmentHelper::addAttachment(
+				newMsg,
+				vmime::make_shared <vmime::defaultAttachment>(att->getData(), att->getType())
+			);
+
+			vmime::shared_ptr <vmime::message> newMsgOut = vmime::make_shared <vmime::message>();
+			newMsgOut->parse(newMsg->generate());
+
+			vmime::shared_ptr <const vmime::bodyPart> attPart = newMsgOut->getBody()->getPartAt(1);
+
+			VASSERT_EQ(encodingName, "base64", attPart->getBody()->getEncoding().generate());
+			VASSERT_EQ(encodingName, "Attachment data", extractBodyContents(attPart));
+		}
 	}
 
 	// Content-Disposition: attachment

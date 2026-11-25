@@ -210,9 +210,10 @@ encoding encoding::decideImpl(
 
 bool encoding::shouldReencode() const {
 
+	// UUEncode is not a MIME encoding (RFC 2045, section 6.1): data encoded
+	// with it is re-encoded with a MIME encoding
 	if (m_name == encodingTypes::BASE64 ||
-	    m_name == encodingTypes::QUOTED_PRINTABLE ||
-	    m_name == encodingTypes::UUENCODE) {
+	    m_name == encodingTypes::QUOTED_PRINTABLE) {
 
 		return false;
 	}
