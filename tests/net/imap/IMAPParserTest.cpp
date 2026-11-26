@@ -36,6 +36,7 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 		VMIME_TEST(testFETCHResponse_optional_body_fld_lang)
 		VMIME_TEST(testFETCHBodyStructure_NIL_body_fld_param_value)
 		VMIME_TEST(testFETCHBodyStructure_empty_body_fld_param_instead_of_NIL)
+		VMIME_TEST(testFETCHResponse_empty_msg_att)
 		VMIME_TEST(testPipelining)
 		VMIME_TEST(testStarFlagWithoutBackslash)
 		VMIME_TEST(testUnquotedMailboxName)
@@ -255,6 +256,28 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 			parser->setStrict(false);
 
 			VASSERT_NO_THROW("non-strict mode", std::unique_ptr <vmime::net::imap::IMAPParser::response>(parser->readResponse(*tag)));
+		}
+	}
+
+	// msg-att contains at least one item (RFC 9051, section 9): an empty
+	// list must be rejected, not parsed as a list with a NULL item
+	void testFETCHResponse_empty_msg_att() {
+
+		const char* resp = "* 1 FETCH ()\r\na001 OK FETCH complete\r\n";
+
+		for (const bool strict : { true, false }) {
+
+			auto socket = vmime::make_shared <testSocket>();
+			socket->localSend(resp);
+
+			auto parser = vmime::make_shared <vmime::net::imap::IMAPParser>();
+			auto tag = vmime::make_shared <vmime::net::imap::IMAPTag>();
+
+			parser->setSocket(socket);
+			parser->setTimeoutHandler(vmime::make_shared <testTimeoutHandler>());
+			parser->setStrict(strict);
+
+			VASSERT_THROW("parse", parser->readResponse(*tag), vmime::exceptions::invalid_response);
 		}
 	}
 

@@ -185,7 +185,7 @@ void IMAPFolder::open(const int mode, bool failIfModeIsNotAvailable) {
 
 		std::vector <string> selectParams;
 
-		if (m_connection->hasCapability("CONDSTORE")) {
+		if (connection->hasCapability("CONDSTORE")) {
 			selectParams.push_back("CONDSTORE");
 		}
 
@@ -1213,7 +1213,7 @@ messageSet IMAPFolder::addMessage(
 	if (finalResp->isBad() || finalResp->response_done->response_tagged->
 			resp_cond_state->status != IMAPParser::resp_cond_state::OK) {
 
-		throw exceptions::command_error("APPEND", resp->getErrorLog(), "bad response");
+		throw exceptions::command_error("APPEND", finalResp->getErrorLog(), "bad response");
 	}
 
 	processStatusUpdate(finalResp.get());

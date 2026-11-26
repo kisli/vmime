@@ -26,6 +26,8 @@
 #include "vmime/net/imap/IMAPStore.hpp"
 #include "vmime/net/imap/IMAPFolder.hpp"
 
+#include "vmime/security/sasl/SASLMechanismFactory.hpp"
+
 
 using namespace vmime::net::imap;
 
@@ -339,6 +341,113 @@ std::vector <vmime::string> SASLIMAPTestSocket::sm_authLines;
 
 
 
+/** SASL mechanism with a security layer which does not change the data,
+  * but counts the bytes decoded. Authentication succeeds without any
+  * challenge.
+  */
+class securityLayerSASLMechanism : public vmime::security::sasl::SASLMechanism {
+
+public:
+
+	securityLayerSASLMechanism(
+		const vmime::shared_ptr <vmime::security::sasl::SASLContext>& /* ctx */,
+		const vmime::string& /* name */
+	) {
+
+	}
+
+	static void reset() {
+
+		sm_decodedBytes = 0;
+	}
+
+	static vmime::size_t getDecodedBytes() {
+
+		return sm_decodedBytes;
+	}
+
+	vmime::string getName() const {
+
+		return "X-VMIME-SECURITY-LAYER";
+	}
+
+	bool step(
+		const vmime::shared_ptr <vmime::security::sasl::SASLSession>& /* sess */,
+		const vmime::byte_t* /* challenge */,
+		const vmime::size_t /* challengeLen */,
+		vmime::byte_t** response,
+		vmime::size_t* responseLen
+	) {
+
+		*response = NULL;
+		*responseLen = 0;
+
+		return true;
+	}
+
+	bool isComplete() const {
+
+		return true;
+	}
+
+	bool hasInitialResponse() const {
+
+		return false;
+	}
+
+	bool isPlaintext() const {
+
+		return false;
+	}
+
+	void encode(
+		const vmime::shared_ptr <vmime::security::sasl::SASLSession>& /* sess */,
+		const vmime::byte_t* input,
+		const vmime::size_t inputLen,
+		vmime::byte_t** output,
+		vmime::size_t* outputLen
+	) {
+
+		copy(input, inputLen, output, outputLen);
+	}
+
+	void decode(
+		const vmime::shared_ptr <vmime::security::sasl::SASLSession>& /* sess */,
+		const vmime::byte_t* input,
+		const vmime::size_t inputLen,
+		vmime::byte_t** output,
+		vmime::size_t* outputLen
+	) {
+
+		sm_decodedBytes += inputLen;
+
+		copy(input, inputLen, output, outputLen);
+	}
+
+private:
+
+	static void copy(
+		const vmime::byte_t* input,
+		const vmime::size_t inputLen,
+		vmime::byte_t** output,
+		vmime::size_t* outputLen
+	) {
+
+		vmime::byte_t* res = new vmime::byte_t[inputLen];
+		std::copy(input, input + inputLen, res);
+
+		*output = res;
+		*outputLen = inputLen;
+	}
+
+	static vmime::size_t sm_decodedBytes;
+};
+
+
+vmime::size_t securityLayerSASLMechanism::sm_decodedBytes = 0;
+
+
+
 /** IMAP test server which sends a PREAUTH greeting, and advertises the
   * STARTTLS capability.
   *
@@ -435,12 +544,14 @@ VMIME_TEST_SUITE_BEGIN(IMAPConnectionTest)
 		VMIME_TEST(testStoreReconnectAfterTimeout)
 		VMIME_TEST(testStoreReconnectDetachesFolders)
 		VMIME_TEST(testFolderReopenAfterTimeout)
+		VMIME_TEST(testFolderOpenAfterStoreTimeout)
 		VMIME_TEST(testFetchWriteError)
 		VMIME_TEST(testAppendReadError)
 		VMIME_TEST(testTrace_LOGIN)
 		VMIME_TEST(testSASLInitialResponse)
 		VMIME_TEST(testSASLInitialResponse_NoSASLIR)
 		VMIME_TEST(testTrace_AUTHENTICATE)
+		VMIME_TEST(testSASLSecurityLayer)
 		VMIME_TEST(testPlaintextAuthNotAllowed)
 		VMIME_TEST(testLOGINDISABLED)
 #if VMIME_HAVE_TLS_SUPPORT
@@ -687,6 +798,34 @@ VMIME_TEST_SUITE_BEGIN(IMAPConnectionTest)
 		VASSERT_EQ("All connections closed", 0, failingIMAPTestSocket::getConnectedCount());
 	}
 
+	// The folder has its own connection: opening it must not use the store
+	// connection, which may have timed out
+	void testFolderOpenAfterStoreTimeout() {
+
+		vmime::shared_ptr <IMAPStore> store = createStore();
+		store->connect();
+
+		vmime::shared_ptr <IMAPFolder> folder =
+			vmime::dynamicCast <IMAPFolder>(store->getDefaultFolder());
+
+		failingIMAPTestSocket::failOn("NOOP", failingIMAPTestSocket::FAILURE_NO_RESPONSE);
+
+		VASSERT_THROW("NOOP", store->noop(), vmime::exceptions::operation_timed_out);
+		VASSERT_FALSE("Store connected", store->isConnected());
+
+		failingIMAPTestSocket::failOn("");
+
+		VASSERT_NO_THROW("Open", folder->open(vmime::net::folder::MODE_READ_WRITE));
+		VASSERT_NO_THROW("NOOP", folder->noop());
+
+		VASSERT_NO_THROW("Close", folder->close(false));
+
+		folder = vmime::null;
+
+		VASSERT_NO_THROW("Disconnect", store->disconnect());
+		VASSERT_EQ("All connections closed", 0, failingIMAPTestSocket::getConnectedCount());
+	}
+
 	void testFetchWriteError() {
 
 		vmime::shared_ptr <IMAPStore> store = createStore();
@@ -832,6 +971,33 @@ VMIME_TEST_SUITE_BEGIN(IMAPConnectionTest)
 
 		VASSERT_TRUE("AUTHENTICATE", isCommandTraced(lines, "AUTHENTICATE PLAIN {initial-response}"));
 		VASSERT_FALSE("Credentials", isCommandTraced(lines, "AUTHENTICATE PLAIN AHVzZXIAcGFzcw=="));
+	}
+
+	// A security layer negotiated during authentication applies to the data
+	// sent and received after the tagged OK response (RFC 9051, section 6.2.2)
+	void testSASLSecurityLayer() {
+
+		vmime::security::sasl::SASLMechanismFactory::getInstance()->
+			registerMechanism <securityLayerSASLMechanism>("X-VMIME-SECURITY-LAYER");
+
+		securityLayerSASLMechanism::reset();
+		SASLIMAPTestSocket::reset(/* saslIR */ false, "AUTH=X-VMIME-SECURITY-LAYER");
+
+		vmime::shared_ptr <vmime::net::session> sess = vmime::net::session::create();
+		sess->getProperties()["store.imap.options.sasl.fallback"] = false;
+
+		vmime::shared_ptr <vmime::net::store> store =
+			sess->getStore(vmime::utility::url("imap://user:pass@localhost"));
+
+		store->setSocketFactory(vmime::make_shared <testSocketFactory <SASLIMAPTestSocket> >());
+		store->setTimeoutHandlerFactory(vmime::make_shared <testTimeoutHandlerFactory>());
+
+		store->connect();
+
+		// Response to the LIST command sent after authentication
+		VASSERT_TRUE("Decoded", securityLayerSASLMechanism::getDecodedBytes() > 0);
+
+		store->disconnect();
 	}
 
 	// Connect to a server which advertises the specified capabilities: if SASL

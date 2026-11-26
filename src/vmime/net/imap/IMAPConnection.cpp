@@ -487,7 +487,7 @@ void IMAPConnection::authenticateSASL() {
 			    resp->response_done->response_tagged->resp_cond_state->
 			    	status == IMAPParser::resp_cond_state::OK) {
 
-				m_socket = saslSession->getSecuredSocket(m_socket);
+				setSocket(saslSession->getSecuredSocket(m_socket));
 				return;
 
 			} else {
