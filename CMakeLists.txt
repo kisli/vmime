@@ -662,10 +662,18 @@ OPTION(
 	ON
 )
 
+# Sendmail protocol needs to spawn a child process, which is not implemented
+# on Windows
+IF(WIN32)
+	SET(VMIME_DEFAULT_HAVE_MESSAGING_PROTO_SENDMAIL OFF)
+ELSE()
+	SET(VMIME_DEFAULT_HAVE_MESSAGING_PROTO_SENDMAIL ON)
+ENDIF()
+
 OPTION(
 	VMIME_HAVE_MESSAGING_PROTO_SENDMAIL
 	"Enable Sendmail protocol"
-	ON
+	${VMIME_DEFAULT_HAVE_MESSAGING_PROTO_SENDMAIL}
 )
 
 
@@ -1229,29 +1237,43 @@ IF(VMIME_HAVE_MESSAGING_FEATURES AND VMIME_HAVE_MESSAGING_PROTO_SENDMAIL AND NOT
 	MESSAGE(FATAL_ERROR "Sendmail protocol requires file-system support (VMIME_HAVE_FILESYSTEM_FEATURES must be set to ON).")
 ENDIF()
 
-# Path to 'sendmail' must be specified if Sendmail protocol is enabled
+# Path to 'sendmail' binary: this is the default value of the
+# "transport.sendmail.binpath" property, which can be changed at run time
 IF(VMIME_HAVE_MESSAGING_PROTO_SENDMAIL)
-	# Sendmail path
-	# only configure this if we are enabling sendmail
 
-	FOREACH (SENDMAIL_PATH /usr/sbin/sendmail /usr/lib/sendmail /usr/bin/sendmail /bin/sendmail /var/qmail/bin/qmail-inject /bin/cgimail)
-		IF(EXISTS ${SENDMAIL_PATH})
-			MESSAGE(STATUS "Sendmail binary found at ${SENDMAIL_PATH}")
-			SET(VMIME_DEFAULT_SENDMAIL_PATH ${SENDMAIL_PATH})
+	SET(VMIME_SENDMAIL_PATH "" CACHE STRING "Specifies the path to sendmail binary")
+
+	# An empty value may have been cached by a previous run
+	IF(NOT VMIME_SENDMAIL_PATH)
+
+		SET(VMIME_DEFAULT_SENDMAIL_PATH "")
+
+		FOREACH(SENDMAIL_PATH /usr/sbin/sendmail /usr/lib/sendmail /usr/bin/sendmail /bin/sendmail /var/qmail/bin/qmail-inject /bin/cgimail)
+			IF(EXISTS ${SENDMAIL_PATH})
+				MESSAGE(STATUS "Sendmail binary found at ${SENDMAIL_PATH}")
+				SET(VMIME_DEFAULT_SENDMAIL_PATH ${SENDMAIL_PATH})
+				BREAK()
+			ENDIF()
+		ENDFOREACH(SENDMAIL_PATH)
+
+		# The build system may have no MTA installed (eg. a chroot or a
+		# container): fall back to the standard location
+		IF(NOT VMIME_DEFAULT_SENDMAIL_PATH)
+			SET(VMIME_DEFAULT_SENDMAIL_PATH /usr/sbin/sendmail)
+			MESSAGE(STATUS "Sendmail binary not found, using ${VMIME_DEFAULT_SENDMAIL_PATH}")
 		ENDIF()
-	ENDFOREACH(SENDMAIL_PATH)
 
-	SET(
-		VMIME_SENDMAIL_PATH
-		${VMIME_DEFAULT_SENDMAIL_PATH}
-		CACHE
-		STRING
-		"Specifies the path to sendmail binary"
-	)
+		SET(
+			VMIME_SENDMAIL_PATH
+			${VMIME_DEFAULT_SENDMAIL_PATH}
+			CACHE
+			STRING
+			"Specifies the path to sendmail binary"
+			FORCE
+		)
 
-	IF(NOT VMIME_SENDMAIL_PATH OR VMIME_SENDMAIL_PATH STREQUAL "")
-		MESSAGE(FATAL_ERROR "Enabling Sendmail protocol requires that you specify path to 'sendmail' binary.")
 	ENDIF()
+
 ENDIF()
 
 
