@@ -33,6 +33,7 @@
 
 #include <vector>
 #include <map>
+#include <atomic>
 
 #include "vmime/types.hpp"
 
@@ -163,6 +164,54 @@ public:
 
 	void noop();
 
+	/** Possible results of idle(). */
+	enum IdleResult {
+		IDLE_CHANGES,       /**< The server reported changes in the folder
+		                         (the listeners have been notified). */
+		IDLE_TIMEOUT,       /**< The delay elapsed without any change. */
+		IDLE_INTERRUPTED    /**< idle() was interrupted by a call to
+		                         interruptIdle(). */
+	};
+
+	/** Wait for changes in this folder, using the IMAP IDLE command
+	  * (RFC 2177). This blocks until the server reports a change (new
+	  * or expunged messages, flags changes...), the specified delay
+	  * elapses, or interruptIdle() is called.
+	  *
+	  * When the server reports a change, the IDLE command is terminated
+	  * and the listeners registered on this folder are notified before
+	  * this function returns. They are called from the thread which
+	  * runs idle(), and can use the folder to fetch new messages.
+	  * Typically, idle() is called in a loop.
+	  *
+	  * The time-out handler is not used while waiting for changes. It is
+	  * used again when terminating the IDLE command.
+	  *
+	  * Note: interruptIdle() is the only function of this object which
+	  * may be called from another thread while idle() is running.
+	  *
+	  * @param timeout maximum time to wait for changes, in seconds (must
+	  * be positive); RFC 2177 asks clients to re-issue the IDLE command
+	  * at least every 29 minutes
+	  * @return the reason why the function returned
+	  * @throw exceptions::invalid_argument if the timeout is not positive
+	  * @throw exceptions::illegal_state if the folder is not open
+	  * @throw exceptions::operation_not_supported if the server does not
+	  * support IDLE
+	  * @throw exceptions::command_error if the server rejects the command
+	  * or closes the connection
+	  * @throw exceptions::net_exception if another error occurs
+	  */
+	IdleResult idle(const int timeout = 29 * 60);
+
+	/** Interrupt idle(), which will return IDLE_INTERRUPTED. If idle() is
+	  * not running, the next call to idle() returns immediately.
+	  *
+	  * Unlike the other functions of this object, this one may be called
+	  * from another thread.
+	  */
+	void interruptIdle();
+
 	void expunge();
 
 	shared_ptr <folder> getParent();
@@ -248,6 +297,8 @@ private:
 	shared_ptr <IMAPFolderStatus> m_status;
 
 	std::vector <IMAPMessage*> m_messages;
+
+	std::atomic <bool> m_idleInterrupted;
 };
 
 

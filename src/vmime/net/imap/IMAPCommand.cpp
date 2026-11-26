@@ -385,6 +385,13 @@ shared_ptr <IMAPCommand> IMAPCommand::NOOP() {
 
 
 // static
+shared_ptr <IMAPCommand> IMAPCommand::IDLE() {
+
+	return createCommand("IDLE");
+}
+
+
+// static
 shared_ptr <IMAPCommand> IMAPCommand::EXPUNGE() {
 
 	return createCommand("EXPUNGE");

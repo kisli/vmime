@@ -995,6 +995,42 @@ IMAPParser::response* IMAPConnection::readResponse(IMAPParser::literalHandler* l
 }
 
 
+IMAPParser::response* IMAPConnection::readResponseElement(IMAPParser::literalHandler* lh) {
+
+	if (!m_socket) {
+		throw exceptions::socket_not_connected_exception();
+	}
+
+	try {
+
+		return m_parser->readResponseElement(lh);
+
+	} catch (...) {
+
+		closeConnection();
+		throw;
+	}
+}
+
+
+bool IMAPConnection::waitForResponseLine(const int msecs) {
+
+	if (!m_socket) {
+		throw exceptions::socket_not_connected_exception();
+	}
+
+	try {
+
+		return m_parser->waitForLine(msecs);
+
+	} catch (...) {
+
+		closeConnection();
+		throw;
+	}
+}
+
+
 IMAPConnection::ProtocolStates IMAPConnection::state() const {
 
 	return m_state;

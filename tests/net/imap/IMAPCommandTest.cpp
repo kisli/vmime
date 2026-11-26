@@ -54,6 +54,7 @@ VMIME_TEST_SUITE_BEGIN(IMAPCommandTest)
 		VMIME_TEST(testSTARTTLS)
 		VMIME_TEST(testCAPABILITY)
 		VMIME_TEST(testNOOP)
+		VMIME_TEST(testIDLE)
 		VMIME_TEST(testEXPUNGE)
 		VMIME_TEST(testCLOSE)
 		VMIME_TEST(testLOGOUT)
@@ -453,6 +454,14 @@ VMIME_TEST_SUITE_BEGIN(IMAPCommandTest)
 
 		VASSERT_NOT_NULL("Not null", cmd);
 		VASSERT_EQ("Text", "NOOP", cmd->getText());
+	}
+
+	void testIDLE() {
+
+		vmime::shared_ptr <IMAPCommand> cmd = IMAPCommand::IDLE();
+
+		VASSERT_NOT_NULL("Not null", cmd);
+		VASSERT_EQ("Text", "IDLE", cmd->getText());
 	}
 
 	void testEXPUNGE() {

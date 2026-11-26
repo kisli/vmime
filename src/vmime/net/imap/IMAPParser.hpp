@@ -4749,6 +4749,94 @@ public:
 	}
 
 
+	/** Read a single element of a response: a continuation request,
+	  * an untagged response, or the line which completes the response
+	  * (tagged response). Unlike readResponse(), this does not wait for
+	  * the tagged response, so that unsolicited responses can be processed
+	  * as they arrive while a command is in progress (eg. IDLE).
+	  *
+	  * @param lh literal handler, or NULL if not used
+	  * @return a response which contains either one element in
+	  * continue_req_or_response_data, or response_done
+	  */
+	response* readResponseElement(literalHandler* lh = NULL) {
+
+		size_t pos = 0;
+		string line = readLine();
+
+		std::unique_ptr <response> resp(new response);
+
+		m_literalHandler = lh;
+
+		if (!line.empty() && (line[0] == '*' || line[0] == '+')) {
+
+			continue_req_or_response_data* elem =
+				get <continue_req_or_response_data>(line, &pos);
+
+			if (elem) {
+				resp->continue_req_or_response_data.push_back(
+					std::unique_ptr <continue_req_or_response_data>(elem)
+				);
+			}
+
+		} else {
+
+			resp->response_done.reset(get <response_done>(line, &pos));
+		}
+
+		m_literalHandler = NULL;
+
+		if (resp->continue_req_or_response_data.empty() && !resp->response_done) {
+			throw exceptions::invalid_response("", m_errorResponseLine);
+		}
+
+		resp->setErrorLog(lastLine());
+
+		return resp.release();
+	}
+
+
+	/** Wait until a complete line is available in the input buffer, for
+	  * at most the specified delay. Unlike readLine(), this does not
+	  * trigger the time-out handler, as the absence of data is expected
+	  * here (eg. while waiting for unsolicited responses during IDLE).
+	  *
+	  * @param msecs maximum time to wait, in milliseconds
+	  * @return true if a complete line can be read without blocking,
+	  * or false otherwise
+	  */
+	bool waitForLine(const int msecs) {
+
+		if (m_buffer.find('\n') != string::npos) {
+			return true;
+		}
+
+		shared_ptr <timeoutHandler> toh = m_timeoutHandler.lock();
+		shared_ptr <socket> sok = m_socket.lock();
+
+		if (!sok)
+			throw exceptions::illegal_state("Store disconnected");
+
+		if (toh) {
+			toh->resetTimeOut();
+		}
+
+		// Data may be pending in an upper layer (eg. TLS) while there is
+		// nothing to read on the underlying socket, so receive first
+		string receiveBuffer;
+		sok->receive(receiveBuffer);
+
+		if (receiveBuffer.empty()) {
+			sok->waitForRead(msecs);
+			sok->receive(receiveBuffer);
+		}
+
+		m_buffer += receiveBuffer;
+
+		return m_buffer.find('\n') != string::npos;
+	}
+
+
 	/** Parse a token and advance.
 	  * If the token has been parsed successfully, a raw pointer to it
 	  * will be returned. The caller is responsible to free the memory.

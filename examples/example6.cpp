@@ -30,6 +30,7 @@
 
 #include "vmime/vmime.hpp"
 #include "vmime/platforms/posix/posixHandler.hpp"
+#include "vmime/net/imap/IMAPFolder.hpp"
 
 #include "example6_tracer.hpp"
 #include "example6_authenticator.hpp"
@@ -393,6 +394,43 @@ static void sendMessage() {
 }
 
 
+/** Print the changes reported by a folder.
+  */
+class changesListener : public vmime::net::events::messageCountListener,
+                        public vmime::net::events::messageChangedListener {
+
+public:
+
+	void messagesAdded(const vmime::shared_ptr <vmime::net::events::messageCountEvent>& event) {
+
+		printNumbers("New message(s)", event->getNumbers());
+	}
+
+	void messagesRemoved(const vmime::shared_ptr <vmime::net::events::messageCountEvent>& event) {
+
+		printNumbers("Removed message(s)", event->getNumbers());
+	}
+
+	void messageChanged(const vmime::shared_ptr <vmime::net::events::messageChangedEvent>& event) {
+
+		printNumbers("Changed message(s)", event->getNumbers());
+	}
+
+private:
+
+	static void printNumbers(const std::string& what, const std::vector <vmime::size_t>& numbers) {
+
+		std::cout << what << ":";
+
+		for (vmime::size_t i = 0 ; i < numbers.size() ; ++i) {
+			std::cout << " " << numbers[i];
+		}
+
+		std::cout << std::endl;
+	}
+};
+
+
 /** Connect to a message store interactively.
   */
 static void connectStore() {
@@ -483,6 +521,7 @@ static void connectStore() {
 				choices.push_back("Change folder");
 				choices.push_back("Add message (to the current folder)");
 				choices.push_back("Copy message (into the current folder)");
+				choices.push_back("Wait for changes (IMAP IDLE)");
 				choices.push_back("Display trace output");
 				choices.push_back("Return to main menu");
 
@@ -798,8 +837,74 @@ static void connectStore() {
 
 					break;
 				}
+				// Wait for changes (IMAP IDLE)
+				case 12: {
+
+#if VMIME_HAVE_MESSAGING_PROTO_IMAP
+
+					vmime::shared_ptr <vmime::net::imap::IMAPFolder> imapFolder =
+						vmime::dynamicCast <vmime::net::imap::IMAPFolder>(f);
+
+					if (!imapFolder) {
+
+						std::cerr << "IDLE is only available with IMAP." << std::endl;
+						break;
+					}
+
+					std::cout << "Enter maximum time to wait, in seconds: ";
+					std::cout.flush();
+
+					std::string line;
+					std::getline(std::cin, line);
+
+					std::istringstream iss(line);
+
+					int timeout = 0;
+					iss >> timeout;
+
+					if (timeout <= 0) {
+
+						std::cerr << "Invalid time." << std::endl;
+						break;
+					}
+
+					std::cout << "Waiting for changes..." << std::endl;
+
+					changesListener listener;
+
+					imapFolder->addMessageCountListener(&listener);
+					imapFolder->addMessageChangedListener(&listener);
+
+					vmime::net::imap::IMAPFolder::IdleResult result;
+
+					try {
+
+						result = imapFolder->idle(timeout);
+
+					} catch (...) {
+
+						imapFolder->removeMessageChangedListener(&listener);
+						imapFolder->removeMessageCountListener(&listener);
+						throw;
+					}
+
+					imapFolder->removeMessageChangedListener(&listener);
+					imapFolder->removeMessageCountListener(&listener);
+
+					if (result == vmime::net::imap::IMAPFolder::IDLE_TIMEOUT) {
+						std::cout << "No change." << std::endl;
+					}
+
+#else
+
+					std::cerr << "IMAP support is not enabled." << std::endl;
+
+#endif // VMIME_HAVE_MESSAGING_PROTO_IMAP
+
+					break;
+				}
 				// Display trace output
-				case 12:
+				case 13:
 
 					std::cout << std::endl;
 					std::cout << "Connection Trace:" << std::endl;
@@ -808,7 +913,7 @@ static void connectStore() {
 					break;
 
 				// Main menu
-				case 13:
+				case 14:
 
 					f->close(true);  // 'true' to expunge deleted messages
 					cont = false;

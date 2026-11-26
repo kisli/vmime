@@ -72,6 +72,7 @@ public:
 	static shared_ptr <IMAPCommand> STARTTLS();
 	static shared_ptr <IMAPCommand> CAPABILITY();
 	static shared_ptr <IMAPCommand> NOOP();
+	static shared_ptr <IMAPCommand> IDLE();
 	static shared_ptr <IMAPCommand> EXPUNGE();
 	static shared_ptr <IMAPCommand> CLOSE();
 	static shared_ptr <IMAPCommand> LOGOUT();
