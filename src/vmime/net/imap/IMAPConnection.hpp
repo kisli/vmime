@@ -88,6 +88,9 @@ public:
 	void sendRaw(const byte_t* buffer, const size_t count);
 
 	IMAPParser::response* readResponse(IMAPParser::literalHandler* lh = NULL);
+	IMAPParser::response* readResponseElement(IMAPParser::literalHandler* lh = NULL);
+
+	bool waitForResponseLine(const int msecs);
 
 
 	shared_ptr <const IMAPStore> getStore() const;

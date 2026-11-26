@@ -1090,6 +1090,78 @@ methods on a {\vcode folder} object: {\vcode addMessageChangedListener()},
 information, please read the class documentation for
 {\vcode vmime::net::events} namespace.
 
+\subsection{Waiting for changes (IMAP IDLE)} % --------------------------------
+
+Instead of calling {\vcode noop()} at regular intervals to check whether new
+messages have arrived, an IMAP client can ask the server to report changes as
+soon as they happen, using the IDLE command\footnote{See RFC 2177:
+\url{https://www.rfc-editor.org/rfc/rfc2177}}. This is available with the
+{\vcode idle()} function of {\vcode vmime::net::imap::IMAPFolder}.
+
+{\vcode idle()} blocks until the server reports a change in the folder (new or
+expunged messages, flags changes...), the specified delay elapses, or
+{\vcode interruptIdle()} is called. When the server reports a change, the
+listeners registered on the folder are notified before {\vcode idle()}
+returns. As the IDLE command has been terminated at this time, the listeners
+can use the folder, for example to fetch the new messages. The return value
+tells why the function returned: {\vcode IDLE\_CHANGES}, {\vcode IDLE\_TIMEOUT}
+or {\vcode IDLE\_INTERRUPTED}.
+
+\begin{lstlisting}[caption={Waiting for new messages}]
+#include "vmime/net/imap/IMAPFolder.hpp"
+
+class myMessageCountListener : public vmime::net::events::messageCountListener {
+
+public:
+
+   void messagesAdded(const vmime::shared_ptr <vmime::net::events::messageCountEvent>& event) {
+
+      std::cout << event->getNumbers().size() << " new message(s)" << std::endl;
+   }
+
+   void messagesRemoved(const vmime::shared_ptr <vmime::net::events::messageCountEvent>& event) {
+
+   }
+};
+
+vmime::shared_ptr <vmime::net::imap::IMAPFolder> folder =
+   vmime::dynamicCast <vmime::net::imap::IMAPFolder>(store->getDefaultFolder());
+
+folder->open(vmime::net::folder::MODE_READ_ONLY);
+
+myMessageCountListener listener;
+folder->addMessageCountListener(&listener);
+
+std::atomic <bool> running(true);
+
+while (running) {
+
+   // Wait for changes, for at most 29 minutes
+   folder->idle(29 * 60);
+}
+\end{lstlisting}
+
+To stop waiting from another thread (eg. when the application exits), call
+{\vcode interruptIdle()}: this is the only function of the folder which can be
+called from another thread while {\vcode idle()} is running. If it is called
+before {\vcode idle()}, the next call to {\vcode idle()} returns immediately,
+so the request is never lost:
+
+\begin{lstlisting}
+// In another thread
+running = false;
+folder->interruptIdle();
+\end{lstlisting}
+
+\vnote{RFC 2177 asks clients to terminate and re-issue the IDLE command at least
+every 29 minutes, as servers may consider the client inactive and close the
+connection after 30 minutes. A NAT router or a firewall may drop an inactive
+connection much earlier: in this case, use a shorter delay.}
+
+If the server does not support IDLE, {\vcode idle()} throws an
+{\vcode operation\_not\_supported} exception. You can then fall back on calling
+{\vcode noop()} at regular intervals.
+
 
 % ============================================================================
 \section{Handling timeouts}
@@ -1144,6 +1216,10 @@ When using a service, a default timeout handler is set: if an operation
 is blocked for more than 30 seconds (ie. network link is down and no data
 was received since 30 seconds), an {\vcode operation\_timed\_out} exception
 is thrown.
+
+The timeout handler is not used while an IMAP folder waits for changes with
+{\vcode idle()}, as no data is expected from the server during this time. It
+is used again when the IDLE command is terminated.
 
 The following example shows how to implement a simple timeout handler:
 

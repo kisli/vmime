@@ -46,6 +46,7 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 		VMIME_TEST(testIDResponse)
 		VMIME_TEST(testIDResponse_NIL)
 		VMIME_TEST(testKeywords_TurkishLocale)
+		VMIME_TEST(testReadResponseElement)
 	VMIME_TEST_LIST_END
 
 
@@ -753,6 +754,70 @@ VMIME_TEST_SUITE_BEGIN(IMAPParserTest)
 		VASSERT("resp text code", code);
 		VASSERT_EQ("UIDVALIDITY", vmime::net::imap::IMAPParser::resp_text_code::UIDVALIDITY, code->type);
 		VASSERT_EQ("UIDVALIDITY value", 42, code->nz_number->value);
+	}
+
+	// Used for IDLE: each element of a response is read separately
+	void testReadResponseElement() {
+
+		const char* respText =
+			"+ idling\r\n"
+			"* 4 EXISTS\r\n"
+			"a001 OK IDLE terminated\r\n";
+
+		auto socket = vmime::make_shared <testSocket>();
+		auto toh = vmime::make_shared <testTimeoutHandler>();
+
+		socket->localSend(respText);
+
+		auto parser = vmime::make_shared <vmime::net::imap::IMAPParser>();
+
+		parser->setSocket(socket);
+		parser->setTimeoutHandler(toh);
+
+		std::unique_ptr <vmime::net::imap::IMAPParser::response> resp;
+
+		// Continuation request
+		VASSERT("wait 1", parser->waitForLine(10));
+		VASSERT_NO_THROW("parse 1", resp.reset(parser->readResponseElement()));
+		VASSERT_EQ("size 1", 1, resp->continue_req_or_response_data.size());
+		VASSERT("continue req", resp->continue_req_or_response_data[0]->continue_req);
+		VASSERT("done 1", !resp->response_done);
+
+		// Untagged response
+		VASSERT("wait 2", parser->waitForLine(10));
+		VASSERT_NO_THROW("parse 2", resp.reset(parser->readResponseElement()));
+		VASSERT_EQ("size 2", 1, resp->continue_req_or_response_data.size());
+		VASSERT("resp data", resp->continue_req_or_response_data[0]->response_data);
+		VASSERT("mailbox data", resp->continue_req_or_response_data[0]->response_data->mailbox_data);
+		VASSERT("done 2", !resp->response_done);
+
+		// Tagged response
+		VASSERT("wait 3", parser->waitForLine(10));
+		VASSERT_NO_THROW("parse 3", resp.reset(parser->readResponseElement()));
+		VASSERT_EQ("size 3", 0, resp->continue_req_or_response_data.size());
+		VASSERT("done 3", resp->response_done);
+		VASSERT("tagged", resp->response_done->response_tagged);
+		VASSERT_EQ(
+			"status",
+			vmime::net::imap::IMAPParser::resp_cond_state::OK,
+			resp->response_done->response_tagged->resp_cond_state->status
+		);
+
+		// No more data
+		VASSERT("wait 4", !parser->waitForLine(10));
+
+		// Incomplete line
+		socket->localSend("* 5 EXI");
+		VASSERT("wait 5", !parser->waitForLine(10));
+
+		socket->localSend("STS\r\n");
+		VASSERT("wait 6", parser->waitForLine(10));
+
+		// Invalid response
+		socket->localSend("* FOO BAR\r\n");
+
+		VASSERT_NO_THROW("parse 6", resp.reset(parser->readResponseElement()));
+		VASSERT_THROW("parse 7", parser->readResponseElement(), vmime::exceptions::invalid_response);
 	}
 
 VMIME_TEST_SUITE_END

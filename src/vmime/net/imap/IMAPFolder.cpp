@@ -45,6 +45,7 @@
 #include "vmime/utility/details/classicOStringStream.hpp"
 
 #include <algorithm>
+#include <chrono>
 #include <sstream>
 
 
@@ -64,7 +65,8 @@ IMAPFolder::IMAPFolder(
 	  m_name(path.isEmpty() ? folder::path::component("") : path.getLastComponent()),
 	  m_mode(-1),
 	  m_open(false),
-	  m_attribs(attribs) {
+	  m_attribs(attribs),
+	  m_idleInterrupted(false) {
 
 	store->registerFolder(this);
 
@@ -1463,6 +1465,171 @@ void IMAPFolder::noop() {
 	}
 
 	processStatusUpdate(resp.get());
+}
+
+
+// Maximum time spent waiting for data during IDLE before checking
+// whether idle() has been interrupted, in milliseconds
+static const int IDLE_POLL_INTERVAL = 100;
+
+
+IMAPFolder::IdleResult IMAPFolder::idle(const int timeout) {
+
+	shared_ptr <IMAPStore> store = m_store.lock();
+
+	if (!store) {
+		throw exceptions::illegal_state("Store disconnected");
+	} else if (!isOpen()) {
+		throw exceptions::illegal_state("Folder not open");
+	}
+
+	if (timeout <= 0) {
+		throw exceptions::invalid_argument();
+	}
+
+	if (!m_connection->hasCapability("IDLE")) {
+		throw exceptions::operation_not_supported();
+	}
+
+	// interruptIdle() was called before idle()
+	if (m_idleInterrupted.exchange(false)) {
+		return IDLE_INTERRUPTED;
+	}
+
+	IMAPCommand::IDLE()->send(m_connection);
+
+	// Wait for the continuation request
+	scoped_ptr <IMAPParser::response> resp(m_connection->readResponse());
+
+	// Unsolicited responses received while idling: they are processed
+	// once the IDLE command is terminated, so that the listeners can
+	// use the folder
+	IMAPParser::response updates;
+
+	bool idling = false;
+	bool changed = false;
+
+	for (auto& respData : resp->continue_req_or_response_data) {
+
+		if (respData->continue_req) {
+
+			idling = true;
+
+		} else {
+
+			if (respData->response_data &&
+			    (respData->response_data->mailbox_data || respData->response_data->message_data)) {
+
+				changed = true;
+			}
+
+			updates.continue_req_or_response_data.push_back(std::move(respData));
+		}
+	}
+
+	if (!idling) {
+		throw exceptions::command_error("IDLE", resp->getErrorLog(), "bad response");
+	}
+
+	// Wait for changes
+	IdleResult result = IDLE_CHANGES;
+
+	const std::chrono::steady_clock::time_point deadline =
+		std::chrono::steady_clock::now() + std::chrono::seconds(timeout);
+
+	while (!changed) {
+
+		if (m_idleInterrupted.exchange(false)) {
+			result = IDLE_INTERRUPTED;
+			break;
+		}
+
+		const std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+
+		if (now >= deadline) {
+			result = IDLE_TIMEOUT;
+			break;
+		}
+
+		const int remaining = static_cast <int>(
+			std::chrono::duration_cast <std::chrono::milliseconds>(deadline - now).count()
+		);
+
+		if (!m_connection->waitForResponseLine(std::min(remaining, IDLE_POLL_INTERVAL))) {
+			continue;
+		}
+
+		scoped_ptr <IMAPParser::response> elem(m_connection->readResponseElement());
+
+		// The server terminated the command by itself
+		if (elem->response_done) {
+
+			updates.response_done = std::move(elem->response_done);
+			updates.setErrorLog(elem->getErrorLog());
+
+			result = IDLE_TIMEOUT;
+			break;
+		}
+
+		auto& respData = elem->continue_req_or_response_data.front();
+
+		if (respData->response_data) {
+
+			if (respData->response_data->resp_cond_bye) {
+
+				processStatusUpdate(&updates);
+
+				m_connection->closeConnection();
+
+				throw exceptions::command_error(
+					"IDLE", elem->getErrorLog(), "connection closed by server"
+				);
+			}
+
+			// Other untagged status responses (eg. keep-alive "* OK ...")
+			// do not report a change in the folder
+			if (respData->response_data->mailbox_data || respData->response_data->message_data) {
+				changed = true;
+			}
+		}
+
+		updates.continue_req_or_response_data.push_back(std::move(respData));
+	}
+
+	// Terminate the IDLE command
+	if (!updates.response_done) {
+
+		m_connection->sendRaw(utility::stringUtils::bytesFromString("DONE\r\n"), 6);
+
+		if (m_connection->getTracer()) {
+			m_connection->getTracer()->traceSend("DONE");
+		}
+
+		scoped_ptr <IMAPParser::response> finalResp(m_connection->readResponse());
+
+		for (auto& respData : finalResp->continue_req_or_response_data) {
+			updates.continue_req_or_response_data.push_back(std::move(respData));
+		}
+
+		updates.response_done = std::move(finalResp->response_done);
+		updates.setErrorLog(finalResp->getErrorLog());
+	}
+
+	if (updates.isBad() || updates.response_done->response_tagged->
+			resp_cond_state->status != IMAPParser::resp_cond_state::OK) {
+
+		throw exceptions::command_error("IDLE", updates.getErrorLog(), "bad response");
+	}
+
+	processStatusUpdate(&updates);
+
+	return result;
+}
+
+
+void IMAPFolder::interruptIdle() {
+
+	m_idleInterrupted = true;
 }
 
 
