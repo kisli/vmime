@@ -3776,7 +3776,8 @@ public:
 
 			VIMAP_PARSER_CHECK(one_char <'('> );
 
-			items.push_back(std::unique_ptr <msg_att_item>(parser.get <msg_att_item>(line, &pos)));
+			// At least one item is required (RFC 9051, section 9)
+			VIMAP_PARSER_GET_PUSHBACK(msg_att_item, items);
 
 			while (!VIMAP_PARSER_TRY_CHECK(one_char <')'> )) {
 				VIMAP_PARSER_CHECK(SPACE);
