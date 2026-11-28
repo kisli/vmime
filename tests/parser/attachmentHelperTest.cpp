@@ -292,6 +292,17 @@ VMIME_TEST_SUITE_BEGIN(attachmentHelperTest)
 		VASSERT_EQ("3", false, vmime::attachmentHelper::isAttachment(hdr, false));
 		VASSERT_EQ("4", true, vmime::attachmentHelper::isAttachment(
 			hdr, false, vmime::attachmentHelper::INLINE_OBJECTS));
+
+		// Object referenced by a URI, without Content-Disposition field
+		// (RFC 2557, section 9.2)
+		hdr.parse(
+			"Content-Type: image/png\r\n"
+			"Content-Location: http://www.vmime.org/logo.png\r\n"
+		);
+
+		VASSERT_EQ("5", false, vmime::attachmentHelper::isAttachment(hdr, false));
+		VASSERT_EQ("6", true, vmime::attachmentHelper::isAttachment(
+			hdr, false, vmime::attachmentHelper::INLINE_OBJECTS));
 	}
 
 	void testGetAttachmentName() {

@@ -31,16 +31,235 @@
 #include "vmime/emptyContentHandler.hpp"
 #include "vmime/stringContentHandler.hpp"
 
+#include "vmime/parserHelpers.hpp"
+
 #include "vmime/utility/outputStreamAdapter.hpp"
+#include "vmime/utility/stringUtils.hpp"
+#include "vmime/utility/uriReference.hpp"
 #include "vmime/utility/details/classicOStringStream.hpp"
 
 
 namespace vmime {
 
 
+// Base URI when no other one applies (RFC 2557, section 5)
+static const char* const DEFAULT_BASE_URI = "thismessage:/";
+
+
+static string resolveURI(const string& base, const string& ref) {
+
+	return utility::uriReference(ref).resolve(utility::uriReference(base)).toString();
+}
+
+
+// "cid:" URIs only reference Content-Ids (RFC 2557, section 8.3)
+static bool isCIDReference(const string& ref) {
+
+	return utility::stringUtils::isStringEqualNoCase(utility::uriReference(ref).getScheme(), "cid");
+}
+
+
+static bool isMultipartRelated(const bodyPart& part) {
+
+	const shared_ptr <const mediaType> type =
+		part.getHeader()->findFieldValue <mediaType>(fields::CONTENT_TYPE);
+
+	return type &&
+	       type->getType() == mediaTypes::MULTIPART &&
+	       type->getSubType() == mediaTypes::MULTIPART_RELATED;
+}
+
+
+// Returns the URI in the Content-Location field of a part: encoded words are
+// decoded, and white-spaces are removed to unfold it (RFC 2557, section 4.4.3,
+// and RFC 2017, section 3.1)
+static string getLocation(const bodyPart& part) {
+
+	const shared_ptr <const text> location =
+		part.getHeader()->findFieldValue <text>(fields::CONTENT_LOCATION);
+
+	if (!location) {
+		return "";
+	}
+
+	const string buffer = location->getWholeBuffer();
+
+	string uri;
+	uri.reserve(buffer.length());
+
+	for (const char c : buffer) {
+
+		if (!parserHelpers::isSpace(c)) {
+			uri += c;
+		}
+	}
+
+	return uri;
+}
+
+
+// Returns the base URI of the relative URIs in a part: the first absolute URI
+// in the Content-Location fields of this part and of the parts which contain
+// it, else "thismessage:/" (RFC 2557, section 5)
+static string findBaseURI(const bodyPart* part) {
+
+	for ( ; part ; part = part->getParentPart()) {
+
+		const string location = getLocation(*part);
+
+		if (utility::uriReference(location).hasScheme()) {
+			return location;
+		}
+	}
+
+	return DEFAULT_BASE_URI;
+}
+
+
+// Returns the "href" attribute of the BASE element of an HTML document, or an
+// empty string if there is none (RFC 2557, section 5); character references
+// are not decoded
+static string findHTMLBase(const string& html) {
+
+	const string lower = utility::stringUtils::toLower(html);
+	const size_t length = lower.length();
+
+	for (size_t pos = lower.find("<base") ; pos != string::npos ; pos = lower.find("<base", pos + 1)) {
+
+		size_t p = pos + 5;
+
+		// Not "<basefont", for example
+		if (p < length && !parserHelpers::isSpace(lower[p]) && lower[p] != '/' && lower[p] != '>') {
+			continue;
+		}
+
+		// Attributes, until the end of the tag
+		while (p < length && lower[p] != '>') {
+
+			if (parserHelpers::isSpace(lower[p]) || lower[p] == '/') {
+				++p;
+				continue;
+			}
+
+			const size_t nameStart = p;
+
+			while (p < length && !parserHelpers::isSpace(lower[p]) &&
+			       lower[p] != '=' && lower[p] != '>' && lower[p] != '/') {
+
+				++p;
+			}
+
+			const string name = lower.substr(nameStart, p - nameStart);
+
+			while (p < length && parserHelpers::isSpace(lower[p])) {
+				++p;
+			}
+
+			string value;
+
+			if (p < length && lower[p] == '=') {
+
+				++p;
+
+				while (p < length && parserHelpers::isSpace(lower[p])) {
+					++p;
+				}
+
+				// Quoted value
+				if (p < length && (lower[p] == '"' || lower[p] == '\'')) {
+
+					const size_t end = std::min(lower.find(lower[p], p + 1), length);
+
+					value = html.substr(p + 1, end - p - 1);
+					p = std::min(end + 1, length);
+
+				// Unquoted value
+				} else {
+
+					const size_t valueStart = p;
+
+					while (p < length && !parserHelpers::isSpace(lower[p]) && lower[p] != '>') {
+						++p;
+					}
+
+					value = html.substr(valueStart, p - valueStart);
+				}
+			}
+
+			if (name == "href") {
+				return utility::stringUtils::trim(value);
+			}
+		}
+	}
+
+	return "";
+}
+
+
+// Finds the parts with a Content-Location in a multipart/related part, except
+// the HTML text, without looking into nested multipart/related parts: RFC 2557
+// does not cover references from outside to their parts (section 7)
+static void findLocationParts(
+	const bodyPart& part,
+	const bodyPart& textPart,
+	std::vector <shared_ptr <const bodyPart> >& locParts
+) {
+
+	for (size_t i = 0 ; i < part.getBody()->getPartCount() ; ++i) {
+
+		const shared_ptr <const bodyPart> p = part.getBody()->getPartAt(i);
+
+		if (p->getBody()->getPartCount() != 0) {
+
+			if (!isMultipartRelated(*p)) {
+				findLocationParts(*p, textPart, locParts);
+			}
+
+		} else if (p.get() != &textPart) {
+
+			const string location = getLocation(*p);
+
+			if (!location.empty() && !isCIDReference(location)) {
+				locParts.push_back(p);
+			}
+		}
+	}
+}
+
+
+// Long URIs are split into words of at most 40 bytes, where the field can be
+// folded (RFC 2557, section 4.4.2, and RFC 2017, section 3.1); URIs with 8-bit
+// bytes are encoded with the charset of the HTML text (section 4.4.1)
+static text locationToText(const string& location, const charset& ch) {
+
+	if (!utility::stringUtils::is7bit(location)) {
+		return text(word(location, ch));
+	}
+
+	// "Content-Location: " is 18 bytes long
+	if (18 + location.length() <= lineLengthLimits::convenient) {
+		return text(word(location, charset(charsets::US_ASCII)));
+	}
+
+	string words;
+
+	for (size_t pos = 0 ; pos < location.length() ; pos += 40) {
+
+		if (pos != 0) {
+			words += ' ';
+		}
+
+		words += location.substr(pos, 40);
+	}
+
+	return text(word(words, charset(charsets::US_ASCII)));
+}
+
+
 htmlTextPart::htmlTextPart()
 	: m_plainText(make_shared <emptyContentHandler>()),
-	  m_text(make_shared <emptyContentHandler>()) {
+	  m_text(make_shared <emptyContentHandler>()),
+	  m_baseURI(DEFAULT_BASE_URI) {
 
 }
 
@@ -106,6 +325,10 @@ void htmlTextPart::generateIn(
 			mediaType(mediaTypes::MULTIPART, mediaTypes::MULTIPART_RELATED)
 		);
 
+		// The type of the root part is required (RFC 2387, section 3.1)
+		dynamicCast <contentTypeField>(relPart->getHeader()->ContentType())
+			->getParameter("type")->setValue(word(getType().generate(), charset(charsets::US_ASCII)));
+
 		// Add the HTML part into this part
 		relPart->getBody()->appendPart(htmlPart);
 
@@ -116,19 +339,29 @@ void htmlTextPart::generateIn(
 			shared_ptr <bodyPart> objPart = make_shared <bodyPart>();
 			relPart->getBody()->appendPart(objPart);
 
-			string id = (*it)->getId();
+			objPart->getHeader()->ContentType()->setValue((*it)->getType());
 
-			if (id.length() >= 4 &&
-			    (id[0] == 'c' || id[0] == 'C') &&
-			    (id[1] == 'i' || id[1] == 'I') &&
-			    (id[2] == 'd' || id[2] == 'D') &&
-			    id[3] == ':') {
+			if ((*it)->getReferenceType() == embeddedObject::REFERENCED_BY_ID) {
 
-				id = id.substr(4);
+				string id = (*it)->getId();
+
+				if (id.length() >= 4 &&
+				    (id[0] == 'c' || id[0] == 'C') &&
+				    (id[1] == 'i' || id[1] == 'I') &&
+				    (id[2] == 'd' || id[2] == 'D') &&
+				    id[3] == ':') {
+
+					id = id.substr(4);
+				}
+
+				objPart->getHeader()->ContentId()->setValue(messageId("<" + id + ">"));
 			}
 
-			objPart->getHeader()->ContentType()->setValue((*it)->getType());
-			objPart->getHeader()->ContentId()->setValue(messageId("<" + id + ">"));
+			// An object can be referenced by both a Content-Id and a URI
+			if (!(*it)->m_location.empty()) {
+				objPart->getHeader()->ContentLocation()->setValue(locationToText((*it)->m_location, m_charset));
+			}
+
 			objPart->getHeader()->ContentDisposition()->setValue(contentDisposition(contentDispositionTypes::INLINE));
 			objPart->getHeader()->ContentTransferEncoding()->setValue((*it)->getEncoding());
 				//encoding(encodingTypes::BASE64);
@@ -146,39 +379,27 @@ void htmlTextPart::generateIn(
 
 void htmlTextPart::findEmbeddedParts(
 	const bodyPart& part,
-	std::vector <shared_ptr <const bodyPart> >& cidParts,
-	std::vector <shared_ptr <const bodyPart> >& locParts
+	std::vector <shared_ptr <const bodyPart> >& cidParts
 ) {
 
 	for (size_t i = 0 ; i < part.getBody()->getPartCount() ; ++i) {
 
 		shared_ptr <const bodyPart> p = part.getBody()->getPartAt(i);
 
-		// For a part to be an embedded object, it must have either a
-		// Content-Id field or a Content-Location field.
 		if (p->getHeader()->hasField(fields::CONTENT_ID)) {
 			cidParts.push_back(p);
 		}
 
-		if (p->getHeader()->hasField(fields::CONTENT_LOCATION)) {
-			locParts.push_back(p);
-		}
-
-		findEmbeddedParts(*p, cidParts, locParts);
+		findEmbeddedParts(*p, cidParts);
 	}
 }
 
 
-void htmlTextPart::addEmbeddedObject(
+shared_ptr <htmlTextPart::embeddedObject> htmlTextPart::addEmbeddedObject(
 	const bodyPart& part,
 	const string& id,
 	const embeddedObject::ReferenceType refType
 ) {
-
-	// The object may already exists. This can happen if an object is
-	// identified by both a Content-Id and a Content-Location. In this
-	// case, there will be two embedded objects with two different IDs
-	// but referencing the same content.
 
 	mediaType type;
 
@@ -194,15 +415,17 @@ void htmlTextPart::addEmbeddedObject(
 		// No "Content-type" field: assume "application/octet-stream".
 	}
 
-	m_objects.push_back(
-		make_shared <embeddedObject>(
-			vmime::clone(part.getBody()->getContents()),
-			part.getBody()->getEncoding(),
-			id,
-			type,
-			refType
-		)
+	shared_ptr <embeddedObject> obj = make_shared <embeddedObject>(
+		vmime::clone(part.getBody()->getContents()),
+		part.getBody()->getEncoding(),
+		id,
+		type,
+		refType
 	);
+
+	m_objects.push_back(obj);
+
+	return obj;
 }
 
 
@@ -214,9 +437,20 @@ void htmlTextPart::parse(
 
 	// Search for possible embedded objects in the _whole_ message.
 	std::vector <shared_ptr <const bodyPart> > cidParts;
+
+	findEmbeddedParts(*message, cidParts);
+
+	// Objects referenced by a URI are in the multipart/related part of the
+	// HTML text, or in a multipart/related part which contains it (RFC 2557,
+	// sections 7 and 8.2)
 	std::vector <shared_ptr <const bodyPart> > locParts;
 
-	findEmbeddedParts(*message, cidParts, locParts);
+	for (const bodyPart* p = textPart->getParentPart() ; p ; p = p->getParentPart()) {
+
+		if (isMultipartRelated(*p)) {
+			findLocationParts(*p, *textPart, locParts);
+		}
+	}
 
 	// Extract HTML text
 	utility::details::classicOStringStream oss;
@@ -238,8 +472,25 @@ void htmlTextPart::parse(
 		m_charset = charset();
 	}
 
-	// Extract embedded objects. The algorithm is quite simple: for each previously
-	// found inline part, we check if its CID/Location is contained in the HTML text.
+	// Base URI of the relative URIs in the HTML text: the BASE element comes
+	// first, and it can itself be relative (RFC 2557, section 5)
+	m_baseURI = findBaseURI(textPart.get());
+
+	const string htmlBase = findHTMLBase(data);
+
+	if (!htmlBase.empty()) {
+		m_baseURI = resolveURI(m_baseURI, htmlBase);
+	}
+
+	// Sets the Content-Location of an object, and the URI it resolves to
+	auto setLocation = [](embeddedObject& obj, const bodyPart& part) {
+
+		obj.m_location = getLocation(part);
+		obj.m_resolvedLocation = resolveURI(findBaseURI(part.getParentPart()), obj.m_location);
+	};
+
+	// Extract embedded objects. For each part with a Content-Id, we check if
+	// its CID is contained in the HTML text.
 	for (std::vector <shared_ptr <const bodyPart> >::const_iterator p = cidParts.begin() ;
 	     p != cidParts.end() ; ++p) {
 
@@ -253,25 +504,32 @@ void htmlTextPart::parse(
 
 			// This part is referenced in the HTML text.
 			// Add it to the embedded object list.
-			addEmbeddedObject(**p, mid.getId(), embeddedObject::REFERENCED_BY_ID);
+			shared_ptr <embeddedObject> obj =
+				addEmbeddedObject(**p, mid.getId(), embeddedObject::REFERENCED_BY_ID);
+
+			// The object may also be identified by a Content-Location. In
+			// this case, there is a single embedded object, referenced by
+			// its Content-Id, which can also be found with its URI.
+			const std::vector <shared_ptr <const bodyPart> >::iterator loc =
+				std::find(locParts.begin(), locParts.end(), *p);
+
+			if (loc != locParts.end()) {
+
+				setLocation(*obj, **p);
+				locParts.erase(loc);
+			}
 		}
 	}
 
+	// The other parts with a URI are objects referenced by their URI: which
+	// URIs are used is up to the HTML text, so they are all kept
 	for (std::vector <shared_ptr <const bodyPart> >::const_iterator p = locParts.begin() ;
 	     p != locParts.end() ; ++p) {
 
-		const shared_ptr <const headerField> locField =
-			(*p)->getHeader()->findField(fields::CONTENT_LOCATION);
+		shared_ptr <embeddedObject> obj =
+			addEmbeddedObject(**p, getLocation(**p), embeddedObject::REFERENCED_BY_LOCATION);
 
-		const text loc = *locField->getValue <text>();
-		const string locStr = loc.getWholeBuffer();
-
-		if (data.find(locStr) != string::npos) {
-
-			// This part is referenced in the HTML text.
-			// Add it to the embedded object list.
-			addEmbeddedObject(**p, locStr, embeddedObject::REFERENCED_BY_LOCATION);
-		}
+		setLocation(*obj, **p);
 	}
 
 	// Extract plain text, if any.
@@ -414,10 +672,19 @@ shared_ptr <const htmlTextPart::embeddedObject> htmlTextPart::getObjectAt(const 
 
 shared_ptr <const htmlTextPart::embeddedObject> htmlTextPart::findObject(const string& id) const
 {
+	// URIs other than "cid:" ones are compared with the Content-Location of
+	// objects, once resolved (RFC 2557, section 8.2)
+	const bool isCID = isCIDReference(id);
+	const string uri = resolveURI(m_baseURI, id);
+
 	for (std::vector <shared_ptr <embeddedObject> >::const_iterator o = m_objects.begin() ;
 	     o != m_objects.end() ; ++o) {
 
-		if ((*o)->matchesId(id)) {
+		if ((*o)->getReferenceType() == embeddedObject::REFERENCED_BY_ID && (*o)->matchesId(id)) {
+			return *o;
+		}
+
+		if (!isCID && !(*o)->m_resolvedLocation.empty() && (*o)->m_resolvedLocation == uri) {
 			return *o;
 		}
 	}
@@ -428,15 +695,7 @@ shared_ptr <const htmlTextPart::embeddedObject> htmlTextPart::findObject(const s
 
 bool htmlTextPart::hasObject(const string& id) const {
 
-	for (std::vector <shared_ptr <embeddedObject> >::const_iterator o = m_objects.begin() ;
-	     o != m_objects.end() ; ++o) {
-
-		if ((*o)->matchesId(id)) {
-			return true;
-		}
-	}
-
-	return false;
+	return !!findObject(id);
 }
 
 
@@ -474,6 +733,49 @@ shared_ptr <const htmlTextPart::embeddedObject> htmlTextPart::addObject(
 
 	shared_ptr <stringContentHandler> cts = make_shared <stringContentHandler>(data);
 	return addObject(cts, encoding::decide(cts), type);
+}
+
+
+shared_ptr <const htmlTextPart::embeddedObject> htmlTextPart::addObject(
+	const shared_ptr <contentHandler>& data,
+	const vmime::encoding& enc,
+	const mediaType& type,
+	const string& location
+) {
+
+	// A URI has no white-spaces: they are removed from a folded
+	// Content-Location field when it is parsed (RFC 2557, section 4.4.3)
+	if (location.empty()) {
+		throw exceptions::invalid_argument();
+	}
+
+	for (const char c : location) {
+
+		if (c == ' ' || parserHelpers::isControl(c)) {
+			throw exceptions::invalid_argument();
+		}
+	}
+
+	shared_ptr <embeddedObject> obj = make_shared <embeddedObject>(
+		data, enc, location, type, embeddedObject::REFERENCED_BY_LOCATION
+	);
+
+	obj->m_location = location;
+	obj->m_resolvedLocation = resolveURI(m_baseURI, location);
+
+	m_objects.push_back(obj);
+
+	return obj;
+}
+
+
+shared_ptr <const htmlTextPart::embeddedObject> htmlTextPart::addObject(
+	const shared_ptr <contentHandler>& data,
+	const mediaType& type,
+	const string& location
+) {
+
+	return addObject(data, encoding::decide(data), type, location);
 }
 
 
