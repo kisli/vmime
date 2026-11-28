@@ -34,6 +34,7 @@ VMIME_TEST_SUITE_BEGIN(attachmentHelperTest)
 		VMIME_TEST(testIsBodyPartAnAttachment1)
 		VMIME_TEST(testIsBodyPartAnAttachment2)
 		VMIME_TEST(testIsBodyPartAnAttachment3)
+		VMIME_TEST(testIsBodyPartAnAttachment4)
 		VMIME_TEST(testIsAttachment)
 		VMIME_TEST(testGetAttachmentName)
 		VMIME_TEST(testGetBodyPartAttachment)
@@ -254,19 +255,29 @@ VMIME_TEST_SUITE_BEGIN(attachmentHelperTest)
 		VASSERT_EQ("1", true, vmime::attachmentHelper::isBodyPartAnAttachment(p));
 	}
 
-	// Content-Disposition: attachment
 	// Content-Id field present
 	void testIsBodyPartAnAttachment4() {
 
+		// Content-Disposition: attachment, which is not overridden by
+		// the Content-Id field (RFC 2183, section 2.2)
 		vmime::string data = "Content-Disposition: attachment\r\n"
 			"Content-Type: application/octet-stream\r\n"
-			"Content-Id: bar\r\n"
+			"Content-Id: <bar@vmime.org>\r\n"
 			"\r\nFoo\r\n";
 
 		vmime::shared_ptr <vmime::bodyPart> p = vmime::make_shared <vmime::bodyPart>();
 		p->parse(data);
 
-		VASSERT_EQ("1", false, vmime::attachmentHelper::isBodyPartAnAttachment(p));
+		VASSERT_EQ("1", true, vmime::attachmentHelper::isBodyPartAnAttachment(p));
+
+		// No Content-Disposition field: embedded object (MHTML)
+		data = "Content-Type: application/octet-stream\r\n"
+			"Content-Id: <bar@vmime.org>\r\n"
+			"\r\nFoo\r\n";
+
+		p->parse(data);
+
+		VASSERT_EQ("2", false, vmime::attachmentHelper::isBodyPartAnAttachment(p));
 	}
 
 	// Header only, for the root part or not

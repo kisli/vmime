@@ -407,11 +407,13 @@ mb.constructTextPart(
 vmime::shared_ptr <vmime::htmlTextPart> textPart =
    vmime::dynamicCast <vmime::htmlTextPart>(mb.getTextPart());
 
-// -- Add the JPEG image (the returned identifier is used to identify the
-// -- embedded object in the HTML text, the famous "CID", or "Content-Id").
+// -- Add the JPEG image (the reference identifier of the returned object is
+// -- used to reference it in the HTML text: "cid:" followed by the famous
+// -- "CID", or "Content-Id").
 // -- Note: you can also read data from a file; see the next example.
-const vmime::string id = textPart->addObject("<...image data...>",
-   vmime::mediaType(vmime::mediaTypes::IMAGE, vmime::mediaTypes::IMAGE_JPEG));
+vmime::shared_ptr <const vmime::htmlTextPart::embeddedObject> obj =
+   textPart->addObject("<...image data...>",
+      vmime::mediaType(vmime::mediaTypes::IMAGE, vmime::mediaTypes::IMAGE_JPEG));
 
 // -- Set the text
 textPart->setCharset(vmime::charsets::ISO8859_15);
@@ -419,7 +421,7 @@ textPart->setCharset(vmime::charsets::ISO8859_15);
 textPart->setText(
    vmime::make_shared <vmime::stringContentHandler>(
       "This is the <b>HTML text</b>, and the image:<br/>"
-      "<img src=\"") + id + vmime::string("\"/>"
+      "<img src=\"" + obj->getReferenceId() + "\"/>"
    )
 );
 
@@ -445,7 +447,7 @@ following code opens the file \emph{/path/to/image.jpg}, connects it to an
 input stream, then add an embedded object:
 
 \begin{lstlisting}
-vmime::utility::fileSystemFactory* fs =
+vmime::shared_ptr <vmime::utility::fileSystemFactory> fs =
    vmime::platform::getHandler()->getFileSystemFactory();
 
 vmime::shared_ptr <vmime::utility::file> imageFile =
@@ -457,13 +459,14 @@ vmime::shared_ptr <vmime::contentHandler> imageCts =
       imageFile->getLength()
    );
 
-const vmime::string cid = textPart.addObject(
-   imageCts,
-   vmime::mediaType(
-      vmime::mediaTypes::IMAGE,
-      vmime::mediaTypes::IMAGE_JPEG
-   )
-);
+vmime::shared_ptr <const vmime::htmlTextPart::embeddedObject> obj =
+   textPart->addObject(
+      imageCts,
+      vmime::mediaType(
+         vmime::mediaTypes::IMAGE,
+         vmime::mediaTypes::IMAGE_JPEG
+      )
+   );
 \end{lstlisting}
 
 An embedded object can also be referenced by a URL rather than by a
