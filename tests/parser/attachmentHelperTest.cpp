@@ -34,6 +34,7 @@ VMIME_TEST_SUITE_BEGIN(attachmentHelperTest)
 		VMIME_TEST(testIsBodyPartAnAttachment1)
 		VMIME_TEST(testIsBodyPartAnAttachment2)
 		VMIME_TEST(testIsBodyPartAnAttachment3)
+		VMIME_TEST(testIsBodyPartAnAttachment4)
 		VMIME_TEST(testIsAttachment)
 		VMIME_TEST(testGetAttachmentName)
 		VMIME_TEST(testGetBodyPartAttachment)
@@ -254,19 +255,29 @@ VMIME_TEST_SUITE_BEGIN(attachmentHelperTest)
 		VASSERT_EQ("1", true, vmime::attachmentHelper::isBodyPartAnAttachment(p));
 	}
 
-	// Content-Disposition: attachment
 	// Content-Id field present
 	void testIsBodyPartAnAttachment4() {
 
+		// Content-Disposition: attachment, which is not overridden by
+		// the Content-Id field (RFC 2183, section 2.2)
 		vmime::string data = "Content-Disposition: attachment\r\n"
 			"Content-Type: application/octet-stream\r\n"
-			"Content-Id: bar\r\n"
+			"Content-Id: <bar@vmime.org>\r\n"
 			"\r\nFoo\r\n";
 
 		vmime::shared_ptr <vmime::bodyPart> p = vmime::make_shared <vmime::bodyPart>();
 		p->parse(data);
 
-		VASSERT_EQ("1", false, vmime::attachmentHelper::isBodyPartAnAttachment(p));
+		VASSERT_EQ("1", true, vmime::attachmentHelper::isBodyPartAnAttachment(p));
+
+		// No Content-Disposition field: embedded object (MHTML)
+		data = "Content-Type: application/octet-stream\r\n"
+			"Content-Id: <bar@vmime.org>\r\n"
+			"\r\nFoo\r\n";
+
+		p->parse(data);
+
+		VASSERT_EQ("2", false, vmime::attachmentHelper::isBodyPartAnAttachment(p));
 	}
 
 	// Header only, for the root part or not
@@ -291,6 +302,17 @@ VMIME_TEST_SUITE_BEGIN(attachmentHelperTest)
 
 		VASSERT_EQ("3", false, vmime::attachmentHelper::isAttachment(hdr, false));
 		VASSERT_EQ("4", true, vmime::attachmentHelper::isAttachment(
+			hdr, false, vmime::attachmentHelper::INLINE_OBJECTS));
+
+		// Object referenced by a URI, without Content-Disposition field
+		// (RFC 2557, section 9.2)
+		hdr.parse(
+			"Content-Type: image/png\r\n"
+			"Content-Location: http://www.vmime.org/logo.png\r\n"
+		);
+
+		VASSERT_EQ("5", false, vmime::attachmentHelper::isAttachment(hdr, false));
+		VASSERT_EQ("6", true, vmime::attachmentHelper::isAttachment(
 			hdr, false, vmime::attachmentHelper::INLINE_OBJECTS));
 	}
 

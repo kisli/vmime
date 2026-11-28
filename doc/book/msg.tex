@@ -135,6 +135,29 @@ for (int i = 0 ; i < mp.getTextPartCount() ; ++i) {
 }
 \end{lstlisting}
 
+To get the embedded object referenced by a URL of the HTML text (in the
+{\vcode src} attribute of an {\vcode img} element, for example), pass this URL
+to {\vcode findObject()}, as it is written in the HTML text, but with its
+character references decoded ({\vcode \&amp;} is {\vcode \&}). A
+{\vcode cid:} URL is compared with the {\vcode Content-Id} field of objects.
+Another URL is compared with their {\vcode Content-Location} field, once
+relative URLs are resolved as specified in RFC-2557: against the
+{\vcode base} element of the HTML text, else the {\vcode Content-Location}
+field of the HTML part or of a part which contains it.
+
+\begin{lstlisting}
+// With "Content-Location: http://www.vmime.org/" in the header of the
+// message, this finds the object with the following field:
+//    Content-Location: http://www.vmime.org/images/logo.png
+vmime::shared_ptr <const vmime::htmlTextPart::embeddedObject> obj =
+   htp->findObject("images/logo.png");
+\end{lstlisting}
+
+Following RFC-2557, objects referenced by a URL are in the
+{\vcode multipart/related} part of the HTML text, or in a
+{\vcode multipart/related} part which contains it. All of them are listed,
+whether or not the HTML text uses them.
+
 
 \subsection{Non-ASCII text in header fields} % --------------------------------
 
@@ -384,11 +407,13 @@ mb.constructTextPart(
 vmime::shared_ptr <vmime::htmlTextPart> textPart =
    vmime::dynamicCast <vmime::htmlTextPart>(mb.getTextPart());
 
-// -- Add the JPEG image (the returned identifier is used to identify the
-// -- embedded object in the HTML text, the famous "CID", or "Content-Id").
+// -- Add the JPEG image (the reference identifier of the returned object is
+// -- used to reference it in the HTML text: "cid:" followed by the famous
+// -- "CID", or "Content-Id").
 // -- Note: you can also read data from a file; see the next example.
-const vmime::string id = textPart->addObject("<...image data...>",
-   vmime::mediaType(vmime::mediaTypes::IMAGE, vmime::mediaTypes::IMAGE_JPEG));
+vmime::shared_ptr <const vmime::htmlTextPart::embeddedObject> obj =
+   textPart->addObject("<...image data...>",
+      vmime::mediaType(vmime::mediaTypes::IMAGE, vmime::mediaTypes::IMAGE_JPEG));
 
 // -- Set the text
 textPart->setCharset(vmime::charsets::ISO8859_15);
@@ -396,7 +421,7 @@ textPart->setCharset(vmime::charsets::ISO8859_15);
 textPart->setText(
    vmime::make_shared <vmime::stringContentHandler>(
       "This is the <b>HTML text</b>, and the image:<br/>"
-      "<img src=\"") + id + vmime::string("\"/>"
+      "<img src=\"" + obj->getReferenceId() + "\"/>"
    )
 );
 
@@ -422,7 +447,7 @@ following code opens the file \emph{/path/to/image.jpg}, connects it to an
 input stream, then add an embedded object:
 
 \begin{lstlisting}
-vmime::utility::fileSystemFactory* fs =
+vmime::shared_ptr <vmime::utility::fileSystemFactory> fs =
    vmime::platform::getHandler()->getFileSystemFactory();
 
 vmime::shared_ptr <vmime::utility::file> imageFile =
@@ -434,11 +459,36 @@ vmime::shared_ptr <vmime::contentHandler> imageCts =
       imageFile->getLength()
    );
 
-const vmime::string cid = textPart.addObject(
+vmime::shared_ptr <const vmime::htmlTextPart::embeddedObject> obj =
+   textPart->addObject(
+      imageCts,
+      vmime::mediaType(
+         vmime::mediaTypes::IMAGE,
+         vmime::mediaTypes::IMAGE_JPEG
+      )
+   );
+\end{lstlisting}
+
+An embedded object can also be referenced by a URL rather than by a
+Content-Id, for example to send a web page with its images. The URL is
+written in the {\vcode Content-Location} field of the object, and you use the
+same URL in the HTML text. It can be absolute or relative, but it cannot
+contain white-spaces: encode them as {\vcode \%20}, both in the URL and in the
+HTML text. A long URL is folded as specified in RFC-2557.
+
+\begin{lstlisting}
+textPart->addObject(
    imageCts,
    vmime::mediaType(
       vmime::mediaTypes::IMAGE,
       vmime::mediaTypes::IMAGE_JPEG
+   ),
+   "images/paris.jpg"
+);
+
+textPart->setText(
+   vmime::make_shared <vmime::stringContentHandler>(
+      "<img src=\"images/paris.jpg\"/>"
    )
 );
 \end{lstlisting}

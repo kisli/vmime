@@ -134,6 +134,8 @@ public:
 
 	private:
 
+		friend class htmlTextPart;
+
 		static string cleanId(const string& id);
 
 		shared_ptr <contentHandler> m_data;
@@ -141,10 +143,16 @@ public:
 		string m_id;
 		mediaType m_type;
 		ReferenceType m_refType;
+
+		// Content-Location of the object, if any, and the URI it
+		// resolves to (RFC 2557, section 8.2)
+		string m_location;
+		string m_resolvedLocation;
 	};
 
 
 	/** Test the existence of an embedded object given its identifier.
+	  * See findObject() for the identifiers which can be used.
 	  *
 	  * @param id object identifier
 	  * @return true if an object with this identifier exists,
@@ -153,6 +161,13 @@ public:
 	bool hasObject(const string& id) const;
 
 	/** Return the embedded object with the specified identifier.
+	  *
+	  * The identifier is either a Content-Id, with or without "cid:",
+	  * or a URI found in the HTML text: a relative URI is resolved as
+	  * specified in RFC 2557 (section 8.2), then compared with the
+	  * Content-Location of objects. A URI found in an HTML attribute
+	  * must be given after its character references are decoded (eg.
+	  * "&amp;amp;" is "&amp;").
 	  *
 	  * @param id object identifier
 	  * @return embedded object with the specified identifier, or NULL if
@@ -220,6 +235,46 @@ public:
 		const mediaType& type
 	);
 
+	/** Embed an object referenced by a URI rather than by a Content-Id
+	  * (RFC 2557). The URI is written in the Content-Location field of
+	  * the object, and it is the identifier of the returned object: use
+	  * the same URI in the HTML text, for example in the 'src' attribute
+	  * of an &lt;img> tag.
+	  *
+	  * @param data object data
+	  * @param type data type
+	  * @param location URI of the object, absolute or relative
+	  * @return embedded object
+	  * @throw exceptions::invalid_argument if the location is empty, or
+	  * contains a white-space or a control character
+	  */
+	shared_ptr <const embeddedObject> addObject(
+		const shared_ptr <contentHandler>& data,
+		const mediaType& type,
+		const string& location
+	);
+
+	/** Embed an object referenced by a URI rather than by a Content-Id
+	  * (RFC 2557). The URI is written in the Content-Location field of
+	  * the object, and it is the identifier of the returned object: use
+	  * the same URI in the HTML text, for example in the 'src' attribute
+	  * of an &lt;img> tag.
+	  *
+	  * @param data object data
+	  * @param enc data encoding
+	  * @param type data type
+	  * @param location URI of the object, absolute or relative
+	  * @return embedded object
+	  * @throw exceptions::invalid_argument if the location is empty, or
+	  * contains a white-space or a control character
+	  */
+	shared_ptr <const embeddedObject> addObject(
+		const shared_ptr <contentHandler>& data,
+		const encoding& enc,
+		const mediaType& type,
+		const string& location
+	);
+
 
 	size_t getPartCount() const;
 
@@ -242,13 +297,15 @@ private:
 
 	std::vector <shared_ptr <embeddedObject> > m_objects;
 
+	// Base URI of the relative URIs in the HTML text (RFC 2557, section 5)
+	string m_baseURI;
+
 	void findEmbeddedParts(
 		const bodyPart& part,
-		std::vector <shared_ptr <const bodyPart> >& cidParts,
-		std::vector <shared_ptr <const bodyPart> >& locParts
+		std::vector <shared_ptr <const bodyPart> >& cidParts
 	);
 
-	void addEmbeddedObject(
+	shared_ptr <embeddedObject> addEmbeddedObject(
 		const bodyPart& part,
 		const string& id,
 		const embeddedObject::ReferenceType refType

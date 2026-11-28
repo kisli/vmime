@@ -127,9 +127,11 @@ bool attachmentHelper::isAttachment(
 
 		if ((options & INLINE_OBJECTS) == 0) {
 
-			// If a "Content-Id" field is present, it might be an
-			// embedded object (MHTML messages)
-			if (hdr.hasField(vmime::fields::CONTENT_ID)) {
+			// If a "Content-Id" or a "Content-Location" field is present,
+			// it might be an embedded object (MHTML messages, RFC 2557)
+			if (hdr.hasField(vmime::fields::CONTENT_ID) ||
+			    hdr.hasField(vmime::fields::CONTENT_LOCATION)) {
+
 				return false;
 			}
 		}
